@@ -5934,8 +5934,11 @@ cp_parser_nested_name_specifier_opt (cp_parser *parser,
 	      && parser->colon_corrects_to_scope_p
 	      && cp_lexer_peek_nth_token (parser->lexer, 3)->type == CPP_NAME)
 	    {
-	      error_at (token->location,
-			"found %<:%> in nested-name-specifier, expected %<::%>");
+	      gcc_rich_location richloc (token->location);
+	      richloc.add_fixit_replace ("::");
+	      error_at_rich_loc (&richloc,
+				 "found %<:%> in nested-name-specifier, "
+				 "expected %<::%>");
 	      token->type = CPP_SCOPE;
 	    }
 
@@ -8763,7 +8766,8 @@ cp_parser_cast_expression (cp_parser *parser, bool address_p, bool cast_p,
 		  && !in_system_header_at (input_location)
 		  && !VOID_TYPE_P (type)
 		  && current_lang_name != lang_name_c)
-		warning (OPT_Wold_style_cast, "use of old-style cast");
+		warning (OPT_Wold_style_cast,
+			 "use of old-style cast to %qT", type);
 
 	      /* Only type conversions to integral or enumeration types
 		 can be used in constant-expressions.  */
@@ -23653,8 +23657,10 @@ cp_parser_member_declaration (cp_parser* parser)
 	      if (cp_lexer_next_token_is (parser->lexer, CPP_SEMICOLON))
 		{
 		  cp_token *token = cp_lexer_previous_token (parser->lexer);
-		  error_at (token->location,
-			    "stray %<,%> at end of member declaration");
+		  gcc_rich_location richloc (token->location);
+		  richloc.add_fixit_remove ();
+		  error_at_rich_loc (&richloc, "stray %<,%> at end of "
+				     "member declaration");
 		}
 	    }
 	  /* If the next token isn't a `;', then we have a parse error.  */
@@ -23665,8 +23671,10 @@ cp_parser_member_declaration (cp_parser* parser)
 		 actual semicolon is missing.  Find the previous token
 		 and use that for our error position.  */
 	      cp_token *token = cp_lexer_previous_token (parser->lexer);
-	      error_at (token->location,
-			"expected %<;%> at end of member declaration");
+	      gcc_rich_location richloc (token->location);
+	      richloc.add_fixit_insert_after (";");
+	      error_at_rich_loc (&richloc, "expected %<;%> at end of "
+				 "member declaration");
 
 	      /* Assume that the user meant to provide a semicolon.  If
 		 we were to cp_parser_skip_to_end_of_statement, we might
@@ -38976,16 +38984,6 @@ make_generic_type_name ()
   char buf[32];
   sprintf (buf, "auto:%d", ++generic_parm_count);
   return get_identifier (buf);
-}
-
-/* Predicate that behaves as is_auto_or_concept but matches the parent
-   node of the generic type rather than the generic type itself.  This
-   allows for type transformation in add_implicit_template_parms.  */
-
-static inline bool
-tree_type_is_auto_or_concept (const_tree t)
-{
-  return TREE_TYPE (t) && is_auto_or_concept (TREE_TYPE (t));
 }
 
 /* Add an implicit template type parameter to the CURRENT_TEMPLATE_PARMS

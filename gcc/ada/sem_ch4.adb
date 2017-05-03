@@ -30,7 +30,6 @@ with Einfo;    use Einfo;
 with Elists;   use Elists;
 with Errout;   use Errout;
 with Exp_Util; use Exp_Util;
-with Fname;    use Fname;
 with Itypes;   use Itypes;
 with Lib;      use Lib;
 with Lib.Xref; use Lib.Xref;
@@ -341,6 +340,7 @@ package body Sem_Ch4 is
 
       procedure List_Operand_Interps (Opnd : Node_Id) is
          Nam   : Node_Id;
+         pragma Warnings (Off, Nam);
          Err   : Node_Id := N;
 
       begin
@@ -1463,6 +1463,25 @@ package body Sem_Ch4 is
          --  actuals.
 
          Check_Function_Writable_Actuals (N);
+
+         --  The return type of the function may be incomplete. This can be
+         --  the case if the type is a generic formal, or a limited view. It
+         --  can also happen when the function declaration appears before the
+         --  full view of the type (which is legal in Ada 2012) and the call
+         --  appears in a different unit, in which case the incomplete view
+         --  must be replaced with the full view to prevent subsequent type
+         --  errors.
+
+         if Is_Incomplete_Type (Etype (N))
+           and then Present (Full_View (Etype (N)))
+         then
+            if Is_Entity_Name (Nam) then
+               Set_Etype (Nam, Full_View (Etype (N)));
+               Set_Etype (Entity (Nam), Full_View (Etype (N)));
+            end if;
+
+            Set_Etype (N, Full_View (Etype (N)));
+         end if;
       end if;
    end Analyze_Call;
 
@@ -1529,6 +1548,10 @@ package body Sem_Ch4 is
 
       Alt := First (Alternatives (N));
       while Present (Alt) loop
+         if Error_Posted (Expression (Alt)) then
+            return;
+         end if;
+
          Analyze (Expression (Alt));
 
          if No (FirstX) and then Etype (Expression (Alt)) /= Any_Type then
@@ -1540,6 +1563,10 @@ package body Sem_Ch4 is
 
       --  Get our initial type from the first expression for which we got some
       --  useful type information from the expression.
+
+      if No (FirstX) then
+         return;
+      end if;
 
       if not Is_Overloaded (FirstX) then
          Set_Etype (N, Etype (FirstX));
@@ -2097,8 +2124,8 @@ package body Sem_Ch4 is
 
          New_N :=
            Make_Function_Call (Loc,
-           Name => Make_Explicit_Dereference (Loc, P),
-           Parameter_Associations => New_List);
+             Name                   => Make_Explicit_Dereference (Loc, P),
+             Parameter_Associations => New_List);
 
          --  If the prefix is overloaded, remove operations that have formals,
          --  we know that this is a parameterless call.
@@ -2193,22 +2220,29 @@ package body Sem_Ch4 is
 
    procedure Analyze_If_Expression (N : Node_Id) is
       Condition : constant Node_Id := First (Expressions (N));
-      Then_Expr : constant Node_Id := Next (Condition);
+      Then_Expr : Node_Id;
       Else_Expr : Node_Id;
 
    begin
       --  Defend against error of missing expressions from previous error
+
+      if No (Condition) then
+         Check_Error_Detected;
+         return;
+      end if;
+
+      Then_Expr := Next (Condition);
 
       if No (Then_Expr) then
          Check_Error_Detected;
          return;
       end if;
 
+      Else_Expr := Next (Then_Expr);
+
       if Comes_From_Source (N) then
          Check_SPARK_05_Restriction ("if expression is not allowed", N);
       end if;
-
-      Else_Expr := Next (Then_Expr);
 
       if Comes_From_Source (N) then
          Check_Compiler_Unit ("if expression", N);
@@ -3464,9 +3498,7 @@ package body Sem_Ch4 is
                  and then
                   (Etype (Actual) /= Universal_Integer
                     or else not Is_Descendant_Of_Address (Etype (Formal))
-                    or else
-                      Is_Predefined_File_Name
-                        (Unit_File_Name (Get_Source_Unit (N))))
+                    or else In_Predefined_Unit (N))
                then
                   Next_Actual (Actual);
                   Next_Formal (Formal);
@@ -4294,6 +4326,7 @@ package body Sem_Ch4 is
       Act_Decl      : Node_Id;
       Comp          : Entity_Id;
       Has_Candidate : Boolean := False;
+      Hidden_Comp   : Entity_Id;
       In_Scope      : Boolean;
       Is_Private_Op : Boolean;
       Parent_N      : Node_Id;
@@ -4833,6 +4866,7 @@ package body Sem_Ch4 is
          --  can only be a direct name or an expanded name.
 
          Set_Etype (Sel, Any_Type);
+         Hidden_Comp := Empty;
          In_Scope := In_Open_Scopes (Prefix_Type);
          Is_Private_Op := False;
 
@@ -4883,6 +4917,10 @@ package body Sem_Ch4 is
                   Has_Candidate := True;
 
                else
+                  if Ekind (Comp) = E_Component then
+                     Hidden_Comp := Comp;
+                  end if;
+
                   goto Next_Comp;
                end if;
 
@@ -4904,6 +4942,21 @@ package body Sem_Ch4 is
             end if;
 
             <<Next_Comp>>
+               if Comp = First_Private_Entity (Type_To_Use) then
+                  if Etype (Sel) /= Any_Type then
+
+                     --  We have a candiate
+
+                     exit;
+
+                  else
+                     --  Indicate that subsequent operations are private,
+                     --  for better error reporting.
+
+                     Is_Private_Op := True;
+                  end if;
+               end if;
+
                Next_Entity (Comp);
                exit when not In_Scope
                  and then
@@ -4951,11 +5004,20 @@ package body Sem_Ch4 is
 
          elsif In_Scope
            and then Is_Object_Reference (Original_Node (Prefix (N)))
+           and then Comes_From_Source (N)
            and then Is_Private_Op
          then
-            Error_Msg_NE
-              ("invalid reference to private operation of some object of "
-               & "type &", N, Type_To_Use);
+            if Present (Hidden_Comp) then
+               Error_Msg_NE
+                 ("invalid reference to private component of object of type "
+                  & "&", N, Type_To_Use);
+
+            else
+               Error_Msg_NE
+                 ("invalid reference to private operation of some object of "
+                  & "type &", N, Type_To_Use);
+            end if;
+
             Set_Entity (Sel, Any_Id);
             Set_Etype  (Sel, Any_Type);
             return;
@@ -6430,13 +6492,14 @@ package body Sem_Ch4 is
             --  Either the types are compatible, or one operand is universal
             --  (numeric or null).
 
-           or else (In_Instance
-                     and then
-                       (First_Subtype (T1) = First_Subtype (Etype (R))
-                         or else Nkind (R) = N_Null
-                         or else
-                           (Is_Numeric_Type (T1)
-                             and then Is_Universal_Numeric_Type (Etype (R)))))
+           or else
+             ((In_Instance or else In_Inlined_Body)
+                and then
+                  (First_Subtype (T1) = First_Subtype (Etype (R))
+                    or else Nkind (R) = N_Null
+                    or else
+                      (Is_Numeric_Type (T1)
+                        and then Is_Universal_Numeric_Type (Etype (R)))))
 
            --  In Ada 2005, the equality on anonymous access types is declared
            --  in Standard, and is always visible.
@@ -7332,8 +7395,7 @@ package body Sem_Ch4 is
                --  variants of System, and it must be removed as well.
 
                elsif Ada_Version >= Ada_2005
-                 or else Is_Predefined_File_Name
-                           (Unit_File_Name (Get_Source_Unit (It.Nam)))
+                 or else In_Predefined_Unit (It.Nam)
                then
                   Remove_Interp (I);
                   exit;
@@ -7358,7 +7420,7 @@ package body Sem_Ch4 is
                   if Nkind (Right_Opnd (N)) = N_Integer_Literal then
                      Remove_Address_Interpretations (Second_Op);
 
-                  elsif Nkind (Right_Opnd (N)) = N_Integer_Literal then
+                  elsif Nkind (Left_Opnd (N)) = N_Integer_Literal then
                      Remove_Address_Interpretations (First_Op);
                   end if;
                end if;
@@ -7521,19 +7583,19 @@ package body Sem_Ch4 is
    is
       Pref_Typ : constant Entity_Id := Etype (Prefix);
 
+      function Constant_Indexing_OK return Boolean;
+      --  Constant_Indexing is legal if there is no Variable_Indexing defined
+      --  for the type, or else node not a target of assignment, or an actual
+      --  for an IN OUT or OUT formal (RM 4.1.6 (11)).
+
       function Expr_Matches_In_Formal
         (Subp : Entity_Id;
          Par  : Node_Id) return Boolean;
       --  Find formal corresponding to given indexed component that is an
       --  actual in a call. Note that the enclosing subprogram call has not
-      --  beenanalyzed yet, and the parameter list is not normalized, so
+      --  been analyzed yet, and the parameter list is not normalized, so
       --  that if the argument is a parameter association we must match it
       --  by name and not by position.
-
-      function Constant_Indexing_OK return Boolean;
-      --  Constant_Indexing is legal if there is no Variable_Indexing defined
-      --  for the type, or else node not a target of assignment, or an actual
-      --  for an IN OUT or OUT formal (RM 4.1.6 (11)).
 
       function Find_Indexing_Operations
         (T           : Entity_Id;
@@ -7543,56 +7605,6 @@ package body Sem_Ch4 is
       --  name Nam. If the operation is overloaded, the reference carries all
       --  interpretations. Flag Is_Constant should be set when the context is
       --  constant indexing.
-
-      -----------------------------
-      -- Expr_Matches_In_Formal  --
-      -----------------------------
-
-      function Expr_Matches_In_Formal
-        (Subp : Entity_Id;
-         Par  : Node_Id) return Boolean
-      is
-         Actual : Node_Id;
-         Formal : Node_Id;
-
-      begin
-         Formal := First_Formal (Subp);
-         Actual := First  (Parameter_Associations ((Parent (Par))));
-
-         if Nkind (Par) /= N_Parameter_Association then
-
-            --  Match by position.
-
-            while Present (Actual) and then Present (Formal) loop
-               exit when Actual = Par;
-               Next (Actual);
-
-               if Present (Formal) then
-                  Next_Formal (Formal);
-
-               --  Otherwise this is a parameter mismatch, the error is
-               --  reported elsewhere, or else variable indexing is implied.
-
-               else
-                  return False;
-               end if;
-            end loop;
-
-         else
-            --  Match by name
-
-            while Present (Formal) loop
-               exit when Chars (Formal) = Chars (Selector_Name (Par));
-               Next_Formal (Formal);
-
-               if No (Formal) then
-                  return False;
-               end if;
-            end loop;
-         end if;
-
-         return Present (Formal) and then Ekind (Formal) = E_In_Parameter;
-      end Expr_Matches_In_Formal;
 
       --------------------------
       -- Constant_Indexing_OK --
@@ -7653,7 +7665,7 @@ package body Sem_Ch4 is
                         end loop;
                      end;
 
-                     --  All interpretations have a matching in-formal.
+                     --  All interpretations have a matching in-mode formal
 
                      return True;
 
@@ -7710,6 +7722,56 @@ package body Sem_Ch4 is
 
          return True;
       end Constant_Indexing_OK;
+
+      ----------------------------
+      -- Expr_Matches_In_Formal --
+      ----------------------------
+
+      function Expr_Matches_In_Formal
+        (Subp : Entity_Id;
+         Par  : Node_Id) return Boolean
+      is
+         Actual : Node_Id;
+         Formal : Node_Id;
+
+      begin
+         Formal := First_Formal (Subp);
+         Actual := First (Parameter_Associations ((Parent (Par))));
+
+         if Nkind (Par) /= N_Parameter_Association then
+
+            --  Match by position
+
+            while Present (Actual) and then Present (Formal) loop
+               exit when Actual = Par;
+               Next (Actual);
+
+               if Present (Formal) then
+                  Next_Formal (Formal);
+
+               --  Otherwise this is a parameter mismatch, the error is
+               --  reported elsewhere, or else variable indexing is implied.
+
+               else
+                  return False;
+               end if;
+            end loop;
+
+         else
+            --  Match by name
+
+            while Present (Formal) loop
+               exit when Chars (Formal) = Chars (Selector_Name (Par));
+               Next_Formal (Formal);
+
+               if No (Formal) then
+                  return False;
+               end if;
+            end loop;
+         end if;
+
+         return Present (Formal) and then Ekind (Formal) = E_In_Parameter;
+      end Expr_Matches_In_Formal;
 
       ------------------------------
       -- Find_Indexing_Operations --
@@ -8605,6 +8667,14 @@ package body Sem_Ch4 is
          Actuals : List_Id;
 
       begin
+         --  Obj may already have been rewritten if it involves an implicit
+         --  dereference (e.g. if it is an access to a limited view). Preserve
+         --  a link to the original node for ASIS use.
+
+         if not Comes_From_Source (Obj) then
+            Set_Original_Node (Dummy, Original_Node (Obj));
+         end if;
+
          --  Common case covering 1) Call to a procedure and 2) Call to a
          --  function that has some additional actuals.
 

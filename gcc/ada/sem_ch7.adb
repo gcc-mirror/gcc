@@ -975,22 +975,20 @@ package body Sem_Ch7 is
       Set_Ekind  (Id, E_Package);
       Set_Etype  (Id, Standard_Void_Type);
 
-      --  Set SPARK_Mode from context only for non-generic package
+      --  Set SPARK_Mode from context
 
-      if Ekind (Id) = E_Package then
-         Set_SPARK_Pragma               (Id, SPARK_Mode_Pragma);
-         Set_SPARK_Aux_Pragma           (Id, SPARK_Mode_Pragma);
-         Set_SPARK_Pragma_Inherited     (Id);
-         Set_SPARK_Aux_Pragma_Inherited (Id);
+      Set_SPARK_Pragma               (Id, SPARK_Mode_Pragma);
+      Set_SPARK_Aux_Pragma           (Id, SPARK_Mode_Pragma);
+      Set_SPARK_Pragma_Inherited     (Id);
+      Set_SPARK_Aux_Pragma_Inherited (Id);
 
-         --  Save the state of flag Ignore_SPARK_Mode_Pragmas_In_Instance in
-         --  case the body of this package is instantiated or inlined later and
-         --  out of context. The body uses this attribute to restore the value
-         --  of the global flag.
+      --  Save the state of flag Ignore_SPARK_Mode_Pragmas_In_Instance in case
+      --  the body of this package is instantiated or inlined later and out of
+      --  context. The body uses this attribute to restore the value of the
+      --  global flag.
 
-         if Ignore_SPARK_Mode_Pragmas_In_Instance then
-            Set_Ignore_SPARK_Mode_Pragmas (Id);
-         end if;
+      if Ignore_SPARK_Mode_Pragmas_In_Instance then
+         Set_Ignore_SPARK_Mode_Pragmas (Id);
       end if;
 
       --  Analyze aspect specifications immediately, since we need to recognize
@@ -1713,11 +1711,14 @@ package body Sem_Ch7 is
 
       Check_One_Tagged_Type_Or_Extension_At_Most;
 
-      --  If switch set, output information on why body required
+      --  Output relevant information as to why the package requires a body.
+      --  Do not consider generated packages as this exposes internal symbols
+      --  and leads to confusing messages.
 
       if List_Body_Required_Info
         and then In_Extended_Main_Source_Unit (Id)
         and then Unit_Requires_Body (Id)
+        and then Comes_From_Source (Id)
       then
          Unit_Requires_Body_Info (Id);
       end if;
@@ -3145,4 +3146,5 @@ package body Sem_Ch7 is
          Next_Entity (E);
       end loop;
    end Unit_Requires_Body_Info;
+
 end Sem_Ch7;

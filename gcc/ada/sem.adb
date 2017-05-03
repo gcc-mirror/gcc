@@ -29,7 +29,6 @@ with Debug_A;   use Debug_A;
 with Elists;    use Elists;
 with Exp_SPARK; use Exp_SPARK;
 with Expander;  use Expander;
-with Fname;     use Fname;
 with Ghost;     use Ghost;
 with Lib;       use Lib;
 with Lib.Load;  use Lib.Load;
@@ -654,6 +653,15 @@ package body Sem is
          =>
             null;
 
+         --  A quantified expression with a missing "all" or "some" qualifier
+         --  looks identical to an iterated component association. By language
+         --  definition, the latter must be present within array aggregates. If
+         --  this is not the case, then the iterated component association is
+         --  really an illegal quantified expression. Diagnose this scenario.
+
+         when N_Iterated_Component_Association =>
+            Diagnose_Iterated_Component_Association (N);
+
          --  For the remaining node types, we generate compiler abort, because
          --  these nodes are always analyzed within the Sem_Chn routines and
          --  there should never be a case of making a call to the main Analyze
@@ -704,7 +712,6 @@ package body Sem is
             | N_Function_Specification
             | N_Generic_Association
             | N_Index_Or_Discriminant_Constraint
-            | N_Iterated_Component_Association
             | N_Iteration_Scheme
             | N_Mod_Clause
             | N_Modular_Type_Definition
@@ -1219,8 +1226,8 @@ package body Sem is
 
    procedure Lock is
    begin
-      Scope_Stack.Locked := True;
       Scope_Stack.Release;
+      Scope_Stack.Locked := True;
    end Lock;
 
    ----------------
@@ -1417,8 +1424,8 @@ package body Sem is
       --  Sequential_IO) as this would prevent pragma Extend_System from being
       --  taken into account, for example when Text_IO is renaming DEC.Text_IO.
 
-      if Is_Predefined_File_Name
-           (Unit_File_Name (Current_Sem_Unit), Renamings_Included => False)
+      if Is_Predefined_Unit (Current_Sem_Unit)
+        and then not Is_Predefined_Renaming (Current_Sem_Unit)
       then
          GNAT_Mode := True;
       end if;
@@ -1466,7 +1473,7 @@ package body Sem is
 
       Save_Opt_Config_Switches (Save_Config_Switches);
       Set_Opt_Config_Switches
-        (Is_Internal_File_Name (Unit_File_Name (Current_Sem_Unit)),
+        (Is_Internal_Unit (Current_Sem_Unit),
          Is_Main_Unit_Or_Main_Unit_Spec);
 
       --  Save current non-partition-wide restrictions

@@ -9,7 +9,7 @@
 void foo ()
 {
   int i;
-  float f = (float)i;  // { dg-warning "use of old-style cast" "" }
+  float f = (float)i;  // { dg-warning "use of old-style cast" }
 
   (void)i;
 }

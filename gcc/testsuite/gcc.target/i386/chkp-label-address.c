@@ -3,7 +3,7 @@
 
 #include <stdio.h>
 
-static int f1 () /* { dg-warning "function cannot be instrumented" "" } */
+static int f1 () /* { dg-warning "function cannot be instrumented" } */
 {
   static int array = &&label_B - &&label_A;
 

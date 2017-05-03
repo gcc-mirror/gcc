@@ -3763,13 +3763,23 @@ package body Sem_Attr is
       --------------
 
       when Attribute_Enum_Rep =>
+         --  T'Enum_Rep (X) case
+
          if Present (E1) then
             Check_E1;
             Check_Discrete_Type;
             Resolve (E1, P_Base_Type);
 
-         elsif not Is_Discrete_Type (Etype (P)) then
-            Error_Attr_P ("prefix of % attribute must be of discrete type");
+         --  X'Enum_Rep case.  X must be an object or enumeration literal, and
+         --  it must be of a discrete type.
+
+         elsif not ((Is_Object_Reference (P)
+                       or else (Is_Entity_Name (P)
+                                  and then Ekind (Entity (P)) =
+                                             E_Enumeration_Literal))
+                    and then Is_Discrete_Type (Etype (P)))
+         then
+            Error_Attr_P ("prefix of % attribute must be discrete object");
          end if;
 
          Set_Etype (N, Universal_Integer);
@@ -4032,20 +4042,36 @@ package body Sem_Attr is
       when Attribute_Image =>
          Check_SPARK_05_Restriction_On_Attribute;
 
-         --  AI12-00124-1 : The ARG has adopted the GNAT semantics of 'Img
-         --  for scalar types, so that the prefix can be an object and not
-         --  a type, and there is no need for an argument. Given this vote
-         --  of confidence from the ARG, simplest is to transform this new
-         --  usage of 'Image into a reference to 'Img.
+         --  AI12-00124-1 : The ARG has adopted the GNAT semantics of 'Img for
+         --  scalar types, so that the prefix can be an object and not a type,
+         --  and there is no need for an argument. Given the vote of confidence
+         --  from the ARG, simplest is to transform this new usage of 'Image
+         --  into a reference to 'Img.
 
          if Ada_Version > Ada_2005
            and then Is_Object_Reference (P)
            and then Is_Scalar_Type (P_Type)
          then
-            Rewrite (N,
-              Make_Attribute_Reference (Loc,
-                Prefix         => Relocate_Node (P),
-                Attribute_Name => Name_Img));
+            if No (Expressions (N)) then
+               Rewrite (N,
+                 Make_Attribute_Reference (Loc,
+                   Prefix         => Relocate_Node (P),
+                   Attribute_Name => Name_Img));
+
+            --  If the attribute reference includes expressions, the only
+            --  possible interpretation is as an indexing of the parameterless
+            --  version of 'Image, so rewrite it accordingly.
+
+            else
+               Rewrite (N,
+                 Make_Indexed_Component (Loc,
+                   Prefix      =>
+                     Make_Attribute_Reference (Loc,
+                       Prefix         => Relocate_Node (P),
+                       Attribute_Name => Name_Img),
+                   Expressions => Expressions (N)));
+            end if;
+
             Analyze (N);
             return;
 
@@ -4306,7 +4332,7 @@ package body Sem_Attr is
 
          Context   : constant Node_Id := Parent (N);
          Attr      : Node_Id;
-         Encl_Loop : Node_Id;
+         Encl_Loop : Node_Id   := Empty;
          Encl_Prag : Node_Id   := Empty;
          Loop_Id   : Entity_Id := Empty;
          Scop      : Entity_Id;
@@ -6157,7 +6183,7 @@ package body Sem_Attr is
             elsif Val < 0 then
                Set_Etype (E1, Universal_Integer);
 
-            --  Otherwise set type to Unsigned_64 to accomodate max values
+            --  Otherwise set type to Unsigned_64 to accommodate max values
 
             else
                Set_Etype (E1, Standard_Unsigned_64);
@@ -6220,7 +6246,7 @@ package body Sem_Attr is
          --  single dereference link in a composite type.
 
          procedure Compute_Type_Key (T : Entity_Id);
-         --  Create a CRC integer from the declaration of the type, For a
+         --  Create a CRC integer from the declaration of the type. For a
          --  composite type, fold in the representation of its components in
          --  recursive fashion. We use directly the source representation of
          --  the types involved.
@@ -6245,19 +6271,13 @@ package body Sem_Attr is
             -----------------------------
 
             procedure Process_One_Declaration is
-               Ptr : Source_Ptr;
-
             begin
-               Ptr := P_Min;
-
                --  Scan type declaration, skipping blanks
 
-               while Ptr <= P_Max loop
+               for Ptr in P_Min .. P_Max loop
                   if Buffer (Ptr) /= ' ' then
                      System.CRC32.Update (CRC, Buffer (Ptr));
                   end if;
-
-                  Ptr := Ptr + 1;
                end loop;
             end Process_One_Declaration;
 
@@ -6284,7 +6304,8 @@ package body Sem_Attr is
             end if;
 
             Sloc_Range (Enclosing_Declaration (T), P_Min, P_Max);
-            SFI    := Get_Source_File_Index (P_Min);
+            SFI := Get_Source_File_Index (P_Min);
+            pragma Assert (SFI = Get_Source_File_Index (P_Max));
             Buffer := Source_Text (SFI);
 
             Process_One_Declaration;
@@ -6301,7 +6322,7 @@ package body Sem_Attr is
                end if;
 
             elsif Is_Derived_Type (T) then
-               Compute_Type_Key (Etype  (T));
+               Compute_Type_Key (Etype (T));
 
             elsif Is_Record_Type (T) then
                declare
@@ -6315,19 +6336,28 @@ package body Sem_Attr is
                end;
             end if;
 
-            --  Fold in representation aspects for the type, which appear in
-            --  the same source buffer.
+            if Is_First_Subtype (T) then
 
-            Rep := First_Rep_Item (T);
+               --  Fold in representation aspects for the type, which appear in
+               --  the same source buffer. If the representation aspects are in
+               --  a different source file, then skip them; they apply to some
+               --  other type, perhaps one we're derived from.
 
-            while Present (Rep) loop
-               if Comes_From_Source (Rep) then
-                  Sloc_Range (Rep, P_Min, P_Max);
-                  Process_One_Declaration;
-               end if;
+               Rep := First_Rep_Item (T);
 
-               Rep := Next_Rep_Item (Rep);
-            end loop;
+               while Present (Rep) loop
+                  if Comes_From_Source (Rep) then
+                     Sloc_Range (Rep, P_Min, P_Max);
+
+                     if SFI = Get_Source_File_Index (P_Min) then
+                        pragma Assert (SFI = Get_Source_File_Index (P_Max));
+                        Process_One_Declaration;
+                     end if;
+                  end if;
+
+                  Rep := Next_Rep_Item (Rep);
+               end loop;
+            end if;
          end Compute_Type_Key;
 
       --  Start of processing for Type_Key
@@ -9658,9 +9688,6 @@ package body Sem_Attr is
          elsif Is_Access_Type (Typ) then
             Id := RE_Type_Class_Access;
 
-         elsif Is_Enumeration_Type (Typ) then
-            Id := RE_Type_Class_Enumeration;
-
          elsif Is_Task_Type (Typ) then
             Id := RE_Type_Class_Task;
 
@@ -10039,7 +10066,7 @@ package body Sem_Attr is
 
                      --  If range is null, result is zero, that has already
                      --  been dealt with, so what we need is the power of ten
-                     --  that accomodates the Pos of the largest value, which
+                     --  that accommodates the Pos of the largest value, which
                      --  is the high bound of the range + one for the space.
 
                      W := 1;
@@ -11611,6 +11638,7 @@ package body Sem_Attr is
 
                   if Is_Scalar_Type (Component_Type (Typ))
                     and then not Is_OK_Static_Expression (Expr)
+                    and then not Range_Checks_Suppressed (Component_Type (Typ))
                   then
                      if Is_Entity_Name (Expr)
                        and then Etype (Expr) = Component_Type (Typ)
@@ -11682,6 +11710,8 @@ package body Sem_Attr is
 
                      if Is_Scalar_Type (Etype (Entity (Comp)))
                        and then not Is_OK_Static_Expression (Expr)
+                       and then not Range_Checks_Suppressed
+                                      (Etype (Entity (Comp)))
                      then
                         Set_Do_Range_Check (Expr);
                      end if;

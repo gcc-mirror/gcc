@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -336,6 +336,12 @@ package Checks is
    procedure Install_Null_Excluding_Check (N : Node_Id);
    --  Determines whether an access node requires a runtime access check and
    --  if so inserts the appropriate run-time check.
+
+   procedure Install_Primitive_Elaboration_Check (Subp_Body : Node_Id);
+   --  Insert a check which ensures that subprogram body Subp_Body has been
+   --  properly elaborated. The check is installed only when Subp_Body is the
+   --  body of a nonabstract library-level primitive of a tagged type. Further
+   --  restrictions may apply, see the body for details.
 
    function Make_Bignum_Block (Loc : Source_Ptr) return Node_Id;
    --  This function is used by top level overflow checking routines to do a
@@ -909,8 +915,18 @@ package Checks is
    --  Chars (Related_Id)_FIRST/_LAST. For suggested use of these parameters
    --  see the warning in the body of Sem_Ch3.Process_Range_Expr_In_Decl.
 
-   procedure Null_Exclusion_Static_Checks (N : Node_Id);
-   --  Ada 2005 (AI-231): Check bad usages of the null-exclusion issue
+   procedure Null_Exclusion_Static_Checks
+     (N          : Node_Id;
+      Comp       : Node_Id := Empty;
+      Array_Comp : Boolean := False);
+   --  Ada 2005 (AI-231): Test for and warn on null-excluding objects or
+   --  components that will raise an exception due to initialization by null.
+   --
+   --  When a value for Comp is supplied (as in the case of an uninitialized
+   --  null-excluding component within a composite object), a reported warning
+   --  will indicate the offending component instead of the object itself.
+   --  Array_Comp being True indicates an array object with null-excluding
+   --  components, and any reported warning will indicate that.
 
    procedure Remove_Checks (Expr : Node_Id);
    --  Remove all checks from Expr except those that are only executed

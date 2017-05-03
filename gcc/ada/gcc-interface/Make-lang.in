@@ -223,6 +223,7 @@ GCC_LLINK=$(LLINKER) $(GCC_LINKERFLAGS) $(LDFLAGS)
 # Object files for gnat1 from C sources.
 GNAT1_C_OBJS = ada/adadecode.o ada/adaint.o ada/argv.o ada/cio.o \
  ada/cstreams.o ada/env.o ada/init.o ada/initialize.o ada/raise.o \
+ ada/raise-gcc.o \
  ada/seh_init.o ada/targext.o ada/cuintp.o ada/decl.o ada/rtfinal.o \
  ada/rtinit.o ada/misc.o ada/utils.o ada/utils2.o ada/trans.o ada/targtyps.o
 
@@ -232,6 +233,7 @@ GNAT_ADA_OBJS =	\
  ada/a-chlat1.o	\
  ada/a-elchha.o	\
  ada/a-except.o	\
+ ada/a-exctra.o \
  ada/a-ioexce.o	\
  ada/ada.o	\
  ada/spark_xrefs.o	\
@@ -334,6 +336,7 @@ GNAT_ADA_OBJS =	\
  ada/rident.o	\
  ada/rtsfind.o	\
  ada/s-addope.o	\
+ ada/s-addima.o \
  ada/s-assert.o	\
  ada/s-bitops.o	\
  ada/s-carun8.o	\
@@ -351,9 +354,11 @@ GNAT_ADA_OBJS =	\
  ada/s-excdeb.o	\
  ada/s-except.o	\
  ada/s-exctab.o	\
+ ada/s-excmac.o \
  ada/s-htable.o	\
  ada/s-imenne.o	\
  ada/s-imgenu.o	\
+ ada/s-imgint.o \
  ada/s-mastop.o	\
  ada/s-memory.o	\
  ada/s-os_lib.o	\
@@ -372,7 +377,9 @@ GNAT_ADA_OBJS =	\
  ada/s-strhas.o	\
  ada/s-string.o	\
  ada/s-strops.o	\
+ ada/s-traceb.o \
  ada/s-traent.o	\
+ ada/s-trasym.o \
  ada/s-unstyp.o	\
  ada/s-utf_32.o	\
  ada/s-valint.o	\
@@ -381,6 +388,7 @@ GNAT_ADA_OBJS =	\
  ada/s-wchcnv.o	\
  ada/s-wchcon.o	\
  ada/s-wchjis.o	\
+ ada/s-wchstw.o \
  ada/scans.o	\
  ada/scil_ll.o	\
  ada/scn.o	\
@@ -514,6 +522,7 @@ GNATBIND_OBJS = \
  ada/osint.o      \
  ada/output.o     \
  ada/raise.o      \
+ ada/raise-gcc.o  \
  ada/restrict.o   \
  ada/rident.o     \
  ada/rtfinal.o    \
@@ -534,10 +543,12 @@ GNATBIND_OBJS = \
  ada/s-crtl.o     \
  ada/s-excdeb.o   \
  ada/s-except.o   \
+ ada/s-excmac.o   \
  ada/s-exctab.o   \
  ada/s-htable.o   \
  ada/s-imenne.o   \
  ada/s-imgenu.o   \
+ ada/s-imgint.o   \
  ada/s-mastop.o   \
  ada/s-memory.o   \
  ada/s-os_lib.o   \
@@ -555,11 +566,13 @@ GNATBIND_OBJS = \
  ada/s-string.o   \
  ada/s-strops.o   \
  ada/s-traent.o   \
+ ada/s-traceb.o   \
  ada/s-unstyp.o   \
  ada/s-utf_32.o   \
  ada/s-wchcnv.o   \
  ada/s-wchcon.o   \
  ada/s-wchjis.o   \
+ ada/s-wchstw.o   \
  ada/scans.o      \
  ada/scil_ll.o    \
  ada/scng.o       \
@@ -593,6 +606,24 @@ ADA_BACKEND = $(BACKEND) attribs.o
 
 # List of target dependent sources, overridden below as necessary
 TARGET_ADA_SRCS =
+
+# Select the right s-excmac according to exception layout (Itanium or arm)
+host_cpu=$(word 1, $(subst -, ,$(host)))
+EH_MECHANISM=gcc
+ifeq ($(strip $(filter-out arm%,$(host_cpu))),)
+EH_MECHANISM=arm
+endif
+
+# For unwind-pe.h
+CFLAGS-ada/raise-gcc.o += -I$(srcdir)/../libgcc -DEH_MECHANISM_$(EH_MECHANISM)
+
+ada/s-excmac.o: ada/s-excmac.ads ada/s-excmac.adb
+
+ada/s-excmac.ads: $(srcdir)/ada/s-excmac-$(EH_MECHANISM).ads
+	$(CP) $< $@
+
+ada/s-excmac.adb: $(srcdir)/ada/s-excmac-$(EH_MECHANISM).adb
+	$(CP) $< $@
 
 # Needs to be built with CC=gcc
 # Since the RTL should be built with the latest compiler, remove the
@@ -976,12 +1007,12 @@ ada/sdefault.o : ada/ada.ads ada/a-except.ads ada/a-unccon.ads \
 
 # Special flags - see gcc-interface/Makefile.in for the template.
 
-ada/a-except.o  : ada/a-except.adb ada/a-except.ads
+ada/a-except.o : ada/a-except.adb ada/a-except.ads ada/s-excmac.ads ada/s-excmac.adb
 	$(CC) -c $(ALL_ADAFLAGS) $(FORCE_DEBUG_ADAFLAGS) -O1 -fno-inline \
 	 $(ADA_INCLUDES) $< $(OUTPUT_OPTION)
 	@$(ADA_DEPS)
 
-ada/s-excdeb.o  : ada/s-excdeb.adb ada/s-excdeb.ads
+ada/s-excdeb.o : ada/s-excdeb.adb ada/s-excdeb.ads
 	$(CC) -c $(ALL_ADAFLAGS) $(FORCE_DEBUG_ADAFLAGS) -O0 \
 	 $(ADA_INCLUDES) $< $(OUTPUT_OPTION)
 	@$(ADA_DEPS)

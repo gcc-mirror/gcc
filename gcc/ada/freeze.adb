@@ -37,7 +37,6 @@ with Exp_Disp;  use Exp_Disp;
 with Exp_Pakd;  use Exp_Pakd;
 with Exp_Util;  use Exp_Util;
 with Exp_Tss;   use Exp_Tss;
-with Fname;     use Fname;
 with Ghost;     use Ghost;
 with Layout;    use Layout;
 with Lib;       use Lib;
@@ -55,7 +54,6 @@ with Sem_Ch6;   use Sem_Ch6;
 with Sem_Ch7;   use Sem_Ch7;
 with Sem_Ch8;   use Sem_Ch8;
 with Sem_Ch13;  use Sem_Ch13;
-with Sem_Disp;  use Sem_Disp;
 with Sem_Eval;  use Sem_Eval;
 with Sem_Mech;  use Sem_Mech;
 with Sem_Prag;  use Sem_Prag;
@@ -1176,7 +1174,8 @@ package body Freeze is
       Component_Aliased : Boolean;
 
       Comp_Byte_Aligned : Boolean;
-      --  Set for the record case, True if Comp starts on a byte boundary
+      pragma Warnings (Off, Comp_Byte_Aligned);
+      --  Set for the record case, True if Comp is aligned on byte boundaries
       --  (in which case it is allowed to have different storage order).
 
       Comp_SSO_Differs  : Boolean;
@@ -1196,12 +1195,14 @@ package body Freeze is
 
          else
             --  If a component clause is present, check if the component starts
-            --  on a storage element boundary. Otherwise conservatively assume
-            --  it does so only in the case where the record is not packed.
+            --  and ends on byte boundaries. Otherwise conservatively assume it
+            --  does so only in the case where the record is not packed.
 
             if Present (Component_Clause (Comp)) then
                Comp_Byte_Aligned :=
-                 Normalized_First_Bit (Comp) mod System_Storage_Unit = 0;
+                 (Normalized_First_Bit (Comp) mod System_Storage_Unit = 0)
+                   and then
+                 (Esize (Comp) mod System_Storage_Unit = 0);
             else
                Comp_Byte_Aligned := not Is_Packed (Encl_Type);
             end if;
@@ -1266,18 +1267,10 @@ package body Freeze is
 
             --  Component SSO differs from enclosing composite:
 
-            --  Reject if component is a bit-packed array, as it is represented
-            --  as a scalar internally.
-
-            if Is_Bit_Packed_Array (Comp_Base) then
-               Error_Msg_N
-                 ("type of packed component must have same scalar storage "
-                  & "order as enclosing composite", Err_Node);
-
             --  Reject if composite is a bit-packed array, as it is rewritten
             --  into an array of scalars.
 
-            elsif Is_Bit_Packed_Array (Encl_Base) then
+            if Is_Bit_Packed_Array (Encl_Base) then
                Error_Msg_N
                  ("type of packed array must have same scalar storage order "
                   & "as component", Err_Node);
@@ -1401,21 +1394,74 @@ package body Freeze is
 
    procedure Check_Inherited_Conditions (R : Entity_Id) is
       Prim_Ops      : constant Elist_Id := Primitive_Operations (R);
-      A_Post        : Node_Id;
-      A_Pre         : Node_Id;
       Decls         : List_Id;
       Needs_Wrapper : Boolean;
-      New_Prag      : Node_Id;
       Op_Node       : Elmt_Id;
       Par_Prim      : Entity_Id;
-      Par_Type      : Entity_Id;
       Prim          : Entity_Id;
+
+      procedure Build_Inherited_Condition_Pragmas (Subp : Entity_Id);
+      --  Build corresponding pragmas for an operation whose ancestor has
+      --  class-wide pre/postconditions. If the operation is inherited, the
+      --  pragmas force the creation of a wrapper for the inherited operation.
+      --  If the ancestor is being overridden, the pragmas are constructed only
+      --  to verify their legality, in case they contain calls to other
+      --  primitives that may haven been overridden.
+
+      ---------------------------------------
+      -- Build_Inherited_Condition_Pragmas --
+      ---------------------------------------
+
+      procedure Build_Inherited_Condition_Pragmas (Subp : Entity_Id) is
+         A_Post   : Node_Id;
+         A_Pre    : Node_Id;
+         New_Prag : Node_Id;
+
+      begin
+         A_Pre := Get_Pragma (Par_Prim, Pragma_Precondition);
+         if Present (A_Pre) and then Class_Present (A_Pre) then
+            New_Prag := New_Copy_Tree (A_Pre);
+            Build_Class_Wide_Expression
+              (Prag          => New_Prag,
+               Subp          => Prim,
+               Par_Subp      => Par_Prim,
+               Adjust_Sloc   => False,
+               Needs_Wrapper => Needs_Wrapper);
+
+            if Needs_Wrapper
+              and then not Comes_From_Source (Subp)
+              and then Expander_Active
+            then
+               Append (New_Prag, Decls);
+            end if;
+         end if;
+
+         A_Post := Get_Pragma (Par_Prim, Pragma_Postcondition);
+
+         if Present (A_Post) and then Class_Present (A_Post) then
+            New_Prag := New_Copy_Tree (A_Post);
+            Build_Class_Wide_Expression
+              (Prag           => New_Prag,
+               Subp           => Prim,
+               Par_Subp       => Par_Prim,
+               Adjust_Sloc    => False,
+               Needs_Wrapper  => Needs_Wrapper);
+
+            if Needs_Wrapper
+              and then not Comes_From_Source (Subp)
+              and then Expander_Active
+            then
+               Append (New_Prag, Decls);
+            end if;
+         end if;
+      end Build_Inherited_Condition_Pragmas;
+
+   --  Start of processing for Check_Inherited_Conditions
 
    begin
       Op_Node := First_Elmt (Prim_Ops);
       while Present (Op_Node) loop
-         Prim          := Node (Op_Node);
-         Needs_Wrapper := False;
+         Prim := Node (Op_Node);
 
          --  Map the overridden primitive to the overriding one. This takes
          --  care of all overridings and is done only once.
@@ -1423,7 +1469,30 @@ package body Freeze is
          if Present (Overridden_Operation (Prim))
            and then Comes_From_Source (Prim)
          then
-            Update_Primitives_Mapping (Overridden_Operation (Prim), Prim);
+            Par_Prim := Overridden_Operation (Prim);
+            Update_Primitives_Mapping (Par_Prim, Prim);
+         end if;
+
+         Next_Elmt (Op_Node);
+      end loop;
+
+      --  Perform validity checks on the inherited conditions of overriding
+      --  operations, for conformance with LSP, and apply SPARK-specific
+      --  restrictions on inherited conditions.
+
+      Op_Node := First_Elmt (Prim_Ops);
+      while Present (Op_Node) loop
+         Prim := Node (Op_Node);
+
+         if Present (Overridden_Operation (Prim))
+           and then Comes_From_Source (Prim)
+         then
+            Par_Prim := Overridden_Operation (Prim);
+
+            --  Analyze the contract items of the overridden operation, before
+            --  they are rewritten as pragmas.
+
+            Analyze_Entry_Or_Subprogram_Contract (Par_Prim);
 
             --  In SPARK mode this is where we can collect the inherited
             --  conditions, because we do not create the Check pragmas that
@@ -1431,154 +1500,98 @@ package body Freeze is
             --  overriding operations.
 
             if SPARK_Mode = On then
-
-               --  Analyze the contract items of the parent operation, before
-               --  they are rewritten when inherited.
-
-               Analyze_Entry_Or_Subprogram_Contract
-                 (Overridden_Operation (Prim));
-
-               --  Now verify the legality of inherited contracts for LSP
-               --  conformance.
-
                Collect_Inherited_Class_Wide_Conditions (Prim);
+
+            --  Otherwise build the corresponding pragmas to check for legality
+            --  of the inherited condition.
+
+            else
+               Build_Inherited_Condition_Pragmas (Prim);
             end if;
          end if;
 
          Next_Elmt (Op_Node);
       end loop;
 
-      --  In all cases, we examine inherited operations to check whether they
-      --  require a wrapper to handle inherited conditions that call other
-      --  primitives, so that LSP can be verified/enforced.
+      --  Now examine the inherited operations to check whether they require
+      --  a wrapper to handle inherited conditions that call other primitives,
+      --  so that LSP can be verified/enforced.
 
       Op_Node := First_Elmt (Prim_Ops);
+      Needs_Wrapper := False;
+
       while Present (Op_Node) loop
          Decls := Empty_List;
          Prim  := Node (Op_Node);
 
          if not Comes_From_Source (Prim) and then Present (Alias (Prim)) then
             Par_Prim := Alias (Prim);
-            Par_Type := Find_Dispatching_Type (Par_Prim);
 
-            --  Analyze the contract items of the parent operation, before
-            --  they are rewritten when inherited.
+            --  Analyze the contract items of the parent operation, and
+            --  determine whether a wrapper is needed. This is determined
+            --  when the condition is rewritten in sem_prag, using the
+            --  mapping between overridden and overriding operations built
+            --  in the loop above.
 
             Analyze_Entry_Or_Subprogram_Contract (Par_Prim);
-
-            A_Pre := Get_Pragma (Par_Prim, Pragma_Precondition);
-
-            if Present (A_Pre) and then Class_Present (A_Pre) then
-               New_Prag := New_Copy_Tree (A_Pre);
-               Build_Class_Wide_Expression
-                 (Prag          => New_Prag,
-                  Subp          => Prim,
-                  Par_Subp      => Par_Prim,
-                  Adjust_Sloc   => False,
-                  Needs_Wrapper => Needs_Wrapper);
-
-               if Needs_Wrapper then
-                  Append (New_Prag, Decls);
-               end if;
-            end if;
-
-            A_Post := Get_Pragma (Par_Prim, Pragma_Postcondition);
-
-            if Present (A_Post) and then Class_Present (A_Post) then
-               New_Prag := New_Copy_Tree (A_Pre);
-               Build_Class_Wide_Expression
-                 (Prag           => New_Prag,
-                  Subp           => Prim,
-                  Par_Subp       => Par_Prim,
-                  Adjust_Sloc    => False,
-                  Needs_Wrapper  => Needs_Wrapper);
-
-               if Needs_Wrapper then
-                  Append (New_Prag, Decls);
-               end if;
-            end if;
+            Build_Inherited_Condition_Pragmas (Prim);
          end if;
 
-         if Needs_Wrapper and then not Is_Abstract_Subprogram (Par_Prim) then
-
+         if Needs_Wrapper
+           and then not Is_Abstract_Subprogram (Par_Prim)
+           and then Expander_Active
+         then
             --  We need to build a new primitive that overrides the inherited
             --  one, and whose inherited expression has been updated above.
             --  These expressions are the arguments of pragmas that are part
             --  of the declarations of the wrapper. The wrapper holds a single
-            --  statement that is a call to the parent primitive, where the
+            --  statement that is a call to the class-wide clone, where the
             --  controlling actuals are conversions to the corresponding type
             --  in the parent primitive:
 
-            --    procedure New_Prim (F1 : T1.; ...) is
-            --       pragma Check (Precondition,  Expr);
+            --    procedure New_Prim (F1 : T1; ...);
+            --    procedure New_Prim (F1 : T1; ...) is
+            --       pragma Check (Precondition, Expr);
             --    begin
-            --       Par_Prim (Par_Type (F1) ..);
+            --       Par_Prim_Clone (Par_Type (F1), ...);
             --    end;
 
-            --  If the primitive is a function the statement is a call
+            --  If the primitive is a function the statement is a return
+            --  statement with a call.
 
             declare
-               Loc        : constant Source_Ptr := Sloc (R);
-               Actuals    : List_Id;
-               Call       : Node_Id;
-               Formal     : Entity_Id;
-               New_F_Spec : Node_Id;
-               New_Formal : Entity_Id;
-               New_Proc   : Node_Id;
-               New_Spec   : Node_Id;
+               Loc      : constant Source_Ptr := Sloc (R);
+               Par_R    : constant Node_Id    := Parent (R);
+               New_Body : Node_Id;
+               New_Decl : Node_Id;
+               New_Spec : Node_Id;
 
             begin
-               Actuals    := Empty_List;
-               New_Spec   := Build_Overriding_Spec (Par_Prim, R);
-               Formal     := First_Formal (Par_Prim);
-               New_F_Spec := First (Parameter_Specifications (New_Spec));
+               New_Spec := Build_Overriding_Spec (Par_Prim, R);
+               New_Decl :=
+                 Make_Subprogram_Declaration (Loc,
+                   Specification => New_Spec);
 
-               while Present (Formal) loop
-                  New_Formal := Defining_Identifier (New_F_Spec);
+               --  Insert the declaration and the body of the wrapper after
+               --  type declaration that generates inherited operation. For
+               --  a null procedure, the declaration implies a null body.
 
-                  --  If controlling argument, add conversion
+               if Nkind (New_Spec) = N_Procedure_Specification
+                 and then Null_Present (New_Spec)
+               then
+                  Insert_After_And_Analyze (Par_R, New_Decl);
 
-                  if Etype (Formal) = Par_Type then
-                     Append_To (Actuals,
-                       Make_Type_Conversion (Loc,
-                         New_Occurrence_Of (Par_Type, Loc),
-                         New_Occurrence_Of (New_Formal, Loc)));
-
-                  else
-                     Append_To (Actuals, New_Occurrence_Of (New_Formal, Loc));
-                  end if;
-
-                  Next_Formal (Formal);
-                  Next (New_F_Spec);
-               end loop;
-
-               if Ekind (Par_Prim) = E_Procedure then
-                  Call :=
-                    Make_Procedure_Call_Statement (Loc,
-                      Name                   =>
-                        New_Occurrence_Of (Par_Prim, Loc),
-                      Parameter_Associations => Actuals);
                else
-                  Call :=
-                    Make_Simple_Return_Statement (Loc,
-                     Expression =>
-                       Make_Function_Call (Loc,
-                         Name                   =>
-                           New_Occurrence_Of (Par_Prim, Loc),
-                         Parameter_Associations => Actuals));
+                  --  Build body as wrapper to a call to the already built
+                  --  class-wide clone.
+
+                  New_Body :=
+                    Build_Class_Wide_Clone_Call
+                      (Loc, Decls, Par_Prim, New_Spec);
+
+                  Insert_List_After_And_Analyze
+                    (Par_R, New_List (New_Decl, New_Body));
                end if;
-
-               New_Proc :=
-                 Make_Subprogram_Body (Loc,
-                   Specification              => New_Spec,
-                   Declarations               => Decls,
-                   Handled_Statement_Sequence =>
-                     Make_Handled_Sequence_Of_Statements (Loc,
-                       Statements => New_List (Call),
-                       End_Label  => Make_Identifier (Loc, Chars (Prim))));
-
-               Insert_After (Parent (R), New_Proc);
-               Analyze (New_Proc);
             end;
 
             Needs_Wrapper := False;
@@ -8178,7 +8191,7 @@ package body Freeze is
       if Is_Pure (E)
         and then Is_Subprogram (E)
         and then not Has_Pragma_Pure_Function (E)
-        and then not Is_Internal_File_Name (Unit_File_Name (Current_Sem_Unit))
+        and then not Is_Internal_Unit (Current_Sem_Unit)
       then
          Check_Function_With_Address_Parameter (E);
       end if;

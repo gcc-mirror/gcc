@@ -72,11 +72,6 @@ gcov-dump [@option{-v}|@option{--version}]
 Display help about using @command{gcov-dump} (on the standard output), and
 exit without doing any further processing.
 
-@item -v
-@itemx --version
-Display the @command{gcov-dump} version number (on the standard output),
-and exit without doing any further processing.
-
 @item -l
 @itemx --long
 Dump content of records.
@@ -84,6 +79,11 @@ Dump content of records.
 @item -p
 @itemx --positions
 Dump positions of records.
+
+@item -v
+@itemx --version
+Display the @command{gcov-dump} version number (on the standard output),
+and exit without doing any further processing.
 
 @item -w
 @itemx --working-sets

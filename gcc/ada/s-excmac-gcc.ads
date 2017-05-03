@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2013-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 2013-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -179,12 +179,7 @@ package System.Exceptions.Machine is
      Ada.Unchecked_Conversion
        (GCC_Exception_Access, GNAT_GCC_Exception_Access);
 
-   function New_Occurrence return GNAT_GCC_Exception_Access is
-      (new GNAT_GCC_Exception'
-        (Header     => (Class   => GNAT_Exception_Class,
-                        Cleanup => Null_Address,
-                        others  => 0),
-         Occurrence => <>));
+   function New_Occurrence return GNAT_GCC_Exception_Access;
    --  Allocate and initialize a machine occurrence
 
 end System.Exceptions.Machine;

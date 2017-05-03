@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 1998-2016, AdaCore                     --
+--                     Copyright (C) 1998-2017, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -2086,28 +2086,15 @@ package body GNAT.Spitbol.Patterns is
    ----------
 
    procedure Dump (P : Pattern) is
-
-      subtype Count is Ada.Text_IO.Count;
-      Scol : Count;
-      --  Used to keep track of column in dump output
-
-      Refs : Ref_Array (1 .. P.P.Index);
-      --  We build a reference array whose N'th element points to the
-      --  pattern element whose Index value is N.
-
-      Cols : Natural := 2;
-      --  Number of columns used for pattern numbers, minimum is 2
-
-      E : PE_Ptr;
-
-      procedure Write_Node_Id (E : PE_Ptr);
-      --  Writes out a string identifying the given pattern element
+      procedure Write_Node_Id (E : PE_Ptr; Cols : Natural);
+      --  Writes out a string identifying the given pattern element. Cols is
+      --  the column indentation level.
 
       -------------------
       -- Write_Node_Id --
       -------------------
 
-      procedure Write_Node_Id (E : PE_Ptr) is
+      procedure Write_Node_Id (E : PE_Ptr; Cols : Natural) is
       begin
          if E = EOP then
             Put ("EOP");
@@ -2134,16 +2121,29 @@ package body GNAT.Spitbol.Patterns is
          end if;
       end Write_Node_Id;
 
+      --  Local variables
+
+      Cols : Natural := 2;
+      --  Number of columns used for pattern numbers, minimum is 2
+
+      E : PE_Ptr;
+
+      subtype Count is Ada.Text_IO.Count;
+      Scol : Count;
+      --  Used to keep track of column in dump output
+
    --  Start of processing for Dump
 
    begin
       New_Line;
-      Put ("Pattern Dump Output (pattern at " &
-           Image (P'Address) &
-           ", S = " & Natural'Image (P.Stk) & ')');
+      Put
+        ("Pattern Dump Output (pattern at "
+         & Image (P'Address)
+         & ", S = "
+         & Natural'Image (P.Stk) & ')');
+      New_Line;
 
       Scol := Col;
-      New_Line;
 
       while Col < Scol loop
          Put ('-');
@@ -2165,144 +2165,151 @@ package body GNAT.Spitbol.Patterns is
          return;
       end if;
 
-      Build_Ref_Array (P.P, Refs);
+      declare
+         Refs : Ref_Array (1 .. P.P.Index);
+         --  We build a reference array whose N'th element points to the
+         --  pattern element whose Index value is N.
 
-      --  Set number of columns required for node numbers
+      begin
+         Build_Ref_Array (P.P, Refs);
 
-      while 10 ** Cols - 1 < Integer (P.P.Index) loop
-         Cols := Cols + 1;
-      end loop;
+         --  Set number of columns required for node numbers
 
-      --  Now dump the nodes in reverse sequence. We output them in reverse
-      --  sequence since this corresponds to the natural order used to
-      --  construct the patterns.
+         while 10 ** Cols - 1 < Integer (P.P.Index) loop
+            Cols := Cols + 1;
+         end loop;
 
-      for J in reverse Refs'Range loop
-         E := Refs (J);
-         Write_Node_Id (E);
-         Set_Col (Count (Cols) + 4);
-         Put (Image (E));
-         Put ("  ");
-         Put (Pattern_Code'Image (E.Pcode));
-         Put ("  ");
-         Set_Col (21 + Count (Cols) + Address_Image_Length);
-         Write_Node_Id (E.Pthen);
-         Set_Col (24 + 2 * Count (Cols) + Address_Image_Length);
+         --  Now dump the nodes in reverse sequence. We output them in reverse
+         --  sequence since this corresponds to the natural order used to
+         --  construct the patterns.
 
-         case E.Pcode is
-            when PC_Alt
-               | PC_Arb_X
-               | PC_Arbno_S
-               | PC_Arbno_X
-            =>
-               Write_Node_Id (E.Alt);
+         for J in reverse Refs'Range loop
+            E := Refs (J);
+            Write_Node_Id (E, Cols);
+            Set_Col (Count (Cols) + 4);
+            Put (Image (E));
+            Put ("  ");
+            Put (Pattern_Code'Image (E.Pcode));
+            Put ("  ");
+            Set_Col (21 + Count (Cols) + Address_Image_Length);
+            Write_Node_Id (E.Pthen, Cols);
+            Set_Col (24 + 2 * Count (Cols) + Address_Image_Length);
 
-            when PC_Rpat =>
-               Put (Str_PP (E.PP));
+            case E.Pcode is
+               when PC_Alt
+                  | PC_Arb_X
+                  | PC_Arbno_S
+                  | PC_Arbno_X
+               =>
+                  Write_Node_Id (E.Alt, Cols);
 
-            when PC_Pred_Func =>
-               Put (Str_BF (E.BF));
+               when PC_Rpat =>
+                  Put (Str_PP (E.PP));
 
-            when PC_Assign_Imm
-               | PC_Assign_OnM
-               | PC_Any_VP
-               | PC_Break_VP
-               | PC_BreakX_VP
-               | PC_NotAny_VP
-               | PC_NSpan_VP
-               | PC_Span_VP
-               | PC_String_VP
-            =>
-               Put (Str_VP (E.VP));
+               when PC_Pred_Func =>
+                  Put (Str_BF (E.BF));
 
-            when PC_Write_Imm
-               | PC_Write_OnM
-            =>
-               Put (Str_FP (E.FP));
+               when PC_Assign_Imm
+                  | PC_Assign_OnM
+                  | PC_Any_VP
+                  | PC_Break_VP
+                  | PC_BreakX_VP
+                  | PC_NotAny_VP
+                  | PC_NSpan_VP
+                  | PC_Span_VP
+                  | PC_String_VP
+               =>
+                  Put (Str_VP (E.VP));
 
-            when PC_String =>
-               Put (Image (E.Str.all));
+               when PC_Write_Imm
+                  | PC_Write_OnM
+               =>
+                  Put (Str_FP (E.FP));
 
-            when PC_String_2 =>
-               Put (Image (E.Str2));
+               when PC_String =>
+                  Put (Image (E.Str.all));
 
-            when PC_String_3 =>
-               Put (Image (E.Str3));
+               when PC_String_2 =>
+                  Put (Image (E.Str2));
 
-            when PC_String_4 =>
-               Put (Image (E.Str4));
+               when PC_String_3 =>
+                  Put (Image (E.Str3));
 
-            when PC_String_5 =>
-               Put (Image (E.Str5));
+               when PC_String_4 =>
+                  Put (Image (E.Str4));
 
-            when PC_String_6 =>
-               Put (Image (E.Str6));
+               when PC_String_5 =>
+                  Put (Image (E.Str5));
 
-            when PC_Setcur =>
-               Put (Str_NP (E.Var));
+               when PC_String_6 =>
+                  Put (Image (E.Str6));
 
-            when PC_Any_CH
-               | PC_Break_CH
-               | PC_BreakX_CH
-               | PC_Char
-               | PC_NotAny_CH
-               | PC_NSpan_CH
-               | PC_Span_CH
-            =>
-               Put (''' & E.Char & ''');
+               when PC_Setcur =>
+                  Put (Str_NP (E.Var));
 
-            when PC_Any_CS
-               | PC_Break_CS
-               | PC_BreakX_CS
-               | PC_NotAny_CS
-               | PC_NSpan_CS
-               | PC_Span_CS
-            =>
-               Put ('"' & To_Sequence (E.CS) & '"');
+               when PC_Any_CH
+                  | PC_Break_CH
+                  | PC_BreakX_CH
+                  | PC_Char
+                  | PC_NotAny_CH
+                  | PC_NSpan_CH
+                  | PC_Span_CH
+               =>
+                  Put (''' & E.Char & ''');
 
-            when PC_Arbno_Y
-               | PC_Len_Nat
-               | PC_Pos_Nat
-               | PC_RPos_Nat
-               | PC_RTab_Nat
-               | PC_Tab_Nat
-            =>
-               Put (S (E.Nat));
+               when PC_Any_CS
+                  | PC_Break_CS
+                  | PC_BreakX_CS
+                  | PC_NotAny_CS
+                  | PC_NSpan_CS
+                  | PC_Span_CS
+               =>
+                  Put ('"' & To_Sequence (E.CS) & '"');
 
-            when PC_Pos_NF
-               | PC_Len_NF
-               | PC_RPos_NF
-               | PC_RTab_NF
-               | PC_Tab_NF
-            =>
-               Put (Str_NF (E.NF));
+               when PC_Arbno_Y
+                  | PC_Len_Nat
+                  | PC_Pos_Nat
+                  | PC_RPos_Nat
+                  | PC_RTab_Nat
+                  | PC_Tab_Nat
+               =>
+                  Put (S (E.Nat));
 
-            when PC_Pos_NP
-               | PC_Len_NP
-               | PC_RPos_NP
-               | PC_RTab_NP
-               | PC_Tab_NP
-            =>
-               Put (Str_NP (E.NP));
+               when PC_Pos_NF
+                  | PC_Len_NF
+                  | PC_RPos_NF
+                  | PC_RTab_NF
+                  | PC_Tab_NF
+               =>
+                  Put (Str_NF (E.NF));
 
-            when PC_Any_VF
-               | PC_Break_VF
-               | PC_BreakX_VF
-               | PC_NotAny_VF
-               | PC_NSpan_VF
-               | PC_Span_VF
-               | PC_String_VF
-            =>
-               Put (Str_VF (E.VF));
+               when PC_Pos_NP
+                  | PC_Len_NP
+                  | PC_RPos_NP
+                  | PC_RTab_NP
+                  | PC_Tab_NP
+               =>
+                  Put (Str_NP (E.NP));
 
-            when others =>
-               null;
-         end case;
+               when PC_Any_VF
+                  | PC_Break_VF
+                  | PC_BreakX_VF
+                  | PC_NotAny_VF
+                  | PC_NSpan_VF
+                  | PC_Span_VF
+                  | PC_String_VF
+               =>
+                  Put (Str_VF (E.VF));
+
+               when others =>
+                  null;
+            end case;
+
+            New_Line;
+         end loop;
 
          New_Line;
-      end loop;
-
-      New_Line;
+      end;
    end Dump;
 
    ----------

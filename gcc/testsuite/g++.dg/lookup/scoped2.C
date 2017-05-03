@@ -13,7 +13,7 @@ struct Derived : Base
 {
   void Foo ()
   {
-    Base::Baz ();  // { dg-error "is not a member" "" }
+    Base::Baz ();  // { dg-error "is not a member" }
       
   }
 };

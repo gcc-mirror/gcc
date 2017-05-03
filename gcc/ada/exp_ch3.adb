@@ -1431,6 +1431,15 @@ package body Exp_Ch3 is
 
       if Is_Null_Init_Proc (Proc) and then not Init_Or_Norm_Scalars then
          return Empty_List;
+
+      --  Nothing to do for an array of controlled components that have only
+      --  the inherited Initialize primitive. This is a useful optimization
+      --  for CodePeer.
+
+      elsif Is_Trivial_Subprogram (Proc)
+        and then Is_Array_Type (Full_Init_Type)
+      then
+         return New_List (Make_Null_Statement (Loc));
       end if;
 
       --  Use the [underlying] full view when dealing with a private type. This
@@ -2875,6 +2884,7 @@ package body Exp_Ch3 is
                   declare
                      Exp   : Node_Id;
                      Nam   : Name_Id;
+                     pragma Warnings (Off, Nam);
                      Ritem : Node_Id;
 
                   begin
@@ -3174,7 +3184,7 @@ package body Exp_Ch3 is
          if Present (Variant_Part (Comp_List)) then
             declare
                Variant_Alts : constant List_Id := New_List;
-               Var_Loc      : Source_Ptr;
+               Var_Loc      : Source_Ptr := No_Location;
                Variant      : Node_Id;
 
             begin
@@ -7544,8 +7554,19 @@ package body Exp_Ch3 is
 
       --  Non-interface types
 
+      --  Do not generate invariant procedure within other assertion
+      --  subprograms, which may involve local declarations of local
+      --  subtypes to which these checks don't apply.
+
       elsif Has_Invariants (Def_Id) then
-         Build_Invariant_Procedure_Body (Def_Id);
+         if Within_Internal_Subprogram
+          or else (Ekind (Current_Scope) = E_Function
+                    and then Is_Predicate_Function (Current_Scope))
+         then
+            null;
+         else
+            Build_Invariant_Procedure_Body (Def_Id);
+         end if;
       end if;
 
       Restore_Ghost_Mode (Saved_GM);

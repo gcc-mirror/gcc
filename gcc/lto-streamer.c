@@ -257,35 +257,6 @@ print_lto_report (const char *s)
 	     lto_section_name[i], lto_stats.section_size[i]);
 }
 
-
-#ifdef LTO_STREAMER_DEBUG
-struct tree_hash_entry
-{
-  tree key;
-  intptr_t value;
-};
-
-struct tree_entry_hasher : nofree_ptr_hash <tree_hash_entry>
-{
-  static inline hashval_t hash (const tree_hash_entry *);
-  static inline bool equal (const tree_hash_entry *, const tree_hash_entry *);
-};
-
-inline hashval_t
-tree_entry_hasher::hash (const tree_hash_entry *e)
-{
-  return htab_hash_pointer (e->key);
-}
-
-inline bool
-tree_entry_hasher::equal (const tree_hash_entry *e1, const tree_hash_entry *e2)
-{
-  return (e1->key == e2->key);
-}
-
-static hash_table<tree_entry_hasher> *tree_htab;
-#endif
-
 /* Initialization common to the LTO reader and writer.  */
 
 void
@@ -297,10 +268,6 @@ lto_streamer_init (void)
      handle it.  */
   if (flag_checking)
     streamer_check_handled_ts_structures ();
-
-#ifdef LTO_STREAMER_DEBUG
-  tree_htab = new hash_table<tree_entry_hasher> (31);
-#endif
 }
 
 
@@ -313,65 +280,6 @@ gate_lto_out (void)
 	  /* Don't bother doing anything if the program has errors.  */
 	  && !seen_error ());
 }
-
-
-#ifdef LTO_STREAMER_DEBUG
-/* Add a mapping between T and ORIG_T, which is the numeric value of
-   the original address of T as it was seen by the LTO writer.  This
-   mapping is useful when debugging streaming problems.  A debugging
-   session can be started on both reader and writer using ORIG_T
-   as a breakpoint value in both sessions.
-
-   Note that this mapping is transient and only valid while T is
-   being reconstructed.  Once T is fully built, the mapping is
-   removed.  */
-
-void
-lto_orig_address_map (tree t, intptr_t orig_t)
-{
-  struct tree_hash_entry ent;
-  struct tree_hash_entry **slot;
-
-  ent.key = t;
-  ent.value = orig_t;
-  slot = tree_htab->find_slot (&ent, INSERT);
-  gcc_assert (!*slot);
-  *slot = XNEW (struct tree_hash_entry);
-  **slot = ent;
-}
-
-
-/* Get the original address of T as it was seen by the writer.  This
-   is only valid while T is being reconstructed.  */
-
-intptr_t
-lto_orig_address_get (tree t)
-{
-  struct tree_hash_entry ent;
-  struct tree_hash_entry **slot;
-
-  ent.key = t;
-  slot = tree_htab->find_slot (&ent, NO_INSERT);
-  return (slot ? (*slot)->value : 0);
-}
-
-
-/* Clear the mapping of T to its original address.  */
-
-void
-lto_orig_address_remove (tree t)
-{
-  struct tree_hash_entry ent;
-  struct tree_hash_entry **slot;
-
-  ent.key = t;
-  slot = tree_htab->find_slot (&ent, NO_INSERT);
-  gcc_assert (slot);
-  free (*slot);
-  tree_htab->clear_slot (slot);
-}
-#endif
-
 
 /* Check that the version MAJOR.MINOR is the correct version number.  */
 

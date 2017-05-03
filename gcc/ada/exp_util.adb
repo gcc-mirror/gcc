@@ -991,7 +991,8 @@ package body Exp_Util is
                    Make_Procedure_Call_Statement (Loc,
                      Name                   =>
                        New_Occurrence_Of (Proc_To_Call, Loc),
-                     Parameter_Associations => Actuals)))));
+                     Parameter_Associations => Actuals)))),
+           Suppress => All_Checks);
 
          --  The newly generated Allocate / Deallocate becomes the default
          --  procedure to call when the back end processes the allocation /
@@ -1113,10 +1114,17 @@ package body Exp_Util is
             if Present (New_E) then
                Rewrite (N, New_Occurrence_Of (New_E, Sloc (N)));
 
-               --  If the entity is an overridden primitive, we must build a
-               --  wrapper for the current inherited operation.
+               --  If the entity is an overridden primitive and we are not
+               --  in GNATprove mode, we must build a wrapper for the current
+               --  inherited operation. If the reference is the prefix of an
+               --  attribute such as 'Result (or others ???) there is no need
+               --  for a wrapper: the condition is just rewritten in terms of
+               --  the inherited subprogram.
 
-               if Is_Subprogram (New_E) then
+               if Is_Subprogram (New_E)
+                  and then Nkind (Parent (N)) /= N_Attribute_Reference
+                  and then not GNATprove_Mode
+               then
                   Needs_Wrapper := True;
                end if;
             end if;
@@ -1130,10 +1138,17 @@ package body Exp_Util is
                if not Is_Abstract_Subprogram (Subp)
                  and then Is_Abstract_Subprogram (Entity (N))
                then
-                  Error_Msg_Sloc := Sloc (Current_Scope);
-                  Error_Msg_NE
-                    ("cannot call abstract subprogram in inherited condition "
-                      & "for&#", N, Current_Scope);
+                  Error_Msg_Sloc   := Sloc (Current_Scope);
+                  Error_Msg_Node_2 := Subp;
+                  if Comes_From_Source (Subp) then
+                     Error_Msg_NE
+                       ("cannot call abstract subprogram & in inherited "
+                        & "condition for&#", Subp, Entity (N));
+                  else
+                     Error_Msg_NE
+                       ("cannot call abstract subprogram & in inherited "
+                        & "condition for inherited&#", Subp, Entity (N));
+                  end if;
 
                --  In SPARK mode, reject an inherited condition for an
                --  inherited operation if it contains a call to an overriding
@@ -4724,72 +4739,85 @@ package body Exp_Util is
    -------------------
 
    procedure Evaluate_Name (Nam : Node_Id) is
-      K : constant Node_Kind := Nkind (Nam);
-
    begin
-      --  For an explicit dereference, we simply force the evaluation of the
-      --  name expression. The dereference provides a value that is the address
-      --  for the renamed object, and it is precisely this value that we want
-      --  to preserve.
-
-      if K = N_Explicit_Dereference then
-         Force_Evaluation (Prefix (Nam));
-
-      --  For a selected component, we simply evaluate the prefix
-
-      elsif K = N_Selected_Component then
-         Evaluate_Name (Prefix (Nam));
-
-      --  For an indexed component, or an attribute reference, we evaluate the
+      --  For an attribute reference or an indexed component, evaluate the
       --  prefix, which is itself a name, recursively, and then force the
       --  evaluation of all the subscripts (or attribute expressions).
 
-      elsif Nkind_In (K, N_Indexed_Component, N_Attribute_Reference) then
-         Evaluate_Name (Prefix (Nam));
+      case Nkind (Nam) is
+         when N_Attribute_Reference
+            | N_Indexed_Component
+         =>
+            Evaluate_Name (Prefix (Nam));
 
-         declare
-            E : Node_Id;
+            declare
+               E : Node_Id;
 
-         begin
-            E := First (Expressions (Nam));
-            while Present (E) loop
-               Force_Evaluation (E);
+            begin
+               E := First (Expressions (Nam));
+               while Present (E) loop
+                  Force_Evaluation (E);
 
-               if Original_Node (E) /= E then
-                  Set_Do_Range_Check (E, Do_Range_Check (Original_Node (E)));
-               end if;
+                  if Original_Node (E) /= E then
+                     Set_Do_Range_Check
+                       (E, Do_Range_Check (Original_Node (E)));
+                  end if;
 
-               Next (E);
-            end loop;
-         end;
+                  Next (E);
+               end loop;
+            end;
 
-      --  For a slice, we evaluate the prefix, as for the indexed component
-      --  case and then, if there is a range present, either directly or as the
-      --  constraint of a discrete subtype indication, we evaluate the two
-      --  bounds of this range.
+         --  For an explicit dereference, we simply force the evaluation of
+         --  the name expression. The dereference provides a value that is the
+         --  address for the renamed object, and it is precisely this value
+         --  that we want to preserve.
 
-      elsif K = N_Slice then
-         Evaluate_Name (Prefix (Nam));
-         Evaluate_Slice_Bounds (Nam);
+         when N_Explicit_Dereference =>
+            Force_Evaluation (Prefix (Nam));
 
-      --  For a type conversion, the expression of the conversion must be the
-      --  name of an object, and we simply need to evaluate this name.
+         --  For a function call, we evaluate the call
 
-      elsif K = N_Type_Conversion then
-         Evaluate_Name (Expression (Nam));
+         when N_Function_Call =>
+            Force_Evaluation (Nam);
 
-      --  For a function call, we evaluate the call
+         --  For a qualified expression, we evaluate the underlying object
+         --  name if any, otherwise we force the evaluation of the underlying
+         --  expression.
 
-      elsif K = N_Function_Call then
-         Force_Evaluation (Nam);
+         when N_Qualified_Expression =>
+            if Is_Object_Reference (Expression (Nam)) then
+               Evaluate_Name (Expression (Nam));
+            else
+               Force_Evaluation (Expression (Nam));
+            end if;
 
-      --  The remaining cases are direct name, operator symbol and character
-      --  literal. In all these cases, we do nothing, since we want to
-      --  reevaluate each time the renamed object is used.
+         --  For a selected component, we simply evaluate the prefix
 
-      else
-         return;
-      end if;
+         when N_Selected_Component =>
+            Evaluate_Name (Prefix (Nam));
+
+         --  For a slice, we evaluate the prefix, as for the indexed component
+         --  case and then, if there is a range present, either directly or as
+         --  the constraint of a discrete subtype indication, we evaluate the
+         --  two bounds of this range.
+
+         when N_Slice =>
+            Evaluate_Name (Prefix (Nam));
+            Evaluate_Slice_Bounds (Nam);
+
+         --  For a type conversion, the expression of the conversion must be
+         --  the name of an object, and we simply need to evaluate this name.
+
+         when N_Type_Conversion =>
+            Evaluate_Name (Expression (Nam));
+
+         --  The remaining cases are direct name, operator symbol and character
+         --  literal. In all these cases, we do nothing, since we want to
+         --  reevaluate each time the renamed object is used.
+
+         when others =>
+            null;
+      end case;
    end Evaluate_Name;
 
    ---------------------------
@@ -6933,7 +6961,7 @@ package body Exp_Util is
             --  existing actions of the expression with actions, and should
             --  never reach here: if actions are inserted on a statement
             --  within the Actions of an expression with actions, or on some
-            --  sub-expression of such a statement, then the outermost proper
+            --  subexpression of such a statement, then the outermost proper
             --  insertion point is right before the statement, and we should
             --  never climb up as far as the N_Expression_With_Actions itself.
 
@@ -7463,8 +7491,10 @@ package body Exp_Util is
       Aux : constant Node_Id := Aux_Decls_Node (Cunit (Main_Unit));
 
    begin
-      Push_Scope (Cunit_Entity (Main_Unit));
-      --  ??? should this be Current_Sem_Unit instead of Main_Unit?
+      Push_Scope (Cunit_Entity (Current_Sem_Unit));
+      --  And not Main_Unit as previously. If the main unit is a body,
+      --  the scope needed to analyze the actions is the entity of the
+      --  corresponding declaration.
 
       if No (Actions (Aux)) then
          Set_Actions (Aux, New_List (N));
@@ -12920,10 +12950,13 @@ package body Exp_Util is
               Side_Effect_Free (Expressions (N), Name_Req, Variable_Ref)
                 and then Safe_Prefixed_Reference (N);
 
-         --  A type qualification is side effect free if the expression
-         --  is side effect free.
+         --  A type qualification, type conversion, or unchecked expression is
+         --  side effect free if the expression is side effect free.
 
-         when N_Qualified_Expression =>
+         when N_Qualified_Expression
+            | N_Type_Conversion
+            | N_Unchecked_Expression
+         =>
             return Side_Effect_Free (Expression (N), Name_Req, Variable_Ref);
 
          --  A selected component is side effect free only if it is a side
@@ -12947,12 +12980,6 @@ package body Exp_Util is
                Side_Effect_Free (Discrete_Range (N), Name_Req, Variable_Ref)
                  and then Safe_Prefixed_Reference (N);
 
-         --  A type conversion is side effect free if the expression to be
-         --  converted is side effect free.
-
-         when N_Type_Conversion =>
-            return Side_Effect_Free (Expression (N), Name_Req, Variable_Ref);
-
          --  A unary operator is side effect free if the operand
          --  is side effect free.
 
@@ -12967,12 +12994,6 @@ package body Exp_Util is
               Safe_Unchecked_Type_Conversion (N)
                 and then Side_Effect_Free
                            (Expression (N), Name_Req, Variable_Ref);
-
-         --  An unchecked expression is side effect free if its expression
-         --  is side effect free.
-
-         when N_Unchecked_Expression =>
-            return Side_Effect_Free (Expression (N), Name_Req, Variable_Ref);
 
          --  A literal is side effect free
 

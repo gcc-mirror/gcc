@@ -48,13 +48,9 @@ int arr_2_2_3[2][2][3] = \
   /* { dg-begin-multiline-output "" }
    { 0, 1, 2, 3, 4, 5,
    ^
-     {
-     {      } {      }
-                     }
+     {{     } {      }}
      6, 7, 8, 9, 10, 11};
-     {
-     {      } {        }
-                       }
+     {{     } {        }}
      { dg-end-multiline-output "" } */
 
 int arr_2_3_2[2][3][2] = \
@@ -63,13 +59,9 @@ int arr_2_3_2[2][3][2] = \
   /* { dg-begin-multiline-output "" }
    { 0, 1, 2, 3, 4, 5,
    ^
-     {
-     {   } {   } {   }
-                     }
+     {{  } {   } {   }}
      6, 7, 8, 9, 10, 11};
-     {
-     {   } {   } {     }
-                       }
+     {{  } {   } {     }}
      { dg-end-multiline-output "" } */
 
 int arr_6_2[6][2] = \
@@ -89,15 +81,9 @@ int arr_3_2_2[3][2][2] = \
   /* { dg-begin-multiline-output "" }
    { 0, 1, 2, 3, 4, 5,
    ^
-     {
-     {   } {   }
-               } {
-                 {   }
+     {{  } {   }}{{  }
      6, 7, 8, 9, 10, 11};
-     {   }
-         } {
-           {   } {     }
-                       }
+     {   }}{{  } {     }}
      { dg-end-multiline-output "" } */
 
 int arr_3_4[3][4] = \
@@ -128,13 +114,9 @@ int arr_2_1_6[2][1][6] = \
   /* { dg-begin-multiline-output "" }
    { 0, 1, 2, 3, 4, 5,
    ^
-     {
-     {               }
-                     }
+     {{              }}
      6, 7, 8, 9, 10, 11};
-     {
-     {                 }
-                       }
+     {{                }}
      { dg-end-multiline-output "" } */
 
 struct sf2 arr_6_sf2[6] = \
@@ -165,21 +147,9 @@ struct sa2 arr_6_sa2[6] = \
   /* { dg-begin-multiline-output "" }
    { 0, 1, 2, 3, 4, 5,
    ^
-     {
-     {   }
-         } {
-           {   }
-               } {
-                 {   }
-                     }
+     {{  }}{{  }}{{  }}
      6, 7, 8, 9, 10, 11};
-     {
-     {   }
-         } {
-           {   }
-               } {
-                 {     }
-                       }
+     {{  }}{{  }}{{    }}
      { dg-end-multiline-output "" } */
 
 struct sa3 arr_4_sa3[4] = \
@@ -188,15 +158,7 @@ struct sa3 arr_4_sa3[4] = \
   /* { dg-begin-multiline-output "" }
    { 0, 1, 2, 3, 4, 5,
    ^
-     {
-     {      }
-            } {
-              {      }
-                     }
+     {{     }}{{     }}
      6, 7, 8, 9, 10, 11};
-     {
-     {      }
-            } {
-              {        }
-                       }
+     {{     }}{{       }}
      { dg-end-multiline-output "" } */

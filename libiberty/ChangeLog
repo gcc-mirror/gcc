@@ -1,3 +1,64 @@
+2017-05-02  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-demangle.c (dlang_hexdigit): New function.
+	(ascii2hex): Remove function.
+	(dlang_parse_string): Update to call dlang_hexdigit.
+	* testsuite/d-demangle-expected: Add tests.
+
+2017-05-02  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-demangle.c (strtol): Remove declaration.
+	Updated all callers to use dlang_number.
+	(dlang_number): New function.
+	(dlang_value): Moved check for ISDIGIT into dlang_parse_integer.
+	* testsuite/d-demangle-expected: Add tests.
+
+2017-05-02  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-demangle.c (dlang_parse_symbol): Remove function.
+	(dlang_parse_qualified): New function.
+	(dlang_parse_mangle): New function.
+	(dlang_type): Update to call dlang_parse_qualified.
+	(dlang_identifier): Update to call either dlang_parse_qualified or
+	dlang_parse_mangle.
+	(dlang_type_modifier_p): Remove function.
+	(dlang_call_convention_p): Don't allow type modifiers in mangle.
+	(dlang_template_args): Update to call dlang_identifier.
+	(dlang_demangle): Update to call dlang_parse_mangle.
+	* testsuite/d-demangle-expected: Add tests.
+
+2017-05-01  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-demangle.c (dlang_value): Add comment explaining why cases for
+	digits are required.
+	* testsuite/d-demangle-expected: Update integer value tests.
+
+2017-05-01  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-demangle.c (dlang_parse_symbol): Skip over anonymous symbols.
+	* testsuite/d-demangle-expected: Add tests.
+
+2017-05-01  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-demangle.c (dlang_identifier): Handle template constraint symbols.
+	(dlang_parse_template): Only advance if template symbol prefix is
+	followed by a digit.
+	* testsuite/d-demangle-expected: Add tests.
+
+2017-05-01  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-demangle.c (dlang_attributes): Handle scope attributes.
+	* testsuite/d-demangle-expected: Add tests.
+
+2017-04-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR demangler/80513
+	* cp-demangle.c (d_number): Check for overflow.
+	* cplus-dem.c (consume_count): Fix overflow check.
+	(gnu_special): Check for underscore after thunk delta.
+	* testsuite/demangle-expected: Add tests for overflows and invalid
+	characters in thunks.
+
 2017-04-21  Mark Wielaard  <mark@klomp.org>
 
 	* cp-demangle.c (MAX_RECURSION_COUNT): New constant.

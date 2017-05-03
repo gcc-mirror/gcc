@@ -6372,7 +6372,7 @@ complete_array_type (tree *ptype, tree initial_value, bool do_default)
   layout_type (main_type);
 
   /* Make sure we have the canonical MAIN_TYPE. */
-  hashval_t hashcode = type_hash_default (main_type);
+  hashval_t hashcode = type_hash_canon_hash (main_type);
   main_type = type_hash_canon (hashcode, main_type);
 
   /* Fix the canonical type.  */

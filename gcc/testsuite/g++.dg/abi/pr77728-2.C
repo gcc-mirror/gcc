@@ -1,5 +1,5 @@
 // { dg-do compile { target { { aarch64-*-* } && c++11 } } }
-// { dg-options "-Wpsabi" }
+// { dg-options "" }
 
 #include <stdarg.h>
 
@@ -30,7 +30,7 @@ struct K : public D { typedef A<N> T; int i, j; };
 struct L { static int h alignas (16); int i, j, k, l; };
 
 int
-fn1 (int a, B<0> b)	// { dg-message "note: parameter passing for argument of type \[^\n\r]* changed in GCC 7\.1" }
+fn1 (int a, B<0> b)
 {
   return a + b.i;
 }
@@ -42,14 +42,13 @@ fn2 (int a, B<1> b)
 }
 
 int
-fn3 (int a, L b)	// { dg-message "note: parameter passing for argument of type \[^\n\r]* changed in GCC 7\.1" }
+fn3 (int a, L b)
 {
   return a + b.i;
 }
 
 int
 fn4 (int a, int b, int c, int d, int e, int f, int g, int h, int i, int j, int k, int l, int m, B<0> n, ...)
-// { dg-message "note: parameter passing for argument of type \[^\n\r]* changed in GCC 7\.1" "" { target *-*-* } .-1 }
 {
   va_list ap;
   va_start (ap, n);
@@ -110,7 +109,6 @@ fn9 (int a, int b, int c, int d, int e, int f, int g, int h, int i, int j, int k
 
 int
 fn10 (int a, int b, int c, int d, int e, int f, int g, int h, int i, int j, int k, int l, int m, J n, ...)
-// { dg-message "note: parameter passing for argument of type \[^\n\r]* changed in GCC 7\.1" "" { target *-*-* } .-1 }
 {
   va_list ap;
   va_start (ap, n);
@@ -121,7 +119,6 @@ fn10 (int a, int b, int c, int d, int e, int f, int g, int h, int i, int j, int 
 
 int
 fn11 (int a, int b, int c, int d, int e, int f, int g, int h, int i, int j, int k, int l, int m, K<0> n, ...)
-// { dg-message "note: parameter passing for argument of type \[^\n\r]* changed in GCC 7\.1" "" { target *-*-* } .-1 }
 {
   va_list ap;
   va_start (ap, n);
@@ -153,19 +150,16 @@ test ()
   static J j;
   static K<0> k0;
   static K<2> k2;
-  fn1 (1, b0);	// { dg-message "note: parameter passing for argument of type \[^\n\r]* changed in GCC 7\.1" }
+  fn1 (1, b0);
   fn2 (1, b1);
-  fn3 (1, l);	// { dg-message "note: parameter passing for argument of type \[^\n\r]* changed in GCC 7\.1" }
+  fn3 (1, l);
   fn4 (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, b0, 1, 2, 3, 4);
-  // { dg-message "note: parameter passing for argument of type \[^\n\r]* changed in GCC 7\.1" "" { target *-*-* } .-1 }
   fn5 (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, b1, 1, 2, 3, 4);
   fn6 (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, c, 1, 2, 3, 4);
   fn7 (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, e, 1, 2, 3, 4);
   fn8 (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, h, 1, 2, 3, 4);
   fn9 (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, i, 1, 2, 3, 4);
   fn10 (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, j, 1, 2, 3, 4);
-  // { dg-message "note: parameter passing for argument of type \[^\n\r]* changed in GCC 7\.1" "" { target *-*-* } .-1 }
   fn11 (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, k0, 1, 2, 3, 4);
-  // { dg-message "note: parameter passing for argument of type \[^\n\r]* changed in GCC 7\.1" "" { target *-*-* } .-1 }
   fn12 (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, k2, 1, 2, 3, 4);
 }

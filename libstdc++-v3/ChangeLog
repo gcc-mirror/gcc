@@ -1,3 +1,48 @@
+2017-05-02  Hugo Beauzée-Luyssen <hugo@beauzee.fr>
+
+	PR libstdc++/69506
+	* config/os/mingw32-w64/os_defines.h (_GLIBCXX_USE_WEAK_REF): Define.
+
+2017-04-29  François Dumont  <fdumont@gcc.gnu.org>
+
+	* testsuite/libstdc++-prettyprinters/48362.cc: Replace a regexp-test
+	by a note-test.
+
+2017-04-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/80553
+	* include/bits/stl_construct.h (_Destroy, _Destroy_n): Add static
+	assertions to ensure type is destructible.
+	(destroy_at, destroy, destroy_n): Move from stl_uninitialized.h.
+	* include/bits/stl_uninitialized.h (destroy_at, destroy, destroy_n):
+	Move to stl_construct.h.
+	* testsuite/20_util/specialized_algorithms/memory_management_tools/
+	destroy_neg.cc: New test.
+	* testsuite/23_containers/vector/cons/destructible_neg.cc: New test.
+
+	* testsuite/17_intro/headers/c++1998/stdc++_assert_neg.cc: Remove
+	superfluous "" in dg-error.
+
+2017-04-28  Tom de Vries  <tom@codesourcery.com>
+
+	* testsuite/17_intro/headers/c++1998/stdc++_assert_neg.cc: Remove
+	superfluous '{ target *-*-* }' in dg-(error|warning|message|bogus).
+
+2017-04-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/ext/pb_ds/detail/list_update_map_/iterators_fn_imps.hpp
+	(PB_DS_CLASS_C_DEC::end()): Remove redundant const in cast type.
+	* testsuite/util/testsuite_rng.h (twister_rand_gen::get_prob()):
+	Likewise.
+
+2017-04-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/23_containers/deque/allocator/move_assign-2.cc: Improve
+	comment. Ensure first test works because allocator type propagates and
+	not because is_always_equal is true.
+	* testsuite/23_containers/vector/52591.cc: Likewise. Restore original
+	testcase that instantiates the move-assignment operator.
+
 2017-04-24  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/80506

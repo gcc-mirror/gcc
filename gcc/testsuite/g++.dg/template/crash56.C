@@ -12,5 +12,5 @@ namespace N
 
 template<typename T> void g (N::A *p)
 {
-  (void) A (p); // { dg-message "" "" }
+  (void) A (p); // { dg-message "" }
 }

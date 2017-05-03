@@ -928,9 +928,7 @@ package body Sem_Prag is
 
                   --  Constants
 
-                  if Ekind_In (Item_Id, E_Constant,
-                                        E_Discriminant,
-                                        E_Loop_Parameter)
+                  if Ekind_In (Item_Id, E_Constant, E_Loop_Parameter)
                       or else
 
                     --  Current instances of concurrent types
@@ -2216,7 +2214,6 @@ package body Sem_Prag is
 
                elsif not Ekind_In (Item_Id, E_Abstract_State,
                                             E_Constant,
-                                            E_Discriminant,
                                             E_Loop_Parameter,
                                             E_Variable)
                then
@@ -2284,19 +2281,6 @@ package body Sem_Prag is
                   if Nam_In (Global_Mode, Name_In_Out, Name_Output) then
                      SPARK_Msg_NE
                        ("constant & cannot act as output", Item, Item_Id);
-                     return;
-                  end if;
-
-               --  Discriminant related checks
-
-               elsif Ekind (Item_Id) = E_Discriminant then
-
-                  --  A discriminant is a read-only item, therefore it cannot
-                  --  act as an output.
-
-                  if Nam_In (Global_Mode, Name_In_Out, Name_Output) then
-                     SPARK_Msg_NE
-                       ("discriminant & cannot act as output", Item, Item_Id);
                      return;
                   end if;
 
@@ -3426,13 +3410,14 @@ package body Sem_Prag is
    --------------------
 
    procedure Analyze_Pragma (N : Node_Id) is
-      Loc     : constant Source_Ptr := Sloc (N);
-      Prag_Id : Pragma_Id;
+      Loc : constant Source_Ptr := Sloc (N);
 
       Pname : Name_Id := Pragma_Name (N);
       --  Name of the source pragma, or name of the corresponding aspect for
       --  pragmas which originate in a source aspect. In the latter case, the
       --  name may be different from the pragma name.
+
+      Prag_Id : constant Pragma_Id := Get_Pragma_Id (Pname);
 
       Pragma_Exit : exception;
       --  This exception is used to exit pragma processing completely. It
@@ -4247,9 +4232,12 @@ package body Sem_Prag is
 
                --  For a type derived from a generic formal type, the operation
                --  inheriting the condition is a renaming, not an overriding of
-               --  the operation of the formal.
+               --  the operation of the formal. Ditto for an inherited
+               --  operation which has no explicit contracts.
 
-               if Is_Generic_Type (Find_Dispatching_Type (Prev)) then
+               if Is_Generic_Type (Find_Dispatching_Type (Prev))
+                 or else not Comes_From_Source (Prev)
+               then
                   Prev := Alias (Prev);
                else
                   Prev := Overridden_Operation (Prev);
@@ -4438,6 +4426,14 @@ package body Sem_Prag is
                      Corresponding_Aspect (N));
                end if;
             end;
+
+         --  A renaming declaration may inherit a generated pragma, its
+         --  placement comes from expansion, not from source.
+
+         elsif Nkind (Subp_Decl) = N_Subprogram_Renaming_Declaration
+           and then not Comes_From_Source (N)
+         then
+            null;
 
          --  Otherwise the placement is illegal
 
@@ -4909,25 +4905,15 @@ package body Sem_Prag is
             then
                return;
 
-            --  Static expression that raises Constraint_Error. This has
-            --  already been flagged, so just exit from pragma processing.
-
-            elsif Is_OK_Static_Expression (Argx) then
-               raise Pragma_Exit;
-
             --  Here we have a real error (non-static expression)
 
             else
                Error_Msg_Name_1 := Pname;
+               Flag_Non_Static_Expr
+                 (Fix_Error ("argument for pragma% must be a identifier or "
+                  & "static string expression!"), Argx);
 
-               declare
-                  Msg : constant String :=
-                          "argument for pragma% must be a identifier or "
-                          & "static string expression!";
-               begin
-                  Flag_Non_Static_Expr (Fix_Error (Msg), Argx);
-                  raise Pragma_Exit;
-               end;
+               raise Pragma_Exit;
             end if;
          end if;
       end Check_Arg_Is_External_Name;
@@ -4940,8 +4926,7 @@ package body Sem_Prag is
          Argx : constant Node_Id := Get_Pragma_Arg (Arg);
       begin
          if Nkind (Argx) /= N_Identifier then
-            Error_Pragma_Arg
-              ("argument for pragma% must be identifier", Argx);
+            Error_Pragma_Arg ("argument for pragma% must be identifier", Argx);
          end if;
       end Check_Arg_Is_Identifier;
 
@@ -7747,6 +7732,22 @@ package body Sem_Prag is
             --  given entity, not its homonyms.
 
             if From_Aspect_Specification (N) then
+               if C = Convention_Intrinsic
+                 and then Nkind (Ent) = N_Defining_Operator_Symbol
+               then
+                  if Is_Fixed_Point_Type (Etype (Ent))
+                    or else Is_Fixed_Point_Type (Etype (First_Entity (Ent)))
+                    or else Is_Fixed_Point_Type (Etype (Last_Entity (Ent)))
+                  then
+                     Error_Msg_N
+                       ("no intrinsic operator available for this fixed-point "
+                        & "operation", N);
+                     Error_Msg_N
+                       ("\use expression functions with the desired "
+                        & "conversions made explicit", N);
+                  end if;
+               end if;
+
                return;
             end if;
 
@@ -10529,9 +10530,13 @@ package body Sem_Prag is
 
       Check_Restriction_No_Use_Of_Pragma (N);
 
-      --  Ignore pragma if Ignore_Pragma applies
+      --  Ignore pragma if Ignore_Pragma applies. Also ignore pragma
+      --  Default_Scalar_Storage_Order if the -gnatI switch was given.
 
-      if Should_Ignore_Pragma_Sem (N) then
+      if Should_Ignore_Pragma_Sem (N)
+        or else (Prag_Id = Pragma_Default_Scalar_Storage_Order
+                  and then Ignore_Rep_Clauses)
+      then
          return;
       end if;
 
@@ -10557,7 +10562,6 @@ package body Sem_Prag is
 
       --  Here to start processing for recognized pragma
 
-      Prag_Id := Get_Pragma_Id (Pname);
       Pname   := Original_Aspect_Pragma_Name (N);
 
       --  Capture setting of Opt.Uneval_Old
@@ -12679,6 +12683,7 @@ package body Sem_Prag is
             Eloc  : Source_Ptr;
             Expr  : Node_Id;
             Str   : Node_Id;
+            pragma Warnings (Off, Str);
 
          begin
             --  Pragma Check is Ghost when it applies to a Ghost entity. Set
@@ -13433,6 +13438,7 @@ package body Sem_Prag is
          when Pragma_Contract_Cases => Contract_Cases : declare
             Spec_Id   : Entity_Id;
             Subp_Decl : Node_Id;
+            Subp_Spec : Node_Id;
 
          begin
             GNAT_Pragma;
@@ -13473,7 +13479,19 @@ package body Sem_Prag is
             --  Subprogram
 
             elsif Nkind (Subp_Decl) = N_Subprogram_Declaration then
-               null;
+               Subp_Spec := Specification (Subp_Decl);
+
+               --  Pragma Contract_Cases is forbidden on null procedures, as
+               --  this may lead to potential ambiguities in behavior when
+               --  interface null procedures are involved.
+
+               if Nkind (Subp_Spec) = N_Procedure_Specification
+                 and then Null_Present (Subp_Spec)
+               then
+                  Error_Msg_N (Fix_Error
+                    ("pragma % cannot apply to null procedure"), N);
+                  return;
+               end if;
 
             else
                Pragma_Misplaced;
@@ -23961,6 +23979,9 @@ package body Sem_Prag is
      (N         : Node_Id;
       Freeze_Id : Entity_Id := Empty)
    is
+      Subp_Decl : constant Node_Id   := Find_Related_Declaration_Or_Body (N);
+      Spec_Id   : constant Entity_Id := Unique_Defining_Entity (Subp_Decl);
+
       Disp_Typ : Entity_Id;
       --  The dispatching type of the subprogram subject to the pre- or
       --  postcondition.
@@ -24007,6 +24028,23 @@ package body Sem_Prag is
                        ("operation in class-wide condition must be primitive "
                         & "of &", Nod, Disp_Typ);
                   end if;
+
+               --  Otherwise we have a call to an overridden primitive, and we
+               --  will create a common class-wide clone for the body of
+               --  original operation and its eventual inherited versions.  If
+               --  the original operation dispatches on result it is never
+               --  inherited and there is no need for a clone. There is not
+               --  need for a clone either in GNATprove mode, as cases that
+               --  would require it are rejected (when an inherited primitive
+               --  calls an overridden operation in a class-wide contract), and
+               --  the clone would make proof impossible in some cases.
+
+               elsif not Is_Abstract_Subprogram (Spec_Id)
+                 and then No (Class_Wide_Clone (Spec_Id))
+                 and then not Has_Controlling_Result (Spec_Id)
+                 and then not GNATprove_Mode
+               then
+                  Build_Class_Wide_Clone_Decl (Spec_Id);
                end if;
             end;
 
@@ -24039,10 +24077,7 @@ package body Sem_Prag is
 
       --  Local variables
 
-      Subp_Decl : constant Node_Id   := Find_Related_Declaration_Or_Body (N);
-      Spec_Id   : constant Entity_Id := Unique_Defining_Entity (Subp_Decl);
-      Expr      : constant Node_Id   := Expression (Get_Argument (N, Spec_Id));
-
+      Expr     : constant Node_Id := Expression (Get_Argument (N, Spec_Id));
       Saved_GM : constant Ghost_Mode_Type := Ghost_Mode;
       --  Save the Ghost mode to restore on exit
 
@@ -24126,6 +24161,15 @@ package body Sem_Prag is
 
       if Restore_Scope then
          End_Scope;
+      end if;
+
+      --  If analysis of the condition indicates that a class-wide clone
+      --  has been created, build and analyze its declaration.
+
+      if Is_Subprogram (Spec_Id)
+        and then Present (Class_Wide_Clone (Spec_Id))
+      then
+         Analyze (Unit_Declaration_Node (Class_Wide_Clone (Spec_Id)));
       end if;
 
       --  Currently it is not possible to inline pre/postconditions on a
@@ -29945,7 +29989,17 @@ package body Sem_Prag is
          if Nkind (Stmt) = N_Pragma
            and then Pragma_On_Body_Or_Stub_OK (Get_Pragma_Id (Stmt))
          then
-            Relocate_Pragma (Stmt);
+
+            --  If a source pragma Warnings follows the body, it applies to
+            --  following statements and does not belong in the body.
+
+            if Get_Pragma_Id (Stmt) = Pragma_Warnings
+              and then Comes_From_Source (Stmt)
+            then
+               null;
+            else
+               Relocate_Pragma (Stmt);
+            end if;
 
          --  Skip internally generated code
 

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -2945,6 +2945,14 @@ package body Exp_Ch7 is
             Find_Last_Init (Count_Ins, Body_Ins);
          end if;
 
+         --  If the Initialize function is null or trivial, the call will have
+         --  been replaced with a null statement, in which case place counter
+         --  declaration after object declaration itself.
+
+         if No (Count_Ins) then
+            Count_Ins := Decl;
+         end if;
+
          Insert_After (Count_Ins, Inc_Decl);
          Analyze (Inc_Decl);
 
@@ -4043,22 +4051,42 @@ package body Exp_Ch7 is
    procedure Establish_Transient_Scope (N : Node_Id; Sec_Stack : Boolean) is
       Loc       : constant Source_Ptr := Sloc (N);
       Iter_Loop : Entity_Id;
+      Scop_Id   : Entity_Id;
+      Scop_Rec  : Scope_Stack_Entry;
       Wrap_Node : Node_Id;
 
    begin
-      --  Do not create a transient scope if we are already inside one
+      --  Do not create a new transient scope if there is an existing transient
+      --  scope on the stack.
 
-      for S in reverse Scope_Stack.First .. Scope_Stack.Last loop
-         if Scope_Stack.Table (S).Is_Transient then
+      for Index in reverse Scope_Stack.First .. Scope_Stack.Last loop
+         Scop_Rec := Scope_Stack.Table (Index);
+         Scop_Id  := Scop_Rec.Entity;
+
+         --  The current scope is transient. If the scope being established
+         --  needs to manage the secondary stack, then the existing scope
+         --  overtakes that function.
+
+         if Scop_Rec.Is_Transient then
             if Sec_Stack then
-               Set_Uses_Sec_Stack (Scope_Stack.Table (S).Entity);
+               Set_Uses_Sec_Stack (Scop_Id);
             end if;
 
             return;
 
-         --  If we encounter Standard there are no enclosing transient scopes
+         --  Prevent the search from going too far because transient blocks
+         --  are bounded by packages and subprogram scopes. Reaching Standard
+         --  should be impossible without hitting one of the other cases first
+         --  unless Standard was manually pushed.
 
-         elsif Scope_Stack.Table (S).Entity = Standard_Standard then
+         elsif Scop_Id = Standard_Standard
+           or else Ekind_In (Scop_Id, E_Entry,
+                                      E_Entry_Family,
+                                      E_Function,
+                                      E_Package,
+                                      E_Procedure,
+                                      E_Subprogram_Body)
+         then
             exit;
          end if;
       end loop;
@@ -4156,37 +4184,37 @@ package body Exp_Ch7 is
    procedure Expand_Cleanup_Actions (N : Node_Id) is
       Scop : constant Entity_Id := Current_Scope;
 
-      Is_Asynchronous_Call : constant Boolean :=
-                               Nkind (N) = N_Block_Statement
-                                 and then Is_Asynchronous_Call_Block (N);
-      Is_Master            : constant Boolean :=
-                               Nkind (N) /= N_Entry_Body
-                                 and then Is_Task_Master (N);
-      Is_Protected_Body    : constant Boolean :=
-                               Nkind (N) = N_Subprogram_Body
-                                 and then Is_Protected_Subprogram_Body (N);
-      Is_Task_Allocation   : constant Boolean :=
-                               Nkind (N) = N_Block_Statement
-                                 and then Is_Task_Allocation_Block (N);
-      Is_Task_Body         : constant Boolean :=
-                               Nkind (Original_Node (N)) = N_Task_Body;
-      Needs_Sec_Stack_Mark : constant Boolean :=
-                               Uses_Sec_Stack (Scop)
-                                 and then
-                                   not Sec_Stack_Needed_For_Return (Scop);
-      Needs_Custom_Cleanup : constant Boolean :=
-                               Nkind (N) = N_Block_Statement
-                                 and then Present (Cleanup_Actions (N));
+      Is_Asynchronous_Call   : constant Boolean :=
+                                 Nkind (N) = N_Block_Statement
+                                   and then Is_Asynchronous_Call_Block (N);
+      Is_Master              : constant Boolean :=
+                                 Nkind (N) /= N_Entry_Body
+                                   and then Is_Task_Master (N);
+      Is_Protected_Subp_Body : constant Boolean :=
+                                 Nkind (N) = N_Subprogram_Body
+                                   and then Is_Protected_Subprogram_Body (N);
+      Is_Task_Allocation     : constant Boolean :=
+                                 Nkind (N) = N_Block_Statement
+                                   and then Is_Task_Allocation_Block (N);
+      Is_Task_Body           : constant Boolean :=
+                                 Nkind (Original_Node (N)) = N_Task_Body;
+      Needs_Sec_Stack_Mark   : constant Boolean :=
+                                 Uses_Sec_Stack (Scop)
+                                   and then
+                                     not Sec_Stack_Needed_For_Return (Scop);
+      Needs_Custom_Cleanup   : constant Boolean :=
+                                 Nkind (N) = N_Block_Statement
+                                   and then Present (Cleanup_Actions (N));
 
-      Actions_Required     : constant Boolean :=
-                               Requires_Cleanup_Actions (N, True)
-                                 or else Is_Asynchronous_Call
-                                 or else Is_Master
-                                 or else Is_Protected_Body
-                                 or else Is_Task_Allocation
-                                 or else Is_Task_Body
-                                 or else Needs_Sec_Stack_Mark
-                                 or else Needs_Custom_Cleanup;
+      Actions_Required       : constant Boolean :=
+                                 Requires_Cleanup_Actions (N, True)
+                                   or else Is_Asynchronous_Call
+                                   or else Is_Master
+                                   or else Is_Protected_Subp_Body
+                                   or else Is_Task_Allocation
+                                   or else Is_Task_Body
+                                   or else Needs_Sec_Stack_Mark
+                                   or else Needs_Custom_Cleanup;
 
       HSS : Node_Id := Handled_Statement_Sequence (N);
       Loc : Source_Ptr;
@@ -6124,7 +6152,12 @@ package body Exp_Ch7 is
 
          Init_Call := Build_Initialization_Call;
 
-         if Present (Init_Call) then
+         --  Only create finalization block if there is a non-trivial
+         --  call to initialization.
+
+         if Present (Init_Call)
+           and then Nkind (Init_Call) /= N_Null_Statement
+         then
             Init_Loop :=
               Make_Block_Statement (Loc,
                 Handled_Statement_Sequence =>
@@ -6330,6 +6363,15 @@ package body Exp_Ch7 is
 
           Handled_Statement_Sequence =>
             Make_Handled_Sequence_Of_Statements (Loc, Statements => Stmts)));
+
+      --  If there are no calls to component initialization, indicate that
+      --  the procedure is trivial, so prevent calls to it.
+
+      if Is_Empty_List (Stmts)
+        or else Nkind (First (Stmts)) = N_Null_Statement
+      then
+         Set_Is_Trivial_Subprogram (Proc_Id);
+      end if;
 
       return Proc_Id;
    end Make_Deep_Proc;
@@ -6702,7 +6744,7 @@ package body Exp_Ch7 is
 
          --  Local variables
 
-         Bod_Stmts       : List_Id;
+         Bod_Stmts       : List_Id := No_List;
          Finalizer_Decls : List_Id := No_List;
          Rec_Def         : Node_Id;
 
@@ -6915,7 +6957,6 @@ package body Exp_Ch7 is
 
          Counter        : Int := 0;
          Finalizer_Data : Finalization_Exception_Data;
-         Num_Comps      : Nat := 0;
 
          function Process_Component_List_For_Finalize
            (Comps : Node_Id) return List_Id;
@@ -6931,25 +6972,28 @@ package body Exp_Ch7 is
            (Comps : Node_Id) return List_Id
          is
             procedure Process_Component_For_Finalize
-              (Decl  : Node_Id;
-               Alts  : List_Id;
-               Decls : List_Id;
-               Stmts : List_Id);
+              (Decl      : Node_Id;
+               Alts      : List_Id;
+               Decls     : List_Id;
+               Stmts     : List_Id;
+               Num_Comps : in out Nat);
             --  Process the declaration of a single controlled component. If
             --  flag Is_Local is enabled, create the corresponding label and
             --  jump circuitry. Alts is the list of case alternatives, Decls
             --  is the top level declaration list where labels are declared
-            --  and Stmts is the list of finalization actions.
+            --  and Stmts is the list of finalization actions. Num_Comps
+            --  denotes the current number of components needing finalization.
 
             ------------------------------------
             -- Process_Component_For_Finalize --
             ------------------------------------
 
             procedure Process_Component_For_Finalize
-              (Decl  : Node_Id;
-               Alts  : List_Id;
-               Decls : List_Id;
-               Stmts : List_Id)
+              (Decl      : Node_Id;
+               Alts      : List_Id;
+               Decls     : List_Id;
+               Stmts     : List_Id;
+               Num_Comps : in out Nat)
             is
                Id       : constant Entity_Id := Defining_Identifier (Decl);
                Typ      : constant Entity_Id := Etype (Id);
@@ -7046,7 +7090,7 @@ package body Exp_Ch7 is
             --  Local variables
 
             Alts       : List_Id;
-            Counter_Id : Entity_Id;
+            Counter_Id : Entity_Id := Empty;
             Decl       : Node_Id;
             Decl_Id    : Entity_Id;
             Decl_Typ   : Entity_Id;
@@ -7055,6 +7099,7 @@ package body Exp_Ch7 is
             Jump_Block : Node_Id;
             Label      : Node_Id;
             Label_Id   : Entity_Id;
+            Num_Comps  : Nat;
             Stmts      : List_Id;
             Var_Case   : Node_Id;
 
@@ -7165,7 +7210,8 @@ package body Exp_Ch7 is
                     and then Has_Access_Constraint (Decl_Id)
                     and then No (Expression (Decl))
                   then
-                     Process_Component_For_Finalize (Decl, Alts, Decls, Stmts);
+                     Process_Component_For_Finalize
+                       (Decl, Alts, Decls, Stmts, Num_Comps);
                   end if;
 
                   Prev_Non_Pragma (Decl);
@@ -7192,7 +7238,8 @@ package body Exp_Ch7 is
                   then
                      null;
                   else
-                     Process_Component_For_Finalize (Decl, Alts, Decls, Stmts);
+                     Process_Component_For_Finalize
+                       (Decl, Alts, Decls, Stmts, Num_Comps);
                   end if;
                end if;
 
@@ -7280,7 +7327,7 @@ package body Exp_Ch7 is
 
          --  Local variables
 
-         Bod_Stmts       : List_Id;
+         Bod_Stmts       : List_Id := No_List;
          Finalizer_Decls : List_Id := No_List;
          Rec_Def         : Node_Id;
 
@@ -8155,6 +8202,18 @@ package body Exp_Ch7 is
          Check_Visibly_Controlled (Initialize_Case, Typ, Proc, Ref);
       end if;
 
+      --  If initialization procedure for an array of controlled objects is
+      --  trivial, do not generate a useless call to it.
+
+      if (Is_Array_Type (Utyp) and then Is_Trivial_Subprogram (Proc))
+        or else
+          (not Comes_From_Source (Proc)
+            and then Present (Alias (Proc))
+            and then Is_Trivial_Subprogram (Alias (Proc)))
+      then
+         return Make_Null_Statement (Loc);
+      end if;
+
       --  The object reference may need another conversion depending on the
       --  type of the formal and that of the actual.
 
@@ -8266,83 +8325,129 @@ package body Exp_Ch7 is
       Action : Node_Id;
       Par    : Node_Id) return Node_Id
    is
-      Decls  : constant List_Id := New_List;
-      Instrs : constant List_Id := New_List (Action);
+      function Manages_Sec_Stack (Id : Entity_Id) return Boolean;
+      --  Determine whether scoping entity Id manages the secondary stack
+
+      -----------------------
+      -- Manages_Sec_Stack --
+      -----------------------
+
+      function Manages_Sec_Stack (Id : Entity_Id) return Boolean is
+      begin
+         case Ekind (Id) is
+
+            --  An exception handler with a choice parameter utilizes a dummy
+            --  block to provide a declarative region. Such a block should not
+            --  be considered because it never manifests in the tree and can
+            --  never release the secondary stack.
+
+            when E_Block =>
+               return
+                 Uses_Sec_Stack (Id) and then not Is_Exception_Handler (Id);
+
+            when E_Entry
+               | E_Entry_Family
+               | E_Function
+               | E_Procedure
+            =>
+               return Uses_Sec_Stack (Id);
+
+            when others =>
+               return False;
+         end case;
+      end Manages_Sec_Stack;
+
+      --  Local variables
+
+      Decls    : constant List_Id   := New_List;
+      Instrs   : constant List_Id   := New_List (Action);
+      Trans_Id : constant Entity_Id := Current_Scope;
+
       Block  : Node_Id;
       Insert : Node_Id;
+      Scop   : Entity_Id;
+
+   --  Start of processing for Make_Transient_Block
 
    begin
-      --  Case where only secondary stack use is involved
+      --  Even though the transient block is tasked with managing the secondary
+      --  stack, the block may forgo this functionality depending on how the
+      --  secondary stack is managed by enclosing scopes.
 
-      if Uses_Sec_Stack (Current_Scope)
-        and then Nkind (Action) /= N_Simple_Return_Statement
-        and then Nkind (Par) /= N_Exception_Handler
-      then
-         declare
-            S : Entity_Id;
+      if Manages_Sec_Stack (Trans_Id) then
 
-         begin
-            S := Scope (Current_Scope);
-            loop
-               --  At the outer level, no need to release the sec stack
+         --  Determine whether an enclosing scope already manages the secondary
+         --  stack.
 
-               if S = Standard_Standard then
-                  Set_Uses_Sec_Stack (Current_Scope, False);
-                  exit;
+         Scop := Scope (Trans_Id);
+         while Present (Scop) loop
 
-               --  In a function, only release the sec stack if the function
-               --  does not return on the sec stack otherwise the result may
-               --  be lost. The caller is responsible for releasing.
+            --  It should not be possible to reach Standard without hitting one
+            --  of the other cases first unless Standard was manually pushed.
 
-               elsif Ekind (S) = E_Function then
-                  Set_Uses_Sec_Stack (Current_Scope, False);
+            if Scop = Standard_Standard then
+               exit;
 
-                  if not Requires_Transient_Scope (Etype (S)) then
-                     Set_Uses_Sec_Stack (S, True);
-                     Check_Restriction (No_Secondary_Stack, Action);
-                  end if;
+            --  The transient block is within a function which returns on the
+            --  secondary stack. Take a conservative approach and assume that
+            --  the value on the secondary stack is part of the result. Note
+            --  that it is not possible to detect this dependency without flow
+            --  analysis which the compiler does not have. Letting the object
+            --  live longer than the transient block will not leak any memory
+            --  because the caller will reclaim the total storage used by the
+            --  function.
 
-                  exit;
+            elsif Ekind (Scop) = E_Function
+              and then Sec_Stack_Needed_For_Return (Scop)
+            then
+               Set_Uses_Sec_Stack (Trans_Id, False);
+               exit;
 
-               --  In a loop or entry we should install a block encompassing
-               --  all the construct. For now just release right away.
+            --  The transient block must manage the secondary stack when the
+            --  block appears within a loop in order to reclaim the memory at
+            --  each iteration.
 
-               elsif Ekind_In (S, E_Entry, E_Loop) then
-                  exit;
+            elsif Ekind (Scop) = E_Loop then
+               exit;
 
-               --  In a procedure or a block, release the sec stack on exit
-               --  from the construct. Note that an exception handler with a
-               --  choice parameter requires a declarative region in the form
-               --  of a block. The block does not physically manifest in the
-               --  tree as it only serves as a scope. Do not consider such a
-               --  block because it will never release the sec stack.
+            --  The transient block does not need to manage the secondary stack
+            --  when there is an enclosing construct which already does that.
+            --  This optimization saves on SS_Mark and SS_Release calls but may
+            --  allow objects to live a little longer than required.
 
-               --  ??? Memory leak can be created by recursive calls
+            --  The transient block must manage the secondary stack when switch
+            --  -gnatd.s (strict management) is in effect.
 
-               elsif Ekind (S) = E_Procedure
-                 or else (Ekind (S) = E_Block
-                           and then not Is_Exception_Handler (S))
-               then
-                  Set_Uses_Sec_Stack (Current_Scope, False);
-                  Set_Uses_Sec_Stack (S, True);
-                  Check_Restriction (No_Secondary_Stack, Action);
-                  exit;
+            elsif Manages_Sec_Stack (Scop) and then not Debug_Flag_Dot_S then
+               Set_Uses_Sec_Stack (Trans_Id, False);
+               exit;
 
-               else
-                  S := Scope (S);
-               end if;
-            end loop;
-         end;
+            --  Prevent the search from going too far because transient blocks
+            --  are bounded by packages and subprogram scopes.
+
+            elsif Ekind_In (Scop, E_Entry,
+                                  E_Entry_Family,
+                                  E_Function,
+                                  E_Package,
+                                  E_Procedure,
+                                  E_Subprogram_Body)
+            then
+               exit;
+            end if;
+
+            Scop := Scope (Scop);
+         end loop;
       end if;
 
       --  Create the transient block. Set the parent now since the block itself
-      --  is not part of the tree. The current scope is the E_Block entity
-      --  that has been pushed by Establish_Transient_Scope.
+      --  is not part of the tree. The current scope is the E_Block entity that
+      --  has been pushed by Establish_Transient_Scope.
 
-      pragma Assert (Ekind (Current_Scope) = E_Block);
+      pragma Assert (Ekind (Trans_Id) = E_Block);
+
       Block :=
         Make_Block_Statement (Loc,
-          Identifier                 => New_Occurrence_Of (Current_Scope, Loc),
+          Identifier                 => New_Occurrence_Of (Trans_Id, Loc),
           Declarations               => Decls,
           Handled_Statement_Sequence =>
             Make_Handled_Sequence_Of_Statements (Loc, Statements => Instrs),
@@ -8357,8 +8462,9 @@ package body Exp_Ch7 is
         (Action, Clean => False, Manage_SS => False);
 
       Insert := Prev (Action);
+
       if Present (Insert) then
-         Freeze_All (First_Entity (Current_Scope), Insert);
+         Freeze_All (First_Entity (Trans_Id), Insert);
       end if;
 
       --  Transfer cleanup actions to the newly created block

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,7 +31,6 @@ with Errout;   use Errout;
 with Exp_Disp; use Exp_Disp;
 with Exp_Tss;  use Exp_Tss;
 with Exp_Util; use Exp_Util;
-with Fname;    use Fname;
 with Freeze;   use Freeze;
 with Ghost;    use Ghost;
 with Impunit;  use Impunit;
@@ -3644,7 +3643,7 @@ package body Sem_Ch8 is
       --  except that packages whose file name starts a-n are OK (these are
       --  children of Ada.Numerics, which are never loaded by Rtsfind).
 
-      if Is_Predefined_File_Name (Unit_File_Name (Current_Sem_Unit))
+      if Is_Predefined_Unit (Current_Sem_Unit)
         and then Get_Name_String
                    (Unit_File_Name (Current_Sem_Unit)) (1 .. 3) /= "a-n"
         and then Nkind (Unit (Cunit (Current_Sem_Unit))) =
@@ -4764,15 +4763,15 @@ package body Sem_Ch8 is
    ----------------------
 
    procedure Find_Direct_Name (N : Node_Id) is
-      E    : Entity_Id;
-      E2   : Entity_Id;
-      Msg  : Boolean;
-
-      Inst : Entity_Id := Empty;
-      --  Enclosing instance, if any
+      E   : Entity_Id;
+      E2  : Entity_Id;
+      Msg : Boolean;
 
       Homonyms : Entity_Id;
       --  Saves start of homonym chain
+
+      Inst : Entity_Id := Empty;
+      --  Enclosing instance, if any
 
       Nvis_Entity : Boolean;
       --  Set True to indicate that there is at least one entity on the homonym
@@ -4835,8 +4834,6 @@ package body Sem_Ch8 is
          Scop : constant Entity_Id := Scope (E);
          --  Declared scope of candidate entity
 
-         Act : Entity_Id;
-
          function Declared_In_Actual (Pack : Entity_Id) return Boolean;
          --  Recursive function that does the work and examines actuals of
          --  actual packages of current instance.
@@ -4858,7 +4855,7 @@ package body Sem_Ch8 is
                   if Renamed_Object (Pack) = Scop then
                      return True;
 
-                  --  Check for end of list of actuals.
+                  --  Check for end of list of actuals
 
                   elsif Ekind (Act) = E_Package
                     and then Renamed_Object (Act) = Pack
@@ -4877,6 +4874,10 @@ package body Sem_Ch8 is
                return False;
             end if;
          end Declared_In_Actual;
+
+         --  Local variables
+
+         Act : Entity_Id;
 
       --  Start of processing for From_Actual_Package
 
@@ -4966,7 +4967,7 @@ package body Sem_Ch8 is
 
          --  Case of from internal file
 
-         if Is_Internal_File_Name (Fname) then
+         if In_Internal_Unit (E) then
 
             --  Private part entities in internal files are never considered
             --  to be known to the writer of normal application code.
@@ -5331,6 +5332,11 @@ package body Sem_Ch8 is
          Msg := True;
       end Undefined;
 
+      --  Local variables
+
+      Nested_Inst : Entity_Id := Empty;
+      --  The entity of a nested instance which appears within Inst (if any)
+
    --  Start of processing for Find_Direct_Name
 
    begin
@@ -5497,15 +5503,17 @@ package body Sem_Ch8 is
          --  If there is more than one potentially use-visible entity and at
          --  least one of them non-overloadable, we have an error (RM 8.4(11)).
          --  Note that E points to the first such entity on the homonym list.
-         --  Special case: if one of the entities is declared in an actual
-         --  package, it was visible in the generic, and takes precedence over
-         --  other entities that are potentially use-visible. Same if it is
-         --  declared in a local instantiation of the current instance.
 
          else
+            --  If one of the entities is declared in an actual package, it
+            --  was visible in the generic, and takes precedence over other
+            --  entities that are potentially use-visible. The same applies
+            --  if the entity is declared in a local instantiation of the
+            --  current instance.
+
             if In_Instance then
 
-               --  Find current instance
+               --  Find the current instance
 
                Inst := Current_Scope;
                while Present (Inst) and then Inst /= Standard_Standard loop
@@ -5516,12 +5524,21 @@ package body Sem_Ch8 is
                   Inst := Scope (Inst);
                end loop;
 
+               --  Reexamine the candidate entities, giving priority to those
+               --  that were visible within the generic.
+
                E2 := E;
                while Present (E2) loop
+                  Nested_Inst := Nearest_Enclosing_Instance (E2);
+
+                  --  The entity is declared within an actual package, or in a
+                  --  nested instance. The ">=" accounts for the case where the
+                  --  current instance and the nested instance are the same.
+
                   if From_Actual_Package (E2)
-                    or else
-                      (Is_Generic_Instance (Scope (E2))
-                        and then Scope_Depth (Scope (E2)) > Scope_Depth (Inst))
+                    or else (Present (Nested_Inst)
+                              and then Scope_Depth (Nested_Inst) >=
+                                       Scope_Depth (Inst))
                   then
                      E := E2;
                      goto Found;
@@ -5533,18 +5550,14 @@ package body Sem_Ch8 is
                Nvis_Messages;
                goto Done;
 
-            elsif
-              Is_Predefined_File_Name (Unit_File_Name (Current_Sem_Unit))
-            then
+            elsif Is_Predefined_Unit (Current_Sem_Unit) then
                --  A use-clause in the body of a system file creates conflict
                --  with some entity in a user scope, while rtsfind is active.
                --  Keep only the entity coming from another predefined unit.
 
                E2 := E;
                while Present (E2) loop
-                  if Is_Predefined_File_Name
-                    (Unit_File_Name (Get_Source_Unit (Sloc (E2))))
-                  then
+                  if In_Predefined_Unit (E2) then
                      E := E2;
                      goto Found;
                   end if;
@@ -8549,6 +8562,14 @@ package body Sem_Ch8 is
       else
          Error_Msg_N
            ("object& cannot be used before end of its declaration!", N);
+
+         --  If the premature reference appears as the expression in its own
+         --  declaration, rewrite it to prevent compiler loops in subsequent
+         --  uses of this mangled declaration in address clauses.
+
+         if Nkind (Parent (N)) = N_Object_Declaration then
+            Set_Entity (N, Any_Id);
+         end if;
       end if;
    end Premature_Usage;
 

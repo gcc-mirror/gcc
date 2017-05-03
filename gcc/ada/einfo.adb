@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -185,6 +185,7 @@ package body Einfo is
    --    Scalar_Range                    Node20
 
    --    Accept_Address                  Elist21
+   --    Corresponding_Record_Component  Node21
    --    Default_Expr_Function           Node21
    --    Discriminant_Constraint         Elist21
    --    Interface_Name                  Node21
@@ -272,10 +273,7 @@ package body Einfo is
 
    --    Validated_Object                Node36
 
-   --    Class_Wide_Preconds             List38
-
-   --    Class_Wide_Postconds            List39
-
+   --    Class_Wide_Clone                Node38
    --    SPARK_Pragma                    Node40
 
    --    Original_Protected_Subprogram   Node41
@@ -606,8 +604,7 @@ package body Einfo is
    --    Rewritten_For_C                 Flag287
    --    Predicates_Ignored              Flag288
    --    Has_Timing_Event                Flag289
-
-   --    (unused)                        Flag290  --  ??? flag breaks einfo.h
+   --    Is_Class_Wide_Clone             Flag290
 
    --    Has_Inherited_Invariants        Flag291
    --    Is_Partial_Invariant_Procedure  Flag292
@@ -618,8 +615,8 @@ package body Einfo is
    --    Is_Entry_Wrapper                Flag297
    --    Is_Underlying_Full_View         Flag298
    --    Body_Needed_For_Inlining        Flag299
-
    --    Has_Private_Extension           Flag300
+
    --    Ignore_SPARK_Mode_Pragmas       Flag301
    --    (unused)                        Flag302
    --    (unused)                        Flag303
@@ -873,17 +870,11 @@ package body Einfo is
       return Flag31 (Id);
    end Checks_May_Be_Suppressed;
 
-   function Class_Wide_Postconds (Id : E) return S is
+   function Class_Wide_Clone (Id : E) return E is
    begin
       pragma Assert (Is_Subprogram (Id));
-      return List39 (Id);
-   end Class_Wide_Postconds;
-
-   function Class_Wide_Preconds (Id : E) return S is
-   begin
-      pragma Assert (Is_Subprogram (Id));
-      return List38 (Id);
-   end Class_Wide_Preconds;
+      return Node38 (Id);
+   end Class_Wide_Clone;
 
    function Class_Wide_Type (Id : E) return E is
    begin
@@ -959,6 +950,12 @@ package body Einfo is
       pragma Assert (Ekind (Id) = E_Subprogram_Body);
       return Node18 (Id);
    end Corresponding_Protected_Entry;
+
+   function Corresponding_Record_Component (Id : E) return E is
+   begin
+      pragma Assert (Ekind_In (Id, E_Component, E_Discriminant));
+      return Node21 (Id);
+   end Corresponding_Record_Component;
 
    function Corresponding_Record_Type (Id : E) return E is
    begin
@@ -2140,6 +2137,11 @@ package body Einfo is
    begin
       return Flag73 (Id);
    end Is_Child_Unit;
+
+   function Is_Class_Wide_Clone (Id : E) return B is
+   begin
+      return Flag290 (Id);
+   end Is_Class_Wide_Clone;
 
    function Is_Class_Wide_Equivalent_Type (Id : E) return B is
    begin
@@ -3958,17 +3960,11 @@ package body Einfo is
       Set_Flag31 (Id, V);
    end Set_Checks_May_Be_Suppressed;
 
-   procedure Set_Class_Wide_Preconds (Id : E; V : S) is
+   procedure Set_Class_Wide_Clone (Id : E; V : E) is
    begin
       pragma Assert (Is_Subprogram (Id));
-      Set_List38 (Id, V);
-   end Set_Class_Wide_Preconds;
-
-   procedure Set_Class_Wide_Postconds (Id : E; V : S) is
-   begin
-      pragma Assert (Is_Subprogram (Id));
-      Set_List39 (Id, V);
-   end Set_Class_Wide_Postconds;
+      Set_Node38 (Id, V);
+   end Set_Class_Wide_Clone;
 
    procedure Set_Class_Wide_Type (Id : E; V : E) is
    begin
@@ -4093,6 +4089,12 @@ package body Einfo is
       pragma Assert (Ekind_In (Id, E_Void, E_Subprogram_Body));
       Set_Node18 (Id, V);
    end Set_Corresponding_Protected_Entry;
+
+   procedure Set_Corresponding_Record_Component (Id : E; V : E) is
+   begin
+      pragma Assert (Ekind_In (Id, E_Component, E_Discriminant));
+      Set_Node21 (Id, V);
+   end Set_Corresponding_Record_Component;
 
    procedure Set_Corresponding_Record_Type (Id : E; V : E) is
    begin
@@ -5265,6 +5267,11 @@ package body Einfo is
    begin
       Set_Flag73 (Id, V);
    end Set_Is_Child_Unit;
+
+   procedure Set_Is_Class_Wide_Clone (Id : E; V : B := True) is
+   begin
+      Set_Flag290 (Id, V);
+   end Set_Is_Class_Wide_Clone;
 
    procedure Set_Is_Class_Wide_Equivalent_Type (Id : E; V : B := True) is
    begin
@@ -7123,15 +7130,13 @@ package body Einfo is
       end if;
 
       loop
-         if Nkind (P) /= N_Selected_Component
-           and then Nkind (P) /= N_Expanded_Name
-           and then
-             not (Nkind (P) = N_Defining_Program_Unit_Name
-                   and then Is_Child_Unit (Id))
+         if Nkind_In (P, N_Selected_Component, N_Expanded_Name)
+           or else (Nkind (P) = N_Defining_Program_Unit_Name
+                    and then Is_Child_Unit (Id))
          then
-            return P;
-         else
             P := Parent (P);
+         else
+            return P;
          end if;
       end loop;
    end Declaration_Node;
@@ -10410,6 +10415,11 @@ package body Einfo is
          when Entry_Kind =>
             Write_Str ("Accept_Address");
 
+         when E_Component
+            | E_Discriminant
+         =>
+            Write_Str ("Corresponding_Record_Component");
+
          when E_In_Parameter =>
             Write_Str ("Default_Expr_Function");
 
@@ -10985,7 +10995,7 @@ package body Einfo is
          when E_Function
             | E_Procedure
          =>
-            Write_Str ("Class_Wide_Preconditions");
+            Write_Str ("class-wide clone");
 
          when others =>
             Write_Str ("Field38??");
@@ -10999,11 +11009,6 @@ package body Einfo is
    procedure Write_Field39_Name (Id : Entity_Id) is
    begin
       case Ekind (Id) is
-         when E_Function
-            | E_Procedure
-         =>
-            Write_Str ("Class_Wide_Postcondition");
-
          when others =>
             Write_Str ("Field39??");
       end case;

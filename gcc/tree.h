@@ -851,7 +851,7 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
    caller decide whether a warning is appropriate or not.  */
 #define TYPE_OVERFLOW_UNDEFINED(TYPE)				\
   (!ANY_INTEGRAL_TYPE_CHECK(TYPE)->base.u.bits.unsigned_flag	\
-   && !flag_wrapv && !flag_trapv && flag_strict_overflow)
+   && !flag_wrapv && !flag_trapv)
 
 /* True if overflow for the given integral type should issue a
    trap.  */
@@ -865,7 +865,7 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
    && (flag_sanitize & SANITIZE_SI_OVERFLOW))
 
 /* True if pointer types have undefined overflow.  */
-#define POINTER_TYPE_OVERFLOW_UNDEFINED (flag_strict_overflow)
+#define POINTER_TYPE_OVERFLOW_UNDEFINED (!flag_wrapv)
 
 /* Nonzero in a VAR_DECL or STRING_CST means assembler code has been written.
    Nonzero in a FUNCTION_DECL means that the function has been compiled.
@@ -898,6 +898,12 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
 
 /* Cilk keywords accessors.  */
 #define CILK_SPAWN_FN(NODE) TREE_OPERAND (CILK_SPAWN_STMT_CHECK (NODE), 0)
+
+/* If this is true, we should insert a __cilk_detach call just before
+   this function call.  */
+#define EXPR_CILK_SPAWN(NODE) \
+  (TREE_CHECK2 (NODE, CALL_EXPR, \
+                AGGR_INIT_EXPR)->base.u.bits.unsigned_flag)
 
 /* In a RESULT_DECL, PARM_DECL and VAR_DECL, means that it is
    passed by invisible reference (and the TREE_TYPE is a pointer to the true
@@ -2042,10 +2048,16 @@ extern machine_mode element_mode (const_tree t);
 
 /* For an ARRAY_TYPE, a RECORD_TYPE, a UNION_TYPE or a QUAL_UNION_TYPE
    whether the array is typeless storage or the type contains a member
-   with this flag set.  Such types are excempt from type-based alias
-   analysis.  */
+   with this flag set.  Such types are exempt from type-based alias
+   analysis.  For ARRAY_TYPEs with AGGREGATE_TYPE_P element types
+   the flag should be inherited from the element type, can change
+   when type is finalized and because of that should not be used in
+   type hashing.  For ARRAY_TYPEs with non-AGGREGATE_TYPE_P element types
+   the flag should not be changed after the array is created and should
+   be used in type hashing.  */
 #define TYPE_TYPELESS_STORAGE(NODE) \
-  (TREE_CHECK4 (NODE, RECORD_TYPE, UNION_TYPE, QUAL_UNION_TYPE, ARRAY_TYPE)->type_common.typeless_storage)
+  (TREE_CHECK4 (NODE, RECORD_TYPE, UNION_TYPE, QUAL_UNION_TYPE, \
+		ARRAY_TYPE)->type_common.typeless_storage)
 
 /* Indicated that objects of this type should be laid out in as
    compact a way as possible.  */
@@ -4305,7 +4317,7 @@ extern tree build_variant_type_copy (tree CXX_MEM_STAT_INFO);
    How the hash code is computed is up to the caller, as long as any two
    callers that could hash identical-looking type nodes agree.  */
 
-extern hashval_t type_hash_default (tree);
+extern hashval_t type_hash_canon_hash (tree);
 extern tree type_hash_canon (unsigned int, tree);
 
 extern tree convert (tree, tree);

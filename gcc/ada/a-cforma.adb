@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2010-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 2010-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -324,34 +324,6 @@ is
       end return;
    end Copy;
 
-   ---------------------
-   -- Current_To_Last --
-   ---------------------
-
-   function Current_To_Last (Container : Map; Current : Cursor) return Map is
-      Curs : Cursor := First (Container);
-      C    : Map (Container.Capacity) := Copy (Container, Container.Capacity);
-      Node : Count_Type;
-
-   begin
-      if Curs = No_Element then
-         Clear (C);
-         return C;
-
-      elsif Current /= No_Element and not Has_Element (Container, Current) then
-         raise Constraint_Error;
-
-      else
-         while Curs.Node /= Current.Node loop
-            Node := Curs.Node;
-            Delete (C, Curs);
-            Curs := Next (Container, (Node => Node));
-         end loop;
-
-         return C;
-      end if;
-   end Current_To_Last;
-
    ------------
    -- Delete --
    ------------
@@ -369,6 +341,7 @@ is
       Tree_Operations.Delete_Node_Sans_Free (Container,
                                              Position.Node);
       Formal_Ordered_Maps.Free (Container, Position.Node);
+      Position := No_Element;
    end Delete;
 
    procedure Delete (Container : in out Map; Key : Key_Type) is
@@ -520,36 +493,6 @@ is
       return Container.Nodes (First (Container).Node).Key;
    end First_Key;
 
-   -----------------------
-   -- First_To_Previous --
-   -----------------------
-
-   function First_To_Previous
-     (Container : Map;
-      Current   : Cursor) return Map
-   is
-      Curs : Cursor := Current;
-      C    : Map (Container.Capacity) := Copy (Container, Container.Capacity);
-      Node : Count_Type;
-
-   begin
-      if Curs = No_Element then
-         return C;
-
-      elsif not Has_Element (Container, Curs) then
-         raise Constraint_Error;
-
-      else
-         while Curs.Node /= 0 loop
-            Node := Curs.Node;
-            Delete (C, Curs);
-            Curs := Next (Container, (Node => Node));
-         end loop;
-
-         return C;
-      end if;
-   end First_To_Previous;
-
    -----------
    -- Floor --
    -----------
@@ -564,6 +507,218 @@ is
 
       return (Node => Node);
    end Floor;
+
+   ------------------
+   -- Formal_Model --
+   ------------------
+
+   package body Formal_Model is
+
+      ----------
+      -- Find --
+      ----------
+
+      function Find
+        (Container : K.Sequence;
+         Key       : Key_Type) return Count_Type
+      is
+      begin
+         for I in 1 .. K.Length (Container) loop
+            if Equivalent_Keys (Key, K.Get (Container, I)) then
+               return I;
+            elsif Key < K.Get (Container, I) then
+               return 0;
+            end if;
+         end loop;
+         return 0;
+      end Find;
+
+      -------------------------
+      -- K_Bigger_Than_Range --
+      -------------------------
+
+      function K_Bigger_Than_Range
+        (Container : K.Sequence;
+         Fst       : Positive_Count_Type;
+         Lst       : Count_Type;
+         Key       : Key_Type) return Boolean
+      is
+      begin
+         for I in Fst .. Lst loop
+            if not (K.Get (Container, I) < Key) then
+               return False;
+            end if;
+         end loop;
+         return True;
+      end K_Bigger_Than_Range;
+
+      ---------------
+      -- K_Is_Find --
+      ---------------
+
+      function K_Is_Find
+        (Container : K.Sequence;
+         Key       : Key_Type;
+         Position  : Count_Type) return Boolean
+      is
+      begin
+         for I in 1 .. Position - 1 loop
+            if Key < K.Get (Container, I) then
+               return False;
+            end if;
+         end loop;
+
+         if Position < K.Length (Container) then
+            for I in Position + 1 .. K.Length (Container) loop
+               if K.Get (Container, I) < Key then
+                  return False;
+               end if;
+            end loop;
+         end if;
+         return True;
+      end K_Is_Find;
+
+      --------------------------
+      -- K_Smaller_Than_Range --
+      --------------------------
+
+      function K_Smaller_Than_Range
+        (Container : K.Sequence;
+         Fst       : Positive_Count_Type;
+         Lst       : Count_Type;
+         Key       : Key_Type) return Boolean
+      is
+      begin
+         for I in Fst .. Lst loop
+            if not (Key < K.Get (Container, I)) then
+               return False;
+            end if;
+         end loop;
+         return True;
+      end K_Smaller_Than_Range;
+
+      ----------
+      -- Keys --
+      ----------
+
+      function Keys (Container : Map) return K.Sequence is
+         Position : Count_Type := Container.First;
+         R        : K.Sequence;
+
+      begin
+         --  Can't use First, Next or Element here, since they depend on models
+         --  for their postconditions.
+
+         while Position /= 0 loop
+            R := K.Add (R, Container.Nodes (Position).Key);
+            Position := Tree_Operations.Next (Container, Position);
+         end loop;
+
+         return R;
+      end Keys;
+
+      ----------------------------
+      -- Lift_Abstraction_Level --
+      ----------------------------
+
+      procedure Lift_Abstraction_Level (Container : Map) is null;
+
+      -----------
+      -- Model --
+      -----------
+
+      function Model (Container : Map) return M.Map is
+         Position : Count_Type := Container.First;
+         R        : M.Map;
+
+      begin
+         --  Can't use First, Next or Element here, since they depend on models
+         --  for their postconditions.
+
+         while Position /= 0 loop
+            R :=
+              M.Add
+                (Container => R,
+                 New_Key   => Container.Nodes (Position).Key,
+                 New_Item  => Container.Nodes (Position).Element);
+
+            Position := Tree_Operations.Next (Container, Position);
+         end loop;
+
+         return R;
+      end Model;
+
+      -------------------------
+      -- P_Positions_Shifted --
+      -------------------------
+
+      function P_Positions_Shifted
+        (Small : P.Map;
+         Big   : P.Map;
+         Cut   : Positive_Count_Type;
+         Count : Count_Type := 1) return Boolean
+      is
+      begin
+         for Cu of Small loop
+            if not P.Has_Key (Big, Cu) then
+               return False;
+            end if;
+         end loop;
+
+         for Cu of Big loop
+            declare
+               Pos : constant Positive_Count_Type := P.Get (Big, Cu);
+
+            begin
+               if Pos < Cut then
+                  if not P.Has_Key (Small, Cu)
+                    or else Pos /= P.Get (Small, Cu)
+                  then
+                     return False;
+                  end if;
+
+               elsif Pos >= Cut + Count then
+                  if not P.Has_Key (Small, Cu)
+                    or else Pos /= P.Get (Small, Cu) + Count
+                  then
+                     return False;
+                  end if;
+
+               else
+                  if P.Has_Key (Small, Cu) then
+                     return False;
+                  end if;
+               end if;
+            end;
+         end loop;
+
+         return True;
+      end P_Positions_Shifted;
+
+      ---------------
+      -- Positions --
+      ---------------
+
+      function Positions (Container : Map) return P.Map is
+         I        : Count_Type := 1;
+         Position : Count_Type := Container.First;
+         R        : P.Map;
+
+      begin
+         --  Can't use First, Next or Element here, since they depend on models
+         --  for their postconditions.
+
+         while Position /= 0 loop
+            R := P.Add (R, (Node => Position), I);
+            pragma Assert (P.Length (R) = I);
+            Position := Tree_Operations.Next (Container, Position);
+            I := I + 1;
+         end loop;
+
+         return R;
+      end Positions;
+
+   end Formal_Model;
 
    ----------
    -- Free --
@@ -864,47 +1019,6 @@ is
       return (Node => Tree_Operations.Next (Container, Position.Node));
    end Next;
 
-   -------------
-   -- Overlap --
-   -------------
-
-   function Overlap (Left, Right : Map) return Boolean is
-   begin
-      if Length (Left) = 0 or Length (Right) = 0 then
-         return False;
-      end if;
-
-      declare
-         L_Node : Count_Type          := First (Left).Node;
-         R_Node : Count_Type          := First (Right).Node;
-         L_Last : constant Count_Type := Next (Left, Last (Left).Node);
-         R_Last : constant Count_Type := Next (Right, Last (Right).Node);
-
-      begin
-         if Left'Address = Right'Address then
-            return True;
-         end if;
-
-         loop
-            if L_Node = L_Last
-              or else R_Node = R_Last
-            then
-               return False;
-            end if;
-
-            if Left.Nodes (L_Node).Key < Right.Nodes (R_Node).Key then
-               L_Node := Next (Left, L_Node);
-
-            elsif Right.Nodes (R_Node).Key < Left.Nodes (L_Node).Key then
-               R_Node := Next (Right, R_Node);
-
-            else
-               return True;
-            end if;
-         end loop;
-      end;
-   end Overlap;
-
    ------------
    -- Parent --
    ------------
@@ -1041,36 +1155,5 @@ is
    begin
       Node.Right := Right;
    end Set_Right;
-
-   ------------------
-   -- Strict_Equal --
-   ------------------
-
-   function Strict_Equal (Left, Right : Map) return Boolean is
-      LNode : Count_Type := First (Left).Node;
-      RNode : Count_Type := First (Right).Node;
-
-   begin
-      if Length (Left) /= Length (Right) then
-         return False;
-      end if;
-
-      while LNode = RNode loop
-         if LNode = 0 then
-            return True;
-         end if;
-
-         if Left.Nodes (LNode).Element /= Right.Nodes (RNode).Element
-           or else Left.Nodes (LNode).Key /= Right.Nodes (RNode).Key
-         then
-            exit;
-         end if;
-
-         LNode := Next (Left, LNode);
-         RNode := Next (Right, RNode);
-      end loop;
-
-      return False;
-   end Strict_Equal;
 
 end Ada.Containers.Formal_Ordered_Maps;

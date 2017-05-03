@@ -3884,15 +3884,29 @@ substitute_in_expr (tree exp, tree f, tree r)
 
 	  new_tree = NULL_TREE;
 
-	  /* If we are trying to replace F with a constant, inline back
+	  /* If we are trying to replace F with a constant or with another
+	     instance of one of the arguments of the call, inline back
 	     functions which do nothing else than computing a value from
 	     the arguments they are passed.  This makes it possible to
 	     fold partially or entirely the replacement expression.  */
-	  if (CONSTANT_CLASS_P (r) && code == CALL_EXPR)
+	  if (code == CALL_EXPR)
 	    {
-	      tree t = maybe_inline_call_in_expr (exp);
-	      if (t)
-		return SUBSTITUTE_IN_EXPR (t, f, r);
+	      bool maybe_inline = false;
+	      if (CONSTANT_CLASS_P (r))
+		maybe_inline = true;
+	      else
+		for (i = 3; i < TREE_OPERAND_LENGTH (exp); i++)
+		  if (operand_equal_p (TREE_OPERAND (exp, i), r, 0))
+		    {
+		      maybe_inline = true;
+		      break;
+		    }
+	      if (maybe_inline)
+		{
+		  tree t = maybe_inline_call_in_expr (exp);
+		  if (t)
+		    return SUBSTITUTE_IN_EXPR (t, f, r);
+		}
 	    }
 
 	  for (i = 1; i < TREE_OPERAND_LENGTH (exp); i++)
@@ -4836,7 +4850,7 @@ build_type_attribute_qual_variant (tree ttype, tree attribute, int quals)
 
       TYPE_ATTRIBUTES (ntype) = attribute;
 
-      hashval_t hash = type_hash_default (ntype);
+      hashval_t hash = type_hash_canon_hash (ntype);
       ntype = type_hash_canon (hash, ntype);
 
       /* If the target-dependent attributes make NTYPE different from
@@ -6949,7 +6963,7 @@ decl_debug_args_insert (tree from)
    speed, rather than maximum entropy.  */
 
 hashval_t
-type_hash_default (tree type)
+type_hash_canon_hash (tree type)
 {
   inchash::hash hstate;
 
@@ -7100,9 +7114,16 @@ type_cache_hasher::equal (type_hash *a, type_hash *b)
         break;
       return 0;
     case ARRAY_TYPE:
-      return (TYPE_TYPELESS_STORAGE (a->type)
-	      == TYPE_TYPELESS_STORAGE (b->type)
-	      && TYPE_DOMAIN (a->type) == TYPE_DOMAIN (b->type));
+      /* Don't compare TYPE_TYPELESS_STORAGE flag on aggregates,
+	 where the flag should be inherited from the element type
+	 and can change after ARRAY_TYPEs are created; on non-aggregates
+	 compare it and hash it, scalars will never have that flag set
+	 and we need to differentiate between arrays created by different
+	 front-ends or middle-end created arrays.  */
+      return (TYPE_DOMAIN (a->type) == TYPE_DOMAIN (b->type)
+	      && (AGGREGATE_TYPE_P (TREE_TYPE (a->type))
+		  || (TYPE_TYPELESS_STORAGE (a->type)
+		      == TYPE_TYPELESS_STORAGE (b->type))));
 
     case RECORD_TYPE:
     case UNION_TYPE:
@@ -8283,7 +8304,7 @@ build_range_type_1 (tree type, tree lowval, tree highval, bool shared)
       return itype;
     }
 
-  hashval_t hash = type_hash_default (itype);
+  hashval_t hash = type_hash_canon_hash (itype);
   itype = type_hash_canon (hash, itype);
 
   return itype;
@@ -8392,7 +8413,7 @@ build_array_type_1 (tree elt_type, tree index_type, bool typeless_storage,
 
   if (shared)
     {
-      hashval_t hash = type_hash_default (t);
+      hashval_t hash = type_hash_canon_hash (t);
       t = type_hash_canon (hash, t);
     }
 
@@ -8550,7 +8571,7 @@ build_function_type (tree value_type, tree arg_types)
   TYPE_ARG_TYPES (t) = arg_types;
 
   /* If we already have such a type, use the old one.  */
-  hashval_t hash = type_hash_default (t);
+  hashval_t hash = type_hash_canon_hash (t);
   t = type_hash_canon (hash, t);
 
   /* Set up the canonical type. */
@@ -8704,7 +8725,7 @@ build_method_type_directly (tree basetype,
   TYPE_ARG_TYPES (t) = argtypes;
 
   /* If we already have such a type, use the old one.  */
-  hashval_t hash = type_hash_default (t);
+  hashval_t hash = type_hash_canon_hash (t);
   t = type_hash_canon (hash, t);
 
   /* Set up the canonical type. */
@@ -8761,7 +8782,7 @@ build_offset_type (tree basetype, tree type)
   TREE_TYPE (t) = type;
 
   /* If we already have such a type, use the old one.  */
-  hashval_t hash = type_hash_default (t);
+  hashval_t hash = type_hash_canon_hash (t);
   t = type_hash_canon (hash, t);
 
   if (!COMPLETE_TYPE_P (t))
@@ -8804,7 +8825,7 @@ build_complex_type (tree component_type, bool named)
   TREE_TYPE (t) = TYPE_MAIN_VARIANT (component_type);
 
   /* If we already have such a type, use the old one.  */
-  hashval_t hash = type_hash_default (t);
+  hashval_t hash = type_hash_canon_hash (t);
   t = type_hash_canon (hash, t);
 
   if (!COMPLETE_TYPE_P (t))
@@ -10077,7 +10098,7 @@ make_vector_type (tree innertype, int nunits, machine_mode mode)
 
   layout_type (t);
 
-  hashval_t hash = type_hash_default (t);
+  hashval_t hash = type_hash_canon_hash (t);
   t = type_hash_canon (hash, t);
 
   /* We have built a main variant, based on the main variant of the

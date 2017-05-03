@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -2008,6 +2008,31 @@ package body Exp_Fixd is
 
       else
          Do_Divide_Fixed_Fixed (N);
+
+         --  A focused optimization: if after constant folding the
+         --  expression is of the form:  T ((Exp * D) / D), where D is
+         --  a static constant, return  T (Exp). This form will show up
+         --  when D is the denominator of the static expression for the
+         --  'small of fixed-point types involved. This transformation
+         --  removes a division that may be expensive on some targets.
+
+         if Nkind (N) = N_Type_Conversion
+           and then Nkind (Expression (N)) = N_Op_Divide
+         then
+            declare
+               Num : constant Node_Id := Left_Opnd  (Expression (N));
+               Den : constant Node_Id := Right_Opnd (Expression (N));
+
+            begin
+               if Nkind (Den) = N_Integer_Literal
+                 and then Nkind (Num) = N_Op_Multiply
+                 and then Nkind (Right_Opnd (Num)) = N_Integer_Literal
+                 and then Intval (Den) = Intval (Right_Opnd (Num))
+               then
+                  Rewrite (Expression (N), Left_Opnd (Num));
+               end if;
+            end;
+         end if;
       end if;
    end Expand_Divide_Fixed_By_Fixed_Giving_Fixed;
 

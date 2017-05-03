@@ -5,7 +5,7 @@
 void foo()
 {
   if (false)
-    if (int i=0)  // { dg-warning "unused" "" }
-      int j=0;    // { dg-warning "unused" "" }
+    if (int i=0)  // { dg-warning "unused" }
+      int j=0;    // { dg-warning "unused" }
 }
 

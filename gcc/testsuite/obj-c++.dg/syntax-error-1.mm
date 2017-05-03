@@ -25,8 +25,9 @@ extern void NXLog(const char *, ...);
 
 @implementation Test2
 - (void) foo2
-  NXLog("Hello, world!"); /* { dg-error "expected .\{. before .NXLog." } */
+  NXLog("Hello, world!"); /* { dg-line Test2_foo2_body } */
+  /* { dg-error "expected .\{. before .NXLog." "" { target *-*-* } Test2_foo2_body } */
 } /* { dg-error "stray .\}. between Objective\\-C\\+\\+ methods" } */
 @end
 
-/* { dg-error "expected constructor, destructor, or type conversion before" "" { target *-*-* } 28 } */
+/* { dg-error "expected constructor, destructor, or type conversion before" "" { target *-*-* } Test2_foo2_body } */

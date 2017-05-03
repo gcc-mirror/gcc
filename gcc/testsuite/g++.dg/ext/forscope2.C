@@ -16,12 +16,12 @@ struct A
 
 void Go( )
 {
-  for (int i = 1;;)	// { dg-warning "using obsolete binding" "" }
+  for (int i = 1;;)	// { dg-warning "using obsolete binding" }
     {
       switch (1) {
       default: {}
       }
       A d;
     }
-  i;  // { dg-warning "name lookup" "" }
+  i;  // { dg-warning "name lookup" }
 }

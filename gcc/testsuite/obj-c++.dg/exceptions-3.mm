@@ -10,7 +10,7 @@
 @interface MyObject
 {
   Class isa;
-}
+} /* { dg-line interface_MyObject } */
 @end
 
 @implementation MyObject
@@ -71,8 +71,8 @@ int test (id object)
   @try { @throw object; }
   @catch (MyObject x)     /* { dg-error "@catch parameter is not a known Objective-C class type" } */
     {                     /* { dg-error "no matching function" "" { target *-*-* } .-1 } */
-      dummy++;            /* { dg-message "MyObject" "" { target *-*-* } 13 } */
-    }                     /* { dg-message "candidate" "" { target *-*-* } 13 } */
+      dummy++;            /* { dg-message "MyObject" "" { target *-*-* } interface_MyObject } */
+    }                     /* { dg-message "candidate" "" { target *-*-* } interface_MyObject } */
   @try { @throw object; }
   @catch (static MyObject *x) /* { dg-error "storage class" } */
     {

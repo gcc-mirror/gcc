@@ -56,8 +56,7 @@ class edit_context
   void print_diff (pretty_printer *pp, bool show_filenames);
 
  private:
-  bool apply_insert (const fixit_insert *insert);
-  bool apply_replace (const fixit_replace *replace);
+  bool apply_fixit (const fixit_hint *hint);
   edited_file *get_file (const char *filename);
   edited_file &get_or_insert_file (const char *filename);
 

@@ -626,18 +626,29 @@ package body Sem_Eval is
          return Non_Static;
 
       --  When the choice denotes a subtype with a static predictate, check the
-      --  expression against the predicate values.
+      --  expression against the predicate values. Different procedures apply
+      --  to discrete and non-discrete types.
 
       elsif (Nkind (Choice) = N_Subtype_Indication
-               or else (Is_Entity_Name (Choice)
-                         and then Is_Type (Entity (Choice))))
+              or else (Is_Entity_Name (Choice)
+                        and then Is_Type (Entity (Choice))))
         and then Has_Predicates (Etype (Choice))
         and then Has_Static_Predicate (Etype (Choice))
       then
-         return
-           Choices_Match (Expr, Static_Discrete_Predicate (Etype (Choice)));
+         if Is_Discrete_Type (Etype (Choice)) then
+            return
+              Choices_Match
+                (Expr, Static_Discrete_Predicate (Etype (Choice)));
 
-      --  Discrete type case
+         elsif Real_Or_String_Static_Predicate_Matches (Expr, Etype (Choice))
+         then
+            return Match;
+
+         else
+            return No_Match;
+         end if;
+
+      --  Discrete type case only
 
       elsif Is_Discrete_Type (Etyp) then
          Val := Expr_Value (Expr);
@@ -2147,7 +2158,9 @@ package body Sem_Eval is
    begin
       Set_Is_Static_Expression (N, False);
 
-      if not Is_Static_Expression (Expression (N)) then
+      if Error_Posted (Expression (N))
+        or else not Is_Static_Expression (Expression (N))
+      then
          Check_Non_Static_Context (Expression (N));
          return;
       end if;
@@ -5670,14 +5683,6 @@ package body Sem_Eval is
          then
             return False;
 
-         --  If either type has constraint error bounds, then consider that
-         --  they match to avoid junk cascaded errors here.
-
-         elsif not Is_OK_Static_Subtype (T1)
-           or else not Is_OK_Static_Subtype (T2)
-         then
-            return True;
-
          --  Base types must match, but we don't check that (should we???) but
          --  we do at least check that both types are real, or both types are
          --  not real.
@@ -5697,19 +5702,17 @@ package body Sem_Eval is
             begin
                if Is_Real_Type (T1) then
                   return
-                    (Expr_Value_R (LB1) > Expr_Value_R (HB1))
+                    Expr_Value_R (LB1) > Expr_Value_R (HB1)
                       or else
-                    (Expr_Value_R (LB2) <= Expr_Value_R (LB1)
-                       and then
-                     Expr_Value_R (HB1) <= Expr_Value_R (HB2));
+                        (Expr_Value_R (LB2) <= Expr_Value_R (LB1)
+                          and then Expr_Value_R (HB1) <= Expr_Value_R (HB2));
 
                else
                   return
-                    (Expr_Value (LB1) > Expr_Value (HB1))
+                    Expr_Value (LB1) > Expr_Value (HB1)
                       or else
-                    (Expr_Value (LB2) <= Expr_Value (LB1)
-                       and then
-                     Expr_Value (HB1) <= Expr_Value (HB2));
+                        (Expr_Value (LB2) <= Expr_Value (LB1)
+                          and then Expr_Value (HB1) <= Expr_Value (HB2));
                end if;
             end;
          end if;
@@ -5717,17 +5720,20 @@ package body Sem_Eval is
       --  Access types
 
       elsif Is_Access_Type (T1) then
-         return (not Is_Constrained (T2)
-                  or else (Subtypes_Statically_Match
-                             (Designated_Type (T1), Designated_Type (T2))))
+         return
+           (not Is_Constrained (T2)
+             or else Subtypes_Statically_Match
+                       (Designated_Type (T1), Designated_Type (T2)))
            and then not (Can_Never_Be_Null (T2)
                           and then not Can_Never_Be_Null (T1));
 
       --  All other cases
 
       else
-         return (Is_Composite_Type (T1) and then not Is_Constrained (T2))
-           or else Subtypes_Statically_Match (T1, T2, Formal_Derived_Matching);
+         return
+           (Is_Composite_Type (T1) and then not Is_Constrained (T2))
+             or else Subtypes_Statically_Match
+                       (T1, T2, Formal_Derived_Matching);
       end if;
    end Subtypes_Statically_Compatible;
 
@@ -5845,23 +5851,16 @@ package body Sem_Eval is
 
             else
                if not Is_OK_Static_Subtype (T1)
-                 or else not Is_OK_Static_Subtype (T2)
+                    or else
+                  not Is_OK_Static_Subtype (T2)
                then
                   return False;
 
-               --  If either type has constraint error bounds, then say that
-               --  they match to avoid junk cascaded errors here.
-
-               elsif not Is_OK_Static_Subtype (T1)
-                 or else not Is_OK_Static_Subtype (T2)
-               then
-                  return True;
-
                elsif Is_Real_Type (T1) then
                   return
-                    (Expr_Value_R (LB1) = Expr_Value_R (LB2))
+                    Expr_Value_R (LB1) = Expr_Value_R (LB2)
                       and then
-                    (Expr_Value_R (HB1) = Expr_Value_R (HB2));
+                    Expr_Value_R (HB1) = Expr_Value_R (HB2);
 
                else
                   return
@@ -6460,8 +6459,8 @@ package body Sem_Eval is
    --------------------
 
    procedure Why_Not_Static (Expr : Node_Id) is
-      N   : constant Node_Id   := Original_Node (Expr);
-      Typ : Entity_Id;
+      N   : constant Node_Id := Original_Node (Expr);
+      Typ : Entity_Id        := Empty;
       E   : Entity_Id;
       Alt : Node_Id;
       Exp : Node_Id;

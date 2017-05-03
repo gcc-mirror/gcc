@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 1999-2015, AdaCore                     --
+--                     Copyright (C) 1999-2017, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -81,5 +81,14 @@ package System.Traceback.Symbolic is
    function Symbolic_Traceback
      (E : Ada.Exceptions.Exception_Occurrence) return String;
    --  Build string containing symbolic traceback of given exception occurrence
+
+   procedure Enable_Cache (Include_Modules : Boolean := False);
+   --  Read symbolic information from binary files and cache them in memory.
+   --  This will speed up the above functions but will require more memory.
+   --  If Include_Modules is true, shared modules (or DLL) will also be cached.
+   --  This procedure may do nothing if not supported. The profile of this
+   --  subprogram may change in the future (new parameters can be added with
+   --  default value), but backward compatibility for direct calls is
+   --  supported.
 
 end System.Traceback.Symbolic;

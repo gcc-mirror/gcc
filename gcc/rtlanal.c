@@ -1221,6 +1221,24 @@ reg_set_p (const_rtx reg, const_rtx insn)
 		  || find_reg_fusage (insn, CLOBBER, reg)))))
     return true;
 
+  /* There are no REG_INC notes for SP autoinc.  */
+  if (reg == stack_pointer_rtx && INSN_P (insn))
+    {
+      subrtx_var_iterator::array_type array;
+      FOR_EACH_SUBRTX_VAR (iter, array, PATTERN (insn), NONCONST)
+	{
+	  rtx mem = *iter;
+	  if (mem
+	      && MEM_P (mem)
+	      && GET_RTX_CLASS (GET_CODE (XEXP (mem, 0))) == RTX_AUTOINC)
+	    {
+	      if (XEXP (XEXP (mem, 0), 0) == stack_pointer_rtx)
+		return true;
+	      iter.skip_subrtxes ();
+	    }
+	}
+    }
+
   return set_of (reg, insn) != NULL_RTX;
 }
 

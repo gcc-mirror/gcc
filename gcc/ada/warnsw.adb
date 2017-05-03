@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1999-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1999-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -75,6 +75,7 @@ package body Warnsw is
       Warn_On_Overlap                     := Setting;
       Warn_On_Overridden_Size             := Setting;
       Warn_On_Parameter_Order             := Setting;
+      Warn_On_Questionable_Layout         := Setting;
       Warn_On_Questionable_Missing_Parens := Setting;
       Warn_On_Record_Holes                := Setting;
       Warn_On_Redundant_Constructs        := Setting;
@@ -166,6 +167,8 @@ package body Warnsw is
         W.Warn_On_Overridden_Size;
       Warn_On_Parameter_Order             :=
         W.Warn_On_Parameter_Order;
+      Warn_On_Questionable_Layout         :=
+        W.Warn_On_Questionable_Layout;
       Warn_On_Questionable_Missing_Parens :=
         W.Warn_On_Questionable_Missing_Parens;
       Warn_On_Record_Holes                :=
@@ -270,6 +273,8 @@ package body Warnsw is
         Warn_On_Overridden_Size;
       W.Warn_On_Parameter_Order             :=
         Warn_On_Parameter_Order;
+      W.Warn_On_Questionable_Layout         :=
+        Warn_On_Questionable_Layout;
       W.Warn_On_Questionable_Missing_Parens :=
         Warn_On_Questionable_Missing_Parens;
       W.Warn_On_Record_Holes                :=
@@ -393,6 +398,12 @@ package body Warnsw is
 
          when 'P' =>
             Warn_On_Parameter_Order             := False;
+
+         when 'q' =>
+            Warn_On_Questionable_Layout         := True;
+
+         when 'Q' =>
+            Warn_On_Questionable_Layout         := False;
 
          when 'r' =>
             Warn_On_Object_Renames_Function     := True;
@@ -520,6 +531,9 @@ package body Warnsw is
 
          when 'e' =>
             Warning_Mode                        := Treat_As_Error;
+
+         when 'E' =>
+            Warning_Mode := Treat_Run_Time_Warnings_As_Errors;
 
          when 'f' =>
             Check_Unreferenced_Formals          := True;

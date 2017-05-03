@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -33,7 +33,6 @@ with Ada.Finalization;           use Ada.Finalization;
 with Ada.IO_Exceptions;          use Ada.IO_Exceptions;
 with Ada.Unchecked_Deallocation;
 
-with Interfaces.C;
 with Interfaces.C_Streams;       use Interfaces.C_Streams;
 
 with System.Case_Util;           use System.Case_Util;
@@ -48,7 +47,6 @@ package body System.File_IO is
    package SSL renames System.Soft_Links;
 
    use type CRTL.size_t;
-   use type Interfaces.C.int;
 
    ----------------------
    -- Global Variables --
@@ -65,8 +63,8 @@ package body System.File_IO is
 
    type Temp_File_Record is record
       File : AFCB_Ptr;
-      Name : String (1 .. max_path_len + 1);
       Next : aliased Temp_File_Record_Ptr;
+      Name : String (1 .. max_path_len + 1);
    end record;
    --  One of these is allocated for each temporary file created
 

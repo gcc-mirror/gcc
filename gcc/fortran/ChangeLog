@@ -1,3 +1,9 @@
+2017-05-01  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/37131
+	* frontend-passes.c (inline_matmul_assign): Also check bounds
+	for allocatable lhs and matrix-vector-multiplication.
+
 2017-04-23  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/80484

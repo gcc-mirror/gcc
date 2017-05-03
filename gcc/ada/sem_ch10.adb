@@ -648,9 +648,7 @@ package body Sem_Ch10 is
             Circularity : Boolean := True;
 
          begin
-            if Is_Predefined_File_Name
-                 (Unit_File_Name (Get_Source_Unit (Unit (N))))
-            then
+            if In_Predefined_Unit (N) then
                Circularity := False;
 
             else
@@ -919,13 +917,9 @@ package body Sem_Ch10 is
 
       --  Register predefined units in Rtsfind
 
-      declare
-         Unum : constant Unit_Number_Type := Get_Source_Unit (Sloc (N));
-      begin
-         if Is_Predefined_File_Name (Unit_File_Name (Unum)) then
-            Set_RTU_Loaded (Unit_Node);
-         end if;
-      end;
+      if In_Predefined_Unit (N) then
+         Set_RTU_Loaded (Unit_Node);
+      end if;
 
       --  Treat compilation unit pragmas that appear after the library unit
 
@@ -1230,7 +1224,7 @@ package body Sem_Ch10 is
 
                 --  No checks needed for predefined files
 
-                or else Is_Predefined_File_Name (Unit_File_Name (Unum))
+                or else Is_Predefined_Unit (Unum)
 
                 --  No checks required if no separate spec
 
@@ -2294,10 +2288,10 @@ package body Sem_Ch10 is
          Pop_Scope;
       end Remove_Scope;
 
-      Saved_SM  : constant SPARK_Mode_Type := SPARK_Mode;
-      Saved_SMP : constant Node_Id         := SPARK_Mode_Pragma;
+      Saved_SM  : SPARK_Mode_Type := SPARK_Mode;
+      Saved_SMP : Node_Id         := SPARK_Mode_Pragma;
       --  Save the SPARK mode-related data to restore on exit. Removing
-      --  eclosing scopes and contexts to provide a clean environment for the
+      --  enclosing scopes and contexts to provide a clean environment for the
       --  context of the subunit will eliminate any previously set SPARK_Mode.
 
    --  Start of processing for Analyze_Subunit
@@ -2357,6 +2351,15 @@ package body Sem_Ch10 is
 
          Analyze_Subunit_Context;
 
+         --  Take into account the effect of any SPARK_Mode configuration
+         --  pragma, which takes precedence over a different value of
+         --  SPARK_Mode inherited from the context of the stub.
+
+         if SPARK_Mode /= None then
+            Saved_SM  := SPARK_Mode;
+            Saved_SMP := SPARK_Mode_Pragma;
+         end if;
+
          Re_Install_Parents (Lib_Unit, Par_Unit);
          Set_Is_Immediately_Visible (Par_Unit);
 
@@ -2398,7 +2401,8 @@ package body Sem_Ch10 is
       Generate_Parent_References (Unit (N), Par_Unit);
 
       --  Reinstall the SPARK_Mode which was in effect prior to any scope and
-      --  context manipulations.
+      --  context manipulations, taking into account a possible SPARK_Mode
+      --  configuration pragma if present.
 
       Install_SPARK_Mode (Saved_SM, Saved_SMP);
 
@@ -2524,18 +2528,10 @@ package body Sem_Ch10 is
       --  himself, but that's a marginal case, and fixing it is hard ???
 
       if Restriction_Check_Required (No_Obsolescent_Features) then
-         declare
-            F : constant File_Name_Type :=
-                  Unit_File_Name (Get_Source_Unit (U));
-         begin
-            if Is_Predefined_File_Name (F, Renamings_Included => True)
-                 and then not
-               Is_Predefined_File_Name (F, Renamings_Included => False)
-            then
-               Check_Restriction (No_Obsolescent_Features, N);
-               Restriction_Violation := True;
-            end if;
-         end;
+         if In_Predefined_Renaming (U) then
+            Check_Restriction (No_Obsolescent_Features, N);
+            Restriction_Violation := True;
+         end if;
       end if;
 
       --  Check No_Implementation_Units violation
@@ -2566,7 +2562,7 @@ package body Sem_Ch10 is
          --  clauses into regular with clauses.
 
          if Sloc (U) /= No_Location then
-            if Is_Predefined_File_Name (Unit_File_Name (Get_Source_Unit (U)))
+            if In_Predefined_Unit (U)
 
               --  In ASIS mode the rtsfind mechanism plays no role, and
               --  we need to maintain the original tree structure, so
@@ -2598,7 +2594,7 @@ package body Sem_Ch10 is
 
       Semantics (Library_Unit (N));
 
-      Intunit := Is_Internal_File_Name (Unit_File_Name (Current_Sem_Unit));
+      Intunit := Is_Internal_Unit (Current_Sem_Unit);
 
       if Sloc (U) /= No_Location then
 
@@ -3537,7 +3533,7 @@ package body Sem_Ch10 is
                   --  Exclude license check if withed unit is an internal unit.
                   --  This situation arises e.g. with the GPL version of GNAT.
 
-                  if Is_Internal_File_Name (Unit_File_Name (Withu)) then
+                  if Is_Internal_Unit (Withu) then
                      null;
 
                      --  Otherwise check various cases
@@ -5276,7 +5272,7 @@ package body Sem_Ch10 is
       --  skipped for dummy units (for missing packages).
 
       if Sloc (Uname) /= No_Location
-        and then (not Is_Internal_File_Name (Unit_File_Name (Current_Sem_Unit))
+        and then (not Is_Internal_Unit (Current_Sem_Unit)
                    or else Current_Sem_Unit = Main_Unit)
       then
          Check_Restricted_Unit
@@ -6149,7 +6145,7 @@ package body Sem_Ch10 is
       Last_Public_Shadow := Last_Shadow;
 
       --  Ada 2005 (AI-262): Build the limited view of the private declarations
-      --  to accomodate limited private with clauses.
+      --  to accommodate limited private with clauses.
 
       Process_Declarations_And_States
         (Pack  => Pack,

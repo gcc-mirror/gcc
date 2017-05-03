@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -2938,6 +2938,16 @@ package body Exp_Ch6 is
               and then Is_Aliased_View (Prev_Orig)
             then
                Prev_Orig := Prev;
+
+            --  If the actual is a formal of an enclosing subprogram it is
+            --  the right entity, even if it is a rewriting. This happens
+            --  when the call is within an inherited condition or predicate.
+
+            elsif Is_Entity_Name (Actual)
+              and then Is_Formal (Entity (Actual))
+              and then In_Open_Scopes (Scope (Entity (Actual)))
+            then
+               Prev_Orig := Prev;
             end if;
 
             --  Ada 2005 (AI-251): Thunks must propagate the extra actuals of
@@ -4798,7 +4808,7 @@ package body Exp_Ch6 is
                   Init_Assignment :=
                     Make_Assignment_Statement (Loc,
                       Name       => New_Occurrence_Of (Ret_Obj_Id, Loc),
-                      Expression => Relocate_Node (Ret_Obj_Expr));
+                      Expression => New_Copy_Tree (Ret_Obj_Expr));
 
                   Set_Etype (Name (Init_Assignment), Etype (Ret_Obj_Id));
                   Set_Assignment_OK (Name (Init_Assignment));
@@ -5632,6 +5642,13 @@ package body Exp_Ch6 is
       --  Set to encode entity names in package body before gigi is called
 
       Qualify_Entity_Names (N);
+
+      --  If the body belongs to a nonabstract library-level source primitive
+      --  of a tagged type, install an elaboration check which ensures that a
+      --  dispatching call targeting the primitive will not execute the body
+      --  without it being previously elaborated.
+
+      Install_Primitive_Elaboration_Check (N);
    end Expand_N_Subprogram_Body;
 
    -----------------------------------
@@ -7309,6 +7326,8 @@ package body Exp_Ch6 is
    ------------------------------
 
    procedure Insert_Post_Call_Actions (N : Node_Id; Post_Call : List_Id) is
+      Context : constant Node_Id := Parent (N);
+
    begin
       if Is_Empty_List (Post_Call) then
          return;
@@ -7319,7 +7338,7 @@ package body Exp_Ch6 is
       --  call or indexing, i.e. an expression context as well.
 
       if not Is_List_Member (N)
-        or else Nkind_In (Parent (N), N_Function_Call, N_Indexed_Component)
+        or else Nkind_In (Context, N_Function_Call, N_Indexed_Component)
       then
          --  In Ada 2012 the call may be a function call in an expression
          --  (since OUT and IN OUT parameters are now allowed for such calls).
@@ -7395,22 +7414,26 @@ package body Exp_Ch6 is
          --  corresponding statement list.
 
          else
-            declare
-               P : Node_Id;
+            pragma Assert (Nkind_In (Context, N_Entry_Call_Alternative,
+                                              N_Triggering_Alternative));
 
-            begin
-               P := Parent (N);
-               pragma Assert (Nkind_In (P, N_Entry_Call_Alternative,
-                                           N_Triggering_Alternative));
-
-               if Is_Non_Empty_List (Statements (P)) then
-                  Insert_List_Before_And_Analyze
-                    (First (Statements (P)), Post_Call);
-               else
-                  Set_Statements (P, Post_Call);
-               end if;
-            end;
+            if Is_Non_Empty_List (Statements (Context)) then
+               Insert_List_Before_And_Analyze
+                 (First (Statements (Context)), Post_Call);
+            else
+               Set_Statements (Context, Post_Call);
+            end if;
          end if;
+
+      --  A procedure call is always part of a declarative or statement list,
+      --  however a function call may appear nested within a construct. Most
+      --  cases of function call nesting are handled in the special case above.
+      --  The only exception is when the function call acts as an actual in a
+      --  procedure call. In this case the function call is in a list, but the
+      --  post-call actions must be inserted after the procedure call.
+
+      elsif Nkind (Context) = N_Procedure_Call_Statement then
+         Insert_Actions_After (Context, Post_Call);
 
       --  Otherwise, normal case where N is in a statement sequence, just put
       --  the post-call stuff after the call statement.

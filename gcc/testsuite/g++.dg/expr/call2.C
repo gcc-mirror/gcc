@@ -10,5 +10,5 @@ class D;
 bool mm(D); 
  
 void g(C& f) { 
-  mm(f); // { dg-error "parameter" "" }
+  mm(f); // { dg-error "parameter" }
 }

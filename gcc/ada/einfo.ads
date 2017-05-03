@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -625,16 +625,12 @@ package Einfo is
 --       tables must be consulted to determine if there actually is an active
 --       Suppress or Unsuppress pragma that applies to the entity.
 
---    Class_Wide_Preconds (List38)
---       Defined on subprograms. Holds the list of class-wide precondition
---       functions inherited from ancestors. Each such function is an
---       instantiation of the generic function generated from an explicit
---       aspect specification for a class-wide precondition. A type is an
---       ancestor of itself, and therefore a root type has such an instance
---       on its own list.
-
---    Class_Wide_Postconds (List39)
---       Ditto for class-wide postconditions.
+--    Class_Wide_Clone (Node38)
+--       Defined on subprogram entities. Set if the subprogram has a class-wide
+--       ore- or postcondition, and the expression contains calls to other
+--       primitive funtions of the type. Used to implement properly the
+--       semantics of inherited operations whose class-wide condition may
+--       be different from that of the ancestor (See AI012-0195).
 
 --    Class_Wide_Type (Node9)
 --       Defined in all type entities. For a tagged type or subtype, returns
@@ -765,6 +761,14 @@ package Einfo is
 --    Corresponding_Protected_Entry (Node18)
 --       Defined in subprogram bodies. Set for subprogram bodies that implement
 --       a protected type entry to point to the entity for the entry.
+
+--    Corresponding_Record_Component (Node21)
+--       Defined in components of a derived untagged record type, including
+--       discriminants. For a regular component or a girder discriminant,
+--       points to the corresponding component in the parent type. Set to
+--       Empty for a non-girder discriminant. It is used by the back end to
+--       ensure the layout of the derived type matches that of the parent
+--       type when there is no representation clause on the derived type.
 
 --    Corresponding_Record_Type (Node18)
 --       Defined in protected and task types and subtypes. References the
@@ -2360,6 +2364,12 @@ package Einfo is
 --       Defined in all entities. Set only for defining entities of program
 --       units that are child units (but False for subunits).
 
+--    Is_Class_Wide_Clone (Flag290)
+--       Defined on subprogram entities. Set for subprograms built in order
+--       to implement properly the inheritance of class-wide pre- or post-
+--       conditions when the condition contains calls to other primitives
+--       of the ancestor type. Used to implement AI12-0195.
+
 --    Is_Class_Wide_Equivalent_Type (Flag35)
 --       Defined in record types and subtypes. Set to True, if the type acts
 --       as a class-wide equivalent type, i.e. the Equivalent_Type field of
@@ -3701,7 +3711,7 @@ package Einfo is
 
 --    OK_To_Reorder_Components (Flag239) [base type only]
 --       Defined in record types. Set if the backend is permitted to reorder
---       the components. If not set, the record must be layed out in the order
+--       the components. If not set, the record must be laid out in the order
 --       in which the components are declared textually. Currently this flag
 --       can only be set by debug switches.
 
@@ -3791,7 +3801,7 @@ package Einfo is
 --       non-contiguous enumeration index types). References the type used to
 --       represent the packed array, which is either a modular type for short
 --       static arrays or an array of System.Unsigned in the bit-packed case,
---       or a regular array in the non-standard enumeration index case). Note
+--       or a regular array in the non-standard enumeration index case. Note
 --       that in some situations (internal types and references to fields of
 --       variant records), it is not always possible to construct this type in
 --       advance of its use. If this field is empty, then the necessary type
@@ -4163,10 +4173,10 @@ package Einfo is
 --       needed, since returns an invalid value in this case.
 
 --    Sec_Stack_Needed_For_Return (Flag167)
---       Defined in scope entities (blocks, functions, procedures, tasks,
---       entries). Set to True when secondary stack is used to hold the
---       returned value of a function and thus should not be released on
---       scope exit.
+--       Defined in scope entities (blocks, entries, entry families, functions,
+--       and procedures). Set to True when secondary stack is used to hold the
+--       returned value of a function and thus should not be released on scope
+--       exit.
 
 --    Shadow_Entities (List14)
 --       Defined in package and generic package entities. Points to a list
@@ -4522,9 +4532,10 @@ package Einfo is
 --       Protection object (see System.Tasking.Protected_Objects).
 
 --    Uses_Sec_Stack (Flag95)
---       Defined in scope entities (block, entry, function, loop, procedure,
---       task). Set to True when secondary stack is used in this scope and must
---       be released on exit unless Sec_Stack_Needed_For_Return is set.
+--       Defined in scope entities (blocks, entries, entry families, functions,
+--       loops, and procedures). Set to True when the secondary stack is used
+--       in this scope and must be released on exit unless flag
+--       Sec_Stack_Needed_For_Return is set.
 
 --    Validated_Object (Node36)
 --       Defined in variables. Contains the object whose value is captured by
@@ -5812,6 +5823,7 @@ package Einfo is
    --    Prival                              (Node17)
    --    Renamed_Object                      (Node18)   (always Empty)
    --    Discriminant_Checking_Func          (Node20)
+   --    Corresponding_Record_Component      (Node21)
    --    Original_Record_Component           (Node22)
    --    DT_Offset_To_Top_Func               (Node25)
    --    Related_Type                        (Node27)
@@ -5905,6 +5917,7 @@ package Einfo is
    --    Renamed_Object                      (Node18)   (always Empty)
    --    Corresponding_Discriminant          (Node19)
    --    Discriminant_Default_Value          (Node20)
+   --    Corresponding_Record_Component      (Node21)
    --    Original_Record_Component           (Node22)
    --    CR_Discriminant                     (Node23)
    --    Is_Completely_Hidden                (Flag103)
@@ -6044,8 +6057,7 @@ package Einfo is
    --    Linker_Section_Pragma               (Node33)
    --    Contract                            (Node34)
    --    Import_Pragma                       (Node35)   (non-generic case only)
-   --    Class_Wide_Preconds                 (List38)
-   --    Class_Wide_Postconds                (List39)
+   --    Class_Wide_Clone                    (Node38)
    --    SPARK_Pragma                        (Node40)
    --    Original_Protected_Subprogram       (Node41)
    --    Body_Needed_For_SAL                 (Flag40)
@@ -6361,8 +6373,7 @@ package Einfo is
    --    Linker_Section_Pragma               (Node33)
    --    Contract                            (Node34)
    --    Import_Pragma                       (Node35)   (non-generic case only)
-   --    Class_Wide_Preconds                 (List38)
-   --    Class_Wide_Postconds                (List39)
+   --    Class_Wide_Clone                    (Node38)
    --    SPARK_Pragma                        (Node40)
    --    Original_Protected_Subprogram       (Node41)
    --    Body_Needed_For_SAL                 (Flag40)
@@ -6442,11 +6453,9 @@ package Einfo is
    --    SPARK_Pragma                        (Node40)
    --    SPARK_Aux_Pragma                    (Node41)
    --    Ignore_SPARK_Mode_Pragmas           (Flag301)
-   --    Sec_Stack_Needed_For_Return         (Flag167)  ???
    --    SPARK_Aux_Pragma_Inherited          (Flag266)
    --    SPARK_Pragma_Inherited              (Flag265)
    --    Uses_Lock_Free                      (Flag188)
-   --    Uses_Sec_Stack                      (Flag95)   ???
    --    First_Component                     (synth)
    --    First_Component_Or_Discriminant     (synth)
    --    Has_Entries                         (synth)
@@ -6597,10 +6606,8 @@ package Einfo is
    --    Has_Master_Entity                   (Flag21)
    --    Has_Storage_Size_Clause             (Flag23)   (base type only)
    --    Ignore_SPARK_Mode_Pragmas           (Flag301)
-   --    Sec_Stack_Needed_For_Return         (Flag167)  ???
    --    SPARK_Aux_Pragma_Inherited          (Flag266)
    --    SPARK_Pragma_Inherited              (Flag265)
-   --    Uses_Sec_Stack                      (Flag95)   ???
    --    First_Component                     (synth)
    --    First_Component_Or_Discriminant     (synth)
    --    Has_Entries                         (synth)
@@ -6929,8 +6936,7 @@ package Einfo is
    function Can_Never_Be_Null                   (Id : E) return B;
    function Can_Use_Internal_Rep                (Id : E) return B;
    function Checks_May_Be_Suppressed            (Id : E) return B;
-   function Class_Wide_Postconds                (Id : E) return S;
-   function Class_Wide_Preconds                 (Id : E) return S;
+   function Class_Wide_Clone                     (Id : E) return E;
    function Class_Wide_Type                     (Id : E) return E;
    function Cloned_Subtype                      (Id : E) return E;
    function Component_Alignment                 (Id : E) return C;
@@ -6947,6 +6953,7 @@ package Einfo is
    function Corresponding_Function              (Id : E) return E;
    function Corresponding_Procedure             (Id : E) return E;
    function Corresponding_Protected_Entry       (Id : E) return E;
+   function Corresponding_Record_Component      (Id : E) return E;
    function Corresponding_Record_Type           (Id : E) return E;
    function Corresponding_Remote_Type           (Id : E) return E;
    function CR_Discriminant                     (Id : E) return E;
@@ -7146,6 +7153,7 @@ package Einfo is
    function Is_Character_Type                   (Id : E) return B;
    function Is_Checked_Ghost_Entity             (Id : E) return B;
    function Is_Child_Unit                       (Id : E) return B;
+   function Is_Class_Wide_Clone                 (Id : E) return B;
    function Is_Class_Wide_Equivalent_Type       (Id : E) return B;
    function Is_Compilation_Unit                 (Id : E) return B;
    function Is_Completely_Hidden                (Id : E) return B;
@@ -7618,8 +7626,7 @@ package Einfo is
    procedure Set_Can_Never_Be_Null               (Id : E; V : B := True);
    procedure Set_Can_Use_Internal_Rep            (Id : E; V : B := True);
    procedure Set_Checks_May_Be_Suppressed        (Id : E; V : B := True);
-   procedure Set_Class_Wide_Postconds            (Id : E; V : S);
-   procedure Set_Class_Wide_Preconds             (Id : E; V : S);
+   procedure Set_Class_Wide_Clone                (Id : E; V : E);
    procedure Set_Class_Wide_Type                 (Id : E; V : E);
    procedure Set_Cloned_Subtype                  (Id : E; V : E);
    procedure Set_Component_Alignment             (Id : E; V : C);
@@ -7636,6 +7643,7 @@ package Einfo is
    procedure Set_Corresponding_Function          (Id : E; V : E);
    procedure Set_Corresponding_Procedure         (Id : E; V : E);
    procedure Set_Corresponding_Protected_Entry   (Id : E; V : E);
+   procedure Set_Corresponding_Record_Component  (Id : E; V : E);
    procedure Set_Corresponding_Record_Type       (Id : E; V : E);
    procedure Set_Corresponding_Remote_Type       (Id : E; V : E);
    procedure Set_CR_Discriminant                 (Id : E; V : E);
@@ -7831,6 +7839,7 @@ package Einfo is
    procedure Set_Is_Character_Type               (Id : E; V : B := True);
    procedure Set_Is_Checked_Ghost_Entity         (Id : E; V : B := True);
    procedure Set_Is_Child_Unit                   (Id : E; V : B := True);
+   procedure Set_Is_Class_Wide_Clone             (Id : E; V : B := True);
    procedure Set_Is_Class_Wide_Equivalent_Type   (Id : E; V : B := True);
    procedure Set_Is_Compilation_Unit             (Id : E; V : B := True);
    procedure Set_Is_Completely_Hidden            (Id : E; V : B := True);
@@ -8424,8 +8433,7 @@ package Einfo is
    pragma Inline (Can_Never_Be_Null);
    pragma Inline (Can_Use_Internal_Rep);
    pragma Inline (Checks_May_Be_Suppressed);
-   pragma Inline (Class_Wide_Preconds);
-   pragma Inline (Class_Wide_Postconds);
+   pragma Inline (Class_Wide_Clone);
    pragma Inline (Class_Wide_Type);
    pragma Inline (Cloned_Subtype);
    pragma Inline (Component_Bit_Offset);
@@ -8439,6 +8447,7 @@ package Einfo is
    pragma Inline (Corresponding_Discriminant);
    pragma Inline (Corresponding_Equality);
    pragma Inline (Corresponding_Protected_Entry);
+   pragma Inline (Corresponding_Record_Component);
    pragma Inline (Corresponding_Record_Type);
    pragma Inline (Corresponding_Remote_Type);
    pragma Inline (CR_Discriminant);
@@ -8637,6 +8646,7 @@ package Einfo is
    pragma Inline (Is_Character_Type);
    pragma Inline (Is_Checked_Ghost_Entity);
    pragma Inline (Is_Child_Unit);
+   pragma Inline (Is_Class_Wide_Clone);
    pragma Inline (Is_Class_Wide_Equivalent_Type);
    pragma Inline (Is_Class_Wide_Type);
    pragma Inline (Is_Compilation_Unit);
@@ -8949,8 +8959,7 @@ package Einfo is
    pragma Inline (Set_Can_Never_Be_Null);
    pragma Inline (Set_Can_Use_Internal_Rep);
    pragma Inline (Set_Checks_May_Be_Suppressed);
-   pragma Inline (Set_Class_Wide_Postconds);
-   pragma Inline (Set_Class_Wide_Preconds);
+   pragma Inline (Set_Class_Wide_Clone);
    pragma Inline (Set_Class_Wide_Type);
    pragma Inline (Set_Cloned_Subtype);
    pragma Inline (Set_Component_Bit_Offset);
@@ -8964,6 +8973,7 @@ package Einfo is
    pragma Inline (Set_Corresponding_Discriminant);
    pragma Inline (Set_Corresponding_Equality);
    pragma Inline (Set_Corresponding_Protected_Entry);
+   pragma Inline (Set_Corresponding_Record_Component);
    pragma Inline (Set_Corresponding_Record_Type);
    pragma Inline (Set_Corresponding_Remote_Type);
    pragma Inline (Set_CR_Discriminant);
@@ -9153,6 +9163,7 @@ package Einfo is
    pragma Inline (Set_Is_Character_Type);
    pragma Inline (Set_Is_Checked_Ghost_Entity);
    pragma Inline (Set_Is_Child_Unit);
+   pragma Inline (Set_Is_Class_Wide_Clone);
    pragma Inline (Set_Is_Class_Wide_Equivalent_Type);
    pragma Inline (Set_Is_Compilation_Unit);
    pragma Inline (Set_Is_Completely_Hidden);

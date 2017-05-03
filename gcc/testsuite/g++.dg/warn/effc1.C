@@ -10,7 +10,7 @@ class A
 {
   public:
   A & operator+=( int );
-  A & operator+( int ); // { dg-warning ".* should return by value" "" }
+  A & operator+( int ); // { dg-warning ".* should return by value" }
   A operator+=( float );
   A operator+( float );
 };

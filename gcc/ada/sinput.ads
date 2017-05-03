@@ -494,7 +494,7 @@ package Sinput is
    --  NEL code. Now such programs can of course be compiled in UTF-8 mode,
    --  but in practice they also compile fine in standard 8-bit mode without
    --  specifying a character encoding. Since this is common practice, it would
-   --  be a signficant upwards incompatibility to recognize NEL in 8-bit mode.
+   --  be a significant upwards incompatibility to recognize NEL in 8-bit mode.
 
    -----------------
    -- Subprograms --
@@ -936,7 +936,7 @@ private
    type Dope_Rec is record
       First, Last : Source_Ptr'Base;
    end record;
-   Dope_Rec_Size : constant := 2 * Source_Ptr'Size;
+   Dope_Rec_Size : constant := 2 * Source_Ptr'Base'Size;
    for Dope_Rec'Size use Dope_Rec_Size;
    for Dope_Rec'Alignment use Dope_Rec_Size / 8;
    type Dope_Ptr is access all Dope_Rec;

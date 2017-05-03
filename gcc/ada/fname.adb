@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -99,21 +99,14 @@ package body Fname is
       return False;
    end Has_Prefix;
 
-   ---------------------------
-   -- Is_Internal_File_Name --
-   ---------------------------
+   -----------------------
+   -- Is_GNAT_File_Name --
+   -----------------------
 
-   function Is_Internal_File_Name
-     (Fname              : String;
-      Renamings_Included : Boolean := True) return Boolean
-   is
+   function Is_GNAT_File_Name (Fname : String) return Boolean is
    begin
-      if Is_Predefined_File_Name (Fname, Renamings_Included) then
-         return True;
-      end if;
-
-      --  Check for internal extensions first, so we don't think (e.g.)
-      --  "gnat.adc" is internal.
+      --  Check for internal extensions before checking prefixes, so we don't
+      --  think (e.g.) "gnat.adc" is internal.
 
       if not Has_Internal_Extension (Fname) then
          return False;
@@ -128,6 +121,29 @@ package body Fname is
       --  See the note in Is_Predefined_File_Name for the rationale
 
       return Fname'Length = 8 and then Has_Prefix (Fname, "gnat");
+   end Is_GNAT_File_Name;
+
+   function Is_GNAT_File_Name (Fname : File_Name_Type) return Boolean is
+      Result : constant Boolean :=
+                 Is_GNAT_File_Name (Get_Name_String (Fname));
+   begin
+      return Result;
+   end Is_GNAT_File_Name;
+
+   ---------------------------
+   -- Is_Internal_File_Name --
+   ---------------------------
+
+   function Is_Internal_File_Name
+     (Fname              : String;
+      Renamings_Included : Boolean := True) return Boolean
+   is
+   begin
+      if Is_Predefined_File_Name (Fname, Renamings_Included) then
+         return True;
+      end if;
+
+      return Is_GNAT_File_Name (Fname);
    end Is_Internal_File_Name;
 
    function Is_Internal_File_Name
@@ -149,27 +165,13 @@ package body Fname is
      (Fname              : String;
       Renamings_Included : Boolean := True) return Boolean
    is
-      subtype Str8 is String (1 .. 8);
-
-      Renaming_Names : constant array (1 .. 8) of Str8 :=
-        ("calendar",   --  Calendar
-         "machcode",   --  Machine_Code
-         "unchconv",   --  Unchecked_Conversion
-         "unchdeal",   --  Unchecked_Deallocation
-         "directio",   --  Direct_IO
-         "ioexcept",   --  IO_Exceptions
-         "sequenio",   --  Sequential_IO
-         "text_io.");  --  Text_IO
-
-      --  Note: the implementation is optimized to perform uniform comparisons
-      --  on string slices whose length is known at compile time and is a small
-      --  power of 2 (at most 8 characters); the remaining calls to Has_Prefix
-      --  must be inlined to expose the compile-time known length. There must
-      --  be no calls to the fallback string comparison routine (e.g. memcmp)
-      --  left in the object code for the function; this can save up to 10% of
-      --  the entire compilation time spent in the front end.
-
    begin
+      --  Definitely false if longer than 12 characters (8.3)
+
+      if Fname'Length > 12 then
+         return False;
+      end if;
+
       if not Has_Internal_Extension (Fname) then
          return False;
       end if;
@@ -186,12 +188,6 @@ package body Fname is
          end;
       end if;
 
-      --  Definitely false if longer than 12 characters (8.3)
-
-      if Fname'Length > 12 then
-         return False;
-      end if;
-
       --  We include the "." in the prefixes below, so we don't match (e.g.)
       --  adamant.ads. So the first line matches "ada.ads", "ada.adb", and
       --  "ada.ali". But that's not necessary if they have 8 characters.
@@ -205,16 +201,10 @@ package body Fname is
 
       --  If instructed and the name has 8+ characters, check for renamings
 
-      if Renamings_Included and then Fname'Length >= 8 then
-         declare
-            S : String renames Fname (Fname'First .. Fname'First + 7);
-         begin
-            for J in Renaming_Names'Range loop
-               if S = Renaming_Names (J) then
-                  return True;
-               end if;
-            end loop;
-         end;
+      if Renamings_Included
+        and then Is_Predefined_Renaming_File_Name (Fname)
+      then
+         return True;
       end if;
 
       return False;
@@ -230,6 +220,50 @@ package body Fname is
    begin
       return Result;
    end Is_Predefined_File_Name;
+
+   --------------------------------------
+   -- Is_Predefined_Renaming_File_Name --
+   --------------------------------------
+
+   function Is_Predefined_Renaming_File_Name
+     (Fname : String) return Boolean
+   is
+      subtype Str8 is String (1 .. 8);
+
+      Renaming_Names : constant array (1 .. 8) of Str8 :=
+        ("calendar",   --  Calendar
+         "machcode",   --  Machine_Code
+         "unchconv",   --  Unchecked_Conversion
+         "unchdeal",   --  Unchecked_Deallocation
+         "directio",   --  Direct_IO
+         "ioexcept",   --  IO_Exceptions
+         "sequenio",   --  Sequential_IO
+         "text_io.");  --  Text_IO
+   begin
+      --  Definitely false if longer than 12 characters (8.3)
+
+      if Fname'Length in 8 .. 12 then
+         declare
+            S : String renames Fname (Fname'First .. Fname'First + 7);
+         begin
+            for J in Renaming_Names'Range loop
+               if S = Renaming_Names (J) then
+                  return True;
+               end if;
+            end loop;
+         end;
+      end if;
+
+      return False;
+   end Is_Predefined_Renaming_File_Name;
+
+   function Is_Predefined_Renaming_File_Name
+     (Fname : File_Name_Type) return Boolean is
+      Result : constant Boolean :=
+                 Is_Predefined_Renaming_File_Name (Get_Name_String (Fname));
+   begin
+      return Result;
+   end Is_Predefined_Renaming_File_Name;
 
    ---------------
    -- Tree_Read --

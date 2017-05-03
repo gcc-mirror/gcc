@@ -2507,8 +2507,6 @@ ggc_pch_finish (struct ggc_pch_data *d, FILE *f)
 static void
 move_ptes_to_front (int count_old_page_tables, int count_new_page_tables)
 {
-  unsigned i;
-
   /* First, we swap the new entries to the front of the varrays.  */
   page_entry **new_by_depth;
   unsigned long **new_save_in_use;
@@ -2536,10 +2534,10 @@ move_ptes_to_front (int count_old_page_tables, int count_new_page_tables)
   G.save_in_use = new_save_in_use;
 
   /* Now update all the index_by_depth fields.  */
-  for (i = G.by_depth_in_use; i > 0; --i)
+  for (unsigned i = G.by_depth_in_use; i--;)
     {
-      page_entry *p = G.by_depth[i-1];
-      p->index_by_depth = i-1;
+      page_entry *p = G.by_depth[i];
+      p->index_by_depth = i;
     }
 
   /* And last, we update the depth pointers in G.depth.  The first

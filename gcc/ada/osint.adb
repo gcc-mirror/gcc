@@ -1550,6 +1550,10 @@ package body Osint is
          begin
             Get_Current_Dir (Buffer'Address, Path_Len'Address);
 
+            if Path_Len = 0 then
+               raise Program_Error;
+            end if;
+
             if Buffer (Path_Len) /= Directory_Separator then
                Path_Len := Path_Len + 1;
                Buffer (Path_Len) := Directory_Separator;
@@ -2308,7 +2312,7 @@ package body Osint is
 
       --  Read the file. Note that the loop is probably not necessary since the
       --  whole file is read at once but the loop is harmless and that way we
-      --  are sure to accomodate systems where this is not the case.
+      --  are sure to accommodate systems where this is not the case.
 
       Curr := 1;
       Actual_Len := Len;

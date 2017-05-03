@@ -32,7 +32,6 @@
 with Alloc;
 with Hostparm; use Hostparm;
 with Table;
-with System;   use System;
 with Types;    use Types;
 
 package Namet is
@@ -563,13 +562,6 @@ package Namet is
    procedure Write_Name_Decoded (Id : Name_Id);
    --  Like Write_Name, except that the name written is the decoded name, as
    --  described for Append_Decoded.
-
-   function Name_Chars_Address return System.Address;
-   --  Return starting address of name characters table (used in Back_End call
-   --  to Gigi).
-
-   function Name_Entries_Address return System.Address;
-   --  Return starting address of Names table (used in Back_End call to Gigi)
 
    function Name_Entries_Count return Nat;
    --  Return current number of entries in the names table

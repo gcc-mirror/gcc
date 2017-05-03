@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -37,7 +37,6 @@ with Exp_Ch7;  use Exp_Ch7;
 with Exp_Ch9;  use Exp_Ch9;
 with Exp_Disp; use Exp_Disp;
 with Exp_Tss;  use Exp_Tss;
-with Fname;    use Fname;
 with Freeze;   use Freeze;
 with Itypes;   use Itypes;
 with Lib;      use Lib;
@@ -3042,15 +3041,7 @@ package body Exp_Aggr is
            and then Root_Type (Etype (N)) = Root_Type (Entity (Prefix (Expr)))
          then
             if Is_Entity_Name (Lhs) then
-               Rewrite (Prefix (Expr),
-                 New_Occurrence_Of (Entity (Lhs), Loc));
-
-            elsif Nkind (Lhs) = N_Selected_Component then
-               Rewrite (Expr,
-                 Make_Attribute_Reference (Loc,
-                   Attribute_Name => Name_Unrestricted_Access,
-                   Prefix         => New_Copy_Tree (Lhs)));
-               Set_Analyzed (Parent (Expr), False);
+               Rewrite (Prefix (Expr), New_Occurrence_Of (Entity (Lhs), Loc));
 
             else
                Rewrite (Expr,
@@ -4540,8 +4531,7 @@ package body Exp_Aggr is
                                           and then
                                             Is_Preelaborated (Spec_Entity (P)))
                                 or else
-                                  Is_Predefined_File_Name
-                                    (Unit_File_Name (Get_Source_Unit (P)))
+                                  Is_Predefined_Unit (Get_Source_Unit (P))
                               then
                                  null;
 

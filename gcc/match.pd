@@ -1042,6 +1042,54 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (if (wi::gt_p(@2, 0, TYPE_SIGN (TREE_TYPE (@2))))
    (cmp @0 @1))))
 
+/* X + Z < Y + Z is the same as X < Y when there is no overflow.  */
+(for op (lt le ge gt)
+ (simplify
+  (op (plus:c @0 @2) (plus:c @1 @2))
+  (if (ANY_INTEGRAL_TYPE_P (TREE_TYPE (@0))
+       && TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (@0)))
+   (op @0 @1))))
+/* For equality and subtraction, this is also true with wrapping overflow.  */
+(for op (eq ne minus)
+ (simplify
+  (op (plus:c @0 @2) (plus:c @1 @2))
+  (if (ANY_INTEGRAL_TYPE_P (TREE_TYPE (@0))
+       && (TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (@0))
+	   || TYPE_OVERFLOW_WRAPS (TREE_TYPE (@0))))
+   (op @0 @1))))
+
+/* X - Z < Y - Z is the same as X < Y when there is no overflow.  */
+(for op (lt le ge gt)
+ (simplify
+  (op (minus @0 @2) (minus @1 @2))
+  (if (ANY_INTEGRAL_TYPE_P (TREE_TYPE (@0))
+       && TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (@0)))
+   (op @0 @1))))
+/* For equality and subtraction, this is also true with wrapping overflow.  */
+(for op (eq ne minus)
+ (simplify
+  (op (minus @0 @2) (minus @1 @2))
+  (if (ANY_INTEGRAL_TYPE_P (TREE_TYPE (@0))
+       && (TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (@0))
+	   || TYPE_OVERFLOW_WRAPS (TREE_TYPE (@0))))
+   (op @0 @1))))
+
+/* Z - X < Z - Y is the same as Y < X when there is no overflow.  */
+(for op (lt le ge gt)
+ (simplify
+  (op (minus @2 @0) (minus @2 @1))
+  (if (ANY_INTEGRAL_TYPE_P (TREE_TYPE (@0))
+       && TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (@0)))
+   (op @1 @0))))
+/* For equality and subtraction, this is also true with wrapping overflow.  */
+(for op (eq ne minus)
+ (simplify
+  (op (minus @2 @0) (minus @2 @1))
+  (if (ANY_INTEGRAL_TYPE_P (TREE_TYPE (@0))
+       && (TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (@0))
+	   || TYPE_OVERFLOW_WRAPS (TREE_TYPE (@0))))
+   (op @1 @0))))
+
 /* ((X inner_op C0) outer_op C1)
    With X being a tree where value_range has reasoned certain bits to always be
    zero throughout its computed value range,

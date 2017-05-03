@@ -12,14 +12,14 @@ f (void)
   ;
 
 #pragma acc host_data use_device(v2)
+  /* { dg-error ".use_device_ptr. variable is neither a pointer nor an array" "" { target c } .-1 } */
+  /* { dg-error ".use_device_ptr. variable is neither a pointer, nor an array nor reference to pointer or array" "" { target c++ } .-2 } */
   ;
-  /* { dg-error ".use_device_ptr. variable is neither a pointer nor an array" "" { target c } 14 } */
-  /* { dg-error ".use_device_ptr. variable is neither a pointer, nor an array nor reference to pointer or array" "" { target c++ } 14 } */
   
 #pragma acc host_data use_device(v0)
+  /* { dg-error ".use_device_ptr. variable is neither a pointer nor an array" "" { target c } .-1 } */
+  /* { dg-error ".use_device_ptr. variable is neither a pointer, nor an array nor reference to pointer or array" "" { target c++ } .-2 } */
   ;
-  /* { dg-error ".use_device_ptr. variable is neither a pointer nor an array" "" { target c } 19 } */
-  /* { dg-error ".use_device_ptr. variable is neither a pointer, nor an array nor reference to pointer or array" "" { target c++ } 19 } */
 }
 
 

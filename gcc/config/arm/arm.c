@@ -28236,17 +28236,32 @@ arm_expand_compare_and_swap (rtx operands[])
       gcc_unreachable ();
     }
 
-  switch (mode)
+  if (TARGET_THUMB1)
     {
-    case QImode: gen = gen_atomic_compare_and_swapqi_1; break;
-    case HImode: gen = gen_atomic_compare_and_swaphi_1; break;
-    case SImode: gen = gen_atomic_compare_and_swapsi_1; break;
-    case DImode: gen = gen_atomic_compare_and_swapdi_1; break;
-    default:
-      gcc_unreachable ();
+      switch (mode)
+	{
+	case QImode: gen = gen_atomic_compare_and_swapt1qi_1; break;
+	case HImode: gen = gen_atomic_compare_and_swapt1hi_1; break;
+	case SImode: gen = gen_atomic_compare_and_swapt1si_1; break;
+	case DImode: gen = gen_atomic_compare_and_swapt1di_1; break;
+	default:
+	  gcc_unreachable ();
+	}
+    }
+  else
+    {
+      switch (mode)
+	{
+	case QImode: gen = gen_atomic_compare_and_swap32qi_1; break;
+	case HImode: gen = gen_atomic_compare_and_swap32hi_1; break;
+	case SImode: gen = gen_atomic_compare_and_swap32si_1; break;
+	case DImode: gen = gen_atomic_compare_and_swap32di_1; break;
+	default:
+	  gcc_unreachable ();
+	}
     }
 
-  bdst = TARGET_THUMB1 ? bval : gen_rtx_REG (CCmode, CC_REGNUM);
+  bdst = TARGET_THUMB1 ? bval : gen_rtx_REG (CC_Zmode, CC_REGNUM);
   emit_insn (gen (bdst, rval, mem, oldval, newval, is_weak, mod_s, mod_f));
 
   if (mode == QImode || mode == HImode)

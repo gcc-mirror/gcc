@@ -1,5 +1,7 @@
 2017-05-03  Nathan Sidwell  <nathan@acm.org>
 
+	Merge trunk r247550.
+
 	Namespace partitions.
 	gcc/cp/
 	* cp-tree.h (MODULES_PER_BINDING_CLUSTER): Delete.

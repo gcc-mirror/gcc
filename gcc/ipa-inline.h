@@ -103,13 +103,16 @@ struct GTY(()) predicate
    context.  We keep simple array of record, every containing of predicate
    and time/size to account.
 
-   We keep values scaled up, so fractional sizes and times can be
-   accounted.  */
+   We keep values scaled up, so fractional sizes can be accounted.  */
 #define INLINE_SIZE_SCALE 2
-#define INLINE_TIME_SCALE (CGRAPH_FREQ_BASE * 2)
 struct GTY(()) size_time_entry
 {
-  struct predicate predicate;
+  /* Predicate for code to be executed.  */
+  struct predicate exec_predicate;
+  /* Predicate for value to be constant and optimized out in a specialized copy.
+     When deciding on specialization this makes it possible to see how much
+     the executed code paths will simplify.  */
+  struct predicate nonconst_predicate;
   int size;
   sreal GTY((skip)) time;
 };
@@ -230,9 +233,12 @@ struct inline_edge_summary
 typedef struct inline_edge_summary inline_edge_summary_t;
 extern vec<inline_edge_summary_t> inline_edge_summary_vec;
 
+/* Data we cache about callgraph edges during inlining to avoid expensive
+   re-computations during the greedy algorithm.  */
 struct edge_growth_cache_entry
 {
-  int time, size;
+  sreal time, nonspec_time;
+  int size;
   inline_hints hints;
 };
 
@@ -249,19 +255,18 @@ void inline_write_summary (void);
 void inline_free_summary (void);
 void inline_analyze_function (struct cgraph_node *node);
 void initialize_inline_failed (struct cgraph_edge *);
-int estimate_time_after_inlining (struct cgraph_node *, struct cgraph_edge *);
 int estimate_size_after_inlining (struct cgraph_node *, struct cgraph_edge *);
 void estimate_ipcp_clone_size_and_time (struct cgraph_node *,
 					vec<tree>,
 					vec<ipa_polymorphic_call_context>,
 					vec<ipa_agg_jump_function_p>,
-					int *, int *, inline_hints *);
+					int *, sreal *, inline_hints *);
 int estimate_growth (struct cgraph_node *);
 bool growth_likely_positive (struct cgraph_node *, int);
 void inline_merge_summary (struct cgraph_edge *edge);
 void inline_update_overall_summary (struct cgraph_node *node);
 int do_estimate_edge_size (struct cgraph_edge *edge);
-int do_estimate_edge_time (struct cgraph_edge *edge);
+sreal do_estimate_edge_time (struct cgraph_edge *edge);
 inline_hints do_estimate_edge_hints (struct cgraph_edge *edge);
 void initialize_growth_caches (void);
 void free_growth_caches (void);
@@ -314,14 +319,16 @@ estimate_edge_growth (struct cgraph_edge *edge)
 /* Return estimated callee runtime increase after inlining
    EDGE.  */
 
-static inline int
-estimate_edge_time (struct cgraph_edge *edge)
+static inline sreal
+estimate_edge_time (struct cgraph_edge *edge, sreal *nonspec_time = NULL)
 {
-  int ret;
+  sreal ret;
   if ((int)edge_growth_cache.length () <= edge->uid
-      || !(ret =  edge_growth_cache[edge->uid].time))
+      || !edge_growth_cache[edge->uid].size)
     return do_estimate_edge_time (edge);
-  return ret - (ret > 0);
+  if (nonspec_time)
+    *nonspec_time = edge_growth_cache[edge->uid].nonspec_time;
+  return edge_growth_cache[edge->uid].time;
 }
 
 
@@ -345,7 +352,7 @@ reset_edge_growth_cache (struct cgraph_edge *edge)
 {
   if ((int)edge_growth_cache.length () > edge->uid)
     {
-      struct edge_growth_cache_entry zero = {0, 0, 0};
+      struct edge_growth_cache_entry zero = {0, 0, 0, 0};
       edge_growth_cache[edge->uid] = zero;
     }
 }

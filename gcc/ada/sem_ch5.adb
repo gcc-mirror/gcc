@@ -107,7 +107,7 @@ package body Sem_Ch5 is
       T1   : Entity_Id;
       T2   : Entity_Id;
 
-      Save_Full_Analysis : Boolean;
+      Save_Full_Analysis : Boolean := False;  -- initialize to prevent warning
 
       procedure Diagnose_Non_Variable_Lhs (N : Node_Id);
       --  N is the node for the left hand side of an assignment, and it is not
@@ -1387,7 +1387,7 @@ package body Sem_Ch5 is
    procedure Analyze_Exit_Statement (N : Node_Id) is
       Target   : constant Node_Id := Name (N);
       Cond     : constant Node_Id := Condition (N);
-      Scope_Id : Entity_Id;
+      Scope_Id : Entity_Id := Empty;  -- initialize to prevent warning
       U_Name   : Entity_Id;
       Kind     : Entity_Kind;
 
@@ -1864,7 +1864,7 @@ package body Sem_Ch5 is
       Loc       : constant Source_Ptr := Sloc (N);
       Subt      : constant Node_Id    := Subtype_Indication (N);
 
-      Bas : Entity_Id;
+      Bas : Entity_Id := Empty;  -- initialize to prevent warning
       Typ : Entity_Id;
 
    --   Start of processing for Analyze_Iterator_Specification

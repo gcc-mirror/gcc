@@ -592,6 +592,14 @@ struct switch_conv_info
      dump file, if there is one.  */
   const char *reason;
 
+  /* True if default case is not used for any value between range_min and
+     range_max inclusive.  */
+  bool contiguous_range;
+
+  /* True if default case does not have the required shape for other case
+     labels.  */
+  bool default_case_nonstandard;
+
   /* Parameters for expand_switch_using_bit_tests.  Should be computed
      the same way as in expand_case.  */
   unsigned int uniq;
@@ -606,8 +614,9 @@ collect_switch_conv_info (gswitch *swtch, struct switch_conv_info *info)
   unsigned int branch_num = gimple_switch_num_labels (swtch);
   tree min_case, max_case;
   unsigned int count, i;
-  edge e, e_default;
+  edge e, e_default, e_first;
   edge_iterator ei;
+  basic_block first;
 
   memset (info, 0, sizeof (*info));
 
@@ -616,40 +625,14 @@ collect_switch_conv_info (gswitch *swtch, struct switch_conv_info *info)
      Collect the bits we can deduce from the CFG.  */
   info->index_expr = gimple_switch_index (swtch);
   info->switch_bb = gimple_bb (swtch);
-  info->default_bb =
-    label_to_block (CASE_LABEL (gimple_switch_default_label (swtch)));
+  info->default_bb
+    = label_to_block (CASE_LABEL (gimple_switch_default_label (swtch)));
   e_default = find_edge (info->switch_bb, info->default_bb);
   info->default_prob = e_default->probability;
   info->default_count = e_default->count;
   FOR_EACH_EDGE (e, ei, info->switch_bb->succs)
     if (e != e_default)
       info->other_count += e->count;
-
-  /* See if there is one common successor block for all branch
-     targets.  If it exists, record it in FINAL_BB.
-     Start with the destination of the default case as guess
-     or its destination in case it is a forwarder block.  */
-  if (! single_pred_p (e_default->dest))
-    info->final_bb = e_default->dest;
-  else if (single_succ_p (e_default->dest)
-	   && ! single_pred_p (single_succ (e_default->dest)))
-    info->final_bb = single_succ (e_default->dest);
-  /* Require that all switch destinations are either that common
-     FINAL_BB or a forwarder to it.  */
-  if (info->final_bb)
-    FOR_EACH_EDGE (e, ei, info->switch_bb->succs)
-      {
-	if (e->dest == info->final_bb)
-	  continue;
-
-	if (single_pred_p (e->dest)
-	    && single_succ_p (e->dest)
-	    && single_succ (e->dest) == info->final_bb)
-	  continue;
-
-	info->final_bb = NULL;
-	break;
-      }
 
   /* Get upper and lower bounds of case values, and the covered range.  */
   min_case = gimple_switch_label (swtch, 1);
@@ -661,8 +644,67 @@ collect_switch_conv_info (gswitch *swtch, struct switch_conv_info *info)
   else
     info->range_max = CASE_LOW (max_case);
 
-  info->range_size =
-    int_const_binop (MINUS_EXPR, info->range_max, info->range_min);
+  info->contiguous_range = true;
+  tree last = CASE_HIGH (min_case) ? CASE_HIGH (min_case) : info->range_min;
+  for (i = 2; i < branch_num; i++)
+    {
+      tree elt = gimple_switch_label (swtch, i);
+      wide_int w = last;
+      if (w + 1 != CASE_LOW (elt))
+	{
+	  info->contiguous_range = false;
+	  break;
+	}
+      last = CASE_HIGH (elt) ? CASE_HIGH (elt) : CASE_LOW (elt);
+    }
+
+  if (info->contiguous_range)
+    {
+      first = label_to_block (CASE_LABEL (gimple_switch_label (swtch, 1)));
+      e_first = find_edge (info->switch_bb, first);
+    }
+  else
+    {
+      first = info->default_bb;
+      e_first = e_default;
+    }
+
+  /* See if there is one common successor block for all branch
+     targets.  If it exists, record it in FINAL_BB.
+     Start with the destination of the first non-default case
+     if the range is contiguous and default case otherwise as
+     guess or its destination in case it is a forwarder block.  */
+  if (! single_pred_p (e_first->dest))
+    info->final_bb = e_first->dest;
+  else if (single_succ_p (e_first->dest)
+	   && ! single_pred_p (single_succ (e_first->dest)))
+    info->final_bb = single_succ (e_first->dest);
+  /* Require that all switch destinations are either that common
+     FINAL_BB or a forwarder to it, except for the default
+     case if contiguous range.  */
+  if (info->final_bb)
+    FOR_EACH_EDGE (e, ei, info->switch_bb->succs)
+      {
+	if (e->dest == info->final_bb)
+	  continue;
+
+	if (single_pred_p (e->dest)
+	    && single_succ_p (e->dest)
+	    && single_succ (e->dest) == info->final_bb)
+	  continue;
+
+	if (e == e_default && info->contiguous_range)
+	  {
+	    info->default_case_nonstandard = true;
+	    continue;
+	  }
+
+	info->final_bb = NULL;
+	break;
+      }
+
+  info->range_size
+    = int_const_binop (MINUS_EXPR, info->range_max, info->range_min);
 
   /* Get a count of the number of case labels.  Single-valued case labels
      simply count as one, but a case range counts double, since it may
@@ -713,7 +755,7 @@ check_range (struct switch_conv_info *info)
 static bool
 check_all_empty_except_final (struct switch_conv_info *info)
 {
-  edge e;
+  edge e, e_default = find_edge (info->switch_bb, info->default_bb);
   edge_iterator ei;
 
   FOR_EACH_EDGE (e, ei, info->switch_bb->succs)
@@ -723,6 +765,12 @@ check_all_empty_except_final (struct switch_conv_info *info)
 
       if (!empty_block_p (e->dest))
 	{
+	  if (info->contiguous_range && e == e_default)
+	    {
+	      info->default_case_nonstandard = true;
+	      continue;
+	    }
+
 	  info->reason = "bad case - a non-final BB not empty";
 	  return false;
 	}
@@ -737,7 +785,7 @@ check_all_empty_except_final (struct switch_conv_info *info)
    phi nodes are OK, otherwise false.  */
 
 static bool
-check_final_bb (struct switch_conv_info *info)
+check_final_bb (gswitch *swtch, struct switch_conv_info *info)
 {
   gphi_iterator gsi;
 
@@ -747,6 +795,9 @@ check_final_bb (struct switch_conv_info *info)
       gphi *phi = gsi.phi ();
       unsigned int i;
 
+      if (virtual_operand_p (gimple_phi_result (phi)))
+	continue;
+
       info->phi_count++;
 
       for (i = 0; i < gimple_phi_num_args (phi); i++)
@@ -754,27 +805,55 @@ check_final_bb (struct switch_conv_info *info)
 	  basic_block bb = gimple_phi_arg_edge (phi, i)->src;
 
 	  if (bb == info->switch_bb
-	      || (single_pred_p (bb) && single_pred (bb) == info->switch_bb))
+	      || (single_pred_p (bb)
+		  && single_pred (bb) == info->switch_bb
+		  && (!info->default_case_nonstandard
+		      || empty_block_p (bb))))
 	    {
 	      tree reloc, val;
+	      const char *reason = NULL;
 
 	      val = gimple_phi_arg_def (phi, i);
 	      if (!is_gimple_ip_invariant (val))
+		reason = "non-invariant value from a case";
+	      else
 		{
-		  info->reason = "non-invariant value from a case";
-		  return false; /* Non-invariant argument.  */
+		  reloc = initializer_constant_valid_p (val, TREE_TYPE (val));
+		  if ((flag_pic && reloc != null_pointer_node)
+		      || (!flag_pic && reloc == NULL_TREE))
+		    {
+		      if (reloc)
+			reason
+			  = "value from a case would need runtime relocations";
+		      else
+			reason
+			  = "value from a case is not a valid initializer";
+		    }
 		}
-	      reloc = initializer_constant_valid_p (val, TREE_TYPE (val));
-	      if ((flag_pic && reloc != null_pointer_node)
-		  || (!flag_pic && reloc == NULL_TREE))
+	      if (reason)
 		{
-		  if (reloc)
-		    info->reason
-		      = "value from a case would need runtime relocations";
-		  else
-		    info->reason
-		      = "value from a case is not a valid initializer";
-		  return false;
+		  /* For contiguous range, we can allow non-constant
+		     or one that needs relocation, as long as it is
+		     only reachable from the default case.  */
+		  if (bb == info->switch_bb)
+		    bb = info->final_bb;
+		  if (!info->contiguous_range || bb != info->default_bb)
+		    {
+		      info->reason = reason;
+		      return false;
+		    }
+
+		  unsigned int branch_num = gimple_switch_num_labels (swtch);
+		  for (unsigned int i = 1; i < branch_num; i++)
+		    {
+		      tree lab = CASE_LABEL (gimple_switch_label (swtch, i));
+		      if (label_to_block (lab) == bb)
+			{
+			  info->reason = reason;
+			  return false;
+			}
+		    }
+		  info->default_case_nonstandard = true;
 		}
 	    }
 	}
@@ -815,7 +894,9 @@ free_temp_arrays (struct switch_conv_info *info)
 }
 
 /* Populate the array of default values in the order of phi nodes.
-   DEFAULT_CASE is the CASE_LABEL_EXPR for the default switch branch.  */
+   DEFAULT_CASE is the CASE_LABEL_EXPR for the default switch branch
+   if the range is non-contiguous or the default case has standard
+   structure, otherwise it is the first non-default case instead.  */
 
 static void
 gather_default_values (tree default_case, struct switch_conv_info *info)
@@ -825,7 +906,8 @@ gather_default_values (tree default_case, struct switch_conv_info *info)
   edge e;
   int i = 0;
 
-  gcc_assert (CASE_LOW (default_case) == NULL_TREE);
+  gcc_assert (CASE_LOW (default_case) == NULL_TREE
+	      || info->default_case_nonstandard);
 
   if (bb == info->final_bb)
     e = find_edge (info->switch_bb, bb);
@@ -835,6 +917,8 @@ gather_default_values (tree default_case, struct switch_conv_info *info)
   for (gsi = gsi_start_phis (info->final_bb); !gsi_end_p (gsi); gsi_next (&gsi))
     {
       gphi *phi = gsi.phi ();
+      if (virtual_operand_p (gimple_phi_result (phi)))
+	continue;
       tree val = PHI_ARG_DEF_FROM_EDGE (phi, e);
       gcc_assert (val);
       info->default_values[i++] = val;
@@ -850,6 +934,7 @@ build_constructors (gswitch *swtch, struct switch_conv_info *info)
 {
   unsigned i, branch_num = gimple_switch_num_labels (swtch);
   tree pos = info->range_min;
+  tree pos_one = build_int_cst (TREE_TYPE (pos), 1);
 
   for (i = 1; i < branch_num; i++)
     {
@@ -869,6 +954,7 @@ build_constructors (gswitch *swtch, struct switch_conv_info *info)
       while (tree_int_cst_lt (pos, CASE_LOW (cs)))
 	{
 	  int k;
+	  gcc_assert (!info->contiguous_range);
 	  for (k = 0; k < info->phi_count; k++)
 	    {
 	      constructor_elt elt;
@@ -879,8 +965,7 @@ build_constructors (gswitch *swtch, struct switch_conv_info *info)
 	      info->constructors[k]->quick_push (elt);
 	    }
 
-	  pos = int_const_binop (PLUS_EXPR, pos,
-				 build_int_cst (TREE_TYPE (pos), 1));
+	  pos = int_const_binop (PLUS_EXPR, pos, pos_one);
 	}
       gcc_assert (tree_int_cst_equal (pos, CASE_LOW (cs)));
 
@@ -893,6 +978,8 @@ build_constructors (gswitch *swtch, struct switch_conv_info *info)
 	   !gsi_end_p (gsi); gsi_next (&gsi))
 	{
 	  gphi *phi = gsi.phi ();
+	  if (virtual_operand_p (gimple_phi_result (phi)))
+	    continue;
 	  tree val = PHI_ARG_DEF_FROM_EDGE (phi, e);
 	  tree low = CASE_LOW (cs);
 	  pos = CASE_LOW (cs);
@@ -905,8 +992,7 @@ build_constructors (gswitch *swtch, struct switch_conv_info *info)
 	      elt.value = unshare_expr_without_location (val);
 	      info->constructors[j]->quick_push (elt);
 
-	      pos = int_const_binop (PLUS_EXPR, pos,
-				     build_int_cst (TREE_TYPE (pos), 1));
+	      pos = int_const_binop (PLUS_EXPR, pos, pos_one);
 	    } while (!tree_int_cst_lt (high, pos)
 		     && tree_int_cst_lt (low, pos));
 	  j++;
@@ -1125,8 +1211,12 @@ build_arrays (gswitch *swtch, struct switch_conv_info *info)
   info->arr_ref_first = stmt;
 
   for (gpi = gsi_start_phis (info->final_bb), i = 0;
-       !gsi_end_p (gpi); gsi_next (&gpi), i++)
-    build_one_array (swtch, i, arr_index_type, gpi.phi (), tidx, info);
+       !gsi_end_p (gpi); gsi_next (&gpi))
+    {
+      gphi *phi = gpi.phi ();
+      if (!virtual_operand_p (gimple_phi_result (phi)))
+	build_one_array (swtch, i++, arr_index_type, phi, tidx, info);
+    }
 }
 
 /* Generates and appropriately inserts loads of default values at the position
@@ -1155,7 +1245,7 @@ gen_def_assigns (gimple_stmt_iterator *gsi, struct switch_conv_info *info)
    of succession).  */
 
 static void
-prune_bbs (basic_block bbd, basic_block final)
+prune_bbs (basic_block bbd, basic_block final, basic_block default_bb)
 {
   edge_iterator ei;
   edge e;
@@ -1165,7 +1255,7 @@ prune_bbs (basic_block bbd, basic_block final)
       basic_block bb;
       bb = e->dest;
       remove_edge (e);
-      if (bb != final)
+      if (bb != final && bb != default_bb)
 	delete_basic_block (bb);
     }
   delete_basic_block (bbd);
@@ -1184,11 +1274,20 @@ fix_phi_nodes (edge e1f, edge e2f, basic_block bbf,
   int i;
 
   for (gsi = gsi_start_phis (bbf), i = 0;
-       !gsi_end_p (gsi); gsi_next (&gsi), i++)
+       !gsi_end_p (gsi); gsi_next (&gsi))
     {
       gphi *phi = gsi.phi ();
-      add_phi_arg (phi, info->target_inbound_names[i], e1f, UNKNOWN_LOCATION);
-      add_phi_arg (phi, info->target_outbound_names[i], e2f, UNKNOWN_LOCATION);
+      tree inbound, outbound;
+      if (virtual_operand_p (gimple_phi_result (phi)))
+	inbound = outbound = gimple_vop (cfun);
+      else
+	{
+	  inbound = info->target_inbound_names[i];
+	  outbound = info->target_outbound_names[i++];
+	}
+      add_phi_arg (phi, inbound, e1f, UNKNOWN_LOCATION);
+      if (!info->default_case_nonstandard)
+	add_phi_arg (phi, outbound, e2f, UNKNOWN_LOCATION);
     }
 }
 
@@ -1225,10 +1324,10 @@ gen_inbound_check (gswitch *swtch, struct switch_conv_info *info)
 
   gcond *cond_stmt;
 
-  gassign *last_assign;
+  gassign *last_assign = NULL;
   gimple_stmt_iterator gsi;
   basic_block bb0, bb1, bb2, bbf, bbd;
-  edge e01, e02, e21, e1d, e1f, e2f;
+  edge e01 = NULL, e02, e21, e1d, e1f, e2f;
   location_t loc = gimple_location (swtch);
 
   gcc_assert (info->default_values);
@@ -1248,9 +1347,12 @@ gen_inbound_check (gswitch *swtch, struct switch_conv_info *info)
   update_stmt (cond_stmt);
 
   /* block 2 */
-  label2 = gimple_build_label (label_decl2);
-  gsi_insert_before (&gsi, label2, GSI_SAME_STMT);
-  last_assign = gen_def_assigns (&gsi, info);
+  if (!info->default_case_nonstandard)
+    {
+      label2 = gimple_build_label (label_decl2);
+      gsi_insert_before (&gsi, label2, GSI_SAME_STMT);
+      last_assign = gen_def_assigns (&gsi, info);
+    }
 
   /* block 1 */
   label1 = gimple_build_label (label_decl1);
@@ -1265,16 +1367,40 @@ gen_inbound_check (gswitch *swtch, struct switch_conv_info *info)
   e02 = split_block (bb0, cond_stmt);
   bb2 = e02->dest;
 
-  e21 = split_block (bb2, last_assign);
-  bb1 = e21->dest;
-  remove_edge (e21);
+  if (info->default_case_nonstandard)
+    {
+      bb1 = bb2;
+      bb2 = info->default_bb;
+      e01 = e02;
+      e01->flags = EDGE_TRUE_VALUE;
+      e02 = make_edge (bb0, bb2, EDGE_FALSE_VALUE);
+      edge e_default = find_edge (bb1, bb2);
+      for (gphi_iterator gsi = gsi_start_phis (bb2);
+	   !gsi_end_p (gsi); gsi_next (&gsi))
+	{
+	  gphi *phi = gsi.phi ();
+	  tree arg = PHI_ARG_DEF_FROM_EDGE (phi, e_default);
+	  add_phi_arg (phi, arg, e02,
+		       gimple_phi_arg_location_from_edge (phi, e_default));
+	}
+      /* Partially fix the dominator tree, if it is available.  */
+      if (dom_info_available_p (CDI_DOMINATORS))
+	redirect_immediate_dominators (CDI_DOMINATORS, bb1, bb0);
+    }
+  else
+    {
+      e21 = split_block (bb2, last_assign);
+      bb1 = e21->dest;
+      remove_edge (e21);
+    }
 
   e1d = split_block (bb1, info->arr_ref_last);
   bbd = e1d->dest;
   remove_edge (e1d);
 
   /* flags and profiles of the edge for in-range values */
-  e01 = make_edge (bb0, bb1, EDGE_TRUE_VALUE);
+  if (!info->default_case_nonstandard)
+    e01 = make_edge (bb0, bb1, EDGE_TRUE_VALUE);
   e01->probability = REG_BR_PROB_BASE - info->default_prob;
   e01->count = info->other_count;
 
@@ -1290,17 +1416,24 @@ gen_inbound_check (gswitch *swtch, struct switch_conv_info *info)
   e1f->probability = REG_BR_PROB_BASE;
   e1f->count = info->other_count;
 
-  e2f = make_edge (bb2, bbf, EDGE_FALLTHRU);
-  e2f->probability = REG_BR_PROB_BASE;
-  e2f->count = info->default_count;
+  if (info->default_case_nonstandard)
+    e2f = NULL;
+  else
+    {
+      e2f = make_edge (bb2, bbf, EDGE_FALLTHRU);
+      e2f->probability = REG_BR_PROB_BASE;
+      e2f->count = info->default_count;
+    }
 
   /* frequencies of the new BBs */
   bb1->frequency = EDGE_FREQUENCY (e01);
   bb2->frequency = EDGE_FREQUENCY (e02);
-  bbf->frequency = EDGE_FREQUENCY (e1f) + EDGE_FREQUENCY (e2f);
+  if (!info->default_case_nonstandard)
+    bbf->frequency = EDGE_FREQUENCY (e1f) + EDGE_FREQUENCY (e2f);
 
   /* Tidy blocks that have become unreachable.  */
-  prune_bbs (bbd, info->final_bb);
+  prune_bbs (bbd, info->final_bb,
+	     info->default_case_nonstandard ? info->default_bb : NULL);
 
   /* Fixup the PHI nodes in bbF.  */
   fix_phi_nodes (e1f, e2f, bbf, info);
@@ -1311,15 +1444,17 @@ gen_inbound_check (gswitch *swtch, struct switch_conv_info *info)
       vec<basic_block> bbs_to_fix_dom;
 
       set_immediate_dominator (CDI_DOMINATORS, bb1, bb0);
-      set_immediate_dominator (CDI_DOMINATORS, bb2, bb0);
+      if (!info->default_case_nonstandard)
+	set_immediate_dominator (CDI_DOMINATORS, bb2, bb0);
       if (! get_immediate_dominator (CDI_DOMINATORS, bbf))
 	/* If bbD was the immediate dominator ...  */
 	set_immediate_dominator (CDI_DOMINATORS, bbf, bb0);
 
-      bbs_to_fix_dom.create (4);
+      bbs_to_fix_dom.create (3 + (bb2 != bbf));
       bbs_to_fix_dom.quick_push (bb0);
       bbs_to_fix_dom.quick_push (bb1);
-      bbs_to_fix_dom.quick_push (bb2);
+      if (bb2 != bbf)
+	bbs_to_fix_dom.quick_push (bb2);
       bbs_to_fix_dom.quick_push (bbf);
 
       iterate_fix_dominators (CDI_DOMINATORS, bbs_to_fix_dom, true);
@@ -1394,7 +1529,7 @@ process_switch (gswitch *swtch)
       gcc_assert (info.reason);
       return info.reason;
     }
-  if (!check_final_bb (&info))
+  if (!check_final_bb (swtch, &info))
     {
       gcc_assert (info.reason);
       return info.reason;
@@ -1404,7 +1539,9 @@ process_switch (gswitch *swtch)
      transformation.  */
 
   create_temp_arrays (&info);
-  gather_default_values (gimple_switch_default_label (swtch), &info);
+  gather_default_values (info.default_case_nonstandard
+			 ? gimple_switch_label (swtch, 1)
+			 : gimple_switch_default_label (swtch), &info);
   build_constructors (swtch, &info);
 
   build_arrays (swtch, &info); /* Build the static arrays and assignments.   */

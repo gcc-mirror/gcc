@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---           Copyright (C) 2014-2016, Free Software Foundation, Inc.        --
+--           Copyright (C) 2014-2017, Free Software Foundation, Inc.        --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -287,12 +287,12 @@ private
 
    type Data (Size : Natural) is record
       Ref_Count    : Natural := 1;
-      Format       : String (1 .. Size); -- the format string
       Index        : Positive := 1;      -- format index for next value
       Result       : Unbounded_String;   -- current value
       Current      : Natural;            -- the current format number
       Stored_Value : Natural := 0;       -- number of stored values in Stack
       Stack        : I_Vars;
+      Format       : String (1 .. Size); -- the format string
    end record;
 
    type Data_Access is access Data;

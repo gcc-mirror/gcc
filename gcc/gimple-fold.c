@@ -3251,6 +3251,28 @@ gimple_fold_builtin_acc_on_device (gimple_stmt_iterator *gsi, tree arg0)
   return true;
 }
 
+/* Fold realloc (0, n) -> malloc (n).  */
+
+static bool
+gimple_fold_builtin_realloc (gimple_stmt_iterator *gsi)
+{
+  gimple *stmt = gsi_stmt (*gsi);
+  tree arg = gimple_call_arg (stmt, 0);
+  tree size = gimple_call_arg (stmt, 1);
+
+  if (operand_equal_p (arg, null_pointer_node, 0))
+    {
+      tree fn_malloc = builtin_decl_implicit (BUILT_IN_MALLOC);
+      if (fn_malloc)
+	{
+	  gcall *repl = gimple_build_call (fn_malloc, 1, size);
+	  replace_call_with_call_and_fold (gsi, repl);
+	  return true;
+	}
+    }
+  return false;
+}
+
 /* Fold the non-target builtin at *GSI and return whether any simplification
    was made.  */
 
@@ -3409,6 +3431,9 @@ gimple_fold_builtin (gimple_stmt_iterator *gsi)
     case BUILT_IN_ACC_ON_DEVICE:
       return gimple_fold_builtin_acc_on_device (gsi,
 						gimple_call_arg (stmt, 0));
+    case BUILT_IN_REALLOC:
+      return gimple_fold_builtin_realloc (gsi);
+
     default:;
     }
 

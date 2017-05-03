@@ -1968,15 +1968,12 @@ package body Sem_Ch13 is
             if A_Id = Aspect_Attach_Handler
               or else A_Id = Aspect_Interrupt_Handler
             then
-               --  Decorate the reference as comming from the sources and force
-               --  its reanalysis to generate the reference to E; required to
-               --  avoid reporting spurious warning on E as unreferenced entity
-               --  (because aspects are not fully analyzed).
 
-               Set_Comes_From_Source (Ent, Comes_From_Source (Id));
-               Set_Entity (Ent, Empty);
+               --  Treat the specification as a reference to the protected
+               --  operation, which might otherwise appear unreferenced and
+               --  generate spurious warnings.
 
-               Analyze (Ent);
+               Generate_Reference (E, Id);
             end if;
 
             --  Check for duplicate aspect. Note that the Comes_From_Source
@@ -4670,8 +4667,10 @@ package body Sem_Ch13 is
             when Attribute_Alignment
                | Attribute_Bit_Order
                | Attribute_Component_Size
+               | Attribute_Default_Scalar_Storage_Order
                | Attribute_Machine_Radix
                | Attribute_Object_Size
+               | Attribute_Scalar_Storage_Order
                | Attribute_Size
                | Attribute_Small
                | Attribute_Stream_Size
@@ -4699,7 +4698,7 @@ package body Sem_Ch13 is
 
             --  We do not do anything here with address clauses, they will be
             --  removed by Freeze later on, but for now, it works better to
-            --  keep then in the tree.
+            --  keep them in the tree.
 
             when Attribute_Address =>
                null;
@@ -4858,8 +4857,12 @@ package body Sem_Ch13 is
             --  Even when ignoring rep clauses we need to indicate that the
             --  entity has an address clause and thus it is legal to declare
             --  it imported. Freeze will get rid of the address clause later.
+            --  Also call Set_Address_Taken to indicate that an address clause
+            --  was present, even if we are about to remove it.
 
             if Ignore_Rep_Clauses then
+               Set_Address_Taken (U_Ent);
+
                if Ekind_In (U_Ent, E_Variable, E_Constant) then
                   Record_Rep_Item (U_Ent, N);
                end if;
@@ -9079,6 +9082,14 @@ package body Sem_Ch13 is
       --  not be in scope at the freeze point of the instance).
 
       if In_Instance then
+         return;
+
+      --  The enclosing scope may have been rewritten during expansion (.e.g. a
+      --  task body is rewritten as a procedure) after this conformance check
+      --  has been performed, so do not perform it again (it may not easily be
+      --  done if full visibility of local entities is not available).
+
+      elsif not Comes_From_Source (Current_Scope) then
          return;
 
       --  Case of aspects Dimension, Dimension_System and Synchronization
@@ -13323,10 +13334,10 @@ package body Sem_Ch13 is
             Expr : Node_Id;
 
             X_Alignment : Uint;
-            Y_Alignment : Uint;
+            Y_Alignment : Uint := Uint_0;
 
             X_Size : Uint;
-            Y_Size : Uint;
+            Y_Size : Uint := Uint_0;
 
             X_Offs : Uint;
 

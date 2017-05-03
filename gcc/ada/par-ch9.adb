@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -79,7 +79,7 @@ package body Ch9 is
    --  Error recovery: cannot raise Error_Resync
 
    function P_Task return Node_Id is
-      Aspect_Sloc : Source_Ptr;
+      Aspect_Sloc : Source_Ptr := No_Location;
       Name_Node   : Node_Id;
       Task_Node   : Node_Id;
       Task_Sloc   : Source_Ptr;
@@ -425,7 +425,7 @@ package body Ch9 is
    --  Error recovery: cannot raise Error_Resync
 
    function P_Protected return Node_Id is
-      Aspect_Sloc    : Source_Ptr;
+      Aspect_Sloc    : Source_Ptr := No_Location;
       Name_Node      : Node_Id;
       Protected_Node : Node_Id;
       Protected_Sloc : Source_Ptr;

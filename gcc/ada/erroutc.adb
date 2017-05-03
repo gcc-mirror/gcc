@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -140,10 +140,12 @@ package body Erroutc is
             --  Adjust error message count
 
             if Errors.Table (D).Info then
-               Info_Messages := Info_Messages - 1;
 
                if Errors.Table (D).Warn then
+                  Warning_Info_Messages := Warning_Info_Messages - 1;
                   Warnings_Detected := Warnings_Detected - 1;
+               else
+                  Report_Info_Messages := Report_Info_Messages - 1;
                end if;
 
             elsif Errors.Table (D).Warn or else Errors.Table (D).Style then
@@ -242,10 +244,11 @@ package body Erroutc is
 
    function Compilation_Errors return Boolean is
    begin
-      return Total_Errors_Detected /= 0
-        or else (Warnings_Detected /= 0
-                  and then Warning_Mode = Treat_As_Error)
-        or else Warnings_Treated_As_Errors /= 0;
+      return
+        Total_Errors_Detected /= 0
+          or else (Warnings_Detected - Warning_Info_Messages /= 0
+                    and then Warning_Mode = Treat_As_Error)
+          or else Warnings_Treated_As_Errors /= 0;
    end Compilation_Errors;
 
    ------------------

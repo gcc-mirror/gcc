@@ -1096,16 +1096,13 @@ decl_refs_may_alias_p (tree ref1, tree base1,
 {
   gcc_checking_assert (DECL_P (base1) && DECL_P (base2));
 
-  int cmp = compare_base_decls (base1, base2);
-
   /* If both references are based on different variables, they cannot alias.  */
-  if (cmp == 0)
+  if (compare_base_decls (base1, base2) == 0)
     return false;
 
   /* If both references are based on the same variable, they cannot alias if
      the accesses do not overlap.  */
-  if (cmp == 1
-      && !ranges_overlap_p (offset1, max_size1, offset2, max_size2))
+  if (!ranges_overlap_p (offset1, max_size1, offset2, max_size2))
     return false;
 
   /* For components with variable position, the above test isn't sufficient,
@@ -2538,6 +2535,8 @@ stmt_kills_ref_p (gimple *stmt, ao_ref *ref)
 	  case BUILT_IN_MEMPCPY_CHK:
 	  case BUILT_IN_MEMMOVE_CHK:
 	  case BUILT_IN_MEMSET_CHK:
+	  case BUILT_IN_STRNCPY:
+	  case BUILT_IN_STPNCPY:
 	    {
 	      /* For a must-alias check we need to be able to constrain
 		 the access properly.  */

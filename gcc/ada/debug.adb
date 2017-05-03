@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -49,7 +49,7 @@ package body Debug is
    --  dj   Suppress "junk null check" for access parameter values
    --  dk   Generate GNATBUG message on abort, even if previous errors
    --  dl   Generate unit load trace messages
-   --  dm
+   --  dm   Prevent special frontend inlining in GNATprove mode
    --  dn   Generate messages for node/list allocation
    --  do   Print source from tree (original code only)
    --  dp   Generate messages for parser scope stack push/pops
@@ -109,7 +109,7 @@ package body Debug is
    --  d.p  Use original Ada 95 semantics for Bit_Order (disable AI95-0133)
    --  d.q  Suppress optimizations on imported 'in'
    --  d.r  Enable OK_To_Reorder_Components in non-variant records
-   --  d.s
+   --  d.s  Strict secondary stack management
    --  d.t  Disable static allocation of library level dispatch tables
    --  d.u  Enable Modify_Tree_For_C (update tree for c)
    --  d.v  Enable OK_To_Reorder_Components in variant records
@@ -280,6 +280,11 @@ package body Debug is
    --  dl   Generate unit load trace messages. A line of traceback output is
    --       generated each time a request is made to the library manager to
    --       load a new unit.
+
+   --  dm   Prevent special frontend inlining in GNATprove mode. In some cases,
+   --       some subprogram calls are inlined in GNATprove mode in order to
+   --       facilitate formal verification. This debug switch prevents that
+   --       inlining to happen.
 
    --  dn   Generate messages for node/list allocation. Each time a node or
    --       list header is allocated, a line of output is generated. Certain
@@ -572,6 +577,16 @@ package body Debug is
    --  d.r  Forces the flag OK_To_Reorder_Components to be set in all record
    --       base types that have no discriminants.
 
+   --  d.s  The compiler no longer attempts to optimize the calls to secondary
+   --       stack management routines SS_Mark and SS_Release. As a result, each
+   --       transient block tasked with secondary stack management will fulfill
+   --       its role unconditionally.
+
+   --  d.s  The compiler does not generate calls to secondary stack management
+   --       routines SS_Mark and SS_Release for a transient block when there is
+   --       an enclosing scoping construct which already manages the secondary
+   --       stack.
+
    --  d.t  The compiler has been modified (a fairly extensive modification)
    --       to generate static dispatch tables for library level tagged types.
    --       This debug switch disables this modification and reverts to the
@@ -833,8 +848,8 @@ package body Debug is
    --      prefer specs with no bodies to specs with bodies, and between two
    --      specs with bodies, prefers the one whose body is closer to being
    --      able to be elaborated. This is a clear improvement, but we provide
-   --      this debug flag in case of regressions. Note: -gnatdo is even older
-   --      than -gnatdp.
+   --      this debug flag in case of regressions. Note: -do is even older
+   --      than -dp.
 
    --  dp  Use old elaboration order preference. The new preference rules
    --      elaborate all units within a strongly connected component together,

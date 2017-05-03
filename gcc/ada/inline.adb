@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -410,8 +410,7 @@ package body Inline is
 
       if not Comes_From_Source (N)
         and then In_Extended_Main_Source_Unit (N)
-        and then
-          Is_Predefined_File_Name (Unit_File_Name (Get_Source_Unit (E)))
+        and then Is_Predefined_Unit (Get_Source_Unit (E))
       then
          Set_Needs_Debug_Info (E, False);
       end if;
@@ -1556,7 +1555,7 @@ package body Inline is
          --  subprograms may contain nested subprograms and become ineligible
          --  for inlining.
 
-         if Is_Predefined_File_Name (Unit_File_Name (Get_Source_Unit (Subp)))
+         if Is_Predefined_Unit (Get_Source_Unit (Subp))
            and then not In_Extended_Main_Source_Unit (Subp)
          then
             null;
@@ -1602,7 +1601,7 @@ package body Inline is
          --  compatibility but it will be removed when we enforce the
          --  strictness of the new rules.
 
-         if Is_Predefined_File_Name (Unit_File_Name (Get_Source_Unit (Subp)))
+         if Is_Predefined_Unit (Get_Source_Unit (Subp))
            and then not In_Extended_Main_Source_Unit (Subp)
          then
             null;
@@ -1617,9 +1616,7 @@ package body Inline is
                declare
                   Gen_P : constant Entity_Id := Generic_Parent (Parent (Subp));
                begin
-                  if Is_Predefined_File_Name
-                       (Unit_File_Name (Get_Source_Unit (Gen_P)))
-                  then
+                  if Is_Predefined_Unit (Get_Source_Unit (Gen_P)) then
                      Set_Is_Inlined (Subp, False);
                      Error_Msg_NE (Msg & "p?", N, Subp);
                      return;
@@ -2283,8 +2280,7 @@ package body Inline is
    is
       Loc       : constant Source_Ptr := Sloc (N);
       Is_Predef : constant Boolean :=
-                    Is_Predefined_File_Name
-                      (Unit_File_Name (Get_Source_Unit (Subp)));
+                    Is_Predefined_Unit (Get_Source_Unit (Subp));
       Orig_Bod  : constant Node_Id :=
                     Body_To_Inline (Unit_Declaration_Node (Subp));
 
@@ -2305,7 +2301,7 @@ package body Inline is
       --  this is the left-hand side of the assignment, else it is a temporary
       --  to which the return value is assigned prior to rewriting the call.
 
-      Targ1 : Node_Id;
+      Targ1 : Node_Id := Empty;
       --  A separate target used when the return type is unconstrained
 
       Temp     : Entity_Id;
@@ -3565,8 +3561,7 @@ package body Inline is
          end if;
 
          return Present (Conv)
-           and then Is_Predefined_File_Name
-                      (Unit_File_Name (Get_Source_Unit (Conv)))
+           and then Is_Predefined_Unit (Get_Source_Unit (Conv))
            and then Is_Intrinsic_Subprogram (Conv);
       end Is_Unchecked_Conversion;
 
@@ -4184,14 +4179,14 @@ package body Inline is
 
    procedure Lock is
    begin
-      Pending_Instantiations.Locked := True;
-      Inlined_Bodies.Locked := True;
-      Successors.Locked := True;
-      Inlined.Locked := True;
       Pending_Instantiations.Release;
+      Pending_Instantiations.Locked := True;
       Inlined_Bodies.Release;
+      Inlined_Bodies.Locked := True;
       Successors.Release;
+      Successors.Locked := True;
       Inlined.Release;
+      Inlined.Locked := True;
    end Lock;
 
    --------------------------------

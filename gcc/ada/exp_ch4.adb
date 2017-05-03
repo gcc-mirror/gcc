@@ -128,6 +128,11 @@ package body Exp_Ch4 is
    --  Common expansion processing for Boolean operators (And, Or, Xor) for the
    --  case of array type arguments.
 
+   procedure Expand_Non_Binary_Modular_Op (N : Node_Id);
+   --  Generating C code convert non-binary modular arithmetic operations into
+   --  code that relies on the frontend expansion of operator Mod. No expansion
+   --  is performed if N is not a non-binary modular operand.
+
    procedure Expand_Short_Circuit_Operator (N : Node_Id);
    --  Common expansion processing for short-circuit boolean operators
 
@@ -2700,7 +2705,7 @@ package body Exp_Ch4 is
       --  last operand is always retained, in case it provides the bounds for
       --  a null result.
 
-      Opnd : Node_Id;
+      Opnd : Node_Id := Empty;
       --  Current operand being processed in the loop through operands. After
       --  this loop is complete, always contains the last operand (which is not
       --  the same as Operands (NN), since null operands are skipped).
@@ -2742,13 +2747,13 @@ package body Exp_Ch4 is
       --  This is either an integer literal node, or an identifier reference to
       --  a constant entity initialized to the appropriate value.
 
-      Last_Opnd_Low_Bound : Node_Id;
+      Last_Opnd_Low_Bound : Node_Id := Empty;
       --  A tree node representing the low bound of the last operand. This
       --  need only be set if the result could be null. It is used for the
       --  special case of setting the right low bound for a null result.
       --  This is of type Ityp.
 
-      Last_Opnd_High_Bound : Node_Id;
+      Last_Opnd_High_Bound : Node_Id := Empty;
       --  A tree node representing the high bound of the last operand. This
       --  need only be set if the result could be null. It is used for the
       --  special case of setting the right high bound for a null result.
@@ -3957,6 +3962,217 @@ package body Exp_Ch4 is
       end if;
    end Expand_Membership_Minimize_Eliminate_Overflow;
 
+   ----------------------------------
+   -- Expand_Non_Binary_Modular_Op --
+   ----------------------------------
+
+   procedure Expand_Non_Binary_Modular_Op (N : Node_Id) is
+      Loc : constant Source_Ptr := Sloc (N);
+      Typ : constant Entity_Id  := Etype (N);
+
+      procedure Expand_Modular_Addition;
+      --  Expand the modular addition handling the special case of adding a
+      --  constant.
+
+      procedure Expand_Modular_Op;
+      --  Compute the general rule: (lhs OP rhs) mod Modulus
+
+      procedure Expand_Modular_Subtraction;
+      --  Expand the modular addition handling the special case of subtracting
+      --  a constant.
+
+      -----------------------------
+      -- Expand_Modular_Addition --
+      -----------------------------
+
+      procedure Expand_Modular_Addition is
+      begin
+         --  If this is not the addition of a constant then compute it using
+         --  the general rule: (lhs + rhs) mod Modulus
+
+         if Nkind (Right_Opnd (N)) /= N_Integer_Literal then
+            Expand_Modular_Op;
+
+         --  If this is an addition of a constant, convert it to a subtraction
+         --  plus a conditional expression since we can compute it faster than
+         --  computing the modulus.
+
+         --      modMinusRhs = Modulus - rhs
+         --      if lhs < modMinusRhs then lhs + rhs
+         --                           else lhs - modMinusRhs
+
+         else
+            declare
+               Mod_Minus_Right : constant Uint :=
+                                   Modulus (Typ) - Intval (Right_Opnd (N));
+
+               Exprs     : constant List_Id := New_List;
+               Cond_Expr : constant Node_Id := New_Op_Node (N_Op_Lt, Loc);
+               Then_Expr : constant Node_Id := New_Op_Node (N_Op_Add, Loc);
+               Else_Expr : constant Node_Id := New_Op_Node (N_Op_Subtract,
+                                                            Loc);
+            begin
+               Set_Left_Opnd (Cond_Expr,
+                 New_Copy_Tree (Left_Opnd (N)));
+               Set_Right_Opnd (Cond_Expr,
+                 Make_Integer_Literal (Loc, Mod_Minus_Right));
+               Append_To (Exprs, Cond_Expr);
+
+               Set_Left_Opnd (Then_Expr,
+                 Unchecked_Convert_To (Standard_Unsigned,
+                   New_Copy_Tree (Left_Opnd (N))));
+               Set_Right_Opnd (Then_Expr,
+                 Make_Integer_Literal (Loc, Intval (Right_Opnd (N))));
+               Append_To (Exprs, Then_Expr);
+
+               Set_Left_Opnd (Else_Expr,
+                 Unchecked_Convert_To (Standard_Unsigned,
+                   New_Copy_Tree (Left_Opnd (N))));
+               Set_Right_Opnd (Else_Expr,
+                 Make_Integer_Literal (Loc, Mod_Minus_Right));
+               Append_To (Exprs, Else_Expr);
+
+               Rewrite (N,
+                 Unchecked_Convert_To (Typ,
+                   Make_If_Expression (Loc, Expressions => Exprs)));
+            end;
+         end if;
+      end Expand_Modular_Addition;
+
+      -----------------------
+      -- Expand_Modular_Op --
+      -----------------------
+
+      procedure Expand_Modular_Op is
+         Op_Expr  : constant Node_Id := New_Op_Node (Nkind (N), Loc);
+         Mod_Expr : constant Node_Id := New_Op_Node (N_Op_Mod, Loc);
+
+      begin
+         --  Convert non-binary modular type operands into integer or integer
+         --  values. Thus we avoid never-ending loops expanding them, and we
+         --  also ensure that the backend never receives non-binary modular
+         --  type expressions.
+
+         if Nkind_In (Nkind (N), N_Op_And, N_Op_Or) then
+            Set_Left_Opnd (Op_Expr,
+              Unchecked_Convert_To (Standard_Unsigned,
+                New_Copy_Tree (Left_Opnd (N))));
+            Set_Right_Opnd (Op_Expr,
+              Unchecked_Convert_To (Standard_Unsigned,
+                New_Copy_Tree (Right_Opnd (N))));
+            Set_Left_Opnd (Mod_Expr,
+              Unchecked_Convert_To (Standard_Integer, Op_Expr));
+         else
+            Set_Left_Opnd (Op_Expr,
+              Unchecked_Convert_To (Standard_Integer,
+                New_Copy_Tree (Left_Opnd (N))));
+            Set_Right_Opnd (Op_Expr,
+              Unchecked_Convert_To (Standard_Integer,
+                New_Copy_Tree (Right_Opnd (N))));
+            Set_Left_Opnd (Mod_Expr, Op_Expr);
+         end if;
+
+         Set_Right_Opnd (Mod_Expr,
+           Make_Integer_Literal (Loc, Modulus (Typ)));
+
+         Rewrite (N,
+           Unchecked_Convert_To (Typ, Mod_Expr));
+      end Expand_Modular_Op;
+
+      --------------------------------
+      -- Expand_Modular_Subtraction --
+      --------------------------------
+
+      procedure Expand_Modular_Subtraction is
+      begin
+         --  If this is not the addition of a constant then compute it using
+         --  the general rule: (lhs + rhs) mod Modulus
+
+         if Nkind (Right_Opnd (N)) /= N_Integer_Literal then
+            Expand_Modular_Op;
+
+         --  If this is an addition of a constant, convert it to a subtraction
+         --  plus a conditional expression since we can compute it faster than
+         --  computing the modulus.
+
+         --      modMinusRhs = Modulus - rhs
+         --      if lhs < rhs then lhs + modMinusRhs
+         --                   else lhs - rhs
+
+         else
+            declare
+               Mod_Minus_Right : constant Uint :=
+                                   Modulus (Typ) - Intval (Right_Opnd (N));
+
+               Exprs     : constant List_Id := New_List;
+               Cond_Expr : constant Node_Id := New_Op_Node (N_Op_Lt, Loc);
+               Then_Expr : constant Node_Id := New_Op_Node (N_Op_Add, Loc);
+               Else_Expr : constant Node_Id := New_Op_Node (N_Op_Subtract,
+                                                            Loc);
+            begin
+               Set_Left_Opnd (Cond_Expr,
+                 New_Copy_Tree (Left_Opnd (N)));
+               Set_Right_Opnd (Cond_Expr,
+                 Make_Integer_Literal (Loc, Intval (Right_Opnd (N))));
+               Append_To (Exprs, Cond_Expr);
+
+               Set_Left_Opnd (Then_Expr,
+                 Unchecked_Convert_To (Standard_Unsigned,
+                   New_Copy_Tree (Left_Opnd (N))));
+               Set_Right_Opnd (Then_Expr,
+                 Make_Integer_Literal (Loc, Mod_Minus_Right));
+               Append_To (Exprs, Then_Expr);
+
+               Set_Left_Opnd (Else_Expr,
+                 Unchecked_Convert_To (Standard_Unsigned,
+                   New_Copy_Tree (Left_Opnd (N))));
+               Set_Right_Opnd (Else_Expr,
+                 Unchecked_Convert_To (Standard_Unsigned,
+                   New_Copy_Tree (Right_Opnd (N))));
+               Append_To (Exprs, Else_Expr);
+
+               Rewrite (N,
+                 Unchecked_Convert_To (Typ,
+                   Make_If_Expression (Loc, Expressions => Exprs)));
+            end;
+         end if;
+      end Expand_Modular_Subtraction;
+
+   --  Start of processing for Expand_Non_Binary_Modular_Op
+
+   begin
+      --  No action needed if we are not generating C code for a non-binary
+      --  modular operand.
+
+      if not Modify_Tree_For_C
+        or else not Non_Binary_Modulus (Typ)
+      then
+         return;
+      end if;
+
+      case Nkind (N) is
+         when N_Op_Add =>
+            Expand_Modular_Addition;
+
+         when N_Op_Subtract =>
+            Expand_Modular_Subtraction;
+
+         when N_Op_Minus =>
+            --  Expand -expr into (0 - expr)
+
+            Rewrite (N,
+              Make_Op_Subtract (Loc,
+                Left_Opnd  => Make_Integer_Literal (Loc, 0),
+                Right_Opnd => Right_Opnd (N)));
+            Analyze_And_Resolve (N, Typ);
+
+         when others =>
+            Expand_Modular_Op;
+      end case;
+
+      Analyze_And_Resolve (N, Typ);
+   end Expand_Non_Binary_Modular_Op;
+
    ------------------------
    -- Expand_N_Allocator --
    ------------------------
@@ -4036,6 +4252,7 @@ package body Exp_Ch4 is
          declare
             Len : Node_Id;
             Res : Node_Id;
+            pragma Warnings (Off, Res);
 
          begin
             for J in 1 .. Number_Dimensions (E) loop
@@ -4869,11 +5086,10 @@ package body Exp_Ch4 is
       else
          if Generate_C_Code then
 
-            --  We cannot ensure that correct C code will be generated if
-            --  any temporary is created down the line (to e.g. handle
-            --  checks or capture values) since we might end up with
-            --  dangling references to local variables, so better be safe
-            --  and reject the construct.
+            --  We cannot ensure that correct C code will be generated if any
+            --  temporary is created down the line (to e.g. handle checks or
+            --  capture values) since we might end up with dangling references
+            --  to local variables, so better be safe and reject the construct.
 
             Error_Msg_N
               ("case expression too complex, use case statement instead", N);
@@ -6639,6 +6855,13 @@ package body Exp_Ch4 is
       --  Overflow checks for floating-point if -gnateF mode active
 
       Check_Float_Op_Overflow (N);
+
+      --  Generating C code convert non-binary modular additions into code that
+      --  relies on the frontend expansion of operator Mod.
+
+      if Modify_Tree_For_C then
+         Expand_Non_Binary_Modular_Op (N);
+      end if;
    end Expand_N_Op_Add;
 
    ---------------------
@@ -6662,7 +6885,13 @@ package body Exp_Ch4 is
 
       elsif Is_Intrinsic_Subprogram (Entity (N)) then
          Expand_Intrinsic_Call (N, Entity (N));
+      end if;
 
+      --  Generating C code convert non-binary modular operators into code that
+      --  relies on the frontend expansion of operator Mod.
+
+      if Modify_Tree_For_C then
+         Expand_Non_Binary_Modular_Op (N);
       end if;
    end Expand_N_Op_And;
 
@@ -6904,6 +7133,13 @@ package body Exp_Ch4 is
       --  Overflow checks for floating-point if -gnateF mode active
 
       Check_Float_Op_Overflow (N);
+
+      --  Generating C code convert non-binary modular divisions into code that
+      --  relies on the frontend expansion of operator Mod.
+
+      if Modify_Tree_For_C then
+         Expand_Non_Binary_Modular_Op (N);
+      end if;
    end Expand_N_Op_Divide;
 
    --------------------
@@ -8406,6 +8642,13 @@ package body Exp_Ch4 is
 
          Analyze_And_Resolve (N, Typ);
       end if;
+
+      --  Generating C code convert non-binary modular minus into code that
+      --  relies on the frontend expansion of operator Mod.
+
+      if Modify_Tree_For_C then
+         Expand_Non_Binary_Modular_Op (N);
+      end if;
    end Expand_N_Op_Minus;
 
    ---------------------
@@ -8882,6 +9125,13 @@ package body Exp_Ch4 is
       --  Overflow checks for floating-point if -gnateF mode active
 
       Check_Float_Op_Overflow (N);
+
+      --  Generating C code convert non-binary modular multiplications into
+      --  code that relies on the frontend expansion of operator Mod.
+
+      if Modify_Tree_For_C then
+         Expand_Non_Binary_Modular_Op (N);
+      end if;
    end Expand_N_Op_Multiply;
 
    --------------------
@@ -8926,6 +9176,9 @@ package body Exp_Ch4 is
       --  the same visibility as in the generic unit. This avoids duplicating
       --  or factoring the complex code for record/array equality tests etc.
 
+      --  This case is also used for the minimal expansion performed in
+      --  GNATprove mode.
+
       else
          declare
             Loc : constant Source_Ptr := Sloc (N);
@@ -8941,7 +9194,14 @@ package body Exp_Ch4 is
                   Make_Op_Eq (Loc,
                     Left_Opnd =>  Left_Opnd (N),
                     Right_Opnd => Right_Opnd (N)));
-            Set_Paren_Count (Right_Opnd (Neg), 1);
+
+            --  The level of parentheses is useless in GNATprove mode, and
+            --  bumping its level here leads to wrong columns being used in
+            --  check messages, hence skip it in this mode.
+
+            if not GNATprove_Mode then
+               Set_Paren_Count (Right_Opnd (Neg), 1);
+            end if;
 
             if Scope (Ne) /= Standard_Standard then
                Set_Entity (Right_Opnd (Neg), Corresponding_Equality (Ne));
@@ -8958,7 +9218,12 @@ package body Exp_Ch4 is
          end;
       end if;
 
-      Optimize_Length_Comparison (N);
+      --  No need for optimization in GNATprove mode, where we would rather see
+      --  the original source expression.
+
+      if not GNATprove_Mode then
+         Optimize_Length_Comparison (N);
+      end if;
    end Expand_N_Op_Ne;
 
    ---------------------
@@ -9176,7 +9441,13 @@ package body Exp_Ch4 is
 
       elsif Is_Intrinsic_Subprogram (Entity (N)) then
          Expand_Intrinsic_Call (N, Entity (N));
+      end if;
 
+      --  Generating C code convert non-binary modular operators into code that
+      --  relies on the frontend expansion of operator Mod.
+
+      if Modify_Tree_For_C then
+         Expand_Non_Binary_Modular_Op (N);
       end if;
    end Expand_N_Op_Or;
 
@@ -9610,6 +9881,13 @@ package body Exp_Ch4 is
       --  Overflow checks for floating-point if -gnateF mode active
 
       Check_Float_Op_Overflow (N);
+
+      --  Generating C code convert non-binary modular subtractions into code
+      --  that relies on the frontend expansion of operator Mod.
+
+      if Modify_Tree_For_C then
+         Expand_Non_Binary_Modular_Op (N);
+      end if;
    end Expand_N_Op_Subtract;
 
    ---------------------
@@ -12033,7 +12311,6 @@ package body Exp_Ch4 is
    -------------------------------
 
    procedure Insert_Dereference_Action (N : Node_Id) is
-
       function Is_Checked_Storage_Pool (P : Entity_Id) return Boolean;
       --  Return true if type of P is derived from Checked_Pool;
 
@@ -12063,11 +12340,12 @@ package body Exp_Ch4 is
 
       --  Local variables
 
-      Typ   : constant Entity_Id  := Etype (N);
-      Desig : constant Entity_Id  := Available_View (Designated_Type (Typ));
-      Loc   : constant Source_Ptr := Sloc (N);
-      Pool  : constant Entity_Id  := Associated_Storage_Pool (Typ);
-      Pnod  : constant Node_Id    := Parent (N);
+      Context   : constant Node_Id    := Parent (N);
+      Ptr_Typ   : constant Entity_Id  := Etype (N);
+      Desig_Typ : constant Entity_Id  :=
+                    Available_View (Designated_Type (Ptr_Typ));
+      Loc       : constant Source_Ptr := Sloc (N);
+      Pool      : constant Entity_Id  := Associated_Storage_Pool (Ptr_Typ);
 
       Addr      : Entity_Id;
       Alig      : Entity_Id;
@@ -12079,18 +12357,18 @@ package body Exp_Ch4 is
    --  Start of processing for Insert_Dereference_Action
 
    begin
-      pragma Assert (Nkind (Pnod) = N_Explicit_Dereference);
+      pragma Assert (Nkind (Context) = N_Explicit_Dereference);
 
       --  Do not re-expand a dereference which has already been processed by
       --  this routine.
 
-      if Has_Dereference_Action (Pnod) then
+      if Has_Dereference_Action (Context) then
          return;
 
       --  Do not perform this type of expansion for internally-generated
       --  dereferences.
 
-      elsif not Comes_From_Source (Original_Node (Pnod)) then
+      elsif not Comes_From_Source (Original_Node (Context)) then
          return;
 
       --  A dereference action is only applicable to objects which have been
@@ -12132,15 +12410,15 @@ package body Exp_Ch4 is
 
       --  Special case of an unconstrained array: need to add descriptor size
 
-      if Is_Array_Type (Desig)
-        and then not Is_Constrained (First_Subtype (Desig))
+      if Is_Array_Type (Desig_Typ)
+        and then not Is_Constrained (First_Subtype (Desig_Typ))
       then
          Size_Bits :=
            Make_Op_Add (Loc,
              Left_Opnd  =>
                Make_Attribute_Reference (Loc,
                  Prefix         =>
-                   New_Occurrence_Of (First_Subtype (Desig), Loc),
+                   New_Occurrence_Of (First_Subtype (Desig_Typ), Loc),
                  Attribute_Name => Name_Descriptor_Size),
              Right_Opnd => Size_Bits);
       end if;
@@ -12182,7 +12460,14 @@ package body Exp_Ch4 is
       --  knowledge of hidden pointers, we have to bring the two pointers back
       --  in view in order to restore the original state of the object.
 
-      if Needs_Finalization (Desig) then
+      --  The address manipulation is not performed for access types that are
+      --  subject to pragma No_Heap_Finalization because the two pointers do
+      --  not exist in the first place.
+
+      if No_Heap_Finalization (Ptr_Typ) then
+         null;
+
+      elsif Needs_Finalization (Desig_Typ) then
 
          --  Adjust the address and size of the dereferenced object. Generate:
          --    Adjust_Controlled_Dereference (Addr, Size, Alig);
@@ -12204,7 +12489,7 @@ package body Exp_Ch4 is
          --       <Stmt>;
          --    end if;
 
-         if Is_Class_Wide_Type (Desig) then
+         if Is_Class_Wide_Type (Desig_Typ) then
             Deref :=
               Make_Explicit_Dereference (Loc,
                 Prefix => Duplicate_Subexpr_Move_Checks (N));
@@ -12243,7 +12528,7 @@ package body Exp_Ch4 is
       --  Mark the explicit dereference as processed to avoid potential
       --  infinite expansion.
 
-      Set_Has_Dereference_Action (Pnod);
+      Set_Has_Dereference_Action (Context);
 
    exception
       when RE_Not_Available =>
@@ -13053,7 +13338,7 @@ package body Exp_Ch4 is
          Result :=
            Make_Op_Le (Loc,
              Left_Opnd  => Left,
-                       Right_Opnd => Right);
+             Right_Opnd => Right);
 
       --  X'Length > 1  => X'First < X'Last
       --  X'Length > n  => X'First + (n = 1) < X'Last

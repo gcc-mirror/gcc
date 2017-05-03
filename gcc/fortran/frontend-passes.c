@@ -3066,9 +3066,10 @@ inline_matmul_assign (gfc_code **c, int *walk_subtrees,
       gfc_code *lhs_alloc;
 
       /* Only need to check a single dimension for the A2B2 case for
-	 bounds checking, the rest will be allocated.  */
+	 bounds checking, the rest will be allocated.  Also check this
+	 for A2B1.   */
 
-      if (gfc_option.rtcheck & GFC_RTCHECK_BOUNDS && m_case == A2B2)
+      if ((gfc_option.rtcheck & GFC_RTCHECK_BOUNDS) && (m_case == A2B2 || m_case == A2B1))
 	{
 	  gfc_code *test;
 	  gfc_expr *a2, *b1;

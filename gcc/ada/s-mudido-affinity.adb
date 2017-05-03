@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---          Copyright (C) 2011-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 2011-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -77,8 +77,6 @@ package body System.Multiprocessors.Dispatching_Domains is
    is
       Target : constant ST.Task_Id := Convert_Ids (T);
 
-      use type ST.Dispatching_Domain_Access;
-
    begin
       --  The exception Dispatching_Domain_Error is propagated if T is already
       --  assigned to a Dispatching_Domain other than
@@ -127,7 +125,6 @@ package body System.Multiprocessors.Dispatching_Domains is
 
       use type ST.Dispatching_Domain;
       use type ST.Dispatching_Domain_Access;
-      use type ST.Array_Allocated_Tasks;
       use type ST.Task_Id;
 
       T : ST.Task_Id;
@@ -330,8 +327,6 @@ package body System.Multiprocessors.Dispatching_Domains is
               Ada.Task_Identification.Current_Task)
    is
       Target : constant ST.Task_Id := Convert_Ids (T);
-
-      use type ST.Dispatching_Domain_Access;
 
    begin
       --  The exception Dispatching_Domain_Error is propagated if CPU is not

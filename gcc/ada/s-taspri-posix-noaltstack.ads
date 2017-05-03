@@ -7,7 +7,7 @@
 --                                  S p e c                                 --
 --                                                                          --
 --             Copyright (C) 1991-1994, Florida State University            --
---                     Copyright (C) 1995-2014, AdaCore                     --
+--                     Copyright (C) 1995-2017, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -73,12 +73,12 @@ package System.Task_Primitives is
 
 private
 
+   type RTS_Lock is new System.OS_Interface.pthread_mutex_t;
+
    type Lock is record
-      WO : aliased System.OS_Interface.pthread_mutex_t;
+      WO : aliased RTS_Lock;
       RW : aliased System.OS_Interface.pthread_rwlock_t;
    end record;
-
-   type RTS_Lock is new System.OS_Interface.pthread_mutex_t;
 
    type Suspension_Object is record
       State : Boolean;
@@ -90,7 +90,7 @@ private
       Waiting : Boolean;
       --  Flag showing if there is a task already suspended on this object
 
-      L : aliased System.OS_Interface.pthread_mutex_t;
+      L : aliased RTS_Lock;
       --  Protection for ensuring mutual exclusion on the Suspension_Object
 
       CV : aliased System.OS_Interface.pthread_cond_t;

@@ -8,14 +8,14 @@
 template <class T>
 struct Foo {
   int j; // we never see this one.
-  int k; // { dg-message "Foo" "" }
+  int k; // { dg-message "Foo" }
   
 };
 
 struct Baz 
 {
   int j;
-  int k; // { dg-message "candidates" "" }
+  int k; // { dg-message "candidates" }
   
 };
 
@@ -23,7 +23,7 @@ template <class T>
 struct Bar : public Foo<T>, Baz {
   
   int baz () { return j; } // binds to Baz::j
-  int foo () { return this->k; } // { dg-error "request for member" "" }
+  int foo () { return this->k; } // { dg-error "request for member" }
 };
 
 int main()
@@ -31,7 +31,7 @@ int main()
   Bar<int> bar;
 
   bar.baz ();
-  bar.foo (); // { dg-message "required" "" }
+  bar.foo (); // { dg-message "required" }
   
   return 0;
 }

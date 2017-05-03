@@ -1406,6 +1406,14 @@ package body Sem_Dim is
    --  Start of processing for Analyze_Dimension_Binary_Op
 
    begin
+      --  If the node is already analyzed, do not examine the operands. At the
+      --  end of the analysis their dimensions have been removed, and the node
+      --  itself may have been rewritten.
+
+      if Analyzed (N) then
+         return;
+      end if;
+
       if Nkind_In (N_Kind, N_Op_Add, N_Op_Expon, N_Op_Subtract)
         or else N_Kind in N_Multiplying_Operator
         or else N_Kind in N_Op_Compare
@@ -2146,9 +2154,9 @@ package body Sem_Dim is
 
          if Dim_Of_Expr /= Dim_Of_Etyp then
 
-            --  Numeric literal case. Issue a warning if the object type is not
-            --  dimensionless to indicate the literal is treated as if its
-            --  dimension matches the type dimension.
+            --  Numeric literal case. Issue a warning if the object type is
+            --  not dimensionless to indicate the literal is treated as if
+            --  its dimension matches the type dimension.
 
             if Nkind_In (Original_Node (Expr), N_Real_Literal,
                                                N_Integer_Literal)
@@ -2163,6 +2171,12 @@ package body Sem_Dim is
 
                Set_Dimensions (Id, Dim_Of_Expr);
 
+            --  Expression may have been constant-folded. If nominal type has
+            --  dimensions, verify that expression has same type.
+
+            elsif Exists (Dim_Of_Etyp) and then Etype (Expr) = Etyp then
+               null;
+
             --  For all other cases, issue an error message
 
             else
@@ -2170,8 +2184,8 @@ package body Sem_Dim is
             end if;
          end if;
 
-         --  Remove dimensions in expression after checking consistency
-         --  with given type.
+         --  Remove dimensions in expression after checking consistency with
+         --  given type.
 
          Remove_Dimensions (Expr);
       end if;

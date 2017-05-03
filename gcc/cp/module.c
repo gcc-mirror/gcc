@@ -2331,13 +2331,13 @@ cpms_in::finish_type (FILE *d, tree type)
       TYPE_NEXT_VARIANT (type) = TYPE_NEXT_VARIANT (main);
       TYPE_NEXT_VARIANT (main) = type;
       /* CANONICAL_TYPE is either already correctly remapped.  Or
-         correctly already us.  FIXME:Are we sure abcpms_out this?  */
+         correctly already us.  FIXME:Are we sure about this?  */
     found_variant:;
     }
   else if (!TYPE_STRUCTURAL_EQUALITY_P (type))
     {
       gcc_assert (TYPE_ALIGN (type));
-      hashval_t hash = type_hash_default (type);
+      hashval_t hash = type_hash_canon_hash (type);
       /* type_hash_canon frees type, if we find it already.  */
       type = type_hash_canon (hash, type);
       // FIXME: This is where it'd be nice to determine if type

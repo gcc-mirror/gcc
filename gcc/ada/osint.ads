@@ -662,7 +662,7 @@ package Osint is
    --  The suffixes used for the ALI files
 
    function Prep_Suffix return String;
-   --  The suffix used for pre-processed files
+   --  The suffix used for preprocessed files
 
 private
 
