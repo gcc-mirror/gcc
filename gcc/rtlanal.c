@@ -4164,14 +4164,6 @@ rtx_cost (rtx x, machine_mode mode, enum rtx_code outer_code,
 	return COSTS_N_INSNS (2 + factor);
       break;
 
-    case TRUNCATE:
-      /* If we can tie these modes, make this cheap.  */
-      if (MODES_TIEABLE_P (mode, GET_MODE (SUBREG_REG (x))))
-	{
-	  total = 0;
-	  break;
-	}
-      /* FALLTHRU */
     default:
       if (targetm.rtx_costs (x, mode, outer_code, opno, &total, speed))
 	return total;
