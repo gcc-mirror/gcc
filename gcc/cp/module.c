@@ -43,6 +43,7 @@ struct GTY(()) module_state
   module_state ();
 
  public:
+  void freeze (const module_state *);
   void set_index (unsigned index);
   void set_name (tree name);
   void do_import (unsigned index, bool is_export);
@@ -66,6 +67,12 @@ module_state::module_state ()
     name (NULL_TREE), name_parts (NULL), direct_import (0),
     crc (0), stamp (0)
 {
+}
+
+void module_state::freeze (const module_state *other)
+{
+  gcc_assert (!other->name);
+  bitmap_copy (imports, other->imports);
 }
 
 /* We've been assigned INDEX.  Mark the self-import-export bits.  */
@@ -118,6 +125,17 @@ vec<tree, va_gc> *
 module_name_parts (unsigned ix)
 {
   return (*modules)[ix]->name_parts;
+}
+
+/* Return the bitmap describing what modules are imported into
+   MODULE.  Remember, we always import ourselves.  */
+
+bitmap
+module_import_bitmap (unsigned ix)
+{
+  const module_state *state = (*modules)[ix];
+
+  return state ? state->imports : NULL;
 }
 
 /* We've just directly imported INDEX.  Update our import/export
@@ -1032,17 +1050,26 @@ cpms_in::header (FILE *d)
   if (v != ver)
     {
       bool have_a_go = false;
+      char v_dform[12], ver_dform[12];
+      sprintf (v_dform, "%04u/%02u/%02u",
+	       v_date / 10000, (v_date / 100) % 100, (v_date % 100));
+      sprintf (ver_dform, "%04u/%02u/%02u",
+	       ver_date / 10000, (ver_date / 100) % 100, (ver_date % 100));
       if (ver_date != v_date)
 	/* Dates differ, decline.  */
-	error ("%qs is version %d, require version %d",
-	       r.name, v_date, ver_date);
+	error ("%qs built by version %s, this is version %s",
+	       r.name, v_dform, ver_dform);
       else
 	{
 	  /* Times differ, give it a go.  */
-	  warning (0, "%qs is version %d, but build time is %d, not %d",
-		   r.name, v_date, v_time, ver_time);
+	  char v_tform[8], ver_tform[8];
+	  sprintf (v_tform, "%02u:%02u", v_time / 100, v_time % 100);
+	  sprintf (ver_tform, "%02u:%02u", ver_time / 100, ver_time % 100);
+	  warning (0, "%qs is version %s, but build time was %s, not %s",
+		   r.name, v_dform, v_tform, ver_tform);
 	  have_a_go = true;
 	}
+
       if (!have_a_go)
 	{
 	  r.bad ();
@@ -2236,7 +2263,7 @@ cpms_out::write_bindings (FILE *d, tree ns)
       if (OVL_P (decl))
 	{
 	  for (ovl_iterator iter (decl); iter; ++iter)
-	    if (!iter.via_using_p ())
+	    if (!iter.using_p ())
 	      {
 		tree fn = *iter;
 
@@ -2578,9 +2605,13 @@ do_module_import (location_t loc, tree name, import_kind kind,
     {
       module_map = hash_map<lang_identifier *, unsigned>::create_ggc (31);
       vec_safe_reserve (modules, IMPORTED_MODULE_BASE);
+      this_module = new (ggc_alloc <module_state> ()) module_state ();
       for (unsigned ix = IMPORTED_MODULE_BASE; ix--;)
 	modules->quick_push (NULL);
-      this_module = new (ggc_alloc <module_state> ()) module_state ();
+      /* Insert map as unless/until we declare a module, we're the
+	 global modle.  */
+      if (kind <= ik_interface)
+	(*modules)[GLOBAL_MODULE_INDEX] = this_module;
     }
 
   bool existed;
@@ -2709,12 +2740,22 @@ declare_module (location_t loc, tree name, tree attrs)
   module_nm = get_identifier (sym);
   free (sym);
 
+  module_state *frozen = NULL;
+  if (modules)
+    {
+      /* If we did any importing already, freeze it.  */
+      gcc_assert ((*modules)[GLOBAL_MODULE_INDEX] == this_module);
+      frozen = new (ggc_alloc <module_state> ()) module_state (*this_module);
+      frozen->freeze (this_module);
+    }
+
   unsigned index = do_module_import
     (loc, name, inter ? ik_interface : ik_implementation, 0, 0);
   if (index != GLOBAL_MODULE_INDEX)
     {
       gcc_assert (index == THIS_MODULE_INDEX);
 
+      (*modules)[GLOBAL_MODULE_INDEX] = frozen;
       current_module = index;
       this_module->direct_import = inter;
       if (inter) // FIXME:we should do in both cases (or neither)

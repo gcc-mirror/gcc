@@ -4026,7 +4026,8 @@ cxx_init_decl_processing (void)
   gcc_assert (global_namespace == NULL_TREE);
   global_namespace = build_lang_decl (NAMESPACE_DECL, global_identifier,
 				      void_type_node);
-  TREE_PUBLIC (global_namespace) = 1;
+  TREE_PUBLIC (global_namespace) = true;
+  DECL_MODULE_EXPORT_P (global_namespace) = true;
   DECL_CONTEXT (global_namespace)
     = build_translation_unit_decl (get_identifier (main_input_filename));
   debug_hooks->register_main_translation_unit

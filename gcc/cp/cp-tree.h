@@ -323,7 +323,7 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
       IMPLICIT_CONV_EXPR_DIRECT_INIT (in IMPLICIT_CONV_EXPR)
       TRANSACTION_EXPR_IS_STMT (in TRANSACTION_EXPR)
       CONVERT_EXPR_VBASE_PATH (in CONVERT_EXPR)
-      OVL_LOOKUP_P (in OVERLOAD)
+      OVL_EXPORT_P (in OVERLOAD)
       PACK_EXPANSION_LOCAL_P (in *_PACK_EXPANSION)
       TINFO_HAS_ACCESS_ERRORS (in TEMPLATE_INFO)
       SIZEOF_EXPR_TYPE_P (in SIZEOF_EXPR)
@@ -374,8 +374,7 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
       CALL_EXPR_ORDERED_ARGS (in CALL_EXPR, AGGR_INIT_EXPR)
       DECLTYPE_FOR_REF_CAPTURE (in DECLTYPE_TYPE)
       OVL_NESTED_P (in OVERLOAD)
-      DCL_MODULE_EXPORT_P (in FUNCTION_DECL, VAR_DECL, TYPE_DECL,
-      				TEMPLATE_DECL)
+      DECL_MODULE_EXPORT_P (in _DECL)
    4: TREE_HAS_CONSTRUCTOR (in INDIRECT_REF, SAVE_EXPR, CONSTRUCTOR,
 	  CALL_EXPR, or FIELD_DECL).
       IDENTIFIER_TYPENAME_P (in IDENTIFIER_NODE)
@@ -388,6 +387,7 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
       FUNCTION_RVALUE_QUALIFIED (in FUNCTION_TYPE, METHOD_TYPE)
       CALL_EXPR_REVERSE_ARGS (in CALL_EXPR, AGGR_INIT_EXPR)
       LOOKUP_FOUND_P (in RECORD_TYPE, UNION_TYPE, NAMESPACE_DECL)
+      OVL_LOOKUP_P (in OVERLOAD)
    6: IDENTIFIER_REPO_CHOSEN (in IDENTIFIER_NODE)
       TYPE_MARKED_P (in _TYPE)
       DECL_NON_TRIVIALLY_INITIALIZED_P (in VAR_DECL)
@@ -653,16 +653,20 @@ typedef struct ptrmem_cst * ptrmem_cst_t;
 #define OVL_CHAIN(NODE) \
   (((struct tree_overload*)OVERLOAD_CHECK (NODE))->common.chain)
 
+/* It is not an accident that EXPORT, VIA_USING and HIDDEN use
+   contiguous bit fields.  */
+/* If set, this is an exported declaration.   */
+#define OVL_EXPORT_P(NODE)	TREE_LANG_FLAG_0 (OVERLOAD_CHECK (NODE))
 /* If set, this was imported in a using declaration.   */
-#define OVL_VIA_USING_P(NODE)	TREE_LANG_FLAG_1 (OVERLOAD_CHECK (NODE))
-/* If set, this overload was constructed during lookup.  */
-#define OVL_LOOKUP_P(NODE) TREE_LANG_FLAG_0 (OVERLOAD_CHECK (NODE))
+#define OVL_USING_P(NODE)	TREE_LANG_FLAG_1 (OVERLOAD_CHECK (NODE))
 /* If set, this overload is a hidden decl.  */
-#define OVL_HIDDEN_P(NODE) TREE_LANG_FLAG_2 (OVERLOAD_CHECK (NODE))
+#define OVL_HIDDEN_P(NODE)	TREE_LANG_FLAG_2 (OVERLOAD_CHECK (NODE))
 /* If set, this overload contains a nested overload.  */
-#define OVL_NESTED_P(NODE) TREE_LANG_FLAG_3 (OVERLOAD_CHECK (NODE))
+#define OVL_NESTED_P(NODE)	TREE_LANG_FLAG_3 (OVERLOAD_CHECK (NODE))
+/* If set, this overload was constructed during lookup.  */
+#define OVL_LOOKUP_P(NODE)	TREE_LANG_FLAG_5 (OVERLOAD_CHECK (NODE))
 /* If set, this is a persistant lookup. */
-#define OVL_USED_P(NODE) TREE_USED (OVERLOAD_CHECK (NODE))
+#define OVL_USED_P(NODE)	TREE_USED (OVERLOAD_CHECK (NODE))
 
 /* The first decl of an overload.  */
 #define OVL_FIRST(NODE)	ovl_first (NODE)
@@ -728,9 +732,9 @@ class ovl_iterator
   }
 
  public:
-  bool via_using_p () const
+  bool using_p () const
   {
-    return TREE_CODE (ovl) == OVERLOAD && OVL_VIA_USING_P (ovl);
+    return TREE_CODE (ovl) == OVERLOAD && OVL_USING_P (ovl);
   }
   bool hidden_p () const
   {
@@ -744,7 +748,7 @@ class ovl_iterator
   }
   tree unusing (tree overload)
   {
-    gcc_assert (via_using_p ());
+    gcc_assert (using_p ());
     return remove_node (overload, ovl);
   }
 
@@ -1439,7 +1443,7 @@ check_constraint_info (tree t)
 
 /* Whether this is an exported DECL.  */
 #define DECL_MODULE_EXPORT_P(NODE) \
-  TREE_LANG_FLAG_3 (VAR_TEMPL_TYPE_OR_FUNCTION_DECL_CHECK (NODE))
+  TREE_LANG_FLAG_3 (DECL_CHECK (NODE))
 
 /* Whether the namespace contains module-linkage objects.  */
 #define MODULE_NAMESPACE_P(NODE) \
@@ -6391,6 +6395,7 @@ extern void finish_module ();
 extern void import_export_module (location_t, tree, tree, bool);
 extern tree module_name (unsigned);
 extern vec<tree, va_gc> *module_name_parts (unsigned);
+extern bitmap module_import_bitmap (unsigned module);
 
 /* In optimize.c */
 extern bool maybe_clone_body			(tree);

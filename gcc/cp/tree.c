@@ -2154,14 +2154,14 @@ ovl_copy (tree ovl)
   TREE_TYPE (result) = TREE_TYPE (ovl);
   OVL_FUNCTION (result) = OVL_FUNCTION (ovl);
   OVL_CHAIN (result) = OVL_CHAIN (ovl);
-  if (OVL_HIDDEN_P (ovl))
-    OVL_HIDDEN_P (ovl) = true;
-  if (OVL_VIA_USING_P (ovl))
-    OVL_VIA_USING_P (ovl) = true;
+  OVL_HIDDEN_P (ovl) = OVL_HIDDEN_P (ovl);
+  OVL_USING_P (ovl) = OVL_USING_P (ovl);
+  OVL_EXPORT_P (ovl) = OVL_EXPORT_P (ovl);
+
   return result;
 }
 
-/* Add FN to the (potentially NULL) overload set OVL.  VIA_USING is
+/* Add FN to the (potentially NULL) overload set OVL.  USING_P is
    true, if FN is via a using declaration.  We also pay attention to
    DECL_HIDDEN.  Overloads are ordered as hidden, using, regular,
    exported.  */
@@ -2169,8 +2169,8 @@ ovl_copy (tree ovl)
 tree
 ovl_insert (tree maybe_ovl, tree fn, bool using_p)
 {
-  bool hidden_p = !using_p && DECL_HIDDEN_P (fn);
-  int weight = hidden_p * 2 + using_p;
+  bool hidden_p = DECL_HIDDEN_P (fn);
+  int weight = hidden_p * 4 + using_p * 2 + DECL_MODULE_EXPORT_P (fn);
   bool copying = false;
 
   tree result = NULL_TREE;
@@ -2179,7 +2179,9 @@ ovl_insert (tree maybe_ovl, tree fn, bool using_p)
   /* Find insertion point.  */
   while (maybe_ovl && TREE_CODE (maybe_ovl) == OVERLOAD
 	 && (weight <
-	     (OVL_HIDDEN_P (maybe_ovl) * 2 + OVL_VIA_USING_P (maybe_ovl))))
+	     (OVL_HIDDEN_P (maybe_ovl) * 4
+	      + OVL_USING_P (maybe_ovl) * 2
+	      + OVL_EXPORT_P (maybe_ovl))))
     {
       gcc_checking_assert (!OVL_LOOKUP_P (maybe_ovl)
 			   && (!OVL_USED_P (maybe_ovl) || !copying));
@@ -2197,13 +2199,32 @@ ovl_insert (tree maybe_ovl, tree fn, bool using_p)
     }
 
   tree trail = fn;
+  if (maybe_ovl && TREE_CODE (maybe_ovl) != OVERLOAD
+      && !DECL_MODULE_EXPORT_P (maybe_ovl) && DECL_MODULE_EXPORT_P (fn))
+    {
+      /* We must place FN after MAYBE_OVL, which isa raw _DECL  */
+      gcc_assert (!using_p && !hidden_p);
+      if (TREE_CODE (fn) == TEMPLATE_DECL)
+	{
+	  trail = ovl_make (fn, NULL_TREE);
+	  if (DECL_MODULE_EXPORT_P (fn))
+	    OVL_EXPORT_P (trail) = true;
+	}
+      /* Now swap things round, so it looks like we're prepending as
+	 normal.  */
+      fn = maybe_ovl;
+      maybe_ovl = trail;
+    }
+
   if (maybe_ovl || using_p || hidden_p || TREE_CODE (fn) == TEMPLATE_DECL)
     {
       trail = ovl_make (fn, maybe_ovl);
       if (hidden_p)
 	OVL_HIDDEN_P (trail) = true;
       if (using_p)
-	OVL_VIA_USING_P (trail) = true;
+	OVL_USING_P (trail) = true;
+      if (DECL_MODULE_EXPORT_P (fn))
+	OVL_EXPORT_P (trail) = true;
     }
 
   if (insert_after)
@@ -2227,7 +2248,7 @@ ovl_iterator::unhide_node (tree overload, tree node)
   OVL_HIDDEN_P (node) = false;
   if (tree chain = OVL_CHAIN (node))
     if (TREE_CODE (chain) == OVERLOAD
-	&& (OVL_VIA_USING_P (chain) || OVL_HIDDEN_P (chain)))
+	&& (OVL_USING_P (chain) || OVL_HIDDEN_P (chain)))
       {
 	overload = remove_node (overload, node);
 	overload = ovl_insert (overload, OVL_FUNCTION (node));
@@ -2495,7 +2516,7 @@ ovl_scope (tree ovl)
   ovl2_iterator iter (ovl);
   do
     ovl = *iter;
-  while (iter.via_using_p () && ++iter);
+  while (iter.using_p () && ++iter);
 
   return CP_DECL_CONTEXT (ovl);
 }

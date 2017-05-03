@@ -1,5 +1,20 @@
 2017-05-03  Nathan Sidwell  <nathan@acm.org>
 
+	Namespace partitions.
+	gcc/cp/
+	* cp-tree.h (OVL_EXPORT_P): New. Move OVL_LOOKUP_P.
+	(DECL_MODULE_EXPORT_P): Allow any DECL.
+	(module_import_bitmap): Declare.
+	* decl.c (cxx_init_decl_processing): Export global_namespace.
+	* module.c (module_import_bitmap): New.
+	(do_module_import): Install as global module, if needed.
+	(declare_module): Freeze global imports.
+	* name-lookup.c: Include bitmap.h.
+	(name_lookup::process_binding): Take split bindings.
+	(name_lookup::process_module_binding): New.
+	(name_lookup::search_namespace_only): Adjust.
+	* tree.c (ovl_insert): Sort by export_p too.
+
 	Merge trunk r247550.
 
 	Namespace partitions.

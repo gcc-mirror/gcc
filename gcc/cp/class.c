@@ -1096,7 +1096,7 @@ add_method (tree type, tree method, bool via_using)
 
       /* Two using-declarations can coexist, we'll complain about ambiguity in
 	 overload resolution.  */
-      if (via_using && iter.via_using_p ()
+      if (via_using && iter.using_p ()
 	  /* Except handle inherited constructors specially.  */
 	  && ! DECL_CONSTRUCTOR_P (fn))
 	continue;
@@ -5007,9 +5007,9 @@ clone_constructors_and_destructors (tree t)
     return;
 
   for (ovl_iterator iter (CLASSTYPE_CONSTRUCTORS (t)); iter; ++iter)
-    clone_function_decl (*iter, /*update_methods=*/true, iter.via_using_p ());
+    clone_function_decl (*iter, /*update_methods=*/true, iter.using_p ());
   for (ovl_iterator iter (CLASSTYPE_DESTRUCTORS (t)); iter; ++iter)
-    clone_function_decl (*iter, /*update_methods=*/true, iter.via_using_p ());
+    clone_function_decl (*iter, /*update_methods=*/true, iter.using_p ());
 }
 
 /* Deduce noexcept for a destructor DTOR.  */

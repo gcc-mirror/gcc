@@ -32,6 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gcc-rich-location.h"
 #include "spellcheck-tree.h"
 #include "parser.h"
+#include "bitmap.h"
 
 static cxx_binding *cxx_binding_make (tree value, tree type);
 static cp_binding_level *innermost_nonclass_level (void);
@@ -211,7 +212,7 @@ add_decl_to_level (cp_binding_level *level, tree decl)
     {
       /* Inner namespaces get their own chain, to make walking
 	 simpler.  */
-      //  FIXME: only because of cp_binding_level::static_decls
+      //  FIXME: only because of spelling correction.
       DECL_CHAIN (decl) = level->namespaces;
       level->namespaces = decl;
     }
@@ -344,7 +345,9 @@ private:
 
 private:
   static tree merge_binding (tree, tree);
-  bool process_binding (tree binding);
+  bool process_binding (tree val_bind, tree type_bind);
+  unsigned process_module_binding (bitmap, unsigned,
+				   unsigned, unsigned, tree);
   /* Look in only namespace.  */
   bool search_namespace_only (tree scope);
   /* Look in namespace and its (recursive) inlines. Ignore using
@@ -467,11 +470,8 @@ name_lookup::merge_binding (tree cur, tree new_val)
 }
 
 bool
-name_lookup::process_binding (tree binding)
+name_lookup::process_binding (tree new_val, tree new_type)
 {
-  tree new_val = MAYBE_STAT_DECL (binding);
-  tree new_type = MAYBE_STAT_TYPE (binding);
-
   /* Did we really see a type? */
   if (LOOKUP_NAMESPACES_ONLY (flags)
       || (!(flags & LOOKUP_HIDDEN)
@@ -519,6 +519,60 @@ name_lookup::process_binding (tree binding)
   return new_val != NULL_TREE;
 }
 
+/* If we're importing a module containing this binding, add it to the
+   lookup set.  The trickiness is with namespaces, we only want to
+   find it once.  */
+
+unsigned
+name_lookup::process_module_binding (bitmap imports, unsigned marker,
+				     unsigned ix, unsigned span, tree bind)
+{
+  tree new_type = MAYBE_STAT_TYPE (bind);
+  tree new_val = MAYBE_STAT_DECL (bind);
+
+  if (ix != GLOBAL_MODULE_INDEX
+      && !(ix <= current_module && ix + span > current_module))
+    {
+      bool found = false;
+
+      if (imports)
+	for (; !found && span--; ix++)
+	  if (bitmap_bit_p (imports, ix))
+	    found = true;
+
+      if (!found)
+	return marker;
+
+      /* Not the current or global module, so we only see exports.  */
+      if (new_type && !DECL_MODULE_EXPORT_P (new_type))
+	new_type = NULL_TREE;
+      // FIXME:have stat_hack point directly to the exported set Right
+      // now, the ordering of this with the bitmap check is
+      // unfortunate.
+      while (new_val && TREE_CODE (new_val) == OVERLOAD
+	     && !OVL_EXPORT_P (new_val))
+	new_val = OVL_CHAIN (new_val);
+      if (new_val && TREE_CODE (new_val) != OVERLOAD
+	  && !DECL_MODULE_EXPORT_P (new_val))
+	new_val = NULL_TREE;
+    }
+
+  /* Optimize for (re-)finding a namespace.  */
+  if (new_val && !new_type
+      && TREE_CODE (new_val) == NAMESPACE_DECL
+      && !DECL_NAMESPACE_ALIAS (new_val))
+    {
+      if (marker & 2)
+	return marker;
+      marker |= 2;
+    }
+
+  if (new_type || new_val)
+    marker |= process_binding (new_val, new_type);
+
+  return marker;
+}
+
 /* Look in exactly namespace SCOPE.  */
 
 bool
@@ -531,18 +585,31 @@ name_lookup::search_namespace_only (tree scope)
       tree val = *binding;
       if (TREE_CODE (val) != MODULE_VECTOR)
 	/* Only a global module binding, visible from anywhere.  */
-	found |= process_binding (val);
+	found |= process_binding (MAYBE_STAT_DECL (val),
+				  MAYBE_STAT_TYPE (val));
       else
 	{
-	  // FIXME:grab & test the import bitmap
+	  /* I presume the binding list is going to be sparser than
+	     the import bitmap.  Hence iterate over the former
+	     checking for bits set in the bitmap.  */
+	  bitmap imports = module_import_bitmap (current_module);
 	  module_cluster *cluster = MODULE_VECTOR_CLUSTER_BASE (val);
+	  int marker = 0;
 	  for (unsigned ix = MODULE_VECTOR_NUM_CLUSTERS (val); ix--; cluster++)
 	    {
 	      if (cluster->spans[0])
-		found |= process_binding (cluster->slots[0]);
+		marker = process_module_binding (imports, marker,
+						 cluster->bases[0],
+						 cluster->spans[0],
+						 cluster->slots[0]);
+	      
 	      if (cluster->spans[1])
-		found |= process_binding (cluster->slots[1]);
+		marker = process_module_binding (imports, marker,
+						 cluster->bases[1],
+						 cluster->spans[1],
+						 cluster->slots[1]);
 	    }
+	  found |= marker & 1;
 	}
     }
 
@@ -1748,8 +1815,7 @@ update_binding (cp_binding_level *level, cxx_binding *binding, tree *slot,
 	    {
 	      tree fn = *iter;
 
-	      if (iter.via_using_p ()
-		  && matching_fn_p (fn, decl))
+	      if (iter.using_p () && matching_fn_p (fn, decl))
 		{
 		  /* If a function declaration in namespace scope or
 		     block scope has the same name and the same
@@ -2375,7 +2441,7 @@ do_pushdecl (tree decl, bool is_friend)
 	old = NULL_TREE;
 
       for (ovl_iterator iter (old); iter; ++iter)
-	if (iter.via_using_p ())
+	if (iter.using_p ())
 	  ; /* Ignore using decls here.  */
 	else if (tree match = duplicate_decls (decl, *iter, is_friend))
 	  {
@@ -3624,7 +3690,7 @@ do_nonmember_using_decl (tree scope, tree name, tree *value_p, tree *type_p)
 		    /* The function already exists in the current
 		       namespace.  */
 		    found = true;
-		  else if (old.via_using_p ())
+		  else if (old.using_p ())
 		    continue; /* This is a using decl. */
 		  else if (old.hidden_p () && !DECL_HIDDEN_FRIEND_P (old_fn))
 		    continue; /* This is an anticipated builtin.  */
@@ -6390,6 +6456,8 @@ push_namespace (tree name, bool make_inline)
 	    sorry ("cannot nest more than %d namespaces",
 		   SCOPE_DEPTH (current_namespace));
 	  DECL_CONTEXT (ns) = FROB_CONTEXT (current_namespace);
+	  /* Namespaces are always exported. */
+	  DECL_MODULE_EXPORT_P (ns) = true;
 	  new_ns = true;
 	}
       // FIXME anonmous namespace
