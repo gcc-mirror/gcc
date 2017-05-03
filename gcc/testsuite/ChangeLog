@@ -1,3 +1,10 @@
+2017-05-03  Tom de Vries  <tom@codesourcery.com>
+
+	* c-c++-common/goacc/data-default-1.c: Add quotes to numerical comment
+	arg of dg directive.
+	* c-c++-common/goacc/routine-3.c: Same.
+	* c-c++-common/goacc/routine-4.c: Same.
+
 2017-05-02  David Malcolm  <dmalcolm@redhat.com>
 
 	* gcc.dg/plugin/diagnostic-test-show-locus-bw.c
