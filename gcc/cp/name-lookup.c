@@ -65,6 +65,7 @@ static tree *
 module_binding_slot (tree *slot, unsigned ix, int create)
 {
   bool not_vec = !*slot || TREE_CODE (*slot) != MODULE_VECTOR;
+  unsigned clusters = 0;
 
   if (not_vec)
     {
@@ -74,14 +75,8 @@ module_binding_slot (tree *slot, unsigned ix, int create)
       if (!create)
 	return NULL;
     }
-
-  module_cluster *cluster;
-  unsigned clusters = 0;
-  if (!not_vec)
-    {
-      clusters = MODULE_VECTOR_NUM_CLUSTERS (*slot);
-      cluster = &MODULE_VECTOR_CLUSTER (*slot, clusters - 1);
-    }
+  else
+    clusters = MODULE_VECTOR_NUM_CLUSTERS (*slot);
 
   /* Figure out if we need to extend the module vector itself.  */
   unsigned incr = 0;
@@ -89,22 +84,27 @@ module_binding_slot (tree *slot, unsigned ix, int create)
     incr = not_vec; /* Only if it's not already a vector.  */
   else if (clusters < 2)
     incr = 2 - clusters; /* Make sure we have glob/this slots too.  */
-  else if (create < 0)
+  else
     {
-      /* If we're binding a namespace, see if we can extend the span
-	 of the final element.  */
-      incr = cluster->spans[1] != 0;
-      if (cluster->bases[incr] + cluster->spans[incr] == ix)
+      module_cluster *last = MODULE_VECTOR_CLUSTER_LAST (*slot);
+      if (create < 0)
 	{
-	  cluster->spans[incr]++;
-	  return &cluster->slots[incr];
+	  /* If we're binding a namespace, see if we can extend the span
+	     of the final element.  */
+	  incr = last->spans[1] != 0;
+	  if (last->bases[incr] + last->spans[incr] == ix)
+	    {
+	      last->spans[incr]++;
+	      return &last->slots[incr];
+	    }
+	  /* Otherwise we need to extend, if that was the last slot of the
+	     cluster.  */
 	}
-      /* Otherwise we need to extend, if that was the last slot of the
-	 cluster.  */
+      else if (last->spans[1])
+	incr = 1; /* No spare slot in the final cluster.  */
     }
-  else if (cluster->spans[1])
-    incr = 1; /* No spare slot in the final cluster.  */
 
+  module_cluster *cluster;
   if (incr)
     {
       tree new_vec = make_module_vec (clusters + incr);
@@ -122,13 +122,14 @@ module_binding_slot (tree *slot, unsigned ix, int create)
 	  cluster->spans[THIS_MODULE_INDEX] = 1;
 	}
       *slot = new_vec;
-      clusters += incr;
-      cluster += clusters - 1;
     }
+  else
+    cluster = MODULE_VECTOR_CLUSTER_BASE (*slot);
 
   unsigned off = ix;
   if (ix >= IMPORTED_MODULE_BASE)
     {
+      cluster += MODULE_VECTOR_NUM_CLUSTERS (*slot) - 1;
       off = cluster->spans[0] != 0;
 
       gcc_assert (!off || cluster->bases[0] + cluster->spans[0] <= ix);
@@ -3798,10 +3799,6 @@ do_local_using_decl (tree decl, tree scope, tree name)
 bool
 is_nested_namespace (tree ancestor, tree descendant, bool inline_only)
 {
-  /* Strip current module's local namespace from root.  */
-  if (CURRENT_MODULE_NAMESPACE_P (ancestor))
-    ancestor = CP_DECL_CONTEXT (ancestor);
-
   int depth = SCOPE_DEPTH (ancestor);
 
   if (!depth && !inline_only)
@@ -3828,10 +3825,7 @@ is_ancestor (tree root, tree child)
 	       || CLASS_TYPE_P (child)));
 
   /* The global namespace encloses everything.  */
-  if (root == global_namespace
-      || (TREE_CODE (root) == NAMESPACE_DECL
-	  && CURRENT_MODULE_NAMESPACE_P (root)
-	  && CP_DECL_CONTEXT (root) == global_namespace))
+  if (root == global_namespace)
     return true;
 
   /* Search until we reach namespace scope.  */

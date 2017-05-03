@@ -17,5 +17,5 @@ namespace One {
 
 // These fail until namespace hack is removed
 // { dg-final { scan-assembler "_Z3Foov:" } }
-// { dg-final { scan-assembler "_ZW5okely6dokelyEN3One3Two5Three4Foo2Ev:" { xfail *-*-* } } }
+// { dg-final { scan-assembler "_ZW5okely6dokelyEN3One3Two5Three4Foo2Ev:" } }
 // { dg-final { scan-assembler "_ZN3One3Two5Three4Baz2Ev:" } }

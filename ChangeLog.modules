@@ -2,6 +2,27 @@
 
 	Namespace partitions.
 	gcc/cp/
+	* cp-tree.h (MODULE_NAMESPACE_P, GLOBAL_MODULE_NAMESPACE_P,
+	CURRENT_MODULE_NAMESPACE_P): Delete.
+	(pop_module_namespace, push_module_namespace): Delete.
+	* module.c (cpms_out::write_bindings, cpms_in::finish_namespace):
+	Remove module namespace hacks.
+	(push_module_namespace, pop_module_namespace): Delete.
+	(module_to_ext): Swallow into ...
+	(module_to_filename): ... here.
+	(declare_module): Don't create module namespace symbol.
+	* name-lookup.c (module_binding_slot): Fixup global module
+	insertion.
+	(is_nested_namespce, is_ancestor): Remove module namespace hacks.
+	* parser.c (check_module_outermost, cp_parser_module_export,
+	cp_parser_module_proclamation,
+	cp_parser_namespace_definition): Likewise
+	gcc/testsuite/
+	* g++.dg/modules/mod-sym-[123].C: Remove xfails.
+	* g++.dg/modules/mod-impl-1_a.C: Revert to run test.
+
+	Namespace partitions.
+	gcc/cp/
 	* cp-tree.h (OVL_EXPORT_P): New. Move OVL_LOOKUP_P.
 	(DECL_MODULE_EXPORT_P): Allow any DECL.
 	(module_import_bitmap): Declare.

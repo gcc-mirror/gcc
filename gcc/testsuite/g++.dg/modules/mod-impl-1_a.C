@@ -1,5 +1,5 @@
-// { dg-module-do "link" { xfail *-*-* } }
-// FAIL until namespace hack removed, then should run
+// { dg-module-do "run"  { xfail *-*-* } }
+// FIXME: set decl module on import
 
 module baz [[interface]];
 // { dg-module-if "baz" }

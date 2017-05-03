@@ -2224,17 +2224,6 @@ cpms_in::read_tree (FILE *d, tree *tp, unsigned tag)
 void
 cpms_out::write_bindings (FILE *d, tree ns)
 {
-  bool mod_ns = CURRENT_MODULE_NAMESPACE_P (ns);
-
-  /* Don't walk into other module's namespaces.  */
-  if (MODULE_NAMESPACE_P (ns) && !mod_ns)
-    {
-      if (d)
-	fprintf (d, "Skipping namespace '%s'\n",
-		 IDENTIFIER_POINTER (DECL_NAME (ns)));
-      return;
-    }
-
   if (d)
     fprintf (d, "Walking namespace '%s'\n",
 	     IDENTIFIER_POINTER (DECL_NAME (ns)));
@@ -2282,7 +2271,7 @@ cpms_out::write_bindings (FILE *d, tree ns)
 	}
       else if (TREE_CODE (decl) == NAMESPACE_DECL)
 	write_bindings (d, decl);
-      else if (mod_ns || DECL_MODULE_EXPORT_P (decl)
+      else if (DECL_MODULE_EXPORT_P (decl)
 	       // FIXME: set MODULE_EXPORT_P properly.  Utter hack here
 	       || !DECL_EXTERN_C_P (decl))
 	switch (TREE_CODE (decl))
@@ -2304,17 +2293,6 @@ cpms_out::write_bindings (FILE *d, tree ns)
 #define MOD_FNAME_SFX ".nms" /* New Module System.  Honest.  */
 #define MOD_FNAME_DOT '-'
 
-/* Mangling for module symbol.  */
-#define MOD_SYM_PFX "_M"
-#if !defined (NO_DOT_IN_LABEL)
-#define MOD_SYM_DOT '.'
-#elif !defined (NO_DOLLAR_IN_LABEL)
-#define MOD_SYM_DOT '$'
-#else
-#define MOD_SYM_DOT '_'
-#endif
-
-static GTY(()) tree module_nm; /* Name for this module namespaces. */
 static location_t module_loc;	 /* Location of the module decl.  */
 static GTY(()) tree proclaimer;
 static int export_depth; /* -1 for singleton export.  */
@@ -2419,47 +2397,19 @@ cpms_in::finish_namespace (FILE *d, tree ns)
   tree res = NULL_TREE;
 
   /* We will not have frobbed the namespace yet.  */
-  bool inline_p = DECL_NAMESPACE_INLINE_P (ns);
-  bool module_p = MODULE_NAMESPACE_P (ns);
-  if (module_p && (state != this_module || DECL_NAME (ns) != module_nm))
-    DECL_NAMESPACE_INLINE_P (ns) = false;
   res = push_module_namespace (CP_DECL_CONTEXT (ns), index, ns);
   if (!res)
     error ("failed to insert namespace %E", ns);
   else if (res == ns)
     {
       if (d)
-	fprintf (d, "Creating%s namespace %s (%p)\n",
-		 inline_p ? " inline" : "",
+	fprintf (d, "Creating namespace %s (%p)\n",
 		 IDENTIFIER_POINTER (DECL_NAME (ns)), (void *)res);
     }
   else
     free_node (ns);
 
   return res;
-}
-
-/* If we're in the purview of a module, push its local namespace.  */
-
-void
-push_module_namespace (bool do_it)
-{
-  gcc_assert (TREE_CODE (current_scope ()) == NAMESPACE_DECL
-	      && (!do_it || module_nm));
-  if (do_it && push_namespace (module_nm, true))
-    MODULE_NAMESPACE_P (current_namespace) = true;
-}
-
-/* If we're in the current module's local namespace, pop cpms_out of it.  */
-
-bool
-pop_module_namespace ()
-{
-  gcc_assert (TREE_CODE (current_scope ()) == NAMESPACE_DECL);
-  bool do_it = CURRENT_MODULE_NAMESPACE_P (current_namespace);
-  if (do_it)
-    pop_namespace ();
-  return do_it;
 }
 
 /* Nest a module export level.  Return true if we were already in a
@@ -2533,24 +2483,19 @@ module_interface_p ()
    FIXME: Add host-applicable hooks.  */
 
 static char *
-module_to_ext (tree id, const char *pfx, const char *sfx, char dot)
-{
-  char *name = concat (pfx, IDENTIFIER_POINTER (id), sfx, NULL);
-  char *ptr = name + strlen (pfx);
-  size_t len = IDENTIFIER_LENGTH (id);
-
-  if (dot != '.')
-    for (; len--; ptr++)
-      if (*ptr == '.')
-	*ptr = dot;
-
-  return name;
-}
-
-static char *
 module_to_filename (tree id)
 {
-  return module_to_ext (id, MOD_FNAME_PFX, MOD_FNAME_SFX, MOD_FNAME_DOT);
+  char *name = concat (MOD_FNAME_PFX, IDENTIFIER_POINTER (id),
+		       MOD_FNAME_SFX, NULL);
+  char *ptr = name + strlen (MOD_FNAME_PFX);
+  size_t len = IDENTIFIER_LENGTH (id);
+
+  if (MOD_FNAME_DOT != '.')
+    for (; len--; ptr++)
+      if (*ptr == '.')
+	*ptr = MOD_FNAME_DOT;
+
+  return name;
 }
 
 /* Read a module NAME file name FNAME on STREAM.  Returns its module
@@ -2736,9 +2681,6 @@ declare_module (location_t loc, tree name, tree attrs)
     }
 
   module_loc = loc;
-  char *sym = module_to_ext (name, MOD_SYM_PFX, NULL, MOD_SYM_DOT);
-  module_nm = get_identifier (sym);
-  free (sym);
 
   module_state *frozen = NULL;
   if (modules)
@@ -2758,8 +2700,6 @@ declare_module (location_t loc, tree name, tree attrs)
       (*modules)[GLOBAL_MODULE_INDEX] = frozen;
       current_module = index;
       this_module->direct_import = inter;
-      if (inter) // FIXME:we should do in both cases (or neither)
-	push_module_namespace (true);
     }
 }
 

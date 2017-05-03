@@ -12394,14 +12394,11 @@ check_module_outermost (const cp_token *token, const char *msg)
 {
   tree scope = current_scope ();
   bool result = true;
-  bool popped = false;
 
   /* Don't get confused by any module namespace.  */
   if (TREE_CODE (scope) == NAMESPACE_DECL)
-    {
-      popped = pop_module_namespace ();
-      scope = current_scope ();
-    }
+    scope = current_scope ();
+
   if (scope != global_namespace
       || module_exporting_level ()
       || current_lang_depth ())
@@ -12410,7 +12407,7 @@ check_module_outermost (const cp_token *token, const char *msg)
 		"%qs may only occur at outermost scope", msg);
       result = false;
     }
-  push_module_namespace (popped);
+
   return result;
 }
 
@@ -12474,7 +12471,6 @@ cp_parser_module_export (cp_parser *parser)
     cp_parser_module_declaration (parser, true);
   else
     {
-      bool popped = pop_module_namespace ();
       if (braced)
 	{
 	  cp_ensure_no_omp_declare_simd (parser);
@@ -12486,7 +12482,6 @@ cp_parser_module_export (cp_parser *parser)
 	}
       else
 	cp_parser_declaration (parser);
-      push_module_namespace (popped);
     }
 
   pop_module_export (prev);
@@ -12508,9 +12503,7 @@ cp_parser_module_proclamation (cp_parser *parser)
     name = NULL;
 
   int prev = push_module_export (true, name);
-  bool popped = pop_module_namespace ();
   cp_parser_declaration (parser);
-  push_module_namespace (popped);
   pop_module_export (prev);
 }
 
@@ -18395,7 +18388,6 @@ cp_parser_namespace_definition (cp_parser* parser)
   /* Parse any specified attributes before the identifier.  */
   tree attribs = cp_parser_attributes_opt (parser);
 
-  bool popped = pop_module_namespace ();
   for (;;)
     {
       identifier = NULL_TREE;
@@ -18449,8 +18441,6 @@ cp_parser_namespace_definition (cp_parser* parser)
 
   warning  (OPT_Wnamespaces, "namespace %qD entered", current_namespace);
 
-  push_module_namespace (popped);
-
   /* Look for the `{' to validate starting the namespace.  */
   cp_parser_require (parser, CPP_OPEN_BRACE, RT_OPEN_BRACE);
 
@@ -18459,8 +18449,6 @@ cp_parser_namespace_definition (cp_parser* parser)
 
   /* Look for the final `}'.  */
   cp_parser_require (parser, CPP_CLOSE_BRACE, RT_CLOSE_BRACE);
-
-  popped = pop_module_namespace ();
 
   if (has_visibility)
     pop_visibility (1);
@@ -18472,8 +18460,6 @@ cp_parser_namespace_definition (cp_parser* parser)
   /* Pop the nested namespace definitions.  */
   while (nested_definition_count--)
     pop_namespace ();
-
-  push_module_namespace (popped);
 }
 
 /* Parse a namespace-body.

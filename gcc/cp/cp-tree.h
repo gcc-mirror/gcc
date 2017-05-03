@@ -352,7 +352,6 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
       TINFO_USED_TEMPLATE_ID (in TEMPLATE_INFO)
       PACK_EXPANSION_SIZEOF_P (in *_PACK_EXPANSION)
       OVL_VIA_USING (in OVERLOAD)
-      MODULE_NAMESPACE_P (in NAMESPACE_DECL)
    2: IDENTIFIER_OPNAME_P (in IDENTIFIER_NODE)
       ICS_THIS_FLAG (in _CONV)
       DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (in VAR_DECL)
@@ -365,7 +364,6 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
       AGGR_INIT_ZERO_FIRST (in AGGR_INIT_EXPR)
       CONSTRUCTOR_MUTABLE_POISON (in CONSTRUCTOR)
       OVL_HIDDEN_P (in OVERLOAD)
-      GLOBAL_MODULE_NAMESPACE_P (in NAMESPACE_DECL)
    3: (TREE_REFERENCE_EXPR) (in NON_LVALUE_EXPR) (commented-out).
       ICS_BAD_FLAG (in _CONV)
       FN_TRY_BLOCK_P (in TRY_BLOCK)
@@ -1445,18 +1443,7 @@ check_constraint_info (tree t)
 #define DECL_MODULE_EXPORT_P(NODE) \
   TREE_LANG_FLAG_3 (DECL_CHECK (NODE))
 
-/* Whether the namespace contains module-linkage objects.  */
-#define MODULE_NAMESPACE_P(NODE) \
-  TREE_LANG_FLAG_1 (NAMESPACE_DECL_CHECK (NODE))
-
-/* A fragment of the global module.  */
-#define GLOBAL_MODULE_NAMESPACE_P(NODE) \
-  TREE_LANG_FLAG_2 (NAMESPACE_DECL_CHECK (NODE))
-
-#define CURRENT_MODULE_NAMESPACE_P(NODE) \
-  (MODULE_NAMESPACE_P (NODE) && DECL_NAMESPACE_INLINE_P (NODE))
-
-
+
 enum cp_tree_node_structure_enum {
   TS_CP_GENERIC,
   TS_CP_IDENTIFIER,
@@ -6388,8 +6375,6 @@ extern int module_exporting_level ();
 extern void decl_set_module (tree);
 extern int push_module_export (bool, tree = NULL);
 extern void pop_module_export (int);
-extern void push_module_namespace (bool);
-extern bool pop_module_namespace ();
 extern void declare_module (location_t, tree, tree);
 extern void finish_module ();
 extern void import_export_module (location_t, tree, tree, bool);
