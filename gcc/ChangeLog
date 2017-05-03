@@ -1,3 +1,12 @@
+2017-05-03  Martin Jambor  <mjambor@suse.cz>
+
+	* symbol-summary.h (function_summary): New method exists.
+	(function_summary::symtab_removal): Deallocate through release.
+	(call_summary): New class.
+	(gt_ggc_mx): New overload.
+	(gt_pch_nx): Likewise.
+	(gt_pch_nx): Likewise.
+
 2017-05-03  Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/78496
