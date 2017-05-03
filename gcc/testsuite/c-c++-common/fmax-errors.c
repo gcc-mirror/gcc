@@ -11,7 +11,7 @@ void foo (unsigned int i, unsigned int j)
 
   (k) ();			/* { dg-error "" } */
   /* Make sure we see the notes related to the final error we emit.  */
-  /* { dg-message "identifier" "" { target c } 12 } */
+  /* { dg-message "identifier" "" { target c } .-2 } */
 
   /* Warnings after the final error should not appear.  */
   i + j; /* no warning.  */
