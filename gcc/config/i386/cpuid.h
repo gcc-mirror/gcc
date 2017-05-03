@@ -234,8 +234,9 @@ __get_cpuid (unsigned int __level,
 	     unsigned int *__ecx, unsigned int *__edx)
 {
   unsigned int __ext = __level & 0x80000000;
+  unsigned int __maxlevel = __get_cpuid_max (__ext, 0);
 
-  if (__get_cpuid_max (__ext, 0) < __level)
+  if (__maxlevel == 0 || __maxlevel < __level)
     return 0;
 
   __cpuid (__level, *__eax, *__ebx, *__ecx, *__edx);
