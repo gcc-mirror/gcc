@@ -1,3 +1,7 @@
+2017-05-03  Jason Merrill  <jason@redhat.com>
+
+	* timevar.def: Add TV_CONSTEXPR.
+
 2017-05-03  David Malcolm  <dmalcolm@redhat.com>
 
 	* common.opt (fdiagnostics-parseable-fixits): Fix typo.
