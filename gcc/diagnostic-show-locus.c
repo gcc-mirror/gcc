@@ -1242,6 +1242,295 @@ layout::annotation_line_showed_range_p (int line, int start_column,
   return false;
 }
 
+/* Classes for printing trailing fix-it hints i.e. those that
+   don't add new lines.
+
+   For insertion, these can look like:
+
+     new_text
+
+   For replacement, these can look like:
+
+     ------------- : underline showing affected range
+     new_text
+
+   For deletion, these can look like:
+
+     ------------- : underline showing affected range
+
+   This can become confusing if they overlap, and so we need
+   to do some preprocessing to decide what to print.
+   We use the list of fixit_hint instances affecting the line
+   to build a list of "correction" instances, and print the
+   latter.
+
+   For example, consider a set of fix-its for converting
+   a C-style cast to a C++ const_cast.
+
+   Given:
+
+   ..000000000111111111122222222223333333333.
+   ..123456789012345678901234567890123456789.
+     foo *f = (foo *)ptr->field;
+                          ^~~~~
+
+   and the fix-it hints:
+     - replace col 10 (the open paren) with "const_cast<"
+     - replace col 16 (the close paren) with "> ("
+     - insert ")" before col 27
+
+   then we would get odd-looking output:
+
+     foo *f = (foo *)ptr->field;
+                          ^~~~~
+              -
+              const_cast<
+                    -
+                    > (        )
+
+   It would be better to detect when fixit hints are going to
+   overlap (those that require new lines), and to consolidate
+   the printing of such fixits, giving something like:
+
+     foo *f = (foo *)ptr->field;
+                          ^~~~~
+              -----------------
+              const_cast<foo *> (ptr->field)
+
+   This works by detecting when the printing would overlap, and
+   effectively injecting no-op replace hints into the gaps between
+   such fix-its, so that the printing joins up.
+
+   In the above example, the overlap of:
+     - replace col 10 (the open paren) with "const_cast<"
+   and:
+     - replace col 16 (the close paren) with "> ("
+   is fixed by injecting a no-op:
+     - replace cols 11-15 with themselves ("foo *")
+   and consolidating these, making:
+     - replace cols 10-16 with "const_cast<" + "foo *" + "> ("
+   i.e.:
+     - replace cols 10-16 with "const_cast<foo *> ("
+
+   This overlaps with the final fix-it hint:
+     - insert ")" before col 27
+   and so we repeat the consolidation process, by injecting
+   a no-op:
+     - replace cols 17-26 with themselves ("ptr->field")
+   giving:
+     - replace cols 10-26 with "const_cast<foo *> (" + "ptr->field" + ")"
+   i.e.:
+     - replace cols 10-26 with "const_cast<foo *> (ptr->field)"
+
+   and is thus printed as desired.  */
+
+/* A range of columns within a line.  */
+
+struct column_range
+{
+  column_range (int start_, int finish_) : start (start_), finish (finish_) {}
+
+  bool operator== (const column_range &other) const
+  {
+    return start == other.start && finish == other.finish;
+  }
+
+  int start;
+  int finish;
+};
+
+/* Get the range of columns that HINT would affect.  */
+
+static column_range
+get_affected_columns (const fixit_hint *hint)
+{
+  int start_column = LOCATION_COLUMN (hint->get_start_loc ());
+  int finish_column = LOCATION_COLUMN (hint->get_next_loc ()) - 1;
+
+  return column_range (start_column, finish_column);
+}
+
+/* Get the range of columns that would be printed for HINT.  */
+
+static column_range
+get_printed_columns (const fixit_hint *hint)
+{
+  int start_column = LOCATION_COLUMN (hint->get_start_loc ());
+  int final_hint_column = start_column + hint->get_length () - 1;
+  if (hint->insertion_p ())
+    {
+      return column_range (start_column, final_hint_column);
+    }
+  else
+    {
+      int finish_column = LOCATION_COLUMN (hint->get_next_loc ()) - 1;
+
+      return column_range (start_column,
+			   MAX (finish_column, final_hint_column));
+    }
+}
+
+/* A correction on a particular line.
+   This describes a plan for how to print one or more fixit_hint
+   instances that affected the line, potentially consolidating hints
+   into corrections to make the result easier for the user to read.  */
+
+struct correction
+{
+  correction (column_range affected_columns,
+	      column_range printed_columns,
+	      const char *new_text, size_t new_text_len)
+  : m_affected_columns (affected_columns),
+    m_printed_columns (printed_columns),
+    m_text (xstrdup (new_text)),
+    m_len (new_text_len),
+    m_alloc_sz (new_text_len + 1)
+  {
+  }
+
+  ~correction () { free (m_text); }
+
+  bool insertion_p () const
+  {
+    return m_affected_columns.start == m_affected_columns.finish + 1;
+  }
+
+  void ensure_capacity (size_t len);
+  void ensure_terminated ();
+
+  /* If insert, then start: the column before which the text
+     is to be inserted, and finish is offset by the length of
+     the replacement.
+     If replace, then the range of columns affected.  */
+  column_range m_affected_columns;
+
+  /* If insert, then start: the column before which the text
+     is to be inserted, and finish is offset by the length of
+     the replacement.
+     If replace, then the range of columns affected.  */
+  column_range m_printed_columns;
+
+  /* The text to be inserted/used as replacement.  */
+  char *m_text;
+  size_t m_len;
+  size_t m_alloc_sz;
+};
+
+/* Ensure that m_text can hold a string of length LEN
+   (plus 1 for 0-termination).  */
+
+void
+correction::ensure_capacity (size_t len)
+{
+  /* Allow 1 extra byte for 0-termination.  */
+  if (m_alloc_sz < (len + 1))
+    {
+      size_t new_alloc_sz = (len + 1) * 2;
+      m_text = (char *)xrealloc (m_text, new_alloc_sz);
+      m_alloc_sz = new_alloc_sz;
+    }
+}
+
+/* Ensure that m_text is 0-terminated.  */
+
+void
+correction::ensure_terminated ()
+{
+  /* 0-terminate the buffer.  */
+  gcc_assert (m_len < m_alloc_sz);
+  m_text[m_len] = '\0';
+}
+
+/* A list of corrections affecting a particular line.
+   This is used by layout::print_trailing_fixits for planning
+   how to print the fix-it hints affecting the line.  */
+
+struct line_corrections
+{
+  line_corrections (const char *filename, int row)
+  : m_filename (filename), m_row (row)
+  {}
+  ~line_corrections ();
+
+  void add_hint (const fixit_hint *hint);
+
+  const char *m_filename;
+  int m_row;
+  auto_vec <correction *> m_corrections;
+};
+
+/* struct line_corrections.  */
+
+line_corrections::~line_corrections ()
+{
+  unsigned i;
+  correction *c;
+  FOR_EACH_VEC_ELT (m_corrections, i, c)
+    delete c;
+}
+
+/* Add HINT to the corrections for this line.
+   Attempt to consolidate nearby hints so that they will not
+   overlap with printed.  */
+
+void
+line_corrections::add_hint (const fixit_hint *hint)
+{
+  column_range affected_columns = get_affected_columns (hint);
+  column_range printed_columns = get_printed_columns (hint);
+
+  /* Potentially consolidate.  */
+  if (!m_corrections.is_empty ())
+    {
+      correction *last_correction
+	= m_corrections[m_corrections.length () - 1];
+      if (printed_columns.start <= last_correction->m_printed_columns.finish)
+	{
+	  /* We have two hints for which the printed forms of the hints
+	     would touch or overlap, so we need to consolidate them to avoid
+	     confusing the user.
+	     Attempt to inject a "replace" correction from immediately
+	     after the end of the last hint to immediately before the start
+	     of the next hint.  */
+	  column_range between (last_correction->m_affected_columns.finish + 1,
+				printed_columns.start - 1);
+
+	  /* Try to read the source.  */
+	  int line_width;
+	  const char *line = location_get_source_line (m_filename, m_row,
+						       &line_width);
+	  if (line && between.finish < line_width)
+	    {
+	      /* Consolidate into the last correction:
+		 add a no-op "replace" of the "between" text, and
+		 add the text from the new hint.  */
+	      size_t old_len = last_correction->m_len;
+	      size_t between_len = between.finish + 1 - between.start;
+	      size_t new_len = old_len + between_len + hint->get_length ();
+	      last_correction->ensure_capacity (new_len);
+	      memcpy (last_correction->m_text + old_len,
+		      line + between.start - 1,
+		      between.finish + 1 - between.start);
+	      memcpy (last_correction->m_text + old_len + between_len,
+		      hint->get_string (), hint->get_length ());
+	      last_correction->m_len = new_len;
+	      last_correction->ensure_terminated ();
+	      last_correction->m_affected_columns.finish
+		= affected_columns.finish;
+	      last_correction->m_printed_columns.finish
+		+= between_len + hint->get_length ();
+	      return;
+	    }
+	}
+    }
+
+  /* If no consolidation happened, add a new correction instance.  */
+  m_corrections.safe_push (new correction (affected_columns,
+					   printed_columns,
+					   hint->get_string (),
+					   hint->get_length ()));
+}
+
 /* If there are any fixit hints on source line ROW, print them.
    They are printed in order, attempting to combine them onto lines, but
    starting new lines if necessary.
@@ -1251,58 +1540,67 @@ layout::annotation_line_showed_range_p (int line, int start_column,
 void
 layout::print_trailing_fixits (int row)
 {
-  int column = 0;
+  /* Build a list of correction instances for the line,
+     potentially consolidating hints (for the sake of readability).  */
+  line_corrections corrections (m_exploc.file, row);
   for (unsigned int i = 0; i < m_fixit_hints.length (); i++)
     {
       const fixit_hint *hint = m_fixit_hints[i];
 
+      /* Newline fixits are handled by layout::print_leading_fixits.  */
       if (hint->ends_with_newline_p ())
 	continue;
 
       if (hint->affects_line_p (m_exploc.file, row))
+	corrections.add_hint (hint);
+    }
+
+  /* Now print the corrections.  */
+  unsigned i;
+  correction *c;
+  int column = 0;
+
+  FOR_EACH_VEC_ELT (corrections.m_corrections, i, c)
+    {
+      /* For now we assume each fixit hint can only touch one line.  */
+      if (c->insertion_p ())
 	{
-	  /* For now we assume each fixit hint can only touch one line.  */
-	  if (hint->insertion_p ())
+	  /* This assumes the insertion just affects one line.  */
+	  int start_column = c->m_printed_columns.start;
+	  move_to_column (&column, start_column);
+	  m_colorizer.set_fixit_insert ();
+	  pp_string (m_pp, c->m_text);
+	  m_colorizer.set_normal_text ();
+	  column += c->m_len;
+	}
+      else
+	{
+	  /* If the range of the replacement wasn't printed in the
+	     annotation line, then print an extra underline to
+	     indicate exactly what is being replaced.
+	     Always show it for removals.  */
+	  int start_column = c->m_affected_columns.start;
+	  int finish_column = c->m_affected_columns.finish;
+	  if (!annotation_line_showed_range_p (row, start_column,
+					       finish_column)
+	      || c->m_len == 0)
 	    {
-	      /* This assumes the insertion just affects one line.  */
-	      int start_column = LOCATION_COLUMN (hint->get_start_loc ());
+	      move_to_column (&column, start_column);
+	      m_colorizer.set_fixit_delete ();
+	      for (; column <= finish_column; column++)
+		pp_character (m_pp, '-');
+	      m_colorizer.set_normal_text ();
+	    }
+	  /* Print the replacement text.  REPLACE also covers
+	     removals, so only do this extra work (potentially starting
+	     a new line) if we have actual replacement text.  */
+	  if (c->m_len > 0)
+	    {
 	      move_to_column (&column, start_column);
 	      m_colorizer.set_fixit_insert ();
-	      pp_string (m_pp, hint->get_string ());
+	      pp_string (m_pp, c->m_text);
 	      m_colorizer.set_normal_text ();
-	      column += hint->get_length ();
-	    }
-	  else
-	    {
-	      int line = LOCATION_LINE (hint->get_start_loc ());
-	      int start_column = LOCATION_COLUMN (hint->get_start_loc ());
-	      int finish_column = LOCATION_COLUMN (hint->get_next_loc ()) - 1;
-
-	      /* If the range of the replacement wasn't printed in the
-		 annotation line, then print an extra underline to
-		 indicate exactly what is being replaced.
-		 Always show it for removals.  */
-	      if (!annotation_line_showed_range_p (line, start_column,
-						   finish_column)
-		  || hint->get_length () == 0)
-		{
-		  move_to_column (&column, start_column);
-		  m_colorizer.set_fixit_delete ();
-		  for (; column <= finish_column; column++)
-		    pp_character (m_pp, '-');
-		  m_colorizer.set_normal_text ();
-		}
-	      /* Print the replacement text.  REPLACE also covers
-		 removals, so only do this extra work (potentially starting
-		 a new line) if we have actual replacement text.  */
-	      if (hint->get_length () > 0)
-		{
-		  move_to_column (&column, start_column);
-		  m_colorizer.set_fixit_insert ();
-		  pp_string (m_pp, hint->get_string ());
-		  m_colorizer.set_normal_text ();
-		  column += hint->get_length ();
-		}
+	      column += c->m_len;
 	    }
 	}
     }
@@ -2153,6 +2451,203 @@ test_fixit_consolidation (const line_table_case &case_)
   }
 }
 
+/* Verify that the line_corrections machinery correctly prints
+   overlapping fixit-hints.  */
+
+static void
+test_overlapped_fixit_printing (const line_table_case &case_)
+{
+  /* Create a tempfile and write some text to it.
+     ...000000000111111111122222222223333333333.
+     ...123456789012345678901234567890123456789.  */
+  const char *content
+    = ("  foo *f = (foo *)ptr->field;\n");
+  temp_source_file tmp (SELFTEST_LOCATION, ".C", content);
+  line_table_test ltt (case_);
+
+  const line_map_ordinary *ord_map
+    = linemap_check_ordinary (linemap_add (line_table, LC_ENTER, false,
+					   tmp.get_filename (), 0));
+
+  linemap_line_start (line_table, 1, 100);
+
+  const location_t final_line_end
+    = linemap_position_for_line_and_column (line_table, ord_map, 6, 36);
+
+  /* Don't attempt to run the tests if column data might be unavailable.  */
+  if (final_line_end > LINE_MAP_MAX_LOCATION_WITH_COLS)
+    return;
+
+  /* A test for converting a C-style cast to a C++-style cast.  */
+  const location_t open_paren
+    = linemap_position_for_line_and_column (line_table, ord_map, 1, 12);
+  const location_t close_paren
+    = linemap_position_for_line_and_column (line_table, ord_map, 1, 18);
+  const location_t expr_start
+    = linemap_position_for_line_and_column (line_table, ord_map, 1, 19);
+  const location_t expr_finish
+    = linemap_position_for_line_and_column (line_table, ord_map, 1, 28);
+  const location_t expr = make_location (expr_start, expr_start, expr_finish);
+
+  /* Various examples of fix-it hints that aren't themselves consolidated,
+     but for which the *printing* may need consolidation.  */
+
+  /* Example where 3 fix-it hints are printed as one.  */
+  {
+    test_diagnostic_context dc;
+    rich_location richloc (line_table, expr);
+    richloc.add_fixit_replace (open_paren, "const_cast<");
+    richloc.add_fixit_replace (close_paren, "> (");
+    richloc.add_fixit_insert_after (")");
+
+    diagnostic_show_locus (&dc, &richloc, DK_ERROR);
+    ASSERT_STREQ ("\n"
+		  "   foo *f = (foo *)ptr->field;\n"
+		  "                   ^~~~~~~~~~\n"
+		  "            -----------------\n"
+		  "            const_cast<foo *> (ptr->field)\n",
+		  pp_formatted_text (dc.printer));
+
+    /* Unit-test the line_corrections machinery.  */
+    ASSERT_EQ (3, richloc.get_num_fixit_hints ());
+    const fixit_hint *hint_0 = richloc.get_fixit_hint (0);
+    ASSERT_EQ (column_range (12, 12), get_affected_columns (hint_0));
+    ASSERT_EQ (column_range (12, 22), get_printed_columns (hint_0));
+    const fixit_hint *hint_1 = richloc.get_fixit_hint (1);
+    ASSERT_EQ (column_range (18, 18), get_affected_columns (hint_1));
+    ASSERT_EQ (column_range (18, 20), get_printed_columns (hint_1));
+    const fixit_hint *hint_2 = richloc.get_fixit_hint (2);
+    ASSERT_EQ (column_range (29, 28), get_affected_columns (hint_2));
+    ASSERT_EQ (column_range (29, 29), get_printed_columns (hint_2));
+
+    /* Add each hint in turn to a line_corrections instance,
+       and verify that they are consolidated into one correction instance
+       as expected.  */
+    line_corrections lc (tmp.get_filename (), 1);
+
+    /* The first replace hint by itself.  */
+    lc.add_hint (hint_0);
+    ASSERT_EQ (1, lc.m_corrections.length ());
+    ASSERT_EQ (column_range (12, 12), lc.m_corrections[0]->m_affected_columns);
+    ASSERT_EQ (column_range (12, 22), lc.m_corrections[0]->m_printed_columns);
+    ASSERT_STREQ ("const_cast<", lc.m_corrections[0]->m_text);
+
+    /* After the second replacement hint, they are printed together
+       as a replacement (along with the text between them).  */
+    lc.add_hint (hint_1);
+    ASSERT_EQ (1, lc.m_corrections.length ());
+    ASSERT_STREQ ("const_cast<foo *> (", lc.m_corrections[0]->m_text);
+    ASSERT_EQ (column_range (12, 18), lc.m_corrections[0]->m_affected_columns);
+    ASSERT_EQ (column_range (12, 30), lc.m_corrections[0]->m_printed_columns);
+
+    /* After the final insertion hint, they are all printed together
+       as a replacement (along with the text between them).  */
+    lc.add_hint (hint_2);
+    ASSERT_STREQ ("const_cast<foo *> (ptr->field)",
+		  lc.m_corrections[0]->m_text);
+    ASSERT_EQ (1, lc.m_corrections.length ());
+    ASSERT_EQ (column_range (12, 28), lc.m_corrections[0]->m_affected_columns);
+    ASSERT_EQ (column_range (12, 41), lc.m_corrections[0]->m_printed_columns);
+  }
+
+  /* Example where two are consolidated during printing.  */
+  {
+    test_diagnostic_context dc;
+    rich_location richloc (line_table, expr);
+    richloc.add_fixit_replace (open_paren, "CAST (");
+    richloc.add_fixit_replace (close_paren, ") (");
+    richloc.add_fixit_insert_after (")");
+
+    diagnostic_show_locus (&dc, &richloc, DK_ERROR);
+    ASSERT_STREQ ("\n"
+		  "   foo *f = (foo *)ptr->field;\n"
+		  "                   ^~~~~~~~~~\n"
+		  "            -\n"
+		  "            CAST (-\n"
+		  "                  ) (        )\n",
+		  pp_formatted_text (dc.printer));
+  }
+
+  /* Example where none are consolidated during printing.  */
+  {
+    test_diagnostic_context dc;
+    rich_location richloc (line_table, expr);
+    richloc.add_fixit_replace (open_paren, "CST (");
+    richloc.add_fixit_replace (close_paren, ") (");
+    richloc.add_fixit_insert_after (")");
+
+    diagnostic_show_locus (&dc, &richloc, DK_ERROR);
+    ASSERT_STREQ ("\n"
+		  "   foo *f = (foo *)ptr->field;\n"
+		  "                   ^~~~~~~~~~\n"
+		  "            -\n"
+		  "            CST ( -\n"
+		  "                  ) (        )\n",
+		  pp_formatted_text (dc.printer));
+  }
+
+  /* Example of deletion fix-it hints.  */
+  {
+    test_diagnostic_context dc;
+    rich_location richloc (line_table, expr);
+    richloc.add_fixit_insert_before (open_paren, "(bar *)");
+    source_range victim = {open_paren, close_paren};
+    richloc.add_fixit_remove (victim);
+
+    /* This case is actually handled by fixit-consolidation,
+       rather than by line_corrections.  */
+    ASSERT_EQ (1, richloc.get_num_fixit_hints ());
+
+    diagnostic_show_locus (&dc, &richloc, DK_ERROR);
+    ASSERT_STREQ ("\n"
+		  "   foo *f = (foo *)ptr->field;\n"
+		  "                   ^~~~~~~~~~\n"
+		  "            -------\n"
+		  "            (bar *)\n",
+		  pp_formatted_text (dc.printer));
+  }
+
+  /* Example of deletion fix-it hints that would overlap.  */
+  {
+    test_diagnostic_context dc;
+    rich_location richloc (line_table, expr);
+    richloc.add_fixit_insert_before (open_paren, "(longer *)");
+    source_range victim = {expr_start, expr_finish};
+    richloc.add_fixit_remove (victim);
+
+    /* These fixits are not consolidated.  */
+    ASSERT_EQ (2, richloc.get_num_fixit_hints ());
+
+    /* But the corrections are.  */
+    diagnostic_show_locus (&dc, &richloc, DK_ERROR);
+    ASSERT_STREQ ("\n"
+		  "   foo *f = (foo *)ptr->field;\n"
+		  "                   ^~~~~~~~~~\n"
+		  "            -----------------\n"
+		  "            (longer *)(foo *)\n",
+		  pp_formatted_text (dc.printer));
+  }
+
+  /* Example of insertion fix-it hints that would overlap.  */
+  {
+    test_diagnostic_context dc;
+    rich_location richloc (line_table, expr);
+    richloc.add_fixit_insert_before (open_paren, "LONGER THAN THE CAST");
+    richloc.add_fixit_insert_after (close_paren, "TEST");
+
+    /* The first insertion is long enough that if printed naively,
+       it would overlap with the second.
+       Verify that they are printed as a single replacement.  */
+    diagnostic_show_locus (&dc, &richloc, DK_ERROR);
+    ASSERT_STREQ ("\n"
+		  "   foo *f = (foo *)ptr->field;\n"
+		  "                   ^~~~~~~~~~\n"
+		  "            -------\n"
+		  "            LONGER THAN THE CAST(foo *)TEST\n",
+		  pp_formatted_text (dc.printer));
+  }
+}
+
 /* Insertion fix-it hint: adding a "break;" on a line by itself.  */
 
 static void
@@ -2314,6 +2809,7 @@ diagnostic_show_locus_c_tests ()
   for_each_line_table_case (test_diagnostic_show_locus_one_liner);
   for_each_line_table_case (test_diagnostic_show_locus_fixit_lines);
   for_each_line_table_case (test_fixit_consolidation);
+  for_each_line_table_case (test_overlapped_fixit_printing);
   for_each_line_table_case (test_fixit_insert_containing_newline);
   for_each_line_table_case (test_fixit_insert_containing_newline_2);
   for_each_line_table_case (test_fixit_replace_containing_newline);

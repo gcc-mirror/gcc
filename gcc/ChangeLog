@@ -1,3 +1,19 @@
+2017-05-03  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic-show-locus.c (struct column_range): New struct.
+	(get_affected_columns): New function.
+	(get_printed_columns): New function.
+	(struct correction): New struct.
+	(correction::ensure_capacity): New function.
+	(correction::ensure_terminated): New function.
+	(struct line_corrections): New struct.
+	(line_corrections::~line_corrections): New dtor.
+	(line_corrections::add_hint): New function.
+	(layout::print_trailing_fixits): Reimplement in terms of the new
+	classes.
+	(selftest::test_overlapped_fixit_printing): New function.
+	(selftest::diagnostic_show_locus_c_tests): Call it.
+
 2017-05-03  Nathan Sidwell  <nathan@acm.org>
 
 	Canonicalize canonical type hashing
