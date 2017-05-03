@@ -209,10 +209,10 @@ struct subscript
 
 typedef struct subscript *subscript_p;
 
-#define SUB_CONFLICTS_IN_A(SUB) SUB->conflicting_iterations_in_a
-#define SUB_CONFLICTS_IN_B(SUB) SUB->conflicting_iterations_in_b
-#define SUB_LAST_CONFLICT(SUB) SUB->last_conflict
-#define SUB_DISTANCE(SUB) SUB->distance
+#define SUB_CONFLICTS_IN_A(SUB) (SUB)->conflicting_iterations_in_a
+#define SUB_CONFLICTS_IN_B(SUB) (SUB)->conflicting_iterations_in_b
+#define SUB_LAST_CONFLICT(SUB) (SUB)->last_conflict
+#define SUB_DISTANCE(SUB) (SUB)->distance
 
 /* A data_dependence_relation represents a relation between two
    data_references A and B.  */
@@ -268,20 +268,20 @@ struct data_dependence_relation
 
 typedef struct data_dependence_relation *ddr_p;
 
-#define DDR_A(DDR) DDR->a
-#define DDR_B(DDR) DDR->b
-#define DDR_AFFINE_P(DDR) DDR->affine_p
-#define DDR_ARE_DEPENDENT(DDR) DDR->are_dependent
-#define DDR_SUBSCRIPTS(DDR) DDR->subscripts
+#define DDR_A(DDR) (DDR)->a
+#define DDR_B(DDR) (DDR)->b
+#define DDR_AFFINE_P(DDR) (DDR)->affine_p
+#define DDR_ARE_DEPENDENT(DDR) (DDR)->are_dependent
+#define DDR_SUBSCRIPTS(DDR) (DDR)->subscripts
 #define DDR_SUBSCRIPT(DDR, I) DDR_SUBSCRIPTS (DDR)[I]
 #define DDR_NUM_SUBSCRIPTS(DDR) DDR_SUBSCRIPTS (DDR).length ()
 
-#define DDR_LOOP_NEST(DDR) DDR->loop_nest
+#define DDR_LOOP_NEST(DDR) (DDR)->loop_nest
 /* The size of the direction/distance vectors: the number of loops in
    the loop nest.  */
 #define DDR_NB_LOOPS(DDR) (DDR_LOOP_NEST (DDR).length ())
-#define DDR_INNER_LOOP(DDR) DDR->inner_loop
-#define DDR_SELF_REFERENCE(DDR) DDR->self_reference_p
+#define DDR_INNER_LOOP(DDR) (DDR)->inner_loop
+#define DDR_SELF_REFERENCE(DDR) (DDR)->self_reference_p
 
 #define DDR_DIST_VECTS(DDR) ((DDR)->dist_vects)
 #define DDR_DIR_VECTS(DDR) ((DDR)->dir_vects)
@@ -293,7 +293,7 @@ typedef struct data_dependence_relation *ddr_p;
   DDR_DIR_VECTS (DDR)[I]
 #define DDR_DIST_VECT(DDR, I) \
   DDR_DIST_VECTS (DDR)[I]
-#define DDR_REVERSED_P(DDR) DDR->reversed_p
+#define DDR_REVERSED_P(DDR) (DDR)->reversed_p
 
 
 bool dr_analyze_innermost (struct data_reference *, struct loop *);

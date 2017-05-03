@@ -1,3 +1,12 @@
+2017-05-03  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* tree-data-ref.h (SUB_CONFLICTS_IN_A): Wrap SUB argument in brackets.
+	(SUB_CONFLICTS_IN_B, SUB_LAST_CONFLICT, SUB_DISTANCE): Likewise.
+	(DDR_A): Wrap DDR argument in brackets.
+	(DDR_B, DDR_AFFINE_P, DDR_ARE_DEPENDENT, DDR_SUBSCRIPTS): Likewise.
+	(DDR_LOOP_NEST, DDR_INNER_LOOP, DDR_SELF_REFERENCE): Likewise.
+	(DDR_REVERSED_P): Likewise.
+
 2017-05-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/79472
