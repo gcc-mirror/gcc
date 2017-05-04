@@ -1,5 +1,10 @@
 2017-05-04  Jakub Jelinek  <jakub@redhat.com>
 
+	* gcc.dg/gomp/for-4.c: Expected nonmonotonic functions in the dumps.
+	* gcc.dg/gomp/for-5.c: Likewise.
+	* g++.dg/gomp/for-4.C: Likewise.
+	* g++.dg/gomp/for-5.C: Likewise.
+
 	* c-c++-common/gomp/target-data-1.c: New test.
 
 Copyright (C) 2017 Free Software Foundation, Inc.

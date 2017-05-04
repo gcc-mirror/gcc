@@ -536,8 +536,8 @@ expand_parallel_call (struct omp_region *region, basic_block bb,
 	      break;
 	    case OMP_CLAUSE_SCHEDULE_DYNAMIC:
 	    case OMP_CLAUSE_SCHEDULE_GUIDED:
-	      if (region->inner->sched_modifiers
-		  & OMP_CLAUSE_SCHEDULE_NONMONOTONIC)
+	      if ((region->inner->sched_modifiers
+		   & OMP_CLAUSE_SCHEDULE_MONOTONIC) == 0)
 		{
 		  start_ix2 = 3 + region->inner->sched_kind;
 		  break;
@@ -5854,7 +5854,7 @@ expand_omp_for (struct omp_region *region, gimple *inner_stmt)
 	  break;
 	case OMP_CLAUSE_SCHEDULE_DYNAMIC:
 	case OMP_CLAUSE_SCHEDULE_GUIDED:
-	  if ((fd.sched_modifiers & OMP_CLAUSE_SCHEDULE_NONMONOTONIC)
+	  if ((fd.sched_modifiers & OMP_CLAUSE_SCHEDULE_MONOTONIC) == 0
 	      && !fd.ordered
 	      && !fd.have_ordered)
 	    {
