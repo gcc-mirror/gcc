@@ -18,6 +18,7 @@ enum e {
      whole expression violates the constraints.  */
   E4 = 0 * (1 / 0), /* { dg-warning "division by zero" } */
   /* { dg-error "enumerator value for 'E4' is not an integer constant" "enum error" { target c++ } .-1 } */
+  /* { dg-error "division by zero is not a constant.expression" "division" { target c++11 } .-2 } */
   E5 = INT_MAX + 1, /* { dg-warning "integer overflow in expression" } */
   /* { dg-warning "overflow in constant expression" "constant" { target *-*-* } .-1 } */
   /* Again, overflow in evaluated subexpression.  */
@@ -30,6 +31,9 @@ enum e {
 struct s {
   int a;
   int : 0 * (1 / 0); /* { dg-warning "division by zero" } */
+/* { dg-error "division by zero is not a constant.expression" "division" { target c++11 } .-1 } */
+/* { dg-error "width not an integer constant" "bit.field" { target c++ } .-2 } */
+/* { dg-error "is not a constant expression" "division" { target c++ } .-3 } */
   int : 0 * (INT_MAX + 1); /* { dg-warning "integer overflow in expression" } */
   /* { dg-warning "overflow in constant expression" "constant" { target *-*-* } .-1 } */
 };
@@ -53,16 +57,25 @@ void *n = 0;
    subexpression, so is a null pointer constant.  */
 void *p = 0 * (INT_MAX + 1); /* { dg-warning "integer overflow in expression" } */
 /* { dg-warning "invalid conversion from 'int' to 'void" "null" { target *-*-* } .-1 } */
-void *q = 0 * (1 / 0); /* { dg-warning "division by zero" } */
-/* { dg-error "invalid conversion from 'int' to 'void*'" "null" { xfail *-*-* } .-1 } */
-void *r = (1 ? 0 : INT_MAX+1); /* { dg-bogus "integer overflow in expression" "" { xfail *-*-* } } */
+
+void *q = 0 * (1 / 0);
+/* { dg-warning "division by zero" "" { target *-*-* } .-1 } */
+/* { dg-error "invalid conversion from 'int' to 'void*'" "null" { xfail *-*-* } .-2 } */
+/* { dg-warning "invalid conversion from" "convert" { target *-*-* } .-3 } */
+
+void *r = (1 ? 0 : INT_MAX+1);
+/* { dg-bogus "integer overflow in expression" "" { xfail *-*-* } .-1 } */
+/* { dg-warning "invalid conversion from" "convert" { target c++11 } .-2 } */
 
 void
 g (int i)
 {
   switch (i)
     {
-    case 0 * (1/0): /* { dg-warning "division by zero" } */
+    case 0 * (1/0):
+      /* { dg-warning "division by zero" "" { target *-*-* } .-1 } */
+      /* { dg-error "division by zero is not a constant expression" "division" { target c++11 } .-2 } */
+      /* { dg-error "is not a constant expression" "const" { target *-*-* } .-3 } */
       ;
     case 1 + 0 * (INT_MAX + 1): /* { dg-warning "integer overflow in expression" } */
       /* { dg-warning "overflow in constant expression" "constant" { target *-*-* } .-1 } */
@@ -126,11 +139,3 @@ h2i (int x)
   ui = INT_MIN;
   ui = x ? INT_MIN : 1U;
 }
-/* { dg-error "division by zero is not a constant.expression" "division" { target c++11 } 19 } */
-/* { dg-error "division by zero is not a constant.expression" "division" { target c++11 } 32 } */
-/* { dg-warning "invalid conversion from" "convert" { target *-*-* } 56 } */
-/* { dg-warning "invalid conversion from" "convert" { target c++11 } 58 } */
-/* { dg-error "division by zero is not a constant expression" "division" { target c++11 } 65 } */
-/* { dg-error "is not a constant expression" "const" { target *-*-* } 65 } */
-/* { dg-error "width not an integer constant" "bit.field" { target c++ } 32 } */
-/* { dg-error "is not a constant expression" "division" { target c++ } 32 } */

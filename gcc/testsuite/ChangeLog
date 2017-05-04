@@ -1,6 +1,16 @@
 2017-05-04  Tom de Vries  <tom@codesourcery.com>
 
 	PR testsuite/80557
+	* g++.dg/warn/Wstrict-aliasing-float-ref-int-obj.C: Replace absolute
+	line numbers.
+	* g++.dg/warn/miss-format-1.C: Same.
+	* g++.dg/warn/overflow-warn-1.C: Same.
+	* g++.dg/warn/overflow-warn-3.C: Same.
+	* g++.dg/warn/overflow-warn-4.C: Same.
+
+2017-05-04  Tom de Vries  <tom@codesourcery.com>
+
+	PR testsuite/80557
 	* gcc.target/i386/pr57655.c: Replace absolute line numbers.
 	* gcc.target/i386/pr68657.c: Same.
 	* gcc.target/i386/pr69255-1.c: Same.
