@@ -1,4 +1,21 @@
 2017-05-04  Prakhar Bahuguna  <prakhar.bahuguna@arm.com>
+	    Andre Simoes Dias Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* config/arm/arm.md (movsi): Change TARGET_32BIT to TARGET_HAVE_MOVT.
+	(movt splitter): Likewise.
+	* config/arm/arm.c (arm_option_check_internal): Change arm_arch_thumb2
+	to TARGET_HAVE_MOVT, and merge with -mslow-flash-data check.
+	(const_ok_for_arm): Change else to else if (TARGET_THUMB2) and add else
+	block for Thumb-1 with MOVT.
+	(thumb2_legitimate_address_p): Move code block ...
+	(can_avoid_literal_pool_for_label_p): ... into this new function.
+	(thumb1_legitimate_address_p): Add check for TARGET_HAVE_MOVT and
+	literal pool.
+	(thumb_legitimate_constant_p): Add conditional on TARGET_HAVE_MOVT
+	* doc/invoke.texi (-mpure-code): Change "ARMv7-M targets" for
+	"M-profile targets with the MOVT instruction".
+
+2017-05-04  Prakhar Bahuguna  <prakhar.bahuguna@arm.com>
 
 	* gcc/config/arm/arm-builtins.c (arm_init_builtins): Rename
 	__builtin_arm_ldfscr to __builtin_arm_get_fpscr, and rename
