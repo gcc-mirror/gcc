@@ -1,5 +1,7 @@
 2017-05-04  Martin Sebor  <msebor@redhat.com>
 
+	* builtins.c: Fix a trivial typo in a comment.
+
 	PR middle-end/79234
 	* builtins.c (check_sizes): Adjust to handle reading past the end.
 	Avoid printing excessive upper bound of ranges.  Use %E to print

@@ -3047,7 +3047,7 @@ expand_builtin_memcpy_args (tree dest, tree src, tree len, rtx target, tree exp)
    MAXLEN is the user-supplied bound on the length of the source sequence
    (such as in strncat(d, s, N).  It specifies the upper limit on the number
    of bytes to write.
-   SRC is the source string (such as in strcpy(d, s)) when the epxression
+   SRC is the source string (such as in strcpy(d, s)) when the expression
    EXP is a string function call (as opposed to a memory call like memcpy).
    As an exception, SRC can also be an integer denoting the precomputed
    size of the source string or object (for functions like memcpy).
