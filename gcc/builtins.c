@@ -121,6 +121,7 @@ static rtx builtin_memcpy_read_str (void *, HOST_WIDE_INT, machine_mode);
 static rtx expand_builtin_memcpy (tree, rtx);
 static rtx expand_builtin_memcpy_with_bounds (tree, rtx);
 static rtx expand_builtin_memcpy_args (tree, tree, tree, rtx, tree);
+static rtx expand_builtin_memmove (tree, rtx);
 static rtx expand_builtin_mempcpy (tree, rtx, machine_mode);
 static rtx expand_builtin_mempcpy_with_bounds (tree, rtx, machine_mode);
 static rtx expand_builtin_mempcpy_args (tree, tree, tree, rtx,
@@ -129,6 +130,7 @@ static rtx expand_builtin_strcat (tree, rtx);
 static rtx expand_builtin_strcpy (tree, rtx);
 static rtx expand_builtin_strcpy_args (tree, tree, rtx);
 static rtx expand_builtin_stpcpy (tree, rtx, machine_mode);
+static rtx expand_builtin_stpncpy (tree, rtx);
 static rtx expand_builtin_strncat (tree, rtx);
 static rtx expand_builtin_strncpy (tree, rtx);
 static rtx builtin_memset_gen_str (void *, HOST_WIDE_INT, machine_mode);
@@ -3125,6 +3127,7 @@ check_sizes (int opt, tree exp, tree size, tree maxlen, tree str, tree objsize)
   if (range[0] && tree_int_cst_lt (maxobjsize, range[0]))
     {
       location_t loc = tree_nonartificial_location (exp);
+      loc = expansion_point_location_if_in_system_header (loc);
 
       if (range[0] == range[1])
 	warning_at (loc, opt,
@@ -3157,17 +3160,18 @@ check_sizes (int opt, tree exp, tree size, tree maxlen, tree str, tree objsize)
 	  unsigned HOST_WIDE_INT uwir0 = tree_to_uhwi (range[0]);
 
 	  location_t loc = tree_nonartificial_location (exp);
+	  loc = expansion_point_location_if_in_system_header (loc);
 
 	  if (at_least_one)
 	    warning_at (loc, opt,
-			"%K%qD: writing at least %wu byte into a region "
+			"%K%qD writing at least %wu byte into a region "
 			"of size %wu overflows the destination",
 			exp, get_callee_fndecl (exp), uwir0,
 			tree_to_uhwi (objsize));
 	  else if (range[0] == range[1])
 	    warning_at (loc, opt,
 			(uwir0 == 1
-			 ? G_("%K%qD: writing %wu byte into a region "
+			 ? G_("%K%qD writing %wu byte into a region "
 			      "of size %wu overflows the destination")
 			 : G_("%K%qD writing %wu bytes into a region "
 			      "of size %wu overflows the destination")),
@@ -3175,7 +3179,7 @@ check_sizes (int opt, tree exp, tree size, tree maxlen, tree str, tree objsize)
 			tree_to_uhwi (objsize));
 	  else
 	    warning_at (loc, opt,
-			"%K%qD: writing between %wu and %wu bytes "
+			"%K%qD writing between %wu and %wu bytes "
 			"into a region of size %wu overflows "
 			"the destination",
 			exp, get_callee_fndecl (exp), uwir0,
@@ -3196,6 +3200,7 @@ check_sizes (int opt, tree exp, tree size, tree maxlen, tree str, tree objsize)
       if (range[0] && objsize && tree_fits_uhwi_p (objsize))
 	{
 	  location_t loc = tree_nonartificial_location (exp);
+	  loc = expansion_point_location_if_in_system_header (loc);
 
 	  if (tree_int_cst_lt (maxobjsize, range[0]))
 	    {
@@ -3302,6 +3307,24 @@ expand_builtin_memcpy (tree exp, rtx target)
   check_memop_sizes (exp, dest, len);
 
   return expand_builtin_memcpy_args (dest, src, len, target, exp);
+}
+
+/* Check a call EXP to the memmove built-in for validity.
+   Return NULL_RTX on both success and failure.  */
+
+static rtx
+expand_builtin_memmove (tree exp, rtx)
+{
+  if (!validate_arglist (exp,
+ 			 POINTER_TYPE, POINTER_TYPE, INTEGER_TYPE, VOID_TYPE))
+    return NULL_RTX;
+
+  tree dest = CALL_EXPR_ARG (exp, 0);
+  tree len = CALL_EXPR_ARG (exp, 2);
+
+  check_memop_sizes (exp, dest, len);
+
+  return NULL_RTX;
 }
 
 /* Expand an instrumented call EXP to the memcpy builtin.
@@ -3614,6 +3637,13 @@ expand_builtin_stpcpy (tree exp, rtx target, machine_mode mode)
   dst = CALL_EXPR_ARG (exp, 0);
   src = CALL_EXPR_ARG (exp, 1);
 
+  if (warn_stringop_overflow)
+    {
+      tree destsize = compute_dest_size (dst, warn_stringop_overflow - 1);
+      check_sizes (OPT_Wstringop_overflow_,
+		   exp, /*size=*/NULL_TREE, /*maxlen=*/NULL_TREE, src, destsize);
+    }
+
   /* If return value is ignored, transform stpcpy into strcpy.  */
   if (target == const0_rtx && builtin_decl_implicit (BUILT_IN_STRCPY))
     {
@@ -3674,6 +3704,47 @@ expand_builtin_stpcpy (tree exp, rtx target, machine_mode mode)
     }
 }
 
+/* Check a call EXP to the stpncpy built-in for validity.
+   Return NULL_RTX on both success and failure.  */
+
+static rtx
+expand_builtin_stpncpy (tree exp, rtx)
+{
+  if (!validate_arglist (exp,
+			 POINTER_TYPE, POINTER_TYPE, INTEGER_TYPE, VOID_TYPE)
+      || !warn_stringop_overflow)
+    return NULL_RTX;
+
+  tree dest = CALL_EXPR_ARG (exp, 0);
+  tree src = CALL_EXPR_ARG (exp, 1);
+
+  /* The number of bytes to write (not the maximum).  */
+  tree len = CALL_EXPR_ARG (exp, 2);
+  /* The length of the source sequence.  */
+  tree slen = c_strlen (src, 1);
+
+  /* Try to determine the range of lengths that the source expression
+     refers to.  */
+  tree lenrange[2];
+  if (slen)
+    lenrange[0] = lenrange[1] = slen;
+  else
+    {
+      get_range_strlen (src, lenrange);
+      slen = lenrange[0];
+    }
+
+  tree destsize = compute_dest_size (dest,
+				     warn_stringop_overflow - 1);
+
+  /* The number of bytes to write is LEN but check_sizes will also
+     check SLEN if LEN's value isn't known.  */
+  check_sizes (OPT_Wstringop_overflow_,
+	       exp, len, /*maxlen=*/NULL_TREE, slen, destsize);
+
+  return NULL_RTX;
+}
+
 /* Callback routine for store_by_pieces.  Read GET_MODE_BITSIZE (MODE)
    bytes from constant string DATA + OFFSET and return it as target
    constant.  */
@@ -3729,9 +3800,13 @@ check_strncat_sizes (tree exp, tree objsize)
   if (tree_fits_uhwi_p (maxlen) && tree_fits_uhwi_p (objsize)
       && tree_int_cst_equal (objsize, maxlen))
     {
-      warning_at (EXPR_LOCATION (exp), OPT_Wstringop_overflow_,
-		  "specified bound %wu "
+      location_t loc = tree_nonartificial_location (exp);
+      loc = expansion_point_location_if_in_system_header (loc);
+
+      warning_at (loc, OPT_Wstringop_overflow_,
+		  "%K%qD: specified bound %wu "
 		  "equals the size of the destination",
+		  exp, get_callee_fndecl (exp),
 		  tree_to_uhwi (maxlen));
 
       return false;
@@ -3793,9 +3868,13 @@ expand_builtin_strncat (tree exp, rtx)
   if (tree_fits_uhwi_p (maxlen) && tree_fits_uhwi_p (destsize)
       && tree_int_cst_equal (destsize, maxlen))
     {
-      warning_at (EXPR_LOCATION (exp), OPT_Wstringop_overflow_,
-		  "specified bound %wu "
+      location_t loc = tree_nonartificial_location (exp);
+      loc = expansion_point_location_if_in_system_header (loc);
+
+      warning_at (loc, OPT_Wstringop_overflow_,
+		  "%K%qD: specified bound %wu "
 		  "equals the size of the destination",
+		  exp, get_callee_fndecl (exp),
 		  tree_to_uhwi (maxlen));
 
       return NULL_RTX;
@@ -6712,8 +6791,20 @@ expand_builtin (tree exp, rtx target, rtx subtarget, machine_mode mode,
 	return target;
       break;
 
+    case BUILT_IN_STPNCPY:
+      target = expand_builtin_stpncpy (exp, target);
+      if (target)
+	return target;
+      break;
+
     case BUILT_IN_MEMCPY:
       target = expand_builtin_memcpy (exp, target);
+      if (target)
+	return target;
+      break;
+
+    case BUILT_IN_MEMMOVE:
+      target = expand_builtin_memmove (exp, target);
       if (target)
 	return target;
       break;

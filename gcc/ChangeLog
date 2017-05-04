@@ -1,3 +1,16 @@
+2017-05-04  Martin Sebor  <msebor@redhat.com>
+
+	PR preprocessor/79214
+	PR middle-end/79222
+	PR middle-end/79223
+	* builtins.c (check_sizes): Add inlinining context and issue
+	warnings even when -Wno-system-headers is set.
+	(check_strncat_sizes): Same.
+	(expand_builtin_strncat): Same.
+	(expand_builtin_memmove): New function.
+	(expand_builtin_stpncpy): Same.
+	(expand_builtin): Handle memmove and stpncpy.
+
 2017-05-04  Bin Cheng  <bin.cheng@arm.com>
 
 	* tree-ssa-loop-ivopts.c (struct cost_pair): Remove field inv_expr
