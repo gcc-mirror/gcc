@@ -1,3 +1,10 @@
+2017-05-04  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* tree-ssa-loop-manip.c (niter_for_unrolled_loop): Add commentary
+	to explain the use of truncating division.  Cap the number of
+	iterations to the maximum given by nb_iterations_upper_bound,
+	if defined.
+
 2017-05-04  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	* configure.ac (--enable-mingw-wildcard): Add new configurable feature.
