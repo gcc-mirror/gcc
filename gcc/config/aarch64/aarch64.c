@@ -193,10 +193,10 @@ static const struct aarch64_flag_desc aarch64_tuning_flags[] =
 static const struct cpu_addrcost_table generic_addrcost_table =
 {
     {
-      0, /* hi  */
+      1, /* hi  */
       0, /* si  */
       0, /* di  */
-      0, /* ti  */
+      1, /* ti  */
     },
   0, /* pre_modify  */
   0, /* post_modify  */
