@@ -35627,6 +35627,8 @@ cp_parser_omp_target_data (cp_parser *parser, cp_token *pragma_tok, bool *if_p)
 	    *pc = OMP_CLAUSE_CHAIN (*pc);
 	    continue;
 	  }
+      else if (OMP_CLAUSE_CODE (*pc) == OMP_CLAUSE_USE_DEVICE_PTR)
+	map_seen = 3;
       pc = &OMP_CLAUSE_CHAIN (*pc);
     }
 
@@ -35635,7 +35637,7 @@ cp_parser_omp_target_data (cp_parser *parser, cp_token *pragma_tok, bool *if_p)
       if (map_seen == 0)
 	error_at (pragma_tok->location,
 		  "%<#pragma omp target data%> must contain at least "
-		  "one %<map%> clause");
+		  "one %<map%> or %<use_device_ptr%> clause");
       return NULL_TREE;
     }
 

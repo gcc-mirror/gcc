@@ -1,0 +1,9 @@
+2017-05-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/gomp/target-data-1.c: New test.
+
+Copyright (C) 2017 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.
