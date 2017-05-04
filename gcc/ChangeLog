@@ -3,7 +3,7 @@
 	PR preprocessor/79214
 	PR middle-end/79222
 	PR middle-end/79223
-	* builtins.c (check_sizes): Add inlinining context and issue
+	* builtins.c (check_sizes): Add inlining context and issue
 	warnings even when -Wno-system-headers is set.
 	(check_strncat_sizes): Same.
 	(expand_builtin_strncat): Same.
