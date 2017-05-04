@@ -1,3 +1,8 @@
+2017-05-04  Marek Polacek  <polacek@redhat.com>
+
+	PR tree-optimization/80612
+	* calls.c (get_size_range): Check for INTEGRAL_TYPE_P.
+
 2017-05-04  Prakhar Bahuguna  <prakhar.bahuguna@arm.com>
 	    Andre Simoes Dias Vieira  <andre.simoesdiasvieira@arm.com>
 
