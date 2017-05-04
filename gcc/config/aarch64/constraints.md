@@ -214,3 +214,8 @@
  A constraint that matches an immediate operand valid for AdvSIMD scalar."
  (and (match_code "const_int")
       (match_test "aarch64_simd_imm_scalar_p (op, GET_MODE (op))")))
+
+(define_address_constraint "Dp"
+  "@internal
+ An address valid for a prefetch instruction."
+ (match_test "aarch64_address_valid_for_prefetch_p (op, true)"))

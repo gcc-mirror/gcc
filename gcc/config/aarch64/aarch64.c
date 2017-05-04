@@ -4549,6 +4549,24 @@ aarch64_classify_address (struct aarch64_address_info *info,
     }
 }
 
+/* Return true if the address X is valid for a PRFM instruction.
+   STRICT_P is true if we should do strict checking with
+   aarch64_classify_address.  */
+
+bool
+aarch64_address_valid_for_prefetch_p (rtx x, bool strict_p)
+{
+  struct aarch64_address_info addr;
+
+  /* PRFM accepts the same addresses as DImode...  */
+  bool res = aarch64_classify_address (&addr, x, DImode, MEM, strict_p);
+  if (!res)
+    return false;
+
+  /* ... except writeback forms.  */
+  return addr.type != ADDRESS_REG_WB;
+}
+
 bool
 aarch64_symbolic_address_p (rtx x)
 {
