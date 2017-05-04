@@ -353,7 +353,6 @@ struct cost_pair
   tree value;		/* For final value elimination, the expression for
 			   the final value of the iv.  For iv elimination,
 			   the new bound to compare with.  */
-  iv_inv_expr_ent *inv_expr; /* Loop invariant expression.  */
 };
 
 /* Use.  */
