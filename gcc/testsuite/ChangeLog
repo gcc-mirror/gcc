@@ -1,5 +1,19 @@
 2017-05-04  Martin Sebor  <msebor@redhat.com>
 
+	PR middle-end/79234
+	* gcc.dg/builtin-stringop-chk-8.c: New test.
+	* gcc.dg/builtin-stringop-chk-1.c: Adjust.
+	* gcc.dg/builtin-stringop-chk-4.c: Same.
+	* gcc.dg/builtin-strncat-chk-1.c: Same.
+	* g++.dg/ext/strncpy-chk1.C: Same.
+	* g++.dg/torture/Wsizeof-pointer-memaccess1.C: Same.
+	* gcc.dg/out-of-bounds-1.c: Same.
+	* gcc.dg/pr78138.c: Same.
+	* gcc.dg/torture/Wsizeof-pointer-memaccess1.c: Same.
+	* gfortran.dg/mvbits_7.f90: Same.
+
+2017-05-04  Martin Sebor  <msebor@redhat.com>
+
 	PR preprocessor/79214
 	PR middle-end/79222
 	PR middle-end/79223

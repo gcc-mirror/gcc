@@ -1,5 +1,27 @@
 2017-05-04  Martin Sebor  <msebor@redhat.com>
 
+	PR middle-end/79234
+	* builtins.c (check_sizes): Adjust to handle reading past the end.
+	Avoid printing excessive upper bound of ranges.  Use %E to print
+	tree nodes instead of converting them to %wu.
+	(expand_builtin_memchr): New function.
+	(compute_dest_size): Rename...
+	(compute_objsize): ...to this.
+	(expand_builtin_memcpy): Adjust.
+	(expand_builtin_mempcpy): Adjust.
+	(expand_builtin_strcat): Adjust.
+	(expand_builtin_strcpy): Adjust.
+	(check_strncat_sizes): Adjust.
+	(expand_builtin_strncat): Adjust.
+	(expand_builtin_strncpy): Adjust and simplify.
+	(expand_builtin_memset): Adjust.
+	(expand_builtin_bzero): Adjust.
+	(expand_builtin_memcmp): Adjust.
+	(expand_builtin): Handle memcmp.
+	(maybe_emit_chk_warning): Check strncat just once.
+
+2017-05-04  Martin Sebor  <msebor@redhat.com>
+
 	PR preprocessor/79214
 	PR middle-end/79222
 	PR middle-end/79223

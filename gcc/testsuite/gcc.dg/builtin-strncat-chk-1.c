@@ -28,11 +28,11 @@ test (int arg, ...)
   *p = 0;
   strncat (p, "abcdefgh", 11);
   *p = 0;
-  strncat (p, "abcdefghijkl", 11); /* { dg-warning "specified bound 11 exceeds the size 10 of the destination" } */
+  strncat (p, "abcdefghijkl", 11); /* { dg-warning "specified bound 11 exceeds destination size 10" } */
   *p = 0;
   strncat (p, q, 9);
   *p = 0;
-  strncat (p, q, 10); /* { dg-warning "specified bound 10 equals the size of the destination" } */
+  strncat (p, q, 10); /* { dg-warning "specified bound 10 equals destination size" } */
   *p = 0;
-  strncat (p, q, 11); /* { dg-warning "specified bound 11 exceeds the size 10 of the destination" } */
+  strncat (p, q, 11); /* { dg-warning "specified bound 11 exceeds destination size 10" } */
 }
