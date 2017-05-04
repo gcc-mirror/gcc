@@ -1,3 +1,11 @@
+2017-05-04  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	Backport from trunk.
+	PR fortran/80484
+	* io.c (format_lex): Check for '/' and set token to FMT_SLASH.
+	(check_format): Move FMT_DT checking code to data_desc section.
+	* module.c (gfc_match_use): Include the case of INTERFACE_DTIO.
+
 2017-05-02  Release Manager
 
 	* GCC 7.1.0 released.
