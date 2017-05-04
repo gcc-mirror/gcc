@@ -1,5 +1,9 @@
 2017-05-04  Wilco Dijkstra  <wdijkstr@arm.com>
 
+	* config/aarch64/aarch64.c (generic_tunings): Update prefetch model.
+
+2017-05-04  Wilco Dijkstra  <wdijkstr@arm.com>
+
 	* config/aarch64/aarch64.c (cortexa35_tunings): Set jump alignment to 4.
 	(cortexa53_tunings): Likewise.
 	(cortexa57_tunings): Likewise.
