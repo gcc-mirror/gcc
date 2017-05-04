@@ -238,7 +238,6 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
 #define auto_identifier			cp_global_trees[CPTI_AUTO_IDENTIFIER]
 #define decltype_auto_identifier	cp_global_trees[CPTI_DECLTYPE_AUTO_IDENTIFIER]
 #define init_list_identifier		cp_global_trees[CPTI_INIT_LIST_IDENTIFIER]
-/* The name of a C++17 deduction guide.  */
 #define lang_name_c			cp_global_trees[CPTI_LANG_NAME_C]
 #define lang_name_cplusplus		cp_global_trees[CPTI_LANG_NAME_CPLUSPLUS]
 
@@ -378,14 +377,12 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
       IDENTIFIER_TYPENAME_P (in IDENTIFIER_NODE)
       DECL_TINFO_P (in VAR_DECL)
       FUNCTION_REF_QUALIFIED (in FUNCTION_TYPE, METHOD_TYPE)
-      LOOKUP_SEEN_P (in NAMESPACE_DECL, TEMPLATE_DECL,
-      	FUNCTION_DECL, RECORD_TYPE, UNION_TYPE, OVERLOAD)
+      LOOKUP_FOUND_P (in RECORD_TYPE, UNION_TYPE, NAMESPACE_DECL)
+      OVL_LOOKUP_P (in OVERLOAD)
    5: C_IS_RESERVED_WORD (in IDENTIFIER_NODE)
       DECL_VTABLE_OR_VTT_P (in VAR_DECL)
       FUNCTION_RVALUE_QUALIFIED (in FUNCTION_TYPE, METHOD_TYPE)
       CALL_EXPR_REVERSE_ARGS (in CALL_EXPR, AGGR_INIT_EXPR)
-      LOOKUP_FOUND_P (in RECORD_TYPE, UNION_TYPE, NAMESPACE_DECL)
-      OVL_LOOKUP_P (in OVERLOAD)
    6: IDENTIFIER_REPO_CHOSEN (in IDENTIFIER_NODE)
       TYPE_MARKED_P (in _TYPE)
       DECL_NON_TRIVIALLY_INITIALIZED_P (in VAR_DECL)
@@ -638,11 +635,9 @@ typedef struct ptrmem_cst * ptrmem_cst_t;
     && flag_hosted)
 
 /* Lookup walker marking.  */
-#define LOOKUP_SEEN_P(NODE) \
-  TREE_LANG_FLAG_4 (TREE_CHECK6(NODE, OVERLOAD,NAMESPACE_DECL,TEMPLATE_DECL,\
-				FUNCTION_DECL,RECORD_TYPE,UNION_TYPE))
+#define LOOKUP_SEEN_P(NODE) TREE_VISITED(NODE)
 #define LOOKUP_FOUND_P(NODE) \
-  TREE_LANG_FLAG_5 (TREE_CHECK3(NODE,RECORD_TYPE,UNION_TYPE,NAMESPACE_DECL))
+  TREE_LANG_FLAG_4 (TREE_CHECK3(NODE,RECORD_TYPE,UNION_TYPE,NAMESPACE_DECL))
 
 /* These two accessors should only be used by OVL manipulators.
    Other users should use iterators and convenience functions.  */
@@ -662,7 +657,7 @@ typedef struct ptrmem_cst * ptrmem_cst_t;
 /* If set, this overload contains a nested overload.  */
 #define OVL_NESTED_P(NODE)	TREE_LANG_FLAG_3 (OVERLOAD_CHECK (NODE))
 /* If set, this overload was constructed during lookup.  */
-#define OVL_LOOKUP_P(NODE)	TREE_LANG_FLAG_5 (OVERLOAD_CHECK (NODE))
+#define OVL_LOOKUP_P(NODE)	TREE_LANG_FLAG_4 (OVERLOAD_CHECK (NODE))
 /* If set, this is a persistant lookup. */
 #define OVL_USED_P(NODE)	TREE_USED (OVERLOAD_CHECK (NODE))
 
@@ -674,10 +669,13 @@ typedef struct ptrmem_cst * ptrmem_cst_t;
 #define OVL_SINGLE_P(NODE) \
   (TREE_CODE (NODE) != OVERLOAD || !OVL_CHAIN (NODE))
 
-/* Whether this is a set of overloaded functions.  */
+/* Whether this is a set of overloaded functions.  TEMPLATE_DECLS are
+   always wrapped in an OVERLOAD, so we don't need to check them
+   here.  */
 #define OVL_P(NODE) \
   (TREE_CODE (NODE) == FUNCTION_DECL || TREE_CODE (NODE) == OVERLOAD)
-/* Whether this is a plurality of overloaded functions.  */
+/* Whether this is a plurality of overloaded functions (which could
+   include a single TEMPLATE_DECL.  */
 #define OVL_PLURAL_P(NODE) \
   (TREE_CODE (NODE) == OVERLOAD && TREE_TYPE (NODE) == unknown_type_node)
 

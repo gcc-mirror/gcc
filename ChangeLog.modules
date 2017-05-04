@@ -1,5 +1,9 @@
 2017-05-03  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* cp-tree.h (LOOKUP_SEEN_P): Map to TREE_VISITED.
+	(LOOKUP_FOUND_P, OVL_LOOKUP_P): Move to lang_flag_4
+
 	Modules via index, working again!
 	gcc/cp/
 	* module.c (cpms_in::tag_binding): Set module index.
