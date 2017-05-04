@@ -1,3 +1,14 @@
+2017-05-04  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* configure.ac (--enable-mingw-wildcard): Add new configurable feature.
+	* configure: Regenerate.
+	* config.in: Regenerate.
+	* config/i386/driver-mingw32.c: new file.
+	* config/i386/x-mingw32: Add rule to build driver-mingw32.o.
+	* config.host: Link driver-mingw32.o on MinGW host.
+	* doc/install.texi: Document new --enable-mingw-wildcard configure
+	option.
+
 2017-05-04  Marek Polacek  <polacek@redhat.com>
 
 	PR tree-optimization/80612
