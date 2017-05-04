@@ -5,7 +5,7 @@ int
 foo ()
 {
   int i, bits;
-  for (i = 1, bits = 1; i > 0; i += i) /* { dg-warning "assuming signed overflow does not occur" "correct warning" } */
+  for (i = 1, bits = 1; i > 0; i += i) /* { dg-warning "assuming signed overflow does not occur" "correct warning" { xfail *-*-* } } */
     ++bits;
   return bits;
 }

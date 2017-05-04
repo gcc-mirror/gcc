@@ -1,3 +1,43 @@
+2017-05-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/31130
+	* tree-vrp.c (needs_overflow_infinity): Remove as always returning
+	false.
+	(supports_overflow_infinity): Likewise.
+	(is_negative_overflow_infinity): Likewise.
+	(is_positive_overflow_infinity): Likewise.
+	(is_overflow_infinity): Likewise.
+	(stmt_overflow_infinity): Likewise.
+	(overflow_infinity_range_p): Likewise.
+	(usable_range_p): Remove as always returning true.
+	(make_overflow_infinity): Remove.
+	(negative_overflow_infinity): Likewise.
+	(positive_overflow_infinity): Likewise.
+	(avoid_overflow_infinity): Likewise.
+	(set_value_range): Adjust accordingly.
+	(set_value_range_to_nonnegative): Likewise, remove now unused
+	overflow_infinity arg.
+	(vrp_operand_equal_p): Adjust.
+	(update_value_range): Likewise.
+	(range_int_cst_singleton_p): Likewise.
+	(operand_less_p): Likewise.
+	(compare_values_warnv): Likewise.
+	(extract_range_for_var_from_comparison_expr): Likewise.
+	(vrp_int_const_binop): Likewise.
+	(zero_nonzero_bits_from_vr): Likewise.
+	(extract_range_from_multiplicative_op_1): Likewise.
+	(extract_range_from_binary_expr_1): Likewise.
+	(extract_range_from_unary_expr): Likewise.
+	(extract_range_from_comparison): Likewise.
+	(extract_range_basic): Likewise.
+	(adjust_range_with_scev): Likewise.
+	(compare_ranges): Likewise.
+	(compare_range_with_value): Likewise.
+	(dump_value_range): Likewise.
+	(test_for_singularity): Likewise, remove strict_overflow_p parameter
+	never used.
+	(simplify_cond_using_ranges): Adjust.
+
 2017-05-04  Pekka Jääskeläinen  <pekka.jaaskelainen@parmance.com>
 
 	* brig-builtins.def: Added a builtin for class_f64.
