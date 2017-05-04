@@ -2192,14 +2192,17 @@ opt_const_cmp_to_sub (void)
 
 	      rtx jmppattern = PATTERN (patchme);
 
-	      rtx jmpsrc = XEXP(jmppattern, 1);
-	      if (!jmpsrc)
+	      if (GET_RTX_LENGTH (GET_CODE(jmppattern)) < 2)
 		ok = false;
-	      else if (GET_CODE(jmpsrc) == IF_THEN_ELSE)
+	      else
 		{
-		  rtx condition = XEXP(jmpsrc, 0);
-		  RTX_CODE code = GET_CODE(condition);
-		  ok = code == EQ || code == NE;
+		  rtx jmpsrc = XEXP(jmppattern, 1);
+		  if (GET_CODE(jmpsrc) == IF_THEN_ELSE)
+		    {
+		      rtx condition = XEXP(jmpsrc, 0);
+		      RTX_CODE code = GET_CODE(condition);
+		      ok = code == EQ || code == NE;
+		    }
 		}
 	    }
 	}
