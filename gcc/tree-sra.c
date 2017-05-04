@@ -1305,6 +1305,15 @@ disqualify_if_bad_bb_terminating_stmt (gimple *stmt, tree lhs, tree rhs)
   return false;
 }
 
+/* Return true if the nature of BASE is such that it contains data even if
+   there is no write to it in the function.  */
+
+static bool
+comes_initialized_p (tree base)
+{
+  return TREE_CODE (base) == PARM_DECL || constant_decl_p (base);
+}
+
 /* Scan expressions occurring in STMT, create access structures for all accesses
    to candidates for scalarization and remove those candidates which occur in
    statements or expressions that prevent them from being split apart.  Return
@@ -1364,8 +1373,10 @@ build_accesses_from_assign (gimple *stmt)
       link->racc = racc;
       add_link_to_rhs (racc, link);
       /* Let's delay marking the areas as written until propagation of accesses
-	 across link.  */
-      lacc->write = false;
+	 across link, unless the nature of rhs tells us that its data comes
+	 from elsewhere.  */
+      if (!comes_initialized_p (racc->base))
+	lacc->write = false;
     }
 
   return lacc || racc;
@@ -2472,8 +2483,7 @@ analyze_access_subtree (struct access *root, struct access *parent,
 
   if (!hole || root->grp_total_scalarization)
     root->grp_covered = 1;
-  else if (root->grp_write || TREE_CODE (root->base) == PARM_DECL
-	   || constant_decl_p (root->base))
+  else if (root->grp_write || comes_initialized_p (root->base))
     root->grp_unscalarized_data = 1; /* not covered and written to */
   return sth_created;
 }
@@ -2581,11 +2591,14 @@ propagate_subaccesses_across_link (struct access *lacc, struct access *racc)
 
   /* IF the LHS is still not marked as being written to, we only need to do so
      if the RHS at this level actually was.  */
-  if (!lacc->grp_write &&
-      (racc->grp_write || TREE_CODE (racc->base) == PARM_DECL))
+  if (!lacc->grp_write)
     {
-      lacc->grp_write = true;
-      ret = true;
+      gcc_checking_assert (!comes_initialized_p (racc->base));
+      if (racc->grp_write)
+	{
+	  lacc->grp_write = true;
+	  ret = true;
+	}
     }
 
   if (is_gimple_reg_type (lacc->type)

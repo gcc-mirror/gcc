@@ -1,4 +1,9 @@
-2016-05-04  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+2017-05-04  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/80622
+	* gcc.dg/tree-ssa/pr80622.c: New test.
+
+2017-05-04  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* gcc.target/aarch64/prfm_imm_offset_1.c: New test.
 
