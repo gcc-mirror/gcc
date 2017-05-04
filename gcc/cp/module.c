@@ -867,7 +867,7 @@ public:
   void tag_conf (FILE *);
   void tag_import (FILE *, unsigned ix, const module_state *);
   void tag_trees (FILE *);
-  void tag_binding (FILE *, tree ns, unsigned, tree name, tree ovl);
+  void tag_binding (FILE *, tree ns, bool, tree name, tree ovl);
   int done ()
   {
     return w.done ();
@@ -879,7 +879,8 @@ private:
   void write_tree_ary (FILE *, unsigned, const gtp *);
   void write_core_bools (FILE *, tree);
   void write_core_vals (FILE *, tree);
-  void write_decl_lang_bools (FILE *, tree);
+  void write_lang_decl_bools (FILE *, tree);
+  void write_lang_decl_vals (FILE *, tree);
 
 public:
   void write_tree (FILE *, tree);
@@ -948,7 +949,8 @@ private:
   bool read_tree_ary (FILE *, unsigned, const gtp *);
   bool read_core_bools (FILE *, tree);
   bool read_core_vals (FILE *, tree);
-  bool read_decl_lang_bools (FILE *, tree);
+  bool read_lang_decl_bools (FILE *, tree);
+  bool read_lang_decl_vals (FILE *, tree);
 
 public:
   bool read_tree (FILE *, tree *, unsigned = 0);
@@ -1390,53 +1392,51 @@ cpms_in::tag_import (FILE *d)
    NS must have already have a binding somewhere.
 
    tree:ns
-   u:module
+   u:main_p
    tree:name
-   tree:ovl
+   tree:binding
 */
 
 void
-cpms_out::tag_binding (FILE *d, tree ns, unsigned ix, tree name, tree ovl)
+cpms_out::tag_binding (FILE *d, tree ns, bool main, tree name, tree binding)
 {
+  if (TREE_CODE (binding) == TYPE_DECL)
+    // FIXME: No typedefs
+    return;
+
   if (d)
-    fprintf (d, "Writing bindings for %s\n", IDENTIFIER_POINTER (name));
+    fprintf (d, "Writing %s %s bindings for %s\n",
+	     IDENTIFIER_POINTER (DECL_NAME (ns)), 
+	     main ? "main" : "global", IDENTIFIER_POINTER (name));
 
   w.u (rt_binding);
   write_tree (d, ns);
-  w.u (ix);
+  w.u (main);
   write_tree (d, name);
-  write_tree (d, ovl);
+  write_tree (d, binding);
   w.checkpoint ();
 }
 
 bool
 cpms_in::tag_binding (FILE *d)
 {
-  tree name, ns, ovl;
-  unsigned ix;
+  tree name, ns, binding;
   if (!read_tree (d, &ns))
     return false;
-  ix = r.u ();
+  bool main = r.u ();
   if (!read_tree (d, &name)
-      || !read_tree (d, &ovl))
+      || !read_tree (d, &binding))
     return false;
   if (!r.checkpoint ())
     return false;
 
-  if (ix > THIS_MODULE_INDEX)
-    {
-      error ("unexpected binding for module %u", ix);
-      return false;
-    }
-
-  // FIXME:just set the index on the single thing
-  if (ix)
-    DECL_MODULE_INDEX (ovl) = index;
-
   if (d)
-    fprintf (d, "Reading binding for %s in %s\n",
-	     IDENTIFIER_POINTER (name), IDENTIFIER_POINTER (DECL_NAME (ns)));
-  return push_module_binding (ns, ix ? index : GLOBAL_MODULE_INDEX, name, ovl);
+    fprintf (d, "Reading %s %s binding for %s\n",
+	     IDENTIFIER_POINTER (DECL_NAME (ns)), 
+	     main ? "main" : "global",
+	     IDENTIFIER_POINTER (name));
+  return push_module_binding (ns, main ? index : GLOBAL_MODULE_INDEX,
+			      name, binding);
 }
 
 int
@@ -1618,6 +1618,14 @@ cpms_in::finish (FILE *d, tree t)
 {
   if (TYPE_P (t))
     return finish_type (d, t);
+
+  else if (DECL_P (t) && DECL_LANG_SPECIFIC (t)
+	   && (DECL_MODULE_INDEX (t) != GLOBAL_MODULE_INDEX
+	       && DECL_MODULE_INDEX (t) != index))
+    // FIXME; we should do this earlier and here otherwise
+    /* Indirect import.  Find the matching decl.  */
+    return find_module_instance (CP_DECL_CONTEXT (t),
+				 DECL_MODULE_INDEX (t), t);
 
   switch (TREE_CODE (t))
     {
@@ -1831,24 +1839,112 @@ cpms_in::read_core_bools (FILE *, tree t)
       
   // Add more
 #undef RB
-  return true;
+  return !r.error ();
 }
 
 void
-cpms_out::write_decl_lang_bools (FILE *, tree t)
+cpms_out::write_lang_decl_bools (FILE *, tree t)
 {
+  const struct lang_decl *lang = DECL_LANG_SPECIFIC (t);
 #define WB(X) (w.b (X))
-  WB (DECL_LANGUAGE (t) == lang_cplusplus);
+  WB (lang->u.base.language == lang_cplusplus);
+  WB ((lang->u.base.use_template >> 0) & 1);
+  WB ((lang->u.base.use_template >> 1) & 1);
+  WB (lang->u.base.not_really_extern);
+  WB (lang->u.base.initialized_in_class);
+  WB (lang->u.base.repo_available_p);
+  WB (lang->u.base.threadprivate_or_deleted_p);
+  WB (lang->u.base.anticipated_p);
+  WB (lang->u.base.friend_or_tls);
+  WB (lang->u.base.template_conv_p);
+  WB (lang->u.base.odr_used);
+  WB (lang->u.base.u2sel);
+  WB (lang->u.base.concept_p);
+  WB (lang->u.base.var_declared_inline_p);
+  WB (lang->u.base.decomposition_p);
+  switch (lang->u.base.selector)
+    {
+    case 1:  /* lang_decl_fn.  */
+      WB (lang->u.fn.global_ctor_p);
+      WB (lang->u.fn.global_dtor_p);
+      WB (lang->u.fn.assignment_operator_p);
+      WB (lang->u.fn.static_function);
+      WB (lang->u.fn.pure_virtual);
+      WB (lang->u.fn.defaulted_p);
+      WB (lang->u.fn.has_in_charge_parm_p);
+      WB (lang->u.fn.has_vtt_parm_p);
+      /* There shouldn't be a pending inline at this point.  */
+      gcc_assert (!lang->u.fn.pending_inline_p);
+      WB (lang->u.fn.nonconverting);
+      WB (lang->u.fn.thunk_p);
+      WB (lang->u.fn.this_thunk_p);
+      WB (lang->u.fn.hidden_friend_p);
+      WB (lang->u.fn.omp_declare_reduction_p);
+      /* FALLTHROUGH.  */
+    case 0:  /* lang_decl_min.  */
+      /* No bools.  */
+      break;
+    case 2:  /* lang_decl_ns.  */
+      /* No bools.  */
+      break;
+    case 3:  /* lang_decl_parm.  */
+      /* No bools.  */
+      break;
+    }
 #undef WB
 }
 
 bool
-cpms_in::read_decl_lang_bools (FILE *, tree t)
+cpms_in::read_lang_decl_bools (FILE *, tree t)
 {
+  struct lang_decl *lang = DECL_LANG_SPECIFIC (t);
 #define RB(X) ((X) = r.b ())
-  SET_DECL_LANGUAGE (t, r.b () ? lang_cplusplus : lang_c);
+  lang->u.base.language = r.b () ? lang_cplusplus : lang_c;
+  unsigned v = 0;
+  v |= r.b () << 0;
+  v |= r.b () << 1;
+  lang->u.base.use_template = v;
+  RB (lang->u.base.not_really_extern);
+  RB (lang->u.base.initialized_in_class);
+  RB (lang->u.base.repo_available_p);
+  RB (lang->u.base.threadprivate_or_deleted_p);
+  RB (lang->u.base.anticipated_p);
+  RB (lang->u.base.friend_or_tls);
+  RB (lang->u.base.template_conv_p);
+  RB (lang->u.base.odr_used);
+  RB (lang->u.base.u2sel);
+  RB (lang->u.base.concept_p);
+  RB (lang->u.base.var_declared_inline_p);
+  RB (lang->u.base.decomposition_p);
+  switch (lang->u.base.selector)
+    {
+    case 1:  /* lang_decl_fn.  */
+      RB (lang->u.fn.global_ctor_p);
+      RB (lang->u.fn.global_dtor_p);
+      RB (lang->u.fn.assignment_operator_p);
+      RB (lang->u.fn.static_function);
+      RB (lang->u.fn.pure_virtual);
+      RB (lang->u.fn.defaulted_p);
+      RB (lang->u.fn.has_in_charge_parm_p);
+      RB (lang->u.fn.has_vtt_parm_p);
+      RB (lang->u.fn.nonconverting);
+      RB (lang->u.fn.thunk_p);
+      RB (lang->u.fn.this_thunk_p);
+      RB (lang->u.fn.hidden_friend_p);
+      RB (lang->u.fn.omp_declare_reduction_p);
+      /* FALLTHROUGH.  */
+    case 0:  /* lang_decl_min.  */
+      /* No bools.  */
+      break;
+    case 2:  /* lang_decl_ns.  */
+      /* No bools.  */
+      break;
+    case 3:  /* lang_decl_parm.  */
+      /* No bools.  */
+      break;
+    }
 #undef RB
-  return true;
+  return !r.error ();
 }
 
 /* Read & write the core values and pointers.  */
@@ -1859,7 +1955,8 @@ cpms_out::write_core_vals (FILE *d, tree t)
 #define WU(X) (w.u (X))
 #define WT(X) (write_tree (d, X))
 
-  WT (TREE_TYPE (t));
+  if (CODE_CONTAINS_STRUCT (TREE_CODE (t), TS_TYPED))
+    WT (TREE_TYPE (t));
 
   if (CODE_CONTAINS_STRUCT (TREE_CODE (t), TS_LIST))
     {
@@ -1867,6 +1964,7 @@ cpms_out::write_core_vals (FILE *d, tree t)
       WT (TREE_VALUE (t));
       WT (TREE_CHAIN (t));
     }
+
   if (CODE_CONTAINS_STRUCT (TREE_CODE (t), TS_TYPE_COMMON))
     {
       /* By construction we want to make sure we have the canonical
@@ -1885,6 +1983,7 @@ cpms_out::write_core_vals (FILE *d, tree t)
       WT (CP_TYPE_CONTEXT (t));
       WT (TYPE_STUB_DECL (t));
     }
+
   if (CODE_CONTAINS_STRUCT (TREE_CODE (t), TS_TYPE_NON_COMMON))
     {
       switch (TREE_CODE (t))
@@ -1906,11 +2005,13 @@ cpms_out::write_core_vals (FILE *d, tree t)
 	WT (TYPE_MINVAL (t));
       WT (TYPE_MAXVAL (t));
     }
+
   if (CODE_CONTAINS_STRUCT (TREE_CODE (t), TS_DECL_MINIMAL))
     {
       WT (DECL_NAME (t));
       WT (CP_DECL_CONTEXT (t));
     }
+
   if (CODE_CONTAINS_STRUCT (TREE_CODE (t), TS_DECL_COMMON))
     {
       WU (DECL_MODE (t));
@@ -1919,17 +2020,31 @@ cpms_out::write_core_vals (FILE *d, tree t)
       WT (DECL_SIZE_UNIT (t));
       WT (DECL_ATTRIBUTES (t));
     }
+
   if (CODE_CONTAINS_STRUCT (TREE_CODE (t), TS_DECL_NON_COMMON))
     {
       if (TREE_CODE (t) == TYPE_DECL)
 	WT (DECL_ORIGINAL_TYPE (t));
     }
+
   if (CODE_CONTAINS_STRUCT (TREE_CODE (t), TS_DECL_WITH_VIS))
     {
       WU (DECL_VISIBILITY (t));
       WT (DECL_ASSEMBLER_NAME_SET_P (t)
 	  ? DECL_ASSEMBLER_NAME (t) : NULL_TREE);
     }
+
+  switch (TREE_CODE (t))
+    {
+    case OVERLOAD:
+      WT (OVL_FUNCTION (t));
+      WT (OVL_CHAIN (t));
+      break;
+
+    default:
+      break;
+    }
+
 #undef WT
 #undef WU
 }
@@ -1940,15 +2055,17 @@ cpms_in::read_core_vals (FILE *d, tree t)
 #define RU(X) ((X) = r.u ())
 #define RM(X) ((X) = machine_mode (r.u ()))
 #define RT(X) if (!read_tree (d, &(X))) return false
-  RT (TREE_TYPE (t));
+  if (CODE_CONTAINS_STRUCT (TREE_CODE (t), TS_TYPED))
+    RT (TREE_TYPE (t));
 
-   if (CODE_CONTAINS_STRUCT (TREE_CODE (t), TS_LIST))
+  if (CODE_CONTAINS_STRUCT (TREE_CODE (t), TS_LIST))
     {
       RT (TREE_PURPOSE (t));
       RT (TREE_VALUE (t));
       RT (TREE_CHAIN (t));
     }
- if (CODE_CONTAINS_STRUCT (TREE_CODE (t), TS_TYPE_COMMON))
+
+   if (CODE_CONTAINS_STRUCT (TREE_CODE (t), TS_TYPE_COMMON))
     {
       RT (TYPE_MAIN_VARIANT (t));
       RT (TYPE_CANONICAL (t));
@@ -1963,7 +2080,8 @@ cpms_in::read_core_vals (FILE *d, tree t)
       RT (TYPE_CONTEXT (t));
       RT (TYPE_STUB_DECL (t));
     }
-  if (CODE_CONTAINS_STRUCT (TREE_CODE (t), TS_TYPE_NON_COMMON))
+
+   if (CODE_CONTAINS_STRUCT (TREE_CODE (t), TS_TYPE_NON_COMMON))
     {
       switch (TREE_CODE (t))
 	{
@@ -1984,11 +2102,13 @@ cpms_in::read_core_vals (FILE *d, tree t)
 	RT (TYPE_MINVAL (t));
       RT (TYPE_MAXVAL (t));
     }
+
   if (CODE_CONTAINS_STRUCT (TREE_CODE (t), TS_DECL_MINIMAL))
     {
       RT (DECL_NAME (t));
       RT (DECL_CONTEXT (t));
     }
+
   if (CODE_CONTAINS_STRUCT (TREE_CODE (t), TS_DECL_COMMON))
     {
       RM (DECL_MODE (t));
@@ -1997,11 +2117,13 @@ cpms_in::read_core_vals (FILE *d, tree t)
       RT (DECL_SIZE_UNIT (t));
       RT (DECL_ATTRIBUTES (t));
     }
+
   if (CODE_CONTAINS_STRUCT (TREE_CODE (t), TS_DECL_NON_COMMON))
     {
       if (TREE_CODE (t) == TYPE_DECL)
 	RT (DECL_ORIGINAL_TYPE (t));
     }
+
   if (CODE_CONTAINS_STRUCT (TREE_CODE (t), TS_DECL_WITH_VIS))
     {
       DECL_VISIBILITY (t) = symbol_visibility (r.u ());
@@ -2010,10 +2132,95 @@ cpms_in::read_core_vals (FILE *d, tree t)
       if (name)
 	SET_DECL_ASSEMBLER_NAME (t, name);
     }
+
+  switch (TREE_CODE (t))
+    {
+    case OVERLOAD:
+      RT (OVL_FUNCTION (t));
+      RT (OVL_CHAIN (t));
+      break;
+
+    default:
+      break;
+    }
 #undef RT
 #undef RM
 #undef RU
-  return true;
+  return !r.error ();
+}
+
+void
+cpms_out::write_lang_decl_vals (FILE *d, tree t)
+{
+  const struct lang_decl *lang = DECL_LANG_SPECIFIC (t);
+#define WU(X) (w.u (X))
+#define WT(X) (write_tree (d, X))
+  WU (lang->u.base.module_index);
+  switch (lang->u.base.selector)
+    {
+    case 1:  /* lang_decl_fn.  */
+      WU (lang->u.fn.operator_code);
+      if (lang->u.fn.thunk_p)
+	w.wi (lang->u.fn.u5.fixed_offset);
+      else
+	WT (lang->u.fn.u5.cloned_function);
+      /* FALLTHROUGH.  */
+    case 0:  /* lang_decl_min.  */
+      // FIXME: no templates yet
+      gcc_assert (!lang->u.min.template_info);
+      if (lang->u.base.u2sel)
+	WU (lang->u.min.u2.discriminator);
+      else
+	WT (lang->u.min.u2.access);
+      break;
+    case 2:  /* lang_decl_ns.  */
+      break;
+    case 3:  /* lang_decl_parm.  */
+      break;
+    }
+#undef WU
+#undef WT
+}
+
+bool
+cpms_in::read_lang_decl_vals (FILE *d, tree t)
+{
+  struct lang_decl *lang = DECL_LANG_SPECIFIC (t);
+#define RU(X) ((X) = r.u ())
+#define RT(X) if (!read_tree (d, &(X))) return false
+  unsigned ix = r.u ();
+  if (ix >= remap_num)
+    return false;
+  lang->u.base.module_index = remap_vec[ix];
+  switch (lang->u.base.selector)
+    {
+    case 1:  /* lang_decl_fn.  */
+      {
+	unsigned code = r.u ();
+	/* It seems to be hard to check this is in range.  */
+	lang->u.fn.operator_code = (tree_code)code;
+	if (lang->u.fn.thunk_p)
+	  lang->u.fn.u5.fixed_offset = r.wi ();
+	else
+	  RT (lang->u.fn.u5.cloned_function);
+      }
+      /* FALLTHROUGH.  */
+    case 0:  /* lang_decl_min.  */
+      // FIXME: no templates yet
+      gcc_assert (!lang->u.min.template_info);
+      if (lang->u.base.u2sel)
+	RU (lang->u.min.u2.discriminator);
+      else
+	RT (lang->u.min.u2.access);
+      break;
+    case 2:  /* lang_decl_ns.  */
+      break;
+    case 3:  /* lang_decl_parm.  */
+      break;
+    }
+#undef RU
+#undef RT
+  return !r.error ();
 }
 
 /* Write either the decl (as a declaration) itself (and create a
@@ -2079,24 +2286,28 @@ cpms_out::write_tree (FILE *d, tree t)
   if (code != IDENTIFIER_NODE)
     {
       write_core_bools (d, t);
+      int specific = 0;
 
       if (TYPE_P (t) || DECL_P (t))
 	{
-	  bool specific = (TYPE_P (t) ? TYPE_LANG_SPECIFIC (t) != NULL
-			   : DECL_LANG_SPECIFIC (t) != NULL);
-	  w.b (specific);
-	  if (!specific)
-	    ;
-	  else if (TYPE_P (t))
-	    ; // FIXME: write type lang bools
+	  if (TYPE_P (t))
+	    specific = TYPE_LANG_SPECIFIC (t) ? -1 : 0;
 	  else if (DECL_P (t))
-	    write_decl_lang_bools (d, t);
+	    specific = DECL_LANG_SPECIFIC (t) ? +1 : 0;
+	  w.b (specific != 0);
+	  if (specific < 0)
+	    ; // FIXME: write type lang bools
+	  else if (specific > 0)
+	    write_lang_decl_bools (d, t);
 	}
       w.bflush ();
       w.checkpoint ();
 
       write_core_vals (d, t);
-      // FIXME:Write lang_specific pointers & vals
+      if (specific < 0)
+	; // FIXME: write lang_type vals
+      else if (specific > 0)
+	write_lang_decl_vals (d, t);
     }
 
   w.checkpoint ();
@@ -2153,28 +2364,25 @@ cpms_in::read_tree (FILE *d, tree *tp, unsigned tag)
       if (!read_core_bools (d, t))
 	return false;
 
+      int specific = 0;
       bool lied = false;
       if (TYPE_P (t) || DECL_P (t))
 	{
-	  bool specific = r.b ();
-	  if (!specific)
-	    ;
-	  else if (TYPE_P (t))
+	  if (r.b ())
+	    specific = TYPE_P (t) ? -1 : +1;
+	  if (specific
+	      && !(specific < 0
+		  ? maybe_add_lang_type_raw (t)
+		   : maybe_add_lang_decl_raw (t)))
 	    {
-	      if (!maybe_add_lang_type_raw (t))
-		lied = true;
-	      else
-		{
-		  // FIXME:read lang_specific bits
-		}
+	      specific = 0;
+	      lied = true;
 	    }
-	  else if (DECL_P (t))
-	    {
-	      if (!maybe_add_lang_decl_raw (t))
-		lied = true;
-	      else if (!read_decl_lang_bools (d, t))
-		return false;
-	    }
+
+	  if (specific
+	      // FIXME read lang_type bools
+	      && !(specific < 0 ? true : read_lang_decl_bools (d, t)))
+	    return false;
 	}
       r.bflush ();
       if (!r.checkpoint ())
@@ -2184,10 +2392,13 @@ cpms_in::read_tree (FILE *d, tree *tp, unsigned tag)
 	  r.bad ();
 	  return false;
 	}
+
       if (!read_core_vals (d, t))
 	return false;
-
-      // FIXME:Read lang_specific ptrs & vals
+      if (specific
+	  // FIXME read lang_type vals
+	  && !(specific < 0 ? true : read_lang_decl_vals (d, t)))
+	return false;
     }
 
   if (!r.checkpoint ())
@@ -2240,52 +2451,42 @@ cpms_out::write_bindings (FILE *d, tree ns)
       std::pair<tree, tree> binding (*iter);
 
       tree name = binding.first;
-      tree ovl = binding.second;
+      tree global = binding.second;
+      tree inner = NULL_TREE;
 
-      // FIXME, write global and this module bindings
-      if (TREE_CODE (ovl) == MODULE_VECTOR)
-	ovl = MODULE_VECTOR_CLUSTER (ovl, 0).slots[THIS_MODULE_INDEX];
-      else
-	ovl = NULL_TREE;
-      if (!ovl)
-	continue;
-
-      tree type; // FIXME stop ignoring me
-      tree decl = decapsulate_binding (ovl, &type);
-
-      if (OVL_P (decl))
+      if (TREE_CODE (global) == MODULE_VECTOR)
 	{
-	  for (ovl_iterator iter (decl); iter; ++iter)
-	    if (!iter.using_p ())
-	      {
-		tree fn = *iter;
+	  tree main
+	    = MODULE_VECTOR_CLUSTER (global, 0).slots[THIS_MODULE_INDEX];
+	  global
+	    = MODULE_VECTOR_CLUSTER (global, 0) .slots[GLOBAL_MODULE_INDEX];
 
-		if (DECL_MODULE_INDEX (fn) == THIS_MODULE_INDEX)
-		  {
-		    gcc_assert (CP_DECL_CONTEXT (fn) == ns);
-
-		    // FIXME:Add templates later
-		    gcc_assert (TREE_CODE (fn) == FUNCTION_DECL);
-
-		    // FIXME Hack alert, just one fn
-		    tag_binding (d, ns, THIS_MODULE_INDEX, name, fn);
-		    break;
-		  }
-	      }
+	  if (!main)
+	    ;
+	  else if (TREE_CODE (main) == NAMESPACE_DECL
+		   && !DECL_NAMESPACE_ALIAS (main))
+	    inner = main;
+	  else
+	    tag_binding (d, ns, true, name, main);
 	}
-      else if (TREE_CODE (decl) == NAMESPACE_DECL)
-	write_bindings (d, decl);
-      else if (DECL_MODULE_EXPORT_P (decl)
-	       // FIXME: set MODULE_EXPORT_P properly.  Utter hack here
-	       || !DECL_EXTERN_C_P (decl))
-	switch (TREE_CODE (decl))
-	  {
-	  case VAR_DECL:
-	  case TYPE_DECL:
-	    break;
-	  default:
-	    gcc_unreachable (); // FIXME: implement more
-	  }
+
+      if (!global)
+	;
+      else if (TREE_CODE (global) == OVERLOAD
+	       && OVL_HIDDEN_P (global)
+	       && !DECL_HIDDEN_FRIEND_P (OVL_FUNCTION (global)))
+	/* Don't write anticipated builtin.  */;
+      else if (TREE_CODE (global) == NAMESPACE_DECL
+	       && !DECL_NAMESPACE_ALIAS (global))
+	inner = global;
+      else if (TREE_CODE (global) != OVERLOAD
+	       && DECL_IS_BUILTIN (global))
+	/* Don't write builtins.  */;
+      else
+	tag_binding (d, ns, false, name, global);
+
+      if (inner)
+	write_bindings (d, inner);
     }
   if (d)
     fprintf (d, "Walked namespace '%s'\n",

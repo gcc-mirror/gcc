@@ -1,3 +1,20 @@
+2017-05-04  Nathan Sidwell  <nathan@acm.org>
+
+	Overload bindings
+	gcc/cp/
+	* module.c (cpms_in::tag_binding, cpms_out::tag_binding): Binding
+	can be overload.
+	(cpms_out::write_bindings): Write whole slot.
+	(cpms_in::finish): Look for import match.
+	(cpms_in::read_lang_decl_bools, cpms_out::write_lang_decl_bools,
+	cpms_in::read_lang_decl_vals, cpms_out::write_lang_decl_vals):
+	Implement.
+	* name-lookup.c (push_module_binding): Binding can be overload.
+	(find_module_instance): New.
+	* name-lookup.h (find_module_instance): Declare.
+	gcc/testsuite/
+	* g++.dg/modules/mod-impl-1_[abcd]: Add overloads.
+
 2017-05-03  Nathan Sidwell  <nathan@acm.org>
 
 	Merge trunk r247593.

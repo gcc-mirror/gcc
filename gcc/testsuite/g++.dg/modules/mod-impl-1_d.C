@@ -19,5 +19,8 @@ int main ()
   if (Square (2.0f) != -4)
     return 1;
 
+  if (Square (2, 3, 4) != 9 * 4)
+    return 1;
+  
   return 0;
 }

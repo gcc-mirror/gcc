@@ -2664,18 +2664,72 @@ push_module_namespace (tree ctx, unsigned module, tree ns)
    binding.  */
 
 bool
-push_module_binding (tree ns, unsigned module, tree name, tree ovl)
+push_module_binding (tree ns, unsigned module, tree name, tree binding)
 {
-  gcc_assert (TREE_CODE (ovl) != NAMESPACE_DECL);
+  gcc_assert (TREE_CODE (binding) != NAMESPACE_DECL
+	      || DECL_NAMESPACE_ALIAS (binding));
   tree *slot = find_or_create_namespace_slot (ns, name);
   tree *mslot = module_binding_slot (slot, module, -1);
-  tree old = MAYBE_STAT_DECL (*mslot);
 
-  // FIXME: for now
-  gcc_assert (TREE_CODE (ovl) == FUNCTION_DECL);
-  if (old != ovl)
-    old = update_binding (NAMESPACE_LEVEL (ns), NULL, mslot, old, ovl, false);
-  return old != error_mark_node;
+  gcc_assert (!MAYBE_STAT_TYPE (binding)); // FIXME
+  gcc_assert (!*mslot || !MAYBE_STAT_TYPE (*mslot)); // FIXME
+
+  if (module == GLOBAL_MODULE_INDEX && *mslot
+      && anticipated_builtin_p (*mslot))
+    /* Zap out an anticipated builtin.  */
+    *mslot = NULL_TREE;
+
+  for (ovl_iterator iter (MAYBE_STAT_DECL (binding)); iter; ++iter)
+    {
+      tree decl = *iter;
+      if (*mslot)
+	{
+	  bool found = false;
+
+	  for (ovl_iterator old (MAYBE_STAT_DECL (*mslot));
+	       !found && old; ++old)
+	    /* We'll already have done lookup when reading in the fn
+	       itself, so pointer equality is sufficient.  */
+	    if (*old == decl)
+	      found = true;
+
+	  if (!found)
+	    *mslot = ovl_insert (*mslot, decl, iter.using_p ());
+	}
+
+      if (!iter.using_p ())
+	add_decl_to_level (NAMESPACE_LEVEL (ns), decl);
+    }
+
+  if (!*mslot)
+    *mslot = binding;
+
+  return true;
+}
+
+/* DECL is a partially read in decl (code and type correct).  Look in
+   NS for an existing binding in MOD.  */
+
+tree
+find_module_instance (tree ns, unsigned mod, tree decl)
+{
+  gcc_assert (TREE_CODE (decl) != NAMESPACE_DECL
+	      || DECL_NAMESPACE_ALIAS (decl));
+  if (tree *slot = find_namespace_slot (ns, DECL_NAME (decl)))
+    if (tree *mslot = module_binding_slot (slot, mod, 0))
+      if (tree binding = *mslot)
+	{
+	  gcc_assert (!MAYBE_STAT_TYPE (binding)); // FIXME
+
+	  for (ovl_iterator iter (MAYBE_STAT_DECL (binding)); iter; ++iter)
+	    if (TREE_CODE (decl) == TREE_CODE (*iter)
+		&& same_type_p (TREE_TYPE (decl), TREE_TYPE (*iter)))
+	      return *iter;
+	}
+
+  /* We should have found an imported decl.  But global and main
+     modules could be new.  */
+  return mod <= IMPORTED_MODULE_BASE ? decl : NULL_TREE;
 }
 
 /* Enter DECL into the symbol table, if that's appropriate.  Returns

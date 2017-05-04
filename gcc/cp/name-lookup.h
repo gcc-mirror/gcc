@@ -345,8 +345,8 @@ extern void pop_from_top_level (void);
 
 /* Lower level interface for modules. */
 extern tree decapsulate_binding (tree value, tree *type_p);
-extern tree push_module_namespace (tree ctx, unsigned module, tree decl);
-extern bool push_module_binding (tree ctx, unsigned module,
-				 tree name, tree ovl);
+extern tree push_module_namespace (tree ctx, unsigned mod, tree decl);
+extern bool push_module_binding (tree ctx, unsigned mod, tree name, tree ovl);
+extern tree find_module_instance (tree ctx, unsigned mod, tree decl);
 
 #endif /* GCC_CP_NAME_LOOKUP_H */

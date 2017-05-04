@@ -5,4 +5,7 @@ module baz [[interface]];
 
 export int Square (int);
 
+float Square (int, int);
+export int Square (int, int, int);
+
 int Prod (int, int);
