@@ -631,6 +631,7 @@ gfc_match_use (void)
 
 	case INTERFACE_USER_OP:
 	case INTERFACE_GENERIC:
+	case INTERFACE_DTIO:
 	  m = gfc_match (" =>");
 
 	  if (type == INTERFACE_USER_OP && m == MATCH_YES
