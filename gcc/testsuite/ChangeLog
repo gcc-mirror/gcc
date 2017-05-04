@@ -1,4 +1,10 @@
 2017-05-04  Prakhar Bahuguna  <prakhar.bahuguna@arm.com>
+	    Andre Simoes Dias Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* gcc.target/arm/pure-code/pure-code.exp: Add conditional for
+	check_effective_target_arm_thumb1_movt_ok.
+
+2017-05-04  Prakhar Bahuguna  <prakhar.bahuguna@arm.com>
 
 	* gcc.target/arm/fpscr.c: New file.
 
