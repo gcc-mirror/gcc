@@ -1,3 +1,8 @@
+2017-05-04  Jan Hubicka  <hubicka@ucw.cz>
+
+	* gcc.dg/ipa/ipcp-2.c: Decrease ipcp threshold
+	* gcc.dg/tree-ssa/ipa-cp-1.c: Likewise.
+
 2017-05-04  Richard Biener  <rguenther@suse.de>
 
 	* gcc.dg/tree-ssa/ssa-fre-58.c: New testcase.
