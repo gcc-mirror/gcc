@@ -1,3 +1,13 @@
+2017-05-04  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-cp.c (perform_estimation_of_a_value): Drop base_time parameter;
+	update use of estimate_ipcp_clone_size_and_time.
+	(estimate_local_effects): Update use of
+	estimate_ipcp_clone_size_and_time and perform_estimation_of_a_value.
+	* ipa-inline.h (estimate_ipcp_clone_size_and_time): Update prototype.
+	* ipa-inline-analysis.c (estimate_ipcp_clone_size_and_time):
+	Return nonspecialized time.
+
 2017-05-04  Richard Biener  <rguenther@suse.de>
 
 	* tree-ssa-alias.c (get_continuation_for_phi): Improve looking

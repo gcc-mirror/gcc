@@ -272,7 +272,8 @@ void estimate_ipcp_clone_size_and_time (struct cgraph_node *,
 					vec<tree>,
 					vec<ipa_polymorphic_call_context>,
 					vec<ipa_agg_jump_function_p>,
-					int *, sreal *, inline_hints *);
+					int *, sreal *, sreal *,
+				        inline_hints *);
 int estimate_growth (struct cgraph_node *);
 bool growth_likely_positive (struct cgraph_node *, int);
 void inline_merge_summary (struct cgraph_edge *edge);
