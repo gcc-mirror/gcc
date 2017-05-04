@@ -1,3 +1,10 @@
+2017-05-04  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-alias.c (get_continuation_for_phi): Improve looking
+	for the last VUSE which def dominates the PHI.  Directly call
+	maybe_skip_until.
+	(get_continuation_for_phi_1): Remove.
+
 2017-05-04  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	* tree-ssa-loop-manip.c (niter_for_unrolled_loop): Add commentary
