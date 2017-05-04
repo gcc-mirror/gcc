@@ -9643,7 +9643,6 @@ simplify_cond_using_ranges_2 (gcond *stmt)
 {
   tree op0 = gimple_cond_lhs (stmt);
   tree op1 = gimple_cond_rhs (stmt);
-  enum tree_code cond_code = gimple_cond_code (stmt);
 
   /* If we have a comparison of an SSA_NAME (OP0) against a constant,
      see if OP0 was set by a type conversion where the source of

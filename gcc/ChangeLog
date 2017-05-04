@@ -1,3 +1,8 @@
+2017-05-04  Martin Liska  <mliska@suse.cz>
+
+	* tree-vrp.c (simplify_cond_using_ranges_2): Remove unused
+	variable cond_code.
+
 2017-05-04  Richard Biener  <rguenther@suse.de>
 
 	* tree.c (array_at_struct_end_p): Handle arrays at struct
