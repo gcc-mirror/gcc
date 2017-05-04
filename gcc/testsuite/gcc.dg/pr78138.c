@@ -20,5 +20,5 @@ void g (void *p)
   extern unsigned n;
   if (n < 17 || 32 < n) n = 7;
 
-  memcpy (d, p, n);   /* { dg-warning ".memcpy.: writing between 7 and 32 bytes into a region of size 5" } */
+  memcpy (d, p, n);   /* { dg-warning ".memcpy. writing between 7 and 32 bytes into a region of size 5" } */
 };

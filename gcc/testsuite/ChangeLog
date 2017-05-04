@@ -1,5 +1,17 @@
 2017-05-04  Martin Sebor  <msebor@redhat.com>
 
+	PR preprocessor/79214
+	PR middle-end/79222
+	PR middle-end/79223
+	* gcc.dg/pr79214.c: New test.
+	* gcc.dg/pr79214.h: New test header.
+	* gcc.dg/pr79222.c: New test.
+	* gcc.dg/pr79223.c: New test.
+	* gcc.dg/pr78138.c: Adjust.
+	* gfortran.dg/unconstrained_commons.f: Same.
+
+2017-05-04  Martin Sebor  <msebor@redhat.com>
+
 	PR translation/80280
 	* g++.dg/abi/Wabi-2-3.C: Adjust.
 	* g++.dg/abi/Wabi-3-2.C: Ditto.
