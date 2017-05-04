@@ -1,5 +1,22 @@
 2017-05-04  Nathan Sidwell  <nathan@acm.org>
 
+	More global trees.
+	* cp-tree.h (enum cp_tree_index): Add CPTI_GLOBAL,
+	CPTI_GLOBAL_TYPE, CPTI_GLOBAL_IDENTIFIER, CPTI_ANON_IDENTIFIER,
+	CPTI_INIT_LIST_IDENTIFIER.
+	(global_namespace, global_type_node, global_identifier,
+	anon_identifier, init_list_identifier): New.
+	* decl.c (global_type_node, global_scope_name): Delete.
+	(initialize_predefined_identifiers): Add new identifiers.
+	(cxx_init_decl_processing): Adjust.
+	* name-lookup.h (global_namespace, global_type_node): Delete.
+	* name-lookup.c (global_namespace, anonymous_namespace_name,
+	get_anonymous_namespace_name): Delete.
+	(namespace_scope_ht_size, begin_scope, pushtag_1,
+	push_namespace): Adjust,
+	* call.c (type_has_extended_temps): Use init_list_identifier.
+	* pt.c (listify): Likewise.
+
 	* name-lookup.c: Reorder functions to make merging from modules
 	branch simpler.
 

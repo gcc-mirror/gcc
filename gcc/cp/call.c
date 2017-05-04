@@ -10543,15 +10543,15 @@ type_has_extended_temps (tree type)
 bool
 is_std_init_list (tree type)
 {
-  /* Look through typedefs.  */
   if (!TYPE_P (type))
     return false;
   if (cxx_dialect == cxx98)
     return false;
+  /* Look through typedefs.  */
   type = TYPE_MAIN_VARIANT (type);
   return (CLASS_TYPE_P (type)
 	  && CP_TYPE_CONTEXT (type) == std_node
-	  && strcmp (TYPE_NAME_STRING (type), "initializer_list") == 0);
+	  && init_list_identifier == DECL_NAME (TYPE_NAME (type)));
 }
 
 /* Returns true iff DECL is a list constructor: i.e. a constructor which

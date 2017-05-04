@@ -61,14 +61,6 @@ static tree push_using_directive (tree);
 static tree lookup_extern_c_fun_in_all_ns (tree);
 static void diagnose_name_conflict (tree, tree);
 
-/* The :: namespace.  */
-
-tree global_namespace;
-
-/* The name of the anonymous namespace, throughout this translation
-   unit.  */
-static GTY(()) tree anonymous_namespace_name;
-
 /* Add DECL to the list of things declared in B.  */
 
 static void
@@ -642,23 +634,6 @@ lookup_arg_dependent (tree name, tree fns, vec<tree, va_gc> *args)
   ret = lookup_arg_dependent_1 (name, fns, args);
   timevar_cond_stop (TV_NAME_LOOKUP, subtime);
   return ret;
-}
-
-/* Initialize anonymous_namespace_name if necessary, and return it.  */
-
-static tree
-get_anonymous_namespace_name (void)
-{
-  if (!anonymous_namespace_name)
-    {
-      /* We used to use get_file_function_name here, but that isn't
-	 necessary now that anonymous namespace typeinfos
-	 are !TREE_PUBLIC, and thus compared by address.  */
-      /* The demangler expects anonymous namespaces to be called
-	 something starting with '_GLOBAL__N_'.  */
-      anonymous_namespace_name = get_identifier ("_GLOBAL__N_1");
-    }
-  return anonymous_namespace_name;
 }
 
 /* Compute the chain index of a binding_entry given the HASH value of its
@@ -2111,7 +2086,7 @@ namespace_scope_ht_size (tree ns)
 
   return name == std_identifier
     ? NAMESPACE_STD_HT_SIZE
-    : (name == global_scope_name
+    : (name == global_identifier
        ? GLOBAL_SCOPE_HT_SIZE
        : NAMESPACE_ORDINARY_HT_SIZE);
 }
@@ -2189,7 +2164,7 @@ begin_scope (scope_kind kind, tree entity)
       NAMESPACE_LEVEL (entity) = scope;
       vec_alloc (scope->static_decls,
 		 (DECL_NAME (entity) == std_identifier
-		  || DECL_NAME (entity) == global_scope_name) ? 200 : 10);
+		  || DECL_NAME (entity) == global_identifier) ? 200 : 10);
       break;
 
     default:
@@ -6167,7 +6142,7 @@ pushtag_1 (tree name, tree type, tag_scope scope)
 	    return decl;
 
 	  if (DECL_CONTEXT (decl) == std_node
-	      && strcmp (TYPE_NAME_STRING (type), "initializer_list") == 0
+	      && init_list_identifier == DECL_NAME (TYPE_NAME (type))
 	      && !CLASSTYPE_TEMPLATE_INFO (type))
 	    {
 	      error ("declaration of std::initializer_list does not match "
@@ -6489,11 +6464,11 @@ push_namespace (tree name)
   /* We should not get here if the global_namespace is not yet constructed
      nor if NAME designates the global namespace:  The global scope is
      constructed elsewhere.  */
-  gcc_assert (global_namespace != NULL && name != global_scope_name);
+  gcc_assert (global_namespace != NULL && name != global_identifier);
 
   if (anon)
     {
-      name = get_anonymous_namespace_name();
+      name = anon_identifier;
       d = IDENTIFIER_NAMESPACE_VALUE (name);
       if (d)
 	/* Reopening anonymous namespace.  */

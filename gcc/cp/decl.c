@@ -140,14 +140,6 @@ static void expand_static_init (tree, tree);
 
 tree cp_global_trees[CPTI_MAX];
 
-/* Indicates that there is a type value in some namespace, although
-   that is not necessarily in scope at the moment.  */
-
-tree global_type_node;
-
-/* The node that holds the "name" of the global scope.  */
-tree global_scope_name;
-
 #define local_names cp_function_chain->x_local_names
 
 /* A list of objects which have constructors or destructors
@@ -3935,7 +3927,7 @@ make_unbound_class_template (tree context, tree name, tree parm_list,
 
 
 
-/* Push the declarations of builtin types into the namespace.
+/* Push the declarations of builtin types into the global namespace.
    RID_INDEX is the index of the builtin type in the array
    RID_POINTERS.  NAME is the name used when looking up the builtin
    type.  TYPE is the _TYPE node for the builtin type.  */
@@ -4037,10 +4029,15 @@ initialize_predefined_identifiers (void)
     { VTABLE_PFN_NAME, &pfn_identifier, 0 },
     { "_vptr", &vptr_identifier, 0 },
     { "__vtt_parm", &vtt_parm_identifier, 0 },
-    { "::", &global_scope_name, 0 },
+    { "::", &global_identifier, 0 },
     { "std", &std_identifier, 0 },
+      /* The demangler expects anonymous namespaces to be called
+	 something starting with '_GLOBAL__N_'.  It no longer needs
+	 to be unique to the TU.  */
+    { "_GLOBAL__N_1", &anon_identifier, 0 },
     { "auto", &auto_identifier, 0 },
     { "decltype(auto)", &decltype_auto_identifier, 0 },
+    { "initializer_list", &init_list_identifier, 0 },
     { NULL, NULL, 0 }
   };
 
@@ -4073,14 +4070,15 @@ cxx_init_decl_processing (void)
   current_binding_level = NULL;
   /* Enter the global namespace.  */
   gcc_assert (global_namespace == NULL_TREE);
-  global_namespace = build_lang_decl (NAMESPACE_DECL, global_scope_name,
+  global_namespace = build_lang_decl (NAMESPACE_DECL, global_identifier,
 				      void_type_node);
+  TREE_PUBLIC (global_namespace) = 1;
   DECL_CONTEXT (global_namespace)
     = build_translation_unit_decl (get_identifier (main_input_filename));
   debug_hooks->register_main_translation_unit
     (DECL_CONTEXT (global_namespace));
-  TREE_PUBLIC (global_namespace) = 1;
   begin_scope (sk_namespace, global_namespace);
+  current_namespace = global_namespace;
 
   if (flag_visibility_ms_compat)
     default_visibility = VISIBILITY_HIDDEN;

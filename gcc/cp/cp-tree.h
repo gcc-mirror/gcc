@@ -119,6 +119,8 @@ enum cp_tree_index
     CPTI_VTBL_PTR_TYPE,
     CPTI_STD,
     CPTI_ABI,
+    CPTI_GLOBAL,
+    CPTI_GLOBAL_TYPE,
     CPTI_CONST_TYPE_INFO_TYPE,
     CPTI_TYPE_INFO_PTR_TYPE,
     CPTI_ABORT_FNDECL,
@@ -138,9 +140,12 @@ enum cp_tree_index
     CPTI_THIS_IDENTIFIER,
     CPTI_PFN_IDENTIFIER,
     CPTI_VPTR_IDENTIFIER,
+    CPTI_GLOBAL_IDENTIFIER,
     CPTI_STD_IDENTIFIER,
+    CPTI_ANON_IDENTIFIER,
     CPTI_AUTO_IDENTIFIER,
     CPTI_DECLTYPE_AUTO_IDENTIFIER,
+    CPTI_INIT_LIST_IDENTIFIER,
 
     CPTI_LANG_NAME_C,
     CPTI_LANG_NAME_CPLUSPLUS,
@@ -184,6 +189,8 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
 #define vtbl_ptr_type_node		cp_global_trees[CPTI_VTBL_PTR_TYPE]
 #define std_node			cp_global_trees[CPTI_STD]
 #define abi_node			cp_global_trees[CPTI_ABI]
+#define global_namespace		cp_global_trees[CPTI_GLOBAL]
+#define global_type_node		cp_global_trees[CPTI_GLOBAL_TYPE]
 #define const_type_info_type_node	cp_global_trees[CPTI_CONST_TYPE_INFO_TYPE]
 #define type_info_ptr_type		cp_global_trees[CPTI_TYPE_INFO_PTR_TYPE]
 #define abort_fndecl			cp_global_trees[CPTI_ABORT_FNDECL]
@@ -224,12 +231,14 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
 #define this_identifier			cp_global_trees[CPTI_THIS_IDENTIFIER]
 #define pfn_identifier			cp_global_trees[CPTI_PFN_IDENTIFIER]
 #define vptr_identifier			cp_global_trees[CPTI_VPTR_IDENTIFIER]
-/* The name of the std namespace.  */
+/* The name of the ::, std & anon namespaces.  */
+#define global_identifier		cp_global_trees[CPTI_GLOBAL_IDENTIFIER]
 #define std_identifier			cp_global_trees[CPTI_STD_IDENTIFIER]
+#define anon_identifier			cp_global_trees[CPTI_ANON_IDENTIFIER]
 /* auto and declspec(auto) identifiers.  */
 #define auto_identifier			cp_global_trees[CPTI_AUTO_IDENTIFIER]
 #define decltype_auto_identifier	cp_global_trees[CPTI_DECLTYPE_AUTO_IDENTIFIER]
-/* The name of a C++17 deduction guide.  */
+#define init_list_identifier		cp_global_trees[CPTI_INIT_LIST_IDENTIFIER]
 #define lang_name_c			cp_global_trees[CPTI_LANG_NAME_C]
 #define lang_name_cplusplus		cp_global_trees[CPTI_LANG_NAME_CPLUSPLUS]
 
@@ -277,6 +286,7 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
    access nodes in tree.h.  */
 
 #define access_default_node		null_node
+
 
 #include "name-lookup.h"
 

@@ -278,15 +278,6 @@ struct GTY(()) cp_binding_level {
 
 #define class_binding_level scope_chain->class_bindings
 
-/* The tree node representing the global scope.  */
-extern GTY(()) tree global_namespace;
-extern GTY(()) tree global_scope_name;
-
-/* Indicates that there is a type value in some namespace, although
-   that is not necessarily in scope at the moment.  */
-
-extern GTY(()) tree global_type_node;
-
 /* True if SCOPE designates the global scope binding contour.  */
 #define global_scope_p(SCOPE) \
   ((SCOPE) == NAMESPACE_LEVEL (global_namespace))
