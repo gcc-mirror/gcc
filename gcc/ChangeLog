@@ -1,4 +1,14 @@
-2016-05-04  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+2017-05-04  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/80622
+	* tree-sra.c (comes_initialized_p): New function.
+	(build_accesses_from_assign): Only set write lazily when
+	comes_initialized_p is false.
+	(analyze_access_subtree): Use comes_initialized_p.
+	(propagate_subaccesses_across_link): Assert !comes_initialized_p
+	instead of testing for PARM_DECL.
+
+2017-05-04  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/aarch64/aarch64.md (prefetch); Adjust predicate and
 	constraint on operand 0 to allow more general addressing modes.
