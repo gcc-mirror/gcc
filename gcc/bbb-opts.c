@@ -150,6 +150,8 @@ class insn_info
   bool src_plus;
   bool src_const;
 
+  machine_mode mode;
+
   rtx dst_reg;
   rtx dst_mem_reg;
   rtx dst_symbol;
@@ -158,14 +160,14 @@ class insn_info
   rtx src_symbol;
   unsigned dst_mem_addr;
 
-  unsigned src_intval;
+  unsigned src_mem_addr;
 
 public:
   insn_info (rtx_insn * i = 0, int p = 0) :
       insn (i), myuse (0), hard (0), use (0), def (0), proepi (p), stack (false), label (false), jump (false), call (
 	  false), compare (false), dst_mem (false), src_mem (false), dst_plus (false), src_plus (false), src_const (
-	  false), dst_reg (0), dst_mem_reg (0), dst_symbol (0), src_reg (0), src_mem_reg (0), src_symbol (0), dst_mem_addr (
-	  0), src_intval (0)
+	  false), mode (VOIDmode), dst_reg (0), dst_mem_reg (0), dst_symbol (0), src_reg (0), src_mem_reg (0), src_symbol (
+	  0), dst_mem_addr (0), src_mem_addr (0)
   {
   }
 
@@ -179,7 +181,7 @@ public:
   swap_adds (rtx_insn * newinsn, insn_info & ii);
 
   void
-  absolute2base (unsigned regno, unsigned base);
+  absolute2base (unsigned regno, unsigned base, rtx with_symbol);
 
   inline bool
   is_dst_reg () const
@@ -205,16 +207,33 @@ public:
     return dst_mem_reg;
   }
 
+  inline bool
+  has_src_memreg () const
+  {
+    return src_mem_reg;
+  }
+
   inline rtx
   get_dst_symbol () const
   {
     return dst_symbol;
   }
 
+  inline rtx
+  get_src_symbol () const
+  {
+    return src_symbol;
+  }
   inline bool
   has_dst_addr () const
   {
     return dst_mem_addr;
+  }
+
+  inline bool
+  has_src_addr () const
+  {
+    return src_mem_addr;
   }
 
   inline bool
@@ -239,6 +258,12 @@ public:
   get_dst_addr () const
   {
     return dst_mem_addr;
+  }
+
+  inline unsigned
+  get_src_addr () const
+  {
+    return src_mem_addr;
   }
 
   inline bool
@@ -292,7 +317,7 @@ public:
   inline int
   get_src_intval () const
   {
-    return src_intval;
+    return src_mem_addr;
   }
 
   inline bool
@@ -401,6 +426,12 @@ public:
     return use;
   }
 
+  inline unsigned
+  get_myuse () const
+  {
+    return myuse;
+  }
+
   inline void
   set_use (unsigned u)
   {
@@ -467,6 +498,7 @@ public:
   inline insn_info &
   merge (insn_info const & o)
   {
+    myuse = o.myuse;
     use = (use & ~o.def) | o.use;
     def |= o.def;
     hard |= o.hard;
@@ -577,6 +609,8 @@ public:
   void
   set_insn (rtx_insn * newinsn);
 
+  void
+  a5_to_a7 (rtx a7);
 };
 
 void
@@ -677,6 +711,8 @@ insn_info::fledder (rtx set)
   rtx dst = SET_DEST(set);
   rtx src = SET_SRC(set);
 
+  mode = GET_MODE(dst);
+
   if (dst == cc0_rtx)
     {
       compare = true;
@@ -737,7 +773,7 @@ insn_info::fledder (rtx set)
       if (REG_P(mem))
 	src_mem_reg = mem;
       else if (GET_CODE(mem) == CONST_INT)
-	src_intval = INTVAL(mem);
+	src_mem_addr = INTVAL(mem);
       else if (GET_CODE(mem) == SYMBOL_REF)
 	src_symbol = mem;
       else if (GET_CODE(mem) == PLUS)
@@ -749,7 +785,7 @@ insn_info::fledder (rtx set)
 	    {
 	      src_mem_reg = reg;
 	      src_const = true;
-	      src_intval = INTVAL(konst);
+	      src_mem_addr = INTVAL(konst);
 	    }
 	}
       else if (GET_CODE(mem) == CONST)
@@ -762,7 +798,7 @@ insn_info::fledder (rtx set)
 		{
 		  src_plus = true;
 		  src_symbol = sym;
-		  src_intval = INTVAL(XEXP(mem, 1));
+		  src_mem_addr = INTVAL(XEXP(mem, 1));
 		}
 	    }
 	}
@@ -770,7 +806,7 @@ insn_info::fledder (rtx set)
   else if (GET_CODE(src) == CONST_INT)
     {
       src_const = true;
-      src_intval = INTVAL(src);
+      src_mem_addr = INTVAL(src);
     }
   else if (GET_CODE(src) == PLUS)
     {
@@ -783,7 +819,7 @@ insn_info::fledder (rtx set)
 	    {
 	      src_reg = reg;
 	      src_const = true;
-	      src_intval = INTVAL(konst);
+	      src_mem_addr = INTVAL(konst);
 	    }
 	  else if (REG_P(konst))
 	    {
@@ -915,6 +951,42 @@ insn_info::swap_adds (rtx_insn * newinsn, insn_info & ii)
   // usage flags did not change
 }
 
+static
+void
+replace_reg (rtx x, unsigned regno, rtx newreg, int offset)
+{
+  RTX_CODE code = GET_CODE(x);
+  const char *fmt = GET_RTX_FORMAT(code);
+  for (int i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
+    {
+      if (fmt[i] == 'e')
+	{
+	  rtx y = XEXP(x, i);
+	  if (REG_P(y) && REGNO(y) == regno)
+	    {
+	      XEXP(x, i) = newreg;
+	      if (offset && i + 1 < GET_RTX_LENGTH(code))
+		{
+		  rtx c = XEXP(x, i + 1);
+		  if (GET_CODE(c) == CONST_INT)
+		    XEXP(x, i + 1) = gen_rtx_CONST_INT (GET_MODE(x), INTVAL(c) + offset);
+		}
+	    }
+	  else
+	    replace_reg (y, regno, newreg, offset);
+	}
+      else if (fmt[i] == 'E')
+	for (int j = XVECLEN (x, i) - 1; j >= 0; j--)
+	  replace_reg (XVECEXP(x, i, j), regno, newreg, offset);
+    }
+}
+
+void
+insn_info::a5_to_a7 (rtx a7)
+{
+  replace_reg (PATTERN (insn), FRAME_POINTER_REGNUM, a7, -4);
+}
+
 void
 insn_info::set_insn (rtx_insn * newinsn)
 {
@@ -923,31 +995,62 @@ insn_info::set_insn (rtx_insn * newinsn)
 }
 
 void
-insn_info::absolute2base (unsigned regno, unsigned base)
+insn_info::absolute2base (unsigned regno, unsigned base, rtx with_symbol)
 {
   rtx set = PATTERN (get_insn ());
   rtx src = SET_SRC(set);
-  machine_mode mode = GET_MODE(SET_DEST(set));
-
-  unsigned addr = get_dst_addr ();
-  unsigned offset = addr - base;
+  rtx dst = SET_DEST(set);
+  machine_mode mode = GET_MODE(dst);
 
   rtx pattern;
   rtx reg = gen_raw_REG (SImode, regno);
-  if (base == addr)
-    pattern = gen_rtx_SET(gen_rtx_MEM (mode, reg), src);
-  else
-    pattern = gen_rtx_SET(gen_rtx_MEM (mode, gen_rtx_PLUS(SImode, reg, gen_rtx_CONST_INT(SImode, offset))), src);
+
+  if (is_dst_mem () && (has_dst_addr () || get_dst_symbol ()) && !has_dst_memreg () && get_dst_symbol () == with_symbol)
+    {
+      unsigned addr = get_dst_addr ();
+      unsigned offset = addr - base;
+      if (offset <= 0x7ffe)
+	{
+	  rtx olddst = dst;
+	  if (base == addr)
+	    dst = gen_rtx_MEM (mode, reg);
+	  else
+	    dst = gen_rtx_MEM (mode, gen_rtx_PLUS(SImode, reg, gen_rtx_CONST_INT (SImode, offset)));
+
+	  if (src_plus && rtx_equal_p (olddst, XEXP(src, 0)))
+	    XEXP(src, 0) = dst;
+
+	  dst_mem_reg = reg;
+	  dst_mem = true;
+	  dst_mem_addr = offset;
+	  dst_plus = offset != 0;
+	}
+    }
+
+  if (is_src_mem () && (has_src_addr () || get_src_symbol ()) && !has_src_memreg () && get_src_symbol () == with_symbol)
+    {
+      unsigned addr = get_src_addr ();
+      unsigned offset = addr - base;
+      if (offset <= 0x7ffe)
+	{
+	  if (base == addr)
+	    src = gen_rtx_MEM (mode, reg);
+	  else
+	    src = gen_rtx_MEM (mode, gen_rtx_PLUS(SImode, reg, gen_rtx_CONST_INT (SImode, offset)));
+
+	  src_mem_reg = reg;
+	  src_mem = true;
+	  src_mem_addr = offset;
+	  src_plus = offset != 0;
+	}
+    }
+
+  pattern = gen_rtx_SET(dst, src);
 
   SET_INSN_DELETED(insn);
   insn = emit_insn_after (pattern, insn);
 
   mark_use (regno);
-
-  dst_mem_reg = reg;
-  dst_mem = true;
-  dst_mem_addr = offset;
-  dst_plus = offset != 0;
 
   insn2index.insert (std::make_pair (insn, this));
 }
@@ -2646,29 +2749,29 @@ opt_shrink_stack_frame (void)
 
   if (usea5 && a5offset == -4)
     {
+      /* for now only drop the frame pointer if it's not used.
+       * Needs tracking of the sp to adjust the offsets.
+       */
       if (freemask & (1 << FRAME_POINTER_REGNUM))
 	{
 	  log ("dropping unused frame pointer\n");
-	  for (std::vector<int>::iterator i = a5pos.begin (); i != a5pos.end (); ++i)
-	    SET_INSN_DELETED(infos[*i].get_insn ());
+	  for (auto i = a5pos.rbegin (); i != a5pos.rend (); ++i)
+	    {
+	      SET_INSN_DELETED(infos[*i].get_insn ());
+	      infos.erase (infos.begin () + *i);
+	    }
 
-	  /* convert parameter access via a5 into a7. */
+	  /* convert all parameter accesses via a5 into a7. */
 	  for (unsigned i = 0; i < infos.size (); ++i)
 	    {
 	      insn_info & ii = infos[i];
+	      if (ii.get_myuse () & (1 << FRAME_POINTER_REGNUM))
+		ii.a5_to_a7 (a7);
 
-	      if (ii.is_dst_reg () && ii.get_src_mem_regno () == FRAME_POINTER_REGNUM)
-		{
-		  rtx x = gen_rtx_CONST_INT (SImode, ii.get_src_intval () - 4);
-		  rtx p = gen_rtx_PLUS(SImode, a7, x);
-		  rtx pattern = gen_rtx_SET(copy_reg (ii.get_dst_reg (), -1),
-					    gen_rtx_MEM (GET_MODE(ii.get_dst_reg ()), p));
-		  set_insn_deleted (ii.get_insn ());
-		  rtx_insn * newinsn = emit_insn_after (pattern, ii.get_insn ());
-		  ii.plus_to_move (newinsn);
-		}
+	      ii.unset (FRAME_POINTER_REGNUM);
 	    }
 
+	  update_insn2index ();
 	  ++changed;
 	}
     }
@@ -2687,18 +2790,23 @@ opt_absolute (void)
   for (unsigned i = 0; i < infos.size (); ++i)
     {
       insn_info & ii = infos[i];
-      if (!ii.is_dst_mem () || !ii.has_dst_addr () || ii.has_dst_memreg ())
+
+      bool is_dst = ii.is_dst_mem () && (ii.has_dst_addr () || ii.get_dst_symbol ()) && !ii.has_dst_memreg ();
+      bool is_src = ii.is_src_mem () && (ii.has_src_addr () || ii.get_src_symbol ()) && !ii.has_src_memreg ();
+
+      if (!is_dst && !is_src)
 	continue;
 
       unsigned freemask = ~(ii.get_use () | ii.get_def ()) & 0x7f00 & usable_regs;
       if (!freemask)
 	continue;
 
-      rtx with_symbol = ii.get_dst_symbol ();
+      rtx with_symbol = is_dst ? ii.get_dst_symbol () : ii.get_src_symbol ();
 
       std::vector<unsigned> found;
       found.push_back (i);
       unsigned base = ii.get_dst_addr ();
+      unsigned max = base;
       unsigned j = i + 1;
       for (; j < infos.size (); ++j)
 	{
@@ -2710,13 +2818,49 @@ opt_absolute (void)
 	  if (!freemask)
 	    break;
 
-	  if (jj.is_dst_mem () && jj.has_dst_addr () && !jj.has_dst_memreg () && jj.get_dst_symbol () == with_symbol)
+	  bool j_dst = jj.is_dst_mem () && (jj.has_dst_addr () || jj.get_dst_symbol ()) && !jj.has_dst_memreg ()
+	      && jj.get_dst_symbol () == with_symbol;
+	  bool j_src = jj.is_src_mem () && (jj.has_src_addr () || jj.get_src_symbol ()) && !jj.has_src_memreg ()
+	      && jj.get_src_symbol () == with_symbol;
+	  if (j_dst)
 	    {
 	      unsigned addr = jj.get_dst_addr ();
 	      if (addr < base)
-		base = addr;
-
-	      found.push_back (j);
+		{
+		  if (max - addr <= 0x7ffe)
+		    {
+		      base = addr;
+		      found.push_back (j);
+		      continue;
+		    }
+		}
+	      else if (addr - base <= 0x7ffe)
+		{
+		  if (addr > max)
+		    max = addr;
+		  found.push_back (j);
+		  continue;
+		}
+	    }
+	  if (j_src)
+	    {
+	      unsigned addr = jj.get_src_addr ();
+	      if (addr < base)
+		{
+		  if (max - addr <= 0x7ffe)
+		    {
+		      base = addr;
+		      found.push_back (j);
+		      continue;
+		    }
+		}
+	      else if (addr - base <= 0x7ffe)
+		{
+		  if (addr > max)
+		    max = addr;
+		  found.push_back (j);
+		  continue;
+		}
 	    }
 	}
 
@@ -2743,7 +2887,7 @@ opt_absolute (void)
 	  for (auto k = found.begin (); k != found.end (); ++k)
 	    {
 	      insn_info & kk = infos[*k];
-	      kk.absolute2base (regno, base);
+	      kk.absolute2base (regno, base, with_symbol);
 	    }
 
 	  // load base into reg
@@ -2767,13 +2911,17 @@ opt_absolute (void)
 	  nn.fledder (lea);
 	  nn.mark_def (regno);
 	  infos.insert (infos.begin () + i, nn);
-	  while (i++ < j)
-	    infos[i].mark_use (regno);
-	  ++j;
-	  ++change_count;
-	}
 
-      i = j;
+	  /* mark until last hit is found. */
+	  for (unsigned k = i + 1; k < infos.size (); ++k)
+	    {
+	      infos[k].mark_use (regno);
+	      if (k == *found.rbegin ())
+		break;
+	    }
+	  ++change_count;
+	  --i;
+	}
     }
 
   if (change_count)
