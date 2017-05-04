@@ -1,5 +1,16 @@
 2017-05-04  Richard Biener  <rguenther@suse.de>
 
+	* tree.c (array_at_struct_end_p): Handle arrays at struct
+	end with flexarrays more conservatively.  Refactor and treat
+	arrays of arrays or aggregates more strict.  Fix
+	VIEW_CONVERT_EXPR handling.  Remove allow_compref argument.
+	* tree.c (array_at_struct_end_p): Adjust prototype.
+	* emit-rtl.c (set_mem_attributes_minus_bitpos): Adjust.
+	* gimple-fold.c (get_range_strlen): Likewise.
+	* tree-chkp.c (chkp_may_narrow_to_field): Likewise.
+
+2017-05-04  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/31130
 	* tree-vrp.c (needs_overflow_infinity): Remove as always returning
 	false.
