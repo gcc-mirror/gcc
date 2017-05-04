@@ -3306,7 +3306,12 @@
   switch (which_alternative)
     {
     case 0:
+    fprintf (stderr, "-----\n");
+    	 fprintf (stderr, "%d %d %d\n", satisfies_constraint_W (operands[1]), memory_operand (operands[1], SImode), stack_operand (operands[1], SImode));
+      debug_rtx (operands[1]);
+    /*
       operands[1] = gen_lowpart (QImode, operands[1]);
+      */
       return "lbu\t%0,%1";
     case 1:
       operands[1] = gen_lowpart (HImode, operands[1]);

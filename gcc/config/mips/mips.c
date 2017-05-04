@@ -2590,7 +2590,7 @@ mips_stack_address_p (rtx x, machine_mode mode)
 
   return (mips_classify_address (&addr, x, mode, false)
 	  && addr.type == ADDRESS_REG
-	  && addr.reg == stack_pointer_rtx);
+	  && rtx_equal_p (addr.reg, stack_pointer_rtx));
 }
 
 /* Return true if ADDR matches the pattern for the LWXS load scaled indexed
@@ -6098,7 +6098,9 @@ mips_function_arg_boundary (machine_mode mode, const_tree type)
 {
   unsigned int alignment;
 
-  alignment = type ? TYPE_ALIGN (type) : GET_MODE_ALIGNMENT (mode);
+  alignment = type && mode == BLKmode
+	      ? TYPE_ALIGN (TYPE_MAIN_VARIANT (type))
+	      : GET_MODE_ALIGNMENT (mode);
   if (alignment < PARM_BOUNDARY)
     alignment = PARM_BOUNDARY;
   if (alignment > STACK_BOUNDARY)
@@ -8470,11 +8472,6 @@ and_operands_ok (machine_mode mode, rtx op1, rtx op2)
 
   if (memory_operand (op1, mode))
     {
-      if (TARGET_MIPS16) {
-	struct mips_address_info addr;
-	if (!mips_classify_address (&addr, op1, mode, false))
-	  return false;
-      }
       return and_load_operand (op2, mode);
     }
   else
