@@ -1811,6 +1811,16 @@ AC_ARG_ENABLE(secureplt,
 		[enable -msecure-plt by default for PowerPC])],
 [], [])
 
+AC_ARG_ENABLE(mingw-wildcard,
+[AS_HELP_STRING([--enable-mingw-wildcard],
+		[Set whether to expand wildcard on command-line.
+		 Default to platform configuration])],
+[],[enable_mingw_wildcard=platform])
+AS_IF([test x"$enable_mingw_wildcard" != xplatform ],
+      [AC_DEFINE_UNQUOTED(MINGW_DOWILDCARD,
+		 $(test x"$enable_mingw_wildcard" = xno; echo $?),
+		 [Value to set mingw's _dowildcard to.])])
+
 AC_ARG_ENABLE(leading-mingw64-underscores,
   AS_HELP_STRING([--enable-leading-mingw64-underscores],
                  [enable leading underscores on 64 bit mingw targets]),
