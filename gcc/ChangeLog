@@ -1,3 +1,16 @@
+2016-05-04  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64.md (prefetch); Adjust predicate and
+	constraint on operand 0 to allow more general addressing modes.
+	Adjust output template.
+	* config/aarch64/aarch64.c (aarch64_address_valid_for_prefetch_p):
+	New function.
+	* config/aarch64/aarch64-protos.h
+	(aarch64_address_valid_for_prefetch_p): Declare prototype.
+	* config/aarch64/constraints.md (Dp): New address constraint.
+	* config/aarch64/predicates.md (aarch64_prefetch_operand): New
+	predicate.
+
 2017-05-04  Jan Hubicka  <hubicka@ucw.cz>
 
 	* ipa-cp.c (perform_estimation_of_a_value): Drop base_time parameter;
