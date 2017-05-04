@@ -1,3 +1,12 @@
+2017-05-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/31130
+	* gcc.dg/Wstrict-overflow-12.c: XFAIL.
+	* gcc.dg/Wstrict-overflow-13.c: Likewise.
+	* gcc.dg/Wstrict-overflow-21.c: Likewise.
+	* gcc.dg/pr52904.c: Remove XFAIL.
+	* gcc.dg/tree-ssa/vrp114.c: New testcase.
+
 2017-05-03  Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/78496

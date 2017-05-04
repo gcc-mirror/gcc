@@ -11,7 +11,7 @@ int
 foo ()
 {
   int j;
-  for (j = 1; 0 < j; j *= 2) /* { dg-warning "assuming signed overflow does not occur" "correct warning" } */
+  for (j = 1; 0 < j; j *= 2) /* { dg-warning "assuming signed overflow does not occur" "correct warning" { xfail *-*-* } } */
     if (! bigtime_test (j))
       return 1;
   return 0;
