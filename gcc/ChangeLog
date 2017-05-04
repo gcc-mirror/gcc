@@ -76,7 +76,6 @@
 	* ipa-inline.h (inline_summary): Add ctor.
 	(create_ggc): Do not use ggc_cleared_alloc.
 
->>>>>>> .r247575
 2017-05-03  Jeff Downs  <heydowns@somuchpressure.net>
 	    Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
