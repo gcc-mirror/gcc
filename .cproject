@@ -43,6 +43,7 @@
 									<listOptionValue builtIn="false" value="IN_GCC=1"/>
 									<listOptionValue builtIn="false" value="HAVE_cc0=1"/>
 									<listOptionValue builtIn="false" value="__ECLIPSE__=1"/>
+									<listOptionValue builtIn="false" value="TARGET_AMIGA=1"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.cygwin.780175803" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input.cygwin"/>
 							</tool>
@@ -58,6 +59,7 @@
 									<listOptionValue builtIn="false" value="IN_GCC=1"/>
 									<listOptionValue builtIn="false" value="HAVE_cc0=1"/>
 									<listOptionValue builtIn="false" value="__ECLIPSE__=1"/>
+									<listOptionValue builtIn="false" value="TARGET_AMIGA=1"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.cygwin.2078467313" superClass="cdt.managedbuild.tool.gnu.c.compiler.input.cygwin"/>
 							</tool>
@@ -106,6 +108,7 @@
 									<listOptionValue builtIn="false" value="IN_GCC=1"/>
 									<listOptionValue builtIn="false" value="HAVE_cc0=1"/>
 									<listOptionValue builtIn="false" value="__ECLIPSE__=1"/>
+									<listOptionValue builtIn="false" value="TARGET_AMIGA=1"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.1150724656" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
 							</tool>
@@ -119,6 +122,7 @@
 									<listOptionValue builtIn="false" value="IN_GCC=1"/>
 									<listOptionValue builtIn="false" value="HAVE_cc0=1"/>
 									<listOptionValue builtIn="false" value="__ECLIPSE__=1"/>
+									<listOptionValue builtIn="false" value="TARGET_AMIGA=1"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.1133865092" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>

@@ -184,6 +184,18 @@ public:
   absolute2base (unsigned regno, unsigned base, rtx with_symbol);
 
   inline bool
+  is_compare () const
+  {
+    return compare;
+  }
+
+  inline machine_mode
+  get_mode () const
+  {
+    return mode;
+  }
+
+  inline bool
   is_dst_reg () const
   {
     return dst_reg;
@@ -385,6 +397,29 @@ public:
     use = 0;
     def = 0;
     hard = 0;
+  }
+
+  inline void
+  reset_flags ()
+  {
+    compare = false;
+    dst_mem = false;
+    src_mem = false;
+    dst_plus = false;
+    src_plus = false;
+    src_const = false;
+
+    mode = VOIDmode;
+
+    dst_reg = 0;
+    dst_mem_reg = 0;
+    dst_symbol = 0;
+    src_reg = 0;
+    src_mem_reg = 0;
+    src_symbol = 0;
+    dst_mem_addr = 0;
+
+    src_mem_addr = 0;
   }
 
   inline bool
@@ -711,8 +746,6 @@ insn_info::fledder (rtx set)
   rtx dst = SET_DEST(set);
   rtx src = SET_SRC(set);
 
-  mode = GET_MODE(dst);
-
   if (dst == cc0_rtx)
     {
       compare = true;
@@ -720,6 +753,8 @@ insn_info::fledder (rtx set)
       dst = SET_DEST(set);
       src = SET_SRC(set);
     }
+
+  mode = GET_MODE(dst);
 
   if (REG_P(dst))
     {
@@ -991,6 +1026,9 @@ void
 insn_info::set_insn (rtx_insn * newinsn)
 {
   insn = newinsn;
+
+  reset_flags ();
+
   fledder (PATTERN (insn));
 }
 
@@ -1255,7 +1293,7 @@ update_insn_infos (void)
 
   /* fill the mask of general used regs. */
   insn_info zz;
-  for (int i = 0; i < infos.size (); ++i)
+  for (unsigned i = 0; i < infos.size (); ++i)
     {
       insn_info & ii = infos[i];
       if (ii.in_proepi () != 1)
@@ -2097,140 +2135,141 @@ opt_const_cmp_to_sub (void)
 {
   unsigned change_count = 0;
 #if HAVE_cc0
-  for (int index = infos.size () - 2; index > 0; --index)
+  if (infos.size () < 2)
+    return change_count;
+
+  unsigned lastsub = 0;
+  for (unsigned index = infos.size () - 2; index > 0; --index)
     {
-      rtx_insn * insn = infos[index].get_insn ();
-      rtx seti = single_set (insn);
-      if (!seti)
+      insn_info & i1 = infos[index];
+
+      /* we wan't a compare or tst insn, */
+      if (!i1.is_compare ())
 	continue;
 
-      rtx dsti = SET_DEST(seti);
-      if (dsti != cc0_rtx)
+      if (GET_MODE_SIZE(i1.get_mode()) > 4 || !i1.is_dst_reg () || REGNO(i1.get_dst_reg()) > 7)
 	continue;
 
-      rtx srci = SET_SRC(seti);
-      if (GET_CODE(srci) != COMPARE)
+      /* src must be a reg dead register with a constant - or a #0 */
+      if (!i1.get_src_reg () && (!i1.is_src_const () || i1.is_src_plus ()))
 	continue;
 
-      rtx left = XEXP(srci, 0);
-      rtx right = XEXP(srci, 1);
-      if (!REG_P(left) || !REG_P(right) || REG_NREGS(left) > 1 || REG_NREGS(right) > 1)
-	continue;
-
-      // TODO
-      // FEATURE: check if the next uses are also a add/sub
-      // then maybe that add/sub can be adjusted too
-
-//      if (!find_reg_note (insn, REG_DEAD, left) || !find_reg_note (insn, REG_DEAD, right))
-//      	continue;
-      /* use own reg_dead - reg_notes seem to be inaccurate!? */
-      if (!is_reg_dead (REGNO(left), index) || !is_reg_dead (REGNO(right), index))
-	continue;
-
-      // maybe add a search?
-      rtx_insn * prev = infos[index - 1].get_insn ();
-      rtx setp = single_set (prev);
-      if (!setp)
-	continue;
-
-      rtx constant_reg = SET_DEST(setp);
-      if (!REG_P(constant_reg))
-	continue;
-
-      rtx srcp = SET_SRC(setp);
-      if (!CONST_INT_P(srcp))
-	continue;
-
-      int intval = -INTVAL(srcp);
-      if (intval < -8 || intval > 7 || intval == 0)
-	continue;
-
-      enum machine_mode mode = GET_MODE(constant_reg);
-      if (GET_MODE_SIZE(mode) > 4)
-	continue;
-
-      //     printf("mode size: %d\n", GET_MODE_SIZE(mode));
-
-      rtx reg = constant_reg == left ? right : constant_reg == right ? left : 0;
-
-      // no gain with address regs.
-      if (!reg || REGNO(reg) > 7)
-	continue;
-
-      // search the jump(s)
-      bool ok = true;
+      /* allow an alive reg, if life ends at previous handled sub. */
+      int lastsubval = 0;
+      if (lastsub == index + 3)
 	{
-	  // invert all conditions using this statement.
-	  std::vector<unsigned> todo;
-	  std::vector<unsigned> done;
-	  done.resize (infos.size ());
-	  todo.push_back (index + 1);
+	  insn_info & pp = infos[lastsub];
+	  if (pp.get_dst_regno () != i1.get_dst_regno ())
+	    continue;
+	  lastsubval = pp.get_src_intval ();
+	}
+      else if (!is_reg_dead (i1.get_dst_regno (), index))
+	continue;
 
-	  while (ok && todo.size ())
+      insn_info & i0 = infos[index - 1];
+      int intval = 0;
+      /* compare with register - check previous insn for load with constant. */
+      if (i1.is_src_reg ())
+	{
+	  if (!is_reg_dead (i1.get_src_regno (), index))
+	    continue;
+
+	  if (GET_MODE_SIZE(i0.get_mode()) > 4)
+	    continue;
+
+	  if (!i0.is_dst_reg () && (!i0.is_src_const () || i0.is_src_plus ()))
+	    continue;
+
+	  if (i0.get_dst_regno () != i1.get_src_regno ())
+	    continue;
+
+	  intval = -i0.get_src_intval ();
+	  if (intval < -8 || intval > 7)
+	    continue;
+
+	  /* is the next sub value in range? */
+	  if (lastsub == index + 3 && (lastsubval - intval < -8 || lastsubval - intval > 7))
+	    continue;
+	}
+
+      /* next insn must be the jump. */
+      insn_info & i2 = infos[index + 1];
+      if (!i2.is_jump ())
+	continue;
+
+      rtx_insn * jump = i2.get_insn ();
+      rtx jmppattern = PATTERN (jump);
+      if (GET_RTX_LENGTH (GET_CODE(jmppattern)) < 2)
+	continue;
+
+      rtx jmpsrc = XEXP(jmppattern, 1);
+      if (GET_CODE(jmpsrc) != IF_THEN_ELSE)
+	continue;
+
+      rtx condition = XEXP(jmpsrc, 0);
+      RTX_CODE code = GET_CODE(condition);
+      if (code != EQ && code != NE)
+	continue;
+
+      if (intval)
+	{
+	  rtx copyreg = copy_reg (i1.get_dst_reg (), -1);
+	  /* create the sub statement. */
+	  rtx sub = gen_rtx_PLUS(i1.get_mode (), copyreg, gen_rtx_CONST_INT (i1.get_mode (), intval));
+
+	  rtx_insn * subinsn = make_insn_raw (gen_rtx_SET(copyreg, sub));
+
+	  int num_clobbers_to_add = 0;
+	  int insn_code_number = recog (PATTERN (subinsn), subinsn, &num_clobbers_to_add);
+	  if (insn_code_number < 0 || !check_asm_operands (PATTERN (subinsn)))
+	    continue;
+
+	  /* delete move #x,dy. */
+	  SET_INSN_DELETED(i0.get_insn ())
+	  /* delete cmp dx,dy */
+	  SET_INSN_DELETED(i1.get_insn ());
+	  /* add a cmp #0 - to be removed in final() */
+
+	  /* convert cmp/tst into sub */
+	  subinsn = emit_insn_before (PATTERN (subinsn), i1.get_insn ());
+	  i1.set_insn (subinsn);
+
+	  rtx neu = gen_rtx_SET(cc0_rtx,
+				gen_rtx_COMPARE(i1.get_mode (), copyreg, gen_rtx_CONST_INT(i1.get_mode (), 0)));
+
+	  emit_insn_before (neu, i2.get_insn ());
+
+	  log ("const_cmp_to_sub replaced %s == %s (%d) with sub %d,%s\n", reg_names[i1.get_dst_regno ()],
+	  reg_names[i0.get_dst_regno ()],
+	       -intval, -intval, reg_names[i1.get_dst_regno ()]);
+
+	  if (index + 3 == lastsub)
 	    {
-	      unsigned pos = todo[todo.size () - 1];
-	      todo.pop_back ();
+	      /* patch previous sub - or even a compare. */
+	      insn_info & pp = infos[lastsub];
 
-	      if (done[pos])
-		continue;
+	      int diff = lastsubval - intval;
+	      rtx c = gen_rtx_CONST_INT (i1.get_mode (), diff);
 
-	      done[pos] = 1;
-
-	      if (infos[pos].is_def (FIRST_PSEUDO_REGISTER))
-		continue;
-
-	      if (pos + 1 < infos.size ())
-		todo.push_back (pos + 1);
-
-	      rtx_insn * patchme = infos[pos].get_insn ();
-	      if (!JUMP_P(patchme))
-		continue;
-
-	      auto j = insn2index.find ((rtx_insn *) JUMP_LABEL(patchme));
-	      if (j != insn2index.end ())
-		todo.push_back (j->second->get_index ());
-
-	      rtx jmppattern = PATTERN (patchme);
-
-	      if (GET_RTX_LENGTH (GET_CODE(jmppattern)) < 2)
-		ok = false;
+	      if (pp.is_compare ())
+		{
+		  /* still a compare with 0 -> insert the sub. */
+		  rtx copyreg = copy_reg (i1.get_dst_reg (), -1);
+		  /* create the sub statement. */
+		  rtx sub = gen_rtx_PLUS(i1.get_mode (), copyreg, c);
+		  rtx set = gen_rtx_SET(copyreg, sub);
+		  emit_insn_before (set, pp.get_insn ());
+		}
 	      else
 		{
-		  rtx jmpsrc = XEXP(jmppattern, 1);
-		  if (GET_CODE(jmpsrc) == IF_THEN_ELSE)
-		    {
-		      rtx condition = XEXP(jmpsrc, 0);
-		      RTX_CODE code = GET_CODE(condition);
-		      ok = code == EQ || code == NE;
-		    }
+		  /* modify the sub. */
+		  XEXP(SET_SRC(PATTERN(pp.get_insn())), 1) = c;
 		}
 	    }
+
+	  lastsub = index;
+	  ++change_count;
 	}
-      if (!ok)
-	continue;
-
-      rtx plus = gen_rtx_PLUS(mode, copy_reg (reg, -1), gen_rtx_CONST_INT (mode, intval));
-
-      rtx_insn * neuprev = make_insn_raw (gen_rtx_SET(copy_reg (reg, -1), plus));
-
-      int num_clobbers_to_add = 0;
-      int insn_code_number = recog (PATTERN (neuprev), neuprev, &num_clobbers_to_add);
-      if (insn_code_number < 0 || !check_asm_operands (PATTERN (neuprev)))
-	continue;
-
-      // also convert current statement to cmp #0, reg
-      SET_INSN_DELETED(insn);
-      rtx copyreg = copy_reg (reg, -1);
-      rtx neu = gen_rtx_SET(cc0_rtx, gen_rtx_COMPARE(mode, copyreg, gen_rtx_CONST_INT(mode, 0)));
-      insn = emit_insn_after (neu, prev);
-      add_reg_note (insn, REG_DEAD, copyreg);
-
-      SET_INSN_DELETED(prev);
-      prev = emit_insn_before (PATTERN (neuprev), insn);
-
-      log ("const_cmp_to_sub replaced reg-reg compare with sub\n");
-
-      ++change_count;
     }
 #endif
   return change_count;
@@ -2992,7 +3031,7 @@ namespace
   pass_bbb_optimizations::execute_bbb_optimizations (void)
   {
     be_very_verbose = strchr (string_bbb_opts, 'V');
-    be_verbose = be_very_verbose || strchr (string_bbb_opts, 'v') || 1;
+    be_verbose = be_very_verbose || strchr (string_bbb_opts, 'v');
 
     bool do_opt_strcpy = strchr (string_bbb_opts, 's') || strchr (string_bbb_opts, '+');
     bool do_commute_add_move = strchr (string_bbb_opts, 'a') || strchr (string_bbb_opts, '+');
