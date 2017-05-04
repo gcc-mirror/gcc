@@ -1,3 +1,11 @@
+2017-05-04  Martin Sebor  <msebor@redhat.com>
+
+	PR translation/80280
+	* g++.dg/abi/Wabi-2-3.C: Adjust.
+	* g++.dg/abi/Wabi-3-2.C: Ditto.
+	* g++.dg/lookup/using17.C: Ditto.
+	* gcc.dg/format/gcc_diag-1.c (foo): Ditto.
+
 2017-05-04  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/80622

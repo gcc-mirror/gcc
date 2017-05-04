@@ -1,3 +1,23 @@
+2017-05-04  Martin Sebor  <msebor@redhat.com>
+
+	PR translation/80280
+	* call.c (print_z_candidate): Add missing quoting to %D and other
+	like directives.
+	(build_op_call_1): Same.
+	* constraint.cc (diagnose_check_constraint): Same.
+	* mangle.c (mangle_decl): Same.
+	* name-lookup.c (cp_binding_level_debug): Same.
+	(set_decl_namespace): Same.
+	* parser.c (cp_parser_tx_qualifier_opt): Same.
+	* pt.c (print_candidates_1): Same.
+	(check_template_variable): Same.
+	(tsubst_default_argument): Same.
+	(most_specialized_partial_spec): Same.
+	* semantics.c (omp_reduction_lookup): Same.
+	* tree.c (check_abi_tag_redeclaration): Same.
+	* typeck.c (comptypes): Same.
+	* typeck2.c (abstract_virtuals_error_sfinae): Same.
+
 2017-05-04  Nathan Sidwell  <nathan@acm.org>
 
 	More global trees.

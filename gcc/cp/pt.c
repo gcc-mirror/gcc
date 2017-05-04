@@ -1943,14 +1943,14 @@ print_candidates_1 (tree fns, bool more, const char **str)
             if (!more && !OVL_NEXT (fns))
               {
                 inform (DECL_SOURCE_LOCATION (cand),
-			"candidate is: %#D", cand);
+			"candidate is: %#qD", cand);
                 continue;
               }
 
             *str = _("candidates are:");
             spaces = get_spaces (*str);
           }
-        inform (DECL_SOURCE_LOCATION (cand), "%s %#D", *str, cand);
+	inform (DECL_SOURCE_LOCATION (cand), "%s %#qD", *str, cand);
         *str = spaces ? spaces : *str;
       }
 
@@ -2583,7 +2583,8 @@ check_template_variable (tree decl)
   if (template_header_count > wanted)
     {
       bool warned = pedwarn (DECL_SOURCE_LOCATION (decl), 0,
-			     "too many template headers for %D (should be %d)",
+			     "too many template headers for %qD "
+	                     "(should be %d)",
 			     decl, wanted);
       if (warned && CLASS_TYPE_P (ctx)
 	  && CLASSTYPE_TEMPLATE_SPECIALIZATION (ctx))
@@ -11978,7 +11979,7 @@ tsubst_default_argument (tree fn, tree type, tree arg, tsubst_flags_t complain)
   if (errorcount+sorrycount > errs
       && (complain & tf_warning_or_error))
     inform (input_location,
-	    "  when instantiating default argument for call to %D", fn);
+	    "  when instantiating default argument for call to %qD", fn);
 
   /* Make sure the default argument is reasonable.  */
   arg = check_default_argument (type, arg, complain);
@@ -21895,7 +21896,7 @@ most_specialized_partial_spec (tree target, tsubst_flags_t complain)
         {
 	  tree subst = build_tree_list (TREE_VALUE (t), TREE_PURPOSE (t));
           inform (DECL_SOURCE_LOCATION (TREE_VALUE (t)),
-		  "%s %#S", spaces ? spaces : str, subst);
+		  "%s %#qS", spaces ? spaces : str, subst);
           spaces = spaces ? spaces : get_spaces (str);
         }
       free (spaces);

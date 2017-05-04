@@ -1,3 +1,20 @@
+2017-05-04  Martin Sebor  <msebor@redhat.com>
+
+	PR translation/80280
+	* builtins.c (expand_builtin_object_size): Add missing quoting to
+	%D and like directives.
+	* hsa-gen.c (hsa_type_for_scalar_tree_type): Same.
+	(hsa_type_for_tree_type): Same.
+	(verify_function_arguments): Same.
+	* symtab.c (symbol_table::change_decl_assembler_name): Same.
+	* varasm.c (get_section): Same.
+	(mark_weak): Same.
+
+2017-05-04  Martin Sebor  <msebor@redhat.com>
+
+	PR translation/80280
+	* config/i386/i386.c (ix86_function_versions): Quote a %D directive.
+
 2017-05-04  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	* config/aarch64/aarch64.c (generic_addrcost_table):

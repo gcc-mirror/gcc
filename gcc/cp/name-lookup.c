@@ -2070,7 +2070,7 @@ cp_binding_level_debug (cp_binding_level *scope, int line, const char *action)
 {
   const char *desc = cp_binding_level_descriptor (scope);
   if (scope->this_entity)
-    verbatim ("%s %s(%E) %p %d\n", action, desc,
+    verbatim ("%s %<%s(%E)%> %p %d\n", action, desc,
 	      scope->this_entity, (void *) scope, line);
   else
     verbatim ("%s %s %p %d\n", action, desc, (void *) scope, line);
@@ -4154,8 +4154,9 @@ set_decl_namespace (tree decl, tree scope, bool friendp)
 	  if (DECL_HIDDEN_FRIEND_P (found))
 	    {
 	      pedwarn (DECL_SOURCE_LOCATION (decl), 0,
-		       "%qD has not been declared within %D", decl, scope);
-	      inform (DECL_SOURCE_LOCATION (found), "only here as a friend");
+		       "%qD has not been declared within %qD", decl, scope);
+	      inform (DECL_SOURCE_LOCATION (found),
+		      "only here as a %<friend%>");
 	    }
 	  DECL_CONTEXT (decl) = DECL_CONTEXT (found);
 	  return;
