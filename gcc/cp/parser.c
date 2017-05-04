@@ -20370,7 +20370,7 @@ cp_parser_tx_qualifier_opt (cp_parser *parser)
 	      cp_lexer_consume_token (parser->lexer);
 	      if (!flag_tm)
 		{
-		  error ("%E requires %<-fgnu-tm%>", name);
+		  error ("%qE requires %<-fgnu-tm%>", name);
 		  return NULL_TREE;
 		}
 	      else

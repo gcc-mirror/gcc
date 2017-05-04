@@ -3906,6 +3906,8 @@ mangle_decl (const tree decl)
 
       if (warn_abi)
 	{
+	  const char fabi_version[] = "-fabi-version";
+
 	  if (flag_abi_compat_version != warn_abi_version
 	      || id2 == NULL_TREE)
 	    {
@@ -3921,15 +3923,15 @@ mangle_decl (const tree decl)
 		   && abi_version_at_least (warn_abi_version))
 	    warning_at (DECL_SOURCE_LOCATION (G.entity), OPT_Wabi,
 			"the mangled name of %qD changed between "
-			"-fabi-version=%d (%D) and -fabi-version=%d (%D)",
-			G.entity, warn_abi_version, id2,
-			save_ver, id);
+			"%<%s=%d%> (%qD) and %<%s=%d%> (%qD)",
+			G.entity, fabi_version, warn_abi_version, id2,
+			fabi_version, save_ver, id);
 	  else
 	    warning_at (DECL_SOURCE_LOCATION (G.entity), OPT_Wabi,
 			"the mangled name of %qD changes between "
-			"-fabi-version=%d (%D) and -fabi-version=%d (%D)",
-			G.entity, save_ver, id,
-			warn_abi_version, id2);
+			"%<%s=%d%> (%qD) and %<%s=%d%> (%qD)",
+			G.entity, fabi_version, save_ver, id,
+			fabi_version, warn_abi_version, id2);
 	}
 
       flag_abi_version = save_ver;

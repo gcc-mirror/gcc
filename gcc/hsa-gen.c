@@ -587,7 +587,7 @@ hsa_type_for_scalar_tree_type (const_tree type, bool min32int)
     {
       HSA_SORRY_ATV (EXPR_LOCATION (type),
 		     "support for HSA does not implement huge or "
-		     "variable-sized type %T", type);
+		     "variable-sized type %qT", type);
       return res;
     }
 
@@ -616,7 +616,7 @@ hsa_type_for_scalar_tree_type (const_tree type, bool min32int)
   if (res == BRIG_TYPE_NONE)
     {
       HSA_SORRY_ATV (EXPR_LOCATION (type),
-		     "support for HSA does not implement type %T", type);
+		     "support for HSA does not implement type %qT", type);
       return res;
     }
 
@@ -628,7 +628,7 @@ hsa_type_for_scalar_tree_type (const_tree type, bool min32int)
 	{
 	  HSA_SORRY_ATV (EXPR_LOCATION (type),
 			 "support for HSA does not implement a vector type "
-			 "where a type and unit size are equal: %T", type);
+			 "where a type and unit size are equal: %qT", type);
 	  return res;
 	}
 
@@ -645,7 +645,7 @@ hsa_type_for_scalar_tree_type (const_tree type, bool min32int)
 	  break;
 	default:
 	  HSA_SORRY_ATV (EXPR_LOCATION (type),
-			 "support for HSA does not implement type %T", type);
+			 "support for HSA does not implement type %qT", type);
 	}
     }
 
@@ -704,7 +704,7 @@ hsa_type_for_tree_type (const_tree type, unsigned HOST_WIDE_INT *dim_p = NULL,
   if (!tree_fits_uhwi_p (TYPE_SIZE_UNIT (type)))
     {
       HSA_SORRY_ATV (EXPR_LOCATION (type), "support for HSA does not "
-		     "implement huge or variable-sized type %T", type);
+		     "implement huge or variable-sized type %qT", type);
       return BRIG_TYPE_NONE;
     }
 
@@ -732,8 +732,8 @@ hsa_type_for_tree_type (const_tree type, unsigned HOST_WIDE_INT *dim_p = NULL,
 	      || !tree_fits_shwi_p (TYPE_MAX_VALUE (domain)))
 	    {
 	      HSA_SORRY_ATV (EXPR_LOCATION (type),
-			     "support for HSA does not implement array %T with "
-			     "unknown bounds", type);
+			     "support for HSA does not implement array "
+			     "%qT with unknown bounds", type);
 	      return BRIG_TYPE_NONE;
 	    }
 	  HOST_WIDE_INT min = tree_to_shwi (TYPE_MIN_VALUE (domain));
@@ -3485,14 +3485,14 @@ verify_function_arguments (tree decl)
   if (DECL_STATIC_CHAIN (decl))
     {
       HSA_SORRY_ATV (EXPR_LOCATION (decl),
-		     "HSA does not support nested functions: %D", decl);
+		     "HSA does not support nested functions: %qD", decl);
       return;
     }
   else if (!TYPE_ARG_TYPES (type) || stdarg_p (type))
     {
       HSA_SORRY_ATV (EXPR_LOCATION (decl),
 		     "HSA does not support functions with variadic arguments "
-		     "(or unknown return type): %D", decl);
+		     "(or unknown return type): %qD", decl);
       return;
     }
 }

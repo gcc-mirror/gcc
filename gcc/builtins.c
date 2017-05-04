@@ -9493,7 +9493,7 @@ expand_builtin_object_size (tree exp)
 
   if (!validate_arglist (exp, POINTER_TYPE, INTEGER_TYPE, VOID_TYPE))
     {
-      error ("%Kfirst argument of %D must be a pointer, second integer constant",
+      error ("%Kfirst argument of %qD must be a pointer, second integer constant",
 	     exp, fndecl);
       expand_builtin_trap ();
       return const0_rtx;
@@ -9506,7 +9506,7 @@ expand_builtin_object_size (tree exp)
       || tree_int_cst_sgn (ost) < 0
       || compare_tree_int (ost, 3) > 0)
     {
-      error ("%Klast argument of %D is not integer constant between 0 and 3",
+      error ("%Klast argument of %qD is not integer constant between 0 and 3",
 	     exp, fndecl);
       expand_builtin_trap ();
       return const0_rtx;

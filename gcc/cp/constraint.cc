@@ -2859,7 +2859,7 @@ diagnose_check_constraint (location_t loc, tree orig, tree cur, tree args)
     {
       if (elide_constraint_failure_p ())
         return;
-      inform (loc, "in the expansion of concept %qE %S", check, sub);
+      inform (loc, "in the expansion of concept %<E %S%>", check, sub);
       cur = get_concept_definition (decl);
       tsubst_expr (cur, targs, tf_warning_or_error, NULL_TREE, false);
       return;

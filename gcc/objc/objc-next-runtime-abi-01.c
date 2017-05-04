@@ -2812,7 +2812,7 @@ objc_eh_runtime_type (tree type)
 	 we use c++'s typeinfo decl. */
       return build_eh_type_type (type);
 #else
-      error ("non-objective-c type '%T' cannot be caught", type);
+      error ("non-objective-c type %qT cannot be caught", type);
       ident = get_identifier ("ErrorMarkNode");
       goto make_err_class;
 #endif
