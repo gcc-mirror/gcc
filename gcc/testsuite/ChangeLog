@@ -1,3 +1,12 @@
+2017-05-04  Tom de Vries  <tom@codesourcery.com>
+
+	PR testsuite/80557
+	* gcc.target/i386/pr57655.c: Replace absolute line numbers.
+	* gcc.target/i386/pr68657.c: Same.
+	* gcc.target/i386/pr69255-1.c: Same.
+	* gcc.target/i386/pr69255-2.c: Same.
+	* gcc.target/i386/pr69255-3.c: Same.
+
 2017-05-04  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/31130
