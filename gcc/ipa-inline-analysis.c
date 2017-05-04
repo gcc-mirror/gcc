@@ -3478,17 +3478,17 @@ estimate_ipcp_clone_size_and_time (struct cgraph_node *node,
 				   known_contexts,
 				   vec<ipa_agg_jump_function_p> known_aggs,
 				   int *ret_size, sreal *ret_time,
+				   sreal *ret_nonspec_time,
 				   inline_hints *hints)
 {
   clause_t clause, nonspec_clause;
-  sreal nonspec_time;
 
   evaluate_conditions_for_known_args (node, false, known_vals, known_aggs,
 				      &clause, &nonspec_clause);
   estimate_node_size_and_time (node, clause, nonspec_clause,
 			       known_vals, known_contexts,
 			       known_aggs, ret_size, NULL, ret_time,
-			       &nonspec_time, hints, vNULL);
+			       ret_nonspec_time, hints, vNULL);
 }
 
 /* Translate all conditions from callee representation into caller

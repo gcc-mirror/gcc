@@ -1,3 +1,9 @@
+2017-05-04  Martin Sebor  <msebor@redhat.com>
+
+	PR translation/80280
+	* c-attribs.c (handle_alias_ifunc_attribute): Quote a %D directive.
+	(handle_weakref_attribute): Same.
+
 2017-05-03  Nathan Sidwell  <nathan@acm.org>
 
 	Canonicalize canonical type hashing

@@ -320,15 +320,15 @@ get_section (const char *name, unsigned int flags, tree decl)
 	      && decl != sect->named.decl)
 	    {
 	      if (decl != NULL && DECL_P (decl))
-		error ("%+D causes a section type conflict with %D",
+		error ("%+qD causes a section type conflict with %qD",
 		       decl, sect->named.decl);
 	      else
-		error ("section type conflict with %D", sect->named.decl);
+		error ("section type conflict with %qD", sect->named.decl);
 	      inform (DECL_SOURCE_LOCATION (sect->named.decl),
 		      "%qD was declared here", sect->named.decl);
 	    }
 	  else if (decl != NULL && DECL_P (decl))
-	    error ("%+D causes a section type conflict", decl);
+	    error ("%+qD causes a section type conflict", decl);
 	  else
 	    error ("section type conflict");
 	  /* Make sure we don't error about one section multiple times.  */
@@ -5383,7 +5383,7 @@ mark_weak (tree decl)
 
   struct symtab_node *n = symtab_node::get (decl);
   if (n && n->refuse_visibility_changes)
-    error ("%+D declared weak after being used", decl);
+    error ("%+qD declared weak after being used", decl);
   DECL_WEAK (decl) = 1;
 
   if (DECL_RTL_SET_P (decl)

@@ -70,20 +70,21 @@ foo (int i, int i1, int i2, unsigned int u, double d, char *s, void *p,
   cdiag ("%m");
   cxxdiag ("%m");
 
-  tdiag ("%D%F%T%V", t1, t1, t1, t1);
-  tdiag ("%+D%+F%+T%+V", t1, t1, t1, t1);
+  /* Quote directives to avoid "warning: conversion used unquoted." */
+  tdiag ("%<%D%F%T%V%>", t1, t1, t1, t1);
+  tdiag ("%<%+D%+F%+T%+V%>", t1, t1, t1, t1);
   tdiag ("%q+D%q+F%q+T%q+V", t1, t1, t1, t1);
-  tdiag ("%D%D%D%D", t1, t2, *t3, t4[5]);
-  cdiag ("%D%F%T%V", t1, t1, t1, t1);
-  cdiag ("%+D%+F%+T%+V", t1, t1, t1, t1);
+  tdiag ("%<%D%D%D%D%>", t1, t2, *t3, t4[5]);
+  cdiag ("%<%D%F%T%V%>", t1, t1, t1, t1);
+  cdiag ("%<%+D%+F%+T%+V%>", t1, t1, t1, t1);
   cdiag ("%q+D%q+F%q+T%q+V", t1, t1, t1, t1);
-  cdiag ("%D%D%D%D", t1, t2, *t3, t4[5]);
-  cdiag ("%E", t1);
-  cxxdiag ("%A%D%E%F%T%V", t1, t1, t1, t1, t1, t1);
-  cxxdiag ("%D%D%D%D", t1, t2, *t3, t4[5]);
-  cxxdiag ("%#A%#D%#E%#F%#T%#V", t1, t1, t1, t1, t1, t1);
-  cxxdiag ("%+A%+D%+E%+F%+T%+V", t1, t1, t1, t1, t1, t1);
-  cxxdiag ("%+#A%+#D%+#E%+#F%+#T%+#V", t1, t1, t1, t1, t1, t1);
+  cdiag ("%<%D%D%D%D%>", t1, t2, *t3, t4[5]);
+  cdiag ("%<%E%>", t1);
+  cxxdiag ("%<%A%D%E%F%T%V%>", t1, t1, t1, t1, t1, t1);
+  cxxdiag ("%<%D%D%D%D%>", t1, t2, *t3, t4[5]);
+  cxxdiag ("%<%#A%#D%#E%#F%#T%#V%>", t1, t1, t1, t1, t1, t1);
+  cxxdiag ("%<%+A%+D%+E%+F%+T%+V%>", t1, t1, t1, t1, t1, t1);
+  cxxdiag ("%<%+#A%+#D%+#E%+#F%+#T%+#V%>", t1, t1, t1, t1, t1, t1);
   cxxdiag ("%C%L%O%P%Q", i, i, i, i, i);
 
   tdiag ("%v%qv%#v", i, i, i);
@@ -113,7 +114,7 @@ foo (int i, int i1, int i2, unsigned int u, double d, char *s, void *p,
   tdiag ("%#D", t1); /* { dg-warning "format" "bogus modifier" } */
   cdiag ("%A", t1); /* { dg-warning "format" "bogus tree" } */
   cdiag ("%#D", t1); /* { dg-warning "format" "bogus modifier" } */
-  cdiag ("%+D", t1);
+  cdiag ("%<%+D%>", t1);
   cxxdiag ("%C"); /* { dg-warning "format" "missing arg" } */
   cxxdiag ("%C", l); /* { dg-warning "format" "wrong arg" } */
   cxxdiag ("%C", i, i); /* { dg-warning "format" "extra arg" } */

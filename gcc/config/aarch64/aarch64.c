@@ -193,10 +193,10 @@ static const struct aarch64_flag_desc aarch64_tuning_flags[] =
 static const struct cpu_addrcost_table generic_addrcost_table =
 {
     {
-      0, /* hi  */
+      1, /* hi  */
       0, /* si  */
       0, /* di  */
-      0, /* ti  */
+      1, /* ti  */
     },
   0, /* pre_modify  */
   0, /* post_modify  */
@@ -538,8 +538,8 @@ static const struct tune_params generic_tunings =
   2, /* issue_rate  */
   (AARCH64_FUSE_AES_AESMC), /* fusible_ops  */
   8,	/* function_align.  */
-  8,	/* jump_align.  */
-  4,	/* loop_align.  */
+  4,	/* jump_align.  */
+  8,	/* loop_align.  */
   2,	/* int_reassoc_width.  */
   4,	/* fp_reassoc_width.  */
   1,	/* vec_reassoc_width.  */
@@ -547,7 +547,7 @@ static const struct tune_params generic_tunings =
   2,	/* min_div_recip_mul_df.  */
   0,	/* max_case_values.  */
   0,	/* cache_line_size.  */
-  tune_params::AUTOPREFETCHER_OFF,	/* autoprefetcher_model.  */
+  tune_params::AUTOPREFETCHER_WEAK,	/* autoprefetcher_model.  */
   (AARCH64_EXTRA_TUNE_NONE)	/* tune_flags.  */
 };
 
@@ -564,7 +564,7 @@ static const struct tune_params cortexa35_tunings =
   (AARCH64_FUSE_AES_AESMC | AARCH64_FUSE_MOV_MOVK | AARCH64_FUSE_ADRP_ADD
    | AARCH64_FUSE_MOVK_MOVK | AARCH64_FUSE_ADRP_LDR), /* fusible_ops  */
   16,	/* function_align.  */
-  8,	/* jump_align.  */
+  4,	/* jump_align.  */
   8,	/* loop_align.  */
   2,	/* int_reassoc_width.  */
   4,	/* fp_reassoc_width.  */
@@ -590,7 +590,7 @@ static const struct tune_params cortexa53_tunings =
   (AARCH64_FUSE_AES_AESMC | AARCH64_FUSE_MOV_MOVK | AARCH64_FUSE_ADRP_ADD
    | AARCH64_FUSE_MOVK_MOVK | AARCH64_FUSE_ADRP_LDR), /* fusible_ops  */
   16,	/* function_align.  */
-  8,	/* jump_align.  */
+  4,	/* jump_align.  */
   8,	/* loop_align.  */
   2,	/* int_reassoc_width.  */
   4,	/* fp_reassoc_width.  */
@@ -616,7 +616,7 @@ static const struct tune_params cortexa57_tunings =
   (AARCH64_FUSE_AES_AESMC | AARCH64_FUSE_MOV_MOVK | AARCH64_FUSE_ADRP_ADD
    | AARCH64_FUSE_MOVK_MOVK), /* fusible_ops  */
   16,	/* function_align.  */
-  8,	/* jump_align.  */
+  4,	/* jump_align.  */
   8,	/* loop_align.  */
   2,	/* int_reassoc_width.  */
   4,	/* fp_reassoc_width.  */
@@ -642,7 +642,7 @@ static const struct tune_params cortexa72_tunings =
   (AARCH64_FUSE_AES_AESMC | AARCH64_FUSE_MOV_MOVK | AARCH64_FUSE_ADRP_ADD
    | AARCH64_FUSE_MOVK_MOVK), /* fusible_ops  */
   16,	/* function_align.  */
-  8,	/* jump_align.  */
+  4,	/* jump_align.  */
   8,	/* loop_align.  */
   2,	/* int_reassoc_width.  */
   4,	/* fp_reassoc_width.  */
@@ -668,7 +668,7 @@ static const struct tune_params cortexa73_tunings =
   (AARCH64_FUSE_AES_AESMC | AARCH64_FUSE_MOV_MOVK | AARCH64_FUSE_ADRP_ADD
    | AARCH64_FUSE_MOVK_MOVK | AARCH64_FUSE_ADRP_LDR), /* fusible_ops  */
   16,	/* function_align.  */
-  8,	/* jump_align.  */
+  4,	/* jump_align.  */
   8,	/* loop_align.  */
   2,	/* int_reassoc_width.  */
   4,	/* fp_reassoc_width.  */
@@ -4547,6 +4547,24 @@ aarch64_classify_address (struct aarch64_address_info *info,
     default:
       return false;
     }
+}
+
+/* Return true if the address X is valid for a PRFM instruction.
+   STRICT_P is true if we should do strict checking with
+   aarch64_classify_address.  */
+
+bool
+aarch64_address_valid_for_prefetch_p (rtx x, bool strict_p)
+{
+  struct aarch64_address_info addr;
+
+  /* PRFM accepts the same addresses as DImode...  */
+  bool res = aarch64_classify_address (&addr, x, DImode, MEM, strict_p);
+  if (!res)
+    return false;
+
+  /* ... except writeback forms.  */
+  return addr.type != ADDRESS_REG_WB;
 }
 
 bool

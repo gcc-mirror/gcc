@@ -1,3 +1,87 @@
+2017-05-04  Bin Cheng  <bin.cheng@arm.com>
+
+	* tree-ssa-loop-ivopts.c (struct cost_pair): Remove field inv_expr
+	which is not used any more.
+
+2017-05-04  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* config/aarch64/aarch64.c (generic_tunings): Update prefetch model.
+
+2017-05-04  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* config/aarch64/aarch64.c (cortexa35_tunings): Set jump alignment to 4.
+	(cortexa53_tunings): Likewise.
+	(cortexa57_tunings): Likewise.
+	(cortexa72_tunings): Likewise.
+	(cortexa73_tunings): Likewise.
+
+2017-05-04  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* config/aarch64/aarch64.c (generic_tunings): Set jump alignment to 4.
+	Set loop alignment to 8.
+
+2017-05-04  Martin Sebor  <msebor@redhat.com>
+
+	PR translation/80280
+	* builtins.c (expand_builtin_object_size): Add missing quoting to
+	%D and like directives.
+	* hsa-gen.c (hsa_type_for_scalar_tree_type): Same.
+	(hsa_type_for_tree_type): Same.
+	(verify_function_arguments): Same.
+	* symtab.c (symbol_table::change_decl_assembler_name): Same.
+	* varasm.c (get_section): Same.
+	(mark_weak): Same.
+
+2017-05-04  Martin Sebor  <msebor@redhat.com>
+
+	PR translation/80280
+	* config/i386/i386.c (ix86_function_versions): Quote a %D directive.
+
+2017-05-04  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* config/aarch64/aarch64.c (generic_addrcost_table):
+	Change HI/TI mode setting.
+
+2017-05-04  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/80622
+	* tree-sra.c (comes_initialized_p): New function.
+	(build_accesses_from_assign): Only set write lazily when
+	comes_initialized_p is false.
+	(analyze_access_subtree): Use comes_initialized_p.
+	(propagate_subaccesses_across_link): Assert !comes_initialized_p
+	instead of testing for PARM_DECL.
+
+2017-05-04  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64.md (prefetch); Adjust predicate and
+	constraint on operand 0 to allow more general addressing modes.
+	Adjust output template.
+	* config/aarch64/aarch64.c (aarch64_address_valid_for_prefetch_p):
+	New function.
+	* config/aarch64/aarch64-protos.h
+	(aarch64_address_valid_for_prefetch_p): Declare prototype.
+	* config/aarch64/constraints.md (Dp): New address constraint.
+	* config/aarch64/predicates.md (aarch64_prefetch_operand): New
+	predicate.
+
+2017-05-04  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-cp.c (perform_estimation_of_a_value): Drop base_time parameter;
+	update use of estimate_ipcp_clone_size_and_time.
+	(estimate_local_effects): Update use of
+	estimate_ipcp_clone_size_and_time and perform_estimation_of_a_value.
+	* ipa-inline.h (estimate_ipcp_clone_size_and_time): Update prototype.
+	* ipa-inline-analysis.c (estimate_ipcp_clone_size_and_time):
+	Return nonspecialized time.
+
+2017-05-04  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-alias.c (get_continuation_for_phi): Improve looking
+	for the last VUSE which def dominates the PHI.  Directly call
+	maybe_skip_until.
+	(get_continuation_for_phi_1): Remove.
+
 2017-05-04  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	* tree-ssa-loop-manip.c (niter_for_unrolled_loop): Add commentary

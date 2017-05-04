@@ -1,5 +1,9 @@
 2017-05-04  Nathan Sidwell  <nathan@acm.org>
 
+	Merge trunk r247612.
+	gcc/testsuite/
+	* g++.dg/lookup/using17.C: Adjust error message.
+
 	Overload bindings
 	gcc/cp/
 	* module.c (cpms_in::tag_binding, cpms_out::tag_binding): Binding

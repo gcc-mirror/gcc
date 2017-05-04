@@ -137,7 +137,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gcc 7.1-b20170226\n"
 "Report-Msgid-Bugs-To: https://gcc.gnu.org/bugs/\n"
-"POT-Creation-Date: 2017-04-24 20:38+0000\n"
+"POT-Creation-Date: 2017-05-01 22:24+0000\n"
 "PO-Revision-Date: 2017-02-28 11:00+0200\n"
 "Last-Translator: Joe Hansen <joedalton2@yahoo.dk>\n"
 "Language-Team: Danish <dansk@dansk-gruppen.dk>\n"
@@ -2949,42 +2949,42 @@ msgstr "længdemodifikation i strfmon-formatering"
 msgid "<command-line>"
 msgstr "<kommandolinje>"
 
-#: config/aarch64/aarch64.c:4926 config/arm/arm.c:21795 config/arm/arm.c:21808
-#: config/arm/arm.c:21833 config/nios2/nios2.c:2653
+#: config/aarch64/aarch64.c:4927 config/arm/arm.c:21832 config/arm/arm.c:21845
+#: config/arm/arm.c:21870 config/nios2/nios2.c:2653
 #, c-format
 msgid "Unsupported operand for code '%c'"
 msgstr "Ikke understøttet operand for koden »%c«"
 
-#: config/aarch64/aarch64.c:4938 config/aarch64/aarch64.c:4954
-#: config/aarch64/aarch64.c:4967 config/aarch64/aarch64.c:4979
-#: config/aarch64/aarch64.c:4990 config/aarch64/aarch64.c:5013
-#: config/aarch64/aarch64.c:5066 config/aarch64/aarch64.c:5269
+#: config/aarch64/aarch64.c:4939 config/aarch64/aarch64.c:4955
+#: config/aarch64/aarch64.c:4968 config/aarch64/aarch64.c:4980
+#: config/aarch64/aarch64.c:4991 config/aarch64/aarch64.c:5014
+#: config/aarch64/aarch64.c:5067 config/aarch64/aarch64.c:5270
 #, c-format
 msgid "invalid operand for '%%%c'"
 msgstr "ugyldig operand for »%%%c«"
 
-#: config/aarch64/aarch64.c:5033 config/aarch64/aarch64.c:5046
-#: config/aarch64/aarch64.c:5056
+#: config/aarch64/aarch64.c:5034 config/aarch64/aarch64.c:5047
+#: config/aarch64/aarch64.c:5057
 #, c-format
 msgid "incompatible floating point / vector register operand for '%%%c'"
 msgstr ""
 
-#: config/aarch64/aarch64.c:5102 config/arm/arm.c:22340
+#: config/aarch64/aarch64.c:5103 config/arm/arm.c:22377
 #, c-format
 msgid "missing operand"
 msgstr "manglende operand"
 
-#: config/aarch64/aarch64.c:5164
+#: config/aarch64/aarch64.c:5165
 #, c-format
 msgid "invalid constant"
 msgstr "ugyldig konstant:"
 
-#: config/aarch64/aarch64.c:5167
+#: config/aarch64/aarch64.c:5168
 #, c-format
 msgid "invalid operand"
 msgstr "ugyldig operand"
 
-#: config/aarch64/aarch64.c:5280
+#: config/aarch64/aarch64.c:5281
 #, c-format
 msgid "invalid operand prefix '%%%c'"
 msgstr "ugyldig operandpræfiks »%%%c«"
@@ -3142,31 +3142,31 @@ msgstr "ugyldig operand-uddatakode"
 msgid "invalid UNSPEC as operand: %d"
 msgstr "ugyldig UNSPEC som operand: %d"
 
-#: config/arm/arm.c:18804 config/arm/arm.c:18829 config/arm/arm.c:18839
-#: config/arm/arm.c:18848 config/arm/arm.c:18857
+#: config/arm/arm.c:18841 config/arm/arm.c:18866 config/arm/arm.c:18876
+#: config/arm/arm.c:18885 config/arm/arm.c:18894
 #, c-format
 msgid "invalid shift operand"
 msgstr "ugyldig skift-operand"
 
-#: config/arm/arm.c:21671 config/arm/arm.c:21689
+#: config/arm/arm.c:21708 config/arm/arm.c:21726
 #, fuzzy, c-format
 #| msgid "Generate char instructions"
 msgid "predicated Thumb instruction"
 msgstr "Generér char-instruktioner"
 
-#: config/arm/arm.c:21677
+#: config/arm/arm.c:21714
 #, fuzzy, c-format
 #| msgid "ret instruction not implemented"
 msgid "predicated instruction in conditional sequence"
 msgstr "ret-instruktion ikke implementeret"
 
-#: config/arm/arm.c:21910 config/arm/arm.c:21932 config/arm/arm.c:21942
-#: config/arm/arm.c:21952 config/arm/arm.c:21962 config/arm/arm.c:22001
-#: config/arm/arm.c:22019 config/arm/arm.c:22044 config/arm/arm.c:22059
-#: config/arm/arm.c:22086 config/arm/arm.c:22093 config/arm/arm.c:22111
-#: config/arm/arm.c:22118 config/arm/arm.c:22126 config/arm/arm.c:22147
-#: config/arm/arm.c:22154 config/arm/arm.c:22287 config/arm/arm.c:22294
-#: config/arm/arm.c:22321 config/arm/arm.c:22328 config/bfin/bfin.c:1437
+#: config/arm/arm.c:21947 config/arm/arm.c:21969 config/arm/arm.c:21979
+#: config/arm/arm.c:21989 config/arm/arm.c:21999 config/arm/arm.c:22038
+#: config/arm/arm.c:22056 config/arm/arm.c:22081 config/arm/arm.c:22096
+#: config/arm/arm.c:22123 config/arm/arm.c:22130 config/arm/arm.c:22148
+#: config/arm/arm.c:22155 config/arm/arm.c:22163 config/arm/arm.c:22184
+#: config/arm/arm.c:22191 config/arm/arm.c:22324 config/arm/arm.c:22331
+#: config/arm/arm.c:22358 config/arm/arm.c:22365 config/bfin/bfin.c:1437
 #: config/bfin/bfin.c:1444 config/bfin/bfin.c:1451 config/bfin/bfin.c:1458
 #: config/bfin/bfin.c:1467 config/bfin/bfin.c:1474 config/bfin/bfin.c:1481
 #: config/bfin/bfin.c:1488
@@ -3174,13 +3174,13 @@ msgstr "ret-instruktion ikke implementeret"
 msgid "invalid operand for code '%c'"
 msgstr "ugyldig operand for koden »%c«"
 
-#: config/arm/arm.c:22014
+#: config/arm/arm.c:22051
 #, c-format
 msgid "instruction never executed"
 msgstr "instruktion aldrig udført"
 
 #. Former Maverick support, removed after GCC-4.7.
-#: config/arm/arm.c:22035
+#: config/arm/arm.c:22072
 #, c-format
 msgid "obsolete Maverick format code '%c'"
 msgstr "forældet Maverick-formatkode »%c«"
@@ -4008,102 +4008,102 @@ msgstr "emit_fusion_p9_store, ugyldig reg #2"
 msgid "emit_fusion_p9_store not MEM"
 msgstr "emit_fusion_p9_store ikke MEM"
 
-#: config/s390/s390.c:7314
+#: config/s390/s390.c:7482
 #, c-format
 msgid "symbolic memory references are only supported on z10 or later"
 msgstr "symbolske hukommelsesreferencer er kun understøttet på z10 eller senere"
 
-#: config/s390/s390.c:7325
+#: config/s390/s390.c:7493
 #, c-format
 msgid "cannot decompose address"
 msgstr "Kan ikke nedbryde adresse"
 
-#: config/s390/s390.c:7394
+#: config/s390/s390.c:7562
 #, c-format
 msgid "invalid comparison operator for 'E' output modifier"
 msgstr "ugyldig sammenligningsoperator til »E«-ændring"
 
-#: config/s390/s390.c:7417
+#: config/s390/s390.c:7585
 #, c-format
 msgid "invalid reference for 'J' output modifier"
 msgstr "ugyldig reference til »J«-uddataændring"
 
-#: config/s390/s390.c:7435
+#: config/s390/s390.c:7603
 #, c-format
 msgid "invalid address for 'O' output modifier"
 msgstr "ugyldig adresse til »O«-uddataændring"
 
-#: config/s390/s390.c:7457
+#: config/s390/s390.c:7625
 #, c-format
 msgid "invalid address for 'R' output modifier"
 msgstr "ugyldig adresse til »R«-uddataændring"
 
-#: config/s390/s390.c:7475
+#: config/s390/s390.c:7643
 #, c-format
 msgid "memory reference expected for 'S' output modifier"
 msgstr "hukommelsesreference forventet til »S«-uddataændring"
 
-#: config/s390/s390.c:7485
+#: config/s390/s390.c:7653
 #, c-format
 msgid "invalid address for 'S' output modifier"
 msgstr "ugyldig adresse for »S«-uddatamodifikation"
 
-#: config/s390/s390.c:7506
+#: config/s390/s390.c:7674
 #, c-format
 msgid "register or memory expression expected for 'N' output modifier"
 msgstr "register eller hukommelsesudtryk forventet til »N«-uddataændring"
 
-#: config/s390/s390.c:7517
+#: config/s390/s390.c:7685
 #, c-format
 msgid "register or memory expression expected for 'M' output modifier"
 msgstr "register eller hukommelsesudtryk forventet til »M«-uddataændring"
 
-#: config/s390/s390.c:7603 config/s390/s390.c:7624
+#: config/s390/s390.c:7771 config/s390/s390.c:7792
 #, c-format
 msgid "invalid constant for output modifier '%c'"
 msgstr "ugyldig konstant til uddataændringen »%c«"
 
-#: config/s390/s390.c:7621
+#: config/s390/s390.c:7789
 #, c-format
 msgid "invalid constant - try using an output modifier"
 msgstr "ugyldig konstant - prøv at bruge en uddataændring"
 
-#: config/s390/s390.c:7658
+#: config/s390/s390.c:7826
 #, c-format
 msgid "invalid constant vector for output modifier '%c'"
 msgstr "ugyldig konstantvektor for uddataændringen »%c«"
 
-#: config/s390/s390.c:7665
+#: config/s390/s390.c:7833
 #, c-format
 msgid "invalid expression - try using an output modifier"
 msgstr "ugyldigt udtryk - prøv at brug en uddataændring"
 
-#: config/s390/s390.c:7668
+#: config/s390/s390.c:7836
 #, c-format
 msgid "invalid expression for output modifier '%c'"
 msgstr "ugyldig udtryk til uddataændringen »%c«"
 
-#: config/s390/s390.c:11535
+#: config/s390/s390.c:11703
 #, fuzzy
 #| msgid "too few arguments to function"
 msgid "vector argument passed to unprototyped function"
 msgstr "for få parametre til funktionen"
 
-#: config/s390/s390.c:15354
+#: config/s390/s390.c:15522
 #, fuzzy
 #| msgid "pointer targets in %s differ in signedness"
 msgid "types differ in signedness"
 msgstr "fortegnene i henvisningsmål i %s er forskellige"
 
-#: config/s390/s390.c:15364
+#: config/s390/s390.c:15532
 msgid "binary operator does not support two vector bool operands"
 msgstr ""
 
-#: config/s390/s390.c:15367
+#: config/s390/s390.c:15535
 msgid "binary operator does not support vector bool operand"
 msgstr "binær operator understøtter ikke vektor bool-operand"
 
-#: config/s390/s390.c:15375
+#: config/s390/s390.c:15543
 msgid "binary operator does not support mixing vector bool with floating point vector operands"
 msgstr ""
 
@@ -20518,7 +20518,7 @@ msgstr ""
 msgid "assuming signed overflow does not occur when combining constants around a comparison"
 msgstr ""
 
-#: fold-const.c:12046
+#: fold-const.c:12048
 #, gcc-internal-format
 msgid "fold check: original tree changed by fold"
 msgstr ""
@@ -21088,8 +21088,8 @@ msgstr "kan ikke erklære henvisninger til referencer"
 msgid "null pointer dereference"
 msgstr "henvisning"
 
-#: gimple-ssa-isolate-paths.c:413 gimple-ssa-isolate-paths.c:531 tree.c:12872
-#: tree.c:12909 c/c-typeck.c:2906 c/c-typeck.c:2990 c/c-typeck.c:9913
+#: gimple-ssa-isolate-paths.c:413 gimple-ssa-isolate-paths.c:531 tree.c:12880
+#: tree.c:12917 c/c-typeck.c:2906 c/c-typeck.c:2990 c/c-typeck.c:9913
 #: c/c-typeck.c:9930 c/gimple-parser.c:1556 c/gimple-parser.c:1564
 #: cp/call.c:6454 cp/call.c:7933 cp/constexpr.c:777 cp/constexpr.c:2174
 #: cp/cvt.c:992 cp/cvt.c:1019 cp/decl.c:7224 cp/decl2.c:5072 cp/pt.c:7993
@@ -21104,300 +21104,300 @@ msgstr "  '%#D' erklæret her"
 msgid "nonnull argument %qD compared to NULL"
 msgstr ""
 
-#: gimple-ssa-sprintf.c:2307 gimple-ssa-sprintf.c:2435
+#: gimple-ssa-sprintf.c:2308 gimple-ssa-sprintf.c:2436
 #, gcc-internal-format
 msgid "%qE output may be truncated before the last format character"
 msgstr ""
 
-#: gimple-ssa-sprintf.c:2309 gimple-ssa-sprintf.c:2437
+#: gimple-ssa-sprintf.c:2310 gimple-ssa-sprintf.c:2438
 #, gcc-internal-format
 msgid "%qE output truncated before the last format character"
 msgstr ""
 
-#: gimple-ssa-sprintf.c:2311 gimple-ssa-sprintf.c:2439
+#: gimple-ssa-sprintf.c:2312 gimple-ssa-sprintf.c:2440
 #, gcc-internal-format
 msgid "%qE may write a terminating nul past the end of the destination"
 msgstr ""
 
-#: gimple-ssa-sprintf.c:2313 gimple-ssa-sprintf.c:2441
+#: gimple-ssa-sprintf.c:2314 gimple-ssa-sprintf.c:2442
 #, gcc-internal-format
 msgid "%qE writing a terminating nul past the end of the destination"
 msgstr ""
 
-#: gimple-ssa-sprintf.c:2326
+#: gimple-ssa-sprintf.c:2327
 #, gcc-internal-format
 msgid "%<%.*s%> directive output may be truncated writing %wu byte into a region of size %wu"
 msgstr ""
 
-#: gimple-ssa-sprintf.c:2328
+#: gimple-ssa-sprintf.c:2329
 #, gcc-internal-format
 msgid "%<%.*s%> directive output truncated writing %wu byte into a region of size %wu"
 msgstr ""
 
-#: gimple-ssa-sprintf.c:2330
+#: gimple-ssa-sprintf.c:2331
 #, gcc-internal-format
 msgid "%<%.*s%> directive writing %wu byte into a region of size %wu"
 msgstr ""
 
-#: gimple-ssa-sprintf.c:2334
+#: gimple-ssa-sprintf.c:2335
 #, gcc-internal-format
 msgid "%<%.*s%> directive output may be truncated writing %wu bytes into a region of size %wu"
 msgstr ""
 
-#: gimple-ssa-sprintf.c:2336
+#: gimple-ssa-sprintf.c:2337
 #, gcc-internal-format
 msgid "%<%.*s%> directive output truncated writing %wu bytes into a region of size %wu"
 msgstr ""
 
-#: gimple-ssa-sprintf.c:2338
+#: gimple-ssa-sprintf.c:2339
 #, gcc-internal-format
 msgid "%<%.*s%> directive writing %wu bytes into a region of size %wu"
 msgstr ""
 
-#: gimple-ssa-sprintf.c:2351
+#: gimple-ssa-sprintf.c:2352
 #, gcc-internal-format
 msgid "%<%.*s%> directive output may be truncated writing up to %wu bytes into a region of size %wu"
 msgstr ""
 
-#: gimple-ssa-sprintf.c:2353
+#: gimple-ssa-sprintf.c:2354
 #, gcc-internal-format
 msgid "%<%.*s%> directive output truncated writing up to %wu bytes into a region of size %wu"
 msgstr ""
 
-#: gimple-ssa-sprintf.c:2355
+#: gimple-ssa-sprintf.c:2356
 #, gcc-internal-format
 msgid "%<%.*s%> directive writing up to %wu bytes into a region of size %wu"
 msgstr ""
 
-#: gimple-ssa-sprintf.c:2371
+#: gimple-ssa-sprintf.c:2372
 #, gcc-internal-format
 msgid "%<%.*s%> directive output may be truncated writing likely %wu or more bytes into a region of size %wu"
 msgstr ""
 
-#: gimple-ssa-sprintf.c:2373
+#: gimple-ssa-sprintf.c:2374
 #, gcc-internal-format
 msgid "%<%.*s%> directive output truncated writing likely %wu or more bytes into a region of size %wu"
 msgstr ""
 
-#: gimple-ssa-sprintf.c:2375
+#: gimple-ssa-sprintf.c:2376
 #, gcc-internal-format
 msgid "%<%.*s%> directive writing likely %wu or more bytes into a region of size %wu"
 msgstr ""
 
-#: gimple-ssa-sprintf.c:2388
+#: gimple-ssa-sprintf.c:2389
 #, gcc-internal-format
 msgid "%<%.*s%> directive output may be truncated writing between %wu and %wu bytes into a region of size %wu"
 msgstr ""
 
-#: gimple-ssa-sprintf.c:2390
+#: gimple-ssa-sprintf.c:2391
 #, gcc-internal-format
 msgid "%<%.*s%> directive output truncated writing between %wu and %wu bytes into a region of size %wu"
 msgstr ""
 
-#: gimple-ssa-sprintf.c:2392
+#: gimple-ssa-sprintf.c:2393
 #, gcc-internal-format
 msgid "%<%.*s%> directive writing between %wu and %wu bytes into a region of size %wu"
 msgstr ""
 
-#: gimple-ssa-sprintf.c:2404
+#: gimple-ssa-sprintf.c:2405
 #, gcc-internal-format
 msgid "%<%.*s%> directive output may be truncated writing %wu or more bytes into a region of size %wu"
 msgstr ""
 
-#: gimple-ssa-sprintf.c:2406
+#: gimple-ssa-sprintf.c:2407
 #, gcc-internal-format
 msgid "%<%.*s%> directive output truncated writing %wu or more bytes into a region of size %wu"
 msgstr ""
 
-#: gimple-ssa-sprintf.c:2408
+#: gimple-ssa-sprintf.c:2409
 #, gcc-internal-format
 msgid "%<%.*s%> directive writing %wu or more bytes into a region of size %wu"
 msgstr ""
 
-#: gimple-ssa-sprintf.c:2454
+#: gimple-ssa-sprintf.c:2455
 #, gcc-internal-format
 msgid "%<%.*s%> directive output may be truncated writing %wu byte into a region of size between %wu and %wu"
 msgstr ""
 
-#: gimple-ssa-sprintf.c:2456
+#: gimple-ssa-sprintf.c:2457
 #, gcc-internal-format
 msgid "%<%.*s%> directive output truncated writing %wu byte into a region of size between %wu and %wu"
 msgstr ""
 
-#: gimple-ssa-sprintf.c:2458
+#: gimple-ssa-sprintf.c:2459
 #, gcc-internal-format
 msgid "%<%.*s%> directive writing %wu byte into a region of size between %wu and %wu"
 msgstr ""
 
-#: gimple-ssa-sprintf.c:2462
+#: gimple-ssa-sprintf.c:2463
 #, gcc-internal-format
 msgid "%<%.*s%> directive output may be truncated writing %wu bytes into a region of size between %wu and %wu"
 msgstr ""
 
-#: gimple-ssa-sprintf.c:2464
+#: gimple-ssa-sprintf.c:2465
 #, gcc-internal-format
 msgid "%<%.*s%> directive output truncated writing %wu bytes into a region of size between %wu and %wu"
 msgstr ""
 
-#: gimple-ssa-sprintf.c:2466
+#: gimple-ssa-sprintf.c:2467
 #, gcc-internal-format
 msgid "%<%.*s%> directive writing %wu bytes into a region of size between %wu and %wu"
 msgstr ""
 
-#: gimple-ssa-sprintf.c:2480
+#: gimple-ssa-sprintf.c:2481
 #, gcc-internal-format
 msgid "%<%.*s%> directive output may be truncated writing up to %wu bytes into a region of size between %wu and %wu"
 msgstr ""
 
-#: gimple-ssa-sprintf.c:2483
+#: gimple-ssa-sprintf.c:2484
 #, gcc-internal-format
 msgid "%<%.*s%> directive output truncated writing up to %wu bytes into a region of size between %wu and %wu"
 msgstr ""
 
-#: gimple-ssa-sprintf.c:2486
+#: gimple-ssa-sprintf.c:2487
 #, gcc-internal-format
 msgid "%<%.*s%> directive writing up to %wu bytes into a region of size between %wu and %wu"
 msgstr ""
 
-#: gimple-ssa-sprintf.c:2502
+#: gimple-ssa-sprintf.c:2503
 #, gcc-internal-format
 msgid "%<%.*s%> directive output may be truncated writing likely %wu or more bytes into a region of size between %wu and %wu"
 msgstr ""
 
-#: gimple-ssa-sprintf.c:2505
+#: gimple-ssa-sprintf.c:2506
 #, gcc-internal-format
 msgid "%<%.*s%> directive output truncated writing likely %wu or more bytes into a region of size between %wu and %wu"
 msgstr ""
 
-#: gimple-ssa-sprintf.c:2508
+#: gimple-ssa-sprintf.c:2509
 #, gcc-internal-format
 msgid "%<%.*s%> directive writing likely %wu or more bytes into a region of size between %wu and %wu"
 msgstr ""
 
-#: gimple-ssa-sprintf.c:2521
+#: gimple-ssa-sprintf.c:2522
 #, gcc-internal-format
 msgid "%<%.*s%> directive output may be truncated writing between %wu and %wu bytes into a region of size between %wu and %wu"
 msgstr ""
 
-#: gimple-ssa-sprintf.c:2524
+#: gimple-ssa-sprintf.c:2525
 #, gcc-internal-format
 msgid "%<%.*s%> directive output truncated writing between %wu and %wu bytes into a region of size between %wu and %wu"
 msgstr ""
 
-#: gimple-ssa-sprintf.c:2527
+#: gimple-ssa-sprintf.c:2528
 #, gcc-internal-format
 msgid "%<%.*s%> directive writing between %wu and %wu bytes into a region of size between %wu and %wu"
 msgstr ""
 
-#: gimple-ssa-sprintf.c:2539
+#: gimple-ssa-sprintf.c:2540
 #, gcc-internal-format
 msgid "%<%.*s%> directive output may be truncated writing %wu or more bytes into a region of size between %wu and %wu"
 msgstr ""
 
-#: gimple-ssa-sprintf.c:2542
+#: gimple-ssa-sprintf.c:2543
 #, gcc-internal-format
 msgid "%<%.*s%> directive output truncated writing %wu or more bytes into a region of size between %wu and %wu"
 msgstr ""
 
-#: gimple-ssa-sprintf.c:2545
+#: gimple-ssa-sprintf.c:2546
 #, gcc-internal-format
 msgid "%<%.*s%> directive writing %wu or more bytes into a region of size between %wu and %wu"
 msgstr ""
 
-#: gimple-ssa-sprintf.c:2710
+#: gimple-ssa-sprintf.c:2711
 #, gcc-internal-format
 msgid "%<%.*s%> directive output between %wu and %wu bytes may exceed minimum required size of 4095"
 msgstr ""
 
-#: gimple-ssa-sprintf.c:2712
+#: gimple-ssa-sprintf.c:2713
 #, gcc-internal-format
 msgid "%<%.*s%> directive output between %wu and %wu bytes exceeds minimum required size of 4095"
 msgstr ""
 
-#: gimple-ssa-sprintf.c:2751
+#: gimple-ssa-sprintf.c:2752
 #, gcc-internal-format
 msgid "%<%.*s%> directive output between %wu and %wu bytes causes result to exceed %<INT_MAX%>"
 msgstr ""
 
-#: gimple-ssa-sprintf.c:2753
+#: gimple-ssa-sprintf.c:2754
 #, gcc-internal-format
 msgid "%<%.*s%> directive output between %wu and %wu bytes may cause result to exceed %<INT_MAX%>"
 msgstr ""
 
-#: gimple-ssa-sprintf.c:2767
+#: gimple-ssa-sprintf.c:2768
 #, gcc-internal-format
 msgid "assuming directive output of %wu byte"
 msgstr ""
 
-#: gimple-ssa-sprintf.c:2768
+#: gimple-ssa-sprintf.c:2769
 #, gcc-internal-format
 msgid "assuming directive output of %wu bytes"
 msgstr ""
 
-#: gimple-ssa-sprintf.c:2775
+#: gimple-ssa-sprintf.c:2776
 #, fuzzy, gcc-internal-format
 #| msgid "wrong type argument to %s"
 msgid "directive argument %qE"
 msgstr "forkert parametertype til %s"
 
-#: gimple-ssa-sprintf.c:2777
+#: gimple-ssa-sprintf.c:2778
 #, fuzzy, gcc-internal-format
 #| msgid "disable pass %s for functions in the range of [%u, %u]"
 msgid "directive argument in the range [%E, %E]"
 msgstr "deaktiver videregivelse %s for funktioner i intervallet [%u, %u]"
 
-#: gimple-ssa-sprintf.c:2781
+#: gimple-ssa-sprintf.c:2782
 #, gcc-internal-format
 msgid "using the range [%E, %E] for directive argument"
 msgstr ""
 
-#: gimple-ssa-sprintf.c:2801
+#: gimple-ssa-sprintf.c:2802
 #, gcc-internal-format
 msgid "%qE output %wu byte into a destination of size %wu"
 msgstr ""
 
-#: gimple-ssa-sprintf.c:2802
+#: gimple-ssa-sprintf.c:2803
 #, gcc-internal-format
 msgid "%qE output %wu bytes into a destination of size %wu"
 msgstr ""
 
-#: gimple-ssa-sprintf.c:2806
+#: gimple-ssa-sprintf.c:2807
 #, gcc-internal-format
 msgid "%qE output between %wu and %wu bytes into a destination of size %wu"
 msgstr ""
 
-#: gimple-ssa-sprintf.c:2811
+#: gimple-ssa-sprintf.c:2812
 #, gcc-internal-format
 msgid "%qE output %wu or more bytes (assuming %wu) into a destination of size %wu"
 msgstr ""
 
-#: gimple-ssa-sprintf.c:2816
+#: gimple-ssa-sprintf.c:2817
 #, gcc-internal-format
 msgid "%qE output %wu or more bytes into a destination of size %wu"
 msgstr ""
 
-#: gimple-ssa-sprintf.c:3588
+#: gimple-ssa-sprintf.c:3591
 #, gcc-internal-format
 msgid "specified bound %wu exceeds maximum object size %wu"
 msgstr ""
 
-#: gimple-ssa-sprintf.c:3594
+#: gimple-ssa-sprintf.c:3597
 #, gcc-internal-format
 msgid "specified bound %wu exceeds %<INT_MAX %>"
 msgstr ""
 
-#: gimple-ssa-sprintf.c:3647
+#: gimple-ssa-sprintf.c:3650
 #, fuzzy, gcc-internal-format
 #| msgid "pointer"
 msgid "null destination pointer"
 msgstr "henvisning"
 
-#: gimple-ssa-sprintf.c:3664
+#: gimple-ssa-sprintf.c:3667
 #, gcc-internal-format
 msgid "specified bound %wu exceeds the size %wu of the destination object"
 msgstr ""
 
-#: gimple-ssa-sprintf.c:3676
+#: gimple-ssa-sprintf.c:3679
 #, fuzzy, gcc-internal-format
 #| msgid "null format string"
 msgid "null format string"
@@ -23680,161 +23680,161 @@ msgstr "  oprindelig definition er her"
 msgid "%D renamed after being referenced in assembly"
 msgstr "%D omdøbt efter at være refereret i maskinkode"
 
-#: symtab.c:970
+#: symtab.c:978
 #, gcc-internal-format
 msgid "function symbol is not function"
 msgstr "funktionsymbol er ikke en funktion"
 
-#: symtab.c:978
+#: symtab.c:986
 #, gcc-internal-format
 msgid "variable symbol is not variable"
 msgstr "variabelsymbol er ikke en variabel"
 
-#: symtab.c:984
+#: symtab.c:992
 #, gcc-internal-format
 msgid "node has unknown type"
 msgstr "node har ukendt type"
 
-#: symtab.c:993
+#: symtab.c:1001
 #, gcc-internal-format
 msgid "node not found node->decl->decl_with_vis.symtab_node"
 msgstr "node blev ikke fundet node->decl->decl_with_vis.symtab_node"
 
-#: symtab.c:1001
+#: symtab.c:1009
 #, gcc-internal-format
 msgid "node differs from node->decl->decl_with_vis.symtab_node"
 msgstr "node er forskellig fra node->decl->decl_with_vis.symtab_node"
 
-#: symtab.c:1010
+#: symtab.c:1018
 #, gcc-internal-format
 msgid "assembler name hash list corrupted"
 msgstr "maskinekodenavn på hashliste er ødelagt"
 
-#: symtab.c:1023
+#: symtab.c:1031
 #, gcc-internal-format
 msgid "node not found in symtab assembler name hash"
 msgstr "node blev ikke fundet i symtabs maskinkodehash"
 
-#: symtab.c:1030
+#: symtab.c:1038
 #, gcc-internal-format
 msgid "double linked list of assembler names corrupted"
 msgstr "dobbelt lænket liste på maskinekodenavne er ødelagt"
 
-#: symtab.c:1035
+#: symtab.c:1043
 #, gcc-internal-format
 msgid "node has body_removed but is definition"
 msgstr "node har body_removed men er en definition"
 
-#: symtab.c:1040
+#: symtab.c:1048
 #, fuzzy, gcc-internal-format
 #| msgid "node is analyzed byt it is not a definition"
 msgid "node is analyzed but it is not a definition"
 msgstr "node er analyseret byt, det er ikke en definition"
 
-#: symtab.c:1045
+#: symtab.c:1053
 #, gcc-internal-format
 msgid "node is alias but not implicit alias"
 msgstr "node er alias men ikke implicit alias"
 
-#: symtab.c:1050
+#: symtab.c:1058
 #, gcc-internal-format
 msgid "node is alias but not definition"
 msgstr "node er alias men ikke definition"
 
-#: symtab.c:1055
+#: symtab.c:1063
 #, fuzzy, gcc-internal-format
 #| msgid "node is weakref but not an alias"
 msgid "node is weakref but not an transparent_alias"
 msgstr "node er weakref men ikke et alias"
 
-#: symtab.c:1060
+#: symtab.c:1068
 #, fuzzy, gcc-internal-format
 #| msgid "node is weakref but not an alias"
 msgid "node is transparent_alias but not an alias"
 msgstr "node er weakref men ikke et alias"
 
-#: symtab.c:1069
+#: symtab.c:1077
 #, gcc-internal-format
 msgid "node is in same_comdat_group list but has no comdat_group"
 msgstr "node er i same_comdat_grooup-liste men har ingen comdat_group"
 
-#: symtab.c:1074
+#: symtab.c:1082
 #, gcc-internal-format
 msgid "same_comdat_group list across different groups"
 msgstr "same_comdat_group-liste over forskellige grupper"
 
-#: symtab.c:1079
+#: symtab.c:1087
 #, gcc-internal-format
 msgid "mixing different types of symbol in same comdat groups is not supported"
 msgstr "blanding af forskellige symboltyper i samme comdata-gruppe er ikke understøttet"
 
-#: symtab.c:1084
+#: symtab.c:1092
 #, gcc-internal-format
 msgid "node is alone in a comdat group"
 msgstr "node er alene i en comdat-gruppe"
 
-#: symtab.c:1091
+#: symtab.c:1099
 #, gcc-internal-format
 msgid "same_comdat_group is not a circular list"
 msgstr "same_comdat_group er ikke en cirkulær liste"
 
-#: symtab.c:1106
+#: symtab.c:1114
 #, gcc-internal-format, gfc-internal-format
 msgid "comdat-local symbol referred to by %s outside its comdat"
 msgstr "comdat-local-symbol refereret ti laf %s uden for dets comdat"
 
-#: symtab.c:1116
+#: symtab.c:1124
 #, gcc-internal-format
 msgid "implicit_section flag is set but section isn't"
 msgstr "implicit_section-flag er angivet men sektion er ikke"
 
-#: symtab.c:1123
+#: symtab.c:1131
 #, gcc-internal-format
 msgid "Both section and comdat group is set"
 msgstr "Både sektion og comdat-gruppe er angivet"
 
-#: symtab.c:1135
+#: symtab.c:1143
 #, gcc-internal-format
 msgid "Alias and target's section differs"
 msgstr "Alias og måls sektion er forskellige"
 
-#: symtab.c:1142
+#: symtab.c:1150
 #, gcc-internal-format
 msgid "Alias and target's comdat groups differs"
 msgstr "Alias og måls comdat-grupper er forskellige"
 
-#: symtab.c:1157
+#: symtab.c:1165
 #, fuzzy, gcc-internal-format
 #| msgid "Alias and target's section differs"
 msgid "Transparent alias and target's assembler names differs"
 msgstr "Alias og måls sektion er forskellige"
 
-#: symtab.c:1165
+#: symtab.c:1173
 #, gcc-internal-format
 msgid "Chained transparent aliases"
 msgstr ""
 
-#: symtab.c:1188 symtab.c:1225
+#: symtab.c:1196 symtab.c:1233
 #, gcc-internal-format
 msgid "symtab_node::verify failed"
 msgstr "symtab_node::verify mislykkedes"
 
-#: symtab.c:1221
+#: symtab.c:1229
 #, gcc-internal-format
 msgid "Two symbols with same comdat_group are not linked by the same_comdat_group list."
 msgstr "To symboler med samme comdat_group er ikke lænket af same_comdat_group-listen."
 
-#: symtab.c:1630
+#: symtab.c:1638
 #, gcc-internal-format
 msgid "function %q+D part of alias cycle"
 msgstr "funktion %q+D del af aliascyklus"
 
-#: symtab.c:1632
+#: symtab.c:1640
 #, gcc-internal-format
 msgid "variable %q+D part of alias cycle"
 msgstr "variabel %q+D del af aliascyklus"
 
-#: symtab.c:1660
+#: symtab.c:1668
 #, gcc-internal-format
 msgid "section of alias %q+D must match section of its target"
 msgstr "sektion for alias %q+D skal matche sektion for dens målarkitektur"
@@ -25610,8 +25610,8 @@ msgstr ""
 #: c-family/c-attribs.c:2898 c-family/c-attribs.c:2937
 #: c-family/c-attribs.c:3019 c-family/c-attribs.c:3062
 #: c-family/c-attribs.c:3078 c-family/c-attribs.c:3172
-#: c-family/c-common.c:5631 config/darwin.c:2062 config/arm/arm.c:6704
-#: config/arm/arm.c:6732 config/arm/arm.c:6749 config/avr/avr.c:9460
+#: c-family/c-common.c:5631 config/darwin.c:2062 config/arm/arm.c:6741
+#: config/arm/arm.c:6769 config/arm/arm.c:6786 config/avr/avr.c:9460
 #: config/h8300/h8300.c:5480 config/h8300/h8300.c:5504 config/i386/i386.c:7715
 #: config/i386/i386.c:41425 config/ia64/ia64.c:762
 #: config/rs6000/rs6000.c:35369 config/spu/spu.c:3741
@@ -25648,104 +25648,104 @@ msgstr ""
 msgid "%qE implies default visibility, but %qD has already been declared with a different visibility"
 msgstr ""
 
-#: tree.c:8366
+#: tree.c:8373
 #, gcc-internal-format
 msgid "arrays of functions are not meaningful"
 msgstr "en tabel af funktioner giver ikke mening"
 
-#: tree.c:8537
+#: tree.c:8545
 #, gcc-internal-format
 msgid "function return type cannot be function"
 msgstr "en funktions returtype kan ikke være en funktion"
 
-#: tree.c:9831 tree.c:9916 tree.c:9977
+#: tree.c:9839 tree.c:9924 tree.c:9985
 #, fuzzy, gcc-internal-format, gfc-internal-format
 #| msgid "tree check: expected %s, have %s in %s, at %s:%d"
 msgid "tree check: %s, have %s in %s, at %s:%d"
 msgstr "træ-kontrol: forventede %s, har %s i %s, ved %s:%d"
 
-#: tree.c:9868
+#: tree.c:9876
 #, fuzzy, gcc-internal-format, gfc-internal-format
 #| msgid "tree check: expected %s, have %s in %s, at %s:%d"
 msgid "tree check: expected none of %s, have %s in %s, at %s:%d"
 msgstr "træ-kontrol: forventede %s, har %s i %s, ved %s:%d"
 
-#: tree.c:9881
+#: tree.c:9889
 #, fuzzy, gcc-internal-format
 #| msgid "tree check: expected class '%c', have '%c' (%s) in %s, at %s:%d"
 msgid "tree check: expected class %qs, have %qs (%s) in %s, at %s:%d"
 msgstr "træ-kontrol: forventede klasse '%c', har '%c' (%s) i %s, ved %s:%d"
 
-#: tree.c:9930
+#: tree.c:9938
 #, fuzzy, gcc-internal-format
 #| msgid "tree check: expected class '%c', have '%c' (%s) in %s, at %s:%d"
 msgid "tree check: did not expect class %qs, have %qs (%s) in %s, at %s:%d"
 msgstr "træ-kontrol: forventede klasse '%c', har '%c' (%s) i %s, ved %s:%d"
 
-#: tree.c:9943
+#: tree.c:9951
 #, fuzzy, gcc-internal-format, gfc-internal-format
 #| msgid "tree check: expected %s, have %s in %s, at %s:%d"
 msgid "tree check: expected omp_clause %s, have %s in %s, at %s:%d"
 msgstr "træ-kontrol: forventede %s, har %s i %s, ved %s:%d"
 
-#: tree.c:10003
+#: tree.c:10011
 #, fuzzy, gcc-internal-format
 #| msgid "tree check: expected %s, have %s in %s, at %s:%d"
 msgid "tree check: expected tree that contains %qs structure, have %qs in %s, at %s:%d"
 msgstr "træ-kontrol: forventede %s, har %s i %s, ved %s:%d"
 
-#: tree.c:10017
+#: tree.c:10025
 #, fuzzy, gcc-internal-format, gfc-internal-format
 #| msgid "tree check: accessed elt %d of tree_vec with %d elts in %s, at %s:%d"
 msgid "tree check: accessed elt %d of tree_int_cst with %d elts in %s, at %s:%d"
 msgstr "trækontrol: tilgik udtrykstræ %d af tree_vec med %d udtrykstræer i %s, ved %s:%d"
 
-#: tree.c:10029
+#: tree.c:10037
 #, gcc-internal-format, gfc-internal-format
 msgid "tree check: accessed elt %d of tree_vec with %d elts in %s, at %s:%d"
 msgstr "trækontrol: tilgik udtrykstræ %d af tree_vec med %d udtrykstræer i %s, ved %s:%d"
 
-#: tree.c:10042
+#: tree.c:10050
 #, fuzzy, gcc-internal-format, gfc-internal-format
 msgid "tree check: accessed operand %d of %s with %d operands in %s, at %s:%d"
 msgstr "trækontrol: tilgik operand %d af %s med %d operander i %s, ved %s:%d"
 
-#: tree.c:10055
+#: tree.c:10063
 #, fuzzy, gcc-internal-format, gfc-internal-format
 msgid "tree check: accessed operand %d of omp_clause %s with %d operands in %s, at %s:%d"
 msgstr "trækontrol: tilgik operand %d af %s med %d operander i %s, ved %s:%d"
 
-#: tree.c:12867
+#: tree.c:12875
 #, fuzzy, gcc-internal-format
 #| msgid "`%s' is deprecated"
 msgid "%qD is deprecated: %s"
 msgstr "'%s' er forældet"
 
-#: tree.c:12870
+#: tree.c:12878
 #, fuzzy, gcc-internal-format
 #| msgid "`%s' is deprecated"
 msgid "%qD is deprecated"
 msgstr "'%s' er forældet"
 
-#: tree.c:12894 tree.c:12916
+#: tree.c:12902 tree.c:12924
 #, fuzzy, gcc-internal-format
 #| msgid "`%s' is deprecated"
 msgid "%qE is deprecated: %s"
 msgstr "'%s' er forældet"
 
-#: tree.c:12897 tree.c:12919
+#: tree.c:12905 tree.c:12927
 #, fuzzy, gcc-internal-format
 #| msgid "`%s' is deprecated"
 msgid "%qE is deprecated"
 msgstr "'%s' er forældet"
 
-#: tree.c:12903 tree.c:12924
+#: tree.c:12911 tree.c:12932
 #, fuzzy, gcc-internal-format, gfc-internal-format
 #| msgid "type is deprecated"
 msgid "type is deprecated: %s"
 msgstr "type er forældet"
 
-#: tree.c:12906 tree.c:12927
+#: tree.c:12914 tree.c:12935
 #, gcc-internal-format
 msgid "type is deprecated"
 msgstr "type er forældet"
@@ -25772,266 +25772,266 @@ msgstr "type er forældet"
 #. main variant only.
 #.
 #. Convenience macro for matching individual fields.
-#: tree.c:13354
+#: tree.c:13362
 #, gcc-internal-format
 msgid "type variant differs by "
 msgstr ""
 
-#: tree.c:13395
+#: tree.c:13403
 #, gcc-internal-format
 msgid "type variant has different TYPE_SIZE_UNIT"
 msgstr ""
 
-#: tree.c:13397
+#: tree.c:13405
 #, gcc-internal-format
 msgid "type variant's TYPE_SIZE_UNIT"
 msgstr ""
 
-#: tree.c:13399
+#: tree.c:13407
 #, gcc-internal-format
 msgid "type's TYPE_SIZE_UNIT"
 msgstr ""
 
-#: tree.c:13419
+#: tree.c:13427
 #, gcc-internal-format
 msgid "type variant with TYPE_ALIAS_SET_KNOWN_P"
 msgstr ""
 
-#: tree.c:13432
+#: tree.c:13440
 #, gcc-internal-format
 msgid "type variant has different TYPE_VFIELD"
 msgstr ""
 
-#: tree.c:13449
+#: tree.c:13457
 #, gcc-internal-format
 msgid "type variant has TYPE_METHODS"
 msgstr ""
 
-#: tree.c:13474
+#: tree.c:13482
 #, gcc-internal-format
 msgid "type variant has different TYPE_BINFO"
 msgstr ""
 
-#: tree.c:13476
+#: tree.c:13484
 #, gcc-internal-format
 msgid "type variant's TYPE_BINFO"
 msgstr ""
 
-#: tree.c:13478
+#: tree.c:13486
 #, gcc-internal-format
 msgid "type's TYPE_BINFO"
 msgstr ""
 
-#: tree.c:13516
+#: tree.c:13524
 #, gcc-internal-format
 msgid "type variant has different TYPE_FIELDS"
 msgstr ""
 
-#: tree.c:13518
+#: tree.c:13526
 #, gcc-internal-format
 msgid "first mismatch is field"
 msgstr ""
 
-#: tree.c:13520
+#: tree.c:13528
 #, gcc-internal-format
 msgid "and field"
 msgstr ""
 
-#: tree.c:13537
+#: tree.c:13545
 #, gcc-internal-format
 msgid "type variant has different TREE_TYPE"
 msgstr ""
 
-#: tree.c:13539 tree.c:13550
+#: tree.c:13547 tree.c:13558
 #, gcc-internal-format
 msgid "type variant's TREE_TYPE"
 msgstr ""
 
-#: tree.c:13541 tree.c:13552
+#: tree.c:13549 tree.c:13560
 #, gcc-internal-format
 msgid "type's TREE_TYPE"
 msgstr ""
 
-#: tree.c:13548
+#: tree.c:13556
 #, fuzzy, gcc-internal-format
 #| msgid "-march=%s is not compatible with the selected ABI"
 msgid "type is not compatible with its variant"
 msgstr "-march=%s er ikke forenelig med den valgte ABI"
 
-#: tree.c:13851
+#: tree.c:13859
 #, fuzzy, gcc-internal-format
 #| msgid "environment variable DJGPP not defined"
 msgid "Main variant is not defined"
 msgstr "miljøvariablen DJGPP er ikke defineret"
 
-#: tree.c:13856
+#: tree.c:13864
 #, gcc-internal-format
 msgid "TYPE_MAIN_VARIANT has different TYPE_MAIN_VARIANT"
 msgstr ""
 
-#: tree.c:13868
+#: tree.c:13876
 #, gcc-internal-format
 msgid "TYPE_CANONICAL has different TYPE_CANONICAL"
 msgstr ""
 
-#: tree.c:13886
+#: tree.c:13894
 #, gcc-internal-format
 msgid "TYPE_CANONICAL is not compatible"
 msgstr ""
 
-#: tree.c:13894
+#: tree.c:13902
 #, gcc-internal-format
 msgid "TYPE_MODE of TYPE_CANONICAL is not compatible"
 msgstr ""
 
-#: tree.c:13902
+#: tree.c:13910
 #, gcc-internal-format
 msgid "TYPE_CANONICAL of main variant is not main variant"
 msgstr ""
 
-#: tree.c:13918
+#: tree.c:13926
 #, gcc-internal-format
 msgid "TYPE_VFIELD is not FIELD_DECL nor TREE_LIST"
 msgstr ""
 
-#: tree.c:13928
+#: tree.c:13936
 #, gcc-internal-format
 msgid "TYPE_NEXT_PTR_TO is not POINTER_TYPE"
 msgstr ""
 
-#: tree.c:13938
+#: tree.c:13946
 #, gcc-internal-format
 msgid "TYPE_NEXT_REF_TO is not REFERENCE_TYPE"
 msgstr ""
 
-#: tree.c:13956
+#: tree.c:13964
 #, gcc-internal-format
 msgid "TYPE_MINVAL non-NULL"
 msgstr ""
 
-#: tree.c:13968
+#: tree.c:13976
 #, gcc-internal-format
 msgid "TYPE_METHODS is not FUNCTION_DECL, TEMPLATE_DECL nor error_mark_node"
 msgstr ""
 
-#: tree.c:13979
+#: tree.c:13987
 #, gcc-internal-format
 msgid "TYPE_METHOD_BASETYPE is not record nor union"
 msgstr ""
 
-#: tree.c:13990
+#: tree.c:13998
 #, gcc-internal-format
 msgid "TYPE_OFFSET_BASETYPE is not record nor union"
 msgstr ""
 
-#: tree.c:14008
+#: tree.c:14016
 #, gcc-internal-format
 msgid "TYPE_ARRAY_MAX_SIZE not INTEGER_CST"
 msgstr ""
 
-#: tree.c:14015
+#: tree.c:14023
 #, gcc-internal-format
 msgid "TYPE_MAXVAL non-NULL"
 msgstr ""
 
-#: tree.c:14027
+#: tree.c:14035
 #, gcc-internal-format
 msgid "TYPE_BINFO is not TREE_BINFO"
 msgstr ""
 
-#: tree.c:14035
+#: tree.c:14043
 #, gcc-internal-format
 msgid "TYPE_BINFO type is not TYPE_MAIN_VARIANT"
 msgstr ""
 
-#: tree.c:14042
+#: tree.c:14050
 #, gcc-internal-format
 msgid "TYPE_LANG_SLOT_1 (binfo) field is non-NULL"
 msgstr ""
 
-#: tree.c:14058
+#: tree.c:14066
 #, gcc-internal-format
 msgid "Enum value is not CONST_DECL or INTEGER_CST"
 msgstr ""
 
-#: tree.c:14066
+#: tree.c:14074
 #, gcc-internal-format
 msgid "Enum value type is not INTEGER_TYPE nor convertible to the enum"
 msgstr ""
 
-#: tree.c:14073
+#: tree.c:14081
 #, gcc-internal-format
 msgid "Enum value name is not IDENTIFIER_NODE"
 msgstr ""
 
-#: tree.c:14083
+#: tree.c:14091
 #, fuzzy, gcc-internal-format
 #| msgid "size of array `%s' has non-integer type"
 msgid "Array TYPE_DOMAIN is not integer type"
 msgstr "størrelsen af tabellen '%s' er ikke af en heltalstype"
 
-#: tree.c:14092
+#: tree.c:14100
 #, fuzzy, gcc-internal-format
 #| msgid "field `%s' has incomplete type"
 msgid "TYPE_FIELDS defined in incomplete type"
 msgstr "feltet '%s' er af en ufuldstændig type"
 
-#: tree.c:14112
+#: tree.c:14120
 #, gcc-internal-format
 msgid "Wrong tree in TYPE_FIELDS list"
 msgstr ""
 
-#: tree.c:14127
+#: tree.c:14135
 #, gcc-internal-format
 msgid "TYPE_CACHED_VALUES_P is %i while TYPE_CACHED_VALUES is %p"
 msgstr ""
 
-#: tree.c:14133
+#: tree.c:14141
 #, gcc-internal-format
 msgid "TYPE_CACHED_VALUES is not TREE_VEC"
 msgstr ""
 
-#: tree.c:14146
+#: tree.c:14154
 #, gcc-internal-format
 msgid "wrong TYPE_CACHED_VALUES entry"
 msgstr ""
 
-#: tree.c:14159
+#: tree.c:14167
 #, gcc-internal-format
 msgid "TREE_PURPOSE is non-NULL in TYPE_ARG_TYPES list"
 msgstr ""
 
-#: tree.c:14165
+#: tree.c:14173
 #, gcc-internal-format
 msgid "Wrong entry in TYPE_ARG_TYPES list"
 msgstr ""
 
-#: tree.c:14172
+#: tree.c:14180
 #, gcc-internal-format
 msgid "TYPE_VALUES_RAW field is non-NULL"
 msgstr ""
 
-#: tree.c:14184
+#: tree.c:14192
 #, gcc-internal-format
 msgid "TYPE_CACHED_VALUES_P is set while it should not"
 msgstr ""
 
-#: tree.c:14190
+#: tree.c:14198
 #, gcc-internal-format
 msgid "TYPE_STRING_FLAG is set on wrong type code"
 msgstr ""
 
-#: tree.c:14202
+#: tree.c:14210
 #, gcc-internal-format
 msgid "TYPE_STRING_FLAG is set on type that does not look like char nor array of chars"
 msgstr ""
 
-#: tree.c:14214
+#: tree.c:14222
 #, gcc-internal-format
 msgid "TYPE_METHOD_BASETYPE is not main variant"
 msgstr ""
 
-#: tree.c:14221
+#: tree.c:14229
 #, fuzzy, gcc-internal-format
 #| msgid "verify_flow_info failed"
 msgid "verify_type failed"
@@ -27132,14 +27132,14 @@ msgstr ""
 msgid "%<fallthrough%> attribute specified with a parameter"
 msgstr "standardparameter givet til %d. parameter for '%#D'"
 
-#: c-family/c-common.c:5762 c-family/c-common.c:6573 c-family/c-common.c:6644
+#: c-family/c-common.c:5762 c-family/c-common.c:6574 c-family/c-common.c:6645
 #: c/c-typeck.c:3557
 #, fuzzy, gcc-internal-format
 #| msgid "too few arguments to function"
 msgid "too few arguments to function %qE"
 msgstr "for få parametre til funktionen"
 
-#: c-family/c-common.c:5767 c-family/c-common.c:6670 c/c-typeck.c:3286
+#: c-family/c-common.c:5767 c-family/c-common.c:6671 c/c-typeck.c:3286
 #, fuzzy, gcc-internal-format
 #| msgid "too many arguments to function"
 msgid "too many arguments to function %qE"
@@ -27235,84 +27235,84 @@ msgstr "forsøg på at finde adressen af bitfeltstrukturmedlemmet '%D'"
 msgid "index %E denotes an offset greater than size of %qT"
 msgstr ""
 
-#: c-family/c-common.c:6515 cp/init.c:2952 cp/init.c:2971
+#: c-family/c-common.c:6516 cp/init.c:2952 cp/init.c:2971
 #, fuzzy, gcc-internal-format
 #| msgid "size of array `%s' is too large"
 msgid "size of array is too large"
 msgstr "størrelsen af tabellen '%s' er for stor"
 
-#: c-family/c-common.c:6603
+#: c-family/c-common.c:6604
 #, fuzzy, gcc-internal-format
 #| msgid "incompatible type for argument %d of `%s'"
 msgid "operand type %qT is incompatible with argument %d of %qE"
 msgstr "typen af den %d. parameter i '%s' passer ikke"
 
-#: c-family/c-common.c:6737
+#: c-family/c-common.c:6738
 #, fuzzy, gcc-internal-format
 #| msgid "too few arguments to function `%s'"
 msgid "incorrect number of arguments to function %qE"
 msgstr "for få parametre til funktionen '%s'"
 
-#: c-family/c-common.c:6752
+#: c-family/c-common.c:6753
 #, fuzzy, gcc-internal-format
 #| msgid "argument 3 of `%s' must be a 2-bit literal"
 msgid "argument 1 of %qE must be a non-void pointer type"
 msgstr "parameter til '%s' skal være en 2 bit-konstant"
 
-#: c-family/c-common.c:6761
+#: c-family/c-common.c:6762
 #, fuzzy, gcc-internal-format
 #| msgid "argument of `asm' is not a constant string"
 msgid "argument 1 of %qE must be a pointer to a constant size type"
 msgstr "parameteren til 'asm' er ikke en konstant streng"
 
-#: c-family/c-common.c:6772
+#: c-family/c-common.c:6773
 #, fuzzy, gcc-internal-format
 #| msgid "argument 3 of `%s' must be a 2-bit literal"
 msgid "argument 1 of %qE must be a pointer to a nonzero size object"
 msgstr "parameter til '%s' skal være en 2 bit-konstant"
 
-#: c-family/c-common.c:6787
+#: c-family/c-common.c:6788
 #, fuzzy, gcc-internal-format
 #| msgid "argument 3 of `%s' must be a 2-bit literal"
 msgid "argument %d of %qE must be a pointer type"
 msgstr "parameter til '%s' skal være en 2 bit-konstant"
 
-#: c-family/c-common.c:6795
+#: c-family/c-common.c:6796
 #, fuzzy, gcc-internal-format
 #| msgid "argument of `asm' is not a constant string"
 msgid "argument %d of %qE must be a pointer to a constant size type"
 msgstr "parameteren til 'asm' er ikke en konstant streng"
 
-#: c-family/c-common.c:6801
+#: c-family/c-common.c:6802
 #, fuzzy, gcc-internal-format
 #| msgid "argument 3 of `%s' must be a 2-bit literal"
 msgid "argument %d of %qE must not be a pointer to a function"
 msgstr "parameter til '%s' skal være en 2 bit-konstant"
 
-#: c-family/c-common.c:6809
+#: c-family/c-common.c:6810
 #, fuzzy, gcc-internal-format
 #| msgid "in passing argument %P of `%+D'"
 msgid "size mismatch in argument %d of %qE"
 msgstr "i overbringelse af parameter %P af '%+D'"
 
-#: c-family/c-common.c:6825
+#: c-family/c-common.c:6826
 #, fuzzy, gcc-internal-format
 #| msgid "invalid type argument of `%s'"
 msgid "invalid memory model argument %d of %qE"
 msgstr "ugyldig typeparameter '%s'"
 
-#: c-family/c-common.c:6832
+#: c-family/c-common.c:6833
 #, gcc-internal-format
 msgid "non-integer memory model argument %d of %qE"
 msgstr ""
 
-#: c-family/c-common.c:7753
+#: c-family/c-common.c:7754
 #, fuzzy, gcc-internal-format
 #| msgid "accumulator number is out of bounds"
 msgid "index value is out of bound"
 msgstr "akkumulatortal er uden for det gyldig interval"
 
-#: c-family/c-common.c:7794 c-family/c-common.c:7842 c-family/c-common.c:7857
+#: c-family/c-common.c:7795 c-family/c-common.c:7843 c-family/c-common.c:7858
 #: cp/call.c:4836 cp/call.c:4843
 #, gcc-internal-format
 msgid "conversion of scalar %qT to vector %qT involves truncation"
@@ -27320,24 +27320,24 @@ msgstr ""
 
 #. Reject arguments that are built-in functions with
 #. no library fallback.
-#: c-family/c-common.c:7943
+#: c-family/c-common.c:7944
 #, fuzzy, gcc-internal-format
 msgid "built-in function %qE must be directly called"
 msgstr "den indbyggede funktion '%s' er erklæret som noget der ikke er en funktion"
 
-#: c-family/c-common.c:7965 c/c-decl.c:6124
+#: c-family/c-common.c:7966 c/c-decl.c:6124
 #, fuzzy, gcc-internal-format
 #| msgid "size of array `%s' is too large"
 msgid "size of array %qE is too large"
 msgstr "størrelsen af tabellen '%s' er for stor"
 
-#: c-family/c-common.c:7967 c/c-decl.c:6127
+#: c-family/c-common.c:7968 c/c-decl.c:6127
 #, fuzzy, gcc-internal-format
 #| msgid "size of array `%s' is too large"
 msgid "size of unnamed array is too large"
 msgstr "størrelsen af tabellen '%s' er for stor"
 
-#: c-family/c-common.c:7997
+#: c-family/c-common.c:7998
 #, gcc-internal-format
 msgid "environment variable SOURCE_DATE_EPOCH must expand to a non-negative integer less than or equal to %wd"
 msgstr ""
@@ -29271,7 +29271,7 @@ msgstr "%qs er ikke et gyldigt tilvalg til præprocessoren"
 msgid "too many input files"
 msgstr "for mange inddatafiler"
 
-#: common/config/aarch64/aarch64-common.c:313 config/aarch64/aarch64.c:8751
+#: common/config/aarch64/aarch64-common.c:313 config/aarch64/aarch64.c:8759
 #, gcc-internal-format
 msgid "unknown value %qs for -mcpu"
 msgstr "ukendt værdi %qs for -mcpu"
@@ -29760,201 +29760,201 @@ msgstr "%s fra en henvisningstype der ikke er forenelig med målets"
 msgid "%qs feature modifier is incompatible with %s %s"
 msgstr "%s fra en henvisningstype der ikke er forenelig med målets"
 
-#: config/aarch64/aarch64.c:8374
+#: config/aarch64/aarch64.c:8382
 #, gcc-internal-format, gfc-internal-format
 msgid "unknown flag passed in -moverride=%s (%s)"
 msgstr ""
 
-#: config/aarch64/aarch64.c:8418
+#: config/aarch64/aarch64.c:8426
 #, gcc-internal-format, gfc-internal-format
 msgid "%s string ill-formed\n"
 msgstr ""
 
-#: config/aarch64/aarch64.c:8475
+#: config/aarch64/aarch64.c:8483
 #, fuzzy, gcc-internal-format, gfc-internal-format
 #| msgid "Invalid range %s in option %s"
 msgid "tuning string missing in option (%s)"
 msgstr "ugyldigt interval %s i tilvalg %s"
 
-#: config/aarch64/aarch64.c:8493
+#: config/aarch64/aarch64.c:8501
 #, fuzzy, gcc-internal-format, gfc-internal-format
 #| msgid "unknown spec function `%s'"
 msgid "unknown tuning option (%s)"
 msgstr "ukendt specifikationsfunktion '%s'"
 
-#: config/aarch64/aarch64.c:8707
+#: config/aarch64/aarch64.c:8715
 #, fuzzy, gcc-internal-format
 #| msgid "invalid argument of `%s' attribute"
 msgid "valid arguments are: %s; did you mean %qs?"
 msgstr "ugyldig parameter til egenskaben '%s'"
 
-#: config/aarch64/aarch64.c:8748
+#: config/aarch64/aarch64.c:8756
 #, fuzzy, gcc-internal-format
 #| msgid "missing argument to \"-%s\""
 msgid "missing cpu name in %<-mcpu=%s%>"
 msgstr "der mangler en parameter til tilvalget '-%s'"
 
-#: config/aarch64/aarch64.c:8755
+#: config/aarch64/aarch64.c:8763
 #, fuzzy, gcc-internal-format
 #| msgid "unknown machine mode `%s'"
 msgid "invalid feature modifier in %<-mcpu=%s%>"
 msgstr "ukendt maskintilstand '%s'"
 
-#: config/aarch64/aarch64.c:8782
+#: config/aarch64/aarch64.c:8790
 #, fuzzy, gcc-internal-format
 #| msgid "missing argument to \"-%s\""
 msgid "missing arch name in %<-march=%s%>"
 msgstr "der mangler en parameter til tilvalget '-%s'"
 
-#: config/aarch64/aarch64.c:8785
+#: config/aarch64/aarch64.c:8793
 #, fuzzy, gcc-internal-format
 #| msgid "bad value (%s) for -march= switch"
 msgid "unknown value %qs for -march"
 msgstr "ugyldig værdi (%s) til tilvalget -march="
 
-#: config/aarch64/aarch64.c:8789
+#: config/aarch64/aarch64.c:8797
 #, fuzzy, gcc-internal-format
 msgid "invalid feature modifier in %<-march=%s%>"
 msgstr "et filnavn mangler efter '-%s'"
 
-#: config/aarch64/aarch64.c:8815
+#: config/aarch64/aarch64.c:8823
 #, fuzzy, gcc-internal-format
 #| msgid "missing argument to \"-%s\""
 msgid "missing cpu name in %<-mtune=%s%>"
 msgstr "der mangler en parameter til tilvalget '-%s'"
 
-#: config/aarch64/aarch64.c:8818
+#: config/aarch64/aarch64.c:8826
 #, gcc-internal-format
 msgid "unknown value %qs for -mtune"
 msgstr "ukendt værdi %qs for -mtune"
 
-#: config/aarch64/aarch64.c:8921 config/arm/arm.c:3093
+#: config/aarch64/aarch64.c:8929 config/arm/arm.c:3094
 #, fuzzy, gcc-internal-format, gfc-internal-format
 #| msgid "switch -mcpu=%s conflicts with -march= switch"
 msgid "switch -mcpu=%s conflicts with -march=%s switch"
 msgstr "tilvalget -mcpu=%s er i konflikt med tilvalget -march="
 
-#: config/aarch64/aarch64.c:8956
+#: config/aarch64/aarch64.c:8964
 #, fuzzy, gcc-internal-format
 msgid "Assembler does not support -mabi=ilp32"
 msgstr "%s understøtter ikke %s"
 
-#: config/aarch64/aarch64.c:8960
+#: config/aarch64/aarch64.c:8968
 #, gcc-internal-format
 msgid "Return address signing is only supported for -mabi=lp64"
 msgstr ""
 
-#: config/aarch64/aarch64.c:9022
+#: config/aarch64/aarch64.c:9030
 #, gcc-internal-format
 msgid "code model %qs with -f%s"
 msgstr ""
 
-#: config/aarch64/aarch64.c:9187
+#: config/aarch64/aarch64.c:9195
 #, fuzzy, gcc-internal-format, gfc-internal-format
 #| msgid "missing argument to \"-%s\""
 msgid "missing architecture name in 'arch' target %s"
 msgstr "der mangler en parameter til tilvalget '-%s'"
 
-#: config/aarch64/aarch64.c:9190
+#: config/aarch64/aarch64.c:9198
 #, fuzzy, gcc-internal-format
 #| msgid "bad value (%s) for -march= switch"
 msgid "unknown value %qs for 'arch' target %s"
 msgstr "ugyldig værdi (%s) til tilvalget -march="
 
-#: config/aarch64/aarch64.c:9194
+#: config/aarch64/aarch64.c:9202
 #, fuzzy, gcc-internal-format
 msgid "invalid feature modifier %qs for 'arch' target %s"
 msgstr "et filnavn mangler efter '-%s'"
 
-#: config/aarch64/aarch64.c:9228
+#: config/aarch64/aarch64.c:9236
 #, fuzzy, gcc-internal-format, gfc-internal-format
 #| msgid "missing argument to \"-%s\""
 msgid "missing cpu name in 'cpu' target %s"
 msgstr "der mangler en parameter til tilvalget '-%s'"
 
-#: config/aarch64/aarch64.c:9231
+#: config/aarch64/aarch64.c:9239
 #, fuzzy, gcc-internal-format
 #| msgid "unknown value %qs for -mcpu"
 msgid "unknown value %qs for 'cpu' target %s"
 msgstr "ukendt værdi %qs for -mcpu"
 
-#: config/aarch64/aarch64.c:9235
+#: config/aarch64/aarch64.c:9243
 #, fuzzy, gcc-internal-format
 msgid "invalid feature modifier %qs for 'cpu' target %s"
 msgstr "et filnavn mangler efter '-%s'"
 
-#: config/aarch64/aarch64.c:9266
+#: config/aarch64/aarch64.c:9274
 #, fuzzy, gcc-internal-format
 #| msgid "unknown value %qs for -mtune"
 msgid "unknown value %qs for 'tune' target %s"
 msgstr "ukendt værdi %qs for -mtune"
 
-#: config/aarch64/aarch64.c:9307
+#: config/aarch64/aarch64.c:9315
 #, fuzzy, gcc-internal-format
 msgid "missing feature modifier in target %s %qs"
 msgstr "et filnavn mangler efter '-%s'"
 
-#: config/aarch64/aarch64.c:9312
+#: config/aarch64/aarch64.c:9320
 #, fuzzy, gcc-internal-format
 msgid "invalid feature modifier in target %s %qs"
 msgstr "et filnavn mangler efter '-%s'"
 
-#: config/aarch64/aarch64.c:9364
+#: config/aarch64/aarch64.c:9372
 #, fuzzy, gcc-internal-format, gfc-internal-format
 #| msgid "malformed spec function arguments"
 msgid "malformed target %s"
 msgstr "forkert udformede specifikationsfunktionsparametre"
 
-#: config/aarch64/aarch64.c:9412
+#: config/aarch64/aarch64.c:9420
 #, fuzzy, gcc-internal-format
 #| msgid "%s only accepts 1 argument"
 msgid "target %s %qs does not accept an argument"
 msgstr "%s accepterer kun 1 parameter"
 
-#: config/aarch64/aarch64.c:9421
+#: config/aarch64/aarch64.c:9429
 #, fuzzy, gcc-internal-format
 #| msgid "target system does not support the %qs debug format"
 msgid "target %s %qs does not allow a negated form"
 msgstr "målarkitektursystem understøtter ikke %qs-fejlsøgningsformatet"
 
-#: config/aarch64/aarch64.c:9476
+#: config/aarch64/aarch64.c:9484
 #, fuzzy, gcc-internal-format, gfc-internal-format
 #| msgid "\"%s\" is not defined"
 msgid "target %s %s=%s is not valid"
 msgstr "\"%s\" er ikke defineret"
 
-#: config/aarch64/aarch64.c:9536 config/arm/arm.c:30367
+#: config/aarch64/aarch64.c:9544 config/arm/arm.c:30411
 #: config/i386/i386.c:6772 config/rs6000/rs6000.c:39283
-#: config/s390/s390.c:14849
+#: config/s390/s390.c:15017
 #, fuzzy, gcc-internal-format
 #| msgid "`%s' attribute argument not a string constant"
 msgid "attribute %<target%> argument not a string"
 msgstr "parameteren til egenskaben '%s' er ikke en strengkonstant"
 
-#: config/aarch64/aarch64.c:9546
+#: config/aarch64/aarch64.c:9554
 #, fuzzy, gcc-internal-format, gfc-internal-format
 #| msgid "malformed spec function name"
 msgid "malformed target %s value"
 msgstr "forkert udformet specifikationsfunktionsnavn"
 
-#: config/aarch64/aarch64.c:9563
+#: config/aarch64/aarch64.c:9571
 #, fuzzy, gcc-internal-format
 #| msgid "template argument %d is invalid"
 msgid "target %s %qs is invalid"
 msgstr "skabelonsparameter %d er ugyldig"
 
-#: config/aarch64/aarch64.c:9572
+#: config/aarch64/aarch64.c:9580
 #, gcc-internal-format
 msgid "malformed target %s list %qs"
 msgstr ""
 
-#: config/aarch64/aarch64.c:11420
+#: config/aarch64/aarch64.c:11428
 #, fuzzy, gcc-internal-format
 #| msgid "line number out of range"
 msgid "%Klane %wd out of range %wd - %wd"
 msgstr "linjenummer er uden for det gyldige interval"
 
-#: config/aarch64/aarch64.c:11422
+#: config/aarch64/aarch64.c:11430
 #, fuzzy, gcc-internal-format
 #| msgid "line number out of range"
 msgid "lane %wd out of range %wd - %wd"
@@ -30391,64 +30391,64 @@ msgstr ""
 msgid "the count should be no less than 0.  please check the intrinsic _mm_sra_si64 in code."
 msgstr ""
 
-#: config/arm/arm.c:2799
+#: config/arm/arm.c:2800
 #, fuzzy, gcc-internal-format
 #| msgid "-msystem-v and -p are incompatible"
 msgid "iWMMXt and NEON are incompatible"
 msgstr "-msystem-v og -p er indbyrdes uforenelige"
 
-#: config/arm/arm.c:2805
+#: config/arm/arm.c:2806
 #, fuzzy, gcc-internal-format
 #| msgid "target CPU does not support APCS-32"
 msgid "target CPU does not support ARM mode"
 msgstr "målprocessoren understøtter ikke APCS-32"
 
-#: config/arm/arm.c:2809
+#: config/arm/arm.c:2810
 #, gcc-internal-format
 msgid "enabling backtrace support is only meaningful when compiling for the Thumb"
 msgstr "aktivering af tilbagesporingsunderstøttelse giver kun mening ved oversættelse for en Thumb"
 
-#: config/arm/arm.c:2812
+#: config/arm/arm.c:2813
 #, gcc-internal-format
 msgid "enabling callee interworking support is only meaningful when compiling for the Thumb"
 msgstr "aktivering af interarbejdeunderstøttelse for kaldte objekter giver kun mening ved oversættelse for en Thumb"
 
-#: config/arm/arm.c:2820
+#: config/arm/arm.c:2821
 #, gcc-internal-format
 msgid "-g with -mno-apcs-frame may not give sensible debugging"
 msgstr "-g med -mno-apcs-frame giver måske ikke fornuftig fejlanalysering"
 
-#: config/arm/arm.c:2824
+#: config/arm/arm.c:2825
 #, gcc-internal-format
 msgid "iWMMXt unsupported under Thumb mode"
 msgstr ""
 
-#: config/arm/arm.c:2827
+#: config/arm/arm.c:2828
 #, gcc-internal-format
 msgid "can not use -mtp=cp15 with 16-bit Thumb"
 msgstr ""
 
-#: config/arm/arm.c:2831
+#: config/arm/arm.c:2832
 #, gcc-internal-format
 msgid "RTP PIC is incompatible with Thumb"
 msgstr ""
 
-#: config/arm/arm.c:2839
+#: config/arm/arm.c:2840
 #, gcc-internal-format
 msgid "-mslow-flash-data only supports non-pic code on armv7-m targets"
 msgstr ""
 
-#: config/arm/arm.c:2844
+#: config/arm/arm.c:2845
 #, gcc-internal-format
 msgid "-mpure-code only supports non-pic code on armv7-m targets"
 msgstr ""
 
-#: config/arm/arm.c:2947
+#: config/arm/arm.c:2948
 #, gcc-internal-format
 msgid "target CPU does not support THUMB instructions"
 msgstr "målprocessoren understøtter ikke THUMB-instruktioner"
 
-#: config/arm/arm.c:2992
+#: config/arm/arm.c:2993
 #, fuzzy, gcc-internal-format
 #| msgid "target CPU does not support interworking"
 msgid "target CPU does not support unaligned accesses"
@@ -30456,134 +30456,140 @@ msgstr "målprocessoren understøtter ikke interarbejde"
 
 #. To support this we need to be able to parse FPU feature options
 #. from the architecture string.
-#: config/arm/arm.c:3246
+#: config/arm/arm.c:3247
 #, fuzzy, gcc-internal-format
 #| msgid "-mpcrel -fPIC is not currently supported on selected cpu"
 msgid "-mfpu=auto not currently supported without an explicit CPU."
 msgstr "-mpcrel -fPIC er i øjeblikket ikke understøttet på valgt cpu"
 
-#: config/arm/arm.c:3321
+#: config/arm/arm.c:3322
 #, gcc-internal-format
 msgid "target CPU does not support interworking"
 msgstr "målprocessoren understøtter ikke interarbejde"
 
-#: config/arm/arm.c:3327
+#: config/arm/arm.c:3328
 #, gcc-internal-format
 msgid "-mapcs-stack-check incompatible with -mno-apcs-frame"
 msgstr "-mapcs-stack-check og -mno-apcs-frame er indbyrdes uforenelige"
 
-#: config/arm/arm.c:3335
+#: config/arm/arm.c:3336
 #, gcc-internal-format
 msgid "-fpic and -mapcs-reent are incompatible"
 msgstr "-fpic og -mapcs-reent er indbyrdes uforenelige"
 
-#: config/arm/arm.c:3338
+#: config/arm/arm.c:3339
 #, gcc-internal-format
 msgid "APCS reentrant code not supported.  Ignored"
 msgstr "APCS-genindtrædelig kode er ikke understøttet - ignoreret"
 
-#: config/arm/arm.c:3372
+#: config/arm/arm.c:3373
 #, fuzzy, gcc-internal-format
 #| msgid "-mrelocatable and -msdata=%s are incompatible"
 msgid "selected fp16 options are incompatible"
 msgstr "-mrelocatable og -msdata=%s er indbyrdes uforenelige"
 
-#: config/arm/arm.c:3403
+#: config/arm/arm.c:3404
 #, gcc-internal-format
 msgid "iwmmxt requires an AAPCS compatible ABI for proper operation"
 msgstr ""
 
-#: config/arm/arm.c:3406
+#: config/arm/arm.c:3407
 #, gcc-internal-format
 msgid "iwmmxt abi requires an iwmmxt capable cpu"
 msgstr ""
 
-#: config/arm/arm.c:3417
+#: config/arm/arm.c:3418
 #, fuzzy, gcc-internal-format
 #| msgid "target CPU does not support interworking"
 msgid "AAPCS does not support -mcaller-super-interworking"
 msgstr "målprocessoren understøtter ikke interarbejde"
 
-#: config/arm/arm.c:3420
+#: config/arm/arm.c:3421
 #, fuzzy, gcc-internal-format
 #| msgid "target CPU does not support interworking"
 msgid "AAPCS does not support -mcallee-super-interworking"
 msgstr "målprocessoren understøtter ikke interarbejde"
 
-#: config/arm/arm.c:3425
+#: config/arm/arm.c:3426
 #, gcc-internal-format
 msgid "__fp16 and no ldrh"
 msgstr ""
 
-#: config/arm/arm.c:3436
+#: config/arm/arm.c:3437
 #, gcc-internal-format
 msgid "-mfloat-abi=hard: selected processor lacks an FPU"
 msgstr ""
 
-#: config/arm/arm.c:3444
+#: config/arm/arm.c:3445
 #, gcc-internal-format
 msgid "-mfloat-abi=hard and VFP"
 msgstr ""
 
-#: config/arm/arm.c:3480
+#: config/arm/arm.c:3481
 #, fuzzy, gcc-internal-format
 #| msgid "structure size boundary can only be set to 8 or 32"
 msgid "structure size boundary can only be set to 8, 32 or 64"
 msgstr "strukturstørrelsesgrænse kan kun sættes til 8 eller 32"
 
-#: config/arm/arm.c:3482
+#: config/arm/arm.c:3483
 #, gcc-internal-format
 msgid "structure size boundary can only be set to 8 or 32"
 msgstr "strukturstørrelsesgrænse kan kun sættes til 8 eller 32"
 
-#: config/arm/arm.c:3507
+#: config/arm/arm.c:3508
 #, gcc-internal-format
 msgid "RTP PIC is incompatible with -msingle-pic-base"
 msgstr ""
 
-#: config/arm/arm.c:3519
+#: config/arm/arm.c:3520
 #, gcc-internal-format
 msgid "-mpic-register= is useless without -fpic"
 msgstr "-mpic-register= er ubrugelig uden -fpic"
 
-#: config/arm/arm.c:3528
+#: config/arm/arm.c:3529
 #, gcc-internal-format, gfc-internal-format
 msgid "unable to use '%s' for PIC register"
 msgstr "kan ikke bruge '%s' til PIC-register"
 
-#: config/arm/arm.c:3547
+#: config/arm/arm.c:3548
 #, fuzzy, gcc-internal-format
 #| msgid "-fdata-sections not supported for this target"
 msgid "-freorder-blocks-and-partition not supported on this architecture"
 msgstr "-fdata-sections understøttes ikke på målarkitekturen"
 
-#: config/arm/arm.c:3638
+#: config/arm/arm.c:3639
 #, fuzzy, gcc-internal-format
 #| msgid "target CPU does not support THUMB instructions"
 msgid "target CPU does not support ARMv8-M Security Extensions"
 msgstr "målprocessoren understøtter ikke THUMB-instruktioner"
 
-#: config/arm/arm.c:5706
+#: config/arm/arm.c:5707
 #, gcc-internal-format
 msgid "non-AAPCS derived PCS variant"
 msgstr ""
 
-#: config/arm/arm.c:5708
+#: config/arm/arm.c:5709
 #, gcc-internal-format
 msgid "variadic functions must use the base AAPCS variant"
 msgstr ""
 
-#: config/arm/arm.c:5727
+#: config/arm/arm.c:5728
 #, gcc-internal-format
 msgid "PCS variant"
 msgstr ""
 
-#: config/arm/arm.c:5922
+#: config/arm/arm.c:5923
 #, gcc-internal-format
 msgid "Thumb-1 hard-float VFP ABI"
 msgstr ""
 
-#: config/arm/arm.c:6672 config/arm/arm.c:6690 config/arm/arm.c:6865
+#: config/arm/arm.c:6362 config/arm/arm.c:6565 config/arm/arm.c:6593
+#: config/arm/arm.c:26560
+#, gcc-internal-format
+msgid "parameter passing for argument of type %qT changed in GCC 7.1"
+msgstr ""
+
+#: config/arm/arm.c:6709 config/arm/arm.c:6727 config/arm/arm.c:6902
 #: config/avr/avr.c:9480 config/avr/avr.c:9496 config/bfin/bfin.c:4673
 #: config/bfin/bfin.c:4734 config/bfin/bfin.c:4763
 #: config/epiphany/epiphany.c:475 config/h8300/h8300.c:5456
@@ -30600,79 +30606,79 @@ msgstr ""
 msgid "%qE attribute only applies to functions"
 msgstr "egenskaben '%s' kan kun anvendes sammen med funktioner"
 
-#: config/arm/arm.c:6814
+#: config/arm/arm.c:6851
 #, fuzzy, gcc-internal-format
 #| msgid "`%s' attribute only applies to functions"
 msgid "%qE attribute not available to functions with arguments passed on the stack"
 msgstr "egenskaben '%s' kan kun anvendes sammen med funktioner"
 
-#: config/arm/arm.c:6826
+#: config/arm/arm.c:6863
 #, fuzzy, gcc-internal-format
 #| msgid "`%D' must take either one or two arguments"
 msgid "%qE attribute not available to functions with variable number of arguments"
 msgstr "'%D' skal tage mod én eller to parametre"
 
-#: config/arm/arm.c:6835
+#: config/arm/arm.c:6872
 #, fuzzy, gcc-internal-format
 #| msgid "`%s' attribute only applies to functions"
 msgid "%qE attribute not available to functions that return value on the stack"
 msgstr "egenskaben '%s' kan kun anvendes sammen med funktioner"
 
-#: config/arm/arm.c:6857 config/arm/arm.c:6909
+#: config/arm/arm.c:6894 config/arm/arm.c:6946
 #, fuzzy, gcc-internal-format
 #| msgid "`%s' attribute ignored for `%s'"
 msgid "%qE attribute ignored without -mcmse option."
 msgstr "'%s'-egenskaben ignoreret for '%s'"
 
-#: config/arm/arm.c:6876
+#: config/arm/arm.c:6913
 #, fuzzy, gcc-internal-format
 msgid "%qE attribute has no effect on functions with static linkage"
 msgstr "'%s'-egenskaben kan kun anvendes sammen med funktioner"
 
-#: config/arm/arm.c:6925
+#: config/arm/arm.c:6962
 #, fuzzy, gcc-internal-format
 #| msgid "`%s' attribute only applies to function types"
 msgid "%qE attribute only applies to base type of a function pointer"
 msgstr "egenskaben '%s' kan kun anvendes sammen med funktionstyper"
 
-#: config/arm/arm.c:12208
+#: config/arm/arm.c:12245
 #, fuzzy, gcc-internal-format
 #| msgid "line number out of range"
 msgid "%K%s %wd out of range %wd - %wd"
 msgstr "linjenummer er uden for det gyldige interval"
 
-#: config/arm/arm.c:12211
+#: config/arm/arm.c:12248
 #, fuzzy, gcc-internal-format
 #| msgid "line number out of range"
 msgid "%s %wd out of range %wd - %wd"
 msgstr "linjenummer er uden for det gyldige interval"
 
-#: config/arm/arm.c:23458
+#: config/arm/arm.c:23495
 #, gcc-internal-format
 msgid "unable to compute real location of stacked parameter"
 msgstr "kan ikke beregne virkelig placering af stakkede parametre"
 
-#: config/arm/arm.c:24111
+#: config/arm/arm.c:24148
 #, gcc-internal-format
 msgid "Unexpected thumb1 far jump"
 msgstr ""
 
-#: config/arm/arm.c:24375
+#: config/arm/arm.c:24412
 #, gcc-internal-format
 msgid "no low registers available for popping high registers"
 msgstr "ingen lave registre er tilgængelige til at modtage værdier fra høje registre"
 
-#: config/arm/arm.c:24624
+#: config/arm/arm.c:24661
 #, gcc-internal-format
 msgid "interrupt Service Routines cannot be coded in Thumb mode"
 msgstr "afbrydelsesservicerutiner kan ikke kodes i Thumb-tilstand"
 
-#: config/arm/arm.c:24853
+#: config/arm/arm.c:24890
 #, gcc-internal-format
 msgid "-fstack-check=specific for Thumb-1"
 msgstr ""
 
-#: config/arm/arm.c:30391
+#: config/arm/arm.c:30435
 #, fuzzy, gcc-internal-format, gfc-internal-format
 #| msgid "invalid vector type for attribute `%s'"
 msgid "invalid fpu for attribute(target(\"%s\"))"
@@ -30681,13 +30687,13 @@ msgstr "ugyldig vektortype for egenskaben '%s'"
 #. This doesn't really make sense until we support
 #. general dynamic selection of the architecture and all
 #. sub-features.
-#: config/arm/arm.c:30399
+#: config/arm/arm.c:30443
 #, gcc-internal-format
 msgid "auto fpu selection not currently permitted here"
 msgstr ""
 
-#: config/arm/arm.c:30406 config/i386/i386.c:6838 config/i386/i386.c:6885
-#: config/s390/s390.c:14915 config/s390/s390.c:14965 config/s390/s390.c:14982
+#: config/arm/arm.c:30450 config/i386/i386.c:6838 config/i386/i386.c:6885
+#: config/s390/s390.c:15083 config/s390/s390.c:15133 config/s390/s390.c:15150
 #, gcc-internal-format, gfc-internal-format
 msgid "attribute(target(\"%s\")) is unknown"
 msgstr ""
@@ -33513,7 +33519,7 @@ msgstr "vec_extract accepterer kun 2 parametre"
 msgid "vec_cmpne only accepts 2 arguments"
 msgstr "vec_insert accepterer kun 3 parametre"
 
-#: config/rs6000/rs6000-c.c:5711
+#: config/rs6000/rs6000-c.c:5710
 #, fuzzy, gcc-internal-format
 #| msgid "vec_insert only accepts 3 arguments"
 msgid "vec_adde only accepts 3 arguments"
@@ -33525,43 +33531,43 @@ msgstr "vec_insert accepterer kun 3 parametre"
 msgid "vec_addec only accepts 3 arguments"
 msgstr "vec_insert accepterer kun 3 parametre"
 
-#: config/rs6000/rs6000-c.c:5861
+#: config/rs6000/rs6000-c.c:5862
 #, gcc-internal-format, gfc-internal-format
 msgid "%s only accepts %d arguments"
 msgstr "%s accepterer kun %d parametre"
 
-#: config/rs6000/rs6000-c.c:5866
+#: config/rs6000/rs6000-c.c:5867
 #, gcc-internal-format, gfc-internal-format
 msgid "%s only accepts 1 argument"
 msgstr "%s accepterer kun 1 parameter"
 
-#: config/rs6000/rs6000-c.c:5871
+#: config/rs6000/rs6000-c.c:5872
 #, gcc-internal-format, gfc-internal-format
 msgid "%s only accepts 2 arguments"
 msgstr "%s accepterer kun 2 parametre"
 
-#: config/rs6000/rs6000-c.c:5937
+#: config/rs6000/rs6000-c.c:5938
 #, gcc-internal-format
 msgid "vec_extract only accepts 2 arguments"
 msgstr "vec_extract accepterer kun 2 parametre"
 
-#: config/rs6000/rs6000-c.c:6106
+#: config/rs6000/rs6000-c.c:6107
 #, gcc-internal-format
 msgid "vec_insert only accepts 3 arguments"
 msgstr "vec_insert accepterer kun 3 parametre"
 
-#: config/rs6000/rs6000-c.c:6380
+#: config/rs6000/rs6000-c.c:6381
 #, fuzzy, gcc-internal-format
 #| msgid "cast from `%T' to `%T' discards qualifiers from pointer target type"
 msgid "passing arg %d of %qE discards qualifiers from pointer target type"
 msgstr "typeomtvingning fra '%T' til '%T' kasserer modifikationer på henvisningsmålets type"
 
-#: config/rs6000/rs6000-c.c:6434
+#: config/rs6000/rs6000-c.c:6435
 #, fuzzy, gcc-internal-format, gfc-internal-format
 msgid "Builtin function %s not supported in this compiler configuration"
 msgstr "%s understøttes ikke af denne konfiguration"
 
-#: config/rs6000/rs6000-c.c:6442
+#: config/rs6000/rs6000-c.c:6443
 #, fuzzy, gcc-internal-format, gfc-internal-format
 #| msgid "invalid register in the instruction"
 msgid "invalid parameter combination for AltiVec intrinsic %s"
@@ -34689,120 +34695,120 @@ msgstr "for mange parametre til funktionen"
 msgid "requested %qE attribute is not a comma separated pair of non-negative integer constants or too large (max. %d)"
 msgstr ""
 
-#: config/s390/s390.c:9812
+#: config/s390/s390.c:9980
 #, fuzzy, gcc-internal-format
 #| msgid "Total size of local variables exceeds architecture limit."
 msgid "total size of local variables exceeds architecture limit"
 msgstr "Total størrelse af lokale variable overstiger arkitekturgrænsen."
 
-#: config/s390/s390.c:10926
+#: config/s390/s390.c:11094
 #, gcc-internal-format
 msgid "frame size of function %qs is %wd bytes exceeding user provided stack limit of %d bytes.  An unconditional trap is added."
 msgstr ""
 
-#: config/s390/s390.c:10942
+#: config/s390/s390.c:11110
 #, gcc-internal-format
 msgid "frame size of function %qs is %wd bytes which is more than half the stack size. The dynamic check would not be reliable. No check emitted for this function."
 msgstr ""
 
-#: config/s390/s390.c:10970
+#: config/s390/s390.c:11138
 #, fuzzy, gcc-internal-format
 #| msgid "%Jsize of '%D' is %d bytes"
 msgid "frame size of %qs is %wd bytes"
 msgstr "%Jstørrelsen af '%D' er %d byte"
 
-#: config/s390/s390.c:10974
+#: config/s390/s390.c:11142
 #, gcc-internal-format
 msgid "%qs uses dynamic stack allocation"
 msgstr ""
 
-#: config/s390/s390.c:11352
+#: config/s390/s390.c:11520
 #, gcc-internal-format
 msgid "CPUs older than z900 are not supported for -fsplit-stack"
 msgstr ""
 
-#: config/s390/s390.c:14498
+#: config/s390/s390.c:14666
 #, gcc-internal-format, gfc-internal-format
 msgid "%sarch=%s%s is deprecated and will be removed in future releases; use at least %sarch=z900%s"
 msgstr ""
 
-#: config/s390/s390.c:14510
+#: config/s390/s390.c:14678
 #, gcc-internal-format, gfc-internal-format
 msgid "%stune=%s%s is deprecated and will be removed in future releases; use at least %stune=z900%s"
 msgstr ""
 
-#: config/s390/s390.c:14522
+#: config/s390/s390.c:14690
 #, fuzzy, gcc-internal-format, gfc-internal-format
 msgid "z/Architecture mode not supported on %s"
 msgstr "fældetilstand understøttes ikke på Unicos/Mk"
 
-#: config/s390/s390.c:14525
+#: config/s390/s390.c:14693
 #, fuzzy, gcc-internal-format
 msgid "64-bit ABI not supported in ESA/390 mode"
 msgstr "kodemodellen %s er ikke understøttet i PIC-tilstand"
 
-#: config/s390/s390.c:14542
+#: config/s390/s390.c:14710
 #, fuzzy, gcc-internal-format, gfc-internal-format
 #| msgid "Use hardware floating point instructions"
 msgid "hardware vector support not available on %s"
 msgstr "Benyt hardware-kommatalsinstruktioner"
 
-#: config/s390/s390.c:14545
+#: config/s390/s390.c:14713
 #, gcc-internal-format
 msgid "hardware vector support not available with -msoft-float"
 msgstr ""
 
-#: config/s390/s390.c:14573
+#: config/s390/s390.c:14741
 #, fuzzy, gcc-internal-format, gfc-internal-format
 #| msgid "Use hardware floating point instructions"
 msgid "hardware decimal floating point instructions not available on %s"
 msgstr "Benyt hardware-kommatalsinstruktioner"
 
-#: config/s390/s390.c:14577
+#: config/s390/s390.c:14745
 #, fuzzy, gcc-internal-format
 #| msgid "Use hardware floating point instructions"
 msgid "hardware decimal floating point instructions not available in ESA/390 mode"
 msgstr "Benyt hardware-kommatalsinstruktioner"
 
-#: config/s390/s390.c:14589
+#: config/s390/s390.c:14757
 #, gcc-internal-format
 msgid "-mhard-dfp can%'t be used in conjunction with -msoft-float"
 msgstr ""
 
-#: config/s390/s390.c:14597
+#: config/s390/s390.c:14765
 #, gcc-internal-format
 msgid "-mbackchain -mpacked-stack -mhard-float are not supported in combination"
 msgstr ""
 
-#: config/s390/s390.c:14603
+#: config/s390/s390.c:14771
 #, gcc-internal-format
 msgid "stack size must be greater than the stack guard value"
 msgstr ""
 
-#: config/s390/s390.c:14605
+#: config/s390/s390.c:14773
 #, gcc-internal-format
 msgid "stack size must not be greater than 64k"
 msgstr ""
 
-#: config/s390/s390.c:14608
+#: config/s390/s390.c:14776
 #, gcc-internal-format
 msgid "-mstack-guard implies use of -mstack-size"
 msgstr ""
 
 #. argument is not a plain number
-#: config/s390/s390.c:14706
+#: config/s390/s390.c:14874
 #, fuzzy, gcc-internal-format
 msgid "arguments to %qs should be non-negative integers"
 msgstr "parameter til '%s' skal være en 2 bit-konstant uden fortegn"
 
-#: config/s390/s390.c:14713
+#: config/s390/s390.c:14881
 #, fuzzy, gcc-internal-format
 #| msgid "argument to `%s' attribute larger than %d"
 msgid "argument to %qs is too large (max. %d)"
 msgstr "parameter til egenskaben '%s' er større end %d"
 
 #. Value is not allowed for the target attribute.
-#: config/s390/s390.c:14921
+#: config/s390/s390.c:15089
 #, fuzzy, gcc-internal-format
 #| msgid "__builtin_trap not supported by this target"
 msgid "value %qs is not supported by attribute %<target%>"
