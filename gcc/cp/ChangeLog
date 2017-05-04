@@ -1,3 +1,7 @@
+2017-05-04  Nathan Sidwell  <nathan@acm.org>
+
+	* constraint.cc (diagnose_check_constraint): Fix %E thinko.
+
 2017-05-04  Martin Sebor  <msebor@redhat.com>
 
 	PR translation/80280
