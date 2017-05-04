@@ -1,3 +1,191 @@
+2017-05-04  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* tree-ssa-loop-manip.c (niter_for_unrolled_loop): Add commentary
+	to explain the use of truncating division.  Cap the number of
+	iterations to the maximum given by nb_iterations_upper_bound,
+	if defined.
+
+2017-05-04  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* configure.ac (--enable-mingw-wildcard): Add new configurable feature.
+	* configure: Regenerate.
+	* config.in: Regenerate.
+	* config/i386/driver-mingw32.c: new file.
+	* config/i386/x-mingw32: Add rule to build driver-mingw32.o.
+	* config.host: Link driver-mingw32.o on MinGW host.
+	* doc/install.texi: Document new --enable-mingw-wildcard configure
+	option.
+
+2017-05-04  Marek Polacek  <polacek@redhat.com>
+
+	PR tree-optimization/80612
+	* calls.c (get_size_range): Check for INTEGRAL_TYPE_P.
+
+2017-05-04  Prakhar Bahuguna  <prakhar.bahuguna@arm.com>
+	    Andre Simoes Dias Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* config/arm/arm.md (movsi): Change TARGET_32BIT to TARGET_HAVE_MOVT.
+	(movt splitter): Likewise.
+	* config/arm/arm.c (arm_option_check_internal): Change arm_arch_thumb2
+	to TARGET_HAVE_MOVT, and merge with -mslow-flash-data check.
+	(const_ok_for_arm): Change else to else if (TARGET_THUMB2) and add else
+	block for Thumb-1 with MOVT.
+	(thumb2_legitimate_address_p): Move code block ...
+	(can_avoid_literal_pool_for_label_p): ... into this new function.
+	(thumb1_legitimate_address_p): Add check for TARGET_HAVE_MOVT and
+	literal pool.
+	(thumb_legitimate_constant_p): Add conditional on TARGET_HAVE_MOVT
+	* doc/invoke.texi (-mpure-code): Change "ARMv7-M targets" for
+	"M-profile targets with the MOVT instruction".
+
+2017-05-04  Prakhar Bahuguna  <prakhar.bahuguna@arm.com>
+
+	* gcc/config/arm/arm-builtins.c (arm_init_builtins): Rename
+	__builtin_arm_ldfscr to __builtin_arm_get_fpscr, and rename
+	__builtin_arm_stfscr to __builtin_arm_set_fpscr.
+
+2017-05-04  Martin Liska  <mliska@suse.cz>
+
+	* tree-vrp.c (simplify_cond_using_ranges_2): Remove unused
+	variable cond_code.
+
+2017-05-04  Richard Biener  <rguenther@suse.de>
+
+	* tree.c (array_at_struct_end_p): Handle arrays at struct
+	end with flexarrays more conservatively.  Refactor and treat
+	arrays of arrays or aggregates more strict.  Fix
+	VIEW_CONVERT_EXPR handling.  Remove allow_compref argument.
+	* tree.c (array_at_struct_end_p): Adjust prototype.
+	* emit-rtl.c (set_mem_attributes_minus_bitpos): Adjust.
+	* gimple-fold.c (get_range_strlen): Likewise.
+	* tree-chkp.c (chkp_may_narrow_to_field): Likewise.
+
+2017-05-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/31130
+	* tree-vrp.c (needs_overflow_infinity): Remove as always returning
+	false.
+	(supports_overflow_infinity): Likewise.
+	(is_negative_overflow_infinity): Likewise.
+	(is_positive_overflow_infinity): Likewise.
+	(is_overflow_infinity): Likewise.
+	(stmt_overflow_infinity): Likewise.
+	(overflow_infinity_range_p): Likewise.
+	(usable_range_p): Remove as always returning true.
+	(make_overflow_infinity): Remove.
+	(negative_overflow_infinity): Likewise.
+	(positive_overflow_infinity): Likewise.
+	(avoid_overflow_infinity): Likewise.
+	(set_value_range): Adjust accordingly.
+	(set_value_range_to_nonnegative): Likewise, remove now unused
+	overflow_infinity arg.
+	(vrp_operand_equal_p): Adjust.
+	(update_value_range): Likewise.
+	(range_int_cst_singleton_p): Likewise.
+	(operand_less_p): Likewise.
+	(compare_values_warnv): Likewise.
+	(extract_range_for_var_from_comparison_expr): Likewise.
+	(vrp_int_const_binop): Likewise.
+	(zero_nonzero_bits_from_vr): Likewise.
+	(extract_range_from_multiplicative_op_1): Likewise.
+	(extract_range_from_binary_expr_1): Likewise.
+	(extract_range_from_unary_expr): Likewise.
+	(extract_range_from_comparison): Likewise.
+	(extract_range_basic): Likewise.
+	(adjust_range_with_scev): Likewise.
+	(compare_ranges): Likewise.
+	(compare_range_with_value): Likewise.
+	(dump_value_range): Likewise.
+	(test_for_singularity): Likewise, remove strict_overflow_p parameter
+	never used.
+	(simplify_cond_using_ranges): Adjust.
+
+2017-05-04  Pekka Jääskeläinen  <pekka.jaaskelainen@parmance.com>
+
+	* brig-builtins.def: Added a builtin for class_f64.
+	* builtin-types.def: Added a builtin type needed by class_f64.
+
+2017-05-03  Jason Merrill  <jason@redhat.com>
+
+	* timevar.def: Add TV_CONSTEXPR.
+
+2017-05-03  David Malcolm  <dmalcolm@redhat.com>
+
+	* common.opt (fdiagnostics-parseable-fixits): Fix typo.
+
+2017-05-03  Martin Jambor  <mjambor@suse.cz>
+
+	* ipa-prop.c (ipa_update_after_lto_read): Removed.
+	* ipa-prop.h (ipa_update_after_lto_read): Remove declaration.
+	* ipa-cp.c (ipcp_propagate_stage): Do not call
+	ipa_update_after_lto_read.
+	* ipa-inline.c (ipa_inline): Likewise.
+
+2017-05-03  Martin Jambor  <mjambor@suse.cz>
+
+	* ipa-prop.h (ipa_edge_args): Make a class.  Mark with for_user GTY
+	tag.  Added a default constructor and a destructor.
+	(ipa_edge_args_sum_t): New class;
+	(ipa_edge_args_sum): Declare.
+	(ipa_edge_args_vector): Remove declaration.
+	(IPA_EDGE_REF): Use ipa_edge_args_sum.
+	(ipa_free_edge_args_substructures): Remove declaration.
+	(ipa_check_create_edge_args): Use ipa_edge_args_sum.
+	(ipa_edge_args_info_available_for_edge_p): Likewise.
+	* ipa-prop.c (ipa_edge_args_vector): Removed.
+	(edge_removal_hook_holder): Likewise.
+	(edge_duplication_hook_holder): Likewise.
+	(ipa_edge_args_sum): New variable.
+	(ipa_propagate_indirect_call_infos): Test ipa_edge_args_sum instead of
+	ipa_edge_args_vector.
+	(ipa_free_edge_args_substructures): Likewise.
+	(ipa_free_all_edge_args): Free ipa_edge_args_sum instead of
+	ipa_edge_args_vector.
+	(ipa_edge_removal_hook): Turned into method
+	ipa_edge_args_sum_t::remove.
+	(ipa_edge_duplication_hook): Turned into method
+	ipa_edge_args_sum_t::duplicate.
+	(ipa_register_cgraph_hooks): Create ipa_edge_args_sum instead of
+	registering edge hooks.
+	(ipa_unregister_cgraph_hooks): Do not unregister edge hooks.
+	* ipa-inline-analysis.c (estimate_function_body_sizes): Test
+	ipa_edge_args_sum instead of ipa_edge_args_vector.
+	* ipa-profile.c (ipa_profile): Likewise.
+
+2017-05-03  Martin Jambor  <mjambor@suse.cz>
+
+	* symbol-summary.h (function_summary): New method exists.
+	(function_summary::symtab_removal): Deallocate through release.
+	(call_summary): New class.
+	(gt_ggc_mx): New overload.
+	(gt_pch_nx): Likewise.
+	(gt_pch_nx): Likewise.
+
+2017-05-03  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/78496
+	* tree-vrp.c (simplify_cond_using_ranges_1): Renamed
+	from simplify_cond_using_ranges.  Split off code to walk
+	backwards through casts into ...
+	(simplify_cond_using_ranges_2): New function.
+	(simplify_stmt_using_ranges): Call simplify_cond_using_ranges_1.
+	(execute_vrp): After identifying jump threads, call
+	simplify_cond_using_ranges_2.
+
+2017-05-03  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR bootstrap/80609
+	* ipa-inline.h (inline_summary): Add ctor.
+	(create_ggc): Do not use ggc_cleared_alloc.
+
+2017-05-03  Jeff Downs  <heydowns@somuchpressure.net>
+	    Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.c (handle_braces): Support escaping in switch matching
+	text.
+	* doc/invoke.texi (Spec Files): Document it.
+	Remove superfluous @code markup in items.
+
 2017-05-03  David Malcolm  <dmalcolm@redhat.com>
 
 	* diagnostic-show-locus.c (struct column_range): New struct.

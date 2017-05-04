@@ -559,9 +559,24 @@ void ipcp_grow_transformations_if_necessary (void);
 
 /* ipa_edge_args stores information related to a callsite and particularly its
    arguments.  It can be accessed by the IPA_EDGE_REF macro.  */
-struct GTY(()) ipa_edge_args
+
+class GTY((for_user)) ipa_edge_args
 {
-  /* Vector of the callsite's jump function of each parameter.  */
+ public:
+
+  /* Default constructor.  */
+  ipa_edge_args () : jump_functions (NULL), polymorphic_call_contexts (NULL)
+    {}
+
+  /* Destructor.  */
+  ~ipa_edge_args ()
+    {
+      vec_free (jump_functions);
+      vec_free (polymorphic_call_contexts);
+    }
+
+  /* Vectors of the callsite's jump function and polymorphic context
+     information of each parameter.  */
   vec<ipa_jump_func, va_gc> *jump_functions;
   vec<ipa_polymorphic_call_context, va_gc> *polymorphic_call_contexts;
 };
@@ -611,19 +626,35 @@ public:
 			  ipa_node_params *data2);
 };
 
+/* Summary to manange ipa_edge_args structures.  */
+
+class GTY((user)) ipa_edge_args_sum_t : public call_summary <ipa_edge_args *>
+{
+ public:
+  ipa_edge_args_sum_t (symbol_table *table, bool ggc)
+    : call_summary<ipa_edge_args *> (table, ggc) { }
+
+  /* Hook that is called by summary when an edge is duplicated.  */
+  virtual void remove (cgraph_edge *cs, ipa_edge_args *args);
+  /* Hook that is called by summary when an edge is duplicated.  */
+  virtual void duplicate (cgraph_edge *src,
+			  cgraph_edge *dst,
+			  ipa_edge_args *old_args,
+			  ipa_edge_args *new_args);
+};
+
 /* Function summary where the parameter infos are actually stored. */
 extern GTY(()) ipa_node_params_t * ipa_node_params_sum;
+/* Call summary to store information about edges such as jump functions.  */
+extern GTY(()) ipa_edge_args_sum_t *ipa_edge_args_sum;
 
 /* Vector of IPA-CP transformation data for each clone.  */
 extern GTY(()) vec<ipcp_transformation_summary, va_gc> *ipcp_transformations;
-/* Vector where the parameter infos are actually stored. */
-extern GTY(()) vec<ipa_edge_args, va_gc> *ipa_edge_args_vector;
-
 
 /* Return the associated parameter/argument info corresponding to the given
    node/edge.  */
 #define IPA_NODE_REF(NODE) (ipa_node_params_sum->get (NODE))
-#define IPA_EDGE_REF(EDGE) (&(*ipa_edge_args_vector)[(EDGE)->uid])
+#define IPA_EDGE_REF(EDGE) (ipa_edge_args_sum->get (EDGE))
 /* This macro checks validity of index returned by
    ipa_get_param_decl_index function.  */
 #define IS_VALID_JUMP_FUNC_INDEX(I) ((I) != -1)
@@ -653,14 +684,14 @@ ipa_check_create_node_params (void)
 	 ipa_node_params_t (symtab, true));
 }
 
-/* Returns true if the array of edge infos is large enough to accommodate an
-   info for EDGE.  The main purpose of this function is that debug dumping
-   function can check info availability without causing reallocations.  */
+/* Returns true if edge summary contains a record for EDGE.  The main purpose
+   of this function is that debug dumping function can check info availability
+   without causing allocations.  */
 
 static inline bool
 ipa_edge_args_info_available_for_edge_p (struct cgraph_edge *edge)
 {
-  return ((unsigned) edge->uid < vec_safe_length (ipa_edge_args_vector));
+  return ipa_edge_args_sum->exists (edge);
 }
 
 static inline ipcp_transformation_summary *
@@ -830,7 +861,6 @@ void ipa_prop_write_jump_functions (void);
 void ipa_prop_read_jump_functions (void);
 void ipcp_write_transformation_summaries (void);
 void ipcp_read_transformation_summaries (void);
-void ipa_update_after_lto_read (void);
 int ipa_get_param_decl_index (struct ipa_node_params *, tree);
 tree ipa_value_from_jfunc (struct ipa_node_params *info,
 			   struct ipa_jump_func *jfunc);

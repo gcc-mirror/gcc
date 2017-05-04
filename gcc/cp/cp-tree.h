@@ -102,6 +102,7 @@ operator == (const cp_expr &lhs, tree rhs)
   return lhs.get_value () == rhs;
 }
 
+
 enum cp_tree_index
 {
     CPTI_WCHAR_DECL,
@@ -350,7 +351,7 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
       CONSTRUCTOR_NO_IMPLICIT_ZERO (in CONSTRUCTOR)
       TINFO_USED_TEMPLATE_ID (in TEMPLATE_INFO)
       PACK_EXPANSION_SIZEOF_P (in *_PACK_EXPANSION)
-      OVL_VIA_USING (in OVERLOAD)
+      OVL_USING_P (in OVERLOAD)
    2: IDENTIFIER_OPNAME_P (in IDENTIFIER_NODE)
       ICS_THIS_FLAG (in _CONV)
       DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (in VAR_DECL)

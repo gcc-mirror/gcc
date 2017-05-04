@@ -26,8 +26,9 @@ if ![info exists DEFAULT_CFLAGS] then {
 }
 
 # The -mpure-code option is only available for M-profile targets that support
-# thumb2.
-if {[check_effective_target_arm_thumb2_ok]
+# the MOVT instruction.
+if {([check_effective_target_arm_thumb2_ok]
+     || [check_effective_target_arm_thumb1_movt_ok])
     && [check_effective_target_arm_cortex_m]} then {
 # Initialize `dg'.
 dg-init

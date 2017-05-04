@@ -1,3 +1,60 @@
+2017-05-04  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* gcc.dg/vect/vect-profile-1.c: New test.
+
+2017-05-04  Marek Polacek  <polacek@redhat.com>
+
+	PR tree-optimization/80612
+	* gcc.dg/torture/pr80612.c: New test.
+
+2017-05-04  Prakhar Bahuguna  <prakhar.bahuguna@arm.com>
+	    Andre Simoes Dias Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* gcc.target/arm/pure-code/pure-code.exp: Add conditional for
+	check_effective_target_arm_thumb1_movt_ok.
+
+2017-05-04  Prakhar Bahuguna  <prakhar.bahuguna@arm.com>
+
+	* gcc.target/arm/fpscr.c: New file.
+
+2017-05-04  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* gcc.c-torture/execute/pr78622.c: Require c99_runtime effective
+	target.
+
+2017-05-04  Tom de Vries  <tom@codesourcery.com>
+
+	PR testsuite/80557
+	* g++.dg/warn/Wstrict-aliasing-float-ref-int-obj.C: Replace absolute
+	line numbers.
+	* g++.dg/warn/miss-format-1.C: Same.
+	* g++.dg/warn/overflow-warn-1.C: Same.
+	* g++.dg/warn/overflow-warn-3.C: Same.
+	* g++.dg/warn/overflow-warn-4.C: Same.
+
+2017-05-04  Tom de Vries  <tom@codesourcery.com>
+
+	PR testsuite/80557
+	* gcc.target/i386/pr57655.c: Replace absolute line numbers.
+	* gcc.target/i386/pr68657.c: Same.
+	* gcc.target/i386/pr69255-1.c: Same.
+	* gcc.target/i386/pr69255-2.c: Same.
+	* gcc.target/i386/pr69255-3.c: Same.
+
+2017-05-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/31130
+	* gcc.dg/Wstrict-overflow-12.c: XFAIL.
+	* gcc.dg/Wstrict-overflow-13.c: Likewise.
+	* gcc.dg/Wstrict-overflow-21.c: Likewise.
+	* gcc.dg/pr52904.c: Remove XFAIL.
+	* gcc.dg/tree-ssa/vrp114.c: New testcase.
+
+2017-05-03  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/78496
+	* gcc.dg/tree-ssa/ssa-thread-15.c: New test.
+
 2017-05-03  Uros Bizjak  <ubizjak@gmail.com>
 
 	* g++.dg/lto/pr79671_0.C (foo): Fix asm constraints.

@@ -175,6 +175,18 @@ struct GTY(()) inline_summary
   int growth;
   /* Number of SCC on the beginning of inlining process.  */
   int scc_no;
+
+  /* Keep all field empty so summary dumping works during its computation.
+     This is useful for debugging.  */
+  inline_summary ()
+    : estimated_self_stack_size (0), self_size (0), self_time (0), min_size (0),
+      inlinable (false), contains_cilk_spawn (false), single_caller (false),
+      fp_expressions (false), estimated_stack_size (false),
+      stack_frame_offset (false), time (0), size (0), conds (NULL),
+      entry (NULL), loop_iterations (NULL), loop_stride (NULL),
+      array_index (NULL), growth (0), scc_no (0)
+    {
+    }
 };
 
 class GTY((user)) inline_summary_t: public function_summary <inline_summary *>
@@ -185,7 +197,7 @@ public:
 
   static inline_summary_t *create_ggc (symbol_table *symtab)
   {
-    struct inline_summary_t *summary = new (ggc_cleared_alloc <inline_summary_t> ())
+    struct inline_summary_t *summary = new (ggc_alloc <inline_summary_t> ())
       inline_summary_t(symtab, true);
     summary->disable_insertion_hook ();
     return summary;

@@ -1104,6 +1104,9 @@ niter_for_unrolled_loop (struct loop *loop, unsigned factor)
   gcc_assert (factor != 0);
   bool profile_p = false;
   gcov_type est_niter = expected_loop_iterations_unbounded (loop, &profile_p);
+  /* Note that this is really CEIL (est_niter + 1, factor) - 1, where the
+     "+ 1" converts latch iterations to loop iterations and the "- 1"
+     converts back.  */
   gcov_type new_est_niter = est_niter / factor;
 
   /* Without profile feedback, loops for which we do not know a better estimate
@@ -1118,6 +1121,15 @@ niter_for_unrolled_loop (struct loop *loop, unsigned factor)
 	new_est_niter = est_niter;
       else
 	new_est_niter = 5;
+    }
+
+  if (loop->any_upper_bound)
+    {
+      /* As above, this is really CEIL (upper_bound + 1, factor) - 1.  */
+      widest_int bound = wi::udiv_floor (loop->nb_iterations_upper_bound,
+					 factor);
+      if (wi::ltu_p (bound, new_est_niter))
+	new_est_niter = bound.to_uhwi ();
     }
 
   return new_est_niter;

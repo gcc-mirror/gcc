@@ -57,8 +57,8 @@ along with GCC; see the file COPYING3.  If not see
 ipa_node_params_t *ipa_node_params_sum = NULL;
 /* Vector of IPA-CP transformation data for each clone.  */
 vec<ipcp_transformation_summary, va_gc> *ipcp_transformations;
-/* Vector where the parameter infos are actually stored. */
-vec<ipa_edge_args, va_gc> *ipa_edge_args_vector;
+/* Edge summary for IPA-CP edge information.  */
+ipa_edge_args_sum_t *ipa_edge_args_sum;
 
 /* Traits for a hash table for reusing already existing ipa_bits. */
 
@@ -148,8 +148,6 @@ struct ipa_vr_ggc_hash_traits : public ggc_cache_remove <value_range *>
 static GTY ((cache)) hash_table<ipa_vr_ggc_hash_traits> *ipa_vr_hash_table;
 
 /* Holders of ipa cgraph hooks: */
-static struct cgraph_edge_hook_list *edge_removal_hook_holder;
-static struct cgraph_2edge_hook_list *edge_duplication_hook_holder;
 static struct cgraph_node_hook_list *function_insertion_hook_holder;
 
 /* Description of a reference to an IPA constant.  */
@@ -3700,7 +3698,7 @@ ipa_propagate_indirect_call_infos (struct cgraph_edge *cs,
      (i.e. during early inlining).  */
   if (!ipa_node_params_sum)
     return false;
-  gcc_assert (ipa_edge_args_vector);
+  gcc_assert (ipa_edge_args_sum);
 
   propagate_controlled_uses (cs);
   changed = propagate_info_to_inlined_callees (cs, cs->callee, new_edges);
@@ -3715,9 +3713,10 @@ ipa_propagate_indirect_call_infos (struct cgraph_edge *cs,
 void
 ipa_check_create_edge_args (void)
 {
-  if (vec_safe_length (ipa_edge_args_vector)
-      <= (unsigned) symtab->edges_max_uid)
-    vec_safe_grow_cleared (ipa_edge_args_vector, symtab->edges_max_uid + 1);
+  if (!ipa_edge_args_sum)
+    ipa_edge_args_sum
+      = (new (ggc_cleared_alloc <ipa_edge_args_sum_t> ())
+	 ipa_edge_args_sum_t (symtab, true));
   if (!ipa_bits_hash_table)
     ipa_bits_hash_table = hash_table<ipa_bit_ggc_hash_traits>::create_ggc (37);
   if (!ipa_vr_hash_table)
@@ -3739,16 +3738,11 @@ ipa_free_edge_args_substructures (struct ipa_edge_args *args)
 void
 ipa_free_all_edge_args (void)
 {
-  int i;
-  struct ipa_edge_args *args;
-
-  if (!ipa_edge_args_vector)
+  if (!ipa_edge_args_sum)
     return;
 
-  FOR_EACH_VEC_ELT (*ipa_edge_args_vector, i, args)
-    ipa_free_edge_args_substructures (args);
-
-  vec_free (ipa_edge_args_vector);
+  ipa_edge_args_sum->release ();
+  ipa_edge_args_sum = NULL;
 }
 
 /* Free all ipa_node_params structures.  */
@@ -3785,18 +3779,12 @@ ipa_set_node_agg_value_chain (struct cgraph_node *node,
   (*ipcp_transformations)[node->uid].agg_values = aggvals;
 }
 
-/* Hook that is called by cgraph.c when an edge is removed.  */
+/* Hook that is called by cgraph.c when an edge is removed.  Adjust reference
+   count data structures accordingly.  */
 
-static void
-ipa_edge_removal_hook (struct cgraph_edge *cs, void *data ATTRIBUTE_UNUSED)
+void
+ipa_edge_args_sum_t::remove (cgraph_edge *cs, ipa_edge_args *args)
 {
-  struct ipa_edge_args *args;
-
-  /* During IPA-CP updating we can be called on not-yet analyzed clones.  */
-  if (vec_safe_length (ipa_edge_args_vector) <= (unsigned)cs->uid)
-    return;
-
-  args = IPA_EDGE_REF (cs);
   if (args->jump_functions)
     {
       struct ipa_jump_func *jf;
@@ -3811,23 +3799,16 @@ ipa_edge_removal_hook (struct cgraph_edge *cs, void *data ATTRIBUTE_UNUSED)
 	    rdesc->cs = NULL;
 	}
     }
-
-  ipa_free_edge_args_substructures (IPA_EDGE_REF (cs));
 }
 
-/* Hook that is called by cgraph.c when an edge is duplicated.  */
+/* Method invoked when an edge is duplicated.  Copy ipa_edge_args and adjust
+   reference count data strucutres accordingly.  */
 
-static void
-ipa_edge_duplication_hook (struct cgraph_edge *src, struct cgraph_edge *dst,
-			   void *)
+void
+ipa_edge_args_sum_t::duplicate (cgraph_edge *src, cgraph_edge *dst,
+				ipa_edge_args *old_args, ipa_edge_args *new_args)
 {
-  struct ipa_edge_args *old_args, *new_args;
   unsigned int i;
-
-  ipa_check_create_edge_args ();
-
-  old_args = IPA_EDGE_REF (src);
-  new_args = IPA_EDGE_REF (dst);
 
   new_args->jump_functions = vec_safe_copy (old_args->jump_functions);
   if (old_args->polymorphic_call_contexts)
@@ -3989,13 +3970,8 @@ void
 ipa_register_cgraph_hooks (void)
 {
   ipa_check_create_node_params ();
+  ipa_check_create_edge_args ();
 
-  if (!edge_removal_hook_holder)
-    edge_removal_hook_holder =
-      symtab->add_edge_removal_hook (&ipa_edge_removal_hook, NULL);
-  if (!edge_duplication_hook_holder)
-    edge_duplication_hook_holder =
-      symtab->add_edge_duplication_hook (&ipa_edge_duplication_hook, NULL);
   function_insertion_hook_holder =
       symtab->add_cgraph_insertion_hook (&ipa_add_new_function, NULL);
 }
@@ -4005,10 +3981,6 @@ ipa_register_cgraph_hooks (void)
 static void
 ipa_unregister_cgraph_hooks (void)
 {
-  symtab->remove_edge_removal_hook (edge_removal_hook_holder);
-  edge_removal_hook_holder = NULL;
-  symtab->remove_edge_duplication_hook (edge_duplication_hook_holder);
-  edge_duplication_hook_holder = NULL;
   symtab->remove_cgraph_insertion_hook (function_insertion_hook_holder);
   function_insertion_hook_holder = NULL;
 }
@@ -5218,7 +5190,7 @@ ipa_prop_write_jump_functions (void)
   lto_symtab_encoder_iterator lsei;
   lto_symtab_encoder_t encoder;
 
-  if (!ipa_node_params_sum || !ipa_edge_args_vector)
+  if (!ipa_node_params_sum || !ipa_edge_args_sum)
     return;
 
   ob = create_output_block (LTO_section_jump_functions);
@@ -5311,17 +5283,6 @@ ipa_prop_read_jump_functions (void)
       if (data)
         ipa_prop_read_section (file_data, data, len);
     }
-}
-
-/* After merging units, we can get mismatch in argument counts.
-   Also decl merging might've rendered parameter lists obsolete.
-   Also compute called_with_variable_arg info.  */
-
-void
-ipa_update_after_lto_read (void)
-{
-  ipa_check_create_node_params ();
-  ipa_check_create_edge_args ();
 }
 
 void

@@ -1,5 +1,7 @@
 2017-05-03  Nathan Sidwell  <nathan@acm.org>
 
+	Merge trunk r247593.
+
 	gcc/cp/
 	* cp-tree.h (LOOKUP_SEEN_P): Map to TREE_VISITED.
 	(LOOKUP_FOUND_P, OVL_LOOKUP_P): Move to lang_flag_4
