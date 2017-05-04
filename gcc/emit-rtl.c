@@ -1957,7 +1957,7 @@ set_mem_attributes_minus_bitpos (rtx ref, tree t, int objectp,
 	      || (TREE_CODE (t2) == COMPONENT_REF
 		  /* For trailing arrays t2 doesn't have a size that
 		     covers all valid accesses.  */
-		  && ! array_at_struct_end_p (t, false)))
+		  && ! array_at_struct_end_p (t)))
 	    {
 	      attrs.expr = t2;
 	      attrs.offset_known_p = false;
