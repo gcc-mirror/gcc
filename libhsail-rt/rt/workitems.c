@@ -63,10 +63,6 @@ static clock_t start_time;
 #define FIBER_STACK_SIZE (64*1024)
 #define GROUP_SEGMENT_ALIGN 256
 
-/* HSA requires WGs to be executed in flat work-group id order.  Enabling
-   the following macro can reveal test cases that rely on the ordering,
-   but is not useful for much else.  */
-
 uint32_t __hsail_workitemabsid (uint32_t dim, PHSAWorkItem *context);
 
 uint32_t __hsail_workitemid (uint32_t dim, PHSAWorkItem *context);

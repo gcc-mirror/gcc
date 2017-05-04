@@ -1,3 +1,8 @@
+2017-05-04  Pekka Jääskeläinen  <pekka.jaaskelainen@parmance.com>
+
+	* brig-builtins.def: Added a builtin for class_f64.
+	* builtin-types.def: Added a builtin type needed by class_f64.
+
 2017-05-03  Jason Merrill  <jason@redhat.com>
 
 	* timevar.def: Add TV_CONSTEXPR.
@@ -71,6 +76,7 @@
 	* ipa-inline.h (inline_summary): Add ctor.
 	(create_ggc): Do not use ggc_cleared_alloc.
 
+>>>>>>> .r247575
 2017-05-03  Jeff Downs  <heydowns@somuchpressure.net>
 	    Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 

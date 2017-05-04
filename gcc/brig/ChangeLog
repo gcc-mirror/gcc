@@ -1,3 +1,11 @@
+2017-05-03  Pekka Jääskeläinen  <visit0r@kamu>
+
+	* brigfrontend/brig-code-entry-handler.cc
+	(brig_code_entry_handler::build_address_operand): Fix a bug
+	with reg+offset addressing on 32b segments. In large mode,
+	the offset is treated as 32bits unless it's global, readonly or
+	kernarg address space.
+
 2016-02-01  Pekka Jääskeläinen  <pekka.jaaskelainen@parmance.com>
 
 	* brigfrontend/brig-code-entry-handler.cc: fix address
