@@ -4,6 +4,13 @@
 	2017-03-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/79901
+	* config/i386/sse.md (*avx512bw_<code><mode>3<mask_name>): Renamed to
+	...
+	(*avx512f_<code><mode>3<mask_name>): ... this.
+	(<code><mode>3 with maxmin code iterator): Use VI8_AVX2_AVX512F
+	iterator instead of VI8_AVX2_AVX512BW.
+
+	PR rtl-optimization/79901
 	* expr.c (expand_expr_real_2): For vector MIN/MAX, if there is no
 	min/max expander, expand it using expand_vec_cond_expr.
 
