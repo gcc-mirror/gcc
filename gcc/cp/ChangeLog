@@ -1,5 +1,30 @@
 2017-05-05  Nathan Sidwell  <nathan@acm.org>
 
+	* cp-tree.h (IDENTIFIER_GLOBAL_VALUE): Use get_namespace_value.
+	(SET_IDENTIFIER_GLOBAL_VALUE): Use set_global_value.
+	(IDENTIFIER_NAMESPACE_VALUE): Delete.
+	* name-lookup.h (namespace_binding, set_namespace_binding): Replace
+	with ...
+	(get_namespace_value, set_global_value): ... these.
+	(get_global_value_if_present, is_typename_at_global_scope): Delete.
+	* decl.c (poplevel): Use get_namespace_value.
+	(grokdeclarator): Use IDENTIFIER_GLOBAL_VALUE.
+	* class.c (build_vtbl_initializer): Stash library decl in
+	static var. Use IDENTIFIER_GLOBAL_VALUE.
+	* except.c (do_get_exception_ptr, do_begin_catch, do_end_catch,
+	do_allocate_exception, do_free_exception, build_throw): Likewise.
+	* init.c (throw_bad_array_new_length): Likewise.
+	* rtti.c (throw_bad_cast, throw_bad_typeid): Likewise.
+	* name-lookup.c (arg_assoc_namespace, pushdecl_maybe_friend_1,
+	check_for_our_of_scope_variable, push_overloaded_decl_1): Use
+	get_namespace_value.
+	(set_namespace_binding_1): Rename to
+	(set_namespace_binding): ... here.
+	(set_global_value): New.
+	(lookup_name_innermost_nonclass_level_1, push_namespace): Use
+	get_namespace_value.
+	* pt.c (listify): Use get_namespace_value.
+
 	* call.c (make_temporary_var_for_ref_to_temp): Push decl into
 	current scope.
 	* lex.c (unqualified_name_lookup_error): Likewise.
