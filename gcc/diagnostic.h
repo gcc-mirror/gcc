@@ -270,8 +270,12 @@ extern diagnostic_context *global_dc;
 
 /* Override the option index to be used for reporting a
    diagnostic.  */
-#define diagnostic_override_option_index(DI, OPTIDX) \
-    ((DI)->option_index = (OPTIDX))
+
+static inline void
+diagnostic_override_option_index (diagnostic_info *info, int optidx)
+{
+  info->option_index = optidx;
+}
 
 /* Diagnostic related functions.  */
 extern void diagnostic_initialize (diagnostic_context *, int);
