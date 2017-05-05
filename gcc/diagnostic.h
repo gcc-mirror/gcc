@@ -348,7 +348,7 @@ diagnostic_expand_location (const diagnostic_info * diagnostic, int which = 0)
 /* This is somehow the right-side margin of a caret line, that is, we
    print at least these many characters after the position pointed at
    by the caret.  */
-#define CARET_LINE_MARGIN 10
+const int CARET_LINE_MARGIN = 10;
 
 /* Return true if the two locations can be represented within the same
    caret line.  This is used to build a prefix and also to determine

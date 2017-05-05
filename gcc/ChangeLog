@@ -1,5 +1,10 @@
 2017-05-05  David Malcolm  <dmalcolm@redhat.com>
 
+	* diagnostic.h (CARET_LINE_MARGIN): Convert from macro to const
+	int.
+
+2017-05-05  David Malcolm  <dmalcolm@redhat.com>
+
 	* diagnostic.h (diagnostic_override_option_index): Convert from
 	macro to inline function.
 
