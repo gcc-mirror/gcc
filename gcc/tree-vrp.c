@@ -2865,8 +2865,59 @@ extract_range_from_binary_expr_1 (value_range *vr,
 						  &may_be_nonzero1,
 						  &must_be_nonzero1);
 
+      if (code == BIT_AND_EXPR || code == BIT_IOR_EXPR)
+	{
+	  value_range *vr0p = NULL, *vr1p = NULL;
+	  if (range_int_cst_singleton_p (&vr1))
+	    {
+	      vr0p = &vr0;
+	      vr1p = &vr1;
+	    }
+	  else if (range_int_cst_singleton_p (&vr0))
+	    {
+	      vr0p = &vr1;
+	      vr1p = &vr0;
+	    }
+	  /* For op & or | attempt to optimize:
+	     [x, y] op z into [x op z, y op z]
+	     if z is a constant which (for op | its bitwise not) has n
+	     consecutive least significant bits cleared followed by m 1
+	     consecutive bits set immediately above it and either
+	     m + n == precision, or (x >> (m + n)) == (y >> (m + n)).
+	     The least significant n bits of all the values in the range are
+	     cleared or set, the m bits above it are preserved and any bits
+	     above these are required to be the same for all values in the
+	     range.  */
+	  if (vr0p && range_int_cst_p (vr0p))
+	    {
+	      wide_int w = vr1p->min;
+	      int m = 0, n = 0;
+	      if (code == BIT_IOR_EXPR)
+		w = ~w;
+	      if (wi::eq_p (w, 0))
+		n = TYPE_PRECISION (expr_type);
+	      else
+		{
+		  n = wi::ctz (w);
+		  w = ~(w | wi::mask (n, false, w.get_precision ()));
+		  if (wi::eq_p (w, 0))
+		    m = TYPE_PRECISION (expr_type) - n;
+		  else
+		    m = wi::ctz (w) - n;
+		}
+	      wide_int mask = wi::mask (m + n, true, w.get_precision ());
+	      if (wi::eq_p (mask & vr0p->min, mask & vr0p->max))
+		{
+		  min = int_const_binop (code, vr0p->min, vr1p->min);
+		  max = int_const_binop (code, vr0p->max, vr1p->min);
+		}
+	    }
+	}
+
       type = VR_RANGE;
-      if (code == BIT_AND_EXPR)
+      if (min && max)
+	/* Optimized above already.  */;
+      else if (code == BIT_AND_EXPR)
 	{
 	  min = wide_int_to_tree (expr_type,
 				  must_be_nonzero0 & must_be_nonzero1);

@@ -1,3 +1,10 @@
+2017-05-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/80558
+	* tree-vrp.c (extract_range_from_binary_expr_1): Optimize
+	[x, y] op z into [x op, y op z] for op & or | if conditions
+	are met.
+
 2017-05-05  Andre Vieira  <andre.simoesdiasvieira@arm.com>
 	    Prakhar Bahuguna  <prakhar.bahuguna@arm.com>
 
