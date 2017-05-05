@@ -3,6 +3,9 @@
 	Backported from mainline
 	2017-03-31  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/79572
+	* g++.dg/ubsan/null-8.C: New test.
+
 	PR debug/80025
 	* gcc.dg/torture/pr80025.c: New test.
 

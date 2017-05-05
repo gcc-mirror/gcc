@@ -425,17 +425,26 @@ ubsan_maybe_instrument_reference_or_call (location_t loc, tree op, tree ptype,
   return fold_build2 (COMPOUND_EXPR, TREE_TYPE (op), call, op);
 }
 
-/* Instrument a NOP_EXPR to REFERENCE_TYPE if needed.  */
+/* Instrument a NOP_EXPR to REFERENCE_TYPE or INTEGER_CST with REFERENCE_TYPE
+   type if needed.  */
 
 void
-ubsan_maybe_instrument_reference (tree stmt)
+ubsan_maybe_instrument_reference (tree *stmt_p)
 {
-  tree op = TREE_OPERAND (stmt, 0);
+  tree stmt = *stmt_p;
+  tree op = stmt;
+  if (TREE_CODE (stmt) == NOP_EXPR)
+    op = TREE_OPERAND (stmt, 0);
   op = ubsan_maybe_instrument_reference_or_call (EXPR_LOCATION (stmt), op,
 						 TREE_TYPE (stmt),
 						 UBSAN_REF_BINDING);
   if (op)
-    TREE_OPERAND (stmt, 0) = op;
+    {
+      if (TREE_CODE (stmt) == NOP_EXPR) 
+	TREE_OPERAND (stmt, 0) = op;
+      else
+	*stmt_p = op;
+    }
 }
 
 /* Instrument a CALL_EXPR to a method if needed.  */
