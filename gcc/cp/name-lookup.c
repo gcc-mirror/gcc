@@ -94,7 +94,7 @@ add_decl_to_level (tree decl, cp_binding_level *b)
 		&& (!TREE_PUBLIC (decl)
 		    || decl_anon_ns_mem_p (decl)
 		    || DECL_DECLARED_INLINE_P (decl))))
-	  vec_safe_push (b->static_decls, decl);
+	  vec_safe_push (static_decls, decl);
     }
 }
 
@@ -2162,9 +2162,6 @@ begin_scope (scope_kind kind, tree entity)
 
     case sk_namespace:
       NAMESPACE_LEVEL (entity) = scope;
-      vec_alloc (scope->static_decls,
-		 (DECL_NAME (entity) == std_identifier
-		  || DECL_NAME (entity) == global_identifier) ? 200 : 10);
       break;
 
     default:

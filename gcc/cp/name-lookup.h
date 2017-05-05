@@ -191,9 +191,6 @@ struct GTY(()) cp_binding_level {
   /* A chain of NAMESPACE_DECL nodes.  */
   tree namespaces;
 
-  /* An array of static functions and variables (for namespaces only) */
-  vec<tree, va_gc> *static_decls;
-
   /* A list of USING_DECL nodes.  */
   tree usings;
 

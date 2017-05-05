@@ -4908,6 +4908,12 @@ extern int current_class_depth;
 /* An array of all local classes present in this translation unit, in
    declaration order.  */
 extern GTY(()) vec<tree, va_gc> *local_classes;
+
+/* in decl.c */
+
+/* An array of static vars & fns.  */
+extern GTY(()) vec<tree, va_gc> *static_decls;
+
 
 /* Here's where we control how name mangling takes place.  */
 
@@ -5899,8 +5905,7 @@ extern tree check_default_argument		(tree, tree, tsubst_flags_t);
 typedef int (*walk_namespaces_fn)		(tree, void *);
 extern int walk_namespaces			(walk_namespaces_fn,
 						 void *);
-extern int wrapup_globals_for_namespace		(tree, void *);
-extern int diagnose_inline_vars_for_namespace	(tree, void *);
+extern int wrapup_namespace_globals		();
 extern tree create_implicit_typedef		(tree, tree);
 extern int local_variable_p			(const_tree);
 extern tree register_dtor_fn			(tree);

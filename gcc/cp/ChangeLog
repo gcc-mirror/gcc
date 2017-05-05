@@ -1,3 +1,20 @@
+2017-05-05  Nathan Sidwell  <nathan@acm.org>
+
+	Kill per-namespace static_decls.
+	* cp-tree.h (static_decls): Declare.
+	(wrapup_globals_for_namespace,
+	diagnose_inline_vars_for_namespace): Replace with ...
+	(wrapup_namespace_globals): ... this.
+	* decl.c (static_decls): Define.
+	(wrapup_globals_for_namespace,
+	diagnose_inline_vars_for_namespace): Replace with ...
+	(wrapup_namespace_globals): ... this.
+	(cxx_init_decl_processing): Initialize static_decls.
+	* decl2.c (c_parse_final_cleanups): Adjust.
+	* name-lookup.h (cp_binding_level): Remove static_decls member.
+	* name-lookup.c (add_decl_to_level): Adjust.
+	(begin_scope): Adjust.
+
 2017-05-05  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/71577
