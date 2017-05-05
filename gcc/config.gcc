@@ -3803,6 +3803,7 @@ case "${target}" in
 						;;
 					esac
 				done
+			fi				
 
 			if test "x${tmake_profile_file}" != x ; then
 				# arm/t-aprofile and arm/t-rmprofile are only
