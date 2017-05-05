@@ -1,3 +1,13 @@
+2017-05-05  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* config/arm/aarch-common.c (arm_early_load_addr_dep_ptr):
+	New function.
+	(arm_early_store_addr_dep_ptr): Likewise.
+	* config/arm/aarch-common-protos.h
+	(arm_early_load_addr_dep_ptr): Add prototype.
+	(arm_early_store_addr_dep_ptr): Likewise.
+	* config/arm/cortex-a53.md: Add new bypasses.
+
 2017-05-05  Jakub Jelinek  <jakub@redhat.com>
 
 	* tree.c (next_type_uid): Change type to unsigned.
