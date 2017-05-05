@@ -3,6 +3,9 @@
 	Backported from mainline
 	2017-03-22  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/80141
+	* g++.dg/gomp/pr80141.C: New test.
+
 	PR c++/80129
 	* g++.dg/torture/pr80129.C: New test.
 
