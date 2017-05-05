@@ -3,6 +3,9 @@
 	Backported from mainline
 	2017-04-04  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/80297
+	* g++.dg/torture/pr80297.C: New test.
+
 	PR target/80286
 	* gcc.target/i386/avx-pr80286.c: New test.
 	* gcc.dg/pr80286.c: New test.
