@@ -4,6 +4,9 @@
 	2017-03-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/79932
+	* gcc.target/i386/pr79932-2.c: New test.
+
+	PR target/79932
 	* gcc.target/i386/pr79932-1.c: New test.
 
 	2017-03-07  Jakub Jelinek  <jakub@redhat.com>
