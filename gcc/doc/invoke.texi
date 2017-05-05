@@ -975,6 +975,7 @@ See RS/6000 and PowerPC Options.
 -mtune=@var{processor-string} @gol
 -msmall-data-limit=@var{N-bytes} @gol
 -msave-restore  -mno-save-restore @gol
+-mstrict-align -mno-strict-align @gol
 -mcmodel=@var{code-model} @gol
 -mexplicit-relocs  -mno-explicit-relocs @gol}
 
@@ -20913,6 +20914,11 @@ Put global and static data smaller than @var{n} bytes into a special section
 @itemx -mno-save-restore
 @opindex msave-restore
 Use smaller but slower prologue and epilogue code.
+
+@item -mstrict-align
+@itemx -mno-strict-align
+@opindex mstrict-align
+Do not generate unaligned memory accesses.
 
 @item -mcmodel=@var{code-model}
 @opindex mcmodel
