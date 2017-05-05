@@ -1,3 +1,9 @@
+2017-05-05  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	PR tree-optimization/80613
+	* tree-ssa-dce.c (propagate_necessity): Remove cases for
+	BUILT_IN_STRDUP and BUILT_IN_STRNDUP.
+
 2017-05-05  Richard Biener  <rguenther@suse.de>
 
 	* tree-ssa-pre.c (get_or_alloc_expr_for): Simplify.

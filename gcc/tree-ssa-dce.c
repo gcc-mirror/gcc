@@ -782,9 +782,7 @@ propagate_necessity (bool aggressive)
 		  && DECL_BUILT_IN_CLASS (def_callee) == BUILT_IN_NORMAL
 		  && (DECL_FUNCTION_CODE (def_callee) == BUILT_IN_ALIGNED_ALLOC
 		      || DECL_FUNCTION_CODE (def_callee) == BUILT_IN_MALLOC
-		      || DECL_FUNCTION_CODE (def_callee) == BUILT_IN_CALLOC
-		      || DECL_FUNCTION_CODE (def_callee) == BUILT_IN_STRDUP
-		      || DECL_FUNCTION_CODE (def_callee) == BUILT_IN_STRNDUP))
+		      || DECL_FUNCTION_CODE (def_callee) == BUILT_IN_CALLOC))
 		{
 		  gimple *bounds_def_stmt;
 		  tree bounds;
