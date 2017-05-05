@@ -2420,6 +2420,72 @@ _mm512_cmple_epi16_mask (__m512i __X, __m512i __Y)
 						  (__mmask32) -1);
 }
 
+extern __inline __m512i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_packs_epi32 (__m512i __A, __m512i __B)
+{
+  return (__m512i) __builtin_ia32_packssdw512_mask ((__v16si) __A,
+						    (__v16si) __B,
+						    (__v32hi)
+						    _mm512_setzero_hi (),
+						    (__mmask32) -1);
+}
+
+extern __inline __m512i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_maskz_packs_epi32 (__mmask32 __M, __m512i __A, __m512i __B)
+{
+  return (__m512i) __builtin_ia32_packssdw512_mask ((__v16si) __A,
+						    (__v16si) __B,
+						    (__v32hi)
+						    _mm512_setzero_hi (),
+						    __M);
+}
+
+extern __inline __m512i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_mask_packs_epi32 (__m512i __W, __mmask32 __M, __m512i __A,
+			 __m512i __B)
+{
+  return (__m512i) __builtin_ia32_packssdw512_mask ((__v16si) __A,
+						    (__v16si) __B,
+						    (__v32hi) __W,
+						    __M);
+}
+
+extern __inline __m512i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_packus_epi32 (__m512i __A, __m512i __B)
+{
+  return (__m512i) __builtin_ia32_packusdw512_mask ((__v16si) __A,
+						    (__v16si) __B,
+						    (__v32hi)
+						    _mm512_setzero_hi (),
+						    (__mmask32) -1);
+}
+
+extern __inline __m512i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_maskz_packus_epi32 (__mmask32 __M, __m512i __A, __m512i __B)
+{
+  return (__m512i) __builtin_ia32_packusdw512_mask ((__v16si) __A,
+						    (__v16si) __B,
+						    (__v32hi)
+						    _mm512_setzero_hi (),
+						    __M);
+}
+
+extern __inline __m512i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_mask_packus_epi32 (__m512i __W, __mmask32 __M, __m512i __A,
+			  __m512i __B)
+{
+  return (__m512i) __builtin_ia32_packusdw512_mask ((__v16si) __A,
+						    (__v16si) __B,
+						    (__v32hi) __W,
+						    __M);
+}
+
 #ifdef __OPTIMIZE__
 extern __inline __m512i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
@@ -2741,72 +2807,6 @@ _mm512_cmp_epu8_mask (__m512i __X, __m512i __Y, const int __P)
   return (__mmask64) __builtin_ia32_ucmpb512_mask ((__v64qi) __X,
 						   (__v64qi) __Y, __P,
 						   (__mmask64) -1);
-}
-
-extern __inline __m512i
-__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm512_packs_epi32 (__m512i __A, __m512i __B)
-{
-  return (__m512i) __builtin_ia32_packssdw512_mask ((__v16si) __A,
-						    (__v16si) __B,
-						    (__v32hi)
-						    _mm512_setzero_hi (),
-						    (__mmask32) -1);
-}
-
-extern __inline __m512i
-__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm512_maskz_packs_epi32 (__mmask32 __M, __m512i __A, __m512i __B)
-{
-  return (__m512i) __builtin_ia32_packssdw512_mask ((__v16si) __A,
-						    (__v16si) __B,
-						    (__v32hi)
-						    _mm512_setzero_hi(),
-						    __M);
-}
-
-extern __inline __m512i
-__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm512_mask_packs_epi32 (__m512i __W, __mmask32 __M, __m512i __A,
-			 __m512i __B)
-{
-  return (__m512i) __builtin_ia32_packssdw512_mask ((__v16si) __A,
-						    (__v16si) __B,
-						    (__v32hi) __W,
-						    __M);
-}
-
-extern __inline __m512i
-__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm512_packus_epi32 (__m512i __A, __m512i __B)
-{
-  return (__m512i) __builtin_ia32_packusdw512_mask ((__v16si) __A,
-						    (__v16si) __B,
-						    (__v32hi)
-						    _mm512_setzero_hi (),
-						    (__mmask32) -1);
-}
-
-extern __inline __m512i
-__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm512_maskz_packus_epi32 (__mmask32 __M, __m512i __A, __m512i __B)
-{
-  return (__m512i) __builtin_ia32_packusdw512_mask ((__v16si) __A,
-						    (__v16si) __B,
-						    (__v32hi)
-						    _mm512_setzero_hi(),
-						    __M);
-}
-
-extern __inline __m512i
-__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm512_mask_packus_epi32 (__m512i __W, __mmask32 __M, __m512i __A,
-			  __m512i __B)
-{
-  return (__m512i) __builtin_ia32_packusdw512_mask ((__v16si) __A,
-						    (__v16si) __B,
-						    (__v32hi) __W,
-						    __M);
 }
 
 extern __inline __m512i
