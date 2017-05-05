@@ -1,6 +1,13 @@
 2017-05-05  Janus Weil  <janus@gcc.gnu.org>
 
 	Backport from trunk
+	PR fortran/80121
+	* trans-expr.c (gfc_conv_procedure_call): Deallocate the components
+	of allocatable intent(out) arguments.
+
+2017-05-05  Janus Weil  <janus@gcc.gnu.org>
+
+	Backport from trunk
 	PR fortran/80392
 	* trans-types.c (gfc_get_derived_type): Prevent an infinite loop when
 	building a derived type that includes a procedure pointer component
