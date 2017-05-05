@@ -3791,34 +3791,18 @@ case "${target}" in
 		# Add extra multilibs
 		if test "x$with_multilib_list" != x; then
 			arm_multilibs=`echo $with_multilib_list | sed -e 's/,/ /g'`
-			case ${arm_multilibs} in
-			aprofile)
-				# Note that arm/t-aprofile is a
-				# stand-alone make file fragment to be
-				# used only with itself.  We do not
-				# specifically use the
-				# TM_MULTILIB_OPTION framework because
-				# this shorthand is more
-				# pragmatic.
-				tmake_profile_file="arm/t-aprofile"
-				;;
-			rmprofile)
-				# Note that arm/t-rmprofile is a
-				# stand-alone make file fragment to be
-				# used only with itself.  We do not
-				# specifically use the
-				# TM_MULTILIB_OPTION framework because
-				# this shorthand is more
-				# pragmatic.
-				tmake_profile_file="arm/t-rmprofile"
-				;;
-			default)
-				;;
-			*)
-				echo "Error: --with-multilib-list=${with_multilib_list} not supported." 1>&2
-				exit 1
-				;;
-			esac
+			if test "x${arm_multilibs}" != xdefault ; then
+				for arm_multilib in ${arm_multilibs}; do
+					case ${arm_multilib} in
+					aprofile|rmprofile)
+						tmake_profile_file="arm/t-multilib"
+						;;
+					*)
+						echo "Error: --with-multilib-list=${with_multilib_list} not supported." 1>&2
+						exit 1
+						;;
+					esac
+				done
 
 			if test "x${tmake_profile_file}" != x ; then
 				# arm/t-aprofile and arm/t-rmprofile are only

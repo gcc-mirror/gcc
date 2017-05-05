@@ -1,3 +1,19 @@
+2017-05-05  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* config.gcc: Allow combinations of aprofile and rmprofile values for
+	--with-multilib-list.
+	* config/arm/t-multilib: New file.
+	* config/arm/t-aprofile: Remove initialization of MULTILIB_*
+	variables.  Remove setting of ISA and floating-point ABI in
+	MULTILIB_OPTIONS and MULTILIB_DIRNAMES.  Set architecture and FPU in
+	MULTI_ARCH_OPTS_A and MULTI_ARCH_DIRS_A rather than MULTILIB_OPTIONS
+	and MULTILIB_DIRNAMES respectively.  Add comment to introduce all
+	matches.  Add architecture matches for marvel-pj4 and generic-armv7-a
+	CPU options.
+	* config/arm/t-rmprofile: Likewise except for the matches changes.
+	* doc/install.texi (--with-multilib-list): Document the combination of
+	aprofile and rmprofile values and warn about pitfalls in doing that.
+
 2017-05-05  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	* config/aarch64/aarch64.md (movsi_aarch64): Remove '*' from r=w.

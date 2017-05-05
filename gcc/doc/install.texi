@@ -1092,14 +1092,18 @@ for each target is given below.
 
 @table @code
 @item arm*-*-*
-@var{list} is one of@code{default}, @code{aprofile} or @code{rmprofile}.
-Specifying @code{default} is equivalent to omitting this option, ie. only the
-default runtime library will be enabled.  Specifying @code{aprofile} or
-@code{rmprofile} builds multilibs for a combination of ISA, architecture,
-FPU available and floating-point ABI.
+@var{list} is a comma separated list of @code{aprofile} and @code{rmprofile}
+to build multilibs for A or R and M architecture profiles respectively.  Note
+that, due to some limitation of the current multilib framework, using the
+combined @code{aprofile,rmprofile} multilibs selects in some cases a less
+optimal multilib than when using the multilib profile for the architecture
+targetted.  The special value @code{default} is also accepted and is equivalent
+to omitting the option, ie. only the default run-time library will be enabled.
 
 The table below gives the combination of ISAs, architectures, FPUs and
 floating-point ABIs for which multilibs are built for each accepted value.
+The union of these options is considered when specifying both @code{aprofile}
+and @code{rmprofile}.
 
 @multitable @columnfractions .15 .28 .30
 @item Option @tab aprofile @tab rmprofile
