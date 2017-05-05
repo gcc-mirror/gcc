@@ -8069,12 +8069,15 @@ make_compound_operation (rtx x, enum rtx_code in_code)
 		|| GET_CODE (inner) == SUBREG
 		/* (subreg:SI (and:DI (reg:DI) (const_int 0x800000000)) 0)
 		   is (const_int 0), rather than
-		   (subreg:SI (lshiftrt:DI (reg:DI) (const_int 35)) 0).  */
+		   (subreg:SI (lshiftrt:DI (reg:DI) (const_int 35)) 0).
+		   Similarly (subreg:QI (and:SI (reg:SI) (const_int 0x80)) 0)
+		   for non-equality comparisons against 0 is not equivalent
+		   to (subreg:QI (lshiftrt:SI (reg:SI) (const_int 7)) 0).  */
 		|| (GET_CODE (inner) == AND
 		    && CONST_INT_P (XEXP (inner, 1))
 		    && GET_MODE_SIZE (mode) < GET_MODE_SIZE (GET_MODE (inner))
 		    && exact_log2 (UINTVAL (XEXP (inner, 1)))
-		       >= GET_MODE_BITSIZE (mode))))
+		       >= GET_MODE_BITSIZE (mode) - 1)))
 	  subreg_code = SET;
 
 	tem = make_compound_operation (inner, subreg_code);
