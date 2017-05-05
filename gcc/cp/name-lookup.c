@@ -37,6 +37,8 @@ static cxx_binding *cxx_binding_make (tree value, tree type);
 static cp_binding_level *innermost_nonclass_level (void);
 static void set_identifier_type_value_with_scope (tree id, tree decl,
 						  cp_binding_level *b);
+static void set_namespace_binding (tree name, tree scope, tree val);
+
 /* The bindings for a particular name in a particular scope.  */
 
 struct scope_binding {
@@ -213,7 +215,7 @@ arg_assoc_namespace (struct arg_lookup *k, tree scope)
       if (arg_assoc_namespace (k, TREE_PURPOSE (value)))
 	return true;
 
-  value = namespace_binding (k->name, scope);
+  value = get_namespace_value (scope, k->name);
   if (!value)
     return false;
 
@@ -1248,7 +1250,7 @@ pushdecl_maybe_friend_1 (tree x, bool is_friend)
       /* In case this decl was explicitly namespace-qualified, look it
 	 up in its namespace context.  */
       if (DECL_NAMESPACE_SCOPE_P (x) && namespace_bindings_p ())
-	t = namespace_binding (name, DECL_CONTEXT (x));
+	t = get_namespace_value (DECL_CONTEXT (x), name);
       else
 	t = lookup_name_innermost_nonclass_level (name);
 
@@ -1265,7 +1267,7 @@ pushdecl_maybe_friend_1 (tree x, bool is_friend)
 	  t = innermost_non_namespace_value (name);
 	  /* Or in the innermost namespace.  */
 	  if (! t)
-	    t = namespace_binding (name, DECL_CONTEXT (x));
+	    t = get_namespace_value (DECL_CONTEXT (x), name);
 	  /* Does it have linkage?  Note that if this isn't a DECL, it's an
 	     OVERLOAD, which is OK.  */
 	  if (t && DECL_P (t) && ! (TREE_STATIC (t) || DECL_EXTERNAL (t)))
@@ -1519,7 +1521,7 @@ pushdecl_maybe_friend_1 (tree x, bool is_friend)
 	{
 	  tree decl;
 
-	  decl = IDENTIFIER_NAMESPACE_VALUE (name);
+	  decl = get_namespace_value (current_namespace, name);
 	  if (decl && TREE_CODE (decl) == OVERLOAD)
 	    decl = OVL_FUNCTION (decl);
 
@@ -1556,7 +1558,7 @@ pushdecl_maybe_friend_1 (tree x, bool is_friend)
 		  || TREE_CODE (x) == NAMESPACE_DECL
 		  || TREE_CODE (x) == CONST_DECL
 		  || TREE_CODE (x) == TEMPLATE_DECL))
-	    SET_IDENTIFIER_NAMESPACE_VALUE (name, x);
+	    set_namespace_binding (name, current_namespace, x);
 
 	  /* If new decl is `static' and an `extern' was seen previously,
 	     warn about it.  */
@@ -1566,7 +1568,7 @@ pushdecl_maybe_friend_1 (tree x, bool is_friend)
       else
 	{
 	  /* Here to install a non-global value.  */
-	  tree oldglobal = IDENTIFIER_NAMESPACE_VALUE (name);
+	  tree oldglobal = get_namespace_value (current_namespace, name);
 	  tree oldlocal = NULL_TREE;
 	  cp_binding_level *oldscope = NULL;
 	  cxx_binding *oldbinding = outer_binding (name, NULL, true);
@@ -1605,7 +1607,8 @@ pushdecl_maybe_friend_1 (tree x, bool is_friend)
 		oldlocal = DECL_SHADOWED_FOR_VAR (oldlocal);
 
 	      if (oldlocal == NULL_TREE)
-		oldlocal = IDENTIFIER_NAMESPACE_VALUE (DECL_NAME (d));
+		oldlocal
+		  = get_namespace_value (current_namespace, DECL_NAME (d));
 	    }
 
 	  /* If this is an extern function declaration, see if we
@@ -1969,7 +1972,7 @@ check_for_out_of_scope_variable (tree decl)
     shadowed = DECL_HAS_SHADOWED_FOR_VAR_P (shadowed)
       ? DECL_SHADOWED_FOR_VAR (shadowed) : NULL_TREE;
   if (!shadowed)
-    shadowed = IDENTIFIER_NAMESPACE_VALUE (DECL_NAME (decl));
+    shadowed = get_namespace_value (current_namespace, DECL_NAME (decl));
   if (shadowed)
     {
       if (!DECL_ERROR_REPORTED (decl))
@@ -2931,7 +2934,7 @@ push_overloaded_decl_1 (tree decl, int flags, bool is_friend)
   int doing_global = (namespace_bindings_p () || !(flags & PUSH_LOCAL));
 
   if (doing_global)
-    old = namespace_binding (name, DECL_CONTEXT (decl));
+    old = get_namespace_value (DECL_CONTEXT (decl), name);
   else
     old = lookup_name_innermost_nonclass_level (name);
 
@@ -4016,20 +4019,22 @@ namespace_binding_1 (tree name, tree scope)
   return binding ? binding->value : NULL_TREE;
 }
 
+/* Return the binding for NAME in NS.  If NS is NULL, look in
+   global_namespace.  */
+
 tree
-namespace_binding (tree name, tree scope)
+get_namespace_value (tree ns, tree name)
 {
-  tree ret;
   bool subtime = timevar_cond_start (TV_NAME_LOOKUP);
-  ret = namespace_binding_1 (name, scope);
+  if (!ns)
+    ns = global_namespace;
+  tree ret = namespace_binding_1 (name, ns);
   timevar_cond_stop (TV_NAME_LOOKUP, subtime);
   return ret;
 }
 
-/* Set the binding value for name in scope.  */
-
 static void
-set_namespace_binding_1 (tree name, tree scope, tree val)
+set_namespace_binding (tree name, tree scope, tree val)
 {
   cxx_binding *b;
 
@@ -4047,13 +4052,16 @@ set_namespace_binding_1 (tree name, tree scope, tree val)
     supplement_binding (b, val);
 }
 
-/* Wrapper for set_namespace_binding_1.  */
+/* Set NAME in the global namespace to VAL.  Does not add it to the
+   list of things in the namespace.  */
 
 void
-set_namespace_binding (tree name, tree scope, tree val)
+set_global_value (tree name, tree val)
 {
   bool subtime = timevar_cond_start (TV_NAME_LOOKUP);
-  set_namespace_binding_1 (name, scope, val);
+
+  set_namespace_binding (name, global_namespace, val);
+
   timevar_cond_stop (TV_NAME_LOOKUP, subtime);
 }
 
@@ -5815,7 +5823,7 @@ lookup_name_innermost_nonclass_level_1 (tree name)
 
   if (b->kind == sk_namespace)
     {
-      t = IDENTIFIER_NAMESPACE_VALUE (name);
+      t = get_namespace_value (current_namespace, name);
 
       /* extern "C" function() */
       if (t != NULL_TREE && TREE_CODE (t) == TREE_LIST)
@@ -6467,7 +6475,7 @@ push_namespace (tree name)
   if (anon)
     {
       name = anon_identifier;
-      d = IDENTIFIER_NAMESPACE_VALUE (name);
+      d = get_namespace_value (current_namespace, name);
       if (d)
 	/* Reopening anonymous namespace.  */
 	need_new = false;
@@ -6476,7 +6484,7 @@ push_namespace (tree name)
   else
     {
       /* Check whether this is an extended namespace definition.  */
-      d = IDENTIFIER_NAMESPACE_VALUE (name);
+      d = get_namespace_value (current_namespace, name);
       if (d != NULL_TREE && TREE_CODE (d) == NAMESPACE_DECL)
 	{
 	  tree dna = DECL_NAMESPACE_ALIAS (d);

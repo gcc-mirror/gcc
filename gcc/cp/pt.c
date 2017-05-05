@@ -24731,7 +24731,7 @@ make_constrained_auto (tree con, tree args)
 static tree
 listify (tree arg)
 {
-  tree std_init_list = namespace_binding (init_list_identifier, std_node);
+  tree std_init_list = get_namespace_value (std_node, init_list_identifier);
   tree argvec;
   if (!std_init_list || !DECL_CLASS_TEMPLATE_P (std_init_list))
     {    

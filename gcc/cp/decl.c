@@ -687,16 +687,13 @@ poplevel (int keep, int reverse, int functionbody)
 	  && DECL_NAME (link))
 	{
 	  tree name = DECL_NAME (link);
-	  cxx_binding *ob;
-	  tree ns_binding;
 
-	  ob = outer_binding (name,
-			      IDENTIFIER_BINDING (name),
-			      /*class_p=*/true);
+	  cxx_binding *ob = outer_binding (name,
+					   IDENTIFIER_BINDING (name),
+					   /*class_p=*/true);
+	  tree ns_binding = NULL_TREE;
 	  if (!ob)
-	    ns_binding = IDENTIFIER_NAMESPACE_VALUE (name);
-	  else
-	    ns_binding = NULL_TREE;
+	    ns_binding = get_namespace_value (current_namespace, name);
 
 	  if (ob && ob->scope == current_binding_level->level_chain)
 	    /* We have something like:
@@ -10148,7 +10145,8 @@ grokdeclarator (const cp_declarator *declarator,
 		    gcc_assert (flags == NO_SPECIAL);
 		    flags = TYPENAME_FLAG;
 		    sfk = sfk_conversion;
-		    if (is_typename_at_global_scope (dname))
+		    tree glob = IDENTIFIER_GLOBAL_VALUE (dname);
+		    if (glob && TREE_CODE (glob) == TYPE_DECL)
 		      name = identifier_to_locale (IDENTIFIER_POINTER (dname));
 		    else
 		      name = "<invalid operator>";

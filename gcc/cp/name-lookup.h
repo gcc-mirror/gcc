@@ -311,8 +311,8 @@ extern tree pushdecl_with_scope (tree, cp_binding_level *, bool);
 extern tree lookup_name_prefer_type (tree, int);
 extern tree lookup_name_real (tree, int, int, bool, int, int);
 extern tree lookup_type_scope (tree, tag_scope);
-extern tree namespace_binding (tree, tree);
-extern void set_namespace_binding (tree, tree, tree);
+extern tree get_namespace_value (tree ns, tree id);
+extern void set_global_value (tree id, tree val);
 extern bool hidden_name_p (tree);
 extern tree remove_hidden_names (tree);
 extern tree lookup_qualified_name (tree, tree, int, bool, /*hidden*/bool = false);
@@ -341,27 +341,5 @@ extern void parse_using_directive (tree, tree);
 extern tree innermost_non_namespace_value (tree);
 extern cxx_binding *outer_binding (tree, cxx_binding *, bool);
 extern void cp_emit_debug_info_for_using (tree, tree);
-
-/* Set *DECL to the (non-hidden) declaration for ID at global scope,
-   if present and return true; otherwise return false.  */
-
-inline bool
-get_global_value_if_present (tree id, tree *decl)
-{
-  tree global_value = namespace_binding (id, global_namespace);
-  if (global_value)
-    *decl = global_value;
-  return global_value != NULL;
-}
-
-/* True is the binding of IDENTIFIER at global scope names a type.  */
-
-inline bool
-is_typename_at_global_scope (tree id)
-{
-  tree global_value = namespace_binding (id, global_namespace);
-
-  return global_value && TREE_CODE (global_value) == TYPE_DECL;
-}
 
 #endif /* GCC_CP_NAME_LOOKUP_H */

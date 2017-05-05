@@ -554,13 +554,9 @@ struct GTY(()) ptrmem_cst {
 typedef struct ptrmem_cst * ptrmem_cst_t;
 
 #define IDENTIFIER_GLOBAL_VALUE(NODE) \
-  namespace_binding ((NODE), global_namespace)
+  get_namespace_value (NULL_TREE, (NODE))
 #define SET_IDENTIFIER_GLOBAL_VALUE(NODE, VAL) \
-  set_namespace_binding ((NODE), global_namespace, (VAL))
-#define IDENTIFIER_NAMESPACE_VALUE(NODE) \
-  namespace_binding ((NODE), current_namespace)
-#define SET_IDENTIFIER_NAMESPACE_VALUE(NODE, VAL) \
-  set_namespace_binding ((NODE), current_namespace, (VAL))
+  set_global_value ((NODE), (VAL))
 
 #define CLEANUP_P(NODE)		TREE_LANG_FLAG_0 (TRY_BLOCK_CHECK (NODE))
 
