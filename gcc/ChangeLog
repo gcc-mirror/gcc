@@ -1,3 +1,19 @@
+2017-05-04  Andrew Waterman  <andrew@sifive.com>
+
+	* config/riscv/riscv.opt (mstrict-align): New option.
+	* config/riscv/riscv.h (STRICT_ALIGNMENT): Use it.  Update comment.
+	(SLOW_UNALIGNED_ACCESS): Define.
+	(riscv_slow_unaligned_access): Declare.
+	* config/riscv/riscv.c (riscv_tune_info): Add slow_unaligned_access
+	field.
+	(riscv_slow_unaligned_access): New variable.
+	(rocket_tune_info): Set slow_unaligned_access to true.
+	(optimize_size_tune_info): Set slow_unaligned_access to false.
+	(riscv_cpu_info_table): Add entry for optimize_size_tune_info.
+	(riscv_valid_lo_sum_p): Use TARGET_STRICT_ALIGN.
+	(riscv_option_override): Set riscv_slow_unaligned_access.
+	* doc/invoke.texi: Add -mstrict-align to RISC-V.
+
 2017-05-04  Kito Cheng  <kito.cheng@gmail.com>
 
 	* config/riscv/riscv.md: Unify indentation.
