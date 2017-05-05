@@ -208,16 +208,18 @@ optimized locations from all the inlining passes into
 If the @var{filename} is provided, then the dumps from all the
 applicable optimizations are concatenated into the @file{filename}.
 Otherwise the dump is output onto @file{stderr}. If @var{options} is
-omitted, it defaults to @option{all-all}, which means dump all
-available optimization info from all the passes. In the following
-example, all optimization info is output on to @file{stderr}.
+omitted, it defaults to @option{optimized-optall}, which means dump
+all information about successful optimizations from all the passes.
+In the following example, the optimization information is output on
+to @file{stderr}.
 
 @smallexample
 gcc -O3 -fopt-info
 @end smallexample
 
 Note that @option{-fopt-info-vec-missed} behaves the same as
-@option{-fopt-info-missed-vec}.
+@option{-fopt-info-missed-vec}.  The order of the optimization group
+names and message types listed after @option{-fopt-info} does not matter.
 
 As another example, consider
 
