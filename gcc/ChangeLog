@@ -1,5 +1,15 @@
 2017-05-05  David Malcolm  <dmalcolm@redhat.com>
 
+	* diagnostic.c (diagnostic_impl): Replace report_diagnostic
+	with diagnostic_report_diagnostic.
+	(diagnostic_n_impl_richloc): Likewise.
+	* diagnostic.h (report_diagnostic): Delete macro.
+	* rtl-error.c (diagnostic_for_asm): Replace report_diagnostic
+	with diagnostic_report_diagnostic.
+	* substring-locations.c (format_warning_va): Likewise.
+
+2017-05-05  David Malcolm  <dmalcolm@redhat.com>
+
 	* diagnostic.c (diagnostic_report_diagnostic): Eliminate
 	save/restor of format_spec.  Move option-printing code to...
 	(print_option_information): ...this new function, and

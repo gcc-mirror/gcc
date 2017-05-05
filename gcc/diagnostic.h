@@ -278,8 +278,6 @@ extern diagnostic_context *global_dc;
   (!(DC)->dc_inhibit_warnings						\
    && !(in_system_header_at (LOC) && !(DC)->dc_warn_system_headers))
 
-#define report_diagnostic(D) diagnostic_report_diagnostic (global_dc, D)
-
 /* Override the option index to be used for reporting a
    diagnostic.  */
 #define diagnostic_override_option_index(DI, OPTIDX) \
