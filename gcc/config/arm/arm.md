@@ -233,10 +233,6 @@
 	       (match_test "arm_restrict_it"))
 	  (const_string "no")
 
-	  (and (eq_attr "use_literal_pool" "yes")
-	       (match_test "arm_disable_literal_pool"))
-	  (const_string "no")
-
 	  (eq_attr "arch_enabled" "no")
 	  (const_string "no")]
 	 (const_string "yes")))
@@ -5878,8 +5874,9 @@
 	(match_operand:ANY64 1 "immediate_operand" ""))]
   "TARGET_32BIT
    && reload_completed
-   && (arm_const_double_inline_cost (operands[1])
-       <= arm_max_const_double_inline_cost ())"
+   && (arm_disable_literal_pool
+       || (arm_const_double_inline_cost (operands[1])
+	   <= arm_max_const_double_inline_cost ()))"
   [(const_int 0)]
   "
   arm_split_constant (SET, SImode, curr_insn,
