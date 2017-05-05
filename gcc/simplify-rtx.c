@@ -900,8 +900,10 @@ simplify_unary_operation_1 (enum rtx_code code, machine_mode mode, rtx op)
 	  && XEXP (op, 1) == constm1_rtx)
 	return simplify_gen_unary (NEG, mode, XEXP (op, 0), mode);
 
-      /* Similarly, (not (neg X)) is (plus X -1).  */
-      if (GET_CODE (op) == NEG)
+      /* Similarly, (not (neg X)) is (plus X -1).  Only do this for
+	 modes that have CONSTM1_RTX, i.e. MODE_INT, MODE_PARTIAL_INT
+	 and MODE_VECTOR_INT.  */
+      if (GET_CODE (op) == NEG && CONSTM1_RTX (mode))
 	return simplify_gen_binary (PLUS, mode, XEXP (op, 0),
 				    CONSTM1_RTX (mode));
 
