@@ -1,6 +1,12 @@
 2017-05-05  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2017-04-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/80501
+	* combine.c (make_compound_operation_int): Set subreg_code to SET
+	even for AND with mask of the sign bit of mode.
+
 	2017-04-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR sanitizer/80349
