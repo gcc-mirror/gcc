@@ -1,3 +1,7 @@
+2017-05-05  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-pre.c (get_or_alloc_expr_for): Simplify.
+
 2017-05-05  Georg-Johann Lay  <avr@gjlay.de>
 
 	* config/avr/avr.md [flag_strict_overflow]: Remove any occurence
