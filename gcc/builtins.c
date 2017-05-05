@@ -3147,12 +3147,12 @@ check_sizes (int opt, tree exp, tree size, tree maxlen, tree src, tree objsize)
 
       if (range[0] == range[1])
 	warning_at (loc, opt,
-		    "%K%qD: specified size %E "
+		    "%K%qD specified size %E "
 		    "exceeds maximum object size %E",
 		    exp, get_callee_fndecl (exp), range[0], maxobjsize);
 	  else
 	    warning_at (loc, opt,
-			"%K%qD: specified size between %E and %E "
+			"%K%qD specified size between %E and %E "
 			"exceeds maximum object size %E",
 			exp, get_callee_fndecl (exp),
 			range[0], range[1], maxobjsize);
@@ -3178,14 +3178,14 @@ check_sizes (int opt, tree exp, tree size, tree maxlen, tree src, tree objsize)
 		 and a source of unknown length.  The call will write
 		 at least one byte past the end of the destination.  */
 	      warning_at (loc, opt,
-			  "%K%qD: writing %E or more bytes into a region "
+			  "%K%qD writing %E or more bytes into a region "
 			  "of size %E overflows the destination",
 			  exp, get_callee_fndecl (exp), range[0], objsize);
 	    }
 	  else if (tree_int_cst_equal (range[0], range[1]))
 	    warning_at (loc, opt,
 			(integer_onep (range[0])
-			 ? G_("%K%qD: writing %E byte into a region "
+			 ? G_("%K%qD writing %E byte into a region "
 			      "of size %E overflows the destination")
 			 : G_("%K%qD writing %E bytes into a region "
 			      "of size %E overflows the destination")),
@@ -3194,13 +3194,13 @@ check_sizes (int opt, tree exp, tree size, tree maxlen, tree src, tree objsize)
 	    {
 	      /* Avoid printing the upper bound if it's invalid.  */
 	      warning_at (loc, opt,
-			  "%K%qD: writing %E or more bytes into a region "
+			  "%K%qD writing %E or more bytes into a region "
 			  "of size %E overflows the destination",
 			  exp, get_callee_fndecl (exp), range[0], objsize);
 	    }
 	  else
 	    warning_at (loc, opt,
-			"%K%qD: writing between %E and %E bytes into "
+			"%K%qD writing between %E and %E bytes into "
 			"a region of size %E overflows the destination",
 			exp, get_callee_fndecl (exp), range[0],	range[1],
 			objsize);
@@ -3229,13 +3229,13 @@ check_sizes (int opt, tree exp, tree size, tree maxlen, tree src, tree objsize)
 		 is greater than the object size if both are big.  */
 	      if (range[0] == range[1])
 		warning_at (loc, opt,
-			    "%K%qD: specified bound %E "
+			    "%K%qD specified bound %E "
 			    "exceeds maximum object size %E",
 			    exp, get_callee_fndecl (exp),
 			    range[0], maxobjsize);
 	      else
 		warning_at (loc, opt,
-			    "%K%qD: specified bound between %E and %E "
+			    "%K%qD specified bound between %E and %E "
 			    "exceeds maximum object size %E",
 			    exp, get_callee_fndecl (exp),
 			    range[0], range[1], maxobjsize);
@@ -3247,13 +3247,13 @@ check_sizes (int opt, tree exp, tree size, tree maxlen, tree src, tree objsize)
 	    {
 	      if (tree_int_cst_equal (range[0], range[1]))
 		warning_at (loc, opt,
-			    "%K%qD: specified bound %E "
+			    "%K%qD specified bound %E "
 			    "exceeds destination size %E",
 			    exp, get_callee_fndecl (exp),
 			    range[0], objsize);
 	      else
 		warning_at (loc, opt,
-			    "%K%qD: specified bound between %E and %E "
+			    "%K%qD specified bound between %E and %E "
 			    "exceeds destination size %E",
 			    exp, get_callee_fndecl (exp),
 			    range[0], range[1], objsize);
@@ -3272,20 +3272,20 @@ check_sizes (int opt, tree exp, tree size, tree maxlen, tree src, tree objsize)
       if (tree_int_cst_equal (range[0], range[1]))
 	warning_at (loc, opt,
 		    (tree_int_cst_equal (range[0], integer_one_node)
-		     ? G_("%K%qD: reading %E byte from a region of size %E")
+		     ? G_("%K%qD reading %E byte from a region of size %E")
 		     : G_("%K%qD reading %E bytes from a region of size %E")),
 		    exp, get_callee_fndecl (exp), range[0], slen);
       else if (tree_int_cst_sign_bit (range[1]))
 	{
 	  /* Avoid printing the upper bound if it's invalid.  */
 	  warning_at (loc, opt,
-		      "%K%qD: reading %E or more bytes from a region "
+		      "%K%qD reading %E or more bytes from a region "
 		      "of size %E",
 		      exp, get_callee_fndecl (exp), range[0], slen);
 	}
       else
 	warning_at (loc, opt,
-		    "%K%qD: reading between %E and %E bytes from a region "
+		    "%K%qD reading between %E and %E bytes from a region "
 		    "of size %E",
 		    exp, get_callee_fndecl (exp), range[0], range[1], slen);
       return false;
@@ -3876,7 +3876,7 @@ check_strncat_sizes (tree exp, tree objsize)
       loc = expansion_point_location_if_in_system_header (loc);
 
       warning_at (loc, OPT_Wstringop_overflow_,
-		  "%K%qD: specified bound %E equals destination size",
+		  "%K%qD specified bound %E equals destination size",
 		  exp, get_callee_fndecl (exp), maxlen);
 
       return false;
@@ -3942,7 +3942,7 @@ expand_builtin_strncat (tree exp, rtx)
       loc = expansion_point_location_if_in_system_header (loc);
 
       warning_at (loc, OPT_Wstringop_overflow_,
-		  "%K%qD: specified bound %E equals destination size",
+		  "%K%qD specified bound %E equals destination size",
 		  exp, get_callee_fndecl (exp), maxlen);
 
       return NULL_RTX;

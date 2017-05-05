@@ -23,15 +23,15 @@ size_t range (void)
 
 void test_memcpy (void)
 {
-  memcpy (d, s, range ());   /* { dg-warning ".memcpy. writing between 4 and \[0-9\]+ bytes into a region of size 3 overflows the destination" } */
+  memcpy (d, s, range ());   /* { dg-warning ".memcpy. writing 4 or more bytes into a region of size 3 overflows the destination" } */
 }
 
 void test_mempcpy (void)
 {
-  mempcpy (d, s, range ());   /* { dg-warning ".mempcpy. writing between 4 and \[0-9\]+ bytes into a region of size 3 overflows the destination" } */
+  mempcpy (d, s, range ());   /* { dg-warning ".mempcpy. writing 4 or more bytes into a region of size 3 overflows the destination" } */
 }
 
 void test_memmove (void)
 {
-  memmove (d + 1, d, range ());   /* { dg-warning ".memmove. writing between 4 and \[0-9\]+ bytes into a region of size 2 overflows the destination" } */
+  memmove (d + 1, d, range ());   /* { dg-warning ".memmove. writing 4 or more bytes into a region of size 2 overflows the destination" } */
 }
