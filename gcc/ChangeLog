@@ -1,5 +1,11 @@
 2017-05-05  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/80632
+	* tree-switch-conversion.c (struct switch_conv_info): Add target_vop
+	field.
+	(build_arrays): Initialize it for virtual phis.
+	(fix_phi_nodes): Use it for virtual phis.
+
 	PR tree-optimization/80558
 	* tree-vrp.c (extract_range_from_binary_expr_1): Optimize
 	[x, y] op z into [x op, y op z] for op & or | if conditions
