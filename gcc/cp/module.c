@@ -793,10 +793,10 @@ public:
   static const gtp global_tree_arys[];
 
 private:
-  unsigned index;
+  unsigned tag;
 
 public:
-  cpm_stream () : index (rt_ref_base)
+  cpm_stream () : tag (rt_ref_base)
   {
     gcc_assert (MAX_TREE_CODES <= rt_ref_base - rt_tree_base);
   }
@@ -805,7 +805,7 @@ protected:
   /* Allocate a new reference index.  */
   unsigned next ()
   {
-    return index++;
+    return tag++;
   }
 
 public:
@@ -908,7 +908,7 @@ class cpms_in : public cpm_stream
   typedef unbounded_int_hashmap_traits<unsigned,tree> traits;
   hash_map<unsigned,tree,traits> map; /* ids to trees  */
 
-  unsigned index; /* Module index.  */
+  unsigned mod_ix; /* Module index.  */
   unsigned HOST_WIDE_INT stamp;  /* Expected time stamp.  */
 
   /* Remapping from incoming module indices to current TU. */
@@ -931,9 +931,9 @@ public:
   {
     return r.done ();
   }
-  unsigned get_index () const
+  unsigned get_mod () const
   {
-    return index;
+    return mod_ix;
   }
 
 private:
@@ -958,7 +958,7 @@ public:
 
 cpms_in::cpms_in (FILE *s, const char *n,
 		  module_state *state_, unsigned HOST_WIDE_INT stmp)
-  :r (s, n), state (state_), index (GLOBAL_MODULE_INDEX),
+  :r (s, n), state (state_), mod_ix (GLOBAL_MODULE_INDEX),
    stamp (stmp), remap_num (0), remap_vec (NULL)
 {
 }
@@ -1358,7 +1358,7 @@ cpms_in::tag_import (FILE *d)
     return false;
 
   /* Not designed to import after having assigned our number. */
-  if (index)
+  if (mod_ix)
     {
       error ("misordered import %qs", mod);
       return false;
@@ -1383,7 +1383,7 @@ cpms_in::tag_import (FILE *d)
 
   if (d)
     fprintf (d, "Completed nested import '%s' #%u %s\n",
-	     IDENTIFIER_POINTER (imp), index,
+	     IDENTIFIER_POINTER (imp), imp_ix,
 	     imp_ix != GLOBAL_MODULE_INDEX ? "ok" : "failed");
   return imp_ix != GLOBAL_MODULE_INDEX;
 }
@@ -1405,7 +1405,7 @@ cpms_out::tag_binding (FILE *d, tree ns, bool main, tree name, tree binding)
     return;
 
   if (d)
-    fprintf (d, "Writing %s %s bindings for %s\n",
+    fprintf (d, "Writing '%s' %s bindings for '%s'\n",
 	     IDENTIFIER_POINTER (DECL_NAME (ns)), 
 	     main ? "main" : "global", IDENTIFIER_POINTER (name));
 
@@ -1431,11 +1431,11 @@ cpms_in::tag_binding (FILE *d)
     return false;
 
   if (d)
-    fprintf (d, "Reading %s %s binding for %s\n",
+    fprintf (d, "Reading '%s' %s binding for '%s'\n",
 	     IDENTIFIER_POINTER (DECL_NAME (ns)), 
 	     main ? "main" : "global",
 	     IDENTIFIER_POINTER (name));
-  return push_module_binding (ns, main ? index : GLOBAL_MODULE_INDEX,
+  return push_module_binding (ns, main ? mod_ix : GLOBAL_MODULE_INDEX,
 			      name, binding);
 }
 
@@ -1455,30 +1455,31 @@ cpms_in::read_item (FILE *d)
       break;
     }
   
-  if (index == GLOBAL_MODULE_INDEX)
+  if (mod_ix == GLOBAL_MODULE_INDEX)
     {
       if (state == this_module)
 	{
-	  index = THIS_MODULE_INDEX;
-	  (*modules)[index] = state;
+	  mod_ix = THIS_MODULE_INDEX;
+	  (*modules)[mod_ix] = state;
 	}
       else
 	{
-	  index = modules->length ();
-	  if (index == MODULE_INDEX_LIMIT)
+	  mod_ix = modules->length ();
+	  if (mod_ix == MODULE_INDEX_LIMIT)
 	    {
-	      sorry ("too many modules loaded (limit is %u)", index);
+	      sorry ("too many modules loaded (limit is %u)", mod_ix);
 	      r.bad ();
 	      return -1;
 	    }
 	  vec_safe_push (modules, state);
-	  state->set_index (index);
+	  state->set_index (mod_ix);
 	}
       alloc_remap_vec (THIS_MODULE_INDEX);
-      remap_vec[THIS_MODULE_INDEX] = index;
+      remap_vec[THIS_MODULE_INDEX] = mod_ix;
 
       if (d)
-	fprintf (d, "Assigning module index %u\n", index);
+	fprintf (d, "Assigning '%s' module index %u\n",
+		 IDENTIFIER_POINTER (state->name), mod_ix);
     }
 
   switch (rt)
@@ -1619,13 +1620,7 @@ cpms_in::finish (FILE *d, tree t)
   if (TYPE_P (t))
     return finish_type (d, t);
 
-  else if (DECL_P (t) && DECL_LANG_SPECIFIC (t)
-	   && (DECL_MODULE_INDEX (t) != GLOBAL_MODULE_INDEX
-	       && DECL_MODULE_INDEX (t) != index))
-    // FIXME; we should do this earlier and here otherwise
-    /* Indirect import.  Find the matching decl.  */
-    return find_module_instance (CP_DECL_CONTEXT (t),
-				 DECL_MODULE_INDEX (t), t);
+  // FIXME:merge global decl?
 
   switch (TREE_CODE (t))
     {
@@ -2006,11 +2001,7 @@ cpms_out::write_core_vals (FILE *d, tree t)
       WT (TYPE_MAXVAL (t));
     }
 
-  if (CODE_CONTAINS_STRUCT (TREE_CODE (t), TS_DECL_MINIMAL))
-    {
-      WT (DECL_NAME (t));
-      WT (CP_DECL_CONTEXT (t));
-    }
+  /* DECL_MINIMAL context and name already written out.  */
 
   if (CODE_CONTAINS_STRUCT (TREE_CODE (t), TS_DECL_COMMON))
     {
@@ -2082,32 +2073,28 @@ cpms_in::read_core_vals (FILE *d, tree t)
     }
 
    if (CODE_CONTAINS_STRUCT (TREE_CODE (t), TS_TYPE_NON_COMMON))
-    {
-      switch (TREE_CODE (t))
-	{
-	default:
-	  break;
-	case ENUMERAL_TYPE:
-	  RT (TYPE_VALUES (t));
-	  break;
-	case  ARRAY_TYPE:
-	  RT (TYPE_DOMAIN (t));
-	  break;
-	case FUNCTION_TYPE:
-	case METHOD_TYPE:
-	  RT (TYPE_ARG_TYPES (t));
-	  break;
-	}
-      if (!POINTER_TYPE_P (t))
-	RT (TYPE_MINVAL (t));
-      RT (TYPE_MAXVAL (t));
-    }
+     {
+       switch (TREE_CODE (t))
+	 {
+	 default:
+	   break;
+	 case ENUMERAL_TYPE:
+	   RT (TYPE_VALUES (t));
+	   break;
+	 case  ARRAY_TYPE:
+	   RT (TYPE_DOMAIN (t));
+	   break;
+	 case FUNCTION_TYPE:
+	 case METHOD_TYPE:
+	   RT (TYPE_ARG_TYPES (t));
+	   break;
+	 }
+       if (!POINTER_TYPE_P (t))
+	 RT (TYPE_MINVAL (t));
+       RT (TYPE_MAXVAL (t));
+     }
 
-  if (CODE_CONTAINS_STRUCT (TREE_CODE (t), TS_DECL_MINIMAL))
-    {
-      RT (DECL_NAME (t));
-      RT (DECL_CONTEXT (t));
-    }
+   /* DECL_MINIMAL NAME and CONTEXT already read in.  */
 
   if (CODE_CONTAINS_STRUCT (TREE_CODE (t), TS_DECL_COMMON))
     {
@@ -2155,7 +2142,7 @@ cpms_out::write_lang_decl_vals (FILE *d, tree t)
   const struct lang_decl *lang = DECL_LANG_SPECIFIC (t);
 #define WU(X) (w.u (X))
 #define WT(X) (write_tree (d, X))
-  WU (lang->u.base.module_index);
+  /* Module index already written.  */
   switch (lang->u.base.selector)
     {
     case 1:  /* lang_decl_fn.  */
@@ -2188,10 +2175,9 @@ cpms_in::read_lang_decl_vals (FILE *d, tree t)
   struct lang_decl *lang = DECL_LANG_SPECIFIC (t);
 #define RU(X) ((X) = r.u ())
 #define RT(X) if (!read_tree (d, &(X))) return false
-  unsigned ix = r.u ();
-  if (ix >= remap_num)
-    return false;
-  lang->u.base.module_index = remap_vec[ix];
+
+  /* Module index already read.  */
+
   switch (lang->u.base.selector)
     {
     case 1:  /* lang_decl_fn.  */
@@ -2231,6 +2217,17 @@ cpms_in::read_lang_decl_vals (FILE *d, tree t)
 
    We emit in the following order:
      <tag>
+     IF DECL_P
+       <context>
+       <name>
+       <module-no>
+       IF imported
+         <tag>
+	 goto done
+     <length_info>
+     IF IDENTIFIER_P
+       goto done
+
      <core bools>
      <lang-specific-p>
      <bflush & checkpoint>
@@ -2240,6 +2237,8 @@ cpms_in::read_lang_decl_vals (FILE *d, tree t)
      <core vals & trees>
      if lang-specific-p
        <lang-specific vals & trees>
+
+   done:
      <checkpoint>
 */
 
@@ -2252,16 +2251,47 @@ cpms_out::write_tree (FILE *d, tree t)
       return;
     }
   
-  bool existed;
-  unsigned *val = &map.get_or_insert (t, &existed);
-  if (existed)
+  if (unsigned *val = map.get (t))
     {
       w.u (*val);
       return;
     }
 
-  *val = next ();
   tree_code code = TREE_CODE (t);
+  gcc_assert (rt_tree_base + code < rt_ref_base);
+  w.u (rt_tree_base + code);
+  tree_code_class klass = TREE_CODE_CLASS (code);
+  int body = 1;
+
+  if (code == IDENTIFIER_NODE)
+    body = 0;
+  else if (klass == tcc_declaration)
+    {
+      /* Write out ctx/name/module and maybe tag.  */
+      tree ctx = CP_DECL_CONTEXT (t);
+      write_tree (d, ctx);
+      write_tree (d, DECL_NAME (t));
+      unsigned mod = MAYBE_DECL_MODULE_INDEX (t);
+      w.u (mod);
+      if (mod >= IMPORTED_MODULE_BASE)
+	{
+	  unsigned key = key_module_instance (ctx, mod, DECL_NAME (t), t);
+	  w.u (key);
+	  if (d)
+	    fprintf (d, "Writing import %s::'%s'[%u]@%s\n",
+		     IDENTIFIER_POINTER (DECL_NAME (ctx)),
+		     IDENTIFIER_POINTER (DECL_NAME (t)), key,
+		     IDENTIFIER_POINTER (module_name (mod)));
+	  body = -1;
+	}
+    }
+
+  if (body >= 0)
+    start (code, t);
+
+  unsigned tag = next ();
+  bool existed = map.put (t, tag);
+  gcc_assert (!existed);
   if (d)
     {
       tree name = t;
@@ -2274,39 +2304,39 @@ cpms_out::write_tree (FILE *d, tree t)
 	name = DECL_NAME (name);
       else if (TREE_CODE (name) != IDENTIFIER_NODE)
 	name = NULL_TREE;
-      fprintf (d, "Writing:%u %p (%s:%s)\n", *val, (void *)t,
+      fprintf (d, "Writing:%u %p (%s:'%s')\n", tag, (void *)t,
 	       get_tree_code_name (TREE_CODE (t)),
 	       name ? IDENTIFIER_POINTER (name) : "");
     }
 
-  gcc_assert (rt_tree_base + code < rt_ref_base);
-  w.u (rt_tree_base + code);
-  start (code, t);
-
-  if (code != IDENTIFIER_NODE)
+  if (body > 0)
     {
       write_core_bools (d, t);
-      int specific = 0;
+      bool specific = false;
 
-      if (TYPE_P (t) || DECL_P (t))
+      if (klass == tcc_type || klass == tcc_declaration)
 	{
-	  if (TYPE_P (t))
-	    specific = TYPE_LANG_SPECIFIC (t) ? -1 : 0;
-	  else if (DECL_P (t))
-	    specific = DECL_LANG_SPECIFIC (t) ? +1 : 0;
-	  w.b (specific != 0);
-	  if (specific < 0)
+	  if (klass == tcc_type)
+	    specific = TYPE_LANG_SPECIFIC (t) != NULL;
+	  else if (klass == tcc_declaration)
+	    specific = DECL_LANG_SPECIFIC (t) != NULL;
+	  w.b (specific);
+	  if (!specific)
+	    ;
+	  else if (klass == tcc_type)
 	    ; // FIXME: write type lang bools
-	  else if (specific > 0)
+	  else
 	    write_lang_decl_bools (d, t);
 	}
       w.bflush ();
       w.checkpoint ();
 
       write_core_vals (d, t);
-      if (specific < 0)
+      if (!specific)
+	;
+      else if (klass == tcc_type)
 	; // FIXME: write lang_type vals
-      else if (specific > 0)
+      else
 	write_lang_decl_vals (d, t);
     }
 
@@ -2349,8 +2379,54 @@ cpms_in::read_tree (FILE *d, tree *tp, unsigned tag)
     }
 
   tree_code code = tree_code (tag - rt_tree_base);
+  tree_code_class klass = TREE_CODE_CLASS (code);
+  tree t = NULL_TREE;
 
-  tree t = start (code);
+  int body = 1;
+  tree name = NULL_TREE;
+  tree ctx = NULL_TREE;
+  unsigned mod = GLOBAL_MODULE_INDEX;
+  unsigned key = ~0u;
+
+  if (code == IDENTIFIER_NODE)
+    body = 0;
+  else if (klass == tcc_declaration
+	   && read_tree (d, &ctx) && read_tree (d, &name))
+    {
+      mod = r.u ();
+      if (mod >= IMPORTED_MODULE_BASE)
+	{
+	  key = r.u ();
+	  body = -1;
+	}
+
+      if (mod >= remap_num)
+	r.bad ();
+      else
+	mod = remap_vec[mod];
+      if (body < 0)
+	{
+	  if (!r.checkpoint ())
+	    return false;
+
+	  t = find_module_instance (ctx, mod, name, key);
+	  if (!t || TREE_CODE (t) != code)
+	    {
+	      error ("failed to find %<%E::%E@%E%>",
+		     ctx, name, module_name (mod));
+	      r.bad ();
+	      t = NULL_TREE;
+	    }
+	  if (d)
+	    fprintf (d, "Importing %s::'%s'[%u]@%s\n",
+		     IDENTIFIER_POINTER (DECL_NAME (ctx)),
+		     IDENTIFIER_POINTER (name), key,
+		     IDENTIFIER_POINTER (module_name (mod)));
+	}
+    }
+
+  if (body >= 0)
+    t = start (code);
 
   /* Insert into map.  */
   tag = next ();
@@ -2359,29 +2435,31 @@ cpms_in::read_tree (FILE *d, tree *tp, unsigned tag)
   if (d)
     fprintf (d, "Reading:%u %s\n", tag, get_tree_code_name (code));
 
-  if (code != IDENTIFIER_NODE)
+  if (body > 0)
     {
       if (!read_core_bools (d, t))
 	return false;
 
-      int specific = 0;
+      bool specific = false;
       bool lied = false;
-      if (TYPE_P (t) || DECL_P (t))
+      if (klass == tcc_type || klass == tcc_declaration)
 	{
-	  if (r.b ())
-	    specific = TYPE_P (t) ? -1 : +1;
-	  if (specific
-	      && !(specific < 0
-		  ? maybe_add_lang_type_raw (t)
-		   : maybe_add_lang_decl_raw (t)))
+	  specific = r.b ();
+	  if (!specific)
+	    ;
+	  else if (klass == tcc_type
+		   ? !maybe_add_lang_type_raw (t)
+		   : !maybe_add_lang_decl_raw (t))
 	    {
-	      specific = 0;
+	      specific = false;
 	      lied = true;
 	    }
 
-	  if (specific
-	      // FIXME read lang_type bools
-	      && !(specific < 0 ? true : read_lang_decl_bools (d, t)))
+	  if (!specific)
+	    ;
+	  else if (klass == tcc_type
+		   ? !true // FIXME: read lang_type bools
+		   : !read_lang_decl_bools (d, t))
 	    return false;
 	}
       r.bflush ();
@@ -2393,29 +2471,45 @@ cpms_in::read_tree (FILE *d, tree *tp, unsigned tag)
 	  return false;
 	}
 
+      if (klass == tcc_declaration)
+	{
+	  DECL_CONTEXT (t) = ctx;
+	  DECL_NAME (t) = name;
+	}
+
       if (!read_core_vals (d, t))
 	return false;
-      if (specific
-	  // FIXME read lang_type vals
-	  && !(specific < 0 ? true : read_lang_decl_vals (d, t)))
-	return false;
+      if (!specific)
+	;
+      else if (klass == tcc_type)
+	; // FIXME read lang_type vals
+      else
+	{
+	  DECL_MODULE_INDEX (t) = mod;
+	  if (!read_lang_decl_vals (d, t))
+	    return false;
+	}
     }
 
-  if (!r.checkpoint ())
+  if (body >= 0 && !r.checkpoint ())
     return false;
 
-  tree found = finish (d, t);
-  if (found != t)
+  if (body > 0)
     {
-      /* Update the mapping.  */
-      t = found;
-      map.put (tag, t);
+      tree found = finish (d, t);
+
+      if (found != t)
+	{
+	  /* Update the mapping.  */
+	  t = found;
+	  map.put (tag, t);
+	}
     }
   *tp = t ? t : error_mark_node;
 
   if (d && t)
     {
-      tree name = found;
+      tree name = t;
       
       if (TYPE_P (name))
 	name = TYPE_NAME (name);
@@ -2425,8 +2519,8 @@ cpms_in::read_tree (FILE *d, tree *tp, unsigned tag)
 	name = DECL_NAME (name);
       else if (TREE_CODE (name) != IDENTIFIER_NODE)
 	name = NULL_TREE;
-      fprintf (d, "Index %u inserting %p (%s:%s)\n", tag, (void *)found,
-	       get_tree_code_name (TREE_CODE (found)),
+      fprintf (d, "Index %u inserting %p (%s:'%s')\n", tag, (void *)t,
+	       get_tree_code_name (TREE_CODE (t)),
 	       name ? IDENTIFIER_POINTER (name) : "");
     }
 
@@ -2602,7 +2696,7 @@ cpms_in::finish_namespace (FILE *d, tree ns)
   tree res = NULL_TREE;
 
   /* We will not have frobbed the namespace yet.  */
-  res = push_module_namespace (CP_DECL_CONTEXT (ns), index, ns);
+  res = push_module_namespace (CP_DECL_CONTEXT (ns), mod_ix, ns);
   if (!res)
     error ("failed to insert namespace %E", ns);
   else if (res == ns)
@@ -2737,7 +2831,7 @@ read_module (FILE *stream, const char *fname, module_state *state,
 
   if (ok)
     {
-      ok = in.get_index ();
+      ok = in.get_mod ();
       gcc_assert (ok >= THIS_MODULE_INDEX);
     }
 

@@ -1,3 +1,19 @@
+2017-05-05  Nathan Sidwell  <nathan@acm.org>
+
+	Indirect import lookup by tagging
+	gcc/cp/
+	* cp-tree.h (MAYBE_DECL_MODULE_INDEX): New.
+	(DECL_GLOBAL_MODULE_P, DECL_THIS_MODULE_P): Delete.
+	* mangle.c (maybe_write_module): Adjust.
+	* module.c (cpms_out::write_tree, cpms_in::read_tree): Mark
+	imported decls by tag.
+	* name-lookup.h (key_module_instance, find_module_instance): Declare.
+	* name-lookup.c (module_binding_slot): Allow search only.
+	(key_module_instance): New.
+	(find_module_instance): Use key.
+	gcc/testsuite/
+	* g++.dg/modules/mod-indirect-1_[a-e].C: New.
+
 2017-05-04  Nathan Sidwell  <nathan@acm.org>
 
 	Merge trunk r247612.

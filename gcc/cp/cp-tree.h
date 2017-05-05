@@ -1430,13 +1430,10 @@ check_constraint_info (tree t)
 #define DECL_MODULE_INDEX(N) \
   (DECL_LANG_SPECIFIC (N)->u.base.module_index)
 
-#define DECL_GLOBAL_MODULE_P(N) \
-  (!DECL_LANG_SPECIFIC (N)						\
-   || DECL_LANG_SPECIFIC (N)->u.base.module_index == GLOBAL_MODULE_INDEX)
-
-#define DECL_THIS_MODULE_P(N) \
-  (DECL_LANG_SPECIFIC (N) \
-   && DECL_LANG_SPECIFIC (N)->u.base.module_index == THIS_MODULE_INDEX)
+/* Get DECL's module index.  Anything lacking lang-specific is in the
+   global module.  */
+#define MAYBE_DECL_MODULE_INDEX(N) \
+  (DECL_LANG_SPECIFIC (N) ? DECL_MODULE_INDEX (N) : GLOBAL_MODULE_INDEX)
 
 /* Whether this is an exported DECL.  */
 #define DECL_MODULE_EXPORT_P(NODE) \

@@ -56,16 +56,19 @@ create_local_binding (cp_binding_level *level, tree name)
   return binding;
 }
 
-/* *SLOT is a namespace binding slot.  Create or extend the the
-   *MODULE_VECTOR to allow a binding in module IX.
-   IX must either be the global or this module, or after any existing
-   module binding.  */
+/* *SLOT is a namespace binding slot.  Find or create the
+   module-specific slot.  If CREATE is 0, we return NULL on
+   not-found.  If CREATE < 0, we're creating a slot for a namespace,
+   and try and extend an existing trailing binding span.  Otherwise
+   we're just creating a regular slot.  By construction, one can only
+   create new binding slots at the end of the array.  */
 
 static tree *
 module_binding_slot (tree *slot, unsigned ix, int create)
 {
   bool not_vec = !*slot || TREE_CODE (*slot) != MODULE_VECTOR;
   unsigned clusters = 0;
+  module_cluster *cluster;
 
   if (not_vec)
     {
@@ -76,7 +79,42 @@ module_binding_slot (tree *slot, unsigned ix, int create)
 	return NULL;
     }
   else
-    clusters = MODULE_VECTOR_NUM_CLUSTERS (*slot);
+    {
+      clusters = MODULE_VECTOR_NUM_CLUSTERS (*slot);
+      cluster = MODULE_VECTOR_CLUSTER_BASE (*slot);
+
+      if (ix < IMPORTED_MODULE_BASE)
+	{
+	  gcc_assert (cluster->spans[ix]);
+
+	  return &cluster->slots[ix];
+	}
+
+      /* We do a linear search from the end because we don't expect
+	 this to be very populated, and this allows us to quickly
+	 determine the append case.  */
+
+      unsigned probe = clusters;
+      for (cluster += clusters; --cluster, --probe;)
+	{
+	  gcc_checking_assert (cluster->spans[0]);
+	  if (cluster->spans[1])
+	    {
+	      if (cluster->bases[1] + cluster->spans[1] <= ix)
+		break;
+	      if (cluster->bases[1] <= ix)
+		return &cluster->slots[1];
+	    }
+	  if (cluster->bases[0] + cluster->spans[0] < ix)
+	    break;
+	  if (cluster->bases[0] <= ix)
+	    return &cluster->slots[0];
+	}
+      if (!create)
+	return NULL;
+      /* If we're to insert, we must be at the end.  */
+      gcc_assert (probe + 1 == clusters);
+    }
 
   /* Figure out if we need to extend the module vector itself.  */
   unsigned incr = 0;
@@ -86,25 +124,24 @@ module_binding_slot (tree *slot, unsigned ix, int create)
     incr = 2 - clusters; /* Make sure we have glob/this slots too.  */
   else
     {
-      module_cluster *last = MODULE_VECTOR_CLUSTER_LAST (*slot);
+      cluster = MODULE_VECTOR_CLUSTER_LAST (*slot);
       if (create < 0)
 	{
 	  /* If we're binding a namespace, see if we can extend the span
 	     of the final element.  */
-	  incr = last->spans[1] != 0;
-	  if (last->bases[incr] + last->spans[incr] == ix)
+	  incr = cluster->spans[1] != 0;
+	  if (cluster->bases[incr] + cluster->spans[incr] == ix)
 	    {
-	      last->spans[incr]++;
-	      return &last->slots[incr];
+	      cluster->spans[incr]++;
+	      return &cluster->slots[incr];
 	    }
 	  /* Otherwise we need to extend, if that was the last slot of the
 	     cluster.  */
 	}
-      else if (last->spans[1])
+      else if (cluster->spans[1])
 	incr = 1; /* No spare slot in the final cluster.  */
     }
 
-  module_cluster *cluster;
   if (incr)
     {
       tree new_vec = make_module_vec (clusters + incr);
@@ -2669,7 +2706,7 @@ push_module_binding (tree ns, unsigned module, tree name, tree binding)
   gcc_assert (TREE_CODE (binding) != NAMESPACE_DECL
 	      || DECL_NAMESPACE_ALIAS (binding));
   tree *slot = find_or_create_namespace_slot (ns, name);
-  tree *mslot = module_binding_slot (slot, module, -1);
+  tree *mslot = module_binding_slot (slot, module, true);
 
   gcc_assert (!MAYBE_STAT_TYPE (binding)); // FIXME
   gcc_assert (!*mslot || !MAYBE_STAT_TYPE (*mslot)); // FIXME
@@ -2707,29 +2744,66 @@ push_module_binding (tree ns, unsigned module, tree name, tree binding)
   return true;
 }
 
-/* DECL is a partially read in decl (code and type correct).  Look in
-   NS for an existing binding in MOD.  */
+/* CTX contains DECL in a module MOD binding for NAME.  Determine a
+   distinguishing KEY so we can find it again upon import.  */
 
-tree
-find_module_instance (tree ns, unsigned mod, tree decl)
+unsigned
+key_module_instance (tree ctx, unsigned mod, tree name, tree decl)
 {
   gcc_assert (TREE_CODE (decl) != NAMESPACE_DECL
 	      || DECL_NAMESPACE_ALIAS (decl));
-  if (tree *slot = find_namespace_slot (ns, DECL_NAME (decl)))
+
+  /* This will need extending for other kinds of context.  */
+  gcc_assert (TREE_CODE (ctx) == NAMESPACE_DECL);
+
+  /* There must be a binding, so no need to check for NULLs.  */
+  tree *slot = find_namespace_slot (ctx, name);
+  tree *mslot = module_binding_slot (slot, mod, 0);
+  tree binding = *mslot;
+  unsigned key = 0;
+
+  if (MAYBE_STAT_TYPE (binding) != decl)
+    for (ovl_iterator iter (MAYBE_STAT_DECL (binding)); key++, iter; ++iter)
+      if (*iter == decl)
+	break;
+
+  return key;
+}
+
+/* CTX contains a module MOD binding for NAME.  Use KEY to find the
+   binding we want.  Return NULL if nothing found (that would be an
+   error).  */
+
+tree
+find_module_instance (tree ctx, unsigned mod, tree name, unsigned key)
+{
+  /* This will need extending for other kinds of context.  */
+  gcc_assert (TREE_CODE (ctx) == NAMESPACE_DECL);
+  tree decl = NULL_TREE;
+  
+  /* Although there must be a binding, we're dealing with
+     untrustworthy data, so check for NULL.  */
+  if (tree *slot = find_namespace_slot (ctx, name))
     if (tree *mslot = module_binding_slot (slot, mod, 0))
       if (tree binding = *mslot)
 	{
-	  gcc_assert (!MAYBE_STAT_TYPE (binding)); // FIXME
-
-	  for (ovl_iterator iter (MAYBE_STAT_DECL (binding)); iter; ++iter)
-	    if (TREE_CODE (decl) == TREE_CODE (*iter)
-		&& same_type_p (TREE_TYPE (decl), TREE_TYPE (*iter)))
-	      return *iter;
+	  if (!key)
+	    decl = MAYBE_STAT_TYPE (binding);
+	  else
+	    for (ovl_iterator iter (MAYBE_STAT_DECL (binding)); iter; ++iter)
+	      if (!--key)
+		{
+		  decl = *iter;
+		  break;
+		}
 	}
 
-  /* We should have found an imported decl.  But global and main
-     modules could be new.  */
-  return mod <= IMPORTED_MODULE_BASE ? decl : NULL_TREE;
+  /* We should not have found a namespace.  */
+  if (decl && TREE_CODE (decl) == NAMESPACE_DECL
+      && !DECL_NAMESPACE_ALIAS (decl))
+    decl = NULL_TREE;
+
+  return decl;
 }
 
 /* Enter DECL into the symbol table, if that's appropriate.  Returns

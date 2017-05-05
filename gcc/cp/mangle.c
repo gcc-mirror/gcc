@@ -875,7 +875,8 @@ maybe_write_module (tree decl)
     }
   while (TREE_CODE (probe) != NAMESPACE_DECL);
 
-  if (DECL_MODULE_EXPORT_P (decl) || DECL_GLOBAL_MODULE_P (decl))
+  if (DECL_MODULE_EXPORT_P (decl)
+      || MAYBE_DECL_MODULE_INDEX (decl) == GLOBAL_MODULE_INDEX)
     return;
 
   write_char ('W');
