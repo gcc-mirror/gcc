@@ -78,7 +78,6 @@ static void check_for_uninitialized_const_var (tree);
 static tree local_variable_p_walkfn (tree *, int *, void *);
 static const char *tag_name (enum tag_types);
 static tree lookup_and_check_tag (enum tag_types, tree, tag_scope, bool);
-static int walk_namespaces_r (tree, walk_namespaces_fn, void *);
 static void maybe_deduce_size_from_array_init (tree, tree);
 static void layout_var_decl (tree);
 static tree check_initializer (tree, tree, int, vec<tree, va_gc> **);
@@ -877,32 +876,6 @@ poplevel (int keep, int reverse, int functionbody)
 
   timevar_cond_stop (TV_NAME_LOOKUP, subtime);
   return block;
-}
-
-/* Walk all the namespaces contained NAMESPACE, including NAMESPACE
-   itself, calling F for each.  The DATA is passed to F as well.  */
-
-static int
-walk_namespaces_r (tree name_space, walk_namespaces_fn f, void* data)
-{
-  int result = 0;
-  tree current = NAMESPACE_LEVEL (name_space)->namespaces;
-
-  result |= (*f) (name_space, data);
-
-  for (; current; current = DECL_CHAIN (current))
-    result |= walk_namespaces_r (current, f, data);
-
-  return result;
-}
-
-/* Walk all the namespaces, calling F for each.  The DATA is passed to
-   F as well.  */
-
-int
-walk_namespaces (walk_namespaces_fn f, void* data)
-{
-  return walk_namespaces_r (global_namespace, f, data);
 }
 
 /* Call wrapup_globals_declarations for the globals in NAMESPACE.  */

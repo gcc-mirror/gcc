@@ -1,5 +1,9 @@
 2017-05-05  Nathan Sidwell  <nathan@acm.org>
 
+	Kill walk_namespaces.
+	* cp-tree.h (walk_namespaces_fn, walk_namespaces): Delete.
+	* decl.c (walk_namespaces_r, walk_namespaces): Delete.
+
 	Kill per-namespace static_decls.
 	* cp-tree.h (static_decls): Declare.
 	(wrapup_globals_for_namespace,

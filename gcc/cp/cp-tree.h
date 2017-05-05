@@ -5902,9 +5902,6 @@ extern void revert_static_member_fn		(tree);
 extern void fixup_anonymous_aggr		(tree);
 extern tree compute_array_index_type		(tree, tree, tsubst_flags_t);
 extern tree check_default_argument		(tree, tree, tsubst_flags_t);
-typedef int (*walk_namespaces_fn)		(tree, void *);
-extern int walk_namespaces			(walk_namespaces_fn,
-						 void *);
 extern int wrapup_namespace_globals		();
 extern tree create_implicit_typedef		(tree, tree);
 extern int local_variable_p			(const_tree);
