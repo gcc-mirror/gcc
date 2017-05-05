@@ -7596,7 +7596,7 @@ handle_mode_attribute (tree *node, tree name, tree args,
 	  return NULL_TREE;
 	}
 
-      *node = typefm;
+      *node = build_qualified_type (typefm, TYPE_QUALS (type));
     }
 
   return NULL_TREE;
