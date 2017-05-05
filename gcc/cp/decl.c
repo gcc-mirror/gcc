@@ -157,6 +157,9 @@ tree tls_aggregates;
 
 tree integer_two_node;
 
+/* vector of static decls.  */
+vec<tree, va_gc> *static_decls;
+
 /* Used only for jumps to as-yet undefined labels, since jumps to
    defined labels can have their validity checked immediately.  */
 
@@ -903,57 +906,45 @@ walk_namespaces (walk_namespaces_fn f, void* data)
 }
 
 /* Call wrapup_globals_declarations for the globals in NAMESPACE.  */
+/* Diagnose odr-used extern inline variables without definitions
+   in the current TU.  */
 
 int
-wrapup_globals_for_namespace (tree name_space, void* data ATTRIBUTE_UNUSED)
+wrapup_namespace_globals ()
 {
-  cp_binding_level *level = NAMESPACE_LEVEL (name_space);
-  vec<tree, va_gc> *statics = level->static_decls;
-  tree *vec = statics->address ();
-  int len = statics->length ();
-
-  if (warn_unused_function)
+  if (vec<tree, va_gc> *statics = static_decls)
     {
       tree decl;
       unsigned int i;
-      FOR_EACH_VEC_SAFE_ELT (statics, i, decl)
-	if (TREE_CODE (decl) == FUNCTION_DECL
-	    && DECL_INITIAL (decl) == 0
-	    && DECL_EXTERNAL (decl)
-	    && !TREE_PUBLIC (decl)
-	    && !DECL_ARTIFICIAL (decl)
-	    && !DECL_FRIEND_PSEUDO_TEMPLATE_INSTANTIATION (decl)
-	    && !TREE_NO_WARNING (decl))
-	  {
+      FOR_EACH_VEC_ELT (*statics, i, decl)
+	{
+	  if (warn_unused_function
+	      && TREE_CODE (decl) == FUNCTION_DECL
+	      && DECL_INITIAL (decl) == 0
+	      && DECL_EXTERNAL (decl)
+	      && !TREE_PUBLIC (decl)
+	      && !DECL_ARTIFICIAL (decl)
+	      && !DECL_FRIEND_PSEUDO_TEMPLATE_INSTANTIATION (decl)
+	      && !TREE_NO_WARNING (decl))
 	    warning_at (DECL_SOURCE_LOCATION (decl),
 			OPT_Wunused_function,
 			"%qF declared %<static%> but never defined", decl);
-	    TREE_NO_WARNING (decl) = 1;
-	  }
+
+	  if (VAR_P (decl)
+	      && DECL_EXTERNAL (decl)
+	      && DECL_INLINE_VAR_P (decl)
+	      && DECL_ODR_USED (decl))
+	    error_at (DECL_SOURCE_LOCATION (decl),
+		      "odr-used inline variable %qD is not defined", decl);
+	}
+
+      /* Clear out the list, so we don't rescan next time.  */
+      static_decls = NULL;
+
+      /* Write out any globals that need to be output.  */
+      return wrapup_global_declarations (statics->address (),
+					 statics->length ());
     }
-
-  /* Write out any globals that need to be output.  */
-  return wrapup_global_declarations (vec, len);
-}
-
-/* Diagnose odr-used extern inline variables without definitions
-   in the current TU.  */
-int
-diagnose_inline_vars_for_namespace (tree name_space, void *)
-{
-  cp_binding_level *level = NAMESPACE_LEVEL (name_space);
-  vec<tree, va_gc> *statics = level->static_decls;
-  tree decl;
-  unsigned int i;
-
-  FOR_EACH_VEC_SAFE_ELT (statics, i, decl)
-    if (VAR_P (decl)
-	&& DECL_EXTERNAL (decl)
-	&& DECL_INLINE_VAR_P (decl)
-	&& DECL_ODR_USED (decl))
-      error_at (DECL_SOURCE_LOCATION (decl),
-		"odr-used inline variable %qD is not defined", decl);
-
   return 0;
 }
 
@@ -4096,6 +4087,9 @@ cxx_init_decl_processing (void)
   c_common_nodes_and_builtins ();
 
   integer_two_node = build_int_cst (NULL_TREE, 2);
+
+  /* Guess at the initial static decls size.  */
+  vec_alloc (static_decls, 500);
 
   record_builtin_type (RID_BOOL, "bool", boolean_type_node);
   truthvalue_type_node = boolean_type_node;
