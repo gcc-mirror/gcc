@@ -1,3 +1,8 @@
+2017-05-05  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr.md [flag_strict_overflow]: Remove any occurence
+	of this flag from insn conditions due to removal from r247495.
+
 2017-05-05  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	* config/arm/aarch-common.c (arm_early_load_addr_dep_ptr):
