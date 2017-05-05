@@ -1,3 +1,11 @@
+2017-05-05  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree.c (next_type_uid): Change type to unsigned.
+	(type_hash_canon): Decrement back next_type_uid if
+	freeing a type node with the highest TYPE_UID.  For INTEGER_TYPEs
+	also ggc_free TYPE_MIN_VALUE, TYPE_MAX_VALUE and TYPE_CACHED_VALUES
+	if possible.
+
 2017-05-04  Martin Sebor  <msebor@redhat.com>
 
 	* builtins.c: Fix a trivial typo in a comment.

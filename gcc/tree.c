@@ -151,7 +151,7 @@ static const char * const tree_node_kind_names[] = {
 /* Unique id for next decl created.  */
 static GTY(()) int next_decl_uid;
 /* Unique id for next type created.  */
-static GTY(()) int next_type_uid = 1;
+static GTY(()) unsigned next_type_uid = 1;
 /* Unique id for next debug decl created.  Use negative numbers,
    to catch erroneous uses.  */
 static GTY(()) int next_debug_decl_uid;
@@ -7188,6 +7188,22 @@ type_hash_canon (unsigned int hashcode, tree type)
     {
       tree t1 = ((type_hash *) *loc)->type;
       gcc_assert (TYPE_MAIN_VARIANT (t1) == t1);
+      if (TYPE_UID (type) + 1 == next_type_uid)
+	--next_type_uid;
+      /* Free also min/max values and the cache for integer
+	 types.  This can't be done in free_node, as LTO frees
+	 those on its own.  */
+      if (TREE_CODE (type) == INTEGER_TYPE)
+	{
+	  if (TYPE_MIN_VALUE (type)
+	      && TREE_TYPE (TYPE_MIN_VALUE (type)) == type)
+	    ggc_free (TYPE_MIN_VALUE (type));
+	  if (TYPE_MAX_VALUE (type)
+	      && TREE_TYPE (TYPE_MAX_VALUE (type)) == type)
+	    ggc_free (TYPE_MAX_VALUE (type));
+	  if (TYPE_CACHED_VALUES_P (type))
+	    ggc_free (TYPE_CACHED_VALUES (type));
+	}
       free_node (type);
       return t1;
     }
