@@ -1,7 +1,18 @@
 2017-05-05  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2017-04-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/80321
+	* dwarf2out.c (decls_for_scope): Ignore declarations of
+	current_function_decl in BLOCK_NONLOCALIZED_VARS.
+
 	2017-03-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/79255
+	* dwarf2out.c (decls_for_scope): If BLOCK_NONLOCALIZED_VAR is
+	a FUNCTION_DECL, pass it as decl instead of origin to
+	process_scope_var.
 
 	PR debug/80025
 	* cselib.c (cselib_hasher::equal): Pass 0 to rtx_equal_for_cselib_1.
