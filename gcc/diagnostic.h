@@ -189,7 +189,7 @@ struct diagnostic_context
 
   /* Used to detect when the input file stack has changed since last
      described.  */
-  const struct line_map *last_module;
+  const line_map_ordinary *last_module;
 
   int lock;
 
@@ -240,16 +240,6 @@ diagnostic_inhibit_notes (diagnostic_context * context)
 
 /* Same as output_prefixing_rule.  Works on 'diagnostic_context *'.  */
 #define diagnostic_prefixing_rule(DC) ((DC)->printer->wrapping.rule)
-
-/* True if the last module or file in which a diagnostic was reported is
-   different from the current one.  */
-#define diagnostic_last_module_changed(DC, MAP)	\
-  ((DC)->last_module != MAP)
-
-/* Remember the current module or file as being the last one in which we
-   report a diagnostic.  */
-#define diagnostic_set_last_module(DC, MAP)	\
-  (DC)->last_module = MAP
 
 /* Raise SIGABRT on any diagnostic of severity DK_ERROR or higher.  */
 #define diagnostic_abort_on_error(DC) \
