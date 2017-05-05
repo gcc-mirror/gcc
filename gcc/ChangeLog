@@ -1,5 +1,13 @@
 2017-05-05  David Malcolm  <dmalcolm@redhat.com>
 
+	* diagnostic.c (diagnostic_report_diagnostic): Eliminate
+	save/restor of format_spec.  Move option-printing code to...
+	(print_option_information): ...this new function, and
+	reimplement by simply printing to the pretty_printer,
+	rather than appending to the format string.
+
+2017-05-05  David Malcolm  <dmalcolm@redhat.com>
+
 	* diagnostic.c (diagnostic_report_diagnostic): Split out pragma
 	handling logic into...
 	(update_effective_level_from_pragmas): ...this new function.
