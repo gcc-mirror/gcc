@@ -4478,8 +4478,7 @@ omp_privatize_field (tree t, bool shared)
   if (v == NULL_TREE)
     {
       v = create_temporary_var (TREE_TYPE (m));
-      if (!DECL_LANG_SPECIFIC (v))
-	retrofit_lang_decl (v);
+      retrofit_lang_decl (v);
       DECL_OMP_PRIVATIZED_MEMBER (v) = 1;
       SET_DECL_VALUE_EXPR (v, m);
       DECL_HAS_VALUE_EXPR_P (v) = 1;

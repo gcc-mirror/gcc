@@ -1305,8 +1305,7 @@ alter_access (tree t, tree fdecl, tree access)
 {
   tree elem;
 
-  if (!DECL_LANG_SPECIFIC (fdecl))
-    retrofit_lang_decl (fdecl);
+  retrofit_lang_decl (fdecl);
 
   gcc_assert (!DECL_DISCRIMINATOR_P (fdecl));
 
