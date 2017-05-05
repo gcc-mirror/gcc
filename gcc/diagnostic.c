@@ -534,6 +534,25 @@ diagnostic_action_after_output (diagnostic_context *context,
     }
 }
 
+/* True if the last module or file in which a diagnostic was reported is
+   different from the current one.  */
+
+static bool
+last_module_changed_p (diagnostic_context *context,
+		       const line_map_ordinary *map)
+{
+  return context->last_module != map;
+}
+
+/* Remember the current module or file as being the last one in which we
+   report a diagnostic.  */
+
+static void
+set_last_module (diagnostic_context *context, const line_map_ordinary *map)
+{
+  context->last_module = map;
+}
+
 void
 diagnostic_report_current_module (diagnostic_context *context, location_t where)
 {
@@ -552,9 +571,9 @@ diagnostic_report_current_module (diagnostic_context *context, location_t where)
 			    LRK_MACRO_DEFINITION_LOCATION,
 			    &map);
 
-  if (map && diagnostic_last_module_changed (context, map))
+  if (map && last_module_changed_p (context, map))
     {
-      diagnostic_set_last_module (context, map);
+      set_last_module (context, map);
       if (! MAIN_FILE_P (map))
 	{
 	  map = INCLUDED_FROM (line_table, map);
