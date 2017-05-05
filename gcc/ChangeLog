@@ -1,3 +1,53 @@
+2017-05-05  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* config.gcc: Allow combinations of aprofile and rmprofile values for
+	--with-multilib-list.
+	* config/arm/t-multilib: New file.
+	* config/arm/t-aprofile: Remove initialization of MULTILIB_*
+	variables.  Remove setting of ISA and floating-point ABI in
+	MULTILIB_OPTIONS and MULTILIB_DIRNAMES.  Set architecture and FPU in
+	MULTI_ARCH_OPTS_A and MULTI_ARCH_DIRS_A rather than MULTILIB_OPTIONS
+	and MULTILIB_DIRNAMES respectively.  Add comment to introduce all
+	matches.  Add architecture matches for marvel-pj4 and generic-armv7-a
+	CPU options.
+	* config/arm/t-rmprofile: Likewise except for the matches changes.
+	* doc/install.texi (--with-multilib-list): Document the combination of
+	aprofile and rmprofile values and warn about pitfalls in doing that.
+
+2017-05-05  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* config/aarch64/aarch64.md (movsi_aarch64): Remove '*' from r=w.
+	(movdi_aarch64): Likewise.
+
+2017-05-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/80632
+	* tree-switch-conversion.c (struct switch_conv_info): Add target_vop
+	field.
+	(build_arrays): Initialize it for virtual phis.
+	(fix_phi_nodes): Use it for virtual phis.
+
+	PR tree-optimization/80558
+	* tree-vrp.c (extract_range_from_binary_expr_1): Optimize
+	[x, y] op z into [x op, y op z] for op & or | if conditions
+	are met.
+
+2017-05-05  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+	    Prakhar Bahuguna  <prakhar.bahuguna@arm.com>
+
+	PR target/71607
+	* config/arm/arm.md (use_literal_pool): Remove.
+	(64-bit immediate split): No longer takes cost into consideration
+	if arm_disable_literal_pool is enabled.
+	* config/arm/arm.c (arm_tls_referenced_p): Add diagnostic if TLS is
+	used when arm_disable_literal_pool is enabled.
+	(arm_max_const_double_inline_cost): Remove use of
+	arm_disable_literal_pool.
+	(push_minipool_fix): Add assert.
+	(arm_reorg): Add return if arm_disable_literal_pool is enabled.
+	* config/arm/vfp.md (no_literal_pool_df_immediate): New.
+	(no_literal_pool_sf_immediate): New.
+
 2017-05-05  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
 
 	PR tree-optimization/80613

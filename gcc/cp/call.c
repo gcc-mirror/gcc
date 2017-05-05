@@ -10231,7 +10231,7 @@ make_temporary_var_for_ref_to_temp (tree decl, tree type)
       DECL_NAME (var) = name;
       SET_DECL_ASSEMBLER_NAME (var, name);
 
-      var = pushdecl/*_top_level*/ (var);
+      var = pushdecl (var);
     }
   else
     /* Create a new cleanup level if necessary.  */
