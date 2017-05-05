@@ -1,3 +1,11 @@
+2017-05-05  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000.c (rs6000_vect_nonmem): New static var.
+	(rs6000_init_cost): Initialize rs6000_vect_nonmem.
+	(rs6000_add_stmt_cost): Update rs6000_vect_nonmem.
+	(rs6000_finish_cost): Avoid vectorizing simple copy loops with
+	VF=2 that require versioning.
+
 2017-05-05  David Malcolm  <dmalcolm@redhat.com>
 
 	* diagnostic.h (CARET_LINE_MARGIN): Convert from macro to const
