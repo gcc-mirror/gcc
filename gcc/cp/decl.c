@@ -6116,8 +6116,7 @@ reshape_init (tree type, tree init, tsubst_flags_t complain)
     {
       if (complain & tf_error)
 	error ("too many initializers for %qT", type);
-      else
-	return error_mark_node;
+      return error_mark_node;
     }
 
   if (CONSTRUCTOR_IS_DIRECT_INIT (init)
