@@ -1,3 +1,9 @@
+2017-05-05  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic.c (diagnostic_report_diagnostic): Split out pragma
+	handling logic into...
+	(update_effective_level_from_pragmas): ...this new function.
+
 2017-05-04  Andrew Waterman  <andrew@sifive.com>
 
 	* config/riscv/riscv.opt (mstrict-align): New option.
