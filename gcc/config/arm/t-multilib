@@ -1,0 +1,69 @@
+# Copyright (C) 2016 Free Software Foundation, Inc.
+#
+# This file is part of GCC.
+#
+# GCC is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3, or (at your option)
+# any later version.
+#
+# GCC is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+# This is a target makefile fragment that attempts to get
+# multilibs built for the range of CPU's, FPU's and ABI's that
+# are relevant for the ARM architecture.  It should not be used in
+# conjunction with another make file fragment and assumes --with-arch,
+# --with-cpu, --with-fpu, --with-float, --with-mode have their default
+# values during the configure step.  We enforce this during the
+# top-level configury.
+
+MULTILIB_OPTIONS     =
+MULTILIB_DIRNAMES    =
+MULTILIB_EXCEPTIONS  =
+MULTILIB_MATCHES     =
+MULTILIB_REUSE	     =
+
+comma := ,
+tm_multilib_list := $(subst $(comma), ,$(TM_MULTILIB_CONFIG))
+
+HAS_APROFILE := $(filter aprofile,$(tm_multilib_list))
+HAS_RMPROFILE := $(filter rmprofile,$(tm_multilib_list))
+
+ifneq (,$(HAS_APROFILE))
+include $(srcdir)/config/arm/t-aprofile
+endif
+ifneq (,$(HAS_RMPROFILE))
+include $(srcdir)/config/arm/t-rmprofile
+endif
+SEP := $(and $(HAS_APROFILE),$(HAS_RMPROFILE),/)
+
+
+# We have the following hierachy:
+#   ISA: A32 (.) or T16/T32 (thumb)
+#   Architecture: ARMv6-M (v6-m), ARMv7-M (v7-m), ARMv7E-M (v7e-m),
+#                 ARMv7 (v7-ar), ARMv7-A (v7-a), ARMv7VE (v7ve),
+#                 ARMv8-M Baseline (v8-m.base), ARMv8-M Mainline (v8-m.main)
+#                 or ARMv8-A (v8-a).
+#   FPU: VFPv3-D16 (fpv3), NEONv1 (simdv1), FPV4-SP-D16 (fpv4-sp),
+#        VFPv4-D16 (fpv4), NEON-VFPV4 (simdvfpv4), FPV5-SP-D16 (fpv5-sp),
+#        VFPv5-D16 (fpv5), NEON for ARMv8 (simdv8), or None (.).
+#   Float-abi: Soft (.), softfp (softfp), or hard (hard).
+
+MULTILIB_OPTIONS       += mthumb
+MULTILIB_DIRNAMES      += thumb
+
+MULTILIB_OPTIONS       += $(MULTI_ARCH_OPTS_A)$(SEP)$(MULTI_ARCH_OPTS_RM)
+MULTILIB_DIRNAMES      += $(MULTI_ARCH_DIRS_A) $(MULTI_ARCH_DIRS_RM)
+
+MULTILIB_OPTIONS       += $(MULTI_FPU_OPTS_A)$(SEP)$(MULTI_FPU_OPTS_RM)
+MULTILIB_DIRNAMES      += $(MULTI_FPU_DIRS_A) $(MULTI_FPU_DIRS_RM)
+
+MULTILIB_OPTIONS       += mfloat-abi=softfp/mfloat-abi=hard
+MULTILIB_DIRNAMES      += softfp hard
