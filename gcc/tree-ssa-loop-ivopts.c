@@ -2459,67 +2459,36 @@ find_interesting_uses_outside (struct ivopts_data *data, edge exit)
     }
 }
 
-/* Compute maximum offset of [base + offset] addressing mode
-   for memory reference represented by USE.  */
+/* Return TRUE if OFFSET is within the range of [base + offset] addressing
+   mode for memory reference represented by USE.  */
 
-static HOST_WIDE_INT
-compute_max_addr_offset (struct iv_use *use)
+static GTY (()) vec<rtx, va_gc> *addr_list;
+
+static bool
+addr_offset_valid_p (struct iv_use *use, HOST_WIDE_INT offset)
 {
-  int width;
   rtx reg, addr;
-  HOST_WIDE_INT i, off;
-  unsigned list_index, num;
-  addr_space_t as;
-  machine_mode mem_mode, addr_mode;
-  static vec<HOST_WIDE_INT> max_offset_list;
+  unsigned list_index;
+  addr_space_t as = TYPE_ADDR_SPACE (TREE_TYPE (use->iv->base));
+  machine_mode addr_mode, mem_mode = TYPE_MODE (TREE_TYPE (*use->op_p));
 
-  as = TYPE_ADDR_SPACE (TREE_TYPE (use->iv->base));
-  mem_mode = TYPE_MODE (TREE_TYPE (*use->op_p));
-
-  num = max_offset_list.length ();
   list_index = (unsigned) as * MAX_MACHINE_MODE + (unsigned) mem_mode;
-  if (list_index >= num)
+  if (list_index >= vec_safe_length (addr_list))
+    vec_safe_grow_cleared (addr_list, list_index + MAX_MACHINE_MODE);
+
+  addr = (*addr_list)[list_index];
+  if (!addr)
     {
-      max_offset_list.safe_grow (list_index + MAX_MACHINE_MODE);
-      for (; num < max_offset_list.length (); num++)
-	max_offset_list[num] = -1;
+      addr_mode = targetm.addr_space.address_mode (as);
+      reg = gen_raw_REG (addr_mode, LAST_VIRTUAL_REGISTER + 1);
+      addr = gen_rtx_fmt_ee (PLUS, addr_mode, reg, NULL_RTX);
+      (*addr_list)[list_index] = addr;
     }
+  else
+    addr_mode = GET_MODE (addr);
 
-  off = max_offset_list[list_index];
-  if (off != -1)
-    return off;
-
-  addr_mode = targetm.addr_space.address_mode (as);
-  reg = gen_raw_REG (addr_mode, LAST_VIRTUAL_REGISTER + 1);
-  addr = gen_rtx_fmt_ee (PLUS, addr_mode, reg, NULL_RTX);
-
-  width = GET_MODE_BITSIZE (addr_mode) - 1;
-  if (width > (HOST_BITS_PER_WIDE_INT - 1))
-    width = HOST_BITS_PER_WIDE_INT - 1;
-
-  for (i = width; i > 0; i--)
-    {
-      off = (HOST_WIDE_INT_1U << i) - 1;
-      XEXP (addr, 1) = gen_int_mode (off, addr_mode);
-      if (memory_address_addr_space_p (mem_mode, addr, as))
-	break;
-
-      /* For some strict-alignment targets, the offset must be naturally
-	 aligned.  Try an aligned offset if mem_mode is not QImode.  */
-      off = (HOST_WIDE_INT_1U << i);
-      if (off > GET_MODE_SIZE (mem_mode) && mem_mode != QImode)
-	{
-	  off -= GET_MODE_SIZE (mem_mode);
-	  XEXP (addr, 1) = gen_int_mode (off, addr_mode);
-	  if (memory_address_addr_space_p (mem_mode, addr, as))
-	    break;
-	}
-    }
-  if (i == 0)
-    off = 0;
-
-  max_offset_list[list_index] = off;
-  return off;
+  XEXP (addr, 1) = gen_int_mode (offset, addr_mode);
+  return (memory_address_addr_space_p (mem_mode, addr, as));
 }
 
 /* Comparison function to sort group in ascending order of addr_offset.  */
@@ -2598,14 +2567,12 @@ static void
 split_address_groups (struct ivopts_data *data)
 {
   unsigned int i, j;
-  HOST_WIDE_INT max_offset = -1;
-
-  /* Reset max offset to split all small groups.  */
-  if (split_small_address_groups_p (data))
-    max_offset = 0;
+  /* Always split group.  */
+  bool split_p = split_small_address_groups_p (data);
 
   for (i = 0; i < data->vgroups.length (); i++)
     {
+      struct iv_group *new_group = NULL;
       struct iv_group *group = data->vgroups[i];
       struct iv_use *use = group->vuses[0];
 
@@ -2614,29 +2581,29 @@ split_address_groups (struct ivopts_data *data)
       if (group->vuses.length () == 1)
 	continue;
 
-      if (max_offset != 0)
-	max_offset = compute_max_addr_offset (use);
+      gcc_assert (group->type == USE_ADDRESS);
 
-      for (j = 1; j < group->vuses.length (); j++)
+      for (j = 1; j < group->vuses.length ();)
 	{
 	  struct iv_use *next = group->vuses[j];
+	  HOST_WIDE_INT offset = next->addr_offset - use->addr_offset;
 
-	  /* Only uses with offset that can fit in offset part against
-	     the first use can be grouped together.  */
-	  if (next->addr_offset - use->addr_offset
-	      > (unsigned HOST_WIDE_INT) max_offset)
-	    break;
+	  /* Split group if aksed to, or the offset against the first
+	     use can't fit in offset part of addressing mode.  IV uses
+	     having the same offset are still kept in one group.  */
+	  if (offset != 0 &&
+	      (split_p || !addr_offset_valid_p (use, offset)))
+	    {
+	      if (!new_group)
+		new_group = record_group (data, group->type);
+	      group->vuses.ordered_remove (j);
+	      new_group->vuses.safe_push (next);
+	      continue;
+	    }
 
 	  next->id = j;
 	  next->group_id = group->id;
-	}
-      /* Split group.  */
-      if (j < group->vuses.length ())
-	{
-	  struct iv_group *new_group = record_group (data, group->type);
-	  new_group->vuses.safe_splice (group->vuses);
-	  new_group->vuses.block_remove (0, j);
-	  group->vuses.truncate (j);
+	  j++;
 	}
     }
 }
@@ -7853,3 +7820,5 @@ tree_ssa_iv_optimize (void)
 
   tree_ssa_iv_optimize_finalize (&data);
 }
+
+#include "gt-tree-ssa-loop-ivopts.h"

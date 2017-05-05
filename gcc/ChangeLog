@@ -1,3 +1,11 @@
+2017-05-05  Bin Cheng  <bin.cheng@arm.com>
+
+	* Makefile.in (GTFILES): Add tree-ssa-loop-ivopts.c.
+	* tree-ssa-loop-ivopts.c (compute_max_addr_offset): Delete.
+	(addr_list, addr_offset_valid_p): New.
+	(split_address_groups): Check offset validity with above function.
+	(gt-tree-ssa-loop-ivopts.h): Include header file.
+
 2017-05-05  Nathan Sidwell  <nathan@acm.org>
 
 	* config.gcc (arm*-*-*): Add missing 'fi'.
