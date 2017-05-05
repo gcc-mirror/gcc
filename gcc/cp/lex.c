@@ -447,13 +447,9 @@ unqualified_name_lookup_error (tree name, location_t loc)
 	 this NAME in the innermost block scope.  */
       if (local_bindings_p ())
 	{
-	  tree decl;
-	  decl = build_decl (loc, VAR_DECL, name, error_mark_node);
-	  DECL_CONTEXT (decl) = current_function_decl;
-	  push_local_binding (name, decl, 0);
-	  /* Mark the variable as used so that we do not get warnings
-	     about it being unused later.  */
-	  TREE_USED (decl) = 1;
+	  tree decl = build_decl (loc, VAR_DECL, name, error_mark_node);
+	  TREE_USED (decl) = true;
+	  pushdecl (decl);
 	}
     }
 

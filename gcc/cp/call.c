@@ -10234,10 +10234,7 @@ perform_direct_initialization_if_possible (tree type,
 tree
 make_temporary_var_for_ref_to_temp (tree decl, tree type)
 {
-  tree var;
-
-  /* Create the variable.  */
-  var = create_temporary_var (type);
+  tree var = create_temporary_var (type);
 
   /* Register the variable.  */
   if (VAR_P (decl)
@@ -10245,15 +10242,16 @@ make_temporary_var_for_ref_to_temp (tree decl, tree type)
     {
       /* Namespace-scope or local static; give it a mangled name.  */
       /* FIXME share comdat with decl?  */
-      tree name;
 
       TREE_STATIC (var) = TREE_STATIC (decl);
       CP_DECL_THREAD_LOCAL_P (var) = CP_DECL_THREAD_LOCAL_P (decl);
       set_decl_tls_model (var, DECL_TLS_MODEL (decl));
-      name = mangle_ref_init_variable (decl);
+
+      tree name = mangle_ref_init_variable (decl);
       DECL_NAME (var) = name;
       SET_DECL_ASSEMBLER_NAME (var, name);
-      var = pushdecl_top_level (var);
+
+      var = pushdecl (var);
     }
   else
     /* Create a new cleanup level if necessary.  */
