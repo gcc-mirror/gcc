@@ -13219,7 +13219,8 @@ gcc -O2 -ftree-vectorize -fopt-info-vec-missed
 prints information about missed optimization opportunities from
 vectorization passes on @file{stderr}.  
 Note that @option{-fopt-info-vec-missed} is equivalent to 
-@option{-fopt-info-missed-vec}.
+@option{-fopt-info-missed-vec}.  The order of the optimization group
+names and message types listed after @option{-fopt-info} does not matter.
 
 As another example,
 @smallexample

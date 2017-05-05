@@ -1,3 +1,11 @@
+2017-05-05  Steve Ellcey  <sellcey@cavium.com>
+
+	* doc/invoke.texi (-fopt-info): Explicitly say order of options
+	included in -fopt-info does not matter.
+	* doc/optinfo.texi (-fopt-info): Fix description of default
+	behavour. Explicitly say order of options included in -fopt-info
+	does not matter.
+
 2017-05-05  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	* config.gcc: Allow combinations of aprofile and rmprofile values for
