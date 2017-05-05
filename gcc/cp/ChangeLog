@@ -1,5 +1,9 @@
 2017-05-05  Nathan Sidwell  <nathan@acm.org>
 
+	* call.c (make_temporary_var_for_ref_to_temp): Push decl into
+	current scope.
+	* lex.c (unqualified_name_lookup_error): Likewise.
+
 	* class.c (alter_class): Use retrofit_lang_decl directly.
 	* decl.c (push_local_name, dupliate_decls): Likewise.
 	* semantics.c (omp_privatize_field): Likewise.
