@@ -1173,31 +1173,7 @@ get_or_alloc_expr_for (tree t)
     return get_or_alloc_expr_for_name (t);
   else if (is_gimple_min_invariant (t))
     return get_or_alloc_expr_for_constant (t);
-  else
-    {
-      /* More complex expressions can result from SCCVN expression
-	 simplification that inserts values for them.  As they all
-	 do not have VOPs the get handled by the nary ops struct.  */
-      vn_nary_op_t result;
-      unsigned int result_id;
-      vn_nary_op_lookup (t, &result);
-      if (result != NULL)
-	{
-	  pre_expr e = pre_expr_pool.allocate ();
-	  e->kind = NARY;
-	  PRE_EXPR_NARY (e) = result;
-	  result_id = lookup_expression_id (e);
-	  if (result_id != 0)
-	    {
-	      pre_expr_pool.remove (e);
-	      e = expression_for_id (result_id);
-	      return e;
-	    }
-	  alloc_expression_id (e);
-	  return e;
-	}
-    }
-  return NULL;
+  gcc_unreachable ();
 }
 
 /* Return the folded version of T if T, when folded, is a gimple

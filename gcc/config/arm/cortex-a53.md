@@ -254,6 +254,16 @@
 		 "cortex_a53_store*"
 		 "arm_no_early_store_addr_dep")
 
+;; Model a bypass for load to load/store address.
+
+(define_bypass 3 "cortex_a53_load1"
+		 "cortex_a53_load*"
+		 "arm_early_load_addr_dep_ptr")
+
+(define_bypass 3 "cortex_a53_load1"
+		 "cortex_a53_store*"
+		 "arm_early_store_addr_dep_ptr")
+
 ;; Model a GP->FP register move as similar to stores.
 
 (define_bypass 0 "cortex_a53_alu*,cortex_a53_shift*"
