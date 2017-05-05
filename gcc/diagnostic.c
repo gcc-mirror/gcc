@@ -815,6 +815,32 @@ update_effective_level_from_pragmas (diagnostic_context *context,
   return diag_class;
 }
 
+/* Print any metadata about the option used to control DIAGNOSTIC to CONTEXT's
+   printer, e.g. " [-Werror=uninitialized]".
+   Subroutine of diagnostic_report_diagnostic.  */
+
+static void
+print_option_information (diagnostic_context *context,
+			  const diagnostic_info *diagnostic,
+			  diagnostic_t orig_diag_kind)
+{
+  char *option_text;
+
+  option_text = context->option_name (context, diagnostic->option_index,
+				      orig_diag_kind, diagnostic->kind);
+
+  if (option_text)
+    {
+      pretty_printer *pp = context->printer;
+      pp_string (pp, " [");
+      pp_string (pp, colorize_start (pp_show_color (pp),
+				     diagnostic_kind_color[diagnostic->kind]));
+      pp_string (pp, option_text);
+      pp_string (pp, colorize_stop (pp_show_color (pp)));
+      pp_character (pp, ']');
+      free (option_text);
+    }
+}
 
 /* Report a diagnostic message (an error or a warning) as specified by
    DC.  This function is *the* subroutine in terms of which front-ends
@@ -829,7 +855,6 @@ diagnostic_report_diagnostic (diagnostic_context *context,
 {
   location_t location = diagnostic_location (diagnostic);
   diagnostic_t orig_diag_kind = diagnostic->kind;
-  const char *saved_format_spec;
 
   /* Give preference to being able to inhibit warnings, before they
      get reclassified to something else.  */
@@ -925,33 +950,13 @@ diagnostic_report_diagnostic (diagnostic_context *context,
   else
     ++diagnostic_kind_count (context, diagnostic->kind);
 
-  saved_format_spec = diagnostic->message.format_spec;
-  if (context->show_option_requested)
-    {
-      char *option_text;
-
-      option_text = context->option_name (context, diagnostic->option_index,
-					  orig_diag_kind, diagnostic->kind);
-
-      if (option_text)
-	{
-	  const char *cs
-	    = colorize_start (pp_show_color (context->printer),
-			      diagnostic_kind_color[diagnostic->kind]);
-	  const char *ce = colorize_stop (pp_show_color (context->printer));
-	  diagnostic->message.format_spec
-	    = ACONCAT ((diagnostic->message.format_spec,
-			" ", 
-			"[", cs, option_text, ce, "]",
-			NULL));
-	  free (option_text);
-	}
-    }
   diagnostic->message.x_data = &diagnostic->x_data;
   diagnostic->x_data = NULL;
   pp_format (context->printer, &diagnostic->message);
   (*diagnostic_starter (context)) (context, diagnostic);
   pp_output_formatted_text (context->printer);
+  if (context->show_option_requested)
+    print_option_information (context, diagnostic, orig_diag_kind);
   (*diagnostic_finalizer (context)) (context, diagnostic);
   if (context->parseable_fixits_p)
     {
@@ -959,7 +964,6 @@ diagnostic_report_diagnostic (diagnostic_context *context,
       pp_flush (context->printer);
     }
   diagnostic_action_after_output (context, diagnostic->kind);
-  diagnostic->message.format_spec = saved_format_spec;
   diagnostic->x_data = NULL;
 
   if (context->edit_context_ptr)
