@@ -1,5 +1,10 @@
 2017-05-05  David Malcolm  <dmalcolm@redhat.com>
 
+	* diagnostic.h (diagnostic_override_option_index): Convert from
+	macro to inline function.
+
+2017-05-05  David Malcolm  <dmalcolm@redhat.com>
+
 	* diagnostic.c (last_module_changed_p): New function.
 	(set_last_module): New function.
 	(diagnostic_report_current_module): Convert macro usage to
