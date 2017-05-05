@@ -1,3 +1,22 @@
+2017-05-05  Marek Polacek  <polacek@redhat.com>
+	    Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/77728
+	* config/arm/arm.c: Include gimple.h.
+	(aapcs_layout_arg): Emit -Wpsabi note if arm_needs_doubleword_align
+	returns negative, increment ncrn if it returned non-zero.
+	(arm_needs_doubleword_align): Return int instead of bool,
+	ignore DECL_ALIGN of non-FIELD_DECL TYPE_FIELDS chain
+	members, but if there is any such non-FIELD_DECL
+	> PARM_BOUNDARY aligned decl, return -1 instead of false.
+	(arm_function_arg): Emit -Wpsabi note if arm_needs_doubleword_align
+	returns negative, increment nregs if it returned non-zero.
+	(arm_setup_incoming_varargs): Likewise.
+	(arm_function_arg_boundary): Emit -Wpsabi note if
+	arm_needs_doubleword_align returns negative, return
+	DOUBLEWORD_ALIGNMENT if it returned non-zero.
+
 2017-05-03  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backport from mainline
