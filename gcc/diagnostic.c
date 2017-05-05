@@ -768,6 +768,54 @@ print_parseable_fixits (pretty_printer *pp, rich_location *richloc)
     }
 }
 
+/* Update the diag_class of DIAGNOSTIC based on its location
+   relative to any
+     #pragma GCC diagnostic
+   directives recorded within CONTEXT.
+
+   Return the new diag_class of DIAGNOSTIC if it was updated, or
+   DK_UNSPECIFIED otherwise.  */
+
+static diagnostic_t
+update_effective_level_from_pragmas (diagnostic_context *context,
+				     diagnostic_info *diagnostic)
+{
+  diagnostic_t diag_class = DK_UNSPECIFIED;
+
+  if (context->n_classification_history > 0)
+    {
+      location_t location = diagnostic_location (diagnostic);
+
+      /* FIXME: Stupid search.  Optimize later. */
+      for (int i = context->n_classification_history - 1; i >= 0; i --)
+	{
+	  if (linemap_location_before_p
+	      (line_table,
+	       context->classification_history[i].location,
+	       location))
+	    {
+	      if (context->classification_history[i].kind == (int) DK_POP)
+		{
+		  i = context->classification_history[i].option;
+		  continue;
+		}
+	      int option = context->classification_history[i].option;
+	      /* The option 0 is for all the diagnostics.  */
+	      if (option == 0 || option == diagnostic->option_index)
+		{
+		  diag_class = context->classification_history[i].kind;
+		  if (diag_class != DK_UNSPECIFIED)
+		    diagnostic->kind = diag_class;
+		  break;
+		}
+	    }
+	}
+    }
+
+  return diag_class;
+}
+
+
 /* Report a diagnostic message (an error or a warning) as specified by
    DC.  This function is *the* subroutine in terms of which front-ends
    should implement their specific diagnostic handling modules.  The
@@ -822,8 +870,6 @@ diagnostic_report_diagnostic (diagnostic_context *context,
   if (diagnostic->option_index
       && diagnostic->option_index != permissive_error_option (context))
     {
-      diagnostic_t diag_class = DK_UNSPECIFIED;
-
       /* This tests if the user provided the appropriate -Wfoo or
 	 -Wno-foo option.  */
       if (! context->option_enabled (diagnostic->option_index,
@@ -831,33 +877,8 @@ diagnostic_report_diagnostic (diagnostic_context *context,
 	return false;
 
       /* This tests for #pragma diagnostic changes.  */
-      if (context->n_classification_history > 0)
-	{
-	  /* FIXME: Stupid search.  Optimize later. */
-	  for (int i = context->n_classification_history - 1; i >= 0; i --)
-	    {
-	      if (linemap_location_before_p
-		  (line_table,
-		   context->classification_history[i].location,
-		   location))
-		{
-		  if (context->classification_history[i].kind == (int) DK_POP)
-		    {
-		      i = context->classification_history[i].option;
-		      continue;
-		    }
-		  int option = context->classification_history[i].option;
-		  /* The option 0 is for all the diagnostics.  */
-		  if (option == 0 || option == diagnostic->option_index)
-		    {
-		      diag_class = context->classification_history[i].kind;
-		      if (diag_class != DK_UNSPECIFIED)
-			diagnostic->kind = diag_class;
-		      break;
-		    }
-		}
-	    }
-	}
+      diagnostic_t diag_class
+	= update_effective_level_from_pragmas (context, diagnostic);
 
       /* This tests if the user provided the appropriate -Werror=foo
 	 option.  */
