@@ -1,3 +1,8 @@
+2017-05-05  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* config/aarch64/aarch64.md (movsi_aarch64): Remove '*' from r=w.
+	(movdi_aarch64): Likewise.
+
 2017-05-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/80632
