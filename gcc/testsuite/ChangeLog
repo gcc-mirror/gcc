@@ -3,6 +3,9 @@
 	Backported from mainline
 	2017-02-21  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/79570
+	* gcc.dg/pr79570.c: New test.
+
 	PR c++/79641
 	* c-c++-common/pr79641.c: New test.
 
