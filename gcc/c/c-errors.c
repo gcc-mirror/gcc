@@ -48,7 +48,7 @@ pedwarn_c99 (location_t location, int opt, const char *gmsgid, ...)
 			   (pedantic && !flag_isoc11)
 			   ? DK_PEDWARN : DK_WARNING);
       diagnostic.option_index = OPT_Wc99_c11_compat;
-      warned = report_diagnostic (&diagnostic);
+      warned = diagnostic_report_diagnostic (global_dc, &diagnostic);
     }
   /* -Wno-c99-c11-compat suppresses even the pedwarns.  */
   else if (warn_c99_c11_compat == 0)
@@ -58,7 +58,7 @@ pedwarn_c99 (location_t location, int opt, const char *gmsgid, ...)
     {
       diagnostic_set_info (&diagnostic, gmsgid, &ap, &richloc, DK_PEDWARN);
       diagnostic.option_index = opt;
-      warned = report_diagnostic (&diagnostic);
+      warned = diagnostic_report_diagnostic (global_dc, &diagnostic);
     }
   va_end (ap);
   return warned;
@@ -92,7 +92,7 @@ pedwarn_c90 (location_t location, int opt, const char *gmsgid, ...)
 			       (pedantic && !flag_isoc99)
 			       ? DK_PEDWARN : DK_WARNING);
 	  diagnostic.option_index = opt;
-	  report_diagnostic (&diagnostic);
+	  diagnostic_report_diagnostic (global_dc, &diagnostic);
 	  warned = true;
 	  goto out;
 	}
@@ -105,7 +105,7 @@ pedwarn_c90 (location_t location, int opt, const char *gmsgid, ...)
 			   (pedantic && !flag_isoc99)
 			   ? DK_PEDWARN : DK_WARNING);
       diagnostic.option_index = OPT_Wc90_c99_compat;
-      report_diagnostic (&diagnostic);
+      diagnostic_report_diagnostic (global_dc, &diagnostic);
     }
   /* -Wno-c90-c99-compat suppresses the pedwarns.  */
   else if (warn_c90_c99_compat == 0)
@@ -115,7 +115,7 @@ pedwarn_c90 (location_t location, int opt, const char *gmsgid, ...)
     {
       diagnostic_set_info (&diagnostic, gmsgid, &ap, &richloc, DK_PEDWARN);
       diagnostic.option_index = opt;
-      report_diagnostic (&diagnostic);
+      diagnostic_report_diagnostic (global_dc, &diagnostic);
       warned = true;
     }
 out:

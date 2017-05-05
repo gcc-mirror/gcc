@@ -1076,7 +1076,7 @@ diagnostic_impl (rich_location *richloc, int opt,
       if (kind == DK_WARNING || kind == DK_PEDWARN)
 	diagnostic.option_index = opt;
     }
-  return report_diagnostic (&diagnostic);
+  return diagnostic_report_diagnostic (global_dc, &diagnostic);
 }
 
 /* Same as diagonostic_n_impl taking rich_location instead of location_t.  */
@@ -1092,7 +1092,7 @@ diagnostic_n_impl_richloc (rich_location *richloc, int opt, int n,
                                   ap, richloc, kind);
   if (kind == DK_WARNING)
     diagnostic.option_index = opt;
-  return report_diagnostic (&diagnostic);
+  return diagnostic_report_diagnostic (global_dc, &diagnostic);
 } 
 
 /* Implement inform_n, warning_n, and error_n, as documented and

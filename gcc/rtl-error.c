@@ -71,7 +71,7 @@ diagnostic_for_asm (const rtx_insn *insn, const char *msg, va_list *args_ptr,
 
   diagnostic_set_info (&diagnostic, msg, args_ptr,
 		       &richloc, kind);
-  report_diagnostic (&diagnostic);
+  diagnostic_report_diagnostic (global_dc, &diagnostic);
 }
 
 void
