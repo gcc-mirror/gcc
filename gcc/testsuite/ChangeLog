@@ -1,5 +1,21 @@
 2017-05-06  Tom de Vries  <tom@codesourcery.com>
 
+	PR testsuite/80606
+	* gcc.target/i386/avx-vtestpd-1.c: Remove default_packed lines.
+	* gcc.target/i386/avx-vtestpd-2.c: Same.
+	* gcc.target/i386/avx-vtestpd-256-1.c: Same.
+	* gcc.target/i386/avx-vtestpd-256-2.c: Same.
+	* gcc.target/i386/avx-vtestpd-256-3.c: Same.
+	* gcc.target/i386/avx-vtestpd-3.c: Same.
+	* gcc.target/i386/avx-vtestps-1.c: Same.
+	* gcc.target/i386/avx-vtestps-2.c: Same.
+	* gcc.target/i386/avx-vtestps-256-1.c: Same.
+	* gcc.target/i386/avx-vtestps-256-2.c: Same.
+	* gcc.target/i386/avx-vtestps-256-3.c: Same.
+	* gcc.target/i386/avx-vtestps-3.c: Same.
+
+2017-05-06  Tom de Vries  <tom@codesourcery.com>
+
 	* gcc.target/avr/progmem-error-1.cpp: Add abolute line number comment.
 
 2017-05-06  Tom de Vries  <tom@codesourcery.com>
