@@ -1,6 +1,11 @@
 2017-05-06  Tom de Vries  <tom@codesourcery.com>
 
 	PR testsuite/80557
+	* gcc.target/arm/pr69180.c: Replace absolute line numbers.
+
+2017-05-06  Tom de Vries  <tom@codesourcery.com>
+
+	PR testsuite/80557
 	* gcc.target/aarch64/spellcheck_1.c: Replace absolute line numbers.
 	* gcc.target/aarch64/spellcheck_2.c: Same.
 	* gcc.target/aarch64/spellcheck_3.c: Same.
