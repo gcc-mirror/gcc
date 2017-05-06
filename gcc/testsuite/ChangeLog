@@ -1,6 +1,12 @@
 2017-05-06  Tom de Vries  <tom@codesourcery.com>
 
 	PR testsuite/80557
+	* gcc.target/spu/Wmain.c: Replace absolute line numbers.
+	* gcc.target/spu/intrinsics-1.c: Same.
+
+2017-05-06  Tom de Vries  <tom@codesourcery.com>
+
+	PR testsuite/80557
 	* gcc.target/arm/pr69180.c: Replace absolute line numbers.
 
 2017-05-06  Tom de Vries  <tom@codesourcery.com>
