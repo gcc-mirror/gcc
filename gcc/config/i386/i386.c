@@ -2569,7 +2569,7 @@ enum x86_64_reg_class
 
 /* Table of constants used by fldpi, fldln2, etc....  */
 static REAL_VALUE_TYPE ext_80387_constants_table [5];
-static bool ext_80387_constants_init = 0;
+static bool ext_80387_constants_init;
 
 
 static struct machine_function * ix86_init_machine_status (void);
@@ -8544,9 +8544,6 @@ ix86_asm_output_function_label (FILE *asm_out_file, const char *fname,
     }
 }
 
-/* regclass.c  */
-extern void init_regs (void);
-
 /* Implementation of call abi switching target hook. Specific to FNDECL
    the specific call register sets are set.  See also
    ix86_conditional_register_usage for more details.  */
@@ -9665,7 +9662,7 @@ function_arg_advance_32 (CUMULATIVE_ARGS *cum, machine_mode mode,
 			 HOST_WIDE_INT words)
 {
   int res = 0;
-  bool error_p = NULL;
+  bool error_p = false;
 
   if (TARGET_IAMCU)
     {
@@ -9710,13 +9707,13 @@ pass_in_reg:
 
     case DFmode:
       if (cum->float_in_sse == -1)
-	error_p = 1;
+	error_p = true;
       if (cum->float_in_sse < 2)
 	break;
       /* FALLTHRU */
     case SFmode:
       if (cum->float_in_sse == -1)
-	error_p = 1;
+	error_p = true;
       if (cum->float_in_sse < 1)
 	break;
       /* FALLTHRU */
@@ -9927,6 +9924,7 @@ function_arg_32 (CUMULATIVE_ARGS *cum, machine_mode mode,
 		 HOST_WIDE_INT bytes, HOST_WIDE_INT words)
 {
   bool error_p = false;
+
   /* Avoid the AL settings for the Unix64 ABI.  */
   if (mode == VOIDmode)
     return constm1_rtx;
@@ -9978,13 +9976,13 @@ pass_in_reg:
 
     case DFmode:
       if (cum->float_in_sse == -1)
-	error_p = 1;
+	error_p = true;
       if (cum->float_in_sse < 2)
 	break;
       /* FALLTHRU */
     case SFmode:
       if (cum->float_in_sse == -1)
-	error_p = 1;
+	error_p = true;
       if (cum->float_in_sse < 1)
 	break;
       /* FALLTHRU */
