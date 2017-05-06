@@ -76,10 +76,16 @@ __vector __bool unsigned int vbui;	/* { dg-error "" } */
 __vector __bool signed int vbsi;	/* { dg-error "" } */
 __vector __bool unsigned vbuj;		/* { dg-error "" } */
 __vector __bool signed vbsj;		/* { dg-error "" } */
+
 __vector signed float vsf;		/* { dg-error "" } */
+/* { dg-message "note: previous" "prev vsf" { target *-*-* } .-1 } */
+
 __vector unsigned float vuf;		/* { dg-error "" } */
 __vector short float vsf;		/* { dg-error "" } */
+
 __vector signed double vsd;		/* { dg-error "" } */
+/* { dg-message "note: previous" "prev vsd" { target *-*-* } .-1 } */
+
 __vector unsigned double vud;		/* { dg-error "" } */
 __vector short double vsd;		/* { dg-error "" } */
 __vector __bool float vbf;		/* { dg-error "" } */
@@ -87,5 +93,3 @@ __vector __bool double vbd;		/* { dg-error "" } */
 __vector __bool short float blf;	/* { dg-error "" } */
 __vector __bool short double vlbd;	/* { dg-error "" } */
 
-/* { dg-message "note: previous" "prev vsf" { target *-*-* } 79 } */
-/* { dg-message "note: previous" "prev vsd" { target *-*-* } 82 } */
