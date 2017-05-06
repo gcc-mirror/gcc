@@ -1,6 +1,10 @@
 2017-05-06  Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/78496
+	* tree-vrp.c (simplify_assert_expr_using_ranges): Remove debugging
+	code.
+
+	PR tree-optimization/78496
 	* tree-vrp.c (simplify_assert_expr_using_ranges): New function.
 	(simplify_stmt_using_ranges): Call it.
 	(vrp_dom_walker::before_dom_children): Extract equivalences
