@@ -9608,7 +9608,6 @@ range_fits_type_p (value_range *vr, unsigned dest_precision, signop dest_sgn)
 static bool
 simplify_assert_expr_using_ranges (gimple *stmt)
 {
-  return false;
   tree cond = TREE_OPERAND (gimple_assign_rhs1 (stmt), 1);
   tree_code code = TREE_CODE (cond);
   tree op0 = TREE_OPERAND (cond, 0);
