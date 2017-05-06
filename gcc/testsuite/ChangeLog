@@ -1,3 +1,8 @@
+2017-05-06  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	PR rtl-optimization/75964
+	* gcc.dg/torture/pr75964.c: New test.
+
 2017-05-06  Tom de Vries  <tom@codesourcery.com>
 
 	PR testsuite/80606
