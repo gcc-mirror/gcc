@@ -1,3 +1,12 @@
+2017-05-06  Tom de Vries  <tom@codesourcery.com>
+
+	PR testsuite/80557
+	* g++.dg/debug/dwarf2/dwarf2-1.C: Replace absolute line numbers.
+	* g++.dg/debug/dwarf2/dwarf2-2.C: Same.
+	* g++.dg/debug/dwarf2/pr46123-2.C: Same.
+	* g++.dg/debug/dwarf2/typedef5.C: Same.
+	* g++.dg/goacc/data-1.C: Same.
+
 2017-05-05  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* gcc.target/powerpc/versioned-copy-loop.c: New file.
