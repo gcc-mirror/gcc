@@ -1,5 +1,11 @@
 2017-05-06  Richard Sandiford  <richard.sandiford@linaro.org>
 
+	* lra-constraints.c (lra_copy_reg_equiv): New function.
+	(split_reg): Use it to copy equivalence information from the
+	original register to the spill register.
+
+2017-05-06  Richard Sandiford  <richard.sandiford@linaro.org>
+
 	PR rtl-optimization/75964
 	* simplify-rtx.c (simplify_const_relational_operation): Remove
 	invalid handling of comparisons of integer ABS.
