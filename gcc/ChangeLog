@@ -1,3 +1,10 @@
+2017-05-06  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (ext_80387_constant_init): Do not explicitly
+	initialize to zero.
+	(init_regs): Remove declaration.
+	(function_arg_advance_32): Initialize error_p as boolean variable.
+
 2017-05-05  Nathan Sidwell  <nathan@acm.org>
 
 	* store-motion.c (remove_reachable_equiv_notes): Reformat long
