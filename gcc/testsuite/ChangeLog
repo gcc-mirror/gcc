@@ -1,5 +1,9 @@
 2017-05-06  Tom de Vries  <tom@codesourcery.com>
 
+	* gcc.target/avr/progmem-error-1.cpp: Add abolute line number comment.
+
+2017-05-06  Tom de Vries  <tom@codesourcery.com>
+
 	PR testsuite/80557
 	* gcc.target/powerpc/altivec-macros.c: Replace absolute line numbers.
 	* gcc.target/powerpc/altivec-types-1.c: Same.
