@@ -1,3 +1,8 @@
+2017-05-05  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-inline-analysis.c (estimate_function_body_sizes): Recompute
+	body size unconditionally.
+
 2017-05-07  Jeff Law  <law@redhat.com>
 
 	Revert:
