@@ -755,6 +755,8 @@ insn_info::fledder (rtx set)
     }
 
   mode = GET_MODE(dst);
+  if (mode == VOIDmode)
+    mode = GET_MODE(src);
 
   if (REG_P(dst))
     {
@@ -1038,7 +1040,6 @@ insn_info::absolute2base (unsigned regno, unsigned base, rtx with_symbol)
   rtx set = PATTERN (get_insn ());
   rtx src = SET_SRC(set);
   rtx dst = SET_DEST(set);
-  machine_mode mode = GET_MODE(dst);
 
   rtx pattern;
   rtx reg = gen_raw_REG (SImode, regno);
@@ -2839,6 +2840,9 @@ opt_absolute (void)
       if (!is_dst && !is_src)
 	continue;
 
+      if (ii.get_mode() == VOIDmode)
+	continue;
+
       unsigned freemask = ~(ii.get_use () | ii.get_def ()) & 0x7f00 & usable_regs;
       if (!freemask)
 	continue;
@@ -2859,6 +2863,9 @@ opt_absolute (void)
 	  freemask &= ~(jj.get_use () | jj.get_def ());
 	  if (!freemask)
 	    break;
+
+	  if (jj.get_mode() == VOIDmode)
+	    continue;
 
 	  bool j_dst = jj.is_dst_mem () && (jj.has_dst_addr () || jj.get_dst_symbol ()) && !jj.has_dst_memreg ()
 	      && jj.get_dst_symbol () == with_symbol;
