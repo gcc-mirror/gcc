@@ -9600,42 +9600,6 @@ range_fits_type_p (value_range *vr, unsigned dest_precision, signop dest_sgn)
   return true;
 }
 
-/* Simplify STMT, an ASSERT_EXPR, using ranges.  This is helpful because jump
-   threading looks at the ASSERT_EXPRs.  Collapsing the condition of
-   an ASSERT_EXPR from a relational to an equality test is where most
-   of the benefit occurrs, so that's the only thing we currently do.  */
-
-static bool
-simplify_assert_expr_using_ranges (gimple *stmt)
-{
-  tree cond = TREE_OPERAND (gimple_assign_rhs1 (stmt), 1);
-  tree_code code = TREE_CODE (cond);
-  tree op0 = TREE_OPERAND (cond, 0);
-
-  /* The condition of the ASSERT_EXPR must be a simple relational
-     between an SSA_NAME (with a range) and a constant.  */
-  if (TREE_CODE (op0) != SSA_NAME
-      || !INTEGRAL_TYPE_P (TREE_TYPE (op0)))
-    return false;
-
-  tree op1 = TREE_OPERAND (cond, 1);
-  if (TREE_CODE (op1) != INTEGER_CST)
-    return false;
-
-  value_range *vr = get_value_range (op0);
-  if (!vr || vr->type != VR_RANGE)
-    return false;
-
-  tree res = test_for_singularity (code, op0, op1, vr);
-  if (res)
-    {
-      TREE_SET_CODE (cond, EQ_EXPR);
-      TREE_OPERAND (cond, 1) = res;
-      return true;
-    }
-  return false;
-}
-
 /* Simplify a conditional using a relational operator to an equality
    test if the range information indicates only one value can satisfy
    the original conditional.  */
@@ -10370,9 +10334,6 @@ simplify_stmt_using_ranges (gimple_stmt_iterator *gsi)
 	case MAX_EXPR:
 	  return simplify_min_or_max_using_ranges (gsi, stmt);
 
-	case ASSERT_EXPR:
-	  return simplify_assert_expr_using_ranges (stmt);
-
 	default:
 	  break;
 	}
@@ -10637,18 +10598,6 @@ vrp_dom_walker::before_dom_children (basic_block bb)
 	{
 	  tree rhs1 = gimple_assign_rhs1 (stmt);
 	  tree cond = TREE_OPERAND (rhs1, 1);
-	  tree lhs = gimple_assign_lhs (stmt);
-	  m_const_and_copies->record_const_or_copy (lhs, TREE_OPERAND (rhs1, 0));
-
-	  if (TREE_CODE (cond) == EQ_EXPR)
-	    {
-	      tree cond_op0 = TREE_OPERAND (cond, 0);
-	      tree cond_op1 = TREE_OPERAND (cond, 1);
-	      if (TREE_CODE (cond_op0) == SSA_NAME)
-		m_const_and_copies->record_const_or_copy (cond_op0, cond_op1);
-	      continue;
-	    }
-
 	  tree inverted = invert_truthvalue (cond);
 	  vec<cond_equivalence> p;
 	  p.create (3);
@@ -10656,6 +10605,9 @@ vrp_dom_walker::before_dom_children (basic_block bb)
 	  for (unsigned int i = 0; i < p.length (); i++)
 	    m_avail_exprs_stack->record_cond (&p[i]);
 
+	  tree lhs = gimple_assign_lhs (stmt);
+	  m_const_and_copies->record_const_or_copy (lhs,
+						    TREE_OPERAND (rhs1, 0));
 	  p.release ();
 	  continue;
 	}
