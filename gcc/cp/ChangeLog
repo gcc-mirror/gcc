@@ -1,3 +1,8 @@
+2017-05-07  Volker Reichelt  <v.reichelt@netcologne.de>
+
+	PR translation/80280
+	* call.c (print_z_candidate): Fix quoting.
+
 2017-05-05  David Malcolm  <dmalcolm@redhat.com>
 
 	* error.c (pedwarn_cxx98): Replace report_diagnostic
