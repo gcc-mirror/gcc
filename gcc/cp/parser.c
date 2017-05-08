@@ -18428,17 +18428,7 @@ cp_parser_namespace_definition (cp_parser* parser)
 	      "a nested namespace definition cannot be inline");
 
   /* Start the namespace.  */
-  if (int count = push_namespace (identifier, is_inline))
-    {
-      nested_definition_count += count;
-      if (is_inline && !DECL_NAMESPACE_INLINE_P (current_namespace))
-	{
-	  error_at (token->location, "an inline namespace must be"
-		    " specified at initial definition");
-	  inform (DECL_SOURCE_LOCATION (current_namespace),
-		  "%qD defined here", current_namespace);
-	}
-    }
+  nested_definition_count += push_namespace (identifier, is_inline);
 
   bool has_visibility = handle_namespace_attrs (current_namespace, attribs);
 

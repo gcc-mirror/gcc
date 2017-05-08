@@ -1,5 +1,14 @@
 2017-05-08  Nathan Sidwell  <nathan@acm.org>
 
+	Implement DR2061
+	gcc/cp/
+	* name-lookup.c (push_inline_namespace): New.
+	(push_namespace): Use it.  Check inline consistency here ...
+	* parser.c (cp_parser_namespace_definition): ... not here.
+	gcc/testsuite/
+	* g++.dg/cpp0x/dr2061.C: New.
+	* g++.dg/parse/namespace-alias-1.C: Augment.
+
 	gcc/cp/
 	* cp-tree.h, call.c, class.c, name-lookup.c, parser.c, pt.c,
 	semantics.c, tree.c: Rename ovl2_iterator to lkp_iterator.

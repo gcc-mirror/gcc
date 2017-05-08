@@ -6504,6 +6504,23 @@ pushdecl_top_level_init (tree x, tree init)
   return x;
 }
 
+/* Enter the namespaces from current_namerspace to NS.  */
+
+static int
+push_inline_namespaces (tree ns)
+{
+  int count = 0;
+  if (ns != current_namespace)
+    {
+      gcc_assert (ns != global_namespace);
+      count += push_inline_namespaces (CP_DECL_CONTEXT (ns));
+      resume_scope (NAMESPACE_LEVEL (ns));
+      current_namespace = ns;
+      count++;
+    }
+  return count;
+}
+
 /* Push into the scope of the NAME namespace.  If NAME is NULL_TREE,
    then we enter an anonymous namespace.  If MAKE_INLINE is true, then
    we create an inline namespace (it is up to the caller to check upon
@@ -6531,27 +6548,13 @@ push_namespace (tree name, bool make_inline)
     else if (TREE_CODE (lookup.value) == NAMESPACE_DECL)
       {
 	ns = lookup.value;
-	// FIXME: DR2061 about finding a member of an inline namespace
-	gcc_assert (CP_DECL_CONTEXT (ns) == current_namespace);
 	if (tree dna = DECL_NAMESPACE_ALIAS (ns))
 	  {
-	    /* We do some error recovery for, eg, the redeclaration of
-	       M here:
-
-	       namespace N {}
-	       namespace M = N;
-	       namespace M {}
-
-	       However, in nasty cases like:
-
-	       namespace N
-	       {
-	         namespace M = N;
-	         namespace M {}
-	       }
-
-	       we just error out below, in duplicate_decls.  */
-	    if (NAMESPACE_LEVEL (dna)->level_chain == current_binding_level)
+	    /* A namespace alias is not allowed here, but if the alias
+	       is for a namespace also inside the current scope,
+	       accept it with a diagnostic.  That's better than dieing
+	       horribly.  */
+	    if (is_nested_namespace (current_namespace, CP_DECL_CONTEXT (dna)))
 	      {
 		error ("namespace alias %qD not allowed here, "
 		       "assuming %qD", ns, dna);
@@ -6564,7 +6567,11 @@ push_namespace (tree name, bool make_inline)
   }
 
   bool new_ns = false;
-  if (!ns)
+  if (ns)
+    /* DR2061.  NS might be a member of an inline namespace.  We
+       need to push into those namespaces.  */
+    count += push_inline_namespaces (CP_DECL_CONTEXT (ns));
+  else
     {
       /* Before making a new namespace, see if we already have one in
 	 the existing partitions of the current namespace.  */
@@ -6584,7 +6591,7 @@ push_namespace (tree name, bool make_inline)
 	  DECL_MODULE_EXPORT_P (ns) = true;
 	  new_ns = true;
 	}
-      // FIXME anonmous namespace
+
       if (pushdecl (ns) == error_mark_node)
 	ns = NULL_TREE;
       else if (new_ns)
@@ -6611,6 +6618,11 @@ push_namespace (tree name, bool make_inline)
 
   if (ns)
     {
+      if (make_inline && !DECL_NAMESPACE_INLINE_P (ns))
+	{
+	  error ("inline namespace must be specified at initial definition");
+	  inform (DECL_SOURCE_LOCATION (ns), "%qD defined here", ns);
+	}
       if (new_ns)
 	begin_scope (sk_namespace, ns);
       else

@@ -5,3 +5,18 @@ namespace N
   namespace M = N;  // { dg-message "previous declaration" }
   namespace M {}    // { dg-error "declaration of namespace" }
 }
+
+namespace A
+{
+  namespace B 
+  {
+    namespace C
+    {
+    }
+  }
+
+  namespace D = B::C;
+  namespace D  // { dg-error "not allowed" }
+  {
+  }
+}
