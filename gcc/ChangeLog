@@ -1,3 +1,8 @@
+2017-05-08  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/constraints.md (Usa): New constraint.
+	* config/aarch64/aarch64.md (*movsi_aarch64, *movdi_aarch64): Use it.
+
 2017-05-08  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	* config.gcc (arm*-*-*): Set TM_MULTILIB_CONFIG from
