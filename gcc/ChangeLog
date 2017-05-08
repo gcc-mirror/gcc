@@ -1,3 +1,16 @@
+2017-05-08  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* target.def (compute_frame_layout): New optional target hook.
+	* doc/tm.texi.in (TARGET_COMPUTE_FRAME_LAYOUT): Add hook.
+	* doc/tm.texi (TARGET_COMPUTE_FRAME_LAYOUT): Add documentation.
+	* lra-eliminations.c (update_reg_eliminate): Call compute_frame_layout
+	target hook.
+	* reload1.c (verify_initial_elim_offsets): Likewise.
+	* config/arm/arm.c (TARGET_COMPUTE_FRAME_LAYOUT): Define.
+	(use_simple_return_p): Call arm_compute_frame_layout if needed.
+	(arm_get_frame_offsets): Split up into this ...
+	(arm_compute_frame_layout): ... and this function.
+
 2017-05-08  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* config/aarch64/constraints.md (Usa): New constraint.
