@@ -1,5 +1,9 @@
 2017-05-08  Nathan Sidwell  <nathan@acm.org>
 
+	* decl.c (builtin_function_1): Set DCL_ANTICIPATED before pushing.
+	(start_preparsed_function): Do decl pushing before setting
+	current_funciton_decl and announcing it.
+
 	* name-lookup.h (pushdecl_with_scope): Replace with ...
 	(pushdecl_outermost_localscope): ... this.
 	* name-lookup.c (pushdecl_with_scope): Replace with ...
