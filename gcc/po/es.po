@@ -17,6 +17,7 @@
 # dereference        - desreferencia
 # hardware           - hardware
 # hotness            - calentura
+# immediate          - inmediato
 # insns              - instrucciones  #: config/frv/frv.opt:126
 # instruction        - instrucción
 # iv optimization    - optimización iv
@@ -38,7 +39,7 @@ msgstr ""
 "Project-Id-Version: gcc 7.1.0\n"
 "Report-Msgid-Bugs-To: https://gcc.gnu.org/bugs/\n"
 "POT-Creation-Date: 2017-05-01 22:24+0000\n"
-"PO-Revision-Date: 2017-05-02 21:34+0200\n"
+"PO-Revision-Date: 2017-05-06 12:55+0200\n"
 "Last-Translator: Antonio Ceballos <aceballos@gmail.com>\n"
 "Language-Team: Spanish <es@tp.org.es>\n"
 "Language: es\n"
@@ -3133,34 +3134,24 @@ msgid "unsupported fixed-point conversion"
 msgstr "conversión de coma fija no admitida"
 
 #: config/avr/avr.c:9803
-#, fuzzy
-#| msgid "Loop variable"
 msgid "variable"
-msgstr "Variable de ciclo"
+msgstr "variable"
 
 #: config/avr/avr.c:9808
-#, fuzzy
-#| msgid "a parameter"
 msgid "function parameter"
-msgstr "un parámetro"
+msgstr "parámetro de función"
 
 #: config/avr/avr.c:9813
-#, fuzzy
-#| msgid "structure"
 msgid "structure field"
-msgstr "estructura"
+msgstr "campo de estructura"
 
 #: config/avr/avr.c:9819
-#, fuzzy
-#| msgid "creating array of functions"
 msgid "return type of function"
-msgstr "se crea la matriz de funciones"
+msgstr "tipo de retorno de función"
 
 #: config/avr/avr.c:9824
-#, fuzzy
-#| msgid "null pointer"
 msgid "pointer"
-msgstr "puntero nulo"
+msgstr "puntero"
 
 #: config/avr/driver-avr.c:48
 #, c-format
@@ -3470,10 +3461,9 @@ msgid "operand is not an integer, invalid operand code 'R'"
 msgstr "el operando no es un entero, código de operando 'R' no válido"
 
 #: config/i386/i386.c:18261
-#, fuzzy, c-format
-#| msgid "operand is not a specific integer, invalid operand code 'r'"
+#, c-format
 msgid "operand is not a specific integer, invalid operand code 'R'"
-msgstr "el operando no es un entero concreto, código de operando 'r' no válido"
+msgstr "el operando no es un entero concreto, código de operando 'R' no válido"
 
 #: config/i386/i386.c:18357
 #, c-format
@@ -6198,10 +6188,8 @@ msgid "Warn about 'new' of type with extended alignment without -faligned-new."
 msgstr "Advierte de 'new' de tipos con alineamiento extendido sin -faligned-new."
 
 #: c-family/c.opt:296
-#, fuzzy
-#| msgid "-Waligned-new=all Warn even if 'new' uses a class member allocation function."
 msgid "-Waligned-new=[none|global|all]\tWarn even if 'new' uses a class member allocation function."
-msgstr "-Waligned-new=all Avisa aunque 'new' use una función de reserva miembro de clase."
+msgstr "-Waligned-new=[none|global|all]\tAvisa aunque 'new' use una función de reserva miembro de clase."
 
 #: c-family/c.opt:300 ada/gcc-interface/lang.opt:57
 msgid "Enable most warning messages."
@@ -6220,10 +6208,8 @@ msgid "-Walloc-zero Warn for calls to allocation functions that specify zero byt
 msgstr "-Walloc-zero Advierte de llamadas a funciones de reserva que especifican cero bytes."
 
 #: c-family/c.opt:317
-#, fuzzy
-#| msgid "-Walloca-larger-than=<number> Warn on unbounded uses of alloca, and on bounded uses of alloca whose bound can be larger than <number> bytes."
 msgid "-Walloca-larger-than=<number>\tWarn on unbounded uses of alloca, and on bounded uses of alloca whose bound can be larger than <number> bytes."
-msgstr "-Walloca-larger-than=<número> Advierte de usos no acotados de alloca y de usos acotados cuyo límite pueda ser más grande que <número> bytes."
+msgstr "-Walloca-larger-than=<número>\tAdvierte de usos no acotados de alloca y de usos acotados cuyo límite pueda ser más grande que <número> bytes."
 
 #: c-family/c.opt:331
 msgid "Warn whenever an Objective-C assignment is being intercepted by the garbage collector."
@@ -6374,10 +6360,8 @@ msgid "Warn about an empty body in an if or else statement."
 msgstr "Avisa sobre un cuerpo vacío en una declaración if o else."
 
 #: c-family/c.opt:489
-#, fuzzy
-#| msgid "Warn about stray tokens after #elif and #endif."
 msgid "Warn about stray tokens after #else and #endif."
-msgstr "Avisa sobre elementos sobrantes después de #elif y #endif."
+msgstr "Avisa sobre elementos sobrantes después de #else y #endif."
 
 #: c-family/c.opt:493
 msgid "Warn about comparison of different enum types."
@@ -6892,10 +6876,8 @@ msgid "Warn if a variable length array is used."
 msgstr "Avisa si se usa una matriz de longitud variable."
 
 #: c-family/c.opt:1104
-#, fuzzy
-#| msgid "-Walloca-larger-than=<number> Warn on unbounded uses of alloca, and on bounded uses of alloca whose bound can be larger than <number> bytes."
 msgid "-Wvla-larger-than=<number>\tWarn on unbounded uses of variable-length arrays, and on bounded uses of variable-length arrays whose bound can be larger than <number> bytes."
-msgstr "-Walloca-larger-than=<número> Advierte de usos no acotados de alloca y de usos acotados cuyo límite pueda ser más grande que <número> bytes."
+msgstr "-Wvla-larger-than=<número>\tAdvierte de usos no acotados de arrays de longitud variable y de usos acotados de arrays de longitud variable cuyo límite pueda ser más grande que <número> bytes."
 
 #: c-family/c.opt:1110
 msgid "Warn when a register variable is declared volatile."
@@ -8947,10 +8929,8 @@ msgid "Branches are this expensive (1-5, arbitrary units)."
 msgstr "Las ramificaciones son así de caras (1-5, unidades arbitrarias)."
 
 #: config/i386/i386.opt:275
-#, fuzzy
-#| msgid "Data greater than given threshold will go into .ldata section in x86-64 medium model."
 msgid "-mlarge-data-threshold=<number>\tData greater than given threshold will go into .ldata section in x86-64 medium model."
-msgstr "Los datos más grandes que el límite dado irán a la sección .ldata en el modeolo medium del x86-64."
+msgstr "-mlarge-data-threshold=<número>\tLos datos más grandes que el límite dado irán a la sección .ldata en el modeolo medium del x86-64."
 
 #: config/i386/i386.opt:279
 msgid "Use given x86-64 code model."
@@ -12747,17 +12727,15 @@ msgstr "Usa la instrucción synci para invalidar el i-caché."
 
 #: config/mips/mips.opt:393
 msgid "Use lwxc1/swxc1/ldxc1/sdxc1 instructions where applicable."
-msgstr ""
+msgstr "Usa instrucciones lwxc1/swxc1/ldxc1/sdxc1 donde sean aplicables."
 
 #: config/mips/mips.opt:397
 msgid "Use 4-operand madd.s/madd.d and related instructions where applicable."
-msgstr ""
+msgstr "Usa operandos cuaternarios madd.s/madd.d e instrucciones relacionadas donde sean aplicables."
 
 #: config/mips/mips.opt:409
-#, fuzzy
-#| msgid "Use Virtualization Application Specific instructions."
 msgid "Use Virtualization (VZ) instructions."
-msgstr "Usa instrucciones específicas de aplicación de virtualización."
+msgstr "Usa instrucciones virtualización (VZ)."
 
 #: config/mips/mips.opt:413
 msgid "Use eXtended Physical Address (XPA) instructions."
@@ -13340,10 +13318,8 @@ msgid "Warn when not issuing stack smashing protection for some reason."
 msgstr "Avisa cuando no se está usando la protección contra destrucción de la pila por alguna razón."
 
 #: common.opt:693
-#, fuzzy
-#| msgid "Warn if stack usage might be larger than specified amount."
 msgid "-Wstack-usage=<number>\tWarn if stack usage might be larger than specified amount."
-msgstr "Avisa si el uso de pila puede ser mayor que el monto especificado."
+msgstr "-Wstack-usage=<number>\tAvisa si el uso de pila puede ser mayor que el monto especificado."
 
 #: common.opt:697 common.opt:701
 msgid "Warn about code which might break strict aliasing rules."
@@ -13804,10 +13780,8 @@ msgid "Perform a forward propagation pass on RTL."
 msgstr "Realiza el paso de la propagación hacia adelante en RTL."
 
 #: common.opt:1379
-#, fuzzy
-#| msgid "-ffp-contract=[off|on|fast] Perform floating-point expression contraction."
 msgid "-ffp-contract=[off|on|fast]\tPerform floating-point expression contraction."
-msgstr "-ffp-contract=[off|on|fast] Realiza contracción de expresión de coma flotante."
+msgstr "-ffp-contract=[off|on|fast]\tRealiza contracción de expresión de coma flotante."
 
 #: common.opt:1382
 #, c-format
@@ -13908,10 +13882,8 @@ msgid "Perform conversion of conditional jumps to conditional execution."
 msgstr "Realiza la conversión de saltos condicionales a ejecución condicional."
 
 #: common.opt:1531
-#, fuzzy
-#| msgid "-fstack-reuse=[all|named_vars|none] Set stack reuse level for local variables."
 msgid "-fstack-reuse=[all|named_vars|none]\tSet stack reuse level for local variables."
-msgstr "-fstack-reuse=[all|named_vars|none] Establece el nivel de reúso de la pila para variables locales."
+msgstr "-fstack-reuse=[all|named_vars|none]\tEstablece el nivel de reúso de la pila para variables locales."
 
 #: common.opt:1534
 #, c-format
@@ -14011,10 +13983,8 @@ msgid "Perform IPA Value Range Propagation."
 msgstr "Realiza la Propagación de Rango Valor IPA."
 
 #: common.opt:1664
-#, fuzzy
-#| msgid "-fira-algorithm=[CB|priority] Set the used IRA algorithm."
 msgid "-fira-algorithm=[CB|priority]\tSet the used IRA algorithm."
-msgstr "-fira-algorithm=[CB|priority] Establece el algoritmo IRA a usar."
+msgstr "-fira-algorithm=[CB|priority]\tEstablece el algoritmo IRA a usar."
 
 #: common.opt:1667
 #, c-format
@@ -14022,10 +13992,8 @@ msgid "unknown IRA algorithm %qs"
 msgstr "algoritmo IRA %qs desconocido"
 
 #: common.opt:1677
-#, fuzzy
-#| msgid "-fira-region=[one|all|mixed] Set regions for IRA."
 msgid "-fira-region=[one|all|mixed]\tSet regions for IRA."
-msgstr "-fira-region=[one|all|mixed] Establece las regiones para IRA."
+msgstr "-fira-region=[one|all|mixed]\tEstablece las regiones para IRA."
 
 #: common.opt:1680
 #, c-format
@@ -14361,10 +14329,8 @@ msgid "Reorder basic blocks to improve code placement."
 msgstr "Reordena los bloques básicos para mejorar la ubicación del código."
 
 #: common.opt:2076
-#, fuzzy
-#| msgid "-freorder-blocks-algorithm=[simple|stc] Set the used basic block reordering algorithm."
 msgid "-freorder-blocks-algorithm=[simple|stc]\tSet the used basic block reordering algorithm."
-msgstr "-freorder-blocks-algorithm=[simple|stc] Establece el algoritmo de ordenación de bloque básico usado."
+msgstr "-freorder-blocks-algorithm=[simple|stc]\tEstablece el algoritmo de ordenación de bloque básico usado."
 
 #: common.opt:2079
 #, c-format
@@ -14733,10 +14699,8 @@ msgid "Enable loop optimizations on tree level."
 msgstr "Activa las optimizaciones de bucles a nivel de árbol."
 
 #: common.opt:2526
-#, fuzzy
-#| msgid "Enable automatic parallelization of loops."
 msgid "-ftree-parallelize-loops=<number>\tEnable automatic parallelization of loops."
-msgstr "Activa la paralelización automática de bucles."
+msgstr "-ftree-parallelize-loops=<número>\tActiva la paralelización automática de bucles."
 
 #: common.opt:2530
 msgid "Enable hoisting loads from conditional pointers."
@@ -14864,13 +14828,11 @@ msgstr "Activa la vectorización de bloque básico (SLP) en árboles."
 
 #: common.opt:2693
 msgid "Specifies the cost model for vectorization. -fvect-cost-model=[unlimited|dynamic|cheap]\tSpecifies the cost model for vectorization."
-msgstr ""
+msgstr "Especifica el modelo de coste para vectorización. -fvect-cost-model=[unlimited|dynamic|cheap]\tEspecifica el modelo de coste para vectorización."
 
 #: common.opt:2698
-#, fuzzy
-#| msgid "Specifies the vectorization cost model for code marked with a simd directive."
 msgid "-fsimd-cost-model=[unlimited|dynamic|cheap]\tSpecifies the vectorization cost model for code marked with a simd directive."
-msgstr "Especifica el modelo de coste de la vectorización para código marcado con directiva simd."
+msgstr "-fsimd-cost-model=[unlimited|dynamic|cheap]\tEspecifica el modelo de coste de la vectorización para código marcado con directiva simd."
 
 #: common.opt:2701
 #, c-format
@@ -15563,10 +15525,9 @@ msgid "type attributes ignored after type is already defined"
 msgstr "se descartan los atributos de tipo después de que el tipo ya se definió"
 
 #: auto-profile.c:347
-#, fuzzy, gcc-internal-format
-#| msgid "Offset exceeds 16 bytes."
+#, gcc-internal-format
 msgid "offset exceeds 16 bytes"
-msgstr "El desplazamiento excede 16 bytes."
+msgstr "el desplazamiento excede 16 bytes"
 
 #: auto-profile.c:854
 #, gcc-internal-format
@@ -15574,40 +15535,34 @@ msgid "Not expected TAG."
 msgstr "No se esperaba TAG."
 
 #: auto-profile.c:920
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Cannot open profile file %s."
+#, gcc-internal-format, gfc-internal-format
 msgid "cannot open profile file %s"
-msgstr "No se puede abrir el fichero de perfil %s."
+msgstr "no se puede abrir el fichero de perfil %s"
 
 #: auto-profile.c:926
-#, fuzzy, gcc-internal-format
-#| msgid "AutoFDO profile magic number does not match."
+#, gcc-internal-format
 msgid "AutoFDO profile magic number does not match"
-msgstr "El número mágico de perfil AutoFDO no cuadra."
+msgstr "El número mágico de perfil AutoFDO no cuadra"
 
 #: auto-profile.c:934
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "AutoFDO profile version %u does match %u."
+#, gcc-internal-format, gfc-internal-format
 msgid "AutoFDO profile version %u does match %u"
-msgstr "La versión %u de perfil AutoFDO no cuadra con %u."
+msgstr "La versión %u de perfil AutoFDO no cuadra con %u"
 
 #: auto-profile.c:946
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Cannot read string table from %s."
+#, gcc-internal-format, gfc-internal-format
 msgid "cannot read string table from %s"
-msgstr "No se puede leer la tabla de cadenas de %s."
+msgstr "no se puede leer la tabla de cadenas de %s"
 
 #: auto-profile.c:954
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Cannot read function profile from %s."
+#, gcc-internal-format, gfc-internal-format
 msgid "cannot read function profile from %s"
-msgstr "No se puede leer el perfil de función de %s."
+msgstr "no se puede leer el perfil de función de %s"
 
 #: auto-profile.c:964
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Cannot read working set from %s."
+#, gcc-internal-format, gfc-internal-format
 msgid "cannot read working set from %s"
-msgstr "No se puede leer el conjunto de trabajo de %s."
+msgstr "no se puede leer el conjunto de trabajo de %s"
 
 #: bt-load.c:1564
 #, gcc-internal-format
@@ -18358,16 +18313,14 @@ msgid "enclosing task"
 msgstr "tarea contenedora"
 
 #: gimplify.c:6852
-#, fuzzy, gcc-internal-format
-#| msgid "%qE not specified in enclosing %s"
+#, gcc-internal-format
 msgid "%qE not specified in enclosing %qs"
-msgstr "no se especificó %qE en el %s que lo contiene"
+msgstr "no se especificó %qE en el %qs que lo contiene"
 
 #: gimplify.c:6854
-#, fuzzy, gcc-internal-format
-#| msgid "enclosing %s"
+#, gcc-internal-format
 msgid "enclosing %qs"
-msgstr "%s contenedora"
+msgstr "%qs contenedora"
 
 #: gimplify.c:6965
 #, gcc-internal-format
@@ -18736,10 +18689,9 @@ msgid "the incompatible type defined in another translation unit"
 msgstr "el tipo incompatible definido en otra unidad de traducción"
 
 #: ipa-devirt.c:1142
-#, fuzzy, gcc-internal-format
-#| msgid "type name %<%s%> should match type name %<%s%>"
+#, gcc-internal-format
 msgid "type name %qs should match type name %qs"
-msgstr "el nombre de tipo %<%s%> debería concordar con el nombre de tipo %<%s%>"
+msgstr "el nombre de tipo %qs debería concordar con el nombre de tipo %qs"
 
 #: ipa-devirt.c:1146 ipa-devirt.c:1238
 #, gcc-internal-format
@@ -18757,10 +18709,9 @@ msgid "return value type mismatch"
 msgstr "no coincide el tipo del valor de retorno"
 
 #: ipa-devirt.c:1204
-#, fuzzy, gcc-internal-format
-#| msgid "field initializer type mismatch"
+#, gcc-internal-format
 msgid "implicit this pointer type mismatch"
-msgstr "no coincide el tipo del inicializador del campo"
+msgstr "no coincide el tipo del puntero this implícito"
 
 #: ipa-devirt.c:1207
 #, gcc-internal-format, gfc-internal-format
@@ -18975,16 +18926,14 @@ msgid "ipa inline summary is missing in input file"
 msgstr "falta el resumen de inclusión en línea ipa en el fichero de entrada"
 
 #: ipa-pure-const.c:187
-#, fuzzy, gcc-internal-format
-#| msgid "function might be candidate for attribute %<%s%>"
+#, gcc-internal-format
 msgid "function might be candidate for attribute %qs"
-msgstr "la función puede ser candidata para el atributo %<%s%>"
+msgstr "la función puede ser candidata para el atributo %qs"
 
 #: ipa-pure-const.c:188
-#, fuzzy, gcc-internal-format
-#| msgid "function might be candidate for attribute %<%s%> if it is known to return normally"
+#, gcc-internal-format
 msgid "function might be candidate for attribute %qs if it is known to return normally"
-msgstr "la función puede ser candidata para el atributo %<%s%> si se sabe que devuelve normalmente"
+msgstr "la función puede ser candidata para el atributo %qs si se sabe que retorna normalmente"
 
 #: ipa-reference.c:1182
 #, gcc-internal-format
@@ -19143,10 +19092,9 @@ msgid "bytecode stream: unexpected LTO section %s"
 msgstr "flujo de bytecode: sección LTO %s inesperada"
 
 #: lto-streamer.c:383
-#, fuzzy, gcc-internal-format
-#| msgid "bytecode stream in file '%s' generated with LTO version %d.%d instead of the expected %d.%d"
+#, gcc-internal-format
 msgid "bytecode stream in file %qs generated with LTO version %d.%d instead of the expected %d.%d"
-msgstr "flujo de bytecode en el fichero '%s' generado con LTO versión %d.%d en lugar de la versión esperada %d.%d"
+msgstr "flujo de bytecode en el fichero %qs generado con LTO versión %d.%d en lugar de la versión esperada %d.%d"
 
 #: lto-wrapper.c:114
 #, gcc-internal-format
@@ -19461,10 +19409,9 @@ msgid "-fopenacc-dim operand is malformed at '%s'"
 msgstr "operando -fopenacc-dim defectuoso en '%s'"
 
 #: omp-offload.c:1157
-#, fuzzy, gcc-internal-format
-#| msgid "inner loop uses same OpenACC parallelism as containing loop"
+#, gcc-internal-format
 msgid "routine call uses same OpenACC parallelism as containing loop"
-msgstr "el bucle interno usa el mismo paralelismo OpenACC que el bucle que lo contiene"
+msgstr "la llamada a la rutina usa el mismo paralelismo OpenACC que el bucle que lo contiene"
 
 #: omp-offload.c:1161 omp-offload.c:1193
 #, gcc-internal-format
@@ -19472,16 +19419,14 @@ msgid "containing loop here"
 msgstr "bucle que lo contiene aquí"
 
 #: omp-offload.c:1166
-#, fuzzy, gcc-internal-format
-#| msgid "%s uses OpenACC parallelism disallowed by containing routine"
+#, gcc-internal-format
 msgid "routine call uses OpenACC parallelism disallowed by containing routine"
-msgstr "%s usa paralelismo OpenACC no permitido por la rutina que lo contiene"
+msgstr "la llamada a la rutina usa paralelismo OpenACC no permitido por la rutina que lo contiene"
 
 #: omp-offload.c:1168
-#, fuzzy, gcc-internal-format
-#| msgid "%s uses OpenACC parallelism disallowed by containing routine"
+#, gcc-internal-format
 msgid "loop uses OpenACC parallelism disallowed by containing routine"
-msgstr "%s usa paralelismo OpenACC no permitido por la rutina que lo contiene"
+msgstr "el bucle usa paralelismo OpenACC no permitido por la rutina que lo contiene"
 
 #: omp-offload.c:1173
 #, gcc-internal-format
@@ -19505,10 +19450,9 @@ msgid "insufficient partitioning available to parallelize tile loop"
 msgstr "insuficiente paralelismo disponible para paralelizar bucle de elemento"
 
 #: omp-offload.c:1337
-#, fuzzy, gcc-internal-format
-#| msgid "insufficient partitioning available to parallelize%s loop"
+#, gcc-internal-format
 msgid "insufficient partitioning available to parallelize loop"
-msgstr "insuficiente paralelismo disponible para paralelizar bucle %s"
+msgstr "insuficiente paralelismo disponible para paralelizar bucle"
 
 #: omp-simd-clone.c:192
 #, gcc-internal-format
@@ -19707,8 +19651,7 @@ msgid "-fsanitize=all option is not valid"
 msgstr "la opción -fsanitize=all no es válida"
 
 #: opts.c:1642
-#, fuzzy, gcc-internal-format
-#| msgid "unrecognized argument to -f%ssanitize%s= option: %q.*s; did you mean %qs"
+#, gcc-internal-format
 msgid "unrecognized argument to -f%ssanitize%s= option: %q.*s; did you mean %qs?"
 msgstr "no se reconoce el argumento para la opción -f%ssanitize%s=: %q.*s; ¿quiso decir %qs?"
 
@@ -20037,10 +19980,9 @@ msgid "insn with UID %i not found for operand %i of insn %i"
 msgstr "insn con UID %i no encontrada para el operando %i de insn %i"
 
 #: read-rtl-function.c:409
-#, fuzzy, gcc-internal-format
-#| msgid "function %qs cannot be declared %<mutable%>"
+#, gcc-internal-format
 msgid "%<__RTL%> function cannot be compiled with %<-flto%>"
-msgstr "la función %qs no se puede declarar %<mutable%>"
+msgstr "la función %<__RTL%> no se puede compilar con %<-flto%>"
 
 #: read-rtl-function.c:710
 #, gcc-internal-format, gfc-internal-format
@@ -20642,34 +20584,29 @@ msgid "Graphite loop optimizations cannot be used (isl is not available) (-fgrap
 msgstr "No se pueden usar las optimizaciones de bucle Graphite (isl no está disponible) (-fgraphite, -fgraphite-identity, -floop-nest-optimize, -floop-parallelize-all"
 
 #: toplev.c:1273
-#, fuzzy, gcc-internal-format
-#| msgid "-fcheck-pointer-bounds is not supported for this target"
+#, gcc-internal-format
 msgid "%<-fcheck-pointer-bounds%> is not supported for this target"
-msgstr "no se admite -fcheck-pointer-bounds para este objetivo"
+msgstr "no se admite %<-fcheck-pointer-bounds%> para este objetivo"
 
 #: toplev.c:1281
-#, fuzzy, gcc-internal-format
-#| msgid "-fcheck-pointer-bounds is not supported with -fsanitize=bounds"
+#, gcc-internal-format
 msgid "%<-fcheck-pointer-bounds%> is not supported with %<-fsanitize=bounds-strict%>"
-msgstr "fcheck-pointer-bounds no se admite con -fsanitize=bounds"
+msgstr "%<-fcheck-pointer-bounds%> no se admite con %<-fsanitize=bounds-strict%>"
 
 #: toplev.c:1288
-#, fuzzy, gcc-internal-format
-#| msgid "-fcheck-pointer-bounds is not supported with -fsanitize=bounds"
+#, gcc-internal-format
 msgid "%<-fcheck-pointer-bounds%> is not supported with %<-fsanitize=bounds%>"
-msgstr "fcheck-pointer-bounds no se admite con -fsanitize=bounds"
+msgstr "%<-fcheck-pointer-bounds%> no se admite con %<-fsanitize=bounds%>"
 
 #: toplev.c:1296
-#, fuzzy, gcc-internal-format
-#| msgid "-fcheck-pointer-bounds is not supported with Address Sanitizer"
+#, gcc-internal-format
 msgid "%<-fcheck-pointer-bounds%> is not supported with Address Sanitizer"
-msgstr "fcheck-pointer-bounds no se admite con Address Sanitizer"
+msgstr "%<-fcheck-pointer-bounds%> no se admite con Address Sanitizer"
 
 #: toplev.c:1304
-#, fuzzy, gcc-internal-format
-#| msgid "-fcheck-pointer-bounds is not supported with Address Sanitizer"
+#, gcc-internal-format
 msgid "%<-fcheck-pointer-bounds%> is not supported with Thread Sanitizer"
-msgstr "fcheck-pointer-bounds no se admite con Address Sanitizer"
+msgstr "%<-fcheck-pointer-bounds%> no se admite con Thread Sanitizer"
 
 #: toplev.c:1320
 #, gcc-internal-format
@@ -21638,10 +21575,9 @@ msgid "memory access check always fail"
 msgstr "la comprebación de acceso de memoria siempre falla"
 
 #: tree-chkp.c:1996
-#, fuzzy, gcc-internal-format
-#| msgid "-fcheck-pointer-bounds requires '%s' name for internal usage"
+#, gcc-internal-format
 msgid "-fcheck-pointer-bounds requires %qs name for internal usage"
-msgstr "-fcheck-pointer-bounds requiere nombre '%s' para uso interno "
+msgstr "-fcheck-pointer-bounds requiere nombre %qs para uso interno "
 
 #: tree-chkp.c:2774
 #, gcc-internal-format, gfc-internal-format
@@ -21860,10 +21796,9 @@ msgid "within this loop"
 msgstr "dentro de este bucle"
 
 #: tree-ssa-loop-prefetch.c:2045
-#, fuzzy, gcc-internal-format
-#| msgid "-falign-labels=%d is not supported"
+#, gcc-internal-format
 msgid "%<l1-cache-size%> parameter is not a power of two %d"
-msgstr "no se admite -falign-labels=%d"
+msgstr "el parámetro %<l1-cache-size%> no es potencia de dos %d"
 
 #: tree-ssa-operands.c:975
 #, gcc-internal-format
@@ -23810,10 +23745,9 @@ msgid "format string argument is not a string type"
 msgstr "el argumento de la cadena de formato no es un tipo de cadena"
 
 #: c-family/c-format.c:210
-#, fuzzy, gcc-internal-format
-#| msgid "found a %<%s%> reference but the format argument should be a string"
+#, gcc-internal-format
 msgid "found a %qs reference but the format argument should be a string"
-msgstr "se encontró una referencia %<%s%> pero el argumento de formato debe ser una cadena"
+msgstr "se encontró una referencia %qs pero el argumento de formato debe ser una cadena"
 
 #: c-family/c-format.c:213
 #, gcc-internal-format
@@ -23821,16 +23755,14 @@ msgid "found a %qT but the format argument should be a string"
 msgstr "se encontró un %qT pero el argumento de formato debe ser una cadena"
 
 #: c-family/c-format.c:223
-#, fuzzy, gcc-internal-format
-#| msgid "format argument should be a %<%s%> reference but a string was found"
+#, gcc-internal-format
 msgid "format argument should be a %qs reference but a string was found"
-msgstr "el argumento de formato debe ser una referencia %<%s%> pero se encontró una cadena"
+msgstr "el argumento de formato debe ser una referencia %qs pero se encontró una cadena"
 
 #: c-family/c-format.c:245
-#, fuzzy, gcc-internal-format
-#| msgid "format argument should be a %<%s%> reference"
+#, gcc-internal-format
 msgid "format argument should be a %qs reference"
-msgstr "el argumento de formato debe ser una referencia %<%s%>"
+msgstr "el argumento de formato debe ser una referencia %qs"
 
 #: c-family/c-format.c:289
 #, gcc-internal-format
@@ -25865,10 +25797,9 @@ msgid "%qE 2.95 vtable-compatibility attribute applies only to C++ classes"
 msgstr "el atributo de compatibilidad vtable 2.95 %qE sólo aplica a clases C++"
 
 #: config/darwin.c:2758
-#, fuzzy, gcc-internal-format
-#| msgid "visibility attribute not supported in this configuration; ignored"
+#, gcc-internal-format
 msgid "protected visibility attribute not supported in this configuration; ignored"
-msgstr "no se admiten los atributos de visibilidad en esta configuración; descartados"
+msgstr "no se admiten los atributos de visibilidad protected en esta configuración; descartados"
 
 #: config/darwin.c:2947
 #, gcc-internal-format, gfc-internal-format
@@ -26002,16 +25933,14 @@ msgid "profiler support for VxWorks"
 msgstr "soporte de análisis de perfil para VxWorks"
 
 #: config/aarch64/aarch64-builtins.c:1089 config/arm/arm-builtins.c:2246
-#, fuzzy, gcc-internal-format
-#| msgid "argument must be a constant"
+#, gcc-internal-format
 msgid "%Kargument %d must be a constant immediate"
-msgstr "el argumento debe ser una constante"
+msgstr "el %Kargumento %d debe ser un inmediato constante"
 
 #: config/aarch64/aarch64-builtins.c:1160 config/arm/arm-builtins.c:2471
-#, fuzzy, gcc-internal-format
-#| msgid "index mask must be an immediate"
+#, gcc-internal-format
 msgid "%Klane index must be a constant immediate"
-msgstr "la máscara de índice debe ser un inmediato"
+msgstr "el índice %Klane debe ser un inmediato constante"
 
 #: config/aarch64/aarch64-builtins.c:1163
 #, fuzzy, gcc-internal-format
@@ -26020,10 +25949,9 @@ msgid "%Ktotal size and element size must be a non-zero constant immediate"
 msgstr "el segundo argumento debe ser un inmediato de 4-bit"
 
 #: config/aarch64/aarch64.c:927
-#, fuzzy, gcc-internal-format
-#| msgid "%qs is incompatible with %qs"
+#, gcc-internal-format
 msgid "%qs is incompatible with %s %s"
-msgstr "%qs es incompatible con %qs"
+msgstr "%qs es incompatible con %s %s"
 
 #: config/aarch64/aarch64.c:929
 #, fuzzy, gcc-internal-format
@@ -26034,12 +25962,12 @@ msgstr "%qs es incompatible con %qs"
 #: config/aarch64/aarch64.c:8382
 #, gcc-internal-format, gfc-internal-format
 msgid "unknown flag passed in -moverride=%s (%s)"
-msgstr ""
+msgstr "indicador pasado en -moverride=%s (%s) desconocido"
 
 #: config/aarch64/aarch64.c:8426
 #, gcc-internal-format, gfc-internal-format
 msgid "%s string ill-formed\n"
-msgstr ""
+msgstr "cadena %s mal formada\n"
 
 #: config/aarch64/aarch64.c:8483
 #, fuzzy, gcc-internal-format, gfc-internal-format
@@ -26054,16 +25982,14 @@ msgid "unknown tuning option (%s)"
 msgstr "cadena de elemento %s desconocida\n"
 
 #: config/aarch64/aarch64.c:8715
-#, fuzzy, gcc-internal-format
-#| msgid "valid arguments to %qs are: %s"
+#, gcc-internal-format
 msgid "valid arguments are: %s; did you mean %qs?"
-msgstr "los argumentos válidos para %qs son: %s"
+msgstr "los argumentos válidos son: %s; ¿quiso decir %qs?"
 
 #: config/aarch64/aarch64.c:8756
-#, fuzzy, gcc-internal-format
-#| msgid "missing path after %qs"
+#, gcc-internal-format
 msgid "missing cpu name in %<-mcpu=%s%>"
-msgstr "falta una ruta después de %qs"
+msgstr "falta el nombre de la cpu en %<-mcpu=%s%>"
 
 #: config/aarch64/aarch64.c:8763
 #, fuzzy, gcc-internal-format
@@ -26078,10 +26004,9 @@ msgid "missing arch name in %<-march=%s%>"
 msgstr "falta una ruta después de %qs"
 
 #: config/aarch64/aarch64.c:8793
-#, fuzzy, gcc-internal-format
-#| msgid "unknown value %s for -mfpu"
+#, gcc-internal-format
 msgid "unknown value %qs for -march"
-msgstr "valor %s desconocido para -mfpu"
+msgstr "valor %qs desconocido para -march"
 
 #: config/aarch64/aarch64.c:8797
 #, fuzzy, gcc-internal-format
@@ -26090,16 +26015,14 @@ msgid "invalid feature modifier in %<-march=%s%>"
 msgstr "opción de modelo de datos -mdata-model=%s no válida"
 
 #: config/aarch64/aarch64.c:8823
-#, fuzzy, gcc-internal-format
-#| msgid "Unknown cpu used in -mtune=%s."
+#, gcc-internal-format
 msgid "missing cpu name in %<-mtune=%s%>"
-msgstr "Se utilizó un cpu desconocido en -mtune=%s."
+msgstr "falta el nombre de la cpu en %<-mtune=%s%>"
 
 #: config/aarch64/aarch64.c:8826
-#, fuzzy, gcc-internal-format
-#| msgid "unknown value %s for -mfpu"
+#, gcc-internal-format
 msgid "unknown value %qs for -mtune"
-msgstr "valor %s desconocido para -mfpu"
+msgstr "valor %qs desconocido para -mtune"
 
 #: config/aarch64/aarch64.c:8929 config/arm/arm.c:3094
 #, gcc-internal-format, gfc-internal-format
@@ -26107,10 +26030,9 @@ msgid "switch -mcpu=%s conflicts with -march=%s switch"
 msgstr "la opción -mcpu=%s genera un conflicto con la opción -march=%s"
 
 #: config/aarch64/aarch64.c:8964
-#, fuzzy, gcc-internal-format
-#| msgid "The compiler does not support -march=%s."
+#, gcc-internal-format
 msgid "Assembler does not support -mabi=ilp32"
-msgstr "El compilador no tiene soporte para -march=%s."
+msgstr "El ensamblador no tiene soporte para -mabi=ilp32"
 
 #: config/aarch64/aarch64.c:8968
 #, gcc-internal-format
@@ -26125,13 +26047,12 @@ msgstr ""
 #: config/aarch64/aarch64.c:9195
 #, gcc-internal-format, gfc-internal-format
 msgid "missing architecture name in 'arch' target %s"
-msgstr ""
+msgstr "falta el nombre de la arquitectura en el objetivo 'arch' %s"
 
 #: config/aarch64/aarch64.c:9198
-#, fuzzy, gcc-internal-format
-#| msgid "unknown value %s for -mfpu"
+#, gcc-internal-format
 msgid "unknown value %qs for 'arch' target %s"
-msgstr "valor %s desconocido para -mfpu"
+msgstr "valor %qs desconocido para el objetivo 'arch' %s"
 
 #: config/aarch64/aarch64.c:9202
 #, gcc-internal-format
@@ -26139,16 +26060,14 @@ msgid "invalid feature modifier %qs for 'arch' target %s"
 msgstr ""
 
 #: config/aarch64/aarch64.c:9236
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "missing makefile target after %qs"
+#, gcc-internal-format, gfc-internal-format
 msgid "missing cpu name in 'cpu' target %s"
-msgstr "falta un fichero make objetivo después de %qs"
+msgstr "falta el nombre de la cpu en el objetivo 'cpu' %s"
 
 #: config/aarch64/aarch64.c:9239
-#, fuzzy, gcc-internal-format
-#| msgid "unknown value %s for -mfpu"
+#, gcc-internal-format
 msgid "unknown value %qs for 'cpu' target %s"
-msgstr "valor %s desconocido para -mfpu"
+msgstr "valor %qs desconocido para el objetivo 'cpu' %s"
 
 #: config/aarch64/aarch64.c:9243
 #, gcc-internal-format
@@ -26156,10 +26075,9 @@ msgid "invalid feature modifier %qs for 'cpu' target %s"
 msgstr ""
 
 #: config/aarch64/aarch64.c:9274
-#, fuzzy, gcc-internal-format
-#| msgid "unknown value %s for -mfpu"
+#, gcc-internal-format
 msgid "unknown value %qs for 'tune' target %s"
-msgstr "valor %s desconocido para -mfpu"
+msgstr "valor %qs desconocido para el objetivo 'tune' %s"
 
 #: config/aarch64/aarch64.c:9315
 #, fuzzy, gcc-internal-format
@@ -26174,28 +26092,24 @@ msgid "invalid feature modifier in target %s %qs"
 msgstr "argumento de modelo de memoria %d no válido de %qE"
 
 #: config/aarch64/aarch64.c:9372
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "malformed spec function arguments"
+#, gcc-internal-format, gfc-internal-format
 msgid "malformed target %s"
-msgstr "argumentos de la función de especificación malformados"
+msgstr "objetivo %s mal formado"
 
 #: config/aarch64/aarch64.c:9420
-#, fuzzy, gcc-internal-format
-#| msgid "%s only accepts 1 argument"
+#, gcc-internal-format
 msgid "target %s %qs does not accept an argument"
-msgstr "%s sólo acepta 1 argumento"
+msgstr "el objetivo %s %qs no acepta un argumento"
 
 #: config/aarch64/aarch64.c:9429
-#, fuzzy, gcc-internal-format
-#| msgid "matching constraint does not allow a register"
+#, gcc-internal-format
 msgid "target %s %qs does not allow a negated form"
-msgstr "la restricción coincidente no permite un registro"
+msgstr "el objetivo %s %qs no permite una forma negada"
 
 #: config/aarch64/aarch64.c:9484
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "%s\"%s\"%s is invalid"
+#, gcc-internal-format, gfc-internal-format
 msgid "target %s %s=%s is not valid"
-msgstr "%s\"%s\"%s es no válido"
+msgstr "el objetivo %s %s=%s no es válido"
 
 #: config/aarch64/aarch64.c:9544 config/arm/arm.c:30411
 #: config/i386/i386.c:6772 config/rs6000/rs6000.c:39283
@@ -26206,16 +26120,14 @@ msgid "attribute %<target%> argument not a string"
 msgstr "el argumento del atributo %qE no es una cadena"
 
 #: config/aarch64/aarch64.c:9554
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "malformed #pragma call"
+#, gcc-internal-format, gfc-internal-format
 msgid "malformed target %s value"
-msgstr "#pragma call malformado"
+msgstr "valor del objetivo %s mal formado"
 
 #: config/aarch64/aarch64.c:9571
-#, fuzzy, gcc-internal-format
-#| msgid "%s\"%s\"%s is invalid"
+#, gcc-internal-format
 msgid "target %s %qs is invalid"
-msgstr "%s\"%s\"%s es no válido"
+msgstr "el objetivo %s %qs no es válido"
 
 #: config/aarch64/aarch64.c:9580
 #, gcc-internal-format
@@ -26225,7 +26137,7 @@ msgstr ""
 #: config/aarch64/aarch64.c:11428
 #, gcc-internal-format
 msgid "%Klane %wd out of range %wd - %wd"
-msgstr ""
+msgstr "%Klane %wd fuera de rango %wd - %wd"
 
 #: config/aarch64/aarch64.c:11430
 #, fuzzy, gcc-internal-format
@@ -26301,10 +26213,9 @@ msgid "-mno-mpy supported only for ARC700 or ARCv2"
 msgstr ""
 
 #: config/arc/arc.c:720
-#, fuzzy, gcc-internal-format
-#| msgid "-fno-fat-lto-objects are supported only with linker plugin."
+#, gcc-internal-format
 msgid "-mno-dpfp-lrsr supported only with -mdpfp"
-msgstr "-fno-fat-lto-object sólo se admite con el plugin enlazador."
+msgstr "-mno-dpfp-lrsr sólo se admite con -mdpfp"
 
 #: config/arc/arc.c:725
 #, fuzzy, gcc-internal-format
@@ -26315,17 +26226,17 @@ msgstr "no se pueden usar juntos -mcorea y -mcoreab"
 #: config/arc/arc.c:729
 #, gcc-internal-format
 msgid "-mspfp_fast not available on ARC600 or ARC601"
-msgstr ""
+msgstr "-mspfp_fast no disponible en ARC600 ni ARC601"
 
 #: config/arc/arc.c:734
 #, gcc-internal-format
 msgid "No FPX/FPU mixing allowed"
-msgstr ""
+msgstr "No está permitido mezclar FPX/FPU"
 
 #: config/arc/arc.c:740
 #, gcc-internal-format, gfc-internal-format
 msgid "PIC is not supported for %s. Generating non-PIC code only.."
-msgstr ""
+msgstr "No se admite PIC para %s. Se generará soloamente código no PIC.."
 
 #. Check options against architecture options.  Throw an error if
 #. option is not allowed.
@@ -26333,18 +26244,17 @@ msgstr ""
 #, fuzzy, gcc-internal-format, gfc-internal-format
 #| msgid "%qD is not a variable in clause %qs"
 msgid "%s is not available for %s architecture"
-msgstr "%qD no es una variable en la cláusula %qs"
+msgstr "%s no está disponible para la arquitectura %s"
 
 #: config/arc/arc.c:879
 #, gcc-internal-format
 msgid "compact-casesi is not applicable to ARCv2"
-msgstr ""
+msgstr "compact-casesi no es aplicable a ARCv2"
 
 #: config/arc/arc.c:1378
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "multiple function type attributes specified"
+#, gcc-internal-format, gfc-internal-format
 msgid "multiply option implies r%d is fixed"
-msgstr "se especificaron múltiples atributos de tipo de función"
+msgstr "la opción multiply implica r%d fijo"
 
 #: config/arc/arc.c:1601 config/epiphany/epiphany.c:492
 #: config/epiphany/epiphany.c:532
@@ -26358,73 +26268,69 @@ msgid "argument of %qE attribute is not \"ilink1\" or \"ilink2\""
 msgstr "el argumento del atributo %qE no es \"ilink1\" o \"ilink2\""
 
 #: config/arc/arc.c:1618
-#, fuzzy, gcc-internal-format
-#| msgid "argument of %qE attribute is not \"ilink1\" or \"ilink2\""
+#, gcc-internal-format
 msgid "argument of %qE attribute is not \"ilink\""
-msgstr "el argumento del atributo %qE no es \"ilink1\" o \"ilink2\""
+msgstr "el argumento del atributo %qE no es \"ilink\""
 
 #: config/arc/arc.c:5715
-#, fuzzy, gcc-internal-format
-#| msgid "bit array slice with non-constant length"
+#, gcc-internal-format
 msgid "__builtin_arc_aligned with non-constant alignment"
-msgstr "rebanada de la matriz de bits con longitud no constante"
+msgstr "__builtin_arc_aligned con alineamiento no constante"
 
 #: config/arc/arc.c:5723
-#, fuzzy, gcc-internal-format
-#| msgid "invalid argument to %<__builtin_frame_address%>"
+#, gcc-internal-format
 msgid "invalid alignment value for __builtin_arc_aligned"
-msgstr "argumento no válido para %<__builtin_frame_address%>"
+msgstr "valor de argumento no válido para __builtin_arc_aligned"
 
 #: config/arc/arc.c:5850
 #, gcc-internal-format
 msgid "builtin operand should be an unsigned 6-bit value"
-msgstr ""
+msgstr "el operando interno debería ser un valor de 6 bits sin signo"
 
 #: config/arc/arc.c:5891
-#, fuzzy, gcc-internal-format
-#| msgid "-mcorea should be used with -mmulticore"
+#, gcc-internal-format
 msgid "operand 1 should be an unsigned 3-bit immediate"
-msgstr "-mcorea se debe usar con -mmulticore"
+msgstr "el operando 1 debería ser un inmediato de 3 bits sin signo"
 
 #: config/arc/arc.c:5932 config/arc/arc.c:6029
 #, gcc-internal-format
 msgid "operand 2 should be an unsigned 3-bit value (I0-I7)"
-msgstr ""
+msgstr "el operando 2 debería ser un valor de 3 bits sin signo (10-17)"
 
 #: config/arc/arc.c:5965 config/arc/arc.c:5997
 #, gcc-internal-format
 msgid "operand 1 should be an unsigned 3-bit value (I0-I7)"
-msgstr ""
+msgstr "el operando 1 debería ser un valor de 3 bits sin signo (10-17)"
 
 #: config/arc/arc.c:5969 config/arc/arc.c:6001
 #, gcc-internal-format
 msgid "operand 2 should be an unsigned 8-bit value"
-msgstr ""
+msgstr "el operando 2 debería ser un valor de 8 bits sin signo"
 
 #: config/arc/arc.c:6033
 #, gcc-internal-format
 msgid "operand 3 should be an unsigned 8-bit value"
-msgstr ""
+msgstr "el operando 3 debería ser un valor de 8 bits sin signo"
 
 #: config/arc/arc.c:6066
 #, gcc-internal-format
 msgid "operand 4 should be an unsigned 8-bit value (0-255)"
-msgstr ""
+msgstr "el operando 4 debería ser un valor de 8 bits sin signo (0-255)"
 
 #: config/arc/arc.c:6070
 #, gcc-internal-format
 msgid "operand 3 should be an unsigned 3-bit value (I0-I7)"
-msgstr ""
+msgstr "el operando 3 debería ser un valor de 3 bits sin signo (10-17)"
 
 #: config/arc/arc.c:6077
 #, gcc-internal-format
 msgid "operand 2 should be an unsigned 3-bit value (subreg 0-7)"
-msgstr ""
+msgstr "el operando 2 debería ser un valor de 3 bits sin signo (0-7)"
 
 #: config/arc/arc.c:6080
 #, gcc-internal-format
 msgid "operand 2 should be an even 3-bit value (subreg 0,2,4,6)"
-msgstr ""
+msgstr "el operando 2 debería ser un valor de 3 bits par (subreg 0,2,4,6)"
 
 #: config/arc/arc.c:6127
 #, fuzzy, gcc-internal-format, gfc-internal-format
@@ -26433,22 +26339,19 @@ msgid "builtin requires an immediate for operand %d"
 msgstr "se usó un símbolo como un operando inmediato"
 
 #: config/arc/arc.c:6132
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "argument 2 must be a 5-bit unsigned literal"
+#, gcc-internal-format, gfc-internal-format
 msgid "operand %d should be a 6 bit unsigned immediate"
-msgstr "el argumento 2 debe ser una literal sin signo de 5-bit"
+msgstr "el operando %d debería ser un inmediato sin signo de 6 bits"
 
 #: config/arc/arc.c:6136
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "argument 2 must be a 5-bit unsigned literal"
+#, gcc-internal-format, gfc-internal-format
 msgid "operand %d should be a 8 bit unsigned immediate"
-msgstr "el argumento 2 debe ser una literal sin signo de 5-bit"
+msgstr "el operando %d debería ser un inmediato sin signo de 8 bits"
 
 #: config/arc/arc.c:6140
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "argument 2 must be a 5-bit unsigned literal"
+#, gcc-internal-format, gfc-internal-format
 msgid "operand %d should be a 3 bit unsigned immediate"
-msgstr "el argumento 2 debe ser una literal sin signo de 5-bit"
+msgstr "el operando %d debería ser un inmediato sin signo de 3 bits"
 
 #: config/arc/arc.c:6143
 #, gcc-internal-format, gfc-internal-format
@@ -26458,12 +26361,12 @@ msgstr ""
 #: config/arc/arc.c:6194
 #, gcc-internal-format
 msgid "register number must be a compile-time constant. Try giving higher optimization levels"
-msgstr ""
+msgstr "el número de registro debe ser una constante en tiempo de compilación. Pruebe a poner niveles de optimización más altos"
 
 #: config/arc/arc.c:6215
 #, gcc-internal-format
 msgid "operand for sleep instruction must be an unsigned 6 bit compile-time constant"
-msgstr ""
+msgstr "el operando para la instrucción sleep debe ser una constante en tiempo de compilación sin signo de 6 bits"
 
 #: config/arc/arc.c:6804
 #, gcc-internal-format
