@@ -131,7 +131,8 @@ The _S_initialize() function:
     are grabbed from the global list to a thread specific list or when
     a thread decides to return some blocks to the global freelist.
 </p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="allocator.mt.deallocation"></a>Deallocation Notes</h3></div></div></div><p> Notes about deallocation. This allocator does not explicitly
-release memory. Because of this, memory debugging programs like
+release memory back to the OS, but keeps its own freelists instead.
+Because of this, memory debugging programs like
 valgrind or purify may notice leaks: sorry about this
 inconvenience. Operating systems will reclaim allocated memory at
 program termination anyway. If sidestepping this kind of noise is

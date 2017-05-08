@@ -281,7 +281,8 @@ The _S_initialize() function:
 
 
 <para> Notes about deallocation. This allocator does not explicitly
-release memory. Because of this, memory debugging programs like
+release memory back to the OS, but keeps its own freelists instead.
+Because of this, memory debugging programs like
 valgrind or purify may notice leaks: sorry about this
 inconvenience. Operating systems will reclaim allocated memory at
 program termination anyway. If sidestepping this kind of noise is
