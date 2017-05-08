@@ -1,3 +1,10 @@
+2017-05-08  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* name-lookup.h (push_namespace): Return int.
+	* name-lookup.c (push_namespace): Return count of depth pushed.
+	* parser.c (cp_parser_namespace_definition): Accumulate depth pushed.
+
 2017-05-05  Nathan Sidwell  <nathan@acm.org>
 
 	Merge trunk r247654.

@@ -18410,8 +18410,8 @@ cp_parser_namespace_definition (cp_parser* parser)
 
       /* Nested namespace names can create new namespaces (unlike
 	 other qualified-ids).  */
-      if (identifier && push_namespace (identifier))
-	++nested_definition_count;
+      if (int count = identifier ? push_namespace (identifier) : 0)
+	nested_definition_count += count;
       else
 	cp_parser_error (parser, "nested namespace name required");
       cp_lexer_consume_token (parser->lexer);
@@ -18428,13 +18428,16 @@ cp_parser_namespace_definition (cp_parser* parser)
 	      "a nested namespace definition cannot be inline");
 
   /* Start the namespace.  */
-  bool pushed = push_namespace (identifier, is_inline);
-  if (pushed && is_inline && !DECL_NAMESPACE_INLINE_P (current_namespace))
+  if (int count = push_namespace (identifier, is_inline))
     {
-      error_at (token->location,
-		"an inline namespace must be specified at initial definition");
-      inform (DECL_SOURCE_LOCATION (current_namespace),
-	      "%qD defined here", current_namespace);
+      nested_definition_count += count;
+      if (is_inline && !DECL_NAMESPACE_INLINE_P (current_namespace))
+	{
+	  error_at (token->location, "an inline namespace must be"
+		    " specified at initial definition");
+	  inform (DECL_SOURCE_LOCATION (current_namespace),
+		  "%qD defined here", current_namespace);
+	}
     }
 
   bool has_visibility = handle_namespace_attrs (current_namespace, attribs);
@@ -18452,10 +18455,6 @@ cp_parser_namespace_definition (cp_parser* parser)
 
   if (has_visibility)
     pop_visibility (1);
-
-  /* Finish the namespace.  */
-  if (pushed)
-    pop_namespace ();
 
   /* Pop the nested namespace definitions.  */
   while (nested_definition_count--)

@@ -6507,12 +6507,13 @@ pushdecl_top_level_init (tree x, tree init)
 /* Push into the scope of the NAME namespace.  If NAME is NULL_TREE,
    then we enter an anonymous namespace.  If MAKE_INLINE is true, then
    we create an inline namespace (it is up to the caller to check upon
-   redefinition). Return true on successful entry  */
+   redefinition). Return the number of namespaces entered.  */
 
-bool
+int
 push_namespace (tree name, bool make_inline)
 {
   bool subtime = timevar_cond_start (TV_NAME_LOOKUP);
+  int count = 0;
 
   /* We should not get here if the global_namespace is not yet constructed
      nor if NAME designates the global namespace:  The global scope is
@@ -6530,7 +6531,7 @@ push_namespace (tree name, bool make_inline)
     else if (TREE_CODE (lookup.value) == NAMESPACE_DECL)
       {
 	ns = lookup.value;
-	// FIXME: DR about finding a member of an inline namespace
+	// FIXME: DR2061 about finding a member of an inline namespace
 	gcc_assert (CP_DECL_CONTEXT (ns) == current_namespace);
 	if (tree dna = DECL_NAMESPACE_ALIAS (ns))
 	  {
@@ -6615,10 +6616,11 @@ push_namespace (tree name, bool make_inline)
       else
 	resume_scope (NAMESPACE_LEVEL (ns));
       current_namespace = ns;
+      count++;
     }
 
   timevar_cond_stop (TV_NAME_LOOKUP, subtime);
-  return ns != NULL_TREE;
+  return count;
 }
 
 /* Pop from the scope of the current namespace.  */
