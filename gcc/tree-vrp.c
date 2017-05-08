@@ -857,27 +857,28 @@ symbolic_range_based_on_p (value_range *vr, const_tree sym)
    *STRICT_OVERFLOW_P.*/
 
 static bool
-gimple_assign_nonzero_warnv_p (gimple *stmt, bool *strict_overflow_p)
+gimple_assign_nonzero_p (gimple *stmt)
 {
   enum tree_code code = gimple_assign_rhs_code (stmt);
+  bool strict_overflow_p;
   switch (get_gimple_rhs_class (code))
     {
     case GIMPLE_UNARY_RHS:
       return tree_unary_nonzero_warnv_p (gimple_assign_rhs_code (stmt),
 					 gimple_expr_type (stmt),
 					 gimple_assign_rhs1 (stmt),
-					 strict_overflow_p);
+					 &strict_overflow_p);
     case GIMPLE_BINARY_RHS:
       return tree_binary_nonzero_warnv_p (gimple_assign_rhs_code (stmt),
 					  gimple_expr_type (stmt),
 					  gimple_assign_rhs1 (stmt),
 					  gimple_assign_rhs2 (stmt),
-					  strict_overflow_p);
+					  &strict_overflow_p);
     case GIMPLE_TERNARY_RHS:
       return false;
     case GIMPLE_SINGLE_RHS:
       return tree_single_nonzero_warnv_p (gimple_assign_rhs1 (stmt),
-					  strict_overflow_p);
+					  &strict_overflow_p);
     case GIMPLE_INVALID_RHS:
       gcc_unreachable ();
     default:
@@ -891,12 +892,12 @@ gimple_assign_nonzero_warnv_p (gimple *stmt, bool *strict_overflow_p)
    *STRICT_OVERFLOW_P.*/
 
 static bool
-gimple_stmt_nonzero_warnv_p (gimple *stmt, bool *strict_overflow_p)
+gimple_stmt_nonzero_p (gimple *stmt)
 {
   switch (gimple_code (stmt))
     {
     case GIMPLE_ASSIGN:
-      return gimple_assign_nonzero_warnv_p (stmt, strict_overflow_p);
+      return gimple_assign_nonzero_p (stmt);
     case GIMPLE_CALL:
       {
 	tree fndecl = gimple_call_fndecl (stmt);
@@ -934,13 +935,13 @@ gimple_stmt_nonzero_warnv_p (gimple *stmt, bool *strict_overflow_p)
     }
 }
 
-/* Like tree_expr_nonzero_warnv_p, but this function uses value ranges
+/* Like tree_expr_nonzero_p, but this function uses value ranges
    obtained so far.  */
 
 static bool
-vrp_stmt_computes_nonzero (gimple *stmt, bool *strict_overflow_p)
+vrp_stmt_computes_nonzero (gimple *stmt)
 {
-  if (gimple_stmt_nonzero_warnv_p (stmt, strict_overflow_p))
+  if (gimple_stmt_nonzero_p (stmt))
     return true;
 
   /* If we have an expression of the form &X->a, then the expression
@@ -3927,8 +3928,7 @@ extract_range_basic (value_range *vr, gimple *stmt)
   if (INTEGRAL_TYPE_P (type)
       && gimple_stmt_nonnegative_warnv_p (stmt, &sop))
     set_value_range_to_nonnegative (vr, type);
-  else if (vrp_stmt_computes_nonzero (stmt, &sop)
-	   && !sop)
+  else if (vrp_stmt_computes_nonzero (stmt))
     set_value_range_to_nonnull (vr, type);
   else
     set_value_range_to_varying (vr);
@@ -7568,7 +7568,6 @@ static void
 vrp_visit_cond_stmt (gcond *stmt, edge *taken_edge_p)
 {
   tree val;
-  bool sop;
 
   *taken_edge_p = NULL;
 
@@ -7634,25 +7633,14 @@ vrp_visit_cond_stmt (gcond *stmt, edge *taken_edge_p)
      additional checking.  Testing on several code bases (GCC, DLV,
      MICO, TRAMP3D and SPEC2000) showed that doing this results in
      4 more predicates folded in SPEC.  */
-  sop = false;
 
+  bool sop;
   val = vrp_evaluate_conditional_warnv_with_ops (gimple_cond_code (stmt),
 						 gimple_cond_lhs (stmt),
 						 gimple_cond_rhs (stmt),
 						 false, &sop, NULL);
   if (val)
-    {
-      if (!sop)
-	*taken_edge_p = find_taken_edge (gimple_bb (stmt), val);
-      else
-	{
-	  if (dump_file && (dump_flags & TDF_DETAILS))
-	    fprintf (dump_file,
-		     "\nIgnoring predicate evaluation because "
-		     "it assumes that signed overflow is undefined");
-	  val = NULL_TREE;
-	}
-    }
+    *taken_edge_p = find_taken_edge (gimple_bb (stmt), val);
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
