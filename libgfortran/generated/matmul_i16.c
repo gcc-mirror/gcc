@@ -286,8 +286,7 @@ matmul_i16_avx (gfc_array_i16 * const restrict retarray,
 		 i1, i2, i3, i4, i5, i6;
 
       /* Local variables */
-      GFC_INTEGER_16 t1[65536], /* was [256][256] */
-		 f11, f12, f21, f22, f31, f32, f41, f42,
+      GFC_INTEGER_16 f11, f12, f21, f22, f31, f32, f41, f42,
 		 f13, f14, f23, f24, f33, f34, f43, f44;
       index_type i, j, l, ii, jj, ll;
       index_type isec, jsec, lsec, uisec, ujsec, ulsec;
@@ -310,6 +309,17 @@ matmul_i16_avx (gfc_array_i16 * const restrict retarray,
       /* Early exit if possible */
       if (m == 0 || n == 0 || k == 0)
 	return;
+
+      /* Adjust size of t1 to what is needed.  */
+      index_type t1_dim;
+      t1_dim = (a_dim1-1) * 256 + b_dim1;
+      if (t1_dim > 65536)
+	t1_dim = 65536;
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wvla"
+      GFC_INTEGER_16 t1[t1_dim]; /* was [256][256] */
+#pragma GCC diagnostic pop
 
       /* Empty c first.  */
       for (j=1; j<=n; j++)
@@ -829,8 +839,7 @@ matmul_i16_avx2 (gfc_array_i16 * const restrict retarray,
 		 i1, i2, i3, i4, i5, i6;
 
       /* Local variables */
-      GFC_INTEGER_16 t1[65536], /* was [256][256] */
-		 f11, f12, f21, f22, f31, f32, f41, f42,
+      GFC_INTEGER_16 f11, f12, f21, f22, f31, f32, f41, f42,
 		 f13, f14, f23, f24, f33, f34, f43, f44;
       index_type i, j, l, ii, jj, ll;
       index_type isec, jsec, lsec, uisec, ujsec, ulsec;
@@ -853,6 +862,17 @@ matmul_i16_avx2 (gfc_array_i16 * const restrict retarray,
       /* Early exit if possible */
       if (m == 0 || n == 0 || k == 0)
 	return;
+
+      /* Adjust size of t1 to what is needed.  */
+      index_type t1_dim;
+      t1_dim = (a_dim1-1) * 256 + b_dim1;
+      if (t1_dim > 65536)
+	t1_dim = 65536;
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wvla"
+      GFC_INTEGER_16 t1[t1_dim]; /* was [256][256] */
+#pragma GCC diagnostic pop
 
       /* Empty c first.  */
       for (j=1; j<=n; j++)
@@ -1372,8 +1392,7 @@ matmul_i16_avx512f (gfc_array_i16 * const restrict retarray,
 		 i1, i2, i3, i4, i5, i6;
 
       /* Local variables */
-      GFC_INTEGER_16 t1[65536], /* was [256][256] */
-		 f11, f12, f21, f22, f31, f32, f41, f42,
+      GFC_INTEGER_16 f11, f12, f21, f22, f31, f32, f41, f42,
 		 f13, f14, f23, f24, f33, f34, f43, f44;
       index_type i, j, l, ii, jj, ll;
       index_type isec, jsec, lsec, uisec, ujsec, ulsec;
@@ -1396,6 +1415,17 @@ matmul_i16_avx512f (gfc_array_i16 * const restrict retarray,
       /* Early exit if possible */
       if (m == 0 || n == 0 || k == 0)
 	return;
+
+      /* Adjust size of t1 to what is needed.  */
+      index_type t1_dim;
+      t1_dim = (a_dim1-1) * 256 + b_dim1;
+      if (t1_dim > 65536)
+	t1_dim = 65536;
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wvla"
+      GFC_INTEGER_16 t1[t1_dim]; /* was [256][256] */
+#pragma GCC diagnostic pop
 
       /* Empty c first.  */
       for (j=1; j<=n; j++)
@@ -1911,8 +1941,7 @@ matmul_i16_vanilla (gfc_array_i16 * const restrict retarray,
 		 i1, i2, i3, i4, i5, i6;
 
       /* Local variables */
-      GFC_INTEGER_16 t1[65536], /* was [256][256] */
-		 f11, f12, f21, f22, f31, f32, f41, f42,
+      GFC_INTEGER_16 f11, f12, f21, f22, f31, f32, f41, f42,
 		 f13, f14, f23, f24, f33, f34, f43, f44;
       index_type i, j, l, ii, jj, ll;
       index_type isec, jsec, lsec, uisec, ujsec, ulsec;
@@ -1935,6 +1964,17 @@ matmul_i16_vanilla (gfc_array_i16 * const restrict retarray,
       /* Early exit if possible */
       if (m == 0 || n == 0 || k == 0)
 	return;
+
+      /* Adjust size of t1 to what is needed.  */
+      index_type t1_dim;
+      t1_dim = (a_dim1-1) * 256 + b_dim1;
+      if (t1_dim > 65536)
+	t1_dim = 65536;
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wvla"
+      GFC_INTEGER_16 t1[t1_dim]; /* was [256][256] */
+#pragma GCC diagnostic pop
 
       /* Empty c first.  */
       for (j=1; j<=n; j++)
@@ -2508,8 +2548,7 @@ matmul_i16 (gfc_array_i16 * const restrict retarray,
 		 i1, i2, i3, i4, i5, i6;
 
       /* Local variables */
-      GFC_INTEGER_16 t1[65536], /* was [256][256] */
-		 f11, f12, f21, f22, f31, f32, f41, f42,
+      GFC_INTEGER_16 f11, f12, f21, f22, f31, f32, f41, f42,
 		 f13, f14, f23, f24, f33, f34, f43, f44;
       index_type i, j, l, ii, jj, ll;
       index_type isec, jsec, lsec, uisec, ujsec, ulsec;
@@ -2532,6 +2571,17 @@ matmul_i16 (gfc_array_i16 * const restrict retarray,
       /* Early exit if possible */
       if (m == 0 || n == 0 || k == 0)
 	return;
+
+      /* Adjust size of t1 to what is needed.  */
+      index_type t1_dim;
+      t1_dim = (a_dim1-1) * 256 + b_dim1;
+      if (t1_dim > 65536)
+	t1_dim = 65536;
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wvla"
+      GFC_INTEGER_16 t1[t1_dim]; /* was [256][256] */
+#pragma GCC diagnostic pop
 
       /* Empty c first.  */
       for (j=1; j<=n; j++)
