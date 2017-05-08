@@ -1,3 +1,8 @@
+2017-05-08  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* testsuite/gcc.dg/vect/vect-44.c: Add -fno-vect-cost-model.
+	* gcc/testsuite/gcc.dg/vect/vect-50.c: Likewise.
+
 2017-05-07  Jeff Law  <law@redhat.com>
 
 	Revert:
