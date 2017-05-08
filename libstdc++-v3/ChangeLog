@@ -1,5 +1,9 @@
 2017-05-08  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/std/optional: Use a separate static_assert per condition.
+	* testsuite/20_util/optional/cons/value_neg.cc: Update dg-error line
+	numbers.
+
 	* doc/xml/manual/mt_allocator.xml: Clarify deallocation behaviour.
 	* doc/html/*: Regenerate.
 
