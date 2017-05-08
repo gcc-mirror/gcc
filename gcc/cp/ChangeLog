@@ -1,3 +1,13 @@
+2017-05-08  Jason Merrill  <jason@redhat.com>
+
+	PR c++/80178 - parameter passing for uncopyable classes
+	* tree.c (type_has_nontrivial_copy_init): True for classes with only
+	deleted copy/move ctors.
+	(remember_deleted_copy, maybe_warn_parm_abi): New.
+	* decl.c (require_complete_types_for_parms, check_function_type):
+	Call maybe_warn_parm_abi.
+	* call.c (convert_for_arg_passing, build_cxx_call): Likewise.
+
 2017-05-08  Nathan Sidwell  <nathan@acm.org>
 
 	* decl.c (builtin_function_1): Set DCL_ANTICIPATED before pushing.
