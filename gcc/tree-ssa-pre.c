@@ -817,19 +817,23 @@ bitmap_set_and (bitmap_set_t dest, bitmap_set_t orig)
 
   if (dest != orig)
     {
-      bitmap_head temp;
-      bitmap_initialize (&temp, &grand_bitmap_obstack);
-
       bitmap_and_into (&dest->values, &orig->values);
-      bitmap_copy (&temp, &dest->expressions);
-      EXECUTE_IF_SET_IN_BITMAP (&temp, 0, i, bi)
+
+      unsigned int to_clear = -1U;
+      FOR_EACH_EXPR_ID_IN_SET (dest, i, bi)
 	{
+	  if (to_clear != -1U)
+	    {
+	      bitmap_clear_bit (&dest->expressions, to_clear);
+	      to_clear = -1U;
+	    }
 	  pre_expr expr = expression_for_id (i);
 	  unsigned int value_id = get_expr_value_id (expr);
 	  if (!bitmap_bit_p (&dest->values, value_id))
-	    bitmap_clear_bit (&dest->expressions, i);
+	    to_clear = i;
 	}
-      bitmap_clear (&temp);
+      if (to_clear != -1U)
+	bitmap_clear_bit (&dest->expressions, to_clear);
     }
 }
 
@@ -862,18 +866,20 @@ bitmap_set_subtract_values (bitmap_set_t a, bitmap_set_t b)
 {
   unsigned int i;
   bitmap_iterator bi;
-  bitmap_head temp;
-
-  bitmap_initialize (&temp, &grand_bitmap_obstack);
-
-  bitmap_copy (&temp, &a->expressions);
-  EXECUTE_IF_SET_IN_BITMAP (&temp, 0, i, bi)
+  pre_expr to_remove = NULL;
+  FOR_EACH_EXPR_ID_IN_SET (a, i, bi)
     {
+      if (to_remove)
+	{
+	  bitmap_remove_from_set (a, to_remove);
+	  to_remove = NULL;
+	}
       pre_expr expr = expression_for_id (i);
       if (bitmap_set_contains_value (b, get_expr_value_id (expr)))
-	bitmap_remove_from_set (a, expr);
+	to_remove = expr;
     }
-  bitmap_clear (&temp);
+  if (to_remove)
+    bitmap_remove_from_set (a, to_remove);
 }
 
 
