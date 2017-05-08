@@ -1,5 +1,10 @@
 2017-05-08  Richard Biener  <rguenther@suse.de>
 
+	* tree-ssa-pre.c (bitmap_set_and): Avoid bitmap copy.
+	(bitmap_set_subtract_values): Likewise.
+
+2017-05-08  Richard Biener  <rguenther@suse.de>
+
 	* tree-vrp.c (gimple_assign_nonzero_warnv_p): Rename to ...
 	(gimple_assign_nonzero): ... this and remove strict_overflow_p
 	argument.
