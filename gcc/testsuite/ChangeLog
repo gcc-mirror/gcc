@@ -1,3 +1,11 @@
+2016-05-08  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	Backport from mainline
+	PR target/69868 + swap optimization backports
+	* gcc.target/powerpc/swaps-p8-20.c: New.
+	* gcc.target/powerpc/swaps-p8-23.c: New.
+	* gcc.target/powerpc/swaps-p8-24.c: New.
+
 2017-05-01  Janus Weil  <janus@gcc.gnu.org>
 
 	Backport from trunk

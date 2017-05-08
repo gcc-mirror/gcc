@@ -1,3 +1,30 @@
+2016-05-08  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	Backport from mainline
+	PR target/69868 + swap optimization backports
+	* config/rs6000/rs6000.c (swap_web_entry): Enlarge
+	special_handling bitfield.
+	(special_handling_values): Add SH_XXPERMDI, SH_CONCAT, SH_VPERM,
+	and SH_VPERM_COMP.
+	(const_load_sequence_p): New.
+	(load_comp_mask_p): New.
+	(v2df_reduction_p): New.
+	(rtx_is_swappable_p): Perform special handling for XXPERMDI and
+	for reductions.
+	(insn_is_swappable_p): Perform special handling for VEC_CONCAT,
+	V2DF reductions, and various permutes.
+	(adjust_xxpermdi): New.
+	(adjust_concat): New.
+	(find_swapped_load_and_const_vector): New.
+	(replace_const_vector_in_load): New.
+	(adjust_vperm): New.
+	(adjust_vperm_comp): New.
+	(handle_special_swappables): Call adjust_xxpermdi, adjust_concat,
+	adjust_vperm, and adjust_vperm_comp.
+	(replace_swap_with_copy): Allow vector NOT operations to also be
+	replaced by copies.
+	(dump_swap_insn_table): Handle new special handling values.
+
 2017-05-03  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backport from mainline
