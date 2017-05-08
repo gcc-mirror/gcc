@@ -460,9 +460,11 @@ enum reg_class
 
 #define STACK_GROWS_DOWNWARD 1
 
+#define FRAME_GROWS_DOWNWARD flag_stack_protect
+
 /* Offset within stack frame to start allocating local variables at.  */
 #define STARTING_FRAME_OFFSET						\
-  crtl->outgoing_args_size
+  (FRAME_GROWS_DOWNWARD ? 0 : crtl->outgoing_args_size)
 
 /* The ARG_POINTER and FRAME_POINTER are not real Xtensa registers, so
    they are eliminated to either the stack pointer or hard frame pointer.  */
@@ -474,20 +476,7 @@ enum reg_class
 
 /* Specify the initial difference between the specified pair of registers.  */
 #define INITIAL_ELIMINATION_OFFSET(FROM, TO, OFFSET)			\
-  do {									\
-    long frame_size = compute_frame_size (get_frame_size ());		\
-    switch (FROM)							\
-      {									\
-      case FRAME_POINTER_REGNUM:					\
-        (OFFSET) = 0;							\
-	break;								\
-      case ARG_POINTER_REGNUM:						\
-        (OFFSET) = frame_size;						\
-	break;								\
-      default:								\
-	gcc_unreachable ();						\
-      }									\
-  } while (0)
+  (OFFSET) = xtensa_initial_elimination_offset ((FROM), (TO))
 
 /* If defined, the maximum amount of space required for outgoing
    arguments will be computed and placed into the variable
