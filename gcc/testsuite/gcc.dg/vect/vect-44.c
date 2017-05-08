@@ -1,4 +1,5 @@
 /* { dg-require-effective-target vect_float } */
+/* { dg-options "-fno-vect-cost-model" } */
 
 #include <stdarg.h>
 #include "tree-vect.h"
