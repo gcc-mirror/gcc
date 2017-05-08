@@ -1,3 +1,8 @@
+2017-05-08  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* config.gcc (arm*-*-*): Set TM_MULTILIB_CONFIG from
+	with_multilib_list after it has been checked.
+
 2017-05-08  Richard Biener  <rguenther@suse.de>
 
 	* tree-ssa-pre.c (bitmap_set_and): Avoid bitmap copy.
