@@ -1,3 +1,8 @@
+2017-05-08  Martin Sebor  <msebor@redhat.com>
+
+	PR translation/80280
+	* config/sol2-c.c (solaris_pragma_align): Correct quoting.
+
 2017-05-08  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	* target.def (compute_frame_layout): New optional target hook.
