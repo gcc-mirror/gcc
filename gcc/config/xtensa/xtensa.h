@@ -19,27 +19,12 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 /* Get Xtensa configuration settings */
-#include "xtensa-config.h"
+#include "xtensa-dynconfig.h"
 
 /* External variables defined in xtensa.cc.  */
 
 /* Macros used in the machine description to select various Xtensa
    configuration options.  */
-#ifndef XCHAL_HAVE_MUL32_HIGH
-#define XCHAL_HAVE_MUL32_HIGH 0
-#endif
-#ifndef XCHAL_HAVE_RELEASE_SYNC
-#define XCHAL_HAVE_RELEASE_SYNC 0
-#endif
-#ifndef XCHAL_HAVE_S32C1I
-#define XCHAL_HAVE_S32C1I 0
-#endif
-#ifndef XCHAL_HAVE_THREADPTR
-#define XCHAL_HAVE_THREADPTR 0
-#endif
-#ifndef XCHAL_HAVE_FP_POSTINC
-#define XCHAL_HAVE_FP_POSTINC 0
-#endif
 #define TARGET_BIG_ENDIAN	XCHAL_HAVE_BE
 #define TARGET_DENSITY		XCHAL_HAVE_DENSITY
 #define TARGET_MAC16		XCHAL_HAVE_MAC16
@@ -76,7 +61,7 @@ along with GCC; see the file COPYING3.  If not see
 #endif
 
 /* Define this if the target has no hardware divide instructions.  */
-#if !TARGET_DIV32
+#if !__XCHAL_HAVE_DIV32
 #define TARGET_HAS_NO_HW_DIVIDE
 #endif
 
@@ -84,6 +69,7 @@ along with GCC; see the file COPYING3.  If not see
 /* Target CPU builtins.  */
 #define TARGET_CPU_CPP_BUILTINS()					\
   do {									\
+    const char **builtin;						\
     builtin_assert ("cpu=xtensa");					\
     builtin_assert ("machine=xtensa");					\
     builtin_define ("__xtensa__");					\
@@ -93,6 +79,8 @@ along with GCC; see the file COPYING3.  If not see
     builtin_define (TARGET_BIG_ENDIAN ? "__XTENSA_EB__" : "__XTENSA_EL__"); \
     if (!TARGET_HARD_FLOAT)						\
       builtin_define ("__XTENSA_SOFT_FLOAT__");				\
+    for (builtin = xtensa_get_config_strings (); *builtin; ++builtin)	\
+      builtin_define (*builtin);					\
   } while (0)
 
 #define CPP_SPEC " %(subtarget_cpp_spec) "

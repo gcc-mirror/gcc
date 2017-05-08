@@ -561,6 +561,7 @@ tic6x-*-*)
 	;;
 xtensa*-*-*)
 	extra_options="${extra_options} fused-madd.opt"
+	extra_objs="xtensa-dynconfig.o"
 	;;
 esac
 
