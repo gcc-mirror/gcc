@@ -540,13 +540,13 @@ Objective-C and Objective-C++ Dialects}.
 -fdisable-tree-@var{pass_name} @gol
 -fdisable-tree-@var{pass-name}=@var{range-list} @gol
 -fdump-noaddr  -fdump-unnumbered  -fdump-unnumbered-links @gol
--fdump-translation-unit@r{[}-@var{n}@r{]} @gol
 -fdump-class-hierarchy@r{[}-@var{n}@r{]} @gol
+-fdump-final-insns@r{[}=@var{file}@r{]}
 -fdump-ipa-all  -fdump-ipa-cgraph  -fdump-ipa-inline @gol
 -fdump-passes @gol
 -fdump-rtl-@var{pass}  -fdump-rtl-@var{pass}=@var{filename} @gol
 -fdump-statistics @gol
--fdump-final-insns@r{[}=@var{file}@r{]}
+-fdump-translation-unit@r{[}-@var{n}@r{]} @gol
 -fdump-tree-all @gol
 -fdump-tree-@var{switch} @gol
 -fdump-tree-@var{switch}-@var{options} @gol
@@ -12938,16 +12938,6 @@ When doing debugging dumps (see @option{-d} option above), suppress
 instruction numbers for the links to the previous and next instructions
 in a sequence.
 
-@item -fdump-translation-unit @r{(C++ only)}
-@itemx -fdump-translation-unit-@var{options} @r{(C++ only)}
-@opindex fdump-translation-unit
-Dump a representation of the tree structure for the entire translation
-unit to a file.  The file name is made by appending @file{.tu} to the
-source file name, and the file is created in the same directory as the
-output file.  If the @samp{-@var{options}} form is used, @var{options}
-controls the details of the dump as described for the
-@option{-fdump-tree} options.
-
 @item -fdump-class-hierarchy @r{(C++ only)}
 @itemx -fdump-class-hierarchy-@var{options} @r{(C++ only)}
 @opindex fdump-class-hierarchy
@@ -12994,6 +12984,16 @@ form is used, @samp{-stats} causes counters to be summed over the
 whole compilation unit while @samp{-details} dumps every event as
 the passes generate them.  The default with no option is to sum
 counters for each function compiled.
+
+@item -fdump-translation-unit @r{(C++ only)}
+@itemx -fdump-translation-unit-@var{options} @r{(C++ only)}
+@opindex fdump-translation-unit
+Dump a representation of the tree structure for the entire translation
+unit to a file.  The file name is made by appending @file{.tu} to the
+source file name, and the file is created in the same directory as the
+output file.  If the @samp{-@var{options}} form is used, @var{options}
+controls the details of the dump as described for the
+@option{-fdump-tree} options.
 
 @item -fdump-tree-all
 @itemx -fdump-tree-@var{switch}
