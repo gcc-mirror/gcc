@@ -1,6 +1,10 @@
 2017-05-08  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* cp-tree.h, call.c, class.c, name-lookup.c, parser.c, pt.c,
+	semantics.c, tree.c: Rename ovl2_iterator to lkp_iterator.
+
+	gcc/cp/
 	* name-lookup.h (push_namespace): Return int.
 	* name-lookup.c (push_namespace): Return count of depth pushed.
 	* parser.c (cp_parser_namespace_definition): Accumulate depth pushed.

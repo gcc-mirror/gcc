@@ -2513,7 +2513,7 @@ ovl_scope (tree ovl)
   /* FIXME: What if it's all using declarations?  Prepend some kind
      of context? */
   /* Skip using-declarations.  */
-  ovl2_iterator iter (ovl);
+  lkp_iterator iter (ovl);
   do
     ovl = *iter;
   while (iter.using_p () && ++iter);

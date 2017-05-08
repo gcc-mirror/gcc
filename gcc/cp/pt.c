@@ -1921,7 +1921,7 @@ print_candidates_1 (tree fns, char **str, bool more = false)
       print_candidates_1 (TREE_VALUE (fns), str, more || TREE_CHAIN (fns));
   else
     {
-      ovl2_iterator iter (fns);
+      lkp_iterator iter (fns);
 
       do
 	{
@@ -2101,7 +2101,7 @@ determine_specialization (tree template_id,
       if (targs != error_mark_node)
         templates = tree_cons (targs, fns, templates);
     }
-  else for (ovl2_iterator iter (fns); iter; ++iter)
+  else for (lkp_iterator iter (fns); iter; ++iter)
     {
       tree fn = *iter;
 
@@ -23956,7 +23956,7 @@ type_dependent_expression_p (tree expression)
       gcc_assert (TREE_CODE (expression) == OVERLOAD
 		  || TREE_CODE (expression) == FUNCTION_DECL);
 
-      for (ovl2_iterator iter (expression); iter; ++iter)
+      for (lkp_iterator iter (expression); iter; ++iter)
 	if (type_dependent_expression_p (*iter))
 	  return true;
 
@@ -25196,7 +25196,7 @@ do_class_deduction (tree ptype, tree tmpl, tree init, int flags,
   /* Prune explicit deduction guides in copy-initialization context.  */
   if (flags & LOOKUP_ONLYCONVERTING)
     {
-      for (ovl2_iterator iter (cands); !elided && iter; ++iter)
+      for (lkp_iterator iter (cands); !elided && iter; ++iter)
 	if (DECL_NONCONVERTING_P (STRIP_TEMPLATE (*iter)))
 	  elided = true;
 
@@ -25204,7 +25204,7 @@ do_class_deduction (tree ptype, tree tmpl, tree init, int flags,
 	{
 	  /* Found a nonconverting guide, prune the candidates.  */
 	  tree pruned = NULL_TREE;
-	  for (ovl2_iterator iter (cands); iter; ++iter)
+	  for (lkp_iterator iter (cands); iter; ++iter)
 	    if (!DECL_NONCONVERTING_P (STRIP_TEMPLATE (*iter)))
 	      pruned = lookup_add (pruned, *iter);
 

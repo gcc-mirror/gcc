@@ -775,19 +775,19 @@ protected:
 
 /* Iterator over a (potentially) 2 dimensional overload.  */
 
-class ovl2_iterator : public ovl_iterator
+class lkp_iterator : public ovl_iterator
 {
   typedef ovl_iterator parent;
 
   tree outer;
 
  public:
-  ovl2_iterator (tree o)
+  lkp_iterator (tree o)
     : parent (o), outer (maybe_push ())
   {
   }
 
-  ovl2_iterator &operator++ ()
+  lkp_iterator &operator++ ()
   {
     bool repush = !outer;
 

@@ -1041,7 +1041,7 @@ adl_lookup::assoc_expr (tree expr)
   expr = MAYBE_BASELINK_FUNCTIONS (expr);
 
   if (OVL_P (expr))
-    for (ovl2_iterator iter (expr); iter; ++iter)
+    for (lkp_iterator iter (expr); iter; ++iter)
       assoc_type (TREE_TYPE (*iter));
   else if (TREE_CODE (expr) == TEMPLATE_ID_EXPR)
     {
@@ -3800,7 +3800,7 @@ do_nonmember_using_decl (tree scope, tree name, tree *value_p, tree *type_p)
       /* Check for using functions.  */
       if (OVL_P (lookup.value) && (!value || OVL_P (value)))
 	{
-	  for (ovl2_iterator usings (lookup.value); usings; ++usings)
+	  for (lkp_iterator usings (lookup.value); usings; ++usings)
 	    {
 	      tree new_fn = *usings;
 
@@ -6720,7 +6720,7 @@ cp_emit_debug_info_for_using (tree t, tree context)
   t = MAYBE_BASELINK_FUNCTIONS (t);
 
   /* FIXME: Handle TEMPLATE_DECLs.  */
-  for (ovl2_iterator iter (t); iter; ++iter)
+  for (lkp_iterator iter (t); iter; ++iter)
     {
       tree fn = *iter;
       if (TREE_CODE (fn) != TEMPLATE_DECL)
