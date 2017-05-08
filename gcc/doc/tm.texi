@@ -3684,6 +3684,15 @@ such as the result of @code{get_frame_size ()} and the tables of
 registers @code{df_regs_ever_live_p} and @code{call_used_regs}.
 @end defmac
 
+@deftypefn {Target Hook} void TARGET_COMPUTE_FRAME_LAYOUT (void)
+This target hook is called once each time the frame layout needs to be
+recalculated.  The calculations can be cached by the target and can then
+be used by @code{INITIAL_ELIMINATION_OFFSET} instead of re-computing the
+layout on every invocation of that hook.  This is particularly useful
+for targets that have an expensive frame layout function.  Implementing
+this callback is optional.
+@end deftypefn
+
 @node Stack Arguments
 @subsection Passing Function Arguments on the Stack
 @cindex arguments on stack
