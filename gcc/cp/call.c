@@ -7352,17 +7352,21 @@ convert_for_arg_passing (tree type, tree val, tsubst_flags_t complain)
 	   && COMPLETE_TYPE_P (type)
 	   && tree_int_cst_lt (TYPE_SIZE (type), TYPE_SIZE (integer_type_node)))
     val = cp_perform_integral_promotions (val, complain);
-  if ((complain & tf_warning)
-      && warn_suggest_attribute_format)
+  if (complain & tf_warning)
     {
-      tree rhstype = TREE_TYPE (val);
-      const enum tree_code coder = TREE_CODE (rhstype);
-      const enum tree_code codel = TREE_CODE (type);
-      if ((codel == POINTER_TYPE || codel == REFERENCE_TYPE)
-	  && coder == codel
-	  && check_missing_format_attribute (type, rhstype))
-	warning (OPT_Wsuggest_attribute_format,
-		 "argument of function call might be a candidate for a format attribute");
+      if (warn_suggest_attribute_format)
+	{
+	  tree rhstype = TREE_TYPE (val);
+	  const enum tree_code coder = TREE_CODE (rhstype);
+	  const enum tree_code codel = TREE_CODE (type);
+	  if ((codel == POINTER_TYPE || codel == REFERENCE_TYPE)
+	      && coder == codel
+	      && check_missing_format_attribute (type, rhstype))
+	    warning (OPT_Wsuggest_attribute_format,
+		     "argument of function call might be a candidate "
+		     "for a format attribute");
+	}
+      maybe_warn_parm_abi (type, EXPR_LOC_OR_LOC (val, input_location));
     }
   return val;
 }
@@ -8234,7 +8238,10 @@ build_cxx_call (tree fn, int nargs, tree *argarray,
 	return error_mark_node;
 
       if (MAYBE_CLASS_TYPE_P (TREE_TYPE (fn)))
-	fn = build_cplus_new (TREE_TYPE (fn), fn, complain);
+	{
+	  fn = build_cplus_new (TREE_TYPE (fn), fn, complain);
+	  maybe_warn_parm_abi (TREE_TYPE (fn), loc);
+	}
     }
   return convert_from_reference (fn);
 }

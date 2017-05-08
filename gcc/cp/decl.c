@@ -12387,6 +12387,9 @@ require_complete_types_for_parms (tree parms)
 	{
 	  relayout_decl (parms);
 	  DECL_ARG_TYPE (parms) = type_passed_as (TREE_TYPE (parms));
+
+	  maybe_warn_parm_abi (TREE_TYPE (parms),
+			       DECL_SOURCE_LOCATION (parms));
 	}
       else
 	/* grokparms or complete_type_or_else will have already issued
@@ -14639,7 +14642,11 @@ check_function_type (tree decl, tree current_function_parms)
       TREE_TYPE (decl) = fntype;
     }
   else
-    abstract_virtuals_error (decl, TREE_TYPE (fntype));
+    {
+      abstract_virtuals_error (decl, TREE_TYPE (fntype));
+      maybe_warn_parm_abi (TREE_TYPE (fntype),
+			   DECL_SOURCE_LOCATION (decl));
+    }
 }
 
 /* True iff FN is an implicitly-defined default constructor.  */
