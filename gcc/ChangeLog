@@ -1,3 +1,16 @@
+2017-05-08  Richard Biener  <rguenther@suse.de>
+
+	* tree-vrp.c (gimple_assign_nonzero_warnv_p): Rename to ...
+	(gimple_assign_nonzero): ... this and remove strict_overflow_p
+	argument.
+	(gimple_stmt_nonzero_warnv_p): Rename to ...
+	(gimple_stmt_nonzero_p): ... this and remove strict_overflow_p
+	argument.
+	(vrp_stmt_computes_nonzero): Remove strict_overflow_p argument.
+	(extract_range_basic): Adjust, do not disable propagation on
+	strict overflow sensitive simplification.
+	(vrp_visit_cond_stmt): Likewise.
+
 2017-05-05  Jan Hubicka  <hubicka@ucw.cz>
 
 	* ipa-inline-analysis.c (estimate_function_body_sizes): Recompute
