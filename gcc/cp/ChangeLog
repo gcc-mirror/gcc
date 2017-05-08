@@ -1,5 +1,8 @@
 2017-05-08  Nathan Sidwell  <nathan@acm.org>
 
+	* class.c (build_vtbl_initializer): Don't shadow outer variable
+	with static var.
+
 	Revert _binding -> _value change.
 	* name-lookup.h (get_namespace_value, set_global_value): Rename to ...
 	(get_namespace_binding, set_global_binding): ... these.
