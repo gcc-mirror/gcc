@@ -1,3 +1,8 @@
+2017-05-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/mt_allocator.xml: Clarify deallocation behaviour.
+	* doc/html/*: Regenerate.
+
 2017-05-02  Hugo Beauzée-Luyssen <hugo@beauzee.fr>
 
 	PR libstdc++/69506
