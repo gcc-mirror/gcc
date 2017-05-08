@@ -2870,14 +2870,23 @@ pushdecl_with_scope_1 (tree x, cp_binding_level *level, bool is_friend)
   return x;
 }
  
-/* Wrapper for pushdecl_with_scope_1.  */
+/* Inject X into the local scope just before the function parms.  */
 
 tree
-pushdecl_with_scope (tree x, cp_binding_level *level, bool is_friend)
+pushdecl_outermost_localscope (tree x)
 {
-  tree ret;
   bool subtime = timevar_cond_start (TV_NAME_LOOKUP);
-  ret = pushdecl_with_scope_1 (x, level, is_friend);
+  cp_binding_level *b  = NULL, *n = current_binding_level;
+
+  if (n->kind == sk_function_parms)
+    return error_mark_node;
+  do
+    {
+      b = n;
+      n = b->level_chain;
+    }
+  while (n->kind != sk_function_parms);
+  tree ret = pushdecl_with_scope_1 (x, b, false);
   timevar_cond_stop (TV_NAME_LOOKUP, subtime);
   return ret;
 }
@@ -4350,7 +4359,8 @@ pushdecl_namespace_level (tree x, bool is_friend)
   tree t;
 
   bool subtime = timevar_cond_start (TV_NAME_LOOKUP);
-  t = pushdecl_with_scope (x, NAMESPACE_LEVEL (current_namespace), is_friend);
+  t = pushdecl_with_scope_1
+    (x, NAMESPACE_LEVEL (current_namespace), is_friend);
 
   /* Now, the type_shadowed stack may screw us.  Munge it so it does
      what we want.  */

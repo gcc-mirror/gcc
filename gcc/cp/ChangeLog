@@ -1,5 +1,13 @@
 2017-05-08  Nathan Sidwell  <nathan@acm.org>
 
+	* name-lookup.h (pushdecl_with_scope): Replace with ...
+	(pushdecl_outermost_localscope): ... this.
+	* name-lookup.c (pushdecl_with_scope): Replace with ...
+	(pushdecl_outermost_localscope): ... this.
+	(pushdecl_namespace_level): Adjust.
+	* decl.c (cp_make_fname_decl): Use pushdecl_outermost_localscope.
+	* lambda.c (insert_capture_proxy): Likewise.
+
 	* class.c (build_vtbl_initializer): Don't shadow outer variable
 	with static var.
 
