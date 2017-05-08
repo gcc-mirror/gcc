@@ -1,5 +1,15 @@
 2017-05-08  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
+	PR fortran/79930
+	* gfortran.dg/inline_transpose_1.f90:  Add
+	-finline-matmul-limit=0 to options.
+	* gfortran.dg/matmul_5.f90:  Likewise.
+	* gfortran.dg/vect/vect-8.f90: Likewise.
+	* gfortran.dg/inline_matmul_14.f90:  New test.
+	* gfortran.dg/inline_matmul_15.f90:  New test.
+
+2017-05-08  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
 	PR fortran/80602
 	* gfortran.dg/matmul_15.f90:  New test case.
 

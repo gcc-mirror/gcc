@@ -1,3 +1,11 @@
+2017-05-08  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/79930
+	* frontend-passes.c (matmul_to_var_expr): New function,
+	add prototype.
+	(matmul_to_var_code):  Likewise.
+	(optimize_namespace):  Use them from gfc_code_walker.
+
 2017-05-05  David Malcolm  <dmalcolm@redhat.com>
 
 	* cpp.c (cb_cpp_error): Replace report_diagnostic

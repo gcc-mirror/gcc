@@ -43,6 +43,8 @@ static void optimize_reduction (gfc_namespace *);
 static int callback_reduction (gfc_expr **, int *, void *);
 static void realloc_strings (gfc_namespace *);
 static gfc_expr *create_var (gfc_expr *, const char *vname=NULL);
+static int matmul_to_var_expr (gfc_expr **, int *, void *);
+static int matmul_to_var_code (gfc_code **, int *, void *);
 static int inline_matmul_assign (gfc_code **, int *, void *);
 static gfc_code * create_do_loop (gfc_expr *, gfc_expr *, gfc_expr *,
 				  locus *, gfc_namespace *,
@@ -1076,9 +1078,20 @@ optimize_namespace (gfc_namespace *ns)
   gfc_code_walker (&ns->code, cfe_code, cfe_expr_0, NULL);
   gfc_code_walker (&ns->code, optimize_code, optimize_expr, NULL);
   if (flag_inline_matmul_limit != 0)
-    gfc_code_walker (&ns->code, inline_matmul_assign, dummy_expr_callback,
-		     NULL);
-
+    {
+      bool found;
+      do
+	{
+	  found = false;
+	  gfc_code_walker (&ns->code, matmul_to_var_code, matmul_to_var_expr,
+			   (void *) &found);
+	}
+      while (found);
+	
+      gfc_code_walker (&ns->code, inline_matmul_assign, dummy_expr_callback,
+		       NULL);
+    }
+  
   /* BLOCKs are handled in the expression walker below.  */
   for (ns = ns->contained; ns; ns = ns->sibling)
     {
@@ -2085,6 +2098,64 @@ doloop_warn (gfc_namespace *ns)
 }
 
 /* This selction deals with inlining calls to MATMUL.  */
+
+/* Replace calls to matmul outside of straight assignments with a temporary
+   variable so that later inlining will work.  */
+
+static int
+matmul_to_var_expr (gfc_expr **ep, int *walk_subtrees ATTRIBUTE_UNUSED,
+		    void *data)
+{
+  gfc_expr *e, *n;
+  bool *found = (bool *) data;
+  
+  e = *ep;
+
+  if (e->expr_type != EXPR_FUNCTION
+      || e->value.function.isym == NULL
+      || e->value.function.isym->id != GFC_ISYM_MATMUL)
+    return 0;
+
+  if (forall_level > 0 || iterator_level > 0 || in_omp_workshare
+      || in_where)
+    return 0;
+
+  /* Check if this is already in the form c = matmul(a,b).  */
+  
+  if ((*current_code)->expr2 == e)
+    return 0;
+
+  n = create_var (e, "matmul");
+  
+  /* If create_var is unable to create a variable (for example if
+     -fno-realloc-lhs is in force with a variable that does not have bounds
+     known at compile-time), just return.  */
+
+  if (n == NULL)
+    return 0;
+  
+  *ep = n;
+  *found = true;
+  return 0;
+}
+
+/* Set current_code and associated variables so that matmul_to_var_expr can
+   work.  */
+
+static int
+matmul_to_var_code (gfc_code **c, int *walk_subtrees ATTRIBUTE_UNUSED,
+		    void *data ATTRIBUTE_UNUSED)
+{
+  if (current_code != c)
+    {
+      current_code = c;
+      inserted_block = NULL;
+      changed_statement = NULL;
+    }
+  
+  return 0;
+}
+
 
 /* Auxiliary function to build and simplify an array inquiry function.
    dim is zero-based.  */
