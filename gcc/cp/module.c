@@ -1298,9 +1298,10 @@ void
 cpms_out::tag_import (FILE *d, unsigned ix, const module_state *state)
 {
   if (d)
-    fprintf (d, "Writing import '%s' (%d, %x)\n",
-	     IDENTIFIER_POINTER (state->name),
-	     state->direct_import, state->crc);
+    fprintf (d, "Writing %simport '%s' (crc=%x)\n",
+	     state->direct_import == 2 ? "export " :
+	     state->direct_import ? "" : "indirect ",
+	     IDENTIFIER_POINTER (state->name), state->crc);
   w.u (rt_import);
   w.u (ix);
   w.u (state->direct_import);
@@ -1370,7 +1371,9 @@ cpms_in::tag_import (FILE *d)
     }
 
   if (d)
-    fprintf (d, "Begin nested import '%s'\n", IDENTIFIER_POINTER (imp));
+    fprintf (d, "Begin nested %simport '%s'\n",
+	     direct == 2 ? "export " : direct ? "" : "indirect ",
+	     IDENTIFIER_POINTER (imp));
   int imp_ix = do_module_import (UNKNOWN_LOCATION, imp,
 				 direct ? ik_direct : ik_indirect,
 				 stamp, crc, d);
@@ -1378,7 +1381,13 @@ cpms_in::tag_import (FILE *d)
     {
       remap_vec[ix] = imp_ix;
       if (direct)
-	state->do_import (imp_ix, direct == 2);
+	{
+	  bool is_export = direct == 2;
+	  if (d)
+	    fprintf (d, "Direct %simport '%s' %u", is_export ? "export " : "",
+		     IDENTIFIER_POINTER (imp), imp_ix);
+	  state->do_import (imp_ix, direct == 2);
+	}
     }
 
   if (d)
@@ -2945,22 +2954,20 @@ do_module_import (location_t loc, tree name, import_kind kind,
 /* Import the module NAME into the current TU and maybe re-export it.  */
 
 void
-import_export_module (location_t loc, tree name, tree, bool is_export)
+import_module (location_t loc, tree name, tree)
 {
-  push_to_top_level (); // FIXME only when namespae hack
   gcc_assert (global_namespace == current_scope ());
   unsigned index = do_module_import (loc, name, ik_direct, 0, 0);
   if (index != GLOBAL_MODULE_INDEX)
-    this_module->do_import (index, is_export);
+    this_module->do_import (index, export_depth != 0);
   gcc_assert (global_namespace == current_scope ());
-  pop_from_top_level ();
 }
 
 /* Declare the name of the current module to be NAME. ATTRS is used to
    determine if this is the interface or not.  */
 
 void
-declare_module (location_t loc, tree name, tree attrs)
+declare_module (location_t loc, tree name, bool inter, tree)
 {
   if (this_module && this_module->name)
     {
@@ -2970,14 +2977,6 @@ declare_module (location_t loc, tree name, tree attrs)
     }
 
   gcc_assert (global_namespace == current_scope ());
-  /* Look for 'interface' attribute.  There's no point caching the
-     identifier, because module declaration occurs at most once.  */
-  bool inter = lookup_attribute ("interface", attrs) != NULL_TREE;
-
-  if (!inter)
-    {
-      // FIXME: Command line switches or file suffix check?
-    }
 
   module_loc = loc;
 

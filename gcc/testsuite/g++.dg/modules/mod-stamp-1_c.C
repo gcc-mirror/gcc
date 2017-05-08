@@ -1,4 +1,4 @@
 
-module Foo [[interface ]];
+export module Foo;
 
 export int bob (int);

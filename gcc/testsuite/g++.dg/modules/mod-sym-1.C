@@ -1,4 +1,4 @@
-module linkage [[interface]];
+export module linkage;
 // { dg-module-if "linkage" }
 
 inline void Foo () {}

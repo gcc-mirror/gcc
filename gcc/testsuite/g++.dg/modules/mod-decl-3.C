@@ -1,7 +1,7 @@
 
 export void Foo (); // { dg-error "after an interface module" }
 
-module bob [[interface]];
+export module bob;
 // { dg-module-if "!bob" }
 
 export

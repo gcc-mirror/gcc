@@ -1,6 +1,6 @@
 module;  // { dg-error "expected" }
 
-module frist [[interface]];
+export module frist;
 // { dg-module-if "!frist" }
 
 module foo.second; // { dg-error "already declared" }

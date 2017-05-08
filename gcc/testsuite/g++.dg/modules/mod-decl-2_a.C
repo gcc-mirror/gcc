@@ -1,5 +1,5 @@
 
-module bob [[interface]];
+export module bob;
 // { dg-module-if "bob" }
 export void Foo ();
 export 

@@ -1,4 +1,4 @@
-module Baz [[interface]];
+export module Baz;
 // { dg-module-if "Baz" }
 
 void Quux (void);

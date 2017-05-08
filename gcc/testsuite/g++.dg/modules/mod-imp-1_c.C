@@ -3,7 +3,7 @@
 // { dg-final { scan-dump "fe" "Writing module 'Baz'" "fe" } }
 // { dg-final { scan-dump "fe" "Writing import 'Foo'" "fe" } }
 
-module Baz [[interface]];
+export module Baz;
 // { dg-module-if "Baz" }
 
 import Foo;

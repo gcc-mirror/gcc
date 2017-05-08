@@ -1,5 +1,6 @@
 // { dg-options "-fno-modules" }
 
-module nope [[interface]]; // { dg-error "" }
+export // { dg-message "ignored" }
+module nope; // { dg-error "" }
 // { dg-message "only available with -fmodules" "" { target *-*-* } .-1 }
 // { dg-module-if "!nope" }

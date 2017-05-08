@@ -1,4 +1,4 @@
- module bob [[interface]];
+export module bob;
 // { dg-module-if "bob" }
 
 namespace X

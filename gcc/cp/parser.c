@@ -12392,16 +12392,9 @@ cp_parser_module_name (cp_parser *parser)
 static bool
 check_module_outermost (const cp_token *token, const char *msg)
 {
-  tree scope = current_scope ();
   bool result = true;
 
-  /* Don't get confused by any module namespace.  */
-  if (TREE_CODE (scope) == NAMESPACE_DECL)
-    scope = current_scope ();
-
-  if (scope != global_namespace
-      || module_exporting_level ()
-      || current_lang_depth ())
+  if (current_scope () != global_namespace || current_lang_depth ())
     {
       error_at (token->location,
 		"%qs may only occur at outermost scope", msg);
@@ -12411,17 +12404,13 @@ check_module_outermost (const cp_token *token, const char *msg)
   return result;
 }
 
-/* Module-declaration, import-declaration
-   module module-name attr-spec-seq-opt ;
-   import module-name attr-spec-seq-opt ; */
+/* Module-declaration
+   module module-name attr-spec-seq-opt ; */
 
 static void
-cp_parser_module_declaration (cp_parser *parser, bool is_export)
+cp_parser_module_declaration (cp_parser *parser, bool is_interface)
 {
-  bool is_import = cp_lexer_next_token_is_keyword (parser->lexer, RID_IMPORT);
-  
-  gcc_assert (is_import
-	      || cp_lexer_next_token_is_keyword (parser->lexer, RID_MODULE));
+  gcc_assert (cp_lexer_next_token_is_keyword (parser->lexer, RID_MODULE));
 
   cp_token *token = cp_lexer_consume_token (parser->lexer);
   tree name = cp_parser_module_name (parser);
@@ -12430,15 +12419,31 @@ cp_parser_module_declaration (cp_parser *parser, bool is_export)
 
   if (!name)
     ;
-  else if (!check_module_outermost (token,
-				    is_import ? "module-import"
-				    : is_export ? "module-export"
-				    : "module-declaration"))
+  else if (!check_module_outermost (token, "module-declaration"))
     ;
-  else if (is_import || is_export)
-    import_export_module (token->location, name, attrs, is_export);
   else
-    declare_module (token->location, name, attrs);
+    declare_module (token->location, name, is_interface, attrs);
+}
+
+/* Import-declaration
+   import module-name attr-spec-seq-opt ; */
+
+static void
+cp_parser_import_declaration (cp_parser *parser)
+{
+  gcc_assert (cp_lexer_next_token_is_keyword (parser->lexer, RID_IMPORT));
+
+  cp_token *token = cp_lexer_consume_token (parser->lexer);
+  tree name = cp_parser_module_name (parser);
+  tree attrs = cp_parser_attributes_opt (parser);
+  cp_parser_consume_semicolon_at_end_of_statement (parser);
+
+  if (!name)
+    ;
+  else if (!check_module_outermost (token, "module-import"))
+    ;
+  else
+    import_module (token->location, name, attrs);
 }
 
 /*  export-declaration.
@@ -12452,25 +12457,26 @@ cp_parser_module_export (cp_parser *parser)
 {
   gcc_assert (cp_lexer_next_token_is_keyword (parser->lexer, RID_EXPORT));
   cp_token *token = cp_lexer_consume_token (parser->lexer);
-  if (!module_interface_p ())
-    error_at (token->location,
-	      "%qE may only occur after an interface module declaration",
-	      token->u.value);
-
-  bool braced = cp_lexer_next_token_is (parser->lexer, CPP_OPEN_BRACE);
-  int prev = push_module_export (!braced);
-
-  if (prev)
-    error_at (token->location,
-	      prev < -1
-	      ? "%qE may not occur in a proclaimed-ownership declaration"
-	      : "%qE may only occur once in an export declaration",
-	      token->u.value);
 
   if (cp_lexer_next_token_is_keyword (parser->lexer, RID_MODULE))
     cp_parser_module_declaration (parser, true);
   else
     {
+      if (!module_interface_p ())
+	error_at (token->location,
+		  "%qE may only occur after an interface module declaration",
+		  token->u.value);
+
+      bool braced = cp_lexer_next_token_is (parser->lexer, CPP_OPEN_BRACE);
+      int prev = push_module_export (!braced);
+
+      if (prev)
+	error_at (token->location,
+		  prev < -1
+		  ? "%qE may not occur in a proclaimed-ownership declaration"
+		  : "%qE may only occur once in an export declaration",
+		  token->u.value);
+
       if (braced)
 	{
 	  cp_ensure_no_omp_declare_simd (parser);
@@ -12482,9 +12488,9 @@ cp_parser_module_export (cp_parser *parser)
 	}
       else
 	cp_parser_declaration (parser);
-    }
 
-  pop_module_export (prev);
+      pop_module_export (prev);
+    }
 }
 
 /* Proclaimed ownership declaration:
@@ -12655,7 +12661,7 @@ cp_parser_declaration (cp_parser* parser)
 	cp_parser_explicit_instantiation (parser);
     }
   else if (token1.keyword == RID_IMPORT)
-    cp_parser_module_declaration (parser, false);
+    cp_parser_import_declaration (parser);
   /* If the next token is `export', it's new-style modules or
      old-style template.  */
   else if (token1.keyword == RID_EXPORT)

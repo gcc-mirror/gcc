@@ -1,6 +1,6 @@
 inline void Foo () {}
 
-module okely.dokely [[interface]];
+export module okely.dokely;
 // { dg-module-if "okely.dokely" }
 
 namespace One {

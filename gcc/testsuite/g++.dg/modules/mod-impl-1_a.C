@@ -1,6 +1,6 @@
 // { dg-module-do "run" }
 
-module baz [[interface]];
+export module baz;
 // { dg-module-if "baz" }
 
 export int Square (int);

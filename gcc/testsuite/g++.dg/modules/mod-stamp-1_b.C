@@ -1,5 +1,5 @@
 
-module Bar [[interface]];
+export module Bar;
 // { dg-module-if "Bar" }
 
 import Foo;

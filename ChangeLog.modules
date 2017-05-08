@@ -1,5 +1,20 @@
 2017-05-08  Nathan Sidwell  <nathan@acm.org>
 
+	Implement 'export module foo;'
+	gcc/cp/
+	* cp-tree.h (declare_module): Add interface flag.
+	(import_export_module): Rename to ...
+	(import_module): ... here.  Lose export flag.
+	* module.c (import_module): Determine exportness from export
+	depth.
+	(declare_module): Add interface flag, don't check attribs.
+	* parser.c (check_module_outermost): Don't check export depth.
+	(cp_parser_module_declaration): Don't deal with imports.
+	(cp_parser_import_declaration): New.
+	(cp_parser_module_export, cp_parser_declaration): Adjust.
+	gcc/testsuite/
+	* g++.dg/modules/import-1_[a-g].C: New.
+
 	Implement DR2061
 	gcc/cp/
 	* name-lookup.c (push_inline_namespace): New.
