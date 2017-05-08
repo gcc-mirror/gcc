@@ -215,7 +215,7 @@ arg_assoc_namespace (struct arg_lookup *k, tree scope)
       if (arg_assoc_namespace (k, TREE_PURPOSE (value)))
 	return true;
 
-  value = get_namespace_value (scope, k->name);
+  value = get_namespace_binding (scope, k->name);
   if (!value)
     return false;
 
@@ -1250,7 +1250,7 @@ pushdecl_maybe_friend_1 (tree x, bool is_friend)
       /* In case this decl was explicitly namespace-qualified, look it
 	 up in its namespace context.  */
       if (DECL_NAMESPACE_SCOPE_P (x) && namespace_bindings_p ())
-	t = get_namespace_value (DECL_CONTEXT (x), name);
+	t = get_namespace_binding (DECL_CONTEXT (x), name);
       else
 	t = lookup_name_innermost_nonclass_level (name);
 
@@ -1267,7 +1267,7 @@ pushdecl_maybe_friend_1 (tree x, bool is_friend)
 	  t = innermost_non_namespace_value (name);
 	  /* Or in the innermost namespace.  */
 	  if (! t)
-	    t = get_namespace_value (DECL_CONTEXT (x), name);
+	    t = get_namespace_binding (DECL_CONTEXT (x), name);
 	  /* Does it have linkage?  Note that if this isn't a DECL, it's an
 	     OVERLOAD, which is OK.  */
 	  if (t && DECL_P (t) && ! (TREE_STATIC (t) || DECL_EXTERNAL (t)))
@@ -1521,7 +1521,7 @@ pushdecl_maybe_friend_1 (tree x, bool is_friend)
 	{
 	  tree decl;
 
-	  decl = get_namespace_value (current_namespace, name);
+	  decl = get_namespace_binding (current_namespace, name);
 	  if (decl && TREE_CODE (decl) == OVERLOAD)
 	    decl = OVL_FUNCTION (decl);
 
@@ -1568,7 +1568,7 @@ pushdecl_maybe_friend_1 (tree x, bool is_friend)
       else
 	{
 	  /* Here to install a non-global value.  */
-	  tree oldglobal = get_namespace_value (current_namespace, name);
+	  tree oldglobal = get_namespace_binding (current_namespace, name);
 	  tree oldlocal = NULL_TREE;
 	  cp_binding_level *oldscope = NULL;
 	  cxx_binding *oldbinding = outer_binding (name, NULL, true);
@@ -1608,7 +1608,7 @@ pushdecl_maybe_friend_1 (tree x, bool is_friend)
 
 	      if (oldlocal == NULL_TREE)
 		oldlocal
-		  = get_namespace_value (current_namespace, DECL_NAME (d));
+		  = get_namespace_binding (current_namespace, DECL_NAME (d));
 	    }
 
 	  /* If this is an extern function declaration, see if we
@@ -1972,7 +1972,7 @@ check_for_out_of_scope_variable (tree decl)
     shadowed = DECL_HAS_SHADOWED_FOR_VAR_P (shadowed)
       ? DECL_SHADOWED_FOR_VAR (shadowed) : NULL_TREE;
   if (!shadowed)
-    shadowed = get_namespace_value (current_namespace, DECL_NAME (decl));
+    shadowed = get_namespace_binding (current_namespace, DECL_NAME (decl));
   if (shadowed)
     {
       if (!DECL_ERROR_REPORTED (decl))
@@ -2934,7 +2934,7 @@ push_overloaded_decl_1 (tree decl, int flags, bool is_friend)
   int doing_global = (namespace_bindings_p () || !(flags & PUSH_LOCAL));
 
   if (doing_global)
-    old = get_namespace_value (DECL_CONTEXT (decl), name);
+    old = get_namespace_binding (DECL_CONTEXT (decl), name);
   else
     old = lookup_name_innermost_nonclass_level (name);
 
@@ -4023,7 +4023,7 @@ namespace_binding_1 (tree name, tree scope)
    global_namespace.  */
 
 tree
-get_namespace_value (tree ns, tree name)
+get_namespace_binding (tree ns, tree name)
 {
   bool subtime = timevar_cond_start (TV_NAME_LOOKUP);
   if (!ns)
@@ -4052,11 +4052,11 @@ set_namespace_binding (tree name, tree scope, tree val)
     supplement_binding (b, val);
 }
 
-/* Set NAME in the global namespace to VAL.  Does not add it to the
-   list of things in the namespace.  */
+/* Set value binding og NAME in the global namespace to VAL.  Does not
+   add it to the list of things in the namespace.  */
 
 void
-set_global_value (tree name, tree val)
+set_global_binding (tree name, tree val)
 {
   bool subtime = timevar_cond_start (TV_NAME_LOOKUP);
 
@@ -5823,7 +5823,7 @@ lookup_name_innermost_nonclass_level_1 (tree name)
 
   if (b->kind == sk_namespace)
     {
-      t = get_namespace_value (current_namespace, name);
+      t = get_namespace_binding (current_namespace, name);
 
       /* extern "C" function() */
       if (t != NULL_TREE && TREE_CODE (t) == TREE_LIST)
@@ -6475,7 +6475,7 @@ push_namespace (tree name)
   if (anon)
     {
       name = anon_identifier;
-      d = get_namespace_value (current_namespace, name);
+      d = get_namespace_binding (current_namespace, name);
       if (d)
 	/* Reopening anonymous namespace.  */
 	need_new = false;
@@ -6484,7 +6484,7 @@ push_namespace (tree name)
   else
     {
       /* Check whether this is an extended namespace definition.  */
-      d = get_namespace_value (current_namespace, name);
+      d = get_namespace_binding (current_namespace, name);
       if (d != NULL_TREE && TREE_CODE (d) == NAMESPACE_DECL)
 	{
 	  tree dna = DECL_NAMESPACE_ALIAS (d);

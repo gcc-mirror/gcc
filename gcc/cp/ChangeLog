@@ -1,3 +1,18 @@
+2017-05-08  Nathan Sidwell  <nathan@acm.org>
+
+	Revert _binding -> _value change.
+	* name-lookup.h (get_namespace_value, set_global_value): Rename to ...
+	(get_namespace_binding, set_global_binding): ... these.
+	* name-lookup.c (get_namespace_value, set_global_value): Rename to ...
+	(get_namespace_binding, set_global_binding): ... these.
+	(arg_assoc_namespace, pushdecl_maybe_friend_1,
+	check_for_out_of_scope_variable, push_overloaded_decl_1,
+	lookup_name_innermost_nonclass_level, push_namespace): Adjust.
+	* cp-tree.h (IDENTIFIER_GLOBAL_VALUE,
+	SET_IDENTIFIER_GLOBAL_VALUE): Adjust.
+	* decl.c (poplevel): Adjust.
+	* pt.c (make_constrained_auto): Likewise.
+
 2017-05-07  Volker Reichelt  <v.reichelt@netcologne.de>
 
 	PR translation/80280
