@@ -1,3 +1,8 @@
+2017-05-08  Jason Merrill  <jason@redhat.com>
+
+	* c-opts.c (c_common_post_options): Update defaults for
+	flag_abi_version and flag_abi_compat_version.
+
 2017-05-05  David Malcolm  <dmalcolm@redhat.com>
 
 	* c-common.c (c_cpp_error): Replace report_diagnostic
