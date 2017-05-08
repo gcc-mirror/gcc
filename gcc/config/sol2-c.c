@@ -113,7 +113,7 @@ solaris_pragma_align (cpp_reader *pfile ATTRIBUTE_UNUSED)
       tree decl = identifier_global_value (t);
       if (decl && DECL_P (decl))
 	warning (0, "%<#pragma align%> must appear before the declaration of "
-		 "%D, ignoring", decl);
+		 "%qD, ignoring", decl);
       else
 	solaris_pending_aligns = tree_cons (t, build_tree_list (NULL, x),
 					    solaris_pending_aligns);
