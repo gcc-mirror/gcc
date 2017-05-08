@@ -1,3 +1,11 @@
+2017-05-05  Joshua Conner  <joshconner@google.com>
+
+	* config/arm/unwind-arm.h (_Unwind_decode_typeinfo_ptr): Use
+	pc-relative indirect handling for fuchsia.
+	* config/t-slibgcc-fuchsia: New file.
+	* config.host (*-*-fuchsia*, aarch64*-*-fuchsia*, arm*-*-fuchsia*,
+	x86_64-*-fuchsia*): Add definitions. 
+
 2017-04-19  Martin Liska  <mliska@suse.cz>
 
 	PR gcov-profile/80435

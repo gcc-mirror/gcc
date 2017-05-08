@@ -4614,7 +4614,7 @@ do_class_using_decl (tree scope, tree name)
    global_namespace.  */
 
 tree
-get_namespace_value (tree ns, tree name)
+get_namespace_binding (tree ns, tree name)
 {
   bool subtime = timevar_cond_start (TV_NAME_LOOKUP);
   if (!ns)
@@ -4626,11 +4626,11 @@ get_namespace_value (tree ns, tree name)
   return ret;
 }
 
-/* Set NAME in the global namespace to VAL.  Does not add it to the
-   list of things in the namespace.  */
+/* Set value binding og NAME in the global namespace to VAL.  Does not
+   add it to the list of things in the namespace.  */
 
 void
-set_global_value (tree name, tree val)
+set_global_binding (tree name, tree val)
 {
   bool subtime = timevar_cond_start (TV_NAME_LOOKUP);
 

@@ -1,3 +1,8 @@
+2017-05-05  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-common.c (c_cpp_error): Replace report_diagnostic
+	with diagnostic_report_diagnostic.
+
 2017-05-04  Martin Sebor  <msebor@redhat.com>
 
 	PR translation/80280

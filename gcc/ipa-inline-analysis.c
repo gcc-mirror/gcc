@@ -2994,6 +2994,7 @@ estimate_function_body_sizes (struct cgraph_node *node, bool early)
   inline_summaries->get (node)->self_size = size;
   nonconstant_names.release ();
   ipa_release_body_info (&fbi);
+  inline_update_overall_summary (node);
   if (opt_for_fn (node->decl, optimize))
     {
       if (!early)
@@ -3119,12 +3120,13 @@ compute_inline_parameters (struct cgraph_node *node, bool early)
   info->size = info->self_size;
   info->stack_frame_offset = 0;
   info->estimated_stack_size = info->estimated_self_stack_size;
-  if (flag_checking)
-    {
-      inline_update_overall_summary (node);
-      gcc_assert (!(info->time - info->self_time).to_int ()
-		  && info->size == info->self_size);
-    }
+
+  /* Code above should compute exactly the same result as
+     inline_update_overall_summary but because computation happens in
+     different order the roundoff errors result in slight changes.  */
+  inline_update_overall_summary (node);
+  gcc_assert (!(info->time - info->self_time).to_int ()
+	      && info->size == info->self_size);
 }
 
 

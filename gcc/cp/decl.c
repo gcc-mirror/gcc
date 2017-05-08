@@ -693,7 +693,7 @@ poplevel (int keep, int reverse, int functionbody)
 					   /*class_p=*/true);
 	  tree ns_binding = NULL_TREE;
 	  if (!ob)
-	    ns_binding = get_namespace_value (current_namespace, name);
+	    ns_binding = get_namespace_binding (current_namespace, name);
 
 	  if (ob && ob->scope == current_binding_level->level_chain)
 	    /* We have something like:

@@ -1,3 +1,96 @@
+2017-05-08  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* testsuite/gcc.dg/vect/vect-44.c: Add -fno-vect-cost-model.
+	* gcc/testsuite/gcc.dg/vect/vect-50.c: Likewise.
+
+2017-05-07  Jeff Law  <law@redhat.com>
+
+	Revert:
+	2017-05-06  Jeff Law  <law@redhat.com>
+	PR tree-optimization/78496
+	* gcc.dg/tree-ssa/ssa-thread-16.c: New test.
+	* gcc.dg/tree-ssa/ssa-thread-17.c: New test.
+
+2017-05-06  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/78496
+	* gcc.dg/tree-ssa/ssa-thread-16.c: New test.
+	* gcc.dg/tree-ssa/ssa-thread-17.c: New test.
+
+2017-05-06  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* gcc.target/aarch64/spill_1.c: New test.
+
+2017-05-06  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	PR rtl-optimization/75964
+	* gcc.dg/torture/pr75964.c: New test.
+
+2017-05-06  Tom de Vries  <tom@codesourcery.com>
+
+	PR testsuite/80606
+	* gcc.target/i386/avx-vtestpd-1.c: Remove default_packed lines.
+	* gcc.target/i386/avx-vtestpd-2.c: Same.
+	* gcc.target/i386/avx-vtestpd-256-1.c: Same.
+	* gcc.target/i386/avx-vtestpd-256-2.c: Same.
+	* gcc.target/i386/avx-vtestpd-256-3.c: Same.
+	* gcc.target/i386/avx-vtestpd-3.c: Same.
+	* gcc.target/i386/avx-vtestps-1.c: Same.
+	* gcc.target/i386/avx-vtestps-2.c: Same.
+	* gcc.target/i386/avx-vtestps-256-1.c: Same.
+	* gcc.target/i386/avx-vtestps-256-2.c: Same.
+	* gcc.target/i386/avx-vtestps-256-3.c: Same.
+	* gcc.target/i386/avx-vtestps-3.c: Same.
+
+2017-05-06  Tom de Vries  <tom@codesourcery.com>
+
+	* gcc.target/avr/progmem-error-1.cpp: Add abolute line number comment.
+
+2017-05-06  Tom de Vries  <tom@codesourcery.com>
+
+	PR testsuite/80557
+	* gcc.target/powerpc/altivec-macros.c: Replace absolute line numbers.
+	* gcc.target/powerpc/altivec-types-1.c: Same.
+
+2017-05-06  Tom de Vries  <tom@codesourcery.com>
+
+	PR testsuite/80557
+	* gcc.target/spu/Wmain.c: Replace absolute line numbers.
+	* gcc.target/spu/intrinsics-1.c: Same.
+
+2017-05-06  Tom de Vries  <tom@codesourcery.com>
+
+	PR testsuite/80557
+	* gcc.target/arm/pr69180.c: Replace absolute line numbers.
+
+2017-05-06  Tom de Vries  <tom@codesourcery.com>
+
+	PR testsuite/80557
+	* gcc.target/aarch64/spellcheck_1.c: Replace absolute line numbers.
+	* gcc.target/aarch64/spellcheck_2.c: Same.
+	* gcc.target/aarch64/spellcheck_3.c: Same.
+
+2017-05-06  Tom de Vries  <tom@codesourcery.com>
+
+	PR testsuite/80557
+	* g++.dg/debug/dwarf2/dwarf2-1.C: Replace absolute line numbers.
+	* g++.dg/debug/dwarf2/dwarf2-2.C: Same.
+	* g++.dg/debug/dwarf2/pr46123-2.C: Same.
+	* g++.dg/debug/dwarf2/typedef5.C: Same.
+	* g++.dg/goacc/data-1.C: Same.
+
+2017-05-05  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* gcc.target/powerpc/versioned-copy-loop.c: New file.
+
+2017-05-05  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/79038
+	PR target/79202
+	PR target/79203
+	* gcc.target/powerpc/ppc-round3.c: New test.
+	* gcc.target/powerpc/ppc-round2.c: Update expected code.
+
 2017-05-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/80632

@@ -3,7 +3,11 @@ foo (int &a, int (&b)[100], int &n)
 {
 #pragma acc enter data copyin (a, b) async wait
 #pragma acc enter data create (b[20:30]) async wait
-#pragma acc enter data (a) /* { dg-error "expected '#pragma acc' clause before '\\\(' token" } */
+
+#pragma acc enter data (a)
+  /* { dg-error "expected '#pragma acc' clause before '\\\(' token" "" { target *-*-* } .-1 } */
+  /* { dg-error "has no data movement clause" "" { target *-*-* } .-2 } */
+
 #pragma acc enter data create (b(1:10)) /* { dg-error "expected '\\\)' before '\\\(' token" } */
 #pragma acc exit data delete (a) if (0)
 #pragma acc exit data copyout (b) if (a)
@@ -22,7 +26,11 @@ foo (T &a, T (&b)[100], T &n)
 {
 #pragma acc enter data copyin (a, b) async wait
 #pragma acc enter data create (b[20:30]) async wait
-#pragma acc enter data (a) /* { dg-error "expected '#pragma acc' clause before '\\\(' token" } */
+
+#pragma acc enter data (a)
+  /* { dg-error "expected '#pragma acc' clause before '\\\(' token" "" { target *-*-* } .-1 } */
+  /* { dg-error "has no data movement clause" "" { target *-*-* } .-2 } */
+
 #pragma acc enter data create (b(1:10)) /* { dg-error "expected '\\\)' before '\\\(' token" } */
 #pragma acc exit data delete (a) if (0)
 #pragma acc exit data copyout (b) if (a)
@@ -34,6 +42,3 @@ foo (T &a, T (&b)[100], T &n)
 #pragma acc enter Data /* { dg-error "expected 'data' after" } */
 #pragma acc exit copyout (b) /* { dg-error "expected 'data' after" } */
 }
-
-/* { dg-error "has no data movement clause" "" { target *-*-* } 6 } */
-/* { dg-error "has no data movement clause" "" { target *-*-* } 25 } */

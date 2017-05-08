@@ -3803,7 +3803,7 @@ case "${target}" in
 						;;
 					esac
 				done
-			fi				
+			fi
 
 			if test "x${tmake_profile_file}" != x ; then
 				# arm/t-aprofile and arm/t-rmprofile are only
@@ -3820,6 +3820,7 @@ case "${target}" in
 				fi
 
 				tmake_file="${tmake_file} ${tmake_profile_file}"
+				TM_MULTILIB_CONFIG="$with_multilib_list"
 			fi
 		fi
 		;;

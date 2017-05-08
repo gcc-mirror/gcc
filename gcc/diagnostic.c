@@ -534,6 +534,25 @@ diagnostic_action_after_output (diagnostic_context *context,
     }
 }
 
+/* True if the last module or file in which a diagnostic was reported is
+   different from the current one.  */
+
+static bool
+last_module_changed_p (diagnostic_context *context,
+		       const line_map_ordinary *map)
+{
+  return context->last_module != map;
+}
+
+/* Remember the current module or file as being the last one in which we
+   report a diagnostic.  */
+
+static void
+set_last_module (diagnostic_context *context, const line_map_ordinary *map)
+{
+  context->last_module = map;
+}
+
 void
 diagnostic_report_current_module (diagnostic_context *context, location_t where)
 {
@@ -552,9 +571,9 @@ diagnostic_report_current_module (diagnostic_context *context, location_t where)
 			    LRK_MACRO_DEFINITION_LOCATION,
 			    &map);
 
-  if (map && diagnostic_last_module_changed (context, map))
+  if (map && last_module_changed_p (context, map))
     {
-      diagnostic_set_last_module (context, map);
+      set_last_module (context, map);
       if (! MAIN_FILE_P (map))
 	{
 	  map = INCLUDED_FROM (line_table, map);
@@ -768,6 +787,80 @@ print_parseable_fixits (pretty_printer *pp, rich_location *richloc)
     }
 }
 
+/* Update the diag_class of DIAGNOSTIC based on its location
+   relative to any
+     #pragma GCC diagnostic
+   directives recorded within CONTEXT.
+
+   Return the new diag_class of DIAGNOSTIC if it was updated, or
+   DK_UNSPECIFIED otherwise.  */
+
+static diagnostic_t
+update_effective_level_from_pragmas (diagnostic_context *context,
+				     diagnostic_info *diagnostic)
+{
+  diagnostic_t diag_class = DK_UNSPECIFIED;
+
+  if (context->n_classification_history > 0)
+    {
+      location_t location = diagnostic_location (diagnostic);
+
+      /* FIXME: Stupid search.  Optimize later. */
+      for (int i = context->n_classification_history - 1; i >= 0; i --)
+	{
+	  if (linemap_location_before_p
+	      (line_table,
+	       context->classification_history[i].location,
+	       location))
+	    {
+	      if (context->classification_history[i].kind == (int) DK_POP)
+		{
+		  i = context->classification_history[i].option;
+		  continue;
+		}
+	      int option = context->classification_history[i].option;
+	      /* The option 0 is for all the diagnostics.  */
+	      if (option == 0 || option == diagnostic->option_index)
+		{
+		  diag_class = context->classification_history[i].kind;
+		  if (diag_class != DK_UNSPECIFIED)
+		    diagnostic->kind = diag_class;
+		  break;
+		}
+	    }
+	}
+    }
+
+  return diag_class;
+}
+
+/* Print any metadata about the option used to control DIAGNOSTIC to CONTEXT's
+   printer, e.g. " [-Werror=uninitialized]".
+   Subroutine of diagnostic_report_diagnostic.  */
+
+static void
+print_option_information (diagnostic_context *context,
+			  const diagnostic_info *diagnostic,
+			  diagnostic_t orig_diag_kind)
+{
+  char *option_text;
+
+  option_text = context->option_name (context, diagnostic->option_index,
+				      orig_diag_kind, diagnostic->kind);
+
+  if (option_text)
+    {
+      pretty_printer *pp = context->printer;
+      pp_string (pp, " [");
+      pp_string (pp, colorize_start (pp_show_color (pp),
+				     diagnostic_kind_color[diagnostic->kind]));
+      pp_string (pp, option_text);
+      pp_string (pp, colorize_stop (pp_show_color (pp)));
+      pp_character (pp, ']');
+      free (option_text);
+    }
+}
+
 /* Report a diagnostic message (an error or a warning) as specified by
    DC.  This function is *the* subroutine in terms of which front-ends
    should implement their specific diagnostic handling modules.  The
@@ -781,7 +874,6 @@ diagnostic_report_diagnostic (diagnostic_context *context,
 {
   location_t location = diagnostic_location (diagnostic);
   diagnostic_t orig_diag_kind = diagnostic->kind;
-  const char *saved_format_spec;
 
   /* Give preference to being able to inhibit warnings, before they
      get reclassified to something else.  */
@@ -822,8 +914,6 @@ diagnostic_report_diagnostic (diagnostic_context *context,
   if (diagnostic->option_index
       && diagnostic->option_index != permissive_error_option (context))
     {
-      diagnostic_t diag_class = DK_UNSPECIFIED;
-
       /* This tests if the user provided the appropriate -Wfoo or
 	 -Wno-foo option.  */
       if (! context->option_enabled (diagnostic->option_index,
@@ -831,33 +921,8 @@ diagnostic_report_diagnostic (diagnostic_context *context,
 	return false;
 
       /* This tests for #pragma diagnostic changes.  */
-      if (context->n_classification_history > 0)
-	{
-	  /* FIXME: Stupid search.  Optimize later. */
-	  for (int i = context->n_classification_history - 1; i >= 0; i --)
-	    {
-	      if (linemap_location_before_p
-		  (line_table,
-		   context->classification_history[i].location,
-		   location))
-		{
-		  if (context->classification_history[i].kind == (int) DK_POP)
-		    {
-		      i = context->classification_history[i].option;
-		      continue;
-		    }
-		  int option = context->classification_history[i].option;
-		  /* The option 0 is for all the diagnostics.  */
-		  if (option == 0 || option == diagnostic->option_index)
-		    {
-		      diag_class = context->classification_history[i].kind;
-		      if (diag_class != DK_UNSPECIFIED)
-			diagnostic->kind = diag_class;
-		      break;
-		    }
-		}
-	    }
-	}
+      diagnostic_t diag_class
+	= update_effective_level_from_pragmas (context, diagnostic);
 
       /* This tests if the user provided the appropriate -Werror=foo
 	 option.  */
@@ -904,33 +969,13 @@ diagnostic_report_diagnostic (diagnostic_context *context,
   else
     ++diagnostic_kind_count (context, diagnostic->kind);
 
-  saved_format_spec = diagnostic->message.format_spec;
-  if (context->show_option_requested)
-    {
-      char *option_text;
-
-      option_text = context->option_name (context, diagnostic->option_index,
-					  orig_diag_kind, diagnostic->kind);
-
-      if (option_text)
-	{
-	  const char *cs
-	    = colorize_start (pp_show_color (context->printer),
-			      diagnostic_kind_color[diagnostic->kind]);
-	  const char *ce = colorize_stop (pp_show_color (context->printer));
-	  diagnostic->message.format_spec
-	    = ACONCAT ((diagnostic->message.format_spec,
-			" ", 
-			"[", cs, option_text, ce, "]",
-			NULL));
-	  free (option_text);
-	}
-    }
   diagnostic->message.x_data = &diagnostic->x_data;
   diagnostic->x_data = NULL;
   pp_format (context->printer, &diagnostic->message);
   (*diagnostic_starter (context)) (context, diagnostic);
   pp_output_formatted_text (context->printer);
+  if (context->show_option_requested)
+    print_option_information (context, diagnostic, orig_diag_kind);
   (*diagnostic_finalizer (context)) (context, diagnostic);
   if (context->parseable_fixits_p)
     {
@@ -938,7 +983,6 @@ diagnostic_report_diagnostic (diagnostic_context *context,
       pp_flush (context->printer);
     }
   diagnostic_action_after_output (context, diagnostic->kind);
-  diagnostic->message.format_spec = saved_format_spec;
   diagnostic->x_data = NULL;
 
   if (context->edit_context_ptr)
@@ -1051,7 +1095,7 @@ diagnostic_impl (rich_location *richloc, int opt,
       if (kind == DK_WARNING || kind == DK_PEDWARN)
 	diagnostic.option_index = opt;
     }
-  return report_diagnostic (&diagnostic);
+  return diagnostic_report_diagnostic (global_dc, &diagnostic);
 }
 
 /* Same as diagonostic_n_impl taking rich_location instead of location_t.  */
@@ -1067,7 +1111,7 @@ diagnostic_n_impl_richloc (rich_location *richloc, int opt, int n,
                                   ap, richloc, kind);
   if (kind == DK_WARNING)
     diagnostic.option_index = opt;
-  return report_diagnostic (&diagnostic);
+  return diagnostic_report_diagnostic (global_dc, &diagnostic);
 } 
 
 /* Implement inform_n, warning_n, and error_n, as documented and

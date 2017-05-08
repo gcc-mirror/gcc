@@ -1,5 +1,7 @@
 2017-05-08  Nathan Sidwell  <nathan@acm.org>
 
+	Merge trunk r247749.
+
 	Implement 'export module foo;'
 	gcc/cp/
 	* cp-tree.h (declare_module): Add interface flag.
