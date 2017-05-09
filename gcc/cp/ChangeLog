@@ -1,3 +1,15 @@
+2017-05-09  Jason Merrill  <jason@redhat.com>
+
+	PR c++/70167 - array prvalue treated as lvalue
+	* cp-tree.h (CONSTRUCTOR_C99_COMPOUND_LITERAL): New.
+	(enum fcl_t): New.
+	* semantics.c (finish_compound_literal): Add fcl_context parameter.
+	Only make a static variable for C99 syntax.
+	* parser.c (cp_parser_postfix_expression): Pass it.
+	* pt.c (tsubst_copy_and_build): Likewise.
+	* call.c (extend_ref_init_temps): Set
+	DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P.
+
 2017-05-09  Nathan Sidwell  <nathan@acm.org>
 
 	* cp-lang.c (get_global_decls, cxx_pushdecl): New.

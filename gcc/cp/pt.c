@@ -17709,7 +17709,12 @@ tsubst_copy_and_build (tree t,
 	CONSTRUCTOR_IS_DIRECT_INIT (r) = CONSTRUCTOR_IS_DIRECT_INIT (t);
 
 	if (TREE_HAS_CONSTRUCTOR (t))
-	  RETURN (finish_compound_literal (type, r, complain));
+	  {
+	    fcl_t cl = fcl_functional;
+	    if (CONSTRUCTOR_C99_COMPOUND_LITERAL (t))
+	      cl = fcl_c99;
+	    RETURN (finish_compound_literal (type, r, complain, cl));
+	  }
 
 	TREE_TYPE (r) = type;
 	RETURN (r);

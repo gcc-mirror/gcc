@@ -6770,7 +6770,7 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p,
 		/* Form the representation of the compound-literal.  */
 		postfix_expression
 		  = finish_compound_literal (type, initializer,
-					     tf_warning_or_error);
+					     tf_warning_or_error, fcl_c99);
 		postfix_expression.set_location (initializer.get_location ());
 		break;
 	      }
@@ -26834,7 +26834,7 @@ cp_parser_functional_cast (cp_parser* parser, tree type)
 	type = TREE_TYPE (type);
 
       cast = finish_compound_literal (type, expression_list,
-				      tf_warning_or_error);
+				      tf_warning_or_error, fcl_functional);
       /* Create a location of the form:
 	    type_name{i, f}
 	    ^~~~~~~~~~~~~~~

@@ -10516,6 +10516,9 @@ extend_ref_init_temps (tree decl, tree init, vec<tree, va_gc> **cleanups)
 	      FOR_EACH_VEC_SAFE_ELT (elts, i, p)
 		p->value = extend_ref_init_temps (decl, p->value, cleanups);
 	    }
+	  recompute_constructor_flags (ctor);
+	  if (decl_maybe_constant_var_p (decl) && TREE_CONSTANT (ctor))
+	    DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (decl) = true;
 	}
     }
 
