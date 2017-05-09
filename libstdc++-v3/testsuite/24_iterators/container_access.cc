@@ -55,7 +55,7 @@ test03()
   std::initializer_list<int> il2{};
   VERIFY(std::size(il2) == 0);
   VERIFY(std::empty(il2));
-  constexpr std::initializer_list<int> il3{1,2,3};
+  static constexpr std::initializer_list<int> il3{1,2,3};
   constexpr auto d = std::data(il3);
   static_assert(d == il3.begin());
   constexpr auto s = std::size(il3);
