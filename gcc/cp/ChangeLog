@@ -1,5 +1,7 @@
 2017-05-09  Jason Merrill  <jason@redhat.com>
 
+	* class.c (check_bases): Ignore empty bases.
+
 	PR c++/70979 - literal class and closure types
 	* class.c (finalize_literal_type_property): Handle closures
 	specifically.
