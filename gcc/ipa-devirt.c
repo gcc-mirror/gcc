@@ -138,10 +138,11 @@ struct type_pair
 };
 
 template <>
-struct default_hash_traits <type_pair> : typed_noop_remove <type_pair>
+struct default_hash_traits <type_pair>
+  : typed_noop_remove <type_pair>
 {
-  typedef type_pair value_type;
-  typedef type_pair compare_type;
+  GTY((skip)) typedef type_pair value_type;
+  GTY((skip)) typedef type_pair compare_type;
   static hashval_t
   hash (type_pair p)
   {

@@ -1,3 +1,8 @@
+2017-05-09  Nathan Sidwell  <nathan@acm.org>
+
+	* ipa-devirt.c (default_hash_traits<type_pair>): Skip struct-scope
+	typedefs.
+
 2017-05-09  Marek Polacek  <polacek@redhat.com>
 
 	* doc/invoke.texi: Fix typo.
