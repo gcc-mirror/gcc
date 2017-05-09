@@ -1,5 +1,20 @@
 2017-05-09  Richard Biener  <rguenther@suse.de>
 
+	* tree-vrp.c (get_single_symbol): Add assert that we don't
+	get overflowed constants as invariant part.
+	(compare_values_warnv): Add comment before the TREE_NO_WARNING
+	checks.  Use wi::cmp instead of recursing for integer constants.
+	(compare_values): Just ignore whether we assumed undefined
+	overflow instead of failing the compare.
+	(extract_range_for_var_from_comparison_expr): Add comment before the
+	TREE_NO_WARNING sets.
+	(test_for_singularity): Likewise.
+	(extract_range_from_comparison): Do not disable optimization
+	when we assumed undefined overflow.
+	(extract_range_basic): Remove init of unused var.
+
+2017-05-09  Richard Biener  <rguenther@suse.de>
+
 	* tree-vrp.c (vrp_int_const_binop): Use wide-ints and simplify.
 	(extract_range_from_multiplicative_op_1): Adjust.
 	(extract_range_from_binary_expr_1): Use int_const_binop.
