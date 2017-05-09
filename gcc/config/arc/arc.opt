@@ -486,3 +486,7 @@ Enable use of NPS400 xld/xst extension.
 munaligned-access
 Target Report Var(unaligned_access) Init(UNALIGNED_ACCESS_DEFAULT)
 Enable unaligned word and halfword accesses to packed data.
+
+mirq-ctrl-saved=
+Target RejectNegative Joined Var(arc_deferred_options) Defer
+Specifies the registers that the processor saves on an interrupt entry and exit.
