@@ -125,15 +125,24 @@ typedef struct irq_ctrl_saved_t
 static irq_ctrl_saved_t irq_ctrl_saved;
 
 #define ARC_AUTOBLINK_IRQ_P(FNTYPE)				\
-  (ARC_INTERRUPT_P (FNTYPE) && irq_ctrl_saved.irq_save_blink)
+  ((ARC_INTERRUPT_P (FNTYPE)					\
+    && irq_ctrl_saved.irq_save_blink)				\
+   || (ARC_FAST_INTERRUPT_P (FNTYPE)				\
+       && rgf_banked_register_count > 8))
 
-#define ARC_AUTOFP_IRQ_P(FNTYPE)					\
-  (ARC_INTERRUPT_P (FNTYPE) && (irq_ctrl_saved.irq_save_last_reg > 26))
+#define ARC_AUTOFP_IRQ_P(FNTYPE)				\
+  ((ARC_INTERRUPT_P (FNTYPE)					\
+    && (irq_ctrl_saved.irq_save_last_reg > 26))			\
+  || (ARC_FAST_INTERRUPT_P (FNTYPE)				\
+      && rgf_banked_register_count > 8))
 
-#define ARC_AUTO_IRQ_P(FNTYPE)				\
-  (ARC_INTERRUPT_P (FNTYPE)				\
-   && (irq_ctrl_saved.irq_save_blink			\
+#define ARC_AUTO_IRQ_P(FNTYPE)					\
+  (ARC_INTERRUPT_P (FNTYPE) && !ARC_FAST_INTERRUPT_P (FNTYPE)	\
+   && (irq_ctrl_saved.irq_save_blink				\
        || (irq_ctrl_saved.irq_save_last_reg >= 0)))
+
+/* Number of registers in second bank for FIRQ support.  */
+static int rgf_banked_register_count;
 
 #define arc_ccfsm_current cfun->machine->ccfsm_current
 
@@ -924,6 +933,27 @@ irq_range (const char *cstr)
   irq_ctrl_saved.irq_save_lpcount  = (lpcount == 60);
 }
 
+/* Parse -mrgf-banked-regs=NUM option string.  Valid values for NUM are 4,
+   8, 16, or 32.  */
+
+static void
+parse_mrgf_banked_regs_option (const char *arg)
+{
+  long int val;
+  char *end_ptr;
+
+  errno = 0;
+  val = strtol (arg, &end_ptr, 10);
+  if (errno != 0 || *arg == '\0' || *end_ptr != '\0'
+      || (val != 0 && val != 4 && val != 8 && val != 16 && val != 32))
+    {
+      error ("invalid number in -mrgf-banked-regs=%s "
+	     "valid values are 0, 4, 8, 16, or 32", arg);
+      return;
+    }
+  rgf_banked_register_count = (int) val;
+}
+
 /* Check ARC options, generate derived target attributes.  */
 
 static void
@@ -966,6 +996,8 @@ arc_override_options (void)
   irq_ctrl_saved.irq_save_blink    = false;
   irq_ctrl_saved.irq_save_lpcount  = false;
 
+  rgf_banked_register_count = 0;
+
   /* Handle the deferred options.  */
   if (vopt)
     FOR_EACH_VEC_ELT (*vopt, i, opt)
@@ -977,6 +1009,13 @@ arc_override_options (void)
 	      irq_range (opt->arg);
 	    else
 	      warning (0, "option -mirq-ctrl-saved valid only for ARC v2 processors");
+	    break;
+
+	  case OPT_mrgf_banked_regs_:
+	    if (TARGET_V2)
+	      parse_mrgf_banked_regs_option (opt->arg);
+	    else
+	      warning (0, "option -mrgf-banked-regs valid only for ARC v2 processors");
 	    break;
 
 	  default:
@@ -1787,9 +1826,9 @@ arc_handle_interrupt_attribute (tree *, tree name, tree args, int,
 	       name);
       *no_add_attrs = true;
     }
-  else if (strcmp (TREE_STRING_POINTER (value), "ilink1")
-	   && strcmp (TREE_STRING_POINTER (value), "ilink2")
-	   && !TARGET_V2)
+  else if (!TARGET_V2
+	   && strcmp (TREE_STRING_POINTER (value), "ilink1")
+	   && strcmp (TREE_STRING_POINTER (value), "ilink2"))
     {
       warning (OPT_Wattributes,
 	       "argument of %qE attribute is not \"ilink1\" or \"ilink2\"",
@@ -1797,10 +1836,11 @@ arc_handle_interrupt_attribute (tree *, tree name, tree args, int,
       *no_add_attrs = true;
     }
   else if (TARGET_V2
-	   && strcmp (TREE_STRING_POINTER (value), "ilink"))
+	   && strcmp (TREE_STRING_POINTER (value), "ilink")
+	   && strcmp (TREE_STRING_POINTER (value), "firq"))
     {
       warning (OPT_Wattributes,
-	       "argument of %qE attribute is not \"ilink\"",
+	       "argument of %qE attribute is not \"ilink\" or \"firq\"",
 	       name);
       *no_add_attrs = true;
     }
@@ -2360,6 +2400,8 @@ arc_compute_function_type (struct function *fun)
 	    fn_type = ARC_FUNCTION_ILINK1;
 	  else if (!strcmp (TREE_STRING_POINTER (value), "ilink2"))
 	    fn_type = ARC_FUNCTION_ILINK2;
+	  else if (!strcmp (TREE_STRING_POINTER (value), "firq"))
+	    fn_type = ARC_FUNCTION_FIRQ;
 	  else
 	    gcc_unreachable ();
 	  break;
@@ -2386,7 +2428,29 @@ arc_must_save_register (int regno, struct function *func)
 {
   enum arc_function_type fn_type = arc_compute_function_type (func);
   bool irq_auto_save_p = ((irq_ctrl_saved.irq_save_last_reg >= regno)
-			  && ARC_INTERRUPT_P (fn_type));
+			  && ARC_AUTO_IRQ_P (fn_type));
+  bool firq_auto_save_p = ARC_FAST_INTERRUPT_P (fn_type);
+
+  switch (rgf_banked_register_count)
+    {
+    case 4:
+      firq_auto_save_p &= (regno < 4);
+      break;
+    case 8:
+      firq_auto_save_p &= ((regno < 4) || ((regno > 11) && (regno < 16)));
+      break;
+    case 16:
+      firq_auto_save_p &= ((regno < 4) || ((regno > 9) && (regno < 16))
+			   || ((regno > 25) && (regno < 29))
+			   || ((regno > 29) && (regno < 32)));
+      break;
+    case 32:
+      firq_auto_save_p &= (regno != 29) && (regno < 32);
+      break;
+    default:
+      firq_auto_save_p = false;
+      break;
+    }
 
   if ((regno) != RETURN_ADDR_REGNUM
       && (regno) != FRAME_POINTER_REGNUM
@@ -2394,7 +2458,8 @@ arc_must_save_register (int regno, struct function *func)
       && (!call_used_regs[regno]
 	  || ARC_INTERRUPT_P (fn_type))
       /* Do not emit code for auto saved regs.  */
-      && !irq_auto_save_p)
+      && !irq_auto_save_p
+      && !firq_auto_save_p)
     return true;
 
   if (flag_pic && crtl->uses_pic_offset_table
@@ -2723,11 +2788,6 @@ arc_save_restore (rtx base_reg,
     }
 } /* arc_save_restore */
 
-
-int arc_return_address_regs[4]
-  = {0, RETURN_ADDR_REGNUM, ILINK1_REGNUM, ILINK2_REGNUM};
-
-
 /* Build dwarf information when the context is saved via AUX_IRQ_CTRL
    mechanism.  */
 
@@ -2841,7 +2901,8 @@ arc_expand_prologue (void)
 
   /* IRQ using automatic save mechanism will save the register before
      anything we do.  */
-  if (ARC_AUTO_IRQ_P (fn_type))
+  if (ARC_AUTO_IRQ_P (fn_type)
+      && !ARC_FAST_INTERRUPT_P (fn_type))
     {
       arc_dwarf_emit_irq_save_regs ();
     }
@@ -9699,6 +9760,9 @@ arc_can_follow_jump (const rtx_insn *follower, const rtx_insn *followee)
       }
   return true;
 }
+
+int arc_return_address_regs[5] =
+  {0, RETURN_ADDR_REGNUM, ILINK1_REGNUM, ILINK2_REGNUM, ILINK1_REGNUM};
 
 /* Implement EPILOGUE__USES.
    Return true if REGNO should be added to the deemed uses of the epilogue.

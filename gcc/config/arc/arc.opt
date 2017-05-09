@@ -490,3 +490,7 @@ Enable unaligned word and halfword accesses to packed data.
 mirq-ctrl-saved=
 Target RejectNegative Joined Var(arc_deferred_options) Defer
 Specifies the registers that the processor saves on an interrupt entry and exit.
+
+mrgf-banked-regs=
+Target RejectNegative Joined Var(arc_deferred_options) Defer
+Specifies the number of registers replicated in second register bank on entry to fast interrupt.
