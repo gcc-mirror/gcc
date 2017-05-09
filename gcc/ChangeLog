@@ -1,5 +1,7 @@
 2017-05-09  Nathan Sidwell  <nathan@acm.org>
 
+	* tree.h (tree_fits_shwi_p, tree_fits_uhwi_p): Unconditionally pure.
+
 	* ipa-devirt.c (default_hash_traits<type_pair>): Skip struct-scope
 	typedefs.
 
