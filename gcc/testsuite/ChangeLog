@@ -1,4 +1,14 @@
 2017-05-09  Claudiu Zissulescu  <claziss@synopsys.com>
+	    Andrew Burgess <andrew.burgess@embecosm.com>
+
+	* gcc.target/arc/firq-1.c: New file.
+	* gcc.target/arc/firq-2.c: Likewise.
+	* gcc.target/arc/firq-3.c: Likewise.
+	* gcc.target/arc/firq-4.c: Likewise.
+	* gcc.target/arc/firq-5.c: Likewise.
+	* gcc.target/arc/firq-6.c: Likewise.
+
+2017-05-09  Claudiu Zissulescu  <claziss@synopsys.com>
 
 	* gcc.target/arc/interrupt-5.c: Newfile.
 	* gcc.target/arc/interrupt-6.c: Likewise.

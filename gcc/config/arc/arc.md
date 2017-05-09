@@ -4740,8 +4740,8 @@
     = gen_rtx_REG (Pmode,
 		   arc_return_address_regs[arc_compute_function_type (cfun)]);
 
-  if (arc_compute_function_type (cfun) == ARC_FUNCTION_ILINK1
-      && TARGET_V2)
+  if (TARGET_V2
+      && ARC_INTERRUPT_P (arc_compute_function_type (cfun)))
   {
     return \"rtie\";
   }
@@ -4751,8 +4751,7 @@
   return \"\";
 }
   [(set (attr "type")
-	(cond [(and (eq (symbol_ref "arc_compute_function_type (cfun)")
-			(symbol_ref "ARC_FUNCTION_ILINK1"))
+	(cond [(and (match_test "ARC_INTERRUPT_P (arc_compute_function_type (cfun))")
 		    (match_test "TARGET_V2"))
 	       (const_string "brcc_no_delay_slot")]
 	      (const_string "return")))
@@ -4782,7 +4781,7 @@
 		      (simple_return) (pc)))]
   "reload_completed
    && !(TARGET_V2
-     && arc_compute_function_type (cfun) == ARC_FUNCTION_ILINK1)"
+     && ARC_INTERRUPT_P (arc_compute_function_type (cfun)))"
 {
   rtx xop[2];
   xop[0] = operands[0];

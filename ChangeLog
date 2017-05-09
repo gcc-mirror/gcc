@@ -1,4 +1,28 @@
 2017-05-09  Claudiu Zissulescu  <claziss@synopsys.com>
+	    Andrew Burgess <andrew.burgess@embecosm.com>
+
+	* config/arc/arc.c (ARC_AUTOBLINK_IRQ_P): Consider fast interrupts
+	case.
+	(ARC_AUTOFP_IRQ_P): Likewise.
+	(ARC_AUTO_IRQ_P): Likewise.
+	(rgf_banked_register_count): New variable.
+	(parse_mrgf_banked_regs_option): New function.
+	(arc_override_options): Handle rgf_banked_regs option.
+	(arc_handle_interrupt_attribute): Add firq option.
+	(arc_compute_function_type): Return fast irq type when required.
+	(arc_must_save_register): Handle fast interrupts.
+	(arc_expand_prologue): Do not emit dwarf info for fast interrupts.
+	(arc_return_address_regs): Update.
+	* config/arc/arc.h (arc_return_address_regs): Update.
+	(arc_function_type): Add fast interrupt type.
+	(ARC_INTERRUPT_P): Update.
+	(RC_FAST_INTERRUPT_P): Define.
+	* config/arc/arc.md (simple_return): Update for fast interrupts.
+	(p_return_i): Likewise.
+	* config/arc/arc.opt (mrgf-banked-regs): New option.
+	* doc/invoke.texi (mrgf-banked-regs): Document.
+
+2017-05-09  Claudiu Zissulescu  <claziss@synopsys.com>
 
 	* config/arc/arc.c (irq_ctrl_saved): New variable.
 	(ARC_AUTOBLINK_IRQ_P): Define.

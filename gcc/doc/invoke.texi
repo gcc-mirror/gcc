@@ -607,6 +607,7 @@ Objective-C and Objective-C++ Dialects}.
 -mcrc  -mdsp-packa  -mdvbf  -mlock  -mmac-d16  -mmac-24  -mrtsc  -mswape @gol
 -mtelephony  -mxy  -misize  -mannotate-align  -marclinux  -marclinux_prof @gol
 -mlong-calls  -mmedium-calls  -msdata -mirq-ctrl-saved @gol
+-mrgf-banked-regs @gol
 -mvolatile-cache  -mtp-regno=@var{regno} @gol
 -malign-call  -mauto-modify-reg  -mbbit-peephole  -mno-brcc @gol
 -mcase-vector-pcrel  -mcompact-casesi  -mno-cond-exec  -mearly-cbranchsi @gol
@@ -14555,6 +14556,15 @@ specified as two registers separated by a dash.  The register range
 always starts with @code{r0}, the upper limit is @code{fp} register.
 @var{blink} and @var{lp_count} are optional.  This option is only
 valid for ARC EM and ARC HS cores.
+
+@item -mrgf-banked-regs=@var{number}
+@opindex mrgf-banked-regs
+Specifies the number of registers replicated in second register bank
+on entry to fast interrupt.  Fast interrupts are interrupts with the
+highest priority level P0.  These interrupts save only PC and STATUS32
+registers to avoid memory transactions during interrupt entry and exit
+sequences.  Use this option when you are using fast interrupts in an
+ARC V2 family processor.  Permitted values are 4, 8, 16, and 32.
 
 @end table
 
