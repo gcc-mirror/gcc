@@ -51,7 +51,7 @@ int dump_flags;
 static struct dump_file_info dump_files[TDI_end] =
 {
   {NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 0, 0, 0, false, false},
-  {".fe", "front-end", NULL, NULL, NULL, NULL, NULL, TDF_LANG,
+  {".lang", "lang", NULL, NULL, NULL, NULL, NULL, TDF_LANG,
    OPTGROUP_OTHER, 0, 0, 0, -1, false, false},
   {".cgraph", "ipa-cgraph", NULL, NULL, NULL, NULL, NULL, TDF_IPA,
    0, 0, 0, 0, 0, false, false},
@@ -61,7 +61,7 @@ static struct dump_file_info dump_files[TDI_end] =
    0, 0, 0, 0, 0, false, false},
   {".tu", "translation-unit", NULL, NULL, NULL, NULL, NULL, TDF_TREE,
    0, 0, 0, 0, 1, false, false},
-  {".class", "class-hierarchy", NULL, NULL, NULL, NULL, NULL, TDF_TREE,
+  {".class", "class-hierarchy", NULL, NULL, NULL, NULL, NULL, TDF_LANG,
    0, 0, 0, 0, 2, false, false},
   {".original", "tree-original", NULL, NULL, NULL, NULL, NULL, TDF_TREE,
    0, 0, 0, 0, 3, false, false},
@@ -71,6 +71,8 @@ static struct dump_file_info dump_files[TDI_end] =
    0, 0, 0, 0, 5, false, false},
 #define FIRST_AUTO_NUMBERED_DUMP 6
 
+  {NULL, "lang-all", NULL, NULL, NULL, NULL, NULL, TDF_LANG,
+   0, 0, 0, 0, 0, false, false},
   {NULL, "tree-all", NULL, NULL, NULL, NULL, NULL, TDF_TREE,
    0, 0, 0, 0, 0, false, false},
   {NULL, "rtl-all", NULL, NULL, NULL, NULL, NULL, TDF_RTL,
@@ -117,11 +119,10 @@ static const struct dump_option_value_info dump_options[] =
   {"missed", MSG_MISSED_OPTIMIZATION},
   {"note", MSG_NOTE},
   {"optall", MSG_ALL},
-  {"lang", TDF_LANG},
-  {"all", ~(TDF_RAW | TDF_SLIM | TDF_LINENO | TDF_TREE | TDF_RTL | TDF_IPA
+  {"all", ~(TDF_KIND_MASK | TDF_RAW | TDF_SLIM | TDF_LINENO
 	    | TDF_STMTADDR | TDF_GRAPH | TDF_DIAGNOSTIC | TDF_VERBOSE
 	    | TDF_RHS_ONLY | TDF_NOUID | TDF_ENUMERATE_LOCALS | TDF_SCEV
-	    | TDF_GIMPLE | TDF_LANG)},
+	    | TDF_GIMPLE)},
   {NULL, 0}
 };
 
@@ -285,15 +286,11 @@ get_dump_file_name (struct dump_file_info *dfi) const
     dump_id[0] = '\0';
   else
     {
-      char suffix;
-      if (dfi->pflags & TDF_TREE)
-	suffix = 't';
-      else if (dfi->pflags & TDF_IPA)
-	suffix = 'i';
-      else
-	suffix = 'r';
-
-      if (snprintf (dump_id, sizeof (dump_id), ".%03d%c", dfi->num, suffix) < 0)
+      /* LANG, TREE, RTL, IPA.  */
+      char suffix = "ltri"[TDF_KIND (dfi->pflags)];
+      
+      if (snprintf (dump_id, sizeof (dump_id), ".%03d%c", dfi->num, suffix)
+	  < 0)
 	dump_id[0] = '\0';
     }
 
@@ -660,13 +657,13 @@ int
 gcc::dump_manager::
 dump_enable_all (int flags, const char *filename)
 {
-  int ir_dump_type = (flags & (TDF_TREE | TDF_RTL | TDF_IPA));
+  int ir_dump_type = TDF_KIND (flags);
   int n = 0;
   size_t i;
 
   for (i = TDI_none + 1; i < (size_t) TDI_end; i++)
     {
-      if ((dump_files[i].pflags & ir_dump_type))
+      if (TDF_KIND (dump_files[i].pflags) == ir_dump_type)
         {
           const char *old_filename = dump_files[i].pfilename;
           dump_files[i].pstate = -1;
@@ -687,7 +684,7 @@ dump_enable_all (int flags, const char *filename)
 
   for (i = 0; i < m_extra_dump_files_in_use; i++)
     {
-      if ((m_extra_dump_files[i].pflags & ir_dump_type))
+      if (TDF_KIND (m_extra_dump_files[i].pflags) & ir_dump_type)
         {
           const char *old_filename = m_extra_dump_files[i].pfilename;
           m_extra_dump_files[i].pstate = -1;

@@ -1,4 +1,4 @@
-// { dg-additional-options "-fdump-front-end" }
-// { dg-final { scan-dump "fe" "Importing 'Foo'" "fe" } }
+// { dg-additional-options "-fdump-lang" }
+// { dg-final { scan-dump "lang" "Importing 'Foo'" "fe" } }
 
 module Foo;

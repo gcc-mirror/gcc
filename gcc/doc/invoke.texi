@@ -542,8 +542,8 @@ Objective-C and Objective-C++ Dialects}.
 -fdump-noaddr  -fdump-unnumbered  -fdump-unnumbered-links @gol
 -fdump-class-hierarchy@r{[}-@var{n}@r{]} @gol
 -fdump-final-insns@r{[}=@var{file}@r{]}
--fdump-front-end @gol
 -fdump-ipa-all  -fdump-ipa-cgraph  -fdump-ipa-inline @gol
+-fdump-lang-all @gol
 -fdump-passes @gol
 -fdump-rtl-@var{pass}  -fdump-rtl-@var{pass}=@var{filename} @gol
 -fdump-statistics @gol
@@ -12953,11 +12953,6 @@ same directory as the output file.  If the @samp{-@var{options}} form
 is used, @var{options} controls the details of the dump as described
 for the @option{-fdump-tree} options.
 
-@item -fdump-front-end
-@opindex fdump-front-end
-Dump front-end-specific information.  The file name is made by appending
-@file{.fe} to the source file name.  Currently used for C++ modules.
-
 @item -fdump-ipa-@var{switch}
 @opindex fdump-ipa
 Control the dumping at various stages of inter-procedural analysis
@@ -12978,6 +12973,11 @@ and inlining decisions.
 Dump after function inlining.
 
 @end table
+
+@item -fdump-lang
+@opindex fdump-lang
+Dump language-specific information.  The file name is made by appending
+@file{.lang} to the source file name.  Currently used for C++ modules.
 
 @item -fdump-passes
 @opindex fdump-passes

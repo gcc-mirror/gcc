@@ -1,5 +1,14 @@
 2017-05-09  Nathan Sidwell  <nathan@acm.org>
 
+	Rename -fdump-front-end to -fdump-lang.
+	gcc/
+	* dumpfile.h (TDF_KIND_MASK, TDF_KIND): New.  Adjust.
+	* dumpfile.c (dump_files): Rename file suffix.
+	(get_dump_file_name, dump_enable_all): Adjust.
+	* doc/invoke.texi: Rename option.
+	gcc/testsuite/
+	* g++.dg/modules: Adjust tests.
+
 	gcc/cp/
 	* module.c (cpms_in::finish): Merge global decls.
 	(cpms_in::finish_function, cpms_in::finish_namespace): Delete.

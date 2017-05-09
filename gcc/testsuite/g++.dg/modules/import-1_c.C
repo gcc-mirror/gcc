@@ -1,6 +1,6 @@
-// { dg-additional-options "-fdump-front-end" }
-// { dg-final { scan-dump "fe" "Writing export import 'Baz'" "fe" } }
-// { dg-final { scan-dump "fe" "Writing export import 'Bar'" "fe" } }
+// { dg-additional-options "-fdump-lang" }
+// { dg-final { scan-dump "lang" "Writing export import 'Baz'" "fe" } }
+// { dg-final { scan-dump "lang" "Writing export import 'Bar'" "fe" } }
 
 export module Foo;
 // { dg-module-if "Foo" }

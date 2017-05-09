@@ -1,6 +1,6 @@
-// { dg-additional-options "-fdump-front-end" }
-// { dg-final { scan-dump "fe" "Direct export import 'Baz'" "fe" } }
-// { dg-final { scan-dump "fe" "Direct export import 'Bar'" "fe" } }
+// { dg-additional-options "-fdump-lang" }
+// { dg-final { scan-dump "lang" "Direct export import 'Baz'" "fe" } }
+// { dg-final { scan-dump "lang" "Direct export import 'Bar'" "fe" } }
 import Foo;
 
 int main ()
