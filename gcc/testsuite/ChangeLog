@@ -1,3 +1,10 @@
+2017-05-09  Sebastian Peryt  <sebastian.peryt@intel.com>
+
+	* gcc.target/i386/avx512f-vaddsd-2.c: Test fixed.
+	* gcc.target/i386/avx512f-vaddss-2.c: Ditto.
+	* gcc.target/i386/avx512f-vsubsd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vsubss-2.c: Ditto.
+
 2017-05-09  Dominique d'Humieres  <dominiq@lps.ens.fr>
 
 	PR testsuite/80611
