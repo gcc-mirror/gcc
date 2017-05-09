@@ -1,3 +1,10 @@
+2017-05-09  Martin Sebor  <msebor@redhat.com>
+
+	PR translation/80280
+	* config/i386/msformat-c.c (ms_printf_flag_specs): Initialize new
+	data member added in r247778.
+	(ms_scanf_flag_specs, ms_strftime_flag_specs): Same.
+
 2017-05-09  Nathan Sidwell  <nathan@acm.org>
 
 	* tree.h (tree_fits_shwi_p, tree_fits_uhwi_p): Unconditionally pure.
