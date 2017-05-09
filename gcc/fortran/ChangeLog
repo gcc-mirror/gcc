@@ -1,3 +1,10 @@
+2017-05-09  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/79311
+	* resolve.c (gfc_resolve_finalizers): Ensure that derived-type
+	components have a their finalizers resolved, also if the superordinate
+	type itself has a finalizer.
+
 2017-05-08  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/79930
