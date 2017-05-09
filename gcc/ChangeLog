@@ -1,3 +1,9 @@
+2017-05-09  Richard Biener  <rguenther@suse.de>
+
+	* tree-vrp.c (vrp_int_const_binop): Use wide-ints and simplify.
+	(extract_range_from_multiplicative_op_1): Adjust.
+	(extract_range_from_binary_expr_1): Use int_const_binop.
+
 2017-05-08  Kelvin Nilsen  <kelvin@gcc.gnu.org>
 
 	PR target/80101
