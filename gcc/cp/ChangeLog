@@ -1,3 +1,9 @@
+2017-05-09  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-lang.c (get_global_decls, cxx_pushdecl): New.
+	(LANG_HOOKS_GETDECLS, LANG_HOOKS_PUSHDECL): Override.
+	* name-lookup.h (pushdecl_top_level): Declare.
+
 2017-05-08  Jason Merrill  <jason@redhat.com>
 
 	PR c++/80178 - parameter passing for uncopyable classes
@@ -10,7 +16,7 @@
 
 2017-05-08  Nathan Sidwell  <nathan@acm.org>
 
-	* decl.c (builtin_function_1): Set DCL_ANTICIPATED before pushing.
+	* decl.c (builtin_function_1): Set DECL_ANTICIPATED before pushing.
 	(start_preparsed_function): Do decl pushing before setting
 	current_funciton_decl and announcing it.
 

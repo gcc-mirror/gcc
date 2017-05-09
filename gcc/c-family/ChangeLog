@@ -1,3 +1,8 @@
+2017-05-09  Nathan Sidwell  <nathan@acm.org>
+
+	* c-common.c (c_register_builtin_type): Use pushdecl lang_hook.
+	* c-common.h (pushdecl_top_level, pushdecl): Don't declare here.
+
 2017-05-08  Martin Sebor  <msebor@redhat.com>
 
 	PR translation/80280
