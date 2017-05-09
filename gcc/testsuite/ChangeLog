@@ -1,3 +1,11 @@
+2017-05-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR testsuite/80678
+	2016-06-11  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR middle-end/71310
+	* gcc.target/powerpc/pr71310.c: New testcase.
+
 2017-05-05  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
