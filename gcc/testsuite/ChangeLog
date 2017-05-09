@@ -1,5 +1,6 @@
 2017-05-09  Dominique d'Humieres  <dominiq@lps.ens.fr>
 
+	PR testsuite/80611
 	* gfortran.dg/coarray_lock_7.f90: Fix dg-final regexps.
 
 2017-05-09  Claudiu Zissulescu  <claziss@synopsys.com>
