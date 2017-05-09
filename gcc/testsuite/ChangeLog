@@ -1,3 +1,8 @@
+2017-05-09  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/80186
+	* g++.dg/template/crash126.C: New.
+
 2017-05-09  Sebastian Peryt  <sebastian.peryt@intel.com>
 
 	* gcc.target/i386/avx512f-vaddsd-2.c: Test fixed.

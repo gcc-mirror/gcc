@@ -1,3 +1,9 @@
+2017-05-09  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/80186
+	* pt.c (tsubst_decl): Early return error_mark_node if
+	grok_ctor_properties returns false.
+
 2017-05-09  Jason Merrill  <jason@redhat.com>
 
 	PR c++/70167 - array prvalue treated as lvalue
