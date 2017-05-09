@@ -1,3 +1,11 @@
+2017-05-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.c (c_parser_omp_variable_list): For OMP_CLAUSE_DEPEND,
+	parse clause operands as either an array section, or lvalue assignment
+	expression.
+	* c-typeck.c (c_finish_omp_clauses): Allow any lvalue as
+	OMP_CLAUSE_DEPEND operand (besides array section), adjust diagnostics.
+
 2017-05-04  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-parser.c (c_parser_omp_target_data): Allow target data

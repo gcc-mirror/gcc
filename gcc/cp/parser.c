@@ -30888,6 +30888,8 @@ cp_parser_omp_var_list_no_open (cp_parser *parser, enum omp_clause_code kind,
     {
       tree name, decl;
 
+      if (kind == OMP_CLAUSE_DEPEND)
+	cp_parser_parse_tentatively (parser);
       token = cp_lexer_peek_token (parser->lexer);
       if (kind != 0
 	  && current_class_ptr
@@ -30907,7 +30909,12 @@ cp_parser_omp_var_list_no_open (cp_parser *parser, enum omp_clause_code kind,
 					  /*declarator_p=*/false,
 					  /*optional_p=*/false);
 	  if (name == error_mark_node)
-	    goto skip_comma;
+	    {
+	      if (kind == OMP_CLAUSE_DEPEND
+		  && cp_parser_simulate_error (parser))
+		goto depend_lvalue;
+	      goto skip_comma;
+	    }
 
 	  decl = cp_parser_lookup_name_simple (parser, name, token->location);
 	  if (decl == error_mark_node)
@@ -30965,7 +30972,14 @@ cp_parser_omp_var_list_no_open (cp_parser *parser, enum omp_clause_code kind,
 		    {
 		      /* Look for `:'.  */
 		      if (!cp_parser_require (parser, CPP_COLON, RT_COLON))
-			goto skip_comma;
+			{
+			  if (kind == OMP_CLAUSE_DEPEND
+			      && cp_parser_simulate_error (parser))
+			    goto depend_lvalue;
+			  goto skip_comma;
+			}
+		      if (kind == OMP_CLAUSE_DEPEND)
+			cp_parser_commit_to_tentative_parse (parser);
 		      if (!cp_lexer_next_token_is (parser->lexer,
 						   CPP_CLOSE_SQUARE))
 			length = cp_parser_expression (parser);
@@ -30973,13 +30987,33 @@ cp_parser_omp_var_list_no_open (cp_parser *parser, enum omp_clause_code kind,
 		  /* Look for the closing `]'.  */
 		  if (!cp_parser_require (parser, CPP_CLOSE_SQUARE,
 					  RT_CLOSE_SQUARE))
-		    goto skip_comma;
+		    {
+		      if (kind == OMP_CLAUSE_DEPEND
+			  && cp_parser_simulate_error (parser))
+			goto depend_lvalue;
+		      goto skip_comma;
+		    }
 
 		  decl = tree_cons (low_bound, length, decl);
 		}
 	      break;
 	    default:
 	      break;
+	    }
+
+	  if (kind == OMP_CLAUSE_DEPEND)
+	    {
+	      if (cp_lexer_next_token_is_not (parser->lexer, CPP_COMMA)
+		  && cp_lexer_next_token_is_not (parser->lexer, CPP_CLOSE_PAREN)
+		  && cp_parser_simulate_error (parser))
+		{
+		depend_lvalue:
+		  cp_parser_abort_tentative_parse (parser);
+		  decl = cp_parser_assignment_expression (parser, NULL,
+							  false, false);
+		}
+	      else
+		cp_parser_parse_definitely (parser);
 	    }
 
 	  tree u = build_omp_clause (token->location, kind);

@@ -10737,13 +10737,87 @@ c_parser_omp_variable_list (c_parser *parser,
 			    location_t clause_loc,
 			    enum omp_clause_code kind, tree list)
 {
-  if (c_parser_next_token_is_not (parser, CPP_NAME)
-      || c_parser_peek_token (parser)->id_kind != C_ID_ID)
+  auto_vec<c_token> tokens;
+  unsigned int tokens_avail = 0;
+
+  if (kind != OMP_CLAUSE_DEPEND
+      && (c_parser_next_token_is_not (parser, CPP_NAME)
+	  || c_parser_peek_token (parser)->id_kind != C_ID_ID))
     c_parser_error (parser, "expected identifier");
 
-  while (c_parser_next_token_is (parser, CPP_NAME)
-	 && c_parser_peek_token (parser)->id_kind == C_ID_ID)
+  while (kind == OMP_CLAUSE_DEPEND
+	 || (c_parser_next_token_is (parser, CPP_NAME)
+	     && c_parser_peek_token (parser)->id_kind == C_ID_ID))
     {
+      bool array_section_p = false;
+      if (kind == OMP_CLAUSE_DEPEND)
+	{
+	  if (c_parser_next_token_is_not (parser, CPP_NAME)
+	      || c_parser_peek_token (parser)->id_kind != C_ID_ID)
+	    {
+	      struct c_expr expr = c_parser_expr_no_commas (parser, NULL);
+	      if (expr.value != error_mark_node)
+		{
+		  tree u = build_omp_clause (clause_loc, kind);
+		  OMP_CLAUSE_DECL (u) = expr.value;
+		  OMP_CLAUSE_CHAIN (u) = list;
+		  list = u;
+		}
+
+	      if (c_parser_next_token_is_not (parser, CPP_COMMA))
+		break;
+
+	      c_parser_consume_token (parser);
+	      continue;
+	    }
+
+	  tokens.truncate (0);
+	  unsigned int nesting_depth = 0;
+	  while (1)
+	    {
+	      c_token *token = c_parser_peek_token (parser);
+	      switch (token->type)
+		{
+		case CPP_EOF:
+		case CPP_PRAGMA_EOL:
+		  break;
+		case CPP_OPEN_BRACE:
+		case CPP_OPEN_PAREN:
+		case CPP_OPEN_SQUARE:
+		  ++nesting_depth;
+		  goto add;
+		case CPP_CLOSE_BRACE:
+		case CPP_CLOSE_PAREN:
+		case CPP_CLOSE_SQUARE:
+		  if (nesting_depth-- == 0)
+		    break;
+		  goto add;
+		case CPP_COMMA:
+		  if (nesting_depth == 0)
+		    break;
+		  goto add;
+		default:
+		add:
+		  tokens.safe_push (*token);
+		  c_parser_consume_token (parser);
+		  continue;
+		}
+	      break;
+	    }
+
+	  /* Make sure nothing tries to read past the end of the tokens.  */
+	  c_token eof_token;
+	  memset (&eof_token, 0, sizeof (eof_token));
+	  eof_token.type = CPP_EOF;
+	  tokens.safe_push (eof_token);
+	  tokens.safe_push (eof_token);
+
+	  tokens_avail = parser->tokens_avail;
+	  gcc_assert (parser->tokens == &parser->tokens_buf[0]);
+	  parser->tokens = tokens.address ();
+	  parser->tokens_avail = tokens.length ();
+	}
+
       tree t = lookup_name (c_parser_peek_token (parser)->value);
 
       if (t == NULL_TREE)
@@ -10819,6 +10893,7 @@ c_parser_omp_variable_list (c_parser *parser,
 			  t = error_mark_node;
 			  break;
 			}
+		      array_section_p = true;
 		      if (!c_parser_next_token_is (parser, CPP_CLOSE_SQUARE))
 			{
 			  location_t expr_loc
@@ -10839,6 +10914,30 @@ c_parser_omp_variable_list (c_parser *parser,
 
 		  t = tree_cons (low_bound, length, t);
 		}
+	      if (kind == OMP_CLAUSE_DEPEND
+		  && t != error_mark_node
+		  && parser->tokens_avail != 2)
+		{
+		  if (array_section_p)
+		    {
+		      error_at (c_parser_peek_token (parser)->location,
+				"expected %<)%> or %<,%>");
+		      t = error_mark_node;
+		    }
+		  else
+		    {
+		      parser->tokens = tokens.address ();
+		      parser->tokens_avail = tokens.length ();
+
+		      t = c_parser_expr_no_commas (parser, NULL).value;
+		      if (t != error_mark_node && parser->tokens_avail != 2)
+			{
+			  error_at (c_parser_peek_token (parser)->location,
+				    "expected %<)%> or %<,%>");
+			  t = error_mark_node;
+			}
+		    }
+		}
 	      break;
 	    default:
 	      break;
@@ -10855,6 +10954,11 @@ c_parser_omp_variable_list (c_parser *parser,
       else
 	list = tree_cons (t, NULL_TREE, list);
 
+      if (kind == OMP_CLAUSE_DEPEND)
+	{
+	  parser->tokens = &parser->tokens_buf[0];
+	  parser->tokens_avail = tokens_avail;
+	}
       if (c_parser_next_token_is_not (parser, CPP_COMMA))
 	break;
 

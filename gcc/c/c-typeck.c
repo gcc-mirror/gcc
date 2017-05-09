@@ -13330,10 +13330,11 @@ c_finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	    }
 	  if (t == error_mark_node)
 	    remove = true;
-	  else if (!VAR_P (t) && TREE_CODE (t) != PARM_DECL)
+	  else if (!lvalue_p (t))
 	    {
 	      error_at (OMP_CLAUSE_LOCATION (c),
-			"%qE is not a variable in %<depend%> clause", t);
+			"%qE is not lvalue expression nor array section in "
+			"%<depend%> clause", t);
 	      remove = true;
 	    }
 	  else if (!c_mark_addressable (t))

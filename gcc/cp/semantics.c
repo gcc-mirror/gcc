@@ -6626,24 +6626,25 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	    }
 	  if (t == error_mark_node)
 	    remove = true;
-	  else if (!VAR_P (t) && TREE_CODE (t) != PARM_DECL)
-	    {
-	      if (processing_template_decl)
-		break;
-	      if (DECL_P (t))
-		error ("%qD is not a variable in %<depend%> clause", t);
-	      else
-		error ("%qE is not a variable in %<depend%> clause", t);
-	      remove = true;
-	    }
 	  else if (t == current_class_ptr)
 	    {
 	      error ("%<this%> allowed in OpenMP only in %<declare simd%>"
 		     " clauses");
 	      remove = true;
 	    }
-	  else if (!processing_template_decl
-		   && !cxx_mark_addressable (t))
+          else if (processing_template_decl)
+	    break;
+	  else if (!lvalue_p (t))
+	    {
+	      if (DECL_P (t))
+		error ("%qD is not lvalue expression nor array section "
+		       "in %<depend%> clause", t);
+	      else
+		error ("%qE is not lvalue expression nor array section "
+		       "in %<depend%> clause", t);
+	      remove = true;
+	    }
+	  else if (!cxx_mark_addressable (t))
 	    remove = true;
 	  break;
 
