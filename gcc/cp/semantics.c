@@ -2647,12 +2647,14 @@ finish_unary_op_expr (location_t op_loc, enum tree_code code, cp_expr expr,
   return result;
 }
 
-/* Finish a compound-literal expression.  TYPE is the type to which
-   the CONSTRUCTOR in COMPOUND_LITERAL is being cast.  */
+/* Finish a compound-literal expression or C++11 functional cast with aggregate
+   initializer.  TYPE is the type to which the CONSTRUCTOR in COMPOUND_LITERAL
+   is being cast.  */
 
 tree
 finish_compound_literal (tree type, tree compound_literal,
-			 tsubst_flags_t complain)
+			 tsubst_flags_t complain,
+			 fcl_t fcl_context)
 {
   if (type == error_mark_node)
     return error_mark_node;
@@ -2661,7 +2663,7 @@ finish_compound_literal (tree type, tree compound_literal,
     {
       compound_literal
 	= finish_compound_literal (TREE_TYPE (type), compound_literal,
-				   complain);
+				   complain, fcl_context);
       return cp_build_c_cast (type, compound_literal, complain);
     }
 
@@ -2682,6 +2684,8 @@ finish_compound_literal (tree type, tree compound_literal,
       TREE_TYPE (compound_literal) = type;
       /* Mark the expression as a compound literal.  */
       TREE_HAS_CONSTRUCTOR (compound_literal) = 1;
+      if (fcl_context == fcl_c99)
+	CONSTRUCTOR_C99_COMPOUND_LITERAL (compound_literal) = 1;
       return compound_literal;
     }
 
@@ -2717,10 +2721,17 @@ finish_compound_literal (tree type, tree compound_literal,
   compound_literal = digest_init_flags (type, compound_literal, LOOKUP_NORMAL,
 					complain);
   if (TREE_CODE (compound_literal) == CONSTRUCTOR)
-    TREE_HAS_CONSTRUCTOR (compound_literal) = true;
+    {
+      TREE_HAS_CONSTRUCTOR (compound_literal) = true;
+      if (fcl_context == fcl_c99)
+	CONSTRUCTOR_C99_COMPOUND_LITERAL (compound_literal) = 1;
+    }
 
   /* Put static/constant array temporaries in static variables.  */
+  /* FIXME all C99 compound literals should be variables rather than C++
+     temporaries, unless they are used as an aggregate initializer.  */
   if ((!at_function_scope_p () || CP_TYPE_CONST_P (type))
+      && fcl_context == fcl_c99
       && TREE_CODE (type) == ARRAY_TYPE
       && !TYPE_HAS_NONTRIVIAL_DESTRUCTOR (type)
       && initializer_constant_valid_p (compound_literal, type))

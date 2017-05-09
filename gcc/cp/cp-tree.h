@@ -369,6 +369,7 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
       DECL_NON_TRIVIALLY_INITIALIZED_P (in VAR_DECL)
       CALL_EXPR_ORDERED_ARGS (in CALL_EXPR, AGGR_INIT_EXPR)
       DECLTYPE_FOR_REF_CAPTURE (in DECLTYPE_TYPE)
+      CONSTUCTOR_C99_COMPOUND_LITERAL (in CONSTRUCTOR)
    4: TREE_HAS_CONSTRUCTOR (in INDIRECT_REF, SAVE_EXPR, CONSTRUCTOR,
 	  CALL_EXPR, or FIELD_DECL).
       IDENTIFIER_TYPENAME_P (in IDENTIFIER_NODE)
@@ -3898,6 +3899,11 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
 #define CONSTRUCTOR_MUTABLE_POISON(NODE) \
   (TREE_LANG_FLAG_2 (CONSTRUCTOR_CHECK (NODE)))
 
+/* True if this typed CONSTRUCTOR represents C99 compound-literal syntax rather
+   than C++11 functional cast syntax.  */
+#define CONSTRUCTOR_C99_COMPOUND_LITERAL(NODE) \
+  (TREE_LANG_FLAG_3 (CONSTRUCTOR_CHECK (NODE)))
+
 #define DIRECT_LIST_INIT_P(NODE) \
    (BRACE_ENCLOSED_INITIALIZER_P (NODE) && CONSTRUCTOR_IS_DIRECT_INIT (NODE))
 
@@ -6483,7 +6489,10 @@ extern tree finish_this_expr			(void);
 extern tree finish_pseudo_destructor_expr       (tree, tree, tree, location_t);
 extern cp_expr finish_unary_op_expr		(location_t, enum tree_code, cp_expr,
 						 tsubst_flags_t);
-extern tree finish_compound_literal		(tree, tree, tsubst_flags_t);
+/* Whether this call to finish_compound_literal represents a C++11 functional
+   cast or a C99 compound literal.  */
+enum fcl_t { fcl_functional, fcl_c99 };
+extern tree finish_compound_literal		(tree, tree, tsubst_flags_t, fcl_t = fcl_functional);
 extern tree finish_fname			(tree);
 extern void finish_translation_unit		(void);
 extern tree finish_template_type_parm		(tree, tree);
