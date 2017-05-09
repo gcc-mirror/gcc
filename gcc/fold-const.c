@@ -3920,9 +3920,19 @@ optimize_bit_field_compare (location_t loc, enum tree_code code,
        return 0;
    }
 
+  /* Honor the C++ memory model and mimic what RTL expansion does.  */
+  unsigned HOST_WIDE_INT bitstart = 0;
+  unsigned HOST_WIDE_INT bitend = 0;
+  if (TREE_CODE (lhs) == COMPONENT_REF)
+    {
+      get_bit_range (&bitstart, &bitend, lhs, &lbitpos, &offset);
+      if (offset != NULL_TREE)
+	return 0;
+    }
+
   /* See if we can find a mode to refer to this field.  We should be able to,
      but fail if we can't.  */
-  nmode = get_best_mode (lbitsize, lbitpos, 0, 0,
+  nmode = get_best_mode (lbitsize, lbitpos, bitstart, bitend,
 			 const_p ? TYPE_ALIGN (TREE_TYPE (linner))
 			 : MIN (TYPE_ALIGN (TREE_TYPE (linner)),
 				TYPE_ALIGN (TREE_TYPE (rinner))),

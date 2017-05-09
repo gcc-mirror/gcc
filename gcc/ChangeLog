@@ -1,3 +1,22 @@
+2017-05-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR testsuite/80678
+	2016-06-14  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/71310
+	PR bootstrap/71510
+	* expr.h (get_bit_range): Declare.
+	* expr.c (get_bit_range): Export.
+	* fold-const.c (optimize_bit_field_compare): Use get_bit_range and
+	word_mode again to constrain the bitfield access.
+
+	2016-06-11  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR middle-end/71310
+	* fold-const.c (optimize_bit_field_compare): Don't try to use
+	word_mode unconditionally for reading the bit field, look at
+	DECL_BIT_FIELD_REPRESENTATIVE instead.
+
 2017-05-05  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
