@@ -1,4 +1,10 @@
 2017-05-09  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* gcc.target/arc/tmac-1.c: New file.
+	* gcc.target/arc/tmac-2.c: Likewise.
+	* gcc.target/arc/tmac.h: Likewise.
+
+2017-05-09  Claudiu Zissulescu  <claziss@synopsys.com>
 	    Andrew Burgess <andrew.burgess@embecosm.com>
 
 	* gcc.target/arc/firq-1.c: New file.
