@@ -1,3 +1,8 @@
+2017-05-09  Volker Reichelt  <v.reichelt@netcologne.de>
+
+	PR c/35441
+	* gcc.dg/pr35441.c: New test.
+
 2017-05-09  Martin Sebor  <msebor@redhat.com>
 
 	PR testsuite/80643
