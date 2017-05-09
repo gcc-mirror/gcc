@@ -1,10 +1,17 @@
 /* { dg-do compile } */
 /* { dg-options "-O3 -fdisable-tree-evrp -fdisable-tree-cunrolli -fdisable-tree-vrp1 -fdump-tree-cunroll-blocks-details" } */
+
+#if __SIZEOF_INT__ < 4
+__extension__ typedef __INT32_TYPE__ i32;
+#else
+typedef int i32;
+#endif
+
 struct a {int a[8];int b;};
 void
 t(struct a *a)
 {
-  for (int i=0;i<123456 && a->a[i];i++)
+  for (i32 i=0;i<123456 && a->a[i];i++)
     a->a[i]++;
 }
 /* This pass relies on the fact that we do not eliminate the redundant test for i early.

@@ -1,3 +1,8 @@
+2017-05-09  Senthil Kumar Selvaraj  <senthil_kumar.selvaraj@atmel.com>
+
+	* gcc.dg/tree-ssa/cunroll-13.c: Use __INT32_TYPE__ for
+	for targets with __SIZEOF_INT__ < 4.
+
 2017-05-09  Richard Biener  <rguenther@suse.de>
 
 	* gcc.dg/vect/vect-50.c: Revert last change.
