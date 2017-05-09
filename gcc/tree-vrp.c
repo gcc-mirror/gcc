@@ -185,11 +185,10 @@ vrp_val_min (const_tree type)
   return TYPE_MIN_VALUE (type);
 }
 
-/* Return whether VAL is equal to the maximum value of its type.  This
-   will be true for a positive overflow infinity.  We can't do a
-   simple equality comparison with TYPE_MAX_VALUE because C typedefs
-   and Ada subtypes can produce types whose TYPE_MAX_VALUE is not ==
-   to the integer constant with the same value in the type.  */
+/* Return whether VAL is equal to the maximum value of its type.
+   We can't do a simple equality comparison with TYPE_MAX_VALUE because
+   C typedefs and Ada subtypes can produce types whose TYPE_MAX_VALUE
+   is not == to the integer constant with the same value in the type.  */
 
 static inline bool
 vrp_val_is_max (const_tree val)
@@ -200,8 +199,7 @@ vrp_val_is_max (const_tree val)
 	      && operand_equal_p (val, type_max, 0)));
 }
 
-/* Return whether VAL is equal to the minimum value of its type.  This
-   will be true for a negative overflow infinity.  */
+/* Return whether VAL is equal to the minimum value of its type.  */
 
 static inline bool
 vrp_val_is_min (const_tree val)
@@ -412,8 +410,7 @@ copy_value_range (value_range *to, value_range *from)
 
 /* Set value range VR to a single value.  This function is only called
    with values we get from statements, and exists to clear the
-   TREE_OVERFLOW flag so that we don't think we have an overflow
-   infinity when we shouldn't.  */
+   TREE_OVERFLOW flag.  */
 
 static inline void
 set_value_range_to_value (value_range *vr, tree val, bitmap equiv)
@@ -424,11 +421,7 @@ set_value_range_to_value (value_range *vr, tree val, bitmap equiv)
   set_value_range (vr, VR_RANGE, val, val, equiv);
 }
 
-/* Set value range VR to a non-negative range of type TYPE.
-   OVERFLOW_INFINITY indicates whether to use an overflow infinity
-   rather than TYPE_MAX_VALUE; this should be true if we determine
-   that the range is nonnegative based on the assumption that signed
-   overflow does not occur.  */
+/* Set value range VR to a non-negative range of type TYPE.  */
 
 static inline void
 set_value_range_to_nonnegative (value_range *vr, tree type)
@@ -853,10 +846,7 @@ symbolic_range_based_on_p (value_range *vr, const_tree sym)
   return (min_has_symbol || max_has_symbol);
 }
 
-/* Return true if the result of assignment STMT is know to be non-zero.
-   If the return value is based on the assumption that signed overflow is
-   undefined, set *STRICT_OVERFLOW_P to true; otherwise, don't change
-   *STRICT_OVERFLOW_P.*/
+/* Return true if the result of assignment STMT is know to be non-zero.  */
 
 static bool
 gimple_assign_nonzero_p (gimple *stmt)
@@ -888,10 +878,7 @@ gimple_assign_nonzero_p (gimple *stmt)
     }
 }
 
-/* Return true if STMT is known to compute a non-zero value.
-   If the return value is based on the assumption that signed overflow is
-   undefined, set *STRICT_OVERFLOW_P to true; otherwise, don't change
-   *STRICT_OVERFLOW_P.*/
+/* Return true if STMT is known to compute a non-zero value.  */
 
 static bool
 gimple_stmt_nonzero_p (gimple *stmt)
@@ -1610,10 +1597,11 @@ extract_range_from_ssa_name (value_range *vr, tree var)
 }
 
 
-/* Wrapper around int_const_binop.  If the operation overflows and we
-   are not using wrapping arithmetic, then adjust the result to be
-   -INF or +INF depending on CODE, VAL1 and VAL2.  This can return
-   NULL_TREE for division by zero.  */
+/* Wrapper around int_const_binop.  If the operation overflows and
+   overflow is undefined, then adjust the result to be
+   -INF or +INF depending on CODE, VAL1 and VAL2.  Sets *OVERFLOW_P
+   to whether the operation overflowed.  For division by zero
+   the result is indeterminate but *OVERFLOW_P is set.  */
 
 static wide_int
 vrp_int_const_binop (enum tree_code code, tree val1, tree val2,
@@ -1699,9 +1687,8 @@ vrp_int_const_binop (enum tree_code code, tree val1, tree val2,
   if (overflow
       && TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (val1)))
     {
-      /* If the operation overflowed but neither VAL1 nor VAL2 are
-	 overflown, return -INF or +INF depending on the operation
-	 and the combination of signs of the operands.  */
+      /* If the operation overflowed return -INF or +INF depending
+	 on the operation and the combination of signs of the operands.  */
       int sgn1 = tree_int_cst_sgn (val1);
       int sgn2 = tree_int_cst_sgn (val2);
 
@@ -1727,11 +1714,6 @@ vrp_int_const_binop (enum tree_code code, tree val1, tree val2,
 	     as positive here, for the corner case 0 - (-INF), which
 	     overflows, but must yield +INF.  */
 	  || (code == MINUS_EXPR && sgn1 >= 0)
-	  /* We only get in here with positive shift count, so the
-	     overflow direction is the same as the sign of val1.
-	     Actually rshift does not overflow at all, but we only
-	     handle the case of shifting overflowed -INF and +INF.  */
-	  || (code == RSHIFT_EXPR && sgn1 >= 0)
 	  /* For division, the only case is -INF / -1 = +INF.  */
 	  || code == TRUNC_DIV_EXPR
 	  || code == FLOOR_DIV_EXPR
@@ -4015,11 +3997,6 @@ adjust_range_with_scev (value_range *vr, struct loop *loop,
 				get_chrec_loop (chrec), true))
     return;
 
-  /* We use TYPE_MIN_VALUE and TYPE_MAX_VALUE here instead of
-     negative_overflow_infinity and positive_overflow_infinity,
-     because we have concluded that the loop probably does not
-     wrap.  */
-
   type = TREE_TYPE (var);
   if (POINTER_TYPE_P (type) || !TYPE_MIN_VALUE (type))
     tmin = lower_bound_in_type (type, type);
@@ -4164,8 +4141,8 @@ adjust_range_with_scev (value_range *vr, struct loop *loop,
    - Return NULL_TREE if it is not always possible to determine the
      value of the comparison.
 
-   Also set *STRICT_OVERFLOW_P to indicate whether a range with an
-   overflow infinity was used in the test.  */
+   Also set *STRICT_OVERFLOW_P to indicate whether comparision evaluation
+   assumed signed overflow is undefined.  */
 
 
 static tree
@@ -4305,8 +4282,8 @@ compare_ranges (enum tree_code comp, value_range *vr0, value_range *vr1,
    values in VR.  Return BOOLEAN_FALSE_NODE if the comparison
    always returns false.  Return NULL_TREE if it is not always
    possible to determine the value of the comparison.  Also set
-   *STRICT_OVERFLOW_P to indicate whether a range with an overflow
-   infinity was used in the test.  */
+   *STRICT_OVERFLOW_P to indicate whether comparision evaluation
+   assumed signed overflow is undefined.  */
 
 static tree
 compare_range_with_value (enum tree_code comp, value_range *vr, tree val,
@@ -7246,7 +7223,7 @@ compare_name_with_value (enum tree_code comp, tree var, tree val,
    ranges equivalent to N1 against all the ranges equivalent to N2
    to determine the value of N1 COMP N2.  Return the same value
    returned by compare_ranges.  Set *STRICT_OVERFLOW_P to indicate
-   whether we relied on an overflow infinity in the comparison.  */
+   whether we relied on undefined signed overflow in the comparison.  */
 
 
 static tree
@@ -8952,7 +8929,7 @@ extract_range_from_phi_node (gphi *phi, value_range *vr_result)
   /* To prevent infinite iterations in the algorithm, derive ranges
      when the new value is slightly bigger or smaller than the
      previous one.  We don't do this if we have seen a new executable
-     edge; this helps us avoid an overflow infinity for conditionals
+     edge; this helps us avoid an infinity for conditionals
      which are not in a loop.  If the old value-range was VR_UNDEFINED
      use the updated range and iterate one more time.  If we will not
      simulate this PHI again via the backedge allow us to iterate.  */
@@ -9476,8 +9453,6 @@ test_for_singularity (enum tree_code cond_code, tree op0,
      written.  */
   if (cond_code == LE_EXPR || cond_code == LT_EXPR)
     {
-      /* This should not be negative infinity; there is no overflow
-	 here.  */
       min = TYPE_MIN_VALUE (TREE_TYPE (op0));
 
       max = op1;
@@ -9492,8 +9467,6 @@ test_for_singularity (enum tree_code cond_code, tree op0,
     }
   else if (cond_code == GE_EXPR || cond_code == GT_EXPR)
     {
-      /* This should not be positive infinity; there is no overflow
-	 here.  */
       max = TYPE_MAX_VALUE (TREE_TYPE (op0));
 
       min = op1;
