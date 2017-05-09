@@ -803,6 +803,8 @@ get_single_symbol (tree t, bool *neg, tree *inv)
   if (TREE_CODE (t) != SSA_NAME)
     return NULL_TREE;
 
+  gcc_assert (! inv_ || ! TREE_OVERFLOW_P (inv_));
+
   *neg = neg_;
   *inv = inv_;
   return t;
@@ -1069,6 +1071,8 @@ compare_values_warnv (tree val1, tree val2, bool *strict_overflow_p)
 	return -2;
 
       if (strict_overflow_p != NULL
+	  /* Symbolic range building sets TREE_NO_WARNING to declare
+	     that overflow doesn't happen.  */
 	  && (!inv1 || !TREE_NO_WARNING (val1))
 	  && (!inv2 || !TREE_NO_WARNING (val2)))
 	*strict_overflow_p = true;
@@ -1078,7 +1082,7 @@ compare_values_warnv (tree val1, tree val2, bool *strict_overflow_p)
       if (!inv2)
 	inv2 = build_int_cst (TREE_TYPE (val2), 0);
 
-      return compare_values_warnv (inv1, inv2, strict_overflow_p);
+      return wi::cmp (inv1, inv2, TYPE_SIGN (TREE_TYPE (val1)));
     }
 
   const bool cst1 = is_gimple_min_invariant (val1);
@@ -1092,6 +1096,8 @@ compare_values_warnv (tree val1, tree val2, bool *strict_overflow_p)
 	return -2;
 
       if (strict_overflow_p != NULL
+	  /* Symbolic range building sets TREE_NO_WARNING to declare
+	     that overflow doesn't happen.  */
 	  && (!sym1 || !TREE_NO_WARNING (val1))
 	  && (!sym2 || !TREE_NO_WARNING (val2)))
 	*strict_overflow_p = true;
@@ -1119,14 +1125,9 @@ compare_values_warnv (tree val1, tree val2, bool *strict_overflow_p)
 
   if (!POINTER_TYPE_P (TREE_TYPE (val1)))
     {
-      /* We cannot compare overflowed values, except for overflow
-	 infinities.  */
+      /* We cannot compare overflowed values.  */
       if (TREE_OVERFLOW (val1) || TREE_OVERFLOW (val2))
-	{
-	  if (strict_overflow_p != NULL)
-	    *strict_overflow_p = true;
-	  return -2;
-	}
+	return -2;
 
       return tree_int_cst_compare (val1, val2);
     }
@@ -1162,21 +1163,13 @@ compare_values_warnv (tree val1, tree val2, bool *strict_overflow_p)
     }
 }
 
-/* Compare values like compare_values_warnv, but treat comparisons of
-   nonconstants which rely on undefined overflow as incomparable.  */
+/* Compare values like compare_values_warnv.  */
 
 static int
 compare_values (tree val1, tree val2)
 {
   bool sop;
-  int ret;
-
-  sop = false;
-  ret = compare_values_warnv (val1, val2, &sop);
-  if (sop
-      && (!is_gimple_min_invariant (val1) || !is_gimple_min_invariant (val2)))
-    ret = -2;
-  return ret;
+  return compare_values_warnv (val1, val2, &sop);
 }
 
 
@@ -1499,6 +1492,7 @@ extract_range_for_var_from_comparison_expr (tree var, enum tree_code cond_code,
 	      else
 		max = fold_build2 (MINUS_EXPR, TREE_TYPE (max), max,
 				   build_int_cst (TREE_TYPE (max), 1));
+	      /* Signal to compare_values_warnv this expr doesn't overflow.  */
 	      if (EXPR_P (max))
 		TREE_NO_WARNING (max) = 1;
 	    }
@@ -1538,6 +1532,7 @@ extract_range_for_var_from_comparison_expr (tree var, enum tree_code cond_code,
 	      else
 		min = fold_build2 (PLUS_EXPR, TREE_TYPE (min), min,
 				   build_int_cst (TREE_TYPE (min), 1));
+	      /* Signal to compare_values_warnv this expr doesn't overflow.  */
 	      if (EXPR_P (min))
 		TREE_NO_WARNING (min) = 1;
 	    }
@@ -3446,18 +3441,12 @@ static void
 extract_range_from_comparison (value_range *vr, enum tree_code code,
 			       tree type, tree op0, tree op1)
 {
-  bool sop = false;
+  bool sop;
   tree val;
 
   val = vrp_evaluate_conditional_warnv_with_ops (code, op0, op1, false, &sop,
   						 NULL);
-
-  /* A disadvantage of using a special infinity as an overflow
-     representation is that we lose the ability to record overflow
-     when we don't have an infinity.  So we have to ignore a result
-     which relies on overflow.  */
-
-  if (val && !sop)
+  if (val)
     {
       /* Since this expression was found on the RHS of an assignment,
 	 its type may be different from _Bool.  Convert VAL to EXPR's
@@ -3587,7 +3576,7 @@ check_for_binary_op_overflow (enum tree_code subcode, tree type,
 static void
 extract_range_basic (value_range *vr, gimple *stmt)
 {
-  bool sop = false;
+  bool sop;
   tree type = gimple_expr_type (stmt);
 
   if (is_gimple_call (stmt))
@@ -9496,6 +9485,7 @@ test_for_singularity (enum tree_code cond_code, tree op0,
 	{
 	  tree one = build_int_cst (TREE_TYPE (op0), 1);
 	  max = fold_build2 (MINUS_EXPR, TREE_TYPE (op0), max, one);
+	  /* Signal to compare_values_warnv this expr doesn't overflow.  */
 	  if (EXPR_P (max))
 	    TREE_NO_WARNING (max) = 1;
 	}
@@ -9511,6 +9501,7 @@ test_for_singularity (enum tree_code cond_code, tree op0,
 	{
 	  tree one = build_int_cst (TREE_TYPE (op0), 1);
 	  min = fold_build2 (PLUS_EXPR, TREE_TYPE (op0), min, one);
+	  /* Signal to compare_values_warnv this expr doesn't overflow.  */
 	  if (EXPR_P (min))
 	    TREE_NO_WARNING (min) = 1;
 	}
