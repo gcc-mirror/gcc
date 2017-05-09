@@ -697,6 +697,11 @@
   (and (match_code "reg")
        (match_test "REGNO (op) == (TARGET_BIG_ENDIAN ? 58 : 59)")))
 
+(define_predicate "accl_operand"
+  (and (match_code "reg")
+       (match_test "REGNO (op) == (TARGET_BIG_ENDIAN ? 59 : 58)")
+       (match_test "TARGET_V2")))
+
 ; Unfortunately, we can not allow a const_int_operand before reload, because
 ; reload needs a non-void mode to guide it how to reload the inside of a
 ; {sign_}extend.

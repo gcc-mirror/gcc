@@ -1,4 +1,20 @@
 2017-05-09  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/arc.c (arc_conditional_register_usage): Handle ACCL,
+	ACCH registers.
+	* config/arc/arc.md (mulsidi3): Use advanced mpy instructions when
+	available.
+	(umulsidi3): Likewise.
+	(mulsidi3_700): Disable this pattern when we have advanced mpy
+	instructions.
+	(umulsidi3_700): Likewise.
+	(maddsidi4): New pattern.
+	(macd, mac, mac_r, umaddsidi4, macdu, macu, macu_r): Likewise.
+	(mpyd_arcv2hs, mpyd_imm_arcv2hs, mpydu_arcv2hs): Likewise.
+	(mpydu_imm_arcv2hs): Likewise.
+	* config/arc/predicates.md (accl_operand): New predicate.
+
+2017-05-09  Claudiu Zissulescu  <claziss@synopsys.com>
 	    Andrew Burgess <andrew.burgess@embecosm.com>
 
 	* config/arc/arc.c (ARC_AUTOBLINK_IRQ_P): Consider fast interrupts
