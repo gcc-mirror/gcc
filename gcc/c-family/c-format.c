@@ -53,6 +53,9 @@ struct function_format_info
   unsigned HOST_WIDE_INT first_arg_num;	/* number of first arg (zero for varargs) */
 };
 
+/* Initialized in init_dynamic_diag_info.  */
+static tree local_tree_type_node;
+
 static bool decode_format_attr (tree, function_format_info *, int);
 static int decode_format_type (const char *);
 
@@ -492,17 +495,17 @@ static const format_length_info gcc_gfc_length_specs[] =
 
 static const format_flag_spec printf_flag_specs[] =
 {
-  { ' ',  0, 0, N_("' ' flag"),        N_("the ' ' printf flag"),              STD_C89 },
-  { '+',  0, 0, N_("'+' flag"),        N_("the '+' printf flag"),              STD_C89 },
-  { '#',  0, 0, N_("'#' flag"),        N_("the '#' printf flag"),              STD_C89 },
-  { '0',  0, 0, N_("'0' flag"),        N_("the '0' printf flag"),              STD_C89 },
-  { '-',  0, 0, N_("'-' flag"),        N_("the '-' printf flag"),              STD_C89 },
-  { '\'', 0, 0, N_("''' flag"),        N_("the ''' printf flag"),              STD_EXT },
-  { 'I',  0, 0, N_("'I' flag"),        N_("the 'I' printf flag"),              STD_EXT },
-  { 'w',  0, 0, N_("field width"),     N_("field width in printf format"),     STD_C89 },
-  { 'p',  0, 0, N_("precision"),       N_("precision in printf format"),       STD_C89 },
-  { 'L',  0, 0, N_("length modifier"), N_("length modifier in printf format"), STD_C89 },
-  { 0, 0, 0, NULL, NULL, STD_C89 }
+  { ' ',  0, 0, 0, N_("' ' flag"),        N_("the ' ' printf flag"),              STD_C89 },
+  { '+',  0, 0, 0, N_("'+' flag"),        N_("the '+' printf flag"),              STD_C89 },
+  { '#',  0, 0, 0, N_("'#' flag"),        N_("the '#' printf flag"),              STD_C89 },
+  { '0',  0, 0, 0, N_("'0' flag"),        N_("the '0' printf flag"),              STD_C89 },
+  { '-',  0, 0, 0, N_("'-' flag"),        N_("the '-' printf flag"),              STD_C89 },
+  { '\'', 0, 0, 0, N_("''' flag"),        N_("the ''' printf flag"),              STD_EXT },
+  { 'I',  0, 0, 0, N_("'I' flag"),        N_("the 'I' printf flag"),              STD_EXT },
+  { 'w',  0, 0, 0, N_("field width"),     N_("field width in printf format"),     STD_C89 },
+  { 'p',  0, 0, 0, N_("precision"),       N_("precision in printf format"),       STD_C89 },
+  { 'L',  0, 0, 0, N_("length modifier"), N_("length modifier in printf format"), STD_C89 },
+  { 0, 0, 0, 0, NULL, NULL, STD_C89 }
 };
 
 
@@ -516,15 +519,15 @@ static const format_flag_pair printf_flag_pairs[] =
 
 static const format_flag_spec asm_fprintf_flag_specs[] =
 {
-  { ' ',  0, 0, N_("' ' flag"),        N_("the ' ' printf flag"),              STD_C89 },
-  { '+',  0, 0, N_("'+' flag"),        N_("the '+' printf flag"),              STD_C89 },
-  { '#',  0, 0, N_("'#' flag"),        N_("the '#' printf flag"),              STD_C89 },
-  { '0',  0, 0, N_("'0' flag"),        N_("the '0' printf flag"),              STD_C89 },
-  { '-',  0, 0, N_("'-' flag"),        N_("the '-' printf flag"),              STD_C89 },
-  { 'w',  0, 0, N_("field width"),     N_("field width in printf format"),     STD_C89 },
-  { 'p',  0, 0, N_("precision"),       N_("precision in printf format"),       STD_C89 },
-  { 'L',  0, 0, N_("length modifier"), N_("length modifier in printf format"), STD_C89 },
-  { 0, 0, 0, NULL, NULL, STD_C89 }
+  { ' ',  0, 0, 0, N_("' ' flag"),        N_("the ' ' printf flag"),              STD_C89 },
+  { '+',  0, 0, 0, N_("'+' flag"),        N_("the '+' printf flag"),              STD_C89 },
+  { '#',  0, 0, 0, N_("'#' flag"),        N_("the '#' printf flag"),              STD_C89 },
+  { '0',  0, 0, 0, N_("'0' flag"),        N_("the '0' printf flag"),              STD_C89 },
+  { '-',  0, 0, 0, N_("'-' flag"),        N_("the '-' printf flag"),              STD_C89 },
+  { 'w',  0, 0, 0, N_("field width"),     N_("field width in printf format"),     STD_C89 },
+  { 'p',  0, 0, 0, N_("precision"),       N_("precision in printf format"),       STD_C89 },
+  { 'L',  0, 0, 0, N_("length modifier"), N_("length modifier in printf format"), STD_C89 },
+  { 0, 0, 0, 0, NULL, NULL, STD_C89 }
 };
 
 static const format_flag_pair asm_fprintf_flag_pairs[] =
@@ -547,12 +550,12 @@ static const format_flag_pair gcc_diag_flag_pairs[] =
 
 static const format_flag_spec gcc_diag_flag_specs[] =
 {
-  { '+',  0, 0, N_("'+' flag"),        N_("the '+' printf flag"),              STD_C89 },
-  { '#',  0, 0, N_("'#' flag"),        N_("the '#' printf flag"),              STD_C89 },
-  { 'q',  0, 0, N_("'q' flag"),        N_("the 'q' diagnostic flag"),          STD_C89 },
-  { 'p',  0, 0, N_("precision"),       N_("precision in printf format"),       STD_C89 },
-  { 'L',  0, 0, N_("length modifier"), N_("length modifier in printf format"), STD_C89 },
-  { 0, 0, 0, NULL, NULL, STD_C89 }
+  { '+',  0, 0, 0, N_("'+' flag"),        N_("the '+' printf flag"),              STD_C89 },
+  { '#',  0, 0, 0, N_("'#' flag"),        N_("the '#' printf flag"),              STD_C89 },
+  { 'q',  0, 0, 1, N_("'q' flag"),        N_("the 'q' diagnostic flag"),          STD_C89 },
+  { 'p',  0, 0, 0, N_("precision"),       N_("precision in printf format"),       STD_C89 },
+  { 'L',  0, 0, 0, N_("length modifier"), N_("length modifier in printf format"), STD_C89 },
+  { 0, 0, 0, 0, NULL, NULL, STD_C89 }
 };
 
 #define gcc_tdiag_flag_specs gcc_diag_flag_specs
@@ -562,14 +565,14 @@ static const format_flag_spec gcc_diag_flag_specs[] =
 
 static const format_flag_spec scanf_flag_specs[] =
 {
-  { '*',  0, 0, N_("assignment suppression"), N_("the assignment suppression scanf feature"), STD_C89 },
-  { 'a',  0, 0, N_("'a' flag"),               N_("the 'a' scanf flag"),                       STD_EXT },
-  { 'm',  0, 0, N_("'m' flag"),               N_("the 'm' scanf flag"),                       STD_EXT },
-  { 'w',  0, 0, N_("field width"),            N_("field width in scanf format"),              STD_C89 },
-  { 'L',  0, 0, N_("length modifier"),        N_("length modifier in scanf format"),          STD_C89 },
-  { '\'', 0, 0, N_("''' flag"),               N_("the ''' scanf flag"),                       STD_EXT },
-  { 'I',  0, 0, N_("'I' flag"),               N_("the 'I' scanf flag"),                       STD_EXT },
-  { 0, 0, 0, NULL, NULL, STD_C89 }
+  { '*',  0, 0, 0, N_("assignment suppression"), N_("the assignment suppression scanf feature"), STD_C89 },
+  { 'a',  0, 0, 0, N_("'a' flag"),               N_("the 'a' scanf flag"),                       STD_EXT },
+  { 'm',  0, 0, 0, N_("'m' flag"),               N_("the 'm' scanf flag"),                       STD_EXT },
+  { 'w',  0, 0, 0, N_("field width"),            N_("field width in scanf format"),              STD_C89 },
+  { 'L',  0, 0, 0, N_("length modifier"),        N_("length modifier in scanf format"),          STD_C89 },
+  { '\'', 0, 0, 0, N_("''' flag"),               N_("the ''' scanf flag"),                       STD_EXT },
+  { 'I',  0, 0, 0, N_("'I' flag"),               N_("the 'I' scanf flag"),                       STD_EXT },
+  { 0, 0, 0, 0, NULL, NULL, STD_C89 }
 };
 
 
@@ -583,16 +586,16 @@ static const format_flag_pair scanf_flag_pairs[] =
 
 static const format_flag_spec strftime_flag_specs[] =
 {
-  { '_', 0,   0, N_("'_' flag"),     N_("the '_' strftime flag"),          STD_EXT },
-  { '-', 0,   0, N_("'-' flag"),     N_("the '-' strftime flag"),          STD_EXT },
-  { '0', 0,   0, N_("'0' flag"),     N_("the '0' strftime flag"),          STD_EXT },
-  { '^', 0,   0, N_("'^' flag"),     N_("the '^' strftime flag"),          STD_EXT },
-  { '#', 0,   0, N_("'#' flag"),     N_("the '#' strftime flag"),          STD_EXT },
-  { 'w', 0,   0, N_("field width"),  N_("field width in strftime format"), STD_EXT },
-  { 'E', 0,   0, N_("'E' modifier"), N_("the 'E' strftime modifier"),      STD_C99 },
-  { 'O', 0,   0, N_("'O' modifier"), N_("the 'O' strftime modifier"),      STD_C99 },
-  { 'O', 'o', 0, NULL,               N_("the 'O' modifier"),               STD_EXT },
-  { 0, 0, 0, NULL, NULL, STD_C89 }
+  { '_', 0,   0, 0, N_("'_' flag"),     N_("the '_' strftime flag"),          STD_EXT },
+  { '-', 0,   0, 0, N_("'-' flag"),     N_("the '-' strftime flag"),          STD_EXT },
+  { '0', 0,   0, 0, N_("'0' flag"),     N_("the '0' strftime flag"),          STD_EXT },
+  { '^', 0,   0, 0, N_("'^' flag"),     N_("the '^' strftime flag"),          STD_EXT },
+  { '#', 0,   0, 0, N_("'#' flag"),     N_("the '#' strftime flag"),          STD_EXT },
+  { 'w', 0,   0, 0, N_("field width"),  N_("field width in strftime format"), STD_EXT },
+  { 'E', 0,   0, 0, N_("'E' modifier"), N_("the 'E' strftime modifier"),      STD_C99 },
+  { 'O', 0,   0, 0, N_("'O' modifier"), N_("the 'O' strftime modifier"),      STD_C99 },
+  { 'O', 'o', 0, 0, NULL,               N_("the 'O' modifier"),               STD_EXT },
+  { 0, 0, 0, 0, NULL, NULL, STD_C89 }
 };
 
 
@@ -609,17 +612,17 @@ static const format_flag_pair strftime_flag_pairs[] =
 
 static const format_flag_spec strfmon_flag_specs[] =
 {
-  { '=',  0, 1, N_("fill character"),  N_("fill character in strfmon format"),  STD_C89 },
-  { '^',  0, 0, N_("'^' flag"),        N_("the '^' strfmon flag"),              STD_C89 },
-  { '+',  0, 0, N_("'+' flag"),        N_("the '+' strfmon flag"),              STD_C89 },
-  { '(',  0, 0, N_("'(' flag"),        N_("the '(' strfmon flag"),              STD_C89 },
-  { '!',  0, 0, N_("'!' flag"),        N_("the '!' strfmon flag"),              STD_C89 },
-  { '-',  0, 0, N_("'-' flag"),        N_("the '-' strfmon flag"),              STD_C89 },
-  { 'w',  0, 0, N_("field width"),     N_("field width in strfmon format"),     STD_C89 },
-  { '#',  0, 0, N_("left precision"),  N_("left precision in strfmon format"),  STD_C89 },
-  { 'p',  0, 0, N_("right precision"), N_("right precision in strfmon format"), STD_C89 },
-  { 'L',  0, 0, N_("length modifier"), N_("length modifier in strfmon format"), STD_C89 },
-  { 0, 0, 0, NULL, NULL, STD_C89 }
+  { '=',  0, 1, 0, N_("fill character"),  N_("fill character in strfmon format"),  STD_C89 },
+  { '^',  0, 0, 0, N_("'^' flag"),        N_("the '^' strfmon flag"),              STD_C89 },
+  { '+',  0, 0, 0, N_("'+' flag"),        N_("the '+' strfmon flag"),              STD_C89 },
+  { '(',  0, 0, 0, N_("'(' flag"),        N_("the '(' strfmon flag"),              STD_C89 },
+  { '!',  0, 0, 0, N_("'!' flag"),        N_("the '!' strfmon flag"),              STD_C89 },
+  { '-',  0, 0, 0, N_("'-' flag"),        N_("the '-' strfmon flag"),              STD_C89 },
+  { 'w',  0, 0, 0, N_("field width"),     N_("field width in strfmon format"),     STD_C89 },
+  { '#',  0, 0, 0, N_("left precision"),  N_("left precision in strfmon format"),  STD_C89 },
+  { 'p',  0, 0, 0, N_("right precision"), N_("right precision in strfmon format"), STD_C89 },
+  { 'L',  0, 0, 0, N_("length modifier"), N_("length modifier in strfmon format"), STD_C89 },
+  { 0, 0, 0, 0, NULL, NULL, STD_C89 }
 };
 
 static const format_flag_pair strfmon_flag_pairs[] =
@@ -685,10 +688,13 @@ static const format_char_info gcc_diag_char_table[] =
   /* Custom conversion specifiers.  */
 
   /* These will require a "tree" at runtime.  */
-  { "K",   0, STD_C89, { T89_V,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q",    "",   NULL },
+  { "K",   1, STD_C89, { T89_T,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "",    "\"",   NULL },
 
-  { "r",   1, STD_C89, { T89_C,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "",    "cR",   NULL },
-  { "<>'R",0, STD_C89, NOARGUMENTS, "",      "",   NULL },
+  { "r",   1, STD_C89, { T89_C,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "",    "//cR",   NULL },
+  { "<",   0, STD_C89, NOARGUMENTS, "",      "<",   NULL },
+  { ">",   0, STD_C89, NOARGUMENTS, "",      ">",   NULL },
+  { "'" ,  0, STD_C89, NOARGUMENTS, "",      "",    NULL },
+  { "R",   0, STD_C89, NOARGUMENTS, "",     "\\",   NULL },
   { "m",   0, STD_C89, NOARGUMENTS, "q",     "",   NULL },
   { NULL,  0, STD_C89, NOLENGTHS, NULL, NULL, NULL }
 };
@@ -706,12 +712,17 @@ static const format_char_info gcc_tdiag_char_table[] =
   /* Custom conversion specifiers.  */
 
   /* These will require a "tree" at runtime.  */
-  { "DFKTEV", 0, STD_C89, { T89_V,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q+", "",   NULL },
+  { "DFTV", 1, STD_C89, { T89_T,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q+", "'",   NULL },
+  { "E", 1, STD_C89, { T89_T,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q+", "",   NULL },
+  { "K", 1, STD_C89, { T89_T,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "", "\"",   NULL },
 
   { "v",   0, STD_C89, { T89_I,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q#",  "",   NULL },
 
-  { "r",   1, STD_C89, { T89_C,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "",    "cR",   NULL },
-  { "<>'R",0, STD_C89, NOARGUMENTS, "",      "",   NULL },
+  { "r",   1, STD_C89, { T89_C,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "",    "/cR",   NULL },
+  { "<",   0, STD_C89, NOARGUMENTS, "",      "<",   NULL },
+  { ">",   0, STD_C89, NOARGUMENTS, "",      ">",   NULL },
+  { "'",   0, STD_C89, NOARGUMENTS, "",      "",    NULL },
+  { "R",   0, STD_C89, NOARGUMENTS, "",     "\\",   NULL },
   { "m",   0, STD_C89, NOARGUMENTS, "q",     "",   NULL },
   { "Z",   1, STD_C89, { T89_I,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "",    "", &gcc_tdiag_char_table[0] },
   { NULL,  0, STD_C89, NOLENGTHS, NULL, NULL, NULL }
@@ -730,12 +741,17 @@ static const format_char_info gcc_cdiag_char_table[] =
   /* Custom conversion specifiers.  */
 
   /* These will require a "tree" at runtime.  */
-  { "DEFKTV", 0, STD_C89, { T89_V,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q+", "",   NULL },
+  { "DFTV", 1, STD_C89, { T89_T,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q+", "'",   NULL },
+  { "E",   1, STD_C89, { T89_T,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q+", "",   NULL },
+  { "K",   1, STD_C89, { T89_T,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "", "\"",   NULL },
 
   { "v",   0, STD_C89, { T89_I,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q#",  "",   NULL },
 
-  { "r",   1, STD_C89, { T89_C,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "",    "cR",   NULL },
-  { "<>'R",0, STD_C89, NOARGUMENTS, "",      "",   NULL },
+  { "r",   1, STD_C89, { T89_C,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "",    "/cR",   NULL },
+  { "<",   0, STD_C89, NOARGUMENTS, "",      "<",  NULL },
+  { ">",   0, STD_C89, NOARGUMENTS, "",      ">",  NULL },
+  { "'",   0, STD_C89, NOARGUMENTS, "",      "",   NULL },
+  { "R",   0, STD_C89, NOARGUMENTS, "",     "\\",  NULL },
   { "m",   0, STD_C89, NOARGUMENTS, "q",     "",   NULL },
   { "Z",   1, STD_C89, { T89_I,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "",    "", &gcc_tdiag_char_table[0] },
   { NULL,  0, STD_C89, NOLENGTHS, NULL, NULL, NULL }
@@ -754,15 +770,19 @@ static const format_char_info gcc_cxxdiag_char_table[] =
   /* Custom conversion specifiers.  */
 
   /* These will require a "tree" at runtime.  */
-  { "ADEFKSTVX",0,STD_C89,{ T89_V,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q+#",   "",   NULL },
-
+  { "ADFSTVX",1,STD_C89,{ T89_T,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q+#",   "'",   NULL },
+  { "E", 1,STD_C89,{ T89_T,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q+#",   "",   NULL },
+  { "K", 1, STD_C89,{ T89_T,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "",   "\"",   NULL },
   { "v", 0,STD_C89, { T89_I,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q#",  "",   NULL },
 
   /* These accept either an 'int' or an 'enum tree_code' (which is handled as an 'int'.)  */
   { "CLOPQ",0,STD_C89, { T89_I,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q",  "",   NULL },
 
-  { "r",   1, STD_C89, { T89_C,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "",    "cR",   NULL },
-  { "<>'R",0, STD_C89, NOARGUMENTS, "",      "",   NULL },
+  { "r",   1, STD_C89, { T89_C,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "",    "/cR",   NULL },
+  { "<",   0, STD_C89, NOARGUMENTS, "",      "<",   NULL },
+  { ">",   0, STD_C89, NOARGUMENTS, "",      ">",   NULL },
+  { "'",   0, STD_C89, NOARGUMENTS, "",      "",    NULL },
+  { "R",   0, STD_C89, NOARGUMENTS, "",      "\\",  NULL },
   { "m",   0, STD_C89, NOARGUMENTS, "q",     "",   NULL },
   { "Z",   1, STD_C89, { T89_I,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "",    "", &gcc_tdiag_char_table[0] },
   { NULL,  0, STD_C89, NOLENGTHS, NULL, NULL, NULL }
@@ -1689,7 +1709,8 @@ class flag_chars_t
 		 tree format_string_cst,
 		 location_t format_string_loc,
 		 const char * const orig_format_chars,
-		 char format_char);
+		 char format_char,
+		 bool quoted);
   int get_alloc_flag (const format_kind_info *fki);
   int assignment_suppression_p (const format_kind_info *fki);
 
@@ -1849,10 +1870,13 @@ flag_chars_t::validate (const format_kind_info *fki,
 			tree format_string_cst,
 			location_t format_string_loc,
 			const char * const orig_format_chars,
-			char format_char)
+			char format_char,
+			bool quoted)
 {
   int i;
   int d = 0;
+  bool quotflag = false;
+
   for (i = 0; m_flag_chars[i] != 0; i++)
     {
       const format_flag_spec *s = get_flag_spec (flag_specs,
@@ -1860,6 +1884,10 @@ flag_chars_t::validate (const format_kind_info *fki,
       m_flag_chars[i - d] = m_flag_chars[i];
       if (m_flag_chars[i] == fki->length_code_char)
 	continue;
+
+      /* Remember if a quoting flag is seen.  */
+      quotflag |= s->quoting;
+
       if (strchr (fci->flag_chars, m_flag_chars[i]) == 0)
 	{
 	  format_warning_at_char (format_string_loc, format_string_cst,
@@ -1891,8 +1919,30 @@ flag_chars_t::validate (const format_kind_info *fki,
 			    format_char, fki->name);
 	    }
 	}
+
+      /* Detect quoting directives used within a quoted sequence, such
+	 as GCC's "%<...%qE".  */
+      if (quoted && s->quoting)
+	{
+	  format_warning_at_char (format_string_loc, format_string_cst,
+				  format_chars - orig_format_chars - 1,
+				  OPT_Wformat_,
+				  "%s used within a quoted sequence",
+				  _(s->name));
+	}
     }
   m_flag_chars[i - d] = 0;
+
+  if (!quoted
+      && !quotflag
+      && strchr (fci->flags2, '\''))
+    {
+      format_warning_at_char (format_string_loc, format_string_cst,
+			      format_chars - orig_format_chars,
+			      OPT_Wformat_,
+			      "%qc conversion used unquoted",
+			      format_char);
+    }
 }
 
 /* Determine if an assignment-allocation has been set, requiring
@@ -2704,6 +2754,16 @@ check_format_info_main (format_check_results *res,
      and it didn't use $; 1 if $ formats are in use.  */
   int has_operand_number = -1;
 
+  /* Vector of pointers to opening quoting directives (like GCC "%<").  */
+  auto_vec<const char*> quotdirs;
+
+  /* Pointers to the most recent color directives (like GCC's "%r or %R").
+     A starting color directive much be terminated before the end of
+     the format string.  A terminating directive makes no sense without
+     a prior starting directive.  */
+  const char *color_begin = NULL;
+  const char *color_end = NULL;
+
   init_dollar_format_checking (info->first_arg_num, first_fillin_param);
 
   while (*format_chars != 0)
@@ -2785,10 +2845,71 @@ check_format_info_main (format_check_results *res,
 
       flag_chars.validate (fki, fci, flag_specs, format_chars,
 			   format_string_cst,
-			   format_string_loc, orig_format_chars, format_char);
+			   format_string_loc, orig_format_chars, format_char,
+			   quotdirs.length () > 0);
 
       const int alloc_flag = flag_chars.get_alloc_flag (fki);
       const bool suppressed = flag_chars.assignment_suppression_p (fki);
+
+      /* Diagnose nested or unmatched quoting directives such as GCC's
+	 "%<...%<" and "%>...%>".  */
+      bool quot_begin_p = strchr (fci->flags2, '<');
+      bool quot_end_p = strchr (fci->flags2, '>');
+
+      if (quot_begin_p && !quot_end_p)
+	{
+	  if (quotdirs.length ())
+	    format_warning_at_char (format_string_loc, format_string_cst,
+				    format_chars - orig_format_chars,
+				    OPT_Wformat_,
+				    "nested quoting directive");
+	  quotdirs.safe_push (format_chars);
+	}
+      else if (!quot_begin_p && quot_end_p)
+	{
+	  if (quotdirs.length ())
+	    quotdirs.pop ();
+	  else
+	    format_warning_at_char (format_string_loc, format_string_cst,
+				    format_chars - orig_format_chars,
+				    OPT_Wformat_,
+				    "unmatched quoting directive");
+	}
+
+      bool color_begin_p = strchr (fci->flags2, '/');
+      if (color_begin_p)
+	{
+	  color_begin = format_chars;
+	  color_end = NULL;
+	}
+      else if (strchr (fci->flags2, '\\'))
+	{
+	  if (color_end)
+	    format_warning_at_char (format_string_loc, format_string_cst,
+				    format_chars - orig_format_chars,
+				    OPT_Wformat_,
+				    "%qc directive redundant after prior "
+				    "occurence of the same", format_char);
+	  else if (!color_begin)
+	    format_warning_at_char (format_string_loc, format_string_cst,
+				    format_chars - orig_format_chars,
+				    OPT_Wformat_,
+				    "unmatched color reset directive");
+	  color_end = format_chars;
+	}
+
+      /* Diagnose directives that shouldn't appear in a quoted sequence.
+	 (They are denoted by a double quote in FLAGS2.)  */
+      if (quotdirs.length ())
+	{
+	  if (strchr (fci->flags2, '"'))
+	    format_warning_at_char (format_string_loc, format_string_cst,
+				    format_chars - orig_format_chars,
+				    OPT_Wformat_,
+				    "%qc conversion used within a quoted "
+				    "sequence",
+				    format_char);
+	}
 
       /* Validate the pairs of flags used.  */
       arg_parser.validate_flag_pairs (fci, format_char);
@@ -2834,6 +2955,15 @@ check_format_info_main (format_check_results *res,
     }
   if (has_operand_number > 0)
     finish_dollar_format_checking (res, fki->flags & (int) FMT_FLAG_DOLLAR_GAP_POINTER_OK);
+
+  if (quotdirs.length ())
+    format_warning_at_char (format_string_loc, format_string_cst,
+			    quotdirs.pop () - orig_format_chars,
+			    OPT_Wformat_, "unterminated quoting directive");
+  if (color_begin && !color_end)
+    format_warning_at_char (format_string_loc, format_string_cst,
+			    color_begin - orig_format_chars,
+			    OPT_Wformat_, "unterminated color directive");
 }
 
 /* Check the argument types from a single format conversion (possibly
@@ -3654,58 +3784,58 @@ init_dynamic_gfc_info (void)
 static void
 init_dynamic_diag_info (void)
 {
-  static tree t, loc, hwi;
-
-  if (!loc || !t || !hwi)
+  /* For the GCC-diagnostics custom format specifiers to work, one
+     must have declared 'tree' and 'location_t' prior to using those
+     attributes.  If we haven't seen these declarations then
+     the specifiers requiring these types shouldn't be used.
+     However we don't force a hard ICE because we may see only one
+     or the other type.  */
+  if (tree loc = maybe_get_identifier ("location_t"))
     {
-      static format_char_info *diag_fci, *tdiag_fci, *cdiag_fci, *cxxdiag_fci;
+      loc = identifier_global_value (loc);
+      if (loc && TREE_CODE (loc) != TYPE_DECL)
+	error ("%<location_t%> is not defined as a type");
+    }
+
+  /* Initialize the global tree node type local to this file.  */
+  if (!local_tree_type_node
+      || local_tree_type_node == void_type_node)
+    {
+      /* We need to grab the underlying 'union tree_node' so peek into
+	 an extra type level.  */
+      if ((local_tree_type_node = maybe_get_identifier ("tree")))
+	{
+	  local_tree_type_node = identifier_global_value (local_tree_type_node);
+	  if (local_tree_type_node)
+	    {
+	      if (TREE_CODE (local_tree_type_node) != TYPE_DECL)
+		{
+		  error ("%<tree%> is not defined as a type");
+		  local_tree_type_node = 0;
+		}
+	      else if (TREE_CODE (TREE_TYPE (local_tree_type_node))
+		       != POINTER_TYPE)
+		{
+		  error ("%<tree%> is not defined as a pointer type");
+		  local_tree_type_node = 0;
+		}
+	      else
+		local_tree_type_node =
+		  TREE_TYPE (TREE_TYPE (local_tree_type_node));
+	    }
+	}
+      else
+	local_tree_type_node = void_type_node;
+    }
+
+  static tree hwi;
+
+  if (!hwi)
+    {
       static format_length_info *diag_ls;
       unsigned int i;
 
-      /* For the GCC-diagnostics custom format specifiers to work, one
-	 must have declared 'tree' and/or 'location_t' prior to using
-	 those attributes.  If we haven't seen these declarations then
-	 you shouldn't use the specifiers requiring these types.
-	 However we don't force a hard ICE because we may see only one
-	 or the other type.  */
-      if ((loc = maybe_get_identifier ("location_t")))
-	{
-	  loc = identifier_global_value (loc);
-	  if (loc)
-	    {
-	      if (TREE_CODE (loc) != TYPE_DECL)
-		{
-		  error ("%<location_t%> is not defined as a type");
-		  loc = 0;
-		}
-	      else
-		loc = TREE_TYPE (loc);
-	    }
-	}
-
-      /* We need to grab the underlying 'union tree_node' so peek into
-	 an extra type level.  */
-      if ((t = maybe_get_identifier ("tree")))
-	{
-	  t = identifier_global_value (t);
-	  if (t)
-	    {
-	      if (TREE_CODE (t) != TYPE_DECL)
-		{
-		  error ("%<tree%> is not defined as a type");
-		  t = 0;
-		}
-	      else if (TREE_CODE (TREE_TYPE (t)) != POINTER_TYPE)
-		{
-		  error ("%<tree%> is not defined as a pointer type");
-		  t = 0;
-		}
-	      else
-		t = TREE_TYPE (TREE_TYPE (t));
-	    }
-	}
-
-      /* Find the underlying type for HOST_WIDE_INT.  For the %w
+      /* Find the underlying type for HOST_WIDE_INT.  For the 'w'
 	 length modifier to work, one must have issued: "typedef
 	 HOST_WIDE_INT __gcc_host_wide_int__;" in one's source code
 	 prior to using that modifier.  */
@@ -3757,75 +3887,17 @@ init_dynamic_diag_info (void)
 	  else
 	    gcc_unreachable ();
 	}
-
-      /* Handle the __gcc_diag__ format specifics.  */
-      if (!diag_fci)
-	dynamic_format_types[gcc_diag_format_type].conversion_specs =
-	  diag_fci = (format_char_info *)
-		     xmemdup (gcc_diag_char_table,
-			      sizeof (gcc_diag_char_table),
-			      sizeof (gcc_diag_char_table));
-      if (t)
-	{
-	  i = find_char_info_specifier_index (diag_fci, 'K');
-	  diag_fci[i].types[0].type = &t;
-	  diag_fci[i].pointer_count = 1;
-	}
-
-      /* Handle the __gcc_tdiag__ format specifics.  */
-      if (!tdiag_fci)
-	dynamic_format_types[gcc_tdiag_format_type].conversion_specs =
-	  tdiag_fci = (format_char_info *)
-		      xmemdup (gcc_tdiag_char_table,
-			       sizeof (gcc_tdiag_char_table),
-			       sizeof (gcc_tdiag_char_table));
-      if (t)
-	{
-	  /* All specifiers taking a tree share the same struct.  */
-	  i = find_char_info_specifier_index (tdiag_fci, 'D');
-	  tdiag_fci[i].types[0].type = &t;
-	  tdiag_fci[i].pointer_count = 1;
-	  i = find_char_info_specifier_index (tdiag_fci, 'K');
-	  tdiag_fci[i].types[0].type = &t;
-	  tdiag_fci[i].pointer_count = 1;
-	}
-
-      /* Handle the __gcc_cdiag__ format specifics.  */
-      if (!cdiag_fci)
-	dynamic_format_types[gcc_cdiag_format_type].conversion_specs =
-	  cdiag_fci = (format_char_info *)
-		      xmemdup (gcc_cdiag_char_table,
-			       sizeof (gcc_cdiag_char_table),
-			       sizeof (gcc_cdiag_char_table));
-      if (t)
-	{
-	  /* All specifiers taking a tree share the same struct.  */
-	  i = find_char_info_specifier_index (cdiag_fci, 'D');
-	  cdiag_fci[i].types[0].type = &t;
-	  cdiag_fci[i].pointer_count = 1;
-	  i = find_char_info_specifier_index (cdiag_fci, 'K');
-	  cdiag_fci[i].types[0].type = &t;
-	  cdiag_fci[i].pointer_count = 1;
-	}
-
-      /* Handle the __gcc_cxxdiag__ format specifics.  */
-      if (!cxxdiag_fci)
-	dynamic_format_types[gcc_cxxdiag_format_type].conversion_specs =
-	  cxxdiag_fci = (format_char_info *)
-			xmemdup (gcc_cxxdiag_char_table,
-				 sizeof (gcc_cxxdiag_char_table),
-				 sizeof (gcc_cxxdiag_char_table));
-      if (t)
-	{
-	  /* All specifiers taking a tree share the same struct.  */
-	  i = find_char_info_specifier_index (cxxdiag_fci, 'D');
-	  cxxdiag_fci[i].types[0].type = &t;
-	  cxxdiag_fci[i].pointer_count = 1;
-	  i = find_char_info_specifier_index (cxxdiag_fci, 'K');
-	  cxxdiag_fci[i].types[0].type = &t;
-	  cxxdiag_fci[i].pointer_count = 1;
-	}
     }
+
+  /* It's safe to "re-initialize these to the same values.  */
+  dynamic_format_types[gcc_diag_format_type].conversion_specs =
+    gcc_diag_char_table;
+  dynamic_format_types[gcc_tdiag_format_type].conversion_specs =
+    gcc_tdiag_char_table;
+  dynamic_format_types[gcc_cdiag_format_type].conversion_specs =
+    gcc_cdiag_char_table;
+  dynamic_format_types[gcc_cxxdiag_format_type].conversion_specs =
+    gcc_cxxdiag_char_table;
 }
 
 #ifdef TARGET_FORMAT_TYPES

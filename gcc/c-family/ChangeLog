@@ -1,3 +1,19 @@
+2017-05-08  Martin Sebor  <msebor@redhat.com>
+
+	PR translation/80280
+	* c-format.h (struct format_flag_spec): Add new member.
+	(T89_T): New macro.
+	* c-format.c (local_tree_type_node): New global.
+	(printf_flag_specs, asm_fprintf_flag_spec): Initialize new data.
+	(gcc_diag_flag_specs, scanf_flag_specs, strftime_flag_specs): Ditto.
+	(strfmon_flag_specs): Likewise.
+	(gcc_diag_char_table, gcc_cdiag_char_table): Split up specifiers
+	with distinct quoting properties.
+	(gcc_tdiag_char_table, gcc_cxxdiag_char_table): Same.
+	(flag_chars_t::validate): Add argument and handle bad quoting.
+	(check_format_info_main): Handle quoting problems.
+	(init_dynamic_diag_info): Simplify.
+
 2017-05-08  Jason Merrill  <jason@redhat.com>
 
 	* c-opts.c (c_common_post_options): Update defaults for
