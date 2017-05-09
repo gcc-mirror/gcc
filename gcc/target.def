@@ -5395,6 +5395,18 @@ five otherwise.  This is best for most machines.",
  unsigned int, (void),
  default_case_values_threshold)
 
+/* Optional callback to advise the target to compute the frame layout.  */
+DEFHOOK
+(compute_frame_layout,
+ "This target hook is called once each time the frame layout needs to be\n\
+recalculated.  The calculations can be cached by the target and can then\n\
+be used by @code{INITIAL_ELIMINATION_OFFSET} instead of re-computing the\n\
+layout on every invocation of that hook.  This is particularly useful\n\
+for targets that have an expensive frame layout function.  Implementing\n\
+this callback is optional.",
+ void, (void),
+ hook_void_void)
+
 /* Return true if a function must have and use a frame pointer.  */
 DEFHOOK
 (frame_pointer_required,

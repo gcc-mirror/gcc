@@ -1,3 +1,44 @@
+2017-05-09  Marek Polacek  <polacek@redhat.com>
+
+	PR c/80525
+	* c-c++-common/Wlogical-op-1.c: Don't use -fwrapv anymore.
+	* c-c++-common/Wlogical-op-2.c: New test.
+
+2017-05-09  Senthil Kumar Selvaraj  <senthil_kumar.selvaraj@atmel.com>
+
+	* gcc.dg/tree-ssa/cunroll-13.c: Use __INT32_TYPE__ for
+	for targets with __SIZEOF_INT__ < 4.
+
+2017-05-09  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/vect/vect-50.c: Revert last change.
+	* gcc.dg/vect/vect-44.c: Likewise.
+
+2017-05-08  Martin Sebor  <msebor@redhat.com>
+
+	PR translation/80280
+	* gcc.dg/format/gcc_diag-10.c: New test.
+
+2017-05-08  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	PR target/80101
+	* gcc.target/powerpc/pr80101-1.c: New test.
+
+2017-05-08  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/79930
+	* gfortran.dg/inline_transpose_1.f90:  Add
+	-finline-matmul-limit=0 to options.
+	* gfortran.dg/matmul_5.f90:  Likewise.
+	* gfortran.dg/vect/vect-8.f90: Likewise.
+	* gfortran.dg/inline_matmul_14.f90:  New test.
+	* gfortran.dg/inline_matmul_15.f90:  New test.
+
+2017-05-08  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/80602
+	* gfortran.dg/matmul_15.f90:  New test case.
+
 2017-05-08  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	* testsuite/gcc.dg/vect/vect-44.c: Add -fno-vect-cost-model.

@@ -3213,6 +3213,8 @@ such as the result of @code{get_frame_size ()} and the tables of
 registers @code{df_regs_ever_live_p} and @code{call_used_regs}.
 @end defmac
 
+@hook TARGET_COMPUTE_FRAME_LAYOUT
+
 @node Stack Arguments
 @subsection Passing Function Arguments on the Stack
 @cindex arguments on stack

@@ -1,5 +1,9 @@
 2017-05-09  Nathan Sidwell  <nathan@acm.org>
 
+	Merge trunk r247787.
+	gcc/cp/
+	* tree.c (type_has_nontrivial_copy_init): Use ovl_iterator.
+
 	Error message module designation.
 	gcc/cp/
 	* error.c (dump_module_suffix): New.

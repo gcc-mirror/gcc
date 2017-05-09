@@ -1,3 +1,93 @@
+2017-05-09  Marek Polacek  <polacek@redhat.com>
+
+	* doc/invoke.texi: Fix typo.
+
+2017-05-09  Richard Biener  <rguenther@suse.de>
+
+	* tree-vrp.c (vrp_val_is_max): Adjust comment.
+	(vrp_val_is_min): Likewise.
+	(set_value_range_to_value): Likewise.
+	(set_value_range_to_nonnegative): Likewise.
+	(gimple_assign_nonzero_p): Likewise.
+	(gimple_stmt_nonzero_p): Likewise.
+	(vrp_int_const_binop): Likewise.  Remove unreachable case.
+	(adjust_range_with_scev): Adjust comments.
+	(compare_range_with_value): Likewise.
+	(extract_range_from_phi_node): Likewise.
+	(test_for_singularity): Likewise.
+
+2017-05-09  Richard Biener  <rguenther@suse.de>
+
+	* tree-vrp.c (get_single_symbol): Add assert that we don't
+	get overflowed constants as invariant part.
+	(compare_values_warnv): Add comment before the TREE_NO_WARNING
+	checks.  Use wi::cmp instead of recursing for integer constants.
+	(compare_values): Just ignore whether we assumed undefined
+	overflow instead of failing the compare.
+	(extract_range_for_var_from_comparison_expr): Add comment before the
+	TREE_NO_WARNING sets.
+	(test_for_singularity): Likewise.
+	(extract_range_from_comparison): Do not disable optimization
+	when we assumed undefined overflow.
+	(extract_range_basic): Remove init of unused var.
+
+2017-05-09  Richard Biener  <rguenther@suse.de>
+
+	* tree-vrp.c (vrp_int_const_binop): Use wide-ints and simplify.
+	(extract_range_from_multiplicative_op_1): Adjust.
+	(extract_range_from_binary_expr_1): Use int_const_binop.
+
+2017-05-08  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	PR target/80101
+	* config/rs6000/power6.md: Replace store_data_bypass_p calls with
+	rs6000_store_data_bypass_p in seven define_bypass directives and
+	in several comments.
+	* config/rs6000/rs6000-protos.h: Add prototype for
+	rs6000_store_data_bypass_p function.
+	* config/rs6000/rs6000.c (rs6000_store_data_bypass_p): New
+	function implements slightly different (rs6000-specific) semantics
+	than store_data_bypass_p, returning false rather than aborting
+	with assertion error when arguments do not satisfy the
+	requirements of store data bypass.
+	(rs6000_adjust_cost): Replace six calls of store_data_bypass_p with
+	rs6000_store_data_bypass_p.
+
+2017-05-08  Max Filippov  <jcmvbkbc@gmail.com>
+
+	* config/xtensa/xtensa-protos.h
+       	(xtensa_initial_elimination_offset): New declaration.
+	* config/xtensa/xtensa.c (xtensa_initial_elimination_offset):
+	New function. Move its body from the INITIAL_ELIMINATION_OFFSET
+	macro definition, add case for FRAME_POINTER_REGNUM when
+	FRAME_GROWS_DOWNWARD.
+	* config/xtensa/xtensa.h (FRAME_GROWS_DOWNWARD): New macro
+	definition.
+	(INITIAL_ELIMINATION_OFFSET): Replace body with call to
+	xtensa_initial_elimination_offset.
+
+2017-05-08  Nathan Sidwell  <nathan@acm.org>
+
+	* doc/invoke.texi: Alphabetize -fdump options.
+
+2017-05-08  Martin Sebor  <msebor@redhat.com>
+
+	PR translation/80280
+	* config/sol2-c.c (solaris_pragma_align): Correct quoting.
+
+2017-05-08  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* target.def (compute_frame_layout): New optional target hook.
+	* doc/tm.texi.in (TARGET_COMPUTE_FRAME_LAYOUT): Add hook.
+	* doc/tm.texi (TARGET_COMPUTE_FRAME_LAYOUT): Add documentation.
+	* lra-eliminations.c (update_reg_eliminate): Call compute_frame_layout
+	target hook.
+	* reload1.c (verify_initial_elim_offsets): Likewise.
+	* config/arm/arm.c (TARGET_COMPUTE_FRAME_LAYOUT): Define.
+	(use_simple_return_p): Call arm_compute_frame_layout if needed.
+	(arm_get_frame_offsets): Split up into this ...
+	(arm_compute_frame_layout): ... and this function.
+
 2017-05-08  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* config/aarch64/constraints.md (Usa): New constraint.

@@ -1,5 +1,5 @@
 ! { dg-do run }
-! { dg-options "-fdump-tree-original -fdump-tree-optimized -Warray-temporaries -fbounds-check" }
+! { dg-options "-finline-matmul-limit=0 -fdump-tree-original -fdump-tree-optimized -Warray-temporaries -fbounds-check" }
 
   implicit none
 

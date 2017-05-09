@@ -237,16 +237,16 @@ tree cxx_enum_underlying_base_type (const_tree type)
 
 /* Return the list of decls in the global namespace.  */
 
-static
-tree get_global_decls ()
+static tree
+get_global_decls ()
 {
   return NAMESPACE_LEVEL (global_namespace)->names;
 }
 
 /* Push DECL into the current scope.  */
 
-static
-tree cxx_pushdecl (tree decl)
+static tree
+cxx_pushdecl (tree decl)
 {
   return pushdecl (decl);
 }

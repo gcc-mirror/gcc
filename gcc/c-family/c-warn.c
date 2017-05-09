@@ -30,6 +30,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "intl.h"
 #include "asan.h"
 #include "gcc-rich-location.h"
+#include "gimplify.h"
 
 /* Print a warning if a constant expression had overflow in folding.
    Invoke this function on every expression that the language
@@ -112,6 +113,21 @@ overflow_warning (location_t loc, tree value)
     }
 }
 
+/* Helper function for walk_tree.  Unwrap C_MAYBE_CONST_EXPRs in an expression
+   pointed to by TP.  */
+
+static tree
+unwrap_c_maybe_const (tree *tp, int *walk_subtrees, void *)
+{
+  if (TREE_CODE (*tp) == C_MAYBE_CONST_EXPR)
+    {
+      *tp = C_MAYBE_CONST_EXPR_EXPR (*tp);
+      /* C_MAYBE_CONST_EXPRs don't nest.  */
+      *walk_subtrees = false;
+    }
+  return NULL_TREE;
+}
+
 /* Warn about uses of logical || / && operator in a context where it
    is likely that the bitwise equivalent was intended by the
    programmer.  We have seen an expression in which CODE is a binary
@@ -189,11 +205,11 @@ warn_logical_operator (location_t location, enum tree_code code, tree type,
      (with OR) or trivially false (with AND).  If so, do not warn.
      This is a common idiom for testing ranges of data types in
      portable code.  */
+  op_left = unshare_expr (op_left);
+  walk_tree_without_duplicates (&op_left, unwrap_c_maybe_const, NULL);
   lhs = make_range (op_left, &in0_p, &low0, &high0, &strict_overflow_p);
   if (!lhs)
     return;
-  if (TREE_CODE (lhs) == C_MAYBE_CONST_EXPR)
-    lhs = C_MAYBE_CONST_EXPR_EXPR (lhs);
 
   /* If this is an OR operation, invert both sides; now, the result
      should be always false to get a warning.  */
@@ -204,11 +220,11 @@ warn_logical_operator (location_t location, enum tree_code code, tree type,
   if (tem && integer_zerop (tem))
     return;
 
+  op_right = unshare_expr (op_right);
+  walk_tree_without_duplicates (&op_right, unwrap_c_maybe_const, NULL);
   rhs = make_range (op_right, &in1_p, &low1, &high1, &strict_overflow_p);
   if (!rhs)
     return;
-  if (TREE_CODE (rhs) == C_MAYBE_CONST_EXPR)
-    rhs = C_MAYBE_CONST_EXPR_EXPR (rhs);
 
   /* If this is an OR operation, invert both sides; now, the result
      should be always false to get a warning.  */
