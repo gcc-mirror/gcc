@@ -1618,66 +1618,91 @@ extract_range_from_ssa_name (value_range *vr, tree var)
 /* Wrapper around int_const_binop.  If the operation overflows and we
    are not using wrapping arithmetic, then adjust the result to be
    -INF or +INF depending on CODE, VAL1 and VAL2.  This can return
-   NULL_TREE if we need to use an overflow infinity representation but
-   the type does not support it.  */
+   NULL_TREE for division by zero.  */
 
-static tree
-vrp_int_const_binop (enum tree_code code, tree val1, tree val2)
+static wide_int
+vrp_int_const_binop (enum tree_code code, tree val1, tree val2,
+		     bool *overflow_p)
 {
-  tree res;
+  bool overflow = false;
+  signop sign = TYPE_SIGN (TREE_TYPE (val1));
+  wide_int res;
 
-  res = int_const_binop (code, val1, val2);
-
-  /* If we are using unsigned arithmetic, operate symbolically
-     on -INF and +INF as int_const_binop only handles signed overflow.  */
-  if (TYPE_UNSIGNED (TREE_TYPE (val1)))
+  switch (code)
     {
-      int checkz = compare_values (res, val1);
-      bool overflow = false;
+    case RSHIFT_EXPR:
+    case LSHIFT_EXPR:
+      {
+	wide_int wval2 = wi::to_wide (val2, TYPE_PRECISION (TREE_TYPE (val1)));
+	if (wi::neg_p (wval2))
+	  {
+	    wval2 = -wval2;
+	    if (code == RSHIFT_EXPR)
+	      code = LSHIFT_EXPR;
+	    else
+	      code = RSHIFT_EXPR;
+	  }
 
-      /* Ensure that res = val1 [+*] val2 >= val1
-         or that res = val1 - val2 <= val1.  */
-      if ((code == PLUS_EXPR
-	   && !(checkz == 1 || checkz == 0))
-          || (code == MINUS_EXPR
-	      && !(checkz == 0 || checkz == -1)))
+	if (code == RSHIFT_EXPR)
+	  /* It's unclear from the C standard whether shifts can overflow.
+	     The following code ignores overflow; perhaps a C standard
+	     interpretation ruling is needed.  */
+	  res = wi::rshift (val1, wval2, sign);
+	else
+	  res = wi::lshift (val1, wval2);
+	break;
+      }
+
+    case MULT_EXPR:
+      res = wi::mul (val1, val2, sign, &overflow);
+      break;
+
+    case TRUNC_DIV_EXPR:
+    case EXACT_DIV_EXPR:
+      if (val2 == 0)
 	{
-	  overflow = true;
+	  *overflow_p = true;
+	  return res;
 	}
-      /* Checking for multiplication overflow is done by dividing the
-	 output of the multiplication by the first input of the
-	 multiplication.  If the result of that division operation is
-	 not equal to the second input of the multiplication, then the
-	 multiplication overflowed.  */
-      else if (code == MULT_EXPR && !integer_zerop (val1))
+      else
+	res = wi::div_trunc (val1, val2, sign, &overflow);
+      break;
+
+    case FLOOR_DIV_EXPR:
+      if (val2 == 0)
 	{
-	  tree tmp = int_const_binop (TRUNC_DIV_EXPR,
-				      res,
-				      val1);
-	  int check = compare_values (tmp, val2);
-
-	  if (check != 0)
-	    overflow = true;
+	  *overflow_p = true;
+	  return res;
 	}
+      res = wi::div_floor (val1, val2, sign, &overflow);
+      break;
 
-      if (overflow)
+    case CEIL_DIV_EXPR:
+      if (val2 == 0)
 	{
-	  res = copy_node (res);
-	  TREE_OVERFLOW (res) = 1;
+	  *overflow_p = true;
+	  return res;
 	}
+      res = wi::div_ceil (val1, val2, sign, &overflow);
+      break;
 
+    case ROUND_DIV_EXPR:
+      if (val2 == 0)
+	{
+	  *overflow_p = 0;
+	  return res;
+	}
+      res = wi::div_round (val1, val2, sign, &overflow);
+      break;
+
+    default:
+      gcc_unreachable ();
     }
-  else if (TYPE_OVERFLOW_WRAPS (TREE_TYPE (val1)))
-    /* If the singed operation wraps then int_const_binop has done
-       everything we want.  */
-    ;
-  /* Signed division of -1/0 overflows and by the time it gets here
-     returns NULL_TREE.  */
-  else if (!res)
-    return NULL_TREE;
-  else if (TREE_OVERFLOW (res)
-	   && ! TREE_OVERFLOW (val1)
-	   && ! TREE_OVERFLOW (val2))
+
+  *overflow_p = overflow;
+
+  if (overflow
+      && TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (val1)))
     {
       /* If the operation overflowed but neither VAL1 nor VAL2 are
 	 overflown, return -INF or +INF depending on the operation
@@ -1711,17 +1736,18 @@ vrp_int_const_binop (enum tree_code code, tree val1, tree val2)
 	     overflow direction is the same as the sign of val1.
 	     Actually rshift does not overflow at all, but we only
 	     handle the case of shifting overflowed -INF and +INF.  */
-	  || (code == RSHIFT_EXPR
-	      && sgn1 >= 0)
+	  || (code == RSHIFT_EXPR && sgn1 >= 0)
 	  /* For division, the only case is -INF / -1 = +INF.  */
 	  || code == TRUNC_DIV_EXPR
 	  || code == FLOOR_DIV_EXPR
 	  || code == CEIL_DIV_EXPR
 	  || code == EXACT_DIV_EXPR
 	  || code == ROUND_DIV_EXPR)
-	return TYPE_MAX_VALUE (TREE_TYPE (res));
+	return wi::max_value (TYPE_PRECISION (TREE_TYPE (val1)),
+			      TYPE_SIGN (TREE_TYPE (val1)));
       else
-	return TYPE_MIN_VALUE (TREE_TYPE (res));
+	return wi::min_value (TYPE_PRECISION (TREE_TYPE (val1)),
+			      TYPE_SIGN (TREE_TYPE (val1)));
     }
 
   return res;
@@ -1818,12 +1844,10 @@ extract_range_from_multiplicative_op_1 (value_range *vr,
 					enum tree_code code,
 					value_range *vr0, value_range *vr1)
 {
-  enum value_range_type type;
-  tree val[4];
-  size_t i;
-  tree min, max;
+  enum value_range_type rtype;
+  wide_int val, min, max;
   bool sop;
-  int cmp;
+  tree type;
 
   /* Multiplications, divisions and shifts are a bit tricky to handle,
      depending on the mix of signs we have in the two ranges, we
@@ -1849,88 +1873,69 @@ extract_range_from_multiplicative_op_1 (value_range *vr,
 	       || (code == MULT_EXPR && vr0->type == VR_ANTI_RANGE))
 	      && vr0->type == vr1->type);
 
-  type = vr0->type;
+  rtype = vr0->type;
+  type = TREE_TYPE (vr0->min);
+  signop sgn = TYPE_SIGN (type);
 
-  /* Compute the 4 cross operations.  */
+  /* Compute the 4 cross operations and their minimum and maximum value.  */
   sop = false;
-  val[0] = vrp_int_const_binop (code, vr0->min, vr1->min);
-  if (val[0] == NULL_TREE)
-    sop = true;
+  val = vrp_int_const_binop (code, vr0->min, vr1->min, &sop);
+  if (! sop)
+    min = max = val;
 
   if (vr1->max == vr1->min)
-    val[1] = NULL_TREE;
-  else
+    ;
+  else if (! sop)
     {
-      val[1] = vrp_int_const_binop (code, vr0->min, vr1->max);
-      if (val[1] == NULL_TREE)
-	sop = true;
+      val = vrp_int_const_binop (code, vr0->min, vr1->max, &sop);
+      if (! sop)
+	{
+	  if (wi::lt_p (val, min, sgn))
+	    min = val;
+	  else if (wi::gt_p (val, max, sgn))
+	    max = val;
+	}
     }
 
   if (vr0->max == vr0->min)
-    val[2] = NULL_TREE;
-  else
+    ;
+  else if (! sop)
     {
-      val[2] = vrp_int_const_binop (code, vr0->max, vr1->min);
-      if (val[2] == NULL_TREE)
-	sop = true;
+      val = vrp_int_const_binop (code, vr0->max, vr1->min, &sop);
+      if (! sop)
+	{
+	  if (wi::lt_p (val, min, sgn))
+	    min = val;
+	  else if (wi::gt_p (val, max, sgn))
+	    max = val;
+	}
     }
 
   if (vr0->min == vr0->max || vr1->min == vr1->max)
-    val[3] = NULL_TREE;
-  else
+    ;
+  else if (! sop)
     {
-      val[3] = vrp_int_const_binop (code, vr0->max, vr1->max);
-      if (val[3] == NULL_TREE)
-	sop = true;
+      val = vrp_int_const_binop (code, vr0->max, vr1->max, &sop);
+      if (! sop)
+	{
+	  if (wi::lt_p (val, min, sgn))
+	    min = val;
+	  else if (wi::gt_p (val, max, sgn))
+	    max = val;
+	}
     }
 
+  /* If either operation overflowed, drop to VARYING.  */
   if (sop)
     {
       set_value_range_to_varying (vr);
       return;
     }
 
-  /* Set MIN to the minimum of VAL[i] and MAX to the maximum
-     of VAL[i].  */
-  min = val[0];
-  max = val[0];
-  for (i = 1; i < 4; i++)
-    {
-      if (!is_gimple_min_invariant (min)
-	  || TREE_OVERFLOW (min)
-	  || !is_gimple_min_invariant (max)
-	  || TREE_OVERFLOW (max))
-	break;
-
-      if (val[i])
-	{
-	  if (!is_gimple_min_invariant (val[i])
-	      || TREE_OVERFLOW (val[i]))
-	    {
-	      /* If we found an overflowed value, set MIN and MAX
-		 to it so that we set the resulting range to
-		 VARYING.  */
-	      min = max = val[i];
-	      break;
-	    }
-
-	  if (compare_values (val[i], min) == -1)
-	    min = val[i];
-
-	  if (compare_values (val[i], max) == 1)
-	    max = val[i];
-	}
-    }
-
-  /* If either MIN or MAX overflowed, then set the resulting range to
-     VARYING.  But we do accept an overflow infinity
-     representation.  */
-  if (min == NULL_TREE
-      || !is_gimple_min_invariant (min)
-      || TREE_OVERFLOW (min)
-      || max == NULL_TREE
-      || !is_gimple_min_invariant (max)
-      || TREE_OVERFLOW (max))
+  /* If the new range has its limits swapped around (MIN > MAX),
+     then the operation caused one of them to wrap around, mark
+     the new range VARYING.  */
+  if (wi::gt_p (min, max, sgn))
     {
       set_value_range_to_varying (vr);
       return;
@@ -1939,23 +1944,16 @@ extract_range_from_multiplicative_op_1 (value_range *vr,
   /* We punt for [-INF, +INF].
      We learn nothing when we have INF on both sides.
      Note that we do accept [-INF, -INF] and [+INF, +INF].  */
-  if (vrp_val_is_min (min)
-      && vrp_val_is_max (max))
+  if (wi::eq_p (min, wi::min_value (TYPE_PRECISION (type), sgn))
+      && wi::eq_p (max, wi::max_value (TYPE_PRECISION (type), sgn)))
     {
       set_value_range_to_varying (vr);
       return;
     }
 
-  cmp = compare_values (min, max);
-  if (cmp == -2 || cmp == 1)
-    {
-      /* If the new range has its limits swapped around (MIN > MAX),
-	 then the operation caused one of them to wrap around, mark
-	 the new range VARYING.  */
-      set_value_range_to_varying (vr);
-    }
-  else
-    set_value_range (vr, type, min, max, NULL);
+  set_value_range (vr, rtype,
+		   wide_int_to_tree (type, min),
+		   wide_int_to_tree (type, max), NULL);
 }
 
 /* Extract range information from a binary operation CODE based on
@@ -2438,8 +2436,8 @@ extract_range_from_binary_expr_1 (value_range *vr,
 	      /* For operations that make the resulting range directly
 		 proportional to the original ranges, apply the operation to
 		 the same end of each range.  */
-	      min = vrp_int_const_binop (code, vr0.min, vr1.min);
-	      max = vrp_int_const_binop (code, vr0.max, vr1.max);
+	      min = int_const_binop (code, vr0.min, vr1.min);
+	      max = int_const_binop (code, vr0.max, vr1.max);
 	    }
 	  else if (code == MIN_EXPR)
 	    {
