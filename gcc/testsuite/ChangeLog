@@ -1,3 +1,9 @@
+2017-05-09  Martin Sebor  <msebor@redhat.com>
+
+	PR testsuite/80643
+	* c-c++-common/Wsizeof-pointer-memaccess2.c: Prune -Wformat-overflow
+	output.
+
 2017-05-09  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/80186
