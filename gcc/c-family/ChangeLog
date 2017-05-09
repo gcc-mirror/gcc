@@ -1,3 +1,9 @@
+2017-05-09  Marek Polacek  <polacek@redhat.com>
+
+	PR c/80525
+	* c-warn.c (unwrap_c_maybe_const): New.
+	(warn_logical_operator): Call it.
+
 2017-05-09  Nathan Sidwell  <nathan@acm.org>
 
 	* c-common.c (c_register_builtin_type): Use pushdecl lang_hook.
