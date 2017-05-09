@@ -6241,6 +6241,14 @@
   [(set (zero_extract:SI (match_dup 3) (match_dup 1) (match_dup 2))
 	(zero_extract:SI (match_dup 0) (match_dup 1) (match_dup 2)))])
 
+;; Dummy pattern used as a place holder for automatically saved
+;; registers.
+(define_insn "stack_irq_dwarf"
+  [(unspec_volatile [(const_int 1)] VUNSPEC_ARC_STACK_IRQ)]
+  ""
+  ""
+  [(set_attr "length" "0")])
+
 ;; include the arc-FPX instructions
 (include "fpx.md")
 

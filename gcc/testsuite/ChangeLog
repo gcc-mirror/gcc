@@ -1,3 +1,11 @@
+2017-05-09  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* gcc.target/arc/interrupt-5.c: Newfile.
+	* gcc.target/arc/interrupt-6.c: Likewise.
+	* gcc.target/arc/interrupt-7.c: Likewise.
+	* gcc.target/arc/interrupt-8.c: Likewise.
+	* gcc.target/arc/interrupt-9.c: Likewise.
+
 2017-05-09  Richard Biener  <rguenther@suse.de>
 
 	* gcc.dg/vect/vect-44.c: Add --param vect-max-peeling-for-alignment=0
