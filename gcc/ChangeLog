@@ -1,5 +1,19 @@
 2017-05-09  Richard Biener  <rguenther@suse.de>
 
+	* tree-vrp.c (vrp_val_is_max): Adjust comment.
+	(vrp_val_is_min): Likewise.
+	(set_value_range_to_value): Likewise.
+	(set_value_range_to_nonnegative): Likewise.
+	(gimple_assign_nonzero_p): Likewise.
+	(gimple_stmt_nonzero_p): Likewise.
+	(vrp_int_const_binop): Likewise.  Remove unreachable case.
+	(adjust_range_with_scev): Adjust comments.
+	(compare_range_with_value): Likewise.
+	(extract_range_from_phi_node): Likewise.
+	(test_for_singularity): Likewise.
+
+2017-05-09  Richard Biener  <rguenther@suse.de>
+
 	* tree-vrp.c (get_single_symbol): Add assert that we don't
 	get overflowed constants as invariant part.
 	(compare_values_warnv): Add comment before the TREE_NO_WARNING
