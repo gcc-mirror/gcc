@@ -1,3 +1,7 @@
+2017-05-09  Nathan Sidwell  <nathan@acm.org>
+
+	* c-tree.h (pushdecl): Declare.
+
 2017-05-05  David Malcolm  <dmalcolm@redhat.com>
 
 	* c-decl.c (warn_defaults_to): Replace report_diagnostic

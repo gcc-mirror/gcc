@@ -1,3 +1,8 @@
+2017-05-09  Nathan Sidwell  <nathan@acm.org>
+
+	* objc-gnu-runtime-abi-01.c (objc_add_static_instance): Use
+	pushdecl lang_hook.
+
 2017-05-04  Martin Sebor  <msebor@redhat.com>
 
 	PR translation/80280
