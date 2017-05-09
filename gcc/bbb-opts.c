@@ -923,6 +923,9 @@ temp_reg_rename (std::vector<std::pair<rtx *, rtx> > & loc, rtx x, unsigned oldr
 static std::vector<insn_info> infos;
 static std::vector<rtx_insn *> jumps;
 static std::map<rtx_insn *, insn_info *> insn2index;
+typedef std::vector<insn_info>::iterator insn_info_iterator;
+typedef std::vector<rtx_insn *>::iterator rtx_insn_iterator;
+typedef std::map<rtx_insn *, insn_info *>::iterator i2i_iterator;
 
 static insn_info * info0;
 static unsigned usable_regs;
@@ -1130,7 +1133,7 @@ void
 append_reg_usage (FILE * f, rtx_insn * insn)
 {
 
-  auto i = insn2index.find (insn);
+  i2i_iterator  i = insn2index.find (insn);
   if (i == insn2index.end ())
     return;
 
@@ -1238,11 +1241,11 @@ update_insn_infos (void)
 	  if (LABEL_P(insn))
 	    {
 	      /* work on all jumps referring to that label. */
-	      for (auto i = jumps.begin (); i != jumps.end (); ++i)
+	      for (rtx_insn_iterator i = jumps.begin (); i != jumps.end (); ++i)
 		{
 		  if (JUMP_LABEL(*i) == insn)
 		    {
-		      auto j = insn2index.find (*i);
+		      i2i_iterator j = insn2index.find (*i);
 		      if (j != insn2index.end ())
 			todo.push_back (std::make_pair (j->second->get_index (), ii));
 		    }
@@ -1481,11 +1484,11 @@ opt_reg_rename (void)
 		   * check if the reg was used at that jump.
 		   * if used, find def
 		   */
-		  for (auto i = jumps.begin (); i != jumps.end (); ++i)
+		  for (rtx_insn_iterator i = jumps.begin (); i != jumps.end (); ++i)
 		    {
 		      if (JUMP_LABEL(*i) == insn)
 			{
-			  auto j = insn2index.find (*i);
+			  i2i_iterator j = insn2index.find (*i);
 			  if (j == insn2index.end ())
 			    continue;
 
@@ -1528,7 +1531,7 @@ opt_reg_rename (void)
 	      /* follow jump and/or next insn. */
 	      if (JUMP_P(insn))
 		{
-		  auto j = insn2index.find ((rtx_insn *) JUMP_LABEL(insn));
+		  i2i_iterator j = insn2index.find ((rtx_insn *) JUMP_LABEL(insn));
 		  if (j == insn2index.end ())
 		    {
 		      /* whoops - label not found. */
@@ -2797,7 +2800,7 @@ opt_shrink_stack_frame (void)
       if (freemask & (1 << FRAME_POINTER_REGNUM))
 	{
 	  log ("dropping unused frame pointer\n");
-	  for (auto i = a5pos.rbegin (); i != a5pos.rend (); ++i)
+	  for (std::vector<int>::reverse_iterator i = a5pos.rbegin (); i != a5pos.rend (); ++i)
 	    {
 	      SET_INSN_DELETED(infos[*i].get_insn ());
 	      infos.erase (infos.begin () + *i);
@@ -2909,7 +2912,7 @@ opt_absolute (void)
       if (freemask && found.size () > 2)
 	{
 	  /* check again. */
-	  for (auto k = found.begin (); k != found.end ();)
+	  for (std::vector<unsigned>::iterator k = found.begin (); k != found.end ();)
 	    {
 	      insn_info & kk = infos[*k];
 	      if (kk.get_dst_addr () - base > 0x7ffc)
@@ -2926,7 +2929,7 @@ opt_absolute (void)
 	  else
 	    log ("modifying %d absolute addresses using %s\n", found.size (), reg_names[regno]);
 
-	  for (auto k = found.begin (); k != found.end (); ++k)
+	  for (std::vector<unsigned>::iterator k = found.begin (); k != found.end (); ++k)
 	    {
 	      insn_info & kk = infos[*k];
 	      kk.absolute2base (regno, base, with_symbol);
