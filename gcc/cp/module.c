@@ -1384,7 +1384,8 @@ cpms_in::tag_import (FILE *d)
 	{
 	  bool is_export = direct == 2;
 	  if (d)
-	    fprintf (d, "Direct %simport '%s' %u", is_export ? "export " : "",
+	    fprintf (d, "Direct %simport '%s' %u\n",
+		     is_export ? "export " : "",
 		     IDENTIFIER_POINTER (imp), imp_ix);
 	  state->do_import (imp_ix, direct == 2);
 	}

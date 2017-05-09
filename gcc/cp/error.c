@@ -957,6 +957,19 @@ dump_global_iord (cxx_pretty_printer *pp, tree t)
 }
 
 static void
+dump_module_suffix (cxx_pretty_printer *pp, tree decl)
+{
+  unsigned mod = MAYBE_DECL_MODULE_INDEX (decl);
+
+  if (!DECL_MODULE_EXPORT_P (decl) && mod != GLOBAL_MODULE_INDEX)
+    {
+      pp_character (pp, '@');
+      pp->padding = pp_none;
+      pp_cxx_tree_identifier (pp, module_name (mod));
+    }
+}
+
+static void
 dump_simple_decl (cxx_pretty_printer *pp, tree t, tree type, int flags)
 {
   if (flags & TFF_DECL_SPECIFIERS)
@@ -994,6 +1007,9 @@ dump_simple_decl (cxx_pretty_printer *pp, tree t, tree type, int flags)
     }
   else
     pp_string (pp, M_("<anonymous>"));
+
+  dump_module_suffix (pp, t);
+
   if (flags & TFF_DECL_SPECIFIERS)
     dump_type_suffix (pp, type, flags);
 }
@@ -1144,7 +1160,7 @@ dump_decl (cxx_pretty_printer *pp, tree t, int flags)
 
     case SCOPE_REF:
       dump_type (pp, TREE_OPERAND (t, 0), flags);
-      pp_colon_colon (pp);
+      pp_cxx_colon_colon (pp);
       dump_decl (pp, TREE_OPERAND (t, 1), TFF_UNQUALIFIED_NAME);
       break;
 
@@ -1815,6 +1831,8 @@ dump_function_name (cxx_pretty_printer *pp, tree t, int flags)
     }
   else
     dump_decl (pp, name, flags);
+
+  dump_module_suffix (pp, t);
 
   if (DECL_TEMPLATE_INFO (t)
       && !DECL_FRIEND_PSEUDO_TEMPLATE_INSTANTIATION (t)
