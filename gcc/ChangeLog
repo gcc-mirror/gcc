@@ -1,3 +1,7 @@
+2017-05-09  Marek Polacek  <polacek@redhat.com>
+
+	* doc/invoke.texi: Fix typo.
+
 2017-05-09  Richard Biener  <rguenther@suse.de>
 
 	* tree-vrp.c (vrp_val_is_max): Adjust comment.

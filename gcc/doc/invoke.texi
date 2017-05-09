@@ -4279,10 +4279,10 @@ switch (cond)
 C++17 provides a standard way to suppress the @option{-Wimplicit-fallthrough}
 warning using @code{[[fallthrough]];} instead of the GNU attribute.  In C++11
 or C++14 users can use @code{[[gnu::fallthrough]];}, which is a GNU extension.
-Instead of the these attributes, it is also possible to add a fallthrough
-comment to silence the warning.  The whole body of the C or C++ style comment
-should match the given regular expressions listed below.  The option argument
-@var{n} specifies what kind of comments are accepted:
+Instead of these attributes, it is also possible to add a fallthrough comment
+to silence the warning.  The whole body of the C or C++ style comment should
+match the given regular expressions listed below.  The option argument @var{n}
+specifies what kind of comments are accepted:
 
 @itemize @bullet
 
