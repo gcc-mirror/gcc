@@ -2639,90 +2639,101 @@ find_namespace_partition (tree slot_val)
   return NULL_TREE;
 }
 
-/* NS is a newly read in NAMESPACE_DECL, residing in CTX.  Find or
-   insert it into CTX's binding table.  Return the matched or new
-   namespace, or NULL on error.  */
+/* DECL is a newly read in global-module _DECL, residing in CTX.
+   Merge it with an already matching declaration.  If DECL is a
+   namespace, insert it.Return the matched or new decl, or NULL
+   on error.  */
 
 tree
-push_module_namespace (tree ctx, unsigned module, tree ns)
+merge_global_decl (tree ctx, tree decl)
 {
-  gcc_assert (DECL_CONTEXT (ns) == ctx
-	      && TREE_CODE (ns) == NAMESPACE_DECL
-	      && !DECL_NAMESPACE_ALIAS (ns));
-
-  tree *slot = find_or_create_namespace_slot (ctx, DECL_NAME (ns));
-  tree *mslot = module_binding_slot (slot, module, -1);
+  bool is_ns = (TREE_CODE (decl) == NAMESPACE_DECL
+		&& !DECL_NAMESPACE_ALIAS (decl));
+  gcc_assert (DECL_CONTEXT (decl) == ctx);
+  /* We know we'll eventually insert the decl, so we can create the
+     slot now.  */
+  tree *slot = find_or_create_namespace_slot (ctx, DECL_NAME (decl));
+  tree *mslot = module_binding_slot (slot, GLOBAL_MODULE_INDEX, is_ns);
   tree old = NULL_TREE;
 
-  if (!*mslot)
-    old = find_namespace_partition (*slot);
-  else if (TREE_CODE (*mslot) == NAMESPACE_DECL
-	   && !DECL_NAMESPACE_ALIAS (*mslot))
-    old = *mslot;
+  for (ovl_iterator iter (MAYBE_STAT_DECL (*mslot)); !old && iter; ++iter)
+    if (!iter.using_p ())
+      old = duplicate_decls (decl, *iter, false);
 
-  if (old)
-    {
-      *mslot = old;
-      if (DECL_NAMESPACE_INLINE_P (old)
-	  != DECL_NAMESPACE_INLINE_P (ns))
-	old = NULL_TREE;
-    }
+  if (old == error_mark_node)
+    old = NULL_TREE;
+  else if (old)
+    ;
+  else if (!is_ns)
+    old = decl;
   else
     {
+      /* Namespaces are always exported, and everything's exported
+	 from the global module.  Thus this namespace must be
+	 consistent with the global module, even if it didn't
+	 explicitly mention it.  So push it now.  It can't be hiding
+	 in some other module.  */
+      gcc_assert (!find_namespace_partition (*slot));
+
       /* Creating a new namespace.  */
-      SCOPE_DEPTH (ns) = SCOPE_DEPTH (ctx) + 1;
+      SCOPE_DEPTH (decl) = SCOPE_DEPTH (ctx) + 1;
       if (ctx == global_namespace)
-	DECL_CONTEXT (ns) = DECL_CONTEXT (global_namespace);
+	DECL_CONTEXT (decl) = DECL_CONTEXT (global_namespace);
       old = update_binding (NAMESPACE_LEVEL (ctx), NULL,
-			    mslot, old, ns, false);
-      // FIXME: push into global module too, for now
-      if (module != GLOBAL_MODULE_INDEX)
-	{
-	  tree *gslot = module_binding_slot (slot, GLOBAL_MODULE_INDEX, true);
-	  if (!*gslot)
-	    *gslot = old;
-	  gcc_assert (*gslot == old);
-	}
-      if (old == ns)
+			    mslot, old, decl, false);
+      if (old == decl)
 	{
 	  if (DECL_NAMESPACE_INLINE_P (old))
 	    vec_safe_push (DECL_NAMESPACE_INLINEES (ctx), old);
-	  begin_scope (sk_namespace, old);
+	  /* Create its scope -- but don't push it.  */
+	  cp_binding_level *scope = ggc_cleared_alloc<cp_binding_level> ();
+	  scope->this_entity = old;
+	  scope->more_cleanups_ok = true;
+	  scope->kind = sk_namespace;
+	  NAMESPACE_LEVEL (old) = scope;
 	}
       else
 	old = NULL_TREE;
     }
 
+  if (is_ns && old
+      && DECL_NAMESPACE_INLINE_P (old) != DECL_NAMESPACE_INLINE_P (decl))
+    old = NULL_TREE;
+
   return old;
 }
 
-/* NAME is being bound within namespace NS and MODULE to OVL.
-   Unless MODULE is GLOBAL_MODULE_INDEX, there should be no existing
+/* NAME is being bound within namespace NS and MODULE to OVL.  Unless
+   MODULE is GLOBAL_MODULE_INDEX, there should be no existing
    binding.  */
 
 bool
-push_module_binding (tree ns, unsigned module, tree name, tree binding)
+push_module_binding (tree ns, unsigned mod, tree name, tree binding)
 {
-  gcc_assert (TREE_CODE (binding) != NAMESPACE_DECL
-	      || DECL_NAMESPACE_ALIAS (binding));
+  bool is_ns = (TREE_CODE (binding) == NAMESPACE_DECL
+		&& !DECL_NAMESPACE_ALIAS (binding));
+
   tree *slot = find_or_create_namespace_slot (ns, name);
-  tree *mslot = module_binding_slot (slot, module, true);
+  tree *mslot = module_binding_slot (slot, mod, is_ns ? -1 : 1);
 
   gcc_assert (!MAYBE_STAT_TYPE (binding)); // FIXME
   gcc_assert (!*mslot || !MAYBE_STAT_TYPE (*mslot)); // FIXME
 
-  if (module == GLOBAL_MODULE_INDEX && *mslot
-      && anticipated_builtin_p (*mslot))
-    /* Zap out an anticipated builtin.  */
-    *mslot = NULL_TREE;
+  if (*mslot && anticipated_builtin_p (*mslot))
+    {
+      gcc_assert (mod == GLOBAL_MODULE_INDEX);
+      /* Zap out an anticipated builtin.  */
+      *mslot = NULL_TREE;
+    }
 
   for (ovl_iterator iter (MAYBE_STAT_DECL (binding)); iter; ++iter)
     {
       tree decl = *iter;
+      bool found = false;
+
       if (*mslot)
 	{
-	  bool found = false;
-
+	  // FIXME:Hidden names?
 	  for (ovl_iterator old (MAYBE_STAT_DECL (*mslot));
 	       !found && old; ++old)
 	    /* We'll already have done lookup when reading in the fn
@@ -2734,11 +2745,12 @@ push_module_binding (tree ns, unsigned module, tree name, tree binding)
 	    *mslot = ovl_insert (*mslot, decl, iter.using_p ());
 	}
 
-      if (!iter.using_p ())
+      if (!found && !iter.using_p () && !is_ns)
 	add_decl_to_level (NAMESPACE_LEVEL (ns), decl);
     }
 
   if (!*mslot)
+    /* There was nothing there, just install the whole binding.  */
     *mslot = binding;
 
   return true;

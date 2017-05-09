@@ -1,5 +1,14 @@
 2017-05-09  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* module.c (cpms_in::finish): Merge global decls.
+	(cpms_in::finish_function, cpms_in::finish_namespace): Delete.
+	* name-lookup.h (push_module_namespace): Replace with ...
+	(merge_global_decl): ... this.
+	* name-lookup.c (push_module_namespace): Morph into ...
+	(merge_global_decl): ... this.
+	(push_module_binding): Don't re-add found things.
+
 	gcc/
 	* tree.h (TREE_CHECK6, tree_check6): Delete.
 

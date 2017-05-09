@@ -345,7 +345,7 @@ extern void pop_from_top_level (void);
 
 /* Lower level interface for modules. */
 extern tree decapsulate_binding (tree value, tree *type_p);
-extern tree push_module_namespace (tree ctx, unsigned mod, tree decl);
+extern tree merge_global_decl (tree ctx, tree decl);
 extern bool push_module_binding (tree ctx, unsigned mod, tree name, tree ovl);
 extern unsigned key_module_instance (tree ctx, unsigned mod,
 				     tree name, tree decl);

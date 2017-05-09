@@ -937,8 +937,6 @@ public:
   }
 
 private:
-  tree finish_namespace (FILE *, tree);
-  tree finish_function (FILE *, tree);
   tree finish_type (FILE *, tree);
 
 private:
@@ -1630,19 +1628,20 @@ cpms_in::finish (FILE *d, tree t)
   if (TYPE_P (t))
     return finish_type (d, t);
 
-  // FIXME:merge global decl?
-
-  switch (TREE_CODE (t))
+  if (DECL_P (t) && MAYBE_DECL_MODULE_INDEX (t) == GLOBAL_MODULE_INDEX)
     {
-    default: break;
+      /* A global-module decl.  See if there's already a duplicate.  */
+      tree old = merge_global_decl (CP_DECL_CONTEXT (t), t);
 
-    case NAMESPACE_DECL:
-      return finish_namespace (d, t);
+      if (!old)
+	error ("failed to merge %#qD", t);
+      else if (d)
+	fprintf (d, "%s decl '%s', (%p)\n", old == t ? "New" : "Existing",
+		 IDENTIFIER_POINTER (DECL_NAME (old)), (void *)old);
 
-    case FUNCTION_DECL:
-      return finish_function (d, t);
+      return old;
     }
-  
+
   return t;
 }
 
@@ -2662,63 +2661,6 @@ cpms_in::finish_type (FILE *d, tree type)
     }
 
   return type;
-}
-
-/* Finish a function decl FN.  Insert into the symbol table or do
-   duplicate decl processing.  */
-
-tree
-cpms_in::finish_function (FILE *d, tree fn)
-{
-  // FIXME: look in other imports for this decl.  If this is me, then
-  // do nothing (we'll insert it below.)
-  return fn;
-#if 0  
-  // FIXME: want to look exactly in scope,  no using decls etc.
-  tree cur = lookup_qualified_name (DECL_CONTEXT (fn), DECL_NAME (fn),
-				    false, false, false);
-  if (cur == error_mark_node)
-    cur = NULL_TREE;
-  else
-    {
-      return fn;
-      gcc_unreachable (); // FIXME: deal with overloads & duplicates
-    }
-
-  fn = pushdecl (fn);
-  if (fn == error_mark_node)
-    return fn; // FIXME:why?
-  if (DECL_CONTEXT (fn) == global_namespace)
-    DECL_CONTEXT (fn) = DECL_CONTEXT (global_namespace);
-
-  if (d)
-    fprintf (d, "Inserting function decl %s (%p)\n",
-	     IDENTIFIER_POINTER (DECL_NAME (fn)), (void *)fn);
-#endif
-  return fn;
-}
-
-/* NS has just been read in.  Insert or find the namespace.  */
-
-tree
-cpms_in::finish_namespace (FILE *d, tree ns)
-{
-  tree res = NULL_TREE;
-
-  /* We will not have frobbed the namespace yet.  */
-  res = push_module_namespace (CP_DECL_CONTEXT (ns), mod_ix, ns);
-  if (!res)
-    error ("failed to insert namespace %E", ns);
-  else if (res == ns)
-    {
-      if (d)
-	fprintf (d, "Creating namespace %s (%p)\n",
-		 IDENTIFIER_POINTER (DECL_NAME (ns)), (void *)res);
-    }
-  else
-    free_node (ns);
-
-  return res;
 }
 
 /* Nest a module export level.  Return true if we were already in a
