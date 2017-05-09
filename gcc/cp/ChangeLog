@@ -1,3 +1,10 @@
+2017-05-09  Jason Merrill  <jason@redhat.com>
+
+	PR c++/66297, DR 1684 - literal class and constexpr member fns
+	* constexpr.c (is_valid_constexpr_fn): Only complain about
+	non-literal enclosing class in C++11.
+	* class.c (finalize_literal_type_property): Likewise.
+
 2017-05-09  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/80186

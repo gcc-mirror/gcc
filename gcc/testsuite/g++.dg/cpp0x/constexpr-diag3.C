@@ -16,7 +16,7 @@ int main()
 struct complex 			// { dg-message "no constexpr constructor" }
 {
   complex(double r, double i) : re(r), im(i) { }
-  constexpr double real() const { return re; } // { dg-error "not a literal type" }
+  constexpr double real() const { return re; } // { dg-error "not a literal type" "" { target c++11_only } }
   double imag() const { return im; }
 
 private:
@@ -25,7 +25,7 @@ private:
 };
 
 constexpr complex co1(0, 1);	   // { dg-error "not literal" }
-constexpr double dd2 = co1.real(); // { dg-error "non-constexpr function" }
+constexpr double dd2 = co1.real(); // { dg-error "" }
 
 // --------------------
 
