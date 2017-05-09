@@ -1,3 +1,8 @@
+2017-05-09  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/vect/vect-50.c: Revert last change.
+	* gcc.dg/vect/vect-44.c: Likewise.
+
 2017-05-08  Martin Sebor  <msebor@redhat.com>
 
 	PR translation/80280
