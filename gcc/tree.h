@@ -289,10 +289,6 @@ as_internal_fn (combined_fn code)
 (tree_not_check5 ((T), __FILE__, __LINE__, __FUNCTION__, \
                                (CODE1), (CODE2), (CODE3), (CODE4), (CODE5)))
 
-#define TREE_CHECK6(T, CODE1, CODE2, CODE3, CODE4, CODE5, CODE6)	\
-(tree_check6 ((T), __FILE__, __LINE__, __FUNCTION__, \
-		      (CODE1), (CODE2), (CODE3), (CODE4), (CODE5), (CODE6)))
-
 #define CONTAINS_STRUCT_CHECK(T, STRUCT) \
 (contains_struct_check ((T), (STRUCT), __FILE__, __LINE__, __FUNCTION__))
 
@@ -415,7 +411,6 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
 #define TREE_NOT_CHECK4(T, CODE1, CODE2, CODE3, CODE4) (T)
 #define TREE_CHECK5(T, CODE1, CODE2, CODE3, CODE4, CODE5) (T)
 #define TREE_NOT_CHECK5(T, CODE1, CODE2, CODE3, CODE4, CODE5) (T)
-#define TREE_CHECK6(T, CODE1, CODE2, CODE3, CODE4, CODE5, CODE6) (T)
 #define TREE_CLASS_CHECK(T, CODE)		(T)
 #define TREE_RANGE_CHECK(T, CODE1, CODE2)	(T)
 #define EXPR_CHECK(T)				(T)
@@ -3191,21 +3186,6 @@ tree_not_check5 (tree __t, const char *__f, int __l, const char *__g,
       || TREE_CODE (__t) == __c4
       || TREE_CODE (__t) == __c5)
     tree_not_check_failed (__t, __f, __l, __g, __c1, __c2, __c3, __c4, __c5, 0);
-  return __t;
-}
-
-inline tree
-tree_check6 (tree __t, const char *__f, int __l, const char *__g,
-             enum tree_code __c1, enum tree_code __c2, enum tree_code __c3,
-             enum tree_code __c4, enum tree_code __c5, enum tree_code __c6)
-{
-  if (TREE_CODE (__t) != __c1
-      && TREE_CODE (__t) != __c2
-      && TREE_CODE (__t) != __c3
-      && TREE_CODE (__t) != __c4
-      && TREE_CODE (__t) != __c5
-      && TREE_CODE (__t) != __c6)
-    tree_check_failed (__t, __f, __l, __g, __c1, __c2, __c3, __c4, __c5, __c6, 0);
   return __t;
 }
 
