@@ -1,5 +1,10 @@
 2017-05-09  Jason Merrill  <jason@redhat.com>
 
+	PR c++/70979 - literal class and closure types
+	* class.c (finalize_literal_type_property): Handle closures
+	specifically.
+	(explain_non_literal_class): Likewise.
+
 	PR c++/66297, DR 1684 - literal class and constexpr member fns
 	* constexpr.c (is_valid_constexpr_fn): Only complain about
 	non-literal enclosing class in C++11.

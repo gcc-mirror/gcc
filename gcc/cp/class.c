@@ -5752,6 +5752,8 @@ finalize_literal_type_property (tree t)
   if (cxx_dialect < cxx11
       || TYPE_HAS_NONTRIVIAL_DESTRUCTOR (t))
     CLASSTYPE_LITERAL_P (t) = false;
+  else if (CLASSTYPE_LITERAL_P (t) && LAMBDA_TYPE_P (t))
+    CLASSTYPE_LITERAL_P (t) = (cxx_dialect >= cxx1z);
   else if (CLASSTYPE_LITERAL_P (t) && !TYPE_HAS_TRIVIAL_DFLT (t)
 	   && CLASSTYPE_NON_AGGREGATE (t)
 	   && !TYPE_HAS_CONSTEXPR_CTOR (t))
@@ -5794,10 +5796,14 @@ explain_non_literal_class (tree t)
     return;
 
   inform (0, "%q+T is not literal because:", t);
-  if (TYPE_HAS_NONTRIVIAL_DESTRUCTOR (t))
+  if (cxx_dialect < cxx1z && LAMBDA_TYPE_P (t))
+    inform (0, "  %qT is a closure type, which is only literal in "
+	    "C++1z and later", t);
+  else if (TYPE_HAS_NONTRIVIAL_DESTRUCTOR (t))
     inform (0, "  %q+T has a non-trivial destructor", t);
   else if (CLASSTYPE_NON_AGGREGATE (t)
 	   && !TYPE_HAS_TRIVIAL_DFLT (t)
+	   && !LAMBDA_TYPE_P (t)
 	   && !TYPE_HAS_CONSTEXPR_CTOR (t))
     {
       inform (0, "  %q+T is not an aggregate, does not have a trivial "
