@@ -4150,7 +4150,6 @@ make_char_string_pack (tree value)
 
   /* Build the argument packs.  */
   SET_ARGUMENT_PACK_ARGS (argpack, charvec);
-  TREE_TYPE (argpack) = char_type_node;
 
   TREE_VEC_ELT (argvec, 0) = argpack;
 
@@ -4186,7 +4185,6 @@ make_string_pack (tree value)
 
   /* Build the argument packs.  */
   SET_ARGUMENT_PACK_ARGS (argpack, charvec);
-  TREE_TYPE (argpack) = str_char_type_node;
 
   TREE_VEC_ELT (argvec, 1) = argpack;
 

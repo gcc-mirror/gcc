@@ -1,3 +1,13 @@
+2017-05-10  Jason Merrill  <jason@redhat.com>
+
+	PR c++/79549 - C++17 ICE with non-type auto template parameter pack
+	* pt.c (convert_template_argument): Just return an argument pack.
+	(coerce_template_parameter_pack, template_parm_to_arg)
+	(extract_fnparm_pack, make_argument_pack, tsubst_template_args)
+	(tsubst_decl, tsubst, type_unification_real, unify_pack_expansion):
+	Don't set the type of a NONTYPE_ARGUMENT_PACK.
+	* parser.c (make_char_string_pack, make_string_pack): Likewise.
+
 2017-05-10  Nathan Sidwell  <nathan@acm.org>
 
 	* cp-tree.h (add_method, clone_function_decl): Change last arg to
