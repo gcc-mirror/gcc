@@ -4,9 +4,11 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// +build darwin dragonfly freebsd openbsd netbsd
+// +build aix darwin dragonfly freebsd openbsd netbsd
 
 package syscall
+
+import "unsafe"
 
 const SizeofSockaddrInet4 = 16
 const SizeofSockaddrInet6 = 28

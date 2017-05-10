@@ -7,7 +7,6 @@
 #include "runtime.h"
 #include "array.h"
 #include "arch.h"
-#include "malloc.h"
 
 extern Slice runtime_get_envs(void);
 

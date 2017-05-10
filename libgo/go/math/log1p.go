@@ -97,6 +97,9 @@ package math
 func libc_log1p(float64) float64
 
 func Log1p(x float64) float64 {
+	if x == 0 {
+		return x
+	}
 	return libc_log1p(x)
 }
 

@@ -128,6 +128,7 @@ class Expression
     EXPRESSION_RECEIVE,
     EXPRESSION_TYPE_DESCRIPTOR,
     EXPRESSION_GC_SYMBOL,
+    EXPRESSION_PTRMASK_SYMBOL,
     EXPRESSION_TYPE_INFO,
     EXPRESSION_SLICE_INFO,
     EXPRESSION_SLICE_VALUE,
@@ -402,6 +403,13 @@ class Expression
   static Expression*
   make_gc_symbol(Type* type);
 
+  // Make an expression that evaluates to the address of a ptrmask
+  // symbol for TYPE.  For most types this will be the same as
+  // make_gc_symbol, but for larger types make_gc_symbol will return a
+  // gcprog while this will return a ptrmask.
+  static Expression*
+  make_ptrmask_symbol(Type* type);
+
   // Make an expression which evaluates to some characteristic of a
   // type.  These are only used for type descriptors, so there is no
   // location parameter.
@@ -413,7 +421,15 @@ class Expression
       TYPE_INFO_ALIGNMENT,
       // The required alignment of a value of the type when used as a
       // field in a struct.
-      TYPE_INFO_FIELD_ALIGNMENT
+      TYPE_INFO_FIELD_ALIGNMENT,
+      // The size of the prefix of a value of the type that contains
+      // all the pointers.  This is 0 for a type that contains no
+      // pointers.  It is always <= TYPE_INFO_SIZE.
+      TYPE_INFO_BACKEND_PTRDATA,
+      // Like TYPE_INFO_BACKEND_PTRDATA, but the ptrdata value that we
+      // want to store in a type descriptor.  They are the same for
+      // most types, but can differ for a type that uses a gcprog.
+      TYPE_INFO_DESCRIPTOR_PTRDATA
     };
 
   static Expression*
@@ -1774,6 +1790,10 @@ class Unary_expression : public Expression
     this->is_slice_init_ = true;
   }
 
+  // Call the address_taken method on the operand if necessary.
+  void
+  check_operand_address_taken(Gogo*);
+
   // Apply unary opcode OP to UNC, setting NC.  Return true if this
   // could be done, false if not.  On overflow, issues an error and
   // sets *ISSUED_ERROR.
@@ -2270,7 +2290,10 @@ class Call_expression : public Expression
 			    Expression**);
 
   Bexpression*
-  set_results(Translate_context*, Bexpression*);
+  set_results(Translate_context*);
+
+  Bexpression*
+  call_result_ref(Translate_context* context);
 
   // The function to call.
   Expression* fn_;
@@ -4011,6 +4034,13 @@ class Numeric_constant
   To_unsigned_long
   to_unsigned_long(unsigned long* val) const;
 
+  // If the value can be expressed as an integer that describes the
+  // size of an object in memory, set *VAL and return true.
+  // Otherwise, return false.  Currently we use int64_t to represent a
+  // memory size, as in Type::backend_type_size.
+  bool
+  to_memory_size(int64_t* val) const;
+
   // If the value can be expressed as an int, return true and
   // initialize and set VAL.  This will return false for a value with
   // an explicit float or complex type, even if the value is integral.
@@ -4051,6 +4081,12 @@ class Numeric_constant
 
   To_unsigned_long
   mpfr_to_unsigned_long(const mpfr_t fval, unsigned long *val) const;
+
+  bool
+  mpz_to_memory_size(const mpz_t ival, int64_t* val) const;
+
+  bool
+  mpfr_to_memory_size(const mpfr_t fval, int64_t* val) const;
 
   bool
   check_int_type(Integer_type*, bool, Location);

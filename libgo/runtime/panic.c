@@ -16,19 +16,23 @@ runtime_throw(const char *s)
 void
 runtime_panicstring(const char *s)
 {
+	M* mp;
 	Eface err;
 
-	if(runtime_m()->mallocing) {
-		runtime_printf("panic: %s\n", s);
-		runtime_throw("panic during malloc");
-	}
-	if(runtime_m()->gcing) {
-		runtime_printf("panic: %s\n", s);
-		runtime_throw("panic during gc");
-	}
-	if(runtime_m()->locks) {
-		runtime_printf("panic: %s\n", s);
-		runtime_throw("panic holding locks");
+	mp = runtime_m();
+	if (mp != nil) {
+		if(mp->mallocing) {
+			runtime_printf("panic: %s\n", s);
+			runtime_throw("panic during malloc");
+		}
+		if(mp->gcing) {
+			runtime_printf("panic: %s\n", s);
+			runtime_throw("panic during gc");
+		}
+		if(mp->locks) {
+			runtime_printf("panic: %s\n", s);
+			runtime_throw("panic holding locks");
+		}
 	}
 	runtime_newErrorCString(s, &err);
 	runtime_panic(err);

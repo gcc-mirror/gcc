@@ -126,6 +126,9 @@ package math
 func libc_expm1(float64) float64
 
 func Expm1(x float64) float64 {
+	if x == 0 {
+		return x
+	}
 	return libc_expm1(x)
 }
 
