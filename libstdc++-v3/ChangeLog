@@ -1,3 +1,8 @@
+2017-05-10  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/bits/stl_algobase.h (std::__iter_swap<false>): Remove
+	_GLIBCXX_MOVE usage.
+
 2017-05-09  Jason Merrill  <jason@redhat.com>
 
 	* testsuite/24_iterators/container_access.cc (test03): Make il3 static.
