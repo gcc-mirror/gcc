@@ -543,6 +543,7 @@ Objective-C and Objective-C++ Dialects}.
 -fdump-class-hierarchy@r{[}-@var{n}@r{]} @gol
 -fdump-final-insns@r{[}=@var{file}@r{]}
 -fdump-ipa-all  -fdump-ipa-cgraph  -fdump-ipa-inline @gol
+-fdump-lang-all @gol
 -fdump-passes @gol
 -fdump-rtl-@var{pass}  -fdump-rtl-@var{pass}=@var{filename} @gol
 -fdump-statistics @gol
@@ -12969,6 +12970,10 @@ and inlining decisions.
 Dump after function inlining.
 
 @end table
+
+@item -fdump-lang-all
+@opindex fdump-lang-all
+Control the dumping of language-specific information.
 
 @item -fdump-passes
 @opindex fdump-passes
