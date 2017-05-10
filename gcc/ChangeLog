@@ -1,3 +1,9 @@
+2017-05-10  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	PR target/80671
+	* config/aarch64/cortex-a57-fma-steering.c (merge_forest):
+	Move member access before delete.
+
 2017-05-10  Alexandre Oliva <aoliva@redhat.com>
 
 	* tree-inline.c (expand_call_inline): Split block at stmt
