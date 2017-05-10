@@ -1,3 +1,9 @@
+2017-05-10  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000.c (altivec_init_builtins): Define POWER8
+	built-ins for vec_xl and vec_xst with short and char pointer
+	arguments.
+
 2017-05-10  Sebastian Peryt  <sebastian.peryt@intel.com>
 
 	* config/i386/avx512fintrin.h (_mm_mask_max_round_sd)

@@ -18295,6 +18295,17 @@ altivec_init_builtins (void)
       def_builtin ("__builtin_vsx_st_elemrev_v16qi",
 		   void_ftype_v16qi_long_pvoid, VSX_BUILTIN_ST_ELEMREV_V16QI);
     }
+  else
+    {
+      rs6000_builtin_decls[(int) VSX_BUILTIN_LD_ELEMREV_V8HI]
+	= rs6000_builtin_decls[(int) VSX_BUILTIN_LXVW4X_V8HI];
+      rs6000_builtin_decls[(int) VSX_BUILTIN_LD_ELEMREV_V16QI]
+	= rs6000_builtin_decls[(int) VSX_BUILTIN_LXVW4X_V16QI];
+      rs6000_builtin_decls[(int) VSX_BUILTIN_ST_ELEMREV_V8HI]
+	= rs6000_builtin_decls[(int) VSX_BUILTIN_STXVW4X_V8HI];
+      rs6000_builtin_decls[(int) VSX_BUILTIN_ST_ELEMREV_V16QI]
+	= rs6000_builtin_decls[(int) VSX_BUILTIN_STXVW4X_V16QI];
+    }
 
   def_builtin ("__builtin_vec_vsx_ld", opaque_ftype_long_pcvoid,
 	       VSX_BUILTIN_VEC_LD);
