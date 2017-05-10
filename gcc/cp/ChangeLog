@@ -1,3 +1,16 @@
+2017-05-10  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-tree.h (add_method, clone_function_decl): Change last arg to
+	bool.
+	* class.c (add_method): Change third arg to bool.  Adjust.
+	(one_inheriting_sig, one_inherited_ctor): Adjust.
+	(clone_function_decl): Change 2nd arg to bool.  Adjust.
+	(clone_constructors_and_destructors): Adjust.
+	* lambda.c (maybe_add_lambda_conv_op): Adjust.
+	* method.c (lazily_declare_fn): Adjust.
+	* pt.c (tsubst_decl, instantiate_template_1): Adjust.
+	* semantics.c (finish_member_declaration): Adjust.
+
 2017-05-10  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/80145

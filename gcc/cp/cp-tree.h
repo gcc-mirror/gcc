@@ -5722,7 +5722,7 @@ extern tree build_vfn_ref			(tree, tree);
 extern tree get_vtable_decl			(tree, int);
 extern void resort_type_method_vec		(void *, void *,
 						 gt_pointer_operator, void *);
-extern bool add_method				(tree, tree, tree);
+extern bool add_method				(tree, tree, bool);
 extern tree declared_access			(tree);
 extern tree currently_open_class		(tree);
 extern tree currently_open_derived_class	(tree);
@@ -5785,7 +5785,7 @@ extern tree missing_abi_tags			(tree);
 extern void fixup_type_variants			(tree);
 extern void fixup_attribute_variants		(tree);
 extern tree* decl_cloned_function_p		(const_tree, bool);
-extern void clone_function_decl			(tree, int);
+extern void clone_function_decl			(tree, bool);
 extern void adjust_clone_args			(tree);
 extern void deduce_noexcept_on_destructor       (tree);
 extern void insert_late_enum_def_into_classtype_sorted_fields (tree, tree);

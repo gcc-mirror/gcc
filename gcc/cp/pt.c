@@ -12413,7 +12413,7 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 	       If it isn't, that'll be handled by
 	       clone_constructors_and_destructors.  */
 	    if (PRIMARY_TEMPLATE_P (gen_tmpl))
-	      clone_function_decl (r, /*update_method_vec_p=*/0);
+	      clone_function_decl (r, /*update_methods=*/false);
 	  }
 	else if ((complain & tf_error) != 0
 		 && IDENTIFIER_OPNAME_P (DECL_NAME (r))
@@ -18205,7 +18205,7 @@ instantiate_template_1 (tree tmpl, tree orig_args, tsubst_flags_t complain)
      by cloning the instantiation of the main entry point, not by
      instantiating the template clones.  */
   if (DECL_CHAIN (gen_tmpl) && DECL_CLONED_FUNCTION_P (DECL_CHAIN (gen_tmpl)))
-    clone_function_decl (fndecl, /*update_method_vec_p=*/0);
+    clone_function_decl (fndecl, /*update_methods=*/false);
 
   if (!access_ok)
     {

@@ -1002,12 +1002,12 @@ modify_vtable_entry (tree t,
 }
 
 
-/* Add method METHOD to class TYPE.  If USING_DECL is non-null, it is
-   the USING_DECL naming METHOD.  Returns true if the method could be
-   added to the method vec.  */
+/* Add method METHOD to class TYPE.  If VIA_USING indicates whether
+   METHOD is being injected via a using_decl.  Returns true if the
+   method could be added to the method vec.  */
 
 bool
-add_method (tree type, tree method, tree using_decl)
+add_method (tree type, tree method, bool via_using)
 {
   unsigned slot;
   tree overload;
@@ -1097,7 +1097,7 @@ add_method (tree type, tree method, tree using_decl)
 
       /* Two using-declarations can coexist, we'll complain about ambiguity in
 	 overload resolution.  */
-      if (using_decl && TREE_CODE (fns) == OVERLOAD && OVL_USED (fns)
+      if (via_using && TREE_CODE (fns) == OVERLOAD && OVL_USED (fns)
 	  /* Except handle inherited constructors specially.  */
 	  && ! DECL_CONSTRUCTOR_P (fn))
 	goto cont;
@@ -1221,12 +1221,10 @@ add_method (tree type, tree method, tree using_decl)
 	      /* Otherwise defer to the other function.  */
 	      return false;
 	    }
-	  if (using_decl)
-	    {
-	      if (DECL_CONTEXT (fn) == type)
-		/* Defer to the local function.  */
-		return false;
-	    }
+
+	  if (via_using)
+	    /* Defer to the local function.  */
+	    return false;
 	  else if (flag_new_inheriting_ctors
 		   && DECL_INHERITED_CTOR (fn))
 	    {
@@ -1238,13 +1236,9 @@ add_method (tree type, tree method, tree using_decl)
 	    {
 	      error ("%q+#D cannot be overloaded", method);
 	      error ("with %q+#D", fn);
+	      return false;
 	    }
 
-	  /* We don't call duplicate_decls here to merge the
-	     declarations because that will confuse things if the
-	     methods have inline definitions.  In particular, we
-	     will crash while processing the definitions.  */
-	  return false;
 	}
 
     cont:
@@ -1259,7 +1253,7 @@ add_method (tree type, tree method, tree using_decl)
     return false;
 
   /* Add the new binding.  */
-  if (using_decl)
+  if (via_using)
     {
       overload = ovl_cons (method, current_fns);
       OVL_USED (overload) = true;
@@ -3340,7 +3334,7 @@ one_inheriting_sig (tree t, tree ctor, tree *parms, int nparms)
   tree fn = implicitly_declare_fn (sfk_inheriting_constructor,
 				   t, false, ctor, parmlist);
   gcc_assert (TYPE_MAIN_VARIANT (t) == t);
-  if (add_method (t, fn, NULL_TREE))
+  if (add_method (t, fn, false))
     {
       DECL_CHAIN (fn) = TYPE_METHODS (t);
       TYPE_METHODS (t) = fn;
@@ -3359,7 +3353,7 @@ one_inherited_ctor (tree ctor, tree t, tree using_decl)
     {
       ctor = implicitly_declare_fn (sfk_inheriting_constructor,
 				    t, /*const*/false, ctor, parms);
-      add_method (t, ctor, using_decl);
+      add_method (t, ctor, using_decl != NULL_TREE);
       TYPE_HAS_USER_CONSTRUCTOR (t) = true;
       return;
     }
@@ -4890,11 +4884,12 @@ decl_cloned_function_p (const_tree decl, bool just_testing)
 }
 
 /* Produce declarations for all appropriate clones of FN.  If
-   UPDATE_METHOD_VEC_P is nonzero, the clones are added to the
-   CLASTYPE_METHOD_VEC as well.  */
+   UPDATE_METHODS is true, the clones are added to the
+   CLASTYPE_METHOD_VEC.  VIA_USING indicates whether these are cloning
+   decls brought in via using declarations (i.e. inheriting ctors).  */
 
 void
-clone_function_decl (tree fn, int update_method_vec_p)
+clone_function_decl (tree fn, bool update_methods)
 {
   tree clone;
 
@@ -4908,11 +4903,11 @@ clone_function_decl (tree fn, int update_method_vec_p)
       /* For each constructor, we need two variants: an in-charge version
 	 and a not-in-charge version.  */
       clone = build_clone (fn, complete_ctor_identifier);
-      if (update_method_vec_p)
-	add_method (DECL_CONTEXT (clone), clone, NULL_TREE);
+      if (update_methods)
+	add_method (DECL_CONTEXT (clone), clone, false);
       clone = build_clone (fn, base_ctor_identifier);
-      if (update_method_vec_p)
-	add_method (DECL_CONTEXT (clone), clone, NULL_TREE);
+      if (update_methods)
+	add_method (DECL_CONTEXT (clone), clone, false);
     }
   else
     {
@@ -4930,15 +4925,15 @@ clone_function_decl (tree fn, int update_method_vec_p)
       if (DECL_VIRTUAL_P (fn))
 	{
 	  clone = build_clone (fn, deleting_dtor_identifier);
-	  if (update_method_vec_p)
-	    add_method (DECL_CONTEXT (clone), clone, NULL_TREE);
+	  if (update_methods)
+	    add_method (DECL_CONTEXT (clone), clone, false);
 	}
       clone = build_clone (fn, complete_dtor_identifier);
-      if (update_method_vec_p)
-	add_method (DECL_CONTEXT (clone), clone, NULL_TREE);
+      if (update_methods)
+	add_method (DECL_CONTEXT (clone), clone, false);
       clone = build_clone (fn, base_dtor_identifier);
-      if (update_method_vec_p)
-	add_method (DECL_CONTEXT (clone), clone, NULL_TREE);
+      if (update_methods)
+	add_method (DECL_CONTEXT (clone), clone, false);
     }
 
   /* Note that this is an abstract function that is never emitted.  */
@@ -5041,10 +5036,12 @@ clone_constructors_and_destructors (tree t)
   if (!CLASSTYPE_METHOD_VEC (t))
     return;
 
+  /* While constructors can be via a using declaration, at this point
+     we no longer need to know that.  */
   for (fns = CLASSTYPE_CONSTRUCTORS (t); fns; fns = OVL_NEXT (fns))
-    clone_function_decl (OVL_CURRENT (fns), /*update_method_vec_p=*/1);
+    clone_function_decl (OVL_CURRENT (fns), /*update_methods=*/true);
   for (fns = CLASSTYPE_DESTRUCTORS (t); fns; fns = OVL_NEXT (fns))
-    clone_function_decl (OVL_CURRENT (fns), /*update_method_vec_p=*/1);
+    clone_function_decl (OVL_CURRENT (fns), /*update_methods=*/true);
 }
 
 /* Deduce noexcept for a destructor DTOR.  */

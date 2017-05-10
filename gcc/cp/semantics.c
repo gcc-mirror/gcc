@@ -3018,7 +3018,7 @@ finish_member_declaration (tree decl)
     {
       /* We also need to add this function to the
 	 CLASSTYPE_METHOD_VEC.  */
-      if (add_method (current_class_type, decl, NULL_TREE))
+      if (add_method (current_class_type, decl, false))
 	{
 	  gcc_assert (TYPE_MAIN_VARIANT (current_class_type) == current_class_type);
 	  DECL_CHAIN (decl) = TYPE_METHODS (current_class_type);
