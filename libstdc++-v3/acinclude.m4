@@ -3763,7 +3763,7 @@ case $enable_symvers in
 	      [Define to use GNU versioning in the shared library.])
     ;;
   gnu-versioned-namespace)
-    libtool_VERSION=7:0:0
+    libtool_VERSION=8:0:0
     SYMVER_FILE=config/abi/pre/gnu-versioned-namespace.ver
     AC_DEFINE(_GLIBCXX_SYMVER_GNU_NAMESPACE, 1,
 	      [Define to use GNU namespace versioning in the shared library.])

@@ -46,8 +46,17 @@ AM_CFLAGS = -fexceptions -fnon-call-exceptions -fplan9-extensions \
 	-I $(srcdir)/../libgcc -I $(srcdir)/../libbacktrace \
 	-I $(MULTIBUILDTOP)../../gcc/include
 
+AM_LDFLAGS =
+
 if USING_SPLIT_STACK
-AM_LDFLAGS = -XCClinker $(SPLIT_STACK)
+AM_LDFLAGS += -XCClinker $(SPLIT_STACK)
+endif
+
+if LIBGO_IS_AIX
+# Using an import file for libgo avoid requiring to use the -brtl flag
+# when builing a go program
+AM_LDFLAGS += -Wl,-bbigtoc -Wl,-bI:$(srcdir)/libgo.imp
+EXTRA_libgo_la_DEPENDENCIES = libgo.imp
 endif
 
 # Multilib support.
@@ -383,12 +392,6 @@ toolexeclibgounicode_DATA = \
 	unicode/utf16.gox \
 	unicode/utf8.gox
 
-if HAVE_SYS_MMAN_H
-runtime_mem_file = runtime/mem.c
-else
-runtime_mem_file = runtime/mem_posix_memalign.c
-endif
-
 if LIBGO_IS_RTEMS
 rtems_task_variable_add_file = runtime/rtems-task-variable-add.c
 else
@@ -419,7 +422,11 @@ else
 if LIBGO_IS_NETBSD
 runtime_getncpu_file = runtime/getncpu-bsd.c
 else
+if LIBGO_IS_AIX
+runtime_getncpu_file = runtime/getncpu-aix.c
+else
 runtime_getncpu_file = runtime/getncpu-none.c
+endif
 endif
 endif
 endif
@@ -430,7 +437,6 @@ endif
 runtime_files = \
 	runtime/aeshash.c \
 	runtime/go-assert.c \
-	runtime/go-breakpoint.c \
 	runtime/go-caller.c \
 	runtime/go-callers.c \
 	runtime/go-cdiv.c \
@@ -445,7 +451,6 @@ runtime_files = \
 	runtime/go-memmove.c \
 	runtime/go-nanotime.c \
 	runtime/go-now.c \
-	runtime/go-new.c \
 	runtime/go-nosys.c \
 	runtime/go-reflect-call.c \
 	runtime/go-runtime-error.c \
@@ -453,46 +458,21 @@ runtime_files = \
 	runtime/go-signal.c \
 	runtime/go-strslice.c \
 	runtime/go-typedesc-equal.c \
-	runtime/go-unsafe-new.c \
-	runtime/go-unsafe-newarray.c \
 	runtime/go-unsafe-pointer.c \
 	runtime/go-unsetenv.c \
 	runtime/go-unwind.c \
 	runtime/go-varargs.c \
 	runtime/env_posix.c \
-	runtime/heapdump.c \
-	runtime/mcache.c \
-	runtime/mcentral.c \
-	$(runtime_mem_file) \
-	runtime/mfixalloc.c \
-	runtime/mgc0.c \
-	runtime/mheap.c \
-	runtime/msize.c \
 	runtime/panic.c \
-	runtime/parfor.c \
 	runtime/print.c \
 	runtime/proc.c \
 	runtime/runtime_c.c \
+	runtime/stack.c \
 	runtime/thread.c \
 	$(runtime_thread_files) \
 	runtime/yield.c \
 	$(rtems_task_variable_add_file) \
-	malloc.c \
 	$(runtime_getncpu_file)
-
-goc2c.$(OBJEXT): runtime/goc2c.c
-	$(CC_FOR_BUILD) -c $(CFLAGS_FOR_BUILD) $<
-
-goc2c: goc2c.$(OBJEXT)
-	$(CC_FOR_BUILD) $(CFLAGS_FOR_BUILD) $(LDFLAGS_FOR_BUILD) -o $@ $<
-
-malloc.c: $(srcdir)/runtime/malloc.goc goc2c
-	./goc2c $< > $@.tmp
-	mv -f $@.tmp $@
-
-%.c: $(srcdir)/runtime/%.goc goc2c
-	./goc2c $< > $@.tmp
-	mv -f $@.tmp $@
 
 version.go: s-version; @true
 s-version: Makefile
@@ -500,6 +480,7 @@ s-version: Makefile
 	echo "package sys" > version.go.tmp
 	echo 'const DefaultGoroot = "$(prefix)"' >> version.go.tmp
 	echo 'const TheVersion = "'`cat $(srcdir)/VERSION | sed 1q`' '`$(GOC) --version | sed 1q`'"' >> version.go.tmp
+	echo 'const Goexperiment = ``' >> version.go.tmp
 	echo 'const GOARCH = "'$(GOARCH)'"' >> version.go.tmp
 	echo 'const GOOS = "'$(GOOS)'"' >> version.go.tmp
 	echo 'const GccgoToolDir = "$(libexecsubdir)"' >> version.go.tmp
@@ -550,7 +531,7 @@ s-version: Makefile
 
 runtime_sysinfo.go: s-runtime_sysinfo; @true
 s-runtime_sysinfo: $(srcdir)/mkrsysinfo.sh gen-sysinfo.go
-	$(SHELL) $(srcdir)/mkrsysinfo.sh
+	GOOS=$(GOOS) $(SHELL) $(srcdir)/mkrsysinfo.sh
 	$(SHELL) $(srcdir)/mvifdiff.sh tmp-runtime_sysinfo.go runtime_sysinfo.go
 	$(STAMP) $@
 
@@ -560,14 +541,23 @@ s-sigtab: $(srcdir)/mksigtab.sh gen-sysinfo.go
 	$(SHELL) $(srcdir)/mvifdiff.sh tmp-sigtab.go sigtab.go
 	$(STAMP) $@
 
+# _Complex_lock and _Reader_lock are Go translations of some AIX system
+# types and should not be exported back to C
+# sigset conflicts with system type sigset on AIX, so we need to rename it
 runtime.inc: s-runtime-inc; @true
 s-runtime-inc: runtime.lo Makefile
-	rm -f runtime.inc.tmp2
-	grep -v "#define _" runtime.inc.tmp | grep -v "#define [cm][01234] " > runtime.inc.tmp2
+	rm -f runtime.inc.tmp2 runtime.inc.tmp3
+	grep -v "#define _" runtime.inc.tmp | grep -v "#define [cm][01234] " | grep -v "#define empty " > runtime.inc.tmp2
 	for pattern in '_[GP][a-z]' _Max _Lock _Sig _Trace _MHeap _Num; do \
 	  grep "#define $$pattern" runtime.inc.tmp >> runtime.inc.tmp2; \
 	done
-	$(SHELL) $(srcdir)/mvifdiff.sh runtime.inc.tmp2 runtime.inc
+	for TYPE in _Complex_lock _Reader_lock; do \
+	  sed -e '/struct '$${TYPE}' {/,/^}/s/^.*$$//' runtime.inc.tmp2 > runtime.inc.tmp3; \
+	  mv runtime.inc.tmp3 runtime.inc.tmp2; \
+	done
+	sed -e 's/sigset/sigset_go/' runtime.inc.tmp2 > runtime.inc.tmp3
+	$(SHELL) $(srcdir)/mvifdiff.sh runtime.inc.tmp3 runtime.inc
+	rm -f runtime.inc.tmp2 runtime.inc.tmp3
 	$(STAMP) $@
 
 noinst_DATA = zstdpkglist.go
@@ -579,7 +569,7 @@ s-zstdpkglist: Makefile
 	echo 'package main' > zstdpkglist.go.tmp
 	echo "" >> zstdpkglist.go.tmp
 	echo 'var stdpkg = map[string]bool{' >> zstdpkglist.go.tmp
-	echo $(libgo_go_objs) 'unsafe.lo' 'runtime/cgo.lo' | sed 's/\.lo /\": true,\n/g' | grep -v _c | sed 's/\.lo/\": true,/' | sed 's/^/\t\"/' | sort -u >> zstdpkglist.go.tmp
+	echo $(libgo_go_objs) 'unsafe.lo' 'runtime/cgo.lo' | sed 's|[a-z0-9_/]*_c\.lo||g' | sed 's|\([a-z0-9_/]*\)\.lo|"\1": true,|g' >> zstdpkglist.go.tmp
 	echo '}' >> zstdpkglist.go.tmp
 	$(SHELL) $(srcdir)/mvifdiff.sh zstdpkglist.go.tmp zstdpkglist.go
 	$(STAMP) $@
@@ -632,7 +622,7 @@ s-errno:
 
 sysinfo.go: s-sysinfo; @true
 s-sysinfo: $(srcdir)/mksysinfo.sh gen-sysinfo.go errno.i
-	$(SHELL) $(srcdir)/mksysinfo.sh
+	GOOS=$(GOOS) $(SHELL) $(srcdir)/mksysinfo.sh
 	$(SHELL) $(srcdir)/mvifdiff.sh tmp-sysinfo.go sysinfo.go
 	$(STAMP) $@
 
@@ -923,8 +913,13 @@ BUILDPACKAGE = \
 	$(LTGOCOMPILE) -I . -c -fgo-pkgpath=`echo $@ | sed -e 's/.lo$$//'` $($(subst -,_,$(subst .,_,$(subst /,_,$@)))_GOCFLAGS) -o $@ $$files
 
 # How to build a .gox file from a .lo file.
+# Matching .o file can either be in the same directory as the .lo (non-PIC
+# object) or in the .libs directory (PIC object).
 BUILDGOX = \
-	f=`echo $< | sed -e 's/.lo$$/.o/'`; \
+	f="$(basename $<).o"; \
+	if test ! -f $$f; then \
+	  f="$(basename $(<D)/.libs/$(<F)).o"; \
+	fi; \
 	$(OBJCOPY) -j .go_export $$f $@.tmp; \
 	$(SHELL) $(srcdir)/mvifdiff.sh $@.tmp `echo $@ | sed -e 's/s-gox/gox/'`
 
@@ -941,6 +936,8 @@ CHECK = \
 	export RUNTESTFLAGS; \
 	MAKE="$(MAKE)"; \
 	export MAKE; \
+	NM="$(NM)"; \
+	export NM; \
 	libgccdir=`${GOC} -print-libgcc-file-name | sed -e 's|/[^/]*$$||'`; \
 	LD_LIBRARY_PATH="`${PWD_COMMAND}`/.libs:$${libgccdir}:${LD_LIBRARY_PATH}"; \
 	LD_LIBRARY_PATH=`echo $${LD_LIBRARY_PATH} | sed 's,::*,:,g;s,^:*,,;s,:*$$,,'`; \
@@ -1296,6 +1293,7 @@ TEST_PACKAGES = \
 	runtime/internal/sys/check \
 	runtime/pprof/check \
 	runtime/pprof/internal/protopprof/check \
+	runtime/trace/check \
 	sync/atomic/check \
 	text/scanner/check \
 	text/tabwriter/check \
@@ -1407,7 +1405,12 @@ check-multi:
 bench:
 	-@$(MAKE) -k $(TEST_PACKAGES) GOBENCH=.
 
-MOSTLYCLEAN_FILES = libgo.head libgo.sum.sep libgo.log.sep
+MOSTLYCLEANFILES = \
+	s-runtime_sysinfo s-sigtab s-runtime-inc s-zstdpkglist \
+	s-libcalls s-libcalls-list s-syscall_arch s-gen-sysinfo s-sysinfo \
+	s-errno s-epoll \
+	libgo.head libgo.sum.sep libgo.log.sep libgo.var \
+	libcalls-list runtime.inc runtime.inc.tmp2 runtime.inc.tmp3
 
 mostlyclean-local:
 	find . -name '*.lo' -print | xargs $(LIBTOOL) --mode=clean rm -f
@@ -1415,8 +1418,13 @@ mostlyclean-local:
 	find . -name '*-testsum' -print | xargs rm -f
 	find . -name '*-testlog' -print | xargs rm -f
 
-CLEANFILES = *.go *.gox goc2c *.c s-version libgo.sum libgo.log
+CLEANFILES = *.go *.c s-version libgo.sum libgo.log runtime.inc
 
 clean-local:
 	find . -name '*.la' -print | xargs $(LIBTOOL) --mode=clean rm -f
 	find . -name '*.a' -print | xargs rm -f
+	find . -name '*.gox' -print | xargs rm -f
+	find . -name '*.s-gox' -print | xargs rm -f
+
+distclean-local:
+	find . -name '*.lo.dep' -print | xargs rm -f

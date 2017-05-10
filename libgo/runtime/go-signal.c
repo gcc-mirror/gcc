@@ -91,7 +91,7 @@ sigtramp(int sig, siginfo_t *info, void *context)
 
 	__splitstack_getcontext(&stack_context[0]);
 
-	stack = __splitstack_find_context(&gp->m->gsignal->stackcontext[0],
+	stack = __splitstack_find_context((void*)(&gp->m->gsignal->stackcontext[0]),
 					  &stack_size, &next_segment,
 					  &next_sp, &initial_sp);
 
@@ -126,7 +126,7 @@ sigtramp(int sig, siginfo_t *info, void *context)
 	// Set the split stack context so that the stack guards are
 	// checked correctly.
 
-	__splitstack_setcontext(&gp->m->gsignal->stackcontext[0]);
+	__splitstack_setcontext((void*)(&gp->m->gsignal->stackcontext[0]));
 
 	sigtrampgo(sig, info, context);
 

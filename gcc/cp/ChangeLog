@@ -1,5 +1,52 @@
 2017-05-10  Nathan Sidwell  <nathan@acm.org>
 
+	* class.c (handle_using_decl): Always use OVL_CURRENT.
+	(resolve_address_of_overloaded_function): Move iterator decl into
+	for scope.  Don't strip anticipated decls here.
+
+	* pt.c (print_candidates_1): Separate TREE_LIST and OVERLOAD
+	printing.
+	(print_candidates): Adjust.
+
+	* cp-tree.h (build_new_function_call): Lose koenig_p arg.  Fix
+	line breaking.
+	* call.c (build_new_function_call): Lose koenig_p arg.  Remove
+	koenig_p handling here.
+	* pt.c (push_template_decl_real): Unconditionally retrofit_lang_decl.
+	(tsubst_omp_clauses): Likewise.
+	(do_class_deduction): Adjust buld_new_function_call calls.
+	* semantics.c (finish_call_expr): Likewise.
+
+2017-05-10  Jason Merrill  <jason@redhat.com>
+
+	* pt.c (unify_parameter_deduction_failure, unify_cv_qual_mismatch)
+	(unify_type_mismatch, unify_parameter_pack_mismatch)
+	(unify_ptrmem_cst_mismatch, unify_expression_unequal)
+	(unify_parameter_pack_inconsistent, unify_inconsistency)
+	(unify_vla_arg, unify_method_type_error, unify_arity)
+	(unify_arg_conversion, unify_no_common_base)
+	(unify_inconsistent_template_template_parameters)
+	(unify_template_deduction_failure)
+	(unify_template_argument_mismatch)
+	(unify_overload_resolution_failure): Call unify_invalid.
+
+	CWG 1847 - Clarifying compatibility during partial ordering
+	* pt.c (more_specialized_fn): No order between two non-deducible
+	parameters.
+
+	* pt.c (dependent_type_p): Make sure we aren't called with
+	global_type_node.
+
+	PR c++/79549 - C++17 ICE with non-type auto template parameter pack
+	* pt.c (convert_template_argument): Just return an argument pack.
+	(coerce_template_parameter_pack, template_parm_to_arg)
+	(extract_fnparm_pack, make_argument_pack, tsubst_template_args)
+	(tsubst_decl, tsubst, type_unification_real, unify_pack_expansion):
+	Don't set the type of a NONTYPE_ARGUMENT_PACK.
+	* parser.c (make_char_string_pack, make_string_pack): Likewise.
+
+2017-05-10  Nathan Sidwell  <nathan@acm.org>
+
 	* cp-tree.h (add_method, clone_function_decl): Change last arg to
 	bool.
 	* class.c (add_method): Change third arg to bool.  Adjust.

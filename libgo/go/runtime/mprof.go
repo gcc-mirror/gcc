@@ -12,15 +12,6 @@ import (
 	"unsafe"
 )
 
-// Export temporarily for gccgo's C code to call:
-//go:linkname mProf_Malloc runtime.mProf_Malloc
-//go:linkname mProf_Free runtime.mProf_Free
-//go:linkname mProf_GC runtime.mProf_GC
-//go:linkname tracealloc runtime.tracealloc
-//go:linkname tracefree runtime.tracefree
-//go:linkname tracegc runtime.tracegc
-//go:linkname iterate_memprof runtime.iterate_memprof
-
 // NOTE(rsc): Everything here could use cas if contention became an issue.
 var proflock mutex
 

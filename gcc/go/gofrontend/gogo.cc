@@ -720,15 +720,18 @@ Gogo::init_imports(std::vector<Bstatement*>& init_stmts, Bfunction *bfunction)
 // roots during the mark phase.  We build a struct that is easy to
 // hook into a list of roots.
 
-// struct __go_gc_root_list
-// {
-//   struct __go_gc_root_list* __next;
-//   struct __go_gc_root
-//   {
-//     void* __decl;
-//     size_t __size;
-//   } __roots[];
-// };
+// type gcRoot struct {
+// 	decl    unsafe.Pointer // Pointer to variable.
+//	size    uintptr        // Total size of variable.
+// 	ptrdata uintptr        // Length of variable's gcdata.
+// 	gcdata  *byte          // Pointer mask.
+// }
+//
+// type gcRootList struct {
+// 	next  *gcRootList
+// 	count int
+// 	roots [...]gcRoot
+// }
 
 // The last entry in the roots array has a NULL decl field.
 
@@ -737,28 +740,35 @@ Gogo::register_gc_vars(const std::vector<Named_object*>& var_gc,
 		       std::vector<Bstatement*>& init_stmts,
                        Bfunction* init_bfn)
 {
-  if (var_gc.empty())
+  if (var_gc.empty() && this->gc_roots_.empty())
     return;
 
   Type* pvt = Type::make_pointer_type(Type::make_void_type());
-  Type* uint_type = Type::lookup_integer_type("uint");
-  Struct_type* root_type = Type::make_builtin_struct_type(2,
-                                                          "__decl", pvt,
-                                                          "__size", uint_type);
+  Type* uintptr_type = Type::lookup_integer_type("uintptr");
+  Type* byte_type = this->lookup_global("byte")->type_value();
+  Type* pointer_byte_type = Type::make_pointer_type(byte_type);
+  Struct_type* root_type =
+    Type::make_builtin_struct_type(4,
+				   "decl", pvt,
+				   "size", uintptr_type,
+				   "ptrdata", uintptr_type,
+				   "gcdata", pointer_byte_type);
 
   Location builtin_loc = Linemap::predeclared_location();
-  unsigned roots_len = var_gc.size() + this->gc_roots_.size() + 1;
+  unsigned long roots_len = var_gc.size() + this->gc_roots_.size();
   Expression* length = Expression::make_integer_ul(roots_len, NULL,
                                                    builtin_loc);
   Array_type* root_array_type = Type::make_array_type(root_type, length);
   root_array_type->set_is_array_incomparable();
-  Type* ptdt = Type::make_type_descriptor_ptr_type();
-  Struct_type* root_list_type =
-      Type::make_builtin_struct_type(2,
-                                     "__next", ptdt,
-                                     "__roots", root_array_type);
 
-  // Build an initializer for the __roots array.
+  Type* int_type = Type::lookup_integer_type("int");
+  Struct_type* root_list_type =
+      Type::make_builtin_struct_type(3,
+                                     "next", pvt,
+				     "count", int_type,
+                                     "roots", root_array_type);
+
+  // Build an initializer for the roots array.
 
   Expression_list* roots_init = new Expression_list();
 
@@ -772,11 +782,22 @@ Gogo::register_gc_vars(const std::vector<Named_object*>& var_gc,
       Expression* decl = Expression::make_var_reference(*p, no_loc);
       Expression* decl_addr =
           Expression::make_unary(OPERATOR_AND, decl, no_loc);
+      decl_addr->unary_expression()->set_does_not_escape();
+      decl_addr = Expression::make_cast(pvt, decl_addr, no_loc);
       init->push_back(decl_addr);
 
-      Expression* decl_size =
-          Expression::make_type_info(decl->type(), Expression::TYPE_INFO_SIZE);
-      init->push_back(decl_size);
+      Expression* size =
+	Expression::make_type_info(decl->type(),
+				   Expression::TYPE_INFO_SIZE);
+      init->push_back(size);
+
+      Expression* ptrdata =
+	Expression::make_type_info(decl->type(),
+				   Expression::TYPE_INFO_BACKEND_PTRDATA);
+      init->push_back(ptrdata);
+
+      Expression* gcdata = Expression::make_ptrmask_symbol(decl->type());
+      init->push_back(gcdata);
 
       Expression* root_ctor =
           Expression::make_struct_composite_literal(root_type, init, no_loc);
@@ -791,37 +812,35 @@ Gogo::register_gc_vars(const std::vector<Named_object*>& var_gc,
 
       Expression* expr = *p;
       Location eloc = expr->location();
-      init->push_back(expr);
+      init->push_back(Expression::make_cast(pvt, expr, eloc));
 
       Type* type = expr->type()->points_to();
       go_assert(type != NULL);
+
       Expression* size =
-	Expression::make_type_info(type, Expression::TYPE_INFO_SIZE);
+	Expression::make_type_info(type,
+				   Expression::TYPE_INFO_SIZE);
       init->push_back(size);
+
+      Expression* ptrdata =
+	Expression::make_type_info(type,
+				   Expression::TYPE_INFO_BACKEND_PTRDATA);
+      init->push_back(ptrdata);
+
+      Expression* gcdata = Expression::make_ptrmask_symbol(type);
+      init->push_back(gcdata);
 
       Expression* root_ctor =
 	Expression::make_struct_composite_literal(root_type, init, eloc);
       roots_init->push_back(root_ctor);
     }
 
-  // The list ends with a NULL entry.
-
-  Expression_list* null_init = new Expression_list();
-  Expression* nil = Expression::make_nil(builtin_loc);
-  null_init->push_back(nil);
-
-  Expression *zero = Expression::make_integer_ul(0, NULL, builtin_loc);
-  null_init->push_back(zero);
-
-  Expression* null_root_ctor =
-      Expression::make_struct_composite_literal(root_type, null_init,
-                                                builtin_loc);
-  roots_init->push_back(null_root_ctor);
-
   // Build a constructor for the struct.
 
   Expression_list* root_list_init = new Expression_list();
-  root_list_init->push_back(nil);
+  root_list_init->push_back(Expression::make_nil(builtin_loc));
+  root_list_init->push_back(Expression::make_integer_ul(roots_len, int_type,
+							builtin_loc));
 
   Expression* roots_ctor =
       Expression::make_array_composite_literal(root_array_type, roots_init,
@@ -1216,24 +1235,31 @@ sort_var_inits(Gogo* gogo, Var_inits* var_inits)
     }
 
   // VAR_INITS is in the correct order.  For each VAR in VAR_INITS,
-  // check for a loop of VAR on itself.  We only do this if
-  // INIT is not NULL and there is no dependency; when INIT is
-  // NULL, it means that PREINIT sets VAR, which we will
+  // check for a loop of VAR on itself.
   // interpret as a loop.
   for (Var_inits::const_iterator p = var_inits->begin();
        p != var_inits->end();
        ++p)
-    {
-      Named_object* var = p->var();
-      Expression* init = var->var_value()->init();
-      Block* preinit = var->var_value()->preinit();
-      Named_object* dep = gogo->var_depends_on(var->var_value());
-      if (init != NULL && dep == NULL
-	  && expression_requires(init, preinit, NULL, var))
-	go_error_at(var->location(),
-		    "initialization expression for %qs depends upon itself",
-		    var->message_name().c_str());
-    }
+    gogo->check_self_dep(p->var());
+}
+
+// Give an error if the initialization expression for VAR depends on
+// itself.  We only check if INIT is not NULL and there is no
+// dependency; when INIT is NULL, it means that PREINIT sets VAR,
+// which we will interpret as a loop.
+
+void
+Gogo::check_self_dep(Named_object* var)
+{
+  Expression* init = var->var_value()->init();
+  Block* preinit = var->var_value()->preinit();
+  Named_object* dep = this->var_depends_on(var->var_value());
+  if (init != NULL
+      && dep == NULL
+      && expression_requires(init, preinit, NULL, var))
+    go_error_at(var->location(),
+		"initialization expression for %qs depends upon itself",
+		var->message_name().c_str());
 }
 
 // Write out the global definitions.
@@ -1425,8 +1451,18 @@ Gogo::write_globals()
 	      var_inits.push_back(Var_init(no, zero_stmt));
 	    }
 
+	  // Collect a list of all global variables with pointers,
+	  // to register them for the garbage collector.
 	  if (!is_sink && var->type()->has_pointer())
-	    var_gc.push_back(no);
+	    {
+	      // Avoid putting runtime.gcRoots itself on the list.
+	      if (this->compiling_runtime()
+		  && this->package_name() == "runtime"
+		  && Gogo::unpack_hidden_name(no->name()) == "gcRoots")
+		;
+	      else
+		var_gc.push_back(no);
+	    }
 	}
     }
 
@@ -3584,14 +3620,14 @@ class Order_eval : public Traverse
 // Implement the order of evaluation rules for a statement.
 
 int
-Order_eval::statement(Block* block, size_t* pindex, Statement* s)
+Order_eval::statement(Block* block, size_t* pindex, Statement* stmt)
 {
   // FIXME: This approach doesn't work for switch statements, because
   // we add the new statements before the whole switch when we need to
   // instead add them just before the switch expression.  The right
   // fix is probably to lower switch statements with nonconstant cases
   // to a series of conditionals.
-  if (s->switch_statement() != NULL)
+  if (stmt->switch_statement() != NULL)
     return TRAVERSE_CONTINUE;
 
   Find_eval_ordering find_eval_ordering;
@@ -3599,11 +3635,11 @@ Order_eval::statement(Block* block, size_t* pindex, Statement* s)
   // If S is a variable declaration, then ordinary traversal won't do
   // anything.  We want to explicitly traverse the initialization
   // expression if there is one.
-  Variable_declaration_statement* vds = s->variable_declaration_statement();
+  Variable_declaration_statement* vds = stmt->variable_declaration_statement();
   Expression* init = NULL;
   Expression* orig_init = NULL;
   if (vds == NULL)
-    s->traverse_contents(&find_eval_ordering);
+    stmt->traverse_contents(&find_eval_ordering);
   else
     {
       init = vds->var()->var_value()->init();
@@ -3636,7 +3672,7 @@ Order_eval::statement(Block* block, size_t* pindex, Statement* s)
   // usually leave it in place.
   if (c == 1)
     {
-      switch (s->classification())
+      switch (stmt->classification())
 	{
 	case Statement::STATEMENT_ASSIGNMENT:
 	  // For an assignment statement, we need to evaluate an
@@ -3653,7 +3689,7 @@ Order_eval::statement(Block* block, size_t* pindex, Statement* s)
 	    // move.  We need to move any subexpressions in case they
 	    // are themselves call statements that require passing a
 	    // closure.
-	    Expression* expr = s->expression_statement()->expr();
+	    Expression* expr = stmt->expression_statement()->expr();
 	    if (expr->call_expression() != NULL
 		&& expr->call_expression()->result_count() == 0)
 	      break;
@@ -3666,7 +3702,8 @@ Order_eval::statement(Block* block, size_t* pindex, Statement* s)
 	}
     }
 
-  bool is_thunk = s->thunk_statement() != NULL;
+  bool is_thunk = stmt->thunk_statement() != NULL;
+  Expression_statement* es = stmt->expression_statement();
   for (Find_eval_ordering::const_iterator p = find_eval_ordering.begin();
        p != find_eval_ordering.end();
        ++p)
@@ -3697,8 +3734,13 @@ Order_eval::statement(Block* block, size_t* pindex, Statement* s)
           //
           // Since a given call expression can be shared by multiple
           // Call_result_expressions, avoid hoisting the call the
-          // second time we see it here.
+          // second time we see it here. In addition, don't try to
+          // hoist the top-level multi-return call in the statement,
+          // since doing this would result a tree with more than one copy
+          // of the call.
           if (this->remember_expression(*pexpr))
+            s = NULL;
+          else if (es != NULL && *pexpr == es->expr())
             s = NULL;
           else
             s = Statement::make_statement(*pexpr, true);
@@ -4448,9 +4490,7 @@ Expression*
 Gogo::allocate_memory(Type* type, Location location)
 {
   Expression* td = Expression::make_type_descriptor(type, location);
-  Expression* size =
-    Expression::make_type_info(type, Expression::TYPE_INFO_SIZE);
-  return Runtime::make_call(Runtime::NEW, location, 2, td, size);
+  return Runtime::make_call(Runtime::NEW, location, 1, td);
 }
 
 // Traversal class used to check for return statements.
@@ -4502,7 +4542,7 @@ Gogo::do_exports()
 {
   // For now we always stream to a section.  Later we may want to
   // support streaming to a separate file.
-  Stream_to_section stream;
+  Stream_to_section stream(this->backend());
 
   // Write out either the prefix or pkgpath depending on how we were
   // invoked.
@@ -6696,11 +6736,19 @@ Variable::get_backend_variable(Gogo* gogo, Named_object* function,
                   asm_name.append(n);
                 }
 	      asm_name = go_encode_id(asm_name);
+
+	      bool is_hidden = Gogo::is_hidden_name(name);
+	      // Hack to export runtime.writeBarrier.  FIXME.
+	      // This is because go:linkname doesn't work on variables.
+	      if (gogo->compiling_runtime()
+		  && var_name == "runtime.writeBarrier")
+		is_hidden = false;
+
 	      bvar = backend->global_variable(var_name,
 					      asm_name,
 					      btype,
 					      package != NULL,
-					      Gogo::is_hidden_name(name),
+					      is_hidden,
 					      this->in_unique_section_,
 					      this->location_);
 	    }

@@ -1,3 +1,23 @@
+2017-05-10  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+        PR fortran/80687
+        PR fortran/80696
+        * m4/matmul_internal.m4:  'matmul_name`:  Always
+        use malloc/free to allocate t1.
+        * generated/matmul_c10.c: Regenerated.
+        * generated/matmul_c16.c: Regenerated.
+        * generated/matmul_c4.c: Regenerated.
+        * generated/matmul_c8.c: Regenerated.
+        * generated/matmul_i1.c: Regenerated.
+        * generated/matmul_i16.c: Regenerated.
+        * generated/matmul_i2.c: Regenerated.
+        * generated/matmul_i4.c: Regenerated.
+        * generated/matmul_i8.c: Regenerated.
+        * generated/matmul_r10.c: Regenerated.
+        * generated/matmul_r16.c: Regenerated.
+        * generated/matmul_r4.c: Regenerated.
+        * generated/matmul_r8.c: Regenerated.
+
 2017-05-08  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/80602

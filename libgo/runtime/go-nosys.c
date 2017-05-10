@@ -341,6 +341,18 @@ utimensat(int dirfd __attribute__ ((unused)),
 }
 #endif
 
+
+#ifndef HAVE_MINCORE
+int
+mincore(void *addr __attribute__ ((unused)),
+	size_t length __attribute__ ((unused)),
+	unsigned char *vec __attribute__ ((unused)))
+{
+  errno = ENOSYS;
+  return -1;
+}
+#endif
+
 /* Long double math functions.  These are needed on old i386 systems
    that don't have them in libm.  The compiler translates calls to
    these functions on float64 to call an 80-bit floating point
@@ -491,6 +503,15 @@ strerror_r (int errnum, char *buf, size_t buflen)
 }
 
 #endif /* ! HAVE_STRERROR_R */
+
+#ifndef HAVE_SYSCALL
+int
+syscall(int number, ...)
+{
+  errno = ENOSYS;
+  return -1;
+}
+#endif
 
 #ifndef HAVE_WAIT4
 

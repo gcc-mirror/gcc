@@ -1177,7 +1177,12 @@ Type::type_descriptor_pointer(Gogo* gogo, Location location)
   Bexpression* var_expr =
       gogo->backend()->var_expression(t->type_descriptor_var_,
                                       VE_rvalue, location);
-  return gogo->backend()->address_expression(var_expr, location);
+  Bexpression* var_addr =
+      gogo->backend()->address_expression(var_expr, location);
+  Type* td_type = Type::make_type_descriptor_type();
+  Btype* td_btype = td_type->get_backend(gogo);
+  Btype* ptd_btype = gogo->backend()->pointer_type(td_btype);
+  return gogo->backend()->convert_expression(ptd_btype, var_addr, location);
 }
 
 // A mapping from unnamed types to type descriptor variables.
@@ -1395,18 +1400,6 @@ Type::named_type_descriptor(Gogo* gogo, Type* type, Named_type* name)
   return type->do_type_descriptor(gogo, name);
 }
 
-// Generate the GC symbol for this TYPE.  VALS is the data so far in this
-// symbol; extra values will be appended in do_gc_symbol.  OFFSET is the
-// offset into the symbol where the GC data is located.  STACK_SIZE is the
-// size of the GC stack when dealing with array types.
-
-void
-Type::gc_symbol(Gogo* gogo, Type* type, Expression_list** vals,
-		Expression** offset, int stack_size)
-{
-  type->do_gc_symbol(gogo, vals, offset, stack_size);
-}
-
 // Make a builtin struct type from a list of fields.  The fields are
 // pairs of a name and a type.
 
@@ -1477,6 +1470,7 @@ Type::make_type_descriptor_type()
       Location bloc = Linemap::predeclared_location();
 
       Type* uint8_type = Type::lookup_integer_type("uint8");
+      Type* pointer_uint8_type = Type::make_pointer_type(uint8_type);
       Type* uint32_type = Type::lookup_integer_type("uint32");
       Type* uintptr_type = Type::lookup_integer_type("uintptr");
       Type* string_type = Type::lookup_string_type();
@@ -1543,15 +1537,16 @@ Type::make_type_descriptor_type()
       // The type descriptor type.
 
       Struct_type* type_descriptor_type =
-	Type::make_builtin_struct_type(11,
+	Type::make_builtin_struct_type(12,
+				       "size", uintptr_type,
+				       "ptrdata", uintptr_type,
+				       "hash", uint32_type,
 				       "kind", uint8_type,
 				       "align", uint8_type,
 				       "fieldAlign", uint8_type,
-				       "size", uintptr_type,
-				       "hash", uint32_type,
 				       "hashfn", hash_fntype,
 				       "equalfn", equal_fntype,
-				       "gc", uintptr_type,
+				       "gcdata", pointer_uint8_type,
 				       "string", pointer_string_type,
 				       "", pointer_uncommon_type,
 				       "ptrToThis",
@@ -2307,30 +2302,25 @@ Type::type_descriptor_constructor(Gogo* gogo, int runtime_type_kind,
   const Struct_field_list* fields = td_type->struct_type()->fields();
 
   Expression_list* vals = new Expression_list();
-  vals->reserve(9);
+  vals->reserve(12);
 
   if (!this->has_pointer())
     runtime_type_kind |= RUNTIME_TYPE_KIND_NO_POINTERS;
   if (this->points_to() != NULL)
     runtime_type_kind |= RUNTIME_TYPE_KIND_DIRECT_IFACE;
+  int64_t ptrsize;
+  int64_t ptrdata;
+  if (this->needs_gcprog(gogo, &ptrsize, &ptrdata))
+    runtime_type_kind |= RUNTIME_TYPE_KIND_GC_PROG;
+
   Struct_field_list::const_iterator p = fields->begin();
-  go_assert(p->is_field_name("kind"));
-  vals->push_back(Expression::make_integer_ul(runtime_type_kind, p->type(),
-					      bloc));
-
-  ++p;
-  go_assert(p->is_field_name("align"));
-  Expression::Type_info type_info = Expression::TYPE_INFO_ALIGNMENT;
-  vals->push_back(Expression::make_type_info(this, type_info));
-
-  ++p;
-  go_assert(p->is_field_name("fieldAlign"));
-  type_info = Expression::TYPE_INFO_FIELD_ALIGNMENT;
-  vals->push_back(Expression::make_type_info(this, type_info));
-
-  ++p;
   go_assert(p->is_field_name("size"));
-  type_info = Expression::TYPE_INFO_SIZE;
+  Expression::Type_info type_info = Expression::TYPE_INFO_SIZE;
+  vals->push_back(Expression::make_type_info(this, type_info));
+
+  ++p;
+  go_assert(p->is_field_name("ptrdata"));
+  type_info = Expression::TYPE_INFO_DESCRIPTOR_PTRDATA;
   vals->push_back(Expression::make_type_info(this, type_info));
 
   ++p;
@@ -2341,6 +2331,21 @@ Type::type_descriptor_constructor(Gogo* gogo, int runtime_type_kind,
   else
     h = this->hash_for_method(gogo);
   vals->push_back(Expression::make_integer_ul(h, p->type(), bloc));
+
+  ++p;
+  go_assert(p->is_field_name("kind"));
+  vals->push_back(Expression::make_integer_ul(runtime_type_kind, p->type(),
+					      bloc));
+
+  ++p;
+  go_assert(p->is_field_name("align"));
+  type_info = Expression::TYPE_INFO_ALIGNMENT;
+  vals->push_back(Expression::make_type_info(this, type_info));
+
+  ++p;
+  go_assert(p->is_field_name("fieldAlign"));
+  type_info = Expression::TYPE_INFO_FIELD_ALIGNMENT;
+  vals->push_back(Expression::make_type_info(this, type_info));
 
   ++p;
   go_assert(p->is_field_name("hashfn"));
@@ -2368,7 +2373,7 @@ Type::type_descriptor_constructor(Gogo* gogo, int runtime_type_kind,
     vals->push_back(Expression::make_func_reference(equal_fn, NULL, bloc));
 
   ++p;
-  go_assert(p->is_field_name("gc"));
+  go_assert(p->is_field_name("gcdata"));
   vals->push_back(Expression::make_gc_symbol(this));
 
   ++p;
@@ -2413,6 +2418,12 @@ Type::type_descriptor_constructor(Gogo* gogo, int runtime_type_kind,
   return Expression::make_struct_composite_literal(td_type, vals, bloc);
 }
 
+// The maximum length of a GC ptrmask bitmap.  This corresponds to the
+// length used by the gc toolchain, and also appears in
+// libgo/go/reflect/type.go.
+
+static const int64_t max_ptrmask_bytes = 2048;
+
 // Return a pointer to the Garbage Collection information for this type.
 
 Bexpression*
@@ -2421,6 +2432,10 @@ Type::gc_symbol_pointer(Gogo* gogo)
   Type* t = this->forwarded();
   while (t->named_type() != NULL && t->named_type()->is_alias())
     t = t->named_type()->real_type()->forwarded();
+
+  if (!t->has_pointer())
+    return gogo->backend()->nil_pointer_expression();
+
   if (t->gc_symbol_var_ == NULL)
     {
       t->make_gc_symbol_var(gogo);
@@ -2431,7 +2446,10 @@ Type::gc_symbol_pointer(Gogo* gogo)
       gogo->backend()->var_expression(t->gc_symbol_var_, VE_rvalue, bloc);
   Bexpression* addr_expr =
       gogo->backend()->address_expression(var_expr, bloc);
-  Btype* ubtype = Type::lookup_integer_type("uintptr")->get_backend(gogo);
+
+  Type* uint8_type = Type::lookup_integer_type("uint8");
+  Type* pointer_uint8_type = Type::make_pointer_type(uint8_type);
+  Btype* ubtype = pointer_uint8_type->get_backend(gogo);
   return gogo->backend()->convert_expression(ubtype, addr_expr, bloc);
 }
 
@@ -2466,10 +2484,20 @@ Type::make_gc_symbol_var(Gogo* gogo)
       phash = &ins.first->second;
     }
 
+  int64_t ptrsize;
+  int64_t ptrdata;
+  if (!this->needs_gcprog(gogo, &ptrsize, &ptrdata))
+    {
+      this->gc_symbol_var_ = this->gc_ptrmask_var(gogo, ptrsize, ptrdata);
+      if (phash != NULL)
+	*phash = this->gc_symbol_var_;
+      return;
+    }
+
   std::string sym_name = this->type_descriptor_var_name(gogo, nt) + "$gc";
 
   // Build the contents of the gc symbol.
-  Expression* sym_init = this->gc_symbol_constructor(gogo);
+  Expression* sym_init = this->gcprog_constructor(gogo, ptrsize, ptrdata);
   Btype* sym_btype = sym_init->type()->get_backend(gogo);
 
   // If the type descriptor for this type is defined somewhere else, so is the
@@ -2502,28 +2530,13 @@ Type::make_gc_symbol_var(Gogo* gogo)
       is_common = true;
     }
 
-  // The current garbage collector requires that the GC symbol be
-  // aligned to at least a four byte boundary.  See the use of PRECISE
-  // and LOOP in libgo/runtime/mgc0.c.
-  int64_t align;
-  if (!sym_init->type()->backend_type_align(gogo, &align))
-    go_assert(saw_errors());
-  if (align < 4)
-    align = 4;
-  else
-    {
-      // Use default alignment.
-      align = 0;
-    }
-
   // Since we are building the GC symbol in this package, we must create the
   // variable before converting the initializer to its backend representation
   // because the initializer may refer to the GC symbol for this type.
   std::string asm_name(go_selectively_encode_id(sym_name));
   this->gc_symbol_var_ =
       gogo->backend()->implicit_variable(sym_name, asm_name,
-					 sym_btype, false, true, is_common,
-					 align);
+					 sym_btype, false, true, is_common, 0);
   if (phash != NULL)
     *phash = this->gc_symbol_var_;
 
@@ -2535,50 +2548,658 @@ Type::make_gc_symbol_var(Gogo* gogo)
 					      sym_binit);
 }
 
-// Return an array literal for the Garbage Collection information for this type.
+// Return whether this type needs a GC program, and set *PTRDATA to
+// the size of the pointer data in bytes and *PTRSIZE to the size of a
+// pointer.
 
-Expression*
-Type::gc_symbol_constructor(Gogo* gogo)
+bool
+Type::needs_gcprog(Gogo* gogo, int64_t* ptrsize, int64_t* ptrdata)
 {
-  Location bloc = Linemap::predeclared_location();
+  if (!this->backend_type_ptrdata(gogo, ptrdata))
+    {
+      go_assert(saw_errors());
+      return false;
+    }
 
-  // The common GC Symbol data starts with the width of the type and ends
-  // with the GC Opcode GC_END.
-  // However, for certain types, the GC symbol may include extra information
-  // before the ending opcode, so we pass the expression list into
-  // Type::gc_symbol to allow it to add extra information as is necessary.
-  Expression_list* vals = new Expression_list;
+  Type* voidptr = Type::make_pointer_type(Type::make_void_type());
+  if (!voidptr->backend_type_size(gogo, ptrsize))
+    go_unreachable();
 
-  Type* uintptr_t = Type::lookup_integer_type("uintptr");
-  // width
-  vals->push_back(Expression::make_type_info(this,
-					     Expression::TYPE_INFO_SIZE));
-
-  Expression* offset = Expression::make_integer_ul(0, uintptr_t, bloc);
-
-  this->do_gc_symbol(gogo, &vals, &offset, 0);
-
-  vals->push_back(Expression::make_integer_ul(GC_END, uintptr_t, bloc));
-
-  Expression* len = Expression::make_integer_ul(vals->size(), NULL,
-						bloc);
-  Array_type* gc_symbol_type = Type::make_array_type(uintptr_t, len);
-  gc_symbol_type->set_is_array_incomparable();
-  return Expression::make_array_composite_literal(gc_symbol_type, vals, bloc);
+  return *ptrdata / *ptrsize > max_ptrmask_bytes;
 }
 
-// Advance the OFFSET of the GC symbol by this type's width.
+// A simple class used to build a GC ptrmask for a type.
+
+class Ptrmask
+{
+ public:
+  Ptrmask(size_t count)
+    : bits_((count + 7) / 8, 0)
+  {}
+
+  void
+  set_from(Gogo*, Type*, int64_t ptrsize, int64_t offset);
+
+  std::string
+  symname() const;
+
+  Expression*
+  constructor(Gogo* gogo) const;
+
+ private:
+  void
+  set(size_t index)
+  { this->bits_.at(index / 8) |= 1 << (index % 8); }
+
+  // The actual bits.
+  std::vector<unsigned char> bits_;
+};
+
+// Set bits in ptrmask starting from OFFSET based on TYPE.  OFFSET
+// counts in bytes.  PTRSIZE is the size of a pointer on the target
+// system.
 
 void
-Type::advance_gc_offset(Expression** offset)
+Ptrmask::set_from(Gogo* gogo, Type* type, int64_t ptrsize, int64_t offset)
 {
-  if (this->is_error_type())
-    return;
+  switch (type->base()->classification())
+    {
+    default:
+    case Type::TYPE_NIL:
+    case Type::TYPE_CALL_MULTIPLE_RESULT:
+    case Type::TYPE_NAMED:
+    case Type::TYPE_FORWARD:
+      go_unreachable();
 
+    case Type::TYPE_ERROR:
+    case Type::TYPE_VOID:
+    case Type::TYPE_BOOLEAN:
+    case Type::TYPE_INTEGER:
+    case Type::TYPE_FLOAT:
+    case Type::TYPE_COMPLEX:
+    case Type::TYPE_SINK:
+      break;
+
+    case Type::TYPE_FUNCTION:
+    case Type::TYPE_POINTER:
+    case Type::TYPE_MAP:
+    case Type::TYPE_CHANNEL:
+      // These types are all a single pointer.
+      go_assert((offset % ptrsize) == 0);
+      this->set(offset / ptrsize);
+      break;
+
+    case Type::TYPE_STRING:
+      // A string starts with a single pointer.
+      go_assert((offset % ptrsize) == 0);
+      this->set(offset / ptrsize);
+      break;
+
+    case Type::TYPE_INTERFACE:
+      // An interface is two pointers.
+      go_assert((offset % ptrsize) == 0);
+      this->set(offset / ptrsize);
+      this->set((offset / ptrsize) + 1);
+      break;
+
+    case Type::TYPE_STRUCT:
+      {
+	if (!type->has_pointer())
+	  return;
+
+	const Struct_field_list* fields = type->struct_type()->fields();
+	int64_t soffset = 0;
+	for (Struct_field_list::const_iterator pf = fields->begin();
+	     pf != fields->end();
+	     ++pf)
+	  {
+	    int64_t field_align;
+	    if (!pf->type()->backend_type_field_align(gogo, &field_align))
+	      {
+		go_assert(saw_errors());
+		return;
+	      }
+	    soffset = (soffset + (field_align - 1)) &~ (field_align - 1);
+
+	    this->set_from(gogo, pf->type(), ptrsize, offset + soffset);
+
+	    int64_t field_size;
+	    if (!pf->type()->backend_type_size(gogo, &field_size))
+	      {
+		go_assert(saw_errors());
+		return;
+	      }
+	    soffset += field_size;
+	  }
+      }
+      break;
+
+    case Type::TYPE_ARRAY:
+      if (type->is_slice_type())
+	{
+	  // A slice starts with a single pointer.
+	  go_assert((offset % ptrsize) == 0);
+	  this->set(offset / ptrsize);
+	  break;
+	}
+      else
+	{
+	  if (!type->has_pointer())
+	    return;
+
+	  int64_t len;
+	  if (!type->array_type()->int_length(&len))
+	    {
+	      go_assert(saw_errors());
+	      return;
+	    }
+
+	  Type* element_type = type->array_type()->element_type();
+	  int64_t ele_size;
+	  if (!element_type->backend_type_size(gogo, &ele_size))
+	    {
+	      go_assert(saw_errors());
+	      return;
+	    }
+
+	  int64_t eoffset = 0;
+	  for (int64_t i = 0; i < len; i++, eoffset += ele_size)
+	    this->set_from(gogo, element_type, ptrsize, offset + eoffset);
+	  break;
+	}
+    }
+}
+
+// Return a symbol name for this ptrmask.  This is used to coalesce
+// identical ptrmasks, which are common.  The symbol name must use
+// only characters that are valid in symbols.  It's nice if it's
+// short.  We convert it to a base64 string.
+
+std::string
+Ptrmask::symname() const
+{
+  const char chars[65] =
+    "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_.";
+  go_assert(chars[64] == '\0');
+  std::string ret;
+  unsigned int b = 0;
+  int remaining = 0;
+  for (std::vector<unsigned char>::const_iterator p = this->bits_.begin();
+       p != this->bits_.end();
+       ++p)
+    {
+      b |= *p << remaining;
+      remaining += 8;
+      while (remaining >= 6)
+	{
+	  ret += chars[b & 0x3f];
+	  b >>= 6;
+	  remaining -= 6;
+	}
+    }
+  while (remaining > 0)
+    {
+      ret += chars[b & 0x3f];
+      b >>= 6;
+      remaining -= 6;
+    }
+  return ret;
+}
+
+// Return a constructor for this ptrmask.  This will be used to
+// initialize the runtime ptrmask value.
+
+Expression*
+Ptrmask::constructor(Gogo* gogo) const
+{
   Location bloc = Linemap::predeclared_location();
-  Expression* width =
-    Expression::make_type_info(this, Expression::TYPE_INFO_SIZE);
-  *offset = Expression::make_binary(OPERATOR_PLUS, *offset, width, bloc);
+  Type* byte_type = gogo->lookup_global("byte")->type_value();
+  Expression* len = Expression::make_integer_ul(this->bits_.size(), NULL,
+						bloc);
+  Array_type* at = Type::make_array_type(byte_type, len);
+  Expression_list* vals = new Expression_list();
+  vals->reserve(this->bits_.size());
+  for (std::vector<unsigned char>::const_iterator p = this->bits_.begin();
+       p != this->bits_.end();
+       ++p)
+    vals->push_back(Expression::make_integer_ul(*p, byte_type, bloc));
+  return Expression::make_array_composite_literal(at, vals, bloc);
+}
+
+// The hash table mapping a ptrmask symbol name to the ptrmask variable.
+Type::GC_gcbits_vars Type::gc_gcbits_vars;
+
+// Return a ptrmask variable for a type.  For a type descriptor this
+// is only used for variables that are small enough to not need a
+// gcprog, but for a global variable this is used for a variable of
+// any size.  PTRDATA is the number of bytes of the type that contain
+// pointer data.  PTRSIZE is the size of a pointer on the target
+// system.
+
+Bvariable*
+Type::gc_ptrmask_var(Gogo* gogo, int64_t ptrsize, int64_t ptrdata)
+{
+  Ptrmask ptrmask(ptrdata / ptrsize);
+  ptrmask.set_from(gogo, this, ptrsize, 0);
+  std::string sym_name = "runtime.gcbits." + ptrmask.symname();
+  Bvariable* bvnull = NULL;
+  std::pair<GC_gcbits_vars::iterator, bool> ins =
+    Type::gc_gcbits_vars.insert(std::make_pair(sym_name, bvnull));
+  if (!ins.second)
+    {
+      // We've already built a GC symbol for this set of gcbits.
+      return ins.first->second;
+    }
+
+  Expression* val = ptrmask.constructor(gogo);
+  Translate_context context(gogo, NULL, NULL, NULL);
+  context.set_is_const();
+  Bexpression* bval = val->get_backend(&context);
+
+  std::string asm_name(go_selectively_encode_id(sym_name));
+  Btype *btype = val->type()->get_backend(gogo);
+  Bvariable* ret = gogo->backend()->implicit_variable(sym_name, asm_name,
+						      btype, false, true,
+						      true, 0);
+  gogo->backend()->implicit_variable_set_init(ret, sym_name, btype, false,
+					      true, true, bval);
+  ins.first->second = ret;
+  return ret;
+}
+
+// A GCProg is used to build a program for the garbage collector.
+// This is used for types with a lot of pointer data, to reduce the
+// size of the data in the compiled program.  The program is expanded
+// at runtime.  For the format, see runGCProg in libgo/go/runtime/mbitmap.go.
+
+class GCProg
+{
+ public:
+  GCProg()
+    : bytes_(), index_(0), nb_(0)
+  {}
+
+  // The number of bits described so far.
+  int64_t
+  bit_index() const
+  { return this->index_; }
+
+  void
+  set_from(Gogo*, Type*, int64_t ptrsize, int64_t offset);
+
+  void
+  end();
+
+  Expression*
+  constructor(Gogo* gogo) const;
+
+ private:
+  void
+  ptr(int64_t);
+
+  bool
+  should_repeat(int64_t, int64_t);
+
+  void
+  repeat(int64_t, int64_t);
+
+  void
+  zero_until(int64_t);
+
+  void
+  lit(unsigned char);
+
+  void
+  varint(int64_t);
+
+  void
+  flushlit();
+
+  // Add a byte to the program.
+  void
+  byte(unsigned char x)
+  { this->bytes_.push_back(x); }
+
+  // The maximum number of bytes of literal bits.
+  static const int max_literal = 127;
+
+  // The program.
+  std::vector<unsigned char> bytes_;
+  // The index of the last bit described.
+  int64_t index_;
+  // The current set of literal bits.
+  unsigned char b_[max_literal];
+  // The current number of literal bits.
+  int nb_;
+};
+
+// Set data in gcprog starting from OFFSET based on TYPE.  OFFSET
+// counts in bytes.  PTRSIZE is the size of a pointer on the target
+// system.
+
+void
+GCProg::set_from(Gogo* gogo, Type* type, int64_t ptrsize, int64_t offset)
+{
+  switch (type->base()->classification())
+    {
+    default:
+    case Type::TYPE_NIL:
+    case Type::TYPE_CALL_MULTIPLE_RESULT:
+    case Type::TYPE_NAMED:
+    case Type::TYPE_FORWARD:
+      go_unreachable();
+
+    case Type::TYPE_ERROR:
+    case Type::TYPE_VOID:
+    case Type::TYPE_BOOLEAN:
+    case Type::TYPE_INTEGER:
+    case Type::TYPE_FLOAT:
+    case Type::TYPE_COMPLEX:
+    case Type::TYPE_SINK:
+      break;
+
+    case Type::TYPE_FUNCTION:
+    case Type::TYPE_POINTER:
+    case Type::TYPE_MAP:
+    case Type::TYPE_CHANNEL:
+      // These types are all a single pointer.
+      go_assert((offset % ptrsize) == 0);
+      this->ptr(offset / ptrsize);
+      break;
+
+    case Type::TYPE_STRING:
+      // A string starts with a single pointer.
+      go_assert((offset % ptrsize) == 0);
+      this->ptr(offset / ptrsize);
+      break;
+
+    case Type::TYPE_INTERFACE:
+      // An interface is two pointers.
+      go_assert((offset % ptrsize) == 0);
+      this->ptr(offset / ptrsize);
+      this->ptr((offset / ptrsize) + 1);
+      break;
+
+    case Type::TYPE_STRUCT:
+      {
+	if (!type->has_pointer())
+	  return;
+
+	const Struct_field_list* fields = type->struct_type()->fields();
+	int64_t soffset = 0;
+	for (Struct_field_list::const_iterator pf = fields->begin();
+	     pf != fields->end();
+	     ++pf)
+	  {
+	    int64_t field_align;
+	    if (!pf->type()->backend_type_field_align(gogo, &field_align))
+	      {
+		go_assert(saw_errors());
+		return;
+	      }
+	    soffset = (soffset + (field_align - 1)) &~ (field_align - 1);
+
+	    this->set_from(gogo, pf->type(), ptrsize, offset + soffset);
+
+	    int64_t field_size;
+	    if (!pf->type()->backend_type_size(gogo, &field_size))
+	      {
+		go_assert(saw_errors());
+		return;
+	      }
+	    soffset += field_size;
+	  }
+      }
+      break;
+
+    case Type::TYPE_ARRAY:
+      if (type->is_slice_type())
+	{
+	  // A slice starts with a single pointer.
+	  go_assert((offset % ptrsize) == 0);
+	  this->ptr(offset / ptrsize);
+	  break;
+	}
+      else
+	{
+	  if (!type->has_pointer())
+	    return;
+
+	  int64_t len;
+	  if (!type->array_type()->int_length(&len))
+	    {
+	      go_assert(saw_errors());
+	      return;
+	    }
+
+	  Type* element_type = type->array_type()->element_type();
+
+	  // Flatten array of array to a big array by multiplying counts.
+	  while (element_type->array_type() != NULL
+		 && !element_type->is_slice_type())
+	    {
+	      int64_t ele_len;
+	      if (!element_type->array_type()->int_length(&ele_len))
+		{
+		  go_assert(saw_errors());
+		  return;
+		}
+
+	      len *= ele_len;
+	      element_type = element_type->array_type()->element_type();
+	    }
+
+	  int64_t ele_size;
+	  if (!element_type->backend_type_size(gogo, &ele_size))
+	    {
+	      go_assert(saw_errors());
+	      return;
+	    }
+
+	  go_assert(len > 0 && ele_size > 0);
+
+	  if (!this->should_repeat(ele_size / ptrsize, len))
+	    {
+	      // Cheaper to just emit the bits.
+	      int64_t eoffset = 0;
+	      for (int64_t i = 0; i < len; i++, eoffset += ele_size)
+		this->set_from(gogo, element_type, ptrsize, offset + eoffset);
+	    }
+	  else
+	    {
+	      go_assert((offset % ptrsize) == 0);
+	      go_assert((ele_size % ptrsize) == 0);
+	      this->set_from(gogo, element_type, ptrsize, offset);
+	      this->zero_until((offset + ele_size) / ptrsize);
+	      this->repeat(ele_size / ptrsize, len - 1);
+	    }
+
+	  break;
+	}
+    }
+}
+
+// Emit a 1 into the bit stream of a GC program at the given bit index.
+
+void
+GCProg::ptr(int64_t index)
+{
+  go_assert(index >= this->index_);
+  this->zero_until(index);
+  this->lit(1);
+}
+
+// Return whether it is worthwhile to use a repeat to describe c
+// elements of n bits each, compared to just emitting c copies of the
+// n-bit description.
+
+bool
+GCProg::should_repeat(int64_t n, int64_t c)
+{
+  // Repeat if there is more than 1 item and if the total data doesn't
+  // fit into four bytes.
+  return c > 1 && c * n > 4 * 8;
+}
+
+// Emit an instruction to repeat the description of the last n words c
+// times (including the initial description, so c + 1 times in total).
+
+void
+GCProg::repeat(int64_t n, int64_t c)
+{
+  if (n == 0 || c == 0)
+    return;
+  this->flushlit();
+  if (n < 128)
+    this->byte(0x80 | static_cast<unsigned char>(n & 0x7f));
+  else
+    {
+      this->byte(0x80);
+      this->varint(n);
+    }
+  this->varint(c);
+  this->index_ += n * c;
+}
+
+// Add zeros to the bit stream up to the given index.
+
+void
+GCProg::zero_until(int64_t index)
+{
+  go_assert(index >= this->index_);
+  int64_t skip = index - this->index_;
+  if (skip == 0)
+    return;
+  if (skip < 4 * 8)
+    {
+      for (int64_t i = 0; i < skip; ++i)
+	this->lit(0);
+      return;
+    }
+  this->lit(0);
+  this->flushlit();
+  this->repeat(1, skip - 1);
+}
+
+// Add a single literal bit to the program.
+
+void
+GCProg::lit(unsigned char x)
+{
+  if (this->nb_ == GCProg::max_literal)
+    this->flushlit();
+  this->b_[this->nb_] = x;
+  ++this->nb_;
+  ++this->index_;
+}
+
+// Emit the varint encoding of x.
+
+void
+GCProg::varint(int64_t x)
+{
+  go_assert(x >= 0);
+  while (x >= 0x80)
+    {
+      this->byte(0x80 | static_cast<unsigned char>(x & 0x7f));
+      x >>= 7;
+    }
+  this->byte(static_cast<unsigned char>(x & 0x7f));
+}
+
+// Flush any pending literal bits.
+
+void
+GCProg::flushlit()
+{
+  if (this->nb_ == 0)
+    return;
+  this->byte(static_cast<unsigned char>(this->nb_));
+  unsigned char bits = 0;
+  for (int i = 0; i < this->nb_; ++i)
+    {
+      bits |= this->b_[i] << (i % 8);
+      if ((i + 1) % 8 == 0)
+	{
+	  this->byte(bits);
+	  bits = 0;
+	}
+    }
+  if (this->nb_ % 8 != 0)
+    this->byte(bits);
+  this->nb_ = 0;
+}
+
+// Mark the end of a GC program.
+
+void
+GCProg::end()
+{
+  this->flushlit();
+  this->byte(0);
+}
+
+// Return an Expression for the bytes in a GC program.
+
+Expression*
+GCProg::constructor(Gogo* gogo) const
+{
+  Location bloc = Linemap::predeclared_location();
+
+  // The first four bytes are the length of the program in target byte
+  // order.  Build a struct whose first type is uint32 to make this
+  // work.
+
+  Type* uint32_type = Type::lookup_integer_type("uint32");
+
+  Type* byte_type = gogo->lookup_global("byte")->type_value();
+  Expression* len = Expression::make_integer_ul(this->bytes_.size(), NULL,
+						bloc);
+  Array_type* at = Type::make_array_type(byte_type, len);
+
+  Struct_type* st = Type::make_builtin_struct_type(2, "len", uint32_type,
+						   "bytes", at);
+
+  Expression_list* vals = new Expression_list();
+  vals->reserve(this->bytes_.size());
+  for (std::vector<unsigned char>::const_iterator p = this->bytes_.begin();
+       p != this->bytes_.end();
+       ++p)
+    vals->push_back(Expression::make_integer_ul(*p, byte_type, bloc));
+  Expression* bytes = Expression::make_array_composite_literal(at, vals, bloc);
+
+  vals = new Expression_list();
+  vals->push_back(Expression::make_integer_ul(this->bytes_.size(), uint32_type,
+					      bloc));
+  vals->push_back(bytes);
+
+  return Expression::make_struct_composite_literal(st, vals, bloc);
+}
+
+// Return a composite literal for the garbage collection program for
+// this type.  This is only used for types that are too large to use a
+// ptrmask.
+
+Expression*
+Type::gcprog_constructor(Gogo* gogo, int64_t ptrsize, int64_t ptrdata)
+{
+  Location bloc = Linemap::predeclared_location();
+
+  GCProg prog;
+  prog.set_from(gogo, this, ptrsize, 0);
+  int64_t offset = prog.bit_index() * ptrsize;
+  prog.end();
+
+  int64_t type_size;
+  if (!this->backend_type_size(gogo, &type_size))
+    {
+      go_assert(saw_errors());
+      return Expression::make_error(bloc);
+    }
+
+  go_assert(offset >= ptrdata && offset <= type_size);
+
+  return prog.constructor(gogo);
 }
 
 // Return a composite literal for the uncommon type information for
@@ -2946,6 +3567,164 @@ Type::backend_type_field_align(Gogo* gogo, int64_t *palign)
   return true;
 }
 
+// Get the ptrdata value for a type.  This is the size of the prefix
+// of the type that contains all pointers.  Store the ptrdata in
+// *PPTRDATA and return whether we found it.
+
+bool
+Type::backend_type_ptrdata(Gogo* gogo, int64_t* pptrdata)
+{
+  *pptrdata = 0;
+
+  if (!this->has_pointer())
+    return true;
+
+  if (!this->is_backend_type_size_known(gogo))
+    return false;
+
+  switch (this->classification_)
+    {
+    case TYPE_ERROR:
+      return true;
+
+    case TYPE_FUNCTION:
+    case TYPE_POINTER:
+    case TYPE_MAP:
+    case TYPE_CHANNEL:
+      // These types are nothing but a pointer.
+      return this->backend_type_size(gogo, pptrdata);
+
+    case TYPE_INTERFACE:
+      // An interface is a struct of two pointers.
+      return this->backend_type_size(gogo, pptrdata);
+
+    case TYPE_STRING:
+      {
+	// A string is a struct whose first field is a pointer, and
+	// whose second field is not.
+	Type* uint8_type = Type::lookup_integer_type("uint8");
+	Type* ptr = Type::make_pointer_type(uint8_type);
+	return ptr->backend_type_size(gogo, pptrdata);
+      }
+
+    case TYPE_NAMED:
+    case TYPE_FORWARD:
+      return this->base()->backend_type_ptrdata(gogo, pptrdata);
+
+    case TYPE_STRUCT:
+      {
+	const Struct_field_list* fields = this->struct_type()->fields();
+	int64_t offset = 0;
+	const Struct_field *ptr = NULL;
+	int64_t ptr_offset = 0;
+	for (Struct_field_list::const_iterator pf = fields->begin();
+	     pf != fields->end();
+	     ++pf)
+	  {
+	    int64_t field_align;
+	    if (!pf->type()->backend_type_field_align(gogo, &field_align))
+	      return false;
+	    offset = (offset + (field_align - 1)) &~ (field_align - 1);
+
+	    if (pf->type()->has_pointer())
+	      {
+		ptr = &*pf;
+		ptr_offset = offset;
+	      }
+
+	    int64_t field_size;
+	    if (!pf->type()->backend_type_size(gogo, &field_size))
+	      return false;
+	    offset += field_size;
+	  }
+
+	if (ptr != NULL)
+	  {
+	    int64_t ptr_ptrdata;
+	    if (!ptr->type()->backend_type_ptrdata(gogo, &ptr_ptrdata))
+	      return false;
+	    *pptrdata = ptr_offset + ptr_ptrdata;
+	  }
+	return true;
+      }
+
+    case TYPE_ARRAY:
+      if (this->is_slice_type())
+	{
+	  // A slice is a struct whose first field is a pointer, and
+	  // whose remaining fields are not.
+	  Type* element_type = this->array_type()->element_type();
+	  Type* ptr = Type::make_pointer_type(element_type);
+	  return ptr->backend_type_size(gogo, pptrdata);
+	}
+      else
+	{
+	  Numeric_constant nc;
+	  if (!this->array_type()->length()->numeric_constant_value(&nc))
+	    return false;
+	  int64_t len;
+	  if (!nc.to_memory_size(&len))
+	    return false;
+
+	  Type* element_type = this->array_type()->element_type();
+	  int64_t ele_size;
+	  int64_t ele_ptrdata;
+	  if (!element_type->backend_type_size(gogo, &ele_size)
+	      || !element_type->backend_type_ptrdata(gogo, &ele_ptrdata))
+	    return false;
+	  go_assert(ele_size > 0 && ele_ptrdata > 0);
+
+	  *pptrdata = (len - 1) * ele_size + ele_ptrdata;
+	  return true;
+	}
+
+    default:
+    case TYPE_VOID:
+    case TYPE_BOOLEAN:
+    case TYPE_INTEGER:
+    case TYPE_FLOAT:
+    case TYPE_COMPLEX:
+    case TYPE_SINK:
+    case TYPE_NIL:
+    case TYPE_CALL_MULTIPLE_RESULT:
+      go_unreachable();
+    }
+}
+
+// Get the ptrdata value to store in a type descriptor.  This is
+// normally the same as backend_type_ptrdata, but for a type that is
+// large enough to use a gcprog we may need to store a different value
+// if it ends with an array.  If the gcprog uses a repeat descriptor
+// for the array, and if the array element ends with non-pointer data,
+// then the gcprog will produce a value that describes the complete
+// array where the backend ptrdata will omit the non-pointer elements
+// of the final array element.  This is a subtle difference but the
+// run time code checks it to verify that it has expanded a gcprog as
+// expected.
+
+bool
+Type::descriptor_ptrdata(Gogo* gogo, int64_t* pptrdata)
+{
+  int64_t backend_ptrdata;
+  if (!this->backend_type_ptrdata(gogo, &backend_ptrdata))
+    return false;
+
+  int64_t ptrsize;
+  if (!this->needs_gcprog(gogo, &ptrsize, &backend_ptrdata))
+    {
+      *pptrdata = backend_ptrdata;
+      return true;
+    }
+
+  GCProg prog;
+  prog.set_from(gogo, this, ptrsize, 0);
+  int64_t offset = prog.bit_index() * ptrsize;
+
+  go_assert(offset >= backend_ptrdata);
+  *pptrdata = offset;
+  return true;
+}
+
 // Default function to export a type.
 
 void
@@ -3008,10 +3787,6 @@ class Error_type : public Type
   { go_assert(saw_errors()); }
 
   void
-  do_gc_symbol(Gogo*, Expression_list**, Expression**, int)
-  { go_assert(saw_errors()); }
-
-  void
   do_mangled_name(Gogo*, std::string* ret) const
   { ret->push_back('E'); }
 };
@@ -3047,10 +3822,6 @@ class Void_type : public Type
 
   void
   do_reflection(Gogo*, std::string*) const
-  { }
-
-  void
-  do_gc_symbol(Gogo*, Expression_list**, Expression**, int)
   { }
 
   void
@@ -3092,9 +3863,6 @@ class Boolean_type : public Type
   { ret->append("bool"); }
 
   void
-  do_gc_symbol(Gogo*, Expression_list**, Expression**, int);
-
-  void
   do_mangled_name(Gogo*, std::string* ret) const
   { ret->push_back('b'); }
 };
@@ -3113,12 +3881,6 @@ Boolean_type::do_type_descriptor(Gogo* gogo, Named_type* name)
       return Type::type_descriptor(gogo, no->type_value());
     }
 }
-
-// Update the offset of the GC symbol.
-
-void
-Boolean_type::do_gc_symbol(Gogo*, Expression_list**, Expression** offset, int)
-{ this->advance_gc_offset(offset); }
 
 Type*
 Type::make_boolean_type()
@@ -3629,20 +4391,6 @@ String_type::do_reflection(Gogo*, std::string* ret) const
   ret->append("string");
 }
 
-// Generate GC symbol for strings.
-
-void
-String_type::do_gc_symbol(Gogo*, Expression_list** vals,
-			  Expression** offset, int)
-{
-  Location bloc = Linemap::predeclared_location();
-  Type* uintptr_type = Type::lookup_integer_type("uintptr");
-  (*vals)->push_back(Expression::make_integer_ul(GC_STRING, uintptr_type,
-						 bloc));
-  (*vals)->push_back(*offset);
-  this->advance_gc_offset(offset);
-}
-
 // Mangled name of a string type.
 
 void
@@ -3711,10 +4459,6 @@ class Sink_type : public Type
 
   void
   do_reflection(Gogo*, std::string*) const
-  { go_unreachable(); }
-
-  void
-  do_gc_symbol(Gogo*, Expression_list**, Expression**, int)
   { go_unreachable(); }
 
   void
@@ -4300,22 +5044,6 @@ Function_type::do_reflection(Gogo* gogo, std::string* ret) const
     }
 }
 
-// Generate GC symbol for a function type.
-
-void
-Function_type::do_gc_symbol(Gogo*, Expression_list** vals,
-			    Expression** offset, int)
-{
-  Location bloc = Linemap::predeclared_location();
-  Type* uintptr_type = Type::lookup_integer_type("uintptr");
-
-  // We use GC_APTR here because we do not currently have a way to describe the
-  // the type of the possible function closure.  FIXME.
-  (*vals)->push_back(Expression::make_integer_ul(GC_APTR, uintptr_type, bloc));
-  (*vals)->push_back(*offset);
-  this->advance_gc_offset(offset);
-}
-
 // Mangled name.
 
 void
@@ -4718,26 +5446,6 @@ Pointer_type::do_reflection(Gogo* gogo, std::string* ret) const
   this->append_reflection(this->to_type_, gogo, ret);
 }
 
-// Generate GC symbol for pointer types.
-
-void
-Pointer_type::do_gc_symbol(Gogo*, Expression_list** vals,
-			   Expression** offset, int)
-{
-  Location loc = Linemap::predeclared_location();
-  Type* uintptr_type = Type::lookup_integer_type("uintptr");
-
-  unsigned long opval = this->to_type_->has_pointer() ? GC_PTR : GC_APTR;
-  (*vals)->push_back(Expression::make_integer_ul(opval, uintptr_type, loc));
-  (*vals)->push_back(*offset);
-
-  if (this->to_type_->has_pointer())
-    (*vals)->push_back(Expression::make_gc_symbol(this->to_type_));
-  this->advance_gc_offset(offset);
-}
-
-// Mangled name.
-
 void
 Pointer_type::do_mangled_name(Gogo* gogo, std::string* ret) const
 {
@@ -4816,10 +5524,6 @@ class Nil_type : public Type
   { go_unreachable(); }
 
   void
-  do_gc_symbol(Gogo*, Expression_list**, Expression**, int)
-  { go_unreachable(); }
-
-  void
   do_mangled_name(Gogo*, std::string* ret) const
   { ret->push_back('n'); }
 };
@@ -4872,10 +5576,6 @@ class Call_multiple_result_type : public Type
   void
   do_reflection(Gogo*, std::string*) const
   { go_assert(saw_errors()); }
-
-  void
-  do_gc_symbol(Gogo*, Expression_list**, Expression**, int)
-  { go_unreachable(); }
 
   void
   do_mangled_name(Gogo*, std::string*) const
@@ -5890,27 +6590,6 @@ Struct_type::do_reflection(Gogo* gogo, std::string* ret) const
   ret->push_back('}');
 }
 
-// Generate GC symbol for struct types.
-
-void
-Struct_type::do_gc_symbol(Gogo* gogo, Expression_list** vals,
-			  Expression** offset, int stack_size)
-{
-  Location bloc = Linemap::predeclared_location();
-  const Struct_field_list* sfl = this->fields();
-  for (Struct_field_list::const_iterator p = sfl->begin();
-       p != sfl->end();
-       ++p)
-    {
-      Expression* field_offset =
-  	Expression::make_struct_field_offset(this, &*p);
-      Expression* o =
-  	Expression::make_binary(OPERATOR_PLUS, *offset, field_offset, bloc);
-      Type::gc_symbol(gogo, p->type(), vals, &o, stack_size);
-    }
-  this->advance_gc_offset(offset);
-}
-
 // Mangled name.
 
 void
@@ -6085,6 +6764,7 @@ Struct_type::can_write_to_c_header(
   const Struct_field_list* fields = this->fields_;
   if (fields == NULL || fields->empty())
     return false;
+  int sinks = 0;
   for (Struct_field_list::const_iterator p = fields->begin();
        p != fields->end();
        ++p)
@@ -6093,7 +6773,11 @@ Struct_type::can_write_to_c_header(
 	return false;
       if (!this->can_write_type_to_c_header(p->type(), requires, declare))
 	return false;
+      if (Gogo::message_name(p->field_name()) == "_")
+	sinks++;
     }
+  if (sinks > 1)
+    return false;
   return true;
 }
 
@@ -6360,6 +7044,20 @@ Type::make_struct_type(Struct_field_list* fields,
 
 // Class Array_type.
 
+// Store the length of an array as an int64_t into *PLEN.  Return
+// false if the length can not be determined.  This will assert if
+// called for a slice.
+
+bool
+Array_type::int_length(int64_t* plen)
+{
+  go_assert(this->length_ != NULL);
+  Numeric_constant nc;
+  if (!this->length_->numeric_constant_value(&nc))
+    return false;
+  return nc.to_memory_size(plen);
+}
+
 // Whether two array types are identical.
 
 bool
@@ -6502,6 +7200,38 @@ Array_type::do_verify()
   if (!this->verify_length())
     this->length_ = Expression::make_error(this->length_->location());
   return true;
+}
+
+// Whether the type contains pointers.  This is always true for a
+// slice.  For an array it is true if the element type has pointers
+// and the length is greater than zero.
+
+bool
+Array_type::do_has_pointer() const
+{
+  if (this->length_ == NULL)
+    return true;
+  if (!this->element_type_->has_pointer())
+    return false;
+
+  Numeric_constant nc;
+  if (!this->length_->numeric_constant_value(&nc))
+    {
+      // Error reported elsewhere.
+      return false;
+    }
+
+  unsigned long val;
+  switch (nc.to_unsigned_long(&val))
+    {
+    case Numeric_constant::NC_UL_VALID:
+      return val > 0;
+    case Numeric_constant::NC_UL_BIG:
+      return true;
+    default:
+      // Error reported elsewhere.
+      return false;
+    }
 }
 
 // Whether we can use memcmp to compare this array.
@@ -7091,120 +7821,6 @@ Array_type::do_reflection(Gogo* gogo, std::string* ret) const
   ret->push_back(']');
 
   this->append_reflection(this->element_type_, gogo, ret);
-}
-
-// GC Symbol construction for array types.
-
-void
-Array_type::do_gc_symbol(Gogo* gogo, Expression_list** vals,
-			 Expression** offset, int stack_size)
-{
-  if (this->length_ == NULL)
-    this->slice_gc_symbol(gogo, vals, offset, stack_size);
-  else
-    this->array_gc_symbol(gogo, vals, offset, stack_size);
-}
-
-// Generate the GC Symbol for a slice.
-
-void
-Array_type::slice_gc_symbol(Gogo* gogo, Expression_list** vals,
-			    Expression** offset, int)
-{
-  Location bloc = Linemap::predeclared_location();
-
-  // Differentiate between slices with zero-length and non-zero-length values.
-  Type* element_type = this->element_type();
-  int64_t element_size;
-  bool ok = element_type->backend_type_size(gogo, &element_size);
-  if (!ok) {
-    go_assert(saw_errors());
-    element_size = 4;
-  }
-
-  Type* uintptr_type = Type::lookup_integer_type("uintptr");
-  unsigned long opval = element_size == 0 ? GC_APTR : GC_SLICE;
-  (*vals)->push_back(Expression::make_integer_ul(opval, uintptr_type, bloc));
-  (*vals)->push_back(*offset);
-
-  if (element_size != 0 && ok)
-    (*vals)->push_back(Expression::make_gc_symbol(element_type));
-  this->advance_gc_offset(offset);
-}
-
-// Generate the GC symbol for an array.
-
-void
-Array_type::array_gc_symbol(Gogo* gogo, Expression_list** vals,
-			    Expression** offset, int stack_size)
-{
-  Location bloc = Linemap::predeclared_location();
-
-  Numeric_constant nc;
-  unsigned long bound;
-  if (!this->length_->numeric_constant_value(&nc)
-      || nc.to_unsigned_long(&bound) == Numeric_constant::NC_UL_NOTINT)
-    {
-      go_assert(saw_errors());
-      return;
-    }
-
-  Btype* pbtype = gogo->backend()->pointer_type(gogo->backend()->void_type());
-  int64_t pwidth = gogo->backend()->type_size(pbtype);
-  int64_t iwidth;
-  bool ok = this->backend_type_size(gogo, &iwidth);
-  if (!ok)
-    {
-      go_assert(saw_errors());
-      iwidth = 4;
-    }
-
-  Type* element_type = this->element_type();
-  if (bound < 1 || !element_type->has_pointer())
-    this->advance_gc_offset(offset);
-  else if (ok && (bound == 1 || iwidth <= 4 * pwidth))
-    {
-      for (unsigned int i = 0; i < bound; ++i)
-	Type::gc_symbol(gogo, element_type, vals, offset, stack_size);
-    }
-  else
-    {
-      Type* uintptr_type = Type::lookup_integer_type("uintptr");
-
-      if (stack_size < GC_STACK_CAPACITY)
-  	{
-	  (*vals)->push_back(Expression::make_integer_ul(GC_ARRAY_START,
-							 uintptr_type, bloc));
-  	  (*vals)->push_back(*offset);
-	  Expression* uintptr_len =
-	    Expression::make_cast(uintptr_type, this->length_, bloc);
-  	  (*vals)->push_back(uintptr_len);
-
-	  Expression* width =
-	    Expression::make_type_info(element_type,
-				       Expression::TYPE_INFO_SIZE);
-  	  (*vals)->push_back(width);
-
-	  Expression* offset2 = Expression::make_integer_ul(0, uintptr_type,
-							    bloc);
-
-	  Type::gc_symbol(gogo, element_type, vals, &offset2, stack_size + 1);
-	  (*vals)->push_back(Expression::make_integer_ul(GC_ARRAY_NEXT,
-							 uintptr_type, bloc));
-  	}
-      else
-  	{
-	  (*vals)->push_back(Expression::make_integer_ul(GC_REGION,
-							 uintptr_type, bloc));
-	  (*vals)->push_back(*offset);
-
-	  Expression* width =
-	    Expression::make_type_info(this, Expression::TYPE_INFO_SIZE);
-  	  (*vals)->push_back(width);
-	  (*vals)->push_back(Expression::make_gc_symbol(this));
-  	}
-      this->advance_gc_offset(offset);
-    }
 }
 
 // Mangled name.
@@ -7832,21 +8448,6 @@ Map_type::do_reflection(Gogo* gogo, std::string* ret) const
   this->append_reflection(this->val_type_, gogo, ret);
 }
 
-// Generate GC symbol for a map.
-
-void
-Map_type::do_gc_symbol(Gogo*, Expression_list** vals,
-		       Expression** offset, int)
-{
-  // TODO(cmang): Generate GC data for the Map elements.
-  Location bloc = Linemap::predeclared_location();
-  Type* uintptr_type = Type::lookup_integer_type("uintptr");
-
-  (*vals)->push_back(Expression::make_integer_ul(GC_APTR, uintptr_type, bloc));
-  (*vals)->push_back(*offset);
-  this->advance_gc_offset(offset);
-}
-
 // Mangled name for a map.
 
 void
@@ -8015,28 +8616,6 @@ Channel_type::do_reflection(Gogo* gogo, std::string* ret) const
     ret->append("<-");
   ret->push_back(' ');
   this->append_reflection(this->element_type_, gogo, ret);
-}
-
-// Generate GC symbol for channels.
-
-void
-Channel_type::do_gc_symbol(Gogo*, Expression_list** vals,
-			   Expression** offset, int)
-{
-  Location bloc = Linemap::predeclared_location();
-  Type* uintptr_type = Type::lookup_integer_type("uintptr");
-
-  (*vals)->push_back(Expression::make_integer_ul(GC_CHAN_PTR, uintptr_type,
-						 bloc));
-  (*vals)->push_back(*offset);
- 
-  Type* unsafeptr_type = Type::make_pointer_type(Type::make_void_type());
-  Expression* type_descriptor =
-    Expression::make_type_descriptor(this, bloc);
-  type_descriptor =
-    Expression::make_unsafe_cast(unsafeptr_type, type_descriptor, bloc);
-  (*vals)->push_back(type_descriptor);
-  this->advance_gc_offset(offset);
 }
 
 // Mangled name.
@@ -8973,21 +9552,6 @@ Interface_type::do_reflection(Gogo* gogo, std::string* ret) const
       ret->push_back(' ');
     }
   ret->append("}");
-}
-
-// Generate GC symbol for interface types.
-
-void
-Interface_type::do_gc_symbol(Gogo*, Expression_list** vals,
-			     Expression** offset, int)
-{
-  Location bloc = Linemap::predeclared_location();
-  Type* uintptr_type = Type::lookup_integer_type("uintptr");
-
-  unsigned long opval = this->is_empty() ? GC_EFACE : GC_IFACE;
-  (*vals)->push_back(Expression::make_integer_ul(opval, uintptr_type, bloc));
-  (*vals)->push_back(*offset);
-  this->advance_gc_offset(offset);
 }
 
 // Mangled name.
@@ -10462,20 +11026,6 @@ Named_type::append_reflection_type_name(Gogo* gogo, bool use_alias,
       ret->push_back('\t');
     }
   ret->append(Gogo::unpack_hidden_name(this->named_object_->name()));
-}
-
-// Generate GC symbol for named types.
-
-void
-Named_type::do_gc_symbol(Gogo* gogo, Expression_list** vals,
-			 Expression** offset, int stack)
-{
-  if (!this->seen_)
-    {
-      this->seen_ = true;
-      Type::gc_symbol(gogo, this->real_type(), vals, offset, stack);
-      this->seen_ = false;
-    }
 }
 
 // Get the mangled name.

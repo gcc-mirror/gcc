@@ -16343,6 +16343,13 @@ vector signed int vec_nabs (vector signed int);
 vector float vec_nabs (vector float);
 vector double vec_nabs (vector double);
 
+vector signed char vec_neg (vector signed char);
+vector signed short vec_neg (vector signed short);
+vector signed int vec_neg (vector signed int);
+vector signed long long vec_neg (vector signed long long);
+vector float  char vec_neg (vector float);
+vector double vec_neg (vector double);
+
 vector float vec_nor (vector float, vector float);
 vector signed int vec_nor (vector signed int, vector signed int);
 vector unsigned int vec_nor (vector unsigned int, vector unsigned int);

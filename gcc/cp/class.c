@@ -8151,11 +8151,6 @@ resolve_address_of_overloaded_function (tree target_type,
 	     one, or vice versa.  */
 	  continue;
 
-	/* Ignore functions which haven't been explicitly
-	   declared.  */
-	if (DECL_ANTICIPATED (fn))
-	  continue;
-
 	/* In C++17 we need the noexcept-qualifier to compare types.  */
 	if (flag_noexcept_type)
 	  maybe_instantiate_noexcept (fn);

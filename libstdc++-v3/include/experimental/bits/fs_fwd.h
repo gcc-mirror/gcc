@@ -47,7 +47,7 @@ namespace filesystem
 inline namespace v1
 {
 #if _GLIBCXX_INLINE_VERSION
-inline namespace __7 { }
+inline namespace __8 { }
 #endif
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 

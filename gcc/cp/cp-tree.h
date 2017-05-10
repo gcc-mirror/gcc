@@ -5891,13 +5891,14 @@ extern tree build_user_type_conversion		(tree, tree, int,
 						 tsubst_flags_t);
 extern tree build_new_function_call		(tree, vec<tree, va_gc> **, 
 						 tsubst_flags_t);
-extern tree build_operator_new_call		(tree, vec<tree, va_gc> **, tree *,
-						 tree *, tree, tree, tree *,
-						 tsubst_flags_t);
-extern tree build_new_method_call		(tree, tree, vec<tree, va_gc> **,
-						 tree, int, tree *,
-						 tsubst_flags_t);
-extern tree build_special_member_call		(tree, tree, vec<tree, va_gc> **,
+extern tree build_operator_new_call		(tree, vec<tree, va_gc> **,
+						 tree *, tree *, tree, tree,
+						 tree *, tsubst_flags_t);
+extern tree build_new_method_call		(tree, tree,
+						 vec<tree, va_gc> **, tree,
+						 int, tree *, tsubst_flags_t);
+extern tree build_special_member_call		(tree, tree,
+						 vec<tree, va_gc> **,
 						 tree, int, tsubst_flags_t);
 extern tree build_new_op			(location_t, enum tree_code,
 						 int, tree, tree, tree, tree *,
@@ -5905,7 +5906,7 @@ extern tree build_new_op			(location_t, enum tree_code,
 extern tree build_op_call			(tree, vec<tree, va_gc> **,
 						 tsubst_flags_t);
 extern bool aligned_allocation_fn_p		(tree);
-extern bool usual_deallocation_fn_p	(tree);
+extern bool usual_deallocation_fn_p		(tree);
 extern tree build_op_delete_call		(enum tree_code, tree, tree,
 						 bool, tree, tree,
 						 tsubst_flags_t);

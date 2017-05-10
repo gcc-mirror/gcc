@@ -58,6 +58,36 @@ test_nabs_double (vector double x)
 	return vec_nabs (x);
 }
 
+vector signed char
+test_neg_char (vector signed char x)
+{
+	return vec_neg (x);
+}
+
+vector short
+test_neg_short (vector short x)
+{
+	return vec_neg (x);
+}
+
+vector int
+test_neg_int (vector int x)
+{
+	return vec_neg (x);
+}
+
+vector float
+test_neg_float (vector float x)
+{
+	return vec_neg (x);
+}
+
+vector double
+test_neg_double (vector double x)
+{
+	return vec_neg (x);
+}
+
 /* Expected test results:
 
      test_eq_char              1 vcmpequb inst
@@ -68,19 +98,26 @@ test_nabs_double (vector double x)
      test_nabs_short           1 vspltisw, 1 vsubuhm, 1 vminsh
      test_nabs_int             1 vspltisw, 1 vsubuwm, 1 vminsw
      test_nabs_float           1 xvnabssp
-     test_nabs_double          1 xvnabsdp */
+     test_nabs_double          1 xvnabsdp
+     test_neg_char             1 vspltisw, 1 vsububm
+     test_neg_short            1 vspltisw, 1 vsubuhm
+     test_neg_int              1 vspltisw, 1 vsubuwm
+     test_neg_float            1 xvnegsp
+     test_neg_float            1 xvnegdp */
 
 /* { dg-final { scan-assembler-times "vcmpequb" 1 } } */
 /* { dg-final { scan-assembler-times "vcmpequh" 1 } } */
 /* { dg-final { scan-assembler-times "vcmpequw" 1 } } */
 /* { dg-final { scan-assembler-times "vsldoi"   1 } } */
-/* { dg-final { scan-assembler-times "vsububm"  1 } } */
-/* { dg-final { scan-assembler-times "vsubuhm"  1 } } */
-/* { dg-final { scan-assembler-times "vsubuwm"  1 } } */
+/* { dg-final { scan-assembler-times "vsububm"  2 } } */
+/* { dg-final { scan-assembler-times "vsubuhm"  2 } } */
+/* { dg-final { scan-assembler-times "vsubuwm"  2 } } */
 /* { dg-final { scan-assembler-times "vminsb"   1 } } */
 /* { dg-final { scan-assembler-times "vminsh"   1 } } */
 /* { dg-final { scan-assembler-times "vminsw"   1 } } */
-/* { dg-final { scan-assembler-times "vspltisw" 3 } } */
+/* { dg-final { scan-assembler-times "vspltisw" 6 } } */
 /* { dg-final { scan-assembler-times "xvnabssp" 1 } } */
 /* { dg-final { scan-assembler-times "xvnabsdp" 1 } } */
+/* { dg-final { scan-assembler-times "xvnegsp"  1 } } */
+/* { dg-final { scan-assembler-times "xvnegdp"  1 } } */
 

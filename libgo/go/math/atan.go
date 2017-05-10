@@ -97,6 +97,9 @@ func satan(x float64) float64 {
 func libc_atan(float64) float64
 
 func Atan(x float64) float64 {
+	if x == 0 {
+		return x
+	}
 	return libc_atan(x)
 }
 

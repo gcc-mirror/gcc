@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// +build dragonfly freebsd linux nacl netbsd openbsd solaris
+// +build aix dragonfly freebsd linux nacl netbsd openbsd solaris
 
 package x509
 
@@ -16,6 +16,7 @@ import (
 var certDirectories = []string{
 	"/etc/ssl/certs",               // SLES10/SLES11, https://golang.org/issue/12139
 	"/system/etc/security/cacerts", // Android
+	"/var/ssl/certs",               // AIX
 }
 
 func (c *Certificate) systemVerify(opts *VerifyOptions) (chains [][]*Certificate, err error) {

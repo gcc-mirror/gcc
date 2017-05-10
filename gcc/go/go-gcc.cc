@@ -506,6 +506,10 @@ class Gcc_backend : public Backend
                            const std::vector<Bfunction*>&,
                            const std::vector<Bvariable*>&);
 
+  void
+  write_export_data(const char* bytes, unsigned int size);
+
+
  private:
   // Make a Bexpression from a tree.
   Bexpression*
@@ -748,6 +752,13 @@ Gcc_backend::Gcc_backend()
   this->define_builtin(BUILT_IN_TRAP, "__builtin_trap", NULL,
 		       build_function_type(void_type_node, void_list_node),
 		       false, true);
+
+  // The runtime uses __builtin_prefetch.
+  this->define_builtin(BUILT_IN_PREFETCH, "__builtin_prefetch", NULL,
+		       build_varargs_function_type_list(void_type_node,
+							const_ptr_type_node,
+							NULL_TREE),
+		       false, false);
 }
 
 // Get an unnamed integer type.
@@ -3211,6 +3222,13 @@ Gcc_backend::write_global_definitions(
 
   delete[] defs;
 }
+
+void
+Gcc_backend::write_export_data(const char* bytes, unsigned int size)
+{
+  go_write_export_data(bytes, size);
+}
+
 
 // Define a builtin function.  BCODE is the builtin function code
 // defined by builtins.def.  NAME is the name of the builtin function.

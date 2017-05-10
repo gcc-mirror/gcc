@@ -158,6 +158,9 @@ go_parse_input_files(const char** filenames, unsigned int filename_count,
   // Write out queued up functions for hash and comparison of types.
   ::gogo->write_specific_type_functions();
 
+  // Add write barriers.
+  ::gogo->add_write_barriers();
+
   // Flatten the parse tree.
   ::gogo->flatten();
 
