@@ -1359,8 +1359,7 @@ handle_using_decl (tree using_decl, tree t)
 			     tf_warning_or_error);
   if (old_value)
     {
-      if (is_overloaded_fn (old_value))
-	old_value = OVL_CURRENT (old_value);
+      old_value = OVL_CURRENT (old_value);
 
       if (DECL_P (old_value) && DECL_CONTEXT (old_value) == t)
 	/* OK */;
@@ -1384,7 +1383,7 @@ handle_using_decl (tree using_decl, tree t)
 	{
 	  error ("%q+D invalid in %q#T", using_decl, t);
 	  error ("  because of local method %q+#D with same name",
-		 OVL_CURRENT (old_value));
+		 old_value);
 	  return;
 	}
     }
@@ -8184,39 +8183,29 @@ resolve_address_of_overloaded_function (tree target_type,
      if we're just going to throw them out anyhow.  But, of course, we
      can only do this when we don't *need* a template function.  */
   if (!template_only)
-    {
-      tree fns;
+    for (tree fns = overload; fns; fns = OVL_NEXT (fns))
+      {
+	tree fn = OVL_CURRENT (fns);
 
-      for (fns = overload; fns; fns = OVL_NEXT (fns))
-	{
-	  tree fn = OVL_CURRENT (fns);
+	if (TREE_CODE (fn) == TEMPLATE_DECL)
+	  /* We're not looking for templates just yet.  */
+	  continue;
 
-	  if (TREE_CODE (fn) == TEMPLATE_DECL)
-	    /* We're not looking for templates just yet.  */
-	    continue;
+	if ((TREE_CODE (TREE_TYPE (fn)) == METHOD_TYPE) != is_ptrmem)
+	  /* We're looking for a non-static member, and this isn't
+	     one, or vice versa.  */
+	  continue;
 
-	  if ((TREE_CODE (TREE_TYPE (fn)) == METHOD_TYPE)
-	      != is_ptrmem)
-	    /* We're looking for a non-static member, and this isn't
-	       one, or vice versa.  */
-	    continue;
+	/* In C++17 we need the noexcept-qualifier to compare types.  */
+	if (flag_noexcept_type)
+	  maybe_instantiate_noexcept (fn);
 
-	  /* Ignore functions which haven't been explicitly
-	     declared.  */
-	  if (DECL_ANTICIPATED (fn))
-	    continue;
-
-	  /* In C++17 we need the noexcept-qualifier to compare types.  */
-	  if (flag_noexcept_type)
-	    maybe_instantiate_noexcept (fn);
-
-	  /* See if there's a match.  */
-	  tree fntype = static_fn_type (fn);
-	  if (same_type_p (target_fn_type, fntype)
-	      || fnptr_conv_p (target_fn_type, fntype))
-	    matches = tree_cons (fn, NULL_TREE, matches);
-	}
-    }
+	/* See if there's a match.  */
+	tree fntype = static_fn_type (fn);
+	if (same_type_p (target_fn_type, fntype)
+	    || fnptr_conv_p (target_fn_type, fntype))
+	  matches = tree_cons (fn, NULL_TREE, matches);
+      }
 
   /* Now, if we've already got a match (or matches), there's no need
      to proceed to the template functions.  But, if we don't have a

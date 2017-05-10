@@ -1,5 +1,9 @@
 2017-05-10  Nathan Sidwell  <nathan@acm.org>
 
+	* class.c (handle_using_decl): Always use OVL_CURRENT.
+	(resolve_address_of_overloaded_function): Move iterator decl into
+	for scope.  Don't strip anticipated decls here.
+
 	* pt.c (print_candidates_1): Separate TREE_LIST and OVERLOAD
 	printing.
 	(print_candidates): Adjust.
