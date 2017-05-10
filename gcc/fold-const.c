@@ -15876,7 +15876,8 @@ fold_indirect_ref_1 (location_t loc, tree type, tree op0)
 
   STRIP_NOPS (sub);
   subtype = TREE_TYPE (sub);
-  if (!POINTER_TYPE_P (subtype))
+  if (!POINTER_TYPE_P (subtype)
+      || TYPE_REF_CAN_ALIAS_ALL (TREE_TYPE (op0)))
     return NULL_TREE;
 
   if (TREE_CODE (sub) == ADDR_EXPR)

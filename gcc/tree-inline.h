@@ -101,7 +101,7 @@ struct copy_body_data
 
   /* GIMPLE_CALL if va arg parameter packs should be expanded or NULL
      is not.  */
-  gimple call_stmt;
+  gcall *call_stmt;
 
   /* Exception landing pad the inlined call lies in.  */
   int eh_lp_nr;

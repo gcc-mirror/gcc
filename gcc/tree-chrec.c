@@ -167,7 +167,12 @@ chrec_fold_plus_poly_poly (enum tree_code code,
 
   /* This function should never be called for chrecs of loops that
      do not belong to the same loop nest.  */
-  gcc_assert (loop0 == loop1);
+  if (loop0 != loop1)
+    {
+      /* It still can happen if we are not in loop-closed SSA form.  */
+      gcc_assert (! loops_state_satisfies_p (LOOP_CLOSED_SSA));
+      return chrec_dont_know;
+    }
 
   if (code == PLUS_EXPR || code == POINTER_PLUS_EXPR)
     {
@@ -229,7 +234,12 @@ chrec_fold_multiply_poly_poly (tree type,
        chrec_fold_multiply (type, CHREC_LEFT (poly0), poly1),
        CHREC_RIGHT (poly0));
 
-  gcc_assert (loop0 == loop1);
+  if (loop0 != loop1)
+    {
+      /* It still can happen if we are not in loop-closed SSA form.  */
+      gcc_assert (! loops_state_satisfies_p (LOOP_CLOSED_SSA));
+      return chrec_dont_know;
+    }
 
   /* poly0 and poly1 are two polynomials in the same variable,
      {a, +, b}_x * {c, +, d}_x  ->  {a*c, +, a*d + b*c + b*d, +, 2*b*d}_x.  */
