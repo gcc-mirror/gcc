@@ -27,17 +27,17 @@ along with GCC; see the file COPYING3.  If not see
 enum tree_dump_index
 {
   TDI_none,			/* No dump */
-  TDI_cgraph,                   /* dump function call graph.  */
-  TDI_inheritance,              /* dump type inheritance graph.  */
+  TDI_cgraph,			/* dump function call graph.  */
+  TDI_inheritance,		/* dump type inheritance graph.  */
   TDI_clones,			/* dump IPA cloning decisions.  */
   TDI_tu,			/* dump the whole translation unit.  */
   TDI_class,			/* dump class hierarchy.  */
   TDI_original,			/* dump each function before optimizing it */
   TDI_generic,			/* dump each function after genericizing it */
   TDI_nested,			/* dump each function after unnesting it */
-  TDI_tree_all,                 /* enable all the GENERIC/GIMPLE dumps.  */
-  TDI_rtl_all,                  /* enable all the RTL dumps.  */
-  TDI_ipa_all,                  /* enable all the IPA dumps.  */
+  TDI_tree_all,			/* enable all the GENERIC/GIMPLE dumps.  */
+  TDI_rtl_all,			/* enable all the RTL dumps.  */
+  TDI_ipa_all,			/* enable all the IPA dumps.  */
 
   TDI_end
 };
@@ -49,7 +49,7 @@ enum tree_dump_index
    allow that.  */
 #define TDF_ADDRESS	(1 << 0)	/* dump node addresses */
 #define TDF_SLIM	(1 << 1)	/* don't go wild following links */
-#define TDF_RAW  	(1 << 2)	/* don't unparse the function */
+#define TDF_RAW		(1 << 2)	/* don't unparse the function */
 #define TDF_DETAILS	(1 << 3)	/* show more detailed info about
 					   each pass */
 #define TDF_STATS	(1 << 4)	/* dump various statistics about
@@ -66,11 +66,11 @@ enum tree_dump_index
 
 #define TDF_GRAPH	(1 << 13)	/* a graph dump is being emitted */
 #define TDF_MEMSYMS	(1 << 14)	/* display memory symbols in expr.
-                                           Implies TDF_VOPS.  */
+					   Implies TDF_VOPS.  */
 
 #define TDF_DIAGNOSTIC	(1 << 15)	/* A dump to be put in a diagnostic
 					   message.  */
-#define TDF_VERBOSE     (1 << 16)       /* A dump that uses the full tree
+#define TDF_VERBOSE	(1 << 16)	/* A dump that uses the full tree
 					   dumper to print stmts.  */
 #define TDF_RHS_ONLY	(1 << 17)	/* a flag to only print the RHS of
 					   a gimple stmt.  */
@@ -84,49 +84,50 @@ enum tree_dump_index
 #define TDF_SCEV	(1 << 24)	/* Dump SCEV details.  */
 #define TDF_COMMENT	(1 << 25)	/* Dump lines with prefix ";;"  */
 #define TDF_GIMPLE	(1 << 26)	/* Dump in GIMPLE FE syntax  */
-#define MSG_OPTIMIZED_LOCATIONS  (1 << 27)  /* -fopt-info optimized sources */
-#define MSG_MISSED_OPTIMIZATION  (1 << 28)  /* missed opportunities */
-#define MSG_NOTE                 (1 << 29)  /* general optimization info */
-#define MSG_ALL         (MSG_OPTIMIZED_LOCATIONS | MSG_MISSED_OPTIMIZATION \
-                         | MSG_NOTE)
+#define MSG_OPTIMIZED_LOCATIONS	 (1 << 27)  /* -fopt-info optimized sources */
+#define MSG_MISSED_OPTIMIZATION	 (1 << 28)  /* missed opportunities */
+#define MSG_NOTE		 (1 << 29)  /* general optimization info */
+#define MSG_ALL		(MSG_OPTIMIZED_LOCATIONS | MSG_MISSED_OPTIMIZATION \
+			 | MSG_NOTE)
 
 
 /* Flags to control high-level -fopt-info dumps.  Usually these flags
    define a group of passes.  An optimization pass can be part of
    multiple groups.  */
-#define OPTGROUP_NONE        (0)
-#define OPTGROUP_IPA         (1 << 1)   /* IPA optimization passes */
-#define OPTGROUP_LOOP        (1 << 2)   /* Loop optimization passes */
-#define OPTGROUP_INLINE      (1 << 3)   /* Inlining passes */
-#define OPTGROUP_OMP         (1 << 4)   /* OMP (Offloading and Multi
+#define OPTGROUP_NONE	     (0)
+#define OPTGROUP_IPA	     (1 << 1)	/* IPA optimization passes */
+#define OPTGROUP_LOOP	     (1 << 2)	/* Loop optimization passes */
+#define OPTGROUP_INLINE	     (1 << 3)	/* Inlining passes */
+#define OPTGROUP_OMP	     (1 << 4)	/* OMP (Offloading and Multi
 					   Processing) transformations */
-#define OPTGROUP_VEC         (1 << 5)   /* Vectorization passes */
-#define OPTGROUP_OTHER       (1 << 6)   /* All other passes */
+#define OPTGROUP_VEC	     (1 << 5)	/* Vectorization passes */
+#define OPTGROUP_OTHER	     (1 << 6)	/* All other passes */
 #define OPTGROUP_ALL	     (OPTGROUP_IPA | OPTGROUP_LOOP | OPTGROUP_INLINE \
-                              | OPTGROUP_OMP | OPTGROUP_VEC | OPTGROUP_OTHER)
+			      | OPTGROUP_OMP | OPTGROUP_VEC | OPTGROUP_OTHER)
 
 /* Define a tree dump switch.  */
 struct dump_file_info
 {
-  const char *suffix;           /* suffix to give output file.  */
-  const char *swtch;            /* command line dump switch */
-  const char *glob;             /* command line glob  */
-  const char *pfilename;        /* filename for the pass-specific stream  */
-  const char *alt_filename;     /* filename for the -fopt-info stream  */
-  FILE *pstream;                /* pass-specific dump stream  */
-  FILE *alt_stream;             /* -fopt-info stream */
-  int pflags;                   /* dump flags */
-  int optgroup_flags;           /* optgroup flags for -fopt-info */
-  int alt_flags;                /* flags for opt-info */
-  int pstate;                   /* state of pass-specific stream */
-  int alt_state;                /* state of the -fopt-info stream */
-  int num;                      /* dump file number */
-  bool owns_strings;            /* fields "suffix", "swtch", "glob" can be
+  const char *suffix;		/* suffix to give output file.  */
+  const char *swtch;		/* command line dump switch */
+  const char *glob;		/* command line glob  */
+  const char *pfilename;	/* filename for the pass-specific stream  */
+  const char *alt_filename;	/* filename for the -fopt-info stream  */
+  FILE *pstream;		/* pass-specific dump stream  */
+  FILE *alt_stream;		/* -fopt-info stream */
+  int pflags;			/* dump flags */
+  int optgroup_flags;		/* optgroup flags for -fopt-info */
+  int alt_flags;		/* flags for opt-info */
+  int pstate;			/* state of pass-specific stream */
+  int alt_state;		/* state of the -fopt-info stream */
+  int num;			/* dump file number */
+  bool owns_strings;		/* fields "suffix", "swtch", "glob" can be
 				   const strings, or can be dynamically
 				   allocated, needing free.  */
-  bool graph_dump_initialized;  /* When a given dump file is being initialized,
-				   this flag is set to true if the corresponding
-				   TDF_graph dump file has also been
+  bool graph_dump_initialized;	/* When a given dump file is being
+				   initialized, this flag is set to
+				   true if the corresponding TDF_graph
+				   dump file has also been
 				   initialized.  */
 };
 
@@ -137,7 +138,7 @@ extern int opt_info_switch_p (const char *);
 extern const char *dump_flag_name (int);
 extern void dump_printf (int, const char *, ...) ATTRIBUTE_PRINTF_2;
 extern void dump_printf_loc (int, source_location,
-                             const char *, ...) ATTRIBUTE_PRINTF_3;
+			     const char *, ...) ATTRIBUTE_PRINTF_3;
 extern void dump_basic_block (int, basic_block, int);
 extern void dump_generic_expr_loc (int, source_location, int, tree);
 extern void dump_generic_expr (int, int, tree);

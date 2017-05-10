@@ -1,3 +1,7 @@
+2017-05-10  Nathan Sidwell  <nathan@acm.org>
+
+	* dumpfile.h: Tabify.
+
 2017-05-10  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	PR target/80671
