@@ -2797,8 +2797,17 @@ extract_range_from_binary_expr_1 (value_range_t *vr,
 	    min = build_symbolic_expr (expr_type, sym_min_op0,
 				       neg_min_op0, min);
 	  else if (sym_min_op1)
-	    min = build_symbolic_expr (expr_type, sym_min_op1,
-				       neg_min_op1 ^ minus_p, min);
+	    {
+	      /* We may not negate if that might introduce
+		 undefined overflow.  */
+	      if (! minus_p
+		  || neg_min_op1
+		  || TYPE_OVERFLOW_WRAPS (expr_type))
+		min = build_symbolic_expr (expr_type, sym_min_op1,
+					   neg_min_op1 ^ minus_p, min);
+	      else
+		min = NULL_TREE;
+	    }
 
 	  /* Likewise for the upper bound.  */
 	  if (sym_max_op0 == sym_max_op1)
@@ -2807,8 +2816,17 @@ extract_range_from_binary_expr_1 (value_range_t *vr,
 	    max = build_symbolic_expr (expr_type, sym_max_op0,
 				       neg_max_op0, max);
 	  else if (sym_max_op1)
-	    max = build_symbolic_expr (expr_type, sym_max_op1,
-				       neg_max_op1 ^ minus_p, max);
+	    {
+	      /* We may not negate if that might introduce
+		 undefined overflow.  */
+	      if (! minus_p
+		  || neg_max_op1
+		  || TYPE_OVERFLOW_WRAPS (expr_type))
+		max = build_symbolic_expr (expr_type, sym_max_op1,
+					   neg_max_op1 ^ minus_p, max);
+	      else
+		max = NULL_TREE;
+	    }
 	}
       else
 	{

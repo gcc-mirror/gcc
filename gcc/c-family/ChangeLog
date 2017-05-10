@@ -1,3 +1,10 @@
+2017-05-10  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	PR c/79756
+	* c-common.c (c_common_mark_addressable_vec): Look through
+	C_MAYBE_CONST_EXPR.
+
 2017-03-22  Martin Liska  <mliska@suse.cz>
 
 	Backport from mainline

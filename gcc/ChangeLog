@@ -1,6 +1,23 @@
 2017-05-10  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline
+	2017-02-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/79732
+	* tree-inline.c (expand_call_inline): Handle anonymous
+	SSA lhs properly when inlining a function without return
+	value.
+
+	2017-02-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/79666
+	* tree-vrp.c (extract_range_from_binary_expr_1): Make sure
+	to not symbolically negate if that may introduce undefined
+	overflow.
+
+2017-05-10  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
 	2017-03-21  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/80122

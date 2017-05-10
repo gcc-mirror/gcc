@@ -163,11 +163,11 @@ gfc_add_modify_loc (location_t loc, stmtblock_t * pblock, tree lhs, tree rhs)
   tree t1, t2;
   t1 = TREE_TYPE (rhs);
   t2 = TREE_TYPE (lhs);
-  /* Make sure that the types of the rhs and the lhs are the same
+  /* Make sure that the types of the rhs and the lhs are compatible
      for scalar assignments.  We should probably have something
      similar for aggregates, but right now removing that check just
      breaks everything.  */
-  gcc_assert (t1 == t2
+  gcc_assert (TYPE_MAIN_VARIANT (t1) == TYPE_MAIN_VARIANT (t2)
 	      || AGGREGATE_TYPE_P (TREE_TYPE (lhs)));
 #endif
 
