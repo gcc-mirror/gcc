@@ -1,5 +1,16 @@
 2017-05-10  Jason Merrill  <jason@redhat.com>
 
+	* pt.c (unify_parameter_deduction_failure, unify_cv_qual_mismatch)
+	(unify_type_mismatch, unify_parameter_pack_mismatch)
+	(unify_ptrmem_cst_mismatch, unify_expression_unequal)
+	(unify_parameter_pack_inconsistent, unify_inconsistency)
+	(unify_vla_arg, unify_method_type_error, unify_arity)
+	(unify_arg_conversion, unify_no_common_base)
+	(unify_inconsistent_template_template_parameters)
+	(unify_template_deduction_failure)
+	(unify_template_argument_mismatch)
+	(unify_overload_resolution_failure): Call unify_invalid.
+
 	CWG 1847 - Clarifying compatibility during partial ordering
 	* pt.c (more_specialized_fn): No order between two non-deducible
 	parameters.
