@@ -30,6 +30,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "rtl.h"
 #include "tree.h"
 #include "gimple.h"
+#include "cfghooks.h"
 #include "predict.h"
 #include "alloc-pool.h"
 #include "memmodel.h"
@@ -49,6 +50,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "expr.h"
 #include "langhooks.h"
 #include "cfganal.h"
+#include "tree-cfg.h"
 #include "params.h"
 #include "dumpfile.h"
 #include "builtins.h"
@@ -1007,20 +1009,21 @@ emit_case_dispatch_table (tree index_expr, tree index_type,
 	  = gen_rtx_LABEL_REF (Pmode, label_rtx (n->code_label));
     }
 
-  /* Fill in the gaps with the default.  We may have gaps at
-     the beginning if we tried to avoid the minval subtraction,
-     so substitute some label even if the default label was
-     deemed unreachable.  */
-  if (!default_label)
-    default_label = fallback_label;
+  /* The dispatch table may contain gaps, including at the beginning of
+     the table if we tried to avoid the minval subtraction.  We fill the
+     dispatch table slots associated with the gaps with the default case label.
+     However, in the event the default case is unreachable, we then use
+     any label from one of the case statements.  */
+  rtx gap_label = (default_label) ? default_label : fallback_label;
+
   for (i = 0; i < ncases; i++)
     if (labelvec[i] == 0)
       {
-        has_gaps = true;
-        labelvec[i] = gen_rtx_LABEL_REF (Pmode, default_label);
+	has_gaps = true;
+	labelvec[i] = gen_rtx_LABEL_REF (Pmode, gap_label);
       }
 
-  if (has_gaps)
+  if (has_gaps && default_label)
     {
       /* There is at least one entry in the jump table that jumps
          to default label. The default label can either be reached
@@ -1115,7 +1118,7 @@ void
 expand_case (gswitch *stmt)
 {
   tree minval = NULL_TREE, maxval = NULL_TREE, range = NULL_TREE;
-  rtx_code_label *default_label = NULL;
+  rtx_code_label *default_label;
   unsigned int count, uniq;
   int i;
   int ncases = gimple_switch_num_labels (stmt);
@@ -1232,9 +1235,21 @@ expand_case (gswitch *stmt)
                              case_list, default_label,
                              default_prob);
   else
-    emit_case_dispatch_table (index_expr, index_type,
-			      case_list, default_label,
-			      minval, maxval, range, bb);
+    {
+      /* If the default case is unreachable, then set default_label to NULL
+	 so that we omit the range check when generating the dispatch table.
+	 We also remove the edge to the unreachable default case.  The block
+	 itself will be automatically removed later.  */
+      if (EDGE_COUNT (default_edge->dest->succs) == 0
+	  && gimple_seq_unreachable_p (bb_seq (default_edge->dest)))
+	{
+	  default_label = NULL;
+	  remove_edge (default_edge);
+	}
+      emit_case_dispatch_table (index_expr, index_type,
+				case_list, default_label,
+				minval, maxval, range, bb);
+    }
 
   reorder_insns (NEXT_INSN (before_case), get_last_insn (), before_case);
 
