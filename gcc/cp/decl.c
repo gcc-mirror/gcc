@@ -15562,16 +15562,19 @@ finish_function (int flags)
   if (!processing_template_decl && FNDECL_USED_AUTO (fndecl)
       && TREE_TYPE (fntype) == current_function_auto_return_pattern)
     {
-      if (!is_auto (current_function_auto_return_pattern)
-	  && !current_function_returns_value && !current_function_returns_null)
+      if (is_auto (current_function_auto_return_pattern))
+	{
+	  apply_deduced_return_type (fndecl, void_type_node);
+	  fntype = TREE_TYPE (fndecl);
+	}
+      else if (!current_function_returns_value
+	       && !current_function_returns_null)
 	{
 	  error ("no return statements in function returning %qT",
 		 current_function_auto_return_pattern);
 	  inform (input_location, "only plain %<auto%> return type can be "
 		  "deduced to %<void%>");
 	}
-      apply_deduced_return_type (fndecl, void_type_node);
-      fntype = TREE_TYPE (fndecl);
     }
 
   // If this is a concept, check that the definition is reasonable.
