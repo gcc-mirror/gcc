@@ -1,3 +1,14 @@
+2017-05-10  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-tree.h (build_new_function_call): Lose koenig_p arg.  Fix
+	line breaking.
+	* call.c (build_new_function_call): Lose koenig_p arg.  Remove
+	koenig_p handling here.
+	* pt.c (push_template_decl_real): Unconditionally retrofit_lang_decl.
+	(tsubst_omp_clauses): Likewise.
+	(do_class_deduction): Adjust buld_new_function_call calls.
+	* semantics.c (finish_call_expr): Likewise.
+
 2017-05-10  Jason Merrill  <jason@redhat.com>
 
 	* pt.c (unify_parameter_deduction_failure, unify_cv_qual_mismatch)

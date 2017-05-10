@@ -4192,7 +4192,7 @@ print_error_for_call_failure (tree fn, vec<tree, va_gc> *args,
    ARGS.  */
 
 tree
-build_new_function_call (tree fn, vec<tree, va_gc> **args, bool koenig_p, 
+build_new_function_call (tree fn, vec<tree, va_gc> **args,
 			 tsubst_flags_t complain)
 {
   struct z_candidate *candidates, *cand;
@@ -4209,22 +4209,6 @@ build_new_function_call (tree fn, vec<tree, va_gc> **args, bool koenig_p,
 
   if (flag_tm)
     tm_malloc_replacement (fn);
-
-  /* If this function was found without using argument dependent
-     lookup, then we want to ignore any undeclared friend
-     functions.  */
-  if (!koenig_p)
-    {
-      tree orig_fn = fn;
-
-      fn = remove_hidden_names (fn);
-      if (!fn)
-	{
-	  if (complain & tf_error)
-	    print_error_for_call_failure (orig_fn, *args, NULL);
-	  return error_mark_node;
-	}
-    }
 
   /* Get the high-water mark for the CONVERSION_OBSTACK.  */
   p = conversion_obstack_alloc (0);
