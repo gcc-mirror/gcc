@@ -1157,6 +1157,9 @@ bool translate_isl_ast_to_gimple::
 is_valid_rename (tree rename, basic_block def_bb, basic_block use_bb,
 		 phi_node_kind phi_kind, tree old_name, basic_block old_bb) const
 {
+  if (SSA_NAME_IS_DEFAULT_DEF (rename))
+    return true;
+
   /* The def of the rename must either dominate the uses or come from a
      back-edge.  Also the def must respect the loop closed ssa form.  */
   if (!is_loop_closed_ssa_use (use_bb, rename))
@@ -1212,6 +1215,7 @@ get_rename (basic_block new_bb, tree old_name, basic_block old_bb,
 	  basic_block bb = gimple_bb (SSA_NAME_DEF_STMT (rename));
 	  if (is_valid_rename (rename, bb, new_bb, phi_kind, old_name, old_bb)
 	      && (phi_kind == close_phi
+		  || ! bb
 		  || flow_bb_inside_loop_p (bb->loop_father, new_bb)))
 	    return rename;
 	  return NULL_TREE;
@@ -1913,7 +1917,7 @@ copy_loop_phi_nodes (basic_block bb, basic_block new_bb)
       if (is_gimple_reg (res) && scev_analyzable_p (res, region->region))
 	continue;
 
-      gphi *new_phi = create_phi_node (SSA_NAME_VAR (res), new_bb);
+      gphi *new_phi = create_phi_node (NULL_TREE, new_bb);
       tree new_res = create_new_def_for (res, new_phi,
 					 gimple_phi_result_ptr (new_phi));
       set_rename (res, new_res);
@@ -2013,7 +2017,7 @@ add_close_phis_to_outer_loops (tree last_merge_name, edge last_e,
   if (!bb_contains_loop_close_phi_nodes (bb) || !single_succ_p (bb))
     bb = split_edge (e);
 
-  gphi *close_phi = create_phi_node (SSA_NAME_VAR (last_merge_name), bb);
+  gphi *close_phi = create_phi_node (NULL_TREE, bb);
   tree res = create_new_def_for (last_merge_name, close_phi,
 				 gimple_phi_result_ptr (close_phi));
   set_rename (old_close_phi_name, res);
@@ -2058,7 +2062,7 @@ add_close_phis_to_merge_points (gphi *old_close_phi, gphi *new_close_phi,
       last_merge_name = add_close_phis_to_outer_loops (last_merge_name, merge_e,
 						       old_close_phi);
 
-      gphi *merge_phi = create_phi_node (SSA_NAME_VAR (old_close_phi_name), new_merge_bb);
+      gphi *merge_phi = create_phi_node (NULL_TREE, new_merge_bb);
       tree merge_res = create_new_def_for (old_close_phi_name, merge_phi,
 					   gimple_phi_result_ptr (merge_phi));
       set_rename (old_close_phi_name, merge_res);
@@ -2111,7 +2115,7 @@ copy_loop_close_phi_args (basic_block old_bb, basic_block new_bb, bool postpone)
 	/* Loop close phi nodes should not be scev_analyzable_p.  */
 	gcc_unreachable ();
 
-      gphi *new_close_phi = create_phi_node (SSA_NAME_VAR (res), new_bb);
+      gphi *new_close_phi = create_phi_node (NULL_TREE, new_bb);
       tree new_res = create_new_def_for (res, new_close_phi,
 					 gimple_phi_result_ptr (new_close_phi));
       set_rename (res, new_res);
@@ -2494,7 +2498,7 @@ copy_cond_phi_nodes (basic_block bb, basic_block new_bb, vec<tree> iv_map)
       if (virtual_operand_p (res))
 	continue;
 
-      gphi *new_phi = create_phi_node (SSA_NAME_VAR (res), new_bb);
+      gphi *new_phi = create_phi_node (NULL_TREE, new_bb);
       tree new_res = create_new_def_for (res, new_phi,
 					 gimple_phi_result_ptr (new_phi));
       set_rename (res, new_res);
