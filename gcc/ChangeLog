@@ -1,3 +1,9 @@
+2017-05-10  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR target/79027
+	* config/pa/pa.c (pa_cannot_change_mode_class): Reject changes to/from
+	modes with zero size.  Enhance comment.
+
 2017-05-10  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* config/rs6000/rs6000.c (altivec_init_builtins): Define POWER8
