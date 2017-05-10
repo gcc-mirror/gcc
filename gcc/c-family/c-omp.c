@@ -1191,6 +1191,8 @@ c_omp_split_clauses (location_t loc, enum tree_code code,
 				    OMP_CLAUSE_LASTPRIVATE);
 	      OMP_CLAUSE_DECL (c) = OMP_CLAUSE_DECL (clauses);
 	      OMP_CLAUSE_CHAIN (c) = cclauses[C_OMP_CLAUSE_SPLIT_DISTRIBUTE];
+	      OMP_CLAUSE_LASTPRIVATE_CONDITIONAL (c)
+		= OMP_CLAUSE_LASTPRIVATE_CONDITIONAL (clauses);
 	      cclauses[C_OMP_CLAUSE_SPLIT_DISTRIBUTE] = c;
 	    }
 	  if (code == OMP_FOR || code == OMP_SECTIONS)
@@ -1208,6 +1210,8 @@ c_omp_split_clauses (location_t loc, enum tree_code code,
 	      c = build_omp_clause (OMP_CLAUSE_LOCATION (clauses),
 				    OMP_CLAUSE_LASTPRIVATE);
 	      OMP_CLAUSE_DECL (c) = OMP_CLAUSE_DECL (clauses);
+	      OMP_CLAUSE_LASTPRIVATE_CONDITIONAL (c)
+		= OMP_CLAUSE_LASTPRIVATE_CONDITIONAL (clauses);
 	      if ((mask & (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_NUM_THREADS))
 		  != 0)
 		s = C_OMP_CLAUSE_SPLIT_PARALLEL;

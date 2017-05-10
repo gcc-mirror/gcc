@@ -11401,12 +11401,41 @@ c_parser_omp_clause_if (c_parser *parser, tree list, bool is_omp)
 }
 
 /* OpenMP 2.5:
-   lastprivate ( variable-list ) */
+   lastprivate ( variable-list )
+
+   OpenMP 5.0:
+   lastprivate ( [ lastprivate-modifier : ] variable-list ) */
 
 static tree
 c_parser_omp_clause_lastprivate (c_parser *parser, tree list)
 {
-  return c_parser_omp_var_list_parens (parser, OMP_CLAUSE_LASTPRIVATE, list);
+  /* The clauses location.  */
+  location_t loc = c_parser_peek_token (parser)->location;
+
+  if (c_parser_require (parser, CPP_OPEN_PAREN, "expected %<(%>"))
+    {
+      bool conditional = false;
+      if (c_parser_next_token_is (parser, CPP_NAME)
+	  && c_parser_peek_2nd_token (parser)->type == CPP_COLON)
+	{
+	  const char *p
+	    = IDENTIFIER_POINTER (c_parser_peek_token (parser)->value);
+	  if (strcmp (p, "conditional") == 0)
+	    {
+	      conditional = true;
+	      c_parser_consume_token (parser);
+	      c_parser_consume_token (parser);
+	    }
+	}
+      tree nlist = c_parser_omp_variable_list (parser, loc,
+					       OMP_CLAUSE_LASTPRIVATE, list);
+      c_parser_skip_until_found (parser, CPP_CLOSE_PAREN, "expected %<)%>");
+      if (conditional)
+	for (tree c = nlist; c != list; c = OMP_CLAUSE_CHAIN (c))
+	  OMP_CLAUSE_LASTPRIVATE_CONDITIONAL (c) = 1;
+      return nlist;
+    }
+  return list;
 }
 
 /* OpenMP 3.1:
@@ -17872,8 +17901,9 @@ c_parser_cilk_all_clauses (c_parser *parser)
 	  clauses = c_parser_omp_clause_firstprivate (parser, clauses);
 	  break;
 	case PRAGMA_CILK_CLAUSE_LASTPRIVATE:
-	  /* Use the OpenMP counterpart.  */
-	  clauses = c_parser_omp_clause_lastprivate (parser, clauses);
+	  clauses
+	    = c_parser_omp_var_list_parens (parser, OMP_CLAUSE_LASTPRIVATE,
+					    clauses);
 	  break;
 	case PRAGMA_CILK_CLAUSE_REDUCTION:
 	  /* Use the OpenMP counterpart.  */

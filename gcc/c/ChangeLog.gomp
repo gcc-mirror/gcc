@@ -1,3 +1,10 @@
+2017-05-10  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.c (c_parser_omp_clause_lastprivate): Parse optional
+	conditional: modifier.
+	(c_parser_cilk_all_clauses): Call c_parser_omp_var_list_parens
+	directly.
+
 2017-05-09  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-parser.c (c_parser_omp_variable_list): For OMP_CLAUSE_DEPEND,

@@ -389,7 +389,13 @@ dump_omp_clause (pretty_printer *pp, tree clause, int spc, int flags)
       goto print_remap;
     case OMP_CLAUSE_LASTPRIVATE:
       name = "lastprivate";
-      goto print_remap;
+      if (!OMP_CLAUSE_LASTPRIVATE_CONDITIONAL (clause))
+	goto print_remap;
+      pp_string (pp, "lastprivate(conditional:");
+      dump_generic_node (pp, OMP_CLAUSE_DECL (clause),
+			 spc, flags, false);
+      pp_right_paren (pp);
+      break;
     case OMP_CLAUSE_COPYIN:
       name = "copyin";
       goto print_remap;

@@ -1469,6 +1469,10 @@ extern void protected_set_expr_location (tree, location_t);
 #define OMP_CLAUSE_LASTPRIVATE_TASKLOOP_IV(NODE) \
   TREE_PROTECTED (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_LASTPRIVATE))
 
+/* True if a LASTPRIVATE clause has CONDITIONAL: modifier.  */
+#define OMP_CLAUSE_LASTPRIVATE_CONDITIONAL(NODE) \
+  TREE_PRIVATE (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_LASTPRIVATE))
+
 /* True on a SHARED clause if a FIRSTPRIVATE clause for the same
    decl is present in the chain (this can happen only for taskloop
    with FIRSTPRIVATE/LASTPRIVATE on it originally.  */

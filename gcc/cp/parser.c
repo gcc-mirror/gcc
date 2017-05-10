@@ -32459,6 +32459,43 @@ cp_parser_omp_clause_aligned (cp_parser *parser, tree list)
   return nlist;
 }
 
+/* OpenMP 2.5:
+   lastprivate ( variable-list )
+
+   OpenMP 5.0:
+   lastprivate ( [ lastprivate-modifier : ] variable-list )  */
+
+static tree
+cp_parser_omp_clause_lastprivate (cp_parser *parser, tree list, location_t loc)
+{
+  bool conditional = false;
+
+  if (!cp_parser_require (parser, CPP_OPEN_PAREN, RT_OPEN_PAREN))
+    return list;
+
+  if (cp_lexer_next_token_is (parser->lexer, CPP_NAME)
+      && cp_lexer_nth_token_is (parser->lexer, 2, CPP_COLON))
+    {
+      tree id = cp_lexer_peek_token (parser->lexer)->u.value;
+      const char *p = IDENTIFIER_POINTER (id);
+
+      if (strcmp ("conditional", p) == 0)
+	{
+	  conditional = true;
+	  cp_lexer_consume_token (parser->lexer);
+	  cp_lexer_consume_token (parser->lexer);
+	}
+    }
+
+  tree nlist = cp_parser_omp_var_list_no_open (parser, OMP_CLAUSE_LASTPRIVATE,
+					       list, NULL);
+
+  if (conditional)
+    for (tree c = nlist; c != list; c = OMP_CLAUSE_CHAIN (c))
+      OMP_CLAUSE_LASTPRIVATE_CONDITIONAL (c) = 1;
+  return nlist;
+}
+
 /* OpenMP 4.0:
    linear ( variable-list )
    linear ( variable-list : expression )
@@ -33334,8 +33371,8 @@ cp_parser_omp_all_clauses (cp_parser *parser, omp_clause_mask mask,
 	  c_name = "if";
 	  break;
 	case PRAGMA_OMP_CLAUSE_LASTPRIVATE:
-	  clauses = cp_parser_omp_var_list (parser, OMP_CLAUSE_LASTPRIVATE,
-					    clauses);
+	  clauses = cp_parser_omp_clause_lastprivate (parser, clauses,
+						      token->location);
 	  c_name = "lastprivate";
 	  break;
 	case PRAGMA_OMP_CLAUSE_MERGEABLE:

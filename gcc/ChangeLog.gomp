@@ -1,0 +1,19 @@
+2017-05-10  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree.h (OMP_CLAUSE_LASTPRIVATE_CONDITIONAL): Define.
+	* tree-pretty-print.c (dump_omp_clause) <case OMP_CLAUSE_LASTPRIVATE>:
+	Print conditional: for OMP_CLAUSE_LASTPRIVATE_CONDITIONAL.
+	* gimplify.c (gimplify_scan_omp_clauses): Diagnose invalid
+	gimplify_scan_omp_clauses.
+
+2017-05-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* omp-expand.c (expand_parallel_call, expand_omp_for): For dynamic
+	and guided schedule without monotonic and nonmonotonic modifier,
+	default to nonmonotonic.
+
+Copyright (C) 2017 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.

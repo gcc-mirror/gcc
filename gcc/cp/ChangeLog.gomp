@@ -1,3 +1,8 @@
+2017-05-10  Jakub Jelinek  <jakub@redhat.com>
+
+	* parser.c (cp_parser_omp_clause_lastprivate): New function.
+	(cp_parser_omp_all_clauses): Call it for OpenMP lastprivate clause.
+
 2017-05-09  Jakub Jelinek  <jakub@redhat.com>
 
 	* parser.c (cp_parser_omp_var_list_no_open): For OMP_CLAUSE_DEPEND,
