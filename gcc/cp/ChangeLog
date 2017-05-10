@@ -1,5 +1,9 @@
 2017-05-10  Nathan Sidwell  <nathan@acm.org>
 
+	* pt.c (print_candidates_1): Separate TREE_LIST and OVERLOAD
+	printing.
+	(print_candidates): Adjust.
+
 	* cp-tree.h (build_new_function_call): Lose koenig_p arg.  Fix
 	line breaking.
 	* call.c (build_new_function_call): Lose koenig_p arg.  Remove

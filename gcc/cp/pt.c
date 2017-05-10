@@ -1922,43 +1922,28 @@ explicit_class_specialization_p (tree type)
    in *STR when it ends.  */
 
 static void
-print_candidates_1 (tree fns, bool more, const char **str)
+print_candidates_1 (tree fns, char **str, bool more = false)
 {
-  tree fn, fn2;
-  char *spaces = NULL;
-
-  for (fn = fns; fn; fn = OVL_NEXT (fn))
-    if (TREE_CODE (fn) == TREE_LIST)
+  if (TREE_CODE (fns) == TREE_LIST)
+    for (; fns; fns = TREE_CHAIN (fns))
+      print_candidates_1 (TREE_VALUE (fns), str, more || TREE_CHAIN (fns));
+  else
+    while (fns)
       {
-        for (fn2 = fn; fn2 != NULL_TREE; fn2 = TREE_CHAIN (fn2))
-          print_candidates_1 (TREE_VALUE (fn2),
-                              TREE_CHAIN (fn2) || more, str);
-      }
-    else
-      {
-	tree cand = OVL_CURRENT (fn);
-        if (!*str)
-          {
-            /* Pick the prefix string.  */
-            if (!more && !OVL_NEXT (fns))
-              {
-                inform (DECL_SOURCE_LOCATION (cand),
-			"candidate is: %#qD", cand);
-                continue;
-              }
+	tree cand = OVL_CURRENT (fns);
 
-            *str = _("candidates are:");
-            spaces = get_spaces (*str);
-          }
-	inform (DECL_SOURCE_LOCATION (cand), "%s %#qD", *str, cand);
-        *str = spaces ? spaces : *str;
+	fns = OVL_NEXT (fns);
+	const char *pfx = *str;
+	if (!pfx)
+	  {
+	    if (more || fns)
+	      pfx = _("candidates are:");
+	    else
+	      pfx = _("candidate is:");
+	    *str = get_spaces (pfx);
+	  }
+	inform (DECL_SOURCE_LOCATION (cand), "%s %#qD", pfx, cand);
       }
-
-  if (!more)
-    {
-      free (spaces);
-      *str = NULL;
-    }
 }
 
 /* Print the list of candidate FNS in an error message.  FNS can also
@@ -1967,9 +1952,9 @@ print_candidates_1 (tree fns, bool more, const char **str)
 void
 print_candidates (tree fns)
 {
-  const char *str = NULL;
-  print_candidates_1 (fns, false, &str);
-  gcc_assert (str == NULL);
+  char *str = NULL;
+  print_candidates_1 (fns, &str);
+  free (str);
 }
 
 /* Get a (possibly) constrained template declaration for the
