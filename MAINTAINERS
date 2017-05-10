@@ -101,7 +101,6 @@ s390 port		Ulrich Weigand		<uweigand@de.ibm.com>
 s390 port		Andreas Krebbel		<Andreas.Krebbel@de.ibm.com>
 score port		Chen Liqin		<liqin.gcc@gmail.com>
 sh port			Alexandre Oliva		<aoliva@redhat.com>
-sh port			Kaz Kojima		<kkojima@gcc.gnu.org>
 sh port			Oleg Endo		<olegendo@gcc.gnu.org>
 sparc port		Richard Henderson	<rth@redhat.com>
 sparc port		David S. Miller		<davem@redhat.com>
@@ -449,6 +448,7 @@ Andi Kleen					<andi@firstfloor.org>
 Jeff Knaggs					<jknaggs@redhat.com>
 Michael Koch					<konqueror@gmx.de>
 Nicolas Koenig					<koenigni@student.ethz.ch>
+Kaz Kojima					<kkojima@gcc.gnu.org>
 Dave Korn					<dave.korn.cygwin@gmail.com>
 Matt Kraai					<kraai@ftbfs.org>
 Jan Kratochvil					<jan.kratochvil@redhat.com>

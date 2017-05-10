@@ -12387,8 +12387,8 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 	if (DECL_CONSTRUCTOR_P (r) || DECL_DESTRUCTOR_P (r))
 	  {
 	    maybe_retrofit_in_chrg (r);
-	    if (DECL_CONSTRUCTOR_P (r))
-	      grok_ctor_properties (ctx, r);
+	    if (DECL_CONSTRUCTOR_P (r) && !grok_ctor_properties (ctx, r))
+	      RETURN (error_mark_node);
 	    /* If this is an instantiation of a member template, clone it.
 	       If it isn't, that'll be handled by
 	       clone_constructors_and_destructors.  */
@@ -17690,7 +17690,12 @@ tsubst_copy_and_build (tree t,
 	CONSTRUCTOR_IS_DIRECT_INIT (r) = CONSTRUCTOR_IS_DIRECT_INIT (t);
 
 	if (TREE_HAS_CONSTRUCTOR (t))
-	  RETURN (finish_compound_literal (type, r, complain));
+	  {
+	    fcl_t cl = fcl_functional;
+	    if (CONSTRUCTOR_C99_COMPOUND_LITERAL (t))
+	      cl = fcl_c99;
+	    RETURN (finish_compound_literal (type, r, complain, cl));
+	  }
 
 	TREE_TYPE (r) = type;
 	RETURN (r);

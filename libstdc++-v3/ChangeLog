@@ -1,3 +1,7 @@
+2017-05-09  Jason Merrill  <jason@redhat.com>
+
+	* testsuite/24_iterators/container_access.cc (test03): Make il3 static.
+
 2017-05-08  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/std/optional: Use a separate static_assert per condition.

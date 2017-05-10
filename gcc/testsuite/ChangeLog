@@ -1,3 +1,81 @@
+2017-05-10  Alexandre Oliva <aoliva@redhat.com>
+
+	* gcc.dg/guality/inline-params-2.c: New.
+
+2017-05-10  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/80145
+	* g++.dg/cpp1y/auto-fn37.C: New.
+	* g++.dg/cpp1y/auto-fn38.C: Likewise.
+
+2017-05-09  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/68163
+	* gcc.target/powerpc/pr68163.c: New test.
+
+2017-05-09  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/79311
+	* gfortran.dg/finalize_32.f90: New test.
+
+2017-05-09  Volker Reichelt  <v.reichelt@netcologne.de>
+
+	PR c/35441
+	* gcc.dg/pr35441.c: New test.
+
+2017-05-09  Martin Sebor  <msebor@redhat.com>
+
+	PR testsuite/80643
+	* c-c++-common/Wsizeof-pointer-memaccess2.c: Prune -Wformat-overflow
+	output.
+
+2017-05-09  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/80186
+	* g++.dg/template/crash126.C: New.
+
+2017-05-09  Sebastian Peryt  <sebastian.peryt@intel.com>
+
+	* gcc.target/i386/avx512f-vaddsd-2.c: Test fixed.
+	* gcc.target/i386/avx512f-vaddss-2.c: Ditto.
+	* gcc.target/i386/avx512f-vsubsd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vsubss-2.c: Ditto.
+
+2017-05-09  Dominique d'Humieres  <dominiq@lps.ens.fr>
+
+	PR testsuite/80611
+	* gfortran.dg/coarray_lock_7.f90: Fix dg-final regexps.
+
+2017-05-09  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* gcc.target/arc/tmac-1.c: New file.
+	* gcc.target/arc/tmac-2.c: Likewise.
+	* gcc.target/arc/tmac.h: Likewise.
+
+2017-05-09  Claudiu Zissulescu  <claziss@synopsys.com>
+	    Andrew Burgess <andrew.burgess@embecosm.com>
+
+	* gcc.target/arc/firq-1.c: New file.
+	* gcc.target/arc/firq-2.c: Likewise.
+	* gcc.target/arc/firq-3.c: Likewise.
+	* gcc.target/arc/firq-4.c: Likewise.
+	* gcc.target/arc/firq-5.c: Likewise.
+	* gcc.target/arc/firq-6.c: Likewise.
+
+2017-05-09  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* gcc.target/arc/interrupt-5.c: Newfile.
+	* gcc.target/arc/interrupt-6.c: Likewise.
+	* gcc.target/arc/interrupt-7.c: Likewise.
+	* gcc.target/arc/interrupt-8.c: Likewise.
+	* gcc.target/arc/interrupt-9.c: Likewise.
+
+2017-05-09  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/vect/vect-44.c: Add --param vect-max-peeling-for-alignment=0
+	and adjust.
+	* gcc.dg/vect/vect-50.c: Likewise.
+
 2017-05-09  Marek Polacek  <polacek@redhat.com>
 
 	PR c/80525

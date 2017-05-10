@@ -1,3 +1,77 @@
+2017-05-10  Nathan Sidwell  <nathan@acm.org>
+
+	* dumpfile.h (TDI_lang_all): New.
+	(TDF_KIND): New. Renumber others
+	(TDF_LANG, TDF_TREE, TDF_RTL, TDF_IPA): Enumerate value, rather
+	than bits.
+	* dumpfile.c (dump_files): Mark language dumps as TDF_LANG.  add
+	lang-all.
+	(get_dump_file_name): Adjust suffix generation.
+	(dump_enable_all): Use TDF_KIND.
+	* doc/invoke.texi (-fdump-lang-all): Document.
+
+	* dumpfile.h: Tabify.
+
+2017-05-10  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	PR target/80671
+	* config/aarch64/cortex-a57-fma-steering.c (merge_forest):
+	Move member access before delete.
+
+2017-05-10  Alexandre Oliva <aoliva@redhat.com>
+
+	* tree-inline.c (expand_call_inline): Split block at stmt
+	before the call.
+
+2017-05-09  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/68163
+	* config/rs6000/rs6000.md (f32_lr): Delete mode attributes that
+	are now unused after splitting mov{sf,sd}_hardfloat.
+	(f32_lr2): Likewise.
+	(f32_lm): Likewise.
+	(f32_lm2): Likewise.
+	(f32_li): Likewise.
+	(f32_li2): Likewise.
+	(f32_lv): Likewise.
+	(f32_sr): Likewise.
+	(f32_sr2): Likewise.
+	(f32_sm): Likewise.
+	(f32_sm2): Likewise.
+	(f32_si): Likewise.
+	(f32_si2): Likewise.
+	(f32_sv): Likewise.
+	(f32_dm): Likewise.
+	(f32_vsx): Likewise.
+	(f32_av): Likewise.
+	(mov<mode>_hardfloat): Split into separate movsf and movsd pieces.
+	For movsf, order stores so the VSX stores occur before the GPR
+	store which encourages the register allocator to use a traditional
+	FPR instead of a GPR.  For movsd, order the stores so that the GPR
+	store comes before the VSX stores to allow the power6 to work.
+	This is due to the power6 not having a 32-bit integer store
+	instruction from a FPR.
+	(movsf_hardfloat): Likewise.
+	(movsd_hardfloat): Likewise.
+
+2017-05-09  Martin Sebor  <msebor@redhat.com>
+
+	PR translation/80280
+	* config/sol2-c.c (cmn_err_flag_specs): Initialize new data member
+	added in r247778.
+
+	PR translation/80280
+	* config/i386/msformat-c.c (ms_printf_flag_specs): Initialize new
+	data member added in r247778.
+	(ms_scanf_flag_specs, ms_strftime_flag_specs): Same.
+
+2017-05-09  Nathan Sidwell  <nathan@acm.org>
+
+	* tree.h (tree_fits_shwi_p, tree_fits_uhwi_p): Unconditionally pure.
+
+	* ipa-devirt.c (default_hash_traits<type_pair>): Skip struct-scope
+	typedefs.
+
 2017-05-09  Marek Polacek  <polacek@redhat.com>
 
 	* doc/invoke.texi: Fix typo.

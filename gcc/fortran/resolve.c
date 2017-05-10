@@ -12385,26 +12385,23 @@ gfc_resolve_finalizers (gfc_symbol* derived, bool *finalizable)
   if (parent)
     gfc_resolve_finalizers (parent, finalizable);
 
-  /* Return early when not finalizable. Additionally, ensure that derived-type
-     components have a their finalizables resolved.  */
-  if (!derived->f2k_derived || !derived->f2k_derived->finalizers)
+  /* Ensure that derived-type components have a their finalizers resolved.  */
+  bool has_final = derived->f2k_derived && derived->f2k_derived->finalizers;
+  for (c = derived->components; c; c = c->next)
+    if (c->ts.type == BT_DERIVED
+	&& !c->attr.pointer && !c->attr.proc_pointer && !c->attr.allocatable)
+      {
+	bool has_final2 = false;
+	if (!gfc_resolve_finalizers (c->ts.u.derived, &has_final2))
+	  return false;  /* Error.  */
+	has_final = has_final || has_final2;
+      }
+  /* Return early if not finalizable.  */
+  if (!has_final)
     {
-      bool has_final = false;
-      for (c = derived->components; c; c = c->next)
-	if (c->ts.type == BT_DERIVED
-	    && !c->attr.pointer && !c->attr.proc_pointer && !c->attr.allocatable)
-	  {
-	    bool has_final2 = false;
-	    if (!gfc_resolve_finalizers (c->ts.u.derived, &has_final))
-	      return false;  /* Error.  */
-	    has_final = has_final || has_final2;
-	  }
-      if (!has_final)
-	{
-	  if (finalizable)
-	    *finalizable = false;
-	  return true;
-	}
+      if (finalizable)
+	*finalizable = false;
+      return true;
     }
 
   /* Walk over the list of finalizer-procedures, check them, and if any one

@@ -1,3 +1,69 @@
+2017-05-09  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* MAINTAINERS: Move myself to Write After Approval section.
+
+2017-05-09  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/arc.c (arc_conditional_register_usage): Handle ACCL,
+	ACCH registers.
+	* config/arc/arc.md (mulsidi3): Use advanced mpy instructions when
+	available.
+	(umulsidi3): Likewise.
+	(mulsidi3_700): Disable this pattern when we have advanced mpy
+	instructions.
+	(umulsidi3_700): Likewise.
+	(maddsidi4): New pattern.
+	(macd, mac, mac_r, umaddsidi4, macdu, macu, macu_r): Likewise.
+	(mpyd_arcv2hs, mpyd_imm_arcv2hs, mpydu_arcv2hs): Likewise.
+	(mpydu_imm_arcv2hs): Likewise.
+	* config/arc/predicates.md (accl_operand): New predicate.
+
+2017-05-09  Claudiu Zissulescu  <claziss@synopsys.com>
+	    Andrew Burgess <andrew.burgess@embecosm.com>
+
+	* config/arc/arc.c (ARC_AUTOBLINK_IRQ_P): Consider fast interrupts
+	case.
+	(ARC_AUTOFP_IRQ_P): Likewise.
+	(ARC_AUTO_IRQ_P): Likewise.
+	(rgf_banked_register_count): New variable.
+	(parse_mrgf_banked_regs_option): New function.
+	(arc_override_options): Handle rgf_banked_regs option.
+	(arc_handle_interrupt_attribute): Add firq option.
+	(arc_compute_function_type): Return fast irq type when required.
+	(arc_must_save_register): Handle fast interrupts.
+	(arc_expand_prologue): Do not emit dwarf info for fast interrupts.
+	(arc_return_address_regs): Update.
+	* config/arc/arc.h (arc_return_address_regs): Update.
+	(arc_function_type): Add fast interrupt type.
+	(ARC_INTERRUPT_P): Update.
+	(RC_FAST_INTERRUPT_P): Define.
+	* config/arc/arc.md (simple_return): Update for fast interrupts.
+	(p_return_i): Likewise.
+	* config/arc/arc.opt (mrgf-banked-regs): New option.
+	* doc/invoke.texi (mrgf-banked-regs): Document.
+
+2017-05-09  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/arc.c (irq_ctrl_saved): New variable.
+	(ARC_AUTOBLINK_IRQ_P): Define.
+	(ARC_AUTOFP_IRQ_P): Likewise.
+	(ARC_AUTO_IRQ_P): Likewise.
+	(irq_range): New function.
+	(arc_must_save_register): Likewise.
+	(arc_must_save_return_addr): Likewise.
+	(arc_dwarf_emit_irq_save_regs): Likewise.
+	(arc_override_options): Handle deferred options.
+	(MUST_SAVE_REGISTER): Deleted, replaced by arc_must_save_register.
+	(MUST_SAVE_RETURN_ADDR): Deleted, replaced by
+	arc_must_save_return_addr.
+	(arc_compute_frame_size): Handle automated save and restore of
+	registers.
+	(arc_expand_prologue): Likewise.
+	(arc_expand_epilogue): Likewise.
+	* config/arc/arc.md (stack_irq_dwarf): New unspec instruction.
+	* config/arc/arc.opt (mirq-ctrl-saved): New option.
+	* doc/invoke.texi (mirq-ctrl-saved): Document option.
+
 2017-04-19  Thomas Koenig  <tkoenig@gcc.gnu.org>
 	Tobias Burnus  <tobias.burnus@physik.fu-berlin.de>
 

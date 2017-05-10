@@ -1,3 +1,8 @@
+2017-05-09  Andreas Tobler  <andreast@gcc.gnu.org>
+
+	* config.host: Use the generic FreeBSD t-slibgcc-elf-ver for
+	arm*-*-freebsd* instead of the t-slibgcc-libgcc.
+
 2017-05-05  Joshua Conner  <joshconner@google.com>
 
 	* config/arm/unwind-arm.h (_Unwind_decode_typeinfo_ptr): Use

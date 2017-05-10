@@ -1,3 +1,13 @@
+2017-05-09  Volker Reichelt  <v.reichelt@netcologne.de>
+
+	PR c/35441
+	* c-pretty-print.c (c_pretty_printer::expression): Handle MAX_EXPR,
+	MIN_EXPR, EXACT_DIV_EXPR, RDIV_EXPR, LROTATE_EXPR, RROTATE_EXPR.
+	(c_pretty_printer::postfix_expression): Handle MAX_EXPR, MIN_EXPR.
+	(c_pretty_printer::multiplicative_expression): Handle EXACT_DIV_EXPR,
+	RDIV_EXPR.
+	(pp_c_shift_expression): Handle LROTATE_EXPR, RROTATE_EXPR.
+
 2017-05-09  Marek Polacek  <polacek@redhat.com>
 
 	PR c/80525
