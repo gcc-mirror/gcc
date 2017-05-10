@@ -1,3 +1,70 @@
+2017-05-10  Sebastian Peryt  <sebastian.peryt@intel.com>
+
+	* gcc.target/i386/avx512f-vmaxsd-1.c (_mm_mask_max_round_sd)
+	(_mm_maskz_max_round_sd): Test new intrinsics.
+	* gcc.target/i386/avx512f-vmaxsd-2.c: New.
+	* gcc.target/i386/avx512f-vmaxss-1.c (_mm_mask_max_round_ss)
+	(_mm_maskz_max_round_ss): Test new intrinsics.
+	* gcc.target/i386/avx512f-vmaxss-2.c: New.
+	* gcc.target/i386/avx512f-vminsd-1.c (_mm_mask_min_round_sd)
+	(_mm_maskz_min_round_sd): Test new intrinsics.
+	* gcc.target/i386/avx512f-vminsd-2.c: New.
+	* gcc.target/i386/avx512f-vminss-1.c (_mm_mask_min_round_ss)
+	(_mm_maskz_min_round_ss): Test new intrinsics.
+	* gcc.target/i386/avx512f-vminss-2.c: New.
+	* gcc.target/i386/avx-1.c (__builtin_ia32_maxsd_mask_round)
+	(__builtin_ia32_maxss_mask_round, __builtin_ia32_minsd_mask_round)
+	(__builtin_ia32_minss_mask_round): Test new builtins.
+	* gcc.target/i386/sse-13.c: Ditto.
+	* gcc.target/i386/sse-23.c: Ditto.
+	* gcc.target/i386/sse-14.c (_mm_maskz_max_round_sd)
+	(_mm_maskz_max_round_ss, _mm_maskz_min_round_sd)
+	(_mm_maskz_min_round_ss, _mm_mask_max_round_sd)
+	(_mm_mask_max_round_ss, _mm_mask_min_round_sd)
+	(_mm_mask_min_round_ss): Test new intrinsics.
+	* gcc.target/i386/testround-1.c: Ditto.
+
+2017-05-10  Sebastian Peryt  <sebastian.peryt@intel.com>
+
+	* gcc.target/i386/avx512f-vdivsd-1.c (_mm_mask_div_sd)
+	(_mm_maskz_div_sd, _mm_mask_div_round_sd)
+	(_mm_maskz_div_round_sd): Test new intrinsics.
+	* gcc.target/i386/avx512f-vdivsd-2.c: New.
+	* gcc.target/i386/avx512f-vdivss-1.c (_mm_mask_div_ss)
+	(_mm_maskz_div_ss, _mm_mask_div_round_ss)
+	(_mm_maskz_div_round_ss): Test new intrinsics.
+	* gcc.target/i386/avx512f-vdivss-2.c: New.
+	* gcc.target/i386/avx512f-vmulsd-1.c (_mm_mask_mul_sd)
+	(_mm_maskz_mul_sd, _mm_mask_mul_round_sd)
+	(_mm_maskz_mul_round_sd): Test new intrinsics.
+	* gcc.target/i386/avx512f-vmulsd-2.c: New.
+	* gcc.target/i386/avx512f-vmulss-1.c (_mm_mask_mul_ss)
+	(_mm_maskz_mul_ss, _mm_mask_mul_round_ss)
+	(_mm_maskz_mul_round_ss): Test new intrinsics.
+	* gcc.target/i386/avx512f-vmulss-2.c: New.
+	* gcc.target/i386/avx-1.c (__builtin_ia32_divsd_mask_round)
+	(__builtin_ia32_divss_mask_round, __builtin_ia32_mulsd_mask_round)
+	(__builtin_ia32_mulss_mask_round): Test new builtins.
+	* gcc.target/i386/sse-13.c: Ditto.
+	* gcc.target/i386/sse-23.c: Ditto.
+	* gcc.target/i386/sse-14.c (_mm_maskz_div_round_sd)
+	(_mm_maskz_div_round_ss, _mm_maskz_mul_round_sd)
+	(_mm_maskz_mul_round_ss): Test new intrinsics.
+	* gcc.target/i386/testround-1.c: Ditto.
+
+2017-05-10  Julia Koval  <julia.koval@intel.com>
+
+	* gcc.target/i386/avx-vinsertf128-256-1: Test new intrinsics.
+	* gcc.target/i386/avx-vinsertf128-256-2: Ditto.
+	* gcc.target/i386/avx-vinsertf128-256-3: Ditto.
+
+2017-05-10  Julia Koval  <julia.koval@intel.com>
+
+	* gcc.target/i386/avx512f-vrcp14sd-1.c: Test new intrinsics.
+	* gcc.target/i386/avx512f-vrcp14sd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vrcp14ss-1.c: Ditto.
+	* gcc.target/i386/avx512f-vrcp14ss-2.c: Ditto.
+
 2017-05-10  Peter Bergner  <bergner@vnet.ibm.com>
 
 	PR tree-optimization/51513
