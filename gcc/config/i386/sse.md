@@ -1608,7 +1608,7 @@
    (set_attr "btver2_decode" "direct,double")
    (set_attr "mode" "<MODE>")])
 
-(define_insn "<sse>_vm<multdiv_mnemonic><mode>3<round_name>"
+(define_insn "<sse>_vm<multdiv_mnemonic><mode>3<mask_name><round_name>"
   [(set (match_operand:VF_128 0 "register_operand" "=x,v")
 	(vec_merge:VF_128
 	  (multdiv:VF_128
@@ -1619,7 +1619,7 @@
   "TARGET_SSE"
   "@
    <multdiv_mnemonic><ssescalarmodesuffix>\t{%2, %0|%0, %<iptr>2}
-   v<multdiv_mnemonic><ssescalarmodesuffix>\t{<round_op3>%2, %1, %0|%0, %1, %<iptr>2<round_op3>}"
+   v<multdiv_mnemonic><ssescalarmodesuffix>\t{<round_mask_op3>%2, %1, %0<mask_operand3>|%0<mask_operand3>, %1, %<iptr>2<round_mask_op3>}"
   [(set_attr "isa" "noavx,avx")
    (set_attr "type" "sse<multdiv_mnemonic>")
    (set_attr "prefix" "<round_prefix>")
@@ -1717,6 +1717,23 @@
 	  (const_int 1)))]
   "TARGET_AVX512F"
   "vrcp14<ssescalarmodesuffix>\t{%1, %2, %0|%0, %2, %<iptr>1}"
+  [(set_attr "type" "sse")
+   (set_attr "prefix" "evex")
+   (set_attr "mode" "<MODE>")])
+
+(define_insn "srcp14<mode>_mask"
+  [(set (match_operand:VF_128 0 "register_operand" "=v")
+	(vec_merge:VF_128
+	  (vec_merge:VF_128
+	    (unspec:VF_128
+	      [(match_operand:VF_128 1 "nonimmediate_operand" "vm")]
+	    UNSPEC_RCP14)
+	      (match_operand:VF_128 3 "vector_move_operand" "0C")
+	    (match_operand:<avx512fmaskmode> 4 "register_operand" "Yk"))
+	  (match_operand:VF_128 2 "register_operand" "v")
+	  (const_int 1)))]
+  "TARGET_AVX512F"
+  "vrcp14<ssescalarmodesuffix>\t{%1, %2, %0%{%4%}%N3|%0%{%4%}%N3, %2, %<iptr>1}"
   [(set_attr "type" "sse")
    (set_attr "prefix" "evex")
    (set_attr "mode" "<MODE>")])
@@ -1910,7 +1927,7 @@
    (set_attr "prefix" "<mask_prefix3>")
    (set_attr "mode" "<MODE>")])
 
-(define_insn "<sse>_vm<code><mode>3<round_saeonly_name>"
+(define_insn "<sse>_vm<code><mode>3<mask_name><round_saeonly_name>"
   [(set (match_operand:VF_128 0 "register_operand" "=x,v")
 	(vec_merge:VF_128
 	  (smaxmin:VF_128
@@ -1921,7 +1938,7 @@
   "TARGET_SSE"
   "@
    <maxmin_float><ssescalarmodesuffix>\t{%2, %0|%0, %<iptr>2}
-   v<maxmin_float><ssescalarmodesuffix>\t{<round_saeonly_op3>%2, %1, %0|%0, %1, %<iptr>2<round_saeonly_op3>}"
+   v<maxmin_float><ssescalarmodesuffix>\t{<round_saeonly_mask_op3>%2, %1, %0<mask_operand3>|%0<mask_operand3>, %1, %<iptr>2<round_saeonly_mask_op3>}"
   [(set_attr "isa" "noavx,avx")
    (set_attr "type" "sse")
    (set_attr "btver2_sse_attr" "maxmin")
