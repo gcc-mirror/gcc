@@ -5570,7 +5570,7 @@ template arguments to %qD do not match original template %qD",
     SET_TYPE_TEMPLATE_INFO (TREE_TYPE (tmpl), info);
   else
     {
-      if (is_primary && !DECL_LANG_SPECIFIC (decl))
+      if (is_primary)
 	retrofit_lang_decl (decl);
       if (DECL_LANG_SPECIFIC (decl))
 	DECL_TEMPLATE_INFO (decl) = info;
@@ -15253,8 +15253,7 @@ tsubst_omp_clauses (tree clauses, enum c_omp_region_type ort,
 		tree decl = OMP_CLAUSE_DECL (nc);
 		if (VAR_P (decl))
 		  {
-		    if (!DECL_LANG_SPECIFIC (decl))
-		      retrofit_lang_decl (decl);
+		    retrofit_lang_decl (decl);
 		    DECL_OMP_PRIVATIZED_MEMBER (decl) = 1;
 		  }
 	      }
@@ -25250,14 +25249,12 @@ do_class_deduction (tree ptype, tree tmpl, tree init, int flags,
     }
 
   ++cp_unevaluated_operand;
-  tree t = build_new_function_call (cands, &args, /*koenig*/false,
-				    tf_decltype);
+  tree t = build_new_function_call (cands, &args, tf_decltype);
 
   if (t == error_mark_node && (complain & tf_warning_or_error))
     {
       error ("class template argument deduction failed:");
-      t = build_new_function_call (cands, &args, /*koenig*/false,
-				   complain | tf_decltype);
+      t = build_new_function_call (cands, &args, complain | tf_decltype);
       if (old_cands != cands)
 	inform (input_location, "explicit deduction guides not considered "
 		"for copy-initialization");

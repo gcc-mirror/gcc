@@ -2438,7 +2438,7 @@ finish_call_expr (tree fn, vec<tree, va_gc> **args, bool disallow_virtual,
 	    }
 
 	  /* A call to a namespace-scope function.  */
-	  result = build_new_function_call (fn, args, koenig_p, complain);
+	  result = build_new_function_call (fn, args, complain);
 	}
     }
   else if (TREE_CODE (fn) == PSEUDO_DTOR_EXPR)
