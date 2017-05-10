@@ -290,6 +290,7 @@ matmul_i4_avx (gfc_array_i4 * const restrict retarray,
 		 f13, f14, f23, f24, f33, f34, f43, f44;
       index_type i, j, l, ii, jj, ll;
       index_type isec, jsec, lsec, uisec, ujsec, ulsec;
+      GFC_INTEGER_4 *t1;
 
       a = abase;
       b = bbase;
@@ -316,10 +317,7 @@ matmul_i4_avx (gfc_array_i4 * const restrict retarray,
       if (t1_dim > 65536)
 	t1_dim = 65536;
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wvla"
-      GFC_INTEGER_4 t1[t1_dim]; /* was [256][256] */
-#pragma GCC diagnostic pop
+      t1 = malloc (t1_dim * sizeof(GFC_INTEGER_4));
 
       /* Empty c first.  */
       for (j=1; j<=n; j++)
@@ -535,6 +533,7 @@ matmul_i4_avx (gfc_array_i4 * const restrict retarray,
 		}
 	    }
 	}
+      free(t1);
       return;
     }
   else if (rxstride == 1 && aystride == 1 && bxstride == 1)
@@ -843,6 +842,7 @@ matmul_i4_avx2 (gfc_array_i4 * const restrict retarray,
 		 f13, f14, f23, f24, f33, f34, f43, f44;
       index_type i, j, l, ii, jj, ll;
       index_type isec, jsec, lsec, uisec, ujsec, ulsec;
+      GFC_INTEGER_4 *t1;
 
       a = abase;
       b = bbase;
@@ -869,10 +869,7 @@ matmul_i4_avx2 (gfc_array_i4 * const restrict retarray,
       if (t1_dim > 65536)
 	t1_dim = 65536;
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wvla"
-      GFC_INTEGER_4 t1[t1_dim]; /* was [256][256] */
-#pragma GCC diagnostic pop
+      t1 = malloc (t1_dim * sizeof(GFC_INTEGER_4));
 
       /* Empty c first.  */
       for (j=1; j<=n; j++)
@@ -1088,6 +1085,7 @@ matmul_i4_avx2 (gfc_array_i4 * const restrict retarray,
 		}
 	    }
 	}
+      free(t1);
       return;
     }
   else if (rxstride == 1 && aystride == 1 && bxstride == 1)
@@ -1396,6 +1394,7 @@ matmul_i4_avx512f (gfc_array_i4 * const restrict retarray,
 		 f13, f14, f23, f24, f33, f34, f43, f44;
       index_type i, j, l, ii, jj, ll;
       index_type isec, jsec, lsec, uisec, ujsec, ulsec;
+      GFC_INTEGER_4 *t1;
 
       a = abase;
       b = bbase;
@@ -1422,10 +1421,7 @@ matmul_i4_avx512f (gfc_array_i4 * const restrict retarray,
       if (t1_dim > 65536)
 	t1_dim = 65536;
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wvla"
-      GFC_INTEGER_4 t1[t1_dim]; /* was [256][256] */
-#pragma GCC diagnostic pop
+      t1 = malloc (t1_dim * sizeof(GFC_INTEGER_4));
 
       /* Empty c first.  */
       for (j=1; j<=n; j++)
@@ -1641,6 +1637,7 @@ matmul_i4_avx512f (gfc_array_i4 * const restrict retarray,
 		}
 	    }
 	}
+      free(t1);
       return;
     }
   else if (rxstride == 1 && aystride == 1 && bxstride == 1)
@@ -1945,6 +1942,7 @@ matmul_i4_vanilla (gfc_array_i4 * const restrict retarray,
 		 f13, f14, f23, f24, f33, f34, f43, f44;
       index_type i, j, l, ii, jj, ll;
       index_type isec, jsec, lsec, uisec, ujsec, ulsec;
+      GFC_INTEGER_4 *t1;
 
       a = abase;
       b = bbase;
@@ -1971,10 +1969,7 @@ matmul_i4_vanilla (gfc_array_i4 * const restrict retarray,
       if (t1_dim > 65536)
 	t1_dim = 65536;
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wvla"
-      GFC_INTEGER_4 t1[t1_dim]; /* was [256][256] */
-#pragma GCC diagnostic pop
+      t1 = malloc (t1_dim * sizeof(GFC_INTEGER_4));
 
       /* Empty c first.  */
       for (j=1; j<=n; j++)
@@ -2190,6 +2185,7 @@ matmul_i4_vanilla (gfc_array_i4 * const restrict retarray,
 		}
 	    }
 	}
+      free(t1);
       return;
     }
   else if (rxstride == 1 && aystride == 1 && bxstride == 1)
@@ -2552,6 +2548,7 @@ matmul_i4 (gfc_array_i4 * const restrict retarray,
 		 f13, f14, f23, f24, f33, f34, f43, f44;
       index_type i, j, l, ii, jj, ll;
       index_type isec, jsec, lsec, uisec, ujsec, ulsec;
+      GFC_INTEGER_4 *t1;
 
       a = abase;
       b = bbase;
@@ -2578,10 +2575,7 @@ matmul_i4 (gfc_array_i4 * const restrict retarray,
       if (t1_dim > 65536)
 	t1_dim = 65536;
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wvla"
-      GFC_INTEGER_4 t1[t1_dim]; /* was [256][256] */
-#pragma GCC diagnostic pop
+      t1 = malloc (t1_dim * sizeof(GFC_INTEGER_4));
 
       /* Empty c first.  */
       for (j=1; j<=n; j++)
@@ -2797,6 +2791,7 @@ matmul_i4 (gfc_array_i4 * const restrict retarray,
 		}
 	    }
 	}
+      free(t1);
       return;
     }
   else if (rxstride == 1 && aystride == 1 && bxstride == 1)
