@@ -9,5 +9,5 @@ template < class T, class > struct A
 
 void f () 
 {
-  A < int, int > (A < int, int >());  // { dg-error "cannot bind" }
+  A < int, int > (A < int, int >());  // { dg-error "cannot bind" "" { target c++14_down } }
 }
