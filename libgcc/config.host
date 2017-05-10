@@ -378,7 +378,7 @@ arm-wrs-vxworks)
 	;;
 arm*-*-freebsd*)                # ARM FreeBSD EABI
 	tmake_file="${tmake_file} arm/t-arm t-fixedpoint-gnu-prefix arm/t-elf"
-	tmake_file="${tmake_file} arm/t-bpabi arm/t-freebsd t-slibgcc-libgcc"
+	tmake_file="${tmake_file} arm/t-bpabi arm/t-freebsd"
 	tm_file="${tm_file} arm/bpabi-lib.h"
 	unwind_header=config/arm/unwind-arm.h
 	tmake_file="${tmake_file} t-softfp-sfdf t-softfp-excl arm/t-softfp t-softfp"
