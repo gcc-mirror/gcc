@@ -1,5 +1,15 @@
 2017-05-10  Nathan Sidwell  <nathan@acm.org>
 
+	* dumpfile.h (TDI_lang_all): New.
+	(TDF_KIND): New. Renumber others
+	(TDF_LANG, TDF_TREE, TDF_RTL, TDF_IPA): Enumerate value, rather
+	than bits.
+	* dumpfile.c (dump_files): Mark language dumps as TDF_LANG.  add
+	lang-all.
+	(get_dump_file_name): Adjust suffix generation.
+	(dump_enable_all): Use TDF_KIND.
+	* doc/invoke.texi (-fdump-lang-all): Document.
+
 	* dumpfile.h: Tabify.
 
 2017-05-10  Wilco Dijkstra  <wdijkstr@arm.com>

@@ -35,6 +35,8 @@ enum tree_dump_index
   TDI_original,			/* dump each function before optimizing it */
   TDI_generic,			/* dump each function after genericizing it */
   TDI_nested,			/* dump each function after unnesting it */
+
+  TDI_lang_all,			/* enable all the language dumps.  */
   TDI_tree_all,			/* enable all the GENERIC/GIMPLE dumps.  */
   TDI_rtl_all,			/* enable all the RTL dumps.  */
   TDI_ipa_all,			/* enable all the IPA dumps.  */
@@ -47,21 +49,26 @@ enum tree_dump_index
    the DUMP_OPTIONS array in dumpfile.c. The TDF_* flags coexist with
    MSG_* flags (for -fopt-info) and the bit values must be chosen to
    allow that.  */
-#define TDF_ADDRESS	(1 << 0)	/* dump node addresses */
-#define TDF_SLIM	(1 << 1)	/* don't go wild following links */
-#define TDF_RAW		(1 << 2)	/* don't unparse the function */
-#define TDF_DETAILS	(1 << 3)	/* show more detailed info about
-					   each pass */
-#define TDF_STATS	(1 << 4)	/* dump various statistics about
-					   each pass */
-#define TDF_BLOCKS	(1 << 5)	/* display basic block boundaries */
-#define TDF_VOPS	(1 << 6)	/* display virtual operands */
-#define TDF_LINENO	(1 << 7)	/* display statement line numbers */
-#define TDF_UID		(1 << 8)	/* display decl UIDs */
+#define TDF_LANG	0	/* is a lang-specific dump.  */
+#define TDF_TREE	1	/* is a tree dump */
+#define TDF_RTL		2	/* is a RTL dump */
+#define TDF_IPA		3	/* is an IPA dump */
+#define TDF_KIND_MASK   3
+#define TDF_KIND(X) ((X) & TDF_KIND_MASK)
 
-#define TDF_TREE	(1 << 9)	/* is a tree dump */
-#define TDF_RTL		(1 << 10)	/* is a RTL dump */
-#define TDF_IPA		(1 << 11)	/* is an IPA dump */
+/* Bit 2 unused, available for hire.  */
+#define TDF_ADDRESS	(1 << 3)	/* dump node addresses */
+#define TDF_SLIM	(1 << 4)	/* don't go wild following links */
+#define TDF_RAW		(1 << 5)	/* don't unparse the function */
+#define TDF_DETAILS	(1 << 6)	/* show more detailed info about
+					   each pass */
+#define TDF_STATS	(1 << 7)	/* dump various statistics about
+					   each pass */
+#define TDF_BLOCKS	(1 << 8)	/* display basic block boundaries */
+#define TDF_VOPS	(1 << 9)	/* display virtual operands */
+#define TDF_LINENO	(1 << 10)	/* display statement line numbers */
+#define TDF_UID		(1 << 11)	/* display decl UIDs */
+
 #define TDF_STMTADDR	(1 << 12)	/* Address of stmt.  */
 
 #define TDF_GRAPH	(1 << 13)	/* a graph dump is being emitted */
