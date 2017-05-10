@@ -1,3 +1,8 @@
+2017-05-10  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	PR tree-optimization/77644
+	* gcc.dg/tree-ssa/pr77644.c: New test-case.
+
 2017-05-10  Alexandre Oliva <aoliva@redhat.com>
 
 	* gcc.dg/guality/inline-params-2.c: New.

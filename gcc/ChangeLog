@@ -1,3 +1,8 @@
+2017-05-10  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	PR tree-optimization/77644
+	* match.pd (sqrt(x) cmp sqrt(y) -> x cmp y): New pattern.
+
 2017-05-10  Nathan Sidwell  <nathan@acm.org>
 
 	* dumpfile.h (TDI_lang_all): New.

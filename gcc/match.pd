@@ -2633,7 +2633,12 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	 (if (GENERIC)
 	  (truth_andif
 	   (ge @0 { build_real (TREE_TYPE (@0), dconst0); })
-	   (cmp @0 { build_real (TREE_TYPE (@0), c2); }))))))))))))
+	   (cmp @0 { build_real (TREE_TYPE (@0), c2); })))))))))
+   /* Transform sqrt(x) cmp sqrt(y) -> x cmp y.  */
+   (simplify
+    (cmp (sq @0) (sq @1))
+      (if (! HONOR_NANS (@0))
+	(cmp @0 @1))))))
 
 /* Fold A /[ex] B CMP C to A CMP B * C.  */
 (for cmp (eq ne)
