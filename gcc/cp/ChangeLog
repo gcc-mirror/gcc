@@ -1,3 +1,9 @@
+2017-05-10  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/80145
+	* decl.c (finish_function): To improve error recovery, change the
+	logic for calling apply_deduced_return_type.
+
 2017-05-09  Jason Merrill  <jason@redhat.com>
 
 	* class.c (check_bases): Ignore empty bases.
