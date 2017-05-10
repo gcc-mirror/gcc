@@ -36,18 +36,25 @@ test_vui_packs_vull_vull (vector unsigned long long x,
   return vec_packs (x, y);
 }
 
+vector long long
+test_neg_long_long (vector long long x)
+{
+	return vec_neg (x);
+}
+
 /* Expected test results:
 
      test_eq_long_long          1 vcmpequd inst
      test_pack_float            1 vpkudum inst
      test_nabs_long_long        1 vspltisw, 1 vsubudm, 1 vminsd
      test_vsi_packs_vsll_vsll   1 vpksdss
-     test_vui_packs_vull_vull   1 vpkudus */
+     test_vui_packs_vull_vull   1 vpkudus
+     test_neg_long_long         1 vspltisw, 1 vsubudm */
 
 /* { dg-final { scan-assembler-times "vcmpequd" 1 } } */
 /* { dg-final { scan-assembler-times "vpkudum"  1 } } */
-/* { dg-final { scan-assembler-times "vspltisw" 1 } } */
-/* { dg-final { scan-assembler-times "vsubudm"  1 } } */
+/* { dg-final { scan-assembler-times "vspltisw" 2 } } */
+/* { dg-final { scan-assembler-times "vsubudm"  2 } } */
 /* { dg-final { scan-assembler-times "vminsd"   1 } } */
 /* { dg-final { scan-assembler-times "vpksdss"  1 } } */
 /* { dg-final { scan-assembler-times "vpkudus"  1 } } */  

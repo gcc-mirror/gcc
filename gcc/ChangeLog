@@ -1,3 +1,18 @@
+2017-05-10  Carl Love  <cel@us.ibm.com>
+
+	* config/rs6000/rs6000-c: Add support for built-in functions
+	vector signed char        vec_neg (vector signed char)
+	vector signed short int   vec_neg (vector short int)
+	vector signed int         vec_neg (vector signed int)
+	vector signed long long   vec_neg (vector signed long long)
+	vector float              vec_neg (vector float)
+	vector double             vec_neg (vector double)
+	* config/rs6000/rs6000-builtin.def: Add definitions for NEG function
+	overload.
+	* config/rs6000/altivec.h: Add define for vec_neg
+	* doc/extend.texi: Update the built-in documentation for the
+	new built-in functions.
+
 2017-05-10  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
 
 	PR tree-optimization/77644
