@@ -1,3 +1,7 @@
+2017-05-09  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* MAINTAINERS: Move myself to Write After Approval section.
+
 2017-05-09  Claudiu Zissulescu  <claziss@synopsys.com>
 
 	* config/arc/arc.c (arc_conditional_register_usage): Handle ACCL,
