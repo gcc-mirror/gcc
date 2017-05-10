@@ -1,5 +1,19 @@
 2017-05-10  François Dumont  <fdumont@gcc.gnu.org>
 
+	Bump version namespace.
+	* config/abi/pre/gnu-versioned-namespace.ver: Bump version namespace
+	from __7 to __8. Bump GLIBCXX_7.0 to GLIBCXX_8.0.
+	* acinclude.m4 (libtool_VERSION): Bump to 8:0:0.
+	* include/bits/c++config: Adapt.
+	* include/bits/regex.h: Adapt.
+	* include/experimental/bits/fs_fwd.h: Adapt.
+	* include/experimental/bits/lfts_config.h: Adapt.
+	* include/std/variant: Adapt.
+	* python/libstdcxx/v6/printers.py: Adapt.
+	* testsuite/libstdc++-prettyprinters/48362.cc: Adapt.
+	* include/bits/stl_tree.h (_Rb_tree_impl<>): Remove _Is_pod_comparator
+	template parameter when version namespace is active.
+
 	* include/bits/stl_algobase.h (std::__iter_swap<false>): Remove
 	_GLIBCXX_MOVE usage.
 
