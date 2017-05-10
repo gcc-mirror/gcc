@@ -1,3 +1,7 @@
+2017-05-10  Alexandre Oliva <aoliva@redhat.com>
+
+	* gcc.dg/guality/inline-params-2.c: New.
+
 2017-05-10  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/80145

@@ -4542,33 +4542,20 @@ expand_call_inline (basic_block bb, gimple *stmt, copy_body_data *id)
     DECL_FUNCTION_PERSONALITY (cg_edge->caller->decl)
       = DECL_FUNCTION_PERSONALITY (cg_edge->callee->decl);
 
-  /* Split the block holding the GIMPLE_CALL.  */
-  e = split_block (bb, stmt);
+  /* Split the block before the GIMPLE_CALL.  */
+  stmt_gsi = gsi_for_stmt (stmt);
+  gsi_prev (&stmt_gsi);
+  e = split_block (bb, gsi_end_p (stmt_gsi) ? NULL : gsi_stmt (stmt_gsi));
   bb = e->src;
   return_block = e->dest;
   remove_edge (e);
-
-  /* split_block splits after the statement; work around this by
-     moving the call into the second block manually.  Not pretty,
-     but seems easier than doing the CFG manipulation by hand
-     when the GIMPLE_CALL is in the last statement of BB.  */
-  stmt_gsi = gsi_last_bb (bb);
-  gsi_remove (&stmt_gsi, false);
 
   /* If the GIMPLE_CALL was in the last statement of BB, it may have
      been the source of abnormal edges.  In this case, schedule
      the removal of dead abnormal edges.  */
   gsi = gsi_start_bb (return_block);
-  if (gsi_end_p (gsi))
-    {
-      gsi_insert_after (&gsi, stmt, GSI_NEW_STMT);
-      purge_dead_abnormal_edges = true;
-    }
-  else
-    {
-      gsi_insert_before (&gsi, stmt, GSI_NEW_STMT);
-      purge_dead_abnormal_edges = false;
-    }
+  gsi_next (&gsi);
+  purge_dead_abnormal_edges = gsi_end_p (gsi);
 
   stmt_gsi = gsi_start_bb (return_block);
 
