@@ -6105,19 +6105,22 @@ unify_success (bool /*explain_p*/)
   return 0;
 }
 
+/* Other failure functions should call this one, to provide a single function
+   for setting a breakpoint on.  */
+
+static int
+unify_invalid (bool /*explain_p*/)
+{
+  return 1;
+}
+
 static int
 unify_parameter_deduction_failure (bool explain_p, tree parm)
 {
   if (explain_p)
     inform (input_location,
 	    "  couldn't deduce template parameter %qD", parm);
-  return 1;
-}
-
-static int
-unify_invalid (bool /*explain_p*/)
-{
-  return 1;
+  return unify_invalid (explain_p);
 }
 
 static int
@@ -6127,7 +6130,7 @@ unify_cv_qual_mismatch (bool explain_p, tree parm, tree arg)
     inform (input_location,
 	    "  types %qT and %qT have incompatible cv-qualifiers",
 	    parm, arg);
-  return 1;
+  return unify_invalid (explain_p);
 }
 
 static int
@@ -6135,7 +6138,7 @@ unify_type_mismatch (bool explain_p, tree parm, tree arg)
 {
   if (explain_p)
     inform (input_location, "  mismatched types %qT and %qT", parm, arg);
-  return 1;
+  return unify_invalid (explain_p);
 }
 
 static int
@@ -6146,7 +6149,7 @@ unify_parameter_pack_mismatch (bool explain_p, tree parm, tree arg)
 	    "  template parameter %qD is not a parameter pack, but "
 	    "argument %qD is",
 	    parm, arg);
-  return 1;
+  return unify_invalid (explain_p);
 }
 
 static int
@@ -6157,7 +6160,7 @@ unify_ptrmem_cst_mismatch (bool explain_p, tree parm, tree arg)
 	    "  template argument %qE does not match "
 	    "pointer-to-member constant %qE",
 	    arg, parm);
-  return 1;
+  return unify_invalid (explain_p);
 }
 
 static int
@@ -6165,7 +6168,7 @@ unify_expression_unequal (bool explain_p, tree parm, tree arg)
 {
   if (explain_p)
     inform (input_location, "  %qE is not equivalent to %qE", parm, arg);
-  return 1;
+  return unify_invalid (explain_p);
 }
 
 static int
@@ -6175,7 +6178,7 @@ unify_parameter_pack_inconsistent (bool explain_p, tree old_arg, tree new_arg)
     inform (input_location,
 	    "  inconsistent parameter pack deduction with %qT and %qT",
 	    old_arg, new_arg);
-  return 1;
+  return unify_invalid (explain_p);
 }
 
 static int
@@ -6192,7 +6195,7 @@ unify_inconsistency (bool explain_p, tree parm, tree first, tree second)
 		"  deduced conflicting values for non-type parameter "
 		"%qE (%qE and %qE)", parm, first, second);
     }
-  return 1;
+  return unify_invalid (explain_p);
 }
 
 static int
@@ -6203,7 +6206,7 @@ unify_vla_arg (bool explain_p, tree arg)
 	    "  variable-sized array type %qT is not "
 	    "a valid template argument",
 	    arg);
-  return 1;
+  return unify_invalid (explain_p);
 }
 
 static int
@@ -6213,7 +6216,7 @@ unify_method_type_error (bool explain_p, tree arg)
     inform (input_location,
 	    "  member function type %qT is not a valid template argument",
 	    arg);
-  return 1;
+  return unify_invalid (explain_p);
 }
 
 static int
@@ -6232,7 +6235,7 @@ unify_arity (bool explain_p, int have, int wanted, bool least_p = false)
 		  "  candidate expects %d arguments, %d provided",
 		  wanted, have);
     }
-  return 1;
+  return unify_invalid (explain_p);
 }
 
 static int
@@ -6256,7 +6259,7 @@ unify_arg_conversion (bool explain_p, tree to_type,
     inform (EXPR_LOC_OR_LOC (arg, input_location),
 	    "  cannot convert %qE (type %qT) to type %qT",
 	    arg, from_type, to_type);
-  return 1;
+  return unify_invalid (explain_p);
 }
 
 static int
@@ -6274,7 +6277,7 @@ unify_no_common_base (bool explain_p, enum template_base_result r,
 	inform (input_location, "  %qT is not derived from %qT", arg, parm);
 	break;
       }
-  return 1;
+  return unify_invalid (explain_p);
 }
 
 static int
@@ -6284,7 +6287,7 @@ unify_inconsistent_template_template_parameters (bool explain_p)
     inform (input_location,
 	    "  template parameters of a template template argument are "
 	    "inconsistent with other deduced template arguments");
-  return 1;
+  return unify_invalid (explain_p);
 }
 
 static int
@@ -6294,7 +6297,7 @@ unify_template_deduction_failure (bool explain_p, tree parm, tree arg)
     inform (input_location,
 	    "  can't deduce a template for %qT from non-template type %qT",
 	    parm, arg);
-  return 1;
+  return unify_invalid (explain_p);
 }
 
 static int
@@ -6303,7 +6306,7 @@ unify_template_argument_mismatch (bool explain_p, tree parm, tree arg)
   if (explain_p)
     inform (input_location,
 	    "  template argument %qE does not match %qE", arg, parm);
-  return 1;
+  return unify_invalid (explain_p);
 }
 
 static int
@@ -6313,7 +6316,7 @@ unify_overload_resolution_failure (bool explain_p, tree arg)
     inform (input_location,
 	    "  could not resolve address from overloaded function %qE",
 	    arg);
-  return 1;
+  return unify_invalid (explain_p);
 }
 
 /* Attempt to convert the non-type template parameter EXPR to the
