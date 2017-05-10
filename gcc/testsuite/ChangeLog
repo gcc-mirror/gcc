@@ -1,5 +1,6 @@
 2017-05-10  Peter Bergner  <bergner@vnet.ibm.com>
 
+	PR tree-optimization/51513
 	* gcc.target/powerpc/pr51513.c: New test.
 	* gcc.dg/predict-13.c: Replace __builtin_unreachable() with
 	__builtin_abort().

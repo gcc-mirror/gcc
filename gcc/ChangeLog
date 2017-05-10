@@ -1,5 +1,6 @@
 2017-05-10  Peter Bergner  <bergner@vnet.ibm.com>
 
+	PR tree-optimization/51513
 	* tree-cfg.c (gimple_seq_unreachable_p): New function.
 	(assert_unreachable_fallthru_edge_p): Use it.
 	(group_case_labels_stmt): Likewise.
