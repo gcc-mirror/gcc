@@ -1110,7 +1110,7 @@ maybe_add_lambda_conv_op (tree type)
   if (generic_lambda_p)
     fn = add_inherited_template_parms (fn, DECL_TI_TEMPLATE (callop));
 
-  add_method (type, fn, NULL_TREE);
+  add_method (type, fn, false);
 
   /* Generic thunk code fails for varargs; we'll complain in mark_used if
      the conversion op is used.  */
@@ -1156,7 +1156,7 @@ maybe_add_lambda_conv_op (tree type)
       cplus_decl_attributes (&fn, attrs, 0);
     }
 
-  add_method (type, fn, NULL_TREE);
+  add_method (type, fn, false);
 
   if (nested)
     push_function_context ();

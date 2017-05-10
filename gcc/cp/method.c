@@ -2359,7 +2359,7 @@ lazily_declare_fn (special_function_kind sfk, tree type)
       || sfk == sfk_copy_assignment)
     check_for_override (fn, type);
   /* Add it to CLASSTYPE_METHOD_VEC.  */
-  add_method (type, fn, NULL_TREE);
+  add_method (type, fn, false);
   /* Add it to TYPE_METHODS.  */
   if (sfk == sfk_destructor
       && DECL_VIRTUAL_P (fn))
@@ -2375,7 +2375,7 @@ lazily_declare_fn (special_function_kind sfk, tree type)
   if (DECL_MAYBE_IN_CHARGE_CONSTRUCTOR_P (fn)
       || DECL_MAYBE_IN_CHARGE_DESTRUCTOR_P (fn))
     /* Create appropriate clones.  */
-    clone_function_decl (fn, /*update_method_vec=*/true);
+    clone_function_decl (fn, /*update_methods=*/true);
 
   return fn;
 }
