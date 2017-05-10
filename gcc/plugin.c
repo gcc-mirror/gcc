@@ -114,6 +114,16 @@ static const char *str_plugin_init_func_name = "plugin_init";
 static const char *str_license = "plugin_is_GPL_compatible";
 #endif
 
+/* Helper function for hashing the base_name of the plugin_name_args
+   structure to be inserted into the hash table.  */
+
+static hashval_t
+htab_hash_plugin (const PTR p)
+{
+  const struct plugin_name_args *plugin = (const struct plugin_name_args *) p;
+  return htab_hash_string (plugin->base_name);
+ }
+
 /* Helper function for the hash table that compares the base_name of the
    existing entry (S1) with the given string (S2).  */
 
@@ -183,10 +193,11 @@ add_new_plugin (const char* plugin_name)
   /* If this is the first -fplugin= option we encounter, create
      'plugin_name_args_tab' hash table.  */
   if (!plugin_name_args_tab)
-    plugin_name_args_tab = htab_create (10, htab_hash_string, htab_str_eq,
+    plugin_name_args_tab = htab_create (10, htab_hash_plugin, htab_str_eq,
                                         NULL);
 
-  slot = htab_find_slot (plugin_name_args_tab, base_name, INSERT);
+  slot = htab_find_slot_with_hash (plugin_name_args_tab, base_name,
+				   htab_hash_string (base_name), INSERT);
 
   /* If the same plugin (name) has been specified earlier, either emit an
      error or a warning message depending on if they have identical full
@@ -273,7 +284,8 @@ parse_plugin_arg_opt (const char *arg)
   /* Check if the named plugin has already been specified earlier in the
      command-line.  */
   if (plugin_name_args_tab
-      && ((slot = htab_find_slot (plugin_name_args_tab, name, NO_INSERT))
+      && ((slot = htab_find_slot_with_hash (plugin_name_args_tab, name,
+					    htab_hash_string (name), NO_INSERT))
           != NULL))
     {
       struct plugin_name_args *plugin = (struct plugin_name_args *) *slot;
@@ -329,7 +341,8 @@ parse_plugin_arg_opt (const char *arg)
 static void
 register_plugin_info (const char* name, struct plugin_info *info)
 {
-  void **slot = htab_find_slot (plugin_name_args_tab, name, NO_INSERT);
+  void **slot = htab_find_slot_with_hash (plugin_name_args_tab, name,
+					  htab_hash_string (name), NO_INSERT);
   struct plugin_name_args *plugin = (struct plugin_name_args *) *slot;
   plugin->version = info->version;
   plugin->help = info->help;
@@ -627,7 +640,8 @@ init_one_plugin (void **slot, void * ARG_UNUSED (info))
   bool ok = try_init_one_plugin (plugin);
   if (!ok)
     {
-      htab_remove_elt (plugin_name_args_tab, plugin->base_name);
+      htab_remove_elt_with_hash (plugin_name_args_tab, plugin->base_name,
+				 htab_hash_string (plugin->base_name));
       XDELETE (plugin);
     }
   return 1;

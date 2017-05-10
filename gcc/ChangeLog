@@ -1,3 +1,62 @@
+2017-05-10  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2017-03-17  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/80075
+	* tree-eh.c (stmt_could_throw_1_p): Only handle gimple assigns.
+	Properly verify the LHS before the RHS possibly claims to be
+	handled.
+	(stmt_could_throw_p): Hande gimple conds fully here.  Clobbers
+	do not throw.
+
+	2017-03-21  Brad Spengler <spender@grsecurity.net>
+
+	PR plugin/80094
+	* plugin.c (htab_hash_plugin): New function.
+	(add_new_plugin): Use it and adjust.
+	(parse_plugin_arg_opt): Adjust.
+	(init_one_plugin): Likewise.
+
+	2017-03-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/80113
+	* graphite-isl-ast-to-gimple.c (copy_loop_phi_nodes): Do not
+	allocate extra SSA name for PHI def.
+	(add_close_phis_to_outer_loops): Likewise.
+	(add_close_phis_to_merge_points): Likewise.
+	(copy_loop_close_phi_args): Likewise.
+	(copy_cond_phi_nodes): Likewise.
+
+	2017-03-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/80122
+	* tree-inline.c (copy_bb): Do not expans va-arg packs or
+	va_arg_pack_len when the inlined call stmt requires pack
+	expansion itself.
+	* tree-inline.h (struct copy_body_data): Make call_stmt a gcall *.
+
+	2017-03-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/80167
+	* graphite-isl-ast-to-gimple.c
+	(translate_isl_ast_to_gimple::is_valid_rename): Handle default-defs
+	properly.
+	(translate_isl_ast_to_gimple::get_rename): Likewise.
+
+	2017-03-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/80170
+	* tree-vect-data-refs.c (vect_compute_data_ref_alignment): Make
+	sure DR/SCEV didnt fold in constants we do not see when looking
+	at the reference base alignment.
+
+	2017-03-27  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/80171
+	* gimple-fold.c (fold_ctor_reference): Properly guard against
+	NULL return value from canonicalize_constructor_val.
+
 2017-05-09  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline
