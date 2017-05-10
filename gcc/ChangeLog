@@ -1,3 +1,18 @@
+2017-05-10  Peter Bergner  <bergner@vnet.ibm.com>
+
+	* tree-cfg.c (gimple_seq_unreachable_p): New function.
+	(assert_unreachable_fallthru_edge_p): Use it.
+	(group_case_labels_stmt): Likewise.
+	* tree-cfg.h: Prototype it.
+	* stmt.c: Include cfghooks.h and tree-cfg.h.
+	(emit_case_dispatch_table) <gap_label>: New local variable.
+	Use it to fill dispatch table gaps.
+	Test for default_label before updating probabilities.
+	(expand_case) <default_label>: Remove unneeded initialization.
+	Test for unreachable default case statement and remove its edge.
+	Set default_label accordingly.
+	* tree-ssa-ccp.c (optimize_unreachable): Update comment.
+
 2017-05-10  Carl Love  <cel@us.ibm.com>
 
 	* config/rs6000/rs6000-c: Add support for built-in functions

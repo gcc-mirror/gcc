@@ -2715,7 +2715,8 @@ optimize_unreachable (gimple_stmt_iterator i)
 	}
       else
 	{
-	  /* Todo: handle other cases, f.i. switch statement.  */
+	  /* Todo: handle other cases.  Note that unreachable switch case
+	     statements have already been removed.  */
 	  continue;
 	}
 

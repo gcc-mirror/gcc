@@ -56,6 +56,7 @@ extern bool is_ctrl_stmt (gimple *);
 extern bool is_ctrl_altering_stmt (gimple *);
 extern bool simple_goto_p (gimple *);
 extern bool stmt_ends_bb_p (gimple *);
+extern bool gimple_seq_unreachable_p (gimple_seq);
 extern bool assert_unreachable_fallthru_edge_p (edge);
 extern void delete_tree_cfg_annotations (function *);
 extern gphi *get_virtual_phi (basic_block);

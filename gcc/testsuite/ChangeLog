@@ -1,3 +1,10 @@
+2017-05-10  Peter Bergner  <bergner@vnet.ibm.com>
+
+	* gcc.target/powerpc/pr51513.c: New test.
+	* gcc.dg/predict-13.c: Replace __builtin_unreachable() with
+	__builtin_abort().
+	* gcc.dg/predict-14.c: Likewise.
+
 2017-05-10  Carl Love  <cel@us.ibm.com>
 	* gcc.target/powerpc/builtins-3.c: Add tests for the new built-ins to
 	to the test suite file.
