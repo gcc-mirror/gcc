@@ -1,5 +1,9 @@
 2017-05-10  John David Anglin  <danglin@gcc.gnu.org>
 
+	PR target/80090
+	* config/pa/pa.c (pa_assemble_integer): When outputting a SYMBOL_REF,
+	handle calling assemble_external ourself.
+
 	PR target/79027
 	* config/pa/pa.c (pa_cannot_change_mode_class): Reject changes to/from
 	modes with zero size.  Enhance comment.
