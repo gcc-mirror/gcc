@@ -1,3 +1,9 @@
+2017-05-10  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR ada/80626
+	* system-linux-x86.ads (Memory_Size): Use Long_Integer'Size
+	instead of Word_Size.
+
 2017-05-10  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	* raise-gcc.c (exception_class_eq): Make ec parameter const.
