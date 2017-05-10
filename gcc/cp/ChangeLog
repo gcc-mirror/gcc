@@ -1,5 +1,8 @@
 2017-05-10  Jason Merrill  <jason@redhat.com>
 
+	* pt.c (dependent_type_p): Make sure we aren't called with
+	global_type_node.
+
 	PR c++/79549 - C++17 ICE with non-type auto template parameter pack
 	* pt.c (convert_template_argument): Just return an argument pack.
 	(coerce_template_parameter_pack, template_parm_to_arg)

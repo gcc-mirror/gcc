@@ -23436,6 +23436,10 @@ dependent_type_p (tree type)
   if (type == error_mark_node)
     return false;
 
+  /* Getting here with global_type_node means we improperly called this
+     function on the TREE_TYPE of an IDENTIFIER_NODE.  */
+  gcc_checking_assert (type != global_type_node);
+
   /* If we have not already computed the appropriate value for TYPE,
      do so now.  */
   if (!TYPE_DEPENDENT_P_VALID (type))
