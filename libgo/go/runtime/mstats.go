@@ -467,10 +467,7 @@ func readmemstats_m(stats *MemStats) {
 // For gccgo this is in runtime/mgc0.c.
 func updatememstats(stats *gcstats)
 
-/*
-For gccgo these are still in runtime/mgc0.c.
-
-//go:linkname readGCStats runtime/debug.readGCStats
+//go:linkname readGCStats runtime_debug.readGCStats
 func readGCStats(pauses *[]uint64) {
 	systemstack(func() {
 		readGCStats_m(pauses)
@@ -618,7 +615,6 @@ func flushmcache(i int) {
 		return
 	}
 	c.releaseAll()
-	stackcache_clear(c)
 }
 
 // flushallmcaches flushes the mcaches of all Ps.
@@ -651,8 +647,6 @@ func purgecachedstats(c *mcache) {
 		c.local_nsmallfree[i] = 0
 	}
 }
-
-*/
 
 // Atomically increases a given *system* memory stat. We are counting on this
 // stat never overflowing a uintptr, so this function must only be used for

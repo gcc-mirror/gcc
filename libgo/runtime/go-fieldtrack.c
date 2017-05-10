@@ -27,11 +27,19 @@ __go_fieldtrack (byte *p __attribute__ ((unused)))
    map[string]bool.  */
 
 extern const char _etext[] __attribute__ ((weak));
+extern const char _edata[] __attribute__ ((weak));
+#ifdef _AIX
+// Following symbols do not exist on AIX
+const char *__etext = NULL;
+const char *__data_start = NULL;
+const char *__edata = NULL;
+const char *__bss_start = NULL;
+#else
 extern const char __etext[] __attribute__ ((weak));
 extern const char __data_start[] __attribute__ ((weak));
-extern const char _edata[] __attribute__ ((weak));
 extern const char __edata[] __attribute__ ((weak));
 extern const char __bss_start[] __attribute__ ((weak));
+#endif
 
 extern void *mapassign (const struct __go_map_type *, void *hmap,
 			const void *key)

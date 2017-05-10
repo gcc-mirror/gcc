@@ -131,7 +131,7 @@ func c128hash(p unsafe.Pointer, h uintptr) uintptr {
 	return f64hash(unsafe.Pointer(&x[1]), f64hash(unsafe.Pointer(&x[0]), h))
 }
 
-func interhash(p unsafe.Pointer, h uintptr, size uintptr) uintptr {
+func interhash(p unsafe.Pointer, h uintptr) uintptr {
 	a := (*iface)(p)
 	tab := a.tab
 	if tab == nil {
@@ -199,10 +199,10 @@ func c128equal(p, q unsafe.Pointer) bool {
 func strequal(p, q unsafe.Pointer) bool {
 	return *(*string)(p) == *(*string)(q)
 }
-func interequal(p, q unsafe.Pointer, size uintptr) bool {
+func interequal(p, q unsafe.Pointer) bool {
 	return ifaceeq(*(*iface)(p), *(*iface)(q))
 }
-func nilinterequal(p, q unsafe.Pointer, size uintptr) bool {
+func nilinterequal(p, q unsafe.Pointer) bool {
 	return efaceeq(*(*eface)(p), *(*eface)(q))
 }
 func efaceeq(x, y eface) bool {
@@ -360,6 +360,34 @@ var _ = interequal
 var _ = nilinterequal
 var _ = pointerhash
 var _ = pointerequal
+
+// Testing adapters for hash quality tests (see hash_test.go)
+func stringHash(s string, seed uintptr) uintptr {
+	return strhash(noescape(unsafe.Pointer(&s)), seed)
+}
+
+func bytesHash(b []byte, seed uintptr) uintptr {
+	s := (*slice)(unsafe.Pointer(&b))
+	return memhash(s.array, seed, uintptr(s.len))
+}
+
+func int32Hash(i uint32, seed uintptr) uintptr {
+	return memhash32(noescape(unsafe.Pointer(&i)), seed)
+}
+
+func int64Hash(i uint64, seed uintptr) uintptr {
+	return memhash64(noescape(unsafe.Pointer(&i)), seed)
+}
+
+func efaceHash(i interface{}, seed uintptr) uintptr {
+	return nilinterhash(noescape(unsafe.Pointer(&i)), seed)
+}
+
+func ifaceHash(i interface {
+	F()
+}, seed uintptr) uintptr {
+	return interhash(noescape(unsafe.Pointer(&i)), seed)
+}
 
 const hashRandomBytes = sys.PtrSize / 4 * 64
 

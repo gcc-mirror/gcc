@@ -1,0 +1,6 @@
+#! .
+__go_init_main
+__go_end
+.main.main
+_etext
+_edata

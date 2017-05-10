@@ -17,7 +17,11 @@ __go_string_slice (String s, intgo start, intgo end)
     end = len;
   if (start > len || end < start || end > len)
     runtime_panicstring ("string index out of bounds");
-  ret.str = s.str + start;
   ret.len = end - start;
+  // If the length of the new string is zero, don't adjust the str
+  // field.  This ensures that we don't create a pointer to the next
+  // memory block, and thus keep it live unnecessarily.
+  if (ret.len > 0)
+    ret.str = s.str + start;
   return ret;
 }

@@ -8,16 +8,13 @@
 #include <errno.h>
 #include <stdlib.h>
 #include <time.h>
+#include <unistd.h>
 #include <semaphore.h>
 
 void
 runtime_osinit (void)
 {
   runtime_ncpu = getproccount();
-}
-
-void
-runtime_goenvs (void)
-{
-  runtime_goenvs_unix ();
+  setncpu(runtime_ncpu);
+  setpagesize(getpagesize());
 }

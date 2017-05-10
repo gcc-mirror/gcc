@@ -166,6 +166,3 @@ func sysauxv(auxv []uintptr) int {
 	}
 	return i / 2
 }
-
-// Temporary for gccgo until we port mem_GOOS.go.
-var addrspace_vec [1]byte

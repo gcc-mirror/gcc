@@ -89,28 +89,6 @@ static const int RUNTIME_TYPE_KIND_DIRECT_IFACE = (1 << 5);
 static const int RUNTIME_TYPE_KIND_GC_PROG = (1 << 6);
 static const int RUNTIME_TYPE_KIND_NO_POINTERS = (1 << 7);
 
-// GC instruction opcodes.  These must match the values in libgo/runtime/mgc0.h.
-enum GC_Opcode
-{
-  GC_END = 0,     // End of object, loop or subroutine.
-  GC_PTR,         // A typed pointer.
-  GC_APTR,        // Pointer to an arbitrary object.
-  GC_ARRAY_START, // Start an array with a fixed length.
-  GC_ARRAY_NEXT,  // The next element of an array.
-  GC_CALL,        // Call a subroutine.
-  GC_CHAN_PTR,    // Go channel.
-  GC_STRING,      // Go string.
-  GC_EFACE,       // interface{}.
-  GC_IFACE,       // interface{...}.
-  GC_SLICE,       // Go slice.
-  GC_REGION,      // A region/part of the current object.
-
-  GC_NUM_INSTR    // Number of instruction opcodes
-};
-
-// The GC Stack Capacity must match the value in libgo/runtime/mgc0.h.
-static const int GC_STACK_CAPACITY = 8;
-
 // To build the complete list of methods for a named type we need to
 // gather all methods from anonymous fields.  Those methods may
 // require an arbitrary set of indirections and field offsets.  There
@@ -944,6 +922,15 @@ class Type
   Bexpression*
   gc_symbol_pointer(Gogo* gogo);
 
+  // Return whether this type needs a garbage collection program.
+  // Sets *PTRSIZE and *PTRDATA.
+  bool
+  needs_gcprog(Gogo*, int64_t* ptrsize, int64_t* ptrdata);
+
+  // Return a ptrmask variable for this type.
+  Bvariable*
+  gc_ptrmask_var(Gogo*, int64_t ptrsize, int64_t ptrdata);
+
   // Return the type reflection string for this type.
   std::string
   reflection(Gogo*) const;
@@ -970,6 +957,20 @@ class Type
   // true.  Otherwise, return false.
   bool
   backend_type_field_align(Gogo*, int64_t* palign);
+
+  // Determine the ptrdata size for the backend version of this type:
+  // the length of the prefix of the type that can contain a pointer
+  // value.  If it can be determined, set *PPTRDATA to the value in
+  // bytes and return true.  Otherwise, return false.
+  bool
+  backend_type_ptrdata(Gogo*, int64_t* pptrdata);
+
+  // Determine the ptrdata size that we are going to set in the type
+  // descriptor.  This is normally the same as backend_type_ptrdata,
+  // but differs if we use a gcprog for an array.  The arguments and
+  // results are as for backend_type_ptrdata.
+  bool
+  descriptor_ptrdata(Gogo*, int64_t* pptrdata);
 
   // Whether the backend size is known.
   bool
@@ -1044,9 +1045,6 @@ class Type
   do_type_descriptor(Gogo*, Named_type* name) = 0;
 
   virtual void
-  do_gc_symbol(Gogo*, Expression_list**, Expression**, int) = 0;
-
-  virtual void
   do_reflection(Gogo*, std::string*) const = 0;
 
   virtual void
@@ -1100,22 +1098,6 @@ class Type
   Expression*
   type_descriptor_constructor(Gogo*, int runtime_type_kind, Named_type*,
 			      const Methods*, bool only_value_methods);
-
-  // Generate the GC symbol for this TYPE.  VALS is the data so far in this
-  // symbol; extra values will be appended in do_gc_symbol.  OFFSET is the
-  // offset into the symbol where the GC data is located.  STACK_SIZE is the
-  // size of the GC stack when dealing with array types.
-  static void
-  gc_symbol(Gogo*, Type* type, Expression_list** vals, Expression** offset,
-	    int stack_size);
-
-  // Build a composite literal for the GC symbol of this type.
-  Expression*
-  gc_symbol_constructor(Gogo*);
-
-  // Advance the OFFSET of the GC symbol by the size of this type.
-  void
-  advance_gc_offset(Expression** offset);
 
   // For the benefit of child class reflection string generation.
   void
@@ -1194,6 +1176,11 @@ class Type
 
   static GC_symbol_vars gc_symbol_vars;
 
+  // Map ptrmask symbol names to the ptrmask variable.
+  typedef Unordered_map(std::string, Bvariable*) GC_gcbits_vars;
+
+  static GC_gcbits_vars gc_gcbits_vars;
+
   // Build the GC symbol for this type.
   void
   make_gc_symbol_var(Gogo*);
@@ -1209,6 +1196,11 @@ class Type
   // package where the type descriptor is defined.
   bool
   type_descriptor_defined_elsewhere(Named_type* name, const Package** package);
+
+  // Make a composite literal for the garbage collection program for
+  // this type.
+  Expression*
+  gcprog_constructor(Gogo*, int64_t ptrsize, int64_t ptrdata);
 
   // Build the hash and equality type functions for a type which needs
   // specific functions.
@@ -1606,10 +1598,6 @@ protected:
   do_reflection(Gogo*, std::string*) const;
 
   void
-  do_gc_symbol(Gogo*, Expression_list**, Expression** offset, int)
-  { this->advance_gc_offset(offset); }
-
-  void
   do_mangled_name(Gogo*, std::string*) const;
 
  private:
@@ -1696,10 +1684,6 @@ class Float_type : public Type
   do_reflection(Gogo*, std::string*) const;
 
   void
-  do_gc_symbol(Gogo*, Expression_list**, Expression** offset, int)
-  { this->advance_gc_offset(offset); }
-
-  void
   do_mangled_name(Gogo*, std::string*) const;
 
  private:
@@ -1778,10 +1762,6 @@ class Complex_type : public Type
   do_reflection(Gogo*, std::string*) const;
 
   void
-  do_gc_symbol(Gogo*, Expression_list**, Expression** offset, int)
-  { this->advance_gc_offset(offset); }
-
-  void
   do_mangled_name(Gogo*, std::string*) const;
 
  private:
@@ -1834,9 +1814,6 @@ class String_type : public Type
 
   void
   do_reflection(Gogo*, std::string*) const;
-
-  void
-  do_gc_symbol(Gogo*, Expression_list**, Expression**, int);
 
   void
   do_mangled_name(Gogo*, std::string* ret) const;
@@ -1994,9 +1971,6 @@ class Function_type : public Type
   do_reflection(Gogo*, std::string*) const;
 
   void
-  do_gc_symbol(Gogo*, Expression_list**, Expression**, int);
-
-  void
   do_mangled_name(Gogo*, std::string*) const;
 
   void
@@ -2118,9 +2092,6 @@ class Pointer_type : public Type
 
   void
   do_reflection(Gogo*, std::string*) const;
-
-  void
-  do_gc_symbol(Gogo*, Expression_list**, Expression**, int);
 
   void
   do_mangled_name(Gogo*, std::string*) const;
@@ -2442,9 +2413,6 @@ class Struct_type : public Type
   do_reflection(Gogo*, std::string*) const;
 
   void
-  do_gc_symbol(Gogo*, Expression_list**, Expression**, int);
-
-  void
   do_mangled_name(Gogo*, std::string*) const;
 
   void
@@ -2519,6 +2487,12 @@ class Array_type : public Type
   length() const
   { return this->length_; }
 
+  // Store the length as an int64_t into *PLEN.  Return false if the
+  // length can not be determined.  This will assert if called for a
+  // slice.
+  bool
+  int_length(int64_t* plen);
+
   // Whether this type is identical with T.
   bool
   is_identical(const Array_type* t, bool errors_are_identical) const;
@@ -2583,10 +2557,7 @@ class Array_type : public Type
   do_verify();
 
   bool
-  do_has_pointer() const
-  {
-    return this->length_ == NULL || this->element_type_->has_pointer();
-  }
+  do_has_pointer() const;
 
   bool
   do_compare_is_identity(Gogo*);
@@ -2614,9 +2585,6 @@ class Array_type : public Type
   do_reflection(Gogo*, std::string*) const;
 
   void
-  do_gc_symbol(Gogo*, Expression_list**, Expression**, int);
-
-  void
   do_mangled_name(Gogo*, std::string*) const;
 
   void
@@ -2631,12 +2599,6 @@ class Array_type : public Type
 
   Expression*
   slice_type_descriptor(Gogo*, Named_type*);
-
-  void
-  slice_gc_symbol(Gogo*, Expression_list**, Expression**, int);
-
-  void
-  array_gc_symbol(Gogo*, Expression_list**, Expression**, int);
 
   // The type of elements of the array.
   Type* element_type_;
@@ -2735,9 +2697,6 @@ class Map_type : public Type
 
   void
   do_reflection(Gogo*, std::string*) const;
-
-  void
-  do_gc_symbol(Gogo*, Expression_list**, Expression**, int);
 
   void
   do_mangled_name(Gogo*, std::string*) const;
@@ -2850,9 +2809,6 @@ class Channel_type : public Type
 
   void
   do_reflection(Gogo*, std::string*) const;
-
-  void
-  do_gc_symbol(Gogo*, Expression_list**, Expression**, int);
 
   void
   do_mangled_name(Gogo*, std::string*) const;
@@ -2997,9 +2953,6 @@ class Interface_type : public Type
 
   void
   do_reflection(Gogo*, std::string*) const;
-
-  void
-  do_gc_symbol(Gogo*, Expression_list**, Expression**, int);
 
   void
   do_mangled_name(Gogo*, std::string*) const;
@@ -3307,10 +3260,6 @@ class Named_type : public Type
   do_reflection(Gogo*, std::string*) const;
 
   void
-  do_gc_symbol(Gogo* gogo, Expression_list** vals, Expression** offset,
-	       int stack);
-
-  void
   do_mangled_name(Gogo*, std::string* ret) const;
 
   void
@@ -3465,11 +3414,6 @@ class Forward_declaration_type : public Type
 
   void
   do_reflection(Gogo*, std::string*) const;
-
-  void
-  do_gc_symbol(Gogo* gogo, Expression_list** vals, Expression** offset,
-	       int stack_size)
-  { Type::gc_symbol(gogo, this->real_type(), vals, offset, stack_size); }
 
   void
   do_mangled_name(Gogo*, std::string* ret) const;

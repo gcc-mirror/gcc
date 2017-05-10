@@ -16,7 +16,7 @@
    older versions of glibc when a SIGPROF signal arrives while
    collecting a backtrace.  */
 
-uint32 runtime_in_callers;
+static uint32 runtime_in_callers;
 
 /* Argument passed to callback function.  */
 
@@ -128,8 +128,8 @@ callback (void *data, uintptr_t pc, const char *filename, int lineno,
 	  if (__builtin_strcmp (p, "/proc.c") == 0)
 	    {
 	      if (__builtin_strcmp (function, "kickoff") == 0
-		  || __builtin_strcmp (function, "runtime_mstart") == 0
-		  || __builtin_strcmp (function, "runtime_main") == 0)
+		  || __builtin_strcmp (function, "runtime.mstart") == 0
+		  || __builtin_strcmp (function, "runtime.main") == 0)
 		return 1;
 	    }
 	}
@@ -152,6 +152,20 @@ error_callback (void *data __attribute__ ((unused)),
   if (errnum != 0)
     runtime_printf ("%s errno %d\n", msg, errnum);
   runtime_throw (msg);
+}
+
+/* Return whether we are already collecting a stack trace. This is
+   called from the signal handler.  */
+
+bool alreadyInCallers(void)
+  __attribute__ ((no_split_stack));
+bool alreadyInCallers(void)
+  __asm__ (GOSYM_PREFIX "runtime.alreadyInCallers");
+
+bool
+alreadyInCallers()
+{
+  return runtime_atomicload(&runtime_in_callers) > 0;
 }
 
 /* Gather caller PC's.  */
@@ -183,7 +197,10 @@ Callers (int skip, struct __go_open_array pc)
   int ret;
   int i;
 
-  locbuf = (Location *) runtime_mal (pc.__count * sizeof (Location));
+  /* Note that calling mallocgc here assumes that we are not going to
+     store any allocated Go pointers in the slice.  */
+  locbuf = (Location *) runtime_mallocgc (pc.__count * sizeof (Location),
+					  nil, false);
 
   /* In the Go 1 release runtime.Callers has an off-by-one error,
      which we can not correct because it would break backward

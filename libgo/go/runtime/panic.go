@@ -97,7 +97,6 @@ func deferproc(frame *bool, pfn uintptr, arg unsafe.Pointer) {
 	n.arg = arg
 	n.retaddr = 0
 	n.makefunccanrecover = false
-	n.special = false
 }
 
 // Allocate a Defer, usually using per-P pool.
@@ -141,10 +140,6 @@ func newdefer() *_defer {
 //
 //go:nosplit
 func freedefer(d *_defer) {
-	if d.special {
-		return
-	}
-
 	// When C code calls a Go function on a non-Go thread, the
 	// deferred call to cgocallBackDone will set g to nil.
 	// Don't crash trying to put d on the free list; just let it
