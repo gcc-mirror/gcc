@@ -21182,6 +21182,13 @@ more_specialized_fn (tree pat1, tree pat2, int len)
           len = 0;
         }
 
+      /* DR 1847: If a particular P contains no template-parameters that
+	 participate in template argument deduction, that P is not used to
+	 determine the ordering.  */
+      if (!uses_deducible_template_parms (arg1)
+	  && !uses_deducible_template_parms (arg2))
+	goto next;
+
       if (TREE_CODE (arg1) == REFERENCE_TYPE)
 	{
 	  ref1 = TYPE_REF_IS_RVALUE (arg1) + 1;
@@ -21302,6 +21309,8 @@ more_specialized_fn (tree pat1, tree pat2, int len)
 	/* We've failed to deduce something in either direction.
 	   These must be unordered.  */
 	break;
+
+    next:
 
       if (TREE_CODE (arg1) == TYPE_PACK_EXPANSION
           || TREE_CODE (arg2) == TYPE_PACK_EXPANSION)
