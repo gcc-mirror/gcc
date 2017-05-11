@@ -68,6 +68,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #pragma GCC diagnostic pop
 #endif
 
+#if !__cpp_rtti
+  class type_info;
+#endif
+
  /**
    *  @brief  Exception possibly thrown by @c shared_ptr.
    *  @ingroup exceptions
@@ -498,7 +502,23 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // helpers for make_shared / allocate_shared
 
-  struct _Sp_make_shared_tag { };
+  struct _Sp_make_shared_tag
+  {
+#if !__cpp_rtti
+  private:
+    template<typename _Tp, _Lock_policy _Lp>
+      friend class __shared_ptr;
+    template<typename _Tp, typename _Alloc, _Lock_policy _Lp>
+      friend class _Sp_counted_ptr_inplace;
+
+    static const type_info&
+    _S_ti() noexcept
+    {
+      static constexpr _Sp_make_shared_tag __tag;
+      return reinterpret_cast<const type_info&>(__tag);
+    }
+#endif
+  };
 
   template<typename _Tp, typename _Alloc, _Lock_policy _Lp>
     class _Sp_counted_ptr_inplace final : public _Sp_counted_base<_Lp>
@@ -551,8 +571,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       {
 #if __cpp_rtti
 	if (__ti == typeid(_Sp_make_shared_tag))
-	  return const_cast<typename remove_cv<_Tp>::type*>(_M_ptr());
+#else
+	if (&__ti == &_Sp_make_shared_tag::_S_ti())
 #endif
+	  return const_cast<typename remove_cv<_Tp>::type*>(_M_ptr());
 	return nullptr;
       }
 
@@ -1295,7 +1317,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	owner_before(__weak_ptr<_Tp1, _Lp> const& __rhs) const
 	{ return _M_refcount._M_less(__rhs._M_refcount); }
 
-#if __cpp_rtti
     protected:
       // This constructor is non-standard, it is used by allocate_shared.
       template<typename _Alloc, typename... _Args>
@@ -1306,43 +1327,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	{
 	  // _M_ptr needs to point to the newly constructed object.
 	  // This relies on _Sp_counted_ptr_inplace::_M_get_deleter.
+#if __cpp_rtti
 	  void* __p = _M_refcount._M_get_deleter(typeid(__tag));
+#else
+	  void* __p = _M_refcount._M_get_deleter(_Sp_make_shared_tag::_S_ti());
+#endif
 	  _M_ptr = static_cast<_Tp*>(__p);
 	  _M_enable_shared_from_this_with(_M_ptr);
 	}
-#else
-      template<typename _Alloc>
-        struct _Deleter
-        {
-          void operator()(typename _Alloc::value_type* __ptr)
-          {
-	    __allocated_ptr<_Alloc> __guard{ _M_alloc, __ptr };
-	    allocator_traits<_Alloc>::destroy(_M_alloc, __guard.get());
-          }
-          _Alloc _M_alloc;
-        };
-
-      template<typename _Alloc, typename... _Args>
-	__shared_ptr(_Sp_make_shared_tag __tag, const _Alloc& __a,
-		     _Args&&... __args)
-	: _M_ptr(), _M_refcount()
-	{
-	  typedef typename allocator_traits<_Alloc>::template
-	    rebind_traits<typename std::remove_cv<_Tp>::type> __traits;
-	  _Deleter<typename __traits::allocator_type> __del = { __a };
-	  auto __guard = std::__allocate_guarded(__del._M_alloc);
-	  auto __ptr = __guard.get();
-	  // _GLIBCXX_RESOLVE_LIB_DEFECTS
-	  // 2070. allocate_shared should use allocator_traits<A>::construct
-	  __traits::construct(__del._M_alloc, __ptr,
-			      std::forward<_Args>(__args)...);
-	  __guard = nullptr;
-	  __shared_count<_Lp> __count(__ptr, __del, __del._M_alloc);
-	  _M_refcount._M_swap(__count);
-	  _M_ptr = __ptr;
-	  _M_enable_shared_from_this_with(_M_ptr);
-	}
-#endif
 
       template<typename _Tp1, _Lock_policy _Lp1, typename _Alloc,
 	       typename... _Args>

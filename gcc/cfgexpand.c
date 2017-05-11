@@ -6542,6 +6542,14 @@ pass_expand::execute (function *fun)
   set_block_levels (DECL_INITIAL (fun->decl), 0);
   default_rtl_profile ();
 
+  /* For -dx discard loops now, otherwise IL verify in clean_state will
+     ICE.  */
+  if (rtl_dump_and_exit)
+    {
+      cfun->curr_properties &= ~PROP_loops;
+      loop_optimizer_finalize ();
+    }
+
   timevar_pop (TV_POST_EXPAND);
 
   return 0;

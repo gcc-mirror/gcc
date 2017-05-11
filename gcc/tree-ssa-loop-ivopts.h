@@ -29,8 +29,6 @@ extern bool contains_abnormal_ssa_name_p (tree);
 extern struct loop *outermost_invariant_loop_for_expr (struct loop *, tree);
 extern bool expr_invariant_in_loop_p (struct loop *, tree);
 bool may_be_nonaddressable_p (tree expr);
-bool multiplier_allowed_in_address_p (HOST_WIDE_INT, machine_mode,
-				      addr_space_t);
 void tree_ssa_iv_optimize (void);
 
 #endif /* GCC_TREE_SSA_LOOP_IVOPTS_H */

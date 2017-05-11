@@ -1,3 +1,44 @@
+2017-05-11  Nathan Sidwell  <nathan@acm.org>
+
+	* name-lookup.c (pushdecl_outermost_localscope): Always
+	conditionally stop timer.
+
+	* decl.c (xref_tag_1): Don't frob ts_lambda scope here.
+	* name-lookup.c (pushtag_1): Deal with ts_lambda scope.
+
+	* cp-tree.h (pushdecl, pushdecl_maybe_friend, pushtag,
+	pushtag_top_level_maybe_friend,
+	pushdecl_top_level_and_finish):	Move declarations to ...
+	* name-lookup.h: ... here.  Group pushdecl variants.
+	(pushdecl_top_level_and_finish): Rename to ...
+	(pushdecl_top_level_with_init): ... here.
+	* decl.c (cp_make_fname_decl): Use pushdecl_top_level_with_init.
+	* decl2.c (get_guard, handle_tls_init): Likewise.
+	* rtti.c (get_tinfo_decl, tinfo_base_init): Likewise.
+	* lambda.c (maybe_add_lambda_conv_op): Use namespace_bindings_p.
+	* method.c (implicitly_declare_fn): Likewise.
+	* searchc (node_debug_info_needed): Likewise.
+	* name-lookup.c (pushdecl_top_level_and_finish): Rename to ...
+	(pushdecl_top_level_with_init): ... here.
+	(pop_everything): Use namespace_bindings_p.
+
+	* name-lookup.h (pop_binding): Rename to pop_local_binding.
+	(getdecls): Rename to get_local_decls.
+	* name-lookup.c (pop_binding): Rename to ...
+	(pop_local_binding): ... here.
+	(pop_bindings_and_leave_scope): Adjust.
+	(getdecls): Rename to ...
+	(get_local_decls): ... here.  Assert local scope.
+	* decl.c (poplevel): Assert not namespace.  Adjust and simplify
+	logic.
+	(store_parm_decls): Adjust get_local_decls call.
+	(parser.c (synthesize_implicit_template_parm): Likewise.
+
+2017-05-11  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	PR c++/80682
+	* method.c (is_trivially_xible): Reject void types.
+
 2017-05-10  Nathan Sidwell  <nathan@acm.org>
 
 	* class.c (handle_using_decl): Always use OVL_CURRENT.

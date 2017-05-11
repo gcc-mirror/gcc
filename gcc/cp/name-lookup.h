@@ -281,7 +281,7 @@ struct GTY(()) cp_binding_level {
 extern cp_binding_level *leave_scope (void);
 extern bool kept_level_p (void);
 extern bool global_bindings_p (void);
-extern bool toplevel_bindings_p	(void);
+extern bool toplevel_bindings_p (void);
 extern bool namespace_bindings_p (void);
 extern bool local_bindings_p (void);
 extern bool template_parm_scope_p (void);
@@ -334,7 +334,7 @@ extern void finish_local_using_directive (tree, tree);
 extern tree pushdecl (tree, bool is_friend = false);
 extern tree pushdecl_outermost_localscope (tree);
 extern tree pushdecl_top_level (tree, bool is_friend = false);
-extern tree pushdecl_top_level_init (tree, tree);
+extern tree pushdecl_top_level_and_finish (tree, tree);
 extern tree pushtag (tree, tree, tag_scope);
 extern int push_namespace (tree, bool make_inline = false);
 extern void pop_namespace (void);

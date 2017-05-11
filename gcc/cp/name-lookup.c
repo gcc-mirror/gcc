@@ -3687,19 +3687,17 @@ do_pushdecl_with_scope (tree x, cp_binding_level *level, bool is_friend)
 tree
 pushdecl_outermost_localscope (tree x)
 {
+  cp_binding_level *b = NULL;
   bool subtime = timevar_cond_start (TV_NAME_LOOKUP);
-  cp_binding_level *b  = NULL, *n = current_binding_level;
 
-  if (n->kind == sk_function_parms)
-    return error_mark_node;
-  do
-    {
-      b = n;
-      n = b->level_chain;
-    }
-  while (n->kind != sk_function_parms);
-  tree ret = do_pushdecl_with_scope (x, b, false);
+  /* Find the scope just inside the function parms.  */
+  for (cp_binding_level *n = current_binding_level;
+       n->kind != sk_function_parms; n = b->level_chain)
+    b = n;
+
+  tree ret = b ? do_pushdecl_with_scope (x, b, false) : error_mark_node;
   timevar_cond_stop (TV_NAME_LOOKUP, subtime);
+
   return ret;
 }
 
@@ -6043,8 +6041,15 @@ do_pushtag (tree name, tree type, tag_scope scope)
 	    view of the language.  */
 	 || (b->kind == sk_template_parms
 	     && (b->explicit_spec_p || scope == ts_global))
-	 /* Pushing into a class is ok for lambdas or want current  */
-	 || (b->kind == sk_class && scope != ts_lambda && scope != ts_current))
+	 /* Pushing into a class is ok for lambdas or when we want current  */
+	 || (b->kind == sk_class
+	     && scope != ts_lambda
+	     && (scope != ts_current
+		 /* We may be defining a new type in the initializer
+		    of a static member variable. We allow this when
+		    not pedantic, and it is particularly useful for
+		    type punning via an anonymous union.  */
+		 || COMPLETE_TYPE_P (b->this_entity))))
     b = b->level_chain;
 
   gcc_assert (identifier_p (name));
@@ -6507,7 +6512,7 @@ pushdecl_top_level (tree x, bool is_friend)
    initializing it with INIT.  */
 
 tree
-pushdecl_top_level_init (tree x, tree init)
+pushdecl_top_level_and_finish (tree x, tree init)
 {
   push_to_top_level ();
   x = pushdecl_namespace_level (x, false);

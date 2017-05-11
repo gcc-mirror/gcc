@@ -88,8 +88,15 @@ bool aff_comb_cannot_overlap_p (aff_tree *, const widest_int &,
 /* Debugging functions.  */
 void debug_aff (aff_tree *);
 
+/* Return AFF's type.  */
+inline tree
+aff_combination_type (aff_tree *aff)
+{
+  return aff->type;
+}
+
 /* Return true if AFF is actually ZERO.  */
-static inline bool
+inline bool
 aff_combination_zero_p (aff_tree *aff)
 {
   if (!aff)
@@ -101,4 +108,20 @@ aff_combination_zero_p (aff_tree *aff)
   return false;
 }
 
+/* Return true if AFF is actually const.  */
+inline bool
+aff_combination_const_p (aff_tree *aff)
+{
+  return (aff == NULL || aff->n == 0);
+}
+
+/* Return true iff AFF contains one (negated) singleton variable.  Users need
+   to make sure AFF points to a valid combination.  */
+inline bool
+aff_combination_singleton_var_p (aff_tree *aff)
+{
+  return (aff->n == 1
+	  && aff->offset == 0
+	  && (aff->elts[0].coef == 1 || aff->elts[0].coef == -1));
+}
 #endif /* GCC_TREE_AFFINE_H */

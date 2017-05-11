@@ -1,3 +1,194 @@
+2017-05-11  Nathan Sidwell  <nathan@acm.org>
+
+	* dumpfile.h (TDF_FLAGS): New.
+	* dumpfile.c (dump_start): Use TDF_FLAGS.
+	(dump_enable_all): Fix TDF_KIND check thinko.
+
+2017-05-11  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	* config/rs6000/rs6000-c.c (altivec_overloaded_builtins): Add
+	array entries to represent two legal parameterizations of the
+	overloaded __builtin_cmpb function, as represented by the
+	P6_OV_BUILTIN_CMPB constant.
+	(altivec_resolve_overloaded_builtin): Add special case handling
+	for the __builtin_cmpb function, as represented by the
+	P6_OV_BUILTIN_CMPB constant.
+	* config/rs6000/rs6000-builtin.def (BU_P6_2): New macro.
+	(BU_P6_64BIT_2): New macro.
+	(BU_P6_OVERLOAD_2): New macro
+	(CMPB_32): Add 32-bit compare-bytes support for 32-bit only targets.
+	(CMPB): Add 64-bit compare-bytes support for 32-bit and 64-bit targets.
+	(CMPB): Add overload support to represent both 32-bit and 64-bit
+	compare-bytes function.
+	* config/rs6000/rs6000.c (rs6000_builtin_mask_calculate): Add
+	support for TARGET_CMPB.
+	* config/rs6000/rs6000.h: Add support for RS6000_BTM_CMPB.
+	* doc/extend.texi (PowerPC AltiVec Built-in Functions): Add
+	documentation of the __builtin_cmpb overloaded built-in function.
+
+2017-05-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/80705
+	* tree-vect-data-refs.c (vect_analyze_data_refs): DECL_NONALIASED
+	bases are not vectorizable.
+
+2017-05-11  Bin Cheng  <bin.cheng@arm.com>
+
+	* tree-ssa-loop-ivopts.c (determine_set_costs): Skip non-interger
+	when counting register pressure.
+
+2017-05-11  Bin Cheng  <bin.cheng@arm.com>
+
+	* tree-ssa-loop-ivopts.c (compare_cost_pair): New.
+	(iv_ca_more_deps): Renamed to ...
+	(iv_ca_compare_deps): ... this.
+	(iv_ca_extend): Extend iv_ca if NEW_CP is cheaper than OLD_CP.
+
+2017-05-11  Bin Cheng  <bin.cheng@arm.com>
+
+	* tree-ssa-loop-ivopts.c (find_interesting_uses): Move inv vars dump
+	to ...
+	(determine_group_iv_costs): ... here.
+	(find_inv_vars_cb): Record inv var if it's not recorded before.
+
+2017-05-11  Bin Cheng  <bin.cheng@arm.com>
+
+	* tree-ssa-loop-ivopts.c (allow_ip_end_pos_p): Refine comments.
+	(get_shiftadd_cost): Ditto.
+
+2017-05-11  Bin Cheng  <bin.cheng@arm.com>
+
+	* tree-ssa-address.c: Include header file.
+	(move_hint_to_base): Return TRUE if BASE_HINT is moved to memory
+	address.
+	(add_to_parts): Refactor.
+	(addr_to_parts): New parameter.  Update use of move_hint_to_base.
+	(create_mem_ref): Update use of addr_to_parts.  Re-associate addr
+	in new order.
+
+2017-05-11  Bin Cheng  <bin.cheng@arm.com>
+
+	PR tree-optimization/53090
+	* tree-ssa-loop-ivopts.c (enum comp_iv_rewrite): New enum value
+	COMP_IV_EXPR_2.
+	(extract_cond_operands): Detect condition with IV on both sides
+	and return COMP_IV_EXPR_2.
+	(find_interesting_uses_cond): Add iv_use for both IVs in condition.
+	(rewrite_use_compare): Simplify by removing call to function
+	extract_cond_operands.
+
+2017-05-11  Bin Cheng  <bin.cheng@arm.com>
+
+	* tree-ssa-loop-ivopts.c (enum comp_iv_rewrite): New.
+	(extract_cond_operands): Detect condition comparing against non-
+	invariant bound and return appropriate enum value.
+	(find_interesting_uses_cond): Update use of extract_cond_operands.
+	Handle its return value accordingly.
+	(determine_group_iv_cost_cond, rewrite_use_compare): Ditto.
+
+2017-05-11  Bin Cheng  <bin.cheng@arm.com>
+
+	* tree-ssa-loop-ivopts.c (rewrite_use_nonlinear_expr): Re-associate
+	nonlinear iv_use computation in loop invariant sensitive way.
+
+2017-05-11  Bin Cheng  <bin.cheng@arm.com>
+
+	* tree-ssa-loop-ivopts.c (relate_compare_use_with_all_cands): New.
+	(find_iv_candidates): Call relate_compare_use_with_all_cands.
+
+2017-05-11  Bin Cheng  <bin.cheng@arm.com>
+
+	* tree-ssa-loop-ivopts.c (struct iv_cand): New field inv_exprs.
+	(dump_cand): Support iv_cand.inv_exprs.
+	(add_candidate_1): Record invariant exprs in iv_cand.inv_exprs
+	for candidates.
+	(iv_ca_set_no_cp, iv_ca_set_cp, free_loop_data): Support
+	iv_cand.inv_exprs.
+
+2017-05-11  Bin Cheng  <bin.cheng@arm.com>
+
+	* tree-ssa-loop-ivopts.c (multiplier_allowed_in_address_p): Move
+	from ...
+	* tree-ssa-address.c (multiplier_allowed_in_address_p): ... to here
+	as local function.  Include necessary header files.
+	* tree-ssa-loop-ivopts.h (multiplier_allowed_in_address_p): Delete.
+
+2017-05-11  Bin Cheng  <bin.cheng@arm.com>
+
+	* tree-ssa-loop-ivopts.c (autoinc_possible_for_pair): Simplify.
+
+2017-05-11  Bin Cheng  <bin.cheng@arm.com>
+
+	* tree-ssa-loop-ivopts.c (force_expr_to_var_cost): Handle more
+	operators: TRUNC_DIV_EXPR, BIT_AND_EXPR, BIT_IOR_EXPR, LSHIFT_EXPR,
+	RSHIFT_EXPR and BIT_NOT_EXPR.
+
+2017-05-11  Bin Cheng  <bin.cheng@arm.com>
+
+	* tree-ssa-loop-ivopts.c (get_loop_invariant_expr): Simplify.
+	(adjust_setup_cost): New parameter supporting round up adjustment.
+	(struct address_cost_data): Delete.
+	(force_expr_to_var_cost): Don't bound cost with spill_cost.
+	(split_address_cost, ptr_difference_cost): Delete.
+	(difference_cost, compare_aff_trees, record_inv_expr): Delete.
+	(struct ainc_cost_data): New struct.
+	(get_address_cost_ainc): New function.
+	(get_address_cost, get_computation_cost): Reimplement.
+	(determine_group_iv_cost_address): Record inv_expr for all uses of
+	a group.
+	(determine_group_iv_cost_cond): Call get_loop_invariant_expr.
+	(iv_ca_has_deps): Reimplemented to ...
+	(iv_ca_more_deps): ... this.  Check if NEW_CP introduces more deps
+	than OLD_CP.
+	(iv_ca_extend): Call iv_ca_more_deps.
+
+2017-05-11  Bin Cheng  <bin.cheng@arm.com>
+
+	* tree-ssa-address.c (struct mem_address): Move to header file.
+	(valid_mem_ref_p, move_fixed_address_to_symbol): Make it global.
+	* tree-ssa-address.h (struct mem_address): Move from C file.
+	(valid_mem_ref_p, move_fixed_address_to_symbol): Declare.
+
+2017-05-11  Bin Cheng  <bin.cheng@arm.com>
+
+	* tree-affine.h (aff_combination_type): New interface.
+	(aff_combination_zero_p): Remove static.
+	(aff_combination_const_p): New interface.
+	(aff_combination_singleton_var_p): New interfaces.
+
+2017-05-11  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-pre.c (eliminate_dom_walker::before_dom_children):
+	Skip unreachable blocks and destinations.
+	(eliminate): Move stmt removal and fixup ...
+	(fini_eliminate): ... here.  Skip inserted exprs.
+	(pass_pre::execute): Move fini_pre after fini_eliminate.
+	* tree-ssa-tailmerge.c: Include tree-cfgcleanup.h.
+	(tail_merge_optimize): Run cleanup_tree_cfg if requested by
+	PRE to get rid of dead code that has invalid SSA form and
+	split critical edges again.
+
+2017-05-11  Bin Cheng  <bin.cheng@arm.com>
+
+	* rtlanal.c (rtx_cost): Handle TRUNCATE between tieable modes.
+
+2017-05-11  Richard Biener  <rguenther@suse.de>
+
+	* passes.c (execute_function_todo): Verify loops if they are
+	said to be up-to-date.
+	* cfgexpand.c (pass_expand::execute): Discard loops for -dx.
+	* trans-mem.c (pass_tm_edges::execute): Mark loops for fixup.
+
+2017-05-10  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR target/80090
+	* config/pa/pa.c (pa_assemble_integer): When outputting a SYMBOL_REF,
+	handle calling assemble_external ourself.
+
+	PR target/79027
+	* config/pa/pa.c (pa_cannot_change_mode_class): Reject changes to/from
+	modes with zero size.  Enhance comment.
+
 2017-05-10  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* config/rs6000/rs6000.c (altivec_init_builtins): Define POWER8

@@ -1,3 +1,37 @@
+2017-05-11  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	* gcc.target/powerpc/cmpb-1.c: New test.
+	* gcc.target/powerpc/cmpb-2.c: New test.
+	* gcc.target/powerpc/cmpb-3.c: New test.
+	* gcc.target/powerpc/cmpb32-1.c: New test.
+	* gcc.target/powerpc/cmpb32-2.c: New test.
+
+2017-05-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/80705
+	* gcc.dg/vect/bb-slp-pr80705.c: New testcase.
+
+2017-05-11  Nathan Sidwell  <nathan@acm.org>
+
+	* lib/scanlang.exp: New.
+	* lib/gcc-dg.exp: Load scanlang.exp.
+	* g++.dg/inherit/covariant7.C: Use scan-lang-dump.
+
+2017-05-11  Mikhail Maltsev  <maltsevm@gmail.com>
+
+	PR testsuite/80580
+	* gcc.dg/gimplefe-error-6.c: New test.
+
+2017-05-11  Mikhail Maltsev  <maltsevm@gmail.com>
+
+	PR testsuite/80580
+	* gcc.dg/gimplefe-error-5.c: New test.
+
+2017-05-11  Mikhail Maltsev  <maltsevm@gmail.com>
+
+	PR testsuite/80580
+	* gcc.dg/gimplefe-error-4.c: New test.
+
 2017-05-10  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* gcc.target/powerpc/p8-vec-xl-xst.c: New file.
