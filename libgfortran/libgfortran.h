@@ -808,9 +808,7 @@ internal_proto(get_unformatted_convert);
 
 /* Secure getenv() which returns NULL if running as SUID/SGID.  */
 #ifndef HAVE_SECURE_GETENV
-#ifdef HAVE___SECURE_GETENV
-#define secure_getenv __secure_getenv
-#elif defined(HAVE_GETUID) && defined(HAVE_GETEUID) \
+#if defined(HAVE_GETUID) && defined(HAVE_GETEUID) \
   && defined(HAVE_GETGID) && defined(HAVE_GETEGID)
 #define FALLBACK_SECURE_GETENV
 extern char *secure_getenv (const char *);
