@@ -1,3 +1,9 @@
+2017-05-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/80705
+	* tree-vect-data-refs.c (vect_analyze_data_refs): DECL_NONALIASED
+	bases are not vectorizable.
+
 2017-05-11  Bin Cheng  <bin.cheng@arm.com>
 
 	* tree-ssa-loop-ivopts.c (determine_set_costs): Skip non-interger
