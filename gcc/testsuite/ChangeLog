@@ -1,6 +1,11 @@
 2017-05-11  Mikhail Maltsev  <maltsevm@gmail.com>
 
 	PR testsuite/80580
+	* gcc.dg/gimplefe-error-6.c: New test.
+
+2017-05-11  Mikhail Maltsev  <maltsevm@gmail.com>
+
+	PR testsuite/80580
 	* gcc.dg/gimplefe-error-5.c: New test.
 
 2017-05-11  Mikhail Maltsev  <maltsevm@gmail.com>
