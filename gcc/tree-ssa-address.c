@@ -28,11 +28,13 @@ along with GCC; see the file COPYING3.  If not see
 #include "rtl.h"
 #include "tree.h"
 #include "gimple.h"
+#include "memmodel.h"
 #include "stringpool.h"
 #include "tree-vrp.h"
 #include "tree-ssanames.h"
 #include "expmed.h"
 #include "insn-config.h"
+#include "emit-rtl.h"
 #include "recog.h"
 #include "tree-pretty-print.h"
 #include "fold-const.h"
@@ -535,6 +537,62 @@ add_to_parts (struct mem_address *parts, tree elt)
   else
     parts->base = fold_build2 (PLUS_EXPR, type,
 			       parts->base, elt);
+}
+
+/* Returns true if multiplying by RATIO is allowed in an address.  Test the
+   validity for a memory reference accessing memory of mode MODE in address
+   space AS.  */
+
+static bool
+multiplier_allowed_in_address_p (HOST_WIDE_INT ratio, machine_mode mode,
+				 addr_space_t as)
+{
+#define MAX_RATIO 128
+  unsigned int data_index = (int) as * MAX_MACHINE_MODE + (int) mode;
+  static vec<sbitmap> valid_mult_list;
+  sbitmap valid_mult;
+
+  if (data_index >= valid_mult_list.length ())
+    valid_mult_list.safe_grow_cleared (data_index + 1);
+
+  valid_mult = valid_mult_list[data_index];
+  if (!valid_mult)
+    {
+      machine_mode address_mode = targetm.addr_space.address_mode (as);
+      rtx reg1 = gen_raw_REG (address_mode, LAST_VIRTUAL_REGISTER + 1);
+      rtx reg2 = gen_raw_REG (address_mode, LAST_VIRTUAL_REGISTER + 2);
+      rtx addr, scaled;
+      HOST_WIDE_INT i;
+
+      valid_mult = sbitmap_alloc (2 * MAX_RATIO + 1);
+      bitmap_clear (valid_mult);
+      scaled = gen_rtx_fmt_ee (MULT, address_mode, reg1, NULL_RTX);
+      addr = gen_rtx_fmt_ee (PLUS, address_mode, scaled, reg2);
+      for (i = -MAX_RATIO; i <= MAX_RATIO; i++)
+	{
+	  XEXP (scaled, 1) = gen_int_mode (i, address_mode);
+	  if (memory_address_addr_space_p (mode, addr, as)
+	      || memory_address_addr_space_p (mode, scaled, as))
+	    bitmap_set_bit (valid_mult, i + MAX_RATIO);
+	}
+
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	{
+	  fprintf (dump_file, "  allowed multipliers:");
+	  for (i = -MAX_RATIO; i <= MAX_RATIO; i++)
+	    if (bitmap_bit_p (valid_mult, i + MAX_RATIO))
+	      fprintf (dump_file, " %d", (int) i);
+	  fprintf (dump_file, "\n");
+	  fprintf (dump_file, "\n");
+	}
+
+      valid_mult_list[data_index] = valid_mult;
+    }
+
+  if (ratio > MAX_RATIO || ratio < -MAX_RATIO)
+    return false;
+
+  return bitmap_bit_p (valid_mult, ratio + MAX_RATIO);
 }
 
 /* Finds the most expensive multiplication in ADDR that can be
