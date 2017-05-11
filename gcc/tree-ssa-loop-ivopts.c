@@ -1647,6 +1647,17 @@ find_interesting_uses_op (struct ivopts_data *data, tree op)
   return use;
 }
 
+/* Indicate how compare type iv_use can be handled.  */
+enum comp_iv_rewrite
+{
+  COMP_IV_NA,
+  /* We may rewrite compare type iv_use by expressing value of the iv_use.  */
+  COMP_IV_EXPR,
+  /* We may rewrite compare type iv_use by expressing value of the iv_use
+     or by eliminating it with other iv_cand.  */
+  COMP_IV_ELIM
+};
+
 /* Given a condition in statement STMT, checks whether it is a compare
    of an induction variable and an invariant.  If this is the case,
    CONTROL_VAR is set to location of the iv, BOUND to the location of
@@ -1655,7 +1666,7 @@ find_interesting_uses_op (struct ivopts_data *data, tree op)
    the case, CONTROL_VAR and BOUND are set to the arguments of the
    condition and false is returned.  */
 
-static bool
+static enum comp_iv_rewrite
 extract_cond_operands (struct ivopts_data *data, gimple *stmt,
 		       tree **control_var, tree **bound,
 		       struct iv **iv_var, struct iv **iv_bound)
@@ -1665,7 +1676,7 @@ extract_cond_operands (struct ivopts_data *data, gimple *stmt,
   static tree zero;
   tree *op0 = &zero, *op1 = &zero;
   struct iv *iv0 = &const_iv, *iv1 = &const_iv;
-  bool ret = false;
+  enum comp_iv_rewrite rewrite_type = COMP_IV_NA;
 
   if (gimple_code (stmt) == GIMPLE_COND)
     {
@@ -1687,18 +1698,27 @@ extract_cond_operands (struct ivopts_data *data, gimple *stmt,
   if (TREE_CODE (*op1) == SSA_NAME)
     iv1 = get_iv (data, *op1);
 
-  /* Exactly one of the compared values must be an iv, and the other one must
-     be an invariant.  */
-  if (!iv0 || !iv1)
+  /* If both sides of comparison are IVs.  */
+  if (iv0 && iv1 && !integer_zerop (iv0->step) && !integer_zerop (iv1->step))
     goto end;
 
-  if (integer_zerop (iv0->step))
+  /* If none side of comparison is IV.  */
+  if ((!iv0 || integer_zerop (iv0->step))
+      && (!iv1 || integer_zerop (iv1->step)))
+    goto end;
+
+  /* Control variable may be on the other side.  */
+  if (!iv0 || integer_zerop (iv0->step))
     {
-      /* Control variable may be on the other side.  */
       std::swap (op0, op1);
       std::swap (iv0, iv1);
     }
-  ret = !integer_zerop (iv0->step) && integer_zerop (iv1->step);
+  /* If one side is IV and the other side isn't loop invariant.  */
+  if (!iv1)
+    rewrite_type = COMP_IV_EXPR;
+  /* If one side is IV and the other side is loop invariant.  */
+  else if (!integer_zerop (iv0->step) && integer_zerop (iv1->step))
+    rewrite_type = COMP_IV_ELIM;
 
 end:
   if (control_var)
@@ -1710,7 +1730,7 @@ end:
   if (iv_bound)
     *iv_bound = iv1;
 
-  return ret;
+  return rewrite_type;
 }
 
 /* Checks whether the condition in STMT is interesting and if so,
@@ -1721,15 +1741,17 @@ find_interesting_uses_cond (struct ivopts_data *data, gimple *stmt)
 {
   tree *var_p, *bound_p;
   struct iv *var_iv;
+  enum comp_iv_rewrite ret;
 
-  if (!extract_cond_operands (data, stmt, &var_p, &bound_p, &var_iv, NULL))
+  ret = extract_cond_operands (data, stmt, &var_p, &bound_p, &var_iv, NULL);
+  if (ret == COMP_IV_NA)
     {
       find_interesting_uses_op (data, *var_p);
       find_interesting_uses_op (data, *bound_p);
       return;
     }
 
-  record_group_use (data, NULL, var_iv, stmt, USE_COMPARE);
+  record_group_use (data, var_p, var_iv, stmt, USE_COMPARE);
 }
 
 /* Returns the outermost loop EXPR is obviously invariant in
@@ -5068,15 +5090,21 @@ determine_group_iv_cost_cond (struct ivopts_data *data,
   struct iv *cmp_iv;
   bitmap inv_exprs = NULL;
   bitmap inv_vars_elim = NULL, inv_vars_express = NULL, inv_vars;
-  comp_cost elim_cost, express_cost, cost, bound_cost;
-  bool ok;
+  comp_cost elim_cost = infinite_cost, express_cost, cost, bound_cost;
+  enum comp_iv_rewrite rewrite_type;
   iv_inv_expr_ent *inv_expr_elim = NULL, *inv_expr_express = NULL, *inv_expr;
   tree *control_var, *bound_cst;
   enum tree_code comp = ERROR_MARK;
   struct iv_use *use = group->vuses[0];
 
+  /* Extract condition operands.  */
+  rewrite_type = extract_cond_operands (data, use->stmt, &control_var,
+					&bound_cst, NULL, &cmp_iv);
+  gcc_assert (rewrite_type != COMP_IV_NA);
+
   /* Try iv elimination.  */
-  if (may_eliminate_iv (data, use, cand, &bound, &comp))
+  if (rewrite_type == COMP_IV_ELIM
+      && may_eliminate_iv (data, use, cand, &bound, &comp))
     {
       elim_cost = force_var_cost (data, bound, &inv_vars_elim);
       if (elim_cost.cost == 0)
@@ -5098,14 +5126,6 @@ determine_group_iv_cost_cond (struct ivopts_data *data,
 	 once.  */
       elim_cost.cost = adjust_setup_cost (data, elim_cost.cost);
     }
-  else
-    elim_cost = infinite_cost;
-
-  /* Try expressing the original giv.  If it is compared with an invariant,
-     note that we cannot get rid of it.  */
-  ok = extract_cond_operands (data, use->stmt, &control_var, &bound_cst,
-			      NULL, &cmp_iv);
-  gcc_assert (ok);
 
   /* When the condition is a comparison of the candidate IV against
      zero, prefer this IV.
@@ -6938,7 +6958,7 @@ rewrite_use_compare (struct ivopts_data *data,
   enum tree_code compare;
   struct iv_group *group = data->vgroups[use->group_id];
   struct cost_pair *cp = get_group_iv_cost (data, group, cand);
-  bool ok;
+  enum comp_iv_rewrite rewrite_type;
 
   bound = cp->value;
   if (bound)
@@ -6972,8 +6992,9 @@ rewrite_use_compare (struct ivopts_data *data,
   comp = get_computation_at (data->current_loop, use->stmt, use, cand);
   gcc_assert (comp != NULL_TREE);
 
-  ok = extract_cond_operands (data, use->stmt, &var_p, NULL, NULL, NULL);
-  gcc_assert (ok);
+  rewrite_type = extract_cond_operands (data, use->stmt,
+					&var_p, NULL, NULL, NULL);
+  gcc_assert (rewrite_type != COMP_IV_NA);
 
   *var_p = force_gimple_operand_gsi (&bsi, comp, true, SSA_NAME_VAR (*var_p),
 				     true, GSI_SAME_STMT);
