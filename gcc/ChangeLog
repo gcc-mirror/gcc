@@ -1,5 +1,12 @@
 2017-05-11  Bin Cheng  <bin.cheng@arm.com>
 
+	* tree-ssa-loop-ivopts.c (compare_cost_pair): New.
+	(iv_ca_more_deps): Renamed to ...
+	(iv_ca_compare_deps): ... this.
+	(iv_ca_extend): Extend iv_ca if NEW_CP is cheaper than OLD_CP.
+
+2017-05-11  Bin Cheng  <bin.cheng@arm.com>
+
 	* tree-ssa-loop-ivopts.c (find_interesting_uses): Move inv vars dump
 	to ...
 	(determine_group_iv_costs): ... here.
