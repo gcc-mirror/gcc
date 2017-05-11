@@ -1,5 +1,14 @@
 2017-05-11  Bin Cheng  <bin.cheng@arm.com>
 
+	* tree-ssa-loop-ivopts.c (enum comp_iv_rewrite): New.
+	(extract_cond_operands): Detect condition comparing against non-
+	invariant bound and return appropriate enum value.
+	(find_interesting_uses_cond): Update use of extract_cond_operands.
+	Handle its return value accordingly.
+	(determine_group_iv_cost_cond, rewrite_use_compare): Ditto.
+
+2017-05-11  Bin Cheng  <bin.cheng@arm.com>
+
 	* tree-ssa-loop-ivopts.c (rewrite_use_nonlinear_expr): Re-associate
 	nonlinear iv_use computation in loop invariant sensitive way.
 
