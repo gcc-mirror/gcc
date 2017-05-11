@@ -1,5 +1,13 @@
 2017-05-11  Bin Cheng  <bin.cheng@arm.com>
 
+	* tree-ssa-loop-ivopts.c (multiplier_allowed_in_address_p): Move
+	from ...
+	* tree-ssa-address.c (multiplier_allowed_in_address_p): ... to here
+	as local function.  Include necessary header files.
+	* tree-ssa-loop-ivopts.h (multiplier_allowed_in_address_p): Delete.
+
+2017-05-11  Bin Cheng  <bin.cheng@arm.com>
+
 	* tree-ssa-loop-ivopts.c (autoinc_possible_for_pair): Simplify.
 
 2017-05-11  Bin Cheng  <bin.cheng@arm.com>
