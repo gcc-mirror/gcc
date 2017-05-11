@@ -490,7 +490,7 @@ dump_start (int phase, int *flag_ptr)
       dfi->pstream = stream;
       dump_file = dfi->pstream;
       /* Initialize current dump flags. */
-      pflags = dfi->pflags;
+      pflags = TDF_FLAGS (dfi->pflags);
     }
 
   stream = dump_open_alternate_stream (dfi);
@@ -500,7 +500,7 @@ dump_start (int phase, int *flag_ptr)
       count++;
       alt_dump_file = dfi->alt_stream;
       /* Initialize current -fopt-info flags. */
-      alt_flags = dfi->alt_flags;
+      alt_flags = TDF_FLAGS (dfi->alt_flags);
     }
 
   if (flag_ptr)
@@ -682,7 +682,7 @@ dump_enable_all (int flags, const char *filename)
 
   for (i = 0; i < m_extra_dump_files_in_use; i++)
     {
-      if (TDF_KIND (m_extra_dump_files[i].pflags) & ir_dump_type)
+      if (TDF_KIND (m_extra_dump_files[i].pflags) == ir_dump_type)
         {
           const char *old_filename = m_extra_dump_files[i].pfilename;
           m_extra_dump_files[i].pstate = -1;
