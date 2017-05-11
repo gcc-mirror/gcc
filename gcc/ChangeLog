@@ -1,5 +1,14 @@
 2017-05-11  Bin Cheng  <bin.cheng@arm.com>
 
+	* tree-ssa-loop-ivopts.c (struct iv_cand): New field inv_exprs.
+	(dump_cand): Support iv_cand.inv_exprs.
+	(add_candidate_1): Record invariant exprs in iv_cand.inv_exprs
+	for candidates.
+	(iv_ca_set_no_cp, iv_ca_set_cp, free_loop_data): Support
+	iv_cand.inv_exprs.
+
+2017-05-11  Bin Cheng  <bin.cheng@arm.com>
+
 	* tree-ssa-loop-ivopts.c (multiplier_allowed_in_address_p): Move
 	from ...
 	* tree-ssa-address.c (multiplier_allowed_in_address_p): ... to here
