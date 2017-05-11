@@ -340,7 +340,7 @@ extern tree pushdecl (tree);
 extern tree pushdecl_outermost_localscope (tree);
 extern tree pushdecl_top_level_maybe_friend (tree, bool is_friend);
 extern tree pushdecl_top_level (tree);
-extern tree pushdecl_top_level_with_init (tree, tree);
+extern tree pushdecl_top_level_and_finish (tree, tree);
 extern tree pushtag (tree, tree, tag_scope);
 extern bool push_namespace (tree);
 extern void pop_namespace (void);

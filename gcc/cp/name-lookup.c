@@ -4586,7 +4586,7 @@ pushdecl_top_level_maybe_friend (tree x, bool is_friend)
    initializing it with INIT.  */
 
 tree
-pushdecl_top_level_with_init (tree x, tree init)
+pushdecl_top_level_and_finish (tree x, tree init)
 {
   return pushdecl_top_level_1 (x, &init, false);
 }

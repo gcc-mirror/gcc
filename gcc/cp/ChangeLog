@@ -1,5 +1,12 @@
 2017-05-11  Nathan Sidwell  <nathan@acm.org>
 
+	Revert pushdecl_top_level_and_finish name change.
+	* name-lookup.h (pushdecl_top_level_and_finish): Resurrect old name.
+	* name-lookup.c (pushdecl_top_level_and_finish): Likewise.
+	* decl.c (cp_make_fname_decl): Adjust.
+	* decl2.c (get_guard, handle_tls_init):  Adjust.
+	* rtti.c (get_tinfo_decl, tinfo_base_init):  Adjust.
+
 	* name-lookup.c (pushdecl_outermost_localscope): Always
 	conditionally stop timer.
 
