@@ -2738,9 +2738,9 @@ Gcc_backend::implicit_variable_reference(const std::string& name, Btype* btype)
 
   tree decl = build_decl(BUILTINS_LOCATION, VAR_DECL,
                          get_identifier_from_string(name), type_tree);
-  DECL_EXTERNAL(decl) = 0;
+  DECL_EXTERNAL(decl) = 1;
   TREE_PUBLIC(decl) = 1;
-  TREE_STATIC(decl) = 1;
+  TREE_STATIC(decl) = 0;
   DECL_ARTIFICIAL(decl) = 1;
   go_preserve_from_gc(decl);
   return new Bvariable(decl);
