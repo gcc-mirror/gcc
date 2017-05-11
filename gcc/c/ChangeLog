@@ -1,6 +1,12 @@
 2017-05-11  Mikhail Maltsev  <maltsevm@gmail.com>
 
 	PR testsuite/80580
+	* gimple-parser.c (c_parser_gimple_postfix_expression): Handle
+	incorrect __MEM syntax.
+
+2017-05-11  Mikhail Maltsev  <maltsevm@gmail.com>
+
+	PR testsuite/80580
 	* gimple-parser.c (c_parser_gimple_unary_expression): Check argument
 	type of unary '*'.
 

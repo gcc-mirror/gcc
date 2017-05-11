@@ -804,6 +804,16 @@ c_parser_gimple_postfix_expression (c_parser *parser)
 			}
 		    }
 		  ptr = c_parser_gimple_unary_expression (parser);
+		  if (ptr.value == error_mark_node
+		      || ! POINTER_TYPE_P (TREE_TYPE (ptr.value)))
+		    {
+		      if (ptr.value != error_mark_node)
+			error_at (ptr.get_start (),
+				  "invalid type of %<__MEM%> operand");
+		      c_parser_skip_until_found (parser, CPP_CLOSE_PAREN,
+						 "expected %<)%>");
+		      return expr;
+		    }
 		  if (! alias_type)
 		    alias_type = TREE_TYPE (ptr.value);
 		  /* Optional constant offset.  */
