@@ -1,3 +1,9 @@
+2017-05-11  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/pr22152.c: Fix undefined testcase.  Remove
+	unnecessary loop.  Run on 32-bit targets only.
+	(dg-options): Remove -fno-tree-sink.
+
 2017-05-11  Kelvin Nilsen  <kelvin@gcc.gnu.org>
 
 	* gcc.target/powerpc/cmpb-1.c: New test.
