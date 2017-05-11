@@ -1,3 +1,10 @@
+2017-05-11  Julia Koval  <julia.koval@intel.com>
+
+	* gcc.target/i386/avx512f-vrsqrt14sd-1.c: Test new intrinsics.
+	* gcc.target/i386/avx512f-vrsqrt14sd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vrsqrt14ss-1.c: Ditto.
+	* gcc.target/i386/avx512f-vrsqrt14ss-2.c: Ditto.
+
 2017-05-11  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/70538
