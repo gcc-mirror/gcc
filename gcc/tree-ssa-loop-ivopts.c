@@ -1653,6 +1653,9 @@ enum comp_iv_rewrite
   COMP_IV_NA,
   /* We may rewrite compare type iv_use by expressing value of the iv_use.  */
   COMP_IV_EXPR,
+  /* We may rewrite compare type iv_uses on both sides of comparison by
+     expressing value of each iv_use.  */
+  COMP_IV_EXPR_2,
   /* We may rewrite compare type iv_use by expressing value of the iv_use
      or by eliminating it with other iv_cand.  */
   COMP_IV_ELIM
@@ -1698,9 +1701,12 @@ extract_cond_operands (struct ivopts_data *data, gimple *stmt,
   if (TREE_CODE (*op1) == SSA_NAME)
     iv1 = get_iv (data, *op1);
 
-  /* If both sides of comparison are IVs.  */
+  /* If both sides of comparison are IVs.  We can express ivs on both end.  */
   if (iv0 && iv1 && !integer_zerop (iv0->step) && !integer_zerop (iv1->step))
-    goto end;
+    {
+      rewrite_type = COMP_IV_EXPR_2;
+      goto end;
+    }
 
   /* If none side of comparison is IV.  */
   if ((!iv0 || integer_zerop (iv0->step))
@@ -1740,10 +1746,11 @@ static void
 find_interesting_uses_cond (struct ivopts_data *data, gimple *stmt)
 {
   tree *var_p, *bound_p;
-  struct iv *var_iv;
+  struct iv *var_iv, *bound_iv;
   enum comp_iv_rewrite ret;
 
-  ret = extract_cond_operands (data, stmt, &var_p, &bound_p, &var_iv, NULL);
+  ret = extract_cond_operands (data, stmt,
+			       &var_p, &bound_p, &var_iv, &bound_iv);
   if (ret == COMP_IV_NA)
     {
       find_interesting_uses_op (data, *var_p);
@@ -1752,6 +1759,9 @@ find_interesting_uses_cond (struct ivopts_data *data, gimple *stmt)
     }
 
   record_group_use (data, var_p, var_iv, stmt, USE_COMPARE);
+  /* Record compare type iv_use for iv on the other side of comparison.  */
+  if (ret == COMP_IV_EXPR_2)
+    record_group_use (data, bound_p, bound_iv, stmt, USE_COMPARE);
 }
 
 /* Returns the outermost loop EXPR is obviously invariant in
@@ -6953,12 +6963,11 @@ static void
 rewrite_use_compare (struct ivopts_data *data,
 		     struct iv_use *use, struct iv_cand *cand)
 {
-  tree comp, *var_p, op, bound;
+  tree comp, op, bound;
   gimple_stmt_iterator bsi = gsi_for_stmt (use->stmt);
   enum tree_code compare;
   struct iv_group *group = data->vgroups[use->group_id];
   struct cost_pair *cp = get_group_iv_cost (data, group, cand);
-  enum comp_iv_rewrite rewrite_type;
 
   bound = cp->value;
   if (bound)
@@ -6991,13 +7000,10 @@ rewrite_use_compare (struct ivopts_data *data,
      giv.  */
   comp = get_computation_at (data->current_loop, use->stmt, use, cand);
   gcc_assert (comp != NULL_TREE);
-
-  rewrite_type = extract_cond_operands (data, use->stmt,
-					&var_p, NULL, NULL, NULL);
-  gcc_assert (rewrite_type != COMP_IV_NA);
-
-  *var_p = force_gimple_operand_gsi (&bsi, comp, true, SSA_NAME_VAR (*var_p),
-				     true, GSI_SAME_STMT);
+  gcc_assert (use->op_p != NULL);
+  *use->op_p = force_gimple_operand_gsi (&bsi, comp, true,
+					 SSA_NAME_VAR (*use->op_p),
+					 true, GSI_SAME_STMT);
 }
 
 /* Rewrite the groups using the selected induction variables.  */

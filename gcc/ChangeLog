@@ -1,5 +1,16 @@
 2017-05-11  Bin Cheng  <bin.cheng@arm.com>
 
+	PR tree-optimization/53090
+	* tree-ssa-loop-ivopts.c (enum comp_iv_rewrite): New enum value
+	COMP_IV_EXPR_2.
+	(extract_cond_operands): Detect condition with IV on both sides
+	and return COMP_IV_EXPR_2.
+	(find_interesting_uses_cond): Add iv_use for both IVs in condition.
+	(rewrite_use_compare): Simplify by removing call to function
+	extract_cond_operands.
+
+2017-05-11  Bin Cheng  <bin.cheng@arm.com>
+
 	* tree-ssa-loop-ivopts.c (enum comp_iv_rewrite): New.
 	(extract_cond_operands): Detect condition comparing against non-
 	invariant bound and return appropriate enum value.
