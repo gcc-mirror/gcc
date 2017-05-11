@@ -1,3 +1,13 @@
+2017-05-11  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/78659
+	* io.c (dtio_procs_present): Add new function to check for DTIO
+	procedures relative to I/O statement READ or WRITE.
+	(gfc_resolve_dt): Add namelist checks using the new function.
+	* resolve.c (dtio_procs_present): Remove function and related
+	namelist checks. (resolve_fl_namelist): Add check specific to
+	Fortran 95 restriction on namelist objects.
+
 2017-05-11  Nathan Sidwell  <nathan@acm.org>
 	
 	* trans-decl.c: Include dumpfile.h not tree-dump.h,
