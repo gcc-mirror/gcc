@@ -380,6 +380,11 @@
 #define vec_vpopcntd __builtin_vec_vpopcntd
 #define vec_vpopcnth __builtin_vec_vpopcnth
 #define vec_vpopcntw __builtin_vec_vpopcntw
+#define vec_popcnt __builtin_vec_vpopcntu
+#define vec_popcntb __builtin_vec_vpopcntub
+#define vec_popcnth __builtin_vec_vpopcntuh
+#define vec_popcntw __builtin_vec_vpopcntuw
+#define vec_popcntd __builtin_vec_vpopcntud
 #define vec_vrld __builtin_vec_vrld
 #define vec_vsld __builtin_vec_vsld
 #define vec_vsrad __builtin_vec_vsrad

@@ -1,3 +1,29 @@
+2017-05-11  Carl Love  <cel@us.ibm.com>
+
+	* config/rs6000/rs6000-c: Add support for built-in functions
+	vector unsigned char vec_popcnt (vector signed char)
+	vector unsigned char vec_popcnt (vector unsigned char)
+	vector unsigned short vec_popcnt (vector signed short)
+	vector unsigned short vec_popcnt (vector unsigned short)
+	vector unsigned int vec_popcnt (vector signed int)
+	vector unsigned int vec_popcnt (vector unsigned int)
+	vector unsigned long long vec_popcnt (vector signed long long)
+	vector unsigned long long vec_popcnt (vector unsigned long long)
+	vector signed long long vec_slo (vector signed long long,
+                                         vector signed char)
+	vector signed long long vec_slo (vector signed long long,
+                                         vector unsigned char)
+	vector unsigned long long vec_slo (vector unsigned long long,
+                                           vector signed char)
+	vector unsigned long long vec_slo (vector unsigned long long,
+                                           vector unsigned char)
+	* config/rs6000/rs6000-builtin.def: Add definitions for VPOPCNTUB,
+	VPOPCNTUH, VPOPCNTUW, and VPOPCNTUD overloads.
+	* config/rs6000/altivec.h: Add define for vec_popcnt, vec_popcntb,
+	vec_popcnth, vec_popcntw and vec_popcntd built-in functions.
+	* doc/extend.texi: Update the built-in documentation file for the
+	new built-in functions.
+
 2017-05-11  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* attribs.h (sorted_attr_string): Move machine independent
