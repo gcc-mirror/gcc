@@ -1,5 +1,10 @@
 2017-05-11  Bin Cheng  <bin.cheng@arm.com>
 
+	* tree-ssa-loop-ivopts.c (relate_compare_use_with_all_cands): New.
+	(find_iv_candidates): Call relate_compare_use_with_all_cands.
+
+2017-05-11  Bin Cheng  <bin.cheng@arm.com>
+
 	* tree-ssa-loop-ivopts.c (struct iv_cand): New field inv_exprs.
 	(dump_cand): Support iv_cand.inv_exprs.
 	(add_candidate_1): Record invariant exprs in iv_cand.inv_exprs

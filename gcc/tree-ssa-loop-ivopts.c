@@ -5250,6 +5250,21 @@ set_autoinc_for_original_candidates (struct ivopts_data *data)
     }
 }
 
+/* Relate compare use with all candidates.  */
+
+static void
+relate_compare_use_with_all_cands (struct ivopts_data *data)
+{
+  unsigned i, max_id = data->vcands.length () - 1;
+  for (i = 0; i < data->vgroups.length (); i++)
+    {
+      struct iv_group *group = data->vgroups[i];
+
+      if (group->type == USE_COMPARE)
+	bitmap_set_range (group->related_cands, 0, max_id);
+    }
+}
+
 /* Finds the candidates for the induction variables.  */
 
 static void
@@ -5268,6 +5283,10 @@ find_iv_candidates (struct ivopts_data *data)
 
   /* Record the important candidates.  */
   record_important_candidates (data);
+
+  /* Relate compare iv_use with all candidates.  */
+  if (!data->consider_all_candidates)
+    relate_compare_use_with_all_cands (data);
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
