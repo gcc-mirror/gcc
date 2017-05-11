@@ -1,3 +1,19 @@
+2017-05-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/80285
+	* include/bits/shared_ptr_base.h (_Sp_make_shared_tag::_S_ti): Define
+	function to get unique fake std::type_info reference.
+	(_Sp_counted_ptr_inplace::_M_get_deleter) [!__cpp_rtti]: Compare to
+	_S_ti() fake reference.
+	(__shared_ptr(_Sp_make_shared_tag, const Alloc&, Args&&...)): Share
+	single implementation with or without RTTI enable.
+	[!__cpp_rtti]: Pass fake reference to _M_get_deleter.
+	* testsuite/20_util/shared_ptr/creation/alloc.cc: Change expected
+	allocation and deallocation counts.
+	* testsuite/20_util/shared_ptr/creation/single_allocation.cc: New.
+	* testsuite/20_util/shared_ptr/creation/single_allocation_no_rtti.cc:
+	New.
+
 2017-05-10  François Dumont  <fdumont@gcc.gnu.org>
 
 	Bump version namespace.
