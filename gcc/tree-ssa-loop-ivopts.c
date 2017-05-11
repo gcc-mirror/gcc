@@ -2676,32 +2676,16 @@ find_interesting_uses (struct ivopts_data *data)
 	if (!is_gimple_debug (gsi_stmt (bsi)))
 	  find_interesting_uses_stmt (data, gsi_stmt (bsi));
     }
+  free (body);
 
   split_address_groups (data);
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
-      bitmap_iterator bi;
-
-      fprintf (dump_file, "\n<Invariant Vars>:\n");
-      EXECUTE_IF_SET_IN_BITMAP (data->relevant, 0, i, bi)
-	{
-	  struct version_info *info = ver_info (data, i);
-	  if (info->inv_id)
-	    {
-	      fprintf (dump_file, "Inv %d:\t", info->inv_id);
-	      print_generic_expr (dump_file, info->name, TDF_SLIM);
-	      fprintf (dump_file, "%s\n",
-		       info->has_nonlin_use ? "" : "\t(eliminable)");
-	    }
-	}
-
       fprintf (dump_file, "\n<IV Groups>:\n");
       dump_groups (dump_file, data);
       fprintf (dump_file, "\n");
     }
-
-  free (body);
 }
 
 /* Strips constant offsets from EXPR and stores them to OFFSET.  If INSIDE_ADDR
@@ -2918,13 +2902,28 @@ struct walk_tree_data
 static tree
 find_inv_vars_cb (tree *expr_p, int *ws ATTRIBUTE_UNUSED, void *data)
 {
-  struct walk_tree_data *wdata = (struct walk_tree_data*) data;
+  tree op = *expr_p;
   struct version_info *info;
+  struct walk_tree_data *wdata = (struct walk_tree_data*) data;
 
-  if (TREE_CODE (*expr_p) != SSA_NAME)
+  if (TREE_CODE (op) != SSA_NAME)
     return NULL_TREE;
 
-  info = name_info (wdata->idata, *expr_p);
+  info = name_info (wdata->idata, op);
+  /* Because we expand simple operations when finding IVs, loop invariant
+     variable that isn't referred by the original loop could be used now.
+     Record such invariant variables here.  */
+  if (!info->iv)
+    {
+      struct ivopts_data *idata = wdata->idata;
+      basic_block bb = gimple_bb (SSA_NAME_DEF_STMT (op));
+
+      if (!bb || !flow_bb_inside_loop_p (idata->current_loop, bb))
+	{
+	  set_iv (idata, op, op, build_int_cst (TREE_TYPE (op), 0), true);
+	  record_invariant (idata, op, false);
+	}
+    }
   if (!info->inv_id || info->has_nonlin_use)
     return NULL_TREE;
 
@@ -5389,6 +5388,23 @@ determine_group_iv_costs (struct ivopts_data *data)
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
+      bitmap_iterator bi;
+
+      /* Dump invariant variables.  */
+      fprintf (dump_file, "\n<Invariant Vars>:\n");
+      EXECUTE_IF_SET_IN_BITMAP (data->relevant, 0, i, bi)
+	{
+	  struct version_info *info = ver_info (data, i);
+	  if (info->inv_id)
+	    {
+	      fprintf (dump_file, "Inv %d:\t", info->inv_id);
+	      print_generic_expr (dump_file, info->name, TDF_SLIM);
+	      fprintf (dump_file, "%s\n",
+		       info->has_nonlin_use ? "" : "\t(eliminable)");
+	    }
+	}
+
+      /* Dump invariant expressions.  */
       fprintf (dump_file, "\n<Invariant Expressions>:\n");
       auto_vec <iv_inv_expr_ent *> list (data->inv_expr_tab->elements ());
 
