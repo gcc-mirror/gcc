@@ -1,5 +1,11 @@
 2017-05-11  Bin Cheng  <bin.cheng@arm.com>
 
+	* tree-ssa-loop-ivopts.c (force_expr_to_var_cost): Handle more
+	operators: TRUNC_DIV_EXPR, BIT_AND_EXPR, BIT_IOR_EXPR, LSHIFT_EXPR,
+	RSHIFT_EXPR and BIT_NOT_EXPR.
+
+2017-05-11  Bin Cheng  <bin.cheng@arm.com>
+
 	* tree-ssa-loop-ivopts.c (get_loop_invariant_expr): Simplify.
 	(adjust_setup_cost): New parameter supporting round up adjustment.
 	(struct address_cost_data): Delete.
