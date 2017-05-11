@@ -5577,6 +5577,10 @@ determine_set_costs (struct ivopts_data *data)
       if (get_iv (data, op))
 	continue;
 
+      if (!POINTER_TYPE_P (TREE_TYPE (op))
+	  && !INTEGRAL_TYPE_P (TREE_TYPE (op)))
+	continue;
+
       n++;
     }
 

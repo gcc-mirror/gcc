@@ -1,5 +1,10 @@
 2017-05-11  Bin Cheng  <bin.cheng@arm.com>
 
+	* tree-ssa-loop-ivopts.c (determine_set_costs): Skip non-interger
+	when counting register pressure.
+
+2017-05-11  Bin Cheng  <bin.cheng@arm.com>
+
 	* tree-ssa-loop-ivopts.c (compare_cost_pair): New.
 	(iv_ca_more_deps): Renamed to ...
 	(iv_ca_compare_deps): ... this.
