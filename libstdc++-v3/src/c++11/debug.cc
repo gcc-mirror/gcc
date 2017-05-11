@@ -1069,6 +1069,7 @@ namespace __gnu_debug
     abort();
   }
 
+#if !_GLIBCXX_INLINE_VERSION
   // Deprecated methods kept for backward compatibility.
   void
   _Error_formatter::_Parameter::_M_print_field(
@@ -1116,4 +1117,6 @@ namespace __gnu_debug
     void
     _Error_formatter::_M_format_word(char*, int, const char*,
                                     const char*) const;
+#endif
+
 } // namespace __gnu_debug
