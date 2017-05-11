@@ -1,3 +1,27 @@
+2017-05-11  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* attribs.h (sorted_attr_string): Move machine independent
+	functions for target clone support from the i386 port to common
+	code.  Rename ix86_function_versions to common_function_versions.
+	Rename make_name to make_unique_name.
+	(common_function_versions): Likewise.
+	(make_unique_name): Likewise.
+	(make_dispatcher_decl): Likewise.
+	(is_function_default_version): Likewise.
+	* attribs.c (attr_strcmp): Likewise.
+	(sorted_attr_string): Likewise.
+	(common_function_versions): Likewise.
+	(make_unique_name): Likewise.
+	(make_dispatcher_decl): Likewise.
+	(is_function_default_version): Likewise.
+	* config/i386/i386.c (attr_strcmp): Likewise.
+	(sorted_attr_string): Likewise.
+	(ix86_function_versions): Likewise.
+	(make_name): Likewise.
+	(make_dispatcher_decl): Likewise.
+	(is_function_default_version): Likewise.
+	(TARGET_OPTION_FUNCTION_VERSIONS): Update target function hook.
+
 2017-05-11  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	PR target/80695
