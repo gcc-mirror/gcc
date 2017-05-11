@@ -1,3 +1,9 @@
+2017-05-11  Nathan Sidwell  <nathan@acm.org>
+
+	* lib/scanlang.exp: New.
+	* lib/gcc-dg.exp: Load scanlang.exp.
+	* g++.dg/inherit/covariant7.C: Use scan-lang-dump.
+
 2017-05-11  Mikhail Maltsev  <maltsevm@gmail.com>
 
 	PR testsuite/80580
