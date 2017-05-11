@@ -1,5 +1,9 @@
 2017-05-11  François Dumont  <fdumont@gcc.gnu.org>
 
+	* include/bits/stl_tree.h [_GLIBCXX_INLINE_VERSION]
+	(_Rb_tree_impl<>): Remove _Is_pod_comparator
+	template parameter.
+
 	* include/debug/safe_container.h [_GLIBCXX_USE_CXX11_ABI]
 	(_Safe_container<>): Remove _IsCxx11AllocatorAware template parameter.
 	* include/debug/string: Adapt.
@@ -48,8 +52,6 @@
 	* include/std/variant: Adapt.
 	* python/libstdcxx/v6/printers.py: Adapt.
 	* testsuite/libstdc++-prettyprinters/48362.cc: Adapt.
-	* include/bits/stl_tree.h (_Rb_tree_impl<>): Remove _Is_pod_comparator
-	template parameter when version namespace is active.
 
 	* include/bits/stl_algobase.h (std::__iter_swap<false>): Remove
 	_GLIBCXX_MOVE usage.
