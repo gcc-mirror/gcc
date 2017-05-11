@@ -5229,19 +5229,12 @@ static bool
 autoinc_possible_for_pair (struct ivopts_data *data, struct iv_use *use,
 			   struct iv_cand *cand)
 {
-  bitmap inv_vars;
-  bool can_autoinc;
-  comp_cost cost;
-
   if (use->type != USE_ADDRESS)
     return false;
 
-  cost = get_computation_cost (data, use, cand, true, &inv_vars,
-			       &can_autoinc, NULL);
-
-  BITMAP_FREE (inv_vars);
-
-  return !cost.infinite_cost_p () && can_autoinc;
+  bool can_autoinc = false;
+  get_computation_cost (data, use, cand, true, NULL, &can_autoinc, NULL);
+  return can_autoinc;
 }
 
 /* Examine IP_ORIGINAL candidates to see if they are incremented next to a

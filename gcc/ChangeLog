@@ -1,5 +1,9 @@
 2017-05-11  Bin Cheng  <bin.cheng@arm.com>
 
+	* tree-ssa-loop-ivopts.c (autoinc_possible_for_pair): Simplify.
+
+2017-05-11  Bin Cheng  <bin.cheng@arm.com>
+
 	* tree-ssa-loop-ivopts.c (force_expr_to_var_cost): Handle more
 	operators: TRUNC_DIV_EXPR, BIT_AND_EXPR, BIT_IOR_EXPR, LSHIFT_EXPR,
 	RSHIFT_EXPR and BIT_NOT_EXPR.
