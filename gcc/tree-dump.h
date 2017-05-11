@@ -87,7 +87,6 @@ extern void dump_string (dump_info_p, const char *);
 extern void dump_string_field (dump_info_p, const char *, const char *);
 extern void queue_and_dump_index (dump_info_p, const char *, const_tree, int);
 extern void queue_and_dump_type (dump_info_p, const_tree);
-extern void dump_function (int, tree);
 extern int dump_flag (dump_info_p, int, const_tree);
 
 #endif /* ! GCC_TREE_DUMP_H */

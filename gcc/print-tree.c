@@ -32,7 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-iterator.h"
 #include "gimple-pretty-print.h" /* FIXME */
 #include "tree-cfg.h"
-#include "tree-dump.h"
+#include "dumpfile.h"
 #include "print-tree.h"
 
 /* Define the hash table of nodes already seen.

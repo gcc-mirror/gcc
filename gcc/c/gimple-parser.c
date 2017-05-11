@@ -53,7 +53,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssanames.h"
 #include "gimple-ssa.h"
 #include "tree-dfa.h"
-#include "tree-dump.h"
 
 
 /* Gimple parsing functions.  */
