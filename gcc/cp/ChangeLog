@@ -1,5 +1,8 @@
 2017-05-11  Nathan Sidwell  <nathan@acm.org>
 
+	* name-lookup.c (pushdecl_outermost_localscope): Always
+	conditionally stop timer.
+
 	* decl.c (xref_tag_1): Don't frob ts_lambda scope here.
 	* name-lookup.c (pushtag_1): Deal with ts_lambda scope.
 
