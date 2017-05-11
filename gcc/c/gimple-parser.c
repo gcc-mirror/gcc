@@ -567,6 +567,11 @@ c_parser_gimple_unary_expression (c_parser *parser)
 	op = c_parser_gimple_postfix_expression (parser);
 	if (op.value == error_mark_node)
 	  return ret;
+	if (! POINTER_TYPE_P (TREE_TYPE (op.value)))
+	  {
+	    error_at (op_loc, "expected pointer as argument of unary %<*%>");
+	    return ret;
+	  }
 	finish = op.get_finish ();
 	location_t combined_loc = make_location (op_loc, op_loc, finish);
 	ret.value = build_simple_mem_ref_loc (combined_loc, op.value);
