@@ -3873,6 +3873,7 @@ HOST_WIDE_INT
 rs6000_builtin_mask_calculate (void)
 {
   return (((TARGET_ALTIVEC)		    ? RS6000_BTM_ALTIVEC   : 0)
+	  | ((TARGET_CMPB)		    ? RS6000_BTM_CMPB	   : 0)
 	  | ((TARGET_VSX)		    ? RS6000_BTM_VSX	   : 0)
 	  | ((TARGET_SPE)		    ? RS6000_BTM_SPE	   : 0)
 	  | ((TARGET_PAIRED_FLOAT)	    ? RS6000_BTM_PAIRED	   : 0)
