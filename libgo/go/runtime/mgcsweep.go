@@ -48,6 +48,8 @@ func finishsweep_m() {
 }
 
 func bgsweep(c chan int) {
+	setSystemGoroutine()
+
 	sweep.g = getg()
 
 	lock(&sweep.lock)

@@ -152,6 +152,8 @@ func deltimer(t *timer) bool {
 // It sleeps until the next event in the timers heap.
 // If addtimer inserts a new earlier event, it wakes timerproc early.
 func timerproc() {
+	setSystemGoroutine()
+
 	timers.gp = getg()
 	for {
 		lock(&timers.lock)

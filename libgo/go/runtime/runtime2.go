@@ -415,6 +415,8 @@ type g struct {
 
 	scanningself bool // whether goroutine is scanning its own stack
 
+	isSystemGoroutine bool // whether goroutine is a "system" goroutine
+
 	traceback *tracebackg // stack traceback buffer
 
 	context      g_ucontext_t // saved context for setcontext
