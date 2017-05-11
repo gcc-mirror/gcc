@@ -4342,7 +4342,7 @@ cp_make_fname_decl (location_t loc, tree id, int type_dep)
   else
     {
       DECL_THIS_STATIC (decl) = true;
-      pushdecl_top_level_and_finish (decl, init);
+      pushdecl_top_level_with_init (decl, init);
     }
 
   return decl;

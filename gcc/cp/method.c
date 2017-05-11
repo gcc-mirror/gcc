@@ -2096,7 +2096,7 @@ implicitly_declare_fn (special_function_kind kind, tree type,
   set_linkage_according_to_type (type, fn);
   if (TREE_PUBLIC (fn))
     DECL_COMDAT (fn) = 1;
-  rest_of_decl_compilation (fn, toplevel_bindings_p (), at_eof);
+  rest_of_decl_compilation (fn, namespace_bindings_p (), at_eof);
   gcc_assert (!TREE_USED (fn));
 
   /* Propagate constraints from the inherited constructor. */

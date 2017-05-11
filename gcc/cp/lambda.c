@@ -1098,7 +1098,7 @@ maybe_add_lambda_conv_op (tree type)
   SET_OVERLOADED_OPERATOR_CODE (fn, TYPE_EXPR);
   grokclassfn (type, fn, NO_SPECIAL);
   set_linkage_according_to_type (type, fn);
-  rest_of_decl_compilation (fn, toplevel_bindings_p (), at_eof);
+  rest_of_decl_compilation (fn, namespace_bindings_p (), at_eof);
   DECL_IN_AGGR_P (fn) = 1;
   DECL_ARTIFICIAL (fn) = 1;
   DECL_NOT_REALLY_EXTERN (fn) = 1;
@@ -1128,7 +1128,7 @@ maybe_add_lambda_conv_op (tree type)
   DECL_SOURCE_LOCATION (fn) = DECL_SOURCE_LOCATION (callop);
   grokclassfn (type, fn, NO_SPECIAL);
   set_linkage_according_to_type (type, fn);
-  rest_of_decl_compilation (fn, toplevel_bindings_p (), at_eof);
+  rest_of_decl_compilation (fn, namespace_bindings_p (), at_eof);
   DECL_IN_AGGR_P (fn) = 1;
   DECL_ARTIFICIAL (fn) = 1;
   DECL_NOT_REALLY_EXTERN (fn) = 1;
