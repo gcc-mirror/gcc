@@ -1,5 +1,17 @@
 2017-05-11  Nathan Sidwell  <nathan@acm.org>
 
+	* name-lookup.h (pushdecl): Add default friend parm.
+	(pushdecl_maybe_friend): Delete.
+	(pushdecl_top_level): Add default friend parm.
+	(pushdecl_top_level_maybe_friend): Delete.
+	* name-lookup.c (pushdecl_maybe_friend): Delete.
+	(pushdecl): Add is_friend parm.
+	(pushdecl_top_level): Add is friend_parm.
+	(pushdecl_top_level_maybe_friend, pushdecl_top_level_1): Delete.
+	(pushdecl_top_level_and_finish): Do pushing and finishing directly.
+	* friend.c (do_friend): Adjust.
+	* pt.c (tsubst_friend_class): Adjust.
+
 	Revert pushdecl_top_level_and_finish name change.
 	* name-lookup.h (pushdecl_top_level_and_finish): Resurrect old name.
 	* name-lookup.c (pushdecl_top_level_and_finish): Likewise.

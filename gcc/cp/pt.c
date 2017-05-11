@@ -9920,7 +9920,7 @@ tsubst_friend_class (tree friend_tmpl, tree args)
 	= INNERMOST_TEMPLATE_ARGS (CLASSTYPE_TI_ARGS (TREE_TYPE (tmpl)));
 
       /* Inject this template into the global scope.  */
-      friend_type = TREE_TYPE (pushdecl_top_level_maybe_friend (tmpl, true));
+      friend_type = TREE_TYPE (pushdecl_top_level (tmpl, true));
     }
 
   if (context != global_namespace)

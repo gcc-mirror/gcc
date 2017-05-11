@@ -335,11 +335,9 @@ extern tree innermost_non_namespace_value (tree);
 extern cxx_binding *outer_binding (tree, cxx_binding *, bool);
 extern void cp_emit_debug_info_for_using (tree, tree);
 
-extern tree pushdecl_maybe_friend (tree, bool is_friend);
-extern tree pushdecl (tree);
 extern tree pushdecl_outermost_localscope (tree);
-extern tree pushdecl_top_level_maybe_friend (tree, bool is_friend);
-extern tree pushdecl_top_level (tree);
+extern tree pushdecl (tree, bool is_friend = false);
+extern tree pushdecl_top_level (tree, bool is_friend = false);
 extern tree pushdecl_top_level_and_finish (tree, tree);
 extern tree pushtag (tree, tree, tag_scope);
 extern bool push_namespace (tree);
