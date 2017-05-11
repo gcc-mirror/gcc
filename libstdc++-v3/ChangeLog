@@ -1,5 +1,9 @@
 2017-05-11  Jonathan Wakely  <jwakely@redhat.com>
 
+	* doc/xml/manual/allocator.xml: Fix ViewCVS URLs.
+	* doc/xml/manual/mt_allocator.xml: Likewise.
+	* doc/html/*: Regenerate.
+
 	PR libstdc++/80285
 	* include/bits/shared_ptr_base.h (_Sp_make_shared_tag::_S_ti): Define
 	function to get unique fake std::type_info reference.
