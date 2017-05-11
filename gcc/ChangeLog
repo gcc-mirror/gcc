@@ -1,5 +1,7 @@
 2017-05-11  Nathan Sidwell  <nathan@acm.org>
 
+	* graphite-poly.c: Include dumpfile.h.
+
 	* dumpfle.h (dump_function): Declare here ...
 	* tree-dump.h (dump_function): ... not here.
 	* dumpfile.c: #include tree-cfg.h.
