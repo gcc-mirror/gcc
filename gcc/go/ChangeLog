@@ -1,3 +1,9 @@
+2017-05-11  Ian Lance Taylor  <iant@google.com>
+
+	PR go/64238
+	* go-gcc.cc (Gcc_backend::implicit_variable_reference): Set
+	DECL_EXTERNAL, clear TREE_STATIC.
+
 2017-05-02  Release Manager
 
 	* GCC 7.1.0 released.
