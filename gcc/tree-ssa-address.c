@@ -178,13 +178,6 @@ gen_addr_rtx (machine_mode address_mode,
     *addr = const0_rtx;
 }
 
-/* Description of a memory address.  */
-
-struct mem_address
-{
-  tree symbol, base, index, step, offset;
-};
-
 /* Returns address for TARGET_MEM_REF with parameters given by ADDR
    in address space AS.
    If REALLY_EXPAND is false, just make fake registers instead
@@ -330,7 +323,7 @@ tree_mem_ref_addr (tree type, tree mem_ref)
 /* Returns true if a memory reference in MODE and with parameters given by
    ADDR is valid on the current target.  */
 
-static bool
+bool
 valid_mem_ref_p (machine_mode mode, addr_space_t as,
 		 struct mem_address *addr)
 {
@@ -408,7 +401,7 @@ fixed_address_object_p (tree obj)
 /* If ADDR contains an address of object that is a link time constant,
    move it to PARTS->symbol.  */
 
-static void
+void
 move_fixed_address_to_symbol (struct mem_address *parts, aff_tree *addr)
 {
   unsigned i;

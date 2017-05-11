@@ -1,5 +1,12 @@
 2017-05-11  Bin Cheng  <bin.cheng@arm.com>
 
+	* tree-ssa-address.c (struct mem_address): Move to header file.
+	(valid_mem_ref_p, move_fixed_address_to_symbol): Make it global.
+	* tree-ssa-address.h (struct mem_address): Move from C file.
+	(valid_mem_ref_p, move_fixed_address_to_symbol): Declare.
+
+2017-05-11  Bin Cheng  <bin.cheng@arm.com>
+
 	* tree-affine.h (aff_combination_type): New interface.
 	(aff_combination_zero_p): Remove static.
 	(aff_combination_const_p): New interface.
