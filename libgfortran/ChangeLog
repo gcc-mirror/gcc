@@ -1,3 +1,10 @@
+2017-05-11  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* libgfortran.h: HAVE_SECURE_GETENV: Don't check
+	HAVE___SECURE_GETENV.
+	* environ/runtime.c (secure_getenv): Use __secure_getenv via a
+        weak reference.
+
 2017-05-10  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
         PR fortran/80687
