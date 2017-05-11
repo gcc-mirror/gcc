@@ -31,7 +31,7 @@
 #include "cgraph.h"
 #include "fold-const.h"
 #include "stor-layout.h"
-#include "tree-dump.h"
+#include "dumpfile.h"
 #include "tree-inline.h"
 #include "gimplify.h"
 #include "gimple-iterator.h"

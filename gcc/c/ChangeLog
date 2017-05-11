@@ -1,3 +1,7 @@
+2017-05-11  Nathan Sidwell  <nathan@acm.org>
+
+	* gimple-parser.c: Don't #include tree-dump.h.
+
 2017-05-11  Mikhail Maltsev  <maltsevm@gmail.com>
 
 	PR testsuite/80580

@@ -1,6 +1,17 @@
 2017-05-11  Nathan Sidwell  <nathan@acm.org>
 
-	* dumpfile.h (TDF_FLAGS): New.
+	* dumpfle.h (dump_function): Declare here ...
+	* tree-dump.h (dump_function): ... not here.
+	* dumpfile.c: #include tree-cfg.h.
+	(dump_function): Move here from ...
+	* tree-dump.c (dump_function): ... here.
+	* gimplify.c: #include splay-tree.h, not tree-dump.h.
+	* graphite-poly.c: Don't include tree-dump.h.
+	* cgraphclones.c: Include dumpfile.h not tree-dump.h.
+	* print-tree.c: Likewise.
+	* stor-layout.c: Likewise.
+	* tree-nested.c: Likewise.
+
 	* dumpfile.c (dump_start): Use TDF_FLAGS.
 	(dump_enable_all): Fix TDF_KIND check thinko.
 

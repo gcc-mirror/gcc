@@ -26,6 +26,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-core.h"
 #include "dumpfile.h"
 #include "context.h"
+#include "tree-cfg.h"
 
 /* If non-NULL, return one past-the-end of the matching SUBPART of
    the WHOLE string.  */
@@ -978,6 +979,22 @@ dump_basic_block (int dump_kind, basic_block bb, int indent)
     dump_bb (dump_file, bb, indent, TDF_DETAILS);
   if (alt_dump_file && (dump_kind & alt_flags))
     dump_bb (alt_dump_file, bb, indent, TDF_DETAILS);
+}
+
+/* Dump FUNCTION_DECL FN as tree dump PHASE.  */
+
+void
+dump_function (int phase, tree fn)
+{
+  FILE *stream;
+  int flags;
+
+  stream = dump_begin (phase, &flags);
+  if (stream)
+    {
+      dump_function_to_file (fn, stream, flags);
+      dump_end (phase, stream);
+    }
 }
 
 /* Print information from the combine pass on dump_file.  */
