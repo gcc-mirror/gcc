@@ -1835,6 +1835,10 @@ BU_P8V_AV_1 (VPOPCNTB,	      "vpopcntb",	CONST,  popcountv16qi2)
 BU_P8V_AV_1 (VPOPCNTH,	      "vpopcnth",	CONST,  popcountv8hi2)
 BU_P8V_AV_1 (VPOPCNTW,	      "vpopcntw",	CONST,  popcountv4si2)
 BU_P8V_AV_1 (VPOPCNTD,	      "vpopcntd",	CONST,  popcountv2di2)
+BU_P8V_AV_1 (VPOPCNTUB,       "vpopcntub",	CONST,  popcountv16qi2)
+BU_P8V_AV_1 (VPOPCNTUH,       "vpopcntuh",	CONST,  popcountv8hi2)
+BU_P8V_AV_1 (VPOPCNTUW,       "vpopcntuw",	CONST,  popcountv4si2)
+BU_P8V_AV_1 (VPOPCNTUD,       "vpopcntud",	CONST,  popcountv2di2)
 BU_P8V_AV_1 (VGBBD,	      "vgbbd",		CONST,  p8v_vgbbd)
 
 /* 2 argument altivec instructions added in ISA 2.07.  */
@@ -1921,6 +1925,11 @@ BU_P8V_OVERLOAD_1 (VPOPCNTB,	"vpopcntb")
 BU_P8V_OVERLOAD_1 (VPOPCNTH,	"vpopcnth")
 BU_P8V_OVERLOAD_1 (VPOPCNTW,	"vpopcntw")
 BU_P8V_OVERLOAD_1 (VPOPCNTD,	"vpopcntd")
+BU_P8V_OVERLOAD_1 (VPOPCNTU,	"vpopcntu")
+BU_P8V_OVERLOAD_1 (VPOPCNTUB,	"vpopcntub")
+BU_P8V_OVERLOAD_1 (VPOPCNTUH,	"vpopcntuh")
+BU_P8V_OVERLOAD_1 (VPOPCNTUW,	"vpopcntuw")
+BU_P8V_OVERLOAD_1 (VPOPCNTUD,	"vpopcntud")
 BU_P8V_OVERLOAD_1 (VGBBD,	"vgbbd")
 
 /* ISA 2.07 vector overloaded 2 argument functions.  */

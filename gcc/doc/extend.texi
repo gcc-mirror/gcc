@@ -16709,6 +16709,10 @@ vector signed char vec_slo (vector signed char, vector unsigned char);
 vector unsigned char vec_slo (vector unsigned char, vector signed char);
 vector unsigned char vec_slo (vector unsigned char,
                               vector unsigned char);
+vector signed long long vec_slo (vector signed long long, vector signed char);
+vector signed long long vec_slo (vector signed long long, vector unsigned char);
+vector unsigned long long vec_slo (vector unsigned long long, vector signed char);
+vector unsigned long long vec_slo (vector unsigned long long, vector unsigned char);
 
 vector signed char vec_splat (vector signed char, const int);
 vector unsigned char vec_splat (vector unsigned char, const int);
@@ -17854,6 +17858,15 @@ vector unsigned int vec_packs (vector unsigned long long,
 vector unsigned int vec_packsu (vector long long, vector long long);
 vector unsigned int vec_packsu (vector unsigned long long,
                                 vector unsigned long long);
+
+vector unsigned char vec_popcnt (vector signed char);
+vector unsigned char vec_popcnt (vector unsigned char);
+vector unsigned short vec_popcnt (vector signed short);
+vector unsigned short vec_popcnt (vector unsigned short);
+vector unsigned int vec_popcnt (vector signed int);
+vector unsigned int vec_popcnt (vector unsigned int);
+vector unsigned long long vec_popcnt (vector signed long long);
+vector unsigned long long vec_popcnt (vector unsigned long long);
 
 vector long long vec_rl (vector long long,
                          vector unsigned long long);
