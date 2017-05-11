@@ -1,3 +1,9 @@
+2017-05-11  Nathan Sidwell  <nathan@acm.org>
+
+	* dumpfile.h (TDF_FLAGS): New.
+	* dumpfile.c (dump_start): Use TDF_FLAGS.
+	(dump_enable_all): Fix TDF_KIND check thinko.
+
 2017-05-11  Kelvin Nilsen  <kelvin@gcc.gnu.org>
 
 	* config/rs6000/rs6000-c.c (altivec_overloaded_builtins): Add

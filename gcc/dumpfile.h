@@ -55,6 +55,7 @@ enum tree_dump_index
 #define TDF_IPA		3	/* is an IPA dump */
 #define TDF_KIND_MASK   3
 #define TDF_KIND(X) ((X) & TDF_KIND_MASK)
+#define TDF_FLAGS(X) ((X) & ~TDF_KIND_MASK)
 
 /* Bit 2 unused, available for hire.  */
 #define TDF_ADDRESS	(1 << 3)	/* dump node addresses */
