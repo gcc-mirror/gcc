@@ -1,5 +1,11 @@
 2017-05-11  Nathan Sidwell  <nathan@acm.org>
 
+	* cp-lang.c (get_global_decls, cxx_pushdecl, LANG_HOOK_GETDECLS,
+	LANG_HOOKS_PUSHDECL): Move to ...
+	* cp-objcp-common.c (cp_get_global_decls, cp_pushdec,
+	LANG_HOOK_DECLS, LANG_HOOKS_PUSHDECL): ... here.
+	* cp-objcp-common.h (cp_get_global_decls, cp_pushdecl): Declare.
+
 	* name-lookup.h (pushdecl): Add default friend parm.
 	(pushdecl_maybe_friend): Delete.
 	(pushdecl_top_level): Add default friend parm.
