@@ -38970,7 +38970,7 @@ synthesize_implicit_template_parm  (cp_parser *parser, tree constr)
   else
     parser->implicit_template_parms = new_parm;
 
-  tree new_decl = getdecls ();
+  tree new_decl = get_local_decls ();
   if (non_type)
     /* Return the TEMPLATE_PARM_INDEX, not the PARM_DECL.  */
     new_decl = DECL_INITIAL (new_decl);

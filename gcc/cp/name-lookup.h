@@ -89,7 +89,7 @@ struct GTY(()) cxx_saved_binding {
 extern tree identifier_type_value (tree);
 extern void set_identifier_type_value (tree, tree);
 extern void push_binding (tree, tree, cp_binding_level*);
-extern void pop_binding (tree, tree);
+extern void pop_local_binding (tree, tree);
 extern void pop_bindings_and_leave_scope (void);
 extern tree constructor_name (tree);
 extern bool constructor_name_p (tree, tree);
@@ -324,7 +324,7 @@ extern void push_local_binding (tree, tree, int);
 extern bool pushdecl_class_level (tree);
 extern tree pushdecl_namespace_level (tree, bool);
 extern bool push_class_level_binding (tree, tree);
-extern tree getdecls (void);
+extern tree get_local_decls ();
 extern int function_parm_depth (void);
 extern tree cp_namespace_decls (tree);
 extern void set_decl_namespace (tree, tree, bool);
