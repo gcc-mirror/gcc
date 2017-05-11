@@ -1,3 +1,15 @@
+2017-05-11  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-pre.c (eliminate_dom_walker::before_dom_children):
+	Skip unreachable blocks and destinations.
+	(eliminate): Move stmt removal and fixup ...
+	(fini_eliminate): ... here.  Skip inserted exprs.
+	(pass_pre::execute): Move fini_pre after fini_eliminate.
+	* tree-ssa-tailmerge.c: Include tree-cfgcleanup.h.
+	(tail_merge_optimize): Run cleanup_tree_cfg if requested by
+	PRE to get rid of dead code that has invalid SSA form and
+	split critical edges again.
+
 2017-05-11  Bin Cheng  <bin.cheng@arm.com>
 
 	* rtlanal.c (rtx_cost): Handle TRUNCATE between tieable modes.

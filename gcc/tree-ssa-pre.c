@@ -4196,9 +4196,14 @@ eliminate_dom_walker::before_dom_children (basic_block b)
   /* Mark new bb.  */
   el_avail_stack.safe_push (NULL_TREE);
 
-  /* ???  If we do nothing for unreachable blocks then this will confuse
-     tailmerging.  Eventually we can reduce its reliance on SCCVN now
-     that we fully copy/constant-propagate (most) things.  */
+  /* Skip unreachable blocks marked unreachable during the SCCVN domwalk.  */
+  edge_iterator ei;
+  edge e;
+  FOR_EACH_EDGE (e, ei, b->preds)
+    if (e->flags & EDGE_EXECUTABLE)
+      break;
+  if (! e)
+    return NULL;
 
   for (gphi_iterator gsi = gsi_start_phis (b); !gsi_end_p (gsi);)
     {
@@ -4695,10 +4700,8 @@ eliminate_dom_walker::before_dom_children (basic_block b)
     }
 
   /* Replace destination PHI arguments.  */
-  edge_iterator ei;
-  edge e;
   FOR_EACH_EDGE (e, ei, b->succs)
-    {
+    if (e->flags & EDGE_EXECUTABLE)
       for (gphi_iterator gsi = gsi_start_phis (e->dest);
 	   !gsi_end_p (gsi);
 	   gsi_next (&gsi))
@@ -4717,7 +4720,6 @@ eliminate_dom_walker::before_dom_children (basic_block b)
 		gimple_set_plf (SSA_NAME_DEF_STMT (sprime), NECESSARY, true);
 	    }
 	}
-    }
   return NULL;
 }
 
@@ -4743,9 +4745,6 @@ eliminate_dom_walker::after_dom_children (basic_block)
 static unsigned int
 eliminate (bool do_pre)
 {
-  gimple_stmt_iterator gsi;
-  gimple *stmt;
-
   need_eh_cleanup = BITMAP_ALLOC (NULL);
   need_ab_cleanup = BITMAP_ALLOC (NULL);
 
@@ -4761,6 +4760,18 @@ eliminate (bool do_pre)
   el_avail.release ();
   el_avail_stack.release ();
 
+  return el_todo;
+}
+
+/* Perform CFG cleanups made necessary by elimination.  */
+
+static unsigned 
+fini_eliminate (void)
+{
+  gimple_stmt_iterator gsi;
+  gimple *stmt;
+  unsigned todo = 0;
+
   /* We cannot remove stmts during BB walk, especially not release SSA
      names there as this confuses the VN machinery.  The stmts ending
      up in el_to_remove are either stores or simple copies.
@@ -4769,12 +4780,6 @@ eliminate (bool do_pre)
     {
       stmt = el_to_remove.pop ();
 
-      if (dump_file && (dump_flags & TDF_DETAILS))
-	{
-	  fprintf (dump_file, "Removing dead stmt ");
-	  print_gimple_stmt (dump_file, stmt, 0, 0);
-	}
-
       tree lhs;
       if (gimple_code (stmt) == GIMPLE_PHI)
 	lhs = gimple_phi_result (stmt);
@@ -4782,8 +4787,15 @@ eliminate (bool do_pre)
 	lhs = gimple_get_lhs (stmt);
 
       if (inserted_exprs
-	  && TREE_CODE (lhs) == SSA_NAME)
-	bitmap_clear_bit (inserted_exprs, SSA_NAME_VERSION (lhs));
+	  && TREE_CODE (lhs) == SSA_NAME
+	  && bitmap_bit_p (inserted_exprs, SSA_NAME_VERSION (lhs)))
+	continue;
+
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	{
+	  fprintf (dump_file, "Removing dead stmt ");
+	  print_gimple_stmt (dump_file, stmt, 0, 0);
+	}
 
       gsi = gsi_for_stmt (stmt);
       if (gimple_code (stmt) == GIMPLE_PHI)
@@ -4800,7 +4812,7 @@ eliminate (bool do_pre)
 	}
 
       /* Removing a stmt may expose a forwarder block.  */
-      el_todo |= TODO_cleanup_cfg;
+      todo |= TODO_cleanup_cfg;
     }
   el_to_remove.release ();
 
@@ -4819,18 +4831,10 @@ eliminate (bool do_pre)
 	}
 
       if (fixup_noreturn_call (stmt))
-	el_todo |= TODO_cleanup_cfg;
+	todo |= TODO_cleanup_cfg;
     }
   el_to_fixup.release ();
 
-  return el_todo;
-}
-
-/* Perform CFG cleanups made necessary by elimination.  */
-
-static unsigned 
-fini_eliminate (void)
-{
   bool do_eh_cleanup = !bitmap_empty_p (need_eh_cleanup);
   bool do_ab_cleanup = !bitmap_empty_p (need_ab_cleanup);
 
@@ -4844,8 +4848,8 @@ fini_eliminate (void)
   BITMAP_FREE (need_ab_cleanup);
 
   if (do_eh_cleanup || do_ab_cleanup)
-    return TODO_cleanup_cfg;
-  return 0;
+    todo |= TODO_cleanup_cfg;
+  return todo;
 }
 
 /* Borrow a bit of tree-ssa-dce.c for the moment.
@@ -5110,8 +5114,8 @@ pass_pre::execute (function *fun)
   remove_dead_inserted_code ();
 
   scev_finalize ();
-  fini_pre ();
   todo |= fini_eliminate ();
+  fini_pre ();
   loop_optimizer_finalize ();
 
   /* Restore SSA info before tail-merging as that resets it as well.  */
