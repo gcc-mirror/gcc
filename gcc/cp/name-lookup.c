@@ -2874,19 +2874,17 @@ pushdecl_with_scope_1 (tree x, cp_binding_level *level, bool is_friend)
 tree
 pushdecl_outermost_localscope (tree x)
 {
+  cp_binding_level *b = NULL;
   bool subtime = timevar_cond_start (TV_NAME_LOOKUP);
-  cp_binding_level *b  = NULL, *n = current_binding_level;
 
-  if (n->kind == sk_function_parms)
-    return error_mark_node;
-  do
-    {
-      b = n;
-      n = b->level_chain;
-    }
-  while (n->kind != sk_function_parms);
-  tree ret = pushdecl_with_scope_1 (x, b, false);
+  /* Find the scope just inside the function parms.  */
+  for (cp_binding_level *n = current_binding_level;
+       n->kind != sk_function_parms; n = b->level_chain)
+    b = n;
+
+  tree ret = b ? pushdecl_with_scope_1 (x, b, false) : error_mark_node;
   timevar_cond_stop (TV_NAME_LOOKUP, subtime);
+
   return ret;
 }
 
