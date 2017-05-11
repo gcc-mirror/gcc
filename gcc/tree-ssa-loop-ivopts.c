@@ -347,9 +347,10 @@ struct cost_pair
   struct iv_cand *cand;	/* The candidate.  */
   comp_cost cost;	/* The cost.  */
   enum tree_code comp;	/* For iv elimination, the comparison.  */
-  bitmap inv_vars;	/* The list of invariants that have to be
-			   preserved.  */
-  bitmap inv_exprs;	/* Loop invariant expressions.  */
+  bitmap inv_vars;	/* The list of invariant ssa_vars that have to be
+			   preserved when representing iv_use with iv_cand.  */
+  bitmap inv_exprs;	/* The list of newly created invariant expressions
+			   when representing iv_use with iv_cand.  */
   tree value;		/* For final value elimination, the expression for
 			   the final value of the iv.  For iv elimination,
 			   the new bound to compare with.  */
@@ -418,8 +419,11 @@ struct iv_cand
   unsigned cost_step;	/* Cost of the candidate's increment operation.  */
   struct iv_use *ainc_use; /* For IP_{BEFORE,AFTER}_USE candidates, the place
 			      where it is incremented.  */
-  bitmap inv_vars;	/* The list of invariants that are used in step of the
-			   biv.  */
+  bitmap inv_vars;	/* The list of invariant ssa_vars used in step of the
+			   iv_cand.  */
+  bitmap inv_exprs;	/* If step is more complicated than a single ssa_var,
+			   hanlde it as a new invariant expression which will
+			   be hoisted out of loop.  */
   struct iv *orig_iv;	/* The original iv if this cand is added from biv with
 			   smaller type.  */
 };
@@ -788,6 +792,11 @@ dump_cand (FILE *file, struct iv_cand *cand)
     {
       fprintf (file, "  Depend on inv.vars: ");
       dump_bitmap (file, cand->inv_vars);
+    }
+  if (cand->inv_exprs)
+    {
+      fprintf (file, "  Depend on inv.exprs: ");
+      dump_bitmap (file, cand->inv_exprs);
     }
 
   if (cand->var_before)
@@ -3025,7 +3034,23 @@ add_candidate_1 (struct ivopts_data *data,
       data->vcands.safe_push (cand);
 
       if (TREE_CODE (step) != INTEGER_CST)
-	find_inv_vars (data, &step, &cand->inv_vars);
+	{
+	  find_inv_vars (data, &step, &cand->inv_vars);
+
+	  iv_inv_expr_ent *inv_expr = get_loop_invariant_expr (data, step);
+	  /* Share bitmap between inv_vars and inv_exprs for cand.  */
+	  if (inv_expr != NULL)
+	    {
+	      cand->inv_exprs = cand->inv_vars;
+	      cand->inv_vars = NULL;
+	      if (cand->inv_exprs)
+		bitmap_clear (cand->inv_exprs);
+	      else
+		cand->inv_exprs = BITMAP_ALLOC (NULL);
+
+	      bitmap_set_bit (cand->inv_exprs, inv_expr->id);
+	    }
+	}
 
       if (pos == IP_AFTER_USE || pos == IP_BEFORE_USE)
 	cand->ainc_use = use;
@@ -5603,6 +5628,7 @@ iv_ca_set_no_cp (struct ivopts_data *data, struct iv_ca *ivs,
       ivs->n_cands--;
       ivs->cand_cost -= cp->cand->cost;
       iv_ca_set_remove_invs (ivs, cp->cand->inv_vars, ivs->n_inv_var_uses);
+      iv_ca_set_remove_invs (ivs, cp->cand->inv_exprs, ivs->n_inv_expr_uses);
     }
 
   ivs->cand_use_cost -= cp->cost;
@@ -5659,6 +5685,7 @@ iv_ca_set_cp (struct ivopts_data *data, struct iv_ca *ivs,
 	  ivs->n_cands++;
 	  ivs->cand_cost += cp->cand->cost;
 	  iv_ca_set_add_invs (ivs, cp->cand->inv_vars, ivs->n_inv_var_uses);
+	  iv_ca_set_add_invs (ivs, cp->cand->inv_exprs, ivs->n_inv_expr_uses);
 	}
 
       ivs->cand_use_cost += cp->cost;
@@ -7140,6 +7167,8 @@ free_loop_data (struct ivopts_data *data)
 
       if (cand->inv_vars)
 	BITMAP_FREE (cand->inv_vars);
+      if (cand->inv_exprs)
+	BITMAP_FREE (cand->inv_exprs);
       free (cand);
     }
   data->vcands.truncate (0);
