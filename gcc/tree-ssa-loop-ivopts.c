@@ -3108,9 +3108,9 @@ add_candidate_1 (struct ivopts_data *data,
 
    The purpose is to avoid splitting latch edge with a biv increment, thus
    creating a jump, possibly confusing other optimization passes and leaving
-   less freedom to scheduler.  So we allow IP_END_POS only if IP_NORMAL_POS
-   is not available (so we do not have a better alternative), or if the latch
-   edge is already nonempty.  */
+   less freedom to scheduler.  So we allow IP_END only if IP_NORMAL is not
+   available (so we do not have a better alternative), or if the latch edge
+   is already nonempty.  */
 
 static bool
 allow_ip_end_pos_p (struct loop *loop)
@@ -3955,10 +3955,10 @@ adjust_setup_cost (struct ivopts_data *data, unsigned cost,
     return cost;
 }
 
- /* Calculate the SPEED or size cost of shiftadd EXPR in MODE.  MULT is the
-    EXPR operand holding the shift.  COST0 and COST1 are the costs for
-    calculating the operands of EXPR.  Returns true if successful, and returns
-    the cost in COST.  */
+/* Calculate the SPEED or size cost of shiftadd EXPR in MODE.  MULT is the
+   EXPR operand holding the shift.  COST0 and COST1 are the costs for
+   calculating the operands of EXPR.  Returns true if successful, and returns
+   the cost in COST.  */
 
 static bool
 get_shiftadd_cost (tree expr, machine_mode mode, comp_cost cost0,
