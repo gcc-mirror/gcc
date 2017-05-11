@@ -15107,6 +15107,24 @@ Similar to @code{__builtin_nans}, except the return type is @code{__float128}.
 @end table
 
 The following built-in functions are available for the PowerPC family
+of processors, starting with ISA 2.05 or later (@option{-mcpu=power6}
+or @option{-mcmpb}):
+@smallexample
+unsigned long long __builtin_cmpb (unsigned long long int, unsigned long long int);
+unsigned int __builtin_cmpb (unsigned int, unsigned int);
+@end smallexample
+
+The @code{__builtin_cmpb} function
+performs a byte-wise compare on the contents of its two arguments,
+returning the result of the byte-wise comparison as the returned
+value.  For each byte comparison, the corresponding byte of the return
+value holds 0xff if the input bytes are equal and 0 if the input bytes
+are not equal.  If either of the arguments to this built-in function
+is wider than 32 bits, the function call expands into the form that
+expects @code{unsigned long long int} arguments
+which is only available on 64-bit targets.
+
+The following built-in functions are available for the PowerPC family
 of processors, starting with ISA 2.06 or later (@option{-mcpu=power7}
 or @option{-mpopcntd}):
 @smallexample

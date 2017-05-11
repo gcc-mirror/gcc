@@ -1,3 +1,25 @@
+2017-05-11  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	* config/rs6000/rs6000-c.c (altivec_overloaded_builtins): Add
+	array entries to represent two legal parameterizations of the
+	overloaded __builtin_cmpb function, as represented by the
+	P6_OV_BUILTIN_CMPB constant.
+	(altivec_resolve_overloaded_builtin): Add special case handling
+	for the __builtin_cmpb function, as represented by the
+	P6_OV_BUILTIN_CMPB constant.
+	* config/rs6000/rs6000-builtin.def (BU_P6_2): New macro.
+	(BU_P6_64BIT_2): New macro.
+	(BU_P6_OVERLOAD_2): New macro
+	(CMPB_32): Add 32-bit compare-bytes support for 32-bit only targets.
+	(CMPB): Add 64-bit compare-bytes support for 32-bit and 64-bit targets.
+	(CMPB): Add overload support to represent both 32-bit and 64-bit
+	compare-bytes function.
+	* config/rs6000/rs6000.c (rs6000_builtin_mask_calculate): Add
+	support for TARGET_CMPB.
+	* config/rs6000/rs6000.h: Add support for RS6000_BTM_CMPB.
+	* doc/extend.texi (PowerPC AltiVec Built-in Functions): Add
+	documentation of the __builtin_cmpb overloaded built-in function.
+
 2017-05-11  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/80705

@@ -1,3 +1,11 @@
+2017-05-11  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	* gcc.target/powerpc/cmpb-1.c: New test.
+	* gcc.target/powerpc/cmpb-2.c: New test.
+	* gcc.target/powerpc/cmpb-3.c: New test.
+	* gcc.target/powerpc/cmpb32-1.c: New test.
+	* gcc.target/powerpc/cmpb32-2.c: New test.
+
 2017-05-11  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/80705
