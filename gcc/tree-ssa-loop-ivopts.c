@@ -6659,10 +6659,9 @@ static void
 rewrite_use_nonlinear_expr (struct ivopts_data *data,
 			    struct iv_use *use, struct iv_cand *cand)
 {
-  tree comp;
-  tree tgt;
   gassign *ass;
   gimple_stmt_iterator bsi;
+  tree comp, type = get_use_type (use), tgt;
 
   /* An important special case -- if we are asked to express value of
      the original iv by itself, just exit; there is no need to
@@ -6706,9 +6705,6 @@ rewrite_use_nonlinear_expr (struct ivopts_data *data,
 	}
     }
 
-  comp = get_computation_at (data->current_loop, use->stmt, use, cand);
-  gcc_assert (comp != NULL_TREE);
-
   switch (gimple_code (use->stmt))
     {
     case GIMPLE_PHI:
@@ -6730,6 +6726,47 @@ rewrite_use_nonlinear_expr (struct ivopts_data *data,
       gcc_unreachable ();
     }
 
+  aff_tree aff_inv, aff_var;
+  if (!get_computation_aff_1 (data->current_loop, use->stmt,
+			      use, cand, &aff_inv, &aff_var))
+    gcc_unreachable ();
+
+  unshare_aff_combination (&aff_inv);
+  unshare_aff_combination (&aff_var);
+  /* Prefer CSE opportunity than loop invariant by adding offset at last
+     so that iv_uses have different offsets can be CSEed.  */
+  widest_int offset = aff_inv.offset;
+  aff_inv.offset = 0;
+
+  gimple_seq stmt_list = NULL, seq = NULL;
+  tree comp_op1 = aff_combination_to_tree (&aff_inv);
+  tree comp_op2 = aff_combination_to_tree (&aff_var);
+  gcc_assert (comp_op1 && comp_op2);
+
+  comp_op1 = force_gimple_operand (comp_op1, &seq, true, NULL);
+  gimple_seq_add_seq (&stmt_list, seq);
+  comp_op2 = force_gimple_operand (comp_op2, &seq, true, NULL);
+  gimple_seq_add_seq (&stmt_list, seq);
+
+  if (POINTER_TYPE_P (TREE_TYPE (comp_op2)))
+    std::swap (comp_op1, comp_op2);
+
+  if (POINTER_TYPE_P (TREE_TYPE (comp_op1)))
+    {
+      comp = fold_build_pointer_plus (comp_op1,
+				      fold_convert (sizetype, comp_op2));
+      comp = fold_build_pointer_plus (comp,
+				      wide_int_to_tree (sizetype, offset));
+    }
+  else
+    {
+      comp = fold_build2 (PLUS_EXPR, TREE_TYPE (comp_op1), comp_op1,
+			  fold_convert (TREE_TYPE (comp_op1), comp_op2));
+      comp = fold_build2 (PLUS_EXPR, TREE_TYPE (comp_op1), comp,
+			  wide_int_to_tree (TREE_TYPE (comp_op1), offset));
+    }
+
+  comp = fold_convert (type, comp);
   if (!valid_gimple_rhs_p (comp)
       || (gimple_code (use->stmt) != GIMPLE_PHI
 	  /* We can't allow re-allocating the stmt as it might be pointed
@@ -6737,8 +6774,8 @@ rewrite_use_nonlinear_expr (struct ivopts_data *data,
 	  && (get_gimple_rhs_num_ops (TREE_CODE (comp))
 	      >= gimple_num_ops (gsi_stmt (bsi)))))
     {
-      comp = force_gimple_operand_gsi (&bsi, comp, true, NULL_TREE,
-				       true, GSI_SAME_STMT);
+      comp = force_gimple_operand (comp, &seq, true, NULL);
+      gimple_seq_add_seq (&stmt_list, seq);
       if (POINTER_TYPE_P (TREE_TYPE (tgt)))
 	{
 	  duplicate_ssa_name_ptr_info (comp, SSA_NAME_PTR_INFO (tgt));
@@ -6749,6 +6786,7 @@ rewrite_use_nonlinear_expr (struct ivopts_data *data,
 	}
     }
 
+  gsi_insert_seq_before (&bsi, stmt_list, GSI_SAME_STMT);
   if (gimple_code (use->stmt) == GIMPLE_PHI)
     {
       ass = gimple_build_assign (tgt, comp);
