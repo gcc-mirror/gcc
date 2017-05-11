@@ -1843,12 +1843,52 @@ _mm_rsqrt14_sd (__m128d __A, __m128d __B)
 					     (__v2df) __A);
 }
 
+extern __inline __m128d
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask_rsqrt14_sd (__m128d __W, __mmask8 __U, __m128d __A, __m128d __B)
+{
+  return (__m128d) __builtin_ia32_rsqrt14sd_mask ((__v2df) __B,
+						 (__v2df) __A,
+						 (__v2df) __W,
+						 (__mmask8) __U);
+}
+
+extern __inline __m128d
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_maskz_rsqrt14_sd (__mmask8 __U, __m128d __A, __m128d __B)
+{
+  return (__m128d) __builtin_ia32_rsqrt14sd_mask ((__v2df) __B,
+						 (__v2df) __A,
+						 (__v2df) _mm_setzero_pd (),
+						 (__mmask8) __U);
+}
+
 extern __inline __m128
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm_rsqrt14_ss (__m128 __A, __m128 __B)
 {
   return (__m128) __builtin_ia32_rsqrt14ss ((__v4sf) __B,
 					    (__v4sf) __A);
+}
+
+extern __inline __m128
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask_rsqrt14_ss (__m128 __W, __mmask8 __U, __m128 __A, __m128 __B)
+{
+  return (__m128) __builtin_ia32_rsqrt14ss_mask ((__v4sf) __B,
+						 (__v4sf) __A,
+						 (__v4sf) __W,
+						 (__mmask8) __U);
+}
+
+extern __inline __m128
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_maskz_rsqrt14_ss (__mmask8 __U, __m128 __A, __m128 __B)
+{
+  return (__m128) __builtin_ia32_rsqrt14ss_mask ((__v4sf) __B,
+						(__v4sf) __A,
+						(__v4sf) _mm_setzero_ps (),
+						(__mmask8) __U);
 }
 
 #ifdef __OPTIMIZE__
