@@ -5627,6 +5627,19 @@ cheaper_cost_pair (struct cost_pair *a, struct cost_pair *b)
   return false;
 }
 
+/* Compare if A is a more expensive cost pair than B.  Return 1, 0 and -1
+   for more expensive, equal and cheaper respectively.  */
+
+static int
+compare_cost_pair (struct cost_pair *a, struct cost_pair *b)
+{
+  if (cheaper_cost_pair (a, b))
+    return -1;
+  if (cheaper_cost_pair (b, a))
+    return 1;
+
+  return 0;
+}
 
 /* Returns candidate by that USE is expressed in IVS.  */
 
@@ -5812,13 +5825,14 @@ iv_ca_cost (struct iv_ca *ivs)
     return ivs->cost;
 }
 
-/* Returns true if applying NEW_CP to GROUP for IVS introduces more
-   invariants than OLD_CP.  */
+/* Compare if applying NEW_CP to GROUP for IVS introduces more invariants
+   than OLD_CP.  Return 1, 0 and -1 for more, equal and fewer invariants
+   respectively.  */
 
-static bool
-iv_ca_more_deps (struct ivopts_data *data, struct iv_ca *ivs,
-		 struct iv_group *group, struct cost_pair *old_cp,
-		 struct cost_pair *new_cp)
+static int
+iv_ca_compare_deps (struct ivopts_data *data, struct iv_ca *ivs,
+		    struct iv_group *group, struct cost_pair *old_cp,
+		    struct cost_pair *new_cp)
 {
   gcc_assert (old_cp && new_cp && old_cp != new_cp);
   unsigned old_n_invs = ivs->n_invs;
@@ -5826,7 +5840,7 @@ iv_ca_more_deps (struct ivopts_data *data, struct iv_ca *ivs,
   unsigned new_n_invs = ivs->n_invs;
   iv_ca_set_cp (data, ivs, group, old_cp);
 
-  return (new_n_invs > old_n_invs);
+  return new_n_invs > old_n_invs ? 1 : (new_n_invs < old_n_invs ? -1 : 0);
 }
 
 /* Creates change of expressing GROUP by NEW_CP instead of OLD_CP and chains
@@ -6058,11 +6072,18 @@ iv_ca_extend (struct ivopts_data *data, struct iv_ca *ivs,
       if (!new_cp)
 	continue;
 
-      if (!min_ncand && iv_ca_more_deps (data, ivs, group, old_cp, new_cp))
-	continue;
+      if (!min_ncand)
+	{
+	  int cmp_invs = iv_ca_compare_deps (data, ivs, group, old_cp, new_cp);
+	  /* Skip if new_cp depends on more invariants.  */
+	  if (cmp_invs > 0)
+	    continue;
 
-      if (!min_ncand && !cheaper_cost_pair (new_cp, old_cp))
-	continue;
+	  int cmp_cost = compare_cost_pair (new_cp, old_cp);
+	  /* Skip if new_cp is not cheaper.  */
+	  if (cmp_cost > 0 || (cmp_cost == 0 && cmp_invs == 0))
+	    continue;
+	}
 
       *delta = iv_ca_delta_add (group, old_cp, new_cp, *delta);
     }
