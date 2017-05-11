@@ -9,7 +9,7 @@ package runtime
 
 import (
 	"runtime/internal/sys"
-	"unsafe"
+	_ "unsafe" // for go:linkname
 )
 
 // For gccgo, use go:linkname to rename compiler-called functions to
@@ -19,34 +19,6 @@ import (
 //go:linkname printtrace runtime.printtrace
 //go:linkname goroutineheader runtime.goroutineheader
 //go:linkname printcreatedby runtime.printcreatedby
-
-var (
-	// initialized in tracebackinit
-	runfinqPC        uintptr
-	bgsweepPC        uintptr
-	forcegchelperPC  uintptr
-	timerprocPC      uintptr
-	gcBgMarkWorkerPC uintptr
-)
-
-func tracebackinit() {
-	// Go variable initialization happens late during runtime startup.
-	// Instead of initializing the variables above in the declarations,
-	// schedinit calls this function so that the variables are
-	// initialized and available earlier in the startup sequence.
-	// This doesn't use funcPC to avoid memory allocation.
-	// FIXME: We should be able to use funcPC when escape analysis is on.
-	f1 := runfinq
-	runfinqPC = **(**uintptr)(unsafe.Pointer(&f1))
-	f2 := bgsweep
-	bgsweepPC = **(**uintptr)(unsafe.Pointer(&f2))
-	f3 := forcegchelper
-	forcegchelperPC = **(**uintptr)(unsafe.Pointer(&f3))
-	f4 := timerproc
-	timerprocPC = **(**uintptr)(unsafe.Pointer(&f4))
-	f5 := gcBgMarkWorker
-	gcBgMarkWorkerPC = **(**uintptr)(unsafe.Pointer(&f5))
-}
 
 func printcreatedby(gp *g) {
 	// Show what created goroutine, except main goroutine (goid 1).
@@ -196,15 +168,7 @@ func goroutineheader(gp *g) {
 // isSystemGoroutine reports whether the goroutine g must be omitted in
 // stack dumps and deadlock detector.
 func isSystemGoroutine(gp *g) bool {
-	// FIXME: This doesn't work reliably for gccgo because in many
-	// cases the startpc field will be set to a thunk rather than
-	// to one of these addresses.
-	pc := gp.startpc
-	return pc == runfinqPC && !fingRunning ||
-		pc == bgsweepPC ||
-		pc == forcegchelperPC ||
-		pc == timerprocPC ||
-		pc == gcBgMarkWorkerPC
+	return gp.isSystemGoroutine
 }
 
 func tracebackothers(me *g) {

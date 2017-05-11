@@ -100,8 +100,7 @@ func wakefing() *g {
 }
 
 var (
-	fingCreate  uint32
-	fingRunning bool
+	fingCreate uint32
 )
 
 func createfing() {
@@ -113,17 +112,19 @@ func createfing() {
 
 // This is the goroutine that runs all of the finalizers
 func runfinq() {
+	setSystemGoroutine()
+
 	var (
 		ef   eface
 		ifac iface
 	)
 
+	gp := getg()
 	for {
 		lock(&finlock)
 		fb := finq
 		finq = nil
 		if fb == nil {
-			gp := getg()
 			fing = gp
 			fingwait = true
 			goparkunlock(&finlock, "finalizer wait", traceEvGoBlock, 1)
@@ -160,9 +161,17 @@ func runfinq() {
 				default:
 					throw("bad kind in runfinq")
 				}
-				fingRunning = true
+				// This is not a system goroutine while
+				// running the actual finalizer.
+				// This matters because we want this
+				// goroutine to appear in a stack dump
+				// if the finalizer crashes.
+				// The gc toolchain handles this using
+				// a global variable fingRunning,
+				// but we don't need that.
+				gp.isSystemGoroutine = false
 				reflectcall(f.ft, f.fn, false, false, &param, nil)
-				fingRunning = false
+				gp.isSystemGoroutine = true
 
 				// Drop finalizer queue heap references
 				// before hiding them from markroot.

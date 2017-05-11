@@ -237,6 +237,8 @@ func init() {
 }
 
 func forcegchelper() {
+	setSystemGoroutine()
+
 	forcegc.g = getg()
 	for {
 		lock(&forcegc.lock)
@@ -450,7 +452,6 @@ func schedinit() {
 
 	sched.maxmcount = 10000
 
-	tracebackinit()
 	mallocinit()
 	mcommoninit(_g_.m)
 	alginit() // maps must not be used before this call
@@ -2688,9 +2689,6 @@ func newproc(fn uintptr, arg unsafe.Pointer) *g {
 	newg.param = arg
 	newg.gopc = getcallerpc(unsafe.Pointer(&fn))
 	newg.startpc = fn
-	if isSystemGoroutine(newg) {
-		atomic.Xadd(&sched.ngsys, +1)
-	}
 	// The stack is dirty from the argument frame, so queue it for
 	// scanning. Do this before setting it to runnable so we still
 	// own the G. If we're recycling a G, it may already be on the
@@ -2727,6 +2725,18 @@ func newproc(fn uintptr, arg unsafe.Pointer) *g {
 	}
 	_g_.m.locks--
 	return newg
+}
+
+// setSystemGoroutine marks this goroutine as a "system goroutine".
+// In the gc toolchain this is done by comparing startpc to a list of
+// saved special PCs. In gccgo that approach does not work as startpc
+// is often a thunk that invokes the real function with arguments,
+// so the thunk address never matches the saved special PCs. Instead,
+// since there are only a limited number of "system goroutines",
+// we force each one to mark itself as special.
+func setSystemGoroutine() {
+	getg().isSystemGoroutine = true
+	atomic.Xadd(&sched.ngsys, +1)
 }
 
 // Put on gfree list.
