@@ -1,3 +1,8 @@
+2017-05-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/80705
+	* gcc.dg/vect/bb-slp-pr80705.c: New testcase.
+
 2017-05-11  Nathan Sidwell  <nathan@acm.org>
 
 	* lib/scanlang.exp: New.
