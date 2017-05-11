@@ -2910,6 +2910,45 @@ find_inv_vars (struct ivopts_data *data, tree *expr_p, bitmap *inv_vars)
   walk_tree (expr_p, find_inv_vars_cb, &wdata, NULL);
 }
 
+/* Get entry from invariant expr hash table for INV_EXPR.  New entry
+   will be recorded if it doesn't exist yet.  Given below two exprs:
+     inv_expr + cst1, inv_expr + cst2
+   It's hard to make decision whether constant part should be stripped
+   or not.  We choose to not strip based on below facts:
+     1) We need to count ADD cost for constant part if it's stripped,
+	which is't always trivial where this functions is called.
+     2) Stripping constant away may be conflict with following loop
+	invariant hoisting pass.
+     3) Not stripping constant away results in more invariant exprs,
+	which usually leads to decision preferring lower reg pressure.  */
+
+static iv_inv_expr_ent *
+get_loop_invariant_expr (struct ivopts_data *data, tree inv_expr)
+{
+  STRIP_NOPS (inv_expr);
+
+  if (TREE_CODE (inv_expr) == INTEGER_CST || TREE_CODE (inv_expr) == SSA_NAME)
+    return NULL;
+
+  /* Don't strip constant part away as we used to.  */
+
+  /* Stores EXPR in DATA->inv_expr_tab, return pointer to iv_inv_expr_ent.  */
+  struct iv_inv_expr_ent ent;
+  ent.expr = inv_expr;
+  ent.hash = iterative_hash_expr (inv_expr, 0);
+  struct iv_inv_expr_ent **slot = data->inv_expr_tab->find_slot (&ent, INSERT);
+
+  if (!*slot)
+    {
+      *slot = XNEW (struct iv_inv_expr_ent);
+      (*slot)->expr = inv_expr;
+      (*slot)->hash = ent.hash;
+      (*slot)->id = ++data->max_inv_expr_id;
+    }
+
+  return *slot;
+}
+
 /* Adds a candidate BASE + STEP * i.  Important field is set to IMPORTANT and
    position to POS.  If USE is not NULL, the candidate is set as related to
    it.  If both BASE and STEP are NULL, we add a pseudocandidate for the
@@ -3841,14 +3880,20 @@ get_computation_at (struct loop *loop, gimple *at,
 
 /* Adjust the cost COST for being in loop setup rather than loop body.
    If we're optimizing for space, the loop setup overhead is constant;
-   if we're optimizing for speed, amortize it over the per-iteration cost.  */
+   if we're optimizing for speed, amortize it over the per-iteration cost.
+   If ROUND_UP_P is true, the result is round up rather than to zero when
+   optimizing for speed.  */
 static unsigned
-adjust_setup_cost (struct ivopts_data *data, unsigned cost)
+adjust_setup_cost (struct ivopts_data *data, unsigned cost,
+		   bool round_up_p = false)
 {
   if (cost == INFTY)
     return cost;
   else if (optimize_loop_for_speed_p (data->current_loop))
-    return cost / avg_loop_niter (data->current_loop);
+    {
+      HOST_WIDE_INT niters = avg_loop_niter (data->current_loop);
+      return ((HOST_WIDE_INT) cost + (round_up_p ? niters - 1 : 0)) / niters;
+    }
   else
     return cost;
 }
@@ -3908,353 +3953,6 @@ multiplier_allowed_in_address_p (HOST_WIDE_INT ratio, machine_mode mode,
     return false;
 
   return bitmap_bit_p (valid_mult, ratio + MAX_RATIO);
-}
-
-/* Returns cost of address in shape symbol + var + OFFSET + RATIO * index.
-   If SYMBOL_PRESENT is false, symbol is omitted.  If VAR_PRESENT is false,
-   variable is omitted.  Compute the cost for a memory reference that accesses
-   a memory location of mode MEM_MODE in address space AS.
-
-   MAY_AUTOINC is set to true if the autoincrement (increasing index by
-   size of MEM_MODE / RATIO) is available.  To make this determination, we
-   look at the size of the increment to be made, which is given in CSTEP.
-   CSTEP may be zero if the step is unknown.
-   STMT_AFTER_INC is true iff the statement we're looking at is after the
-   increment of the original biv.
-
-   TODO -- there must be some better way.  This all is quite crude.  */
-
-enum ainc_type
-{
-  AINC_PRE_INC,		/* Pre increment.  */
-  AINC_PRE_DEC,		/* Pre decrement.  */
-  AINC_POST_INC,	/* Post increment.  */
-  AINC_POST_DEC,	/* Post decrement.  */
-  AINC_NONE		/* Also the number of auto increment types.  */
-};
-
-struct address_cost_data
-{
-  HOST_WIDE_INT min_offset, max_offset;
-  unsigned costs[2][2][2][2];
-  unsigned ainc_costs[AINC_NONE];
-};
-
-
-static comp_cost
-get_address_cost (bool symbol_present, bool var_present,
-		  unsigned HOST_WIDE_INT offset, HOST_WIDE_INT ratio,
-		  HOST_WIDE_INT cstep, machine_mode mem_mode,
-		  addr_space_t as, bool speed,
-		  bool stmt_after_inc, bool *may_autoinc)
-{
-  machine_mode address_mode = targetm.addr_space.address_mode (as);
-  static vec<address_cost_data *> address_cost_data_list;
-  unsigned int data_index = (int) as * MAX_MACHINE_MODE + (int) mem_mode;
-  address_cost_data *data;
-  static bool has_preinc[MAX_MACHINE_MODE], has_postinc[MAX_MACHINE_MODE];
-  static bool has_predec[MAX_MACHINE_MODE], has_postdec[MAX_MACHINE_MODE];
-  unsigned cost, acost, complexity;
-  enum ainc_type autoinc_type;
-  bool offset_p, ratio_p, autoinc;
-  HOST_WIDE_INT s_offset, autoinc_offset, msize;
-  unsigned HOST_WIDE_INT mask;
-  unsigned bits;
-
-  if (data_index >= address_cost_data_list.length ())
-    address_cost_data_list.safe_grow_cleared (data_index + 1);
-
-  data = address_cost_data_list[data_index];
-  if (!data)
-    {
-      HOST_WIDE_INT i;
-      HOST_WIDE_INT rat, off = 0;
-      int old_cse_not_expected, width;
-      unsigned sym_p, var_p, off_p, rat_p, add_c;
-      rtx_insn *seq;
-      rtx addr, base;
-      rtx reg0, reg1;
-
-      data = (address_cost_data *) xcalloc (1, sizeof (*data));
-
-      reg1 = gen_raw_REG (address_mode, LAST_VIRTUAL_REGISTER + 1);
-
-      width = GET_MODE_BITSIZE (address_mode) - 1;
-      if (width > (HOST_BITS_PER_WIDE_INT - 1))
-	width = HOST_BITS_PER_WIDE_INT - 1;
-      addr = gen_rtx_fmt_ee (PLUS, address_mode, reg1, NULL_RTX);
-
-      for (i = width; i >= 0; i--)
-	{
-	  off = -(HOST_WIDE_INT_1U << i);
-	  XEXP (addr, 1) = gen_int_mode (off, address_mode);
-	  if (memory_address_addr_space_p (mem_mode, addr, as))
-	    break;
-	}
-      data->min_offset = (i == -1? 0 : off);
-
-      for (i = width; i >= 0; i--)
-	{
-	  off = (HOST_WIDE_INT_1U << i) - 1;
-	  XEXP (addr, 1) = gen_int_mode (off, address_mode);
-	  if (memory_address_addr_space_p (mem_mode, addr, as))
-	    break;
-	  /* For some strict-alignment targets, the offset must be naturally
-	     aligned.  Try an aligned offset if mem_mode is not QImode.  */
-	  off = mem_mode != QImode
-		? (HOST_WIDE_INT_1U << i)
-		    - GET_MODE_SIZE (mem_mode)
-		: 0;
-	  if (off > 0)
-	    {
-	      XEXP (addr, 1) = gen_int_mode (off, address_mode);
-	      if (memory_address_addr_space_p (mem_mode, addr, as))
-		break;
-	    }
-	}
-      if (i == -1)
-	off = 0;
-      data->max_offset = off;
-
-      if (dump_file && (dump_flags & TDF_DETAILS))
-	{
-	  fprintf (dump_file, "get_address_cost:\n");
-	  fprintf (dump_file, "  min offset %s " HOST_WIDE_INT_PRINT_DEC "\n",
-		   GET_MODE_NAME (mem_mode),
-		   data->min_offset);
-	  fprintf (dump_file, "  max offset %s " HOST_WIDE_INT_PRINT_DEC "\n",
-		   GET_MODE_NAME (mem_mode),
-		   data->max_offset);
-	}
-
-      rat = 1;
-      for (i = 2; i <= MAX_RATIO; i++)
-	if (multiplier_allowed_in_address_p (i, mem_mode, as))
-	  {
-	    rat = i;
-	    break;
-	  }
-
-      /* Compute the cost of various addressing modes.  */
-      acost = 0;
-      reg0 = gen_raw_REG (address_mode, LAST_VIRTUAL_REGISTER + 1);
-      reg1 = gen_raw_REG (address_mode, LAST_VIRTUAL_REGISTER + 2);
-
-      if (USE_LOAD_PRE_DECREMENT (mem_mode)
-	  || USE_STORE_PRE_DECREMENT (mem_mode))
-	{
-	  addr = gen_rtx_PRE_DEC (address_mode, reg0);
-	  has_predec[mem_mode]
-	    = memory_address_addr_space_p (mem_mode, addr, as);
-
-	  if (has_predec[mem_mode])
-	    data->ainc_costs[AINC_PRE_DEC]
-	      = address_cost (addr, mem_mode, as, speed);
-	}
-      if (USE_LOAD_POST_DECREMENT (mem_mode)
-	  || USE_STORE_POST_DECREMENT (mem_mode))
-	{
-	  addr = gen_rtx_POST_DEC (address_mode, reg0);
-	  has_postdec[mem_mode]
-	    = memory_address_addr_space_p (mem_mode, addr, as);
-
-	  if (has_postdec[mem_mode])
-	    data->ainc_costs[AINC_POST_DEC]
-	      = address_cost (addr, mem_mode, as, speed);
-	}
-      if (USE_LOAD_PRE_INCREMENT (mem_mode)
-	  || USE_STORE_PRE_DECREMENT (mem_mode))
-	{
-	  addr = gen_rtx_PRE_INC (address_mode, reg0);
-	  has_preinc[mem_mode]
-	    = memory_address_addr_space_p (mem_mode, addr, as);
-
-	  if (has_preinc[mem_mode])
-	    data->ainc_costs[AINC_PRE_INC]
-	      = address_cost (addr, mem_mode, as, speed);
-	}
-      if (USE_LOAD_POST_INCREMENT (mem_mode)
-	  || USE_STORE_POST_INCREMENT (mem_mode))
-	{
-	  addr = gen_rtx_POST_INC (address_mode, reg0);
-	  has_postinc[mem_mode]
-	    = memory_address_addr_space_p (mem_mode, addr, as);
-
-	  if (has_postinc[mem_mode])
-	    data->ainc_costs[AINC_POST_INC]
-	      = address_cost (addr, mem_mode, as, speed);
-	}
-      for (i = 0; i < 16; i++)
-	{
-	  sym_p = i & 1;
-	  var_p = (i >> 1) & 1;
-	  off_p = (i >> 2) & 1;
-	  rat_p = (i >> 3) & 1;
-
-	  addr = reg0;
-	  if (rat_p)
-	    addr = gen_rtx_fmt_ee (MULT, address_mode, addr,
-				   gen_int_mode (rat, address_mode));
-
-	  if (var_p)
-	    addr = gen_rtx_fmt_ee (PLUS, address_mode, addr, reg1);
-
-	  if (sym_p)
-	    {
-	      base = gen_rtx_SYMBOL_REF (address_mode, ggc_strdup (""));
-	      /* ??? We can run into trouble with some backends by presenting
-		 it with symbols which haven't been properly passed through
-		 targetm.encode_section_info.  By setting the local bit, we
-		 enhance the probability of things working.  */
-	      SYMBOL_REF_FLAGS (base) = SYMBOL_FLAG_LOCAL;
-
-	      if (off_p)
-		base = gen_rtx_fmt_e (CONST, address_mode,
-				      gen_rtx_fmt_ee
-					(PLUS, address_mode, base,
-					 gen_int_mode (off, address_mode)));
-	    }
-	  else if (off_p)
-	    base = gen_int_mode (off, address_mode);
-	  else
-	    base = NULL_RTX;
-
-	  if (base)
-	    addr = gen_rtx_fmt_ee (PLUS, address_mode, addr, base);
-
-	  start_sequence ();
-	  /* To avoid splitting addressing modes, pretend that no cse will
-	     follow.  */
-	  old_cse_not_expected = cse_not_expected;
-	  cse_not_expected = true;
-	  addr = memory_address_addr_space (mem_mode, addr, as);
-	  cse_not_expected = old_cse_not_expected;
-	  seq = get_insns ();
-	  end_sequence ();
-
-	  acost = seq_cost (seq, speed);
-	  acost += address_cost (addr, mem_mode, as, speed);
-
-	  if (!acost)
-	    acost = 1;
-	  data->costs[sym_p][var_p][off_p][rat_p] = acost;
-	}
-
-      /* On some targets, it is quite expensive to load symbol to a register,
-	 which makes addresses that contain symbols look much more expensive.
-	 However, the symbol will have to be loaded in any case before the
-	 loop (and quite likely we have it in register already), so it does not
-	 make much sense to penalize them too heavily.  So make some final
-	 tweaks for the SYMBOL_PRESENT modes:
-
-	 If VAR_PRESENT is false, and the mode obtained by changing symbol to
-	 var is cheaper, use this mode with small penalty.
-	 If VAR_PRESENT is true, try whether the mode with
-	 SYMBOL_PRESENT = false is cheaper even with cost of addition, and
-	 if this is the case, use it.  */
-      add_c = add_cost (speed, address_mode);
-      for (i = 0; i < 8; i++)
-	{
-	  var_p = i & 1;
-	  off_p = (i >> 1) & 1;
-	  rat_p = (i >> 2) & 1;
-
-	  acost = data->costs[0][1][off_p][rat_p] + 1;
-	  if (var_p)
-	    acost += add_c;
-
-	  if (acost < data->costs[1][var_p][off_p][rat_p])
-	    data->costs[1][var_p][off_p][rat_p] = acost;
-	}
-
-      if (dump_file && (dump_flags & TDF_DETAILS))
-	{
-	  fprintf (dump_file, "<Address Costs>:\n");
-
-	  for (i = 0; i < 16; i++)
-	    {
-	      sym_p = i & 1;
-	      var_p = (i >> 1) & 1;
-	      off_p = (i >> 2) & 1;
-	      rat_p = (i >> 3) & 1;
-
-	      fprintf (dump_file, "  ");
-	      if (sym_p)
-		fprintf (dump_file, "sym + ");
-	      if (var_p)
-		fprintf (dump_file, "var + ");
-	      if (off_p)
-		fprintf (dump_file, "cst + ");
-	      if (rat_p)
-		fprintf (dump_file, "rat * ");
-
-	      acost = data->costs[sym_p][var_p][off_p][rat_p];
-	      fprintf (dump_file, "index costs %d\n", acost);
-	    }
-	  if (has_predec[mem_mode] || has_postdec[mem_mode]
-	      || has_preinc[mem_mode] || has_postinc[mem_mode])
-	    fprintf (dump_file, "  May include autoinc/dec\n");
-	  fprintf (dump_file, "\n");
-	}
-
-      address_cost_data_list[data_index] = data;
-    }
-
-  bits = GET_MODE_BITSIZE (address_mode);
-  mask = ~(HOST_WIDE_INT_M1U << (bits - 1) << 1);
-  offset &= mask;
-  if ((offset >> (bits - 1) & 1))
-    offset |= ~mask;
-  s_offset = offset;
-
-  autoinc = false;
-  autoinc_type = AINC_NONE;
-  msize = GET_MODE_SIZE (mem_mode);
-  autoinc_offset = offset;
-  if (stmt_after_inc)
-    autoinc_offset += ratio * cstep;
-  if (symbol_present || var_present || ratio != 1)
-    autoinc = false;
-  else
-    {
-      if (has_postinc[mem_mode] && autoinc_offset == 0
-	  && msize == cstep)
-	autoinc_type = AINC_POST_INC;
-      else if (has_postdec[mem_mode] && autoinc_offset == 0
-	       && msize == -cstep)
-	autoinc_type = AINC_POST_DEC;
-      else if (has_preinc[mem_mode] && autoinc_offset == msize
-	       && msize == cstep)
-	autoinc_type = AINC_PRE_INC;
-      else if (has_predec[mem_mode] && autoinc_offset == -msize
-	       && msize == -cstep)
-	autoinc_type = AINC_PRE_DEC;
-
-      if (autoinc_type != AINC_NONE)
-	autoinc = true;
-    }
-
-  cost = 0;
-  offset_p = (s_offset != 0
-	      && data->min_offset <= s_offset
-	      && s_offset <= data->max_offset);
-  ratio_p = (ratio != 1
-	     && multiplier_allowed_in_address_p (ratio, mem_mode, as));
-
-  if (ratio != 1 && !ratio_p)
-    cost += mult_by_coeff_cost (ratio, address_mode, speed);
-
-  if (s_offset && !offset_p && !symbol_present)
-    cost += add_cost (speed, address_mode);
-
-  if (may_autoinc)
-    *may_autoinc = autoinc;
-  if (autoinc)
-    acost = data->ainc_costs[autoinc_type];
-  else
-    acost = data->costs[symbol_present][var_present][offset_p][ratio_p];
-  complexity = (symbol_present != 0) + (var_present != 0) + offset_p + ratio_p;
-  return comp_cost (cost + acost, complexity);
 }
 
  /* Calculate the SPEED or size cost of shiftadd EXPR in MODE.  MULT is the
@@ -4464,14 +4162,6 @@ force_expr_to_var_cost (tree expr, bool speed)
 
   cost += cost0;
   cost += cost1;
-
-  /* Bound the cost by target_spill_cost.  The parts of complicated
-     computations often are either loop invariant or at least can
-     be shared between several iv uses, so letting this grow without
-     limits would not give reasonable results.  */
-  if (cost.cost > (int) target_spill_cost [speed])
-    cost.cost = target_spill_cost [speed];
-
   return cost;
 }
 
@@ -4488,291 +4178,255 @@ force_var_cost (struct ivopts_data *data, tree expr, bitmap *inv_vars)
   return force_expr_to_var_cost (expr, data->speed);
 }
 
-/* Estimates cost of expressing address ADDR  as var + symbol + offset.  The
-   value of offset is added to OFFSET, SYMBOL_PRESENT and VAR_PRESENT are set
-   to false if the corresponding part is missing.  inv_vars is a set of the
-   invariants the computation depends on.  */
+/* Returns cost of auto-modifying address expression in shape base + offset.
+   AINC_STEP is step size of the address IV.  AINC_OFFSET is offset of the
+   address expression.  The address expression has ADDR_MODE in addr space
+   AS.  The memory access has MEM_MODE.  SPEED means we are optimizing for
+   speed or size.  */
+
+enum ainc_type
+{
+  AINC_PRE_INC,		/* Pre increment.  */
+  AINC_PRE_DEC,		/* Pre decrement.  */
+  AINC_POST_INC,	/* Post increment.  */
+  AINC_POST_DEC,	/* Post decrement.  */
+  AINC_NONE		/* Also the number of auto increment types.  */
+};
+
+struct ainc_cost_data
+{
+  unsigned costs[AINC_NONE];
+};
 
 static comp_cost
-split_address_cost (struct ivopts_data *data,
-		    tree addr, bool *symbol_present, bool *var_present,
-		    unsigned HOST_WIDE_INT *offset, bitmap *inv_vars)
+get_address_cost_ainc (HOST_WIDE_INT ainc_step, HOST_WIDE_INT ainc_offset,
+		       machine_mode addr_mode, machine_mode mem_mode,
+		       addr_space_t as, bool speed)
 {
-  tree core;
-  HOST_WIDE_INT bitsize;
-  HOST_WIDE_INT bitpos;
-  tree toffset;
-  machine_mode mode;
-  int unsignedp, reversep, volatilep;
+  if (!USE_LOAD_PRE_DECREMENT (mem_mode)
+      && !USE_STORE_PRE_DECREMENT (mem_mode)
+      && !USE_LOAD_POST_DECREMENT (mem_mode)
+      && !USE_STORE_POST_DECREMENT (mem_mode)
+      && !USE_LOAD_PRE_INCREMENT (mem_mode)
+      && !USE_STORE_PRE_INCREMENT (mem_mode)
+      && !USE_LOAD_POST_INCREMENT (mem_mode)
+      && !USE_STORE_POST_INCREMENT (mem_mode))
+    return infinite_cost;
 
-  core = get_inner_reference (addr, &bitsize, &bitpos, &toffset, &mode,
-			      &unsignedp, &reversep, &volatilep);
-
-  if (toffset != 0
-      || bitpos % BITS_PER_UNIT != 0
-      || reversep
-      || !VAR_P (core))
+  static vec<ainc_cost_data *> ainc_cost_data_list;
+  unsigned idx = (unsigned) as * MAX_MACHINE_MODE + (unsigned) mem_mode;
+  if (idx >= ainc_cost_data_list.length ())
     {
-      *symbol_present = false;
-      *var_present = true;
-      find_inv_vars (data, &addr, inv_vars);
-      return comp_cost (target_spill_cost[data->speed], 0);
+      unsigned nsize = ((unsigned) as + 1) *MAX_MACHINE_MODE;
+
+      gcc_assert (nsize > idx);
+      ainc_cost_data_list.safe_grow_cleared (nsize);
     }
 
-  *offset += bitpos / BITS_PER_UNIT;
-  if (TREE_STATIC (core)
-      || DECL_EXTERNAL (core))
+  ainc_cost_data *data = ainc_cost_data_list[idx];
+  if (data == NULL)
     {
-      *symbol_present = true;
-      *var_present = false;
-      return no_cost;
-    }
+      rtx reg = gen_raw_REG (addr_mode, LAST_VIRTUAL_REGISTER + 1);
 
-  *symbol_present = false;
-  *var_present = true;
-  return no_cost;
-}
-
-/* Estimates cost of expressing difference of addresses E1 - E2 as
-   var + symbol + offset.  The value of offset is added to OFFSET,
-   SYMBOL_PRESENT and VAR_PRESENT are set to false if the corresponding
-   part is missing.  inv_vars is a set of the invariants the computation
-   depends on.  */
-
-static comp_cost
-ptr_difference_cost (struct ivopts_data *data,
-		     tree e1, tree e2, bool *symbol_present, bool *var_present,
-		     unsigned HOST_WIDE_INT *offset, bitmap *inv_vars)
-{
-  HOST_WIDE_INT diff = 0;
-  aff_tree aff_e1, aff_e2;
-  tree type;
-
-  gcc_assert (TREE_CODE (e1) == ADDR_EXPR);
-
-  if (ptr_difference_const (e1, e2, &diff))
-    {
-      *offset += diff;
-      *symbol_present = false;
-      *var_present = false;
-      return no_cost;
-    }
-
-  if (integer_zerop (e2))
-    return split_address_cost (data, TREE_OPERAND (e1, 0),
-			       symbol_present, var_present, offset, inv_vars);
-
-  *symbol_present = false;
-  *var_present = true;
-
-  type = signed_type_for (TREE_TYPE (e1));
-  tree_to_aff_combination (e1, type, &aff_e1);
-  tree_to_aff_combination (e2, type, &aff_e2);
-  aff_combination_scale (&aff_e2, -1);
-  aff_combination_add (&aff_e1, &aff_e2);
-
-  return force_var_cost (data, aff_combination_to_tree (&aff_e1), inv_vars);
-}
-
-/* Estimates cost of expressing difference E1 - E2 as
-   var + symbol + offset.  The value of offset is added to OFFSET,
-   SYMBOL_PRESENT and VAR_PRESENT are set to false if the corresponding
-   part is missing.  INV_VARS is a set of the invariants the computation
-   depends on.  */
-
-static comp_cost
-difference_cost (struct ivopts_data *data,
-		 tree e1, tree e2, bool *symbol_present, bool *var_present,
-		 unsigned HOST_WIDE_INT *offset, bitmap *inv_vars)
-{
-  machine_mode mode = TYPE_MODE (TREE_TYPE (e1));
-  unsigned HOST_WIDE_INT off1, off2;
-  aff_tree aff_e1, aff_e2;
-  tree type;
-
-  e1 = strip_offset (e1, &off1);
-  e2 = strip_offset (e2, &off2);
-  *offset += off1 - off2;
-
-  STRIP_NOPS (e1);
-  STRIP_NOPS (e2);
-
-  if (TREE_CODE (e1) == ADDR_EXPR)
-    return ptr_difference_cost (data, e1, e2, symbol_present, var_present,
-				offset, inv_vars);
-  *symbol_present = false;
-
-  if (operand_equal_p (e1, e2, 0))
-    {
-      *var_present = false;
-      return no_cost;
-    }
-
-  *var_present = true;
-
-  if (integer_zerop (e2))
-    return force_var_cost (data, e1, inv_vars);
-
-  if (integer_zerop (e1))
-    {
-      comp_cost cost = force_var_cost (data, e2, inv_vars);
-      cost += mult_by_coeff_cost (-1, mode, data->speed);
-      return cost;
-    }
-
-  type = signed_type_for (TREE_TYPE (e1));
-  tree_to_aff_combination (e1, type, &aff_e1);
-  tree_to_aff_combination (e2, type, &aff_e2);
-  aff_combination_scale (&aff_e2, -1);
-  aff_combination_add (&aff_e1, &aff_e2);
-
-  return force_var_cost (data, aff_combination_to_tree (&aff_e1), inv_vars);
-}
-
-/* Returns true if AFF1 and AFF2 are identical.  */
-
-static bool
-compare_aff_trees (aff_tree *aff1, aff_tree *aff2)
-{
-  unsigned i;
-
-  if (aff1->n != aff2->n)
-    return false;
-
-  for (i = 0; i < aff1->n; i++)
-    {
-      if (aff1->elts[i].coef != aff2->elts[i].coef)
-	return false;
-
-      if (!operand_equal_p (aff1->elts[i].val, aff2->elts[i].val, 0))
-	return false;
-    }
-  return true;
-}
-
-/* Stores EXPR in DATA->inv_expr_tab, return pointer to iv_inv_expr_ent.  */
-
-static iv_inv_expr_ent *
-record_inv_expr (struct ivopts_data *data, tree expr)
-{
-  struct iv_inv_expr_ent ent;
-  struct iv_inv_expr_ent **slot;
-
-  ent.expr = expr;
-  ent.hash = iterative_hash_expr (expr, 0);
-  slot = data->inv_expr_tab->find_slot (&ent, INSERT);
-
-  if (!*slot)
-    {
-      *slot = XNEW (struct iv_inv_expr_ent);
-      (*slot)->expr = expr;
-      (*slot)->hash = ent.hash;
-      (*slot)->id = data->max_inv_expr_id++;
-    }
-
-  return *slot;
-}
-
-/* Returns the invariant expression if expression UBASE - RATIO * CBASE
-   requires a new compiler generated temporary.  Returns -1 otherwise.
-   ADDRESS_P is a flag indicating if the expression is for address
-   computation.  */
-
-static iv_inv_expr_ent *
-get_loop_invariant_expr (struct ivopts_data *data, tree ubase,
-			 tree cbase, HOST_WIDE_INT ratio,
-			 bool address_p)
-{
-  aff_tree ubase_aff, cbase_aff;
-  tree expr, ub, cb;
-
-  STRIP_NOPS (ubase);
-  STRIP_NOPS (cbase);
-  ub = ubase;
-  cb = cbase;
-
-  if ((TREE_CODE (ubase) == INTEGER_CST)
-      && (TREE_CODE (cbase) == INTEGER_CST))
-    return NULL;
-
-  /* Strips the constant part. */
-  if (TREE_CODE (ubase) == PLUS_EXPR
-      || TREE_CODE (ubase) == MINUS_EXPR
-      || TREE_CODE (ubase) == POINTER_PLUS_EXPR)
-    {
-      if (TREE_CODE (TREE_OPERAND (ubase, 1)) == INTEGER_CST)
-	ubase = TREE_OPERAND (ubase, 0);
-    }
-
-  /* Strips the constant part. */
-  if (TREE_CODE (cbase) == PLUS_EXPR
-      || TREE_CODE (cbase) == MINUS_EXPR
-      || TREE_CODE (cbase) == POINTER_PLUS_EXPR)
-    {
-      if (TREE_CODE (TREE_OPERAND (cbase, 1)) == INTEGER_CST)
-	cbase = TREE_OPERAND (cbase, 0);
-    }
-
-  if (address_p)
-    {
-      if (((TREE_CODE (ubase) == SSA_NAME)
-	   || (TREE_CODE (ubase) == ADDR_EXPR
-	       && is_gimple_min_invariant (ubase)))
-	  && (TREE_CODE (cbase) == INTEGER_CST))
-	return NULL;
-
-      if (((TREE_CODE (cbase) == SSA_NAME)
-	   || (TREE_CODE (cbase) == ADDR_EXPR
-	       && is_gimple_min_invariant (cbase)))
-	  && (TREE_CODE (ubase) == INTEGER_CST))
-	return NULL;
-    }
-
-  if (ratio == 1)
-    {
-      if (operand_equal_p (ubase, cbase, 0))
-	return NULL;
-
-      if (TREE_CODE (ubase) == ADDR_EXPR
-	  && TREE_CODE (cbase) == ADDR_EXPR)
+      data = (ainc_cost_data *) xcalloc (1, sizeof (*data));
+      data->costs[AINC_PRE_DEC] = INFTY;
+      data->costs[AINC_POST_DEC] = INFTY;
+      data->costs[AINC_PRE_INC] = INFTY;
+      data->costs[AINC_POST_INC] = INFTY;
+      if (USE_LOAD_PRE_DECREMENT (mem_mode)
+	  || USE_STORE_PRE_DECREMENT (mem_mode))
 	{
-	  tree usym, csym;
+	  rtx addr = gen_rtx_PRE_DEC (addr_mode, reg);
 
-	  usym = TREE_OPERAND (ubase, 0);
-	  csym = TREE_OPERAND (cbase, 0);
-	  if (TREE_CODE (usym) == ARRAY_REF)
-	    {
-	      tree ind = TREE_OPERAND (usym, 1);
-	      if (TREE_CODE (ind) == INTEGER_CST
-		  && tree_fits_shwi_p (ind)
-		  && tree_to_shwi (ind) == 0)
-		usym = TREE_OPERAND (usym, 0);
-	    }
-	  if (TREE_CODE (csym) == ARRAY_REF)
-	    {
-	      tree ind = TREE_OPERAND (csym, 1);
-	      if (TREE_CODE (ind) == INTEGER_CST
-		  && tree_fits_shwi_p (ind)
-		  && tree_to_shwi (ind) == 0)
-		csym = TREE_OPERAND (csym, 0);
-	    }
-	  if (operand_equal_p (usym, csym, 0))
-	    return NULL;
+	  if (memory_address_addr_space_p (mem_mode, addr, as))
+	    data->costs[AINC_PRE_DEC]
+	      = address_cost (addr, mem_mode, as, speed);
 	}
-      /* Now do more complex comparison  */
-      tree_to_aff_combination (ubase, TREE_TYPE (ubase), &ubase_aff);
-      tree_to_aff_combination (cbase, TREE_TYPE (cbase), &cbase_aff);
-      if (compare_aff_trees (&ubase_aff, &cbase_aff))
-	return NULL;
+      if (USE_LOAD_POST_DECREMENT (mem_mode)
+	  || USE_STORE_POST_DECREMENT (mem_mode))
+	{
+	  rtx addr = gen_rtx_POST_DEC (addr_mode, reg);
+
+	  if (memory_address_addr_space_p (mem_mode, addr, as))
+	    data->costs[AINC_POST_DEC]
+	      = address_cost (addr, mem_mode, as, speed);
+	}
+      if (USE_LOAD_PRE_INCREMENT (mem_mode)
+	  || USE_STORE_PRE_INCREMENT (mem_mode))
+	{
+	  rtx addr = gen_rtx_PRE_INC (addr_mode, reg);
+
+	  if (memory_address_addr_space_p (mem_mode, addr, as))
+	    data->costs[AINC_PRE_INC]
+	      = address_cost (addr, mem_mode, as, speed);
+	}
+      if (USE_LOAD_POST_INCREMENT (mem_mode)
+	  || USE_STORE_POST_INCREMENT (mem_mode))
+	{
+	  rtx addr = gen_rtx_POST_INC (addr_mode, reg);
+
+	  if (memory_address_addr_space_p (mem_mode, addr, as))
+	    data->costs[AINC_POST_INC]
+	      = address_cost (addr, mem_mode, as, speed);
+	}
+      ainc_cost_data_list[idx] = data;
     }
 
-  tree_to_aff_combination (ub, TREE_TYPE (ub), &ubase_aff);
-  tree_to_aff_combination (cb, TREE_TYPE (cb), &cbase_aff);
+  HOST_WIDE_INT msize = GET_MODE_SIZE (mem_mode);
+  if (ainc_offset == 0 && msize == ainc_step)
+    return comp_cost (data->costs[AINC_POST_INC], 0);
+  if (ainc_offset == 0 && msize == -ainc_step)
+    return comp_cost (data->costs[AINC_POST_DEC], 0);
+  if (ainc_offset == msize && msize == ainc_step)
+    return comp_cost (data->costs[AINC_PRE_INC], 0);
+  if (ainc_offset == -msize && msize == -ainc_step)
+    return comp_cost (data->costs[AINC_PRE_DEC], 0);
 
-  aff_combination_scale (&cbase_aff, -1 * ratio);
-  aff_combination_add (&ubase_aff, &cbase_aff);
-  expr = aff_combination_to_tree (&ubase_aff);
-  return record_inv_expr (data, expr);
+  return infinite_cost;
+}
+
+/* Return cost of computing USE's address expression by using CAND.
+   AFF_INV and AFF_VAR represent invariant and variant parts of the
+   address expression, respectively.  If AFF_INV is simple, store
+   the loop invariant variables which are depended by it in INV_VARS;
+   if AFF_INV is complicated, handle it as a new invariant expression
+   and record it in INV_EXPR.  RATIO indicates multiple times between
+   steps of USE and CAND.  If CAN_AUTOINC is nonNULL, store boolean
+   value to it indicating if this is an auto-increment address.  */
+
+static comp_cost
+get_address_cost (struct ivopts_data *data, struct iv_use *use,
+		  struct iv_cand *cand, aff_tree *aff_inv,
+		  aff_tree *aff_var, HOST_WIDE_INT ratio,
+		  bitmap *inv_vars, iv_inv_expr_ent **inv_expr,
+		  bool *can_autoinc, bool speed)
+{
+  rtx addr;
+  bool simple_inv = true;
+  tree comp_inv = NULL_TREE, type = aff_var->type;
+  comp_cost var_cost = no_cost, cost = no_cost;
+  struct mem_address parts = {NULL_TREE, integer_one_node,
+			      NULL_TREE, NULL_TREE, NULL_TREE};
+  machine_mode addr_mode = TYPE_MODE (type);
+  machine_mode mem_mode = TYPE_MODE (TREE_TYPE (*use->op_p));
+  addr_space_t as = TYPE_ADDR_SPACE (TREE_TYPE (use->iv->base));
+
+  if (!aff_combination_const_p (aff_inv))
+    {
+      parts.index = integer_one_node;
+      /* Addressing mode "base + index".  */
+      if (valid_mem_ref_p (mem_mode, as, &parts))
+	{
+	  parts.step = wide_int_to_tree (type, ratio);
+	  /* Addressing mode "base + index << scale".  */
+	  if (ratio != 1 && !valid_mem_ref_p (mem_mode, as, &parts))
+	    parts.step = NULL_TREE;
+
+	  if (aff_inv->offset != 0)
+	    {
+	      parts.offset = wide_int_to_tree (sizetype, aff_inv->offset);
+	      /* Addressing mode "base + index [<< scale] + offset".  */
+	      if (!valid_mem_ref_p (mem_mode, as, &parts))
+		parts.offset = NULL_TREE;
+	      else
+		aff_inv->offset = 0;
+	    }
+
+	  move_fixed_address_to_symbol (&parts, aff_inv);
+	  /* Base is fixed address and is moved to symbol part.  */
+	  if (parts.symbol != NULL_TREE && aff_combination_zero_p (aff_inv))
+	    parts.base = NULL_TREE;
+
+	  /* Addressing mode "symbol + base + index [<< scale] [+ offset]".  */
+	  if (parts.symbol != NULL_TREE
+	      && !valid_mem_ref_p (mem_mode, as, &parts))
+	    {
+	      aff_combination_add_elt (aff_inv, parts.symbol, 1);
+	      parts.symbol = NULL_TREE;
+	      /* Reset SIMPLE_INV since symbol address needs to be computed
+		 outside of address expression in this case.  */
+	      simple_inv = false;
+	      /* Symbol part is moved back to base part, it can't be NULL.  */
+	      parts.base = integer_one_node;
+	    }
+	}
+      else
+	parts.index = NULL_TREE;
+    }
+  else
+    {
+      if (can_autoinc && ratio == 1 && cst_and_fits_in_hwi (cand->iv->step))
+	{
+	  HOST_WIDE_INT ainc_step = int_cst_value (cand->iv->step);
+	  HOST_WIDE_INT ainc_offset = (aff_inv->offset).to_shwi ();
+
+	  if (stmt_after_increment (data->current_loop, cand, use->stmt))
+	    ainc_offset += ainc_step;
+	  cost = get_address_cost_ainc (ainc_step, ainc_offset,
+					addr_mode, mem_mode, as, speed);
+	  if (!cost.infinite_cost_p ())
+	    {
+	      *can_autoinc = true;
+	      return cost;
+	    }
+	  cost = no_cost;
+	}
+      if (!aff_combination_zero_p (aff_inv))
+	{
+	  parts.offset = wide_int_to_tree (sizetype, aff_inv->offset);
+	  /* Addressing mode "base + offset".  */
+	  if (!valid_mem_ref_p (mem_mode, as, &parts))
+	    parts.offset = NULL_TREE;
+	  else
+	    aff_inv->offset = 0;
+	}
+    }
+
+  if (simple_inv)
+    simple_inv = (aff_inv == NULL
+		  || aff_combination_const_p (aff_inv)
+		  || aff_combination_singleton_var_p (aff_inv));
+  if (!aff_combination_zero_p (aff_inv))
+    comp_inv = aff_combination_to_tree (aff_inv);
+  if (comp_inv != NULL_TREE)
+    cost = force_var_cost (data, comp_inv, inv_vars);
+  if (ratio != 1 && parts.step == NULL_TREE)
+    var_cost += mult_by_coeff_cost (ratio, addr_mode, speed);
+  if (comp_inv != NULL_TREE && parts.index == NULL_TREE)
+    var_cost += add_cost (speed, addr_mode);
+
+  if (comp_inv && inv_expr && !simple_inv)
+    {
+      *inv_expr = get_loop_invariant_expr (data, comp_inv);
+      /* Clear depends on.  */
+      if (*inv_expr != NULL && inv_vars && *inv_vars)
+	bitmap_clear (*inv_vars);
+
+      /* Cost of small invariant expression adjusted against loop niters
+	 is usually zero, which makes it difficult to be differentiated
+	 from candidate based on loop invariant variables.  Secondly, the
+	 generated invariant expression may not be hoisted out of loop by
+	 following pass.  We penalize the cost by rounding up in order to
+	 neutralize such effects.  */
+      cost.cost = adjust_setup_cost (data, cost.cost, true);
+      cost.scratch = cost.cost;
+    }
+
+  cost += var_cost;
+  addr = addr_for_mem_ref (&parts, as, false);
+  gcc_assert (memory_address_addr_space_p (mem_mode, addr, as));
+  cost += address_cost (addr, mem_mode, as, speed);
+
+  if (parts.symbol != NULL_TREE)
+    cost.complexity += 1;
+  if (parts.step != NULL_TREE && !integer_onep (parts.step))
+    cost.complexity += 1;
+  if (parts.base != NULL_TREE && parts.index != NULL_TREE)
+    cost.complexity += 1;
+  if (parts.offset != NULL_TREE && !integer_zerop (parts.offset))
+    cost.complexity += 1;
+
+  return cost;
 }
 
 /* Scale (multiply) the computed COST (except scratch part that should be
@@ -4816,31 +4470,25 @@ get_computation_cost (struct ivopts_data *data, struct iv_use *use,
 		      bool *can_autoinc, iv_inv_expr_ent **inv_expr)
 {
   gimple *at = use->stmt;
-  tree ubase = use->iv->base, ustep = use->iv->step;
-  tree cbase, cstep;
-  tree utype = TREE_TYPE (ubase), ctype;
-  unsigned HOST_WIDE_INT cstepi, offset = 0;
+  tree ubase = use->iv->base, cbase = cand->iv->base;
+  tree utype = TREE_TYPE (ubase), ctype = TREE_TYPE (cbase);
+  tree comp_inv = NULL_TREE;
   HOST_WIDE_INT ratio, aratio;
-  bool var_present, symbol_present, stmt_is_after_inc;
   comp_cost cost;
   widest_int rat;
+  aff_tree aff_inv, aff_var;
   bool speed = optimize_bb_for_speed_p (gimple_bb (at));
-  machine_mode mem_mode = (address_p
-				? TYPE_MODE (TREE_TYPE (*use->op_p))
-				: VOIDmode);
 
   if (inv_vars)
     *inv_vars = NULL;
+  if (can_autoinc)
+    *can_autoinc = false;
+  if (inv_expr)
+    *inv_expr = NULL;
 
-  cbase = cand->iv->base;
-  cstep = cand->iv->step;
-  ctype = TREE_TYPE (cbase);
-
+  /* Check if we have enough precision to express the values of use.  */
   if (TYPE_PRECISION (utype) > TYPE_PRECISION (ctype))
-    {
-      /* We do not have a precision to express the values of use.  */
-      return infinite_cost;
-    }
+    return infinite_cost;
 
   if (address_p
       || (use->iv->base_object
@@ -4859,180 +4507,65 @@ get_computation_cost (struct ivopts_data *data, struct iv_use *use,
 	return infinite_cost;
     }
 
+  if (!get_computation_aff_1 (data->current_loop, at, use,
+			      cand, &aff_inv, &aff_var, &rat)
+      || !wi::fits_shwi_p (rat))
+    return infinite_cost;
+
+  ratio = rat.to_shwi ();
+  if (address_p)
+    {
+      cost = get_address_cost (data, use, cand, &aff_inv, &aff_var, ratio,
+			       inv_vars, inv_expr, can_autoinc, speed);
+      return get_scaled_computation_cost_at (data, at, cost);
+    }
+
+  bool simple_inv = (aff_combination_const_p (&aff_inv)
+		     || aff_combination_singleton_var_p (&aff_inv));
+  tree signed_type = signed_type_for (aff_combination_type (&aff_inv));
+  aff_combination_convert (&aff_inv, signed_type);
+  if (!aff_combination_zero_p (&aff_inv))
+    comp_inv = aff_combination_to_tree (&aff_inv);
+
+  cost = force_var_cost (data, comp_inv, inv_vars);
+  if (comp_inv && inv_expr && !simple_inv)
+    {
+      *inv_expr = get_loop_invariant_expr (data, comp_inv);
+      /* Clear depends on.  */
+      if (*inv_expr != NULL && inv_vars && *inv_vars)
+	bitmap_clear (*inv_vars);
+
+      cost.cost = adjust_setup_cost (data, cost.cost);
+      /* Record setup cost in scratch field.  */
+      cost.scratch = cost.cost;
+    }
+  /* Cost of constant integer can be covered when adding invariant part to
+     variant part.  */
+  else if (comp_inv && CONSTANT_CLASS_P (comp_inv))
+    cost = no_cost;
+
+  /* Need type narrowing to represent use with cand.  */
   if (TYPE_PRECISION (utype) < TYPE_PRECISION (ctype))
     {
-      /* TODO -- add direct handling of this case.  */
-      goto fallback;
+      machine_mode outer_mode = TYPE_MODE (utype);
+      machine_mode inner_mode = TYPE_MODE (ctype);
+      cost += comp_cost (convert_cost (outer_mode, inner_mode, speed), 0);
     }
 
-  /* CSTEPI is removed from the offset in case statement is after the
-     increment.  If the step is not constant, we use zero instead.
-     This is a bit imprecise (there is the extra addition), but
-     redundancy elimination is likely to transform the code so that
-     it uses value of the variable before increment anyway,
-     so it is not that much unrealistic.  */
-  if (cst_and_fits_in_hwi (cstep))
-    cstepi = int_cst_value (cstep);
+  /* Turn a + i * (-c) into a - i * c.  */
+  if (ratio < 0 && comp_inv && !integer_zerop (comp_inv))
+    aratio = -ratio;
   else
-    cstepi = 0;
+    aratio = ratio;
 
-  if (!constant_multiple_of (ustep, cstep, &rat))
-    return infinite_cost;
+  if (ratio != 1)
+    cost += mult_by_coeff_cost (aratio, TYPE_MODE (utype), speed);
 
-  if (wi::fits_shwi_p (rat))
-    ratio = rat.to_shwi ();
-  else
-    return infinite_cost;
-
-  STRIP_NOPS (cbase);
-  ctype = TREE_TYPE (cbase);
-
-  stmt_is_after_inc = stmt_after_increment (data->current_loop, cand, at);
-
-  /* use = ubase + ratio * (var - cbase).  If either cbase is a constant
-     or ratio == 1, it is better to handle this like
-
-     ubase - ratio * cbase + ratio * var
-
-     (also holds in the case ratio == -1, TODO.  */
-
-  if (cst_and_fits_in_hwi (cbase))
-    {
-      offset = - ratio * (unsigned HOST_WIDE_INT) int_cst_value (cbase);
-      cost = difference_cost (data,
-			      ubase, build_int_cst (utype, 0),
-			      &symbol_present, &var_present, &offset,
-			      inv_vars);
-      cost /= avg_loop_niter (data->current_loop);
-    }
-  else if (ratio == 1)
-    {
-      tree real_cbase = cbase;
-
-      /* Check to see if any adjustment is needed.  */
-      if (cstepi == 0 && stmt_is_after_inc)
-	{
-	  aff_tree real_cbase_aff;
-	  aff_tree cstep_aff;
-
-	  tree_to_aff_combination (cbase, TREE_TYPE (real_cbase),
-				   &real_cbase_aff);
-	  tree_to_aff_combination (cstep, TREE_TYPE (cstep), &cstep_aff);
-
-	  aff_combination_add (&real_cbase_aff, &cstep_aff);
-	  real_cbase = aff_combination_to_tree (&real_cbase_aff);
-	}
-
-      cost = difference_cost (data,
-			      ubase, real_cbase,
-			      &symbol_present, &var_present, &offset,
-			      inv_vars);
-      cost /= avg_loop_niter (data->current_loop);
-    }
-  else if (address_p
-	   && !POINTER_TYPE_P (ctype)
-	   && multiplier_allowed_in_address_p
-		(ratio, mem_mode,
-			TYPE_ADDR_SPACE (TREE_TYPE (utype))))
-    {
-      tree real_cbase = cbase;
-
-      if (cstepi == 0 && stmt_is_after_inc)
-	{
-	  if (POINTER_TYPE_P (ctype))
-	    real_cbase = fold_build2 (POINTER_PLUS_EXPR, ctype, cbase, cstep);
-	  else
-	    real_cbase = fold_build2 (PLUS_EXPR, ctype, cbase, cstep);
-	}
-      real_cbase = fold_build2 (MULT_EXPR, ctype, real_cbase,
-				build_int_cst (ctype, ratio));
-      cost = difference_cost (data,
-			      ubase, real_cbase,
-			      &symbol_present, &var_present, &offset,
-			      inv_vars);
-      cost /= avg_loop_niter (data->current_loop);
-    }
-  else
-    {
-      cost = force_var_cost (data, cbase, inv_vars);
-      cost += difference_cost (data, ubase, build_int_cst (utype, 0),
-			       &symbol_present, &var_present, &offset,
-			       inv_vars);
-      cost /= avg_loop_niter (data->current_loop);
-      cost += add_cost (data->speed, TYPE_MODE (ctype));
-    }
-
-  /* Record setup cost in scratch field.  */
-  cost.scratch = cost.cost;
-
-  if (inv_expr && inv_vars && *inv_vars)
-    {
-      *inv_expr = get_loop_invariant_expr (data, ubase, cbase, ratio,
-					   address_p);
-      /* Clear depends on.  */
-      if (*inv_expr != NULL)
-	bitmap_clear (*inv_vars);
-    }
-
-  /* If we are after the increment, the value of the candidate is higher by
-     one iteration.  */
-  if (stmt_is_after_inc)
-    offset -= ratio * cstepi;
-
-  /* Now the computation is in shape symbol + var1 + const + ratio * var2.
-     (symbol/var1/const parts may be omitted).  If we are looking for an
-     address, find the cost of addressing this.  */
-  if (address_p)
-    {
-      cost += get_address_cost (symbol_present, var_present,
-				offset, ratio, cstepi,
-				mem_mode,
-				TYPE_ADDR_SPACE (TREE_TYPE (utype)),
-				speed, stmt_is_after_inc, can_autoinc);
-      return get_scaled_computation_cost_at (data, at, cost);
-    }
-
-  /* Otherwise estimate the costs for computing the expression.  */
-  if (!symbol_present && !var_present && !offset)
-    {
-      if (ratio != 1)
-	cost += mult_by_coeff_cost (ratio, TYPE_MODE (ctype), speed);
-      return get_scaled_computation_cost_at (data, at, cost);
-    }
-
-  /* Symbol + offset should be compile-time computable so consider that they
-      are added once to the variable, if present.  */
-  if (var_present && (symbol_present || offset))
-    cost += adjust_setup_cost (data,
-				    add_cost (speed, TYPE_MODE (ctype)));
-
-  /* Having offset does not affect runtime cost in case it is added to
-     symbol, but it increases complexity.  */
-  if (offset)
-    cost.complexity++;
-
-  cost += add_cost (speed, TYPE_MODE (ctype));
-
-  aratio = ratio > 0 ? ratio : -ratio;
-  if (aratio != 1)
-    cost += mult_by_coeff_cost (aratio, TYPE_MODE (ctype), speed);
-
-  return get_scaled_computation_cost_at (data, at, cost);
-
-fallback:
-  if (can_autoinc)
-    *can_autoinc = false;
-
-  /* Just get the expression, expand it and measure the cost.  */
-  tree comp = get_computation_at (data->current_loop, at, use, cand);
-
-  if (!comp)
-    return infinite_cost;
-
-  if (address_p)
-    comp = build_simple_mem_ref (comp);
-
-  cost = comp_cost (computation_cost (comp, speed), 0);
+  /* TODO: We may also need to check if we can compute  a + i * 4 in one
+     instruction.  */
+  /* Need to add up the invariant and variant parts.  */
+  if (comp_inv && !integer_zerop (comp_inv))
+    cost += add_cost (speed, TYPE_MODE (utype));
 
   return get_scaled_computation_cost_at (data, at, cost);
 }
@@ -5113,7 +4646,14 @@ determine_group_iv_cost_address (struct ivopts_data *data,
 	 same cost as the first iv_use, but the cost really depends on the
 	 offset and where the iv_use is.  */
 	cost = get_computation_cost (data, next, cand, true,
-				     NULL, &can_autoinc, NULL);
+				     NULL, &can_autoinc, &inv_expr);
+	if (inv_expr)
+	  {
+	    if (!inv_exprs)
+	      inv_exprs = BITMAP_ALLOC (NULL);
+
+	    bitmap_set_bit (inv_exprs, inv_expr->id);
+	  }
       sum_cost += cost;
     }
   set_group_iv_cost (data, group, cand, sum_cost, inv_vars,
@@ -5560,7 +5100,7 @@ determine_group_iv_cost_cond (struct ivopts_data *data,
 	 inv_expr_elim instead.  */
       if (inv_vars_elim && bitmap_count_bits (inv_vars_elim) > 1)
 	{
-	  inv_expr_elim = record_inv_expr (data, bound);
+	  inv_expr_elim = get_loop_invariant_expr (data, bound);
 	  bitmap_clear (inv_vars_elim);
 	}
       /* The bound is a loop invariant, so it will be only computed
@@ -6221,25 +5761,21 @@ iv_ca_cost (struct iv_ca *ivs)
     return ivs->cost;
 }
 
-/* Returns true if all dependences of CP are among invariants in IVS.  */
+/* Returns true if applying NEW_CP to GROUP for IVS introduces more
+   invariants than OLD_CP.  */
 
 static bool
-iv_ca_has_deps (struct iv_ca *ivs, struct cost_pair *cp)
+iv_ca_more_deps (struct ivopts_data *data, struct iv_ca *ivs,
+		 struct iv_group *group, struct cost_pair *old_cp,
+		 struct cost_pair *new_cp)
 {
-  unsigned i;
-  bitmap_iterator bi;
+  gcc_assert (old_cp && new_cp && old_cp != new_cp);
+  unsigned old_n_invs = ivs->n_invs;
+  iv_ca_set_cp (data, ivs, group, new_cp);
+  unsigned new_n_invs = ivs->n_invs;
+  iv_ca_set_cp (data, ivs, group, old_cp);
 
-  if (cp->inv_vars)
-    EXECUTE_IF_SET_IN_BITMAP (cp->inv_vars, 0, i, bi)
-      if (ivs->n_inv_var_uses[i] == 0)
-	return false;
-
-  if (cp->inv_exprs)
-    EXECUTE_IF_SET_IN_BITMAP (cp->inv_exprs, 0, i, bi)
-      if (ivs->n_inv_expr_uses[i] == 0)
-	return false;
-
-  return true;
+  return (new_n_invs > old_n_invs);
 }
 
 /* Creates change of expressing GROUP by NEW_CP instead of OLD_CP and chains
@@ -6471,7 +6007,7 @@ iv_ca_extend (struct ivopts_data *data, struct iv_ca *ivs,
       if (!new_cp)
 	continue;
 
-      if (!min_ncand && !iv_ca_has_deps (ivs, new_cp))
+      if (!min_ncand && iv_ca_more_deps (data, ivs, group, old_cp, new_cp))
 	continue;
 
       if (!min_ncand && !cheaper_cost_pair (new_cp, old_cp))

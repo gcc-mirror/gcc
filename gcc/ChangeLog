@@ -1,5 +1,24 @@
 2017-05-11  Bin Cheng  <bin.cheng@arm.com>
 
+	* tree-ssa-loop-ivopts.c (get_loop_invariant_expr): Simplify.
+	(adjust_setup_cost): New parameter supporting round up adjustment.
+	(struct address_cost_data): Delete.
+	(force_expr_to_var_cost): Don't bound cost with spill_cost.
+	(split_address_cost, ptr_difference_cost): Delete.
+	(difference_cost, compare_aff_trees, record_inv_expr): Delete.
+	(struct ainc_cost_data): New struct.
+	(get_address_cost_ainc): New function.
+	(get_address_cost, get_computation_cost): Reimplement.
+	(determine_group_iv_cost_address): Record inv_expr for all uses of
+	a group.
+	(determine_group_iv_cost_cond): Call get_loop_invariant_expr.
+	(iv_ca_has_deps): Reimplemented to ...
+	(iv_ca_more_deps): ... this.  Check if NEW_CP introduces more deps
+	than OLD_CP.
+	(iv_ca_extend): Call iv_ca_more_deps.
+
+2017-05-11  Bin Cheng  <bin.cheng@arm.com>
+
 	* tree-ssa-address.c (struct mem_address): Move to header file.
 	(valid_mem_ref_p, move_fixed_address_to_symbol): Make it global.
 	* tree-ssa-address.h (struct mem_address): Move from C file.
