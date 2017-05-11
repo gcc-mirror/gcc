@@ -1,3 +1,8 @@
+2017-05-11  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/70538
+	* g++.dg/cpp0x/pr70538.C: New.
+
 2017-05-11  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.target/i386/pr22152.c: Fix undefined testcase.  Remove
