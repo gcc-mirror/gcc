@@ -4588,7 +4588,7 @@ pushdecl_top_level_maybe_friend (tree x, bool is_friend)
    initializing it with INIT.  */
 
 tree
-pushdecl_top_level_and_finish (tree x, tree init)
+pushdecl_top_level_with_init (tree x, tree init)
 {
   return pushdecl_top_level_1 (x, &init, false);
 }
@@ -6618,7 +6618,7 @@ pop_everything (void)
 {
   if (ENABLE_SCOPE_CHECKING)
     verbatim ("XXX entering pop_everything ()\n");
-  while (!toplevel_bindings_p ())
+  while (!namespace_bindings_p ())
     {
       if (current_binding_level->kind == sk_class)
 	pop_nested_class ();

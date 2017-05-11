@@ -3021,7 +3021,7 @@ get_guard (tree decl)
       DECL_ARTIFICIAL (guard) = 1;
       DECL_IGNORED_P (guard) = 1;
       TREE_USED (guard) = 1;
-      pushdecl_top_level_and_finish (guard, NULL_TREE);
+      pushdecl_top_level_with_init (guard, NULL_TREE);
     }
   return guard;
 }
@@ -4261,7 +4261,7 @@ handle_tls_init (void)
   TREE_USED (guard) = true;
   CP_DECL_THREAD_LOCAL_P (guard) = true;
   set_decl_tls_model (guard, decl_default_tls_model (guard));
-  pushdecl_top_level_and_finish (guard, NULL_TREE);
+  pushdecl_top_level_with_init (guard, NULL_TREE);
 
   tree fn = get_local_tls_init_fn ();
   start_preparsed_function (fn, NULL_TREE, SF_PRE_PARSED);

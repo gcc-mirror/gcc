@@ -1,5 +1,21 @@
 2017-05-11  Nathan Sidwell  <nathan@acm.org>
 
+	* cp-tree.h (pushdecl, pushdecl_maybe_friend, pushtag,
+	pushtag_top_level_maybe_friend,
+	pushdecl_top_level_and_finish):	Move declarations to ...
+	* name-lookup.h: ... here.  Group pushdecl variants.
+	(pushdecl_top_level_and_finish): Rename to ...
+	(pushdecl_top_level_with_init): ... here.
+	* decl.c (cp_make_fname_decl): Use pushdecl_top_level_with_init.
+	* decl2.c (get_guard, handle_tls_init): Likewise.
+	* rtti.c (get_tinfo_decl, tinfo_base_init): Likewise.
+	* lambda.c (maybe_add_lambda_conv_op): Use namespace_bindings_p.
+	* method.c (implicitly_declare_fn): Likewise.
+	* searchc (node_debug_info_needed): Likewise.
+	* name-lookup.c (pushdecl_top_level_and_finish): Rename to ...
+	(pushdecl_top_level_with_init): ... here.
+	(pop_everything): Use namespace_bindings_p.
+
 	* name-lookup.h (pop_binding): Rename to pop_local_binding.
 	(getdecls): Rename to get_local_decls.
 	* name-lookup.c (pop_binding): Rename to ...

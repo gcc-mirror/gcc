@@ -282,29 +282,22 @@ struct GTY(()) cp_binding_level {
 extern cp_binding_level *leave_scope (void);
 extern bool kept_level_p (void);
 extern bool global_bindings_p (void);
-extern bool toplevel_bindings_p	(void);
+extern bool toplevel_bindings_p (void);
 extern bool namespace_bindings_p (void);
 extern bool local_bindings_p (void);
 extern bool template_parm_scope_p (void);
 extern scope_kind innermost_scope_kind (void);
 extern cp_binding_level *begin_scope (scope_kind, tree);
 extern void print_binding_stack	(void);
-extern void push_to_top_level (void);
-extern void pop_from_top_level (void);
 extern void pop_everything (void);
 extern void keep_next_level (bool);
-extern bool is_ancestor (tree, tree);
+extern bool is_ancestor (tree ancestor, tree descendant);
 extern tree push_scope (tree);
 extern void pop_scope (tree);
 extern tree push_inner_scope (tree);
 extern void pop_inner_scope (tree, tree);
 extern void push_binding_level (cp_binding_level *);
 
-extern tree pushdecl_outermost_localscope (tree);
-extern bool push_namespace (tree);
-extern void pop_namespace (void);
-extern void push_nested_namespace (tree);
-extern void pop_nested_namespace (tree);
 extern bool handle_namespace_attrs (tree, tree);
 extern void pushlevel_class (void);
 extern void poplevel_class (void);
@@ -342,6 +335,18 @@ extern tree innermost_non_namespace_value (tree);
 extern cxx_binding *outer_binding (tree, cxx_binding *, bool);
 extern void cp_emit_debug_info_for_using (tree, tree);
 
-extern tree pushdecl_top_level			(tree);
+extern tree pushdecl_maybe_friend (tree, bool is_friend);
+extern tree pushdecl (tree);
+extern tree pushdecl_outermost_localscope (tree);
+extern tree pushdecl_top_level_maybe_friend (tree, bool is_friend);
+extern tree pushdecl_top_level (tree);
+extern tree pushdecl_top_level_with_init (tree, tree);
+extern tree pushtag (tree, tree, tag_scope);
+extern bool push_namespace (tree);
+extern void pop_namespace (void);
+extern void push_nested_namespace (tree);
+extern void pop_nested_namespace (tree);
+extern void push_to_top_level (void);
+extern void pop_from_top_level (void);
 
 #endif /* GCC_CP_NAME_LOOKUP_H */

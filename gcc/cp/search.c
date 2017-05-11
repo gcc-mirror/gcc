@@ -2365,7 +2365,7 @@ note_debug_info_needed (tree type)
   if (TYPE_DECL_SUPPRESS_DEBUG (TYPE_NAME (type)))
     {
       TYPE_DECL_SUPPRESS_DEBUG (TYPE_NAME (type)) = 0;
-      rest_of_type_compilation (type, toplevel_bindings_p ());
+      rest_of_type_compilation (type, namespace_bindings_p ());
     }
 
   dfs_walk_all (TYPE_BINFO (type), dfs_debug_mark, NULL, 0);

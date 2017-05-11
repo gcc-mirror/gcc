@@ -445,7 +445,7 @@ get_tinfo_decl (tree type)
       DECL_NOT_REALLY_EXTERN (d) = 1;
       set_linkage_according_to_type (type, d);
 
-      d = pushdecl_top_level_and_finish (d, NULL_TREE);
+      d = pushdecl_top_level_with_init (d, NULL_TREE);
       if (CLASS_TYPE_P (type))
 	CLASSTYPE_TYPEINFO_VAR (TYPE_MAIN_VARIANT (type)) = d;
 
@@ -911,7 +911,7 @@ tinfo_base_init (tinfo_s *ti, tree target)
     name_string = tinfo_name (target, !TREE_PUBLIC (name_decl));
     DECL_INITIAL (name_decl) = name_string;
     mark_used (name_decl);
-    pushdecl_top_level_and_finish (name_decl, name_string);
+    pushdecl_top_level_with_init (name_decl, name_string);
   }
 
   vtable_ptr = ti->vtable;

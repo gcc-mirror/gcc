@@ -5820,13 +5820,8 @@ extern bool fnptr_conv_p			(tree, tree);
 extern tree strip_fnptr_conv			(tree);
 
 /* in name-lookup.c */
-extern tree pushdecl				(tree);
-extern tree pushdecl_maybe_friend		(tree, bool);
 extern void maybe_push_cleanup_level		(tree);
-extern tree pushtag				(tree, tree, tag_scope);
 extern tree make_anon_name			(void);
-extern tree pushdecl_top_level_maybe_friend	(tree, bool);
-extern tree pushdecl_top_level_and_finish	(tree, tree);
 extern tree check_for_out_of_scope_variable	(tree);
 extern void dump				(cp_binding_level &ref);
 extern void dump				(cp_binding_level *ptr);
