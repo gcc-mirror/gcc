@@ -1,5 +1,8 @@
 2017-05-11  Nathan Sidwell  <nathan@acm.org>
 
+	* decl.c (xref_tag_1): Don't frob ts_lambda scope here.
+	* name-lookup.c (pushtag_1): Deal with ts_lambda scope.
+
 	* cp-tree.h (pushdecl, pushdecl_maybe_friend, pushtag,
 	pushtag_top_level_maybe_friend,
 	pushdecl_top_level_and_finish):	Move declarations to ...
