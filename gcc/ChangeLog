@@ -1,5 +1,10 @@
 2017-05-11  Bin Cheng  <bin.cheng@arm.com>
 
+	* tree-ssa-loop-ivopts.c (allow_ip_end_pos_p): Refine comments.
+	(get_shiftadd_cost): Ditto.
+
+2017-05-11  Bin Cheng  <bin.cheng@arm.com>
+
 	* tree-ssa-address.c: Include header file.
 	(move_hint_to_base): Return TRUE if BASE_HINT is moved to memory
 	address.
