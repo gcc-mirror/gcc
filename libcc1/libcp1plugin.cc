@@ -812,7 +812,7 @@ safe_pushdecl_maybe_friend (tree decl, bool is_friend)
   save_oracle = cp_binding_oracle;
   cp_binding_oracle = NULL;
 
-  tree ret = pushdecl_maybe_friend (decl, is_friend);
+  tree ret = pushdecl (decl, is_friend);
 
   cp_binding_oracle = save_oracle;
 
