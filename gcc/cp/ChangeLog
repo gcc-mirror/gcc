@@ -1,3 +1,8 @@
+2017-05-11  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	PR c++/80682
+	* method.c (is_trivially_xible): Reject void types.
+
 2017-05-10  Nathan Sidwell  <nathan@acm.org>
 
 	* class.c (handle_using_decl): Always use OVL_CURRENT.

@@ -1207,6 +1207,8 @@ constructible_expr (tree to, tree from)
 bool
 is_trivially_xible (enum tree_code code, tree to, tree from)
 {
+  if (VOID_TYPE_P (to))
+    return false;
   tree expr;
   if (code == MODIFY_EXPR)
     expr = assignable_expr (to, from);
