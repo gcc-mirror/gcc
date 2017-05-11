@@ -336,6 +336,22 @@ cxx_block_may_fallthru (const_tree stmt)
     }
 }
 
+/* Return the list of decls in the global namespace.  */
+
+tree
+cp_get_global_decls ()
+{
+  return NAMESPACE_LEVEL (global_namespace)->names;
+}
+
+/* Push DECL into the current scope.  */
+
+tree
+cp_pushdecl (tree decl)
+{
+  return pushdecl (decl);
+}
+
 void
 cp_common_init_ts (void)
 {
