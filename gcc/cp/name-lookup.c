@@ -1862,24 +1862,17 @@ pushdecl_maybe_friend_1 (tree x, bool is_friend)
   return x;
 }
 
-/* Wrapper for pushdecl_maybe_friend_1.  */
+/* Record a decl-node X as belonging to the current lexical scope.
+   It's a friend if IS_FRIEND is true.  */
 
 tree
-pushdecl_maybe_friend (tree x, bool is_friend)
+pushdecl (tree x, bool is_friend)
 {
   tree ret;
   bool subtime = timevar_cond_start (TV_NAME_LOOKUP);
   ret = pushdecl_maybe_friend_1 (x, is_friend);
   timevar_cond_stop (TV_NAME_LOOKUP, subtime);
   return ret;
-}
-
-/* Record a decl-node X as belonging to the current lexical scope.  */
-
-tree
-pushdecl (tree x)
-{
-  return pushdecl_maybe_friend (x, false);
 }
 
 /* Enter DECL into the symbol table, if that's appropriate.  Returns
@@ -2862,7 +2855,7 @@ pushdecl_with_scope_1 (tree x, cp_binding_level *level, bool is_friend)
     {
       b = current_binding_level;
       current_binding_level = level;
-      x = pushdecl_maybe_friend (x, is_friend);
+      x = pushdecl (x, is_friend);
       current_binding_level = b;
     }
   current_function_decl = function_decl;
@@ -4548,47 +4541,30 @@ parse_using_directive (tree name_space, tree attribs)
     }
 }
 
-/* Like pushdecl, only it places X in the global scope if appropriate.
-   Calls cp_finish_decl to register the variable, initializing it with
-   *INIT, if INIT is non-NULL.  */
+/* Pushes X into the global namespace.  */
 
-static tree
-pushdecl_top_level_1 (tree x, tree *init, bool is_friend)
+tree
+pushdecl_top_level (tree x, bool is_friend)
 {
   bool subtime = timevar_cond_start (TV_NAME_LOOKUP);
   push_to_top_level ();
   x = pushdecl_namespace_level (x, is_friend);
-  if (init)
-    cp_finish_decl (x, *init, false, NULL_TREE, 0);
   pop_from_top_level ();
   timevar_cond_stop (TV_NAME_LOOKUP, subtime);
   return x;
 }
 
-/* Like pushdecl, only it places X in the global scope if appropriate.  */
-
-tree
-pushdecl_top_level (tree x)
-{
-  return pushdecl_top_level_1 (x, NULL, false);
-}
-
-/* Like pushdecl_top_level, but adding the IS_FRIEND parameter.  */
-
-tree
-pushdecl_top_level_maybe_friend (tree x, bool is_friend)
-{
-  return pushdecl_top_level_1 (x, NULL, is_friend);
-}
-
-/* Like pushdecl, only it places X in the global scope if
-   appropriate.  Calls cp_finish_decl to register the variable,
-   initializing it with INIT.  */
+/* Pushes X into the global namespace and Calls cp_finish_decl to
+   register the variable, initializing it with INIT.  */
 
 tree
 pushdecl_top_level_and_finish (tree x, tree init)
 {
-  return pushdecl_top_level_1 (x, &init, false);
+  push_to_top_level ();
+  x = pushdecl_namespace_level (x, false);
+  cp_finish_decl (x, init, false, NULL_TREE, 0);
+  pop_from_top_level ();
+  return x;
 }
 
 /* Combines two sets of overloaded functions into an OVERLOAD chain, removing
