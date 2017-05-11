@@ -1,3 +1,10 @@
+2017-05-11  Bin Cheng  <bin.cheng@arm.com>
+
+	* tree-affine.h (aff_combination_type): New interface.
+	(aff_combination_zero_p): Remove static.
+	(aff_combination_const_p): New interface.
+	(aff_combination_singleton_var_p): New interfaces.
+
 2017-05-11  Richard Biener  <rguenther@suse.de>
 
 	* tree-ssa-pre.c (eliminate_dom_walker::before_dom_children):
