@@ -137,11 +137,7 @@ GLIBCXX_8.0 {
     _ZNK11__gnu_debug19_Safe_iterator_base14_M_can_compareERKS0_;
 
     _ZNK11__gnu_debug16_Error_formatter10_M_message*;
-    _ZNK11__gnu_debug16_Error_formatter10_Parameter*;
-    _ZNK11__gnu_debug16_Error_formatter13_M_print_word*;
-    _ZNK11__gnu_debug16_Error_formatter15_M_print_string*;
     _ZNK11__gnu_debug16_Error_formatter8_M_error*;
-    _ZNK11__gnu_debug16_Error_formatter17_M_get_max_lengthEv;
 
     # __gnu_debug::_Safe_unordered_container_base
     # __gnu_debug::_Safe_local_iterator_base
@@ -149,7 +145,6 @@ GLIBCXX_8.0 {
     _ZN11__gnu_debug30_Safe_unordered_container_base13_M_detach_allEv;
     _ZN11__gnu_debug25_Safe_local_iterator_base9_M_attachEPNS_19_Safe_sequence_baseEb;
     _ZN11__gnu_debug25_Safe_local_iterator_base9_M_detachEv;
-
 
     # parallel mode
     _ZN14__gnu_parallel9_Settings3getEv;
