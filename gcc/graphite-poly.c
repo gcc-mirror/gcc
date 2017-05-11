@@ -40,6 +40,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "pretty-print.h"
 #include "gimple-pretty-print.h"
 #include "graphite.h"
+#include "dumpfile.h"
 
 /* Print to STDERR the GMP value VAL.  */
 
