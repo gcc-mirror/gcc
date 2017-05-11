@@ -692,6 +692,13 @@ c_parser_parse_ssa_name (c_parser *parser,
 	      c_parser_error (parser, "base variable or SSA name undeclared"); 
 	      return error_mark_node;
 	    }
+	  if (!(VAR_P (parent)
+		|| TREE_CODE (parent) == PARM_DECL
+		|| TREE_CODE (parent) == RESULT_DECL))
+	    {
+	      error ("invalid base %qE for SSA name", parent);
+	      return error_mark_node;
+	    }
 	  if (VECTOR_TYPE_P (TREE_TYPE (parent))
 	      || TREE_CODE (TREE_TYPE (parent)) == COMPLEX_TYPE)
 	    DECL_GIMPLE_REG_P (parent) = 1;
