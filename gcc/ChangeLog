@@ -1,3 +1,23 @@
+2017-05-11  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/80706
+	* config/i386/sync.md (UNSPEC_LDX_ATOMIC): New unspec.
+	(UNSPEC_STX_ATOMIC): Ditto.
+	(loaddi_via_sse): New insn.
+	(storedi_via_sse): Ditto.
+	(atomic_loaddi_fpu): Emit loaddi_via_sse and storedi_via_sse.
+	Update corresponding peephole2 patterns.
+	(atomic_storedi_fpu): Ditto.
+
+2017-05-11  Julia Koval  <julia.koval@intel.com>
+
+	* config/i386/avx512fintrin.h (_mm_mask_rsqrt14_sd)
+	(_mm_maskz_rsqrt14_sd, _mm_mask_rsqrt14_ss, _mm_maskz_rsqrt14_ss):
+	New intrinsics.
+	* config/i386/i386-builtin.def (__builtin_ia32_rsqrt14sd_mask)
+	(__builtin_ia32_rsqrt14ss_mask): New builtins.
+	* config/i386/sse.md (rsqrt14_<mode>_mask): New pattern.
+
 2017-05-11  Nathan Sidwell  <nathan@acm.org>
 
 	* graphite-poly.c: Include dumpfile.h.
