@@ -25,6 +25,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "stringpool.h"
 #include "dumpfile.h"
 #include "bitmap.h"
+#include "cgraph.h"
 
 /* State of a particular module. */
 struct GTY(()) module_state
@@ -909,6 +910,7 @@ public:
 private:
   void start (tree_code, tree);
   void write_loc (FILE *, location_t);
+  bool write_tree_present (FILE *, bool, tree);
   void write_tree_ary (FILE *, unsigned, const gtp *);
   void write_core_bools (FILE *, tree);
   void write_core_vals (FILE *, tree);
@@ -984,6 +986,7 @@ private:
   tree start (tree_code);
   tree finish (FILE *, tree);
   location_t read_loc (FILE *);
+  bool read_tree_present (FILE *, bool, tree);
   bool read_tree_ary (FILE *, unsigned, const gtp *);
   bool read_core_bools (FILE *, tree);
   bool read_core_vals (FILE *, tree);
@@ -1208,8 +1211,8 @@ cpms_in::tag_conf (FILE *d)
    recursive, and this avoids having to deal with that in the
    cpm_reader.
 
-   u:count
    <ary>*
+   <u:0>
 */
 
 const cpm_stream::gtp cpm_stream::global_tree_arys[] =
@@ -1223,31 +1226,54 @@ void
 cpms_out::tag_trees (FILE *d)
 {
   w.u (rt_trees);
-  unsigned ix;
-  for (ix = 0; global_tree_arys[ix].ptr; ix++)
-    continue;
-  w.u (ix);
-  for (ix = 0; global_tree_arys[ix].ptr; ix++)
+  for (unsigned ix = 0; global_tree_arys[ix].ptr; ix++)
     write_tree_ary (d, ix, &global_tree_arys[ix]);
+  w.u (0);
   w.checkpoint ();
 }
 
 bool
 cpms_in::tag_trees (FILE *d)
 {
-  unsigned n = r.u ();
-  unsigned ix;
-
-  for (ix = 0; ix != n && global_tree_arys[ix].ptr; ix++)
+  for (unsigned ix = 0; global_tree_arys[ix].ptr; ix++)
     if (!read_tree_ary (d, ix, &global_tree_arys[ix]))
       return false;
+  return !r.u () && r.checkpoint ();
+}
 
-  if (ix != n || global_tree_arys[ix].ptr)
+bool
+cpms_out::write_tree_present (FILE *d, bool is_type, tree t)
+{
+  bool existed = true;
+
+  if (t)
     {
-      error ("%qs has %u arrays, expected %u", r.name, n, ix);
-      return false;
+      unsigned *val = &map.get_or_insert (t, &existed);
+      if (!existed)
+	*val = next ();
     }
-  return r.checkpoint ();
+  w.b (existed);
+  if (d)
+    fprintf (d, is_type ? "(%d)" : "%d", !existed);
+
+  return existed;
+}
+
+bool
+cpms_in::read_tree_present (FILE *d, bool is_type, tree t)
+{
+  bool existed = r.b ();
+
+  if (d)
+    fprintf (d, is_type ? "(%d)" : "%d", !existed);
+  if (!existed)
+    {
+      unsigned tag = next ();
+
+      gcc_assert (t);
+      map.put (tag, t);
+    }
+  return existed;
 }
 
 /* Global tree array
@@ -1260,34 +1286,29 @@ cpms_out::write_tree_ary (FILE *d, unsigned ary_num, const gtp *ary_p)
   const tree *ary = ary_p->ptr;
   unsigned num = ary_p->num;
 
+  if (d)
+    fprintf (d, "Writing globals %d[%d] {", ary_num, num);
+  w.u (ary_num);
   w.u (num);
 
-  unsigned n = 0;
+  unsigned n1 = 0, n2 = 0;
   for (unsigned ix = 0; ix != num; ix++)
     {
-      bool insert = false;
-  
-      if (ary[ix])
+      tree t = ary[ix];
+
+      if (!write_tree_present (d, false, t))
 	{
-	  bool existed;
-	  unsigned *val = &map.get_or_insert (ary[ix], &existed);
-	  if (!existed)
-	    {
-	      n++;
-	      *val = next ();
-	      insert = true;
-	    }
-	  if (d)
-	    fprintf (d, "Fixed %u:%u index %u is %p (%s)%s\n",
-		     ary_num, ix, *val, (void *)ary[ix],
-		     get_tree_code_name (TREE_CODE (ary[ix])),
-		     insert ? " inserted" : "");
+	  n1++;
+	  if (CODE_CONTAINS_STRUCT (TREE_CODE (t), TS_TYPED)
+	      && !write_tree_present (d, true, TREE_TYPE (t)))
+	    n2++;
+	  if (d && !(n1 & 15))
+	    fprintf (d, "\n\t%u:", ix + 1);
 	}
-      w.b (insert);
     }
   w.bflush ();
   if (d)
-    fprintf (d, "Writing %u fixed trees (%d unique)\n", num, n);
+    fprintf (d, "}\nWrote %u globals %u types\n", n1, n2);
 }
 
 bool
@@ -1296,32 +1317,30 @@ cpms_in::read_tree_ary (FILE *d, unsigned ary_num, const gtp *ary_p)
   const tree *ary = ary_p->ptr;
   unsigned num = ary_p->num;
 
-  unsigned n = r.u ();
-  if (n != num)
-    {
-      error ("%qs array %u %u trees, expected %u", r.name, ary_num, n, num);
-      return false;
-    }
+  if (r.u () != ary_num || r.u () != num)
+    return false;
 
-  n = 0;
+  if (d)
+    fprintf (d, "Reading globals %d[%d] {", ary_num, num);
+  unsigned n1 = 0, n2 = 0;
   for (unsigned ix = 0; ix != num; ix++)
-    if (r.b ())
-      {
-	tree t = ary[ix];
-	unsigned tag = next ();
+    {
+      tree t = ary[ix];
 
-	gcc_assert (t);
-	n++;
-	map.put (tag, t);
-	if (d)
-	  fprintf (d, "Fixed %u:%u index %u is %p (%s)\n",
-		   ary_num, ix, tag, (void *)t,
-		   get_tree_code_name (TREE_CODE (t)));
-      }
+      if (!read_tree_present (d, false, t))
+	{
+	  n1++;
+	  if (CODE_CONTAINS_STRUCT (TREE_CODE (t), TS_TYPED)
+	      && !read_tree_present (d, true, TREE_TYPE (t)))
+	    n2++;
+	  if (d && !(n1 & 15))
+	    fprintf (d, "\n\t%u:", ix + 1);
+	}
+    }
   r.bflush ();
 
   if (d)
-    fprintf (d, "Reading %u fixed trees (%d unique)\n", num, n);
+    fprintf (d, "}\nRead %u globals %u types\n", n1, n2);
   return true;
 }
 
@@ -1516,17 +1535,20 @@ cpms_out::tag_definition (FILE *d, tree decl)
       gcc_unreachable ();
     case FUNCTION_DECL:
       write_tree (d, DECL_ARGUMENTS (decl));
+      write_tree (d, DECL_RESULT (decl));
+      write_tree (d, DECL_INITIAL (decl));
       write_tree (d, DECL_SAVED_TREE (decl));
       break;
     }
-
-  w.checkpoint ();
 }
 
 bool
 cpms_in::tag_definition (FILE *d)
 {
   tree decl = read_tree (d);;
+  if (d)
+    fprintf (d, "Reading definition of %s\n",
+	     IDENTIFIER_POINTER (DECL_NAME (decl)));
   switch (TREE_CODE (decl))
     {
     default:
@@ -1534,15 +1556,22 @@ cpms_in::tag_definition (FILE *d)
 
     case FUNCTION_DECL:
       {
-	tree args = read_tree (d);
-	tree body = read_tree (d);
-	// FIXME do something
-	if (!r.checkpoint ())
-	  return false;
+	DECL_ARGUMENTS (decl) = read_tree (d);
+	DECL_RESULT (decl) = read_tree (d);
+	DECL_INITIAL (decl) = read_tree (d);
+	DECL_SAVED_TREE (decl) = read_tree (d);
+	comdat_linkage (decl);
+	note_vague_linkage_fn (decl);
+	current_function_decl = decl;
+	allocate_struct_function (decl, false);
+	set_cfun (NULL);
+	current_function_decl = NULL_TREE;
+	cgraph_node::finalize_function (decl, false);
+	break;
       }
     }
 
-  return true;
+  return !r.error ();
 }
 
 int
@@ -1703,7 +1732,7 @@ cpms_in::start (tree_code code)
     case OMP_CLAUSE:
       gcc_unreachable (); // FIXME:
     }
-  
+
   return t;
 }
 
@@ -1718,16 +1747,21 @@ cpms_in::finish (FILE *d, tree t)
 
   if (DECL_P (t) && MAYBE_DECL_MODULE_INDEX (t) == GLOBAL_MODULE_INDEX)
     {
-      /* A global-module decl.  See if there's already a duplicate.  */
-      tree old = merge_global_decl (CP_DECL_CONTEXT (t), t);
+      tree ctx = CP_DECL_CONTEXT (t);
 
-      if (!old)
-	error ("failed to merge %#qD", t);
-      else if (d)
-	fprintf (d, "%s decl '%s', (%p)\n", old == t ? "New" : "Existing",
-		 IDENTIFIER_POINTER (DECL_NAME (old)), (void *)old);
+      if (TREE_CODE (ctx) == NAMESPACE_DECL)
+	{
+	  /* A global-module decl.  See if there's already a duplicate.  */
+	  tree old = merge_global_decl (CP_DECL_CONTEXT (t), t);
 
-      return old;
+	  if (!old)
+	    error ("failed to merge %#qD", t);
+	  else if (d)
+	    fprintf (d, "%s decl '%s', (%p)\n", old == t ? "New" : "Existing",
+		     IDENTIFIER_POINTER (DECL_NAME (old)), (void *)old);
+
+	  return old;
+	}
     }
 
   return t;
@@ -2217,6 +2251,14 @@ cpms_out::write_core_vals (FILE *d, tree t)
 
       WT (t->decl_common.size_unit);
       WT (t->decl_common.attributes);
+      switch (code)
+	{
+	default:
+	  break;
+	case PARM_DECL:
+	  WT (t->decl_common.initial);
+	  break;
+	}
       /* decl_common.initial, decl_common.abstract_origin.  */
     }
 
@@ -2243,6 +2285,10 @@ cpms_out::write_core_vals (FILE *d, tree t)
     {
       
     }
+
+  if (CODE_CONTAINS_STRUCT (code, TS_EXP))
+    for (unsigned ix = TREE_OPERAND_LENGTH (t); ix--;)
+      WT (TREE_OPERAND (t, ix));
 
   switch (code)
     {
@@ -2345,6 +2391,14 @@ cpms_in::read_core_vals (FILE *d, tree t)
 
       RT (t->decl_common.size_unit);
       RT (t->decl_common.attributes);
+      switch (code)
+	{
+	default:
+	  break;
+	case PARM_DECL:
+	  RT (t->decl_common.initial);
+	  break;
+	}
       /* decl_common.initial, decl_common.abstract_origin.  */
     }
 
@@ -2371,6 +2425,10 @@ cpms_in::read_core_vals (FILE *d, tree t)
     {
       
     }
+
+  if (CODE_CONTAINS_STRUCT (code, TS_EXP))
+    for (unsigned ix = TREE_OPERAND_LENGTH (t); ix--;)
+      RT (TREE_OPERAND (t, ix));
 
   switch (code)
     {

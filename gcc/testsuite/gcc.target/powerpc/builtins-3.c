@@ -88,6 +88,30 @@ test_neg_double (vector double x)
 	return vec_neg (x);
 }
 
+vector signed long long
+test_vsll_slo_vsll_vsc (vector signed long long x, vector signed char y)
+{
+	return vec_slo (x, y);
+}
+
+vector signed long long
+test_vsll_slo_vsll_vuc (vector signed long long x, vector unsigned char y)
+{
+	return vec_slo (x, y);
+}
+
+vector unsigned long long
+test_vull_slo_vull_vsc (vector unsigned long long x, vector signed char y)
+{
+	return vec_slo (x, y);
+}
+
+vector unsigned long long
+test_vull_slo_vull_vuc (vector unsigned long long x, vector unsigned char y)
+{
+	return vec_slo (x, y);
+}
+
 /* Expected test results:
 
      test_eq_char              1 vcmpequb inst
@@ -103,7 +127,11 @@ test_neg_double (vector double x)
      test_neg_short            1 vspltisw, 1 vsubuhm
      test_neg_int              1 vspltisw, 1 vsubuwm
      test_neg_float            1 xvnegsp
-     test_neg_float            1 xvnegdp */
+     test_neg_float            1 xvnegdp
+     test_vsll_slo_vsll_vsc    1 vslo
+     test_vsll_slo_vsll_vuc    1 vslo
+     test_vull_slo_vsll_vsc    1 vslo
+     test_vull_slo_vsll_vuc    1 vslo */
 
 /* { dg-final { scan-assembler-times "vcmpequb" 1 } } */
 /* { dg-final { scan-assembler-times "vcmpequh" 1 } } */
@@ -120,4 +148,5 @@ test_neg_double (vector double x)
 /* { dg-final { scan-assembler-times "xvnabsdp" 1 } } */
 /* { dg-final { scan-assembler-times "xvnegsp"  1 } } */
 /* { dg-final { scan-assembler-times "xvnegdp"  1 } } */
+/* { dg-final { scan-assembler-times "vslo"     4 } } */
 

@@ -1,5 +1,7 @@
 2017-05-12  Nathan Sidwell  <nathan@acm.org>
 
+	Merge trunk r247968.
+
 	gcc/cp/
 	* module.c (cpm_reader::read_tree): Change interface, adjust callers.
 

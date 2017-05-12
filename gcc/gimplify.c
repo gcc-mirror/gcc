@@ -56,7 +56,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-low.h"
 #include "cilk.h"
 #include "gomp-constants.h"
-#include "tree-dump.h"
+#include "splay-tree.h"
 #include "gimple-walk.h"
 #include "langhooks-def.h"	/* FIXME: for lhd_set_decl_assembler_name */
 #include "builtins.h"

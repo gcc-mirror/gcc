@@ -82,11 +82,9 @@ extern int omp_max_vf (void);
 extern int omp_max_simt_vf (void);
 extern tree oacc_launch_pack (unsigned code, tree device, unsigned op);
 extern void oacc_replace_fn_attrib (tree fn, tree dims);
-extern void oacc_set_fn_attrib (tree fn, tree clauses, bool is_kernel,
-				vec<tree> *args);
+extern void oacc_set_fn_attrib (tree fn, tree clauses, vec<tree> *args);
 extern tree oacc_build_routine_dims (tree clauses);
 extern tree oacc_get_fn_attrib (tree fn);
-extern bool oacc_fn_attrib_kernels_p (tree attr);
 extern int oacc_get_fn_dim_size (tree fn, int axis);
 extern int oacc_get_ifn_dim_arg (const gimple *stmt);
 

@@ -147,6 +147,7 @@ extern const char *dump_flag_name (int);
 extern void dump_printf (int, const char *, ...) ATTRIBUTE_PRINTF_2;
 extern void dump_printf_loc (int, source_location,
 			     const char *, ...) ATTRIBUTE_PRINTF_3;
+extern void dump_function (int phase, tree fn);
 extern void dump_basic_block (int, basic_block, int);
 extern void dump_generic_expr_loc (int, source_location, int, tree);
 extern void dump_generic_expr (int, int, tree);

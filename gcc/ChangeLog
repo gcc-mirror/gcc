@@ -1,6 +1,126 @@
+2017-05-12  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-sccvn.h (has_VN_INFO): Declare.
+	* tree-ssa-pre.c (eliminate_dom_walker::before_dom_children):
+	Fold all stmts not inplace.
+
+2017-05-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/80713
+	* tree-ssa-pre.c (remove_dead_inserted_code): Clear
+	inserted_exprs bit for not removed stmts.
+
+2017-05-12  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR middle-end/69921
+	* tree-parloops.c (create_parallel_loop): Set "oacc kernels
+	parallelized" attribute for parallelized OpenACC kernels.
+	* omp-offload.c (execute_oacc_device_lower): Use it.
+
+	* omp-expand.c (expand_omp_target) <GF_OMP_TARGET_KIND_OACC_KERNELS>:
+	Set "oacc kernels" attribute.
+	* omp-general.c (oacc_set_fn_attrib): Remove is_kernel formal
+	parameter.  Adjust all users.
+	(oacc_fn_attrib_kernels_p): Remove function.
+	* omp-offload.c (execute_oacc_device_lower): Look for "oacc
+	kernels" attribute instead of calling oacc_fn_attrib_kernels_p.
+	* tree-ssa-loop.c (gate_oacc_kernels): Likewise.
+	* tree-parloops.c (create_parallel_loop): If oacc_kernels_p,
+	assert "oacc kernels" attribute is set.
+
+2017-05-11  Carl Love  <cel@us.ibm.com>
+
+	* config/rs6000/rs6000-c: Add support for built-in functions
+	vector unsigned char vec_popcnt (vector signed char)
+	vector unsigned char vec_popcnt (vector unsigned char)
+	vector unsigned short vec_popcnt (vector signed short)
+	vector unsigned short vec_popcnt (vector unsigned short)
+	vector unsigned int vec_popcnt (vector signed int)
+	vector unsigned int vec_popcnt (vector unsigned int)
+	vector unsigned long long vec_popcnt (vector signed long long)
+	vector unsigned long long vec_popcnt (vector unsigned long long)
+	vector signed long long vec_slo (vector signed long long,
+                                         vector signed char)
+	vector signed long long vec_slo (vector signed long long,
+                                         vector unsigned char)
+	vector unsigned long long vec_slo (vector unsigned long long,
+                                           vector signed char)
+	vector unsigned long long vec_slo (vector unsigned long long,
+                                           vector unsigned char)
+	* config/rs6000/rs6000-builtin.def: Add definitions for VPOPCNTUB,
+	VPOPCNTUH, VPOPCNTUW, and VPOPCNTUD overloads.
+	* config/rs6000/altivec.h: Add define for vec_popcnt, vec_popcntb,
+	vec_popcnth, vec_popcntw and vec_popcntd built-in functions.
+	* doc/extend.texi: Update the built-in documentation file for the
+	new built-in functions.
+
+2017-05-11  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* attribs.h (sorted_attr_string): Move machine independent
+	functions for target clone support from the i386 port to common
+	code.  Rename ix86_function_versions to common_function_versions.
+	Rename make_name to make_unique_name.
+	(common_function_versions): Likewise.
+	(make_unique_name): Likewise.
+	(make_dispatcher_decl): Likewise.
+	(is_function_default_version): Likewise.
+	* attribs.c (attr_strcmp): Likewise.
+	(sorted_attr_string): Likewise.
+	(common_function_versions): Likewise.
+	(make_unique_name): Likewise.
+	(make_dispatcher_decl): Likewise.
+	(is_function_default_version): Likewise.
+	* config/i386/i386.c (attr_strcmp): Likewise.
+	(sorted_attr_string): Likewise.
+	(ix86_function_versions): Likewise.
+	(make_name): Likewise.
+	(make_dispatcher_decl): Likewise.
+	(is_function_default_version): Likewise.
+	(TARGET_OPTION_FUNCTION_VERSIONS): Update target function hook.
+
+2017-05-11  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	PR target/80695
+	* config/rs6000/rs6000.c (rs6000_builtin_vectorization_cost):
+	Account for direct move costs for vec_construct of integer
+	vectors.
+
+2017-05-11  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/80706
+	* config/i386/sync.md (UNSPEC_LDX_ATOMIC): New unspec.
+	(UNSPEC_STX_ATOMIC): Ditto.
+	(loaddi_via_sse): New insn.
+	(storedi_via_sse): Ditto.
+	(atomic_loaddi_fpu): Emit loaddi_via_sse and storedi_via_sse.
+	Update corresponding peephole2 patterns.
+	(atomic_storedi_fpu): Ditto.
+
+2017-05-11  Julia Koval  <julia.koval@intel.com>
+
+	* config/i386/avx512fintrin.h (_mm_mask_rsqrt14_sd)
+	(_mm_maskz_rsqrt14_sd, _mm_mask_rsqrt14_ss, _mm_maskz_rsqrt14_ss):
+	New intrinsics.
+	* config/i386/i386-builtin.def (__builtin_ia32_rsqrt14sd_mask)
+	(__builtin_ia32_rsqrt14ss_mask): New builtins.
+	* config/i386/sse.md (rsqrt14_<mode>_mask): New pattern.
+
 2017-05-11  Nathan Sidwell  <nathan@acm.org>
 
-	* dumpfile.h (TDF_FLAGS): New.
+	* graphite-poly.c: Include dumpfile.h.
+
+	* dumpfle.h (dump_function): Declare here ...
+	* tree-dump.h (dump_function): ... not here.
+	* dumpfile.c: #include tree-cfg.h.
+	(dump_function): Move here from ...
+	* tree-dump.c (dump_function): ... here.
+	* gimplify.c: #include splay-tree.h, not tree-dump.h.
+	* graphite-poly.c: Don't include tree-dump.h.
+	* cgraphclones.c: Include dumpfile.h not tree-dump.h.
+	* print-tree.c: Likewise.
+	* stor-layout.c: Likewise.
+	* tree-nested.c: Likewise.
+
 	* dumpfile.c (dump_start): Use TDF_FLAGS.
 	(dump_enable_all): Fix TDF_KIND check thinko.
 

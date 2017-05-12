@@ -1,3 +1,24 @@
+2017-05-11  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/bits/stl_tree.h [_GLIBCXX_INLINE_VERSION]
+	(_Rb_tree_impl<>): Remove _Is_pod_comparator
+	template parameter.
+
+	* include/debug/safe_container.h [_GLIBCXX_USE_CXX11_ABI]
+	(_Safe_container<>): Remove _IsCxx11AllocatorAware template parameter.
+	* include/debug/string: Adapt.
+
+	* include/debug/formatter.h [_GLIBCXX_INLINE_VERSION]
+	(__gnu_debug::_Error_formatter::_Parameter::_M_print_field): Remove.
+	(__gnu_debug::_Error_formatter::_Parameter::_M_print_description):
+	Remove.
+	(__gnu_debug::_Error_formatter::_M_format_word): Remove.
+	(__gnu_debug::_Error_formatter::_M_print_word): Remove.
+	(__gnu_debug::_Error_formatter::_M_print_string): Remove.
+	(__gnu_debug::_Error_formatter::_M_get_max_length): Remove.
+	* src/c++11/debug.cc: Adapt.
+	* config/abi/pre/gnu-versioned-namespace.ver: Adapt.
+
 2017-05-11  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/xml/manual/allocator.xml: Fix ViewCVS URLs.
@@ -31,8 +52,6 @@
 	* include/std/variant: Adapt.
 	* python/libstdcxx/v6/printers.py: Adapt.
 	* testsuite/libstdc++-prettyprinters/48362.cc: Adapt.
-	* include/bits/stl_tree.h (_Rb_tree_impl<>): Remove _Is_pod_comparator
-	template parameter when version namespace is active.
 
 	* include/bits/stl_algobase.h (std::__iter_swap<false>): Remove
 	_GLIBCXX_MOVE usage.

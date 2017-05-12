@@ -415,6 +415,8 @@ type g struct {
 
 	scanningself bool // whether goroutine is scanning its own stack
 
+	isSystemGoroutine bool // whether goroutine is a "system" goroutine
+
 	traceback *tracebackg // stack traceback buffer
 
 	context      g_ucontext_t // saved context for setcontext
@@ -791,3 +793,10 @@ type g_ucontext_t [(_sizeof_ucontext_t + 15) / unsafe.Sizeof(uintptr(0))]uintptr
 // sigset is the Go version of the C type sigset_t.
 // _sigset_t is defined by the Makefile from <signal.h>.
 type sigset _sigset_t
+
+// getMemstats returns a pointer to the internal memstats variable,
+// for C code.
+//go:linkname getMemstats runtime.getMemstats
+func getMemstats() *mstats {
+	return &memstats
+}

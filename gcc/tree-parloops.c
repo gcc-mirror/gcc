@@ -2040,16 +2040,20 @@ create_parallel_loop (struct loop *loop, tree loop_fn, tree data,
   tree cvar, cvar_init, initvar, cvar_next, cvar_base, type;
   edge exit, nexit, guard, end, e;
 
-  /* Prepare the GIMPLE_OMP_PARALLEL statement.  */
   if (oacc_kernels_p)
     {
-      tree clause = build_omp_clause (loc, OMP_CLAUSE_NUM_GANGS);
-      OMP_CLAUSE_NUM_GANGS_EXPR (clause)
-	= build_int_cst (integer_type_node, n_threads);
-      oacc_set_fn_attrib (cfun->decl, clause, true, NULL);
+      gcc_checking_assert (lookup_attribute ("oacc kernels",
+					     DECL_ATTRIBUTES (cfun->decl)));
+      /* Indicate to later processing that this is a parallelized OpenACC
+	 kernels construct.  */
+      DECL_ATTRIBUTES (cfun->decl)
+	= tree_cons (get_identifier ("oacc kernels parallelized"),
+		     NULL_TREE, DECL_ATTRIBUTES (cfun->decl));
     }
   else
     {
+      /* Prepare the GIMPLE_OMP_PARALLEL statement.  */
+
       basic_block bb = loop_preheader_edge (loop)->src;
       basic_block paral_bb = single_pred (bb);
       gsi = gsi_last_bb (paral_bb);
@@ -2151,7 +2155,8 @@ create_parallel_loop (struct loop *loop, tree loop_fn, tree data,
 
   /* Emit GIMPLE_OMP_FOR.  */
   if (oacc_kernels_p)
-    /* In combination with the NUM_GANGS on the parallel.  */
+    /* Parallelized OpenACC kernels constructs use gang parallelism.  See also
+       omp-offload.c:execute_oacc_device_lower.  */
     t = build_omp_clause (loc, OMP_CLAUSE_GANG);
   else
     {

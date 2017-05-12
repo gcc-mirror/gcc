@@ -153,22 +153,6 @@ dump_maybe_newline (dump_info_p di)
     }
 }
 
-/* Dump FUNCTION_DECL FN as tree dump PHASE.  */
-
-void
-dump_function (int phase, tree fn)
-{
-  FILE *stream;
-  int flags;
-
-  stream = dump_begin (phase, &flags);
-  if (stream)
-    {
-      dump_function_to_file (fn, stream, flags);
-      dump_end (phase, stream);
-    }
-}
-
 /* Dump pointer PTR using FIELD to identify it.  */
 
 void

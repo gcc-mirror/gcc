@@ -12,12 +12,6 @@ import (
 	"unsafe"
 )
 
-//extern opendir
-func libc_opendir(*byte) *syscall.DIR
-
-//extern closedir
-func libc_closedir(*syscall.DIR) int
-
 // FIXME: pathconf returns long, not int.
 //extern pathconf
 func libc_pathconf(*byte, int) int

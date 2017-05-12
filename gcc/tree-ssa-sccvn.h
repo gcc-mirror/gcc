@@ -209,6 +209,7 @@ typedef struct vn_ssa_aux
 enum vn_lookup_kind { VN_NOWALK, VN_WALK, VN_WALKREWRITE };
 
 /* Return the value numbering info for an SSA_NAME.  */
+bool has_VN_INFO (tree);
 extern vn_ssa_aux_t VN_INFO (tree);
 extern vn_ssa_aux_t VN_INFO_GET (tree);
 tree vn_get_expr_for (tree);

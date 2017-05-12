@@ -406,6 +406,8 @@ extern void globrunqput(G*)
   __asm__(GOSYM_PREFIX "runtime.globrunqput");
 extern P* pidleget(void)
   __asm__(GOSYM_PREFIX "runtime.pidleget");
+extern struct mstats* getMemstats(void)
+  __asm__(GOSYM_PREFIX "runtime.getMemstats");
 
 bool runtime_isstarted;
 
@@ -726,7 +728,7 @@ runtime_malg(bool allocatestack, bool signalstack, byte** ret_stack, uintptr* re
                 // 32-bit mode, the Go allocation space is all of
                 // memory anyhow.
 		if(sizeof(void*) == 8) {
-			void *p = runtime_sysAlloc(stacksize, &mstats()->other_sys);
+			void *p = runtime_sysAlloc(stacksize, &getMemstats()->stacks_sys);
 			if(p == nil)
 				runtime_throw("runtime: cannot allocate memory for goroutine stack");
 			*ret_stack = (byte*)p;

@@ -39,8 +39,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-data-ref.h"
 #include "pretty-print.h"
 #include "gimple-pretty-print.h"
-#include "tree-dump.h"
 #include "graphite.h"
+#include "dumpfile.h"
 
 /* Print to STDERR the GMP value VAL.  */
 

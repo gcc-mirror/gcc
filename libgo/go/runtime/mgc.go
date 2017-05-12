@@ -1423,6 +1423,8 @@ func gcBgMarkPrepare() {
 }
 
 func gcBgMarkWorker(_p_ *p) {
+	setSystemGoroutine()
+
 	gp := getg()
 
 	type parkInfo struct {

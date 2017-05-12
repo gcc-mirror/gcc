@@ -1,3 +1,121 @@
+2017-05-12  Richard Biener  <rguenther@suse.de>
+
+	* g++.dg/tree-ssa/ssa-dse-2.C: Adjust.
+
+2017-05-12  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/67687
+	* g++.dg/cpp0x/constexpr-ice17.C: New.
+
+2017-05-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/80713
+	* gcc.dg/torture/pr80713.c: New testcase.
+
+2017-05-12  Andi Kleen  <ak@linux.intel.com>
+
+	PR testsuite/77684
+	* lib/target-supports.exp (profopt-perf-wrapper):
+	Add -m8 option to increase parallelism.
+
+2017-05-12  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* c-c++-common/goacc/parallel-dims-1.c: New file.
+	* c-c++-common/goacc/parallel-dims-2.c: Likewise.
+
+	* c-c++-common/goacc/classify-kernels-unparallelized.c: Adjust.
+	* c-c++-common/goacc/classify-kernels.c: Likewise.
+	* c-c++-common/goacc/kernels-counter-vars-function-scope.c:
+	Likewise.
+	* c-c++-common/goacc/kernels-double-reduction-n.c: Likewise.
+	* c-c++-common/goacc/kernels-double-reduction.c: Likewise.
+	* c-c++-common/goacc/kernels-loop-2.c: Likewise.
+	* c-c++-common/goacc/kernels-loop-3.c: Likewise.
+	* c-c++-common/goacc/kernels-loop-g.c: Likewise.
+	* c-c++-common/goacc/kernels-loop-mod-not-zero.c: Likewise.
+	* c-c++-common/goacc/kernels-loop-n.c: Likewise.
+	* c-c++-common/goacc/kernels-loop-nest.c: Likewise.
+	* c-c++-common/goacc/kernels-loop.c: Likewise.
+	* c-c++-common/goacc/kernels-one-counter-var.c: Likewise.
+	* c-c++-common/goacc/kernels-reduction.c: Likewise.
+	* gfortran.dg/goacc/classify-kernels-unparallelized.f95: Likewise.
+	* gfortran.dg/goacc/classify-kernels.f95: Likewise.
+	* gfortran.dg/goacc/kernels-loop-2.f95: Likewise.
+	* gfortran.dg/goacc/kernels-loop-data-2.f95: Likewise.
+	* gfortran.dg/goacc/kernels-loop-data-enter-exit-2.f95: Likewise.
+	* gfortran.dg/goacc/kernels-loop-data-enter-exit.f95: Likewise.
+	* gfortran.dg/goacc/kernels-loop-data-update.f95: Likewise.
+	* gfortran.dg/goacc/kernels-loop-data.f95: Likewise.
+	* gfortran.dg/goacc/kernels-loop-n.f95: Likewise.
+	* gfortran.dg/goacc/kernels-loop.f95: Likewise.
+
+	* c-c++-common/goacc/classify-kernels-unparallelized.c: Adjust.
+	* c-c++-common/goacc/classify-kernels.c: Likewise.
+	* c-c++-common/goacc/classify-parallel.c: Likewise.
+	* c-c++-common/goacc/classify-routine.c: Likewise.
+	* gfortran.dg/goacc/classify-kernels-unparallelized.f95: Likewise.
+	* gfortran.dg/goacc/classify-kernels.f95: Likewise.
+	* gfortran.dg/goacc/classify-parallel.f95: Likewise.
+	* gfortran.dg/goacc/classify-routine.f95: Likewise.
+
+	* c-c++-common/goacc/classify-kernels-unparallelized.c: New file.
+	* c-c++-common/goacc/classify-kernels.c: Likewise.
+	* c-c++-common/goacc/classify-parallel.c: Likewise.
+	* c-c++-common/goacc/classify-routine.c: Likewise.
+	* gfortran.dg/goacc/classify-kernels-unparallelized.f95: Likewise.
+	* gfortran.dg/goacc/classify-kernels.f95: Likewise.
+	* gfortran.dg/goacc/classify-parallel.f95: Likewise.
+	* gfortran.dg/goacc/classify-routine.f95: Likewise.
+
+2017-05-11  Nathan Sidwell  <nathan@acm.org>
+
+	* lib/gcc-dg.exp (schedule-cleanups): Add lang dump capability.
+
+2017-05-11  Carl Love  <cel@us.ibm.com>
+
+	* gcc.target/powerpc/builtins-3-p8.c: Add tests for the new built-ins
+	to the test suite file.
+	* gcc.target/powerpc/builtins-3.c: Add tests for the new built-ins
+	to the test suite file.
+
+2017-05-11  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/78659
+	* gfortran.dg/namelist_91.f90: New test.
+	* gfortran.dg/namelist_92.f90: New test.
+	* gfortran.dg/namelist_93.f90: New test.
+	* gfortran.dg/namelist_94.f90: New test.
+
+2017-05-11  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	PR target/80695
+	* gcc.target/powerpc/pr80695-p8.c: New file.
+	* gcc.target/powerpc/pr80695-p9.c: New file.
+
+2017-05-11  Uros Bizjak  <ubizjak@gmail.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/80706
+	* gcc.target/i386/pr80706.c: New test.
+
+2017-05-11  Julia Koval  <julia.koval@intel.com>
+
+	* gcc.target/i386/avx512f-vrsqrt14sd-1.c: Test new intrinsics.
+	* gcc.target/i386/avx512f-vrsqrt14sd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vrsqrt14ss-1.c: Ditto.
+	* gcc.target/i386/avx512f-vrsqrt14ss-2.c: Ditto.
+
+2017-05-11  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/70538
+	* g++.dg/cpp0x/pr70538.C: New.
+
+2017-05-11  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/pr22152.c: Fix undefined testcase.
+	Remove unnecessary loop.  Run on 32-bit targets only.
+	(dg-options): Remove -fno-tree-sink.
+
 2017-05-11  Kelvin Nilsen  <kelvin@gcc.gnu.org>
 
 	* gcc.target/powerpc/cmpb-1.c: New test.
