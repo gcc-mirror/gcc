@@ -1,3 +1,7 @@
+2017-05-12  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* testsuite/lib/libitm.exp: Load scanlang.exp.
+
 2017-04-03  Jonathan Wakely  <jwakely@redhat.com>
 
 	* libitm_i.h (sutrct gtm_thread): Fix typo in comment.
