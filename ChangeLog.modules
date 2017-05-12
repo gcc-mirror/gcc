@@ -1,6 +1,9 @@
 2017-05-12  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.c (cpms_{in,out}): Rename {read,write}_tree to tree_node.
+
+	gcc/cp/
 	* module.c (cpms_{in,out}): Rename read/write fns.
 
 	More inline bodies

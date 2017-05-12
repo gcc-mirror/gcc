@@ -919,7 +919,7 @@ private:
   void lang_decl_vals (FILE *, tree);
 
 public:
-  void write_tree (FILE *, tree);
+  void tree_node (FILE *, tree);
   void bindings (FILE *d, tree ns);
 };
 
@@ -995,7 +995,7 @@ private:
   bool lang_decl_vals (FILE *, tree);
 
 public:
-  tree read_tree (FILE *);
+  tree tree_node (FILE *);
 };
 
 cpms_in::cpms_in (FILE *s, const char *n,
@@ -1479,10 +1479,10 @@ cpms_out::tag_binding (FILE *d, tree ns, bool main, tree name, tree binding)
 	     main ? "main" : "global", IDENTIFIER_POINTER (name));
 
   w.u (rt_binding);
-  write_tree (d, ns);
+  tree_node (d, ns);
   w.u (main);
-  write_tree (d, name);
-  write_tree (d, binding);
+  tree_node (d, name);
+  tree_node (d, binding);
   w.checkpoint ();
 
   for (ovl_iterator iter (binding); iter; ++iter)
@@ -1492,10 +1492,10 @@ cpms_out::tag_binding (FILE *d, tree ns, bool main, tree name, tree binding)
 bool
 cpms_in::tag_binding (FILE *d)
 {
-  tree ns = read_tree (d);
+  tree ns = tree_node (d);
   unsigned main = r.u ();
-  tree name = read_tree (d);
-  tree binding = read_tree (d);
+  tree name = tree_node (d);
+  tree binding = tree_node (d);
 
   if (!r.checkpoint ())
     return false;
@@ -1528,17 +1528,17 @@ cpms_out::tag_definition (FILE *d, tree decl)
     }
 
   w.u (rt_definition);
-  write_tree (d, decl);
+  tree_node (d, decl);
 
   switch (TREE_CODE (decl))
     {
     default:
       gcc_unreachable ();
     case FUNCTION_DECL:
-      write_tree (d, DECL_ARGUMENTS (decl));
-      write_tree (d, DECL_RESULT (decl));
-      write_tree (d, DECL_INITIAL (decl));
-      write_tree (d, DECL_SAVED_TREE (decl));
+      tree_node (d, DECL_ARGUMENTS (decl));
+      tree_node (d, DECL_RESULT (decl));
+      tree_node (d, DECL_INITIAL (decl));
+      tree_node (d, DECL_SAVED_TREE (decl));
       break;
     }
 }
@@ -1546,7 +1546,7 @@ cpms_out::tag_definition (FILE *d, tree decl)
 bool
 cpms_in::tag_definition (FILE *d)
 {
-  tree decl = read_tree (d);;
+  tree decl = tree_node (d);;
   if (d)
     fprintf (d, "Reading definition of %s\n",
 	     IDENTIFIER_POINTER (DECL_NAME (decl)));
@@ -1557,10 +1557,10 @@ cpms_in::tag_definition (FILE *d)
 
     case FUNCTION_DECL:
       {
-	DECL_ARGUMENTS (decl) = read_tree (d);
-	DECL_RESULT (decl) = read_tree (d);
-	DECL_INITIAL (decl) = read_tree (d);
-	DECL_SAVED_TREE (decl) = read_tree (d);
+	DECL_ARGUMENTS (decl) = tree_node (d);
+	DECL_RESULT (decl) = tree_node (d);
+	DECL_INITIAL (decl) = tree_node (d);
+	DECL_SAVED_TREE (decl) = tree_node (d);
 	comdat_linkage (decl);
 	note_vague_linkage_fn (decl);
 	current_function_decl = decl;
@@ -2173,7 +2173,7 @@ void
 cpms_out::core_vals (FILE *d, tree t)
 {
 #define WU(X) (w.u (X))
-#define WT(X) (write_tree (d, X))
+#define WT(X) (tree_node (d, X))
   tree_code code = TREE_CODE (t);
 
   switch (code)
@@ -2328,7 +2328,7 @@ cpms_in::core_vals (FILE *d, tree t)
 {
 #define RU(X) ((X) = r.u ())
 #define RUC(T,X) ((X) = T (r.u ()))
-#define RT(X) ((X) = read_tree (d))
+#define RT(X) ((X) = tree_node (d))
   tree_code code = TREE_CODE (t);
 
   switch (code)
@@ -2480,7 +2480,7 @@ cpms_out::lang_decl_vals (FILE *d, tree t)
 {
   const struct lang_decl *lang = DECL_LANG_SPECIFIC (t);
 #define WU(X) (w.u (X))
-#define WT(X) (write_tree (d, X))
+#define WT(X) (tree_node (d, X))
   /* Module index already written.  */
   switch (lang->u.base.selector)
     {
@@ -2513,7 +2513,7 @@ cpms_in::lang_decl_vals (FILE *d, tree t)
 {
   struct lang_decl *lang = DECL_LANG_SPECIFIC (t);
 #define RU(X) ((X) = r.u ())
-#define RT(X) ((X) = read_tree (d))
+#define RT(X) ((X) = tree_node (d))
 
   /* Module index already read.  */
 
@@ -2582,7 +2582,7 @@ cpms_in::lang_decl_vals (FILE *d, tree t)
 */
 
 void
-cpms_out::write_tree (FILE *d, tree t)
+cpms_out::tree_node (FILE *d, tree t)
 {
   if (!t)
     {
@@ -2608,8 +2608,8 @@ cpms_out::write_tree (FILE *d, tree t)
     {
       /* Write out ctx/name/module and maybe tag.  */
       tree ctx = CP_DECL_CONTEXT (t);
-      write_tree (d, ctx);
-      write_tree (d, DECL_NAME (t));
+      tree_node (d, ctx);
+      tree_node (d, DECL_NAME (t));
       unsigned mod = MAYBE_DECL_MODULE_INDEX (t);
       w.u (mod);
       if (mod >= IMPORTED_MODULE_BASE)
@@ -2689,7 +2689,7 @@ cpms_out::write_tree (FILE *d, tree t)
    error_mark_node if TAG is totally bogus.  */
 
 tree
-cpms_in::read_tree (FILE *d)
+cpms_in::tree_node (FILE *d)
 {
   unsigned tag = r.u ();
 
@@ -2732,8 +2732,8 @@ cpms_in::read_tree (FILE *d)
     body = 0;
   else if (klass == tcc_declaration)
     {
-      ctx = read_tree (d);
-      name = read_tree (d);
+      ctx = tree_node (d);
+      name = tree_node (d);
       if (r.error ())
 	return NULL_TREE;
 
