@@ -1,3 +1,16 @@
+2017-05-12  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* omp-expand.c (expand_omp_target) <GF_OMP_TARGET_KIND_OACC_KERNELS>:
+	Set "oacc kernels" attribute.
+	* omp-general.c (oacc_set_fn_attrib): Remove is_kernel formal
+	parameter.  Adjust all users.
+	(oacc_fn_attrib_kernels_p): Remove function.
+	* omp-offload.c (execute_oacc_device_lower): Look for "oacc
+	kernels" attribute instead of calling oacc_fn_attrib_kernels_p.
+	* tree-ssa-loop.c (gate_oacc_kernels): Likewise.
+	* tree-parloops.c (create_parallel_loop): If oacc_kernels_p,
+	assert "oacc kernels" attribute is set.
+
 2017-05-11  Carl Love  <cel@us.ibm.com>
 
 	* config/rs6000/rs6000-c: Add support for built-in functions

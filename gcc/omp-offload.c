@@ -619,7 +619,6 @@ oacc_validate_dims (tree fn, tree attrs, int *dims, int level, unsigned used)
   tree purpose[GOMP_DIM_MAX];
   unsigned ix;
   tree pos = TREE_VALUE (attrs);
-  bool is_kernel = oacc_fn_attrib_kernels_p (attrs);
 
   /* Make sure the attribute creator attached the dimension
      information.  */
@@ -666,13 +665,8 @@ oacc_validate_dims (tree fn, tree attrs, int *dims, int level, unsigned used)
       /* Replace the attribute with new values.  */
       pos = NULL_TREE;
       for (ix = GOMP_DIM_MAX; ix--;)
-	{
-	  pos = tree_cons (purpose[ix],
-			   build_int_cst (integer_type_node, dims[ix]),
-			   pos);
-	  if (is_kernel)
-	    TREE_PUBLIC (pos) = 1;
-	}
+	pos = tree_cons (purpose[ix],
+			 build_int_cst (integer_type_node, dims[ix]), pos);
       oacc_replace_fn_attrib (fn, pos);
     }
 }
@@ -1455,10 +1449,16 @@ execute_oacc_device_lower ()
   int fn_level = oacc_fn_attrib_level (attrs);
 
   if (dump_file)
-    fprintf (dump_file, oacc_fn_attrib_kernels_p (attrs)
-	     ? "Function is kernels offload\n"
-	     : fn_level < 0 ? "Function is parallel offload\n"
-	     : "Function is routine level %d\n", fn_level);
+    {
+      if (fn_level >= 0)
+	fprintf (dump_file, "Function is OpenACC routine level %d\n",
+		 fn_level);
+      else if (lookup_attribute ("oacc kernels",
+				 DECL_ATTRIBUTES (current_function_decl)))
+	fprintf (dump_file, "Function is OpenACC kernels offload\n");
+      else
+	fprintf (dump_file, "Function is OpenACC parallel offload\n");
+    }
 
   unsigned outer_mask = fn_level >= 0 ? GOMP_DIM_MASK (fn_level) - 1 : 0;
   unsigned used_mask = oacc_loop_partition (loops, outer_mask);
