@@ -1,5 +1,8 @@
 2017-05-12  Thomas Schwinge  <thomas@codesourcery.com>
 
+	* c-c++-common/goacc/parallel-dims-1.c: New file.
+	* c-c++-common/goacc/parallel-dims-2.c: Likewise.
+
 	* c-c++-common/goacc/classify-kernels-unparallelized.c: Adjust.
 	* c-c++-common/goacc/classify-kernels.c: Likewise.
 	* c-c++-common/goacc/kernels-counter-vars-function-scope.c:

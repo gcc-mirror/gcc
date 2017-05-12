@@ -1,3 +1,11 @@
+2017-05-12  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* c-parser.c (c_parser_omp_clause_num_gangs)
+	(c_parser_omp_clause_num_workers)
+	(c_parser_omp_clause_vector_length): Merge functions into...
+	(c_parser_oacc_single_int_clause): ... this new function.  Adjust
+	all users.
+
 2017-05-11  Nathan Sidwell  <nathan@acm.org>
 
 	* gimple-parser.c: Don't #include tree-dump.h.
