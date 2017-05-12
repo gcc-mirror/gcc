@@ -28,7 +28,12 @@ SIGLIST=""
 addsig() {
     echo "	$1: $2,"
     # Get the signal number and add it to SIGLIST
-    signum=`grep "const $1 = " gen-sysinfo.go | sed -e 's/.* = \([0-9]*\)/\1/'`
+    signum=`grep "const $1 = " gen-sysinfo.go | sed -e 's/.* = //'`
+    if echo "$signum" | grep -q '^_SIG[A-Z0-9_]*$'; then
+        # Recurse once to obtain signal number
+        # This is needed for some MIPS signals defined as aliases of other signals
+        signum=`grep "const $signum = " gen-sysinfo.go | sed -e 's/.* = //'`
+    fi
     SIGLIST=$SIGLIST"_${signum}_"
 }
 
