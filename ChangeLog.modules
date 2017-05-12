@@ -1,5 +1,13 @@
 2017-05-12  Nathan Sidwell  <nathan@acm.org>
 
+	Inline function bodies
+	gcc/cp/
+	* module.c (cpms_out::write_tree, cpms_in::read_tree): Read/write
+	exprs
+	(cpms_in::tag_definition): Insert inline function.
+	gcc/testsuite/
+	* g++.dg/modules/fn-inline-1_[ab].C: New.
+
 	Merge trunk r247968.
 
 	gcc/cp/
