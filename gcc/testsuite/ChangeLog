@@ -1,4 +1,6 @@
-gcc/testsuite/ChangeLog:
+2017-05-11  Nathan Sidwell  <nathan@acm.org>
+
+	* lib/gcc-dg.exp (schedule-cleanups): Add lang dump capability.
 
 2017-05-11  Carl Love  <cel@us.ibm.com>
 

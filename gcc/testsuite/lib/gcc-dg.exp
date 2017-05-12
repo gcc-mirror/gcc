@@ -158,8 +158,8 @@ proc schedule-cleanups { opts } {
     }
     # Finally see if there are any dumps in opts, otherwise we are done
     if [regexp -- {(?=(?:^|[ \t]+)?)-fdump-[^ \t]+(?=(?:$|[ \t]+)?)} $opts] {
-        # Ipa, Rtl, Tree for simplicity
-        set ptn "{i,r,t}"
+        # Lang, Ipa, Rtl, Tree for simplicity
+        set ptn "{l,i,r,t}"
     } else {
         return $finalcode
     }
