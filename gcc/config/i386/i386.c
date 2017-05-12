@@ -40913,9 +40913,16 @@ ix86_rtx_costs (rtx x, machine_mode mode, int outer_code_i, int opno,
 	    }
 	  else if (GET_CODE (XEXP (x, 0)) == PLUS)
 	    {
-	      *total = cost->lea;
-	      *total += rtx_cost (XEXP (XEXP (x, 0), 0), mode,
-				  outer_code, opno, speed);
+	      /* Add with carry, ignore the cost of adding a carry flag.  */
+	      if (ix86_carry_flag_operator (XEXP (XEXP (x, 0), 0), mode))
+		*total = cost->add;
+	      else
+		{
+		  *total = cost->lea;
+		  *total += rtx_cost (XEXP (XEXP (x, 0), 0), mode,
+				      outer_code, opno, speed);
+		}
+
 	      *total += rtx_cost (XEXP (XEXP (x, 0), 1), mode,
 				  outer_code, opno, speed);
 	      *total += rtx_cost (XEXP (x, 1), mode,
@@ -40926,6 +40933,20 @@ ix86_rtx_costs (rtx x, machine_mode mode, int outer_code_i, int opno,
       /* FALLTHRU */
 
     case MINUS:
+      /* Subtract with borrow, ignore the cost of subtracting a carry flag.  */
+      if (GET_MODE_CLASS (mode) == MODE_INT
+	  && GET_MODE_SIZE (mode) <= UNITS_PER_WORD
+	  && GET_CODE (XEXP (x, 0)) == MINUS
+	  && ix86_carry_flag_operator (XEXP (XEXP (x, 0), 1), mode))
+	{
+	  *total = cost->add;
+	  *total += rtx_cost (XEXP (XEXP (x, 0), 0), mode,
+			      outer_code, opno, speed);
+	  *total += rtx_cost (XEXP (x, 1), mode,
+			      outer_code, opno, speed);
+	  return true;
+	}
+
       if (SSE_FLOAT_MODE_P (mode) && TARGET_SSE_MATH)
 	{
 	  /* ??? SSE cost should be used here.  */

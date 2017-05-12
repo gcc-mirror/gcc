@@ -1,3 +1,11 @@
+2017-05-12  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/80723
+	* config/i386/i386.c (ix86_rtx_cost) [case PLUS]: Ignore the
+	cost of adding a carry flag for ADC instruction.
+	[case MINUS]: Ignore the cost of subtracting a carry flag
+	for SBB instruction.
+
 2017-05-12  Steven Munroe  <munroesj@gcc.gnu.org>
 
 	* config.gcc (powerpc*-*-*): Add bmi2intrin.h, bmiintrin.h,
@@ -8,7 +16,7 @@
 
 2017-05-12  Jeff Law  <law@redhat.com>
 
-	* tree-vrp.c (vrp_dom_walker::before_dom_childern): Push unwinding
+	* tree-vrp.c (vrp_dom_walker::before_dom_children): Push unwinding
 	markers.
 
 2017-05-12  Peter Bergner  <bergner@vnet.ibm.com>
