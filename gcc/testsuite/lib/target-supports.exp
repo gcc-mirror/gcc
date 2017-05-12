@@ -522,9 +522,16 @@ proc check_effective_target_keeps_null_pointer_checks { } {
 
 # Return the autofdo profile wrapper
 
+# Linux by default allows 516KB of perf event buffers
+# in /proc/sys/kernel/perf_event_mlock_kb
+# Each individual perf tries to grab it
+# This causes problems with parallel test suite runs. Instead
+# limit us to 8 pages (32K), which should be good enough
+# for the small test programs. With the default settings 
+# this allows parallelism of 16 and higher of parallel gcc-auto-profile
 proc profopt-perf-wrapper { } {
     global srcdir
-    return "$srcdir/../config/i386/gcc-auto-profile -o perf.data "
+    return "$srcdir/../config/i386/gcc-auto-profile -o perf.data -m8 "
 }
 
 # Return true if profiling is supported on the target.
