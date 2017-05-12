@@ -1684,6 +1684,10 @@ group_case_labels_stmt (gswitch *stmt)
 	  || (EDGE_COUNT (base_bb->succs) == 0
 	      && gimple_seq_unreachable_p (bb_seq (base_bb))))
 	{
+	  edge e;
+	  if (base_bb != default_bb
+	      && (e = find_edge (gimple_bb (stmt), base_bb)) != NULL)
+	    remove_edge_and_dominated_blocks (e);
 	  gimple_switch_set_label (stmt, i, NULL_TREE);
 	  i++;
 	  new_size--;

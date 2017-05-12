@@ -1,3 +1,8 @@
+2017-05-12  Peter Bergner  <bergner@vnet.ibm.com>
+
+	PR middle-end/80707
+	* tree-cfg.c: Remove cfg edges of unreachable case statements.
+
 2017-05-12  Will Schmidt  <will_schmidt@vnet.ibm.com>
 
 	* config/rs6000/rs6000.c (rs6000_gimple_fold_builtin): Add handling for
