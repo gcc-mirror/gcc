@@ -2043,10 +2043,13 @@ create_parallel_loop (struct loop *loop, tree loop_fn, tree data,
   /* Prepare the GIMPLE_OMP_PARALLEL statement.  */
   if (oacc_kernels_p)
     {
+      gcc_checking_assert (lookup_attribute ("oacc kernels",
+					     DECL_ATTRIBUTES (cfun->decl)));
+
       tree clause = build_omp_clause (loc, OMP_CLAUSE_NUM_GANGS);
       OMP_CLAUSE_NUM_GANGS_EXPR (clause)
 	= build_int_cst (integer_type_node, n_threads);
-      oacc_set_fn_attrib (cfun->decl, clause, true, NULL);
+      oacc_set_fn_attrib (cfun->decl, clause, NULL);
     }
   else
     {
