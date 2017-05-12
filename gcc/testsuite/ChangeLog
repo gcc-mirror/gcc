@@ -1,3 +1,8 @@
+2017-05-12  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/60430
+	* g++.dg/cpp0x/pr60430.C: New.
+
 2017-05-12  Jeff Law  <law@redhat.com>
 
 	* g++.dg/tree-ssa/ssa-dom-thread-4.c: Update expected output.
