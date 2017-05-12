@@ -910,17 +910,17 @@ public:
 
 private:
   void start (tree_code, tree);
-  void write_loc (FILE *, location_t);
-  bool write_tree_present (FILE *, bool, tree);
-  void write_tree_ary (FILE *, unsigned, const gtp *);
-  void write_core_bools (FILE *, tree);
-  void write_core_vals (FILE *, tree);
-  void write_lang_decl_bools (FILE *, tree);
-  void write_lang_decl_vals (FILE *, tree);
+  void loc (FILE *, location_t);
+  bool mark_present (FILE *, bool, tree);
+  void globals (FILE *, unsigned, const gtp *);
+  void core_bools (FILE *, tree);
+  void core_vals (FILE *, tree);
+  void lang_decl_bools (FILE *, tree);
+  void lang_decl_vals (FILE *, tree);
 
 public:
   void write_tree (FILE *, tree);
-  void write_bindings (FILE *d, tree ns);
+  void bindings (FILE *d, tree ns);
 };
 
 cpms_out::cpms_out (FILE *s, const char *n)
@@ -986,13 +986,13 @@ private:
   bool alloc_remap_vec (unsigned limit);
   tree start (tree_code);
   tree finish (FILE *, tree);
-  location_t read_loc (FILE *);
-  bool read_tree_present (FILE *, bool, tree);
-  bool read_tree_ary (FILE *, unsigned, const gtp *);
-  bool read_core_bools (FILE *, tree);
-  bool read_core_vals (FILE *, tree);
-  bool read_lang_decl_bools (FILE *, tree);
-  bool read_lang_decl_vals (FILE *, tree);
+  location_t loc (FILE *);
+  bool mark_present (FILE *, bool, tree);
+  bool globals (FILE *, unsigned, const gtp *);
+  bool core_bools (FILE *, tree);
+  bool core_vals (FILE *, tree);
+  bool lang_decl_bools (FILE *, tree);
+  bool lang_decl_vals (FILE *, tree);
 
 public:
   tree read_tree (FILE *);
@@ -1228,7 +1228,7 @@ cpms_out::tag_trees (FILE *d)
 {
   w.u (rt_trees);
   for (unsigned ix = 0; global_tree_arys[ix].ptr; ix++)
-    write_tree_ary (d, ix, &global_tree_arys[ix]);
+    globals (d, ix, &global_tree_arys[ix]);
   w.u (0);
   w.checkpoint ();
 }
@@ -1237,13 +1237,13 @@ bool
 cpms_in::tag_trees (FILE *d)
 {
   for (unsigned ix = 0; global_tree_arys[ix].ptr; ix++)
-    if (!read_tree_ary (d, ix, &global_tree_arys[ix]))
+    if (!globals (d, ix, &global_tree_arys[ix]))
       return false;
   return !r.u () && r.checkpoint ();
 }
 
 bool
-cpms_out::write_tree_present (FILE *d, bool is_type, tree t)
+cpms_out::mark_present (FILE *d, bool is_type, tree t)
 {
   bool existed = true;
 
@@ -1261,7 +1261,7 @@ cpms_out::write_tree_present (FILE *d, bool is_type, tree t)
 }
 
 bool
-cpms_in::read_tree_present (FILE *d, bool is_type, tree t)
+cpms_in::mark_present (FILE *d, bool is_type, tree t)
 {
   bool existed = r.b ();
 
@@ -1282,7 +1282,7 @@ cpms_in::read_tree_present (FILE *d, bool is_type, tree t)
    b[]:insert_p  */
 
 void
-cpms_out::write_tree_ary (FILE *d, unsigned ary_num, const gtp *ary_p)
+cpms_out::globals (FILE *d, unsigned ary_num, const gtp *ary_p)
 {
   const tree *ary = ary_p->ptr;
   unsigned num = ary_p->num;
@@ -1297,11 +1297,11 @@ cpms_out::write_tree_ary (FILE *d, unsigned ary_num, const gtp *ary_p)
     {
       tree t = ary[ix];
 
-      if (!write_tree_present (d, false, t))
+      if (!mark_present (d, false, t))
 	{
 	  n1++;
 	  if (CODE_CONTAINS_STRUCT (TREE_CODE (t), TS_TYPED)
-	      && !write_tree_present (d, true, TREE_TYPE (t)))
+	      && !mark_present (d, true, TREE_TYPE (t)))
 	    n2++;
 	  if (d && !(n1 & 15))
 	    fprintf (d, "\n\t%u:", ix + 1);
@@ -1313,7 +1313,7 @@ cpms_out::write_tree_ary (FILE *d, unsigned ary_num, const gtp *ary_p)
 }
 
 bool
-cpms_in::read_tree_ary (FILE *d, unsigned ary_num, const gtp *ary_p)
+cpms_in::globals (FILE *d, unsigned ary_num, const gtp *ary_p)
 {
   const tree *ary = ary_p->ptr;
   unsigned num = ary_p->num;
@@ -1328,11 +1328,11 @@ cpms_in::read_tree_ary (FILE *d, unsigned ary_num, const gtp *ary_p)
     {
       tree t = ary[ix];
 
-      if (!read_tree_present (d, false, t))
+      if (!mark_present (d, false, t))
 	{
 	  n1++;
 	  if (CODE_CONTAINS_STRUCT (TREE_CODE (t), TS_TYPED)
-	      && !read_tree_present (d, true, TREE_TYPE (t)))
+	      && !mark_present (d, true, TREE_TYPE (t)))
 	    n2++;
 	  if (d && !(n1 & 15))
 	    fprintf (d, "\n\t%u:", ix + 1);
@@ -1641,13 +1641,13 @@ cpms_in::read_item (FILE *d)
 /* Read & write locations.  */
 
 void
-cpms_out::write_loc (FILE *, location_t)
+cpms_out::loc (FILE *, location_t)
 {
   // FIXME:Do something
 }
 
 location_t
-cpms_in::read_loc (FILE *)
+cpms_in::loc (FILE *)
 {
   // FIXME:Do something^-1
   return UNKNOWN_LOCATION;
@@ -1778,7 +1778,7 @@ cpms_in::finish (FILE *d, tree t)
 /* Read & write the core boolean flags.  */
 
 void
-cpms_out::write_core_bools (FILE *, tree t)
+cpms_out::core_bools (FILE *, tree t)
 {
 #define WB(X) (w.b (X))
   tree_code code = TREE_CODE (t);
@@ -1919,7 +1919,7 @@ cpms_out::write_core_bools (FILE *, tree t)
 }
 
 bool
-cpms_in::read_core_bools (FILE *, tree t)
+cpms_in::core_bools (FILE *, tree t)
 {
 #define RB(X) ((X) = r.b ())
   tree_code code = TREE_CODE (t);
@@ -2061,7 +2061,7 @@ cpms_in::read_core_bools (FILE *, tree t)
 }
 
 void
-cpms_out::write_lang_decl_bools (FILE *, tree t)
+cpms_out::lang_decl_bools (FILE *, tree t)
 {
 #define WB(X) (w.b (X))
   const struct lang_decl *lang = DECL_LANG_SPECIFIC (t);
@@ -2114,7 +2114,7 @@ cpms_out::write_lang_decl_bools (FILE *, tree t)
 }
 
 bool
-cpms_in::read_lang_decl_bools (FILE *, tree t)
+cpms_in::lang_decl_bools (FILE *, tree t)
 {
 #define RB(X) ((X) = r.b ())
   struct lang_decl *lang = DECL_LANG_SPECIFIC (t);
@@ -2170,7 +2170,7 @@ cpms_in::read_lang_decl_bools (FILE *, tree t)
 /* Read & write the core values and pointers.  */
 
 void
-cpms_out::write_core_vals (FILE *d, tree t)
+cpms_out::core_vals (FILE *d, tree t)
 {
 #define WU(X) (w.u (X))
 #define WT(X) (write_tree (d, X))
@@ -2243,7 +2243,7 @@ cpms_out::write_core_vals (FILE *d, tree t)
   if (CODE_CONTAINS_STRUCT (code, TS_DECL_MINIMAL))
     {
       /* decl_minimal.name & decl_minimal.context already read in.  */
-      write_loc (d, t->decl_minimal.locus);
+      loc (d, t->decl_minimal.locus);
     }
 
   if (CODE_CONTAINS_STRUCT (code, TS_DECL_COMMON))
@@ -2324,7 +2324,7 @@ cpms_out::write_core_vals (FILE *d, tree t)
 }
 
 bool
-cpms_in::read_core_vals (FILE *d, tree t)
+cpms_in::core_vals (FILE *d, tree t)
 {
 #define RU(X) ((X) = r.u ())
 #define RUC(T,X) ((X) = T (r.u ()))
@@ -2398,7 +2398,7 @@ cpms_in::read_core_vals (FILE *d, tree t)
       /* Don't zap the locus just yet, we don't record it correctly
 	 and thus lose all location information.  */
       /* t->decl_minimal.locus = */
-      read_loc (d);
+      loc (d);
     }
 
   if (CODE_CONTAINS_STRUCT (code, TS_DECL_COMMON))
@@ -2476,7 +2476,7 @@ cpms_in::read_core_vals (FILE *d, tree t)
 }
 
 void
-cpms_out::write_lang_decl_vals (FILE *d, tree t)
+cpms_out::lang_decl_vals (FILE *d, tree t)
 {
   const struct lang_decl *lang = DECL_LANG_SPECIFIC (t);
 #define WU(X) (w.u (X))
@@ -2509,7 +2509,7 @@ cpms_out::write_lang_decl_vals (FILE *d, tree t)
 }
 
 bool
-cpms_in::read_lang_decl_vals (FILE *d, tree t)
+cpms_in::lang_decl_vals (FILE *d, tree t)
 {
   struct lang_decl *lang = DECL_LANG_SPECIFIC (t);
 #define RU(X) ((X) = r.u ())
@@ -2650,7 +2650,7 @@ cpms_out::write_tree (FILE *d, tree t)
 
   if (body > 0)
     {
-      write_core_bools (d, t);
+      core_bools (d, t);
       bool specific = false;
 
       if (klass == tcc_type || klass == tcc_declaration)
@@ -2665,18 +2665,18 @@ cpms_out::write_tree (FILE *d, tree t)
 	  else if (klass == tcc_type)
 	    ; // FIXME: write type lang bools
 	  else
-	    write_lang_decl_bools (d, t);
+	    lang_decl_bools (d, t);
 	}
       w.bflush ();
       w.checkpoint ();
 
-      write_core_vals (d, t);
+      core_vals (d, t);
       if (!specific)
 	;
       else if (klass == tcc_type)
 	; // FIXME: write lang_type vals
       else
-	write_lang_decl_vals (d, t);
+	lang_decl_vals (d, t);
     }
 
   w.checkpoint ();
@@ -2784,7 +2784,7 @@ cpms_in::read_tree (FILE *d)
       bool specific = false;
       bool lied = false;
 
-      if (!read_core_bools (d, t))
+      if (!core_bools (d, t))
 	lied = true;
       else if (klass == tcc_type || klass == tcc_declaration)
 	{
@@ -2803,7 +2803,7 @@ cpms_in::read_tree (FILE *d)
 	    ;
 	  else if (klass == tcc_type
 		   ? !true // FIXME: read lang_type bools
-		   : !read_lang_decl_bools (d, t))
+		   : !lang_decl_bools (d, t))
 	    lied = true;
 	}
       r.bflush ();
@@ -2816,8 +2816,9 @@ cpms_in::read_tree (FILE *d)
 	  DECL_NAME (t) = name;
 	}
 
-      if (!read_core_vals (d, t))
-	return NULL_TREE;
+      if (!core_vals (d, t))
+	goto barf;
+
       if (!specific)
 	;
       else if (klass == tcc_type)
@@ -2825,7 +2826,7 @@ cpms_in::read_tree (FILE *d)
       else
 	{
 	  DECL_MODULE_INDEX (t) = mod;
-	  if (!read_lang_decl_vals (d, t))
+	  if (!lang_decl_vals (d, t))
 	    goto barf;
 	}
     }
@@ -2874,7 +2875,7 @@ cpms_in::read_tree (FILE *d)
    module and the main module.  */
 
 void
-cpms_out::write_bindings (FILE *d, tree ns)
+cpms_out::bindings (FILE *d, tree ns)
 {
   if (d)
     fprintf (d, "Walking namespace '%s'\n",
@@ -2923,7 +2924,7 @@ cpms_out::write_bindings (FILE *d, tree ns)
 	tag_binding (d, ns, false, name, global);
 
       if (inner)
-	write_bindings (d, inner);
+	bindings (d, inner);
     }
   if (d)
     fprintf (d, "Walked namespace '%s'\n",
@@ -3300,7 +3301,7 @@ write_module (FILE *stream, const char *fname, tree name)
   out.tag_trees (d);
 
   /* Write decls.  */
-  out.write_bindings (d, global_namespace);
+  out.bindings (d, global_namespace);
 
   // FIXME:Write defns.  Probably fine just to do it during the first
   // namespace walk.
