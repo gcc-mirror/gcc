@@ -17163,6 +17163,17 @@ rs6000_gimple_fold_builtin (gimple_stmt_iterator *gsi)
 	gsi_replace (gsi, g, true);
 	return true;
       }
+    case VSX_BUILTIN_XVMULSP:
+    case VSX_BUILTIN_XVMULDP:
+      {
+	arg0 = gimple_call_arg (stmt, 0);
+	arg1 = gimple_call_arg (stmt, 1);
+	lhs = gimple_call_lhs (stmt);
+	gimple *g = gimple_build_assign (lhs, MULT_EXPR, arg0, arg1);
+	gimple_set_location (g, gimple_location (stmt));
+	gsi_replace (gsi, g, true);
+	return true;
+      }
     /* Even element flavors of vec_mul (signed). */
     case ALTIVEC_BUILTIN_VMULESB:
     case ALTIVEC_BUILTIN_VMULESH:
