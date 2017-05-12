@@ -74,15 +74,6 @@
 bool be_very_verbose;
 bool be_verbose;
 
-#ifdef __ECLIPSE__
-//extern char * string_bbb_opts;
-#define FIRST_PSEUDO_REGISTER 25
-#define FRAME_POINTER_REGNUM 13
-#define STACK_POINTER_REGNUM 15
-#define NOTICE_UPDATE_CC(a,b)
-#define Pmode SImode
-#define PIC_REG 12
-#endif
 extern struct lang_hooks lang_hooks;
 
 /* Lookup of the current function name. */
