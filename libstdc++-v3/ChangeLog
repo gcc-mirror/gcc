@@ -12,10 +12,6 @@
 	(_Rb_tree_impl<>): Remove _Is_pod_comparator
 	template parameter.
 
-	* include/debug/safe_container.h [_GLIBCXX_USE_CXX11_ABI]
-	(_Safe_container<>): Remove _IsCxx11AllocatorAware template parameter.
-	* include/debug/string: Adapt.
-
 	* include/debug/formatter.h [_GLIBCXX_INLINE_VERSION]
 	(__gnu_debug::_Error_formatter::_Parameter::_M_print_field): Remove.
 	(__gnu_debug::_Error_formatter::_Parameter::_M_print_description):
