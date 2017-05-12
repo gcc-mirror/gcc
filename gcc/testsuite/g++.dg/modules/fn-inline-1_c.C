@@ -1,0 +1,15 @@
+import bob;
+
+int main ()
+{
+  if (frob (2) != -2)
+    return 1;
+  if (Frob (0, 2) != 2)
+    return 1;
+  if (Frob (2, 2) != 8)
+    return 1;
+  return 0;
+}
+
+// { dg-final { scan-assembler "_Z4frobi:" } }
+// { dg-final { scan-assembler ".text._Z4frobi,.*,_Z4frobi,comdat" } }

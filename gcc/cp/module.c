@@ -26,6 +26,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "dumpfile.h"
 #include "bitmap.h"
 #include "cgraph.h"
+#include "tree-iterator.h"
 
 /* State of a particular module. */
 struct GTY(()) module_state
@@ -1564,6 +1565,8 @@ cpms_in::tag_definition (FILE *d)
 	note_vague_linkage_fn (decl);
 	current_function_decl = decl;
 	allocate_struct_function (decl, false);
+	cfun->language = ggc_cleared_alloc<language_function> ();
+	cfun->language->base.x_stmt_tree.stmts_are_full_exprs_p = 1;
 	set_cfun (NULL);
 	current_function_decl = NULL_TREE;
 	cgraph_node::finalize_function (decl, false);
@@ -2262,9 +2265,14 @@ cpms_out::write_core_vals (FILE *d, tree t)
       /* decl_common.initial, decl_common.abstract_origin.  */
     }
 
+  if (CODE_CONTAINS_STRUCT (code, TS_LABEL_DECL))
+    {
+      WU (t->label_decl.label_decl_uid);
+      WU (t->label_decl.eh_landing_pad_nr);
+    }
+
   /* TS_DECL_WITH_RTL.  */
   /* TS_FIELD_DECL.  */
-  /* TS_LABEL_DECL. */
   /* TS_RESULT_DECL. */
   /* TS_CONST_DECL.  */
   /* TS_PARM_DECL.  */
@@ -2289,6 +2297,16 @@ cpms_out::write_core_vals (FILE *d, tree t)
   if (CODE_CONTAINS_STRUCT (code, TS_EXP))
     for (unsigned ix = TREE_OPERAND_LENGTH (t); ix--;)
       WT (TREE_OPERAND (t, ix));
+
+  
+  if (CODE_CONTAINS_STRUCT (code, TS_STATEMENT_LIST))
+    {
+      for (tree_stmt_iterator iter = tsi_start (t);
+	   !tsi_end_p (iter); tsi_next (&iter))
+	if (tree stmt = tsi_stmt (iter))
+	  WT (stmt);
+      WT (NULL_TREE);
+    }
 
   switch (code)
     {
@@ -2402,10 +2420,14 @@ cpms_in::read_core_vals (FILE *d, tree t)
       /* decl_common.initial, decl_common.abstract_origin.  */
     }
 
+  if (CODE_CONTAINS_STRUCT (code, TS_LABEL_DECL))
+    {
+      RU (t->label_decl.label_decl_uid);
+      RU (t->label_decl.eh_landing_pad_nr);
+    }
 
   /* TS_DECL_WITH_RTL.  */
   /* TS_FIELD_DECL.  */
-  /* TS_LABEL_DECL. */
   /* TS_RESULT_DECL. */
   /* TS_CONST_DECL.  */
   /* TS_PARM_DECL.  */
@@ -2430,6 +2452,13 @@ cpms_in::read_core_vals (FILE *d, tree t)
     for (unsigned ix = TREE_OPERAND_LENGTH (t); ix--;)
       RT (TREE_OPERAND (t, ix));
 
+  if (CODE_CONTAINS_STRUCT (code, TS_STATEMENT_LIST))
+    {
+      tree_stmt_iterator iter = tsi_start (t);
+      for (tree stmt; RT (stmt);)
+	tsi_link_after (&iter, stmt, TSI_CONTINUE_LINKING);
+    }
+      
   switch (code)
     {
     case OVERLOAD:

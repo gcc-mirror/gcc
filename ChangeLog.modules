@@ -1,8 +1,15 @@
 2017-05-12  Nathan Sidwell  <nathan@acm.org>
 
+	More inline bodies
+	gcc/cp/
+	* module.c (cpms_{in,out}::write_core_vals): Read/write
+	statement lists & LABEL_DECLs.
+	gcc/testsuite/
+	* g++.dg/modules/fn-inline-1_c.C: More test.
+
 	Inline function bodies
 	gcc/cp/
-	* module.c (cpms_out::write_tree, cpms_in::read_tree): Read/write
+	* module.c (cpms_{in,out}::write_core_vals): Read/write
 	exprs
 	(cpms_in::tag_definition): Insert inline function.
 	gcc/testsuite/
