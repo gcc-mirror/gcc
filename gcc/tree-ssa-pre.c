@@ -4645,30 +4645,51 @@ eliminate_dom_walker::before_dom_children (basic_block b)
 	      && TREE_CODE (gimple_assign_rhs1 (stmt)) == ADDR_EXPR)
 	    recompute_tree_invariant_for_addr_expr (gimple_assign_rhs1 (stmt));
 	  gimple *old_stmt = stmt;
-	  if (is_gimple_call (stmt))
+	  gimple_stmt_iterator prev = gsi;
+	  gsi_prev (&prev);
+	  if (fold_stmt (&gsi))
 	    {
-	      /* ???  Only fold calls inplace for now, this may create new
-		 SSA names which in turn will confuse free_scc_vn SSA name
-		 release code.  */
-	      fold_stmt_inplace (&gsi);
-	      /* When changing a call into a noreturn call, cfg cleanup
-		 is needed to fix up the noreturn call.  */
-	      if (!was_noreturn && gimple_call_noreturn_p (stmt))
-		el_to_fixup.safe_push  (stmt);
+	      /* fold_stmt may have created new stmts inbetween
+		 the previous stmt and the folded stmt.  Mark
+		 all defs created there as varying to not confuse
+		 the SCCVN machinery as we're using that even during
+		 elimination.  */
+	      if (gsi_end_p (prev))
+		prev = gsi_start_bb (b);
+	      else
+		gsi_next (&prev);
+	      if (gsi_stmt (prev) != gsi_stmt (gsi))
+		do
+		  {
+		    tree def;
+		    ssa_op_iter dit;
+		    FOR_EACH_SSA_TREE_OPERAND (def, gsi_stmt (prev),
+					       dit, SSA_OP_ALL_DEFS)
+		      /* As existing DEFs may move between stmts
+			 we have to guard VN_INFO_GET.  */
+		      if (! has_VN_INFO (def))
+			VN_INFO_GET (def)->valnum = def;
+		    if (gsi_stmt (prev) == gsi_stmt (gsi))
+		      break;
+		    gsi_next (&prev);
+		  }
+		while (1);
 	    }
-	  else
-	    {
-	      fold_stmt (&gsi);
-	      stmt = gsi_stmt (gsi);
-	      if ((gimple_code (stmt) == GIMPLE_COND
-		   && (gimple_cond_true_p (as_a <gcond *> (stmt))
-		       || gimple_cond_false_p (as_a <gcond *> (stmt))))
-		  || (gimple_code (stmt) == GIMPLE_SWITCH
-		      && TREE_CODE (gimple_switch_index (
-				      as_a <gswitch *> (stmt)))
-		         == INTEGER_CST))
-		el_todo |= TODO_cleanup_cfg;
-	    }
+	  stmt = gsi_stmt (gsi);
+	  /* When changing a call into a noreturn call, cfg cleanup
+	     is needed to fix up the noreturn call.  */
+	  if (!was_noreturn
+	      && is_gimple_call (stmt) && gimple_call_noreturn_p (stmt))
+	    el_to_fixup.safe_push  (stmt);
+	  /* When changing a condition or switch into one we know what
+	     edge will be executed, schedule a cfg cleanup.  */
+	  if ((gimple_code (stmt) == GIMPLE_COND
+	       && (gimple_cond_true_p (as_a <gcond *> (stmt))
+		   || gimple_cond_false_p (as_a <gcond *> (stmt))))
+	      || (gimple_code (stmt) == GIMPLE_SWITCH
+		  && TREE_CODE (gimple_switch_index
+				  (as_a <gswitch *> (stmt))) == INTEGER_CST))
+	    el_todo |= TODO_cleanup_cfg;
 	  /* If we removed EH side-effects from the statement, clean
 	     its EH information.  */
 	  if (maybe_clean_or_replace_eh_stmt (old_stmt, stmt))

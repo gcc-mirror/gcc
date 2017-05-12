@@ -1,3 +1,7 @@
+2017-05-12  Richard Biener  <rguenther@suse.de>
+
+	* g++.dg/tree-ssa/ssa-dse-2.C: Adjust.
+
 2017-05-12  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/67687

@@ -54,6 +54,4 @@ fill_vec_av_set (av_set_t av)
 }
 
 /* { dg-final { scan-tree-dump-not "Trimming statement .head = -" "dse2" } } */
-/* { dg-final { scan-tree-dump "Deleted dead call: " "dse2" } } */
-
-
+/* { dg-final { scan-tree-dump-not "mem\[^\r\n\]*, 0\\);" "dse2" } } */
