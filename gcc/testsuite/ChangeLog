@@ -1,3 +1,8 @@
+2017-05-12  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/67687
+	* g++.dg/cpp0x/constexpr-ice17.C: New.
+
 2017-05-12  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/80713
