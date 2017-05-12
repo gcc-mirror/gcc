@@ -1,3 +1,18 @@
+2017-05-12  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	* gcc.target/powerpc/fold-vec-logical-ands-char.c: New.
+	* gcc.target/powerpc/fold-vec-logical-ands-int.c: New.
+	* gcc.target/powerpc/fold-vec-logical-ands-longlong.c: New.
+	* gcc.target/powerpc/fold-vec-logical-ands-short.c: New.
+	* gcc.target/powerpc/fold-vec-logical-ors-char.c: New.
+	* gcc.target/powerpc/fold-vec-logical-ors-int.c: New.
+	* gcc.target/powerpc/fold-vec-logical-ors-longlong.c: New.
+	* gcc.target/powerpc/fold-vec-logical-ors-short.c: New.
+	* gcc.target/powerpc/fold-vec-logical-other-char.c: New.
+	* gcc.target/powerpc/fold-vec-logical-other-int.c: New.
+	* gcc.target/powerpc/fold-vec-logical-other-longlong.c: New.
+	* gcc.target/powerpc/fold-vec-logical-other-short.c: New.
+
 2017-05-12  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/49604
