@@ -1,5 +1,11 @@
 2017-05-12  Will Schmidt  <will_schmidt@vnet.ibm.com>
 
+	* gcc.target/powerpc/fold-vec-div-float.c: New.
+	* gcc.target/powerpc/fold-vec-div-floatdouble.c: New.
+	* gcc.target/powerpc/fold-vec-div-longlong.c: New.
+
+2017-05-12  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
 	* gcc.target/powerpc/fold-vec-logical-ands-char.c: New.
 	* gcc.target/powerpc/fold-vec-logical-ands-int.c: New.
 	* gcc.target/powerpc/fold-vec-logical-ands-longlong.c: New.
