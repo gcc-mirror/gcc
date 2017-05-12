@@ -1,3 +1,10 @@
+2017-05-10  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	* config/rs6000/rs6000.c (gimple-fold.h): New #include.
+	(rs6000_gimple_fold_builtin): Add handling for early GIMPLE
+	expansion of vector logical operations (and, andc, or, xor,
+	nor, orc, nand).
+
 2017-05-12  Will Schmidt  <will_schmidt@vnet.ibm.com>
 
 	* gimple-fold.c (create_tmp_reg_or_ssa_name): Remove static declaration.
