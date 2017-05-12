@@ -1,3 +1,10 @@
+2017-05-12  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* runtime/environ.c (weak_secure_getenv): Fix "__secure_gettime"
+	vs. "__secure_getenv" typo.
+	(secure_getenv): Fix "HAVE__SECURE_GETENV"
+	vs. "HAVE___SECURE_GETENV" typo.
+
 2017-05-11  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	* libgfortran.h: HAVE_SECURE_GETENV: Don't check
