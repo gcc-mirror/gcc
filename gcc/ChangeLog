@@ -1,3 +1,11 @@
+2017-05-12  Steven Munroe  <munroesj@gcc.gnu.org>
+
+	* config.gcc (powerpc*-*-*): Add bmi2intrin.h, bmiintrin.h,
+	and x86intrin.h
+	* config/rs6000/bmiintrin.h: New file.
+	* config/rs6000/bmi2intrin.h: New file.
+	* config/rs6000/x86intrin.h: New file.
+
 2017-05-12  Jeff Law  <law@redhat.com>
 
 	* tree-vrp.c (vrp_dom_walker::before_dom_childern): Push unwinding
