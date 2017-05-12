@@ -1,5 +1,14 @@
 2017-05-12  Uros Bizjak  <ubizjak@gmail.com>
 
+	* compare-elim.c (try_eliminate_compare): Canonicalize
+	operation with embedded compare to
+	[(set (reg:CCM) (compare:CCM (operation) (immediate)))
+	 (set (reg) (operation)].
+
+	* config/i386/i386.c (TARGET_FLAGS_REGNUM): New define.
+
+2017-05-12  Uros Bizjak  <ubizjak@gmail.com>
+
 	PR target/80723
 	* config/i386/i386.c (ix86_rtx_cost) [case PLUS]: Ignore the
 	cost of adding a carry flag for ADC instruction.
