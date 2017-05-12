@@ -161,8 +161,8 @@ can_refer_decl_in_current_unit_p (tree decl, tree from_decl)
    is in SSA form, a SSA name is created.  Otherwise a temporary register
    is made.  */
 
-static tree
-create_tmp_reg_or_ssa_name (tree type, gimple *stmt = NULL)
+tree
+create_tmp_reg_or_ssa_name (tree type, gimple *stmt)
 {
   if (gimple_in_ssa_p (cfun))
     return make_ssa_name (type, stmt);

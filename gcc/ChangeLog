@@ -1,7 +1,12 @@
 2017-05-12  Will Schmidt  <will_schmidt@vnet.ibm.com>
 
-        * config/rs6000/rs6000.c (rs6000_gimple_fold_builtin): Add handling for
-        early GIMPLE expansion of vector multiplies.
+	* gimple-fold.c (create_tmp_reg_or_ssa_name): Remove static declaration.
+	* gimple-fold.h (create_tmp_reg_or_ssa_name): New prototype.
+
+2017-05-12  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	* config/rs6000/rs6000.c (rs6000_gimple_fold_builtin): Add handling for
+	early GIMPLE expansion of vector multiplies.
 
 2017-05-12  Prakhar Bahuguna  <prakhar.bahuguna@arm.com>
 
