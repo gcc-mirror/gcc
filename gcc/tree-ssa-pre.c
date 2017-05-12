@@ -4947,8 +4947,14 @@ remove_dead_inserted_code (void)
 	}
     }
 
+  unsigned int to_clear = -1U;
   EXECUTE_IF_SET_IN_BITMAP (inserted_exprs, 0, i, bi)
     {
+      if (to_clear != -1U)
+	{
+	  bitmap_clear_bit (inserted_exprs, to_clear);
+	  to_clear = -1U;
+	}
       t = SSA_NAME_DEF_STMT (ssa_name (i));
       if (!gimple_plf (t, NECESSARY))
 	{
@@ -4969,7 +4975,14 @@ remove_dead_inserted_code (void)
 	      release_defs (t);
 	    }
 	}
+      else
+	/* eliminate_fini will skip stmts marked for removal if we
+	   already removed it and uses inserted_exprs for this, so
+	   clear those we didn't end up removing.  */
+	to_clear = i;
     }
+  if (to_clear != -1U)
+    bitmap_clear_bit (inserted_exprs, to_clear);
   BITMAP_FREE (worklist);
 }
 
