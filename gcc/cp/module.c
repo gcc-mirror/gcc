@@ -259,10 +259,18 @@ cpm_serial::crc_buffer (const char *ptr, size_t l)
 /* Byte stream writer.  */
 class cpm_writer : public cpm_serial
 {
+  /* Instrumentation.  */
+  unsigned spans[2];
+  unsigned lengths[2];
+  int is_set;
+
 public:
   cpm_writer (FILE *s, const char *n)
     : cpm_serial (s, n)
   {
+    spans[0] = spans[1] = 0;
+    lengths[0] = lengths[1] = 0;
+    is_set = -1;
   }
   ~cpm_writer ()
   {
@@ -282,6 +290,7 @@ public:
 
 public:
   void checkpoint ();
+  void instrument (FILE *d);
 
 public:
   void b (bool);
@@ -357,9 +366,7 @@ cpm_writer::checkpoint ()
 bool
 cpm_reader::checkpoint ()
 {
-  unsigned b = bytes4 ();
-  bool ret = b == crc;
-  if (!ret)
+  if (bytes4 () != crc)
     {
       /* Map checksum error onto a reasonably specific errno.  */
 #if defined (EPROTO)
@@ -372,7 +379,16 @@ cpm_reader::checkpoint ()
       bad ();
 #endif
     }
-  return ret;
+  return !error ();
+}
+
+void
+cpm_writer::instrument (FILE *d)
+{
+  fprintf (d, "Wrote %u bits\n", lengths[0] + lengths[1]);
+  for (unsigned ix = 0; ix < 2; ix++)
+    fprintf (d, "%s %u spans of %.1f bits\n", ix ? "Ones" : "Zeroes",
+	     spans[ix], (float)lengths[ix] / (spans[ix] + !spans[ix]));
 }
 
 /* Finish a set of bools.  */
@@ -385,6 +401,7 @@ cpm_writer::bflush ()
       bytes4 (bit_val);
       bit_flush ();
     }
+  is_set = -1;
 }
 
 void
@@ -416,14 +433,26 @@ cpm_reader::bfill ()
 
 /* Bools are packed into bytes.  You cannot mix bools and non-bools.
    You must call bflush before emitting another type.  So batch your
-   bools.  */
+   bools.
+
+   It may be worth optimizing for most bools being zero.  some kind of
+   run-length encoding?  */
 
 void
 cpm_writer::b (bool x)
 {
+  if (is_set != x)
+    {
+      is_set = x;
+      spans[x]++;
+    }
+  lengths[x]++;
   bit_val |= unsigned (x) << bit_pos++;
   if (bit_pos == 32)
-    bflush ();
+    {
+      bytes4 (bit_val);
+      bit_flush ();
+    }
 }
 
 bool
@@ -433,7 +462,7 @@ cpm_reader::b ()
     bfill ();
   bool v = (bit_val >> bit_pos++) & 1;
   if (bit_pos == 32)
-    bflush ();
+    bit_flush ();
   return v;
 }
 
@@ -773,15 +802,16 @@ public:
   enum record_tag
   {
     /* Module-specific records.  */
-    rt_eof,  /* End Of File.  duh! */
-    rt_conf, /* Config info (baked in stuff like target-triplet) */
-    rt_stamp, /* Date stamp etc.  */
-    rt_flags, /* Flags that affect AST generation, such as fshort-enum.  */
-    rt_import, /* An import. */
-    rt_binding, /* A name-binding.  */
-    rt_trees, /* Global trees.  */
-    rt_tree_base = 0x100,      /* Tree codes.  */
-    rt_ref_base = 0x1000    /* Back-reference indices.  */
+    rt_eof,		/* End Of File.  duh! */
+    rt_conf,		/* Config info (baked in stuff like target-triplet) */
+    rt_stamp,		/* Date stamp etc.  */
+    rt_flags,		/* Flags that affect AST compatibility.  */
+    rt_import,		/* An import. */
+    rt_binding,		/* A name-binding.  */
+    rt_definition,	/* A definition. */
+    rt_trees,		/* Global trees.  */
+    rt_tree_base = 0x100,	/* Tree codes.  */
+    rt_ref_base = 0x1000	/* Back-reference indices.  */
   };
   struct gtp 
   {
@@ -861,6 +891,8 @@ public:
   cpms_out (FILE *, const char *);
   ~cpms_out ();
 
+  void instrument (FILE *);
+
 public:
   void header (FILE *, tree);
   void tag_eof ();
@@ -868,6 +900,7 @@ public:
   void tag_import (FILE *, unsigned ix, const module_state *);
   void tag_trees (FILE *);
   void tag_binding (FILE *, tree ns, bool, tree name, tree ovl);
+  void tag_definition (FILE *, tree decl);
   int done ()
   {
     return w.done ();
@@ -875,7 +908,7 @@ public:
 
 private:
   void start (tree_code, tree);
-  void write_loc (location_t);
+  void write_loc (FILE *, location_t);
   void write_tree_ary (FILE *, unsigned, const gtp *);
   void write_core_bools (FILE *, tree);
   void write_core_vals (FILE *, tree);
@@ -894,6 +927,12 @@ cpms_out::cpms_out (FILE *s, const char *n)
 
 cpms_out::~cpms_out ()
 {
+}
+
+void
+cpms_out::instrument (FILE *d)
+{
+  w.instrument (d);
 }
 
 /* Cpm_Stream in.  */
@@ -925,6 +964,7 @@ public:
   bool tag_conf (FILE *);
   bool tag_import (FILE *);
   bool tag_binding (FILE *);
+  bool tag_definition (FILE *);
   bool tag_trees (FILE *);
   int read_item (FILE *);
   int done ()
@@ -943,7 +983,7 @@ private:
   bool alloc_remap_vec (unsigned limit);
   tree start (tree_code);
   tree finish (FILE *, tree);
-  location_t read_loc ();
+  location_t read_loc (FILE *);
   bool read_tree_ary (FILE *, unsigned, const gtp *);
   bool read_core_bools (FILE *, tree);
   bool read_core_vals (FILE *, tree);
@@ -1397,6 +1437,7 @@ cpms_in::tag_import (FILE *d)
 }
 
 /* NAME is bound to OVL in namespace NS.  Write out the binding.
+   We also write out the definitions of things in the binding list.
    NS must have already have a binding somewhere.
 
    tree:ns
@@ -1423,6 +1464,9 @@ cpms_out::tag_binding (FILE *d, tree ns, bool main, tree name, tree binding)
   write_tree (d, name);
   write_tree (d, binding);
   w.checkpoint ();
+
+  for (ovl_iterator iter (binding); iter; ++iter)
+    tag_definition (d, *iter);
 }
 
 bool
@@ -1445,6 +1489,65 @@ cpms_in::tag_binding (FILE *d)
 	     IDENTIFIER_POINTER (name));
   return push_module_binding (ns, main ? mod_ix : GLOBAL_MODULE_INDEX,
 			      name, binding);
+}
+
+
+/* Write out DECL's definition, if importers need it.  */
+
+void
+cpms_out::tag_definition (FILE *d, tree decl)
+{
+  switch (TREE_CODE (decl))
+    {
+    default:
+      return;
+
+    case FUNCTION_DECL:
+      if (!DECL_SAVED_TREE (decl))
+	return;
+      if (!DECL_DECLARED_INLINE_P (decl))
+	return;
+    }
+
+  w.u (rt_definition);
+  write_tree (d, decl);
+
+  switch (TREE_CODE (decl))
+    {
+    default:
+      gcc_unreachable ();
+    case FUNCTION_DECL:
+      write_tree (d, DECL_ARGUMENTS (decl));
+      write_tree (d, DECL_SAVED_TREE (decl));
+      break;
+    }
+
+  w.checkpoint ();
+}
+
+bool
+cpms_in::tag_definition (FILE *d)
+{
+  tree decl;
+  if (!read_tree (d, &decl))
+    return false;
+  switch (TREE_CODE (decl))
+    {
+    default:
+      return false;
+
+    case FUNCTION_DECL:
+      {
+	tree args, body;
+	if (!read_tree (d, &args) || !read_tree (d, &body))
+	  return false;
+	// FIXME do something
+	if (!r.checkpoint ())
+	  return false;
+      }
+    }
+
+  return true;
 }
 
 int
@@ -1496,6 +1599,8 @@ cpms_in::read_item (FILE *d)
       return tag_eof (d);
     case rt_binding:
       return tag_binding (d);
+    case rt_definition:
+      return tag_definition (d);
     case rt_trees:
       return tag_trees (d);
 
@@ -1521,13 +1626,13 @@ cpms_in::read_item (FILE *d)
 /* Read & write locations.  */
 
 void
-cpms_out::write_loc (location_t)
+cpms_out::write_loc (FILE *, location_t)
 {
   // FIXME:Do something
 }
 
 location_t
-cpms_in::read_loc ()
+cpms_in::read_loc (FILE *)
 {
   // FIXME:Do something^-1
   return UNKNOWN_LOCATION;
@@ -1645,103 +1750,151 @@ cpms_in::finish (FILE *d, tree t)
   return t;
 }
 
+/* The structure streamers access the raw fields, because the
+   alternative, of using the accessor macros can require using
+   different accessors for the same underlying field, depending on the
+   tree code.  That's both confusing and annoying.  */
+
 /* Read & write the core boolean flags.  */
 
 void
 cpms_out::write_core_bools (FILE *, tree t)
 {
 #define WB(X) (w.b (X))
-  WB (TREE_ADDRESSABLE (t));
-  WB (TREE_THIS_VOLATILE (t));
-  WB (TREE_PUBLIC (t));
-  WB (TREE_PRIVATE (t));
-  WB (TREE_PROTECTED (t));
-  WB (TREE_DEPRECATED (t));
+  tree_code code = TREE_CODE (t);
 
-  if (TREE_CODE (t) != TREE_VEC)
-    {
-      WB (TREE_LANG_FLAG_0 (t));
-      WB (TREE_LANG_FLAG_1 (t));
-      WB (TREE_LANG_FLAG_2 (t));
-      WB (TREE_LANG_FLAG_3 (t));
-      WB (TREE_LANG_FLAG_4 (t));
-      WB (TREE_LANG_FLAG_5 (t));
-      WB (TREE_LANG_FLAG_6 (t));
-    }
-  
-  if (TYPE_P (t))
-    {
-      WB (TYPE_UNSIGNED (t));
-      WB (TYPE_ARTIFICIAL (t));
-      WB (TYPE_LANG_FLAG_0 (t));
-      WB (TYPE_LANG_FLAG_1 (t));
-      WB (TYPE_LANG_FLAG_2 (t));
-      WB (TYPE_LANG_FLAG_3 (t));
-      WB (TYPE_LANG_FLAG_4 (t));
-      WB (TYPE_LANG_FLAG_5 (t));
-      WB (TYPE_LANG_FLAG_6 (t));
-      WB (TYPE_LANG_FLAG_7 (t));
-    }
-  else
-    {
-      WB (TREE_SIDE_EFFECTS (t));
-      WB (TREE_CONSTANT (t));
-      WB (TREE_READONLY (t));
-      WB (TREE_NO_WARNING (t));
-    }
-  
-  if (DECL_P (t))
-    {
-      WB (DECL_UNSIGNED (t));
-      WB (DECL_NAMELESS (t));
-    }
+  WB (t->base.side_effects_flag);
+  WB (t->base.constant_flag);
+  WB (t->base.addressable_flag);
+  WB (t->base.volatile_flag);
+  WB (t->base.readonly_flag);
+  WB (t->base.asm_written_flag);
+  WB (t->base.nowarning_flag);
+  // visited is zero
+  WB (t->base.used_flag);
+  WB (t->base.nothrow_flag);
+  WB (t->base.static_flag);
+  WB (t->base.public_flag);
+  WB (t->base.private_flag);
+  WB (t->base.protected_flag);
+  WB (t->base.deprecated_flag);
+  WB (t->base.default_def_flag);
 
-  if (CODE_CONTAINS_STRUCT (TREE_CODE (t), TS_TYPE_COMMON))
+  switch (code)
     {
-      WB (TYPE_STRING_FLAG (t));
-      WB (TYPE_NEEDS_CONSTRUCTING (t));
-      WB (TYPE_PACKED (t));
-      WB (TYPE_RESTRICT (t));
-      WB (TYPE_USER_ALIGN (t));
-      WB (TYPE_READONLY (t));
+    case TREE_VEC:
+    case INTEGER_CST:
+    case CALL_EXPR:
+    case SSA_NAME:
+    case MEM_REF:
+    case TARGET_MEM_REF:
+      /* These use different base.u fields.  */
+      break;
+
+    default:
+      WB (t->base.u.bits.lang_flag_0);
+      WB (t->base.u.bits.lang_flag_1);
+      WB (t->base.u.bits.lang_flag_2);
+      WB (t->base.u.bits.lang_flag_3);
+      WB (t->base.u.bits.lang_flag_4);
+      WB (t->base.u.bits.lang_flag_5);
+      WB (t->base.u.bits.lang_flag_6);
+      WB (t->base.u.bits.saturating_flag);
+      WB (t->base.u.bits.unsigned_flag);
+      WB (t->base.u.bits.packed_flag);
+      WB (t->base.u.bits.user_align);
+      WB (t->base.u.bits.nameless_flag);
+      WB (t->base.u.bits.atomic_flag);
+      break;
     }
 
-  if (CODE_CONTAINS_STRUCT (TREE_CODE (t), TS_DECL_COMMON))
+  if (CODE_CONTAINS_STRUCT (code, TS_TYPE_COMMON))
     {
-      WB (DECL_NONLOCAL (t));
-      WB (DECL_VIRTUAL_P (t));
-      WB (DECL_IGNORED_P (t));
-      WB (DECL_ABSTRACT_P (t));
-      WB (DECL_ARTIFICIAL (t));
-      WB (DECL_USER_ALIGN (t));
-      WB (DECL_PRESERVE_P (t));
-      WB (DECL_EXTERNAL (t));
+      WB (t->type_common.no_force_blk_flag);
+      WB (t->type_common.needs_constructing_flag);
+      WB (t->type_common.transparent_aggr_flag);
+      WB (t->type_common.restrict_flag);
+      WB (t->type_common.string_flag);
+      WB (t->type_common.lang_flag_0);
+      WB (t->type_common.lang_flag_1);
+      WB (t->type_common.lang_flag_2);
+      WB (t->type_common.lang_flag_3);
+      WB (t->type_common.lang_flag_4);
+      WB (t->type_common.lang_flag_5);
+      WB (t->type_common.lang_flag_6);
+      WB (t->type_common.typeless_storage);
     }
-  if (CODE_CONTAINS_STRUCT (TREE_CODE (t), TS_DECL_WITH_VIS))
-    {
-      WB (DECL_COMMON (t));
-      WB (DECL_DLLIMPORT_P (t));
-      WB (DECL_WEAK (t));
-      WB (DECL_SEEN_IN_BIND_EXPR_P (t));
-      WB (DECL_COMDAT (t));
-      WB (DECL_VISIBILITY_SPECIFIED (t));
 
-      switch (TREE_CODE (t))
-	{
-	default:
-	  break;
-	case VAR_DECL:
-	  WB (DECL_HARD_REGISTER (t));
-	  WB (DECL_IN_CONSTANT_POOL (t));
-	  break;
-	case FUNCTION_DECL:
-	  WB (DECL_FINAL_P (t));
-	  WB (DECL_CXX_CONSTRUCTOR_P (t));
-	  WB (DECL_CXX_DESTRUCTOR_P (t));
-	  break;
-	}
+  if (CODE_CONTAINS_STRUCT (code, TS_DECL_COMMON))
+    {
+      WB (t->decl_common.nonlocal_flag);
+      WB (t->decl_common.virtual_flag);
+      WB (t->decl_common.ignored_flag);
+      WB (t->decl_common.abstract_flag);
+      WB (t->decl_common.artificial_flag);
+      WB (t->decl_common.preserve_flag);
+      WB (t->decl_common.debug_expr_is_from);
+      WB (t->decl_common.lang_flag_0);
+      WB (t->decl_common.lang_flag_1);
+      WB (t->decl_common.lang_flag_2);
+      WB (t->decl_common.lang_flag_3);
+      WB (t->decl_common.lang_flag_4);
+      WB (t->decl_common.lang_flag_5);
+      WB (t->decl_common.lang_flag_6);
+      WB (t->decl_common.lang_flag_7);
+      WB (t->decl_common.lang_flag_8);
+      WB (t->decl_common.decl_flag_0);
+      WB (t->decl_common.decl_flag_1);
+      WB (t->decl_common.decl_flag_2);
+      WB (t->decl_common.decl_flag_3);
+      WB (t->decl_common.gimple_reg_flag);
+      WB (t->decl_common.decl_by_reference_flag);
+      WB (t->decl_common.decl_read_flag);
+      WB (t->decl_common.decl_nonshareable_flag);
     }
-  // FIXME: Add more
+
+  if (CODE_CONTAINS_STRUCT (code, TS_DECL_WITH_VIS))
+    {
+      WB (t->decl_with_vis.defer_output);
+      WB (t->decl_with_vis.hard_register);
+      WB (t->decl_with_vis.common_flag);
+      WB (t->decl_with_vis.in_text_section);
+      WB (t->decl_with_vis.in_constant_pool);
+      WB (t->decl_with_vis.dllimport_flag);
+      WB (t->decl_with_vis.weak_flag);
+      WB (t->decl_with_vis.seen_in_bind_expr);
+      WB (t->decl_with_vis.comdat_flag);
+      WB (t->decl_with_vis.visibility_specified);
+      WB (t->decl_with_vis.comdat_flag);
+      WB (t->decl_with_vis.init_priority_p);
+      WB (t->decl_with_vis.shadowed_for_var_p);
+      WB (t->decl_with_vis.cxx_constructor);
+      WB (t->decl_with_vis.cxx_destructor);
+      WB (t->decl_with_vis.final);
+      WB (t->decl_with_vis.regdecl_flag);
+    }
+
+  if (CODE_CONTAINS_STRUCT (code, TS_FUNCTION_DECL))
+    {
+      WB (t->function_decl.static_ctor_flag);
+      WB (t->function_decl.static_dtor_flag);
+      WB (t->function_decl.uninlinable);
+      WB (t->function_decl.possibly_inlined);
+      WB (t->function_decl.novops_flag);
+      WB (t->function_decl.returns_twice_flag);
+      WB (t->function_decl.malloc_flag);
+      WB (t->function_decl.operator_new_flag);
+      WB (t->function_decl.declared_inline_flag);
+      WB (t->function_decl.no_inline_warning_flag);
+      WB (t->function_decl.no_instrument_function_entry_exit);
+      WB (t->function_decl.no_limit_stack);
+      WB (t->function_decl.disregard_inline_limits);
+      WB (t->function_decl.pure_flag);
+      WB (t->function_decl.looping_const_or_pure_flag);
+      WB (t->function_decl.has_debug_args_flag);
+      WB (t->function_decl.tm_clone_flag);
+      WB (t->function_decl.versioned_function);
+    }
 #undef WB
 }
 
@@ -1749,99 +1902,140 @@ bool
 cpms_in::read_core_bools (FILE *, tree t)
 {
 #define RB(X) ((X) = r.b ())
-  RB (TREE_ADDRESSABLE (t));
-  RB (TREE_THIS_VOLATILE (t));
-  RB (TREE_PUBLIC (t));
-  RB (TREE_PRIVATE (t));
-  RB (TREE_PROTECTED (t));
-  RB (TREE_DEPRECATED (t));
+  tree_code code = TREE_CODE (t);
 
-  if (TREE_CODE (t) != TREE_VEC)
-    {
-      RB (TREE_LANG_FLAG_0 (t));
-      RB (TREE_LANG_FLAG_1 (t));
-      RB (TREE_LANG_FLAG_2 (t));
-      RB (TREE_LANG_FLAG_3 (t));
-      RB (TREE_LANG_FLAG_4 (t));
-      RB (TREE_LANG_FLAG_5 (t));
-      RB (TREE_LANG_FLAG_6 (t));
-    }
-  
-  if (TYPE_P (t))
-    {
-      RB (TYPE_UNSIGNED (t));
-      RB (TYPE_ARTIFICIAL (t));
-      RB (TYPE_LANG_FLAG_0 (t));
-      RB (TYPE_LANG_FLAG_1 (t));
-      RB (TYPE_LANG_FLAG_2 (t));
-      RB (TYPE_LANG_FLAG_3 (t));
-      RB (TYPE_LANG_FLAG_4 (t));
-      RB (TYPE_LANG_FLAG_5 (t));
-      RB (TYPE_LANG_FLAG_6 (t));
-      RB (TYPE_LANG_FLAG_7 (t));
-    }
-  else
-    {
-      RB (TREE_SIDE_EFFECTS (t));
-      RB (TREE_CONSTANT (t));
-      RB (TREE_READONLY (t));
-      RB (TREE_NO_WARNING (t));
-    }
-  
-  if (DECL_P (t))
-    {
-      RB (DECL_UNSIGNED (t));
-      RB (DECL_NAMELESS (t));
-    }
+  RB (t->base.side_effects_flag);
+  RB (t->base.constant_flag);
+  RB (t->base.addressable_flag);
+  RB (t->base.volatile_flag);
+  RB (t->base.readonly_flag);
+  RB (t->base.asm_written_flag);
+  RB (t->base.nowarning_flag);
+  // visited is zero
+  RB (t->base.used_flag);
+  RB (t->base.nothrow_flag);
+  RB (t->base.static_flag);
+  RB (t->base.public_flag);
+  RB (t->base.private_flag);
+  RB (t->base.protected_flag);
+  RB (t->base.deprecated_flag);
+  RB (t->base.default_def_flag);
 
-  if (CODE_CONTAINS_STRUCT (TREE_CODE (t), TS_TYPE_COMMON))
+  switch (code)
     {
-      RB (TYPE_STRING_FLAG (t));
-      RB (TYPE_NEEDS_CONSTRUCTING (t));
-      RB (TYPE_PACKED (t));
-      RB (TYPE_RESTRICT (t));
-      RB (TYPE_USER_ALIGN (t));
-      RB (TYPE_READONLY (t));
+    case TREE_VEC:
+    case INTEGER_CST:
+    case CALL_EXPR:
+    case SSA_NAME:
+    case MEM_REF:
+    case TARGET_MEM_REF:
+      /* These use different base.u fields.  */
+      break;
+
+    default:
+      RB (t->base.u.bits.lang_flag_0);
+      RB (t->base.u.bits.lang_flag_1);
+      RB (t->base.u.bits.lang_flag_2);
+      RB (t->base.u.bits.lang_flag_3);
+      RB (t->base.u.bits.lang_flag_4);
+      RB (t->base.u.bits.lang_flag_5);
+      RB (t->base.u.bits.lang_flag_6);
+      RB (t->base.u.bits.saturating_flag);
+      RB (t->base.u.bits.unsigned_flag);
+      RB (t->base.u.bits.packed_flag);
+      RB (t->base.u.bits.user_align);
+      RB (t->base.u.bits.nameless_flag);
+      RB (t->base.u.bits.atomic_flag);
+      break;
     }
 
-  if (CODE_CONTAINS_STRUCT (TREE_CODE (t), TS_DECL_COMMON))
+  if (CODE_CONTAINS_STRUCT (code, TS_TYPE_COMMON))
     {
-      RB (DECL_NONLOCAL (t));
-      RB (DECL_VIRTUAL_P (t));
-      RB (DECL_IGNORED_P (t));
-      RB (DECL_ABSTRACT_P (t));
-      RB (DECL_ARTIFICIAL (t));
-      RB (DECL_USER_ALIGN (t));
-      RB (DECL_PRESERVE_P (t));
-      RB (DECL_EXTERNAL (t));
+      RB (t->type_common.no_force_blk_flag);
+      RB (t->type_common.needs_constructing_flag);
+      RB (t->type_common.transparent_aggr_flag);
+      RB (t->type_common.restrict_flag);
+      RB (t->type_common.string_flag);
+      RB (t->type_common.lang_flag_0);
+      RB (t->type_common.lang_flag_1);
+      RB (t->type_common.lang_flag_2);
+      RB (t->type_common.lang_flag_3);
+      RB (t->type_common.lang_flag_4);
+      RB (t->type_common.lang_flag_5);
+      RB (t->type_common.lang_flag_6);
+      RB (t->type_common.typeless_storage);
     }
 
-  if (CODE_CONTAINS_STRUCT (TREE_CODE (t), TS_DECL_WITH_VIS))
+  if (CODE_CONTAINS_STRUCT (code, TS_DECL_COMMON))
     {
-      RB (DECL_COMMON (t));
-      RB (DECL_DLLIMPORT_P (t));
-      RB (DECL_WEAK (t));
-      RB (DECL_SEEN_IN_BIND_EXPR_P (t));
-      RB (DECL_COMDAT (t));
-      RB (DECL_VISIBILITY_SPECIFIED (t));
-
-      switch (TREE_CODE (t))
-	{
-	default:
-	  break;
-	case VAR_DECL:
-	  RB (DECL_HARD_REGISTER (t));
-	  RB (DECL_IN_CONSTANT_POOL (t));
-	  break;
-	case FUNCTION_DECL:
-	  RB (DECL_FINAL_P (t));
-	  RB (DECL_CXX_CONSTRUCTOR_P (t));
-	  RB (DECL_CXX_DESTRUCTOR_P (t));
-	  break;
-	}
+      RB (t->decl_common.nonlocal_flag);
+      RB (t->decl_common.virtual_flag);
+      RB (t->decl_common.ignored_flag);
+      RB (t->decl_common.abstract_flag);
+      RB (t->decl_common.artificial_flag);
+      RB (t->decl_common.preserve_flag);
+      RB (t->decl_common.debug_expr_is_from);
+      RB (t->decl_common.lang_flag_0);
+      RB (t->decl_common.lang_flag_1);
+      RB (t->decl_common.lang_flag_2);
+      RB (t->decl_common.lang_flag_3);
+      RB (t->decl_common.lang_flag_4);
+      RB (t->decl_common.lang_flag_5);
+      RB (t->decl_common.lang_flag_6);
+      RB (t->decl_common.lang_flag_7);
+      RB (t->decl_common.lang_flag_8);
+      RB (t->decl_common.decl_flag_0);
+      RB (t->decl_common.decl_flag_1);
+      RB (t->decl_common.decl_flag_2);
+      RB (t->decl_common.decl_flag_3);
+      RB (t->decl_common.gimple_reg_flag);
+      RB (t->decl_common.decl_by_reference_flag);
+      RB (t->decl_common.decl_read_flag);
+      RB (t->decl_common.decl_nonshareable_flag);
     }
-      
-  // Add more
+
+  if (CODE_CONTAINS_STRUCT (code, TS_DECL_WITH_VIS))
+    {
+      RB (t->decl_with_vis.defer_output);
+      RB (t->decl_with_vis.hard_register);
+      RB (t->decl_with_vis.common_flag);
+      RB (t->decl_with_vis.in_text_section);
+      RB (t->decl_with_vis.in_constant_pool);
+      RB (t->decl_with_vis.dllimport_flag);
+      RB (t->decl_with_vis.weak_flag);
+      RB (t->decl_with_vis.seen_in_bind_expr);
+      RB (t->decl_with_vis.comdat_flag);
+      RB (t->decl_with_vis.visibility_specified);
+      RB (t->decl_with_vis.comdat_flag);
+      RB (t->decl_with_vis.init_priority_p);
+      RB (t->decl_with_vis.shadowed_for_var_p);
+      RB (t->decl_with_vis.cxx_constructor);
+      RB (t->decl_with_vis.cxx_destructor);
+      RB (t->decl_with_vis.final);
+      RB (t->decl_with_vis.regdecl_flag);
+    }
+
+  if (CODE_CONTAINS_STRUCT (code, TS_FUNCTION_DECL))
+    {
+      RB (t->function_decl.static_ctor_flag);
+      RB (t->function_decl.static_dtor_flag);
+      RB (t->function_decl.uninlinable);
+      RB (t->function_decl.possibly_inlined);
+      RB (t->function_decl.novops_flag);
+      RB (t->function_decl.returns_twice_flag);
+      RB (t->function_decl.malloc_flag);
+      RB (t->function_decl.operator_new_flag);
+      RB (t->function_decl.declared_inline_flag);
+      RB (t->function_decl.no_inline_warning_flag);
+      RB (t->function_decl.no_instrument_function_entry_exit);
+      RB (t->function_decl.no_limit_stack);
+      RB (t->function_decl.disregard_inline_limits);
+      RB (t->function_decl.pure_flag);
+      RB (t->function_decl.looping_const_or_pure_flag);
+      RB (t->function_decl.has_debug_args_flag);
+      RB (t->function_decl.tm_clone_flag);
+      RB (t->function_decl.versioned_function);
+    }
 #undef RB
   return !r.error ();
 }
@@ -1849,8 +2043,9 @@ cpms_in::read_core_bools (FILE *, tree t)
 void
 cpms_out::write_lang_decl_bools (FILE *, tree t)
 {
-  const struct lang_decl *lang = DECL_LANG_SPECIFIC (t);
 #define WB(X) (w.b (X))
+  const struct lang_decl *lang = DECL_LANG_SPECIFIC (t);
+
   WB (lang->u.base.language == lang_cplusplus);
   WB ((lang->u.base.use_template >> 0) & 1);
   WB ((lang->u.base.use_template >> 1) & 1);
@@ -1901,8 +2096,9 @@ cpms_out::write_lang_decl_bools (FILE *, tree t)
 bool
 cpms_in::read_lang_decl_bools (FILE *, tree t)
 {
-  struct lang_decl *lang = DECL_LANG_SPECIFIC (t);
 #define RB(X) ((X) = r.b ())
+  struct lang_decl *lang = DECL_LANG_SPECIFIC (t);
+
   lang->u.base.language = r.b () ? lang_cplusplus : lang_c;
   unsigned v = 0;
   v |= r.b () << 0;
@@ -1958,87 +2154,118 @@ cpms_out::write_core_vals (FILE *d, tree t)
 {
 #define WU(X) (w.u (X))
 #define WT(X) (write_tree (d, X))
+  tree_code code = TREE_CODE (t);
 
-  if (CODE_CONTAINS_STRUCT (TREE_CODE (t), TS_TYPED))
-    WT (TREE_TYPE (t));
-
-  if (CODE_CONTAINS_STRUCT (TREE_CODE (t), TS_LIST))
+  switch (code)
     {
-      WT (TREE_PURPOSE (t));
-      WT (TREE_VALUE (t));
-      WT (TREE_CHAIN (t));
+    case TREE_VEC:
+    case INTEGER_CST:
+      /* Length written earlier.  */
+      break;
+    case CALL_EXPR:
+      WU (t->base.u.ifn);
+      break;
+    case SSA_NAME:
+    case MEM_REF:
+    case TARGET_MEM_REF:
+      /* We shouldn't meet these.  */
+      gcc_unreachable ();
+
+    default:
+      break;
     }
 
-  if (CODE_CONTAINS_STRUCT (TREE_CODE (t), TS_TYPE_COMMON))
+  if (CODE_CONTAINS_STRUCT (code, TS_TYPED))
+    WT (t->typed.type);
+
+  /* Whether TREE_CHAIN is dumped depends on who's containing it.  */
+
+  if (CODE_CONTAINS_STRUCT (code, TS_LIST))
+    {
+      WT (t->list.common.chain);
+      WT (t->list.purpose);
+      WT (t->list.value);
+    }
+
+  if (CODE_CONTAINS_STRUCT (code, TS_TYPE_COMMON))
     {
       /* By construction we want to make sure we have the canonical
 	 and main variants already in the type table, so emit them
 	 now.  */
-      WT (TYPE_MAIN_VARIANT (t));
-      WT (TYPE_CANONICAL (t));
+      WT (t->type_common.main_variant);
+      WT (t->type_common.canonical);
+      /* type_common.next_variant is internally manipulated.  */
+      /* type_common.pointer_to, type_common.reference_to.  */
 
-      WU (TYPE_MODE_RAW (t));
-      WU (TYPE_PRECISION (t));
-      WU (TYPE_ALIGN (t));
-      WT (TYPE_SIZE (t));
-      WT (TYPE_SIZE_UNIT (t));
-      WT (TYPE_ATTRIBUTES (t));
-      WT (TYPE_NAME (t));
-      WT (CP_TYPE_CONTEXT (t));
-      WT (TYPE_STUB_DECL (t));
+      WU (t->type_common.precision);
+      WU (t->type_common.contains_placeholder_bits);
+      WU (t->type_common.mode);
+      WU (t->type_common.align);
+
+      WT (t->type_common.size);
+      WT (t->type_common.size_unit);
+      WT (t->type_common.attributes);
+      WT (t->type_common.name);
+      WT (CP_TYPE_CONTEXT (t)); /* Frobbed type_common.context  */
+
+      WT (t->type_common.common.chain); /* TYPE_STUB_DECL.  */
     }
 
-  if (CODE_CONTAINS_STRUCT (TREE_CODE (t), TS_TYPE_NON_COMMON))
+  if (CODE_CONTAINS_STRUCT (code, TS_TYPE_NON_COMMON))
     {
-      switch (TREE_CODE (t))
-	{
-	default:
-	  break;
-	case ENUMERAL_TYPE:
-	  WT (TYPE_VALUES (t));
-	  break;
-	case  ARRAY_TYPE:
-	  WT (TYPE_DOMAIN (t));
-	  break;
-	case FUNCTION_TYPE:
-	case METHOD_TYPE:
-	  WT (TYPE_ARG_TYPES (t));
-	  break;
-	}
+      WT (t->type_non_common.values);
       if (!POINTER_TYPE_P (t))
-	WT (TYPE_MINVAL (t));
-      WT (TYPE_MAXVAL (t));
+	WT (t->type_non_common.minval);
+      WT (t->type_non_common.maxval);
+      WT (t->type_non_common.binfo);
     }
 
-  /* DECL_MINIMAL context and name already written out.  */
-
-  if (CODE_CONTAINS_STRUCT (TREE_CODE (t), TS_DECL_COMMON))
+  if (CODE_CONTAINS_STRUCT (code, TS_DECL_MINIMAL))
     {
-      WU (DECL_MODE (t));
-      WU (DECL_ALIGN (t));
-      WT (DECL_SIZE (t));
-      WT (DECL_SIZE_UNIT (t));
-      WT (DECL_ATTRIBUTES (t));
+      /* decl_minimal.name & decl_minimal.context already read in.  */
+      write_loc (d, t->decl_minimal.locus);
     }
 
-  if (CODE_CONTAINS_STRUCT (TREE_CODE (t), TS_DECL_NON_COMMON))
+  if (CODE_CONTAINS_STRUCT (code, TS_DECL_COMMON))
     {
-      if (TREE_CODE (t) == TYPE_DECL)
-	WT (DECL_ORIGINAL_TYPE (t));
+      WU (t->decl_common.mode);
+      WU (t->decl_common.off_align);
+      WU (t->decl_common.align);
+
+      WT (t->decl_common.size_unit);
+      WT (t->decl_common.attributes);
+      /* decl_common.initial, decl_common.abstract_origin.  */
     }
 
-  if (CODE_CONTAINS_STRUCT (TREE_CODE (t), TS_DECL_WITH_VIS))
+  /* TS_DECL_WITH_RTL.  */
+  /* TS_FIELD_DECL.  */
+  /* TS_LABEL_DECL. */
+  /* TS_RESULT_DECL. */
+  /* TS_CONST_DECL.  */
+  /* TS_PARM_DECL.  */
+
+  if (CODE_CONTAINS_STRUCT (code, TS_DECL_WITH_VIS))
     {
-      WU (DECL_VISIBILITY (t));
-      WT (DECL_ASSEMBLER_NAME_SET_P (t)
-	  ? DECL_ASSEMBLER_NAME (t) : NULL_TREE);
+      WT (t->decl_with_vis.assembler_name);
+      WU (t->decl_with_vis.visibility);
+    }
+  /* TS_VAR_DECL. */
+
+  if (CODE_CONTAINS_STRUCT (code, TS_DECL_NON_COMMON))
+    {
+      /* decl_non_common.result. */
     }
 
-  switch (TREE_CODE (t))
+  if (CODE_CONTAINS_STRUCT (code, TS_FUNCTION_DECL))
+    {
+      
+    }
+
+  switch (code)
     {
     case OVERLOAD:
-      WT (OVL_FUNCTION (t));
-      WT (OVL_CHAIN (t));
+      WT (((lang_tree_node *)t)->overload.function);
+      WT (t->common.chain);
       break;
 
     default:
@@ -2053,87 +2280,120 @@ bool
 cpms_in::read_core_vals (FILE *d, tree t)
 {
 #define RU(X) ((X) = r.u ())
-#define RM(X) ((X) = machine_mode (r.u ()))
+#define RUC(T,X) ((X) = T (r.u ()))
 #define RT(X) if (!read_tree (d, &(X))) return false
-  if (CODE_CONTAINS_STRUCT (TREE_CODE (t), TS_TYPED))
-    RT (TREE_TYPE (t));
+  tree_code code = TREE_CODE (t);
 
-  if (CODE_CONTAINS_STRUCT (TREE_CODE (t), TS_LIST))
+  switch (code)
     {
-      RT (TREE_PURPOSE (t));
-      RT (TREE_VALUE (t));
-      RT (TREE_CHAIN (t));
+    case TREE_VEC:
+    case INTEGER_CST:
+      /* Length read earlier.  */
+      break;
+    case CALL_EXPR:
+      RUC (internal_fn, t->base.u.ifn);
+      break;
+    case SSA_NAME:
+    case MEM_REF:
+    case TARGET_MEM_REF:
+      /* We shouldn't meet these.  */
+      return false;
+
+    default:
+      break;
     }
 
-   if (CODE_CONTAINS_STRUCT (TREE_CODE (t), TS_TYPE_COMMON))
-    {
-      RT (TYPE_MAIN_VARIANT (t));
-      RT (TYPE_CANONICAL (t));
+  if (CODE_CONTAINS_STRUCT (code, TS_TYPED))
+    RT (t->typed.type);
 
-      RM (TYPE_MODE_RAW (t));
-      RU (TYPE_PRECISION (t));
-      SET_TYPE_ALIGN (t, r.u ());
-      RT (TYPE_SIZE (t));
-      RT (TYPE_SIZE_UNIT (t));
-      RT (TYPE_ATTRIBUTES (t));
-      RT (TYPE_NAME (t));
-      RT (TYPE_CONTEXT (t));
-      RT (TYPE_STUB_DECL (t));
+  /* Whether TREE_CHAIN is dumped depends on who's containing it.  */
+
+  if (CODE_CONTAINS_STRUCT (code, TS_LIST))
+    {
+      RT (t->list.common.chain);
+      RT (t->list.purpose);
+      RT (t->list.value);
     }
 
-   if (CODE_CONTAINS_STRUCT (TREE_CODE (t), TS_TYPE_NON_COMMON))
-     {
-       switch (TREE_CODE (t))
-	 {
-	 default:
-	   break;
-	 case ENUMERAL_TYPE:
-	   RT (TYPE_VALUES (t));
-	   break;
-	 case  ARRAY_TYPE:
-	   RT (TYPE_DOMAIN (t));
-	   break;
-	 case FUNCTION_TYPE:
-	 case METHOD_TYPE:
-	   RT (TYPE_ARG_TYPES (t));
-	   break;
-	 }
-       if (!POINTER_TYPE_P (t))
-	 RT (TYPE_MINVAL (t));
-       RT (TYPE_MAXVAL (t));
-     }
-
-   /* DECL_MINIMAL NAME and CONTEXT already read in.  */
-
-  if (CODE_CONTAINS_STRUCT (TREE_CODE (t), TS_DECL_COMMON))
+  if (CODE_CONTAINS_STRUCT (code, TS_TYPE_COMMON))
     {
-      RM (DECL_MODE (t));
-      SET_DECL_ALIGN (t, r.u ());
-      RT (DECL_SIZE (t));
-      RT (DECL_SIZE_UNIT (t));
-      RT (DECL_ATTRIBUTES (t));
+      RT (t->type_common.main_variant);
+      RT (t->type_common.canonical);
+      /* type_common.next_variant is internally manipulated.  */
+      /* type_common.pointer_to, type_common.reference_to.  */
+
+      RU (t->type_common.precision);
+      RU (t->type_common.contains_placeholder_bits);
+      RUC (machine_mode, t->type_common.mode);
+      RU (t->type_common.align);
+
+      RT (t->type_common.size);
+      RT (t->type_common.size_unit);
+      RT (t->type_common.attributes);
+      RT (t->type_common.name);
+      RT (t->type_common.context); /* Frobbed  */
+
+      RT (t->type_common.common.chain); /* TYPE_STUB_DECL.  */
+    }
+
+  if (CODE_CONTAINS_STRUCT (code, TS_TYPE_NON_COMMON))
+    {
+      RT (t->type_non_common.values);
+      if (!POINTER_TYPE_P (t))
+	RT (t->type_non_common.minval);
+      RT (t->type_non_common.maxval);
+      RT (t->type_non_common.binfo);
+    }
+
+  if (CODE_CONTAINS_STRUCT (code, TS_DECL_MINIMAL))
+    {
+      /* decl_minimal.name & decl_minimal.context already read in.  */
+      /* Don't zap the locus just yet, we don't record it correctly
+	 and thus lose all location information.  */
+      /* t->decl_minimal.locus = */
+      read_loc (d);
+    }
+
+  if (CODE_CONTAINS_STRUCT (code, TS_DECL_COMMON))
+    {
+      RUC (machine_mode, t->decl_common.mode);
+      RU (t->decl_common.off_align);
+      RU (t->decl_common.align);
+
+      RT (t->decl_common.size_unit);
+      RT (t->decl_common.attributes);
+      /* decl_common.initial, decl_common.abstract_origin.  */
+    }
+
+
+  /* TS_DECL_WITH_RTL.  */
+  /* TS_FIELD_DECL.  */
+  /* TS_LABEL_DECL. */
+  /* TS_RESULT_DECL. */
+  /* TS_CONST_DECL.  */
+  /* TS_PARM_DECL.  */
+
+  if (CODE_CONTAINS_STRUCT (code, TS_DECL_WITH_VIS))
+    {
+      RT (t->decl_with_vis.assembler_name);
+      RUC (symbol_visibility, t->decl_with_vis.visibility);
     }
 
   if (CODE_CONTAINS_STRUCT (TREE_CODE (t), TS_DECL_NON_COMMON))
     {
-      if (TREE_CODE (t) == TYPE_DECL)
-	RT (DECL_ORIGINAL_TYPE (t));
+      /* decl_non_common.result. */
     }
 
-  if (CODE_CONTAINS_STRUCT (TREE_CODE (t), TS_DECL_WITH_VIS))
+  if (CODE_CONTAINS_STRUCT (code, TS_FUNCTION_DECL))
     {
-      DECL_VISIBILITY (t) = symbol_visibility (r.u ());
-      tree name;
-      RT (name);
-      if (name)
-	SET_DECL_ASSEMBLER_NAME (t, name);
+      
     }
 
-  switch (TREE_CODE (t))
+  switch (code)
     {
     case OVERLOAD:
-      RT (OVL_FUNCTION (t));
-      RT (OVL_CHAIN (t));
+      RT (((lang_tree_node *)t)->overload.function);
+      RT (t->common.chain);
       break;
 
     default:
@@ -2976,7 +3236,10 @@ write_module (FILE *stream, const char *fname, tree name)
     error ("failed to write module %qE (%qs): %s", name, fname,
 	   e >= 0 ? xstrerror (errno) : "Bad file data");
   if (d)
-    dump_end (TDI_lang, d);
+    {
+      out.instrument (d);
+      dump_end (TDI_lang, d);
+    }
 }
 
 /* Finalize the module at end of parsing.  */

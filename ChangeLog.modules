@@ -1,3 +1,10 @@
+2017-05-12  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* module.c (cpm_writer): Instrument bool distribution.
+	(cpms_out::tag_definition, cpms_in::tag_definition): New.
+	(cpms_out, cpms_in): Transfer more stuff.
+
 2017-05-11  Nathan Sidwell  <nathan@acm.org>
 
 	Merge trunk r247911.
