@@ -1,6 +1,9 @@
 2017-05-12  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.c (cpm_reader::read_tree): Change interface, adjust callers.
+
+	gcc/cp/
 	* module.c (cpm_writer): Instrument bool distribution.
 	(cpms_out::tag_definition, cpms_in::tag_definition): New.
 	(cpms_out, cpms_in): Transfer more stuff.

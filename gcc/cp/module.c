@@ -991,7 +991,7 @@ private:
   bool read_lang_decl_vals (FILE *, tree);
 
 public:
-  bool read_tree (FILE *, tree *, unsigned = 0);
+  tree read_tree (FILE *);
 };
 
 cpms_in::cpms_in (FILE *s, const char *n,
@@ -1472,13 +1472,11 @@ cpms_out::tag_binding (FILE *d, tree ns, bool main, tree name, tree binding)
 bool
 cpms_in::tag_binding (FILE *d)
 {
-  tree name, ns, binding;
-  if (!read_tree (d, &ns))
-    return false;
-  bool main = r.u ();
-  if (!read_tree (d, &name)
-      || !read_tree (d, &binding))
-    return false;
+  tree ns = read_tree (d);
+  unsigned main = r.u ();
+  tree name = read_tree (d);
+  tree binding = read_tree (d);
+
   if (!r.checkpoint ())
     return false;
 
@@ -1528,9 +1526,7 @@ cpms_out::tag_definition (FILE *d, tree decl)
 bool
 cpms_in::tag_definition (FILE *d)
 {
-  tree decl;
-  if (!read_tree (d, &decl))
-    return false;
+  tree decl = read_tree (d);;
   switch (TREE_CODE (decl))
     {
     default:
@@ -1538,9 +1534,8 @@ cpms_in::tag_definition (FILE *d)
 
     case FUNCTION_DECL:
       {
-	tree args, body;
-	if (!read_tree (d, &args) || !read_tree (d, &body))
-	  return false;
+	tree args = read_tree (d);
+	tree body = read_tree (d);
 	// FIXME do something
 	if (!r.checkpoint ())
 	  return false;
@@ -1609,18 +1604,6 @@ cpms_in::read_item (FILE *d)
       r.bad ();
       return false;
     }
-#if 0
-  tree t;
-  if (!read_tree (d, &t, rt))
-    {
-      if (t == error_mark_node)
-	error ("unknown key %qd", rt);
-      r.bad ();
-      return false;
-    }
-  // FIXME: read body
-  return true;
-#endif
 }
 
 /* Read & write locations.  */
@@ -2281,7 +2264,7 @@ cpms_in::read_core_vals (FILE *d, tree t)
 {
 #define RU(X) ((X) = r.u ())
 #define RUC(T,X) ((X) = T (r.u ()))
-#define RT(X) if (!read_tree (d, &(X))) return false
+#define RT(X) ((X) = read_tree (d))
   tree_code code = TREE_CODE (t);
 
   switch (code)
@@ -2443,7 +2426,7 @@ cpms_in::read_lang_decl_vals (FILE *d, tree t)
 {
   struct lang_decl *lang = DECL_LANG_SPECIFIC (t);
 #define RU(X) ((X) = r.u ())
-#define RT(X) if (!read_tree (d, &(X))) return false
+#define RT(X) ((X) = read_tree (d))
 
   /* Module index already read.  */
 
@@ -2618,33 +2601,34 @@ cpms_out::write_tree (FILE *d, tree t)
    instantiations, whatever).  Return true on success.  Sets *TP to
    error_mark_node if TAG is totally bogus.  */
 
-bool
-cpms_in::read_tree (FILE *d, tree *tp, unsigned tag)
+tree
+cpms_in::read_tree (FILE *d)
 {
-  if (!tag)
-    tag = r.u ();
+  unsigned tag = r.u ();
 
   if (!tag)
-    {
-      *tp = NULL_TREE;
-      return true;
-    }
+    return NULL_TREE;
 
   if (tag >= rt_ref_base)
     {
       tree *val = map.get (tag);
+      if (!val || !*val)
+	{
+	  r.bad ();
+	  return NULL_TREE;
+	}
 
-      *tp = val ? *val : error_mark_node;
+      tree res = *val;
       if (d)
-	fprintf (d, "Reading:%u found %p (%s)\n", tag, (void *)*tp,
-		 *tp ? get_tree_code_name (TREE_CODE (*tp)) : "NULL");
-      return val != NULL;
+	fprintf (d, "Reading:%u found %p (%s)\n", tag, (void *)res,
+		 get_tree_code_name (TREE_CODE (res)));
+      return res;
     }
 
   if (tag < rt_tree_base || tag >= rt_tree_base + MAX_TREE_CODES)
     {
-      *tp = error_mark_node;
-      return false;
+      r.bad ();
+      return NULL_TREE;
     }
 
   tree_code code = tree_code (tag - rt_tree_base);
@@ -2659,9 +2643,13 @@ cpms_in::read_tree (FILE *d, tree *tp, unsigned tag)
 
   if (code == IDENTIFIER_NODE)
     body = 0;
-  else if (klass == tcc_declaration
-	   && read_tree (d, &ctx) && read_tree (d, &name))
+  else if (klass == tcc_declaration)
     {
+      ctx = read_tree (d);
+      name = read_tree (d);
+      if (r.error ())
+	return NULL_TREE;
+
       mod = r.u ();
       if (mod >= IMPORTED_MODULE_BASE)
 	{
@@ -2676,7 +2664,7 @@ cpms_in::read_tree (FILE *d, tree *tp, unsigned tag)
       if (body < 0)
 	{
 	  if (!r.checkpoint ())
-	    return false;
+	    return NULL_TREE;
 
 	  t = find_module_instance (ctx, mod, name, key);
 	  if (!t || TREE_CODE (t) != code)
@@ -2706,12 +2694,12 @@ cpms_in::read_tree (FILE *d, tree *tp, unsigned tag)
 
   if (body > 0)
     {
-      if (!read_core_bools (d, t))
-	return false;
-
       bool specific = false;
       bool lied = false;
-      if (klass == tcc_type || klass == tcc_declaration)
+
+      if (!read_core_bools (d, t))
+	lied = true;
+      else if (klass == tcc_type || klass == tcc_declaration)
 	{
 	  specific = r.b ();
 	  if (!specific)
@@ -2729,16 +2717,11 @@ cpms_in::read_tree (FILE *d, tree *tp, unsigned tag)
 	  else if (klass == tcc_type
 		   ? !true // FIXME: read lang_type bools
 		   : !read_lang_decl_bools (d, t))
-	    return false;
+	    lied = true;
 	}
       r.bflush ();
-      if (!r.checkpoint ())
-	return false;
-      if (lied)
-	{
-	  r.bad ();
-	  return false;
-	}
+      if (lied || !r.checkpoint ())
+	goto barf;
 
       if (klass == tcc_declaration)
 	{
@@ -2747,7 +2730,7 @@ cpms_in::read_tree (FILE *d, tree *tp, unsigned tag)
 	}
 
       if (!read_core_vals (d, t))
-	return false;
+	return NULL_TREE;
       if (!specific)
 	;
       else if (klass == tcc_type)
@@ -2756,12 +2739,17 @@ cpms_in::read_tree (FILE *d, tree *tp, unsigned tag)
 	{
 	  DECL_MODULE_INDEX (t) = mod;
 	  if (!read_lang_decl_vals (d, t))
-	    return false;
+	    goto barf;
 	}
     }
 
   if (body >= 0 && !r.checkpoint ())
-    return false;
+    {
+    barf:
+      r.bad ();
+      map.put (tag, NULL_TREE);
+      return NULL_TREE;
+    }
 
   if (body > 0)
     {
@@ -2774,7 +2762,6 @@ cpms_in::read_tree (FILE *d, tree *tp, unsigned tag)
 	  map.put (tag, t);
 	}
     }
-  *tp = t ? t : error_mark_node;
 
   if (d && t)
     {
@@ -2793,7 +2780,7 @@ cpms_in::read_tree (FILE *d, tree *tp, unsigned tag)
 	       name ? IDENTIFIER_POINTER (name) : "");
     }
 
-  return t != NULL_TREE;
+  return t;
 }
 
 /* Walk the bindings of NS, writing out the bindings for the global
