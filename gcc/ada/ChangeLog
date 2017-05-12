@@ -1,3 +1,20 @@
+2017-05-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* system-linux-arm.ads (Memory_Size): Use Long_Integer'Size
+	instead of Word_Size.
+
+	Revert
+	2017-03-28  Andreas Schwab  <schwab@suse.de>
+
+	PR ada/80117
+	* system-linux-aarch64-ilp32.ads: New file.
+	* gcc-interface/Makefile.in (LIBGNAT_TARGET_PAIRS_COMMON): Rename
+	from LIBGNAT_TARGET_PAIRS.
+	(LIBGNAT_TARGET_PAIRS_32, LIBGNAT_TARGET_PAIRS_64): Define.
+	(LIBGNAT_TARGET_PAIRS): Use LIBGNAT_TARGET_PAIRS_COMMON, and
+	LIBGNAT_TARGET_PAIRS_64 or LIBGNAT_TARGET_PAIRS_32 for -mabi=lp64
+	or -mabi=ilp32, resp.
+
 2017-05-10  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR ada/80626
