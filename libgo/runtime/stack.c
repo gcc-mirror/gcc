@@ -80,7 +80,6 @@ static void doscanstack1(G *gp, void *gcw) {
 			scanstackblock(sp, (uintptr)(spsize), gcw);
 	}
 #else
-	M *mp;
 	byte* bottom;
 	byte* top;
 
