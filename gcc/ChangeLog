@@ -1,3 +1,9 @@
+2017-05-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/80713
+	* tree-ssa-pre.c (remove_dead_inserted_code): Clear
+	inserted_exprs bit for not removed stmts.
+
 2017-05-12  Thomas Schwinge  <thomas@codesourcery.com>
 
 	PR middle-end/69921
