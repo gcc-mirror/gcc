@@ -1,3 +1,9 @@
+2017-05-12  Prakhar Bahuguna  <prakhar.bahuguna@arm.com>
+
+	* config/arm/arm.md (movsi): Add TARGET_32BIT in addition to the
+	TARGET_HAVE_MOVT conditional.
+	(movt splitter): Likewise.
+
 2017-05-12  Richard Biener  <rguenther@suse.de>
 
 	* tree-ssa-sccvn.h (has_VN_INFO): Declare.
