@@ -34,6 +34,6 @@ void KERNELS ()
 
 /* Check the offloaded function's classification and compute dimensions (will
    always be 1 x 1 x 1 for non-offloading compilation).
-   { dg-final { scan-tree-dump-times "(?n)Function is OpenACC kernels offload" 1 "oaccdevlow" } }
+   { dg-final { scan-tree-dump-times "(?n)Function is unparallelized OpenACC kernels offload" 1 "oaccdevlow" } }
    { dg-final { scan-tree-dump-times "(?n)Compute dimensions \\\[1, 1, 1\\\]" 1 "oaccdevlow" } }
    { dg-final { scan-tree-dump-times "(?n)__attribute__\\(\\(oacc function \\(1, 1, 1\\), oacc kernels, omp target entrypoint\\)\\)" 1 "oaccdevlow" } } */
