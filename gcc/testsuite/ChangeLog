@@ -1,3 +1,14 @@
+2017-05-12  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* c-c++-common/goacc/classify-kernels-unparallelized.c: New file.
+	* c-c++-common/goacc/classify-kernels.c: Likewise.
+	* c-c++-common/goacc/classify-parallel.c: Likewise.
+	* c-c++-common/goacc/classify-routine.c: Likewise.
+	* gfortran.dg/goacc/classify-kernels-unparallelized.f95: Likewise.
+	* gfortran.dg/goacc/classify-kernels.f95: Likewise.
+	* gfortran.dg/goacc/classify-parallel.f95: Likewise.
+	* gfortran.dg/goacc/classify-routine.f95: Likewise.
+
 2017-05-11  Nathan Sidwell  <nathan@acm.org>
 
 	* lib/gcc-dg.exp (schedule-cleanups): Add lang dump capability.
