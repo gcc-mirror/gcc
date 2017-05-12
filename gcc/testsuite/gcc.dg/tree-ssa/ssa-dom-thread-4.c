@@ -57,12 +57,8 @@ bitmap_ior_and_compl (bitmap dst, const_bitmap a, const_bitmap b,
    we should thread all three, but due to a bug in the threading
    code we missed the edge when the first conditional is false
    (b_elt is zero, which means the second conditional is always
-   zero.  
-
-   The first two are caught by VRP1, the last is caught by DOM
-   along with another jump thread.  */
-/* { dg-final { scan-tree-dump-times "Threaded" 2 "vrp1" { target { ! logical_op_short_circuit } } } } */
-/* { dg-final { scan-tree-dump-times "Threaded" 2 "dom2" { target { ! logical_op_short_circuit } } } } */
+   zero.  VRP1 catches all three.  */
+/* { dg-final { scan-tree-dump-times "Threaded" 3 "vrp1" { target { ! logical_op_short_circuit } } } } */
 
 /* On targets that define LOGICAL_OP_NON_SHORT_CIRCUIT to 0, we split both
    "a_elt || b_elt" and "b_elt && kill_elt" into two conditions each,

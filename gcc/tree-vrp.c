@@ -10540,6 +10540,8 @@ vrp_dom_walker::before_dom_children (basic_block bb)
 {
   gimple_stmt_iterator gsi;
 
+  m_avail_exprs_stack->push_marker ();
+  m_const_and_copies->push_marker ();
   for (gsi = gsi_start_nondebug_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
     {
       gimple *stmt = gsi_stmt (gsi);
