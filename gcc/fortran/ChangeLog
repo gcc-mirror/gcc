@@ -1,3 +1,14 @@
+2017-05-14  Nicolas Koenig  <koenigni@student.ethz.ch>
+
+	PR fortran/80442
+	* array.c (gfc_ref_dimen_size): Simplify stride
+	expression
+	* data.c (gfc_advance_section): Simplify start,
+	end and stride expressions
+	(gfc_advance_section): Simplify start and end
+	expressions
+	(gfc_get_section_index): Simplify start expression 
+
 2017-05-13  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	* io.c (gfc_resolve_dt): Fix returns to bool type.

@@ -539,6 +539,7 @@ gfc_advance_section (mpz_t *section_index, gfc_array_ref *ar,
   mpz_t tmp; 
   bool forwards;
   int cmp;
+  gfc_expr *start, *end, *stride;
 
   for (i = 0; i < ar->dimen; i++)
     {
@@ -547,12 +548,16 @@ gfc_advance_section (mpz_t *section_index, gfc_array_ref *ar,
 
       if (ar->stride[i])
 	{
+	  stride = gfc_copy_expr(ar->stride[i]);
+	  if(!gfc_simplify_expr(stride, 1))
+	    gfc_internal_error("Simplification error");
 	  mpz_add (section_index[i], section_index[i],
-		   ar->stride[i]->value.integer);
-	if (mpz_cmp_si (ar->stride[i]->value.integer, 0) >= 0)
-	  forwards = true;
-	else
-	  forwards = false;
+		   stride->value.integer);
+	  if (mpz_cmp_si (stride->value.integer, 0) >= 0)
+	    forwards = true;
+	  else
+	    forwards = false;
+	  gfc_free_expr(stride);	
 	}
       else
 	{
@@ -561,7 +566,13 @@ gfc_advance_section (mpz_t *section_index, gfc_array_ref *ar,
 	}
       
       if (ar->end[i])
-	cmp = mpz_cmp (section_index[i], ar->end[i]->value.integer);
+        {
+	  end = gfc_copy_expr(ar->end[i]);
+	  if(!gfc_simplify_expr(end, 1))
+	    gfc_internal_error("Simplification error");
+	  cmp = mpz_cmp (section_index[i], end->value.integer);
+	  gfc_free_expr(end);	
+	}
       else
 	cmp = mpz_cmp (section_index[i], ar->as->upper[i]->value.integer);
 
@@ -569,7 +580,13 @@ gfc_advance_section (mpz_t *section_index, gfc_array_ref *ar,
 	{
 	  /* Reset index to start, then loop to advance the next index.  */
 	  if (ar->start[i])
-	    mpz_set (section_index[i], ar->start[i]->value.integer);
+	    {
+	      start = gfc_copy_expr(ar->start[i]);
+	      if(!gfc_simplify_expr(start, 1))
+	        gfc_internal_error("Simplification error");
+	      mpz_set (section_index[i], start->value.integer);
+	      gfc_free_expr(start); 
+	    }
 	  else
 	    mpz_set (section_index[i], ar->as->lower[i]->value.integer);
 	}
@@ -679,6 +696,7 @@ gfc_get_section_index (gfc_array_ref *ar, mpz_t *section_index, mpz_t *offset)
   int i;
   mpz_t delta;
   mpz_t tmp;
+  gfc_expr *start;
 
   mpz_set_si (*offset, 0);
   mpz_init (tmp);
@@ -692,11 +710,15 @@ gfc_get_section_index (gfc_array_ref *ar, mpz_t *section_index, mpz_t *offset)
 	case DIMEN_RANGE:
 	  if (ar->start[i])
 	    {
-	      mpz_sub (tmp, ar->start[i]->value.integer,
+	      start = gfc_copy_expr(ar->start[i]);
+	      if(!gfc_simplify_expr(start, 1))
+	        gfc_internal_error("Simplification error");
+	      mpz_sub (tmp, start->value.integer,
 		       ar->as->lower[i]->value.integer);
 	      mpz_mul (tmp, tmp, delta);
 	      mpz_add (*offset, tmp, *offset);
-	      mpz_set (section_index[i], ar->start[i]->value.integer);
+	      mpz_set (section_index[i], start->value.integer);
+	      gfc_free_expr(start);
 	    }
 	  else
 	      mpz_set (section_index[i], ar->as->lower[i]->value.integer);
