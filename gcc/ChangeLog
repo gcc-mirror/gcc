@@ -1,7 +1,12 @@
+2017-05-13  Uros Bizjak  <ubizjak@gmail.com>
+
+	* compare-elim.c (equivalent_reg_at_start): Return NULL_RTX
+	when returned register mode doesn't match original mode.
+
 2017-05-12  Jeff Law  <law@redhat.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 
-	* config/mn10300/mn10300.c (mn10300_match_ccmode): Fix where	
+	* config/mn10300/mn10300.c (mn10300_match_ccmode): Fix where
 	we look for cc setter after the compare-elim changes.
 	* config/mn10300/mn10300.md (addsi3_flags): Fix order of patterns
 	within the vector to match what compare-elim now expects.
