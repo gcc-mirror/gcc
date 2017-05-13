@@ -1963,8 +1963,8 @@ opt_strcpy ()
 		      int num_clobbers_to_add = 0;
 		      int insn_code_number;
 
-		      rtx_insn * newinsn = make_insn_raw (
-			  gen_rtx_SET(SET_DEST(single_set(reg2x)), SET_SRC(single_set (x2reg))));
+		      rtx pattern = gen_rtx_SET(SET_DEST(single_set(reg2x)), SET_SRC(single_set (x2reg)));
+		      rtx_insn * newinsn = make_insn_raw (pattern);
 		      insn_code_number = recog (PATTERN (newinsn), newinsn, &num_clobbers_to_add);
 		      if (insn_code_number >= 0 && check_asm_operands (PATTERN (newinsn)))
 			{
@@ -1973,18 +1973,10 @@ opt_strcpy ()
 			  log ("opt_strcpy condition met, removing compare and joining insns - omit reg %s\n",
 			  reg_names[REGNO(dst)]);
 
-			  SET_SRC(single_set(reg2x)) = SET_SRC(single_set (x2reg));
-
-			  for (link = REG_NOTES(x2reg); link; link = XEXP(link, 1))
-			    if (REG_NOTE_KIND (link) != REG_LABEL_OPERAND)
-			      {
-				if (GET_CODE (link) == EXPR_LIST)
-				  add_reg_note (reg2x, REG_NOTE_KIND(link), copy_insn_1 (XEXP(link, 0)));
-				else
-				  add_shallow_copy_of_reg_note (reg2x, link);
-			      }
+			  emit_insn_after(pattern, reg2x);
 
 			  SET_INSN_DELETED(x2reg);
+			  SET_INSN_DELETED(reg2x);
 			  SET_INSN_DELETED(insn);
 
 			  ++change_count;
