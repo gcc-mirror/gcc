@@ -2826,6 +2826,9 @@ opt_absolute (void)
     {
       insn_info & ii = infos[i];
 
+      if (ii.is_compare())
+	continue;
+
       bool is_dst = ii.is_dst_mem () && (ii.has_dst_addr () || ii.get_dst_symbol ()) && !ii.has_dst_memreg ();
       bool is_src = ii.is_src_mem () && (ii.has_src_addr () || ii.get_src_symbol ()) && !ii.has_src_memreg ();
 
@@ -2838,6 +2841,14 @@ opt_absolute (void)
       unsigned freemask = ~(ii.get_use () | ii.get_def ()) & 0x7f00 & usable_regs;
       if (!freemask)
 	continue;
+
+      rtx pattern = PATTERN(ii.get_insn());
+      if (is_dst && !ii.get_src_reg() && !ii.is_src_const())
+	if (MEM_P(XEXP(XEXP(pattern, 1), 0)))
+	  continue;
+      if (is_src && !ii.get_dst_reg())
+	if (MEM_P(XEXP(XEXP(pattern, 0), 0)))
+	  continue;
 
       rtx with_symbol = is_dst ? ii.get_dst_symbol () : ii.get_src_symbol ();
 
@@ -2856,13 +2867,22 @@ opt_absolute (void)
 	  if (!freemask)
 	    break;
 
-	  if (jj.get_mode() == VOIDmode)
+	  if (jj.get_mode() == VOIDmode || jj.is_compare())
 	    continue;
 
 	  bool j_dst = jj.is_dst_mem () && (jj.has_dst_addr () || jj.get_dst_symbol ()) && !jj.has_dst_memreg ()
 	      && jj.get_dst_symbol () == with_symbol;
 	  bool j_src = jj.is_src_mem () && (jj.has_src_addr () || jj.get_src_symbol ()) && !jj.has_src_memreg ()
 	      && jj.get_src_symbol () == with_symbol;
+
+	  pattern = PATTERN(jj.get_insn());
+	  if (j_dst && !jj.get_src_reg() && !jj.is_src_const())
+	    if (MEM_P(XEXP(XEXP(pattern, 1), 0)))
+	      continue;
+	  if (j_src && !jj.get_dst_reg())
+	    if (MEM_P(XEXP(XEXP(pattern, 0), 0)))
+	      continue;
+
 	  if (j_dst)
 	    {
 	      unsigned addr = jj.get_dst_addr ();
