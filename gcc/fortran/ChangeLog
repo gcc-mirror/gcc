@@ -1,3 +1,7 @@
+2017-05-13  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	* io.c (gfc_resolve_dt): Fix returns to bool type.
+
 2017-05-11  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/78659
