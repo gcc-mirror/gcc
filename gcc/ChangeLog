@@ -1,3 +1,34 @@
+2017-05-12  Jeff Law  <law@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	* config/mn10300/mn10300.c (mn10300_match_ccmode): Fix where	
+	we look for cc setter after the compare-elim changes.
+	* config/mn10300/mn10300.md (addsi3_flags): Fix order of patterns
+	within the vector to match what compare-elim now expects.
+	(subsi3_flags, andsi3_flags, iorsi3_flags): Likewise.
+	(xorsi3_flags, one_cmplsi2_flags): Likewise.
+
+	* config/rx/rx.c (rx_match_ccmode): Fix where we look cc setter
+	after the compare-elim changes.
+	* config/rx/rx.md (abssi2_flags): Fix order of patterns within
+	the vector to match what compare-elim now expects.
+	(addsi3_flags, adc_flags, addsi3_flags peepholes): Likewise.
+	(andsi3_flags, negsi2_flags, one_cmplsi2_flags): Likewise.
+	(iorsi3_flags, rotlsi3_flags, rotrsi3_flags): Likewise.
+	(ashrsi3_flags, lshrsi3_flags, ashlsi3_flags): Likewise.
+	(ssaddsi3, subsi3_flags, sbb_flags, xorsi3_flags): Likewise.
+
+	* config/visium/visium.c (single_set_and_flags): Fix where
+	we look for cc setter after the compare-elim changes.
+	* config/visium/visium.md (flags_subst_logic): Fix order of patterns
+	with the vector to match what compare-elim now expects.
+	(flags_subst_arith, add<mode>3_insn_set_carry): Likewise.
+	(add<mode>3_insn_set_overflow, addsi3_insn_set_carry): Likewise.
+	(addsi3_insn_set_overflow, sub<mode>3_insn_set_carry): Likewise.
+	(sub<mode>3_insn_set_overflow, subsi3_insn_set_carry): Likewise.
+	(subsi3_insn_set_overflow, negsi2_insn_set_carry): Likewise.
+	(neg<mode>2_insn_set_overflow): Likewise.
+
 2017-05-12  Jim Wilson  <jim.wilson@linaro.org>
 
 	PR middle-end/79794

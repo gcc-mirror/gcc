@@ -843,11 +843,11 @@
 )
 
 (define_insn "*abssi2_flags"
-  [(set (match_operand:SI         0 "register_operand" "=r,r")
-        (abs:SI (match_operand:SI 1 "register_operand"  "0,r")))
-   (set (reg CC_REG)
-	(compare (abs:SI (match_dup 1))
-		 (const_int 0)))]
+  [(set (reg CC_REG)
+        (compare (abs:SI (match_operand:SI 1 "register_operand"  "0,r"))
+		 (const_int 0)))
+   (set (match_operand:SI		   0 "register_operand" "=r,r")
+	(abs:SI (match_dup 1)))]
   ;; Note - although the ABS instruction does set the O bit in the processor
   ;; status word, it does not do so in a way that is comparable with the CMP
   ;; instruction.  Hence we use CC_ZSmode rather than CC_ZSOmode.
@@ -897,12 +897,12 @@
 )
 
 (define_insn "*addsi3_flags"
-  [(set (match_operand:SI          0 "register_operand"  "=r,r,r,r,r,r,r,r,r,r,r,r,r,r")
-	(plus:SI (match_operand:SI 1 "register_operand"  "%0,0,0,0,0,0,0,r,r,r,r,r,r,0")
-		 (match_operand:SI 2 "rx_source_operand" "r,Uint04,NEGint4,Sint08,Sint16,Sint24,i,0,r,Sint08,Sint16,Sint24,i,Q")))
-   (set (reg CC_REG)
-	(compare (plus:SI (match_dup 1) (match_dup 2))
-		 (const_int 0)))]
+  [(set (reg CC_REG)
+	(compare (plus:SI (match_operand:SI 1 "register_operand"  "%0,0,0,0,0,0,0,r,r,r,r,r,r,0")
+			  (match_operand:SI 2 "rx_source_operand" "r,Uint04,NEGint4,Sint08,Sint16,Sint24,i,0,r,Sint08,Sint16,Sint24,i,Q"))
+		 (const_int 0)))
+   (set (match_operand:SI		    0 "register_operand"  "=r,r,r,r,r,r,r,r,r,r,r,r,r,r")
+	(plus:SI (match_dup 1) (match_dup 2)))]
   "reload_completed && rx_match_ccmode (insn, CC_ZSCmode)"
   "@
   add\t%2, %0
@@ -925,12 +925,13 @@
 
 ;; A helper to expand the above with the CC_MODE filled in.
 (define_expand "addsi3_flags"
-  [(parallel [(set (match_operand:SI 0 "register_operand")
-		   (plus:SI (match_operand:SI 1 "register_operand")
-			    (match_operand:SI 2 "rx_source_operand")))
-	      (set (reg:CC_ZSC CC_REG)
-		   (compare:CC_ZSC (plus:SI (match_dup 1) (match_dup 2))
-				   (const_int 0)))])]
+  [(parallel [(set (reg:CC_ZSC CC_REG)
+		   (compare:CC_ZSC
+		     (plus:SI (match_operand:SI 1 "register_operand")
+			      (match_operand:SI 2 "rx_source_operand"))
+		     (const_int 0)))
+	      (set (match_operand:SI 0 "register_operand")
+		   (plus:SI (match_dup 1) (match_dup 2)))])]
 )
 
 (define_insn "adc_internal"
@@ -948,20 +949,20 @@
 )
 
 (define_insn "*adc_flags"
-  [(set (match_operand:SI     0 "register_operand"  "=r,r,r,r,r,r")
-	(plus:SI
-	  (plus:SI
-	    (ltu:SI (reg:CC CC_REG) (const_int 0))
-	    (match_operand:SI 1 "register_operand"  "%0,0,0,0,0,0"))
-	  (match_operand:SI   2 "rx_source_operand" "r,Sint08,Sint16,Sint24,i,Q")))
-   (set (reg CC_REG)
-	(compare 
+  [(set (reg CC_REG)
+	(compare
 	  (plus:SI
 	    (plus:SI
 	      (ltu:SI (reg:CC CC_REG) (const_int 0))
-	      (match_dup 1))
-	    (match_dup 2))
-	  (const_int 0)))]
+	      (match_operand:SI 1 "register_operand"  "%0,0,0,0,0,0"))
+	    (match_operand:SI   2 "rx_source_operand" "r,Sint08,Sint16,Sint24,i,Q"))
+	  (const_int 0)))
+   (set (match_operand:SI	0 "register_operand"  "=r,r,r,r,r,r")
+	(plus:SI
+	  (plus:SI
+	    (ltu:SI (reg:CC CC_REG) (const_int 0))
+	    (match_dup 1))
+	  (match_dup 2)))]
   "reload_completed && rx_match_ccmode (insn, CC_ZSCmode)"
   "adc\t%2, %0"
   [(set_attr "timings" "11,11,11,11,11,33")
@@ -980,11 +981,11 @@
         (compare:CC (match_dup 0)
                     (const_int 0)))]
   ""
-  [(parallel [(set (match_dup 0)
-		   (plus:SI (match_dup 1) (const_int 0)))
-	      (set (reg:CC_ZSC CC_REG)
+  [(parallel [(set (reg:CC_ZSC CC_REG)
 		   (compare:CC_ZSC (plus:SI (match_dup 1) (const_int 0))
-				   (const_int 0)))])]
+				   (const_int 0)))
+	      (set (match_dup 0)
+		   (plus:SI (match_dup 1) (const_int 0))) ])]
 )
 
 (define_peephole2
@@ -994,11 +995,11 @@
         (compare:CC (match_dup 1)
                     (const_int 0)))]
   ""
-  [(parallel [(set (match_dup 0)
-		   (plus:SI (match_dup 1) (const_int 0)))
-	      (set (reg:CC_ZSC CC_REG)
+  [(parallel [(set (reg:CC_ZSC CC_REG)
 		   (compare:CC_ZSC (plus:SI (match_dup 1) (const_int 0))
-				   (const_int 0)))])]
+				   (const_int 0)))
+	      (set (match_dup 0)
+		   (plus:SI (match_dup 1) (const_int 0)))])]
 )
 
 (define_expand "adddi3"
@@ -1109,12 +1110,12 @@
 )
 
 (define_insn "*andsi3_flags"
-  [(set (match_operand:SI         0 "register_operand"  "=r,r,r,r,r,r,r,r,r")
-	(and:SI (match_operand:SI 1 "register_operand"  "%0,0,0,0,0,0,r,r,0")
-		(match_operand:SI 2 "rx_source_operand" "r,Uint04,Sint08,Sint16,Sint24,i,0,r,Q")))
-   (set (reg CC_REG)
-	(compare (and:SI (match_dup 1) (match_dup 2))
-		 (const_int 0)))]
+  [(set (reg CC_REG)
+	(compare (and:SI (match_operand:SI 1 "register_operand"  "%0,0,0,0,0,0,r,r,0")
+			 (match_operand:SI 2 "rx_source_operand" "r,Uint04,Sint08,Sint16,Sint24,i,0,r,Q"))
+		 (const_int 0)))
+   (set (match_operand:SI		   0 "register_operand"  "=r,r,r,r,r,r,r,r,r")
+	(and:SI (match_dup 1) (match_dup 2)))]
   "reload_completed && rx_match_ccmode (insn, CC_ZSmode)"
   "@
   and\t%2, %0
@@ -1341,11 +1342,11 @@
 ;; Note that the O and C flags are not set as per a normal compare,
 ;; and thus are unusable in that context.
 (define_insn "*negsi2_flags"
-  [(set (match_operand:SI         0 "register_operand" "=r,r")
-        (neg:SI (match_operand:SI 1 "register_operand"  "0,r")))
-   (set (reg CC_REG)
-	(compare (neg:SI (match_dup 1))
-		 (const_int 0)))]
+  [(set (reg CC_REG)
+        (compare (neg:SI (match_operand:SI 1 "register_operand"  "0,r"))
+		 (const_int 0)))
+   (set (match_operand:SI		   0 "register_operand" "=r,r")
+	(neg:SI (match_dup 1)))]
   "reload_completed && rx_match_ccmode (insn, CC_ZSmode)"
   "@
   neg\t%0
@@ -1365,11 +1366,11 @@
 )
 
 (define_insn "*one_cmplsi2_flags"
-  [(set (match_operand:SI         0 "register_operand" "=r,r")
-	(not:SI (match_operand:SI 1 "register_operand"  "0,r")))
-   (set (reg CC_REG)
-	(compare (not:SI (match_dup 1))
-		 (const_int 0)))]
+  [(set (reg CC_REG)
+	(compare (not:SI (match_operand:SI 1 "register_operand"  "0,r"))
+		 (const_int 0)))
+   (set (match_operand:SI		   0 "register_operand" "=r,r")
+	(not:SI (match_dup 1)))]
   "reload_completed && rx_match_ccmode (insn, CC_ZSmode)"
   "@
   not\t%0
@@ -1398,12 +1399,12 @@
 )
 
 (define_insn "*iorsi3_flags"
-  [(set (match_operand:SI         0 "register_operand" "=r,r,r,r,r,r,r,r,r")
-	(ior:SI (match_operand:SI 1 "register_operand" "%0,0,0,0,0,0,r,r,0")
-	        (match_operand:SI 2 "rx_source_operand" "r,Uint04,Sint08,Sint16,Sint24,i,0,r,Q")))
-   (set (reg CC_REG)
-	(compare (ior:SI (match_dup 1) (match_dup 2))
-		 (const_int 0)))]
+  [(set (reg CC_REG)
+	(compare (ior:SI (match_operand:SI 1 "register_operand" "%0,0,0,0,0,0,r,r,0")
+			 (match_operand:SI 2 "rx_source_operand" "r,Uint04,Sint08,Sint16,Sint24,i,0,r,Q"))
+		 (const_int 0)))
+   (set (match_operand:SI		   0 "register_operand" "=r,r,r,r,r,r,r,r,r")
+	(ior:SI (match_dup 1) (match_dup 2)))]
   "reload_completed && rx_match_ccmode (insn, CC_ZSmode)"
   "@
   or\t%2, %0
@@ -1430,12 +1431,12 @@
 )
 
 (define_insn "*rotlsi3_flags"
-  [(set (match_operand:SI            0 "register_operand" "=r")
-	(rotate:SI (match_operand:SI 1 "register_operand"  "0")
-		   (match_operand:SI 2 "rx_shift_operand" "rn")))
-   (set (reg CC_REG)
-	(compare (rotate:SI (match_dup 1) (match_dup 2))
-		 (const_int 0)))]
+  [(set (reg CC_REG)
+	(compare (rotate:SI (match_operand:SI 1 "register_operand"  "0")
+			    (match_operand:SI 2 "rx_shift_operand" "rn"))
+		 (const_int 0)))
+   (set (match_operand:SI		      0 "register_operand" "=r")
+	(rotate:SI (match_dup 1) (match_dup 2)))]
   "reload_completed && rx_match_ccmode (insn, CC_ZSmode)"
   "rotl\t%2, %0"
   [(set_attr "length" "3")]
@@ -1452,12 +1453,12 @@
 )
 
 (define_insn "*rotrsi3_flags"
-  [(set (match_operand:SI              0 "register_operand" "=r")
-	(rotatert:SI (match_operand:SI 1 "register_operand"  "0")
-		     (match_operand:SI 2 "rx_shift_operand" "rn")))
-   (set (reg CC_REG)
-	(compare (rotatert:SI (match_dup 1) (match_dup 2))
-		 (const_int 0)))]
+  [(set (reg CC_REG)
+	(compare (rotatert:SI (match_operand:SI 1 "register_operand"  "0")
+			      (match_operand:SI 2 "rx_shift_operand" "rn"))
+		 (const_int 0)))
+   (set (match_operand:SI			0 "register_operand" "=r")
+	(rotatert:SI (match_dup 1) (match_dup 2)))]
   "reload_completed && rx_match_ccmode (insn, CC_ZSmode)"
   "rotr\t%2, %0"
   [(set_attr "length" "3")]
@@ -1477,12 +1478,12 @@
 )
 
 (define_insn "*ashrsi3_flags"
-  [(set (match_operand:SI              0 "register_operand" "=r,r,r")
-	(ashiftrt:SI (match_operand:SI 1 "register_operand"  "0,0,r")
-		     (match_operand:SI 2 "rx_shift_operand"  "r,n,n")))
-   (set (reg CC_REG)
-	(compare (ashiftrt:SI (match_dup 1) (match_dup 2))
-		 (const_int 0)))]
+  [(set (reg CC_REG)
+	(compare (ashiftrt:SI (match_operand:SI 1 "register_operand"  "0,0,r")
+			      (match_operand:SI 2 "rx_shift_operand"  "r,n,n"))
+		 (const_int 0)))
+   (set (match_operand:SI              0 "register_operand" "=r,r,r")
+	(ashiftrt:SI (match_dup 1) (match_dup 2)))]
   "reload_completed && rx_match_ccmode (insn, CC_ZSmode)"
   "@
   shar\t%2, %0
@@ -1505,12 +1506,12 @@
 )
 
 (define_insn "*lshrsi3_flags"
-  [(set (match_operand:SI              0 "register_operand" "=r,r,r")
-	(lshiftrt:SI (match_operand:SI 1 "register_operand"  "0,0,r")
-		     (match_operand:SI 2 "rx_shift_operand"  "r,n,n")))
-   (set (reg CC_REG)
-	(compare (lshiftrt:SI (match_dup 1) (match_dup 2))
-		 (const_int 0)))]
+  [(set (reg CC_REG)
+	(compare (lshiftrt:SI (match_operand:SI 1 "register_operand"  "0,0,r")
+			      (match_operand:SI 2 "rx_shift_operand"  "r,n,n"))
+		 (const_int 0)))
+   (set (match_operand:SI			0 "register_operand" "=r,r,r")
+	(lshiftrt:SI (match_dup 1) (match_dup 2)))]
   "reload_completed && rx_match_ccmode (insn, CC_ZSmode)"
   "@
   shlr\t%2, %0
@@ -1533,12 +1534,12 @@
 )
 
 (define_insn "*ashlsi3_flags"
-  [(set (match_operand:SI            0 "register_operand" "=r,r,r")
-	(ashift:SI (match_operand:SI 1 "register_operand"  "0,0,r")
-	           (match_operand:SI 2 "rx_shift_operand"  "r,n,n")))
-   (set (reg CC_REG)
-	(compare (ashift:SI (match_dup 1) (match_dup 2))
-		 (const_int 0)))]
+  [(set (reg CC_REG)
+	(compare (ashift:SI (match_operand:SI 1 "register_operand"  "0,0,r")
+			    (match_operand:SI 2 "rx_shift_operand"  "r,n,n"))
+		 (const_int 0)))
+   (set (match_operand:SI		      0 "register_operand" "=r,r,r")
+	(ashift:SI (match_dup 1) (match_dup 2)))]
   "reload_completed && rx_match_ccmode (insn, CC_ZSmode)"
   "@
   shll\t%2, %0
@@ -1556,12 +1557,12 @@
   ""
   "#"
   "reload_completed"
-  [(parallel [(set (match_dup 0)
-		   (plus:SI (match_dup 1) (match_dup 2)))
-	      (set (reg:CC_ZSC CC_REG)
+  [(parallel [(set (reg:CC_ZSC CC_REG)
 		   (compare:CC_ZSC
 		     (plus:SI (match_dup 1) (match_dup 2))
-		     (const_int 0)))])
+		     (const_int 0)))
+	      (set (match_dup 0)
+		   (plus:SI (match_dup 1) (match_dup 2)))])
    (set (match_dup 0)
 	(unspec:SI [(match_dup 0) (reg:CC CC_REG)] 
 		   UNSPEC_BUILTIN_SAT))]
@@ -1597,12 +1598,12 @@
 ;; Note that the O flag is set as if (compare op1 op2) not for
 ;; what is described here, (compare op0 0).
 (define_insn "*subsi3_flags"
-  [(set (match_operand:SI           0 "register_operand" "=r,r,r,r,r")
-	(minus:SI (match_operand:SI 1 "register_operand"  "0,0,0,r,0")
-		  (match_operand:SI 2 "rx_source_operand" "r,Uint04,n,r,Q")))
-   (set (reg CC_REG)
-	(compare (minus:SI (match_dup 1) (match_dup 2))
-		 (const_int 0)))]
+  [(set (reg CC_REG)
+	(compare (minus:SI (match_operand:SI 1 "register_operand"  "0,0,0,r,0")
+			   (match_operand:SI 2 "rx_source_operand" "r,Uint04,n,r,Q"))
+		 (const_int 0)))
+   (set (match_operand:SI		     0 "register_operand" "=r,r,r,r,r")
+	(minus:SI (match_dup 1) (match_dup 2)))]
   "reload_completed && rx_match_ccmode (insn, CC_ZSCmode)"
   "@
   sub\t%2, %0
@@ -1616,12 +1617,13 @@
 
 ;; A helper to expand the above with the CC_MODE filled in.
 (define_expand "subsi3_flags"
-  [(parallel [(set (match_operand:SI 0 "register_operand")
-		   (minus:SI (match_operand:SI 1 "register_operand")
-			     (match_operand:SI 2 "rx_source_operand")))
-	      (set (reg:CC_ZSC CC_REG)
-		   (compare:CC_ZSC (minus:SI (match_dup 1) (match_dup 2))
-				   (const_int 0)))])]
+  [(parallel [(set (reg:CC_ZSC CC_REG)
+		   (compare:CC_ZSC
+		     (minus:SI (match_operand:SI 1 "register_operand")
+			       (match_operand:SI 2 "rx_source_operand"))
+		     (const_int 0)))
+	      (set (match_operand:SI 0 "register_operand")
+		   (minus:SI (match_dup 1) (match_dup 2)))])]
 )
 
 (define_insn "sbb_internal"
@@ -1639,18 +1641,18 @@
 )
 
 (define_insn "*sbb_flags"
-  [(set (match_operand:SI     0 "register_operand"   "=r,r")
-	(minus:SI
-	  (minus:SI
-	    (match_operand:SI 1 "register_operand"   " 0,0")
-	    (match_operand:SI 2 "rx_compare_operand" " r,Q"))
-	  (geu:SI (reg:CC CC_REG) (const_int 0))))
-   (set (reg CC_REG)
+  [(set (reg CC_REG)
 	(compare
 	  (minus:SI
-	    (minus:SI (match_dup 1) (match_dup 2))
+	    (minus:SI
+	      (match_operand:SI 1 "register_operand"   " 0,0")
+	      (match_operand:SI 2 "rx_compare_operand" " r,Q"))
 	    (geu:SI (reg:CC CC_REG) (const_int 0)))
-	  (const_int 0)))]
+	  (const_int 0)))
+   (set (match_operand:SI	0 "register_operand"   "=r,r")
+	(minus:SI
+	  (minus:SI (match_dup 1) (match_dup 2))
+	  (geu:SI (reg:CC CC_REG) (const_int 0))))]
   "reload_completed"
   "sbb\t%2, %0"
   [(set_attr "timings" "11,33")
@@ -1710,13 +1712,13 @@
 )
 
 (define_insn "*xorsi3_flags"
-  [(set (match_operand:SI         0 "register_operand" "=r,r,r,r,r,r")
-	(xor:SI (match_operand:SI 1 "register_operand" "%0,0,0,0,0,0")
-	        (match_operand:SI 2 "rx_source_operand"
-				  "r,Sint08,Sint16,Sint24,i,Q")))
-   (set (reg CC_REG)
-	(compare (xor:SI (match_dup 1) (match_dup 2))
-		 (const_int 0)))]
+  [(set (reg CC_REG)
+	(compare (xor:SI (match_operand:SI 1 "register_operand" "%0,0,0,0,0,0")
+			 (match_operand:SI 2 "rx_source_operand"
+						"r,Sint08,Sint16,Sint24,i,Q"))
+		 (const_int 0)))
+   (set (match_operand:SI		   0 "register_operand" "=r,r,r,r,r,r")
+	(xor:SI (match_dup 1) (match_dup 2)))]
   "reload_completed && rx_match_ccmode (insn, CC_ZSmode)"
   "xor\t%Q2, %0"
   [(set_attr "timings" "11,11,11,11,11,33")
