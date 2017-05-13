@@ -1,3 +1,9 @@
+2017-05-13  Pekka Jääskeläinen  <pekka.jaaskelainen@parmance.com>
+
+	* brig.dg/test/gimple/priv-array-offset-access.hsail:
+	A regression test for a private array access case which caused
+	an assert.
+
 2017-05-12  Martin Sebor  <msebor@redhat.com>
 
 	PR testsuite/80643
