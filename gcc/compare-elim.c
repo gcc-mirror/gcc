@@ -526,6 +526,7 @@ maybe_select_cc_mode (struct comparison *cmp, rtx a ATTRIBUTE_UNUSED,
 static rtx
 equivalent_reg_at_start (rtx reg, rtx_insn *end, rtx_insn *start)
 {
+  machine_mode orig_mode = GET_MODE (reg);
   rtx_insn *bb_head = BB_HEAD (BLOCK_FOR_INSN (end));
 
   for (rtx_insn *insn = PREV_INSN (end);
@@ -571,6 +572,9 @@ equivalent_reg_at_start (rtx reg, rtx_insn *end, rtx_insn *start)
       if (!REG_P (reg))
 	return NULL_RTX;
     }
+
+  if (GET_MODE (reg) != orig_mode)
+    return NULL_RTX;
 
   return reg;
 }
