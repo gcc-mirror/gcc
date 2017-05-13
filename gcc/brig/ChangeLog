@@ -1,4 +1,11 @@
-2017-05-03  Pekka Jääskeläinen  <visit0r@kamu>
+2017-05-13  Pekka Jääskeläinen  <pekka.jaaskelainen@parmance.com>
+
+	* brigfrontend/brig-code-entry-handler.cc
+	(brig_code_entry_handler::build_address_operand): Fix
+	an assertion when doing an 'lda' of a private array
+	offset.
+
+2017-05-03  Pekka Jääskeläinen  <pekka.jaaskelainen@parmance.com>
 
 	* brigfrontend/brig-code-entry-handler.cc
 	(brig_code_entry_handler::build_address_operand): Fix a bug
