@@ -1,3 +1,23 @@
+2017-05-12  Jim Wilson  <jim.wilson@linaro.org>
+
+	PR middle-end/79794
+    	* expmed.c (extract_bit_field_1): Add alt_rtl argument.  Before
+	maybe_expand_insn call, set ops[0].target.  If still set after call,
+	set alt_rtl.  Add extra arg to recursive calls.
+	(extract_bit_field): Add alt_rtl argument.  Pass to
+	extract_bit_field.
+	* expmed.h (extract_bit_field): Fix prototype.
+	* expr.c (emit_group_load_1, copy_blkmode_from_reg)
+	(copy_blkmode_to_reg, read_complex_part, store_field): Pass extra NULL
+	to extract_bit_field_calls.
+	(expand_expr_real_1): Pass alt_rtl to expand_expr_real instead of 0.
+	Pass alt_rtl to extract_bit_field calls.
+	* calls.c (store_unaligned_arguments_into_psuedos)
+	load_register_parameters): Pass extra NULL to extract_bit_field calls.
+	* optabs.c (maybe_legitimize_operand): Clear op->target when call
+	gen_reg_rtx.
+	* optabs.h (struct expand_operand): Add target bitfield.
+
 2017-05-12  Uros Bizjak  <ubizjak@gmail.com>
 
 	* compare-elim.c (try_eliminate_compare): Canonicalize
