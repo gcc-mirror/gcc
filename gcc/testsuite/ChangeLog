@@ -1,3 +1,8 @@
+2017-05-14  Nicolas Koenig  <koenigni@student.ethz.ch>
+
+	PR fortran/80442
+	* gfortran.dg/impl_do_var_data.f90: New Test
+
 2017-05-13  Pekka Jääskeläinen  <pekka.jaaskelainen@parmance.com>
 
 	* brig.dg/test/gimple/priv-array-offset-access.hsail:
