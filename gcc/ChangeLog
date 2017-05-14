@@ -1,5 +1,19 @@
 2017-05-13  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
+	* haifa-sched.c (estimate_shadow_tick): Replace manual bitmap
+	management with auto_bitmap.
+	(fix_inter_tick): Likewise.
+	(fix_recovery_deps): Likewise.
+	* ira.c (add_store_equivs): Likewise.
+	(find_moveable_pseudos): Likewise.
+	(split_live_ranges_for_shrink_wrap): Likewise.
+	* print-rtl.c (rtx_reuse_manager::rtx_reuse_manager): Likewise.
+	(rtx_reuse_manager::seen_def_p): Likewise.
+	(rtx_reuse_manager::set_seen_def): Likewise.
+	* print-rtl.h (class rtx_reuse_manager): Likewise.
+
+2017-05-13  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
 	* bt-load.c (combine_btr_defs): Use auto_bitmap to manage bitmap
 	lifetime.
 	(migrate_btr_def): Likewise.
