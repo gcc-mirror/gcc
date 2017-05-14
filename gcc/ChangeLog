@@ -1,3 +1,17 @@
+2017-05-02  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backport from mainline
+	2017-05-11  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/80706
+	* config/i386/sync.md (UNSPEC_LDX_ATOMIC): New unspec.
+	(UNSPEC_STX_ATOMIC): Ditto.
+	(loaddi_via_sse): New insn.
+	(storedi_via_sse): Ditto.
+	(atomic_loaddi_fpu): Emit loaddi_via_sse and storedi_via_sse.
+	Update corresponding peephole2 patterns.
+	(atomic_storedi_fpu): Ditto.
+
 2017-05-13  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	Backport from mainline
