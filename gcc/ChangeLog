@@ -1,5 +1,10 @@
 2017-05-13  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
+	* bitmap.h (class auto_bitmap): New constructor taking
+	bitmap_obstack * argument.
+
+2017-05-13  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
 	* bitmap.h (class auto_bitmap): Change type of m_bits to
 	bitmap_head, and adjust ctor / dtor and member operators.
 
