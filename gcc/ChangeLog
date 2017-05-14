@@ -1,5 +1,15 @@
 2017-05-13  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
+	* ddg.c (find_nodes_on_paths): Use auto_sbitmap.
+	(longest_simple_path): Likewise.
+	* shrink-wrap.c (spread_components): Likewise.
+	(disqualify_problematic_components): Likewise.
+	(emit_common_heads_for_components): Likewise.
+	(emit_common_tails_for_components): Likewise.
+	(insert_prologue_epilogue_for_components): Likewise.
+
+2017-05-13  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
 	* tree-ssa-dse.c (dse_dom_walker): Make m_live_byes a
 	auto_sbitmap.
 
