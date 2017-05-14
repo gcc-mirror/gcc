@@ -807,6 +807,7 @@ class auto_bitmap
 {
  public:
   auto_bitmap () { bitmap_initialize (&m_bits, &bitmap_default_obstack); }
+  explicit auto_bitmap (bitmap_obstack *o) { bitmap_initialize (&m_bits, o); }
   ~auto_bitmap () { bitmap_clear (&m_bits); }
   // Allow calling bitmap functions on our bitmap.
   operator bitmap () { return &m_bits; }
