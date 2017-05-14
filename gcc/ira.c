@@ -3698,7 +3698,7 @@ add_store_equivs (void)
 static void
 combine_and_move_insns (void)
 {
-  bitmap cleared_regs = BITMAP_ALLOC (NULL);
+  auto_bitmap cleared_regs;
   int max = max_reg_num ();
 
   for (int regno = FIRST_PSEUDO_REGISTER; regno < max; regno++)
@@ -3856,8 +3856,6 @@ combine_and_move_insns (void)
 		df_insn_rescan (insn);
 	    }
     }
-
-  BITMAP_FREE (cleared_regs);
 }
 
 /* A pass over indirect jumps, converting simple cases to direct jumps.
@@ -4083,8 +4081,8 @@ build_insn_chain (void)
   basic_block bb;
   struct insn_chain *c = NULL;
   struct insn_chain *next = NULL;
-  bitmap live_relevant_regs = BITMAP_ALLOC (NULL);
-  bitmap elim_regset = BITMAP_ALLOC (NULL);
+  auto_bitmap live_relevant_regs;
+  auto_bitmap elim_regset;
   /* live_subregs is a vector used to keep accurate information about
      which hardregs are live in multiword pseudos.  live_subregs and
      live_subregs_used are indexed by pseudo number.  The live_subreg
@@ -4093,7 +4091,7 @@ build_insn_chain (void)
      live_subreg[allocno] is number of bytes that the pseudo can
      occupy.  */
   sbitmap *live_subregs = XCNEWVEC (sbitmap, max_regno);
-  bitmap live_subregs_used = BITMAP_ALLOC (NULL);
+  auto_bitmap live_subregs_used;
 
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
     if (TEST_HARD_REG_BIT (eliminable_regset, i))
@@ -4336,9 +4334,6 @@ build_insn_chain (void)
     if (live_subregs[i] != NULL)
       sbitmap_free (live_subregs[i]);
   free (live_subregs);
-  BITMAP_FREE (live_subregs_used);
-  BITMAP_FREE (live_relevant_regs);
-  BITMAP_FREE (elim_regset);
 
   if (dump_file)
     print_insn_chains (dump_file);

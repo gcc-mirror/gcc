@@ -5716,8 +5716,7 @@ gen_hsa_phi_from_gimple_phi (gimple *phi_stmt, hsa_bb *hbb)
 
 hsa_bb::hsa_bb (basic_block cfg_bb, int idx)
   : m_bb (cfg_bb), m_first_insn (NULL), m_last_insn (NULL), m_first_phi (NULL),
-    m_last_phi (NULL), m_index (idx), m_liveout (BITMAP_ALLOC (NULL)),
-    m_livein (BITMAP_ALLOC (NULL))
+    m_last_phi (NULL), m_index (idx)
 {
   gcc_assert (!cfg_bb->aux);
   cfg_bb->aux = this;
@@ -5728,19 +5727,10 @@ hsa_bb::hsa_bb (basic_block cfg_bb, int idx)
 
 hsa_bb::hsa_bb (basic_block cfg_bb)
   : m_bb (cfg_bb), m_first_insn (NULL), m_last_insn (NULL), m_first_phi (NULL),
-    m_last_phi (NULL), m_index (hsa_cfun->m_hbb_count++),
-    m_liveout (BITMAP_ALLOC (NULL)), m_livein (BITMAP_ALLOC (NULL))
+    m_last_phi (NULL), m_index (hsa_cfun->m_hbb_count++)
 {
   gcc_assert (!cfg_bb->aux);
   cfg_bb->aux = this;
-}
-
-/* Destructor of class representing HSA BB.  */
-
-hsa_bb::~hsa_bb ()
-{
-  BITMAP_FREE (m_livein);
-  BITMAP_FREE (m_liveout);
 }
 
 /* Create and initialize and return a new hsa_bb structure for a given CFG

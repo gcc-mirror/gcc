@@ -1303,14 +1303,13 @@ loop_post_order_compute (int *post_order, struct loop *loop)
   edge_iterator *stack;
   int sp;
   int post_order_num = 0;
-  bitmap visited;
 
   /* Allocate stack for back-tracking up CFG.  */
   stack = XNEWVEC (edge_iterator, loop->num_nodes + 1);
   sp = 0;
 
   /* Allocate bitmap to track nodes that have been visited.  */
-  visited = BITMAP_ALLOC (NULL);
+  auto_bitmap visited;
 
   /* Push the first edge on to the stack.  */
   stack[sp++] = ei_start (loop_preheader_edge (loop)->src->succs);
@@ -1352,7 +1351,6 @@ loop_post_order_compute (int *post_order, struct loop *loop)
     }
 
   free (stack);
-  BITMAP_FREE (visited);
 
   return post_order_num;
 }
@@ -1367,14 +1365,13 @@ loop_inverted_post_order_compute (int *post_order, struct loop *loop)
   edge_iterator *stack;
   int sp;
   int post_order_num = 0;
-  bitmap visited;
 
   /* Allocate stack for back-tracking up CFG.  */
   stack = XNEWVEC (edge_iterator, loop->num_nodes + 1);
   sp = 0;
 
   /* Allocate bitmap to track nodes that have been visited.  */
-  visited = BITMAP_ALLOC (NULL);
+  auto_bitmap visited;
 
   /* Put all latches into the initial work list.  In theory we'd want
      to start from loop exits but then we'd have the special case of
@@ -1420,7 +1417,6 @@ loop_inverted_post_order_compute (int *post_order, struct loop *loop)
     }
 
   free (stack);
-  BITMAP_FREE (visited);
   return post_order_num;
 }
 

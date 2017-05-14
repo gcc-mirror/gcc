@@ -1674,7 +1674,7 @@ resolve_noninline_speculation (edge_heap_t *edge_heap, struct cgraph_edge *edge)
       struct cgraph_node *node = edge->caller;
       struct cgraph_node *where = node->global.inlined_to
 				  ? node->global.inlined_to : node;
-      bitmap updated_nodes = BITMAP_ALLOC (NULL);
+      auto_bitmap updated_nodes;
 
       spec_rem += edge->count;
       edge->resolve_speculation ();
@@ -1684,7 +1684,6 @@ resolve_noninline_speculation (edge_heap_t *edge_heap, struct cgraph_edge *edge)
 			  updated_nodes, NULL);
       update_callee_keys (edge_heap, where,
 			  updated_nodes);
-      BITMAP_FREE (updated_nodes);
     }
 }
 
@@ -1726,7 +1725,7 @@ inline_small_functions (void)
   struct cgraph_node *node;
   struct cgraph_edge *edge;
   edge_heap_t edge_heap (sreal::min ());
-  bitmap updated_nodes = BITMAP_ALLOC (NULL);
+  auto_bitmap updated_nodes;
   int min_size, max_size;
   auto_vec<cgraph_edge *> new_indirect_edges;
   int initial_size = 0;
@@ -2072,7 +2071,6 @@ inline_small_functions (void)
 	     "Unit growth for small function inlining: %i->%i (%i%%)\n",
 	     initial_size, overall_size,
 	     initial_size ? overall_size * 100 / (initial_size) - 100: 0);
-  BITMAP_FREE (updated_nodes);
   symtab->remove_edge_removal_hook (edge_removal_hook_holder);
 }
 

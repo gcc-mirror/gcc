@@ -1251,7 +1251,7 @@ rdg_build_partitions (struct graph *rdg,
 		      vec<gimple *> starting_stmts,
 		      vec<partition *> *partitions)
 {
-  bitmap processed = BITMAP_ALLOC (NULL);
+  auto_bitmap processed;
   int i;
   gimple *stmt;
 
@@ -1282,8 +1282,6 @@ rdg_build_partitions (struct graph *rdg,
 
   /* All vertices should have been assigned to at least one partition now,
      other than vertices belonging to dead code.  */
-
-  BITMAP_FREE (processed);
 }
 
 /* Dump to FILE the PARTITIONS.  */

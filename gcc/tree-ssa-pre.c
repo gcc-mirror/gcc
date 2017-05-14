@@ -4910,12 +4910,11 @@ mark_operand_necessary (tree op)
 static void
 remove_dead_inserted_code (void)
 {
-  bitmap worklist;
   unsigned i;
   bitmap_iterator bi;
   gimple *t;
 
-  worklist = BITMAP_ALLOC (NULL);
+  auto_bitmap worklist;
   EXECUTE_IF_SET_IN_BITMAP (inserted_exprs, 0, i, bi)
     {
       t = SSA_NAME_DEF_STMT (ssa_name (i));
@@ -5004,7 +5003,6 @@ remove_dead_inserted_code (void)
     }
   if (to_clear != -1U)
     bitmap_clear_bit (inserted_exprs, to_clear);
-  BITMAP_FREE (worklist);
 }
 
 

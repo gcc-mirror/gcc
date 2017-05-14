@@ -1,5 +1,44 @@
 2017-05-13  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
+	* bt-load.c (combine_btr_defs): Use auto_bitmap to manage bitmap
+	lifetime.
+	(migrate_btr_def): Likewise.
+	* cfgloop.c (get_loop_body_in_bfs_order): Likewise.
+	* df-core.c (loop_post_order_compute): Likewise.
+	(loop_inverted_post_order_compute): Likewise.
+	* hsa-common.h: Likewise.
+	* hsa-gen.c (hsa_bb::~hsa_bb): Likewise.
+	* init-regs.c (initialize_uninitialized_regs): Likewise.
+	* ipa-inline.c (resolve_noninline_speculation): Likewise.
+	(inline_small_functions): Likewise.
+	* ipa-reference.c (ipa_reference_write_optimization_summary): Likewise.
+	* ira.c (combine_and_move_insns): Likewise.
+	(build_insn_chain): Likewise.
+	* loop-invariant.c (find_invariants): Likewise.
+	* lower-subreg.c (propagate_pseudo_copies): Likewise.
+	* predict.c (tree_predict_by_opcode): Likewise.
+	(predict_paths_leading_to): Likewise.
+	(predict_paths_leading_to_edge): Likewise.
+	(estimate_loops_at_level): Likewise.
+	(estimate_loops): Likewise.
+	* shrink-wrap.c (try_shrink_wrapping): Likewise.
+	(spread_components): Likewise.
+	* tree-cfg.c (remove_edge_and_dominated_blocks): Likewise.
+	* tree-loop-distribution.c (rdg_build_partitions): Likewise.
+	* tree-predcom.c (tree_predictive_commoning_loop): Likewise.
+	* tree-ssa-coalesce.c (coalesce_ssa_name): Likewise.
+	* tree-ssa-phionlycprop.c (pass_phi_only_cprop::execute): Likewise.
+	* tree-ssa-pre.c (remove_dead_inserted_code): Likewise.
+	* tree-ssa-sink.c (nearest_common_dominator_of_uses): Likewise.
+	* tree-ssa-threadupdate.c (compute_path_counts): Likewise.
+	(mark_threaded_blocks): Likewise.
+	(thread_through_all_blocks): Likewise.
+	* tree-ssa.c (verify_ssa): Likewise.
+	(execute_update_addresses_taken): Likewise.
+	* tree-ssanames.c (verify_ssaname_freelists): Likewise.
+
+2017-05-13  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
 	* cfganal.c (mark_dfs_back_edges): Replace manual stack with
 	auto_vec.
 	(post_order_compute): Likewise.

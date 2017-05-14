@@ -128,7 +128,7 @@ static basic_block
 nearest_common_dominator_of_uses (def_operand_p def_p, bool *debug_stmts)
 {
   tree var = DEF_FROM_PTR (def_p);
-  bitmap blocks = BITMAP_ALLOC (NULL);
+  auto_bitmap blocks;
   basic_block commondom;
   unsigned int j;
   bitmap_iterator bi;
@@ -158,17 +158,14 @@ nearest_common_dominator_of_uses (def_operand_p def_p, bool *debug_stmts)
 
       /* Short circuit. Nothing dominates the entry block.  */
       if (useblock == ENTRY_BLOCK_PTR_FOR_FN (cfun))
-	{
-	  BITMAP_FREE (blocks);
-	  return NULL;
-	}
+	return NULL;
+
       bitmap_set_bit (blocks, useblock->index);
     }
   commondom = BASIC_BLOCK_FOR_FN (cfun, bitmap_first_set_bit (blocks));
   EXECUTE_IF_SET_IN_BITMAP (blocks, 0, j, bi)
     commondom = nearest_common_dominator (CDI_DOMINATORS, commondom,
 					  BASIC_BLOCK_FOR_FN (cfun, j));
-  BITMAP_FREE (blocks);
   return commondom;
 }
 
