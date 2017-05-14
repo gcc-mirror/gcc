@@ -1,5 +1,27 @@
 2017-05-13  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
+	* df-core.c (df_set_blocks): Start using auto_bitmap.
+	(df_compact_blocks): Likewise.
+	* df-problems.c (df_rd_confluence_n): Likewise.
+	* df-scan.c (df_insn_rescan_all): Likewise.
+	(df_process_deferred_rescans): Likewise.
+	(df_update_entry_block_defs): Likewise.
+	(df_update_exit_block_uses): Likewise.
+	(df_entry_block_bitmap_verify): Likewise.
+	(df_exit_block_bitmap_verify): Likewise.
+	(df_scan_verify): Likewise.
+	* lra-constraints.c (lra_constraints): Likewise.
+	(undo_optional_reloads): Likewise.
+	(lra_undo_inheritance): Likewise.
+	* lra-remat.c (calculate_gen_cands): Likewise.
+	(do_remat): Likewise.
+	* lra-spills.c (assign_spill_hard_regs): Likewise.
+	(spill_pseudos): Likewise.
+	* tree-ssa-pre.c (bitmap_set_and): Likewise.
+	(bitmap_set_subtract_values): Likewise.
+
+2017-05-13  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
 	* haifa-sched.c (estimate_shadow_tick): Replace manual bitmap
 	management with auto_bitmap.
 	(fix_inter_tick): Likewise.
