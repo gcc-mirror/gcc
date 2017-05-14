@@ -1128,7 +1128,8 @@ i386_pe_seh_unwind_emit (FILE *asm_out_file, rtx_insn *insn)
 
 	case REG_CFA_DEF_CFA:
 	case REG_CFA_EXPRESSION:
-	  /* Only emitted with DRAP, which we disable.  */
+	  /* Only emitted with DRAP and aligned memory access using a
+	     realigned SP, both of which we disable.  */
 	  gcc_unreachable ();
 	  break;
 

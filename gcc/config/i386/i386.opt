@@ -538,6 +538,10 @@ Enum(calling_abi) String(sysv) Value(SYSV_ABI)
 EnumValue
 Enum(calling_abi) String(ms) Value(MS_ABI)
 
+mcall-ms2sysv-xlogues
+Target Report Mask(CALL_MS2SYSV_XLOGUES) Save
+Use libgcc stubs to save and restore registers clobbered by 64-bit Microsoft to System V ABI calls.
+
 mveclibabi=
 Target RejectNegative Joined Var(ix86_veclibabi_type) Enum(ix86_veclibabi) Init(ix86_veclibabi_type_none)
 Vector library ABI to use.

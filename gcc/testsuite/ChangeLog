@@ -1,3 +1,10 @@
+2017-05-14  Daniel Santos  <daniel.santos@pobox.com>
+
+	* gcc.target/x86_64/abi/ms-sysv/do-test.S: New file.
+	* gcc.target/x86_64/abi/ms-sysv/gen.cc: Likewise.
+	* gcc.target/x86_64/abi/ms-sysv/ms-sysv.c: Likewise.
+	* gcc.target/x86_64/abi/ms-sysv/ms-sysv.exp: Likewise.
+
 2017-05-14  Julia Koval  <julia.koval@intel.com>
 
 	* gcc.target/i386/xgetsetbv.c: New test.
