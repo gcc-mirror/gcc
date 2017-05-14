@@ -36220,6 +36220,7 @@ ix86_expand_special_args_builtin (const struct builtin_description *d,
     case V4DI_FTYPE_PCV4DI_V4DI:
     case V4SI_FTYPE_PCV4SI_V4SI:
     case V2DI_FTYPE_PCV2DI_V2DI:
+    case VOID_FTYPE_INT_INT64:
       nargs = 2;
       klass = load;
       memory = 0;
@@ -37227,6 +37228,7 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget,
     case IX86_BUILTIN_RDPMC:
     case IX86_BUILTIN_RDTSC:
     case IX86_BUILTIN_RDTSCP:
+    case IX86_BUILTIN_XGETBV:
 
       op0 = gen_reg_rtx (DImode);
       op1 = gen_reg_rtx (DImode);
@@ -37241,6 +37243,18 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget,
 	  insn = (TARGET_64BIT
 		  ? gen_rdpmc_rex64 (op0, op1, op2)
 		  : gen_rdpmc (op0, op2));
+	  emit_insn (insn);
+	}
+      else if (fcode == IX86_BUILTIN_XGETBV)
+	{
+	  arg0 = CALL_EXPR_ARG (exp, 0);
+	  op2 = expand_normal (arg0);
+	  if (!register_operand (op2, SImode))
+	    op2 = copy_to_mode_reg (SImode, op2);
+
+	  insn = (TARGET_64BIT
+		  ? gen_xgetbv_rex64 (op0, op1, op2)
+		  : gen_xgetbv (op0, op2));
 	  emit_insn (insn);
 	}
       else if (fcode == IX86_BUILTIN_RDTSC)
@@ -37331,6 +37345,40 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget,
       op0 = gen_rtx_MEM (mode0, op0);
 
       pat = GEN_FCN (icode) (op0);
+      if (pat)
+	emit_insn (pat);
+      return 0;
+
+    case IX86_BUILTIN_XSETBV:
+      arg0 = CALL_EXPR_ARG (exp, 0);
+      arg1 = CALL_EXPR_ARG (exp, 1);
+      op0 = expand_normal (arg0);
+      op1 = expand_normal (arg1);
+
+      if (!REG_P (op0))
+	op0 = copy_to_mode_reg (SImode, op0);
+
+      if (TARGET_64BIT)
+	{
+	  op2 = expand_simple_binop (DImode, LSHIFTRT, op1, GEN_INT (32),
+				     NULL, 1, OPTAB_DIRECT);
+
+	  op2 = gen_lowpart (SImode, op2);
+	  op1 = gen_lowpart (SImode, op1);
+	  if (!REG_P (op1))
+	    op1 = copy_to_mode_reg (SImode, op1);
+	  if (!REG_P (op2))
+	    op2 = copy_to_mode_reg (SImode, op2);
+	  icode = CODE_FOR_xsetbv_rex64;
+	  pat = GEN_FCN (icode) (op0, op1, op2);
+	}
+      else
+	{
+	  if (!REG_P (op1))
+	    op1 = copy_to_mode_reg (DImode, op1);
+	  icode = CODE_FOR_xsetbv;
+	  pat = GEN_FCN (icode) (op0, op1);
+	}
       if (pat)
 	emit_insn (pat);
       return 0;

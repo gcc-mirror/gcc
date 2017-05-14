@@ -1,3 +1,7 @@
+2017-05-14  Julia Koval  <julia.koval@intel.com>
+
+	* gcc.target/i386/xgetsetbv.c: New test.
+
 2017-05-14  Nicolas Koenig  <koenigni@student.ethz.ch>
 
 	PR fortran/80442
