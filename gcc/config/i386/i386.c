@@ -93,6 +93,7 @@ static rtx legitimize_dllimport_symbol (rtx, bool);
 static rtx legitimize_pe_coff_extern_decl (rtx, bool);
 static rtx legitimize_pe_coff_symbol (rtx, bool);
 static void ix86_print_operand_address_as (FILE *, rtx, addr_space_t, bool);
+static bool ix86_save_reg (unsigned int, bool, bool);
 
 #ifndef CHECK_STACK_LIMIT
 #define CHECK_STACK_LIMIT (-1)
@@ -2424,13 +2425,274 @@ static int const x86_64_int_return_registers[4] =
 
 /* Additional registers that are clobbered by SYSV calls.  */
 
-int const x86_64_ms_sysv_extra_clobbered_registers[12] =
+unsigned const x86_64_ms_sysv_extra_clobbered_registers[12] =
 {
   SI_REG, DI_REG,
   XMM6_REG, XMM7_REG,
   XMM8_REG, XMM9_REG, XMM10_REG, XMM11_REG,
   XMM12_REG, XMM13_REG, XMM14_REG, XMM15_REG
 };
+
+enum xlogue_stub {
+  XLOGUE_STUB_SAVE,
+  XLOGUE_STUB_RESTORE,
+  XLOGUE_STUB_RESTORE_TAIL,
+  XLOGUE_STUB_SAVE_HFP,
+  XLOGUE_STUB_RESTORE_HFP,
+  XLOGUE_STUB_RESTORE_HFP_TAIL,
+
+  XLOGUE_STUB_COUNT
+};
+
+enum xlogue_stub_sets {
+  XLOGUE_SET_ALIGNED,
+  XLOGUE_SET_ALIGNED_PLUS_8,
+  XLOGUE_SET_HFP_ALIGNED_OR_REALIGN,
+  XLOGUE_SET_HFP_ALIGNED_PLUS_8,
+
+  XLOGUE_SET_COUNT
+};
+
+/* Register save/restore layout used by out-of-line stubs.  */
+class xlogue_layout {
+public:
+  struct reginfo
+  {
+    unsigned regno;
+    HOST_WIDE_INT offset;	/* Offset used by stub base pointer (rax or
+				   rsi) to where each register is stored.  */
+  };
+
+  unsigned get_nregs () const			{return m_nregs;}
+  HOST_WIDE_INT get_stack_align_off_in () const	{return m_stack_align_off_in;}
+
+  const reginfo &get_reginfo (unsigned reg) const
+  {
+    gcc_assert (reg < m_nregs);
+    return m_regs[reg];
+  }
+
+  const char *get_stub_name (enum xlogue_stub stub,
+			     unsigned n_extra_args) const;
+  /* Returns an rtx for the stub's symbol based upon
+       1.) the specified stub (save, restore or restore_ret) and
+       2.) the value of cfun->machine->call_ms2sysv_extra_regs and
+       3.) rather or not stack alignment is being performed.  */
+  rtx get_stub_rtx (enum xlogue_stub stub) const;
+
+  /* Returns the amount of stack space (including padding) that the stub
+     needs to store registers based upon data in the machine_function.  */
+  HOST_WIDE_INT get_stack_space_used () const
+  {
+    const struct machine_function &m = *cfun->machine;
+    unsigned last_reg = m.call_ms2sysv_extra_regs + MIN_REGS - 1;
+
+    gcc_assert (m.call_ms2sysv_extra_regs <= MAX_EXTRA_REGS);
+    return m_regs[last_reg].offset
+	    + (m.call_ms2sysv_pad_out ? 8 : 0)
+	    + STUB_INDEX_OFFSET;
+  }
+
+  /* Returns the offset for the base pointer used by the stub.  */
+  HOST_WIDE_INT get_stub_ptr_offset () const
+  {
+    return STUB_INDEX_OFFSET + m_stack_align_off_in;
+  }
+
+  static const struct xlogue_layout &get_instance ();
+  static unsigned compute_stub_managed_regs (HARD_REG_SET &stub_managed_regs);
+
+  static const HOST_WIDE_INT STUB_INDEX_OFFSET = 0x70;
+  static const unsigned MIN_REGS = NUM_X86_64_MS_CLOBBERED_REGS;
+  static const unsigned MAX_REGS = 18;
+  static const unsigned MAX_EXTRA_REGS = MAX_REGS - MIN_REGS;
+  static const unsigned VARIANT_COUNT = MAX_EXTRA_REGS + 1;
+  static const unsigned STUB_NAME_MAX_LEN = 16;
+  static const char * const STUB_BASE_NAMES[XLOGUE_STUB_COUNT];
+  static const unsigned REG_ORDER[MAX_REGS];
+  static const unsigned REG_ORDER_REALIGN[MAX_REGS];
+
+private:
+  xlogue_layout ();
+  xlogue_layout (HOST_WIDE_INT stack_align_off_in, bool hfp);
+  xlogue_layout (const xlogue_layout &);
+
+  /* True if hard frame pointer is used.  */
+  bool m_hfp;
+
+  /* Max number of register this layout manages.  */
+  unsigned m_nregs;
+
+  /* Incoming offset from 16-byte alignment.  */
+  HOST_WIDE_INT m_stack_align_off_in;
+
+  /* Register order and offsets.  */
+  struct reginfo m_regs[MAX_REGS];
+
+  /* Lazy-inited cache of symbol names for stubs.  */
+  char m_stub_names[XLOGUE_STUB_COUNT][VARIANT_COUNT][STUB_NAME_MAX_LEN];
+
+  static const struct xlogue_layout GTY(()) s_instances[XLOGUE_SET_COUNT];
+};
+
+const char * const xlogue_layout::STUB_BASE_NAMES[XLOGUE_STUB_COUNT] = {
+  "savms64",
+  "resms64",
+  "resms64x",
+  "savms64f",
+  "resms64f",
+  "resms64fx"
+};
+
+const unsigned xlogue_layout::REG_ORDER[xlogue_layout::MAX_REGS] = {
+/* The below offset values are where each register is stored for the layout
+   relative to incoming stack pointer.  The value of each m_regs[].offset will
+   be relative to the incoming base pointer (rax or rsi) used by the stub.
+
+    s_instances:   0		1		2		3
+    Offset:					realigned or	aligned + 8
+    Register	   aligned	aligned + 8	aligned w/HFP	w/HFP	*/
+    XMM15_REG,	/* 0x10		0x18		0x10		0x18	*/
+    XMM14_REG,	/* 0x20		0x28		0x20		0x28	*/
+    XMM13_REG,	/* 0x30		0x38		0x30		0x38	*/
+    XMM12_REG,	/* 0x40		0x48		0x40		0x48	*/
+    XMM11_REG,	/* 0x50		0x58		0x50		0x58	*/
+    XMM10_REG,	/* 0x60		0x68		0x60		0x68	*/
+    XMM9_REG,	/* 0x70		0x78		0x70		0x78	*/
+    XMM8_REG,	/* 0x80		0x88		0x80		0x88	*/
+    XMM7_REG,	/* 0x90		0x98		0x90		0x98	*/
+    XMM6_REG,	/* 0xa0		0xa8		0xa0		0xa8	*/
+    SI_REG,	/* 0xa8		0xb0		0xa8		0xb0	*/
+    DI_REG,	/* 0xb0		0xb8		0xb0		0xb8	*/
+    BX_REG,	/* 0xb8		0xc0		0xb8		0xc0	*/
+    BP_REG,	/* 0xc0		0xc8		N/A		N/A	*/
+    R12_REG,	/* 0xc8		0xd0		0xc0		0xc8	*/
+    R13_REG,	/* 0xd0		0xd8		0xc8		0xd0	*/
+    R14_REG,	/* 0xd8		0xe0		0xd0		0xd8	*/
+    R15_REG,	/* 0xe0		0xe8		0xd8		0xe0	*/
+};
+
+/* Instantiates all xlogue_layout instances.  */
+const struct xlogue_layout GTY(())
+xlogue_layout::s_instances[XLOGUE_SET_COUNT] = {
+  xlogue_layout (0, false),
+  xlogue_layout (8, false),
+  xlogue_layout (0, true),
+  xlogue_layout (8, true)
+};
+
+/* Return an appropriate const instance of xlogue_layout based upon values
+   in cfun->machine and crtl.  */
+const struct xlogue_layout &xlogue_layout::get_instance ()
+{
+  enum xlogue_stub_sets stub_set;
+  bool aligned_plus_8 = cfun->machine->call_ms2sysv_pad_in;
+
+  if (stack_realign_fp)
+    stub_set = XLOGUE_SET_HFP_ALIGNED_OR_REALIGN;
+  else if (frame_pointer_needed)
+    stub_set = aligned_plus_8
+	      ? XLOGUE_SET_HFP_ALIGNED_PLUS_8
+	      : XLOGUE_SET_HFP_ALIGNED_OR_REALIGN;
+  else
+    stub_set = aligned_plus_8 ? XLOGUE_SET_ALIGNED_PLUS_8 : XLOGUE_SET_ALIGNED;
+
+  return s_instances[stub_set];
+}
+
+/* Determine which clobbered registers can be saved by the stub and store
+   them in stub_managed_regs.  Returns the count of registers the stub will
+   save and restore.  */
+unsigned
+xlogue_layout::compute_stub_managed_regs (HARD_REG_SET &stub_managed_regs)
+{
+  bool hfp = frame_pointer_needed || stack_realign_fp;
+
+  unsigned i, count;
+  unsigned regno;
+
+  for (i = 0; i < NUM_X86_64_MS_CLOBBERED_REGS; ++i)
+    {
+      regno = x86_64_ms_sysv_extra_clobbered_registers[i];
+      if (regno == BP_REG && hfp)
+	continue;
+      if (!ix86_save_reg (regno, false, false))
+	return 0;
+    }
+
+  for (count = i = 0; i < MAX_REGS; ++i)
+    {
+      regno = REG_ORDER[i];
+      if (regno == BP_REG && hfp)
+	continue;
+      if (!ix86_save_reg (regno, false, false))
+	break;
+      add_to_hard_reg_set (&stub_managed_regs, DImode, regno);
+      ++count;
+    }
+    gcc_assert (count >= MIN_REGS && count <= MAX_REGS);
+    return count;
+}
+
+/* Constructor for xlogue_layout.  */
+xlogue_layout::xlogue_layout (HOST_WIDE_INT stack_align_off_in, bool hfp)
+  : m_hfp (hfp) , m_nregs (hfp ? 17 : 18),
+    m_stack_align_off_in (stack_align_off_in)
+{
+  memset (m_regs, 0, sizeof (m_regs));
+  memset (m_stub_names, 0, sizeof (m_stub_names));
+
+  HOST_WIDE_INT offset = stack_align_off_in;
+  unsigned i, j;
+  for (i = j = 0; i < MAX_REGS; ++i)
+    {
+      unsigned regno = REG_ORDER[i];
+
+      if (regno == BP_REG && hfp)
+	continue;
+      if (SSE_REGNO_P (regno))
+	{
+	  offset += 16;
+	  /* Verify that SSE regs are always aligned.  */
+	  gcc_assert (!((stack_align_off_in + offset) & 15));
+	}
+      else
+	offset += 8;
+
+      m_regs[j].regno    = regno;
+      m_regs[j++].offset = offset - STUB_INDEX_OFFSET;
+    }
+    gcc_assert (j == m_nregs);
+}
+
+const char *xlogue_layout::get_stub_name (enum xlogue_stub stub,
+					  unsigned n_extra_regs) const
+{
+  xlogue_layout *writey_this = const_cast<xlogue_layout*>(this);
+  char *name = writey_this->m_stub_names[stub][n_extra_regs];
+
+  /* Lazy init */
+  if (!*name)
+    {
+      int res = snprintf (name, STUB_NAME_MAX_LEN, "__%s_%u",
+			  STUB_BASE_NAMES[stub], MIN_REGS + n_extra_regs);
+      gcc_checking_assert (res <= (int)STUB_NAME_MAX_LEN);
+    }
+
+  return name;
+}
+
+/* Return rtx of a symbol ref for the entry point (based upon
+   cfun->machine->call_ms2sysv_extra_regs) of the specified stub.  */
+rtx xlogue_layout::get_stub_rtx (enum xlogue_stub stub) const
+{
+  const unsigned n_extra_regs = cfun->machine->call_ms2sysv_extra_regs;
+  gcc_checking_assert (n_extra_regs <= MAX_EXTRA_REGS);
+  gcc_assert (stub < XLOGUE_STUB_COUNT);
+  gcc_assert (crtl->stack_realign_finalized);
+
+  return gen_rtx_SYMBOL_REF (Pmode, get_stub_name (stub, n_extra_regs));
+}
 
 /* Define the structure for the machine field in struct function.  */
 
@@ -2453,12 +2715,29 @@ struct GTY(()) stack_local_entry {
    saved frame pointer			if frame_pointer_needed
 					<- HARD_FRAME_POINTER
    [saved regs]
-					<- regs_save_offset
+					<- reg_save_offset
    [padding0]
-
+					<- stack_realign_offset
    [saved SSE regs]
+	OR
+   [stub-saved registers for ms x64 --> sysv clobbers
+			<- Start of out-of-line, stub-saved/restored regs
+			   (see libgcc/config/i386/(sav|res)ms64*.S)
+     [XMM6-15]
+     [RSI]
+     [RDI]
+     [?RBX]		only if RBX is clobbered
+     [?RBP]		only if RBP and RBX are clobbered
+     [?R12]		only if R12 and all previous regs are clobbered
+     [?R13]		only if R13 and all previous regs are clobbered
+     [?R14]		only if R14 and all previous regs are clobbered
+     [?R15]		only if R15 and all previous regs are clobbered
+			<- end of stub-saved/restored regs
+     [padding1]
+   ]
+					<- outlined_save_offset
 					<- sse_regs_save_offset
-   [padding1]          |
+   [padding2]
 		       |		<- FRAME_POINTER
    [va_arg registers]  |
 		       |
@@ -2481,6 +2760,9 @@ struct ix86_frame
   HOST_WIDE_INT stack_pointer_offset;
   HOST_WIDE_INT hfp_save_offset;
   HOST_WIDE_INT reg_save_offset;
+  HOST_WIDE_INT stack_realign_allocate_offset;
+  HOST_WIDE_INT stack_realign_offset;
+  HOST_WIDE_INT outlined_save_offset;
   HOST_WIDE_INT sse_reg_save_offset;
 
   /* When save_regs_using_mov is set, emit prologue using
@@ -4506,7 +4788,8 @@ ix86_target_string (HOST_WIDE_INT isa, HOST_WIDE_INT isa2,
     { "-mstv",				MASK_STV },
     { "-mavx256-split-unaligned-load",	MASK_AVX256_SPLIT_UNALIGNED_LOAD },
     { "-mavx256-split-unaligned-store",	MASK_AVX256_SPLIT_UNALIGNED_STORE },
-    { "-mprefer-avx128",		MASK_PREFER_AVX128 }
+    { "-mprefer-avx128",		MASK_PREFER_AVX128 },
+    { "-mcall-ms2sysv-xlogues",		MASK_CALL_MS2SYSV_XLOGUES }
   };
 
   /* Additional flag options.  */
@@ -6316,6 +6599,9 @@ ix86_option_override_internal (bool main_args_p,
      opts->x_flag_fentry = 0;
 #endif
    }
+
+  if (TARGET_SEH && TARGET_CALL_MS2SYSV_XLOGUES)
+    sorry ("-mcall-ms2sysv-xlogues isn%'t currently supported with SEH");
 
   if (!(opts_set->x_target_flags & MASK_VZEROUPPER))
     opts->x_target_flags |= MASK_VZEROUPPER;
@@ -12348,6 +12634,10 @@ ix86_hard_regno_scratch_ok (unsigned int regno)
 	      && df_regs_ever_live_p (regno)));
 }
 
+/* Registers who's save & restore will be managed by stubs called from
+   pro/epilogue.  */
+static HARD_REG_SET GTY(()) stub_managed_regs;
+
 /* Return true if register class CL should be an additional allocno
    class.  */
 
@@ -12360,7 +12650,7 @@ ix86_additional_allocno_class_p (reg_class_t cl)
 /* Return TRUE if we need to save REGNO.  */
 
 static bool
-ix86_save_reg (unsigned int regno, bool maybe_eh_return)
+ix86_save_reg (unsigned int regno, bool maybe_eh_return, bool ignore_outlined)
 {
   /* If there are no caller-saved registers, we preserve all registers,
      except for MMX and x87 registers which aren't supported when saving
@@ -12428,6 +12718,10 @@ ix86_save_reg (unsigned int regno, bool maybe_eh_return)
 	}
     }
 
+  if (ignore_outlined && cfun->machine->call_ms2sysv
+      && in_hard_reg_set_p (stub_managed_regs, DImode, regno))
+    return false;
+
   if (crtl->drap_reg
       && regno == REGNO (crtl->drap_reg)
       && !cfun->machine->no_drap_save_restore)
@@ -12448,7 +12742,7 @@ ix86_nsaved_regs (void)
   int regno;
 
   for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
-    if (GENERAL_REGNO_P (regno) && ix86_save_reg (regno, true))
+    if (GENERAL_REGNO_P (regno) && ix86_save_reg (regno, true, true))
       nregs ++;
   return nregs;
 }
@@ -12464,7 +12758,7 @@ ix86_nsaved_sseregs (void)
   if (!TARGET_64BIT_MS_ABI)
     return 0;
   for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
-    if (SSE_REGNO_P (regno) && ix86_save_reg (regno, true))
+    if (SSE_REGNO_P (regno) && ix86_save_reg (regno, true, true))
       nregs ++;
   return nregs;
 }
@@ -12524,6 +12818,15 @@ ix86_builtin_setjmp_frame_value (void)
   return stack_realign_fp ? hard_frame_pointer_rtx : virtual_stack_vars_rtx;
 }
 
+/* Disables out-of-lined msabi to sysv pro/epilogues and emits a warning if
+   warn_once is null, or *warn_once is zero.  */
+static void disable_call_ms2sysv_xlogues (const char *feature)
+{
+  cfun->machine->call_ms2sysv = false;
+  warning (OPT_mcall_ms2sysv_xlogues, "not currently compatible with %s.",
+	   feature);
+}
+
 /* When using -fsplit-stack, the allocation routines set a field in
    the TCB to the bottom of the stack plus this much space, measured
    in bytes.  */
@@ -12535,14 +12838,57 @@ ix86_builtin_setjmp_frame_value (void)
 static void
 ix86_compute_frame_layout (struct ix86_frame *frame)
 {
+  struct machine_function *m = cfun->machine;
   unsigned HOST_WIDE_INT stack_alignment_needed;
   HOST_WIDE_INT offset;
   unsigned HOST_WIDE_INT preferred_alignment;
   HOST_WIDE_INT size = get_frame_size ();
   HOST_WIDE_INT to_allocate;
 
+  CLEAR_HARD_REG_SET (stub_managed_regs);
+
+  /* m->call_ms2sysv is initially enabled in ix86_expand_call for all 64-bit
+   * ms_abi functions that call a sysv function.  We now need to prune away
+   * cases where it should be disabled.  */
+  if (TARGET_64BIT && m->call_ms2sysv)
+  {
+    gcc_assert (TARGET_64BIT_MS_ABI);
+    gcc_assert (TARGET_CALL_MS2SYSV_XLOGUES);
+    gcc_assert (!TARGET_SEH);
+
+    if (!TARGET_SSE)
+      m->call_ms2sysv = false;
+
+    /* Don't break hot-patched functions.  */
+    else if (ix86_function_ms_hook_prologue (current_function_decl))
+      m->call_ms2sysv = false;
+
+    /* TODO: Cases not yet examined.  */
+    else if (crtl->calls_eh_return)
+      disable_call_ms2sysv_xlogues ("__builtin_eh_return");
+
+    else if (ix86_static_chain_on_stack)
+      disable_call_ms2sysv_xlogues ("static call chains");
+
+    else if (ix86_using_red_zone ())
+      disable_call_ms2sysv_xlogues ("red zones");
+
+    else if (flag_split_stack)
+      disable_call_ms2sysv_xlogues ("split stack");
+
+    /* Finally, compute which registers the stub will manage.  */
+    else
+      {
+	unsigned count = xlogue_layout
+			 ::compute_stub_managed_regs (stub_managed_regs);
+	m->call_ms2sysv_extra_regs = count - xlogue_layout::MIN_REGS;
+      }
+  }
+
   frame->nregs = ix86_nsaved_regs ();
   frame->nsseregs = ix86_nsaved_sseregs ();
+  m->call_ms2sysv_pad_in = 0;
+  m->call_ms2sysv_pad_out = 0;
 
   /* 64-bit MS ABI seem to require stack alignment to be always 16,
      except for function prologues, leaf functions and when the defult
@@ -12569,19 +12915,19 @@ ix86_compute_frame_layout (struct ix86_frame *frame)
      scheduling that can be done, which means that there's very little point
      in doing anything except PUSHs.  */
   if (TARGET_SEH)
-    cfun->machine->use_fast_prologue_epilogue = false;
+    m->use_fast_prologue_epilogue = false;
 
   /* During reload iteration the amount of registers saved can change.
      Recompute the value as needed.  Do not recompute when amount of registers
      didn't change as reload does multiple calls to the function and does not
      expect the decision to change within single iteration.  */
   else if (!optimize_bb_for_size_p (ENTRY_BLOCK_PTR_FOR_FN (cfun))
-           && cfun->machine->use_fast_prologue_epilogue_nregs != frame->nregs)
+	   && m->use_fast_prologue_epilogue_nregs != frame->nregs)
     {
       int count = frame->nregs;
       struct cgraph_node *node = cgraph_node::get (current_function_decl);
 
-      cfun->machine->use_fast_prologue_epilogue_nregs = count;
+      m->use_fast_prologue_epilogue_nregs = count;
 
       /* The fast prologue uses move instead of push to save registers.  This
          is significantly longer, but also executes faster as modern hardware
@@ -12598,14 +12944,14 @@ ix86_compute_frame_layout (struct ix86_frame *frame)
       if (node->frequency < NODE_FREQUENCY_NORMAL
 	  || (flag_branch_probabilities
 	      && node->frequency < NODE_FREQUENCY_HOT))
-        cfun->machine->use_fast_prologue_epilogue = false;
+	m->use_fast_prologue_epilogue = false;
       else
-        cfun->machine->use_fast_prologue_epilogue
+	m->use_fast_prologue_epilogue
 	   = !expensive_function_p (count);
     }
 
   frame->save_regs_using_mov
-    = (TARGET_PROLOGUE_USING_MOVE && cfun->machine->use_fast_prologue_epilogue
+    = (TARGET_PROLOGUE_USING_MOVE && m->use_fast_prologue_epilogue
        /* If static stack checking is enabled and done with probes,
 	  the registers need to be saved before allocating the frame.  */
        && flag_stack_check != STATIC_BUILTIN_STACK_CHECK);
@@ -12634,28 +12980,54 @@ ix86_compute_frame_layout (struct ix86_frame *frame)
   if (TARGET_SEH)
     frame->hard_frame_pointer_offset = offset;
 
-  /* Align and set SSE register save area.  */
-  if (frame->nsseregs)
-    {
-      /* The only ABI that has saved SSE registers (Win64) also has a
-	 16-byte aligned default stack, and thus we don't need to be
-	 within the re-aligned local stack frame to save them.  In case
-	 incoming stack boundary is aligned to less than 16 bytes,
-	 unaligned move of SSE register will be emitted, so there is
-	 no point to round up the SSE register save area outside the
-	 re-aligned local stack frame to 16 bytes.  */
-      if (ix86_incoming_stack_boundary >= 128)
-	offset = ROUND_UP (offset, 16);
-      offset += frame->nsseregs * 16;
-    }
-  frame->sse_reg_save_offset = offset;
+  /* When re-aligning the stack frame, but not saving SSE registers, this
+     is the offset we want adjust the stack pointer to.  */
+  frame->stack_realign_allocate_offset = offset;
 
   /* The re-aligned stack starts here.  Values before this point are not
-     directly comparable with values below this point.  In order to make
-     sure that no value happens to be the same before and after, force
-     the alignment computation below to add a non-zero value.  */
+     directly comparable with values below this point.  Use sp_valid_at
+     to determine if the stack pointer is valid for a given offset and
+     fp_valid_at for the frame pointer.  */
   if (stack_realign_fp)
     offset = ROUND_UP (offset, stack_alignment_needed);
+  frame->stack_realign_offset = offset;
+
+  if (TARGET_64BIT && m->call_ms2sysv)
+    {
+      gcc_assert (stack_alignment_needed >= 16);
+      gcc_assert (!frame->nsseregs);
+
+      m->call_ms2sysv_pad_in = !!(offset & UNITS_PER_WORD);
+
+      /* Select an appropriate layout for incoming stack offset.  */
+      const struct xlogue_layout &xlogue = xlogue_layout::get_instance ();
+
+      if ((offset + xlogue.get_stack_space_used ()) & UNITS_PER_WORD)
+	m->call_ms2sysv_pad_out = 1;
+
+      offset += xlogue.get_stack_space_used ();
+      gcc_assert (!(offset & 0xf));
+      frame->outlined_save_offset = offset;
+    }
+
+  /* Align and set SSE register save area.  */
+  else if (frame->nsseregs)
+    {
+      /* The only ABI that has saved SSE registers (Win64) also has a
+	 16-byte aligned default stack.  However, many programs violate
+	 the ABI, and Wine64 forces stack realignment to compensate.
+
+	 If the incoming stack boundary is at least 16 bytes, or DRAP is
+	 required and the DRAP re-alignment boundary is at least 16 bytes,
+	 then we want the SSE register save area properly aligned.  */
+      if (ix86_incoming_stack_boundary >= 128
+	       || (stack_realign_drap && stack_alignment_needed >= 16))
+	offset = ROUND_UP (offset, 16);
+      offset += frame->nsseregs * 16;
+      frame->stack_realign_allocate_offset = offset;
+    }
+
+  frame->sse_reg_save_offset = offset;
 
   /* Va-arg area */
   frame->va_arg_size = ix86_varargs_gpr_size + ix86_varargs_fpr_size;
@@ -12771,15 +13143,57 @@ choose_baseaddr_len (unsigned int regno, HOST_WIDE_INT offset)
   return len;
 }
 
-/* Return an RTX that points to CFA_OFFSET within the stack frame.
-   The valid base registers are taken from CFUN->MACHINE->FS.  */
+/* Determine if the stack pointer is valid for accessing the cfa_offset.  */
 
-static rtx
-choose_baseaddr (HOST_WIDE_INT cfa_offset)
+static inline bool sp_valid_at (HOST_WIDE_INT cfa_offset)
+{
+  const struct machine_frame_state &fs = cfun->machine->fs;
+  return fs.sp_valid && !(fs.sp_realigned
+			  && cfa_offset < fs.sp_realigned_offset);
+}
+
+/* Determine if the frame pointer is valid for accessing the cfa_offset.  */
+
+static inline bool fp_valid_at (HOST_WIDE_INT cfa_offset)
+{
+  const struct machine_frame_state &fs = cfun->machine->fs;
+  return fs.fp_valid && !(fs.sp_valid && fs.sp_realigned
+			  && cfa_offset >= fs.sp_realigned_offset);
+}
+
+/* Choose a base register based upon alignment requested, speed and/or
+   size.  */
+
+static void choose_basereg (HOST_WIDE_INT cfa_offset, rtx &base_reg,
+			    HOST_WIDE_INT &base_offset,
+			    unsigned int align_reqested, unsigned int *align)
 {
   const struct machine_function *m = cfun->machine;
-  rtx base_reg = NULL;
-  HOST_WIDE_INT base_offset = 0;
+  unsigned int hfp_align;
+  unsigned int drap_align;
+  unsigned int sp_align;
+  bool hfp_ok  = fp_valid_at (cfa_offset);
+  bool drap_ok = m->fs.drap_valid;
+  bool sp_ok   = sp_valid_at (cfa_offset);
+
+  hfp_align = drap_align = sp_align = INCOMING_STACK_BOUNDARY;
+
+  /* Filter out any registers that don't meet the requested alignment
+     criteria.  */
+  if (align_reqested)
+    {
+      if (m->fs.realigned)
+	hfp_align = drap_align = sp_align = crtl->stack_alignment_needed;
+      /* SEH unwind code does do not currently support REG_CFA_EXPRESSION
+	 notes (which we would need to use a realigned stack pointer),
+	 so disable on SEH targets.  */
+      else if (m->fs.sp_realigned)
+	sp_align = crtl->stack_alignment_needed;
+
+      hfp_ok = hfp_ok && hfp_align >= align_reqested;
+      drap_ok = drap_ok && drap_align >= align_reqested;
+      sp_ok = sp_ok && sp_align >= align_reqested;
+    }
 
   if (m->use_fast_prologue_epilogue)
     {
@@ -12788,17 +13202,17 @@ choose_baseaddr (HOST_WIDE_INT cfa_offset)
          while DRAP must be reloaded within the epilogue.  But choose either
          over the SP due to increased encoding size.  */
 
-      if (m->fs.fp_valid)
+      if (hfp_ok)
 	{
 	  base_reg = hard_frame_pointer_rtx;
 	  base_offset = m->fs.fp_offset - cfa_offset;
 	}
-      else if (m->fs.drap_valid)
+      else if (drap_ok)
 	{
 	  base_reg = crtl->drap_reg;
 	  base_offset = 0 - cfa_offset;
 	}
-      else if (m->fs.sp_valid)
+      else if (sp_ok)
 	{
 	  base_reg = stack_pointer_rtx;
 	  base_offset = m->fs.sp_offset - cfa_offset;
@@ -12811,13 +13225,13 @@ choose_baseaddr (HOST_WIDE_INT cfa_offset)
 
       /* Choose the base register with the smallest address encoding.
          With a tie, choose FP > DRAP > SP.  */
-      if (m->fs.sp_valid)
+      if (sp_ok)
 	{
 	  base_reg = stack_pointer_rtx;
 	  base_offset = m->fs.sp_offset - cfa_offset;
           len = choose_baseaddr_len (STACK_POINTER_REGNUM, base_offset);
 	}
-      if (m->fs.drap_valid)
+      if (drap_ok)
 	{
 	  toffset = 0 - cfa_offset;
 	  tlen = choose_baseaddr_len (REGNO (crtl->drap_reg), toffset);
@@ -12828,7 +13242,7 @@ choose_baseaddr (HOST_WIDE_INT cfa_offset)
 	      len = tlen;
 	    }
 	}
-      if (m->fs.fp_valid)
+      if (hfp_ok)
 	{
 	  toffset = m->fs.fp_offset - cfa_offset;
 	  tlen = choose_baseaddr_len (HARD_FRAME_POINTER_REGNUM, toffset);
@@ -12840,8 +13254,40 @@ choose_baseaddr (HOST_WIDE_INT cfa_offset)
 	    }
 	}
     }
-  gcc_assert (base_reg != NULL);
 
+    /* Set the align return value.  */
+    if (align)
+      {
+	if (base_reg == stack_pointer_rtx)
+	  *align = sp_align;
+	else if (base_reg == crtl->drap_reg)
+	  *align = drap_align;
+	else if (base_reg == hard_frame_pointer_rtx)
+	  *align = hfp_align;
+      }
+}
+
+/* Return an RTX that points to CFA_OFFSET within the stack frame and
+   the alignment of address.  If align is non-null, it should point to
+   an alignment value (in bits) that is preferred or zero and will
+   recieve the alignment of the base register that was selected.  The
+   valid base registers are taken from CFUN->MACHINE->FS.  */
+
+static rtx
+choose_baseaddr (HOST_WIDE_INT cfa_offset, unsigned int *align)
+{
+  rtx base_reg = NULL;
+  HOST_WIDE_INT base_offset = 0;
+
+  /* If a specific alignment is requested, try to get a base register
+     with that alignment first.  */
+  if (align && *align)
+    choose_basereg (cfa_offset, base_reg, base_offset, *align, align);
+
+  if (!base_reg)
+    choose_basereg (cfa_offset, base_reg, base_offset, 0, align);
+
+  gcc_assert (base_reg != NULL);
   return plus_constant (Pmode, base_reg, base_offset);
 }
 
@@ -12854,7 +13300,7 @@ ix86_emit_save_regs (void)
   rtx_insn *insn;
 
   for (regno = FIRST_PSEUDO_REGISTER - 1; regno-- > 0; )
-    if (GENERAL_REGNO_P (regno) && ix86_save_reg (regno, true))
+    if (GENERAL_REGNO_P (regno) && ix86_save_reg (regno, true, true))
       {
 	insn = emit_insn (gen_push (gen_rtx_REG (word_mode, regno)));
 	RTX_FRAME_RELATED_P (insn) = 1;
@@ -12870,13 +13316,14 @@ ix86_emit_save_reg_using_mov (machine_mode mode, unsigned int regno,
   struct machine_function *m = cfun->machine;
   rtx reg = gen_rtx_REG (mode, regno);
   rtx mem, addr, base, insn;
-  unsigned int align;
+  unsigned int align = GET_MODE_ALIGNMENT (mode);
 
-  addr = choose_baseaddr (cfa_offset);
+  addr = choose_baseaddr (cfa_offset, &align);
   mem = gen_frame_mem (mode, addr);
 
-  /* The location is aligned up to INCOMING_STACK_BOUNDARY.  */
-  align = MIN (GET_MODE_ALIGNMENT (mode), INCOMING_STACK_BOUNDARY);
+  /* The location aligment depends upon the base register.  */
+  align = MIN (GET_MODE_ALIGNMENT (mode), align);
+  gcc_assert (! (cfa_offset & (align / BITS_PER_UNIT - 1)));
   set_mem_align (mem, align);
 
   insn = emit_insn (gen_rtx_SET (mem, reg));
@@ -12916,6 +13363,13 @@ ix86_emit_save_reg_using_mov (machine_mode mode, unsigned int regno,
 	}
     }
 
+  else if (base == stack_pointer_rtx && m->fs.sp_realigned
+	   && cfa_offset >= m->fs.sp_realigned_offset)
+    {
+      gcc_checking_assert (stack_realign_fp);
+      add_reg_note (insn, REG_CFA_EXPRESSION, gen_rtx_SET (mem, reg));
+    }
+
   /* The memory may not be relative to the current CFA register,
      which means that we may need to generate a new pattern for
      use by the unwind info.  */
@@ -12936,7 +13390,7 @@ ix86_emit_save_regs_using_mov (HOST_WIDE_INT cfa_offset)
   unsigned int regno;
 
   for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
-    if (GENERAL_REGNO_P (regno) && ix86_save_reg (regno, true))
+    if (GENERAL_REGNO_P (regno) && ix86_save_reg (regno, true, true))
       {
         ix86_emit_save_reg_using_mov (word_mode, regno, cfa_offset);
 	cfa_offset -= UNITS_PER_WORD;
@@ -12951,7 +13405,7 @@ ix86_emit_save_sse_regs_using_mov (HOST_WIDE_INT cfa_offset)
   unsigned int regno;
 
   for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
-    if (SSE_REGNO_P (regno) && ix86_save_reg (regno, true))
+    if (SSE_REGNO_P (regno) && ix86_save_reg (regno, true, true))
       {
 	ix86_emit_save_reg_using_mov (V4SFmode, regno, cfa_offset);
 	cfa_offset -= GET_MODE_SIZE (V4SFmode);
@@ -13069,15 +13523,18 @@ pro_epilogue_adjust_stack (rtx dest, rtx src, rtx offset,
     {
       HOST_WIDE_INT ooffset = m->fs.sp_offset;
       bool valid = m->fs.sp_valid;
+      bool realigned = m->fs.sp_realigned;
 
       if (src == hard_frame_pointer_rtx)
 	{
 	  valid = m->fs.fp_valid;
+	  realigned = false;
 	  ooffset = m->fs.fp_offset;
 	}
       else if (src == crtl->drap_reg)
 	{
 	  valid = m->fs.drap_valid;
+	  realigned = false;
 	  ooffset = 0;
 	}
       else
@@ -13091,6 +13548,7 @@ pro_epilogue_adjust_stack (rtx dest, rtx src, rtx offset,
 
       m->fs.sp_offset = ooffset - INTVAL (offset);
       m->fs.sp_valid = valid;
+      m->fs.sp_realigned = realigned;
     }
 }
 
@@ -13331,13 +13789,13 @@ get_scratch_register_on_entry (struct scratch_reg *sr)
 	       && !static_chain_p
 	       && drap_regno != CX_REG)
 	regno = CX_REG;
-      else if (ix86_save_reg (BX_REG, true))
+      else if (ix86_save_reg (BX_REG, true, false))
 	regno = BX_REG;
       /* esi is the static chain register.  */
       else if (!(regparm == 3 && static_chain_p)
-	       && ix86_save_reg (SI_REG, true))
+	       && ix86_save_reg (SI_REG, true, false))
 	regno = SI_REG;
-      else if (ix86_save_reg (DI_REG, true))
+      else if (ix86_save_reg (DI_REG, true, false))
 	regno = DI_REG;
       else
 	{
@@ -13811,6 +14269,78 @@ ix86_elim_entry_set_got (rtx reg)
     }
 }
 
+static rtx
+gen_frame_set (rtx reg, rtx frame_reg, int offset, bool store)
+{
+  rtx addr, mem;
+
+  if (offset)
+    addr = gen_rtx_PLUS (Pmode, frame_reg, GEN_INT (offset));
+  mem = gen_frame_mem (GET_MODE (reg), offset ? addr : frame_reg);
+  return gen_rtx_SET (store ? mem : reg, store ? reg : mem);
+}
+
+static inline rtx
+gen_frame_load (rtx reg, rtx frame_reg, int offset)
+{
+  return gen_frame_set (reg, frame_reg, offset, false);
+}
+
+static inline rtx
+gen_frame_store (rtx reg, rtx frame_reg, int offset)
+{
+  return gen_frame_set (reg, frame_reg, offset, true);
+}
+
+static void
+ix86_emit_outlined_ms2sysv_save (const struct ix86_frame &frame)
+{
+  struct machine_function *m = cfun->machine;
+  const unsigned ncregs = NUM_X86_64_MS_CLOBBERED_REGS
+			  + m->call_ms2sysv_extra_regs;
+  rtvec v = rtvec_alloc (ncregs + 1);
+  unsigned int align, i, vi = 0;
+  rtx_insn *insn;
+  rtx sym, addr;
+  rtx rax = gen_rtx_REG (word_mode, AX_REG);
+  const struct xlogue_layout &xlogue = xlogue_layout::get_instance ();
+  HOST_WIDE_INT rax_offset = xlogue.get_stub_ptr_offset () + m->fs.sp_offset;
+  HOST_WIDE_INT stack_alloc_size = frame.stack_pointer_offset - m->fs.sp_offset;
+  HOST_WIDE_INT stack_align_off_in = xlogue.get_stack_align_off_in ();
+
+  /* Verify that the incoming stack 16-byte alignment offset matches the
+     layout we're using.  */
+  gcc_assert (stack_align_off_in == (m->fs.sp_offset & UNITS_PER_WORD));
+
+  /* Get the stub symbol.  */
+  sym = xlogue.get_stub_rtx (frame_pointer_needed ? XLOGUE_STUB_SAVE_HFP
+						  : XLOGUE_STUB_SAVE);
+  RTVEC_ELT (v, vi++) = gen_rtx_USE (VOIDmode, sym);
+
+  /* Setup RAX as the stub's base pointer.  */
+  align = GET_MODE_ALIGNMENT (V4SFmode);
+  addr = choose_baseaddr (rax_offset, &align);
+  gcc_assert (align >= GET_MODE_ALIGNMENT (V4SFmode));
+  insn = emit_insn (gen_rtx_SET (rax, addr));
+
+  gcc_assert (stack_alloc_size >= xlogue.get_stack_space_used ());
+  pro_epilogue_adjust_stack (stack_pointer_rtx, stack_pointer_rtx,
+			     GEN_INT (-stack_alloc_size), -1,
+			     m->fs.cfa_reg == stack_pointer_rtx);
+  for (i = 0; i < ncregs; ++i)
+    {
+      const xlogue_layout::reginfo &r = xlogue.get_reginfo (i);
+      rtx reg = gen_rtx_REG ((SSE_REGNO_P (r.regno) ? V4SFmode : word_mode),
+			     r.regno);
+      RTVEC_ELT (v, vi++) = gen_frame_store (reg, rax, -r.offset);;
+    }
+
+  gcc_assert (vi == (unsigned)GET_NUM_ELEM (v));
+
+  insn = emit_insn (gen_rtx_PARALLEL (VOIDmode, v));
+  RTX_FRAME_RELATED_P (insn) = true;
+}
+
 /* Expand the prologue into a bunch of separate insns.  */
 
 void
@@ -13840,6 +14370,7 @@ ix86_expand_prologue (void)
      this is fudged; we're interested to offsets within the local frame.  */
   m->fs.sp_offset = INCOMING_FRAME_SP_OFFSET;
   m->fs.sp_valid = true;
+  m->fs.sp_realigned = false;
 
   ix86_compute_frame_layout (&frame);
 
@@ -14056,24 +14587,33 @@ ix86_expand_prologue (void)
 	 that we must allocate the size of the register save area before
 	 performing the actual alignment.  Otherwise we cannot guarantee
 	 that there's enough storage above the realignment point.  */
-      if (m->fs.sp_offset != frame.sse_reg_save_offset)
+      allocate = frame.stack_realign_allocate_offset - m->fs.sp_offset;
+      if (allocate && !m->call_ms2sysv)
         pro_epilogue_adjust_stack (stack_pointer_rtx, stack_pointer_rtx,
-				   GEN_INT (m->fs.sp_offset
-					    - frame.sse_reg_save_offset),
-				   -1, false);
+				   GEN_INT (-allocate), -1, false);
 
       /* Align the stack.  */
       insn = emit_insn (ix86_gen_andsp (stack_pointer_rtx,
 					stack_pointer_rtx,
 					GEN_INT (-align_bytes)));
-
       /* For the purposes of register save area addressing, the stack
-         pointer is no longer valid.  As for the value of sp_offset,
-	 see ix86_compute_frame_layout, which we need to match in order
-	 to pass verification of stack_pointer_offset at the end.  */
+	 pointer can no longer be used to access anything in the frame
+	 below m->fs.sp_realigned_offset and the frame pointer cannot be
+	 used for anything at or above.  */
       m->fs.sp_offset = ROUND_UP (m->fs.sp_offset, align_bytes);
-      m->fs.sp_valid = false;
+      m->fs.sp_realigned = true;
+      m->fs.sp_realigned_offset = m->fs.sp_offset - frame.nsseregs * 16;
+      gcc_assert (m->fs.sp_realigned_offset == frame.stack_realign_offset);
+      /* SEH unwind emit doesn't currently support REG_CFA_EXPRESSION, which
+	 is needed to describe where a register is saved using a realigned
+	 stack pointer, so we need to invalidate the stack pointer for that
+	 target.  */
+      if (TARGET_SEH)
+	m->fs.sp_valid = false;
     }
+
+  if (m->call_ms2sysv)
+    ix86_emit_outlined_ms2sysv_save (frame);
 
   allocate = frame.stack_pointer_offset - m->fs.sp_offset;
 
@@ -14308,7 +14848,7 @@ ix86_expand_prologue (void)
       /* vDRAP is setup but after reload it turns out stack realign
          isn't necessary, here we will emit prologue to setup DRAP
          without stack realign adjustment */
-      t = choose_baseaddr (0);
+      t = choose_baseaddr (0, NULL);
       emit_insn (gen_rtx_SET (crtl->drap_reg, t));
     }
 
@@ -14395,22 +14935,25 @@ ix86_emit_restore_regs_using_pop (void)
   unsigned int regno;
 
   for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
-    if (GENERAL_REGNO_P (regno) && ix86_save_reg (regno, false))
+    if (GENERAL_REGNO_P (regno) && ix86_save_reg (regno, false, true))
       ix86_emit_restore_reg_using_pop (gen_rtx_REG (word_mode, regno));
 }
 
-/* Emit code and notes for the LEAVE instruction.  */
+/* Emit code and notes for the LEAVE instruction.  If insn is non-null,
+   omits the emit and only attaches the notes.  */
 
 static void
-ix86_emit_leave (void)
+ix86_emit_leave (rtx_insn *insn)
 {
   struct machine_function *m = cfun->machine;
-  rtx_insn *insn = emit_insn (ix86_gen_leave ());
+  if (!insn)
+    insn = emit_insn (ix86_gen_leave ());
 
   ix86_add_queued_cfa_restore_notes (insn);
 
   gcc_assert (m->fs.fp_valid);
   m->fs.sp_valid = true;
+  m->fs.sp_realigned = false;
   m->fs.sp_offset = m->fs.fp_offset - UNITS_PER_WORD;
   m->fs.fp_valid = false;
 
@@ -14438,13 +14981,13 @@ ix86_emit_restore_regs_using_mov (HOST_WIDE_INT cfa_offset,
   unsigned int regno;
 
   for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
-    if (GENERAL_REGNO_P (regno) && ix86_save_reg (regno, maybe_eh_return))
+    if (GENERAL_REGNO_P (regno) && ix86_save_reg (regno, maybe_eh_return, true))
       {
 	rtx reg = gen_rtx_REG (word_mode, regno);
 	rtx mem;
 	rtx_insn *insn;
 
-	mem = choose_baseaddr (cfa_offset);
+	mem = choose_baseaddr (cfa_offset, NULL);
 	mem = gen_frame_mem (word_mode, mem);
 	insn = emit_move_insn (reg, mem);
 
@@ -14477,17 +15020,18 @@ ix86_emit_restore_sse_regs_using_mov (HOST_WIDE_INT cfa_offset,
   unsigned int regno;
 
   for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
-    if (SSE_REGNO_P (regno) && ix86_save_reg (regno, maybe_eh_return))
+    if (SSE_REGNO_P (regno) && ix86_save_reg (regno, maybe_eh_return, true))
       {
 	rtx reg = gen_rtx_REG (V4SFmode, regno);
 	rtx mem;
-	unsigned int align;
+	unsigned int align = GET_MODE_ALIGNMENT (V4SFmode);
 
-	mem = choose_baseaddr (cfa_offset);
+	mem = choose_baseaddr (cfa_offset, &align);
 	mem = gen_rtx_MEM (V4SFmode, mem);
 
-	/* The location is aligned up to INCOMING_STACK_BOUNDARY.  */
-	align = MIN (GET_MODE_ALIGNMENT (V4SFmode), INCOMING_STACK_BOUNDARY);
+	/* The location aligment depends upon the base register.  */
+	align = MIN (GET_MODE_ALIGNMENT (V4SFmode), align);
+	gcc_assert (! (cfa_offset & (align / BITS_PER_UNIT - 1)));
 	set_mem_align (mem, align);
 	emit_insn (gen_rtx_SET (reg, mem));
 
@@ -14495,6 +15039,164 @@ ix86_emit_restore_sse_regs_using_mov (HOST_WIDE_INT cfa_offset,
 
 	cfa_offset -= GET_MODE_SIZE (V4SFmode);
       }
+}
+
+static void
+ix86_emit_outlined_ms2sysv_restore (const struct ix86_frame &frame,
+				  bool use_call, int style)
+{
+  struct machine_function *m = cfun->machine;
+  const unsigned ncregs = NUM_X86_64_MS_CLOBBERED_REGS
+			  + m->call_ms2sysv_extra_regs;
+  rtvec v;
+  unsigned int elems_needed, align, i, vi = 0;
+  rtx_insn *insn;
+  rtx sym, tmp;
+  rtx rsi = gen_rtx_REG (word_mode, SI_REG);
+  rtx r10 = NULL_RTX;
+  const struct xlogue_layout &xlogue = xlogue_layout::get_instance ();
+  HOST_WIDE_INT stub_ptr_offset = xlogue.get_stub_ptr_offset ();
+  HOST_WIDE_INT rsi_offset = frame.stack_realign_offset + stub_ptr_offset;
+  rtx rsi_frame_load = NULL_RTX;
+  HOST_WIDE_INT rsi_restore_offset = (HOST_WIDE_INT)-1;
+  enum xlogue_stub stub;
+
+  gcc_assert (!m->fs.fp_valid || frame_pointer_needed);
+
+  /* If using a realigned stack, we should never start with padding.  */
+  gcc_assert (!stack_realign_fp || !xlogue.get_stack_align_off_in ());
+
+  /* Setup RSI as the stub's base pointer.  */
+  align = GET_MODE_ALIGNMENT (V4SFmode);
+  tmp = choose_baseaddr (rsi_offset, &align);
+  gcc_assert (align >= GET_MODE_ALIGNMENT (V4SFmode));
+  emit_insn (gen_rtx_SET (rsi, tmp));
+
+  /* Get a symbol for the stub.  */
+  if (frame_pointer_needed)
+    stub = use_call ? XLOGUE_STUB_RESTORE_HFP
+		    : XLOGUE_STUB_RESTORE_HFP_TAIL;
+  else
+    stub = use_call ? XLOGUE_STUB_RESTORE
+		    : XLOGUE_STUB_RESTORE_TAIL;
+  sym = xlogue.get_stub_rtx (stub);
+
+  elems_needed = ncregs;
+  if (use_call)
+    elems_needed += 1;
+  else
+    elems_needed += frame_pointer_needed ? 5 : 3;
+  v = rtvec_alloc (elems_needed);
+
+  /* We call the epilogue stub when we need to pop incoming args or we are
+     doing a sibling call as the tail.  Otherwise, we will emit a jmp to the
+     epilogue stub and it is the tail-call.  */
+  if (use_call)
+      RTVEC_ELT (v, vi++) = gen_rtx_USE (VOIDmode, sym);
+  else
+    {
+      RTVEC_ELT (v, vi++) = ret_rtx;
+      RTVEC_ELT (v, vi++) = gen_rtx_USE (VOIDmode, sym);
+      if (frame_pointer_needed)
+	{
+	  rtx rbp = gen_rtx_REG (DImode, BP_REG);
+	  gcc_assert (m->fs.fp_valid);
+	  gcc_assert (m->fs.cfa_reg == hard_frame_pointer_rtx);
+
+	  tmp = gen_rtx_PLUS (DImode, rbp, GEN_INT (8));
+	  RTVEC_ELT (v, vi++) = gen_rtx_SET (stack_pointer_rtx, tmp);
+	  RTVEC_ELT (v, vi++) = gen_rtx_SET (rbp, gen_rtx_MEM (DImode, rbp));
+	  tmp = gen_rtx_MEM (BLKmode, gen_rtx_SCRATCH (VOIDmode));
+	  RTVEC_ELT (v, vi++) = gen_rtx_CLOBBER (VOIDmode, tmp);
+	}
+      else
+	{
+	  /* If no hard frame pointer, we set R10 to the SP restore value.  */
+	  gcc_assert (!m->fs.fp_valid);
+	  gcc_assert (m->fs.cfa_reg == stack_pointer_rtx);
+	  gcc_assert (m->fs.sp_valid);
+
+	  r10 = gen_rtx_REG (DImode, R10_REG);
+	  tmp = gen_rtx_PLUS (Pmode, rsi, GEN_INT (stub_ptr_offset));
+	  emit_insn (gen_rtx_SET (r10, tmp));
+
+	  RTVEC_ELT (v, vi++) = gen_rtx_SET (stack_pointer_rtx, r10);
+	}
+    }
+
+  /* Generate frame load insns and restore notes.  */
+  for (i = 0; i < ncregs; ++i)
+    {
+      const xlogue_layout::reginfo &r = xlogue.get_reginfo (i);
+      enum machine_mode mode = SSE_REGNO_P (r.regno) ? V4SFmode : word_mode;
+      rtx reg, frame_load;
+
+      reg = gen_rtx_REG (mode, r.regno);
+      frame_load = gen_frame_load (reg, rsi, r.offset);
+
+      /* Save RSI frame load insn & note to add last.  */
+      if (r.regno == SI_REG)
+	{
+	  gcc_assert (!rsi_frame_load);
+	  rsi_frame_load = frame_load;
+	  rsi_restore_offset = r.offset;
+	}
+      else
+	{
+	  RTVEC_ELT (v, vi++) = frame_load;
+	  ix86_add_cfa_restore_note (NULL, reg, r.offset);
+	}
+    }
+
+  /* Add RSI frame load & restore note at the end.  */
+  gcc_assert (rsi_frame_load);
+  gcc_assert (rsi_restore_offset != (HOST_WIDE_INT)-1);
+  RTVEC_ELT (v, vi++) = rsi_frame_load;
+  ix86_add_cfa_restore_note (NULL, gen_rtx_REG (DImode, SI_REG),
+			     rsi_restore_offset);
+
+  /* Finally, for tail-call w/o a hard frame pointer, set SP to R10.  */
+  if (!use_call && !frame_pointer_needed)
+    {
+      gcc_assert (m->fs.sp_valid);
+      gcc_assert (!m->fs.sp_realigned);
+
+      /* At this point, R10 should point to frame.stack_realign_offset.  */
+      if (m->fs.cfa_reg == stack_pointer_rtx)
+	m->fs.cfa_offset += m->fs.sp_offset - frame.stack_realign_offset;
+      m->fs.sp_offset = frame.stack_realign_offset;
+    }
+
+  gcc_assert (vi == (unsigned int)GET_NUM_ELEM (v));
+  tmp = gen_rtx_PARALLEL (VOIDmode, v);
+  if (use_call)
+      insn = emit_insn (tmp);
+  else
+    {
+      insn = emit_jump_insn (tmp);
+      JUMP_LABEL (insn) = ret_rtx;
+
+      if (frame_pointer_needed)
+	ix86_emit_leave (insn);
+      else
+	{
+	  /* Need CFA adjust note.  */
+	  tmp = gen_rtx_SET (stack_pointer_rtx, r10);
+	  add_reg_note (insn, REG_CFA_ADJUST_CFA, tmp);
+	}
+    }
+
+  RTX_FRAME_RELATED_P (insn) = true;
+  ix86_add_queued_cfa_restore_notes (insn);
+
+  /* If we're not doing a tail-call, we need to adjust the stack.  */
+  if (use_call && m->fs.sp_valid)
+    {
+      HOST_WIDE_INT dealloc = m->fs.sp_offset - frame.stack_realign_offset;
+      pro_epilogue_adjust_stack (stack_pointer_rtx, stack_pointer_rtx,
+				GEN_INT (dealloc), style,
+				m->fs.cfa_reg == stack_pointer_rtx);
+    }
 }
 
 /* Restore function stack, frame, and registers.  */
@@ -14507,13 +15209,15 @@ ix86_expand_epilogue (int style)
   struct ix86_frame frame;
   bool restore_regs_via_mov;
   bool using_drap;
+  bool restore_stub_is_tail = false;
 
   ix86_finalize_stack_realign_flags ();
   ix86_compute_frame_layout (&frame);
 
-  m->fs.sp_valid = (!frame_pointer_needed
-		    || (crtl->sp_is_unchanging
-			&& !stack_realign_fp));
+  m->fs.sp_realigned = stack_realign_fp;
+  m->fs.sp_valid = stack_realign_fp
+		   || !frame_pointer_needed
+		   || crtl->sp_is_unchanging;
   gcc_assert (!m->fs.sp_valid
 	      || m->fs.sp_offset == frame.stack_pointer_offset);
 
@@ -14563,10 +15267,10 @@ ix86_expand_epilogue (int style)
   /* SEH requires the use of pops to identify the epilogue.  */
   else if (TARGET_SEH)
     restore_regs_via_mov = false;
-  /* If we're only restoring one register and sp is not valid then
+  /* If we're only restoring one register and sp cannot be used then
      using a move instruction to restore the register since it's
      less work than reloading sp and popping the register.  */
-  else if (!m->fs.sp_valid && frame.nregs <= 1)
+  else if (!sp_valid_at (frame.hfp_save_offset) && frame.nregs <= 1)
     restore_regs_via_mov = true;
   else if (TARGET_EPILOGUE_USING_MOVE
 	   && cfun->machine->use_fast_prologue_epilogue
@@ -14591,7 +15295,7 @@ ix86_expand_epilogue (int style)
 	 the stack pointer, if we will restore via sp.  */
       if (TARGET_64BIT
 	  && m->fs.sp_offset > 0x7fffffff
-	  && !(m->fs.fp_valid || m->fs.drap_valid)
+	  && !(fp_valid_at (frame.stack_realign_offset) || m->fs.drap_valid)
 	  && (frame.nsseregs + frame.nregs) != 0)
 	{
 	  pro_epilogue_adjust_stack (stack_pointer_rtx, stack_pointer_rtx,
@@ -14608,7 +15312,37 @@ ix86_expand_epilogue (int style)
     ix86_emit_restore_sse_regs_using_mov (frame.sse_reg_save_offset,
 					  style == 2);
 
-  if (restore_regs_via_mov)
+  if (m->call_ms2sysv)
+    {
+      int pop_incoming_args = crtl->args.pops_args && crtl->args.size;
+
+      /* We cannot use a tail-call for the stub if:
+	 1. We have to pop incoming args,
+	 2. We have additional int regs to restore, or
+	 3. A sibling call will be the tail-call, or
+	 4. We are emitting an eh_return_internal epilogue.
+
+	 TODO: Item 4 has not yet tested!
+
+	 If any of the above are true, we will call the stub rather than
+	 jump to it.  */
+      restore_stub_is_tail = !(pop_incoming_args || frame.nregs || style != 1);
+      ix86_emit_outlined_ms2sysv_restore (frame, !restore_stub_is_tail, style);
+    }
+
+  /* If using out-of-line stub that is a tail-call, then...*/
+  if (m->call_ms2sysv && restore_stub_is_tail)
+    {
+      /* TODO: parinoid tests. (remove eventually)  */
+      gcc_assert (m->fs.sp_valid);
+      gcc_assert (!m->fs.sp_realigned);
+      gcc_assert (!m->fs.fp_valid);
+      gcc_assert (!m->fs.realigned);
+      gcc_assert (m->fs.sp_offset == UNITS_PER_WORD);
+      gcc_assert (!crtl->drap_reg);
+      gcc_assert (!frame.nregs);
+    }
+  else if (restore_regs_via_mov)
     {
       rtx t;
 
@@ -14677,6 +15411,7 @@ ix86_expand_epilogue (int style)
 	    }
 	  m->fs.sp_offset = UNITS_PER_WORD;
 	  m->fs.sp_valid = true;
+	  m->fs.sp_realigned = false;
 	}
     }
   else
@@ -14698,10 +15433,11 @@ ix86_expand_epilogue (int style)
 	}
 
       /* First step is to deallocate the stack frame so that we can
-	 pop the registers.  Also do it on SEH target for very large
-	 frame as the emitted instructions aren't allowed by the ABI in
-	 epilogues.  */
-      if (!m->fs.sp_valid
+	 pop the registers.  If the stack pointer was realigned, it needs
+	 to be restored now.  Also do it on SEH target for very large
+	 frame as the emitted instructions aren't allowed by the ABI
+	 in epilogues.  */
+      if (!m->fs.sp_valid || m->fs.sp_realigned
  	  || (TARGET_SEH
 	      && (m->fs.sp_offset - frame.reg_save_offset
 		  >= SEH_MAX_FRAME_SIZE)))
@@ -14729,14 +15465,15 @@ ix86_expand_epilogue (int style)
     {
       /* If the stack pointer is valid and pointing at the frame
 	 pointer store address, then we only need a pop.  */
-      if (m->fs.sp_valid && m->fs.sp_offset == frame.hfp_save_offset)
+      if (sp_valid_at (frame.hfp_save_offset)
+	  && m->fs.sp_offset == frame.hfp_save_offset)
 	ix86_emit_restore_reg_using_pop (hard_frame_pointer_rtx);
       /* Leave results in shorter dependency chains on CPUs that are
 	 able to grok it fast.  */
       else if (TARGET_USE_LEAVE
 	       || optimize_bb_for_size_p (EXIT_BLOCK_PTR_FOR_FN (cfun))
 	       || !cfun->machine->use_fast_prologue_epilogue)
-	ix86_emit_leave ();
+	ix86_emit_leave (NULL);
       else
         {
 	  pro_epilogue_adjust_stack (stack_pointer_rtx,
@@ -14783,6 +15520,7 @@ ix86_expand_epilogue (int style)
      be possible to merge the local stack deallocation with the
      deallocation forced by ix86_static_chain_on_stack.   */
   gcc_assert (m->fs.sp_valid);
+  gcc_assert (!m->fs.sp_realigned);
   gcc_assert (!m->fs.fp_valid);
   gcc_assert (!m->fs.realigned);
   if (m->fs.sp_offset != UNITS_PER_WORD)
@@ -14846,7 +15584,7 @@ ix86_expand_epilogue (int style)
       else
 	emit_jump_insn (gen_simple_return_pop_internal (popc));
     }
-  else
+  else if (!m->call_ms2sysv || !restore_stub_is_tail)
     emit_jump_insn (gen_simple_return_internal ());
 
   /* Restore the state back to the state from the prologue,
@@ -28570,17 +29308,19 @@ ix86_expand_call (rtx retval, rtx fnaddr, rtx callarg1,
   else if (TARGET_64BIT_MS_ABI
 	   && (!callarg2 || INTVAL (callarg2) != -2))
     {
-      int const cregs_size
-	= ARRAY_SIZE (x86_64_ms_sysv_extra_clobbered_registers);
-      int i;
+      unsigned i;
 
-      for (i = 0; i < cregs_size; i++)
+      for (i = 0; i < NUM_X86_64_MS_CLOBBERED_REGS; i++)
 	{
 	  int regno = x86_64_ms_sysv_extra_clobbered_registers[i];
 	  machine_mode mode = SSE_REGNO_P (regno) ? TImode : DImode;
 
 	  clobber_reg (&use, gen_rtx_REG (mode, regno));
 	}
+
+      /* Set here, but it may get cleared later.  */
+      if (TARGET_CALL_MS2SYSV_XLOGUES)
+	cfun->machine->call_ms2sysv = true;
     }
 
   if (vec_len > 1)

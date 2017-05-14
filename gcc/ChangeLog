@@ -1,3 +1,69 @@
+2017-05-14  Daniel Santos  <daniel.santos@pobox.com>
+
+	* config/i386/i386.opt: Add option -mcall-ms2sysv-xlogues.
+	* config/i386/i386.h
+	(x86_64_ms_sysv_extra_clobbered_registers): Change type to unsigned.
+	(NUM_X86_64_MS_CLOBBERED_REGS): New macro.
+	(struct machine_function): Add new members call_ms2sysv,
+	call_ms2sysv_pad_in, call_ms2sysv_pad_out and call_ms2sysv_extra_regs.
+	(struct machine_frame_state): New fields sp_realigned and
+	sp_realigned_offset.
+	* config/i386/i386.c
+	(enum xlogue_stub): New enum.
+	(enum xlogue_stub_sets): New enum.
+	(class xlogue_layout): New class.
+	(struct ix86_frame): New fields stack_realign_allocate_offset,
+	stack_realign_offset and outlined_save_offset.  Modify comments to
+	detail stack layout when using out-of-line stubs.
+	(ix86_target_string): Add -mcall-ms2sysv-xlogues option.
+	(ix86_option_override_internal): Add sorry() for TARGET_SEH and
+	-mcall-ms2sysv-xlogues.
+	(stub_managed_regs): New static variable.
+	(ix86_save_reg): Add new parameter ignore_outlined to optionally omit
+	registers managed by out-of-line stub.
+	(disable_call_ms2sysv_xlogues): New function.
+	(ix86_compute_frame_layout): Modify re-alignment calculations, disable
+	m->call_ms2sysv when appropriate and compute frame layout for
+	out-of-line stubs.
+	(sp_valid_at, fp_valid_at): New inline functions.
+	(choose_basereg): New function.
+	(choose_baseaddr): Add align parameter, use choose_basereg and modify
+	all callers.
+	(ix86_emit_save_reg_using_mov, ix86_emit_restore_sse_regs_using_mov):
+	Use align parameter of choose_baseaddr to generated aligned SSE movs
+	when possible.
+	(pro_epilogue_adjust_stack): Modify to track
+	machine_frame_state::sp_realigned.
+	(ix86_nsaved_regs): Modify to accommodate changes to ix86_save_reg.
+	(ix86_nsaved_sseregs): Likewise.
+	(ix86_emit_save_regs): Likewise.
+	(ix86_emit_save_regs_using_mov): Likewise.
+	(ix86_emit_save_sse_regs_using_mov): Likewise.
+	(get_scratch_register_on_entry): Likewise.
+	(gen_frame_set): New function.
+	(gen_frame_load): Likewise.
+	(gen_frame_store): Likewise.
+	(emit_outlined_ms2sysv_save): Likewise.
+	(emit_outlined_ms2sysv_restore): Likewise.
+	(ix86_expand_prologue): Modify stack re-alignment code and call
+	emit_outlined_ms2sysv_save when appropriate.
+	(ix86_emit_leave): Clear machine_frame_state::sp_realigned.  Add
+	parameter rtx_insn *insn, which allows the function to be used to only
+	generate the notes.
+	(ix86_expand_epilogue): Modify validity checks of frame and stack
+	pointers, and call emit_outlined_ms2sysv_restore when appropriate.
+	(ix86_expand_call): Modify to enable m->call_ms2sysv when appropriate.
+	* config/i386/predicates.md
+	(save_multiple): New predicate.
+	(restore_multiple): Likewise.
+	* config/i386/sse.md
+	(save_multiple<mode>): New pattern.
+	(save_multiple_realign<mode>): Likewise.
+	(restore_multiple<mode>): Likewise.
+	(restore_multiple_and_return<mode>): Likewise.
+	(restore_multiple_leave_return<mode>): Likewise.
+	* Makefile.in: Export HOSTCXX and HOSTCXXFLAGS to site.exp
+
 2017-05-14  Julia Koval  <julia.koval@intel.com>
 
 	* config/i386/i386-builtin-types.def (VOID_FTYPE_INT_INT64): New type.
