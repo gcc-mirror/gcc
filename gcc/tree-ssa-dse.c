@@ -601,16 +601,14 @@ class dse_dom_walker : public dom_walker
 {
 public:
   dse_dom_walker (cdi_direction direction)
-    : dom_walker (direction), m_byte_tracking_enabled (false)
-
-  { m_live_bytes = sbitmap_alloc (PARAM_VALUE (PARAM_DSE_MAX_OBJECT_SIZE)); }
-
-  ~dse_dom_walker () { sbitmap_free (m_live_bytes); }
+    : dom_walker (direction),
+    m_live_bytes (PARAM_VALUE (PARAM_DSE_MAX_OBJECT_SIZE)),
+    m_byte_tracking_enabled (false) {}
 
   virtual edge before_dom_children (basic_block);
 
 private:
-  sbitmap m_live_bytes;
+  auto_sbitmap m_live_bytes;
   bool m_byte_tracking_enabled;
   void dse_optimize_stmt (gimple_stmt_iterator *);
 };

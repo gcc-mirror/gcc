@@ -1,5 +1,10 @@
 2017-05-13  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
+	* tree-ssa-dse.c (dse_dom_walker): Make m_live_byes a
+	auto_sbitmap.
+
+2017-05-13  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
 	* df-core.c (df_set_blocks): Start using auto_bitmap.
 	(df_compact_blocks): Likewise.
 	* df-problems.c (df_rd_confluence_n): Likewise.
