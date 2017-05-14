@@ -1,3 +1,8 @@
+2017-05-14  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/80669
+	* builtins.c (expand_builtin_stpncpy): Simplify.
+
 2017-05-14  Daniel Santos  <daniel.santos@pobox.com>
 
 	* config/i386/i386.opt: Add option -mcall-ms2sysv-xlogues.
