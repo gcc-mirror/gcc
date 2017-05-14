@@ -1,5 +1,14 @@
 2017-05-14  Martin Sebor  <msebor@redhat.com>
 
+	PR middle-end/77671
+	* gcc.dg/tree-ssa/builtin-sprintf-7.c: New test.
+	* gcc.dg/tree-ssa/builtin-sprintf-8.c: New test.
+	* gcc.dg/tree-ssa/builtin-sprintf-warn-1.c: Adjust.
+	* gcc.dg/tree-ssa/builtin-sprintf-warn-2.c: Adjust.
+	* gcc.dg/tree-ssa/builtin-sprintf-warn-3.c: Adjust.
+
+2017-05-14  Martin Sebor  <msebor@redhat.com>
+
 	PR middle-end/80669
 	* gcc.dg/builtin-stpncpy.c: New test.
 

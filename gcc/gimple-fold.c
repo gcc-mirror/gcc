@@ -2670,11 +2670,9 @@ gimple_fold_builtin_sprintf_chk (gimple_stmt_iterator *gsi,
    ORIG may be null if this is a 2-argument call.  We don't attempt to
    simplify calls with more than 3 arguments.
 
-   Return NULL_TREE if no simplification was possible, otherwise return the
-   simplified form of the call as a tree.  If IGNORED is true, it means that
-   the caller does not use the returned value of the function.  */
+   Return true if simplification was possible, otherwise false.  */
 
-static bool
+bool
 gimple_fold_builtin_sprintf (gimple_stmt_iterator *gsi)
 {
   gimple *stmt = gsi_stmt (*gsi);
@@ -2795,11 +2793,9 @@ gimple_fold_builtin_sprintf (gimple_stmt_iterator *gsi)
    FMT, and ORIG.  ORIG may be null if this is a 3-argument call.  We don't
    attempt to simplify calls with more than 4 arguments.
 
-   Return NULL_TREE if no simplification was possible, otherwise return the
-   simplified form of the call as a tree.  If IGNORED is true, it means that
-   the caller does not use the returned value of the function.  */
+   Return true if simplification was possible, otherwise false.  */
 
-static bool
+bool
 gimple_fold_builtin_snprintf (gimple_stmt_iterator *gsi)
 {
   gcall *stmt = as_a <gcall *> (gsi_stmt (*gsi));
@@ -3384,10 +3380,7 @@ gimple_fold_builtin (gimple_stmt_iterator *gsi)
     case BUILT_IN_SNPRINTF_CHK:
     case BUILT_IN_VSNPRINTF_CHK:
       return gimple_fold_builtin_snprintf_chk (gsi, fcode);
-    case BUILT_IN_SNPRINTF:
-      return gimple_fold_builtin_snprintf (gsi);
-    case BUILT_IN_SPRINTF:
-      return gimple_fold_builtin_sprintf (gsi);
+
     case BUILT_IN_FPRINTF:
     case BUILT_IN_FPRINTF_UNLOCKED:
     case BUILT_IN_VFPRINTF:

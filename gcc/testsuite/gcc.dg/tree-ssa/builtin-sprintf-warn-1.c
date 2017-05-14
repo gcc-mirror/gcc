@@ -1068,7 +1068,7 @@ void test_sprintf_chk_e_const (void)
 void test_sprintf_chk_s_nonconst (int w, int p, const char *s)
 {
   T (-1, "%s",   s);
-  T ( 0, "%s",   s);            /* { dg-warning "writing a terminating nul" } */
+  T ( 0, "%-s",  s);            /* { dg-warning "writing a terminating nul" } */
   T ( 1, "%s",   s);
   T (-1, "%.0s", s);
   T ( 1, "%.0s", s);
