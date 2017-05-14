@@ -582,11 +582,9 @@ struct df_d
   bitmap_head insns_to_notes_rescan;
   int *postorder;                /* The current set of basic blocks
                                     in reverse postorder.  */
-  int *postorder_inverted;       /* The current set of basic blocks
+  vec<int> postorder_inverted;       /* The current set of basic blocks
                                     in reverse postorder of inverted CFG.  */
   int n_blocks;                  /* The number of blocks in reverse postorder.  */
-  int n_blocks_inverted;         /* The number of blocks
-                                    in reverse postorder of inverted CFG.  */
 
   /* An array [FIRST_PSEUDO_REGISTER], indexed by regno, of the number
      of refs that qualify as being real hard regs uses.  Artificial

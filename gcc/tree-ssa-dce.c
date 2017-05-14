@@ -1040,14 +1040,12 @@ remove_dead_stmt (gimple_stmt_iterator *i, basic_block bb)
 	{
 	  if (!bb_postorder)
 	    {
-	      int *postorder = XNEWVEC (int, n_basic_blocks_for_fn (cfun));
-	      int postorder_num
-		 = inverted_post_order_compute (postorder,
-						&bb_contains_live_stmts);
+	      auto_vec<int, 20> postorder;
+		 inverted_post_order_compute (&postorder,
+					      &bb_contains_live_stmts);
 	      bb_postorder = XNEWVEC (int, last_basic_block_for_fn (cfun));
-	      for (int i = 0; i < postorder_num; ++i)
+	      for (unsigned int i = 0; i < postorder.length (); ++i)
 		 bb_postorder[postorder[i]] = i;
-	      free (postorder);
 	    }
           FOR_EACH_EDGE (e2, ei, bb->succs)
 	    if (!e || e2->dest == EXIT_BLOCK_PTR_FOR_FN (cfun)

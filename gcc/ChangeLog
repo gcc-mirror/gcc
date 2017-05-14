@@ -1,5 +1,25 @@
 2017-05-13  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
+	* cfganal.c (inverted_post_order_compute): Change argument type
+	to vec *.
+	* cfganal.h (inverted_post_order_compute): Adjust prototype.
+	* df-core.c (rest_of_handle_df_initialize): Adjust.
+	(rest_of_handle_df_finish): Likewise.
+	(df_analyze_1): Likewise.
+	(df_analyze): Likewise.
+	(loop_inverted_post_order_compute): Change argument to be a vec *.
+	(df_analyze_loop): Adjust.
+	(df_get_n_blocks): Likewise.
+	(df_get_postorder): Likewise.
+	* df.h (struct df_d): Change field to be a vec.
+	* lcm.c (compute_laterin): Adjust.
+	(compute_available): Likewise.
+	* lra-lives.c (lra_create_live_ranges_1): Likewise.
+	* tree-ssa-dce.c (remove_dead_stmt): Likewise.
+	* tree-ssa-pre.c (compute_antic): Likewise.
+
+2017-05-13  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
 	* cfganal.c (connect_infinite_loops_to_exit): Adjust.
 	(depth_first_search::depth_first_search): Change structure init
 	function to this constructor.

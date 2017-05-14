@@ -790,12 +790,12 @@ dfs_find_deadend (basic_block bb)
    and start looking for a "dead end" from that block
    and do another inverted traversal from that block.  */
 
-int
-inverted_post_order_compute (int *post_order,
+void
+inverted_post_order_compute (vec<int> *post_order,
 			     sbitmap *start_points)
 {
   basic_block bb;
-  int post_order_num = 0;
+  post_order->reserve_exact (n_basic_blocks_for_fn (cfun));
 
   if (flag_checking)
     verify_no_unreachable_blocks ();
@@ -863,13 +863,13 @@ inverted_post_order_compute (int *post_order,
                    time, check its predecessors.  */
 		stack.quick_push (ei_start (pred->preds));
               else
-                post_order[post_order_num++] = pred->index;
+		post_order->quick_push (pred->index);
             }
           else
             {
 	      if (bb != EXIT_BLOCK_PTR_FOR_FN (cfun)
 		  && ei_one_before_end_p (ei))
-                post_order[post_order_num++] = bb->index;
+		post_order->quick_push (bb->index);
 
               if (!ei_one_before_end_p (ei))
 		ei_next (&stack.last ());
@@ -927,9 +927,7 @@ inverted_post_order_compute (int *post_order,
   while (!stack.is_empty ());
 
   /* EXIT_BLOCK is always included.  */
-  post_order[post_order_num++] = EXIT_BLOCK;
-
-  return post_order_num;
+  post_order->quick_push (EXIT_BLOCK);
 }
 
 /* Compute the depth first search order of FN and store in the array
