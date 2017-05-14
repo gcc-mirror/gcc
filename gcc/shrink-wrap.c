@@ -758,7 +758,7 @@ try_shrink_wrapping (edge *entry_edge, rtx_insn *prologue_seq)
      reachable from PRO that we already found, and in VEC a stack of
      those we still need to consider (to find successors).  */
 
-  bitmap bb_with = BITMAP_ALLOC (NULL);
+  auto_bitmap bb_with;
   bitmap_set_bit (bb_with, pro->index);
 
   vec<basic_block> vec;
@@ -822,7 +822,7 @@ try_shrink_wrapping (edge *entry_edge, rtx_insn *prologue_seq)
     {
       calculate_dominance_info (CDI_POST_DOMINATORS);
 
-      bitmap bb_tmp = BITMAP_ALLOC (NULL);
+      auto_bitmap bb_tmp;
       bitmap_copy (bb_tmp, bb_with);
       basic_block last_ok = pro;
       vec.truncate (0);
@@ -859,7 +859,6 @@ try_shrink_wrapping (edge *entry_edge, rtx_insn *prologue_seq)
 
       pro = last_ok;
 
-      BITMAP_FREE (bb_tmp);
       free_dominance_info (CDI_POST_DOMINATORS);
     }
 
@@ -871,7 +870,6 @@ try_shrink_wrapping (edge *entry_edge, rtx_insn *prologue_seq)
 
   if (pro == entry)
     {
-      BITMAP_FREE (bb_with);
       free_dominance_info (CDI_DOMINATORS);
       return;
     }
@@ -1006,7 +1004,6 @@ try_shrink_wrapping (edge *entry_edge, rtx_insn *prologue_seq)
   *entry_edge = make_single_succ_edge (new_bb, pro, EDGE_FALLTHRU);
   force_nonfallthru (*entry_edge);
 
-  BITMAP_FREE (bb_with);
   free_dominance_info (CDI_DOMINATORS);
 }
 
@@ -1265,7 +1262,7 @@ spread_components (sbitmap components)
      on that stack.  */
   vec<basic_block> todo;
   todo.create (n_basic_blocks_for_fn (cfun));
-  bitmap seen = BITMAP_ALLOC (NULL);
+  auto_bitmap seen;
 
   sbitmap old = sbitmap_alloc (SBITMAP_SIZE (components));
 
@@ -1395,7 +1392,6 @@ spread_components (sbitmap components)
     }
 
   sbitmap_free (old);
-  BITMAP_FREE (seen);
 }
 
 /* If we cannot handle placing some component's prologues or epilogues where

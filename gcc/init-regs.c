@@ -48,7 +48,7 @@ static void
 initialize_uninitialized_regs (void)
 {
   basic_block bb;
-  bitmap already_genned = BITMAP_ALLOC (NULL);
+  auto_bitmap already_genned;
 
   if (optimize == 1)
     {
@@ -125,8 +125,6 @@ initialize_uninitialized_regs (void)
 	df_dump (dump_file);
       df_remove_problem (df_live);
     }
-
-  BITMAP_FREE (already_genned);
 }
 
 namespace {

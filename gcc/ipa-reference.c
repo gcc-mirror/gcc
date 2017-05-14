@@ -992,7 +992,7 @@ ipa_reference_write_optimization_summary (void)
   unsigned int count = 0;
   int ltrans_statics_bitcount = 0;
   lto_symtab_encoder_t encoder = ob->decl_state->symtab_node_encoder;
-  bitmap ltrans_statics = BITMAP_ALLOC (NULL);
+  auto_bitmap ltrans_statics;
   int i;
 
   reference_vars_to_consider = splay_tree_new (splay_tree_compare_ints, 0, 0);
@@ -1052,7 +1052,6 @@ ipa_reference_write_optimization_summary (void)
 			       ltrans_statics_bitcount);
 	  }
       }
-  BITMAP_FREE (ltrans_statics);
   lto_destroy_simple_output_block (ob);
   splay_tree_delete (reference_vars_to_consider);
 }

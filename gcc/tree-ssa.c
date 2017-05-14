@@ -1022,7 +1022,7 @@ verify_ssa (bool check_modified_stmt, bool check_ssa_operands)
   ssa_op_iter iter;
   tree op;
   enum dom_state orig_dom_state = dom_info_state (CDI_DOMINATORS);
-  bitmap names_defined_in_bb = BITMAP_ALLOC (NULL);
+  auto_bitmap names_defined_in_bb;
 
   gcc_assert (!need_ssa_update_p (cfun));
 
@@ -1176,7 +1176,6 @@ verify_ssa (bool check_modified_stmt, bool check_ssa_operands)
   else
     set_dom_info_availability (CDI_DOMINATORS, orig_dom_state);
 
-  BITMAP_FREE (names_defined_in_bb);
   timevar_pop (TV_TREE_SSA_VERIFY);
   return;
 
@@ -1622,9 +1621,9 @@ void
 execute_update_addresses_taken (void)
 {
   basic_block bb;
-  bitmap addresses_taken = BITMAP_ALLOC (NULL);
-  bitmap not_reg_needs = BITMAP_ALLOC (NULL);
-  bitmap suitable_for_renaming = BITMAP_ALLOC (NULL);
+  auto_bitmap addresses_taken;
+  auto_bitmap not_reg_needs;
+  auto_bitmap suitable_for_renaming;
   tree var;
   unsigned i;
 
@@ -2005,9 +2004,6 @@ execute_update_addresses_taken (void)
 	update_ssa (TODO_update_ssa);
     }
 
-  BITMAP_FREE (not_reg_needs);
-  BITMAP_FREE (addresses_taken);
-  BITMAP_FREE (suitable_for_renaming);
   timevar_pop (TV_ADDRESS_TAKEN);
 }
 
