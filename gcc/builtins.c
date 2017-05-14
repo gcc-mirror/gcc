@@ -3788,31 +3788,18 @@ expand_builtin_stpncpy (tree exp, rtx)
       || !warn_stringop_overflow)
     return NULL_RTX;
 
+  /* The source and destination of the call.  */
   tree dest = CALL_EXPR_ARG (exp, 0);
   tree src = CALL_EXPR_ARG (exp, 1);
 
-  /* The number of bytes to write (not the maximum).  */
+  /* The exact number of bytes to write (not the maximum).  */
   tree len = CALL_EXPR_ARG (exp, 2);
-  /* The length of the source sequence.  */
-  tree slen = c_strlen (src, 1);
 
-  /* Try to determine the range of lengths that the source expression
-     refers to.  */
-  tree lenrange[2];
-  if (slen)
-    lenrange[0] = lenrange[1] = slen;
-  else
-    {
-      get_range_strlen (src, lenrange);
-      slen = lenrange[0];
-    }
-
+  /* The size of the destination object.  */
   tree destsize = compute_objsize (dest, warn_stringop_overflow - 1);
 
-  /* The number of bytes to write is LEN but check_sizes will also
-     check SLEN if LEN's value isn't known.  */
   check_sizes (OPT_Wstringop_overflow_,
-	       exp, len, /*maxlen=*/NULL_TREE, slen, destsize);
+	       exp, len, /*maxlen=*/NULL_TREE, src, destsize);
 
   return NULL_RTX;
 }
