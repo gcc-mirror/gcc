@@ -1407,14 +1407,16 @@ struct int_set : public auto_vec <uint64_t, 1>
   iterator end ();
 };
 
-int_set::int_set () {}
+int_set::int_set () : auto_vec<uint64_t, 1> () {}
 
-int_set::int_set (uint64_t label)
+int_set::int_set (uint64_t label) :
+  auto_vec<uint64_t, 1> ()
 {
   safe_push (label);
 }
 
-int_set::int_set (const int_set &other)
+int_set::int_set (const int_set &other) :
+  auto_vec<uint64_t, 1> ()
 {
   safe_splice (other);
 }
