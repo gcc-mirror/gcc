@@ -23251,9 +23251,15 @@ ix86_cc_modes_compatible (machine_mode m1, machine_mode m2)
       || (m1 == CCGOCmode && m2 == CCGCmode))
     return CCGCmode;
 
-  if (m1 == CCZmode && (m2 == CCGCmode || m2 == CCGOCmode))
+  if ((m1 == CCNOmode && m2 == CCGOCmode)
+      || (m1 == CCGOCmode && m2 == CCNOmode))
+    return CCNOmode;
+
+  if (m1 == CCZmode
+      && (m2 == CCGCmode || m2 == CCGOCmode || m2 == CCNOmode))
     return m2;
-  else if (m2 == CCZmode && (m1 == CCGCmode || m1 == CCGOCmode))
+  else if (m2 == CCZmode
+	   && (m1 == CCGCmode || m1 == CCGOCmode || m1 == CCNOmode))
     return m1;
 
   switch (m1)
