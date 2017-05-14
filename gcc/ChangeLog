@@ -1,5 +1,19 @@
 2017-05-14  Martin Sebor  <msebor@redhat.com>
 
+	PR middle-end/77671
+	* gimple-fold.c (gimple_fold_builtin_sprintf): Make extern.
+	(gimple_fold_builtin_snprintf): Same.
+	* gimple-fold.h (gimple_fold_builtin_sprintf): Declare.
+	(gimple_fold_builtin_snprintf): Same.
+	* gimple-ssa-sprintf.c (get_format_string): Correct the detection
+	of character types.
+	(is_call_safe): New function.
+	(try_substitute_return_value): Call it.
+	(try_simplify_call): New function.
+	(pass_sprintf_length::handle_gimple_call): Call it.
+
+2017-05-14  Martin Sebor  <msebor@redhat.com>
+
 	PR middle-end/80669
 	* builtins.c (expand_builtin_stpncpy): Simplify.
 
