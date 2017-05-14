@@ -25,6 +25,9 @@
   UNSPEC_FILD_ATOMIC
   UNSPEC_FIST_ATOMIC
 
+  UNSPEC_LDX_ATOMIC
+  UNSPEC_STX_ATOMIC
+
   ;; __atomic support
   UNSPEC_LDA
   UNSPEC_STA
@@ -199,9 +202,8 @@
 	}
       else
 	{
-	  adjust_reg_mode (tmp, DImode);
-	  emit_move_insn (tmp, src);
-	  emit_move_insn (mem, tmp);
+	  emit_insn (gen_loaddi_via_sse (tmp, src));
+	  emit_insn (gen_storedi_via_sse (mem, tmp));
 	}
 
       if (mem != dst)
@@ -226,10 +228,12 @@
   "operands[5] = gen_lowpart (DFmode, operands[1]);")
 
 (define_peephole2
-  [(set (match_operand:DI 0 "sse_reg_operand")
-	(match_operand:DI 1 "memory_operand"))
+  [(set (match_operand:DF 0 "sse_reg_operand")
+	(unspec:DF [(match_operand:DI 1 "memory_operand")]
+		   UNSPEC_LDX_ATOMIC))
    (set (match_operand:DI 2 "memory_operand")
-	(match_dup 0))
+	(unspec:DI [(match_dup 0)]
+		   UNSPEC_STX_ATOMIC))
    (set (match_operand:DF 3 "fp_register_operand")
 	(match_operand:DF 4 "memory_operand"))]
   "!TARGET_64BIT
@@ -301,7 +305,9 @@
   rtx dst = operands[0], src = operands[1];
   rtx mem = operands[2], tmp = operands[3];
 
-  if (!SSE_REG_P (src))
+  if (SSE_REG_P (src))
+    emit_move_insn (dst, src);
+  else
     {
       if (REG_P (src))
 	{
@@ -313,16 +319,13 @@
 	{
 	  emit_insn (gen_loaddi_via_fpu (tmp, src));
 	  emit_insn (gen_storedi_via_fpu (dst, tmp));
-	  DONE;
 	}
       else
 	{
-	  adjust_reg_mode (tmp, DImode);
-	  emit_move_insn (tmp, src);
-	  src = tmp;
+	  emit_insn (gen_loaddi_via_sse (tmp, src));
+	  emit_insn (gen_storedi_via_sse (dst, tmp));
 	}
     }
-  emit_move_insn (dst, src);
   DONE;
 })
 
@@ -344,10 +347,12 @@
 (define_peephole2
   [(set (match_operand:DF 0 "memory_operand")
 	(match_operand:DF 1 "fp_register_operand"))
-   (set (match_operand:DI 2 "sse_reg_operand")
-	(match_operand:DI 3 "memory_operand"))
+   (set (match_operand:DF 2 "sse_reg_operand")
+	(unspec:DF [(match_operand:DI 3 "memory_operand")]
+		   UNSPEC_LDX_ATOMIC))
    (set (match_operand:DI 4 "memory_operand")
-	(match_dup 2))]
+	(unspec:DI [(match_dup 2)]
+		   UNSPEC_STX_ATOMIC))]
   "!TARGET_64BIT
    && peep2_reg_dead_p (3, operands[2])
    && rtx_equal_p (operands[0], adjust_address_nv (operands[3], DFmode, 0))"
@@ -380,6 +385,32 @@
   return "fistp%Z0\t%0";
 }
   [(set_attr "type" "fmov")
+   (set_attr "mode" "DI")])
+
+(define_insn "loaddi_via_sse"
+  [(set (match_operand:DF 0 "register_operand" "=x")
+	(unspec:DF [(match_operand:DI 1 "memory_operand" "m")]
+		   UNSPEC_LDX_ATOMIC))]
+  "TARGET_SSE"
+{
+  if (TARGET_SSE2)
+    return "%vmovq\t{%1, %0|%0, %1}";
+  return "movlps\t{%1, %0|%0, %1}";
+}
+  [(set_attr "type" "ssemov")
+   (set_attr "mode" "DI")])
+
+(define_insn "storedi_via_sse"
+  [(set (match_operand:DI 0 "memory_operand" "=m")
+	(unspec:DI [(match_operand:DF 1 "register_operand" "x")]
+		   UNSPEC_STX_ATOMIC))]
+  "TARGET_SSE"
+{
+  if (TARGET_SSE2)
+    return "%vmovq\t{%1, %0|%0, %1}";
+  return "movlps\t{%1, %0|%0, %1}";
+}
+  [(set_attr "type" "ssemov")
    (set_attr "mode" "DI")])
 
 (define_expand "atomic_compare_and_swap<mode>"
