@@ -61,10 +61,8 @@ static void flow_dfs_compute_reverse_finish (depth_first_search_ds *);
 bool
 mark_dfs_back_edges (void)
 {
-  edge_iterator *stack;
   int *pre;
   int *post;
-  int sp;
   int prenum = 1;
   int postnum = 1;
   bool found = false;
@@ -74,8 +72,7 @@ mark_dfs_back_edges (void)
   post = XCNEWVEC (int, last_basic_block_for_fn (cfun));
 
   /* Allocate stack for back-tracking up CFG.  */
-  stack = XNEWVEC (edge_iterator, n_basic_blocks_for_fn (cfun) + 1);
-  sp = 0;
+  auto_vec<edge_iterator, 20> stack (n_basic_blocks_for_fn (cfun) + 1);
 
   /* Allocate bitmap to track nodes that have been visited.  */
   auto_sbitmap visited (last_basic_block_for_fn (cfun));
@@ -84,16 +81,15 @@ mark_dfs_back_edges (void)
   bitmap_clear (visited);
 
   /* Push the first edge on to the stack.  */
-  stack[sp++] = ei_start (ENTRY_BLOCK_PTR_FOR_FN (cfun)->succs);
+  stack.quick_push (ei_start (ENTRY_BLOCK_PTR_FOR_FN (cfun)->succs));
 
-  while (sp)
+  while (!stack.is_empty ())
     {
-      edge_iterator ei;
       basic_block src;
       basic_block dest;
 
       /* Look at the edge on the top of the stack.  */
-      ei = stack[sp - 1];
+      edge_iterator ei = stack.last ();
       src = ei_edge (ei)->src;
       dest = ei_edge (ei)->dest;
       ei_edge (ei)->flags &= ~EDGE_DFS_BACK;
@@ -110,7 +106,7 @@ mark_dfs_back_edges (void)
 	    {
 	      /* Since the DEST node has been visited for the first
 		 time, check its successors.  */
-	      stack[sp++] = ei_start (dest->succs);
+	      stack.quick_push (ei_start (dest->succs));
 	    }
 	  else
 	    post[dest->index] = postnum++;
@@ -128,15 +124,14 @@ mark_dfs_back_edges (void)
 	    post[src->index] = postnum++;
 
 	  if (!ei_one_before_end_p (ei))
-	    ei_next (&stack[sp - 1]);
+	    ei_next (&stack.last ());
 	  else
-	    sp--;
+	    stack.pop ();
 	}
     }
 
   free (pre);
   free (post);
-  free (stack);
 
   return found;
 }
@@ -637,8 +632,6 @@ int
 post_order_compute (int *post_order, bool include_entry_exit,
 		    bool delete_unreachable)
 {
-  edge_iterator *stack;
-  int sp;
   int post_order_num = 0;
   int count;
 
@@ -646,8 +639,7 @@ post_order_compute (int *post_order, bool include_entry_exit,
     post_order[post_order_num++] = EXIT_BLOCK;
 
   /* Allocate stack for back-tracking up CFG.  */
-  stack = XNEWVEC (edge_iterator, n_basic_blocks_for_fn (cfun) + 1);
-  sp = 0;
+  auto_vec<edge_iterator, 20> stack (n_basic_blocks_for_fn (cfun) + 1);
 
   /* Allocate bitmap to track nodes that have been visited.  */
   auto_sbitmap visited (last_basic_block_for_fn (cfun));
@@ -656,16 +648,15 @@ post_order_compute (int *post_order, bool include_entry_exit,
   bitmap_clear (visited);
 
   /* Push the first edge on to the stack.  */
-  stack[sp++] = ei_start (ENTRY_BLOCK_PTR_FOR_FN (cfun)->succs);
+  stack.quick_push (ei_start (ENTRY_BLOCK_PTR_FOR_FN (cfun)->succs));
 
-  while (sp)
+  while (!stack.is_empty ())
     {
-      edge_iterator ei;
       basic_block src;
       basic_block dest;
 
       /* Look at the edge on the top of the stack.  */
-      ei = stack[sp - 1];
+      edge_iterator ei = stack.last ();
       src = ei_edge (ei)->src;
       dest = ei_edge (ei)->dest;
 
@@ -679,7 +670,7 @@ post_order_compute (int *post_order, bool include_entry_exit,
 	  if (EDGE_COUNT (dest->succs) > 0)
 	    /* Since the DEST node has been visited for the first
 	       time, check its successors.  */
-	    stack[sp++] = ei_start (dest->succs);
+	    stack.quick_push (ei_start (dest->succs));
 	  else
 	    post_order[post_order_num++] = dest->index;
 	}
@@ -690,9 +681,9 @@ post_order_compute (int *post_order, bool include_entry_exit,
 	    post_order[post_order_num++] = src->index;
 
 	  if (!ei_one_before_end_p (ei))
-	    ei_next (&stack[sp - 1]);
+	    ei_next (&stack.last ());
 	  else
-	    sp--;
+	    stack.pop ();
 	}
     }
 
@@ -722,7 +713,6 @@ post_order_compute (int *post_order, bool include_entry_exit,
       tidy_fallthru_edges ();
     }
 
-  free (stack);
   return post_order_num;
 }
 
@@ -813,16 +803,13 @@ inverted_post_order_compute (int *post_order,
 			     sbitmap *start_points)
 {
   basic_block bb;
-  edge_iterator *stack;
-  int sp;
   int post_order_num = 0;
 
   if (flag_checking)
     verify_no_unreachable_blocks ();
 
   /* Allocate stack for back-tracking up CFG.  */
-  stack = XNEWVEC (edge_iterator, n_basic_blocks_for_fn (cfun) + 1);
-  sp = 0;
+  auto_vec<edge_iterator, 20> stack (n_basic_blocks_for_fn (cfun) + 1);
 
   /* Allocate bitmap to track nodes that have been visited.  */
   auto_sbitmap visited (last_basic_block_for_fn (cfun));
@@ -836,12 +823,12 @@ inverted_post_order_compute (int *post_order,
         if (bitmap_bit_p (*start_points, bb->index)
 	    && EDGE_COUNT (bb->preds) > 0)
 	  {
-            stack[sp++] = ei_start (bb->preds);
+	    stack.quick_push (ei_start (bb->preds));
             bitmap_set_bit (visited, bb->index);
 	  }
       if (EDGE_COUNT (EXIT_BLOCK_PTR_FOR_FN (cfun)->preds))
 	{
-          stack[sp++] = ei_start (EXIT_BLOCK_PTR_FOR_FN (cfun)->preds);
+	  stack.quick_push (ei_start (EXIT_BLOCK_PTR_FOR_FN (cfun)->preds));
           bitmap_set_bit (visited, EXIT_BLOCK_PTR_FOR_FN (cfun)->index);
 	}
     }
@@ -853,7 +840,7 @@ inverted_post_order_compute (int *post_order,
         /* Push the initial edge on to the stack.  */
         if (EDGE_COUNT (bb->preds) > 0)
           {
-            stack[sp++] = ei_start (bb->preds);
+	    stack.quick_push (ei_start (bb->preds));
             bitmap_set_bit (visited, bb->index);
           }
       }
@@ -863,13 +850,13 @@ inverted_post_order_compute (int *post_order,
       bool has_unvisited_bb = false;
 
       /* The inverted traversal loop. */
-      while (sp)
+      while (!stack.is_empty ())
         {
           edge_iterator ei;
           basic_block pred;
 
           /* Look at the edge on the top of the stack.  */
-          ei = stack[sp - 1];
+	  ei = stack.last ();
           bb = ei_edge (ei)->dest;
           pred = ei_edge (ei)->src;
 
@@ -882,7 +869,7 @@ inverted_post_order_compute (int *post_order,
               if (EDGE_COUNT (pred->preds) > 0)
                 /* Since the predecessor node has been visited for the first
                    time, check its predecessors.  */
-                stack[sp++] = ei_start (pred->preds);
+		stack.quick_push (ei_start (pred->preds));
               else
                 post_order[post_order_num++] = pred->index;
             }
@@ -893,15 +880,15 @@ inverted_post_order_compute (int *post_order,
                 post_order[post_order_num++] = bb->index;
 
               if (!ei_one_before_end_p (ei))
-                ei_next (&stack[sp - 1]);
+		ei_next (&stack.last ());
               else
-                sp--;
+		stack.pop ();
             }
         }
 
       /* Detect any infinite loop and activate the kludge.
          Note that this doesn't check EXIT_BLOCK itself
-         since EXIT_BLOCK is always added after the outer do-while loop.  */
+	 since EXIT_BLOCK is always added after the outer do-while loop.  */
       FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR_FOR_FN (cfun),
 		      EXIT_BLOCK_PTR_FOR_FN (cfun), next_bb)
         if (!bitmap_bit_p (visited, bb->index))
@@ -926,31 +913,30 @@ inverted_post_order_compute (int *post_order,
                     basic_block be = dfs_find_deadend (bb);
                     gcc_assert (be != NULL);
                     bitmap_set_bit (visited, be->index);
-                    stack[sp++] = ei_start (be->preds);
+		    stack.quick_push (ei_start (be->preds));
                     break;
                   }
               }
           }
 
-      if (has_unvisited_bb && sp == 0)
+      if (has_unvisited_bb && stack.is_empty ())
         {
-          /* No blocks are reachable from EXIT at all.
+	  /* No blocks are reachable from EXIT at all.
              Find a dead-end from the ENTRY, and restart the iteration. */
 	  basic_block be = dfs_find_deadend (ENTRY_BLOCK_PTR_FOR_FN (cfun));
           gcc_assert (be != NULL);
           bitmap_set_bit (visited, be->index);
-          stack[sp++] = ei_start (be->preds);
+	  stack.quick_push (ei_start (be->preds));
         }
 
       /* The only case the below while fires is
          when there's an infinite loop.  */
     }
-  while (sp);
+  while (!stack.is_empty ());
 
   /* EXIT_BLOCK is always included.  */
   post_order[post_order_num++] = EXIT_BLOCK;
 
-  free (stack);
   return post_order_num;
 }
 
@@ -971,14 +957,11 @@ pre_and_rev_post_order_compute_fn (struct function *fn,
 				   int *pre_order, int *rev_post_order,
 				   bool include_entry_exit)
 {
-  edge_iterator *stack;
-  int sp;
   int pre_order_num = 0;
   int rev_post_order_num = n_basic_blocks_for_fn (cfun) - 1;
 
   /* Allocate stack for back-tracking up CFG.  */
-  stack = XNEWVEC (edge_iterator, n_basic_blocks_for_fn (cfun) + 1);
-  sp = 0;
+  auto_vec<edge_iterator, 20> stack (n_basic_blocks_for_fn (cfun) + 1);
 
   if (include_entry_exit)
     {
@@ -998,16 +981,15 @@ pre_and_rev_post_order_compute_fn (struct function *fn,
   bitmap_clear (visited);
 
   /* Push the first edge on to the stack.  */
-  stack[sp++] = ei_start (ENTRY_BLOCK_PTR_FOR_FN (fn)->succs);
+  stack.quick_push (ei_start (ENTRY_BLOCK_PTR_FOR_FN (fn)->succs));
 
-  while (sp)
+  while (!stack.is_empty ())
     {
-      edge_iterator ei;
       basic_block src;
       basic_block dest;
 
       /* Look at the edge on the top of the stack.  */
-      ei = stack[sp - 1];
+      edge_iterator ei = stack.last ();
       src = ei_edge (ei)->src;
       dest = ei_edge (ei)->dest;
 
@@ -1026,7 +1008,7 @@ pre_and_rev_post_order_compute_fn (struct function *fn,
 	  if (EDGE_COUNT (dest->succs) > 0)
 	    /* Since the DEST node has been visited for the first
 	       time, check its successors.  */
-	    stack[sp++] = ei_start (dest->succs);
+	    stack.quick_push (ei_start (dest->succs));
 	  else if (rev_post_order)
 	    /* There are no successors for the DEST node so assign
 	       its reverse completion number.  */
@@ -1042,13 +1024,11 @@ pre_and_rev_post_order_compute_fn (struct function *fn,
 	    rev_post_order[rev_post_order_num--] = src->index;
 
 	  if (!ei_one_before_end_p (ei))
-	    ei_next (&stack[sp - 1]);
+	    ei_next (&stack.last ());
 	  else
-	    sp--;
+	    stack.pop ();
 	}
     }
-
-  free (stack);
 
   if (include_entry_exit)
     {

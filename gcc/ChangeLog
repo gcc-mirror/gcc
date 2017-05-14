@@ -1,5 +1,13 @@
 2017-05-13  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
+	* cfganal.c (mark_dfs_back_edges): Replace manual stack with
+	auto_vec.
+	(post_order_compute): Likewise.
+	(inverted_post_order_compute): Likewise.
+	(pre_and_rev_post_order_compute_fn): Likewise.
+
+2017-05-13  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
 	* genrecog.c (int_set::int_set): Explicitly construct our
 	auto_vec base class.
 	* vec.h (auto_vec::auto_vec): New constructor.
