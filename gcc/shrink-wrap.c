@@ -1264,7 +1264,7 @@ spread_components (sbitmap components)
   todo.create (n_basic_blocks_for_fn (cfun));
   auto_bitmap seen;
 
-  sbitmap old = sbitmap_alloc (SBITMAP_SIZE (components));
+  auto_sbitmap old (SBITMAP_SIZE (components));
 
   /* Find for every block the components that are *not* needed on some path
      from the entry to that block.  Do this with a flood fill from the entry
@@ -1390,8 +1390,6 @@ spread_components (sbitmap components)
 	  fprintf (dump_file, "\n");
 	}
     }
-
-  sbitmap_free (old);
 }
 
 /* If we cannot handle placing some component's prologues or epilogues where
@@ -1400,8 +1398,8 @@ spread_components (sbitmap components)
 static void
 disqualify_problematic_components (sbitmap components)
 {
-  sbitmap pro = sbitmap_alloc (SBITMAP_SIZE (components));
-  sbitmap epi = sbitmap_alloc (SBITMAP_SIZE (components));
+  auto_sbitmap pro (SBITMAP_SIZE (components));
+  auto_sbitmap epi (SBITMAP_SIZE (components));
 
   basic_block bb;
   FOR_EACH_BB_FN (bb, cfun)
@@ -1466,9 +1464,6 @@ disqualify_problematic_components (sbitmap components)
 	    }
 	}
     }
-
-  sbitmap_free (pro);
-  sbitmap_free (epi);
 }
 
 /* Place code for prologues and epilogues for COMPONENTS where we can put
@@ -1476,9 +1471,9 @@ disqualify_problematic_components (sbitmap components)
 static void
 emit_common_heads_for_components (sbitmap components)
 {
-  sbitmap pro = sbitmap_alloc (SBITMAP_SIZE (components));
-  sbitmap epi = sbitmap_alloc (SBITMAP_SIZE (components));
-  sbitmap tmp = sbitmap_alloc (SBITMAP_SIZE (components));
+  auto_sbitmap pro (SBITMAP_SIZE (components));
+  auto_sbitmap epi (SBITMAP_SIZE (components));
+  auto_sbitmap tmp (SBITMAP_SIZE (components));
 
   basic_block bb;
   FOR_ALL_BB_FN (bb, cfun)
@@ -1554,10 +1549,6 @@ emit_common_heads_for_components (sbitmap components)
 	  bitmap_ior (SW (bb)->head_components, SW (bb)->head_components, epi);
 	}
     }
-
-  sbitmap_free (pro);
-  sbitmap_free (epi);
-  sbitmap_free (tmp);
 }
 
 /* Place code for prologues and epilogues for COMPONENTS where we can put
@@ -1565,9 +1556,9 @@ emit_common_heads_for_components (sbitmap components)
 static void
 emit_common_tails_for_components (sbitmap components)
 {
-  sbitmap pro = sbitmap_alloc (SBITMAP_SIZE (components));
-  sbitmap epi = sbitmap_alloc (SBITMAP_SIZE (components));
-  sbitmap tmp = sbitmap_alloc (SBITMAP_SIZE (components));
+  auto_sbitmap pro (SBITMAP_SIZE (components));
+  auto_sbitmap epi (SBITMAP_SIZE (components));
+  auto_sbitmap tmp (SBITMAP_SIZE (components));
 
   basic_block bb;
   FOR_ALL_BB_FN (bb, cfun)
@@ -1664,10 +1655,6 @@ emit_common_tails_for_components (sbitmap components)
 	  bitmap_ior (SW (bb)->tail_components, SW (bb)->tail_components, pro);
 	}
     }
-
-  sbitmap_free (pro);
-  sbitmap_free (epi);
-  sbitmap_free (tmp);
 }
 
 /* Place prologues and epilogues for COMPONENTS on edges, if we haven't already
@@ -1675,8 +1662,8 @@ emit_common_tails_for_components (sbitmap components)
 static void
 insert_prologue_epilogue_for_components (sbitmap components)
 {
-  sbitmap pro = sbitmap_alloc (SBITMAP_SIZE (components));
-  sbitmap epi = sbitmap_alloc (SBITMAP_SIZE (components));
+  auto_sbitmap pro (SBITMAP_SIZE (components));
+  auto_sbitmap epi (SBITMAP_SIZE (components));
 
   basic_block bb;
   FOR_EACH_BB_FN (bb, cfun)
@@ -1753,9 +1740,6 @@ insert_prologue_epilogue_for_components (sbitmap components)
 	    }
 	}
     }
-
-  sbitmap_free (pro);
-  sbitmap_free (epi);
 
   commit_edge_insertions ();
 }
