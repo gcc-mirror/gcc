@@ -153,7 +153,7 @@ class rtx_reuse_manager
  private:
   hash_map<const_rtx, int> m_rtx_occurrence_count;
   hash_map<const_rtx, int> m_rtx_reuse_ids;
-  bitmap_head m_defs_seen;
+  auto_bitmap m_defs_seen;
   int m_next_id;
 };
 
