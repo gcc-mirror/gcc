@@ -1272,6 +1272,18 @@ public:
     this->m_vec = &m_auto;
   }
 
+  auto_vec (size_t s)
+  {
+    if (s > N)
+      {
+	this->create (s);
+	return;
+      }
+
+    m_auto.embedded_init (MAX (N, 2), 0, 1);
+    this->m_vec = &m_auto;
+  }
+
   ~auto_vec ()
   {
     this->release ();

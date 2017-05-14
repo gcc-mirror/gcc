@@ -1,5 +1,11 @@
 2017-05-13  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
+	* genrecog.c (int_set::int_set): Explicitly construct our
+	auto_vec base class.
+	* vec.h (auto_vec::auto_vec): New constructor.
+
+2017-05-13  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
 	* bitmap.h (class auto_bitmap): New constructor taking
 	bitmap_obstack * argument.
 
