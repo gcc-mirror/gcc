@@ -1,3 +1,15 @@
+2017-05-14  Julia Koval  <julia.koval@intel.com>
+
+	* config/i386/i386-builtin-types.def (VOID_FTYPE_INT_INT64): New type.
+	* config/i386/i386-builtin.def (__builtin_ia32_xgetbv)
+	(__builtin_ia32_xsetbv): New builtins.
+	* config/i386/i386.c (ix86_expand_special_args_builtin):
+	Process new types.
+	(ix86_expand_builtin): Special expand for new intrinsics.
+	* config/i386/i386.md (UNSPECV_XGETBV, UNSPECV_XSETBV): New.
+	(xsetbv, xsetbv_rex64, xgetbv, xgetbv_rex64): New insn patterns.
+	* config/i386/xsaveintrin.h (_xsetbv, _getbv): New intrinsics.
+
 2017-05-13  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
 	* cfganal.c (inverted_post_order_compute): Change argument type
