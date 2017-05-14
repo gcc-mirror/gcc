@@ -1,5 +1,14 @@
 2017-05-13  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
+	* cfganal.c (connect_infinite_loops_to_exit): Adjust.
+	(depth_first_search::depth_first_search): Change structure init
+	function to this constructor.
+	(depth_first_search::add_bb): Rename function to this member.
+	(depth_first_search::execute): Likewise.
+	(flow_dfs_compute_reverse_finish): Adjust.
+
+2017-05-13  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
 	* ddg.c (find_nodes_on_paths): Use auto_sbitmap.
 	(longest_simple_path): Likewise.
 	* shrink-wrap.c (spread_components): Likewise.
