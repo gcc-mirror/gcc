@@ -497,9 +497,8 @@ df_set_blocks (bitmap blocks)
 	  /* This block is called to change the focus from one subset
 	     to another.  */
 	  int p;
-	  bitmap_head diff;
-	  bitmap_initialize (&diff, &df_bitmap_obstack);
-	  bitmap_and_compl (&diff, df->blocks_to_analyze, blocks);
+	  auto_bitmap diff (&df_bitmap_obstack);
+	  bitmap_and_compl (diff, df->blocks_to_analyze, blocks);
 	  for (p = 0; p < df->num_problems_defined; p++)
 	    {
 	      struct dataflow *dflow = df->problems_in_order[p];
@@ -510,7 +509,7 @@ df_set_blocks (bitmap blocks)
 		  bitmap_iterator bi;
 		  unsigned int bb_index;
 
-		  EXECUTE_IF_SET_IN_BITMAP (&diff, 0, bb_index, bi)
+		  EXECUTE_IF_SET_IN_BITMAP (diff, 0, bb_index, bi)
 		    {
 		      basic_block bb = BASIC_BLOCK_FOR_FN (cfun, bb_index);
 		      if (bb)
@@ -522,8 +521,6 @@ df_set_blocks (bitmap blocks)
 		    }
 		}
 	    }
-
-	   bitmap_clear (&diff);
 	}
       else
 	{
@@ -1652,9 +1649,8 @@ df_compact_blocks (void)
   int i, p;
   basic_block bb;
   void *problem_temps;
-  bitmap_head tmp;
 
-  bitmap_initialize (&tmp, &df_bitmap_obstack);
+  auto_bitmap tmp (&df_bitmap_obstack);
   for (p = 0; p < df->num_problems_defined; p++)
     {
       struct dataflow *dflow = df->problems_in_order[p];
@@ -1663,17 +1659,17 @@ df_compact_blocks (void)
 	 dflow problem.  */
       if (dflow->out_of_date_transfer_functions)
 	{
-	  bitmap_copy (&tmp, dflow->out_of_date_transfer_functions);
+	  bitmap_copy (tmp, dflow->out_of_date_transfer_functions);
 	  bitmap_clear (dflow->out_of_date_transfer_functions);
-	  if (bitmap_bit_p (&tmp, ENTRY_BLOCK))
+	  if (bitmap_bit_p (tmp, ENTRY_BLOCK))
 	    bitmap_set_bit (dflow->out_of_date_transfer_functions, ENTRY_BLOCK);
-	  if (bitmap_bit_p (&tmp, EXIT_BLOCK))
+	  if (bitmap_bit_p (tmp, EXIT_BLOCK))
 	    bitmap_set_bit (dflow->out_of_date_transfer_functions, EXIT_BLOCK);
 
 	  i = NUM_FIXED_BLOCKS;
 	  FOR_EACH_BB_FN (bb, cfun)
 	    {
-	      if (bitmap_bit_p (&tmp, bb->index))
+	      if (bitmap_bit_p (tmp, bb->index))
 		bitmap_set_bit (dflow->out_of_date_transfer_functions, i);
 	      i++;
 	    }
@@ -1711,22 +1707,20 @@ df_compact_blocks (void)
 
   if (df->blocks_to_analyze)
     {
-      if (bitmap_bit_p (&tmp, ENTRY_BLOCK))
+      if (bitmap_bit_p (tmp, ENTRY_BLOCK))
 	bitmap_set_bit (df->blocks_to_analyze, ENTRY_BLOCK);
-      if (bitmap_bit_p (&tmp, EXIT_BLOCK))
+      if (bitmap_bit_p (tmp, EXIT_BLOCK))
 	bitmap_set_bit (df->blocks_to_analyze, EXIT_BLOCK);
-      bitmap_copy (&tmp, df->blocks_to_analyze);
+      bitmap_copy (tmp, df->blocks_to_analyze);
       bitmap_clear (df->blocks_to_analyze);
       i = NUM_FIXED_BLOCKS;
       FOR_EACH_BB_FN (bb, cfun)
 	{
-	  if (bitmap_bit_p (&tmp, bb->index))
+	  if (bitmap_bit_p (tmp, bb->index))
 	    bitmap_set_bit (df->blocks_to_analyze, i);
 	  i++;
 	}
     }
-
-  bitmap_clear (&tmp);
 
   i = NUM_FIXED_BLOCKS;
   FOR_EACH_BB_FN (bb, cfun)
