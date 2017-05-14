@@ -1,3 +1,8 @@
+2017-05-14  Krister Walfridsson  <krister.walfridsson@gmail.com>
+
+	PR target/80600
+	* config.host (*-*-netbsd*): Add t-slibgcc-libgcc to tmake_file.
+
 2017-05-14  Daniel Santos  <daniel.santos@pobox.com>
 
 	* config.host: Add i386/t-msabi to i386/t-linux file list.
