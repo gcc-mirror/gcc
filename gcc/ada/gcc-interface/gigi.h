@@ -6,7 +6,7 @@
  *                                                                          *
  *                              C Header File                               *
  *                                                                          *
- *          Copyright (C) 1992-2016, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2017, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -315,9 +315,6 @@ extern void post_error_ne_tree_2 (const char *msg, Node_Id node, Entity_Id ent,
 /* Return a label to branch to for the exception type in KIND or NULL_TREE
    if none.  */
 extern tree get_exception_label (char kind);
-
-/* Return the decl for the current elaboration procedure.  */
-extern tree get_elaboration_procedure (void);
 
 /* If nonzero, pretend we are allocating at global level.  */
 extern int force_global;

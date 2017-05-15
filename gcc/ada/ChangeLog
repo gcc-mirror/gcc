@@ -1,3 +1,8 @@
+2017-05-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/gigi.h (get_elaboration_procedure): Delete.
+	* gcc-interface/trans.c (get_elaboration_procedure): Make static.
+
 2017-05-15  Pierre-Marie de Rodat  <derodat@adacore.com>
 
 	* gcc-interface/utils.c (can_materialize_object_renaming_p):
