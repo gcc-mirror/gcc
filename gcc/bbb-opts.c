@@ -88,10 +88,10 @@ extern struct lang_hooks lang_hooks;
 /* Lookup of the current function name. */
 extern tree current_function_decl;
 static tree last_function_decl;
+static char fxname[512];
 static char const *
 get_current_function_name ()
 {
-  static char fxname[512];
   if (current_function_decl == NULL)
     strcpy (fxname, "<toplevel>");
   else
@@ -297,6 +297,12 @@ public:
     return src_mem && src_plus;
   }
 
+  inline bool
+  is_dst_mem_plus () const
+  {
+    return dst_mem && dst_plus;
+  }
+
   inline int
   get_dst_regno () const
   {
@@ -328,9 +334,21 @@ public:
   }
 
   inline int
+  get_dst_mem_regno () const
+  {
+    return dst_mem_reg ? REGNO(dst_mem_reg) : -1;
+  }
+
+  inline int
   get_src_intval () const
   {
     return src_mem_addr;
+  }
+
+  inline int
+  get_dst_intval () const
+  {
+    return dst_mem_addr;
   }
 
   inline bool
@@ -2587,6 +2605,12 @@ opt_shrink_stack_frame (void)
       /* check the pushed regs, either a vector or single statements */
       if (GET_CODE(pattern) == PARALLEL)
 	{
+	  // do not touch the frame pointer parallel insn.
+	  rtx set = XVECEXP(pattern, 0, 0);
+	  rtx dst = SET_DEST(set);
+	  if (REG_P(dst) && REGNO(dst) == FRAME_POINTER_REGNUM)
+	    continue;
+
 	  std::vector<rtx> regs;
 	  std::vector<rtx> clobbers;
 	  for (int j = 0; j < XVECLEN(pattern, 0); ++j)
@@ -2607,13 +2631,6 @@ opt_shrink_stack_frame (void)
 	      else
 		continue;
 
-	      if (REGNO(reg) == FRAME_POINTER_REGNUM)
-		{
-		  // mark as "do not touch"
-		  clobbers.push_back (reg);
-		  break;
-		}
-
 	      if (i < prologueend)
 		paramstart += 4;
 	      unsigned regbit = 1 << REGNO(reg);
@@ -2628,19 +2645,16 @@ opt_shrink_stack_frame (void)
 		regs.push_back (copy_reg (reg, -1));
 	    }
 
-	  /* don't touch - clobbers! */
-	  if (clobbers.size ())
-	    continue;
-
-	  /* add romm for add.
+	  /* add room for add.
 	   * push is always using -(a7) addressing.
 	   * If a5 is used a movem offset(a5) is generated to pop saved registers..
 	   * Otherwise a7 is used and with (a7)+ addressing.
 	   */
 	  int add1 = i < prologueend || !usea5 ? 1 : 0;
-	  if ((int) regs.size () + add1 < XVECLEN(pattern, 0) || regs.size () <= 2)
+	  if ((int) regs.size () + add1 + (int) clobbers.size () < XVECLEN(pattern, 0) || regs.size () <= 2)
 	    {
-	      log ("(f) shrinking stack frame from %d to %d\n", XVECLEN(pattern, 0) - add1, regs.size ());
+	      log ("(f) shrinking stack frame from %d to %d\n", XVECLEN(pattern, 0) - add1 - clobbers.size (),
+		   regs.size ());
 	      if (regs.size () <= 2)
 		{
 		  changed = 1;
@@ -2674,17 +2688,19 @@ opt_shrink_stack_frame (void)
 		  for (unsigned k = 0; k < regs.size (); ++k)
 		    x += REGNO(regs[k]) > STACK_POINTER_REGNUM ? 12 : 4;
 
+		  unsigned l = 0;
 		  /* no add if a5 is used with pop */
 		  if (!usea5 || i < prologueend)
 		    {
 		      plus = gen_rtx_PLUS(SImode, a7, gen_rtx_CONST_INT (SImode, i < prologueend ? -x : x));
-		      XVECEXP(parallel, 0, 0) = gen_rtx_SET(a7, plus);
+		      XVECEXP(parallel, 0, l) = gen_rtx_SET(a7, plus);
+		      ++l;
 		    }
 
 		  if (i >= prologueend)
 		    x = usea5 ? -x : 0;
 
-		  for (unsigned k = 0; k < regs.size (); ++k)
+		  for (unsigned k = 0; k < regs.size (); ++k, ++l)
 		    {
 		      if (i < prologueend)
 			{
@@ -2693,7 +2709,7 @@ opt_shrink_stack_frame (void)
 			  x -= REGNO(regs[k]) > STACK_POINTER_REGNUM ? 12 : 4;
 			  rtx mem = gen_rtx_MEM (REGNO(regs[k]) > STACK_POINTER_REGNUM ? XFmode : SImode, plus);
 			  rtx set = gen_rtx_SET(mem, regs[k]);
-			  XVECEXP(parallel, 0, k + 1) = set;
+			  XVECEXP(parallel, 0, l) = set;
 			}
 		      else
 			{
@@ -2704,7 +2720,7 @@ opt_shrink_stack_frame (void)
 			      plus = gen_rtx_PLUS(SImode, a5, gen_rtx_CONST_INT (SImode, a5offset + x));
 			      rtx mem = gen_rtx_MEM (REGNO(regs[k]) > STACK_POINTER_REGNUM ? XFmode : SImode, plus);
 			      rtx set = gen_rtx_SET(regs[k], mem);
-			      XVECEXP(parallel, 0, k) = set;
+			      XVECEXP(parallel, 0, l) = set;
 			    }
 			  else
 			    {
@@ -2712,9 +2728,15 @@ opt_shrink_stack_frame (void)
 			      x += REGNO(regs[k]) > STACK_POINTER_REGNUM ? 12 : 4;
 			      rtx mem = gen_rtx_MEM (REGNO(regs[k]) > STACK_POINTER_REGNUM ? XFmode : SImode, plus);
 			      rtx set = gen_rtx_SET(regs[k], mem);
-			      XVECEXP(parallel, 0, k + 1) = set;
+			      XVECEXP(parallel, 0, l) = set;
 			    }
 			}
+		    }
+
+		  for (unsigned k = 0; k < clobbers.size (); ++k)
+		    {
+		      rtx clobber = clobbers[k];
+		      XVECEXP(parallel, 0, l++) = clobber;
 		    }
 		  emit_insn_after (parallel, insn);
 		}
@@ -2761,32 +2783,19 @@ opt_shrink_stack_frame (void)
       for (unsigned index = 0; index < infos.size (); ++index)
 	{
 	  insn_info & ii = infos[index];
-	  insn = ii.get_insn ();
-	  if (!insn || !INSN_P(insn))
-	    continue;
-
-	  rtx set = single_set (insn);
-	  if (!set)
-	    continue;
-
-	  rtx mem = SET_SRC(set);
-	  if (MEM_P(mem))
+	  rtx pattern = PATTERN (ii.get_insn ());
+	  if (ii.is_compare ())
+	    pattern = XEXP(pattern, 1);
+	  if (ii.is_src_mem () && ii.is_src_mem_plus () && ii.get_src_mem_regno () == STACK_POINTER_REGNUM)
 	    {
-	      rtx plus = XEXP(mem, 0);
-	      if (GET_CODE(plus) == PLUS)
-		{
-		  rtx sp = XEXP(plus, 0);
-		  if (REG_P(sp) && REGNO(sp) == STACK_POINTER_REGNUM)
-		    {
-		      rtx c = XEXP(plus, 1);
-		      if (CONST_INT_P(c))
-			{
-			  int n = INTVAL(c);
-			  if (n >= paramstart)
-			    XEXP(plus, 1) = gen_rtx_CONST_INT (SImode, n - adjust);
-			}
-		    }
-		}
+	      rtx plus = XEXP(XEXP(pattern, 1), 0);
+	      XEXP(plus, 1) = gen_rtx_CONST_INT (SImode, ii.get_src_intval () - adjust);
+	    }
+
+	  if (ii.is_dst_mem () && ii.is_dst_mem_plus () && ii.get_dst_mem_regno () == STACK_POINTER_REGNUM)
+	    {
+	      rtx plus = XEXP(XEXP(pattern, 0), 0);
+	      XEXP(plus, 1) = gen_rtx_CONST_INT (SImode, ii.get_dst_intval () - adjust);
 	    }
 	}
     }
@@ -3072,6 +3081,9 @@ namespace
     bool do_bb_reg_rename = strchr (string_bbb_opts, 'r') || strchr (string_bbb_opts, '+');
     bool do_shrink_stack_frame = strchr (string_bbb_opts, 'f') || strchr (string_bbb_opts, '+');
     bool do_absolute = strchr (string_bbb_opts, 'b') || strchr (string_bbb_opts, '+');
+
+    if (be_very_verbose)
+      log ("ENTER\n");
 
     for (;;)
       {
