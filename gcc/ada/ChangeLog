@@ -1,3 +1,9 @@
+2017-05-15  Pierre-Marie de Rodat  <derodat@adacore.com>
+
+	* gcc-interface/utils.c (can_materialize_object_renaming_p):
+	Synchronize with GNAT's Exp_Dbug.Debug_Renaming_Declaration:
+	process Original_Node instead of expanded names.
+
 2017-05-15  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/trans.c (return_value_ok_for_nrv_p): Only apply the
