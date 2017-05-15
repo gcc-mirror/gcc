@@ -1,3 +1,10 @@
+2017-05-15  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/80727
+	* transfer.c (read_sf_internal): Remove bogus code to detect EOR.
+	(read_block_form): For internal units, generate EOR if no more
+	bytes left in unit and we are trying to read with ADVANCE='NO'.
+
 2017-05-15  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/80765
