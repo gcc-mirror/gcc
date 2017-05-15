@@ -2575,9 +2575,8 @@ gfc_trans_integer_select (gfc_code * code)
 		 to represent unbounded cases.  */
 
 	      if (!cp->low
-		  || (cp->low
-		      && mpz_cmp (cp->low->value.integer,
-				  cp->high->value.integer) != 0))
+		  || (mpz_cmp (cp->low->value.integer,
+				cp->high->value.integer) != 0))
 		high = gfc_conv_mpz_to_tree (cp->high->value.integer,
 					     cp->high->ts.kind);
 
