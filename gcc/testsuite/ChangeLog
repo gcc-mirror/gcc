@@ -1,6 +1,9 @@
 2017-05-15  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/79369
+	* g++.dg/cpp1z/nested-namespace-def1.C: Adjust.
+
+	PR c++/79369
 	* g++.dg/cpp0x/pr65558.C: Adjust diagnostic location.
 	* g++.dg/cpp0x/pr79369.C: New.
 
