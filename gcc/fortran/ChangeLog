@@ -1,3 +1,10 @@
+2017-05-15  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	Backport from trunk
+	PR fortran/80752
+	* expr.c (gfc_generate_initializer):  If type conversion fails,
+	check for error and return NULL.
+
 2017-05-05  Janus Weil  <janus@gcc.gnu.org>
 
 	Backport from trunk
