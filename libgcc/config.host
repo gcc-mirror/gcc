@@ -249,6 +249,7 @@ case ${host} in
 *-*-netbsd*)
   tmake_file="$tmake_file t-crtstuff-pic t-libgcc-pic t-eh-dw2-dip"
   tmake_file="$tmake_file t-slibgcc t-slibgcc-gld t-slibgcc-elf-ver"
+  tmake_file="$tmake_file t-slibgcc-libgcc"
   # NetBSD 1.7 and later are set up to use GCC's crtstuff for
   # ELF configurations.  We will clear extra_parts in the
   # a.out configurations.
@@ -1368,7 +1369,7 @@ case ${host} in
 i[34567]86-*-linux* | x86_64-*-linux* | \
   i[34567]86-*-kfreebsd*-gnu | x86_64-*-kfreebsd*-gnu | \
   i[34567]86-*-gnu*)
-	tmake_file="${tmake_file} t-tls i386/t-linux t-slibgcc-libgcc"
+	tmake_file="${tmake_file} t-tls i386/t-linux i386/t-msabi t-slibgcc-libgcc"
 	if test "$libgcc_cv_cfi" = "yes"; then
 		tmake_file="${tmake_file} t-stack i386/t-stack-i386"
 	fi

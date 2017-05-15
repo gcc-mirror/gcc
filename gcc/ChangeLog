@@ -1,3 +1,396 @@
+2017-05-15  Renlin Li  <renlin.li@arm.com>
+
+	* config/aarch64/aarch64-protos.h (aarch64_expand_call): Declare.
+	* config/aarch64/aarch64.c (aarch64_expand_call): Define.
+	* config/aarch64/constraints.md (Usf): Add long call check.
+	* config/aarch64/aarch64.md (call): Use aarch64_expand_call.
+	(call_value): Likewise.
+	(sibcall): Likewise.
+	(sibcall_value): Likewise.
+	(call_insn): New.
+	(call_value_insn): New.
+	(sibcall_insn): Update rtx pattern.
+	(sibcall_value_insn): Likewise.
+	(call_internal): Remove.
+	(call_value_internal): Likewise.
+	(sibcall_internal): Likewise.
+	(sibcall_value_internal): Likewise.
+	(call_reg): Likewise.
+	(call_symbol): Likewise.
+	(call_value_reg): Likewise.
+	(call_value_symbol): Likewise.
+
+2017-05-14  Krister Walfridsson  <krister.walfridsson@gmail.com>
+
+	PR target/80600
+	* config/netbsd.h (NETBSD_LIBGCC_SPEC): Always add -lgcc.
+
+2017-05-14  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386.i386.c (ix86_cc_modes_compatible): CCNOmode is
+	compatible with CCGOCmode and with CCZmode.
+
+2017-05-14  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/77671
+	* gimple-fold.c (gimple_fold_builtin_sprintf): Make extern.
+	(gimple_fold_builtin_snprintf): Same.
+	* gimple-fold.h (gimple_fold_builtin_sprintf): Declare.
+	(gimple_fold_builtin_snprintf): Same.
+	* gimple-ssa-sprintf.c (get_format_string): Correct the detection
+	of character types.
+	(is_call_safe): New function.
+	(try_substitute_return_value): Call it.
+	(try_simplify_call): New function.
+	(pass_sprintf_length::handle_gimple_call): Call it.
+
+2017-05-14  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/80669
+	* builtins.c (expand_builtin_stpncpy): Simplify.
+
+2017-05-14  Daniel Santos  <daniel.santos@pobox.com>
+
+	* config/i386/i386.opt: Add option -mcall-ms2sysv-xlogues.
+	* config/i386/i386.h
+	(x86_64_ms_sysv_extra_clobbered_registers): Change type to unsigned.
+	(NUM_X86_64_MS_CLOBBERED_REGS): New macro.
+	(struct machine_function): Add new members call_ms2sysv,
+	call_ms2sysv_pad_in, call_ms2sysv_pad_out and call_ms2sysv_extra_regs.
+	(struct machine_frame_state): New fields sp_realigned and
+	sp_realigned_offset.
+	* config/i386/i386.c
+	(enum xlogue_stub): New enum.
+	(enum xlogue_stub_sets): New enum.
+	(class xlogue_layout): New class.
+	(struct ix86_frame): New fields stack_realign_allocate_offset,
+	stack_realign_offset and outlined_save_offset.  Modify comments to
+	detail stack layout when using out-of-line stubs.
+	(ix86_target_string): Add -mcall-ms2sysv-xlogues option.
+	(ix86_option_override_internal): Add sorry() for TARGET_SEH and
+	-mcall-ms2sysv-xlogues.
+	(stub_managed_regs): New static variable.
+	(ix86_save_reg): Add new parameter ignore_outlined to optionally omit
+	registers managed by out-of-line stub.
+	(disable_call_ms2sysv_xlogues): New function.
+	(ix86_compute_frame_layout): Modify re-alignment calculations, disable
+	m->call_ms2sysv when appropriate and compute frame layout for
+	out-of-line stubs.
+	(sp_valid_at, fp_valid_at): New inline functions.
+	(choose_basereg): New function.
+	(choose_baseaddr): Add align parameter, use choose_basereg and modify
+	all callers.
+	(ix86_emit_save_reg_using_mov, ix86_emit_restore_sse_regs_using_mov):
+	Use align parameter of choose_baseaddr to generated aligned SSE movs
+	when possible.
+	(pro_epilogue_adjust_stack): Modify to track
+	machine_frame_state::sp_realigned.
+	(ix86_nsaved_regs): Modify to accommodate changes to ix86_save_reg.
+	(ix86_nsaved_sseregs): Likewise.
+	(ix86_emit_save_regs): Likewise.
+	(ix86_emit_save_regs_using_mov): Likewise.
+	(ix86_emit_save_sse_regs_using_mov): Likewise.
+	(get_scratch_register_on_entry): Likewise.
+	(gen_frame_set): New function.
+	(gen_frame_load): Likewise.
+	(gen_frame_store): Likewise.
+	(emit_outlined_ms2sysv_save): Likewise.
+	(emit_outlined_ms2sysv_restore): Likewise.
+	(ix86_expand_prologue): Modify stack re-alignment code and call
+	emit_outlined_ms2sysv_save when appropriate.
+	(ix86_emit_leave): Clear machine_frame_state::sp_realigned.  Add
+	parameter rtx_insn *insn, which allows the function to be used to only
+	generate the notes.
+	(ix86_expand_epilogue): Modify validity checks of frame and stack
+	pointers, and call emit_outlined_ms2sysv_restore when appropriate.
+	(ix86_expand_call): Modify to enable m->call_ms2sysv when appropriate.
+	* config/i386/predicates.md
+	(save_multiple): New predicate.
+	(restore_multiple): Likewise.
+	* config/i386/sse.md
+	(save_multiple<mode>): New pattern.
+	(save_multiple_realign<mode>): Likewise.
+	(restore_multiple<mode>): Likewise.
+	(restore_multiple_and_return<mode>): Likewise.
+	(restore_multiple_leave_return<mode>): Likewise.
+	* Makefile.in: Export HOSTCXX and HOSTCXXFLAGS to site.exp
+
+2017-05-14  Julia Koval  <julia.koval@intel.com>
+
+	* config/i386/i386-builtin-types.def (VOID_FTYPE_INT_INT64): New type.
+	* config/i386/i386-builtin.def (__builtin_ia32_xgetbv)
+	(__builtin_ia32_xsetbv): New builtins.
+	* config/i386/i386.c (ix86_expand_special_args_builtin):
+	Process new types.
+	(ix86_expand_builtin): Special expand for new intrinsics.
+	* config/i386/i386.md (UNSPECV_XGETBV, UNSPECV_XSETBV): New.
+	(xsetbv, xsetbv_rex64, xgetbv, xgetbv_rex64): New insn patterns.
+	* config/i386/xsaveintrin.h (_xsetbv, _getbv): New intrinsics.
+
+2017-05-13  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
+	* cfganal.c (inverted_post_order_compute): Change argument type
+	to vec *.
+	* cfganal.h (inverted_post_order_compute): Adjust prototype.
+	* df-core.c (rest_of_handle_df_initialize): Adjust.
+	(rest_of_handle_df_finish): Likewise.
+	(df_analyze_1): Likewise.
+	(df_analyze): Likewise.
+	(loop_inverted_post_order_compute): Change argument to be a vec *.
+	(df_analyze_loop): Adjust.
+	(df_get_n_blocks): Likewise.
+	(df_get_postorder): Likewise.
+	* df.h (struct df_d): Change field to be a vec.
+	* lcm.c (compute_laterin): Adjust.
+	(compute_available): Likewise.
+	* lra-lives.c (lra_create_live_ranges_1): Likewise.
+	* tree-ssa-dce.c (remove_dead_stmt): Likewise.
+	* tree-ssa-pre.c (compute_antic): Likewise.
+
+2017-05-13  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
+	* cfganal.c (connect_infinite_loops_to_exit): Adjust.
+	(depth_first_search::depth_first_search): Change structure init
+	function to this constructor.
+	(depth_first_search::add_bb): Rename function to this member.
+	(depth_first_search::execute): Likewise.
+	(flow_dfs_compute_reverse_finish): Adjust.
+
+2017-05-13  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
+	* ddg.c (find_nodes_on_paths): Use auto_sbitmap.
+	(longest_simple_path): Likewise.
+	* shrink-wrap.c (spread_components): Likewise.
+	(disqualify_problematic_components): Likewise.
+	(emit_common_heads_for_components): Likewise.
+	(emit_common_tails_for_components): Likewise.
+	(insert_prologue_epilogue_for_components): Likewise.
+
+2017-05-13  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
+	* tree-ssa-dse.c (dse_dom_walker): Make m_live_byes a
+	auto_sbitmap.
+
+2017-05-13  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
+	* df-core.c (df_set_blocks): Start using auto_bitmap.
+	(df_compact_blocks): Likewise.
+	* df-problems.c (df_rd_confluence_n): Likewise.
+	* df-scan.c (df_insn_rescan_all): Likewise.
+	(df_process_deferred_rescans): Likewise.
+	(df_update_entry_block_defs): Likewise.
+	(df_update_exit_block_uses): Likewise.
+	(df_entry_block_bitmap_verify): Likewise.
+	(df_exit_block_bitmap_verify): Likewise.
+	(df_scan_verify): Likewise.
+	* lra-constraints.c (lra_constraints): Likewise.
+	(undo_optional_reloads): Likewise.
+	(lra_undo_inheritance): Likewise.
+	* lra-remat.c (calculate_gen_cands): Likewise.
+	(do_remat): Likewise.
+	* lra-spills.c (assign_spill_hard_regs): Likewise.
+	(spill_pseudos): Likewise.
+	* tree-ssa-pre.c (bitmap_set_and): Likewise.
+	(bitmap_set_subtract_values): Likewise.
+
+2017-05-13  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
+	* haifa-sched.c (estimate_shadow_tick): Replace manual bitmap
+	management with auto_bitmap.
+	(fix_inter_tick): Likewise.
+	(fix_recovery_deps): Likewise.
+	* ira.c (add_store_equivs): Likewise.
+	(find_moveable_pseudos): Likewise.
+	(split_live_ranges_for_shrink_wrap): Likewise.
+	* print-rtl.c (rtx_reuse_manager::rtx_reuse_manager): Likewise.
+	(rtx_reuse_manager::seen_def_p): Likewise.
+	(rtx_reuse_manager::set_seen_def): Likewise.
+	* print-rtl.h (class rtx_reuse_manager): Likewise.
+
+2017-05-13  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
+	* bt-load.c (combine_btr_defs): Use auto_bitmap to manage bitmap
+	lifetime.
+	(migrate_btr_def): Likewise.
+	* cfgloop.c (get_loop_body_in_bfs_order): Likewise.
+	* df-core.c (loop_post_order_compute): Likewise.
+	(loop_inverted_post_order_compute): Likewise.
+	* hsa-common.h: Likewise.
+	* hsa-gen.c (hsa_bb::~hsa_bb): Likewise.
+	* init-regs.c (initialize_uninitialized_regs): Likewise.
+	* ipa-inline.c (resolve_noninline_speculation): Likewise.
+	(inline_small_functions): Likewise.
+	* ipa-reference.c (ipa_reference_write_optimization_summary): Likewise.
+	* ira.c (combine_and_move_insns): Likewise.
+	(build_insn_chain): Likewise.
+	* loop-invariant.c (find_invariants): Likewise.
+	* lower-subreg.c (propagate_pseudo_copies): Likewise.
+	* predict.c (tree_predict_by_opcode): Likewise.
+	(predict_paths_leading_to): Likewise.
+	(predict_paths_leading_to_edge): Likewise.
+	(estimate_loops_at_level): Likewise.
+	(estimate_loops): Likewise.
+	* shrink-wrap.c (try_shrink_wrapping): Likewise.
+	(spread_components): Likewise.
+	* tree-cfg.c (remove_edge_and_dominated_blocks): Likewise.
+	* tree-loop-distribution.c (rdg_build_partitions): Likewise.
+	* tree-predcom.c (tree_predictive_commoning_loop): Likewise.
+	* tree-ssa-coalesce.c (coalesce_ssa_name): Likewise.
+	* tree-ssa-phionlycprop.c (pass_phi_only_cprop::execute): Likewise.
+	* tree-ssa-pre.c (remove_dead_inserted_code): Likewise.
+	* tree-ssa-sink.c (nearest_common_dominator_of_uses): Likewise.
+	* tree-ssa-threadupdate.c (compute_path_counts): Likewise.
+	(mark_threaded_blocks): Likewise.
+	(thread_through_all_blocks): Likewise.
+	* tree-ssa.c (verify_ssa): Likewise.
+	(execute_update_addresses_taken): Likewise.
+	* tree-ssanames.c (verify_ssaname_freelists): Likewise.
+
+2017-05-13  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
+	* cfganal.c (mark_dfs_back_edges): Replace manual stack with
+	auto_vec.
+	(post_order_compute): Likewise.
+	(inverted_post_order_compute): Likewise.
+	(pre_and_rev_post_order_compute_fn): Likewise.
+
+2017-05-13  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
+	* genrecog.c (int_set::int_set): Explicitly construct our
+	auto_vec base class.
+	* vec.h (auto_vec::auto_vec): New constructor.
+
+2017-05-13  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
+	* bitmap.h (class auto_bitmap): New constructor taking
+	bitmap_obstack * argument.
+
+2017-05-13  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
+	* bitmap.h (class auto_bitmap): Change type of m_bits to
+	bitmap_head, and adjust ctor / dtor and member operators.
+
+2017-05-13  Uros Bizjak  <ubizjak@gmail.com>
+
+	* compare-elim.c (equivalent_reg_at_start): Return NULL_RTX
+	when returned register mode doesn't match original mode.
+
+2017-05-12  Jeff Law  <law@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	* config/mn10300/mn10300.c (mn10300_match_ccmode): Fix where
+	we look for cc setter after the compare-elim changes.
+	* config/mn10300/mn10300.md (addsi3_flags): Fix order of patterns
+	within the vector to match what compare-elim now expects.
+	(subsi3_flags, andsi3_flags, iorsi3_flags): Likewise.
+	(xorsi3_flags, one_cmplsi2_flags): Likewise.
+
+	* config/rx/rx.c (rx_match_ccmode): Fix where we look cc setter
+	after the compare-elim changes.
+	* config/rx/rx.md (abssi2_flags): Fix order of patterns within
+	the vector to match what compare-elim now expects.
+	(addsi3_flags, adc_flags, addsi3_flags peepholes): Likewise.
+	(andsi3_flags, negsi2_flags, one_cmplsi2_flags): Likewise.
+	(iorsi3_flags, rotlsi3_flags, rotrsi3_flags): Likewise.
+	(ashrsi3_flags, lshrsi3_flags, ashlsi3_flags): Likewise.
+	(ssaddsi3, subsi3_flags, sbb_flags, xorsi3_flags): Likewise.
+
+	* config/visium/visium.c (single_set_and_flags): Fix where
+	we look for cc setter after the compare-elim changes.
+	* config/visium/visium.md (flags_subst_logic): Fix order of patterns
+	with the vector to match what compare-elim now expects.
+	(flags_subst_arith, add<mode>3_insn_set_carry): Likewise.
+	(add<mode>3_insn_set_overflow, addsi3_insn_set_carry): Likewise.
+	(addsi3_insn_set_overflow, sub<mode>3_insn_set_carry): Likewise.
+	(sub<mode>3_insn_set_overflow, subsi3_insn_set_carry): Likewise.
+	(subsi3_insn_set_overflow, negsi2_insn_set_carry): Likewise.
+	(neg<mode>2_insn_set_overflow): Likewise.
+
+2017-05-12  Jim Wilson  <jim.wilson@linaro.org>
+
+	PR middle-end/79794
+    	* expmed.c (extract_bit_field_1): Add alt_rtl argument.  Before
+	maybe_expand_insn call, set ops[0].target.  If still set after call,
+	set alt_rtl.  Add extra arg to recursive calls.
+	(extract_bit_field): Add alt_rtl argument.  Pass to
+	extract_bit_field.
+	* expmed.h (extract_bit_field): Fix prototype.
+	* expr.c (emit_group_load_1, copy_blkmode_from_reg)
+	(copy_blkmode_to_reg, read_complex_part, store_field): Pass extra NULL
+	to extract_bit_field_calls.
+	(expand_expr_real_1): Pass alt_rtl to expand_expr_real instead of 0.
+	Pass alt_rtl to extract_bit_field calls.
+	* calls.c (store_unaligned_arguments_into_psuedos)
+	load_register_parameters): Pass extra NULL to extract_bit_field calls.
+	* optabs.c (maybe_legitimize_operand): Clear op->target when call
+	gen_reg_rtx.
+	* optabs.h (struct expand_operand): Add target bitfield.
+
+2017-05-12  Uros Bizjak  <ubizjak@gmail.com>
+
+	* compare-elim.c (try_eliminate_compare): Canonicalize
+	operation with embedded compare to
+	[(set (reg:CCM) (compare:CCM (operation) (immediate)))
+	 (set (reg) (operation)].
+
+	* config/i386/i386.c (TARGET_FLAGS_REGNUM): New define.
+
+2017-05-12  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/80723
+	* config/i386/i386.c (ix86_rtx_cost) [case PLUS]: Ignore the
+	cost of adding a carry flag for ADC instruction.
+	[case MINUS]: Ignore the cost of subtracting a carry flag
+	for SBB instruction.
+
+2017-05-12  Steven Munroe  <munroesj@gcc.gnu.org>
+
+	* config.gcc (powerpc*-*-*): Add bmi2intrin.h, bmiintrin.h,
+	and x86intrin.h
+	* config/rs6000/bmiintrin.h: New file.
+	* config/rs6000/bmi2intrin.h: New file.
+	* config/rs6000/x86intrin.h: New file.
+
+2017-05-12  Jeff Law  <law@redhat.com>
+
+	* tree-vrp.c (vrp_dom_walker::before_dom_children): Push unwinding
+	markers.
+
+2017-05-12  Peter Bergner  <bergner@vnet.ibm.com>
+
+	PR middle-end/80707
+	* tree-cfg.c: Remove cfg edges of unreachable case statements.
+
+2017-05-12  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	* config/rs6000/rs6000.c (rs6000_gimple_fold_builtin): Add handling for
+	early expansion of vector divide builtins.
+	(builtin_function_type): Add VSX_BUILTIN_UDIV_V2DI to the list of
+	builtins identified as having unsigned arguments.
+
+2017-05-12  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	* config/rs6000/rs6000.c (gimple-fold.h): New #include.
+	(rs6000_gimple_fold_builtin): Add handling for early GIMPLE
+	expansion of vector logical operations (and, andc, or, xor,
+	nor, orc, nand).
+
+2017-05-12  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	* gimple-fold.c (create_tmp_reg_or_ssa_name): Remove static declaration.
+	* gimple-fold.h (create_tmp_reg_or_ssa_name): New prototype.
+
+2017-05-12  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	* config/rs6000/rs6000.c (rs6000_gimple_fold_builtin): Add handling for
+	early GIMPLE expansion of vector multiplies.
+
+2017-05-12  Prakhar Bahuguna  <prakhar.bahuguna@arm.com>
+
+	* config/arm/arm.md (movsi): Add TARGET_32BIT in addition to the
+	TARGET_HAVE_MOVT conditional.
+	(movt splitter): Likewise.
+
 2017-05-12  Richard Biener  <rguenther@suse.de>
 
 	* tree-ssa-sccvn.h (has_VN_INFO): Declare.

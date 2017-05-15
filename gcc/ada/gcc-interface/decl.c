@@ -204,6 +204,7 @@ static tree elaborate_expression_2 (tree, Entity_Id, const char *, bool, bool,
 static tree elaborate_reference (tree, Entity_Id, bool, tree *);
 static tree gnat_to_gnu_component_type (Entity_Id, bool, bool);
 static tree gnat_to_gnu_subprog_type (Entity_Id, bool, bool, tree *);
+static int adjust_packed (tree, tree, int);
 static tree gnat_to_gnu_field (Entity_Id, tree, int, bool, bool);
 static tree gnu_ext_name_for_subprog (Entity_Id, tree);
 static tree change_qualified_type (tree, int);
@@ -3094,6 +3095,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	    Entity_Id gnat_parent = Parent_Subtype (gnat_entity);
 	    tree gnu_dummy_parent_type = make_node (RECORD_TYPE);
 	    tree gnu_parent;
+	    int parent_packed = 0;
 
 	    /* A major complexity here is that the parent subtype will
 	       reference our discriminants in its Stored_Constraint list.
@@ -3172,7 +3174,17 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	       be created with a component clause below, then we need
 	       to apply the same adjustment as in gnat_to_gnu_field.  */
 	    if (has_rep && TYPE_ALIGN (gnu_type) < TYPE_ALIGN (gnu_parent))
-	      SET_TYPE_ALIGN (gnu_type, TYPE_ALIGN (gnu_parent));
+	      {
+		/* ??? For historical reasons, we do it on strict-alignment
+		   platforms only, where it is really required.  This means
+		   that a confirming representation clause will change the
+		   behavior of the compiler on the other platforms.  */
+		if (STRICT_ALIGNMENT)
+		  SET_TYPE_ALIGN (gnu_type, TYPE_ALIGN (gnu_parent));
+		else
+		  parent_packed
+		    = adjust_packed (gnu_parent, gnu_type, parent_packed);
+	      }
 
 	    /* Finally we fix up both kinds of twisted COMPONENT_REF we have
 	       initially built.  The discriminants must reference the fields
@@ -3218,7 +3230,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 				   ? TYPE_SIZE (gnu_parent) : NULL_TREE,
 				   has_rep
 				   ? bitsize_zero_node : NULL_TREE,
-				   0, 1);
+				   parent_packed, 1);
 	    DECL_INTERNAL_P (gnu_field) = 1;
 	    TREE_OPERAND (gnu_get_parent, 1) = gnu_field;
 	    TYPE_FIELDS (gnu_type) = gnu_field;
@@ -3258,12 +3270,12 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	    }
 
 	/* If we have a derived untagged type that renames discriminants in
-	   the root type, the (stored) discriminants are just a copy of the
-	   discriminants of the root type.  This means that any constraints
-	   added by the renaming in the derivation are disregarded as far
-	   as the layout of the derived type is concerned.  To rescue them,
-	   we change the type of the (stored) discriminants to a subtype
-	   with the bounds of the type of the visible discriminants.  */
+	   the parent type, the (stored) discriminants are just a copy of the
+	   discriminants of the parent type.  This means that any constraints
+	   added by the renaming in the derivation are disregarded as far as
+	   the layout of the derived type is concerned.  To rescue them, we
+	   change the type of the (stored) discriminants to a subtype with
+	   the bounds of the type of the visible discriminants.  */
 	if (has_discr
 	    && !is_extension
 	    && Stored_Constraint (gnat_entity) != No_Elist)
@@ -4955,12 +4967,10 @@ finalize_from_limited_with (void)
     }
 }
 
-/* Return the equivalent type to be used for GNAT_ENTITY, if it's a
-   kind of type (such E_Task_Type) that has a different type which Gigi
-   uses for its representation.  If the type does not have a special type
-   for its representation, return GNAT_ENTITY.  If a type is supposed to
-   exist, but does not, abort unless annotating types, in which case
-   return Empty.  If GNAT_ENTITY is Empty, return Empty.  */
+/* Return the equivalent type to be used for GNAT_ENTITY, if it's a kind
+   of type (such E_Task_Type) that has a different type which Gigi uses
+   for its representation.  If the type does not have a special type for
+   its representation, return GNAT_ENTITY.  */
 
 Entity_Id
 Gigi_Equivalent_Type (Entity_Id gnat_entity)

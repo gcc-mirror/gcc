@@ -5969,7 +5969,7 @@
   {
   rtx base, offset, tmp;
 
-  if (TARGET_HAVE_MOVT)
+  if (TARGET_32BIT || TARGET_HAVE_MOVT)
     {
       /* Everything except mem = const or mem = mem can be done easily.  */
       if (MEM_P (operands[0]))
@@ -6093,7 +6093,7 @@
 (define_split
   [(set (match_operand:SI 0 "arm_general_register_operand" "")
 	(match_operand:SI 1 "const_int_operand" ""))]
-  "TARGET_HAVE_MOVT
+  "(TARGET_32BIT || TARGET_HAVE_MOVT)
   && (!(const_ok_for_arm (INTVAL (operands[1]))
         || const_ok_for_arm (~INTVAL (operands[1]))))"
   [(clobber (const_int 0))]

@@ -2163,7 +2163,9 @@ extern int const dbx_register_map[FIRST_PSEUDO_REGISTER];
 extern int const dbx64_register_map[FIRST_PSEUDO_REGISTER];
 extern int const svr4_dbx_register_map[FIRST_PSEUDO_REGISTER];
 
-extern int const x86_64_ms_sysv_extra_clobbered_registers[12];
+extern unsigned const x86_64_ms_sysv_extra_clobbered_registers[12];
+#define NUM_X86_64_MS_CLOBBERED_REGS \
+  (ARRAY_SIZE (x86_64_ms_sysv_extra_clobbered_registers))
 
 /* Before the prologue, RA is at 0(%esp).  */
 #define INCOMING_RETURN_ADDR_RTX \
@@ -2482,6 +2484,17 @@ struct GTY(()) machine_frame_state
      set, the SP/FP offsets above are relative to the aligned frame
      and not the CFA.  */
   BOOL_BITFIELD realigned : 1;
+
+  /* Indicates whether the stack pointer has been re-aligned.  When set,
+     SP/FP continue to be relative to the CFA, but the stack pointer
+     should only be used for offsets >= sp_realigned_offset, while
+     the frame pointer should be used for offsets < sp_realigned_offset.
+     The flags realigned and sp_realigned are mutually exclusive.  */
+  BOOL_BITFIELD sp_realigned : 1;
+
+  /* If sp_realigned is set, this is the offset from the CFA that the
+     stack pointer was realigned to.  */
+  HOST_WIDE_INT sp_realigned_offset;
 };
 
 /* Private to winnt.c.  */
@@ -2564,6 +2577,24 @@ struct GTY(()) machine_function {
      64-bit, rax, r10 and r11 are scratch registers which aren't used to
      pass arguments and can be used for indirect sibcall.  */
   BOOL_BITFIELD arg_reg_available : 1;
+
+  /* If true, we're out-of-lining reg save/restore for regs clobbered
+     by ms_abi functions calling a sysv function.  */
+  BOOL_BITFIELD call_ms2sysv : 1;
+
+  /* If true, the incoming 16-byte aligned stack has an offset (of 8) and
+     needs padding.  */
+  BOOL_BITFIELD call_ms2sysv_pad_in : 1;
+
+  /* If true, the size of the stub save area plus inline int reg saves will
+     result in an 8 byte offset, so needs padding.  */
+  BOOL_BITFIELD call_ms2sysv_pad_out : 1;
+
+  /* This is the number of extra registers saved by stub (valid range is
+     0-6). Each additional register is only saved/restored by the stubs
+     if all successive ones are. (Will always be zero when using a hard
+     frame pointer.) */
+  unsigned int call_ms2sysv_extra_regs:3;
 
   /* During prologue/epilogue generation, the current frame state.
      Otherwise, the frame state at the end of the prologue.  */

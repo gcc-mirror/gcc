@@ -1657,3 +1657,84 @@
   (ior (match_operand 0 "register_operand")
        (and (match_code "const_int")
 	    (match_test "op == constm1_rtx"))))
+
+;; Return true if the vector ends with between 12 and 18 register saves using
+;; RAX as the base address.
+(define_predicate "save_multiple"
+  (match_code "parallel")
+{
+  const unsigned len = XVECLEN (op, 0);
+  unsigned i;
+
+  /* Starting from end of vector, count register saves.  */
+  for (i = 0; i < len; ++i)
+    {
+      rtx src, dest, addr;
+      rtx e = XVECEXP (op, 0, len - 1 - i);
+
+      if (GET_CODE (e) != SET)
+	break;
+
+      src  = SET_SRC (e);
+      dest = SET_DEST (e);
+
+      if (!REG_P (src) || !MEM_P (dest))
+	break;
+
+      addr = XEXP (dest, 0);
+
+      /* Good if dest address is in RAX.  */
+      if (REG_P (addr) && REGNO (addr) == AX_REG)
+	continue;
+
+      /* Good if dest address is offset of RAX.  */
+      if (GET_CODE (addr) == PLUS
+	  && REG_P (XEXP (addr, 0))
+	  && REGNO (XEXP (addr, 0)) == AX_REG)
+	continue;
+
+      break;
+    }
+  return (i >= 12 && i <= 18);
+})
+
+
+;; Return true if the vector ends with between 12 and 18 register loads using
+;; RSI as the base address.
+(define_predicate "restore_multiple"
+  (match_code "parallel")
+{
+  const unsigned len = XVECLEN (op, 0);
+  unsigned i;
+
+  /* Starting from end of vector, count register restores.  */
+  for (i = 0; i < len; ++i)
+    {
+      rtx src, dest, addr;
+      rtx e = XVECEXP (op, 0, len - 1 - i);
+
+      if (GET_CODE (e) != SET)
+	break;
+
+      src  = SET_SRC (e);
+      dest = SET_DEST (e);
+
+      if (!MEM_P (src) || !REG_P (dest))
+	break;
+
+      addr = XEXP (src, 0);
+
+      /* Good if src address is in RSI.  */
+      if (REG_P (addr) && REGNO (addr) == SI_REG)
+	continue;
+
+      /* Good if src address is offset of RSI.  */
+      if (GET_CODE (addr) == PLUS
+	  && REG_P (XEXP (addr, 0))
+	  && REGNO (XEXP (addr, 0)) == SI_REG)
+	continue;
+
+      break;
+    }
+  return (i >= 12 && i <= 18);
+})

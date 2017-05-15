@@ -708,8 +708,8 @@ Gogo::init_imports(std::vector<Bstatement*>& init_stmts, Bfunction *bfunction)
       Bexpression* pfunc_code =
           this->backend()->function_code_expression(pfunc, unknown_loc);
       Bexpression* pfunc_call =
-	this->backend()->call_expression(pfunc_code, empty_args,
-					 NULL, unknown_loc);
+          this->backend()->call_expression(bfunction, pfunc_code, empty_args,
+                                           NULL, unknown_loc);
       init_stmts.push_back(this->backend()->expression_statement(bfunction,
                                                                  pfunc_call));
     }
@@ -1498,7 +1498,7 @@ Gogo::write_globals()
       Bfunction* initfn = func->get_or_make_decl(this, *p);
       Bexpression* func_code =
           this->backend()->function_code_expression(initfn, func_loc);
-      Bexpression* call = this->backend()->call_expression(func_code,
+      Bexpression* call = this->backend()->call_expression(initfn, func_code,
                                                            empty_args,
 							   NULL, func_loc);
       Bstatement* ist = this->backend()->expression_statement(initfn, call);

@@ -25,6 +25,8 @@ contains
   SUBROUTINE bar (x, NF4, NF3, NF1, MF1, MF4, MF3)
     TYPE(t) x(NF4, NF3)  ! Dependency through variable indices
     CALL MVBITS (x(NF4:NF1:MF1, NF1:NF3)%i, 1, &
-                 6, x(-MF4:-MF1:-NF1, -MF1:-MF3)%i, 9)   ! { dg-warning "reading" }
+                 6, x(-MF4:-MF1:-NF1, -MF1:-MF3)%i, 9)
   END SUBROUTINE
 end
+
+! { dg-prune-output "reading \[0-9\]+ bytes from a region" }

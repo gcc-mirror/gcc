@@ -405,10 +405,7 @@ find_pseudo_copy (rtx set)
 static void
 propagate_pseudo_copies (void)
 {
-  bitmap queue, propagate;
-
-  queue = BITMAP_ALLOC (NULL);
-  propagate = BITMAP_ALLOC (NULL);
+  auto_bitmap queue, propagate;
 
   bitmap_copy (queue, decomposable_context);
   do
@@ -429,9 +426,6 @@ propagate_pseudo_copies (void)
       bitmap_ior_into (decomposable_context, propagate);
     }
   while (!bitmap_empty_p (queue));
-
-  BITMAP_FREE (queue);
-  BITMAP_FREE (propagate);
 }
 
 /* A pointer to one of these values is passed to

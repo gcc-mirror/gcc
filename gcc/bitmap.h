@@ -806,10 +806,11 @@ bmp_iter_and_compl (bitmap_iterator *bi, unsigned *bit_no)
 class auto_bitmap
 {
  public:
-  auto_bitmap () { bits = BITMAP_ALLOC (NULL); }
-  ~auto_bitmap () { BITMAP_FREE (bits); }
+  auto_bitmap () { bitmap_initialize (&m_bits, &bitmap_default_obstack); }
+  explicit auto_bitmap (bitmap_obstack *o) { bitmap_initialize (&m_bits, o); }
+  ~auto_bitmap () { bitmap_clear (&m_bits); }
   // Allow calling bitmap functions on our bitmap.
-  operator bitmap () { return bits; }
+  operator bitmap () { return &m_bits; }
 
  private:
   // Prevent making a copy that references our bitmap.
@@ -820,7 +821,7 @@ class auto_bitmap
   auto_bitmap &operator = (auto_bitmap &&);
 #endif
 
-  bitmap bits;
+  bitmap_head m_bits;
 };
 
 #endif /* GCC_BITMAP_H */

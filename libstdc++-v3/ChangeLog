@@ -1,12 +1,16 @@
+2017-05-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/78939
+	* include/std/utility (tuple_size<cv T>): Only define partial
+	specializations when tuple_size<T>::value is valid.
+	* testsuite/20_util/tuple/78939.cc: New.
+	* testsuite/20_util/tuple/cv_tuple_size_neg.cc: New.
+
 2017-05-11  François Dumont  <fdumont@gcc.gnu.org>
 
 	* include/bits/stl_tree.h [_GLIBCXX_INLINE_VERSION]
 	(_Rb_tree_impl<>): Remove _Is_pod_comparator
 	template parameter.
-
-	* include/debug/safe_container.h [_GLIBCXX_USE_CXX11_ABI]
-	(_Safe_container<>): Remove _IsCxx11AllocatorAware template parameter.
-	* include/debug/string: Adapt.
 
 	* include/debug/formatter.h [_GLIBCXX_INLINE_VERSION]
 	(__gnu_debug::_Error_formatter::_Parameter::_M_print_field): Remove.

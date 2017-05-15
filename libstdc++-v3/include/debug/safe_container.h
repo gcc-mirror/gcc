@@ -36,12 +36,8 @@ namespace __gnu_debug
   /// Safe class dealing with some allocator dependent operations.
   template<typename _SafeContainer,
 	   typename _Alloc,
-	   template<typename> class _SafeBase
-#if _GLIBCXX_USE_CXX11_ABI
-	   >
-#else
-	   , bool _IsCxx11AllocatorAware = true>
-#endif
+	   template<typename> class _SafeBase,
+	   bool _IsCxx11AllocatorAware = true>
     class _Safe_container
     : public _SafeBase<_SafeContainer>
     {
@@ -86,10 +82,8 @@ namespace __gnu_debug
       {
 	__glibcxx_check_self_move_assign(__x);
 
-#  if !_GLIBCXX_USE_CXX11_ABI
 	if (_IsCxx11AllocatorAware)
 	  {
-#  endif
 	    typedef __gnu_cxx::__alloc_traits<_Alloc> _Alloc_traits;
 
 	    bool __xfer_memory = _Alloc_traits::_S_propagate_on_move_assign()
@@ -98,11 +92,9 @@ namespace __gnu_debug
 	      _Base::_M_swap(__x);
 	    else
 	      this->_M_invalidate_all();
-#  if !_GLIBCXX_USE_CXX11_ABI
 	  }
 	else
 	  _Base::_M_swap(__x);
-#  endif
 
 	__x._M_invalidate_all();
 	return *this;
@@ -111,9 +103,7 @@ namespace __gnu_debug
       void
       _M_swap(_Safe_container& __x) noexcept
       {
-#  if !_GLIBCXX_USE_CXX11_ABI
 	if (_IsCxx11AllocatorAware)
-#  endif
 	  {
 	    typedef __gnu_cxx::__alloc_traits<_Alloc> _Alloc_traits;
 

@@ -223,7 +223,6 @@ assign_spill_hard_regs (int *pseudo_regnos, int n)
   rtx set;
   basic_block bb;
   HARD_REG_SET conflict_hard_regs;
-  bitmap_head ok_insn_bitmap;
   bitmap setjump_crosses = regstat_get_setjmp_crosses ();
   /* Hard registers which can not be used for any purpose at given
      program point because they are unallocatable or already allocated
@@ -243,13 +242,13 @@ assign_spill_hard_regs (int *pseudo_regnos, int n)
 	for (p = r->start; p <= r->finish; p++)
 	  add_to_hard_reg_set (&reserved_hard_regs[p],
 			       lra_reg_info[i].biggest_mode, hard_regno);
-  bitmap_initialize (&ok_insn_bitmap, &reg_obstack);
+  auto_bitmap ok_insn_bitmap (&reg_obstack);
   FOR_EACH_BB_FN (bb, cfun)
     FOR_BB_INSNS (bb, insn)
       if (DEBUG_INSN_P (insn)
 	  || ((set = single_set (insn)) != NULL_RTX
 	      && REG_P (SET_SRC (set)) && REG_P (SET_DEST (set))))
-	bitmap_set_bit (&ok_insn_bitmap, INSN_UID (insn));
+	bitmap_set_bit (ok_insn_bitmap, INSN_UID (insn));
   for (res = i = 0; i < n; i++)
     {
       regno = pseudo_regnos[i];
@@ -260,7 +259,7 @@ assign_spill_hard_regs (int *pseudo_regnos, int n)
 		 targetm.spill_class ((reg_class_t) rclass,
 				      PSEUDO_REGNO_MODE (regno)))) == NO_REGS
 	  || bitmap_intersect_compl_p (&lra_reg_info[regno].insn_bitmap,
-				       &ok_insn_bitmap))
+				       ok_insn_bitmap))
 	{
 	  pseudo_regnos[res++] = regno;
 	  continue;
@@ -300,7 +299,6 @@ assign_spill_hard_regs (int *pseudo_regnos, int n)
 	/* Just loop.  */
 	df_set_regs_ever_live (hard_regno + nr, true);
     }
-  bitmap_clear (&ok_insn_bitmap);
   free (reserved_hard_regs);
   return res;
 }
@@ -449,17 +447,16 @@ spill_pseudos (void)
   basic_block bb;
   rtx_insn *insn, *curr;
   int i;
-  bitmap_head spilled_pseudos, changed_insns;
 
-  bitmap_initialize (&spilled_pseudos, &reg_obstack);
-  bitmap_initialize (&changed_insns, &reg_obstack);
+  auto_bitmap spilled_pseudos (&reg_obstack);
+  auto_bitmap changed_insns (&reg_obstack);
   for (i = FIRST_PSEUDO_REGISTER; i < regs_num; i++)
     {
       if (lra_reg_info[i].nrefs != 0 && lra_get_regno_hard_regno (i) < 0
 	  && ! lra_former_scratch_p (i))
 	{
-	  bitmap_set_bit (&spilled_pseudos, i);
-	  bitmap_ior_into (&changed_insns, &lra_reg_info[i].insn_bitmap);
+	  bitmap_set_bit (spilled_pseudos, i);
+	  bitmap_ior_into (changed_insns, &lra_reg_info[i].insn_bitmap);
 	}
     }
   FOR_EACH_BB_FN (bb, cfun)
@@ -468,7 +465,7 @@ spill_pseudos (void)
 	{
 	  bool removed_pseudo_p = false;
 	  
-	  if (bitmap_bit_p (&changed_insns, INSN_UID (insn)))
+	  if (bitmap_bit_p (changed_insns, INSN_UID (insn)))
 	    {
 	      rtx *link_loc, link;
 
@@ -526,12 +523,10 @@ spill_pseudos (void)
 			 "Debug insn #%u is reset because it referenced "
 			 "removed pseudo\n", INSN_UID (insn));
 	    }
-	  bitmap_and_compl_into (df_get_live_in (bb), &spilled_pseudos);
-	  bitmap_and_compl_into (df_get_live_out (bb), &spilled_pseudos);
+	  bitmap_and_compl_into (df_get_live_in (bb), spilled_pseudos);
+	  bitmap_and_compl_into (df_get_live_out (bb), spilled_pseudos);
 	}
     }
-  bitmap_clear (&spilled_pseudos);
-  bitmap_clear (&changed_insns);
 }
 
 /* Return true if we need to change some pseudos into memory.  */

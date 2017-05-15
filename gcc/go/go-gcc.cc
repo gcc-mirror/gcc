@@ -348,7 +348,8 @@ class Gcc_backend : public Backend
   array_index_expression(Bexpression* array, Bexpression* index, Location);
 
   Bexpression*
-  call_expression(Bexpression* fn, const std::vector<Bexpression*>& args,
+  call_expression(Bfunction* caller, Bexpression* fn,
+                  const std::vector<Bexpression*>& args,
                   Bexpression* static_chain, Location);
 
   Bexpression*
@@ -1892,9 +1893,11 @@ Gcc_backend::array_index_expression(Bexpression* array, Bexpression* index,
 
 // Create an expression for a call to FN_EXPR with FN_ARGS.
 Bexpression*
-Gcc_backend::call_expression(Bexpression* fn_expr,
+Gcc_backend::call_expression(Bfunction*, // containing fcn for call
+                             Bexpression* fn_expr,
                              const std::vector<Bexpression*>& fn_args,
-                             Bexpression* chain_expr, Location location)
+                             Bexpression* chain_expr,
+                             Location location)
 {
   tree fn = fn_expr->get_tree();
   if (fn == error_mark_node || TREE_TYPE(fn) == error_mark_node)

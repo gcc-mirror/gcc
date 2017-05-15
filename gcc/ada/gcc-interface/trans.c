@@ -217,6 +217,7 @@ static GTY(()) vec<tree, va_gc> *gnu_program_error_label_stack;
 static enum tree_code gnu_codes[Number_Node_Kinds];
 
 static void init_code_table (void);
+static tree get_elaboration_procedure (void);
 static void Compilation_Unit_to_gnu (Node_Id);
 static bool empty_stmt_list_p (tree);
 static void record_code_position (Node_Id);
@@ -237,7 +238,6 @@ static tree build_binary_op_trapv (enum tree_code, tree, tree, tree, Node_Id);
 static tree convert_with_check (Entity_Id, tree, bool, bool, bool, Node_Id);
 static bool addressable_p (tree, tree);
 static tree assoc_to_constructor (Entity_Id, Node_Id, tree);
-static tree extract_values (tree, tree);
 static tree pos_to_constructor (Node_Id, tree, Entity_Id);
 static void validate_unchecked_conversion (Node_Id);
 static tree maybe_implicit_deref (tree);
@@ -1045,7 +1045,7 @@ Identifier_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p)
 		  && (Etype (gnat_node)
 		      == Packed_Array_Impl_Type (gnat_temp_type)))
 	      || (Is_Class_Wide_Type (Etype (gnat_node)))
-	      || (IN (Ekind (gnat_temp_type), Private_Kind)
+	      || (IN (Ekind (gnat_temp_type), Incomplete_Or_Private_Kind)
 		  && Present (Full_View (gnat_temp_type))
 		  && ((Etype (gnat_node) == Full_View (gnat_temp_type))
 		      || (Is_Packed (Full_View (gnat_temp_type))
@@ -3239,8 +3239,9 @@ Loop_Statement_to_gnu (Node_Id gnat_node)
      RETURN_EXPR [<retval> = Ri]
        [...]
 
-   and we try to fulfill a simple criterion that would make it possible to
-   replace one or several Ri variables with the RESULT_DECL of the function.
+   where the Ri are not addressable and we try to fulfill a simple criterion
+   that would make it possible to replace one or several Ri variables by the
+   single RESULT_DECL of the function.
 
    The first observation is that RETURN_EXPRs that don't directly reference
    any of the Ri variables on the RHS of their assignment are transparent wrt
@@ -3272,8 +3273,8 @@ Loop_Statement_to_gnu (Node_Id gnat_node)
    because the anonymous return object is allocated on the secondary stack
    and RESULT_DECL is only a pointer to it.  Each return object can be of a
    different size and is allocated separately so we need not care about the
-   aforementioned overlapping issues.  Therefore, we don't collect the other
-   expressions and skip step #2 in the algorithm.  */
+   addressability and the aforementioned overlapping issues.  Therefore, we
+   don't collect the other expressions and skip step #2 in the algorithm.  */
 
 struct nrv_data
 {
@@ -3613,7 +3614,8 @@ return_value_ok_for_nrv_p (tree ret_obj, tree ret_val)
   if (TREE_STATIC (ret_val))
     return false;
 
-  if (TREE_ADDRESSABLE (ret_val))
+  /* For the constrained case, test for addressability.  */
+  if (ret_obj && TREE_ADDRESSABLE (ret_val))
     return false;
 
   /* For the constrained case, test for overalignment.  */
@@ -5473,6 +5475,15 @@ Compilation_Unit_to_gnu (Node_Id gnat_node)
       if (!optimize && !Has_Pragma_Inline_Always (gnat_entity))
 	continue;
 
+      /* The set of inlined subprograms is computed from data recorded early
+	 during expansion and it can be a strict superset of the final set
+	 computed after semantic analysis, for example if a call to such a
+	 subprogram occurs in a pragma Assert and assertions are disabled.
+	 In that case, semantic analysis resets Is_Public to false but the
+	 entry for the subprogram in the inlining tables is stalled.  */
+      if (!Is_Public (gnat_entity))
+	continue;
+
       gnat_body = Parent (Declaration_Node (gnat_entity));
       if (Nkind (gnat_body) != N_Subprogram_Body)
 	{
@@ -6497,8 +6508,7 @@ gnat_to_gnu (Node_Id gnat_node)
 	  gnu_aggr_type = TYPE_REPRESENTATIVE_ARRAY (gnu_result_type);
 
 	if (Null_Record_Present (gnat_node))
-	  gnu_result = gnat_build_constructor (gnu_aggr_type,
-					       NULL);
+	  gnu_result = gnat_build_constructor (gnu_aggr_type, NULL);
 
 	else if (TREE_CODE (gnu_aggr_type) == RECORD_TYPE
 		 || TREE_CODE (gnu_aggr_type) == UNION_TYPE)
@@ -6858,7 +6868,7 @@ gnat_to_gnu (Node_Id gnat_node)
 
     case N_Allocator:
       {
-	tree gnu_init = 0;
+	tree gnu_init = NULL_TREE;
 	tree gnu_type;
 	bool ignore_init_type = false;
 
@@ -9658,6 +9668,55 @@ process_type (Entity_Id gnat_entity)
     }
 }
 
+/* Subroutine of assoc_to_constructor: VALUES is a list of field associations,
+   some of which are from RECORD_TYPE.  Return a CONSTRUCTOR consisting of the
+   associations that are from RECORD_TYPE.  If we see an internal record, make
+   a recursive call to fill it in as well.  */
+
+static tree
+extract_values (tree values, tree record_type)
+{
+  vec<constructor_elt, va_gc> *v = NULL;
+  tree field;
+
+  for (field = TYPE_FIELDS (record_type); field; field = DECL_CHAIN (field))
+    {
+      tree tem, value = NULL_TREE;
+
+      /* _Parent is an internal field, but may have values in the aggregate,
+	 so check for values first.  */
+      if ((tem = purpose_member (field, values)))
+	{
+	  value = TREE_VALUE (tem);
+	  TREE_ADDRESSABLE (tem) = 1;
+	}
+
+      else if (DECL_INTERNAL_P (field))
+	{
+	  value = extract_values (values, TREE_TYPE (field));
+	  if (TREE_CODE (value) == CONSTRUCTOR
+	      && vec_safe_is_empty (CONSTRUCTOR_ELTS (value)))
+	    value = NULL_TREE;
+	}
+      else
+	/* If we have a record subtype, the names will match, but not the
+	   actual FIELD_DECLs.  */
+	for (tem = values; tem; tem = TREE_CHAIN (tem))
+	  if (DECL_NAME (TREE_PURPOSE (tem)) == DECL_NAME (field))
+	    {
+	      value = convert (TREE_TYPE (field), TREE_VALUE (tem));
+	      TREE_ADDRESSABLE (tem) = 1;
+	    }
+
+      if (!value)
+	continue;
+
+      CONSTRUCTOR_APPEND_ELT (v, field, value);
+    }
+
+  return gnat_build_constructor (record_type, v);
+}
+
 /* GNAT_ENTITY is the type of the resulting constructor, GNAT_ASSOC is the
    front of the Component_Associations of an N_Aggregate and GNU_TYPE is the
    GCC type of the corresponding record type.  Return the CONSTRUCTOR.  */
@@ -9728,11 +9787,12 @@ pos_to_constructor (Node_Id gnat_expr, tree gnu_array_type,
 		    Entity_Id gnat_component_type)
 {
   tree gnu_index = TYPE_MIN_VALUE (TYPE_DOMAIN (gnu_array_type));
-  tree gnu_expr;
   vec<constructor_elt, va_gc> *gnu_expr_vec = NULL;
 
-  for ( ; Present (gnat_expr); gnat_expr = Next (gnat_expr))
+  for (; Present (gnat_expr); gnat_expr = Next (gnat_expr))
     {
+      tree gnu_expr;
+
       /* If the expression is itself an array aggregate then first build the
 	 innermost constructor if it is part of our array (multi-dimensional
 	 case).  */
@@ -9761,55 +9821,6 @@ pos_to_constructor (Node_Id gnat_expr, tree gnu_array_type,
     }
 
   return gnat_build_constructor (gnu_array_type, gnu_expr_vec);
-}
-
-/* Subroutine of assoc_to_constructor: VALUES is a list of field associations,
-   some of which are from RECORD_TYPE.  Return a CONSTRUCTOR consisting of the
-   associations that are from RECORD_TYPE.  If we see an internal record, make
-   a recursive call to fill it in as well.  */
-
-static tree
-extract_values (tree values, tree record_type)
-{
-  tree field, tem;
-  vec<constructor_elt, va_gc> *v = NULL;
-
-  for (field = TYPE_FIELDS (record_type); field; field = DECL_CHAIN (field))
-    {
-      tree value = 0;
-
-      /* _Parent is an internal field, but may have values in the aggregate,
-	 so check for values first.  */
-      if ((tem = purpose_member (field, values)))
-	{
-	  value = TREE_VALUE (tem);
-	  TREE_ADDRESSABLE (tem) = 1;
-	}
-
-      else if (DECL_INTERNAL_P (field))
-	{
-	  value = extract_values (values, TREE_TYPE (field));
-	  if (TREE_CODE (value) == CONSTRUCTOR
-	      && vec_safe_is_empty (CONSTRUCTOR_ELTS (value)))
-	    value = 0;
-	}
-      else
-	/* If we have a record subtype, the names will match, but not the
-	   actual FIELD_DECLs.  */
-	for (tem = values; tem; tem = TREE_CHAIN (tem))
-	  if (DECL_NAME (TREE_PURPOSE (tem)) == DECL_NAME (field))
-	    {
-	      value = convert (TREE_TYPE (field), TREE_VALUE (tem));
-	      TREE_ADDRESSABLE (tem) = 1;
-	    }
-
-      if (!value)
-	continue;
-
-      CONSTRUCTOR_APPEND_ELT (v, field, value);
-    }
-
-  return gnat_build_constructor (record_type, v);
 }
 
 /* Process a N_Validate_Unchecked_Conversion node.  */
@@ -9915,8 +9926,8 @@ Sloc_to_locus (Source_Ptr Sloc, location_t *locus, bool clear_column)
     line = 1;
 
   /* Translate the location.  */
-  *locus = linemap_position_for_line_and_column (line_table, map,
-						 line, column);
+  *locus
+    = linemap_position_for_line_and_column (line_table, map, line, column);
 
   return true;
 }
@@ -10173,7 +10184,7 @@ get_exception_label (char kind)
 
 /* Return the decl for the current elaboration procedure.  */
 
-tree
+static tree
 get_elaboration_procedure (void)
 {
   return gnu_elab_proc_stack->last ();

@@ -1219,10 +1219,10 @@ find_invariants_body (struct loop *loop, basic_block *body,
 static void
 find_invariants (struct loop *loop)
 {
-  bitmap may_exit = BITMAP_ALLOC (NULL);
-  bitmap always_reached = BITMAP_ALLOC (NULL);
-  bitmap has_exit = BITMAP_ALLOC (NULL);
-  bitmap always_executed = BITMAP_ALLOC (NULL);
+  auto_bitmap may_exit;
+  auto_bitmap always_reached;
+  auto_bitmap has_exit;
+  auto_bitmap always_executed;
   basic_block *body = get_loop_body_in_dom_order (loop);
 
   find_exits (loop, body, may_exit, has_exit);
@@ -1233,10 +1233,6 @@ find_invariants (struct loop *loop)
   find_invariants_body (loop, body, always_reached, always_executed);
   merge_identical_invariants ();
 
-  BITMAP_FREE (always_reached);
-  BITMAP_FREE (always_executed);
-  BITMAP_FREE (may_exit);
-  BITMAP_FREE (has_exit);
   free (body);
 }
 

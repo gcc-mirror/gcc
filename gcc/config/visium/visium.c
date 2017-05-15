@@ -932,10 +932,10 @@ single_set_and_flags (rtx_insn *insn)
     {
       rtx pat = PATTERN (insn);
       if (XVECLEN (pat, 0) == 2
-	  && GET_CODE (XVECEXP (pat, 0, 1)) == SET
-	  && REG_P (SET_DEST (XVECEXP (pat, 0, 1)))
-	  && REGNO (SET_DEST (XVECEXP (pat, 0, 1))) == FLAGS_REGNUM)
-	return XVECEXP (pat, 0, 0);
+	  && GET_CODE (XVECEXP (pat, 0, 0)) == SET
+	  && REG_P (SET_DEST (XVECEXP (pat, 0, 0)))
+	  && REGNO (SET_DEST (XVECEXP (pat, 0, 0))) == FLAGS_REGNUM)
+	return XVECEXP (pat, 0, 1);
     }
 
   return single_set (insn);

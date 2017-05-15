@@ -1,5 +1,7 @@
 2017-05-15  Nathan Sidwell  <nathan@acm.org>
 
+	Merge trunk r248059.
+
 	gcc/cp/
 	* module.c (cpms_in::tag_definition): Robustify.
 

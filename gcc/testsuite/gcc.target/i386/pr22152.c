@@ -1,7 +1,6 @@
 /* { dg-do compile { target ia32 } } */
 /* { dg-options "-O2 -msse2 -mtune=core2" } */
 /* { dg-additional-options "-mno-vect8-ret-in-mem" { target *-*-vxworks* } } */
-/* { dg-additional-options "-mabi=sysv" { target x86_64-*-mingw* } } */
 
 #include <mmintrin.h>
 

@@ -1,3 +1,25 @@
+2017-05-15  Adhemerval Zanella  <adhemerval.zanella@linaro.org>
+
+	* config/sparc/lb1spc.S [__ELF__ && __linux__]: Emit .note.GNU-stack
+	section for a non-executable stack.
+
+2017-05-14  Krister Walfridsson  <krister.walfridsson@gmail.com>
+
+	PR target/80600
+	* config.host (*-*-netbsd*): Add t-slibgcc-libgcc to tmake_file.
+
+2017-05-14  Daniel Santos  <daniel.santos@pobox.com>
+
+	* config.host: Add i386/t-msabi to i386/t-linux file list.
+	* config/i386/i386-asm.h: New file.
+	* config/i386/resms64.S: New file.
+	* config/i386/resms64f.S: New file.
+	* config/i386/resms64fx.S: New file.
+	* config/i386/resms64x.S: New file.
+	* config/i386/savms64.S: New file.
+	* config/i386/savms64f.S: New file.
+	* config/i386/t-msabi: New file.
+
 2017-05-09  Andreas Tobler  <andreast@gcc.gnu.org>
 
 	* config.host: Use the generic FreeBSD t-slibgcc-elf-ver for
@@ -9,7 +31,7 @@
 	pc-relative indirect handling for fuchsia.
 	* config/t-slibgcc-fuchsia: New file.
 	* config.host (*-*-fuchsia*, aarch64*-*-fuchsia*, arm*-*-fuchsia*,
-	x86_64-*-fuchsia*): Add definitions. 
+	x86_64-*-fuchsia*): Add definitions.
 
 2017-04-19  Martin Liska  <mliska@suse.cz>
 

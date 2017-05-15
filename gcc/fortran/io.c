@@ -3299,7 +3299,7 @@ gfc_resolve_dt (gfc_dt *dt, locus *loc)
 	      gfc_error ("NAMELIST object %qs in namelist %qs at %L is "
 			 "polymorphic and requires a defined input/output "
 			 "procedure", n->sym->name, dt->namelist->name, loc);
-	      return 1;
+	      return false;
 	    }
     
 	  if ((n->sym->ts.type == BT_DERIVED)
@@ -3310,7 +3310,7 @@ gfc_resolve_dt (gfc_dt *dt, locus *loc)
 				   "namelist %qs at %L with ALLOCATABLE "
 				   "or POINTER components", n->sym->name,
 				   dt->namelist->name, loc))
-		return 1;
+		return false;
     
 	      if (!t)
 		{
@@ -3318,7 +3318,7 @@ gfc_resolve_dt (gfc_dt *dt, locus *loc)
 			     "ALLOCATABLE or POINTER components and thus requires "
 			     "a defined input/output procedure", n->sym->name,
 			     dt->namelist->name, loc);
-		  return 1;
+		  return false;
 		}
 	    }
 	}

@@ -3810,7 +3810,9 @@ site.exp: ./config.status Makefile
 	@echo "set CFLAGS \"\"" >> ./site.tmp
 	@echo "set CXXFLAGS \"\"" >> ./site.tmp
 	@echo "set HOSTCC \"$(CC)\"" >> ./site.tmp
+	@echo "set HOSTCXX \"$(CXX)\"" >> ./site.tmp
 	@echo "set HOSTCFLAGS \"$(CFLAGS)\"" >> ./site.tmp
+	@echo "set HOSTCXXFLAGS \"$(CXXFLAGS)\"" >> ./site.tmp
 # TEST_ALWAYS_FLAGS are flags that should be passed to every compilation.
 # They are passed first to allow individual tests to override them.
 	@echo "set TEST_ALWAYS_FLAGS \"$(SYSROOT_CFLAGS_FOR_TARGET)\"" >> ./site.tmp

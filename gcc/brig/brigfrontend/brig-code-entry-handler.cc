@@ -486,8 +486,10 @@ brig_code_entry_handler::build_address_operand
 	addr = const_offset_2;
       else
 	addr = build2 (POINTER_PLUS_EXPR, ptr_type_node,
-		       addr, convert (size_type_node, const_offset_2));
-
+		       /* Addr can be a constant offset in case this is
+			  a private array access.  */
+		       convert (ptr_type_node, addr),
+		       convert (size_type_node, const_offset_2));
     }
 
   gcc_assert (addr != NULL_TREE);

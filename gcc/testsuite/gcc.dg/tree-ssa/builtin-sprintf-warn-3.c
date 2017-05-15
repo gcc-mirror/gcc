@@ -57,10 +57,10 @@ void test_sprintf_chk_string (const char *s, const char *t)
 {
 #define x x ()
 
-  T (1, "%s", x ? "" : "1");       /* { dg-warning "nul past the end" } */
-  T (1, "%s", x ? "1" : "");       /* { dg-warning "nul past the end" } */
-  T (1, "%s", x ? s : "1");        /* { dg-warning "nul past the end" } */
-  T (1, "%s", x ? "1" : s);        /* { dg-warning "nul past the end" } */
+  T (1, "%-s", x ? "" : "1");       /* { dg-warning "nul past the end" } */
+  T (1, "%-s", x ? "1" : "");       /* { dg-warning "nul past the end" } */
+  T (1, "%-s", x ? s : "1");        /* { dg-warning "nul past the end" } */
+  T (1, "%-s", x ? "1" : s);        /* { dg-warning "nul past the end" } */
 
   /* When neither string is known no warning should be issued at level 1
      since their lenghts are assumed to be zero.  */

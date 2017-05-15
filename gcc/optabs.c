@@ -6962,6 +6962,7 @@ maybe_legitimize_operand (enum insn_code icode, unsigned int opno,
 	return true;
 
       op->value = gen_reg_rtx (mode);
+      op->target = 0;
       break;
 
     case EXPAND_INPUT:

@@ -1,3 +1,121 @@
+2017-05-15  Pierre-Marie de Rodat  <derodat@adacore.com>
+
+	* gnat.dg/specs/pack13.ads: New test.
+
+2017-05-14  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/77671
+	* gcc.dg/tree-ssa/builtin-sprintf-7.c: New test.
+	* gcc.dg/tree-ssa/builtin-sprintf-8.c: New test.
+	* gcc.dg/tree-ssa/builtin-sprintf-warn-1.c: Adjust.
+	* gcc.dg/tree-ssa/builtin-sprintf-warn-2.c: Adjust.
+	* gcc.dg/tree-ssa/builtin-sprintf-warn-3.c: Adjust.
+
+2017-05-14  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/80669
+	* gcc.dg/builtin-stpncpy.c: New test.
+
+2017-05-14  Daniel Santos  <daniel.santos@pobox.com>
+
+	* gcc.target/x86_64/abi/ms-sysv/do-test.S: New file.
+	* gcc.target/x86_64/abi/ms-sysv/gen.cc: Likewise.
+	* gcc.target/x86_64/abi/ms-sysv/ms-sysv.c: Likewise.
+	* gcc.target/x86_64/abi/ms-sysv/ms-sysv.exp: Likewise.
+
+2017-05-14  Julia Koval  <julia.koval@intel.com>
+
+	* gcc.target/i386/xgetsetbv.c: New test.
+
+2017-05-14  Nicolas Koenig  <koenigni@student.ethz.ch>
+
+	PR fortran/80442
+	* gfortran.dg/impl_do_var_data.f90: New Test
+
+2017-05-13  Pekka Jääskeläinen  <pekka.jaaskelainen@parmance.com>
+
+	* brig.dg/test/gimple/priv-array-offset-access.hsail:
+	A regression test for a private array access case which caused
+	an assert.
+
+2017-05-12  Martin Sebor  <msebor@redhat.com>
+
+	PR testsuite/80643
+	* gfortran.dg/mvbits_7.f90: Prune diagnostic output incidental
+	to the purpose of the test.
+
+2017-05-12  Steven Munroe  <munroesj@gcc.gnu.org>
+
+	* gcc.target/powerpc/bmi-andn-1.c: New file
+	* gcc.target/powerpc/bmi-andn-2.c: New file.
+	* gcc.target/powerpc/bmi-bextr-1.c: New file.
+	* gcc.target/powerpc/bmi-bextr-2.c: New file.
+	* gcc.target/powerpc/bmi-bextr-4.c: New file.
+	* gcc.target/powerpc/bmi-bextr-5.c: New file.
+	* gcc.target/powerpc/bmi-blsi-1.c: New file.
+	* gcc.target/powerpc/bmi-blsi-2.c: New file.
+	* gcc.target/powerpc/bmi-blsmsk-1.c: new file.
+	* gcc.target/powerpc/bmi-blsmsk-2.c: New file.
+	* gcc.target/powerpc/bmi-blsr-1.c: New file.
+	* gcc.target/powerpc/bmi-blsr-2.c: New File.
+	* gcc.target/powerpc/bmi-check.h: New File.
+	* gcc.target/powerpc/bmi-tzcnt-1.c: new file.
+	* gcc.target/powerpc/bmi-tzcnt-2.c: New file.
+	* gcc.target/powerpc/bmi2-bzhi32-1.c: New file.
+	* gcc.target/powerpc/bmi2-bzhi64-1.c: New file.
+	* gcc.target/powerpc/bmi2-bzhi64-1a.c: New file.
+	* gcc.target/powerpc/bmi2-check.h: New file.
+	* gcc.target/powerpc/bmi2-mulx32-1.c: New file.
+	* gcc.target/powerpc/bmi2-mulx32-2.c: New file.
+	* gcc.target/powerpc/bmi2-mulx64-1.c: New file.
+	* gcc.target/powerpc/bmi2-mulx64-2.c: New file.
+	* gcc.target/powerpc/bmi2-pdep32-1.c: New file.
+	* gcc.target/powerpc/bmi2-pdep64-1.c: New file.
+	* gcc.target/powerpc/bmi2-pext32-1.c: New File.
+	* gcc.target/powerpc/bmi2-pext64-1.c: New file.
+	* gcc.target/powerpc/bmi2-pext64-1a.c: New File.
+
+2017-05-12  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/60430
+	* g++.dg/cpp0x/pr60430.C: New.
+
+2017-05-12  Jeff Law  <law@redhat.com>
+
+	* g++.dg/tree-ssa/ssa-dom-thread-4.c: Update expected output.
+
+2017-05-12  Peter Bergner  <bergner@vnet.ibm.com>
+
+	PR middle-end/80707
+	* g++.dg/pr80707.C: New test.
+
+2017-05-12  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	* gcc.target/powerpc/fold-vec-div-float.c: New.
+	* gcc.target/powerpc/fold-vec-div-floatdouble.c: New.
+	* gcc.target/powerpc/fold-vec-div-longlong.c: New.
+
+2017-05-12  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	* gcc.target/powerpc/fold-vec-logical-ands-char.c: New.
+	* gcc.target/powerpc/fold-vec-logical-ands-int.c: New.
+	* gcc.target/powerpc/fold-vec-logical-ands-longlong.c: New.
+	* gcc.target/powerpc/fold-vec-logical-ands-short.c: New.
+	* gcc.target/powerpc/fold-vec-logical-ors-char.c: New.
+	* gcc.target/powerpc/fold-vec-logical-ors-int.c: New.
+	* gcc.target/powerpc/fold-vec-logical-ors-longlong.c: New.
+	* gcc.target/powerpc/fold-vec-logical-ors-short.c: New.
+	* gcc.target/powerpc/fold-vec-logical-other-char.c: New.
+	* gcc.target/powerpc/fold-vec-logical-other-int.c: New.
+	* gcc.target/powerpc/fold-vec-logical-other-longlong.c: New.
+	* gcc.target/powerpc/fold-vec-logical-other-short.c: New.
+
+2017-05-12  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/49604
+	* g++.dg/cpp0x/forw_enum14.C: New.
+	* g++.dg/cpp0x/forw_enum15.C: Likewise.
+
 2017-05-12  Richard Biener  <rguenther@suse.de>
 
 	* g++.dg/tree-ssa/ssa-dse-2.C: Adjust.

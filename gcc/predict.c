@@ -2396,7 +2396,6 @@ tree_predict_by_opcode (basic_block bb)
   tree type;
   tree val;
   enum tree_code cmp;
-  bitmap visited;
   edge_iterator ei;
   enum br_predictor predictor;
 
@@ -2409,10 +2408,8 @@ tree_predict_by_opcode (basic_block bb)
   op1 = gimple_cond_rhs (stmt);
   cmp = gimple_cond_code (stmt);
   type = TREE_TYPE (op0);
-  visited = BITMAP_ALLOC (NULL);
-  val = expr_expected_value_1 (boolean_type_node, op0, cmp, op1, visited,
+  val = expr_expected_value_1 (boolean_type_node, op0, cmp, op1, auto_bitmap (),
 			       &predictor);
-  BITMAP_FREE (visited);
   if (val && TREE_CODE (val) == INTEGER_CST)
     {
       if (predictor == PRED_BUILTIN_EXPECT)
@@ -2917,9 +2914,7 @@ static void
 predict_paths_leading_to (basic_block bb, enum br_predictor pred,
 			  enum prediction taken, struct loop *in_loop)
 {
-  bitmap visited = BITMAP_ALLOC (NULL);
-  predict_paths_for_bb (bb, bb, pred, taken, visited, in_loop);
-  BITMAP_FREE (visited);
+  predict_paths_for_bb (bb, bb, pred, taken, auto_bitmap (), in_loop);
 }
 
 /* Like predict_paths_leading_to but take edge instead of basic block.  */
@@ -2943,9 +2938,7 @@ predict_paths_leading_to_edge (edge e, enum br_predictor pred,
       }
   if (!has_nonloop_edge)
     {
-      bitmap visited = BITMAP_ALLOC (NULL);
-      predict_paths_for_bb (bb, bb, pred, taken, visited, in_loop);
-      BITMAP_FREE (visited);
+      predict_paths_for_bb (bb, bb, pred, taken, auto_bitmap (), in_loop);
     }
   else
     predict_edge_def (e, pred, taken);
@@ -3119,7 +3112,7 @@ estimate_loops_at_level (struct loop *first_loop)
       edge e;
       basic_block *bbs;
       unsigned i;
-      bitmap tovisit = BITMAP_ALLOC (NULL);
+      auto_bitmap tovisit;
 
       estimate_loops_at_level (loop->inner);
 
@@ -3132,7 +3125,6 @@ estimate_loops_at_level (struct loop *first_loop)
 	bitmap_set_bit (tovisit, bbs[i]->index);
       free (bbs);
       propagate_freq (loop->header, tovisit);
-      BITMAP_FREE (tovisit);
     }
 }
 
@@ -3141,7 +3133,7 @@ estimate_loops_at_level (struct loop *first_loop)
 static void
 estimate_loops (void)
 {
-  bitmap tovisit = BITMAP_ALLOC (NULL);
+  auto_bitmap tovisit;
   basic_block bb;
 
   /* Start by estimating the frequencies in the loops.  */
@@ -3154,7 +3146,6 @@ estimate_loops (void)
       bitmap_set_bit (tovisit, bb->index);
     }
   propagate_freq (ENTRY_BLOCK_PTR_FOR_FN (cfun), tovisit);
-  BITMAP_FREE (tovisit);
 }
 
 /* Drop the profile for NODE to guessed, and update its frequency based on

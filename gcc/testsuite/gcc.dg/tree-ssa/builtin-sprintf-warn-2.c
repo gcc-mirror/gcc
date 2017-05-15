@@ -94,8 +94,8 @@ struct Arrays {
 void test_s_nonconst (int w, int p, const char *s, const wchar_t *ws,
 		      struct Arrays *a)
 {
-  T (0, "%s",   s);             /* { dg-warning "into a region" "sprintf transformed into strcpy" { xfail *-*-* } } */
-  T (1, "%s",   s);             /* { dg-warning "nul past the end" "sprintf transformed into strcpy" { xfail *-*-* } } */
+  T (0, "%s",   s);             /* { dg-warning "into a region" } */
+  T (1, "%s",   s);             /* { dg-warning "nul past the end" } */
   T (1, "%1s",  s);             /* { dg-warning "writing a terminating nul" } */
   T (1, "%.0s", s);
   T (1, "%.1s", s);             /* { dg-warning "may write a terminating nul" } */
@@ -112,30 +112,27 @@ void test_s_nonconst (int w, int p, const char *s, const wchar_t *ws,
   T (1, "%.1ls",  ws);          /* { dg-warning "may write a terminating nul" } */
   T (1, "%ls",    ws);          /* { dg-warning "may write a terminating nul" } */
 
-  /* Verify that the size of the array is used in lieu of its length.
-     The minus sign disables GCC's sprintf to strcpy transformation.
-     In the case below, the length of s->a1 can be at most zero, so
-     the call should not be diagnosed.  */
-  T (1, "%-s", a->a1);
+  /* Verify that the size of the array is used in lieu of its length.  */
+  T (1, "%s", a->a1);
 
   /* In the following test, since the length of the strings isn't known,
      their type (the array) is used to bound the maximum length to 1,
-     which means the "%-s" directive would not overflow the buffer,
+     which means the "%s" directive would not overflow the buffer,
      but it would leave no room for the terminating nul.  */
-  T (1, "%-s", a->a2);          /* { dg-warning "may write a terminating nul" } */
+  T (1, "%s", a->a2);           /* { dg-warning "may write a terminating nul" } */
 
   /* Unlike in the test above, since the length of the string is bounded
-     by the array type to at most 2, the "^-s" directive is diagnosed firts,
+     by the array type to at most 2, the "%s" directive is diagnosed firts,
      preventing the diagnostic about the terminatinb nul.  */
-  T (1, "%-s", a->a3);          /* { dg-warning "directive writing up to 2 bytes" } */
+  T (1, "%s", a->a3);           /* { dg-warning "directive writing up to 2 bytes" } */
 
   /* The length of a zero length array and flexible array member is
      unknown and at leve 2 assumed to be at least 1.  */
-  T (1, "%-s", a->a0);          /* { dg-warning "may write a terminating nul" } */
-  T (1, "%-s", a->ax);          /* { dg-warning "may write a terminating nul" } */
+  T (1, "%s", a->a0);           /* { dg-warning "may write a terminating nul" } */
+  T (1, "%s", a->ax);           /* { dg-warning "may write a terminating nul" } */
 
-  T (2, "%-s", a->a0);
-  T (2, "%-s", a->ax);
+  T (2, "%s", a->a0);
+  T (2, "%s", a->ax);
 }
 
   /* Exercise buffer overflow detection with non-const integer arguments.  */

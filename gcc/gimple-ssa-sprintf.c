@@ -526,7 +526,10 @@ get_format_string (tree format, location_t *ploc)
   if (TREE_CODE (format) != STRING_CST)
     return NULL;
 
-  if (TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (format))) != char_type_node)
+  tree type = TREE_TYPE (format);
+
+  if (GET_MODE_CLASS (TYPE_MODE (TREE_TYPE (type))) != MODE_INT
+      || GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (type))) != 1)
     {
       /* Wide format string.  */
       return NULL;
@@ -3511,6 +3514,60 @@ get_destination_size (tree dest)
   return HOST_WIDE_INT_M1U;
 }
 
+/* Return true if the call described by INFO with result RES safe to
+   optimize (i.e., no undefined behavior), and set RETVAL to the range
+   of its return values.  */
+
+static bool
+is_call_safe (const pass_sprintf_length::call_info &info,
+	      const format_result &res, bool under4k,
+	      unsigned HOST_WIDE_INT retval[2])
+{
+  if (under4k && !res.under4k)
+    return false;
+
+  /* The minimum return value.  */
+  retval[0] = res.range.min;
+
+  /* The maximum return value is in most cases bounded by RES.RANGE.MAX
+     but in cases involving multibyte characters could be as large as
+     RES.RANGE.UNLIKELY.  */
+  retval[1]
+    = res.range.unlikely < res.range.max ? res.range.max : res.range.unlikely;
+
+  /* Adjust the number of bytes which includes the terminating nul
+     to reflect the return value of the function which does not.
+     Because the valid range of the function is [INT_MIN, INT_MAX],
+     a valid range before the adjustment below is [0, INT_MAX + 1]
+     (the functions only return negative values on error or undefined
+     behavior).  */
+  if (retval[0] <= target_int_max () + 1)
+    --retval[0];
+  if (retval[1] <= target_int_max () + 1)
+    --retval[1];
+
+  /* Avoid the return value optimization when the behavior of the call
+     is undefined either because any directive may have produced 4K or
+     more of output, or the return value exceeds INT_MAX, or because
+     the output overflows the destination object (but leave it enabled
+     when the function is bounded because then the behavior is well-
+     defined).  */
+  if (retval[0] == retval[1]
+      && (info.bounded || retval[0] < info.objsize)
+      && retval[0] <= target_int_max ())
+    return true;
+
+  if ((info.bounded || retval[1] < info.objsize)
+      && (retval[0] < target_int_max ()
+	  && retval[1] < target_int_max ()))
+    return true;
+
+  if (!under4k && (info.bounded || retval[0] < info.objsize))
+    return true;
+
+  return false;
+}
+
 /* Given a suitable result RES of a call to a formatted output function
    described by INFO, substitute the result for the return value of
    the call.  The result is suitable if the number of bytes it represents
@@ -3529,42 +3586,18 @@ try_substitute_return_value (gimple_stmt_iterator *gsi,
   /* Set to true when the entire call has been removed.  */
   bool removed = false;
 
-  /* The minimum return value.  */
-  unsigned HOST_WIDE_INT minretval = res.range.min;
+  /* The minimum and maximum return value.  */
+  unsigned HOST_WIDE_INT retval[2];
+  bool safe = is_call_safe (info, res, true, retval);
 
-  /* The maximum return value is in most cases bounded by RES.RANGE.MAX
-     but in cases involving multibyte characters could be as large as
-     RES.RANGE.UNLIKELY.  */
-  unsigned HOST_WIDE_INT maxretval
-    = res.range.unlikely < res.range.max ? res.range.max : res.range.unlikely;
-
-  /* Adjust the number of bytes which includes the terminating nul
-     to reflect the return value of the function which does not.
-     Because the valid range of the function is [INT_MIN, INT_MAX],
-     a valid range before the adjustment below is [0, INT_MAX + 1]
-     (the functions only return negative values on error or undefined
-     behavior).  */
-  if (minretval <= target_int_max () + 1)
-    --minretval;
-  if (maxretval <= target_int_max () + 1)
-    --maxretval;
-
-  /* Avoid the return value optimization when the behavior of the call
-     is undefined either because any directive may have produced 4K or
-     more of output, or the return value exceeds INT_MAX, or because
-     the output overflows the destination object (but leave it enabled
-     when the function is bounded because then the behavior is well-
-     defined).  */
-  if (res.under4k
-      && minretval == maxretval
-      && (info.bounded || minretval < info.objsize)
-      && minretval <= target_int_max ()
+  if (safe
+      && retval[0] == retval[1]
       /* Not prepared to handle possibly throwing calls here; they shouldn't
 	 appear in non-artificial testcases, except when the __*_chk routines
 	 are badly declared.  */
       && !stmt_ends_bb_p (info.callstmt))
     {
-      tree cst = build_int_cst (integer_type_node, minretval);
+      tree cst = build_int_cst (integer_type_node, retval[0]);
 
       if (lhs == NULL_TREE
 	  && info.nowrite)
@@ -3612,18 +3645,18 @@ try_substitute_return_value (gimple_stmt_iterator *gsi,
     {
       bool setrange = false;
 
-      if ((info.bounded || maxretval < info.objsize)
-	  && res.under4k
-	  && (minretval < target_int_max ()
-	      && maxretval < target_int_max ()))
+      if (safe
+	  && (info.bounded || retval[1] < info.objsize)
+	  && (retval[0] < target_int_max ()
+	      && retval[1] < target_int_max ()))
 	{
 	  /* If the result is in a valid range bounded by the size of
 	     the destination set it so that it can be used for subsequent
 	     optimizations.  */
 	  int prec = TYPE_PRECISION (integer_type_node);
 
-	  wide_int min = wi::shwi (minretval, prec);
-	  wide_int max = wi::shwi (maxretval, prec);
+	  wide_int min = wi::shwi (retval[0], prec);
+	  wide_int max = wi::shwi (retval[1], prec);
 	  set_range_info (lhs, VR_RANGE, min, max);
 
 	  setrange = true;
@@ -3632,21 +3665,21 @@ try_substitute_return_value (gimple_stmt_iterator *gsi,
       if (dump_file)
 	{
 	  const char *inbounds
-	    = (minretval < info.objsize
-	       ? (maxretval < info.objsize
+	    = (retval[0] < info.objsize
+	       ? (retval[1] < info.objsize
 		  ? "in" : "potentially out-of")
 	       : "out-of");
 
 	  const char *what = setrange ? "Setting" : "Discarding";
-	  if (minretval != maxretval)
+	  if (retval[0] != retval[1])
 	    fprintf (dump_file,
 		     "  %s %s-bounds return value range [%llu, %llu].\n",
 		     what, inbounds,
-		     (unsigned long long)minretval,
-		     (unsigned long long)maxretval);
+		     (unsigned long long)retval[0],
+		     (unsigned long long)retval[1]);
 	  else
 	    fprintf (dump_file, "  %s %s-bounds return value %llu.\n",
-		     what, inbounds, (unsigned long long)minretval);
+		     what, inbounds, (unsigned long long)retval[0]);
 	}
     }
 
@@ -3654,6 +3687,34 @@ try_substitute_return_value (gimple_stmt_iterator *gsi,
     fputc ('\n', dump_file);
 
   return removed;
+}
+
+/* Try to simplify a s{,n}printf call described by INFO with result
+   RES by replacing it with a simpler and presumably more efficient
+   call (such as strcpy).  */
+
+static bool
+try_simplify_call (gimple_stmt_iterator *gsi,
+		   const pass_sprintf_length::call_info &info,
+		   const format_result &res)
+{
+  unsigned HOST_WIDE_INT dummy[2];
+  if (!is_call_safe (info, res, info.retval_used (), dummy))
+    return false;
+
+  switch (info.fncode)
+    {
+    case BUILT_IN_SNPRINTF:
+      return gimple_fold_builtin_snprintf (gsi);
+
+    case BUILT_IN_SPRINTF:
+      return gimple_fold_builtin_sprintf (gsi);
+
+    default:
+      ;
+    }
+
+  return false;
 }
 
 /* Determine if a GIMPLE CALL is to one of the sprintf-like built-in
@@ -3907,13 +3968,23 @@ pass_sprintf_length::handle_gimple_call (gimple_stmt_iterator *gsi)
      attempt to substitute the computed result for the return value of
      the call.  Avoid this optimization when -frounding-math is in effect
      and the format string contains a floating point directive.  */
-  if (success
-      && optimize > 0
-      && flag_printf_return_value
-      && (!flag_rounding_math || !res.floating))
-    return try_substitute_return_value (gsi, info, res);
+  bool call_removed = false;
+  if (success && optimize > 0)
+    {
+      /* Save a copy of the iterator pointing at the call.  The iterator
+	 may change to point past the call in try_substitute_return_value
+	 but the original value is needed in try_simplify_call.  */
+      gimple_stmt_iterator gsi_call = *gsi;
 
-  return false;
+      if (flag_printf_return_value
+	  && (!flag_rounding_math || !res.floating))
+	call_removed = try_substitute_return_value (gsi, info, res);
+
+      if (!call_removed)
+	try_simplify_call (&gsi_call, info, res);
+    }
+
+  return call_removed;
 }
 
 /* Execute the pass for function FUN.  */

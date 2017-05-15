@@ -45,9 +45,9 @@ along with GCC; see the file COPYING3.  If not see
    (3) If an insn of form (2) can usefully set the flags, there is
        another pattern of the form
 
-	[(set (reg) (operation)
-	 (set (reg:CCM) (compare:CCM (operation) (immediate)))]
-
+	[(set (reg:CCM) (compare:CCM (operation) (immediate)))
+	 (set (reg) (operation)]
+	 
        The mode CCM will be chosen as if by SELECT_CC_MODE.
 
    Note that unlike NOTICE_UPDATE_CC, we do not handle memory operands.
@@ -526,6 +526,7 @@ maybe_select_cc_mode (struct comparison *cmp, rtx a ATTRIBUTE_UNUSED,
 static rtx
 equivalent_reg_at_start (rtx reg, rtx_insn *end, rtx_insn *start)
 {
+  machine_mode orig_mode = GET_MODE (reg);
   rtx_insn *bb_head = BB_HEAD (BLOCK_FOR_INSN (end));
 
   for (rtx_insn *insn = PREV_INSN (end);
@@ -572,6 +573,9 @@ equivalent_reg_at_start (rtx reg, rtx_insn *end, rtx_insn *start)
 	return NULL_RTX;
     }
 
+  if (GET_MODE (reg) != orig_mode)
+    return NULL_RTX;
+
   return reg;
 }
 
@@ -582,7 +586,7 @@ equivalent_reg_at_start (rtx reg, rtx_insn *end, rtx_insn *start)
 static bool
 try_eliminate_compare (struct comparison *cmp)
 {
-  rtx x, flags, in_a, in_b, cmp_src;
+  rtx flags, in_a, in_b, cmp_src;
 
   /* We must have found an interesting "clobber" preceding the compare.  */
   if (cmp->prev_clobber == NULL)
@@ -628,7 +632,8 @@ try_eliminate_compare (struct comparison *cmp)
      Validate that PREV_CLOBBER itself does in fact refer to IN_A.  Do
      recall that we've already validated the shape of PREV_CLOBBER.  */
   rtx_insn *insn = cmp->prev_clobber;
-  x = XVECEXP (PATTERN (insn), 0, 0);
+
+  rtx x = XVECEXP (PATTERN (insn), 0, 0);
   if (rtx_equal_p (SET_DEST (x), in_a))
     cmp_src = SET_SRC (x);
 
@@ -666,13 +671,24 @@ try_eliminate_compare (struct comparison *cmp)
     flags = gen_rtx_REG (cmp->orig_mode, targetm.flags_regnum);
 
   /* Generate a new comparison for installation in the setter.  */
-  x = copy_rtx (cmp_src);
-  x = gen_rtx_COMPARE (GET_MODE (flags), x, in_b);
-  x = gen_rtx_SET (flags, x);
+  rtx y = copy_rtx (cmp_src);
+  y = gen_rtx_COMPARE (GET_MODE (flags), y, in_b);
+  y = gen_rtx_SET (flags, y);
 
+  /* Canonicalize instruction to:
+     [(set (reg:CCM) (compare:CCM (operation) (immediate)))
+      (set (reg) (operation)]  */
+
+  rtvec v = rtvec_alloc (2);
+  RTVEC_ELT (v, 0) = y;
+  RTVEC_ELT (v, 1) = x;
+  
+  rtx pat = gen_rtx_PARALLEL (VOIDmode, v);
+  
   /* Succeed if the new instruction is valid.  Note that we may have started
      a change group within maybe_select_cc_mode, therefore we must continue. */
-  validate_change (insn, &XVECEXP (PATTERN (insn), 0, 1), x, true);
+  validate_change (insn, &PATTERN (insn), pat, true);
+  
   if (!apply_change_group ())
     return false;
 

@@ -120,8 +120,7 @@ along with GCC; see the file COPYING3.  If not see
 #undef LIB_SPEC
 #define LIB_SPEC NETBSD_LIB_SPEC
 
-/* Provide a LIBGCC_SPEC appropriate for NetBSD.  We also want to exclude
-   libgcc with -symbolic.  */
+/* Provide a LIBGCC_SPEC appropriate for NetBSD.  */
 
 #ifdef NETBSD_NATIVE
 #define NETBSD_LIBGCC_SPEC	\
@@ -133,7 +132,7 @@ along with GCC; see the file COPYING3.  If not see
      %{p: -lgcc_p}		\
      %{pg: -lgcc_p}}"
 #else
-#define NETBSD_LIBGCC_SPEC "%{!shared:%{!symbolic: -lgcc}}"
+#define NETBSD_LIBGCC_SPEC "-lgcc"
 #endif
 
 #undef LIBGCC_SPEC
