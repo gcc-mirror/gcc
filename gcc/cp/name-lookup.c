@@ -2668,6 +2668,7 @@ merge_global_decl (tree ctx, tree decl)
     old = decl;
   else
     {
+      // FIXME: this comment is not correct.
       /* Namespaces are always exported, and everything's exported
 	 from the global module.  Thus this namespace must be
 	 consistent with the global module, even if it didn't

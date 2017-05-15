@@ -18,6 +18,19 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+/* MODULE_STAMP is a #define passed in from the Make file.  When
+   present, it is used for version stamping the binary files, and
+   indicates experimentalness of the module system.
+
+   Comments in this file have a non-negligible chance of being wrong
+   or at least inaccurate.  Due to (a) my misunderstanding, (b)
+   ambiguities that I have interpretted differently to original intent
+   (c) changes in the specification, (d) my poor wording.  */
+
+#ifndef MODULE_STAMP
+#error "Stahp! What are you doing? This is not ready yet."
+#endif
+
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -169,7 +182,7 @@ static unsigned do_module_import (location_t, tree, import_kind,
 				  unsigned crc, FILE * = NULL);
 
 /* Byte serializer base.  */
-class cpm_serial
+class GTY((skip)) cpm_serial
 {
 protected:
   FILE *stream;
@@ -259,7 +272,7 @@ cpm_serial::crc_buffer (const char *ptr, size_t l)
 }
 
 /* Byte stream writer.  */
-class cpm_writer : public cpm_serial
+class GTY((skip)) cpm_writer : public cpm_serial
 {
   /* Instrumentation.  */
   unsigned spans[2];
@@ -310,7 +323,7 @@ public:
 };
 
 /* Byte stream reader.  */
-class cpm_reader : public cpm_serial
+class GTY((skip)) cpm_reader : public cpm_serial
 {
 public:
   cpm_reader (FILE *s, const char *n)
@@ -797,7 +810,8 @@ cpm_reader::fill (size_t want)
 }
 
 /* Module cpm_stream base.  */
-class cpm_stream
+class GTY((user)) cpm_stream
+// GTY((skip)) fails to work
 {
 public:
   /* Record tags.  */
@@ -884,7 +898,7 @@ cpm_stream::version ()
 }
 
 /* cpm_stream cpms_out.  */
-class cpms_out : public cpm_stream
+class GTY((user)) cpms_out : public cpm_stream
 {
   cpm_writer w;
   hash_map<tree,unsigned> map; /* trees to ids  */
@@ -939,7 +953,7 @@ cpms_out::instrument (FILE *d)
 }
 
 /* Cpm_Stream in.  */
-class cpms_in : public cpm_stream
+class GTY((user)) cpms_in : public cpm_stream
 {
   cpm_reader r;
 
@@ -1553,23 +1567,44 @@ cpms_in::tag_definition (FILE *d)
   switch (TREE_CODE (decl))
     {
     default:
+      // FIXME: read other things
       return false;
 
     case FUNCTION_DECL:
       {
-	DECL_ARGUMENTS (decl) = tree_node (d);
-	DECL_RESULT (decl) = tree_node (d);
-	DECL_INITIAL (decl) = tree_node (d);
-	DECL_SAVED_TREE (decl) = tree_node (d);
-	comdat_linkage (decl);
-	note_vague_linkage_fn (decl);
-	current_function_decl = decl;
-	allocate_struct_function (decl, false);
-	cfun->language = ggc_cleared_alloc<language_function> ();
-	cfun->language->base.x_stmt_tree.stmts_are_full_exprs_p = 1;
-	set_cfun (NULL);
-	current_function_decl = NULL_TREE;
-	cgraph_node::finalize_function (decl, false);
+	tree args = tree_node (d);
+	tree result = tree_node (d);
+	tree initial = tree_node (d);
+	tree saved = tree_node (d);
+
+	if (r.error ())
+	  break;
+	unsigned mod = MAYBE_DECL_MODULE_INDEX (decl);
+	if (mod == GLOBAL_MODULE_INDEX
+	    && DECL_SAVED_TREE (decl))
+	  ; // FIXME check same
+	else if (mod != mod_ix)
+	  {
+	    error ("unexpected definition of %q#d", decl);
+	    r.bad ();
+	  }
+	else
+	  {
+	    DECL_ARGUMENTS (decl) = args;
+	    DECL_RESULT (decl) = result;
+	    DECL_INITIAL (decl) = initial;
+	    DECL_SAVED_TREE (decl) = saved;
+
+	    comdat_linkage (decl);
+	    note_vague_linkage_fn (decl);
+	    current_function_decl = decl;
+	    allocate_struct_function (decl, false);
+	    cfun->language = ggc_cleared_alloc<language_function> ();
+	    cfun->language->base.x_stmt_tree.stmts_are_full_exprs_p = 1;
+	    set_cfun (NULL);
+	    current_function_decl = NULL_TREE;
+	    cgraph_node::finalize_function (decl, false);
+	  }
 	break;
       }
     }
@@ -3302,9 +3337,6 @@ write_module (FILE *stream, const char *fname, tree name)
 
   /* Write decls.  */
   out.bindings (d, global_namespace);
-
-  // FIXME:Write defns.  Probably fine just to do it during the first
-  // namespace walk.
 
   out.tag_eof ();
   if (int e = out.done ())
