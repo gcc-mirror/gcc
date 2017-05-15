@@ -1,3 +1,9 @@
+2017-05-15  Jeff Law  <law@redhat.com>
+
+	* config/tilegx/tilegx.c (tilegx_expand_unaligned_load): Add
+	missing argument to extract_bit_field call.
+	* config/tilepro/tilepro.c (tilepro_expand_unaligned_load): Likewise.
+
 2017-05-15  Martin Liska  <mliska@suse.cz>
 
 	PR driver/31468
