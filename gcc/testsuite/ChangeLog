@@ -1,3 +1,7 @@
+2017-05-15  Jeff Law  <law@redhat.com>
+
+	* gcc.target/mips/reorgbug-1.c: New test.
+
 2017-05-15  Pierre-Marie de Rodat  <derodat@adacore.com>
 
 	* gnat.dg/specs/pack13.ads: New test.

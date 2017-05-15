@@ -1,5 +1,8 @@
 2017-05-15  Jeff Law  <law@redhat.com>
 
+	* reorg.c (relax_delay_slots): Create a new variable to hold
+	the temporary target rather than clobbering TARGET_LABEL.
+
 	* config/tilegx/tilegx.c (tilegx_expand_unaligned_load): Add
 	missing argument to extract_bit_field call.
 	* config/tilepro/tilepro.c (tilepro_expand_unaligned_load): Likewise.
