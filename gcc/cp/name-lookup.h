@@ -340,7 +340,7 @@ extern tree pushdecl (tree, bool is_friend = false);
 extern tree pushdecl_top_level (tree, bool is_friend = false);
 extern tree pushdecl_top_level_and_finish (tree, tree);
 extern tree pushtag (tree, tree, tag_scope);
-extern bool push_namespace (tree);
+extern int push_namespace (tree, bool make_inline = false);
 extern void pop_namespace (void);
 extern void push_nested_namespace (tree);
 extern void pop_nested_namespace (tree);

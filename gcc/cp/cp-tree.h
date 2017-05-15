@@ -333,6 +333,7 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
       FOLD_EXPR_MODOP_P (*_FOLD_EXPR)
       IF_STMT_CONSTEXPR_P (IF_STMT)
       TEMPLATE_TYPE_PARM_FOR_CLASS (TEMPLATE_TYPE_PARM)
+      DECL_NAMESPACE_INLINE_P (in NAMESPACE_DECL)
    1: IDENTIFIER_VIRTUAL_P (in IDENTIFIER_NODE)
       TI_PENDING_TEMPLATE_FLAG.
       TEMPLATE_PARMS_FOR_INLINE.
@@ -2915,6 +2916,10 @@ struct GTY(()) lang_decl {
 /* 1 iff NODE is function-local, but for types.  */
 #define LOCAL_CLASS_P(NODE)				\
   (decl_function_context (TYPE_MAIN_DECL (NODE)) != NULL_TREE)
+
+/* Whether the namepace is an inline namespace.  */
+#define DECL_NAMESPACE_INLINE_P(NODE) \
+  TREE_LANG_FLAG_0 (NAMESPACE_DECL_CHECK (NODE))
 
 /* For a NAMESPACE_DECL: the list of using namespace directives
    The PURPOSE is the used namespace, the value is the namespace

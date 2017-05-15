@@ -1,3 +1,13 @@
+2017-05-15  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/79369
+	* cp-tree.h (DECL_NAMESPACE_INLINE_P): New.
+	* name-lookup.h (push_namespace): Return int, add make_inline arg.
+	* name-lookup.c (push_namespace): Deal with inline directly.
+	Return pushed count.
+	* parser.c (cp_parser_namespace_definition): Adjust for
+	push_namespace change.
+
 2017-05-11  Nathan Sidwell  <nathan@acm.org>
 
 	* cp-lang.c (get_global_decls, cxx_pushdecl, LANG_HOOK_GETDECLS,
