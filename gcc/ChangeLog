@@ -1,3 +1,25 @@
+2017-05-15  Renlin Li  <renlin.li@arm.com>
+
+	* config/aarch64/aarch64-protos.h (aarch64_expand_call): Declare.
+	* config/aarch64/aarch64.c (aarch64_expand_call): Define.
+	* config/aarch64/constraints.md (Usf): Add long call check.
+	* config/aarch64/aarch64.md (call): Use aarch64_expand_call.
+	(call_value): Likewise.
+	(sibcall): Likewise.
+	(sibcall_value): Likewise.
+	(call_insn): New.
+	(call_value_insn): New.
+	(sibcall_insn): Update rtx pattern.
+	(sibcall_value_insn): Likewise.
+	(call_internal): Remove.
+	(call_value_internal): Likewise.
+	(sibcall_internal): Likewise.
+	(sibcall_value_internal): Likewise.
+	(call_reg): Likewise.
+	(call_symbol): Likewise.
+	(call_value_reg): Likewise.
+	(call_value_symbol): Likewise.
+
 2017-05-14  Krister Walfridsson  <krister.walfridsson@gmail.com>
 
 	PR target/80600
