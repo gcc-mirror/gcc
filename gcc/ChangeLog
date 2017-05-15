@@ -1,5 +1,6 @@
 2017-05-15  Uros Bizjak  <ubizjak@gmail.com>
 
+	PR target/80425
 	* config/i386.i386.md (*zero_extendsidi2): Do not penalize
 	non-interunit SSE move alternatives with '?'.
 	(zero-extendsidi peephole2): New peephole to skip intermediate

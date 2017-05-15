@@ -1,5 +1,6 @@
 2017-05-15  Uros Bizjak  <ubizjak@gmail.com>
 
+	PR target/80425
 	* gcc.target/i386/pr80425-1.c: New test.
 	* gcc.target/i386/pr80425-2.c: Ditto.
 
