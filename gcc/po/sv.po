@@ -24,7 +24,7 @@ msgstr ""
 "Project-Id-Version: gcc 7.1.0\n"
 "Report-Msgid-Bugs-To: https://gcc.gnu.org/bugs/\n"
 "POT-Creation-Date: 2017-05-01 22:24+0000\n"
-"PO-Revision-Date: 2017-05-12 21:49+0200\n"
+"PO-Revision-Date: 2017-05-15 14:41+0200\n"
 "Last-Translator: Göran Uddeborg <goeran@uddeborg.se>\n"
 "Language-Team: Swedish <tp-sv@listor.tp-sv.se>\n"
 "Language: sv\n"
@@ -6191,7 +6191,7 @@ msgstr "-Walloc-zero Varna för anrop till allokeringsfunktioner som anger noll 
 
 #: c-family/c.opt:317
 msgid "-Walloca-larger-than=<number>\tWarn on unbounded uses of alloca, and on bounded uses of alloca whose bound can be larger than <number> bytes."
-msgstr "-Walloca-larger-than=<antal>\tVarna vid obegränsade användningar av alloca, och vid begränsade användningar av alloca vars gränser kan bara större än <antal> byte."
+msgstr "-Walloca-larger-than=<antal>\tVarna vid obegränsade användningar av alloca, och vid begränsade användningar av alloca vars gränser kan vara större än <antal> byte."
 
 #: c-family/c.opt:331
 msgid "Warn whenever an Objective-C assignment is being intercepted by the garbage collector."
@@ -9669,7 +9669,7 @@ msgstr "Använd anpassad stack istället för lokalt minne för automatisk lagri
 
 #: config/nvptx/nvptx.opt:42
 msgid "Specify size of .local memory used for stack when the exact amount is not known."
-msgstr "Ange storlekn på .local-minne använt till stack när den exakta mängden inte är känd."
+msgstr "Ange storleken på .local-minne använt till stack när den exakta mängden inte är känd."
 
 #: config/nvptx/nvptx.opt:46
 msgid "Generate code that can keep local state uniform across all lanes."
@@ -15518,7 +15518,7 @@ msgstr "Ej förväntades TAGG."
 #: auto-profile.c:920
 #, gcc-internal-format, gfc-internal-format
 msgid "cannot open profile file %s"
-msgstr "kan inte öppna profileringssfilen %s"
+msgstr "kan inte öppna profileringsfilen %s"
 
 #: auto-profile.c:926
 #, gcc-internal-format
@@ -21777,7 +21777,7 @@ msgstr "i denna slinga"
 #: tree-ssa-loop-prefetch.c:2045
 #, gcc-internal-format
 msgid "%<l1-cache-size%> parameter is not a power of two %d"
-msgstr "%<l1-cache-size%>-parametern är inte en exponent av %d"
+msgstr "%<l1-cache-size%>-parametern är inte en potens av två %d"
 
 #: tree-ssa-operands.c:975
 #, gcc-internal-format
@@ -36425,7 +36425,7 @@ msgstr "pure virtual %q#D anropad från en konstruerare"
 #: cp/call.c:8778
 #, gcc-internal-format
 msgid "pure virtual %q#D called from destructor"
-msgstr "pure virtual %q#D anropad från en konstruerare"
+msgstr "pure virtual %q#D anropad från en destruerare"
 
 #: cp/call.c:8801
 #, gcc-internal-format
@@ -45093,7 +45093,7 @@ msgstr "använd %<...%>  för att expandera argumentpaket"
 #: cp/pt.c:17236
 #, gcc-internal-format
 msgid "%qD was not declared in this scope, and no declarations were found by argument-dependent lookup at the point of instantiation"
-msgstr "%qD deklarerades inte i detta definitionsområde, och inga deklarationer hittades av en argumentberoende uppslagning vid instantieringspunkten"
+msgstr "%qD deklarerades inte i detta definitionsområde, och inga deklarationer hittades av en argumentberoende uppslagning vid instansieringspunkten"
 
 #: cp/pt.c:17265
 #, gcc-internal-format
@@ -51689,7 +51689,7 @@ msgstr "DTIO-proceduren %qs vid %L måste vara en subrutin"
 #: fortran/interface.c:4706
 #, gcc-internal-format
 msgid "Too few dummy arguments in DTIO procedure %qs at %L"
-msgstr "För få argument i DTIO-proceduren %qs vid %L"
+msgstr "För få attrappargument i DTIO-proceduren %qs vid %L"
 
 #: fortran/interface.c:4713
 #, gcc-internal-format
@@ -53302,7 +53302,7 @@ msgstr "SUBMODULE-deklaration vid %C"
 #: fortran/module.c:746
 #, gcc-internal-format, gfc-internal-format
 msgid "SUBMODULE declaration at %C cannot appear within another scoping unit"
-msgstr "SUBMODULE-deklarationen vid %C får inte förekomma en annan räckviddsenhet"
+msgstr "SUBMODULE-deklarationen vid %C får inte förekomma i en annan räckviddsenhet"
 
 #: fortran/module.c:821
 #, gcc-internal-format, gfc-internal-format
@@ -54933,7 +54933,7 @@ msgstr "Slut på DO-sats utan block vid %C är sammanvävt med en annan DO-sling
 #: fortran/parse.c:4347
 #, gcc-internal-format, gfc-internal-format
 msgid "CRITICAL block inside of OpenACC region at %C"
-msgstr "CRITICAL-block i unuti OpenACC-region vid %C"
+msgstr "CRITICAL-block inuti OpenACC-region vid %C"
 
 #: fortran/parse.c:4348
 #, gcc-internal-format, gfc-internal-format
