@@ -148,6 +148,7 @@ class insn_info
   bool src_mem;
   bool dst_plus;
   bool src_plus;
+  int src_op;
   bool src_const;
 
   machine_mode mode;
@@ -165,7 +166,7 @@ class insn_info
 public:
   insn_info (rtx_insn * i = 0, int p = 0) :
       insn (i), myuse (0), hard (0), use (0), def (0), proepi (p), stack (false), label (false), jump (false), call (
-	  false), compare (false), dst_mem (false), src_mem (false), dst_plus (false), src_plus (false), src_const (
+	  false), compare (false), dst_mem (false), src_mem (false), dst_plus (false), src_plus (false), src_op (0), src_const (
 	  false), mode (VOIDmode), dst_reg (0), dst_mem_reg (0), dst_symbol (0), src_reg (0), src_mem_reg (0), src_symbol (
 	  0), dst_mem_addr (0), src_mem_addr (0)
   {
@@ -281,13 +282,13 @@ public:
   inline bool
   is_src_reg () const
   {
-    return src_reg && !src_plus;
+    return src_reg && !src_op;
   }
 
-  inline bool
-  is_src_plus () const
+  inline int
+  get_src_op () const
   {
-    return src_reg && src_plus;
+    return src_op;
   }
 
   inline bool
@@ -407,6 +408,7 @@ public:
     src_mem = false;
     dst_plus = false;
     src_plus = false;
+    src_op = 0;
     src_const = false;
 
     mode = VOIDmode;
@@ -754,6 +756,9 @@ insn_info::fledder (rtx set)
       src = SET_SRC(set);
     }
 
+  if (GET_CODE(dst) == STRICT_LOW_PART || GET_CODE(dst) == SUBREG)
+    dst = XEXP(dst, 0);
+
   mode = GET_MODE(dst);
   if (mode == VOIDmode)
     mode = GET_MODE(src);
@@ -845,22 +850,26 @@ insn_info::fledder (rtx set)
       src_const = true;
       src_mem_addr = INTVAL(src);
     }
-  else if (GET_CODE(src) == PLUS)
+  /* It' some kind of operation, e.g. PLUS, XOR, NEG, ... */
+  if (*GET_RTX_FORMAT(GET_CODE(src)) == 'e')
     {
-      src_plus = true;
+      src_op = GET_CODE(src);
       rtx reg = XEXP(src, 0);
-      rtx konst = XEXP(src, 1);
-      if (REG_P(reg))
+      if (REG_P(reg) && GET_RTX_LENGTH(GET_CODE(src)) >= 2)
 	{
-	  if (GET_CODE(konst) == CONST_INT)
+	  rtx konst = XEXP(src, 1);
+	  src_reg = reg;
+	  if (konst)
 	    {
-	      src_reg = reg;
-	      src_const = true;
-	      src_mem_addr = INTVAL(konst);
-	    }
-	  else if (REG_P(konst))
-	    {
-	      src_reg = konst;
+	      if (GET_CODE(konst) == CONST_INT)
+		{
+		  src_const = true;
+		  src_mem_addr = INTVAL(konst);
+		}
+	      else if (REG_P(konst))
+		{
+		  src_reg = konst; /* dst_reg = dst_reg OP src_reg: store src_reg not dst_reg */
+		}
 	    }
 	}
     }
@@ -969,7 +978,7 @@ void
 insn_info::plus_to_move (rtx_insn * newinsn)
 {
   insn = newinsn;
-  src_plus = false;
+  src_op = 0;
   src_reg = XEXP(PATTERN (newinsn), 1);
   insn2index.insert (std::make_pair (insn, this));
   // usage flags did not change
@@ -1603,7 +1612,7 @@ opt_reg_rename (void)
 	  if (!ok)
 	    continue;
 
-	  log ("opt_reg_rename %s -> %s (%d locs, start at %d)\n", reg_names[oldregno], reg_names[newregno],
+	  log ("(r) opt_reg_rename %s -> %s (%d locs, start at %d)\n", reg_names[oldregno], reg_names[newregno],
 	       patch.size (), index);
 
 	  /* apply all changes. */
@@ -1846,7 +1855,7 @@ opt_propagate_moves ()
 			      rtx_insn * after = infos[index + 1].get_insn ();
 			      rtx bset = single_set (before);
 
-			      log ("propagate_moves condition met, moving regs %s, %s\n",
+			      log ("(p) propagate_moves condition met, moving regs %s, %s\n",
 			      reg_names[REGNO(srci)],
 				   reg_names[REGNO(dsti)]);
 
@@ -1882,7 +1891,7 @@ opt_propagate_moves ()
 			      /* add fixes if there were jumps out of the loop. */
 			      if (jump_out.size ())
 				{
-				  log ("propagate_moves fixing %d jump outs\n", jump_out.size ());
+				  log ("(p) propagate_moves fixing %d jump outs\n", jump_out.size ());
 
 				  for (unsigned k = 0; k < jump_out.size (); ++k)
 				    {
@@ -1970,10 +1979,10 @@ opt_strcpy ()
 			{
 			  rtx link;
 
-			  log ("opt_strcpy condition met, removing compare and joining insns - omit reg %s\n",
+			  log ("(s) opt_strcpy condition met, removing compare and joining insns - omit reg %s\n",
 			  reg_names[REGNO(dst)]);
 
-			  emit_insn_after(pattern, reg2x);
+			  emit_insn_after (pattern, reg2x);
 
 			  SET_INSN_DELETED(x2reg);
 			  SET_INSN_DELETED(reg2x);
@@ -2086,7 +2095,7 @@ opt_commute_add_move (void)
 
       if (validate_change (next, &SET_DEST(set2), newmem, 0))
 	{
-	  log ("commute_add_move found\n");
+	  log ("(a) commute_add_move found\n");
 
 	  SET_INSN_DELETED(insn);
 
@@ -2144,7 +2153,7 @@ opt_const_cmp_to_sub (void)
 	continue;
 
       /* src must be a reg dead register with a constant - or a #0 */
-      if (!i1.get_src_reg () && (!i1.is_src_const () || i1.is_src_plus ()))
+      if (!i1.get_src_reg () && (!i1.is_src_const () || i1.get_src_op () == PLUS))
 	continue;
 
       /* allow an alive reg, if life ends at previous handled sub. */
@@ -2170,7 +2179,7 @@ opt_const_cmp_to_sub (void)
 	  if (GET_MODE_SIZE(i0.get_mode()) > 4)
 	    continue;
 
-	  if (!i0.is_dst_reg () && (!i0.is_src_const () || i0.is_src_plus ()))
+	  if (!i0.is_dst_reg () && (!i0.is_src_const () || i0.get_src_op () == PLUS))
 	    continue;
 
 	  if (i0.get_dst_regno () != i1.get_src_regno ())
@@ -2232,7 +2241,7 @@ opt_const_cmp_to_sub (void)
 
 	  emit_insn_before (neu, i2.get_insn ());
 
-	  log ("const_cmp_to_sub replaced %s == %s (%d) with sub %d,%s\n", reg_names[i1.get_dst_regno ()],
+	  log ("(c) const_cmp_to_sub replaced %s == %s (%d) with sub %d,%s\n", reg_names[i1.get_dst_regno ()],
 	  reg_names[i0.get_dst_regno ()],
 	       -intval, -intval, reg_names[i1.get_dst_regno ()]);
 
@@ -2293,7 +2302,7 @@ opt_elim_dead_assign (void)
 
       if (is_reg_dead (REGNO(dst), index))
 	{
-	  log ("%d: elim_dead_assign to %s\n", index, reg_names[REGNO(dst)]);
+	  log ("(e) %d: elim_dead_assign to %s\n", index, reg_names[REGNO(dst)]);
 	  SET_INSN_DELETED(insn);
 	  ++change_count;
 	}
@@ -2333,7 +2342,7 @@ opt_merge_add (void)
 	  continue;
 	}
 
-      if (!ii0.is_dst_reg () || !ii0.is_src_plus () || !ii1.is_src_plus () || !ii2.is_src_plus ())
+      if (!ii0.is_dst_reg () || ii0.get_src_op () != PLUS || ii1.get_src_op () != PLUS || ii2.get_src_op () != PLUS)
 	continue;
 
       if (!ii0.is_src_const () || !ii2.is_src_const () || ii0.get_src_intval () != ii2.get_src_intval ())
@@ -2349,7 +2358,7 @@ opt_merge_add (void)
       if (cc_status.value1 || cc_status.value2)
 	continue;
 
-      log ("%d: merge_add applied\n", index);
+      log ("(m) %d: merge_add applied\n", index);
 
       rtx_insn * insn0 = ii0.get_insn ();
       rtx set = PATTERN (insn0);
@@ -2610,7 +2619,7 @@ opt_shrink_stack_frame (void)
 	      unsigned regbit = 1 << REGNO(reg);
 	      if (freemask & regbit)
 		{
-		  log (i < prologueend ? "remove push for %s\n" : "remove pop for %s\n",
+		  log (i < prologueend ? "(f) remove push for %s\n" : "(f) remove pop for %s\n",
 		  reg_names[REGNO(reg)]);
 		  if (i < prologueend)
 		    adjust += 4;
@@ -2631,7 +2640,7 @@ opt_shrink_stack_frame (void)
 	  int add1 = i < prologueend || !usea5 ? 1 : 0;
 	  if ((int) regs.size () + add1 < XVECLEN(pattern, 0) || regs.size () <= 2)
 	    {
-	      log ("shrinking stack frame from %d to %d\n", XVECLEN(pattern, 0) - add1, regs.size ());
+	      log ("(f) shrinking stack frame from %d to %d\n", XVECLEN(pattern, 0) - add1, regs.size ());
 	      if (regs.size () <= 2)
 		{
 		  changed = 1;
@@ -2726,7 +2735,7 @@ opt_shrink_stack_frame (void)
 	      if (freemask & regbit)
 		{
 		  adjust += REGNO(src) > STACK_POINTER_REGNUM ? 12 : 4;
-		  log ("remove push for %s\n", reg_names[REGNO(src)]);
+		  log ("(f) remove push for %s\n", reg_names[REGNO(src)]);
 		  SET_INSN_DELETED(insn);
 		  ++changed;
 		}
@@ -2738,7 +2747,7 @@ opt_shrink_stack_frame (void)
 	      unsigned regbit = 1 << REGNO(dst);
 	      if (freemask & regbit)
 		{
-		  log ("remove pop for %s\n", reg_names[REGNO(dst)]);
+		  log ("(f) remove pop for %s\n", reg_names[REGNO(dst)]);
 		  SET_INSN_DELETED(insn);
 		  ++changed;
 		}
@@ -2789,7 +2798,7 @@ opt_shrink_stack_frame (void)
        */
       if (freemask & (1 << FRAME_POINTER_REGNUM))
 	{
-	  log ("dropping unused frame pointer\n");
+	  log ("(f) dropping unused frame pointer\n");
 	  for (auto i = a5pos.rbegin (); i != a5pos.rend (); ++i)
 	    {
 	      SET_INSN_DELETED(infos[*i].get_insn ());
@@ -2826,7 +2835,7 @@ opt_absolute (void)
     {
       insn_info & ii = infos[i];
 
-      if (ii.is_compare())
+      if (ii.is_compare ())
 	continue;
 
       bool is_dst = ii.is_dst_mem () && (ii.has_dst_addr () || ii.get_dst_symbol ()) && !ii.has_dst_memreg ();
@@ -2835,18 +2844,19 @@ opt_absolute (void)
       if (!is_dst && !is_src)
 	continue;
 
-      if (ii.get_mode() == VOIDmode)
+      if (ii.get_mode () == VOIDmode)
 	continue;
 
       unsigned freemask = ~(ii.get_use () | ii.get_def ()) & 0x7f00 & usable_regs;
       if (!freemask)
 	continue;
 
-      rtx pattern = PATTERN(ii.get_insn());
-      if (is_dst && !ii.get_src_reg() && !ii.is_src_const())
+      /* exclude operations on that symbol. */
+      rtx pattern = PATTERN (ii.get_insn ());
+      if (is_dst && !ii.get_src_reg () && !ii.is_src_const ())
 	if (MEM_P(XEXP(XEXP(pattern, 1), 0)))
 	  continue;
-      if (is_src && !ii.get_dst_reg())
+      if (is_src && !ii.get_dst_reg ())
 	if (MEM_P(XEXP(XEXP(pattern, 0), 0)))
 	  continue;
 
@@ -2867,7 +2877,7 @@ opt_absolute (void)
 	  if (!freemask)
 	    break;
 
-	  if (jj.get_mode() == VOIDmode || jj.is_compare())
+	  if (jj.get_mode () == VOIDmode || jj.is_compare ())
 	    continue;
 
 	  bool j_dst = jj.is_dst_mem () && (jj.has_dst_addr () || jj.get_dst_symbol ()) && !jj.has_dst_memreg ()
@@ -2875,11 +2885,12 @@ opt_absolute (void)
 	  bool j_src = jj.is_src_mem () && (jj.has_src_addr () || jj.get_src_symbol ()) && !jj.has_src_memreg ()
 	      && jj.get_src_symbol () == with_symbol;
 
-	  pattern = PATTERN(jj.get_insn());
-	  if (j_dst && !jj.get_src_reg() && !jj.is_src_const())
+	  /* exclude operations on that symbol. */
+	  pattern = PATTERN (jj.get_insn ());
+	  if (j_dst && !jj.get_src_reg () && !jj.is_src_const ())
 	    if (MEM_P(XEXP(XEXP(pattern, 1), 0)))
 	      continue;
-	  if (j_src && !jj.get_dst_reg())
+	  if (j_src && !jj.get_dst_reg ())
 	    if (MEM_P(XEXP(XEXP(pattern, 0), 0)))
 	      continue;
 
@@ -2941,9 +2952,9 @@ opt_absolute (void)
 	{
 	  unsigned regno = bit2regno (freemask);
 	  if (with_symbol)
-	    log ("modifying %d symbol addresses using %s\n", found.size (), reg_names[regno]);
+	    log ("(b) modifying %d symbol addresses using %s\n", found.size (), reg_names[regno]);
 	  else
-	    log ("modifying %d absolute addresses using %s\n", found.size (), reg_names[regno]);
+	    log ("(b) modifying %d absolute addresses using %s\n", found.size (), reg_names[regno]);
 
 	  for (auto k = found.begin (); k != found.end (); ++k)
 	    {
