@@ -1,3 +1,8 @@
+2017-05-15  Adhemerval Zanella  <adhemerval.zanella@linaro.org>
+
+	* config/sparc/lb1spc.S [__ELF__ && __linux__]: Emit .note.GNU-stack
+	section for a non-executable stack.
+
 2017-05-14  Krister Walfridsson  <krister.walfridsson@gmail.com>
 
 	PR target/80600

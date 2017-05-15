@@ -5,6 +5,12 @@
    slightly edited to match the desired calling convention, and also to
    optimize them for our purposes.  */
 
+/* An executable stack is *not* required for these functions.  */
+#if defined(__ELF__) && defined(__linux__)
+.section .note.GNU-stack,"",%progbits
+.previous
+#endif
+
 #ifdef L_mulsi3
 .text
 	.align 4
