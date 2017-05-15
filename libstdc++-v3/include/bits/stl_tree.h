@@ -808,7 +808,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #if __cplusplus > 201402L
       using node_type = _Node_handle<_Key, _Val, _Node_allocator>;
-      using insert_return_type = _Node_insert_return<iterator, node_type>;
+      using insert_return_type = _Node_insert_return<
+	conditional_t<is_same_v<_Key, _Val>, const_iterator, iterator>,
+	node_type>;
 #endif
 
       pair<_Base_ptr, _Base_ptr>
