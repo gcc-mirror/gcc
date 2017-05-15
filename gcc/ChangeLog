@@ -1,3 +1,10 @@
+2017-05-15  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386.i386.md (*zero_extendsidi2): Do not penalize
+	non-interunit SSE move alternatives with '?'.
+	(zero-extendsidi peephole2): New peephole to skip intermediate
+	general register in SSE zero-extend sequence.
+
 2017-05-15  Jeff Law  <law@redhat.com>
 
 	* reorg.c (relax_delay_slots): Create a new variable to hold
