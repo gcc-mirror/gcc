@@ -5431,11 +5431,16 @@ can_materialize_object_renaming_p (Node_Id expr)
 {
   while (true)
     {
+      expr = Original_Node (expr);
+
       switch Nkind (expr)
 	{
 	case N_Identifier:
 	case N_Expanded_Name:
-	  return true;
+	  if (!Present (Renamed_Object (Entity (expr))))
+	    return true;
+	  expr = Renamed_Object (Entity (expr));
+	  break;
 
 	case N_Selected_Component:
 	  {
