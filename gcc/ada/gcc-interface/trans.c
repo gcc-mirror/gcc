@@ -217,6 +217,7 @@ static GTY(()) vec<tree, va_gc> *gnu_program_error_label_stack;
 static enum tree_code gnu_codes[Number_Node_Kinds];
 
 static void init_code_table (void);
+static tree get_elaboration_procedure (void);
 static void Compilation_Unit_to_gnu (Node_Id);
 static bool empty_stmt_list_p (tree);
 static void record_code_position (Node_Id);
@@ -10183,7 +10184,7 @@ get_exception_label (char kind)
 
 /* Return the decl for the current elaboration procedure.  */
 
-tree
+static tree
 get_elaboration_procedure (void)
 {
   return gnu_elab_proc_stack->last ();
