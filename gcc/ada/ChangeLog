@@ -1,5 +1,10 @@
 2017-05-15  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/trans.c (return_value_ok_for_nrv_p): Only apply the
+	addressability check in the constrained case.
+
+2017-05-15  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/trans.c (Identifier_to_gnu): Also accept incomplete
 	types not coming from a limited context.
 
