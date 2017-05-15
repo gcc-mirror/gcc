@@ -808,11 +808,9 @@ m68k_compute_frame_layout (void)
 
   /* Only compute the frame once per function.
      Don't cache information until reload has been completed.  */
-  /* SBF: No. Register renaming may free some variables,
-   * => compute it again and again... */
-//  if (current_frame.funcdef_no == current_function_funcdef_no
-//      && reload_completed)
-//    return;
+  if (current_frame.funcdef_no == current_function_funcdef_no
+      && reload_completed)
+    return;
 
   current_frame.size = (get_frame_size () + 3) & -4;
 
