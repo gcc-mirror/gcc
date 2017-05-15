@@ -1,3 +1,8 @@
+2017-05-15  Martin Liska  <mliska@suse.cz>
+
+	PR driver/31468
+	* gcc.c (process_command): Do not allow empty argument of -o option.
+
 2017-05-15  Renlin Li  <renlin.li@arm.com>
 
 	* config/aarch64/aarch64-protos.h (aarch64_expand_call): Declare.
