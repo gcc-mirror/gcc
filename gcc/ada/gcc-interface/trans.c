@@ -5472,6 +5472,15 @@ Compilation_Unit_to_gnu (Node_Id gnat_node)
       if (!optimize && !Has_Pragma_Inline_Always (gnat_entity))
 	continue;
 
+      /* The set of inlined subprograms is computed from data recorded early
+	 during expansion and it can be a strict superset of the final set
+	 computed after semantic analysis, for example if a call to such a
+	 subprogram occurs in a pragma Assert and assertions are disabled.
+	 In that case, semantic analysis resets Is_Public to false but the
+	 entry for the subprogram in the inlining tables is stalled.  */
+      if (!Is_Public (gnat_entity))
+	continue;
+
       gnat_body = Parent (Declaration_Node (gnat_entity));
       if (Nkind (gnat_body) != N_Subprogram_Body)
 	{

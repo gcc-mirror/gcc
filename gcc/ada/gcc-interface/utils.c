@@ -3220,10 +3220,19 @@ create_subprog_decl (tree name, tree asm_name, tree type, tree param_decl_list,
 
     case is_required:
       if (Back_End_Inlining)
-	decl_attributes (&subprog_decl,
-			 tree_cons (get_identifier ("always_inline"),
-				    NULL_TREE, NULL_TREE),
-			 ATTR_FLAG_TYPE_IN_PLACE);
+	{
+	  decl_attributes (&subprog_decl,
+			   tree_cons (get_identifier ("always_inline"),
+				      NULL_TREE, NULL_TREE),
+			   ATTR_FLAG_TYPE_IN_PLACE);
+
+	  /* Inline_Always guarantees that every direct call is inlined and
+	     that there is no indirect reference to the subprogram, so the
+	     instance in the original package (as well as its clones in the
+	     client packages created for inter-unit inlining) can be made
+	     private, which causes the out-of-line body to be eliminated.  */
+	  TREE_PUBLIC (subprog_decl) = 0;
+	}
 
       /* ... fall through ... */
 
