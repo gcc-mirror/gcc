@@ -1,5 +1,10 @@
 2017-05-15  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/trans.c (Identifier_to_gnu): Also accept incomplete
+	types not coming from a limited context.
+
+2017-05-15  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/trans.c (Compilation_Unit_to_gnu): Skip subprograms on
 	the inlined list that are not public.
 	* gcc-interface/utils.c (create_subprog_decl): Clear TREE_PUBLIC if
