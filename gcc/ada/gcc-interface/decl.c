@@ -3270,12 +3270,12 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	    }
 
 	/* If we have a derived untagged type that renames discriminants in
-	   the root type, the (stored) discriminants are just a copy of the
-	   discriminants of the root type.  This means that any constraints
-	   added by the renaming in the derivation are disregarded as far
-	   as the layout of the derived type is concerned.  To rescue them,
-	   we change the type of the (stored) discriminants to a subtype
-	   with the bounds of the type of the visible discriminants.  */
+	   the parent type, the (stored) discriminants are just a copy of the
+	   discriminants of the parent type.  This means that any constraints
+	   added by the renaming in the derivation are disregarded as far as
+	   the layout of the derived type is concerned.  To rescue them, we
+	   change the type of the (stored) discriminants to a subtype with
+	   the bounds of the type of the visible discriminants.  */
 	if (has_discr
 	    && !is_extension
 	    && Stored_Constraint (gnat_entity) != No_Elist)
@@ -4967,12 +4967,10 @@ finalize_from_limited_with (void)
     }
 }
 
-/* Return the equivalent type to be used for GNAT_ENTITY, if it's a
-   kind of type (such E_Task_Type) that has a different type which Gigi
-   uses for its representation.  If the type does not have a special type
-   for its representation, return GNAT_ENTITY.  If a type is supposed to
-   exist, but does not, abort unless annotating types, in which case
-   return Empty.  If GNAT_ENTITY is Empty, return Empty.  */
+/* Return the equivalent type to be used for GNAT_ENTITY, if it's a kind
+   of type (such E_Task_Type) that has a different type which Gigi uses
+   for its representation.  If the type does not have a special type for
+   its representation, return GNAT_ENTITY.  */
 
 Entity_Id
 Gigi_Equivalent_Type (Entity_Id gnat_entity)
