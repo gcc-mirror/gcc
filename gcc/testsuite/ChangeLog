@@ -1,3 +1,8 @@
+2017-05-15  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/80727
+	* gfortran.dg/read_3.f90: New test.
+
 2017-05-15  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/79369
