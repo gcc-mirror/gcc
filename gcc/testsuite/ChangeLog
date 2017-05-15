@@ -1,3 +1,9 @@
+2017-05-15  Richard Biener  <rguenther@suse.de>
+
+	Revert backport of
+	PR middle-end/80222
+	* g++.dg/pr80222.C: New testcase.
+
 2017-05-13  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	Backport from mainline
