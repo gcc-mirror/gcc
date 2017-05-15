@@ -649,6 +649,8 @@ public:
   unsigned
   get_regbit () const
   {
+    if (GET_MODE_SIZE(mode) > 4)
+      return 0;
     return def & ~hard & ~use & 0x7fff;
   }
 
@@ -1538,6 +1540,13 @@ opt_reg_rename (void)
 		}
 	      else if (!(jj.get_use () & rename_regbit))
 		break;
+
+	      /* abort if some insn using this reg uses more than 1 reg. */
+	      if ((jj.get_myuse() & rename_regbit) && GET_MODE_SIZE(jj.get_mode()) > 4)
+		{
+		  mask = 0;
+		  break;
+		}
 
 	      /* update free regs. */
 	      mask &= ~jj.get_use ();
