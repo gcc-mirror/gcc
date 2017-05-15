@@ -126,7 +126,8 @@
 (define_constraint "Usf"
   "@internal Usf is a symbol reference under the context where plt stub allowed."
   (and (match_code "symbol_ref")
-       (match_test "!aarch64_is_noplt_call_p (op)")))
+       (match_test "!(aarch64_is_noplt_call_p (op)
+		      || aarch64_is_long_call_p (op))")))
 
 (define_constraint "UsM"
   "@internal
