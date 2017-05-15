@@ -237,7 +237,6 @@ static tree build_binary_op_trapv (enum tree_code, tree, tree, tree, Node_Id);
 static tree convert_with_check (Entity_Id, tree, bool, bool, bool, Node_Id);
 static bool addressable_p (tree, tree);
 static tree assoc_to_constructor (Entity_Id, Node_Id, tree);
-static tree extract_values (tree, tree);
 static tree pos_to_constructor (Node_Id, tree, Entity_Id);
 static void validate_unchecked_conversion (Node_Id);
 static tree maybe_implicit_deref (tree);
@@ -6497,8 +6496,7 @@ gnat_to_gnu (Node_Id gnat_node)
 	  gnu_aggr_type = TYPE_REPRESENTATIVE_ARRAY (gnu_result_type);
 
 	if (Null_Record_Present (gnat_node))
-	  gnu_result = gnat_build_constructor (gnu_aggr_type,
-					       NULL);
+	  gnu_result = gnat_build_constructor (gnu_aggr_type, NULL);
 
 	else if (TREE_CODE (gnu_aggr_type) == RECORD_TYPE
 		 || TREE_CODE (gnu_aggr_type) == UNION_TYPE)
@@ -6858,7 +6856,7 @@ gnat_to_gnu (Node_Id gnat_node)
 
     case N_Allocator:
       {
-	tree gnu_init = 0;
+	tree gnu_init = NULL_TREE;
 	tree gnu_type;
 	bool ignore_init_type = false;
 
@@ -9658,6 +9656,55 @@ process_type (Entity_Id gnat_entity)
     }
 }
 
+/* Subroutine of assoc_to_constructor: VALUES is a list of field associations,
+   some of which are from RECORD_TYPE.  Return a CONSTRUCTOR consisting of the
+   associations that are from RECORD_TYPE.  If we see an internal record, make
+   a recursive call to fill it in as well.  */
+
+static tree
+extract_values (tree values, tree record_type)
+{
+  vec<constructor_elt, va_gc> *v = NULL;
+  tree field;
+
+  for (field = TYPE_FIELDS (record_type); field; field = DECL_CHAIN (field))
+    {
+      tree tem, value = NULL_TREE;
+
+      /* _Parent is an internal field, but may have values in the aggregate,
+	 so check for values first.  */
+      if ((tem = purpose_member (field, values)))
+	{
+	  value = TREE_VALUE (tem);
+	  TREE_ADDRESSABLE (tem) = 1;
+	}
+
+      else if (DECL_INTERNAL_P (field))
+	{
+	  value = extract_values (values, TREE_TYPE (field));
+	  if (TREE_CODE (value) == CONSTRUCTOR
+	      && vec_safe_is_empty (CONSTRUCTOR_ELTS (value)))
+	    value = NULL_TREE;
+	}
+      else
+	/* If we have a record subtype, the names will match, but not the
+	   actual FIELD_DECLs.  */
+	for (tem = values; tem; tem = TREE_CHAIN (tem))
+	  if (DECL_NAME (TREE_PURPOSE (tem)) == DECL_NAME (field))
+	    {
+	      value = convert (TREE_TYPE (field), TREE_VALUE (tem));
+	      TREE_ADDRESSABLE (tem) = 1;
+	    }
+
+      if (!value)
+	continue;
+
+      CONSTRUCTOR_APPEND_ELT (v, field, value);
+    }
+
+  return gnat_build_constructor (record_type, v);
+}
+
 /* GNAT_ENTITY is the type of the resulting constructor, GNAT_ASSOC is the
    front of the Component_Associations of an N_Aggregate and GNU_TYPE is the
    GCC type of the corresponding record type.  Return the CONSTRUCTOR.  */
@@ -9728,11 +9775,12 @@ pos_to_constructor (Node_Id gnat_expr, tree gnu_array_type,
 		    Entity_Id gnat_component_type)
 {
   tree gnu_index = TYPE_MIN_VALUE (TYPE_DOMAIN (gnu_array_type));
-  tree gnu_expr;
   vec<constructor_elt, va_gc> *gnu_expr_vec = NULL;
 
-  for ( ; Present (gnat_expr); gnat_expr = Next (gnat_expr))
+  for (; Present (gnat_expr); gnat_expr = Next (gnat_expr))
     {
+      tree gnu_expr;
+
       /* If the expression is itself an array aggregate then first build the
 	 innermost constructor if it is part of our array (multi-dimensional
 	 case).  */
@@ -9761,55 +9809,6 @@ pos_to_constructor (Node_Id gnat_expr, tree gnu_array_type,
     }
 
   return gnat_build_constructor (gnu_array_type, gnu_expr_vec);
-}
-
-/* Subroutine of assoc_to_constructor: VALUES is a list of field associations,
-   some of which are from RECORD_TYPE.  Return a CONSTRUCTOR consisting of the
-   associations that are from RECORD_TYPE.  If we see an internal record, make
-   a recursive call to fill it in as well.  */
-
-static tree
-extract_values (tree values, tree record_type)
-{
-  tree field, tem;
-  vec<constructor_elt, va_gc> *v = NULL;
-
-  for (field = TYPE_FIELDS (record_type); field; field = DECL_CHAIN (field))
-    {
-      tree value = 0;
-
-      /* _Parent is an internal field, but may have values in the aggregate,
-	 so check for values first.  */
-      if ((tem = purpose_member (field, values)))
-	{
-	  value = TREE_VALUE (tem);
-	  TREE_ADDRESSABLE (tem) = 1;
-	}
-
-      else if (DECL_INTERNAL_P (field))
-	{
-	  value = extract_values (values, TREE_TYPE (field));
-	  if (TREE_CODE (value) == CONSTRUCTOR
-	      && vec_safe_is_empty (CONSTRUCTOR_ELTS (value)))
-	    value = 0;
-	}
-      else
-	/* If we have a record subtype, the names will match, but not the
-	   actual FIELD_DECLs.  */
-	for (tem = values; tem; tem = TREE_CHAIN (tem))
-	  if (DECL_NAME (TREE_PURPOSE (tem)) == DECL_NAME (field))
-	    {
-	      value = convert (TREE_TYPE (field), TREE_VALUE (tem));
-	      TREE_ADDRESSABLE (tem) = 1;
-	    }
-
-      if (!value)
-	continue;
-
-      CONSTRUCTOR_APPEND_ELT (v, field, value);
-    }
-
-  return gnat_build_constructor (record_type, v);
 }
 
 /* Process a N_Validate_Unchecked_Conversion node.  */
@@ -9915,8 +9914,8 @@ Sloc_to_locus (Source_Ptr Sloc, location_t *locus, bool clear_column)
     line = 1;
 
   /* Translate the location.  */
-  *locus = linemap_position_for_line_and_column (line_table, map,
-						 line, column);
+  *locus
+    = linemap_position_for_line_and_column (line_table, map, line, column);
 
   return true;
 }

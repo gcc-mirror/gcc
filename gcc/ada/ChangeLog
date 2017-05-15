@@ -1,5 +1,17 @@
 2017-05-15  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/trans.c (gnat_to_gnu) <N_Aggregate>: Fix formatting.
+	<N_Allocator>: Use properly typed constants.
+	(extract_values): Move around.
+	(pos_to_constructor): Minor tweaks.
+	(Sloc_to_locus): Fix formatting.
+	* gcc-interface/utils.c (process_deferred_decl_context): Minor tweaks.
+	* gcc-interface/gigi.h (MARK_VISITED): Remove blank line.
+	(Gigi_Equivalent_Type): Adjust head comment.
+	* gcc-interface/decl.c (Gigi_Equivalent_Type): Likewise.
+
+2017-05-15  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Record_Type>: When there
 	is a representation clause on an extension, propagate the alignment of
 	the parent type only if the platform requires strict alignment.
