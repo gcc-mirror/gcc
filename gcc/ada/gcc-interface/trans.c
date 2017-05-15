@@ -3238,8 +3238,9 @@ Loop_Statement_to_gnu (Node_Id gnat_node)
      RETURN_EXPR [<retval> = Ri]
        [...]
 
-   and we try to fulfill a simple criterion that would make it possible to
-   replace one or several Ri variables with the RESULT_DECL of the function.
+   where the Ri are not addressable and we try to fulfill a simple criterion
+   that would make it possible to replace one or several Ri variables by the
+   single RESULT_DECL of the function.
 
    The first observation is that RETURN_EXPRs that don't directly reference
    any of the Ri variables on the RHS of their assignment are transparent wrt
@@ -3271,8 +3272,8 @@ Loop_Statement_to_gnu (Node_Id gnat_node)
    because the anonymous return object is allocated on the secondary stack
    and RESULT_DECL is only a pointer to it.  Each return object can be of a
    different size and is allocated separately so we need not care about the
-   aforementioned overlapping issues.  Therefore, we don't collect the other
-   expressions and skip step #2 in the algorithm.  */
+   addressability and the aforementioned overlapping issues.  Therefore, we
+   don't collect the other expressions and skip step #2 in the algorithm.  */
 
 struct nrv_data
 {
@@ -3612,7 +3613,8 @@ return_value_ok_for_nrv_p (tree ret_obj, tree ret_val)
   if (TREE_STATIC (ret_val))
     return false;
 
-  if (TREE_ADDRESSABLE (ret_val))
+  /* For the constrained case, test for addressability.  */
+  if (ret_obj && TREE_ADDRESSABLE (ret_val))
     return false;
 
   /* For the constrained case, test for overalignment.  */
