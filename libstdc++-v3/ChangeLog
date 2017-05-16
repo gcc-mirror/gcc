@@ -1,5 +1,9 @@
 2017-05-16  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/80285
+	* include/bits/shared_ptr_base.h [!__cpp_rtti] (type_info): Declare
+	outside versioned namespace.
+
 	* configure: Regenerate.
 
 2017-05-16  Marc Glisse  <marc.glisse@inria.fr>
