@@ -17069,14 +17069,22 @@ __extension__ extern __inline float16x4_t
 __attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
 vadd_f16 (float16x4_t __a, float16x4_t __b)
 {
+#ifdef __FAST_MATH__
+  return __a + __b;
+#else
   return __builtin_neon_vaddv4hf (__a, __b);
+#endif
 }
 
 __extension__ extern __inline float16x8_t
 __attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
 vaddq_f16 (float16x8_t __a, float16x8_t __b)
 {
+#ifdef __FAST_MATH__
+  return __a + __b;
+#else
   return __builtin_neon_vaddv8hf (__a, __b);
+#endif
 }
 
 __extension__ extern __inline uint16x4_t
@@ -17587,7 +17595,11 @@ __extension__ extern __inline float16x4_t
 __attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
 vmul_f16 (float16x4_t __a, float16x4_t __b)
 {
+#ifdef __FAST_MATH__
+  return __a * __b;
+#else
   return __builtin_neon_vmulfv4hf (__a, __b);
+#endif
 }
 
 __extension__ extern __inline float16x4_t
@@ -17608,7 +17620,11 @@ __extension__ extern __inline float16x8_t
 __attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
 vmulq_f16 (float16x8_t __a, float16x8_t __b)
 {
+#ifdef __FAST_MATH__
+  return __a * __b;
+#else
   return __builtin_neon_vmulfv8hf (__a, __b);
+#endif
 }
 
 __extension__ extern __inline float16x8_t
@@ -17804,14 +17820,22 @@ __extension__ extern __inline float16x4_t
 __attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
 vsub_f16 (float16x4_t __a, float16x4_t __b)
 {
+#ifdef __FAST_MATH__
+  return __a - __b;
+#else
   return __builtin_neon_vsubv4hf (__a, __b);
+#endif
 }
 
 __extension__ extern __inline float16x8_t
 __attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
 vsubq_f16 (float16x8_t __a, float16x8_t __b)
 {
+#ifdef __FAST_MATH__
+  return __a - __b;
+#else
   return __builtin_neon_vsubv8hf (__a, __b);
+#endif
 }
 
 #endif /* __ARM_FEATURE_VECTOR_FP16_ARITHMETIC.  */
