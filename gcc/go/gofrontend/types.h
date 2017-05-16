@@ -3379,6 +3379,10 @@ class Forward_declaration_type : public Type
   add_method_declaration(const std::string& name, Package*, Function_type*,
 			 Location);
 
+  // Add an already created object as a method to this type.
+  void
+  add_existing_method(Named_object*);
+
  protected:
   int
   do_traverse(Traverse* traverse);

@@ -1786,8 +1786,41 @@ Gogo::start_function(const std::string& name, Function_type* type,
       char buf[30];
       snprintf(buf, sizeof buf, ".$sink%d", sink_count);
       ++sink_count;
-      ret = this->package_->bindings()->add_function(buf, NULL, function);
+      ret = Named_object::make_function(buf, NULL, function);
       ret->func_value()->set_is_sink();
+
+      if (!type->is_method())
+	ret = this->package_->bindings()->add_named_object(ret);
+      else if (add_method_to_type)
+	{
+	  // We should report errors even for sink methods.
+	  Type* rtype = type->receiver()->type();
+	  // Avoid points_to and deref to avoid getting an error if
+	  // the type is not yet defined.
+	  if (rtype->classification() == Type::TYPE_POINTER)
+	    rtype = rtype->points_to();
+	  while (rtype->named_type() != NULL
+		 && rtype->named_type()->is_alias())
+	    rtype = rtype->named_type()->real_type()->forwarded();
+	  if (rtype->is_error_type())
+	    ;
+	  else if (rtype->named_type() != NULL)
+	    {
+	      if (rtype->named_type()->named_object()->package() != NULL)
+		go_error_at(type->receiver()->location(),
+			    "may not define methods on non-local type");
+	    }
+	  else if (rtype->forward_declaration_type() != NULL)
+	    {
+	      // Go ahead and add the method in case we need to report
+	      // an error when we see the definition.
+	      rtype->forward_declaration_type()->add_existing_method(ret);
+	    }
+	  else
+	    go_error_at(type->receiver()->location(),
+			("invalid receiver type "
+			 "(receiver must be a named type)"));
+	}
     }
   else if (!type->is_method())
     {
@@ -6985,7 +7018,10 @@ Type_declaration::define_methods(Named_type* nt)
   for (std::vector<Named_object*>::const_iterator p = this->methods_.begin();
        p != this->methods_.end();
        ++p)
-    nt->add_existing_method(*p);
+    {
+      if (!(*p)->func_value()->is_sink())
+	nt->add_existing_method(*p);
+    }
 }
 
 // We are using the type.  Return true if we should issue a warning.
