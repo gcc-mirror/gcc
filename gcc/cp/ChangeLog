@@ -1,5 +1,26 @@
 2017-05-16  Nathan Sidwell  <nathan@acm.org>
 
+	* cp-tree.h (class ovl_iterator, class lkp_iterator): New OVERLOAD
+	iterators.
+	(MAYBE_BASELINK_FUNCTIONS): New.
+	* constraint.cc	(resolve_constraint_check): Use lkp_iterator.
+	* decl2.c (maybe_warn_sized_delete): Use ovl_iterator.
+	* lambda.c (maybe_generic_this_capture): Use lkp_iterator.
+	* method.c (inherited_ctor_binfo): Use ovl_iterator.
+	(binfo_inherited_from): Likewise.
+	* parser.c (lookup_literal_operator): Use lkp_iterator.
+	* pt.c (iterative_hash_template_arg): Use lkp_iterator.
+	(print_candidates_1): Likewise.
+	(determine_specialization): Likewise.
+	(resolve_overloaded_unification): Likewise.
+	(resolve_nondeduced_context): Likewise.
+	(type_dependent_expression_p): Likewise.
+	(dependent_template_p): Likewise.
+	* ptree.c (cxx_print_xnode): Likewise.
+	* semantics.c (omp_reduction_lookup): Use lkp_iterator.
+	(classtype_has_nothrow_assign_or_copy_p): Use ovl_iterator.
+	* typeck.c (check_template_keyword): Use lkp_iterator.
+
 	* cp-tree.h (OVL_FIRST, OVL_NAME): New.
 	(ovl_first): New.
 	* constexpr.c (function_concept_check): Use OVL_FIRST.

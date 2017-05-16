@@ -4061,16 +4061,16 @@ cp_parser_string_literal (cp_parser *parser, bool translate, bool wide_ok,
 static tree
 lookup_literal_operator (tree name, vec<tree, va_gc> *args)
 {
-  tree decl, fns;
+  tree decl;
   decl = lookup_name (name);
   if (!decl || !is_overloaded_fn (decl))
     return error_mark_node;
 
-  for (fns = decl; fns; fns = OVL_NEXT (fns))
+  for (lkp_iterator iter (decl); iter; ++iter)
     {
       unsigned int ix;
       bool found = true;
-      tree fn = OVL_CURRENT (fns);
+      tree fn = *iter;
       tree parmtypes = TYPE_ARG_TYPES (TREE_TYPE (fn));
       if (parmtypes != NULL_TREE)
 	{

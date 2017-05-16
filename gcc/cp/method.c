@@ -538,9 +538,9 @@ inherited_ctor_binfo (tree binfo, tree fndecl)
     return binfo;
 
   tree results = NULL_TREE;
-  for (; inh; inh = OVL_NEXT (inh))
+  for (ovl_iterator iter (inh); iter; ++iter)
     {
-      tree one = inherited_ctor_binfo_1 (binfo, OVL_CURRENT (inh));
+      tree one = inherited_ctor_binfo_1 (binfo, *iter);
       if (!results)
 	results = one;
       else if (one != results)
@@ -593,9 +593,9 @@ binfo_inherited_from (tree binfo, tree init_binfo, tree inh)
 {
   /* inh is an OVERLOAD if we inherited the same constructor along
      multiple paths, check all of them.  */
-  for (; inh; inh = OVL_NEXT (inh))
+  for (ovl_iterator iter (inh); iter; ++iter)
     {
-      tree fn = OVL_CURRENT (inh);
+      tree fn = *iter;
       tree base = DECL_CONTEXT (fn);
       tree base_binfo = NULL_TREE;
       for (int i = 0; BINFO_BASE_ITERATE (binfo, i, base_binfo); i++)
