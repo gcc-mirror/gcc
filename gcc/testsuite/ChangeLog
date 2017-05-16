@@ -1,3 +1,8 @@
+2017-05-16  Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc.target/arm/armv8_2-fp16-neon-1.c (vceqz): Fix regex.
+	* gcc.target/arm/armv8_2-fp16-neon-2.c (vceqz): Fix regex.
+
 2016-05-16  Matthew Wahab  <matthew.wahab@arm.com>
 
 	* gcc.target/arm/armv8_2-fp16-arith-1.c: Expand comment.  Update
