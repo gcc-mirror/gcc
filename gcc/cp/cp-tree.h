@@ -636,6 +636,62 @@ struct GTY(()) tree_overload {
   tree function;
 };
 
+/* Iterator for a 1 dimensional overload. */
+
+class ovl_iterator 
+{
+  tree ovl;
+
+ public:
+  ovl_iterator (tree o)
+  :ovl (o)
+    {}
+
+  ovl_iterator &operator= (const ovl_iterator &from)
+  {
+    ovl = from.ovl;
+
+    return *this;
+  }
+
+ public:
+  operator bool () const
+  {
+    return ovl;
+  }
+  ovl_iterator &operator++ ()
+  {
+    ovl = TREE_CODE (ovl) != OVERLOAD ? NULL_TREE : OVL_CHAIN (ovl);
+    return *this;
+  }
+  tree operator* () const
+  {
+    tree fn = TREE_CODE (ovl) != OVERLOAD ? ovl : OVL_FUNCTION (ovl);
+
+    /* Check this is not an unexpected 2-dimensional overload.  */
+    gcc_checking_assert (TREE_CODE (fn) != OVERLOAD);
+
+    return fn;
+  }
+};
+
+/* Iterator over a (potentially) 2 dimensional overload, which is
+   produced by name lookup.  */
+
+/* Note this is currently a placeholder, as the name-lookup changes
+   are not yet committed.  */
+
+class lkp_iterator : public ovl_iterator
+{
+  typedef ovl_iterator parent;
+
+ public:
+  lkp_iterator (tree o)
+    : parent (o)
+  {
+  }
+};
+
 struct GTY(()) tree_template_decl {
   struct tree_decl_common common;
   tree arguments;
@@ -653,6 +709,10 @@ struct GTY(()) tree_template_decl {
    a TEMPLATE_DECL, an OVERLOAD, or a TEMPLATE_ID_EXPR.  */
 #define BASELINK_FUNCTIONS(NODE) \
   (((struct tree_baselink*) BASELINK_CHECK (NODE))->functions)
+/* If T is a BASELINK, grab the functions, otherwise just T, which is
+   expected to already be a (list of) functions.  */
+#define MAYBE_BASELINK_FUNCTIONS(T) \
+  (BASELINK_P (T) ? BASELINK_FUNCTIONS (T) : T)
 /* The BINFO in which the search for the functions indicated by this baselink
    began.  This base is used to determine the accessibility of functions
    selected by overload resolution.  */

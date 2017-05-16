@@ -841,18 +841,15 @@ maybe_generic_this_capture (tree object, tree fns)
 	bool id_expr = TREE_CODE (fns) == TEMPLATE_ID_EXPR;
 	if (id_expr)
 	  fns = TREE_OPERAND (fns, 0);
-	for (; fns; fns = OVL_NEXT (fns))
-	  {
-	    tree fn = OVL_CURRENT (fns);
 
-	    if ((!id_expr || TREE_CODE (fn) == TEMPLATE_DECL)
-		&& DECL_NONSTATIC_MEMBER_FUNCTION_P (fn))
-	      {
-		/* Found a non-static member.  Capture this.  */
-		lambda_expr_this_capture (lam, true);
-		break;
-	      }
-	  }
+	for (lkp_iterator iter (fns); iter; ++iter)
+	  if ((!id_expr || TREE_CODE (*iter) == TEMPLATE_DECL)
+	      && DECL_NONSTATIC_MEMBER_FUNCTION_P (*iter))
+	    {
+	      /* Found a non-static member.  Capture this.  */
+	      lambda_expr_this_capture (lam, true);
+	      break;
+	    }
       }
 }
 

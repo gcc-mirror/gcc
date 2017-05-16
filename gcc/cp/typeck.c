@@ -2628,23 +2628,20 @@ check_template_keyword (tree decl)
 	permerror (input_location, "%qD is not a template", decl);
       else
 	{
-	  tree fns;
-	  fns = decl;
-	  if (BASELINK_P (fns))
-	    fns = BASELINK_FUNCTIONS (fns);
-	  while (fns)
+	  bool found = false;
+
+	  for (lkp_iterator iter (MAYBE_BASELINK_FUNCTIONS (decl));
+	       !found && iter; ++iter)
 	    {
-	      tree fn = OVL_CURRENT (fns);
+	      tree fn = *iter;
 	      if (TREE_CODE (fn) == TEMPLATE_DECL
-		  || TREE_CODE (fn) == TEMPLATE_ID_EXPR)
-		break;
-	      if (TREE_CODE (fn) == FUNCTION_DECL
-		  && DECL_USE_TEMPLATE (fn)
-		  && PRIMARY_TEMPLATE_P (DECL_TI_TEMPLATE (fn)))
-		break;
-	      fns = OVL_NEXT (fns);
+		  || TREE_CODE (fn) == TEMPLATE_ID_EXPR
+		  || (TREE_CODE (fn) == FUNCTION_DECL
+		      && DECL_USE_TEMPLATE (fn)
+		      && PRIMARY_TEMPLATE_P (DECL_TI_TEMPLATE (fn))))
+		found = true;
 	    }
-	  if (!fns)
+	  if (!found)
 	    permerror (input_location, "%qD is not a template", decl);
 	}
     }

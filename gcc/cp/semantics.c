@@ -5205,26 +5205,33 @@ omp_reduction_lookup (location_t loc, tree id, tree type, tree *baselinkp,
 						  type),
 				false, false);
   tree fns = id;
-  if (id && is_overloaded_fn (id))
-    id = get_fns (id);
-  for (; id; id = OVL_NEXT (id))
+  id = NULL_TREE;
+  if (fns && is_overloaded_fn (fns))
     {
-      tree fndecl = OVL_CURRENT (id);
-      if (TREE_CODE (fndecl) == FUNCTION_DECL)
+      for (lkp_iterator iter (get_fns (fns)); iter; ++iter)
 	{
-	  tree argtype = TREE_VALUE (TYPE_ARG_TYPES (TREE_TYPE (fndecl)));
-	  if (same_type_p (TREE_TYPE (argtype), type))
-	    break;
+	  tree fndecl = *iter;
+	  if (TREE_CODE (fndecl) == FUNCTION_DECL)
+	    {
+	      tree argtype = TREE_VALUE (TYPE_ARG_TYPES (TREE_TYPE (fndecl)));
+	      if (same_type_p (TREE_TYPE (argtype), type))
+		{
+		  id = fndecl;
+		  break;
+		}
+	    }
+	}
+
+      if (id && BASELINK_P (fns))
+	{
+	  if (baselinkp)
+	    *baselinkp = fns;
+	  else
+	    baselink = fns;
 	}
     }
-  if (id && BASELINK_P (fns))
-    {
-      if (baselinkp)
-	*baselinkp = fns;
-      else
-	baselink = fns;
-    }
-  if (id == NULL_TREE && CLASS_TYPE_P (type) && TYPE_BINFO (type))
+
+  if (!id && CLASS_TYPE_P (type) && TYPE_BINFO (type))
     {
       vec<tree> ambiguous = vNULL;
       tree binfo = TYPE_BINFO (type), base_binfo, ret = NULL_TREE;
@@ -9062,9 +9069,9 @@ classtype_has_nothrow_assign_or_copy_p (tree type, bool assign_p)
   else
     return false;
 
-  for (; fns; fns = OVL_NEXT (fns))
+  for (ovl_iterator iter (fns); iter; ++iter)
     {
-      tree fn = OVL_CURRENT (fns);
+      tree fn = *iter;
  
       if (assign_p)
 	{
