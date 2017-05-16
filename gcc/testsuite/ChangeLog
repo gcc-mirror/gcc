@@ -1,3 +1,11 @@
+2016-05-16  Matthew Wahab  <matthew.wahab@arm.com>
+
+	* gcc.target/arm/armv8_2-fp16-arith-1.c: Expand comment.  Update
+	expected output of vadd, vsub and vmul instructions.
+	* gcc.target/arm/armv8_2-fp16-arith-2.c: New.
+	* gcc.target/arm/armv8_2-fp16-neon-2.c: New.
+	* gcc.target/arm/armv8_2-fp16-neon-3.c: New.
+
 2017-05-15  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/80727

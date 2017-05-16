@@ -1,3 +1,17 @@
+2017-05-16  Matthew Wahab  <matthew.wahab@arm.com>
+
+	* config/arm/arm_neon.h (vadd_f16): Use standard arithmetic
+	operations in fast-math mode.
+	(vaddq_f16): Likewise.
+	(vmul_f16): Likewise.
+	(vmulq_f16): Likewise.
+	(vsub_f16): Likewise.
+	(vsubq_f16): Likewise.
+	* config/arm/neon.md (add<mode>3): New.
+	(sub<mode>3): New.
+	(fma:<VH:mode>3): New.  Also remove outdated comment.
+	(mul<mode>3): New.
+
 2017-05-16  Martin Liska  <mliska@suse.cz>
 
 	PR ipa/79849.
