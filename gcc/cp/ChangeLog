@@ -1,5 +1,28 @@
 2017-05-16  Nathan Sidwell  <nathan@acm.org>
 
+	* cp-tree.h (OVL_FIRST, OVL_NAME): New.
+	(ovl_first): New.
+	* constexpr.c (function_concept_check): Use OVL_FIRST.
+	* cvt.c (build_expr_type_conversion): Likewise.
+	* decl.c (poplevel, grokdeclarator): Use OVL_NAME.
+	* decl2.c (mark_used): Use OVL_FIRST.
+	* error.c (dump_decl): Use OVL_FIRST, OVL_NAME.
+	(dump_expr, location_of): Use OVL_FIRST.
+	* friend.c (do_friend): Use OVL_NAME.
+	* init.c (build_offset_ref): Use OVL_FIRST.
+	* mangle.c (write_member_name): Likewise.
+	(write_expression): Use OVL_NAME.
+	* method.c (strip_inheriting_ctors): Use OVL_FIRST.
+	* name-lookup.c (pushdecl_class_level): Use OVL_NAME.
+	* pt.c (check_explicit_specialization): Use OVL_FIRST.
+	(check_template_shadow): Likewise.
+	(tsubst_template_args): Use OVL_NAME.
+	(tsubst_baselink): Use OVL_FIRST.
+	* semantics.c (perform_koenig_lookup): Use OVL_NAME.
+	* tree.c (get_first_fn): Use OVL_FIRST.
+	* typeck.c (finish_class_member_access_expr): Use OVL_NAME.
+	(cp_build_addr_expr_1): Use OVL_FIRST.
+
 	* pt.c (tsubst_copy_and_build): Remove unnecessary COMPONENT_REF
 	peeking.
 	* semantics.c (finish_id_expression): Directly init local var.

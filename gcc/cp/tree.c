@@ -2169,7 +2169,7 @@ get_fns (tree from)
 tree
 get_first_fn (tree from)
 {
-  return OVL_CURRENT (get_fns (from));
+  return OVL_FIRST (get_fns (from));
 }
 
 /* Return a new OVL node, concatenating it with the old one.  */

@@ -683,7 +683,7 @@ poplevel (int keep, int reverse, int functionbody)
   for (link = decls; link; link = TREE_CHAIN (link))
     {
       decl = TREE_CODE (link) == TREE_LIST ? TREE_VALUE (link) : link;
-      tree name = DECL_NAME (OVL_CURRENT (decl));
+      tree name = OVL_NAME (decl);
 
       if (leaving_for_scope && VAR_P (decl)
 	  /* It's hard to make this ARM compatibility hack play nicely with
@@ -10104,10 +10104,7 @@ grokdeclarator (const cp_declarator *declarator,
 		      if (variable_template_p (dname))
 			dname = DECL_NAME (dname);
 		      else
-		        {
-		          gcc_assert (is_overloaded_fn (dname));
-		          dname = DECL_NAME (get_first_fn (dname));
-		        }
+			dname = OVL_NAME (dname);
 		    }
 		}
 		/* Fall through.  */

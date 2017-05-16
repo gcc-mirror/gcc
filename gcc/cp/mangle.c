@@ -2833,8 +2833,7 @@ write_member_name (tree member)
   else if (TREE_CODE (member) == TEMPLATE_ID_EXPR)
     {
       tree name = TREE_OPERAND (member, 0);
-      if (TREE_CODE (name) == OVERLOAD)
-	name = OVL_FUNCTION (name);
+      name = OVL_FIRST (name);
       write_member_name (name);
       write_template_args (TREE_OPERAND (member, 1));
     }
@@ -3053,10 +3052,7 @@ write_expression (tree expr)
   else if (TREE_CODE (expr) == TEMPLATE_ID_EXPR)
     {
       tree fn = TREE_OPERAND (expr, 0);
-      if (is_overloaded_fn (fn))
-	fn = get_first_fn (fn);
-      if (DECL_P (fn))
-	fn = DECL_NAME (fn);
+      fn = OVL_NAME (fn);
       if (IDENTIFIER_OPNAME_P (fn))
 	write_string ("on");
       write_unqualified_id (fn);
@@ -3257,7 +3253,7 @@ write_expression (tree expr)
 	    if ((TREE_CODE (fn) == FUNCTION_DECL
 		 || TREE_CODE (fn) == OVERLOAD)
 		&& type_dependent_expression_p_push (expr))
-	      fn = DECL_NAME (get_first_fn (fn));
+	      fn = OVL_NAME (fn);
 
 	    write_expression (fn);
 	  }
