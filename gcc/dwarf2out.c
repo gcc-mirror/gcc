@@ -17373,6 +17373,7 @@ loc_list_from_tree_1 (tree loc, int want_address,
 		&& early_dwarf
 		&& current_function_decl
 		&& want_address != 1
+		&& ! DECL_IGNORED_P (loc)
 		&& (INTEGRAL_TYPE_P (TREE_TYPE (loc))
 		    || POINTER_TYPE_P (TREE_TYPE (loc)))
 		&& DECL_CONTEXT (loc) == current_function_decl
