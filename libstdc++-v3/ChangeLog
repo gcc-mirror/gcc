@@ -1,5 +1,9 @@
 2017-05-16  Jonathan Wakely  <jwakely@redhat.com>
 
+	* doc/xml/manual/appendix_contributing.xml: Link to test docs and
+	note higher DejaGnu version requirement.
+	* doc/html/*: Regenerate.
+
 	* doc/xml/manual/appendix_contributing.xml: Link to the list of bad
 	identifiers.
 	* doc/html/*: Regenerate.
