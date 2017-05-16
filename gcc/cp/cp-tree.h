@@ -371,16 +371,16 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
       BIND_EXPR_BODY_BLOCK (in BIND_EXPR)
       CALL_EXPR_ORDERED_ARGS (in CALL_EXPR, AGGR_INIT_EXPR)
       DECLTYPE_FOR_REF_CAPTURE (in DECLTYPE_TYPE)
-      OVL_NESTED_P (in OVERLOAD)
       CONSTUCTOR_C99_COMPOUND_LITERAL (in CONSTRUCTOR)
       DECL_MODULE_EXPORT_P (in _DECL)
+      OVL_NESTED_P (in OVERLOAD)
    4: TREE_HAS_CONSTRUCTOR (in INDIRECT_REF, SAVE_EXPR, CONSTRUCTOR,
 	  CALL_EXPR, or FIELD_DECL).
       IDENTIFIER_TYPENAME_P (in IDENTIFIER_NODE)
       DECL_TINFO_P (in VAR_DECL)
       FUNCTION_REF_QUALIFIED (in FUNCTION_TYPE, METHOD_TYPE)
-      LOOKUP_FOUND_P (in RECORD_TYPE, UNION_TYPE, NAMESPACE_DECL)
       OVL_LOOKUP_P (in OVERLOAD)
+      LOOKUP_FOUND_P (in RECORD_TYPE, UNION_TYPE, NAMESPACE_DECL)
    5: C_IS_RESERVED_WORD (in IDENTIFIER_NODE)
       DECL_VTABLE_OR_VTT_P (in VAR_DECL)
       FUNCTION_RVALUE_QUALIFIED (in FUNCTION_TYPE, METHOD_TYPE)
@@ -6915,16 +6915,10 @@ extern tree hash_tree_chain			(tree, tree);
 extern tree build_qualified_name		(tree, tree, tree, bool);
 extern tree build_ref_qualified_type		(tree, cp_ref_qualifier);
 extern tree make_module_vec			(unsigned clusters);
-inline tree
-ovl_first (tree node)
-{
-  while (TREE_CODE (node) == OVERLOAD)
-    node = OVL_FUNCTION (node);
-  return node;
-}
-extern tree ovl_skip_hidden			(tree);
+inline tree ovl_first				(tree) ATTRIBUTE_PURE;
 extern tree ovl_make				(tree fn,
 						 tree next = NULL_TREE);
+extern tree ovl_skip_hidden			(tree);
 extern tree ovl_insert				(tree maybe_ovl, tree fn,
 						 bool using_p = false);
 extern void lookup_keep				(tree lookup, bool keep);
@@ -6934,8 +6928,8 @@ extern tree lookup_maybe_add			(tree lookup, tree ovl);
 extern int is_overloaded_fn			(tree);
 extern bool really_overloaded_fn		(tree);
 extern tree dependent_name			(tree);
-extern tree get_fns				(tree);
-extern tree get_first_fn			(tree);
+extern tree get_fns				(tree) ATTRIBUTE_PURE;
+extern tree get_first_fn			(tree) ATTRIBUTE_PURE;
 extern tree ovl_scope				(tree);
 extern const char *cxx_printable_name		(tree, int);
 extern const char *cxx_printable_name_translate	(tree, int);
@@ -7379,6 +7373,16 @@ extern void cp_ubsan_instrument_member_accesses (tree *);
 extern tree cp_ubsan_maybe_instrument_downcast	(location_t, tree, tree, tree);
 extern tree cp_ubsan_maybe_instrument_cast_to_vbase (location_t, tree, tree);
 extern void cp_ubsan_maybe_initialize_vtbl_ptrs (tree);
+
+/* Inline bodies.  */
+
+inline tree
+ovl_first (tree node)
+{
+  while (TREE_CODE (node) == OVERLOAD)
+    node = OVL_FUNCTION (node);
+  return node;
+}
 
 /* -- end of C++ */
 

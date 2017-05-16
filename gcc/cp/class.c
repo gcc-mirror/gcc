@@ -5668,7 +5668,7 @@ type_requires_array_cookie (tree type)
   if (!fns || fns == error_mark_node)
     return false;
   /* Loop through all of the functions.  */
-  for (ovl_iterator iter (BASELINK_FUNCTIONS (fns)); iter; ++iter)
+  for (lkp_iterator iter (BASELINK_FUNCTIONS (fns)); iter; ++iter)
     {
       tree fn = *iter;
 
@@ -7463,7 +7463,7 @@ finish_struct (tree t, tree attributes)
 	  {
 	    tree fn = strip_using_decl (x);
 	    if (is_overloaded_fn (fn))
-	      for (ovl_iterator iter (fn); iter; ++iter)
+	      for (lkp_iterator iter (fn); iter; ++iter)
 		add_method (t, *iter, true);
 	  }
 

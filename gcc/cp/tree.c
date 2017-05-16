@@ -3714,8 +3714,8 @@ cp_tree_equal (tree t1, tree t2)
     case OVERLOAD:
       {
 	/* Two overloads. Must be exactly the same set of decls.  */
-	ovl_iterator first (t1);
-	ovl_iterator second (t2);
+	lkp_iterator first (t1);
+	lkp_iterator second (t2);
 
 	for (; first && second; ++first, ++second)
 	  if (*first != *second)

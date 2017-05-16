@@ -1740,13 +1740,8 @@ iterative_hash_template_arg (tree arg, hashval_t val)
       return val;
 
     case OVERLOAD:
-<<<<<<< .working
-      for (ovl_iterator iter (arg); iter; ++iter)
-	val = iterative_hash_template_arg (*iter, val);
-=======
       for (lkp_iterator iter (arg); iter; ++iter)
 	val = iterative_hash_template_arg (*iter, val);
->>>>>>> .merge-right.r248116
       return val;
 
     case CONSTRUCTOR:

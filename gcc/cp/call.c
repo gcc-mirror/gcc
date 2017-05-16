@@ -6218,7 +6218,7 @@ build_op_delete_call (enum tree_code code, tree addr, tree size,
 	     the usual deallocation function, so we shouldn't complain
 	     about using the operator delete (void *, size_t).  */
 	  if (DECL_CLASS_SCOPE_P (fn))
-	    for (ovl_iterator iter (MAYBE_BASELINK_FUNCTIONS (fns));
+	    for (lkp_iterator iter (MAYBE_BASELINK_FUNCTIONS (fns));
 		 iter; ++iter)
 	      {
 		tree elt = *iter;
@@ -6260,7 +6260,7 @@ build_op_delete_call (enum tree_code code, tree addr, tree size,
        allocation function. If the lookup finds a single matching
        deallocation function, that function will be called; otherwise, no
        deallocation function will be called."  */
-    for (ovl_iterator iter (MAYBE_BASELINK_FUNCTIONS (fns)); iter; ++iter)
+    for (lkp_iterator iter (MAYBE_BASELINK_FUNCTIONS (fns)); iter; ++iter)
       {
 	tree elt = *iter;
 	if (usual_deallocation_fn_p (elt))
