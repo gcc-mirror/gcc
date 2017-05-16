@@ -1,3 +1,8 @@
+2017-05-16  Nathan Sidwell  <nathan@acm.org>
+
+	* typeck2.c (cxx_incomplete_type_diagnostic): Revert change and
+	check is_overloaded_fn.
+
 2017-05-16  Martin Liska  <mliska@suse.cz>
 
 	* parser.c (cp_lexer_print_token): Add default value for flags
@@ -58,7 +63,7 @@
 	(get_first_fn) Document.
 	* typeck.c (cp_build_addr_expr_1): Pass arg directly to
 	really_overloaded_fn.
-	* typeck2.c (cxx_inomplete_type_diagnostic): Use get_first_fn directly.
+	* typeck2.c (cxx_incomplete_type_diagnostic): Use get_first_fn directly.
 
 	* cp-tree.h (SCOPE_DEPTH): New.
 	* name-lookup.h (is_nested_namespace): Declare.
