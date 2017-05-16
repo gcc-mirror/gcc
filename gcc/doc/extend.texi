@@ -16321,6 +16321,10 @@ vector signed short vec_mule (vector signed char,
 vector unsigned int vec_mule (vector unsigned short,
                               vector unsigned short);
 vector signed int vec_mule (vector signed short, vector signed short);
+vector unsigned int vec_mule (vector unsigned int,
+                              vector unsigned int);
+vector signed int vec_mule (vector signed int,
+                            vector signed int);
 
 vector signed int vec_vmulesh (vector signed short,
                                vector signed short);
@@ -16340,6 +16344,7 @@ vector signed short vec_mulo (vector signed char, vector signed char);
 vector unsigned int vec_mulo (vector unsigned short,
                               vector unsigned short);
 vector signed int vec_mulo (vector signed short, vector signed short);
+vector unsigned int vec_mulo (vector unsigned short, vector unsigned short);
 
 vector signed int vec_vmulosh (vector signed short,
                                vector signed short);
@@ -16640,6 +16645,31 @@ vector unsigned char vec_sld (vector unsigned char,
 vector bool char vec_sld (vector bool char,
                           vector bool char,
                           const int);
+
+vector signed char vec_sldw (vector signed char,
+                             vector signed char,
+                             const int);
+vector unsigned char vec_sldw (vector unsigned char,
+                               vector unsigned char,
+                               const int);
+vector signed short vec_sldw (vector signed short,
+                              vector signed short,
+                              const int);
+vector unsigned short vec_sldw (vector unsigned short,
+                                vector unsigned short,
+                                const int);
+vector signed int vec_sldw (vector signed int,
+                            vector signed int,
+                            const int);
+vector unsigned int vec_sldw (vector unsigned int,
+                              vector unsigned int,
+                              const int);
+vector signed long long vec_sldw (vector signed long long,
+                                  vector signed long long,
+                                  const int);
+vector unsigned long long vec_sldw (vector unsigned long long,
+                                    vector unsigned long long,
+                                    const int);
 
 vector signed int vec_sll (vector signed int,
                            vector unsigned int);
@@ -17909,6 +17939,8 @@ vector long long vec_vbpermq (vector signed char, vector signed char);
 vector long long vec_vbpermq (vector unsigned char, vector unsigned char);
 
 vector unsigned char vec_bperm (vector unsigned char, vector unsigned char);
+vector unsigned char vec_bperm (vector unsigned long long,
+                                vector unsigned char);
 vector unsigned long long vec_bperm (vector unsigned __int128,
                                      vector unsigned char);
 
