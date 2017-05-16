@@ -2428,6 +2428,15 @@ cp_fold (tree x)
       x = fold (x);
       break;
 
+    case SAVE_EXPR:
+      /* A SAVE_EXPR might contain e.g. (0 * i) + (0 * j), which, after
+	 folding, evaluates to an invariant.  In that case no need to wrap
+	 this folded tree with a SAVE_EXPR.  */
+      r = cp_fold (TREE_OPERAND (x, 0));
+      if (tree_invariant_p (r))
+	x = r;
+      break;
+
     default:
       return org_x;
     }

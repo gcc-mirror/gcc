@@ -247,6 +247,7 @@
 #define vec_sel __builtin_vec_sel
 #define vec_sl __builtin_vec_sl
 #define vec_sld __builtin_vec_sld
+#define vec_sldw __builtin_vsx_xxsldwi
 #define vec_sll __builtin_vec_sll
 #define vec_slo __builtin_vec_slo
 #define vec_splat __builtin_vec_splat
