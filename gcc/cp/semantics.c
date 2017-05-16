@@ -3749,9 +3749,8 @@ finish_id_expression (tree id_expression,
 	}
       else if (is_overloaded_fn (decl))
 	{
-	  tree first_fn;
+	  tree first_fn = get_first_fn (decl);
 
-	  first_fn = get_first_fn (decl);
 	  if (TREE_CODE (first_fn) == TEMPLATE_DECL)
 	    first_fn = DECL_TEMPLATE_RESULT (first_fn);
 
@@ -5615,7 +5614,6 @@ finish_omp_reduction_clause (tree c, bool *need_default_ctor, bool *need_dtor)
     {
       if (id == error_mark_node)
 	return true;
-      id = OVL_CURRENT (id);
       mark_used (id);
       tree body = DECL_SAVED_TREE (id);
       if (!body)
@@ -6924,13 +6922,13 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	    {
 	      if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_TO_DECLARE)
 		{
-		  if (TREE_CODE (t) == OVERLOAD && OVL_CHAIN (t))
-		    error_at (OMP_CLAUSE_LOCATION (c),
-			      "overloaded function name %qE in clause %qs", t,
-			      omp_clause_code_name[OMP_CLAUSE_CODE (c)]);
-		  else if (TREE_CODE (t) == TEMPLATE_ID_EXPR)
+		  if (TREE_CODE (t) == TEMPLATE_ID_EXPR)
 		    error_at (OMP_CLAUSE_LOCATION (c),
 			      "template %qE in clause %qs", t,
+			      omp_clause_code_name[OMP_CLAUSE_CODE (c)]);
+		  else if (really_overloaded_fn (t))
+		    error_at (OMP_CLAUSE_LOCATION (c),
+			      "overloaded function name %qE in clause %qs", t,
 			      omp_clause_code_name[OMP_CLAUSE_CODE (c)]);
 		  else
 		    error_at (OMP_CLAUSE_LOCATION (c),

@@ -17187,10 +17187,9 @@ tsubst_copy_and_build (tree t,
 		    if (diag)
 		      {
 			tree fn = unq;
+
 			if (INDIRECT_REF_P (fn))
 			  fn = TREE_OPERAND (fn, 0);
-			if (TREE_CODE (fn) == COMPONENT_REF)
-			  fn = TREE_OPERAND (fn, 1);
 			if (is_overloaded_fn (fn))
 			  fn = get_first_fn (fn);
 

@@ -5603,7 +5603,7 @@ cp_build_addr_expr_1 (tree arg, bool strict_lvalue, tsubst_flags_t complain)
   gcc_assert (!identifier_p (arg) || !IDENTIFIER_OPNAME_P (arg));
 
   if (TREE_CODE (arg) == COMPONENT_REF && type_unknown_p (arg)
-      && !really_overloaded_fn (TREE_OPERAND (arg, 1)))
+      && !really_overloaded_fn (arg))
     {
       /* They're trying to take the address of a unique non-static
 	 member function.  This is ill-formed (except in MS-land),
