@@ -381,31 +381,11 @@ amigaos_prelink_hook((const char **)(LD1_ARGV), (STRIP))
 /* Note: this is an extension of m68k_args */
 
 
-/* A C type for declaring a variable that is used as the first
-   argument of `FUNCTION_ARG' and other related values.  */
-/* Max. number of data, address and float registers to be used for passing
-   integer, pointer and float arguments when TARGET_REGPARM.
-   It's 4, so d0-d3, a0-a3 and fp0-fp3 can be used.  */
-#undef AMIGAOS_MAX_REGPARM
-#define AMIGAOS_MAX_REGPARM 4
-
-/* The default number of data, address and float registers to use when
-   user specified '-mregparm' switch, not '-mregparm=<value>' option.  */
-#undef AMIGAOS_DEFAULT_REGPARM
-#define AMIGAOS_DEFAULT_REGPARM 2
-
-
 #undef CLASS_MAX_NREGS
 #define CLASS_MAX_NREGS(CLASS, MODE)	\
  ((CLASS) == FP_REGS ? GET_MODE_NUNITS (MODE) \
  : ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD))
 
-/* 1 if N is a possible register number for function argument passing.  */
-#undef FUNCTION_ARG_REGNO_P
-#define FUNCTION_ARG_REGNO_P(N)			\
-  ((((int)N) >= 0 && (N) < AMIGAOS_MAX_REGPARM)		\
-   || ((N) >= 8 && (N) < 8 + AMIGAOS_MAX_REGPARM)	\
-   || (TARGET_68881 && (N) >= 16 && (N) < 16 + AMIGAOS_MAX_REGPARM))
 
 /*
    On the m68k, this is a structure:

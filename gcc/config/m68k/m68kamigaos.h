@@ -670,3 +670,21 @@ extern int amiga_is_const_pic_ref(const_rtx x);
 
 #define EH_TABLES_CAN_BE_READ_ONLY 1
 
+
+/* Max. number of data, address and float registers to be used for passing
+   integer, pointer and float arguments when TARGET_REGPARM.
+   It's 4, so d0-d3, a0-a3 and fp0-fp3 can be used.  */
+#undef AMIGAOS_MAX_REGPARM
+#define AMIGAOS_MAX_REGPARM 4
+
+/* The default number of data, address and float registers to use when
+   user specified '-mregparm' switch, not '-mregparm=<value>' option.  */
+#undef AMIGAOS_DEFAULT_REGPARM
+#define AMIGAOS_DEFAULT_REGPARM 2
+
+/* 1 if N is a possible register number for function argument passing.  */
+#undef FUNCTION_ARG_REGNO_P
+#define FUNCTION_ARG_REGNO_P(N)	amigaos_function_arg_reg(N)
+
+extern int
+amigaos_function_arg_reg(unsigned regno);
