@@ -2304,7 +2304,7 @@ finish_call_expr (tree fn, vec<tree, va_gc> **args, bool disallow_virtual,
 	  KOENIG_LOOKUP_P (result) = koenig_p;
 	  if (is_overloaded_fn (fn))
 	    {
-	      fn = get_ovl (fn);
+	      fn = get_fns (fn);
 	      lookup_keep (fn, true);
 	    }
 
@@ -2384,13 +2384,12 @@ finish_call_expr (tree fn, vec<tree, va_gc> **args, bool disallow_virtual,
 	[class.access.base] says that we need to convert 'this' to B* as
 	part of the access, so we pass 'B' to maybe_dummy_object.  */
 
-      if (DECL_MAYBE_IN_CHARGE_CONSTRUCTOR_P (get_ovl (fn, true)))
+      if (DECL_MAYBE_IN_CHARGE_CONSTRUCTOR_P (get_first_fn (fn)))
 	{
 	  /* A constructor call always uses a dummy object.  (This constructor
 	     call which has the form A::A () is actually invalid and we are
 	     going to reject it later in build_new_method_call.)  */
-	  object
-	    = build_dummy_object (BINFO_TYPE (BASELINK_ACCESS_BINFO (fn)));
+	  object = build_dummy_object (BINFO_TYPE (BASELINK_ACCESS_BINFO (fn)));
 	}
       else
 	object = maybe_dummy_object (BINFO_TYPE (BASELINK_ACCESS_BINFO (fn)),
@@ -2480,7 +2479,7 @@ finish_call_expr (tree fn, vec<tree, va_gc> **args, bool disallow_virtual,
 
   /* Free or retain OVERLOADs from lookup.  */
   if (is_overloaded_fn (orig_fn))
-    lookup_keep (get_ovl (orig_fn), processing_template_decl);
+    lookup_keep (get_fns (orig_fn), processing_template_decl);
 
   return result;
 }
@@ -3740,7 +3739,7 @@ finish_id_expression (tree id_expression,
 	}
       else if (is_overloaded_fn (decl))
 	{
-	  tree first_fn = get_ovl (decl, true);
+	  tree first_fn = get_first_fn (decl);
 
 	  if (TREE_CODE (first_fn) == TEMPLATE_DECL)
 	    first_fn = DECL_TEMPLATE_RESULT (first_fn);
@@ -5204,7 +5203,7 @@ omp_reduction_lookup (location_t loc, tree id, tree type, tree *baselinkp,
   id = NULL_TREE;
   if (fns && is_overloaded_fn (fns))
     {
-      for (ovl_iterator iter (get_ovl (fns)); iter; ++iter)
+      for (ovl_iterator iter (get_fns (fns)); iter; ++iter)
 	{
 	  tree fndecl = *iter;
 	  if (TREE_CODE (fndecl) == FUNCTION_DECL)
@@ -5272,7 +5271,6 @@ omp_reduction_lookup (location_t loc, tree id, tree type, tree *baselinkp,
 	}
       id = ret;
     }
-
   if (id && baselink)
     perform_or_defer_access_check (BASELINK_BINFO (baselink),
 				   id, id, tf_warning_or_error);

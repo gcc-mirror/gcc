@@ -386,11 +386,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // The _M_get operations have _M_engaged as a precondition.
       constexpr _Tp&
       _M_get() noexcept
-      { return this->_M_payload._M_payload; }
+      {
+	__glibcxx_assert(_M_is_engaged());
+	return this->_M_payload._M_payload;
+      }
 
       constexpr const _Tp&
       _M_get() const noexcept
-      { return this->_M_payload._M_payload; }
+      {
+	__glibcxx_assert(_M_is_engaged());
+	return this->_M_payload._M_payload;
+      }
 
       // The _M_construct operation has !_M_engaged as a precondition
       // while _M_destruct has _M_engaged as a precondition.

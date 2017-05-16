@@ -2360,6 +2360,7 @@ lazily_declare_fn (special_function_kind sfk, tree type)
     check_for_override (fn, type);
   /* Add it to CLASSTYPE_METHOD_VEC.  */
   bool added = add_method (type, fn, false);
+  gcc_assert (added);
   /* Add it to TYPE_METHODS.  */
   if (sfk == sfk_destructor
       && DECL_VIRTUAL_P (fn))

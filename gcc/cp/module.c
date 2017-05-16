@@ -1108,7 +1108,7 @@ cpms_in::header (FILE *d)
   if (v != ver)
     {
       bool have_a_go = false;
-      char v_dform[12], ver_dform[12];
+      char v_dform[16], ver_dform[16];
       sprintf (v_dform, "%04u/%02u/%02u",
 	       v_date / 10000, (v_date / 100) % 100, (v_date % 100));
       sprintf (ver_dform, "%04u/%02u/%02u",
@@ -1585,7 +1585,7 @@ cpms_in::tag_definition (FILE *d)
 	  ; // FIXME check same
 	else if (mod != mod_ix)
 	  {
-	    error ("unexpected definition of %q#d", decl);
+	    error ("unexpected definition of %q#D", decl);
 	    r.bad ();
 	  }
 	else

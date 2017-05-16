@@ -1822,7 +1822,7 @@ invalid_nonstatic_memfn_p (location_t loc, tree expr, tsubst_flags_t complain)
   if (flag_ms_extensions)
     return false;
   if (is_overloaded_fn (expr) && !really_overloaded_fn (expr))
-    expr = get_ovl (expr, true);
+    expr = get_first_fn (expr);
   if (DECL_NONSTATIC_MEMBER_FUNCTION_P (expr))
     {
       if (complain & tf_error)
@@ -5415,7 +5415,7 @@ build_x_unary_op (location_t loc, enum tree_code code, cp_expr xarg,
     {
       if (is_overloaded_fn (xarg))
 	{
-	  tree fn = get_ovl (xarg, true);
+	  tree fn = get_first_fn (xarg);
 	  if (DECL_CONSTRUCTOR_P (fn) || DECL_DESTRUCTOR_P (fn))
 	    {
 	      if (complain & tf_error)
@@ -5606,7 +5606,7 @@ cp_build_addr_expr_1 (tree arg, bool strict_lvalue, tsubst_flags_t complain)
 	 is used here to remove this const from the diagnostics
 	 and the created OFFSET_REF.  */
       tree base = TYPE_MAIN_VARIANT (TREE_TYPE (TREE_OPERAND (arg, 0)));
-      tree fn = get_ovl (arg, true);
+      tree fn = get_first_fn (TREE_OPERAND (arg, 1));
       if (!mark_used (fn, complain) && !(complain & tf_error))
 	return error_mark_node;
 

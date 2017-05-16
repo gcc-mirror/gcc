@@ -222,9 +222,9 @@ matmul_r4_avx (gfc_array_r4 * const restrict retarray,
       bxstride = GFC_DESCRIPTOR_STRIDE(b,0);
 
       /* bystride should never be used for 1-dimensional b.
-	 in case it is we want it to cause a segfault, rather than
-	 an incorrect result. */
-      bystride = 0xDEADBEEF;
+         The value is only used for calculation of the
+         memory by the buffer.  */
+      bystride = 256;
       ycount = 1;
     }
   else
@@ -774,9 +774,9 @@ matmul_r4_avx2 (gfc_array_r4 * const restrict retarray,
       bxstride = GFC_DESCRIPTOR_STRIDE(b,0);
 
       /* bystride should never be used for 1-dimensional b.
-	 in case it is we want it to cause a segfault, rather than
-	 an incorrect result. */
-      bystride = 0xDEADBEEF;
+         The value is only used for calculation of the
+         memory by the buffer.  */
+      bystride = 256;
       ycount = 1;
     }
   else
@@ -1326,9 +1326,9 @@ matmul_r4_avx512f (gfc_array_r4 * const restrict retarray,
       bxstride = GFC_DESCRIPTOR_STRIDE(b,0);
 
       /* bystride should never be used for 1-dimensional b.
-	 in case it is we want it to cause a segfault, rather than
-	 an incorrect result. */
-      bystride = 0xDEADBEEF;
+         The value is only used for calculation of the
+         memory by the buffer.  */
+      bystride = 256;
       ycount = 1;
     }
   else
@@ -1874,9 +1874,9 @@ matmul_r4_vanilla (gfc_array_r4 * const restrict retarray,
       bxstride = GFC_DESCRIPTOR_STRIDE(b,0);
 
       /* bystride should never be used for 1-dimensional b.
-	 in case it is we want it to cause a segfault, rather than
-	 an incorrect result. */
-      bystride = 0xDEADBEEF;
+         The value is only used for calculation of the
+         memory by the buffer.  */
+      bystride = 256;
       ycount = 1;
     }
   else
@@ -2480,9 +2480,9 @@ matmul_r4 (gfc_array_r4 * const restrict retarray,
       bxstride = GFC_DESCRIPTOR_STRIDE(b,0);
 
       /* bystride should never be used for 1-dimensional b.
-	 in case it is we want it to cause a segfault, rather than
-	 an incorrect result. */
-      bystride = 0xDEADBEEF;
+         The value is only used for calculation of the
+         memory by the buffer.  */
+      bystride = 256;
       ycount = 1;
     }
   else

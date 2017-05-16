@@ -4224,6 +4224,7 @@ pushdecl_class_level (tree x)
     return true;
 
   subtime = timevar_cond_start (TV_NAME_LOOKUP);
+  /* Get the name of X.  */
   tree name = OVL_NAME (x);
 
   if (name)
@@ -5302,9 +5303,8 @@ lookup_qualified_name (tree scope, tree name, int prefer_type, bool complain,
 	t = lookup.value;
 
       /* If we have a known type overload, pull it out.  This can happen
-	 for both using decls and unhidden functions.  */
-      if (t && TREE_CODE (t) == OVERLOAD
-	  && TREE_TYPE (t) != unknown_type_node)
+	 for using decls.  */
+      if (t && TREE_CODE (t) == OVERLOAD && TREE_TYPE (t) != unknown_type_node)
 	t = OVL_FUNCTION (t);
     }
   else if (cxx_dialect != cxx98 && TREE_CODE (scope) == ENUMERAL_TYPE)

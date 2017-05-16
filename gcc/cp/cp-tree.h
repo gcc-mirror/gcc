@@ -6931,12 +6931,11 @@ extern void lookup_keep				(tree lookup, bool keep);
 extern void lookup_mark				(tree lookup, bool val);
 extern tree lookup_add				(tree lookup, tree ovl);
 extern tree lookup_maybe_add			(tree lookup, tree ovl);
-extern tree get_ovl				(tree expr,
-						 bool want_first = false)
-  ATTRIBUTE_NTC_PURE;
 extern int is_overloaded_fn			(tree);
 extern bool really_overloaded_fn		(tree);
 extern tree dependent_name			(tree);
+extern tree get_fns				(tree);
+extern tree get_first_fn			(tree);
 extern tree ovl_scope				(tree);
 extern const char *cxx_printable_name		(tree, int);
 extern const char *cxx_printable_name_translate	(tree, int);

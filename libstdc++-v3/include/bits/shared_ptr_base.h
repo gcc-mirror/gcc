@@ -59,6 +59,10 @@
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
+#if !__cpp_rtti
+  class type_info;
+#endif
+
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #if _GLIBCXX_USE_DEPRECATED
@@ -66,10 +70,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
   template<typename> class auto_ptr;
 #pragma GCC diagnostic pop
-#endif
-
-#if !__cpp_rtti
-  class type_info;
 #endif
 
  /**

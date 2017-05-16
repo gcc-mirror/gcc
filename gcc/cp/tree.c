@@ -2429,24 +2429,6 @@ ovl_skip_hidden (tree ovl)
   return ovl;
 }
 
-/* Get the overload set that an EXPR refers to.  */
-
-tree
-get_ovl (tree expr, bool want_first)
-{
-  if (TREE_CODE (expr) == OFFSET_REF
-      || TREE_CODE (expr) == COMPONENT_REF)
-    expr = TREE_OPERAND (expr, 1);
-  expr = MAYBE_BASELINK_FUNCTIONS (expr);
-  if (TREE_CODE (expr) == TEMPLATE_ID_EXPR)
-    expr = TREE_OPERAND (expr, 0);
-  gcc_assert (TREE_CODE (expr) == OVERLOAD
-	      || TREE_CODE (expr) == FUNCTION_DECL);
-  if (want_first)
-    expr = OVL_FIRST (expr);
-  return expr;
-}
-
 /* Returns nonzero if X is an expression for a (possibly overloaded)
    function.  If "f" is a function or function template, "f", "c->f",
    "c.f", "C::f", and "f<int>" will all be considered possibly
@@ -2497,6 +2479,32 @@ bool
 really_overloaded_fn (tree x)
 {
   return is_overloaded_fn (x) == 2;
+}
+
+/* Get the overload set FROM refers to.  */
+
+tree
+get_fns (tree from)
+{
+  /* A baselink is also considered an overloaded function.  */
+  if (TREE_CODE (from) == OFFSET_REF
+      || TREE_CODE (from) == COMPONENT_REF)
+    from = TREE_OPERAND (from, 1);
+  if (BASELINK_P (from))
+    from = BASELINK_FUNCTIONS (from);
+  if (TREE_CODE (from) == TEMPLATE_ID_EXPR)
+    from = TREE_OPERAND (from, 0);
+  gcc_assert (TREE_CODE (from) == OVERLOAD
+	      || TREE_CODE (from) == FUNCTION_DECL);
+  return from;
+}
+
+/* Return the first function of the overload set FROM refers to.  */
+
+tree
+get_first_fn (tree from)
+{
+  return OVL_FIRST (get_fns (from));
 }
 
 /* Return the scope where the overloaded functions OVL were found.  */

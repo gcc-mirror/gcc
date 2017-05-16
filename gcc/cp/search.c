@@ -1047,7 +1047,7 @@ shared_member_p (tree t)
     return 1;
   if (is_overloaded_fn (t))
     {
-      for (ovl_iterator iter (get_ovl (t)); iter; ++iter)
+      for (ovl_iterator iter (get_fns (t)); iter; ++iter)
 	if (DECL_NONSTATIC_MEMBER_FUNCTION_P (*iter))
 	  return 0;
       return 1;
@@ -1330,7 +1330,7 @@ lookup_member (tree xbasetype, tree name, int protect, bool want_type,
   if (rval && protect 
       && !really_overloaded_fn (rval))
     {
-      tree decl = is_overloaded_fn (rval) ? get_ovl (rval, true) : rval;
+      tree decl = is_overloaded_fn (rval) ? get_first_fn (rval) : rval;
       if (!DECL_NONSTATIC_MEMBER_FUNCTION_P (decl)
 	  && !perform_or_defer_access_check (basetype_path, decl, decl,
 					     complain))

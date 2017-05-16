@@ -1,3 +1,57 @@
+2017-05-16  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-tree.h (OVL_FIRST, OVL_NAME): New.
+	(ovl_first): New.
+	* constexpr.c (function_concept_check): Use OVL_FIRST.
+	* cvt.c (build_expr_type_conversion): Likewise.
+	* decl.c (poplevel, grokdeclarator): Use OVL_NAME.
+	* decl2.c (mark_used): Use OVL_FIRST.
+	* error.c (dump_decl): Use OVL_FIRST, OVL_NAME.
+	(dump_expr, location_of): Use OVL_FIRST.
+	* friend.c (do_friend): Use OVL_NAME.
+	* init.c (build_offset_ref): Use OVL_FIRST.
+	* mangle.c (write_member_name): Likewise.
+	(write_expression): Use OVL_NAME.
+	* method.c (strip_inheriting_ctors): Use OVL_FIRST.
+	* name-lookup.c (pushdecl_class_level): Use OVL_NAME.
+	* pt.c (check_explicit_specialization): Use OVL_FIRST.
+	(check_template_shadow): Likewise.
+	(tsubst_template_args): Use OVL_NAME.
+	(tsubst_baselink): Use OVL_FIRST.
+	* semantics.c (perform_koenig_lookup): Use OVL_NAME.
+	* tree.c (get_first_fn): Use OVL_FIRST.
+	* typeck.c (finish_class_member_access_expr): Use OVL_NAME.
+	(cp_build_addr_expr_1): Use OVL_FIRST.
+
+	* pt.c (tsubst_copy_and_build): Remove unnecessary COMPONENT_REF
+	peeking.
+	* semantics.c (finish_id_expression): Directly init local var.
+	(finish_omp_reduction_clause): Use really_overloaded_fn.
+	* tree.c (get_fns): Document.  Assert we got an overload.
+	(get_first_fn) Document.
+	* typeck.c (cp_build_addr_expr_1): Pass arg directly to
+	really_overloaded_fn.
+	* typeck2.c (cxx_inomplete_type_diagnostic): Use get_first_fn directly.
+
+	* cp-tree.h (SCOPE_DEPTH): New.
+	* name-lookup.h (is_nested_namespace): Declare.
+	* name-lookup.c (is_nested_namespace): New.
+	(is_ancestor): Use it.
+	(set_decl_namespace): Likewise.
+	(push_namespace): Set SCOPE_DEPTH.
+	* pt.c (check_specialization_namespace): Use is_nested_namespace.
+	(check_unqualigied_spec_or_inst): Likewise.
+
+2017-05-15  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/79369
+	* cp-tree.h (DECL_NAMESPACE_INLINE_P): New.
+	* name-lookup.h (push_namespace): Return int, add make_inline arg.
+	* name-lookup.c (push_namespace): Deal with inline directly.
+	Return pushed count.
+	* parser.c (cp_parser_namespace_definition): Adjust for
+	push_namespace change.
+
 2017-05-11  Nathan Sidwell  <nathan@acm.org>
 
 	* cp-lang.c (get_global_decls, cxx_pushdecl, LANG_HOOK_GETDECLS,

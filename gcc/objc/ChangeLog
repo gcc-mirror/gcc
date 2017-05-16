@@ -1,3 +1,9 @@
+2017-05-16  Sylvestre Ledru  <sylvestre@debian.org>
+
+	* objc-runtime-shared-support.c (build_module_descriptor):
+	Remove unnecessary conditional when building instance of
+	objc_module. CID 1406758
+
 2017-05-09  Nathan Sidwell  <nathan@acm.org>
 
 	* objc-gnu-runtime-abi-01.c (objc_add_static_instance): Use

@@ -1785,7 +1785,7 @@ iterative_hash_template_arg (tree arg, hashval_t val)
     case BASELINK:
       val = iterative_hash_template_arg (BINFO_TYPE (BASELINK_BINFO (arg)),
 					 val);
-      return iterative_hash_template_arg (DECL_NAME (get_ovl (arg, true)),
+      return iterative_hash_template_arg (DECL_NAME (get_first_fn (arg)),
 					  val);
 
     case MODOP_EXPR:
@@ -17132,7 +17132,7 @@ tsubst_copy_and_build (tree t,
 		 /* If lookup found a member function, the Koenig lookup is
 		    not appropriate, even if an unqualified-name was used
 		    to denote the function.  */
-		 && !DECL_FUNCTION_MEMBER_P (get_ovl (function, true)))
+		 && !DECL_FUNCTION_MEMBER_P (get_first_fn (function)))
 		|| identifier_p (function))
 	    /* Only do this when substitution turns a dependent call
 	       into a non-dependent call.  */
@@ -17186,7 +17186,7 @@ tsubst_copy_and_build (tree t,
 			if (INDIRECT_REF_P (fn))
 			  fn = TREE_OPERAND (fn, 0);
 			if (is_overloaded_fn (fn))
-			  fn = get_ovl (fn, true);
+			  fn = get_first_fn (fn);
 
 			if (!DECL_P (fn))
 			  /* Can't say anything more.  */;

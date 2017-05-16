@@ -1,3 +1,38 @@
+2017-05-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/80285
+	* include/bits/shared_ptr_base.h [!__cpp_rtti] (type_info): Declare
+	outside versioned namespace.
+
+	* configure: Regenerate.
+
+2017-05-16  Marc Glisse  <marc.glisse@inria.fr>
+
+	* include/std/optional (_Optional_base::_M_get): Check precondition.
+	* testsuite/20_util/optional/cons/value_neg.cc: Update line numbers.
+
+2017-05-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/appendix_contributing.xml: Link to test docs and
+	note higher DejaGnu version requirement.
+	* doc/html/*: Regenerate.
+
+	* doc/xml/manual/appendix_contributing.xml: Link to the list of bad
+	identifiers.
+	* doc/html/*: Regenerate.
+
+2017-05-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/80761
+	* include/bits/node_handle.h (_Node_insert_return): Reorder members.
+	(tuple_size, tuple_element): Remove partial specializations.
+	* include/bits/stl_tree.h (_Rb_tree::insert_return_type): Use
+	const_iterator for std::set.
+	* testsuite/23_containers/map/modifiers/extract.cc: New.
+	* testsuite/23_containers/set/modifiers/extract.cc: New.
+	* testsuite/23_containers/unordered_map/modifiers/extract.cc: New.
+	* testsuite/23_containers/unordered_set/modifiers/extract.cc: New.
+
 2017-05-12  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/78939

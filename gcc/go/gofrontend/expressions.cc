@@ -10610,10 +10610,24 @@ Index_expression::do_lower(Gogo*, Named_object*, Statement_inserter*, int)
 	}
       return Expression::make_map_index(left, start, location);
     }
+  else if (cap != NULL)
+    {
+      go_error_at(location,
+		  "invalid 3-index slice of object that is not a slice");
+      return Expression::make_error(location);
+    }
+  else if (end != NULL)
+    {
+      go_error_at(location,
+		  ("attempt to slice object that is not "
+		   "array, slice, or string"));
+      return Expression::make_error(location);
+    }
   else
     {
       go_error_at(location,
-                  "attempt to index object which is not array, string, or map");
+                  ("attempt to index object that is not "
+		   "array, slice, string, or map"));
       return Expression::make_error(location);
     }
 }

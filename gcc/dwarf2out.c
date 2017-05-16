@@ -17373,6 +17373,7 @@ loc_list_from_tree_1 (tree loc, int want_address,
 		&& early_dwarf
 		&& current_function_decl
 		&& want_address != 1
+		&& ! DECL_IGNORED_P (loc)
 		&& (INTEGRAL_TYPE_P (TREE_TYPE (loc))
 		    || POINTER_TYPE_P (TREE_TYPE (loc)))
 		&& DECL_CONTEXT (loc) == current_function_decl
@@ -30109,8 +30110,9 @@ resolve_variable_value_in_expr (dw_attr_node *a, dw_loc_descr_ref loc)
 	      break;
 	    }
 	  /* Create DW_TAG_variable that we can refer to.  */
-	  ref = gen_decl_die (decl, NULL_TREE, NULL,
-			      lookup_decl_die (current_function_decl));
+	  gen_decl_die (decl, NULL_TREE, NULL,
+			lookup_decl_die (current_function_decl));
+	  ref = lookup_decl_die (decl);
 	  if (ref)
 	    {
 	      loc->dw_loc_oprnd1.val_class = dw_val_class_die_ref;
@@ -30203,6 +30205,7 @@ note_variable_value_in_expr (dw_die_ref die, dw_loc_descr_ref loc)
 	    loc->dw_loc_oprnd1.val_class = dw_val_class_die_ref;
 	    loc->dw_loc_oprnd1.v.val_die_ref.die = ref;
 	    loc->dw_loc_oprnd1.v.val_die_ref.external = 0;
+	    continue;
 	  }
 	if (VAR_P (decl)
 	    && DECL_CONTEXT (decl)

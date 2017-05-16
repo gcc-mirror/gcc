@@ -2114,6 +2114,11 @@ class Type_declaration
   add_method_declaration(const std::string& name, Package*,
 			 Function_type* type, Location location);
 
+  // Add an already created object as a method.
+  void
+  add_existing_method(Named_object* no)
+  { this->methods_.push_back(no); }
+
   // Return whether any methods were defined.
   bool
   has_methods() const;

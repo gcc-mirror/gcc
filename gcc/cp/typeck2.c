@@ -506,7 +506,7 @@ cxx_incomplete_type_diagnostic (location_t loc, const_tree value,
     case OFFSET_TYPE:
     bad_member:
       {
-	tree member = get_ovl (TREE_OPERAND (value, 1), true);
+	tree member = get_first_fn (TREE_OPERAND (value, 1));
 
 	if (DECL_FUNCTION_MEMBER_P (member)
 	    && ! flag_ms_extensions)
