@@ -506,7 +506,9 @@ cxx_incomplete_type_diagnostic (location_t loc, const_tree value,
     case OFFSET_TYPE:
     bad_member:
       {
-	tree member = get_first_fn (TREE_OPERAND (value, 1));
+	tree member = TREE_OPERAND (value, 1);
+	if (is_overloaded_fn (member))
+	  member = get_first_fn (member);
 
 	if (DECL_FUNCTION_MEMBER_P (member)
 	    && ! flag_ms_extensions)
