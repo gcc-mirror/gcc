@@ -56,9 +56,9 @@ void test02()
   VERIFY( s0.loc.function_name() == string_view(__FUNCTION__) );
 
   S s1(1);
-  VERIFY( s1.loc.line() != 58 );
+  VERIFY( s1.loc.line() == 46 );
   VERIFY( s1.loc.file_name() == __FILE__ );
-  // VERIFY( s1.loc.function_name() == s1.func );
+  VERIFY( s1.loc.function_name() == s1.func );
 }
 
 source_location f(source_location a = source_location::current()) {

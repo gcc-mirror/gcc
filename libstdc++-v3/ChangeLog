@@ -1,6 +1,8 @@
 2017-05-16  Jonathan Wakely  <jwakely@redhat.com>
 
-	* configure: Regenerate.
+	* testsuite/experimental/source_location/1.cc: Change expected result
+	for source_location::current() used in default member initializer.
+
 	* doc/xml/manual/status_cxx2017.xml: Update status table.
 	* doc/html/*: Regenerate.
 	* include/Makefile.am: Add new header.
