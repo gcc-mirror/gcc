@@ -2146,10 +2146,11 @@ really_overloaded_fn (tree x)
   return is_overloaded_fn (x) == 2;
 }
 
+/* Get the overload set FROM refers to.  */
+
 tree
 get_fns (tree from)
 {
-  gcc_assert (is_overloaded_fn (from));
   /* A baselink is also considered an overloaded function.  */
   if (TREE_CODE (from) == OFFSET_REF
       || TREE_CODE (from) == COMPONENT_REF)
@@ -2158,8 +2159,12 @@ get_fns (tree from)
     from = BASELINK_FUNCTIONS (from);
   if (TREE_CODE (from) == TEMPLATE_ID_EXPR)
     from = TREE_OPERAND (from, 0);
+  gcc_assert (TREE_CODE (from) == OVERLOAD
+	      || TREE_CODE (from) == FUNCTION_DECL);
   return from;
 }
+
+/* Return the first function of the overload set FROM refers to.  */
 
 tree
 get_first_fn (tree from)

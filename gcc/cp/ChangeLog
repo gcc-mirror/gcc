@@ -1,5 +1,15 @@
 2017-05-16  Nathan Sidwell  <nathan@acm.org>
 
+	* pt.c (tsubst_copy_and_build): Remove unnecessary COMPONENT_REF
+	peeking.
+	* semantics.c (finish_id_expression): Directly init local var.
+	(finish_omp_reduction_clause): Use really_overloaded_fn.
+	* tree.c (get_fns): Document.  Assert we got an overload.
+	(get_first_fn) Document.
+	* typeck.c (cp_build_addr_expr_1): Pass arg directly to
+	really_overloaded_fn.
+	* typeck2.c (cxx_inomplete_type_diagnostic): Use get_first_fn directly.
+
 	* cp-tree.h (SCOPE_DEPTH): New.
 	* name-lookup.h (is_nested_namespace): Declare.
 	* name-lookup.c (is_nested_namespace): New.
