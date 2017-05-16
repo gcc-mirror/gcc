@@ -784,9 +784,7 @@ check_specialization_namespace (tree tmpl)
       return false;
     }
 
-  if (cxx_dialect < cxx11
-      ? is_associated_namespace (current_namespace, tpl_ns)
-      : is_ancestor (current_namespace, tpl_ns))
+  if (is_nested_namespace (current_namespace, tpl_ns, cxx_dialect < cxx11))
     /* Same or enclosing namespace.  */
     return true;
   else
@@ -810,7 +808,7 @@ check_explicit_instantiation_namespace (tree spec)
   /* DR 275: An explicit instantiation shall appear in an enclosing
      namespace of its template.  */
   ns = decl_namespace_context (spec);
-  if (!is_ancestor (current_namespace, ns))
+  if (!is_nested_namespace (current_namespace, ns))
     permerror (input_location, "explicit instantiation of %qD in namespace %qD "
 	       "(which does not enclose namespace %qD)",
 	       spec, current_namespace, ns);
@@ -2594,8 +2592,8 @@ check_unqualified_spec_or_inst (tree t, location_t loc)
 {
   tree tmpl = most_general_template (t);
   if (DECL_NAMESPACE_SCOPE_P (tmpl)
-      && !is_associated_namespace (current_namespace,
-				   CP_DECL_CONTEXT (tmpl)))
+      && !is_nested_namespace (current_namespace,
+			       CP_DECL_CONTEXT (tmpl), true))
     {
       if (processing_specialization)
 	permerror (loc, "explicit specialization of %qD outside its "

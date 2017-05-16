@@ -292,6 +292,8 @@ extern void print_binding_stack	(void);
 extern void pop_everything (void);
 extern void keep_next_level (bool);
 extern bool is_ancestor (tree ancestor, tree descendant);
+extern bool is_nested_namespace (tree parent, tree descendant,
+				 bool inline_only = false);
 extern tree push_scope (tree);
 extern void pop_scope (tree);
 extern tree push_inner_scope (tree);
