@@ -1,3 +1,12 @@
+2017-05-16  Carl Love  <cel@us.ibm.com>
+
+	* gcc.target/powerpc/builtins-3.c: New vec_mule, vec_mulo test cases.
+	* gcc.target/powerpc/builtins-3-p8.c: Add tests for the new Power 8
+	built-ins to the test suite file.  Note, support for mradds exists
+	but no test case exists.
+	* gcc.target/powerpc/builtins-3-p9.c: Add tests for the new Power 9
+	built-ins to the test suite file.
+
 2017-05-16  Marek Polacek  <polacek@redhat.com>
 
 	PR sanitizer/80536
