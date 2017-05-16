@@ -5029,7 +5029,7 @@ mark_used (tree decl, tsubst_flags_t complain)
       decl = BASELINK_FUNCTIONS (decl);
       if (really_overloaded_fn (decl))
 	return true;
-      decl = OVL_CURRENT (decl);
+      decl = OVL_FIRST (decl);
     }
 
   /* Set TREE_USED for the benefit of -Wunused.  */

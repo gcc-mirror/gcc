@@ -502,10 +502,8 @@ strip_inheriting_ctors (tree dfn)
     return dfn;
   tree fn = dfn;
   while (tree inh = DECL_INHERITED_CTOR (fn))
-    {
-      inh = OVL_CURRENT (inh);
-      fn = inh;
-    }
+    fn = OVL_FIRST (inh);
+
   if (TREE_CODE (fn) == TEMPLATE_DECL
       && TREE_CODE (dfn) == FUNCTION_DECL)
     fn = DECL_TEMPLATE_RESULT (fn);

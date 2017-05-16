@@ -626,6 +626,11 @@ typedef struct ptrmem_cst * ptrmem_cst_t;
    and can be freed afterward.  */
 #define OVL_ARG_DEPENDENT(NODE) TREE_LANG_FLAG_0 (OVERLOAD_CHECK (NODE))
 
+/* The first decl of an overload.  */
+#define OVL_FIRST(NODE)	ovl_first (NODE)
+/* The name of the overload set.  */
+#define OVL_NAME(NODE) DECL_NAME (OVL_FIRST (NODE))
+
 struct GTY(()) tree_overload {
   struct tree_common common;
   tree function;
@@ -6668,6 +6673,13 @@ extern tree hash_tree_cons			(tree, tree, tree);
 extern tree hash_tree_chain			(tree, tree);
 extern tree build_qualified_name		(tree, tree, tree, bool);
 extern tree build_ref_qualified_type		(tree, cp_ref_qualifier);
+inline tree
+ovl_first (tree node)
+{
+  while (TREE_CODE (node) == OVERLOAD)
+    node = OVL_FUNCTION (node);
+  return node;
+}
 extern int is_overloaded_fn			(tree);
 extern tree dependent_name			(tree);
 extern tree get_fns				(tree);

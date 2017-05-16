@@ -2764,10 +2764,8 @@ finish_class_member_access_expr (cp_expr object, tree name, bool template_p,
 	  template_args = TREE_OPERAND (name, 1);
 	  name = TREE_OPERAND (name, 0);
 
-	  if (TREE_CODE (name) == OVERLOAD)
-	    name = DECL_NAME (get_first_fn (name));
-	  else if (DECL_P (name))
-	    name = DECL_NAME (name);
+	  if (!identifier_p (name))
+	    name = OVL_NAME (name);
 	}
 
       if (scope)
@@ -5746,7 +5744,7 @@ cp_build_addr_expr_1 (tree arg, bool strict_lvalue, tsubst_flags_t complain)
       /* Fall through.  */
 
     case OVERLOAD:
-      arg = OVL_CURRENT (arg);
+      arg = OVL_FIRST (arg);
       break;
 
     case OFFSET_REF:
