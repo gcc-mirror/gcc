@@ -5069,8 +5069,8 @@ deduce_noexcept_on_destructors (tree t)
   if (!CLASSTYPE_METHOD_VEC (t))
     return;
 
-  for (tree fns = CLASSTYPE_DESTRUCTORS (t); fns; fns = OVL_NEXT (fns))
-    deduce_noexcept_on_destructor (OVL_CURRENT (fns));
+  for (ovl_iterator iter (CLASSTYPE_DESTRUCTORS (t)); iter; ++iter)
+    deduce_noexcept_on_destructor (*iter);
 }
 
 /* Subroutine of set_one_vmethod_tm_attributes.  Search base classes
@@ -5230,14 +5230,12 @@ default_ctor_p (tree fn)
 bool
 type_has_user_nondefault_constructor (tree t)
 {
-  tree fns;
-
   if (!TYPE_HAS_USER_CONSTRUCTOR (t))
     return false;
 
-  for (fns = CLASSTYPE_CONSTRUCTORS (t); fns; fns = OVL_NEXT (fns))
+  for (ovl_iterator iter (CLASSTYPE_CONSTRUCTORS (t)); iter; ++iter)
     {
-      tree fn = OVL_CURRENT (fns);
+      tree fn = *iter;
       if (!DECL_ARTIFICIAL (fn)
 	  && (TREE_CODE (fn) == TEMPLATE_DECL
 	      || (skip_artificial_parms_for (fn, DECL_ARGUMENTS (fn))
@@ -5257,9 +5255,9 @@ in_class_defaulted_default_constructor (tree t)
   if (!TYPE_HAS_USER_CONSTRUCTOR (t))
     return NULL_TREE;
 
-  for (tree fns = CLASSTYPE_CONSTRUCTORS (t); fns; fns = OVL_NEXT (fns))
+  for (ovl_iterator iter (CLASSTYPE_CONSTRUCTORS (t)); iter; ++iter)
     {
-      tree fn = OVL_CURRENT (fns);
+      tree fn = *iter;
 
       if (DECL_DEFAULTED_IN_CLASS_P (fn)
 	  && default_ctor_p (fn))
@@ -5288,8 +5286,6 @@ user_provided_p (tree fn)
 bool
 type_has_user_provided_constructor (tree t)
 {
-  tree fns;
-
   if (!CLASS_TYPE_P (t))
     return false;
 
@@ -5300,8 +5296,8 @@ type_has_user_provided_constructor (tree t)
   if (!CLASSTYPE_METHOD_VEC (t))
     return false;
 
-  for (fns = CLASSTYPE_CONSTRUCTORS (t); fns; fns = OVL_NEXT (fns))
-    if (user_provided_p (OVL_CURRENT (fns)))
+  for (ovl_iterator iter (CLASSTYPE_CONSTRUCTORS (t)); iter; ++iter)
+    if (user_provided_p (*iter))
       return true;
 
   return false;
@@ -5312,8 +5308,6 @@ type_has_user_provided_constructor (tree t)
 bool
 type_has_user_provided_or_explicit_constructor (tree t)
 {
-  tree fns;
-
   if (!CLASS_TYPE_P (t))
     return false;
 
@@ -5324,9 +5318,9 @@ type_has_user_provided_or_explicit_constructor (tree t)
   if (!CLASSTYPE_METHOD_VEC (t))
     return false;
 
-  for (fns = CLASSTYPE_CONSTRUCTORS (t); fns; fns = OVL_NEXT (fns))
+  for (ovl_iterator iter (CLASSTYPE_CONSTRUCTORS (t)); iter; ++iter)
     {
-      tree fn = OVL_CURRENT (fns);
+      tree fn = *iter;
       if (user_provided_p (fn) || DECL_NONCONVERTING_P (fn))
 	return true;
     }
@@ -5341,16 +5335,14 @@ type_has_user_provided_or_explicit_constructor (tree t)
 bool
 type_has_non_user_provided_default_constructor (tree t)
 {
-  tree fns;
-
   if (!TYPE_HAS_DEFAULT_CONSTRUCTOR (t))
     return false;
   if (CLASSTYPE_LAZY_DEFAULT_CTOR (t))
     return true;
 
-  for (fns = CLASSTYPE_CONSTRUCTORS (t); fns; fns = OVL_NEXT (fns))
+  for (ovl_iterator iter (CLASSTYPE_CONSTRUCTORS (t)); iter; ++iter)
     {
-      tree fn = OVL_CURRENT (fns);
+      tree fn = *iter;
       if (TREE_CODE (fn) == FUNCTION_DECL
 	  && default_ctor_p (fn)
 	  && !user_provided_p (fn))
@@ -5369,11 +5361,11 @@ bool
 vbase_has_user_provided_move_assign (tree type)
 {
   /* Does the type itself have a user-provided move assignment operator?  */
-  for (tree fns
-	 = lookup_fnfields_slot_nolazy (type, cp_assignment_operator_id (NOP_EXPR));
-       fns; fns = OVL_NEXT (fns))
+  for (ovl_iterator iter (lookup_fnfields_slot_nolazy
+			  (type, cp_assignment_operator_id (NOP_EXPR)));
+       iter; ++iter)
     {
-      tree fn = OVL_CURRENT (fns);
+      tree fn = *iter;
       if (move_fn_p (fn) && user_provided_p (fn))
 	return true;
     }
@@ -5503,8 +5495,6 @@ type_has_virtual_destructor (tree type)
 bool
 type_has_move_constructor (tree t)
 {
-  tree fns;
-
   if (CLASSTYPE_LAZY_MOVE_CTOR (t))
     {
       gcc_assert (COMPLETE_TYPE_P (t));
@@ -5514,8 +5504,8 @@ type_has_move_constructor (tree t)
   if (!CLASSTYPE_METHOD_VEC (t))
     return false;
 
-  for (fns = CLASSTYPE_CONSTRUCTORS (t); fns; fns = OVL_NEXT (fns))
-    if (move_fn_p (OVL_CURRENT (fns)))
+  for (ovl_iterator iter (CLASSTYPE_CONSTRUCTORS (t)); iter; ++iter)
+    if (move_fn_p (*iter))
       return true;
 
   return false;
@@ -5526,17 +5516,16 @@ type_has_move_constructor (tree t)
 bool
 type_has_move_assign (tree t)
 {
-  tree fns;
-
   if (CLASSTYPE_LAZY_MOVE_ASSIGN (t))
     {
       gcc_assert (COMPLETE_TYPE_P (t));
       lazily_declare_fn (sfk_move_assignment, t);
     }
 
-  for (fns = lookup_fnfields_slot_nolazy (t, cp_assignment_operator_id (NOP_EXPR));
-       fns; fns = OVL_NEXT (fns))
-    if (move_fn_p (OVL_CURRENT (fns)))
+  for (ovl_iterator iter (lookup_fnfields_slot_nolazy
+			  (t, cp_assignment_operator_id (NOP_EXPR)));
+       iter; ++iter)
+    if (move_fn_p (*iter))
       return true;
 
   return false;
@@ -5550,17 +5539,15 @@ type_has_move_assign (tree t)
 bool
 type_has_user_declared_move_constructor (tree t)
 {
-  tree fns;
-
   if (CLASSTYPE_LAZY_MOVE_CTOR (t))
     return false;
 
   if (!CLASSTYPE_METHOD_VEC (t))
     return false;
 
-  for (fns = CLASSTYPE_CONSTRUCTORS (t); fns; fns = OVL_NEXT (fns))
+  for (ovl_iterator iter (CLASSTYPE_CONSTRUCTORS (t)); iter; ++iter)
     {
-      tree fn = OVL_CURRENT (fns);
+      tree fn = *iter;
       if (move_fn_p (fn) && !DECL_ARTIFICIAL (fn))
 	return true;
     }
@@ -5574,15 +5561,14 @@ type_has_user_declared_move_constructor (tree t)
 bool
 type_has_user_declared_move_assign (tree t)
 {
-  tree fns;
-
   if (CLASSTYPE_LAZY_MOVE_ASSIGN (t))
     return false;
 
-  for (fns = lookup_fnfields_slot_nolazy (t, cp_assignment_operator_id (NOP_EXPR));
-       fns; fns = OVL_NEXT (fns))
+  for (ovl_iterator iter (lookup_fnfields_slot_nolazy
+			  (t, cp_assignment_operator_id (NOP_EXPR)));
+       iter; ++iter)
     {
-      tree fn = OVL_CURRENT (fns);
+      tree fn = *iter;
       if (move_fn_p (fn) && !DECL_ARTIFICIAL (fn))
 	return true;
     }
@@ -5615,10 +5601,11 @@ type_build_ctor_call (tree t)
     return false;
   /* A user-declared constructor might be private, and a constructor might
      be trivial but deleted.  */
-  for (tree fns = lookup_fnfields_slot (inner, complete_ctor_identifier);
-       fns; fns = OVL_NEXT (fns))
+  for (ovl_iterator iter
+	 (lookup_fnfields_slot (inner, complete_ctor_identifier));
+       iter; ++iter)
     {
-      tree fn = OVL_CURRENT (fns);
+      tree fn = *iter;
       if (!DECL_ARTIFICIAL (fn)
 	  || DECL_DELETED_FN (fn))
 	return true;
@@ -5642,10 +5629,11 @@ type_build_dtor_call (tree t)
     return false;
   /* A user-declared destructor might be private, and a destructor might
      be trivial but deleted.  */
-  for (tree fns = lookup_fnfields_slot (inner, complete_dtor_identifier);
-       fns; fns = OVL_NEXT (fns))
+  for (ovl_iterator iter
+	 (lookup_fnfields_slot (inner, complete_dtor_identifier));
+       iter; ++iter)
     {
-      tree fn = OVL_CURRENT (fns);
+      tree fn = *iter;
       if (!DECL_ARTIFICIAL (fn)
 	  || DECL_DELETED_FN (fn))
 	return true;
@@ -5707,16 +5695,13 @@ type_requires_array_cookie (tree type)
   if (!fns || fns == error_mark_node)
     return false;
   /* Loop through all of the functions.  */
-  for (fns = BASELINK_FUNCTIONS (fns); fns; fns = OVL_NEXT (fns))
+  for (lkp_iterator iter (BASELINK_FUNCTIONS (fns)); iter; ++iter)
     {
-      tree fn;
-      tree second_parm;
+      tree fn = *iter;
 
-      /* Select the current function.  */
-      fn = OVL_CURRENT (fns);
       /* See if this function is a one-argument delete function.  If
 	 it is, then it will be the usual deallocation function.  */
-      second_parm = TREE_CHAIN (TYPE_ARG_TYPES (TREE_TYPE (fn)));
+      tree second_parm = TREE_CHAIN (TYPE_ARG_TYPES (TREE_TYPE (fn)));
       if (second_parm == void_list_node)
 	return false;
       /* Do not consider this function if its second argument is an
@@ -5808,26 +5793,23 @@ explain_non_literal_class (tree t)
 	      "default constructor, and has no constexpr constructor that "
 	      "is not a copy or move constructor", t);
       if (type_has_non_user_provided_default_constructor (t))
-	{
-	  /* Note that we can't simply call locate_ctor because when the
-	     constructor is deleted it just returns NULL_TREE.  */
-	  tree fns;
-	  for (fns = CLASSTYPE_CONSTRUCTORS (t); fns; fns = OVL_NEXT (fns))
-	    {
-	      tree fn = OVL_CURRENT (fns);
-	      tree parms = TYPE_ARG_TYPES (TREE_TYPE (fn));
+	/* Note that we can't simply call locate_ctor because when the
+	   constructor is deleted it just returns NULL_TREE.  */
+	for (ovl_iterator iter (CLASSTYPE_CONSTRUCTORS (t)); iter; ++iter)
+	  {
+	    tree fn = *iter;
+	    tree parms = TYPE_ARG_TYPES (TREE_TYPE (fn));
 
-	      parms = skip_artificial_parms_for (fn, parms);
+	    parms = skip_artificial_parms_for (fn, parms);
 
-	      if (sufficient_parms_p (parms))
-		{
-		  if (DECL_DELETED_FN (fn))
-		    maybe_explain_implicit_delete (fn);
-		  else
-		    explain_invalid_constexpr_fn (fn);
-		  break;
-		}
-	    }
+	    if (sufficient_parms_p (parms))
+	      {
+		if (DECL_DELETED_FN (fn))
+		  maybe_explain_implicit_delete (fn);
+		else
+		  explain_invalid_constexpr_fn (fn);
+		break;
+	      }
 	}
     }
   else
@@ -7508,8 +7490,8 @@ finish_struct (tree t, tree attributes)
 	  {
 	    tree fn = strip_using_decl (x);
 	    if (is_overloaded_fn (fn))
-	      for (; fn; fn = OVL_NEXT (fn))
-		add_method (t, OVL_CURRENT (fn), x);
+	      for (lkp_iterator iter (fn); iter; ++iter)
+		add_method (t, *iter, true);
 	  }
 
       /* Remember current #pragma pack value.  */
@@ -8165,7 +8147,7 @@ resolve_address_of_overloaded_function (tree target_type,
       if (complain & tf_error)
 	error ("cannot resolve overloaded function %qD based on"
 	       " conversion to type %qT",
-	       DECL_NAME (OVL_FUNCTION (overload)), target_type);
+	       OVL_NAME (overload), target_type);
       return error_mark_node;
     }
 
@@ -8183,9 +8165,9 @@ resolve_address_of_overloaded_function (tree target_type,
      if we're just going to throw them out anyhow.  But, of course, we
      can only do this when we don't *need* a template function.  */
   if (!template_only)
-    for (tree fns = overload; fns; fns = OVL_NEXT (fns))
+    for (lkp_iterator iter (overload); iter; ++iter)
       {
-	tree fn = OVL_CURRENT (fns);
+	tree fn = *iter;
 
 	if (TREE_CODE (fn) == TEMPLATE_DECL)
 	  /* We're not looking for templates just yet.  */
@@ -8214,7 +8196,6 @@ resolve_address_of_overloaded_function (tree target_type,
     {
       tree target_arg_types;
       tree target_ret_type;
-      tree fns;
       tree *args;
       unsigned int nargs, ia;
       tree arg;
@@ -8230,9 +8211,9 @@ resolve_address_of_overloaded_function (tree target_type,
 	args[ia] = TREE_VALUE (arg);
       nargs = ia;
 
-      for (fns = overload; fns; fns = OVL_NEXT (fns))
+      for (lkp_iterator iter (overload); iter; ++iter)
 	{
-	  tree fn = OVL_CURRENT (fns);
+	  tree fn = *iter;
 	  tree instantiation;
 	  tree targs;
 
@@ -8309,8 +8290,7 @@ resolve_address_of_overloaded_function (tree target_type,
       if (complain & tf_error)
 	{
 	  error ("no matches converting function %qD to type %q#T",
-		 DECL_NAME (OVL_CURRENT (overload)),
-		 target_type);
+		 OVL_NAME (overload), target_type);
 
 	  print_candidates (overload);
 	}
@@ -8337,8 +8317,7 @@ resolve_address_of_overloaded_function (tree target_type,
 	  if (complain & tf_error)
 	    {
 	      error ("converting overloaded function %qD to type %q#T is ambiguous",
-		     DECL_NAME (OVL_FUNCTION (overload)),
-		     target_type);
+		     OVL_NAME (overload), target_type);
 
 	      /* Since print_candidates expects the functions in the
 		 TREE_VALUE slot, we flip them here.  */
@@ -8750,7 +8729,7 @@ note_name_declared_in_class (tree name, tree decl)
       permerror (input_location, "declaration of %q#D", decl);
       permerror (location_of ((tree) n->value),
 		 "changes meaning of %qD from %q#D",
-		 DECL_NAME (OVL_CURRENT (decl)), (tree) n->value);
+		 OVL_NAME (decl), (tree) n->value);
     }
 }
 

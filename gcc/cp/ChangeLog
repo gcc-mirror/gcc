@@ -1,5 +1,34 @@
 2017-05-16  Nathan Sidwell  <nathan@acm.org>
 
+	* call.c (build_user_type_conversion_1): Use OVL_FIRST.
+	(print_error_for_call_faulure): Use OVL_NAME.
+	(build_op_call_1): Use ovl_iterator.
+	(add_candidates): Use OVL_FIRST & lkp_iterator.
+	(build_op_delete_call): Use MAYBE_BASELINK_FUNCTIONS &
+	lkp_iterator.
+	* class.c (deduce_noexcept_on_destructors): Use ovl_iterator.
+	(type_has_user_nondefault_constructor,
+	in_class_defaulted_default_constructor,
+	type_has_user_provided_constructor,
+	type_has_user_provided_or_explicit_constructor,
+	type_has_non_user_provided_default_constructor,
+	vbase_has_user_provided_move_assign,
+	type_has_move_constructor, type_has_move_assign,
+	type_has_user_declared_move_constructor,
+	type_has_user_declared_move_assign,
+	type_build_ctor_call, type_build_dtor_call,
+	type_requires_array_cookie, explain_non_literal_class): Likewise.
+	(finish_struct): Use lkp_iterator.
+	(resolve_address_of_overloaded_function): Use OVL_NAME, lkp_iterator.
+	(note_name_declared_in_class): Use OVL_NAME.
+	* cxx-pretty-print.c (pp_cxx_unqualified_id): Use OVL_FIRST.
+	(pp_cxx_qualified_id, cxx_pretty_printer::id_expression,
+	cxx_pretty_printer::expression): Likewise.
+	* decl2.c (check_classfn): Use ovl_iterator.
+	* pt.c (retrieve_specialization): Use ovl_iterator.
+	* tree.c (cp_tree_equal): Use lkp_iterator.
+	(type_has_nontrivial_copy_init): Use ovl_iterator.
+
 	* typeck2.c (cxx_incomplete_type_diagnostic): Revert change and
 	check is_overloaded_fn.
 
