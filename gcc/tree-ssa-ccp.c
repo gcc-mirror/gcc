@@ -2184,9 +2184,9 @@ ccp_fold_stmt (gimple_stmt_iterator *gsi)
 	if (dump_file)
 	  {
 	    fprintf (dump_file, "Folding predicate ");
-	    print_gimple_expr (dump_file, stmt, 0, 0);
+	    print_gimple_expr (dump_file, stmt, 0);
 	    fprintf (dump_file, " to ");
-	    print_generic_expr (dump_file, val.value, 0);
+	    print_generic_expr (dump_file, val.value);
 	    fprintf (dump_file, "\n");
 	  }
 

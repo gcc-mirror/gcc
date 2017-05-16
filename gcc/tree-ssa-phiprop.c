@@ -150,7 +150,7 @@ phiprop_insert_phi (basic_block bb, gphi *phi, gimple *use_stmt,
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
       fprintf (dump_file, "Inserting PHI for result of load ");
-      print_gimple_stmt (dump_file, use_stmt, 0, 0);
+      print_gimple_stmt (dump_file, use_stmt, 0);
     }
 
   /* Add PHI arguments for each edge inserting loads of the
@@ -177,10 +177,10 @@ phiprop_insert_phi (basic_block bb, gphi *phi, gimple *use_stmt,
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    {
 	      fprintf (dump_file, "  for edge defining ");
-	      print_generic_expr (dump_file, PHI_ARG_DEF_FROM_EDGE (phi, e), 0);
+	      print_generic_expr (dump_file, PHI_ARG_DEF_FROM_EDGE (phi, e));
 	      fprintf (dump_file, " reusing PHI result ");
 	      print_generic_expr (dump_file,
-				  phivn[SSA_NAME_VERSION (old_arg)].value, 0);
+				  phivn[SSA_NAME_VERSION (old_arg)].value);
 	      fprintf (dump_file, "\n");
 	    }
 	  /* Reuse a formerly created dereference.  */
@@ -210,9 +210,9 @@ phiprop_insert_phi (basic_block bb, gphi *phi, gimple *use_stmt,
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    {
 	      fprintf (dump_file, "  for edge defining ");
-	      print_generic_expr (dump_file, PHI_ARG_DEF_FROM_EDGE (phi, e), 0);
+	      print_generic_expr (dump_file, PHI_ARG_DEF_FROM_EDGE (phi, e));
 	      fprintf (dump_file, " inserting load ");
-	      print_gimple_stmt (dump_file, tmp, 0, 0);
+	      print_gimple_stmt (dump_file, tmp, 0);
 	    }
 	}
 
@@ -225,7 +225,7 @@ phiprop_insert_phi (basic_block bb, gphi *phi, gimple *use_stmt,
       update_stmt (new_phi);
 
       if (dump_file && (dump_flags & TDF_DETAILS))
-	print_gimple_stmt (dump_file, new_phi, 0, 0);
+	print_gimple_stmt (dump_file, new_phi, 0);
     }
 
   return res;

@@ -171,9 +171,9 @@ mark_operand_necessary (tree op)
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
       fprintf (dump_file, "marking necessary through ");
-      print_generic_expr (dump_file, op, 0);
+      print_generic_expr (dump_file, op);
       fprintf (dump_file, " stmt ");
-      print_gimple_stmt (dump_file, stmt, 0, 0);
+      print_gimple_stmt (dump_file, stmt, 0);
     }
 
   gimple_set_plf (stmt, STMT_NECESSARY, true);

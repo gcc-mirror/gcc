@@ -204,7 +204,7 @@ resolve_constraint_check (tree ovl, tree args)
 {
   int nerrs = 0;
   tree cands = NULL_TREE;
-  for (ovl_iterator iter (ovl); iter; ++iter)
+  for (lkp_iterator iter (ovl); iter; ++iter)
     {
       // Get the next template overload.
       tree tmpl = *iter;

@@ -2621,7 +2621,7 @@ check_template_keyword (tree decl)
 	{
 	  bool found = false;
 
-	  for (ovl_iterator iter (MAYBE_BASELINK_FUNCTIONS (decl));
+	  for (lkp_iterator iter (MAYBE_BASELINK_FUNCTIONS (decl));
 	       !found && iter; ++iter)
 	    {
 	      tree fn = *iter;

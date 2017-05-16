@@ -1133,7 +1133,7 @@ is_valid_rename (tree rename, basic_block def_bb, basic_block use_bb,
       if (dump_file)
 	{
 	  fprintf (dump_file, "[codegen] rename not in loop closed ssa: ");
-	  print_generic_expr (dump_file, rename, 0);
+	  print_generic_expr (dump_file, rename);
 	  fprintf (dump_file, "\n");
 	}
       return false;
@@ -1233,9 +1233,9 @@ set_rename (tree old_name, tree expr)
   if (dump_file)
     {
       fprintf (dump_file, "[codegen] setting rename: old_name = ");
-      print_generic_expr (dump_file, old_name, 0);
+      print_generic_expr (dump_file, old_name);
       fprintf (dump_file, ", new_name = ");
-      print_generic_expr (dump_file, expr, 0);
+      print_generic_expr (dump_file, expr);
       fprintf (dump_file, "\n");
     }
 
@@ -1656,7 +1656,7 @@ rename_uses (gimple *copy, gimple_stmt_iterator *gsi_tgt, basic_block old_bb,
   if (dump_file)
     {
       fprintf (dump_file, "[codegen] renaming uses of stmt: ");
-      print_gimple_stmt (dump_file, copy, 0, 0);
+      print_gimple_stmt (dump_file, copy, 0);
     }
 
   use_operand_p use_p;
@@ -1668,7 +1668,7 @@ rename_uses (gimple *copy, gimple_stmt_iterator *gsi_tgt, basic_block old_bb,
       if (dump_file)
 	{
 	  fprintf (dump_file, "[codegen] renaming old_name = ");
-	  print_generic_expr (dump_file, old_name, 0);
+	  print_generic_expr (dump_file, old_name);
 	  fprintf (dump_file, "\n");
 	}
 
@@ -1688,7 +1688,7 @@ rename_uses (gimple *copy, gimple_stmt_iterator *gsi_tgt, basic_block old_bb,
 	  if (dump_file)
 	    {
 	      fprintf (dump_file, "[codegen] from rename_map: new_name = ");
-	      print_generic_expr (dump_file, new_expr, 0);
+	      print_generic_expr (dump_file, new_expr);
 	      fprintf (dump_file, "\n");
 	    }
 
@@ -1718,7 +1718,7 @@ rename_uses (gimple *copy, gimple_stmt_iterator *gsi_tgt, basic_block old_bb,
       if (dump_file)
 	{
 	  fprintf (dump_file, "[codegen] not in rename map, scev: ");
-	  print_generic_expr (dump_file, new_expr, 0);
+	  print_generic_expr (dump_file, new_expr);
 	  fprintf (dump_file, "\n");
 	}
 
@@ -1906,7 +1906,7 @@ copy_loop_phi_nodes (basic_block bb, basic_block new_bb)
       if (dump_file)
 	{
 	  fprintf (dump_file, "[codegen] creating loop-phi node: ");
-	  print_gimple_stmt (dump_file, new_phi, 0, 0);
+	  print_gimple_stmt (dump_file, new_phi, 0);
 	}
     }
 
@@ -2066,7 +2066,7 @@ add_close_phis_to_merge_points (gphi *old_close_phi, gphi *new_close_phi,
       if (dump_file)
 	{
 	  fprintf (dump_file, "[codegen] Adding guard-phi: ");
-	  print_gimple_stmt (dump_file, merge_phi, 0, 0);
+	  print_gimple_stmt (dump_file, merge_phi, 0);
 	}
 
       update_stmt (merge_phi);
@@ -2112,7 +2112,7 @@ copy_loop_close_phi_args (basic_block old_bb, basic_block new_bb, bool postpone)
       if (dump_file)
 	{
 	  fprintf (dump_file, "[codegen] Adding loop close phi: ");
-	  print_gimple_stmt (dump_file, new_close_phi, 0, 0);
+	  print_gimple_stmt (dump_file, new_close_phi, 0);
 	}
 
       update_stmt (new_close_phi);
@@ -2136,7 +2136,7 @@ copy_loop_close_phi_args (basic_block old_bb, basic_block new_bb, bool postpone)
 	  if (dump_file)
 	    {
 	      fprintf (dump_file, "[codegen] postpone close phi nodes: ");
-	      print_gimple_stmt (dump_file, new_close_phi, 0, 0);
+	      print_gimple_stmt (dump_file, new_close_phi, 0);
 	    }
 	  continue;
 	}
@@ -2385,7 +2385,7 @@ copy_cond_phi_args (gphi *phi, gphi *new_phi, vec<tree> iv_map, bool postpone)
 	    {
 	      fprintf (dump_file,
 		       "[codegen] parameter argument to phi, new_expr: ");
-	      print_generic_expr (dump_file, new_phi_args[i], 0);
+	      print_generic_expr (dump_file, new_phi_args[i]);
 	      fprintf (dump_file, "\n");
 	    }
 	  continue;
@@ -2414,7 +2414,7 @@ copy_cond_phi_args (gphi *phi, gphi *new_phi, vec<tree> iv_map, bool postpone)
 		{
 		  fprintf (dump_file,
 			   "[codegen] scev analyzeable, new_expr: ");
-		  print_generic_expr (dump_file, new_expr, 0);
+		  print_generic_expr (dump_file, new_expr);
 		  fprintf (dump_file, "\n");
 		}
 	      gsi_insert_earliest (stmts);
@@ -2428,7 +2428,7 @@ copy_cond_phi_args (gphi *phi, gphi *new_phi, vec<tree> iv_map, bool postpone)
 	  if (dump_file)
 	    {
 	      fprintf (dump_file, "[codegen] postpone cond phi nodes: ");
-	      print_gimple_stmt (dump_file, new_phi, 0, 0);
+	      print_gimple_stmt (dump_file, new_phi, 0);
 	    }
 
 	  new_phi_args [i] = NULL_TREE;
@@ -2563,7 +2563,7 @@ graphite_copy_stmts_from_block (basic_block bb, basic_block new_bb,
       if (dump_file)
 	{
 	  fprintf (dump_file, "[codegen] inserting statement: ");
-	  print_gimple_stmt (dump_file, copy, 0, 0);
+	  print_gimple_stmt (dump_file, copy, 0);
 	}
 
       maybe_duplicate_eh_stmt (copy, stmt);
@@ -2816,7 +2816,7 @@ translate_pending_phi_nodes ()
       if (dump_file)
 	{
 	  fprintf (dump_file, "[codegen] translating pending old-phi: ");
-	  print_gimple_stmt (dump_file, old_phi, 0, 0);
+	  print_gimple_stmt (dump_file, old_phi, 0);
 	}
 
       auto_vec <tree, 1> iv_map;
@@ -2831,7 +2831,7 @@ translate_pending_phi_nodes ()
       if (dump_file)
 	{
 	  fprintf (dump_file, "[codegen] to new-phi: ");
-	  print_gimple_stmt (dump_file, new_phi, 0, 0);
+	  print_gimple_stmt (dump_file, new_phi, 0);
 	}
       if (codegen_error_p ())
 	return;

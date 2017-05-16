@@ -168,7 +168,7 @@ dump_copy_of (FILE *file, tree var)
 
   val = copy_of[SSA_NAME_VERSION (var)].value;
   fprintf (file, " copy-of chain: ");
-  print_generic_expr (file, var, 0);
+  print_generic_expr (file, var);
   fprintf (file, " ");
   if (!val)
     fprintf (file, "[UNDEFINED]");
@@ -177,7 +177,7 @@ dump_copy_of (FILE *file, tree var)
   else
     {
       fprintf (file, "-> ");
-      print_generic_expr (file, val, 0);
+      print_generic_expr (file, val);
       fprintf (file, " ");
       fprintf (file, "[COPY]");
     }
@@ -231,7 +231,7 @@ copy_prop_visit_cond_stmt (gimple *stmt, edge *taken_edge_p)
     {
       fprintf (dump_file, "Trying to determine truth value of ");
       fprintf (dump_file, "predicate ");
-      print_gimple_stmt (dump_file, stmt, 0, 0);
+      print_gimple_stmt (dump_file, stmt, 0);
     }
 
   /* Fold COND and see whether we get a useful result.  */

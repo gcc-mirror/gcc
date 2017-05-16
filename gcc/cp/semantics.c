@@ -5203,7 +5203,7 @@ omp_reduction_lookup (location_t loc, tree id, tree type, tree *baselinkp,
   id = NULL_TREE;
   if (fns && is_overloaded_fn (fns))
     {
-      for (ovl_iterator iter (get_fns (fns)); iter; ++iter)
+      for (lkp_iterator iter (get_fns (fns)); iter; ++iter)
 	{
 	  tree fndecl = *iter;
 	  if (TREE_CODE (fndecl) == FUNCTION_DECL)

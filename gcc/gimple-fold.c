@@ -5741,7 +5741,7 @@ gimple_fold_stmt_to_constant_1 (gimple *stmt, tree (*valueize) (tree),
 	      fprintf (dump_file, "Match-and-simplified ");
 	      print_gimple_expr (dump_file, stmt, 0, TDF_SLIM);
 	      fprintf (dump_file, " to ");
-	      print_generic_expr (dump_file, res, 0);
+	      print_generic_expr (dump_file, res);
 	      fprintf (dump_file, "\n");
 	    }
 	  return res;

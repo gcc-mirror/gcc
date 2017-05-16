@@ -1280,7 +1280,7 @@ cp_lexer_print_token (FILE * stream, cp_token *token)
       break;
 
     case CPP_NUMBER:
-      print_generic_expr (stream, token->u.value, 0);
+      print_generic_expr (stream, token->u.value);
       break;
 
     default:
@@ -4069,7 +4069,7 @@ lookup_literal_operator (tree name, vec<tree, va_gc> *args)
   if (!decl || !is_overloaded_fn (decl))
     return error_mark_node;
 
-  for (ovl_iterator iter (decl); iter; ++iter)
+  for (lkp_iterator iter (decl); iter; ++iter)
     {
       unsigned int ix;
       bool found = true;

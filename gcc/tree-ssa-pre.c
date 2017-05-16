@@ -990,10 +990,10 @@ print_pre_expr (FILE *outfile, const pre_expr expr)
   switch (expr->kind)
     {
     case CONSTANT:
-      print_generic_expr (outfile, PRE_EXPR_CONSTANT (expr), 0);
+      print_generic_expr (outfile, PRE_EXPR_CONSTANT (expr));
       break;
     case NAME:
-      print_generic_expr (outfile, PRE_EXPR_NAME (expr), 0);
+      print_generic_expr (outfile, PRE_EXPR_NAME (expr));
       break;
     case NARY:
       {
@@ -1002,7 +1002,7 @@ print_pre_expr (FILE *outfile, const pre_expr expr)
 	fprintf (outfile, "{%s,", get_tree_code_name (nary->opcode));
 	for (i = 0; i < nary->length; i++)
 	  {
-	    print_generic_expr (outfile, nary->op[i], 0);
+	    print_generic_expr (outfile, nary->op[i]);
 	    if (i != (unsigned) nary->length - 1)
 	      fprintf (outfile, ",");
 	  }
@@ -1033,16 +1033,16 @@ print_pre_expr (FILE *outfile, const pre_expr expr)
 	      }
 	    if (vro->op0)
 	      {
-		print_generic_expr (outfile, vro->op0, 0);
+		print_generic_expr (outfile, vro->op0);
 		if (vro->op1)
 		  {
 		    fprintf (outfile, ",");
-		    print_generic_expr (outfile, vro->op1, 0);
+		    print_generic_expr (outfile, vro->op1);
 		  }
 		if (vro->op2)
 		  {
 		    fprintf (outfile, ",");
-		    print_generic_expr (outfile, vro->op2, 0);
+		    print_generic_expr (outfile, vro->op2);
 		  }
 	      }
 	    if (closebrace)
@@ -1054,7 +1054,7 @@ print_pre_expr (FILE *outfile, const pre_expr expr)
 	if (ref->vuse)
 	  {
 	    fprintf (outfile, "@");
-	    print_generic_expr (outfile, ref->vuse, 0);
+	    print_generic_expr (outfile, ref->vuse);
 	  }
       }
       break;
@@ -1386,7 +1386,7 @@ get_representative_for (const pre_expr e)
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
       fprintf (dump_file, "Created SSA_NAME representative ");
-      print_generic_expr (dump_file, name, 0);
+      print_generic_expr (dump_file, name);
       fprintf (dump_file, " for expression:");
       print_pre_expr (dump_file, e);
       fprintf (dump_file, " (%04d)\n", value_id);
@@ -2961,7 +2961,7 @@ create_expression_by_pieces (basic_block block, pre_expr expr,
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
       fprintf (dump_file, "Inserted ");
-      print_gimple_stmt (dump_file, gsi_stmt (gsi_last (*stmts)), 0, 0);
+      print_gimple_stmt (dump_file, gsi_stmt (gsi_last (*stmts)), 0);
       fprintf (dump_file, " in predecessor %d (%04d)\n",
 	       block->index, value_id);
     }
@@ -3122,7 +3122,7 @@ insert_into_preds_of_block (basic_block block, unsigned int exprnum,
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
       fprintf (dump_file, "Created phi ");
-      print_gimple_stmt (dump_file, phi, 0, 0);
+      print_gimple_stmt (dump_file, phi, 0);
       fprintf (dump_file, " in block %d (%04d)\n", block->index, val);
     }
   pre_stats.phis++;
@@ -4147,9 +4147,9 @@ eliminate_insert (gimple_stmt_iterator *gsi, tree val)
 	  if (res)
 	    {
 	      fprintf (dump_file, "Failed to insert expression for value ");
-	      print_generic_expr (dump_file, val, 0);
+	      print_generic_expr (dump_file, val);
 	      fprintf (dump_file, " which is really fully redundant to ");
-	      print_generic_expr (dump_file, res, 0);
+	      print_generic_expr (dump_file, res);
 	      fprintf (dump_file, "\n");
 	    }
 	}
@@ -4169,7 +4169,7 @@ eliminate_insert (gimple_stmt_iterator *gsi, tree val)
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
       fprintf (dump_file, "Inserted ");
-      print_gimple_stmt (dump_file, SSA_NAME_DEF_STMT (res), 0, 0);
+      print_gimple_stmt (dump_file, SSA_NAME_DEF_STMT (res), 0);
     }
 
   return res;
@@ -4222,9 +4222,9 @@ eliminate_dom_walker::before_dom_children (basic_block b)
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    {
 	      fprintf (dump_file, "Replaced redundant PHI node defining ");
-	      print_generic_expr (dump_file, res, 0);
+	      print_generic_expr (dump_file, res);
 	      fprintf (dump_file, " with ");
-	      print_generic_expr (dump_file, sprime, 0);
+	      print_generic_expr (dump_file, sprime);
 	      fprintf (dump_file, "\n");
 	    }
 
@@ -4370,9 +4370,9 @@ eliminate_dom_walker::before_dom_children (basic_block b)
 		      if (dump_file && (dump_flags & TDF_DETAILS))
 			{
 			  fprintf (dump_file, "Not replacing ");
-			  print_gimple_expr (dump_file, stmt, 0, 0);
+			  print_gimple_expr (dump_file, stmt, 0);
 			  fprintf (dump_file, " with ");
-			  print_generic_expr (dump_file, sprime, 0);
+			  print_generic_expr (dump_file, sprime);
 			  fprintf (dump_file, " which would add a loop"
 				   " carried dependence to loop %d\n",
 				   loop->num);
@@ -4401,11 +4401,11 @@ eliminate_dom_walker::before_dom_children (basic_block b)
 		  if (dump_file && (dump_flags & TDF_DETAILS))
 		    {
 		      fprintf (dump_file, "Replaced ");
-		      print_gimple_expr (dump_file, stmt, 0, 0);
+		      print_gimple_expr (dump_file, stmt, 0);
 		      fprintf (dump_file, " with ");
-		      print_generic_expr (dump_file, sprime, 0);
+		      print_generic_expr (dump_file, sprime);
 		      fprintf (dump_file, " in all uses of ");
-		      print_gimple_stmt (dump_file, stmt, 0, 0);
+		      print_gimple_stmt (dump_file, stmt, 0);
 		    }
 
 		  pre_stats.eliminations++;
@@ -4427,11 +4427,11 @@ eliminate_dom_walker::before_dom_children (basic_block b)
 	      if (dump_file && (dump_flags & TDF_DETAILS))
 		{
 		  fprintf (dump_file, "Replaced ");
-		  print_gimple_expr (dump_file, stmt, 0, 0);
+		  print_gimple_expr (dump_file, stmt, 0);
 		  fprintf (dump_file, " with ");
-		  print_generic_expr (dump_file, sprime, 0);
+		  print_generic_expr (dump_file, sprime);
 		  fprintf (dump_file, " in ");
-		  print_gimple_stmt (dump_file, stmt, 0, 0);
+		  print_gimple_stmt (dump_file, stmt, 0);
 		}
 
 	      if (TREE_CODE (sprime) == SSA_NAME)
@@ -4505,7 +4505,7 @@ eliminate_dom_walker::before_dom_children (basic_block b)
 		  if (dump_file && (dump_flags & TDF_DETAILS))
 		    {
 		      fprintf (dump_file, "Deleted redundant store ");
-		      print_gimple_stmt (dump_file, stmt, 0, 0);
+		      print_gimple_stmt (dump_file, stmt, 0);
 		    }
 
 		  /* Queue stmt for removal.  */
@@ -4526,7 +4526,7 @@ eliminate_dom_walker::before_dom_children (basic_block b)
               if (dump_file && (dump_flags & TDF_DETAILS))
                 {
                   fprintf (dump_file, "Removing unexecutable edge from ");
-                  print_gimple_stmt (dump_file, stmt, 0, 0);
+		  print_gimple_stmt (dump_file, stmt, 0);
                 }
 	      if (((EDGE_SUCC (b, 0)->flags & EDGE_TRUE_VALUE) != 0)
 		  == ((EDGE_SUCC (b, 0)->flags & EDGE_EXECUTABLE) != 0))
@@ -4847,7 +4847,7 @@ fini_eliminate (void)
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{
 	  fprintf (dump_file, "Fixing up noreturn call ");
-	  print_gimple_stmt (dump_file, stmt, 0, 0);
+	  print_gimple_stmt (dump_file, stmt, 0);
 	}
 
       if (fixup_noreturn_call (stmt))
@@ -4982,7 +4982,7 @@ remove_dead_inserted_code (void)
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    {
 	      fprintf (dump_file, "Removing unnecessary insertion:");
-	      print_gimple_stmt (dump_file, t, 0, 0);
+	      print_gimple_stmt (dump_file, t, 0);
 	    }
 
 	  gsi = gsi_for_stmt (t);

@@ -1740,8 +1740,13 @@ iterative_hash_template_arg (tree arg, hashval_t val)
       return val;
 
     case OVERLOAD:
+<<<<<<< .working
       for (ovl_iterator iter (arg); iter; ++iter)
 	val = iterative_hash_template_arg (*iter, val);
+=======
+      for (lkp_iterator iter (arg); iter; ++iter)
+	val = iterative_hash_template_arg (*iter, val);
+>>>>>>> .merge-right.r248116
       return val;
 
     case CONSTRUCTOR:
@@ -19375,7 +19380,7 @@ resolve_overloaded_unification (tree tparms,
       tree expl_subargs = TREE_OPERAND (arg, 1);
       arg = TREE_OPERAND (arg, 0);
 
-      for (ovl_iterator iter (arg); iter; ++iter)
+      for (lkp_iterator iter (arg); iter; ++iter)
 	{
 	  tree fn = *iter;
 	  tree subargs, elem;
@@ -19416,7 +19421,7 @@ resolve_overloaded_unification (tree tparms,
        not just the function on its own.  */
     return false;
   else
-    for (ovl_iterator iter (arg); iter; ++iter)
+    for (lkp_iterator iter (arg); iter; ++iter)
       {
 	tree fn = *iter;
 	if (try_one_overload (tparms, targs, tempargs, parm, TREE_TYPE (fn),
@@ -19508,7 +19513,7 @@ resolve_nondeduced_context (tree orig_expr, tsubst_flags_t complain)
       tree badfn = NULL_TREE;
       tree badargs = NULL_TREE;
 
-      for (ovl_iterator iter (arg); iter; ++iter)
+      for (lkp_iterator iter (arg); iter; ++iter)
 	{
 	  tree fn = *iter;
 	  tree subargs, elem;
@@ -24280,7 +24285,7 @@ dependent_template_p (tree tmpl)
 {
   if (TREE_CODE (tmpl) == OVERLOAD)
     {
-      for (ovl_iterator iter (tmpl); iter; ++iter)
+      for (lkp_iterator iter (tmpl); iter; ++iter)
 	if (dependent_template_p (*iter))
 	  return true;
       return false;

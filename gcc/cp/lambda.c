@@ -842,7 +842,7 @@ maybe_generic_this_capture (tree object, tree fns)
 	if (id_expr)
 	  fns = TREE_OPERAND (fns, 0);
 
-	for (ovl_iterator iter (fns); iter; ++iter)
+	for (lkp_iterator iter (fns); iter; ++iter)
 	  if ((!id_expr || TREE_CODE (*iter) == TEMPLATE_DECL)
 	      && DECL_NONSTATIC_MEMBER_FUNCTION_P (*iter))
 	    {

@@ -1169,7 +1169,7 @@ cgraph_edge::resolve_speculation (tree callee_decl)
 		       edge->caller->order,
 		       xstrdup_for_dump (e2->callee->name ()),
 		       e2->callee->order);
-	      print_generic_expr (dump_file, callee_decl, 0);
+	      print_generic_expr (dump_file, callee_decl);
 	      fprintf (dump_file, "\n");
 	    }
 	  else

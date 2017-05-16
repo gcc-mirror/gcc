@@ -726,7 +726,7 @@ dump_hsa_immed (FILE *f, hsa_op_immed *imm)
     & imm->m_type;
 
   if (imm->m_tree_value)
-    print_generic_expr (f, imm->m_tree_value, 0);
+    print_generic_expr (f, imm->m_tree_value);
   else
     {
       if (unsigned_int_type)

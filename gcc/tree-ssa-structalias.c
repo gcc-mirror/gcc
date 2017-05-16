@@ -7453,7 +7453,7 @@ compute_dependence_clique (void)
 		    {
 		      fprintf (dump_file, "found restrict pointed-to "
 			       "for ");
-		      print_generic_expr (dump_file, ptr, 0);
+		      print_generic_expr (dump_file, ptr);
 		      fprintf (dump_file, " but not exclusively\n");
 		    }
 		  restrict_var = NULL;
