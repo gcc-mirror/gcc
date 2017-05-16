@@ -12210,6 +12210,17 @@ Forward_declaration_type::add_method_declaration(const std::string& name,
   return td->add_method_declaration(name, package, type, location);
 }
 
+// Add an already created object as a method.
+
+void
+Forward_declaration_type::add_existing_method(Named_object* nom)
+{
+  Named_object* no = this->named_object();
+  if (no->is_unknown())
+    no->declare_as_type();
+  no->type_declaration_value()->add_existing_method(nom);
+}
+
 // Traversal.
 
 int
