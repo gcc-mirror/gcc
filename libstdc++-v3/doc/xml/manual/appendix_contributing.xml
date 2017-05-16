@@ -898,7 +898,7 @@ indicate a place that may require attention for multi-thread safety.
       Examples: <code>_S_max_elements  _S_default_value</code>
 
       Don't use names in the same scope that differ only in the prefix,
-      e.g. _S_top and _M_top. See BADNAMES for a list of forbidden names.
+      e.g. _S_top and _M_top. See <link linkend="coding_style.bad_identifiers">BADNAMES</link> for a list of forbidden names.
       (The most tempting of these seem to be and "_T" and "__sz".)
 
       Names must never have "__" internally; it would confuse name
