@@ -1,3 +1,33 @@
+2017-05-16  David Malcolm  <dmalcolm@redhat.com>
+
+	* call.c (enforce_access): Add access_failure_info * param and use
+	it to record access failures.
+	* cp-tree.h (class access_failure_info): New class.
+	(enforce_access): Add access_failure_info * param, defaulting to
+	NULL.
+	(lookup_member): Likewise.
+	(locate_field_accessor): New function decl.
+	(perform_or_defer_access_check): Add access_failure_info * param,
+	defaulting to NULL.
+	* search.c (lookup_member): Add access_failure_info * param and
+	pass it on to call to perform_or_defer_access_check.
+	(matches_code_and_type_p): New function.
+	(field_access_p): New function.
+	(direct_accessor_p): New function.
+	(reference_accessor_p): New function.
+	(field_accessor_p): New function.
+	(struct locate_field_data): New struct.
+	(dfs_locate_field_accessor_pre): New function.
+	(locate_field_accessor): New function.
+	* semantics.c (perform_or_defer_access_check): Add
+	access_failure_info * param, and pass it on to call to
+	enforce_access.
+	* typeck.c (access_failure_info::record_access_failure): New method.
+	(access_failure_info::maybe_suggest_accessor): New method.
+	(finish_class_member_access_expr): Pass an access_failure_info
+	instance to the lookup_member call, and call its
+	maybe_suggest_accessor method afterwards.
+
 2017-05-16  Marek Polacek  <polacek@redhat.com>
 
 	PR sanitizer/80536

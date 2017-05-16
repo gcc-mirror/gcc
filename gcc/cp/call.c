@@ -6396,7 +6396,7 @@ build_op_delete_call (enum tree_code code, tree addr, tree size,
 
 bool
 enforce_access (tree basetype_path, tree decl, tree diag_decl,
-		tsubst_flags_t complain)
+		tsubst_flags_t complain, access_failure_info *afi)
 {
   gcc_assert (TREE_CODE (basetype_path) == TREE_BINFO);
 
@@ -6422,17 +6422,23 @@ enforce_access (tree basetype_path, tree decl, tree diag_decl,
 	      error ("%q#D is private within this context", diag_decl);
 	      inform (DECL_SOURCE_LOCATION (diag_decl),
 		      "declared private here");
+	      if (afi)
+		afi->record_access_failure (basetype_path, diag_decl);
 	    }
 	  else if (TREE_PROTECTED (decl))
 	    {
 	      error ("%q#D is protected within this context", diag_decl);
 	      inform (DECL_SOURCE_LOCATION (diag_decl),
 		      "declared protected here");
+	      if (afi)
+		afi->record_access_failure (basetype_path, diag_decl);
 	    }
 	  else
 	    {
 	      error ("%q#D is inaccessible within this context", diag_decl);
 	      inform (DECL_SOURCE_LOCATION (diag_decl), "declared here");
+	      if (afi)
+		afi->record_access_failure (basetype_path, diag_decl);
 	    }
 	}
       return false;

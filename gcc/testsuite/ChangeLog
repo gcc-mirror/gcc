@@ -1,3 +1,10 @@
+2017-05-16  David Malcolm  <dmalcolm@redhat.com>
+
+	* g++.dg/other/accessor-fixits-1.C: New test case.
+	* g++.dg/other/accessor-fixits-2.C: New test case.
+	* g++.dg/other/accessor-fixits-3.C: New test case.
+	* g++.dg/other/accessor-fixits-4.C: New test case.
+
 2017-05-16  Carl Love  <cel@us.ibm.com>
 
 	* gcc.target/powerpc/builtins-3.c: New vec_mule, vec_mulo test cases.
