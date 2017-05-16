@@ -1,5 +1,13 @@
 2017-05-16  Jonathan Wakely  <jwakely@redhat.com>
 
+	* configure: Regenerate.
+	* doc/xml/manual/status_cxx2017.xml: Update status table.
+	* doc/html/*: Regenerate.
+	* include/Makefile.am: Add new header.
+	* include/Makefile.in: Regenerate.
+	* include/experimental/source_location: New header implementing N4519.
+	* testsuite/experimental/source_location/1.cc: New test.
+
 	PR libstdc++/80285
 	* include/bits/shared_ptr_base.h [!__cpp_rtti] (type_info): Declare
 	outside versioned namespace.
