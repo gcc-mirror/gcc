@@ -1,5 +1,8 @@
 2017-05-16  Nathan Sidwell  <nathan@acm.org>
 
+	* name-lookup.c (check_local_shadow): New, broke out of ...
+	(pushdecl_maybe_friend_1): ... here.  Call it.
+
 	* cp-tree.h (OVL_NESTED_P, OVL_LOOKUP_P): New.
 	(ovl_first): Move inline definition to end of file.
 	(ovl_make, lookup_add): Declare.
