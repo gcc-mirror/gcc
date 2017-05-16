@@ -2094,6 +2094,52 @@ build_ref_qualified_type (tree type, cp_ref_qualifier rqual)
   return t;
 }
 
+/* Cache of free ovl nodes.  Uses OVL_FUNCTION for chaining.  */
+static GTY((deletable)) tree ovl_cache;
+
+/* Make a raw overload node containing FN.  */
+
+tree
+ovl_make (tree fn, tree next)
+{
+  tree result = ovl_cache;
+
+  if (result)
+    {
+      ovl_cache = OVL_FUNCTION (result);
+      /* Zap the flags.  */
+      memset (result, 0, sizeof (tree_base));
+      TREE_SET_CODE (result, OVERLOAD);
+    }
+  else
+    result = make_node (OVERLOAD);
+
+  if (TREE_CODE (fn) == OVERLOAD)
+    OVL_NESTED_P (result) = true;
+
+  TREE_TYPE (result) = (next || TREE_CODE (fn) == TEMPLATE_DECL
+			? unknown_type_node : TREE_TYPE (fn));
+  OVL_FUNCTION (result) = fn;
+  OVL_CHAIN (result) = next;
+  return result;
+}
+
+/* Add a potential overload into a lookup set.  */
+
+tree
+lookup_add (tree lookup, tree ovl)
+{
+  if (lookup || TREE_CODE (ovl) == TEMPLATE_DECL)
+    {
+      lookup = ovl_make (ovl, lookup);
+      OVL_LOOKUP_P (lookup) = true;
+    }
+  else
+    lookup = ovl;
+
+  return lookup;
+}
+
 /* Returns nonzero if X is an expression for a (possibly overloaded)
    function.  If "f" is a function or function template, "f", "c->f",
    "c.f", "C::f", and "f<int>" will all be considered possibly

@@ -1,7 +1,16 @@
 2017-05-16  Nathan Sidwell  <nathan@acm.org>
 
+	* cp-tree.h (OVL_NESTED_P, OVL_LOOKUP_P): New.
+	(ovl_first): Move inline definition to end of file.
+	(ovl_make, lookup_add): Declare.
+	(get_fns, get_first_fn): Make pure.
+	* tree.c (ovl_cache): New.
+	(ovl_make, lookup_add): New.
+	* pt.c (do_class_deduction): Don't add candidates that will be
+	elided.
+
 	* call.c (build_user_type_conversion_1): Use OVL_FIRST.
-	(print_error_for_call_faulure): Use OVL_NAME.
+	(print_error_for_call_failure): Use OVL_NAME.
 	(build_op_call_1): Use ovl_iterator.
 	(add_candidates): Use OVL_FIRST & lkp_iterator.
 	(build_op_delete_call): Use MAYBE_BASELINK_FUNCTIONS &

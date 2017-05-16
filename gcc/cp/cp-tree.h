@@ -371,11 +371,13 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
       CALL_EXPR_ORDERED_ARGS (in CALL_EXPR, AGGR_INIT_EXPR)
       DECLTYPE_FOR_REF_CAPTURE (in DECLTYPE_TYPE)
       CONSTUCTOR_C99_COMPOUND_LITERAL (in CONSTRUCTOR)
+      OVL_NESTED_P (in OVERLOAD)
    4: TREE_HAS_CONSTRUCTOR (in INDIRECT_REF, SAVE_EXPR, CONSTRUCTOR,
 	  CALL_EXPR, or FIELD_DECL).
       IDENTIFIER_TYPENAME_P (in IDENTIFIER_NODE)
       DECL_TINFO_P (in VAR_DECL)
       FUNCTION_REF_QUALIFIED (in FUNCTION_TYPE, METHOD_TYPE)
+      OVL_LOOKUP_P (in OVERLOAD)
    5: C_IS_RESERVED_WORD (in IDENTIFIER_NODE)
       DECL_VTABLE_OR_VTT_P (in VAR_DECL)
       FUNCTION_RVALUE_QUALIFIED (in FUNCTION_TYPE, METHOD_TYPE)
@@ -625,6 +627,11 @@ typedef struct ptrmem_cst * ptrmem_cst_t;
 /* If set, this OVERLOAD was created for argument-dependent lookup
    and can be freed afterward.  */
 #define OVL_ARG_DEPENDENT(NODE) TREE_LANG_FLAG_0 (OVERLOAD_CHECK (NODE))
+
+/* If set, this overload contains a nested overload.  */
+#define OVL_NESTED_P(NODE)	TREE_LANG_FLAG_3 (OVERLOAD_CHECK (NODE))
+/* If set, this overload was constructed during lookup.  */
+#define OVL_LOOKUP_P(NODE)	TREE_LANG_FLAG_4 (OVERLOAD_CHECK (NODE))
 
 /* The first decl of an overload.  */
 #define OVL_FIRST(NODE)	ovl_first (NODE)
@@ -6733,17 +6740,14 @@ extern tree hash_tree_cons			(tree, tree, tree);
 extern tree hash_tree_chain			(tree, tree);
 extern tree build_qualified_name		(tree, tree, tree, bool);
 extern tree build_ref_qualified_type		(tree, cp_ref_qualifier);
-inline tree
-ovl_first (tree node)
-{
-  while (TREE_CODE (node) == OVERLOAD)
-    node = OVL_FUNCTION (node);
-  return node;
-}
+inline tree ovl_first				(tree) ATTRIBUTE_PURE;
+extern tree ovl_make				(tree fn,
+						 tree next = NULL_TREE);
+extern tree lookup_add				(tree lookup, tree ovl);
 extern int is_overloaded_fn			(tree);
 extern tree dependent_name			(tree);
-extern tree get_fns				(tree);
-extern tree get_first_fn			(tree);
+extern tree get_fns				(tree) ATTRIBUTE_PURE;
+extern tree get_first_fn			(tree) ATTRIBUTE_PURE;
 extern tree ovl_cons				(tree, tree);
 extern tree build_overload			(tree, tree);
 extern tree ovl_scope				(tree);
@@ -7187,6 +7191,16 @@ extern void cp_ubsan_instrument_member_accesses (tree *);
 extern tree cp_ubsan_maybe_instrument_downcast	(location_t, tree, tree, tree);
 extern tree cp_ubsan_maybe_instrument_cast_to_vbase (location_t, tree, tree);
 extern void cp_ubsan_maybe_initialize_vtbl_ptrs (tree);
+
+/* Inline bodies.  */
+
+inline tree
+ovl_first (tree node)
+{
+  while (TREE_CODE (node) == OVERLOAD)
+    node = OVL_FUNCTION (node);
+  return node;
+}
 
 /* -- end of C++ */
 
