@@ -1,3 +1,10 @@
+2017-05-16  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/80554
+	* decl.c (build_sym): In a submodule allow overriding of host
+	associated symbols from the ancestor module with a new
+	declaration.
+
 2017-05-15  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/80674
@@ -18,7 +25,7 @@
 	end and stride expressions
 	(gfc_advance_section): Simplify start and end
 	expressions
-	(gfc_get_section_index): Simplify start expression 
+	(gfc_get_section_index): Simplify start expression
 
 2017-05-13  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
@@ -35,7 +42,7 @@
 	Fortran 95 restriction on namelist objects.
 
 2017-05-11  Nathan Sidwell  <nathan@acm.org>
-	
+
 	* trans-decl.c: Include dumpfile.h not tree-dump.h,
 
 2017-05-09  Janus Weil  <janus@gcc.gnu.org>
