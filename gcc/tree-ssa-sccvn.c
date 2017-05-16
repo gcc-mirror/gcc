@@ -1740,7 +1740,7 @@ vn_nary_build_or_lookup_1 (code_helper rcode, tree type, tree *ops,
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{
 	  fprintf (dump_file, "Inserting name ");
-	  print_generic_expr (dump_file, result, 0);
+	  print_generic_expr (dump_file, result);
 	  fprintf (dump_file, " for expression ");
 	  print_gimple_expr (dump_file, new_stmt, 0, TDF_SLIM);
 	  fprintf (dump_file, "\n");
@@ -3157,7 +3157,7 @@ print_scc (FILE *out, vec<tree> scc)
   FOR_EACH_VEC_ELT (scc, i, var)
     {
       fprintf (out, " ");
-      print_generic_expr (out, var, 0);
+      print_generic_expr (out, var);
     }
   fprintf (out, "\n");
 }
@@ -3279,9 +3279,9 @@ set_ssa_val_to (tree from, tree to)
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    {
 	      fprintf (dump_file, "Not changing value number of ");
-	      print_generic_expr (dump_file, from, 0);
+	      print_generic_expr (dump_file, from);
 	      fprintf (dump_file, " from VARYING to ");
-	      print_generic_expr (dump_file, to, 0);
+	      print_generic_expr (dump_file, to);
 	      fprintf (dump_file, "\n");
 	    }
 	  return false;
@@ -3294,11 +3294,11 @@ set_ssa_val_to (tree from, tree to)
 	    {
 	      fprintf (dump_file, "Forcing VARYING instead of changing "
 		       "value number of ");
-	      print_generic_expr (dump_file, from, 0);
+	      print_generic_expr (dump_file, from);
 	      fprintf (dump_file, " from ");
-	      print_generic_expr (dump_file, currval, 0);
+	      print_generic_expr (dump_file, currval);
 	      fprintf (dump_file, " (non-constant) to ");
-	      print_generic_expr (dump_file, to, 0);
+	      print_generic_expr (dump_file, to);
 	      fprintf (dump_file, " (constant)\n");
 	    }
 	  to = from;
@@ -3311,9 +3311,9 @@ set_ssa_val_to (tree from, tree to)
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
       fprintf (dump_file, "Setting value number of ");
-      print_generic_expr (dump_file, from, 0);
+      print_generic_expr (dump_file, from);
       fprintf (dump_file, " to ");
-      print_generic_expr (dump_file, to, 0);
+      print_generic_expr (dump_file, to);
     }
 
   if (currval != to
@@ -3790,9 +3790,9 @@ visit_reference_op_store (tree lhs, tree op, gimple *stmt)
 	{
 	  fprintf (dump_file, "No store match\n");
 	  fprintf (dump_file, "Value numbering store ");
-	  print_generic_expr (dump_file, lhs, 0);
+	  print_generic_expr (dump_file, lhs);
 	  fprintf (dump_file, " to ");
-	  print_generic_expr (dump_file, op, 0);
+	  print_generic_expr (dump_file, op);
 	  fprintf (dump_file, "\n");
 	}
       /* Have to set value numbers before insert, since insert is
@@ -3934,9 +3934,9 @@ visit_use (tree use)
       && !SSA_NAME_IS_DEFAULT_DEF (use))
     {
       fprintf (dump_file, "Value numbering ");
-      print_generic_expr (dump_file, use, 0);
+      print_generic_expr (dump_file, use);
       fprintf (dump_file, " stmt = ");
-      print_gimple_stmt (dump_file, stmt, 0, 0);
+      print_gimple_stmt (dump_file, stmt, 0);
     }
 
   /* Handle uninitialized uses.  */
@@ -3967,9 +3967,9 @@ visit_use (tree use)
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    {
 	      fprintf (dump_file, "RHS ");
-	      print_gimple_expr (dump_file, ass, 0, 0);
+	      print_gimple_expr (dump_file, ass, 0);
 	      fprintf (dump_file, " simplified to ");
-	      print_generic_expr (dump_file, simplified, 0);
+	      print_generic_expr (dump_file, simplified);
 	      fprintf (dump_file, "\n");
 	    }
 	}
@@ -4053,9 +4053,9 @@ visit_use (tree use)
 	      if (dump_file && (dump_flags & TDF_DETAILS))
 		{
 		  fprintf (dump_file, "call ");
-		  print_gimple_expr (dump_file, call_stmt, 0, 0);
+		  print_gimple_expr (dump_file, call_stmt, 0);
 		  fprintf (dump_file, " simplified to ");
-		  print_generic_expr (dump_file, simplified, 0);
+		  print_generic_expr (dump_file, simplified);
 		  fprintf (dump_file, "\n");
 		}
 	    }
@@ -4886,7 +4886,7 @@ sccvn_dom_walker::before_dom_children (basic_block bb)
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
       fprintf (dump_file, "Visiting control stmt ending BB %d: ", bb->index);
-      print_gimple_stmt (dump_file, stmt, 0, 0);
+      print_gimple_stmt (dump_file, stmt, 0);
     }
 
   /* ???  We can even handle stmts with outgoing EH or ABNORMAL edges
@@ -5014,9 +5014,9 @@ run_scc_vn (vn_lookup_kind default_vn_walk_kind_)
 	  if (VN_INFO (name)->visited
 	      && SSA_VAL (name) != name)
 	    {
-	      print_generic_expr (dump_file, name, 0);
+	      print_generic_expr (dump_file, name);
 	      fprintf (dump_file, " = ");
-	      print_generic_expr (dump_file, SSA_VAL (name), 0);
+	      print_generic_expr (dump_file, SSA_VAL (name));
 	      fprintf (dump_file, "\n");
 	    }
 	}

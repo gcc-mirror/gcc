@@ -1380,7 +1380,7 @@ pass_object_sizes::execute (function *fun)
 	      fprintf (dump_file, "Simplified\n  ");
 	      print_gimple_stmt (dump_file, call, 0, dump_flags);
 	      fprintf (dump_file, " to ");
-	      print_generic_expr (dump_file, result, 0);
+	      print_generic_expr (dump_file, result);
 	      fprintf (dump_file, "\n");
 	    }
 

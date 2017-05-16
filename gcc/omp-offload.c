@@ -788,7 +788,7 @@ dump_oacc_loop_part (FILE *file, gcall *from, int depth,
 	  if (k == kind && stmt != from)
 	    break;
 	}
-      print_gimple_stmt (file, stmt, depth * 2 + 2, 0);
+      print_gimple_stmt (file, stmt, depth * 2 + 2);
 
       gsi_next (&gsi);
       while (gsi_end_p (gsi))
@@ -808,7 +808,7 @@ dump_oacc_loop (FILE *file, oacc_loop *loop, int depth)
 	   LOCATION_FILE (loop->loc), LOCATION_LINE (loop->loc));
 
   if (loop->marker)
-    print_gimple_stmt (file, loop->marker, depth * 2, 0);
+    print_gimple_stmt (file, loop->marker, depth * 2);
 
   if (loop->routine)
     fprintf (file, "%*sRoutine %s:%u:%s\n",

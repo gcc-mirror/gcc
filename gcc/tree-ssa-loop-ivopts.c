@@ -746,7 +746,7 @@ dump_use (FILE *file, struct iv_use *use)
 {
   fprintf (file, "  Use %d.%d:\n", use->group_id, use->id);
   fprintf (file, "    At stmt:\t");
-  print_gimple_stmt (file, use->stmt, 0, 0);
+  print_gimple_stmt (file, use->stmt, 0);
   fprintf (file, "    At pos:\t");
   if (use->op_p)
     print_generic_expr (file, *use->op_p, TDF_SLIM);
@@ -6943,8 +6943,8 @@ adjust_iv_update_pos (struct iv_cand *cand, struct iv_use *use)
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
       fprintf (dump_file, "Reordering \n");
-      print_gimple_stmt (dump_file, iv_update, 0, 0);
-      print_gimple_stmt (dump_file, use->stmt, 0, 0);
+      print_gimple_stmt (dump_file, iv_update, 0);
+      print_gimple_stmt (dump_file, use->stmt, 0);
       fprintf (dump_file, "\n");
     }
 

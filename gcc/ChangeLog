@@ -1,3 +1,224 @@
+2017-05-16  Martin Liska  <mliska@suse.cz>
+
+	* cgraph.c (cgraph_edge::resolve_speculation): Add default value for flags
+	argument of print_gimple_stmt, print_gimple_expr,
+	print_generic_stmt and print_generic_expr.
+	* cgraphclones.c (symbol_table::materialize_all_clones): Likewise.
+	* coretypes.h: Likewise.
+	* except.c (dump_eh_tree): Likewise.
+	* gimple-fold.c (gimple_fold_stmt_to_constant_1): Likewise.
+	* gimple-pretty-print.h: Likewise.
+	* gimple-ssa-backprop.c (dump_usage_prefix): Likewise.
+	(backprop::push_to_worklist): Likewise.
+	(backprop::pop_from_worklist): Likewise.
+	(backprop::process_use): Likewise.
+	(backprop::intersect_uses): Likewise.
+	(note_replacement): Likewise.
+	* gimple-ssa-store-merging.c (pass_store_merging::terminate_all_aliasing_chains): Likewise.
+	(imm_store_chain_info::coalesce_immediate_stores): Likewise.
+	(pass_store_merging::execute): Likewise.
+	* gimple-ssa-strength-reduction.c (dump_candidate): Likewise.
+	(ssa_base_cand_dump_callback): Likewise.
+	(dump_incr_vec): Likewise.
+	(replace_refs): Likewise.
+	(replace_mult_candidate): Likewise.
+	(create_add_on_incoming_edge): Likewise.
+	(create_phi_basis): Likewise.
+	(insert_initializers): Likewise.
+	(all_phi_incrs_profitable): Likewise.
+	(introduce_cast_before_cand): Likewise.
+	(replace_one_candidate): Likewise.
+	* gimplify.c (gimplify_expr): Likewise.
+	* graphite-isl-ast-to-gimple.c (is_valid_rename): Likewise.
+	(set_rename): Likewise.
+	(rename_uses): Likewise.
+	(copy_loop_phi_nodes): Likewise.
+	(add_close_phis_to_merge_points): Likewise.
+	(copy_loop_close_phi_args): Likewise.
+	(copy_cond_phi_args): Likewise.
+	(graphite_copy_stmts_from_block): Likewise.
+	(translate_pending_phi_nodes): Likewise.
+	* graphite-poly.c (print_pdr): Likewise.
+	(dump_gbb_cases): Likewise.
+	(dump_gbb_conditions): Likewise.
+	(print_scop_params): Likewise.
+	* graphite-scop-detection.c (build_cross_bb_scalars_def): Likewise.
+	(build_cross_bb_scalars_use): Likewise.
+	(gather_bbs::before_dom_children): Likewise.
+	* hsa-dump.c (dump_hsa_immed): Likewise.
+	* ipa-cp.c (print_ipcp_constant_value): Likewise.
+	(get_replacement_map): Likewise.
+	* ipa-inline-analysis.c (dump_condition): Likewise.
+	(estimate_function_body_sizes): Likewise.
+	* ipa-polymorphic-call.c (check_stmt_for_type_change): Likewise.
+	(ipa_polymorphic_call_context::get_dynamic_type): Likewise.
+	* ipa-prop.c (ipa_dump_param): Likewise.
+	(ipa_print_node_jump_functions_for_edge): Likewise.
+	(ipa_modify_call_arguments): Likewise.
+	(ipa_modify_expr): Likewise.
+	(ipa_dump_param_adjustments): Likewise.
+	(ipa_dump_agg_replacement_values): Likewise.
+	(ipcp_modif_dom_walker::before_dom_children): Likewise.
+	* ipa-pure-const.c (check_stmt): Likewise.
+	(pass_nothrow::execute): Likewise.
+	* ipa-split.c (execute_split_functions): Likewise.
+	* omp-offload.c (dump_oacc_loop_part): Likewise.
+	(dump_oacc_loop): Likewise.
+	* trans-mem.c (tm_log_emit): Likewise.
+	(tm_memopt_accumulate_memops): Likewise.
+	(dump_tm_memopt_set): Likewise.
+	(dump_tm_memopt_transform): Likewise.
+	* tree-cfg.c (gimple_verify_flow_info): Likewise.
+	(print_loop): Likewise.
+	* tree-chkp-opt.c (chkp_print_addr): Likewise.
+	(chkp_gather_checks_info): Likewise.
+	(chkp_get_check_result): Likewise.
+	(chkp_remove_check_if_pass): Likewise.
+	(chkp_use_outer_bounds_if_possible): Likewise.
+	(chkp_reduce_bounds_lifetime): Likewise.
+	* tree-chkp.c (chkp_register_addr_bounds): Likewise.
+	(chkp_mark_completed_bounds): Likewise.
+	(chkp_register_incomplete_bounds): Likewise.
+	(chkp_mark_invalid_bounds): Likewise.
+	(chkp_maybe_copy_and_register_bounds): Likewise.
+	(chkp_build_returned_bound): Likewise.
+	(chkp_get_bound_for_parm): Likewise.
+	(chkp_build_bndldx): Likewise.
+	(chkp_get_bounds_by_definition): Likewise.
+	(chkp_generate_extern_var_bounds): Likewise.
+	(chkp_get_bounds_for_decl_addr): Likewise.
+	* tree-chrec.c (chrec_apply): Likewise.
+	* tree-data-ref.c (dump_data_reference): Likewise.
+	(dump_subscript): Likewise.
+	(dump_data_dependence_relation): Likewise.
+	(analyze_overlapping_iterations): Likewise.
+	* tree-inline.c (expand_call_inline): Likewise.
+	(tree_function_versioning): Likewise.
+	* tree-into-ssa.c (dump_defs_stack): Likewise.
+	(dump_currdefs): Likewise.
+	(dump_names_replaced_by): Likewise.
+	(dump_update_ssa): Likewise.
+	(update_ssa): Likewise.
+	* tree-object-size.c (pass_object_sizes::execute): Likewise.
+	* tree-parloops.c (build_new_reduction): Likewise.
+	(try_create_reduction_list): Likewise.
+	(ref_conflicts_with_region): Likewise.
+	(oacc_entry_exit_ok_1): Likewise.
+	(oacc_entry_exit_single_gang): Likewise.
+	* tree-pretty-print.h: Likewise.
+	* tree-scalar-evolution.c (set_scalar_evolution): Likewise.
+	(get_scalar_evolution): Likewise.
+	(add_to_evolution): Likewise.
+	(get_loop_exit_condition): Likewise.
+	(analyze_evolution_in_loop): Likewise.
+	(analyze_initial_condition): Likewise.
+	(analyze_scalar_evolution): Likewise.
+	(instantiate_scev): Likewise.
+	(number_of_latch_executions): Likewise.
+	(gather_chrec_stats): Likewise.
+	(final_value_replacement_loop): Likewise.
+	(scev_const_prop): Likewise.
+	* tree-sra.c (dump_access): Likewise.
+	(disqualify_candidate): Likewise.
+	(create_access): Likewise.
+	(reject): Likewise.
+	(maybe_add_sra_candidate): Likewise.
+	(create_access_replacement): Likewise.
+	(analyze_access_subtree): Likewise.
+	(analyze_all_variable_accesses): Likewise.
+	(sra_modify_assign): Likewise.
+	(initialize_constant_pool_replacements): Likewise.
+	(find_param_candidates): Likewise.
+	(decide_one_param_reduction): Likewise.
+	(replace_removed_params_ssa_names): Likewise.
+	* tree-ssa-ccp.c (ccp_fold_stmt): Likewise.
+	* tree-ssa-copy.c (dump_copy_of): Likewise.
+	(copy_prop_visit_cond_stmt): Likewise.
+	* tree-ssa-dce.c (mark_operand_necessary): Likewise.
+	* tree-ssa-dom.c (pass_dominator::execute): Likewise.
+	(record_equivalences_from_stmt): Likewise.
+	* tree-ssa-dse.c (compute_trims): Likewise.
+	(delete_dead_call): Likewise.
+	(delete_dead_assignment): Likewise.
+	* tree-ssa-forwprop.c (forward_propagate_into_gimple_cond): Likewise.
+	(forward_propagate_into_cond): Likewise.
+	(pass_forwprop::execute): Likewise.
+	* tree-ssa-ifcombine.c (ifcombine_ifandif): Likewise.
+	* tree-ssa-loop-im.c (invariantness_dom_walker::before_dom_children): Likewise.
+	(move_computations_worker): Likewise.
+	(execute_sm): Likewise.
+	* tree-ssa-loop-ivcanon.c (tree_estimate_loop_size): Likewise.
+	(remove_exits_and_undefined_stmts): Likewise.
+	(remove_redundant_iv_tests): Likewise.
+	* tree-ssa-loop-ivopts.c (dump_use): Likewise.
+	(adjust_iv_update_pos): Likewise.
+	* tree-ssa-math-opts.c (bswap_replace): Likewise.
+	* tree-ssa-phiopt.c (factor_out_conditional_conversion): Likewise.
+	(value_replacement): Likewise.
+	* tree-ssa-phiprop.c (phiprop_insert_phi): Likewise.
+	* tree-ssa-pre.c (print_pre_expr): Likewise.
+	(get_representative_for): Likewise.
+	(create_expression_by_pieces): Likewise.
+	(insert_into_preds_of_block): Likewise.
+	(eliminate_insert): Likewise.
+	(eliminate_dom_walker::before_dom_children): Likewise.
+	(eliminate): Likewise.
+	(remove_dead_inserted_code): Likewise.
+	* tree-ssa-propagate.c (substitute_and_fold): Likewise.
+	* tree-ssa-reassoc.c (get_rank): Likewise.
+	(eliminate_duplicate_pair): Likewise.
+	(eliminate_plus_minus_pair): Likewise.
+	(eliminate_not_pairs): Likewise.
+	(undistribute_ops_list): Likewise.
+	(eliminate_redundant_comparison): Likewise.
+	(update_range_test): Likewise.
+	(optimize_range_tests_var_bound): Likewise.
+	(optimize_vec_cond_expr): Likewise.
+	(rewrite_expr_tree): Likewise.
+	(rewrite_expr_tree_parallel): Likewise.
+	(linearize_expr): Likewise.
+	(break_up_subtract): Likewise.
+	(linearize_expr_tree): Likewise.
+	(attempt_builtin_powi): Likewise.
+	(attempt_builtin_copysign): Likewise.
+	(transform_stmt_to_copy): Likewise.
+	(transform_stmt_to_multiply): Likewise.
+	(dump_ops_vector): Likewise.
+	* tree-ssa-sccvn.c (vn_nary_build_or_lookup_1): Likewise.
+	(print_scc): Likewise.
+	(set_ssa_val_to): Likewise.
+	(visit_reference_op_store): Likewise.
+	(visit_use): Likewise.
+	(sccvn_dom_walker::before_dom_children): Likewise.
+	(run_scc_vn): Likewise.
+	* tree-ssa-scopedtables.c (avail_exprs_stack::lookup_avail_expr): Likewise.
+	(expr_hash_elt::print): Likewise.
+	(const_and_copies::pop_to_marker): Likewise.
+	(const_and_copies::record_const_or_copy_raw): Likewise.
+	* tree-ssa-structalias.c (compute_dependence_clique): Likewise.
+	* tree-ssa-uninit.c (collect_phi_def_edges): Likewise.
+	(dump_predicates): Likewise.
+	(find_uninit_use): Likewise.
+	(warn_uninitialized_phi): Likewise.
+	(pass_late_warn_uninitialized::execute): Likewise.
+	* tree-ssa.c (verify_vssa): Likewise.
+	(verify_ssa): Likewise.
+	(maybe_optimize_var): Likewise.
+	* tree-vrp.c (dump_value_range): Likewise.
+	(dump_all_value_ranges): Likewise.
+	(dump_asserts_for): Likewise.
+	(register_edge_assert_for_2): Likewise.
+	(vrp_visit_cond_stmt): Likewise.
+	(vrp_visit_switch_stmt): Likewise.
+	(vrp_visit_stmt): Likewise.
+	(vrp_visit_phi_node): Likewise.
+	(simplify_cond_using_ranges_1): Likewise.
+	(fold_predicate_in): Likewise.
+	(evrp_dom_walker::before_dom_children): Likewise.
+	(evrp_dom_walker::push_value_range): Likewise.
+	(evrp_dom_walker::pop_value_range): Likewise.
+	(execute_early_vrp): Likewise.
+
 2017-05-16  Richard Biener  <rguenther@suse.de>
 
 	* dwarf2out.c (loc_list_from_tree_1): Do not create

@@ -4417,7 +4417,7 @@ dump_value_range (FILE *file, const value_range *vr)
 	  && vrp_val_is_min (vr->min))
 	fprintf (file, "-INF");
       else
-	print_generic_expr (file, vr->min, 0);
+	print_generic_expr (file, vr->min);
 
       fprintf (file, ", ");
 
@@ -4425,7 +4425,7 @@ dump_value_range (FILE *file, const value_range *vr)
 	  && vrp_val_is_max (vr->max))
 	fprintf (file, "+INF");
       else
-	print_generic_expr (file, vr->max, 0);
+	print_generic_expr (file, vr->max);
 
       fprintf (file, "]");
 
@@ -4438,7 +4438,7 @@ dump_value_range (FILE *file, const value_range *vr)
 
 	  EXECUTE_IF_SET_IN_BITMAP (vr->equiv, 0, i, bi)
 	    {
-	      print_generic_expr (file, ssa_name (i), 0);
+	      print_generic_expr (file, ssa_name (i));
 	      fprintf (file, " ");
 	      c++;
 	    }
@@ -4474,7 +4474,7 @@ dump_all_value_ranges (FILE *file)
     {
       if (vr_value[i])
 	{
-	  print_generic_expr (file, ssa_name (i), 0);
+	  print_generic_expr (file, ssa_name (i));
 	  fprintf (file, ": ");
 	  dump_value_range (file, vr_value[i]);
 	  fprintf (file, "\n");
@@ -4587,14 +4587,14 @@ dump_asserts_for (FILE *file, tree name)
   assert_locus *loc;
 
   fprintf (file, "Assertions to be inserted for ");
-  print_generic_expr (file, name, 0);
+  print_generic_expr (file, name);
   fprintf (file, "\n");
 
   loc = asserts_for[SSA_NAME_VERSION (name)];
   while (loc)
     {
       fprintf (file, "\t");
-      print_gimple_stmt (file, gsi_stmt (loc->si), 0, 0);
+      print_gimple_stmt (file, gsi_stmt (loc->si), 0);
       fprintf (file, "\n\tBB #%d", loc->bb->index);
       if (loc->e)
 	{
@@ -4603,9 +4603,9 @@ dump_asserts_for (FILE *file, tree name)
 	  dump_edge_info (file, loc->e, dump_flags, 0);
 	}
       fprintf (file, "\n\tPREDICATE: ");
-      print_generic_expr (file, loc->expr, 0);
+      print_generic_expr (file, loc->expr);
       fprintf (file, " %s ", get_tree_code_name (loc->comp_code));
-      print_generic_expr (file, loc->val, 0);
+      print_generic_expr (file, loc->val);
       fprintf (file, "\n\n");
       loc = loc->next;
     }
@@ -5061,9 +5061,9 @@ register_edge_assert_for_2 (tree name, edge e,
 	  if (dump_file)
 	    {
 	      fprintf (dump_file, "Adding assert for ");
-	      print_generic_expr (dump_file, name3, 0);
+	      print_generic_expr (dump_file, name3);
 	      fprintf (dump_file, " from ");
-	      print_generic_expr (dump_file, tmp, 0);
+	      print_generic_expr (dump_file, tmp);
 	      fprintf (dump_file, "\n");
 	    }
 
@@ -5088,9 +5088,9 @@ register_edge_assert_for_2 (tree name, edge e,
 	  if (dump_file)
 	    {
 	      fprintf (dump_file, "Adding assert for ");
-	      print_generic_expr (dump_file, name2, 0);
+	      print_generic_expr (dump_file, name2);
 	      fprintf (dump_file, " from ");
-	      print_generic_expr (dump_file, tmp, 0);
+	      print_generic_expr (dump_file, tmp);
 	      fprintf (dump_file, "\n");
 	    }
 
@@ -5220,9 +5220,9 @@ register_edge_assert_for_2 (tree name, edge e,
 	      if (dump_file)
 		{
 		  fprintf (dump_file, "Adding assert for ");
-		  print_generic_expr (dump_file, name2, 0);
+		  print_generic_expr (dump_file, name2);
 		  fprintf (dump_file, " from ");
-		  print_generic_expr (dump_file, tmp, 0);
+		  print_generic_expr (dump_file, tmp);
 		  fprintf (dump_file, "\n");
 		}
 
@@ -5294,9 +5294,9 @@ register_edge_assert_for_2 (tree name, edge e,
 	      if (dump_file)
 		{
 		  fprintf (dump_file, "Adding assert for ");
-		  print_generic_expr (dump_file, name2, 0);
+		  print_generic_expr (dump_file, name2);
 		  fprintf (dump_file, " from ");
-		  print_generic_expr (dump_file, tmp, 0);
+		  print_generic_expr (dump_file, tmp);
 		  fprintf (dump_file, "\n");
 		}
 
@@ -5533,9 +5533,9 @@ register_edge_assert_for_2 (tree name, edge e,
 		    if (dump_file)
 		      {
 			fprintf (dump_file, "Adding assert for ");
-			print_generic_expr (dump_file, names[i], 0);
+			print_generic_expr (dump_file, names[i]);
 			fprintf (dump_file, " from ");
-			print_generic_expr (dump_file, tmp, 0);
+			print_generic_expr (dump_file, tmp);
 			fprintf (dump_file, "\n");
 		      }
 
@@ -7541,13 +7541,13 @@ vrp_visit_cond_stmt (gcond *stmt, edge *taken_edge_p)
       ssa_op_iter i;
 
       fprintf (dump_file, "\nVisiting conditional with predicate: ");
-      print_gimple_stmt (dump_file, stmt, 0, 0);
+      print_gimple_stmt (dump_file, stmt, 0);
       fprintf (dump_file, "\nWith known ranges\n");
 
       FOR_EACH_SSA_TREE_OPERAND (use, stmt, i, SSA_OP_USE)
 	{
 	  fprintf (dump_file, "\t");
-	  print_generic_expr (dump_file, use, 0);
+	  print_generic_expr (dump_file, use);
 	  fprintf (dump_file, ": ");
 	  dump_value_range (dump_file, vr_value[SSA_NAME_VERSION (use)]);
 	}
@@ -7612,7 +7612,7 @@ vrp_visit_cond_stmt (gcond *stmt, edge *taken_edge_p)
       if (val == NULL_TREE)
 	fprintf (dump_file, "DON'T KNOW\n");
       else
-	print_generic_stmt (dump_file, val, 0);
+	print_generic_stmt (dump_file, val);
     }
 }
 
@@ -7829,7 +7829,7 @@ vrp_visit_switch_stmt (gswitch *stmt, edge *taken_edge_p)
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
       fprintf (dump_file, "\nVisiting switch expression with operand ");
-      print_generic_expr (dump_file, op, 0);
+      print_generic_expr (dump_file, op);
       fprintf (dump_file, " with known range ");
       dump_value_range (dump_file, vr);
       fprintf (dump_file, "\n");
@@ -7893,7 +7893,7 @@ vrp_visit_switch_stmt (gswitch *stmt, edge *taken_edge_p)
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
       fprintf (dump_file, "  will take edge to ");
-      print_generic_stmt (dump_file, CASE_LABEL (val), 0);
+      print_generic_stmt (dump_file, CASE_LABEL (val));
     }
 }
 
@@ -7948,7 +7948,7 @@ vrp_visit_stmt (gimple *stmt, edge *taken_edge_p, tree *output_p)
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    {
 	      fprintf (dump_file, "Found new range for ");
-	      print_generic_expr (dump_file, *output_p, 0);
+	      print_generic_expr (dump_file, *output_p);
 	      fprintf (dump_file, ": ");
 	      dump_value_range (dump_file, &vr);
 	      fprintf (dump_file, "\n");
@@ -9037,7 +9037,7 @@ vrp_visit_phi_node (gphi *phi)
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{
 	  fprintf (dump_file, "Found new range for ");
-	  print_generic_expr (dump_file, lhs, 0);
+	  print_generic_expr (dump_file, lhs);
 	  fprintf (dump_file, ": ");
 	  dump_value_range (dump_file, &vr_result);
 	  fprintf (dump_file, "\n");
@@ -9579,7 +9579,7 @@ simplify_cond_using_ranges_1 (gcond *stmt)
 	      if (dump_file)
 		{
 		  fprintf (dump_file, "Simplified relational ");
-		  print_gimple_stmt (dump_file, stmt, 0, 0);
+		  print_gimple_stmt (dump_file, stmt, 0);
 		  fprintf (dump_file, " into ");
 		}
 
@@ -9591,7 +9591,7 @@ simplify_cond_using_ranges_1 (gcond *stmt)
 
 	      if (dump_file)
 		{
-		  print_gimple_stmt (dump_file, stmt, 0, 0);
+		  print_gimple_stmt (dump_file, stmt, 0);
 		  fprintf (dump_file, "\n");
 		}
 
@@ -9609,7 +9609,7 @@ simplify_cond_using_ranges_1 (gcond *stmt)
 	      if (dump_file)
 		{
 		  fprintf (dump_file, "Simplified relational ");
-		  print_gimple_stmt (dump_file, stmt, 0, 0);
+		  print_gimple_stmt (dump_file, stmt, 0);
 		  fprintf (dump_file, " into ");
 		}
 
@@ -9621,7 +9621,7 @@ simplify_cond_using_ranges_1 (gcond *stmt)
 
 	      if (dump_file)
 		{
-		  print_gimple_stmt (dump_file, stmt, 0, 0);
+		  print_gimple_stmt (dump_file, stmt, 0);
 		  fprintf (dump_file, "\n");
 		}
 
@@ -10335,9 +10335,9 @@ fold_predicate_in (gimple_stmt_iterator *si)
       if (dump_file)
 	{
 	  fprintf (dump_file, "Folding predicate ");
-	  print_gimple_expr (dump_file, stmt, 0, 0);
+	  print_gimple_expr (dump_file, stmt, 0);
 	  fprintf (dump_file, " to ");
-	  print_generic_expr (dump_file, val, 0);
+	  print_generic_expr (dump_file, val);
 	  fprintf (dump_file, "\n");
 	}
 
@@ -10817,7 +10817,7 @@ evrp_dom_walker::before_dom_children (basic_block bb)
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    {
 	      fprintf (dump_file, "Visiting controlling predicate ");
-	      print_gimple_stmt (dump_file, stmt, 0, 0);
+	      print_gimple_stmt (dump_file, stmt, 0);
 	    }
 	  /* Entering a new scope.  Try to see if we can find a VR
 	     here.  */
@@ -10870,7 +10870,7 @@ evrp_dom_walker::before_dom_children (basic_block bb)
       if (interesting && dump_file && (dump_flags & TDF_DETAILS))
 	{
 	  fprintf (dump_file, "Visiting PHI node ");
-	  print_gimple_stmt (dump_file, phi, 0, 0);
+	  print_gimple_stmt (dump_file, phi, 0);
 	}
       if (!has_unvisited_preds
 	  && interesting)
@@ -10933,7 +10933,7 @@ evrp_dom_walker::before_dom_children (basic_block bb)
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{
 	  fprintf (dump_file, "Visiting stmt ");
-	  print_gimple_stmt (dump_file, stmt, 0, 0);
+	  print_gimple_stmt (dump_file, stmt, 0);
 	}
 
       if (gcond *cond = dyn_cast <gcond *> (stmt))
@@ -11123,7 +11123,7 @@ evrp_dom_walker::push_value_range (tree var, value_range *vr)
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
       fprintf (dump_file, "pushing new range for ");
-      print_generic_expr (dump_file, var, 0);
+      print_generic_expr (dump_file, var);
       fprintf (dump_file, ": ");
       dump_value_range (dump_file, vr);
       fprintf (dump_file, "\n");
@@ -11142,7 +11142,7 @@ evrp_dom_walker::pop_value_range (tree var)
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
       fprintf (dump_file, "popping range for ");
-      print_generic_expr (dump_file, var, 0);
+      print_generic_expr (dump_file, var);
       fprintf (dump_file, ", restoring ");
       dump_value_range (dump_file, vr);
       fprintf (dump_file, "\n");
@@ -11194,7 +11194,7 @@ execute_early_vrp ()
       if (dump_file && dump_flags & TDF_DETAILS)
 	{
 	  fprintf (dump_file, "Removing dead stmt ");
-	  print_gimple_stmt (dump_file, stmt, 0, 0);
+	  print_gimple_stmt (dump_file, stmt, 0);
 	  fprintf (dump_file, "\n");
 	}
       gimple_stmt_iterator gsi = gsi_for_stmt (stmt);

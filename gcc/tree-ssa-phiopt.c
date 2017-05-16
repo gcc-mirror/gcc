@@ -525,11 +525,11 @@ factor_out_conditional_conversion (edge e0, edge e1, gphi *phi,
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
       fprintf (dump_file, "PHI ");
-      print_generic_expr (dump_file, gimple_phi_result (phi), 0);
+      print_generic_expr (dump_file, gimple_phi_result (phi));
       fprintf (dump_file,
 	       " changed to factor conversion out from COND_EXPR.\n");
       fprintf (dump_file, "New stmt with CAST that defines ");
-      print_generic_expr (dump_file, result, 0);
+      print_generic_expr (dump_file, result);
       fprintf (dump_file, ".\n");
     }
 
@@ -984,10 +984,10 @@ value_replacement (basic_block cond_bb, basic_block middle_bb,
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    {
 	      fprintf (dump_file, "PHI ");
-	      print_generic_expr (dump_file, gimple_phi_result (phi), 0);
+	      print_generic_expr (dump_file, gimple_phi_result (phi));
 	      fprintf (dump_file, " reduced for COND_EXPR in block %d to ",
 		       cond_bb->index);
-	      print_generic_expr (dump_file, arg, 0);
+	      print_generic_expr (dump_file, arg);
 	      fprintf (dump_file, ".\n");
             }
           return 1;

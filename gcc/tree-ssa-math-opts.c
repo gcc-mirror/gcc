@@ -2734,7 +2734,7 @@ bswap_replace (gimple *cur_stmt, gimple *ins_stmt, tree fndecl,
 	      fprintf (dump_file,
 		       "%d bit load in target endianness found at: ",
 		       (int) n->range);
-	      print_gimple_stmt (dump_file, cur_stmt, 0, 0);
+	      print_gimple_stmt (dump_file, cur_stmt, 0);
 	    }
 	  return true;
 	}
@@ -2803,7 +2803,7 @@ bswap_replace (gimple *cur_stmt, gimple *ins_stmt, tree fndecl,
     {
       fprintf (dump_file, "%d bit bswap implementation found at: ",
 	       (int) n->range);
-      print_gimple_stmt (dump_file, cur_stmt, 0, 0);
+      print_gimple_stmt (dump_file, cur_stmt, 0);
     }
 
   gsi_insert_after (&gsi, bswap_stmt, GSI_SAME_STMT);

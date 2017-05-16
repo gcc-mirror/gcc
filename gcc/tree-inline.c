@@ -4722,9 +4722,9 @@ expand_call_inline (basic_block bb, gimple *stmt, copy_body_data *id)
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
       fprintf (dump_file, "Inlining ");
-      print_generic_expr (dump_file, id->src_fn, 0);
+      print_generic_expr (dump_file, id->src_fn);
       fprintf (dump_file, " to ");
-      print_generic_expr (dump_file, id->dst_fn, 0);
+      print_generic_expr (dump_file, id->dst_fn);
       fprintf (dump_file, " with frequency %i\n", cg_edge->frequency);
     }
 
@@ -5903,10 +5903,10 @@ tree_function_versioning (tree old_decl, tree new_decl,
 			  {
 			    fprintf (dump_file, "    const ");
 			    print_generic_expr (dump_file,
-						replace_info->new_tree, 0);
+						replace_info->new_tree);
 			    fprintf (dump_file,
 				     "  can't be converted to param ");
-			    print_generic_expr (dump_file, parm, 0);
+			    print_generic_expr (dump_file, parm);
 			    fprintf (dump_file, "\n");
 			  }
 			replace_info->old_tree = NULL;

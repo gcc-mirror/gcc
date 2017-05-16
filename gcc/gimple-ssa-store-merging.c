@@ -823,7 +823,7 @@ pass_store_merging::terminate_all_aliasing_chains (imm_store_chain_info
 		    {
 		      fprintf (dump_file,
 			       "stmt causes chain termination:\n");
-		      print_gimple_stmt (dump_file, stmt, 0, 0);
+		      print_gimple_stmt (dump_file, stmt, 0);
 		    }
 		  terminate_and_release_chain (*chain_info);
 		  ret = true;
@@ -906,7 +906,7 @@ imm_store_chain_info::coalesce_immediate_stores ()
 	  fprintf (dump_file, "Store %u:\nbitsize:" HOST_WIDE_INT_PRINT_DEC
 			      " bitpos:" HOST_WIDE_INT_PRINT_DEC " val:\n",
 		   i, info->bitsize, info->bitpos);
-	  print_generic_expr (dump_file, gimple_assign_rhs1 (info->stmt), 0);
+	  print_generic_expr (dump_file, gimple_assign_rhs1 (info->stmt));
 	  fprintf (dump_file, "\n------------\n");
 	}
 
@@ -1467,7 +1467,7 @@ pass_store_merging::execute (function *fun)
 			{
 			  fprintf (dump_file,
 				   "Recording immediate store from stmt:\n");
-			  print_gimple_stmt (dump_file, stmt, 0, 0);
+			  print_gimple_stmt (dump_file, stmt, 0);
 			}
 		      (*chain_info)->m_store_info.safe_push (info);
 		      /* If we reach the limit of stores to merge in a chain
@@ -1498,9 +1498,9 @@ pass_store_merging::execute (function *fun)
 		    {
 		      fprintf (dump_file,
 			       "Starting new chain with statement:\n");
-		      print_gimple_stmt (dump_file, stmt, 0, 0);
+		      print_gimple_stmt (dump_file, stmt, 0);
 		      fprintf (dump_file, "The base object is:\n");
-		      print_generic_expr (dump_file, base_addr, 0);
+		      print_generic_expr (dump_file, base_addr);
 		      fprintf (dump_file, "\n");
 		    }
 		}

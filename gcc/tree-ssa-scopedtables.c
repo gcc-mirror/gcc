@@ -215,7 +215,7 @@ avail_exprs_stack::lookup_avail_expr (gimple *stmt, bool insert, bool tbaa_p)
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
       fprintf (dump_file, "FIND: ");
-      print_generic_expr (dump_file, lhs, 0);
+      print_generic_expr (dump_file, lhs);
       fprintf (dump_file, "\n");
     }
 
@@ -737,36 +737,36 @@ expr_hash_elt::print (FILE *stream)
 
   if (m_lhs)
     {
-      print_generic_expr (stream, m_lhs, 0);
+      print_generic_expr (stream, m_lhs);
       fprintf (stream, " = ");
     }
 
   switch (m_expr.kind)
     {
       case EXPR_SINGLE:
-        print_generic_expr (stream, m_expr.ops.single.rhs, 0);
-        break;
+	print_generic_expr (stream, m_expr.ops.single.rhs);
+	break;
 
       case EXPR_UNARY:
 	fprintf (stream, "%s ", get_tree_code_name (m_expr.ops.unary.op));
-        print_generic_expr (stream, m_expr.ops.unary.opnd, 0);
-        break;
+	print_generic_expr (stream, m_expr.ops.unary.opnd);
+	break;
 
       case EXPR_BINARY:
-        print_generic_expr (stream, m_expr.ops.binary.opnd0, 0);
+	print_generic_expr (stream, m_expr.ops.binary.opnd0);
 	fprintf (stream, " %s ", get_tree_code_name (m_expr.ops.binary.op));
-        print_generic_expr (stream, m_expr.ops.binary.opnd1, 0);
-        break;
+	print_generic_expr (stream, m_expr.ops.binary.opnd1);
+	break;
 
       case EXPR_TERNARY:
 	fprintf (stream, " %s <", get_tree_code_name (m_expr.ops.ternary.op));
-        print_generic_expr (stream, m_expr.ops.ternary.opnd0, 0);
+	print_generic_expr (stream, m_expr.ops.ternary.opnd0);
 	fputs (", ", stream);
-        print_generic_expr (stream, m_expr.ops.ternary.opnd1, 0);
+	print_generic_expr (stream, m_expr.ops.ternary.opnd1);
 	fputs (", ", stream);
-        print_generic_expr (stream, m_expr.ops.ternary.opnd2, 0);
+	print_generic_expr (stream, m_expr.ops.ternary.opnd2);
 	fputs (">", stream);
-        break;
+	break;
 
       case EXPR_CALL:
         {
@@ -779,11 +779,11 @@ expr_hash_elt::print (FILE *stream)
             fputs (internal_fn_name (gimple_call_internal_fn (fn_from)),
                    stream);
           else
-            print_generic_expr (stream, gimple_call_fn (fn_from), 0);
+	    print_generic_expr (stream, gimple_call_fn (fn_from));
           fprintf (stream, " (");
           for (i = 0; i < nargs; i++)
             {
-              print_generic_expr (stream, m_expr.ops.call.args[i], 0);
+	      print_generic_expr (stream, m_expr.ops.call.args[i]);
               if (i + 1 < nargs)
                 fprintf (stream, ", ");
             }
@@ -799,7 +799,7 @@ expr_hash_elt::print (FILE *stream)
           fprintf (stream, "PHI <");
           for (i = 0; i < nargs; i++)
             {
-              print_generic_expr (stream, m_expr.ops.phi.args[i], 0);
+	      print_generic_expr (stream, m_expr.ops.phi.args[i]);
               if (i + 1 < nargs)
                 fprintf (stream, ", ");
             }
@@ -811,7 +811,7 @@ expr_hash_elt::print (FILE *stream)
   if (m_vop)
     {
       fprintf (stream, " with ");
-      print_generic_expr (stream, m_vop, 0);
+      print_generic_expr (stream, m_vop);
     }
 
   fprintf (stream, "\n");
@@ -838,9 +838,9 @@ const_and_copies::pop_to_marker (void)
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{
 	  fprintf (dump_file, "<<<< COPY ");
-	  print_generic_expr (dump_file, dest, 0);
+	  print_generic_expr (dump_file, dest);
 	  fprintf (dump_file, " = ");
-	  print_generic_expr (dump_file, SSA_NAME_VALUE (dest), 0);
+	  print_generic_expr (dump_file, SSA_NAME_VALUE (dest));
 	  fprintf (dump_file, "\n");
 	}
 
@@ -859,9 +859,9 @@ const_and_copies::record_const_or_copy_raw (tree x, tree y, tree prev_x)
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
       fprintf (dump_file, "0>>> COPY ");
-      print_generic_expr (dump_file, x, 0);
+      print_generic_expr (dump_file, x);
       fprintf (dump_file, " = ");
-      print_generic_expr (dump_file, y, 0);
+      print_generic_expr (dump_file, y);
       fprintf (dump_file, "\n");
     }
 

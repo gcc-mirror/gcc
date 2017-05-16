@@ -1280,7 +1280,7 @@ cp_lexer_print_token (FILE * stream, cp_token *token)
       break;
 
     case CPP_NUMBER:
-      print_generic_expr (stream, token->u.value, 0);
+      print_generic_expr (stream, token->u.value);
       break;
 
     default:

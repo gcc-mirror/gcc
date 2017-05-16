@@ -1118,9 +1118,11 @@ symbol_table::materialize_all_clones (void)
 			    {
 			      ipa_replace_map *replace_info;
 			      replace_info = (*node->clone.tree_map)[i];
-			      print_generic_expr (symtab->dump_file, replace_info->old_tree, 0);
+			      print_generic_expr (symtab->dump_file,
+						  replace_info->old_tree);
 			      fprintf (symtab->dump_file, " -> ");
-			      print_generic_expr (symtab->dump_file, replace_info->new_tree, 0);
+			      print_generic_expr (symtab->dump_file,
+						  replace_info->new_tree);
 			      fprintf (symtab->dump_file, "%s%s;",
 			      	       replace_info->replace_p ? "(replace)":"",
 				       replace_info->ref_p ? "(ref)":"");

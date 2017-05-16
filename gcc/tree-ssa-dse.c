@@ -241,7 +241,7 @@ compute_trims (ao_ref *ref, sbitmap live, int *trim_head, int *trim_tail,
     {
       fprintf (dump_file, "  Trimming statement (head = %d, tail = %d): ",
 	       *trim_head, *trim_tail);
-      print_gimple_stmt (dump_file, stmt, dump_flags, 0);
+      print_gimple_stmt (dump_file, stmt, 0, dump_flags);
       fprintf (dump_file, "\n");
     }
 }
@@ -621,7 +621,7 @@ delete_dead_call (gimple_stmt_iterator *gsi)
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
       fprintf (dump_file, "  Deleted dead call: ");
-      print_gimple_stmt (dump_file, stmt, dump_flags, 0);
+      print_gimple_stmt (dump_file, stmt, 0, dump_flags);
       fprintf (dump_file, "\n");
     }
 
@@ -655,7 +655,7 @@ delete_dead_assignment (gimple_stmt_iterator *gsi)
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
       fprintf (dump_file, "  Deleted dead store: ");
-      print_gimple_stmt (dump_file, stmt, dump_flags, 0);
+      print_gimple_stmt (dump_file, stmt, 0, dump_flags);
       fprintf (dump_file, "\n");
     }
 

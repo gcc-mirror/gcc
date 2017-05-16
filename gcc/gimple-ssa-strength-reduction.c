@@ -1772,12 +1772,12 @@ dump_candidate (slsr_cand_t c)
 {
   fprintf (dump_file, "%3d  [%d] ", c->cand_num,
 	   gimple_bb (c->cand_stmt)->index);
-  print_gimple_stmt (dump_file, c->cand_stmt, 0, 0);
+  print_gimple_stmt (dump_file, c->cand_stmt, 0);
   switch (c->kind)
     {
     case CAND_MULT:
       fputs ("     MULT : (", dump_file);
-      print_generic_expr (dump_file, c->base_expr, 0);
+      print_generic_expr (dump_file, c->base_expr);
       fputs (" + ", dump_file);
       print_decs (c->index, dump_file);
       fputs (") * ", dump_file);
@@ -1785,15 +1785,15 @@ dump_candidate (slsr_cand_t c)
 	  && c->stride_type != TREE_TYPE (c->stride))
 	{
 	  fputs ("(", dump_file);
-	  print_generic_expr (dump_file, c->stride_type, 0);
+	  print_generic_expr (dump_file, c->stride_type);
 	  fputs (")", dump_file);
 	}
-      print_generic_expr (dump_file, c->stride, 0);
+      print_generic_expr (dump_file, c->stride);
       fputs (" : ", dump_file);
       break;
     case CAND_ADD:
       fputs ("     ADD  : ", dump_file);
-      print_generic_expr (dump_file, c->base_expr, 0);
+      print_generic_expr (dump_file, c->base_expr);
       fputs (" + (", dump_file);
       print_decs (c->index, dump_file);
       fputs (" * ", dump_file);
@@ -1801,32 +1801,32 @@ dump_candidate (slsr_cand_t c)
 	  && c->stride_type != TREE_TYPE (c->stride))
 	{
 	  fputs ("(", dump_file);
-	  print_generic_expr (dump_file, c->stride_type, 0);
+	  print_generic_expr (dump_file, c->stride_type);
 	  fputs (")", dump_file);
 	}
-      print_generic_expr (dump_file, c->stride, 0);
+      print_generic_expr (dump_file, c->stride);
       fputs (") : ", dump_file);
       break;
     case CAND_REF:
       fputs ("     REF  : ", dump_file);
-      print_generic_expr (dump_file, c->base_expr, 0);
+      print_generic_expr (dump_file, c->base_expr);
       fputs (" + (", dump_file);
-      print_generic_expr (dump_file, c->stride, 0);
+      print_generic_expr (dump_file, c->stride);
       fputs (") + ", dump_file);
       print_decs (c->index, dump_file);
       fputs (" : ", dump_file);
       break;
     case CAND_PHI:
       fputs ("     PHI  : ", dump_file);
-      print_generic_expr (dump_file, c->base_expr, 0);
+      print_generic_expr (dump_file, c->base_expr);
       fputs (" + (unknown * ", dump_file);
-      print_generic_expr (dump_file, c->stride, 0);
+      print_generic_expr (dump_file, c->stride);
       fputs (") : ", dump_file);
       break;
     default:
       gcc_unreachable ();
     }
-  print_generic_expr (dump_file, c->cand_type, 0);
+  print_generic_expr (dump_file, c->cand_type);
   fprintf (dump_file, "\n     basis: %d  dependent: %d  sibling: %d\n",
 	   c->basis, c->dependent, c->sibling);
   fprintf (dump_file, "     next-interp: %d  dead-savings: %d\n",
@@ -1858,7 +1858,7 @@ ssa_base_cand_dump_callback (cand_chain **slot, void *ignored ATTRIBUTE_UNUSED)
   const_cand_chain_t chain = *slot;
   cand_chain_t p;
 
-  print_generic_expr (dump_file, chain->base_expr, 0);
+  print_generic_expr (dump_file, chain->base_expr);
   fprintf (dump_file, " -> %d", chain->cand->cand_num);
 
   for (p = chain->next; p; p = p->next)
@@ -1897,7 +1897,7 @@ dump_incr_vec (void)
 	  fprintf (dump_file, "\n     count:       %d", incr_vec[i].count);
 	  fprintf (dump_file, "\n     cost:        %d", incr_vec[i].cost);
 	  fputs ("\n     initializer: ", dump_file);
-	  print_generic_expr (dump_file, incr_vec[i].initializer, 0);
+	  print_generic_expr (dump_file, incr_vec[i].initializer);
 	  fputs ("\n\n", dump_file);
 	}
     }
@@ -1947,7 +1947,7 @@ replace_refs (slsr_cand_t c)
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
       fputs ("Replacing reference: ", dump_file);
-      print_gimple_stmt (dump_file, c->cand_stmt, 0, 0);
+      print_gimple_stmt (dump_file, c->cand_stmt, 0);
     }
 
   if (gimple_vdef (c->cand_stmt))
@@ -1964,7 +1964,7 @@ replace_refs (slsr_cand_t c)
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
       fputs ("With: ", dump_file);
-      print_gimple_stmt (dump_file, c->cand_stmt, 0, 0);
+      print_gimple_stmt (dump_file, c->cand_stmt, 0);
       fputs ("\n", dump_file);
     }
 
@@ -2078,7 +2078,7 @@ replace_mult_candidate (slsr_cand_t c, tree basis_name, widest_int bump)
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{
 	  fputs ("Replacing: ", dump_file);
-	  print_gimple_stmt (dump_file, c->cand_stmt, 0, 0);
+	  print_gimple_stmt (dump_file, c->cand_stmt, 0);
 	}
 
       if (bump == 0)
@@ -2138,7 +2138,7 @@ replace_mult_candidate (slsr_cand_t c, tree basis_name, widest_int bump)
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{
 	  fputs ("With: ", dump_file);
-	  print_gimple_stmt (dump_file, stmt_to_print, 0, 0);
+	  print_gimple_stmt (dump_file, stmt_to_print, 0);
 	  fputs ("\n", dump_file);
   	}
     }
@@ -2292,10 +2292,10 @@ create_add_on_incoming_edge (slsr_cand_t c, tree basis_name,
 	{
 	  fprintf (dump_file, "Inserting cast in block %d: ",
 		   insert_bb->index);
-	  print_gimple_stmt (dump_file, cast_stmt, 0, 0);
+	  print_gimple_stmt (dump_file, cast_stmt, 0);
 	}
       fprintf (dump_file, "Inserting in block %d: ", insert_bb->index);
-      print_gimple_stmt (dump_file, new_stmt, 0, 0);
+      print_gimple_stmt (dump_file, new_stmt, 0);
     }
 
   return lhs;
@@ -2384,7 +2384,7 @@ create_phi_basis (slsr_cand_t c, gimple *from_phi, tree basis_name,
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
       fputs ("Introducing new phi basis: ", dump_file);
-      print_gimple_stmt (dump_file, phi, 0, 0);
+      print_gimple_stmt (dump_file, phi, 0);
     }
 
   return name;
@@ -3282,10 +3282,10 @@ insert_initializers (slsr_cand_t c)
 	  if (cast_stmt)
 	    {
 	      fputs ("Inserting stride cast: ", dump_file);
-	      print_gimple_stmt (dump_file, cast_stmt, 0, 0);
+	      print_gimple_stmt (dump_file, cast_stmt, 0);
 	    }
 	  fputs ("Inserting initializer: ", dump_file);
-	  print_gimple_stmt (dump_file, init_stmt, 0, 0);
+	  print_gimple_stmt (dump_file, init_stmt, 0);
 	}
     }
 }
@@ -3345,7 +3345,7 @@ all_phi_incrs_profitable (slsr_cand_t c, gphi *phi)
 		{
 		  fprintf (dump_file, "  Conditional candidate %d, phi: ",
 			   c->cand_num);
-		  print_gimple_stmt (dump_file, phi, 0, 0);
+		  print_gimple_stmt (dump_file, phi, 0);
 		  fputs ("    increment: ", dump_file);
 		  print_decs (increment, dump_file);
 		  if (j < 0)
@@ -3389,7 +3389,7 @@ introduce_cast_before_cand (slsr_cand_t c, tree to_type, tree from_expr)
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
       fputs ("  Inserting: ", dump_file);
-      print_gimple_stmt (dump_file, cast_stmt, 0, 0);
+      print_gimple_stmt (dump_file, cast_stmt, 0);
     }
 
   return cast_lhs;
@@ -3457,7 +3457,7 @@ replace_one_candidate (slsr_cand_t c, unsigned i, tree basis_name)
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
       fputs ("Replacing: ", dump_file);
-      print_gimple_stmt (dump_file, c->cand_stmt, 0, 0);
+      print_gimple_stmt (dump_file, c->cand_stmt, 0);
       stmt_to_print = c->cand_stmt;
     }
 
@@ -3590,7 +3590,7 @@ replace_one_candidate (slsr_cand_t c, unsigned i, tree basis_name)
   if (dump_file && (dump_flags & TDF_DETAILS) && stmt_to_print)
     {
       fputs ("With: ", dump_file);
-      print_gimple_stmt (dump_file, stmt_to_print, 0, 0);
+      print_gimple_stmt (dump_file, stmt_to_print, 0);
       fputs ("\n", dump_file);
     }
 }

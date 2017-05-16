@@ -257,7 +257,7 @@ ipa_dump_param (FILE *file, struct ipa_node_params *info, int i)
   if ((*info->descriptors)[i].decl_or_type)
     {
       fprintf (file, " ");
-      print_generic_expr (file, (*info->descriptors)[i].decl_or_type, 0);
+      print_generic_expr (file, (*info->descriptors)[i].decl_or_type);
     }
 }
 
@@ -315,13 +315,12 @@ ipa_print_node_jump_functions_for_edge (FILE *f, struct cgraph_edge *cs)
 	{
 	  tree val = jump_func->value.constant.value;
 	  fprintf (f, "CONST: ");
-	  print_generic_expr (f, val, 0);
+	  print_generic_expr (f, val);
 	  if (TREE_CODE (val) == ADDR_EXPR
 	      && TREE_CODE (TREE_OPERAND (val, 0)) == CONST_DECL)
 	    {
 	      fprintf (f, " -> ");
-	      print_generic_expr (f, DECL_INITIAL (TREE_OPERAND (val, 0)),
-				  0);
+	      print_generic_expr (f, DECL_INITIAL (TREE_OPERAND (val, 0)));
 	    }
 	  fprintf (f, "\n");
 	}
@@ -334,8 +333,7 @@ ipa_print_node_jump_functions_for_edge (FILE *f, struct cgraph_edge *cs)
 	  if (jump_func->value.pass_through.operation != NOP_EXPR)
 	    {
 	      fprintf (f, " ");
-	      print_generic_expr (f,
-				  jump_func->value.pass_through.operand, 0);
+	      print_generic_expr (f, jump_func->value.pass_through.operand);
 	    }
 	  if (jump_func->value.pass_through.agg_preserved)
 	    fprintf (f, ", agg_preserved");
@@ -369,7 +367,7 @@ ipa_print_node_jump_functions_for_edge (FILE *f, struct cgraph_edge *cs)
 	      else
 		{
 		  fprintf (f, "cst: ");
-		  print_generic_expr (f, item->value, 0);
+		  print_generic_expr (f, item->value);
 		}
 	      fprintf (f, "\n");
 	    }
@@ -4465,7 +4463,7 @@ ipa_modify_call_arguments (struct cgraph_edge *cs, gcall *stmt,
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
       fprintf (dump_file, "replacing stmt:");
-      print_gimple_stmt (dump_file, gsi_stmt (gsi), 0, 0);
+      print_gimple_stmt (dump_file, gsi_stmt (gsi), 0);
     }
 
   new_stmt = gimple_build_call_vec (callee_decl, vargs);
@@ -4491,7 +4489,7 @@ ipa_modify_call_arguments (struct cgraph_edge *cs, gcall *stmt,
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
       fprintf (dump_file, "with stmt:");
-      print_gimple_stmt (dump_file, new_stmt, 0, 0);
+      print_gimple_stmt (dump_file, new_stmt, 0);
       fprintf (dump_file, "\n");
     }
   gsi_replace (&gsi, new_stmt, true);
@@ -4533,9 +4531,9 @@ ipa_modify_expr (tree *expr, bool convert,
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
       fprintf (dump_file, "About to replace expr ");
-      print_generic_expr (dump_file, *expr, 0);
+      print_generic_expr (dump_file, *expr);
       fprintf (dump_file, " with ");
-      print_generic_expr (dump_file, src, 0);
+      print_generic_expr (dump_file, src);
       fprintf (dump_file, "\n");
     }
 
@@ -4758,21 +4756,21 @@ ipa_dump_param_adjustments (FILE *file, ipa_parm_adjustment_vec adjustments,
 	first = false;
 
       fprintf (file, "%i. base_index: %i - ", i, adj->base_index);
-      print_generic_expr (file, parms[adj->base_index], 0);
+      print_generic_expr (file, parms[adj->base_index]);
       if (adj->base)
 	{
 	  fprintf (file, ", base: ");
-	  print_generic_expr (file, adj->base, 0);
+	  print_generic_expr (file, adj->base);
 	}
       if (adj->new_decl)
 	{
 	  fprintf (file, ", new_decl: ");
-	  print_generic_expr (file, adj->new_decl, 0);
+	  print_generic_expr (file, adj->new_decl);
 	}
       if (adj->new_ssa_base)
 	{
 	  fprintf (file, ", new_ssa_base: ");
-	  print_generic_expr (file, adj->new_ssa_base, 0);
+	  print_generic_expr (file, adj->new_ssa_base);
 	}
 
       if (adj->op == IPA_PARM_OP_COPY)
@@ -4800,7 +4798,7 @@ ipa_dump_agg_replacement_values (FILE *f, struct ipa_agg_replacement_value *av)
     {
       fprintf (f, "%s %i[" HOST_WIDE_INT_PRINT_DEC "]=", comma ? "," : "",
 	       av->index, av->offset);
-      print_generic_expr (f, av->value, 0);
+      print_generic_expr (f, av->value);
       comma = true;
     }
   fprintf (f, "\n");
@@ -5647,9 +5645,9 @@ ipcp_modif_dom_walker::before_dom_children (basic_block bb)
 	      if (dump_file)
 		{
 		  fprintf (dump_file, "    const ");
-		  print_generic_expr (dump_file, v->value, 0);
+		  print_generic_expr (dump_file, v->value);
 		  fprintf (dump_file, "  can't be converted to type of ");
-		  print_generic_expr (dump_file, rhs, 0);
+		  print_generic_expr (dump_file, rhs);
 		  fprintf (dump_file, "\n");
 		}
 	      continue;
@@ -5661,7 +5659,7 @@ ipcp_modif_dom_walker::before_dom_children (basic_block bb)
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{
 	  fprintf (dump_file, "Modifying stmt:\n  ");
-	  print_gimple_stmt (dump_file, stmt, 0, 0);
+	  print_gimple_stmt (dump_file, stmt, 0);
 	}
       gimple_assign_set_rhs_from_tree (&gsi, val);
       update_stmt (stmt);
@@ -5669,7 +5667,7 @@ ipcp_modif_dom_walker::before_dom_children (basic_block bb)
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{
 	  fprintf (dump_file, "into:\n  ");
-	  print_gimple_stmt (dump_file, stmt, 0, 0);
+	  print_gimple_stmt (dump_file, stmt, 0);
 	  fprintf (dump_file, "\n");
 	}
 
