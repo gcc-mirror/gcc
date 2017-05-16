@@ -1,3 +1,8 @@
+2017-05-16  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/80554
+	* gfortran.dg/submodule_29.f08: New test.
+
 2017-05-16  David Malcolm  <dmalcolm@redhat.com>
 
 	* g++.dg/other/accessor-fixits-1.C: New test case.
@@ -1279,7 +1284,7 @@
 	* gcc.dg/tree-ssa/vrp35.c: Disable EVRP.
 	* gcc.dg/tree-ssa/vrp36.c: Likewise.
 	* gcc.dg/tree-ssa/pr49039.c: Likewise.
- 
+
 2017-04-27  Marek Polacek  <polacek@redhat.com>
 
 	PR sanitizer/80349
