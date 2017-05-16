@@ -1,5 +1,10 @@
 2017-05-16  Richard Biener  <rguenther@suse.de>
 
+	* dwarf2out.c (loc_list_from_tree_1): Do not create
+	DW_OP_GNU_variable_value for DECL_IGNORED_P decls.
+
+2017-05-16  Richard Biener  <rguenther@suse.de>
+
 	* dwarf2out.c (resolve_variable_value_in_expr): Lookup DIE
 	just generated.
 	(note_variable_value_in_expr): If we resolved the decl ref
