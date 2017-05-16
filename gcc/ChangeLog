@@ -1,3 +1,7 @@
+2017-05-15  Sylvestre Ledru  <sylvestre@debian.org>
+
+	plugin.c (try_init_one_plugin): Fix ressource leaks (CID 726637)
+
 2017-05-15  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/80425
