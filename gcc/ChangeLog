@@ -1,7 +1,13 @@
+2017-05-16  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386.i386.md (*movsi_internal): Split (?rm,*y) alternative
+	to (?r,*Yn) and (?m,*y) alternatives, and (?*y,rm) to (?*Ym,r)
+	and (?*y,m).  Update insn attributes.
+
 2017-05-16  Martin Liska  <mliska@suse.cz>
 
-	* cgraph.c (cgraph_edge::resolve_speculation): Add default value for flags
-	argument of print_gimple_stmt, print_gimple_expr,
+	* cgraph.c (cgraph_edge::resolve_speculation): Add default value for
+	flags argument of print_gimple_stmt, print_gimple_expr,
 	print_generic_stmt and print_generic_expr.
 	* cgraphclones.c (symbol_table::materialize_all_clones): Likewise.
 	* coretypes.h: Likewise.
@@ -14,7 +20,8 @@
 	(backprop::process_use): Likewise.
 	(backprop::intersect_uses): Likewise.
 	(note_replacement): Likewise.
-	* gimple-ssa-store-merging.c (pass_store_merging::terminate_all_aliasing_chains): Likewise.
+	* gimple-ssa-store-merging.c
+	(pass_store_merging::terminate_all_aliasing_chains): Likewise.
 	(imm_store_chain_info::coalesce_immediate_stores): Likewise.
 	(pass_store_merging::execute): Likewise.
 	* gimple-ssa-strength-reduction.c (dump_candidate): Likewise.
@@ -144,7 +151,8 @@
 	(forward_propagate_into_cond): Likewise.
 	(pass_forwprop::execute): Likewise.
 	* tree-ssa-ifcombine.c (ifcombine_ifandif): Likewise.
-	* tree-ssa-loop-im.c (invariantness_dom_walker::before_dom_children): Likewise.
+	* tree-ssa-loop-im.c (invariantness_dom_walker::before_dom_children):
+	Likewise.
 	(move_computations_worker): Likewise.
 	(execute_sm): Likewise.
 	* tree-ssa-loop-ivcanon.c (tree_estimate_loop_size): Likewise.
@@ -191,7 +199,8 @@
 	(visit_use): Likewise.
 	(sccvn_dom_walker::before_dom_children): Likewise.
 	(run_scc_vn): Likewise.
-	* tree-ssa-scopedtables.c (avail_exprs_stack::lookup_avail_expr): Likewise.
+	* tree-ssa-scopedtables.c (avail_exprs_stack::lookup_avail_expr):
+	Likewise.
 	(expr_hash_elt::print): Likewise.
 	(const_and_copies::pop_to_marker): Likewise.
 	(const_and_copies::record_const_or_copy_raw): Likewise.
@@ -254,7 +263,7 @@
 
 2017-05-15  Sylvestre Ledru  <sylvestre@debian.org>
 
-	plugin.c (try_init_one_plugin): Fix ressource leaks (CID 726637)
+	* plugin.c (try_init_one_plugin): Fix ressource leaks (CID 726637).
 
 2017-05-15  Uros Bizjak  <ubizjak@gmail.com>
 
