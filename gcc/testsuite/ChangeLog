@@ -1,3 +1,10 @@
+2017-05-16  Marek Polacek  <polacek@redhat.com>
+
+	PR sanitizer/80536
+	PR sanitizer/80386
+	* c-c++-common/ubsan/pr80536.c: New test.
+	* g++.dg/ubsan/pr80386.C: New test.
+
 2017-05-16  Tamar Christina  <tamar.christina@arm.com>
 
 	* gcc.target/arm/armv8_2-fp16-neon-1.c (vceqz): Fix regex.
