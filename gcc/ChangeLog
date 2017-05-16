@@ -598,7 +598,7 @@
 2017-05-12  Jim Wilson  <jim.wilson@linaro.org>
 
 	PR middle-end/79794
-    	* expmed.c (extract_bit_field_1): Add alt_rtl argument.  Before
+	* expmed.c (extract_bit_field_1): Add alt_rtl argument.  Before
 	maybe_expand_insn call, set ops[0].target.  If still set after call,
 	set alt_rtl.  Add extra arg to recursive calls.
 	(extract_bit_field): Add alt_rtl argument.  Pass to
@@ -722,13 +722,13 @@
 	vector unsigned long long vec_popcnt (vector signed long long)
 	vector unsigned long long vec_popcnt (vector unsigned long long)
 	vector signed long long vec_slo (vector signed long long,
-                                         vector signed char)
+					 vector signed char)
 	vector signed long long vec_slo (vector signed long long,
-                                         vector unsigned char)
+					 vector unsigned char)
 	vector unsigned long long vec_slo (vector unsigned long long,
-                                           vector signed char)
+					   vector signed char)
 	vector unsigned long long vec_slo (vector unsigned long long,
-                                           vector unsigned char)
+					   vector unsigned char)
 	* config/rs6000/rs6000-builtin.def: Add definitions for VPOPCNTUB,
 	VPOPCNTUH, VPOPCNTUW, and VPOPCNTUD overloads.
 	* config/rs6000/altivec.h: Add define for vec_popcnt, vec_popcntb,
@@ -1226,13 +1226,12 @@
 2017-05-08  Max Filippov  <jcmvbkbc@gmail.com>
 
 	* config/xtensa/xtensa-protos.h
-       	(xtensa_initial_elimination_offset): New declaration.
+	(xtensa_initial_elimination_offset): New declaration.
 	* config/xtensa/xtensa.c (xtensa_initial_elimination_offset):
 	New function. Move its body from the INITIAL_ELIMINATION_OFFSET
 	macro definition, add case for FRAME_POINTER_REGNUM when
 	FRAME_GROWS_DOWNWARD.
-	* config/xtensa/xtensa.h (FRAME_GROWS_DOWNWARD): New macro
-	definition.
+	* config/xtensa/xtensa.h (FRAME_GROWS_DOWNWARD): New macro definition.
 	(INITIAL_ELIMINATION_OFFSET): Replace body with call to
 	xtensa_initial_elimination_offset.
 
@@ -2245,13 +2244,13 @@
 
 2017-05-01  Xi Ruoyao  <ryxi@stu.xidian.edu.cn>
 
-        PR c++/80038
+	PR c++/80038
 	* cilk_common.c (expand_builtin_cilk_detach): Move pedigree
 	operations here.
 	* gimplify.c (gimplify_cilk_detach): New function.
 	(gimplify_call_expr, gimplify_modify_expr): Call it as needed.
 	* tree-core.h: Document EXPR_CILK_SPAWN.
-	* tree.h (EXPR_CILK_SPAWN): Define. 
+	* tree.h (EXPR_CILK_SPAWN): Define.
 
 2017-05-01  David Malcolm  <dmalcolm@redhat.com>
 
@@ -2596,7 +2595,7 @@
 	(crc32_unsigned_n): ... this.
 	(crc32_unsigned, crc32_byte): Remove.
 	(crc32_string): Remove unnecessary braces.
- 
+
 2017-04-25  Jan Hubicka  <hubicka@ucw.cz>
 
 	* ipa-cp.c (estimate_local_effects): Convert sreal to int.
@@ -6731,7 +6730,7 @@
 	Use nonimmediate_operand instead of memory_operand for operand 1.
 	(float-extend standard_x87sse_constant_load splitter): Ditto.
 
-2017-02-21 Jeff Law  <law@redhat.com>
+2017-02-21  Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/79621
 	* gimple-ssa-isolate-paths.c (find_implicit_erroneous_behavior): Ignore
@@ -7074,7 +7073,7 @@
 	(add_param_constraints): Use isl_val_int_from_wi.
 	(add_loop_constraints): Likewise, and extract_affine_wi.
 
-2017-02-15 Jeff Law  <law@redhat.com>
+2017-02-15  Jeff Law  <law@redhat.com>
 
 	PR middle-end/79521
 	* ira-costs.c (scan_one_insn): Check have_regs_of_mode before calling
@@ -7172,7 +7171,7 @@
 
 	* config.gcc (supported_defaults) [powerpc*-*-*]: Update.
 
-2017-02-14 Jeff Law  <law@redhat.com>
+2017-02-14  Jeff Law  <law@redhat.com>
 
 	PR target/79404
 	* ira-costs.c (scan_one_insn): Initialize register move costs
@@ -7338,7 +7337,7 @@
 	Objective-C 2.0.
 
 2017-02-12  Gerald Pfeifer  <gerald@pfeifer.com>
-	
+
 	* doc/extend.texi (Named Address Spaces): sourceware.org now
 	defaults to https.
 	* doc/install.texi (Binaries): Ditto.
@@ -7346,7 +7345,7 @@
 
 2017-02-11  Sandra Loosemore  <sandra@codesourcery.com>
 
-	* doc/cpp.texi: Replace "stringify"/"stringification" with C 
+	* doc/cpp.texi: Replace "stringify"/"stringification" with C
 	standard terminology "stringize"/"stringizing" throughout.
 	* doc/cppinternals.texi: Likewise.
 
@@ -7494,7 +7493,8 @@
 	vector partitioning to outer loops.  Assign 2 partitions to loops
 	when available. Add TILE handling.
 	(oacc_loop_partition): Adjust oacc_loop_auto_partitions call.
-	(execite_oacc_device_lower): Process GOACC_TILE fns, ignore unknown specs.
+	(execite_oacc_device_lower): Process GOACC_TILE fns,
+	ignore unknown specs.
 	* tree-nested.c (convert_nonlocal_omp_clauses): Allow OMP_CLAUSE_TILE.
 	* tree.c (omp_clause_num_ops): Adjust TILE ops.
 	* tree.h (OMP_CLAUSE_TILE_ITERVAR, OMP_CLAUSE_TILE_COUNT): New.
@@ -7833,7 +7833,7 @@
 	garbage collector only in textual form.
 
 2017-02-05  Gerald Pfeifer  <gerald@pfeifer.com>
-	
+
 	* doc/extend.texi (x86 specific memory model extensions for
 	transactional memory): Simplify a phrase.
 
@@ -8609,7 +8609,7 @@
 	* run-rtl-passes.c: New file.
 	* run-rtl-passes.h: New file.
 
-2017-01-24 Jeff Law  <law@redhat.com>
+2017-01-24  Jeff Law  <law@redhat.com>
 
 	* config/microblaze/microblaze.h (ASM_FORMAT_PRIVATE_NAME): Increase
 	buffer size.
