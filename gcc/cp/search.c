@@ -1232,11 +1232,13 @@ build_baselink (tree binfo, tree access_binfo, tree functions, tree optype)
 
    WANT_TYPE is 1 when we should only return TYPE_DECLs.
 
-   If nothing can be found return NULL_TREE and do not issue an error.  */
+   If nothing can be found return NULL_TREE and do not issue an error.
+
+   If non-NULL, failure information is written back to AFI.  */
 
 tree
 lookup_member (tree xbasetype, tree name, int protect, bool want_type,
-	       tsubst_flags_t complain)
+	       tsubst_flags_t complain, access_failure_info *afi)
 {
   tree rval, rval_binfo = NULL_TREE;
   tree type = NULL_TREE, basetype_path = NULL_TREE;
@@ -1337,7 +1339,7 @@ lookup_member (tree xbasetype, tree name, int protect, bool want_type,
       tree decl = is_overloaded_fn (rval) ? get_first_fn (rval) : rval;
       if (!DECL_NONSTATIC_MEMBER_FUNCTION_P (decl)
 	  && !perform_or_defer_access_check (basetype_path, decl, decl,
-					     complain))
+					     complain, afi))
 	rval = error_mark_node;
     }
 
@@ -1991,6 +1993,238 @@ dfs_walk_once_accessible (tree binfo, bool friends_p,
   if (pset)
     delete pset;
   return rval;
+}
+
+/* Return true iff the code of T is CODE, and it has compatible
+   type with TYPE.  */
+
+static bool
+matches_code_and_type_p (tree t, enum tree_code code, tree type)
+{
+  if (TREE_CODE (t) != code)
+    return false;
+  if (!cxx_types_compatible_p (TREE_TYPE (t), type))
+    return false;
+  return true;
+}
+
+/* Subroutine of direct_accessor_p and reference_accessor_p.
+   Determine if COMPONENT_REF is a simple field lookup of this->FIELD_DECL.
+   We expect a tree of the form:
+	     <component_ref:
+	       <indirect_ref:S>
+		 <nop_expr:P*
+		   <parm_decl (this)>
+		 <field_decl (FIELD_DECL)>>>.  */
+
+static bool
+field_access_p (tree component_ref, tree field_decl, tree field_type)
+{
+  if (!matches_code_and_type_p (component_ref, COMPONENT_REF, field_type))
+    return false;
+
+  tree indirect_ref = TREE_OPERAND (component_ref, 0);
+  if (TREE_CODE (indirect_ref) != INDIRECT_REF)
+    return false;
+
+  tree ptr = STRIP_NOPS (TREE_OPERAND (indirect_ref, 0));
+  if (!is_this_parameter (ptr))
+    return false;
+
+  /* Must access the correct field.  */
+  if (TREE_OPERAND (component_ref, 1) != field_decl)
+    return false;
+  return true;
+}
+
+/* Subroutine of field_accessor_p.
+
+   Assuming that INIT_EXPR has already had its code and type checked,
+   determine if it is a simple accessor for FIELD_DECL
+   (of type FIELD_TYPE).
+
+   Specifically, a simple accessor within struct S of the form:
+       T get_field () { return m_field; }
+   should have a DECL_SAVED_TREE of the form:
+       <return_expr
+	 <init_expr:T
+	   <result_decl:T
+	   <nop_expr:T
+	     <component_ref:
+	       <indirect_ref:S>
+		 <nop_expr:P*
+		   <parm_decl (this)>
+		 <field_decl (FIELD_DECL)>>>.  */
+
+static bool
+direct_accessor_p (tree init_expr, tree field_decl, tree field_type)
+{
+  tree result_decl = TREE_OPERAND (init_expr, 0);
+  if (!matches_code_and_type_p (result_decl, RESULT_DECL, field_type))
+    return false;
+
+  tree component_ref = STRIP_NOPS (TREE_OPERAND (init_expr, 1));
+  if (!field_access_p (component_ref, field_decl, field_type))
+    return false;
+
+  return true;
+}
+
+/* Subroutine of field_accessor_p.
+
+   Assuming that INIT_EXPR has already had its code and type checked,
+   determine if it is a "reference" accessor for FIELD_DECL
+   (of type FIELD_REFERENCE_TYPE).
+
+   Specifically, a simple accessor within struct S of the form:
+       T& get_field () { return m_field; }
+   should have a DECL_SAVED_TREE of the form:
+       <return_expr
+	 <init_expr:T&
+	   <result_decl:T&
+	   <nop_expr: T&
+	     <addr_expr: T*
+	       <component_ref:T
+		 <indirect_ref:S
+		   <nop_expr
+		     <parm_decl (this)>>
+		   <field (FIELD_DECL)>>>>>>.  */
+static bool
+reference_accessor_p (tree init_expr, tree field_decl, tree field_type,
+		      tree field_reference_type)
+{
+  tree result_decl = TREE_OPERAND (init_expr, 0);
+  if (!matches_code_and_type_p (result_decl, RESULT_DECL, field_reference_type))
+    return false;
+
+  tree field_pointer_type = build_pointer_type (field_type);
+  tree addr_expr = STRIP_NOPS (TREE_OPERAND (init_expr, 1));
+  if (!matches_code_and_type_p (addr_expr, ADDR_EXPR, field_pointer_type))
+    return false;
+
+  tree component_ref = STRIP_NOPS (TREE_OPERAND (addr_expr, 0));
+
+  if (!field_access_p (component_ref, field_decl, field_type))
+    return false;
+
+  return true;
+}
+
+/* Return true if FN is an accessor method for FIELD_DECL.
+   i.e. a method of the form { return FIELD; }, with no
+   conversions.
+
+   If CONST_P, then additionally require that FN be a const
+   method.  */
+
+static bool
+field_accessor_p (tree fn, tree field_decl, bool const_p)
+{
+  if (TREE_CODE (fn) != FUNCTION_DECL)
+    return false;
+
+  /* We don't yet support looking up static data, just fields.  */
+  if (TREE_CODE (field_decl) != FIELD_DECL)
+    return false;
+
+  tree fntype = TREE_TYPE (fn);
+  if (TREE_CODE (fntype) != METHOD_TYPE)
+    return false;
+
+  /* If the field is accessed via a const "this" argument, verify
+     that the "this" parameter is const.  */
+  if (const_p)
+    {
+      tree this_type = type_of_this_parm (fntype);
+      if (!TYPE_READONLY (this_type))
+	return false;
+    }
+
+  tree saved_tree = DECL_SAVED_TREE (fn);
+
+  if (saved_tree == NULL_TREE)
+    return false;
+
+  if (TREE_CODE (saved_tree) != RETURN_EXPR)
+    return false;
+
+  tree init_expr = TREE_OPERAND (saved_tree, 0);
+  if (TREE_CODE (init_expr) != INIT_EXPR)
+    return false;
+
+  /* Determine if this is a simple accessor within struct S of the form:
+       T get_field () { return m_field; }.  */
+   tree field_type = TREE_TYPE (field_decl);
+  if (cxx_types_compatible_p (TREE_TYPE (init_expr), field_type))
+    return direct_accessor_p (init_expr, field_decl, field_type);
+
+  /* Failing that, determine if it is an accessor of the form:
+       T& get_field () { return m_field; }.  */
+  tree field_reference_type = cp_build_reference_type (field_type, false);
+  if (cxx_types_compatible_p (TREE_TYPE (init_expr), field_reference_type))
+    return reference_accessor_p (init_expr, field_decl, field_type,
+				 field_reference_type);
+
+  return false;
+}
+
+/* Callback data for dfs_locate_field_accessor_pre.  */
+
+struct locate_field_data
+{
+  locate_field_data (tree field_decl_, bool const_p_)
+  : field_decl (field_decl_), const_p (const_p_) {}
+
+  tree field_decl;
+  bool const_p;
+};
+
+/* Return a FUNCTION_DECL that is an "accessor" method for DATA, a FIELD_DECL,
+   callable via binfo, if one exists, otherwise return NULL_TREE.
+
+   Callback for dfs_walk_once_accessible for use within
+   locate_field_accessor.  */
+
+static tree
+dfs_locate_field_accessor_pre (tree binfo, void *data)
+{
+  locate_field_data *lfd = (locate_field_data *)data;
+  tree type = BINFO_TYPE (binfo);
+
+  vec<tree, va_gc> *method_vec;
+  tree fn;
+  size_t i;
+
+  if (!CLASS_TYPE_P (type))
+    return NULL_TREE;
+
+  method_vec = CLASSTYPE_METHOD_VEC (type);
+  if (!method_vec)
+    return NULL_TREE;
+
+  for (i = 0; vec_safe_iterate (method_vec, i, &fn); ++i)
+    if (fn)
+      if (field_accessor_p (fn, lfd->field_decl, lfd->const_p))
+	return fn;
+
+  return NULL_TREE;
+}
+
+/* Return a FUNCTION_DECL that is an "accessor" method for FIELD_DECL,
+   callable via BASETYPE_PATH, if one exists, otherwise return NULL_TREE.  */
+
+tree
+locate_field_accessor (tree basetype_path, tree field_decl, bool const_p)
+{
+  if (TREE_CODE (basetype_path) != TREE_BINFO)
+    return NULL_TREE;
+
+  /* Walk the hierarchy, looking for a method of some base class that allows
+     access to the field.  */
+  locate_field_data lfd (field_decl, const_p);
+  return dfs_walk_once_accessible (basetype_path, /*friends=*/true,
+				   dfs_locate_field_accessor_pre,
+				   NULL, &lfd);
 }
 
 /* Check that virtual overrider OVERRIDER is acceptable for base function

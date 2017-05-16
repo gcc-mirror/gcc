@@ -5758,8 +5758,30 @@ extern bool can_convert_arg			(tree, tree, tree, int,
 						 tsubst_flags_t);
 extern bool can_convert_arg_bad			(tree, tree, tree, int,
 						 tsubst_flags_t);
+
+/* A class for recording information about access failures (e.g. private
+   fields), so that we can potentially supply a fix-it hint about
+   an accessor (from a context in which the constness of the object
+   is known).  */
+
+class access_failure_info
+{
+ public:
+  access_failure_info () : m_was_inaccessible (false), m_basetype_path (NULL_TREE),
+    m_field_decl (NULL_TREE) {}
+
+  void record_access_failure (tree basetype_path, tree field_decl);
+  void maybe_suggest_accessor (bool const_p) const;
+
+ private:
+  bool m_was_inaccessible;
+  tree m_basetype_path;
+  tree m_field_decl;
+};
+
 extern bool enforce_access			(tree, tree, tree,
-						 tsubst_flags_t);
+						 tsubst_flags_t,
+						 access_failure_info *afi = NULL);
 extern void push_defarg_context			(tree);
 extern void pop_defarg_context			(void);
 extern tree convert_default_arg			(tree, tree, tree, int,
@@ -6412,8 +6434,10 @@ extern tree lookup_fnfields_slot_nolazy		(tree, tree);
 extern int class_method_index_for_fn		(tree, tree);
 extern tree lookup_fnfields			(tree, tree, int);
 extern tree lookup_member			(tree, tree, int, bool,
-						 tsubst_flags_t);
+						 tsubst_flags_t,
+						 access_failure_info *afi = NULL);
 extern tree lookup_member_fuzzy		(tree, tree, bool);
+extern tree locate_field_accessor		(tree, tree, bool);
 extern int look_for_overrides			(tree, tree);
 extern void get_pure_virtuals			(tree);
 extern void maybe_suppress_debug_info		(tree);
@@ -6468,7 +6492,8 @@ extern bool perform_access_checks (vec<deferred_access_check, va_gc> *,
 				   tsubst_flags_t);
 extern bool perform_deferred_access_checks	(tsubst_flags_t);
 extern bool perform_or_defer_access_check	(tree, tree, tree,
-						 tsubst_flags_t);
+						 tsubst_flags_t,
+						 access_failure_info *afi = NULL);
 
 /* RAII sentinel to ensures that deferred access checks are popped before
   a function returns.  */

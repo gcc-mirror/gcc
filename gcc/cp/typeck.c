@@ -2647,6 +2647,46 @@ check_template_keyword (tree decl)
     }
 }
 
+/* Record that an access failure occurred on BASETYPE_PATH attempting
+   to access FIELD_DECL.  */
+
+void
+access_failure_info::record_access_failure (tree basetype_path,
+					    tree field_decl)
+{
+  m_was_inaccessible = true;
+  m_basetype_path = basetype_path;
+  m_field_decl = field_decl;
+}
+
+/* If an access failure was recorded, then attempt to locate an
+   accessor function for the pertinent field, and if one is
+   available, add a note and fix-it hint suggesting using it.  */
+
+void
+access_failure_info::maybe_suggest_accessor (bool const_p) const
+{
+  if (!m_was_inaccessible)
+    return;
+
+  tree accessor
+    = locate_field_accessor (m_basetype_path, m_field_decl, const_p);
+  if (!accessor)
+    return;
+
+  /* The accessor must itself be accessible for it to be a reasonable
+     suggestion.  */
+  if (!accessible_p (m_basetype_path, accessor, true))
+    return;
+
+  rich_location richloc (line_table, input_location);
+  pretty_printer pp;
+  pp_printf (&pp, "%s()", IDENTIFIER_POINTER (DECL_NAME (accessor)));
+  richloc.add_fixit_replace (pp_formatted_text (&pp));
+  inform_at_rich_loc (&richloc, "field %q#D can be accessed via %q#D",
+		      m_field_decl, accessor);
+}
+
 /* This function is called by the parser to process a class member
    access expression of the form OBJECT.NAME.  NAME is a node used by
    the parser to represent a name; it is not yet a DECL.  It may,
@@ -2829,8 +2869,11 @@ finish_class_member_access_expr (cp_expr object, tree name, bool template_p,
       else
 	{
 	  /* Look up the member.  */
+	  access_failure_info afi;
 	  member = lookup_member (access_path, name, /*protect=*/1,
-				  /*want_type=*/false, complain);
+				  /*want_type=*/false, complain,
+				  &afi);
+	  afi.maybe_suggest_accessor (TYPE_READONLY (object_type));
 	  if (member == NULL_TREE)
 	    {
 	      if (dependent_type_p (object_type))
