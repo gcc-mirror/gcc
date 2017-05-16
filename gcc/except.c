@@ -3196,7 +3196,7 @@ dump_eh_tree (FILE * out, struct function *fun)
 	      for (lp = i->landing_pads; lp ; lp = lp->next_lp)
 		{
 		  fprintf (out, "{%i,", lp->index);
-		  print_generic_expr (out, lp->post_landing_pad, 0);
+		  print_generic_expr (out, lp->post_landing_pad);
 		  fputc ('}', out);
 		  if (lp->next_lp)
 		    fputc (',', out);
@@ -3242,10 +3242,10 @@ dump_eh_tree (FILE * out, struct function *fun)
 		if (c->label)
 		  {
 		    fprintf (out, "lab:");
-		    print_generic_expr (out, c->label, 0);
+		    print_generic_expr (out, c->label);
 		    fputc (';', out);
 		  }
-		print_generic_expr (out, c->type_list, 0);
+		print_generic_expr (out, c->type_list);
 		fputc ('}', out);
 		if (c->next_catch)
 		  fputc (',', out);
@@ -3255,7 +3255,7 @@ dump_eh_tree (FILE * out, struct function *fun)
 
 	case ERT_ALLOWED_EXCEPTIONS:
 	  fprintf (out, " filter :%i types:", i->u.allowed.filter);
-	  print_generic_expr (out, i->u.allowed.type_list, 0);
+	  print_generic_expr (out, i->u.allowed.type_list);
 	  break;
 	}
       fputc ('\n', out);

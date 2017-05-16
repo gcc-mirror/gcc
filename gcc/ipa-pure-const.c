@@ -739,7 +739,7 @@ check_stmt (gimple_stmt_iterator *gsip, funct_state local, bool ipa)
   if (dump_file)
     {
       fprintf (dump_file, "  scanning: ");
-      print_gimple_stmt (dump_file, stmt, 0, 0);
+      print_gimple_stmt (dump_file, stmt, 0);
     }
 
   if (gimple_has_volatile_ops (stmt)
@@ -2013,7 +2013,7 @@ pass_nothrow::execute (function *)
 	    if (dump_file)
 	      {
 		fprintf (dump_file, "Statement can throw: ");
-		print_gimple_stmt (dump_file, gsi_stmt (gsi), 0, 0);
+		print_gimple_stmt (dump_file, gsi_stmt (gsi), 0);
 	      }
 	    return 0;
 	  }

@@ -2478,7 +2478,7 @@ build_new_reduction (reduction_info_table_type *reduction_list,
     {
       fprintf (dump_file,
 	       "Detected reduction. reduction stmt is:\n");
-      print_gimple_stmt (dump_file, reduc_stmt, 0, 0);
+      print_gimple_stmt (dump_file, reduc_stmt, 0);
       fprintf (dump_file, "\n");
     }
 
@@ -2724,9 +2724,9 @@ try_create_reduction_list (loop_p loop,
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    {
 	      fprintf (dump_file, "phi is ");
-	      print_gimple_stmt (dump_file, phi, 0, 0);
+	      print_gimple_stmt (dump_file, phi, 0);
 	      fprintf (dump_file, "arg of phi to exit:   value ");
-	      print_generic_expr (dump_file, val, 0);
+	      print_generic_expr (dump_file, val);
 	      fprintf (dump_file, " used outside loop\n");
 	      fprintf (dump_file,
 		       "  checking if it is part of reduction pattern:\n");
@@ -2767,9 +2767,9 @@ try_create_reduction_list (loop_p loop,
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    {
 	      fprintf (dump_file, "reduction phi is  ");
-	      print_gimple_stmt (dump_file, red->reduc_phi, 0, 0);
+	      print_gimple_stmt (dump_file, red->reduc_phi, 0);
 	      fprintf (dump_file, "reduction stmt is  ");
-	      print_gimple_stmt (dump_file, red->reduc_stmt, 0, 0);
+	      print_gimple_stmt (dump_file, red->reduc_stmt, 0);
 	    }
 	}
     }
@@ -2877,7 +2877,7 @@ ref_conflicts_with_region (gimple_stmt_iterator gsi, ao_ref *ref,
 	      if (dump_file)
 		{
 		  fprintf (dump_file, "skipping reduction store: ");
-		  print_gimple_stmt (dump_file, stmt, 0, 0);
+		  print_gimple_stmt (dump_file, stmt, 0);
 		}
 	      continue;
 	    }
@@ -2896,7 +2896,7 @@ ref_conflicts_with_region (gimple_stmt_iterator gsi, ao_ref *ref,
 		  if (dump_file)
 		    {
 		      fprintf (dump_file, "Stmt ");
-		      print_gimple_stmt (dump_file, stmt, 0, 0);
+		      print_gimple_stmt (dump_file, stmt, 0);
 		    }
 		  return true;
 		}
@@ -2908,7 +2908,7 @@ ref_conflicts_with_region (gimple_stmt_iterator gsi, ao_ref *ref,
 		  if (dump_file)
 		    {
 		      fprintf (dump_file, "Stmt ");
-		      print_gimple_stmt (dump_file, stmt, 0, 0);
+		      print_gimple_stmt (dump_file, stmt, 0);
 		    }
 		  return true;
 		}
@@ -2987,7 +2987,7 @@ oacc_entry_exit_ok_1 (bitmap in_loop_bbs, vec<basic_block> region_bbs,
 			      if (dump_file)
 				{
 				  fprintf (dump_file, "found reduction load: ");
-				  print_gimple_stmt (dump_file, stmt, 0, 0);
+				  print_gimple_stmt (dump_file, stmt, 0);
 				}
 			    }
 			}
@@ -3018,7 +3018,7 @@ oacc_entry_exit_ok_1 (bitmap in_loop_bbs, vec<basic_block> region_bbs,
 	      if (dump_file)
 		{
 		  fprintf (dump_file, "Unhandled stmt in entry/exit: ");
-		  print_gimple_stmt (dump_file, stmt, 0, 0);
+		  print_gimple_stmt (dump_file, stmt, 0);
 		}
 	      return false;
 	    }
@@ -3029,7 +3029,7 @@ oacc_entry_exit_ok_1 (bitmap in_loop_bbs, vec<basic_block> region_bbs,
 	      if (dump_file)
 		{
 		  fprintf (dump_file, "conflicts with entry/exit stmt: ");
-		  print_gimple_stmt (dump_file, stmt, 0, 0);
+		  print_gimple_stmt (dump_file, stmt, 0);
 		}
 	      return false;
 	    }
@@ -3077,7 +3077,7 @@ oacc_entry_exit_single_gang (bitmap in_loop_bbs, vec<basic_block> region_bbs,
 		  fprintf (dump_file,
 			   "skipped reduction store for single-gang"
 			   " neutering: ");
-		  print_gimple_stmt (dump_file, stmt, 0, 0);
+		  print_gimple_stmt (dump_file, stmt, 0);
 		}
 
 	      /* Update gsi to point to next stmt.  */
@@ -3105,7 +3105,7 @@ oacc_entry_exit_single_gang (bitmap in_loop_bbs, vec<basic_block> region_bbs,
 	    {
 	      fprintf (dump_file,
 		       "found store that needs single-gang neutering: ");
-	      print_gimple_stmt (dump_file, stmt, 0, 0);
+	      print_gimple_stmt (dump_file, stmt, 0);
 	    }
 
 	  {

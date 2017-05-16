@@ -558,7 +558,7 @@ dump_condition (FILE *f, conditions conditions, int cond)
 	  return;
 	}
       fprintf (f, " %s ", op_symbol_code (c->code));
-      print_generic_expr (f, c->val, 1);
+      print_generic_expr (f, c->val);
     }
 }
 
@@ -2710,7 +2710,7 @@ estimate_function_body_sizes (struct cgraph_node *node, bool early)
 	      if (dump_file && (dump_flags & TDF_DETAILS))
 		{
 		  fprintf (dump_file, "  ");
-		  print_gimple_stmt (dump_file, gsi_stmt (bsi), 0, 0);
+		  print_gimple_stmt (dump_file, gsi_stmt (bsi), 0);
 		}
 	      predicate_for_phi_result (info, bsi.phi (), &phi_predicate,
 					nonconstant_names);
@@ -2739,7 +2739,7 @@ estimate_function_body_sizes (struct cgraph_node *node, bool early)
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    {
 	      fprintf (dump_file, "  ");
-	      print_gimple_stmt (dump_file, stmt, 0, 0);
+	      print_gimple_stmt (dump_file, stmt, 0);
 	      fprintf (dump_file, "\t\tfreq:%3.2f size:%3i time:%3i\n",
 		       ((double) freq) / CGRAPH_FREQ_BASE, this_size,
 		       this_time);

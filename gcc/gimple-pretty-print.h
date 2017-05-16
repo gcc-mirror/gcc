@@ -27,10 +27,10 @@ along with GCC; see the file COPYING3.  If not see
 extern void debug_gimple_stmt (gimple *);
 extern void debug_gimple_seq (gimple_seq);
 extern void print_gimple_seq (FILE *, gimple_seq, int, int);
-extern void print_gimple_stmt (FILE *, gimple *, int, int);
+extern void print_gimple_stmt (FILE *, gimple *, int, int = 0);
 extern void debug (gimple &ref);
 extern void debug (gimple *ptr);
-extern void print_gimple_expr (FILE *, gimple *, int, int);
+extern void print_gimple_expr (FILE *, gimple *, int, int = 0);
 extern void pp_gimple_stmt_1 (pretty_printer *, gimple *, int, int);
 extern void gimple_dump_bb (FILE *, basic_block, int, int);
 extern void gimple_dump_bb_for_graph (pretty_printer *, basic_block);

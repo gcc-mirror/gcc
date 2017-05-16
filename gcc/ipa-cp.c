@@ -427,10 +427,10 @@ print_ipcp_constant_value (FILE * f, tree v)
       && TREE_CODE (TREE_OPERAND (v, 0)) == CONST_DECL)
     {
       fprintf (f, "& ");
-      print_generic_expr (f, DECL_INITIAL (TREE_OPERAND (v, 0)), 0);
+      print_generic_expr (f, DECL_INITIAL (TREE_OPERAND (v, 0)));
     }
   else
-    print_generic_expr (f, v, 0);
+    print_generic_expr (f, v);
 }
 
 /* Print V which is extracted from a value in a lattice to F.  */
@@ -3594,7 +3594,7 @@ get_replacement_map (struct ipa_node_params *info, tree value, int parm_num)
       ipa_dump_param (dump_file, info, parm_num);
 
       fprintf (dump_file, " with const ");
-      print_generic_expr (dump_file, value, 0);
+      print_generic_expr (dump_file, value);
       fprintf (dump_file, "\n");
     }
   replace_map->old_tree = NULL;

@@ -1,3 +1,9 @@
+2017-05-16  Martin Liska  <mliska@suse.cz>
+
+	* parser.c (cp_lexer_print_token): Add default value for flags
+	argument of print_gimple_stmt, print_gimple_expr,
+	print_generic_stmt and print_generic_expr.
+
 2017-05-16  Nathan Sidwell  <nathan@acm.org>
 
 	* cp-tree.h (class ovl_iterator, class lkp_iterator): New OVERLOAD

@@ -427,13 +427,13 @@ dump_access (FILE *f, struct access *access, bool grp)
 {
   fprintf (f, "access { ");
   fprintf (f, "base = (%d)'", DECL_UID (access->base));
-  print_generic_expr (f, access->base, 0);
+  print_generic_expr (f, access->base);
   fprintf (f, "', offset = " HOST_WIDE_INT_PRINT_DEC, access->offset);
   fprintf (f, ", size = " HOST_WIDE_INT_PRINT_DEC, access->size);
   fprintf (f, ", expr = ");
-  print_generic_expr (f, access->expr, 0);
+  print_generic_expr (f, access->expr);
   fprintf (f, ", type = ");
-  print_generic_expr (f, access->type, 0);
+  print_generic_expr (f, access->type);
   fprintf (f, ", non_addressable = %d, reverse = %d",
 	   access->non_addressable, access->reverse);
   if (grp)
@@ -720,7 +720,7 @@ disqualify_candidate (tree decl, const char *reason)
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
       fprintf (dump_file, "! Disqualifying ");
-      print_generic_expr (dump_file, decl, 0);
+      print_generic_expr (dump_file, decl);
       fprintf (dump_file, " - %s\n", reason);
     }
 
@@ -915,7 +915,7 @@ create_access (tree expr, gimple *stmt, bool write)
 	     multi-element arrays in their own right).  */
 	  fprintf (dump_file, "Allowing non-reg-type load of part"
 			      " of constant-pool entry: ");
-	  print_generic_expr (dump_file, expr, 0);
+	  print_generic_expr (dump_file, expr);
 	}
       maybe_add_sra_candidate (base);
     }
@@ -1924,7 +1924,7 @@ reject (tree var, const char *msg)
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
       fprintf (dump_file, "Rejected (%d): %s: ", DECL_UID (var), msg);
-      print_generic_expr (dump_file, var, 0);
+      print_generic_expr (dump_file, var);
       fprintf (dump_file, "\n");
     }
 }
@@ -1993,7 +1993,7 @@ maybe_add_sra_candidate (tree var)
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
       fprintf (dump_file, "Candidate (%d): ", DECL_UID (var));
-      print_generic_expr (dump_file, var, 0);
+      print_generic_expr (dump_file, var);
       fprintf (dump_file, "\n");
     }
 
@@ -2241,17 +2241,17 @@ create_access_replacement (struct access *access)
       if (access->grp_to_be_debug_replaced)
 	{
 	  fprintf (dump_file, "Created a debug-only replacement for ");
-	  print_generic_expr (dump_file, access->base, 0);
+	  print_generic_expr (dump_file, access->base);
 	  fprintf (dump_file, " offset: %u, size: %u\n",
 		   (unsigned) access->offset, (unsigned) access->size);
 	}
       else
 	{
 	  fprintf (dump_file, "Created a replacement for ");
-	  print_generic_expr (dump_file, access->base, 0);
+	  print_generic_expr (dump_file, access->base);
 	  fprintf (dump_file, " offset: %u, size: %u: ",
 		   (unsigned) access->offset, (unsigned) access->size);
-	  print_generic_expr (dump_file, repl, 0);
+	  print_generic_expr (dump_file, repl);
 	  fprintf (dump_file, "\n");
 	}
     }
@@ -2445,7 +2445,7 @@ analyze_access_subtree (struct access *root, struct access *parent,
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    {
 	      fprintf (dump_file, "Changing the type of a replacement for ");
-	      print_generic_expr (dump_file, root->base, 0);
+	      print_generic_expr (dump_file, root->base);
 	      fprintf (dump_file, " offset: %u, size: %u ",
 		       (unsigned) root->offset, (unsigned) root->size);
 	      fprintf (dump_file, " to an integer.\n");
@@ -2759,14 +2759,14 @@ analyze_all_variable_accesses (void)
 		if (dump_file && (dump_flags & TDF_DETAILS))
 		  {
 		    fprintf (dump_file, "Will attempt to totally scalarize ");
-		    print_generic_expr (dump_file, var, 0);
+		    print_generic_expr (dump_file, var);
 		    fprintf (dump_file, " (UID: %u): \n", DECL_UID (var));
 		  }
 	      }
 	    else if (dump_file && (dump_flags & TDF_DETAILS))
 	      {
 		fprintf (dump_file, "Too big to totally scalarize: ");
-		print_generic_expr (dump_file, var, 0);
+		print_generic_expr (dump_file, var);
 		fprintf (dump_file, " (UID: %u)\n", DECL_UID (var));
 	      }
 	  }
@@ -2798,7 +2798,7 @@ analyze_all_variable_accesses (void)
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    {
 	      fprintf (dump_file, "\nAccess trees for ");
-	      print_generic_expr (dump_file, var, 0);
+	      print_generic_expr (dump_file, var);
 	      fprintf (dump_file, " (UID: %u): \n", DECL_UID (var));
 	      dump_access_tree (dump_file, access);
 	      fprintf (dump_file, "\n");
@@ -3611,7 +3611,7 @@ sra_modify_assign (gimple *stmt, gimple_stmt_iterator *gsi)
 	      if (dump_file)
 		{
 		  fprintf (dump_file, "Removing load: ");
-		  print_gimple_stmt (dump_file, stmt, 0, 0);
+		  print_gimple_stmt (dump_file, stmt, 0);
 		}
 	      generate_subtree_copies (racc->first_child, lhs,
 				       racc->offset, 0, 0, gsi,
@@ -3673,7 +3673,7 @@ initialize_constant_pool_replacements (void)
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    {
 	      fprintf (dump_file, "Generating constant initializer: ");
-	      print_gimple_stmt (dump_file, stmt, 0, 1);
+	      print_gimple_stmt (dump_file, stmt, 0);
 	      fprintf (dump_file, "\n");
 	    }
 	  gsi_insert_after (&gsi, stmt, GSI_NEW_STMT);
@@ -4105,7 +4105,7 @@ find_param_candidates (void)
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{
 	  fprintf (dump_file, "Candidate (%d): ", DECL_UID (parm));
-	  print_generic_expr (dump_file, parm, 0);
+	  print_generic_expr (dump_file, parm);
 	  fprintf (dump_file, "\n");
 	}
     }
@@ -4502,7 +4502,7 @@ decide_one_param_reduction (struct access *repr)
     {
       struct access *acc;
       fprintf (dump_file, "Evaluating PARAM group sizes for ");
-      print_generic_expr (dump_file, parm, 0);
+      print_generic_expr (dump_file, parm);
       fprintf (dump_file, " (UID: %u): \n", DECL_UID (parm));
       for (acc = repr; acc; acc = acc->next_grp)
 	dump_access (dump_file, acc, true);
@@ -4865,9 +4865,9 @@ replace_removed_params_ssa_names (tree old_name, gimple *stmt,
   if (dump_file)
     {
       fprintf (dump_file, "replacing an SSA name of a removed param ");
-      print_generic_expr (dump_file, old_name, 0);
+      print_generic_expr (dump_file, old_name);
       fprintf (dump_file, " with ");
-      print_generic_expr (dump_file, new_name, 0);
+      print_generic_expr (dump_file, new_name);
       fprintf (dump_file, "\n");
     }
 

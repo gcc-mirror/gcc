@@ -1841,7 +1841,7 @@ execute_split_functions (void)
 	    {
 	      fprintf (dump_file, "  freq:%6i size:%3i time:%3i ",
 		       freq, this_size, this_time);
-	      print_gimple_stmt (dump_file, stmt, 0, 0);
+	      print_gimple_stmt (dump_file, stmt, 0);
 	    }
 
 	  if ((flag_sanitize & SANITIZE_THREAD)

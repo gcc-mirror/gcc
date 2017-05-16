@@ -5340,7 +5340,7 @@ gimple_verify_flow_info (void)
 	  if (prev_stmt && DECL_NONLOCAL (label))
 	    {
 	      error ("nonlocal label ");
-	      print_generic_expr (stderr, label, 0);
+	      print_generic_expr (stderr, label);
 	      fprintf (stderr, " is not first in a sequence of labels in bb %d",
 		       bb->index);
 	      err = 1;
@@ -5349,7 +5349,7 @@ gimple_verify_flow_info (void)
 	  if (prev_stmt && EH_LANDING_PAD_NR (label) != 0)
 	    {
 	      error ("EH landing pad label ");
-	      print_generic_expr (stderr, label, 0);
+	      print_generic_expr (stderr, label);
 	      fprintf (stderr, " is not first in a sequence of labels in bb %d",
 		       bb->index);
 	      err = 1;
@@ -5358,7 +5358,7 @@ gimple_verify_flow_info (void)
 	  if (label_to_block (label) != bb)
 	    {
 	      error ("label ");
-	      print_generic_expr (stderr, label, 0);
+	      print_generic_expr (stderr, label);
 	      fprintf (stderr, " to block does not match in bb %d",
 		       bb->index);
 	      err = 1;
@@ -5367,7 +5367,7 @@ gimple_verify_flow_info (void)
 	  if (decl_function_context (label) != current_function_decl)
 	    {
 	      error ("label ");
-	      print_generic_expr (stderr, label, 0);
+	      print_generic_expr (stderr, label);
 	      fprintf (stderr, " has incorrect context in bb %d",
 		       bb->index);
 	      err = 1;
@@ -5392,7 +5392,7 @@ gimple_verify_flow_info (void)
 	  if (glabel *label_stmt = dyn_cast <glabel *> (stmt))
 	    {
 	      error ("label ");
-	      print_generic_expr (stderr, gimple_label_label (label_stmt), 0);
+	      print_generic_expr (stderr, gimple_label_label (label_stmt));
 	      fprintf (stderr, " in the middle of basic block %d", bb->index);
 	      err = 1;
 	    }
@@ -5534,9 +5534,9 @@ gimple_verify_flow_info (void)
 		    && !tree_int_cst_lt (CASE_LOW (prev), CASE_LOW (c)))
 		  {
 		    error ("case labels not sorted: ");
-		    print_generic_expr (stderr, prev, 0);
+		    print_generic_expr (stderr, prev);
 		    fprintf (stderr," is greater than ");
-		    print_generic_expr (stderr, c, 0);
+		    print_generic_expr (stderr, c);
 		    fprintf (stderr," but comes before it.\n");
 		    err = 1;
 		  }
@@ -7851,7 +7851,7 @@ print_loop (FILE *file, struct loop *loop, int indent, int verbosity)
   else
     fprintf (file, ", multiple latches");
   fprintf (file, ", niter = ");
-  print_generic_expr (file, loop->nb_iterations, 0);
+  print_generic_expr (file, loop->nb_iterations);
 
   if (loop->any_upper_bound)
     {
