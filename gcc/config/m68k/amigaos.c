@@ -467,7 +467,7 @@ amigaos_init_cumulative_args (CUMULATIVE_ARGS *cump, tree fntype, tree decl)
 int
 amigaos_function_arg_reg(unsigned regno)
 {
-  return mycum.regs_already_used & (1 << regno) != 0;
+  return (mycum.regs_already_used & (1 << regno)) != 0;
 }
 
 /* Update the data in CUM to advance over an argument.  */
