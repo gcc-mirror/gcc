@@ -25157,8 +25157,28 @@ do_class_deduction (tree ptype, tree tmpl, tree init, int flags,
   tree cands = lookup_qualified_name (CP_DECL_CONTEXT (tmpl), dname,
 				      /*type*/false, /*complain*/false,
 				      /*hidden*/false);
+  bool elided = false;
   if (cands == error_mark_node)
     cands = NULL_TREE;
+
+  /* Prune explicit deduction guides in copy-initialization context.  */
+  if (flags & LOOKUP_ONLYCONVERTING)
+    {
+      for (lkp_iterator iter (cands); !elided && iter; ++iter)
+	if (DECL_NONCONVERTING_P (STRIP_TEMPLATE (*iter)))
+	  elided = true;
+
+      if (elided)
+	{
+	  /* Found a nonconverting guide, prune the candidates.  */
+	  tree pruned = NULL_TREE;
+	  for (lkp_iterator iter (cands); iter; ++iter)
+	    if (!DECL_NONCONVERTING_P (STRIP_TEMPLATE (*iter)))
+	      pruned = lookup_add (pruned, *iter);
+
+	  cands = pruned;
+	}
+    }
 
   tree outer_args = NULL_TREE;
   if (DECL_CLASS_SCOPE_P (tmpl)
@@ -25171,11 +25191,15 @@ do_class_deduction (tree ptype, tree tmpl, tree init, int flags,
   bool saw_ctor = false;
   if (CLASSTYPE_METHOD_VEC (type))
     // FIXME cache artificial deduction guides
-    for (tree fns = CLASSTYPE_CONSTRUCTORS (type); fns; fns = OVL_NEXT (fns))
+    for (ovl_iterator iter (CLASSTYPE_CONSTRUCTORS (type));
+	 iter; ++iter)
       {
-	tree fn = OVL_CURRENT (fns);
-	tree guide = build_deduction_guide (fn, outer_args, complain);
-	cands = ovl_cons (guide, cands);
+	tree guide = build_deduction_guide (*iter, outer_args, complain);
+	if ((flags & LOOKUP_ONLYCONVERTING)
+	    && DECL_NONCONVERTING_P (STRIP_TEMPLATE (guide)))
+	  elided = true;
+	else
+	  cands = lookup_add (cands, guide);
 
 	saw_ctor = true;
       }
@@ -25183,41 +25207,29 @@ do_class_deduction (tree ptype, tree tmpl, tree init, int flags,
   if (!saw_ctor && args->length() == 0)
     {
       tree guide = build_deduction_guide (type, outer_args, complain);
-      cands = ovl_cons (guide, cands);
+      if ((flags & LOOKUP_ONLYCONVERTING)
+	  && DECL_NONCONVERTING_P (STRIP_TEMPLATE (guide)))
+	elided = true;
+      else
+	cands = lookup_add (cands, guide);
     }
   if (args->length() == 1)
     {
       tree guide = build_deduction_guide (build_reference_type (type),
 					  outer_args, complain);
-      cands = ovl_cons (guide, cands);
+      if ((flags & LOOKUP_ONLYCONVERTING)
+	  && DECL_NONCONVERTING_P (STRIP_TEMPLATE (guide)))
+	elided = true;
+      else
+	cands = lookup_add (cands, guide);
     }
 
-  /* Prune explicit deduction guides in copy-initialization context.  */
-  tree old_cands = cands;
-  if (flags & LOOKUP_ONLYCONVERTING)
+  if (elided && !cands)
     {
-      tree t = cands;
-      for (; t; t = OVL_NEXT (t))
-	if (DECL_NONCONVERTING_P (STRIP_TEMPLATE (OVL_CURRENT (t))))
-	  break;
-      if (t)
-	{
-	  tree pruned = NULL_TREE;
-	  for (t = cands; t; t = OVL_NEXT (t))
-	    {
-	      tree f = OVL_CURRENT (t);
-	      if (!DECL_NONCONVERTING_P (STRIP_TEMPLATE (f)))
-		pruned = build_overload (f, pruned);
-	    }
-	  cands = pruned;
-	  if (cands == NULL_TREE)
-	    {
-	      error ("cannot deduce template arguments for copy-initialization"
-		     " of %qT, as it has no non-explicit deduction guides or "
-		     "user-declared constructors", type);
-	      return error_mark_node;
-	    }
-	}
+      error ("cannot deduce template arguments for copy-initialization"
+	     " of %qT, as it has no non-explicit deduction guides or "
+	     "user-declared constructors", type);
+      return error_mark_node;
     }
 
   ++cp_unevaluated_operand;
@@ -25227,7 +25239,7 @@ do_class_deduction (tree ptype, tree tmpl, tree init, int flags,
     {
       error ("class template argument deduction failed:");
       t = build_new_function_call (cands, &args, complain | tf_decltype);
-      if (old_cands != cands)
+      if (elided)
 	inform (input_location, "explicit deduction guides not considered "
 		"for copy-initialization");
     }
