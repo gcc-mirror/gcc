@@ -1,3 +1,10 @@
+2017-05-16  James Greenhalgh  <james.greenhalgh@arm.com>
+	    Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	PR tree-optimization/80457
+	* gcc.target/powerpc/pr78604.c: Verify that vectorized COND_EXPRs
+	call vect_model_simple_cost.
+
 2017-05-16  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/80554

@@ -1,3 +1,21 @@
+2017-05-16  James Greenhalgh  <james.greenhalgh@arm.com>
+	    Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	PR tree-optimization/80457
+	* tree-vect-stmts.c (vect_model_simple_cost): Model the cost
+	of all arguments to a statement as scalar_to_vec operations.
+	(vectorizable_call): Adjust call to vect_model_simple_cost for
+	new parameter.
+	(vectorizable_conversion): Likewise.
+	(vectorizable_assignment): Likewise.
+	(vectorizable_shift): Likewise.
+	(vectorizable_operation): Likewise.
+	(vectorizable_comparison): Likewise.
+	(vect_is_simple_cond): Record the def types for operands.
+	(vectorizable_condition): Likewise, call vect_model_simple_cost.
+	* tree-vectorizer.h (vect_model_simple_cost): Add new parameter
+	for statement argument count.
+
 2017-05-16  Carl Love  <cel@us.ibm.com>
 
 	* config/rs6000/rs6000-c: Add support for built-in functions
