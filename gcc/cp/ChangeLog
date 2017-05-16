@@ -1,3 +1,9 @@
+2017-05-16  Marek Polacek  <polacek@redhat.com>
+
+	PR sanitizer/80536
+	PR sanitizer/80386
+	* cp-gimplify.c (cp_fold): Handle SAVE_EXPR.
+
 2017-05-16  Nathan Sidwell  <nathan@acm.org>
 
 	* name-lookup.c (check_local_shadow): New, broke out of ...

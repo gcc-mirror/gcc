@@ -3337,7 +3337,6 @@ tree_invariant_p (tree t)
 tree
 save_expr (tree expr)
 {
-  tree t = fold (expr);
   tree inner;
 
   /* If the tree evaluates to a constant, then we don't want to hide that
@@ -3345,33 +3344,32 @@ save_expr (tree expr)
      However, a read-only object that has side effects cannot be bypassed.
      Since it is no problem to reevaluate literals, we just return the
      literal node.  */
-  inner = skip_simple_arithmetic (t);
+  inner = skip_simple_arithmetic (expr);
   if (TREE_CODE (inner) == ERROR_MARK)
     return inner;
 
   if (tree_invariant_p_1 (inner))
-    return t;
+    return expr;
 
   /* If INNER contains a PLACEHOLDER_EXPR, we must evaluate it each time, since
      it means that the size or offset of some field of an object depends on
      the value within another field.
 
-     Note that it must not be the case that T contains both a PLACEHOLDER_EXPR
+     Note that it must not be the case that EXPR contains both a PLACEHOLDER_EXPR
      and some variable since it would then need to be both evaluated once and
      evaluated more than once.  Front-ends must assure this case cannot
      happen by surrounding any such subexpressions in their own SAVE_EXPR
      and forcing evaluation at the proper time.  */
   if (contains_placeholder_p (inner))
-    return t;
+    return expr;
 
-  t = build1 (SAVE_EXPR, TREE_TYPE (expr), t);
-  SET_EXPR_LOCATION (t, EXPR_LOCATION (expr));
+  expr = build1_loc (EXPR_LOCATION (expr), SAVE_EXPR, TREE_TYPE (expr), expr);
 
   /* This expression might be placed ahead of a jump to ensure that the
      value was computed on both sides of the jump.  So make sure it isn't
      eliminated as dead.  */
-  TREE_SIDE_EFFECTS (t) = 1;
-  return t;
+  TREE_SIDE_EFFECTS (expr) = 1;
+  return expr;
 }
 
 /* Look inside EXPR into any simple arithmetic operations.  Return the

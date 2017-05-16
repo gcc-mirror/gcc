@@ -1,3 +1,9 @@
+2017-05-16  Marek Polacek  <polacek@redhat.com>
+
+	PR sanitizer/80536
+	PR sanitizer/80386
+	* tree.c (save_expr): Don't fold the expression.
+
 2017-05-16  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386.i386.md (*movsi_internal): Split (?rm,*y) alternative
