@@ -1,3 +1,10 @@
+2017-05-16  Richard Biener  <rguenther@suse.de>
+
+	* dwarf2out.c (resolve_variable_value_in_expr): Lookup DIE
+	just generated.
+	(note_variable_value_in_expr): If we resolved the decl ref
+	do not push to the stack.
+
 2017-05-16  Matthew Wahab  <matthew.wahab@arm.com>
 
 	* config/arm/arm_neon.h (vadd_f16): Use standard arithmetic
