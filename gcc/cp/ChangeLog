@@ -1,3 +1,14 @@
+2017-05-16  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-tree.h (SCOPE_DEPTH): New.
+	* name-lookup.h (is_nested_namespace): Declare.
+	* name-lookup.c (is_nested_namespace): New.
+	(is_ancestor): Use it.
+	(set_decl_namespace): Likewise.
+	(push_namespace): Set SCOPE_DEPTH.
+	* pt.c (check_specialization_namespace): Use is_nested_namespace.
+	(check_unqualigied_spec_or_inst): Likewise.
+
 2017-05-15  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/79369
