@@ -1,3 +1,9 @@
+2017-05-17  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR middle-end/80692
+	* real.c (do_compare): Give decimal_do_compare preference over
+	comparing just the signs.
+
 2017-05-17  Uros Bizjak  <ubizjak@gmail.com>
 
 	* doc/md.texi (Canonicalization of Instructions): Describe the
