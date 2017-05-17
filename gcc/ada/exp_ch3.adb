@@ -7518,8 +7518,19 @@ package body Exp_Ch3 is
       --  class-wide invariants from parent types or interfaces, and invariants
       --  on array elements or record components.
 
+      --  Do not generate invariant procedure within other assertion
+      --  subprograms, which may involve local declarations of local
+      --  subtypes to which these checks don't apply.
+
       if Has_Invariants (Def_Id) then
-         Build_Invariant_Procedure_Body (Def_Id);
+         if Within_Internal_Subprogram
+          or else (Ekind (Current_Scope) = E_Function
+                    and then Is_Predicate_Function (Current_Scope))
+         then
+            null;
+         else
+            Build_Invariant_Procedure_Body (Def_Id);
+         end if;
       end if;
 
       if Mode_Set then
