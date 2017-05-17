@@ -240,7 +240,7 @@
 ;;
 ;; Substitutions.
 ;;
-;; They are used to define the second instruction of the pairs required by
+;; They are used to define the first instruction of the pairs required by
 ;; the postreload compare elimination pass, with a first variant for the
 ;; logical insns and a second variant for the arithmetic insns.
 ;;
