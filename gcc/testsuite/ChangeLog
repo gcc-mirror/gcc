@@ -1,3 +1,7 @@
+2017-05-17  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* gcc.target/powerpc/pr78604.c: Fix typo in dg-options.
+
 2017-05-17  Fritz Reese <fritzoreese@gmail.com>
 
 	PR fortran/80668
