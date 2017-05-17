@@ -1359,7 +1359,7 @@ handle_using_decl (tree using_decl, tree t)
 			     tf_warning_or_error);
   if (old_value)
     {
-      old_value = OVL_CURRENT (old_value);
+      old_value = OVL_FIRST (old_value);
 
       if (DECL_P (old_value) && DECL_CONTEXT (old_value) == t)
 	/* OK */;
@@ -1396,10 +1396,10 @@ handle_using_decl (tree using_decl, tree t)
 
   /* Make type T see field decl FDECL with access ACCESS.  */
   if (flist)
-    for (; flist; flist = OVL_NEXT (flist))
+    for (ovl_iterator iter (flist); iter; ++iter)
       {
-	add_method (t, OVL_CURRENT (flist), using_decl);
-	alter_access (t, OVL_CURRENT (flist), access);
+	add_method (t, *iter, true);
+	alter_access (t, *iter, access);
       }
   else
     alter_access (t, decl, access);
@@ -2245,7 +2245,7 @@ maybe_warn_about_overly_private_class (tree t)
       && (!CLASSTYPE_LAZY_DEFAULT_CTOR (t)
 	  || !CLASSTYPE_LAZY_COPY_CTOR (t)))
     {
-      int nonprivate_ctor = 0;
+      bool nonprivate_ctor = false;
 
       /* If a non-template class does not define a copy
 	 constructor, one is defined for it, enabling it to avoid
@@ -2258,25 +2258,20 @@ maybe_warn_about_overly_private_class (tree t)
 	 complete non-template or fully instantiated classes have this
 	 flag set.  */
       if (!TYPE_HAS_COPY_CTOR (t))
-	nonprivate_ctor = 1;
+	nonprivate_ctor = true;
       else
-	for (fn = CLASSTYPE_CONSTRUCTORS (t); fn; fn = OVL_NEXT (fn))
-	  {
-	    tree ctor = OVL_CURRENT (fn);
-	    /* Ideally, we wouldn't count copy constructors (or, in
-	       fact, any constructor that takes an argument of the
-	       class type as a parameter) because such things cannot
-	       be used to construct an instance of the class unless
-	       you already have one.  But, for now at least, we're
-	       more generous.  */
-	    if (! TREE_PRIVATE (ctor))
-	      {
-		nonprivate_ctor = 1;
-		break;
-	      }
-	  }
+	for (ovl_iterator iter (CLASSTYPE_CONSTRUCTORS (t));
+	     !nonprivate_ctor && iter; ++iter)
+	  /* Ideally, we wouldn't count copy constructors (or, in
+	     fact, any constructor that takes an argument of the class
+	     type as a parameter) because such things cannot be used
+	     to construct an instance of the class unless you already
+	     have one.  But, for now at least, we're more
+	     generous.  */
+	  if (! TREE_PRIVATE (*iter))
+	    nonprivate_ctor = true;
 
-      if (nonprivate_ctor == 0)
+      if (!nonprivate_ctor)
 	{
 	  warning (OPT_Wctor_dtor_privacy,
 		   "%q#T only defines private constructors and has no friends",
@@ -2305,7 +2300,7 @@ method_name_cmp (const void* m1_p, const void* m2_p)
     return -1;
   if (*m2 == NULL_TREE)
     return 1;
-  if (DECL_NAME (OVL_CURRENT (*m1)) < DECL_NAME (OVL_CURRENT (*m2)))
+  if (OVL_NAME (*m1) < OVL_NAME (*m2))
     return -1;
   return 1;
 }
@@ -2325,8 +2320,8 @@ resort_method_name_cmp (const void* m1_p, const void* m2_p)
   if (*m2 == NULL_TREE)
     return 1;
   {
-    tree d1 = DECL_NAME (OVL_CURRENT (*m1));
-    tree d2 = DECL_NAME (OVL_CURRENT (*m2));
+    tree d1 = OVL_NAME (*m1);
+    tree d2 = OVL_NAME (*m2);
     resort_data.new_value (&d1, resort_data.cookie);
     resort_data.new_value (&d2, resort_data.cookie);
     if (d1 < d2)
@@ -2353,7 +2348,7 @@ resort_type_method_vec (void* obj,
   for (slot = CLASSTYPE_FIRST_CONVERSION_SLOT;
        vec_safe_iterate (method_vec, slot, &fn);
        ++slot)
-    if (!DECL_CONV_FN_P (OVL_CURRENT (fn)))
+    if (!DECL_CONV_FN_P (OVL_FIRST (fn)))
       break;
 
   if (len - slot > 1)
@@ -2398,7 +2393,7 @@ finish_struct_methods (tree t)
   for (slot = CLASSTYPE_FIRST_CONVERSION_SLOT;
        method_vec->iterate (slot, &fn_fields);
        ++slot)
-    if (!DECL_CONV_FN_P (OVL_CURRENT (fn_fields)))
+    if (!DECL_CONV_FN_P (OVL_FIRST (fn_fields)))
       break;
   if (len - slot > 1)
     qsort (method_vec->address () + slot,
@@ -2973,7 +2968,6 @@ modify_all_vtables (tree t, tree virtuals)
 static void
 get_basefndecls (tree name, tree t, vec<tree> *base_fndecls)
 {
-  tree methods;
   int n_baseclasses = BINFO_N_BASE_BINFOS (TYPE_BINFO (t));
   int i;
 
@@ -2981,11 +2975,9 @@ get_basefndecls (tree name, tree t, vec<tree> *base_fndecls)
   i = lookup_fnfields_1 (t, name);
   bool found_decls = false;
   if (i != -1)
-    for (methods = (*CLASSTYPE_METHOD_VEC (t))[i];
-	 methods;
-	 methods = OVL_NEXT (methods))
+    for (ovl_iterator iter ((*CLASSTYPE_METHOD_VEC (t))[i]); iter; ++iter)
       {
-	tree method = OVL_CURRENT (methods);
+	tree method = *iter;
 
 	if (TREE_CODE (method) == FUNCTION_DECL
 	    && DECL_VINDEX (method))
@@ -3065,8 +3057,6 @@ warn_hidden (tree t)
        vec_safe_iterate (method_vec, i, &fns);
        ++i)
     {
-      tree fn;
-      tree name;
       tree fndecl;
       tree base_binfo;
       tree binfo;
@@ -3074,7 +3064,7 @@ warn_hidden (tree t)
 
       /* All functions in this slot in the CLASSTYPE_METHOD_VEC will
 	 have the same name.  Figure out what name that is.  */
-      name = DECL_NAME (OVL_CURRENT (fns));
+      tree name = OVL_NAME (fns);
       /* There are no possibly hidden functions yet.  */
       auto_vec<tree, 20> base_fndecls;
       /* Iterate through all of the base classes looking for possibly
@@ -3091,9 +3081,9 @@ warn_hidden (tree t)
 	continue;
 
       /* Remove any overridden functions.  */
-      for (fn = fns; fn; fn = OVL_NEXT (fn))
+      for (ovl_iterator iter (fns); iter; ++iter)
 	{
-	  fndecl = OVL_CURRENT (fn);
+	  fndecl = *iter;
 	  if (TREE_CODE (fndecl) == FUNCTION_DECL
 	      && DECL_VINDEX (fndecl))
 	    {
@@ -3455,9 +3445,8 @@ add_implicitly_declared_members (tree t, tree* access_decls,
 	  tree ctor_list = decl;
 	  location_t loc = input_location;
 	  input_location = DECL_SOURCE_LOCATION (using_decl);
-	  if (ctor_list)
-	    for (; ctor_list; ctor_list = OVL_NEXT (ctor_list))
-	      one_inherited_ctor (OVL_CURRENT (ctor_list), t, using_decl);
+	  for (ovl_iterator iter (ctor_list); iter; ++iter)
+	    one_inherited_ctor (*iter, t, using_decl);
 	  *access_decls = TREE_CHAIN (*access_decls);
 	  input_location = loc;
 	}

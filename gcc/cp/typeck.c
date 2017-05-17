@@ -5519,7 +5519,7 @@ build_x_unary_op (location_t loc, enum tree_code code, cp_expr xarg,
 		 pointer-to-member.  */
 	      xarg = build2 (OFFSET_REF, TREE_TYPE (xarg),
 			     TREE_OPERAND (xarg, 0),
-			     ovl_cons (TREE_OPERAND (xarg, 1), NULL_TREE));
+			     ovl_make (TREE_OPERAND (xarg, 1)));
 	      PTRMEM_OK_P (xarg) = ptrmem;
 	    }
 	}
