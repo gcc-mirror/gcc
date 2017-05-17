@@ -1113,7 +1113,14 @@ insn_info::absolute2base (unsigned regno, unsigned base, rtx with_symbol)
 	      if (src_ee)
 		src = gen_rtx_fmt_ee(src_op, mode, src, gen_rtx_CONST_INT (mode, src_intval));
 	      else
-		src = gen_rtx_fmt_e(src_op, mode, src);
+		{
+		  if (src_op == SIGN_EXTEND)
+		    {
+		      PUT_MODE_RAW(src, mode == SImode ? HImode : mode == HImode ? QImode : SImode);
+		      src->call = 1;
+		    }
+		  src = gen_rtx_fmt_e(src_op, mode, src);
+		}
 	    }
 
 	  src_mem_reg = reg;
@@ -2945,12 +2952,17 @@ opt_absolute (void)
       for (; j < infos.size (); ++j)
 	{
 	  insn_info & jj = infos[j];
-	  if (jj.is_label () || jj.is_jump () || jj.is_call ())
+	  /* TODO: continue also at jump target */
+	  if (jj.is_jump())
+	    continue;
+	  /* TODO: check if label is visited only from jump targets from herein. then the label is ok. */
+	  if (jj.is_label ())
 	    break;
 
-	  freemask &= ~(jj.get_use () | jj.get_def ());
-	  if (!freemask)
+	  unsigned tempmask = freemask & ~(jj.get_use () | jj.get_def ());
+	  if (!tempmask)
 	    break;
+	  freemask = tempmask;
 
 	  if (jj.get_mode () == VOIDmode || jj.is_compare ())
 	    continue;
