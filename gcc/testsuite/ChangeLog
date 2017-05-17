@@ -1,6 +1,12 @@
 2017-05-17  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	Backport from trunk
+	PR libgfortran/80727
+	* gfortran.dg/read_3.f90: New test.
+
+2017-05-17  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	Backport from trunk
 	PR fortran/78659
 	* gfortran.dg/namelist_91.f90: New test.
 	* gfortran.dg/namelist_92.f90: New test.

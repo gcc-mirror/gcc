@@ -1,3 +1,11 @@
+2017-05-17  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	Backport from trunk
+	PR libgfortran/80727
+	* transfer.c (read_sf_internal): Remove bogus code to detect EOR.
+	(read_block_form): For internal units, generate EOR if no more
+	bytes left in unit and we are trying to read with ADVANCE='NO'.
+
 2017-05-02  Release Manager
 
 	* GCC 7.1.0 released.
