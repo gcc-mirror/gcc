@@ -1,3 +1,7 @@
+2017-05-17  Chenghua Xu  <paul.hua.gm@gmail.com>
+
+	* gcc.target/mips/reorgbug-1.c: Don't specify -O2.
+
 2017-05-16  James Greenhalgh  <james.greenhalgh@arm.com>
 	    Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 

@@ -1,4 +1,4 @@
-/* { dg-options "-O2 -msoft-float -mips2" } */
+/* { dg-options "-msoft-float -mips2" } */
 
 typedef long int __int32_t;
 typedef long unsigned int __uint32_t;
