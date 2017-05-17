@@ -1,5 +1,10 @@
 2017-05-17  Marek Polacek  <polacek@redhat.com>
 
+	* c-decl.c: Use NULL_TREE instead of 0 where appropriate.
+	* c-typeck.c: Likewise.
+
+2017-05-17  Marek Polacek  <polacek@redhat.com>
+
 	PR sanitizer/80659
 	* c-decl.c (build_compound_literal): Set DECL_ARTIFICIAL and
 	DECL_IGNORED_P even for non-static compound literals.
