@@ -738,17 +738,13 @@ normalize_template_id_expression (tree t)
     }
 
   /* Check that we didn't refer to a function concept like a variable.  */
-  tree tmpl = TREE_OPERAND (t, 0);
-  if (TREE_CODE (tmpl) == OVERLOAD)
+  tree fn = OVL_FIRST (TREE_OPERAND (t, 0));
+  if (TREE_CODE (fn) == TEMPLATE_DECL
+      && DECL_DECLARED_CONCEPT_P (DECL_TEMPLATE_RESULT (fn)))
     {
-      tree fn = OVL_FUNCTION (tmpl);
-      if (TREE_CODE (fn) == TEMPLATE_DECL
-          && DECL_DECLARED_CONCEPT_P (DECL_TEMPLATE_RESULT (fn)))
-        {
-          error_at (location_of (t),
-                    "invalid reference to function concept %qD", fn);
-          return error_mark_node;
-        }
+      error_at (location_of (t),
+		"invalid reference to function concept %qD", fn);
+      return error_mark_node;
     }
 
   return build_nt (PRED_CONSTR, t);
@@ -1283,15 +1279,9 @@ finish_shorthand_constraint (tree decl, tree constr)
   /* Build the concept check. If it the constraint needs to be
      applied to all elements of the parameter pack, then make
      the constraint an expansion. */
-  tree check;
   tree tmpl = DECL_TI_TEMPLATE (con);
-  if (VAR_P (con))
-    check = build_concept_check (tmpl, arg, args);
-  else
-    {
-      tree ovl = build_overload (tmpl, NULL_TREE);
-      check = build_concept_check (ovl, arg, args);
-    }
+  tree check = VAR_P (con) ? tmpl : ovl_make (tmpl);
+  check = build_concept_check (check, arg, args);
 
   /* Make the check a pack expansion if needed.
 

@@ -1,3 +1,24 @@
+2017-05-17  Nathan Sidwell  <nathan@acm.org>
+
+	* class.c (handle_using_decl): Use OVL_FIRST, ovl_iterator.
+	(maybe_warn_about_overly_private_class): Use ovl_iterator.
+	(method_name_cmp, resort_method_name_cmp): Use OVL_NAME.
+	(resort_type_method_vec, finish_struct_methods): Use OVL_FIRST.
+	(get_base_fndecls): Use ovl_iterator.
+	(warn_hidden): Use OVL_NAME, ovl_iterator.
+	(add_implicitly_declared_members): Use ovl_iterator.
+	* constraint.cc (normalize_template_id_expression): Use OVL_FIRST,
+	flatten nested if.
+	(finish_shorthand_constraint): Simplify, use ovl_make.
+	* pt.c (make_constrained_auto): Simplify.  Use ovl_make.
+	* search.c (shared_member_p): Use ovl_iterator.
+	(lookup_field_fuzzy_info::fuzzy_lookup_fn): Use OVL_NAME.
+	(lookup_conversion_operator): Use OVL_FIRST.
+	(lookup_fnfiels_idx_nolazy): Use OVL_FIRST, OVL_NAME.
+	(look_for_overrides_here): Use ovl_iterator.
+	(lookup_conversions_r): Use OVL_FIRST, OVL_NAME, ovl_iterator.
+	* typeck.c (build_x_unary_op): Use ovl_make.
+
 2017-05-17  Martin Liska  <mliska@suse.cz>
 
 	* class.c (dump_class_hierarchy): Introduce dump_flags_t type and
