@@ -1,3 +1,10 @@
+2017-05-17  Fritz Reese <fritzoreese@gmail.com>
+
+	PR fortran/80668
+	* expr.c (component_initializer): Don't generate initializers for
+	pointer components.
+	* invoke.texi (-finit-derived): Document.
+
 2017-05-16  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/80554
