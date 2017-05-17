@@ -815,6 +815,25 @@ insn_info::fledder (rtx set)
 	}
     }
 
+  /* It' some kind of operation, e.g. PLUS, XOR, NEG, ... */
+  rtx alt_src_reg = 0;
+  int code = GET_CODE(src);
+  if (!REG_P(src) && !MEM_P(src) &&  code != CONST_INT && code != CONST && code != CONST_WIDE_INT && code != CONST_DOUBLE
+      && code != CONST_FIXED && code != CONST_STRING)
+    {
+      src_op = GET_CODE(src);
+      const char *fmt = GET_RTX_FORMAT(code);
+      if (fmt[0] == 'e' && fmt[1] == 'e')
+	{
+	  rtx operand = XEXP(src, 1);
+	  if (GET_CODE(operand) == CONST_INT)
+	    src_const = true, src_mem_addr = INTVAL(operand);
+	  else if (REG_P(operand))
+	    alt_src_reg = operand;
+	}
+      src = XEXP(src, 0);
+    }
+
   if (REG_P(src))
     {
       src_reg = src;
@@ -861,29 +880,8 @@ insn_info::fledder (rtx set)
       src_const = true;
       src_mem_addr = INTVAL(src);
     }
-  /* It' some kind of operation, e.g. PLUS, XOR, NEG, ... */
-  if (*GET_RTX_FORMAT(GET_CODE(src)) == 'e')
-    {
-      src_op = GET_CODE(src);
-      rtx reg = XEXP(src, 0);
-      if (REG_P(reg) && GET_RTX_LENGTH(GET_CODE(src)) >= 2)
-	{
-	  rtx konst = XEXP(src, 1);
-	  src_reg = reg;
-	  if (konst)
-	    {
-	      if (GET_CODE(konst) == CONST_INT)
-		{
-		  src_const = true;
-		  src_mem_addr = INTVAL(konst);
-		}
-	      else if (REG_P(konst))
-		{
-		  src_reg = konst; /* dst_reg = dst_reg OP src_reg: store src_reg not dst_reg */
-		}
-	    }
-	}
-    }
+  if (alt_src_reg)
+    src_reg = alt_src_reg;
 }
 
 /* create a copy for a reg. Optional specify a new register number. */
@@ -2844,7 +2842,10 @@ opt_shrink_stack_frame (void)
 	    pattern = XEXP(pattern, 1);
 	  if (ii.is_src_mem () && ii.is_src_mem_plus () && ii.get_src_mem_regno () == STACK_POINTER_REGNUM)
 	    {
-	      rtx plus = XEXP(XEXP(pattern, 1), 0);
+	      rtx src = XEXP(pattern, 1);
+	      rtx plus = XEXP(src, 0);
+	      if (ii.get_src_op ())
+		plus = XEXP(plus, 0);
 	      XEXP(plus, 1) = gen_rtx_CONST_INT (SImode, ii.get_src_intval () - adjust);
 	    }
 
