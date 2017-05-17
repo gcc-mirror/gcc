@@ -1,6 +1,28 @@
 2017-05-17  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline
+	2017-03-15  Xi Ruoyao  <ryxi@stu.xidian.edu.cn>
+
+	PR libstdc++/62045
+	* include/ext/pb_ds/detail/binary_heap_/binary_heap_.hpp
+	(is_heap): Remove.
+	(push_heap): Remove the wrong checking using is_heap.
+	(make_heap): Remove the assertion using is_heap.
+	* include/ext/pb_ds/detail/binary_heap_/insert_fn_imps.hpp
+	(modify): Ditto.
+	(resize_for_insert_if_needed): Add PB_DS_ASSERT_VALID after
+	calling make_heap.
+
+	Backport from mainline
+	2017-03-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/62045
+	* testsuite/ext/pb_ds/regression/priority_queue_binary_heap-62045.cc:
+	New test.
+	* testsuite/ext/pb_ds/regression/priority_queues.cc: Fix copy&paste
+	error in comment.
+
+	Backport from mainline
 	2015-11-17  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/66059
