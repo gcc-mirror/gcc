@@ -1,3 +1,9 @@
+2017-05-17  Marek Polacek  <polacek@redhat.com>
+
+	PR sanitizer/80659
+	* c-decl.c (build_compound_literal): Set DECL_ARTIFICIAL and
+	DECL_IGNORED_P even for non-static compound literals.
+
 2017-05-17  Martin Liska  <mliska@suse.cz>
 
 	* c-decl.c (c_parse_final_cleanups): Introduce dump_flags_t type and
