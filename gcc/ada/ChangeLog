@@ -1,3 +1,16 @@
+2017-05-17  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/80784
+	Backport from mainline
+
+	2017-05-02  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch3.adb (Freeze_Type): Do not generate an invariant
+	procedure body for a local (sub)type declaration within a
+	predicate function. Invariant checks do not apply to these, and
+	the expansion of the procedure will happen in the wrong scope,
+	leading to misplaced freeze nodes.
+
 2017-05-12  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* system-linux-arm.ads (Memory_Size): Use Long_Integer'Size
