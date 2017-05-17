@@ -1,3 +1,8 @@
+2017-05-17  Fritz Reese <fritzoreese@gmail.com>
+
+	PR fortran/80668
+	* gfortran.dg/pr80668.f90: New.
+
 2017-05-17  Peter Bergner  <bergner@vnet.ibm.com>
 
 	PR middle-end/80775
