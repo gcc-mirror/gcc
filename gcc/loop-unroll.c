@@ -191,7 +191,7 @@ static rtx get_expansion (struct var_to_expand *);
 static void
 report_unroll (struct loop *loop, location_t locus)
 {
-  int report_flags = MSG_OPTIMIZED_LOCATIONS | TDF_RTL | TDF_DETAILS;
+  dump_flags_t report_flags = MSG_OPTIMIZED_LOCATIONS | TDF_RTL | TDF_DETAILS;
 
   if (loop->lpt_decision.decision == LPT_NONE)
     return;

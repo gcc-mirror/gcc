@@ -4361,7 +4361,7 @@ generate_mangling_aliases ()
 static void
 dump_tu (void)
 {
-  int flags;
+  dump_flags_t flags;
   FILE *stream = dump_begin (TDI_tu, &flags);
 
   if (stream)

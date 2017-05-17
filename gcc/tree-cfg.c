@@ -2376,7 +2376,7 @@ gimple_debug_bb_n (int n)
    (see TDF_* in dumpfile.h).  */
 
 void
-gimple_debug_cfg (int flags)
+gimple_debug_cfg (dump_flags_t flags)
 {
   gimple_dump_cfg (stderr, flags);
 }
@@ -2388,7 +2388,7 @@ gimple_debug_cfg (int flags)
    tree.h).  */
 
 void
-gimple_dump_cfg (FILE *file, int flags)
+gimple_dump_cfg (FILE *file, dump_flags_t flags)
 {
   if (flags & TDF_DETAILS)
     {
@@ -7518,7 +7518,7 @@ move_sese_region_to_fn (struct function *dest_cfun, basic_block entry_bb,
    SPC.  */
 
 static void
-dump_default_def (FILE *file, tree def, int spc, int flags)
+dump_default_def (FILE *file, tree def, int spc, dump_flags_t flags)
 {
   for (int i = 0; i < spc; ++i)
     fprintf (file, " ");
@@ -7536,7 +7536,7 @@ dump_default_def (FILE *file, tree def, int spc, int flags)
    */
 
 void
-dump_function_to_file (tree fndecl, FILE *file, int flags)
+dump_function_to_file (tree fndecl, FILE *file, dump_flags_t flags)
 {
   tree arg, var, old_current_fndecl = current_function_decl;
   struct function *dsf;
@@ -7759,7 +7759,7 @@ dump_function_to_file (tree fndecl, FILE *file, int flags)
 /* Dump FUNCTION_DECL FN to stderr using FLAGS (see TDF_* in tree.h)  */
 
 DEBUG_FUNCTION void
-debug_function (tree fn, int flags)
+debug_function (tree fn, dump_flags_t flags)
 {
   dump_function_to_file (fn, stderr, flags);
 }

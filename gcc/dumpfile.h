@@ -99,6 +99,10 @@ enum tree_dump_index
 			 | MSG_NOTE)
 
 
+/* Value of TDF_NONE is used just for bits filtered by TDF_KIND_MASK.  */
+
+#define TDF_NONE 0
+
 /* Flags to control high-level -fopt-info dumps.  Usually these flags
    define a group of passes.  An optimization pass can be part of
    multiple groups.  */
@@ -113,6 +117,10 @@ enum tree_dump_index
 #define OPTGROUP_ALL	     (OPTGROUP_IPA | OPTGROUP_LOOP | OPTGROUP_INLINE \
 			      | OPTGROUP_OMP | OPTGROUP_VEC | OPTGROUP_OTHER)
 
+/* Dump flags type.  */
+
+typedef uint64_t dump_flags_t;
+
 /* Define a tree dump switch.  */
 struct dump_file_info
 {
@@ -123,7 +131,7 @@ struct dump_file_info
   const char *alt_filename;	/* filename for the -fopt-info stream  */
   FILE *pstream;		/* pass-specific dump stream  */
   FILE *alt_stream;		/* -fopt-info stream */
-  int pflags;			/* dump flags */
+  dump_flags_t pflags;		/* dump flags */
   int optgroup_flags;		/* optgroup flags for -fopt-info */
   int alt_flags;		/* flags for opt-info */
   int pstate;			/* state of pass-specific stream */
@@ -140,34 +148,35 @@ struct dump_file_info
 };
 
 /* In dumpfile.c */
-extern FILE *dump_begin (int, int *);
+extern FILE *dump_begin (int, dump_flags_t *);
 extern void dump_end (int, FILE *);
 extern int opt_info_switch_p (const char *);
 extern const char *dump_flag_name (int);
-extern void dump_printf (int, const char *, ...) ATTRIBUTE_PRINTF_2;
-extern void dump_printf_loc (int, source_location,
-			     const char *, ...) ATTRIBUTE_PRINTF_3;
+extern void dump_printf (dump_flags_t, const char *, ...) ATTRIBUTE_PRINTF_2;
+extern void dump_printf_loc (dump_flags_t, source_location,
+                             const char *, ...) ATTRIBUTE_PRINTF_3;
 extern void dump_function (int phase, tree fn);
 extern void dump_basic_block (int, basic_block, int);
 extern void dump_generic_expr_loc (int, source_location, int, tree);
-extern void dump_generic_expr (int, int, tree);
-extern void dump_gimple_stmt_loc (int, source_location, int, gimple *, int);
-extern void dump_gimple_stmt (int, int, gimple *, int);
+extern void dump_generic_expr (dump_flags_t, dump_flags_t, tree);
+extern void dump_gimple_stmt_loc (dump_flags_t, source_location, dump_flags_t,
+				  gimple *, int);
+extern void dump_gimple_stmt (dump_flags_t, dump_flags_t, gimple *, int);
 extern void print_combine_total_stats (void);
 extern bool enable_rtl_dump_file (void);
 
 /* In tree-dump.c  */
-extern void dump_node (const_tree, int, FILE *);
+extern void dump_node (const_tree, dump_flags_t, FILE *);
 
 /* In combine.c  */
 extern void dump_combine_total_stats (FILE *);
 /* In cfghooks.c  */
-extern void dump_bb (FILE *, basic_block, int, int);
+extern void dump_bb (FILE *, basic_block, int, dump_flags_t);
 
 /* Global variables used to communicate with passes.  */
 extern FILE *dump_file;
 extern FILE *alt_dump_file;
-extern int dump_flags;
+extern dump_flags_t dump_flags;
 extern const char *dump_file_name;
 
 /* Return true if any of the dumps is enabled, false otherwise. */
@@ -192,7 +201,7 @@ public:
      SUFFIX, SWTCH, and GLOB. */
   unsigned int
   dump_register (const char *suffix, const char *swtch, const char *glob,
-		 int flags, int optgroup_flags,
+		 dump_flags_t flags, int optgroup_flags,
 		 bool take_ownership);
 
   /* Return the dump_file_info for the given phase.  */
@@ -219,7 +228,7 @@ public:
      set dump_flags appropriately for both pass dump stream and
      -fopt-info stream. */
   int
-  dump_start (int phase, int *flag_ptr);
+  dump_start (int phase, dump_flags_t *flag_ptr);
 
   /* Finish a tree dump for PHASE and close associated dump streams.  Also
      reset the globals DUMP_FILE, ALT_DUMP_FILE, and DUMP_FLAGS.  */
@@ -227,7 +236,7 @@ public:
   dump_finish (int phase);
 
   FILE *
-  dump_begin (int phase, int *flag_ptr);
+  dump_begin (int phase, dump_flags_t *flag_ptr);
 
   /* Returns nonzero if tree dump PHASE has been initialized.  */
   int
@@ -246,10 +255,11 @@ private:
   dump_switch_p_1 (const char *arg, struct dump_file_info *dfi, bool doglob);
 
   int
-  dump_enable_all (int flags, const char *filename);
+  dump_enable_all (dump_flags_t flags, const char *filename);
 
   int
-  opt_info_enable_passes (int optgroup_flags, int flags, const char *filename);
+  opt_info_enable_passes (int optgroup_flags, dump_flags_t flags,
+			  const char *filename);
 
 private:
 
