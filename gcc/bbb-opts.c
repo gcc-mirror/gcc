@@ -1375,30 +1375,32 @@ update_insns ()
 		   */
 		  if (jump_table == 0)
 		    {
-		      // still allow complex if_then_else which are also in parallel
-		      rtx ite = XVECEXP(insn, 0, 0);
+		      // still allow if_then_else inside a parallel insn
+		      rtx ite = XVECEXP(pattern, 0, 0);
 		      if (XEXP(ite, 0) != pc_rtx || GET_CODE(XEXP(ite, 1)) != IF_THEN_ELSE)
 			{
-			  debug_rtx(insn);
+			  debug_rtx (insn);
 			  return 1; // do not optimize.
 			}
-		    }
-		  else
-		  if (XEXP(jump_table, 0) != insn)
-		    {
-		      debug_rtx(insn);
-		      return 2;
-		    }
-
-		  // -> jump_table_data
-		  rtx table = PATTERN (XEXP(jump_table, 1));
-		  for (int j = 0; j < XVECLEN(table, 1); ++j)
-		    {
-		      rtx ref = XVECEXP(table, 1, j);
-		      rtx label = XEXP(ref, 0);
+		      rtx_insn * label = (rtx_insn *) JUMP_LABEL(insn);
 		      label2jump.insert (std::make_pair (label->u2.insn_uid, insn));
 		    }
-
+		  else if (XEXP(jump_table, 0) != insn)
+		    {
+		      debug_rtx (insn);
+		      return 2;
+		    }
+		  else
+		    {
+		      // -> jump_table_data
+		      rtx table = PATTERN (XEXP(jump_table, 1));
+		      for (int j = 0; j < XVECLEN(table, 1); ++j)
+			{
+			  rtx ref = XVECEXP(table, 1, j);
+			  rtx label = XEXP(ref, 0);
+			  label2jump.insert (std::make_pair (label->u2.insn_uid, insn));
+			}
+		    }
 		  jump_table = 0;
 		}
 	      else
@@ -1433,8 +1435,7 @@ update_insns ()
 
 	    }
 	}
-
-      if (NOTE_P(insn))
+      else if (NOTE_P(insn))
 	{
 	  if (NOTE_KIND(insn) == NOTE_INSN_PROLOGUE_END)
 	    inproepilogue = 0;
@@ -2051,8 +2052,6 @@ opt_strcpy ()
 		      insn_code_number = recog (PATTERN (newinsn), newinsn, &num_clobbers_to_add);
 		      if (insn_code_number >= 0 && check_asm_operands (PATTERN (newinsn)))
 			{
-			  rtx link;
-
 			  log ("(s) opt_strcpy condition met, removing compare and joining insns - omit reg %s\n",
 			  reg_names[REGNO(dst)]);
 
@@ -3148,7 +3147,7 @@ namespace
 	if (r)
 	  {
 	    if (be_verbose)
-	      log("no bbb optimization code %d\n", r);
+	      log ("no bbb optimization code %d\n", r);
 	    return 0;
 	  }
 	if (do_opt_strcpy && opt_strcpy ())
