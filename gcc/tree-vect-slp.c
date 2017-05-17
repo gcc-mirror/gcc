@@ -1220,7 +1220,7 @@ fail:
 /* Dump a slp tree NODE using flags specified in DUMP_KIND.  */
 
 static void
-vect_print_slp_tree (int dump_kind, location_t loc, slp_tree node)
+vect_print_slp_tree (dump_flags_t dump_kind, location_t loc, slp_tree node)
 {
   int i;
   gimple *stmt;

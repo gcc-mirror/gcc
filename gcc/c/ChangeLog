@@ -1,3 +1,8 @@
+2017-05-17  Martin Liska  <mliska@suse.cz>
+
+	* c-decl.c (c_parse_final_cleanups): Introduce dump_flags_t type and
+	use it instead of int type.
+
 2017-05-17  Marek Polacek  <polacek@redhat.com>
 
 	* c-convert.c (convert): Replace c_save_expr with save_expr.  Don't

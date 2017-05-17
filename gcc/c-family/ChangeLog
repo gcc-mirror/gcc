@@ -1,3 +1,10 @@
+2017-05-17  Martin Liska  <mliska@suse.cz>
+
+	* c-common.h: Introduce dump_flags_t type and
+	use it instead of int type.
+	* c-gimplify.c (c_genericize): Likewise.
+	* c-opts.c: Likewise.
+
 2017-05-17  Marek Polacek  <polacek@redhat.com>
 
 	* c-common.c (c_save_expr): Remove.

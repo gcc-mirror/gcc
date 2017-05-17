@@ -115,7 +115,7 @@ void
 c_genericize (tree fndecl)
 {
   FILE *dump_orig;
-  int local_dump_flags;
+  dump_flags_t local_dump_flags;
   struct cgraph_node *cgn;
 
   if (flag_sanitize & SANITIZE_BOUNDS)

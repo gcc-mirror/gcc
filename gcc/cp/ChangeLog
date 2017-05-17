@@ -1,3 +1,11 @@
+2017-05-17  Martin Liska  <mliska@suse.cz>
+
+	* class.c (dump_class_hierarchy): Introduce dump_flags_t type and
+	use it instead of int type.
+	(dump_vtable): Likewise.
+	(dump_vtt): Likewise.
+	* decl2.c (dump_tu): Likewise.
+
 2017-05-16  David Malcolm  <dmalcolm@redhat.com>
 
 	* call.c (enforce_access): Add access_failure_info * param and use

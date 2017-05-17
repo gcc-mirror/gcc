@@ -70,7 +70,7 @@ private:
      and possibly incoming edges for the block.  Typically called after
      determining a block is unreachable in the before_dom_children
      callback.  */
-  void propagate_unreachable_to_edges (basic_block, FILE *, int);
+  void propagate_unreachable_to_edges (basic_block, FILE *, dump_flags_t);
 
 };
 

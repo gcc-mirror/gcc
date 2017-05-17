@@ -396,7 +396,7 @@ clear_bb_flags (void)
    It is still practical to have them reported for debugging of simple
    testcases.  */
 static void
-check_bb_profile (basic_block bb, FILE * file, int indent, int flags)
+check_bb_profile (basic_block bb, FILE * file, int indent, dump_flags_t flags)
 {
   edge e;
   int sum = 0;
@@ -474,7 +474,7 @@ check_bb_profile (basic_block bb, FILE * file, int indent, int flags)
 }
 
 void
-dump_edge_info (FILE *file, edge e, int flags, int do_succ)
+dump_edge_info (FILE *file, edge e, dump_flags_t flags, int do_succ)
 {
   basic_block side = (do_succ ? e->dest : e->src);
   bool do_details = false;
@@ -713,7 +713,7 @@ debug_bb_n (int n)
    that maybe_hot_bb_p and probably_never_executed_bb_p don't ICE.  */
 
 void
-dump_bb_info (FILE *outf, basic_block bb, int indent, int flags,
+dump_bb_info (FILE *outf, basic_block bb, int indent, dump_flags_t flags,
 	      bool do_header, bool do_footer)
 {
   edge_iterator ei;
@@ -833,7 +833,7 @@ dump_bb_info (FILE *outf, basic_block bb, int indent, int flags,
 /* Dumps a brief description of cfg to FILE.  */
 
 void
-brief_dump_cfg (FILE *file, int flags)
+brief_dump_cfg (FILE *file, dump_flags_t flags)
 {
   basic_block bb;
 

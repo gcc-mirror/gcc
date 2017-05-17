@@ -96,8 +96,8 @@ DEBUG_FUNCTION void
 dot_all_sese (FILE *file, vec<sese_l>& scops)
 {
   /* Disable debugging while printing graph.  */
-  int tmp_dump_flags = dump_flags;
-  dump_flags = 0;
+  dump_flags_t tmp_dump_flags = dump_flags;
+  dump_flags = TDF_NONE;
 
   fprintf (file, "digraph all {\n");
 

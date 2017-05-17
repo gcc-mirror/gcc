@@ -1,3 +1,48 @@
+2017-05-17  Martin Liska  <mliska@suse.cz>
+
+	* cfg.c: Introduce dump_flags_t type and
+	use it instead of int type.
+	* cfg.h: Likewise.
+	* cfghooks.c: Likewise.
+	* cfghooks.h (struct cfg_hooks): Likewise.
+	* cfgrtl.c: Likewise.
+	* cfgrtl.h: Likewise.
+	* cgraph.c (cgraph_node::get_body): Likewise.
+	* coretypes.h: Likewise.
+	* domwalk.c: Likewise.
+	* domwalk.h: Likewise.
+	* dumpfile.c (struct dump_option_value_info): Likewise.
+	(dump_enable_all): Likewise.
+	(dump_switch_p_1): Likewise.
+	(opt_info_switch_p): Likewise.
+	* dumpfile.h (enum tree_dump_index): Likewise.
+	(struct dump_file_info): Likewise.
+	* genemit.c: Likewise.
+	* generic-match-head.c: Likewise.
+	* gengtype.c (open_base_files): Likewise.
+	* gimple-pretty-print.c: Likewise.
+	* gimple-pretty-print.h: Likewise.
+	* graph.c (print_graph_cfg): Likewise.
+	* graphite-scop-detection.c (dot_all_sese): Likewise.
+	* ipa-devirt.c (build_type_inheritance_graph): Likewise.
+	* loop-unroll.c (report_unroll): Likewise.
+	* passes.c (pass_manager::register_one_dump_file): Likewise.
+	* print-tree.c: Likewise.
+	* statistics.c: Likewise.
+	* tree-cfg.c: Likewise.
+	* tree-cfg.h: Likewise.
+	* tree-dfa.c: Likewise.
+	* tree-dfa.h: Likewise.
+	* tree-dump.c (dump_function): Likewise.
+	* tree-dump.h (struct dump_info): Likewise.
+	* tree-pretty-print.c: Likewise.
+	* tree-pretty-print.h: Likewise.
+	* tree-ssa-live.c: Likewise.
+	* tree-ssa-live.h: Likewise.
+	* tree-ssa-loop-ivcanon.c (try_unroll_loop_completely): Likewise.
+	* tree-vect-loop.c: Likewise.
+	* tree-vect-slp.c: Likewise.
+
 2017-05-16  James Greenhalgh  <james.greenhalgh@arm.com>
 	    Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
