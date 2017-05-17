@@ -120,12 +120,11 @@ c_fully_fold_internal (tree expr, bool in_init, bool *maybe_const_operands,
   bool unused_p;
   source_range old_range;
 
-  /* Constants, declarations, statements, errors, SAVE_EXPRs and
-     anything else not counted as an expression cannot usefully be
-     folded further at this point.  */
+  /* Constants, declarations, statements, errors, and anything else not
+     counted as an expression cannot usefully be folded further at this
+     point.  */
   if (!IS_EXPR_CODE_CLASS (kind)
-      || kind == tcc_statement
-      || code == SAVE_EXPR)
+      || kind == tcc_statement)
     return expr;
 
   if (IS_EXPR_CODE_CLASS (kind))
@@ -564,6 +563,25 @@ c_fully_fold_internal (tree expr, bool in_init, bool *maybe_const_operands,
 	 c_fully_fold does); we cannot tell at this stage which is
 	 appropriate in any particular case.  */
       gcc_unreachable ();
+
+    case SAVE_EXPR:
+      /* Make sure to fold the contents of a SAVE_EXPR exactly once.  */
+      if (!SAVE_EXPR_FOLDED_P (expr))
+	{
+	  op0 = TREE_OPERAND (expr, 0);
+	  op0 = c_fully_fold_internal (op0, in_init, maybe_const_operands,
+				       maybe_const_itself, for_int_const);
+	  /* Don't wrap the folded tree in a SAVE_EXPR if we don't
+	     have to.  */
+	  if (tree_invariant_p (op0))
+	    ret = op0;
+	  else
+	    {
+	      TREE_OPERAND (expr, 0) = op0;
+	      SAVE_EXPR_FOLDED_P (expr) = true;
+	    }
+	}
+      goto out;
 
     default:
       /* Various codes may appear through folding built-in functions

@@ -16909,9 +16909,10 @@ compute_not_to_clear_mask (tree arg_type, rtx arg_rtx, int regno,
   return not_to_clear_mask;
 }
 
-/* Saves callee saved registers, clears callee saved registers and caller saved
-   registers not used to pass arguments before a cmse_nonsecure_call.  And
-   restores the callee saved registers after.  */
+/* Clears caller saved registers not used to pass arguments before a
+   cmse_nonsecure_call.  Saving, clearing and restoring of callee saved
+   registers is done in __gnu_cmse_nonsecure_call libcall.
+   See libgcc/config/arm/cmse_nonsecure_call.S.  */
 
 static void
 cmse_nonsecure_call_clear_caller_saved (void)

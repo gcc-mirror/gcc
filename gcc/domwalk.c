@@ -201,7 +201,7 @@ dom_walker::bb_reachable (struct function *fun, basic_block bb)
 void
 dom_walker::propagate_unreachable_to_edges (basic_block bb,
 					    FILE *dump_file,
-					    int dump_flags)
+					    dump_flags_t dump_flags)
 {
   if (dump_file && (dump_flags & TDF_DETAILS))
     fprintf (dump_file, "Marking all outgoing edges of unreachable "

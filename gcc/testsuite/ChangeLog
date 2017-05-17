@@ -1,3 +1,36 @@
+2017-05-17  Marek Polacek  <polacek@redhat.com>
+
+	PR sanitizer/80659
+	* gcc.dg/asan/pr80659.c: New test.
+
+2017-05-17  Senthil Kumar Selvaraj  <senthil_kumar.selvaraj@atmel.com>
+
+	* gcc.dg/tree-ssa/pr78886.c: Use __SIZE_TYPE__ instead of
+	unsigned long.
+
+2017-05-17  Chenghua Xu  <paul.hua.gm@gmail.com>
+
+	* gcc.target/mips/reorgbug-1.c: Don't specify -O2.
+
+2017-05-16  James Greenhalgh  <james.greenhalgh@arm.com>
+	    Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	PR tree-optimization/80457
+	* gcc.target/powerpc/pr78604.c: Verify that vectorized COND_EXPRs
+	call vect_model_simple_cost.
+
+2017-05-16  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/80554
+	* gfortran.dg/submodule_29.f08: New test.
+
+2017-05-16  David Malcolm  <dmalcolm@redhat.com>
+
+	* g++.dg/other/accessor-fixits-1.C: New test case.
+	* g++.dg/other/accessor-fixits-2.C: New test case.
+	* g++.dg/other/accessor-fixits-3.C: New test case.
+	* g++.dg/other/accessor-fixits-4.C: New test case.
+
 2017-05-16  Carl Love  <cel@us.ibm.com>
 
 	* gcc.target/powerpc/builtins-3.c: New vec_mule, vec_mulo test cases.
@@ -1272,7 +1305,7 @@
 	* gcc.dg/tree-ssa/vrp35.c: Disable EVRP.
 	* gcc.dg/tree-ssa/vrp36.c: Likewise.
 	* gcc.dg/tree-ssa/pr49039.c: Likewise.
- 
+
 2017-04-27  Marek Polacek  <polacek@redhat.com>
 
 	PR sanitizer/80349

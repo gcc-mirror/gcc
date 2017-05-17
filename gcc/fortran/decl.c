@@ -1383,8 +1383,28 @@ build_sym (const char *name, gfc_charlen *cl, bool cl_deferred,
   symbol_attribute attr;
   gfc_symbol *sym;
   int upper;
+  gfc_symtree *st;
 
-  if (gfc_get_symbol (name, NULL, &sym))
+  /* Symbols in a submodule are host associated from the parent module or
+     submodules. Therefore, they can be overridden by declarations in the
+     submodule scope. Deal with this by attaching the existing symbol to
+     a new symtree and recycling the old symtree with a new symbol...  */
+  st = gfc_find_symtree (gfc_current_ns->sym_root, name);
+  if (st != NULL && gfc_state_stack->state == COMP_SUBMODULE
+      && st->n.sym != NULL
+      && st->n.sym->attr.host_assoc && st->n.sym->attr.used_in_submodule)
+    {
+      gfc_symtree *s = gfc_get_unique_symtree (gfc_current_ns);
+      s->n.sym = st->n.sym;
+      sym = gfc_new_symbol (name, gfc_current_ns);
+
+
+      st->n.sym = sym;
+      sym->refs++;
+      gfc_set_sym_referenced (sym);
+    }
+  /* ...Otherwise generate a new symtree and new symbol.  */
+  else if (gfc_get_symbol (name, NULL, &sym))
     return false;
 
   /* Check if the name has already been defined as a type.  The

@@ -1007,7 +1007,7 @@ debug_raw (const tree_node *ptr)
 }
 
 static void
-dump_tree_via_hooks (const tree_node *ptr, int options)
+dump_tree_via_hooks (const tree_node *ptr, dump_flags_t options)
 {
   if (DECL_P (ptr))
     lang_hooks.print_decl (stderr, const_cast <tree_node*> (ptr), 0);

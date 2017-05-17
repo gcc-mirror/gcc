@@ -305,11 +305,13 @@ perform_deferred_access_checks (tsubst_flags_t complain)
 
 /* Defer checking the accessibility of DECL, when looked up in
    BINFO. DIAG_DECL is the declaration to use to print diagnostics.
-   Return value like perform_access_checks above.  */
+   Return value like perform_access_checks above.
+   If non-NULL, report failures to AFI.  */
 
 bool
 perform_or_defer_access_check (tree binfo, tree decl, tree diag_decl,
-			       tsubst_flags_t complain)
+			       tsubst_flags_t complain,
+			       access_failure_info *afi)
 {
   int i;
   deferred_access *ptr;
@@ -328,7 +330,7 @@ perform_or_defer_access_check (tree binfo, tree decl, tree diag_decl,
   /* If we are not supposed to defer access checks, just check now.  */
   if (ptr->deferring_access_checks_kind == dk_no_deferred)
     {
-      bool ok = enforce_access (binfo, decl, diag_decl, complain);
+      bool ok = enforce_access (binfo, decl, diag_decl, complain, afi);
       return (complain & tf_error) ? true : ok;
     }
 

@@ -5261,6 +5261,8 @@ build_compound_literal (location_t loc, tree type, tree init, bool non_const)
   DECL_CONTEXT (decl) = current_function_decl;
   TREE_USED (decl) = 1;
   DECL_READ_P (decl) = 1;
+  DECL_ARTIFICIAL (decl) = 1;
+  DECL_IGNORED_P (decl) = 1;
   TREE_TYPE (decl) = type;
   TREE_READONLY (decl) = (TYPE_READONLY (type)
 			  || (TREE_CODE (type) == ARRAY_TYPE
@@ -5297,8 +5299,6 @@ build_compound_literal (location_t loc, tree type, tree init, bool non_const)
       set_compound_literal_name (decl);
       DECL_DEFER_OUTPUT (decl) = 1;
       DECL_COMDAT (decl) = 1;
-      DECL_ARTIFICIAL (decl) = 1;
-      DECL_IGNORED_P (decl) = 1;
       pushdecl (decl);
       rest_of_decl_compilation (decl, 1, 0);
     }
@@ -6076,7 +6076,7 @@ grokdeclarator (const struct c_declarator *declarator,
 			&& do_ubsan_in_current_function ())
 		      {
 			/* Evaluate the array size only once.  */
-			size = c_save_expr (size);
+			size = save_expr (size);
 			size = c_fully_fold (size, false, NULL);
 		        size = fold_build2 (COMPOUND_EXPR, TREE_TYPE (size),
 					    ubsan_instrument_vla (loc, size),
@@ -11243,7 +11243,7 @@ c_parse_final_cleanups (void)
   if (ext_block)
     {
       tree tmp = BLOCK_VARS (ext_block);
-      int flags;
+      dump_flags_t flags;
       FILE * stream = dump_begin (TDI_tu, &flags);
       if (stream && tmp)
 	{

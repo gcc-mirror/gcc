@@ -776,7 +776,8 @@ pass_manager::register_one_dump_file (opt_pass *pass)
 
   /* Buffer big enough to format a 32-bit UINT_MAX into.  */
   char num[11];
-  int flags, id;
+  dump_flags_t flags;
+  int id;
   int optgroup_flags = OPTGROUP_NONE;
   gcc::dump_manager *dumps = m_ctxt->get_dumps ();
 
