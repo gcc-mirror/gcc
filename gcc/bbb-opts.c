@@ -139,7 +139,8 @@ class insn_info
   bool src_mem;
   bool dst_plus;
   bool src_plus;
-  int src_op;
+  rtx_code src_op;
+  bool src_ee;
   bool src_const;
 
   machine_mode mode;
@@ -151,15 +152,15 @@ class insn_info
   rtx src_mem_reg;
   rtx src_symbol;
   unsigned dst_mem_addr;
-
+  int src_intval;
   unsigned src_mem_addr;
 
 public:
   insn_info (rtx_insn * i = 0, int p = 0) :
       insn (i), myuse (0), hard (0), use (0), def (0), proepi (p), stack (false), label (false), jump (false), call (
-	  false), compare (false), dst_mem (false), src_mem (false), dst_plus (false), src_plus (false), src_op (0), src_const (
-	  false), mode (VOIDmode), dst_reg (0), dst_mem_reg (0), dst_symbol (0), src_reg (0), src_mem_reg (0), src_symbol (
-	  0), dst_mem_addr (0), src_mem_addr (0)
+	  false), compare (false), dst_mem (false), src_mem (false), dst_plus (false), src_plus (false), src_op (
+	  (rtx_code) 0), src_ee (false), src_const (false), mode (VOIDmode), dst_reg (0), dst_mem_reg (0), dst_symbol (
+	  0), src_reg (0), src_mem_reg (0), src_symbol (0), dst_mem_addr (0), src_intval (0), src_mem_addr (0)
   {
   }
 
@@ -265,7 +266,7 @@ public:
   }
 
   inline unsigned
-  get_src_addr () const
+  get_src_mem_addr () const
   {
     return src_mem_addr;
   }
@@ -280,6 +281,12 @@ public:
   get_src_op () const
   {
     return src_op;
+  }
+
+  inline bool
+  is_src_ee () const
+  {
+    return src_ee;
   }
 
   inline bool
@@ -333,7 +340,7 @@ public:
   inline int
   get_src_intval () const
   {
-    return src_mem_addr;
+    return src_intval;
   }
 
   inline int
@@ -417,7 +424,8 @@ public:
     src_mem = false;
     dst_plus = false;
     src_plus = false;
-    src_op = 0;
+    src_op = (rtx_code)0;
+    src_ee = false;
     src_const = false;
 
     mode = VOIDmode;
@@ -430,6 +438,7 @@ public:
     src_symbol = 0;
     dst_mem_addr = 0;
 
+    src_intval = 0;
     src_mem_addr = 0;
   }
 
@@ -818,16 +827,17 @@ insn_info::fledder (rtx set)
   /* It' some kind of operation, e.g. PLUS, XOR, NEG, ... */
   rtx alt_src_reg = 0;
   int code = GET_CODE(src);
-  if (!REG_P(src) && !MEM_P(src) &&  code != CONST_INT && code != CONST && code != CONST_WIDE_INT && code != CONST_DOUBLE
+  if (!REG_P(src) && !MEM_P(src) && code != CONST_INT && code != CONST && code != CONST_WIDE_INT && code != CONST_DOUBLE
       && code != CONST_FIXED && code != CONST_STRING)
     {
       src_op = GET_CODE(src);
       const char *fmt = GET_RTX_FORMAT(code);
       if (fmt[0] == 'e' && fmt[1] == 'e')
 	{
+	  src_ee = true;
 	  rtx operand = XEXP(src, 1);
-	  if (GET_CODE(operand) == CONST_INT)
-	    src_const = true, src_mem_addr = INTVAL(operand);
+	  if (GET_CODE(operand) == CONST_INT || GET_CODE(operand) == CONST_WIDE_INT)
+	    src_const = true, src_intval = INTVAL(operand);
 	  else if (REG_P(operand))
 	    alt_src_reg = operand;
 	}
@@ -992,7 +1002,7 @@ void
 insn_info::plus_to_move (rtx_insn * newinsn)
 {
   insn = newinsn;
-  src_op = 0;
+  src_op = (rtx_code)0;
   src_reg = XEXP(PATTERN (newinsn), 1);
   insn2index.insert (std::make_pair (insn, this));
   // usage flags did not change
@@ -1079,10 +1089,6 @@ insn_info::absolute2base (unsigned regno, unsigned base, rtx with_symbol)
 	  else
 	    dst = gen_rtx_MEM (mode, gen_rtx_PLUS(SImode, reg, gen_rtx_CONST_INT (SImode, offset)));
 
-	  /* some operation to the same value as dst. eg. eor #5,symbol+8 -> eor #5,8(ax) */
-	  if (src_op && rtx_equal_p (olddst, XEXP(src, 0)))
-	    XEXP(src, 0) = dst;
-
 	  dst_mem_reg = reg;
 	  dst_mem = true;
 	  dst_mem_addr = offset;
@@ -1092,7 +1098,7 @@ insn_info::absolute2base (unsigned regno, unsigned base, rtx with_symbol)
 
   if (is_src_mem () && (has_src_addr () || get_src_symbol ()) && !has_src_memreg () && get_src_symbol () == with_symbol)
     {
-      unsigned addr = get_src_addr ();
+      unsigned addr = get_src_mem_addr ();
       unsigned offset = addr - base;
       if (offset <= 0x7ffe)
 	{
@@ -1100,6 +1106,15 @@ insn_info::absolute2base (unsigned regno, unsigned base, rtx with_symbol)
 	    src = gen_rtx_MEM (mode, reg);
 	  else
 	    src = gen_rtx_MEM (mode, gen_rtx_PLUS(SImode, reg, gen_rtx_CONST_INT (SImode, offset)));
+
+	  /* some operation to the same value as dst. eg. eor #5,symbol+8 -> eor #5,8(ax) */
+	  if (src_op)
+	    {
+	      if (src_ee)
+		src = gen_rtx_fmt_ee(src_op, mode, src, gen_rtx_CONST_INT (mode, src_intval));
+	      else
+		src = gen_rtx_fmt_e(src_op, mode, src);
+	    }
 
 	  src_mem_reg = reg;
 	  src_mem = true;
@@ -2846,7 +2861,7 @@ opt_shrink_stack_frame (void)
 	      rtx plus = XEXP(src, 0);
 	      if (ii.get_src_op ())
 		plus = XEXP(plus, 0);
-	      XEXP(plus, 1) = gen_rtx_CONST_INT (SImode, ii.get_src_intval () - adjust);
+	      XEXP(plus, 1) = gen_rtx_CONST_INT (SImode, ii.get_src_mem_addr () - adjust);
 	    }
 
 	  if (ii.is_dst_mem () && ii.is_dst_mem_plus () && ii.get_dst_mem_regno () == STACK_POINTER_REGNUM)
@@ -2904,6 +2919,9 @@ opt_absolute (void)
       if (ii.is_compare ())
 	continue;
 
+      if (ii.get_src_op () && ii.is_src_ee () && !ii.get_src_intval ())
+	continue;
+
       bool is_dst = ii.is_dst_mem () && (ii.has_dst_addr () || ii.get_dst_symbol ()) && !ii.has_dst_memreg ();
       bool is_src = ii.is_src_mem () && (ii.has_src_addr () || ii.get_src_symbol ()) && !ii.has_src_memreg ();
 
@@ -2916,15 +2934,6 @@ opt_absolute (void)
       unsigned freemask = ~(ii.get_use () | ii.get_def ()) & 0x7f00 & usable_regs;
       if (!freemask)
 	continue;
-
-      /* exclude operations on that symbol. */
-      rtx pattern = PATTERN (ii.get_insn ());
-      if (is_dst && !ii.get_src_reg () && !ii.is_src_const ())
-	if (MEM_P(XEXP(XEXP(pattern, 1), 0)))
-	  continue;
-      if (is_src && !ii.get_dst_reg ())
-	if (MEM_P(XEXP(XEXP(pattern, 0), 0)))
-	  continue;
 
       rtx with_symbol = is_dst ? ii.get_dst_symbol () : ii.get_src_symbol ();
 
@@ -2944,6 +2953,9 @@ opt_absolute (void)
 	    break;
 
 	  if (jj.get_mode () == VOIDmode || jj.is_compare ())
+	    continue;
+
+	  if (jj.get_src_op () && jj.is_src_ee () && !jj.get_src_intval ())
 	    continue;
 
 	  bool j_dst = jj.is_dst_mem () && (jj.has_dst_addr () || jj.get_dst_symbol ()) && !jj.has_dst_memreg ()
@@ -2975,7 +2987,7 @@ opt_absolute (void)
 	    }
 	  if (j_src)
 	    {
-	      unsigned addr = jj.get_src_addr ();
+	      unsigned addr = jj.get_src_mem_addr ();
 	      if (addr < base)
 		{
 		  if (max - addr <= 0x7ffe)
