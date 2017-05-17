@@ -1,3 +1,11 @@
+2017-05-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backport from mainline
+	2015-11-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/66059
+	* include/std/utility (_Build_index_tuple): Optimise.
+
 2017-03-17  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline

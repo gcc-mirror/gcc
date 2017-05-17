@@ -202,17 +202,28 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // Stores a tuple of indices.  Used by tuple and pair, and by bind() to
   // extract the elements in a tuple.
-  template<size_t... _Indexes>
-    struct _Index_tuple
+  template<size_t... _Indexes> struct _Index_tuple { };
+
+  // Concatenates two _Index_tuples.
+  template<typename _Itup1, typename _Itup2> struct _Itup_cat;
+
+  template<size_t... _Ind1, size_t... _Ind2>
+    struct _Itup_cat<_Index_tuple<_Ind1...>, _Index_tuple<_Ind2...>>
     {
-      typedef _Index_tuple<_Indexes..., sizeof...(_Indexes)> __next;
+      using __type = _Index_tuple<_Ind1..., (_Ind2 + sizeof...(_Ind1))...>;
     };
 
   // Builds an _Index_tuple<0, 1, 2, ..., _Num-1>.
   template<size_t _Num>
     struct _Build_index_tuple
+    : _Itup_cat<typename _Build_index_tuple<_Num / 2>::__type,
+		typename _Build_index_tuple<_Num - _Num / 2>::__type>
+    { };
+
+  template<>
+    struct _Build_index_tuple<1>
     {
-      typedef typename _Build_index_tuple<_Num - 1>::__type::__next __type;
+      typedef _Index_tuple<0> __type;
     };
 
   template<>
