@@ -1,3 +1,9 @@
+2017-05-17  Marek Polacek  <polacek@redhat.com>
+
+	* c-common.c (c_save_expr): Remove.
+	(c_common_truthvalue_conversion): Remove a call to c_save_expr.
+	* c-common.h (c_save_expr): Remove declaration.
+
 2017-05-09  Volker Reichelt  <v.reichelt@netcologne.de>
 
 	PR c/35441

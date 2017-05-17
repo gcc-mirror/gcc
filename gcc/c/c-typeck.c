@@ -5777,7 +5777,7 @@ build_modify_expr (location_t location, tree lhs, tree lhs_origtype,
 	     that modify LHS.  */
 	  if (TREE_SIDE_EFFECTS (rhs))
 	    {
-	      newrhs = in_late_binary_op ? save_expr (rhs) : c_save_expr (rhs);
+	      newrhs = save_expr (rhs);
 	      rhseval = newrhs;
 	    }
 	  newrhs = build_binary_op (location,
@@ -9301,7 +9301,7 @@ process_init_element (location_t loc, struct c_expr value, bool implicit,
 	      semantic_type = TREE_TYPE (value.value);
 	      value.value = TREE_OPERAND (value.value, 0);
 	    }
-	  value.value = c_save_expr (value.value);
+	  value.value = save_expr (value.value);
 	  if (semantic_type)
 	    value.value = build1 (EXCESS_PRECISION_EXPR, semantic_type,
 				  value.value);
@@ -11621,7 +11621,7 @@ build_binary_op (location_t location, enum tree_code code,
 	    return error_mark_node;
 	  if (first_complex)
 	    {
-	      op0 = c_save_expr (op0);
+	      op0 = save_expr (op0);
 	      real = build_unary_op (EXPR_LOCATION (orig_op0), REALPART_EXPR,
 				     op0, true);
 	      imag = build_unary_op (EXPR_LOCATION (orig_op0), IMAGPART_EXPR,
@@ -11630,7 +11630,7 @@ build_binary_op (location_t location, enum tree_code code,
 		{
 		case MULT_EXPR:
 		case TRUNC_DIV_EXPR:
-		  op1 = c_save_expr (op1);
+		  op1 = save_expr (op1);
 		  imag = build2 (resultcode, real_type, imag, op1);
 		  /* Fall through.  */
 		case PLUS_EXPR:
@@ -11643,7 +11643,7 @@ build_binary_op (location_t location, enum tree_code code,
 	    }
 	  else
 	    {
-	      op1 = c_save_expr (op1);
+	      op1 = save_expr (op1);
 	      real = build_unary_op (EXPR_LOCATION (orig_op1), REALPART_EXPR,
 				     op1, true);
 	      imag = build_unary_op (EXPR_LOCATION (orig_op1), IMAGPART_EXPR,
@@ -11651,7 +11651,7 @@ build_binary_op (location_t location, enum tree_code code,
 	      switch (code)
 		{
 		case MULT_EXPR:
-		  op0 = c_save_expr (op0);
+		  op0 = save_expr (op0);
 		  imag = build2 (resultcode, real_type, op0, imag);
 		  /* Fall through.  */
 		case PLUS_EXPR:
@@ -11835,8 +11835,8 @@ build_binary_op (location_t location, enum tree_code code,
       && !require_constant_value)
     {
       /* OP0 and/or OP1 might have side-effects.  */
-      op0 = c_save_expr (op0);
-      op1 = c_save_expr (op1);
+      op0 = save_expr (op0);
+      op1 = save_expr (op1);
       op0 = c_fully_fold (op0, false, NULL);
       op1 = c_fully_fold (op1, false, NULL);
       if (doing_div_or_mod && (flag_sanitize & (SANITIZE_DIVIDE
@@ -12435,7 +12435,7 @@ handle_omp_array_sections_1 (tree c, tree t, vec<tree> &types,
       /* For [lb:] we will need to evaluate lb more than once.  */
       if (length == NULL_TREE && OMP_CLAUSE_CODE (c) != OMP_CLAUSE_DEPEND)
 	{
-	  tree lb = c_save_expr (low_bound);
+	  tree lb = save_expr (low_bound);
 	  if (lb != low_bound)
 	    {
 	      TREE_PURPOSE (t) = lb;
@@ -12480,7 +12480,7 @@ handle_omp_array_sections_1 (tree c, tree t, vec<tree> &types,
   if (OMP_CLAUSE_CODE (c) != OMP_CLAUSE_DEPEND)
     types.safe_push (TREE_TYPE (ret));
   /* We will need to evaluate lb more than once.  */
-  tree lb = c_save_expr (low_bound);
+  tree lb = save_expr (low_bound);
   if (lb != low_bound)
     {
       TREE_PURPOSE (t) = lb;
