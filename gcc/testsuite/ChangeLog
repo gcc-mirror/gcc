@@ -1,3 +1,8 @@
+2017-05-17  Senthil Kumar Selvaraj  <senthil_kumar.selvaraj@atmel.com>
+
+	* gcc.dg/tree-ssa/pr78886.c: Use __SIZE_TYPE__ instead of
+	unsigned long.
+
 2017-05-17  Chenghua Xu  <paul.hua.gm@gmail.com>
 
 	* gcc.target/mips/reorgbug-1.c: Don't specify -O2.
