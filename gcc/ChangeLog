@@ -1,3 +1,9 @@
+2017-05-17  Uros Bizjak  <ubizjak@gmail.com>
+
+	* doc/md.texi (Canonicalization of Instructions): Describe the
+	canonical form of instructions that inherently set a condition
+	code register.
+
 2017-05-17  Peter Bergner  <bergner@vnet.ibm.com>
 
 	PR middle-end/80775
