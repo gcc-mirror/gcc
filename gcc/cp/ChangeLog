@@ -1,5 +1,14 @@
 2017-05-17  Nathan Sidwell  <nathan@acm.org>
 
+	* cp-tree.h (ovl_iterator::using_p): New predicate.
+	(ovl_iterator::remove_node): New worker.
+	(ovl_insert): Declare.
+	* tree.c (ovl_insert): New.
+	(ovl_iterator::remove_node): New.
+	* class.c (add_method): Use ovl_iterator, ovl_insert.
+	(clone_function_decl): Fix description.
+	(clone_constructors_and_destructors): Use ovl_iterator.
+
 	* class.c (handle_using_decl): Use OVL_FIRST, ovl_iterator.
 	(maybe_warn_about_overly_private_class): Use ovl_iterator.
 	(method_name_cmp, resort_method_name_cmp): Use OVL_NAME.

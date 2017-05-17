@@ -680,6 +680,22 @@ class ovl_iterator
 
     return fn;
   }
+
+ public:
+  /* Whether this overload was introduced by a using decl.  */
+  bool using_p () const
+  {
+    return TREE_CODE (ovl) == OVERLOAD && OVL_USED (ovl);
+  }
+  tree remove_node (tree head)
+  {
+    return remove_node (head, ovl);
+  }
+
+ private:
+  /* We make this a static function to avoid the address of the
+     iterator escaping the local context.  */
+  static tree remove_node (tree head, tree node);
 };
 
 /* Iterator over a (potentially) 2 dimensional overload, which is
@@ -6768,6 +6784,8 @@ extern tree build_ref_qualified_type		(tree, cp_ref_qualifier);
 inline tree ovl_first				(tree) ATTRIBUTE_PURE;
 extern tree ovl_make				(tree fn,
 						 tree next = NULL_TREE);
+extern tree ovl_insert				(tree fn, tree maybe_ovl,
+						 bool using_p = false);
 extern tree lookup_add				(tree lookup, tree ovl);
 extern int is_overloaded_fn			(tree);
 extern tree dependent_name			(tree);

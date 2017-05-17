@@ -1010,7 +1010,6 @@ bool
 add_method (tree type, tree method, bool via_using)
 {
   unsigned slot;
-  tree overload;
   bool template_conv_p = false;
   bool conv_p;
   vec<tree, va_gc> *method_vec;
@@ -1059,7 +1058,7 @@ add_method (tree type, tree method, bool via_using)
 	   vec_safe_iterate (method_vec, slot, &m);
 	   ++slot)
 	{
-	  m = OVL_CURRENT (m);
+	  m = OVL_FIRST (m);
 	  if (template_conv_p)
 	    {
 	      if (TREE_CODE (m) == TEMPLATE_DECL
@@ -1083,24 +1082,23 @@ add_method (tree type, tree method, bool via_using)
   current_fns = insert_p ? NULL_TREE : (*method_vec)[slot];
 
   /* Check to see if we've already got this method.  */
-  for (tree *p = &current_fns; *p; )
+  for (ovl_iterator iter (current_fns); iter; ++iter)
     {
-      tree fns = *p;
-      tree fn = OVL_CURRENT (fns);
+      tree fn = *iter;
       tree fn_type;
       tree method_type;
       tree parms1;
       tree parms2;
 
       if (TREE_CODE (fn) != TREE_CODE (method))
-	goto cont;
+	continue;
 
       /* Two using-declarations can coexist, we'll complain about ambiguity in
 	 overload resolution.  */
-      if (via_using && TREE_CODE (fns) == OVERLOAD && OVL_USED (fns)
+      if (via_using && iter.using_p ()
 	  /* Except handle inherited constructors specially.  */
 	  && ! DECL_CONSTRUCTOR_P (fn))
-	goto cont;
+	continue;
 
       /* [over.load] Member function declarations with the
 	 same name and the same parameter types cannot be
@@ -1134,7 +1132,7 @@ add_method (tree type, tree method, bool via_using)
 	      == FUNCTION_REF_QUALIFIED (method_type))
 	  && (type_memfn_quals (fn_type) != type_memfn_quals (method_type)
 	      || type_memfn_rqual (fn_type) != type_memfn_rqual (method_type)))
-	  goto cont;
+	  continue;
 
       /* For templates, the return type and template parameters
 	 must be identical.  */
@@ -1143,7 +1141,7 @@ add_method (tree type, tree method, bool via_using)
 			    TREE_TYPE (method_type))
 	      || !comp_template_parms (DECL_TEMPLATE_PARMS (fn),
 				       DECL_TEMPLATE_PARMS (method))))
-	goto cont;
+	continue;
 
       if (! DECL_STATIC_FUNCTION_P (fn))
 	parms1 = TREE_CHAIN (parms1);
@@ -1187,8 +1185,9 @@ add_method (tree type, tree method, bool via_using)
 		    mangle_decl (method);
 		}
 	      cgraph_node::record_function_versions (fn, method);
-	      goto cont;
+	      continue;
 	    }
+
 	  if (DECL_INHERITED_CTOR (method))
 	    {
 	      if (DECL_INHERITED_CTOR (fn))
@@ -1202,7 +1201,7 @@ add_method (tree type, tree method, bool via_using)
 			  /* Inheriting the same constructor along different
 			     paths, combine them.  */
 			  SET_DECL_INHERITED_CTOR
-			    (fn, ovl_cons (DECL_INHERITED_CTOR (method),
+			    (fn, ovl_make (DECL_INHERITED_CTOR (method),
 					   DECL_INHERITED_CTOR (fn)));
 			  /* And discard the new one.  */
 			  return false;
@@ -1210,7 +1209,7 @@ add_method (tree type, tree method, bool via_using)
 		      else
 			/* Inherited ctors can coexist until overload
 			   resolution.  */
-			goto cont;
+			continue;
 		    }
 		  error_at (DECL_SOURCE_LOCATION (method),
 			    "%q#D", method);
@@ -1228,8 +1227,8 @@ add_method (tree type, tree method, bool via_using)
 	  else if (flag_new_inheriting_ctors
 		   && DECL_INHERITED_CTOR (fn))
 	    {
-	      /* Hide the inherited constructor.  */
-	      *p = OVL_NEXT (fns);
+	      /* Remove the inherited constructor.  */
+	      current_fns = iter.remove_node (current_fns);
 	      continue;
 	    }
 	  else
@@ -1238,33 +1237,19 @@ add_method (tree type, tree method, bool via_using)
 	      error ("with %q+#D", fn);
 	      return false;
 	    }
-
 	}
-
-    cont:
-      if (TREE_CODE (fns) == OVERLOAD)
-	p = &OVL_CHAIN (fns);
-      else
-	break;
     }
 
   /* A class should never have more than one destructor.  */
   if (current_fns && DECL_MAYBE_IN_CHARGE_DESTRUCTOR_P (method))
     return false;
 
-  /* Add the new binding.  */
-  if (via_using)
-    {
-      overload = ovl_cons (method, current_fns);
-      OVL_USED (overload) = true;
-    }
-  else
-    overload = build_overload (method, current_fns);
+  current_fns = ovl_insert (method, current_fns, via_using);
 
   if (conv_p)
     TYPE_HAS_CONVERSION (type) = 1;
   else if (slot >= CLASSTYPE_FIRST_CONVERSION_SLOT && !complete_p)
-    push_class_level_binding (DECL_NAME (method), overload);
+    push_class_level_binding (DECL_NAME (method), current_fns);
 
   if (insert_p)
     {
@@ -1279,13 +1264,13 @@ add_method (tree type, tree method, bool via_using)
       if (reallocated)
 	CLASSTYPE_METHOD_VEC (type) = method_vec;
       if (slot == method_vec->length ())
-	method_vec->quick_push (overload);
+	method_vec->quick_push (current_fns);
       else
-	method_vec->quick_insert (slot, overload);
+	method_vec->quick_insert (slot, current_fns);
     }
   else
     /* Replace the current slot.  */
-    (*method_vec)[slot] = overload;
+    (*method_vec)[slot] = current_fns;
   return true;
 }
 
@@ -4873,8 +4858,7 @@ decl_cloned_function_p (const_tree decl, bool just_testing)
 
 /* Produce declarations for all appropriate clones of FN.  If
    UPDATE_METHODS is true, the clones are added to the
-   CLASTYPE_METHOD_VEC.  VIA_USING indicates whether these are cloning
-   decls brought in via using declarations (i.e. inheriting ctors).  */
+   CLASSTYPE_METHOD_VEC.  */
 
 void
 clone_function_decl (tree fn, bool update_methods)
@@ -5017,8 +5001,6 @@ adjust_clone_args (tree decl)
 static void
 clone_constructors_and_destructors (tree t)
 {
-  tree fns;
-
   /* If for some reason we don't have a CLASSTYPE_METHOD_VEC, we bail
      out now.  */
   if (!CLASSTYPE_METHOD_VEC (t))
@@ -5026,10 +5008,10 @@ clone_constructors_and_destructors (tree t)
 
   /* While constructors can be via a using declaration, at this point
      we no longer need to know that.  */
-  for (fns = CLASSTYPE_CONSTRUCTORS (t); fns; fns = OVL_NEXT (fns))
-    clone_function_decl (OVL_CURRENT (fns), /*update_methods=*/true);
-  for (fns = CLASSTYPE_DESTRUCTORS (t); fns; fns = OVL_NEXT (fns))
-    clone_function_decl (OVL_CURRENT (fns), /*update_methods=*/true);
+  for (ovl_iterator iter (CLASSTYPE_CONSTRUCTORS (t)); iter; ++iter)
+    clone_function_decl (*iter, /*update_methods=*/true);
+  for (ovl_iterator iter (CLASSTYPE_DESTRUCTORS (t)); iter; ++iter)
+    clone_function_decl (*iter, /*update_methods=*/true);
 }
 
 /* Deduce noexcept for a destructor DTOR.  */
