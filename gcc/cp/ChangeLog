@@ -1,3 +1,13 @@
+2017-05-17  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-tree.h (default_hash_traits <lang_identifier *>): New
+	specialization.
+	* name-lookup.c (lookup_extern_c_fun_in_all_ns): Delete.
+	(extern_c_fns): New hash table.
+	(check_extern_c_conflict): New, broken out of ...
+	(pushdecl_maybe_friend_1): ... here.  Call it.
+	(c_linkage_bindings): Just look in hash table.
+
 2017-05-17  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	PR c++/80654
