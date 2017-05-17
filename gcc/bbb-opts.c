@@ -1081,7 +1081,8 @@ insn_info::absolute2base (unsigned regno, unsigned base, rtx with_symbol)
 	  else
 	    dst = gen_rtx_MEM (mode, gen_rtx_PLUS(SImode, reg, gen_rtx_CONST_INT (SImode, offset)));
 
-	  if (src_plus && rtx_equal_p (olddst, XEXP(src, 0)))
+	  /* some operation to the same value as dst. eg. eor #5,symbol+8 -> eor #5,8(ax) */
+	  if (src_op && rtx_equal_p (olddst, XEXP(src, 0)))
 	    XEXP(src, 0) = dst;
 
 	  dst_mem_reg = reg;
@@ -2950,13 +2951,6 @@ opt_absolute (void)
 	      && jj.get_src_symbol () == with_symbol;
 
 	  /* exclude operations on that symbol. */
-	  pattern = PATTERN (jj.get_insn ());
-	  if (j_dst && !jj.get_src_reg () && !jj.is_src_const ())
-	    if (MEM_P(XEXP(XEXP(pattern, 1), 0)))
-	      continue;
-	  if (j_src && !jj.get_dst_reg ())
-	    if (MEM_P(XEXP(XEXP(pattern, 0), 0)))
-	      continue;
 
 	  if (j_dst)
 	    {
