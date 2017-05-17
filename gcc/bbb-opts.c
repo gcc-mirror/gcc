@@ -943,10 +943,12 @@ temp_reg_rename (std::vector<std::pair<rtx *, rtx> > & loc, rtx x, unsigned oldr
  * Collect some data.
  */
 static std::vector<insn_info> infos;
-static std::vector<rtx_insn *> jumps;
-static std::map<rtx_insn *, insn_info *> insn2index;
 typedef std::vector<insn_info>::iterator insn_info_iterator;
-typedef std::vector<rtx_insn *>::iterator rtx_insn_iterator;
+
+static std::multimap<int, rtx_insn *> label2jump;
+typedef std::multimap<int, rtx_insn *>::iterator l2j_iterator;
+
+static std::map<rtx_insn *, insn_info *> insn2index;
 typedef std::map<rtx_insn *, insn_info *>::iterator i2i_iterator;
 
 static insn_info * info0;
@@ -1122,7 +1124,7 @@ insn_info::absolute2base (unsigned regno, unsigned base, rtx with_symbol)
 static void
 clear (void)
 {
-  jumps.clear ();
+  label2jump.clear ();
   insn2index.clear ();
   infos.clear ();
 }
@@ -1154,7 +1156,7 @@ void
 append_reg_usage (FILE * f, rtx_insn * insn)
 {
 
-  i2i_iterator  i = insn2index.find (insn);
+  i2i_iterator i = insn2index.find (insn);
   if (i == insn2index.end ())
     return;
 
@@ -1262,14 +1264,12 @@ update_insn_infos (void)
 	  if (LABEL_P(insn))
 	    {
 	      /* work on all jumps referring to that label. */
-	      for (rtx_insn_iterator i = jumps.begin (); i != jumps.end (); ++i)
+	      for (l2j_iterator i = label2jump.find (insn->u2.insn_uid), k = i;
+		  i != label2jump.end () && i->first == k->first; ++i)
 		{
-		  if (JUMP_LABEL(*i) == insn)
-		    {
-		      i2i_iterator j = insn2index.find (*i);
-		      if (j != insn2index.end ())
-			todo.push_back (std::make_pair (j->second->get_index (), ii));
-		    }
+		  i2i_iterator j = insn2index.find (i->second);
+		  if (j != insn2index.end ())
+		    todo.push_back (std::make_pair (j->second->get_index (), ii));
 		}
 	      continue;
 	    }
@@ -1299,7 +1299,7 @@ update_insn_infos (void)
 	  if (!use.is_def (FIRST_PSEUDO_REGISTER))
 	    {
 	      CC_STATUS_INIT;
-	      NOTICE_UPDATE_CC (PATTERN (insn), insn);
+	      NOTICE_UPDATE_CC(PATTERN (insn), insn);
 	      if (cc_status.value1 || cc_status.value2)
 		use.mark_def (FIRST_PSEUDO_REGISTER);
 	    }
@@ -1340,10 +1340,13 @@ update_insn_infos (void)
 /*
  * Create a filtered view of insns - keep only those to work with.
  */
-static void
+static int
 update_insns ()
 {
   rtx_insn *insn, *next;
+
+  rtx jump_table = 0;
+
   clear ();
 
   char inproepilogue = 1;
@@ -1360,10 +1363,50 @@ update_insns ()
 
 	  if (JUMP_P(insn))
 	    {
-	      jumps.push_back (insn);
 	      inproepilogue = 0;
 
 	      ii.mark_jump ();
+
+	      rtx pattern = PATTERN (insn);
+	      if (GET_CODE(pattern) == PARALLEL)
+		{
+		  /*
+		   * Use the jump_table_data and add all to the lookup
+		   */
+		  if (jump_table == 0)
+		    {
+		      // still allow complex if_then_else which are also in parallel
+		      rtx ite = XVECEXP(insn, 0, 0);
+		      if (XEXP(ite, 0) != pc_rtx || GET_CODE(XEXP(ite, 1)) != IF_THEN_ELSE)
+			{
+			  debug_rtx(insn);
+			  return 1; // do not optimize.
+			}
+		    }
+		  else
+		  if (XEXP(jump_table, 0) != insn)
+		    {
+		      debug_rtx(insn);
+		      return 2;
+		    }
+
+		  // -> jump_table_data
+		  rtx table = PATTERN (XEXP(jump_table, 1));
+		  for (int j = 0; j < XVECLEN(table, 1); ++j)
+		    {
+		      rtx ref = XVECEXP(table, 1, j);
+		      rtx label = XEXP(ref, 0);
+		      label2jump.insert (std::make_pair (label->u2.insn_uid, insn));
+		    }
+
+		  jump_table = 0;
+		}
+	      else
+		{
+		  rtx_insn * label = (rtx_insn *) JUMP_LABEL(insn);
+		  label2jump.insert (std::make_pair (label->u2.insn_uid, insn));
+		}
+
 	    }
 	  else if (LABEL_P(insn))
 	    {
@@ -1378,6 +1421,16 @@ update_insns ()
 	      rtx set = single_set (insn);
 	      if (set)
 		ii.fledder (set);
+
+	      for (rtx next, note = REG_NOTES(insn); note; note = next)
+		{
+		  next = XEXP(note, 1);
+		  if (REG_NOTE_KIND (note) == REG_LABEL_OPERAND)
+		    {
+		      jump_table = XEXP(note, 0);
+		    }
+		}
+
 	    }
 	}
 
@@ -1392,6 +1445,8 @@ update_insns ()
 
   update_insn2index ();
   update_insn_infos ();
+
+  return 0;
 }
 
 /* convert the lowest set bit into a register number. */
@@ -1505,21 +1560,19 @@ opt_reg_rename (void)
 		   * check if the reg was used at that jump.
 		   * if used, find def
 		   */
-		  for (rtx_insn_iterator i = jumps.begin (); i != jumps.end (); ++i)
+		  for (l2j_iterator i = label2jump.find (insn->u2.insn_uid), k = i;
+		      i != label2jump.end () && i->first == k->first; ++i)
 		    {
-		      if (JUMP_LABEL(*i) == insn)
-			{
-			  i2i_iterator j = insn2index.find (*i);
-			  if (j == insn2index.end ())
-			    continue;
+		      i2i_iterator j = insn2index.find (i->second);
+		      if (j == insn2index.end ())
+			continue;
 
-			  unsigned start = j->second->get_index ();
-			  if (!infos[start].is_use (rename_regno))
-			    continue;
+		      unsigned start = j->second->get_index ();
+		      if (!infos[start].is_use (rename_regno))
+			continue;
 
-			  start = find_start (found, start, rename_regno);
-			  todo.push_back (start);
-			}
+		      start = find_start (found, start, rename_regno);
+		      todo.push_back (start);
 		    }
 		  continue;
 		}
@@ -1542,7 +1595,7 @@ opt_reg_rename (void)
 		break;
 
 	      /* abort if some insn using this reg uses more than 1 reg. */
-	      if ((jj.get_myuse() & rename_regbit) && GET_MODE_SIZE(jj.get_mode()) > 4)
+	      if ((jj.get_myuse () & rename_regbit) && GET_MODE_SIZE(jj.get_mode()) > 4)
 		{
 		  mask = 0;
 		  break;
@@ -1987,7 +2040,7 @@ opt_strcpy ()
 	      if (REG_P(dst) && CONST_INT_P(src) && INTVAL(src) == 0 && is_reg_dead (REGNO(dst), index))
 		{
 		  /* now check via NOTICE_UPDATE_CC*/
-		  NOTICE_UPDATE_CC (PATTERN (reg2x), reg2x);
+		  NOTICE_UPDATE_CC(PATTERN (reg2x), reg2x);
 		  if (cc_status.flags == 0 && rtx_equal_p (dst, cc_status.value2))
 		    {
 		      int num_clobbers_to_add = 0;
@@ -2375,7 +2428,7 @@ opt_merge_add (void)
       rtx_insn * insn1 = ii1.get_insn ();
 
       CC_STATUS_INIT;
-      NOTICE_UPDATE_CC (PATTERN (insn1), insn1);
+      NOTICE_UPDATE_CC(PATTERN (insn1), insn1);
       if (cc_status.value1 || cc_status.value2)
 	continue;
 
@@ -3091,7 +3144,13 @@ namespace
     for (;;)
       {
 	int done = 1;
-	update_insns ();
+	int r = update_insns ();
+	if (r)
+	  {
+	    if (be_verbose)
+	      log("no bbb optimization code %d\n", r);
+	    return 0;
+	  }
 	if (do_opt_strcpy && opt_strcpy ())
 	  done = 0, update_insns ();
 
