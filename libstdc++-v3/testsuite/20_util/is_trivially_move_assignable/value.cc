@@ -88,4 +88,6 @@ void test01()
 		MoveOnly>(true), "");
   static_assert(test_property<is_trivially_move_assignable, 
 		MoveOnly2>(false), "");
+  static_assert(test_property<is_trivially_move_assignable, 
+		void>(false), "");
 }

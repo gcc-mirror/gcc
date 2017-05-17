@@ -9211,6 +9211,12 @@ trait_expr_value (cp_trait_kind kind, tree type1, tree type2)
     case CPTK_IS_UNION:
       return type_code1 == UNION_TYPE;
 
+    case CPTK_IS_ASSIGNABLE:
+      return is_xible (MODIFY_EXPR, type1, type2);
+
+    case CPTK_IS_CONSTRUCTIBLE:
+      return is_xible (INIT_EXPR, type1, type2);
+
     default:
       gcc_unreachable ();
       return false;
@@ -9282,6 +9288,10 @@ finish_trait_expr (cp_trait_kind kind, tree type1, tree type2)
     case CPTK_IS_TRIVIALLY_COPYABLE:
       if (!check_trait_type (type1))
 	return error_mark_node;
+      break;
+
+    case CPTK_IS_ASSIGNABLE:
+    case CPTK_IS_CONSTRUCTIBLE:
       break;
 
     case CPTK_IS_TRIVIALLY_ASSIGNABLE:

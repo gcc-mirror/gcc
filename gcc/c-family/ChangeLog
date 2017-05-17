@@ -1,3 +1,9 @@
+2017-05-17  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	Implement new C++ intrinsics __is_assignable and __is_constructible.
+	* c-common.c (__is_assignable, __is_constructible): New.
+	* c-common.h (RID_IS_ASSIGNABLE, RID_IS_CONSTRUCTIBLE): Likewise.
+
 2017-05-17  Martin Liska  <mliska@suse.cz>
 
 	* c-common.h: Introduce dump_flags_t type and
