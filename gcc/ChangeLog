@@ -1,3 +1,9 @@
+2017-05-17  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* config/arm/arm.c (cmse_nonsecure_call_clear_caller_saved): Refer
+	readers to __gnu_cmse_nonsecure_call libcall for saving, clearing and
+	restoring of callee-saved registers.
+
 2017-05-17  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* compare-elim.c (equivalent_reg_at_start): Adjust outdated comment.
