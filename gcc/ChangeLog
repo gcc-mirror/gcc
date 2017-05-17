@@ -1,3 +1,9 @@
+2017-05-17  Peter Bergner  <bergner@vnet.ibm.com>
+
+	PR middle-end/80775
+	* tree-cfg.c: Move deletion of unreachable case statements to after
+	the merging of consecutive case labels.
+
 2017-05-17  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	* config/arm/arm.c (cmse_nonsecure_call_clear_caller_saved): Refer
