@@ -1,3 +1,16 @@
+2017-05-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/refwrap.h: Fix Doxygen warning.
+	* include/bits/specfun.h: Likewise.
+	* include/bits/std_function.h: Likewise.
+	* include/bits/stl_algo.h (set_union, set_intersection)
+	(set_difference, set_symmetric_difference): Add Doxygen @param tags
+	for output iterator parameters.
+	* include/bits/stl_iterator.h (inserter): Add Doxygen @param tag for
+	iterator parameter.
+	* include/std/mutex (try_lock, lock): Change Mutex to Lockable in
+	Doxygen comments.
+
 2017-05-17  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	Implement new C++ intrinsics __is_assignable and __is_constructible.
