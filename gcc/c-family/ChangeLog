@@ -1,3 +1,8 @@
+2017-05-17  Marek Polacek  <polacek@redhat.com>
+
+	* c-common.c: Use NULL_TREE instead of 0 where appropriate.
+	* c-warn.c: Likewise.
+
 2017-05-17  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	Implement new C++ intrinsics __is_assignable and __is_constructible.
