@@ -1,3 +1,8 @@
+2017-05-17  Peter Bergner  <bergner@vnet.ibm.com>
+
+	PR middle-end/80775
+	* gcc.dg/pr80775.c: New test.
+
 2017-05-17  Marek Polacek  <polacek@redhat.com>
 
 	PR sanitizer/80659
