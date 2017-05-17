@@ -2168,7 +2168,7 @@ ovl_copy (tree ovl)
    exported.  */
 
 tree
-ovl_insert (tree maybe_ovl, tree fn, bool using_p)
+ovl_insert (tree fn, tree maybe_ovl, bool using_p)
 {
   bool hidden_p = DECL_HIDDEN_P (fn);
   int weight = hidden_p * 4 + using_p * 2 + DECL_MODULE_EXPORT_P (fn);
@@ -2252,19 +2252,22 @@ ovl_iterator::unhide_node (tree overload, tree node)
 	&& (OVL_USING_P (chain) || OVL_HIDDEN_P (chain)))
       {
 	overload = remove_node (overload, node);
-	overload = ovl_insert (overload, OVL_FUNCTION (node));
+	overload = ovl_insert (OVL_FUNCTION (node), overload);
       }
   return overload;
 }
 
 /* NODE is on the overloads of OVL.  Remove it.  If a predecessor is
-   OVL_USED we must copy OVL nodes, because those are immutable.  */
+   OVL_USED we must copy OVL nodes, because those are immutable.
+   The removed node is unaltered and may continue to be iterated
+   from.  */
 
 tree
 ovl_iterator::remove_node (tree overload, tree node)
 {
   bool copying = false;
 
+  gcc_assert (TREE_CODE (node) == OVERLOAD);
   tree *slot = &overload;
   while (*slot != node)
     {

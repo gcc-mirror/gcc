@@ -1010,7 +1010,6 @@ bool
 add_method (tree type, tree method, bool via_using)
 {
   unsigned slot;
-  tree overload;
   bool template_conv_p = false;
   bool conv_p;
   vec<tree, va_gc> *method_vec;
@@ -1228,8 +1227,8 @@ add_method (tree type, tree method, bool via_using)
 	  else if (flag_new_inheriting_ctors
 		   && DECL_INHERITED_CTOR (fn))
 	    {
-	      /* Hide the inherited constructor.  */
-	      current_fns = iter.unusing (current_fns);
+	      /* Remove the inherited constructor.  */
+	      current_fns = iter.remove_using (current_fns);
 	      continue;
 	    }
 	  else
@@ -1245,12 +1244,12 @@ add_method (tree type, tree method, bool via_using)
   if (current_fns && DECL_MAYBE_IN_CHARGE_DESTRUCTOR_P (method))
     return false;
 
-  overload = ovl_insert (current_fns, method, via_using);
+  current_fns = ovl_insert (method, current_fns, via_using);
 
   if (conv_p)
     TYPE_HAS_CONVERSION (type) = 1;
   else if (slot >= CLASSTYPE_FIRST_CONVERSION_SLOT && !complete_p)
-    push_class_level_binding (DECL_NAME (method), overload);
+    push_class_level_binding (DECL_NAME (method), current_fns);
 
   if (insert_p)
     {
@@ -1265,13 +1264,13 @@ add_method (tree type, tree method, bool via_using)
       if (reallocated)
 	CLASSTYPE_METHOD_VEC (type) = method_vec;
       if (slot == method_vec->length ())
-	method_vec->quick_push (overload);
+	method_vec->quick_push (current_fns);
       else
-	method_vec->quick_insert (slot, overload);
+	method_vec->quick_insert (slot, current_fns);
     }
   else
     /* Replace the current slot.  */
-    (*method_vec)[slot] = overload;
+    (*method_vec)[slot] = current_fns;
   return true;
 }
 
@@ -4859,8 +4858,9 @@ decl_cloned_function_p (const_tree decl, bool just_testing)
 
 /* Produce declarations for all appropriate clones of FN.  If
    UPDATE_METHODS is true, the clones are added to the
-   CLASTYPE_METHOD_VEC.  VIA_USING indicates whether these are cloning
-   decls brought in via using declarations (i.e. inheriting ctors).  */
+   CLASSTYPE_METHOD_VEC.  VIA_USING indicates whether these are
+   cloning decls brought in via using declarations (i.e. inheriting
+   ctors).  */
 
 void
 clone_function_decl (tree fn, bool update_methods, bool via_using)

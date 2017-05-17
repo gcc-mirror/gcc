@@ -1873,7 +1873,7 @@ update_binding (cp_binding_level *level, cxx_binding *binding, tree *slot,
       else
 	goto conflict;
 
-      to_val = ovl_insert (old, decl);
+      to_val = ovl_insert (decl, old);
     }
   else if (to_type && TREE_CODE (decl) == TYPE_DECL)
     {
@@ -2743,7 +2743,7 @@ push_module_binding (tree ns, unsigned mod, tree name, tree binding)
 	      found = true;
 
 	  if (!found)
-	    *mslot = ovl_insert (*mslot, decl, iter.using_p ());
+	    *mslot = ovl_insert (decl, *mslot, iter.using_p ());
 	}
 
       if (!found && !iter.using_p () && !is_ns)
@@ -3850,7 +3850,7 @@ do_nonmember_using_decl (tree scope, tree name, tree *value_p, tree *type_p)
 		   builtins here.  They don't cause a problem, and
 		   we'd like to match them with a future
 		   declaration.  */
-		value = ovl_insert (value, new_fn, true);
+		value = ovl_insert (new_fn, value, true);
 	    }
 	}
       else if (value

@@ -667,17 +667,17 @@ typedef struct ptrmem_cst * ptrmem_cst_t;
 #define OVL_FIRST(NODE)	ovl_first (NODE)
 /* The name of the overload set.  */
 #define OVL_NAME(NODE) DECL_NAME (OVL_FIRST (NODE))
-/* Whether this is a single member overload.  */
-#define OVL_SINGLE_P(NODE) \
-  (TREE_CODE (NODE) != OVERLOAD || !OVL_CHAIN (NODE))
 
 /* Whether this is a set of overloaded functions.  TEMPLATE_DECLS are
    always wrapped in an OVERLOAD, so we don't need to check them
    here.  */
 #define OVL_P(NODE) \
   (TREE_CODE (NODE) == FUNCTION_DECL || TREE_CODE (NODE) == OVERLOAD)
+/* Whether this is a single member overload.  */
+#define OVL_SINGLE_P(NODE) \
+  (TREE_CODE (NODE) != OVERLOAD || !OVL_CHAIN (NODE))
 /* Whether this is a plurality of overloaded functions (which could
-   include a single TEMPLATE_DECL.  */
+   include a single TEMPLATE_DECL).  */
 #define OVL_PLURAL_P(NODE) \
   (TREE_CODE (NODE) == OVERLOAD && TREE_TYPE (NODE) == unknown_type_node)
 
@@ -694,12 +694,12 @@ struct GTY(()) tree_overload {
 class ovl_iterator 
 {
   tree ovl;
-  const bool allow_inner;
+  const bool allow_inner; /* Only used when checking.  */
 
  public:
   ovl_iterator (tree o, bool allow = false)
-  :ovl (o),
-    allow_inner (allow) {}
+    : ovl (o), allow_inner (allow)
+  {}
 
   ovl_iterator &operator= (const ovl_iterator &from)
   {
@@ -730,6 +730,7 @@ class ovl_iterator
   }
 
  public:
+  /* Whether this overload was introduced by a using decl.  */
   bool using_p () const
   {
     return TREE_CODE (ovl) == OVERLOAD && OVL_USING_P (ovl);
@@ -740,14 +741,14 @@ class ovl_iterator
   }
 
  public:
+  tree remove_using (tree head)
+  {
+    gcc_assert (using_p ());
+    return remove_node (head, ovl);
+  }
   tree unhide (tree overload)
   {
     return unhide_node (overload, ovl);
-  }
-  tree unusing (tree overload)
-  {
-    gcc_assert (using_p ());
-    return remove_node (overload, ovl);
   }
 
  public:
@@ -770,7 +771,9 @@ protected:
   }
 
  private:
-  static tree remove_node (tree ovl, tree node);
+  /* We make these static functions to avoid the address of the
+     iterator escaping the local context.  */
+  static tree remove_node (tree head, tree node);
   static tree unhide_node (tree ovl, tree node);
 };
 
@@ -6944,7 +6947,7 @@ inline tree ovl_first				(tree) ATTRIBUTE_PURE;
 extern tree ovl_make				(tree fn,
 						 tree next = NULL_TREE);
 extern tree ovl_skip_hidden			(tree);
-extern tree ovl_insert				(tree maybe_ovl, tree fn,
+extern tree ovl_insert				(tree fn, tree maybe_ovl,
 						 bool using_p = false);
 extern void lookup_keep				(tree lookup, bool keep);
 extern void lookup_mark				(tree lookup, bool val);
