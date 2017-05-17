@@ -2124,6 +2124,65 @@ ovl_make (tree fn, tree next)
   return result;
 }
 
+/* Add FN to the (potentially NULL) overload set OVL.  USING_P is
+   true, if FN is via a using declaration.  Overloads are ordered as
+   using, regular.  */
+
+tree
+ovl_insert (tree fn, tree maybe_ovl, bool using_p)
+{
+  int weight = using_p;
+
+  tree result = NULL_TREE;
+  tree insert_after = NULL_TREE;
+
+  /* Find insertion point.  */
+  while (maybe_ovl && TREE_CODE (maybe_ovl) == OVERLOAD
+	 && (weight < OVL_USED (maybe_ovl)))
+    {
+      if (!result)
+	result = maybe_ovl;
+      insert_after = maybe_ovl;
+      maybe_ovl = OVL_CHAIN (maybe_ovl);
+    }
+
+  tree trail = fn;
+  if (maybe_ovl || using_p || TREE_CODE (fn) == TEMPLATE_DECL)
+    {
+      trail = ovl_make (fn, maybe_ovl);
+      if (using_p)
+	OVL_USED (trail) = true;
+    }
+
+  if (insert_after)
+    {
+      TREE_CHAIN (insert_after) = trail;
+      TREE_TYPE (insert_after) = unknown_type_node;
+    }
+  else
+    result = trail;
+
+  return result;
+}
+
+/* NODE is on the overloads of OVL.  Remove it.  */
+
+tree
+ovl_iterator::remove_node (tree overload, tree node)
+{
+  tree *slot = &overload;
+  while (*slot != node)
+    slot = &OVL_CHAIN (*slot);
+
+  /* Stitch out NODE.  We don't have to worry about now making a
+     singleton overload (and consequently maybe setting its type),
+     because all uses of this function will be followed by inserting a
+     new node that must follow the place we've cut this out from.  */
+  *slot = OVL_CHAIN (node);
+
+  return overload;
+}
+
 /* Add a potential overload into a lookup set.  */
 
 tree
