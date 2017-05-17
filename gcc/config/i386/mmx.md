@@ -931,7 +931,7 @@
   [(set (match_operand:MMXMODE24 0 "register_operand" "=y")
         (ashiftrt:MMXMODE24
 	  (match_operand:MMXMODE24 1 "register_operand" "0")
-	  (match_operand:SI 2 "nonmemory_operand" "yN")))]
+	  (match_operand:DI 2 "nonmemory_operand" "yN")))]
   "TARGET_MMX"
   "psra<mmxvecsize>\t{%2, %0|%0, %2}"
   [(set_attr "type" "mmxshft")
@@ -945,7 +945,7 @@
   [(set (match_operand:MMXMODE248 0 "register_operand" "=y")
         (any_lshift:MMXMODE248
 	  (match_operand:MMXMODE248 1 "register_operand" "0")
-	  (match_operand:SI 2 "nonmemory_operand" "yN")))]
+	  (match_operand:DI 2 "nonmemory_operand" "yN")))]
   "TARGET_MMX"
   "p<vshift><mmxvecsize>\t{%2, %0|%0, %2}"
   [(set_attr "type" "mmxshft")

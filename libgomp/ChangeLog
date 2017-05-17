@@ -1,3 +1,20 @@
+2017-05-05  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2017-04-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgomp/80394
+	* testsuite/libgomp.c/pr80394.c: New test.
+
+	2017-03-30  Jakub Jelinek  <jakub@redhat.com>
+
+	* env.c (initialize_env): Initialize stacksize to 0.
+
+	2017-03-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/79940
+	* testsuite/libgomp.c/pr79940.c: New test.
+
 2017-01-10  Thomas Schwinge  <thomas@codesourcery.com>
 
 	Backport trunk r239125:

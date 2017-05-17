@@ -3983,7 +3983,12 @@ gfc_default_initializer (gfc_typespec *ts)
 	  if ((comp->ts.type != comp->initializer->ts.type
 	       || comp->ts.kind != comp->initializer->ts.kind)
 	      && !comp->attr.pointer && !comp->attr.proc_pointer)
-	    gfc_convert_type_warn (ctor->expr, &comp->ts, 2, false);
+	    {
+	      bool val;
+	      val = gfc_convert_type_warn (ctor->expr, &comp->ts, 1, false);
+	      if (val == false)
+		return NULL;
+	    }
 	}
 
       if (comp->attr.allocatable

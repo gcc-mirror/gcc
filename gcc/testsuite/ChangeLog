@@ -1,3 +1,263 @@
+2017-05-15  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/80752
+	gfortran.dg/pr80752.f90: New test.
+
+2017-05-15  Richard Biener  <rguenther@suse.de>
+
+	Revert backport of
+	PR middle-end/80222
+	* g++.dg/pr80222.C: New testcase.
+
+2017-05-13  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	Backport from mainline
+	2017-05-05  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* gcc.target/powerpc/versioned-copy-loop.c: New file.
+
+2017-05-12  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	Backport from mainline
+	2017-05-10  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* gcc.target/powerpc/p8-vec-xl-xst.c: New file.
+
+2017-05-10  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2017-03-17  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/80075
+	* g++.dg/torture/pr80075.C: New testcase.
+
+	2017-03-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/80122
+	* gcc.dg/torture/pr80122.c: New testcase.
+
+	2017-03-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/80167
+	* gcc.dg/graphite/pr80167.c: New testcase.
+
+	2017-03-27  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/80171
+	* g++.dg/torture/pr80171.C: New testcase.
+
+2017-05-09  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2017-03-28  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/80222
+	* g++.dg/pr80222.C: New testcase.
+
+	2017-04-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/80262
+	* gcc.target/i386/pr80262.c: New testcase.
+
+	2017-04-03  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/80275
+	* g++.dg/opt/pr80275.C: New testcase.
+
+	2017-04-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/80334
+	* g++.dg/torture/pr80334.C: New testcase.
+
+	2017-04-10  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/80362
+	* gcc.dg/torture/pr80362.c: New testcase.
+
+	2017-04-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/80492
+	* gcc.dg/pr80492.c: New testcase.
+
+	2017-04-27  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/80539
+	* gcc.dg/torture/pr80539.c: New testcase.
+
+2017-05-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR testsuite/80678
+	2016-06-11  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR middle-end/71310
+	* gcc.target/powerpc/pr71310.c: New testcase.
+
+2017-05-05  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2017-04-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/80501
+	* gcc.c-torture/execute/pr80501.c: New test.
+
+	2017-04-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/80349
+	* g++.dg/ubsan/pr80349.C: New test.
+
+	2017-04-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/80385
+	* g++.dg/opt/pr80385.C: New test.
+
+	PR c++/80363
+	* g++.dg/ext/pr80363.C: New test.
+
+	2017-04-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/80176
+	* g++.dg/init/ref23.C: New test.
+
+	2017-04-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/80297
+	* g++.dg/torture/pr80297.C: New test.
+
+	PR target/80286
+	* gcc.target/i386/avx-pr80286.c: New test.
+	* gcc.dg/pr80286.c: New test.
+
+	2017-04-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/80321
+	* gcc.dg/debug/pr80321.c: New test.
+
+	2017-03-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/79255
+	* gcc.dg/pr79255.c: New test.
+
+	PR c++/79572
+	* g++.dg/ubsan/null-8.C: New test.
+
+	PR debug/80025
+	* gcc.dg/torture/pr80025.c: New test.
+
+	2017-03-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/80168
+	* gcc.dg/asan/pr80168.c: New test.
+
+	2017-03-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/80112
+	* gcc.dg/pr80112.c: New test.
+
+	2017-03-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/80141
+	* g++.dg/gomp/pr80141.C: New test.
+
+	PR c++/80129
+	* g++.dg/torture/pr80129.C: New test.
+
+	2017-03-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/80097
+	* gcc.dg/ubsan/pr80097.c: New test.
+
+	2017-03-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/79896
+	* g++.dg/ext/int128-5.C: New test.
+
+	2017-03-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/79944
+	* c-c++-common/asan/pr79944.c: New test.
+
+	PR target/79932
+	* gcc.target/i386/pr79932-2.c: New test.
+
+	PR target/79932
+	* gcc.target/i386/pr79932-1.c: New test.
+
+	2017-03-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/79901
+	* gcc.target/i386/pr79901.c: New test.
+
+	2017-03-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/79807
+	* gcc.target/i386/pr79807.c: New test.
+
+	2017-03-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/79681
+	* g++.dg/cpp1y/constexpr-79681-1.C: New test.
+	* g++.dg/cpp1y/constexpr-79681-2.C: New test.
+
+	2017-02-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/79729
+	* gcc.target/i386/pr79729.c: New test.
+
+	2017-02-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/79396
+	* g++.dg/opt/pr79396.C: New test.
+
+	2017-02-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/79664
+	* g++.dg/cpp1y/constexpr-throw.C: Adjust expected diagnostic location.
+	* g++.dg/gomp/pr79664.C: New test.
+
+	2017-02-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/79639
+	* g++.dg/cpp1y/constexpr-79639.C: New test. 
+
+	PR target/79570
+	* gcc.dg/pr79570.c: New test.
+
+	PR c++/79641
+	* c-c++-common/pr79641.c: New test.
+
+	PR target/79494
+	* gcc.dg/pr79494.c: New test.
+
+	2017-02-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/79568
+	* gcc.target/i386/pr79568-1.c: New test.
+	* gcc.target/i386/pr79568-2.c: New test.
+	* gcc.target/i386/pr79568-3.c: New test.
+
+	2017-02-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/79559
+	* gcc.target/i386/pr79559.c: New test.
+
+	2017-02-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/79512
+	* c-c++-common/gomp/pr79512.c: New test.
+
+2017-05-05  Marek Polacek  <polacek@redhat.com>
+	    Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/77728
+	* g++.dg/abi/pr77728-1.C: New test.
+
+2017-05-01  Janus Weil  <janus@gcc.gnu.org>
+
+	Backport from trunk
+	PR fortran/80392
+	* gfortran.dg/proc_ptr_comp_49.f90: New test case.
+
 2017-04-21  Janus Weil  <janus@gcc.gnu.org>
 
 	Backport from trunk

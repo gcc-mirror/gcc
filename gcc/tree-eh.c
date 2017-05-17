@@ -2513,7 +2513,8 @@ operation_could_trap_p (enum tree_code op, bool fp_operation, bool honor_trapv,
 
   if (TREE_CODE_CLASS (op) != tcc_comparison
       && TREE_CODE_CLASS (op) != tcc_unary
-      && TREE_CODE_CLASS (op) != tcc_binary)
+      && TREE_CODE_CLASS (op) != tcc_binary
+      && op != FMA_EXPR)
     return false;
 
   return operation_could_trap_helper_p (op, fp_operation, honor_trapv,
@@ -2725,9 +2726,9 @@ tree_could_trap_p (tree expr)
    an assignment or a conditional) may throw.  */
 
 static bool
-stmt_could_throw_1_p (gimple *stmt)
+stmt_could_throw_1_p (gassign *stmt)
 {
-  enum tree_code code = gimple_expr_code (stmt);
+  enum tree_code code = gimple_assign_rhs_code (stmt);
   bool honor_nans = false;
   bool honor_snans = false;
   bool fp_operation = false;
@@ -2738,13 +2739,11 @@ stmt_could_throw_1_p (gimple *stmt)
 
   if (TREE_CODE_CLASS (code) == tcc_comparison
       || TREE_CODE_CLASS (code) == tcc_unary
-      || TREE_CODE_CLASS (code) == tcc_binary)
+      || TREE_CODE_CLASS (code) == tcc_binary
+      || code == FMA_EXPR)
     {
-      if (is_gimple_assign (stmt)
-	  && TREE_CODE_CLASS (code) == tcc_comparison)
+      if (TREE_CODE_CLASS (code) == tcc_comparison)
 	t = TREE_TYPE (gimple_assign_rhs1 (stmt));
-      else if (gimple_code (stmt) == GIMPLE_COND)
-	t = TREE_TYPE (gimple_cond_lhs (stmt));
       else
 	t = gimple_expr_type (stmt);
       fp_operation = FLOAT_TYPE_P (t);
@@ -2757,17 +2756,21 @@ stmt_could_throw_1_p (gimple *stmt)
 	honor_trapv = true;
     }
 
+  /* First check the LHS.  */
+  if (tree_could_trap_p (gimple_assign_lhs (stmt)))
+    return true;
+
   /* Check if the main expression may trap.  */
-  t = is_gimple_assign (stmt) ? gimple_assign_rhs2 (stmt) : NULL;
   ret = operation_could_trap_helper_p (code, fp_operation, honor_trapv,
-				       honor_nans, honor_snans, t,
+				       honor_nans, honor_snans,
+				       gimple_assign_rhs2 (stmt),
 				       &handled);
   if (handled)
     return ret;
 
   /* If the expression does not trap, see if any of the individual operands may
      trap.  */
-  for (i = 0; i < gimple_num_ops (stmt); i++)
+  for (i = 1; i < gimple_num_ops (stmt); i++)
     if (tree_could_trap_p (gimple_op (stmt, i)))
       return true;
 
@@ -2793,11 +2796,22 @@ stmt_could_throw_p (gimple *stmt)
     case GIMPLE_CALL:
       return !gimple_call_nothrow_p (as_a <gcall *> (stmt));
 
-    case GIMPLE_ASSIGN:
     case GIMPLE_COND:
-      if (!cfun->can_throw_non_call_exceptions)
+      {
+	if (!cfun->can_throw_non_call_exceptions)
+	  return false;
+	gcond *cond = as_a <gcond *> (stmt);
+	tree lhs = gimple_cond_lhs (cond);
+	return operation_could_trap_p (gimple_cond_code (cond),
+				       FLOAT_TYPE_P (TREE_TYPE (lhs)),
+				       false, NULL_TREE);
+      }
+
+    case GIMPLE_ASSIGN:
+      if (!cfun->can_throw_non_call_exceptions
+	  || gimple_clobber_p (stmt))
         return false;
-      return stmt_could_throw_1_p (stmt);
+      return stmt_could_throw_1_p (as_a <gassign *> (stmt));
 
     case GIMPLE_ASM:
       if (!cfun->can_throw_non_call_exceptions)

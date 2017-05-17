@@ -2711,9 +2711,11 @@ scan_omp_task (gimple_stmt_iterator *gsi, omp_context *outer_ctx)
   tree name, t;
   gomp_task *stmt = as_a <gomp_task *> (gsi_stmt (*gsi));
 
-  /* Ignore task directives with empty bodies.  */
+  /* Ignore task directives with empty bodies, unless they have depend
+     clause.  */
   if (optimize > 0
-      && empty_body_p (gimple_omp_body (stmt)))
+      && empty_body_p (gimple_omp_body (stmt))
+      && !find_omp_clause (gimple_omp_task_clauses (stmt), OMP_CLAUSE_DEPEND))
     {
       gsi_replace (gsi, gimple_build_nop (), false);
       return;

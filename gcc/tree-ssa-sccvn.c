@@ -1224,8 +1224,8 @@ vn_reference_maybe_forwprop_address (vec<vn_reference_op_s> *ops,
 	      && tem[tem.length () - 2].opcode == MEM_REF)
 	    {
 	      vn_reference_op_t new_mem_op = &tem[tem.length () - 2];
-	      new_mem_op->op0 = fold_convert (TREE_TYPE (mem_op->op0),
-					      new_mem_op->op0);
+	      new_mem_op->op0 = wide_int_to_tree (TREE_TYPE (mem_op->op0),
+						  new_mem_op->op0);
 	    }
 	  else
 	    gcc_assert (tem.last ().opcode == STRING_CST);

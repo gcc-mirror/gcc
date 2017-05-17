@@ -1,3 +1,18 @@
+2017-05-05  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2017-03-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/80097
+	* c-typeck.c (build_binary_op): Add EXCESS_PRECISION_EXPR only around
+	optional COMPOUND_EXPR with ubsan instrumentation.
+
+	2017-02-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/79512
+	* c-parser.c (c_parser_omp_target): For -fopenmp-simd
+	ignore #pragma omp target even when not followed by identifier.
+
 2017-02-15  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline

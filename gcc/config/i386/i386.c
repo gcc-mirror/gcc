@@ -14027,6 +14027,8 @@ ix86_expand_split_stack_prologue (void)
 				GEN_INT (UNITS_PER_WORD), constm1_rtx,
 				NULL_RTX, false);
   add_function_usage_to (call_insn, call_fusage);
+  /* Indicate that this function can't jump to non-local gotos.  */
+  make_reg_eh_region_note_nothrow_nononlocal (as_a <rtx_insn *> (call_insn));
 
   /* In order to make call/return prediction work right, we now need
      to execute a return instruction.  See
@@ -16812,8 +16814,8 @@ ix86_print_operand (FILE *file, rtx x, int code)
 	      break;
 
 	    default:
-	      output_operand_lossage
-		("invalid operand size for operand code 'O'");
+	      output_operand_lossage ("invalid operand size for operand "
+				      "code 'O'");
 	      return;
 	    }
 
@@ -16847,15 +16849,14 @@ ix86_print_operand (FILE *file, rtx x, int code)
 		  return;
 
 		default:
-		  output_operand_lossage
-		    ("invalid operand size for operand code 'z'");
+		  output_operand_lossage ("invalid operand size for operand "
+					  "code 'z'");
 		  return;
 		}
 	    }
 
 	  if (GET_MODE_CLASS (GET_MODE (x)) == MODE_FLOAT)
-	    warning
-	      (0, "non-integer operand used with operand code 'z'");
+	    warning (0, "non-integer operand used with operand code 'z'");
 	  /* FALLTHRU */
 
 	case 'Z':
@@ -16917,13 +16918,12 @@ ix86_print_operand (FILE *file, rtx x, int code)
 	    }
 	  else
 	    {
-	      output_operand_lossage
-		("invalid operand type used with operand code 'Z'");
+	      output_operand_lossage ("invalid operand type used with "
+				      "operand code 'Z'");
 	      return;
 	    }
 
-	  output_operand_lossage
-	    ("invalid operand size for operand code 'Z'");
+	  output_operand_lossage ("invalid operand size for operand code 'Z'");
 	  return;
 
 	case 'd':
@@ -17115,7 +17115,12 @@ ix86_print_operand (FILE *file, rtx x, int code)
 	  break;
 
 	case 'K':
-	  gcc_assert (CONST_INT_P (x));
+	  if (!CONST_INT_P (x))
+	    {
+	      output_operand_lossage ("operand is not an integer, invalid "
+				      "operand code 'K'");
+	      return;
+	    }
 
 	  if (INTVAL (x) & IX86_HLE_ACQUIRE)
 #ifdef HAVE_AS_IX86_HLE
@@ -17138,8 +17143,12 @@ ix86_print_operand (FILE *file, rtx x, int code)
 	  return;
 
 	case 'r':
-	  gcc_assert (CONST_INT_P (x));
-	  gcc_assert (INTVAL (x) == ROUND_SAE);
+	  if (!CONST_INT_P (x) || INTVAL (x) != ROUND_SAE)
+	    {
+	      output_operand_lossage ("operand is not a specific integer, "
+				      "invalid operand code 'r'");
+	      return;
+	    }
 
 	  if (ASSEMBLER_DIALECT == ASM_INTEL)
 	    fputs (", ", file);
@@ -17152,7 +17161,12 @@ ix86_print_operand (FILE *file, rtx x, int code)
 	  return;
 
 	case 'R':
-	  gcc_assert (CONST_INT_P (x));
+	  if (!CONST_INT_P (x))
+	    {
+	      output_operand_lossage ("operand is not an integer, invalid "
+				      "operand code 'R'");
+	      return;
+	    }
 
 	  if (ASSEMBLER_DIALECT == ASM_INTEL)
 	    fputs (", ", file);
@@ -17172,7 +17186,8 @@ ix86_print_operand (FILE *file, rtx x, int code)
 	      fputs ("{rz-sae}", file);
 	      break;
 	    default:
-	      gcc_unreachable ();
+	      output_operand_lossage ("operand is not a specific integer, "
+				      "invalid operand code 'R'");
 	    }
 
 	  if (ASSEMBLER_DIALECT == ASM_ATT)
@@ -17267,7 +17282,7 @@ ix86_print_operand (FILE *file, rtx x, int code)
 	  return;
 
 	default:
-	    output_operand_lossage ("invalid operand code '%c'", code);
+	  output_operand_lossage ("invalid operand code '%c'", code);
 	}
     }
 
@@ -32715,9 +32730,9 @@ static const struct builtin_description bdesc_pcmpistr[] =
 /* Special builtins with variable number of arguments.  */
 static const struct builtin_description bdesc_special_args[] =
 {
-  { ~OPTION_MASK_ISA_64BIT, CODE_FOR_nothing, "__builtin_ia32_rdtsc", IX86_BUILTIN_RDTSC, UNKNOWN, (int) UINT64_FTYPE_VOID },
-  { ~OPTION_MASK_ISA_64BIT, CODE_FOR_nothing, "__builtin_ia32_rdtscp", IX86_BUILTIN_RDTSCP, UNKNOWN, (int) UINT64_FTYPE_PUNSIGNED },
-  { ~OPTION_MASK_ISA_64BIT, CODE_FOR_pause, "__builtin_ia32_pause", IX86_BUILTIN_PAUSE, UNKNOWN, (int) VOID_FTYPE_VOID },
+  { 0, CODE_FOR_nothing, "__builtin_ia32_rdtsc", IX86_BUILTIN_RDTSC, UNKNOWN, (int) UINT64_FTYPE_VOID },
+  { 0, CODE_FOR_nothing, "__builtin_ia32_rdtscp", IX86_BUILTIN_RDTSCP, UNKNOWN, (int) UINT64_FTYPE_PUNSIGNED },
+  { 0, CODE_FOR_pause, "__builtin_ia32_pause", IX86_BUILTIN_PAUSE, UNKNOWN, (int) VOID_FTYPE_VOID },
 
   /* 80387 (for use internally for atomic compound assignment).  */
   { 0, CODE_FOR_fnstenv, "__builtin_ia32_fnstenv", IX86_BUILTIN_FNSTENV, UNKNOWN, (int) VOID_FTYPE_PVOID },
@@ -33012,13 +33027,13 @@ static const struct builtin_description bdesc_special_args[] =
 /* Builtins with variable number of arguments.  */
 static const struct builtin_description bdesc_args[] =
 {
-  { ~OPTION_MASK_ISA_64BIT, CODE_FOR_bsr, "__builtin_ia32_bsrsi", IX86_BUILTIN_BSRSI, UNKNOWN, (int) INT_FTYPE_INT },
+  { 0, CODE_FOR_bsr, "__builtin_ia32_bsrsi", IX86_BUILTIN_BSRSI, UNKNOWN, (int) INT_FTYPE_INT },
   { OPTION_MASK_ISA_64BIT, CODE_FOR_bsr_rex64, "__builtin_ia32_bsrdi", IX86_BUILTIN_BSRDI, UNKNOWN, (int) INT64_FTYPE_INT64 },
-  { ~OPTION_MASK_ISA_64BIT, CODE_FOR_nothing, "__builtin_ia32_rdpmc", IX86_BUILTIN_RDPMC, UNKNOWN, (int) UINT64_FTYPE_INT },
-  { ~OPTION_MASK_ISA_64BIT, CODE_FOR_rotlqi3, "__builtin_ia32_rolqi", IX86_BUILTIN_ROLQI, UNKNOWN, (int) UINT8_FTYPE_UINT8_INT },
-  { ~OPTION_MASK_ISA_64BIT, CODE_FOR_rotlhi3, "__builtin_ia32_rolhi", IX86_BUILTIN_ROLHI, UNKNOWN, (int) UINT16_FTYPE_UINT16_INT },
-  { ~OPTION_MASK_ISA_64BIT, CODE_FOR_rotrqi3, "__builtin_ia32_rorqi", IX86_BUILTIN_RORQI, UNKNOWN, (int) UINT8_FTYPE_UINT8_INT },
-  { ~OPTION_MASK_ISA_64BIT, CODE_FOR_rotrhi3, "__builtin_ia32_rorhi", IX86_BUILTIN_RORHI, UNKNOWN, (int) UINT16_FTYPE_UINT16_INT },
+  { 0, CODE_FOR_nothing, "__builtin_ia32_rdpmc", IX86_BUILTIN_RDPMC, UNKNOWN, (int) UINT64_FTYPE_INT },
+  { 0, CODE_FOR_rotlqi3, "__builtin_ia32_rolqi", IX86_BUILTIN_ROLQI, UNKNOWN, (int) UINT8_FTYPE_UINT8_INT },
+  { 0, CODE_FOR_rotlhi3, "__builtin_ia32_rolhi", IX86_BUILTIN_ROLHI, UNKNOWN, (int) UINT16_FTYPE_UINT16_INT },
+  { 0, CODE_FOR_rotrqi3, "__builtin_ia32_rorqi", IX86_BUILTIN_RORQI, UNKNOWN, (int) UINT8_FTYPE_UINT8_INT },
+  { 0, CODE_FOR_rotrhi3, "__builtin_ia32_rorhi", IX86_BUILTIN_RORHI, UNKNOWN, (int) UINT16_FTYPE_UINT16_INT },
 
   /* MMX */
   { OPTION_MASK_ISA_MMX, CODE_FOR_mmx_addv8qi3, "__builtin_ia32_paddb", IX86_BUILTIN_PADDB, UNKNOWN, (int) V8QI_FTYPE_V8QI_V8QI },
@@ -36085,11 +36100,11 @@ ix86_init_mmx_sse_builtins (void)
 	       IX86_BUILTIN_SBB64);
 
   /* Read/write FLAGS.  */
-  def_builtin (~OPTION_MASK_ISA_64BIT, "__builtin_ia32_readeflags_u32",
+  def_builtin (0, "__builtin_ia32_readeflags_u32",
                UNSIGNED_FTYPE_VOID, IX86_BUILTIN_READ_FLAGS);
   def_builtin (OPTION_MASK_ISA_64BIT, "__builtin_ia32_readeflags_u64",
                UINT64_FTYPE_VOID, IX86_BUILTIN_READ_FLAGS);
-  def_builtin (~OPTION_MASK_ISA_64BIT, "__builtin_ia32_writeeflags_u32",
+  def_builtin (0, "__builtin_ia32_writeeflags_u32",
                VOID_FTYPE_UNSIGNED, IX86_BUILTIN_WRITE_FLAGS);
   def_builtin (OPTION_MASK_ISA_64BIT, "__builtin_ia32_writeeflags_u64",
                VOID_FTYPE_UINT64, IX86_BUILTIN_WRITE_FLAGS);
@@ -38062,6 +38077,8 @@ ix86_expand_multi_arg_builtin (enum insn_code icode, tree exp, rtx target,
       || GET_MODE (target) != tmode
       || !insn_data[icode].operand[0].predicate (target, tmode))
     target = gen_reg_rtx (tmode);
+  else if (memory_operand (target, tmode))
+    num_memory++;
 
   gcc_assert (nargs <= 4);
 
@@ -39336,6 +39353,8 @@ ix86_expand_args_builtin (const struct builtin_description *d,
 	  || GET_MODE (target) != tmode
 	  || !insn_p->operand[0].predicate (target, tmode))
 	target = gen_reg_rtx (tmode);
+      else if (memory_operand (target, tmode))
+	num_memory++;
       real_target = target;
     }
   else
@@ -39355,10 +39374,17 @@ ix86_expand_args_builtin (const struct builtin_description *d,
 	{
 	  /* SIMD shift insns take either an 8-bit immediate or
 	     register as count.  But builtin functions take int as
-	     count.  If count doesn't match, we put it in register.  */
+	     count.  If count doesn't match, we put it in register.
+	     The instructions are using 64-bit count, if op is just
+	     32-bit, zero-extend it, as negative shift counts
+	     are undefined behavior and zero-extension is more
+	     efficient.  */
 	  if (!match)
 	    {
-	      op = simplify_gen_subreg (SImode, op, GET_MODE (op), 0);
+	      if (SCALAR_INT_MODE_P (GET_MODE (op)))
+		op = convert_modes (mode, GET_MODE (op), op, 1);
+	      else
+		op = simplify_gen_subreg (mode, op, GET_MODE (op), 0);
 	      if (!insn_p->operand[i + 1].predicate (op, mode))
 		op = copy_to_reg (op);
 	    }
@@ -40518,9 +40544,18 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget,
      Originally the builtin was not created if it wasn't applicable to the
      current ISA based on the command line switches.  With function specific
      options, we need to check in the context of the function making the call
-     whether it is supported.  */
-  if (ix86_builtins_isa[fcode].isa
-      && !(ix86_builtins_isa[fcode].isa & ix86_isa_flags))
+     whether it is supported.  Treat AVX512VL specially.  For other flags,
+     if isa includes more than one ISA bit, treat those are requiring any
+     of them.  For AVX512VL, require both AVX512VL and the non-AVX512VL
+     ISAs.  Similarly for 64BIT, but we shouldn't be building such builtins
+     at all, -m64 is a whole TU option.  */
+  if (((ix86_builtins_isa[fcode].isa
+	& ~(OPTION_MASK_ISA_AVX512VL | OPTION_MASK_ISA_64BIT))
+       && !(ix86_builtins_isa[fcode].isa
+	    & ~(OPTION_MASK_ISA_AVX512VL | OPTION_MASK_ISA_64BIT)
+	    & ix86_isa_flags))
+      || ((ix86_builtins_isa[fcode].isa & OPTION_MASK_ISA_AVX512VL)
+	  && !(ix86_isa_flags & OPTION_MASK_ISA_AVX512VL)))
     {
       char *opts = ix86_target_string (ix86_builtins_isa[fcode].isa, 0, NULL,
 				       NULL, (enum fpmath_unit) 0, false);

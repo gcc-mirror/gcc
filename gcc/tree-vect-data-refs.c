@@ -765,7 +765,7 @@ vect_compute_data_ref_alignment (struct data_reference *dr)
   base = ref;
   while (handled_component_p (base))
     base = TREE_OPERAND (base, 0);
-  unsigned int base_alignment;
+  unsigned int base_alignment = 0;
   unsigned HOST_WIDE_INT base_bitpos;
   get_object_alignment_1 (base, &base_alignment, &base_bitpos);
   /* As data-ref analysis strips the MEM_REF down to its base operand
@@ -774,8 +774,17 @@ vect_compute_data_ref_alignment (struct data_reference *dr)
      DR_BASE_ADDRESS.  */
   if (TREE_CODE (base) == MEM_REF)
     {
-      base_bitpos -= mem_ref_offset (base).to_short_addr () * BITS_PER_UNIT;
-      base_bitpos &= (base_alignment - 1);
+      /* Note all this only works if DR_BASE_ADDRESS is the same as
+	 MEM_REF operand zero, otherwise DR/SCEV analysis might have factored
+	 in other offsets.  We need to rework DR to compute the alingment
+	 of DR_BASE_ADDRESS as long as all information is still available.  */
+      if (operand_equal_p (TREE_OPERAND (base, 0), base_addr, 0))
+	{
+	  base_bitpos -= mem_ref_offset (base).to_short_addr () * BITS_PER_UNIT;
+	  base_bitpos &= (base_alignment - 1);
+	}
+      else
+	base_bitpos = BITS_PER_UNIT;
     }
   if (base_bitpos != 0)
     base_alignment = base_bitpos & -base_bitpos;

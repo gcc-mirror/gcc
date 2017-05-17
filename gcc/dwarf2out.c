@@ -23156,8 +23156,18 @@ decls_for_scope (tree stmt, dw_die_ref context_die)
       for (decl = BLOCK_VARS (stmt); decl != NULL; decl = DECL_CHAIN (decl))
 	process_scope_var (stmt, decl, NULL_TREE, context_die);
       for (i = 0; i < BLOCK_NUM_NONLOCALIZED_VARS (stmt); i++)
-	process_scope_var (stmt, NULL, BLOCK_NONLOCALIZED_VAR (stmt, i),
-			   context_die);
+	{
+	  decl = BLOCK_NONLOCALIZED_VAR (stmt, i);
+	  if (decl == current_function_decl)
+	    /* Ignore declarations of the current function, while they
+	       are declarations, gen_subprogram_die would treat them
+	       as definitions again, because they are equal to
+	       current_function_decl and endlessly recurse.  */;
+	  else if (TREE_CODE (decl) == FUNCTION_DECL)
+	    process_scope_var (stmt, decl, NULL_TREE, context_die);
+	  else
+	    process_scope_var (stmt, NULL_TREE, decl, context_die);
+	}
     }
 
   /* Even if we're at -g1, we need to process the subblocks in order to get

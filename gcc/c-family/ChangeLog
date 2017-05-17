@@ -1,3 +1,21 @@
+2017-05-05  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2017-03-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/79572
+	* c-ubsan.h (ubsan_maybe_instrument_reference): Change argument to
+	tree *.
+	* c-ubsan.c (ubsan_maybe_instrument_reference): Likewise.  Handle
+	not just NOP_EXPR to REFERENCE_TYPE, but also INTEGER_CST with
+	REFERENCE_TYPE.
+
+	2017-02-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/79641
+	* c-common.c (handle_mode_attribute): Use build_qualified_type to
+	preserve quals.
+
 2017-03-22  Martin Liska  <mliska@suse.cz>
 
 	Backport from mainline

@@ -1,3 +1,60 @@
+2017-05-05  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2017-04-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/80363
+	* error.c (dump_expr): Handle VEC_COND_EXPR like COND_EXPR.
+
+	2017-04-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/80176
+	* tree.c (lvalue_kind): For COMPONENT_REF with BASELINK second
+	operand, if it is a static member function, recurse on the
+	BASELINK.
+
+	2017-03-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/79572
+	* cp-gimplify.c (cp_genericize_r): Sanitize INTEGER_CSTs with
+	REFERENCE_TYPE.  Adjust ubsan_maybe_instrument_reference caller
+	for NOP_EXPR to REFERENCE_TYPE.
+
+	2017-03-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/80141
+	* semantics.c (finish_omp_clause) <case OMP_CLAUSE_SIMDLEN,
+	case OMP_CLAUSE_ALIGNED>: Call maybe_constant_value only when not
+	processing_template_decl.
+
+	2017-03-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/79896
+	* decl.c (finish_enum_value_list): If value is error_mark_node,
+	don't copy it and change its type.
+	* init.c (constant_value_1): Return error_mark_node if DECL_INITIAL
+	of CONST_DECL is error_mark_node.
+
+	2017-02-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/79664
+	* parser.c (cp_parser_omp_teams, cp_parser_omp_target): Use
+	SET_EXPR_LOCATION on OMP_TARGET/OMP_TEAMS tree.
+	* constexpr.c (potential_constant_expression_1): Handle
+	OMP_*, OACC_* and CILK_* trees.
+
+	2017-02-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/79639
+	* constexpr.c (cxx_eval_store_expression): If *valp is a PTRMEM_CST,
+	call cplus_expand_constant on it first.
+
+	2017-02-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/79512
+	* parser.c (cp_parser_omp_target): For -fopenmp-simd
+	ignore #pragma omp target even when not followed by identifier.
+
 2017-04-12  Jason Merrill  <jason@redhat.com>
 
 	PR c++/80150 - ICE with overloaded variadic deduction.

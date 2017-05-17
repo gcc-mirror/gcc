@@ -1,3 +1,408 @@
+2017-05-15  Richard Biener  <rguenther@suse.de>
+
+	Revert backport of
+	PR middle-end/80222
+	* gimple-fold.c (gimple_fold_indirect_ref): Do not touch
+	TYPE_REF_CAN_ALIAS_ALL references.
+	* fold-const.c (fold_indirect_ref_1): Likewise.
+
+2017-05-13  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	Backport from mainline
+	2017-05-05  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000.c (rs6000_vect_nonmem): New static var.
+	(rs6000_init_cost): Initialize rs6000_vect_nonmem.
+	(rs6000_add_stmt_cost): Update rs6000_vect_nonmem.
+	(rs6000_finish_cost): Avoid vectorizing simple copy loops with
+	VF=2 that require versioning.
+
+2017-05-12  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	Backport from mainline
+	2017-05-10  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000.c (altivec_init_builtins): Define POWER8
+	built-ins for vec_xl and vec_xst with short and char pointer
+	arguments.
+
+2017-05-10  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR target/80090
+	* config/pa/pa.c (pa_assemble_integer): When outputting a SYMBOL_REF,
+	handle calling assemble_external ourself.
+
+	PR target/79027
+	* config/pa/pa.c (pa_cannot_change_mode_class): Reject changes to/from
+	modes with zero size.  Enhance comment.
+
+2017-05-10  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2017-03-17  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/80075
+	* tree-eh.c (stmt_could_throw_1_p): Only handle gimple assigns.
+	Properly verify the LHS before the RHS possibly claims to be
+	handled.
+	(stmt_could_throw_p): Hande gimple conds fully here.  Clobbers
+	do not throw.
+
+	2017-03-21  Brad Spengler <spender@grsecurity.net>
+
+	PR plugin/80094
+	* plugin.c (htab_hash_plugin): New function.
+	(add_new_plugin): Use it and adjust.
+	(parse_plugin_arg_opt): Adjust.
+	(init_one_plugin): Likewise.
+
+	2017-03-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/80113
+	* graphite-isl-ast-to-gimple.c (copy_loop_phi_nodes): Do not
+	allocate extra SSA name for PHI def.
+	(add_close_phis_to_outer_loops): Likewise.
+	(add_close_phis_to_merge_points): Likewise.
+	(copy_loop_close_phi_args): Likewise.
+	(copy_cond_phi_nodes): Likewise.
+
+	2017-03-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/80122
+	* tree-inline.c (copy_bb): Do not expans va-arg packs or
+	va_arg_pack_len when the inlined call stmt requires pack
+	expansion itself.
+	* tree-inline.h (struct copy_body_data): Make call_stmt a gcall *.
+
+	2017-03-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/80167
+	* graphite-isl-ast-to-gimple.c
+	(translate_isl_ast_to_gimple::is_valid_rename): Handle default-defs
+	properly.
+	(translate_isl_ast_to_gimple::get_rename): Likewise.
+
+	2017-03-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/80170
+	* tree-vect-data-refs.c (vect_compute_data_ref_alignment): Make
+	sure DR/SCEV didnt fold in constants we do not see when looking
+	at the reference base alignment.
+
+	2017-03-27  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/80171
+	* gimple-fold.c (fold_ctor_reference): Properly guard against
+	NULL return value from canonicalize_constructor_val.
+
+2017-05-09  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2017-03-28  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/80222
+	* gimple-fold.c (gimple_fold_indirect_ref): Do not touch
+	TYPE_REF_CAN_ALIAS_ALL references.
+	* fold-const.c (fold_indirect_ref_1): Likewise.
+
+	2017-04-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/80262
+	* tree-sra.c (build_ref_for_offset): Preserve address-space
+	information.
+	* tree-ssa-sccvn.c (vn_reference_maybe_forwprop_address):
+	Drop useless address-space information on MEM_REF offsets.
+
+	2017-04-03  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/80275
+	* fold-const.c (split_address_to_core_and_offset): Handle
+	POINTER_PLUS_EXPR.
+
+	2017-04-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/80334
+	* tree-ssa-loop-ivopts.c (rewrite_use_address): Properly
+	preserve alignment of accesses.
+
+	2017-04-10  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/80362
+	* fold-const.c (fold_binary_loc): Look at unstripped ops when
+	looking for NEGATE_EXPR in -A / -B to A / B folding.
+
+	2017-04-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/80492
+	* alias.c (compare_base_decls): Handle registers with asm
+	specification conservatively.
+
+	2017-04-27  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/80539
+	* tree-chrec.c (chrec_fold_plus_poly_poly): Deal with not
+	being in loop-closed SSA form conservatively.
+	(chrec_fold_multiply_poly_poly): Likewise.
+
+2017-05-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR testsuite/80678
+	2016-06-14  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/71310
+	PR bootstrap/71510
+	* expr.h (get_bit_range): Declare.
+	* expr.c (get_bit_range): Export.
+	* fold-const.c (optimize_bit_field_compare): Use get_bit_range and
+	word_mode again to constrain the bitfield access.
+
+	2016-06-11  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR middle-end/71310
+	* fold-const.c (optimize_bit_field_compare): Don't try to use
+	word_mode unconditionally for reading the bit field, look at
+	DECL_BIT_FIELD_REPRESENTATIVE instead.
+
+2017-05-05  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2017-04-25  Jakub Jelinek  <jakub@redhat.com>
+
+	* Makefile.in (s-options): Invoke opt-gather.awk with LC_ALL=C in the
+	environment.
+
+	PR rtl-optimization/80501
+	* combine.c (make_compound_operation_int): Set subreg_code to SET
+	even for AND with mask of the sign bit of mode.
+
+	2017-04-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/80349
+	* fold-const.c (fold_binary_loc) <case BIT_IOR_EXPR>: Convert arg0's
+	first argument to type.
+
+	2017-04-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/80385
+	* simplify-rtx.c (simplify_unary_operation_1): Don't transform
+	(not (neg X)) into (plus X -1) for complex or non-integral modes.
+
+	PR libgomp/80394
+	* omp-low.c (scan_omp_task): Don't optimize away empty tasks
+	if they have any depend clauses.
+
+	2017-04-04  Jakub Jelinek  <jakub@redhat.com>
+		    Richard Biener  <rguenther@suse.de>
+
+	PR c++/80297
+	* genmatch.c (capture::gen_transform): For GENERIC unshare_expr
+	captures used multiple times, except for the last use.
+	* generic-match-head.c: Include gimplify.h.
+
+	2017-04-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/80286
+	* config/i386/i386.c (ix86_expand_args_builtin): If op has scalar
+	int mode, convert_modes it to mode as unsigned, otherwise use
+	lowpart_subreg to mode rather than SImode.
+	* config/i386/sse.md (<mask_codefor>ashr<mode>3<mask_name>,
+	ashr<mode>3, ashr<mode>3<mask_name>, <shift_insn><mode>3<mask_name>):
+	Use DImode instead of SImode for the shift count operand.
+	* config/i386/mmx.md (mmx_ashr<mode>3, mmx_<shift_insn><mode>3):
+	Likewise.
+
+	2017-04-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/80321
+	* dwarf2out.c (decls_for_scope): Ignore declarations of
+	current_function_decl in BLOCK_NONLOCALIZED_VARS.
+
+	2017-03-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/79255
+	* dwarf2out.c (decls_for_scope): If BLOCK_NONLOCALIZED_VAR is
+	a FUNCTION_DECL, pass it as decl instead of origin to
+	process_scope_var.
+
+	PR debug/80025
+	* cselib.c (cselib_hasher::equal): Pass 0 to rtx_equal_for_cselib_1.
+	(rtx_equal_for_cselib_1): Add depth argument.  If depth
+	is 128, don't look up VALUE locs and punt.  Increment
+	depth in recursive calls when walking VALUE locs.
+
+	2017-03-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/80168
+	* asan.c (instrument_derefs): Copy over last operand from
+	original COMPONENT_REF to the new COMPONENT_REF with
+	DECL_BIT_FIELD_REPRESENTATIVE.
+	* ubsan.c (instrument_object_size): Likewise.
+
+	2017-03-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/80112
+	* loop-doloop.c (doloop_condition_get): Don't check condition
+	if cmp isn't SET with IF_THEN_ELSE src.
+
+	2017-03-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/80129
+	* gimplify.c (gimplify_modify_expr_rhs) <case COND_EXPR>: Clear
+	TREE_READONLY on result if writing it more than once.
+
+	2017-03-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/79944
+	* asan.c (get_mem_refs_of_builtin_call): For BUILT_IN_ATOMIC* and
+	BUILT_IN_SYNC*, determine the access type from the size suffix and
+	always build a MEM_REF with that type.  Handle forgotten
+	BUILT_IN_SYNC_FETCH_AND_NAND_16 and BUILT_IN_SYNC_NAND_AND_FETCH_16.
+
+	PR target/79932
+	* config/i386/avx512vlintrin.h (_mm256_cmpge_epi32_mask,
+	_mm256_cmpge_epi64_mask, _mm256_cmpge_epu32_mask,
+	_mm256_cmpge_epu64_mask, _mm256_cmple_epi32_mask,
+	_mm256_cmple_epi64_mask, _mm256_cmple_epu32_mask,
+	_mm256_cmple_epu64_mask, _mm256_cmplt_epi32_mask,
+	_mm256_cmplt_epi64_mask, _mm256_cmplt_epu32_mask,
+	_mm256_cmplt_epu64_mask, _mm256_cmpneq_epi32_mask,
+	_mm256_cmpneq_epi64_mask, _mm256_cmpneq_epu32_mask,
+	_mm256_cmpneq_epu64_mask, _mm256_mask_cmpge_epi32_mask,
+	_mm256_mask_cmpge_epi64_mask, _mm256_mask_cmpge_epu32_mask,
+	_mm256_mask_cmpge_epu64_mask, _mm256_mask_cmple_epi32_mask,
+	_mm256_mask_cmple_epi64_mask, _mm256_mask_cmple_epu32_mask,
+	_mm256_mask_cmple_epu64_mask, _mm256_mask_cmplt_epi32_mask,
+	_mm256_mask_cmplt_epi64_mask, _mm256_mask_cmplt_epu32_mask,
+	_mm256_mask_cmplt_epu64_mask, _mm256_mask_cmpneq_epi32_mask,
+	_mm256_mask_cmpneq_epi64_mask, _mm256_mask_cmpneq_epu32_mask,
+	_mm256_mask_cmpneq_epu64_mask, _mm_cmpge_epi32_mask,
+	_mm_cmpge_epi64_mask, _mm_cmpge_epu32_mask, _mm_cmpge_epu64_mask,
+	_mm_cmple_epi32_mask, _mm_cmple_epi64_mask, _mm_cmple_epu32_mask,
+	_mm_cmple_epu64_mask, _mm_cmplt_epi32_mask, _mm_cmplt_epi64_mask,
+	_mm_cmplt_epu32_mask, _mm_cmplt_epu64_mask, _mm_cmpneq_epi32_mask,
+	_mm_cmpneq_epi64_mask, _mm_cmpneq_epu32_mask, _mm_cmpneq_epu64_mask,
+	_mm_mask_cmpge_epi32_mask, _mm_mask_cmpge_epi64_mask,
+	_mm_mask_cmpge_epu32_mask, _mm_mask_cmpge_epu64_mask,
+	_mm_mask_cmple_epi32_mask, _mm_mask_cmple_epi64_mask,
+	_mm_mask_cmple_epu32_mask, _mm_mask_cmple_epu64_mask,
+	_mm_mask_cmplt_epi32_mask, _mm_mask_cmplt_epi64_mask,
+	_mm_mask_cmplt_epu32_mask, _mm_mask_cmplt_epu64_mask,
+	_mm_mask_cmpneq_epi32_mask, _mm_mask_cmpneq_epi64_mask,
+	_mm_mask_cmpneq_epu32_mask, _mm_mask_cmpneq_epu64_mask): Move
+	definitions outside of __OPTIMIZE__ guarded section.
+
+	PR target/79932
+	* config/i386/avx512bwintrin.h (_mm512_packs_epi32,
+	_mm512_maskz_packs_epi32, _mm512_mask_packs_epi32,
+	_mm512_packus_epi32, _mm512_maskz_packus_epi32,
+	_mm512_mask_packus_epi32): Move definitions outside of __OPTIMIZE__
+	guarded section.
+
+	2017-03-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/79940
+	* gimplify.c (gimplify_omp_for): Replace index var in outer
+	taskloop statement with an artificial variable and add
+	OMP_CLAUSE_PRIVATE clause for it.
+
+	2017-03-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/79901
+	* config/i386/sse.md (*avx512bw_<code><mode>3<mask_name>): Renamed to
+	...
+	(*avx512f_<code><mode>3<mask_name>): ... this.
+	(<code><mode>3 with maxmin code iterator): Use VI8_AVX2_AVX512F
+	iterator instead of VI8_AVX2_AVX512BW.
+
+	PR rtl-optimization/79901
+	* expr.c (expand_expr_real_2): For vector MIN/MAX, if there is no
+	min/max expander, expand it using expand_vec_cond_expr.
+
+	2017-03-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/79807
+	* config/i386/i386.c (ix86_expand_multi_arg_builtin): If target
+	is a memory operand, increase num_memory.
+	(ix86_expand_args_builtin): Likewise.
+
+	2017-03-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/79681
+	* fold-const.c (make_bit_field_ref): If orig_inner is COMPONENT_REF,
+	attempt to use its first operand as BIT_FIELD_REF base.
+
+	2017-02-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/79729
+	* config/i386/i386.c (ix86_print_operand) <case 'R'>: Replace
+	gcc_unreachable with output_operand_lossage.
+
+	2017-02-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/79396
+	* tree-eh.c (operation_could_trap_p, stmt_could_throw_1_p): Handle
+	FMA_EXPR like tcc_binary or tcc_unary.
+
+	2017-02-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/79570
+	* sel-sched.c (moveup_expr_cached): Don't call sel_bb_head
+	on temporarily removed DEBUG_INSNs.
+
+	PR target/79494
+	* config/i386/i386.c (ix86_expand_split_stack_prologue): Call
+	make_reg_eh_region_note_nothrow_nononlocal on call_insn.
+	* config/rs6000/rs6000.c: Include except.h.
+	(rs6000_expand_split_stack_prologue): Call
+	make_reg_eh_region_note_nothrow_nononlocal on the call insn.
+
+	2017-02-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/79568
+	* config/i386/i386.c (ix86_expand_builtin): Handle
+	OPTION_MASK_ISA_AVX512VL and OPTION_MASK_ISA_64BIT in
+	ix86_builtins_isa[fcode].isa as a requirement of those
+	flags and any other flag in the bitmask.
+	(ix86_init_mmx_sse_builtins): Use 0 instead of
+	~OPTION_MASK_ISA_64BIT as mask.
+	* config/i386/i386-builtin.def (bdesc_special_args,
+	bdesc_args): Likewise.
+
+	2017-02-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/79559
+	* config/i386/i386.c (ix86_print_operand): Use output_operand_lossage
+	instead of gcc_assert for K, r and R code checks.  Formatting fixes.
+
+2017-05-05  Marek Polacek  <polacek@redhat.com>
+	    Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/77728
+	* config/arm/arm.c: Include gimple.h.
+	(aapcs_layout_arg): Emit -Wpsabi note if arm_needs_doubleword_align
+	returns negative, increment ncrn if it returned non-zero.
+	(arm_needs_doubleword_align): Return int instead of bool,
+	ignore DECL_ALIGN of non-FIELD_DECL TYPE_FIELDS chain
+	members, but if there is any such non-FIELD_DECL
+	> PARM_BOUNDARY aligned decl, return -1 instead of false.
+	(arm_function_arg): Emit -Wpsabi note if arm_needs_doubleword_align
+	returns negative, increment nregs if it returned non-zero.
+	(arm_setup_incoming_varargs): Likewise.
+	(arm_function_arg_boundary): Emit -Wpsabi note if
+	arm_needs_doubleword_align returns negative, return
+	DOUBLEWORD_ALIGNMENT if it returned non-zero.
+
+2017-05-03  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backport from mainline
+	2017-05-01  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/68491
+	* config/i386/cpuid.h (__get_cpuid): Always return 0 when
+	__get_cpuid_max returns 0.
+	(__get_cpuid_count): Ditto.
+
 2017-04-21  Eric Botcazou  <ebotcazou@adacore.com>
 
 	Backport from mainline
