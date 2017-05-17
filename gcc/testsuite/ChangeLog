@@ -1,3 +1,8 @@
+2017-05-15  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/80741
+	* gfortran.dg/read_4.f90: New test.
+
 2017-05-17  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* gcc.target/powerpc/pr78604.c: Fix typo in dg-options.
