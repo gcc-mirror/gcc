@@ -60,7 +60,6 @@ static void consider_binding_level (tree name,
 				    enum lookup_name_fuzzy_kind kind);
 static tree lookup_type_current_level (tree);
 static tree push_using_directive (tree);
-static tree lookup_extern_c_fun_in_all_ns (tree);
 static void diagnose_name_conflict (tree, tree);
 
 /* Add DECL to the list of things declared in B.  */
@@ -1184,6 +1183,75 @@ supplement_binding (cxx_binding *binding, tree decl)
   return ret;
 }
 
+/* Map of identifiers to extern C functions (or LISTS thereof).  */
+
+static GTY(()) hash_map<lang_identifier *, tree> *extern_c_fns;
+
+/* DECL has C linkage. If we have an existing instance, make sure it
+   has the same exception specification [7.5, 7.6].  If there's no
+   instance, add DECL to the map.  */
+
+static void
+check_extern_c_conflict (tree decl)
+{
+  /* Ignore artificial or system header decls.  */
+  if (DECL_ARTIFICIAL (decl) || DECL_IN_SYSTEM_HEADER (decl))
+    return;
+
+  if (!extern_c_fns)
+    extern_c_fns = hash_map<lang_identifier *,tree>::create_ggc (127);
+
+  bool existed;
+  tree *slot = &extern_c_fns->get_or_insert (DECL_NAME (decl), &existed);
+  if (!existed)
+    *slot = decl;
+  else
+    {
+      tree old = *slot;
+      if (TREE_CODE (old) == TREE_LIST)
+	old = TREE_VALUE (old);
+
+      int mismatch = 0;
+      if (DECL_CONTEXT (old) == DECL_CONTEXT (decl))
+	; /* If they're in the same context, we'll have already complained
+	     about a (possible) mismatch, when inserting the decl.  */
+      else if (!decls_match (decl, old))
+	mismatch = 1;
+      else if (!comp_except_specs (TYPE_RAISES_EXCEPTIONS (TREE_TYPE (old)),
+				   TYPE_RAISES_EXCEPTIONS (TREE_TYPE (decl)),
+				   ce_normal))
+	mismatch = -1;
+      else if (DECL_ASSEMBLER_NAME_SET_P (old))
+	SET_DECL_ASSEMBLER_NAME (decl, DECL_ASSEMBLER_NAME (old));
+
+      if (mismatch)
+	{
+	  pedwarn (input_location, 0,
+		   "declaration of %q#D with C language linkage", decl);
+	  pedwarn (DECL_SOURCE_LOCATION (old), 0,
+		   "conflicts with previous declaration %q#D", old);
+	  if (mismatch < 0)
+	    pedwarn (input_location, 0,
+		     "due to different exception specifications");
+	}
+      else
+	/* Chain it on for c_linkage_binding's use.  */
+	*slot = tree_cons (NULL_TREE, decl, *slot);
+    }
+}
+
+/* Returns a list of C-linkage decls with the name NAME.  Used in
+   c-family/c-pragma.c to implement redefine_extname pragma.  */
+
+tree
+c_linkage_bindings (tree name)
+{
+  if (extern_c_fns)
+    if (tree *slot = extern_c_fns->get (name))
+      return *slot;
+  return NULL_TREE;
+}
+
 /* DECL is being declared at a local scope.  Emit suitable shadow
    warnings.  */
 
@@ -1591,63 +1659,6 @@ pushdecl_maybe_friend_1 (tree x, bool is_friend)
 	    }
 	}
 
-      /* If x has C linkage-specification, (extern "C"),
-	 lookup its binding, in case it's already bound to an object.
-	 The lookup is done in all namespaces.
-	 If we find an existing binding, make sure it has the same
-	 exception specification as x, otherwise, bail in error [7.5, 7.6].  */
-      if ((TREE_CODE (x) == FUNCTION_DECL)
-	  && DECL_EXTERN_C_P (x)
-          /* We should ignore declarations happening in system headers.  */
-	  && !DECL_ARTIFICIAL (x)
-	  && !DECL_IN_SYSTEM_HEADER (x))
-	{
-	  tree previous = lookup_extern_c_fun_in_all_ns (x);
-	  if (previous
-	      && !DECL_ARTIFICIAL (previous)
-              && !DECL_IN_SYSTEM_HEADER (previous)
-	      && DECL_CONTEXT (previous) != DECL_CONTEXT (x))
-	    {
-	      /* In case either x or previous is declared to throw an exception,
-	         make sure both exception specifications are equal.  */
-	      if (decls_match (x, previous))
-		{
-		  tree x_exception_spec = NULL_TREE;
-		  tree previous_exception_spec = NULL_TREE;
-
-		  x_exception_spec =
-				TYPE_RAISES_EXCEPTIONS (TREE_TYPE (x));
-		  previous_exception_spec =
-				TYPE_RAISES_EXCEPTIONS (TREE_TYPE (previous));
-		  if (!comp_except_specs (previous_exception_spec,
-					  x_exception_spec,
-					  ce_normal))
-		    {
-		      pedwarn (input_location, 0,
-                               "declaration of %q#D with C language linkage",
-			       x);
-		      pedwarn (DECL_SOURCE_LOCATION (previous), 0,
-                               "conflicts with previous declaration %q#D",
-			       previous);
-		      pedwarn (input_location, 0,
-                               "due to different exception specifications");
-		      return error_mark_node;
-		    }
-		  if (DECL_ASSEMBLER_NAME_SET_P (previous))
-		    SET_DECL_ASSEMBLER_NAME (x,
-					     DECL_ASSEMBLER_NAME (previous));
-		}
-	      else
-		{
-		  pedwarn (input_location, 0,
-			   "declaration of %q#D with C language linkage", x);
-		  pedwarn (DECL_SOURCE_LOCATION (previous), 0,
-			   "conflicts with previous declaration %q#D",
-			   previous);
-		}
-	    }
-	}
-
       check_template_shadow (x);
 
       /* If this is a function conjured up by the back end, massage it
@@ -1848,6 +1859,9 @@ pushdecl_maybe_friend_1 (tree x, bool is_friend)
 
       if (VAR_P (x))
 	maybe_register_incomplete_var (x);
+      if (TREE_CODE (x) == FUNCTION_DECL && DECL_EXTERN_C_P (x))
+	/* We need to check and register the fn now.  */
+	check_extern_c_conflict (x);
     }
 
   if (need_new_binding)
@@ -2720,74 +2734,6 @@ binding_for_name (cp_binding_level *scope, tree name)
   result->value_is_inherited = false;
   IDENTIFIER_NAMESPACE_BINDINGS (name) = result;
   return result;
-}
-
-/* Walk through the bindings associated to the name of FUNCTION,
-   and return the first declaration of a function with a
-   "C" linkage specification, a.k.a 'extern "C"'.
-   This function looks for the binding, regardless of which scope it
-   has been defined in. It basically looks in all the known scopes.
-   Note that this function does not lookup for bindings of builtin functions
-   or for functions declared in system headers.  */
-static tree
-lookup_extern_c_fun_in_all_ns (tree function)
-{
-  tree name;
-  cxx_binding *iter;
-
-  gcc_assert (function && TREE_CODE (function) == FUNCTION_DECL);
-
-  name = DECL_NAME (function);
-  gcc_assert (name && identifier_p (name));
-
-  for (iter = IDENTIFIER_NAMESPACE_BINDINGS (name);
-       iter;
-       iter = iter->previous)
-    {
-      tree ovl;
-      for (ovl = iter->value; ovl; ovl = OVL_NEXT (ovl))
-	{
-	  tree decl = OVL_CURRENT (ovl);
-	  if (decl
-	      && TREE_CODE (decl) == FUNCTION_DECL
-	      && DECL_EXTERN_C_P (decl)
-	      && !DECL_ARTIFICIAL (decl))
-	    {
-	      return decl;
-	    }
-	}
-    }
-  return NULL;
-}
-
-/* Returns a list of C-linkage decls with the name NAME.  */
-
-tree
-c_linkage_bindings (tree name)
-{
-  tree decls = NULL_TREE;
-  cxx_binding *iter;
-
-  for (iter = IDENTIFIER_NAMESPACE_BINDINGS (name);
-       iter;
-       iter = iter->previous)
-    {
-      tree ovl;
-      for (ovl = iter->value; ovl; ovl = OVL_NEXT (ovl))
-	{
-	  tree decl = OVL_CURRENT (ovl);
-	  if (decl
-	      && DECL_EXTERN_C_P (decl)
-	      && !DECL_ARTIFICIAL (decl))
-	    {
-	      if (decls == NULL_TREE)
-		decls = decl;
-	      else
-		decls = tree_cons (NULL_TREE, decl, decls);
-	    }
-	}
-    }
-  return decls;
 }
 
 /* Insert another USING_DECL into the current binding level, returning
