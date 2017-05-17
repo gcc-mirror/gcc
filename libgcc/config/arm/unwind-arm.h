@@ -72,12 +72,19 @@ extern "C" {
     {
       return _URC_FAILURE;
     }
+#ifndef __FreeBSD__
   /* Return the address of the instruction, not the actual IP value.  */
 #define _Unwind_GetIP(context) \
   (_Unwind_GetGR (context, 15) & ~(_Unwind_Word)1)
 
 #define _Unwind_SetIP(context, val) \
   _Unwind_SetGR (context, 15, val | (_Unwind_GetGR (context, 15) & 1))
+#else
+  #undef _Unwind_GetIPInfo
+  _Unwind_Ptr _Unwind_GetIP (struct _Unwind_Context *);
+  _Unwind_Ptr _Unwind_GetIPInfo (struct _Unwind_Context *, int *);
+  void _Unwind_SetIP (struct _Unwind_Context *, _Unwind_Ptr);
+#endif
 
 #ifdef __cplusplus
 }   /* extern "C" */
