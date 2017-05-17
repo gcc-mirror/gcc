@@ -5135,6 +5135,8 @@ cp_parser_primary_expression (cp_parser *parser,
 	case RID_IS_TRIVIALLY_CONSTRUCTIBLE:
 	case RID_IS_TRIVIALLY_COPYABLE:
 	case RID_IS_UNION:
+	case RID_IS_ASSIGNABLE:
+	case RID_IS_CONSTRUCTIBLE:
 	  return cp_parser_trait_expr (parser, token->keyword);
 
 	// C++ concepts
@@ -9685,6 +9687,14 @@ cp_parser_trait_expr (cp_parser* parser, enum rid keyword)
       break;
     case RID_DIRECT_BASES:
       kind = CPTK_DIRECT_BASES;
+      break;
+    case RID_IS_ASSIGNABLE:
+      kind = CPTK_IS_ASSIGNABLE;
+      binary = true;
+      break;
+    case RID_IS_CONSTRUCTIBLE:
+      kind = CPTK_IS_CONSTRUCTIBLE;
+      variadic = true;
       break;
     default:
       gcc_unreachable ();

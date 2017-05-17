@@ -1,3 +1,22 @@
+2017-05-17  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	PR c++/80654
+	PR c++/80682
+	Implement new C++ intrinsics __is_assignable and __is_constructible.
+	* cp-tree.h (CPTK_IS_ASSIGNABLE, CPTK_IS_CONSTRUCTIBLE): New.
+	(is_xible): New.
+	* cxx-pretty-print.c (pp_cxx_trait_expression): Handle
+	CPTK_IS_ASSIGNABLE and CPTK_IS_CONSTRUCTIBLE.
+	* method.c (constructible_expr): Set cp_unevaluated.
+	(is_xible_helper): New.
+	(is_trivially_xible): Adjust.
+	(is_xible): New.
+	* parser.c (cp_parser_primary_expression): Handle
+	RID_IS_ASSIGNABLE and RID_IS_CONSTRUCTIBLE.
+	(cp_parser_trait_expr): Likewise.
+	* semantics.c (trait_expr_value): Handle
+	CPTK_IS_ASSIGNABLE and CPTK_IS_CONSTRUCTIBLE.
+
 2017-05-17  Nathan Sidwell  <nathan@acm.org>
 
 	* cp-tree.h (ovl_iterator::using_p): New predicate.
