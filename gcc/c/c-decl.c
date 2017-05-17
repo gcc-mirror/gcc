@@ -6076,7 +6076,7 @@ grokdeclarator (const struct c_declarator *declarator,
 			&& do_ubsan_in_current_function ())
 		      {
 			/* Evaluate the array size only once.  */
-			size = c_save_expr (size);
+			size = save_expr (size);
 			size = c_fully_fold (size, false, NULL);
 		        size = fold_build2 (COMPOUND_EXPR, TREE_TYPE (size),
 					    ubsan_instrument_vla (loc, size),

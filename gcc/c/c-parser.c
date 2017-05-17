@@ -1880,7 +1880,7 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
 		  bool vm_type = variably_modified_type_p (init_type,
 							   NULL_TREE);
 		  if (vm_type)
-		    init.value = c_save_expr (init.value);
+		    init.value = save_expr (init.value);
 		  finish_init ();
 		  specs->typespec_kind = ctsk_typeof;
 		  specs->locations[cdw_typedef] = init_loc;
@@ -6500,7 +6500,7 @@ c_parser_conditional_expression (c_parser *parser, struct c_expr *after,
 	e = TREE_OPERAND (e, 1);
       warn_for_omitted_condop (middle_loc, e);
       /* Make sure first operand is calculated only once.  */
-      exp1.value = c_save_expr (default_conversion (cond.value));
+      exp1.value = save_expr (default_conversion (cond.value));
       if (eptype)
 	exp1.value = build1 (EXCESS_PRECISION_EXPR, eptype, exp1.value);
       exp1.original_type = NULL;
