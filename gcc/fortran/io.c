@@ -2966,6 +2966,30 @@ conflict:
   return MATCH_ERROR;
 }
 
+/* Check for formatted read and write DTIO procedures.  */
+
+static bool
+dtio_procs_present (gfc_symbol *sym, io_kind k)
+{
+  gfc_symbol *derived;
+
+  if (sym && sym->ts.u.derived)
+    {
+      if (sym->ts.type == BT_CLASS && CLASS_DATA (sym))
+	derived = CLASS_DATA (sym)->ts.u.derived;
+      else if (sym->ts.type == BT_DERIVED)
+	derived = sym->ts.u.derived;
+      else
+	return false;
+      if ((k == M_WRITE || k == M_PRINT) && 
+	  (gfc_find_specific_dtio_proc (derived, true, true) != NULL))
+	return true;
+      if ((k == M_READ) &&
+	  (gfc_find_specific_dtio_proc (derived, false, true) != NULL))
+	return true;
+    }
+  return false;
+}
 
 /* Traverse a namelist that is part of a READ statement to make sure
    that none of the variables in the namelist are INTENT(IN).  Returns
@@ -3244,7 +3268,7 @@ gfc_resolve_dt (gfc_dt *dt, locus *loc)
 
   /* If we are reading and have a namelist, check that all namelist symbols
      can appear in a variable definition context.  */
-  if (k == M_READ && dt->namelist)
+  if (dt->namelist)
     {
       gfc_namelist* n;
       for (n = dt->namelist->namelist; n; n = n->next)
@@ -3252,17 +3276,50 @@ gfc_resolve_dt (gfc_dt *dt, locus *loc)
 	  gfc_expr* e;
 	  bool t;
 
-	  e = gfc_get_variable_expr (gfc_find_sym_in_symtree (n->sym));
-	  t = gfc_check_vardef_context (e, false, false, false, NULL);
-	  gfc_free_expr (e);
-
-	  if (!t)
+	  if (k == M_READ)
 	    {
-	      gfc_error ("NAMELIST %qs in READ statement at %L contains"
-			 " the symbol %qs which may not appear in a"
-			 " variable definition context",
-			 dt->namelist->name, loc, n->sym->name);
-	      return false;
+	      e = gfc_get_variable_expr (gfc_find_sym_in_symtree (n->sym));
+	      t = gfc_check_vardef_context (e, false, false, false, NULL);
+	      gfc_free_expr (e);
+    
+	      if (!t)
+		{
+		  gfc_error ("NAMELIST %qs in READ statement at %L contains"
+			     " the symbol %qs which may not appear in a"
+			     " variable definition context",
+			     dt->namelist->name, loc, n->sym->name);
+		  return false;
+		}
+	    }
+
+	  t = dtio_procs_present (n->sym, k);
+
+	  if (n->sym->ts.type == BT_CLASS && !t)
+	    {
+	      gfc_error ("NAMELIST object %qs in namelist %qs at %L is "
+			 "polymorphic and requires a defined input/output "
+			 "procedure", n->sym->name, dt->namelist->name, loc);
+	      return 1;
+	    }
+    
+	  if ((n->sym->ts.type == BT_DERIVED)
+	      && (n->sym->ts.u.derived->attr.alloc_comp
+		  || n->sym->ts.u.derived->attr.pointer_comp))
+	    {
+	      if (!gfc_notify_std (GFC_STD_F2003, "NAMELIST object %qs in "
+				   "namelist %qs at %L with ALLOCATABLE "
+				   "or POINTER components", n->sym->name,
+				   dt->namelist->name, loc))
+		return 1;
+    
+	      if (!t)
+		{
+		  gfc_error ("NAMELIST object %qs in namelist %qs at %L has "
+			     "ALLOCATABLE or POINTER components and thus requires "
+			     "a defined input/output procedure", n->sym->name,
+			     dt->namelist->name, loc);
+		  return 1;
+		}
 	    }
 	}
     }
