@@ -507,9 +507,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     };
 
   /** @brief Generic try_lock.
-   *  @param __l1 Meets Mutex requirements (try_lock() may throw).
-   *  @param __l2 Meets Mutex requirements (try_lock() may throw).
-   *  @param __l3 Meets Mutex requirements (try_lock() may throw).
+   *  @param __l1 Meets Lockable requirements (try_lock() may throw).
+   *  @param __l2 Meets Lockable requirements (try_lock() may throw).
+   *  @param __l3 Meets Lockable requirements (try_lock() may throw).
    *  @return Returns -1 if all try_lock() calls return true. Otherwise returns
    *          a 0-based index corresponding to the argument that returned false.
    *  @post Either all arguments are locked, or none will be.
@@ -527,9 +527,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
   /** @brief Generic lock.
-   *  @param __l1 Meets Mutex requirements (try_lock() may throw).
-   *  @param __l2 Meets Mutex requirements (try_lock() may throw).
-   *  @param __l3 Meets Mutex requirements (try_lock() may throw).
+   *  @param __l1 Meets Lockable requirements (try_lock() may throw).
+   *  @param __l2 Meets Lockable requirements (try_lock() may throw).
+   *  @param __l3 Meets Lockable requirements (try_lock() may throw).
    *  @throw An exception thrown by an argument's lock() or try_lock() member.
    *  @post All arguments are locked.
    *

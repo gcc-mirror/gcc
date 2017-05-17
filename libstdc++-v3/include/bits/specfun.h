@@ -118,8 +118,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    * versions of this math library because of implementation concerns.
    * However, since they were in the TR1 version and since they are popular
    * we kept them as an extension in namespace @c __gnu_cxx:
-   * - @ref conf_hyperg "conf_hyperg - Confluent hypergeometric functions"
-   * - @ref hyperg "hyperg - Hypergeometric functions"
+   * - @ref __gnu_cxx::conf_hyperg "conf_hyperg - Confluent hypergeometric functions"
+   * - @ref __gnu_cxx::hyperg "hyperg - Hypergeometric functions"
    *
    * @section general General Features
    *
