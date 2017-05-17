@@ -922,8 +922,8 @@ empty_delay_slot (rtx_insn *insn)
   return 1;
 }
 
-/* Wrapper around single_set which returns the first SET of a pair if the
-   second SET is to the flags register.  */
+/* Wrapper around single_set which returns the second SET of a pair if the
+   first SET is to the flags register.  */
 
 static rtx
 single_set_and_flags (rtx_insn *insn)

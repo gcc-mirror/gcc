@@ -1,3 +1,9 @@
+2017-05-17  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* compare-elim.c (equivalent_reg_at_start): Adjust outdated comment.
+	* config/visium/visium.c (single_set_and_flags): Likewise.
+	* config/visium/visium.md (Substitutions): Likewise.
+
 2017-05-17  Martin Liska  <mliska@suse.cz>
 
 	* cfg.c: Introduce dump_flags_t type and
