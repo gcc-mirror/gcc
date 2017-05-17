@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -mavx512f -mtune=intel" } */
+/* { dg-additional-options "-mregparm=1" { target ia32 } } */
 
 #include <x86intrin.h>
 

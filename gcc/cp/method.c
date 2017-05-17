@@ -1162,6 +1162,7 @@ constructible_expr (tree to, tree from)
     {
       tree ctype = to;
       vec<tree, va_gc> *args = NULL;
+      cp_unevaluated cp_uneval_guard;
       if (TREE_CODE (to) != REFERENCE_TYPE)
 	to = cp_build_reference_type (to, /*rval*/false);
       tree ob = build_stub_object (to);
@@ -1198,6 +1199,27 @@ constructible_expr (tree to, tree from)
   return expr;
 }
 
+/* Returns a tree iff TO is assignable (if CODE is MODIFY_EXPR) or
+   constructible (otherwise) from FROM, which is a single type for
+   assignment or a list of types for construction.  */
+
+static tree
+is_xible_helper (enum tree_code code, tree to, tree from, bool trivial)
+{
+  if (VOID_TYPE_P (to) || ABSTRACT_CLASS_TYPE_P (to)
+      || (from && FUNC_OR_METHOD_TYPE_P (from)
+	  && (TYPE_READONLY (from) || FUNCTION_REF_QUALIFIED (from))))
+    return error_mark_node;
+  tree expr;
+  if (code == MODIFY_EXPR)
+    expr = assignable_expr (to, from);
+  else if (trivial && from && TREE_CHAIN (from))
+    return error_mark_node; // only 0- and 1-argument ctors can be trivial
+  else
+    expr = constructible_expr (to, from);
+  return expr;
+}
+
 /* Returns true iff TO is trivially assignable (if CODE is MODIFY_EXPR) or
    constructible (otherwise) from FROM, which is a single type for
    assignment or a list of types for construction.  */
@@ -1205,20 +1227,26 @@ constructible_expr (tree to, tree from)
 bool
 is_trivially_xible (enum tree_code code, tree to, tree from)
 {
-  if (VOID_TYPE_P (to))
-    return false;
   tree expr;
-  if (code == MODIFY_EXPR)
-    expr = assignable_expr (to, from);
-  else if (from && TREE_CHAIN (from))
-    return false; // only 0- and 1-argument ctors can be trivial
-  else
-    expr = constructible_expr (to, from);
+  expr = is_xible_helper (code, to, from, /*trivial*/true);
 
   if (expr == error_mark_node)
     return false;
   tree nt = cp_walk_tree_without_duplicates (&expr, check_nontriv, NULL);
   return !nt;
+}
+
+/* Returns true iff TO is assignable (if CODE is MODIFY_EXPR) or
+   constructible (otherwise) from FROM, which is a single type for
+   assignment or a list of types for construction.  */
+
+bool
+is_xible (enum tree_code code, tree to, tree from)
+{
+  tree expr = is_xible_helper (code, to, from, /*trivial*/false);
+  if (expr == error_mark_node)
+    return false;
+  return !!expr;
 }
 
 /* Subroutine of synthesized_method_walk.  Update SPEC_P, TRIVIAL_P and

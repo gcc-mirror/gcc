@@ -7258,6 +7258,25 @@ For the @code{compare} operator, a constant is always the second operand
 if the first argument is a condition code register or @code{(cc0)}.
 
 @item
+For instructions that inherently set a condition code register, the
+@code{compare} operator is always written as the first RTL expression of
+the @code{parallel} instruction pattern.  For example,
+
+@smallexample
+(define_insn ""
+  [(set (reg:CCZ FLAGS_REG)
+	(compare:CCZ
+	  (plus:SI
+	    (match_operand:SI 1 "register_operand" "%r")
+	    (match_operand:SI 2 "register_operand" "r"))
+	  (const_int 0)))
+   (set (match_operand:SI 0 "register_operand" "=r")
+	(plus:SI (match_dup 1) (match_dup 2)))]
+  ""
+  "addl %0, %1, %2")
+@end smallexample
+
+@item
 An operand of @code{neg}, @code{not}, @code{mult}, @code{plus}, or
 @code{minus} is made the first operand under the same conditions as
 above.

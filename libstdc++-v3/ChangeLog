@@ -1,3 +1,40 @@
+2017-05-17  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	Implement new C++ intrinsics __is_assignable and __is_constructible.
+	* include/std/type_traits (__do_is_static_castable_impl): Remove.
+	(__is_static_castable_impl, __is_static_castable_safe): Likewise.
+	(__is_static_castable, __do_is_direct_constructible_impl): Likewise.
+	(__is_direct_constructible_impl): Likewise.
+	(__is_direct_constructible_new_safe): Likewise.
+	(__is_base_to_derived_ref, __is_lvalue_to_rvalue_ref): Likewise.
+	(__is_direct_constructible_ref_cast): Likewise.
+	(__is_direct_constructible_new, __is_direct_constructible): Likewise.
+	(__do_is_nary_constructible_impl): Likewise.
+	(__is_nary_constructible_impl, __is_nary_constructible): Likewise.
+	(__is_constructible_impl): Likewise.
+	(is_constructible): Call the intrinsic.
+	(__is_assignable_helper): Remove.
+	(is_assignable): Call the intrinsic.
+	(is_trivially_constructible): Likewise.
+	(__is_trivially_copy_constructible_impl): New.
+	(is_trivially_copy_constructible): Use it.
+	(__is_trivially_move_constructible_impl): New.
+	(is_trivially_move_constructible): Use it.
+	(is_trivially_assignable): Call the intrinsic.
+	(__is_trivially_copy_assignable_impl): New.
+	(is_trivially_copy_assignable): Use it.
+	(__is_trivially_move_assignable_impl): New.
+	(is_trivially_move_assignable): Use it.
+	(testsuite/20_util/declval/requirements/1_neg.cc): Adjust.
+	(testsuite/20_util/is_trivially_copy_assignable/value.cc):
+	Add test for void.
+	(testsuite/20_util/is_trivially_copy_constructible/value.cc): Likewise.
+	(testsuite/20_util/is_trivially_move_assignable/value.cc): Likewise.
+	(testsuite/20_util/is_trivially_move_constructible/value.cc): Likewise.
+	(testsuite/20_util/make_signed/requirements/typedefs_neg.cc): Adjust.
+	(testsuite/20_util/make_unsigned/requirements/typedefs_neg.cc):
+	Likewise.
+
 2017-05-16  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/experimental/source_location/1.cc: Change expected result

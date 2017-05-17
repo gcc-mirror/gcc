@@ -1661,7 +1661,7 @@ void
 group_case_labels_stmt (gswitch *stmt)
 {
   int old_size = gimple_switch_num_labels (stmt);
-  int i, j, new_size = old_size;
+  int i, j, base_index, new_size = old_size;
   basic_block default_bb = NULL;
 
   default_bb = label_to_block (CASE_LABEL (gimple_switch_default_label (stmt)));
@@ -1678,16 +1678,9 @@ group_case_labels_stmt (gswitch *stmt)
       gcc_assert (base_case);
       base_bb = label_to_block (CASE_LABEL (base_case));
 
-      /* Discard cases that have the same destination as the default case
-	 or if their destination block is unreachable.  */
-      if (base_bb == default_bb
-	  || (EDGE_COUNT (base_bb->succs) == 0
-	      && gimple_seq_unreachable_p (bb_seq (base_bb))))
+      /* Discard cases that have the same destination as the default case.  */
+      if (base_bb == default_bb)
 	{
-	  edge e;
-	  if (base_bb != default_bb
-	      && (e = find_edge (gimple_bb (stmt), base_bb)) != NULL)
-	    remove_edge_and_dominated_blocks (e);
 	  gimple_switch_set_label (stmt, i, NULL_TREE);
 	  i++;
 	  new_size--;
@@ -1697,7 +1690,7 @@ group_case_labels_stmt (gswitch *stmt)
       base_high = CASE_HIGH (base_case)
 	  ? CASE_HIGH (base_case)
 	  : CASE_LOW (base_case);
-      i++;
+      base_index = i++;
 
       /* Try to merge case labels.  Break out when we reach the end
 	 of the label vector or when we cannot merge the next case
@@ -1722,6 +1715,18 @@ group_case_labels_stmt (gswitch *stmt)
 	    }
 	  else
 	    break;
+	}
+
+      /* Discard cases that have an unreachable destination block.  */
+      if (EDGE_COUNT (base_bb->succs) == 0
+	  && gimple_seq_unreachable_p (bb_seq (base_bb)))
+	{
+	  edge base_edge = find_edge (gimple_bb (stmt), base_bb);
+	  if (base_edge != NULL)
+	    remove_edge_and_dominated_blocks (base_edge);
+	  gimple_switch_set_label (stmt, base_index, NULL_TREE);
+	  new_size--;
+	  i++;
 	}
     }
 

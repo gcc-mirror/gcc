@@ -514,6 +514,8 @@ const struct c_common_resword c_common_reswords[] =
   { "volatile",		RID_VOLATILE,	0 },
   { "wchar_t",		RID_WCHAR,	D_CXXONLY },
   { "while",		RID_WHILE,	0 },
+  { "__is_assignable", RID_IS_ASSIGNABLE, D_CXXONLY },
+  { "__is_constructible", RID_IS_CONSTRUCTIBLE, D_CXXONLY },
 
   /* C++ transactional memory.  */
   { "synchronized",	RID_SYNCHRONIZED, D_CXX_OBJC | D_TRANSMEM },

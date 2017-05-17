@@ -2634,6 +2634,12 @@ pp_cxx_trait_expression (cxx_pretty_printer *pp, tree t)
     case CPTK_IS_LITERAL_TYPE:
       pp_cxx_ws_string (pp, "__is_literal_type");
       break;
+    case CPTK_IS_ASSIGNABLE:
+      pp_cxx_ws_string (pp, "__is_assignable");
+      break;
+    case CPTK_IS_CONSTRUCTIBLE:
+      pp_cxx_ws_string (pp, "__is_constructible");
+      break;
 
     default:
       gcc_unreachable ();

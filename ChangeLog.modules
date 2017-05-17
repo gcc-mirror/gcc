@@ -1,5 +1,7 @@
 2017-05-17  Nathan Sidwell  <nathan@acm.org>
 
+	Merge trunk r248159.
+
 	Merge trunk r248151.
 	* cp-tree.h (ovl_insert): Swap first two args.  Update all uses.
 

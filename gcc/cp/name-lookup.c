@@ -2047,7 +2047,7 @@ check_extern_c_conflict (tree decl)
       if (mismatch)
 	{
 	  pedwarn (input_location, 0,
-		   "C-linkage declaration of %q#D", decl);
+		   "declaration of %q#D with C language linkage", decl);
 	  pedwarn (DECL_SOURCE_LOCATION (old), 0,
 		   "conflicts with previous declaration %q#D", old);
 	  if (mismatch < 0)
