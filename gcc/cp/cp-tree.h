@@ -351,6 +351,7 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
       CONSTRUCTOR_NO_IMPLICIT_ZERO (in CONSTRUCTOR)
       TINFO_USED_TEMPLATE_ID (in TEMPLATE_INFO)
       PACK_EXPANSION_SIZEOF_P (in *_PACK_EXPANSION)
+      OVL_USING_P (in OVERLOAD)
    2: IDENTIFIER_OPNAME_P (in IDENTIFIER_NODE)
       ICS_THIS_FLAG (in _CONV)
       DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (in VAR_DECL)
@@ -640,14 +641,12 @@ typedef struct ptrmem_cst * ptrmem_cst_t;
   ((TREE_CODE (NODE) == OVERLOAD) ? OVL_FUNCTION (NODE) : (NODE))
 #define OVL_NEXT(NODE)		\
   ((TREE_CODE (NODE) == OVERLOAD) ? TREE_CHAIN (NODE) : NULL_TREE)
-/* If set, this was imported in a using declaration.
-   This is not to confuse with being used somewhere, which
-   is not important for this node.  */
-#define OVL_USED(NODE)		TREE_USED (OVERLOAD_CHECK (NODE))
 /* If set, this OVERLOAD was created for argument-dependent lookup
    and can be freed afterward.  */
 #define OVL_ARG_DEPENDENT(NODE) TREE_LANG_FLAG_0 (OVERLOAD_CHECK (NODE))
 
+/* If set, this was imported in a using declaration.   */
+#define OVL_USING_P(NODE)	TREE_LANG_FLAG_1 (OVERLOAD_CHECK (NODE))
 /* If set, this overload contains a nested overload.  */
 #define OVL_NESTED_P(NODE)	TREE_LANG_FLAG_3 (OVERLOAD_CHECK (NODE))
 /* If set, this overload was constructed during lookup.  */
@@ -705,7 +704,7 @@ class ovl_iterator
   /* Whether this overload was introduced by a using decl.  */
   bool using_p () const
   {
-    return TREE_CODE (ovl) == OVERLOAD && OVL_USED (ovl);
+    return TREE_CODE (ovl) == OVERLOAD && OVL_USING_P (ovl);
   }
   tree remove_node (tree head)
   {
