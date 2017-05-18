@@ -1,3 +1,7 @@
+2017-05-18  Nathan Sidwell  <nathan@acm.org>
+
+	* c-decl.c (pushdecl_top_level): Delete unused function.
+
 2017-05-18  Marek Polacek  <polacek@redhat.com>
 
 	* c-decl.c (match_builtin_function_types): Use NULL_TREE instead of 0.
