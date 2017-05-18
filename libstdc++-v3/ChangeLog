@@ -1,5 +1,12 @@
 2017-05-18  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/80478
+	* include/std/functional (_Mem_fn_traits_base): Add specializations
+	for noexcept member function types.
+	* testsuite/20_util/function_objects/mem_fn/80478.cc: New test.
+
+2017-05-18  Jonathan Wakely  <jwakely@redhat.com>
+
 	* doc/xml/manual/policy_data_structures.xml: Fix typo.
 	* doc/xml/manual/test_policy_data_structures.xml: Likewise.
 	* doc/html/*: Regenerate.
