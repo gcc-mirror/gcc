@@ -20,7 +20,7 @@
   virtual functions, etc. These details are defined as the compiler
   Application Binary Interface, or ABI. The GNU C++ compiler uses an
   industry-standard C++ ABI starting with version 3. Details can be
-  found in the <a class="link" href="http://mentorembedded.github.com/cxx-abi/abi.html" target="_top">ABI
+  found in the <a class="link" href="http://mentorembedded.github.io/cxx-abi/abi.html" target="_top">ABI
   specification</a>.
 </p><p>
  The GNU C++ compiler, g++, has a compiler command line option to
@@ -153,12 +153,33 @@ compatible.
     was released, in compressed ISO date format, as an unsigned long.
     </p><p>
     This macro is defined in the file "c++config" in the
-    "libstdc++-v3/include/bits" directory. (Up to GCC 4.1.0, it was
-    changed every night by an automated script. Since GCC 4.1.0, it is
-    the same value as gcc/DATESTAMP.)
+    "libstdc++-v3/include/bits" directory. Up to GCC 4.1.0, it was
+    changed every night by an automated script. Since GCC 4.1.0 it is set
+    during configuration to the same value as
+    <code class="filename">gcc/DATESTAMP</code>, so for an official release its value
+    is the same as the date of the release, which is given in the <a class="link" href="https://gcc.gnu.org/develop.html#timeline" target="_top">GCC Release
+    Timeline</a>.
+    </p><p>
+    This macro is not useful for determining whether a particular feature is
+    supported by the version of libstdc++ you are using. The date of a release
+    might be after a feature was added to the development trunk, but the
+    release could be from an older branch. For example, in the 5.4.0 release
+    the macro has the value 20160603 which is greater than the 20160427 value
+    of the macro in the 6.1.0 release, but there are features supported in the
+    6.1.0 release that are not supported in 5.4.0 release.
+    You also can't test for the exact values listed below to try and
+    identify a release, because a snapshot taken from the gcc-5-branch on
+    2016-04-27 would have the same value for the macro as the 6.1.0 release
+    despite being a different version.
+    Many GNU/Linux distributions build their GCC packages from snapshots, so
+    the macro can have dates that doesn't correspond to official releases.
     </p><p>
     It is versioned as follows:
-    </p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p>GCC 3.0.0: 20010615</p></li><li class="listitem"><p>GCC 3.0.1: 20010819</p></li><li class="listitem"><p>GCC 3.0.2: 20011023</p></li><li class="listitem"><p>GCC 3.0.3: 20011220</p></li><li class="listitem"><p>GCC 3.0.4: 20020220</p></li><li class="listitem"><p>GCC 3.1.0: 20020514</p></li><li class="listitem"><p>GCC 3.1.1: 20020725</p></li><li class="listitem"><p>GCC 3.2.0: 20020814</p></li><li class="listitem"><p>GCC 3.2.1: 20021119</p></li><li class="listitem"><p>GCC 3.2.2: 20030205</p></li><li class="listitem"><p>GCC 3.2.3: 20030422</p></li><li class="listitem"><p>GCC 3.3.0: 20030513</p></li><li class="listitem"><p>GCC 3.3.1: 20030804</p></li><li class="listitem"><p>GCC 3.3.2: 20031016</p></li><li class="listitem"><p>GCC 3.3.3: 20040214</p></li><li class="listitem"><p>GCC 3.4.0: 20040419</p></li><li class="listitem"><p>GCC 3.4.1: 20040701</p></li><li class="listitem"><p>GCC 3.4.2: 20040906</p></li><li class="listitem"><p>GCC 3.4.3: 20041105</p></li><li class="listitem"><p>GCC 3.4.4: 20050519</p></li><li class="listitem"><p>GCC 3.4.5: 20051201</p></li><li class="listitem"><p>GCC 3.4.6: 20060306</p></li><li class="listitem"><p>GCC 4.0.0: 20050421</p></li><li class="listitem"><p>GCC 4.0.1: 20050707</p></li><li class="listitem"><p>GCC 4.0.2: 20050921</p></li><li class="listitem"><p>GCC 4.0.3: 20060309</p></li><li class="listitem"><p>GCC 4.1.0: 20060228</p></li><li class="listitem"><p>GCC 4.1.1: 20060524</p></li><li class="listitem"><p>GCC 4.1.2: 20070214</p></li><li class="listitem"><p>GCC 4.2.0: 20070514</p></li><li class="listitem"><p>GCC 4.2.1: 20070719</p></li><li class="listitem"><p>GCC 4.2.2: 20071007</p></li><li class="listitem"><p>GCC 4.2.3: 20080201</p></li><li class="listitem"><p>GCC 4.2.4: 20080519</p></li><li class="listitem"><p>GCC 4.3.0: 20080306</p></li><li class="listitem"><p>GCC 4.3.1: 20080606</p></li><li class="listitem"><p>GCC 4.3.2: 20080827</p></li><li class="listitem"><p>GCC 4.3.3: 20090124</p></li><li class="listitem"><p>GCC 4.3.4: 20090804</p></li><li class="listitem"><p>GCC 4.3.5: 20100522</p></li><li class="listitem"><p>GCC 4.3.6: 20110627</p></li><li class="listitem"><p>GCC 4.4.0: 20090421</p></li><li class="listitem"><p>GCC 4.4.1: 20090722</p></li><li class="listitem"><p>GCC 4.4.2: 20091015</p></li><li class="listitem"><p>GCC 4.4.3: 20100121</p></li><li class="listitem"><p>GCC 4.4.4: 20100429</p></li><li class="listitem"><p>GCC 4.4.5: 20101001</p></li><li class="listitem"><p>GCC 4.4.6: 20110416</p></li><li class="listitem"><p>GCC 4.4.7: 20120313</p></li><li class="listitem"><p>GCC 4.5.0: 20100414</p></li><li class="listitem"><p>GCC 4.5.1: 20100731</p></li><li class="listitem"><p>GCC 4.5.2: 20101216</p></li><li class="listitem"><p>GCC 4.5.3: 20110428</p></li><li class="listitem"><p>GCC 4.5.4: 20120702</p></li><li class="listitem"><p>GCC 4.6.0: 20110325</p></li><li class="listitem"><p>GCC 4.6.1: 20110627</p></li><li class="listitem"><p>GCC 4.6.2: 20111026</p></li><li class="listitem"><p>GCC 4.6.3: 20120301</p></li><li class="listitem"><p>GCC 4.7.0: 20120322</p></li><li class="listitem"><p>GCC 4.7.1: 20120614</p></li><li class="listitem"><p>GCC 4.7.2: 20120920</p></li></ul></div><p></p></li><li class="listitem"><p>
+    </p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p>GCC 3.0.0: 20010615</p></li><li class="listitem"><p>GCC 3.0.1: 20010819</p></li><li class="listitem"><p>GCC 3.0.2: 20011023</p></li><li class="listitem"><p>GCC 3.0.3: 20011220</p></li><li class="listitem"><p>GCC 3.0.4: 20020220</p></li><li class="listitem"><p>GCC 3.1.0: 20020514</p></li><li class="listitem"><p>GCC 3.1.1: 20020725</p></li><li class="listitem"><p>GCC 3.2.0: 20020814</p></li><li class="listitem"><p>GCC 3.2.1: 20021119</p></li><li class="listitem"><p>GCC 3.2.2: 20030205</p></li><li class="listitem"><p>GCC 3.2.3: 20030422</p></li><li class="listitem"><p>GCC 3.3.0: 20030513</p></li><li class="listitem"><p>GCC 3.3.1: 20030804</p></li><li class="listitem"><p>GCC 3.3.2: 20031016</p></li><li class="listitem"><p>GCC 3.3.3: 20040214</p></li><li class="listitem"><p>GCC 3.4.0: 20040419</p></li><li class="listitem"><p>GCC 3.4.1: 20040701</p></li><li class="listitem"><p>GCC 3.4.2: 20040906</p></li><li class="listitem"><p>GCC 3.4.3: 20041105</p></li><li class="listitem"><p>GCC 3.4.4: 20050519</p></li><li class="listitem"><p>GCC 3.4.5: 20051201</p></li><li class="listitem"><p>GCC 3.4.6: 20060306</p></li><li class="listitem"><p>GCC 4.0.0: 20050421</p></li><li class="listitem"><p>GCC 4.0.1: 20050707</p></li><li class="listitem"><p>GCC 4.0.2: 20050921</p></li><li class="listitem"><p>GCC 4.0.3: 20060309</p></li><li class="listitem"><p>
+      GCC 4.1.0 and later: the GCC release date, as shown in the
+      <a class="link" href="https://gcc.gnu.org/develop.html#timeline" target="_top">GCC
+      Release Timeline</a>
+    </p></li></ul></div><p></p></li><li class="listitem"><p>
     Incremental bumping of a library pre-defined macro,
     _GLIBCPP_VERSION. This macro is defined as the released version of
     the library, as a string literal. This is only implemented in
@@ -226,13 +247,12 @@ compatible.
     </p></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="abi.versioning.active"></a>Checking Active</h4></div></div></div><p>
       When the GNU C++ library is being built with symbol versioning
       on, you should see the following at configure time for
-      libstdc++:
+      libstdc++ (showing either 'gnu' or another of the supported styles):
     </p><pre class="screen">
 <code class="computeroutput">
   checking versioning on shared library symbols... gnu
 </code>
 </pre><p>
-  or another of the supported styles.
   If you don't see this line in the configure output, or if this line
   appears but the last word is 'no', then you are out of luck.
 </p><p>
@@ -292,7 +312,7 @@ class that would otherwise have implicit versions. This will change
 the way the compiler deals with this class in by-value return
 statements or parameters: instead of passing instances of this
 class in registers, the compiler will be forced to use memory. See the
-section on <a class="link" href="http://mentorembedded.github.com/cxx-abi/abi.html#calls" target="_top">Function
+section on <a class="link" href="http://mentorembedded.github.io/cxx-abi/abi.html#calls" target="_top">Function
 Calling Conventions and APIs</a>
  of the C++ ABI documentation for further details.
 </p></li></ol></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="abi.impl"></a>Implementation</h3></div></div></div><div class="orderedlist"><ol class="orderedlist" type="1"><li class="listitem"><p>
@@ -490,7 +510,7 @@ gcc test.c -g -O2 -L. -lone -ltwo /usr/lib/libstdc++.so.5 /usr/lib/libstdc++.so.
 	  ABIcheck
 	</a>
       </em>. </span></p></div><div class="biblioentry"><a id="biblio.cxxabi"></a><p>[biblio.cxxabi] <span class="title"><em>
-	<a class="link" href="http://www.codesourcery.com/cxx-abi/" target="_top">
+	<a class="link" href="http://mentorembedded.github.io/cxx-abi/" target="_top">
 	  C++ ABI Summary
 	</a>
       </em>. </span></p></div><div class="biblioentry"><a id="id-1.3.6.3.6.10.4"></a><p><span class="title"><em>
