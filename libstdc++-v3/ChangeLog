@@ -1,5 +1,15 @@
 2017-05-18  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/22_locale/codecvt/codecvt_utf16/79980.cc: Replace
+	effective-target with dg-options directive.
+	* testsuite/22_locale/codecvt/codecvt_utf16/80041.cc: Likewise.
+	* testsuite/22_locale/codecvt/codecvt_utf16/members.cc: Likewise.
+	* testsuite/22_locale/codecvt/codecvt_utf16/misaligned.cc: Likewise.
+	* testsuite/22_locale/codecvt/codecvt_utf8/79980.cc: Likewise.
+	* testsuite/22_locale/codecvt/codecvt_utf8/members.cc: Likewise.
+	* testsuite/22_locale/codecvt/codecvt_utf8_utf16/79511.cc: Likewise.
+	* testsuite/22_locale/codecvt/codecvt_utf8_utf16/members.cc: Likewise.
+
 	Backport from mainline
 	2016-08-02  Jonathan Wakely  <jwakely@redhat.com>
 
