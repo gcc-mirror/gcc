@@ -485,17 +485,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp>
     void cref(const _Tp&&) = delete;
 
-  /// Partial specialization.
+  /// std::ref overload to prevent wrapping a reference_wrapper
   template<typename _Tp>
     inline reference_wrapper<_Tp>
     ref(reference_wrapper<_Tp> __t) noexcept
-    { return ref(__t.get()); }
+    { return std::ref(__t.get()); }
 
-  /// Partial specialization.
+  /// std::cref overload to prevent wrapping a reference_wrapper
   template<typename _Tp>
     inline reference_wrapper<const _Tp>
     cref(reference_wrapper<_Tp> __t) noexcept
-    { return cref(__t.get()); }
+    { return std::cref(__t.get()); }
 
   // @} group functors
 
