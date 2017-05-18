@@ -2304,18 +2304,28 @@ finish_call_expr (tree fn, vec<tree, va_gc> **args, bool disallow_virtual,
 	  result = build_nt_call_vec (fn, *args);
 	  SET_EXPR_LOCATION (result, EXPR_LOC_OR_LOC (fn, input_location));
 	  KOENIG_LOOKUP_P (result) = koenig_p;
+	  if (is_overloaded_fn (fn))
+	    {
+	      fn = get_fns (fn);
+	      lookup_keep (fn, true);
+	    }
+
 	  if (cfun)
 	    {
-	      do
+	      bool abnormal = true;
+	      for (lkp_iterator iter (fn); abnormal && iter; ++iter)
 		{
-		  tree fndecl = OVL_CURRENT (fn);
+		  tree fndecl = *iter;
 		  if (TREE_CODE (fndecl) != FUNCTION_DECL
 		      || !TREE_THIS_VOLATILE (fndecl))
-		    break;
-		  fn = OVL_NEXT (fn);
+		    abnormal = false;
 		}
-	      while (fn);
-	      if (!fn)
+	      /* FIXME: Stop warning about falling off end of non-void
+		 function.   But this is wrong.  Even if we only see
+		 no-return fns at this point, we could select a
+		 future-defined return fn during instantiation.  Or
+		 vice-versa.  */
+	      if (abnormal)
 		current_function_returns_abnormally = 1;
 	    }
 	  return result;
@@ -2469,24 +2479,9 @@ finish_call_expr (tree fn, vec<tree, va_gc> **args, bool disallow_virtual,
       result = convert_from_reference (result);
     }
 
-  if (koenig_p)
-    {
-      /* Free garbage OVERLOADs from arg-dependent lookup.  */
-      tree next = NULL_TREE;
-      for (fn = orig_fn;
-	   fn && TREE_CODE (fn) == OVERLOAD && OVL_ARG_DEPENDENT (fn);
-	   fn = next)
-	{
-	  if (processing_template_decl)
-	    /* In a template, we'll re-use them at instantiation time.  */
-	    OVL_ARG_DEPENDENT (fn) = false;
-	  else
-	    {
-	      next = OVL_CHAIN (fn);
-	      ggc_free (fn);
-	    }
-	}
-    }
+  /* Free or retain OVERLOADs from lookup.  */
+  if (is_overloaded_fn (orig_fn))
+    lookup_keep (get_fns (orig_fn), processing_template_decl);
 
   return result;
 }
