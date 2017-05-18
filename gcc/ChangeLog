@@ -1,3 +1,18 @@
+2017-05-18  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.c (struct machine_function): Add field
+	fpr_is_wrapped_separately.
+	(rs6000_get_separate_components): Use 64 components.  Handle the
+	new FPR components.
+	(rs6000_components_for_bb): Handle the FPR components.
+	(rs6000_emit_prologue_components): Handle the FPR components.
+	(rs6000_emit_epilogue_components): Handle the FPR components.
+	(rs6000_set_handled_components): Handle the FPR components.
+	(rs6000_emit_prologue): Don't output prologue code for those FPRs
+	that are already separately shrink-wrapped.
+	(rs6000_emit_epilogue): Don't output epilogue code for those FPRs
+	that are already separately shrink-wrapped.
+
 2017-05-18  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	PR target/80510
