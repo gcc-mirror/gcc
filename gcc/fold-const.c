@@ -10532,30 +10532,6 @@ fold_binary_loc (location_t loc,
 					TREE_OPERAND (arg1, 0), arg0);
 	}
 
-      /* Transform comparisons of the form C - X CMP X if C % 2 == 1.  */
-      if (TREE_CODE (arg0) == MINUS_EXPR
-	  && TREE_CODE (TREE_OPERAND (arg0, 0)) == INTEGER_CST
-	  && operand_equal_p (tree_strip_nop_conversions (TREE_OPERAND (arg0,
-									1)),
-			      arg1, 0)
-	  && wi::extract_uhwi (TREE_OPERAND (arg0, 0), 0, 1) == 1)
-	return omit_two_operands_loc (loc, type,
-				      code == NE_EXPR
-				      ? boolean_true_node : boolean_false_node,
-				      TREE_OPERAND (arg0, 1), arg1);
-
-      /* Transform comparisons of the form X CMP C - X if C % 2 == 1.  */
-      if (TREE_CODE (arg1) == MINUS_EXPR
-	  && TREE_CODE (TREE_OPERAND (arg1, 0)) == INTEGER_CST
-	  && operand_equal_p (tree_strip_nop_conversions (TREE_OPERAND (arg1,
-									1)),
-			      arg0, 0)
-	  && wi::extract_uhwi (TREE_OPERAND (arg1, 0), 0, 1) == 1)
-	return omit_two_operands_loc (loc, type,
-				      code == NE_EXPR
-				      ? boolean_true_node : boolean_false_node,
-				      TREE_OPERAND (arg1, 1), arg0);
-
       /* If this is an EQ or NE comparison with zero and ARG0 is
 	 (1 << foo) & bar, convert it to (bar >> foo) & 1.  Both require
 	 two operations, but the latter can be done in one less insn
