@@ -1,3 +1,14 @@
+2017-05-18  Nathan Sidwell  <nathan@acm.org>
+
+	* name-lookup.c (find_local_binding): New, broken out of ...
+	(lookup_name_innermost_nonclass_level_1): ... here.  Call it.
+	(set_namespace_binding): Swap scope & name args.
+	(namespace_binding_1): Likewise.
+	(pushdecl_maybe_friend_1): Adjust set_namespace_binding call.
+	(push_overloaded_decl_1): Likewise.
+	(set_global_binding): Likewise.
+	(get_namespace_binding): Adjust namespace_binding_1 call.
+
 2017-05-17  Nathan Sidwell  <nathan@acm.org>
 
 	* cp-tree.h (default_hash_traits <lang_identifier *>): New
