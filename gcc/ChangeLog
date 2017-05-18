@@ -1,3 +1,24 @@
+2017-05-18  Jan Hubicka  <hubicka@ucw.cz>
+
+	* Makefile.in: Add ipa-predicate.o and ipa-predicate.h
+	* ipa-inline-analysis.c (NUM_CONDITIONS): turn into
+	predicate::num_conditions
+	(IS_NOT_CONSTANT): turn into predicate::is_not_constant.
+	(CHANGED): turn into predicate::changed.
+	(agg_position_info): Move to ipa-predicate.h
+	(add_condition, predicate::add_clause, predicate::operator &=,
+	predicate::or_with, predicate::evaluate, predicate::probability,
+	dump_condition, dump_clause, predicate::dump,
+	predicate::remap_after_duplication, predicate::remap_after_inlining,
+	predicate::stream_in, predicate::stream_out): Move to ipa-predicate.c
+	(evaluate_conditions_for_known_args): Update.
+	(set_cond_stmt_execution_predicate): Update.
+	* ipa-inline.h: Include ipa-predicate.h
+	(condition, inline_param_summary, conditions, agg_position_info,
+	predicate): Move to ipa-predicate.h
+	* ipa-predicate.c: New file.
+	* ipa-predicate.h: New file.
+
 2017-05-18  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	* final.c (leaf_function_p): Check we are not in a sequence.
