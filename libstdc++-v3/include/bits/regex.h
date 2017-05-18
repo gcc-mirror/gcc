@@ -2454,7 +2454,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        * one-past-the-end of a range.
        */
       regex_iterator()
-      : _M_match()
+      : _M_pregex()
       { }
 
       /**
