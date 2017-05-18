@@ -1,3 +1,8 @@
+2017-05-18  Marc Glisse  <marc.glisse@inria.fr>
+
+	* fold-const.c (fold_binary_loc): Move transformation...
+	* match.pd (C - X CMP X): ... here.
+
 2017-05-18  Sheldon Lobo  <sheldon.lobo@oracle.com>
 
 	* config/sparc/sparc.c (sparc_option_override): Set function
