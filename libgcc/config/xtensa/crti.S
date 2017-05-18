@@ -24,7 +24,7 @@
 # .init sections.  Users may put any desired instructions in those
 # sections.
 
-#include "xtensa-config.h"
+#include "xtensa-config-builtin.h"
 
 	.section .init
 	.globl _init
