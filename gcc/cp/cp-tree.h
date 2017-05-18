@@ -5877,6 +5877,10 @@ concept_template_p (tree t)
    e.g  "int f(void)".  */
 extern cp_parameter_declarator *no_parameters;
 
+/* Various dump ids.  */
+extern int class_dump_id;
+extern int module_dump_id;
+
 /* in call.c */
 extern bool check_dtor_name			(tree, tree);
 int magic_varargs_p				(tree);

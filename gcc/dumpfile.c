@@ -52,8 +52,6 @@ dump_flags_t dump_flags;
 static struct dump_file_info dump_files[TDI_end] =
 {
   {NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 0, 0, 0, false, false},
-  {".lang", "lang", NULL, NULL, NULL, NULL, NULL, TDF_LANG,
-   OPTGROUP_OTHER, 0, 0, 0, -1, false, false},
   {".cgraph", "ipa-cgraph", NULL, NULL, NULL, NULL, NULL, TDF_IPA,
    0, 0, 0, 0, 0, false, false},
   {".type-inheritance", "ipa-type-inheritance", NULL, NULL, NULL, NULL, NULL, TDF_IPA,
@@ -62,15 +60,13 @@ static struct dump_file_info dump_files[TDI_end] =
    0, 0, 0, 0, 0, false, false},
   {".tu", "translation-unit", NULL, NULL, NULL, NULL, NULL, TDF_LANG,
    0, 0, 0, 0, 1, false, false},
-  {".class", "class-hierarchy", NULL, NULL, NULL, NULL, NULL, TDF_LANG,
-   0, 0, 0, 0, 2, false, false},
   {".original", "tree-original", NULL, NULL, NULL, NULL, NULL, TDF_TREE,
    0, 0, 0, 0, 3, false, false},
   {".gimple", "tree-gimple", NULL, NULL, NULL, NULL, NULL, TDF_TREE,
    0, 0, 0, 0, 4, false, false},
   {".nested", "tree-nested", NULL, NULL, NULL, NULL, NULL, TDF_TREE,
    0, 0, 0, 0, 5, false, false},
-#define FIRST_AUTO_NUMBERED_DUMP 6
+#define FIRST_AUTO_NUMBERED_DUMP 4
 
   {NULL, "lang-all", NULL, NULL, NULL, NULL, NULL, TDF_LANG,
    0, 0, 0, 0, 0, false, false},

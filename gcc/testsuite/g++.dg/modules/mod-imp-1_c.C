@@ -1,7 +1,7 @@
-// { dg-additional-options "-fdump-lang" }
-// { dg-final { scan-dump "lang" "Importing 'Foo'" "fe" } }
-// { dg-final { scan-dump "lang" "Writing module 'Baz'" "fe" } }
-// { dg-final { scan-dump "lang" "Writing import 'Foo'" "fe" } }
+// { dg-additional-options "-fdump-lang-module" }
+// { dg-final { scan-lang-dump "Importing 'Foo'" "module" } }
+// { dg-final { scan-lang-dump "Writing module 'Baz'" "module" } }
+// { dg-final { scan-lang-dump "Writing import 'Foo'" "module" } }
 
 export module Baz;
 // { dg-module-if "Baz" }

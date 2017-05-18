@@ -1,6 +1,6 @@
 // { dg-do compile }
 // { dg-prune-output "direct base" }
-// { dg-options "-fdump-class-hierarchy" }
+// { dg-options "-fdump-lang-class" }
 
 // Copyright (C) 2002 Free Software Foundation, Inc.
 // Contributed by Nathan Sidwell 27 Dec 2002 <nathan@codesourcery.com>

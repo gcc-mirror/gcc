@@ -1,5 +1,37 @@
 2017-05-18  Nathan Sidwell  <nathan@acm.org>
 
+	LANG_HOOK_REGISTER_DUMPS
+	gcc/
+	* context.h (context::set_passes): New.
+	* context.c (context::context): Do not create pass manager.
+	* toplev.c (general_init): Create pass manager here.  Call
+	register dump lang hook.
+	* doc/invoke.texi: Document -fdump-lang option family.
+	* dumpfile.c (dump_files): Remove module and class dumps here.
+	(FIRST_AUTO_NUMBERED_DUMP): Adjust.
+	* dumpfile.h (tree_dump_index): Remove TDI_lang, TDI_class.
+	* langhooks-def.h (lhd_register_dumps): Declare.
+	(LANG_HOOKS_REGISTER_DUMPS): Define.
+	(LANG_HOOKS_INITIALIZER): Add it.
+	* langhooks.c (lhd_register_dumps): Define.
+	* langhooks.h (struct lang_hooks): Add register_dumps.
+	gcc/c-family/
+	* c-opts.c (class_dump_file, class_dump_flags): Delete.
+	(c_common_parse_file): Remove class dump handling.
+	(get_dump_info): Likewise.
+	gcc/cp/
+	* class.c (class_dump_id): Define.
+	(dump_class_hierarchy, dump_vtable, dump_vtt): Use it.
+	* cp-objcp-common.c (cp_register_dumps): New.
+	* cp-objcp-common.h (cp_register_dumps): Declare.
+	(LANG_HOOKS_REGISTER_DUMPS): Override.
+	* cp-tree.h (class_dump_id, module_dump_id): Declare.
+	* module.c (module_dump_id): Define.
+	(read_module, write_module): Use it.
+	gcc/testsuite/
+	* g++.dg/inherit/covariant7.C: Adjust.
+	* g++.dg/modules/ Adjust scans.
+
 	gcc/cp/
 	* cp-tree.h (lookup_add, lookup_maybe_add): Swap args.
 	* name-lookup.c (name_lookup::merge_binding,

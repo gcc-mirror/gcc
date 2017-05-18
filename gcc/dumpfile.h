@@ -27,12 +27,10 @@ along with GCC; see the file COPYING3.  If not see
 enum tree_dump_index
 {
   TDI_none,			/* No dump */
-  TDI_lang,			/* Lang-specific.  */
   TDI_cgraph,                   /* dump function call graph.  */
   TDI_inheritance,              /* dump type inheritance graph.  */
   TDI_clones,			/* dump IPA cloning decisions.  */
   TDI_tu,			/* dump the whole translation unit.  */
-  TDI_class,			/* dump class hierarchy.  */
   TDI_original,			/* dump each function before optimizing it */
   TDI_generic,			/* dump each function after genericizing it */
   TDI_nested,			/* dump each function after unnesting it */

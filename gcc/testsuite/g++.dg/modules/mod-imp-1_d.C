@@ -1,6 +1,6 @@
-// { dg-additional-options "-fdump-lang" }
-// { dg-final { scan-dump "lang" "Importing 'Baz'" "fe" } }
-// { dg-final { scan-dump "lang" "Begin nested import 'Foo'" "fe" } }
-// { dg-final { scan-dump "lang" "Importing 'Foo'" "fe" } }
+// { dg-additional-options "-fdump-lang-module" }
+// { dg-final { scan-lang-dump "Importing 'Baz'" "module" } }
+// { dg-final { scan-lang-dump "Begin nested import 'Foo'" "module" } }
+// { dg-final { scan-lang-dump "Importing 'Foo'" "module" } }
 
 module Baz;

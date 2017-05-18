@@ -41,6 +41,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "cgraph.h"
 #include "tree-iterator.h"
 
+/* Id for dumping the class heirarchy.  */
+int module_dump_id;
+ 
 /* State of a particular module. */
 struct GTY(()) module_state
 {
@@ -810,8 +813,7 @@ cpm_reader::fill (size_t want)
 }
 
 /* Module cpm_stream base.  */
-class GTY((user)) cpm_stream
-// GTY((skip)) fails to work
+class cpm_stream
 {
 public:
   /* Record tags.  */
@@ -898,7 +900,7 @@ cpm_stream::version ()
 }
 
 /* cpm_stream cpms_out.  */
-class GTY((user)) cpms_out : public cpm_stream
+class cpms_out : public cpm_stream
 {
   cpm_writer w;
   hash_map<tree,unsigned> map; /* trees to ids  */
@@ -953,7 +955,7 @@ cpms_out::instrument (FILE *d)
 }
 
 /* Cpm_Stream in.  */
-class GTY((user)) cpms_in : public cpm_stream
+class cpms_in : public cpm_stream
 {
   cpm_reader r;
 
@@ -3130,7 +3132,7 @@ read_module (FILE *stream, const char *fname, module_state *state,
   bool owning_dump = !d;
 
   if (owning_dump)
-    d = dump_begin (TDI_lang, NULL);
+    d = dump_begin (module_dump_id, NULL);
 
   if (d)
     fprintf (d, "Importing '%s'\n", IDENTIFIER_POINTER (state->name));
@@ -3149,7 +3151,7 @@ read_module (FILE *stream, const char *fname, module_state *state,
     }
 
   if (owning_dump && d)
-    dump_end (TDI_lang, d);
+    dump_end (module_dump_id, d);
 
   if (ok)
     {
@@ -3318,7 +3320,7 @@ static void
 write_module (FILE *stream, const char *fname, tree name)
 {
   cpms_out out (stream, fname);
-  FILE *d = dump_begin (TDI_lang, NULL);
+  FILE *d = dump_begin (module_dump_id, NULL);
 
   if (d)
     fprintf (d, "Writing module '%s'\n", IDENTIFIER_POINTER (name));
@@ -3345,7 +3347,7 @@ write_module (FILE *stream, const char *fname, tree name)
   if (d)
     {
       out.instrument (d);
-      dump_end (TDI_lang, d);
+      dump_end (module_dump_id, d);
     }
 }
 

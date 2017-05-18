@@ -1,5 +1,5 @@
-// { dg-additional-options "-fdump-lang" }
-// { dg-final { scan-dump "lang" "Writing module 'Foo'" "lang" } }
+// { dg-additional-options "-fdump-lang-module" }
+// { dg-final { scan-lang-dump "Writing module 'Foo'" "module" } }
 
 export module Foo;
 // { dg-module-if "Foo" }

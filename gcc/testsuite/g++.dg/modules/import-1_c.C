@@ -1,6 +1,6 @@
-// { dg-additional-options "-fdump-lang" }
-// { dg-final { scan-dump "lang" "Writing export import 'Baz'" "lang" } }
-// { dg-final { scan-dump "lang" "Writing export import 'Bar'" "lang" } }
+// { dg-additional-options "-fdump-lang-module" }
+// { dg-final { scan-lang-dump "Writing export import 'Baz'" "module" } }
+// { dg-final { scan-lang-dump "Writing export import 'Bar'" "module" } }
 
 export module Foo;
 // { dg-module-if "Foo" }
