@@ -6954,8 +6954,8 @@ extern tree ovl_insert				(tree fn, tree maybe_ovl,
 						 bool using_p = false);
 extern void lookup_keep				(tree lookup, bool keep);
 extern void lookup_mark				(tree lookup, bool val);
-extern tree lookup_add				(tree lookup, tree ovl);
-extern tree lookup_maybe_add			(tree lookup, tree ovl);
+extern tree lookup_add				(tree fns, tree lookup);
+extern tree lookup_maybe_add			(tree fns, tree lookup);
 extern int is_overloaded_fn			(tree);
 extern bool really_overloaded_fn		(tree);
 extern tree dependent_name			(tree);

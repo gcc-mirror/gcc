@@ -2930,7 +2930,7 @@ check_explicit_specialization (tree declarator,
 
 		    /* Glue all these conversion functions together
 		       with those we already have.  */
-		    fns = lookup_add (fns, ovl);
+		    fns = lookup_add (ovl, fns);
 		  }
 	    }
 
@@ -25174,7 +25174,7 @@ do_class_deduction (tree ptype, tree tmpl, tree init, int flags,
 	  tree pruned = NULL_TREE;
 	  for (lkp_iterator iter (cands); iter; ++iter)
 	    if (!DECL_NONCONVERTING_P (STRIP_TEMPLATE (*iter)))
-	      pruned = lookup_add (pruned, *iter);
+	      pruned = lookup_add (*iter, pruned);
 
 	  cands = pruned;
 	}
@@ -25199,29 +25199,29 @@ do_class_deduction (tree ptype, tree tmpl, tree init, int flags,
 	    && DECL_NONCONVERTING_P (STRIP_TEMPLATE (guide)))
 	  elided = true;
 	else
-	  cands = lookup_add (cands, guide);
+	  cands = lookup_add (guide, cands);
 
 	saw_ctor = true;
       }
 
-  if (!saw_ctor && args->length() == 0)
+  if (args->length () < 2)
     {
-      tree guide = build_deduction_guide (type, outer_args, complain);
-      if ((flags & LOOKUP_ONLYCONVERTING)
-	  && DECL_NONCONVERTING_P (STRIP_TEMPLATE (guide)))
-	elided = true;
-      else
-	cands = lookup_add (cands, guide);
-    }
-  if (args->length() == 1)
-    {
-      tree guide = build_deduction_guide (build_reference_type (type),
-					  outer_args, complain);
-      if ((flags & LOOKUP_ONLYCONVERTING)
-	  && DECL_NONCONVERTING_P (STRIP_TEMPLATE (guide)))
-	elided = true;
-      else
-	cands = lookup_add (cands, guide);
+      tree gtype = NULL_TREE;
+
+      if (args->length () == 1)
+	gtype = build_reference_type (type);
+      else if (!saw_ctor)
+	gtype = type;
+
+      if (gtype)
+	{
+	  tree guide = build_deduction_guide (gtype, outer_args, complain);
+	  if ((flags & LOOKUP_ONLYCONVERTING)
+	      && DECL_NONCONVERTING_P (STRIP_TEMPLATE (guide)))
+	    elided = true;
+	  else
+	    cands = lookup_add (guide, cands);
+	}
     }
 
   if (elided && !cands)

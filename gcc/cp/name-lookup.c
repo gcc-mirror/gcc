@@ -483,7 +483,7 @@ name_lookup::merge_binding (tree cur, tree new_val)
 	    && same_type_p (TREE_TYPE (cur), TREE_TYPE (new_val))))
     ;
   else if (OVL_P (cur) && OVL_P (new_val))
-    cur = lookup_add (cur, new_val);
+    cur = lookup_add (new_val, cur);
   else
     {
       if (TREE_CODE (cur) != TREE_LIST)
@@ -855,19 +855,19 @@ adl_lookup::find_and_mark (tree scope)
 }
 
 void
-adl_lookup::add_functions (tree ovl)
+adl_lookup::add_functions (tree fns)
 {
-  if (!ovl)
+  if (!fns)
     return;
-  else if (TREE_CODE (ovl) == OVERLOAD)
+  else if (TREE_CODE (fns) == OVERLOAD)
     {
-      if (TREE_TYPE (ovl) != unknown_type_node)
-	ovl = OVL_FUNCTION (ovl);
+      if (TREE_TYPE (fns) != unknown_type_node)
+	fns = OVL_FUNCTION (fns);
     }
-  else if (!DECL_DECLARES_FUNCTION_P (ovl))
+  else if (!DECL_DECLARES_FUNCTION_P (fns))
     return;
 
-  value = lookup_maybe_add (value, ovl);
+  value = lookup_maybe_add (fns, value);
 }
 
 /* Add functions of a namespace to the lookup structure.  */

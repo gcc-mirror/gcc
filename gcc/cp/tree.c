@@ -2311,15 +2311,15 @@ lookup_mark (tree ovl, bool val)
 /* Add a potential overload into a lookup set.  */
 
 tree
-lookup_add (tree lookup, tree ovl)
+lookup_add (tree fns, tree lookup)
 {
-  if (lookup || TREE_CODE (ovl) == TEMPLATE_DECL)
+  if (lookup || TREE_CODE (fns) == TEMPLATE_DECL)
     {
-      lookup = ovl_make (ovl, lookup);
+      lookup = ovl_make (fns, lookup);
       OVL_LOOKUP_P (lookup) = true;
     }
   else
-    lookup = ovl;
+    lookup = fns;
 
   return lookup;
 }
@@ -2327,19 +2327,19 @@ lookup_add (tree lookup, tree ovl)
 /* Add a potential overload into a lookup set.  */
 
 tree
-lookup_maybe_add (tree lookup, tree ovl)
+lookup_maybe_add (tree fns, tree lookup)
 {
-  if (LOOKUP_SEEN_P (ovl))
+  if (LOOKUP_SEEN_P (fns))
     return lookup;
 
-  if (lookup && TREE_CODE (ovl) == OVERLOAD)
+  if (lookup && TREE_CODE (fns) == OVERLOAD)
     {
       /* Determine if we already have some part of this overload in
 	 the overload set.  If so fix things up so we only have the
 	 overload set once.  */
       tree marked = NULL_TREE;
 
-      for (tree probe = ovl; probe; probe = OVL_CHAIN (probe))
+      for (tree probe = fns; probe; probe = OVL_CHAIN (probe))
 	if (LOOKUP_SEEN_P (probe))
 	  {
 	    marked = probe;
@@ -2387,9 +2387,9 @@ lookup_maybe_add (tree lookup, tree ovl)
 
   /* Finally mark the new overload and prepend it to the current
      lookup.  */
-  LOOKUP_SEEN_P (ovl) = true;
+  LOOKUP_SEEN_P (fns) = true;
 
-  return lookup_add (lookup, ovl);
+  return lookup_add (fns, lookup);
 }
 
 /* Preserve the contents of a lookup so that it is available for a

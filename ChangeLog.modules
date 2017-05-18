@@ -1,5 +1,12 @@
 2017-05-18  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* cp-tree.h (lookup_add, lookup_maybe_add): Swap args.
+	* name-lookup.c (name_lookup::merge_binding,
+	adl_lookup::add_functions): Adjust.
+	* pt.c (check_explicit_specialization, do_class_deduction): Adjust.
+	* tree.c (lookup_add, lookup_maybe_add): Adjust.
+
 	Merge trunk r248192.
 
 2017-05-17  Nathan Sidwell  <nathan@acm.org>
