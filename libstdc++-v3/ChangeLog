@@ -1,6 +1,13 @@
 2017-05-18  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline
+	2017-04-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/80504
+	* include/std/functional (ref, cref): Qualify calls.
+	* testsuite/20_util/reference_wrapper/80504.cc: New test.
+
+	Backport from mainline
 	2017-04-19  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/80448
