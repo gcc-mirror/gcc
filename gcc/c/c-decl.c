@@ -3089,34 +3089,6 @@ pushdecl (tree x)
     }
   return x;
 }
-
-/* Record X as belonging to file scope.
-   This is used only internally by the Objective-C front end,
-   and is limited to its needs.  duplicate_decls is not called;
-   if there is any preexisting decl for this identifier, it is an ICE.  */
-
-tree
-pushdecl_top_level (tree x)
-{
-  tree name;
-  bool nested = false;
-  gcc_assert (VAR_P (x) || TREE_CODE (x) == CONST_DECL);
-
-  name = DECL_NAME (x);
-
- gcc_assert (TREE_CODE (x) == CONST_DECL || !I_SYMBOL_BINDING (name));
-
-  if (TREE_PUBLIC (x))
-    {
-      bind (name, x, external_scope, /*invisible=*/true, /*nested=*/false,
-	    UNKNOWN_LOCATION);
-      nested = true;
-    }
-  if (file_scope)
-    bind (name, x, file_scope, /*invisible=*/false, nested, UNKNOWN_LOCATION);
-
-  return x;
-}
 
 
 /* Issue a warning about implicit function declaration.  ID is the function
