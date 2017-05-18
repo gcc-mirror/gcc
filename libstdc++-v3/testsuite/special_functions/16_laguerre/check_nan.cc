@@ -1,3 +1,4 @@
+// { dg-do run { target c++11 } }
 // { dg-require-c-std "" }
 // { dg-add-options ieee }
 // { dg-options "-D__STDCPP_WANT_MATH_SPEC_FUNCS__" }
