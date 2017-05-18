@@ -1,4 +1,5 @@
 // { dg-require-sharedlib "" }
+// { dg-skip-if "invalid options for C" { *-*-* } { "-std=c++??" "-std=gnu++??" } }
 // { dg-options "-g -O2 -pthread -ldl -x c -fvtable-verify=none" { target *-*-linux* *-*-gnu* } }
 
 // Copyright (C) 2005-2015 Free Software Foundation, Inc.
