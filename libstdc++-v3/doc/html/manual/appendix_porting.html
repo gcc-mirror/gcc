@@ -329,6 +329,12 @@ version(s). Edit the file <code class="filename">testsuite/util/testsuite_abi.cc
 file to add the new versions to the <code class="varname">known_versions</code> list,
 and update the checks for the latest versions that set the
 <code class="varname">latestp</code> variable).
+</p></li><li class="listitem"><p>
+Add the library (<code class="filename">libstdc++.so.6.0.X</code>)
+and symbols versions
+(<code class="literal">GLIBCXX_3.4.X</code> and <code class="literal">CXXABI_1.3.Y</code>)
+to the <a class="link" href="abi.html#abi.versioning.history" title="History">History</a> section in
+<code class="filename">doc/xml/manual/abi.xml</code> at the relevant places.
 </p></li></ul></div><p>
 Once the new symbol version has been added you can add the names of your new
 symbols in the new version node:
