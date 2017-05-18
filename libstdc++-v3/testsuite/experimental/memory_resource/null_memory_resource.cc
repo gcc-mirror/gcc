@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++14" }
+// { dg-do run { target c++14 } }
 
 // Copyright (C) 2016 Free Software Foundation, Inc.
 //
@@ -18,7 +18,6 @@
 // <http://www.gnu.org/licenses/>.
 
 #include <experimental/memory_resource>
-#include <bits/uses_allocator.h>
 #include <testsuite_hooks.h>
 
 using std::experimental::pmr::memory_resource;
