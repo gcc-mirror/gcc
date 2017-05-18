@@ -590,6 +590,22 @@ class Type
   are_identical(const Type* lhs, const Type* rhs, bool errors_are_identical,
 		std::string* reason);
 
+  // An argument to are_identical_cmp_tags, indicating whether or not
+  // to compare struct field tags.
+  enum Cmp_tags {
+    COMPARE_TAGS,
+    IGNORE_TAGS
+  };
+
+  // Return true if two types are identical.  This is like the
+  // are_identical function, but also takes a CMP_TAGS argument
+  // indicating whether to compare struct tags.  Otherwise the
+  // parameters are as for are_identical.
+  static bool
+  are_identical_cmp_tags(const Type* lhs, const Type* rhs,
+			 Cmp_tags, bool errors_are_identical,
+			 std::string* reason);
+
   // Return true if two types are compatible for use in a binary
   // operation, other than a shift, comparison, or channel send.  This
   // is an equivalence relation.
@@ -1922,7 +1938,7 @@ class Function_type : public Type
   // Whether this type is the same as T.
   bool
   is_identical(const Function_type* t, bool ignore_receiver,
-	       bool errors_are_identical, std::string*) const;
+	       Cmp_tags, bool errors_are_identical, std::string*) const;
 
   // Record that this is a varargs function.
   void
@@ -2322,7 +2338,8 @@ class Struct_type : public Type
 
   // Whether this type is identical with T.
   bool
-  is_identical(const Struct_type* t, bool errors_are_identical) const;
+  is_identical(const Struct_type* t, Cmp_tags,
+	       bool errors_are_identical) const;
 
   // Return whether NAME is a local field which is not exported.  This
   // is only used for better error reporting.
@@ -2521,7 +2538,8 @@ class Array_type : public Type
 
   // Whether this type is identical with T.
   bool
-  is_identical(const Array_type* t, bool errors_are_identical) const;
+  is_identical(const Array_type* t, Cmp_tags,
+	       bool errors_are_identical) const;
 
   // Return an expression for the pointer to the values in an array.
   Expression*
@@ -2694,7 +2712,8 @@ class Map_type : public Type
 
   // Whether this type is identical with T.
   bool
-  is_identical(const Map_type* t, bool errors_are_identical) const;
+  is_identical(const Map_type* t, Cmp_tags,
+	       bool errors_are_identical) const;
 
   // Import a map type.
   static Map_type*
@@ -2814,7 +2833,8 @@ class Channel_type : public Type
 
   // Whether this type is identical with T.
   bool
-  is_identical(const Channel_type* t, bool errors_are_identical) const;
+  is_identical(const Channel_type* t, Cmp_tags,
+	       bool errors_are_identical) const;
 
   // Import a channel type.
   static Channel_type*
@@ -2927,7 +2947,8 @@ class Interface_type : public Type
   // Whether this type is identical with T.  REASON is as in
   // implements_interface.
   bool
-  is_identical(const Interface_type* t, bool errors_are_identical) const;
+  is_identical(const Interface_type* t, Cmp_tags,
+	       bool errors_are_identical) const;
 
   // Whether we can assign T to this type.  is_identical is known to
   // be false.
