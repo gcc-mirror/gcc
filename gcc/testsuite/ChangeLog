@@ -1,3 +1,7 @@
+2017-05-18  Eric Gallager  <egall@gwmail.gwu.edu>
+
+	* gcc.dg/pragma-diag-7.c: New test.
+
 2017-05-18  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/80799
