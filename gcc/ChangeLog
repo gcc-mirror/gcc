@@ -1,3 +1,7 @@
+2017-05-18  Martin Liska  <mliska@suse.cz>
+
+	* vec.h (struct vnull): Use it.
+
 2017-05-18  Jan Hubicka  <hubicka@ucw.cz>
 
 	* ipa-inline-analysis.c (predicate_conditions): Move to ipa-inline.h
