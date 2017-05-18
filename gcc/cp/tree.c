@@ -2138,7 +2138,7 @@ ovl_insert (tree fn, tree maybe_ovl, bool using_p)
 
   /* Find insertion point.  */
   while (maybe_ovl && TREE_CODE (maybe_ovl) == OVERLOAD
-	 && (weight < OVL_USED (maybe_ovl)))
+	 && (weight < OVL_USING_P (maybe_ovl)))
     {
       if (!result)
 	result = maybe_ovl;
@@ -2151,7 +2151,7 @@ ovl_insert (tree fn, tree maybe_ovl, bool using_p)
     {
       trail = ovl_make (fn, maybe_ovl);
       if (using_p)
-	OVL_USED (trail) = true;
+	OVL_USING_P (trail) = true;
     }
 
   if (insert_after)
@@ -2290,7 +2290,7 @@ ovl_scope (tree ovl)
   if (TREE_CODE (ovl) == TEMPLATE_ID_EXPR)
     ovl = TREE_OPERAND (ovl, 0);
   /* Skip using-declarations.  */
-  while (TREE_CODE (ovl) == OVERLOAD && OVL_USED (ovl) && OVL_CHAIN (ovl))
+  while (TREE_CODE (ovl) == OVERLOAD && OVL_USING_P (ovl) && OVL_CHAIN (ovl))
     ovl = OVL_CHAIN (ovl);
   return CP_DECL_CONTEXT (OVL_CURRENT (ovl));
 }

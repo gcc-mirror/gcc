@@ -2920,7 +2920,7 @@ push_overloaded_decl_1 (tree decl, int flags, bool is_friend)
 	      tree fn = OVL_CURRENT (tmp);
 	      tree dup;
 
-	      if (TREE_CODE (tmp) == OVERLOAD && OVL_USED (tmp)
+	      if (TREE_CODE (tmp) == OVERLOAD && OVL_USING_P (tmp)
 		  && !(flags & PUSH_USING)
 		  && compparms_for_decl_and_using_decl (fn, decl)
 		  && ! decls_match (fn, decl))
@@ -3136,7 +3136,7 @@ do_nonmember_using_decl (tree scope, tree name, tree oldval, tree oldtype,
 		  if (new_fn == old_fn)
 		    /* The function already exists in the current namespace.  */
 		    break;
-		  else if (TREE_CODE (tmp1) == OVERLOAD && OVL_USED (tmp1))
+		  else if (TREE_CODE (tmp1) == OVERLOAD && OVL_USING_P (tmp1))
 		    continue; /* this is a using decl */
 		  else if (compparms_for_decl_and_using_decl (new_fn, old_fn))
 		    {

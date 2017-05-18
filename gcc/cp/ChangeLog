@@ -1,5 +1,13 @@
 2017-05-18  Nathan Sidwell  <nathan@acm.org>
 
+	* cp-tree.h (OVL_USED): Replace with ...
+	(OVL_USING_P): ... this.
+	(ovl_iterator::using_p): Adjust.
+	* name-lookup.c (push_overloaded_decl_1,
+	do_nonmember_using_decl): Adjust.
+	* search.c (lookup_field_r): Adjust.
+	* tree.c (ovl_insert, ovl_scope): Adjust.
+
 	* cp-tree.h (lookup_add): Swap args.
 	(ovl_cons, build_overload): Delete.
 	* name-lookup.c (add_function, push_overloaded_decl_1,

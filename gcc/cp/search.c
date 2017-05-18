@@ -1106,7 +1106,7 @@ lookup_field_r (tree binfo, void *data)
   if (!nval)
     /* Look for a data member or type.  */
     nval = lookup_field_1 (type, lfi->name, lfi->want_type);
-  else if (TREE_CODE (nval) == OVERLOAD && OVL_USED (nval))
+  else if (TREE_CODE (nval) == OVERLOAD && OVL_USING_P (nval))
     {
       /* If we have both dependent and non-dependent using-declarations, return
 	 the dependent one rather than an incomplete list of functions.  */
