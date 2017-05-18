@@ -1,5 +1,9 @@
 2017-05-18  Jonathan Wakely  <jwakely@redhat.com>
 
+	* doc/xml/manual/policy_data_structures.xml: Fix typo.
+	* doc/xml/manual/test_policy_data_structures.xml: Likewise.
+	* doc/html/*: Regenerate.
+
 	* doc/xml/manual/abi.xml: Document latest library versions.
 	* doc/xml/manual/build_hacking.xml: Document requirement to update
 	abi.xml when bumping library versions.
