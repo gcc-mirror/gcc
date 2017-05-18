@@ -1,6 +1,12 @@
 2017-05-18  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline
+	2017-03-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/23_containers/list/operations/78389.cc: Fix for C++11
+	mode. Fix less-than to define a valid strict weak ordering.
+
+	Backport from mainline
 	2017-04-24  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/80504

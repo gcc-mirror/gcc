@@ -19,20 +19,20 @@
 
 // 23.2.2.4 list operations [lib.list.ops]
 
-#include <testsuite_hooks.h>
-
 #include <list>
+#include <testsuite_hooks.h>
 
 struct ThrowingComparator
 {
-    unsigned int throw_after = 0;
-    unsigned int count = 0;
-    bool operator()(int, int) {
-        if (++count >= throw_after) {
-            throw 666;
-        }
-        return true;
+  ThrowingComparator(unsigned n) : throw_after(n), count(0) { }
+  unsigned int throw_after;
+  unsigned int count;
+  bool operator()(int, int) {
+    if (++count >= throw_after) {
+      throw 666;
     }
+    return false;
+  }
 };
 
 struct X
@@ -48,7 +48,7 @@ bool operator<(const X&, const X&) {
   if (++count_X >= throw_after_X) {
     throw 666;
   }
-  return true;
+  return false;
 }
 
 
