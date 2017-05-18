@@ -1,5 +1,16 @@
 2017-05-18  Nathan Sidwell  <nathan@acm.org>
 
+	* cp-tree.h (OVL_ARG_DEPENDENT): Delete.
+	(OVL_USED_P): New.
+	(lookup_keep): Declare.
+	* name-lookup.c (add_function): Don't set OVL_ARG_DEPENDENT.
+	* pt.c (tsubst_copy): Assert lookup is persistent.
+	* semantics.c (finish_call_expr): Use lkp_iterator, call
+	lookup_keep.
+	* tree.c (ovl_copy): New.
+	(ovl_insert, ovl_iterator::remove_node): Copy immutable nodes.
+	(lookup_keep): New.
+
 	* cp-tree.h (OVL_USED): Replace with ...
 	(OVL_USING_P): ... this.
 	(ovl_iterator::using_p): Adjust.

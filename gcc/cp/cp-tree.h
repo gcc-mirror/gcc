@@ -323,7 +323,6 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
       IMPLICIT_CONV_EXPR_DIRECT_INIT (in IMPLICIT_CONV_EXPR)
       TRANSACTION_EXPR_IS_STMT (in TRANSACTION_EXPR)
       CONVERT_EXPR_VBASE_PATH (in CONVERT_EXPR)
-      OVL_ARG_DEPENDENT (in OVERLOAD)
       PACK_EXPANSION_LOCAL_P (in *_PACK_EXPANSION)
       TINFO_HAS_ACCESS_ERRORS (in TEMPLATE_INFO)
       SIZEOF_EXPR_TYPE_P (in SIZEOF_EXPR)
@@ -641,9 +640,6 @@ typedef struct ptrmem_cst * ptrmem_cst_t;
   ((TREE_CODE (NODE) == OVERLOAD) ? OVL_FUNCTION (NODE) : (NODE))
 #define OVL_NEXT(NODE)		\
   ((TREE_CODE (NODE) == OVERLOAD) ? TREE_CHAIN (NODE) : NULL_TREE)
-/* If set, this OVERLOAD was created for argument-dependent lookup
-   and can be freed afterward.  */
-#define OVL_ARG_DEPENDENT(NODE) TREE_LANG_FLAG_0 (OVERLOAD_CHECK (NODE))
 
 /* If set, this was imported in a using declaration.   */
 #define OVL_USING_P(NODE)	TREE_LANG_FLAG_1 (OVERLOAD_CHECK (NODE))
@@ -651,6 +647,8 @@ typedef struct ptrmem_cst * ptrmem_cst_t;
 #define OVL_NESTED_P(NODE)	TREE_LANG_FLAG_3 (OVERLOAD_CHECK (NODE))
 /* If set, this overload was constructed during lookup.  */
 #define OVL_LOOKUP_P(NODE)	TREE_LANG_FLAG_4 (OVERLOAD_CHECK (NODE))
+/* If set, this is a persistant lookup. */
+#define OVL_USED_P(NODE)	TREE_USED (OVERLOAD_CHECK (NODE))
 
 /* The first decl of an overload.  */
 #define OVL_FIRST(NODE)	ovl_first (NODE)
@@ -6809,6 +6807,7 @@ extern tree ovl_make				(tree fn,
 extern tree ovl_insert				(tree fn, tree maybe_ovl,
 						 bool using_p = false);
 extern tree lookup_add				(tree fns, tree lookup);
+extern void lookup_keep				(tree lookup, bool keep);
 extern int is_overloaded_fn			(tree);
 extern tree dependent_name			(tree);
 extern tree get_fns				(tree) ATTRIBUTE_PURE;
