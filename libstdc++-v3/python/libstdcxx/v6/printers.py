@@ -85,9 +85,8 @@ except ImportError:
 def find_type(orig, name):
     typ = orig.strip_typedefs()
     while True:
-        # Use typ.name here instead of str(typ) to discard any const,etc.
-        # qualifiers.  PR 67440.
-        search = typ.name + '::' + name
+        # Strip cv-qualifiers.  PR 67440.
+        search = '%s::%s' % (typ.unqualified(), name)
         try:
             return gdb.lookup_type(search)
         except RuntimeError:
