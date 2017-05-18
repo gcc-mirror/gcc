@@ -1,3 +1,13 @@
+2017-05-18  Sheldon Lobo  <sheldon.lobo@oracle.com>
+
+	* config/sparc/sparc.c (sparc_option_override): Set function
+	alignment for -mcpu=niagara7 to 64 to match the I$ line.
+	* config/sparc/sparc.h (BRANCH_COST): Set the SPARC M7 branch
+	latency to 1.
+	* config/sparc/sparc.h (BRANCH_COST): Set the SPARC T4 branch
+	latency to 2.
+	* config/sparc/sol2.h: Fix a ASM_CPU32_DEFAULT_SPEC typo.
+
 2017-05-18  Marek Polacek  <polacek@redhat.com>
 
 	PR sanitizer/80797
