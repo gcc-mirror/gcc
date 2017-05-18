@@ -1,3 +1,8 @@
+2017-05-18  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* brigfrontend/brig-to-generic.h (class brig_to_generic): Use
+	"dump_flags_t" for "m_dump_flags" member.
+
 2017-05-13  Pekka Jääskeläinen  <pekka.jaaskelainen@parmance.com>
 
 	* brigfrontend/brig-code-entry-handler.cc
