@@ -1,11 +1,24 @@
 2017-05-18  Jonathan Wakely  <jwakely@redhat.com>
 
+	Backport from mainline
+	2016-11-09  Tim Shen  <timshen@google.com>
+
+	PR libstdc++/78236
+	* libstdc++-v3/include/bits/regex.h (regex_iterator::regex_iterator()):
+	Define end() as _M_pregex == nullptr.
+	* libstdc++-v3/include/bits/regex.tcc (regex_iterator::operator==(),
+	regex_iterator::operator++()): Fix operator==() and operator++() to
+	look at null-ness of _M_pregex on both sides.
+	* testsuite/28_regex/regression.cc: New testcase.
+
+2017-05-18  Jonathan Wakely  <jwakely@redhat.com>
+
 	* testsuite/libstdc++-prettyprinters/59161.cc: Fix for C++98 mode.
 
 2017-04-03  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	Backport from mainline
-        2017-04-03  Ville Voutilainen  <ville.voutilainen@gmail.com>
+	2017-04-03  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	PR libstdc++/79141
 	* include/bits/stl_pair.h (__nonesuch_no_braces): New.
