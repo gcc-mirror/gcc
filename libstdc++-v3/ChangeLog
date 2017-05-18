@@ -1,6 +1,14 @@
 2017-05-18  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline
+	2017-04-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/80448
+	* include/experimental/bits/fs_dir.h (directory_iterator)
+	(recursive_directory_iterator): Remove noexcept from defaulted
+	constructors.
+
+	Backport from mainline
 	2017-04-03  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/20_util/reference_wrapper/invoke.cc: Uncomment tests
