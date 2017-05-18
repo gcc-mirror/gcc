@@ -317,6 +317,16 @@ bool
 Type::are_identical(const Type* t1, const Type* t2, bool errors_are_identical,
 		    std::string* reason)
 {
+  return Type::are_identical_cmp_tags(t1, t2, COMPARE_TAGS,
+				      errors_are_identical, reason);
+}
+
+// Like are_identical, but with a CMP_TAGS parameter.
+
+bool
+Type::are_identical_cmp_tags(const Type* t1, const Type* t2, Cmp_tags cmp_tags,
+			     bool errors_are_identical, std::string* reason)
+{
   if (t1 == NULL || t2 == NULL)
     {
       // Something is wrong.
@@ -387,31 +397,33 @@ Type::are_identical(const Type* t1, const Type* t2, bool errors_are_identical,
     case TYPE_FUNCTION:
       return t1->function_type()->is_identical(t2->function_type(),
 					       false,
+					       cmp_tags,
 					       errors_are_identical,
 					       reason);
 
     case TYPE_POINTER:
-      return Type::are_identical(t1->points_to(), t2->points_to(),
-				 errors_are_identical, reason);
+      return Type::are_identical_cmp_tags(t1->points_to(), t2->points_to(),
+					  cmp_tags, errors_are_identical,
+					  reason);
 
     case TYPE_STRUCT:
-      return t1->struct_type()->is_identical(t2->struct_type(),
+      return t1->struct_type()->is_identical(t2->struct_type(), cmp_tags,
 					     errors_are_identical);
 
     case TYPE_ARRAY:
-      return t1->array_type()->is_identical(t2->array_type(),
+      return t1->array_type()->is_identical(t2->array_type(), cmp_tags,
 					    errors_are_identical);
 
     case TYPE_MAP:
-      return t1->map_type()->is_identical(t2->map_type(),
+      return t1->map_type()->is_identical(t2->map_type(), cmp_tags,
 					  errors_are_identical);
 
     case TYPE_CHANNEL:
-      return t1->channel_type()->is_identical(t2->channel_type(),
+      return t1->channel_type()->is_identical(t2->channel_type(), cmp_tags,
 					      errors_are_identical);
 
     case TYPE_INTERFACE:
-      return t1->interface_type()->is_identical(t2->interface_type(),
+      return t1->interface_type()->is_identical(t2->interface_type(), cmp_tags,
 						errors_are_identical);
 
     case TYPE_CALL_MULTIPLE_RESULT:
@@ -735,23 +747,26 @@ Type::are_convertible(const Type* lhs, const Type* rhs, std::string* reason)
     return true;
 
   // The types are convertible if they have identical underlying
-  // types.
+  // types, ignoring struct field tags.
   if ((lhs->named_type() != NULL || rhs->named_type() != NULL)
-      && Type::are_identical(lhs->base(), rhs->base(), true, reason))
+      && Type::are_identical_cmp_tags(lhs->base(), rhs->base(), IGNORE_TAGS,
+				      true, reason))
     return true;
 
   // The types are convertible if they are both unnamed pointer types
-  // and their pointer base types have identical underlying types.
+  // and their pointer base types have identical underlying types,
+  // ignoring struct field tags.
   if (lhs->named_type() == NULL
       && rhs->named_type() == NULL
       && lhs->points_to() != NULL
       && rhs->points_to() != NULL
       && (lhs->points_to()->named_type() != NULL
 	  || rhs->points_to()->named_type() != NULL)
-      && Type::are_identical(lhs->points_to()->base(),
-			     rhs->points_to()->base(),
-			     true,
-			     reason))
+      && Type::are_identical_cmp_tags(lhs->points_to()->base(),
+				      rhs->points_to()->base(),
+				      IGNORE_TAGS,
+				      true,
+				      reason))
     return true;
 
   // Integer and floating point types are convertible to each other.
@@ -3758,7 +3773,7 @@ bool
 Function_type::is_valid_redeclaration(const Function_type* t,
 				      std::string* reason) const
 {
-  if (!this->is_identical(t, false, true, reason))
+  if (!this->is_identical(t, false, COMPARE_TAGS, true, reason))
     return false;
 
   // A redeclaration of a function is required to use the same names
@@ -3836,7 +3851,7 @@ Function_type::is_valid_redeclaration(const Function_type* t,
 
 bool
 Function_type::is_identical(const Function_type* t, bool ignore_receiver,
-			    bool errors_are_identical,
+			    Cmp_tags cmp_tags, bool errors_are_identical,
 			    std::string* reason) const
 {
   if (!ignore_receiver)
@@ -3851,8 +3866,8 @@ Function_type::is_identical(const Function_type* t, bool ignore_receiver,
 	}
       if (r1 != NULL)
 	{
-	  if (!Type::are_identical(r1->type(), r2->type(), errors_are_identical,
-				   reason))
+	  if (!Type::are_identical_cmp_tags(r1->type(), r2->type(), cmp_tags,
+					    errors_are_identical, reason))
 	    {
 	      if (reason != NULL && !reason->empty())
 		*reason = "receiver: " + *reason;
@@ -3883,8 +3898,8 @@ Function_type::is_identical(const Function_type* t, bool ignore_receiver,
 	      return false;
 	    }
 
-	  if (!Type::are_identical(p1->type(), p2->type(),
-				   errors_are_identical, NULL))
+	  if (!Type::are_identical_cmp_tags(p1->type(), p2->type(), cmp_tags,
+					    errors_are_identical, NULL))
 	    {
 	      if (reason != NULL)
 		*reason = _("different parameter types");
@@ -3928,8 +3943,9 @@ Function_type::is_identical(const Function_type* t, bool ignore_receiver,
 	      return false;
 	    }
 
-	  if (!Type::are_identical(res1->type(), res2->type(),
-				   errors_are_identical, NULL))
+	  if (!Type::are_identical_cmp_tags(res1->type(), res2->type(),
+					    cmp_tags, errors_are_identical,
+					    NULL))
 	    {
 	      if (reason != NULL)
 		*reason = _("different result types");
@@ -5103,7 +5119,7 @@ Struct_type::do_has_pointer() const
 // Whether this type is identical to T.
 
 bool
-Struct_type::is_identical(const Struct_type* t,
+Struct_type::is_identical(const Struct_type* t, Cmp_tags cmp_tags,
 			  bool errors_are_identical) const
 {
   if (this->is_struct_incomparable_ != t->is_struct_incomparable_)
@@ -5122,20 +5138,23 @@ Struct_type::is_identical(const Struct_type* t,
       if (pf1->field_name() != pf2->field_name())
 	return false;
       if (pf1->is_anonymous() != pf2->is_anonymous()
-	  || !Type::are_identical(pf1->type(), pf2->type(),
-				  errors_are_identical, NULL))
+	  || !Type::are_identical_cmp_tags(pf1->type(), pf2->type(), cmp_tags,
+					   errors_are_identical, NULL))
 	return false;
-      if (!pf1->has_tag())
+      if (cmp_tags == COMPARE_TAGS)
 	{
-	  if (pf2->has_tag())
-	    return false;
-	}
-      else
-	{
-	  if (!pf2->has_tag())
-	    return false;
-	  if (pf1->tag() != pf2->tag())
-	    return false;
+	  if (!pf1->has_tag())
+	    {
+	      if (pf2->has_tag())
+		return false;
+	    }
+	  else
+	    {
+	      if (!pf2->has_tag())
+		return false;
+	      if (pf1->tag() != pf2->tag())
+		return false;
+	    }
 	}
     }
   if (pf2 != fields2->end())
@@ -6363,10 +6382,11 @@ Type::make_struct_type(Struct_field_list* fields,
 // Whether two array types are identical.
 
 bool
-Array_type::is_identical(const Array_type* t, bool errors_are_identical) const
+Array_type::is_identical(const Array_type* t, Cmp_tags cmp_tags,
+			 bool errors_are_identical) const
 {
-  if (!Type::are_identical(this->element_type(), t->element_type(),
-			   errors_are_identical, NULL))
+  if (!Type::are_identical_cmp_tags(this->element_type(), t->element_type(),
+				    cmp_tags, errors_are_identical, NULL))
     return false;
 
   if (this->is_array_incomparable_ != t->is_array_incomparable_)
@@ -7370,12 +7390,14 @@ Map_type::do_verify()
 // Whether two map types are identical.
 
 bool
-Map_type::is_identical(const Map_type* t, bool errors_are_identical) const
+Map_type::is_identical(const Map_type* t, Cmp_tags cmp_tags,
+		       bool errors_are_identical) const
 {
-  return (Type::are_identical(this->key_type(), t->key_type(),
-			      errors_are_identical, NULL)
-	  && Type::are_identical(this->val_type(), t->val_type(),
-				 errors_are_identical, NULL));
+  return (Type::are_identical_cmp_tags(this->key_type(), t->key_type(),
+				       cmp_tags, errors_are_identical, NULL)
+	  && Type::are_identical_cmp_tags(this->val_type(), t->val_type(),
+					  cmp_tags, errors_are_identical,
+					  NULL));
 }
 
 // Hash code.
@@ -7909,11 +7931,11 @@ Channel_type::do_hash_for_method(Gogo* gogo) const
 // Whether this type is the same as T.
 
 bool
-Channel_type::is_identical(const Channel_type* t,
+Channel_type::is_identical(const Channel_type* t, Cmp_tags cmp_tags,
 			   bool errors_are_identical) const
 {
-  if (!Type::are_identical(this->element_type(), t->element_type(),
-			   errors_are_identical, NULL))
+  if (!Type::are_identical_cmp_tags(this->element_type(), t->element_type(),
+				    cmp_tags, errors_are_identical, NULL))
     return false;
   return (this->may_send_ == t->may_send_
 	  && this->may_receive_ == t->may_receive_);
@@ -8341,7 +8363,7 @@ Interface_type::is_unexported_method(Gogo* gogo, const std::string& name) const
 // Whether this type is identical with T.
 
 bool
-Interface_type::is_identical(const Interface_type* t,
+Interface_type::is_identical(const Interface_type* t, Cmp_tags cmp_tags,
 			     bool errors_are_identical) const
 {
   // If methods have not been finalized, then we are asking whether
@@ -8372,8 +8394,8 @@ Interface_type::is_identical(const Interface_type* t,
       if (p1 == this->all_methods_->end())
 	break;
       if (p1->name() != p2->name()
-	  || !Type::are_identical(p1->type(), p2->type(),
-				  errors_are_identical, NULL))
+	  || !Type::are_identical_cmp_tags(p1->type(), p2->type(), cmp_tags,
+					   errors_are_identical, NULL))
 	break;
     }
 
@@ -8571,7 +8593,8 @@ Interface_type::implements_interface(const Type* t, std::string* reason) const
       Function_type* m_fn_type = m->type()->function_type();
       go_assert(p_fn_type != NULL && m_fn_type != NULL);
       std::string subreason;
-      if (!p_fn_type->is_identical(m_fn_type, true, true, &subreason))
+      if (!p_fn_type->is_identical(m_fn_type, true, COMPARE_TAGS, true,
+				   &subreason))
 	{
 	  if (reason != NULL)
 	    {
