@@ -42,6 +42,6 @@ struct A_int_comparer
 
 void test01()
 {
-  A as[] { 0, 1, 2, 3 };
+  A as[] = { 0, 1, 2, 3 };
   std::lower_bound(as, as + 4, 1, A_int_comparer());
 }
