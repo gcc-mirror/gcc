@@ -1,3 +1,7 @@
+2017-05-18  Sheldon Lobo  <sheldon.lobo@oracle.com>
+
+	* MAINTAINERS: Add self to Write After Approval
+
 2017-05-09  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* MAINTAINERS: Move myself to Write After Approval section.
