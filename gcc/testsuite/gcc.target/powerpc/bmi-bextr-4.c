@@ -1,6 +1,6 @@
 /* { dg-do run } */
+/* { dg-options "-O3 -fno-inline" } */
 /* { dg-require-effective-target lp64 } */
-/* { dg-options "-O3 -m64 -fno-inline" } */
 
 #define NO_WARN_X86_INTRINSICS 1
 #include <x86intrin.h>

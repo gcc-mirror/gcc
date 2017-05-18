@@ -1,5 +1,5 @@
 /* { dg-do run } */
-/* { dg-options "-O3 -m64" } */
+/* { dg-options "-O3" } */
 /* { dg-require-effective-target lp64 } */
 
 #define NO_WARN_X86_INTRINSICS 1
