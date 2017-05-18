@@ -37,7 +37,7 @@ static cxx_binding *cxx_binding_make (tree value, tree type);
 static cp_binding_level *innermost_nonclass_level (void);
 static void set_identifier_type_value_with_scope (tree id, tree decl,
 						  cp_binding_level *b);
-static void set_namespace_binding (tree name, tree scope, tree val);
+static void set_namespace_binding (tree scope, tree name, tree val);
 
 /* The bindings for a particular name in a particular scope.  */
 
@@ -97,6 +97,26 @@ add_decl_to_level (tree decl, cp_binding_level *b)
 		    || DECL_DECLARED_INLINE_P (decl))))
 	  vec_safe_push (static_decls, decl);
     }
+}
+
+/* Find the binding for NAME in the local binding level B.  */
+
+static cxx_binding *
+find_local_binding (cp_binding_level *b, tree name)
+{
+  if (cxx_binding *binding = IDENTIFIER_BINDING (name))
+    for (;; b = b->level_chain)
+      {
+	if (binding->scope == b
+	    && !(VAR_P (binding->value)
+		 && DECL_DEAD_FOR_LOCAL (binding->value)))
+	  return binding;
+
+	/* Cleanup contours are transparent to the language.  */
+	if (b->kind != sk_cleanup)
+	  break;
+      }
+  return NULL;
 }
 
 /* [basic.lookup.koenig] */
@@ -1778,7 +1798,7 @@ pushdecl_maybe_friend_1 (tree x, bool is_friend)
 		  || TREE_CODE (x) == NAMESPACE_DECL
 		  || TREE_CODE (x) == CONST_DECL
 		  || TREE_CODE (x) == TEMPLATE_DECL))
-	    set_namespace_binding (name, current_namespace, x);
+	    set_namespace_binding (current_namespace, name, x);
 
 	  /* If new decl is `static' and an `extern' was seen previously,
 	     warn about it.  */
@@ -2952,7 +2972,7 @@ push_overloaded_decl_1 (tree decl, int flags, bool is_friend)
     new_binding = decl;
 
   if (doing_global)
-    set_namespace_binding (name, current_namespace, new_binding);
+    set_namespace_binding (current_namespace, name, new_binding);
   else
     {
       /* We only create an OVERLOAD if there was a previous binding at
@@ -3964,7 +3984,7 @@ do_class_using_decl (tree scope, tree name)
 
 
 static tree
-namespace_binding_1 (tree name, tree scope)
+namespace_binding_1 (tree scope, tree name)
 {
   cxx_binding *binding;
 
@@ -3988,13 +4008,13 @@ get_namespace_binding (tree ns, tree name)
   bool subtime = timevar_cond_start (TV_NAME_LOOKUP);
   if (!ns)
     ns = global_namespace;
-  tree ret = namespace_binding_1 (name, ns);
+  tree ret = namespace_binding_1 (ns, name);
   timevar_cond_stop (TV_NAME_LOOKUP, subtime);
   return ret;
 }
 
 static void
-set_namespace_binding (tree name, tree scope, tree val)
+set_namespace_binding (tree scope, tree name, tree val)
 {
   cxx_binding *b;
 
@@ -4020,7 +4040,7 @@ set_global_binding (tree name, tree val)
 {
   bool subtime = timevar_cond_start (TV_NAME_LOOKUP);
 
-  set_namespace_binding (name, global_namespace, val);
+  set_namespace_binding (global_namespace, name, val);
 
   timevar_cond_stop (TV_NAME_LOOKUP, subtime);
 }
@@ -5760,39 +5780,14 @@ lookup_type_scope (tree name, tag_scope scope)
 static tree
 lookup_name_innermost_nonclass_level_1 (tree name)
 {
-  cp_binding_level *b;
-  tree t = NULL_TREE;
-
-  b = innermost_nonclass_level ();
+  cp_binding_level *b = innermost_nonclass_level ();
 
   if (b->kind == sk_namespace)
-    {
-      t = get_namespace_binding (current_namespace, name);
-
-      /* extern "C" function() */
-      if (t != NULL_TREE && TREE_CODE (t) == TREE_LIST)
-	t = TREE_VALUE (t);
-    }
-  else if (IDENTIFIER_BINDING (name)
-	   && LOCAL_BINDING_P (IDENTIFIER_BINDING (name)))
-    {
-      cxx_binding *binding;
-      binding = IDENTIFIER_BINDING (name);
-      while (1)
-	{
-	  if (binding->scope == b
-	      && !(VAR_P (binding->value)
-		   && DECL_DEAD_FOR_LOCAL (binding->value)))
-	    return binding->value;
-
-	  if (b->kind == sk_cleanup)
-	    b = b->level_chain;
-	  else
-	    break;
-	}
-    }
-
-  return t;
+    return namespace_binding_1 (current_namespace, name);
+  else if (cxx_binding *binding = find_local_binding (b, name))
+    return binding->value;
+  else
+    return NULL_TREE;
 }
 
 /* Wrapper for lookup_name_innermost_nonclass_level_1.  */
