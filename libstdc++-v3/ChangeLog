@@ -1,5 +1,16 @@
 2017-05-18  Jonathan Wakely  <jwakely@redhat.com>
 
+	Backport from mainline
+	2017-01-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/69699
+	* doc/xml/manual/abi.xml (abi.versioning.history): Explain why the
+	_GLIBCXX__ macro is not useful. Remove redundant date information
+	and link to the GCC release timeline.
+	(abi.versioning.active): Move partial sentence into the previous
+	paragraph.
+	* doc/html/*: Regenerate.
+
 	* doc/xml/manual/abi.xml: Document libstdc++.so.6.0.22 version.
 
 	Backport from mainline

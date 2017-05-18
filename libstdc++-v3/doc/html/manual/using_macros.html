@@ -87,6 +87,11 @@
       </p></dd><dt><span class="term"><code class="code">_GLIBCXX_PARALLEL</code></span></dt><dd><p>Undefined by default. When defined, compiles user code
 	using the <a class="link" href="parallel_mode.html" title="Chapter 18. Parallel Mode">parallel
 	mode</a>.
+      </p></dd><dt><span class="term"><code class="code">_GLIBCXX_PARALLEL_ASSERTIONS</code></span></dt><dd><p>Undefined by default, but when any parallel mode header is included
+      this macro will be defined to a non-zero value if
+      <code class="code">_GLIBCXX_ASSERTIONS</code> has a non-zero value, otherwise to zero.
+      When defined to a non-zero value, it enables extra error checking and
+      assertions in the parallel mode.
       </p></dd><dt><span class="term"><code class="code">_GLIBCXX_PROFILE</code></span></dt><dd><p>Undefined by default. When defined, compiles user code
 	using the <a class="link" href="profile_mode.html" title="Chapter 19. Profile Mode">profile
 	mode</a>.
