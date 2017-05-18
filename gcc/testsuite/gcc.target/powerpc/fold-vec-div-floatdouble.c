@@ -1,9 +1,9 @@
 /* Verify that overloaded built-ins for vec_div with float and
-   double inputs for VSX produce the right results with -mvsx. */
+   double inputs for VSX produce the right results. */
 
 /* { dg-do compile } */
 /* { dg-require-effective-target powerpc_vsx_ok } */
-/* { dg-options "-maltivec" } */
+/* { dg-options "-mvsx" } */
 
 #include <altivec.h>
 

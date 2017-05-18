@@ -2,8 +2,9 @@
    inputs produce the right results.  */
 
 /* { dg-do compile } */
-/* { dg-require-effective-target powerpc_p8vector_ok } */
-/* { dg-options "-maltivec -mpower8-vector -O3" } */
+/* { dg-require-effective-target powerpc_vsx_ok } */
+/* { dg-require-effective-target lp64 } */
+/* { dg-options "-mvsx -O2" } */
 
 #include <altivec.h>
 

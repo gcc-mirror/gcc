@@ -5,7 +5,7 @@
 /* { dg-require-effective-target powerpc_float128_hw_ok } */
 /* { dg-require-effective-target int128 } */
 /* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power9" } } */
-/* { dg-options "-maltivec -mvsx -mcpu=power9 -O2" } */
+/* { dg-options "-mcpu=power9 -O2" } */
 /* { dg-additional-options "-maix64" { target powerpc-ibm-aix* } } */
 
 #include "altivec.h"

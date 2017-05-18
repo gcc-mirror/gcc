@@ -153,7 +153,7 @@ test6_nor (vector unsigned long long x, vector unsigned long long y)
 
 // Codegen on power7 is such that the vec_or() tests generate more xxlor
 // instructions than what is seen on power8 or newer.
-// Thus, an additional target close for the xxlor instruction check.
+// Thus, an additional target clause for the xxlor instruction check.
 /* { dg-final { scan-assembler-times {\mxxlor\M} 6 { target p8vector_hw }  } } */
 /* { dg-final { scan-assembler-times {\mxxlor\M} 24 { target { ! p8vector_hw }  }  } } */
 
