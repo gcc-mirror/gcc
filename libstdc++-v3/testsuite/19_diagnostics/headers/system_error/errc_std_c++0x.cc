@@ -83,7 +83,9 @@ void test01()
   TEST_ERRC(no_message_available);
 #endif
 
+#ifdef _GLIBCXX_HAVE_ENOMSG
   TEST_ERRC(no_message);
+#endif
   TEST_ERRC(no_protocol_option);
   TEST_ERRC(no_space_on_device);
 

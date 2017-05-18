@@ -41,22 +41,24 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 // replaced by Winsock WSA-prefixed equivalents.
   enum class errc
     {
-//    address_family_not_supported = 		EAFNOSUPPORT,
-//    address_in_use = 				EADDRINUSE,
-//    address_not_available = 			EADDRNOTAVAIL,
-//    already_connected = 			EISCONN,
+      address_family_not_supported = 		EAFNOSUPPORT,
+      address_in_use = 				EADDRINUSE,
+      address_not_available = 			EADDRNOTAVAIL,
+      already_connected = 			EISCONN,
       argument_list_too_long = 			E2BIG,
       argument_out_of_domain = 			EDOM,
       bad_address = 				EFAULT,
       bad_file_descriptor = 			EBADF,
-//    bad_message = 				EBADMSG,
+#ifdef _GLIBCXX_HAVE_EBADMSG
+      bad_message = 				EBADMSG,
+#endif
       broken_pipe = 				EPIPE,
-//    connection_aborted = 			ECONNABORTED,
-//    connection_already_in_progress = 		EALREADY,
-//    connection_refused = 			ECONNREFUSED,
-//    connection_reset = 			ECONNRESET,
-//    cross_device_link = 			EXDEV,
-//    destination_address_required = 		EDESTADDRREQ,
+      connection_aborted = 			ECONNABORTED,
+      connection_already_in_progress = 		EALREADY,
+      connection_refused = 			ECONNREFUSED,
+      connection_reset = 			ECONNRESET,
+      cross_device_link = 			EXDEV,
+      destination_address_required = 		EDESTADDRREQ,
       device_or_resource_busy = 		EBUSY,
       directory_not_empty = 			ENOTEMPTY,
       executable_format_error = 		ENOEXEC,
@@ -64,8 +66,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       file_too_large = 				EFBIG,
       filename_too_long = 			ENAMETOOLONG,
       function_not_supported = 			ENOSYS,
-//    host_unreachable = 			EHOSTUNREACH,
-//    identifier_removed = 			EIDRM,
+      host_unreachable = 			EHOSTUNREACH,
+#ifdef _GLIBCXX_HAVE_EIDRM
+      identifier_removed = 			EIDRM,
+#endif
       illegal_byte_sequence = 			EILSEQ,
       inappropriate_io_control_operation = 	ENOTTY,
       interrupted = 				EINTR,
@@ -73,67 +77,84 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       invalid_seek = 				ESPIPE,
       io_error = 				EIO,
       is_a_directory = 				EISDIR,
-//    message_size = 				EMSGSIZE,
-//    network_down = 				ENETDOWN,
-//    network_reset = 				ENETRESET,
-//    network_unreachable = 			ENETUNREACH,
-//    no_buffer_space = 			ENOBUFS,
+      message_size = 				EMSGSIZE,
+      network_down = 				ENETDOWN,
+      network_reset = 				ENETRESET,
+      network_unreachable = 			ENETUNREACH,
+      no_buffer_space = 			ENOBUFS,
 #ifdef _GLIBCXX_HAVE_ECHILD
       no_child_process = 			ECHILD,
 #endif
-//    no_link = 				ENOLINK,
+#ifdef _GLIBCXX_HAVE_ENOLINK
+      no_link = 				ENOLINK,
+#endif
       no_lock_available = 			ENOLCK,
-//    no_message_available = 			ENODATA,
-//    no_message = 				ENOMSG,
-//    no_protocol_option = 			ENOPROTOOPT,
+#ifdef _GLIBCXX_HAVE_ENODATA
+      no_message_available = 			ENODATA,
+#endif
+#ifdef _GLIBCXX_HAVE_ENOMSG
+      no_message = 				ENOMSG,
+#endif
+      no_protocol_option = 			ENOPROTOOPT,
 #ifdef _GLIBCXX_HAVE_ENOSPC
       no_space_on_device = 			ENOSPC,
 #endif
-//    no_stream_resources = 			ENOSR,
+#ifdef _GLIBCXX_HAVE_ENOSR
+      no_stream_resources = 			ENOSR,
+#endif
       no_such_device_or_address = 		ENXIO,
       no_such_device = 				ENODEV,
       no_such_file_or_directory = 		ENOENT,
       no_such_process = 			ESRCH,
       not_a_directory = 			ENOTDIR,
-//    not_a_socket = 				ENOTSOCK,
-//    not_a_stream = 				ENOSTR,
-//    not_connected = 				ENOTCONN,
+      not_a_socket = 				ENOTSOCK,
+#ifdef _GLIBCXX_HAVE_ENOSTR
+      not_a_stream = 				ENOSTR,
+#endif
+      not_connected = 				ENOTCONN,
       not_enough_memory = 			ENOMEM,
 #ifdef _GLIBCXX_HAVE_ENOTSUP
       not_supported = 				ENOTSUP,
 #endif
-//    operation_canceled = 			ECANCELED,
-//    operation_in_progress = 			EINPROGRESS,
+      operation_canceled = 			ECANCELED,
+      operation_in_progress = 			EINPROGRESS,
 #ifdef _GLIBCXX_HAVE_EPERM
       operation_not_permitted = 		EPERM,
 #endif
-//    operation_not_supported = 		EOPNOTSUPP,
+      operation_not_supported = 		EOPNOTSUPP,
 #ifdef _GLIBCXX_HAVE_EWOULDBLOCK
       operation_would_block = 			EWOULDBLOCK,
 #endif
-//    owner_dead = 				EOWNERDEAD,
+#ifdef _GLIBCXX_HAVE_EOWNERDEAD
+      owner_dead = 				EOWNERDEAD,
+#endif
       permission_denied = 			EACCES,
-//    protocol_error = 				EPROTO,
-//    protocol_not_supported = 			EPROTONOSUPPORT,
+      protocol_error = 				EPROTO,
+      protocol_not_supported = 			EPROTONOSUPPORT,
       read_only_file_system = 			EROFS,
       resource_deadlock_would_occur = 		EDEADLK,
       resource_unavailable_try_again = 		EAGAIN,
       result_out_of_range = 			ERANGE,
-//    state_not_recoverable = 			ENOTRECOVERABLE,
-//    stream_timeout = 				ETIME,
-//    text_file_busy = 				ETXTBSY,
+#ifdef _GLIBCXX_HAVE_ENOTRECOVERABLE
+      state_not_recoverable = 			ENOTRECOVERABLE,
+#endif
+#ifdef _GLIBCXX_HAVE_ETIME
+      stream_timeout = 				ETIME,
+#endif
+#ifdef _GLIBCXX_HAVE_ETXTBSY
+      text_file_busy = 				ETXTBSY,
+#endif
 #ifdef _GLIBCXX_HAVE_ETIMEDOUT
       timed_out = 				ETIMEDOUT,
 #endif
       too_many_files_open_in_system = 		ENFILE,
       too_many_files_open = 			EMFILE,
-      too_many_links = 				EMLINK
-//    too_many_symbolic_link_levels = 		ELOOP,
+      too_many_links = 				EMLINK,
+      too_many_symbolic_link_levels = 		ELOOP,
 #ifdef _GLIBCXX_HAVE_EOVERFLOW
-	,
-      value_too_large = 			EOVERFLOW
+      value_too_large = 			EOVERFLOW,
 #endif
-//    wrong_protocol_type = 			EPROTOTYPE
+      wrong_protocol_type = 			EPROTOTYPE
    };
 
 _GLIBCXX_END_NAMESPACE_VERSION
