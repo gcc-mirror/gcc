@@ -1,6 +1,17 @@
 2017-05-18  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline
+	2016-11-09  Tim Shen  <timshen@google.com>
+
+	PR libstdc++/78236
+	* libstdc++-v3/include/bits/regex.h (regex_iterator::regex_iterator()):
+	Define end() as _M_pregex == nullptr.
+	* libstdc++-v3/include/bits/regex.tcc (regex_iterator::operator==(),
+	regex_iterator::operator++()): Fix operator==() and operator++() to
+	look at null-ness of _M_pregex on both sides.
+	* testsuite/28_regex/regression.cc: New testcase.
+
+	Backport from mainline
 	2016-12-15  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/59170

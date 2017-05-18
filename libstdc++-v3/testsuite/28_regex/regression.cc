@@ -48,11 +48,33 @@ test02()
   VERIFY(std::regex_search("/abcd", rx));
 }
 
+// PR libstdc++/78236
+void
+test06()
+{
+  char const s[] = "afoo";
+  std::basic_regex<char> r("(f+)");
+  {
+    std::cregex_iterator i(s, s+sizeof(s), r);
+    std::cregex_iterator j(s, s+sizeof(s), r);
+    VERIFY(i == j);
+  }
+  // The iterator manipulation code must be repeated in the same scope
+  // to expose the undefined read during the execution of the ==
+  // operator (stack location reuse)
+  {
+    std::cregex_iterator i(s, s+sizeof(s), r);
+    std::cregex_iterator j;
+    VERIFY(!(i == j));
+  }
+}
+
 int
 main()
 {
   test01();
   test02();
+  test06();
   return 0;
 }
 
