@@ -1,3 +1,7 @@
+2017-05-18  Sheldon Lobo  <sheldon.lobo@oracle.com>
+
+	* gcc.target/sparc/niagara7-align.c: New test.
+
 2017-05-18  Marek Polacek  <polacek@redhat.com>
 
 	PR sanitizer/80797
