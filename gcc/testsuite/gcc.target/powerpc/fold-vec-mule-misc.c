@@ -1,8 +1,8 @@
 /* PR target/79941 */
 
 /* { dg-do run } */
-/* { dg-require-effective-target powerpc_vsx_ok } */
-/* { dg-options "-mvsx -O2 -save-temps" } */
+/* { dg-require-effective-target powerpc_altivec_ok } */
+/* { dg-options "-maltivec -O2 -save-temps" } */
 
 #include <altivec.h>
 

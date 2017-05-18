@@ -1,3 +1,25 @@
+2017-05-18  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	* fold-vec-div-float.c: Update dg-requires and dg-options statements.
+	* fold-vec-div-floatdouble.c: Likewise.
+	* fold-vec-logical-ands-char.c: Likewise.
+	* fold-vec-logical-ands-int.c: Likewise.
+	* fold-vec-logical-ands-short.c: Likewise.
+	* fold-vec-logical-ors-char.c: Likewise.
+	* fold-vec-logical-ors-int.c: Likewise.
+	* fold-vec-logical-ors-short.c: Likewise.
+	* fold-vec-logical-other-char.c: Likewise.
+	* fold-vec-mule-misc.c: Likewise.
+	* fold-vec-mult-float.c: Likewise.
+	* fold-vec-mult-floatdouble.c: Likewise.
+	* fold-vec-mult-int.c: Likewise.
+	* fold-vec-mult-int128-p9.c: Likewise.
+	* fold-vec-sub-floatdouble.c: Likewise.
+	* fold-vec-div-longlong.c: Update dg-requires and dg-options statements.
+	Add lp64 requirement.
+	* fold-vec-mult-int128-p8.c: Likewise.
+	* fold-vec-logical-ors-longlong.c: Fix comment typo.
+
 2017-05-18  Steven Munroe  <munroesj@gcc.gnu.org>
 
 	* gcc.target/powerpc/bmi-andn-1.c: Fix-up dg-options.
