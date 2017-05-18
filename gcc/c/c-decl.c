@@ -4663,18 +4663,18 @@ start_decl (struct c_declarator *declarator, struct c_declspecs *declspecs,
       {
       case TYPE_DECL:
 	error ("typedef %qD is initialized (use __typeof__ instead)", decl);
-	initialized = 0;
+	initialized = false;
 	break;
 
       case FUNCTION_DECL:
 	error ("function %qD is initialized like a variable", decl);
-	initialized = 0;
+	initialized = false;
 	break;
 
       case PARM_DECL:
 	/* DECL_INITIAL in a PARM_DECL is really DECL_ARG_TYPE.  */
 	error ("parameter %qD is initialized", decl);
-	initialized = 0;
+	initialized = false;
 	break;
 
       default:
@@ -4684,7 +4684,7 @@ start_decl (struct c_declarator *declarator, struct c_declspecs *declspecs,
 	/* This can happen if the array size is an undefined macro.
 	   We already gave a warning, so we don't need another one.  */
 	if (TREE_TYPE (decl) == error_mark_node)
-	  initialized = 0;
+	  initialized = false;
 	else if (COMPLETE_TYPE_P (TREE_TYPE (decl)))
 	  {
 	    /* A complete type is ok if size is fixed.  */
@@ -4693,13 +4693,13 @@ start_decl (struct c_declarator *declarator, struct c_declspecs *declspecs,
 		|| C_DECL_VARIABLE_SIZE (decl))
 	      {
 		error ("variable-sized object may not be initialized");
-		initialized = 0;
+		initialized = false;
 	      }
 	  }
 	else if (TREE_CODE (TREE_TYPE (decl)) != ARRAY_TYPE)
 	  {
 	    error ("variable %qD has initializer but incomplete type", decl);
-	    initialized = 0;
+	    initialized = false;
 	  }
 	else if (C_DECL_VARIABLE_SIZE (decl))
 	  {
@@ -4708,7 +4708,7 @@ start_decl (struct c_declarator *declarator, struct c_declspecs *declspecs,
 	       sense to permit them to be initialized given that
 	       ordinary VLAs may not be initialized.  */
 	    error ("variable-sized object may not be initialized");
-	    initialized = 0;
+	    initialized = false;
 	  }
       }
 
@@ -5573,7 +5573,7 @@ grokdeclarator (const struct c_declarator *declarator,
   tree decl_attr = declspecs->decl_attr;
   int array_ptr_quals = TYPE_UNQUALIFIED;
   tree array_ptr_attrs = NULL_TREE;
-  int array_parm_static = 0;
+  bool array_parm_static = false;
   bool array_parm_vla_unspec_p = false;
   tree returned_attrs = NULL_TREE;
   bool bitfield = width != NULL;
@@ -5907,7 +5907,7 @@ grokdeclarator (const struct c_declarator *declarator,
 	  error_at (loc, "static or type qualifiers in non-parameter array declarator");
 	  array_ptr_quals = TYPE_UNQUALIFIED;
 	  array_ptr_attrs = NULL_TREE;
-	  array_parm_static = 0;
+	  array_parm_static = false;
 	}
 
       switch (declarator->kind)
@@ -6277,7 +6277,7 @@ grokdeclarator (const struct c_declarator *declarator,
 			  "array declarator");
 		array_ptr_quals = TYPE_UNQUALIFIED;
 		array_ptr_attrs = NULL_TREE;
-		array_parm_static = 0;
+		array_parm_static = false;
 	      }
 	    orig_qual_indirect++;
 	    break;
@@ -7862,7 +7862,6 @@ finish_struct (location_t loc, tree t, tree fieldlist, tree attributes,
 {
   tree x;
   bool toplevel = file_scope == current_scope;
-  int saw_named_field;
 
   /* If this type was previously laid out as a forward reference,
      make sure we lay it out again.  */
@@ -7907,7 +7906,7 @@ finish_struct (location_t loc, tree t, tree fieldlist, tree attributes,
      type.  (Correct layout requires the original type to have been preserved
      until now.)  */
 
-  saw_named_field = 0;
+  bool saw_named_field = false;
   for (x = fieldlist; x; x = DECL_CHAIN (x))
     {
       if (TREE_TYPE (x) == error_mark_node)
@@ -7982,7 +7981,7 @@ finish_struct (location_t loc, tree t, tree fieldlist, tree attributes,
 
       if (DECL_NAME (x)
 	  || RECORD_OR_UNION_TYPE_P (TREE_TYPE (x)))
-	saw_named_field = 1;
+	saw_named_field = true;
     }
 
   detect_field_duplicates (fieldlist);
@@ -8518,11 +8517,10 @@ build_enumerator (location_t decl_loc, location_t loc,
    This function creates a binding context for the function body
    as well as setting up the FUNCTION_DECL in current_function_decl.
 
-   Returns 1 on success.  If the DECLARATOR is not suitable for a function
-   (it defines a datum instead), we return 0, which tells
-   yyparse to report a parse error.  */
+   Returns true on success.  If the DECLARATOR is not suitable for a function
+   (it defines a datum instead), we return false to report a parse error.  */
 
-int
+bool
 start_function (struct c_declspecs *declspecs, struct c_declarator *declarator,
 		tree attributes)
 {
@@ -8549,7 +8547,7 @@ start_function (struct c_declspecs *declspecs, struct c_declarator *declarator,
      cause a syntax error.  */
   if (decl1 == NULL_TREE
       || TREE_CODE (decl1) != FUNCTION_DECL)
-    return 0;
+    return false;
 
   loc = DECL_SOURCE_LOCATION (decl1);
 
@@ -8749,7 +8747,7 @@ start_function (struct c_declspecs *declspecs, struct c_declarator *declarator,
 
   start_fname_decls ();
 
-  return 1;
+  return true;
 }
 
 /* Subroutine of store_parm_decls which handles new-style function
@@ -9773,7 +9771,7 @@ declspecs_add_qual (source_location loc,
   gcc_assert (TREE_CODE (qual) == IDENTIFIER_NODE
 	      && C_IS_RESERVED_WORD (qual));
   i = C_RID_CODE (qual);
-  location_t prev_loc = 0;
+  location_t prev_loc = UNKNOWN_LOCATION;
   switch (i)
     {
     case RID_CONST:
