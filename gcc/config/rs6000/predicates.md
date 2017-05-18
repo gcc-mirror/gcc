@@ -847,6 +847,22 @@
   (and (match_operand 0 "memory_operand")
        (match_test "offsettable_nonstrict_memref_p (op)")))
 
+;; Return 1 if the operand is a simple offsettable memory operand
+;; that does not include pre-increment, post-increment, etc.
+(define_predicate "simple_offsettable_mem_operand"
+  (match_operand 0 "offsettable_mem_operand")
+{
+  rtx addr = XEXP (op, 0);
+
+  if (GET_CODE (addr) != PLUS && GET_CODE (addr) != LO_SUM)
+    return 0;
+
+  if (!CONSTANT_P (XEXP (addr, 1)))
+    return 0;
+
+  return base_reg_operand (XEXP (addr, 0), Pmode);
+})
+
 ;; Return 1 if the operand is suitable for load/store quad memory.
 ;; This predicate only checks for non-atomic loads/stores (not lqarx/stqcx).
 (define_predicate "quad_memory_operand"

@@ -1,3 +1,15 @@
+2017-05-18  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/80510
+	* config/rs6000/predicates.md (simple_offsettable_mem_operand):
+	New predicate.
+
+	* config/rs6000/rs6000.md (ALTIVEC_DFORM): New iterator.
+	(define_peephole2 for Altivec d-form load): Add peepholes to catch
+	cases where the register allocator uses a move and an offsettable
+	memory operation to/from a FPR register on ISA 2.06/2.07.
+	(define_peephole2 for Altivec d-form store): Likewise.
+
 2017-05-18  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/80799
