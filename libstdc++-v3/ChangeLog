@@ -1,3 +1,13 @@
+2017-05-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backport from mainline
+	2016-10-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* python/libstdcxx/v6/printers.py (build_libstdcxx_dictionary):
+	Register printer for std::__cxx11::list.
+	* python/libstdcxx/v6/xmethods.py (ListMethodsMatcher.match): Match
+	std::__cxx11::list as well as std::list.
+
 2017-05-17  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline
