@@ -1,6 +1,13 @@
 2017-05-18  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline
+	2017-04-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/80493
+	* include/experimental/optional (optional::swap): Fix exception
+	specification.
+
+	Backport from mainline
 	2017-04-19  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/80448
