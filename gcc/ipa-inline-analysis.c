@@ -86,19 +86,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfgexpand.h"
 #include "gimplify.h"
 
-/* Number of bits in integer, but we really want to be stable across different
-   hosts.  */
-#define NUM_CONDITIONS 32
-
-/* Special condition code we use to represent test that operand is compile time
-   constant.  */
-#define IS_NOT_CONSTANT ERROR_MARK
-/* Special condition code we use to represent test that operand is not changed
-   across invocation of the function.  When operand IS_NOT_CONSTANT it is always
-   CHANGED, however i.e. loop invariants can be NOT_CHANGED given percentage
-   of executions even when they are not compile time constants.  */
-#define CHANGED IDENTIFIER_NODE
-
 /* Holders of ipa cgraph hooks: */
 static struct cgraph_2edge_hook_list *edge_duplication_hook_holder;
 static struct cgraph_edge_hook_list *edge_removal_hook_holder;
@@ -116,396 +103,6 @@ vec<edge_growth_cache_entry> edge_growth_cache;
 
 /* Edge predicates goes here.  */
 static object_allocator<predicate> edge_predicate_pool ("edge predicates");
-
-/* Simple description of whether a memory load or a condition refers to a load
-   from an aggregate and if so, how and where from in the aggregate.
-   Individual fields have the same meaning like fields with the same name in
-   struct condition.  */
-
-struct agg_position_info
-{
-  HOST_WIDE_INT offset;
-  bool agg_contents;
-  bool by_ref;
-};
-
-/* Add condition to condition list SUMMARY. OPERAND_NUM, SIZE, CODE and VAL
-   correspond to fields of condition structure.  AGGPOS describes whether the
-   used operand is loaded from an aggregate and where in the aggregate it is.
-   It can be NULL, which means this not a load from an aggregate.  */
-
-static predicate
-add_condition (struct inline_summary *summary, int operand_num,
-	       HOST_WIDE_INT size, struct agg_position_info *aggpos,
-	       enum tree_code code, tree val)
-{
-  int i;
-  struct condition *c;
-  struct condition new_cond;
-  HOST_WIDE_INT offset;
-  bool agg_contents, by_ref;
-
-  if (aggpos)
-    {
-      offset = aggpos->offset;
-      agg_contents = aggpos->agg_contents;
-      by_ref = aggpos->by_ref;
-    }
-  else
-    {
-      offset = 0;
-      agg_contents = false;
-      by_ref = false;
-    }
-
-  gcc_checking_assert (operand_num >= 0);
-  for (i = 0; vec_safe_iterate (summary->conds, i, &c); i++)
-    {
-      if (c->operand_num == operand_num
-	  && c->size == size
-	  && c->code == code
-	  && c->val == val
-	  && c->agg_contents == agg_contents
-	  && (!agg_contents || (c->offset == offset && c->by_ref == by_ref)))
-	return predicate::predicate_testing_cond (i);
-    }
-  /* Too many conditions.  Give up and return constant true.  */
-  if (i == NUM_CONDITIONS - predicate::first_dynamic_condition)
-    return true;
-
-  new_cond.operand_num = operand_num;
-  new_cond.code = code;
-  new_cond.val = val;
-  new_cond.agg_contents = agg_contents;
-  new_cond.by_ref = by_ref;
-  new_cond.offset = offset;
-  new_cond.size = size;
-  vec_safe_push (summary->conds, new_cond);
-
-  return predicate::predicate_testing_cond (i);
-}
-
-
-/* Add clause CLAUSE into the predicate P.
-   When CONDITIONS is NULL do not perform checking whether NEW_CLAUSE
-   is obviously true.  This is useful only when NEW_CLAUSE is known to be
-   sane.  */
-
-void
-predicate::add_clause (conditions conditions, clause_t new_clause)
-{
-  int i;
-  int i2;
-  int insert_here = -1;
-  int c1, c2;
-
-  /* True clause.  */
-  if (!new_clause)
-    return;
-
-  /* False clause makes the whole predicate false.  Kill the other variants.  */
-  if (new_clause == (1 << predicate::false_condition))
-    {
-      *this = false;
-      return;
-    }
-  if (*this == false)
-    return;
-
-  /* No one should be silly enough to add false into nontrivial clauses.  */
-  gcc_checking_assert (!(new_clause & (1 << predicate::false_condition)));
-
-  /* Look where to insert the new_clause.  At the same time prune out
-     new_clauses of P that are implied by the new new_clause and thus
-     redundant.  */
-  for (i = 0, i2 = 0; i <= max_clauses; i++)
-    {
-      m_clause[i2] = m_clause[i];
-
-      if (!m_clause[i])
-	break;
-
-      /* If m_clause[i] implies new_clause, there is nothing to add.  */
-      if ((m_clause[i] & new_clause) == m_clause[i])
-	{
-	  /* We had nothing to add, none of clauses should've become
-	     redundant.  */
-	  gcc_checking_assert (i == i2);
-	  return;
-	}
-
-      if (m_clause[i] < new_clause && insert_here < 0)
-	insert_here = i2;
-
-      /* If new_clause implies clause[i], then clause[i] becomes redundant.
-         Otherwise the clause[i] has to stay.  */
-      if ((m_clause[i] & new_clause) != new_clause)
-	i2++;
-    }
-
-  /* Look for clauses that are obviously true.  I.e.
-     op0 == 5 || op0 != 5.  */
-  if (conditions)
-    for (c1 = predicate::first_dynamic_condition; c1 < NUM_CONDITIONS; c1++)
-      {
-	condition *cc1;
-	if (!(new_clause & (1 << c1)))
-	  continue;
-	cc1 = &(*conditions)[c1 - predicate::first_dynamic_condition];
-	/* We have no way to represent !CHANGED and !IS_NOT_CONSTANT
-	   and thus there is no point for looking for them.  */
-	if (cc1->code == CHANGED || cc1->code == IS_NOT_CONSTANT)
-	  continue;
-	for (c2 = c1 + 1; c2 < NUM_CONDITIONS; c2++)
-	  if (new_clause & (1 << c2))
-	    {
-	      condition *cc1 =
-		&(*conditions)[c1 - predicate::first_dynamic_condition];
-	      condition *cc2 =
-		&(*conditions)[c2 - predicate::first_dynamic_condition];
-	      if (cc1->operand_num == cc2->operand_num
-		  && cc1->val == cc2->val
-		  && cc2->code != IS_NOT_CONSTANT
-		  && cc2->code != CHANGED
-		  && cc1->code == invert_tree_comparison (cc2->code,
-							  HONOR_NANS (cc1->val)))
-		return;
-	    }
-      }
-
-
-  /* We run out of variants.  Be conservative in positive direction.  */
-  if (i2 == max_clauses)
-    return;
-  /* Keep clauses in decreasing order. This makes equivalence testing easy.  */
-  m_clause[i2 + 1] = 0;
-  if (insert_here >= 0)
-    for (; i2 > insert_here; i2--)
-      m_clause[i2] = m_clause[i2 - 1];
-  else
-    insert_here = i2;
-  m_clause[insert_here] = new_clause;
-}
-
-
-/* Do THIS &= P.  */
-
-predicate &
-predicate::operator &= (const predicate &p)
-{
-  /* Avoid busy work.  */
-  if (p == false || *this == true)
-    {
-      *this = p;
-      return *this;
-    }
-  if (*this == false || p == true || this == &p)
-    return *this;
-
-  int i;
-
-  /* See how far predicates match.  */
-  for (i = 0; m_clause[i] && m_clause[i] == p.m_clause[i]; i++)
-    {
-      gcc_checking_assert (i < max_clauses);
-    }
-
-  /* Combine the predicates rest.  */
-  for (; p.m_clause[i]; i++)
-    {
-      gcc_checking_assert (i < max_clauses);
-      add_clause (NULL, p.m_clause[i]);
-    }
-  return *this;
-}
-
-
-
-/* Return THIS | P2.  */
-
-predicate
-predicate::or_with (conditions conditions,
-	            const predicate &p) const
-{
-  /* Avoid busy work.  */
-  if (p == false || *this == true || *this == p)
-    return *this;
-  if (*this == false || p == true)
-    return p;
-
-  /* OK, combine the predicates.  */
-  predicate out = true;
-
-  for (int i = 0; m_clause[i]; i++)
-    for (int j = 0; p.m_clause[j]; j++)
-      {
-	gcc_checking_assert (i < max_clauses && j < max_clauses);
-	out.add_clause (conditions, m_clause[i] | p.m_clause[j]);
-      }
-  return out;
-}
-
-
-/* Having partial truth assignment in POSSIBLE_TRUTHS, return false
-   if predicate P is known to be false.  */
-
-bool
-predicate::evaluate (clause_t possible_truths) const
-{
-  int i;
-
-  /* True remains true.  */
-  if (*this == true)
-    return true;
-
-  gcc_assert (!(possible_truths & (1 << predicate::false_condition)));
-
-  /* See if we can find clause we can disprove.  */
-  for (i = 0; m_clause[i]; i++)
-    {
-      gcc_checking_assert (i < max_clauses);
-      if (!(m_clause[i] & possible_truths))
-	return false;
-    }
-  return true;
-}
-
-/* Return the probability in range 0...REG_BR_PROB_BASE that the predicated
-   instruction will be recomputed per invocation of the inlined call.  */
-
-int
-predicate::probability (conditions conds,
-	                clause_t possible_truths,
-	                vec<inline_param_summary> inline_param_summary) const
-{
-  int i;
-  int combined_prob = REG_BR_PROB_BASE;
-
-  /* True remains true.  */
-  if (*this == true)
-    return REG_BR_PROB_BASE;
-
-  if (*this == false)
-    return 0;
-
-  gcc_assert (!(possible_truths & (1 << predicate::false_condition)));
-
-  /* See if we can find clause we can disprove.  */
-  for (i = 0; m_clause[i]; i++)
-    {
-      gcc_checking_assert (i < max_clauses);
-      if (!(m_clause[i] & possible_truths))
-	return 0;
-      else
-	{
-	  int this_prob = 0;
-	  int i2;
-	  if (!inline_param_summary.exists ())
-	    return REG_BR_PROB_BASE;
-	  for (i2 = 0; i2 < NUM_CONDITIONS; i2++)
-	    if ((m_clause[i] & possible_truths) & (1 << i2))
-	      {
-		if (i2 >= predicate::first_dynamic_condition)
-		  {
-		    condition *c =
-		      &(*conds)[i2 - predicate::first_dynamic_condition];
-		    if (c->code == CHANGED
-			&& (c->operand_num <
-			    (int) inline_param_summary.length ()))
-		      {
-			int iprob =
-			  inline_param_summary[c->operand_num].change_prob;
-			this_prob = MAX (this_prob, iprob);
-		      }
-		    else
-		      this_prob = REG_BR_PROB_BASE;
-		  }
-		else
-		  this_prob = REG_BR_PROB_BASE;
-	      }
-	  combined_prob = MIN (this_prob, combined_prob);
-	  if (!combined_prob)
-	    return 0;
-	}
-    }
-  return combined_prob;
-}
-
-
-/* Dump conditional COND.  */
-
-static void
-dump_condition (FILE *f, conditions conditions, int cond)
-{
-  condition *c;
-  if (cond == predicate::false_condition)
-    fprintf (f, "false");
-  else if (cond == predicate::not_inlined_condition)
-    fprintf (f, "not inlined");
-  else
-    {
-      c = &(*conditions)[cond - predicate::first_dynamic_condition];
-      fprintf (f, "op%i", c->operand_num);
-      if (c->agg_contents)
-	fprintf (f, "[%soffset: " HOST_WIDE_INT_PRINT_DEC "]",
-		 c->by_ref ? "ref " : "", c->offset);
-      if (c->code == IS_NOT_CONSTANT)
-	{
-	  fprintf (f, " not constant");
-	  return;
-	}
-      if (c->code == CHANGED)
-	{
-	  fprintf (f, " changed");
-	  return;
-	}
-      fprintf (f, " %s ", op_symbol_code (c->code));
-      print_generic_expr (f, c->val);
-    }
-}
-
-
-/* Dump clause CLAUSE.  */
-
-static void
-dump_clause (FILE *f, conditions conds, clause_t clause)
-{
-  int i;
-  bool found = false;
-  fprintf (f, "(");
-  if (!clause)
-    fprintf (f, "true");
-  for (i = 0; i < NUM_CONDITIONS; i++)
-    if (clause & (1 << i))
-      {
-	if (found)
-	  fprintf (f, " || ");
-	found = true;
-	dump_condition (f, conds, i);
-      }
-  fprintf (f, ")");
-}
-
-
-/* Dump THIS to F. CONDS a vector of conditions used when evauating
-   predicats. When NL is true new line is output at the end of dump.  */
-
-void
-predicate::dump (FILE *f, conditions conds, bool nl) const
-{
-  int i;
-  if (*this == true)
-    dump_clause (f, conds, 0);
-  else
-    for (i = 0; m_clause[i]; i++)
-      {
-	if (i)
-	  fprintf (f, " && ");
-	dump_clause (f, conds, m_clause[i]);
-      }
-  if (nl)
-    fprintf (f, "\n");
-}
 
 
 /* Dump inline hints.  */
@@ -770,7 +367,7 @@ evaluate_conditions_for_known_args (struct cgraph_node *node,
 	{
 	  struct ipa_agg_jump_function *agg;
 
-	  if (c->code == CHANGED
+	  if (c->code == predicate::changed
 	      && !c->by_ref
 	      && (known_vals[c->operand_num] == error_mark_node))
 	    continue;
@@ -787,7 +384,7 @@ evaluate_conditions_for_known_args (struct cgraph_node *node,
       else
 	{
 	  val = known_vals[c->operand_num];
-	  if (val == error_mark_node && c->code != CHANGED)
+	  if (val == error_mark_node && c->code != predicate::changed)
 	    val = NULL_TREE;
 	}
 
@@ -797,7 +394,7 @@ evaluate_conditions_for_known_args (struct cgraph_node *node,
 	  nonspec_clause |= 1 << (i + predicate::first_dynamic_condition);
 	  continue;
 	}
-      if (c->code == CHANGED)
+      if (c->code == predicate::changed)
 	{
 	  nonspec_clause |= 1 << (i + predicate::first_dynamic_condition);
 	  continue;
@@ -809,7 +406,7 @@ evaluate_conditions_for_known_args (struct cgraph_node *node,
 	  nonspec_clause |= 1 << (i + predicate::first_dynamic_condition);
 	  continue;
 	}
-      if (c->code == IS_NOT_CONSTANT)
+      if (c->code == predicate::is_not_constant)
 	{
 	  nonspec_clause |= 1 << (i + predicate::first_dynamic_condition);
 	  continue;
@@ -1023,23 +620,6 @@ void
 inline_summary_t::remove (cgraph_node *node, inline_summary *info)
 {
   reset_inline_summary (node, info);
-}
-
-/* Remap predicate THIS of former function to be predicate of duplicated function.
-   POSSIBLE_TRUTHS is clause of possible truths in the duplicated node,
-   INFO is inline summary of the duplicated node.  */
-
-predicate
-predicate::remap_after_duplication (clause_t possible_truths)
-{
-  int j;
-  predicate out = true;
-  for (j = 0; m_clause[j]; j++)
-    if (!(possible_truths & m_clause[j]))
-      return false;
-    else
-      out.add_clause (NULL, possible_truths & m_clause[j]);
-  return out;
 }
 
 /* Same as remap_predicate_after_duplication but handle hint predicate *P.
@@ -1778,7 +1358,7 @@ set_cond_stmt_execution_predicate (struct ipa_func_body_info *fbi,
   FOR_EACH_EDGE (e, ei, bb->succs) if (e->flags & EDGE_FALSE_VALUE)
     {
       predicate p = add_condition (summary, index, size, &aggpos,
-					  IS_NOT_CONSTANT, NULL_TREE);
+				   predicate::is_not_constant, NULL_TREE);
       e->aux = edge_predicate_pool.allocate ();
       *(predicate *) e->aux = p;
     }
@@ -1945,7 +1525,8 @@ will_be_nonconstant_expr_predicate (struct ipa_node_params *info,
 
   parm = unmodified_parm (NULL, expr, &size);
   if (parm && (index = ipa_get_param_decl_index (info, parm)) >= 0)
-    return add_condition (summary, index, size, NULL, CHANGED, NULL_TREE);
+    return add_condition (summary, index, size, NULL, predicate::changed,
+			  NULL_TREE);
   if (is_gimple_min_invariant (expr))
     return false;
   if (TREE_CODE (expr) == SSA_NAME)
@@ -2058,7 +1639,8 @@ will_be_nonconstant_predicate (struct ipa_func_body_info *fbi,
 
   if (is_load)
     op_non_const =
-      add_condition (summary, base_index, size, &aggpos, CHANGED, NULL);
+      add_condition (summary, base_index, size, &aggpos, predicate::changed,
+		     NULL);
   else
     op_non_const = false;
   FOR_EACH_SSA_TREE_OPERAND (use, stmt, iter, SSA_OP_USE)
@@ -2070,7 +1652,8 @@ will_be_nonconstant_predicate (struct ipa_func_body_info *fbi,
       if (parm && (index = ipa_get_param_decl_index (fbi->info, parm)) >= 0)
 	{
 	  if (index != base_index)
-	    p = add_condition (summary, index, size, NULL, CHANGED, NULL_TREE);
+	    p = add_condition (summary, index, size, NULL, predicate::changed,
+			       NULL_TREE);
 	  else
 	    continue;
 	}
@@ -3357,101 +2940,6 @@ estimate_ipcp_clone_size_and_time (struct cgraph_node *node,
 			       ret_nonspec_time, hints, vNULL);
 }
 
-/* Translate all conditions from callee representation into caller
-   representation and symbolically evaluate predicate THIS into new predicate.
-
-   INFO is inline_summary of function we are adding predicate into, CALLEE_INFO
-   is summary of function predicate P is from. OPERAND_MAP is array giving
-   callee formal IDs the caller formal IDs. POSSSIBLE_TRUTHS is clausule of all
-   callee conditions that may be true in caller context.  TOPLEV_PREDICATE is
-   predicate under which callee is executed.  OFFSET_MAP is an array of of
-   offsets that need to be added to conditions, negative offset means that
-   conditions relying on values passed by reference have to be discarded
-   because they might not be preserved (and should be considered offset zero
-   for other purposes).  */
-
-predicate
-predicate::remap_after_inlining (struct inline_summary *info,
-				 struct inline_summary *callee_info,
-				 vec<int> operand_map,
-				 vec<int> offset_map,
-				 clause_t possible_truths,
-				 const predicate &toplev_predicate)
-{
-  int i;
-  predicate out = true;
-
-  /* True predicate is easy.  */
-  if (*this == true)
-    return toplev_predicate;
-  for (i = 0; m_clause[i]; i++)
-    {
-      clause_t clause = m_clause[i];
-      int cond;
-      predicate clause_predicate = false;
-
-      gcc_assert (i < max_clauses);
-
-      for (cond = 0; cond < NUM_CONDITIONS; cond++)
-	/* Do we have condition we can't disprove?   */
-	if (clause & possible_truths & (1 << cond))
-	  {
-	    predicate cond_predicate;
-	    /* Work out if the condition can translate to predicate in the
-	       inlined function.  */
-	    if (cond >= predicate::first_dynamic_condition)
-	      {
-		struct condition *c;
-
-		c = &(*callee_info->conds)[cond
-					   -
-					   predicate::first_dynamic_condition];
-		/* See if we can remap condition operand to caller's operand.
-		   Otherwise give up.  */
-		if (!operand_map.exists ()
-		    || (int) operand_map.length () <= c->operand_num
-		    || operand_map[c->operand_num] == -1
-		    /* TODO: For non-aggregate conditions, adding an offset is
-		       basically an arithmetic jump function processing which
-		       we should support in future.  */
-		    || ((!c->agg_contents || !c->by_ref)
-			&& offset_map[c->operand_num] > 0)
-		    || (c->agg_contents && c->by_ref
-			&& offset_map[c->operand_num] < 0))
-		  cond_predicate = true;
-		else
-		  {
-		    struct agg_position_info ap;
-		    HOST_WIDE_INT offset_delta = offset_map[c->operand_num];
-		    if (offset_delta < 0)
-		      {
-			gcc_checking_assert (!c->agg_contents || !c->by_ref);
-			offset_delta = 0;
-		      }
-		    gcc_assert (!c->agg_contents
-				|| c->by_ref || offset_delta == 0);
-		    ap.offset = c->offset + offset_delta;
-		    ap.agg_contents = c->agg_contents;
-		    ap.by_ref = c->by_ref;
-		    cond_predicate = add_condition (info,
-						    operand_map[c->operand_num],
-						    c->size, &ap, c->code,
-						    c->val);
-		  }
-	      }
-	    /* Fixed conditions remains same, construct single
-	       condition predicate.  */
-	    else
-	      cond_predicate = predicate::predicate_testing_cond (cond);
-	    clause_predicate = clause_predicate.or_with (info->conds,
-					                 cond_predicate);
-	  }
-      out &= clause_predicate;
-    }
-  out &= toplev_predicate;
-  return out;
-}
-
 
 /* Update summary information of inline clones after inlining.
    Compute peak stack usage.  */
@@ -4175,27 +3663,6 @@ inline_generate_summary (void)
 }
 
 
-/* Read predicate from IB.  */
-
-void
-predicate::stream_in (struct lto_input_block *ib)
-{
-  clause_t clause;
-  int k = 0;
-
-  do
-    {
-      gcc_assert (k <= max_clauses);
-      clause = m_clause[k++] = streamer_read_uhwi (ib);
-    }
-  while (clause);
-
-  /* Zero-initialize the remaining clauses in OUT.  */
-  while (k <= max_clauses)
-    m_clause[k++] = 0;
-}
-
-
 /* Write inline summary for edge E to OB.  */
 
 static void
@@ -4353,21 +3820,6 @@ inline_read_summary (void)
 
   gcc_assert (inline_summaries);
   inline_summaries->enable_insertion_hook ();
-}
-
-
-/* Write predicate P to OB.  */
-
-void
-predicate::stream_out (struct output_block *ob)
-{
-  int j;
-  for (j = 0; m_clause[j]; j++)
-    {
-      gcc_assert (j < max_clauses);
-      streamer_write_uhwi (ob, m_clause[j]);
-    }
-  streamer_write_uhwi (ob, 0);
 }
 
 
