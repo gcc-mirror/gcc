@@ -1,3 +1,12 @@
+2017-05-18  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/80799
+	* config/i386/mmx.md (*mov<mode>_internal): Enable
+	alternatives 11, 12, 13 and 14 also for 32bit targets.
+	Remove alternatives 15, 16, 17 and 18.
+	* config/i386/sse.md (vec_concatv2di): Change
+	alternative (!x, *y) to (x, ?!*Yn).
+
 2017-05-18  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* dumpfile.h (enum dump_kind): Remove stray comma.
@@ -280,7 +289,7 @@
 
 2017-05-16  Uros Bizjak  <ubizjak@gmail.com>
 
-	* config/i386.i386.md (*movsi_internal): Split (?rm,*y) alternative
+	* config/i386/i386.md (*movsi_internal): Split (?rm,*y) alternative
 	to (?r,*Yn) and (?m,*y) alternatives, and (?*y,rm) to (?*Ym,r)
 	and (?*y,m).  Update insn attributes.
 
