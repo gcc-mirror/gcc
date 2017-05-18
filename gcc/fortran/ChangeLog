@@ -1,3 +1,11 @@
+2017-05-18  Fritz Reese <fritzoreese@gmail.com>
+
+	PR fortran/79968
+	* decl.c (match_attr_spec, gfc_match_automatic,
+	gfc_match_static, gfc_match_structure_decl): Unify diagnostic
+	errors regarding -fdec options.
+	* io.c (match_dec_etag, match_dec_vtag, match_dec_ftag): Ditto.
+
 2017-05-17  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/80741
