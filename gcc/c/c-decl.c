@@ -1630,7 +1630,7 @@ match_builtin_function_types (tree newtype, tree oldtype)
   newrettype = TREE_TYPE (newtype);
 
   if (TYPE_MODE (oldrettype) != TYPE_MODE (newrettype))
-    return 0;
+    return NULL_TREE;
 
   oldargs = TYPE_ARG_TYPES (oldtype);
   newargs = TYPE_ARG_TYPES (newtype);
@@ -1644,7 +1644,7 @@ match_builtin_function_types (tree newtype, tree oldtype)
 	  || !TREE_VALUE (newargs)
 	  || TYPE_MODE (TREE_VALUE (oldargs))
 	     != TYPE_MODE (TREE_VALUE (newargs)))
-	return 0;
+	return NULL_TREE;
 
       oldargs = TREE_CHAIN (oldargs);
       newargs = TREE_CHAIN (newargs);
@@ -3755,7 +3755,7 @@ check_earlier_gotos (tree label, struct c_label_vars* label_vars)
 
 /* Define a label, specifying the location in the source file.
    Return the LABEL_DECL node for the label, if the definition is valid.
-   Otherwise return 0.  */
+   Otherwise return NULL_TREE.  */
 
 tree
 define_label (location_t location, tree name)
@@ -3774,7 +3774,7 @@ define_label (location_t location, tree name)
     {
       error_at (location, "duplicate label %qD", label);
       locate_old_decl (label);
-      return 0;
+      return NULL_TREE;
     }
   else if (label && DECL_CONTEXT (label) == current_function_decl)
     {
@@ -3971,7 +3971,7 @@ pending_xref_error (void)
 /* Look up NAME in the current scope and its superiors
    in the namespace of variables, functions and typedefs.
    Return a ..._DECL node of some kind representing its definition,
-   or return 0 if it is undefined.  */
+   or return NULL_TREE if it is undefined.  */
 
 tree
 lookup_name (tree name)
@@ -5516,7 +5516,7 @@ smallest_type_quals_location (const location_t *locations,
    determine the name and type of the object declared
    and construct a ..._DECL node for it.
    (In one case we can return a ..._TYPE node instead.
-    For invalid input we sometimes return 0.)
+    For invalid input we sometimes return NULL_TREE.)
 
    DECLSPECS is a c_declspecs structure for the declaration specifiers.
 
@@ -5662,7 +5662,7 @@ grokdeclarator (const struct c_declarator *declarator,
      a function declarator.  */
 
   if (funcdef_flag && !funcdef_syntax)
-    return 0;
+    return NULL_TREE;
 
   /* If this looks like a function definition, make it one,
      even if it occurs where parms are expected.
@@ -6833,7 +6833,7 @@ grokdeclarator (const struct c_declarator *declarator,
 		if (funcdef_flag)
 		  storage_class = declspecs->storage_class = csc_none;
 		else
-		  return 0;
+		  return NULL_TREE;
 	      }
 	  }
 
@@ -7073,20 +7073,22 @@ grokparms (struct c_arg_info *arg_info, bool funcdef_flag)
 	     "function declaration isn%'t a prototype");
 
   if (arg_types == error_mark_node)
-    return 0;  /* don't set TYPE_ARG_TYPES in this case */
+    /* Don't set TYPE_ARG_TYPES in this case.  */
+    return NULL_TREE;
 
   else if (arg_types && TREE_CODE (TREE_VALUE (arg_types)) == IDENTIFIER_NODE)
     {
       if (!funcdef_flag)
 	{
-	  pedwarn (input_location, 0, "parameter names (without types) in function declaration");
+	  pedwarn (input_location, 0, "parameter names (without types) in "
+		   "function declaration");
 	  arg_info->parms = NULL_TREE;
 	}
       else
 	arg_info->parms = arg_info->types;
 
       arg_info->types = NULL_TREE;
-      return 0;
+      return NULL_TREE;
     }
   else
     {
@@ -9599,7 +9601,7 @@ identifier_global_value	(tree t)
     if (B_IN_FILE_SCOPE (b) || B_IN_EXTERNAL_SCOPE (b))
       return b->decl;
 
-  return 0;
+  return NULL_TREE;
 }
 
 /* In C, the only C-linkage public declaration is at file scope.  */
