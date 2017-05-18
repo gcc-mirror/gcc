@@ -1,3 +1,7 @@
+2017-05-18  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* final.c (leaf_function_p): Check we are not in a sequence.
+
 2017-05-18  Martin Liska  <mliska@suse.cz>
 
 	* cfgrtl.c (rtl_verify_edges): Remove usage of TDF_RTL.

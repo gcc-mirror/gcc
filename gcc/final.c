@@ -4309,6 +4309,9 @@ leaf_function_p (void)
 {
   rtx_insn *insn;
 
+  /* Ensure we walk the entire function body.  */
+  gcc_assert (!in_sequence_p ());
+
   /* Some back-ends (e.g. s390) want leaf functions to stay leaf
      functions even if they call mcount.  */
   if (crtl->profile && !targetm.keep_leaf_when_profiled ())
