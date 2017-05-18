@@ -6809,13 +6809,11 @@ extern tree ovl_make				(tree fn,
 						 tree next = NULL_TREE);
 extern tree ovl_insert				(tree fn, tree maybe_ovl,
 						 bool using_p = false);
-extern tree lookup_add				(tree lookup, tree ovl);
+extern tree lookup_add				(tree fns, tree lookup);
 extern int is_overloaded_fn			(tree);
 extern tree dependent_name			(tree);
 extern tree get_fns				(tree) ATTRIBUTE_PURE;
 extern tree get_first_fn			(tree) ATTRIBUTE_PURE;
-extern tree ovl_cons				(tree, tree);
-extern tree build_overload			(tree, tree);
 extern tree ovl_scope				(tree);
 extern const char *cxx_printable_name		(tree, int);
 extern const char *cxx_printable_name_translate	(tree, int);

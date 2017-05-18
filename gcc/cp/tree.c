@@ -2183,18 +2183,18 @@ ovl_iterator::remove_node (tree overload, tree node)
   return overload;
 }
 
-/* Add a potential overload into a lookup set.  */
+/* Add a set of new FNS into a lookup.  */
 
 tree
-lookup_add (tree lookup, tree ovl)
+lookup_add (tree fns, tree lookup)
 {
-  if (lookup || TREE_CODE (ovl) == TEMPLATE_DECL)
+  if (lookup || TREE_CODE (fns) == TEMPLATE_DECL)
     {
-      lookup = ovl_make (ovl, lookup);
+      lookup = ovl_make (fns, lookup);
       OVL_LOOKUP_P (lookup) = true;
     }
   else
-    lookup = ovl;
+    lookup = fns;
 
   return lookup;
 }
@@ -2275,30 +2275,6 @@ tree
 get_first_fn (tree from)
 {
   return OVL_FIRST (get_fns (from));
-}
-
-/* Return a new OVL node, concatenating it with the old one.  */
-
-tree
-ovl_cons (tree decl, tree chain)
-{
-  tree result = make_node (OVERLOAD);
-  TREE_TYPE (result) = unknown_type_node;
-  OVL_FUNCTION (result) = decl;
-  TREE_CHAIN (result) = chain;
-
-  return result;
-}
-
-/* Build a new overloaded function. If this is the first one,
-   just return it; otherwise, ovl_cons the _DECLs */
-
-tree
-build_overload (tree decl, tree chain)
-{
-  if (! chain && TREE_CODE (decl) != TEMPLATE_DECL)
-    return decl;
-  return ovl_cons (decl, chain);
 }
 
 /* Return the scope where the overloaded functions OVL were found.  */
