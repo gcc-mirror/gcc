@@ -38,7 +38,6 @@ static cxx_binding *cxx_binding_make (tree value, tree type);
 static cp_binding_level *innermost_nonclass_level (void);
 static void set_identifier_type_value_with_scope (tree id, tree decl,
 						  cp_binding_level *b);
-
 /* Create a new binding for NAME in local binding LEVEL.  */
 
 static cxx_binding *
@@ -293,16 +292,6 @@ find_local_binding (cp_binding_level *b, tree name)
   return NULL;
 }
 
-/* Find the value binding for NAME in the local binding level B.  */
-
-static tree
-find_local_value (cp_binding_level *b, tree name)
-{
-  if (cxx_binding *binding = find_local_binding (b, name))
-    return binding->value;
-  return NULL_TREE;
-}
-
 /* Only look in the innermost non-class level.  */
 
 static tree
@@ -312,8 +301,10 @@ lookup_name_innermost_nonclass_level (tree name)
 
   if (b->kind == sk_namespace)
     return find_namespace_value (current_namespace, name);
+  else if (cxx_binding *binding = find_local_binding (b, name))
+    return binding->value;
   else
-    return find_local_value (b, name);
+   return NULL_TREE;
 }
 
 struct name_lookup
@@ -3778,7 +3769,7 @@ do_nonmember_using_decl (tree scope, tree name, tree *value_p, tree *type_p)
   else if (TREE_CODE (lookup.value) == TREE_LIST)
     {
       error ("reference to %qD is ambiguous", name);
-      print_candidates (lookup.type);
+      print_candidates (lookup.value);
       lookup.value = NULL_TREE;
     }
 

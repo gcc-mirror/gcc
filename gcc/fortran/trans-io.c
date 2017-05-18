@@ -1756,7 +1756,7 @@ transfer_namelist_element (stmtblock_t * block, const char * var_name,
   else
     tmp = build_int_cst (gfc_charlen_type_node, 0);
 
-  if (dtio_proc == NULL_TREE)
+  if (dtio_proc == null_pointer_node)
     tmp = build_call_expr_loc (input_location,
 			   iocall[IOCALL_SET_NML_VAL], 6,
 			   dt_parm_addr, addr_expr, string,

@@ -1566,7 +1566,10 @@ do {									   \
    and annulled branches insert 4 bubbles.
 
    On Niagara-2 and Niagara-3, a not-taken branch costs 1 cycle whereas
-   a taken branch costs 6 cycles.  */
+   a taken branch costs 6 cycles.
+
+   The T4 Supplement specifies the branch latency at 2 cycles.
+   The M7 Supplement specifies the branch latency at 1 cycle. */
 
 #define BRANCH_COST(speed_p, predictable_p) \
 	((sparc_cpu == PROCESSOR_V9 \
@@ -1579,7 +1582,11 @@ do {									   \
 	 : ((sparc_cpu == PROCESSOR_NIAGARA2 \
 	     || sparc_cpu == PROCESSOR_NIAGARA3) \
 	    ? 5 \
-	 : 3))))
+	 : (sparc_cpu == PROCESSOR_NIAGARA4 \
+	    ? 2 \
+	 : (sparc_cpu == PROCESSOR_NIAGARA7 \
+	    ? 1 \
+	 : 3))))))
 
 /* Control the assembler format that we output.  */
 

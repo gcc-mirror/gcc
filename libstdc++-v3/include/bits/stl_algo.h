@@ -5103,6 +5103,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
    *  @param  __last1   End of first range.
    *  @param  __first2  Start of second range.
    *  @param  __last2   End of second range.
+   *  @param  __result  Start of output range.
    *  @return  End of the output range.
    *  @ingroup set_algorithms
    *
@@ -5151,6 +5152,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
    *  @param  __last1   End of first range.
    *  @param  __first2  Start of second range.
    *  @param  __last2   End of second range.
+   *  @param  __result  Start of output range.
    *  @param  __comp    The comparison functor.
    *  @return  End of the output range.
    *  @ingroup set_algorithms
@@ -5223,6 +5225,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
    *  @param  __last1   End of first range.
    *  @param  __first2  Start of second range.
    *  @param  __last2   End of second range.
+   *  @param  __result  Start of output range.
    *  @return  End of the output range.
    *  @ingroup set_algorithms
    *
@@ -5269,6 +5272,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
    *  @param  __last1   End of first range.
    *  @param  __first2  Start of second range.
    *  @param  __last2   End of second range.
+   *  @param  __result  Start of output range.
    *  @param  __comp    The comparison functor.
    *  @return  End of the output range.
    *  @ingroup set_algorithms
@@ -5341,6 +5345,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
    *  @param  __last1   End of first range.
    *  @param  __first2  Start of second range.
    *  @param  __last2   End of second range.
+   *  @param  __result  Start of output range.
    *  @return  End of the output range.
    *  @ingroup set_algorithms
    *
@@ -5389,6 +5394,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
    *  @param  __last1   End of first range.
    *  @param  __first2  Start of second range.
    *  @param  __last2   End of second range.
+   *  @param  __result  Start of output range.
    *  @param  __comp    The comparison functor.
    *  @return  End of the output range.
    *  @ingroup set_algorithms
@@ -5471,6 +5477,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
    *  @param  __last1   End of first range.
    *  @param  __first2  Start of second range.
    *  @param  __last2   End of second range.
+   *  @param  __result  Start of output range.
    *  @return  End of the output range.
    *  @ingroup set_algorithms
    *
@@ -5519,6 +5526,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
    *  @param  __last1   End of first range.
    *  @param  __first2  Start of second range.
    *  @param  __last2   End of second range.
+   *  @param  __result  Start of output range.
    *  @param  __comp    The comparison functor.
    *  @return  End of the output range.
    *  @ingroup set_algorithms

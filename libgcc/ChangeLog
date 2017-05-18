@@ -1,3 +1,9 @@
+2017-05-17  Andreas Tobler  <andreast@gcc.gnu.org>
+
+	* config/arm/unwind-arm.h: Make _Unwind_GetIP, _Unwind_GetIPInfo and
+	_Unwind_SetIP available as functions for arm*-*-freebsd*.
+	* config/arm/unwind-arm.c: Implement the above.
+
 2017-05-15  Adhemerval Zanella  <adhemerval.zanella@linaro.org>
 
 	* config/sparc/lb1spc.S [__ELF__ && __linux__]: Emit .note.GNU-stack

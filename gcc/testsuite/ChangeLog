@@ -1,3 +1,26 @@
+2017-05-18  Sheldon Lobo  <sheldon.lobo@oracle.com>
+
+	* gcc.target/sparc/niagara7-align.c: New test.
+
+2017-05-18  Marek Polacek  <polacek@redhat.com>
+
+	PR sanitizer/80797
+	* c-c++-common/ubsan/null-12.c: New test.
+
+2017-05-17  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR middle-end/80692
+	* gcc.c-torture/execute/pr80692.c: New testcase.
+
+2017-05-17  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/80741
+	* gfortran.dg/read_4.f90: New test.
+
+2017-05-17  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* gcc.target/powerpc/pr78604.c: Fix typo in dg-options.
+
 2017-05-17  Fritz Reese <fritzoreese@gmail.com>
 
 	PR fortran/80668

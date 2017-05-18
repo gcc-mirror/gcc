@@ -1078,7 +1078,7 @@ match_case_to_enum_1 (tree key, tree type, tree label)
   else
     print_hex (key, buf);
 
-  if (TYPE_NAME (type) == 0)
+  if (TYPE_NAME (type) == NULL_TREE)
     warning_at (DECL_SOURCE_LOCATION (CASE_LABEL (label)),
 		warn_switch ? OPT_Wswitch : OPT_Wswitch_enum,
 		"case value %qs not in enumerated type",
