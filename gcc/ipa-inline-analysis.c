@@ -44,17 +44,7 @@ along with GCC; see the file COPYING3.  If not see
    It is easy to add more variants.  To represent function size and time
    that depends on context (i.e. it is known to be optimized away when
    context is known either by inlining or from IP-CP and cloning),
-   we use predicates. Predicates are logical formulas in
-   conjunctive-disjunctive form consisting of clauses. Clauses are bitmaps
-   specifying what conditions must be true. Conditions are simple test
-   of the form described above.
-
-   In order to make predicate (possibly) true, all of its clauses must
-   be (possibly) true. To make clause (possibly) true, one of conditions
-   it mentions must be (possibly) true.  There are fixed bounds on
-   number of clauses and conditions and all the manipulation functions
-   are conservative in positive direction. I.e. we may lose precision
-   by thinking that predicate may be true even when it is not.
+   we use predicates.
 
    estimate_edge_size and estimate_edge_growth can be used to query
    function size/time in the given context.  inline_merge_summary merges
@@ -100,13 +90,6 @@ along with GCC; see the file COPYING3.  If not see
    hosts.  */
 #define NUM_CONDITIONS 32
 
-enum predicate_conditions
-{
-  predicate_false_condition = 0,
-  predicate_not_inlined_condition = 1,
-  predicate_first_dynamic_condition = 2
-};
-
 /* Special condition code we use to represent test that operand is compile time
    constant.  */
 #define IS_NOT_CONSTANT ERROR_MARK
@@ -134,71 +117,6 @@ vec<edge_growth_cache_entry> edge_growth_cache;
 /* Edge predicates goes here.  */
 static object_allocator<predicate> edge_predicate_pool ("edge predicates");
 
-/* Return true predicate (tautology).
-   We represent it by empty list of clauses.  */
-
-static inline struct predicate
-true_predicate (void)
-{
-  struct predicate p;
-  p.clause[0] = 0;
-  return p;
-}
-
-
-/* Return predicate testing single condition number COND.  */
-
-static inline struct predicate
-single_cond_predicate (int cond)
-{
-  struct predicate p;
-  p.clause[0] = 1 << cond;
-  p.clause[1] = 0;
-  return p;
-}
-
-
-/* Return false predicate.  First clause require false condition.  */
-
-static inline struct predicate
-false_predicate (void)
-{
-  return single_cond_predicate (predicate_false_condition);
-}
-
-
-/* Return true if P is (true).  */
-
-static inline bool
-true_predicate_p (struct predicate *p)
-{
-  return !p->clause[0];
-}
-
-
-/* Return true if P is (false).  */
-
-static inline bool
-false_predicate_p (struct predicate *p)
-{
-  if (p->clause[0] == (1 << predicate_false_condition))
-    {
-      gcc_checking_assert (!p->clause[1]
-			   && p->clause[0] == 1 << predicate_false_condition);
-      return true;
-    }
-  return false;
-}
-
-
-/* Return predicate that is set true when function is not inlined.  */
-
-static inline struct predicate
-not_inlined_predicate (void)
-{
-  return single_cond_predicate (predicate_not_inlined_condition);
-}
-
 /* Simple description of whether a memory load or a condition refers to a load
    from an aggregate and if so, how and where from in the aggregate.
    Individual fields have the same meaning like fields with the same name in
@@ -216,7 +134,7 @@ struct agg_position_info
    used operand is loaded from an aggregate and where in the aggregate it is.
    It can be NULL, which means this not a load from an aggregate.  */
 
-static struct predicate
+static predicate
 add_condition (struct inline_summary *summary, int operand_num,
 	       HOST_WIDE_INT size, struct agg_position_info *aggpos,
 	       enum tree_code code, tree val)
@@ -249,11 +167,11 @@ add_condition (struct inline_summary *summary, int operand_num,
 	  && c->val == val
 	  && c->agg_contents == agg_contents
 	  && (!agg_contents || (c->offset == offset && c->by_ref == by_ref)))
-	return single_cond_predicate (i + predicate_first_dynamic_condition);
+	return predicate::predicate_testing_cond (i);
     }
   /* Too many conditions.  Give up and return constant true.  */
-  if (i == NUM_CONDITIONS - predicate_first_dynamic_condition)
-    return true_predicate ();
+  if (i == NUM_CONDITIONS - predicate::first_dynamic_condition)
+    return true;
 
   new_cond.operand_num = operand_num;
   new_cond.code = code;
@@ -263,14 +181,18 @@ add_condition (struct inline_summary *summary, int operand_num,
   new_cond.offset = offset;
   new_cond.size = size;
   vec_safe_push (summary->conds, new_cond);
-  return single_cond_predicate (i + predicate_first_dynamic_condition);
+
+  return predicate::predicate_testing_cond (i);
 }
 
 
-/* Add clause CLAUSE into the predicate P.  */
+/* Add clause CLAUSE into the predicate P.
+   When CONDITIONS is NULL do not perform checking whether NEW_CLAUSE
+   is obviously true.  This is useful only when NEW_CLAUSE is known to be
+   sane.  */
 
-static inline void
-add_clause (conditions conditions, struct predicate *p, clause_t clause)
+void
+predicate::add_clause (conditions conditions, clause_t new_clause)
 {
   int i;
   int i2;
@@ -278,34 +200,33 @@ add_clause (conditions conditions, struct predicate *p, clause_t clause)
   int c1, c2;
 
   /* True clause.  */
-  if (!clause)
+  if (!new_clause)
     return;
 
   /* False clause makes the whole predicate false.  Kill the other variants.  */
-  if (clause == (1 << predicate_false_condition))
+  if (new_clause == (1 << predicate::false_condition))
     {
-      p->clause[0] = (1 << predicate_false_condition);
-      p->clause[1] = 0;
+      *this = false;
       return;
     }
-  if (false_predicate_p (p))
+  if (*this == false)
     return;
 
   /* No one should be silly enough to add false into nontrivial clauses.  */
-  gcc_checking_assert (!(clause & (1 << predicate_false_condition)));
+  gcc_checking_assert (!(new_clause & (1 << predicate::false_condition)));
 
-  /* Look where to insert the clause.  At the same time prune out
-     clauses of P that are implied by the new clause and thus
+  /* Look where to insert the new_clause.  At the same time prune out
+     new_clauses of P that are implied by the new new_clause and thus
      redundant.  */
-  for (i = 0, i2 = 0; i <= MAX_CLAUSES; i++)
+  for (i = 0, i2 = 0; i <= max_clauses; i++)
     {
-      p->clause[i2] = p->clause[i];
+      m_clause[i2] = m_clause[i];
 
-      if (!p->clause[i])
+      if (!m_clause[i])
 	break;
 
-      /* If p->clause[i] implies clause, there is nothing to add.  */
-      if ((p->clause[i] & clause) == p->clause[i])
+      /* If m_clause[i] implies new_clause, there is nothing to add.  */
+      if ((m_clause[i] & new_clause) == m_clause[i])
 	{
 	  /* We had nothing to add, none of clauses should've become
 	     redundant.  */
@@ -313,132 +234,113 @@ add_clause (conditions conditions, struct predicate *p, clause_t clause)
 	  return;
 	}
 
-      if (p->clause[i] < clause && insert_here < 0)
+      if (m_clause[i] < new_clause && insert_here < 0)
 	insert_here = i2;
 
-      /* If clause implies p->clause[i], then p->clause[i] becomes redundant.
-         Otherwise the p->clause[i] has to stay.  */
-      if ((p->clause[i] & clause) != clause)
+      /* If new_clause implies clause[i], then clause[i] becomes redundant.
+         Otherwise the clause[i] has to stay.  */
+      if ((m_clause[i] & new_clause) != new_clause)
 	i2++;
     }
 
   /* Look for clauses that are obviously true.  I.e.
      op0 == 5 || op0 != 5.  */
-  for (c1 = predicate_first_dynamic_condition; c1 < NUM_CONDITIONS; c1++)
-    {
-      condition *cc1;
-      if (!(clause & (1 << c1)))
-	continue;
-      cc1 = &(*conditions)[c1 - predicate_first_dynamic_condition];
-      /* We have no way to represent !CHANGED and !IS_NOT_CONSTANT
-         and thus there is no point for looking for them.  */
-      if (cc1->code == CHANGED || cc1->code == IS_NOT_CONSTANT)
-	continue;
-      for (c2 = c1 + 1; c2 < NUM_CONDITIONS; c2++)
-	if (clause & (1 << c2))
-	  {
-	    condition *cc1 =
-	      &(*conditions)[c1 - predicate_first_dynamic_condition];
-	    condition *cc2 =
-	      &(*conditions)[c2 - predicate_first_dynamic_condition];
-	    if (cc1->operand_num == cc2->operand_num
-		&& cc1->val == cc2->val
-		&& cc2->code != IS_NOT_CONSTANT
-		&& cc2->code != CHANGED
-		&& cc1->code == invert_tree_comparison (cc2->code,
-							HONOR_NANS (cc1->val)))
-	      return;
-	  }
-    }
+  if (conditions)
+    for (c1 = predicate::first_dynamic_condition; c1 < NUM_CONDITIONS; c1++)
+      {
+	condition *cc1;
+	if (!(new_clause & (1 << c1)))
+	  continue;
+	cc1 = &(*conditions)[c1 - predicate::first_dynamic_condition];
+	/* We have no way to represent !CHANGED and !IS_NOT_CONSTANT
+	   and thus there is no point for looking for them.  */
+	if (cc1->code == CHANGED || cc1->code == IS_NOT_CONSTANT)
+	  continue;
+	for (c2 = c1 + 1; c2 < NUM_CONDITIONS; c2++)
+	  if (new_clause & (1 << c2))
+	    {
+	      condition *cc1 =
+		&(*conditions)[c1 - predicate::first_dynamic_condition];
+	      condition *cc2 =
+		&(*conditions)[c2 - predicate::first_dynamic_condition];
+	      if (cc1->operand_num == cc2->operand_num
+		  && cc1->val == cc2->val
+		  && cc2->code != IS_NOT_CONSTANT
+		  && cc2->code != CHANGED
+		  && cc1->code == invert_tree_comparison (cc2->code,
+							  HONOR_NANS (cc1->val)))
+		return;
+	    }
+      }
 
 
   /* We run out of variants.  Be conservative in positive direction.  */
-  if (i2 == MAX_CLAUSES)
+  if (i2 == max_clauses)
     return;
   /* Keep clauses in decreasing order. This makes equivalence testing easy.  */
-  p->clause[i2 + 1] = 0;
+  m_clause[i2 + 1] = 0;
   if (insert_here >= 0)
     for (; i2 > insert_here; i2--)
-      p->clause[i2] = p->clause[i2 - 1];
+      m_clause[i2] = m_clause[i2 - 1];
   else
     insert_here = i2;
-  p->clause[insert_here] = clause;
+  m_clause[insert_here] = new_clause;
 }
 
 
-/* Return P & P2.  */
+/* Do THIS &= P.  */
 
-static struct predicate
-and_predicates (conditions conditions,
-		struct predicate *p, struct predicate *p2)
+predicate &
+predicate::operator &= (const predicate &p)
 {
-  struct predicate out = *p;
+  /* Avoid busy work.  */
+  if (p == false || *this == true)
+    {
+      *this = p;
+      return *this;
+    }
+  if (*this == false || p == true || this == &p)
+    return *this;
+
   int i;
 
-  /* Avoid busy work.  */
-  if (false_predicate_p (p2) || true_predicate_p (p))
-    return *p2;
-  if (false_predicate_p (p) || true_predicate_p (p2))
-    return *p;
-
   /* See how far predicates match.  */
-  for (i = 0; p->clause[i] && p->clause[i] == p2->clause[i]; i++)
+  for (i = 0; m_clause[i] && m_clause[i] == p.m_clause[i]; i++)
     {
-      gcc_checking_assert (i < MAX_CLAUSES);
+      gcc_checking_assert (i < max_clauses);
     }
 
   /* Combine the predicates rest.  */
-  for (; p2->clause[i]; i++)
+  for (; p.m_clause[i]; i++)
     {
-      gcc_checking_assert (i < MAX_CLAUSES);
-      add_clause (conditions, &out, p2->clause[i]);
+      gcc_checking_assert (i < max_clauses);
+      add_clause (NULL, p.m_clause[i]);
     }
-  return out;
+  return *this;
 }
 
 
-/* Return true if predicates are obviously equal.  */
 
-static inline bool
-predicates_equal_p (struct predicate *p, struct predicate *p2)
+/* Return THIS | P2.  */
+
+predicate
+predicate::or_with (conditions conditions,
+	            const predicate &p) const
 {
-  int i;
-  for (i = 0; p->clause[i]; i++)
-    {
-      gcc_checking_assert (i < MAX_CLAUSES);
-      gcc_checking_assert (p->clause[i] > p->clause[i + 1]);
-      gcc_checking_assert (!p2->clause[i]
-			   || p2->clause[i] > p2->clause[i + 1]);
-      if (p->clause[i] != p2->clause[i])
-	return false;
-    }
-  return !p2->clause[i];
-}
-
-
-/* Return P | P2.  */
-
-static struct predicate
-or_predicates (conditions conditions,
-	       struct predicate *p, struct predicate *p2)
-{
-  struct predicate out = true_predicate ();
-  int i, j;
-
   /* Avoid busy work.  */
-  if (false_predicate_p (p2) || true_predicate_p (p))
-    return *p;
-  if (false_predicate_p (p) || true_predicate_p (p2))
-    return *p2;
-  if (predicates_equal_p (p, p2))
-    return *p;
+  if (p == false || *this == true || *this == p)
+    return *this;
+  if (*this == false || p == true)
+    return p;
 
   /* OK, combine the predicates.  */
-  for (i = 0; p->clause[i]; i++)
-    for (j = 0; p2->clause[j]; j++)
+  predicate out = true;
+
+  for (int i = 0; m_clause[i]; i++)
+    for (int j = 0; p.m_clause[j]; j++)
       {
-	gcc_checking_assert (i < MAX_CLAUSES && j < MAX_CLAUSES);
-	add_clause (conditions, &out, p->clause[i] | p2->clause[j]);
+	gcc_checking_assert (i < max_clauses && j < max_clauses);
+	out.add_clause (conditions, m_clause[i] | p.m_clause[j]);
       }
   return out;
 }
@@ -447,22 +349,22 @@ or_predicates (conditions conditions,
 /* Having partial truth assignment in POSSIBLE_TRUTHS, return false
    if predicate P is known to be false.  */
 
-static bool
-evaluate_predicate (struct predicate *p, clause_t possible_truths)
+bool
+predicate::evaluate (clause_t possible_truths) const
 {
   int i;
 
   /* True remains true.  */
-  if (true_predicate_p (p))
+  if (*this == true)
     return true;
 
-  gcc_assert (!(possible_truths & (1 << predicate_false_condition)));
+  gcc_assert (!(possible_truths & (1 << predicate::false_condition)));
 
   /* See if we can find clause we can disprove.  */
-  for (i = 0; p->clause[i]; i++)
+  for (i = 0; m_clause[i]; i++)
     {
-      gcc_checking_assert (i < MAX_CLAUSES);
-      if (!(p->clause[i] & possible_truths))
+      gcc_checking_assert (i < max_clauses);
+      if (!(m_clause[i] & possible_truths))
 	return false;
     }
   return true;
@@ -471,28 +373,28 @@ evaluate_predicate (struct predicate *p, clause_t possible_truths)
 /* Return the probability in range 0...REG_BR_PROB_BASE that the predicated
    instruction will be recomputed per invocation of the inlined call.  */
 
-static int
-predicate_probability (conditions conds,
-		       struct predicate *p, clause_t possible_truths,
-		       vec<inline_param_summary> inline_param_summary)
+int
+predicate::probability (conditions conds,
+	                clause_t possible_truths,
+	                vec<inline_param_summary> inline_param_summary) const
 {
   int i;
   int combined_prob = REG_BR_PROB_BASE;
 
   /* True remains true.  */
-  if (true_predicate_p (p))
+  if (*this == true)
     return REG_BR_PROB_BASE;
 
-  if (false_predicate_p (p))
+  if (*this == false)
     return 0;
 
-  gcc_assert (!(possible_truths & (1 << predicate_false_condition)));
+  gcc_assert (!(possible_truths & (1 << predicate::false_condition)));
 
   /* See if we can find clause we can disprove.  */
-  for (i = 0; p->clause[i]; i++)
+  for (i = 0; m_clause[i]; i++)
     {
-      gcc_checking_assert (i < MAX_CLAUSES);
-      if (!(p->clause[i] & possible_truths))
+      gcc_checking_assert (i < max_clauses);
+      if (!(m_clause[i] & possible_truths))
 	return 0;
       else
 	{
@@ -501,12 +403,12 @@ predicate_probability (conditions conds,
 	  if (!inline_param_summary.exists ())
 	    return REG_BR_PROB_BASE;
 	  for (i2 = 0; i2 < NUM_CONDITIONS; i2++)
-	    if ((p->clause[i] & possible_truths) & (1 << i2))
+	    if ((m_clause[i] & possible_truths) & (1 << i2))
 	      {
-		if (i2 >= predicate_first_dynamic_condition)
+		if (i2 >= predicate::first_dynamic_condition)
 		  {
 		    condition *c =
-		      &(*conds)[i2 - predicate_first_dynamic_condition];
+		      &(*conds)[i2 - predicate::first_dynamic_condition];
 		    if (c->code == CHANGED
 			&& (c->operand_num <
 			    (int) inline_param_summary.length ()))
@@ -536,13 +438,13 @@ static void
 dump_condition (FILE *f, conditions conditions, int cond)
 {
   condition *c;
-  if (cond == predicate_false_condition)
+  if (cond == predicate::false_condition)
     fprintf (f, "false");
-  else if (cond == predicate_not_inlined_condition)
+  else if (cond == predicate::not_inlined_condition)
     fprintf (f, "not inlined");
   else
     {
-      c = &(*conditions)[cond - predicate_first_dynamic_condition];
+      c = &(*conditions)[cond - predicate::first_dynamic_condition];
       fprintf (f, "op%i", c->operand_num);
       if (c->agg_contents)
 	fprintf (f, "[%soffset: " HOST_WIDE_INT_PRINT_DEC "]",
@@ -585,22 +487,21 @@ dump_clause (FILE *f, conditions conds, clause_t clause)
 }
 
 
-/* Dump PREDICATE to F. CONDS a vector of conditions used when evauating
+/* Dump THIS to F. CONDS a vector of conditions used when evauating
    predicats. When NL is true new line is output at the end of dump.  */
 
-static void
-dump_predicate (FILE *f, conditions conds, struct predicate *pred,
-		bool nl = true)
+void
+predicate::dump (FILE *f, conditions conds, bool nl) const
 {
   int i;
-  if (true_predicate_p (pred))
+  if (*this == true)
     dump_clause (f, conds, 0);
   else
-    for (i = 0; pred->clause[i]; i++)
+    for (i = 0; m_clause[i]; i++)
       {
 	if (i)
 	  fprintf (f, " && ");
-	dump_clause (f, conds, pred->clause[i]);
+	dump_clause (f, conds, m_clause[i]);
       }
   if (nl)
     fprintf (f, "\n");
@@ -670,20 +571,20 @@ dump_inline_hints (FILE *f, inline_hints hints)
 
 static void
 account_size_time (struct inline_summary *summary, int size, sreal time,
-		   struct predicate *exec_pred,
-		   struct predicate *nonconst_pred_ptr)
+		   predicate *exec_pred,
+		   predicate *nonconst_pred_ptr)
 {
   size_time_entry *e;
   bool found = false;
   int i;
-  struct predicate nonconst_pred;
+  predicate nonconst_pred;
 
-  if (false_predicate_p (exec_pred))
+  if (*exec_pred == false)
     return;
 
-  nonconst_pred = and_predicates (summary->conds, nonconst_pred_ptr, exec_pred);
+  nonconst_pred = *nonconst_pred_ptr & *exec_pred;
 
-  if (false_predicate_p (&nonconst_pred))
+  if (nonconst_pred == false)
     return;
 
   /* We need to create initial empty unconitional clause, but otherwie
@@ -694,8 +595,8 @@ account_size_time (struct inline_summary *summary, int size, sreal time,
   gcc_assert (time >= 0);
 
   for (i = 0; vec_safe_iterate (summary->entry, i, &e); i++)
-    if (predicates_equal_p (&e->exec_predicate, exec_pred)
-	&& predicates_equal_p (&e->nonconst_predicate, &nonconst_pred))
+    if (e->exec_predicate == *exec_pred
+	&& e->nonconst_predicate == nonconst_pred)
       {
 	found = true;
 	break;
@@ -705,7 +606,6 @@ account_size_time (struct inline_summary *summary, int size, sreal time,
       i = 0;
       found = true;
       e = &(*summary->entry)[0];
-      gcc_assert (!e->exec_predicate.clause[0]);
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file,
 		 "\t\tReached limit on number of entries, "
@@ -717,11 +617,11 @@ account_size_time (struct inline_summary *summary, int size, sreal time,
 	       "\t\tAccounting size:%3.2f, time:%3.2f on %spredicate exec:",
 	       ((double) size) / INLINE_SIZE_SCALE,
 	       (time.to_double ()), found ? "" : "new ");
-      dump_predicate (dump_file, summary->conds, exec_pred, 0);
-      if (!predicates_equal_p (exec_pred, &nonconst_pred))
+      exec_pred->dump (dump_file, summary->conds, 0);
+      if (*exec_pred != nonconst_pred)
 	{
           fprintf (dump_file, " nonconst:");
-          dump_predicate (dump_file, summary->conds, &nonconst_pred);
+          nonconst_pred.dump (dump_file, summary->conds);
 	}
       else
         fprintf (dump_file, "\n");
@@ -771,11 +671,11 @@ redirect_to_unreachable (struct cgraph_edge *e)
 /* Set predicate for edge E.  */
 
 static void
-edge_set_predicate (struct cgraph_edge *e, struct predicate *predicate)
+edge_set_predicate (struct cgraph_edge *e, predicate *predicate)
 {
   /* If the edge is determined to be never executed, redirect it
      to BUILTIN_UNREACHABLE to save inliner from inlining into it.  */
-  if (predicate && false_predicate_p (predicate)
+  if (predicate && *predicate == false
       /* When handling speculative edges, we need to do the redirection
          just once.  Do it always on the direct edge, so we do not
 	 attempt to resolve speculation while duplicating the edge.  */
@@ -783,7 +683,7 @@ edge_set_predicate (struct cgraph_edge *e, struct predicate *predicate)
     e = redirect_to_unreachable (e);
 
   struct inline_edge_summary *es = inline_edge_summary (e);
-  if (predicate && !true_predicate_p (predicate))
+  if (predicate && *predicate != true)
     {
       if (!es->predicate)
 	es->predicate = edge_predicate_pool.allocate ();
@@ -800,9 +700,9 @@ edge_set_predicate (struct cgraph_edge *e, struct predicate *predicate)
 /* Set predicate for hint *P.  */
 
 static void
-set_hint_predicate (struct predicate **p, struct predicate new_predicate)
+set_hint_predicate (predicate **p, predicate new_predicate)
 {
-  if (false_predicate_p (&new_predicate) || true_predicate_p (&new_predicate))
+  if (new_predicate == false || new_predicate == true)
     {
       if (*p)
 	edge_predicate_pool.remove (*p);
@@ -842,8 +742,8 @@ evaluate_conditions_for_known_args (struct cgraph_node *node,
 				    clause_t *ret_clause,
 				    clause_t *ret_nonspec_clause)
 {
-  clause_t clause = inline_p ? 0 : 1 << predicate_not_inlined_condition;
-  clause_t nonspec_clause = 1 << predicate_not_inlined_condition;
+  clause_t clause = inline_p ? 0 : 1 << predicate::not_inlined_condition;
+  clause_t nonspec_clause = 1 << predicate::not_inlined_condition;
   struct inline_summary *info = inline_summaries->get (node);
   int i;
   struct condition *c;
@@ -861,8 +761,8 @@ evaluate_conditions_for_known_args (struct cgraph_node *node,
 			   || (known_vals.length () == known_aggs.length ()));
       if (c->operand_num >= (int) known_vals.length ())
 	{
-	  clause |= 1 << (i + predicate_first_dynamic_condition);
-	  nonspec_clause |= 1 << (i + predicate_first_dynamic_condition);
+	  clause |= 1 << (i + predicate::first_dynamic_condition);
+	  nonspec_clause |= 1 << (i + predicate::first_dynamic_condition);
 	  continue;
 	}
 
@@ -893,25 +793,25 @@ evaluate_conditions_for_known_args (struct cgraph_node *node,
 
       if (!val)
 	{
-	  clause |= 1 << (i + predicate_first_dynamic_condition);
-	  nonspec_clause |= 1 << (i + predicate_first_dynamic_condition);
+	  clause |= 1 << (i + predicate::first_dynamic_condition);
+	  nonspec_clause |= 1 << (i + predicate::first_dynamic_condition);
 	  continue;
 	}
       if (c->code == CHANGED)
 	{
-	  nonspec_clause |= 1 << (i + predicate_first_dynamic_condition);
+	  nonspec_clause |= 1 << (i + predicate::first_dynamic_condition);
 	  continue;
 	}
 
       if (tree_to_shwi (TYPE_SIZE (TREE_TYPE (val))) != c->size)
 	{
-	  clause |= 1 << (i + predicate_first_dynamic_condition);
-	  nonspec_clause |= 1 << (i + predicate_first_dynamic_condition);
+	  clause |= 1 << (i + predicate::first_dynamic_condition);
+	  nonspec_clause |= 1 << (i + predicate::first_dynamic_condition);
 	  continue;
 	}
       if (c->code == IS_NOT_CONSTANT)
 	{
-	  nonspec_clause |= 1 << (i + predicate_first_dynamic_condition);
+	  nonspec_clause |= 1 << (i + predicate::first_dynamic_condition);
 	  continue;
 	}
 
@@ -923,8 +823,8 @@ evaluate_conditions_for_known_args (struct cgraph_node *node,
       if (res && integer_zerop (res))
 	continue;
 
-      clause |= 1 << (i + predicate_first_dynamic_condition);
-      nonspec_clause |= 1 << (i + predicate_first_dynamic_condition);
+      clause |= 1 << (i + predicate::first_dynamic_condition);
+      nonspec_clause |= 1 << (i + predicate::first_dynamic_condition);
     }
   *ret_clause = clause;
   if (ret_nonspec_clause)
@@ -948,7 +848,7 @@ evaluate_properties_for_edge (struct cgraph_edge *e, bool inline_p,
   vec<ipa_agg_jump_function_p> known_aggs = vNULL;
 
   if (clause_ptr)
-    *clause_ptr = inline_p ? 0 : 1 << predicate_not_inlined_condition;
+    *clause_ptr = inline_p ? 0 : 1 << predicate::not_inlined_condition;
   if (known_vals_ptr)
     known_vals_ptr->create (0);
   if (known_contexts_ptr)
@@ -1125,27 +1025,21 @@ inline_summary_t::remove (cgraph_node *node, inline_summary *info)
   reset_inline_summary (node, info);
 }
 
-/* Remap predicate P of former function to be predicate of duplicated function.
+/* Remap predicate THIS of former function to be predicate of duplicated function.
    POSSIBLE_TRUTHS is clause of possible truths in the duplicated node,
    INFO is inline summary of the duplicated node.  */
 
-static struct predicate
-remap_predicate_after_duplication (struct predicate *p,
-				   clause_t possible_truths,
-				   struct inline_summary *info)
+predicate
+predicate::remap_after_duplication (clause_t possible_truths)
 {
-  struct predicate new_predicate = true_predicate ();
   int j;
-  for (j = 0; p->clause[j]; j++)
-    if (!(possible_truths & p->clause[j]))
-      {
-	new_predicate = false_predicate ();
-	break;
-      }
+  predicate out = true;
+  for (j = 0; m_clause[j]; j++)
+    if (!(possible_truths & m_clause[j]))
+      return false;
     else
-      add_clause (info->conds, &new_predicate,
-		  possible_truths & p->clause[j]);
-  return new_predicate;
+      out.add_clause (NULL, possible_truths & m_clause[j]);
+  return out;
 }
 
 /* Same as remap_predicate_after_duplication but handle hint predicate *P.
@@ -1154,17 +1048,15 @@ remap_predicate_after_duplication (struct predicate *p,
  */
 
 static void
-remap_hint_predicate_after_duplication (struct predicate **p,
-					clause_t possible_truths,
-					struct inline_summary *info)
+remap_hint_predicate_after_duplication (predicate **p,
+					clause_t possible_truths)
 {
-  struct predicate new_predicate;
+  predicate new_predicate;
 
   if (!*p)
     return;
 
-  new_predicate = remap_predicate_after_duplication (*p,
-						     possible_truths, info);
+  new_predicate = (*p)->remap_after_duplication (possible_truths);
   /* We do not want to free previous predicate; it is used by node origin.  */
   *p = NULL;
   set_hint_predicate (p, new_predicate);
@@ -1195,7 +1087,7 @@ inline_summary_t::duplicate (cgraph_node *src,
       int count = ipa_get_param_count (parms_info);
       int i, j;
       clause_t possible_truths;
-      struct predicate true_pred = true_predicate ();
+      predicate true_pred = true;
       size_time_entry *e;
       int optimized_out_size = 0;
       bool inlined_to_p = false;
@@ -1236,17 +1128,13 @@ inline_summary_t::duplicate (cgraph_node *src,
          to be true.  */
       for (i = 0; vec_safe_iterate (entry, i, &e); i++)
 	{
-	  struct predicate new_exec_pred;
-	  struct predicate new_nonconst_pred;
-	  new_exec_pred = remap_predicate_after_duplication (&e->exec_predicate,
-							     possible_truths,
-							     info);
-	  new_nonconst_pred
-		 = remap_predicate_after_duplication (&e->nonconst_predicate,
-						     possible_truths,
-						     info);
-	  if (false_predicate_p (&new_exec_pred)
-	      || false_predicate_p (&new_nonconst_pred))
+	  predicate new_exec_pred;
+	  predicate new_nonconst_pred;
+	  new_exec_pred = e->exec_predicate.remap_after_duplication
+				 (possible_truths);
+	  new_nonconst_pred = e->nonconst_predicate.remap_after_duplication
+		  		 (possible_truths);
+	  if (new_exec_pred == false || new_nonconst_pred == false)
 	    optimized_out_size += e->size;
 	  else
 	    account_size_time (info, e->size, e->time, &new_exec_pred,
@@ -1257,7 +1145,7 @@ inline_summary_t::duplicate (cgraph_node *src,
          Also copy constantness arrays.   */
       for (edge = dst->callees; edge; edge = next)
 	{
-	  struct predicate new_predicate;
+	  predicate new_predicate;
 	  struct inline_edge_summary *es = inline_edge_summary (edge);
 	  next = edge->next_callee;
 
@@ -1265,11 +1153,9 @@ inline_summary_t::duplicate (cgraph_node *src,
 	    inlined_to_p = true;
 	  if (!es->predicate)
 	    continue;
-	  new_predicate = remap_predicate_after_duplication (es->predicate,
-							     possible_truths,
-							     info);
-	  if (false_predicate_p (&new_predicate)
-	      && !false_predicate_p (es->predicate))
+	  new_predicate = es->predicate->remap_after_duplication
+	    (possible_truths);
+	  if (new_predicate == false && *es->predicate != false)
 	    optimized_out_size += es->call_stmt_size * INLINE_SIZE_SCALE;
 	  edge_set_predicate (edge, &new_predicate);
 	}
@@ -1278,27 +1164,25 @@ inline_summary_t::duplicate (cgraph_node *src,
          Also copy constantness arrays.   */
       for (edge = dst->indirect_calls; edge; edge = next)
 	{
-	  struct predicate new_predicate;
+	  predicate new_predicate;
 	  struct inline_edge_summary *es = inline_edge_summary (edge);
 	  next = edge->next_callee;
 
 	  gcc_checking_assert (edge->inline_failed);
 	  if (!es->predicate)
 	    continue;
-	  new_predicate = remap_predicate_after_duplication (es->predicate,
-							     possible_truths,
-							     info);
-	  if (false_predicate_p (&new_predicate)
-	      && !false_predicate_p (es->predicate))
+	  new_predicate = es->predicate->remap_after_duplication
+				 (possible_truths);
+	  if (new_predicate == false && *es->predicate != false)
 	    optimized_out_size += es->call_stmt_size * INLINE_SIZE_SCALE;
 	  edge_set_predicate (edge, &new_predicate);
 	}
       remap_hint_predicate_after_duplication (&info->loop_iterations,
-					      possible_truths, info);
+					      possible_truths);
       remap_hint_predicate_after_duplication (&info->loop_stride,
-					      possible_truths, info);
+					      possible_truths);
       remap_hint_predicate_after_duplication (&info->array_index,
-					      possible_truths, info);
+					      possible_truths);
 
       /* If inliner or someone after inliner will ever start producing
          non-trivial clones, we will get trouble with lack of information
@@ -1418,7 +1302,7 @@ dump_inline_edge_summary (FILE *f, int indent, struct cgraph_node *node,
       if (es->predicate)
 	{
 	  fprintf (f, " predicate: ");
-	  dump_predicate (f, info->conds, es->predicate);
+	  es->predicate->dump (f, info->conds);
 	}
       else
 	fprintf (f, "\n");
@@ -1456,7 +1340,7 @@ dump_inline_edge_summary (FILE *f, int indent, struct cgraph_node *node,
       if (es->predicate)
 	{
 	  fprintf (f, "predicate: ");
-	  dump_predicate (f, info->conds, es->predicate);
+	  es->predicate->dump (f, info->conds);
 	}
       else
 	fprintf (f, "\n");
@@ -1499,33 +1383,32 @@ dump_inline_summary (FILE *f, struct cgraph_node *node)
 	  fprintf (f, "    size:%f, time:%f",
 		   (double) e->size / INLINE_SIZE_SCALE,
 		   e->time.to_double ());
-	  if (!true_predicate_p (&e->exec_predicate))
+	  if (e->exec_predicate != true)
 	    {
 	      fprintf (f, ",  executed if:");
-	      dump_predicate (f, s->conds, &e->exec_predicate, 0);
+	      e->exec_predicate.dump (f, s->conds, 0);
 	    }
-	  if (!predicates_equal_p (&e->exec_predicate,
-				   &e->nonconst_predicate))
+	  if (e->exec_predicate != e->nonconst_predicate)
 	    {
 	      fprintf (f, ",  nonconst if:");
-	      dump_predicate (f, s->conds, &e->nonconst_predicate, 0);
+	      e->nonconst_predicate.dump (f, s->conds, 0);
 	    }
 	  fprintf (f, "\n");
 	}
       if (s->loop_iterations)
 	{
 	  fprintf (f, "  loop iterations:");
-	  dump_predicate (f, s->conds, s->loop_iterations);
+	  s->loop_iterations->dump (f, s->conds);
 	}
       if (s->loop_stride)
 	{
 	  fprintf (f, "  loop stride:");
-	  dump_predicate (f, s->conds, s->loop_stride);
+	  s->loop_stride->dump (f, s->conds);
 	}
       if (s->array_index)
 	{
 	  fprintf (f, "  array index:");
-	  dump_predicate (f, s->conds, s->array_index);
+	  s->array_index->dump (f, s->conds);
 	}
       fprintf (f, "  calls:\n");
       dump_inline_edge_summary (f, 4, node, s);
@@ -1859,12 +1742,12 @@ set_cond_stmt_execution_predicate (struct ipa_func_body_info *fbi,
 	     unordered one.  Be sure it is not confused with NON_CONSTANT.  */
 	  if (this_code != ERROR_MARK)
 	    {
-	      struct predicate p
+	      predicate p
 		= add_condition (summary, index, size, &aggpos, this_code,
 				 unshare_expr_without_location
 				 (gimple_cond_rhs (last)));
 	      e->aux = edge_predicate_pool.allocate ();
-	      *(struct predicate *) e->aux = p;
+	      *(predicate *) e->aux = p;
 	    }
 	}
     }
@@ -1894,10 +1777,10 @@ set_cond_stmt_execution_predicate (struct ipa_func_body_info *fbi,
     return;
   FOR_EACH_EDGE (e, ei, bb->succs) if (e->flags & EDGE_FALSE_VALUE)
     {
-      struct predicate p = add_condition (summary, index, size, &aggpos,
+      predicate p = add_condition (summary, index, size, &aggpos,
 					  IS_NOT_CONSTANT, NULL_TREE);
       e->aux = edge_predicate_pool.allocate ();
-      *(struct predicate *) e->aux = p;
+      *(predicate *) e->aux = p;
     }
 }
 
@@ -1931,14 +1814,14 @@ set_switch_stmt_execution_predicate (struct ipa_func_body_info *fbi,
   FOR_EACH_EDGE (e, ei, bb->succs)
     {
       e->aux = edge_predicate_pool.allocate ();
-      *(struct predicate *) e->aux = false_predicate ();
+      *(predicate *) e->aux = false;
     }
   n = gimple_switch_num_labels (last);
   for (case_idx = 0; case_idx < n; ++case_idx)
     {
       tree cl = gimple_switch_label (last, case_idx);
       tree min, max;
-      struct predicate p;
+      predicate p;
 
       e = find_edge (bb, label_to_block (CASE_LABEL (cl)));
       min = CASE_LOW (cl);
@@ -1948,21 +1831,21 @@ set_switch_stmt_execution_predicate (struct ipa_func_body_info *fbi,
          of cases is met, but it is bit hard to do not having negations
          of conditionals handy.  */
       if (!min && !max)
-	p = true_predicate ();
+	p = true;
       else if (!max)
 	p = add_condition (summary, index, size, &aggpos, EQ_EXPR,
 			   unshare_expr_without_location (min));
       else
 	{
-	  struct predicate p1, p2;
+	  predicate p1, p2;
 	  p1 = add_condition (summary, index, size, &aggpos, GE_EXPR,
 			      unshare_expr_without_location (min));
 	  p2 = add_condition (summary, index, size, &aggpos, LE_EXPR,
 			      unshare_expr_without_location (max));
-	  p = and_predicates (summary->conds, &p1, &p2);
+	  p = p1 & p2;
 	}
       *(struct predicate *) e->aux
-	= or_predicates (summary->conds, &p, (struct predicate *) e->aux);
+	= p.or_with (summary->conds, *(struct predicate *) e->aux);
     }
 }
 
@@ -1988,8 +1871,7 @@ compute_bb_predicates (struct ipa_func_body_info *fbi,
   /* Entry block is always executable.  */
   ENTRY_BLOCK_PTR_FOR_FN (my_function)->aux
     = edge_predicate_pool.allocate ();
-  *(struct predicate *) ENTRY_BLOCK_PTR_FOR_FN (my_function)->aux
-    = true_predicate ();
+  *(predicate *) ENTRY_BLOCK_PTR_FOR_FN (my_function)->aux = true;
 
   /* A simple dataflow propagation of predicates forward in the CFG.
      TODO: work in reverse postorder.  */
@@ -1998,44 +1880,42 @@ compute_bb_predicates (struct ipa_func_body_info *fbi,
       done = true;
       FOR_EACH_BB_FN (bb, my_function)
 	{
-	  struct predicate p = false_predicate ();
+	  predicate p = false;
 	  edge e;
 	  edge_iterator ei;
 	  FOR_EACH_EDGE (e, ei, bb->preds)
 	    {
 	      if (e->src->aux)
 		{
-		  struct predicate this_bb_predicate
-		    = *(struct predicate *) e->src->aux;
+		  predicate this_bb_predicate
+		    = *(predicate *) e->src->aux;
 		  if (e->aux)
-		    this_bb_predicate
-		      = and_predicates (summary->conds, &this_bb_predicate,
-					(struct predicate *) e->aux);
-		  p = or_predicates (summary->conds, &p, &this_bb_predicate);
-		  if (true_predicate_p (&p))
+		    this_bb_predicate &= (*(struct predicate *) e->aux);
+		  p = p.or_with (summary->conds, this_bb_predicate);
+		  if (p == true)
 		    break;
 		}
 	    }
-	  if (false_predicate_p (&p))
-	    gcc_assert (!bb->aux);
+	  if (p == false)
+	    gcc_checking_assert (!bb->aux);
 	  else
 	    {
 	      if (!bb->aux)
 		{
 		  done = false;
 		  bb->aux = edge_predicate_pool.allocate ();
-		  *((struct predicate *) bb->aux) = p;
+		  *((predicate *) bb->aux) = p;
 		}
-	      else if (!predicates_equal_p (&p, (struct predicate *) bb->aux))
+	      else if (p != *(predicate *) bb->aux)
 		{
 		  /* This OR operation is needed to ensure monotonous data flow
 		     in the case we hit the limit on number of clauses and the
 		     and/or operations above give approximate answers.  */
-		  p = or_predicates (summary->conds, &p, (struct predicate *)bb->aux);
-	          if (!predicates_equal_p (&p, (struct predicate *) bb->aux))
+		  p = p.or_with (summary->conds, *(predicate *)bb->aux);
+	          if (p != *(predicate *) bb->aux)
 		    {
 		      done = false;
-		      *((struct predicate *) bb->aux) = p;
+		      *((predicate *) bb->aux) = p;
 		    }
 		}
 	    }
@@ -2046,11 +1926,11 @@ compute_bb_predicates (struct ipa_func_body_info *fbi,
 
 /* We keep info about constantness of SSA names.  */
 
-typedef struct predicate predicate_t;
+typedef predicate predicate_t;
 /* Return predicate specifying when the STMT might have result that is not
    a compile time constant.  */
 
-static struct predicate
+static predicate
 will_be_nonconstant_expr_predicate (struct ipa_node_params *info,
 				    struct inline_summary *summary,
 				    tree expr,
@@ -2067,63 +1947,65 @@ will_be_nonconstant_expr_predicate (struct ipa_node_params *info,
   if (parm && (index = ipa_get_param_decl_index (info, parm)) >= 0)
     return add_condition (summary, index, size, NULL, CHANGED, NULL_TREE);
   if (is_gimple_min_invariant (expr))
-    return false_predicate ();
+    return false;
   if (TREE_CODE (expr) == SSA_NAME)
     return nonconstant_names[SSA_NAME_VERSION (expr)];
   if (BINARY_CLASS_P (expr) || COMPARISON_CLASS_P (expr))
     {
-      struct predicate p1 = will_be_nonconstant_expr_predicate
+      predicate p1 = will_be_nonconstant_expr_predicate
 	(info, summary, TREE_OPERAND (expr, 0),
 	 nonconstant_names);
-      struct predicate p2;
-      if (true_predicate_p (&p1))
+      if (p1 == true)
 	return p1;
+
+      predicate p2;
       p2 = will_be_nonconstant_expr_predicate (info, summary,
 					       TREE_OPERAND (expr, 1),
 					       nonconstant_names);
-      return or_predicates (summary->conds, &p1, &p2);
+      return p1.or_with (summary->conds, p2);
     }
   else if (TREE_CODE (expr) == COND_EXPR)
     {
-      struct predicate p1 = will_be_nonconstant_expr_predicate
+      predicate p1 = will_be_nonconstant_expr_predicate
 	(info, summary, TREE_OPERAND (expr, 0),
 	 nonconstant_names);
-      struct predicate p2;
-      if (true_predicate_p (&p1))
+      if (p1 == true)
 	return p1;
+
+      predicate p2;
       p2 = will_be_nonconstant_expr_predicate (info, summary,
 					       TREE_OPERAND (expr, 1),
 					       nonconstant_names);
-      if (true_predicate_p (&p2))
+      if (p2 == true)
 	return p2;
-      p1 = or_predicates (summary->conds, &p1, &p2);
+      p1 = p1.or_with (summary->conds, p2);
       p2 = will_be_nonconstant_expr_predicate (info, summary,
 					       TREE_OPERAND (expr, 2),
 					       nonconstant_names);
-      return or_predicates (summary->conds, &p1, &p2);
+      return p2.or_with (summary->conds, p1);
     }
   else
     {
       debug_tree (expr);
       gcc_unreachable ();
     }
-  return false_predicate ();
+  return false;
 }
 
 
 /* Return predicate specifying when the STMT might have result that is not
    a compile time constant.  */
 
-static struct predicate
+static predicate
 will_be_nonconstant_predicate (struct ipa_func_body_info *fbi,
 			       struct inline_summary *summary,
 			       gimple *stmt,
 			       vec<predicate_t> nonconstant_names)
 {
-  struct predicate p = true_predicate ();
+  predicate p = true;
   ssa_op_iter iter;
   tree use;
-  struct predicate op_non_const;
+  predicate op_non_const;
   bool is_load;
   int base_index;
   HOST_WIDE_INT size;
@@ -2169,7 +2051,7 @@ will_be_nonconstant_predicate (struct ipa_func_body_info *fbi,
 	return p;
       /* If we know when operand is constant,
 	 we still can say something useful.  */
-      if (!true_predicate_p (&nonconstant_names[SSA_NAME_VERSION (use)]))
+      if (nonconstant_names[SSA_NAME_VERSION (use)] != true)
 	continue;
       return p;
     }
@@ -2178,7 +2060,7 @@ will_be_nonconstant_predicate (struct ipa_func_body_info *fbi,
     op_non_const =
       add_condition (summary, base_index, size, &aggpos, CHANGED, NULL);
   else
-    op_non_const = false_predicate ();
+    op_non_const = false;
   FOR_EACH_SSA_TREE_OPERAND (use, stmt, iter, SSA_OP_USE)
     {
       HOST_WIDE_INT size;
@@ -2194,7 +2076,7 @@ will_be_nonconstant_predicate (struct ipa_func_body_info *fbi,
 	}
       else
 	p = nonconstant_names[SSA_NAME_VERSION (use)];
-      op_non_const = or_predicates (summary->conds, &p, &op_non_const);
+      op_non_const = p.or_with (summary->conds, op_non_const);
     }
   if ((gimple_code (stmt) == GIMPLE_ASSIGN || gimple_code (stmt) == GIMPLE_CALL)
       && gimple_op (stmt, 0)
@@ -2345,7 +2227,7 @@ param_change_prob (gimple *stmt, int i)
 static bool
 phi_result_unknown_predicate (struct ipa_node_params *info,
 			      inline_summary *summary, basic_block bb,
-			      struct predicate *p,
+			      predicate *p,
 			      vec<predicate_t> nonconstant_names)
 {
   edge e;
@@ -2355,7 +2237,7 @@ phi_result_unknown_predicate (struct ipa_node_params *info,
 
   if (single_pred_p (bb))
     {
-      *p = false_predicate ();
+      *p = false;
       return true;
     }
 
@@ -2391,7 +2273,7 @@ phi_result_unknown_predicate (struct ipa_node_params *info,
   *p = will_be_nonconstant_expr_predicate (info, summary,
 					   gimple_cond_lhs (stmt),
 					   nonconstant_names);
-  if (true_predicate_p (p))
+  if (*p == true)
     return false;
   else
     return true;
@@ -2404,7 +2286,7 @@ phi_result_unknown_predicate (struct ipa_node_params *info,
 
 static void
 predicate_for_phi_result (struct inline_summary *summary, gphi *phi,
-			  struct predicate *p,
+			  predicate *p,
 			  vec<predicate_t> nonconstant_names)
 {
   unsigned i;
@@ -2415,9 +2297,9 @@ predicate_for_phi_result (struct inline_summary *summary, gphi *phi,
       if (!is_gimple_min_invariant (arg))
 	{
 	  gcc_assert (TREE_CODE (arg) == SSA_NAME);
-	  *p = or_predicates (summary->conds, p,
-			      &nonconstant_names[SSA_NAME_VERSION (arg)]);
-	  if (true_predicate_p (p))
+	  *p = p->or_with (summary->conds,
+			   nonconstant_names[SSA_NAME_VERSION (arg)]);
+	  if (*p == true)
 	    return;
 	}
     }
@@ -2425,25 +2307,25 @@ predicate_for_phi_result (struct inline_summary *summary, gphi *phi,
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
       fprintf (dump_file, "\t\tphi predicate: ");
-      dump_predicate (dump_file, summary->conds, p);
+      p->dump (dump_file, summary->conds);
     }
   nonconstant_names[SSA_NAME_VERSION (gimple_phi_result (phi))] = *p;
 }
 
 /* Return predicate specifying when array index in access OP becomes non-constant.  */
 
-static struct predicate
+static predicate
 array_index_predicate (inline_summary *info,
 		       vec< predicate_t> nonconstant_names, tree op)
 {
-  struct predicate p = false_predicate ();
+  predicate p = false;
   while (handled_component_p (op))
     {
       if (TREE_CODE (op) == ARRAY_REF || TREE_CODE (op) == ARRAY_RANGE_REF)
 	{
 	  if (TREE_CODE (TREE_OPERAND (op, 1)) == SSA_NAME)
-	    p = or_predicates (info->conds, &p,
-			       &nonconstant_names[SSA_NAME_VERSION
+	    p = p.or_with (info->conds, 
+			   nonconstant_names[SSA_NAME_VERSION
 						  (TREE_OPERAND (op, 1))]);
 	}
       op = TREE_OPERAND (op, 0);
@@ -2602,12 +2484,12 @@ estimate_function_body_sizes (struct cgraph_node *node, bool early)
   struct function *my_function = DECL_STRUCT_FUNCTION (node->decl);
   int freq;
   struct inline_summary *info = inline_summaries->get (node);
-  struct predicate bb_predicate;
+  predicate bb_predicate;
   struct ipa_func_body_info fbi;
   vec<predicate_t> nonconstant_names = vNULL;
   int nblocks, n;
   int *order;
-  predicate array_index = true_predicate ();
+  predicate array_index = true;
   gimple *fix_builtin_expect_stmt;
 
   gcc_assert (my_function && my_function->cfg);
@@ -2652,10 +2534,10 @@ estimate_function_body_sizes (struct cgraph_node *node, bool early)
 
   /* When we run into maximal number of entries, we assign everything to the
      constant truth case.  Be sure to have it in list. */
-  bb_predicate = true_predicate ();
+  bb_predicate = true;
   account_size_time (info, 0, 0, &bb_predicate, &bb_predicate);
 
-  bb_predicate = not_inlined_predicate ();
+  bb_predicate = predicate::not_inlined ();
   account_size_time (info, 2 * INLINE_SIZE_SCALE, 0, &bb_predicate,
 		     &bb_predicate);
 
@@ -2680,22 +2562,22 @@ estimate_function_body_sizes (struct cgraph_node *node, bool early)
       if (fbi.info)
 	{
 	  if (bb->aux)
-	    bb_predicate = *(struct predicate *) bb->aux;
+	    bb_predicate = *(predicate *) bb->aux;
 	  else
-	    bb_predicate = false_predicate ();
+	    bb_predicate = false;
 	}
       else
-	bb_predicate = true_predicate ();
+	bb_predicate = true;
 
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{
 	  fprintf (dump_file, "\n BB %i predicate:", bb->index);
-	  dump_predicate (dump_file, info->conds, &bb_predicate);
+	  bb_predicate.dump (dump_file, info->conds);
 	}
 
       if (fbi.info && nonconstant_names.exists ())
 	{
-	  struct predicate phi_predicate;
+	  predicate phi_predicate;
 	  bool first_phi = true;
 
 	  for (gphi_iterator bsi = gsi_start_phis (bb); !gsi_end_p (bsi);
@@ -2726,7 +2608,7 @@ estimate_function_body_sizes (struct cgraph_node *node, bool early)
 	  int this_size = estimate_num_insns (stmt, &eni_size_weights);
 	  int this_time = estimate_num_insns (stmt, &eni_time_weights);
 	  int prob;
-	  struct predicate will_be_nonconstant;
+	  predicate will_be_nonconstant;
 
           /* This relation stmt should be folded after we remove
              buildin_expect call. Adjust the cost here.  */
@@ -2747,25 +2629,21 @@ estimate_function_body_sizes (struct cgraph_node *node, bool early)
 
 	  if (gimple_assign_load_p (stmt) && nonconstant_names.exists ())
 	    {
-	      struct predicate this_array_index;
+	      predicate this_array_index;
 	      this_array_index =
 		array_index_predicate (info, nonconstant_names,
 				       gimple_assign_rhs1 (stmt));
-	      if (!false_predicate_p (&this_array_index))
-		array_index =
-		  and_predicates (info->conds, &array_index,
-				  &this_array_index);
+	      if (this_array_index != false)
+		array_index &= this_array_index;
 	    }
 	  if (gimple_store_p (stmt) && nonconstant_names.exists ())
 	    {
-	      struct predicate this_array_index;
+	      predicate this_array_index;
 	      this_array_index =
 		array_index_predicate (info, nonconstant_names,
 				       gimple_get_lhs (stmt));
-	      if (!false_predicate_p (&this_array_index))
-		array_index =
-		  and_predicates (info->conds, &array_index,
-				  &this_array_index);
+	      if (this_array_index != false)
+		array_index &= this_array_index;
 	    }
 
 
@@ -2783,7 +2661,7 @@ estimate_function_body_sizes (struct cgraph_node *node, bool early)
 		  && gimple_call_lhs (stmt)
 		  && TREE_CODE (gimple_call_lhs (stmt)) == SSA_NAME)
 		{
-		  struct predicate false_p = false_predicate ();
+		  predicate false_p = false;
 		  nonconstant_names[SSA_NAME_VERSION (gimple_call_lhs (stmt))]
 		    = false_p;
 		}
@@ -2816,7 +2694,7 @@ estimate_function_body_sizes (struct cgraph_node *node, bool early)
 	      = will_be_nonconstant_predicate (&fbi, info,
 					       stmt, nonconstant_names);
 	  else
-	    will_be_nonconstant = true_predicate ();
+	    will_be_nonconstant = true;
 	  if (this_time || this_size)
 	    {
 	      this_time *= freq;
@@ -2828,15 +2706,13 @@ estimate_function_body_sizes (struct cgraph_node *node, bool early)
 	      if (prob == 2 && dump_file && (dump_flags & TDF_DETAILS))
 		fprintf (dump_file, "\t\tWill be eliminated by inlining\n");
 
-	      struct predicate p = and_predicates (info->conds, &bb_predicate,
-						   &will_be_nonconstant);
+	      struct predicate p = bb_predicate & will_be_nonconstant;
 
 	      /* We can ignore statement when we proved it is never going
 		 to happen, but we can not do that for call statements
 		 because edges are accounted specially.  */
 
-	      if (!false_predicate_p (is_gimple_call (stmt)
-				      ? &bb_predicate : &p))
+	      if (*(is_gimple_call (stmt) ? &bb_predicate : &p) != false)
 		{
 		  time += this_time;
 		  size += this_size;
@@ -2849,8 +2725,7 @@ estimate_function_body_sizes (struct cgraph_node *node, bool early)
 		{
 		  if (prob)
 		    {
-		      struct predicate ip = not_inlined_predicate ();
-		      ip = and_predicates (info->conds, &ip, &bb_predicate);
+		      predicate ip = bb_predicate & predicate::not_inlined ();
 		      account_size_time (info, this_size * prob,
 					 (sreal)(this_time * prob)
 					 / (CGRAPH_FREQ_BASE * 2), &ip,
@@ -2883,8 +2758,8 @@ estimate_function_body_sizes (struct cgraph_node *node, bool early)
   if (nonconstant_names.exists () && !early)
     {
       struct loop *loop;
-      predicate loop_iterations = true_predicate ();
-      predicate loop_stride = true_predicate ();
+      predicate loop_iterations = true;
+      predicate loop_stride = true;
 
       if (dump_file && (dump_flags & TDF_DETAILS))
 	flow_loops_dump (dump_file, NULL, 0);
@@ -2895,7 +2770,7 @@ estimate_function_body_sizes (struct cgraph_node *node, bool early)
 	  edge ex;
 	  unsigned int j;
 	  struct tree_niter_desc niter_desc;
-	  bb_predicate = *(struct predicate *) loop->header->aux;
+	  bb_predicate = *(predicate *) loop->header->aux;
 
 	  exits = get_loop_exit_edges (loop);
 	  FOR_EACH_VEC_ELT (exits, j, ex)
@@ -2906,17 +2781,13 @@ estimate_function_body_sizes (struct cgraph_node *node, bool early)
 		= will_be_nonconstant_expr_predicate (fbi.info, info,
 						      niter_desc.niter,
 						      nonconstant_names);
-	      if (!true_predicate_p (&will_be_nonconstant))
-		will_be_nonconstant = and_predicates (info->conds,
-						      &bb_predicate,
-						      &will_be_nonconstant);
-	      if (!true_predicate_p (&will_be_nonconstant)
-		  && !false_predicate_p (&will_be_nonconstant))
+	      if (will_be_nonconstant != true)
+		will_be_nonconstant = bb_predicate & will_be_nonconstant;
+	      if (will_be_nonconstant != true
+		  && will_be_nonconstant != false)
 		/* This is slightly inprecise.  We may want to represent each
 		   loop with independent predicate.  */
-		loop_iterations =
-		  and_predicates (info->conds, &loop_iterations,
-				  &will_be_nonconstant);
+		loop_iterations &= will_be_nonconstant;
 	    }
 	  exits.release ();
 	}
@@ -2931,7 +2802,7 @@ estimate_function_body_sizes (struct cgraph_node *node, bool early)
 	  for (unsigned i = 0; i < loop->num_nodes; i++)
 	    {
 	      gimple_stmt_iterator gsi;
-	      bb_predicate = *(struct predicate *) body[i]->aux;
+	      bb_predicate = *(predicate *) body[i]->aux;
 	      for (gsi = gsi_start_bb (body[i]); !gsi_end_p (gsi);
 		   gsi_next (&gsi))
 		{
@@ -2955,16 +2826,13 @@ estimate_function_body_sizes (struct cgraph_node *node, bool early)
 		    = will_be_nonconstant_expr_predicate (fbi.info, info,
 							  iv.step,
 							  nonconstant_names);
-		  if (!true_predicate_p (&will_be_nonconstant))
-		    will_be_nonconstant
-		      = and_predicates (info->conds, &bb_predicate,
-					&will_be_nonconstant);
-		  if (!true_predicate_p (&will_be_nonconstant)
-		      && !false_predicate_p (&will_be_nonconstant))
+		  if (will_be_nonconstant != true)
+		    will_be_nonconstant = bb_predicate & will_be_nonconstant;
+		  if (will_be_nonconstant != true
+		      && will_be_nonconstant != false)
 		    /* This is slightly inprecise.  We may want to represent
 		       each loop with independent predicate.  */
-		    loop_stride = and_predicates (info->conds, &loop_stride,
-						  &will_be_nonconstant);
+		    loop_stride = loop_stride & will_be_nonconstant;
 		}
 	    }
 	  free (body);
@@ -2994,7 +2862,6 @@ estimate_function_body_sizes (struct cgraph_node *node, bool early)
   inline_summaries->get (node)->self_size = size;
   nonconstant_names.release ();
   ipa_release_body_info (&fbi);
-  inline_update_overall_summary (node);
   if (opt_for_fn (node->decl, optimize))
     {
       if (!early)
@@ -3038,14 +2905,14 @@ compute_inline_parameters (struct cgraph_node *node, bool early)
   if (node->thunk.thunk_p)
     {
       struct inline_edge_summary *es = inline_edge_summary (node->callees);
-      struct predicate t = true_predicate ();
+      predicate t = true;
 
       node->local.can_change_signature = false;
       es->call_stmt_size = eni_size_weights.call_cost;
       es->call_stmt_time = eni_time_weights.call_cost;
       account_size_time (info, INLINE_SIZE_SCALE * 2,
 			 2, &t, &t);
-      t = not_inlined_predicate ();
+      t = predicate::not_inlined ();
       account_size_time (info, 2 * INLINE_SIZE_SCALE, 0, &t, &t);
       inline_update_overall_summary (node);
       info->self_size = info->size;
@@ -3287,7 +3154,7 @@ estimate_calls_size_and_time (struct cgraph_node *node, int *size,
 	  continue;
 	}
       if (!es->predicate
-	  || evaluate_predicate (es->predicate, possible_truths))
+	  || es->predicate->evaluate (possible_truths))
 	{
 	  if (e->inline_failed)
 	    {
@@ -3314,7 +3181,7 @@ estimate_calls_size_and_time (struct cgraph_node *node, int *size,
 
       struct inline_edge_summary *es = inline_edge_summary (e);
       if (!es->predicate
-	  || evaluate_predicate (es->predicate, possible_truths))
+	  || es->predicate->evaluate (possible_truths))
 	estimate_edge_size_and_time (e, size,
 				     es->predicate ? NULL : min_size,
 				     time, REG_BR_PROB_BASE,
@@ -3362,8 +3229,8 @@ estimate_node_size_and_time (struct cgraph_node *node,
 	       "   Known to be false: ", node->name (),
 	       node->order);
 
-      for (i = predicate_not_inlined_condition;
-	   i < (predicate_first_dynamic_condition
+      for (i = predicate::not_inlined_condition;
+	   i < (predicate::first_dynamic_condition
 		+ (int) vec_safe_length (info->conds)); i++)
 	if (!(possible_truths & (1 << i)))
 	  {
@@ -3380,10 +3247,8 @@ estimate_node_size_and_time (struct cgraph_node *node,
 
   for (i = 0; vec_safe_iterate (info->entry, i, &e); i++)
     {
-      bool nonconst = evaluate_predicate (&e->nonconst_predicate,
-					  possible_truths);
-      bool exec = evaluate_predicate (&e->exec_predicate,
-				      nonspec_possible_truths);
+      bool nonconst = e->nonconst_predicate.evaluate (possible_truths);
+      bool exec = e->exec_predicate.evaluate (nonspec_possible_truths);
       gcc_assert (!nonconst || exec);
       if (exec)
         {
@@ -3408,9 +3273,8 @@ estimate_node_size_and_time (struct cgraph_node *node,
 	    }
 	  else
 	    {
-	      int prob = predicate_probability (info->conds,
-					        &e->nonconst_predicate,
-					        possible_truths,
+	      int prob = e->nonconst_predicate.probability 
+					       (info->conds, possible_truths,
 					        inline_param_summary);
 	      gcc_checking_assert (prob >= 0);
 	      gcc_checking_assert (prob <= REG_BR_PROB_BASE);
@@ -3419,8 +3283,8 @@ estimate_node_size_and_time (struct cgraph_node *node,
 	  gcc_checking_assert (time >= 0);
         }
      }
-  gcc_checking_assert (true_predicate_p (&(*info->entry)[0].exec_predicate));
-  gcc_checking_assert (true_predicate_p (&(*info->entry)[0].nonconst_predicate));
+  gcc_checking_assert ((*info->entry)[0].exec_predicate == true);
+  gcc_checking_assert ((*info->entry)[0].nonconst_predicate == true);
   min_size = (*info->entry)[0].size;
   gcc_checking_assert (size >= 0);
   gcc_checking_assert (time >= 0);
@@ -3435,13 +3299,13 @@ estimate_node_size_and_time (struct cgraph_node *node,
     time = nonspecialized_time;
 
   if (info->loop_iterations
-      && !evaluate_predicate (info->loop_iterations, possible_truths))
+      && !info->loop_iterations->evaluate (possible_truths))
     hints |= INLINE_HINT_loop_iterations;
   if (info->loop_stride
-      && !evaluate_predicate (info->loop_stride, possible_truths))
+      && !info->loop_stride->evaluate (possible_truths))
     hints |= INLINE_HINT_loop_stride;
   if (info->array_index
-      && !evaluate_predicate (info->array_index, possible_truths))
+      && !info->array_index->evaluate (possible_truths))
     hints |= INLINE_HINT_array_index;
   if (info->scc_no)
     hints |= INLINE_HINT_in_scc;
@@ -3494,7 +3358,7 @@ estimate_ipcp_clone_size_and_time (struct cgraph_node *node,
 }
 
 /* Translate all conditions from callee representation into caller
-   representation and symbolically evaluate predicate P into new predicate.
+   representation and symbolically evaluate predicate THIS into new predicate.
 
    INFO is inline_summary of function we are adding predicate into, CALLEE_INFO
    is summary of function predicate P is from. OPERAND_MAP is array giving
@@ -3506,42 +3370,42 @@ estimate_ipcp_clone_size_and_time (struct cgraph_node *node,
    because they might not be preserved (and should be considered offset zero
    for other purposes).  */
 
-static struct predicate
-remap_predicate (struct inline_summary *info,
-		 struct inline_summary *callee_info,
-		 struct predicate *p,
-		 vec<int> operand_map,
-		 vec<int> offset_map,
-		 clause_t possible_truths, struct predicate *toplev_predicate)
+predicate
+predicate::remap_after_inlining (struct inline_summary *info,
+				 struct inline_summary *callee_info,
+				 vec<int> operand_map,
+				 vec<int> offset_map,
+				 clause_t possible_truths,
+				 const predicate &toplev_predicate)
 {
   int i;
-  struct predicate out = true_predicate ();
+  predicate out = true;
 
   /* True predicate is easy.  */
-  if (true_predicate_p (p))
-    return *toplev_predicate;
-  for (i = 0; p->clause[i]; i++)
+  if (*this == true)
+    return toplev_predicate;
+  for (i = 0; m_clause[i]; i++)
     {
-      clause_t clause = p->clause[i];
+      clause_t clause = m_clause[i];
       int cond;
-      struct predicate clause_predicate = false_predicate ();
+      predicate clause_predicate = false;
 
-      gcc_assert (i < MAX_CLAUSES);
+      gcc_assert (i < max_clauses);
 
       for (cond = 0; cond < NUM_CONDITIONS; cond++)
 	/* Do we have condition we can't disprove?   */
 	if (clause & possible_truths & (1 << cond))
 	  {
-	    struct predicate cond_predicate;
+	    predicate cond_predicate;
 	    /* Work out if the condition can translate to predicate in the
 	       inlined function.  */
-	    if (cond >= predicate_first_dynamic_condition)
+	    if (cond >= predicate::first_dynamic_condition)
 	      {
 		struct condition *c;
 
 		c = &(*callee_info->conds)[cond
 					   -
-					   predicate_first_dynamic_condition];
+					   predicate::first_dynamic_condition];
 		/* See if we can remap condition operand to caller's operand.
 		   Otherwise give up.  */
 		if (!operand_map.exists ()
@@ -3554,7 +3418,7 @@ remap_predicate (struct inline_summary *info,
 			&& offset_map[c->operand_num] > 0)
 		    || (c->agg_contents && c->by_ref
 			&& offset_map[c->operand_num] < 0))
-		  cond_predicate = true_predicate ();
+		  cond_predicate = true;
 		else
 		  {
 		    struct agg_position_info ap;
@@ -3578,16 +3442,14 @@ remap_predicate (struct inline_summary *info,
 	    /* Fixed conditions remains same, construct single
 	       condition predicate.  */
 	    else
-	      {
-		cond_predicate.clause[0] = 1 << cond;
-		cond_predicate.clause[1] = 0;
-	      }
-	    clause_predicate = or_predicates (info->conds, &clause_predicate,
-					      &cond_predicate);
+	      cond_predicate = predicate::predicate_testing_cond (cond);
+	    clause_predicate = clause_predicate.or_with (info->conds,
+					                 cond_predicate);
 	  }
-      out = and_predicates (info->conds, &out, &clause_predicate);
+      out &= clause_predicate;
     }
-  return and_predicates (info->conds, &out, toplev_predicate);
+  out &= toplev_predicate;
+  return out;
 }
 
 
@@ -3678,13 +3540,13 @@ remap_edge_summaries (struct cgraph_edge *inlined_edge,
 		      vec<int> operand_map,
 		      vec<int> offset_map,
 		      clause_t possible_truths,
-		      struct predicate *toplev_predicate)
+		      predicate *toplev_predicate)
 {
   struct cgraph_edge *e, *next;
   for (e = node->callees; e; e = next)
     {
       struct inline_edge_summary *es = inline_edge_summary (e);
-      struct predicate p;
+      predicate p;
       next = e->next_callee;
 
       if (e->inline_failed)
@@ -3693,9 +3555,10 @@ remap_edge_summaries (struct cgraph_edge *inlined_edge,
 
 	  if (es->predicate)
 	    {
-	      p = remap_predicate (info, callee_info,
-				   es->predicate, operand_map, offset_map,
-				   possible_truths, toplev_predicate);
+	      p = es->predicate->remap_after_inlining
+				     (info, callee_info, operand_map,
+				      offset_map, possible_truths,
+				      *toplev_predicate);
 	      edge_set_predicate (e, &p);
 	    }
 	  else
@@ -3709,15 +3572,15 @@ remap_edge_summaries (struct cgraph_edge *inlined_edge,
   for (e = node->indirect_calls; e; e = next)
     {
       struct inline_edge_summary *es = inline_edge_summary (e);
-      struct predicate p;
+      predicate p;
       next = e->next_callee;
 
       remap_edge_change_prob (inlined_edge, e);
       if (es->predicate)
 	{
-	  p = remap_predicate (info, callee_info,
-			       es->predicate, operand_map, offset_map,
-			       possible_truths, toplev_predicate);
+	  p = es->predicate->remap_after_inlining
+				 (info, callee_info, operand_map, offset_map,
+			          possible_truths, *toplev_predicate);
 	  edge_set_predicate (e, &p);
 	}
       else
@@ -3730,26 +3593,26 @@ remap_edge_summaries (struct cgraph_edge *inlined_edge,
 static void
 remap_hint_predicate (struct inline_summary *info,
 		      struct inline_summary *callee_info,
-		      struct predicate **hint,
+		      predicate **hint,
 		      vec<int> operand_map,
 		      vec<int> offset_map,
 		      clause_t possible_truths,
-		      struct predicate *toplev_predicate)
+		      predicate *toplev_predicate)
 {
   predicate p;
 
   if (!*hint)
     return;
-  p = remap_predicate (info, callee_info,
-		       *hint,
-		       operand_map, offset_map,
-		       possible_truths, toplev_predicate);
-  if (!false_predicate_p (&p) && !true_predicate_p (&p))
+  p = (*hint)->remap_after_inlining
+			 (info, callee_info,
+			  operand_map, offset_map,
+			  possible_truths, *toplev_predicate);
+  if (p != false && p != true)
     {
       if (!*hint)
 	set_hint_predicate (hint, p);
       else
-	**hint = and_predicates (info->conds, *hint, &p);
+	**hint &= p;
     }
 }
 
@@ -3767,14 +3630,14 @@ inline_merge_summary (struct cgraph_edge *edge)
   vec<int> operand_map = vNULL;
   vec<int> offset_map = vNULL;
   int i;
-  struct predicate toplev_predicate;
-  struct predicate true_p = true_predicate ();
+  predicate toplev_predicate;
+  predicate true_p = true;
   struct inline_edge_summary *es = inline_edge_summary (edge);
 
   if (es->predicate)
     toplev_predicate = *es->predicate;
   else
-    toplev_predicate = true_predicate ();
+    toplev_predicate = true;
 
   info->fp_expressions |= callee_info->fp_expressions;
 
@@ -3821,21 +3684,21 @@ inline_merge_summary (struct cgraph_edge *edge)
     }
   for (i = 0; vec_safe_iterate (callee_info->entry, i, &e); i++)
     {
-      struct predicate p = remap_predicate (info, callee_info,
-					    &e->exec_predicate, operand_map,
-					    offset_map, clause,
-					    &toplev_predicate);
-      struct predicate nonconstp
-			 = remap_predicate (info, callee_info,
-					    &e->nonconst_predicate, operand_map,
-					    offset_map, clause,
-					    &toplev_predicate);
-      if (!false_predicate_p (&p) && !false_predicate_p (&nonconstp))
+      predicate p;
+      p = e->exec_predicate.remap_after_inlining
+			     (info, callee_info, operand_map,
+			      offset_map, clause,
+			      toplev_predicate);
+      predicate nonconstp;
+      nonconstp = e->nonconst_predicate.remap_after_inlining
+				     (info, callee_info, operand_map,
+				      offset_map, clause,
+				      toplev_predicate);
+      if (p != false && nonconstp != false)
 	{
 	  sreal add_time = ((sreal)e->time * edge->frequency) / CGRAPH_FREQ_BASE;
-	  int prob = predicate_probability (callee_info->conds,
-					    &e->nonconst_predicate,
-					    clause, es->param);
+	  int prob = e->nonconst_predicate.probability (callee_info->conds,
+							clause, es->param);
 	  add_time = add_time * prob / REG_BR_PROB_BASE;
 	  if (prob != REG_BR_PROB_BASE
 	      && dump_file && (dump_flags & TDF_DETAILS))
@@ -3888,7 +3751,7 @@ inline_update_overall_summary (struct cgraph_node *node)
     }
   estimate_calls_size_and_time (node, &info->size, &info->min_size,
 				&info->time, NULL,
-				~(clause_t) (1 << predicate_false_condition),
+				~(clause_t) (1 << predicate::false_condition),
 				vNULL, vNULL, vNULL);
   info->size = (info->size + INLINE_SIZE_SCALE / 2) / INLINE_SIZE_SCALE;
 }
@@ -4069,7 +3932,7 @@ estimate_size_after_inlining (struct cgraph_node *node,
 			      struct cgraph_edge *edge)
 {
   struct inline_edge_summary *es = inline_edge_summary (edge);
-  if (!es->predicate || !false_predicate_p (es->predicate))
+  if (!es->predicate || *es->predicate != false)
     {
       int size = inline_summaries->get (node)->size + estimate_edge_growth (edge);
       gcc_assert (size >= 0);
@@ -4314,25 +4177,22 @@ inline_generate_summary (void)
 
 /* Read predicate from IB.  */
 
-static struct predicate
-read_predicate (struct lto_input_block *ib)
+void
+predicate::stream_in (struct lto_input_block *ib)
 {
-  struct predicate out;
   clause_t clause;
   int k = 0;
 
   do
     {
-      gcc_assert (k <= MAX_CLAUSES);
-      clause = out.clause[k++] = streamer_read_uhwi (ib);
+      gcc_assert (k <= max_clauses);
+      clause = m_clause[k++] = streamer_read_uhwi (ib);
     }
   while (clause);
 
   /* Zero-initialize the remaining clauses in OUT.  */
-  while (k <= MAX_CLAUSES)
-    out.clause[k++] = 0;
-
-  return out;
+  while (k <= max_clauses)
+    m_clause[k++] = 0;
 }
 
 
@@ -4342,13 +4202,13 @@ static void
 read_inline_edge_summary (struct lto_input_block *ib, struct cgraph_edge *e)
 {
   struct inline_edge_summary *es = inline_edge_summary (e);
-  struct predicate p;
+  predicate p;
   int length, i;
 
   es->call_stmt_size = streamer_read_uhwi (ib);
   es->call_stmt_time = streamer_read_uhwi (ib);
   es->loop_depth = streamer_read_uhwi (ib);
-  p = read_predicate (ib);
+  p.stream_in (ib);
   edge_set_predicate (e, &p);
   length = streamer_read_uhwi (ib);
   if (length)
@@ -4432,17 +4292,17 @@ inline_read_section (struct lto_file_decl_data *file_data, const char *data,
 
 	  e.size = streamer_read_uhwi (&ib);
 	  e.time = sreal::stream_in (&ib);
-	  e.exec_predicate = read_predicate (&ib);
-	  e.nonconst_predicate = read_predicate (&ib);
+	  e.exec_predicate.stream_in (&ib);
+	  e.nonconst_predicate.stream_in (&ib);
 
 	  vec_safe_push (info->entry, e);
 	}
 
-      p = read_predicate (&ib);
+      p.stream_in (&ib);
       set_hint_predicate (&info->loop_iterations, p);
-      p = read_predicate (&ib);
+      p.stream_in (&ib);
       set_hint_predicate (&info->loop_stride, p);
-      p = read_predicate (&ib);
+      p.stream_in (&ib);
       set_hint_predicate (&info->array_index, p);
       for (e = node->callees; e; e = e->next_callee)
 	read_inline_edge_summary (&ib, e);
@@ -4498,16 +4358,15 @@ inline_read_summary (void)
 
 /* Write predicate P to OB.  */
 
-static void
-write_predicate (struct output_block *ob, struct predicate *p)
+void
+predicate::stream_out (struct output_block *ob)
 {
   int j;
-  if (p)
-    for (j = 0; p->clause[j]; j++)
-      {
-	gcc_assert (j < MAX_CLAUSES);
-	streamer_write_uhwi (ob, p->clause[j]);
-      }
+  for (j = 0; m_clause[j]; j++)
+    {
+      gcc_assert (j < max_clauses);
+      streamer_write_uhwi (ob, m_clause[j]);
+    }
   streamer_write_uhwi (ob, 0);
 }
 
@@ -4523,7 +4382,10 @@ write_inline_edge_summary (struct output_block *ob, struct cgraph_edge *e)
   streamer_write_uhwi (ob, es->call_stmt_size);
   streamer_write_uhwi (ob, es->call_stmt_time);
   streamer_write_uhwi (ob, es->loop_depth);
-  write_predicate (ob, es->predicate);
+  if (es->predicate)
+    es->predicate->stream_out (ob);
+  else
+    streamer_write_uhwi (ob, 0);
   streamer_write_uhwi (ob, es->param.length ());
   for (i = 0; i < (int) es->param.length (); i++)
     streamer_write_uhwi (ob, es->param[i].change_prob);
@@ -4592,12 +4454,21 @@ inline_write_summary (void)
 	    {
 	      streamer_write_uhwi (ob, e->size);
 	      e->time.stream_out (ob);
-	      write_predicate (ob, &e->exec_predicate);
-	      write_predicate (ob, &e->nonconst_predicate);
+	      e->exec_predicate.stream_out (ob);
+	      e->nonconst_predicate.stream_out (ob);
 	    }
-	  write_predicate (ob, info->loop_iterations);
-	  write_predicate (ob, info->loop_stride);
-	  write_predicate (ob, info->array_index);
+	  if (info->loop_iterations)
+	    info->loop_iterations->stream_out (ob);
+ 	  else
+	    streamer_write_uhwi (ob, 0);
+	  if (info->loop_stride)
+	    info->loop_stride->stream_out (ob);
+ 	  else
+	    streamer_write_uhwi (ob, 0);
+	  if (info->array_index)
+	    info->array_index->stream_out (ob);
+	  else
+	    streamer_write_uhwi (ob, 0);
 	  for (edge = cnode->callees; edge; edge = edge->next_callee)
 	    write_inline_edge_summary (ob, edge);
 	  for (edge = cnode->indirect_calls; edge; edge = edge->next_callee)

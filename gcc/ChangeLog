@@ -1,3 +1,68 @@
+2017-05-18  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-inline-analysis.c (predicate_conditions): Move to ipa-inline.h
+	(true_predicate, false_predicate, true_predicate_p,
+	false_predicate_p): Remove.
+	(single_cond_predicate, not_inlined_predicate): Turn to member function
+	in ipa-inline.h
+	(add_condition): Update.
+	(add_clause): Turn to...
+	(predicate::add_clause): ... this one; update; allow passing NULL
+	as parameter.
+	(and_predicates): Turn to ...
+	(predicate::operator &=): ... this one.
+	(predicates_equal_p): Move to predicate::operator == in ipa-inline.h
+	(or_predicates): Turn to ...
+	(predicate::or_with): ... this one.
+	(evaluate_predicate): Turn to ...
+	(predicate::evaluate): ... this one.
+	(predicate_probability): Turn to ...
+	(predicate::probability): ... this one.
+	(dump_condition): Update.
+	(dump_predicate): Turn to ...
+	(predicate::dump): ... this one.
+	(account_size_time): Update.
+	(edge_set_predicate): Update.
+	(set_hint_predicate): UPdate.
+	(evaluate_conditions_for_known_args): Update.
+	(evaluate_properties_for_edge): Update.
+	(remap_predicate_after_duplication): Turn to...
+	(predicate::remap_after_duplication): ... this one.
+	(remap_hint_predicate_after_duplication): Update.
+	(inline_summary_t::duplicate): UPdate.
+	(dump_inline_edge_summary): Update.
+	(dump_inline_summary): Update.
+	(set_cond_stmt_execution_predicate): Update.
+	(set_switch_stmt_execution_predicate): Update.
+	(compute_bb_predicates): Update.
+	(will_be_nonconstant_expr_predicate): Update.
+	(will_be_nonconstant_predicate): Update.
+	(phi_result_unknown_predicate): Update.
+	(predicate_for_phi_result): Update.
+	(array_index_predicate): Update.
+	(estimate_function_body_sizes): Update.
+	(estimate_node_size_and_time): Update.
+	(estimate_ipcp_clone_size_and_time): Update.
+	(remap_predicate): Rename to ...
+	(predicate::remap_after_inlining): ... this one.
+	(remap_hint_predicate): Update.
+	(inline_merge_summary): Update.
+	(inline_update_overall_summary): Update.
+	(estimate_size_after_inlining): Update.
+	(read_predicate): Rename to ...
+	(predicate::stream_in): ... this one.
+	(read_inline_edge_summary): Update.
+	(write_predicate): Rename to ...
+	(predicate::stream_out): ... this one.
+	(write_inline_edge_summary): Update.
+	* ipa-inline.h (MAX_CLAUSES): Turn to predicate::max_clauses.
+	(clause_t): Turn to uint32_t
+	(predicate): Turn to class; implement constructor and operators
+	==, !=, &
+	(size_time_entry): Update.
+	(inline_summary): Update.
+	(inline_edge_summary): Update.
+
 2017-05-18  Marc Glisse  <marc.glisse@inria.fr>
 
 	* fold-const.c (fold_binary_loc): Move transformation...
