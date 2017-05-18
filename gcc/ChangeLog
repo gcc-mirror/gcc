@@ -1,3 +1,10 @@
+2017-05-18  Marek Polacek  <polacek@redhat.com>
+
+	PR sanitizer/80797
+	* ubsan.c (instrument_null): Unwrap ADDR_EXPRs.
+	(pass_ubsan::execute): Call gimple_assign_single_p instead of
+	gimple_assign_load_p.
+
 2017-05-17  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR middle-end/80692

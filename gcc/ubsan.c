@@ -1208,6 +1208,9 @@ instrument_null (gimple_stmt_iterator gsi, bool is_lhs)
 {
   gimple *stmt = gsi_stmt (gsi);
   tree t = is_lhs ? gimple_get_lhs (stmt) : gimple_assign_rhs1 (stmt);
+  /* Handle also e.g. &s->i.  */
+  if (TREE_CODE (t) == ADDR_EXPR)
+    t = TREE_OPERAND (t, 0);
   tree base = get_base_address (t);
   const enum tree_code code = TREE_CODE (base);
   if (code == MEM_REF
@@ -1998,7 +2001,7 @@ pass_ubsan::execute (function *fun)
 	    {
 	      if (gimple_store_p (stmt))
 		instrument_null (gsi, true);
-	      if (gimple_assign_load_p (stmt))
+	      if (gimple_assign_single_p (stmt))
 		instrument_null (gsi, false);
 	    }
 
