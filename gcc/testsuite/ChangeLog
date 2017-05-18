@@ -1,3 +1,8 @@
+2017-05-18  Marek Polacek  <polacek@redhat.com>
+
+	PR sanitizer/80797
+	* c-c++-common/ubsan/null-12.c: New test.
+
 2017-05-17  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR middle-end/80692
