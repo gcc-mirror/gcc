@@ -176,7 +176,7 @@ class StdListIteratorPrinter:
     def to_string(self):
         nodetype = find_type(self.val.type, '_Node')
         nodetype = nodetype.strip_typedefs().pointer()
-        return self.val['_M_node'].cast(nodetype).dereference()['_M_data']
+        return str(self.val['_M_node'].cast(nodetype).dereference()['_M_data'])
 
 class StdSlistPrinter:
     "Print a __gnu_cxx::slist"
@@ -221,7 +221,7 @@ class StdSlistIteratorPrinter:
     def to_string(self):
         nodetype = find_type(self.val.type, '_Node')
         nodetype = nodetype.strip_typedefs().pointer()
-        return self.val['_M_node'].cast(nodetype).dereference()['_M_data']
+        return str(self.val['_M_node'].cast(nodetype).dereference()['_M_data'])
 
 class StdVectorPrinter:
     "Print a std::vector"
@@ -306,7 +306,7 @@ class StdVectorIteratorPrinter:
         self.val = val
 
     def to_string(self):
-        return self.val['_M_current'].dereference()
+        return str(self.val['_M_current'].dereference())
 
 class StdTuplePrinter:
     "Print a std::tuple"
@@ -464,7 +464,7 @@ class StdRbtreeIteratorPrinter:
 
     def to_string (self):
         node = self.val['_M_node'].cast(self.link_type).dereference()
-        return get_value_from_Rb_tree_node(node)
+        return str(get_value_from_Rb_tree_node(node))
 
 class StdDebugIteratorPrinter:
     "Print a debug enabled version of an iterator"
@@ -476,7 +476,7 @@ class StdDebugIteratorPrinter:
     # and return the wrapped iterator value.
     def to_string (self):
         itype = self.val.type.template_argument(0)
-        return self.val.cast(itype)
+        return str(self.val.cast(itype))
 
 class StdMapPrinter:
     "Print a std::map or std::multimap"
@@ -669,7 +669,7 @@ class StdDequeIteratorPrinter:
         self.val = val
 
     def to_string(self):
-        return self.val['_M_cur'].dereference()
+        return str(self.val['_M_cur'].dereference())
 
 class StdStringPrinter:
     "Print a std::basic_string of some kind"

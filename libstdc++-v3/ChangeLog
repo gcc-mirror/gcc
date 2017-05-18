@@ -1,6 +1,17 @@
 2017-05-18  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline
+	2016-12-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/59161
+	* python/libstdcxx/v6/printers.py (StdListIteratorPrinter.to_string)
+	(StdSlistIteratorPrinter.to_string, StdVectorIteratorPrinter.to_string)
+	(StdRbtreeIteratorPrinter.to_string, StdDequeIteratorPrinter.to_string)
+	(StdDebugIteratorPrinter.to_string): Return string instead of
+	gdb.Value.
+	* testsuite/libstdc++-prettyprinters/59161.cc: New test.
+
+	Backport from mainline
 	2016-10-11  Jonathan Wakely  <jwakely@redhat.com>
 
 	* python/libstdcxx/v6/printers.py (build_libstdcxx_dictionary):
