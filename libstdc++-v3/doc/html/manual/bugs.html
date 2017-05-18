@@ -447,6 +447,10 @@
     </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#2440" target="_top">2440</a>:
        <span class="emphasis"><em><code class="code">seed_seq::size()</code> should be <code class="code">noexcept</code></em></span>
     </span></dt><dd><p>Add <code class="code">noexcept</code>.
+    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#2442" target="_top">2442</a>:
+       <span class="emphasis"><em><code class="code">call_once()</code> shouldn't <code class="code">DECAY_COPY()</code></em></span>
+    </span></dt><dd><p>Remove indirection through call wrapper that made copies
+    of arguments and forward arguments straight to <code class="code">std::invoke</code>.
     </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#2454" target="_top">2454</a>:
        <span class="emphasis"><em>Add <code class="code">raw_storage_iterator::base()</code> member
        </em></span>
@@ -463,4 +467,9 @@
        <span class="emphasis"><em><code class="code">allocator_traits::max_size()</code> default behavior is incorrect
        </em></span>
     </span></dt><dd><p>Divide by the object type.
+    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#2484" target="_top">2484</a>:
+       <span class="emphasis"><em><code class="code">rethrow_if_nested()</code>  is doubly unimplementable
+       </em></span>
+    </span></dt><dd><p>Avoid using <code class="code">dynamic_cast</code> when it would be
+    ill-formed.
     </p></dd></dl></div></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="license.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="status.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="setup.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">License </td><td width="20%" align="center"><a accesskey="h" href="../index.html">Home</a></td><td width="40%" align="right" valign="top"> Chapter 2. Setup</td></tr></table></div></body></html>
