@@ -1,5 +1,7 @@
 2017-05-18  Jonathan Wakely  <jwakely@redhat.com>
 
+	* doc/xml/manual/abi.xml: Document libstdc++.so.6.0.22 version.
+
 	Backport from mainline
 	2016-12-21  Jonathan Wakely  <jwakely@redhat.com>
 

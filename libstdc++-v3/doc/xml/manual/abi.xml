@@ -265,6 +265,7 @@ compatible.
     <listitem><para>GCC 4.8.3: libstdc++.so.6.0.19</para></listitem>
     <listitem><para>GCC 4.9.0: libstdc++.so.6.0.20</para></listitem>
     <listitem><para>GCC 5.1.0: libstdc++.so.6.0.21</para></listitem>
+    <listitem><para>GCC 6.1.0: libstdc++.so.6.0.22</para></listitem>
     </itemizedlist>
     <para>
       Note 1: Error should be libstdc++.so.3.0.3.
