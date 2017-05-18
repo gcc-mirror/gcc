@@ -1,3 +1,7 @@
+2017-05-18  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* c-format.c (local_tree_type_node): Add GTY attribute.
+
 2017-05-18  Marek Polacek  <polacek@redhat.com>
 
 	* c-common.c (c_common_type_for_size): Use NULL_TREE instead of 0.
