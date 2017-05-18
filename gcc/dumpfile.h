@@ -44,20 +44,22 @@ enum tree_dump_index
   TDI_end
 };
 
+/* Enum used to distinguish dump files to types.  */
+
+enum dump_kind
+{
+  DK_none,
+  DK_lang,
+  DK_tree,
+  DK_rtl,
+  DK_ipa,
+};
+
 /* Bit masks to control dumping. Not all values are applicable to all
    dumps. Add new ones at the end. When you define new values, extend
    the DUMP_OPTIONS array in dumpfile.c. The TDF_* flags coexist with
    MSG_* flags (for -fopt-info) and the bit values must be chosen to
    allow that.  */
-#define TDF_LANG	0	/* is a lang-specific dump.  */
-#define TDF_TREE	1	/* is a tree dump */
-#define TDF_RTL		2	/* is a RTL dump */
-#define TDF_IPA		3	/* is an IPA dump */
-#define TDF_KIND_MASK   3
-#define TDF_KIND(X) ((X) & TDF_KIND_MASK)
-#define TDF_FLAGS(X) ((X) & ~TDF_KIND_MASK)
-
-/* Bit 2 unused, available for hire.  */
 #define TDF_ADDRESS	(1 << 3)	/* dump node addresses */
 #define TDF_SLIM	(1 << 4)	/* don't go wild following links */
 #define TDF_RAW		(1 << 5)	/* don't unparse the function */
@@ -124,27 +126,47 @@ typedef uint64_t dump_flags_t;
 /* Define a tree dump switch.  */
 struct dump_file_info
 {
-  const char *suffix;		/* suffix to give output file.  */
-  const char *swtch;		/* command line dump switch */
-  const char *glob;		/* command line glob  */
-  const char *pfilename;	/* filename for the pass-specific stream  */
-  const char *alt_filename;	/* filename for the -fopt-info stream  */
-  FILE *pstream;		/* pass-specific dump stream  */
-  FILE *alt_stream;		/* -fopt-info stream */
-  dump_flags_t pflags;		/* dump flags */
-  int optgroup_flags;		/* optgroup flags for -fopt-info */
-  int alt_flags;		/* flags for opt-info */
-  int pstate;			/* state of pass-specific stream */
-  int alt_state;		/* state of the -fopt-info stream */
-  int num;			/* dump file number */
-  bool owns_strings;		/* fields "suffix", "swtch", "glob" can be
-				   const strings, or can be dynamically
-				   allocated, needing free.  */
-  bool graph_dump_initialized;	/* When a given dump file is being
-				   initialized, this flag is set to
-				   true if the corresponding TDF_graph
-				   dump file has also been
-				   initialized.  */
+  /* Constructor.  */
+  CONSTEXPR dump_file_info ();
+
+  /* Constructor.  */
+  dump_file_info (const char *_suffix, const char *_swtch, dump_kind _dkind,
+		  int _num);
+
+  /* Suffix to give output file.  */
+  const char *suffix;
+  /* Command line dump switch.  */
+  const char *swtch;
+  /* Command line glob.  */
+  const char *glob;
+  /* Filename for the pass-specific stream.  */
+  const char *pfilename;
+  /* Filename for the -fopt-info stream.  */
+  const char *alt_filename;
+  /* Pass-specific dump stream.  */
+  FILE *pstream;
+  /* -fopt-info stream.  */
+  FILE *alt_stream;
+  /* Dump kind.  */
+  dump_kind dkind;
+  /* Dump flags.  */
+  dump_flags_t pflags;
+  /* A pass flags for -fopt-info.  */
+  int alt_flags;
+  /* Flags for -fopt-info given by a user.  */
+  int optgroup_flags;
+  /* State of pass-specific stream.  */
+  int pstate;
+  /* State of the -fopt-info stream.  */
+  int alt_state;
+  /* Dump file number.  */
+  int num;
+  /* Fields "suffix", "swtch", "glob" can be const strings,
+     or can be dynamically allocated, needing free.  */
+  bool owns_strings;
+  /* When a given dump file is being initialized, this flag is set to true
+     if the corresponding TDF_graph dump file has also been initialized.  */
+  bool graph_dump_initialized;
 };
 
 /* In dumpfile.c */
@@ -201,8 +223,7 @@ public:
      SUFFIX, SWTCH, and GLOB. */
   unsigned int
   dump_register (const char *suffix, const char *swtch, const char *glob,
-		 dump_flags_t flags, int optgroup_flags,
-		 bool take_ownership);
+		 dump_kind dkind, int optgroup_flags, bool take_ownership);
 
   /* Return the dump_file_info for the given phase.  */
   struct dump_file_info *
@@ -255,7 +276,7 @@ private:
   dump_switch_p_1 (const char *arg, struct dump_file_info *dfi, bool doglob);
 
   int
-  dump_enable_all (dump_flags_t flags, const char *filename);
+  dump_enable_all (dump_kind dkind, dump_flags_t flags, const char *filename);
 
   int
   opt_info_enable_passes (int optgroup_flags, dump_flags_t flags,
