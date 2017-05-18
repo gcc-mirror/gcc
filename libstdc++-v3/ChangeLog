@@ -1,3 +1,7 @@
+2017-05-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/libstdc++-prettyprinters/59161.cc: Fix for C++98 mode.
+
 2017-04-03  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	Backport from mainline
