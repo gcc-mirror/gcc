@@ -1,6 +1,13 @@
 2017-05-18  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline
+	2016-08-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/18_support/bad_exception/23591_thread-1.c: Skip test if
+	options are present that aren't valid for C.
+	* testsuite/abi/header_cxxabi.c: Likewise.
+
+	Backport from mainline
 	2016-04-18  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/experimental/memory_resource/null_memory_resource.cc:
