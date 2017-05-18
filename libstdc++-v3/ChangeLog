@@ -1,6 +1,12 @@
 2017-05-18  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline
+	2016-08-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/20_util/tuple/cons/element_accepts_anything_byval.cc:
+	Limit test to C++11 and later.
+
+	Backport from mainline
 	2016-08-17  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/20_util/tuple/67844.cc: Require c++11 effective target.
