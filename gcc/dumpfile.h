@@ -52,7 +52,7 @@ enum dump_kind
   DK_lang,
   DK_tree,
   DK_rtl,
-  DK_ipa,
+  DK_ipa
 };
 
 /* Bit masks to control dumping. Not all values are applicable to all

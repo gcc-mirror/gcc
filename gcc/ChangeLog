@@ -1,3 +1,7 @@
+2017-05-18  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* dumpfile.h (enum dump_kind): Remove stray comma.
+
 2017-05-18  Jan Hubicka  <hubicka@ucw.cz>
 
 	* Makefile.in: Add ipa-predicate.o and ipa-predicate.h
