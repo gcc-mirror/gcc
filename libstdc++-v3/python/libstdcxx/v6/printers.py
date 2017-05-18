@@ -174,6 +174,8 @@ class StdListIteratorPrinter:
         self.typename = typename
 
     def to_string(self):
+        if not self.val['_M_node']:
+            return 'non-dereferenceable iterator for std::list'
         nodetype = find_type(self.val.type, '_Node')
         nodetype = nodetype.strip_typedefs().pointer()
         return str(self.val['_M_node'].cast(nodetype).dereference()['_M_data'])
@@ -219,6 +221,8 @@ class StdSlistIteratorPrinter:
         self.val = val
 
     def to_string(self):
+        if not self.val['_M_node']:
+            return 'non-dereferenceable iterator for __gnu_cxx::slist'
         nodetype = find_type(self.val.type, '_Node')
         nodetype = nodetype.strip_typedefs().pointer()
         return str(self.val['_M_node'].cast(nodetype).dereference()['_M_data'])
@@ -306,6 +310,8 @@ class StdVectorIteratorPrinter:
         self.val = val
 
     def to_string(self):
+        if not self.val['_M_current']:
+            return 'non-dereferenceable iterator for std::vector'
         return str(self.val['_M_current'].dereference())
 
 class StdTuplePrinter:
@@ -463,6 +469,8 @@ class StdRbtreeIteratorPrinter:
         self.link_type = nodetype.strip_typedefs().pointer()
 
     def to_string (self):
+        if not self.val['_M_node']:
+            return 'non-dereferenceable iterator for associative container'
         node = self.val['_M_node'].cast(self.link_type).dereference()
         return str(get_value_from_Rb_tree_node(node))
 
@@ -669,6 +677,8 @@ class StdDequeIteratorPrinter:
         self.val = val
 
     def to_string(self):
+        if not self.val['_M_cur']:
+            return 'non-dereferenceable iterator for std::deque'
         return str(self.val['_M_cur'].dereference())
 
 class StdStringPrinter:
