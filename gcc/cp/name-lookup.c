@@ -160,7 +160,7 @@ add_function (struct arg_lookup *k, tree fn)
     ;
   else
     {
-      k->functions = build_overload (fn, k->functions);
+      k->functions = lookup_add (fn, k->functions);
       if (TREE_CODE (k->functions) == OVERLOAD)
 	OVL_ARG_DEPENDENT (k->functions) = true;
     }
@@ -2952,24 +2952,7 @@ push_overloaded_decl_1 (tree decl, int flags, bool is_friend)
 	}
     }
 
-  if (old || TREE_CODE (decl) == TEMPLATE_DECL
-      /* If it's a using declaration, we always need to build an OVERLOAD,
-	 because it's the only way to remember that the declaration comes
-	 from 'using', and have the lookup behave correctly.  */
-      || (flags & PUSH_USING))
-    {
-      if (old && TREE_CODE (old) != OVERLOAD)
-	/* Wrap the existing single decl in an overload.  */
-	new_binding = ovl_cons (old, NULL_TREE);
-      else
-	new_binding = old;
-      new_binding = ovl_cons (decl, new_binding);
-      if (flags & PUSH_USING)
-	OVL_USED (new_binding) = 1;
-    }
-  else
-    /* NAME is not ambiguous.  */
-    new_binding = decl;
+  new_binding = ovl_insert (decl, old, flags & PUSH_USING);
 
   if (doing_global)
     set_namespace_binding (current_namespace, name, new_binding);
@@ -3184,17 +3167,7 @@ do_nonmember_using_decl (tree scope, tree name, tree oldval, tree oldtype,
 	      if (*newval && TREE_CODE (*newval) == OVERLOAD)
 		TREE_TYPE (*newval) = unknown_type_node;
 	      /* Add this new function to the set.  */
-	      *newval = build_overload (OVL_CURRENT (tmp), *newval);
-	      /* If there is only one function, then we use its type.  (A
-		 using-declaration naming a single function can be used in
-		 contexts where overload resolution cannot be
-		 performed.)  */
-	      if (TREE_CODE (*newval) != OVERLOAD)
-		{
-		  *newval = ovl_cons (*newval, NULL_TREE);
-		  TREE_TYPE (*newval) = TREE_TYPE (OVL_CURRENT (tmp));
-		}
-	      OVL_USED (*newval) = 1;
+	      *newval = ovl_insert (OVL_CURRENT (tmp), *newval, true);
 	    }
 	}
       else
@@ -4578,7 +4551,7 @@ merge_functions (tree s1, tree s2)
 
       /* If we exhausted all of the functions in S1, FN2 is new.  */
       if (!fns1)
-	s1 = build_overload (fn2, s1);
+	s1 = lookup_add (fn2, s1);
     }
   return s1;
 }
@@ -4788,7 +4761,7 @@ remove_hidden_names (tree fns)
 
 	  for (o = fns; o; o = OVL_NEXT (o))
 	    if (!hidden_name_p (OVL_CURRENT (o)))
-	      n = build_overload (OVL_CURRENT (o), n);
+	      n = lookup_add (OVL_CURRENT (o), n);
 	  fns = n;
 	}
     }

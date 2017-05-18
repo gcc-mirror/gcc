@@ -1,5 +1,15 @@
 2017-05-18  Nathan Sidwell  <nathan@acm.org>
 
+	* cp-tree.h (lookup_add): Swap args.
+	(ovl_cons, build_overload): Delete.
+	* name-lookup.c (add_function, push_overloaded_decl_1,
+	do_nonmember_using_decl, merge_functions, remove_hidden_names):
+	Use lookup_add, ovl_insert.
+	* pt.c (check_explicit_specialization): Use lookup_add.
+	(do_class_deduction): Likewise. Refactor if.
+	* tree.c (lookup_add): Swap args.
+	(ovl_cons, build_overload): Delete.
+
 	* name-lookup.c (find_local_binding): New, broken out of ...
 	(lookup_name_innermost_nonclass_level_1): ... here.  Call it.
 	(set_namespace_binding): Swap scope & name args.
