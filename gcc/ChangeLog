@@ -1,5 +1,23 @@
 2017-05-18  Martin Liska  <mliska@suse.cz>
 
+	* cfgrtl.c (rtl_verify_edges): Remove usage of TDF_RTL.
+	* dumpfile.c (dump_register): Use new enum dump_kind.
+	(get_dump_file_name): Likewise.
+	(dump_enable_all): Likewise.
+	(dump_switch_p_1): Likewise.
+	(enable_rtl_dump_file): Remove usage of TDF_RTL.
+	* dumpfile.h (enum dump_kind): New enum type.
+	(struct dump_file_info): Create constructor and
+	format fields and comments.
+	* passes.c (pass_manager::register_one_dump_file):
+	Use num dump_kind.
+	* statistics.c (statistics_early_init): Likewise.
+	* tree-ssa-loop-prefetch.c (dump_mem_details): Replace
+	TDF_TREE with TDF_SLIM.
+	(gather_memory_references_ref): Likewise.
+
+2017-05-18  Martin Liska  <mliska@suse.cz>
+
 	* vec.h (struct vnull): Use it.
 
 2017-05-18  Jan Hubicka  <hubicka@ucw.cz>

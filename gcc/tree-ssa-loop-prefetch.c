@@ -288,7 +288,7 @@ dump_mem_details (FILE *file, tree base, tree step,
   if (cst_and_fits_in_hwi (step))
     fprintf (file, HOST_WIDE_INT_PRINT_DEC, int_cst_value (step));
   else
-    print_generic_expr (file, step, TDF_TREE);
+    print_generic_expr (file, step, TDF_SLIM);
   fprintf (file, ")\n");
   fprintf (file, "  delta ");
   fprintf (file, HOST_WIDE_INT_PRINT_DEC, delta);
@@ -553,8 +553,8 @@ gather_memory_references_ref (struct loop *loop, struct mem_ref_group **refs,
           if (dump_file && (dump_flags & TDF_DETAILS))
             {
               fprintf (dump_file, "Memory expression %p\n",(void *) ref ); 
-              print_generic_expr (dump_file, ref, TDF_TREE); 
-              fprintf (dump_file,":");
+	      print_generic_expr (dump_file, ref, TDF_SLIM);
+	      fprintf (dump_file,":");
               dump_mem_details (dump_file, base, step, delta, write_p);
               fprintf (dump_file, 
                        "Ignoring %p, non-constant step prefetching is "
@@ -570,7 +570,7 @@ gather_memory_references_ref (struct loop *loop, struct mem_ref_group **refs,
             if (dump_file && (dump_flags & TDF_DETAILS))
               {
                 fprintf (dump_file, "Memory expression %p\n",(void *) ref );
-                print_generic_expr (dump_file, ref, TDF_TREE);
+		print_generic_expr (dump_file, ref, TDF_SLIM);
                 fprintf (dump_file,":");
                 dump_mem_details (dump_file, base, step, delta, write_p);
                 fprintf (dump_file, 
