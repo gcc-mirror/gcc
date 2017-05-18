@@ -1,5 +1,18 @@
 2017-05-18  Marek Polacek  <polacek@redhat.com>
 
+	* c-decl.c (match_builtin_function_types): Use NULL_TREE instead of 0.
+	(check_earlier_gotos): Likewise.
+	(define_label): Likewise.
+	(pending_xref_error): Likewise.
+	(smallest_type_quals_location): Likewise.
+	(grokdeclarator): Likewise.
+	(grokparms): Likewise.
+	(identifier_global_value): Likewise.
+	* c-typeck.c (set_nonincremental_init_from_string): Likewise.
+	(find_init_member): Likewise.
+
+2017-05-18  Marek Polacek  <polacek@redhat.com>
+
 	* c-decl.c (start_decl): Use false/true instead of 0/1.
 	(grokdeclarator): Likewise.
 	(finish_struct): Likewise.

@@ -1,5 +1,14 @@
 2017-05-18  Marek Polacek  <polacek@redhat.com>
 
+	* c-common.c (c_common_type_for_size): Use NULL_TREE instead of 0.
+	(c_common_fixed_point_type_for_size): Likewise.
+	(c_common_type_for_mode): Likewise.
+	(shorten_compare): Likewise.
+	(c_promoting_integer_type_p): Use false/true instead of 0/1.
+	* c-pragma.c (maybe_apply_renaming_pragma): Use NULL_TREE instead of 0.
+
+2017-05-18  Marek Polacek  <polacek@redhat.com>
+
 	* c-common.c (self_promoting_args_p): Change the return type to bool.
 	Use false/true instead of 0/1.
 	* c-common.h (self_promoting_args_p): Update.
