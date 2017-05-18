@@ -38,6 +38,7 @@ endif
 GOCFLAGS = $(CFLAGS_FOR_TARGET)
 GOCOMPILE = $(GOCOMPILER) $(GOCFLAGS)
 
+AM_GOCFLAGS = -I $(libgodir)
 AM_LDFLAGS = -L $(libgodir) -L $(libgodir)/.libs
 GOLINK = $(GOCOMPILER) $(GOCFLAGS) $(AM_GOCFLAGS) $(LDFLAGS) $(AM_LDFLAGS) -o $@
 
