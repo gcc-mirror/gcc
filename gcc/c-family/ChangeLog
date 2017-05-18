@@ -1,3 +1,9 @@
+2017-05-18  Marek Polacek  <polacek@redhat.com>
+
+	* c-common.c (self_promoting_args_p): Change the return type to bool.
+	Use false/true instead of 0/1.
+	* c-common.h (self_promoting_args_p): Update.
+
 2017-05-17  Marek Polacek  <polacek@redhat.com>
 
 	* c-common.c: Use NULL_TREE instead of 0 where appropriate.

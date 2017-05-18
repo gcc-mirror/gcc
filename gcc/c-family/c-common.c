@@ -4640,7 +4640,7 @@ c_promoting_integer_type_p (const_tree t)
 /* Return 1 if PARMS specifies a fixed number of parameters
    and none of their types is affected by default promotions.  */
 
-int
+bool
 self_promoting_args_p (const_tree parms)
 {
   const_tree t;
@@ -4652,18 +4652,18 @@ self_promoting_args_p (const_tree parms)
 	continue;
 
       if (TREE_CHAIN (t) == NULL_TREE && type != void_type_node)
-	return 0;
+	return false;
 
       if (type == NULL_TREE)
-	return 0;
+	return false;
 
       if (TYPE_MAIN_VARIANT (type) == float_type_node)
-	return 0;
+	return false;
 
       if (c_promoting_integer_type_p (type))
-	return 0;
+	return false;
     }
-  return 1;
+  return true;
 }
 
 /* Recursively remove any '*' or '&' operator from TYPE.  */

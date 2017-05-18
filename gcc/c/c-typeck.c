@@ -105,7 +105,7 @@ static tree digest_init (location_t, tree, tree, tree, bool, bool, int);
 static void output_init_element (location_t, tree, tree, bool, tree, tree, int,
 				 bool, struct obstack *);
 static void output_pending_init_elements (int, struct obstack *);
-static int set_designator (location_t, int, struct obstack *);
+static bool set_designator (location_t, int, struct obstack *);
 static void push_range_stack (tree, struct obstack *);
 static void add_pending_init (location_t, tree, tree, tree, bool,
 			      struct obstack *);
@@ -1306,7 +1306,8 @@ comp_target_types (location_t location, tree ttl, tree ttr)
    If the CONTEXT chain ends in a null, that tree's context is still
    being parsed, so if two trees have context chains ending in null,
    they're in the same translation unit.  */
-int
+
+bool
 same_translation_unit_p (const_tree t1, const_tree t2)
 {
   while (t1 && TREE_CODE (t1) != TRANSLATION_UNIT_DECL)
@@ -8176,9 +8177,9 @@ pop_init_level (location_t loc, int implicit,
 }
 
 /* Common handling for both array range and field name designators.
-   ARRAY argument is nonzero for array ranges.  Returns zero for success.  */
+   ARRAY argument is nonzero for array ranges.  Returns false for success.  */
 
-static int
+static bool
 set_designator (location_t loc, int array,
 		struct obstack *braced_init_obstack)
 {
@@ -8188,12 +8189,12 @@ set_designator (location_t loc, int array,
   /* Don't die if an entire brace-pair level is superfluous
      in the containing level.  */
   if (constructor_type == NULL_TREE)
-    return 1;
+    return true;
 
   /* If there were errors in this designator list already, bail out
      silently.  */
   if (designator_erroneous)
-    return 1;
+    return true;
 
   if (!designator_depth)
     {
@@ -8207,7 +8208,7 @@ set_designator (location_t loc, int array,
 					      last_init_list_comma),
 			      true, braced_init_obstack);
       constructor_designated = 1;
-      return 0;
+      return false;
     }
 
   switch (TREE_CODE (constructor_type))
@@ -8229,18 +8230,18 @@ set_designator (location_t loc, int array,
   if (array && subcode != ARRAY_TYPE)
     {
       error_init (loc, "array index in non-array initializer");
-      return 1;
+      return true;
     }
   else if (!array && subcode != RECORD_TYPE && subcode != UNION_TYPE)
     {
       error_init (loc, "field name not in record or union initializer");
-      return 1;
+      return true;
     }
 
   constructor_designated = 1;
   finish_implicit_inits (loc, braced_init_obstack);
   push_init_level (loc, 2, braced_init_obstack);
-  return 0;
+  return false;
 }
 
 /* If there are range designators in designator list, push a new designator

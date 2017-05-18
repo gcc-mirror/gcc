@@ -1,3 +1,16 @@
+2017-05-18  Marek Polacek  <polacek@redhat.com>
+
+	* c-decl.c (start_decl): Use false/true instead of 0/1.
+	(grokdeclarator): Likewise.
+	(finish_struct): Likewise.
+	(start_function): Change the return type to bool.  Use false/true
+	instead of 0/1.
+	(declspecs_add_qual): Use UNKNOWN_LOCATION instead of 0.
+	* c-tree.h (start_function): Update.
+	* c-typeck.c (same_translation_unit_p): Change the return type to bool.
+	(set_designator): Change the return type to bool.  Use false/true
+	instead of 0/1.
+
 2017-05-17  Marek Polacek  <polacek@redhat.com>
 
 	* c-decl.c: Use NULL_TREE instead of 0 where appropriate.
