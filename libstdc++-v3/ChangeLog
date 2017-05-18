@@ -1,3 +1,10 @@
+2017-05-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/abi.xml: Document latest library versions.
+	* doc/xml/manual/build_hacking.xml: Document requirement to update
+	abi.xml when bumping library versions.
+	* doc/html/*: Regenerate.
+
 2017-05-17  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/refwrap.h: Fix Doxygen warning.
