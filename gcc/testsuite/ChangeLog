@@ -1,5 +1,11 @@
 2017-05-19  Richard Biener  <rguenther@suse.de>
 
+	PR c++/80593
+	* g++.dg/warn/Wstrict-aliasing-bogus-char-2.C: New testcase.
+	* g++.dg/warn/Wstrict-aliasing-6.C: Adjust expected outcome.
+
+2017-05-19  Richard Biener  <rguenther@suse.de>
+
 	PR middle-end/80764
 	* gcc.dg/torture/pr80764.c: New testcase.
 

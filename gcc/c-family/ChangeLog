@@ -1,3 +1,9 @@
+2017-05-19  Richard Biener  <rguenther@suse.de>
+
+	PR c++/80593
+	* c-warn.c (strict_aliasing_warning): Do not warn for accesses
+	to alias-set zero memory.
+
 2017-05-18  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	* c-format.c (local_tree_type_node): Add GTY attribute.
