@@ -1,3 +1,8 @@
+2017-05-19  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/80333
+	* gfortran.dg/dtio_30.f03: New test.
+
 2017-05-19  Marek Polacek  <polacek@redhat.com>
 
 	PR sanitizer/80800
