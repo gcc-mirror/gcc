@@ -1154,9 +1154,13 @@ general_init (const char *argv0, bool init_signals)
      processing.  */
   init_ggc_heuristics ();
 
-  /* Create the singleton holder for global state.
-     Doing so also creates the pass manager and with it the passes.  */
+  /* Create the singleton holder for global state.  This creates the
+     dump manager.  */
   g = new gcc::context ();
+
+  /* Create the passes.  */
+  g->set_passes (new gcc::pass_manager (g));
+
   symtab = new (ggc_cleared_alloc <symbol_table> ()) symbol_table ();
 
   statistics_early_init ();
