@@ -1,7 +1,15 @@
+2017-05-19  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backport from mainline
+	2017-05-18  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/80799
+	* g++.dg/other/i386-11.C: New test.
+
 2017-05-15  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/80752
-	gfortran.dg/pr80752.f90: New test.
+	* gfortran.dg/pr80752.f90: New test.
 
 2017-05-15  Richard Biener  <rguenther@suse.de>
 
@@ -269,8 +277,8 @@
 	Backport from mainline
 	2017-03-30  Martin Jambor  <mjambor@suse.cz>
 
-        PR ipa/77333
-        * g++.dg/ipa/pr77333.C: New test.
+	PR ipa/77333
+	* g++.dg/ipa/pr77333.C: New test.
 
 2017-04-06  Uros Bizjak  <ubizjak@gmail.com>
 
