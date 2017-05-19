@@ -1,3 +1,8 @@
+2017-05-19  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/80764
+	* cfgexpand.c (expand_gimple_cond): Fix loop fixup.
+
 2017-05-18  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* config/rs6000/rs6000.c (struct machine_function): Add field
