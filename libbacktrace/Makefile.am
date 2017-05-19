@@ -100,6 +100,17 @@ stest_LDADD = libbacktrace.la
 
 check_PROGRAMS += stest
 
+edtest_SOURCES = edtest.c edtest2_build.c
+edtest_LDADD = libbacktrace.la
+
+check_PROGRAMS += edtest
+
+edtest2_build.c: gen_edtest2_build; @true
+gen_edtest2_build: $(srcdir)/edtest2.c
+	cat $(srcdir)/edtest2.c > tmp-edtest2_build.c
+	$(SHELL) $(srcdir)/../move-if-change tmp-edtest2_build.c edtest2_build.c
+	echo timestamp > $@
+
 endif NATIVE
 
 # We can't use automake's automatic dependency tracking, because it

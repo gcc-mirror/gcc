@@ -1563,16 +1563,15 @@ add_line (struct backtrace_state *state, struct dwarf_data *ddata,
   return 1;
 }
 
-/* Free the line header information.  If FREE_FILENAMES is true we
-   free the file names themselves, otherwise we leave them, as there
-   may be line structures pointing to them.  */
+/* Free the line header information.  */
 
 static void
 free_line_header (struct backtrace_state *state, struct line_header *hdr,
 		  backtrace_error_callback error_callback, void *data)
 {
-  backtrace_free (state, hdr->dirs, hdr->dirs_count * sizeof (const char *),
-		  error_callback, data);
+  if (hdr->dirs_count != 0)
+    backtrace_free (state, hdr->dirs, hdr->dirs_count * sizeof (const char *),
+		    error_callback, data);
   backtrace_free (state, hdr->filenames,
 		  hdr->filenames_count * sizeof (char *),
 		  error_callback, data);
@@ -1633,12 +1632,16 @@ read_line_header (struct backtrace_state *state, struct unit *u,
       ++hdr->dirs_count;
     }
 
-  hdr->dirs = ((const char **)
-	       backtrace_alloc (state,
-				hdr->dirs_count * sizeof (const char *),
-				line_buf->error_callback, line_buf->data));
-  if (hdr->dirs == NULL)
-    return 0;
+  hdr->dirs = NULL;
+  if (hdr->dirs_count != 0)
+    {
+      hdr->dirs = ((const char **)
+		   backtrace_alloc (state,
+				    hdr->dirs_count * sizeof (const char *),
+				    line_buf->error_callback, line_buf->data));
+      if (hdr->dirs == NULL)
+	return 0;
+    }
 
   i = 0;
   while (*hdr_buf.buf != '\0')
