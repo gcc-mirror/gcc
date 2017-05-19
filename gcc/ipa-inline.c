@@ -493,7 +493,7 @@ can_inline_edge_p (struct cgraph_edge *e, bool report,
 		   > opt_for_fn (caller->decl, optimize)))
 	{
 	  if (estimate_edge_time (e)
-	      >= 20 + inline_edge_summary (e)->call_stmt_time)
+	      >= 20 + ipa_call_summaries->get (e)->call_stmt_time)
 	    {
 	      e->inline_failed = CIF_OPTIMIZATION_MISMATCH;
 	      inlinable = false;
@@ -672,7 +672,7 @@ compute_inlined_call_time (struct cgraph_edge *edge,
   /* This calculation should match one in ipa-inline-analysis.c
      (estimate_edge_size_and_time).  */
   time -= (sreal) edge->frequency
-	   * inline_edge_summary (edge)->call_stmt_time / CGRAPH_FREQ_BASE;
+	   * ipa_call_summaries->get (edge)->call_stmt_time / CGRAPH_FREQ_BASE;
   time += caller_time;
   if (time <= 0)
     time = ((sreal) 1) >> 8;
@@ -722,16 +722,16 @@ want_inline_small_function_p (struct cgraph_edge *e, bool report)
   else if ((!DECL_DECLARED_INLINE_P (callee->decl)
 	   && (!e->count || !e->maybe_hot_p ()))
 	   && inline_summaries->get (callee)->min_size
-		- inline_edge_summary (e)->call_stmt_size
-	      > MAX (MAX_INLINE_INSNS_SINGLE, MAX_INLINE_INSNS_AUTO))
+		- ipa_call_summaries->get (e)->call_stmt_size
+	      > (unsigned)MAX (MAX_INLINE_INSNS_SINGLE, MAX_INLINE_INSNS_AUTO))
     {
       e->inline_failed = CIF_MAX_INLINE_INSNS_AUTO_LIMIT;
       want_inline = false;
     }
   else if ((DECL_DECLARED_INLINE_P (callee->decl) || e->count)
 	   && inline_summaries->get (callee)->min_size
-		- inline_edge_summary (e)->call_stmt_size
-	      > 16 * MAX_INLINE_INSNS_SINGLE)
+		- ipa_call_summaries->get (e)->call_stmt_size
+	      > (unsigned)16 * MAX_INLINE_INSNS_SINGLE)
     {
       e->inline_failed = (DECL_DECLARED_INLINE_P (callee->decl)
 			  ? CIF_MAX_INLINE_INSNS_SINGLE_LIMIT
@@ -1172,7 +1172,7 @@ edge_badness (struct cgraph_edge *edge, bool dump)
      of functions fully inlined in program.  */
   else
     {
-      int nest = MIN (inline_edge_summary (edge)->loop_depth, 8);
+      int nest = MIN (ipa_call_summaries->get (edge)->loop_depth, 8);
       badness = growth;
 
       /* Decrease badness if call is nested.  */
@@ -2691,14 +2691,11 @@ early_inliner (function *fun)
 	     statements that don't have inline parameters computed.  */
 	  for (edge = node->callees; edge; edge = edge->next_callee)
 	    {
-	      if (inline_edge_summary_vec.length () > (unsigned) edge->uid)
-		{
-		  struct inline_edge_summary *es = inline_edge_summary (edge);
-		  es->call_stmt_size
-		    = estimate_num_insns (edge->call_stmt, &eni_size_weights);
-		  es->call_stmt_time
-		    = estimate_num_insns (edge->call_stmt, &eni_time_weights);
-		}
+	      struct ipa_call_summary *es = ipa_call_summaries->get (edge);
+	      es->call_stmt_size
+		= estimate_num_insns (edge->call_stmt, &eni_size_weights);
+	      es->call_stmt_time
+		= estimate_num_insns (edge->call_stmt, &eni_time_weights);
 	    }
 	  inline_update_overall_summary (node);
 	  inlined = false;
@@ -2719,14 +2716,12 @@ early_inliner (function *fun)
 	  for (edge = node->callees; edge; edge = edge->next_callee)
 	    {
 	      /* We have no summary for new bound store calls yet.  */
-	      if (inline_edge_summary_vec.length () > (unsigned)edge->uid)
-		{
-		  struct inline_edge_summary *es = inline_edge_summary (edge);
-		  es->call_stmt_size
-		    = estimate_num_insns (edge->call_stmt, &eni_size_weights);
-		  es->call_stmt_time
-		    = estimate_num_insns (edge->call_stmt, &eni_time_weights);
-		}
+	      struct ipa_call_summary *es = ipa_call_summaries->get (edge);
+	      es->call_stmt_size
+		= estimate_num_insns (edge->call_stmt, &eni_size_weights);
+	      es->call_stmt_time
+		= estimate_num_insns (edge->call_stmt, &eni_time_weights);
+
 	      if (edge->callee->decl
 		  && !gimple_check_call_matching_types (
 		      edge->call_stmt, edge->callee->decl, false))
