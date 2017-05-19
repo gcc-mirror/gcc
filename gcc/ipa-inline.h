@@ -189,10 +189,18 @@ struct ipa_call_summary
   /* Vector indexed by parameters.  */
   vec<inline_param_summary> param;
   /* Estimated size and time of the call statement.  */
-  unsigned int call_stmt_size;
-  unsigned int call_stmt_time;
+  int call_stmt_size;
+  int call_stmt_time;
   /* Depth of loop nest, 0 means no nesting.  */
   unsigned int loop_depth;
+  
+  /* Keep all field empty so summary dumping works during its computation.
+     This is useful for debugging.  */
+  ipa_call_summary ()
+    : predicate (NULL), param (vNULL), call_stmt_size (0), call_stmt_time (0),
+      loop_depth (0)
+    {
+    }
 };
 
 class ipa_call_summary_t: public call_summary <ipa_call_summary *>

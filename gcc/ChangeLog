@@ -1,5 +1,12 @@
 2017-05-19  Jan Hubicka  <hubicka@ucw.cz>
 
+	* ipa-inline.h (ipa_call_summary): Turn sizes into signed;
+	add ctor.
+	* ipa-inline.c (want_inline_small_function_p): Do not cast to
+	unsigned.
+
+2017-05-19  Jan Hubicka  <hubicka@ucw.cz>
+
 	* ipa-inline-analysis.c (cgraph_2edge_hook_list, cgraph_edge_hook_list,
 	inline_edge_removal_hook, inline_edge_duplication_hook): Remove.
 	(inline_edge_summary_vec): Turn into ...
