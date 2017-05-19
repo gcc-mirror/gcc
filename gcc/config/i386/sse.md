@@ -13607,10 +13607,10 @@
 ;; movd instead of movq is required to handle broken assemblers.
 (define_insn "vec_concatv2di"
   [(set (match_operand:V2DI 0 "register_operand"
-	  "=Yr,*x,x ,Yi,x ,!x,x,x,x,x,x")
+	  "=Yr,*x,x ,Yi,x ,x    ,x,x,x,x,x")
 	(vec_concat:V2DI
 	  (match_operand:DI 1 "nonimmediate_operand"
-	  "  0, 0,x ,r ,xm,*y,0,x,0,0,x")
+	  "  0, 0,x ,r ,xm,?!*Yn,0,x,0,0,x")
 	  (match_operand:DI 2 "vector_move_operand"
 	  "*rm,rm,rm,C ,C ,C ,x,x,x,m,m")))]
   "TARGET_SSE"

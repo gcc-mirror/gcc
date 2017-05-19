@@ -1,3 +1,15 @@
+2017-05-19  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backport from mainline
+	2017-05-18  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/80799
+	* config/i386/mmx.md (*mov<mode>_internal): Enable
+	alternatives 11, 12, 13 and 14 also for 32bit targets.
+	Remove alternatives 15, 16, 17 and 18.
+	* config/i386/sse.md (vec_concatv2di): Change
+	alternative (!x, *y) to (x, ?!*Yn).
+
 2017-05-15  Richard Biener  <rguenther@suse.de>
 
 	Revert backport of
@@ -466,13 +478,13 @@
 	Backport from mainline
 	2017-03-30  Martin Jambor  <mjambor@suse.cz>
 
-        PR ipa/77333
-        * cgraph.h (cgraph_build_function_type_skip_args): Declare.
-        * cgraph.c (redirect_call_stmt_to_callee): Set gimple fntype so that
-        it reflects the signature changes performed at the callee side.
-        * cgraphclones.c (build_function_type_skip_args): Make public, renamed
-        to cgraph_build_function_type_skip_args.
-        (build_function_decl_skip_args): Adjust call to the above function.
+	PR ipa/77333
+	* cgraph.h (cgraph_build_function_type_skip_args): Declare.
+	* cgraph.c (redirect_call_stmt_to_callee): Set gimple fntype so that
+	it reflects the signature changes performed at the callee side.
+	* cgraphclones.c (build_function_type_skip_args): Make public, renamed
+	to cgraph_build_function_type_skip_args.
+	(build_function_decl_skip_args): Adjust call to the above function.
 
 2017-04-08  Andreas Tobler  <andreast@gcc.gnu.org>
 
@@ -485,7 +497,7 @@
 2017-04-07  Andreas Tobler  <andreast@gcc.gnu.org>
 
 	Backport from mainline
-        2017-04-07  Andreas Tobler  <andreast@gcc.gnu.org>
+	2017-04-07  Andreas Tobler  <andreast@gcc.gnu.org>
 
 	* config/aarch64/aarch64-freebsd.h: Define WCHAR_T.
 
@@ -757,8 +769,8 @@
 	Backport from mainline
 	2017-03-10  Martin Liska  <mliska@suse.cz>
 
-        PR target/65705
-        PR target/69804
+	PR target/65705
+	PR target/69804
 	* toplev.c (process_options): Enable MPX with LSAN and UBSAN.
 	* tree-chkp.c (chkp_walk_pointer_assignments): Verify that
 	FIELD != NULL.
@@ -902,8 +914,8 @@
 	2017-02-28  Aaron Sawdey  <acsawdey@linux.vnet.ibm.com>
 
 	PR target/79752
-        * config/rs6000/rs6000.md (peephole2 for udiv/umod): Should emit
-        udiv rather than div since input pattern is unsigned.
+	* config/rs6000/rs6000.md (peephole2 for udiv/umod): Should emit
+	udiv rather than div since input pattern is unsigned.
 
 2017-03-14  Richard Biener  <rguenther@suse.de>
 
