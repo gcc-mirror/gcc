@@ -1,3 +1,11 @@
+2017-05-19  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	Backport from trunk
+	* libgfortran.h: HAVE_SECURE_GETENV: Don't check
+	HAVE___SECURE_GETENV.
+	* environ/runtime.c (secure_getenv): Use __secure_getenv via a
+        weak reference.
+
 2017-01-31  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/79305
