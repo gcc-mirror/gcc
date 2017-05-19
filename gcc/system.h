@@ -744,13 +744,6 @@ extern void fancy_abort (const char *, int, const char *) ATTRIBUTE_NORETURN;
 #define gcc_checking_assert(EXPR) ((void)(0 && (EXPR)))
 #endif
 
-/* Some functions are pure when not tree checking.  */
-#ifdef ENABLE_TREE_CHECKING
-#define ATTRIBUTE_NTC_PURE
-#else
-#define ATTRIBUTE_NTC_PURE ATTRIBUTE_PURE
-#endif
-
 /* Use gcc_unreachable() to mark unreachable locations (like an
    unreachable default case of a switch.  Do not use gcc_assert(0).  */
 #if (GCC_VERSION >= 4005) && !ENABLE_ASSERT_CHECKING

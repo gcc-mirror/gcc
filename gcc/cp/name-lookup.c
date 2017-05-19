@@ -6484,9 +6484,7 @@ do_pop_nested_namespace (tree ns)
   do_pop_from_top_level ();
 }
 
-/* Like pushdecl, only it places X in the global scope if appropriate.
-   Calls cp_finish_decl to register the variable, initializing it with
-   *INIT, if INIT is non-NULL.  */
+/* Pushes X into the global namespace.  */
 
 tree
 pushdecl_top_level (tree x, bool is_friend)

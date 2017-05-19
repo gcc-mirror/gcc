@@ -5903,7 +5903,7 @@ extern tree type_decays_to			(tree);
 extern tree extract_call_expr			(tree);
 extern tree build_user_type_conversion		(tree, tree, int,
 						 tsubst_flags_t);
-extern tree build_new_function_call		(tree, vec<tree, va_gc> **, 
+extern tree build_new_function_call		(tree, vec<tree, va_gc> **,
 						 tsubst_flags_t);
 extern tree build_operator_new_call		(tree, vec<tree, va_gc> **,
 						 tree *, tree *, tree, tree,
@@ -6961,10 +6961,10 @@ extern tree ovl_make				(tree fn,
 extern tree ovl_skip_hidden			(tree);
 extern tree ovl_insert				(tree fn, tree maybe_ovl,
 						 bool using_p = false);
-extern void lookup_keep				(tree lookup, bool keep);
 extern void lookup_mark				(tree lookup, bool val);
 extern tree lookup_add				(tree fns, tree lookup);
 extern tree lookup_maybe_add			(tree fns, tree lookup);
+extern void lookup_keep				(tree lookup, bool keep);
 extern int is_overloaded_fn			(tree);
 extern bool really_overloaded_fn		(tree);
 extern tree dependent_name			(tree);

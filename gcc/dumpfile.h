@@ -27,8 +27,8 @@ along with GCC; see the file COPYING3.  If not see
 enum tree_dump_index
 {
   TDI_none,			/* No dump */
-  TDI_cgraph,                   /* dump function call graph.  */
-  TDI_inheritance,              /* dump type inheritance graph.  */
+  TDI_cgraph,			/* dump function call graph.  */
+  TDI_inheritance,		/* dump type inheritance graph.  */
   TDI_clones,			/* dump IPA cloning decisions.  */
   TDI_tu,			/* dump the whole translation unit.  */
   TDI_original,			/* dump each function before optimizing it */
@@ -98,6 +98,7 @@ enum dump_kind
 #define MSG_NOTE		 (1 << 29)  /* general optimization info */
 #define MSG_ALL		(MSG_OPTIMIZED_LOCATIONS | MSG_MISSED_OPTIMIZATION \
 			 | MSG_NOTE)
+
 
 /* Value of TDF_NONE is used just for bits filtered by TDF_KIND_MASK.  */
 

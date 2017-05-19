@@ -1,5 +1,14 @@
 2017-05-19  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* cp-tree.h: Misc cleanups.
+	* name-lookup.c (pushdecl_top_level): Fix description.
+	gcc/
+	* dumpfile.h: Whitespace cleanups.
+	* system.h (ATTRIBUTE_NTC_PURE): Delete.
+	gcc/testsuite/
+	* g++.dg/tree-ssa/ssa-dse-2.C: Restore.
+
 	Merge trunk r248285.
 
 	Merge trunk r248271.
