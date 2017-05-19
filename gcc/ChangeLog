@@ -1,3 +1,9 @@
+2017-05-19  Nathan Sidwell  <nathan@acm.org>
+
+	* context.h (context::set_passes): New.
+	* context.c (context::context): Do not create pass manager.
+	* toplev.c (general_init): Create pass manager here.
+
 2017-05-19  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* config/rs6000/rs6000.md (splitter to load of -1 and mask): Don't
