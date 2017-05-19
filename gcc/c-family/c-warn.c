@@ -1069,6 +1069,10 @@ warnings_for_convert_and_check (location_t loc, tree type, tree expr,
 static void
 match_case_to_enum_1 (tree key, tree type, tree label)
 {
+  /* Avoid warning about enums that have no enumerators.  */
+  if (TYPE_VALUES (type) == NULL_TREE)
+    return;
+
   char buf[WIDE_INT_PRINT_BUFFER_SIZE];
 
   if (tree_fits_uhwi_p (key))
