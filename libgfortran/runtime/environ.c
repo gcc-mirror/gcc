@@ -61,9 +61,20 @@ static void init_unformatted (variable *);
 
 
 #ifdef FALLBACK_SECURE_GETENV
+
+#if SUPPORTS_WEAKREF && defined(HAVE___SECURE_GETENV)
+static char* weak_secure_getenv (const char*)
+  __attribute__((__weakref__("__secure_getenv")));
+#endif
+
 char *
 secure_getenv (const char *name)
 {
+#if SUPPORTS_WEAKREF && defined(HAVE___SECURE_GETENV)
+  if (weak_secure_getenv)
+    return weak_secure_getenv (name);
+#endif
+
   if ((getuid () == geteuid ()) && (getgid () == getegid ()))
     return getenv (name);
   else
