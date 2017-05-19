@@ -491,14 +491,14 @@ static struct hsa_context_info hsa_context;
 #define DLSYM_FN(function) \
   hsa_fns.function##_fn = dlsym (handle, #function); \
   if (hsa_fns.function##_fn == NULL) \
-    return false;
+    goto dl_fail;
 
 static bool
 init_hsa_runtime_functions (void)
 {
   void *handle = dlopen (hsa_runtime_lib, RTLD_LAZY);
   if (handle == NULL)
-    return false;
+    goto dl_fail;
 
   DLSYM_FN (hsa_status_string)
   DLSYM_FN (hsa_agent_get_info)
@@ -530,6 +530,10 @@ init_hsa_runtime_functions (void)
   DLSYM_FN (hsa_ext_program_destroy)
   DLSYM_FN (hsa_ext_program_finalize)
   return true;
+
+ dl_fail:
+  HSA_DEBUG ("while loading %s: %s\n", hsa_runtime_lib, dlerror ());
+  return false;
 }
 
 /* Find kernel for an AGENT by name provided in KERNEL_NAME.  */

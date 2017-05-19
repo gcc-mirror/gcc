@@ -1,3 +1,8 @@
+2017-05-19  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* plugin/plugin-hsa.c (DLSYM_FN, init_hsa_runtime_functions):
+	Debug output for failure.
+
 2017-05-12  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* testsuite/lib/libgomp.exp: Load scanlang.exp.
