@@ -1,5 +1,11 @@
 2017-05-19  Thomas Schwinge  <thomas@codesourcery.com>
 
+	* testsuite/libgomp.oacc-c++/template-reduction.C: Update.
+	* testsuite/libgomp.oacc-c-c++-common/nested-2.c: Update.
+	* testsuite/libgomp.oacc-fortran/data-4-2.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/default-1.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/non-scalar-data.f90: Likewise.
+
 	* plugin/plugin-hsa.c (DLSYM_FN, init_hsa_runtime_functions):
 	Debug output for failure.
 

@@ -1,4 +1,5 @@
-! Copy of data-4.f90 with self exchanged with host for !acc update.
+! Copy of data-4.f90 with self exchanged with host for !acc update, and with
+! default (present) clauses added.
 
 ! { dg-do run }
 
@@ -19,7 +20,7 @@ program asyncwait
 
   !$acc enter data copyin (a(1:N)) copyin (b(1:N)) copyin (N) async
 
-  !$acc parallel async wait
+  !$acc parallel default (present) async wait
   !$acc loop
   do i = 1, N
      b(i) = a(i)
@@ -39,7 +40,7 @@ program asyncwait
 
   !$acc update device (a(1:N), b(1:N)) async (1)
 
-  !$acc parallel async (1) wait (1)
+  !$acc parallel default (present) async (1) wait (1)
   !$acc loop
   do i = 1, N
      b(i) = a(i)
@@ -62,19 +63,19 @@ program asyncwait
   !$acc enter data copyin (c(1:N), d(1:N)) async (1)
   !$acc update device (a(1:N), b(1:N)) async (1)
 
-  !$acc parallel async (1)
+  !$acc parallel default (present) async (1)
   do i = 1, N
      b(i) = (a(i) * a(i) * a(i)) / a(i)
   end do
   !$acc end parallel
 
-  !$acc parallel async (1)
+  !$acc parallel default (present) async (1)
   do i = 1, N
      c(i) = (a(i) * 4) / a(i)
   end do
   !$acc end parallel
 
-  !$acc parallel async (1)
+  !$acc parallel default (present) async (1)
   do i = 1, N
      d(i) = ((a(i) * a(i)  + a(i)) / a(i)) - a(i)
   end do
@@ -100,25 +101,25 @@ program asyncwait
   !$acc enter data copyin (e(1:N)) async (1)
   !$acc update device (a(1:N), b(1:N), c(1:N), d(1:N)) async (1)
 
-  !$acc parallel async (1)
+  !$acc parallel default (present) async (1)
   do i = 1, N
      b(i) = (a(i) * a(i) * a(i)) / a(i)
   end do
   !$acc end parallel
 
-  !$acc parallel async (1)
+  !$acc parallel default (present) async (1)
   do i = 1, N
      c(i) = (a(i) * 4) / a(i)
   end do
   !$acc end parallel
 
-  !$acc parallel async (1)
+  !$acc parallel default (present) async (1)
   do i = 1, N
      d(i) = ((a(i) * a(i) + a(i)) / a(i)) - a(i)
   end do
   !$acc end parallel
 
-  !$acc parallel wait (1) async (1)
+  !$acc parallel default (present) wait (1) async (1)
   do i = 1, N
      e(i) = a(i) + b(i) + c(i) + d(i)
   end do

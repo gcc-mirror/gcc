@@ -51,4 +51,14 @@ program main
 
   if (a .ne. 7.0) call abort
 
+  ! The default (present) clause doesn't affect scalar variables; these will
+  ! still get an implicit copy clause added.
+  !$acc kernels default (present)
+    c = a
+    a = 1.0
+    a = a + c
+  !$acc end kernels
+
+  if (a .ne. 8.0) call abort
+
 end program main

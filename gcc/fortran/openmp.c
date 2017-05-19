@@ -1080,13 +1080,19 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 	      if (gfc_match ("default ( none )") == MATCH_YES)
 		c->default_sharing = OMP_DEFAULT_NONE;
 	      else if (openacc)
-		/* c->default_sharing = OMP_DEFAULT_UNKNOWN */;
-	      else if (gfc_match ("default ( shared )") == MATCH_YES)
-		c->default_sharing = OMP_DEFAULT_SHARED;
-	      else if (gfc_match ("default ( private )") == MATCH_YES)
-		c->default_sharing = OMP_DEFAULT_PRIVATE;
-	      else if (gfc_match ("default ( firstprivate )") == MATCH_YES)
-		c->default_sharing = OMP_DEFAULT_FIRSTPRIVATE;
+		{
+		  if (gfc_match ("default ( present )") == MATCH_YES)
+		    c->default_sharing = OMP_DEFAULT_PRESENT;
+		}
+	      else
+		{
+		  if (gfc_match ("default ( firstprivate )") == MATCH_YES)
+		    c->default_sharing = OMP_DEFAULT_FIRSTPRIVATE;
+		  else if (gfc_match ("default ( private )") == MATCH_YES)
+		    c->default_sharing = OMP_DEFAULT_PRIVATE;
+		  else if (gfc_match ("default ( shared )") == MATCH_YES)
+		    c->default_sharing = OMP_DEFAULT_SHARED;
+		}
 	      if (c->default_sharing != OMP_DEFAULT_UNKNOWN)
 		continue;
 	    }

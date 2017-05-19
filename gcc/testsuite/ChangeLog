@@ -1,5 +1,13 @@
 2017-05-19  Thomas Schwinge  <thomas@codesourcery.com>
 
+	* c-c++-common/goacc/default-1.c: Update.
+	* c-c++-common/goacc/default-2.c: Likewise.
+	* c-c++-common/goacc/default-4.c: Likewise.
+	* gfortran.dg/goacc/default-1.f95: Likewise.
+	* gfortran.dg/goacc/default-4.f: Likewise.
+	* c-c++-common/goacc/default-5.c: New file.
+	* gfortran.dg/goacc/default-5.f: Likewise.
+
 	* c-c++-common/goacc/default-1.c: New file.
 	* c-c++-common/goacc/default-2.c: Likewise.
 	* c-c++-common/goacc/data-default-1.c: Remove file, including its
