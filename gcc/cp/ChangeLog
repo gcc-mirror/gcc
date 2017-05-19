@@ -1,3 +1,14 @@
+2017-05-19  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* config-lang.in (gtfiles): Add c-family/c-format.c,
+	except.c, init.c, lambda.c and friend.c.
+	* class.c (dvirt_fn): Move out of function scope,
+	add GTY attribute.
+	* except.c (fn1-5, throw_fn, rethrow_fn, spec): Likewise.
+	* init.c (fn): Likewise.
+	* lambda.c (ptr_id, max_id): Likewise.
+	* friend.c (global_friend): Add GTY attribute.
+
 2017-05-19  Nathan Sidwell  <nathan@acm.org>
 
 	* call.c (add_list_candidates): Use OVL_FIRST.

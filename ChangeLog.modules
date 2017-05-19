@@ -1,5 +1,7 @@
 2017-05-19  Nathan Sidwell  <nathan@acm.org>
 
+	Merge trunk r248295.
+
 	gcc/cp/
 	* cp-tree.h: Misc cleanups.
 	* name-lookup.c (pushdecl_top_level): Fix description.

@@ -89,7 +89,7 @@ f (int i, int *p)
   if (i == 8) /* { dg-warning "this condition has identical branches" } */
     return i * 8 * i * 8;
   else
-    return 8 * i * 8 * i;
+    return i * 8 * i * 8;
 
 
   if (i == 9) /* { dg-warning "this condition has identical branches" } */

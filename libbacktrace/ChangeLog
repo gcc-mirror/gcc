@@ -1,3 +1,14 @@
+2017-05-19  Than McIntosh  <thanm@google.com>
+
+	* dwarf.c (free_line_header): Don't free dirs if dirs_count == 0.
+	(read_line_header): Don't allocate dirs if dirs_count == 0.
+	* edtest.c: New file.
+	* edtest2.c: New file.
+	* Makefile.am (edtest_SOURCES, edtest_LDADD): Define.
+	(check_PROGRAMS): Add edtest.
+	(edtest2_build.c, gen_edtest2_build): New targets.
+	* Makefile.in: Rebuild.
+
 2017-03-08  Sam Thursfield  <sam.thursfield@codethink.co.uk>
 
 	* btest.c (test5): Replace #ifdef guard with 'unused' attribute

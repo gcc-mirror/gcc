@@ -1,3 +1,11 @@
+2017-05-19  Paul Thomas  <pault@gcc.gnu.org>
+	    Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/80333
+	* list_read.c (nml_read_obj): Compute pointer into class/type
+	arrays from the nl->dim information. Update it for each iteration
+	of the loop for the given object.
+
 2017-05-17  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/80741

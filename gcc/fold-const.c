@@ -6281,11 +6281,13 @@ extract_muldiv_1 (tree t, tree c, enum tree_code code, tree wide_type,
 	 new operation.  Likewise for the RHS from a MULT_EXPR.  Otherwise,
 	 do something only if the second operand is a constant.  */
       if (same_p
+	  && TYPE_OVERFLOW_WRAPS (ctype)
 	  && (t1 = extract_muldiv (op0, c, code, wide_type,
 				   strict_overflow_p)) != 0)
 	return fold_build2 (tcode, ctype, fold_convert (ctype, t1),
 			    fold_convert (ctype, op1));
       else if (tcode == MULT_EXPR && code == MULT_EXPR
+	       && TYPE_OVERFLOW_WRAPS (ctype)
 	       && (t1 = extract_muldiv (op1, c, code, wide_type,
 					strict_overflow_p)) != 0)
 	return fold_build2 (tcode, ctype, fold_convert (ctype, op0),

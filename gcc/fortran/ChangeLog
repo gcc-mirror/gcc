@@ -1,3 +1,11 @@
+2017-05-19  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/80333
+	* trans-io.c (nml_get_addr_expr): If we are dealing with class
+	type data set tmp tree to get that address.
+	(transfer_namelist_element): Set the array spec to point to the
+	the class data.
+
 2017-05-19  David Malcolm  <dmalcolm@redhat.com>
 
 	PR fortran/79852
