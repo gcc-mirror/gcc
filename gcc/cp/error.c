@@ -1189,17 +1189,16 @@ dump_decl (cxx_pretty_printer *pp, tree t, int flags)
       break;
 
     case OVERLOAD:
-      if (OVL_CHAIN (t))
+      if (!OVL_SINGLE_P (t))
 	{
-	  t = OVL_CURRENT (t);
-	  if (DECL_CLASS_SCOPE_P (t))
+	  t = OVL_FIRST (t);
+	  tree ctx = CP_DECL_CONTEXT (t);
+	  if (ctx != global_namespace)
 	    {
-	      dump_type (pp, DECL_CONTEXT (t), flags);
-	      pp_cxx_colon_colon (pp);
-	    }
-	  else if (!DECL_FILE_SCOPE_P (t))
-	    {
-	      dump_decl (pp, DECL_CONTEXT (t), flags);
+	      if (TYPE_P (ctx))
+		dump_type (pp, ctx, flags);
+	      else
+		dump_decl (pp, ctx, flags);
 	      pp_cxx_colon_colon (pp);
 	    }
 	  dump_decl (pp, DECL_NAME (t), flags);

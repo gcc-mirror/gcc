@@ -1,3 +1,22 @@
+2017-05-19  Nathan Sidwell  <nathan@acm.org>
+
+	* call.c (add_list_candidates): Use OVL_FIRST.
+	(build_new_method_call_1): Likewise.
+	* cp-tree.h (OVL_SINGLE_P): New.
+	(TYPE_HIDDEN_P): New.
+	* decl.c (xref_tag_1): Use TYPE_HIDDEN_P.
+	* dump.c (cp_tump_tree): Adjust overload dumping.
+	* error.c (dump_decl): Use OVL_SINGLE_P, simplify context
+	printing.
+	* method.c (lazily_declare_fn): Assert we added it.
+	* parser.c (cp_parser_nested_name_specifier): Use OVL_SINGLE_P,
+	OVL_FIRST.
+	(cp_parser_template_name): Use lkp_iterator.
+	* pt.c (begin_template_parm_list): Fixup comment.
+	(instantiate_class_template_1): Use TYPE_HIDDEN_P.
+	* tree.c (ovl_iterator::remove_node): Cope with inherited ctors.
+	(ovl_scope): Use lkp_iterator.
+
 2017-05-19  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* parser.c (cp_parser_omp_clause_default): Handle

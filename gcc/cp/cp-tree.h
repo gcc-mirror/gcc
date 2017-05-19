@@ -655,6 +655,10 @@ typedef struct ptrmem_cst * ptrmem_cst_t;
 /* The name of the overload set.  */
 #define OVL_NAME(NODE) DECL_NAME (OVL_FIRST (NODE))
 
+/* Whether this is a single member overload.  */
+#define OVL_SINGLE_P(NODE) \
+  (TREE_CODE (NODE) != OVERLOAD || !OVL_CHAIN (NODE))
+
 struct GTY(()) tree_overload {
   struct tree_common common;
   tree function;
@@ -3749,6 +3753,11 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
 #define DECL_ANTICIPATED(NODE) \
   (DECL_LANG_SPECIFIC (TYPE_FUNCTION_OR_TEMPLATE_DECL_CHECK (NODE)) \
    ->u.base.anticipated_p)
+
+/* True if this is a hidden class type.    */
+#define TYPE_HIDDEN_P(NODE) \
+  (DECL_LANG_SPECIFIC (TYPE_NAME (NODE)) \
+   && DECL_ANTICIPATED (TYPE_NAME (NODE)))
 
 /* True for artificial decls added for OpenMP privatized non-static
    data members.  */
