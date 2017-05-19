@@ -37,3 +37,21 @@
 !$ACC END PARALLEL
 !$ACC END DATA
       END SUBROUTINE F2
+
+      SUBROUTINE F3
+      IMPLICIT NONE
+      INTEGER :: F3_A = 2
+      REAL, DIMENSION (2) :: F3_B
+
+!$ACC DATA COPYIN (F3_A) COPYOUT (F3_B)
+! { dg-final { scan-tree-dump-times "omp target oacc_data map\\(force_to:f3_a \[^\\)\]+\\) map\\(force_from:f3_b" 1 "gimple" } }
+!$ACC KERNELS DEFAULT (PRESENT)
+! { dg-final { scan-tree-dump-times "omp target oacc_kernels default\\(present\\) map\\(tofrom:f3_b \[^\\)\]+\\) map\\(tofrom:f3_a" 1 "gimple" } }
+      F3_B(1) = F3_A;
+!$ACC END KERNELS
+!$ACC PARALLEL DEFAULT (PRESENT)
+! { dg-final { scan-tree-dump-times "omp target oacc_parallel default\\(present\\) map\\(tofrom:f3_b \[^\\)\]+\\) map\\(tofrom:f3_a" 1 "gimple" } }
+      F3_B(1) = F3_A;
+!$ACC END PARALLEL
+!$ACC END DATA
+      END SUBROUTINE F3

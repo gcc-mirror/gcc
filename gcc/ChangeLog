@@ -1,5 +1,14 @@
 2017-05-19  Thomas Schwinge  <thomas@codesourcery.com>
 
+	* tree-core.h (enum omp_clause_default_kind): Add
+	"OMP_CLAUSE_DEFAULT_PRESENT".
+	* tree-pretty-print.c (dump_omp_clause): Handle it.
+	* gimplify.c (enum gimplify_omp_var_data): Add
+	"GOVD_MAP_FORCE_PRESENT".
+	(gimplify_adjust_omp_clauses_1): Map it to
+	"GOMP_MAP_FORCE_PRESENT".
+	(oacc_default_clause): Handle "OMP_CLAUSE_DEFAULT_PRESENT".
+
 	* gimplify.c (oacc_default_clause): Clarify.
 
 2017-05-19  Nathan Sidwell  <nathan@acm.org>

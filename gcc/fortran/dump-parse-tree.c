@@ -1283,6 +1283,7 @@ show_omp_clauses (gfc_omp_clauses *omp_clauses)
 	case OMP_DEFAULT_PRIVATE: type = "PRIVATE"; break;
 	case OMP_DEFAULT_SHARED: type = "SHARED"; break;
 	case OMP_DEFAULT_FIRSTPRIVATE: type = "FIRSTPRIVATE"; break;
+	case OMP_DEFAULT_PRESENT: type = "PRESENT"; break;
 	default:
 	  gcc_unreachable ();
 	}

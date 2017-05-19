@@ -1,3 +1,11 @@
+2017-05-19  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* gfortran.h (enum gfc_omp_default_sharing): Add
+	"OMP_DEFAULT_PRESENT".
+	* dump-parse-tree.c (show_omp_clauses): Handle it.
+	* openmp.c (gfc_match_omp_clauses): Likewise.
+	* trans-openmp.c (gfc_trans_omp_clauses): Likewise.
+
 2017-05-18  Fritz Reese <fritzoreese@gmail.com>
 
 	PR fortran/79968

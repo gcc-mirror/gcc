@@ -7,39 +7,39 @@ void f1 ()
 #pragma acc parallel default /* { dg-error "expected .\\(. before end of line" } */
   ;
 
-#pragma acc kernels default ( /* { dg-error "expected .none. before end of line" } */
+#pragma acc kernels default ( /* { dg-error "expected .none. or .present. before end of line" } */
   ;
-#pragma acc parallel default ( /* { dg-error "expected .none. before end of line" } */
-  ;
-
-#pragma acc kernels default (, /* { dg-error "expected .none. before .,. token" } */
-  ;
-#pragma acc parallel default (, /* { dg-error "expected .none. before .,. token" } */
+#pragma acc parallel default ( /* { dg-error "expected .none. or .present. before end of line" } */
   ;
 
-#pragma acc kernels default () /* { dg-error "expected .none. before .\\). token" } */
+#pragma acc kernels default (, /* { dg-error "expected .none. or .present. before .,. token" } */
   ;
-#pragma acc parallel default () /* { dg-error "expected .none. before .\\). token" } */
-  ;
-
-#pragma acc kernels default (,) /* { dg-error "expected .none. before .,. token" } */
-  ;
-#pragma acc parallel default (,) /* { dg-error "expected .none. before .,. token" } */
+#pragma acc parallel default (, /* { dg-error "expected .none. or .present. before .,. token" } */
   ;
 
-#pragma acc kernels default (firstprivate) /* { dg-error "expected .none. before .firstprivate." } */
+#pragma acc kernels default () /* { dg-error "expected .none. or .present. before .\\). token" } */
   ;
-#pragma acc parallel default (firstprivate) /* { dg-error "expected .none. before .firstprivate." } */
-  ;
-
-#pragma acc kernels default (private) /* { dg-error "expected .none. before .private." } */
-  ;
-#pragma acc parallel default (private) /* { dg-error "expected .none. before .private." } */
+#pragma acc parallel default () /* { dg-error "expected .none. or .present. before .\\). token" } */
   ;
 
-#pragma acc kernels default (shared) /* { dg-error "expected .none. before .shared." } */
+#pragma acc kernels default (,) /* { dg-error "expected .none. or .present. before .,. token" } */
   ;
-#pragma acc parallel default (shared) /* { dg-error "expected .none. before .shared." } */
+#pragma acc parallel default (,) /* { dg-error "expected .none. or .present. before .,. token" } */
+  ;
+
+#pragma acc kernels default (firstprivate) /* { dg-error "expected .none. or .present. before .firstprivate." } */
+  ;
+#pragma acc parallel default (firstprivate) /* { dg-error "expected .none. or .present. before .firstprivate." } */
+  ;
+
+#pragma acc kernels default (private) /* { dg-error "expected .none. or .present. before .private." } */
+  ;
+#pragma acc parallel default (private) /* { dg-error "expected .none. or .present. before .private." } */
+  ;
+
+#pragma acc kernels default (shared) /* { dg-error "expected .none. or .present. before .shared." } */
+  ;
+#pragma acc parallel default (shared) /* { dg-error "expected .none. or .present. before .shared." } */
   ;
 
 #pragma acc kernels default (none /* { dg-error "expected .\\). before end of line" } */

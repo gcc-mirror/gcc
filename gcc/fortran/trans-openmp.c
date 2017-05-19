@@ -2564,6 +2564,9 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 	case OMP_DEFAULT_FIRSTPRIVATE:
 	  OMP_CLAUSE_DEFAULT_KIND (c) = OMP_CLAUSE_DEFAULT_FIRSTPRIVATE;
 	  break;
+	case OMP_DEFAULT_PRESENT:
+	  OMP_CLAUSE_DEFAULT_KIND (c) = OMP_CLAUSE_DEFAULT_PRESENT;
+	  break;
 	default:
 	  gcc_unreachable ();
 	}
