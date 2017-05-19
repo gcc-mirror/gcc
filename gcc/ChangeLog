@@ -1,3 +1,9 @@
+2017-05-19  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.md (splitter to load of -1 and mask): Don't
+	use this splitter if two add or or instructions would also work for
+	the constant we want to generate.
+
 2017-05-19  Richard Biener  <rguenther@suse.de>
 
 	PR build/80821
