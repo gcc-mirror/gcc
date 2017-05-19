@@ -1,3 +1,7 @@
+2017-05-19  Jason Merrill  <jason@redhat.com>
+
+	* tree.c (make_tree_vec_stat, grow_tree_vec_stat): Use size_t.
+
 2017-05-19  Marek Polacek  <polacek@redhat.com>
 
 	PR sanitizer/80800
