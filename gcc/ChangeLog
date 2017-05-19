@@ -1,3 +1,15 @@
+2017-05-19  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backport from mainline
+	2017-05-18  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/80799
+	* config/i386/mmx.md (*mov<mode>_internal): Enable
+	alternatives 11, 12, 13 and 14 also for 32bit targets.
+	Remove alternatives 15, 16, 17 and 18.
+	* config/i386/sse.md (vec_concatv2di): Change
+	alternative (!x, *y) to (x, ?!*Yn).
+
 2017-05-15  Richard Biener  <rguenther@suse.de>
 
 	Revert backport of
@@ -134,13 +146,13 @@
 	Backport from mainline
 	2017-03-30  Martin Jambor  <mjambor@suse.cz>
 
-        PR ipa/77333
-        * cgraph.h (cgraph_build_function_type_skip_args): Declare.
-        * cgraph.c (redirect_call_stmt_to_callee): Set gimple fntype so that
-        it reflects the signature changes performed at the callee side.
-        * cgraphclones.c (build_function_type_skip_args): Make public, renamed
-        to cgraph_build_function_type_skip_args.
-        (build_function_decl_skip_args): Adjust call to the above function.
+	PR ipa/77333
+	* cgraph.h (cgraph_build_function_type_skip_args): Declare.
+	* cgraph.c (redirect_call_stmt_to_callee): Set gimple fntype so that
+	it reflects the signature changes performed at the callee side.
+	* cgraphclones.c (build_function_type_skip_args): Make public, renamed
+	to cgraph_build_function_type_skip_args.
+	(build_function_decl_skip_args): Adjust call to the above function.
 
 2017-04-11  Bin Cheng  <bin.cheng@arm.com>
 
@@ -1026,11 +1038,11 @@
 	Backport from mainline
 	2016-11-07  Bernd Schmidt  <bschmidt@redhat.com>
 
-        PR rtl-optimization/77309
-        * combine.c (make_compound_operation): Allow EQ for IN_CODE, and
-        don't assume an equality comparison for plain COMPARE.
-        (simplify_comparison): Pass a more accurate code to
-        make_compound_operation.
+	PR rtl-optimization/77309
+	* combine.c (make_compound_operation): Allow EQ for IN_CODE, and
+	don't assume an equality comparison for plain COMPARE.
+	(simplify_comparison): Pass a more accurate code to
+	make_compound_operation.
 
 2016-12-07  Segher Boessenkool  <segher@kernel.crashing.org>
 

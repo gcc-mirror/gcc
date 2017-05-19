@@ -1,3 +1,11 @@
+2017-05-19  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backport from mainline
+	2017-05-18  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/80799
+	* g++.dg/other/i386-11.C: New test.
+
 2017-05-15  Richard Biener  <rguenther@suse.de>
 
 	Revert backport of
@@ -96,8 +104,8 @@
 	Backport from mainline
 	2017-03-30  Martin Jambor  <mjambor@suse.cz>
 
-        PR ipa/77333
-        * g++.dg/ipa/pr77333.C: New test.
+	PR ipa/77333
+	* g++.dg/ipa/pr77333.C: New test.
 
 2017-04-11  Bin Cheng  <bin.cheng@arm.com>
 
@@ -532,8 +540,8 @@
 	Backport from mainline
 	2016-11-07  Bernd Schmidt  <bschmidt@redhat.com>
 
-        PR rtl-optimization/77309
-        * gcc.dg/torture/pr77309.c: New test.
+	PR rtl-optimization/77309
+	* gcc.dg/torture/pr77309.c: New test.
 
 2016-12-08  Nathan Sidwell  <nathan@acm.org>
 
@@ -598,7 +606,7 @@
 	* gfortran.dg/extends_type_of_3.f90: Fix and extend the test case.
 
 2016-11-20  Harald Anlauf  <anlauf@gmx.de>
- 
+
 	PR fortran/69741
 	* gfortran.dg/forall_18.f90: New testcase.
 
