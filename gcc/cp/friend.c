@@ -32,7 +32,7 @@ along with GCC; see the file COPYING3.  If not see
    template overload resolution results when accessibility matters
    (e.g. tests for an accessible member).  */
 
-static tree global_friend;
+static GTY(()) tree global_friend;
 
 /* Set the GLOBAL_FRIEND for this compilation session.  It might be
    set multiple times, but always to the same scope.  */
@@ -668,3 +668,5 @@ do_friend (tree ctype, tree declarator, tree decl,
 
   return decl;
 }
+
+#include "gt-cp-friend.h"

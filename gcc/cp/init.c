@@ -46,6 +46,8 @@ static tree dfs_initialize_vtbl_ptrs (tree, void *);
 static tree build_field_list (tree, tree, int *);
 static int diagnose_uninitialized_cst_or_ref_member_1 (tree, tree, bool, bool);
 
+static GTY(()) tree fn;
+
 /* We are about to generate some complex initialization code.
    Conceptually, it is all a single expression.  However, we may want
    to include conditionals, loops, and other such statement-level
@@ -2402,7 +2404,6 @@ diagnose_uninitialized_cst_or_ref_member (tree type, bool using_new, bool compla
 tree
 throw_bad_array_new_length (void)
 {
-  static tree fn;
   if (!fn)
     {
       tree name = get_identifier ("__cxa_throw_bad_array_new_length");
@@ -4911,3 +4912,5 @@ build_vec_delete (tree base, tree maxindex,
 
   return rval;
 }
+
+#include "gt-cp-init.h"
