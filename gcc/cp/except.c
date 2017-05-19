@@ -42,6 +42,15 @@ static int complete_ptr_ref_or_void_ptr_p (tree, tree);
 static bool is_admissible_throw_operand_or_catch_parameter (tree, bool);
 static int can_convert_eh (tree, tree);
 
+static GTY(()) tree fn1;
+static GTY(()) tree fn2;
+static GTY(()) tree fn3;
+static GTY(()) tree fn4;
+static GTY(()) tree fn5;
+static GTY(()) tree throw_fn;
+static GTY(()) tree rethrow_fn;
+static GTY(()) tree spec;
+
 /* Sets up all the global eh stuff that needs to be initialized at the
    start of compilation.  */
 
@@ -154,20 +163,18 @@ declare_library_fn (tree name, tree return_type, tree parm_type, int ecf_flags)
 static tree
 do_get_exception_ptr (void)
 {
-  static tree fn;
-
-  if (!fn)
+  if (!fn1)
     {
       tree name = get_identifier ("__cxa_get_exception_ptr");
-      fn = IDENTIFIER_GLOBAL_VALUE (name);
-      if (!fn)
+      fn1 = IDENTIFIER_GLOBAL_VALUE (name);
+      if (!fn1)
 	/* Declare void* __cxa_get_exception_ptr (void *) throw().  */
-	fn = declare_library_fn
+	fn1 = declare_library_fn
 	  (name, ptr_type_node, ptr_type_node,
 	   ECF_NOTHROW | ECF_PURE | ECF_LEAF | ECF_TM_PURE);
     }
 
-  return cp_build_function_call_nary (fn, tf_warning_or_error,
+  return cp_build_function_call_nary (fn1, tf_warning_or_error,
 				      build_exc_ptr (), NULL_TREE);
 }
 
@@ -177,16 +184,14 @@ do_get_exception_ptr (void)
 static tree
 do_begin_catch (void)
 {
-  static tree fn;
-
-  if (!fn)
+  if (!fn2)
     {
-      tree name = fn = get_identifier ("__cxa_begin_catch");
-      fn = IDENTIFIER_GLOBAL_VALUE (name);
-      if (!fn)
+      tree name = get_identifier ("__cxa_begin_catch");
+      fn2 = IDENTIFIER_GLOBAL_VALUE (name);
+      if (!fn2)
 	{
 	  /* Declare void* __cxa_begin_catch (void *) throw().  */
-	  fn = declare_library_fn
+	  fn2 = declare_library_fn
 	    (name, ptr_type_node, ptr_type_node, ECF_NOTHROW);
 
 	  /* Create its transactional-memory equivalent.  */
@@ -198,12 +203,12 @@ do_begin_catch (void)
 		itm_fn = declare_library_fn
 		  (itm_name, ptr_type_node, ptr_type_node,
 		   ECF_NOTHROW | ECF_TM_PURE);
-	      record_tm_replacement (fn, itm_fn);
+	      record_tm_replacement (fn2, itm_fn);
 	    }
 	}
     }
 
-  return cp_build_function_call_nary (fn, tf_warning_or_error,
+  return cp_build_function_call_nary (fn2, tf_warning_or_error,
 				      build_exc_ptr (), NULL_TREE);
 }
 
@@ -231,17 +236,15 @@ dtor_nothrow (tree type)
 static tree
 do_end_catch (tree type)
 {
-  static tree fn;
-
-  if (!fn)
+  if (!fn3)
     {
       tree name = get_identifier ("__cxa_end_catch");
-      fn = IDENTIFIER_GLOBAL_VALUE (name);
-      if (!fn)
+      fn3 = IDENTIFIER_GLOBAL_VALUE (name);
+      if (!fn3)
 	{
 	  /* Declare void __cxa_end_catch ().
 	     This can throw if the destructor for the exception throws.  */
-	  fn = push_void_library_fn (name, void_list_node, 0);
+	  fn3 = push_void_library_fn (name, void_list_node, 0);
 
 	  /* Create its transactional-memory equivalent.  */
 	  if (flag_tm)
@@ -251,12 +254,12 @@ do_end_catch (tree type)
 	      if (!itm_fn)
 		itm_fn = push_void_library_fn
 		  (itm_name, void_list_node, ECF_TM_PURE);
-	      record_tm_replacement (fn, itm_fn);
+	      record_tm_replacement (fn3, itm_fn);
 	    }
 	}
     }
 
-  tree cleanup = cp_build_function_call_vec (fn, NULL, tf_warning_or_error);
+  tree cleanup = cp_build_function_call_vec (fn3, NULL, tf_warning_or_error);
   TREE_NOTHROW (cleanup) = dtor_nothrow (type);
 
   return cleanup;
@@ -516,17 +519,15 @@ finish_eh_spec_block (tree raw_raises, tree eh_spec_block)
 static tree
 do_allocate_exception (tree type)
 {
-  static tree fn;
-
-  if (!fn)
+  if (!fn4)
     {
       tree name = get_identifier ("__cxa_allocate_exception");
-      fn = IDENTIFIER_GLOBAL_VALUE (name);
-      if (!fn)
+      fn4 = IDENTIFIER_GLOBAL_VALUE (name);
+      if (!fn4)
 	{
 	  /* Declare void *__cxa_allocate_exception(size_t) throw().  */
-	  fn = declare_library_fn (name, ptr_type_node, size_type_node,
-				   ECF_NOTHROW | ECF_MALLOC);
+	  fn4 = declare_library_fn (name, ptr_type_node, size_type_node,
+				    ECF_NOTHROW | ECF_MALLOC);
 
 	  if (flag_tm)
 	    {
@@ -536,12 +537,12 @@ do_allocate_exception (tree type)
 		itm_fn = declare_library_fn
 		  (itm_name, ptr_type_node, size_type_node, 
 		   ECF_NOTHROW | ECF_MALLOC | ECF_TM_PURE);
-	      record_tm_replacement (fn, itm_fn);
+	      record_tm_replacement (fn4, itm_fn);
 	    }
 	}
     }
 
-  return cp_build_function_call_nary (fn, tf_warning_or_error,
+  return cp_build_function_call_nary (fn4, tf_warning_or_error,
 				      size_in_bytes (type), NULL_TREE);
 }
 
@@ -551,17 +552,15 @@ do_allocate_exception (tree type)
 static tree
 do_free_exception (tree ptr)
 {
-  static tree fn;
-
-  if (!fn)
+  if (!fn5)
     {
       tree name = get_identifier ("__cxa_free_exception");
-      fn = IDENTIFIER_GLOBAL_VALUE (name);
-      if (!fn)
+      fn5 = IDENTIFIER_GLOBAL_VALUE (name);
+      if (!fn5)
 	{
 	  /* Declare void __cxa_free_exception (void *) throw().  */
-	  fn = declare_library_fn (name, void_type_node, ptr_type_node,
-				   ECF_NOTHROW | ECF_LEAF);
+	  fn5 = declare_library_fn (name, void_type_node, ptr_type_node,
+				    ECF_NOTHROW | ECF_LEAF);
 
 	  if (flag_tm)
 	    {
@@ -571,12 +570,12 @@ do_free_exception (tree ptr)
 		itm_fn = declare_library_fn
 		  (itm_name, void_type_node, ptr_type_node,
 		   ECF_NOTHROW | ECF_LEAF | ECF_TM_PURE);
-	      record_tm_replacement (fn, itm_fn);
+	      record_tm_replacement (fn5, itm_fn);
 	    }
 	}
     }
 
-  return cp_build_function_call_nary (fn, tf_warning_or_error, ptr, NULL_TREE);
+  return cp_build_function_call_nary (fn5, tf_warning_or_error, ptr, NULL_TREE);
 }
 
 /* Wrap all cleanups for TARGET_EXPRs in MUST_NOT_THROW_EXPR.
@@ -640,7 +639,6 @@ build_throw (tree exp)
 
   if (exp)
     {
-      static tree throw_fn;
       tree throw_type;
       tree temp_type;
       tree cleanup;
@@ -793,8 +791,6 @@ build_throw (tree exp)
   else
     {
       /* Rethrow current exception.  */
-      static tree rethrow_fn;
-
       if (!rethrow_fn)
 	{
 	  tree name = get_identifier ("__cxa_rethrow");
@@ -1261,7 +1257,6 @@ build_noexcept_spec (tree expr, int complain)
 tree
 unevaluated_noexcept_spec (void)
 {
-  static tree spec;
   if (spec == NULL_TREE)
     spec = build_noexcept_spec (make_node (DEFERRED_NOEXCEPT), tf_none);
   return spec;
