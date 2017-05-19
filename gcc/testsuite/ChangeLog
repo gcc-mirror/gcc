@@ -1,3 +1,9 @@
+2017-05-19  Prakhar Bahuguna  <prakhar.bahuguna@arm.com>
+
+	* gcc.target/arm/tls-disable-literal-pool.c: Change
+	require-effective-target to tls_native.
+	Move dg-error to return statement line and change to dg-message.
+
 2017-05-19  Richard Biener  <rguenther@suse.de>
 
 	PR c++/80593
