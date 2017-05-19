@@ -1,3 +1,8 @@
+2017-05-19  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/80764
+	* gcc.dg/torture/pr80764.c: New testcase.
+
 2017-05-18  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	PR target/80510
