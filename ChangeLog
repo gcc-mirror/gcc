@@ -1,3 +1,10 @@
+2017-05-19  Martin Liska  <mliska@suse.cz>
+
+	* configure.ac: Add --enable-werror-always just for
+	bootstrap-debug (or none build config) and do not add it
+	when we are on a release branch.
+	* configure: Regenerated.
+
 2017-05-18  Sheldon Lobo  <sheldon.lobo@oracle.com>
 
 	* MAINTAINERS: Add self to Write After Approval
