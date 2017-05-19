@@ -3666,7 +3666,7 @@ add_list_candidates (tree fns, tree first_arg,
      avoid the copy constructor call for copy-list-initialization.  */
   flags |= LOOKUP_NO_NARROWING;
 
-  unsigned nart = num_artificial_parms_for (get_first_fn (fns)) - 1;
+  unsigned nart = num_artificial_parms_for (OVL_FIRST (fns)) - 1;
   tree init_list = (*args)[nart];
 
   /* Always use the default constructor if the list is empty (DR 990).  */
@@ -8539,7 +8539,7 @@ build_new_method_call_1 (tree instance, tree fns, vec<tree, va_gc> **args,
   gcc_assert (TREE_CODE (fns) == FUNCTION_DECL
 	      || TREE_CODE (fns) == TEMPLATE_DECL
 	      || TREE_CODE (fns) == OVERLOAD);
-  fn = get_first_fn (fns);
+  fn = OVL_FIRST (fns);
   name = DECL_NAME (fn);
 
   basetype = TYPE_MAIN_VARIANT (TREE_TYPE (instance));
@@ -8708,7 +8708,7 @@ build_new_method_call_1 (tree instance, tree fns, vec<tree, va_gc> **args,
 	      tree errname = name;
 	      if (IDENTIFIER_CTOR_OR_DTOR_P (errname))
 		{
-		  tree fn = DECL_ORIGIN (get_first_fn (fns));
+		  tree fn = DECL_ORIGIN (OVL_FIRST (fns));
 		  errname = DECL_NAME (fn);
 		}
 	      if (explicit_targs)

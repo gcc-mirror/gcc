@@ -6028,8 +6028,8 @@ cp_parser_nested_name_specifier_opt (cp_parser *parser,
 		  if (is_overloaded_fn (tid))
 		    {
 		      tree fns = get_fns (tid);
-		      if (!OVL_CHAIN (fns))
-			tmpl = OVL_CURRENT (fns);
+		      if (OVL_SINGLE_P (fns))
+			tmpl = OVL_FIRST (fns);
 		      error_at (token->location, "function template-id %qD "
 				"in nested-name-specifier", tid);
 		    }
@@ -15639,7 +15639,6 @@ cp_parser_template_name (cp_parser* parser,
 {
   tree identifier;
   tree decl;
-  tree fns;
   cp_token *token = cp_lexer_peek_token (parser->lexer);
 
   /* If the next token is `operator', then we have either an
@@ -15765,20 +15764,19 @@ cp_parser_template_name (cp_parser* parser,
     }
   else
     {
-      tree fn = NULL_TREE;
-
       /* The standard does not explicitly indicate whether a name that
 	 names a set of overloaded declarations, some of which are
 	 templates, is a template-name.  However, such a name should
 	 be a template-name; otherwise, there is no way to form a
 	 template-id for the overloaded templates.  */
-      fns = BASELINK_P (decl) ? BASELINK_FUNCTIONS (decl) : decl;
-      if (TREE_CODE (fns) == OVERLOAD)
-	for (fn = fns; fn; fn = OVL_NEXT (fn))
-	  if (TREE_CODE (OVL_CURRENT (fn)) == TEMPLATE_DECL)
-	    break;
+      bool found = false;
 
-      if (!fn)
+      for (lkp_iterator iter (MAYBE_BASELINK_FUNCTIONS (decl));
+	   !found && iter; ++iter)
+	if (TREE_CODE (*iter) == TEMPLATE_DECL)
+	  found = true;
+
+      if (!found)
 	{
 	  /* The name does not name a template.  */
 	  cp_parser_error (parser, "expected template-name");

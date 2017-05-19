@@ -648,8 +648,8 @@ begin_template_parm_list (void)
 	 template <class T> struct S2 {};
        };
 
-     pushtag contains special code to call pushdecl_with_scope on the
-     TEMPLATE_DECL for S2.  */
+     pushtag contains special code to insert the TEMPLATE_DECL for S2
+     at the right scope.  */
   begin_scope (sk_template_parms, NULL);
   ++processing_template_decl;
   ++processing_template_parmlist;
@@ -10592,7 +10592,7 @@ instantiate_class_template_1 (tree type)
 		  --processing_template_decl;
 		}
 	      else if (!CLASSTYPE_USE_TEMPLATE (friend_type)
-		       && hidden_name_p (TYPE_NAME (friend_type)))
+		       && TYPE_HIDDEN_P (friend_type))
 		{
 		  /* friend class C;
 

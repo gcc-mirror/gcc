@@ -2230,7 +2230,11 @@ ovl_iterator::remove_node (tree overload, tree node)
      singleton overload (and consequently maybe setting its type),
      because all uses of this function will be followed by inserting a
      new node that must follow the place we've cut this out from.  */
-  *slot = OVL_CHAIN (node);
+  if (TREE_CODE (node) != OVERLOAD)
+    /* Cloned inherited ctors don't mark themselves as via_using.  */
+    *slot = NULL_TREE;
+  else
+    *slot = OVL_CHAIN (node);
 
   return overload;
 }
@@ -2362,9 +2366,12 @@ ovl_scope (tree ovl)
   if (TREE_CODE (ovl) == TEMPLATE_ID_EXPR)
     ovl = TREE_OPERAND (ovl, 0);
   /* Skip using-declarations.  */
-  while (TREE_CODE (ovl) == OVERLOAD && OVL_USING_P (ovl) && OVL_CHAIN (ovl))
-    ovl = OVL_CHAIN (ovl);
-  return CP_DECL_CONTEXT (OVL_CURRENT (ovl));
+  lkp_iterator iter (ovl);
+  do
+    ovl = *iter;
+  while (iter.using_p () && ++iter);
+
+  return CP_DECL_CONTEXT (ovl);
 }
 
 #define PRINT_RING_SIZE 4
