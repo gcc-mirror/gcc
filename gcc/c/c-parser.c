@@ -11057,10 +11057,10 @@ c_parser_omp_clause_copyprivate (c_parser *parser, tree list)
 }
 
 /* OpenMP 2.5:
-   default ( shared | none )
+   default ( none | shared )
 
-   OpenACC 2.0:
-   default (none) */
+   OpenACC:
+   default ( none | present ) */
 
 static tree
 c_parser_omp_clause_default (c_parser *parser, tree list, bool is_oacc)
@@ -11083,6 +11083,12 @@ c_parser_omp_clause_default (c_parser *parser, tree list, bool is_oacc)
 	  kind = OMP_CLAUSE_DEFAULT_NONE;
 	  break;
 
+	case 'p':
+	  if (strcmp ("present", p) != 0 || !is_oacc)
+	    goto invalid_kind;
+	  kind = OMP_CLAUSE_DEFAULT_PRESENT;
+	  break;
+
 	case 's':
 	  if (strcmp ("shared", p) != 0 || is_oacc)
 	    goto invalid_kind;
@@ -11099,7 +11105,7 @@ c_parser_omp_clause_default (c_parser *parser, tree list, bool is_oacc)
     {
     invalid_kind:
       if (is_oacc)
-	c_parser_error (parser, "expected %<none%>");
+	c_parser_error (parser, "expected %<none%> or %<present%>");
       else
 	c_parser_error (parser, "expected %<none%> or %<shared%>");
     }

@@ -31654,10 +31654,10 @@ cp_parser_omp_clause_collapse (cp_parser *parser, tree list, location_t location
 }
 
 /* OpenMP 2.5:
-   default ( shared | none )
+   default ( none | shared )
 
-   OpenACC 2.0
-   default (none) */
+   OpenACC:
+   default ( none | present ) */
 
 static tree
 cp_parser_omp_clause_default (cp_parser *parser, tree list,
@@ -31681,6 +31681,12 @@ cp_parser_omp_clause_default (cp_parser *parser, tree list,
 	  kind = OMP_CLAUSE_DEFAULT_NONE;
 	  break;
 
+	case 'p':
+	  if (strcmp ("present", p) != 0 || !is_oacc)
+	    goto invalid_kind;
+	  kind = OMP_CLAUSE_DEFAULT_PRESENT;
+	  break;
+
 	case 's':
 	  if (strcmp ("shared", p) != 0 || is_oacc)
 	    goto invalid_kind;
@@ -31697,12 +31703,13 @@ cp_parser_omp_clause_default (cp_parser *parser, tree list,
     {
     invalid_kind:
       if (is_oacc)
-	cp_parser_error (parser, "expected %<none%>");
+	cp_parser_error (parser, "expected %<none%> or %<present%>");
       else
 	cp_parser_error (parser, "expected %<none%> or %<shared%>");
     }
 
-  if (!cp_parser_require (parser, CPP_CLOSE_PAREN, RT_CLOSE_PAREN))
+  if (kind == OMP_CLAUSE_DEFAULT_UNSPECIFIED
+      || !cp_parser_require (parser, CPP_CLOSE_PAREN, RT_CLOSE_PAREN))
     cp_parser_skip_to_closing_parenthesis (parser, /*recovering=*/true,
 					   /*or_comma=*/false,
 					   /*consume_paren=*/true);

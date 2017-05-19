@@ -116,7 +116,7 @@ insert (gfc_bbt *new_bbt, gfc_bbt *t, compare_fn compare)
 	t = rotate_left (t);
     }
   else /* if (c == 0)  */
-    gfc_internal_error("insert_bbt(): Duplicate key found!");
+    gfc_internal_error("insert_bbt(): Duplicate key found");
 
   return t;
 }

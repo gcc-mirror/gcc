@@ -9969,7 +9969,7 @@ gfc_match_final_decl (void)
       for (f = block->f2k_derived->finalizers; f; f = f->next)
 	if (f->proc_sym == sym)
 	  {
-	    gfc_error ("%qs at %C is already defined as FINAL procedure!",
+	    gfc_error ("%qs at %C is already defined as FINAL procedure",
 		       name);
 	    return MATCH_ERROR;
 	  }

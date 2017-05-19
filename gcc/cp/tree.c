@@ -2311,7 +2311,11 @@ ovl_iterator::remove_node (tree overload, tree node)
      singleton overload (and consequently maybe setting its type),
      because all uses of this function will be followed by inserting a
      new node that must follow the place we've cut this out from.  */
-  *slot = OVL_CHAIN (node);
+  if (TREE_CODE (node) != OVERLOAD)
+    /* Cloned inherited ctors don't mark themselves as via_using.  */
+    *slot = NULL_TREE;
+  else
+    *slot = OVL_CHAIN (node);
 
   return overload;
 }

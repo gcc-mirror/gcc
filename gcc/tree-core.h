@@ -357,7 +357,7 @@ enum omp_clause_code {
   /* OpenMP clause: ordered [(constant-integer-expression)].  */
   OMP_CLAUSE_ORDERED,
 
-  /* OpenMP clause: default.  */
+  /* OpenACC/OpenMP clause: default.  */
   OMP_CLAUSE_DEFAULT,
 
   /* OpenACC/OpenMP clause: collapse (constant-integer-expression).  */
@@ -499,6 +499,7 @@ enum omp_clause_default_kind {
   OMP_CLAUSE_DEFAULT_NONE,
   OMP_CLAUSE_DEFAULT_PRIVATE,
   OMP_CLAUSE_DEFAULT_FIRSTPRIVATE,
+  OMP_CLAUSE_DEFAULT_PRESENT,
   OMP_CLAUSE_DEFAULT_LAST
 };
 

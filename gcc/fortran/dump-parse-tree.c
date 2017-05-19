@@ -573,7 +573,7 @@ show_expr (gfc_expr *p)
 
 	default:
 	  gfc_internal_error
-	    ("show_expr(): Bad intrinsic in expression!");
+	    ("show_expr(): Bad intrinsic in expression");
 	}
 
       show_expr (p->value.op.op1);
@@ -1283,6 +1283,7 @@ show_omp_clauses (gfc_omp_clauses *omp_clauses)
 	case OMP_DEFAULT_PRIVATE: type = "PRIVATE"; break;
 	case OMP_DEFAULT_SHARED: type = "SHARED"; break;
 	case OMP_DEFAULT_FIRSTPRIVATE: type = "FIRSTPRIVATE"; break;
+	case OMP_DEFAULT_PRESENT: type = "PRESENT"; break;
 	default:
 	  gcc_unreachable ();
 	}

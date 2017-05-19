@@ -3886,6 +3886,11 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
   (DECL_LANG_SPECIFIC (NODE) && TYPE_FUNCTION_OR_TEMPLATE_DECL_P (NODE) \
    && DECL_ANTICIPATED (NODE))
 
+/* True if this is a hidden class type.    */
+#define TYPE_HIDDEN_P(NODE) \
+  (DECL_LANG_SPECIFIC (TYPE_NAME (NODE)) \
+   && DECL_ANTICIPATED (TYPE_NAME (NODE)))
+
 /* True for artificial decls added for OpenMP privatized non-static
    data members.  */
 #define DECL_OMP_PRIVATIZED_MEMBER(NODE) \

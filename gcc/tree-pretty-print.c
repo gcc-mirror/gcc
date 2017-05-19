@@ -502,6 +502,9 @@ dump_omp_clause (pretty_printer *pp, tree clause, int spc, dump_flags_t flags)
 	case OMP_CLAUSE_DEFAULT_FIRSTPRIVATE:
 	  pp_string (pp, "firstprivate");
 	  break;
+	case OMP_CLAUSE_DEFAULT_PRESENT:
+	  pp_string (pp, "present");
+	  break;
 	default:
 	  gcc_unreachable ();
 	}

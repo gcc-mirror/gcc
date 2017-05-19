@@ -10591,7 +10591,7 @@ instantiate_class_template_1 (tree type)
 		  --processing_template_decl;
 		}
 	      else if (!CLASSTYPE_USE_TEMPLATE (friend_type)
-		       && DECL_HIDDEN_P (TYPE_NAME (friend_type)))
+		       && TYPE_HIDDEN_P (friend_type))
 		{
 		  /* friend class C;
 
