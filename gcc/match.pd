@@ -1090,6 +1090,13 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	   || TYPE_OVERFLOW_WRAPS (TREE_TYPE (@0))))
    (op @1 @0))))
 
+/* X == C - X can never be true if C is odd.  */
+(for cmp (eq ne)
+ (simplify
+  (cmp:c (convert? @0) (convert1? (minus INTEGER_CST@1 (convert2? @0))))
+  (if (TREE_INT_CST_LOW (@1) & 1)
+   { constant_boolean_node (cmp == NE_EXPR, type); })))
+
 /* ((X inner_op C0) outer_op C1)
    With X being a tree where value_range has reasoned certain bits to always be
    zero throughout its computed value range,

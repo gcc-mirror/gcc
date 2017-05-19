@@ -159,6 +159,7 @@ typedef struct GTY(()) machine_function
   /* The components already handled by separate shrink-wrapping, which should
      not be considered by the prologue and epilogue.  */
   bool gpr_is_wrapped_separately[32];
+  bool fpr_is_wrapped_separately[32];
   bool lr_is_wrapped_separately;
 } machine_function;
 
@@ -29221,17 +29222,25 @@ rs6000_get_separate_components (void)
   if (TARGET_SPE_ABI)
     return NULL;
 
-  sbitmap components = sbitmap_alloc (32);
-  bitmap_clear (components);
-
   gcc_assert (!(info->savres_strategy & SAVE_MULTIPLE)
 	      && !(info->savres_strategy & REST_MULTIPLE));
+
+  /* Component 0 is the save/restore of LR (done via GPR0).
+     Components 13..31 are the save/restore of GPR13..GPR31.
+     Components 46..63 are the save/restore of FPR14..FPR31.  */
+
+  int n_components = 64;
+
+  sbitmap components = sbitmap_alloc (n_components);
+  bitmap_clear (components);
+
+  int reg_size = TARGET_32BIT ? 4 : 8;
+  int fp_reg_size = 8;
 
   /* The GPRs we need saved to the frame.  */
   if ((info->savres_strategy & SAVE_INLINE_GPRS)
       && (info->savres_strategy & REST_INLINE_GPRS))
     {
-      int reg_size = TARGET_32BIT ? 4 : 8;
       int offset = info->gp_save_offset;
       if (info->push_p)
 	offset += info->total_size;
@@ -29255,6 +29264,23 @@ rs6000_get_separate_components (void)
       || (flag_pic == 1 && DEFAULT_ABI == ABI_V4)
       || (flag_pic && DEFAULT_ABI == ABI_DARWIN))
     bitmap_clear_bit (components, RS6000_PIC_OFFSET_TABLE_REGNUM);
+
+  /* The FPRs we need saved to the frame.  */
+  if ((info->savres_strategy & SAVE_INLINE_FPRS)
+      && (info->savres_strategy & REST_INLINE_FPRS))
+    {
+      int offset = info->fp_save_offset;
+      if (info->push_p)
+	offset += info->total_size;
+
+      for (unsigned regno = info->first_fp_reg_save; regno < 64; regno++)
+	{
+	  if (IN_RANGE (offset, -0x8000, 0x7fff) && save_reg_p (regno))
+	    bitmap_set_bit (components, regno);
+
+	  offset += fp_reg_size;
+	}
+    }
 
   /* Optimize LR save and restore if we can.  This is component 0.  Any
      out-of-line register save/restore routines need LR.  */
@@ -29290,14 +29316,23 @@ rs6000_components_for_bb (basic_block bb)
   sbitmap components = sbitmap_alloc (32);
   bitmap_clear (components);
 
-  /* GPRs are used in a bb if they are in the IN, GEN, or KILL sets.  */
+  /* A register is used in a bb if it is in the IN, GEN, or KILL sets.  */
+
+  /* GPRs.  */
   for (unsigned regno = info->first_gp_reg_save; regno < 32; regno++)
     if (bitmap_bit_p (in, regno)
 	|| bitmap_bit_p (gen, regno)
 	|| bitmap_bit_p (kill, regno))
       bitmap_set_bit (components, regno);
 
-  /* LR needs to be saved around a bb if it is killed in that bb.  */
+  /* FPRs.  */
+  for (unsigned regno = info->first_fp_reg_save; regno < 64; regno++)
+    if (bitmap_bit_p (in, regno)
+	|| bitmap_bit_p (gen, regno)
+	|| bitmap_bit_p (kill, regno))
+      bitmap_set_bit (components, regno);
+
+  /* The link register.  */
   if (bitmap_bit_p (in, LR_REGNO)
       || bitmap_bit_p (gen, LR_REGNO)
       || bitmap_bit_p (kill, LR_REGNO))
@@ -29331,13 +29366,18 @@ rs6000_emit_prologue_components (sbitmap components)
   rtx ptr_reg = gen_rtx_REG (Pmode, frame_pointer_needed
 			     ? HARD_FRAME_POINTER_REGNUM
 			     : STACK_POINTER_REGNUM);
+
+  machine_mode reg_mode = Pmode;
   int reg_size = TARGET_32BIT ? 4 : 8;
+  machine_mode fp_reg_mode = (TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT)
+			     ? DFmode : SFmode;
+  int fp_reg_size = 8;
 
   /* Prologue for LR.  */
   if (bitmap_bit_p (components, 0))
     {
-      rtx reg = gen_rtx_REG (Pmode, 0);
-      rtx_insn *insn = emit_move_insn (reg, gen_rtx_REG (Pmode, LR_REGNO));
+      rtx reg = gen_rtx_REG (reg_mode, 0);
+      rtx_insn *insn = emit_move_insn (reg, gen_rtx_REG (reg_mode, LR_REGNO));
       RTX_FRAME_RELATED_P (insn) = 1;
       add_reg_note (insn, REG_CFA_REGISTER, NULL);
 
@@ -29347,7 +29387,7 @@ rs6000_emit_prologue_components (sbitmap components)
 
       insn = emit_insn (gen_frame_store (reg, ptr_reg, offset));
       RTX_FRAME_RELATED_P (insn) = 1;
-      rtx lr = gen_rtx_REG (Pmode, LR_REGNO);
+      rtx lr = gen_rtx_REG (reg_mode, LR_REGNO);
       rtx mem = copy_rtx (SET_DEST (single_set (insn)));
       add_reg_note (insn, REG_CFA_OFFSET, gen_rtx_SET (mem, lr));
     }
@@ -29361,7 +29401,7 @@ rs6000_emit_prologue_components (sbitmap components)
     {
       if (bitmap_bit_p (components, i))
 	{
-	  rtx reg = gen_rtx_REG (Pmode, i);
+	  rtx reg = gen_rtx_REG (reg_mode, i);
 	  rtx_insn *insn = emit_insn (gen_frame_store (reg, ptr_reg, offset));
 	  RTX_FRAME_RELATED_P (insn) = 1;
 	  rtx set = copy_rtx (single_set (insn));
@@ -29369,6 +29409,25 @@ rs6000_emit_prologue_components (sbitmap components)
 	}
 
       offset += reg_size;
+    }
+
+  /* Prologue for the FPRs.  */
+  offset = info->fp_save_offset;
+  if (info->push_p)
+    offset += info->total_size;
+
+  for (int i = info->first_fp_reg_save; i < 64; i++)
+    {
+      if (bitmap_bit_p (components, i))
+	{
+	  rtx reg = gen_rtx_REG (fp_reg_mode, i);
+	  rtx_insn *insn = emit_insn (gen_frame_store (reg, ptr_reg, offset));
+	  RTX_FRAME_RELATED_P (insn) = 1;
+	  rtx set = copy_rtx (single_set (insn));
+	  add_reg_note (insn, REG_CFA_OFFSET, set);
+	}
+
+      offset += fp_reg_size;
     }
 }
 
@@ -29380,10 +29439,34 @@ rs6000_emit_epilogue_components (sbitmap components)
   rtx ptr_reg = gen_rtx_REG (Pmode, frame_pointer_needed
 			     ? HARD_FRAME_POINTER_REGNUM
 			     : STACK_POINTER_REGNUM);
+
+  machine_mode reg_mode = Pmode;
   int reg_size = TARGET_32BIT ? 4 : 8;
 
+  machine_mode fp_reg_mode = (TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT)
+			     ? DFmode : SFmode;
+  int fp_reg_size = 8;
+
+  /* Epilogue for the FPRs.  */
+  int offset = info->fp_save_offset;
+  if (info->push_p)
+    offset += info->total_size;
+
+  for (int i = info->first_fp_reg_save; i < 64; i++)
+    {
+      if (bitmap_bit_p (components, i))
+	{
+	  rtx reg = gen_rtx_REG (fp_reg_mode, i);
+	  rtx_insn *insn = emit_insn (gen_frame_load (reg, ptr_reg, offset));
+	  RTX_FRAME_RELATED_P (insn) = 1;
+	  add_reg_note (insn, REG_CFA_RESTORE, reg);
+	}
+
+      offset += fp_reg_size;
+    }
+
   /* Epilogue for the GPRs.  */
-  int offset = info->gp_save_offset;
+  offset = info->gp_save_offset;
   if (info->push_p)
     offset += info->total_size;
 
@@ -29391,7 +29474,7 @@ rs6000_emit_epilogue_components (sbitmap components)
     {
       if (bitmap_bit_p (components, i))
 	{
-	  rtx reg = gen_rtx_REG (Pmode, i);
+	  rtx reg = gen_rtx_REG (reg_mode, i);
 	  rtx_insn *insn = emit_insn (gen_frame_load (reg, ptr_reg, offset));
 	  RTX_FRAME_RELATED_P (insn) = 1;
 	  add_reg_note (insn, REG_CFA_RESTORE, reg);
@@ -29407,7 +29490,7 @@ rs6000_emit_epilogue_components (sbitmap components)
       if (info->push_p)
 	offset += info->total_size;
 
-      rtx reg = gen_rtx_REG (Pmode, 0);
+      rtx reg = gen_rtx_REG (reg_mode, 0);
       rtx_insn *insn = emit_insn (gen_frame_load (reg, ptr_reg, offset));
 
       rtx lr = gen_rtx_REG (Pmode, LR_REGNO);
@@ -29427,6 +29510,10 @@ rs6000_set_handled_components (sbitmap components)
     if (bitmap_bit_p (components, i))
       cfun->machine->gpr_is_wrapped_separately[i] = true;
 
+  for (int i = info->first_fp_reg_save; i < 64; i++)
+    if (bitmap_bit_p (components, i))
+      cfun->machine->fpr_is_wrapped_separately[i - 32] = true;
+
   if (bitmap_bit_p (components, 0))
     cfun->machine->lr_is_wrapped_separately = true;
 }
@@ -29439,6 +29526,9 @@ rs6000_emit_prologue (void)
   rs6000_stack_t *info = rs6000_stack_info ();
   machine_mode reg_mode = Pmode;
   int reg_size = TARGET_32BIT ? 4 : 8;
+  machine_mode fp_reg_mode = (TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT)
+			     ? DFmode : SFmode;
+  int fp_reg_size = 8;
   rtx sp_reg_rtx = gen_rtx_REG (Pmode, STACK_POINTER_REGNUM);
   rtx frame_reg_rtx = sp_reg_rtx;
   unsigned int cr_save_regno;
@@ -29736,15 +29826,16 @@ rs6000_emit_prologue (void)
      it ourselves.  Otherwise, call function.  */
   if (!WORLD_SAVE_P (info) && (strategy & SAVE_INLINE_FPRS))
     {
-      int i;
-      for (i = 0; i < 64 - info->first_fp_reg_save; i++)
-	if (save_reg_p (info->first_fp_reg_save + i))
-	  emit_frame_save (frame_reg_rtx,
-			   (TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT
-			    ? DFmode : SFmode),
-			   info->first_fp_reg_save + i,
-			   info->fp_save_offset + frame_off + 8 * i,
-			   sp_off - frame_off);
+      int offset = info->fp_save_offset + frame_off;
+      for (int i = info->first_fp_reg_save; i < 64; i++)
+	{
+	  if (save_reg_p (i)
+	      && !cfun->machine->fpr_is_wrapped_separately[i - 32])
+	    emit_frame_save (frame_reg_rtx, fp_reg_mode, i, offset,
+			     sp_off - frame_off);
+
+	  offset += fp_reg_size;
+	}
     }
   else if (!WORLD_SAVE_P (info) && info->first_fp_reg_save != 64)
     {
@@ -30818,6 +30909,9 @@ rs6000_emit_epilogue (int sibcall)
   rtx cr_save_reg = NULL_RTX;
   machine_mode reg_mode = Pmode;
   int reg_size = TARGET_32BIT ? 4 : 8;
+  machine_mode fp_reg_mode = (TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT)
+			     ? DFmode : SFmode;
+  int fp_reg_size = 8;
   int i;
   bool exit_func;
   unsigned ptr_regno;
@@ -31564,17 +31658,23 @@ rs6000_emit_epilogue (int sibcall)
 
   /* Restore fpr's if we need to do it without calling a function.  */
   if (restoring_FPRs_inline)
-    for (i = 0; i < 64 - info->first_fp_reg_save; i++)
-      if (save_reg_p (info->first_fp_reg_save + i))
+    {
+      int offset = info->fp_save_offset + frame_off;
+      for (i = info->first_fp_reg_save; i < 64; i++)
 	{
-	  rtx reg = gen_rtx_REG ((TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT
-				  ? DFmode : SFmode),
-				 info->first_fp_reg_save + i);
-	  emit_insn (gen_frame_load (reg, frame_reg_rtx,
-				     info->fp_save_offset + frame_off + 8 * i));
-	  if (DEFAULT_ABI == ABI_V4 || flag_shrink_wrap)
-	    cfa_restores = alloc_reg_note (REG_CFA_RESTORE, reg, cfa_restores);
+	  if (save_reg_p (i)
+	      && !cfun->machine->fpr_is_wrapped_separately[i - 32])
+	    {
+	      rtx reg = gen_rtx_REG (fp_reg_mode, i);
+	      emit_insn (gen_frame_load (reg, frame_reg_rtx, offset));
+	      if (DEFAULT_ABI == ABI_V4 || flag_shrink_wrap)
+		cfa_restores = alloc_reg_note (REG_CFA_RESTORE, reg,
+					       cfa_restores);
+	    }
+
+	  offset += fp_reg_size;
 	}
+    }
 
   /* If we saved cr, restore it here.  Just those that were used.  */
   if (info->cr_save_p)

@@ -37,7 +37,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimplify.h"
 #include "intl.h"
 
-/* Id for dumping the class heirarchy.  */
+/* Id for dumping the class hierarchy.  */
 int class_dump_id;
  
 /* The number of nested classes being processed.  If we are not in the

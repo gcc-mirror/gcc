@@ -2170,9 +2170,9 @@ ovl_copy (tree ovl)
 tree
 ovl_insert (tree fn, tree maybe_ovl, bool using_p)
 {
+  bool copying = false; /* Checking use only.  */
   bool hidden_p = DECL_HIDDEN_P (fn);
   int weight = hidden_p * 4 + using_p * 2 + DECL_MODULE_EXPORT_P (fn);
-  bool copying = false;
 
   tree result = NULL_TREE;
   tree insert_after = NULL_TREE;
@@ -2191,7 +2191,7 @@ ovl_insert (tree fn, tree maybe_ovl, bool using_p)
 	  copying = true;
 	  maybe_ovl = ovl_copy (maybe_ovl);
 	  if (insert_after)
-	    TREE_CHAIN (insert_after) = maybe_ovl;
+	    OVL_CHAIN (insert_after) = maybe_ovl;
 	}
       if (!result)
 	result = maybe_ovl;
@@ -2230,13 +2230,34 @@ ovl_insert (tree fn, tree maybe_ovl, bool using_p)
 
   if (insert_after)
     {
-      TREE_CHAIN (insert_after) = trail;
+      OVL_CHAIN (insert_after) = trail;
       TREE_TYPE (insert_after) = unknown_type_node;
     }
   else
     result = trail;
 
   return result;
+}
+
+/* Skip any hidden names at the beginning of OVL.   */
+
+tree
+ovl_skip_hidden (tree ovl)
+{
+  for (;
+       ovl && TREE_CODE (ovl) == OVERLOAD && OVL_HIDDEN_P (ovl);
+       ovl = OVL_CHAIN (ovl))
+    gcc_checking_assert (DECL_HIDDEN_P (OVL_FUNCTION (ovl)));
+
+  if (ovl && TREE_CODE (ovl) != OVERLOAD && DECL_HIDDEN_P (ovl))
+    {
+      /* Any hidden functions should have been wrapped in an
+	 overload, but injected friend classes will not.  */
+      gcc_checking_assert (!DECL_DECLARES_FUNCTION_P (ovl));
+      ovl = NULL_TREE;
+    }
+
+  return ovl;
 }
 
 tree
@@ -2258,16 +2279,18 @@ ovl_iterator::unhide_node (tree overload, tree node)
 }
 
 /* NODE is on the overloads of OVL.  Remove it.  If a predecessor is
-   OVL_USED we must copy OVL nodes, because those are immutable.
+   OVL_USED_P we must copy OVL nodes, because those are immutable.
    The removed node is unaltered and may continue to be iterated
-   from.  */
+   from (i.e. it is safe to remove a node from an overload one is
+   currently iterating over).  */
 
 tree
 ovl_iterator::remove_node (tree overload, tree node)
 {
-  bool copying = false;
+  bool copying = false; /* Checking use only.  */
 
   gcc_assert (TREE_CODE (node) == OVERLOAD);
+
   tree *slot = &overload;
   while (*slot != node)
     {
@@ -2308,7 +2331,7 @@ lookup_mark (tree ovl, bool val)
     LOOKUP_SEEN_P (ovl) = val;
 }
 
-/* Add a potential overload into a lookup set.  */
+/* Add a set of new FNS into a lookup.  */
 
 tree
 lookup_add (tree fns, tree lookup)
@@ -2409,27 +2432,6 @@ lookup_keep (tree lookup, bool keep)
 	OVL_FUNCTION (lookup) = ovl_cache;
 	ovl_cache = lookup;
       }
-}
-
-/* Skip any hidden names at the beginning of OVL.   */
-
-tree
-ovl_skip_hidden (tree ovl)
-{
-  for (;
-       ovl && TREE_CODE (ovl) == OVERLOAD && OVL_HIDDEN_P (ovl);
-       ovl = OVL_CHAIN (ovl))
-    gcc_checking_assert (DECL_HIDDEN_P (OVL_FUNCTION (ovl)));
-
-  if (ovl && TREE_CODE (ovl) != OVERLOAD && DECL_HIDDEN_P (ovl))
-    {
-      /* Any hidden functions should have been wrapped in an
-	 overload, but injected friend classes will not.  */
-      gcc_checking_assert (!DECL_DECLARES_FUNCTION_P (ovl));
-      ovl = NULL_TREE;
-    }
-
-  return ovl;
 }
 
 /* Returns nonzero if X is an expression for a (possibly overloaded)

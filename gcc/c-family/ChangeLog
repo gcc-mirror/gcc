@@ -1,3 +1,28 @@
+2017-05-19  Nathan Sidwell  <nathan@acm.org>
+
+	* c-opts.c (class_dump_file, class_dump_flags): Delete.
+	(c_common_parse_file): Remove class dump handling.
+	(get_dump_info): Likewise.
+
+2017-05-19  Richard Biener  <rguenther@suse.de>
+
+	PR c++/80593
+	* c-warn.c (strict_aliasing_warning): Do not warn for accesses
+	to alias-set zero memory.
+
+2017-05-18  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* c-format.c (local_tree_type_node): Add GTY attribute.
+
+2017-05-18  Marek Polacek  <polacek@redhat.com>
+
+	* c-common.c (c_common_type_for_size): Use NULL_TREE instead of 0.
+	(c_common_fixed_point_type_for_size): Likewise.
+	(c_common_type_for_mode): Likewise.
+	(shorten_compare): Likewise.
+	(c_promoting_integer_type_p): Use false/true instead of 0/1.
+	* c-pragma.c (maybe_apply_renaming_pragma): Use NULL_TREE instead of 0.
+
 2017-05-18  Marek Polacek  <polacek@redhat.com>
 
 	* c-common.c (self_promoting_args_p): Change the return type to bool.

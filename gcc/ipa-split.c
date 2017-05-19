@@ -1742,7 +1742,7 @@ execute_split_functions (void)
     }
   /* This can be relaxed; function might become inlinable after splitting
      away the uninlinable part.  */
-  if (inline_edge_summary_vec.exists ()
+  if (inline_summaries
       && !inline_summaries->get (node)->inlinable)
     {
       if (dump_file)

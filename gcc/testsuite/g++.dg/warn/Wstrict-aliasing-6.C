@@ -4,6 +4,6 @@
 int foo ()
 {
   char buf[8];
-  return *((int *)buf); /* { dg-warning "strict-aliasing" } */
+  return *((int *)buf); /* { dg-bogus "strict-aliasing" } */
 }
 

@@ -1,4 +1,42 @@
+2017-05-19  Nathan Sidwell  <nathan@acm.org>
+
+	* class.c (class_dump_id): Define.
+	(dump_class_hierarchy, dump_vtable, dump_vtt): Use it.
+	* cp-objcp-common.c (cp_register_dumps): New.
+	* cp-objcp-common.h (cp_register_dumps): Declare.
+	(LANG_HOOKS_REGISTER_DUMPS): Override.
+	* cp-tree.h (class_dump_id): Declare.
+
 2017-05-18  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-tree.h (OVL_ARG_DEPENDENT): Delete.
+	(OVL_USED_P): New.
+	(lookup_keep): Declare.
+	* name-lookup.c (add_function): Don't set OVL_ARG_DEPENDENT.
+	* pt.c (tsubst_copy): Assert lookup is persistent.
+	* semantics.c (finish_call_expr): Use lkp_iterator, call
+	lookup_keep.
+	* tree.c (ovl_copy): New.
+	(ovl_insert, ovl_iterator::remove_node): Copy immutable nodes.
+	(lookup_keep): New.
+
+	* cp-tree.h (OVL_USED): Replace with ...
+	(OVL_USING_P): ... this.
+	(ovl_iterator::using_p): Adjust.
+	* name-lookup.c (push_overloaded_decl_1,
+	do_nonmember_using_decl): Adjust.
+	* search.c (lookup_field_r): Adjust.
+	* tree.c (ovl_insert, ovl_scope): Adjust.
+
+	* cp-tree.h (lookup_add): Swap args.
+	(ovl_cons, build_overload): Delete.
+	* name-lookup.c (add_function, push_overloaded_decl_1,
+	do_nonmember_using_decl, merge_functions, remove_hidden_names):
+	Use lookup_add, ovl_insert.
+	* pt.c (check_explicit_specialization): Use lookup_add.
+	(do_class_deduction): Likewise. Refactor if.
+	* tree.c (lookup_add): Swap args.
+	(ovl_cons, build_overload): Delete.
 
 	* name-lookup.c (find_local_binding): New, broken out of ...
 	(lookup_name_innermost_nonclass_level_1): ... here.  Call it.

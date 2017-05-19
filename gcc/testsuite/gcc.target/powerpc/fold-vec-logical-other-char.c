@@ -3,7 +3,7 @@
  * vec_nand) were added as part of ISA 2.07 (P8).  */
 
 /* { dg-do compile } */
-/* { dg-require-effective-target p8vector_hw } */
+/* { dg-require-effective-target powerpc_p8vector_ok } */
 /* { dg-options "-mpower8-vector -O1" } */
 
 #include <altivec.h>

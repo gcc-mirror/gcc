@@ -12989,16 +12989,16 @@ accepted:
 
 Enable all language-specific dumps.
 
-@item class @r{(C++ only)}
-Dump class heirarchy information.  Virtual table information is emitted
+@item class
+Dump class hierarchy information.  Virtual table information is emitted
 unless '@option{slim}' is specified.  This option is applicable to C++ only.
 
-@item module @r{(C++ only)}
-Dump module information.
+@item module
+Dump module information.  This option is applicable to C++ only.
 
 @end table
 
-@item -fdump-passes
+
 @opindex fdump-passes
 Print on @file{stderr} the list of optimization passes that are turned
 on and off by the current command-line options.

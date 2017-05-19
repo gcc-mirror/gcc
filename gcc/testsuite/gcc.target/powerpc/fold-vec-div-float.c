@@ -1,9 +1,9 @@
 /* Verify that overloaded built-ins for vec_div with float
-   inputs produce the right results with -maltivec.  */
+   inputs produce the right results.  */
 
 /* { dg-do compile } */
-/* { dg-require-effective-target powerpc_altivec_ok } */
-/* { dg-options "-maltivec" } */
+/* { dg-require-effective-target powerpc_vsx_ok } */
+/* { dg-options "-mvsx" } */
 
 #include <altivec.h>
 

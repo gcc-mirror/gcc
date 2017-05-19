@@ -54,7 +54,7 @@ struct function_format_info
 };
 
 /* Initialized in init_dynamic_diag_info.  */
-static tree local_tree_type_node;
+static GTY(()) tree local_tree_type_node;
 
 static bool decode_format_attr (tree, function_format_info *, int);
 static int decode_format_type (const char *);
@@ -4211,3 +4211,5 @@ c_format_c_tests ()
 } // namespace selftest
 
 #endif /* CHECKING_P */
+
+#include "gt-c-family-c-format.h"

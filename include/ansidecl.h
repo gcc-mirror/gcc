@@ -313,6 +313,12 @@ So instead we use the macro below and test it against specific values.  */
 #define ENUM_BITFIELD(TYPE) unsigned int
 #endif
 
+#if __cpp_constexpr >= 200704
+#define CONSTEXPR constexpr
+#else
+#define CONSTEXPR
+#endif
+
 /* C++11 adds the ability to add "override" after an implementation of a
    virtual function in a subclass, to:
      (A) document that this is an override of a virtual function

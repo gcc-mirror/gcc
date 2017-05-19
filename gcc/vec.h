@@ -416,10 +416,7 @@ struct GTY((user)) vec
 struct vnull
 {
   template <typename T, typename A, typename L>
-#if __cpp_constexpr >= 200704
-  constexpr
-#endif
-  operator vec<T, A, L> () { return vec<T, A, L>(); }
+  CONSTEXPR operator vec<T, A, L> () { return vec<T, A, L>(); }
 };
 extern vnull vNULL;
 

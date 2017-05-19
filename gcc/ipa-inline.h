@@ -22,32 +22,8 @@ along with GCC; see the file COPYING3.  If not see
 #define GCC_IPA_INLINE_H
 
 #include "sreal.h"
+#include "ipa-predicate.h"
 
-
-/* Representation of inline parameters that do depend on context function is
-   inlined into (i.e. known constant values of function parameters.
-
-   Conditions that are interesting for function body are collected into CONDS
-   vector.  They are of simple for  function_param OP VAL, where VAL is
-   IPA invariant.  The conditions are then referred by predicates.  */
-
-struct GTY(()) condition
-{
-  /* If agg_contents is set, this is the offset from which the used data was
-     loaded.  */
-  HOST_WIDE_INT offset;
-  /* Size of the access reading the data (or the PARM_DECL SSA_NAME).  */
-  HOST_WIDE_INT size;
-  tree val;
-  int operand_num;
-  ENUM_BITFIELD(tree_code) code : 16;
-  /* Set if the used data were loaded from an aggregate parameter or from
-     data received by reference.  */
-  unsigned agg_contents : 1;
-  /* If agg_contents is set, this differentiates between loads from data
-     passed by reference and by value.  */
-  unsigned by_ref : 1;
-};
 
 /* Inline hints are reasons why inline heuristics should preffer inlining given
    function.  They are represtented as bitmap of the following values.  */
@@ -78,25 +54,19 @@ enum inline_hints_vals {
   /* We know that the callee is hot by profile.  */
   INLINE_HINT_known_hot = 256
 };
+
 typedef int inline_hints;
 
+/* Simple description of whether a memory load or a condition refers to a load
+   from an aggregate and if so, how and where from in the aggregate.
+   Individual fields have the same meaning like fields with the same name in
+   struct condition.  */
 
-typedef vec<condition, va_gc> *conditions;
-
-/* Representation of predicates i.e. formulas using conditions defined
-   above.  Predicates are simple logical formulas in conjunctive-disjunctive
-   form.
-
-   Predicate is array of clauses terminated by 0.  Every clause must be true
-   in order to make predicate true.
-   Clauses are represented as bitmaps of conditions. One of conditions
-   must be true in order for clause to be true.  */
-
-#define MAX_CLAUSES 8
-typedef unsigned int clause_t;
-struct GTY(()) predicate
+struct agg_position_info
 {
-  clause_t clause[MAX_CLAUSES + 1];
+  HOST_WIDE_INT offset;
+  bool agg_contents;
+  bool by_ref;
 };
 
 /* Represnetation of function body size and time depending on the inline
@@ -108,11 +78,11 @@ struct GTY(()) predicate
 struct GTY(()) size_time_entry
 {
   /* Predicate for code to be executed.  */
-  struct predicate exec_predicate;
+  predicate exec_predicate;
   /* Predicate for value to be constant and optimized out in a specialized copy.
      When deciding on specialization this makes it possible to see how much
      the executed code paths will simplify.  */
-  struct predicate nonconst_predicate;
+  predicate nonconst_predicate;
   int size;
   sreal GTY((skip)) time;
 };
@@ -161,12 +131,12 @@ struct GTY(()) inline_summary
 
   /* Predicate on when some loop in the function becomes to have known
      bounds.   */
-  struct predicate * GTY((skip)) loop_iterations;
+  predicate * GTY((skip)) loop_iterations;
   /* Predicate on when some loop in the function becomes to have known
      stride.   */
-  struct predicate * GTY((skip)) loop_stride;
+  predicate * GTY((skip)) loop_stride;
   /* Predicate on when some array indexes become constants.  */
-  struct predicate * GTY((skip)) array_index;
+  predicate * GTY((skip)) array_index;
   /* Estimated growth for inlining all copies of the function before start
      of small functions inlining.
      This value will get out of date as the callers are duplicated, but
@@ -212,38 +182,42 @@ public:
 
 extern GTY(()) function_summary <inline_summary *> *inline_summaries;
 
-/* Information kept about parameter of call site.  */
-struct inline_param_summary
-{
-  /* REG_BR_PROB_BASE based probability that parameter will change in between
-     two invocation of the calls.
-     I.e. loop invariant parameters
-     REG_BR_PROB_BASE/estimated_iterations and regular
-     parameters REG_BR_PROB_BASE.
-
-     Value 0 is reserved for compile time invariants. */
-  int change_prob;
-};
-
 /* Information kept about callgraph edges.  */
-struct inline_edge_summary
+struct ipa_call_summary
 {
+  class predicate *predicate;
+  /* Vector indexed by parameters.  */
+  vec<inline_param_summary> param;
   /* Estimated size and time of the call statement.  */
   int call_stmt_size;
   int call_stmt_time;
   /* Depth of loop nest, 0 means no nesting.  */
-  unsigned short int loop_depth;
-  struct predicate *predicate;
-  /* Array indexed by parameters.
-     0 means that parameter change all the time, REG_BR_PROB_BASE means
-     that parameter is constant.  */
-  vec<inline_param_summary> param;
+  unsigned int loop_depth;
+  
+  /* Keep all field empty so summary dumping works during its computation.
+     This is useful for debugging.  */
+  ipa_call_summary ()
+    : predicate (NULL), param (vNULL), call_stmt_size (0), call_stmt_time (0),
+      loop_depth (0)
+    {
+    }
 };
 
-/* Need a typedef for inline_edge_summary because of inline function
-   'inline_edge_summary' below.  */
-typedef struct inline_edge_summary inline_edge_summary_t;
-extern vec<inline_edge_summary_t> inline_edge_summary_vec;
+class ipa_call_summary_t: public call_summary <ipa_call_summary *>
+{
+public:
+  ipa_call_summary_t (symbol_table *symtab, bool ggc):
+    call_summary <ipa_call_summary *> (symtab, ggc) {}
+
+  /* Hook that is called by summary when an edge is duplicated.  */
+  virtual void remove (cgraph_edge *cs, ipa_call_summary *);
+  /* Hook that is called by summary when an edge is duplicated.  */
+  virtual void duplicate (cgraph_edge *src, cgraph_edge *dst,
+			  ipa_call_summary *src_data,
+			  ipa_call_summary *dst_data);
+};
+
+extern call_summary <ipa_call_summary *> *ipa_call_summaries;
 
 /* Data we cache about callgraph edges during inlining to avoid expensive
    re-computations during the greedy algorithm.  */
@@ -299,12 +273,6 @@ void clone_inlined_nodes (struct cgraph_edge *e, bool, bool, int *,
 extern int ncalls_inlined;
 extern int nfunctions_inlined;
 
-static inline struct inline_edge_summary *
-inline_edge_summary (struct cgraph_edge *edge)
-{
-  return &inline_edge_summary_vec[edge->uid];
-}
-
 
 /* Return estimated size of the inline sequence of EDGE.  */
 
@@ -323,10 +291,10 @@ estimate_edge_size (struct cgraph_edge *edge)
 static inline int
 estimate_edge_growth (struct cgraph_edge *edge)
 {
-  gcc_checking_assert (inline_edge_summary (edge)->call_stmt_size
+  gcc_checking_assert (ipa_call_summaries->get (edge)->call_stmt_size
 		       || !edge->callee->analyzed);
   return (estimate_edge_size (edge)
-	  - inline_edge_summary (edge)->call_stmt_size);
+	  - ipa_call_summaries->get (edge)->call_stmt_size);
 }
 
 /* Return estimated callee runtime increase after inlining

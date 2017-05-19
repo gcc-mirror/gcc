@@ -8774,7 +8774,7 @@ set_nonincremental_init_from_string (tree str,
   constructor_incremental = 0;
 }
 
-/* Return value of FIELD in pending initializer or zero if the field was
+/* Return value of FIELD in pending initializer or NULL_TREE if the field was
    not initialized yet.  */
 
 static tree
@@ -8826,7 +8826,7 @@ find_init_member (tree field, struct obstack * braced_init_obstack)
 	  && (constructor_elements->last ().index == field))
 	return constructor_elements->last ().value;
     }
-  return 0;
+  return NULL_TREE;
 }
 
 /* "Output" the next constructor element.
@@ -14007,7 +14007,7 @@ c_build_va_arg (location_t loc1, tree expr, location_t loc2, tree type)
 }
 
 /* Return truthvalue of whether T1 is the same tree structure as T2.
-   Return 1 if they are the same. Return 0 if they are different.  */
+   Return 1 if they are the same. Return false if they are different.  */
 
 bool
 c_tree_equal (tree t1, tree t2)

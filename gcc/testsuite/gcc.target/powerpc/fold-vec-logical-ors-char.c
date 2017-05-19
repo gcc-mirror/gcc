@@ -3,10 +3,9 @@
 
 /* { dg-do compile } */
 /* { dg-require-effective-target powerpc_vsx_ok } */
-/* { dg-options "-maltivec -O1" } */
+/* { dg-options "-mvsx -O1" } */
 
 #include <altivec.h>
-
 
 vector signed char
 test1_or (vector bool char x, vector signed char y)
