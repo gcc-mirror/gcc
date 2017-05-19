@@ -183,24 +183,33 @@ public:
 extern GTY(()) function_summary <inline_summary *> *inline_summaries;
 
 /* Information kept about callgraph edges.  */
-struct inline_edge_summary
+struct ipa_call_summary
 {
-  /* Estimated size and time of the call statement.  */
-  int call_stmt_size;
-  int call_stmt_time;
-  /* Depth of loop nest, 0 means no nesting.  */
-  unsigned short int loop_depth;
   class predicate *predicate;
-  /* Array indexed by parameters.
-     0 means that parameter change all the time, REG_BR_PROB_BASE means
-     that parameter is constant.  */
+  /* Vector indexed by parameters.  */
   vec<inline_param_summary> param;
+  /* Estimated size and time of the call statement.  */
+  unsigned int call_stmt_size;
+  unsigned int call_stmt_time;
+  /* Depth of loop nest, 0 means no nesting.  */
+  unsigned int loop_depth;
 };
 
-/* Need a typedef for inline_edge_summary because of inline function
-   'inline_edge_summary' below.  */
-typedef struct inline_edge_summary inline_edge_summary_t;
-extern vec<inline_edge_summary_t> inline_edge_summary_vec;
+class ipa_call_summary_t: public call_summary <ipa_call_summary *>
+{
+public:
+  ipa_call_summary_t (symbol_table *symtab, bool ggc):
+    call_summary <ipa_call_summary *> (symtab, ggc) {}
+
+  /* Hook that is called by summary when an edge is duplicated.  */
+  virtual void remove (cgraph_edge *cs, ipa_call_summary *);
+  /* Hook that is called by summary when an edge is duplicated.  */
+  virtual void duplicate (cgraph_edge *src, cgraph_edge *dst,
+			  ipa_call_summary *src_data,
+			  ipa_call_summary *dst_data);
+};
+
+extern call_summary <ipa_call_summary *> *ipa_call_summaries;
 
 /* Data we cache about callgraph edges during inlining to avoid expensive
    re-computations during the greedy algorithm.  */
@@ -256,12 +265,6 @@ void clone_inlined_nodes (struct cgraph_edge *e, bool, bool, int *,
 extern int ncalls_inlined;
 extern int nfunctions_inlined;
 
-static inline struct inline_edge_summary *
-inline_edge_summary (struct cgraph_edge *edge)
-{
-  return &inline_edge_summary_vec[edge->uid];
-}
-
 
 /* Return estimated size of the inline sequence of EDGE.  */
 
@@ -280,10 +283,10 @@ estimate_edge_size (struct cgraph_edge *edge)
 static inline int
 estimate_edge_growth (struct cgraph_edge *edge)
 {
-  gcc_checking_assert (inline_edge_summary (edge)->call_stmt_size
+  gcc_checking_assert (ipa_call_summaries->get (edge)->call_stmt_size
 		       || !edge->callee->analyzed);
   return (estimate_edge_size (edge)
-	  - inline_edge_summary (edge)->call_stmt_size);
+	  - ipa_call_summaries->get (edge)->call_stmt_size);
 }
 
 /* Return estimated callee runtime increase after inlining

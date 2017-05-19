@@ -698,7 +698,7 @@ symbol_table::remove_unreachable_nodes (FILE *file)
   symtab_node::checking_verify_symtab_nodes ();
 
   /* If we removed something, perhaps profile could be improved.  */
-  if (changed && optimize && inline_edge_summary_vec.exists ())
+  if (changed && optimize && ipa_call_summaries)
     FOR_EACH_DEFINED_FUNCTION (node)
       ipa_propagate_frequency (node);
 
