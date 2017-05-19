@@ -2677,7 +2677,7 @@ build_actual_constructor (gfc_structure_ctor_component **comp_head,
 	  else if (!comp->attr.artificial)
 	    {
 	      gfc_error ("No initializer for component %qs given in the"
-			 " structure constructor at %C!", comp->name);
+			 " structure constructor at %C", comp->name);
 	      return false;
 	    }
 	}
@@ -2760,13 +2760,13 @@ gfc_convert_to_structure_constructor (gfc_expr *e, gfc_symbol *sym, gfc_expr **c
 	    {
 	      if (last_name)
 		gfc_error ("Component initializer without name after component"
-			   " named %s at %L!", last_name,
+			   " named %s at %L", last_name,
 			   actual->expr ? &actual->expr->where
 					: &gfc_current_locus);
 	      else
 		gfc_error ("Too many components in structure constructor at "
-			   "%L!", actual->expr ? &actual->expr->where
-					       : &gfc_current_locus);
+			   "%L", actual->expr ? &actual->expr->where
+					      : &gfc_current_locus);
 	      goto cleanup;
 	    }
 
@@ -2802,7 +2802,7 @@ gfc_convert_to_structure_constructor (gfc_expr *e, gfc_symbol *sym, gfc_expr **c
 	  if (!strcmp (comp_iter->name, comp_tail->name))
 	    {
 	      gfc_error ("Component %qs is initialized twice in the structure"
-			 " constructor at %L!", comp_tail->name,
+			 " constructor at %L", comp_tail->name,
 			 comp_tail->val ? &comp_tail->where
 					: &gfc_current_locus);
 	      goto cleanup;
@@ -2814,7 +2814,7 @@ gfc_convert_to_structure_constructor (gfc_expr *e, gfc_symbol *sym, gfc_expr **c
 	  && gfc_is_coindexed (comp_tail->val))
      	{
 	  gfc_error ("Coindexed expression to pointer component %qs in "
-		     "structure constructor at %L!", comp_tail->name,
+		     "structure constructor at %L", comp_tail->name,
 		     &comp_tail->where);
 	  goto cleanup;
 	}

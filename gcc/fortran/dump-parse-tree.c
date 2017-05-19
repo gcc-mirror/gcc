@@ -573,7 +573,7 @@ show_expr (gfc_expr *p)
 
 	default:
 	  gfc_internal_error
-	    ("show_expr(): Bad intrinsic in expression!");
+	    ("show_expr(): Bad intrinsic in expression");
 	}
 
       show_expr (p->value.op.op1);

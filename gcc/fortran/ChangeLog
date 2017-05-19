@@ -1,3 +1,13 @@
+2017-05-19  David Malcolm  <dmalcolm@redhat.com>
+
+	PR fortran/79852
+	* bbt.c (insert): Remove trailing exclamation mark from message.
+	* decl.c (gfc_match_final_decl): Likewise.
+	* dump-parse-tree.c (show_expr): Likewise.
+	* module.c (gfc_use_module): Likewise.
+	* primary.c (build_actual_constructor): Likewise.
+	(gfc_convert_to_structure_constructor): Likewise.
+
 2017-05-19  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* gfortran.h (enum gfc_omp_default_sharing): Add
