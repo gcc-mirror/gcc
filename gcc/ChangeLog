@@ -1,3 +1,9 @@
+2017-05-19  Richard Biener  <rguenther@suse.de>
+
+	PR build/80821
+	* genmatch.c (dt_node::gen_kids_1): Add missing scope around
+	predicate evaluation.
+
 2017-05-19  Jan Hubicka  <hubicka@ucw.cz>
 
 	* ipa-inline.h (ipa_call_summary): Turn sizes into signed;
