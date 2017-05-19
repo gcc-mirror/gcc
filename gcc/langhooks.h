@@ -326,6 +326,9 @@ struct lang_hooks
      global diagnostic context structure.  */
   void (*initialize_diagnostics) (diagnostic_context *);
 
+  /* Register language-specific dumps.  */
+  void (*register_dumps) (gcc::dump_manager *);
+
   /* Return true if a warning should be given about option OPTION,
      which is for the wrong language, false if it should be quietly
      ignored.  */

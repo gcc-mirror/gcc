@@ -39,6 +39,7 @@ extern void lhd_do_nothing (void);
 extern void lhd_do_nothing_t (tree);
 extern void lhd_do_nothing_f (struct function *);
 extern tree lhd_pass_through_t (tree);
+extern void lhd_register_dumps (gcc::dump_manager *);
 extern bool lhd_post_options (const char **);
 extern alias_set_type lhd_get_alias_set (tree);
 extern tree lhd_return_null_tree (tree);
@@ -97,6 +98,7 @@ extern int lhd_type_dwarf_attribute (const_tree, int);
 #define LANG_HOOKS_INIT_OPTIONS_STRUCT	hook_void_gcc_optionsp
 #define LANG_HOOKS_INIT_OPTIONS		lhd_init_options
 #define LANG_HOOKS_INITIALIZE_DIAGNOSTICS lhd_initialize_diagnostics
+#define LANG_HOOKS_REGISTER_DUMPS	lhd_register_dumps
 #define LANG_HOOKS_COMPLAIN_WRONG_LANG_P lhd_complain_wrong_lang_p
 #define LANG_HOOKS_HANDLE_OPTION	lhd_handle_option
 #define LANG_HOOKS_POST_OPTIONS		lhd_post_options
@@ -294,6 +296,7 @@ extern void lhd_end_section (void);
   LANG_HOOKS_INIT_OPTIONS_STRUCT, \
   LANG_HOOKS_INIT_OPTIONS, \
   LANG_HOOKS_INITIALIZE_DIAGNOSTICS, \
+  LANG_HOOKS_REGISTER_DUMPS, \
   LANG_HOOKS_COMPLAIN_WRONG_LANG_P, \
   LANG_HOOKS_HANDLE_OPTION, \
   LANG_HOOKS_POST_OPTIONS, \

@@ -352,6 +352,15 @@ cp_pushdecl (tree decl)
   return pushdecl (decl);
 }
 
+/* Register c++-specific dumps.  */
+
+void
+cp_register_dumps (gcc::dump_manager *dumps)
+{
+  class_dump_id = dumps->dump_register
+    (".class", "lang-class", "lang-class", DK_lang, OPTGROUP_NONE, false);
+}
+
 void
 cp_common_init_ts (void)
 {

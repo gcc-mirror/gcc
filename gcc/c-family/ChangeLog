@@ -1,3 +1,9 @@
+2017-05-19  Nathan Sidwell  <nathan@acm.org>
+
+	* c-opts.c (class_dump_file, class_dump_flags): Delete.
+	(c_common_parse_file): Remove class dump handling.
+	(get_dump_info): Likewise.
+
 2017-05-19  Richard Biener  <rguenther@suse.de>
 
 	PR c++/80593

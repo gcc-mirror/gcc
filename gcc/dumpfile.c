@@ -74,11 +74,10 @@ static struct dump_file_info dump_files[TDI_end] =
   dump_file_info (".type-inheritance", "ipa-type-inheritance", DK_ipa, 0),
   dump_file_info (".ipa-clones", "ipa-clones", DK_ipa, 0),
   dump_file_info (".tu", "translation-unit", DK_lang, 1),
-  dump_file_info (".class", "class-hierarchy", DK_lang, 2),
   dump_file_info (".original", "tree-original", DK_tree, 3),
   dump_file_info (".gimple", "tree-gimple", DK_tree, 4),
   dump_file_info (".nested", "tree-nested", DK_tree, 5),
-#define FIRST_AUTO_NUMBERED_DUMP 6
+#define FIRST_AUTO_NUMBERED_DUMP 4
 
   dump_file_info (NULL, "lang-all", DK_lang, 0),
   dump_file_info (NULL, "tree-all", DK_tree, 0),
