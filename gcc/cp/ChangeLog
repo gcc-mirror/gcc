@@ -1,3 +1,12 @@
+2017-05-19  Nathan Sidwell  <nathan@acm.org>
+
+	* class.c (class_dump_id): Define.
+	(dump_class_hierarchy, dump_vtable, dump_vtt): Use it.
+	* cp-objcp-common.c (cp_register_dumps): New.
+	* cp-objcp-common.h (cp_register_dumps): Declare.
+	(LANG_HOOKS_REGISTER_DUMPS): Override.
+	* cp-tree.h (class_dump_id): Declare.
+
 2017-05-18  Nathan Sidwell  <nathan@acm.org>
 
 	* cp-tree.h (OVL_ARG_DEPENDENT): Delete.

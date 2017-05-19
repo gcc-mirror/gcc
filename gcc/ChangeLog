@@ -1,5 +1,19 @@
 2017-05-19  Nathan Sidwell  <nathan@acm.org>
 
+	LANG_HOOK_REGISTER_DUMPS
+	* toplev.c (general_init): Call register dump lang hook.
+	* doc/invoke.texi: Document -fdump-lang option family.
+	* dumpfile.c (dump_files): Remove class dump here.
+	(FIRST_AUTO_NUMBERED_DUMP): Adjust.
+	* dumpfile.h (tree_dump_index): Remove TDI_class.
+	* langhooks-def.h (lhd_register_dumps): Declare.
+	(LANG_HOOKS_REGISTER_DUMPS): Define.
+	(LANG_HOOKS_INITIALIZER): Add it.
+	* langhooks.c (lhd_register_dumps): Define.
+	* langhooks.h (struct lang_hooks): Add register_dumps.
+
+2017-05-19  Nathan Sidwell  <nathan@acm.org>
+
 	* context.h (context::set_passes): New.
 	* context.c (context::context): Do not create pass manager.
 	* toplev.c (general_init): Create pass manager here.

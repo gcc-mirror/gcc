@@ -1,3 +1,7 @@
+2017-05-19  Nathan Sidwell  <nathan@acm.org>
+
+	* g++.dg/inherit/covariant7.C: Adjust.
+
 2017-05-19  Prakhar Bahuguna  <prakhar.bahuguna@arm.com>
 
 	* gcc.target/arm/tls-disable-literal-pool.c: Change

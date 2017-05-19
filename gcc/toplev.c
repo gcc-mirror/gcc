@@ -1158,6 +1158,10 @@ general_init (const char *argv0, bool init_signals)
      dump manager.  */
   g = new gcc::context ();
 
+  /* Allow languages to register their dumps before the optimization
+     passes.  */
+  lang_hooks.register_dumps (g->get_dumps ());
+
   /* Create the passes.  */
   g->set_passes (new gcc::pass_manager (g));
 

@@ -37,6 +37,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimplify.h"
 #include "intl.h"
 
+/* Id for dumping the class hierarchy.  */
+int class_dump_id;
+ 
 /* The number of nested classes being processed.  If we are not in the
    scope of any class, this is zero.  */
 
@@ -8914,11 +8917,10 @@ static void
 dump_class_hierarchy (tree t)
 {
   dump_flags_t flags;
-  FILE *stream = get_dump_info (TDI_class, &flags);
-
-  if (stream)
+  if (FILE *stream = dump_begin (class_dump_id, &flags))
     {
       dump_class_hierarchy_1 (stream, flags, t);
+      dump_end (class_dump_id, stream);
     }
 }
 
@@ -8948,7 +8950,7 @@ static void
 dump_vtable (tree t, tree binfo, tree vtable)
 {
   dump_flags_t flags;
-  FILE *stream = get_dump_info (TDI_class, &flags);
+  FILE *stream = dump_begin (class_dump_id, &flags);
 
   if (!stream)
     return;
@@ -8971,13 +8973,15 @@ dump_vtable (tree t, tree binfo, tree vtable)
       dump_array (stream, vtable);
       fprintf (stream, "\n");
     }
+
+  dump_end (class_dump_id, stream);
 }
 
 static void
 dump_vtt (tree t, tree vtt)
 {
   dump_flags_t flags;
-  FILE *stream = get_dump_info (TDI_class, &flags);
+  FILE *stream = dump_begin (class_dump_id, &flags);
 
   if (!stream)
     return;
@@ -8989,6 +8993,8 @@ dump_vtt (tree t, tree vtt)
       dump_array (stream, vtt);
       fprintf (stream, "\n");
     }
+
+  dump_end (class_dump_id, stream);
 }
 
 /* Dump a function or thunk and its thunkees.  */
