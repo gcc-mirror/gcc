@@ -1,3 +1,7 @@
+2017-05-19  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* gimplify.c (oacc_default_clause): Clarify.
+
 2017-05-19  Nathan Sidwell  <nathan@acm.org>
 
 	LANG_HOOK_REGISTER_DUMPS
