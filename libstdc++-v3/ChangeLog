@@ -1,3 +1,9 @@
+2017-05-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/80796
+	* include/bits/stl_algo.h (search): Add new overload for C++17.
+	* testsuite/25_algorithms/search/searcher.cc: New.
+
 2017-05-18  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/80478
