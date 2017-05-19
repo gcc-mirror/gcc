@@ -723,7 +723,7 @@ want_inline_small_function_p (struct cgraph_edge *e, bool report)
 	   && (!e->count || !e->maybe_hot_p ()))
 	   && inline_summaries->get (callee)->min_size
 		- ipa_call_summaries->get (e)->call_stmt_size
-	      > (unsigned)MAX (MAX_INLINE_INSNS_SINGLE, MAX_INLINE_INSNS_AUTO))
+	      > MAX (MAX_INLINE_INSNS_SINGLE, MAX_INLINE_INSNS_AUTO))
     {
       e->inline_failed = CIF_MAX_INLINE_INSNS_AUTO_LIMIT;
       want_inline = false;
@@ -731,7 +731,7 @@ want_inline_small_function_p (struct cgraph_edge *e, bool report)
   else if ((DECL_DECLARED_INLINE_P (callee->decl) || e->count)
 	   && inline_summaries->get (callee)->min_size
 		- ipa_call_summaries->get (e)->call_stmt_size
-	      > (unsigned)16 * MAX_INLINE_INSNS_SINGLE)
+	      > 16 * MAX_INLINE_INSNS_SINGLE)
     {
       e->inline_failed = (DECL_DECLARED_INLINE_P (callee->decl)
 			  ? CIF_MAX_INLINE_INSNS_SINGLE_LIMIT
