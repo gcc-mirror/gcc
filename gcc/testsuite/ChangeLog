@@ -1,3 +1,18 @@
+2017-05-19  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* c-c++-common/goacc/default-1.c: New file.
+	* c-c++-common/goacc/default-2.c: Likewise.
+	* c-c++-common/goacc/data-default-1.c: Remove file, including its
+	test cases in...
+	* c-c++-common/goacc/default-3.c: ... this new file, and...
+	* c-c++-common/goacc/default-4.c: ... this new file.
+	* gfortran.dg/goacc/default.f95: Remove file, including its test
+	cases in...
+	* gfortran.dg/goacc/default-1.f95: ... this new file, and...
+	* gfortran.dg/goacc/default-2.f: ... this new file.
+	* gfortran.dg/goacc/default-3.f95: New file.
+	* gfortran.dg/goacc/default-4.f: Likewise.
+
 2017-05-19  Nathan Sidwell  <nathan@acm.org>
 
 	* g++.dg/inherit/covariant7.C: Adjust.

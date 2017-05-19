@@ -1,3 +1,8 @@
+2017-05-19  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* parser.c (cp_parser_omp_clause_default): Avoid printing more
+	than one syntax error message.
+
 2017-05-19  Nathan Sidwell  <nathan@acm.org>
 
 	* class.c (class_dump_id): Define.
