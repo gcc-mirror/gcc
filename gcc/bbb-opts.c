@@ -424,7 +424,7 @@ public:
     src_mem = false;
     dst_plus = false;
     src_plus = false;
-    src_op = (rtx_code)0;
+    src_op = (rtx_code) 0;
     src_ee = false;
     src_const = false;
 
@@ -888,7 +888,7 @@ insn_info::fledder (rtx set)
   else if (GET_CODE(src) == CONST_INT)
     {
       src_const = true;
-      src_mem_addr = INTVAL(src);
+      src_intval = INTVAL(src);
     }
   if (alt_src_reg)
     src_reg = alt_src_reg;
@@ -1002,7 +1002,7 @@ void
 insn_info::plus_to_move (rtx_insn * newinsn)
 {
   insn = newinsn;
-  src_op = (rtx_code)0;
+  src_op = (rtx_code) 0;
   src_reg = XEXP(PATTERN (newinsn), 1);
   insn2index.insert (std::make_pair (insn, this));
   // usage flags did not change
@@ -1358,14 +1358,19 @@ update_insn_infos (void)
   usable_regs &= ~(1 << STACK_POINTER_REGNUM);
 }
 
+enum AbortCodes
+{
+  E_OK, E_NO_JUMP_LABEL, E_JUMP_TABLE_MISMATCH, E_JUMP_GOTO_LABEL
+};
+
 /*
  * Create a filtered view of insns - keep only those to work with.
  */
-static int
+static unsigned
 update_insns ()
 {
   rtx_insn *insn, *next;
-
+  unsigned result = 0;
   rtx jump_table = 0;
 
   clear ();
@@ -1386,54 +1391,69 @@ update_insns ()
 	    {
 	      inproepilogue = 0;
 
-	      ii.mark_jump ();
+	      if (ANY_RETURN_P(PATTERN (insn)))
+		continue;
 
-	      rtx pattern = PATTERN (insn);
-	      if (GET_CODE(pattern) == PARALLEL)
+	      ii.mark_jump ();
+	      if (jump_table)
 		{
-		  /*
-		   * Use the jump_table_data and add all to the lookup
-		   */
-		  if (jump_table == 0)
+		  if (XEXP(jump_table, 0) != insn)
 		    {
-		      // still allow if_then_else inside a parallel insn
-		      rtx ite = XVECEXP(pattern, 0, 0);
-		      if (XEXP(ite, 0) != pc_rtx || GET_CODE(XEXP(ite, 1)) != IF_THEN_ELSE)
+		      if (be_very_verbose)
 			{
 			  debug_rtx (insn);
-			  return 1; // do not optimize.
+			  debug_rtx (jump_table);
 			}
-		      rtx_insn * label = (rtx_insn *) JUMP_LABEL(insn);
-		      label2jump.insert (std::make_pair (label->u2.insn_uid, insn));
+		      result = E_JUMP_TABLE_MISMATCH;
+		      jump_table = 0;
+		      continue;
 		    }
-		  else if (XEXP(jump_table, 0) != insn)
+
+		  // -> jump_table_data
+		  rtx table = PATTERN (XEXP(jump_table, 1));
+		  if (GET_CODE(table) == ADDR_DIFF_VEC || GET_CODE(table) == ADDR_VEC)
 		    {
-		      debug_rtx (insn);
-		      return 2;
+		      int k = GET_CODE(table) == ADDR_DIFF_VEC;
+		      for (int j = 0; j < XVECLEN(table, k); ++j)
+			{
+			  rtx ref = XVECEXP(table, k, j);
+			  if (!LABEL_REF_NONLOCAL_P(ref))
+			    {
+			      rtx label = XEXP(ref, 0);
+			      label2jump.insert (std::make_pair (label->u2.insn_uid, insn));
+			    }
+			}
 		    }
 		  else
 		    {
-		      // -> jump_table_data
-		      rtx table = PATTERN (XEXP(jump_table, 1));
-		      for (int j = 0; j < XVECLEN(table, 1); ++j)
+		      if (be_very_verbose)
 			{
-			  rtx ref = XVECEXP(table, 1, j);
-			  rtx label = XEXP(ref, 0);
-			  label2jump.insert (std::make_pair (label->u2.insn_uid, insn));
+			  debug_rtx (insn);
+			  debug_rtx (jump_table);
 			}
+		      result = E_JUMP_GOTO_LABEL;
+		      jump_table = 0;
+		      continue;
 		    }
 		  jump_table = 0;
 		}
 	      else
 		{
 		  rtx_insn * label = (rtx_insn *) JUMP_LABEL(insn);
+		  if (!label)
+		    {
+		      if (be_very_verbose)
+			debug_rtx (insn);
+		      result = E_NO_JUMP_LABEL;
+		      continue;
+		    }
 		  label2jump.insert (std::make_pair (label->u2.insn_uid, insn));
 		}
-
 	    }
 	  else if (LABEL_P(insn))
 	    {
 	      ii.mark_label ();
+	      jump_table = 0;
 	    }
 	  else if (CALL_P(insn))
 	    {
@@ -1468,7 +1488,7 @@ update_insns ()
   update_insn2index ();
   update_insn_infos ();
 
-  return 0;
+  return result;
 }
 
 /* convert the lowest set bit into a register number. */
@@ -2953,7 +2973,7 @@ opt_absolute (void)
 	{
 	  insn_info & jj = infos[j];
 	  /* TODO: continue also at jump target */
-	  if (jj.is_jump())
+	  if (jj.is_jump ())
 	    continue;
 	  /* TODO: check if label is visited only from jump targets from herein. then the label is ok. */
 	  if (jj.is_label ())
@@ -3159,60 +3179,59 @@ namespace
     if (be_very_verbose)
       log ("ENTER\n");
 
-    for (;;)
+    unsigned r = update_insns ();
+    if (!r)
       {
-	int done = 1;
-	int r = update_insns ();
-	if (r)
+	for (;;)
 	  {
-	    if (be_verbose)
-	      log ("no bbb optimization code %d\n", r);
-	    return 0;
-	  }
-	if (do_opt_strcpy && opt_strcpy ())
-	  done = 0, update_insns ();
+	    int done = 1;
+	    if (do_opt_strcpy && opt_strcpy ())
+	      done = 0, update_insns ();
 
-	if (do_commute_add_move && opt_commute_add_move ())
-	  done = 0, update_insns ();
+	    if (do_commute_add_move && opt_commute_add_move ())
+	      done = 0, update_insns ();
 
-	if (do_propagate_moves && opt_propagate_moves ())
-	  done = 0, update_insns ();
+	    if (do_propagate_moves && opt_propagate_moves ())
+	      done = 0, update_insns ();
 
-	if (do_const_cmp_to_sub && opt_const_cmp_to_sub ())
-	  done = 0, update_insns ();
+	    if (do_const_cmp_to_sub && opt_const_cmp_to_sub ())
+	      done = 0, update_insns ();
 
-	if (do_merge_add && opt_merge_add ())
-	  done = 0;
+	    if (do_merge_add && opt_merge_add ())
+	      done = 0;
 
-	if (do_elim_dead_assign && opt_elim_dead_assign ())
-	  done = 0, update_insns ();
+	    if (do_elim_dead_assign && opt_elim_dead_assign ())
+	      done = 0, update_insns ();
 
-	if (do_absolute && opt_absolute ())
-	  done = 0;
+	    if (do_absolute && opt_absolute ())
+	      done = 0;
 
-	if (do_bb_reg_rename)
-	  {
-	    while (opt_reg_rename ())
+	    if (do_bb_reg_rename)
 	      {
-		update_insns ();
-		done = 0;
+		while (opt_reg_rename ())
+		  {
+		    update_insns ();
+		    done = 0;
+		  }
 	      }
+
+	    if (done)
+	      break;
 	  }
 
-	if (done)
-	  break;
+	if (do_shrink_stack_frame)
+	  {
+	    if (opt_shrink_stack_frame ())
+	      update_insns ();
+	  }
       }
-
-    if (do_shrink_stack_frame)
-      {
-	if (opt_shrink_stack_frame ())
-	  update_insns ();
-      }
+    if (r && be_verbose)
+      log ("no bbb optimization code %d\n", r);
 
     if (strchr (string_bbb_opts, 'X') || strchr (string_bbb_opts, 'x'))
       dump_insns ("bbb", strchr (string_bbb_opts, 'X'));
 
-    return 0;
+    return r;
   }
 
 }      // anon namespace

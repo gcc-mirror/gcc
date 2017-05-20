@@ -466,3 +466,14 @@ amigaos_rtx_costs (rtx, machine_mode, int, int, int *, bool);
     && GET_CODE(XEXP(XEXP(XEXP(x, 0), 1), 0)) == UNSPEC \
     )
 
+#undef TARGET_STRUCT_VALUE_RTX
+#define TARGET_STRUCT_VALUE_RTX amigaos_struct_value_rtx
+rtx
+amigaos_struct_value_rtx(tree fntype,
+			       int incoming ATTRIBUTE_UNUSED);
+
+#undef TARGET_STATIC_CHAIN
+#define TARGET_STATIC_CHAIN amigaos_static_chain_rtx
+rtx
+amigaos_static_chain_rtx(const_tree fntype,
+			       bool incoming ATTRIBUTE_UNUSED);

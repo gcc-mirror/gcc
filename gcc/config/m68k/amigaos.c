@@ -39,6 +39,7 @@
 #include "target.h"
 #include "diagnostic-core.h"
 #include "langhooks.h"
+#include "function.h"
 #include "config/m68k/amigaos.h"
 
 //#define MYDEBUG 1
@@ -49,7 +50,6 @@
 #endif
 
 //int amiga_declare_object;
-
 
 #if 0
 static int amigaos_put_in_text (tree);
@@ -436,24 +436,18 @@ amigaos_init_cumulative_args (CUMULATIVE_ARGS *cump, tree fntype, tree decl)
 	  if (!next_param && TREE_VALUE (param) != void_type_node)
 	  cum->num_of_regs = 0;
 	}
-
-      /* check for return values passed in a0 */
-      if (cum->num_of_regs)
-	{
-	  tree type = TYPE_SIZE(TREE_TYPE (DECL_RESULT (current_function_decl)));
-	  int sz = type ? TREE_INT_CST_LOW(type) : 0;
-	  if (sz > 64) /* mark a0 as already used. */
-	    cum->regs_already_used |= 1 << 8;
-	}
     }
 
-  //#if ! defined (PCC_STATIC_STRUCT_RETURN) && defined (M68K_STRUCT_VALUE_REGNUM)
-  //  /* If return value is a structure, and we pass the buffer address in a
-  //     register, we can't use this register for our own purposes.
-  //     FIXME: Something similar would be useful for static chain.  */
-  //  if (fntype && aggregate_value_p (TREE_TYPE (fntype), fntype))
-  //    cum->regs_already_used |= (1 << M68K_STRUCT_VALUE_REGNUM);
-  //#endif
+#if ! defined (PCC_STATIC_STRUCT_RETURN) && defined (M68K_STRUCT_VALUE_REGNUM)
+  /* If return value is a structure, and we pass the buffer address in a
+   register, we can't use this register for our own purposes.
+   FIXME: Something similar would be useful for static chain.  */
+  if (fntype && aggregate_value_p (TREE_TYPE(fntype), fntype))
+    cum->regs_already_used |= (1 << M68K_STRUCT_VALUE_REGNUM);
+#endif
+
+  if (fntype && DECL_STATIC_CHAIN(fntype))
+    cum->regs_already_used |= (1 << STATIC_CHAIN_REGNUM);
 
   if (fntype)
     cum->formal_type = TYPE_ARG_TYPES(fntype);
@@ -463,9 +457,8 @@ amigaos_init_cumulative_args (CUMULATIVE_ARGS *cump, tree fntype, tree decl)
   DPRINTF(("1amigaos_init_cumulative_args %p -> %d\r\n", cum, cum->num_of_regs));
 }
 
-
 int
-amigaos_function_arg_reg(unsigned regno)
+amigaos_function_arg_reg (unsigned regno)
 {
   return (mycum.regs_already_used & (1 << regno)) != 0;
 }
@@ -802,19 +795,21 @@ amiga_named_section (const char *name, unsigned int flags, tree decl ATTRIBUTE_U
 #else
 extern void
 amiga_named_section (const char *name, unsigned int flags, tree decl ATTRIBUTE_UNUSED)
-{
-  if (0 == strncmp(".text", name, 5))
+  {
+    if (0 == strncmp(".text", name, 5))
     name = ".text";
 
-  if (0 == strncmp("section ", name, 8)) {
+    if (0 == strncmp("section ", name, 8))
+      {
 //  fprintf (asm_out_file, "\t.section\t%s\n", name);
-    fprintf (asm_out_file, "\t%s\n", name);
-  } else {
-    fprintf (asm_out_file, "\tsection %s\n", name);
+	fprintf (asm_out_file, "\t%s\n", name);
+      }
+    else
+      {
+	fprintf (asm_out_file, "\tsection %s\n", name);
+      }
   }
-}
 #endif
-
 
 /* Baserel support.  */
 
@@ -846,3 +841,22 @@ read_only_operand (rtx operand)
     return SYMBOL_REF_FLAG (operand) || CONSTANT_POOL_ADDRESS_P(operand);
   return 1;
 }
+
+rtx
+amigaos_struct_value_rtx (tree fntype, int incoming ATTRIBUTE_UNUSED)
+{
+  if (fntype && aggregate_value_p (TREE_TYPE(fntype), fntype))
+    return gen_rtx_REG (Pmode, M68K_STRUCT_VALUE_REGNUM);
+
+  return 0;
+}
+
+rtx
+amigaos_static_chain_rtx (const_tree fntype, bool incoming ATTRIBUTE_UNUSED)
+{
+  if (fntype && DECL_STATIC_CHAIN(fntype))
+    return gen_rtx_REG (Pmode, M68K_STRUCT_VALUE_REGNUM);
+
+  return 0;
+}
+
