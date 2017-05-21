@@ -1,3 +1,9 @@
+2017-05-21  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/70265
+	* g++.dg/cpp1y/constexpr-70265-1.C: New.
+	* g++.dg/cpp1y/constexpr-70265-2.C: Likewise.
+
 2017-05-19  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/80333
