@@ -264,7 +264,10 @@ if (target_flags & (MASK_RESTORE_A4|MASK_ALWAYS_RESTORE_A4))	\
 /* put return values in FPU build in FP0 Reg */
 #undef FUNCTION_VALUE_REGNO_P
 #define FUNCTION_VALUE_REGNO_P(N) \
-  ((N) == D0_REG || (N) == A0_REG || (TARGET_68881 && (N) == FP0_REG))
+  ((N) == D0_REG || (TARGET_68881 && (N) == FP0_REG))
+
+// see 930623-1.c
+//  ((N) == D0_REG || (N) == A0_REG || (TARGET_68881 && (N) == FP0_REG))
 
 /* Inform the program which CPU we compile for.  */
 
