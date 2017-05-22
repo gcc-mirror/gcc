@@ -1,3 +1,17 @@
+2017-05-22  Nathan Sidwell  <nathan@acm.org>
+
+	* name-lookup.c (pushdecl_top_level,
+	pushdecl_top_level_and_finish): Move after namespace pushing and
+	popping functions.
+	(push_to_top_level): Rename to ...
+	(do_push_to_top_level): ... here.  Remove timing code.
+	(pop_from_top_level_1): Rename to ...
+	(do_pop_from_top_level): ... here.
+	(do_push_nested_namespace, do_pop_nested_namespace)
+	(push_to_top_level): New wrapper for do_push_to_top_level.
+	(pop_from_top_level): Adjust.
+	(push_nested_namepace, pop_nested_namespace): Wrappers for workers.
+
 2017-05-19  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	* config-lang.in (gtfiles): Add c-family/c-format.c,
