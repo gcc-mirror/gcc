@@ -4491,32 +4491,6 @@ parse_using_directive (tree name_space, tree attribs)
     }
 }
 
-/* Pushes X into the global namespace.  */
-
-tree
-pushdecl_top_level (tree x, bool is_friend)
-{
-  bool subtime = timevar_cond_start (TV_NAME_LOOKUP);
-  push_to_top_level ();
-  x = pushdecl_namespace_level (x, is_friend);
-  pop_from_top_level ();
-  timevar_cond_stop (TV_NAME_LOOKUP, subtime);
-  return x;
-}
-
-/* Pushes X into the global namespace and Calls cp_finish_decl to
-   register the variable, initializing it with INIT.  */
-
-tree
-pushdecl_top_level_and_finish (tree x, tree init)
-{
-  push_to_top_level ();
-  x = pushdecl_namespace_level (x, false);
-  cp_finish_decl (x, init, false, NULL_TREE, 0);
-  pop_from_top_level ();
-  return x;
-}
-
 /* Combines two sets of overloaded functions into an OVERLOAD chain, removing
    duplicates.  The first list becomes the tail of the result.
 
@@ -6232,16 +6206,14 @@ store_class_bindings (vec<cp_class_binding, va_gc> *names,
 
 static GTY((deletable)) struct saved_scope *free_saved_scope;
 
-void
-push_to_top_level (void)
+static void
+do_push_to_top_level (void)
 {
   struct saved_scope *s;
   cp_binding_level *b;
   cxx_saved_binding *sb;
   size_t i;
   bool need_pop;
-
-  bool subtime = timevar_cond_start (TV_NAME_LOOKUP);
 
   /* Reuse or create a new structure for this saved scope.  */
   if (free_saved_scope != NULL)
@@ -6316,11 +6288,10 @@ push_to_top_level (void)
   push_class_stack ();
   cp_unevaluated_operand = 0;
   c_inhibit_evaluation_warnings = 0;
-  timevar_cond_stop (TV_NAME_LOOKUP, subtime);
 }
 
 static void
-pop_from_top_level_1 (void)
+do_pop_from_top_level (void)
 {
   struct saved_scope *s = scope_chain;
   cxx_saved_binding *saved;
@@ -6356,14 +6327,68 @@ pop_from_top_level_1 (void)
   free_saved_scope = s;
 }
 
-/* Wrapper for pop_from_top_level_1.  */
+/* Push into the scope of the namespace NS, even if it is deeply
+   nested within another namespace.  */
 
-void
-pop_from_top_level (void)
+static void
+do_push_nested_namespace (tree ns)
+{
+  if (ns == global_namespace)
+    do_push_to_top_level ();
+  else
+    {
+      do_push_nested_namespace (CP_DECL_CONTEXT (ns));
+      gcc_checking_assert
+	(get_namespace_binding (current_namespace,
+				DECL_NAME (ns) ? DECL_NAME (ns)
+				: anon_identifier) == ns);
+      resume_scope (NAMESPACE_LEVEL (ns));
+      current_namespace = ns;
+    }
+}
+
+/* Pop back from the scope of the namespace NS, which was previously
+   entered with push_nested_namespace.  */
+
+static void
+do_pop_nested_namespace (tree ns)
+{
+  while (ns != global_namespace)
+    {
+      ns = CP_DECL_CONTEXT (ns);
+      current_namespace = ns;
+      leave_scope ();
+    }
+
+  do_pop_from_top_level ();
+}
+
+/* Pushes X into the global namespace.  */
+
+tree
+pushdecl_top_level (tree x, bool is_friend)
 {
   bool subtime = timevar_cond_start (TV_NAME_LOOKUP);
-  pop_from_top_level_1 ();
+  do_push_to_top_level ();
+  x = pushdecl_namespace_level (x, is_friend);
+  do_pop_from_top_level ();
   timevar_cond_stop (TV_NAME_LOOKUP, subtime);
+  return x;
+}
+
+/* Pushes X into the global namespace and calls cp_finish_decl to
+   register the variable, initializing it with INIT.  */
+
+tree
+pushdecl_top_level_and_finish (tree x, tree init)
+{
+  bool subtime = timevar_cond_start (TV_NAME_LOOKUP);
+  do_push_to_top_level ();
+  x = pushdecl_namespace_level (x, false);
+  cp_finish_decl (x, init, false, NULL_TREE, 0);
+  do_pop_from_top_level ();
+  timevar_cond_stop (TV_NAME_LOOKUP, subtime);
+  return x;
 }
 
 /* Push into the scope of the NAME namespace.  If NAME is NULL_TREE,
@@ -6490,41 +6515,46 @@ pop_namespace (void)
   leave_scope ();
 }
 
-/* Push into the scope of the namespace NS, even if it is deeply
-   nested within another namespace.  */
+/* External entry points for do_{push_to/pop_from}_top_level.  */
+
+void
+push_to_top_level (void)
+{
+  bool subtime = timevar_cond_start (TV_NAME_LOOKUP);
+  do_push_to_top_level ();
+  timevar_cond_stop (TV_NAME_LOOKUP, subtime);
+}
+
+/* Wrapper for pop_from_top_level_1.  */
+
+void
+pop_from_top_level (void)
+{
+  bool subtime = timevar_cond_start (TV_NAME_LOOKUP);
+  do_pop_from_top_level ();
+  timevar_cond_stop (TV_NAME_LOOKUP, subtime);
+}
+
+/* External entry points for do_{push,pop}_nested_namespace.  */
 
 void
 push_nested_namespace (tree ns)
 {
-  if (ns == global_namespace)
-    push_to_top_level ();
-  else
-    {
-      push_nested_namespace (CP_DECL_CONTEXT (ns));
-      push_namespace (DECL_NAME (ns));
-    }
+  bool subtime = timevar_cond_start (TV_NAME_LOOKUP);
+  do_push_nested_namespace (ns);
+  timevar_cond_stop (TV_NAME_LOOKUP, subtime);
 }
-
-/* Pop back from the scope of the namespace NS, which was previously
-   entered with push_nested_namespace.  */
 
 void
 pop_nested_namespace (tree ns)
 {
   bool subtime = timevar_cond_start (TV_NAME_LOOKUP);
   gcc_assert (current_namespace == ns);
-  while (ns != global_namespace)
-    {
-      pop_namespace ();
-      ns = CP_DECL_CONTEXT (ns);
-    }
-
-  pop_from_top_level ();
+  do_pop_nested_namespace (ns);
   timevar_cond_stop (TV_NAME_LOOKUP, subtime);
 }
 
 /* Pop off extraneous binding levels left over due to syntax errors.
-
    We don't pop past namespaces, as they might be valid.  */
 
 void
