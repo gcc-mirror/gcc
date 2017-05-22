@@ -1,4 +1,4 @@
-/* { dg-do compile { target { powerpc*-*-* } } } */
+/* { dg-do compile { target { powerpc64le-*-* } } } */
 /* { dg-skip-if "" { powerpc*-*-darwin* } { "*" } { "" } } */
 /* { dg-require-effective-target powerpc_p8vector_ok } */
 /* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power8" } } */
