@@ -74,7 +74,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-cfg.h"
 #include "symbol-summary.h"
 #include "ipa-prop.h"
-#include "ipa-inline.h"
+#include "ipa-fnsummary.h"
 #include "except.h"
 #include "attribs.h"
 #include "print-tree.h"

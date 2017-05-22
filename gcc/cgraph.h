@@ -2340,6 +2340,10 @@ tree ctor_for_folding (tree);
 /* In tree-chkp.c  */
 extern bool chkp_function_instrumented_p (tree fndecl);
 
+/* In ipa-inline-analysis.c  */
+void initialize_inline_failed (struct cgraph_edge *);
+bool speculation_useful_p (struct cgraph_edge *e, bool anticipate_inlining);
+
 /* Return true when the symbol is real symbol, i.e. it is not inline clone
    or abstract function kept for debug info purposes only.  */
 inline bool

@@ -46,7 +46,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "lto-partition.h"
 #include "context.h"
 #include "pass_manager.h"
-#include "ipa-inline.h"
+#include "ipa-fnsummary.h"
 #include "params.h"
 #include "ipa-utils.h"
 #include "gomp-constants.h"

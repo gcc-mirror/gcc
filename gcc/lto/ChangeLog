@@ -1,3 +1,8 @@
+2017-05-22  Jan Hubicka  <hubicka@ucw.cz>
+
+	* lto.c: Replace ipa-inline.h by ipa-fnsummary.h
+	* lto-partition.c: Replace ipa-inline.h by ipa-fnsummary.h
+
 2017-05-01  Xi Ruoyao  <ryxi@stu.xidian.edu.cn>
 
         PR c++/80038
