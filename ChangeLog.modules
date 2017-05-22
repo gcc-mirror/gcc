@@ -1,3 +1,9 @@
+2017-05-22  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/testsuite/
+	PR c++/80830
+	* g++.dg/lookup/friend20.C: New testcase.
+
 2017-05-19  Nathan Sidwell  <nathan@acm.org>
 
 	Merge trunk r248295.
