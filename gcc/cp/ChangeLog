@@ -1,5 +1,25 @@
 2017-05-22  Nathan Sidwell  <nathan@acm.org>
 
+	* cp-tree.h (CPTI_TERMINATE, CPTI_CALL_UNEXPECTED): Rename to ...
+	(CPTI_TERMINATE_FN, CPTI_CALL_UNEXPECTED_FN): ... here.
+	( CPTI_GET_EXCEPTION_PTR_FN, CPTI_BEGIN_CATCH_FN, CPTI_END_CATCH_FN,
+	CPTI_ALLOCATE_EXCEPTION_FN, CPTI_FREE_EXCEPTION_FN, CPTI_THROW_FN,
+	CPTI_RETHROW_FN): New.
+	(noexcept_deferred_spec): New.
+	(terminate_node, call_unexpected_node): Rename to ...
+	(terminate_fn, call_unexpected_fn): ... here.
+	(get_exception_ptr_fn, begin_catch_fn, end_catch_fn,
+	allocate_exception_fn, free_exception_fn, throw_fn, rethrow_fn): New.
+	* except.c (fn1..fn5, throw_fn, rethrow_rn, spec): Delete.
+	(init_exception_processing): Adjust.
+	(declare_library_fn): Create and push the fns here.
+	(do_get_exception_ptr, do_begin_catch, do_end_catch,
+	do_allocate_exception_ptr, do_free_exception_ptr): Adjust
+	declare_library_fn use.
+	(unevaluated_noexcept_spec): Adjust.
+	* cp-gimplify.c (genericize_eh_spec_block,
+	gimplify_most_not_throw_expr): Adjust.
+
 	* name-lookup.c (pushdecl_top_level,
 	pushdecl_top_level_and_finish): Move after namespace pushing and
 	popping functions.
