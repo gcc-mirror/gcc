@@ -1,3 +1,7 @@
+2017-05-22  Nathan Sidwell  <nathan@acm.org>
+
+	* c-decl.c (c_parse_final_cleanups): Drop TDI_tu handling.
+
 2017-05-19  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* c-parser.c (c_parser_omp_clause_default): Handle

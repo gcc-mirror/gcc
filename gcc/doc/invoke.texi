@@ -550,7 +550,6 @@ Objective-C and Objective-C++ Dialects}.
 -fdump-passes @gol
 -fdump-rtl-@var{pass}  -fdump-rtl-@var{pass}=@var{filename} @gol
 -fdump-statistics @gol
--fdump-translation-unit@r{[}-@var{n}@r{]} @gol
 -fdump-tree-all @gol
 -fdump-tree-@var{switch} @gol
 -fdump-tree-@var{switch}-@var{options} @gol
@@ -12972,7 +12971,7 @@ Dump after function inlining.
 @opindex fdump-lang
 Control the dumping of language-specific information.  The @var{options}
 and @var{filename} portions behave as described in the
-`@option{-fdump-tree} option.  The following @var{switch} values are
+@option{-fdump-tree} option.  The following @var{switch} values are
 accepted:
 
 @table @samp
@@ -12983,6 +12982,9 @@ Enable all language-specific dumps.
 @item class
 Dump class hierarchy information.  Virtual table information is emitted
 unless '@option{slim}' is specified.  This option is applicable to C++ only.
+
+@item raw
+Dump the raw internal tree data.  This option is applicable to C++ only.
 
 @end table
 
@@ -13001,16 +13003,6 @@ form is used, @samp{-stats} causes counters to be summed over the
 whole compilation unit while @samp{-details} dumps every event as
 the passes generate them.  The default with no option is to sum
 counters for each function compiled.
-
-@item -fdump-translation-unit @r{(C++ only)}
-@itemx -fdump-translation-unit-@var{options} @r{(C++ only)}
-@opindex fdump-translation-unit
-Dump a representation of the tree structure for the entire translation
-unit to a file.  The file name is made by appending @file{.tu} to the
-source file name, and the file is created in the same directory as the
-output file.  If the @samp{-@var{options}} form is used, @var{options}
-controls the details of the dump as described for the
-@option{-fdump-tree} options.
 
 @item -fdump-tree-all
 @itemx -fdump-tree-@var{switch}

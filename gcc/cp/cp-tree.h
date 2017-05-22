@@ -5776,6 +5776,7 @@ extern cp_parameter_declarator *no_parameters;
 
 /* Various dump ids.  */
 extern int class_dump_id;
+extern int raw_dump_id;
 
 /* in call.c */
 extern bool check_dtor_name			(tree, tree);

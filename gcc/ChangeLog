@@ -1,3 +1,11 @@
+2017-05-22  Nathan Sidwell  <nathan@acm.org>
+
+	* doc/invoke.texi (fdump-translation-unit): Delete documentation.
+	(fdump-lang): Document 'raw' option.
+	* dumpfile.h (TDI_tu): Delete.
+	* dumpfile.c (dump_files): Remove translation-unit.
+	(FIRST_AUTO_NUMBERED_DUMP): Decrement.
+
 2017-05-22  Georg-Johann Lay  <avr@gjlay.de>
 
 	* config/avr/t-avr (AWK) [t-multilib]: Remove "-v FORMAT=Makefile"

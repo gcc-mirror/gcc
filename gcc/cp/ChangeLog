@@ -1,5 +1,10 @@
 2017-05-22  Nathan Sidwell  <nathan@acm.org>
 
+	* cp-objcp-common.c (cp_register_dumps): Register raw dumper.
+	* cp-tree.h (raw_dump_id): Declare.
+	* decl2.c (raw_dump_id): Define.
+	(dump_tu): Use raw_dump_id.
+
 	* config-lang.in (gtfiles): Sort list, break lines.
 
 	* cp-tree.h (CPTI_TERMINATE, CPTI_CALL_UNEXPECTED): Rename to ...
