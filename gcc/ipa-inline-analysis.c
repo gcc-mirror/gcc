@@ -560,7 +560,6 @@ inline_summary::reset (struct cgraph_node *node)
   struct cgraph_edge *e;
 
   self_size = 0;
-  self_time = 0;
   estimated_stack_size = 0;
   estimated_self_stack_size = 0;
   stack_frame_offset = 0;
@@ -920,8 +919,7 @@ dump_inline_summary (FILE *f, struct cgraph_node *node)
 	fprintf (f, " contains_cilk_spawn");
       if (s->fp_expressions)
 	fprintf (f, " fp_expression");
-      fprintf (f, "\n  self time:       %f\n", s->self_time.to_double ());
-      fprintf (f, "  global time:     %f\n", s->time.to_double ());
+      fprintf (f, "\n  global time:     %f\n", s->time.to_double ());
       fprintf (f, "  self size:       %i\n", s->self_size);
       fprintf (f, "  global size:     %i\n", s->size);
       fprintf (f, "  min size:       %i\n", s->min_size);
@@ -2415,7 +2413,7 @@ estimate_function_body_sizes (struct cgraph_node *node, bool early)
 	  e->aux = NULL;
 	}
     }
-  inline_summaries->get (node)->self_time = time;
+  inline_summaries->get (node)->time = time;
   inline_summaries->get (node)->self_size = size;
   nonconstant_names.release ();
   ipa_release_body_info (&fbi);
@@ -2472,7 +2470,6 @@ compute_inline_parameters (struct cgraph_node *node, bool early)
       info->account_size_time (2 * INLINE_SIZE_SCALE, 0, t, t);
       inline_update_overall_summary (node);
       info->self_size = info->size;
-      info->self_time = info->time;
       /* We can not inline instrumentation clones.  */
       if (node->thunk.add_pointer_bounds_args)
 	{
@@ -2539,7 +2536,6 @@ compute_inline_parameters (struct cgraph_node *node, bool early)
   node->calls_comdat_local = (e != NULL);
 
   /* Inlining characteristics are maintained by the cgraph_mark_inline.  */
-  info->time = info->self_time;
   info->size = info->self_size;
   info->stack_frame_offset = 0;
   info->estimated_stack_size = info->estimated_self_stack_size;
@@ -2548,8 +2544,7 @@ compute_inline_parameters (struct cgraph_node *node, bool early)
      inline_update_overall_summary but because computation happens in
      different order the roundoff errors result in slight changes.  */
   inline_update_overall_summary (node);
-  gcc_assert (!(info->time - info->self_time).to_int ()
-	      && info->size == info->self_size);
+  gcc_assert (info->size == info->self_size);
 }
 
 
@@ -3695,7 +3690,7 @@ inline_read_section (struct lto_file_decl_data *file_data, const char *data,
       info->estimated_stack_size
 	= info->estimated_self_stack_size = streamer_read_uhwi (&ib);
       info->size = info->self_size = streamer_read_uhwi (&ib);
-      info->time = info->self_time = sreal::stream_in (&ib);
+      info->time = sreal::stream_in (&ib);
 
       bp = streamer_read_bitpack (&ib);
       info->inlinable = bp_unpack_value (&bp, 1);
@@ -3848,7 +3843,7 @@ inline_write_summary (void)
 	  streamer_write_uhwi (ob, lto_symtab_encoder_encode (encoder, cnode));
 	  streamer_write_hwi (ob, info->estimated_self_stack_size);
 	  streamer_write_hwi (ob, info->self_size);
-	  info->self_time.stream_out (ob);
+	  info->time.stream_out (ob);
 	  bp = bitpack_create (ob->main_stream);
 	  bp_pack_value (&bp, info->inlinable, 1);
 	  bp_pack_value (&bp, info->contains_cilk_spawn, 1);

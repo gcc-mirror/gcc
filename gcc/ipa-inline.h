@@ -96,8 +96,6 @@ struct GTY(()) inline_summary
   HOST_WIDE_INT estimated_self_stack_size;
   /* Size of the function body.  */
   int self_size;
-  /* Time of the function body.  */
-  sreal GTY((skip)) self_time;
   /* Minimal size increase after inlining.  */
   int min_size;
 
@@ -149,7 +147,7 @@ struct GTY(()) inline_summary
   /* Keep all field empty so summary dumping works during its computation.
      This is useful for debugging.  */
   inline_summary ()
-    : estimated_self_stack_size (0), self_size (0), self_time (0), min_size (0),
+    : estimated_self_stack_size (0), self_size (0), min_size (0),
       inlinable (false), contains_cilk_spawn (false), single_caller (false),
       fp_expressions (false), estimated_stack_size (false),
       stack_frame_offset (false), time (0), size (0), conds (NULL),

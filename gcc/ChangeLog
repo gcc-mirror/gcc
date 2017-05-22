@@ -1,5 +1,15 @@
 2017-05-22  Jan Hubicka  <hubicka@ucw.cz>
 
+	* ipa-inline-analysis.c (inline_summary::reset): Do not reset
+	self_time.
+	(dump_inline_summary): Do not print self_time.
+	(estimate_function_body_sizes): Do not set self_time.
+	(compute_inline_parameters): Likewise.
+	(inline_read_section, inline_write_summary): Do not stream self_time.
+	* ipa-inline.h (inline_summary): Drop self_time.
+
+2017-05-22  Jan Hubicka  <hubicka@ucw.cz>
+
 	* ipa-inline-analysis.c (account_size_time): Rename to ...
 	(inline_summary::account_size_time): ... this one.
 	(reset_ipa_call_summary): Turn to ...
