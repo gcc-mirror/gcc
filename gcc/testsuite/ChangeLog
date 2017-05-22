@@ -1,5 +1,12 @@
 2017-05-22  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gnat.dg/limited_with5.ad[sb]: New test.
+	* gnat.dg/limited_with5_pkg.ad[sb]: New helper.
+	* gnat.dg/limited_with6.ad[sb]: New test.
+	* gnat.dg/limited_with6_pkg.ad[sb]: New helper.
+
+2017-05-22  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gnat.dg/specs/volatile1.ads: Remove obsolete errors.
 	* gnat.dg/specs/clause_on_volatile.ads: Likewise.
 

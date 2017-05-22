@@ -101,8 +101,8 @@ struct incomplete
 static int defer_incomplete_level = 0;
 static struct incomplete *defer_incomplete_list;
 
-/* This variable is used to delay expanding From_Limited_With types until the
-   end of the spec.  */
+/* This variable is used to delay expanding types coming from a limited with
+   clause and completed Taft Amendment types until the end of the spec.  */
 static struct incomplete *defer_limited_with_list;
 
 typedef struct subst_pair_d {
@@ -3580,6 +3580,14 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	const bool is_from_limited_with
 	  = (IN (Ekind (gnat_desig_equiv), Incomplete_Kind)
 	     && From_Limited_With (gnat_desig_equiv));
+	/* Whether it is a completed Taft Amendment type.  Such a type is to
+	   be treated as coming from a limited with clause if it is not in
+	   the main unit, i.e. we break potential circularities here in case
+	   the body of an external unit is loaded for inter-unit inlining.  */
+        const bool is_completed_taft_type
+	  = (IN (Ekind (gnat_desig_equiv), Incomplete_Kind)
+	     && Has_Completion_In_Body (gnat_desig_equiv)
+	     && Present (Full_View (gnat_desig_equiv)));
 	/* The "full view" of the designated type.  If this is an incomplete
 	   entity from a limited with, treat its non-limited view as the full
 	   view.  Otherwise, if this is an incomplete or private type, use the
@@ -3646,13 +3654,14 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 
 	/* Get the type of the thing we are to point to and build a pointer to
 	   it.  If it is a reference to an incomplete or private type with a
-	   full view that is a record or an array, make a dummy type node and
-	   get the actual type later when we have verified it is safe.  */
+	   full view that is a record, an array or an access, make a dummy type
+	   and get the actual type later when we have verified it is safe.  */
 	else if ((!in_main_unit
 		  && !present_gnu_tree (gnat_desig_equiv)
 		  && Present (gnat_desig_full)
 		  && (Is_Record_Type (gnat_desig_full)
-		      || Is_Array_Type (gnat_desig_full)))
+		      || Is_Array_Type (gnat_desig_full)
+		      || Is_Access_Type (gnat_desig_full)))
 		 /* Likewise if this is a reference to a record, an array or a
 		    subprogram type and we are to defer elaborating incomplete
 		    types.  We do this because this access type may be the full
@@ -3763,7 +3772,9 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	    save_gnu_tree (gnat_entity, gnu_decl, false);
 	    saved = true;
 
-	    if (defer_incomplete_level == 0 && !is_from_limited_with)
+	    if (defer_incomplete_level == 0
+		&& !is_from_limited_with
+		&& !is_completed_taft_type)
 	      {
 		update_pointer_to (TYPE_MAIN_VARIANT (gnu_desig_type),
 				   gnat_to_gnu_type (gnat_desig_equiv));
@@ -3772,7 +3783,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	      {
 		struct incomplete *p = XNEW (struct incomplete);
 		struct incomplete **head
-		  = (is_from_limited_with
+		  = (is_from_limited_with || is_completed_taft_type
 		     ? &defer_limited_with_list : &defer_incomplete_list);
 
 		p->old_type = gnu_desig_type;
@@ -4766,7 +4777,9 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	  }
 
       for (p = defer_limited_with_list; p; p = p->next)
-	if (p->old_type && Non_Limited_View (p->full_type) == gnat_entity)
+	if (p->old_type
+	    && (Non_Limited_View (p->full_type) == gnat_entity
+		|| Full_View (p->full_type) == gnat_entity))
 	  {
 	    update_pointer_to (TYPE_MAIN_VARIANT (p->old_type),
 			       TREE_TYPE (gnu_decl));
