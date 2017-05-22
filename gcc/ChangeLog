@@ -1,3 +1,7 @@
+2017-05-22  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* cfgcleanup.c (bb_is_just_return): Allow CLOBBERs.
+
 2017-05-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/80809
