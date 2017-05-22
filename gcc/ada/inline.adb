@@ -667,57 +667,6 @@ package body Inline is
          Table_Name           => "Pending_Inlined");
       --  The workpile used to compute the transitive closure
 
-      function Is_Ancestor_Of_Main
-        (U_Name : Entity_Id;
-         Nam    : Node_Id) return Boolean;
-      --  Determine whether the unit whose body is loaded is an ancestor of
-      --  the main unit, and has a with_clause on it. The body is not
-      --  analyzed yet, so the check is purely lexical: the name of the with
-      --  clause is a selected component, and names of ancestors must match.
-
-      -------------------------
-      -- Is_Ancestor_Of_Main --
-      -------------------------
-
-      function Is_Ancestor_Of_Main
-        (U_Name : Entity_Id;
-         Nam    : Node_Id) return Boolean
-      is
-         Pref : Node_Id;
-
-      begin
-         if Nkind (Nam) /= N_Selected_Component then
-            return False;
-
-         else
-            if Chars (Selector_Name (Nam)) /=
-               Chars (Cunit_Entity (Main_Unit))
-            then
-               return False;
-            end if;
-
-            Pref := Prefix (Nam);
-            if Nkind (Pref) = N_Identifier then
-
-               --  Par is an ancestor of Par.Child.
-
-               return Chars (Pref) = Chars (U_Name);
-
-            elsif Nkind (Pref) = N_Selected_Component
-              and then Chars (Selector_Name (Pref)) = Chars (U_Name)
-            then
-               --  Par.Child is an ancestor of Par.Child.Grand.
-
-               return True;   --  should check that ancestor match
-
-            else
-               --  A is an ancestor of A.B.C if it is an ancestor of A.B
-
-               return Is_Ancestor_Of_Main (U_Name, Pref);
-            end if;
-         end if;
-      end Is_Ancestor_Of_Main;
-
    --  Start of processing for Analyze_Inlined_Bodies
 
    begin
@@ -766,7 +715,7 @@ package body Inline is
                begin
                   if not Is_Loaded (Bname) then
                      Style_Check := False;
-                     Load_Needed_Body (Comp_Unit, OK, Do_Analyze => False);
+                     Load_Needed_Body (Comp_Unit, OK);
 
                      if not OK then
 
@@ -780,43 +729,6 @@ package body Inline is
                         Error_Msg_File_1 :=
                           Get_File_Name (Bname, Subunit => False);
                         Error_Msg_N ("\but file{ was not found!??", Comp_Unit);
-
-                     else
-                        --  If the package to be inlined is an ancestor unit of
-                        --  the main unit, and it has a semantic dependence on
-                        --  it, the inlining cannot take place to prevent an
-                        --  elaboration circularity. The desired body is not
-                        --  analyzed yet, to prevent the completion of Taft
-                        --  amendment types that would lead to elaboration
-                        --  circularities in gigi.
-
-                        declare
-                           U_Id      : constant Entity_Id :=
-                                         Defining_Entity (Unit (Comp_Unit));
-                           Body_Unit : constant Node_Id :=
-                                         Library_Unit (Comp_Unit);
-                           Item      : Node_Id;
-
-                        begin
-                           Item := First (Context_Items (Body_Unit));
-                           while Present (Item) loop
-                              if Nkind (Item) = N_With_Clause
-                                and then
-                                  Is_Ancestor_Of_Main (U_Id, Name (Item))
-                              then
-                                 Set_Is_Inlined (U_Id, False);
-                                 exit;
-                              end if;
-
-                              Next (Item);
-                           end loop;
-
-                           --  If no suspicious with_clauses, analyze the body
-
-                           if Is_Inlined (U_Id) then
-                              Semantics (Body_Unit);
-                           end if;
-                        end;
                      end if;
                   end if;
                end;

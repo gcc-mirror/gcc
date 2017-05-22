@@ -1,3 +1,19 @@
+2017-05-22  Ed Schonberg  <schonberg@adacore.com>
+            Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch4.adb (Analyze_Call): In Ada2012 an incomplete type from a
+	limited view may appear in the profile of a function, and a call to
+	that function in another unit in which the full view is available must
+	use this full view to spurious type errors at the point of call.
+	* inline.adb (Analyze_Inlined_Bodies): Remove restriction on loading
+	of parent body with a with clause for the main unit.
+	* gcc-interface/decl.c (defer_limited_with_list): Document new usage.
+	(gnat_to_gnu_entity) <E_Access_Type>: Handle completed Taft Amendment
+	types declared in external units like types from limited with clauses.
+	Adjust final processing of defer_limited_with_list accordingly.
+	* gcc-interface/trans.c (gnat_to_gnu) < N_Selected_Component>: Try
+	again to translate the prefix after the field if it is incomplete.
+
 2017-05-22  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/decl.c (gnat_to_gnu_field): Do not enforce strict

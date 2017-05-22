@@ -6413,7 +6413,6 @@ gnat_to_gnu (Node_Id gnat_node)
 	Entity_Id gnat_prefix = Prefix (gnat_node);
 	Entity_Id gnat_field = Entity (Selector_Name (gnat_node));
 	tree gnu_prefix = gnat_to_gnu (gnat_prefix);
-	tree gnu_field;
 
 	gnu_prefix = maybe_implicit_deref (gnu_prefix);
 
@@ -6442,8 +6441,19 @@ gnat_to_gnu (Node_Id gnat_node)
 				       NULL_TREE, gnu_prefix);
 	else
 	  {
-	    gnu_field = gnat_to_gnu_field_decl (gnat_field);
+	    tree gnu_field = gnat_to_gnu_field_decl (gnat_field);
 
+	    /* If the prefix has incomplete type, try again to translate it.
+	       The idea is that the translation of the field just above may
+	       have completed it through gnat_to_gnu_entity, in case it is
+	       the dereference of an access to Taft Amendment type used in
+	       the instantiation of a generic body from an external unit.  */
+	    if (!COMPLETE_TYPE_P (TREE_TYPE (gnu_prefix)))
+	      {
+		gnu_prefix = gnat_to_gnu (gnat_prefix);
+		gnu_prefix = maybe_implicit_deref (gnu_prefix);
+	      }
+		
 	    gnu_result
 	      = build_component_ref (gnu_prefix, gnu_field,
 				     (Nkind (Parent (gnat_node))
