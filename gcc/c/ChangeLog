@@ -1,3 +1,10 @@
+2017-05-22  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-fold.c (c_fully_fold_internal): Save the c_fully_fold_internal
+	result for SAVE_EXPR operand and set SAVE_EXPR_FOLDED_P even if
+	it returned invariant.  Call tree_invariant_p unconditionally
+	afterwards to decide whether to return expr or op0.
+
 2017-05-22  Nathan Sidwell  <nathan@acm.org>
 
 	* c-decl.c (c_parse_final_cleanups): Drop TDI_tu handling.
