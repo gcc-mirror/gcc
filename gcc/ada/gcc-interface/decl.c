@@ -307,11 +307,13 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
   /* Contains the list of attributes directly attached to the entity.  */
   struct attrib *attr_list = NULL;
 
-  /* Since a use of an Itype is a definition, process it as such if it
-     is not in a with'ed unit.  */
+  /* Since a use of an Itype is a definition, process it as such if it is in
+     the main unit, except for E_Access_Subtype because it's actually a use
+     of its base type, see below.  */
   if (!definition
       && is_type
       && Is_Itype (gnat_entity)
+      && Ekind (gnat_entity) != E_Access_Subtype
       && !present_gnu_tree (gnat_entity)
       && In_Extended_Main_Code_Unit (gnat_entity))
     {
@@ -4060,7 +4062,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
     case E_Access_Subtype:
       /* We treat this as identical to its base type; any constraint is
 	 meaningful only to the front-end.  */
-      gnu_type = gnat_to_gnu_type (Etype (gnat_entity));
+      gnu_decl = gnat_to_gnu_entity (Etype (gnat_entity), NULL_TREE, false);
+      saved = true;
 
       /* The designated subtype must be elaborated as well, if it does
 	 not have its own freeze node.  But designated subtypes created
@@ -4092,8 +4095,6 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	    gnat_to_gnu_entity (Directly_Designated_Type (gnat_entity),
 				NULL_TREE, false);
 	}
-
-      maybe_present = true;
       break;
 
     /* Subprogram Entities
