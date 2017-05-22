@@ -1066,9 +1066,10 @@ edge_badness (struct cgraph_edge *edge, bool dump)
     {
       sreal numerator, denominator;
       int overall_growth;
+      sreal inlined_time = compute_inlined_call_time (edge, edge_time);
 
       numerator = (compute_uninlined_call_time (edge, unspec_edge_time)
-		   - compute_inlined_call_time (edge, edge_time));
+		   - inlined_time);
       if (numerator == 0)
 	numerator = ((sreal) 1 >> 8);
       if (caller->count)
@@ -1144,7 +1145,7 @@ edge_badness (struct cgraph_edge *edge, bool dump)
 	    overall_growth += 256 * 256 - 256;
 	  denominator *= overall_growth;
         }
-      denominator *= inline_summaries->get (caller)->self_size + growth;
+      denominator *= inlined_time;
 
       badness = - numerator / denominator;
 

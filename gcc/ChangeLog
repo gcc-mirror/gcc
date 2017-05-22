@@ -1,3 +1,12 @@
+2017-05-22  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-inline.c (edge_badness): Use inlined_time instead of
+	inline_summaries->get.
+
+2017-05-22  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-inline.c (edge_badness): Use estimate_size_after_inlining.
+
 2017-05-22  Nathan Sidwell  <nathan@acm.org>
 
 	* doc/invoke.texi (fdump-translation-unit): Delete documentation.
