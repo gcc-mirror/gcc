@@ -1,5 +1,20 @@
 2017-05-22  Nathan Sidwell  <nathan@acm.org>
 
+	* name-lookup.h (parse_using_directive): Replace with ...
+	(finish_namespace_using_directive): ... this and ...
+	(finish_local_using_directive): ... this.
+	* name-lookup.c (add_using_namespace_1): Move later.
+	(add_using_namespace): Move later, add namespace_p arg, remove
+	indirect arg.
+	(push_using_directive_1): Directly recurse.
+	(do_using_directive, parse_using_directive): Delete, split into ...
+	(finish_namespace_using_directive): ... this and ...
+	(finish_local_using_directive): ... this.
+	(push_namespace): Use add_using_namespace.
+	* parser.c (cp_parser_using_directive): Call
+	finish_namespace_using_directive or finish_local_using_directive.
+	* pt.c (tsubst_expr): Call finish_local_using_directive.
+
 	* cp-objcp-common.c (cp_register_dumps): Register raw dumper.
 	* cp-tree.h (raw_dump_id): Declare.
 	* decl2.c (raw_dump_id): Define.

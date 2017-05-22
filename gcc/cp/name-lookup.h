@@ -332,11 +332,12 @@ extern tree do_class_using_decl (tree, tree);
 extern void do_using_directive (tree);
 extern cp_expr lookup_arg_dependent (tree, tree, vec<tree, va_gc> *);
 extern bool is_associated_namespace (tree, tree);
-extern void parse_using_directive (tree, tree);
 extern tree innermost_non_namespace_value (tree);
 extern cxx_binding *outer_binding (tree, cxx_binding *, bool);
 extern void cp_emit_debug_info_for_using (tree, tree);
 
+extern void finish_namespace_using_directive (tree, tree);
+extern void finish_local_using_directive (tree, tree);
 extern tree pushdecl_outermost_localscope (tree);
 extern tree pushdecl (tree, bool is_friend = false);
 extern tree pushdecl_top_level (tree, bool is_friend = false);

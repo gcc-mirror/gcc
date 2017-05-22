@@ -18692,8 +18692,13 @@ cp_parser_using_directive (cp_parser* parser)
   namespace_decl = cp_parser_namespace_name (parser);
   /* And any specified attributes.  */
   attribs = cp_parser_attributes_opt (parser);
+
   /* Update the symbol table.  */
-  parse_using_directive (namespace_decl, attribs);
+  if (namespace_bindings_p ())
+    finish_namespace_using_directive (namespace_decl, attribs);
+  else
+    finish_local_using_directive (namespace_decl, attribs);
+
   /* Look for the final `;'.  */
   cp_parser_require (parser, CPP_SEMICOLON, RT_SEMICOLON);
 }

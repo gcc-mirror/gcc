@@ -4337,60 +4337,6 @@ pushdecl_namespace_level (tree x, bool is_friend)
   return t;
 }
 
-/* Insert USED into the using list of USER. Set INDIRECT_flag if this
-   directive is not directly from the source. Also find the common
-   ancestor and let our users know about the new namespace */
-
-static void
-add_using_namespace_1 (tree user, tree used, bool indirect)
-{
-  tree t;
-  /* Using oneself is a no-op.  */
-  if (user == used)
-    return;
-  gcc_assert (TREE_CODE (user) == NAMESPACE_DECL);
-  gcc_assert (TREE_CODE (used) == NAMESPACE_DECL);
-  /* Check if we already have this.  */
-  t = purpose_member (used, DECL_NAMESPACE_USING (user));
-  if (t != NULL_TREE)
-    {
-      if (!indirect)
-	/* Promote to direct usage.  */
-	TREE_INDIRECT_USING (t) = 0;
-      return;
-    }
-
-  /* Add used to the user's using list.  */
-  DECL_NAMESPACE_USING (user)
-    = tree_cons (used, namespace_ancestor (user, used),
-		 DECL_NAMESPACE_USING (user));
-
-  TREE_INDIRECT_USING (DECL_NAMESPACE_USING (user)) = indirect;
-
-  /* Add user to the used's users list.  */
-  DECL_NAMESPACE_USERS (used)
-    = tree_cons (user, 0, DECL_NAMESPACE_USERS (used));
-
-  /* Recursively add all namespaces used.  */
-  for (t = DECL_NAMESPACE_USING (used); t; t = TREE_CHAIN (t))
-    /* indirect usage */
-    add_using_namespace_1 (user, TREE_PURPOSE (t), 1);
-
-  /* Tell everyone using us about the new used namespaces.  */
-  for (t = DECL_NAMESPACE_USERS (user); t; t = TREE_CHAIN (t))
-    add_using_namespace_1 (TREE_PURPOSE (t), used, 1);
-}
-
-/* Wrapper for add_using_namespace_1.  */
-
-static void
-add_using_namespace (tree user, tree used, bool indirect)
-{
-  bool subtime = timevar_cond_start (TV_NAME_LOOKUP);
-  add_using_namespace_1 (user, used, indirect);
-  timevar_cond_stop (TV_NAME_LOOKUP, subtime);
-}
-
 /* Process a using-declaration not appearing in class or local scope.  */
 
 void
@@ -4420,75 +4366,6 @@ do_toplevel_using_decl (tree decl, tree scope, tree name)
     binding->value = newval;
   if (newtype)
     binding->type = newtype;
-}
-
-/* Process a using-directive.  */
-
-void
-do_using_directive (tree name_space)
-{
-  tree context = NULL_TREE;
-
-  if (name_space == error_mark_node)
-    return;
-
-  gcc_assert (TREE_CODE (name_space) == NAMESPACE_DECL);
-
-  if (building_stmt_list_p ())
-    add_stmt (build_stmt (input_location, USING_STMT, name_space));
-  name_space = ORIGINAL_NAMESPACE (name_space);
-
-  if (!toplevel_bindings_p ())
-    {
-      push_using_directive (name_space);
-    }
-  else
-    {
-      /* direct usage */
-      add_using_namespace (current_namespace, name_space, 0);
-      if (current_namespace != global_namespace)
-	context = current_namespace;
-
-      /* Emit debugging info.  */
-      if (!processing_template_decl)
-	(*debug_hooks->imported_module_or_decl) (name_space, NULL_TREE,
-						 context, false);
-    }
-}
-
-/* Deal with a using-directive seen by the parser.  Currently we only
-   handle attributes here, since they cannot appear inside a template.  */
-
-void
-parse_using_directive (tree name_space, tree attribs)
-{
-  do_using_directive (name_space);
-
-  if (attribs == error_mark_node)
-    return;
-
-  for (tree a = attribs; a; a = TREE_CHAIN (a))
-    {
-      tree name = get_attribute_name (a);
-      if (is_attribute_p ("strong", name))
-	{
-	  warning (OPT_Wdeprecated, "strong using is deprecated; use inline "
-		   "namespaces instead");
-	  if (!toplevel_bindings_p ())
-	    error ("strong using only meaningful at namespace scope");
-	  else if (name_space != error_mark_node)
-	    {
-	      if (!is_ancestor (current_namespace, name_space))
-		error ("current namespace %qD does not enclose strongly used namespace %qD",
-		       current_namespace, name_space);
-	      DECL_NAMESPACE_ASSOCIATIONS (name_space)
-		= tree_cons (current_namespace, 0,
-			     DECL_NAMESPACE_ASSOCIATIONS (name_space));
-	    }
-	}
-      else
-	warning (OPT_Wattributes, "%qD attribute directive ignored", name);
-    }
 }
 
 /* Combines two sets of overloaded functions into an OVERLOAD chain, removing
@@ -5827,7 +5704,7 @@ push_using_directive_1 (tree used)
 
   /* Recursively add all namespaces used.  */
   for (iter = DECL_NAMESPACE_USING (used); iter; iter = TREE_CHAIN (iter))
-    push_using_directive (TREE_PURPOSE (iter));
+    push_using_directive_1 (TREE_PURPOSE (iter));
 
   return ud;
 }
@@ -6363,6 +6240,113 @@ do_pop_nested_namespace (tree ns)
   do_pop_from_top_level ();
 }
 
+/* Insert USED into the using list of USER. Set INDIRECT_flag if this
+   directive is not directly from the source. Also find the common
+   ancestor and let our users know about the new namespace */
+
+static void
+add_using_namespace_1 (tree user, tree used, bool indirect)
+{
+  tree t;
+  /* Using oneself is a no-op.  */
+  if (user == used)
+    return;
+  gcc_assert (TREE_CODE (user) == NAMESPACE_DECL);
+  gcc_assert (TREE_CODE (used) == NAMESPACE_DECL);
+  /* Check if we already have this.  */
+  t = purpose_member (used, DECL_NAMESPACE_USING (user));
+  if (t != NULL_TREE)
+    {
+      if (!indirect)
+	/* Promote to direct usage.  */
+	TREE_INDIRECT_USING (t) = 0;
+      return;
+    }
+
+  /* Add used to the user's using list.  */
+  DECL_NAMESPACE_USING (user)
+    = tree_cons (used, namespace_ancestor (user, used),
+		 DECL_NAMESPACE_USING (user));
+
+  TREE_INDIRECT_USING (DECL_NAMESPACE_USING (user)) = indirect;
+
+  /* Add user to the used's users list.  */
+  DECL_NAMESPACE_USERS (used)
+    = tree_cons (user, 0, DECL_NAMESPACE_USERS (used));
+
+  /* Recursively add all namespaces used.  */
+  for (t = DECL_NAMESPACE_USING (used); t; t = TREE_CHAIN (t))
+    /* indirect usage */
+    add_using_namespace_1 (user, TREE_PURPOSE (t), 1);
+
+  /* Tell everyone using us about the new used namespaces.  */
+  for (t = DECL_NAMESPACE_USERS (user); t; t = TREE_CHAIN (t))
+    add_using_namespace_1 (TREE_PURPOSE (t), used, 1);
+}
+
+/* Wrapper for add_using_namespace_1.  */
+
+static void
+add_using_namespace (bool namespace_level_p, tree from, tree target)
+{
+  bool subtime = timevar_cond_start (TV_NAME_LOOKUP);
+  add_using_namespace_1 (from, target, false);
+  if (namespace_level_p)
+    {
+      /* Emit debugging info.  */
+      tree context = from != global_namespace ? from : NULL_TREE;
+      debug_hooks->imported_module_or_decl (target, NULL_TREE, context, false);
+    }
+  timevar_cond_stop (TV_NAME_LOOKUP, subtime);
+}
+
+/* Process a namespace-scope using directive.  */
+
+void
+finish_namespace_using_directive (tree target, tree attribs)
+{
+  gcc_checking_assert (namespace_bindings_p ());
+  if (target == error_mark_node)
+    return;
+
+  add_using_namespace (true, current_namespace,
+		       ORIGINAL_NAMESPACE (target));
+
+  if (attribs == error_mark_node)
+    return;
+
+  for (tree a = attribs; a; a = TREE_CHAIN (a))
+    {
+      tree name = get_attribute_name (a);
+      if (is_attribute_p ("strong", name))
+	{
+	  warning (0, "strong using directive no longer supported");
+	  if (CP_DECL_CONTEXT (target) == current_namespace)
+	    inform (DECL_SOURCE_LOCATION (target),
+		    "you may use an inline namespace instead");
+	}
+      else
+	warning (OPT_Wattributes, "%qD attribute directive ignored", name);
+    }
+}
+
+/* Process a function-scope using-directive.  */
+
+void
+finish_local_using_directive (tree target, tree attribs)
+{
+  gcc_checking_assert (local_bindings_p ());
+  if (target == error_mark_node)
+    return;
+
+  if (attribs)
+    warning (OPT_Wattributes, "attributes ignored on local using directive");
+
+  add_stmt (build_stmt (input_location, USING_STMT, target));
+
+  push_using_directive (ORIGINAL_NAMESPACE (target));
+}
+
 /* Pushes X into the global namespace.  */
 
 tree
@@ -6468,7 +6452,7 @@ push_namespace (tree name, bool make_inline)
 	      DECL_NAME (ns) = NULL_TREE;
 
 	      if (!make_inline)
-		do_using_directive (ns);
+		add_using_namespace (true, current_namespace, ns);
 	    }
 	  else if (TREE_PUBLIC (current_namespace))
 	    TREE_PUBLIC (ns) = 1;
@@ -6480,7 +6464,7 @@ push_namespace (tree name, bool make_inline)
 	      DECL_NAMESPACE_ASSOCIATIONS (ns)
 		= tree_cons (current_namespace, NULL_TREE, NULL_TREE);
 	      /* Import the contents of the inline namespace.  */
-	      do_using_directive (ns);
+	      add_using_namespace (true, current_namespace, ns);
 	    }
 	}
     }
@@ -6524,8 +6508,6 @@ push_to_top_level (void)
   do_push_to_top_level ();
   timevar_cond_stop (TV_NAME_LOOKUP, subtime);
 }
-
-/* Wrapper for pop_from_top_level_1.  */
 
 void
 pop_from_top_level (void)
