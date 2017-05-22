@@ -1,3 +1,8 @@
+2017-05-22  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/80766
+	* gfortran.dg/typebound_call_28.f90: New test.
+
 2017-05-22  Nathan Sidwell  <nathan@acm.org>
 
 	* g++.dg/lookup/strong-using.C: New.
