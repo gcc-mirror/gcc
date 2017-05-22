@@ -1,3 +1,12 @@
+2017-05-22  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/t-avr (AWK) [t-multilib]: Remove "-v FORMAT=Makefile"
+	command option from $(AWK) call.
+	* config/avr/genmultilib.awk: Simplify and rewrite so that it
+	generates MULTILIB_REQUIRED instead of MULTILIB_EXCEPTIONS.
+	[FORMAT]: Remove handling of variable.
+	* config/avr/t-multilib: Regenerate.
+
 2017-05-22  Jan Hubicka  <hubicka@ucw.cz>
 
 	* ipa-inline-analysis.c (inline_summary::reset): Do not reset

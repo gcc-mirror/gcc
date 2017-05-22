@@ -89,14 +89,13 @@ install-device-specs: s-device-specs installdirs
 		$(INSTALL_DATA) $${file} $(DESTDIR)$(libsubdir)/$${file}; \
 	done
 
-# Map -mmcu= to the right multilib variant
+# Get multilib layout
 # MULTILIB_OPTIONS
 # MULTILIB_DIRNAMES
-# MULTILIB_EXCEPTIONS
-# MULTILIB_MATCHES
+# MULTILIB_REQUIRED
 
 s-mlib: $(srcdir)/config/avr/t-multilib
 
 $(srcdir)/config/avr/t-multilib: $(srcdir)/config/avr/genmultilib.awk \
 				 $(AVR_MCUS)
-	$(AWK) -f $< -v FORMAT=Makefile   $< $(AVR_MCUS) > $@
+	$(AWK) -f $< $< $(AVR_MCUS) > $@
