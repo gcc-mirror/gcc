@@ -1,5 +1,13 @@
 2017-05-22  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* config-lang.in: Update.
+	* name-lookup.c (add_using_directive): Rename to ...
+	(add_using_namespace): ... here.  Add FROM arg.
+	(do_toplevel_using_directive): Fold into add_using_namespace.
+	(finish_namespace_using_directive, finish_local_using_directive,
+	push_namespace): Adjust.
+
 	Merge trunk r248329.
 
 	gcc/testsuite/

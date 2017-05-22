@@ -5903,7 +5903,7 @@ lookup_arg_dependent (tree name, tree fns, vec<tree, va_gc> *args)
    the unqualified search.  */
 
 static void
-add_using_directive (vec<tree, va_gc> *&usings, tree target)
+add_using_namespace (tree from, vec<tree, va_gc> *&usings, tree target)
 {
   if (usings)
     for (unsigned ix = usings->length (); ix--;)
@@ -5911,19 +5911,12 @@ add_using_directive (vec<tree, va_gc> *&usings, tree target)
 	return;
 
   vec_safe_push (usings, target);
-}
-
-/* A using directive in namespace USER for namespace TARGET.  */
-
-static void
-do_toplevel_using_directive (tree user, tree target)
-{
-  add_using_directive (DECL_NAMESPACE_USING (user), target);
-  gcc_assert (!processing_template_decl);
-
-  /* Emit debugging info.  */
-  tree context = user != global_namespace ? user : NULL_TREE;
-  debug_hooks->imported_module_or_decl (user, NULL_TREE, context, false);
+  if (from)
+    {
+      /* Emit debugging info.  */
+      tree context = from != global_namespace ? from : NULL_TREE;
+      debug_hooks->imported_module_or_decl (target, NULL_TREE, context, false);
+    }
 }
 
 /* The type TYPE is being declared.  If it is a class template, or a
@@ -6275,14 +6268,15 @@ store_class_bindings (vec<cp_class_binding, va_gc> *names,
 /* Process a namespace-scope using directive.  */
 
 void
-finish_namespace_using_directive (tree name_space, tree attribs)
+finish_namespace_using_directive (tree target, tree attribs)
 {
   gcc_checking_assert (namespace_bindings_p ());
-  if (name_space == error_mark_node)
+  if (target == error_mark_node)
     return;
 
-  do_toplevel_using_directive (current_namespace,
-			       ORIGINAL_NAMESPACE (name_space));
+  add_using_namespace (current_namespace,
+		       DECL_NAMESPACE_USING (current_namespace),
+		       ORIGINAL_NAMESPACE (target));
 
   if (attribs == error_mark_node)
     return;
@@ -6290,15 +6284,15 @@ finish_namespace_using_directive (tree name_space, tree attribs)
   for (tree a = attribs; a; a = TREE_CHAIN (a))
     {
       tree name = get_attribute_name (a);
-      if (!is_attribute_p ("strong", name))
-	warning (OPT_Wattributes, "%qD attribute directive ignored", name);
-      else if (name_space != error_mark_node)
+      if (is_attribute_p ("strong", name))
 	{
 	  warning (0, "strong using directive no longer supported");
-	  if (CP_DECL_CONTEXT (name_space) == current_namespace)
-	    inform (DECL_SOURCE_LOCATION (name_space),
+	  if (CP_DECL_CONTEXT (target) == current_namespace)
+	    inform (DECL_SOURCE_LOCATION (target),
 		    "you may use an inline namespace instead");
 	}
+      else
+	warning (OPT_Wattributes, "%qD attribute directive ignored", name);
     }
 }
 
@@ -6311,13 +6305,13 @@ finish_local_using_directive (tree target, tree attribs)
   if (target == error_mark_node)
     return;
 
-  if (attribs && attribs != error_mark_node)
+  if (attribs)
     warning (OPT_Wattributes, "attributes ignored on local using directive");
-  
-  if (building_stmt_list_p ())
-    add_stmt (build_stmt (input_location, USING_STMT, target));
 
-  add_using_directive (current_binding_level->using_directives,
+  add_stmt (build_stmt (input_location, USING_STMT, target));
+
+  add_using_namespace (NULL_TREE,
+		       current_binding_level->using_directives,
 		       ORIGINAL_NAMESPACE (target));
 }
 
@@ -6459,10 +6453,10 @@ do_push_nested_namespace (tree ns)
   else
     {
       do_push_nested_namespace (CP_DECL_CONTEXT (ns));
-      tree name = DECL_NAME (ns);
-      if (!name)
-	name = anon_identifier;
-      gcc_assert (find_namespace_value (current_namespace, name) == ns);
+      gcc_checking_assert
+	(find_namespace_value (current_namespace,
+			       DECL_NAME (ns) ? DECL_NAME (ns)
+			       : anon_identifier) == ns);
       resume_scope (NAMESPACE_LEVEL (ns));
       current_namespace = ns;
     }
@@ -6503,10 +6497,12 @@ pushdecl_top_level (tree x, bool is_friend)
 tree
 pushdecl_top_level_and_finish (tree x, tree init)
 {
-  push_to_top_level ();
+  bool subtime = timevar_cond_start (TV_NAME_LOOKUP);
+  do_push_to_top_level ();
   x = pushdecl_namespace_level (x, false);
   cp_finish_decl (x, init, false, NULL_TREE, 0);
-  pop_from_top_level ();
+  do_pop_from_top_level ();
+  timevar_cond_stop (TV_NAME_LOOKUP, subtime);
   return x;
 }
 
@@ -6609,7 +6605,9 @@ push_namespace (tree name, bool make_inline)
 	      DECL_NAME (ns) = NULL_TREE;
 
 	      if (!make_inline)
-		do_toplevel_using_directive (current_namespace, ns);
+		add_using_namespace (current_namespace,
+				     DECL_NAMESPACE_USING (current_namespace),
+				     ns);
 	    }
 	  else if (TREE_PUBLIC (current_namespace))
 	    TREE_PUBLIC (ns) = 1;
