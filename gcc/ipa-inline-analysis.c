@@ -158,33 +158,33 @@ dump_inline_hints (FILE *f, inline_hints hints)
    When NONCONST_PRED is false the code will evaulate to constant and
    will get optimized out in specialized clones of the function.   */
 
-static void
-account_size_time (struct inline_summary *summary, int size, sreal time,
-		   predicate *exec_pred,
-		   predicate *nonconst_pred_ptr)
+void
+inline_summary::account_size_time (int size, sreal time,
+				   const predicate &exec_pred,
+				   const predicate &nonconst_pred_in)
 {
   size_time_entry *e;
   bool found = false;
   int i;
   predicate nonconst_pred;
 
-  if (*exec_pred == false)
+  if (exec_pred == false)
     return;
 
-  nonconst_pred = *nonconst_pred_ptr & *exec_pred;
+  nonconst_pred = nonconst_pred_in & exec_pred;
 
   if (nonconst_pred == false)
     return;
 
   /* We need to create initial empty unconitional clause, but otherwie
      we don't need to account empty times and sizes.  */
-  if (!size && time == 0 && summary->entry)
+  if (!size && time == 0 && size_time_table)
     return;
 
   gcc_assert (time >= 0);
 
-  for (i = 0; vec_safe_iterate (summary->entry, i, &e); i++)
-    if (e->exec_predicate == *exec_pred
+  for (i = 0; vec_safe_iterate (size_time_table, i, &e); i++)
+    if (e->exec_predicate == exec_pred
 	&& e->nonconst_predicate == nonconst_pred)
       {
 	found = true;
@@ -194,7 +194,7 @@ account_size_time (struct inline_summary *summary, int size, sreal time,
     {
       i = 0;
       found = true;
-      e = &(*summary->entry)[0];
+      e = &(*size_time_table)[0];
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file,
 		 "\t\tReached limit on number of entries, "
@@ -206,11 +206,11 @@ account_size_time (struct inline_summary *summary, int size, sreal time,
 	       "\t\tAccounting size:%3.2f, time:%3.2f on %spredicate exec:",
 	       ((double) size) / INLINE_SIZE_SCALE,
 	       (time.to_double ()), found ? "" : "new ");
-      exec_pred->dump (dump_file, summary->conds, 0);
-      if (*exec_pred != nonconst_pred)
+      exec_pred.dump (dump_file, conds, 0);
+      if (exec_pred != nonconst_pred)
 	{
           fprintf (dump_file, " nonconst:");
-          nonconst_pred.dump (dump_file, summary->conds);
+          nonconst_pred.dump (dump_file, conds);
 	}
       else
         fprintf (dump_file, "\n");
@@ -220,9 +220,9 @@ account_size_time (struct inline_summary *summary, int size, sreal time,
       struct size_time_entry new_entry;
       new_entry.size = size;
       new_entry.time = time;
-      new_entry.exec_predicate = *exec_pred;
+      new_entry.exec_predicate = exec_pred;
       new_entry.nonconst_predicate = nonconst_pred;
-      vec_safe_push (summary->entry, new_entry);
+      vec_safe_push (size_time_table, new_entry);
     }
   else
     {
@@ -541,58 +541,55 @@ inline_summary_alloc (void)
 /* We are called multiple time for given function; clear
    data from previous run so they are not cumulated.  */
 
-static void
-reset_ipa_call_summary (struct cgraph_edge *e)
+void
+ipa_call_summary::reset ()
 {
-  struct ipa_call_summary *es = ipa_call_summaries->get (e);
-
-  es->call_stmt_size = es->call_stmt_time = 0;
-  if (es->predicate)
-    edge_predicate_pool.remove (es->predicate);
-  es->predicate = NULL;
-  es->param.release ();
+  call_stmt_size = call_stmt_time = 0;
+  if (predicate)
+    edge_predicate_pool.remove (predicate);
+  predicate = NULL;
+  param.release ();
 }
 
 /* We are called multiple time for given function; clear
    data from previous run so they are not cumulated.  */
 
-static void
-reset_inline_summary (struct cgraph_node *node,
-		      inline_summary *info)
+void
+inline_summary::reset (struct cgraph_node *node)
 {
   struct cgraph_edge *e;
 
-  info->self_size = 0;
-  info->self_time = 0;
-  info->estimated_stack_size = 0;
-  info->estimated_self_stack_size = 0;
-  info->stack_frame_offset = 0;
-  info->size = 0;
-  info->time = 0;
-  info->growth = 0;
-  info->scc_no = 0;
-  if (info->loop_iterations)
+  self_size = 0;
+  self_time = 0;
+  estimated_stack_size = 0;
+  estimated_self_stack_size = 0;
+  stack_frame_offset = 0;
+  size = 0;
+  time = 0;
+  growth = 0;
+  scc_no = 0;
+  if (loop_iterations)
     {
-      edge_predicate_pool.remove (info->loop_iterations);
-      info->loop_iterations = NULL;
+      edge_predicate_pool.remove (loop_iterations);
+      loop_iterations = NULL;
     }
-  if (info->loop_stride)
+  if (loop_stride)
     {
-      edge_predicate_pool.remove (info->loop_stride);
-      info->loop_stride = NULL;
+      edge_predicate_pool.remove (loop_stride);
+      loop_stride = NULL;
     }
-  if (info->array_index)
+  if (array_index)
     {
-      edge_predicate_pool.remove (info->array_index);
-      info->array_index = NULL;
+      edge_predicate_pool.remove (array_index);
+      array_index = NULL;
     }
-  vec_free (info->conds);
-  vec_free (info->entry);
+  vec_free (conds);
+  vec_free (size_time_table);
   for (e = node->callees; e; e = e->next_callee)
-    reset_ipa_call_summary (e);
+    ipa_call_summaries->get (e)->reset ();
   for (e = node->indirect_calls; e; e = e->next_callee)
-    reset_ipa_call_summary (e);
-  info->fp_expressions = false;
+    ipa_call_summaries->get (e)->reset ();
+  fp_expressions = false;
 }
 
 /* Hook that is called by cgraph.c when a node is removed.  */
@@ -600,7 +597,7 @@ reset_inline_summary (struct cgraph_node *node,
 void
 inline_summary_t::remove (cgraph_node *node, inline_summary *info)
 {
-  reset_inline_summary (node, info);
+  info->reset (node);
 }
 
 /* Same as remap_predicate_after_duplication but handle hint predicate *P.
@@ -641,7 +638,7 @@ inline_summary_t::duplicate (cgraph_node *src,
      out that something was optimized out.  */
   if (ipa_node_params_sum && dst->clone.tree_map)
     {
-      vec<size_time_entry, va_gc> *entry = info->entry;
+      vec<size_time_entry, va_gc> *entry = info->size_time_table;
       /* Use SRC parm info since it may not be copied yet.  */
       struct ipa_node_params *parms_info = IPA_NODE_REF (src);
       vec<tree> known_vals = vNULL;
@@ -654,7 +651,7 @@ inline_summary_t::duplicate (cgraph_node *src,
       bool inlined_to_p = false;
       struct cgraph_edge *edge, *next;
 
-      info->entry = 0;
+      info->size_time_table = 0;
       known_vals.safe_grow_cleared (count);
       for (i = 0; i < count; i++)
 	{
@@ -680,7 +677,7 @@ inline_summary_t::duplicate (cgraph_node *src,
 					  NULL);
       known_vals.release ();
 
-      account_size_time (info, 0, 0, &true_pred, &true_pred);
+      info->account_size_time (0, 0, true_pred, true_pred);
 
       /* Remap size_time vectors.
          Simplify the predicate by prunning out alternatives that are known
@@ -698,8 +695,8 @@ inline_summary_t::duplicate (cgraph_node *src,
 	  if (new_exec_pred == false || new_nonconst_pred == false)
 	    optimized_out_size += e->size;
 	  else
-	    account_size_time (info, e->size, e->time, &new_exec_pred,
-			       &new_nonconst_pred);
+	    info->account_size_time (e->size, e->time, new_exec_pred,
+			             new_nonconst_pred);
 	}
 
       /* Remap edge predicates with the same simplification as above.
@@ -753,7 +750,7 @@ inline_summary_t::duplicate (cgraph_node *src,
     }
   else
     {
-      info->entry = vec_safe_copy (info->entry);
+      info->size_time_table = vec_safe_copy (info->size_time_table);
       if (info->loop_iterations)
 	{
 	  predicate p = *info->loop_iterations;
@@ -804,11 +801,11 @@ ipa_call_summary_t::duplicate (struct cgraph_edge *src,
 
 void
 ipa_call_summary_t::remove (struct cgraph_edge *edge,
-			    struct ipa_call_summary *)
+			    struct ipa_call_summary *sum)
 {
   if (edge_growth_cache.exists ())
     reset_edge_growth_cache (edge);
-  reset_ipa_call_summary (edge);
+  sum->reset ();
 }
 
 
@@ -935,7 +932,7 @@ dump_inline_summary (FILE *f, struct cgraph_node *node)
 	fprintf (f, "  estimated growth:%i\n", (int) s->growth);
       if (s->scc_no)
 	fprintf (f, "  In SCC:          %i\n", (int) s->scc_no);
-      for (i = 0; vec_safe_iterate (s->entry, i, &e); i++)
+      for (i = 0; vec_safe_iterate (s->size_time_table, i, &e); i++)
 	{
 	  fprintf (f, "    size:%f, time:%f",
 		   (double) e->size / INLINE_SIZE_SCALE,
@@ -2057,7 +2054,7 @@ estimate_function_body_sizes (struct cgraph_node *node, bool early)
 
   memset(&fbi, 0, sizeof(fbi));
   info->conds = NULL;
-  info->entry = NULL;
+  info->size_time_table = NULL;
 
   /* When optimizing and analyzing for IPA inliner, initialize loop optimizer
      so we can produce proper inline hints.
@@ -2095,11 +2092,11 @@ estimate_function_body_sizes (struct cgraph_node *node, bool early)
   /* When we run into maximal number of entries, we assign everything to the
      constant truth case.  Be sure to have it in list. */
   bb_predicate = true;
-  account_size_time (info, 0, 0, &bb_predicate, &bb_predicate);
+  info->account_size_time (0, 0, bb_predicate, bb_predicate);
 
   bb_predicate = predicate::not_inlined ();
-  account_size_time (info, 2 * INLINE_SIZE_SCALE, 0, &bb_predicate,
-		     &bb_predicate);
+  info->account_size_time (2 * INLINE_SIZE_SCALE, 0, bb_predicate,
+		           bb_predicate);
 
   if (fbi.info)
     compute_bb_predicates (&fbi, node, info);
@@ -2286,17 +2283,17 @@ estimate_function_body_sizes (struct cgraph_node *node, bool early)
 		  if (prob)
 		    {
 		      predicate ip = bb_predicate & predicate::not_inlined ();
-		      account_size_time (info, this_size * prob,
-					 (sreal)(this_time * prob)
-					 / (CGRAPH_FREQ_BASE * 2), &ip,
-					 &p);
+		      info->account_size_time (this_size * prob,
+					       (sreal)(this_time * prob)
+					       / (CGRAPH_FREQ_BASE * 2), ip,
+					       p);
 		    }
 		  if (prob != 2)
-		    account_size_time (info, this_size * (2 - prob),
-				       (sreal)(this_time * (2 - prob))
-					/ (CGRAPH_FREQ_BASE * 2),
-				       &bb_predicate,
-				       &p);
+		    info->account_size_time (this_size * (2 - prob),
+					     (sreal)(this_time * (2 - prob))
+					      / (CGRAPH_FREQ_BASE * 2),
+					     bb_predicate,
+					     p);
 		}
 
 	      if (!info->fp_expressions && fp_expression_p (stmt))
@@ -2453,7 +2450,7 @@ compute_inline_parameters (struct cgraph_node *node, bool early)
   inline_summary_alloc ();
 
   info = inline_summaries->get (node);
-  reset_inline_summary (node, info);
+  info->reset (node);
 
   /* Estimate the stack size for the function if we're optimizing.  */
   self_stack_size = optimize && !node->thunk.thunk_p
@@ -2470,10 +2467,9 @@ compute_inline_parameters (struct cgraph_node *node, bool early)
       node->local.can_change_signature = false;
       es->call_stmt_size = eni_size_weights.call_cost;
       es->call_stmt_time = eni_time_weights.call_cost;
-      account_size_time (info, INLINE_SIZE_SCALE * 2,
-			 2, &t, &t);
+      info->account_size_time (INLINE_SIZE_SCALE * 2, 2, t, t);
       t = predicate::not_inlined ();
-      account_size_time (info, 2 * INLINE_SIZE_SCALE, 0, &t, &t);
+      info->account_size_time (2 * INLINE_SIZE_SCALE, 0, t, t);
       inline_update_overall_summary (node);
       info->self_size = info->size;
       info->self_time = info->time;
@@ -2799,7 +2795,7 @@ estimate_node_size_and_time (struct cgraph_node *node,
 				known_vals, known_contexts, known_aggs);
   sreal nonspecialized_time = time;
 
-  for (i = 0; vec_safe_iterate (info->entry, i, &e); i++)
+  for (i = 0; vec_safe_iterate (info->size_time_table, i, &e); i++)
     {
       bool nonconst = e->nonconst_predicate.evaluate (possible_truths);
       bool exec = e->exec_predicate.evaluate (nonspec_possible_truths);
@@ -2837,9 +2833,9 @@ estimate_node_size_and_time (struct cgraph_node *node,
 	  gcc_checking_assert (time >= 0);
         }
      }
-  gcc_checking_assert ((*info->entry)[0].exec_predicate == true);
-  gcc_checking_assert ((*info->entry)[0].nonconst_predicate == true);
-  min_size = (*info->entry)[0].size;
+  gcc_checking_assert ((*info->size_time_table)[0].exec_predicate == true);
+  gcc_checking_assert ((*info->size_time_table)[0].nonconst_predicate == true);
+  min_size = (*info->size_time_table)[0].size;
   gcc_checking_assert (size >= 0);
   gcc_checking_assert (time >= 0);
   /* nonspecialized_time should be always bigger than specialized time.
@@ -3141,7 +3137,7 @@ inline_merge_summary (struct cgraph_edge *edge)
 	  gcc_assert (map < ipa_get_param_count (IPA_NODE_REF (to)));
 	}
     }
-  for (i = 0; vec_safe_iterate (callee_info->entry, i, &e); i++)
+  for (i = 0; vec_safe_iterate (callee_info->size_time_table, i, &e); i++)
     {
       predicate p;
       p = e->exec_predicate.remap_after_inlining
@@ -3165,7 +3161,7 @@ inline_merge_summary (struct cgraph_edge *edge)
 	      fprintf (dump_file, "\t\tScaling time by probability:%f\n",
 		       (double) prob / REG_BR_PROB_BASE);
 	    }
-	  account_size_time (info, e->size, add_time, &p, &nonconstp);
+	  info->account_size_time (e->size, add_time, p, nonconstp);
 	}
     }
   remap_edge_summaries (edge, edge->callee, info, callee_info, operand_map,
@@ -3203,7 +3199,7 @@ inline_update_overall_summary (struct cgraph_node *node)
 
   info->size = 0;
   info->time = 0;
-  for (i = 0; vec_safe_iterate (info->entry, i, &e); i++)
+  for (i = 0; vec_safe_iterate (info->size_time_table, i, &e); i++)
     {
       info->size += e->size;
       info->time += e->time;
@@ -3723,7 +3719,7 @@ inline_read_section (struct lto_file_decl_data *file_data, const char *data,
 	  vec_safe_push (info->conds, c);
 	}
       count2 = streamer_read_uhwi (&ib);
-      gcc_assert (!info->entry);
+      gcc_assert (!info->size_time_table);
       for (j = 0; j < count2; j++)
 	{
 	  struct size_time_entry e;
@@ -3733,7 +3729,7 @@ inline_read_section (struct lto_file_decl_data *file_data, const char *data,
 	  e.exec_predicate.stream_in (&ib);
 	  e.nonconst_predicate.stream_in (&ib);
 
-	  vec_safe_push (info->entry, e);
+	  vec_safe_push (info->size_time_table, e);
 	}
 
       p.stream_in (&ib);
@@ -3872,8 +3868,8 @@ inline_write_summary (void)
 	      if (c->agg_contents)
 		streamer_write_uhwi (ob, c->offset);
 	    }
-	  streamer_write_uhwi (ob, vec_safe_length (info->entry));
-	  for (i = 0; vec_safe_iterate (info->entry, i, &e); i++)
+	  streamer_write_uhwi (ob, vec_safe_length (info->size_time_table));
+	  for (i = 0; vec_safe_iterate (info->size_time_table, i, &e); i++)
 	    {
 	      streamer_write_uhwi (ob, e->size);
 	      e->time.stream_out (ob);
@@ -3917,7 +3913,7 @@ inline_free_summary (void)
     return;
   FOR_EACH_DEFINED_FUNCTION (node)
     if (!node->alias)
-      reset_inline_summary (node, inline_summaries->get (node));
+      inline_summaries->get (node)->reset (node);
   inline_summaries->release ();
   inline_summaries = NULL;
   ipa_call_summaries->release ();
