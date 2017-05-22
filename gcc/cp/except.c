@@ -42,15 +42,6 @@ static int complete_ptr_ref_or_void_ptr_p (tree, tree);
 static bool is_admissible_throw_operand_or_catch_parameter (tree, bool);
 static int can_convert_eh (tree, tree);
 
-static GTY(()) tree fn1;
-static GTY(()) tree fn2;
-static GTY(()) tree fn3;
-static GTY(()) tree fn4;
-static GTY(()) tree fn5;
-static GTY(()) tree throw_fn;
-static GTY(()) tree rethrow_fn;
-static GTY(()) tree spec;
-
 /* Sets up all the global eh stuff that needs to be initialized at the
    start of compilation.  */
 
@@ -62,15 +53,15 @@ init_exception_processing (void)
   /* void std::terminate (); */
   push_namespace (std_identifier);
   tmp = build_function_type_list (void_type_node, NULL_TREE);
-  terminate_node = build_cp_library_fn_ptr ("terminate", tmp,
+  terminate_fn = build_cp_library_fn_ptr ("terminate", tmp,
 					   ECF_NOTHROW | ECF_NORETURN);
-  TREE_THIS_VOLATILE (terminate_node) = 1;
-  TREE_NOTHROW (terminate_node) = 1;
+  TREE_THIS_VOLATILE (terminate_fn) = 1;
+  TREE_NOTHROW (terminate_fn) = 1;
   pop_namespace ();
 
   /* void __cxa_call_unexpected(void *); */
   tmp = build_function_type_list (void_type_node, ptr_type_node, NULL_TREE);
-  call_unexpected_node
+  call_unexpected_fn
     = push_throw_library_fn (get_identifier ("__cxa_call_unexpected"), tmp);
 }
 
@@ -84,7 +75,7 @@ cp_protect_cleanup_actions (void)
 
      When the destruction of an object during stack unwinding exits
      using an exception ... void terminate(); is called.  */
-  return terminate_node;
+  return terminate_fn;
 }
 
 static tree
@@ -140,21 +131,39 @@ build_exc_ptr (void)
 		       1, integer_zero_node);
 }
 
-/* Declare a function NAME, returning RETURN_TYPE, taking a single
-   parameter PARM_TYPE, with an empty exception specification.
+/* Find or declare a function NAME, returning RTYPE, taking a single
+   parameter PTYPE, with an empty exception specification. ECF are the
+   library fn flags.  If TM_ECF is non-zero, also find or create a
+   transaction variant and record it as a replacement, when flag_tm is
+   in effect.
 
    Note that the C++ ABI document does not have a throw-specifier on
    the routines declared below via this function.  The declarations
    are consistent with the actual implementations in libsupc++.  */
 
 static tree
-declare_library_fn (tree name, tree return_type, tree parm_type, int ecf_flags)
+declare_library_fn (const char *name, tree rtype, tree ptype,
+		    int ecf, int tm_ecf)
 {
-  return push_library_fn (name, build_function_type_list (return_type,
-							  parm_type,
-							  NULL_TREE),
-			  empty_except_spec,
-			  ecf_flags);
+  tree ident = get_identifier (name);
+  tree res = IDENTIFIER_GLOBAL_VALUE (ident);
+  if (!res)
+    {
+      tree type = build_function_type_list (rtype, ptype, NULL_TREE);
+      tree except = ecf & ECF_NOTHROW ? empty_except_spec : NULL_TREE;
+      res = push_library_fn (ident, type, except, ecf);
+      if (tm_ecf && flag_tm)
+	{
+	  char *tm_name = concat ("_ITM_", name + 2, NULL_TREE);
+	  tree tm_ident = get_identifier (tm_name);
+	  free (tm_name);
+	  tree tm_fn = IDENTIFIER_GLOBAL_VALUE (tm_ident);
+	  if (!tm_fn)
+	    tm_fn = push_library_fn (tm_ident, type, except, ecf | tm_ecf);
+	  record_tm_replacement (res, tm_fn);
+	}
+    }
+  return res;
 }
 
 /* Build up a call to __cxa_get_exception_ptr so that we can build a
@@ -163,18 +172,16 @@ declare_library_fn (tree name, tree return_type, tree parm_type, int ecf_flags)
 static tree
 do_get_exception_ptr (void)
 {
-  if (!fn1)
-    {
-      tree name = get_identifier ("__cxa_get_exception_ptr");
-      fn1 = IDENTIFIER_GLOBAL_VALUE (name);
-      if (!fn1)
-	/* Declare void* __cxa_get_exception_ptr (void *) throw().  */
-	fn1 = declare_library_fn
-	  (name, ptr_type_node, ptr_type_node,
-	   ECF_NOTHROW | ECF_PURE | ECF_LEAF | ECF_TM_PURE);
-    }
+  if (!get_exception_ptr_fn)
+    /* Declare void* __cxa_get_exception_ptr (void *) throw().  */
+    get_exception_ptr_fn
+      = declare_library_fn ("__cxa_get_exception_ptr",
+			    ptr_type_node, ptr_type_node,
+			    ECF_NOTHROW | ECF_PURE | ECF_LEAF | ECF_TM_PURE,
+			    0);
 
-  return cp_build_function_call_nary (fn1, tf_warning_or_error,
+  return cp_build_function_call_nary (get_exception_ptr_fn,
+				      tf_warning_or_error,
 				      build_exc_ptr (), NULL_TREE);
 }
 
@@ -184,31 +191,14 @@ do_get_exception_ptr (void)
 static tree
 do_begin_catch (void)
 {
-  if (!fn2)
-    {
-      tree name = get_identifier ("__cxa_begin_catch");
-      fn2 = IDENTIFIER_GLOBAL_VALUE (name);
-      if (!fn2)
-	{
-	  /* Declare void* __cxa_begin_catch (void *) throw().  */
-	  fn2 = declare_library_fn
-	    (name, ptr_type_node, ptr_type_node, ECF_NOTHROW);
+  if (!begin_catch_fn)
+    /* Declare void* __cxa_begin_catch (void *) throw().  */
+    begin_catch_fn
+      = declare_library_fn ("__cxa_begin_catch",
+			    ptr_type_node, ptr_type_node, ECF_NOTHROW,
+			    ECF_TM_PURE);
 
-	  /* Create its transactional-memory equivalent.  */
-	  if (flag_tm)
-	    {
-	      tree itm_name = get_identifier ("_ITM_cxa_begin_catch");
-	      tree itm_fn = IDENTIFIER_GLOBAL_VALUE (itm_name);
-	      if (!itm_fn)
-		itm_fn = declare_library_fn
-		  (itm_name, ptr_type_node, ptr_type_node,
-		   ECF_NOTHROW | ECF_TM_PURE);
-	      record_tm_replacement (fn2, itm_fn);
-	    }
-	}
-    }
-
-  return cp_build_function_call_nary (fn2, tf_warning_or_error,
+  return cp_build_function_call_nary (begin_catch_fn, tf_warning_or_error,
 				      build_exc_ptr (), NULL_TREE);
 }
 
@@ -236,30 +226,15 @@ dtor_nothrow (tree type)
 static tree
 do_end_catch (tree type)
 {
-  if (!fn3)
-    {
-      tree name = get_identifier ("__cxa_end_catch");
-      fn3 = IDENTIFIER_GLOBAL_VALUE (name);
-      if (!fn3)
-	{
-	  /* Declare void __cxa_end_catch ().
-	     This can throw if the destructor for the exception throws.  */
-	  fn3 = push_void_library_fn (name, void_list_node, 0);
+  if (!end_catch_fn)
+    /* Declare void __cxa_end_catch ().
+       This can throw if the destructor for the exception throws.  */
+    end_catch_fn
+      = declare_library_fn ("__cxa_end_catch", void_type_node,
+			    NULL_TREE, 0, ECF_TM_PURE);
 
-	  /* Create its transactional-memory equivalent.  */
-	  if (flag_tm)
-	    {
-	      tree itm_name = get_identifier ("_ITM_cxa_end_catch");
-	      tree itm_fn = IDENTIFIER_GLOBAL_VALUE (itm_name);
-	      if (!itm_fn)
-		itm_fn = push_void_library_fn
-		  (itm_name, void_list_node, ECF_TM_PURE);
-	      record_tm_replacement (fn3, itm_fn);
-	    }
-	}
-    }
-
-  tree cleanup = cp_build_function_call_vec (fn3, NULL, tf_warning_or_error);
+  tree cleanup = cp_build_function_call_vec (end_catch_fn,
+					     NULL, tf_warning_or_error);
   TREE_NOTHROW (cleanup) = dtor_nothrow (type);
 
   return cleanup;
@@ -519,30 +494,15 @@ finish_eh_spec_block (tree raw_raises, tree eh_spec_block)
 static tree
 do_allocate_exception (tree type)
 {
-  if (!fn4)
-    {
-      tree name = get_identifier ("__cxa_allocate_exception");
-      fn4 = IDENTIFIER_GLOBAL_VALUE (name);
-      if (!fn4)
-	{
-	  /* Declare void *__cxa_allocate_exception(size_t) throw().  */
-	  fn4 = declare_library_fn (name, ptr_type_node, size_type_node,
-				    ECF_NOTHROW | ECF_MALLOC);
+  if (!allocate_exception_fn)
+    /* Declare void *__cxa_allocate_exception(size_t) throw().  */
+    allocate_exception_fn
+      = declare_library_fn ("__cxa_allocate_exception",
+			    ptr_type_node, size_type_node,
+			    ECF_NOTHROW | ECF_MALLOC, ECF_TM_PURE);
 
-	  if (flag_tm)
-	    {
-	      tree itm_name = get_identifier ("_ITM_cxa_allocate_exception");
-	      tree itm_fn = IDENTIFIER_GLOBAL_VALUE (itm_name);
-	      if (!itm_fn)
-		itm_fn = declare_library_fn
-		  (itm_name, ptr_type_node, size_type_node, 
-		   ECF_NOTHROW | ECF_MALLOC | ECF_TM_PURE);
-	      record_tm_replacement (fn4, itm_fn);
-	    }
-	}
-    }
-
-  return cp_build_function_call_nary (fn4, tf_warning_or_error,
+  return cp_build_function_call_nary (allocate_exception_fn,
+				      tf_warning_or_error,
 				      size_in_bytes (type), NULL_TREE);
 }
 
@@ -552,30 +512,15 @@ do_allocate_exception (tree type)
 static tree
 do_free_exception (tree ptr)
 {
-  if (!fn5)
-    {
-      tree name = get_identifier ("__cxa_free_exception");
-      fn5 = IDENTIFIER_GLOBAL_VALUE (name);
-      if (!fn5)
-	{
-	  /* Declare void __cxa_free_exception (void *) throw().  */
-	  fn5 = declare_library_fn (name, void_type_node, ptr_type_node,
-				    ECF_NOTHROW | ECF_LEAF);
+  if (!free_exception_fn)
+    /* Declare void __cxa_free_exception (void *) throw().  */
+    free_exception_fn
+      = declare_library_fn ("__cxa_free_exception",
+			    void_type_node, ptr_type_node,
+			    ECF_NOTHROW | ECF_LEAF, ECF_TM_PURE);
 
-	  if (flag_tm)
-	    {
-	      tree itm_name = get_identifier ("_ITM_cxa_free_exception");
-	      tree itm_fn = IDENTIFIER_GLOBAL_VALUE (itm_name);
-	      if (!itm_fn)
-		itm_fn = declare_library_fn
-		  (itm_name, void_type_node, ptr_type_node,
-		   ECF_NOTHROW | ECF_LEAF | ECF_TM_PURE);
-	      record_tm_replacement (fn5, itm_fn);
-	    }
-	}
-    }
-
-  return cp_build_function_call_nary (fn5, tf_warning_or_error, ptr, NULL_TREE);
+  return cp_build_function_call_nary (free_exception_fn,
+				      tf_warning_or_error, ptr, NULL_TREE);
 }
 
 /* Wrap all cleanups for TARGET_EXPRs in MUST_NOT_THROW_EXPR.
@@ -1257,9 +1202,10 @@ build_noexcept_spec (tree expr, int complain)
 tree
 unevaluated_noexcept_spec (void)
 {
-  if (spec == NULL_TREE)
-    spec = build_noexcept_spec (make_node (DEFERRED_NOEXCEPT), tf_none);
-  return spec;
+  if (!noexcept_deferred_spec)
+    noexcept_deferred_spec
+      = build_noexcept_spec (make_node (DEFERRED_NOEXCEPT), tf_none);
+  return noexcept_deferred_spec;
 }
 
 /* Returns a TRY_CATCH_EXPR that will put TRY_LIST and CATCH_LIST in the

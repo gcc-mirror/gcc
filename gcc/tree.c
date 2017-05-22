@@ -2268,7 +2268,7 @@ tree
 make_tree_vec_stat (int len MEM_STAT_DECL)
 {
   tree t;
-  int length = (len - 1) * sizeof (tree) + sizeof (struct tree_vec);
+  size_t length = (len - 1) * sizeof (tree) + sizeof (struct tree_vec);
 
   record_node_allocation_statistics (TREE_VEC, length);
 
@@ -2290,8 +2290,8 @@ grow_tree_vec_stat (tree v, int len MEM_STAT_DECL)
   int oldlen = TREE_VEC_LENGTH (v);
   gcc_assert (len > oldlen);
 
-  int oldlength = (oldlen - 1) * sizeof (tree) + sizeof (struct tree_vec);
-  int length = (len - 1) * sizeof (tree) + sizeof (struct tree_vec);
+  size_t oldlength = (oldlen - 1) * sizeof (tree) + sizeof (struct tree_vec);
+  size_t length = (len - 1) * sizeof (tree) + sizeof (struct tree_vec);
 
   record_node_allocation_statistics (TREE_VEC, length - oldlength);
 

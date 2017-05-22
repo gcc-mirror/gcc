@@ -6497,9 +6497,8 @@ pushdecl_top_level (tree x, bool is_friend)
   return x;
 }
 
-/* Like pushdecl, only it places X in the global scope if
-   appropriate.  Calls cp_finish_decl to register the variable,
-   initializing it with INIT.  */
+/* Pushes X into the global namespace and calls cp_finish_decl to
+   register the variable, initializing it with INIT.  */
 
 tree
 pushdecl_top_level_and_finish (tree x, tree init)

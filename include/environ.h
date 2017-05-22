@@ -27,7 +27,9 @@ Boston, MA 02110-1301, USA.  */
 #     include <crt_externs.h>
 #     define environ (*_NSGetEnviron ())
 #  else
+#    ifndef environ
 extern char **environ;
+#    endif
 #  endif
 #  define HAVE_ENVIRON_DECL
 #endif

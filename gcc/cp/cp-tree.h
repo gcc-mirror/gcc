@@ -153,8 +153,17 @@ enum cp_tree_index
     CPTI_EMPTY_EXCEPT_SPEC,
     CPTI_NOEXCEPT_TRUE_SPEC,
     CPTI_NOEXCEPT_FALSE_SPEC,
-    CPTI_TERMINATE,
-    CPTI_CALL_UNEXPECTED,
+    CPTI_NOEXCEPT_DEFERRED_SPEC,
+
+    CPTI_TERMINATE_FN,
+    CPTI_CALL_UNEXPECTED_FN,
+    CPTI_GET_EXCEPTION_PTR_FN,
+    CPTI_BEGIN_CATCH_FN,
+    CPTI_END_CATCH_FN,
+    CPTI_ALLOCATE_EXCEPTION_FN,
+    CPTI_FREE_EXCEPTION_FN,
+    CPTI_THROW_FN,
+    CPTI_RETHROW_FN,
     CPTI_ATEXIT_FN_PTR_TYPE,
     CPTI_ATEXIT,
     CPTI_DSO_HANDLE,
@@ -242,17 +251,24 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
 #define lang_name_c			cp_global_trees[CPTI_LANG_NAME_C]
 #define lang_name_cplusplus		cp_global_trees[CPTI_LANG_NAME_CPLUSPLUS]
 
-/* Exception specifiers used for throw(), noexcept(true) and
-   noexcept(false).  We rely on these being uncloned.  */
+/* Exception specifiers used for throw(), noexcept(true),
+   noexcept(false) and deferred noexcept.  We rely on these being
+   uncloned.  */
 #define empty_except_spec		cp_global_trees[CPTI_EMPTY_EXCEPT_SPEC]
 #define noexcept_true_spec		cp_global_trees[CPTI_NOEXCEPT_TRUE_SPEC]
 #define noexcept_false_spec		cp_global_trees[CPTI_NOEXCEPT_FALSE_SPEC]
+#define noexcept_deferred_spec		cp_global_trees[CPTI_NOEXCEPT_DEFERRED_SPEC]
 
-/* The declaration for `std::terminate'.  */
-#define terminate_node			cp_global_trees[CPTI_TERMINATE]
-
-/* The declaration for "__cxa_call_unexpected".  */
-#define call_unexpected_node		cp_global_trees[CPTI_CALL_UNEXPECTED]
+/* Exception handling function declarations.  */
+#define terminate_fn			cp_global_trees[CPTI_TERMINATE_FN]
+#define call_unexpected_fn		cp_global_trees[CPTI_CALL_UNEXPECTED_FN]
+#define get_exception_ptr_fn		cp_global_trees[CPTI_GET_EXCEPTION_PTR_FN]
+#define begin_catch_fn			cp_global_trees[CPTI_BEGIN_CATCH_FN]
+#define end_catch_fn			cp_global_trees[CPTI_END_CATCH_FN]
+#define allocate_exception_fn		cp_global_trees[CPTI_ALLOCATE_EXCEPTION_FN]
+#define free_exception_fn		cp_global_trees[CPTI_FREE_EXCEPTION_FN]
+#define throw_fn			cp_global_trees[CPTI_THROW_FN]
+#define rethrow_fn			cp_global_trees[CPTI_RETHROW_FN]
 
 /* The type of the function-pointer argument to "__cxa_atexit" (or
    "std::atexit", if "__cxa_atexit" is not being used).  */

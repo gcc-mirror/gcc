@@ -144,6 +144,10 @@ if test x$have_unwind_getipinfo = xyes; then
 fi
 AC_SUBST(have_getipinfo)
 
+# Check for <sys/capability.h>
+AC_CHECK_HEADER([sys/capability.h], have_capability=-DHAVE_CAPABILITY, have_capability=)
+AC_SUBST(have_capability)
+
 # Determine what GCC version number to use in filesystem paths.
 GCC_BASE_VER
 

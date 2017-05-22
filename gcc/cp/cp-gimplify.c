@@ -150,7 +150,7 @@ genericize_eh_spec_block (tree *stmt_p)
 {
   tree body = EH_SPEC_STMTS (*stmt_p);
   tree allowed = EH_SPEC_RAISES (*stmt_p);
-  tree failure = build_call_n (call_unexpected_node, 1, build_exc_ptr ());
+  tree failure = build_call_n (call_unexpected_fn, 1, build_exc_ptr ());
 
   *stmt_p = build_gimple_eh_filter_tree (body, allowed, failure);
   TREE_NO_WARNING (*stmt_p) = true;
@@ -501,7 +501,7 @@ gimplify_must_not_throw_expr (tree *expr_p, gimple_seq *pre_p)
   gimple *mnt;
 
   gimplify_and_add (body, &try_);
-  mnt = gimple_build_eh_must_not_throw (terminate_node);
+  mnt = gimple_build_eh_must_not_throw (terminate_fn);
   gimple_seq_add_stmt_without_update (&catch_, mnt);
   mnt = gimple_build_try (try_, catch_, GIMPLE_TRY_CATCH);
 

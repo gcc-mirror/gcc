@@ -1,3 +1,45 @@
+2017-05-22  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-inline-analysis.c (inline_summary::reset): Do not reset
+	self_time.
+	(dump_inline_summary): Do not print self_time.
+	(estimate_function_body_sizes): Do not set self_time.
+	(compute_inline_parameters): Likewise.
+	(inline_read_section, inline_write_summary): Do not stream self_time.
+	* ipa-inline.h (inline_summary): Drop self_time.
+
+2017-05-22  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-inline-analysis.c (account_size_time): Rename to ...
+	(inline_summary::account_size_time): ... this one.
+	(reset_ipa_call_summary): Turn to ...
+	(ipa_call_summary::reset): ... this one.
+	(reset_inline_summary): Turn to ...
+	(inline_summary::reset): ... this one.
+	(inline_summary_t::remove): Update.
+	(inline_summary_t::duplicate): Update.
+	(ipa_call_summary_t::remove): Update.
+	(dump_inline_summary): Update.
+	(estimate_function_body_sizes): Update.
+	(compute_inline_parameters): Update.
+	(estimate_node_size_and_time): Update.
+	(inline_merge_summary): Update.
+	(inline_update_overall_summary): Update.
+	(inline_read_section): Update.
+	(inline_write_summary): Update.
+	* ipa-inline.h (inline_summary): Rename entry to size_time_table;
+	add account_size_time and reset member functions.
+	(ipa_call_summary): Add reset function.
+	* ipa-predicate.h (predicate::operator &): Constify.
+
+2017-05-22  Richard Biener  <rguenther@suse.de>
+
+	* df-scan.c (df_insn_refs_verify): Speedup when not verifying.
+
+2017-05-19  Jason Merrill  <jason@redhat.com>
+
+	* tree.c (make_tree_vec_stat, grow_tree_vec_stat): Use size_t.
+
 2017-05-19  Marek Polacek  <polacek@redhat.com>
 
 	PR sanitizer/80800

@@ -137,7 +137,7 @@ public:
 
   /* Compute logical and of predicates.  */
   predicate & operator &= (const predicate &);
-  inline predicate operator &(const predicate &p)
+  inline predicate operator &(const predicate &p) const
     {
       predicate ret = *this;
       ret &= p;
