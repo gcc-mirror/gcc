@@ -1,3 +1,9 @@
+2017-05-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (gnat_to_gnu_entity): Skip regular processing
+	for Itypes that are E_Access_Subtype.
+	<E_Access_Subtype>: Use the DECL of the base type directly.
+
 2017-05-22  Ed Schonberg  <schonberg@adacore.com>
             Eric Botcazou  <ebotcazou@adacore.com>
 
