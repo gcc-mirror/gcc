@@ -1,3 +1,27 @@
+2017-05-22  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-inline-analysis.c (account_size_time): Rename to ...
+	(inline_summary::account_size_time): ... this one.
+	(reset_ipa_call_summary): Turn to ...
+	(ipa_call_summary::reset): ... this one.
+	(reset_inline_summary): Turn to ...
+	(inline_summary::reset): ... this one.
+	(inline_summary_t::remove): Update.
+	(inline_summary_t::duplicate): Update.
+	(ipa_call_summary_t::remove): Update.
+	(dump_inline_summary): Update.
+	(estimate_function_body_sizes): Update.
+	(compute_inline_parameters): Update.
+	(estimate_node_size_and_time): Update.
+	(inline_merge_summary): Update.
+	(inline_update_overall_summary): Update.
+	(inline_read_section): Update.
+	(inline_write_summary): Update.
+	* ipa-inline.h (inline_summary): Rename entry to size_time_table;
+	add account_size_time and reset member functions.
+	(ipa_call_summary): Add reset function.
+	* ipa-predicate.h (predicate::operator &): Constify.
+
 2017-05-22  Richard Biener  <rguenther@suse.de>
 
 	* df-scan.c (df_insn_refs_verify): Speedup when not verifying.
