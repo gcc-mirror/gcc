@@ -1,3 +1,8 @@
+2017-05-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (gnat_to_gnu_field): Do not enforce strict
+	alignment for simple volatile fields and remove associated errors.
+
 2017-05-15  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/gigi.h (get_elaboration_procedure): Delete.

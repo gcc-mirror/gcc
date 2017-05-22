@@ -6783,19 +6783,24 @@ gnat_to_gnu_field (Entity_Id gnat_field, tree gnu_record_type, int packed,
 {
   const Entity_Id gnat_record_type = Underlying_Type (Scope (gnat_field));
   const Entity_Id gnat_field_type = Etype (gnat_field);
-  const bool is_aliased
-    = Is_Aliased (gnat_field);
   const bool is_atomic
     = (Is_Atomic_Or_VFA (gnat_field) || Is_Atomic_Or_VFA (gnat_field_type));
+  const bool is_aliased = Is_Aliased (gnat_field);
   const bool is_independent
     = (Is_Independent (gnat_field) || Is_Independent (gnat_field_type));
   const bool is_volatile
     = (Treat_As_Volatile (gnat_field) || Treat_As_Volatile (gnat_field_type));
+  const bool is_strict_alignment = Strict_Alignment (gnat_field_type);
+  /* We used to consider that volatile fields also require strict alignment,
+     but that was an interpolation and would cause us to reject a pragma
+     volatile on a packed record type containing boolean components, while
+     there is no basis to do so in the RM.  In such cases, the writes will
+     involve load-modify-store sequences, but that's OK for volatile.  The
+     only constraint is the implementation advice whereby only the bits of
+     the components should be accessed if they both start and end on byte
+     boundaries, but that should be guaranteed by the GCC memory model.  */
   const bool needs_strict_alignment
-    = (is_aliased
-       || is_independent
-       || is_volatile
-       || Strict_Alignment (gnat_field_type));
+    = (is_atomic || is_aliased || is_independent || is_strict_alignment);
   tree gnu_field_type = gnat_to_gnu_type (gnat_field_type);
   tree gnu_field_id = get_entity_name (gnat_field);
   tree gnu_field, gnu_size, gnu_pos;
@@ -6917,9 +6922,7 @@ gnat_to_gnu_field (Entity_Id gnat_field, tree gnu_record_type, int packed,
 		s = "position of aliased field& must be multiple of ^ bits";
 	      else if (is_independent)
 		s = "position of independent field& must be multiple of ^ bits";
-	      else if (is_volatile)
-		s = "position of volatile field& must be multiple of ^ bits";
-	      else if (Strict_Alignment (gnat_field_type))
+	      else if (is_strict_alignment)
 		s = "position of & with aliased or tagged part must be"
 		    " multiple of ^ bits";
 	      else
@@ -6947,9 +6950,7 @@ gnat_to_gnu_field (Entity_Id gnat_field, tree gnu_record_type, int packed,
 		    s = "size of aliased field& must be ^ bits";
 		  else if (is_independent)
 		    s = "size of independent field& must be at least ^ bits";
-		  else if (is_volatile)
-		    s = "size of volatile field& must be at least ^ bits";
-		  else if (Strict_Alignment (gnat_field_type))
+		  else if (is_strict_alignment)
 		    s = "size of & with aliased or tagged part must be"
 			" at least ^ bits";
 		  else
@@ -6969,10 +6970,7 @@ gnat_to_gnu_field (Entity_Id gnat_field, tree gnu_record_type, int packed,
 		  if (is_independent)
 		    s = "size of independent field& must be multiple of"
 			" Storage_Unit";
-		  else if (is_volatile)
-		    s = "size of volatile field& must be multiple of"
-			" Storage_Unit";
-		  else if (Strict_Alignment (gnat_field_type))
+		  else if (is_strict_alignment)
 		    s = "size of & with aliased or tagged part must be"
 			" multiple of Storage_Unit";
 		  else
@@ -7079,9 +7077,9 @@ gnat_to_gnu_field (Entity_Id gnat_field, tree gnu_record_type, int packed,
   /* Now create the decl for the field.  */
   gnu_field
     = create_field_decl (gnu_field_id, gnu_field_type, gnu_record_type,
-			 gnu_size, gnu_pos, packed, Is_Aliased (gnat_field));
+			 gnu_size, gnu_pos, packed, is_aliased);
   Sloc_to_locus (Sloc (gnat_field), &DECL_SOURCE_LOCATION (gnu_field));
-  DECL_ALIASED_P (gnu_field) = Is_Aliased (gnat_field);
+  DECL_ALIASED_P (gnu_field) = is_aliased;
   TREE_SIDE_EFFECTS (gnu_field) = TREE_THIS_VOLATILE (gnu_field) = is_volatile;
 
   if (Ekind (gnat_field) == E_Discriminant)
