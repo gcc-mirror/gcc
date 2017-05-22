@@ -1,3 +1,7 @@
+2017-05-19  Martin Sebor  <msebor@redhat.com>
+
+	* print-tree.c (print_node): Print DECL_READ_P flag.
+
 2017-05-22  Jan Hubicka  <hubicka@ucw.cz>
 
 	* Makefile.in: Add ipa-fnsummary.o and ipa-fnsummary.h
