@@ -4103,23 +4103,30 @@ df_insn_refs_verify (struct df_collection_rec *collection_rec,
                      rtx_insn *insn,
 		     bool abort_if_fail)
 {
-  bool ret1, ret2, ret3, ret4;
+  bool ret1, ret2, ret3;
   unsigned int uid = INSN_UID (insn);
   struct df_insn_info *insn_info = DF_INSN_INFO_GET (insn);
 
   df_insn_refs_collect (collection_rec, bb, insn_info);
 
   /* Unfortunately we cannot opt out early if one of these is not
-     right because the marks will not get cleared.  */
+     right and abort_if_fail is set because the marks will not get cleared.  */
   ret1 = df_refs_verify (&collection_rec->def_vec, DF_INSN_UID_DEFS (uid),
 			 abort_if_fail);
+  if (!ret1 && !abort_if_fail)
+    return false;
   ret2 = df_refs_verify (&collection_rec->use_vec, DF_INSN_UID_USES (uid),
 			 abort_if_fail);
+  if (!ret2 && !abort_if_fail)
+    return false;
   ret3 = df_refs_verify (&collection_rec->eq_use_vec, DF_INSN_UID_EQ_USES (uid),
 			 abort_if_fail);
-  ret4 = df_mws_verify (&collection_rec->mw_vec, DF_INSN_UID_MWS (uid),
-		       abort_if_fail);
-  return (ret1 && ret2 && ret3 && ret4);
+  if (!ret3 && !abort_if_fail)
+    return false;
+  if (! df_mws_verify (&collection_rec->mw_vec, DF_INSN_UID_MWS (uid),
+		       abort_if_fail))
+    return false;
+  return (ret1 && ret2 && ret3);
 }
 
 
