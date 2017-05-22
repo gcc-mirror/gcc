@@ -1,3 +1,8 @@
+2017-05-22  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* gcc.target/arm/movsi_movt.c: New test.
+	* gcc.target/arm/movdi_movt.c: New test.
+
 2017-05-22  Pierre-Marie de Rodat  <derodat@adacore.com>
 
 	* gnat.dg/specs/not_null1.ads: New test.
