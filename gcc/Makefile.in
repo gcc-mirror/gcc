@@ -1340,6 +1340,7 @@ OBJS = \
 	ipa-chkp.o \
 	ipa-cp.o \
 	ipa-devirt.o \
+	ipa-fnsummary.o \
 	ipa-polymorphic-call.o \
 	ipa-split.o \
 	ipa-inline.o \
@@ -2507,7 +2508,7 @@ GTFILES = $(CPP_ID_DATA_H) $(srcdir)/input.h $(srcdir)/coretypes.h \
   $(srcdir)/lto-streamer.h \
   $(srcdir)/target-globals.h \
   $(srcdir)/ipa-predicate.h \
-  $(srcdir)/ipa-inline.h \
+  $(srcdir)/ipa-fnsummary.h \
   $(srcdir)/vtable-verify.c \
   $(srcdir)/asan.c \
   $(srcdir)/ubsan.c \

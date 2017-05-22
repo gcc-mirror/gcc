@@ -1,5 +1,65 @@
 2017-05-22  Jan Hubicka  <hubicka@ucw.cz>
 
+	* Makefile.in: Add ipa-fnsummary.o and ipa-fnsummary.h
+	* auto-profile.c: Replace ipa-inline.h by ipa-fnsummary.h
+	* cgraph.c: Likewise.
+	* cgraphunit.c: Likewise.
+	* gengtype.c: Likewise.
+	* ipa-cp.c: Likewise.
+	* ipa-devirt.c: Likewise.
+	* ipa-icf.c: Likewise.
+	* ipa-predicate.c: Likewise.
+	* ipa-profile.c: Likewise.
+	* ipa-prop.c: Likewise.
+	* ipa-split.c: Likewise.
+	* ipa.c: Likewise.
+	* ipa-inline-analysis.c (inline_summaries, ipa_call_summaries,
+	edge_predicate_pool, dump_inline_hints,
+	inline_summary::account_size_time, redirect_to_unreachable,
+	edge_set_predicate, set_hint_predicate,
+	evaluate_conditions_for_known_args, evaluate_properties_for_edge,
+	inline_summary_alloc, ipa_call_summary::reset, inline_summary::reset,
+	inline_summary_t::remove, remap_hint_predicate_after_duplication,
+	inline_summary_t::duplicate, ipa_call_summary_t::duplicate,
+	ipa_call_summary_t::remove, initialize_growth_caches,
+	free_growth_caches, dump_ipa_call_summary, dump_inline_summary,
+	debug_inline_summary, dump_inline_summaries, initialize_inline_failed,
+	mark_modified, unmodified_parm_1, unmodified_parm,
+	unmodified_parm_or_parm_agg_item, eliminated_by_inlining_prob,
+	set_cond_stmt_execution_predicate, set_switch_stmt_execution_predicate,
+	compute_bb_predicates, will_be_nonconstant_expr_predicate,
+	will_be_nonconstant_predicate, record_modified_bb_info,
+	get_minimal_bb, record_modified, param_change_prob,
+	phi_result_unknown_predicate, predicate_for_phi_result,
+	array_index_predicate, clobber_only_eh_bb_p, fp_expression_p,
+	estimate_function_body_sizes, compute_inline_parameters,
+	compute_inline_parameters_for_curren, pass_data_inline_parameters,
+	estimate_node_size_and_time, estimate_ipcp_clone_size_and_time,
+	inline_update_callee_summaries, remap_edge_change_prob,
+	remap_edge_summaries, remap_hint_predicate, inline_merge_summary,
+	inline_update_overall_summary, inline_indirect_intraprocedural_analysis,
+	inline_analyze_function, inline_summary_t::insert,
+	inline_generate_summary, read_ipa_call_summary, inline_read_section,
+	inline_read_summary, write_ipa_call_summary, inline_write_summary,
+	inline_free_summary): Move to ipa-fnsummary.h
+	(predicate_t): Remove.
+	* ipa-fnsummary.c: New file.
+	* ipa-inline.h:  Do not include sreal.h and ipa-predicate.h
+	(enum inline_hints_vals, inline_hints, agg_position_info,
+	INLINE_SIZE_SCALE, size_time_entry, inline_summary, inline_summary_t,
+	inline_summaries, ipa_call_summary, ipa_call_summary_t,
+	ipa_call_summaries, debug_inline_summary, dump_inline_summaries,
+	dump_inline_summary, dump_inline_hints, inline_generate_summary,
+	inline_read_summary, inline_write_summary, inline_free_summary,
+	inline_analyze_function, initialize_inline_failed,
+	inline_merge_summary, inline_update_overall_summary,
+	compute_inline_parameters): Move to ipa-fnsummary.h
+	* ipa-fnsummary.h: New file.
+	* ipa-inline-transform.h: Include ipa-inline.h.
+	* ipa-inline.c: LIkewise.
+
+2017-05-22  Jan Hubicka  <hubicka@ucw.cz>
+
 	* ipa-inline.c (edge_badness): Use inlined_time instead of
 	inline_summaries->get.
 
