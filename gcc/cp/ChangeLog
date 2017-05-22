@@ -1,5 +1,7 @@
 2017-05-22  Nathan Sidwell  <nathan@acm.org>
 
+	* config-lang.in (gtfiles): Sort list, break lines.
+
 	* cp-tree.h (CPTI_TERMINATE, CPTI_CALL_UNEXPECTED): Rename to ...
 	(CPTI_TERMINATE_FN, CPTI_CALL_UNEXPECTED_FN): ... here.
 	( CPTI_GET_EXCEPTION_PTR_FN, CPTI_BEGIN_CATCH_FN, CPTI_END_CATCH_FN,
