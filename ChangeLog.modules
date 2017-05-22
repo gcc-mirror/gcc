@@ -1,5 +1,13 @@
 2017-05-22  Nathan Sidwell  <nathan@acm.org>
 
+	Merge trunk r248338.
+	gcc/cp/
+	* name-lookup.c (add_using_namespace): Remove FROM arg.
+	(notify_debug_using_namespace): New.
+	(finish_namespace_using_directive, push_namespace): Notify debug.
+	gcc/testsuite/
+	* g++.dg/lookup/strong-using-6.C: Delete.
+
 	gcc/cp/
 	* config-lang.in: Update.
 	* name-lookup.c (add_using_directive): Rename to ...

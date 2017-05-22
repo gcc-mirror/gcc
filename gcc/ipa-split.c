@@ -102,7 +102,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-inline.h"
 #include "params.h"
 #include "gimple-pretty-print.h"
-#include "ipa-inline.h"
+#include "ipa-fnsummary.h"
 #include "cfgloop.h"
 #include "tree-chkp.h"
 

@@ -11214,18 +11214,6 @@ c_parse_final_cleanups (void)
       dump_ada_specs (collect_all_refs, NULL);
     }
 
-  if (ext_block)
-    {
-      tree tmp = BLOCK_VARS (ext_block);
-      dump_flags_t flags;
-      FILE * stream = dump_begin (TDI_tu, &flags);
-      if (stream && tmp)
-	{
-	  dump_node (tmp, flags & ~TDF_SLIM, stream);
-	  dump_end (TDI_tu, stream);
-	}
-    }
-
   /* Process all file scopes in this compilation, and the external_scope,
      through wrapup_global_declarations.  */
   FOR_EACH_VEC_ELT (*all_translation_units, i, t)

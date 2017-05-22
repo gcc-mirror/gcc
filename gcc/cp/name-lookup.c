@@ -5903,7 +5903,7 @@ lookup_arg_dependent (tree name, tree fns, vec<tree, va_gc> *args)
    the unqualified search.  */
 
 static void
-add_using_namespace (tree from, vec<tree, va_gc> *&usings, tree target)
+add_using_namespace (vec<tree, va_gc> *&usings, tree target)
 {
   if (usings)
     for (unsigned ix = usings->length (); ix--;)
@@ -5911,12 +5911,16 @@ add_using_namespace (tree from, vec<tree, va_gc> *&usings, tree target)
 	return;
 
   vec_safe_push (usings, target);
-  if (from)
-    {
-      /* Emit debugging info.  */
-      tree context = from != global_namespace ? from : NULL_TREE;
-      debug_hooks->imported_module_or_decl (target, NULL_TREE, context, false);
-    }
+}
+
+/* Notify debug system of a using directive.  */
+
+static void
+notify_debug_using_namespace (tree from, tree target)
+{
+  /* Emit debugging info.  */
+  tree context = from != global_namespace ? from : NULL_TREE;
+  debug_hooks->imported_module_or_decl (target, NULL_TREE, context, false);
 }
 
 /* The type TYPE is being declared.  If it is a class template, or a
@@ -6265,56 +6269,6 @@ store_class_bindings (vec<cp_class_binding, va_gc> *names,
     }
 }
 
-/* Process a namespace-scope using directive.  */
-
-void
-finish_namespace_using_directive (tree target, tree attribs)
-{
-  gcc_checking_assert (namespace_bindings_p ());
-  if (target == error_mark_node)
-    return;
-
-  add_using_namespace (current_namespace,
-		       DECL_NAMESPACE_USING (current_namespace),
-		       ORIGINAL_NAMESPACE (target));
-
-  if (attribs == error_mark_node)
-    return;
-
-  for (tree a = attribs; a; a = TREE_CHAIN (a))
-    {
-      tree name = get_attribute_name (a);
-      if (is_attribute_p ("strong", name))
-	{
-	  warning (0, "strong using directive no longer supported");
-	  if (CP_DECL_CONTEXT (target) == current_namespace)
-	    inform (DECL_SOURCE_LOCATION (target),
-		    "you may use an inline namespace instead");
-	}
-      else
-	warning (OPT_Wattributes, "%qD attribute directive ignored", name);
-    }
-}
-
-/* Process a function-scope using-directive.  */
-
-void
-finish_local_using_directive (tree target, tree attribs)
-{
-  gcc_checking_assert (local_bindings_p ());
-  if (target == error_mark_node)
-    return;
-
-  if (attribs)
-    warning (OPT_Wattributes, "attributes ignored on local using directive");
-
-  add_stmt (build_stmt (input_location, USING_STMT, target));
-
-  add_using_namespace (NULL_TREE,
-		       current_binding_level->using_directives,
-		       ORIGINAL_NAMESPACE (target));
-}
-
 /* A chain of saved_scope structures awaiting reuse.  */
 
 static GTY((deletable)) struct saved_scope *free_saved_scope;
@@ -6478,6 +6432,56 @@ do_pop_nested_namespace (tree ns)
   do_pop_from_top_level ();
 }
 
+/* Process a namespace-scope using directive.  */
+
+void
+finish_namespace_using_directive (tree target, tree attribs)
+{
+  gcc_checking_assert (namespace_bindings_p ());
+  if (target == error_mark_node)
+    return;
+
+  add_using_namespace (DECL_NAMESPACE_USING (current_namespace),
+		       ORIGINAL_NAMESPACE (target));
+  notify_debug_using_namespace (current_namespace,
+				ORIGINAL_NAMESPACE (target));
+
+  if (attribs == error_mark_node)
+    return;
+
+  for (tree a = attribs; a; a = TREE_CHAIN (a))
+    {
+      tree name = get_attribute_name (a);
+      if (is_attribute_p ("strong", name))
+	{
+	  warning (0, "strong using directive no longer supported");
+	  if (CP_DECL_CONTEXT (target) == current_namespace)
+	    inform (DECL_SOURCE_LOCATION (target),
+		    "you may use an inline namespace instead");
+	}
+      else
+	warning (OPT_Wattributes, "%qD attribute directive ignored", name);
+    }
+}
+
+/* Process a function-scope using-directive.  */
+
+void
+finish_local_using_directive (tree target, tree attribs)
+{
+  gcc_checking_assert (local_bindings_p ());
+  if (target == error_mark_node)
+    return;
+
+  if (attribs)
+    warning (OPT_Wattributes, "attributes ignored on local using directive");
+
+  add_stmt (build_stmt (input_location, USING_STMT, target));
+
+  add_using_namespace (current_binding_level->using_directives,
+		       ORIGINAL_NAMESPACE (target));
+}
+
 /* Pushes X into the global namespace.  */
 
 tree
@@ -6605,12 +6609,14 @@ push_namespace (tree name, bool make_inline)
 	      DECL_NAME (ns) = NULL_TREE;
 
 	      if (!make_inline)
-		add_using_namespace (current_namespace,
-				     DECL_NAMESPACE_USING (current_namespace),
+		add_using_namespace (DECL_NAMESPACE_USING (current_namespace),
 				     ns);
 	    }
 	  else if (TREE_PUBLIC (current_namespace))
 	    TREE_PUBLIC (ns) = 1;
+
+	  if (name == anon_identifier || make_inline)
+	    notify_debug_using_namespace (current_namespace, ns);
 
 	  if (make_inline)
 	    {

@@ -34,7 +34,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "symbol-summary.h"
 #include "tree-vrp.h"
 #include "ipa-prop.h"
-#include "ipa-inline.h"
+#include "ipa-fnsummary.h"
 
 /* Debugging function for postorder and inorder code. NOTE is a string
    that is printed before the nodes are printed.  ORDER is an array of

@@ -1,3 +1,7 @@
+2017-05-22  Nathan Sidwell  <nathan@acm.org>
+
+	* g++.dg/lookup/strong-using.C: New.
+
 2017-05-22  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	* gcc.target/arm/movsi_movt.c: New test.
