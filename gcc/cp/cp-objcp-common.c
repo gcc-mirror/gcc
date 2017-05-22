@@ -359,6 +359,9 @@ cp_register_dumps (gcc::dump_manager *dumps)
 {
   class_dump_id = dumps->dump_register
     (".class", "lang-class", "lang-class", DK_lang, OPTGROUP_NONE, false);
+
+  raw_dump_id = dumps->dump_register
+    (".raw", "lang-raw", "lang-raw", DK_lang, OPTGROUP_NONE, false);
 }
 
 void

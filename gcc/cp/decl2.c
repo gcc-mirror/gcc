@@ -49,6 +49,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "c-family/c-ada-spec.h"
 #include "asan.h"
 
+/* Id for dumping the raw trees.  */
+int raw_dump_id;
+ 
 extern cpp_reader *parse_in;
 
 /* This structure contains information about the initializations
@@ -4362,12 +4365,10 @@ static void
 dump_tu (void)
 {
   dump_flags_t flags;
-  FILE *stream = dump_begin (TDI_tu, &flags);
-
-  if (stream)
+  if (FILE *stream = dump_begin (raw_dump_id, &flags))
     {
       dump_node (global_namespace, flags & ~TDF_SLIM, stream);
-      dump_end (TDI_tu, stream);
+      dump_end (raw_dump_id, stream);
     }
 }
 
