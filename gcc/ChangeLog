@@ -1,3 +1,14 @@
+2017-05-22  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/80718
+	* config/rs6000/vsx.md (vsx_splat_<mode>, VSX_D iterator): Split
+	V2DF/V2DI splat into two separate patterns, one that handles
+	registers, and the other that only handles memory.  Drop support
+	for splatting from a GPR on ISA 2.07 and then splitting the
+	splat into direct move and splat.
+	(vsx_splat_<mode>_reg): Likewise.
+	(vsx_splat_<mode>_mem): Likewise.
+
 2017-05-22  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* cfgcleanup.c (bb_is_just_return): Allow CLOBBERs.
