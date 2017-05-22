@@ -2666,7 +2666,7 @@ trivially_empty_bb_p (basic_block bb)
 
 /* Return true if BB contains just a return and possibly a USE of the
    return value.  Fill in *RET and *USE with the return and use insns
-   if any found, otherwise NULL.  */
+   if any found, otherwise NULL.  All CLOBBERs are ignored.  */
 
 static bool
 bb_is_just_return (basic_block bb, rtx_insn **ret, rtx_insn **use)
@@ -2680,13 +2680,15 @@ bb_is_just_return (basic_block bb, rtx_insn **ret, rtx_insn **use)
   FOR_BB_INSNS (bb, insn)
     if (NONDEBUG_INSN_P (insn))
       {
-	if (!*ret && ANY_RETURN_P (PATTERN (insn)))
+	rtx pat = PATTERN (insn);
+
+	if (!*ret && ANY_RETURN_P (pat))
 	  *ret = insn;
-	else if (!*ret && !*use && GET_CODE (PATTERN (insn)) == USE
-	    && REG_P (XEXP (PATTERN (insn), 0))
-	    && REG_FUNCTION_VALUE_P (XEXP (PATTERN (insn), 0)))
+	else if (!*ret && !*use && GET_CODE (pat) == USE
+	    && REG_P (XEXP (pat, 0))
+	    && REG_FUNCTION_VALUE_P (XEXP (pat, 0)))
 	  *use = insn;
-	else
+	else if (GET_CODE (pat) != CLOBBER)
 	  return false;
       }
 

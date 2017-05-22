@@ -1,3 +1,7 @@
+2017-05-22  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* gcc.target/powerpc/conditional-return.c: New testcase.
+
 2017-05-22  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* gcc.target/powerpc/p8-vec-xl-xst.c: Fix target string to
