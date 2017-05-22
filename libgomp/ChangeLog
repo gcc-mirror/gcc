@@ -1,3 +1,8 @@
+2017-05-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/80853
+	* testsuite/libgomp.c/pr80853.c: New test.
+
 2017-05-19  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* testsuite/libgomp.oacc-c++/template-reduction.C: Update.
