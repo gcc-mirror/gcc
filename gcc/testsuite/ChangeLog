@@ -1,3 +1,8 @@
+2017-05-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/specs/volatile1.ads: Remove obsolete errors.
+	* gnat.dg/specs/clause_on_volatile.ads: Likewise.
+
 2017-05-21  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/70265

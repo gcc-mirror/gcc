@@ -57,7 +57,7 @@ package Clause_On_Volatile is
   end record;
   For V1'Alignment use 4;
   for V1 use record
-     VW at 0 range 0 .. 15; -- { dg-error "must be at least" }
+     VW at 0 range 0 .. 15;
   end record;
 
   type V2 is record
@@ -67,7 +67,7 @@ package Clause_On_Volatile is
   For V2'Alignment use 4;
   for V2 use record
      B at 0 range 0 .. 7;
-     VW at 1 range 0 .. 31; -- { dg-error "must be multiple" }
+     VW at 1 range 0 .. 31;
   end record;
 
   type V3 is record
@@ -77,7 +77,7 @@ package Clause_On_Volatile is
   For V3'Alignment use 4;
   for V3 use record
      B at 0 range 0 .. 7;
-     VW at 1 range 0 .. 15; -- { dg-error "must be (multiple|at least)" }
+     VW at 1 range 0 .. 15;
   end record;
 
 end Clause_On_Volatile;
