@@ -112,10 +112,6 @@ struct omp_context
      otherwise.  */
   gimple *simt_stmt;
 
-  /* What to do with variables with implicitly determined sharing
-     attributes.  */
-  enum omp_clause_default_kind default_kind;
-
   /* Nesting depth of this context.  Used to beautify error messages re
      invalid gotos.  The outermost ctx is depth 1, with depth 0 being
      reserved for the main body of the function.  */
@@ -1162,10 +1158,6 @@ scan_sharing_clauses (tree clauses, omp_context *ctx,
 	  install_var_field (decl, by_ref, 3, ctx);
 	  break;
 
-	case OMP_CLAUSE_DEFAULT:
-	  ctx->default_kind = OMP_CLAUSE_DEFAULT_KIND (c);
-	  break;
-
 	case OMP_CLAUSE_FINAL:
 	case OMP_CLAUSE_IF:
 	case OMP_CLAUSE_NUM_THREADS:
@@ -1332,6 +1324,7 @@ scan_sharing_clauses (tree clauses, omp_context *ctx,
 	case OMP_CLAUSE_SEQ:
 	case OMP_CLAUSE_TILE:
 	case OMP_CLAUSE__SIMT_:
+	case OMP_CLAUSE_DEFAULT:
 	  break;
 
 	case OMP_CLAUSE_ALIGNED:
@@ -1826,7 +1819,6 @@ scan_omp_parallel (gimple_stmt_iterator *gsi, omp_context *outer_ctx)
   if (taskreg_nesting_level > 1)
     ctx->is_nested = true;
   ctx->field_map = splay_tree_new (splay_tree_compare_pointers, 0, 0);
-  ctx->default_kind = OMP_CLAUSE_DEFAULT_SHARED;
   ctx->record_type = lang_hooks.types.make_type (RECORD_TYPE);
   name = create_tmp_var_name (".omp_data_s");
   name = build_decl (gimple_location (stmt),
@@ -1875,7 +1867,6 @@ scan_omp_task (gimple_stmt_iterator *gsi, omp_context *outer_ctx)
   if (taskreg_nesting_level > 1)
     ctx->is_nested = true;
   ctx->field_map = splay_tree_new (splay_tree_compare_pointers, 0, 0);
-  ctx->default_kind = OMP_CLAUSE_DEFAULT_SHARED;
   ctx->record_type = lang_hooks.types.make_type (RECORD_TYPE);
   name = create_tmp_var_name (".omp_data_s");
   name = build_decl (gimple_location (stmt),
@@ -2390,7 +2381,6 @@ scan_omp_target (gomp_target *stmt, omp_context *outer_ctx)
 
   ctx = new_omp_context (stmt, outer_ctx);
   ctx->field_map = splay_tree_new (splay_tree_compare_pointers, 0, 0);
-  ctx->default_kind = OMP_CLAUSE_DEFAULT_SHARED;
   ctx->record_type = lang_hooks.types.make_type (RECORD_TYPE);
   name = create_tmp_var_name (".omp_data_t");
   name = build_decl (gimple_location (stmt),
