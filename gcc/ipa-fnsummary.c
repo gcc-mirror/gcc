@@ -2504,46 +2504,6 @@ compute_fn_summary_for_current (void)
   return 0;
 }
 
-namespace {
-
-const pass_data pass_data_inline_parameters =
-{
-  GIMPLE_PASS, /* type */
-  "inline_param", /* name */
-  OPTGROUP_INLINE, /* optinfo_flags */
-  TV_INLINE_PARAMETERS, /* tv_id */
-  0, /* properties_required */
-  0, /* properties_provided */
-  0, /* properties_destroyed */
-  0, /* todo_flags_start */
-  0, /* todo_flags_finish */
-};
-
-class pass_inline_parameters : public gimple_opt_pass
-{
-public:
-  pass_inline_parameters (gcc::context *ctxt)
-    : gimple_opt_pass (pass_data_inline_parameters, ctxt)
-  {}
-
-  /* opt_pass methods: */
-  opt_pass * clone () { return new pass_inline_parameters (m_ctxt); }
-  virtual unsigned int execute (function *)
-    {
-      return compute_fn_summary_for_current ();
-    }
-
-}; // class pass_inline_parameters
-
-} // anon namespace
-
-gimple_opt_pass *
-make_pass_inline_parameters (gcc::context *ctxt)
-{
-  return new pass_inline_parameters (ctxt);
-}
-
-
 /* Estimate benefit devirtualizing indirect edge IE, provided KNOWN_VALS,
    KNOWN_CONTEXTS and KNOWN_AGGS.  */
 
@@ -3207,8 +3167,8 @@ ipa_fn_summary_t::insert (struct cgraph_node *node, ipa_fn_summary *)
 
 /* Note function body size.  */
 
-void
-inline_generate_summary (void)
+static void
+ipa_fn_summary_generate (void)
 {
   struct cgraph_node *node;
 
@@ -3226,7 +3186,7 @@ inline_generate_summary (void)
   ipa_fn_summaries->enable_insertion_hook ();
 
   ipa_register_cgraph_hooks ();
-  inline_free_summary ();
+  ipa_free_fn_summary ();
 
   FOR_EACH_DEFINED_FUNCTION (node)
     if (!node->alias)
@@ -3358,8 +3318,8 @@ inline_read_section (struct lto_file_decl_data *file_data, const char *data,
    and inliner, so when ipa-cp is active, we don't need to write them
    twice.  */
 
-void
-inline_read_summary (void)
+static void
+ipa_fn_summary_read (void)
 {
   struct lto_file_decl_data **file_data_vec = lto_get_file_decl_data ();
   struct lto_file_decl_data *file_data;
@@ -3419,8 +3379,8 @@ write_ipa_call_summary (struct output_block *ob, struct cgraph_edge *e)
    Jump functions are shared among ipa-cp and inliner, so when ipa-cp is
    active, we don't need to write them twice.  */
 
-void
-inline_write_summary (void)
+static void
+ipa_fn_summary_write (void)
 {
   struct output_block *ob = create_output_block (LTO_section_ipa_fn_summary);
   lto_symtab_encoder_t encoder = ob->decl_state->symtab_node_encoder;
@@ -3510,7 +3470,7 @@ inline_write_summary (void)
 /* Release inline summary.  */
 
 void
-inline_free_summary (void)
+ipa_free_fn_summary (void)
 {
   struct cgraph_node *node;
   if (!ipa_call_summaries)
@@ -3524,4 +3484,132 @@ inline_free_summary (void)
   delete ipa_call_summaries;
   ipa_call_summaries = NULL;
   edge_predicate_pool.release ();
+}
+
+namespace {
+
+const pass_data pass_data_local_fn_summary =
+{
+  GIMPLE_PASS, /* type */
+  "local-fnsummary", /* name */
+  OPTGROUP_INLINE, /* optinfo_flags */
+  TV_INLINE_PARAMETERS, /* tv_id */
+  0, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  0, /* todo_flags_finish */
+};
+
+class pass_local_fn_summary : public gimple_opt_pass
+{
+public:
+  pass_local_fn_summary (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_local_fn_summary, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  opt_pass * clone () { return new pass_local_fn_summary (m_ctxt); }
+  virtual unsigned int execute (function *)
+    {
+      return compute_fn_summary_for_current ();
+    }
+
+}; // class pass_local_fn_summary
+
+} // anon namespace
+
+gimple_opt_pass *
+make_pass_local_fn_summary (gcc::context *ctxt)
+{
+  return new pass_local_fn_summary (ctxt);
+}
+
+
+/* Free inline summary.  */
+
+namespace {
+
+const pass_data pass_data_ipa_free_fn_summary =
+{
+  SIMPLE_IPA_PASS, /* type */
+  "free-fnsummary", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  TV_IPA_FREE_INLINE_SUMMARY, /* tv_id */
+  0, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  /* Early optimizations may make function unreachable.  We can not
+     remove unreachable functions as part of the ealry opts pass because
+     TODOs are run before subpasses.  Do it here.  */
+  ( TODO_remove_functions | TODO_dump_symtab ), /* todo_flags_finish */
+};
+
+class pass_ipa_free_fn_summary : public simple_ipa_opt_pass
+{
+public:
+  pass_ipa_free_fn_summary (gcc::context *ctxt)
+    : simple_ipa_opt_pass (pass_data_ipa_free_fn_summary, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  virtual unsigned int execute (function *)
+    {
+      ipa_free_fn_summary ();
+      return 0;
+    }
+
+}; // class pass_ipa_free_fn_summary
+
+} // anon namespace
+
+simple_ipa_opt_pass *
+make_pass_ipa_free_fn_summary (gcc::context *ctxt)
+{
+  return new pass_ipa_free_fn_summary (ctxt);
+}
+
+namespace {
+
+const pass_data pass_data_ipa_fn_summary =
+{
+  IPA_PASS, /* type */
+  "fnsummary", /* name */
+  OPTGROUP_INLINE, /* optinfo_flags */
+  TV_IPA_INLINING, /* tv_id */
+  0, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  ( TODO_dump_symtab ), /* todo_flags_finish */
+};
+
+class pass_ipa_fn_summary : public ipa_opt_pass_d
+{
+public:
+  pass_ipa_fn_summary (gcc::context *ctxt)
+    : ipa_opt_pass_d (pass_data_ipa_fn_summary, ctxt,
+		      ipa_fn_summary_generate, /* generate_summary */
+		      ipa_fn_summary_write, /* write_summary */
+		      ipa_fn_summary_read, /* read_summary */
+		      NULL, /* write_optimization_summary */
+		      NULL, /* read_optimization_summary */
+		      NULL, /* stmt_fixup */
+		      0, /* function_transform_todo_flags_start */
+		      NULL, /* function_transform */
+		      NULL) /* variable_transform */
+  {}
+
+  /* opt_pass methods: */
+  virtual unsigned int execute (function *) { return 0; }
+
+}; // class pass_ipa_fn_summary
+
+} // anon namespace
+
+ipa_opt_pass_d *
+make_pass_ipa_fn_summary (gcc::context *ctxt)
+{
+  return new pass_ipa_fn_summary (ctxt);
 }

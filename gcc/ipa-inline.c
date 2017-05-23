@@ -2502,7 +2502,7 @@ ipa_inline (void)
     ipa_dump_fn_summaries (dump_file);
   /* In WPA we use inline summaries for partitioning process.  */
   if (!flag_wpa)
-    inline_free_summary ();
+    ipa_free_fn_summary ();
   return remove_functions ? TODO_remove_functions : 0;
 }
 
@@ -2808,9 +2808,9 @@ class pass_ipa_inline : public ipa_opt_pass_d
 public:
   pass_ipa_inline (gcc::context *ctxt)
     : ipa_opt_pass_d (pass_data_ipa_inline, ctxt,
-		      inline_generate_summary, /* generate_summary */
-		      inline_write_summary, /* write_summary */
-		      inline_read_summary, /* read_summary */
+		      NULL, /* generate_summary */
+		      NULL, /* write_summary */
+		      NULL, /* read_summary */
 		      NULL, /* write_optimization_summary */
 		      NULL, /* read_optimization_summary */
 		      NULL, /* stmt_fixup */

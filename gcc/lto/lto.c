@@ -3129,7 +3129,7 @@ do_whole_program_analysis (void)
 
   /* Inline summaries are needed for balanced partitioning.  Free them now so
      the memory can be used for streamer caches.  */
-  inline_free_summary ();
+  ipa_free_fn_summary ();
 
   /* AUX pointers are used by partitioning code to bookkeep number of
      partitions symbol is in.  This is no longer needed.  */
