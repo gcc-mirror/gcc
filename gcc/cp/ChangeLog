@@ -1,5 +1,9 @@
 2017-05-23  Jason Merrill  <jason@redhat.com>
 
+	PR c++/80267 - ICE with nested capture of reference
+	PR c++/60992
+	* pt.c (tsubst_copy): Handle lookup finding a capture proxy.
+
 	PR c++/80294 - ICE with constexpr and inheritance.
 	* constexpr.c (reduced_constant_expression_p):
 	A null constructor element is non-constant.

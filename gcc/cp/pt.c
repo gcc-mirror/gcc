@@ -14086,7 +14086,7 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	    {
 	      /* First try name lookup to find the instantiation.  */
 	      r = lookup_name (DECL_NAME (t));
-	      if (r)
+	      if (r && !is_capture_proxy (r))
 		{
 		  /* Make sure that the one we found is the one we want.  */
 		  tree ctx = DECL_CONTEXT (t);
