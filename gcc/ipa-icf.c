@@ -2643,7 +2643,7 @@ sem_item_optimizer::execute (void)
   bool merged_p = merge_classes (prev_class_count);
 
   if (dump_file && (dump_flags & TDF_DETAILS))
-    symtab_node::dump_table (dump_file);
+    symtab->dump (dump_file);
 
   return merged_p;
 }

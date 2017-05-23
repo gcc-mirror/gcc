@@ -2927,7 +2927,7 @@ read_cgraph_and_symbols (unsigned nfiles, const char **fnames)
   if (symtab->dump_file)
     {
       fprintf (symtab->dump_file, "Before merging:\n");
-      symtab_node::dump_table (symtab->dump_file);
+      symtab->dump (symtab->dump_file);
     }
   if (!flag_ltrans)
     {
@@ -3092,7 +3092,7 @@ do_whole_program_analysis (void)
   symtab->function_flags_ready = true;
 
   if (symtab->dump_file)
-    symtab_node::dump_table (symtab->dump_file);
+    symtab->dump (symtab->dump_file);
   bitmap_obstack_initialize (NULL);
   symtab->state = IPA_SSA;
 
@@ -3105,7 +3105,7 @@ do_whole_program_analysis (void)
   if (symtab->dump_file)
     {
       fprintf (symtab->dump_file, "Optimized ");
-      symtab_node::dump_table (symtab->dump_file);
+      symtab->dump (symtab->dump_file);
     }
 
   symtab_node::checking_verify_symtab_nodes ();
