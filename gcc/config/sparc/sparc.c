@@ -1503,15 +1503,18 @@ sparc_option_override (void)
     target_flags &= ~MASK_STACK_BIAS;
 
   /* Supply a default value for align_functions.  */
-  if (align_functions == 0
-      && (sparc_cpu == PROCESSOR_ULTRASPARC
+  if (align_functions == 0)
+    {
+      if (sparc_cpu == PROCESSOR_ULTRASPARC
 	  || sparc_cpu == PROCESSOR_ULTRASPARC3
 	  || sparc_cpu == PROCESSOR_NIAGARA
 	  || sparc_cpu == PROCESSOR_NIAGARA2
 	  || sparc_cpu == PROCESSOR_NIAGARA3
-	  || sparc_cpu == PROCESSOR_NIAGARA4
-	  || sparc_cpu == PROCESSOR_NIAGARA7))
-    align_functions = 32;
+	  || sparc_cpu == PROCESSOR_NIAGARA4)
+	align_functions = 32;
+      else if (sparc_cpu == PROCESSOR_NIAGARA7)
+	align_functions = 64;
+    }
 
   /* Validate PCC_STRUCT_RETURN.  */
   if (flag_pcc_struct_return == DEFAULT_PCC_STRUCT_RETURN)
