@@ -18499,9 +18499,9 @@ cp_parser_using_declaration (cp_parser* parser,
 	      return false;
 	    }
 	  else if (!at_namespace_scope_p ())
-	    do_local_using_decl (decl, qscope, identifier);
+	    finish_local_using_decl (decl, qscope, identifier);
 	  else
-	    do_toplevel_using_decl (decl, qscope, identifier);
+	    finish_namespace_using_decl (decl, qscope, identifier);
 	}
     }
 

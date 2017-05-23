@@ -1,3 +1,29 @@
+2017-05-23  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-tree.h (OVL_P): New.
+	* name-lookup.h (push_local_binding): Delete.
+	(do_toplevel_using_decl, do_local_using_decl): Rename to ...
+	(finish_namespace_using_decl, finish_local_using_decl): ... here
+	* name-lookup.c (add_decl_to_level): Swap args.
+	(pop_bindings_and_leave_scope): Look inside TREE_LIST.
+	(diagnose_name_conflict): Check contexts are same for redecl.
+	(update_local_overload): New.
+	(compparms_for_decl_and_using): Rename to ...
+	(matching_fn_p): ... here.
+	(pushdecl_maybe_friend_1): Adjust add_decl_to_level,
+	push_local_bindings call.
+	(push_local_binding): Make static, replace FLAGS arg with
+	IS_USING.
+	(validate_nonmember_using_decl): Use OVL_FIRST.
+	(do_nonmember_using_decl): Use in/out parameters.  Use
+	lkp_iterator and simplify.
+	(do_toplevel_using_decl, do_local_using_decl): Rename to ...
+	(finish_namespace_using_decl, finish_local_using_decl): ... here.
+	Adjust.
+	(lookup_type_current_level): Delete.
+	* parser.c (cp_parser_using_declaration): Adjust.
+	* pt.c (tsubst_expr): Adjust.
+
 2017-05-22  Nathan Sidwell  <nathan@acm.org>
 
 	* name-lookup.h (parse_using_directive): Replace with ...
