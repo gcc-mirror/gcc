@@ -4615,7 +4615,7 @@ get_namespace_binding (tree ns, tree name)
   return ret;
 }
 
-/* Set value binding og NAME in the global namespace to VAL.  Does not
+/* Set value binding of NAME in the global namespace to VAL.  Does not
    add it to the list of things in the namespace.  */
 
 void
@@ -5884,7 +5884,6 @@ lookup_type_scope (tree name, tag_scope scope)
   timevar_cond_stop (TV_NAME_LOOKUP, subtime);
   return ret;
 }
-
 
 /* Returns true iff DECL is a block-scope extern declaration of a function
    or variable.  */

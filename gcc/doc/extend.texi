@@ -22645,6 +22645,12 @@ true, else it is false.
 The underlying type of @code{type}.  Requires: @code{type} shall be
 an enumeration type ([dcl.enum]).
 
+@item __integer_pack (length)
+When used as the pattern of a pack expansion within a template
+definition, expands to a template argument pack containing integers
+from @code{0} to @code{length-1}.  This is provided for efficient
+implementation of @code{std::make_integer_sequence}.
+
 @end table
 
 

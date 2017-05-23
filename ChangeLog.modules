@@ -1,5 +1,7 @@
 2017-05-23  Nathan Sidwell  <nathan@acm.org>
 
+	Merge trunk r248389.
+
 	gcc/cp/
 	* name-lookup.c (name_lookup::name_lookup): Lose F parm.
 	(name_lookup::ambiguous, add_value, add_type): New.
