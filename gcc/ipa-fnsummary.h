@@ -231,10 +231,7 @@ void ipa_debug_fn_summary (struct cgraph_node *);
 void ipa_dump_fn_summaries (FILE *f);
 void ipa_dump_fn_summary (FILE *f, struct cgraph_node *node);
 void ipa_dump_hints (FILE *f, ipa_hints);
-void inline_generate_summary (void);
-void inline_read_summary (void);
-void inline_write_summary (void);
-void inline_free_summary (void);
+void ipa_free_fn_summary (void);
 void inline_analyze_function (struct cgraph_node *node);
 void estimate_ipcp_clone_size_and_time (struct cgraph_node *,
 					vec<tree>,

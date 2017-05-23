@@ -1,3 +1,33 @@
+2017-05-23  Jan Hubicka  <hubicka@ucw.cz>
+
+	* cgraphunit.c (symbol_table::process_new_functions): Update.
+	* ipa-fnsummary.c (pass_data_inline_parameters): Remove.
+	(inline_generate_summary): Rename to ...
+	(ipa_fn_summary_generate): ... this one.
+	(inline_read_summary): Rename to ...
+	(ipa_fn_summary_read): ... this one.
+	(inline_write_summary): Rename to ...
+	(ipa_fn_summary_write): ... this one.
+	(inline_free_summary): Rename to ...
+	(ipa_free_fn_summary): ... this one.
+	(pass_data_local_fn_summary, pass_local_fn_summary,
+	make_pass_local_fn_summary, pass_data_ipa_free_fn_summary,
+	pass_ipa_free_fn_summary, make_pass_ipa_free_fn_summary,
+	pass_data_ipa_fn_summary, pass_ipa_fn_summary,
+	make_pass_ipa_fn_summary): New.
+	* ipa-fnsummary.h (inline_generate_summary, inline_read_summary,
+	inline_write_summary, inline_free_summary): Remove.
+	(ipa_free_fn_summary) : New.
+	* ipa-inline.c (ipa_inline): Update.
+	(pass_ipa_inline): Do not generate summaries.
+	* ipa.c (pass_data_ipa_free_fn_summary, pass_ipa_free_fn_summary):
+	Remove.
+	* passes.def: Replace pass_inline_parameters by pass_local_fn_summary
+	and add pass_ipa_fn_summary.
+	* tree-pass.h (make_pass_ipa_fn_summary, make_pass_local_fn_summary):
+	New.
+	(make_pass_inline_parameters): Remove.
+
 2017-05-23  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* omp-low.c (struct omp_context): Remove "default_kind" member.

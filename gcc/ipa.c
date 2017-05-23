@@ -843,50 +843,6 @@ ipa_discover_readonly_nonaddressable_vars (void)
   return remove_p;
 }
 
-/* Free inline summary.  */
-
-namespace {
-
-const pass_data pass_data_ipa_free_fn_summary =
-{
-  SIMPLE_IPA_PASS, /* type */
-  "free-inline-summary", /* name */
-  OPTGROUP_NONE, /* optinfo_flags */
-  TV_IPA_FREE_INLINE_SUMMARY, /* tv_id */
-  0, /* properties_required */
-  0, /* properties_provided */
-  0, /* properties_destroyed */
-  0, /* todo_flags_start */
-  /* Early optimizations may make function unreachable.  We can not
-     remove unreachable functions as part of the ealry opts pass because
-     TODOs are run before subpasses.  Do it here.  */
-  ( TODO_remove_functions | TODO_dump_symtab ), /* todo_flags_finish */
-};
-
-class pass_ipa_free_fn_summary : public simple_ipa_opt_pass
-{
-public:
-  pass_ipa_free_fn_summary (gcc::context *ctxt)
-    : simple_ipa_opt_pass (pass_data_ipa_free_fn_summary, ctxt)
-  {}
-
-  /* opt_pass methods: */
-  virtual unsigned int execute (function *)
-    {
-      inline_free_summary ();
-      return 0;
-    }
-
-}; // class pass_ipa_free_fn_summary
-
-} // anon namespace
-
-simple_ipa_opt_pass *
-make_pass_ipa_free_fn_summary (gcc::context *ctxt)
-{
-  return new pass_ipa_free_fn_summary (ctxt);
-}
-
 /* Generate and emit a static constructor or destructor.  WHICH must
    be one of 'I' (for a constructor), 'D' (for a destructor), 'P'
    (for chp static vars constructor) or 'B' (for chkp static bounds
