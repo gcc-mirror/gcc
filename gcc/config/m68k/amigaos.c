@@ -602,7 +602,6 @@ amigaos_function_arg (cumulative_args_t cum_v, machine_mode mode, const_tree typ
 void
 amiga_emit_regparm_clobbers (void)
 {
-  rtx sp = gen_raw_REG (Pmode, 15);
   for (int i = 0; i < FIRST_PSEUDO_REGISTER; ++i)
     if (mycum.regs_already_used & (1 << i))
       {
@@ -861,19 +860,18 @@ amigaos_static_chain_rtx (const_tree decl, bool incoming ATTRIBUTE_UNUSED)
   if (!decl || !DECL_STATIC_CHAIN(decl))
     return 0;
 
-  tree fntype = TREE_TYPE(decl);
-
   unsigned used = 0;
+  tree fntype = TREE_TYPE(decl);
+  if (fntype)
+    for (tree formal_type = TYPE_ARG_TYPES(fntype); formal_type; formal_type = TREE_CHAIN(formal_type))
+      {
+	tree asmtree = TYPE_ATTRIBUTES(TREE_VALUE(formal_type));
+	if (!asmtree || strcmp ("asm", IDENTIFIER_POINTER(TREE_PURPOSE(asmtree))))
+	  continue;
 
-  for (tree formal_type = TYPE_ARG_TYPES(fntype); formal_type; formal_type = TREE_CHAIN(formal_type))
-    {
-      tree asmtree = TYPE_ATTRIBUTES(formal_type);
-      if (!asmtree || strcmp ("asm", IDENTIFIER_POINTER(TREE_PURPOSE(asmtree))))
-	continue;
-
-      unsigned regno = TREE_FIXED_CST_PTR(TREE_VALUE(asmtree))->data.low;
-      used |= 1 << regno;
-    }
+	unsigned regno = TREE_FIXED_CST_PTR(TREE_VALUE(asmtree))->data.low;
+	used |= 1 << regno;
+      }
 
   if (!(used & (1 << 9)))
     return gen_rtx_REG (Pmode, 9);
@@ -881,6 +879,8 @@ amigaos_static_chain_rtx (const_tree decl, bool incoming ATTRIBUTE_UNUSED)
     return gen_rtx_REG (Pmode, 10);
   if (!(used & (1 << 11)))
     return gen_rtx_REG (Pmode, 11);
+  if (!(used & (1 << 14)))
+    return gen_rtx_REG (Pmode, 14);
 
   return 0;
 }
