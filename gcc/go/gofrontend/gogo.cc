@@ -689,7 +689,13 @@ Gogo::init_imports(std::vector<Bstatement*>& init_stmts, Bfunction *bfunction)
 	 this->imported_init_fns_.begin();
        p != this->imported_init_fns_.end();
        ++p)
-    v.push_back(*p);
+    {
+      if ((*p)->priority() < 0)
+	go_error_at(Linemap::unknown_location(),
+		    "internal error: failed to set init priority for %s",
+		    (*p)->package_name().c_str());
+      v.push_back(*p);
+    }
   std::sort(v.begin(), v.end(), priority_compare);
 
   // We build calls to the init functions, which take no arguments.
