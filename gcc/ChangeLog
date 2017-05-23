@@ -1,6 +1,11 @@
 2017-05-23  Tom de Vries  <tom@codesourcery.com>
 
 	* doc/sourcebuild.texi (Effective-Target Keywords, Other hardware
+	attributes): Document rdrand effective target.
+
+2017-05-23  Tom de Vries  <tom@codesourcery.com>
+
+	* doc/sourcebuild.texi (Effective-Target Keywords, Other hardware
 	attributes): Sort alphabetically.
 
 2017-05-23  Georg-Johann Lay  <avr@gjlay.de>
