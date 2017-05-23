@@ -1,3 +1,9 @@
+2017-05-23  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* parser.c (OACC_KERNELS_CLAUSE_MASK): Add
+	"PRAGMA_OACC_CLAUSE_NUM_GANGS", "PRAGMA_OACC_CLAUSE_NUM_WORKERS",
+	"VECTOR_LENGTH".
+
 2017-05-23  Nathan Sidwell  <nathan@acm.org>
 
 	* cp-tree.h (OVL_P): New.

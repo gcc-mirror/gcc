@@ -1,3 +1,9 @@
+2017-05-23  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* omp-offload.c (execute_oacc_device_lower): Remove the
+	parallelism dimensions function attributes for unparallelized
+	OpenACC kernels constructs.
+
 2017-05-23  Martin Liska  <mliska@suse.cz>
 
 	* cgraph.c (cgraph_node::get_create): Use symtab_node::dump_{asm_,}name
