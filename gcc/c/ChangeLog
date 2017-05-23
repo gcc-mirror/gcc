@@ -1,3 +1,8 @@
+2017-05-23  Marek Polacek  <polacek@redhat.com>
+
+	* c-parser.c (c_parser_compound_statement_nostart): Remove redundant
+	quotes.
+
 2017-05-22  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-fold.c (c_fully_fold_internal): Save the c_fully_fold_internal
