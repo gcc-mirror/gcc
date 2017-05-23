@@ -99,8 +99,14 @@ public:
   /* Return name.  */
   const char *name () const;
 
+  /* Return dump name.  */
+  const char *dump_name () const;
+
   /* Return asm name.  */
-  const char * asm_name () const;
+  const char *asm_name () const;
+
+  /* Return dump name with assembler name.  */
+  const char *dump_asm_name () const;
 
   /* Add node into symbol table.  This function is not used directly, but via
      cgraph/varpool node creation routines.  */
@@ -598,6 +604,9 @@ private:
   /* Worker for ultimate_alias_target.  */
   symtab_node *ultimate_alias_target_1 (enum availability *avail = NULL,
 					symtab_node *ref = NULL);
+
+  /* Get dump name with normal or assembly name.  */
+  const char *get_dump_name (bool asm_name_p) const;
 };
 
 inline void

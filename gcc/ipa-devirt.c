@@ -3316,7 +3316,8 @@ dump_targets (FILE *f, vec <cgraph_node *> targets)
       char *name = NULL;
       if (in_lto_p)
 	name = cplus_demangle_v3 (targets[i]->asm_name (), 0);
-      fprintf (f, " %s/%i", name ? name : targets[i]->name (), targets[i]->order);
+      fprintf (f, " %s/%i", name ? name : targets[i]->name (),
+	       targets[i]->order);
       if (in_lto_p)
 	free (name);
       if (!targets[i]->definition)
@@ -3596,8 +3597,8 @@ ipa_devirt (void)
       if (!opt_for_fn (n->decl, flag_devirtualize))
 	continue;
       if (dump_file && n->indirect_calls)
-	fprintf (dump_file, "\n\nProcesing function %s/%i\n",
-		 n->name (), n->order);
+	fprintf (dump_file, "\n\nProcesing function %s\n",
+		 n->dump_name ());
       for (e = n->indirect_calls; e; e = e->next_callee)
 	if (e->indirect_info->polymorphic)
 	  {
@@ -3752,10 +3753,10 @@ ipa_devirt (void)
                   {
                     location_t locus = gimple_location_safe (e->call_stmt);
                     dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, locus,
-                                     "speculatively devirtualizing call in %s/%i to %s/%i\n",
-                                     n->name (), n->order,
-                                     likely_target->name (),
-                                     likely_target->order);
+				     "speculatively devirtualizing call "
+				     "in %s to %s\n",
+				     n->dump_name (),
+				     likely_target->dump_name ());
                   }
 		if (!likely_target->can_be_discarded_p ())
 		  {

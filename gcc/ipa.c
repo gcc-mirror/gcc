@@ -230,10 +230,9 @@ walk_polymorphic_call_targets (hash_set<void *> *reachable_call_targets,
 	      else
 		locus = UNKNOWN_LOCATION;
 	      dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, locus,
-                               "devirtualizing call in %s/%i to %s/%i\n",
-                               edge->caller->name (), edge->caller->order,
-                               target->name (),
-                               target->order);
+			       "devirtualizing call in %s to %s\n",
+			       edge->caller->dump_name (),
+			       target->dump_name ());
 	    }
 	  edge = edge->make_direct (target);
 	  if (ipa_fn_summaries)
@@ -529,7 +528,7 @@ symbol_table::remove_unreachable_nodes (FILE *file)
       if (!node->aux)
 	{
 	  if (file)
-	    fprintf (file, " %s/%i", node->name (), node->order);
+	    fprintf (file, " %s", node->dump_name ());
 	  node->remove ();
 	  changed = true;
 	}
@@ -549,7 +548,7 @@ symbol_table::remove_unreachable_nodes (FILE *file)
 	  if (node->definition && !node->alias && !node->thunk.thunk_p)
 	    {
 	      if (file)
-		fprintf (file, " %s/%i", node->name (), node->order);
+		fprintf (file, " %s", node->dump_name ());
 	      node->body_removed = true;
 	      node->analyzed = false;
 	      node->definition = false;
@@ -616,12 +615,11 @@ symbol_table::remove_unreachable_nodes (FILE *file)
 	  while (vnode->iterate_direct_aliases (0, ref))
 	    {
 	      if (file)
-		fprintf (file, " %s/%i", ref->referred->name (),
-			 ref->referred->order);
+		fprintf (file, " %s", ref->referred->dump_name ());
 	      ref->referring->remove ();
 	    }
 	  if (file)
-	    fprintf (file, " %s/%i", vnode->name (), vnode->order);
+	    fprintf (file, " %s", vnode->dump_name ());
           vnext = next_variable (vnode);
 	  /* Signal removal to the debug machinery.  */
 	  if (! flag_wpa)
@@ -1391,8 +1389,8 @@ ipa_single_use (void)
 
 	  if (dump_file)
 	    {
-	      fprintf (dump_file, "Variable %s/%i is used by single function\n",
-		       var->name (), var->order);
+	      fprintf (dump_file, "Variable %s is used by single function\n",
+		       var->dump_name ());
 	    }
 	  var->used_by_single_function = true;
 	}

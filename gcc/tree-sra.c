@@ -5190,11 +5190,8 @@ convert_callers_for_node (struct cgraph_node *node,
       push_cfun (DECL_STRUCT_FUNCTION (cs->caller->decl));
 
       if (dump_file)
-	fprintf (dump_file, "Adjusting call %s/%i -> %s/%i\n",
-		 xstrdup_for_dump (cs->caller->name ()),
-		 cs->caller->order,
-		 xstrdup_for_dump (cs->callee->name ()),
-		 cs->callee->order);
+	fprintf (dump_file, "Adjusting call %s -> %s\n",
+		 cs->caller->dump_name (), cs->callee->dump_name ());
 
       ipa_modify_call_arguments (cs, cs->call_stmt, *adjustments);
 

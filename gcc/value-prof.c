@@ -1236,12 +1236,10 @@ init_node_map (bool local)
 	      {
 		if (dump_file)
 		  fprintf (dump_file, "Local profile-id %i conflict"
-			   " with nodes %s/%i %s/%i\n",
+			   " with nodes %s %s\n",
 			   n->profile_id,
-			   n->name (),
-			   n->order,
-			   (*val)->name (),
-			   (*val)->order);
+			   n->dump_name (),
+			   (*val)->dump_name ());
 		n->profile_id = (n->profile_id + 1) & 0x7fffffff;
 	      }
 	  }
@@ -1249,21 +1247,18 @@ init_node_map (bool local)
 	  {
 	    if (dump_file)
 	      fprintf (dump_file,
-		       "Node %s/%i has no profile-id"
+		       "Node %s has no profile-id"
 		       " (profile feedback missing?)\n",
-		       n->name (),
-		       n->order);
+		       n->dump_name ());
 	    continue;
 	  }
 	else if ((val = cgraph_node_map->get (n->profile_id)))
 	  {
 	    if (dump_file)
 	      fprintf (dump_file,
-		       "Node %s/%i has IP profile-id %i conflict. "
+		       "Node %s has IP profile-id %i conflict. "
 		       "Giving up.\n",
-		       n->name (),
-		       n->order,
-		       n->profile_id);
+		       n->dump_name (), n->profile_id);
 	    *val = NULL;
 	    continue;
 	  }

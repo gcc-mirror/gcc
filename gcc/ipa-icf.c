@@ -195,8 +195,8 @@ sem_item::dump (void)
 {
   if (dump_file)
     {
-      fprintf (dump_file, "[%s] %s (%u) (tree:%p)\n", type == FUNC ? "func" : "var",
-	       node->name(), node->order, (void *) node->decl);
+      fprintf (dump_file, "[%s] %s (tree:%p)\n", type == FUNC ? "func" : "var",
+	       node->dump_name (), (void *) node->decl);
       fprintf (dump_file, "  hash: %u\n", get_hash ());
       fprintf (dump_file, "  references: ");
 
@@ -869,13 +869,9 @@ sem_function::equals (sem_item *item,
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     fprintf (dump_file,
-	     "Equals called for:%s:%s (%u:%u) (%s:%s) with result: %s\n\n",
-	     xstrdup_for_dump (node->name()),
-	     xstrdup_for_dump (item->node->name ()),
-	     node->order,
-	     item->node->order,
-	     xstrdup_for_dump (node->asm_name ()),
-	     xstrdup_for_dump (item->node->asm_name ()),
+	     "Equals called for: %s:%s with result: %s\n\n",
+	     node->dump_name (),
+	     item->node->dump_name (),
 	     eq ? "true" : "false");
 
   return eq;
@@ -1887,12 +1883,9 @@ sem_variable::equals (sem_item *item,
 			      DECL_INITIAL (item->node->decl));
   if (dump_file && (dump_flags & TDF_DETAILS))
     fprintf (dump_file,
-	     "Equals called for vars:%s:%s (%u:%u) (%s:%s) with result: %s\n\n",
-	     xstrdup_for_dump (node->name()),
-	     xstrdup_for_dump (item->node->name ()),
-	     node->order, item->node->order,
-	     xstrdup_for_dump (node->asm_name ()),
-	     xstrdup_for_dump (item->node->asm_name ()), ret ? "true" : "false");
+	     "Equals called for vars: %s:%s with result: %s\n\n",
+	     node->dump_name (), item->node->dump_name (),
+	     ret ? "true" : "false");
 
   return ret;
 }
@@ -2398,8 +2391,8 @@ sem_item_optimizer::read_section (lto_file_decl_data *file_data,
       gcc_assert (node->definition);
 
       if (dump_file)
-	fprintf (dump_file, "Symbol added:%s (tree: %p, uid:%u)\n",
-		 node->asm_name (), (void *) node->decl, node->order);
+	fprintf (dump_file, "Symbol added: %s (tree: %p)\n",
+		 node->dump_asm_name (), (void *) node->decl);
 
       if (is_a<cgraph_node *> (node))
 	{
@@ -3577,9 +3570,7 @@ congruence_class::dump (FILE *file, unsigned int indent) const
 
   FPUTS_SPACES (file, indent + 2, "");
   for (unsigned i = 0; i < members.length (); i++)
-    fprintf (file, "%s(%p/%u) ", members[i]->node->asm_name (),
-	     (void *) members[i]->decl,
-	     members[i]->node->order);
+    fprintf (file, "%s ", members[i]->node->dump_asm_name ());
 
   fprintf (file, "\n");
 }

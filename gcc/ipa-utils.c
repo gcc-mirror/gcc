@@ -406,9 +406,8 @@ ipa_merge_profiles (struct cgraph_node *dst,
     return;
   if (symtab->dump_file)
     {
-      fprintf (symtab->dump_file, "Merging profiles of %s/%i to %s/%i\n",
-	       xstrdup_for_dump (src->name ()), src->order,
-	       xstrdup_for_dump (dst->name ()), dst->order);
+      fprintf (symtab->dump_file, "Merging profiles of %s to %s\n",
+	       src->dump_name (), dst->dump_name ());
     }
   dst->count += src->count;
 
