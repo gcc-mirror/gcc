@@ -7800,7 +7800,7 @@ ipa_pta_execute (void)
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
-      symtab_node::dump_table (dump_file);
+      symtab->dump (dump_file);
       fprintf (dump_file, "\n");
     }
 

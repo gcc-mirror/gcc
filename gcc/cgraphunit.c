@@ -1208,7 +1208,7 @@ analyze_functions (bool first_time)
   if (symtab->dump_file)
     {
       fprintf (symtab->dump_file, "\n\nInitial ");
-      symtab_node::dump_table (symtab->dump_file);
+      symtab->dump (symtab->dump_file);
     }
 
   if (first_time)
@@ -1278,7 +1278,7 @@ analyze_functions (bool first_time)
   if (symtab->dump_file)
     {
       fprintf (symtab->dump_file, "\n\nReclaimed ");
-      symtab_node::dump_table (symtab->dump_file);
+      symtab->dump (symtab->dump_file);
     }
   bitmap_obstack_release (NULL);
   ggc_collect ();
@@ -2485,7 +2485,7 @@ symbol_table::compile (void)
   if (dump_file)
     {
       fprintf (dump_file, "Optimized ");
-      symtab_node:: dump_table (dump_file);
+      symtab->dump (dump_file);
     }
   if (post_ipa_mem_report)
     {
@@ -2551,7 +2551,7 @@ symbol_table::compile (void)
   if (dump_file)
     {
       fprintf (dump_file, "\nFinal ");
-      symtab_node::dump_table (dump_file);
+      symtab->dump (dump_file);
     }
   if (!flag_checking)
     return;

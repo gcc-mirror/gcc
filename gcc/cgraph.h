@@ -411,12 +411,6 @@ public:
      Return NULL if there's no such node.  */
   static symtab_node *get_for_asmname (const_tree asmname);
 
-  /* Dump symbol table to F.  */
-  static void dump_table (FILE *);
-
-  /* Dump symbol table to stderr.  */
-  static void DEBUG_FUNCTION debug_symtab (void);
-
   /* Verify symbol table for internal consistency.  */
   static DEBUG_FUNCTION void verify_symtab_nodes (void);
 
@@ -2177,6 +2171,15 @@ public:
 
   /* Set the DECL_ASSEMBLER_NAME and update symtab hashtables.  */
   void change_decl_assembler_name (tree decl, tree name);
+
+  /* Dump symbol table to F.  */
+  void dump (FILE *f);
+
+  /* Dump symbol table to stderr.  */
+  inline DEBUG_FUNCTION void debug (void)
+  {
+    dump (stderr);
+  }
 
   /* Return true if assembler names NAME1 and NAME2 leads to the same symbol
      name.  */

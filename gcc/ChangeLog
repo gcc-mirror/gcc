@@ -1,3 +1,15 @@
+2017-05-23  Martin Liska  <mliska@suse.cz>
+
+	* cgraph.h: Move symtab_node::dump_table to symbol_table::dump
+	and symtab_node::debug_symtab to symbol_table::debug.
+	* cgraphunit.c (analyze_functions): Use the renamed function.
+	(symbol_table::compile): Likewise.
+	* ipa-cp.c (ipcp_verify_propagated_values): Likewise.
+	* ipa-icf.c (sem_item_optimizer::execute): Likewise.
+	* passes.c (execute_todo): Likewise.
+	* symtab.c (symbol_table::dump): New function.
+	* tree-ssa-structalias.c (ipa_pta_execute): Use the renamed function.
+
 2017-05-23  Jan Hubicka  <hubicka@ucw.cz>
 
 	* ipa-fnsummary.c (estimate_node_size_and_time): Do not sanity check
