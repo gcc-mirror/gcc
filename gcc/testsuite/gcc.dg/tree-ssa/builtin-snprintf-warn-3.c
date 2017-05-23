@@ -1,6 +1,7 @@
 /* PR middle-end/79448 - unhelpful -Wformat-truncation=2 warning
    { dg-do compile }
-   { dg-options "-O2 -Wformat -Wformat-truncation=2 -ftrack-macro-expansion=0" } */
+   { dg-options "-O2 -Wformat -Wformat-truncation=2 -ftrack-macro-expansion=0" } 
+   { dg-require-effective-target ptr32plus } */
 
 typedef __SIZE_TYPE__  size_t;
 typedef __WCHAR_TYPE__ wchar_t;
