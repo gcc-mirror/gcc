@@ -1,3 +1,10 @@
+2017-05-23  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	Backport from trunk
+	PR fortran/80741
+	* trans-io.c (transfer_namelist_element): Change check from
+	NULL_TREE to null_pointer_node.
+
 2017-05-23  Paul Thomas  <pault@gcc.gnu.org>
 
 	Backport from trunk

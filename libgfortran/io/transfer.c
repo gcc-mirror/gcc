@@ -3977,7 +3977,7 @@ finalize_transfer (st_parameter_dt *dtp)
       fbuf_seek (dtp->u.p.current_unit, 0, SEEK_END);
 
   dtp->u.p.current_unit->saved_pos = 0;
-
+  dtp->u.p.current_unit->last_char = EOF - 1;
   next_record (dtp, 1);
 
  done:
