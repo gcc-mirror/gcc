@@ -95,6 +95,34 @@ program test
   !$acc parallel num_gangs("1") ! { dg-error "scalar INTEGER expression" }
   !$acc end parallel
 
+  !$acc kernels num_gangs ! { dg-error "Unclassifiable OpenACC directive" }
+
+  !$acc kernels num_gangs(3)
+  !$acc end kernels
+
+  !$acc kernels num_gangs(i)
+  !$acc end kernels
+
+  !$acc kernels num_gangs(i+1)
+  !$acc end kernels
+
+  !$acc kernels num_gangs(-1) ! { dg-warning "must be positive" }
+  !$acc end kernels
+
+  !$acc kernels num_gangs(0) ! { dg-warning "must be positive" }
+  !$acc end kernels
+
+  !$acc kernels num_gangs() ! { dg-error "Invalid character in name" }
+
+  !$acc kernels num_gangs(1.5) ! { dg-error "scalar INTEGER expression" }
+  !$acc end kernels
+
+  !$acc kernels num_gangs(.true.) ! { dg-error "scalar INTEGER expression" }
+  !$acc end kernels
+
+  !$acc kernels num_gangs("1") ! { dg-error "scalar INTEGER expression" }
+  !$acc end kernels
+
 
   !$acc parallel num_workers ! { dg-error "Unclassifiable OpenACC directive" }
 
@@ -124,6 +152,34 @@ program test
   !$acc parallel num_workers("1") ! { dg-error "scalar INTEGER expression" }
   !$acc end parallel
 
+  !$acc kernels num_workers ! { dg-error "Unclassifiable OpenACC directive" }
+
+  !$acc kernels num_workers(3)
+  !$acc end kernels
+
+  !$acc kernels num_workers(i)
+  !$acc end kernels
+
+  !$acc kernels num_workers(i+1)
+  !$acc end kernels
+
+  !$acc kernels num_workers(-1) ! { dg-warning "must be positive" }
+  !$acc end kernels
+
+  !$acc kernels num_workers(0) ! { dg-warning "must be positive" }
+  !$acc end kernels
+
+  !$acc kernels num_workers() ! { dg-error "Invalid character in name" }
+
+  !$acc kernels num_workers(1.5) ! { dg-error "scalar INTEGER expression" }
+  !$acc end kernels
+
+  !$acc kernels num_workers(.true.) ! { dg-error "scalar INTEGER expression" }
+  !$acc end kernels
+
+  !$acc kernels num_workers("1") ! { dg-error "scalar INTEGER expression" }
+  !$acc end kernels
+
 
   !$acc parallel vector_length ! { dg-error "Unclassifiable OpenACC directive" }
 
@@ -152,6 +208,34 @@ program test
 
   !$acc parallel vector_length("1") ! { dg-error "scalar INTEGER expression" }
   !$acc end parallel
+
+  !$acc kernels vector_length ! { dg-error "Unclassifiable OpenACC directive" }
+
+  !$acc kernels vector_length(3)
+  !$acc end kernels
+
+  !$acc kernels vector_length(i)
+  !$acc end kernels
+
+  !$acc kernels vector_length(i+1)
+  !$acc end kernels
+
+  !$acc kernels vector_length(-1) ! { dg-warning "must be positive" }
+  !$acc end kernels
+
+  !$acc kernels vector_length(0) ! { dg-warning "must be positive" }
+  !$acc end kernels
+
+  !$acc kernels vector_length() ! { dg-error "Invalid character in name" }
+
+  !$acc kernels vector_length(1.5) ! { dg-error "scalar INTEGER expression" }
+  !$acc end kernels
+
+  !$acc kernels vector_length(.true.) ! { dg-error "scalar INTEGER expression" }
+  !$acc end kernels
+
+  !$acc kernels vector_length("1") ! { dg-error "scalar INTEGER expression" }
+  !$acc end kernels
 
 
   !$acc loop gang

@@ -2155,9 +2155,9 @@ ovl_copy (tree ovl)
   TREE_TYPE (result) = TREE_TYPE (ovl);
   OVL_FUNCTION (result) = OVL_FUNCTION (ovl);
   OVL_CHAIN (result) = OVL_CHAIN (ovl);
-  OVL_HIDDEN_P (ovl) = OVL_HIDDEN_P (ovl);
-  OVL_USING_P (ovl) = OVL_USING_P (ovl);
-  OVL_EXPORT_P (ovl) = OVL_EXPORT_P (ovl);
+  OVL_HIDDEN_P (result) = OVL_HIDDEN_P (ovl);
+  OVL_USING_P (result) = OVL_USING_P (ovl);
+  OVL_EXPORT_P (result) = OVL_EXPORT_P (ovl);
 
   return result;
 }

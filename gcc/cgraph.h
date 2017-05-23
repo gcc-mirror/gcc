@@ -99,8 +99,14 @@ public:
   /* Return name.  */
   const char *name () const;
 
+  /* Return dump name.  */
+  const char *dump_name () const;
+
   /* Return asm name.  */
-  const char * asm_name () const;
+  const char *asm_name () const;
+
+  /* Return dump name with assembler name.  */
+  const char *dump_asm_name () const;
 
   /* Add node into symbol table.  This function is not used directly, but via
      cgraph/varpool node creation routines.  */
@@ -411,12 +417,6 @@ public:
      Return NULL if there's no such node.  */
   static symtab_node *get_for_asmname (const_tree asmname);
 
-  /* Dump symbol table to F.  */
-  static void dump_table (FILE *);
-
-  /* Dump symbol table to stderr.  */
-  static void DEBUG_FUNCTION debug_symtab (void);
-
   /* Verify symbol table for internal consistency.  */
   static DEBUG_FUNCTION void verify_symtab_nodes (void);
 
@@ -604,6 +604,9 @@ private:
   /* Worker for ultimate_alias_target.  */
   symtab_node *ultimate_alias_target_1 (enum availability *avail = NULL,
 					symtab_node *ref = NULL);
+
+  /* Get dump name with normal or assembly name.  */
+  const char *get_dump_name (bool asm_name_p) const;
 };
 
 inline void
@@ -2177,6 +2180,15 @@ public:
 
   /* Set the DECL_ASSEMBLER_NAME and update symtab hashtables.  */
   void change_decl_assembler_name (tree decl, tree name);
+
+  /* Dump symbol table to F.  */
+  void dump (FILE *f);
+
+  /* Dump symbol table to stderr.  */
+  inline DEBUG_FUNCTION void debug (void)
+  {
+    dump (stderr);
+  }
 
   /* Return true if assembler names NAME1 and NAME2 leads to the same symbol
      name.  */

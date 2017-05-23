@@ -1,5 +1,38 @@
 2017-05-23  Nathan Sidwell  <nathan@acm.org>
 
+	PR c++/80866
+	* g++.dg/parse/pr80866.C: New.
+
+2017-05-23  Jan Hubicka  <hubicka@ucw.cz>
+
+	* gcc.dg/ipa/ctor-empty-1.c: Update template.
+	* gcc.dg/ipa/inline-5.c: Likewise.
+	* gfortran.dg/pr48636.f90: Likewise.
+
+2017-05-23  Nathan Sidwell  <nathan@acm.org>
+
+	* g++.dg/parse/ctor9.C: Adjust expected error.
+
+2017-05-23  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/80256
+	* gfortran.dg/bind_c_array_params_2.f90: Modify to pass on
+	Cygwin.
+
+2017-05-23  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* c-c++-common/goacc/parallel-dims-1.c: Update.
+	* c-c++-common/goacc/parallel-dims-2.c: Likewise.
+	* c-c++-common/goacc/routine-1.c: Likewise.
+	* c-c++-common/goacc/uninit-dim-clause.c: Likewise.
+	* g++.dg/goacc/template.C: Likewise.
+	* gfortran.dg/goacc/kernels-tree.f95: Likewise.
+	* gfortran.dg/goacc/routine-3.f90: Likewise.
+	* gfortran.dg/goacc/sie.f95: Likewise.
+	* gfortran.dg/goacc/uninit-dim-clause.f95: Likewise.
+
+2017-05-23  Nathan Sidwell  <nathan@acm.org>
+
 	* g++.dg/lookup/using13.C: Adjust expected error.
 
 2017-05-23  Senthil Kumar Selvaraj  <senthil_kumar.selvaraj@atmel.com>

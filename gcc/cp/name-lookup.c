@@ -2269,7 +2269,7 @@ check_local_shadow (tree decl)
   inform (DECL_SOURCE_LOCATION (shadowed), "shadowed declaration is here");
 }
 
-/* DECL is being pushed inside function CFUN.  Set its context, if
+/* DECL is being pushed inside function CTX.  Set its context, if
    needed.  */
 
 static void

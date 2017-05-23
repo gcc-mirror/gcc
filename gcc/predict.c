@@ -3163,9 +3163,9 @@ drop_profile (struct cgraph_node *node, gcov_type call_count)
 
   if (dump_file)
     fprintf (dump_file,
-             "Dropping 0 profile for %s/%i. %s based on calls.\n",
-             node->name (), node->order,
-             hot ? "Function is hot" : "Function is normal");
+	     "Dropping 0 profile for %s. %s based on calls.\n",
+	     node->dump_name (),
+	     hot ? "Function is hot" : "Function is normal");
   /* We only expect to miss profiles for functions that are reached
      via non-zero call edges in cases where the function may have
      been linked from another module or library (COMDATs and extern
@@ -3181,12 +3181,12 @@ drop_profile (struct cgraph_node *node, gcov_type call_count)
         {
           if (dump_file)
             fprintf (dump_file,
-                     "Missing counts for called function %s/%i\n",
-                     node->name (), node->order);
+		     "Missing counts for called function %s\n",
+		     node->dump_name ());
         }
       else
-        warning (0, "Missing counts for called function %s/%i",
-                 node->name (), node->order);
+	warning (0, "Missing counts for called function %s",
+		 node->dump_name ());
     }
 
   profile_status_for_fn (fn)

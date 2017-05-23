@@ -1,5 +1,22 @@
 2017-05-23  Nathan Sidwell  <nathan@acm.org>
 
+	PR c++/80866
+	* parser.c (cp_parser_template_id): Keep the lookup when stashing
+	the template_id.
+
+	* cp-tree.h (DECL_HIDDEN_P): New.
+	* name-lookup.c (set_decl_context,
+	set_local_extern_decl_linkage):	New, broken out of ...
+	(pushdecl_maybe_friend_1): ... here.  Call them.
+
+2017-05-23  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* parser.c (OACC_KERNELS_CLAUSE_MASK): Add
+	"PRAGMA_OACC_CLAUSE_NUM_GANGS", "PRAGMA_OACC_CLAUSE_NUM_WORKERS",
+	"VECTOR_LENGTH".
+
+2017-05-23  Nathan Sidwell  <nathan@acm.org>
+
 	* cp-tree.h (OVL_P): New.
 	* name-lookup.h (push_local_binding): Delete.
 	(do_toplevel_using_decl, do_local_using_decl): Rename to ...

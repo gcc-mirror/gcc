@@ -1,3 +1,9 @@
+2017-05-23  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* c-parser.c (OACC_KERNELS_CLAUSE_MASK): Add
+	"PRAGMA_OACC_CLAUSE_NUM_GANGS", "PRAGMA_OACC_CLAUSE_NUM_WORKERS",
+	"VECTOR_LENGTH".
+
 2017-05-23  Marek Polacek  <polacek@redhat.com>
 
 	* c-parser.c (c_parser_compound_statement_nostart): Remove redundant

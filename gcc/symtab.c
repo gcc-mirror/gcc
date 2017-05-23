@@ -522,6 +522,31 @@ symtab_node::name () const
   return lang_hooks.decl_printable_name (decl, 2);
 }
 
+const char *
+symtab_node::get_dump_name (bool asm_name_p) const
+{
+#define EXTRA 16
+  const char *fname = asm_name_p ? asm_name () : name ();
+  unsigned l = strlen (fname);
+
+  char *s = (char *)ggc_internal_cleared_alloc (l + EXTRA);
+  snprintf (s, l + EXTRA, "%s/%d", fname, order);
+
+  return s;
+}
+
+const char *
+symtab_node::dump_name () const
+{
+  return get_dump_name (false);
+}
+
+const char *
+symtab_node::dump_asm_name () const
+{
+  return get_dump_name (true);
+}
+
 /* Return ipa reference from this symtab_node to
    REFERED_NODE or REFERED_VARPOOL_NODE. USE_TYPE specify type
    of the use.  */
@@ -751,9 +776,8 @@ symtab_node::dump_references (FILE *file)
   int i;
   for (i = 0; iterate_reference (i, ref); i++)
     {
-      fprintf (file, "%s/%i (%s)",
-               ref->referred->asm_name (),
-               ref->referred->order,
+      fprintf (file, "%s (%s)",
+	       ref->referred->dump_asm_name (),
 	       ipa_ref_use_name [ref->use]);
       if (ref->speculative)
 	fprintf (file, " (speculative)");
@@ -770,9 +794,8 @@ symtab_node::dump_referring (FILE *file)
   int i;
   for (i = 0; iterate_referring(i, ref); i++)
     {
-      fprintf (file, "%s/%i (%s)",
-               ref->referring->asm_name (),
-               ref->referring->order,
+      fprintf (file, "%s (%s)",
+	       ref->referring->dump_asm_name (),
 	       ipa_ref_use_name [ref->use]);
       if (ref->speculative)
 	fprintf (file, " (speculative)");
@@ -791,7 +814,7 @@ symtab_node::dump_base (FILE *f)
     "default", "protected", "hidden", "internal"
   };
 
-  fprintf (f, "%s/%i (%s)", asm_name (), order, name ());
+  fprintf (f, "%s (%s)", dump_asm_name (), name ());
   dump_addr (f, " @", (void *)this);
   fprintf (f, "\n  Type: %s", symtab_type_names[type]);
 
@@ -874,9 +897,8 @@ symtab_node::dump_base (FILE *f)
   fprintf (f, "\n");
   
   if (same_comdat_group)
-    fprintf (f, "  Same comdat group as: %s/%i\n",
-	     same_comdat_group->asm_name (),
-	     same_comdat_group->order);
+    fprintf (f, "  Same comdat group as: %s\n",
+	     same_comdat_group->dump_asm_name ());
   if (next_sharing_asm_name)
     fprintf (f, "  next sharing asm name: %i\n",
 	     next_sharing_asm_name->order);
@@ -913,25 +935,14 @@ symtab_node::dump (FILE *f)
     vnode->dump (f);
 }
 
-/* Dump symbol table to F.  */
-
 void
-symtab_node::dump_table (FILE *f)
+symbol_table::dump (FILE *f)
 {
   symtab_node *node;
   fprintf (f, "Symbol table:\n\n");
   FOR_EACH_SYMBOL (node)
     node->dump (f);
 }
-
-/* Dump symbol table to stderr.  */
-
-DEBUG_FUNCTION void
-symtab_node::debug_symtab (void)
-{
-  dump_table (stderr);
-}
-
 
 /* Return the cgraph node that has ASMNAME for its DECL_ASSEMBLER_NAME.
    Return NULL if there's no such node.  */

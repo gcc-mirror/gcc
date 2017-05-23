@@ -1451,6 +1451,15 @@ execute_oacc_device_lower ()
     = (lookup_attribute ("oacc kernels parallelized",
 			 DECL_ATTRIBUTES (current_function_decl)) != NULL);
 
+  /* Unparallelized OpenACC kernels constructs must get launched as 1 x 1 x 1
+     kernels, so remove the parallelism dimensions function attributes
+     potentially set earlier on.  */
+  if (is_oacc_kernels && !is_oacc_kernels_parallelized)
+    {
+      oacc_set_fn_attrib (current_function_decl, NULL, NULL);
+      attrs = oacc_get_fn_attrib (current_function_decl);
+    }
+
   /* Discover, partition and process the loops.  */
   oacc_loop *loops = oacc_loop_discovery ();
   int fn_level = oacc_fn_attrib_level (attrs);

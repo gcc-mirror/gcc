@@ -230,10 +230,9 @@ walk_polymorphic_call_targets (hash_set<void *> *reachable_call_targets,
 	      else
 		locus = UNKNOWN_LOCATION;
 	      dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, locus,
-                               "devirtualizing call in %s/%i to %s/%i\n",
-                               edge->caller->name (), edge->caller->order,
-                               target->name (),
-                               target->order);
+			       "devirtualizing call in %s to %s\n",
+			       edge->caller->dump_name (),
+			       target->dump_name ());
 	    }
 	  edge = edge->make_direct (target);
 	  if (ipa_fn_summaries)
@@ -529,7 +528,7 @@ symbol_table::remove_unreachable_nodes (FILE *file)
       if (!node->aux)
 	{
 	  if (file)
-	    fprintf (file, " %s/%i", node->name (), node->order);
+	    fprintf (file, " %s", node->dump_name ());
 	  node->remove ();
 	  changed = true;
 	}
@@ -549,7 +548,7 @@ symbol_table::remove_unreachable_nodes (FILE *file)
 	  if (node->definition && !node->alias && !node->thunk.thunk_p)
 	    {
 	      if (file)
-		fprintf (file, " %s/%i", node->name (), node->order);
+		fprintf (file, " %s", node->dump_name ());
 	      node->body_removed = true;
 	      node->analyzed = false;
 	      node->definition = false;
@@ -616,12 +615,11 @@ symbol_table::remove_unreachable_nodes (FILE *file)
 	  while (vnode->iterate_direct_aliases (0, ref))
 	    {
 	      if (file)
-		fprintf (file, " %s/%i", ref->referred->name (),
-			 ref->referred->order);
+		fprintf (file, " %s", ref->referred->dump_name ());
 	      ref->referring->remove ();
 	    }
 	  if (file)
-	    fprintf (file, " %s/%i", vnode->name (), vnode->order);
+	    fprintf (file, " %s", vnode->dump_name ());
           vnext = next_variable (vnode);
 	  /* Signal removal to the debug machinery.  */
 	  if (! flag_wpa)
@@ -843,50 +841,6 @@ ipa_discover_readonly_nonaddressable_vars (void)
   if (dump_file)
     fprintf (dump_file, "\n");
   return remove_p;
-}
-
-/* Free inline summary.  */
-
-namespace {
-
-const pass_data pass_data_ipa_free_fn_summary =
-{
-  SIMPLE_IPA_PASS, /* type */
-  "free-inline-summary", /* name */
-  OPTGROUP_NONE, /* optinfo_flags */
-  TV_IPA_FREE_INLINE_SUMMARY, /* tv_id */
-  0, /* properties_required */
-  0, /* properties_provided */
-  0, /* properties_destroyed */
-  0, /* todo_flags_start */
-  /* Early optimizations may make function unreachable.  We can not
-     remove unreachable functions as part of the ealry opts pass because
-     TODOs are run before subpasses.  Do it here.  */
-  ( TODO_remove_functions | TODO_dump_symtab ), /* todo_flags_finish */
-};
-
-class pass_ipa_free_fn_summary : public simple_ipa_opt_pass
-{
-public:
-  pass_ipa_free_fn_summary (gcc::context *ctxt)
-    : simple_ipa_opt_pass (pass_data_ipa_free_fn_summary, ctxt)
-  {}
-
-  /* opt_pass methods: */
-  virtual unsigned int execute (function *)
-    {
-      inline_free_summary ();
-      return 0;
-    }
-
-}; // class pass_ipa_free_fn_summary
-
-} // anon namespace
-
-simple_ipa_opt_pass *
-make_pass_ipa_free_fn_summary (gcc::context *ctxt)
-{
-  return new pass_ipa_free_fn_summary (ctxt);
 }
 
 /* Generate and emit a static constructor or destructor.  WHICH must
@@ -1391,8 +1345,8 @@ ipa_single_use (void)
 
 	  if (dump_file)
 	    {
-	      fprintf (dump_file, "Variable %s/%i is used by single function\n",
-		       var->name (), var->order);
+	      fprintf (dump_file, "Variable %s is used by single function\n",
+		       var->dump_name ());
 	    }
 	  var->used_by_single_function = true;
 	}
