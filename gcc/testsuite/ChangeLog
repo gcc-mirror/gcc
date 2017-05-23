@@ -1,6 +1,12 @@
 2017-05-23  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	Backport from trunk
+	PR libgfortran/80741
+	* gfortran.dg/read_4.f90: New test.
+
+2017-05-23  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	Backport from trunk
 	PR libgfortran/80333
 	* gfortran.dg/dtio_30.f03: New test.
 
