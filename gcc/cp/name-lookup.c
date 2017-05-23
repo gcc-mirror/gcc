@@ -48,7 +48,6 @@ struct scope_binding {
 };
 #define EMPTY_SCOPE_BINDING { NULL_TREE, NULL_TREE }
 
-static cxx_binding *binding_for_name (cp_binding_level *, tree);
 static tree push_overloaded_decl (tree, int, bool);
 static bool lookup_using_namespace (tree, struct scope_binding *, tree,
 				    tree, int);
@@ -61,6 +60,32 @@ static void consider_binding_level (tree name,
 				    enum lookup_name_fuzzy_kind kind);
 static tree push_using_directive (tree);
 static void diagnose_name_conflict (tree, tree);
+
+/* Find the binding for NAME in namespace NS.  If CREATE_P is true,
+   make an empty binding if there wasn't one.  */
+
+static cxx_binding *
+find_namespace_binding (tree ns, tree name, bool create_p = false)
+{
+  cp_binding_level *level = NAMESPACE_LEVEL (ns);
+  cxx_binding *binding = IDENTIFIER_NAMESPACE_BINDINGS (name);
+
+  for (;binding; binding = binding->previous)
+    if (binding->scope == level)
+      return binding;
+
+  if (create_p)
+    {
+      binding = cxx_binding_make (NULL, NULL);
+      binding->previous = IDENTIFIER_NAMESPACE_BINDINGS (name);
+      binding->scope = level;
+      binding->is_local = false;
+      binding->value_is_inherited = false;
+      IDENTIFIER_NAMESPACE_BINDINGS (name) = binding;
+    }
+
+  return binding;
+}
 
 /* Add DECL to the list of things declared in B.  */
 
@@ -1698,7 +1723,7 @@ pushdecl_maybe_friend_1 (tree x, bool is_friend)
       /* In case this decl was explicitly namespace-qualified, look it
 	 up in its namespace context.  */
       if (DECL_NAMESPACE_SCOPE_P (x) && namespace_bindings_p ())
-	t = get_namespace_binding (DECL_CONTEXT (x), name);
+	t = get_namespace_binding (CP_DECL_CONTEXT (x), name);
       else
 	t = lookup_name_innermost_nonclass_level (name);
 
@@ -2702,9 +2727,9 @@ set_identifier_type_value_with_scope (tree id, tree decl, cp_binding_level *b)
     }
   else
     {
-      cxx_binding *binding =
-	binding_for_name (NAMESPACE_LEVEL (current_namespace), id);
-      gcc_assert (decl);
+      cxx_binding *binding
+	= find_namespace_binding (current_namespace, id, true);
+
       if (binding->value)
 	supplement_binding (binding, decl);
       else
@@ -2809,55 +2834,6 @@ make_lambda_name (void)
 
   sprintf (buf, LAMBDANAME_FORMAT, lambda_cnt++);
   return get_identifier (buf);
-}
-
-/* Return (from the stack of) the BINDING, if any, established at SCOPE.  */
-
-static inline cxx_binding *
-find_binding (cp_binding_level *scope, cxx_binding *binding)
-{
-  for (; binding != NULL; binding = binding->previous)
-    if (binding->scope == scope)
-      return binding;
-
-  return (cxx_binding *)0;
-}
-
-/* Return the binding for NAME in SCOPE, if any.  Otherwise, return NULL.  */
-
-static inline cxx_binding *
-cp_binding_level_find_binding_for_name (cp_binding_level *scope, tree name)
-{
-  cxx_binding *b = IDENTIFIER_NAMESPACE_BINDINGS (name);
-  if (b)
-    {
-      /* Fold-in case where NAME is used only once.  */
-      if (scope == b->scope && b->previous == NULL)
-	return b;
-      return find_binding (scope, b);
-    }
-  return NULL;
-}
-
-/* Always returns a binding for name in scope.  If no binding is
-   found, make a new one.  */
-
-static cxx_binding *
-binding_for_name (cp_binding_level *scope, tree name)
-{
-  cxx_binding *result;
-
-  result = cp_binding_level_find_binding_for_name (scope, name);
-  if (result)
-    return result;
-  /* Not found, make a new one.  */
-  result = cxx_binding_make (NULL, NULL);
-  result->previous = IDENTIFIER_NAMESPACE_BINDINGS (name);
-  result->scope = scope;
-  result->is_local = false;
-  result->value_is_inherited = false;
-  IDENTIFIER_NAMESPACE_BINDINGS (name) = result;
-  return result;
 }
 
 /* Insert another USING_DECL into the current binding level, returning
@@ -2978,7 +2954,7 @@ push_overloaded_decl_1 (tree decl, int flags, bool is_friend)
   int doing_global = (namespace_bindings_p () || !(flags & PUSH_LOCAL));
 
   if (doing_global)
-    old = get_namespace_binding (DECL_CONTEXT (decl), name);
+    old = get_namespace_binding (CP_DECL_CONTEXT (decl), name);
   else
     old = lookup_name_innermost_nonclass_level (name);
 
@@ -3965,25 +3941,6 @@ do_class_using_decl (tree scope, tree name)
 }
 
 
-/* Return the binding value for name in scope.  */
-
-
-static tree
-namespace_binding_1 (tree scope, tree name)
-{
-  cxx_binding *binding;
-
-  if (SCOPE_FILE_SCOPE_P (scope))
-    scope = global_namespace;
-  else
-    /* Unnecessary for the global namespace because it can't be an alias. */
-    scope = ORIGINAL_NAMESPACE (scope);
-
-  binding = cp_binding_level_find_binding_for_name (NAMESPACE_LEVEL (scope), name);
-
-  return binding ? binding->value : NULL_TREE;
-}
-
 /* Return the binding for NAME in NS.  If NS is NULL, look in
    global_namespace.  */
 
@@ -3993,28 +3950,26 @@ get_namespace_binding (tree ns, tree name)
   bool subtime = timevar_cond_start (TV_NAME_LOOKUP);
   if (!ns)
     ns = global_namespace;
-  tree ret = namespace_binding_1 (ns, name);
+  cxx_binding *binding = find_namespace_binding (ns, name);
   timevar_cond_stop (TV_NAME_LOOKUP, subtime);
-  return ret;
+  return binding ? binding->value : NULL_TREE;
 }
 
 static void
 set_namespace_binding (tree scope, tree name, tree val)
 {
-  cxx_binding *b;
-
   if (scope == NULL_TREE)
     scope = global_namespace;
-  b = binding_for_name (NAMESPACE_LEVEL (scope), name);
-  if (!b->value
+  cxx_binding *binding = find_namespace_binding (scope, name, true);
+  if (!binding->value
       /* For templates and using we create a single element OVERLOAD.
 	 Look for the chain to know whether this is really augmenting
 	 an existing overload.  */
       || (TREE_CODE (val) == OVERLOAD && OVL_CHAIN (val))
       || val == error_mark_node)
-    b->value = val;
+    binding->value = val;
   else
-    supplement_binding (b, val);
+    supplement_binding (binding, val);
 }
 
 /* Set value binding og NAME in the global namespace to VAL.  Does not
@@ -4366,7 +4321,7 @@ finish_namespace_using_decl (tree decl, tree scope, tree name)
     return;
 
   cxx_binding *binding
-    = binding_for_name (NAMESPACE_LEVEL (current_namespace), name);
+    = find_namespace_binding (current_namespace, name, true);
 
   tree value = binding->value;
   tree type = binding->type;
@@ -4917,8 +4872,7 @@ unqualified_namespace_lookup_1 (tree name, int flags)
   for (; !val; scope = CP_DECL_CONTEXT (scope))
     {
       struct scope_binding binding = EMPTY_SCOPE_BINDING;
-      cxx_binding *b =
-	 cp_binding_level_find_binding_for_name (NAMESPACE_LEVEL (scope), name);
+      cxx_binding *b = find_namespace_binding (scope, name);
 
       if (b)
 	ambiguous_decl (&binding, b, flags);
@@ -5021,8 +4975,7 @@ lookup_using_namespace (tree name, struct scope_binding *val,
     if (TREE_VALUE (iter) == scope)
       {
 	tree used = ORIGINAL_NAMESPACE (TREE_PURPOSE (iter));
-	cxx_binding *val1 =
-	  cp_binding_level_find_binding_for_name (NAMESPACE_LEVEL (used), name);
+	cxx_binding *val1 = find_namespace_binding (used, name);
 	/* Resolve ambiguities.  */
 	if (val1)
 	  ambiguous_decl (val, val1, flags);
@@ -5092,8 +5045,7 @@ qualified_lookup_using_namespace (tree name, tree scope,
 	    continue;
 	  vec_safe_push (seen_inline, scope);
 
-	  binding =
-	    cp_binding_level_find_binding_for_name (NAMESPACE_LEVEL (scope), name);
+	  binding = find_namespace_binding (scope, name);
 	  if (binding)
 	    {
 	      ambiguous_decl (result, binding, flags);
@@ -5610,8 +5562,7 @@ lookup_type_scope_1 (tree name, tag_scope scope)
   /* Look in namespace scope.  */
   if (!val)
     {
-      iter = cp_binding_level_find_binding_for_name
-	       (NAMESPACE_LEVEL (current_decl_namespace ()), name);
+      iter = find_namespace_binding (current_decl_namespace (), name);
 
       if (iter)
 	{
@@ -5668,13 +5619,14 @@ static tree
 lookup_name_innermost_nonclass_level_1 (tree name)
 {
   cp_binding_level *b = innermost_nonclass_level ();
+  cxx_binding *binding = NULL;
 
   if (b->kind == sk_namespace)
-    return namespace_binding_1 (current_namespace, name);
-  else if (cxx_binding *binding = find_local_binding (b, name))
-    return binding->value;
+    binding = find_namespace_binding (current_namespace, name);
   else
-    return NULL_TREE;
+    binding = find_local_binding (b, name);
+
+  return binding ? binding->value : NULL_TREE;
 }
 
 /* Wrapper for lookup_name_innermost_nonclass_level_1.  */

@@ -1,5 +1,16 @@
 2017-05-23  Nathan Sidwell  <nathan@acm.org>
 
+	* name-lookup.c (find_namespace_binding): New.
+	(pushdecl_maybe_friend_1): Use CP_DECL_CONTEXT.
+	(set_identifier_type_value_with_scope): Use find_namespace_binding.
+	(find_binding, cp_binding_level_find_binding_for_name,
+	binding_for_name, namespace_binding_1): Delete.
+	(push_overloaded_decl_1): Use CP_DECL_CONTEXT.
+	(get_namespace_binding, set_namespace_binding,
+	finish_namespace_using_decl, unqualified_namespace_lookup_1,
+	qualified_lookup_using_namespace, lookup_type_scope_1,
+	lookup_name_innermost_nonclass_level_1): Use find_namespace_binding.
+
 	PR c++/80866
 	* parser.c (cp_parser_template_id): Keep the lookup when stashing
 	the template_id.
