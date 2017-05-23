@@ -2871,6 +2871,7 @@ nml_read_obj (st_parameter_dt *dtp, namelist_info *nl, index_type offset,
   index_type m;
   size_t obj_name_len;
   void *pdata;
+  gfc_class list_obj;
 
   /* If we have encountered a previous read error or this object has not been
      touched in name parsing, just return.  */
@@ -2909,11 +2910,28 @@ nml_read_obj (st_parameter_dt *dtp, namelist_info *nl, index_type offset,
     {
       /* Update the pointer to the data, using the current index vector  */
 
-      pdata = (void*)(nl->mem_pos + offset);
-      for (dim = 0; dim < nl->var_rank; dim++)
-	pdata = (void*)(pdata + (nl->ls[dim].idx
-				 - GFC_DESCRIPTOR_LBOUND(nl,dim))
-			* GFC_DESCRIPTOR_STRIDE(nl,dim) * nl->size);
+      if ((nl->type == BT_DERIVED || nl->type == BT_CLASS)
+	  && nl->dtio_sub != NULL)
+	{
+	  pdata = NULL;  /* Not used under these conidtions.  */
+	  if (nl->type == BT_CLASS)
+	    list_obj.data = ((gfc_class*)nl->mem_pos)->data;
+	  else
+	    list_obj.data = (void *)nl->mem_pos;
+
+	  for (dim = 0; dim < nl->var_rank; dim++)
+	    list_obj.data = list_obj.data + (nl->ls[dim].idx
+	      - GFC_DESCRIPTOR_LBOUND(nl,dim))
+	      * GFC_DESCRIPTOR_STRIDE(nl,dim) * nl->size;
+	}
+      else
+	{
+	  pdata = (void*)(nl->mem_pos + offset);
+	  for (dim = 0; dim < nl->var_rank; dim++)
+	    pdata = (void*)(pdata + (nl->ls[dim].idx
+	      - GFC_DESCRIPTOR_LBOUND(nl,dim))
+	      * GFC_DESCRIPTOR_STRIDE(nl,dim) * nl->size);
+	}
 
       /* If we are finished with the repeat count, try to read next value.  */
 
@@ -2958,6 +2976,7 @@ nml_read_obj (st_parameter_dt *dtp, namelist_info *nl, index_type offset,
 	    break;
 
 	  case BT_DERIVED:
+	  case BT_CLASS:
 	    /* If this object has a User Defined procedure, call it.  */
 	    if (nl->dtio_sub != NULL)
 	      {
@@ -2970,13 +2989,11 @@ nml_read_obj (st_parameter_dt *dtp, namelist_info *nl, index_type offset,
 		int noiostat;
 		int *child_iostat = NULL;
 		gfc_array_i4 vlist;
-		gfc_class list_obj;
 		formatted_dtio dtio_ptr = (formatted_dtio)nl->dtio_sub;
 
 		GFC_DESCRIPTOR_DATA(&vlist) = NULL;
 		GFC_DIMENSION_SET(vlist.dim[0],1, 0, 0);
 
-		list_obj.data = (void *)nl->mem_pos;
 		list_obj.vptr = nl->vtable;
 		list_obj.len = 0;
 

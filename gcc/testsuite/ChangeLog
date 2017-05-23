@@ -1,9 +1,21 @@
+2017-05-23  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	Backport from trunk
+	PR libgfortran/80333
+	* gfortran.dg/dtio_30.f03: New test.
+
 2017-05-23  Sheldon Lobo  <sheldon.lobo@oracle.com>
 
 	Backport from mainline
 	2017-05-18  Sheldon Lobo  <sheldon.lobo@oracle.com>
 
 	* gcc.target/sparc/niagara7-align.c: New test.
+
+2017-05-23  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	Backport from trunk
+	PR libgfortran/80333
+	* gfortran.dg/dtio_30.f03: New test.
 
 2017-05-22  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
