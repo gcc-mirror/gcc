@@ -1,3 +1,12 @@
+2017-05-23  Paul Thomas  <pault@gcc.gnu.org>
+	    Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	Backport from trunk
+	PR fortran/80333
+	* list_read.c (nml_read_obj): Compute pointer into class/type
+	arrays from the nl->dim information. Update it for each iteration
+	of the loop for the given object.
+
 2017-05-19  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	Backport from trunk
