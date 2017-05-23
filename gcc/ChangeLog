@@ -1,3 +1,8 @@
+2017-05-23  Tom de Vries  <tom@codesourcery.com>
+
+	* doc/sourcebuild.texi (Directives, Verify compiler message): Document
+	dg-line directive.
+
 2017-05-23  Jan Hubicka  <hubicka@ucw.cz>
 
 	* cgraphunit.c (symbol_table::process_new_functions): Update.
