@@ -48,7 +48,6 @@ struct scope_binding {
 };
 #define EMPTY_SCOPE_BINDING { NULL_TREE, NULL_TREE }
 
-static tree push_overloaded_decl (tree, int, bool);
 static bool lookup_using_namespace (tree, struct scope_binding *, tree,
 				    tree, int);
 static bool qualified_lookup_using_namespace (tree, tree,
@@ -60,6 +59,23 @@ static void consider_binding_level (tree name,
 				    enum lookup_name_fuzzy_kind kind);
 static tree push_using_directive (tree);
 static void diagnose_name_conflict (tree, tree);
+
+/* Create a local binding level for NAME.  */
+
+static cxx_binding *
+create_local_binding (cp_binding_level *level, tree name)
+{
+  cxx_binding *binding = cxx_binding_make (NULL, NULL);
+
+  INHERITED_VALUE_BINDING_P (binding) = false;
+  LOCAL_BINDING_P (binding) = true;
+  binding->scope = level;
+  binding->previous = IDENTIFIER_BINDING (name);
+
+  IDENTIFIER_BINDING (name) = binding;
+  
+  return binding;
+}
 
 /* Find the binding for NAME in namespace NS.  If CREATE_P is true,
    make an empty binding if there wasn't one.  */
@@ -1281,6 +1297,173 @@ matching_fn_p (tree one, tree two)
   return true;
 }
 
+/* Push DECL into nonclass LEVEL BINDING.  OLD is the current
+   binding value (possibly with anticipated builtins stripped).
+   Diagnose conflicts and return updated decl.  */
+
+static tree
+update_binding (cp_binding_level *level, cxx_binding *binding,
+		tree old, tree decl, bool is_friend)
+{
+  tree to_val = decl;
+  tree to_type = NULL_TREE;
+
+  gcc_assert (level->kind != sk_class);
+  if (old == error_mark_node)
+    old = NULL_TREE;
+
+  if (old && TREE_CODE (old) == TYPE_DECL && DECL_ARTIFICIAL (old))
+    {
+      /* Slide the tdef out of the way.  We'll undo this below, if
+	 we're pushing a matching tdef.  */
+      to_type = old;
+      old = NULL_TREE;
+    }
+
+  if (DECL_DECLARES_FUNCTION_P (decl))
+    {
+      if (!old)
+	;
+      else if (OVL_P (old))
+	{
+	  for (ovl_iterator iter (old); iter; ++iter)
+	    {
+	      tree fn = *iter;
+
+	      if (iter.using_p () && matching_fn_p (fn, decl))
+		{
+		  /* If a function declaration in namespace scope or
+		     block scope has the same name and the same
+		     parameter-type- list (8.3.5) as a function
+		     introduced by a using-declaration, and the
+		     declarations do not declare the same function,
+		     the program is ill-formed.  [namespace.udecl]/14 */
+		  if (tree match = duplicate_decls (decl, fn, is_friend))
+		    return match;
+		  else
+		    /* FIXME: To preserve existing error behavior, we
+		       still push the decl.  This might change.  */
+		    diagnose_name_conflict (decl, fn);
+		}
+	    }
+	}
+      else
+	goto conflict;
+
+      to_val = ovl_insert (decl, old);
+    }
+  else if (to_type && TREE_CODE (decl) == TYPE_DECL)
+    {
+      /* We thought we wanted to slide an artificial typedef out of
+	 the way, to make way for another typedef.  That's not always
+	 what we want to do.  */
+      if (!DECL_ARTIFICIAL (decl))
+	; /* Slide.  */
+      else if (same_type_p (TREE_TYPE (to_type), TREE_TYPE (decl)))
+	/* Two artificial decls to same type.  Do nothing.  */
+	return to_type;
+      else
+	goto conflict;
+    }
+  else if (!old)
+    ;
+  else if (TREE_CODE (decl) == TYPE_DECL && DECL_ARTIFICIAL (decl))
+    {
+      /* Slide DECL into the type slot.  */
+      to_type = decl;
+      to_val = old;
+    }
+  else if (TREE_CODE (old) != TREE_CODE (decl))
+    /* Different kinds of decls conflict.  */
+    goto conflict;
+  else if (TREE_CODE (old) == TYPE_DECL)
+    {
+      if (DECL_ARTIFICIAL (decl))
+	{
+	  /* Slide DECL into the type slot instead.  */
+	  to_type = decl;
+	  to_val = old;
+	}
+      else if (same_type_p (TREE_TYPE (old), TREE_TYPE (decl)))
+	/* Two type decls to the same type.  Do nothing.  */
+	return old;
+      else
+	goto conflict;
+    }
+  else if (TREE_CODE (old) == NAMESPACE_DECL)
+    {
+      if (DECL_NAMESPACE_ALIAS (old) && DECL_NAMESPACE_ALIAS (decl)
+	  && ORIGINAL_NAMESPACE (old) == ORIGINAL_NAMESPACE (decl))
+	/* In a declarative region, a namespace-alias-definition can be
+	   used to redefine a namespace-alias declared in that declarative
+	   region to refer only to the namespace to which it already
+	   refers.  [namespace.alias] */
+	return old;
+      else
+	goto conflict;
+    }
+  else if (TREE_CODE (old) == VAR_DECL)
+    {
+      /* There can be two block-scope declarations of the same
+	 variable, so long as they are `extern' declarations.  */
+      if (!DECL_EXTERNAL (old) || !DECL_EXTERNAL (decl))
+	goto conflict;
+      else if (tree match = duplicate_decls (decl, old, false))
+	return match;
+      else
+	goto conflict;
+    }
+  else
+    {
+    conflict:
+      diagnose_name_conflict (decl, old);
+      to_val = NULL_TREE;
+    }
+
+  if (to_val)
+    {
+      if (level->kind != sk_namespace
+	  && !to_type && binding->value && OVL_P (to_val))
+	update_local_overload (binding, to_val);
+      else
+	{
+	  tree to_add = to_val;
+      
+	  if (level->kind == sk_namespace)
+	    to_add = decl;
+	  else if (to_type == decl)
+	    to_add = decl;
+	  else if (TREE_CODE (to_add) == OVERLOAD)
+	    to_add = build_tree_list (NULL_TREE, to_add);
+
+	  add_decl_to_level (level, to_add);
+	}
+
+      if (to_type == binding->type)
+	to_type = NULL_TREE;
+
+      if (to_type)
+	{
+	  gcc_checking_assert (TREE_CODE (to_type) == TYPE_DECL
+			       && DECL_ARTIFICIAL (to_type));
+
+	  tree type = TREE_TYPE (to_type);
+	  if (to_type != decl
+	      && MAYBE_CLASS_TYPE_P (type) && warn_shadow
+	      && (!DECL_IN_SYSTEM_HEADER (decl)
+		  || !DECL_IN_SYSTEM_HEADER (to_type)))
+	    warning (OPT_Wshadow, "%q#D hides constructor for %q#T",
+		     decl, type);
+	}
+
+      if (to_type)
+	binding->type = to_type;
+      binding->value = to_val;
+    }
+
+  return decl;
+}
+
 /* Map of identifiers to extern C functions (or LISTS thereof).  */
 
 static GTY(()) hash_map<lang_identifier *, tree> *extern_c_fns;
@@ -1690,338 +1873,146 @@ set_local_extern_decl_linkage (tree decl, bool shadowed)
     }
 }
 
-/* Record a decl-node X as belonging to the current lexical scope.
-   Check for errors (such as an incompatible declaration for the same
-   name already seen in the same scope).  IS_FRIEND is true if X is
+/* Record DECL as belonging to the current lexical scope.  Check for
+   errors (such as an incompatible declaration for the same name
+   already seen in the same scope).  IS_FRIEND is true if DECL is
    declared as a friend.
 
-   Returns either X or an old decl for the same name.
-   If an old decl is returned, it may have been smashed
-   to agree with what X says.  */
+   Returns either DECL or an old decl for the same name.  If an old
+   decl is returned, it may have been smashed to agree with what DECL
+   says.  */
 
 static tree
-pushdecl_maybe_friend_1 (tree x, bool is_friend)
+do_pushdecl (tree decl, bool is_friend)
 {
-  tree t;
-  tree name;
-  int need_new_binding;
-
-  if (x == error_mark_node)
+  if (decl == error_mark_node)
     return error_mark_node;
 
-  need_new_binding = 1;
+  if (!DECL_TEMPLATE_PARM_P (decl) && current_function_decl)
+    set_decl_context_in_fn (current_function_decl, decl);
 
-  if (!DECL_TEMPLATE_PARM_P (x) && current_function_decl)
-    set_decl_context_in_fn (current_function_decl, x);
+  /* The binding level we will be pushing into.  During local class
+     pushing, we want to push to the containing scope.  */
+  cp_binding_level *level = current_binding_level;
+  while (level->kind == sk_class)
+    level = level->level_chain;
 
-  name = DECL_NAME (x);
-  if (name)
+  if (tree name = DECL_NAME (decl))
     {
-      if (TREE_CODE (name) == TEMPLATE_ID_EXPR)
-	name = TREE_OPERAND (name, 0);
+      cxx_binding *binding = NULL;
+      tree ns = NULL_TREE; /* Searched namespace.  */
+      tree old = NULL_TREE;
 
-      /* In case this decl was explicitly namespace-qualified, look it
-	 up in its namespace context.  */
-      if (DECL_NAMESPACE_SCOPE_P (x) && namespace_bindings_p ())
-	t = get_namespace_binding (CP_DECL_CONTEXT (x), name);
+      if (level->kind == sk_namespace)
+	{
+	  /* We look in the decl's namespace for an existing
+	     declaration, even though we push into the current
+	     namespace.  */
+	  ns = (DECL_NAMESPACE_SCOPE_P (decl)
+		? CP_DECL_CONTEXT (decl) : current_namespace);
+	  /* Create the binding, if this is current namespace, because
+	     that's where we'll be pushing anyway.  */
+	  binding = find_namespace_binding (ns, name, ns == current_namespace);
+	}
       else
-	t = lookup_name_innermost_nonclass_level (name);
+	binding = find_local_binding (level, name);
 
-      if (current_function_decl && VAR_OR_FUNCTION_DECL_P (x)
-	  && DECL_EXTERNAL (x))
-	set_local_extern_decl_linkage (x, t != NULL_TREE);
+      if (binding)
+	old = binding->value;
 
-      /* If we are declaring a function, and the result of name-lookup
-	 was an OVERLOAD, look for an overloaded instance that is
-	 actually the same as the function we are declaring.  (If
-	 there is one, we have to merge our declaration with the
-	 previous declaration.)  */
-      if (t && TREE_CODE (t) == OVERLOAD)
+      if (current_function_decl && VAR_OR_FUNCTION_DECL_P (decl)
+	  && DECL_EXTERNAL (decl))
+	set_local_extern_decl_linkage (decl, old != NULL_TREE);
+
+      if (old == error_mark_node)
+	old = NULL_TREE;
+
+      for (ovl_iterator iter (old); iter; ++iter)
+	if (iter.using_p ())
+	  ; /* Ignore using decls here.  */
+	else if (tree match = duplicate_decls (decl, *iter, is_friend))
+	  return match;
+
+      /* We are pushing a new decl.  */
+
+      /* Skip a hidden builtin we failed to match already.  */
+      if (old && TREE_CODE (old) == FUNCTION_DECL
+	  && DECL_ANTICIPATED (old)
+	  && !DECL_HIDDEN_FRIEND_P (old))
+	old = NULL_TREE;
+
+      check_template_shadow (decl);
+
+      if (DECL_DECLARES_FUNCTION_P (decl))
 	{
-	  tree match;
+	  check_default_args (decl);
 
-	  if (TREE_CODE (x) == FUNCTION_DECL)
-	    for (match = t; match; match = OVL_NEXT (match))
-	      {
-		if (decls_match (OVL_CURRENT (match), x))
-		  break;
-	      }
-	  else
-	    /* Just choose one.  */
-	    match = t;
-
-	  if (match)
-	    t = OVL_CURRENT (match);
-	  else
-	    t = NULL_TREE;
-	}
-
-      if (t && t != error_mark_node)
-	{
-	  if (TREE_CODE (t) == PARM_DECL)
+	  if (is_friend)
 	    {
-	      /* Check for duplicate params.  */
-	      tree d = duplicate_decls (x, t, is_friend);
-	      if (d)
-		return d;
-	    }
-	  else if ((DECL_EXTERN_C_FUNCTION_P (x)
-		    || DECL_FUNCTION_TEMPLATE_P (x))
-		   && is_overloaded_fn (t))
-	    /* Don't do anything just yet.  */;
-	  else if (t == wchar_decl_node)
-	    {
-	      if (! DECL_IN_SYSTEM_HEADER (x))
-		pedwarn (input_location, OPT_Wpedantic, "redeclaration of %<wchar_t%> as %qT",
-			 TREE_TYPE (x));
-	      
-	      /* Throw away the redeclaration.  */
-	      return t;
-	    }
-	  else
-	    {
-	      tree olddecl = duplicate_decls (x, t, is_friend);
-
-	      /* If the redeclaration failed, we can stop at this
-		 point.  */
-	      if (olddecl == error_mark_node)
-		return error_mark_node;
-
-	      if (olddecl)
-		{
-		  if (TREE_CODE (t) == TYPE_DECL)
-		    SET_IDENTIFIER_TYPE_VALUE (name, TREE_TYPE (t));
-
-		  return t;
-		}
-	      else if (DECL_MAIN_P (x) && TREE_CODE (t) == FUNCTION_DECL)
-		{
-		  /* A redeclaration of main, but not a duplicate of the
-		     previous one.
-
-		     [basic.start.main]
-
-		     This function shall not be overloaded.  */
-		  error ("invalid redeclaration of %q+D", t);
-		  error ("as %qD", x);
-		  /* We don't try to push this declaration since that
-		     causes a crash.  */
-		  return x;
-		}
+	      if (level->kind != sk_namespace)
+		/* In a local class, a friend function declaration must
+		   find a matching decl in the innermost non-class scope.
+		   [class.friend/11] */
+		error ("friend declaration %qD in local class without "
+		       "prior local declaration", decl);
+	      else if (!flag_friend_injection)
+		/* Hide it from ordinary lookup.  */
+		DECL_ANTICIPATED (decl) = DECL_HIDDEN_FRIEND_P (decl) = true;
 	    }
 	}
 
-      check_template_shadow (x);
-
-      /* If this is a function conjured up by the back end, massage it
-	 so it looks friendly.  */
-      if (DECL_NON_THUNK_FUNCTION_P (x) && ! DECL_LANG_SPECIFIC (x))
+      if (level->kind != sk_namespace)
 	{
-	  retrofit_lang_decl (x);
-	  SET_DECL_LANGUAGE (x, lang_c);
+	  check_local_shadow (decl);
+
+	  if (TREE_CODE (decl) == NAMESPACE_DECL)
+	    /* A local namespace alias.  */
+	    set_identifier_type_value (name, NULL_TREE);
+
+	  if (!binding)
+	    binding = create_local_binding (level, name);
+	}
+      else if (!binding)
+	{
+	  ns = current_namespace;
+	  binding = find_namespace_binding (ns, name, true);
 	}
 
-      t = x;
-      if (DECL_NON_THUNK_FUNCTION_P (x) && ! DECL_FUNCTION_MEMBER_P (x))
-	{
-	  t = push_overloaded_decl (x, PUSH_LOCAL, is_friend);
-	  if (!namespace_bindings_p ())
-	    /* We do not need to create a binding for this name;
-	       push_overloaded_decl will have already done so if
-	       necessary.  */
-	    need_new_binding = 0;
-	}
-      else if (DECL_FUNCTION_TEMPLATE_P (x) && DECL_NAMESPACE_SCOPE_P (x))
-	{
-	  t = push_overloaded_decl (x, PUSH_GLOBAL, is_friend);
-	  if (t == x)
-	    add_decl_to_level (NAMESPACE_LEVEL (CP_DECL_CONTEXT (t)), x);
-	}
+      old = update_binding (level, binding, old, decl, is_friend);
 
-      if (DECL_DECLARES_FUNCTION_P (t))
+      if (old != decl)
+	/* An existing decl matched, use it.  */
+	decl = old;
+      else if (TREE_CODE (decl) == TYPE_DECL)
 	{
-	  check_default_args (t);
+	  tree type = TREE_TYPE (decl);
 
-	  if (is_friend && t == x && !flag_friend_injection)
+	  if (type != error_mark_node)
 	    {
-	      /* This is a new friend declaration of a function or a
-		 function template, so hide it from ordinary function
-		 lookup.  */
-	      DECL_ANTICIPATED (t) = 1;
-	      DECL_HIDDEN_FRIEND_P (t) = 1;
+	      if (TYPE_NAME (type) != decl)
+		set_underlying_type (decl);
+
+	      if (!ns)
+		set_identifier_type_value_with_scope (name, decl, level);
+	      else
+		SET_IDENTIFIER_TYPE_VALUE (name, global_type_node);
 	    }
-	}
-
-      if (t != x || DECL_FUNCTION_TEMPLATE_P (t))
-	return t;
-
-      /* If declaring a type as a typedef, copy the type (unless we're
-	 at line 0), and install this TYPE_DECL as the new type's typedef
-	 name.  See the extensive comment of set_underlying_type ().  */
-      if (TREE_CODE (x) == TYPE_DECL)
-	{
-	  tree type = TREE_TYPE (x);
-
-	  if (DECL_IS_BUILTIN (x)
-	      || (TREE_TYPE (x) != error_mark_node
-		  && TYPE_NAME (type) != x
-		  /* We don't want to copy the type when all we're
-		     doing is making a TYPE_DECL for the purposes of
-		     inlining.  */
-		  && (!TYPE_NAME (type)
-		      || TYPE_NAME (type) != DECL_ABSTRACT_ORIGIN (x))))
-	    set_underlying_type (x);
-
-	  if (type != error_mark_node
-	      && TYPE_IDENTIFIER (type))
-	    set_identifier_type_value (DECL_NAME (x), x);
 
 	  /* If this is a locally defined typedef in a function that
 	     is not a template instantation, record it to implement
 	     -Wunused-local-typedefs.  */
 	  if (!instantiating_current_function_p ())
-	    record_locally_defined_typedef (x);
+	    record_locally_defined_typedef (decl);
 	}
-
-      /* Multiple external decls of the same identifier ought to match.
-
-	 We get warnings about inline functions where they are defined.
-	 We get warnings about other functions from push_overloaded_decl.
-
-	 Avoid duplicate warnings where they are used.  */
-      if (TREE_PUBLIC (x) && TREE_CODE (x) != FUNCTION_DECL)
-	{
-	  tree decl;
-
-	  decl = get_namespace_binding (current_namespace, name);
-	  if (decl && TREE_CODE (decl) == OVERLOAD)
-	    decl = OVL_FUNCTION (decl);
-
-	  if (decl && decl != error_mark_node
-	      && (DECL_EXTERNAL (decl) || TREE_PUBLIC (decl))
-	      /* If different sort of thing, we already gave an error.  */
-	      && TREE_CODE (decl) == TREE_CODE (x)
-	      && !comptypes (TREE_TYPE (x), TREE_TYPE (decl),
-			     COMPARE_REDECLARATION))
-	    {
-	      if (permerror (input_location, "type mismatch with previous "
-			     "external decl of %q#D", x))
-		inform (DECL_SOURCE_LOCATION (decl),
-			"previous external decl of %q#D", decl);
-	    }
-	}
-
-      /* This name is new in its binding level.
-	 Install the new declaration and return it.  */
-      if (namespace_bindings_p ())
-	{
-	  /* Install a global value.  */
-
-	  /* If the first global decl has external linkage,
-	     warn if we later see static one.  */
-	  if (IDENTIFIER_GLOBAL_VALUE (name) == NULL_TREE && TREE_PUBLIC (x))
-	    TREE_PUBLIC (name) = 1;
-
-	  /* Bind the name for the entity.  */
-	  if (!(TREE_CODE (x) == TYPE_DECL && DECL_ARTIFICIAL (x)
-		&& t != NULL_TREE)
-	      && (TREE_CODE (x) == TYPE_DECL
-		  || VAR_P (x)
-		  || TREE_CODE (x) == NAMESPACE_DECL
-		  || TREE_CODE (x) == CONST_DECL
-		  || TREE_CODE (x) == TEMPLATE_DECL))
-	    set_namespace_binding (current_namespace, name, x);
-
-	  /* If new decl is `static' and an `extern' was seen previously,
-	     warn about it.  */
-	  if (x != NULL_TREE && t != NULL_TREE && decls_match (x, t))
-	    warn_extern_redeclared_static (x, t);
-	}
-      else
-	{
-	  /* Here to install a non-global value.  */
-	  tree oldglobal = get_namespace_binding (current_namespace, name);
-	  tree oldlocal = NULL_TREE;
-	  cxx_binding *oldbinding = outer_binding (name, NULL, true);
-	  if (oldbinding)
-	    oldlocal = oldbinding->value;
-
-	  check_local_shadow (x);
-
-	  if (need_new_binding)
-	    {
-	      push_local_binding (name, x, false);
-	      /* Because push_local_binding will hook X on to the
-		 current_binding_level's name list, we don't want to
-		 do that again below.  */
-	      need_new_binding = 0;
-	    }
-
-	  /* If this is a TYPE_DECL, push it into the type value slot.  */
-	  if (TREE_CODE (x) == TYPE_DECL)
-	    set_identifier_type_value (name, x);
-
-	  /* Clear out any TYPE_DECL shadowed by a namespace so that
-	     we won't think this is a type.  The C struct hack doesn't
-	     go through namespaces.  */
-	  if (TREE_CODE (x) == NAMESPACE_DECL)
-	    set_identifier_type_value (name, NULL_TREE);
-
-	  if (oldlocal)
-	    {
-	      tree d = oldlocal;
-
-	      while (oldlocal
-		     && VAR_P (oldlocal)
-		     && DECL_DEAD_FOR_LOCAL (oldlocal))
-		oldlocal = DECL_SHADOWED_FOR_VAR (oldlocal);
-
-	      if (oldlocal == NULL_TREE)
-		oldlocal
-		  = get_namespace_binding (current_namespace, DECL_NAME (d));
-	    }
-
-	  /* If this is an extern function declaration, see if we
-	     have a global definition or declaration for the function.  */
-	  if (oldlocal == NULL_TREE
-	      && DECL_EXTERNAL (x)
-	      && oldglobal != NULL_TREE
-	      && TREE_CODE (x) == FUNCTION_DECL
-	      && TREE_CODE (oldglobal) == FUNCTION_DECL)
-	    {
-	      /* We have one.  Their types must agree.  */
-	      if (decls_match (x, oldglobal))
-		/* OK */;
-	      else
-		{
-		  warning (0, "extern declaration of %q#D doesn%'t match", x);
-		  warning_at (DECL_SOURCE_LOCATION (oldglobal), 0,
-			      "global declaration %q#D", oldglobal);
-		}
-	    }
-	  /* If we have a local external declaration,
-	     and no file-scope declaration has yet been seen,
-	     then if we later have a file-scope decl it must not be static.  */
-	  if (oldlocal == NULL_TREE
-	      && oldglobal == NULL_TREE
-	      && DECL_EXTERNAL (x)
-	      && TREE_PUBLIC (x))
-	    TREE_PUBLIC (name) = 1;
-	}
-
-      if (VAR_P (x))
-	maybe_register_incomplete_var (x);
-      if (TREE_CODE (x) == FUNCTION_DECL && DECL_EXTERN_C_P (x))
-	/* We need to check and register the fn now.  */
-	check_extern_c_conflict (x);
+      else if (VAR_P (decl))
+	maybe_register_incomplete_var (decl);
+      else if (TREE_CODE (decl) == FUNCTION_DECL && DECL_EXTERN_C_P (decl))
+	check_extern_c_conflict (decl);
     }
+  else
+    add_decl_to_level (level, decl);
 
-  if (need_new_binding)
-    add_decl_to_level (DECL_NAMESPACE_SCOPE_P (x)
-		       ? NAMESPACE_LEVEL (CP_DECL_CONTEXT (x))
-		       : current_binding_level, x);
-
-  return x;
+  return decl;
 }
 
 /* Record a decl-node X as belonging to the current lexical scope.
@@ -2032,7 +2023,7 @@ pushdecl (tree x, bool is_friend)
 {
   tree ret;
   bool subtime = timevar_cond_start (TV_NAME_LOOKUP);
-  ret = pushdecl_maybe_friend_1 (x, is_friend);
+  ret = do_pushdecl (x, is_friend);
   timevar_cond_stop (TV_NAME_LOOKUP, subtime);
   return ret;
 }
@@ -2921,151 +2912,6 @@ pushdecl_outermost_localscope (tree x)
   tree ret = b ? pushdecl_with_scope_1 (x, b, false) : error_mark_node;
   timevar_cond_stop (TV_NAME_LOOKUP, subtime);
 
-  return ret;
-}
-
-/* DECL is a FUNCTION_DECL for a non-member function, which may have
-   other definitions already in place.  We get around this by making
-   the value of the identifier point to a list of all the things that
-   want to be referenced by that name.  It is then up to the users of
-   that name to decide what to do with that list.
-
-   DECL may also be a TEMPLATE_DECL, with a FUNCTION_DECL in its
-   DECL_TEMPLATE_RESULT.  It is dealt with the same way.
-
-   FLAGS is a bitwise-or of the following values:
-     PUSH_LOCAL: Bind DECL in the current scope, rather than at
-		 namespace scope.
-     PUSH_USING: DECL is being pushed as the result of a using
-		 declaration.
-
-   IS_FRIEND is true if this is a friend declaration.
-
-   The value returned may be a previous declaration if we guessed wrong
-   about what language DECL should belong to (C or C++).  Otherwise,
-   it's always DECL (and never something that's not a _DECL).  */
-
-static tree
-push_overloaded_decl_1 (tree decl, int flags, bool is_friend)
-{
-  tree name = DECL_NAME (decl);
-  tree old;
-  tree new_binding;
-  int doing_global = (namespace_bindings_p () || !(flags & PUSH_LOCAL));
-
-  if (doing_global)
-    old = get_namespace_binding (CP_DECL_CONTEXT (decl), name);
-  else
-    old = lookup_name_innermost_nonclass_level (name);
-
-  if (old)
-    {
-      if (TREE_CODE (old) == TYPE_DECL && DECL_ARTIFICIAL (old))
-	{
-	  tree t = TREE_TYPE (old);
-	  if (MAYBE_CLASS_TYPE_P (t) && warn_shadow
-	      && (! DECL_IN_SYSTEM_HEADER (decl)
-		  || ! DECL_IN_SYSTEM_HEADER (old)))
-	    warning (OPT_Wshadow, "%q#D hides constructor for %q#T", decl, t);
-	  old = NULL_TREE;
-	}
-      else if (is_overloaded_fn (old))
-	{
-	  tree tmp;
-
-	  for (tmp = old; tmp; tmp = OVL_NEXT (tmp))
-	    {
-	      tree fn = OVL_CURRENT (tmp);
-	      tree dup;
-
-	      if (TREE_CODE (tmp) == OVERLOAD && OVL_USING_P (tmp)
-		  && !(flags & PUSH_USING)
-		  && matching_fn_p (fn, decl)
-		  && ! decls_match (fn, decl))
-		diagnose_name_conflict (decl, fn);
-
-	      dup = duplicate_decls (decl, fn, is_friend);
-	      /* If DECL was a redeclaration of FN -- even an invalid
-		 one -- pass that information along to our caller.  */
-	      if (dup == fn || dup == error_mark_node)
-		return dup;
-	    }
-
-	  /* We don't overload implicit built-ins.  duplicate_decls()
-	     may fail to merge the decls if the new decl is e.g. a
-	     template function.  */
-	  if (TREE_CODE (old) == FUNCTION_DECL
-	      && DECL_ANTICIPATED (old)
-	      && !DECL_HIDDEN_FRIEND_P (old))
-	    old = NULL;
-	}
-      else if (old == error_mark_node)
-	/* Ignore the undefined symbol marker.  */
-	old = NULL_TREE;
-      else
-	{
-	  error ("previous non-function declaration %q+#D", old);
-	  error ("conflicts with function declaration %q#D", decl);
-	  return decl;
-	}
-    }
-
-  new_binding = ovl_insert (decl, old, flags & PUSH_USING);
-
-  if (doing_global)
-    set_namespace_binding (current_namespace, name, new_binding);
-  else
-    {
-      /* We only create an OVERLOAD if there was a previous binding at
-	 this level, or if decl is a template. In the former case, we
-	 need to remove the old binding and replace it with the new
-	 binding.  We must also run through the NAMES on the binding
-	 level where the name was bound to update the chain.  */
-
-      if (TREE_CODE (new_binding) == OVERLOAD && old)
-	{
-	  tree *d;
-
-	  for (d = &IDENTIFIER_BINDING (name)->scope->names;
-	       *d;
-	       d = &TREE_CHAIN (*d))
-	    if (*d == old
-		|| (TREE_CODE (*d) == TREE_LIST
-		    && TREE_VALUE (*d) == old))
-	      {
-		if (TREE_CODE (*d) == TREE_LIST)
-		  /* Just replace the old binding with the new.  */
-		  TREE_VALUE (*d) = new_binding;
-		else
-		  /* Build a TREE_LIST to wrap the OVERLOAD.  */
-		  *d = tree_cons (NULL_TREE, new_binding,
-				  TREE_CHAIN (*d));
-
-		/* And update the cxx_binding node.  */
-		IDENTIFIER_BINDING (name)->value = new_binding;
-		return decl;
-	      }
-
-	  /* We should always find a previous binding in this case.  */
-	  gcc_unreachable ();
-	}
-
-      /* Install the new binding.  */
-      push_local_binding (name, new_binding, flags);
-    }
-
-  return decl;
-}
-
-/* Wrapper for push_overloaded_decl_1.  */
-
-static tree
-push_overloaded_decl (tree decl, int flags, bool is_friend)
-{
-  tree ret;
-  bool subtime = timevar_cond_start (TV_NAME_LOOKUP);
-  ret = push_overloaded_decl_1 (decl, flags, is_friend);
-  timevar_cond_stop (TV_NAME_LOOKUP, subtime);
   return ret;
 }
 
