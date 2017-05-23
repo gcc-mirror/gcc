@@ -1,3 +1,13 @@
+2017-05-23  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-tree.h (PUSH_GLOBAL, PUSH_LOCAL, PUSH_USING): Delete.
+	* name-lookup.c (create_local_binding): New.
+	(update_binding): New.
+	(pushdecl_maybe_friend_1): Rename to ...
+	(do_pushdecl): ... this.  Reimplement.
+	(pushdecl): Adjust.
+	(push_overloaded_decl_1, push_overloaded_decl): Delete.
+
 2017-05-23  Jason Merrill  <jason@redhat.com>
 
 	PR c++/80396 - built-in for make_integer_sequence.

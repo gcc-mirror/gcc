@@ -5312,14 +5312,6 @@ enum overload_flags { NO_SPECIAL = 0, DTOR_FLAG, TYPENAME_FLAG };
 				   will be identical to
 				   COMPARE_STRICT.  */
 
-/* Used with push_overloaded_decl.  */
-#define PUSH_GLOBAL	     0  /* Push the DECL into namespace scope,
-				   regardless of the current scope.  */
-#define PUSH_LOCAL	     1  /* Push the DECL into the current
-				   scope.  */
-#define PUSH_USING	     2  /* We are pushing this DECL as the
-				   result of a using declaration.  */
-
 /* Used with start function.  */
 #define SF_DEFAULT	     0  /* No flags.  */
 #define SF_PRE_PARSED	     1  /* The function declaration has
