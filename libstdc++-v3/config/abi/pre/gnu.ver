@@ -1967,6 +1967,13 @@ GLIBCXX_3.4.23 {
 
 } GLIBCXX_3.4.22;
 
+GLIBCXX_3.4.24 {
+
+    # std::random_device::_M_getentropy() const
+    _ZNKSt13random_device13_M_getentropyEv;
+
+} GLIBCXX_3.4.23;
+
 # Symbols in the support library (libsupc++) have their own tag.
 CXXABI_1.3 {
 
