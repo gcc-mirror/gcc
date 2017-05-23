@@ -1030,13 +1030,12 @@ plugin_add_using_decl (cc1_plugin::connection *,
 
       finish_member_declaration (decl);
     }
-  else if (!at_namespace_scope_p ())
-    {
-      gcc_unreachable ();
-      do_local_using_decl (target, tcontext, identifier);
-    }
   else
-    do_toplevel_using_decl (target, tcontext, identifier);
+    {
+      /* We can't be at local scope.  */
+      gcc_assert (at_namespace_scope_p ());
+      finish_namespace_using_decl (target, tcontext, identifier);
+    }
 
   return 1;
 }

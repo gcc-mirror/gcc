@@ -671,6 +671,11 @@ typedef struct ptrmem_cst * ptrmem_cst_t;
 /* The name of the overload set.  */
 #define OVL_NAME(NODE) DECL_NAME (OVL_FIRST (NODE))
 
+/* Whether this is a set of overloaded functions.  TEMPLATE_DECLS are
+   always wrapped in an OVERLOAD, so we don't need to check them
+   here.  */
+#define OVL_P(NODE) \
+  (TREE_CODE (NODE) == FUNCTION_DECL || TREE_CODE (NODE) == OVERLOAD)
 /* Whether this is a single member overload.  */
 #define OVL_SINGLE_P(NODE) \
   (TREE_CODE (NODE) != OVERLOAD || !OVL_CHAIN (NODE))

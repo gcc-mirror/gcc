@@ -1,3 +1,7 @@
+2017-05-23  Nathan Sidwell  <nathan@acm.org>
+
+	* g++.dg/lookup/using13.C: Adjust expected error.
+
 2017-05-23  Senthil Kumar Selvaraj  <senthil_kumar.selvaraj@atmel.com>
 
 	* gcc.dg/tree-ssa/builtin-snprintf-warn-3.c: Require ptr32plus.
