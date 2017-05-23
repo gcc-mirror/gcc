@@ -1,3 +1,7 @@
+2017-05-23  Nathan Sidwell  <nathan@acm.org>
+
+	* g++.dg/parse/ctor9.C: Adjust expected error.
+
 2017-05-23  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/80256

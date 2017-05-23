@@ -3775,6 +3775,11 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
   (DECL_LANG_SPECIFIC (TYPE_FUNCTION_OR_TEMPLATE_DECL_CHECK (NODE)) \
    ->u.base.anticipated_p)
 
+/* Is DECL NODE a hidden name?  */
+#define DECL_HIDDEN_P(NODE) \
+  (DECL_LANG_SPECIFIC (NODE) && TYPE_FUNCTION_OR_TEMPLATE_DECL_P (NODE) \
+   && DECL_ANTICIPATED (NODE))
+
 /* True if this is a hidden class type.    */
 #define TYPE_HIDDEN_P(NODE) \
   (DECL_LANG_SPECIFIC (TYPE_NAME (NODE)) \

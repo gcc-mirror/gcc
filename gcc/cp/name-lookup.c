@@ -1534,6 +1534,137 @@ check_local_shadow (tree decl)
   inform (DECL_SOURCE_LOCATION (shadowed), "shadowed declaration is here");
 }
 
+
+/* DECL is being pushed inside function CTX.  Set its context, if
+   needed.  */
+
+static void
+set_decl_context_in_fn (tree ctx, tree decl)
+{
+  if (!DECL_CONTEXT (decl)
+      /* A local declaration for a function doesn't constitute
+	 nesting.  */
+      && TREE_CODE (decl) != FUNCTION_DECL
+      /* A local declaration for an `extern' variable is in the
+	 scope of the current namespace, not the current
+	 function.  */
+      && !(VAR_P (decl) && DECL_EXTERNAL (decl))
+      /* When parsing the parameter list of a function declarator,
+	 don't set DECL_CONTEXT to an enclosing function.  When we
+	 push the PARM_DECLs in order to process the function body,
+	 current_binding_level->this_entity will be set.  */
+      && !(TREE_CODE (decl) == PARM_DECL
+	   && current_binding_level->kind == sk_function_parms
+	   && current_binding_level->this_entity == NULL))
+    DECL_CONTEXT (decl) = ctx;
+
+  /* If this is the declaration for a namespace-scope function,
+     but the declaration itself is in a local scope, mark the
+     declaration.  */
+  if (TREE_CODE (decl) == FUNCTION_DECL && DECL_NAMESPACE_SCOPE_P (decl))
+    DECL_LOCAL_FUNCTION_P (decl) = 1;
+}
+
+/* DECL is a local-scope decl with linkage.  SHADOWED is true if the
+   name is already bound at the current level.
+
+   [basic.link] If there is a visible declaration of an entity with
+   linkage having the same name and type, ignoring entities declared
+   outside the innermost enclosing namespace scope, the block scope
+   declaration declares that same entity and receives the linkage of
+   the previous declaration.
+
+   Also, make sure that this decl matches any existing external decl
+   in the enclosing namespace.  */
+
+static void
+set_local_extern_decl_linkage (tree decl, bool shadowed)
+{
+  tree ns_value = decl; /* Unique marker.  */
+
+  if (!shadowed)
+    {
+      tree loc_value = innermost_non_namespace_value (DECL_NAME (decl));
+      if (!loc_value)
+	{
+	  ns_value
+	    = get_namespace_binding (current_namespace, DECL_NAME (decl));
+	  loc_value = ns_value;
+	}
+      if (loc_value == error_mark_node)
+	loc_value = NULL_TREE;
+
+      for (ovl_iterator iter (loc_value); iter; ++iter)
+	if (!DECL_HIDDEN_P (*iter)
+	    && (TREE_STATIC (*iter) || DECL_EXTERNAL (*iter))
+	    && decls_match (*iter, decl))
+	  {
+	    /* The standard only says that the local extern inherits
+	       linkage from the previous decl; in particular, default
+	       args are not shared.  Add the decl into a hash table to
+	       make sure only the previous decl in this case is seen
+	       by the middle end.  */
+	    struct cxx_int_tree_map *h;
+
+	    /* We inherit the outer decl's linkage.  But we're a
+	       different decl.  */
+	    TREE_PUBLIC (decl) = TREE_PUBLIC (*iter);
+
+	    if (cp_function_chain->extern_decl_map == NULL)
+	      cp_function_chain->extern_decl_map
+		= hash_table<cxx_int_tree_map_hasher>::create_ggc (20);
+
+	    h = ggc_alloc<cxx_int_tree_map> ();
+	    h->uid = DECL_UID (decl);
+	    h->to = *iter;
+	    cxx_int_tree_map **loc = cp_function_chain->extern_decl_map
+	      ->find_slot (h, INSERT);
+	    *loc = h;
+	    break;
+	  }
+    }
+
+  if (TREE_PUBLIC (decl))
+    {
+      /* DECL is externally visible.  Make sure it matches a matching
+	 decl in the namespace scpe.  We only really need to check
+	 this when inserting the decl, not when we find an existing
+	 match in the current scope.  However, in practice we're
+	 going to be inserting a new decl in the majority of cases --
+	 who writes multiple extern decls for the same thing in the
+	 same local scope?  Doing it here often avoids a duplicate
+	 namespace lookup.  */
+
+      /* Avoid repeating a lookup.  */
+      if (ns_value == decl)
+	ns_value = get_namespace_binding (current_namespace, DECL_NAME (decl));
+
+      if (ns_value == error_mark_node)
+	ns_value = NULL_TREE;
+
+      for (ovl_iterator iter (ns_value); iter; ++iter)
+	{
+	  tree other = *iter;
+
+	  if (!(TREE_PUBLIC (other) || DECL_EXTERNAL (other)))
+	    ; /* Not externally visible.   */
+	  else if (DECL_EXTERN_C_P (decl) && DECL_EXTERN_C_P (other))
+	    ; /* Both are extern "C", we'll check via that mechanism.  */
+	  else if (TREE_CODE (other) != TREE_CODE (decl)
+		   || ((VAR_P (decl) || matching_fn_p (other, decl))
+		       && !comptypes (TREE_TYPE (decl), TREE_TYPE (other),
+				      COMPARE_REDECLARATION)))
+	    {
+	      if (permerror (DECL_SOURCE_LOCATION (decl),
+			     "local external declaration %q#D", decl))
+		inform (DECL_SOURCE_LOCATION (other),
+			"does not match previous declaration %q#D", other);
+	      break;
+	    }
+	}
+    }
+}
+
 /* Record a decl-node X as belonging to the current lexical scope.
    Check for errors (such as an incompatible declaration for the same
    name already seen in the same scope).  IS_FRIEND is true if X is
@@ -1555,45 +1686,12 @@ pushdecl_maybe_friend_1 (tree x, bool is_friend)
 
   need_new_binding = 1;
 
-  if (DECL_TEMPLATE_PARM_P (x))
-    /* Template parameters have no context; they are not X::T even
-       when declared within a class or namespace.  */
-    ;
-  else
-    {
-      if (current_function_decl && x != current_function_decl
-	  /* A local declaration for a function doesn't constitute
-	     nesting.  */
-	  && TREE_CODE (x) != FUNCTION_DECL
-	  /* A local declaration for an `extern' variable is in the
-	     scope of the current namespace, not the current
-	     function.  */
-	  && !(VAR_P (x) && DECL_EXTERNAL (x))
-	  /* When parsing the parameter list of a function declarator,
-	     don't set DECL_CONTEXT to an enclosing function.  When we
-	     push the PARM_DECLs in order to process the function body,
-	     current_binding_level->this_entity will be set.  */
-	  && !(TREE_CODE (x) == PARM_DECL
-	       && current_binding_level->kind == sk_function_parms
-	       && current_binding_level->this_entity == NULL)
-	  && !DECL_CONTEXT (x))
-	DECL_CONTEXT (x) = current_function_decl;
-
-      /* If this is the declaration for a namespace-scope function,
-	 but the declaration itself is in a local scope, mark the
-	 declaration.  */
-      if (TREE_CODE (x) == FUNCTION_DECL
-	  && DECL_NAMESPACE_SCOPE_P (x)
-	  && current_function_decl
-	  && x != current_function_decl)
-	DECL_LOCAL_FUNCTION_P (x) = 1;
-    }
+  if (!DECL_TEMPLATE_PARM_P (x) && current_function_decl)
+    set_decl_context_in_fn (current_function_decl, x);
 
   name = DECL_NAME (x);
   if (name)
     {
-      int different_binding_level = 0;
-
       if (TREE_CODE (name) == TEMPLATE_ID_EXPR)
 	name = TREE_OPERAND (name, 0);
 
@@ -1604,27 +1702,9 @@ pushdecl_maybe_friend_1 (tree x, bool is_friend)
       else
 	t = lookup_name_innermost_nonclass_level (name);
 
-      /* [basic.link] If there is a visible declaration of an entity
-	 with linkage having the same name and type, ignoring entities
-	 declared outside the innermost enclosing namespace scope, the
-	 block scope declaration declares that same entity and
-	 receives the linkage of the previous declaration.  */
-      if (! t && current_function_decl && x != current_function_decl
-	  && VAR_OR_FUNCTION_DECL_P (x)
+      if (current_function_decl && VAR_OR_FUNCTION_DECL_P (x)
 	  && DECL_EXTERNAL (x))
-	{
-	  /* Look in block scope.  */
-	  t = innermost_non_namespace_value (name);
-	  /* Or in the innermost namespace.  */
-	  if (! t)
-	    t = get_namespace_binding (DECL_CONTEXT (x), name);
-	  /* Does it have linkage?  Note that if this isn't a DECL, it's an
-	     OVERLOAD, which is OK.  */
-	  if (t && DECL_P (t) && ! (TREE_STATIC (t) || DECL_EXTERNAL (t)))
-	    t = NULL_TREE;
-	  if (t)
-	    different_binding_level = 1;
-	}
+	set_local_extern_decl_linkage (x, t != NULL_TREE);
 
       /* If we are declaring a function, and the result of name-lookup
 	 was an OVERLOAD, look for an overloaded instance that is
@@ -1653,33 +1733,7 @@ pushdecl_maybe_friend_1 (tree x, bool is_friend)
 
       if (t && t != error_mark_node)
 	{
-	  if (different_binding_level)
-	    {
-	      if (decls_match (x, t))
-		/* The standard only says that the local extern
-		   inherits linkage from the previous decl; in
-		   particular, default args are not shared.  Add
-		   the decl into a hash table to make sure only
-		   the previous decl in this case is seen by the
-		   middle end.  */
-		{
-		  struct cxx_int_tree_map *h;
-
-		  TREE_PUBLIC (x) = TREE_PUBLIC (t);
-
-		  if (cp_function_chain->extern_decl_map == NULL)
-		    cp_function_chain->extern_decl_map
-		      = hash_table<cxx_int_tree_map_hasher>::create_ggc (20);
-
-		  h = ggc_alloc<cxx_int_tree_map> ();
-		  h->uid = DECL_UID (x);
-		  h->to = t;
-		  cxx_int_tree_map **loc = cp_function_chain->extern_decl_map
-		    ->find_slot (h, INSERT);
-		  *loc = h;
-		}
-	    }
-	  else if (TREE_CODE (t) == PARM_DECL)
+	  if (TREE_CODE (t) == PARM_DECL)
 	    {
 	      /* Check for duplicate params.  */
 	      tree d = duplicate_decls (x, t, is_friend);
