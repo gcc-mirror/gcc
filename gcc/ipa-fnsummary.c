@@ -27,12 +27,12 @@ along with GCC; see the file COPYING3.  If not see
    For each call
      - call statement size, time and how often the parameters change
 
-   inline_summary data structures store above information locally (i.e.
+   ipa_fn_summary data structures store above information locally (i.e.
    parameters of the function itself) and globally (i.e. parameters of
    the function created by applying all the inline decisions already
    present in the callgraph).
 
-   We provide access to the inline_summary data structure and
+   We provide access to the ipa_fn_summary data structure and
    basic logic updating the parameters when inlining is performed. 
 
    The summaries are context sensitive.  Context means
@@ -44,7 +44,7 @@ along with GCC; see the file COPYING3.  If not see
    we use predicates.
 
    estimate_edge_size_and_time can be used to query
-   function size/time in the given context.  inline_merge_summary merges
+   function size/time in the given context.  ipa_merge_fn_summary_after_inlining merges
    properties of caller and callee after inlining.
 
    Finally pass_inline_parameters is exported.  This is used to drive
@@ -84,20 +84,20 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimplify.h"
 
 /* Summaries.  */
-function_summary <inline_summary *> *inline_summaries;
+function_summary <ipa_fn_summary *> *ipa_fn_summaries;
 call_summary <ipa_call_summary *> *ipa_call_summaries;
 
 /* Edge predicates goes here.  */
 static object_allocator<predicate> edge_predicate_pool ("edge predicates");
 
 
-/* Dump inline hints.  */
+/* Dump IPA hints.  */
 void
-dump_inline_hints (FILE *f, inline_hints hints)
+ipa_dump_hints (FILE *f, ipa_hints hints)
 {
   if (!hints)
     return;
-  fprintf (f, "inline hints:");
+  fprintf (f, "IPA hints:");
   if (hints & INLINE_HINT_indirect_call)
     {
       hints &= ~INLINE_HINT_indirect_call;
@@ -153,7 +153,7 @@ dump_inline_hints (FILE *f, inline_hints hints)
    will get optimized out in specialized clones of the function.   */
 
 void
-inline_summary::account_size_time (int size, sreal time,
+ipa_fn_summary::account_size_time (int size, sreal time,
 				   const predicate &exec_pred,
 				   const predicate &nonconst_pred_in)
 {
@@ -198,7 +198,7 @@ inline_summary::account_size_time (int size, sreal time,
     {
       fprintf (dump_file,
 	       "\t\tAccounting size:%3.2f, time:%3.2f on %spredicate exec:",
-	       ((double) size) / INLINE_SIZE_SCALE,
+	       ((double) size) / ipa_fn_summary::size_scale,
 	       (time.to_double ()), found ? "" : "new ");
       exec_pred.dump (dump_file, conds, 0);
       if (exec_pred != nonconst_pred)
@@ -257,7 +257,8 @@ static void
 edge_set_predicate (struct cgraph_edge *e, predicate *predicate)
 {
   /* If the edge is determined to be never executed, redirect it
-     to BUILTIN_UNREACHABLE to save inliner from inlining into it.  */
+     to BUILTIN_UNREACHABLE to make it clear to IPA passes the call will
+     be optimized out.  */
   if (predicate && *predicate == false
       /* When handling speculative edges, we need to do the redirection
          just once.  Do it always on the direct edge, so we do not
@@ -327,7 +328,7 @@ evaluate_conditions_for_known_args (struct cgraph_node *node,
 {
   clause_t clause = inline_p ? 0 : 1 << predicate::not_inlined_condition;
   clause_t nonspec_clause = 1 << predicate::not_inlined_condition;
-  struct inline_summary *info = inline_summaries->get (node);
+  struct ipa_fn_summary *info = ipa_fn_summaries->get (node);
   int i;
   struct condition *c;
 
@@ -427,7 +428,7 @@ evaluate_properties_for_edge (struct cgraph_edge *e, bool inline_p,
 			      vec<ipa_agg_jump_function_p> *known_aggs_ptr)
 {
   struct cgraph_node *callee = e->callee->ultimate_alias_target ();
-  struct inline_summary *info = inline_summaries->get (callee);
+  struct ipa_fn_summary *info = ipa_fn_summaries->get (callee);
   vec<tree> known_vals = vNULL;
   vec<ipa_agg_jump_function_p> known_aggs = vNULL;
 
@@ -522,15 +523,14 @@ evaluate_properties_for_edge (struct cgraph_edge *e, bool inline_p,
 }
 
 
-/* Allocate the inline summary vector or resize it to cover all cgraph nodes. */
+/* Allocate the function summary. */
 
 static void
-inline_summary_alloc (void)
+ipa_fn_summary_alloc (void)
 {
-  if (!inline_summaries)
-    inline_summaries = inline_summary_t::create_ggc (symtab);
-  if (!ipa_call_summaries)
-    ipa_call_summaries = new ipa_call_summary_t (symtab, false);
+  gcc_checking_assert (!ipa_fn_summaries);
+  ipa_fn_summaries = ipa_fn_summary_t::create_ggc (symtab);
+  ipa_call_summaries = new ipa_call_summary_t (symtab, false);
 }
 
 /* We are called multiple time for given function; clear
@@ -550,7 +550,7 @@ ipa_call_summary::reset ()
    data from previous run so they are not cumulated.  */
 
 void
-inline_summary::reset (struct cgraph_node *node)
+ipa_fn_summary::reset (struct cgraph_node *node)
 {
   struct cgraph_edge *e;
 
@@ -589,7 +589,7 @@ inline_summary::reset (struct cgraph_node *node)
 /* Hook that is called by cgraph.c when a node is removed.  */
 
 void
-inline_summary_t::remove (cgraph_node *node, inline_summary *info)
+ipa_fn_summary_t::remove (cgraph_node *node, ipa_fn_summary *info)
 {
   info->reset (node);
 }
@@ -617,13 +617,12 @@ remap_hint_predicate_after_duplication (predicate **p,
 
 /* Hook that is called by cgraph.c when a node is duplicated.  */
 void
-inline_summary_t::duplicate (cgraph_node *src,
+ipa_fn_summary_t::duplicate (cgraph_node *src,
 			     cgraph_node *dst,
-			     inline_summary *,
-			     inline_summary *info)
+			     ipa_fn_summary *,
+			     ipa_fn_summary *info)
 {
-  inline_summary_alloc ();
-  memcpy (info, inline_summaries->get (src), sizeof (inline_summary));
+  memcpy (info, ipa_fn_summaries->get (src), sizeof (ipa_fn_summary));
   /* TODO: as an optimization, we may avoid copying conditions
      that are known to be false or true.  */
   info->conds = vec_safe_copy (info->conds);
@@ -708,7 +707,7 @@ inline_summary_t::duplicate (cgraph_node *src,
 	  new_predicate = es->predicate->remap_after_duplication
 	    (possible_truths);
 	  if (new_predicate == false && *es->predicate != false)
-	    optimized_out_size += es->call_stmt_size * INLINE_SIZE_SCALE;
+	    optimized_out_size += es->call_stmt_size * ipa_fn_summary::size_scale;
 	  edge_set_predicate (edge, &new_predicate);
 	}
 
@@ -726,7 +725,7 @@ inline_summary_t::duplicate (cgraph_node *src,
 	  new_predicate = es->predicate->remap_after_duplication
 				 (possible_truths);
 	  if (new_predicate == false && *es->predicate != false)
-	    optimized_out_size += es->call_stmt_size * INLINE_SIZE_SCALE;
+	    optimized_out_size += es->call_stmt_size * ipa_fn_summary::size_scale;
 	  edge_set_predicate (edge, &new_predicate);
 	}
       remap_hint_predicate_after_duplication (&info->loop_iterations,
@@ -765,7 +764,7 @@ inline_summary_t::duplicate (cgraph_node *src,
 	}
     }
   if (!dst->global.inlined_to)
-    inline_update_overall_summary (dst);
+    ipa_update_overall_fn_summary (dst);
 }
 
 
@@ -806,7 +805,7 @@ ipa_call_summary_t::remove (struct cgraph_edge *,
 
 static void
 dump_ipa_call_summary (FILE *f, int indent, struct cgraph_node *node,
-		       struct inline_summary *info)
+		       struct ipa_fn_summary *info)
 {
   struct cgraph_edge *edge;
   for (edge = node->callees; edge; edge = edge->next_callee)
@@ -823,8 +822,8 @@ dump_ipa_call_summary (FILE *f, int indent, struct cgraph_node *node,
 	       ? "inlined" : cgraph_inline_failed_string (edge-> inline_failed),
 	       indent, "", es->loop_depth, edge->frequency,
 	       es->call_stmt_size, es->call_stmt_time,
-	       (int) inline_summaries->get (callee)->size / INLINE_SIZE_SCALE,
-	       (int) inline_summaries->get (callee)->estimated_stack_size);
+	       (int) ipa_fn_summaries->get (callee)->size / ipa_fn_summary::size_scale,
+	       (int) ipa_fn_summaries->get (callee)->estimated_stack_size);
 
       if (es->predicate)
 	{
@@ -850,9 +849,9 @@ dump_ipa_call_summary (FILE *f, int indent, struct cgraph_node *node,
 	  fprintf (f, "%*sStack frame offset %i, callee self size %i,"
 		   " callee size %i\n",
 		   indent + 2, "",
-		   (int) inline_summaries->get (callee)->stack_frame_offset,
-		   (int) inline_summaries->get (callee)->estimated_self_stack_size,
-		   (int) inline_summaries->get (callee)->estimated_stack_size);
+		   (int) ipa_fn_summaries->get (callee)->stack_frame_offset,
+		   (int) ipa_fn_summaries->get (callee)->estimated_self_stack_size,
+		   (int) ipa_fn_summaries->get (callee)->estimated_stack_size);
 	  dump_ipa_call_summary (f, indent + 2, callee, info);
 	}
     }
@@ -876,14 +875,14 @@ dump_ipa_call_summary (FILE *f, int indent, struct cgraph_node *node,
 
 
 void
-dump_inline_summary (FILE *f, struct cgraph_node *node)
+ipa_dump_fn_summary (FILE *f, struct cgraph_node *node)
 {
   if (node->definition)
     {
-      struct inline_summary *s = inline_summaries->get (node);
+      struct ipa_fn_summary *s = ipa_fn_summaries->get (node);
       size_time_entry *e;
       int i;
-      fprintf (f, "Inline summary for %s/%i", node->name (),
+      fprintf (f, "IPA function summary for %s/%i", node->name (),
 	       node->order);
       if (DECL_DISREGARD_INLINE_LIMITS (node->decl))
 	fprintf (f, " always_inline");
@@ -907,7 +906,7 @@ dump_inline_summary (FILE *f, struct cgraph_node *node)
       for (i = 0; vec_safe_iterate (s->size_time_table, i, &e); i++)
 	{
 	  fprintf (f, "    size:%f, time:%f",
-		   (double) e->size / INLINE_SIZE_SCALE,
+		   (double) e->size / ipa_fn_summary::size_scale,
 		   e->time.to_double ());
 	  if (e->exec_predicate != true)
 	    {
@@ -943,19 +942,19 @@ dump_inline_summary (FILE *f, struct cgraph_node *node)
 }
 
 DEBUG_FUNCTION void
-debug_inline_summary (struct cgraph_node *node)
+ipa_debug_fn_summary (struct cgraph_node *node)
 {
-  dump_inline_summary (stderr, node);
+  ipa_dump_fn_summary (stderr, node);
 }
 
 void
-dump_inline_summaries (FILE *f)
+ipa_dump_fn_summaries (FILE *f)
 {
   struct cgraph_node *node;
 
   FOR_EACH_DEFINED_FUNCTION (node)
     if (!node->global.inlined_to)
-      dump_inline_summary (f, node);
+      ipa_dump_fn_summary (f, node);
 }
 
 /* Callback of walk_aliased_vdefs.  Flags that it has been invoked to the
@@ -1207,7 +1206,7 @@ eliminated_by_inlining_prob (gimple *stmt)
 
 static void
 set_cond_stmt_execution_predicate (struct ipa_func_body_info *fbi,
-				   struct inline_summary *summary,
+				   struct ipa_fn_summary *summary,
 				   basic_block bb)
 {
   gimple *last;
@@ -1292,7 +1291,7 @@ set_cond_stmt_execution_predicate (struct ipa_func_body_info *fbi,
 
 static void
 set_switch_stmt_execution_predicate (struct ipa_func_body_info *fbi,
-				     struct inline_summary *summary,
+				     struct ipa_fn_summary *summary,
 				     basic_block bb)
 {
   gimple *lastg;
@@ -1358,7 +1357,7 @@ set_switch_stmt_execution_predicate (struct ipa_func_body_info *fbi,
 static void
 compute_bb_predicates (struct ipa_func_body_info *fbi,
 		       struct cgraph_node *node,
-		       struct inline_summary *summary)
+		       struct ipa_fn_summary *summary)
 {
   struct function *my_function = DECL_STRUCT_FUNCTION (node->decl);
   bool done = false;
@@ -1431,7 +1430,7 @@ compute_bb_predicates (struct ipa_func_body_info *fbi,
 
 static predicate
 will_be_nonconstant_expr_predicate (struct ipa_node_params *info,
-				    struct inline_summary *summary,
+				    struct ipa_fn_summary *summary,
 				    tree expr,
 				    vec<predicate> nonconstant_names)
 {
@@ -1498,7 +1497,7 @@ will_be_nonconstant_expr_predicate (struct ipa_node_params *info,
 
 static predicate
 will_be_nonconstant_predicate (struct ipa_func_body_info *fbi,
-			       struct inline_summary *summary,
+			       struct ipa_fn_summary *summary,
 			       gimple *stmt,
 			       vec<predicate> nonconstant_names)
 {
@@ -1728,7 +1727,7 @@ param_change_prob (gimple *stmt, int i)
 
 static bool
 phi_result_unknown_predicate (struct ipa_node_params *info,
-			      inline_summary *summary, basic_block bb,
+			      ipa_fn_summary *summary, basic_block bb,
 			      predicate *p,
 			      vec<predicate> nonconstant_names)
 {
@@ -1787,7 +1786,7 @@ phi_result_unknown_predicate (struct ipa_node_params *info,
    NONCONSTANT_NAMES, if possible.  */
 
 static void
-predicate_for_phi_result (struct inline_summary *summary, gphi *phi,
+predicate_for_phi_result (struct ipa_fn_summary *summary, gphi *phi,
 			  predicate *p,
 			  vec<predicate> nonconstant_names)
 {
@@ -1817,7 +1816,7 @@ predicate_for_phi_result (struct inline_summary *summary, gphi *phi,
 /* Return predicate specifying when array index in access OP becomes non-constant.  */
 
 static predicate
-array_index_predicate (inline_summary *info,
+array_index_predicate (ipa_fn_summary *info,
 		       vec< predicate> nonconstant_names, tree op)
 {
   predicate p = false;
@@ -1970,12 +1969,11 @@ fp_expression_p (gimple *stmt)
   return false;
 }
 
-/* Compute function body size parameters for NODE.
-   When EARLY is true, we compute only simple summaries without
-   non-trivial predicates to drive the early inliner.  */
+/* Analyze function body for NODE.
+   EARLY indicates run from early optimization pipeline.  */
 
 static void
-estimate_function_body_sizes (struct cgraph_node *node, bool early)
+analyze_function_body (struct cgraph_node *node, bool early)
 {
   sreal time = 0;
   /* Estimate static overhead for function prologue/epilogue and alignment. */
@@ -1985,7 +1983,7 @@ estimate_function_body_sizes (struct cgraph_node *node, bool early)
   basic_block bb;
   struct function *my_function = DECL_STRUCT_FUNCTION (node->decl);
   int freq;
-  struct inline_summary *info = inline_summaries->get (node);
+  struct ipa_fn_summary *info = ipa_fn_summaries->get (node);
   predicate bb_predicate;
   struct ipa_func_body_info fbi;
   vec<predicate> nonconstant_names = vNULL;
@@ -2040,7 +2038,7 @@ estimate_function_body_sizes (struct cgraph_node *node, bool early)
   info->account_size_time (0, 0, bb_predicate, bb_predicate);
 
   bb_predicate = predicate::not_inlined ();
-  info->account_size_time (2 * INLINE_SIZE_SCALE, 0, bb_predicate,
+  info->account_size_time (2 * ipa_fn_summary::size_scale, 0, bb_predicate,
 		           bb_predicate);
 
   if (fbi.info)
@@ -2253,7 +2251,7 @@ estimate_function_body_sizes (struct cgraph_node *node, bool early)
 	    }
 	}
     }
-  set_hint_predicate (&inline_summaries->get (node)->array_index, array_index);
+  set_hint_predicate (&ipa_fn_summaries->get (node)->array_index, array_index);
   time = time / CGRAPH_FREQ_BASE;
   free (order);
 
@@ -2339,9 +2337,9 @@ estimate_function_body_sizes (struct cgraph_node *node, bool early)
 	    }
 	  free (body);
 	}
-      set_hint_predicate (&inline_summaries->get (node)->loop_iterations,
+      set_hint_predicate (&ipa_fn_summaries->get (node)->loop_iterations,
 			  loop_iterations);
-      set_hint_predicate (&inline_summaries->get (node)->loop_stride,
+      set_hint_predicate (&ipa_fn_summaries->get (node)->loop_stride,
 			  loop_stride);
       scev_finalize ();
     }
@@ -2360,8 +2358,8 @@ estimate_function_body_sizes (struct cgraph_node *node, bool early)
 	  e->aux = NULL;
 	}
     }
-  inline_summaries->get (node)->time = time;
-  inline_summaries->get (node)->self_size = size;
+  ipa_fn_summaries->get (node)->time = time;
+  ipa_fn_summaries->get (node)->self_size = size;
   nonconstant_names.release ();
   ipa_release_body_info (&fbi);
   if (opt_for_fn (node->decl, optimize))
@@ -2375,26 +2373,27 @@ estimate_function_body_sizes (struct cgraph_node *node, bool early)
   if (dump_file)
     {
       fprintf (dump_file, "\n");
-      dump_inline_summary (dump_file, node);
+      ipa_dump_fn_summary (dump_file, node);
     }
 }
 
 
-/* Compute parameters of functions used by inliner.
-   EARLY is true when we compute parameters for the early inliner  */
+/* Compute function summary.
+   EARLY is true when we compute parameters during early opts.  */
 
 void
-compute_inline_parameters (struct cgraph_node *node, bool early)
+compute_fn_summary (struct cgraph_node *node, bool early)
 {
   HOST_WIDE_INT self_stack_size;
   struct cgraph_edge *e;
-  struct inline_summary *info;
+  struct ipa_fn_summary *info;
 
   gcc_assert (!node->global.inlined_to);
 
-  inline_summary_alloc ();
+  if (!ipa_fn_summaries)
+    ipa_fn_summary_alloc ();
 
-  info = inline_summaries->get (node);
+  info = ipa_fn_summaries->get (node);
   info->reset (node);
 
   /* Estimate the stack size for the function if we're optimizing.  */
@@ -2412,10 +2411,10 @@ compute_inline_parameters (struct cgraph_node *node, bool early)
       node->local.can_change_signature = false;
       es->call_stmt_size = eni_size_weights.call_cost;
       es->call_stmt_time = eni_time_weights.call_cost;
-      info->account_size_time (INLINE_SIZE_SCALE * 2, 2, t, t);
+      info->account_size_time (ipa_fn_summary::size_scale * 2, 2, t, t);
       t = predicate::not_inlined ();
-      info->account_size_time (2 * INLINE_SIZE_SCALE, 0, t, t);
-      inline_update_overall_summary (node);
+      info->account_size_time (2 * ipa_fn_summary::size_scale, 0, t, t);
+      ipa_update_overall_fn_summary (node);
       info->self_size = info->size;
       /* We can not inline instrumentation clones.  */
       if (node->thunk.add_pointer_bounds_args)
@@ -2474,7 +2473,7 @@ compute_inline_parameters (struct cgraph_node *node, bool early)
 	       node->local.can_change_signature = false;
 	       break;
 	     }
-       estimate_function_body_sizes (node, early);
+       analyze_function_body (node, early);
        pop_cfun ();
      }
   for (e = node->callees; e; e = e->next_callee)
@@ -2488,9 +2487,9 @@ compute_inline_parameters (struct cgraph_node *node, bool early)
   info->estimated_stack_size = info->estimated_self_stack_size;
 
   /* Code above should compute exactly the same result as
-     inline_update_overall_summary but because computation happens in
+     ipa_update_overall_fn_summary but because computation happens in
      different order the roundoff errors result in slight changes.  */
-  inline_update_overall_summary (node);
+  ipa_update_overall_fn_summary (node);
   gcc_assert (info->size == info->self_size);
 }
 
@@ -2499,9 +2498,9 @@ compute_inline_parameters (struct cgraph_node *node, bool early)
    current_function_decl.  */
 
 static unsigned int
-compute_inline_parameters_for_current (void)
+compute_fn_summary_for_current (void)
 {
-  compute_inline_parameters (cgraph_node::get (current_function_decl), true);
+  compute_fn_summary (cgraph_node::get (current_function_decl), true);
   return 0;
 }
 
@@ -2531,7 +2530,7 @@ public:
   opt_pass * clone () { return new pass_inline_parameters (m_ctxt); }
   virtual unsigned int execute (function *)
     {
-      return compute_inline_parameters_for_current ();
+      return compute_fn_summary_for_current ();
     }
 
 }; // class pass_inline_parameters
@@ -2557,7 +2556,7 @@ estimate_edge_devirt_benefit (struct cgraph_edge *ie,
 {
   tree target;
   struct cgraph_node *callee;
-  struct inline_summary *isummary;
+  struct ipa_fn_summary *isummary;
   enum availability avail;
   bool speculative;
 
@@ -2583,7 +2582,7 @@ estimate_edge_devirt_benefit (struct cgraph_edge *ie,
   callee = callee->function_symbol (&avail);
   if (avail < AVAIL_AVAILABLE)
     return false;
-  isummary = inline_summaries->get (callee);
+  isummary = ipa_fn_summaries->get (callee);
   return isummary->inlinable;
 }
 
@@ -2600,7 +2599,7 @@ estimate_edge_size_and_time (struct cgraph_edge *e, int *size, int *min_size,
 			     vec<tree> known_vals,
 			     vec<ipa_polymorphic_call_context> known_contexts,
 			     vec<ipa_agg_jump_function_p> known_aggs,
-			     inline_hints *hints)
+			     ipa_hints *hints)
 {
   struct ipa_call_summary *es = ipa_call_summaries->get (e);
   int call_size = es->call_stmt_size;
@@ -2611,7 +2610,7 @@ estimate_edge_size_and_time (struct cgraph_edge *e, int *size, int *min_size,
 				       known_vals, known_contexts, known_aggs)
       && hints && e->maybe_hot_p ())
     *hints |= INLINE_HINT_indirect_call;
-  cur_size = call_size * INLINE_SIZE_SCALE;
+  cur_size = call_size * ipa_fn_summary::size_scale;
   *size += cur_size;
   if (min_size)
     *min_size += cur_size;
@@ -2631,7 +2630,7 @@ estimate_edge_size_and_time (struct cgraph_edge *e, int *size, int *min_size,
 static void
 estimate_calls_size_and_time (struct cgraph_node *node, int *size,
 			      int *min_size, sreal *time,
-			      inline_hints *hints,
+			      ipa_hints *hints,
 			      clause_t possible_truths,
 			      vec<tree> known_vals,
 			      vec<ipa_polymorphic_call_context> known_contexts,
@@ -2702,16 +2701,16 @@ estimate_node_size_and_time (struct cgraph_node *node,
 			     int *ret_size, int *ret_min_size,
 			     sreal *ret_time,
 			     sreal *ret_nonspecialized_time,
-			     inline_hints *ret_hints,
+			     ipa_hints *ret_hints,
 			     vec<inline_param_summary>
 			     inline_param_summary)
 {
-  struct inline_summary *info = inline_summaries->get (node);
+  struct ipa_fn_summary *info = ipa_fn_summaries->get (node);
   size_time_entry *e;
   int size = 0;
   sreal time = 0;
   int min_size = 0;
-  inline_hints hints = 0;
+  ipa_hints hints = 0;
   int i;
 
   if (dump_file && (dump_flags & TDF_DETAILS))
@@ -2804,8 +2803,8 @@ estimate_node_size_and_time (struct cgraph_node *node,
   if (DECL_DECLARED_INLINE_P (node->decl))
     hints |= INLINE_HINT_declared_inline;
 
-  size = RDIV (size, INLINE_SIZE_SCALE);
-  min_size = RDIV (min_size, INLINE_SIZE_SCALE);
+  size = RDIV (size, ipa_fn_summary::size_scale);
+  min_size = RDIV (min_size, ipa_fn_summary::size_scale);
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     fprintf (dump_file, "\n   size:%i time:%f nonspec time:%f\n", (int) size,
@@ -2837,7 +2836,7 @@ estimate_ipcp_clone_size_and_time (struct cgraph_node *node,
 				   vec<ipa_agg_jump_function_p> known_aggs,
 				   int *ret_size, sreal *ret_time,
 				   sreal *ret_nonspec_time,
-				   inline_hints *hints)
+				   ipa_hints *hints)
 {
   clause_t clause, nonspec_clause;
 
@@ -2857,8 +2856,8 @@ static void
 inline_update_callee_summaries (struct cgraph_node *node, int depth)
 {
   struct cgraph_edge *e;
-  struct inline_summary *callee_info = inline_summaries->get (node);
-  struct inline_summary *caller_info = inline_summaries->get (node->callers->caller);
+  struct ipa_fn_summary *callee_info = ipa_fn_summaries->get (node);
+  struct ipa_fn_summary *caller_info = ipa_fn_summaries->get (node->callers->caller);
   HOST_WIDE_INT peak;
 
   callee_info->stack_frame_offset
@@ -2866,8 +2865,8 @@ inline_update_callee_summaries (struct cgraph_node *node, int depth)
     + caller_info->estimated_self_stack_size;
   peak = callee_info->stack_frame_offset
     + callee_info->estimated_self_stack_size;
-  if (inline_summaries->get (node->global.inlined_to)->estimated_stack_size < peak)
-      inline_summaries->get (node->global.inlined_to)->estimated_stack_size = peak;
+  if (ipa_fn_summaries->get (node->global.inlined_to)->estimated_stack_size < peak)
+      ipa_fn_summaries->get (node->global.inlined_to)->estimated_stack_size = peak;
   ipa_propagate_frequency (node);
   for (e = node->callees; e; e = e->next_callee)
     {
@@ -2932,8 +2931,8 @@ remap_edge_change_prob (struct cgraph_edge *inlined_edge,
 static void
 remap_edge_summaries (struct cgraph_edge *inlined_edge,
 		      struct cgraph_node *node,
-		      struct inline_summary *info,
-		      struct inline_summary *callee_info,
+		      struct ipa_fn_summary *info,
+		      struct ipa_fn_summary *callee_info,
 		      vec<int> operand_map,
 		      vec<int> offset_map,
 		      clause_t possible_truths,
@@ -2988,8 +2987,8 @@ remap_edge_summaries (struct cgraph_edge *inlined_edge,
 /* Same as remap_predicate, but set result into hint *HINT.  */
 
 static void
-remap_hint_predicate (struct inline_summary *info,
-		      struct inline_summary *callee_info,
+remap_hint_predicate (struct ipa_fn_summary *info,
+		      struct ipa_fn_summary *callee_info,
 		      predicate **hint,
 		      vec<int> operand_map,
 		      vec<int> offset_map,
@@ -3016,12 +3015,12 @@ remap_hint_predicate (struct inline_summary *info,
 /* We inlined EDGE.  Update summary of the function we inlined into.  */
 
 void
-inline_merge_summary (struct cgraph_edge *edge)
+ipa_merge_fn_summary_after_inlining (struct cgraph_edge *edge)
 {
-  struct inline_summary *callee_info = inline_summaries->get (edge->callee);
+  struct ipa_fn_summary *callee_info = ipa_fn_summaries->get (edge->callee);
   struct cgraph_node *to = (edge->caller->global.inlined_to
 			    ? edge->caller->global.inlined_to : edge->caller);
-  struct inline_summary *info = inline_summaries->get (to);
+  struct ipa_fn_summary *info = ipa_fn_summaries->get (to);
   clause_t clause = 0;	/* not_inline is known to be false.  */
   size_time_entry *e;
   vec<int> operand_map = vNULL;
@@ -3129,13 +3128,13 @@ inline_merge_summary (struct cgraph_edge *edge)
   offset_map.release ();
 }
 
-/* For performance reasons inline_merge_summary is not updating overall size
+/* For performance reasons ipa_merge_fn_summary_after_inlining is not updating overall size
    and time.  Recompute it.  */
 
 void
-inline_update_overall_summary (struct cgraph_node *node)
+ipa_update_overall_fn_summary (struct cgraph_node *node)
 {
-  struct inline_summary *info = inline_summaries->get (node);
+  struct ipa_fn_summary *info = ipa_fn_summaries->get (node);
   size_time_entry *e;
   int i;
 
@@ -3150,7 +3149,7 @@ inline_update_overall_summary (struct cgraph_node *node)
 				&info->time, NULL,
 				~(clause_t) (1 << predicate::false_condition),
 				vNULL, vNULL, vNULL);
-  info->size = (info->size + INLINE_SIZE_SCALE / 2) / INLINE_SIZE_SCALE;
+  info->size = (info->size + ipa_fn_summary::size_scale / 2) / ipa_fn_summary::size_scale;
 }
 
 
@@ -3181,7 +3180,7 @@ inline_analyze_function (struct cgraph_node *node)
 	     node->name (), node->order);
   if (opt_for_fn (node->decl, optimize) && !node->thunk.thunk_p)
     inline_indirect_intraprocedural_analysis (node);
-  compute_inline_parameters (node, false);
+  compute_fn_summary (node, false);
   if (!optimize)
     {
       struct cgraph_edge *e;
@@ -3198,7 +3197,7 @@ inline_analyze_function (struct cgraph_node *node)
 /* Called when new function is inserted to callgraph late.  */
 
 void
-inline_summary_t::insert (struct cgraph_node *node, inline_summary *)
+ipa_fn_summary_t::insert (struct cgraph_node *node, ipa_fn_summary *)
 {
   inline_analyze_function (node);
 }
@@ -3219,10 +3218,9 @@ inline_generate_summary (void)
   if (!optimize && !flag_generate_lto && !flag_generate_offload && !flag_wpa)
     return;
 
-  if (!inline_summaries)
-    inline_summaries = (inline_summary_t*) inline_summary_t::create_ggc (symtab);
+  ipa_fn_summary_alloc ();
 
-  inline_summaries->enable_insertion_hook ();
+  ipa_fn_summaries->enable_insertion_hook ();
 
   ipa_register_cgraph_hooks ();
   inline_free_summary ();
@@ -3283,7 +3281,7 @@ inline_read_section (struct lto_file_decl_data *file_data, const char *data,
     {
       unsigned int index;
       struct cgraph_node *node;
-      struct inline_summary *info;
+      struct ipa_fn_summary *info;
       lto_symtab_encoder_t encoder;
       struct bitpack_d bp;
       struct cgraph_edge *e;
@@ -3293,7 +3291,7 @@ inline_read_section (struct lto_file_decl_data *file_data, const char *data,
       encoder = file_data->symtab_node_encoder;
       node = dyn_cast<cgraph_node *> (lto_symtab_encoder_deref (encoder,
 								index));
-      info = inline_summaries->get (node);
+      info = ipa_fn_summaries->get (node);
 
       info->estimated_stack_size
 	= info->estimated_self_stack_size = streamer_read_uhwi (&ib);
@@ -3347,7 +3345,7 @@ inline_read_section (struct lto_file_decl_data *file_data, const char *data,
 	read_ipa_call_summary (&ib, e);
     }
 
-  lto_free_section_data (file_data, LTO_section_inline_summary, NULL, data,
+  lto_free_section_data (file_data, LTO_section_ipa_fn_summary, NULL, data,
 			 len);
   lto_data_in_delete (data_in);
 }
@@ -3364,13 +3362,13 @@ inline_read_summary (void)
   struct lto_file_decl_data *file_data;
   unsigned int j = 0;
 
-  inline_summary_alloc ();
+  ipa_fn_summary_alloc ();
 
   while ((file_data = file_data_vec[j++]))
     {
       size_t len;
       const char *data = lto_get_section_data (file_data,
-					       LTO_section_inline_summary,
+					       LTO_section_ipa_fn_summary,
 					       NULL, &len);
       if (data)
 	inline_read_section (file_data, data, len);
@@ -3388,8 +3386,8 @@ inline_read_summary (void)
 	ipa_prop_read_jump_functions ();
     }
 
-  gcc_assert (inline_summaries);
-  inline_summaries->enable_insertion_hook ();
+  gcc_assert (ipa_fn_summaries);
+  ipa_fn_summaries->enable_insertion_hook ();
 }
 
 
@@ -3421,7 +3419,7 @@ write_ipa_call_summary (struct output_block *ob, struct cgraph_edge *e)
 void
 inline_write_summary (void)
 {
-  struct output_block *ob = create_output_block (LTO_section_inline_summary);
+  struct output_block *ob = create_output_block (LTO_section_ipa_fn_summary);
   lto_symtab_encoder_t encoder = ob->decl_state->symtab_node_encoder;
   unsigned int count = 0;
   int i;
@@ -3441,7 +3439,7 @@ inline_write_summary (void)
       cgraph_node *cnode = dyn_cast <cgraph_node *> (snode);
       if (cnode && cnode->definition && !cnode->alias)
 	{
-	  struct inline_summary *info = inline_summaries->get (cnode);
+	  struct ipa_fn_summary *info = ipa_fn_summaries->get (cnode);
 	  struct bitpack_d bp;
 	  struct cgraph_edge *edge;
 	  int i;
@@ -3516,9 +3514,9 @@ inline_free_summary (void)
     return;
   FOR_EACH_DEFINED_FUNCTION (node)
     if (!node->alias)
-      inline_summaries->get (node)->reset (node);
-  inline_summaries->release ();
-  inline_summaries = NULL;
+      ipa_fn_summaries->get (node)->reset (node);
+  ipa_fn_summaries->release ();
+  ipa_fn_summaries = NULL;
   ipa_call_summaries->release ();
   delete ipa_call_summaries;
   ipa_call_summaries = NULL;

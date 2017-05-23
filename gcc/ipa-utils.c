@@ -626,7 +626,7 @@ ipa_merge_profiles (struct cgraph_node *dst,
 	}
       if (!preserve_body)
         src->release_body ();
-      inline_update_overall_summary (dst);
+      ipa_update_overall_fn_summary (dst);
     }
   /* TODO: if there is no match, we can scale up.  */
   src->decl = oldsrcdecl;

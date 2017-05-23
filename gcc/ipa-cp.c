@@ -708,7 +708,7 @@ ipcp_cloning_candidate_p (struct cgraph_node *node)
   init_caller_stats (&stats);
   node->call_for_symbol_thunks_and_aliases (gather_caller_stats, &stats, false);
 
-  if (inline_summaries->get (node)->self_size < stats.n_calls)
+  if (ipa_fn_summaries->get (node)->self_size < stats.n_calls)
     {
       if (dump_file)
 	fprintf (dump_file, "Considering %s for cloning; code might shrink.\n",
@@ -2540,7 +2540,7 @@ devirtualization_time_bonus (struct cgraph_node *node,
   for (ie = node->indirect_calls; ie; ie = ie->next_callee)
     {
       struct cgraph_node *callee;
-      struct inline_summary *isummary;
+      struct ipa_fn_summary *isummary;
       enum availability avail;
       tree target;
       bool speculative;
@@ -2558,7 +2558,7 @@ devirtualization_time_bonus (struct cgraph_node *node,
       callee = callee->function_symbol (&avail);
       if (avail < AVAIL_AVAILABLE)
 	continue;
-      isummary = inline_summaries->get (callee);
+      isummary = ipa_fn_summaries->get (callee);
       if (!isummary->inlinable)
 	continue;
 
@@ -2579,7 +2579,7 @@ devirtualization_time_bonus (struct cgraph_node *node,
 /* Return time bonus incurred because of HINTS.  */
 
 static int
-hint_time_bonus (inline_hints hints)
+hint_time_bonus (ipa_hints hints)
 {
   int result = 0;
   if (hints & (INLINE_HINT_loop_iterations | INLINE_HINT_loop_stride))
@@ -2797,7 +2797,7 @@ perform_estimation_of_a_value (cgraph_node *node, vec<tree> known_csts,
 {
   int size, time_benefit;
   sreal time, base_time;
-  inline_hints hints;
+  ipa_hints hints;
 
   estimate_ipcp_clone_size_and_time (node, known_csts, known_contexts,
 				     known_aggs_ptrs, &size, &time,
@@ -2855,7 +2855,7 @@ estimate_local_effects (struct cgraph_node *node)
       || (removable_params_cost && node->local.can_change_signature))
     {
       struct caller_statistics stats;
-      inline_hints hints;
+      ipa_hints hints;
       sreal time, base_time;
       int size;
 
@@ -3258,7 +3258,7 @@ ipcp_propagate_stage (struct ipa_topo_info *topo)
 	initialize_node_lattices (node);
       }
     if (node->definition && !node->alias)
-      overall_size += inline_summaries->get (node)->self_size;
+      overall_size += ipa_fn_summaries->get (node)->self_size;
     if (node->count > max_count)
       max_count = node->count;
   }
@@ -3342,7 +3342,7 @@ ipcp_discover_new_direct_edges (struct cgraph_node *node,
     }
   /* Turning calls to direct calls will improve overall summary.  */
   if (found)
-    inline_update_overall_summary (node);
+    ipa_update_overall_fn_summary (node);
 }
 
 /* Vector of pointers which for linked lists of clones of an original crgaph
