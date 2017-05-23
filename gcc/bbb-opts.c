@@ -155,12 +155,15 @@ class insn_info
   int src_intval;
   unsigned src_mem_addr;
 
+  bool visited;
+
 public:
   insn_info (rtx_insn * i = 0, int p = 0) :
       insn (i), myuse (0), hard (0), use (0), def (0), proepi (p), stack (false), label (false), jump (false), call (
 	  false), compare (false), dst_mem (false), src_mem (false), dst_plus (false), src_plus (false), src_op (
 	  (rtx_code) 0), src_ee (false), src_const (false), mode (VOIDmode), dst_reg (0), dst_mem_reg (0), dst_symbol (
-	  0), src_reg (0), src_mem_reg (0), src_symbol (0), dst_mem_addr (0), src_intval (0), src_mem_addr (0)
+	  0), src_reg (0), src_mem_reg (0), src_symbol (0), dst_mem_addr (0), src_intval (0), src_mem_addr (0), visited (
+	  false)
   {
   }
 
@@ -409,14 +412,6 @@ public:
   }
 
   inline void
-  reset ()
-  {
-    use = 0;
-    def = 0;
-    hard = 0;
-  }
-
-  inline void
   reset_flags ()
   {
     compare = false;
@@ -574,34 +569,6 @@ public:
     return *this;
   }
 
-#if 0
-  inline insn_info
-  operator | (insn_info const & o) const
-    {
-      insn_info t;
-      t.use = use | o.use;
-      t.def = def | o.def;
-      t.hard = hard | o.hard;
-      return t;
-    }
-
-  inline bool
-  operator == (insn_info const & o)
-    {
-      return use == o.use;
-    }
-
-  inline insn_info
-  operator ~ () const
-    {
-      insn_info t;
-      t.use = ~use;
-      t.def = ~def;
-      t.hard = ~hard;
-      return t;
-    }
-#endif
-
   inline insn_info &
   make_hard ()
   {
@@ -626,6 +593,18 @@ public:
     if (o.hard & ~hard)
       return false;
     return true;
+  }
+
+  inline bool
+  visit () const
+  {
+    return visited;
+  }
+
+  inline void
+  mark_visited ()
+  {
+    visited = true;
   }
 
   void
@@ -959,6 +938,9 @@ typedef std::multimap<int, rtx_insn *>::iterator l2j_iterator;
 static std::map<rtx_insn *, insn_info *> insn2index;
 typedef std::map<rtx_insn *, insn_info *>::iterator i2i_iterator;
 
+static std::set<unsigned> returns;
+typedef std::set<unsigned>::iterator su_iterator;
+
 static insn_info * info0;
 static unsigned usable_regs;
 
@@ -1148,6 +1130,7 @@ clear (void)
   label2jump.clear ();
   insn2index.clear ();
   infos.clear ();
+  returns.clear ();
 }
 
 /*
@@ -1256,11 +1239,14 @@ dump_insns (char const * name, bool all)
 static void
 update_insn_infos (void)
 {
-  /* own analyze reg life */
+  /* add all return (jump outs) and start analysis there. */
   std::vector<std::pair<unsigned, insn_info> > todo;
-  todo.push_back (std::make_pair (infos.size () - 1, insn_info ()));
+  for (su_iterator i = returns.begin (); i != returns.end (); ++i)
+    todo.push_back (std::make_pair (*i, insn_info ()));
 
-  int pass = 0;
+  if (todo.begin () == todo.end ())
+    todo.push_back (std::make_pair (infos.size () - 1, insn_info ()));
+
   while (!todo.empty ())
     {
       std::pair<unsigned, insn_info> p = *todo.rbegin ();
@@ -1270,17 +1256,18 @@ update_insn_infos (void)
 
       for (int pos = p.first; pos >= 0; --pos)
 	{
-	  rtx_insn * insn = infos[pos].get_insn ();
+	  insn_info & pp = infos[pos];
+	  rtx_insn * insn = pp.get_insn ();
 	  /* can be NULL as used in opt_shrink_stack_frame(). */
 	  if (!insn)
 	    continue;
 
 	  /* no new information -> break. */
-	  if (pass && infos[pos].contains (ii))
+	  if (pp.in_proepi () == 0 && pp.visit () && pp.contains (ii))
 	    break;
 
 	  ii.clear_hard_def ();
-	  ii.merge (infos[pos]);
+	  ii.merge (pp);
 
 	  if (LABEL_P(insn))
 	    {
@@ -1295,6 +1282,8 @@ update_insn_infos (void)
 	      continue;
 	    }
 
+	  pp.mark_visited ();
+
 	  rtx pattern = PATTERN (insn);
 	  insn_info use (insn);
 	  use.scan ();
@@ -1304,9 +1293,11 @@ update_insn_infos (void)
 	    }
 	  else if (JUMP_P(insn))
 	    {
-	      if (ANY_RETURN_P(pattern))
+	      if (pos != p.first)
 		{
-		  ii.reset ();
+		  su_iterator k = returns.find (pos);
+		  if (k != returns.end ())
+		    break;
 		}
 	    }
 	  else if (GET_CODE (pattern) == USE || GET_CODE (pattern) == CLOBBER)
@@ -1330,10 +1321,9 @@ update_insn_infos (void)
 	    use.make_hard ();
 
 	  ii.merge (use);
-	  infos[pos].update (ii);
+	  pp.update (ii);
 	  ii.updateWith (use);
 	}
-      ++pass;
     }
 
   /* fill the mask of general used regs. */
@@ -1389,10 +1379,13 @@ update_insns ()
 
 	  if (JUMP_P(insn))
 	    {
-	      inproepilogue = 0;
-
-	      if (ANY_RETURN_P(PATTERN (insn)))
-		continue;
+	      if (inproepilogue || ANY_RETURN_P(PATTERN (insn)))
+		{
+		  returns.insert (infos.size () - 1);
+		  inproepilogue = 0;
+		  if (ANY_RETURN_P(PATTERN (insn)))
+		    continue;
+		}
 
 	      ii.mark_jump ();
 	      if (jump_table)
