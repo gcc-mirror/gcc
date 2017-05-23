@@ -123,7 +123,7 @@ BEGIN {
 	have[opts] = 1
 	# Some special handling for the default mmcu: Remove a
 	# leading "mmcu=avr2/" in order not to confuse genmultilib.
-	opts = gensub (/mmcu=avr2\//, "", 1, opts)
+	gsub (/^mmcu=avr2\//, "", opts)
 	if (opts != "mmcu=avr2")
 	    m_required = m_required " \\\n\t" opts
     }
