@@ -1,5 +1,9 @@
 2017-05-23  Nathan Sidwell  <nathan@acm.org>
 
+	PR c++/80866
+	* parser.c (cp_parser_template_id): Keep the lookup when stashing
+	the template_id.
+
 	* cp-tree.h (DECL_HIDDEN_P): New.
 	* name-lookup.c (set_decl_context,
 	set_local_extern_decl_linkage):	New, broken out of ...
