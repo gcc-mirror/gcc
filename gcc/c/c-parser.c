@@ -4905,7 +4905,7 @@ c_parser_compound_statement_nostart (c_parser *parser)
           if (parser->in_if_block)
             {
 	      mark_valid_location_for_stdc_pragma (save_valid_for_pragma);
-              error_at (loc, """expected %<}%> before %<else%>");
+	      error_at (loc, "expected %<}%> before %<else%>");
               return;
             }
           else
