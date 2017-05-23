@@ -5109,6 +5109,13 @@ mark_used (tree decl, tsubst_flags_t complain)
   if (!require_deduced_type (decl, complain))
     return false;
 
+  if (builtin_pack_fn_p (decl))
+    {
+      error ("use of built-in parameter pack %qD outside of a template",
+	     DECL_NAME (decl));
+      return false;
+    }
+
   /* If we don't need a value, then we don't need to synthesize DECL.  */
   if (cp_unevaluated_operand || in_discarded_stmt)
     return true;

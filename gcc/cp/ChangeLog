@@ -1,3 +1,15 @@
+2017-05-23  Jason Merrill  <jason@redhat.com>
+
+	PR c++/80396 - built-in for make_integer_sequence.
+	* pt.c (builtin_pack_fn_p, builtin_pack_call_p)
+	(expand_integer_pack, expand_builtin_pack_call): New.
+	(find_parameter_packs_r): Check builtin_pack_call_p.
+	(check_for_bare_parameter_packs): Handle it.
+	(tsubst_pack_expansion): Call expand_builtin_pack_call.
+	(declare_integer_pack): New.
+	(init_template_processing): Call it.
+	* decl2.c (mark_used): Check builtin_pack_fn_p.
+
 2017-05-23  Nathan Sidwell  <nathan@acm.org>
 
 	* name-lookup.c (find_namespace_binding): New.

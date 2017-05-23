@@ -215,6 +215,7 @@ static tree instantiate_alias_template (tree, tree, tsubst_flags_t);
 static bool complex_alias_template_p (const_tree tmpl);
 static tree tsubst_attributes (tree, tree, tsubst_flags_t, tree);
 static tree canonicalize_expr_argument (tree, tsubst_flags_t);
+static tree make_argument_pack (tree);
 
 /* Make the current scope suitable for access checking when we are
    processing T.  T can be FUNCTION_DECL for instantiated function
@@ -3414,6 +3415,101 @@ get_template_argument_pack_elems (const_tree t)
   return ARGUMENT_PACK_ARGS (t);
 }
 
+/* True iff FN is a function representing a built-in variadic parameter
+   pack.  */
+
+bool
+builtin_pack_fn_p (tree fn)
+{
+  if (!fn
+      || TREE_CODE (fn) != FUNCTION_DECL
+      || !DECL_IS_BUILTIN (fn))
+    return false;
+
+  if (strcmp (IDENTIFIER_POINTER (DECL_NAME (fn)), "__integer_pack") == 0)
+    return true;
+
+  return false;
+}
+
+/* True iff CALL is a call to a function representing a built-in variadic
+   parameter pack.  */
+
+static bool
+builtin_pack_call_p (tree call)
+{
+  if (TREE_CODE (call) != CALL_EXPR)
+    return false;
+  return builtin_pack_fn_p (CALL_EXPR_FN (call));
+}
+
+/* Return a TREE_VEC for the expansion of __integer_pack(HI).  */
+
+static tree
+expand_integer_pack (tree call, tree args, tsubst_flags_t complain,
+		     tree in_decl)
+{
+  tree ohi = CALL_EXPR_ARG (call, 0);
+  tree hi = tsubst_copy_and_build (ohi, args, complain, in_decl,
+				   false/*fn*/, true/*int_cst*/);
+
+  if (value_dependent_expression_p (hi))
+    {
+      if (hi != ohi)
+	{
+	  call = copy_node (call);
+	  CALL_EXPR_ARG (call, 0) = hi;
+	}
+      tree ex = make_pack_expansion (call);
+      tree vec = make_tree_vec (1);
+      TREE_VEC_ELT (vec, 0) = ex;
+      return vec;
+    }
+  else
+    {
+      hi = cxx_constant_value (hi);
+      int len = valid_constant_size_p (hi) ? tree_to_shwi (hi) : -1;
+
+      /* Calculate the largest value of len that won't make the size of the vec
+	 overflow an int.  The compiler will exceed resource limits long before
+	 this, but it seems a decent place to diagnose.  */
+      int max = ((INT_MAX - sizeof (tree_vec)) / sizeof (tree)) + 1;
+
+      if (len < 0 || len > max)
+	{
+	  if ((complain & tf_error)
+	      && hi != error_mark_node)
+	    error ("argument to __integer_pack must be between 0 and %d", max);
+	  return error_mark_node;
+	}
+
+      tree vec = make_tree_vec (len);
+
+      for (int i = 0; i < len; ++i)
+	TREE_VEC_ELT (vec, i) = size_int (i);
+
+      return vec;
+    }
+}
+
+/* Return a TREE_VEC for the expansion of built-in template parameter pack
+   CALL.  */
+
+static tree
+expand_builtin_pack_call (tree call, tree args, tsubst_flags_t complain,
+			  tree in_decl)
+{
+  if (!builtin_pack_call_p (call))
+    return NULL_TREE;
+
+  tree fn = CALL_EXPR_FN (call);
+
+  if (strcmp (IDENTIFIER_POINTER (DECL_NAME (fn)), "__integer_pack") == 0)
+    return expand_integer_pack (call, args, complain, in_decl);
+
+  return NULL_TREE;
+}
+
 /* Structure used to track the progress of find_parameter_packs_r.  */
 struct find_parameter_pack_data 
 {
@@ -3501,6 +3597,11 @@ find_parameter_packs_r (tree *tp, int *walk_subtrees, void* data)
 			ppd, ppd->visited);
 	  *walk_subtrees = 0;
 	}
+      break;
+
+    case CALL_EXPR:
+      if (builtin_pack_call_p (t))
+	parameter_pack_p = true;
       break;
 
     case BASES:
@@ -3801,6 +3902,8 @@ check_for_bare_parameter_packs (tree t)
             name = TYPE_NAME (pack);
           else if (TREE_CODE (pack) == TEMPLATE_PARM_INDEX)
             name = DECL_NAME (TEMPLATE_PARM_DECL (pack));
+	  else if (TREE_CODE (pack) == CALL_EXPR)
+	    name = DECL_NAME (CALL_EXPR_FN (pack));
           else
             name = DECL_NAME (pack);
 
@@ -11286,6 +11389,7 @@ tsubst_pack_expansion (tree t, tree args, tsubst_flags_t complain,
 
       if (TREE_CODE (parm_pack) == BASES)
        {
+	 gcc_assert (parm_pack == pattern);
          if (BASES_DIRECT (parm_pack))
            return calculate_direct_bases (tsubst_expr (BASES_TYPE (parm_pack),
                                                         args, complain, in_decl, false));
@@ -11293,7 +11397,14 @@ tsubst_pack_expansion (tree t, tree args, tsubst_flags_t complain,
            return calculate_bases (tsubst_expr (BASES_TYPE (parm_pack),
                                                  args, complain, in_decl, false));
        }
-      if (TREE_CODE (parm_pack) == PARM_DECL)
+      else if (builtin_pack_call_p (parm_pack))
+	{
+	  /* ??? Support use in other patterns.  */
+	  gcc_assert (parm_pack == pattern);
+	  return expand_builtin_pack_call (parm_pack, args,
+					   complain, in_decl);
+	}
+      else if (TREE_CODE (parm_pack) == PARM_DECL)
 	{
 	  /* We know we have correct local_specializations if this
 	     expansion is at function scope, or if we're dealing with a
@@ -26007,6 +26118,21 @@ init_constraint_processing (void)
   subsumption_table = hash_table<subsumption_hasher>::create_ggc(37);
 }
 
+/* __integer_pack(N) in a pack expansion expands to a sequence of numbers from
+   0..N-1.  */
+
+void
+declare_integer_pack (void)
+{
+  tree ipfn = push_library_fn (get_identifier ("__integer_pack"),
+			       build_function_type_list (integer_type_node,
+							 integer_type_node,
+							 NULL_TREE),
+			       NULL_TREE, ECF_CONST);
+  DECL_DECLARED_CONSTEXPR_P (ipfn) = true;
+  DECL_BUILT_IN_CLASS (ipfn) = BUILT_IN_FRONTEND;
+}
+
 /* Set up the hash tables for template instantiations.  */
 
 void
@@ -26014,6 +26140,9 @@ init_template_processing (void)
 {
   decl_specializations = hash_table<spec_hasher>::create_ggc (37);
   type_specializations = hash_table<spec_hasher>::create_ggc (37);
+
+  if (cxx_dialect >= cxx11)
+    declare_integer_pack ();
 }
 
 /* Print stats about the template hash tables for -fstats.  */
