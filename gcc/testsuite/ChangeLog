@@ -1,3 +1,8 @@
+2017-05-23  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/80866
+	* g++.dg/parse/pr80866.C: New.
+
 2017-05-23  Jan Hubicka  <hubicka@ucw.cz>
 
 	* gcc.dg/ipa/ctor-empty-1.c: Update template.

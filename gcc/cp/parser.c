@@ -15570,6 +15570,11 @@ cp_parser_template_id (cp_parser *parser,
 	= make_location (token->location, token->location, finish_loc);
       token->location = combined_loc;
 
+      /* We must mark the lookup as kept, so we don't throw it away on
+	 the first parse.  */
+      if (is_overloaded_fn (template_id))
+	lookup_keep (get_fns (template_id), true);
+
       /* Retrieve any deferred checks.  Do not pop this access checks yet
 	 so the memory will not be reclaimed during token replacing below.  */
       token->u.tree_check_value = ggc_cleared_alloc<struct tree_check> ();
