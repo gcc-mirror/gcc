@@ -1,5 +1,10 @@
 2017-05-23  Jan Hubicka  <hubicka@ucw.cz>
 
+	* ipa-fnsummary.c (estimate_node_size_and_time): Do not sanity check
+	that nonconst implies exec.
+
+2017-05-23  Jan Hubicka  <hubicka@ucw.cz>
+
 	* ipa-inline-analysis.c (cgraph_2edge_hook_list, cgraph_edge_hook_list,
 	inline_edge_removal_hook, inline_edge_duplication_hook): Remove.
 	(inline_edge_summary_vec): Turn into ...
