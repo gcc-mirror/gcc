@@ -1,5 +1,8 @@
 2017-05-23  Thomas Schwinge  <thomas@codesourcery.com>
 
+	* omp-low.c (struct omp_context): Remove "default_kind" member.
+	Adjust all users.
+
 	* omp-offload.c (execute_oacc_device_lower): Remove the
 	parallelism dimensions function attributes for unparallelized
 	OpenACC kernels constructs.
