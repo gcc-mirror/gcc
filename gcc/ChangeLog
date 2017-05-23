@@ -1,5 +1,77 @@
 2017-05-23  Martin Liska  <mliska@suse.cz>
 
+	* cgraph.c (cgraph_node::get_create): Use symtab_node::dump_{asm_,}name
+	functions.
+	(cgraph_edge::make_speculative): Likewise.
+	(cgraph_edge::resolve_speculation): Likewise.
+	(cgraph_edge::redirect_call_stmt_to_callee): Likewise.
+	(cgraph_node::dump): Likewise.
+	* cgraph.h: Likewise.
+	* cgraphunit.c (analyze_functions): Likewise.
+	(symbol_table::compile): Likewise.
+	* ipa-cp.c (print_all_lattices): Likewise.
+	(determine_versionability): Likewise.
+	(initialize_node_lattices): Likewise.
+	(ipcp_verify_propagated_values): Likewise.
+	(estimate_local_effects): Likewise.
+	(update_profiling_info): Likewise.
+	(create_specialized_node): Likewise.
+	(perhaps_add_new_callers): Likewise.
+	(decide_about_value): Likewise.
+	(decide_whether_version_node): Likewise.
+	(identify_dead_nodes): Likewise.
+	(ipcp_store_bits_results): Likewise.
+	* ipa-devirt.c (dump_targets): Likewise.
+	(ipa_devirt): Likewise.
+	* ipa-icf.c (sem_item::dump): Likewise.
+	(sem_function::equals): Likewise.
+	(sem_variable::equals): Likewise.
+	(sem_item_optimizer::read_section): Likewise.
+	(sem_item_optimizer::execute): Likewise.
+	(congruence_class::dump): Likewise.
+	* ipa-inline-analysis.c (dump_ipa_call_summary): Likewise.
+	(dump_inline_summary): Likewise.
+	(estimate_node_size_and_time): Likewise.
+	(inline_analyze_function): Likewise.
+	* ipa-inline-transform.c (inline_call): Likewise.
+	* ipa-inline.c (report_inline_failed_reason): Likewise.
+	(want_early_inline_function_p): Likewise.
+	(edge_badness): Likewise.
+	(update_edge_key): Likewise.
+	(inline_small_functions): Likewise.
+	* ipa-profile.c (ipa_profile): Likewise.
+	* ipa-prop.c (ipa_print_node_jump_functions): Likewise.
+	(ipa_make_edge_direct_to_target): Likewise.
+	(remove_described_reference): Likewise.
+	(ipa_impossible_devirt_target): Likewise.
+	(propagate_controlled_uses): Likewise.
+	(ipa_print_node_params): Likewise.
+	(ipcp_transform_function): Likewise.
+	* ipa-pure-const.c (pure_const_read_summary): Likewise.
+	(propagate_pure_const): Likewise.
+	* ipa-reference.c (generate_summary): Likewise.
+	(read_write_all_from_decl): Likewise.
+	(propagate): Likewise.
+	(ipa_reference_read_optimization_summary): Likewise.
+	* ipa-utils.c (ipa_merge_profiles): Likewise.
+	* ipa.c (walk_polymorphic_call_targets): Likewise.
+	(symbol_table::remove_unreachable_nodes): Likewise.
+	(ipa_single_use): Likewise.
+	* passes.c (execute_todo): Likewise.
+	* predict.c (drop_profile): Likewise.
+	* symtab.c (symtab_node::get_dump_name): New function.
+	(symtab_node::dump_name): Likewise.
+	(symtab_node::dump_asm_name): Likewise.
+	(symtab_node::dump_references): Likewise.
+	(symtab_node::dump_referring): Likewise.
+	(symtab_node::dump_base): Likewise.
+	(symtab_node::debug_symtab): Likewise.
+	* tree-sra.c (convert_callers_for_node): Likewise.
+	* tree-ssa-structalias.c (ipa_pta_execute): Likewise.
+	* value-prof.c (init_node_map): Likewise.
+
+2017-05-23  Martin Liska  <mliska@suse.cz>
+
 	* cgraph.h: Move symtab_node::dump_table to symbol_table::dump
 	and symtab_node::debug_symtab to symbol_table::debug.
 	* cgraphunit.c (analyze_functions): Use the renamed function.

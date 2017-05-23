@@ -590,9 +590,9 @@ ipa_profile (void)
 		  if (dump_file)
 		    {
 		      fprintf (dump_file, "Indirect call -> direct call from"
-			       " other module %s/%i => %s/%i, prob %3.2f\n",
-			       xstrdup_for_dump (n->name ()), n->order,
-			       xstrdup_for_dump (n2->name ()), n2->order,
+			       " other module %s => %s, prob %3.2f\n",
+			       n->dump_name (),
+			       n2->dump_name (),
 			       e->indirect_info->common_target_probability
 			       / (float)REG_BR_PROB_BASE);
 		    }

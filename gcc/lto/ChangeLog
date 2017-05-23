@@ -1,5 +1,12 @@
 2017-05-23  Martin Liska  <mliska@suse.cz>
 
+	* lto-symtab.c (lto_cgraph_replace_node): Use
+	symtab_node::dump_{asm_,}name functions.
+	* lto.c (read_cgraph_and_symbols): Likewise.
+	(do_whole_program_analysis): Likewise.
+
+2017-05-23  Martin Liska  <mliska@suse.cz>
+
 	* lto.c (read_cgraph_and_symbols): Use the renamed function.
 	(do_whole_program_analysis): Use the renamed function.
 

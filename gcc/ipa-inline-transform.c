@@ -351,8 +351,8 @@ inline_call (struct cgraph_edge *e, bool update_original,
       cl_optimization_restore (&opts, opts_for_fn (to->decl));
       opts.x_flag_strict_aliasing = false;
       if (dump_file)
-	fprintf (dump_file, "Dropping flag_strict_aliasing on %s:%i\n",
-		 to->name (), to->order);
+	fprintf (dump_file, "Dropping flag_strict_aliasing on %s\n",
+		 to->dump_name ());
       DECL_FUNCTION_SPECIFIC_OPTIMIZATION (to->decl)
 	 = build_optimization_node (&opts);
       reload_optimization_node = true;
@@ -412,8 +412,8 @@ inline_call (struct cgraph_edge *e, bool update_original,
 	  opts.x_flag_errno_math
 	    = opt_for_fn (callee->decl, flag_errno_math);
 	  if (dump_file)
-	    fprintf (dump_file, "Copying FP flags from %s:%i to %s:%i\n",
-		     callee->name (), callee->order, to->name (), to->order);
+	    fprintf (dump_file, "Copying FP flags from %s to %s\n",
+		     callee->dump_name (), to->dump_name ());
 	  DECL_FUNCTION_SPECIFIC_OPTIMIZATION (to->decl)
 	     = build_optimization_node (&opts);
 	  reload_optimization_node = true;

@@ -539,8 +539,7 @@ print_all_lattices (FILE * f, bool dump_sources, bool dump_benefits)
       struct ipa_node_params *info;
 
       info = IPA_NODE_REF (node);
-      fprintf (f, "  Node: %s/%i:\n", node->name (),
-	       node->order);
+      fprintf (f, "  Node: %s:\n", node->dump_name ());
       count = ipa_get_param_count (info);
       for (i = 0; i < count; i++)
 	{
@@ -622,8 +621,8 @@ determine_versionability (struct cgraph_node *node,
     }
 
   if (reason && dump_file && !node->alias && !node->thunk.thunk_p)
-    fprintf (dump_file, "Function %s/%i is not versionable, reason: %s.\n",
-	     node->name (), node->order, reason);
+    fprintf (dump_file, "Function %s is not versionable, reason: %s.\n",
+	     node->dump_name (), reason);
 
   info->versionable = (reason == NULL);
 }
@@ -1195,9 +1194,8 @@ initialize_node_lattices (struct cgraph_node *node)
 	}
       if (dump_file && (dump_flags & TDF_DETAILS)
 	  && !node->alias && !node->thunk.thunk_p)
-	fprintf (dump_file, "Marking all lattices of %s/%i as %s\n",
-		 node->name (), node->order,
-		 disable ? "BOTTOM" : "VARIABLE");
+	fprintf (dump_file, "Marking all lattices of %s as %s\n",
+		 node->dump_name (), disable ? "BOTTOM" : "VARIABLE");
     }
 
   for (ie = node->indirect_calls; ie; ie = ie->next_callee)
@@ -2842,8 +2840,7 @@ estimate_local_effects (struct cgraph_node *node)
     return;
 
   if (dump_file && (dump_flags & TDF_DETAILS))
-    fprintf (dump_file, "\nEstimating effects for %s/%i.\n",
-	     node->name (), node->order);
+    fprintf (dump_file, "\nEstimating effects for %s.\n", node->dump_name ());
 
   always_const = gather_context_independent_values (info, &known_csts,
 						    &known_contexts, &known_aggs,
@@ -3656,10 +3653,10 @@ update_profiling_info (struct cgraph_node *orig_node,
   if (orig_node_count < orig_sum + new_sum)
     {
       if (dump_file)
-	fprintf (dump_file, "    Problem: node %s/%i has too low count "
+	fprintf (dump_file, "    Problem: node %s has too low count "
 		 HOST_WIDE_INT_PRINT_DEC " while the sum of incoming "
 		 "counts is " HOST_WIDE_INT_PRINT_DEC "\n",
-		 orig_node->name (), orig_node->order,
+		 orig_node->dump_name (),
 		 (HOST_WIDE_INT) orig_node_count,
 		 (HOST_WIDE_INT) (orig_sum + new_sum));
 
@@ -3798,8 +3795,7 @@ create_specialized_node (struct cgraph_node *node,
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
-      fprintf (dump_file, "     the new node is %s/%i.\n",
-	       new_node->name (), new_node->order);
+      fprintf (dump_file, "     the new node is %s.\n", new_node->dump_name ());
       if (known_contexts.exists ())
 	{
 	  for (i = 0; i < count; i++)
@@ -4439,12 +4435,9 @@ perhaps_add_new_callers (cgraph_node *node, ipcp_value<valtype> *val)
 	      && cgraph_edge_brings_all_agg_vals_for_node (cs, val->spec_node))
 	    {
 	      if (dump_file)
-		fprintf (dump_file, " - adding an extra caller %s/%i"
-			 " of %s/%i\n",
-			 xstrdup_for_dump (cs->caller->name ()),
-			 cs->caller->order,
-			 xstrdup_for_dump (val->spec_node->name ()),
-			 val->spec_node->order);
+		fprintf (dump_file, " - adding an extra caller %s of %s\n",
+			 cs->caller->dump_name (),
+			 val->spec_node->dump_name ());
 
 	      cs->redirect_callee_duplicating_thunks (val->spec_node);
 	      val->spec_node->expand_all_artificial_thunks ();
@@ -4600,8 +4593,8 @@ decide_about_value (struct cgraph_node *node, int index, HOST_WIDE_INT offset,
     return false;
 
   if (dump_file)
-    fprintf (dump_file, "  Creating a specialized node of %s/%i.\n",
-	     node->name (), node->order);
+    fprintf (dump_file, "  Creating a specialized node of %s.\n",
+	     node->dump_name ());
 
   callers = gather_edges_for_value (val, node, caller_count);
   if (offset == -1)
@@ -4642,8 +4635,8 @@ decide_whether_version_node (struct cgraph_node *node)
     return false;
 
   if (dump_file && (dump_flags & TDF_DETAILS))
-    fprintf (dump_file, "\nEvaluating opportunities for %s/%i.\n",
-	     node->name (), node->order);
+    fprintf (dump_file, "\nEvaluating opportunities for %s.\n",
+	     node->dump_name ());
 
   gather_context_independent_values (info, &known_csts, &known_contexts,
 				  info->do_clone_for_all_contexts ? &known_aggs
@@ -4697,9 +4690,8 @@ decide_whether_version_node (struct cgraph_node *node)
       vec<cgraph_edge *> callers;
 
       if (dump_file)
-	fprintf (dump_file, " - Creating a specialized node of %s/%i "
-		 "for all known contexts.\n", node->name (),
-		 node->order);
+	fprintf (dump_file, " - Creating a specialized node of %s "
+		 "for all known contexts.\n", node->dump_name ());
 
       callers = node->collect_callers ();
 
@@ -4794,8 +4786,7 @@ identify_dead_nodes (struct cgraph_node *node)
     {
       for (v = node; v; v = ((struct ipa_dfs_info *) v->aux)->next_cycle)
 	if (IPA_NODE_REF (v)->node_dead)
-	  fprintf (dump_file, "  Marking node as dead: %s/%i.\n",
-		   v->name (), v->order);
+	  fprintf (dump_file, "  Marking node as dead: %s.\n", v->dump_name ());
     }
 }
 
@@ -4892,8 +4883,8 @@ ipcp_store_bits_results (void)
 	    continue;
 	  if (!dumped_sth)
 	    {
-	      fprintf (dump_file, "Propagated bits info for function %s/%i:\n",
-		       node->name (), node->order);
+	      fprintf (dump_file, "Propagated bits info for function %s:\n",
+		       node->dump_name ());
 	      dumped_sth = true;
 	    }
 	  fprintf (dump_file, " param %i: value = ", i);
