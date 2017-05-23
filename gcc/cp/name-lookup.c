@@ -328,8 +328,8 @@ protected:
   static vec<unsigned, va_heap, vl_ptr> state;
 
 public:
-  name_lookup (tree n, int f, tree v = NULL_TREE)
-  : name (n), value (v), type (NULL_TREE), flags (f)
+  name_lookup (tree n, int f)
+  : name (n), value (NULL_TREE), type (NULL_TREE), flags (f)
   {
     cookie = preserve_state ();
   }
@@ -365,13 +365,16 @@ protected:
       mark_seen (scope);
     return ret;
   }
+  bool find_and_mark (tree scope);
 
 private:
   static unsigned preserve_state ();
   static void restore_state (unsigned);
 
 private:
-  static tree merge_binding (tree, tree);
+  static tree ambiguous (tree thing, tree current);
+  void add_value (tree new_val);
+  void add_type (tree new_type);
   bool process_binding (tree val_bind, tree type_bind);
   unsigned process_module_binding (bitmap, unsigned,
 				   unsigned, unsigned, tree);
@@ -399,6 +402,7 @@ private:
 public:
   /* Search namespace + inlines + maybe usings as qualified lookup.  */
   bool search_qualified (tree scope, bool usings = true);
+
   /* Search namespace + inlines + usings as unqualified lookup.  */
   bool search_unqualified (tree scope, cp_binding_level *);
 };
@@ -465,44 +469,78 @@ name_lookup::mark_seen (tree scope)
   scopes.safe_push (scope);
 }
 
-/* NEW_VAL is being added to the current lookup CUR.  */
-
-tree
-name_lookup::merge_binding (tree cur, tree new_val)
+bool
+name_lookup::find_and_mark (tree scope)
 {
-  if (!cur)
-    cur = new_val;
-  else if (!new_val)
-    ;
-  else if (cur == new_val)
-    ;
-  else if ((TREE_CODE (cur) == TYPE_DECL
-	    && TREE_CODE (new_val) == TYPE_DECL
-	    && same_type_p (TREE_TYPE (cur), TREE_TYPE (new_val))))
-    ;
-  else if (OVL_P (cur) && OVL_P (new_val))
-    cur = lookup_add (new_val, cur);
-  else
+  bool result = LOOKUP_FOUND_P (scope);
+  if (!result)
     {
-      if (TREE_CODE (cur) != TREE_LIST)
-	{
-	  cur = build_tree_list (NULL_TREE, cur);
-	  TREE_TYPE (cur) = error_mark_node;
-	}
-      cur = tree_cons (NULL_TREE, new_val, cur);
-      TREE_TYPE (cur) = error_mark_node;
+      LOOKUP_FOUND_P (scope) = true;
+      if (!LOOKUP_SEEN_P (scope))
+	scopes.safe_push (scope);
     }
 
-  return cur;
+  return result;
 }
+
+/* THING and CURRENT are ambiguous, concatenate them.  */
+tree
+name_lookup::ambiguous (tree thing, tree current)
+{
+  if (TREE_CODE (current) != TREE_LIST)
+    {
+      current = build_tree_list (NULL_TREE, current);
+      TREE_TYPE (current) = error_mark_node;
+    }
+  current = tree_cons (NULL_TREE, thing, current);
+  TREE_TYPE (current) = error_mark_node;
+
+  return current;
+}
+
+/* Add a NEW_VAL, a found value binding into the current value binding.  */
+
+void
+name_lookup::add_value (tree new_val)
+{
+  if (!value)
+    value = new_val;
+  else if (value == new_val)
+    ;
+  else if ((TREE_CODE (value) == TYPE_DECL
+	    && TREE_CODE (new_val) == TYPE_DECL
+	    && same_type_p (TREE_TYPE (value), TREE_TYPE (new_val))))
+    ;
+  else if (OVL_P (value) && OVL_P (new_val))
+    value = lookup_add (new_val, value);
+  else
+    value = ambiguous (new_val, value);
+}
+
+/* Add a NEW_TYPE, a found type binding into the current type binding.  */
+
+void
+name_lookup::add_type (tree new_type)
+{
+  if (!type)
+    type = new_type;
+  else if (TREE_CODE (type) == TREE_LIST
+	   || !same_type_p (TREE_TYPE (type), TREE_TYPE (new_type)))
+    type = ambiguous (new_type, type);
+}
+
+/* Process a found binding containing NEW_VAL and NEW_TYPE.  Returns
+   true if we actually found something noteworthy.  */
 
 bool
 name_lookup::process_binding (tree new_val, tree new_type)
 {
   /* Did we really see a type? */
-  if (LOOKUP_NAMESPACES_ONLY (flags)
-      || (!(flags & LOOKUP_HIDDEN)
-	  && new_type && DECL_HIDDEN_P (new_type)))
+  if (new_type
+      && (LOOKUP_NAMESPACES_ONLY (flags)
+	  || (!(flags & LOOKUP_HIDDEN)
+	      && DECL_LANG_SPECIFIC (new_type)
+	      && DECL_ANTICIPATED (new_type))))
     new_type = NULL_TREE;
 
   if (new_val && !(flags & LOOKUP_HIDDEN))
@@ -539,9 +577,11 @@ name_lookup::process_binding (tree new_val, tree new_type)
       new_type = NULL_TREE;
     }
 
-  /* Now merge.  */
-  value = merge_binding (value, new_val);
-  type = merge_binding (type, new_type);
+  /* Merge into the lookup  */
+  if (new_val)
+    add_value (new_val);
+  if (new_type)
+    add_type (new_type);
 
   return new_val != NULL_TREE;
 }
@@ -680,7 +720,7 @@ name_lookup::search_usings (tree scope)
   bool found = false;
   if (vec<tree, va_gc> *usings = DECL_NAMESPACE_USING (scope))
     for (unsigned ix = usings->length (); ix--;)
-      found |= search_qualified ((*usings)[ix]);
+      found |= search_qualified ((*usings)[ix], true);
 
   /* Look in its inline children.  */
   if (vec<tree, va_gc> *inlinees = DECL_NAMESPACE_INLINEES (scope))
@@ -808,8 +848,9 @@ name_lookup::search_unqualified (tree scope, cp_binding_level *level)
       if (scope == global_namespace)
 	break;
     }
-  
+
   vec_safe_truncate (queue, length);
+
   return found;
 }
 
@@ -817,43 +858,56 @@ struct adl_lookup : name_lookup
 {
   typedef name_lookup parent;
 
-  bool find_and_mark (tree);
+ public:
+  adl_lookup (tree);
 
-  void add_functions (tree);
+ public:
+  tree search_adl (tree fns, vec<tree, va_gc> *args);
 
-  void assoc_expr (tree);
-  void assoc_type (tree);
-  void assoc_template_arg (tree);
-  void assoc_class (tree);
-  void assoc_bases (tree);
-  void assoc_class_only (tree);
-  void assoc_namespace (tree);
-  void assoc_namespace_only (tree);
+ private:
+  void add_fns (tree);
 
-  adl_lookup (tree name, tree fns);
+  void adl_expr (tree);
+  void adl_type (tree);
+  void adl_template_arg (tree);
+  void adl_class (tree);
+  void adl_bases (tree);
+  void adl_class_only (tree);
+  void adl_namespace (tree);
+  void adl_namespace_only (tree);
 };
 
-adl_lookup::adl_lookup (tree name, tree fns)
-: parent (name, 0, fns)
+adl_lookup::adl_lookup (tree name)
+: parent (name, 0)
 {
 }
 
-bool
-adl_lookup::find_and_mark (tree scope)
+tree
+adl_lookup::search_adl (tree fns, vec<tree, va_gc> *args)
 {
-  bool result = LOOKUP_FOUND_P (scope);
-  if (!result)
-    {
-      LOOKUP_FOUND_P (scope) = true;
-      if (!LOOKUP_SEEN_P (scope))
-	scopes.safe_push (scope);
-    }
+  lookup_mark (fns, true);
+  value = fns;
 
-  return result;
+  unsigned ix;
+  tree arg;
+
+  FOR_EACH_VEC_ELT_REVERSE (*args, ix, arg)
+    /* OMP reduction operators put a type as the first arg.  I don't
+       suppose we should ADL on that?  */
+    if (!TYPE_P (arg))
+      adl_expr (arg);
+
+  fns = value;
+  lookup_mark (fns, false);
+
+  return fns;
 }
+
+/* FNS is a value binding.  If it is a (set of overloaded) functions,
+   add them into the current value.  */
 
 void
-adl_lookup::add_functions (tree fns)
+adl_lookup::add_fns (tree fns)
 {
   if (!fns)
     return;
@@ -871,23 +925,23 @@ adl_lookup::add_functions (tree fns)
 /* Add functions of a namespace to the lookup structure.  */
 
 void
-adl_lookup::assoc_namespace_only (tree scope)
+adl_lookup::adl_namespace_only (tree scope)
 {
   mark_seen (scope);
 
   /* Look down into inline namespaces.  */
   if (vec<tree, va_gc> *inlinees = DECL_NAMESPACE_INLINEES (scope))
     for (unsigned ix = inlinees->length (); ix--;)
-      assoc_namespace_only ((*inlinees)[ix]);
+      adl_namespace_only ((*inlinees)[ix]);
 
-  add_functions (ovl_skip_hidden (find_namespace_value (scope, name)));
+  add_fns (ovl_skip_hidden (find_namespace_value (scope, name)));
 }
 
 /* Find the containing non-inlined namespace, add it and all its
    inlinees.  */
 
 void
-adl_lookup::assoc_namespace (tree scope)
+adl_lookup::adl_namespace (tree scope)
 {
   if (seen_p (scope))
     return;
@@ -896,13 +950,13 @@ adl_lookup::assoc_namespace (tree scope)
   while (DECL_NAMESPACE_INLINE_P (scope))
     scope = CP_DECL_CONTEXT (scope);
 
-  assoc_namespace_only (scope);
+  adl_namespace_only (scope);
 }
 
 /* Adds the class and its friends to the lookup structure.  */
 
 void
-adl_lookup::assoc_class_only (tree type)
+adl_lookup::adl_class_only (tree type)
 {
   /* Backend-built structures, such as __builtin_va_list, aren't
      affected by all this.  */
@@ -915,7 +969,7 @@ adl_lookup::assoc_class_only (tree type)
     return;
 
   tree context = decl_namespace_context (type);
-  assoc_namespace (context);
+  adl_namespace (context);
 
   complete_type (type);
 
@@ -939,7 +993,7 @@ adl_lookup::assoc_class_only (tree type)
 	  if (TREE_CODE (fn) == FUNCTION_DECL && DECL_USE_TEMPLATE (fn))
 	    continue;
 
-	  add_functions (fn);
+	  add_fns (fn);
 	}
 }
 
@@ -947,9 +1001,9 @@ adl_lookup::assoc_class_only (tree type)
    Returns true on error.  */
 
 void
-adl_lookup::assoc_bases (tree type)
+adl_lookup::adl_bases (tree type)
 {
-  assoc_class_only (type);
+  adl_class_only (type);
 
   /* Process baseclasses.  */
   if (tree binfo = TYPE_BINFO (type))
@@ -958,7 +1012,7 @@ adl_lookup::assoc_bases (tree type)
       int i;
 
       for (i = 0; BINFO_BASE_ITERATE (binfo, i, base_binfo); i++)
-	assoc_bases (BINFO_TYPE (base_binfo));
+	adl_bases (BINFO_TYPE (base_binfo));
     }
 }
 
@@ -979,7 +1033,7 @@ adl_lookup::assoc_bases (tree type)
    namespaces.  --end note] */
 
 void
-adl_lookup::assoc_class (tree type)
+adl_lookup::adl_class (tree type)
 {
   /* Backend build structures, such as __builtin_va_list, aren't
      affected by all this.  */
@@ -988,15 +1042,15 @@ adl_lookup::assoc_class (tree type)
 
   type = TYPE_MAIN_VARIANT (type);
   /* We don't set found here because we have to have set seen first,
-     which is done in the assoc_bases walk.  */
+     which is done in the adl_bases walk.  */
   if (found_p (type))
     return;
 
-  assoc_bases (type);
+  adl_bases (type);
   mark_found (type);
 
   if (TYPE_CLASS_SCOPE_P (type))
-    assoc_class_only (TYPE_CONTEXT (type));
+    adl_class_only (TYPE_CONTEXT (type));
 
   /* Process template arguments.  */
   if (CLASSTYPE_TEMPLATE_INFO (type)
@@ -1004,12 +1058,12 @@ adl_lookup::assoc_class (tree type)
     {
       tree list = INNERMOST_TEMPLATE_ARGS (CLASSTYPE_TI_ARGS (type));
       for (int i = 0; i < TREE_VEC_LENGTH (list); ++i)
-	assoc_template_arg (TREE_VEC_ELT (list, i));
+	adl_template_arg (TREE_VEC_ELT (list, i));
     }
 }
 
 void
-adl_lookup::assoc_expr (tree expr)
+adl_lookup::adl_expr (tree expr)
 {
   if (!expr)
     return;
@@ -1018,7 +1072,7 @@ adl_lookup::assoc_expr (tree expr)
 
   if (TREE_TYPE (expr) != unknown_type_node)
     {
-      assoc_type (TREE_TYPE (expr));
+      adl_type (TREE_TYPE (expr));
       return;
     }
 
@@ -1031,7 +1085,7 @@ adl_lookup::assoc_expr (tree expr)
 
   if (OVL_P (expr))
     for (lkp_iterator iter (expr); iter; ++iter)
-      assoc_type (TREE_TYPE (*iter));
+      adl_type (TREE_TYPE (*iter));
   else if (TREE_CODE (expr) == TEMPLATE_ID_EXPR)
     {
       /* The working paper doesn't currently say how to handle
@@ -1041,17 +1095,17 @@ adl_lookup::assoc_expr (tree expr)
 	 for class template specializations.  */
 
       /* First the templates.  */
-      assoc_expr (TREE_OPERAND (expr, 0));
+      adl_expr (TREE_OPERAND (expr, 0));
 
       /* Now the arguments.  */
       if (tree args = TREE_OPERAND (expr, 1))
 	for (int ix = TREE_VEC_LENGTH (args); ix--;)
-	  assoc_template_arg (TREE_VEC_ELT (args, ix));
+	  adl_template_arg (TREE_VEC_ELT (args, ix));
     }
 }
 
 void
-adl_lookup::assoc_type (tree type)
+adl_lookup::adl_type (tree type)
 {
   if (!type)
     return;
@@ -1059,8 +1113,8 @@ adl_lookup::assoc_type (tree type)
   if (TYPE_PTRDATAMEM_P (type))
     {
       /* Pointer to member: associate class type and value type.  */
-      assoc_type (TYPE_PTRMEM_CLASS_TYPE (type));
-      assoc_type (TYPE_PTRMEM_POINTED_TO_TYPE (type));
+      adl_type (TYPE_PTRMEM_CLASS_TYPE (type));
+      adl_type (TYPE_PTRMEM_POINTED_TO_TYPE (type));
       return;
     }
 
@@ -1069,12 +1123,12 @@ adl_lookup::assoc_type (tree type)
     case RECORD_TYPE:
       if (TYPE_PTRMEMFUNC_P (type))
 	{
-	  assoc_type (TYPE_PTRMEMFUNC_FN_TYPE (type));
+	  adl_type (TYPE_PTRMEMFUNC_FN_TYPE (type));
 	  return;
 	}
       /* FALLTHRU */
     case UNION_TYPE:
-      assoc_class (type);
+      adl_class (type);
       return;
 
     case METHOD_TYPE:
@@ -1083,19 +1137,19 @@ adl_lookup::assoc_type (tree type)
     case FUNCTION_TYPE:
       /* Associate the parameter types.  */
       for (tree args = TYPE_ARG_TYPES (type); args; args = TREE_CHAIN (args))
-	assoc_type (TREE_VALUE (args));
+	adl_type (TREE_VALUE (args));
       /* FALLTHROUGH */
 
     case POINTER_TYPE:
     case REFERENCE_TYPE:
     case ARRAY_TYPE:
-      assoc_type (TREE_TYPE (type));
+      adl_type (TREE_TYPE (type));
       return;
 
     case ENUMERAL_TYPE:
       if (TYPE_CLASS_SCOPE_P (type))
-	assoc_class_only (TYPE_CONTEXT (type));
-      assoc_namespace (decl_namespace_context (type));
+	adl_class_only (TYPE_CONTEXT (type));
+      adl_namespace (decl_namespace_context (type));
       return;
 
     case LANG_TYPE:
@@ -1104,7 +1158,7 @@ adl_lookup::assoc_type (tree type)
       return;
 
     case TYPE_PACK_EXPANSION:
-      assoc_type (PACK_EXPANSION_PATTERN (type));
+      adl_type (PACK_EXPANSION_PATTERN (type));
       return;
 
     default:
@@ -1116,7 +1170,7 @@ adl_lookup::assoc_type (tree type)
    structure.  */
 
 void
-adl_lookup::assoc_template_arg (tree arg)
+adl_lookup::adl_template_arg (tree arg)
 {
   /* [basic.lookup.koenig]
 
@@ -1139,10 +1193,10 @@ adl_lookup::assoc_template_arg (tree arg)
 
       /* It's not a member template.  */
       if (TREE_CODE (ctx) == NAMESPACE_DECL)
-	assoc_namespace (ctx);
+	adl_namespace (ctx);
       /* Otherwise, it must be member template.  */
       else
-	assoc_class_only (ctx);
+	adl_class_only (ctx);
     }
   /* It's an argument pack; handle it recursively.  */
   else if (ARGUMENT_PACK_P (arg))
@@ -1150,31 +1204,20 @@ adl_lookup::assoc_template_arg (tree arg)
       tree args = ARGUMENT_PACK_ARGS (arg);
       int i, len = TREE_VEC_LENGTH (args);
       for (i = 0; i < len; ++i) 
-	assoc_template_arg (TREE_VEC_ELT (args, i));
+	adl_template_arg (TREE_VEC_ELT (args, i));
     }
   /* It's not a template template argument, but it is a type template
      argument.  */
   else if (TYPE_P (arg))
-    assoc_type (arg);
+    adl_type (arg);
 }
 
 static tree
 do_lookup_arg_dependent (tree name, tree fns, vec<tree, va_gc> *args)
 {
-  adl_lookup lookup (name, fns);
+  adl_lookup lookup (name);
 
-  lookup_mark (fns, true);
-  unsigned ix;
-  tree arg;
-
-  FOR_EACH_VEC_ELT_REVERSE (*args, ix, arg)
-    /* OMP reduction operators put a type as the first arg.  I don't
-       suppose we should ADL on that?  */
-    if (!TYPE_P (arg))
-      lookup.assoc_expr (arg);
-
-  fns = lookup.value;
-  lookup_mark (fns, false);
+  fns = lookup.search_adl (fns, args);
 
   return fns;
 }
@@ -3756,10 +3799,6 @@ do_nonmember_using_decl (tree scope, tree name, tree *value_p, tree *type_p)
   name_lookup lookup (name, 0);
 
   if (!qualified_namespace_lookup (scope, &lookup))
-    /* Lookup error */
-    return;
-
-  if (!lookup.value)
     {
       error ("%qD not declared", name);
       return;
@@ -5057,12 +5096,10 @@ suggest_alternatives_for (location_t location, tree name,
       name_lookup lookup (name, 0);
       cp_binding_level *level = NAMESPACE_LEVEL (scope);
 
-      /* Look in this namespace.  */
-      qualified_namespace_lookup (scope, &lookup);
-
       n_searched++;
 
-      if (lookup.value)
+      /* Look in this namespace.  */
+      if (qualified_namespace_lookup (scope, &lookup))
 	candidates.safe_push (lookup.value);
 
       /* Add child namespaces.  */
@@ -5250,19 +5287,6 @@ suggest_alternative_in_explicit_scope (location_t location, tree name,
   return false;
 }
 
-/* Unscoped lookup of a global: iterate over current namespaces,
-   considering using-directives.  */
-
-static tree
-unqualified_namespace_lookup (tree name, int flags)
-{
-  name_lookup lookup (name, flags);
-  bool subtime = timevar_cond_start (TV_NAME_LOOKUP);
-  lookup.search_unqualified (current_decl_namespace (), current_binding_level);
-  timevar_cond_stop (TV_NAME_LOOKUP, subtime);
-  return lookup.value;
-}
-
 /* Look up NAME (an IDENTIFIER_NODE) in SCOPE (either a NAMESPACE_DECL
    or a class TYPE).
 
@@ -5288,12 +5312,14 @@ lookup_qualified_name (tree scope, tree name, int prefer_type, bool complain,
       name_lookup lookup (name, flags);
 
       if (qualified_namespace_lookup (scope, &lookup))
-	t = lookup.value;
+	{
+	  t = lookup.value;
 
-      /* If we have a known type overload, pull it out.  This can happen
-	 for using decls.  */
-      if (t && TREE_CODE (t) == OVERLOAD && TREE_TYPE (t) != unknown_type_node)
-	t = OVL_FUNCTION (t);
+	  /* If we have a known type overload, pull it out.  This can happen
+	     for using decls.  */
+	  if (TREE_CODE (t) == OVERLOAD && TREE_TYPE (t) != unknown_type_node)
+	    t = OVL_FUNCTION (t);
+	}
     }
   else if (cxx_dialect != cxx98 && TREE_CODE (scope) == ENUMERAL_TYPE)
     t = lookup_enumerator (scope, name);
@@ -5315,9 +5341,9 @@ qualified_namespace_lookup (tree scope, name_lookup *lookup)
 {
   timevar_start (TV_NAME_LOOKUP);
   query_oracle (lookup->name);
-  lookup->search_qualified (ORIGINAL_NAMESPACE (scope));
+  bool found = lookup->search_qualified (ORIGINAL_NAMESPACE (scope));
   timevar_stop (TV_NAME_LOOKUP);
-  return lookup->value != error_mark_node;
+  return found;
 }
 
 /* Helper function for lookup_name_fuzzy.
@@ -5692,7 +5718,12 @@ lookup_name_real_1 (tree name, int prefer_type, int nonclass, bool block_p,
 
   /* Now lookup in namespace scopes.  */
   if (!val)
-    val = unqualified_namespace_lookup (name, flags);
+    {
+      name_lookup lookup (name, flags);
+      if (lookup.search_unqualified
+	  (current_decl_namespace (), current_binding_level))
+	val = lookup.value;
+    }
 
   /* If we have a known type overload, pull it out.  This can happen
      for both using decls and unhidden functions.  */
@@ -6548,25 +6579,23 @@ push_namespace (tree name, bool make_inline)
     name_lookup lookup (name, 0);
     if (!lookup.search_qualified (current_namespace, /*usings=*/false))
       ;
-    else if (TREE_CODE (lookup.value) == NAMESPACE_DECL)
+    else if (TREE_CODE (lookup.value) != NAMESPACE_DECL)
+      ;
+    else if (tree dna = DECL_NAMESPACE_ALIAS (lookup.value))
       {
-	ns = lookup.value;
-	if (tree dna = DECL_NAMESPACE_ALIAS (ns))
+	/* A namespace alias is not allowed here, but if the alias
+	   is for a namespace also inside the current scope,
+	   accept it with a diagnostic.  That's better than dying
+	   horribly.  */
+	if (is_nested_namespace (current_namespace, CP_DECL_CONTEXT (dna)))
 	  {
-	    /* A namespace alias is not allowed here, but if the alias
-	       is for a namespace also inside the current scope,
-	       accept it with a diagnostic.  That's better than dieing
-	       horribly.  */
-	    if (is_nested_namespace (current_namespace, CP_DECL_CONTEXT (dna)))
-	      {
-		error ("namespace alias %qD not allowed here, "
-		       "assuming %qD", ns, dna);
-		ns = dna;
-	      }
-	    else
-	      ns = NULL_TREE;
+	    error ("namespace alias %qD not allowed here, "
+		   "assuming %qD", lookup.value, dna);
+	    ns = dna;
 	  }
       }
+    else
+      ns = lookup.value;
   }
 
   bool new_ns = false;

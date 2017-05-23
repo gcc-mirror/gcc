@@ -1,5 +1,19 @@
 2017-05-23  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* name-lookup.c (name_lookup::name_lookup): Lose F parm.
+	(name_lookup::ambiguous, add_value, add_type): New.
+	(name_lookup::merge_binding): Delete.
+	(name_lookup::find_and_mark): Move from adl_lookup.
+	(name_lookup::process_binding): Adjust.
+	(adl_lookup::search_adl): New.
+	(do_lookup_arg_dependent): Call it.
+	(qualified_namespace_lookup): Return found flag.
+	(unqualified_namespace_lookup): Delete.
+	(lookup_name_real_1, push_namepace): Adjust.
+
+	Merge trunk r248377.
+
 	Merge trunk r248365.
 
 2017-05-22  Nathan Sidwell  <nathan@acm.org>
