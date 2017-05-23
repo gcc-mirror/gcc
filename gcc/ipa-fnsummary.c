@@ -2738,11 +2738,14 @@ estimate_node_size_and_time (struct cgraph_node *node,
 
   for (i = 0; vec_safe_iterate (info->size_time_table, i, &e); i++)
     {
-      bool nonconst = e->nonconst_predicate.evaluate (possible_truths);
       bool exec = e->exec_predicate.evaluate (nonspec_possible_truths);
-      gcc_assert (!nonconst || exec);
+
+      /* Because predicates are conservative, it can happen that nonconst is 1
+	 but exec is 0.  */
       if (exec)
         {
+          bool nonconst = e->nonconst_predicate.evaluate (possible_truths);
+
 	  gcc_checking_assert (e->time >= 0);
 	  gcc_checking_assert (time >= 0);
 
