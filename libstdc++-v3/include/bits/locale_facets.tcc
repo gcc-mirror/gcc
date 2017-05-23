@@ -375,10 +375,10 @@ _GLIBCXX_BEGIN_NAMESPACE_LDBL
       _M_extract_int(_InIter __beg, _InIter __end, ios_base& __io,
 		     ios_base::iostate& __err, _ValueT& __v) const
       {
-        typedef char_traits<_CharT>			     __traits_type;
+        typedef char_traits<_CharT>			    __traits_type;
 	using __gnu_cxx::__add_unsigned;
-	typedef typename __add_unsigned<_ValueT>::__type __unsigned_type;
-	typedef __numpunct_cache<_CharT>                     __cache_type;
+	typedef typename __add_unsigned<_ValueT>::__type    __unsigned_type;
+	typedef __numpunct_cache<_CharT>                    __cache_type;
 	__use_cache<__cache_type> __uc;
 	const locale& __loc = __io._M_getloc();
 	const __cache_type* __lc = __uc(__loc);
@@ -463,15 +463,16 @@ _GLIBCXX_BEGIN_NAMESPACE_LDBL
 			      - __num_base::_S_izero : __base);
 
 	// Extract.
+	typedef __gnu_cxx::__numeric_traits<_ValueT> __num_traits;
 	string __found_grouping;
 	if (__lc->_M_use_grouping)
 	  __found_grouping.reserve(32);
 	bool __testfail = false;
 	bool __testoverflow = false;
 	const __unsigned_type __max =
-	  (__negative && __gnu_cxx::__numeric_traits<_ValueT>::__is_signed)
-	  ? -__gnu_cxx::__numeric_traits<_ValueT>::__min
-	  : __gnu_cxx::__numeric_traits<_ValueT>::__max;
+	  (__negative && __num_traits::__is_signed)
+	  ? -static_cast<__unsigned_type>(__num_traits::__min)
+	  : __num_traits::__max;
 	const __unsigned_type __smax = __max / __base;
 	__unsigned_type __result = 0;
 	int __digit = 0;
@@ -572,11 +573,10 @@ _GLIBCXX_BEGIN_NAMESPACE_LDBL
 	  }
 	else if (__testoverflow)
 	  {
-	    if (__negative
-		&& __gnu_cxx::__numeric_traits<_ValueT>::__is_signed)
-	      __v = __gnu_cxx::__numeric_traits<_ValueT>::__min;
+	    if (__negative && __num_traits::__is_signed)
+	      __v = __num_traits::__min;
 	    else
-	      __v = __gnu_cxx::__numeric_traits<_ValueT>::__max;
+	      __v = __num_traits::__max;
 	    __err = ios_base::failbit;
 	  }
 	else

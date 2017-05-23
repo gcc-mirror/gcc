@@ -5204,7 +5204,7 @@ convert_callers_for_node (struct cgraph_node *node,
   for (cs = node->callers; cs; cs = cs->next_caller)
     if (bitmap_set_bit (recomputed_callers, cs->caller->uid)
 	&& gimple_in_ssa_p (DECL_STRUCT_FUNCTION (cs->caller->decl)))
-      compute_inline_parameters (cs->caller, true);
+      compute_fn_summary (cs->caller, true);
   BITMAP_FREE (recomputed_callers);
 
   return true;
@@ -5381,7 +5381,7 @@ ipa_sra_preliminary_function_checks (struct cgraph_node *node)
     }
 
   if ((DECL_ONE_ONLY (node->decl) || DECL_EXTERNAL (node->decl))
-      && inline_summaries->get (node)->size >= MAX_INLINE_INSNS_AUTO)
+      && ipa_fn_summaries->get (node)->size >= MAX_INLINE_INSNS_AUTO)
     {
       if (dump_file)
 	fprintf (dump_file, "Function too big to be made truly local.\n");

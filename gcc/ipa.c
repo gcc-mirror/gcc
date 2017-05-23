@@ -236,8 +236,8 @@ walk_polymorphic_call_targets (hash_set<void *> *reachable_call_targets,
                                target->order);
 	    }
 	  edge = edge->make_direct (target);
-	  if (inline_summaries)
-	    inline_update_overall_summary (node);
+	  if (ipa_fn_summaries)
+	    ipa_update_overall_fn_summary (node);
 	  else if (edge->call_stmt)
 	    {
 	      edge->redirect_call_stmt_to_callee ();
@@ -849,7 +849,7 @@ ipa_discover_readonly_nonaddressable_vars (void)
 
 namespace {
 
-const pass_data pass_data_ipa_free_inline_summary =
+const pass_data pass_data_ipa_free_fn_summary =
 {
   SIMPLE_IPA_PASS, /* type */
   "free-inline-summary", /* name */
@@ -865,11 +865,11 @@ const pass_data pass_data_ipa_free_inline_summary =
   ( TODO_remove_functions | TODO_dump_symtab ), /* todo_flags_finish */
 };
 
-class pass_ipa_free_inline_summary : public simple_ipa_opt_pass
+class pass_ipa_free_fn_summary : public simple_ipa_opt_pass
 {
 public:
-  pass_ipa_free_inline_summary (gcc::context *ctxt)
-    : simple_ipa_opt_pass (pass_data_ipa_free_inline_summary, ctxt)
+  pass_ipa_free_fn_summary (gcc::context *ctxt)
+    : simple_ipa_opt_pass (pass_data_ipa_free_fn_summary, ctxt)
   {}
 
   /* opt_pass methods: */
@@ -879,14 +879,14 @@ public:
       return 0;
     }
 
-}; // class pass_ipa_free_inline_summary
+}; // class pass_ipa_free_fn_summary
 
 } // anon namespace
 
 simple_ipa_opt_pass *
-make_pass_ipa_free_inline_summary (gcc::context *ctxt)
+make_pass_ipa_free_fn_summary (gcc::context *ctxt)
 {
-  return new pass_ipa_free_inline_summary (ctxt);
+  return new pass_ipa_free_fn_summary (ctxt);
 }
 
 /* Generate and emit a static constructor or destructor.  WHICH must

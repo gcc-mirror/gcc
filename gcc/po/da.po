@@ -135,10 +135,10 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gcc 7.1-b20170226\n"
+"Project-Id-Version: gcc 7.1.0\n"
 "Report-Msgid-Bugs-To: https://gcc.gnu.org/bugs/\n"
 "POT-Creation-Date: 2017-05-01 22:24+0000\n"
-"PO-Revision-Date: 2017-02-28 11:00+0200\n"
+"PO-Revision-Date: 2017-05-21 11:00+0200\n"
 "Last-Translator: Joe Hansen <joedalton2@yahoo.dk>\n"
 "Language-Team: Danish <dansk@dansk-gruppen.dk>\n"
 "Language: da\n"
@@ -895,15 +895,12 @@ msgstr ""
 "\n"
 
 #: gcov.c:656
-#, fuzzy, c-format
-#| msgid ""
-#| "Usage: gcov [OPTION]... SOURCE|OBJ...\n"
-#| "\n"
+#, c-format
 msgid ""
 "Usage: gcov [OPTION...] SOURCE|OBJ...\n"
 "\n"
 msgstr ""
-"Brug: gcov [TILVALG]... KILDE|OBJ...\n"
+"Brug: gcov [TILVALG...] KILDE|OBJ...\n"
 "\n"
 
 #: gcov.c:657
@@ -2101,19 +2098,19 @@ msgid "Maximum number of loop peels to enhance alignment of data references in a
 msgstr "Det maksimale antal navnerum der søges i efter alternativer, når navneopslag mislykkes."
 
 #: params.def:573
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "The maximum memory locations recorded by cselib."
-msgstr "Det maksimale antal instruktioner til RTL-indbyggeren"
+msgstr "Det maksimale antal hukommelseslokationer registreret af cselib."
 
 #: params.def:586
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Minimum heap expansion to trigger garbage collection, as a percentage of the total size of the heap."
-msgstr "Minimal heap-udvidelse for at udløse garbage collection, som en procentdel af den totale heap"
+msgstr "Minimal heap-udvidelse for at udløse affaldsindsamling, som en procentdel af den samlede størrelse på heap'en."
 
 #: params.def:591
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Minimum heap size before we start collecting garbage, in kilobytes."
-msgstr "Minimal heap-størrelse før garbage collection startes, i kilobyte."
+msgstr "Minimal heap-størrelse før vi starter affaldsindsamling, i kilobyte."
 
 #: params.def:599
 #, fuzzy, no-c-format
@@ -2174,10 +2171,9 @@ msgid "Maximum number of times that an insn could be scheduled."
 msgstr ""
 
 #: params.def:664
-#, fuzzy, no-c-format
-#| msgid "The maximum number of instructions in a single function eligible for inlining"
+#, no-c-format
 msgid "Maximum number of instructions in the ready list that are considered eligible for renaming."
-msgstr "Det maksimale antal instruktioner i en enkelt funktion der må indbygges"
+msgstr "Det maksimale antal instruktioner i »ready«-listen som anses for klar til omdøbning."
 
 #: params.def:669
 #, no-c-format
@@ -2320,37 +2316,34 @@ msgid "size of tiles for loop blocking."
 msgstr ""
 
 #: params.def:865
-#, fuzzy, no-c-format
-#| msgid "maximum number of parameters in a SCoP"
+#, no-c-format
 msgid "maximum number of parameters in a SCoP."
-msgstr "Det maksimale antal parametre i en SCoP"
+msgstr "maksimalt antal parametre i en SCoP."
 
 #: params.def:872
-#, fuzzy, no-c-format
-#| msgid "maximum number of basic blocks per function to be analyzed by Graphite"
+#, no-c-format
 msgid "maximum number of basic blocks per function to be analyzed by Graphite."
-msgstr "Det maksimale antal grundlæggende blokke per funktion, der skal analyseres af Graphite"
+msgstr "maksimalt antal grundlæggende blokke per funktion, der skal analyseres af Graphite."
 
 #: params.def:879
 #, no-c-format
 msgid "maximum number of arrays per scop."
-msgstr "det maksimale antal tabeller per scop."
+msgstr "maksimalt antal tabeller per scop."
 
 #: params.def:886
 #, no-c-format
 msgid "minimal number of loops per function to be analyzed by Graphite."
-msgstr "det minimale antal løkker per funktion som analyseres af Graphite."
+msgstr "minimalt antal løkker per funktion som analyseres af Graphite."
 
 #: params.def:891
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "maximum number of isl operations, 0 means unlimited"
-msgstr "Det maksimale antal instruktioner der overvejes at udrulle i en løkke"
+msgstr "maksimalt antal isl-operationer, 0 betyder ubegrænset"
 
 #: params.def:897
-#, fuzzy, no-c-format
-#| msgid "Maximum number of datarefs in loop for building loop data dependencies"
+#, no-c-format
 msgid "Maximum number of datarefs in loop for building loop data dependencies."
-msgstr "Det maksimale antal datareferencer i loop for bygning af loop-dataafhængigheder"
+msgstr "Maksimalt antal datareferencer i loop for bygning af loop-dataafhængigheder."
 
 #: params.def:904
 #, no-c-format
@@ -2358,10 +2351,9 @@ msgid "Max basic blocks number in loop for loop invariant motion."
 msgstr ""
 
 #: params.def:912
-#, fuzzy, no-c-format
-#| msgid "use internal function id in profile lookup"
+#, no-c-format
 msgid "use internal function id in profile lookup."
-msgstr "brug intern funktions-id i profilopslag"
+msgstr "brug intern funktions-id i profilopslag."
 
 #: params.def:920
 #, no-c-format
@@ -2369,10 +2361,9 @@ msgid "track topn target addresses in indirect-call profile."
 msgstr ""
 
 #: params.def:926
-#, fuzzy, no-c-format
-#| msgid "Maximum number of instructions in basic block to be considered for SLP vectorization"
+#, no-c-format
 msgid "Maximum number of instructions in basic block to be considered for SLP vectorization."
-msgstr "Det maksimale antal instruktioner i basisblokke som skal overvejes i SLP-vektorisering"
+msgstr "Maksimalt antal instruktioner i basisblokke som skal overvejes i SLP-vektorisering."
 
 #: params.def:931
 #, no-c-format
@@ -2515,10 +2506,9 @@ msgid "Allow the store merging pass to introduce unaligned stores if it is legal
 msgstr ""
 
 #: params.def:1110
-#, fuzzy, no-c-format
-#| msgid "The maximum number of incoming edges to consider for crossjumping"
+#, no-c-format
 msgid "Maximum number of constant stores to merge in the store merging pass."
-msgstr "Det maksimale antal indadgående kanter der overvejes til krydsspring"
+msgstr "Maksimalt antal konstante lagre at sammenføje i gennemløbet for lagersammenføjelse."
 
 #: params.def:1116
 #, no-c-format
@@ -25659,46 +25649,39 @@ msgid "function return type cannot be function"
 msgstr "en funktions returtype kan ikke være en funktion"
 
 #: tree.c:9839 tree.c:9924 tree.c:9985
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "tree check: expected %s, have %s in %s, at %s:%d"
+#, gcc-internal-format, gfc-internal-format
 msgid "tree check: %s, have %s in %s, at %s:%d"
-msgstr "træ-kontrol: forventede %s, har %s i %s, ved %s:%d"
+msgstr "træ-kontrol: %s, har %s i %s, ved %s:%d"
 
 #: tree.c:9876
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "tree check: expected %s, have %s in %s, at %s:%d"
+#, gcc-internal-format, gfc-internal-format
 msgid "tree check: expected none of %s, have %s in %s, at %s:%d"
-msgstr "træ-kontrol: forventede %s, har %s i %s, ved %s:%d"
+msgstr "træ-kontrol: forventede ingen af %s, har %s i %s, ved %s:%d"
 
 #: tree.c:9889
-#, fuzzy, gcc-internal-format
-#| msgid "tree check: expected class '%c', have '%c' (%s) in %s, at %s:%d"
+#, gcc-internal-format
 msgid "tree check: expected class %qs, have %qs (%s) in %s, at %s:%d"
-msgstr "træ-kontrol: forventede klasse '%c', har '%c' (%s) i %s, ved %s:%d"
+msgstr "træ-kontrol: forventede klasse %qs, har %qs (%s) i %s, ved %s:%d"
 
 #: tree.c:9938
-#, fuzzy, gcc-internal-format
-#| msgid "tree check: expected class '%c', have '%c' (%s) in %s, at %s:%d"
+#, gcc-internal-format
 msgid "tree check: did not expect class %qs, have %qs (%s) in %s, at %s:%d"
-msgstr "træ-kontrol: forventede klasse '%c', har '%c' (%s) i %s, ved %s:%d"
+msgstr "træ-kontrol: forventede ikke klasse %qs, har %qs (%s) i %s, ved %s:%d"
 
 #: tree.c:9951
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "tree check: expected %s, have %s in %s, at %s:%d"
+#, gcc-internal-format, gfc-internal-format
 msgid "tree check: expected omp_clause %s, have %s in %s, at %s:%d"
-msgstr "træ-kontrol: forventede %s, har %s i %s, ved %s:%d"
+msgstr "træ-kontrol: forventede omp_clause %s, har %s i %s, ved %s:%d"
 
 #: tree.c:10011
-#, fuzzy, gcc-internal-format
-#| msgid "tree check: expected %s, have %s in %s, at %s:%d"
+#, gcc-internal-format
 msgid "tree check: expected tree that contains %qs structure, have %qs in %s, at %s:%d"
-msgstr "træ-kontrol: forventede %s, har %s i %s, ved %s:%d"
+msgstr "træ-kontrol: forventede træ som indeholder %qs-struktur, har %qs i %s, ved %s:%d"
 
 #: tree.c:10025
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "tree check: accessed elt %d of tree_vec with %d elts in %s, at %s:%d"
+#, gcc-internal-format, gfc-internal-format
 msgid "tree check: accessed elt %d of tree_int_cst with %d elts in %s, at %s:%d"
-msgstr "trækontrol: tilgik udtrykstræ %d af tree_vec med %d udtrykstræer i %s, ved %s:%d"
+msgstr "trækontrol: tilgik udtrykstræ %d af tree_int_cst med %d udtrykstræer i %s, ved %s:%d"
 
 #: tree.c:10037
 #, gcc-internal-format, gfc-internal-format
@@ -25706,44 +25689,39 @@ msgid "tree check: accessed elt %d of tree_vec with %d elts in %s, at %s:%d"
 msgstr "trækontrol: tilgik udtrykstræ %d af tree_vec med %d udtrykstræer i %s, ved %s:%d"
 
 #: tree.c:10050
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "tree check: accessed operand %d of %s with %d operands in %s, at %s:%d"
 msgstr "trækontrol: tilgik operand %d af %s med %d operander i %s, ved %s:%d"
 
 #: tree.c:10063
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "tree check: accessed operand %d of omp_clause %s with %d operands in %s, at %s:%d"
-msgstr "trækontrol: tilgik operand %d af %s med %d operander i %s, ved %s:%d"
+msgstr "trækontrol: tilgik operand %d af omp_clause %s med %d operander i %s, ved %s:%d"
 
 #: tree.c:12875
-#, fuzzy, gcc-internal-format
-#| msgid "`%s' is deprecated"
+#, gcc-internal-format
 msgid "%qD is deprecated: %s"
-msgstr "'%s' er forældet"
+msgstr "%qD er forældet: %s"
 
 #: tree.c:12878
-#, fuzzy, gcc-internal-format
-#| msgid "`%s' is deprecated"
+#, gcc-internal-format
 msgid "%qD is deprecated"
-msgstr "'%s' er forældet"
+msgstr "%qD  er forældet"
 
 #: tree.c:12902 tree.c:12924
-#, fuzzy, gcc-internal-format
-#| msgid "`%s' is deprecated"
+#, gcc-internal-format
 msgid "%qE is deprecated: %s"
-msgstr "'%s' er forældet"
+msgstr "%qE er forældet: %s"
 
 #: tree.c:12905 tree.c:12927
-#, fuzzy, gcc-internal-format
-#| msgid "`%s' is deprecated"
+#, gcc-internal-format
 msgid "%qE is deprecated"
-msgstr "'%s' er forældet"
+msgstr "%qE er forældet"
 
 #: tree.c:12911 tree.c:12932
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "type is deprecated"
+#, gcc-internal-format, gfc-internal-format
 msgid "type is deprecated: %s"
-msgstr "type er forældet"
+msgstr "type er forældet: %s"
 
 #: tree.c:12914 tree.c:12935
 #, gcc-internal-format
@@ -25835,7 +25813,7 @@ msgstr ""
 #: tree.c:13528
 #, gcc-internal-format
 msgid "and field"
-msgstr ""
+msgstr "og felt"
 
 #: tree.c:13545
 #, gcc-internal-format
@@ -25845,24 +25823,22 @@ msgstr ""
 #: tree.c:13547 tree.c:13558
 #, gcc-internal-format
 msgid "type variant's TREE_TYPE"
-msgstr ""
+msgstr "typevariants TREE_TYPE"
 
 #: tree.c:13549 tree.c:13560
 #, gcc-internal-format
 msgid "type's TREE_TYPE"
-msgstr ""
+msgstr "types TREE_TYPE"
 
 #: tree.c:13556
-#, fuzzy, gcc-internal-format
-#| msgid "-march=%s is not compatible with the selected ABI"
+#, gcc-internal-format
 msgid "type is not compatible with its variant"
-msgstr "-march=%s er ikke forenelig med den valgte ABI"
+msgstr "type er ikke forenelig med dens variant"
 
 #: tree.c:13859
-#, fuzzy, gcc-internal-format
-#| msgid "environment variable DJGPP not defined"
+#, gcc-internal-format
 msgid "Main variant is not defined"
-msgstr "miljøvariablen DJGPP er ikke defineret"
+msgstr "Hovedvariant er ikke defineret"
 
 #: tree.c:13864
 #, gcc-internal-format
@@ -25965,21 +25941,19 @@ msgid "Enum value name is not IDENTIFIER_NODE"
 msgstr ""
 
 #: tree.c:14091
-#, fuzzy, gcc-internal-format
-#| msgid "size of array `%s' has non-integer type"
+#, gcc-internal-format
 msgid "Array TYPE_DOMAIN is not integer type"
-msgstr "størrelsen af tabellen '%s' er ikke af en heltalstype"
+msgstr "Tabellen TYPE_DOMAIN er ikke af en heltalstype"
 
 #: tree.c:14100
-#, fuzzy, gcc-internal-format
-#| msgid "field `%s' has incomplete type"
+#, gcc-internal-format
 msgid "TYPE_FIELDS defined in incomplete type"
-msgstr "feltet '%s' er af en ufuldstændig type"
+msgstr "TYPE_FIELDS er defineret i en ufuldstændig type"
 
 #: tree.c:14120
 #, gcc-internal-format
 msgid "Wrong tree in TYPE_FIELDS list"
-msgstr ""
+msgstr "Forkert træ i TYPE_FIELDS-liste"
 
 #: tree.c:14135
 #, gcc-internal-format
@@ -26032,15 +26006,14 @@ msgid "TYPE_METHOD_BASETYPE is not main variant"
 msgstr ""
 
 #: tree.c:14229
-#, fuzzy, gcc-internal-format
-#| msgid "verify_flow_info failed"
+#, gcc-internal-format
 msgid "verify_type failed"
-msgstr "verify_flow_info mislykkedes"
+msgstr "verify_type mislykkedes"
 
 #: value-prof.c:515
 #, gcc-internal-format
 msgid "dead histogram"
-msgstr ""
+msgstr "død histogram"
 
 #: value-prof.c:544
 #, gcc-internal-format
@@ -26048,10 +26021,9 @@ msgid "Histogram value statement does not correspond to the statement it is asso
 msgstr ""
 
 #: value-prof.c:556
-#, fuzzy, gcc-internal-format
-#| msgid "verify_flow_info failed"
+#, gcc-internal-format
 msgid "verify_histograms failed"
-msgstr "verify_flow_info mislykkedes"
+msgstr "verify_histograms mislykkedes"
 
 #: value-prof.c:613
 #, gcc-internal-format, gfc-internal-format
@@ -26069,34 +26041,29 @@ msgid "variable tracking size limit exceeded"
 msgstr ""
 
 #: varasm.c:323
-#, fuzzy, gcc-internal-format
-#| msgid "%J%D causes a section type conflict"
+#, gcc-internal-format
 msgid "%+D causes a section type conflict with %D"
-msgstr "%J%D forårsager en sektionstypekonflikt"
+msgstr "%+D forårsager en sektionstypekonflikt med %D"
 
 #: varasm.c:326
-#, fuzzy, gcc-internal-format
-#| msgid "  conflict with `%D'"
+#, gcc-internal-format
 msgid "section type conflict with %D"
-msgstr "  konflikt med '%D'"
+msgstr "afsnitstypekonflikt med %D"
 
 #: varasm.c:331
-#, fuzzy, gcc-internal-format
-#| msgid "%J%D causes a section type conflict"
+#, gcc-internal-format
 msgid "%+D causes a section type conflict"
-msgstr "%J%D forårsager en sektionstypekonflikt"
+msgstr "%+D forårsager en sektionstypekonflikt"
 
 #: varasm.c:333
-#, fuzzy, gcc-internal-format
-#| msgid "%J%D causes a section type conflict"
+#, gcc-internal-format
 msgid "section type conflict"
-msgstr "%J%D forårsager en sektionstypekonflikt"
+msgstr "sektionstypekonflikt"
 
 #: varasm.c:1008
-#, fuzzy, gcc-internal-format
-#| msgid "%Jalignment of '%D' is greater than maximum object file alignment.  Using %d"
+#, gcc-internal-format
 msgid "alignment of %q+D is greater than maximum object file alignment %d"
-msgstr "%Jjustering af '%D' er større end den maksimale objektfilsjustering - bruger %d"
+msgstr "justering af %q+D er større end den maksimale objektfilsjustering %d"
 
 #: varasm.c:1160
 #, fuzzy, gcc-internal-format
@@ -26105,22 +26072,19 @@ msgid "only zero initializers are allowed in section %qs"
 msgstr "kun variabler uden startværdi kan placeres i .bss-sektionen"
 
 #: varasm.c:1367 varasm.c:1376
-#, fuzzy, gcc-internal-format
-#| msgid "%Jregister name not specified for '%D'"
+#, gcc-internal-format
 msgid "register name not specified for %q+D"
-msgstr "%Jregisternavn ikke angivet for '%D'"
+msgstr "registernavn ikke angivet for %q+D"
 
 #: varasm.c:1378
-#, fuzzy, gcc-internal-format
-#| msgid "%Jinvalid register name for '%D'"
+#, gcc-internal-format
 msgid "invalid register name for %q+D"
-msgstr "%Jugyldigt registernavn for '%D'"
+msgstr "ugyldigt registernavn for %q+D"
 
 #: varasm.c:1380
-#, fuzzy, gcc-internal-format
-#| msgid "%Jdata type of '%D' isn't suitable for a register"
+#, gcc-internal-format
 msgid "data type of %q+D isn%'t suitable for a register"
-msgstr "%Jdatatypen for '%D' passer ikke med et register"
+msgstr "datatypen for %q+D passer ikke med et register"
 
 #: varasm.c:1383
 #, gcc-internal-format
@@ -26128,10 +26092,9 @@ msgid "the register specified for %q+D cannot be accessed by the current target"
 msgstr ""
 
 #: varasm.c:1386
-#, fuzzy, gcc-internal-format
-#| msgid "register used for two global register variables"
+#, gcc-internal-format
 msgid "the register specified for %q+D is not general enough to be used as a register variable"
-msgstr "register brugt til to globale registervariabler"
+msgstr "registeret specificeret for %q+D er ikke generelt nok til at blive brugt som en registervariabel"
 
 #: varasm.c:1389
 #, fuzzy, gcc-internal-format
@@ -31031,27 +30994,24 @@ msgid "-mmulticore can only be used with BF561"
 msgstr ""
 
 #: config/bfin/bfin.c:2394
-#, fuzzy, gcc-internal-format
-#| msgid "-frepo must be used with -c"
+#, gcc-internal-format
 msgid "-mcorea should be used with -mmulticore"
-msgstr "-frepo skal bruges med -c"
+msgstr "-mcorea skal bruges med -mmulticore"
 
 #: config/bfin/bfin.c:2397
-#, fuzzy, gcc-internal-format
-#| msgid "-frepo must be used with -c"
+#, gcc-internal-format
 msgid "-mcoreb should be used with -mmulticore"
-msgstr "-frepo skal bruges med -c"
+msgstr "-mcoreb skal bruges med -mmulticore"
 
 #: config/bfin/bfin.c:2400
-#, fuzzy, gcc-internal-format
-#| msgid "-mapcs-26 and -mapcs-32 may not be used together"
+#, gcc-internal-format
 msgid "-mcorea and -mcoreb can%'t be used together"
-msgstr "-mapcs-26 og -mapcs-32 kan ikke bruges på samme tid"
+msgstr "-mcorea og -mcoreb kan ikke bruges på samme tid"
 
 #: config/bfin/bfin.c:4678
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "multiple function type attributes specified"
-msgstr "inline funktion '%s' givet egenskaben noinline"
+msgstr "der er angivet flere funktionstypeattributter"
 
 #: config/bfin/bfin.c:4745
 #, gcc-internal-format
@@ -31059,21 +31019,19 @@ msgid "can%'t apply both longcall and shortcall attributes to the same function"
 msgstr ""
 
 #: config/bfin/bfin.c:4802
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qE attribute cannot be specified for local variables"
-msgstr "sektionsegenskaben kan ikke angives for lokale variabler"
+msgstr "%qE-attribut kan ikke angives for lokale variabler"
 
 #: config/c6x/c6x.c:239
-#, fuzzy, gcc-internal-format
-#| msgid "Profiling is not supported on this target."
+#, gcc-internal-format
 msgid "-fpic and -fPIC not supported without -mdsbt on this target"
-msgstr "Profilering er ikke understøttet på målarkitekturen."
+msgstr "-fpic og -fPIC er ikke understøttet uden -mdsbt på denne målarkitektur"
 
 #: config/c6x/c6x.h:365 config/nvptx/nvptx.h:181
-#, fuzzy, gcc-internal-format
-#| msgid "profiling not implemented yet"
+#, gcc-internal-format
 msgid "profiling is not yet implemented for this architecture"
-msgstr "profilering understøttes ikke endnu"
+msgstr "profilering er endnu ikke implementerer for denne arkitektur"
 
 #: config/cr16/cr16.c:294
 #, gcc-internal-format
@@ -31081,15 +31039,14 @@ msgid "data-model=far not valid for cr16c architecture"
 msgstr ""
 
 #: config/cr16/cr16.c:297
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "invalid option `-mshort-data-%s'"
+#, gcc-internal-format, gfc-internal-format
 msgid "invalid data model option -mdata-model=%s"
-msgstr "ugyldigt tilvalg '-mshort-data-%s'"
+msgstr "ugyldigt tilvalg for datamodel -mdata-model=%s"
 
 #: config/cr16/cr16.h:431
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "profiler support for CR16"
-msgstr "function_profiler-understøttelse for MMIX"
+msgstr "profiler-understøttelse for CR16"
 
 #. This function is for retrieving a part of an instruction name for
 #. an operator, for immediate output.  If that ever happens for
@@ -31101,10 +31058,9 @@ msgid "MULT case in cris_op_str"
 msgstr ""
 
 #: config/cris/cris.c:885
-#, fuzzy, gcc-internal-format
-#| msgid "invalid operand for 'b' modifier"
+#, gcc-internal-format
 msgid "invalid use of ':' modifier"
-msgstr "ugyldig operand til 'b'-ændring"
+msgstr "ugyldig brug af »:«-ændring"
 
 #: config/cris/cris.c:1119 config/moxie/moxie.c:182
 #, gcc-internal-format, gfc-internal-format
@@ -31117,10 +31073,9 @@ msgid "internal error: sideeffect-insn affecting main effect"
 msgstr "intern fejl: bivirkningsinstruktion påvirker hovedvirkning"
 
 #: config/cris/cris.c:1967
-#, fuzzy, gcc-internal-format
-#| msgid "unknown relocation unspec"
+#, gcc-internal-format
 msgid "unknown cc_attr value"
-msgstr "ukendt relokaliserings-unspec"
+msgstr "ukendt cc_attr-værdi"
 
 #. If we get here, the caller got its initial tests wrong.
 #: config/cris/cris.c:2394
@@ -31149,16 +31104,14 @@ msgid "-fPIC and -fpic are not supported in this configuration"
 msgstr "-fPIC og -fpic understøttes ikke af denne konfiguration"
 
 #: config/cris/cris.c:2967
-#, fuzzy, gcc-internal-format
-#| msgid "unknown insn mode"
+#, gcc-internal-format
 msgid "unknown src"
-msgstr "ukendt instruktionstilstand"
+msgstr "ukendt src"
 
 #: config/cris/cris.c:3022
-#, fuzzy, gcc-internal-format
-#| msgid "unknown insn mode"
+#, gcc-internal-format
 msgid "unknown dest"
-msgstr "ukendt instruktionstilstand"
+msgstr "ukendt dest"
 
 #: config/cris/cris.c:3303
 #, gcc-internal-format, gfc-internal-format
@@ -31168,11 +31121,10 @@ msgstr "stakramme for stor: %d byte"
 #: config/cris/cris.c:3791 config/cris/cris.c:3819
 #, gcc-internal-format
 msgid "expand_binop failed in movsi got"
-msgstr ""
+msgstr "expand_binop mislykkedes i movsi got"
 
 #: config/cris/cris.c:3914
-#, fuzzy, gcc-internal-format
-#| msgid "emitting PIC operand, but PIC register isn't set up"
+#, gcc-internal-format
 msgid "emitting PIC operand, but PIC register isn%'t set up"
 msgstr "udsender PIC-operand, men PIC-register er ikke sat op"
 
@@ -31243,13 +31195,12 @@ msgstr ""
 #: config/epiphany/epiphany.c:1525
 #, gcc-internal-format
 msgid "stack_offset must be at least 4"
-msgstr ""
+msgstr "stack_offset skal være mindst 4"
 
 #: config/epiphany/epiphany.c:1527
-#, fuzzy, gcc-internal-format
-#| msgid "stack frame not a multiple of 8 bytes: %d"
+#, gcc-internal-format
 msgid "stack_offset must be a multiple of 4"
-msgstr "stakramme ikke et produkt af 8 byte: %d"
+msgstr "stack_offset skal gå op i 4"
 
 #: config/frv/frv.c:8593
 #, gcc-internal-format
@@ -31262,16 +31213,14 @@ msgid "accumulator number is out of bounds"
 msgstr "akkumulatortal er uden for det gyldig interval"
 
 #: config/frv/frv.c:8609
-#, fuzzy, gcc-internal-format
-#| msgid "inappropriate accumulator for `%s'"
+#, gcc-internal-format
 msgid "inappropriate accumulator for %qs"
-msgstr "forkert akkumulator for '%s'"
+msgstr "upassende akkumulator for %qs"
 
 #: config/frv/frv.c:8685
-#, fuzzy, gcc-internal-format
-#| msgid "invalid type argument"
+#, gcc-internal-format
 msgid "invalid IACC argument"
-msgstr "ugyldig typeparameter"
+msgstr "ugyldig IACC-parameter"
 
 #: config/frv/frv.c:8708
 #, fuzzy, gcc-internal-format
@@ -31349,55 +31298,49 @@ msgid "-ms2600 is used without -ms"
 msgstr "-ms2600 benyttet uden -ms"
 
 #: config/h8300/h8300.c:354
-#, fuzzy, gcc-internal-format
-#| msgid "-mn is used without -mh or -ms"
+#, gcc-internal-format
 msgid "-mn is used without -mh or -ms or -msx"
-msgstr "-mn benyttet uden -mh eller -ms"
+msgstr "-mn bruges uden -mh eller -ms eller -msx"
 
 #: config/h8300/h8300.c:360
-#, fuzzy, gcc-internal-format
-#| msgid "-ms2600 is used without -ms"
+#, gcc-internal-format
 msgid "-mexr is used without -ms"
-msgstr "-ms2600 benyttet uden -ms"
+msgstr "-mexr bruges uden -ms"
 
 #: config/h8300/h8300.c:366
-#, fuzzy, gcc-internal-format
-#| msgid "Profiling is not supported on this target."
+#, gcc-internal-format
 msgid "-mint32 is not supported for H8300 and H8300L targets"
-msgstr "Profilering er ikke understøttet på målarkitekturen."
+msgstr "-mint32 er ikke understøttet for H8300- og H8300L-målarkitekturer"
 
 #: config/h8300/h8300.c:372
-#, fuzzy, gcc-internal-format
-#| msgid "-mn is used without -mh or -ms"
+#, gcc-internal-format
 msgid "-mexr is used without -ms or -msx"
-msgstr "-mn benyttet uden -mh eller -ms"
+msgstr "-mexr bruges uden -ms eller msx"
 
 #: config/h8300/h8300.c:378
 #, gcc-internal-format
 msgid "-mno-exr valid only with -ms or -msx                   - Option ignored!"
-msgstr ""
+msgstr "-mno-exr er kun gyldig med -ms eller -msx              - Tilvalg ignoreret!"
 
 #: config/h8300/h8300.c:385
-#, fuzzy, gcc-internal-format
-#| msgid "Profiling is not supported on this target."
+#, gcc-internal-format
 msgid "-mn is not supported for linux targets"
-msgstr "Profilering er ikke understøttet på målarkitekturen."
+msgstr "-mn er ikke understøttet for Linux-målarkitekturer"
 
 #: config/i386/host-cygwin.c:62
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "can%'t extend PCH file: %m"
-msgstr "kan ikke læse fra midlertidig fil"
+msgstr "kan ikke udvide PCH-filen: %m"
 
 #: config/i386/host-cygwin.c:73
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "can%'t set position in PCH file: %m"
-msgstr "kan ikke oprette informationsfilen '%s' til opbevaringssted"
+msgstr "kan ikke angive position i PCH-filen: %m"
 
 #: config/i386/i386.c:4692
-#, fuzzy, gcc-internal-format
-#| msgid "error in args to spec function `%s'"
+#, gcc-internal-format
 msgid "wrong argument %qs to option %qs"
-msgstr "fejl i parametre til specifikationsfunktion '%s'"
+msgstr "forkert parameter %qs for tilvalget %qs"
 
 #: config/i386/i386.c:4698
 #, gcc-internal-format
@@ -31405,23 +31348,20 @@ msgid "size ranges of option %qs should be increasing"
 msgstr ""
 
 #: config/i386/i386.c:4708
-#, fuzzy, gcc-internal-format
-#| msgid "return type specified for `operator %T'"
+#, gcc-internal-format
 msgid "wrong strategy name %qs specified for option %qs"
-msgstr "returtype angivet for 'operator %T'"
+msgstr "forkert strateginavn %qs er angivet for tilvalget %qs"
 
 #. rep; movq isn't available in 32-bit code.
 #: config/i386/i386.c:4734
-#, fuzzy, gcc-internal-format
-#| msgid "return type specified for `operator %T'"
+#, gcc-internal-format
 msgid "strategy name %qs specified for option %qs not supported for 32-bit code"
-msgstr "returtype angivet for 'operator %T'"
+msgstr "strateginavnet %qs angivet for tilvalget %qs er ikke understøttet for 32-bit kode"
 
 #: config/i386/i386.c:4747
-#, fuzzy, gcc-internal-format
-#| msgid "Tune alignment for the specified chip or CPU version"
+#, gcc-internal-format
 msgid "unknown alignment %qs specified for option %qs"
-msgstr "Finjustér justering til en given chip- eller processorversion"
+msgstr "ukendt justering %qs angivet for tilvalget %qs"
 
 #: config/i386/i386.c:4757
 #, gcc-internal-format
@@ -31460,34 +31400,30 @@ msgid "-mstringop-strategy=rep_8byte not supported for 32-bit code"
 msgstr ""
 
 #: config/i386/i386.c:5316
-#, fuzzy, gcc-internal-format
-#| msgid "code model `%s' not supported in the %s bit mode"
+#, gcc-internal-format
 msgid "address mode %qs not supported in the %s bit mode"
-msgstr "kodemodellen %s er ikke understøttet i %s bit-tilstand"
+msgstr "adressetilstanden %qs er ikke understøttet i %s bit-tilstand"
 
 #: config/i386/i386.c:5342 config/i386/i386.c:5351 config/i386/i386.c:5363
 #: config/i386/i386.c:5374 config/i386/i386.c:5385
-#, fuzzy, gcc-internal-format
-#| msgid "code model `%s' not supported in the %s bit mode"
+#, gcc-internal-format
 msgid "code model %qs not supported in the %s bit mode"
-msgstr "kodemodellen %s er ikke understøttet i %s bit-tilstand"
+msgstr "kodemodellen %qs er ikke understøttet i %s bit-tilstand"
 
 #: config/i386/i386.c:5354 config/i386/i386.c:5366
-#, fuzzy, gcc-internal-format
-#| msgid "code model %s not supported in PIC mode"
+#, gcc-internal-format
 msgid "code model %qs not supported in x32 mode"
-msgstr "kodemodellen %s er ikke understøttet i PIC-tilstand"
+msgstr "kodemodellen %qs er ikke understøttet i x32-tilstand"
 
 #: config/i386/i386.c:5372 config/i386/i386.c:5381 config/i386/i386.c:6556
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "code model %s not supported in PIC mode"
+#, gcc-internal-format, gfc-internal-format
 msgid "code model %s does not support PIC mode"
-msgstr "kodemodellen %s er ikke understøttet i PIC-tilstand"
+msgstr "kodemodellen %s understøtter ikke PIC-tilstand"
 
 #: config/i386/i386.c:5409
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "-masm=intel not supported in this configuration"
-msgstr "%s understøttes ikke af denne konfiguration"
+msgstr "-masm=intel understøttes ikke af denne konfiguration"
 
 #: config/i386/i386.c:5414
 #, gcc-internal-format, gfc-internal-format
@@ -31720,9 +31656,9 @@ msgid "Only DWARF debug format is supported for interrupt service routine."
 msgstr ""
 
 #: config/i386/i386.c:7267
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "%s instructions aren't allowed in %s service routine"
-msgstr "'%D' blev ikke erklæret i dette virkefelt"
+msgstr "%s-instruktioner er ikke tilladt i %s-tjenesterutinen"
 
 #: config/i386/i386.c:7271
 #, gcc-internal-format, gfc-internal-format
@@ -31735,28 +31671,24 @@ msgid "fastcall and regparm attributes are not compatible"
 msgstr "fastcall og regparm er indbyrdes uforenelige"
 
 #: config/i386/i386.c:7688
-#, fuzzy, gcc-internal-format
-#| msgid "fastcall and stdcall attributes are not compatible"
+#, gcc-internal-format
 msgid "regparam and thiscall attributes are not compatible"
-msgstr "fastcall og stdcall er indbyrdes uforenelige"
+msgstr "regparam og thiscall er indbyrdes uforenelige"
 
 #: config/i386/i386.c:7695 config/i386/i386.c:41349
-#, fuzzy, gcc-internal-format
-#| msgid "`%s' attribute requires an integer constant argument"
+#, gcc-internal-format
 msgid "%qE attribute requires an integer constant argument"
-msgstr "egenskaben '%s' kræver en heltalskonstant som parameter"
+msgstr "%qE-egenskaben kræver en heltalskonstant som parameter"
 
 #: config/i386/i386.c:7701
-#, fuzzy, gcc-internal-format
-#| msgid "argument to `%s' attribute larger than %d"
+#, gcc-internal-format
 msgid "argument to %qE attribute larger than %d"
-msgstr "parameter til egenskaben '%s' er større end %d"
+msgstr "parameter til %qE-egenskaben er større end %d"
 
 #: config/i386/i386.c:7726 config/i386/i386.c:7769
-#, fuzzy, gcc-internal-format
-#| msgid "fastcall and stdcall attributes are not compatible"
+#, gcc-internal-format
 msgid "fastcall and cdecl attributes are not compatible"
-msgstr "fastcall og stdcall er indbyrdes uforenelige"
+msgstr "fastcall og cdecl er indbyrdes uforenelige"
 
 #: config/i386/i386.c:7730
 #, gcc-internal-format
@@ -31764,40 +31696,34 @@ msgid "fastcall and stdcall attributes are not compatible"
 msgstr "fastcall og stdcall er indbyrdes uforenelige"
 
 #: config/i386/i386.c:7738 config/i386/i386.c:7787
-#, fuzzy, gcc-internal-format
-#| msgid "fastcall and stdcall attributes are not compatible"
+#, gcc-internal-format
 msgid "fastcall and thiscall attributes are not compatible"
-msgstr "fastcall og stdcall er indbyrdes uforenelige"
+msgstr "fastcall og thiscall er indbyrdes uforenelige"
 
 #: config/i386/i386.c:7748 config/i386/i386.c:7765
-#, fuzzy, gcc-internal-format
-#| msgid "fastcall and stdcall attributes are not compatible"
+#, gcc-internal-format
 msgid "stdcall and cdecl attributes are not compatible"
-msgstr "fastcall og stdcall er indbyrdes uforenelige"
+msgstr "stdcall og cdecl er indbyrdes uforenelige"
 
 #: config/i386/i386.c:7752
-#, fuzzy, gcc-internal-format
-#| msgid "fastcall and stdcall attributes are not compatible"
+#, gcc-internal-format
 msgid "stdcall and fastcall attributes are not compatible"
-msgstr "fastcall og stdcall er indbyrdes uforenelige"
+msgstr "stdcall og fastcall er indbyrdes uforenelige"
 
 #: config/i386/i386.c:7756 config/i386/i386.c:7783
-#, fuzzy, gcc-internal-format
-#| msgid "fastcall and stdcall attributes are not compatible"
+#, gcc-internal-format
 msgid "stdcall and thiscall attributes are not compatible"
-msgstr "fastcall og stdcall er indbyrdes uforenelige"
+msgstr "stdcall og thiscall er indbyrdes uforenelige"
 
 #: config/i386/i386.c:7773 config/i386/i386.c:7791
-#, fuzzy, gcc-internal-format
-#| msgid "fastcall and stdcall attributes are not compatible"
+#, gcc-internal-format
 msgid "cdecl and thiscall attributes are not compatible"
-msgstr "fastcall og stdcall er indbyrdes uforenelige"
+msgstr "cdecl og thiscall er indbyrdes uforenelige"
 
 #: config/i386/i386.c:7779
-#, fuzzy, gcc-internal-format
-#| msgid "`%s' attribute ignored for `%s'"
+#, gcc-internal-format
 msgid "%qE attribute is used for non-class method"
-msgstr "'%s'-egenskaben ignoreret for '%s'"
+msgstr "%qE-egenskaben bruges til ikke-klasse metode"
 
 #: config/i386/i386.c:8023
 #, gcc-internal-format
@@ -31810,15 +31736,14 @@ msgid "calling %qT with attribute sseregparm without SSE/SSE2 enabled"
 msgstr ""
 
 #: config/i386/i386.c:8342
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "X32 does not support ms_abi attribute"
-msgstr "%s understøtter ikke %s"
+msgstr "X32 understøtter ikke egenskaben ms_abi"
 
 #: config/i386/i386.c:8374
-#, fuzzy, gcc-internal-format
-#| msgid "-march=%s is not compatible with the selected ABI"
+#, gcc-internal-format
 msgid "ms_hook_prologue is not compatible with nested function"
-msgstr "-march=%s er ikke forenelig med den valgte ABI"
+msgstr "ms_hook_prologue er ikke forenelig med den indlejrede funktion"
 
 #: config/i386/i386.c:8687
 #, gcc-internal-format
@@ -31934,10 +31859,9 @@ msgid "-fsplit-stack does not support 3 register parameters"
 msgstr "-mips%d understøtter ikke 64-bit kommatalsregistre"
 
 #: config/i386/i386.c:17672 config/i386/i386.c:17686
-#, fuzzy, gcc-internal-format
-#| msgid "unsupported operand size for extended register"
+#, gcc-internal-format
 msgid "unsupported size for integer register"
-msgstr "ikke-understøttet operandstørrelse for udvidede registre"
+msgstr "størrelse er ikke understøttet for heltalsregister"
 
 #: config/i386/i386.c:17718
 #, gcc-internal-format
@@ -40391,10 +40315,9 @@ msgid "%qE in %<aligned%> clause is neither a pointer nor an array"
 msgstr "variablen til tabel-delete er hverken af en henvisnings- eller en tabeltype"
 
 #: c/c-typeck.c:13274
-#, fuzzy, gcc-internal-format
-#| msgid "`%s' is not a valid class name"
+#, gcc-internal-format
 msgid "%<_Atomic%> %qD in %<aligned%> clause"
-msgstr "'%s' er et ugyldigt klassenavn"
+msgstr "%<_Atomic%> %qD i %<aligned%>-klausul"
 
 #: c/c-typeck.c:13281
 #, gcc-internal-format
@@ -40402,10 +40325,9 @@ msgid "%qE appears more than once in %<aligned%> clauses"
 msgstr ""
 
 #: c/c-typeck.c:13336 cp/semantics.c:6634
-#, fuzzy, gcc-internal-format
-#| msgid "`%s' is not a valid class name"
+#, gcc-internal-format
 msgid "%qE is not a variable in %<depend%> clause"
-msgstr "'%s' er et ugyldigt klassenavn"
+msgstr "%qE er ikke en variable i %<depend%>-klausul"
 
 #: c/c-typeck.c:13358 cp/semantics.c:6665
 #, gcc-internal-format
@@ -40416,32 +40338,29 @@ msgstr ""
 #: cp/semantics.c:6841
 #, gcc-internal-format
 msgid "%qD appears more than once in motion clauses"
-msgstr ""
+msgstr "%qD fremgår mere end en gang i motion-klausuller"
 
 #: c/c-typeck.c:13388 c/c-typeck.c:13520 cp/semantics.c:6690
 #: cp/semantics.c:6845
 #, gcc-internal-format
 msgid "%qD appears more than once in map clauses"
-msgstr ""
+msgstr "%qD fremgår mere end en gang i map-klausuller"
 
 #: c/c-typeck.c:13420 cp/semantics.c:6731
-#, fuzzy, gcc-internal-format
-#| msgid "`%D' does not declare a template type"
+#, gcc-internal-format
 msgid "%qE does not have a mappable type in %qs clause"
-msgstr "'%D' erklærer ikke en skabelonstype"
+msgstr "%qE har ikke en mappable-type i %qs-klausul"
 
 #: c/c-typeck.c:13480 c/c-typeck.c:13570 cp/semantics.c:6806
 #: cp/semantics.c:6945
-#, fuzzy, gcc-internal-format
-#| msgid "`%D' does not declare a template type"
+#, gcc-internal-format
 msgid "%qD does not have a mappable type in %qs clause"
-msgstr "'%D' erklærer ikke en skabelonstype"
+msgstr "%qD har ikke en mappable-type i %qs-klausul"
 
 #: c/c-typeck.c:13551 cp/semantics.c:6925
-#, fuzzy, gcc-internal-format
-#| msgid "`%s' is not a valid class name"
+#, gcc-internal-format
 msgid "%qE is neither a variable nor a function name in clause %qs"
-msgstr "'%s' er et ugyldigt klassenavn"
+msgstr "%qE er hverken en variabel eller et funktionsnavn i klausul %qs"
 
 #: c/c-typeck.c:13579 cp/semantics.c:6954
 #, gcc-internal-format

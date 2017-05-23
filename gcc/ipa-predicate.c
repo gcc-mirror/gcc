@@ -387,7 +387,7 @@ predicate::remap_after_duplication (clause_t possible_truths)
 /* Translate all conditions from callee representation into caller
    representation and symbolically evaluate predicate THIS into new predicate.
 
-   INFO is inline_summary of function we are adding predicate into, CALLEE_INFO
+   INFO is ipa_fn_summary of function we are adding predicate into, CALLEE_INFO
    is summary of function predicate P is from. OPERAND_MAP is array giving
    callee formal IDs the caller formal IDs. POSSSIBLE_TRUTHS is clausule of all
    callee conditions that may be true in caller context.  TOPLEV_PREDICATE is
@@ -398,8 +398,8 @@ predicate::remap_after_duplication (clause_t possible_truths)
    for other purposes).  */
 
 predicate
-predicate::remap_after_inlining (struct inline_summary *info,
-				 struct inline_summary *callee_info,
+predicate::remap_after_inlining (struct ipa_fn_summary *info,
+				 struct ipa_fn_summary *callee_info,
 				 vec<int> operand_map,
 				 vec<int> offset_map,
 				 clause_t possible_truths,
@@ -522,7 +522,7 @@ predicate::stream_out (struct output_block *ob)
    It can be NULL, which means this not a load from an aggregate.  */
 
 predicate
-add_condition (struct inline_summary *summary, int operand_num,
+add_condition (struct ipa_fn_summary *summary, int operand_num,
 	       HOST_WIDE_INT size, struct agg_position_info *aggpos,
 	       enum tree_code code, tree val)
 {

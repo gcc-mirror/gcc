@@ -566,21 +566,17 @@ c_fully_fold_internal (tree expr, bool in_init, bool *maybe_const_operands,
 
     case SAVE_EXPR:
       /* Make sure to fold the contents of a SAVE_EXPR exactly once.  */
+      op0 = TREE_OPERAND (expr, 0);
       if (!SAVE_EXPR_FOLDED_P (expr))
 	{
-	  op0 = TREE_OPERAND (expr, 0);
 	  op0 = c_fully_fold_internal (op0, in_init, maybe_const_operands,
 				       maybe_const_itself, for_int_const);
-	  /* Don't wrap the folded tree in a SAVE_EXPR if we don't
-	     have to.  */
-	  if (tree_invariant_p (op0))
-	    ret = op0;
-	  else
-	    {
-	      TREE_OPERAND (expr, 0) = op0;
-	      SAVE_EXPR_FOLDED_P (expr) = true;
-	    }
+	  TREE_OPERAND (expr, 0) = op0;
+	  SAVE_EXPR_FOLDED_P (expr) = true;
 	}
+      /* Return the SAVE_EXPR operand if it is invariant.  */
+      if (tree_invariant_p (op0))
+	ret = op0;
       goto out;
 
     default:

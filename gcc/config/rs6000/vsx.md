@@ -3066,29 +3066,41 @@
 })
 
 ;; V2DF/V2DI splat
-(define_insn_and_split "vsx_splat_<mode>"
-  [(set (match_operand:VSX_D 0 "vsx_register_operand"
-					"=<VSa>,    <VSa>,we,<VS_64dm>")
+;; We separate the register splat insn from the memory splat insn to force the
+;; register allocator to generate the indexed form of the SPLAT when it is
+;; given an offsettable memory reference.  Otherwise, if the register and
+;; memory insns were combined into a single insn, the register allocator will
+;; load the value into a register, and then do a double word permute.
+(define_expand "vsx_splat_<mode>"
+  [(set (match_operand:VSX_D 0 "vsx_register_operand")
 	(vec_duplicate:VSX_D
-	 (match_operand:<VS_scalar> 1 "splat_input_operand"
-					"<VS_64reg>,Z,    b, wA")))]
+	 (match_operand:<VS_scalar> 1 "input_operand")))]
+  "VECTOR_MEM_VSX_P (<MODE>mode)"
+{
+  rtx op1 = operands[1];
+  if (MEM_P (op1))
+    operands[1] = rs6000_address_for_fpconvert (op1);
+  else if (!REG_P (op1))
+    op1 = force_reg (<VSX_D:VS_scalar>mode, op1);
+})
+
+(define_insn "vsx_splat_<mode>_reg"
+  [(set (match_operand:VSX_D 0 "vsx_register_operand" "=<VSX_D:VSa>,?we")
+	(vec_duplicate:VSX_D
+	 (match_operand:<VS_scalar> 1 "gpc_reg_operand" "<VSX_D:VS_64reg>,b")))]
   "VECTOR_MEM_VSX_P (<MODE>mode)"
   "@
    xxpermdi %x0,%x1,%x1,0
-   lxvdsx %x0,%y1
-   mtvsrdd %x0,%1,%1
-   #"
-  "&& reload_completed && TARGET_POWERPC64 && !TARGET_P9_VECTOR
-   && int_reg_operand (operands[1], <VS_scalar>mode)"
-  [(set (match_dup 2)
-	(match_dup 1))
-   (set (match_dup 0)
-	(vec_duplicate:VSX_D (match_dup 2)))]
-{
-  operands[2] = gen_rtx_REG (<VS_scalar>mode, reg_or_subregno (operands[0]));
-}
-  [(set_attr "type" "vecperm,vecload,vecperm,vecperm")
-   (set_attr "length" "4,4,4,8")])
+   mtvsrdd %x0,%1,%1"
+  [(set_attr "type" "vecperm")])
+
+(define_insn "vsx_splat_<VSX_D:mode>_mem"
+  [(set (match_operand:VSX_D 0 "vsx_register_operand" "=<VSX_D:VSa>")
+	(vec_duplicate:VSX_D
+	 (match_operand:<VSX_D:VS_scalar> 1 "memory_operand" "Z")))]
+  "VECTOR_MEM_VSX_P (<MODE>mode)"
+  "lxvdsx %x0,%y1"
+  [(set_attr "type" "vecload")])
 
 ;; V4SI splat support
 (define_insn "vsx_splat_v4si"

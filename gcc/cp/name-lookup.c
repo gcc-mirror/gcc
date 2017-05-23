@@ -38,8 +38,6 @@ static cxx_binding *cxx_binding_make (tree value, tree type);
 static cp_binding_level *innermost_nonclass_level (void);
 static void set_identifier_type_value_with_scope (tree id, tree decl,
 						  cp_binding_level *b);
-/* Create a new binding for NAME in local binding LEVEL.  */
-
 static cxx_binding *
 create_local_binding (cp_binding_level *level, tree name)
 {
@@ -3749,7 +3747,7 @@ validate_nonmember_using_decl (tree decl, tree scope, tree name)
 
 /* Process a local-scope or namespace-scope using declaration.  SCOPE
    is the nominated scope to search for NAME.  VALUE_P and TYPE_P
-   point to the binding for NAME in the current scoe and are
+   point to the binding for NAME in the current scope and are
    updated.  */
 
 static void
@@ -3870,57 +3868,6 @@ do_nonmember_using_decl (tree scope, tree name, tree *value_p, tree *type_p)
 
   *value_p = value;
   *type_p = type;
-}
-
-/* Process a using-declaration at function scope.  */
-
-void
-do_local_using_decl (tree decl, tree scope, tree name)
-{
-  tree orig_decl = decl;
-
-  decl = validate_nonmember_using_decl (decl, scope, name);
-  if (decl == NULL_TREE)
-    return;
-
-  if (building_stmt_list_p ()
-      && at_function_scope_p ())
-    add_decl_expr (decl);
-
-  gcc_checking_assert (current_binding_level->kind != sk_class
-		       && current_binding_level->kind != sk_namespace);
-  cxx_binding *binding = find_local_binding (current_binding_level, name);
-  tree value = binding ? binding->value : NULL_TREE;
-  tree type = binding ? binding->type : NULL_TREE;
-
-  do_nonmember_using_decl (scope, name, &value, &type);
-
-  if (!value)
-    ;
-  else if (binding && value == binding->value)
-    ;
-  else if (binding && binding->value && TREE_CODE (value) == OVERLOAD)
-    {
-      update_local_overload (IDENTIFIER_BINDING (name), value);
-      IDENTIFIER_BINDING (name)->value = value;
-    }
-  else
-    /* Install the new binding.  */
-    push_local_binding (name, value, true);
-
-  if (!type)
-    ;
-  else if (binding && type == binding->type)
-    ;
-  else
-    {
-      push_local_binding (name, type, true);
-      set_identifier_type_value (name, type);
-    }
-
-  /* Emit debug info.  */
-  if (!processing_template_decl)
-    cp_emit_debug_info_for_using (orig_decl, current_scope());
 }
 
 /* Returns true if ANCESTOR encloses DESCENDANT, including matching.
@@ -4956,13 +4903,15 @@ pushdecl_namespace_level (tree x, bool is_friend)
   return t;
 }
 
-/* Process a using-declaration not appearing in class or local scope.  */
+/* Process a using-declaration appearing in namespace scope.  */
 
 void
-do_toplevel_using_decl (tree decl, tree scope, tree name)
+finish_namespace_using_decl (tree decl, tree scope, tree name)
 {
   tree orig_decl = decl;
 
+  gcc_checking_assert (current_binding_level->kind == sk_namespace
+		       && !processing_template_decl);
   decl = validate_nonmember_using_decl (decl, scope, name);
   if (decl == NULL_TREE)
     return;
@@ -4982,8 +4931,56 @@ do_toplevel_using_decl (tree decl, tree scope, tree name)
     *slot = val;
 
   /* Emit debug info.  */
+  cp_emit_debug_info_for_using (orig_decl, current_namespace);
+}
+
+/* Process a using-declaration at function scope.  */
+
+void
+finish_local_using_decl (tree decl, tree scope, tree name)
+{
+  tree orig_decl = decl;
+
+  gcc_checking_assert (current_binding_level->kind != sk_class
+		       && current_binding_level->kind != sk_namespace);
+  decl = validate_nonmember_using_decl (decl, scope, name);
+  if (decl == NULL_TREE)
+    return;
+
+  add_decl_expr (decl);
+
+  cxx_binding *binding = find_local_binding (current_binding_level, name);
+  tree value = binding ? binding->value : NULL_TREE;
+  tree type = binding ? binding->type : NULL_TREE;
+
+  do_nonmember_using_decl (scope, name, &value, &type);
+
+  if (!value)
+    ;
+  else if (binding && value == binding->value)
+    ;
+  else if (binding && binding->value && TREE_CODE (value) == OVERLOAD)
+    {
+      update_local_overload (IDENTIFIER_BINDING (name), value);
+      IDENTIFIER_BINDING (name)->value = value;
+    }
+  else
+    /* Install the new binding.  */
+    push_local_binding (name, value, true);
+
+  if (!type)
+    ;
+  else if (binding && type == binding->type)
+    ;
+  else
+    {
+      push_local_binding (name, type, true);
+      set_identifier_type_value (name, type);
+    }
+
+  /* Emit debug info.  */
   if (!processing_template_decl)
-    cp_emit_debug_info_for_using (orig_decl, current_namespace);
+    cp_emit_debug_info_for_using (orig_decl, current_scope ());
 }
 
 /* Return the declarations that are members of the namespace NS.  */

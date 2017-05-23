@@ -150,7 +150,7 @@ caller_growth_limits (struct cgraph_edge *e)
   int newsize;
   int limit = 0;
   HOST_WIDE_INT stack_size_limit = 0, inlined_stack;
-  inline_summary *info, *what_info, *outer_info = inline_summaries->get (to);
+  ipa_fn_summary *info, *what_info, *outer_info = ipa_fn_summaries->get (to);
 
   /* Look for function e->caller is inlined to.  While doing
      so work out the largest function body on the way.  As
@@ -162,7 +162,7 @@ caller_growth_limits (struct cgraph_edge *e)
      too much in order to prevent compiler from exploding".  */
   while (true)
     {
-      info = inline_summaries->get (to);
+      info = ipa_fn_summaries->get (to);
       if (limit < info->self_size)
 	limit = info->self_size;
       if (stack_size_limit < info->estimated_self_stack_size)
@@ -173,7 +173,7 @@ caller_growth_limits (struct cgraph_edge *e)
 	break;
     }
 
-  what_info = inline_summaries->get (what);
+  what_info = ipa_fn_summaries->get (what);
 
   if (limit < what_info->self_size)
     limit = what_info->self_size;
@@ -364,7 +364,7 @@ can_inline_edge_p (struct cgraph_edge *e, bool report,
       e->inline_failed = CIF_TARGET_OPTION_MISMATCH;
       inlinable = false;
     }
-  else if (!inline_summaries->get (callee)->inlinable)
+  else if (!ipa_fn_summaries->get (callee)->inlinable)
     {
       e->inline_failed = CIF_FUNCTION_NOT_INLINABLE;
       inlinable = false;
@@ -391,8 +391,8 @@ can_inline_edge_p (struct cgraph_edge *e, bool report,
 	     (DECL_DISREGARD_INLINE_LIMITS (callee->decl)
 	      && lookup_attribute ("always_inline",
 				   DECL_ATTRIBUTES (callee->decl)));
-      inline_summary *caller_info = inline_summaries->get (caller);
-      inline_summary *callee_info = inline_summaries->get (callee);
+      ipa_fn_summary *caller_info = ipa_fn_summaries->get (caller);
+      ipa_fn_summary *callee_info = ipa_fn_summaries->get (callee);
 
      /* Until GCC 4.9 we did not check the semantics alterning flags
 	bellow and inline across optimization boundry.
@@ -647,7 +647,7 @@ compute_uninlined_call_time (struct cgraph_edge *edge,
   else
     uninlined_call_time = uninlined_call_time >> 11;
 
-  sreal caller_time = inline_summaries->get (caller)->time;
+  sreal caller_time = ipa_fn_summaries->get (caller)->time;
   return uninlined_call_time + caller_time;
 }
 
@@ -661,7 +661,7 @@ compute_inlined_call_time (struct cgraph_edge *edge,
   cgraph_node *caller = (edge->caller->global.inlined_to 
 			 ? edge->caller->global.inlined_to
 			 : edge->caller);
-  sreal caller_time = inline_summaries->get (caller)->time;
+  sreal caller_time = ipa_fn_summaries->get (caller)->time;
 
   if (edge->count && caller->count)
     time *= (sreal)edge->count / caller->count;
@@ -722,7 +722,7 @@ want_inline_small_function_p (struct cgraph_edge *e, bool report)
      MAX_INLINE_INSNS_SINGLE 16-fold for inline functions.  */
   else if ((!DECL_DECLARED_INLINE_P (callee->decl)
 	   && (!e->count || !e->maybe_hot_p ()))
-	   && inline_summaries->get (callee)->min_size
+	   && ipa_fn_summaries->get (callee)->min_size
 		- ipa_call_summaries->get (e)->call_stmt_size
 	      > MAX (MAX_INLINE_INSNS_SINGLE, MAX_INLINE_INSNS_AUTO))
     {
@@ -730,7 +730,7 @@ want_inline_small_function_p (struct cgraph_edge *e, bool report)
       want_inline = false;
     }
   else if ((DECL_DECLARED_INLINE_P (callee->decl) || e->count)
-	   && inline_summaries->get (callee)->min_size
+	   && ipa_fn_summaries->get (callee)->min_size
 		- ipa_call_summaries->get (e)->call_stmt_size
 	      > 16 * MAX_INLINE_INSNS_SINGLE)
     {
@@ -742,7 +742,7 @@ want_inline_small_function_p (struct cgraph_edge *e, bool report)
   else
     {
       int growth = estimate_edge_growth (e);
-      inline_hints hints = estimate_edge_hints (e);
+      ipa_hints hints = estimate_edge_hints (e);
       bool big_speedup = big_speedup_p (e);
 
       if (growth <= 0)
@@ -1005,8 +1005,8 @@ edge_badness (struct cgraph_edge *edge, bool dump)
   int growth;
   sreal edge_time, unspec_edge_time;
   struct cgraph_node *callee = edge->callee->ultimate_alias_target ();
-  struct inline_summary *callee_info = inline_summaries->get (callee);
-  inline_hints hints;
+  struct ipa_fn_summary *callee_info = ipa_fn_summaries->get (callee);
+  ipa_hints hints;
   cgraph_node *caller = (edge->caller->global.inlined_to 
 			 ? edge->caller->global.inlined_to
 			 : edge->caller);
@@ -1030,7 +1030,7 @@ edge_badness (struct cgraph_edge *edge, bool dump)
 	       growth,
 	       edge_time.to_double (),
 	       unspec_edge_time.to_double ());
-      dump_inline_hints (dump_file, hints);
+      ipa_dump_hints (dump_file, hints);
       if (big_speedup_p (edge))
 	fprintf (dump_file, " big_speedup");
       fprintf (dump_file, "\n");
@@ -1116,7 +1116,7 @@ edge_badness (struct cgraph_edge *edge, bool dump)
 		  && (!DECL_DECLARED_INLINE_P (edge->callee->decl)
 		      || DECL_DECLARED_INLINE_P (caller->decl)))))
 	{
-	  struct inline_summary *caller_info = inline_summaries->get (caller);
+	  struct ipa_fn_summary *caller_info = ipa_fn_summaries->get (caller);
 	  int caller_growth = caller_info->growth;
 
 	  /* Only apply the penalty when caller looks like inline candidate,
@@ -1322,7 +1322,7 @@ update_caller_keys (edge_heap_t *heap, struct cgraph_node *node,
   struct cgraph_edge *edge;
   struct ipa_ref *ref;
 
-  if ((!node->alias && !inline_summaries->get (node)->inlinable)
+  if ((!node->alias && !ipa_fn_summaries->get (node)->inlinable)
       || node->global.inlined_to)
     return;
   if (!bitmap_set_bit (updated_nodes, node->uid))
@@ -1380,7 +1380,7 @@ update_callee_keys (edge_heap_t *heap, struct cgraph_node *node,
            don't need updating.  */
 	if (e->inline_failed
 	    && (callee = e->callee->ultimate_alias_target (&avail, e->caller))
-	    && inline_summaries->get (callee)->inlinable
+	    && ipa_fn_summaries->get (callee)->inlinable
 	    && avail >= AVAIL_AVAILABLE
 	    && !bitmap_bit_p (updated_nodes, callee->uid))
 	  {
@@ -1551,10 +1551,10 @@ recursive_inlining (struct cgraph_edge *edge,
     fprintf (dump_file,
 	     "\n   Inlined %i times, "
 	     "body grown from size %i to %i, time %f to %f\n", n,
-	     inline_summaries->get (master_clone)->size,
-	     inline_summaries->get (node)->size,
-	     inline_summaries->get (master_clone)->time.to_double (),
-	     inline_summaries->get (node)->time.to_double ());
+	     ipa_fn_summaries->get (master_clone)->size,
+	     ipa_fn_summaries->get (node)->size,
+	     ipa_fn_summaries->get (master_clone)->time.to_double (),
+	     ipa_fn_summaries->get (node)->time.to_double ());
 
   /* Remove master clone we used for inlining.  We rely that clones inlined
      into master clone gets queued just before master clone so we don't
@@ -1681,7 +1681,7 @@ resolve_noninline_speculation (edge_heap_t *edge_heap, struct cgraph_edge *edge)
       spec_rem += edge->count;
       edge->resolve_speculation ();
       reset_edge_caches (where);
-      inline_update_overall_summary (where);
+      ipa_update_overall_fn_summary (where);
       update_caller_keys (edge_heap, where,
 			  updated_nodes, NULL);
       update_callee_keys (edge_heap, where,
@@ -1751,7 +1751,7 @@ inline_small_functions (void)
 	if (!node->alias && node->analyzed
 	    && (node->has_gimple_body_p () || node->thunk.thunk_p))
 	  {
-	    struct inline_summary *info = inline_summaries->get (node);
+	    struct ipa_fn_summary *info = ipa_fn_summaries->get (node);
 	    struct ipa_dfs_info *dfs = (struct ipa_dfs_info *) node->aux;
 
 	    /* Do not account external functions, they will be optimized out
@@ -1772,7 +1772,7 @@ inline_small_functions (void)
 		for (n2 = node; n2;
 		     n2 = ((struct ipa_dfs_info *) node->aux)->next_cycle)
 		  {
-		    struct inline_summary *info2 = inline_summaries->get (n2);
+		    struct ipa_fn_summary *info2 = ipa_fn_summaries->get (n2);
 		    if (info2->scc_no)
 		      break;
 		    info2->scc_no = id;
@@ -1835,7 +1835,7 @@ inline_small_functions (void)
 	{
 	  struct cgraph_node *where = node->global.inlined_to
 				      ? node->global.inlined_to : node;
-	  inline_update_overall_summary (where);
+	  ipa_update_overall_fn_summary (where);
 	  reset_edge_caches (where);
           update_caller_keys (&edge_heap, where,
 			      updated_nodes, NULL);
@@ -1922,7 +1922,7 @@ inline_small_functions (void)
 	  fprintf (dump_file,
 		   "\nConsidering %s/%i with %i size\n",
 		   callee->name (), callee->order,
-		   inline_summaries->get (callee)->size);
+		   ipa_fn_summaries->get (callee)->size);
 	  fprintf (dump_file,
 		   " to be inlined into %s/%i in %s:%i\n"
 		   " Estimated badness is %f, frequency %.2f.\n",
@@ -2053,8 +2053,8 @@ inline_small_functions (void)
 		   "net change of %+i.\n",
 		   edge->callee->name (),
 		   edge->caller->name (),
-		   inline_summaries->get (edge->caller)->time.to_double (),
-		   inline_summaries->get (edge->caller)->size,
+		   ipa_fn_summaries->get (edge->caller)->time.to_double (),
+		   ipa_fn_summaries->get (edge->caller)->size,
 		   overall_size - old_size);
 	}
       if (min_size > overall_size)
@@ -2154,7 +2154,7 @@ flatten_function (struct cgraph_node *node, bool early)
 
   node->aux = NULL;
   if (!node->global.inlined_to)
-    inline_update_overall_summary (node);
+    ipa_update_overall_fn_summary (node);
 }
 
 /* Inline NODE to all callers.  Worker for cgraph_for_node_and_aliases.
@@ -2186,11 +2186,11 @@ inline_to_all_callers_1 (struct cgraph_node *node, void *data,
 	  fprintf (dump_file,
 		   "\nInlining %s size %i.\n",
 		   node->name (),
-		   inline_summaries->get (node)->size);
+		   ipa_fn_summaries->get (node)->size);
 	  fprintf (dump_file,
 		   " Called once from %s %i insns.\n",
 		   node->callers->caller->name (),
-		   inline_summaries->get (node->callers->caller)->size);
+		   ipa_fn_summaries->get (node->callers->caller)->size);
 	}
 
       /* Remember which callers we inlined to, delaying updating the
@@ -2201,7 +2201,7 @@ inline_to_all_callers_1 (struct cgraph_node *node, void *data,
 	fprintf (dump_file,
 		 " Inlined into %s which now has %i size\n",
 		 caller->name (),
-		 inline_summaries->get (caller)->size);
+		 ipa_fn_summaries->get (caller)->size);
       if (!(*num_calls)--)
 	{
 	  if (dump_file)
@@ -2227,7 +2227,7 @@ inline_to_all_callers (struct cgraph_node *node, void *data)
      we have a lot of calls to the same function.  */
   for (hash_set<cgraph_node *>::iterator i = callers.begin ();
        i != callers.end (); ++i)
-    inline_update_overall_summary (*i);
+    ipa_update_overall_fn_summary (*i);
   return res;
 }
 
@@ -2242,7 +2242,7 @@ dump_overall_stats (void)
     if (!node->global.inlined_to
 	&& !node->alias)
       {
-	sreal time = inline_summaries->get (node)->time;
+	sreal time = ipa_fn_summaries->get (node)->time;
 	sum += time;
 	sum_weighted += time * node->count;
       }
@@ -2377,7 +2377,7 @@ ipa_inline (void)
   order = XCNEWVEC (struct cgraph_node *, symtab->cgraph_count);
 
   if (dump_file)
-    dump_inline_summaries (dump_file);
+    ipa_dump_fn_summaries (dump_file);
 
   nnodes = ipa_reverse_postorder (order);
 
@@ -2482,7 +2482,7 @@ ipa_inline (void)
 	      struct cgraph_node *where = node->global.inlined_to
 					  ? node->global.inlined_to : node;
 	      reset_edge_caches (where);
-	      inline_update_overall_summary (where);
+	      ipa_update_overall_fn_summary (where);
 	    }
 	  if (want_inline_function_to_all_callers_p (node, cold))
 	    {
@@ -2510,7 +2510,7 @@ ipa_inline (void)
     }
 
   if (dump_file)
-    dump_inline_summaries (dump_file);
+    ipa_dump_fn_summaries (dump_file);
   /* In WPA we use inline summaries for partitioning process.  */
   if (!flag_wpa)
     inline_free_summary ();
@@ -2559,7 +2559,7 @@ inline_always_inline_functions (struct cgraph_node *node)
       inlined = true;
     }
   if (inlined)
-    inline_update_overall_summary (node);
+    ipa_update_overall_fn_summary (node);
 
   return inlined;
 }
@@ -2576,7 +2576,7 @@ early_inline_small_functions (struct cgraph_node *node)
   for (e = node->callees; e; e = e->next_callee)
     {
       struct cgraph_node *callee = e->callee->ultimate_alias_target ();
-      if (!inline_summaries->get (callee)->inlinable
+      if (!ipa_fn_summaries->get (callee)->inlinable
 	  || !e->inline_failed)
 	continue;
 
@@ -2612,7 +2612,7 @@ early_inline_small_functions (struct cgraph_node *node)
     }
 
   if (inlined)
-    inline_update_overall_summary (node);
+    ipa_update_overall_fn_summary (node);
 
   return inlined;
 }
@@ -2699,7 +2699,7 @@ early_inliner (function *fun)
 	      es->call_stmt_time
 		= estimate_num_insns (edge->call_stmt, &eni_time_weights);
 	    }
-	  inline_update_overall_summary (node);
+	  ipa_update_overall_fn_summary (node);
 	  inlined = false;
 	  timevar_pop (TV_INTEGRATION);
 	}
@@ -2733,7 +2733,7 @@ early_inliner (function *fun)
 		}
 	    }
 	  if (iterations < PARAM_VALUE (PARAM_EARLY_INLINER_MAX_ITERATIONS) - 1)
-	    inline_update_overall_summary (node);
+	    ipa_update_overall_fn_summary (node);
 	  timevar_pop (TV_INTEGRATION);
 	  iterations++;
 	  inlined = false;

@@ -25,10 +25,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "ipa-predicate.h"
 
 
-/* Inline hints are reasons why inline heuristics should preffer inlining given
+/* Hints are reasons why IPA heuristics should preffer specializing given
    function.  They are represtented as bitmap of the following values.  */
-enum inline_hints_vals {
-  /* When inlining turns indirect call into a direct call,
+enum ipa_hints_vals {
+  /* When specialization turns indirect call into a direct call,
      it is good idea to do so.  */
   INLINE_HINT_indirect_call = 1,
   /* Inlining may make loop iterations or loop stride known.  It is good idea
@@ -42,11 +42,11 @@ enum inline_hints_vals {
      win.  */
   INLINE_HINT_in_scc = 16,
   /* If function is declared inline by user, it may be good idea to inline
-     it.  */
+     it.  Set by simple_edge_hints in ipa-inline-analysis.c.  */
   INLINE_HINT_declared_inline = 32,
   /* Programs are usually still organized for non-LTO compilation and thus
      if functions are in different modules, inlining may not be so important. 
-   */
+     Set by simple_edge_hints in ipa-inline-analysis.c.   */
   INLINE_HINT_cross_module = 64,
   /* If array indexes of loads/stores become known there may be room for
      further optimization.  */
@@ -55,7 +55,7 @@ enum inline_hints_vals {
   INLINE_HINT_known_hot = 256
 };
 
-typedef int inline_hints;
+typedef int ipa_hints;
 
 /* Simple description of whether a memory load or a condition refers to a load
    from an aggregate and if so, how and where from in the aggregate.
@@ -69,12 +69,9 @@ struct agg_position_info
   bool by_ref;
 };
 
-/* Represnetation of function body size and time depending on the inline
+/* Representation of function body size and time depending on the call
    context.  We keep simple array of record, every containing of predicate
-   and time/size to account.
-
-   We keep values scaled up, so fractional sizes can be accounted.  */
-#define INLINE_SIZE_SCALE 2
+   and time/size to account.  */
 struct GTY(()) size_time_entry
 {
   /* Predicate for code to be executed.  */
@@ -88,7 +85,7 @@ struct GTY(()) size_time_entry
 };
 
 /* Function inlining information.  */
-struct GTY(()) inline_summary
+struct GTY(()) ipa_fn_summary
 {
   /* Information about the function body itself.  */
 
@@ -116,7 +113,7 @@ struct GTY(()) inline_summary
 
   /* Estimated stack frame consumption by the function.  */
   HOST_WIDE_INT estimated_stack_size;
-  /* Expected offset of the stack frame of inlined function.  */
+  /* Expected offset of the stack frame of function.  */
   HOST_WIDE_INT stack_frame_offset;
   /* Estimated size of the function after inlining.  */
   sreal GTY((skip)) time;
@@ -146,7 +143,7 @@ struct GTY(()) inline_summary
 
   /* Keep all field empty so summary dumping works during its computation.
      This is useful for debugging.  */
-  inline_summary ()
+  ipa_fn_summary ()
     : estimated_self_stack_size (0), self_size (0), min_size (0),
       inlinable (false), contains_cilk_spawn (false), single_caller (false),
       fp_expressions (false), estimated_stack_size (false),
@@ -159,32 +156,35 @@ struct GTY(()) inline_summary
   /* Record time and size under given predicates.  */
   void account_size_time (int, sreal, const predicate &, const predicate &);
 
-  /* Reset inline summary to empty state.  */
+  /* Reset summary to empty state.  */
   void reset (struct cgraph_node *node);
+
+  /* We keep values scaled up, so fractional sizes can be accounted.  */
+  static const int size_scale = 2;
 };
 
-class GTY((user)) inline_summary_t: public function_summary <inline_summary *>
+class GTY((user)) ipa_fn_summary_t: public function_summary <ipa_fn_summary *>
 {
 public:
-  inline_summary_t (symbol_table *symtab, bool ggc):
-    function_summary <inline_summary *> (symtab, ggc) {}
+  ipa_fn_summary_t (symbol_table *symtab, bool ggc):
+    function_summary <ipa_fn_summary *> (symtab, ggc) {}
 
-  static inline_summary_t *create_ggc (symbol_table *symtab)
+  static ipa_fn_summary_t *create_ggc (symbol_table *symtab)
   {
-    struct inline_summary_t *summary = new (ggc_alloc <inline_summary_t> ())
-      inline_summary_t(symtab, true);
+    struct ipa_fn_summary_t *summary = new (ggc_alloc <ipa_fn_summary_t> ())
+      ipa_fn_summary_t(symtab, true);
     summary->disable_insertion_hook ();
     return summary;
   }
 
 
-  virtual void insert (cgraph_node *, inline_summary *);
-  virtual void remove (cgraph_node *node, inline_summary *);
+  virtual void insert (cgraph_node *, ipa_fn_summary *);
+  virtual void remove (cgraph_node *node, ipa_fn_summary *);
   virtual void duplicate (cgraph_node *src, cgraph_node *dst,
-			  inline_summary *src_data, inline_summary *dst_data);
+			  ipa_fn_summary *src_data, ipa_fn_summary *dst_data);
 };
 
-extern GTY(()) function_summary <inline_summary *> *inline_summaries;
+extern GTY(()) function_summary <ipa_fn_summary *> *ipa_fn_summaries;
 
 /* Information kept about callgraph edges.  */
 struct ipa_call_summary
@@ -227,26 +227,24 @@ public:
 extern call_summary <ipa_call_summary *> *ipa_call_summaries;
 
 /* In ipa-fnsummary.c  */
-void debug_inline_summary (struct cgraph_node *);
-void dump_inline_summaries (FILE *f);
-void dump_inline_summary (FILE *f, struct cgraph_node *node);
-void dump_inline_hints (FILE *f, inline_hints);
+void ipa_debug_fn_summary (struct cgraph_node *);
+void ipa_dump_fn_summaries (FILE *f);
+void ipa_dump_fn_summary (FILE *f, struct cgraph_node *node);
+void ipa_dump_hints (FILE *f, ipa_hints);
 void inline_generate_summary (void);
 void inline_read_summary (void);
 void inline_write_summary (void);
 void inline_free_summary (void);
 void inline_analyze_function (struct cgraph_node *node);
-int estimate_size_after_inlining (struct cgraph_node *, struct cgraph_edge *);
 void estimate_ipcp_clone_size_and_time (struct cgraph_node *,
 					vec<tree>,
 					vec<ipa_polymorphic_call_context>,
 					vec<ipa_agg_jump_function_p>,
 					int *, sreal *, sreal *,
-				        inline_hints *);
-void inline_merge_summary (struct cgraph_edge *edge);
-void inline_update_overall_summary (struct cgraph_node *node);
-void compute_inline_parameters (struct cgraph_node *, bool);
-bool inline_account_function_p (struct cgraph_node *node);
+				        ipa_hints *);
+void ipa_merge_fn_summary_after_inlining (struct cgraph_edge *edge);
+void ipa_update_overall_fn_summary (struct cgraph_node *node);
+void compute_fn_summary (struct cgraph_node *, bool);
 
 
 void evaluate_properties_for_edge (struct cgraph_edge *e, bool inline_p,
@@ -265,7 +263,7 @@ void estimate_node_size_and_time (struct cgraph_node *node,
 				  int *ret_size, int *ret_min_size,
 				  sreal *ret_time,
 				  sreal *ret_nonspecialized_time,
-				  inline_hints *ret_hints,
+				  ipa_hints *ret_hints,
 				  vec<inline_param_summary>
 				  inline_param_summary);
 

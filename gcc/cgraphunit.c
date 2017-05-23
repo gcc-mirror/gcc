@@ -332,9 +332,17 @@ symbol_table::process_new_functions (void)
 	  push_cfun (DECL_STRUCT_FUNCTION (fndecl));
 	  if ((state == IPA_SSA || state == IPA_SSA_AFTER_INLINING)
 	      && !gimple_in_ssa_p (DECL_STRUCT_FUNCTION (fndecl)))
-	    g->get_passes ()->execute_early_local_passes ();
-	  else if (inline_summaries != NULL)
-	    compute_inline_parameters (node, true);
+	    {
+	      bool summaried_computed = ipa_fn_summaries != NULL;
+	      g->get_passes ()->execute_early_local_passes ();
+	      /* Early passes compure inline parameters to do inlining
+		 and splitting.  This is redundant for functions added late.
+		 Just throw away whatever it did.  */
+	      if (!summaried_computed)
+		inline_free_summary ();
+	    }
+	  else if (ipa_fn_summaries != NULL)
+	    compute_fn_summary (node, true);
 	  free_dominance_info (CDI_POST_DOMINATORS);
 	  free_dominance_info (CDI_DOMINATORS);
 	  pop_cfun ();

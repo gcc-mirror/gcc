@@ -1,3 +1,30 @@
+2017-05-23  Nathan Sidwell  <nathan@acm.org>
+
+	* g++.dg/lookup/using13.C: Adjust expected error.
+
+2017-05-23  Senthil Kumar Selvaraj  <senthil_kumar.selvaraj@atmel.com>
+
+	* gcc.dg/tree-ssa/builtin-snprintf-warn-3.c: Require ptr32plus.
+
+2017-05-22  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/80718
+	* gcc.target/powerpc/pr80718.c: New test.
+
+2017-05-22  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* gcc.target/powerpc/conditional-return.c: New testcase.
+
+2017-05-22  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* gcc.target/powerpc/p8-vec-xl-xst.c: Fix target string to
+	LE-only.
+
+2017-05-22  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/80766
+	* gfortran.dg/typebound_call_28.f90: New test.
+
 2017-05-22  Nathan Sidwell  <nathan@acm.org>
 
 	* g++.dg/lookup/strong-using.C: New.

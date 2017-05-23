@@ -1468,7 +1468,7 @@ afdo_vpt_for_early_inline (stmt_set *promoted_stmts)
           current_function_decl) == NULL)
     return false;
 
-  compute_inline_parameters (cgraph_node::get (current_function_decl), true);
+  compute_fn_summary (cgraph_node::get (current_function_decl), true);
 
   bool has_vpt = false;
   FOR_EACH_BB_FN (bb, cfun)
@@ -1592,7 +1592,7 @@ afdo_annotate_cfg (const stmt_set &promoted_stmts)
 static void
 early_inline ()
 {
-  compute_inline_parameters (cgraph_node::get (current_function_decl), true);
+  compute_fn_summary (cgraph_node::get (current_function_decl), true);
   unsigned todo = early_inliner (cfun);
   if (todo & TODO_update_ssa_any)
     update_ssa (TODO_update_ssa);
@@ -1670,7 +1670,7 @@ auto_profile (void)
     free_dominance_info (CDI_DOMINATORS);
     free_dominance_info (CDI_POST_DOMINATORS);
     cgraph_edge::rebuild_edges ();
-    compute_inline_parameters (cgraph_node::get (current_function_decl), true);
+    compute_fn_summary (cgraph_node::get (current_function_decl), true);
     pop_cfun ();
   }
 

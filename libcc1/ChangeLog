@@ -1,3 +1,8 @@
+2017-05-23  Nathan Sidwell  <nathan@acm.org>
+
+	* libcp1plugin.cc (plugin_add_using_decl): Call
+	finish_namespace_using_decl.  Use assert not unreachable.
+
 2017-05-11  Nathan Sidwell  <nathan@acm.org>
 
 	* libcp1plugin.cc (safe_pushdecl_maybe_friend): Call pushdecl.

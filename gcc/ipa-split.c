@@ -1713,7 +1713,7 @@ split_function (basic_block return_bb, struct split_point *split_point,
     }
   free_dominance_info (CDI_DOMINATORS);
   free_dominance_info (CDI_POST_DOMINATORS);
-  compute_inline_parameters (node, true);
+  compute_fn_summary (node, true);
 }
 
 /* Execute function splitting pass.  */
@@ -1742,8 +1742,8 @@ execute_split_functions (void)
     }
   /* This can be relaxed; function might become inlinable after splitting
      away the uninlinable part.  */
-  if (inline_summaries
-      && !inline_summaries->get (node)->inlinable)
+  if (ipa_fn_summaries
+      && !ipa_fn_summaries->get (node)->inlinable)
     {
       if (dump_file)
 	fprintf (dump_file, "Not splitting: not inlinable.\n");
