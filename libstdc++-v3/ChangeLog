@@ -1,3 +1,9 @@
+2017-05-23  Xi Ruoyao  <ryxi@stu.xidian.edu.cn>
+
+	PR libstdc++/67214
+	* include/bits/locale_facets.tcc (num_get::_M_extract_int): Add
+	explicit conversion to avoid signed overflow.
+
 2017-05-19  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/80796
