@@ -1389,7 +1389,7 @@ public:
   /* True if this decl is a dispatcher for function versions.  */
   unsigned dispatcher_function : 1;
   /* True if this decl calls a COMDAT-local function.  This is set up in
-     compute_inline_parameters and inline_call.  */
+     compute_fn_summary and inline_call.  */
   unsigned calls_comdat_local : 1;
   /* True if node has been created by merge operation in IPA-ICF.  */
   unsigned icf_merged: 1;

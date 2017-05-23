@@ -1,3 +1,46 @@
+2017-05-23  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-inline-analysis.c (cgraph_2edge_hook_list, cgraph_edge_hook_list,
+	inline_edge_removal_hook, inline_edge_duplication_hook): Remove.
+	(inline_edge_summary_vec): Turn into ...
+	(ipa_call_summaries): ... this one.
+	(redirect_to_unreachable, edge_set_predicate,
+	evaluate_properties_for_edge, inline_summary_alloc,
+	reset_ipa_call_summary, reset_inline_summary,
+	inline_summary_t::duplicate): Update.
+	(inline_edge_duplication_hook): Turn to ...
+	(ipa_call_summary_t::duplicate): ... this one.
+	(inline_edge_removal_hook): Turn to ...
+	(ipa_call_summary_t::remove): ... this one.
+	(dump_inline_edge_summary): Turn to ...
+	(dump_ipa_call_summary): ... this one.
+	(estimate_function_body_sizes): Update.
+	(inline_update_callee_summaries): Update.
+	(remap_edge_change_prob): Update.
+	(remap_edge_summaries): Update.
+	(inline_merge_summary): Update.
+	(do_estimate_edge_time): Update.
+	(inline_generate_summary): Update.
+	(inline_read_section): Update.
+	(inline_read_summary): Update.
+	(inline_free_summary): Update.
+	* ipa-inline.c (can_inline_edge_p): Update.
+	(compute_inlined_call_time): Update.
+	(want_inline_small_function_p): Update.
+	(edge_badness): Update.
+	(early_inliner): Update.
+	* ipa-inline.h (inline_edge_summary): Turn to ...
+	(ipa_call_summary): ... this one.
+	(ipa_call_summary_t): New class.
+	(inline_edge_summary_t, inline_edge_summary_vec): Remove.
+	(ipa_call_summaries): New.
+	(inline_edge_summary): Remove.
+	(estimate_edge_growth): Update.
+	* ipa-profile.c (ipa_propagate_frequency_1): Update.
+	* ipa-prop.c (ipa_make_edge_direct_to_target): Update.
+	* ipa-split.c (execute_split_functions): Update.
+	* ipa.c (symbol_table::remove_unreachable_nodes): Update.
+
 2017-05-23  Tom de Vries  <tom@codesourcery.com>
 
 	* doc/sourcebuild.texi (Effective-Target Keywords, Other hardware

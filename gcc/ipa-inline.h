@@ -27,24 +27,18 @@ struct edge_growth_cache_entry
 {
   sreal time, nonspec_time;
   int size;
-  inline_hints hints;
+  ipa_hints hints;
 };
 
 extern vec<edge_growth_cache_entry> edge_growth_cache;
 
 /* In ipa-inline-analysis.c  */
 int estimate_size_after_inlining (struct cgraph_node *, struct cgraph_edge *);
-void estimate_ipcp_clone_size_and_time (struct cgraph_node *,
-					vec<tree>,
-					vec<ipa_polymorphic_call_context>,
-					vec<ipa_agg_jump_function_p>,
-					int *, sreal *, sreal *,
-				        inline_hints *);
 int estimate_growth (struct cgraph_node *);
 bool growth_likely_positive (struct cgraph_node *, int);
 int do_estimate_edge_size (struct cgraph_edge *edge);
 sreal do_estimate_edge_time (struct cgraph_edge *edge);
-inline_hints do_estimate_edge_hints (struct cgraph_edge *edge);
+ipa_hints do_estimate_edge_hints (struct cgraph_edge *edge);
 void initialize_growth_caches (void);
 void free_growth_caches (void);
 
@@ -105,10 +99,10 @@ estimate_edge_time (struct cgraph_edge *edge, sreal *nonspec_time = NULL)
 /* Return estimated callee runtime increase after inlining
    EDGE.  */
 
-static inline inline_hints
+static inline ipa_hints
 estimate_edge_hints (struct cgraph_edge *edge)
 {
-  inline_hints ret;
+  ipa_hints ret;
   if ((int)edge_growth_cache.length () <= edge->uid
       || !(ret = edge_growth_cache[edge->uid].hints))
     return do_estimate_edge_hints (edge);
