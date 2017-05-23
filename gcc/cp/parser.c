@@ -15096,7 +15096,7 @@ cp_parser_template_parameter (cp_parser* parser, bool *is_non_type,
   *is_parameter_pack = false;
   /* Peek at the next token.  */
   token = cp_lexer_peek_token (parser->lexer);
-  /* If it is `class' or `template', we have a type-parameter.  */
+  /* If it is `template', we have a type-parameter.  */
   if (token->keyword == RID_TEMPLATE)
     return cp_parser_type_parameter (parser, is_parameter_pack);
   /* If it is `class' or `typename' we do not know yet whether it is a
