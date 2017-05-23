@@ -1,3 +1,15 @@
+2017-05-23  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* c-c++-common/goacc/parallel-dims-1.c: Update.
+	* c-c++-common/goacc/parallel-dims-2.c: Likewise.
+	* c-c++-common/goacc/routine-1.c: Likewise.
+	* c-c++-common/goacc/uninit-dim-clause.c: Likewise.
+	* g++.dg/goacc/template.C: Likewise.
+	* gfortran.dg/goacc/kernels-tree.f95: Likewise.
+	* gfortran.dg/goacc/routine-3.f90: Likewise.
+	* gfortran.dg/goacc/sie.f95: Likewise.
+	* gfortran.dg/goacc/uninit-dim-clause.f95: Likewise.
+
 2017-05-23  Nathan Sidwell  <nathan@acm.org>
 
 	* g++.dg/lookup/using13.C: Adjust expected error.

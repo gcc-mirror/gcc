@@ -1,3 +1,8 @@
+2017-05-23  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* openmp.c (OACC_KERNELS_CLAUSES): Add "OMP_CLAUSE_NUM_GANGS",
+	"OMP_CLAUSE_NUM_WORKERS", "OMP_CLAUSE_VECTOR_LENGTH".
+
 2017-05-22  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/80766

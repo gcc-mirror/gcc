@@ -1,5 +1,9 @@
 2017-05-23  Thomas Schwinge  <thomas@codesourcery.com>
 
+	* testsuite/libgomp.oacc-c-c++-common/kernels-loop-2.c: Update.
+	* testsuite/libgomp.oacc-c-c++-common/parallel-dims.c: Likewise.
+	* testsuite/libgomp.oacc-fortran/kernels-loop-2.f95: Likewise.
+
 	* testsuite/libgomp.oacc-c-c++-common/parallel-dims.c: Rewrite.
 	* testsuite/lib/libgomp.exp
 	(check_effective_target_openacc_nvidia_accel_configured): New

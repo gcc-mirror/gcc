@@ -520,5 +520,40 @@ int main ()
   }
 
 
+  /* Unparallelized OpenACC kernels constructs must get launched as 1 x 1 x 1
+     kernels even when there are explicit num_gangs, num_workers, or
+     vector_length clauses.  */
+  {
+    int gangs = 5;
+#define WORKERS 5
+#define VECTORS 13
+    int gangs_min, gangs_max, workers_min, workers_max, vectors_min, vectors_max;
+    gangs_min = workers_min = vectors_min = INT_MAX;
+    gangs_max = workers_max = vectors_max = INT_MIN;
+#pragma acc kernels \
+  num_gangs (gangs) \
+  num_workers (WORKERS) \
+  vector_length (VECTORS)
+    {
+      /* This is to make the OpenACC kernels construct unparallelizable.  */
+      asm volatile ("" : : : "memory");
+
+#pragma acc loop reduction (min: gangs_min, workers_min, vectors_min) reduction (max: gangs_max, workers_max, vectors_max)
+      for (int i = 100; i > -100; --i)
+	{
+	  gangs_min = gangs_max = acc_gang ();
+	  workers_min = workers_max = acc_worker ();
+	  vectors_min = vectors_max = acc_vector ();
+	}
+    }
+    if (gangs_min != 0 || gangs_max != 1 - 1
+	|| workers_min != 0 || workers_max != 1 - 1
+	|| vectors_min != 0 || vectors_max != 1 - 1)
+      __builtin_abort ();
+#undef VECTORS
+#undef WORKERS
+  }
+
+
   return 0;
 }
