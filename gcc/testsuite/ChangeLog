@@ -1,3 +1,12 @@
+2017-05-24  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/ext/integer-pack2.C: Require int32 effective target.
+	Don't include limits.h.
+	(w): Conditionalize on long long wider than int.  Use
+	1LL << (__SIZEOF_INT__ * __CHAR_BIT__) instead of
+	-9223372036854775808.
+	(x): Use __INT_MAX__ instead of INT_MAX.
+
 2017-05-24  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/66094
