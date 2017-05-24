@@ -1,9 +1,10 @@
+/* Test of reduction on parallel directive (with async).  */
+/* See also Fortran variants in "../libgomp.oacc-fortran/par-reduction-2*".  */
+
 /* { dg-additional-options "-w" } */
 
 #include <assert.h>
 #include <openacc.h>
-
-/* Test of reduction on parallel directive (with async).  */
 
 int
 main (int argc, char *argv[])
@@ -25,7 +26,7 @@ main (int argc, char *argv[])
   }
   res = GANGS * 5;
 
-  acc_wait (1);
+  acc_async_wait (1);
 
   assert (res == res1);
   assert (res == res2);
@@ -49,7 +50,7 @@ main (int argc, char *argv[])
   for (int i = 0; i < GANGS; ++i)
     res *= 5;
 
-  acc_wait (1);
+  acc_async_wait_all ();
 
   assert (res == res1);
   assert (res == res2);
