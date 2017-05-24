@@ -1,0 +1,36 @@
+# Support for NetBSD PowerPC ELF targets (SVR4 ABI).
+#
+# Copyright (C) 2002-2017 Free Software Foundation, Inc.
+#
+# This file is part of GCC.
+#
+# GCC is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3, or (at your option)
+# any later version.
+#
+# GCC is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+# Switch synonyms
+MULTILIB_MATCHES_FLOAT	= msoft-float=mcpu?401 \
+			  msoft-float=mcpu?403 \
+			  msoft-float=mcpu?405 \
+			  msoft-float=mcpu?ec603e \
+			  msoft-float=mcpu?801 \
+			  msoft-float=mcpu?821 \
+			  msoft-float=mcpu?823 \
+			  msoft-float=mcpu?860
+
+MULTILIB_OPTIONS	= msoft-float
+MULTILIB_DIRNAMES	= soft-float
+MULTILIB_EXTRA_OPTS	= fPIC mstrict-align
+MULTILIB_EXCEPTIONS	=
+
+MULTILIB_MATCHES	= ${MULTILIB_MATCHES_FLOAT}

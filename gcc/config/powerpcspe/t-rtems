@@ -1,0 +1,79 @@
+# Multilibs for powerpc RTEMS targets.
+#
+# Copyright (C) 2004-2017 Free Software Foundation, Inc.
+#
+# This file is part of GCC.
+#
+# GCC is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3, or (at your option)
+# any later version.
+#
+# GCC is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+MULTILIB_OPTIONS =
+MULTILIB_DIRNAMES =
+MULTILIB_MATCHES =
+MULTILIB_EXCEPTIONS =
+MULTILIB_REQUIRED =
+
+MULTILIB_OPTIONS += mcpu=403/mcpu=505/mcpu=603e/mcpu=604/mcpu=860/mcpu=7400/mcpu=8540/mcpu=e6500
+MULTILIB_DIRNAMES += m403 m505 m603e m604 m860 m7400 m8540 me6500
+
+MULTILIB_OPTIONS += m32
+MULTILIB_DIRNAMES += m32
+
+MULTILIB_OPTIONS += msoft-float/mfloat-gprs=double
+MULTILIB_DIRNAMES += nof gprsdouble
+
+MULTILIB_OPTIONS += mno-spe/mno-altivec
+MULTILIB_DIRNAMES += nospe noaltivec
+
+MULTILIB_MATCHES  	+= ${MULTILIB_MATCHES_ENDIAN}
+MULTILIB_MATCHES	+= ${MULTILIB_MATCHES_SYSV}
+# Map 405 to 403
+MULTILIB_MATCHES	+= mcpu?403=mcpu?405
+# Map 602, 603e, 603 to 603e
+MULTILIB_MATCHES	+= mcpu?603e=mcpu?602
+MULTILIB_MATCHES	+= mcpu?603e=mcpu?603
+# Map 801, 821, 823 to 860
+MULTILIB_MATCHES 	+= mcpu?860=mcpu?801
+MULTILIB_MATCHES 	+= mcpu?860=mcpu?821
+MULTILIB_MATCHES 	+= mcpu?860=mcpu?823
+# Map 7450 to 7400
+MULTILIB_MATCHES	+= mcpu?7400=mcpu?7450
+
+# Map 750 to .
+MULTILIB_MATCHES	+= mcpu?750=
+
+# Map 8548 to 8540
+MULTILIB_MATCHES	+= mcpu?8540=mcpu?8548
+
+# Map -mcpu=8540 -mfloat-gprs=single to -mcpu=8540
+# (mfloat-gprs=single is implicit default)
+MULTILIB_MATCHES	+= mcpu?8540=mcpu?8540/mfloat-gprs?single
+
+# Enumeration of multilibs
+
+MULTILIB_REQUIRED += msoft-float
+MULTILIB_REQUIRED += mcpu=403
+MULTILIB_REQUIRED += mcpu=505
+MULTILIB_REQUIRED += mcpu=603e
+MULTILIB_REQUIRED += mcpu=603e/msoft-float
+MULTILIB_REQUIRED += mcpu=604
+MULTILIB_REQUIRED += mcpu=604/msoft-float
+MULTILIB_REQUIRED += mcpu=7400
+MULTILIB_REQUIRED += mcpu=7400/msoft-float
+MULTILIB_REQUIRED += mcpu=8540
+MULTILIB_REQUIRED += mcpu=8540/msoft-float/mno-spe
+MULTILIB_REQUIRED += mcpu=8540/mfloat-gprs=double
+MULTILIB_REQUIRED += mcpu=860
+MULTILIB_REQUIRED += mcpu=e6500/m32
+MULTILIB_REQUIRED += mcpu=e6500/m32/msoft-float/mno-altivec
