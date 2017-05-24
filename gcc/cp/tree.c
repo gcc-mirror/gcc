@@ -2172,17 +2172,16 @@ ovl_insert (tree fn, tree maybe_ovl, bool using_p)
 {
   bool copying = false; /* Checking use only.  */
   bool hidden_p = DECL_HIDDEN_P (fn);
-  int weight = hidden_p * 4 + using_p * 2 + DECL_MODULE_EXPORT_P (fn);
+  int weight = ((hidden_p - DECL_MODULE_EXPORT_P (fn)) << 1) |  (using_p << 0);
 
   tree result = NULL_TREE;
   tree insert_after = NULL_TREE;
 
   /* Find insertion point.  */
   while (maybe_ovl && TREE_CODE (maybe_ovl) == OVERLOAD
-	 && (weight <
-	     (OVL_HIDDEN_P (maybe_ovl) * 4
-	      + OVL_USING_P (maybe_ovl) * 2
-	      + OVL_EXPORT_P (maybe_ovl))))
+	 && (weight < (((OVL_HIDDEN_P (maybe_ovl)
+			 - OVL_EXPORT_P (maybe_ovl)) << 1)
+		       | (OVL_USING_P (maybe_ovl) << 0))))
     {
       gcc_checking_assert (!OVL_LOOKUP_P (maybe_ovl)
 			   && (!OVL_USED_P (maybe_ovl) || !copying));
@@ -2260,8 +2259,10 @@ ovl_skip_hidden (tree ovl)
   return ovl;
 }
 
+/* NODE is an OVL_HIDDEN_P node which is now revealed.  */
+
 tree
-ovl_iterator::unhide_node (tree overload, tree node)
+ovl_iterator::reveal_node (tree overload, tree node)
 {
   /* We cannot have returned NODE as part of a lookup overload, so it
      cannot be USED.  */
@@ -2272,6 +2273,8 @@ ovl_iterator::unhide_node (tree overload, tree node)
     if (TREE_CODE (chain) == OVERLOAD
 	&& (OVL_USING_P (chain) || OVL_HIDDEN_P (chain)))
       {
+	/* The node needs moving, and the simplest way is to remove it
+	   and reinsert.  */
 	overload = remove_node (overload, node);
 	overload = ovl_insert (OVL_FUNCTION (node), overload);
       }

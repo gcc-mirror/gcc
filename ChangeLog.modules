@@ -1,5 +1,7 @@
 2017-05-24  Nathan Sidwell  <nathan@acm.org>
 
+	Merge trunk r248406.
+
 	gcc/cp/
 	* call.c (build_operator_new_call, build_new_op_1): Open code ADL
 	lookup.

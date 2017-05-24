@@ -757,14 +757,14 @@ class ovl_iterator
   }
 
  public:
-  tree remove_using (tree head)
+  tree remove_node (tree head)
   {
     gcc_assert (using_p ());
     return remove_node (head, ovl);
   }
-  tree unhide (tree overload)
+  tree reveal_node (tree overload)
   {
-    return unhide_node (overload, ovl);
+    return reveal_node (overload, ovl);
   }
 
  public:
@@ -790,7 +790,7 @@ protected:
   /* We make these static functions to avoid the address of the
      iterator escaping the local context.  */
   static tree remove_node (tree head, tree node);
-  static tree unhide_node (tree ovl, tree node);
+  static tree reveal_node (tree ovl, tree node);
 };
 
 /* Iterator over a (potentially) 2 dimensional overload.  */

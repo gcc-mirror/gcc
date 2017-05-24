@@ -1231,7 +1231,7 @@ add_method (tree type, tree method, bool via_using)
 		   && DECL_INHERITED_CTOR (fn))
 	    {
 	      /* Remove the inherited constructor.  */
-	      current_fns = iter.remove_using (current_fns);
+	      current_fns = iter.remove_node (current_fns);
 	      continue;
 	    }
 	  else

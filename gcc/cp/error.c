@@ -1005,6 +1005,8 @@ dump_simple_decl (cxx_pretty_printer *pp, tree t, tree type, int flags)
       else
 	dump_decl (pp, DECL_NAME (t), flags);
     }
+  else if (DECL_DECOMPOSITION_P (t))
+    pp_string (pp, M_("<structured bindings>"));
   else
     pp_string (pp, M_("<anonymous>"));
 

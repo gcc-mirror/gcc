@@ -2494,13 +2494,12 @@ do_pushdecl (tree decl, bool is_friend)
 	  ; /* Ignore using decls here.  */
 	else if (tree match = duplicate_decls (decl, *iter, is_friend))
 	  {
-	    if (match == error_mark_node)
-	      return match;
-
-	    if (iter.hidden_p () && !DECL_HIDDEN_P (match))
+	    if (iter.hidden_p ()
+		&& match != error_mark_node
+		&& !DECL_HIDDEN_P (match))
 	      {
-		/* Unhiding a previously hidden friend.  */
-		tree head = iter.unhide (old);
+		/* Unhiding a previously hidden decl.  */
+		tree head = iter.reveal_node (old);
 		if (head != old)
 		  {
 		    if (!ns)
@@ -2518,13 +2517,13 @@ do_pushdecl (tree decl, bool is_friend)
 		  /* We need to check and register the fn now.  */
 		  check_extern_c_conflict (match);
 	      }
-
 	    return match;
 	  }
 
       /* We are pushing a new decl.  */
 
-      /* Skip a hidden builtin we failed to match already.  */
+      /* Skip a hidden builtin we failed to match already.  There can
+	 only be one.  */
       if (old && anticipated_builtin_p (old))
 	old = OVL_CHAIN (old);
 
@@ -2603,16 +2602,17 @@ do_pushdecl (tree decl, bool is_friend)
   return decl;
 }
 
-/* Record a decl-node X as belonging to the current lexical scope (or
-   the namespace containing it in the case of being friendly).  */
+/* Record a decl-node X as belonging to the current lexical scope.
+   It's a friend if IS_FRIEND is true -- which affects exactly where
+   we push it.  */
 
 tree
 pushdecl (tree x, bool is_friend)
 {
   bool subtime = timevar_cond_start (TV_NAME_LOOKUP);
-  x = do_pushdecl (x, is_friend);
+  tree ret = do_pushdecl (x, is_friend);
   timevar_cond_stop (TV_NAME_LOOKUP, subtime);
-  return x;
+  return ret;
 }
 
 /* SLOT_VAL is the value of a binding.  Look in the module partitions
