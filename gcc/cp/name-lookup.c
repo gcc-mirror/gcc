@@ -275,14 +275,10 @@ arg_assoc_namespace (struct arg_lookup *k, tree scope)
   if (!value)
     return false;
 
+  value = ovl_skip_hidden (value);
+  
   for (; value; value = OVL_NEXT (value))
     {
-      /* We don't want to find arbitrary hidden functions via argument
-	 dependent lookup.  We only want to find friends of associated
-	 classes, which we'll do via arg_assoc_class.  */
-      if (hidden_name_p (OVL_CURRENT (value)))
-	continue;
-
       if (add_function (k, OVL_CURRENT (value)))
 	return true;
     }
@@ -630,7 +626,7 @@ lookup_arg_dependent_1 (tree name, tree fns, vec<tree, va_gc> *args)
   /* Remove any hidden friend functions from the list of functions
      found so far.  They will be added back by arg_assoc_class as
      appropriate.  */
-  fns = remove_hidden_names (fns);
+  fns = ovl_skip_hidden (fns);
 
   k.name = name;
   k.args = args;
@@ -4347,7 +4343,7 @@ ambiguous_decl (struct scope_binding *old, cxx_binding *new_binding, int flags)
   /* Copy the type.  */
   type = new_binding->type;
   if (LOOKUP_NAMESPACES_ONLY (flags)
-      || (type && hidden_name_p (type) && !(flags & LOOKUP_HIDDEN)))
+      || (type && !(flags & LOOKUP_HIDDEN) && DECL_HIDDEN_P (type)))
     type = NULL_TREE;
 
   /* Copy the value.  */
@@ -4355,7 +4351,7 @@ ambiguous_decl (struct scope_binding *old, cxx_binding *new_binding, int flags)
   if (val)
     {
       if (!(flags & LOOKUP_HIDDEN))
-	val = remove_hidden_names (val);
+	val = ovl_skip_hidden (val);
       if (val)
 	switch (TREE_CODE (val))
 	  {
@@ -4463,59 +4459,6 @@ qualify_lookup (tree val, int flags)
   if (is_lambda_ignored_entity (val))
     return false;
   return true;
-}
-
-/* Given a lookup that returned VAL, decide if we want to ignore it or
-   not based on DECL_ANTICIPATED.  */
-
-bool
-hidden_name_p (tree val)
-{
-  if (DECL_P (val)
-      && DECL_LANG_SPECIFIC (val)
-      && TYPE_FUNCTION_OR_TEMPLATE_DECL_P (val)
-      && DECL_ANTICIPATED (val))
-    return true;
-  if (TREE_CODE (val) == OVERLOAD)
-    {
-      for (tree o = val; o; o = OVL_CHAIN (o))
-	if (!hidden_name_p (OVL_FUNCTION (o)))
-	  return false;
-      return true;
-    }
-  return false;
-}
-
-/* Remove any hidden declarations from a possibly overloaded set
-   of functions.  */
-
-tree
-remove_hidden_names (tree fns)
-{
-  if (!fns)
-    return fns;
-
-  if (DECL_P (fns) && hidden_name_p (fns))
-    fns = NULL_TREE;
-  else if (TREE_CODE (fns) == OVERLOAD)
-    {
-      tree o;
-
-      for (o = fns; o; o = OVL_NEXT (o))
-	if (hidden_name_p (OVL_CURRENT (o)))
-	  break;
-      if (o)
-	{
-	  tree n = NULL_TREE;
-
-	  for (o = fns; o; o = OVL_NEXT (o))
-	    if (!hidden_name_p (OVL_CURRENT (o)))
-	      n = lookup_add (OVL_CURRENT (o), n);
-	  fns = n;
-	}
-    }
-
-  return fns;
 }
 
 /* Suggest alternatives for NAME, an IDENTIFIER_NODE for which name
@@ -5336,10 +5279,6 @@ lookup_name_real_1 (tree name, int prefer_type, int nonclass, bool block_p,
   /* Now lookup in namespace scopes.  */
   if (!val)
     val = unqualified_namespace_lookup (name, flags);
-
-  /* Anticipated built-ins and friends aren't found by normal lookup.  */
-  if (val && !(flags & LOOKUP_HIDDEN))
-    val = remove_hidden_names (val);
 
   /* If we have a single function from a using decl, pull it out.  */
   if (val && TREE_CODE (val) == OVERLOAD && !really_overloaded_fn (val))
