@@ -360,7 +360,6 @@ cp_register_dumps (gcc::dump_manager *dumps)
   class_dump_id = dumps->dump_register
     (".class", "lang-class", "lang-class", DK_lang, OPTGROUP_NONE, false);
 
-
   module_dump_id = dumps->dump_register
     (".module", "lang-module", "lang-module", DK_lang, OPTGROUP_NONE, false);
 

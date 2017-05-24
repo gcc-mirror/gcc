@@ -312,30 +312,29 @@ public:
   typedef vec<using_pair, va_heap, vl_embed> using_queue;
 
 public:
-  tree name; /* The identifier being looked for.  */
-  tree value; /* A (possibly ambiguous) set of things found.  */
-  tree type; /* A type that has been found.  */
+  tree name;	/* The identifier being looked for.  */
+  tree value;	/* A (possibly ambiguous) set of things found.  */
+  tree type;	/* A type that has been found.  */
   int flags;
-  unsigned from;  /* Module we're looking from.  */
-  unsigned cookie;
+  vec<tree, va_heap, vl_embed> *scopes;
+  name_lookup *previous; /* Previously active lookup.  */
 
 protected:
-  /* Marked scopes to unmark.   */
-  static vec<tree, va_heap, vl_ptr> scopes;
-  /* Stack of preserved marking state.  Name lookup can recurse via
-     ADL causing instantiation of an incomplete type.  But this is
-     not at all common.  */
-  static vec<unsigned, va_heap, vl_ptr> state;
+  /* Marked scope stack for outermost name lookup.  */
+  static vec<tree, va_heap, vl_embed> *shared_scopes;
+  /* Currently active lookup.  */
+  static name_lookup *active;
 
 public:
   name_lookup (tree n, int f)
-  : name (n), value (NULL_TREE), type (NULL_TREE), flags (f)
+  : name (n), value (NULL_TREE), type (NULL_TREE), flags (f),
+    scopes (NULL), previous (NULL)
   {
-    cookie = preserve_state ();
+    preserve_state ();
   }
   ~name_lookup ()
   {
-    restore_state (cookie);
+    restore_state ();
   }
 
 private: /* Uncopyable, unmovable, unassignable. I am a rock. */
@@ -352,13 +351,13 @@ protected:
     return LOOKUP_FOUND_P (scope);
   }
   
-  static void mark_seen (tree scope); /* Mark and add to scope vector. */
+  void mark_seen (tree scope); /* Mark and add to scope vector. */
   static void mark_found (tree scope)
   {
     gcc_checking_assert (seen_p (scope));
     LOOKUP_FOUND_P (scope) = true;
   }
-  static bool see_and_mark (tree scope)
+  bool see_and_mark (tree scope)
   {
     bool ret = seen_p (scope);
     if (!ret)
@@ -368,8 +367,8 @@ protected:
   bool find_and_mark (tree scope);
 
 private:
-  static unsigned preserve_state ();
-  static void restore_state (unsigned);
+  void preserve_state ();
+  void restore_state ();
 
 private:
   static tree ambiguous (tree thing, tree current);
@@ -421,58 +420,94 @@ public:
   tree search_adl (tree fns, vec<tree, va_gc> *args);
 };
 
-/* Scopes to unmark.  */
-vec<tree, va_heap, vl_ptr> name_lookup::scopes;
-/* Preserved state.  */
-vec<unsigned, va_heap, vl_ptr> name_lookup::state;
+/* Scope stack shared by all outermost lookups.  This avoids us
+   allocating and freeing on every single lookup.  */
+vec<tree, va_heap, vl_embed> *name_lookup::shared_scopes;
 
-/* Save marking state of an in-progress lookup that we've
-   interrupted.  */
+/* Currently active lookup.  */
+name_lookup *name_lookup::active;
 
-unsigned
+/* Name lookup is recursive, becase ADL can cause template
+   instatiation.  This is of course a rare event, so we optimize for
+   it not happening.  When we discover an active name-lookup, which
+   must be an ADL lookup,  we need to unmark the marked scopes and also
+   unmark the lookup we might have been accumulating.  */
+
+void
 name_lookup::preserve_state ()
 {
-  unsigned cookie = scopes.length ();
-  unsigned length = state.length ();
-  unsigned prev_cookie = length ? state[length - 1] : 0;
-  if (cookie)
+  previous = active;
+  if (previous)
     {
-      state.reserve (length + cookie - prev_cookie + 1);
-      for (unsigned ix = prev_cookie; ix != cookie; ix++)
+      unsigned length = vec_safe_length (previous->scopes);
+      vec_safe_reserve (previous->scopes, length * 2);
+      for (unsigned ix = length; ix--;)
 	{
-	  tree decl = scopes[ix];
+	  tree decl = (*previous->scopes)[ix];
+
 	  gcc_checking_assert (LOOKUP_SEEN_P (decl));
-	  state.quick_push (LOOKUP_FOUND_P (decl));
-	  LOOKUP_SEEN_P (decl) = LOOKUP_FOUND_P (decl) = false;
+	  LOOKUP_SEEN_P (decl) = false;
+
+	  /* Preserve the FOUND_P state on the interrupted lookup's
+	     stack.  */
+	  if (LOOKUP_FOUND_P (decl))
+	    {
+	      LOOKUP_FOUND_P (decl) = false;
+	      previous->scopes->quick_push (decl);
+	    }
 	}
-      state.quick_push (cookie);
+      lookup_mark (previous->value, false);
     }
-  return prev_cookie;
+  else
+    scopes = shared_scopes;
+  active = this;
 }
 
 /* Restore the marking state of a lookup we interrupted.  */
 
 void
-name_lookup::restore_state (unsigned prev_cookie)
+name_lookup::restore_state ()
 {
-  unsigned cookie = state.is_empty () ? 0 : state.pop ();
-
-  while (scopes.length () != cookie)
+  /* Unmark and empty this lookup's scope stack.  */
+  for (unsigned ix = vec_safe_length (scopes); ix--;)
     {
-      tree decl = scopes.pop ();
+      tree decl = scopes->pop ();
       gcc_checking_assert (LOOKUP_SEEN_P (decl));
-      LOOKUP_SEEN_P (decl) = LOOKUP_FOUND_P (decl) = false;
+      LOOKUP_SEEN_P (decl) = false;
+      LOOKUP_FOUND_P (decl) = false;
     }
 
-  for (unsigned ix = cookie; ix-- != prev_cookie;)
+  active = previous;
+  if (previous)
     {
-      tree decl = scopes[ix];
+      unsigned length = vec_safe_length (previous->scopes);
+      for (unsigned ix = 0; ix != length; ix++)
+	{
+	  tree decl = (*previous->scopes)[ix];
+	  if (LOOKUP_SEEN_P (decl))
+	    {
+	      /* The remainder of the scope stack must be recording
+		 FOUND_P decls, which we want to pop off.  */
+	      do
+		{
+		  tree decl = previous->scopes->pop ();
+		  gcc_checking_assert (LOOKUP_SEEN_P (decl)
+				       && !LOOKUP_FOUND_P (decl));
+		  LOOKUP_FOUND_P (decl) = true;
+		}
+	      while (++ix != length);
+	      break;
+	    }
 
-      gcc_checking_assert (!LOOKUP_SEEN_P (decl) && !LOOKUP_FOUND_P (decl));
-      LOOKUP_SEEN_P (decl) = true;
-      if (state.pop ())
-	LOOKUP_FOUND_P (decl) = true;
+	  gcc_checking_assert (!LOOKUP_FOUND_P (decl));
+	  LOOKUP_SEEN_P (decl) = true;
+	}
+
+      lookup_mark (previous->value, true);
+      free (scopes);
     }
+  else
+    shared_scopes = scopes;
 }
 
 void
@@ -480,7 +515,7 @@ name_lookup::mark_seen (tree scope)
 {
   gcc_checking_assert (!seen_p (scope));
   LOOKUP_SEEN_P (scope) = true;
-  scopes.safe_push (scope);
+  vec_safe_push (scopes, scope);
 }
 
 bool
@@ -491,13 +526,14 @@ name_lookup::find_and_mark (tree scope)
     {
       LOOKUP_FOUND_P (scope) = true;
       if (!LOOKUP_SEEN_P (scope))
-	scopes.safe_push (scope);
+	vec_safe_push (scopes, scope);
     }
 
   return result;
 }
 
 /* THING and CURRENT are ambiguous, concatenate them.  */
+
 tree
 name_lookup::ambiguous (tree thing, tree current)
 {

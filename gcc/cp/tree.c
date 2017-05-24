@@ -2331,11 +2331,19 @@ lookup_mark (tree ovl, bool val)
   /* For every node that is a lookup, mark the thing it points to.  */
   for (; ovl && TREE_CODE (ovl) == OVERLOAD && OVL_LOOKUP_P (ovl);
        ovl = OVL_CHAIN (ovl))
-    LOOKUP_SEEN_P (OVL_FUNCTION (ovl)) = val;
+    {
+      tree targ = OVL_FUNCTION (ovl);
+      gcc_checking_assert (LOOKUP_SEEN_P (targ) != val);
+      LOOKUP_SEEN_P (targ) = val;
+    }
 
   if (ovl && (TREE_CODE (ovl) == OVERLOAD ||
 	      TREE_CODE (ovl) == FUNCTION_DECL))
-    LOOKUP_SEEN_P (ovl) = val;
+    {
+      /* Mark the overload itsef.  */
+      gcc_checking_assert (LOOKUP_SEEN_P (ovl) != val);
+      LOOKUP_SEEN_P (ovl) = val;
+    }
 }
 
 /* Add a set of new FNS into a lookup.  */

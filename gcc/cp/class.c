@@ -4869,7 +4869,7 @@ void
 clone_function_decl (tree fn, bool update_methods, bool via_using)
 {
   tree clone;
-  
+
   /* Avoid inappropriate cloning.  */
   if (DECL_CHAIN (fn)
       && DECL_CLONED_FUNCTION_P (DECL_CHAIN (fn)))

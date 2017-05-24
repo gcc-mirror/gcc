@@ -1,5 +1,12 @@
 2017-05-24  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* name-lookup.c (lookup_name): Reimplement state preservation and
+	restoration.
+	* tree.c (lookup_mark): Add asserts.
+	gcc/testsuite/
+	* g++.dg/lookup/koenig14.C: New.
+
 	Merge trunk r248406.
 
 	gcc/cp/
