@@ -2337,15 +2337,16 @@ is_overloaded_fn (tree x)
   if (TREE_CODE (x) == OFFSET_REF
       || TREE_CODE (x) == COMPONENT_REF)
     x = TREE_OPERAND (x, 1);
-  if (BASELINK_P (x))
-    x = BASELINK_FUNCTIONS (x);
+  x = MAYBE_BASELINK_FUNCTIONS (x);
   if (TREE_CODE (x) == TEMPLATE_ID_EXPR)
     x = TREE_OPERAND (x, 0);
-  if (DECL_FUNCTION_TEMPLATE_P (OVL_CURRENT (x))
-      || (TREE_CODE (x) == OVERLOAD && OVL_CHAIN (x)))
+
+  if (DECL_FUNCTION_TEMPLATE_P (OVL_FIRST (x))
+      || (TREE_CODE (x) == OVERLOAD && !OVL_SINGLE_P (x)))
     return 2;
-  return  (TREE_CODE (x) == FUNCTION_DECL
-	   || TREE_CODE (x) == OVERLOAD);
+
+  return (TREE_CODE (x) == FUNCTION_DECL
+	  || TREE_CODE (x) == OVERLOAD);
 }
 
 /* X is the CALL_EXPR_FN of a CALL_EXPR.  If X represents a dependent name
@@ -2357,11 +2358,10 @@ dependent_name (tree x)
 {
   if (identifier_p (x))
     return x;
-  if (TREE_CODE (x) != COMPONENT_REF
-      && TREE_CODE (x) != OFFSET_REF
-      && TREE_CODE (x) != BASELINK
-      && is_overloaded_fn (x))
-    return DECL_NAME (get_first_fn (x));
+  if (TREE_CODE (x) == TEMPLATE_ID_EXPR)
+    x = TREE_OPERAND (x, 0);
+  if (TREE_CODE (x) == OVERLOAD || TREE_CODE (x) == FUNCTION_DECL)
+    return OVL_NAME (x);
   return NULL_TREE;
 }
 
@@ -3319,22 +3319,15 @@ decl_namespace_context (tree decl)
 bool
 decl_anon_ns_mem_p (const_tree decl)
 {
-  while (1)
+  while (TREE_CODE (decl) != NAMESPACE_DECL)
     {
-      if (decl == NULL_TREE || decl == error_mark_node)
-	return false;
-      if (TREE_CODE (decl) == NAMESPACE_DECL
-	  && DECL_NAME (decl) == NULL_TREE)
-	return true;
-      /* Classes and namespaces inside anonymous namespaces have
-         TREE_PUBLIC == 0, so we can shortcut the search.  */
-      else if (TYPE_P (decl))
-	return (TREE_PUBLIC (TYPE_MAIN_DECL (decl)) == 0);
-      else if (TREE_CODE (decl) == NAMESPACE_DECL)
-	return (TREE_PUBLIC (decl) == 0);
-      else
-	decl = DECL_CONTEXT (decl);
+      /* Classes inside anonymous namespaces have TREE_PUBLIC == 0.  */
+      if (TYPE_P (decl))
+	return !TREE_PUBLIC (TYPE_MAIN_DECL (decl));
+
+      decl = CP_DECL_CONTEXT (decl);
     }
+  return !TREE_PUBLIC (decl);
 }
 
 /* Subroutine of cp_tree_equal: t1 and t2 are the CALL_EXPR_FNs of two
