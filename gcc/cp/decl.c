@@ -6043,6 +6043,7 @@ reshape_init (tree type, tree init, tsubst_flags_t complain)
   if (is_direct_enum_init (type, init))
     {
       tree elt = CONSTRUCTOR_ELT (init, 0)->value;
+      type = cv_unqualified (type);
       if (check_narrowing (ENUM_UNDERLYING_TYPE (type), elt, complain))
 	return cp_build_c_cast (type, elt, tf_warning_or_error);
       else

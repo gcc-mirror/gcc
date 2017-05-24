@@ -1,3 +1,14 @@
+2017-05-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR c++/80544
+	* tree.c (reshape_init): Use unqualified type for direct enum init.
+	* typeck.c (maybe_warn_about_cast_ignoring_quals): New.
+	(build_static_cast_1, build_reinterpret_cast_1): Strip cv-quals from
+	non-class destination types.
+	(build_const_cast_1): Strip cv-quals from destination types.
+	(build_static_cast, build_reinterpret_cast, build_const_cast)
+	(cp_build_c_cast): Add calls to maybe_warn_about_cast_ignoring_quals.
+
 2017-05-24  Martin Sebor  <msebor@redhat.com>
 
 	PR c/80731
