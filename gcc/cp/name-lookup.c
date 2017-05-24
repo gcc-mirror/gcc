@@ -2103,7 +2103,13 @@ push_local_binding (tree id, tree decl, bool is_using)
      push_local_binding with a friend decl of a local class.  */
   b = innermost_nonclass_level ();
 
-  if (lookup_name_innermost_nonclass_level (id))
+  cxx_binding *binding = NULL;
+  if (b->kind == sk_namespace)
+    binding = find_namespace_binding (current_namespace, id);
+  else
+    binding = find_local_binding (b, id);
+
+  if (binding)
     {
       /* Supplement the existing binding.  */
       if (!supplement_binding (IDENTIFIER_BINDING (id), decl))
@@ -5429,37 +5435,6 @@ lookup_type_scope (tree name, tag_scope scope)
   timevar_cond_stop (TV_NAME_LOOKUP, subtime);
   return ret;
 }
-
-
-/* Similar to `lookup_name' but look only in the innermost non-class
-   binding level.  */
-
-static tree
-lookup_name_innermost_nonclass_level_1 (tree name)
-{
-  cp_binding_level *b = innermost_nonclass_level ();
-  cxx_binding *binding = NULL;
-
-  if (b->kind == sk_namespace)
-    binding = find_namespace_binding (current_namespace, name);
-  else
-    binding = find_local_binding (b, name);
-
-  return binding ? binding->value : NULL_TREE;
-}
-
-/* Wrapper for lookup_name_innermost_nonclass_level_1.  */
-
-tree
-lookup_name_innermost_nonclass_level (tree name)
-{
-  tree ret;
-  bool subtime = timevar_cond_start (TV_NAME_LOOKUP);
-  ret = lookup_name_innermost_nonclass_level_1 (name);
-  timevar_cond_stop (TV_NAME_LOOKUP, subtime);
-  return ret;
-}
-
 
 /* Returns true iff DECL is a block-scope extern declaration of a function
    or variable.  */

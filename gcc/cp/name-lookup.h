@@ -310,7 +310,6 @@ extern tree get_namespace_binding (tree ns, tree id);
 extern void set_global_binding (tree id, tree val);
 extern tree lookup_qualified_name (tree, tree, int, bool, /*hidden*/bool = false);
 extern tree lookup_name_nonclass (tree);
-extern tree lookup_name_innermost_nonclass_level (tree);
 extern bool is_local_extern (tree);
 extern tree lookup_function_nonclass (tree, vec<tree, va_gc> *, bool);
 extern bool pushdecl_class_level (tree);
