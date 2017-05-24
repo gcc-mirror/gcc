@@ -1,3 +1,11 @@
+2017-05-23  Jason Merrill  <jason@redhat.com>
+
+	-Wunused and C++17 structured bindings
+	* decl.c (poplevel): Don't warn about unused structured bindings,
+	only real variables.
+	* error.c (dump_simple_decl): Handle structured bindings.
+	* expr.c (mark_exp_read): Look through DECL_VALUE_EXPR.
+
 2017-05-23  Nathan Sidwell  <nathan@acm.org>
 
 	* cp-tree.h (PUSH_GLOBAL, PUSH_LOCAL, PUSH_USING): Delete.
