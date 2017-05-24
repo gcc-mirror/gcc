@@ -1,3 +1,8 @@
+2017-05-24  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	PR rtl-optimization/80754
+	* lra-remat.c (do_remat): Add overlap checks for dst_regno.
+
 2017-05-24  Sheldon Lobo  <smlobo@sheldon.us.oracle.com>
 
 	* config/sparc/sparc.md (length): Return the correct value for -mflat
