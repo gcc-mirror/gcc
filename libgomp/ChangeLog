@@ -1,5 +1,19 @@
 2017-05-24  Thomas Schwinge  <thomas@codesourcery.com>
 
+	* openacc.h (acc_pcopyin, acc_pcreate): Provide prototypes instead
+	of preprocessor definitions.
+	* libgomp.h (strong_alias): Guard by "#ifdef
+	HAVE_ATTRIBUTE_ALIAS".
+	* oacc-mem.c: Provide "acc_pcreate" as alias for
+	"acc_present_or_create", and "acc_pcopyin" as alias for
+	"acc_present_or_copyin".
+	* libgomp.map: New version "OACC_2.0.1".
+	(OACC_2.0.1): Add "acc_pcopyin", and "acc_pcreate".
+	* testsuite/libgomp.oacc-c-c++-common/lib-38.c: Remove, merging
+	its content into...
+	* testsuite/libgomp.oacc-c-c++-common/lib-32.c: ... this file.
+	Extend testing.
+
 	* plugin/plugin-nvptx.c (nvptx_get_num_devices): Debugging output
 	when disabling nvptx offloading.
 

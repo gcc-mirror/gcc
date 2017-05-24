@@ -91,8 +91,10 @@ void acc_free (void *) __GOACC_NOTHROW;
    the standard specifies otherwise.  */
 void *acc_copyin (void *, size_t) __GOACC_NOTHROW;
 void *acc_present_or_copyin (void *, size_t) __GOACC_NOTHROW;
+void *acc_pcopyin (void *, size_t) __GOACC_NOTHROW;
 void *acc_create (void *, size_t) __GOACC_NOTHROW;
 void *acc_present_or_create (void *, size_t) __GOACC_NOTHROW;
+void *acc_pcreate (void *, size_t) __GOACC_NOTHROW;
 void acc_copyout (void *, size_t) __GOACC_NOTHROW;
 void acc_delete (void *, size_t) __GOACC_NOTHROW;
 void acc_update_device (void *, size_t) __GOACC_NOTHROW;
@@ -104,11 +106,6 @@ void *acc_hostptr (void *) __GOACC_NOTHROW;
 int acc_is_present (void *, size_t) __GOACC_NOTHROW;
 void acc_memcpy_to_device (void *, void *, size_t) __GOACC_NOTHROW;
 void acc_memcpy_from_device (void *, void *, size_t) __GOACC_NOTHROW;
-
-/* Old names.  OpenACC does not specify whether these can or must
-   not be macros, inlines or aliases for the new names.  */
-#define acc_pcreate acc_present_or_create
-#define acc_pcopyin acc_present_or_copyin
 
 /* CUDA-specific routines.  */
 void *acc_get_current_cuda_device (void) __GOACC_NOTHROW;
