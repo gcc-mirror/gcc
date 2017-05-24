@@ -1,4 +1,5 @@
 /* acc_present_or_create, acc_present_or_copyin, etc.  */
+/* See also Fortran variants in "../libgomp.oacc-fortran/lib-32*".  */
 
 #include <stdbool.h>
 #include <stdlib.h>

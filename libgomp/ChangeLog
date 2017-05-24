@@ -1,5 +1,8 @@
 2017-05-24  Thomas Schwinge  <thomas@codesourcery.com>
 
+	* testsuite/libgomp.oacc-fortran/lib-32-1.f: New file.
+	* testsuite/libgomp.oacc-fortran/lib-32-2.f: Likewise.
+
 	* openacc.h (acc_pcopyin, acc_pcreate): Provide prototypes instead
 	of preprocessor definitions.
 	* libgomp.h (strong_alias): Guard by "#ifdef
