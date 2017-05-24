@@ -380,6 +380,8 @@ OACC_2.0 {
 
 OACC_2.0.1 {
   global:
+	acc_async_wait;
+	acc_async_wait_all;
 	acc_pcopyin;
 	acc_pcreate;
 } OACC_2.0;

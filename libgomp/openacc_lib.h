@@ -108,6 +108,11 @@
         end subroutine
       end interface
 
+!     acc_async_wait is an OpenACC 1.0 compatibility name for acc_wait.
+      interface acc_async_wait
+        procedure :: acc_wait_h
+      end interface
+
       interface acc_wait_async
         subroutine acc_wait_async_h (a1, a2)
           integer a1, a2
@@ -117,6 +122,12 @@
       interface acc_wait_all
         subroutine acc_wait_all_h ()
         end subroutine
+      end interface
+
+!     acc_async_wait_all is an OpenACC 1.0 compatibility name for
+!     acc_wait_all.
+      interface acc_async_wait_all
+        procedure :: acc_wait_all_h
       end interface
 
       interface acc_wait_all_async
