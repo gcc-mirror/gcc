@@ -1,3 +1,8 @@
+2017-05-24  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* var-tracking.c (track_expr_p): Do not return 0 for tracked record
+	parameters passed indirectly.
+
 2017-05-23  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (*movdi_internal): Remove SSE4
