@@ -656,7 +656,10 @@ poplevel (int keep, int reverse, int functionbody)
 	if (VAR_P (decl)
 	    && (! TREE_USED (decl) || !DECL_READ_P (decl))
 	    && ! DECL_IN_SYSTEM_HEADER (decl)
-	    && DECL_NAME (decl) && ! DECL_ARTIFICIAL (decl)
+	    /* For structured bindings, consider only real variables, not
+	       subobjects.  */
+	    && (DECL_DECOMPOSITION_P (decl) ? !DECL_VALUE_EXPR (decl)
+		: (DECL_NAME (decl) && !DECL_ARTIFICIAL (decl)))
 	    && type != error_mark_node
 	    && (!CLASS_TYPE_P (type)
 		|| !TYPE_HAS_NONTRIVIAL_DESTRUCTOR (type)
