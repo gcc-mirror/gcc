@@ -162,15 +162,6 @@ complete_type_or_else (tree type, tree value)
   return complete_type_or_maybe_complain (type, value, tf_warning_or_error);
 }
 
-/* Return truthvalue of whether type of EXP is instantiated.  */
-
-int
-type_unknown_p (const_tree exp)
-{
-  return (TREE_CODE (exp) == TREE_LIST
-	  || TREE_TYPE (exp) == unknown_type_node);
-}
-
 
 /* Return the common type of two parameter lists.
    We assume that comptypes has already been done and returned 1;

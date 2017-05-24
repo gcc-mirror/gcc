@@ -1,3 +1,15 @@
+2017-05-24  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-tree.h (cp_free_lang_data): Add extern.
+	(ovl_skip_hidden, is_overloaded_fn, really_overloaded_fn): Add
+	ATTRIBUTE_PURE.
+	(type_unknown_p): Return bool, make inline, lose TREE_LIST check.
+	* typeck.c (type_unknown_p): Delete.
+	* tree.c (is_overloaded_fn): Use MAYBE_BASELINE_FUNCTIONS, adjust
+	overload management.
+	(dependent_name): Likewise.
+	(decl_anon_ns_mem_p): Simplify.
+
 2017-05-24  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR c++/80544

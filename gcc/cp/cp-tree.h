@@ -6789,7 +6789,7 @@ extern tree finish_builtin_launder		(location_t, tree,
 /* in tree.c */
 extern int cp_tree_operand_length		(const_tree);
 extern int cp_tree_code_length			(enum tree_code);
-void cp_free_lang_data 				(tree t);
+extern void cp_free_lang_data 			(tree t);
 extern tree force_target_expr			(tree, tree, tsubst_flags_t);
 extern tree build_target_expr_with_type		(tree, tree, tsubst_flags_t);
 extern void lang_check_failed			(const char *, int,
@@ -6811,7 +6811,8 @@ extern bool type_has_nontrivial_copy_init	(const_tree);
 extern void maybe_warn_parm_abi			(tree, location_t);
 extern bool class_tmpl_impl_spec_p		(const_tree);
 extern int zero_init_p				(const_tree);
-extern bool check_abi_tag_redeclaration		(const_tree, const_tree, const_tree);
+extern bool check_abi_tag_redeclaration		(const_tree, const_tree,
+						 const_tree);
 extern bool check_abi_tag_args			(tree, tree);
 extern tree strip_typedefs			(tree, bool * = NULL);
 extern tree strip_typedefs_expr			(tree, bool * = NULL);
@@ -6852,10 +6853,11 @@ extern tree ovl_make				(tree fn,
 						 tree next = NULL_TREE);
 extern tree ovl_insert				(tree fn, tree maybe_ovl,
 						 bool using_p = false);
-extern tree ovl_skip_hidden			(tree);
+extern tree ovl_skip_hidden			(tree) ATTRIBUTE_PURE;
 extern tree lookup_add				(tree fns, tree lookup);
 extern void lookup_keep				(tree lookup, bool keep);
-extern int is_overloaded_fn			(tree);
+extern int is_overloaded_fn			(tree) ATTRIBUTE_PURE;
+extern bool really_overloaded_fn		(tree) ATTRIBUTE_PURE;
 extern tree dependent_name			(tree);
 extern tree get_fns				(tree) ATTRIBUTE_PURE;
 extern tree get_first_fn			(tree) ATTRIBUTE_PURE;
@@ -6876,7 +6878,6 @@ extern bool decl_anon_ns_mem_p			(const_tree);
 extern tree lvalue_type				(tree);
 extern tree error_type				(tree);
 extern int varargs_function_p			(const_tree);
-extern bool really_overloaded_fn		(tree);
 extern bool cp_tree_equal			(tree, tree);
 extern tree no_linkage_check			(tree, bool);
 extern void debug_binfo				(tree);
@@ -6933,7 +6934,7 @@ extern tree require_complete_type_sfinae	(tree, tsubst_flags_t);
 extern tree complete_type			(tree);
 extern tree complete_type_or_else		(tree, tree);
 extern tree complete_type_or_maybe_complain	(tree, tree, tsubst_flags_t);
-extern int type_unknown_p			(const_tree);
+inline bool type_unknown_p			(const_tree);
 enum { ce_derived, ce_type, ce_normal, ce_exact };
 extern bool comp_except_specs			(const_tree, const_tree, int);
 extern bool comptypes				(tree, tree, int);
@@ -7309,6 +7310,12 @@ ovl_first (tree node)
   while (TREE_CODE (node) == OVERLOAD)
     node = OVL_FUNCTION (node);
   return node;
+}
+
+inline bool
+type_unknown_p (const_tree expr)
+{
+  return TREE_TYPE (expr) == unknown_type_node;
 }
 
 /* -- end of C++ */
