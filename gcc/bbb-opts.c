@@ -1239,13 +1239,14 @@ append_reg_usage (FILE * f, rtx_insn * insn)
   insn_info & ii = *i->second;
 
   if (f != stderr)
-    fprintf (f, "\n\t\t\t\t\t\t|%c ", ii.is_stack () ? 's' : ' ');
+    fprintf (f, "\n\t\t\t\t\t\t|%c ",
+	     ii.is_stack () ? 's' : ii.in_proepi () == 1 ? 'p' : ii.in_proepi () == 2 ? 'e' : ' ');
 
   for (int j = 0; j < 8; ++j)
     if (ii.is_use (j) || ii.is_def (j))
       {
 	fprintf (f, ii.is_hard (j) ? "!" : " ");
-	fprintf (f, ii.is_def (j) ? ii.is_use (j) ? "*" : "+" : " ");
+	fprintf (f, ii.is_def (j) ? ii.is_use (j) ? "*" : "+" : ii.is_myuse (j) ? "." : " ");
 	fprintf (f, "d%d ", j);
       }
     else
@@ -1255,7 +1256,7 @@ append_reg_usage (FILE * f, rtx_insn * insn)
     if (ii.is_use (j) || ii.is_def (j))
       {
 	fprintf (f, ii.is_hard (j) ? "!" : " ");
-	fprintf (f, ii.is_def (j) ? ii.is_use (j) ? "*" : "+" : " ");
+	fprintf (f, ii.is_def (j) ? ii.is_use (j) ? "*" : "+" : ii.is_myuse (j) ? "." : " ");
 	fprintf (f, "a%d ", j - 8);
       }
     else
@@ -3032,12 +3033,15 @@ opt_shrink_stack_frame (void)
       for (unsigned index = 0; index < infos.size (); ++index)
 	{
 	  insn_info & ii = infos[index];
+	  if (ii.in_proepi ())
+	    continue;
+
 	  rtx pattern = PATTERN (ii.get_insn ());
 	  if (ii.is_compare ())
 	    pattern = XEXP(pattern, 1);
 
 	  // lea n(sp),ax
-	  if (ii.get_src_reg() && ii.get_src_regno () == STACK_POINTER_REGNUM && ii.get_src_op () == PLUS)
+	  if (ii.get_src_reg () && ii.get_src_regno () == STACK_POINTER_REGNUM && ii.get_src_op () == PLUS)
 	    {
 	      rtx src = XEXP(pattern, 1);
 	      XEXP(src, 1) = gen_rtx_CONST_INT (GET_MODE(XEXP(src, 1)), ii.get_src_intval () - adjust);
@@ -3049,13 +3053,13 @@ opt_shrink_stack_frame (void)
 	      rtx plus = XEXP(src, 0);
 	      if (ii.get_src_op ())
 		plus = XEXP(plus, 0);
-	      XEXP(plus, 1) = gen_rtx_CONST_INT (SImode, ii.get_src_mem_addr () - adjust);
+	      XEXP(plus, 1) = gen_rtx_CONST_INT (GET_MODE(XEXP(plus, 1)), ii.get_src_mem_addr () - adjust);
 	    }
 
 	  if (ii.is_dst_mem () && ii.is_dst_mem_plus () && ii.get_dst_mem_regno () == STACK_POINTER_REGNUM)
 	    {
 	      rtx plus = XEXP(XEXP(pattern, 0), 0);
-	      XEXP(plus, 1) = gen_rtx_CONST_INT (SImode, ii.get_dst_intval () - adjust);
+	      XEXP(plus, 1) = gen_rtx_CONST_INT (GET_MODE(XEXP(plus, 1)), ii.get_dst_intval () - adjust);
 	    }
 	}
     }
