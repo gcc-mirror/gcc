@@ -6655,9 +6655,7 @@ check_for_casting_away_constness (tree src_type, tree dest_type,
     }
 }
 
-/*
-  Warns if the cast from expression EXPR to type TYPE is useless.
- */
+/* Warns if the cast from expression EXPR to type TYPE is useless.  */
 void
 maybe_warn_about_useless_cast (tree type, tree expr, tsubst_flags_t complain)
 {
@@ -6670,6 +6668,20 @@ maybe_warn_about_useless_cast (tree type, tree expr, tsubst_flags_t complain)
 	   && same_type_p (TREE_TYPE (expr), TREE_TYPE (type)))
 	  || same_type_p (TREE_TYPE (expr), type))
 	warning (OPT_Wuseless_cast, "useless cast to type %qT", type);
+    }
+}
+
+/* Warns if the cast ignores cv-qualifiers on TYPE.  */
+void
+maybe_warn_about_cast_ignoring_quals (tree type, tsubst_flags_t complain)
+{
+  if (warn_ignored_qualifiers
+      && complain & tf_warning
+      && !CLASS_TYPE_P (type)
+      && (cp_type_quals (type) & (TYPE_QUAL_CONST|TYPE_QUAL_VOLATILE)))
+    {
+      warning (OPT_Wignored_qualifiers, "type qualifiers ignored on cast "
+	       "result type");
     }
 }
 
@@ -6745,6 +6757,10 @@ build_static_cast_1 (tree type, tree expr, bool c_cast_p,
 
   /* Save casted types in the function's used types hash table.  */
   used_types_insert (type);
+
+  /* A prvalue of non-class type is cv-unqualified.  */
+  if (!CLASS_TYPE_P (type))
+    type = cv_unqualified (type);
 
   /* [expr.static.cast]
 
@@ -7035,7 +7051,10 @@ build_static_cast (tree type, tree expr, tsubst_flags_t complain)
   if (valid_p)
     {
       if (result != error_mark_node)
-	maybe_warn_about_useless_cast (type, expr, complain);
+	{
+	  maybe_warn_about_useless_cast (type, expr, complain);
+	  maybe_warn_about_cast_ignoring_quals (type, complain);
+	}
       return result;
     }
 
@@ -7107,6 +7126,10 @@ build_reinterpret_cast_1 (tree type, tree expr, bool c_cast_p,
 
   /* Save casted types in the function's used types hash table.  */
   used_types_insert (type);
+
+  /* A prvalue of non-class type is cv-unqualified.  */
+  if (!CLASS_TYPE_P (type))
+    type = cv_unqualified (type);
 
   /* [expr.reinterpret.cast]
      An lvalue expression of type T1 can be cast to the type
@@ -7289,7 +7312,10 @@ build_reinterpret_cast (tree type, tree expr, tsubst_flags_t complain)
   r = build_reinterpret_cast_1 (type, expr, /*c_cast_p=*/false,
 				/*valid_p=*/NULL, complain);
   if (r != error_mark_node)
-    maybe_warn_about_useless_cast (type, expr, complain);
+    {
+      maybe_warn_about_useless_cast (type, expr, complain);
+      maybe_warn_about_cast_ignoring_quals (type, complain);
+    }
   return r;
 }
 
@@ -7334,6 +7360,9 @@ build_const_cast_1 (tree dst_type, tree expr, tsubst_flags_t complain,
 	       "or reference to a function type", dst_type);
       return error_mark_node;
     }
+
+  /* A prvalue of non-class type is cv-unqualified.  */
+  dst_type = cv_unqualified (dst_type);
 
   /* Save casted types in the function's used types hash table.  */
   used_types_insert (dst_type);
@@ -7455,7 +7484,10 @@ build_const_cast (tree type, tree expr, tsubst_flags_t complain)
 
   r = build_const_cast_1 (type, expr, complain, /*valid_p=*/NULL);
   if (r != error_mark_node)
-    maybe_warn_about_useless_cast (type, expr, complain);
+    {
+      maybe_warn_about_useless_cast (type, expr, complain);
+      maybe_warn_about_cast_ignoring_quals (type, complain);
+    }
   return r;
 }
 
@@ -7558,7 +7590,10 @@ cp_build_c_cast (tree type, tree expr, tsubst_flags_t complain)
   if (valid_p)
     {
       if (result != error_mark_node)
-	maybe_warn_about_useless_cast (type, value, complain);
+	{
+	  maybe_warn_about_useless_cast (type, value, complain);
+	  maybe_warn_about_cast_ignoring_quals (type, complain);
+	}
       return result;
     }
 
@@ -7579,6 +7614,7 @@ cp_build_c_cast (tree type, tree expr, tsubst_flags_t complain)
       tree result_type;
 
       maybe_warn_about_useless_cast (type, value, complain);
+      maybe_warn_about_cast_ignoring_quals (type, complain);
 
       /* Non-class rvalues always have cv-unqualified type.  */
       if (!CLASS_TYPE_P (type))

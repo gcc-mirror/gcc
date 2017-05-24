@@ -1,3 +1,8 @@
+2017-05-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR c++/80544
+	* g++.dg/expr/cast11.C: New test.
+
 2017-05-24  Martin Sebor  <msebor@redhat.com>
 
 	PR c/80731
