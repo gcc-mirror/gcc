@@ -1227,16 +1227,24 @@ int_safely_convertible_to_real_p (const_tree from_type, const_tree to_type)
    can return SAFE_CONVERSION (zero) in that case.  Function can produce
    signedness warnings if PRODUCE_WARNS is true.
 
+   RESULT, when non-null is the result of the conversion.  When constant
+   it is included in the text of diagnostics.
+
    Function allows conversions from complex constants to non-complex types,
    provided that imaginary part is zero and real part can be safely converted
    to TYPE.  */
 
 enum conversion_safety
-unsafe_conversion_p (location_t loc, tree type, tree expr, bool produce_warns)
+unsafe_conversion_p (location_t loc, tree type, tree expr, tree result,
+		     bool produce_warns)
 {
   enum conversion_safety give_warning = SAFE_CONVERSION; /* is 0 or false */
   tree expr_type = TREE_TYPE (expr);
-  loc = expansion_point_location_if_in_system_header (loc);
+
+  bool cstresult = (result
+		    && TREE_CODE_CLASS (TREE_CODE (result)) == tcc_constant);
+
+    loc = expansion_point_location_if_in_system_header (loc);
 
   if (TREE_CODE (expr) == REAL_CST || TREE_CODE (expr) == INTEGER_CST)
     {
@@ -1262,14 +1270,31 @@ unsafe_conversion_p (location_t loc, tree type, tree expr, bool produce_warns)
 	      && tree_int_cst_sgn (expr) < 0)
 	    {
 	      if (produce_warns)
-		warning_at (loc, OPT_Wsign_conversion, "negative integer"
-			    " implicitly converted to unsigned type");
+		{
+		  if (cstresult)
+		    warning_at (loc, OPT_Wsign_conversion,
+				"unsigned conversion from %qT to %qT "
+				"changes value from %qE to %qE",
+				expr_type, type, expr, result);
+		  else
+		    warning_at (loc, OPT_Wsign_conversion,
+				"unsigned conversion from %qT to %qT "
+				"changes the value of %qE",
+				expr_type, type, expr);
+		}
 	    }
 	  else if (!TYPE_UNSIGNED (type) && TYPE_UNSIGNED (expr_type))
 	    {
-	      if (produce_warns)
-		warning_at (loc, OPT_Wsign_conversion, "conversion of unsigned"
-			    " constant value to negative integer");
+	      if (cstresult)
+		warning_at (loc, OPT_Wsign_conversion,
+			    "signed conversion from %qT to %qT changes "
+			    "value from %qE to %qE",
+			    expr_type, type, expr, result);
+	      else
+		warning_at (loc, OPT_Wsign_conversion,
+			    "signed conversion from %qT to %qT changes "
+			    "the value of %qE",
+			    expr_type, type, expr);
 	    }
 	  else
 	    give_warning = UNSAFE_OTHER;
@@ -1308,7 +1333,7 @@ unsafe_conversion_p (location_t loc, tree type, tree expr, bool produce_warns)
 	   with different type of EXPR, but it is still safe, because when EXPR
 	   is a constant, it's type is not used in text of generated warnings
 	   (otherwise they could sound misleading).  */
-	return unsafe_conversion_p (loc, type, TREE_REALPART (expr),
+	return unsafe_conversion_p (loc, type, TREE_REALPART (expr), result,
 				    produce_warns);
       /* Conversion from complex constant with non-zero imaginary part.  */
       else
@@ -1328,9 +1353,10 @@ unsafe_conversion_p (location_t loc, tree type, tree expr, bool produce_warns)
 		 Possible solution: add a separate function for checking
 		 constants and combine result of two calls appropriately.  */
 	      enum conversion_safety re_safety =
-		  unsafe_conversion_p (loc, type, TREE_REALPART (expr), false);
+		  unsafe_conversion_p (loc, type, TREE_REALPART (expr),
+				       result, false);
 	      enum conversion_safety im_safety =
-		  unsafe_conversion_p (loc, type, imag_part, false);
+		unsafe_conversion_p (loc, type, imag_part, result, false);
 
 	      /* Merge the results into appropriate single warning.  */
 
@@ -7654,7 +7680,8 @@ scalar_to_vector (location_t loc, enum tree_code code, tree op0, tree op1,
 	if (TREE_CODE (type0) == INTEGER_TYPE
 	    && TREE_CODE (TREE_TYPE (type1)) == INTEGER_TYPE)
 	  {
-	    if (unsafe_conversion_p (loc, TREE_TYPE (type1), op0, false))
+	    if (unsafe_conversion_p (loc, TREE_TYPE (type1), op0,
+				     NULL_TREE, false))
 	      {
 		if (complain)
 		  error_at (loc, "conversion of scalar %qT to vector %qT "
@@ -7702,7 +7729,8 @@ scalar_to_vector (location_t loc, enum tree_code code, tree op0, tree op1,
 	if (TREE_CODE (type0) == INTEGER_TYPE
 	    && TREE_CODE (TREE_TYPE (type1)) == INTEGER_TYPE)
 	  {
-	    if (unsafe_conversion_p (loc, TREE_TYPE (type1), op0, false))
+	    if (unsafe_conversion_p (loc, TREE_TYPE (type1), op0,
+				     NULL_TREE, false))
 	      {
 		if (complain)
 		  error_at (loc, "conversion of scalar %qT to vector %qT "
@@ -7717,7 +7745,8 @@ scalar_to_vector (location_t loc, enum tree_code code, tree op0, tree op1,
 		     || TREE_CODE (type0) == INTEGER_TYPE)
 		 && SCALAR_FLOAT_TYPE_P (TREE_TYPE (type1)))
 	  {
-	    if (unsafe_conversion_p (loc, TREE_TYPE (type1), op0, false))
+	    if (unsafe_conversion_p (loc, TREE_TYPE (type1), op0,
+				     NULL_TREE, false))
 	      {
 		if (complain)
 		  error_at (loc, "conversion of scalar %qT to vector %qT "

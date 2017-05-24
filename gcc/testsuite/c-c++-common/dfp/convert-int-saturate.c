@@ -23,40 +23,40 @@ main ()
 {
 
   /* Unsigned.  */
-  usi = DEC32_MAX;  /* { dg-warning "overflow in implicit constant conversion" } */
+  usi = DEC32_MAX;  /* { dg-warning "overflow in conversion" } */
   if (usi != UINT_MAX)
     FAILURE
 
-  usi = DEC64_MAX;  /* { dg-warning "overflow in implicit constant conversion" } */
+  usi = DEC64_MAX;  /* { dg-warning "overflow in conversion" } */
   if (usi != UINT_MAX)
     FAILURE
 
-  usi = DEC128_MAX; /* { dg-warning "overflow in implicit constant conversion" } */
+  usi = DEC128_MAX; /* { dg-warning "overflow in conversion" } */
   if (usi != UINT_MAX)
     FAILURE
 
   /* Signed.  */
-  si = DEC32_MAX;	/* { dg-warning "overflow in implicit constant conversion" } */
+  si = DEC32_MAX;	/* { dg-warning "overflow in conversion" } */
   if (si != INT_MAX)
     FAILURE
 
-  si = DEC64_MAX;   /* { dg-warning "overflow in implicit constant conversion" } */
+  si = DEC64_MAX;   /* { dg-warning "overflow in conversion" } */
   if (si != INT_MAX)
     FAILURE
 
-  si = DEC128_MAX;  /* { dg-warning "overflow in implicit constant conversion" } */
+  si = DEC128_MAX;  /* { dg-warning "overflow in conversion" } */
   if (si != INT_MAX)
     FAILURE
 
-  si = - DEC32_MAX; /* { dg-warning "overflow in implicit constant conversion" } */
+  si = - DEC32_MAX; /* { dg-warning "overflow in conversion" } */
   if (si != INT_MIN)
     FAILURE
 
-  si = - DEC64_MAX; /* { dg-warning "overflow in implicit constant conversion" } */
+  si = - DEC64_MAX; /* { dg-warning "overflow in conversion" } */
   if (si != INT_MIN)
     FAILURE
 
-  si = - DEC128_MAX; /* { dg-warning "overflow in implicit constant conversion" } */
+  si = - DEC128_MAX; /* { dg-warning "overflow in conversion" } */
   if (si != INT_MIN)
     FAILURE
 

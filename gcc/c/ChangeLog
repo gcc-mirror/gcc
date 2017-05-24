@@ -1,3 +1,9 @@
+2017-05-24  Martin Sebor  <msebor@redhat.com>
+
+	PR c/80731
+	* c-fold.c (c_fully_fold_internal): Adjust.
+	* c-typeck.c (parser_build_unary_op): Adjust.
+
 2017-05-23  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* c-parser.c (OACC_KERNELS_CLAUSE_MASK): Add

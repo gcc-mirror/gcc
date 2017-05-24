@@ -63,7 +63,7 @@ void func3()
      warn.  */
   uchar_x = bar != 0 ? 2.1 : 10; /* { dg-warning "conversion" } */
   uchar_x = bar != 0
-    ? (unsigned char) 1024 /* { dg-warning "negative integer implicitly converted to unsigned type" } */
+    ? (unsigned char) 1024 /* { dg-warning "unsigned conversion from .int. to .unsigned char. changes the value of .-1." } */
     : -1;
 }
 

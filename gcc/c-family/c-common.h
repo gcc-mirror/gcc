@@ -832,7 +832,7 @@ extern tree c_common_signed_type (tree);
 extern tree c_common_signed_or_unsigned_type (int, tree);
 extern void c_common_init_ts (void);
 extern tree c_build_bitfield_integer_type (unsigned HOST_WIDE_INT, int);
-extern enum conversion_safety unsafe_conversion_p (location_t, tree, tree,
+extern enum conversion_safety unsafe_conversion_p (location_t, tree, tree, tree,
 						   bool);
 extern bool decl_with_nonnull_addr_p (const_tree);
 extern tree c_fully_fold (tree, bool, bool *);
@@ -1483,7 +1483,7 @@ extern bool cilk_recognize_spawn (tree, tree *);
 /* In c-warn.c.  */
 extern void constant_expression_warning (tree);
 extern void constant_expression_error (tree);
-extern void overflow_warning (location_t, tree);
+extern void overflow_warning (location_t, tree, tree = NULL_TREE);
 extern void warn_logical_operator (location_t, enum tree_code, tree,
 				   enum tree_code, tree, enum tree_code, tree);
 extern void warn_tautological_cmp (location_t, enum tree_code, tree, tree);
