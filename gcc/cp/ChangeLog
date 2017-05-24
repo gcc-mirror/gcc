@@ -1,5 +1,14 @@
 2017-05-24  Nathan Sidwell  <nathan@acm.org>
 
+	* cp-tree.h (ovl_skip_hidden): Declare.
+	* tree.c (ovl_skip_hidden): New.
+	* name-lookup.c (arg_assoc_namespace): Call ovl_skip_hidden.
+	(lookup_arg_dependent_1): Likewise.
+	(ambiguous_decl): Use DECL_HIDDEN_P, ovl_skip_hidden.
+	(hidden_name_p, remove_hidden_names): Delete.
+	(lookup_name_real_1): Do not strip hidden names.
+	* name-lookup.h (hidden_name_p, remove_hidden_names): Delete.
+
 	* cp-tree.h (OVL_HIDDEN_P): New.
 	(ovl_iterator::hidden_p, ovl_iterator::reveal_node): New.
 	(ovl_iterator::reveal_node): Declare.
