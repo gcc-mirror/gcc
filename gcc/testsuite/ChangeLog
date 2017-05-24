@@ -1,3 +1,46 @@
+2017-05-24  Martin Sebor  <msebor@redhat.com>
+
+	PR c/80731
+	* c-c++-common/Wfloat-conversion.c: Adjust.
+	* c-c++-common/dfp/convert-int-saturate.c: Same.
+	* c-c++-common/pr68657-1.c: Same.
+	* g++.dg/ext/utf-cvt.C: Same.
+	* g++.dg/ext/utf16-4.C: Same.
+	* g++.dg/warn/Wconversion-real-integer-3.C: Same.
+	* g++.dg/warn/Wconversion-real-integer2.C: Same.
+	* g++.dg/warn/Wconversion3.C: Same.
+	* g++.dg/warn/Wconversion4.C: Same.
+	* g++.dg/warn/Wsign-conversion.C: Same.
+	* g++.dg/warn/overflow-warn-1.C: Same.
+	* g++.dg/warn/overflow-warn-3.C: Same.
+	* g++.dg/warn/overflow-warn-4.C: Same.
+	* g++.dg/warn/pr35635.C: Same.
+	* g++.old-deja/g++.mike/enum1.C: Same.
+	* gcc.dg/Wconversion-3.c: Same.
+	* gcc.dg/Wconversion-5.c: Same.
+	* gcc.dg/Wconversion-complex-c99.c: Same.
+	* gcc.dg/Wconversion-complex-gnu.c: Same.
+	* gcc.dg/Wconversion-integer.c: Same.
+	* gcc.dg/Wsign-conversion.c: Same.
+	* gcc.dg/bitfld-2.c: Same.
+	* gcc.dg/c90-const-expr-11.c: Same.
+	* gcc.dg/c90-const-expr-7.c: Same.
+	* gcc.dg/c99-const-expr-7.c: Same.
+	* gcc.dg/overflow-warn-1.c: Same.
+	* gcc.dg/overflow-warn-2.c: Same.
+	* gcc.dg/overflow-warn-3.c: Same.
+	* gcc.dg/overflow-warn-4.c: Same.
+	* gcc.dg/overflow-warn-5.c: Same.
+	* gcc.dg/overflow-warn-8.c: Same.
+	* gcc.dg/overflow-warn-9.c: New test.
+	* gcc.dg/pr35635.c: Adjust.
+	* gcc.dg/pr59940.c: Same.
+	* gcc.dg/pr59963-2.c: Same.
+	* gcc.dg/pr60114.c: Same.
+	* gcc.dg/switch-warn-2.c: Same.
+	* gcc.dg/utf-cvt.c: Same.
+	* gcc.dg/utf16-4.c: Same.
+
 2017-05-24  Jakub Jelinek  <jakub@redhat.com>
 
 	* g++.dg/ext/integer-pack2.C: Require int32 effective target.

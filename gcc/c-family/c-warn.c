@@ -63,8 +63,9 @@ constant_expression_error (tree value)
     error ("overflow in constant expression");
 }
 
-/* Print a warning if an expression had overflow in folding and its
-   operands hadn't.
+/* Print a warning if an expression result VALUE had an overflow
+   in folding and its operands hadn't.  EXPR, which may be null, is
+   the operand of the expression.
 
    Invoke this function on every expression that
    (1) appears in the source code, and
@@ -75,42 +76,74 @@ constant_expression_error (tree value)
    already overflowed.  */
 
 void
-overflow_warning (location_t loc, tree value)
+overflow_warning (location_t loc, tree value, tree expr)
 {
   if (c_inhibit_evaluation_warnings != 0)
     return;
 
+  const char *warnfmt = NULL;
+
   switch (TREE_CODE (value))
     {
     case INTEGER_CST:
-      warning_at (loc, OPT_Woverflow, "integer overflow in expression");
+      warnfmt = (expr
+		 ? G_("integer overflow in expression %qE of type %qT "
+		      "results in %qE")
+		 : G_("integer overflow in expression of type %qT "
+		      "results in %qE"));
       break;
 
     case REAL_CST:
-      warning_at (loc, OPT_Woverflow,
-		  "floating point overflow in expression");
+      warnfmt = (expr
+		 ? G_ ("floating point overflow in expression %qE "
+		       "of type %qT results in %qE")
+		 : G_ ("floating point overflow in expression of type %qT "
+		       "results in %qE"));
       break;
 
     case FIXED_CST:
-      warning_at (loc, OPT_Woverflow, "fixed-point overflow in expression");
+      warnfmt = (expr
+		 ? G_("fixed-point overflow in expression %qE of type %qT "
+		      "results in %qE")
+		 : G_("fixed-point overflow in expression of type %qT "
+		      "results in %qE"));
       break;
 
     case VECTOR_CST:
-      warning_at (loc, OPT_Woverflow, "vector overflow in expression");
+      warnfmt = (expr
+		 ? G_("vector overflow in expression %qE of type %qT "
+		      "results in %qE")
+		 : G_("vector overflow in expression of type %qT "
+		      "results in %qE"));
       break;
 
     case COMPLEX_CST:
       if (TREE_CODE (TREE_REALPART (value)) == INTEGER_CST)
-	warning_at (loc, OPT_Woverflow,
-		    "complex integer overflow in expression");
+	warnfmt = (expr
+		   ? G_("complex integer overflow in expression %qE "
+			"of type %qT results in %qE")
+		   : G_("complex integer overflow in expression of type %qT "
+			"results in %qE"));
       else if (TREE_CODE (TREE_REALPART (value)) == REAL_CST)
-	warning_at (loc, OPT_Woverflow,
-		    "complex floating point overflow in expression");
+	warnfmt = (expr
+		   ? G_("complex floating point overflow in expression %qE "
+			"of type %qT results in %qE")
+		   : G_("complex floating point overflow in expression "
+			"of type %qT results in %qE"));
+      else
+	return;
       break;
 
     default:
-      break;
+      return;
     }
+
+  if (expr)
+    warning_at (loc, OPT_Woverflow, warnfmt, expr, TREE_TYPE (expr), value);
+  else
+    warning_at (loc, OPT_Woverflow, warnfmt, TREE_TYPE (value), value);
+
+  TREE_NO_WARNING (value) = 1;
 }
 
 /* Helper function for walk_tree.  Unwrap C_MAYBE_CONST_EXPRs in an expression
@@ -930,7 +963,7 @@ check_main_parameter_types (tree decl)
    This is a helper function for warnings_for_convert_and_check.  */
 
 static void
-conversion_warning (location_t loc, tree type, tree expr)
+conversion_warning (location_t loc, tree type, tree expr, tree result)
 {
   tree expr_type = TREE_TYPE (expr);
   enum conversion_safety conversion_kind;
@@ -971,43 +1004,49 @@ conversion_warning (location_t loc, tree type, tree expr)
     case REAL_CST:
     case INTEGER_CST:
     case COMPLEX_CST:
-      conversion_kind = unsafe_conversion_p (loc, type, expr, true);
-      if (conversion_kind == UNSAFE_REAL)
-	warning_at (loc, OPT_Wfloat_conversion,
-		    "conversion to %qT alters %qT constant value",
-		    type, expr_type);
-      else if (conversion_kind)
-	warning_at (loc, OPT_Wconversion,
-		    "conversion to %qT alters %qT constant value",
-		    type, expr_type);
-      return;
-
-    case COND_EXPR:
       {
+	conversion_kind = unsafe_conversion_p (loc, type, expr, result, true);
+	int warnopt;
+	if (conversion_kind == UNSAFE_REAL)
+	  warnopt = OPT_Wfloat_conversion;
+	else if (conversion_kind)
+	  warnopt = OPT_Wconversion;
+	else
+	  break;
+
+	if (TREE_CODE_CLASS (TREE_CODE (result)) == tcc_constant)
+	  warning_at (loc, warnopt,
+		      "conversion from %qT to %qT changes value from %qE to %qE",
+		      expr_type, type, expr, result);
+	else
+	  warning_at (loc, warnopt,
+		      "conversion from %qT to %qT changes the value of %qE",
+		      expr_type, type, expr);
+	break;
+      }
+    case COND_EXPR:
+	  {
 	/* In case of COND_EXPR, we do not care about the type of
 	   COND_EXPR, only about the conversion of each operand.  */
 	tree op1 = TREE_OPERAND (expr, 1);
 	tree op2 = TREE_OPERAND (expr, 2);
 
-	conversion_warning (loc, type, op1);
-	conversion_warning (loc, type, op2);
+	conversion_warning (loc, type, op1, result);
+	conversion_warning (loc, type, op2, result);
 	return;
       }
 
     default: /* 'expr' is not a constant.  */
-      conversion_kind = unsafe_conversion_p (loc, type, expr, true);
-      if (conversion_kind == UNSAFE_REAL)
+      conversion_kind = unsafe_conversion_p (loc, type, expr, result, true);
+      if (conversion_kind == UNSAFE_IMAGINARY)
+	warning_at (loc, OPT_Wconversion,
+		    "conversion from %qT to to %qT discards imaginary "
+		    "component",
+		    expr_type, type);
+      else if (conversion_kind == UNSAFE_REAL || conversion_kind)
 	warning_at (loc, OPT_Wfloat_conversion,
-		    "conversion to %qT from %qT may alter its value",
-		    type, expr_type);
-      else if (conversion_kind == UNSAFE_IMAGINARY)
-	warning_at (loc, OPT_Wconversion,
-		    "conversion to %qT from %qT discards imaginary component",
-		    type, expr_type);
-      else if (conversion_kind)
-	warning_at (loc, OPT_Wconversion,
-		    "conversion to %qT from %qT may alter its value",
-		    type, expr_type);
+		    "conversion from %qT to %qT may change value",
+		    expr_type, type);
     }
 }
 
@@ -1020,6 +1059,10 @@ warnings_for_convert_and_check (location_t loc, tree type, tree expr,
 				tree result)
 {
   loc = expansion_point_location_if_in_system_header (loc);
+
+  bool cst = TREE_CODE_CLASS (TREE_CODE (result)) == tcc_constant;
+
+  tree exprtype = TREE_TYPE (expr);
 
   if (TREE_CODE (expr) == INTEGER_CST
       && (TREE_CODE (type) == INTEGER_TYPE
@@ -1036,31 +1079,76 @@ warnings_for_convert_and_check (location_t loc, tree type, tree expr,
 	  /* This detects cases like converting -129 or 256 to
 	     unsigned char.  */
 	  if (!int_fits_type_p (expr, c_common_signed_type (type)))
-	    warning_at (loc, OPT_Woverflow,
-			"large integer implicitly truncated to unsigned type");
+	    {
+	      if (cst)
+		warning_at (loc, OPT_Woverflow,
+			    (TYPE_UNSIGNED (exprtype)
+			     ? G_("conversion from %qT to %qT "
+				  "changes value from %qE to %qE")
+			     : G_("unsigned conversion from %qT to %qT "
+				  "changes value from %qE to %qE")),
+			    exprtype, type, expr, result);
+	      else
+		warning_at (loc, OPT_Woverflow,
+			    (TYPE_UNSIGNED (exprtype)
+			     ? G_("conversion from %qT to %qT "
+				  "changes the value of %qE")
+			     : G_("unsigned conversion from %qT to %qT "
+				  "changes the value of %qE")),
+			    exprtype, type, expr);
+	    }
 	  else
-	    conversion_warning (loc, type, expr);
+	    conversion_warning (loc, type, expr, result);
 	}
       else if (!int_fits_type_p (expr, c_common_unsigned_type (type)))
-	warning_at (loc, OPT_Woverflow,
-		 "overflow in implicit constant conversion");
+	{
+	  if (cst)
+	    warning_at (loc, OPT_Woverflow,
+			"overflow in conversion from %qT to %qT "
+			"changes value from %qE to %qE",
+			exprtype, type, expr, result);
+	  else
+	    warning_at (loc, OPT_Woverflow,
+			"overflow in conversion from %qT to %qT "
+			"changes the value of %qE",
+			exprtype, type, expr);
+	}
       /* No warning for converting 0x80000000 to int.  */
       else if (pedantic
-	       && (TREE_CODE (TREE_TYPE (expr)) != INTEGER_TYPE
-		   || TYPE_PRECISION (TREE_TYPE (expr))
+	       && (TREE_CODE (exprtype) != INTEGER_TYPE
+		   || TYPE_PRECISION (exprtype)
 		   != TYPE_PRECISION (type)))
-	warning_at (loc, OPT_Woverflow,
-		    "overflow in implicit constant conversion");
-
+	{
+	  if (cst)
+	    warning_at (loc, OPT_Woverflow,
+			"overflow in conversion from %qT to %qT "
+			"changes value from %qE to %qE",
+			exprtype, type, expr, result);
+	  else
+	    warning_at (loc, OPT_Woverflow,
+			"overflow in conversion from %qT to %qT "
+			"changes the value of %qE",
+			exprtype, type, expr);
+	}
       else
-	conversion_warning (loc, type, expr);
+	conversion_warning (loc, type, expr, result);
     }
   else if ((TREE_CODE (result) == INTEGER_CST
 	    || TREE_CODE (result) == FIXED_CST) && TREE_OVERFLOW (result))
-    warning_at (loc, OPT_Woverflow,
-		"overflow in implicit constant conversion");
+    {
+      if (cst)
+	warning_at (loc, OPT_Woverflow,
+		    "overflow in conversion from %qT to %qT "
+		    "chages value from %qE to %qE",
+		    exprtype, type, expr, result);
+      else
+	warning_at (loc, OPT_Woverflow,
+		    "overflow in conversion from %qT to %qT "
+		    "chages the value of %qE",
+		    exprtype, type, expr);
+    }
   else
-    conversion_warning (loc, type, expr);
+    conversion_warning (loc, type, expr, result);
 }
 
 /* Subroutines of c_do_switch_warnings, called via splay_tree_foreach.

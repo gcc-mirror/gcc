@@ -1,3 +1,8 @@
+2017-05-24  Martin Sebor  <msebor@redhat.com>
+
+	PR c/80731
+	* call.c (fully_fold_internal): Adjust.
+
 2017-05-24  Nathan Sidwell  <nathan@acm.org>
 
 	* cp-tree.h (ovl_skip_hidden): Declare.

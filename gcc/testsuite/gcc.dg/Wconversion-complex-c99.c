@@ -63,10 +63,10 @@ var_complex_narrowing (void)
   double _Complex doublec = 0.;
 
   vdoublec = floatc;
-  vfloatc = doublec; /* { dg-warning "float-conversion" } */
+  vfloatc = doublec; /* { dg-warning "conversion from .complex double. to .complex float. may change value" } */
 
   fdoublec (floatc);
-  ffloatc (doublec); /* { dg-warning "float-conversion" } */
+  ffloatc (doublec); /* { dg-warning "conversion from .complex double. to .complex float. may change value" } */
 }
 
 /* Check implicit conversions of complex values to integers.  */
