@@ -1551,6 +1551,14 @@ c_pretty_printer::postfix_expression (tree e)
 			   : "__builtin_islessgreater");
       goto two_args_fun;
 
+    case MAX_EXPR:
+      pp_c_ws_string (this, "max");
+      goto two_args_fun;
+
+    case MIN_EXPR:
+      pp_c_ws_string (this, "min");
+      goto two_args_fun;
+
     two_args_fun:
       pp_c_left_paren (this);
       expression (TREE_OPERAND (e, 0));
@@ -1829,6 +1837,8 @@ c_pretty_printer::multiplicative_expression (tree e)
     case MULT_EXPR:
     case TRUNC_DIV_EXPR:
     case TRUNC_MOD_EXPR:
+    case EXACT_DIV_EXPR:
+    case RDIV_EXPR:
       multiplicative_expression (TREE_OPERAND (e, 0));
       pp_c_whitespace (this);
       if (code == MULT_EXPR)
@@ -1890,9 +1900,13 @@ pp_c_shift_expression (c_pretty_printer *pp, tree e)
     {
     case LSHIFT_EXPR:
     case RSHIFT_EXPR:
+    case LROTATE_EXPR:
+    case RROTATE_EXPR:
       pp_c_shift_expression (pp, TREE_OPERAND (e, 0));
       pp_c_whitespace (pp);
-      pp_string (pp, code == LSHIFT_EXPR ? "<<" : ">>");
+      pp_string (pp, code == LSHIFT_EXPR ? "<<" :
+		     code == RSHIFT_EXPR ? ">>" :
+		     code == LROTATE_EXPR ? "<<<" : ">>>");
       pp_c_whitespace (pp);
       pp_c_additive_expression (pp, TREE_OPERAND (e, 1));
       break;
@@ -2186,6 +2200,8 @@ c_pretty_printer::expression (tree e)
     case UNLT_EXPR:
     case UNGE_EXPR:
     case UNGT_EXPR:
+    case MAX_EXPR:
+    case MIN_EXPR:
     case ABS_EXPR:
     case CONSTRUCTOR:
     case COMPOUND_LITERAL_EXPR:
@@ -2217,11 +2233,15 @@ c_pretty_printer::expression (tree e)
     case MULT_EXPR:
     case TRUNC_MOD_EXPR:
     case TRUNC_DIV_EXPR:
+    case EXACT_DIV_EXPR:
+    case RDIV_EXPR:
       multiplicative_expression (e);
       break;
 
     case LSHIFT_EXPR:
     case RSHIFT_EXPR:
+    case LROTATE_EXPR:
+    case RROTATE_EXPR:
       pp_c_shift_expression (this, e);
       break;
 

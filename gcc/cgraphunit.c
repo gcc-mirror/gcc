@@ -194,7 +194,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "ipa-prop.h"
 #include "gimple-pretty-print.h"
 #include "plugin.h"
-#include "ipa-inline.h"
+#include "ipa-fnsummary.h"
 #include "ipa-utils.h"
 #include "except.h"
 #include "cfgloop.h"
@@ -332,9 +332,17 @@ symbol_table::process_new_functions (void)
 	  push_cfun (DECL_STRUCT_FUNCTION (fndecl));
 	  if ((state == IPA_SSA || state == IPA_SSA_AFTER_INLINING)
 	      && !gimple_in_ssa_p (DECL_STRUCT_FUNCTION (fndecl)))
-	    g->get_passes ()->execute_early_local_passes ();
-	  else if (inline_summaries != NULL)
-	    compute_inline_parameters (node, true);
+	    {
+	      bool summaried_computed = ipa_fn_summaries != NULL;
+	      g->get_passes ()->execute_early_local_passes ();
+	      /* Early passes compure inline parameters to do inlining
+		 and splitting.  This is redundant for functions added late.
+		 Just throw away whatever it did.  */
+	      if (!summaried_computed)
+		ipa_free_fn_summary ();
+	    }
+	  else if (ipa_fn_summaries != NULL)
+	    compute_fn_summary (node, true);
 	  free_dominance_info (CDI_POST_DOMINATORS);
 	  free_dominance_info (CDI_DOMINATORS);
 	  pop_cfun ();
@@ -1200,7 +1208,7 @@ analyze_functions (bool first_time)
   if (symtab->dump_file)
     {
       fprintf (symtab->dump_file, "\n\nInitial ");
-      symtab_node::dump_table (symtab->dump_file);
+      symtab->dump (symtab->dump_file);
     }
 
   if (first_time)
@@ -1270,7 +1278,7 @@ analyze_functions (bool first_time)
   if (symtab->dump_file)
     {
       fprintf (symtab->dump_file, "\n\nReclaimed ");
-      symtab_node::dump_table (symtab->dump_file);
+      symtab->dump (symtab->dump_file);
     }
   bitmap_obstack_release (NULL);
   ggc_collect ();
@@ -2477,7 +2485,7 @@ symbol_table::compile (void)
   if (dump_file)
     {
       fprintf (dump_file, "Optimized ");
-      symtab_node:: dump_table (dump_file);
+      symtab->dump (dump_file);
     }
   if (post_ipa_mem_report)
     {
@@ -2543,7 +2551,7 @@ symbol_table::compile (void)
   if (dump_file)
     {
       fprintf (dump_file, "\nFinal ");
-      symtab_node::dump_table (dump_file);
+      symtab->dump (dump_file);
     }
   if (!flag_checking)
     return;

@@ -510,6 +510,10 @@ Temporary_statement::do_get_backend(Translate_context* context)
       binit = init->get_backend(context);
     }
 
+  if (binit != NULL)
+    binit = context->backend()->convert_expression(btype, binit,
+                                                   this->location());
+
   Bstatement* statement;
   this->bvariable_ =
     context->backend()->temporary_variable(bfunction, context->bblock(),

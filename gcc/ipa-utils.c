@@ -34,7 +34,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "symbol-summary.h"
 #include "tree-vrp.h"
 #include "ipa-prop.h"
-#include "ipa-inline.h"
+#include "ipa-fnsummary.h"
 
 /* Debugging function for postorder and inorder code. NOTE is a string
    that is printed before the nodes are printed.  ORDER is an array of
@@ -406,9 +406,8 @@ ipa_merge_profiles (struct cgraph_node *dst,
     return;
   if (symtab->dump_file)
     {
-      fprintf (symtab->dump_file, "Merging profiles of %s/%i to %s/%i\n",
-	       xstrdup_for_dump (src->name ()), src->order,
-	       xstrdup_for_dump (dst->name ()), dst->order);
+      fprintf (symtab->dump_file, "Merging profiles of %s to %s\n",
+	       src->dump_name (), dst->dump_name ());
     }
   dst->count += src->count;
 
@@ -626,7 +625,7 @@ ipa_merge_profiles (struct cgraph_node *dst,
 	}
       if (!preserve_body)
         src->release_body ();
-      inline_update_overall_summary (dst);
+      ipa_update_overall_fn_summary (dst);
     }
   /* TODO: if there is no match, we can scale up.  */
   src->decl = oldsrcdecl;

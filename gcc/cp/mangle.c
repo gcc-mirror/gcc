@@ -2833,8 +2833,7 @@ write_member_name (tree member)
   else if (TREE_CODE (member) == TEMPLATE_ID_EXPR)
     {
       tree name = TREE_OPERAND (member, 0);
-      if (TREE_CODE (name) == OVERLOAD)
-	name = OVL_FUNCTION (name);
+      name = OVL_FIRST (name);
       write_member_name (name);
       write_template_args (TREE_OPERAND (member, 1));
     }
@@ -3053,10 +3052,7 @@ write_expression (tree expr)
   else if (TREE_CODE (expr) == TEMPLATE_ID_EXPR)
     {
       tree fn = TREE_OPERAND (expr, 0);
-      if (is_overloaded_fn (fn))
-	fn = get_first_fn (fn);
-      if (DECL_P (fn))
-	fn = DECL_NAME (fn);
+      fn = OVL_NAME (fn);
       if (IDENTIFIER_OPNAME_P (fn))
 	write_string ("on");
       write_unqualified_id (fn);
@@ -3257,7 +3253,7 @@ write_expression (tree expr)
 	    if ((TREE_CODE (fn) == FUNCTION_DECL
 		 || TREE_CODE (fn) == OVERLOAD)
 		&& type_dependent_expression_p_push (expr))
-	      fn = DECL_NAME (get_first_fn (fn));
+	      fn = OVL_NAME (fn);
 
 	    write_expression (fn);
 	  }
@@ -3906,6 +3902,8 @@ mangle_decl (const tree decl)
 
       if (warn_abi)
 	{
+	  const char fabi_version[] = "-fabi-version";
+
 	  if (flag_abi_compat_version != warn_abi_version
 	      || id2 == NULL_TREE)
 	    {
@@ -3921,15 +3919,15 @@ mangle_decl (const tree decl)
 		   && abi_version_at_least (warn_abi_version))
 	    warning_at (DECL_SOURCE_LOCATION (G.entity), OPT_Wabi,
 			"the mangled name of %qD changed between "
-			"-fabi-version=%d (%D) and -fabi-version=%d (%D)",
-			G.entity, warn_abi_version, id2,
-			save_ver, id);
+			"%<%s=%d%> (%qD) and %<%s=%d%> (%qD)",
+			G.entity, fabi_version, warn_abi_version, id2,
+			fabi_version, save_ver, id);
 	  else
 	    warning_at (DECL_SOURCE_LOCATION (G.entity), OPT_Wabi,
 			"the mangled name of %qD changes between "
-			"-fabi-version=%d (%D) and -fabi-version=%d (%D)",
-			G.entity, save_ver, id,
-			warn_abi_version, id2);
+			"%<%s=%d%> (%qD) and %<%s=%d%> (%qD)",
+			G.entity, fabi_version, save_ver, id,
+			fabi_version, warn_abi_version, id2);
 	}
 
       flag_abi_version = save_ver;

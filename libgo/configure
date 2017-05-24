@@ -646,6 +646,8 @@ ALLGOOS
 GOOS
 LIBGO_IS_BSD_FALSE
 LIBGO_IS_BSD_TRUE
+LIBGO_IS_AIX_FALSE
+LIBGO_IS_AIX_TRUE
 LIBGO_IS_SOLARIS_FALSE
 LIBGO_IS_SOLARIS_TRUE
 LIBGO_IS_RTEMS_FALSE
@@ -4326,6 +4328,14 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
 
+
+case ${host} in
+  *-*-aix*)
+    # static hash tables crashes on AIX when libgo is built with O2
+    CFLAGS="$CFLAGS -fno-section-anchors"
+    GOCFLAGS="$GOCFLAGS -fno-section-anchors"
+    ;;
+esac
 
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether to enable maintainer-specific portions of Makefiles" >&5
@@ -11104,7 +11114,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11107 "configure"
+#line 11117 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11210,7 +11220,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11213 "configure"
+#line 11223 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -13507,7 +13517,7 @@ go_include="-include"
 # All known GOOS values.  This is the union of all operating systems
 # supported by the gofrontend and all operating systems supported by
 # the gc toolchain.
-ALLGOOS="android darwin dragonfly freebsd irix linux netbsd openbsd plan9 rtems solaris windows"
+ALLGOOS="aix android darwin dragonfly freebsd irix linux netbsd openbsd plan9 rtems solaris windows"
 
 is_darwin=no
 is_freebsd=no
@@ -13518,6 +13528,7 @@ is_openbsd=no
 is_dragonfly=no
 is_rtems=no
 is_solaris=no
+is_aix=no
 GOOS=unknown
 case ${host} in
   *-*-darwin*)   is_darwin=yes;  GOOS=darwin ;;
@@ -13529,6 +13540,7 @@ case ${host} in
   *-*-dragonfly*) is_dragonfly=yes; GOOS=dragonfly ;;
   *-*-rtems*)    is_rtems=yes;   GOOS=rtems ;;
   *-*-solaris2*) is_solaris=yes; GOOS=solaris ;;
+  *-*-aix*)      is_aix=yes;     GOOS=aix ;;
 esac
  if test $is_darwin = yes; then
   LIBGO_IS_DARWIN_TRUE=
@@ -13600,6 +13612,14 @@ fi
 else
   LIBGO_IS_SOLARIS_TRUE='#'
   LIBGO_IS_SOLARIS_FALSE=
+fi
+
+ if test $is_aix = yes; then
+  LIBGO_IS_AIX_TRUE=
+  LIBGO_IS_AIX_FALSE='#'
+else
+  LIBGO_IS_AIX_TRUE='#'
+  LIBGO_IS_AIX_FALSE=
 fi
 
  if test $is_darwin = yes -o $is_dragonfly = yes -o $is_freebsd = yes -o $is_netbsd = yes -o $is_openbsd = yes; then
@@ -14868,7 +14888,7 @@ else
 fi
 
 
-for ac_func in accept4 dup3 epoll_create1 faccessat fallocate fchmodat fchownat futimesat getxattr inotify_add_watch inotify_init inotify_init1 inotify_rm_watch listxattr mkdirat mknodat open64 openat pipe2 removexattr renameat setxattr sync_file_range splice tee unlinkat unshare utimensat
+for ac_func in accept4 dup3 epoll_create1 faccessat fallocate fchmodat fchownat futimesat getxattr inotify_add_watch inotify_init inotify_init1 inotify_rm_watch listxattr mkdirat mknodat open64 openat pipe2 removexattr renameat setxattr sync_file_range splice syscall tee unlinkat unshare utimensat
 do :
   as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
 ac_fn_c_check_func "$LINENO" "$ac_func" "$as_ac_var"
@@ -15751,6 +15771,10 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${LIBGO_IS_SOLARIS_TRUE}" && test -z "${LIBGO_IS_SOLARIS_FALSE}"; then
   as_fn_error "conditional \"LIBGO_IS_SOLARIS\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${LIBGO_IS_AIX_TRUE}" && test -z "${LIBGO_IS_AIX_FALSE}"; then
+  as_fn_error "conditional \"LIBGO_IS_AIX\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${LIBGO_IS_BSD_TRUE}" && test -z "${LIBGO_IS_BSD_FALSE}"; then

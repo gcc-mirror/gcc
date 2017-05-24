@@ -1469,18 +1469,26 @@ package body Sem_Ch4 is
          --  can also happen when the function declaration appears before the
          --  full view of the type (which is legal in Ada 2012) and the call
          --  appears in a different unit, in which case the incomplete view
-         --  must be replaced with the full view to prevent subsequent type
-         --  errors.
+         --  must be replaced with the full view (or the non-limited view)
+         --  to prevent subsequent type errors. Note that the usual install/
+         --  removal of limited_with clauses is not sufficient to handle this
+         --  case, because the limited view may have been captured is another
+         --  compilation unit that defines the current function.
 
-         if Is_Incomplete_Type (Etype (N))
-           and then Present (Full_View (Etype (N)))
-         then
-            if Is_Entity_Name (Nam) then
-               Set_Etype (Nam, Full_View (Etype (N)));
-               Set_Etype (Entity (Nam), Full_View (Etype (N)));
+         if Is_Incomplete_Type (Etype (N)) then
+            if Present (Full_View (Etype (N))) then
+               if Is_Entity_Name (Nam) then
+                  Set_Etype (Nam, Full_View (Etype (N)));
+                  Set_Etype (Entity (Nam), Full_View (Etype (N)));
+               end if;
+
+               Set_Etype (N, Full_View (Etype (N)));
+
+            elsif From_Limited_With (Etype (N))
+              and then Present (Non_Limited_View (Etype (N)))
+            then
+               Set_Etype (N, Non_Limited_View (Etype (N)));
             end if;
-
-            Set_Etype (N, Full_View (Etype (N)));
          end if;
       end if;
    end Analyze_Call;

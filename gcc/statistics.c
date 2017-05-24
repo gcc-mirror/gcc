@@ -27,7 +27,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "pass_manager.h"
 
 static int statistics_dump_nr;
-static int statistics_dump_flags;
+static dump_flags_t statistics_dump_flags;
 static FILE *statistics_dump_file;
 
 /* Statistics entry.  A integer counter associated to a string ID
@@ -259,7 +259,7 @@ statistics_early_init (void)
 {
   gcc::dump_manager *dumps = g->get_dumps ();
   statistics_dump_nr = dumps->dump_register (".statistics", "statistics",
-					     "statistics", TDF_TREE,
+					     "statistics", DK_tree,
 					     OPTGROUP_NONE,
 					     false);
 }

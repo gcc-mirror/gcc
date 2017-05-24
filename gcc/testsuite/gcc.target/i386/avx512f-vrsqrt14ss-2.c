@@ -4,6 +4,7 @@
 
 #include <math.h>
 #include "avx512f-check.h"
+#include "avx512f-helper.h"
 
 static void
 compute_vrsqrt14ss (float *s1, float *s2, float *r)
@@ -17,7 +18,8 @@ compute_vrsqrt14ss (float *s1, float *s2, float *r)
 static void
 avx512f_test (void)
 {
-  union128 s1, s2, res1;
+  union128 s1, s2, res1, res2, res3;
+  __mmask8 m = 0;
   float res_ref[4];
 
   s1.x = _mm_set_ps (-24.43, 68.346, -43.35, 546.46);
@@ -29,4 +31,17 @@ avx512f_test (void)
 
   if (check_fp_union128 (res1, res_ref))
     abort ();
+
+  res2.x = _mm_set_ps (5.0, 6.0, 7.0, DEFAULT_VALUE);
+  res2.x = _mm_mask_rsqrt14_ss(res2.x, m, s1.x, s2.x);
+
+  MASK_MERGE () (res_ref, m, 1);
+  if (checkVf (res2.a, res_ref, 4))
+    abort();
+
+  res3.x = _mm_maskz_rsqrt14_ss(m, s1.x, s2.x);
+  
+  MASK_ZERO () (res_ref, m, 1);
+  if (checkVf (res3.a, res_ref, 4))
+    abort();
 }

@@ -48,8 +48,11 @@ struct expand_operand {
      rather than signed.  Only meaningful for certain types.  */
   unsigned int unsigned_p : 1;
 
+  /* Is the target operand.  */
+  unsigned int target : 1;
+
   /* Unused; available for future use.  */
-  unsigned int unused : 7;
+  unsigned int unused : 6;
 
   /* The mode passed to the convert_*_operand function.  It has a
      type-dependent meaning.  */

@@ -6,11 +6,11 @@ int main(int argc, char **argv)
   switch (argc)
     {
     case 1:
-      __builtin_unreachable();
+      __builtin_abort();
     case 4:
-      __builtin_unreachable();
+      __builtin_abort();
     default:
-      __builtin_unreachable();
+      __builtin_abort();
     }
 
   return 10;

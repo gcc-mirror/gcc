@@ -117,10 +117,9 @@ function_concept_check_p (tree t)
   gcc_assert (TREE_CODE (t) == CALL_EXPR);
   tree fn = CALL_EXPR_FN (t);
   if (fn != NULL_TREE
-      && TREE_CODE (fn) == TEMPLATE_ID_EXPR
-      && TREE_CODE (TREE_OPERAND (fn, 0)) == OVERLOAD)
+      && TREE_CODE (fn) == TEMPLATE_ID_EXPR)
     {
-      tree f1 = get_first_fn (fn);
+      tree f1 = OVL_FIRST (TREE_OPERAND (fn, 0));
       if (TREE_CODE (f1) == TEMPLATE_DECL
 	  && DECL_DECLARED_CONCEPT_P (DECL_TEMPLATE_RESULT (f1)))
         return true;
@@ -205,10 +204,10 @@ resolve_constraint_check (tree ovl, tree args)
 {
   int nerrs = 0;
   tree cands = NULL_TREE;
-  for (tree p = ovl; p != NULL_TREE; p = OVL_NEXT (p))
+  for (lkp_iterator iter (ovl); iter; ++iter)
     {
       // Get the next template overload.
-      tree tmpl = OVL_CURRENT (p);
+      tree tmpl = *iter;
       if (TREE_CODE (tmpl) != TEMPLATE_DECL)
         continue;
 
@@ -739,17 +738,13 @@ normalize_template_id_expression (tree t)
     }
 
   /* Check that we didn't refer to a function concept like a variable.  */
-  tree tmpl = TREE_OPERAND (t, 0);
-  if (TREE_CODE (tmpl) == OVERLOAD)
+  tree fn = OVL_FIRST (TREE_OPERAND (t, 0));
+  if (TREE_CODE (fn) == TEMPLATE_DECL
+      && DECL_DECLARED_CONCEPT_P (DECL_TEMPLATE_RESULT (fn)))
     {
-      tree fn = OVL_FUNCTION (tmpl);
-      if (TREE_CODE (fn) == TEMPLATE_DECL
-          && DECL_DECLARED_CONCEPT_P (DECL_TEMPLATE_RESULT (fn)))
-        {
-          error_at (location_of (t),
-                    "invalid reference to function concept %qD", fn);
-          return error_mark_node;
-        }
+      error_at (location_of (t),
+		"invalid reference to function concept %qD", fn);
+      return error_mark_node;
     }
 
   return build_nt (PRED_CONSTR, t);
@@ -1284,15 +1279,9 @@ finish_shorthand_constraint (tree decl, tree constr)
   /* Build the concept check. If it the constraint needs to be
      applied to all elements of the parameter pack, then make
      the constraint an expansion. */
-  tree check;
   tree tmpl = DECL_TI_TEMPLATE (con);
-  if (VAR_P (con))
-    check = build_concept_check (tmpl, arg, args);
-  else
-    {
-      tree ovl = build_overload (tmpl, NULL_TREE);
-      check = build_concept_check (ovl, arg, args);
-    }
+  tree check = VAR_P (con) ? tmpl : ovl_make (tmpl);
+  check = build_concept_check (check, arg, args);
 
   /* Make the check a pack expansion if needed.
 
@@ -2859,7 +2848,7 @@ diagnose_check_constraint (location_t loc, tree orig, tree cur, tree args)
     {
       if (elide_constraint_failure_p ())
         return;
-      inform (loc, "in the expansion of concept %qE %S", check, sub);
+      inform (loc, "in the expansion of concept %<%E %S%>", check, sub);
       cur = get_concept_definition (decl);
       tsubst_expr (cur, targs, tf_warning_or_error, NULL_TREE, false);
       return;

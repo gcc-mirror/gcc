@@ -1080,13 +1080,19 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 	      if (gfc_match ("default ( none )") == MATCH_YES)
 		c->default_sharing = OMP_DEFAULT_NONE;
 	      else if (openacc)
-		/* c->default_sharing = OMP_DEFAULT_UNKNOWN */;
-	      else if (gfc_match ("default ( shared )") == MATCH_YES)
-		c->default_sharing = OMP_DEFAULT_SHARED;
-	      else if (gfc_match ("default ( private )") == MATCH_YES)
-		c->default_sharing = OMP_DEFAULT_PRIVATE;
-	      else if (gfc_match ("default ( firstprivate )") == MATCH_YES)
-		c->default_sharing = OMP_DEFAULT_FIRSTPRIVATE;
+		{
+		  if (gfc_match ("default ( present )") == MATCH_YES)
+		    c->default_sharing = OMP_DEFAULT_PRESENT;
+		}
+	      else
+		{
+		  if (gfc_match ("default ( firstprivate )") == MATCH_YES)
+		    c->default_sharing = OMP_DEFAULT_FIRSTPRIVATE;
+		  else if (gfc_match ("default ( private )") == MATCH_YES)
+		    c->default_sharing = OMP_DEFAULT_PRIVATE;
+		  else if (gfc_match ("default ( shared )") == MATCH_YES)
+		    c->default_sharing = OMP_DEFAULT_SHARED;
+		}
 	      if (c->default_sharing != OMP_DEFAULT_UNKNOWN)
 		continue;
 	    }
@@ -1926,7 +1932,8 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
    | OMP_CLAUSE_PRESENT_OR_CREATE | OMP_CLAUSE_DEVICEPTR | OMP_CLAUSE_PRIVATE \
    | OMP_CLAUSE_FIRSTPRIVATE | OMP_CLAUSE_DEFAULT | OMP_CLAUSE_WAIT)
 #define OACC_KERNELS_CLAUSES \
-  (omp_mask (OMP_CLAUSE_IF) | OMP_CLAUSE_ASYNC | OMP_CLAUSE_DEVICEPTR	      \
+  (omp_mask (OMP_CLAUSE_IF) | OMP_CLAUSE_ASYNC | OMP_CLAUSE_NUM_GANGS	      \
+   | OMP_CLAUSE_NUM_WORKERS | OMP_CLAUSE_VECTOR_LENGTH | OMP_CLAUSE_DEVICEPTR \
    | OMP_CLAUSE_COPY | OMP_CLAUSE_COPYIN | OMP_CLAUSE_COPYOUT		      \
    | OMP_CLAUSE_CREATE | OMP_CLAUSE_PRESENT | OMP_CLAUSE_PRESENT_OR_COPY      \
    | OMP_CLAUSE_PRESENT_OR_COPYIN | OMP_CLAUSE_PRESENT_OR_COPYOUT	      \

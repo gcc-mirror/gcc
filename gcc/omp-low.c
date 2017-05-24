@@ -112,10 +112,6 @@ struct omp_context
      otherwise.  */
   gimple *simt_stmt;
 
-  /* What to do with variables with implicitly determined sharing
-     attributes.  */
-  enum omp_clause_default_kind default_kind;
-
   /* Nesting depth of this context.  Used to beautify error messages re
      invalid gotos.  The outermost ctx is depth 1, with depth 0 being
      reserved for the main body of the function.  */
@@ -1162,10 +1158,6 @@ scan_sharing_clauses (tree clauses, omp_context *ctx,
 	  install_var_field (decl, by_ref, 3, ctx);
 	  break;
 
-	case OMP_CLAUSE_DEFAULT:
-	  ctx->default_kind = OMP_CLAUSE_DEFAULT_KIND (c);
-	  break;
-
 	case OMP_CLAUSE_FINAL:
 	case OMP_CLAUSE_IF:
 	case OMP_CLAUSE_NUM_THREADS:
@@ -1332,6 +1324,7 @@ scan_sharing_clauses (tree clauses, omp_context *ctx,
 	case OMP_CLAUSE_SEQ:
 	case OMP_CLAUSE_TILE:
 	case OMP_CLAUSE__SIMT_:
+	case OMP_CLAUSE_DEFAULT:
 	  break;
 
 	case OMP_CLAUSE_ALIGNED:
@@ -1826,7 +1819,6 @@ scan_omp_parallel (gimple_stmt_iterator *gsi, omp_context *outer_ctx)
   if (taskreg_nesting_level > 1)
     ctx->is_nested = true;
   ctx->field_map = splay_tree_new (splay_tree_compare_pointers, 0, 0);
-  ctx->default_kind = OMP_CLAUSE_DEFAULT_SHARED;
   ctx->record_type = lang_hooks.types.make_type (RECORD_TYPE);
   name = create_tmp_var_name (".omp_data_s");
   name = build_decl (gimple_location (stmt),
@@ -1875,7 +1867,6 @@ scan_omp_task (gimple_stmt_iterator *gsi, omp_context *outer_ctx)
   if (taskreg_nesting_level > 1)
     ctx->is_nested = true;
   ctx->field_map = splay_tree_new (splay_tree_compare_pointers, 0, 0);
-  ctx->default_kind = OMP_CLAUSE_DEFAULT_SHARED;
   ctx->record_type = lang_hooks.types.make_type (RECORD_TYPE);
   name = create_tmp_var_name (".omp_data_s");
   name = build_decl (gimple_location (stmt),
@@ -1913,6 +1904,29 @@ scan_omp_task (gimple_stmt_iterator *gsi, omp_context *outer_ctx)
     }
 }
 
+/* Helper function for finish_taskreg_scan, called through walk_tree.
+   If maybe_lookup_decl_in_outer_context returns non-NULL for some
+   tree, replace it in the expression.  */
+
+static tree
+finish_taskreg_remap (tree *tp, int *walk_subtrees, void *data)
+{
+  if (VAR_P (*tp))
+    {
+      omp_context *ctx = (omp_context *) data;
+      tree t = maybe_lookup_decl_in_outer_ctx (*tp, ctx);
+      if (t != *tp)
+	{
+	  if (DECL_HAS_VALUE_EXPR_P (t))
+	    t = unshare_expr (DECL_VALUE_EXPR (t));
+	  *tp = t;
+	}
+      *walk_subtrees = 0;
+    }
+  else if (IS_TYPE_OR_DECL_P (*tp))
+    *walk_subtrees = 0;
+  return NULL_TREE;
+}
 
 /* If any decls have been made addressable during scan_omp,
    adjust their fields if needed, and layout record types
@@ -2033,6 +2047,11 @@ finish_taskreg_scan (omp_context *ctx)
 	layout_type (ctx->srecord_type);
       tree t = fold_convert_loc (loc, long_integer_type_node,
 				 TYPE_SIZE_UNIT (ctx->record_type));
+      if (TREE_CODE (t) != INTEGER_CST)
+	{
+	  t = unshare_expr (t);
+	  walk_tree (&t, finish_taskreg_remap, ctx, NULL);
+	}
       gimple_omp_task_set_arg_size (ctx->stmt, t);
       t = build_int_cst (long_integer_type_node,
 			 TYPE_ALIGN_UNIT (ctx->record_type));
@@ -2362,7 +2381,6 @@ scan_omp_target (gomp_target *stmt, omp_context *outer_ctx)
 
   ctx = new_omp_context (stmt, outer_ctx);
   ctx->field_map = splay_tree_new (splay_tree_compare_pointers, 0, 0);
-  ctx->default_kind = OMP_CLAUSE_DEFAULT_SHARED;
   ctx->record_type = lang_hooks.types.make_type (RECORD_TYPE);
   name = create_tmp_var_name (".omp_data_t");
   name = build_decl (gimple_location (stmt),
@@ -5140,15 +5158,25 @@ lower_reduction_clauses (tree clauses, gimple_seq *stmt_seqp, omp_context *ctx)
       if (OMP_CLAUSE_CODE (c) != OMP_CLAUSE_REDUCTION)
 	continue;
 
+      enum omp_clause_code ccode = OMP_CLAUSE_REDUCTION;
       orig_var = var = OMP_CLAUSE_DECL (c);
       if (TREE_CODE (var) == MEM_REF)
 	{
 	  var = TREE_OPERAND (var, 0);
 	  if (TREE_CODE (var) == POINTER_PLUS_EXPR)
 	    var = TREE_OPERAND (var, 0);
-	  if (TREE_CODE (var) == INDIRECT_REF
-	      || TREE_CODE (var) == ADDR_EXPR)
+	  if (TREE_CODE (var) == ADDR_EXPR)
 	    var = TREE_OPERAND (var, 0);
+	  else
+	    {
+	      /* If this is a pointer or referenced based array
+		 section, the var could be private in the outer
+		 context e.g. on orphaned loop construct.  Pretend this
+		 is private variable's outer reference.  */
+	      ccode = OMP_CLAUSE_PRIVATE;
+	      if (TREE_CODE (var) == INDIRECT_REF)
+		var = TREE_OPERAND (var, 0);
+	    }
 	  orig_var = var;
 	  if (is_variable_sized (var))
 	    {
@@ -5162,7 +5190,7 @@ lower_reduction_clauses (tree clauses, gimple_seq *stmt_seqp, omp_context *ctx)
       new_var = lookup_decl (var, ctx);
       if (var == OMP_CLAUSE_DECL (c) && omp_is_reference (var))
 	new_var = build_simple_mem_ref_loc (clause_loc, new_var);
-      ref = build_outer_var_ref (var, ctx);
+      ref = build_outer_var_ref (var, ctx, ccode);
       code = OMP_CLAUSE_REDUCTION_CODE (c);
 
       /* reduction(-:var) sums up the partial results, so it acts

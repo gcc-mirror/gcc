@@ -581,6 +581,9 @@ struct switch_conv_info
      switch expression is out of range.  */
   tree *target_outbound_names;
 
+  /* VOP SSA_NAME.  */
+  tree target_vop;
+
   /* The first load statement that loads a temporary from a new static array.
    */
   gimple *arr_ref_first;
@@ -1216,6 +1219,24 @@ build_arrays (gswitch *swtch, struct switch_conv_info *info)
       gphi *phi = gpi.phi ();
       if (!virtual_operand_p (gimple_phi_result (phi)))
 	build_one_array (swtch, i++, arr_index_type, phi, tidx, info);
+      else
+	{
+	  edge e;
+	  edge_iterator ei;
+	  FOR_EACH_EDGE (e, ei, info->switch_bb->succs)
+	    {
+	      if (e->dest == info->final_bb)
+		break;
+	      if (!info->default_case_nonstandard
+		  || e->dest != info->default_bb)
+		{
+		  e = single_succ_edge (e->dest);
+		  break;
+		}
+	    }
+	  gcc_assert (e && e->dest == info->final_bb);
+	  info->target_vop = PHI_ARG_DEF_FROM_EDGE (phi, e);
+	}
     }
 }
 
@@ -1279,7 +1300,7 @@ fix_phi_nodes (edge e1f, edge e2f, basic_block bbf,
       gphi *phi = gsi.phi ();
       tree inbound, outbound;
       if (virtual_operand_p (gimple_phi_result (phi)))
-	inbound = outbound = gimple_vop (cfun);
+	inbound = outbound = info->target_vop;
       else
 	{
 	  inbound = info->target_inbound_names[i];

@@ -497,13 +497,11 @@ public:
 unsigned int
 pass_phi_only_cprop::execute (function *fun)
 {
-  bitmap interesting_names;
-  bitmap interesting_names1;
   bool cfg_altered = false;
 
   /* Bitmap of blocks which need EH information updated.  We can not
      update it on-the-fly as doing so invalidates the dominator tree.  */
-  bitmap need_eh_cleanup = BITMAP_ALLOC (NULL);
+  auto_bitmap need_eh_cleanup;
 
   /* INTERESTING_NAMES is effectively our worklist, indexed by
      SSA_NAME_VERSION.
@@ -515,8 +513,8 @@ pass_phi_only_cprop::execute (function *fun)
 
      Experiments have show we generally get better compilation
      time behavior with bitmaps rather than sbitmaps.  */
-  interesting_names = BITMAP_ALLOC (NULL);
-  interesting_names1 = BITMAP_ALLOC (NULL);
+  auto_bitmap interesting_names;
+  auto_bitmap interesting_names1;
 
   calculate_dominance_info (CDI_DOMINATORS);
   cfg_altered = false;
@@ -570,13 +568,8 @@ pass_phi_only_cprop::execute (function *fun)
   /* Propagation of const and copies may make some EH edges dead.  Purge
      such edges from the CFG as needed.  */
   if (!bitmap_empty_p (need_eh_cleanup))
-    {
-      gimple_purge_all_dead_eh_edges (need_eh_cleanup);
-      BITMAP_FREE (need_eh_cleanup);
-    }
+    gimple_purge_all_dead_eh_edges (need_eh_cleanup);
 
-  BITMAP_FREE (interesting_names);
-  BITMAP_FREE (interesting_names1);
   return 0;
 }
 

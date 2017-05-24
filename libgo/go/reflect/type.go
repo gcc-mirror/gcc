@@ -259,20 +259,21 @@ const (
 // with a unique tag like `reflect:"array"` or `reflect:"ptr"`
 // so that code cannot convert from, say, *arrayType to *ptrType.
 type rtype struct {
-	kind       uint8 // enumeration for C
-	align      int8  // alignment of variable with this type
-	fieldAlign uint8 // alignment of struct field with this type
-	_          uint8 // unused/padding
 	size       uintptr
-	hash       uint32 // hash of type; avoids computation in hash tables
+	ptrdata    uintptr // size of memory prefix holding all pointers
+	hash       uint32  // hash of type; avoids computation in hash tables
+	kind       uint8   // enumeration for C
+	align      int8    // alignment of variable with this type
+	fieldAlign uint8   // alignment of struct field with this type
+	_          uint8   // unused/padding
 
 	hashfn  func(unsafe.Pointer, uintptr) uintptr     // hash function
 	equalfn func(unsafe.Pointer, unsafe.Pointer) bool // equality function
 
-	gc            unsafe.Pointer // garbage collection data
-	string        *string        // string form; unnecessary  but undeniably useful
-	*uncommonType                // (relatively) uncommon fields
-	ptrToThis     *rtype         // type for pointer to this type, if used in binary or has methods
+	gcdata        *byte   // garbage collection data
+	string        *string // string form; unnecessary  but undeniably useful
+	*uncommonType         // (relatively) uncommon fields
+	ptrToThis     *rtype  // type for pointer to this type, if used in binary or has methods
 }
 
 // Method on non-interface type
@@ -381,24 +382,6 @@ type structType struct {
 	rtype  `reflect:"struct"`
 	fields []structField // sorted by offset
 }
-
-// NOTE: These are copied from ../runtime/mgc0.h.
-// They must be kept in sync.
-const (
-	_GC_END = iota
-	_GC_PTR
-	_GC_APTR
-	_GC_ARRAY_START
-	_GC_ARRAY_NEXT
-	_GC_CALL
-	_GC_CHAN_PTR
-	_GC_STRING
-	_GC_EFACE
-	_GC_IFACE
-	_GC_SLICE
-	_GC_REGION
-	_GC_NUM_INSTR
-)
 
 /*
  * The compiler knows the exact layout of all the data structures above.
@@ -1098,32 +1081,6 @@ var ptrMap struct {
 	m map[*rtype]*ptrType
 }
 
-// garbage collection bytecode program for pointer to memory without pointers.
-// See ../../cmd/gc/reflect.c:/^dgcsym1 and :/^dgcsym.
-type ptrDataGC struct {
-	width uintptr // sizeof(ptr)
-	op    uintptr // _GC_APTR
-	off   uintptr // 0
-	end   uintptr // _GC_END
-}
-
-var ptrDataGCProg = ptrDataGC{
-	width: unsafe.Sizeof((*byte)(nil)),
-	op:    _GC_APTR,
-	off:   0,
-	end:   _GC_END,
-}
-
-// garbage collection bytecode program for pointer to memory with pointers.
-// See ../../cmd/gc/reflect.c:/^dgcsym1 and :/^dgcsym.
-type ptrGC struct {
-	width  uintptr        // sizeof(ptr)
-	op     uintptr        // _GC_PTR
-	off    uintptr        // 0
-	elemgc unsafe.Pointer // element gc type
-	end    uintptr        // _GC_END
-}
-
 // PtrTo returns the pointer type with element t.
 // For example, if t represents type Foo, PtrTo(t) represents *Foo.
 func PtrTo(t Type) Type {
@@ -1188,18 +1145,6 @@ func (t *rtype) ptrTo() *rtype {
 	pp.uncommonType = nil
 	pp.ptrToThis = nil
 	pp.elem = t
-
-	if t.kind&kindNoPointers != 0 {
-		pp.gc = unsafe.Pointer(&ptrDataGCProg)
-	} else {
-		pp.gc = unsafe.Pointer(&ptrGC{
-			width:  pp.size,
-			op:     _GC_PTR,
-			off:    0,
-			elemgc: t.gc,
-			end:    _GC_END,
-		})
-	}
 
 	q := canonicalize(&pp.rtype)
 	p = (*ptrType)(unsafe.Pointer(q.(*rtype)))
@@ -1507,16 +1452,6 @@ func cachePut(k cacheKey, t *rtype) Type {
 	return t
 }
 
-// garbage collection bytecode program for chan.
-// See ../../cmd/gc/reflect.c:/^dgcsym1 and :/^dgcsym.
-type chanGC struct {
-	width uintptr // sizeof(map)
-	op    uintptr // _GC_CHAN_PTR
-	off   uintptr // 0
-	typ   *rtype  // map type
-	end   uintptr // _GC_END
-}
-
 // The funcLookupCache caches FuncOf lookups.
 // FuncOf does not share the common lookupCache since cacheKey is not
 // sufficient to represent functions unambiguously.
@@ -1583,17 +1518,6 @@ func ChanOf(dir ChanDir, t Type) Type {
 	ch.elem = typ
 	ch.uncommonType = nil
 	ch.ptrToThis = nil
-
-	ch.gc = unsafe.Pointer(&chanGC{
-		width: ch.size,
-		op:    _GC_CHAN_PTR,
-		off:   0,
-		typ:   &ch.rtype,
-		end:   _GC_END,
-	})
-
-	// INCORRECT. Uncomment to check that TestChanOfGC fails when ch.gc is wrong.
-	// ch.gc = unsafe.Pointer(&badGC{width: ch.size, end: _GC_END})
 
 	return cachePut(ckey, &ch.rtype)
 }
@@ -1733,9 +1657,6 @@ func FuncOf(in, out []Type, variadic bool) Type {
 	ft.uncommonType = nil
 	ft.ptrToThis = nil
 
-	// TODO(cmang): Generate GC data for funcs.
-	ft.gc = unsafe.Pointer(&ptrDataGCProg)
-
 	funcLookupCache.m[hash] = append(funcLookupCache.m[hash], &ft.rtype)
 
 	return toType(&ft.rtype)
@@ -1859,8 +1780,8 @@ func bucketOf(ktyp, etyp *rtype) *rtype {
 	// and it's easier to generate a pointer bitmap than a GC program.
 	// Note that since the key and value are known to be <= 128 bytes,
 	// they're guaranteed to have bitmaps instead of GC programs.
-	// var gcdata *byte
-	// var ptrdata uintptr
+	var gcdata *byte
+	var ptrdata uintptr
 
 	size := bucketSize
 	size = align(size, uintptr(ktyp.fieldAlign))
@@ -1875,37 +1796,63 @@ func bucketOf(ktyp, etyp *rtype) *rtype {
 	if maxAlign > ptrSize {
 		size = align(size, maxAlign)
 		size += align(ptrSize, maxAlign) - ptrSize
+	} else if maxAlign < ptrSize {
+		size = align(size, ptrSize)
+		maxAlign = ptrSize
 	}
 
 	ovoff := size
 	size += ptrSize
-	if maxAlign < ptrSize {
-		maxAlign = ptrSize
-	}
 
-	var gcPtr unsafe.Pointer
 	if kind != kindNoPointers {
-		gc := []uintptr{size}
-		base := bucketSize
-		base = align(base, uintptr(ktyp.fieldAlign))
+		nptr := size / ptrSize
+		mask := make([]byte, (nptr+7)/8)
+		psize := bucketSize
+		psize = align(psize, uintptr(ktyp.fieldAlign))
+		base := psize / ptrSize
+
 		if ktyp.kind&kindNoPointers == 0 {
-			gc = append(gc, _GC_ARRAY_START, base, bucketSize, ktyp.size)
-			gc = appendGCProgram(gc, ktyp, 0)
-			gc = append(gc, _GC_ARRAY_NEXT)
+			if ktyp.kind&kindGCProg != 0 {
+				panic("reflect: unexpected GC program in MapOf")
+			}
+			kmask := (*[16]byte)(unsafe.Pointer(ktyp.gcdata))
+			for i := uintptr(0); i < ktyp.size/ptrSize; i++ {
+				if (kmask[i/8]>>(i%8))&1 != 0 {
+					for j := uintptr(0); j < bucketSize; j++ {
+						word := base + j*ktyp.size/ptrSize + i
+						mask[word/8] |= 1 << (word % 8)
+					}
+				}
+			}
 		}
-		base += ktyp.size * bucketSize
-		base = align(base, uintptr(etyp.fieldAlign))
+		psize += bucketSize * ktyp.size
+		psize = align(psize, uintptr(etyp.fieldAlign))
+		base = psize / ptrSize
+
 		if etyp.kind&kindNoPointers == 0 {
-			gc = append(gc, _GC_ARRAY_START, base, bucketSize, etyp.size)
-			gc = appendGCProgram(gc, etyp, 0)
-			gc = append(gc, _GC_ARRAY_NEXT)
+			if etyp.kind&kindGCProg != 0 {
+				panic("reflect: unexpected GC program in MapOf")
+			}
+			emask := (*[16]byte)(unsafe.Pointer(etyp.gcdata))
+			for i := uintptr(0); i < etyp.size/ptrSize; i++ {
+				if (emask[i/8]>>(i%8))&1 != 0 {
+					for j := uintptr(0); j < bucketSize; j++ {
+						word := base + j*etyp.size/ptrSize + i
+						mask[word/8] |= 1 << (word % 8)
+					}
+				}
+			}
 		}
-		gc = append(gc, _GC_APTR, ovoff, _GC_END)
-		gcPtr = unsafe.Pointer(&gc[0])
-	} else {
-		// No pointers in bucket.
-		gc := [...]uintptr{size, _GC_END}
-		gcPtr = unsafe.Pointer(&gc[0])
+
+		word := ovoff / ptrSize
+		mask[word/8] |= 1 << (word % 8)
+		gcdata = &mask[0]
+		ptrdata = (word + 1) * ptrSize
+
+		// overflow word must be last
+		if ptrdata != size {
+			panic("reflect: bad layout computation in MapOf")
+		}
 	}
 
 	b := &rtype{
@@ -1913,100 +1860,12 @@ func bucketOf(ktyp, etyp *rtype) *rtype {
 		fieldAlign: uint8(maxAlign),
 		size:       size,
 		kind:       kind,
-		gc:         gcPtr,
+		ptrdata:    ptrdata,
+		gcdata:     gcdata,
 	}
 	s := "bucket(" + *ktyp.string + "," + *etyp.string + ")"
 	b.string = &s
 	return b
-}
-
-// Take the GC program for "t" and append it to the GC program "gc".
-func appendGCProgram(gc []uintptr, t *rtype, offset uintptr) []uintptr {
-	p := t.gc
-	p = unsafe.Pointer(uintptr(p) + unsafe.Sizeof(uintptr(0))) // skip size
-loop:
-	for {
-		var argcnt int
-		switch *(*uintptr)(p) {
-		case _GC_END:
-			// Note: _GC_END not included in append
-			break loop
-		case _GC_ARRAY_NEXT:
-			argcnt = 0
-		case _GC_APTR, _GC_STRING, _GC_EFACE, _GC_IFACE:
-			argcnt = 1
-		case _GC_PTR, _GC_CALL, _GC_CHAN_PTR, _GC_SLICE:
-			argcnt = 2
-		case _GC_ARRAY_START, _GC_REGION:
-			argcnt = 3
-		default:
-			panic("unknown GC program op for " + *t.string + ": " + strconv.FormatUint(*(*uint64)(p), 10))
-		}
-		for i := 0; i < argcnt+1; i++ {
-			v := *(*uintptr)(p)
-			if i == 1 {
-				v += offset
-			}
-			gc = append(gc, v)
-			p = unsafe.Pointer(uintptr(p) + unsafe.Sizeof(uintptr(0)))
-		}
-	}
-	return gc
-}
-func hMapOf(bucket *rtype) *rtype {
-	ptrsize := unsafe.Sizeof(uintptr(0))
-
-	// make gc program & compute hmap size
-	gc := make([]uintptr, 1)           // first entry is size, filled in at the end
-	offset := unsafe.Sizeof(uint(0))   // count
-	offset += unsafe.Sizeof(uint32(0)) // flags
-	offset += unsafe.Sizeof(uint32(0)) // hash0
-	offset += unsafe.Sizeof(uint8(0))  // B
-	offset += unsafe.Sizeof(uint8(0))  // keysize
-	offset += unsafe.Sizeof(uint8(0))  // valuesize
-	offset = (offset + 1) / 2 * 2
-	offset += unsafe.Sizeof(uint16(0)) // bucketsize
-	offset = (offset + ptrsize - 1) / ptrsize * ptrsize
-	// gc = append(gc, _GC_PTR, offset, uintptr(bucket.gc)) // buckets
-	offset += ptrsize
-	// gc = append(gc, _GC_PTR, offset, uintptr(bucket.gc)) // oldbuckets
-	offset += ptrsize
-	offset += ptrsize // nevacuate
-	gc = append(gc, _GC_END)
-	gc[0] = offset
-
-	h := new(rtype)
-	h.size = offset
-	// h.gc = unsafe.Pointer(&gc[0])
-	s := "hmap(" + *bucket.string + ")"
-	h.string = &s
-	return h
-}
-
-// garbage collection bytecode program for slice of non-zero-length values.
-// See ../../cmd/gc/reflect.c:/^dgcsym1 and :/^dgcsym.
-type sliceGC struct {
-	width  uintptr        // sizeof(slice)
-	op     uintptr        // _GC_SLICE
-	off    uintptr        // 0
-	elemgc unsafe.Pointer // element gc program
-	end    uintptr        // _GC_END
-}
-
-// garbage collection bytecode program for slice of zero-length values.
-// See ../../cmd/gc/reflect.c:/^dgcsym1 and :/^dgcsym.
-type sliceEmptyGC struct {
-	width uintptr // sizeof(slice)
-	op    uintptr // _GC_APTR
-	off   uintptr // 0
-	end   uintptr // _GC_END
-}
-
-var sliceEmptyGCProg = sliceEmptyGC{
-	width: unsafe.Sizeof([]byte(nil)),
-	op:    _GC_APTR,
-	off:   0,
-	end:   _GC_END,
 }
 
 // SliceOf returns the slice type with element type t.
@@ -2037,21 +1896,6 @@ func SliceOf(t Type) Type {
 	slice.uncommonType = nil
 	slice.ptrToThis = nil
 
-	if typ.size == 0 {
-		slice.gc = unsafe.Pointer(&sliceEmptyGCProg)
-	} else {
-		slice.gc = unsafe.Pointer(&sliceGC{
-			width:  slice.size,
-			op:     _GC_SLICE,
-			off:    0,
-			elemgc: typ.gc,
-			end:    _GC_END,
-		})
-	}
-
-	// INCORRECT. Uncomment to check that TestSliceOfOfGC fails when slice.gc is wrong.
-	// slice.gc = unsafe.Pointer(&badGC{width: slice.size, end: _GC_END})
-
 	return cachePut(ckey, &slice.rtype)
 }
 
@@ -2073,15 +1917,18 @@ var structLookupCache struct {
 // This limitation may be lifted in a future version.
 func StructOf(fields []StructField) Type {
 	var (
-		hash     = uint32(0)
-		size     uintptr
-		typalign int8
+		hash       = uint32(0)
+		size       uintptr
+		typalign   int8
+		comparable = true
+		hashable   = true
 
 		fs   = make([]structField, len(fields))
 		repr = make([]byte, 0, 64)
 		fset = map[string]struct{}{} // fields' names
 
-		hasPtr = false // records whether at least one struct-field is a pointer
+		hasPtr    = false // records whether at least one struct-field is a pointer
+		hasGCProg = false // records whether a struct-field type has a GCProg
 	)
 
 	lastzero := uintptr(0)
@@ -2092,6 +1939,9 @@ func StructOf(fields []StructField) Type {
 		}
 		f := runtimeStructField(field)
 		ft := f.typ
+		if ft.kind&kindGCProg != 0 {
+			hasGCProg = true
+		}
 		if ft.pointers() {
 			hasPtr = true
 		}
@@ -2155,6 +2005,9 @@ func StructOf(fields []StructField) Type {
 		if i < len(fields)-1 {
 			repr = append(repr, ';')
 		}
+
+		comparable = comparable && (ft.equalfn != nil)
+		hashable = hashable && (ft.hashfn != nil)
 
 		f.offset = align(size, uintptr(ft.fieldAlign))
 		if int8(ft.fieldAlign) > typalign {
@@ -2228,36 +2081,95 @@ func StructOf(fields []StructField) Type {
 	typ.fieldAlign = uint8(typalign)
 	if !hasPtr {
 		typ.kind |= kindNoPointers
-		gc := [...]uintptr{size, _GC_END}
-		typ.gc = unsafe.Pointer(&gc[0])
 	} else {
 		typ.kind &^= kindNoPointers
-		gc := []uintptr{size}
-		for _, ft := range fs {
-			gc = appendGCProgram(gc, ft.typ, ft.offset)
-		}
-		gc = append(gc, _GC_END)
-		typ.gc = unsafe.Pointer(&gc[0])
 	}
 
-	typ.hashfn = func(p unsafe.Pointer, seed uintptr) uintptr {
-		ret := seed
-		for _, ft := range typ.fields {
-			o := unsafe.Pointer(uintptr(p) + ft.offset)
-			ret = ft.typ.hashfn(o, ret)
-		}
-		return ret
-	}
-
-	typ.equalfn = func(p, q unsafe.Pointer) bool {
-		for _, ft := range typ.fields {
-			pi := unsafe.Pointer(uintptr(p) + ft.offset)
-			qi := unsafe.Pointer(uintptr(q) + ft.offset)
-			if !ft.typ.equalfn(pi, qi) {
-				return false
+	if hasGCProg {
+		lastPtrField := 0
+		for i, ft := range fs {
+			if ft.typ.pointers() {
+				lastPtrField = i
 			}
 		}
-		return true
+		prog := []byte{0, 0, 0, 0} // will be length of prog
+		for i, ft := range fs {
+			if i > lastPtrField {
+				// gcprog should not include anything for any field after
+				// the last field that contains pointer data
+				break
+			}
+			// FIXME(sbinet) handle padding, fields smaller than a word
+			elemGC := (*[1 << 30]byte)(unsafe.Pointer(ft.typ.gcdata))[:]
+			elemPtrs := ft.typ.ptrdata / ptrSize
+			switch {
+			case ft.typ.kind&kindGCProg == 0 && ft.typ.ptrdata != 0:
+				// Element is small with pointer mask; use as literal bits.
+				mask := elemGC
+				// Emit 120-bit chunks of full bytes (max is 127 but we avoid using partial bytes).
+				var n uintptr
+				for n := elemPtrs; n > 120; n -= 120 {
+					prog = append(prog, 120)
+					prog = append(prog, mask[:15]...)
+					mask = mask[15:]
+				}
+				prog = append(prog, byte(n))
+				prog = append(prog, mask[:(n+7)/8]...)
+			case ft.typ.kind&kindGCProg != 0:
+				// Element has GC program; emit one element.
+				elemProg := elemGC[4 : 4+*(*uint32)(unsafe.Pointer(&elemGC[0]))-1]
+				prog = append(prog, elemProg...)
+			}
+			// Pad from ptrdata to size.
+			elemWords := ft.typ.size / ptrSize
+			if elemPtrs < elemWords {
+				// Emit literal 0 bit, then repeat as needed.
+				prog = append(prog, 0x01, 0x00)
+				if elemPtrs+1 < elemWords {
+					prog = append(prog, 0x81)
+					prog = appendVarint(prog, elemWords-elemPtrs-1)
+				}
+			}
+		}
+		*(*uint32)(unsafe.Pointer(&prog[0])) = uint32(len(prog) - 4)
+		typ.kind |= kindGCProg
+		typ.gcdata = &prog[0]
+	} else {
+		typ.kind &^= kindGCProg
+		bv := new(bitVector)
+		addTypeBits(bv, 0, typ.common())
+		if len(bv.data) > 0 {
+			typ.gcdata = &bv.data[0]
+		}
+	}
+	typ.ptrdata = typeptrdata(typ.common())
+
+	if hashable {
+		typ.hashfn = func(p unsafe.Pointer, seed uintptr) uintptr {
+			o := seed
+			for _, ft := range typ.fields {
+				pi := unsafe.Pointer(uintptr(p) + ft.offset)
+				o = ft.typ.hashfn(pi, o)
+			}
+			return o
+		}
+	} else {
+		typ.hashfn = nil
+	}
+
+	if comparable {
+		typ.equalfn = func(p, q unsafe.Pointer) bool {
+			for _, ft := range typ.fields {
+				pi := unsafe.Pointer(uintptr(p) + ft.offset)
+				qi := unsafe.Pointer(uintptr(q) + ft.offset)
+				if !ft.typ.equalfn(pi, qi) {
+					return false
+				}
+			}
+			return true
+		}
+	} else {
+		typ.equalfn = nil
 	}
 
 	typ.kind &^= kindDirectIface
@@ -2308,6 +2220,35 @@ func runtimeStructField(field StructField) structField {
 	}
 }
 
+// typeptrdata returns the length in bytes of the prefix of t
+// containing pointer data. Anything after this offset is scalar data.
+// keep in sync with ../cmd/compile/internal/gc/reflect.go
+func typeptrdata(t *rtype) uintptr {
+	if !t.pointers() {
+		return 0
+	}
+	switch t.Kind() {
+	case Struct:
+		st := (*structType)(unsafe.Pointer(t))
+		// find the last field that has pointers.
+		field := 0
+		for i := range st.fields {
+			ft := st.fields[i].typ
+			if ft.pointers() {
+				field = i
+			}
+		}
+		f := st.fields[field]
+		return f.offset + f.typ.ptrdata
+
+	default:
+		panic("reflect.typeptrdata: unexpected type, " + t.String())
+	}
+}
+
+// See cmd/compile/internal/gc/reflect.go for derivation of constant.
+const maxPtrmaskBytes = 2048
+
 // ArrayOf returns the array type with the given count and element type.
 // For example, if t represents int, ArrayOf(5, t) represents [5]int.
 //
@@ -2350,9 +2291,9 @@ func ArrayOf(count int, elem Type) Type {
 		panic("reflect.ArrayOf: array size would exceed virtual address space")
 	}
 	array.size = typ.size * uintptr(count)
-	// if count > 0 && typ.ptrdata != 0 {
-	// 	array.ptrdata = typ.size*uintptr(count-1) + typ.ptrdata
-	// }
+	if count > 0 && typ.ptrdata != 0 {
+		array.ptrdata = typ.size*uintptr(count-1) + typ.ptrdata
+	}
 	array.align = typ.align
 	array.fieldAlign = typ.fieldAlign
 	array.uncommonType = nil
@@ -2364,41 +2305,111 @@ func ArrayOf(count int, elem Type) Type {
 	case typ.kind&kindNoPointers != 0 || array.size == 0:
 		// No pointers.
 		array.kind |= kindNoPointers
-		gc := [...]uintptr{array.size, _GC_END}
-		array.gc = unsafe.Pointer(&gc[0])
+		array.gcdata = nil
+		array.ptrdata = 0
 
 	case count == 1:
 		// In memory, 1-element array looks just like the element.
 		array.kind |= typ.kind & kindGCProg
-		array.gc = typ.gc
+		array.gcdata = typ.gcdata
+		array.ptrdata = typ.ptrdata
+
+	case typ.kind&kindGCProg == 0 && array.size <= maxPtrmaskBytes*8*ptrSize:
+		// Element is small with pointer mask; array is still small.
+		// Create direct pointer mask by turning each 1 bit in elem
+		// into count 1 bits in larger mask.
+		mask := make([]byte, (array.ptrdata/ptrSize+7)/8)
+		elemMask := (*[1 << 30]byte)(unsafe.Pointer(typ.gcdata))[:]
+		elemWords := typ.size / ptrSize
+		for j := uintptr(0); j < typ.ptrdata/ptrSize; j++ {
+			if (elemMask[j/8]>>(j%8))&1 != 0 {
+				for i := uintptr(0); i < array.len; i++ {
+					k := i*elemWords + j
+					mask[k/8] |= 1 << (k % 8)
+				}
+			}
+		}
+		array.gcdata = &mask[0]
 
 	default:
-		gc := []uintptr{array.size, _GC_ARRAY_START, 0, uintptr(count), typ.size}
-		gc = appendGCProgram(gc, typ, 0)
-		gc = append(gc, _GC_ARRAY_NEXT, _GC_END)
-		array.gc = unsafe.Pointer(&gc[0])
+		// Create program that emits one element
+		// and then repeats to make the array.
+		prog := []byte{0, 0, 0, 0} // will be length of prog
+		elemGC := (*[1 << 30]byte)(unsafe.Pointer(typ.gcdata))[:]
+		elemPtrs := typ.ptrdata / ptrSize
+		if typ.kind&kindGCProg == 0 {
+			// Element is small with pointer mask; use as literal bits.
+			mask := elemGC
+			// Emit 120-bit chunks of full bytes (max is 127 but we avoid using partial bytes).
+			var n uintptr
+			for n = elemPtrs; n > 120; n -= 120 {
+				prog = append(prog, 120)
+				prog = append(prog, mask[:15]...)
+				mask = mask[15:]
+			}
+			prog = append(prog, byte(n))
+			prog = append(prog, mask[:(n+7)/8]...)
+		} else {
+			// Element has GC program; emit one element.
+			elemProg := elemGC[4 : 4+*(*uint32)(unsafe.Pointer(&elemGC[0]))-1]
+			prog = append(prog, elemProg...)
+		}
+		// Pad from ptrdata to size.
+		elemWords := typ.size / ptrSize
+		if elemPtrs < elemWords {
+			// Emit literal 0 bit, then repeat as needed.
+			prog = append(prog, 0x01, 0x00)
+			if elemPtrs+1 < elemWords {
+				prog = append(prog, 0x81)
+				prog = appendVarint(prog, elemWords-elemPtrs-1)
+			}
+		}
+		// Repeat count-1 times.
+		if elemWords < 0x80 {
+			prog = append(prog, byte(elemWords|0x80))
+		} else {
+			prog = append(prog, 0x80)
+			prog = appendVarint(prog, elemWords)
+		}
+		prog = appendVarint(prog, uintptr(count)-1)
+		prog = append(prog, 0)
+		*(*uint32)(unsafe.Pointer(&prog[0])) = uint32(len(prog) - 4)
+		array.kind |= kindGCProg
+		array.gcdata = &prog[0]
+		array.ptrdata = array.size // overestimate but ok; must match program
 	}
 
 	array.kind &^= kindDirectIface
 
-	array.hashfn = func(p unsafe.Pointer, seed uintptr) uintptr {
-		ret := seed
-		for i := 0; i < count; i++ {
-			ret = typ.hashfn(p, ret)
-			p = unsafe.Pointer(uintptr(p) + typ.size)
+	esize := typ.size
+
+	if typ.equalfn == nil {
+		array.equalfn = nil
+	} else {
+		eequal := typ.equalfn
+		array.equalfn = func(p, q unsafe.Pointer) bool {
+			for i := 0; i < count; i++ {
+				pi := arrayAt(p, i, esize)
+				qi := arrayAt(q, i, esize)
+				if !eequal(pi, qi) {
+					return false
+				}
+			}
+			return true
 		}
-		return ret
 	}
 
-	array.equalfn = func(p1, p2 unsafe.Pointer) bool {
-		for i := 0; i < count; i++ {
-			if !typ.equalfn(p1, p2) {
-				return false
+	if typ.hashfn == nil {
+		array.hashfn = nil
+	} else {
+		ehash := typ.hashfn
+		array.hashfn = func(ptr unsafe.Pointer, seed uintptr) uintptr {
+			o := seed
+			for i := 0; i < count; i++ {
+				o = ehash(arrayAt(ptr, i, esize), o)
 			}
-			p1 = unsafe.Pointer(uintptr(p1) + typ.size)
-			p2 = unsafe.Pointer(uintptr(p2) + typ.size)
+			return o
 		}
-		return true
 	}
 
 	return cachePut(ckey, &array.rtype)

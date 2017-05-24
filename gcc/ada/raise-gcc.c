@@ -909,7 +909,8 @@ extern struct Exception_Data Non_Ada_Error;
 /* Return true iff the exception class of EXCEPT is EC.  */
 
 static int
-exception_class_eq (const _GNAT_Exception *except, _Unwind_Exception_Class ec)
+exception_class_eq (const _GNAT_Exception *except,
+		    const _Unwind_Exception_Class ec)
 {
 #ifdef __ARM_EABI_UNWINDER__
   return memcmp (except->common.exception_class, ec, 8) == 0;

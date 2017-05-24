@@ -53,7 +53,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssanames.h"
 #include "gimple-ssa.h"
 #include "tree-dfa.h"
-#include "tree-dump.h"
 
 
 /* Gimple parsing functions.  */
@@ -567,6 +566,11 @@ c_parser_gimple_unary_expression (c_parser *parser)
 	op = c_parser_gimple_postfix_expression (parser);
 	if (op.value == error_mark_node)
 	  return ret;
+	if (! POINTER_TYPE_P (TREE_TYPE (op.value)))
+	  {
+	    error_at (op_loc, "expected pointer as argument of unary %<*%>");
+	    return ret;
+	  }
 	finish = op.get_finish ();
 	location_t combined_loc = make_location (op_loc, op_loc, finish);
 	ret.value = build_simple_mem_ref_loc (combined_loc, op.value);
@@ -687,6 +691,13 @@ c_parser_parse_ssa_name (c_parser *parser,
 	      c_parser_error (parser, "base variable or SSA name undeclared"); 
 	      return error_mark_node;
 	    }
+	  if (!(VAR_P (parent)
+		|| TREE_CODE (parent) == PARM_DECL
+		|| TREE_CODE (parent) == RESULT_DECL))
+	    {
+	      error ("invalid base %qE for SSA name", parent);
+	      return error_mark_node;
+	    }
 	  if (VECTOR_TYPE_P (TREE_TYPE (parent))
 	      || TREE_CODE (TREE_TYPE (parent)) == COMPLEX_TYPE)
 	    DECL_GIMPLE_REG_P (parent) = 1;
@@ -799,6 +810,16 @@ c_parser_gimple_postfix_expression (c_parser *parser)
 			}
 		    }
 		  ptr = c_parser_gimple_unary_expression (parser);
+		  if (ptr.value == error_mark_node
+		      || ! POINTER_TYPE_P (TREE_TYPE (ptr.value)))
+		    {
+		      if (ptr.value != error_mark_node)
+			error_at (ptr.get_start (),
+				  "invalid type of %<__MEM%> operand");
+		      c_parser_skip_until_found (parser, CPP_CLOSE_PAREN,
+						 "expected %<)%>");
+		      return expr;
+		    }
 		  if (! alias_type)
 		    alias_type = TREE_TYPE (ptr.value);
 		  /* Optional constant offset.  */

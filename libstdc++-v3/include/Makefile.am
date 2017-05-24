@@ -679,6 +679,7 @@ experimental_headers = \
 	${experimental_srcdir}/ratio \
 	${experimental_srcdir}/regex \
 	${experimental_srcdir}/set \
+	${experimental_srcdir}/source_location \
 	${experimental_srcdir}/string \
 	${experimental_srcdir}/string_view \
 	${experimental_srcdir}/system_error \

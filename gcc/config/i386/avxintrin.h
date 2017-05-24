@@ -1484,6 +1484,42 @@ _mm256_castsi128_si256 (__m128i __A)
   return (__m256i) __builtin_ia32_si256_si ((__v4si)__A);
 }
 
+extern __inline __m256 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_set_m128 ( __m128 __H, __m128 __L)
+{
+  return _mm256_insertf128_ps (_mm256_castps128_ps256 (__L), __H, 1);
+}
+
+extern __inline __m256d __attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_set_m128d (__m128d __H, __m128d __L)
+{
+  return _mm256_insertf128_pd (_mm256_castpd128_pd256 (__L), __H, 1);
+}
+
+extern __inline __m256i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_set_m128i (__m128i __H, __m128i __L)
+{
+  return _mm256_insertf128_si256 (_mm256_castsi128_si256 (__L), __H, 1);
+}
+
+extern __inline __m256 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_setr_m128 (__m128 __L, __m128 __H)
+{
+  return _mm256_set_m128 (__H, __L);
+}
+
+extern __inline __m256d __attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_setr_m128d (__m128d __L, __m128d __H)
+{
+  return _mm256_set_m128d (__H, __L);
+}
+
+extern __inline __m256i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_setr_m128i (__m128i __L, __m128i __H)
+{
+  return _mm256_set_m128i (__H, __L);
+}
+
 #ifdef __DISABLE_AVX__
 #undef __DISABLE_AVX__
 #pragma GCC pop_options

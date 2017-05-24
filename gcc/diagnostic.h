@@ -189,7 +189,7 @@ struct diagnostic_context
 
   /* Used to detect when the input file stack has changed since last
      described.  */
-  const struct line_map *last_module;
+  const line_map_ordinary *last_module;
 
   int lock;
 
@@ -241,16 +241,6 @@ diagnostic_inhibit_notes (diagnostic_context * context)
 /* Same as output_prefixing_rule.  Works on 'diagnostic_context *'.  */
 #define diagnostic_prefixing_rule(DC) ((DC)->printer->wrapping.rule)
 
-/* True if the last module or file in which a diagnostic was reported is
-   different from the current one.  */
-#define diagnostic_last_module_changed(DC, MAP)	\
-  ((DC)->last_module != MAP)
-
-/* Remember the current module or file as being the last one in which we
-   report a diagnostic.  */
-#define diagnostic_set_last_module(DC, MAP)	\
-  (DC)->last_module = MAP
-
 /* Raise SIGABRT on any diagnostic of severity DK_ERROR or higher.  */
 #define diagnostic_abort_on_error(DC) \
   (DC)->abort_on_error = true
@@ -278,12 +268,14 @@ extern diagnostic_context *global_dc;
   (!(DC)->dc_inhibit_warnings						\
    && !(in_system_header_at (LOC) && !(DC)->dc_warn_system_headers))
 
-#define report_diagnostic(D) diagnostic_report_diagnostic (global_dc, D)
-
 /* Override the option index to be used for reporting a
    diagnostic.  */
-#define diagnostic_override_option_index(DI, OPTIDX) \
-    ((DI)->option_index = (OPTIDX))
+
+static inline void
+diagnostic_override_option_index (diagnostic_info *info, int optidx)
+{
+  info->option_index = optidx;
+}
 
 /* Diagnostic related functions.  */
 extern void diagnostic_initialize (diagnostic_context *, int);
@@ -356,7 +348,7 @@ diagnostic_expand_location (const diagnostic_info * diagnostic, int which = 0)
 /* This is somehow the right-side margin of a caret line, that is, we
    print at least these many characters after the position pointed at
    by the caret.  */
-#define CARET_LINE_MARGIN 10
+const int CARET_LINE_MARGIN = 10;
 
 /* Return true if the two locations can be represented within the same
    caret line.  This is used to build a prefix and also to determine

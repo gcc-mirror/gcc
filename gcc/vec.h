@@ -416,10 +416,7 @@ struct GTY((user)) vec
 struct vnull
 {
   template <typename T, typename A, typename L>
-#if __cpp_constexpr >= 200704
-  constexpr
-#endif
-  operator vec<T, A, L> () { return vec<T, A, L>(); }
+  CONSTEXPR operator vec<T, A, L> () { return vec<T, A, L>(); }
 };
 extern vnull vNULL;
 
@@ -1268,6 +1265,18 @@ class auto_vec : public vec<T, va_heap>
 public:
   auto_vec ()
   {
+    m_auto.embedded_init (MAX (N, 2), 0, 1);
+    this->m_vec = &m_auto;
+  }
+
+  auto_vec (size_t s)
+  {
+    if (s > N)
+      {
+	this->create (s);
+	return;
+      }
+
     m_auto.embedded_init (MAX (N, 2), 0, 1);
     this->m_vec = &m_auto;
   }

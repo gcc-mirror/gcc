@@ -599,8 +599,7 @@ generate_summary (void)
 
 	  l = &get_reference_vars_info (node)->local;
 	  fprintf (dump_file,
-		   "\nFunction name:%s/%i:",
-		   node->asm_name (), node->order);
+		   "\nFunction name:%s:", node->dump_name ());
 	  fprintf (dump_file, "\n  locals read: ");
 	  if (l->statics_read)
 	    EXECUTE_IF_SET_IN_BITMAP (l->statics_read,
@@ -636,8 +635,7 @@ read_write_all_from_decl (struct cgraph_node *node,
     {
       read_all = true;
       if (dump_file && (dump_flags & TDF_DETAILS))
-         fprintf (dump_file, "   %s/%i -> read all\n",
-		  node->asm_name (), node->order);
+	fprintf (dump_file, "   %s -> read all\n", node->dump_name ());
     }
   else
     {
@@ -646,8 +644,8 @@ read_write_all_from_decl (struct cgraph_node *node,
       read_all = true;
       write_all = true;
       if (dump_file && (dump_flags & TDF_DETAILS))
-         fprintf (dump_file, "   %s/%i -> read all, write all\n",
-		  node->asm_name (), node->order);
+	fprintf (dump_file, "   %s -> read all, write all\n",
+		  node->dump_name ());
     }
 }
 
@@ -754,8 +752,7 @@ propagate (void)
       node_g = &node_info->global;
 
       if (dump_file && (dump_flags & TDF_DETAILS))
-	fprintf (dump_file, "Starting cycle with %s/%i\n",
-		  node->asm_name (), node->order);
+	fprintf (dump_file, "Starting cycle with %s\n", node->dump_name ());
 
       vec<cgraph_node *> cycle_nodes = ipa_get_nodes_in_cycle (node);
 
@@ -763,8 +760,7 @@ propagate (void)
       FOR_EACH_VEC_ELT (cycle_nodes, x, w)
 	{
 	  if (dump_file && (dump_flags & TDF_DETAILS))
-	    fprintf (dump_file, "  Visiting %s/%i\n",
-		     w->asm_name (), w->order);
+	    fprintf (dump_file, "  Visiting %s\n", w->dump_asm_name ());
 	  get_read_write_all_from_node (w, read_all, write_all);
 	  if (read_all && write_all)
 	    break;
@@ -826,9 +822,7 @@ propagate (void)
           if (node->alias || !opt_for_fn (node->decl, flag_ipa_reference))
 	    continue;
 
-	  fprintf (dump_file,
-		   "\nFunction name:%s/%i:",
-		   node->asm_name (), node->order);
+	  fprintf (dump_file, "\nFunction name:%s:", node->dump_asm_name ());
 
 	  ipa_reference_vars_info_t node_info = get_reference_vars_info (node);
 	  ipa_reference_global_vars_info_t node_g = &node_info->global;
@@ -839,8 +833,7 @@ propagate (void)
 	      ipa_reference_vars_info_t w_ri = get_reference_vars_info (w);
 	      ipa_reference_local_vars_info_t w_l = &w_ri->local;
 	      if (w != node)
-		fprintf (dump_file, "\n  next cycle: %s/%i ",
-			 w->asm_name (), w->order);
+		fprintf (dump_file, "\n  next cycle: %s ", w->dump_asm_name ());
 	      fprintf (dump_file, "\n    locals read: ");
 	      dump_static_vars_set_to_file (dump_file, w_l->statics_read);
 	      fprintf (dump_file, "\n    locals written: ");
@@ -992,7 +985,7 @@ ipa_reference_write_optimization_summary (void)
   unsigned int count = 0;
   int ltrans_statics_bitcount = 0;
   lto_symtab_encoder_t encoder = ob->decl_state->symtab_node_encoder;
-  bitmap ltrans_statics = BITMAP_ALLOC (NULL);
+  auto_bitmap ltrans_statics;
   int i;
 
   reference_vars_to_consider = splay_tree_new (splay_tree_compare_ints, 0, 0);
@@ -1052,7 +1045,6 @@ ipa_reference_write_optimization_summary (void)
 			       ltrans_statics_bitcount);
 	  }
       }
-  BITMAP_FREE (ltrans_statics);
   lto_destroy_simple_output_block (ob);
   splay_tree_delete (reference_vars_to_consider);
 }
@@ -1121,8 +1113,8 @@ ipa_reference_read_optimization_summary (void)
 	      info->statics_not_written = BITMAP_ALLOC (&optimization_summary_obstack);
 	      if (dump_file)
 		fprintf (dump_file,
-			 "\nFunction name:%s/%i:\n  static not read:",
-			 node->asm_name (), node->order);
+			 "\nFunction name:%s:\n  static not read:",
+			 node->dump_asm_name ());
 
 	      /* Set the statics not read.  */
 	      v_count = streamer_read_hwi (ib);

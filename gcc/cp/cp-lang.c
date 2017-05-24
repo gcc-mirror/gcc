@@ -229,5 +229,6 @@ tree cxx_enum_underlying_base_type (const_tree type)
   return underlying_type;
 }
 
+
 #include "gt-cp-cp-lang.h"
 #include "gtype-cp.h"

@@ -1722,7 +1722,7 @@ build_expr_type_conversion (int desires, tree expr, bool complain)
       int win = 0;
       tree candidate;
       tree cand = TREE_VALUE (conv);
-      cand = OVL_CURRENT (cand);
+      cand = OVL_FIRST (cand);
 
       if (winner && winner == cand)
 	continue;

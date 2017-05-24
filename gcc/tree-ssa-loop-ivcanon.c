@@ -248,7 +248,7 @@ tree_estimate_loop_size (struct loop *loop, edge exit, edge edge_to_cancel,
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    {
 	      fprintf (dump_file, "  size: %3i ", num);
-	      print_gimple_stmt (dump_file, gsi_stmt (gsi), 0, 0);
+	      print_gimple_stmt (dump_file, gsi_stmt (gsi), 0);
 	    }
 
 	  /* Look for reasons why we might optimize this stmt away. */
@@ -512,7 +512,7 @@ remove_exits_and_undefined_stmts (struct loop *loop, unsigned int npeeled)
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    {
 	      fprintf (dump_file, "Forced statement unreachable: ");
-	      print_gimple_stmt (dump_file, elt->stmt, 0, 0);
+	      print_gimple_stmt (dump_file, elt->stmt, 0);
 	    }
 	}
       /* If we know the exit will be taken after peeling, update.  */
@@ -525,7 +525,7 @@ remove_exits_and_undefined_stmts (struct loop *loop, unsigned int npeeled)
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    {
 	      fprintf (dump_file, "Forced exit to be taken: ");
-	      print_gimple_stmt (dump_file, elt->stmt, 0, 0);
+	      print_gimple_stmt (dump_file, elt->stmt, 0);
 	    }
 	  if (!loop_exit_edge_p (loop, exit_edge))
 	    exit_edge = EDGE_SUCC (bb, 1);
@@ -582,7 +582,7 @@ remove_redundant_iv_tests (struct loop *loop)
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    {
 	      fprintf (dump_file, "Removed pointless exit: ");
-	      print_gimple_stmt (dump_file, elt->stmt, 0, 0);
+	      print_gimple_stmt (dump_file, elt->stmt, 0);
 	    }
 	  gcond *cond_stmt = as_a <gcond *> (elt->stmt);
 	  if (exit_edge->flags & EDGE_TRUE_VALUE)
@@ -686,7 +686,7 @@ try_unroll_loop_completely (struct loop *loop,
   struct loop_size size;
   bool n_unroll_found = false;
   edge edge_to_cancel = NULL;
-  int report_flags = MSG_OPTIMIZED_LOCATIONS | TDF_RTL | TDF_DETAILS;
+  dump_flags_t report_flags = MSG_OPTIMIZED_LOCATIONS | TDF_DETAILS;
 
   /* See if we proved number of iterations to be low constant.
 

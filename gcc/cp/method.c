@@ -502,10 +502,8 @@ strip_inheriting_ctors (tree dfn)
     return dfn;
   tree fn = dfn;
   while (tree inh = DECL_INHERITED_CTOR (fn))
-    {
-      inh = OVL_CURRENT (inh);
-      fn = inh;
-    }
+    fn = OVL_FIRST (inh);
+
   if (TREE_CODE (fn) == TEMPLATE_DECL
       && TREE_CODE (dfn) == FUNCTION_DECL)
     fn = DECL_TEMPLATE_RESULT (fn);
@@ -540,9 +538,9 @@ inherited_ctor_binfo (tree binfo, tree fndecl)
     return binfo;
 
   tree results = NULL_TREE;
-  for (; inh; inh = OVL_NEXT (inh))
+  for (ovl_iterator iter (inh); iter; ++iter)
     {
-      tree one = inherited_ctor_binfo_1 (binfo, OVL_CURRENT (inh));
+      tree one = inherited_ctor_binfo_1 (binfo, *iter);
       if (!results)
 	results = one;
       else if (one != results)
@@ -595,9 +593,9 @@ binfo_inherited_from (tree binfo, tree init_binfo, tree inh)
 {
   /* inh is an OVERLOAD if we inherited the same constructor along
      multiple paths, check all of them.  */
-  for (; inh; inh = OVL_NEXT (inh))
+  for (ovl_iterator iter (inh); iter; ++iter)
     {
-      tree fn = OVL_CURRENT (inh);
+      tree fn = *iter;
       tree base = DECL_CONTEXT (fn);
       tree base_binfo = NULL_TREE;
       for (int i = 0; BINFO_BASE_ITERATE (binfo, i, base_binfo); i++)
@@ -1164,6 +1162,7 @@ constructible_expr (tree to, tree from)
     {
       tree ctype = to;
       vec<tree, va_gc> *args = NULL;
+      cp_unevaluated cp_uneval_guard;
       if (TREE_CODE (to) != REFERENCE_TYPE)
 	to = cp_build_reference_type (to, /*rval*/false);
       tree ob = build_stub_object (to);
@@ -1200,6 +1199,27 @@ constructible_expr (tree to, tree from)
   return expr;
 }
 
+/* Returns a tree iff TO is assignable (if CODE is MODIFY_EXPR) or
+   constructible (otherwise) from FROM, which is a single type for
+   assignment or a list of types for construction.  */
+
+static tree
+is_xible_helper (enum tree_code code, tree to, tree from, bool trivial)
+{
+  if (VOID_TYPE_P (to) || ABSTRACT_CLASS_TYPE_P (to)
+      || (from && FUNC_OR_METHOD_TYPE_P (from)
+	  && (TYPE_READONLY (from) || FUNCTION_REF_QUALIFIED (from))))
+    return error_mark_node;
+  tree expr;
+  if (code == MODIFY_EXPR)
+    expr = assignable_expr (to, from);
+  else if (trivial && from && TREE_CHAIN (from))
+    return error_mark_node; // only 0- and 1-argument ctors can be trivial
+  else
+    expr = constructible_expr (to, from);
+  return expr;
+}
+
 /* Returns true iff TO is trivially assignable (if CODE is MODIFY_EXPR) or
    constructible (otherwise) from FROM, which is a single type for
    assignment or a list of types for construction.  */
@@ -1208,17 +1228,25 @@ bool
 is_trivially_xible (enum tree_code code, tree to, tree from)
 {
   tree expr;
-  if (code == MODIFY_EXPR)
-    expr = assignable_expr (to, from);
-  else if (from && TREE_CHAIN (from))
-    return false; // only 0- and 1-argument ctors can be trivial
-  else
-    expr = constructible_expr (to, from);
+  expr = is_xible_helper (code, to, from, /*trivial*/true);
 
   if (expr == error_mark_node)
     return false;
   tree nt = cp_walk_tree_without_duplicates (&expr, check_nontriv, NULL);
   return !nt;
+}
+
+/* Returns true iff TO is assignable (if CODE is MODIFY_EXPR) or
+   constructible (otherwise) from FROM, which is a single type for
+   assignment or a list of types for construction.  */
+
+bool
+is_xible (enum tree_code code, tree to, tree from)
+{
+  tree expr = is_xible_helper (code, to, from, /*trivial*/false);
+  if (expr == error_mark_node)
+    return false;
+  return !!expr;
 }
 
 /* Subroutine of synthesized_method_walk.  Update SPEC_P, TRIVIAL_P and
@@ -2094,7 +2122,7 @@ implicitly_declare_fn (special_function_kind kind, tree type,
   set_linkage_according_to_type (type, fn);
   if (TREE_PUBLIC (fn))
     DECL_COMDAT (fn) = 1;
-  rest_of_decl_compilation (fn, toplevel_bindings_p (), at_eof);
+  rest_of_decl_compilation (fn, namespace_bindings_p (), at_eof);
   gcc_assert (!TREE_USED (fn));
 
   /* Propagate constraints from the inherited constructor. */
@@ -2359,7 +2387,8 @@ lazily_declare_fn (special_function_kind sfk, tree type)
       || sfk == sfk_copy_assignment)
     check_for_override (fn, type);
   /* Add it to CLASSTYPE_METHOD_VEC.  */
-  add_method (type, fn, NULL_TREE);
+  bool added = add_method (type, fn, false);
+  gcc_assert (added);
   /* Add it to TYPE_METHODS.  */
   if (sfk == sfk_destructor
       && DECL_VIRTUAL_P (fn))
@@ -2375,7 +2404,7 @@ lazily_declare_fn (special_function_kind sfk, tree type)
   if (DECL_MAYBE_IN_CHARGE_CONSTRUCTOR_P (fn)
       || DECL_MAYBE_IN_CHARGE_DESTRUCTOR_P (fn))
     /* Create appropriate clones.  */
-    clone_function_decl (fn, /*update_method_vec=*/true);
+    clone_function_decl (fn, /*update_methods=*/true);
 
   return fn;
 }

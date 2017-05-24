@@ -62,7 +62,7 @@ struct cfg_hooks
 
   /* Debugging.  */
   int (*verify_flow_info) (void);
-  void (*dump_bb) (FILE *, basic_block, int, int);
+  void (*dump_bb) (FILE *, basic_block, int, dump_flags_t);
   void (*dump_bb_for_graph) (pretty_printer *, basic_block);
 
   /* Basic CFG manipulation.  */
@@ -198,9 +198,9 @@ checking_verify_flow_info (void)
     verify_flow_info ();
 }
 
-extern void dump_bb (FILE *, basic_block, int, int);
+extern void dump_bb (FILE *, basic_block, int, dump_flags_t);
 extern void dump_bb_for_graph (pretty_printer *, basic_block);
-extern void dump_flow_info (FILE *, int);
+extern void dump_flow_info (FILE *, dump_flags_t);
 
 extern edge redirect_edge_and_branch (edge, basic_block);
 extern basic_block redirect_edge_and_branch_force (edge, basic_block);

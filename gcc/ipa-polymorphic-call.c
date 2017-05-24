@@ -1398,7 +1398,7 @@ check_stmt_for_type_change (ao_ref *ao ATTRIBUTE_UNUSED, tree vdef, void *data)
 	if (dump_file)
 	  {
 	    fprintf (dump_file, "  Checking constructor call: ");
-	    print_gimple_stmt (dump_file, stmt, 0, 0);
+	    print_gimple_stmt (dump_file, stmt, 0);
 	  }
 
 	/* See if THIS parameter seems like instance pointer.  */
@@ -1460,7 +1460,7 @@ check_stmt_for_type_change (ao_ref *ao ATTRIBUTE_UNUSED, tree vdef, void *data)
      if (dump_file)
 	{
           fprintf (dump_file, "  Function call may change dynamic type:");
-	  print_gimple_stmt (dump_file, stmt, 0, 0);
+	  print_gimple_stmt (dump_file, stmt, 0);
 	}
      tci->speculative++;
      return csftc_abort_walking_p (tci->speculative);
@@ -1473,7 +1473,7 @@ check_stmt_for_type_change (ao_ref *ao ATTRIBUTE_UNUSED, tree vdef, void *data)
       if (dump_file)
 	{
 	  fprintf (dump_file, "  Checking vtbl store: ");
-	  print_gimple_stmt (dump_file, stmt, 0, 0);
+	  print_gimple_stmt (dump_file, stmt, 0);
 	}
 
       type = extr_type_from_vtbl_ptr_store (stmt, tci, &offset);
@@ -1653,9 +1653,9 @@ ipa_polymorphic_call_context::get_dynamic_type (tree instance,
   if (dump_file)
     {
       fprintf (dump_file, "Determining dynamic type for call: ");
-      print_gimple_stmt (dump_file, call, 0, 0);
+      print_gimple_stmt (dump_file, call, 0);
       fprintf (dump_file, "  Starting walk at: ");
-      print_gimple_stmt (dump_file, stmt, 0, 0);
+      print_gimple_stmt (dump_file, stmt, 0);
       fprintf (dump_file, "  instance pointer: ");
       print_generic_expr (dump_file, otr_object, TDF_SLIM);
       fprintf (dump_file, "  Outer instance pointer: ");

@@ -26,6 +26,7 @@ load_gcc_lib file-format.exp
 load_gcc_lib target-supports-dg.exp
 load_gcc_lib scanasm.exp
 load_gcc_lib scandump.exp
+load_gcc_lib scanlang.exp
 load_gcc_lib scanrtl.exp
 load_gcc_lib scantree.exp
 load_gcc_lib scanipa.exp
@@ -356,6 +357,18 @@ proc check_effective_target_offload_device_shared_as { } {
 	  return x == 10;
 	}
     } ]
+}
+
+# Return 1 if configured for nvptx offloading.
+
+proc check_effective_target_openacc_nvidia_accel_configured { } {
+    global offload_targets
+    if { ![string match "*,nvptx,*" ",$offload_targets,"] } {
+        return 0
+    }
+    # PR libgomp/65099: Currently, we only support offloading in 64-bit
+    # configurations.
+    return [is-effective-target lp64]
 }
 
 # Return 1 if at least one nvidia board is present.

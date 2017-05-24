@@ -39,6 +39,12 @@ public:
 
   /* Pass-management.  */
 
+  void set_passes (pass_manager *m)
+  {
+    gcc_assert (!m_passes);
+    m_passes = m;
+  }
+
   pass_manager *get_passes () { gcc_assert (m_passes); return m_passes; }
 
   /* Handling dump files.  */

@@ -16,6 +16,7 @@ class Bindings;
 class Type;
 class Package;
 class Import_init_set;
+class Backend;
 
 // Codes used for the builtin types.  These are all negative to make
 // them easily distinct from the codes assigned by Export::write_type.
@@ -236,11 +237,14 @@ class Export : public String_dump
 class Stream_to_section : public Export::Stream
 {
  public:
-  Stream_to_section();
+  Stream_to_section(Backend*);
 
  protected:
   void
   do_write(const char*, size_t);
+
+ private:
+  Backend* backend_;
 };
 
 #endif // !defined(GO_EXPORT_H)

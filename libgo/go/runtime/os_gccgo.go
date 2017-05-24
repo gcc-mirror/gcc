@@ -11,6 +11,10 @@ import (
 // Temporary for C code to call:
 //go:linkname minit runtime.minit
 
+func goenvs() {
+	goenvs_unix()
+}
+
 // Called to initialize a new m (including the bootstrap m).
 // Called on the parent thread (main thread in case of bootstrap), can allocate memory.
 func mpreinit(mp *m) {

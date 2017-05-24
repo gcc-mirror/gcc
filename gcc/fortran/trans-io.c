@@ -1613,6 +1613,10 @@ nml_get_addr_expr (gfc_symbol * sym, gfc_component * c,
     tmp = fold_build3_loc (input_location, COMPONENT_REF, TREE_TYPE (tmp),
 			   base_addr, tmp, NULL_TREE);
 
+  if (GFC_CLASS_TYPE_P (TREE_TYPE (tmp))
+      && GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (gfc_class_data_get (tmp))))
+    tmp = gfc_class_data_get (tmp);
+
   if (GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (tmp)))
     tmp = gfc_conv_array_data (tmp);
   else
@@ -1670,8 +1674,12 @@ transfer_namelist_element (stmtblock_t * block, const char * var_name,
 
   /* Build ts, as and data address using symbol or component.  */
 
-  ts = (sym) ? &sym->ts : &c->ts;
-  as = (sym) ? sym->as : c->as;
+  ts = sym ? &sym->ts : &c->ts;
+
+  if (ts->type != BT_CLASS)
+    as = sym ? sym->as : c->as;
+  else
+    as = sym ? CLASS_DATA (sym)->as : CLASS_DATA (c)->as;
 
   addr_expr = nml_get_addr_expr (sym, c, base_addr);
 
@@ -1680,9 +1688,12 @@ transfer_namelist_element (stmtblock_t * block, const char * var_name,
 
   if (rank)
     {
-      decl = (sym) ? sym->backend_decl : c->backend_decl;
+      decl = sym ? sym->backend_decl : c->backend_decl;
       if (sym && sym->attr.dummy)
         decl = build_fold_indirect_ref_loc (input_location, decl);
+
+      if (ts->type == BT_CLASS)
+	decl = gfc_class_data_get (decl);
       dt =  TREE_TYPE (decl);
       dtype = gfc_get_dtype (dt);
     }
@@ -1756,7 +1767,7 @@ transfer_namelist_element (stmtblock_t * block, const char * var_name,
   else
     tmp = build_int_cst (gfc_charlen_type_node, 0);
 
-  if (dtio_proc == NULL_TREE)
+  if (dtio_proc == null_pointer_node)
     tmp = build_call_expr_loc (input_location,
 			   iocall[IOCALL_SET_NML_VAL], 6,
 			   dt_parm_addr, addr_expr, string,

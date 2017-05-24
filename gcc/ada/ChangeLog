@@ -1,3 +1,103 @@
+2017-05-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (gnat_to_gnu_entity): Skip regular processing
+	for Itypes that are E_Access_Subtype.
+	<E_Access_Subtype>: Use the DECL of the base type directly.
+
+2017-05-22  Ed Schonberg  <schonberg@adacore.com>
+            Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch4.adb (Analyze_Call): In Ada2012 an incomplete type from a
+	limited view may appear in the profile of a function, and a call to
+	that function in another unit in which the full view is available must
+	use this full view to spurious type errors at the point of call.
+	* inline.adb (Analyze_Inlined_Bodies): Remove restriction on loading
+	of parent body with a with clause for the main unit.
+	* gcc-interface/decl.c (defer_limited_with_list): Document new usage.
+	(gnat_to_gnu_entity) <E_Access_Type>: Handle completed Taft Amendment
+	types declared in external units like types from limited with clauses.
+	Adjust final processing of defer_limited_with_list accordingly.
+	* gcc-interface/trans.c (gnat_to_gnu) < N_Selected_Component>: Try
+	again to translate the prefix after the field if it is incomplete.
+
+2017-05-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (gnat_to_gnu_field): Do not enforce strict
+	alignment for simple volatile fields and remove associated errors.
+
+2017-05-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/gigi.h (get_elaboration_procedure): Delete.
+	* gcc-interface/trans.c (get_elaboration_procedure): Make static.
+
+2017-05-15  Pierre-Marie de Rodat  <derodat@adacore.com>
+
+	* gcc-interface/utils.c (can_materialize_object_renaming_p):
+	Synchronize with GNAT's Exp_Dbug.Debug_Renaming_Declaration:
+	process Original_Node instead of expanded names.
+
+2017-05-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (return_value_ok_for_nrv_p): Only apply the
+	addressability check in the constrained case.
+
+2017-05-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (Identifier_to_gnu): Also accept incomplete
+	types not coming from a limited context.
+
+2017-05-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (Compilation_Unit_to_gnu): Skip subprograms on
+	the inlined list that are not public.
+	* gcc-interface/utils.c (create_subprog_decl): Clear TREE_PUBLIC if
+	there is a pragma Inline_Always on the subprogram.
+
+2017-05-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (gnat_to_gnu) <N_Aggregate>: Fix formatting.
+	<N_Allocator>: Use properly typed constants.
+	(extract_values): Move around.
+	(pos_to_constructor): Minor tweaks.
+	(Sloc_to_locus): Fix formatting.
+	* gcc-interface/utils.c (process_deferred_decl_context): Minor tweaks.
+	* gcc-interface/gigi.h (MARK_VISITED): Remove blank line.
+	(Gigi_Equivalent_Type): Adjust head comment.
+	* gcc-interface/decl.c (Gigi_Equivalent_Type): Likewise.
+
+2017-05-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Record_Type>: When there
+	is a representation clause on an extension, propagate the alignment of
+	the parent type only if the platform requires strict alignment.
+
+2017-05-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* system-linux-arm.ads (Memory_Size): Use Long_Integer'Size
+	instead of Word_Size.
+
+	Revert
+	2017-03-28  Andreas Schwab  <schwab@suse.de>
+
+	PR ada/80117
+	* system-linux-aarch64-ilp32.ads: New file.
+	* gcc-interface/Makefile.in (LIBGNAT_TARGET_PAIRS_COMMON): Rename
+	from LIBGNAT_TARGET_PAIRS.
+	(LIBGNAT_TARGET_PAIRS_32, LIBGNAT_TARGET_PAIRS_64): Define.
+	(LIBGNAT_TARGET_PAIRS): Use LIBGNAT_TARGET_PAIRS_COMMON, and
+	LIBGNAT_TARGET_PAIRS_64 or LIBGNAT_TARGET_PAIRS_32 for -mabi=lp64
+	or -mabi=ilp32, resp.
+
+2017-05-10  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR ada/80626
+	* system-linux-x86.ads (Memory_Size): Use Long_Integer'Size
+	instead of Word_Size.
+
+2017-05-10  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* raise-gcc.c (exception_class_eq): Make ec parameter const.
+
 2017-05-02  Richard Biener  <rguenther@suse.de>
 
 	* gcc-interface/misc.c (gnat_post_options): Do not set

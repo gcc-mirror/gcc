@@ -228,7 +228,7 @@ enum lto_section_type
   LTO_section_symtab_nodes,
   LTO_section_opts,
   LTO_section_cgraph_opt_sum,
-  LTO_section_inline_summary,
+  LTO_section_ipa_fn_summary,
   LTO_section_ipcp_transform,
   LTO_section_ipa_icf,
   LTO_section_offload_table,

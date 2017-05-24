@@ -594,7 +594,7 @@ maybe_apply_renaming_pragma (tree decl, tree asmname)
 	    pending_redefine_extname->unordered_remove (ix);
 	    break;
 	  }
-      return 0;
+      return NULL_TREE;
     }
 
   /* Find out if we have a pending #pragma redefine_extname.  */
@@ -643,7 +643,7 @@ maybe_apply_renaming_pragma (tree decl, tree asmname)
     }
 
   /* Nada.  */
-  return 0;
+  return NULL_TREE;
 }
 
 

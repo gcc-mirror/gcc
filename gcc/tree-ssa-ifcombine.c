@@ -444,11 +444,11 @@ ifcombine_ifandif (basic_block inner_cond_bb, bool inner_inv,
       if (dump_file)
 	{
 	  fprintf (dump_file, "optimizing double bit test to ");
-	  print_generic_expr (dump_file, name1, 0);
+	  print_generic_expr (dump_file, name1);
 	  fprintf (dump_file, " & T == T\nwith temporary T = (1 << ");
-	  print_generic_expr (dump_file, bit1, 0);
+	  print_generic_expr (dump_file, bit1);
 	  fprintf (dump_file, ") | (1 << ");
-	  print_generic_expr (dump_file, bit2, 0);
+	  print_generic_expr (dump_file, bit2);
 	  fprintf (dump_file, ")\n");
 	}
 
@@ -523,11 +523,11 @@ ifcombine_ifandif (basic_block inner_cond_bb, bool inner_inv,
       if (dump_file)
 	{
 	  fprintf (dump_file, "optimizing bits or bits test to ");
-	  print_generic_expr (dump_file, name1, 0);
+	  print_generic_expr (dump_file, name1);
 	  fprintf (dump_file, " & T != 0\nwith temporary T = ");
-	  print_generic_expr (dump_file, bits1, 0);
+	  print_generic_expr (dump_file, bits1);
 	  fprintf (dump_file, " | ");
-	  print_generic_expr (dump_file, bits2, 0);
+	  print_generic_expr (dump_file, bits2);
 	  fprintf (dump_file, "\n");
 	}
 
@@ -607,7 +607,7 @@ ifcombine_ifandif (basic_block inner_cond_bb, bool inner_inv,
       if (dump_file)
 	{
 	  fprintf (dump_file, "optimizing two comparisons to ");
-	  print_generic_expr (dump_file, t, 0);
+	  print_generic_expr (dump_file, t);
 	  fprintf (dump_file, "\n");
 	}
 

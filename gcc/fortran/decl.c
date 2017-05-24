@@ -1383,8 +1383,28 @@ build_sym (const char *name, gfc_charlen *cl, bool cl_deferred,
   symbol_attribute attr;
   gfc_symbol *sym;
   int upper;
+  gfc_symtree *st;
 
-  if (gfc_get_symbol (name, NULL, &sym))
+  /* Symbols in a submodule are host associated from the parent module or
+     submodules. Therefore, they can be overridden by declarations in the
+     submodule scope. Deal with this by attaching the existing symbol to
+     a new symtree and recycling the old symtree with a new symbol...  */
+  st = gfc_find_symtree (gfc_current_ns->sym_root, name);
+  if (st != NULL && gfc_state_stack->state == COMP_SUBMODULE
+      && st->n.sym != NULL
+      && st->n.sym->attr.host_assoc && st->n.sym->attr.used_in_submodule)
+    {
+      gfc_symtree *s = gfc_get_unique_symtree (gfc_current_ns);
+      s->n.sym = st->n.sym;
+      sym = gfc_new_symbol (name, gfc_current_ns);
+
+
+      st->n.sym = sym;
+      sym->refs++;
+      gfc_set_sym_referenced (sym);
+    }
+  /* ...Otherwise generate a new symtree and new symbol.  */
+  else if (gfc_get_symbol (name, NULL, &sym))
     return false;
 
   /* Check if the name has already been defined as a type.  The
@@ -4210,7 +4230,8 @@ match_attr_spec (void)
       if ((d == DECL_STATIC || d == DECL_AUTOMATIC)
 	  && !flag_dec_static)
 	{
-	  gfc_error ("%s at %L is a DEC extension, enable with -fdec-static",
+	  gfc_error ("%s at %L is a DEC extension, enable with "
+		     "%<-fdec-static%>",
 		     d == DECL_STATIC ? "STATIC" : "AUTOMATIC", &seen_at[d]);
 	  m = MATCH_ERROR;
 	  goto cleanup;
@@ -7889,8 +7910,10 @@ gfc_match_automatic (void)
 
   if (!flag_dec_static)
     {
-      gfc_error ("AUTOMATIC at %C is a DEC extension, enable with "
-		 "-fdec-static");
+      gfc_error ("%s at %C is a DEC extension, enable with "
+		 "%<-fdec-static%>",
+		 "AUTOMATIC"
+		 );
       return MATCH_ERROR;
     }
 
@@ -7943,7 +7966,9 @@ gfc_match_static (void)
 
   if (!flag_dec_static)
     {
-      gfc_error ("STATIC at %C is a DEC extension, enable with -fdec-static");
+      gfc_error ("%s at %C is a DEC extension, enable with "
+		 "%<-fdec-static%>",
+		 "STATIC");
       return MATCH_ERROR;
     }
 
@@ -8702,8 +8727,9 @@ gfc_match_structure_decl (void)
 
   if (!flag_dec_structure)
     {
-      gfc_error ("STRUCTURE at %C is a DEC extension, enable with "
-		 "-fdec-structure");
+      gfc_error ("%s at %C is a DEC extension, enable with "
+		 "%<-fdec-structure%>",
+		 "STRUCTURE");
       return MATCH_ERROR;
     }
 
@@ -9943,7 +9969,7 @@ gfc_match_final_decl (void)
       for (f = block->f2k_derived->finalizers; f; f = f->next)
 	if (f->proc_sym == sym)
 	  {
-	    gfc_error ("%qs at %C is already defined as FINAL procedure!",
+	    gfc_error ("%qs at %C is already defined as FINAL procedure",
 		       name);
 	    return MATCH_ERROR;
 	  }

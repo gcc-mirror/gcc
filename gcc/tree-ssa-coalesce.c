@@ -1791,7 +1791,7 @@ coalesce_ssa_name (void)
   tree_live_info_p liveinfo;
   ssa_conflicts *graph;
   coalesce_list *cl;
-  bitmap used_in_copies = BITMAP_ALLOC (NULL);
+  auto_bitmap used_in_copies;
   var_map map;
   unsigned int i;
   tree a;
@@ -1847,8 +1847,6 @@ coalesce_ssa_name (void)
     compute_optimized_partition_bases (map, used_in_copies, cl);
   else
     compute_samebase_partition_bases (map);
-
-  BITMAP_FREE (used_in_copies);
 
   if (num_var_partitions (map) < 1)
     {

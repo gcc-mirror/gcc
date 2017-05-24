@@ -7453,7 +7453,7 @@ compute_dependence_clique (void)
 		    {
 		      fprintf (dump_file, "found restrict pointed-to "
 			       "for ");
-		      print_generic_expr (dump_file, ptr, 0);
+		      print_generic_expr (dump_file, ptr);
 		      fprintf (dump_file, " but not exclusively\n");
 		    }
 		  restrict_var = NULL;
@@ -7800,7 +7800,7 @@ ipa_pta_execute (void)
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
-      symtab_node::dump_table (dump_file);
+      symtab->dump (dump_file);
       fprintf (dump_file, "\n");
     }
 

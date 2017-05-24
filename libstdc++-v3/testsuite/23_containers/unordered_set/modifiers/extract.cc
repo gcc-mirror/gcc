@@ -128,6 +128,17 @@ test03()
   static_assert( is_same_v<test_type::node_type, compat_type3::node_type> );
 }
 
+void
+test04()
+{
+  // Check order of members in insert_return_type
+  auto [pos, ins, node] = test_type::insert_return_type{};
+  using std::is_same_v;
+  static_assert( is_same_v<test_type::iterator, decltype(pos)> );
+  static_assert( is_same_v<bool, decltype(ins)> );
+  static_assert( is_same_v<test_type::node_type, decltype(node)> );
+}
+
 int
 main()
 {

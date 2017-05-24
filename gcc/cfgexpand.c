@@ -2503,7 +2503,10 @@ expand_gimple_cond (basic_block bb, gcond *stmt)
   false_edge->flags |= EDGE_FALLTHRU;
   new_bb->count = false_edge->count;
   new_bb->frequency = EDGE_FREQUENCY (false_edge);
-  add_bb_to_loop (new_bb, bb->loop_father);
+  add_bb_to_loop (new_bb, dest->loop_father);
+  if (bb->loop_father->latch == bb
+      && bb->loop_father->header == dest)
+    bb->loop_father->latch = new_bb;
   new_edge = make_edge (new_bb, dest, 0);
   new_edge->probability = REG_BR_PROB_BASE;
   new_edge->count = new_bb->count;
@@ -6541,6 +6544,14 @@ pass_expand::execute (function *fun)
      the common parent easily.  */
   set_block_levels (DECL_INITIAL (fun->decl), 0);
   default_rtl_profile ();
+
+  /* For -dx discard loops now, otherwise IL verify in clean_state will
+     ICE.  */
+  if (rtl_dump_and_exit)
+    {
+      cfun->curr_properties &= ~PROP_loops;
+      loop_optimizer_finalize ();
+    }
 
   timevar_pop (TV_POST_EXPAND);
 

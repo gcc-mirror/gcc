@@ -8,9 +8,10 @@
 #pragma GCC target ("fpu=neon-fp-armv8")
 
 #define __ARM_NEON_FP 0
-#define __ARM_FP 0
-#define __ARM_FEATURE_LDREX 0
+/* { dg-warning ".__ARM_NEON_FP. redefined" "" { target *-*-* } .-1 }  */
 
-/* { dg-warning ".__ARM_NEON_FP. redefined" "" { target *-*-* } 10 }  */
-/* { dg-warning ".__ARM_FP. redefined" "" { target *-*-* } 11 } */
-/* { dg-warning ".__ARM_FEATURE_LDREX. redefined" "" { target *-*-* } 12 } */
+#define __ARM_FP 0
+/* { dg-warning ".__ARM_FP. redefined" "" { target *-*-* } .-1 } */
+
+#define __ARM_FEATURE_LDREX 0
+/* { dg-warning ".__ARM_FEATURE_LDREX. redefined" "" { target *-*-* } .-1 } */

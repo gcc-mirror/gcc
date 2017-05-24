@@ -30,6 +30,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "intl.h"
 #include "asan.h"
 #include "gcc-rich-location.h"
+#include "gimplify.h"
 
 /* Print a warning if a constant expression had overflow in folding.
    Invoke this function on every expression that the language
@@ -112,6 +113,21 @@ overflow_warning (location_t loc, tree value)
     }
 }
 
+/* Helper function for walk_tree.  Unwrap C_MAYBE_CONST_EXPRs in an expression
+   pointed to by TP.  */
+
+static tree
+unwrap_c_maybe_const (tree *tp, int *walk_subtrees, void *)
+{
+  if (TREE_CODE (*tp) == C_MAYBE_CONST_EXPR)
+    {
+      *tp = C_MAYBE_CONST_EXPR_EXPR (*tp);
+      /* C_MAYBE_CONST_EXPRs don't nest.  */
+      *walk_subtrees = false;
+    }
+  return NULL_TREE;
+}
+
 /* Warn about uses of logical || / && operator in a context where it
    is likely that the bitwise equivalent was intended by the
    programmer.  We have seen an expression in which CODE is a binary
@@ -189,11 +205,11 @@ warn_logical_operator (location_t location, enum tree_code code, tree type,
      (with OR) or trivially false (with AND).  If so, do not warn.
      This is a common idiom for testing ranges of data types in
      portable code.  */
+  op_left = unshare_expr (op_left);
+  walk_tree_without_duplicates (&op_left, unwrap_c_maybe_const, NULL);
   lhs = make_range (op_left, &in0_p, &low0, &high0, &strict_overflow_p);
   if (!lhs)
     return;
-  if (TREE_CODE (lhs) == C_MAYBE_CONST_EXPR)
-    lhs = C_MAYBE_CONST_EXPR_EXPR (lhs);
 
   /* If this is an OR operation, invert both sides; now, the result
      should be always false to get a warning.  */
@@ -204,11 +220,11 @@ warn_logical_operator (location_t location, enum tree_code code, tree type,
   if (tem && integer_zerop (tem))
     return;
 
+  op_right = unshare_expr (op_right);
+  walk_tree_without_duplicates (&op_right, unwrap_c_maybe_const, NULL);
   rhs = make_range (op_right, &in1_p, &low1, &high1, &strict_overflow_p);
   if (!rhs)
     return;
-  if (TREE_CODE (rhs) == C_MAYBE_CONST_EXPR)
-    rhs = C_MAYBE_CONST_EXPR_EXPR (rhs);
 
   /* If this is an OR operation, invert both sides; now, the result
      should be always false to get a warning.  */
@@ -521,10 +537,10 @@ strict_aliasing_warning (tree otype, tree type, tree expr)
 	    = get_alias_set (TREE_TYPE (TREE_OPERAND (expr, 0)));
 	  alias_set_type set2 = get_alias_set (TREE_TYPE (type));
 
-	  if (set1 != set2 && set2 != 0
-	      && (set1 == 0
-		  || (!alias_set_subset_of (set2, set1)
-		      && !alias_sets_conflict_p (set1, set2))))
+	  if (set2 != 0
+	      && set1 != set2
+	      && !alias_set_subset_of (set2, set1)
+	      && !alias_sets_conflict_p (set1, set2))
 	    {
 	      warning (OPT_Wstrict_aliasing, "dereferencing type-punned "
 		       "pointer will break strict-aliasing rules");
@@ -1053,6 +1069,10 @@ warnings_for_convert_and_check (location_t loc, tree type, tree expr,
 static void
 match_case_to_enum_1 (tree key, tree type, tree label)
 {
+  /* Avoid warning about enums that have no enumerators.  */
+  if (TYPE_VALUES (type) == NULL_TREE)
+    return;
+
   char buf[WIDE_INT_PRINT_BUFFER_SIZE];
 
   if (tree_fits_uhwi_p (key))
@@ -1062,7 +1082,7 @@ match_case_to_enum_1 (tree key, tree type, tree label)
   else
     print_hex (key, buf);
 
-  if (TYPE_NAME (type) == 0)
+  if (TYPE_NAME (type) == NULL_TREE)
     warning_at (DECL_SOURCE_LOCATION (CASE_LABEL (label)),
 		warn_switch ? OPT_Wswitch : OPT_Wswitch_enum,
 		"case value %qs not in enumerated type",

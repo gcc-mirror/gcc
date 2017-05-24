@@ -878,14 +878,13 @@ Feature-testing recommendations for C++</link>.
     </row>
 
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>
 	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2015/n4519.pdf">
 	  N4519
 	</link>
       </entry>
       <entry> Source-Code Information Capture </entry>
-      <entry>N</entry>
+      <entry>Y</entry>
       <entry>Library Fundamentals 2 TS</entry>
     </row>
 

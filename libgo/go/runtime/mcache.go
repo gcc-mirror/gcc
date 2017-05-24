@@ -4,15 +4,7 @@
 
 package runtime
 
-// This is a temporary mcache.go for gccgo.
-// At some point it will be replaced by the one in the gc runtime package.
-
 import "unsafe"
-
-type mcachelist struct {
-	list  *mlink
-	nlist uint32
-}
 
 // Per-thread (in Go, per-P) cache for small objects.
 // No locking needed because it is per-thread (per-P).
@@ -24,8 +16,8 @@ type mcachelist struct {
 type mcache struct {
 	// The following members are accessed on every malloc,
 	// so they are grouped here for better caching.
-	next_sample      int32   // trigger heap sample after allocating this many bytes
-	local_cachealloc uintptr // bytes allocated (or freed) from cache since last lock of heap
+	next_sample int32   // trigger heap sample after allocating this many bytes
+	local_scan  uintptr // bytes of scannable heap allocated
 
 	// Allocator cache for tiny objects w/o pointers.
 	// See "Tiny allocator" comment in malloc.go.
@@ -36,12 +28,12 @@ type mcache struct {
 	// tiny is a heap pointer. Since mcache is in non-GC'd memory,
 	// we handle it by clearing it in releaseAll during mark
 	// termination.
-	tiny     unsafe.Pointer
-	tinysize uintptr
+	tiny             uintptr
+	tinyoffset       uintptr
+	local_tinyallocs uintptr // number of tiny allocs not counted in other stats
 
 	// The rest is not accessed on every malloc.
-	alloc [_NumSizeClasses]*mspan     // spans to allocate from
-	free  [_NumSizeClasses]mcachelist // lists of explicitly freed objects
+	alloc [_NumSizeClasses]*mspan // spans to allocate from
 
 	// Local allocator stats, flushed during GC.
 	local_nlookup    uintptr                  // number of pointer lookups
@@ -50,46 +42,98 @@ type mcache struct {
 	local_nsmallfree [_NumSizeClasses]uintptr // number of frees for small objects (<=maxsmallsize)
 }
 
-type mtypes struct {
-	compression byte
-	data        uintptr
+// A gclink is a node in a linked list of blocks, like mlink,
+// but it is opaque to the garbage collector.
+// The GC does not trace the pointers during collection,
+// and the compiler does not emit write barriers for assignments
+// of gclinkptr values. Code should store references to gclinks
+// as gclinkptr, not as *gclink.
+type gclink struct {
+	next gclinkptr
 }
 
-type special struct {
-	next   *special
-	offset uint16
-	kind   byte
+// A gclinkptr is a pointer to a gclink, but it is opaque
+// to the garbage collector.
+type gclinkptr uintptr
+
+// ptr returns the *gclink form of p.
+// The result should be used for accessing fields, not stored
+// in other data structures.
+func (p gclinkptr) ptr() *gclink {
+	return (*gclink)(unsafe.Pointer(p))
 }
 
-type mspan struct {
-	next     *mspan // next span in list, or nil if none
-	prev     *mspan // previous span's next field, or list head's first field if none
-	start    uintptr
-	npages   uintptr // number of pages in span
-	freelist *mlink
+// dummy MSpan that contains no free objects.
+var emptymspan mspan
 
-	// sweep generation:
-	// if sweepgen == h->sweepgen - 2, the span needs sweeping
-	// if sweepgen == h->sweepgen - 1, the span is currently being swept
-	// if sweepgen == h->sweepgen, the span is swept and ready to use
-	// h->sweepgen is incremented by 2 after every GC
-
-	sweepgen    uint32
-	ref         uint16
-	sizeclass   uint8   // size class
-	incache     bool    // being used by an mcache
-	state       uint8   // mspaninuse etc
-	needzero    uint8   // needs to be zeroed before allocation
-	elemsize    uintptr // computed from sizeclass or from npages
-	unusedsince int64   // first time spotted by gc in mspanfree state
-	npreleased  uintptr // number of pages released to the os
-	limit       uintptr // end of data in span
-	types       mtypes
-	speciallock mutex    // guards specials list
-	specials    *special // linked list of special records sorted by offset.
-	freebuf     *mlink
+func allocmcache() *mcache {
+	lock(&mheap_.lock)
+	c := (*mcache)(mheap_.cachealloc.alloc())
+	unlock(&mheap_.lock)
+	for i := 0; i < _NumSizeClasses; i++ {
+		c.alloc[i] = &emptymspan
+	}
+	c.next_sample = nextSample()
+	return c
 }
 
-type mlink struct {
-	next *mlink
+func freemcache(c *mcache) {
+	systemstack(func() {
+		c.releaseAll()
+
+		// NOTE(rsc,rlh): If gcworkbuffree comes back, we need to coordinate
+		// with the stealing of gcworkbufs during garbage collection to avoid
+		// a race where the workbuf is double-freed.
+		// gcworkbuffree(c.gcworkbuf)
+
+		lock(&mheap_.lock)
+		purgecachedstats(c)
+		mheap_.cachealloc.free(unsafe.Pointer(c))
+		unlock(&mheap_.lock)
+	})
+}
+
+// Gets a span that has a free object in it and assigns it
+// to be the cached span for the given sizeclass. Returns this span.
+func (c *mcache) refill(sizeclass int32) *mspan {
+	_g_ := getg()
+
+	_g_.m.locks++
+	// Return the current cached span to the central lists.
+	s := c.alloc[sizeclass]
+
+	if uintptr(s.allocCount) != s.nelems {
+		throw("refill of span with free space remaining")
+	}
+
+	if s != &emptymspan {
+		s.incache = false
+	}
+
+	// Get a new cached span from the central lists.
+	s = mheap_.central[sizeclass].mcentral.cacheSpan()
+	if s == nil {
+		throw("out of memory")
+	}
+
+	if uintptr(s.allocCount) == s.nelems {
+		throw("span has no free space")
+	}
+
+	c.alloc[sizeclass] = s
+	_g_.m.locks--
+	return s
+}
+
+func (c *mcache) releaseAll() {
+	for i := 0; i < _NumSizeClasses; i++ {
+		s := c.alloc[i]
+		if s != &emptymspan {
+			mheap_.central[i].mcentral.uncacheSpan(s)
+			c.alloc[i] = &emptymspan
+		}
+	}
+	// Clear tinyalloc pool.
+	c.tiny = 0
+	c.tinyoffset = 0
 }

@@ -474,6 +474,14 @@ and update the checks for the latest versions that set the
 <varname>latestp</varname> variable).
 </para>
 </listitem>
+<listitem><para>
+Add the library (<filename class="library">libstdc++.so.6.0.X</filename>)
+and symbols versions
+(<literal>GLIBCXX_3.4.X</literal> and <literal>CXXABI_1.3.Y</literal>)
+to the <link linkend="abi.versioning.history">History</link> section in
+<filename>doc/xml/manual/abi.xml</filename> at the relevant places.
+</para>
+</listitem>
 </itemizedlist>
 
 <para>

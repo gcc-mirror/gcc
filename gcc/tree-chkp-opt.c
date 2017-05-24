@@ -262,16 +262,16 @@ chkp_print_addr (const address_t &addr)
 	fprintf (dump_file, " + ");
 
       if (addr.pol[n].var == NULL_TREE)
-	print_generic_expr (dump_file, addr.pol[n].cst, 0);
+	print_generic_expr (dump_file, addr.pol[n].cst);
       else
 	{
 	  if (TREE_CODE (addr.pol[n].cst) != INTEGER_CST
 	      || !integer_onep (addr.pol[n].cst))
 	    {
-	      print_generic_expr (dump_file, addr.pol[n].cst, 0);
+	      print_generic_expr (dump_file, addr.pol[n].cst);
 	      fprintf (dump_file, " * ");
 	    }
-	  print_generic_expr (dump_file, addr.pol[n].var, 0);
+	  print_generic_expr (dump_file, addr.pol[n].var);
 	}
     }
 }
@@ -518,11 +518,11 @@ chkp_gather_checks_info (void)
 		{
 		  fprintf (dump_file, "Adding check information:\n");
 		  fprintf (dump_file, "  bounds: ");
-		  print_generic_expr (dump_file, ci.bounds, 0);
+		  print_generic_expr (dump_file, ci.bounds);
 		  fprintf (dump_file, "\n  address: ");
 		  chkp_print_addr (ci.addr);
 		  fprintf (dump_file, "\n  check: ");
-		  print_gimple_stmt (dump_file, stmt, 0, 0);
+		  print_gimple_stmt (dump_file, stmt, 0);
 		}
 	    }
 	}
@@ -543,11 +543,11 @@ chkp_get_check_result (struct check_info *ci, tree bounds)
     {
       fprintf (dump_file, "Trying to compute result of the check\n");
       fprintf (dump_file, "  check: ");
-      print_gimple_stmt (dump_file, ci->stmt, 0, 0);
+      print_gimple_stmt (dump_file, ci->stmt, 0);
       fprintf (dump_file, "  address: ");
       chkp_print_addr (ci->addr);
       fprintf (dump_file, "\n  bounds: ");
-      print_generic_expr (dump_file, bounds, 0);
+      print_generic_expr (dump_file, bounds);
       fprintf (dump_file, "\n");
     }
 
@@ -695,7 +695,7 @@ chkp_remove_check_if_pass (struct check_info *ci)
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
       fprintf (dump_file, "Trying to remove check: ");
-      print_gimple_stmt (dump_file, ci->stmt, 0, 0);
+      print_gimple_stmt (dump_file, ci->stmt, 0);
     }
 
   result = chkp_get_check_result (ci, ci->bounds);
@@ -749,9 +749,9 @@ chkp_use_outer_bounds_if_possible (struct check_info *ci)
     {
       fprintf (dump_file, "Check if bounds intersection is redundant: \n");
       fprintf (dump_file, "  check: ");
-      print_gimple_stmt (dump_file, ci->stmt, 0, 0);
+      print_gimple_stmt (dump_file, ci->stmt, 0);
       fprintf (dump_file, "  intersection: ");
-      print_gimple_stmt (dump_file, bnd_def, 0, 0);
+      print_gimple_stmt (dump_file, bnd_def, 0);
       fprintf (dump_file, "\n");
     }
 
@@ -774,9 +774,9 @@ chkp_use_outer_bounds_if_possible (struct check_info *ci)
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{
 	  fprintf (dump_file, "  action: use ");
-	  print_generic_expr (dump_file, bnd2, 0);
+	  print_generic_expr (dump_file, bnd2);
 	  fprintf (dump_file, " instead of ");
-	  print_generic_expr (dump_file, ci->bounds, 0);
+	  print_generic_expr (dump_file, ci->bounds);
 	  fprintf (dump_file, "\n");
 	}
 
@@ -1199,7 +1199,7 @@ chkp_reduce_bounds_lifetime (void)
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    {
 	      fprintf (dump_file, "Moving creation of ");
-	      print_generic_expr (dump_file, op, 0);
+	      print_generic_expr (dump_file, op);
 	      fprintf (dump_file, " down to its use.\n");
 	    }
 

@@ -1,3 +1,136 @@
+2017-05-23  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* c-parser.c (OACC_KERNELS_CLAUSE_MASK): Add
+	"PRAGMA_OACC_CLAUSE_NUM_GANGS", "PRAGMA_OACC_CLAUSE_NUM_WORKERS",
+	"VECTOR_LENGTH".
+
+2017-05-23  Marek Polacek  <polacek@redhat.com>
+
+	* c-parser.c (c_parser_compound_statement_nostart): Remove redundant
+	quotes.
+
+2017-05-22  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-fold.c (c_fully_fold_internal): Save the c_fully_fold_internal
+	result for SAVE_EXPR operand and set SAVE_EXPR_FOLDED_P even if
+	it returned invariant.  Call tree_invariant_p unconditionally
+	afterwards to decide whether to return expr or op0.
+
+2017-05-22  Nathan Sidwell  <nathan@acm.org>
+
+	* c-decl.c (c_parse_final_cleanups): Drop TDI_tu handling.
+
+2017-05-19  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* c-parser.c (c_parser_omp_clause_default): Handle
+	"OMP_CLAUSE_DEFAULT_PRESENT".
+
+2017-05-18  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* config-lang.in (gtfiles): Add c-family/c-format.c.
+
+2017-05-18  Nathan Sidwell  <nathan@acm.org>
+
+	* c-decl.c (pushdecl_top_level): Delete unused function.
+
+2017-05-18  Marek Polacek  <polacek@redhat.com>
+
+	* c-decl.c (match_builtin_function_types): Use NULL_TREE instead of 0.
+	(check_earlier_gotos): Likewise.
+	(define_label): Likewise.
+	(pending_xref_error): Likewise.
+	(smallest_type_quals_location): Likewise.
+	(grokdeclarator): Likewise.
+	(grokparms): Likewise.
+	(identifier_global_value): Likewise.
+	* c-typeck.c (set_nonincremental_init_from_string): Likewise.
+	(find_init_member): Likewise.
+
+2017-05-18  Marek Polacek  <polacek@redhat.com>
+
+	* c-decl.c (start_decl): Use false/true instead of 0/1.
+	(grokdeclarator): Likewise.
+	(finish_struct): Likewise.
+	(start_function): Change the return type to bool.  Use false/true
+	instead of 0/1.
+	(declspecs_add_qual): Use UNKNOWN_LOCATION instead of 0.
+	* c-tree.h (start_function): Update.
+	* c-typeck.c (same_translation_unit_p): Change the return type to bool.
+	(set_designator): Change the return type to bool.  Use false/true
+	instead of 0/1.
+
+2017-05-17  Marek Polacek  <polacek@redhat.com>
+
+	* c-decl.c: Use NULL_TREE instead of 0 where appropriate.
+	* c-typeck.c: Likewise.
+
+2017-05-17  Marek Polacek  <polacek@redhat.com>
+
+	PR sanitizer/80659
+	* c-decl.c (build_compound_literal): Set DECL_ARTIFICIAL and
+	DECL_IGNORED_P even for non-static compound literals.
+
+2017-05-17  Martin Liska  <mliska@suse.cz>
+
+	* c-decl.c (c_parse_final_cleanups): Introduce dump_flags_t type and
+	use it instead of int type.
+
+2017-05-17  Marek Polacek  <polacek@redhat.com>
+
+	* c-convert.c (convert): Replace c_save_expr with save_expr.  Don't
+	call c_fully_fold.
+	(convert) <case COMPLEX_TYPE>: Remove special handling of COMPLEX_TYPEs.
+	* c-decl.c (grokdeclarator): Replace c_save_expr with save_expr. 
+	* c-fold.c (c_fully_fold_internal): Handle SAVE_EXPR.
+	* c-parser.c (c_parser_declaration_or_fndef): Replace c_save_expr with
+	save_expr.
+	(c_parser_conditional_expression): Likewise.
+	* c-tree.h (SAVE_EXPR_FOLDED_P): Define.
+	* c-typeck.c (build_modify_expr): Replace c_save_expr with save_expr.
+	(process_init_element): Likewise.
+	(build_binary_op): Likewise.
+	(handle_omp_array_sections_1): Likewise.
+
+2017-05-12  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* c-parser.c (c_parser_omp_clause_num_gangs)
+	(c_parser_omp_clause_num_workers)
+	(c_parser_omp_clause_vector_length): Merge functions into...
+	(c_parser_oacc_single_int_clause): ... this new function.  Adjust
+	all users.
+
+2017-05-11  Nathan Sidwell  <nathan@acm.org>
+
+	* gimple-parser.c: Don't #include tree-dump.h.
+
+2017-05-11  Mikhail Maltsev  <maltsevm@gmail.com>
+
+	PR testsuite/80580
+	* gimple-parser.c (c_parser_parse_ssa_name): Validate SSA name base.
+
+2017-05-11  Mikhail Maltsev  <maltsevm@gmail.com>
+
+	PR testsuite/80580
+	* gimple-parser.c (c_parser_gimple_postfix_expression): Handle
+	incorrect __MEM syntax.
+
+2017-05-11  Mikhail Maltsev  <maltsevm@gmail.com>
+
+	PR testsuite/80580
+	* gimple-parser.c (c_parser_gimple_unary_expression): Check argument
+	type of unary '*'.
+
+2017-05-09  Nathan Sidwell  <nathan@acm.org>
+
+	* c-tree.h (pushdecl): Declare.
+
+2017-05-05  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-decl.c (warn_defaults_to): Replace report_diagnostic
+	with diagnostic_report_diagnostic.
+	* c-errors.c (pedwarn_c99): Likewise.
+	(pedwarn_c90): Likewise.
+
 2017-05-01  Xi Ruoyao  <ryxi@stu.xidian.edu.cn>
 
         PR c++/80038

@@ -514,6 +514,8 @@ const struct c_common_resword c_common_reswords[] =
   { "volatile",		RID_VOLATILE,	0 },
   { "wchar_t",		RID_WCHAR,	D_CXXONLY },
   { "while",		RID_WHILE,	0 },
+  { "__is_assignable", RID_IS_ASSIGNABLE, D_CXXONLY },
+  { "__is_constructible", RID_IS_CONSTRUCTIBLE, D_CXXONLY },
 
   /* C++ transactional memory.  */
   { "synchronized",	RID_SYNCHRONIZED, D_CXX_OBJC | D_TRANSMEM },
@@ -2110,7 +2112,7 @@ c_common_type_for_size (unsigned int bits, int unsignedp)
   if (bits <= TYPE_PRECISION (intDI_type_node))
     return unsignedp ? unsigned_intDI_type_node : intDI_type_node;
 
-  return 0;
+  return NULL_TREE;
 }
 
 /* Return a fixed-point type that has at least IBIT ibits and FBIT fbits
@@ -2136,7 +2138,7 @@ c_common_fixed_point_type_for_size (unsigned int ibit, unsigned int fbit,
       sorry ("GCC cannot support operators with integer types and "
 	     "fixed-point types that have too many integral and "
 	     "fractional bits together");
-      return 0;
+      return NULL_TREE;
     }
 
   return c_common_type_for_mode (mode, satp);
@@ -2357,7 +2359,7 @@ c_common_type_for_mode (machine_mode mode, int unsignedp)
 	&& !!unsignedp == !!TYPE_UNSIGNED (TREE_VALUE (t)))
       return TREE_VALUE (t);
 
-  return 0;
+  return NULL_TREE;
 }
 
 tree
@@ -2589,7 +2591,7 @@ c_register_builtin_type (tree type, const char* name)
   DECL_ARTIFICIAL (decl) = 1;
   if (!TYPE_NAME (type))
     TYPE_NAME (type) = decl;
-  pushdecl (decl);
+  lang_hooks.decls.pushdecl (decl);
 
   registered_builtin_types = tree_cons (0, type, registered_builtin_types);
 }
@@ -2688,7 +2690,7 @@ expr_original_type (tree expr)
 
    LOC is the location of the comparison.
 
-   If this function returns nonzero, it means that the comparison has
+   If this function returns non-NULL_TREE, it means that the comparison has
    a constant value.  What this function returns is an expression for
    that value.  */
 
@@ -2942,7 +2944,7 @@ shorten_compare (location_t loc, tree *op0_ptr, tree *op1_ptr,
   else if (real1 && real2
 	   && (DECIMAL_FLOAT_MODE_P (TYPE_MODE (TREE_TYPE (primop0)))
 	       || DECIMAL_FLOAT_MODE_P (TYPE_MODE (TREE_TYPE (primop1)))))
-    return 0;
+    return NULL_TREE;
 
   else if (real1 && real2
 	   && (TYPE_PRECISION (TREE_TYPE (primop0))
@@ -2987,7 +2989,7 @@ shorten_compare (location_t loc, tree *op0_ptr, tree *op1_ptr,
       if (!real1 && !real2 && integer_zerop (primop1)
 	  && TYPE_UNSIGNED (*restype_ptr))
 	{
-	  tree value = 0;
+	  tree value = NULL_TREE;
 	  /* All unsigned values are >= 0, so we warn.  However,
 	     if OP0 is a constant that is >= 0, the signedness of
 	     the comparison isn't an issue, so suppress the
@@ -3020,7 +3022,7 @@ shorten_compare (location_t loc, tree *op0_ptr, tree *op1_ptr,
 	      break;
 	    }
 
-	  if (value != 0)
+	  if (value != NULL_TREE)
 	    {
 	      /* Don't forget to evaluate PRIMOP0 if it has side effects.  */
 	      if (TREE_SIDE_EFFECTS (primop0))
@@ -3036,7 +3038,7 @@ shorten_compare (location_t loc, tree *op0_ptr, tree *op1_ptr,
 
   *restype_ptr = truthvalue_type_node;
 
-  return 0;
+  return NULL_TREE;
 }
 
 /* Return a tree for the sum or difference (RESULTCODE says which)
@@ -3161,24 +3163,6 @@ c_wrap_maybe_const (tree expr, bool non_const)
     TREE_NO_WARNING (expr) = 1;
   protected_set_expr_location (expr, loc);
 
-  return expr;
-}
-
-/* Wrap a SAVE_EXPR around EXPR, if appropriate.  Like save_expr, but
-   for C folds the inside expression and wraps a C_MAYBE_CONST_EXPR
-   around the SAVE_EXPR if needed so that c_fully_fold does not need
-   to look inside SAVE_EXPRs.  */
-
-tree
-c_save_expr (tree expr)
-{
-  bool maybe_const = true;
-  if (c_dialect_cxx ())
-    return save_expr (expr);
-  expr = c_fully_fold (expr, false, &maybe_const);
-  expr = save_expr (expr);
-  if (!maybe_const)
-    expr = c_wrap_maybe_const (expr, true);
   return expr;
 }
 
@@ -3436,7 +3420,7 @@ c_common_truthvalue_conversion (location_t location, tree expr)
 
   if (TREE_CODE (TREE_TYPE (expr)) == COMPLEX_TYPE)
     {
-      tree t = (in_late_binary_op ? save_expr (expr) : c_save_expr (expr));
+      tree t = save_expr (expr);
       expr = (build_binary_op
 	      (EXPR_LOCATION (expr),
 	       (TREE_SIDE_EFFECTS (expr)
@@ -4646,17 +4630,17 @@ c_promoting_integer_type_p (const_tree t)
       return TYPE_PRECISION (t) < TYPE_PRECISION (integer_type_node);
 
     case BOOLEAN_TYPE:
-      return 1;
+      return true;
 
     default:
-      return 0;
+      return false;
     }
 }
 
 /* Return 1 if PARMS specifies a fixed number of parameters
    and none of their types is affected by default promotions.  */
 
-int
+bool
 self_promoting_args_p (const_tree parms)
 {
   const_tree t;
@@ -4667,19 +4651,19 @@ self_promoting_args_p (const_tree parms)
       if (type == error_mark_node)
 	continue;
 
-      if (TREE_CHAIN (t) == 0 && type != void_type_node)
-	return 0;
+      if (TREE_CHAIN (t) == NULL_TREE && type != void_type_node)
+	return false;
 
-      if (type == 0)
-	return 0;
+      if (type == NULL_TREE)
+	return false;
 
       if (TYPE_MAIN_VARIANT (type) == float_type_node)
-	return 0;
+	return false;
 
       if (c_promoting_integer_type_p (type))
-	return 0;
+	return false;
     }
-  return 1;
+  return true;
 }
 
 /* Recursively remove any '*' or '&' operator from TYPE.  */
@@ -5595,7 +5579,7 @@ check_function_arguments_recurse (void (*callback)
 	    format_num = tree_to_uhwi (format_num_expr);
 
 	    for (inner_arg = first_call_expr_arg (param, &iter), i = 1;
-		 inner_arg != 0;
+		 inner_arg != NULL_TREE;
 		 inner_arg = next_call_expr_arg (&iter), i++)
 	      if (i == format_num)
 		{
@@ -6109,7 +6093,7 @@ c_cpp_error (cpp_reader *pfile ATTRIBUTE_UNUSED, int level, int reason,
 				  richloc, dlevel);
   diagnostic_override_option_index (&diagnostic,
                                     c_option_controlling_cpp_error (reason));
-  ret = report_diagnostic (&diagnostic);
+  ret = diagnostic_report_diagnostic (global_dc, &diagnostic);
   if (level == CPP_DL_WARNING_SYSHDR)
     global_dc->dc_warn_system_headers = save_warn_system_headers;
   return ret;

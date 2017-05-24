@@ -3457,26 +3457,26 @@ print_z_candidate (location_t loc, const char *msgstr,
     {
       cloc = loc;
       if (candidate->num_convs == 3)
-	inform (cloc, "%s%D(%T, %T, %T) <built-in>", msg, fn,
+	inform (cloc, "%s%<%D(%T, %T, %T)%> <built-in>", msg, fn,
 		candidate->convs[0]->type,
 		candidate->convs[1]->type,
 		candidate->convs[2]->type);
       else if (candidate->num_convs == 2)
-	inform (cloc, "%s%D(%T, %T) <built-in>", msg, fn,
+	inform (cloc, "%s%<%D(%T, %T)%> <built-in>", msg, fn,
 		candidate->convs[0]->type,
 		candidate->convs[1]->type);
       else
-	inform (cloc, "%s%D(%T) <built-in>", msg, fn,
+	inform (cloc, "%s%<%D(%T)%> <built-in>", msg, fn,
 		candidate->convs[0]->type);
     }
   else if (TYPE_P (fn))
-    inform (cloc, "%s%T <conversion>", msg, fn);
+    inform (cloc, "%s%qT <conversion>", msg, fn);
   else if (candidate->viable == -1)
-    inform (cloc, "%s%#D <near match>", msg, fn);
+    inform (cloc, "%s%#qD <near match>", msg, fn);
   else if (DECL_DELETED_FN (fn))
-    inform (cloc, "%s%#D <deleted>", msg, fn);
+    inform (cloc, "%s%#qD <deleted>", msg, fn);
   else
-    inform (cloc, "%s%#D", msg, fn);
+    inform (cloc, "%s%#qD", msg, fn);
   if (fn != candidate->fn)
     {
       cloc = location_of (candidate->fn);
@@ -3666,7 +3666,7 @@ add_list_candidates (tree fns, tree first_arg,
      avoid the copy constructor call for copy-list-initialization.  */
   flags |= LOOKUP_NO_NARROWING;
 
-  unsigned nart = num_artificial_parms_for (get_first_fn (fns)) - 1;
+  unsigned nart = num_artificial_parms_for (OVL_FIRST (fns)) - 1;
   tree init_list = (*args)[nart];
 
   /* Always use the default constructor if the list is empty (DR 990).  */
@@ -3783,8 +3783,8 @@ build_user_type_conversion_1 (tree totype, tree expr, int flags,
 
       /* We should never try to call the abstract or base constructor
 	 from here.  */
-      gcc_assert (!DECL_HAS_IN_CHARGE_PARM_P (OVL_CURRENT (ctors))
-		  && !DECL_HAS_VTT_PARM_P (OVL_CURRENT (ctors)));
+      gcc_assert (!DECL_HAS_IN_CHARGE_PARM_P (OVL_FIRST (ctors))
+		  && !DECL_HAS_VTT_PARM_P (OVL_FIRST (ctors)));
 
       args = make_tree_vector_single (expr);
       if (BRACE_ENCLOSED_INITIALIZER_P (expr))
@@ -4172,7 +4172,7 @@ print_error_for_call_failure (tree fn, vec<tree, va_gc> *args,
       targs = TREE_OPERAND (fn, 1);
       fn = TREE_OPERAND (fn, 0);
     }
-  tree name = DECL_NAME (OVL_CURRENT (fn));
+  tree name = OVL_NAME (fn);
   location_t loc = location_of (name);
   if (targs)
     name = lookup_template_function (name, targs);
@@ -4192,7 +4192,7 @@ print_error_for_call_failure (tree fn, vec<tree, va_gc> *args,
    ARGS.  */
 
 tree
-build_new_function_call (tree fn, vec<tree, va_gc> **args, bool koenig_p, 
+build_new_function_call (tree fn, vec<tree, va_gc> **args,
 			 tsubst_flags_t complain)
 {
   struct z_candidate *candidates, *cand;
@@ -4209,22 +4209,6 @@ build_new_function_call (tree fn, vec<tree, va_gc> **args, bool koenig_p,
 
   if (flag_tm)
     tm_malloc_replacement (fn);
-
-  /* If this function was found without using argument dependent
-     lookup, then we want to ignore any undeclared friend
-     functions.  */
-  if (!koenig_p)
-    {
-      tree orig_fn = fn;
-
-      fn = remove_hidden_names (fn);
-      if (!fn)
-	{
-	  if (complain & tf_error)
-	    print_error_for_call_failure (orig_fn, *args, NULL);
-	  return error_mark_node;
-	}
-    }
 
   /* Get the high-water mark for the CONVERSION_OBSTACK.  */
   p = conversion_obstack_alloc (0);
@@ -4426,7 +4410,8 @@ build_op_call_1 (tree obj, vec<tree, va_gc> **args, tsubst_flags_t complain)
       if (complain & tf_error)
         /* It's no good looking for an overloaded operator() on a
            pointer-to-member-function.  */
-        error ("pointer-to-member function %E cannot be called without an object; consider using .* or ->*", obj);
+	error ("pointer-to-member function %qE cannot be called without "
+	       "an object; consider using %<.*%> or %<->*%>", obj);
       return error_mark_node;
     }
 
@@ -4464,16 +4449,15 @@ build_op_call_1 (tree obj, vec<tree, va_gc> **args, tsubst_flags_t complain)
 
   for (; convs; convs = TREE_CHAIN (convs))
     {
-      tree fns = TREE_VALUE (convs);
       tree totype = TREE_TYPE (convs);
 
       if (TYPE_PTRFN_P (totype)
 	  || TYPE_REFFN_P (totype)
 	  || (TREE_CODE (totype) == REFERENCE_TYPE
 	      && TYPE_PTRFN_P (TREE_TYPE (totype))))
-	for (; fns; fns = OVL_NEXT (fns))
+	for (ovl_iterator iter (TREE_VALUE (convs)); iter; ++iter)
 	  {
-	    tree fn = OVL_CURRENT (fns);
+	    tree fn = *iter;
 
 	    if (DECL_NONCONVERTING_P (fn))
 	      continue;
@@ -5391,13 +5375,12 @@ add_candidates (tree fns, tree first_arg, const vec<tree, va_gc> *args,
   bool check_list_ctor;
   bool check_converting;
   unification_kind_t strict;
-  tree fn;
 
   if (!fns)
     return;
 
   /* Precalculate special handling of constructors and conversion ops.  */
-  fn = OVL_CURRENT (fns);
+  tree fn = OVL_FIRST (fns);
   if (DECL_CONV_FN_P (fn))
     {
       check_list_ctor = false;
@@ -5440,12 +5423,12 @@ add_candidates (tree fns, tree first_arg, const vec<tree, va_gc> *args,
     /* Delay creating the implicit this parameter until it is needed.  */
     non_static_args = NULL;
 
-  for (; fns; fns = OVL_NEXT (fns))
+  for (lkp_iterator iter (fns); iter; ++iter)
     {
       tree fn_first_arg;
       const vec<tree, va_gc> *fn_args;
 
-      fn = OVL_CURRENT (fns);
+      fn = *iter;
 
       if (check_converting && DECL_NONCONVERTING_P (fn))
 	continue;
@@ -6216,8 +6199,7 @@ build_op_delete_call (enum tree_code code, tree addr, tree size,
       if (fn == error_mark_node)
 	return NULL_TREE;
 
-      if (BASELINK_P (fn))
-	fn = BASELINK_FUNCTIONS (fn);
+      fn = MAYBE_BASELINK_FUNCTIONS (fn);
 
       /* "If the lookup finds the two-parameter form of a usual deallocation
 	 function (3.7.4.2) and that function, considered as a placement
@@ -6236,10 +6218,10 @@ build_op_delete_call (enum tree_code code, tree addr, tree size,
 	     the usual deallocation function, so we shouldn't complain
 	     about using the operator delete (void *, size_t).  */
 	  if (DECL_CLASS_SCOPE_P (fn))
-	    for (t = BASELINK_P (fns) ? BASELINK_FUNCTIONS (fns) : fns;
-		 t; t = OVL_NEXT (t))
+	    for (lkp_iterator iter (MAYBE_BASELINK_FUNCTIONS (fns));
+		 iter; ++iter)
 	      {
-		tree elt = OVL_CURRENT (t);
+		tree elt = *iter;
 		if (usual_deallocation_fn_p (elt)
 		    && FUNCTION_ARG_CHAIN (elt) == void_list_node)
 		  goto ok;
@@ -6278,10 +6260,9 @@ build_op_delete_call (enum tree_code code, tree addr, tree size,
        allocation function. If the lookup finds a single matching
        deallocation function, that function will be called; otherwise, no
        deallocation function will be called."  */
-    for (t = BASELINK_P (fns) ? BASELINK_FUNCTIONS (fns) : fns;
-	 t; t = OVL_NEXT (t))
+    for (lkp_iterator iter (MAYBE_BASELINK_FUNCTIONS (fns)); iter; ++iter)
       {
-	tree elt = OVL_CURRENT (t);
+	tree elt = *iter;
 	if (usual_deallocation_fn_p (elt))
 	  {
 	    if (!fn)
@@ -6415,7 +6396,7 @@ build_op_delete_call (enum tree_code code, tree addr, tree size,
 
 bool
 enforce_access (tree basetype_path, tree decl, tree diag_decl,
-		tsubst_flags_t complain)
+		tsubst_flags_t complain, access_failure_info *afi)
 {
   gcc_assert (TREE_CODE (basetype_path) == TREE_BINFO);
 
@@ -6441,17 +6422,23 @@ enforce_access (tree basetype_path, tree decl, tree diag_decl,
 	      error ("%q#D is private within this context", diag_decl);
 	      inform (DECL_SOURCE_LOCATION (diag_decl),
 		      "declared private here");
+	      if (afi)
+		afi->record_access_failure (basetype_path, diag_decl);
 	    }
 	  else if (TREE_PROTECTED (decl))
 	    {
 	      error ("%q#D is protected within this context", diag_decl);
 	      inform (DECL_SOURCE_LOCATION (diag_decl),
 		      "declared protected here");
+	      if (afi)
+		afi->record_access_failure (basetype_path, diag_decl);
 	    }
 	  else
 	    {
 	      error ("%q#D is inaccessible within this context", diag_decl);
 	      inform (DECL_SOURCE_LOCATION (diag_decl), "declared here");
+	      if (afi)
+		afi->record_access_failure (basetype_path, diag_decl);
 	    }
 	}
       return false;
@@ -7351,17 +7338,21 @@ convert_for_arg_passing (tree type, tree val, tsubst_flags_t complain)
 	   && COMPLETE_TYPE_P (type)
 	   && tree_int_cst_lt (TYPE_SIZE (type), TYPE_SIZE (integer_type_node)))
     val = cp_perform_integral_promotions (val, complain);
-  if ((complain & tf_warning)
-      && warn_suggest_attribute_format)
+  if (complain & tf_warning)
     {
-      tree rhstype = TREE_TYPE (val);
-      const enum tree_code coder = TREE_CODE (rhstype);
-      const enum tree_code codel = TREE_CODE (type);
-      if ((codel == POINTER_TYPE || codel == REFERENCE_TYPE)
-	  && coder == codel
-	  && check_missing_format_attribute (type, rhstype))
-	warning (OPT_Wsuggest_attribute_format,
-		 "argument of function call might be a candidate for a format attribute");
+      if (warn_suggest_attribute_format)
+	{
+	  tree rhstype = TREE_TYPE (val);
+	  const enum tree_code coder = TREE_CODE (rhstype);
+	  const enum tree_code codel = TREE_CODE (type);
+	  if ((codel == POINTER_TYPE || codel == REFERENCE_TYPE)
+	      && coder == codel
+	      && check_missing_format_attribute (type, rhstype))
+	    warning (OPT_Wsuggest_attribute_format,
+		     "argument of function call might be a candidate "
+		     "for a format attribute");
+	}
+      maybe_warn_parm_abi (type, EXPR_LOC_OR_LOC (val, input_location));
     }
   return val;
 }
@@ -8233,7 +8224,10 @@ build_cxx_call (tree fn, int nargs, tree *argarray,
 	return error_mark_node;
 
       if (MAYBE_CLASS_TYPE_P (TREE_TYPE (fn)))
-	fn = build_cplus_new (TREE_TYPE (fn), fn, complain);
+	{
+	  fn = build_cplus_new (TREE_TYPE (fn), fn, complain);
+	  maybe_warn_parm_abi (TREE_TYPE (fn), loc);
+	}
     }
   return convert_from_reference (fn);
 }
@@ -8545,7 +8539,7 @@ build_new_method_call_1 (tree instance, tree fns, vec<tree, va_gc> **args,
   gcc_assert (TREE_CODE (fns) == FUNCTION_DECL
 	      || TREE_CODE (fns) == TEMPLATE_DECL
 	      || TREE_CODE (fns) == OVERLOAD);
-  fn = get_first_fn (fns);
+  fn = OVL_FIRST (fns);
   name = DECL_NAME (fn);
 
   basetype = TYPE_MAIN_VARIANT (TREE_TYPE (instance));
@@ -8714,7 +8708,7 @@ build_new_method_call_1 (tree instance, tree fns, vec<tree, va_gc> **args,
 	      tree errname = name;
 	      if (IDENTIFIER_CTOR_OR_DTOR_P (errname))
 		{
-		  tree fn = DECL_ORIGIN (get_first_fn (fns));
+		  tree fn = DECL_ORIGIN (OVL_FIRST (fns));
 		  errname = DECL_NAME (fn);
 		}
 	      if (explicit_targs)
@@ -10233,10 +10227,7 @@ perform_direct_initialization_if_possible (tree type,
 tree
 make_temporary_var_for_ref_to_temp (tree decl, tree type)
 {
-  tree var;
-
-  /* Create the variable.  */
-  var = create_temporary_var (type);
+  tree var = create_temporary_var (type);
 
   /* Register the variable.  */
   if (VAR_P (decl)
@@ -10244,15 +10235,16 @@ make_temporary_var_for_ref_to_temp (tree decl, tree type)
     {
       /* Namespace-scope or local static; give it a mangled name.  */
       /* FIXME share comdat with decl?  */
-      tree name;
 
       TREE_STATIC (var) = TREE_STATIC (decl);
       CP_DECL_THREAD_LOCAL_P (var) = CP_DECL_THREAD_LOCAL_P (decl);
       set_decl_tls_model (var, DECL_TLS_MODEL (decl));
-      name = mangle_ref_init_variable (decl);
+
+      tree name = mangle_ref_init_variable (decl);
       DECL_NAME (var) = name;
       SET_DECL_ASSEMBLER_NAME (var, name);
-      var = pushdecl_top_level (var);
+
+      var = pushdecl (var);
     }
   else
     /* Create a new cleanup level if necessary.  */
@@ -10510,6 +10502,9 @@ extend_ref_init_temps (tree decl, tree init, vec<tree, va_gc> **cleanups)
 	      FOR_EACH_VEC_SAFE_ELT (elts, i, p)
 		p->value = extend_ref_init_temps (decl, p->value, cleanups);
 	    }
+	  recompute_constructor_flags (ctor);
+	  if (decl_maybe_constant_var_p (decl) && TREE_CONSTANT (ctor))
+	    DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (decl) = true;
 	}
     }
 
@@ -10543,15 +10538,15 @@ type_has_extended_temps (tree type)
 bool
 is_std_init_list (tree type)
 {
-  /* Look through typedefs.  */
   if (!TYPE_P (type))
     return false;
   if (cxx_dialect == cxx98)
     return false;
+  /* Look through typedefs.  */
   type = TYPE_MAIN_VARIANT (type);
   return (CLASS_TYPE_P (type)
 	  && CP_TYPE_CONTEXT (type) == std_node
-	  && strcmp (TYPE_NAME_STRING (type), "initializer_list") == 0);
+	  && init_list_identifier == DECL_NAME (TYPE_NAME (type)));
 }
 
 /* Returns true iff DECL is a list constructor: i.e. a constructor which

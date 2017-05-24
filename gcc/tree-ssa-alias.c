@@ -2663,70 +2663,6 @@ maybe_skip_until (gimple *phi, tree target, ao_ref *ref,
   return true;
 }
 
-/* For two PHI arguments ARG0 and ARG1 try to skip non-aliasing code
-   until we hit the phi argument definition that dominates the other one.
-   Return that, or NULL_TREE if there is no such definition.  */
-
-static tree
-get_continuation_for_phi_1 (gimple *phi, tree arg0, tree arg1,
-			    ao_ref *ref, unsigned int *cnt,
-			    bitmap *visited, bool abort_on_visited,
-			    void *(*translate)(ao_ref *, tree, void *, bool *),
-			    void *data)
-{
-  gimple *def0 = SSA_NAME_DEF_STMT (arg0);
-  gimple *def1 = SSA_NAME_DEF_STMT (arg1);
-  tree common_vuse;
-
-  if (arg0 == arg1)
-    return arg0;
-  else if (gimple_nop_p (def0)
-	   || (!gimple_nop_p (def1)
-	       && dominated_by_p (CDI_DOMINATORS,
-				  gimple_bb (def1), gimple_bb (def0))))
-    {
-      if (maybe_skip_until (phi, arg0, ref, arg1, cnt,
-			    visited, abort_on_visited, translate, data))
-	return arg0;
-    }
-  else if (gimple_nop_p (def1)
-	   || dominated_by_p (CDI_DOMINATORS,
-			      gimple_bb (def0), gimple_bb (def1)))
-    {
-      if (maybe_skip_until (phi, arg1, ref, arg0, cnt,
-			    visited, abort_on_visited, translate, data))
-	return arg1;
-    }
-  /* Special case of a diamond:
-       MEM_1 = ...
-       goto (cond) ? L1 : L2
-       L1: store1 = ...    #MEM_2 = vuse(MEM_1)
-	   goto L3
-       L2: store2 = ...    #MEM_3 = vuse(MEM_1)
-       L3: MEM_4 = PHI<MEM_2, MEM_3>
-     We were called with the PHI at L3, MEM_2 and MEM_3 don't
-     dominate each other, but still we can easily skip this PHI node
-     if we recognize that the vuse MEM operand is the same for both,
-     and that we can skip both statements (they don't clobber us).
-     This is still linear.  Don't use maybe_skip_until, that might
-     potentially be slow.  */
-  else if ((common_vuse = gimple_vuse (def0))
-	   && common_vuse == gimple_vuse (def1))
-    {
-      bool disambiguate_only = true;
-      *cnt += 2;
-      if ((!stmt_may_clobber_ref_p_1 (def0, ref)
-	   || (translate
-	       && (*translate) (ref, arg0, data, &disambiguate_only) == NULL))
-	  && (!stmt_may_clobber_ref_p_1 (def1, ref)
-	      || (translate
-		  && (*translate) (ref, arg1, data, &disambiguate_only) == NULL)))
-	return common_vuse;
-    }
-
-  return NULL_TREE;
-}
-
 
 /* Starting from a PHI node for the virtual operand of the memory reference
    REF find a continuation virtual operand that allows to continue walking
@@ -2749,44 +2685,73 @@ get_continuation_for_phi (gimple *phi, ao_ref *ref,
 
   /* For two or more arguments try to pairwise skip non-aliasing code
      until we hit the phi argument definition that dominates the other one.  */
-  else if (nargs >= 2)
+  basic_block phi_bb = gimple_bb (phi);
+  tree arg0, arg1;
+  unsigned i;
+
+  /* Find a candidate for the virtual operand which definition
+     dominates those of all others.  */
+  /* First look if any of the args themselves satisfy this.  */
+  for (i = 0; i < nargs; ++i)
     {
-      tree arg0, arg1;
-      unsigned i;
-
-      /* Find a candidate for the virtual operand which definition
-	 dominates those of all others.  */
-      arg0 = PHI_ARG_DEF (phi, 0);
-      if (!SSA_NAME_IS_DEFAULT_DEF (arg0))
-	for (i = 1; i < nargs; ++i)
+      arg0 = PHI_ARG_DEF (phi, i);
+      if (SSA_NAME_IS_DEFAULT_DEF (arg0))
+	break;
+      basic_block def_bb = gimple_bb (SSA_NAME_DEF_STMT (arg0));
+      if (def_bb != phi_bb
+	  && dominated_by_p (CDI_DOMINATORS, phi_bb, def_bb))
+	break;
+      arg0 = NULL_TREE;
+    }
+  /* If not, look if we can reach such candidate by walking defs
+     of a PHI arg without crossing other PHIs.  */
+  if (! arg0)
+    for (i = 0; i < nargs; ++i)
+      {
+	arg0 = PHI_ARG_DEF (phi, i);
+	gimple *def = SSA_NAME_DEF_STMT (arg0);
+	/* Backedges can't work.  */
+	if (dominated_by_p (CDI_DOMINATORS,
+			    gimple_bb (def), phi_bb))
+	  continue;
+	/* See below.  */
+	if (gimple_code (def) == GIMPLE_PHI)
+	  continue;
+	while (! dominated_by_p (CDI_DOMINATORS,
+				 phi_bb, gimple_bb (def)))
 	  {
-	    arg1 = PHI_ARG_DEF (phi, i);
-	    if (SSA_NAME_IS_DEFAULT_DEF (arg1))
+	    arg0 = gimple_vuse (def);
+	    if (SSA_NAME_IS_DEFAULT_DEF (arg0))
+	      break;
+	    def = SSA_NAME_DEF_STMT (arg0);
+	    if (gimple_code (def) == GIMPLE_PHI)
 	      {
-		arg0 = arg1;
-		break;
+		/* Do not try to look through arbitrarily complicated
+		   CFGs.  For those looking for the first VUSE starting
+		   from the end of the immediate dominator of phi_bb
+		   is likely faster.  */
+		arg0 = NULL_TREE;
+		goto next;
 	      }
-	    if (dominated_by_p (CDI_DOMINATORS,
-				gimple_bb (SSA_NAME_DEF_STMT (arg0)),
-				gimple_bb (SSA_NAME_DEF_STMT (arg1))))
-	      arg0 = arg1;
 	  }
+	break;
+next:;
+      }
+  if (! arg0)
+    return NULL_TREE;
 
-      /* Then pairwise reduce against the found candidate.  */
-      for (i = 0; i < nargs; ++i)
-	{
-	  arg1 = PHI_ARG_DEF (phi, i);
-	  arg0 = get_continuation_for_phi_1 (phi, arg0, arg1, ref,
-					     cnt, visited, abort_on_visited,
-					     translate, data);
-	  if (!arg0)
-	    return NULL_TREE;
-	}
-
-      return arg0;
+  /* Then check against the found candidate.  */
+  for (i = 0; i < nargs; ++i)
+    {
+      arg1 = PHI_ARG_DEF (phi, i);
+      if (arg1 == arg0)
+	;
+      else if (! maybe_skip_until (phi, arg0, ref, arg1, cnt, visited,
+				   abort_on_visited, translate, data))
+	return NULL_TREE;
     }
 
-  return NULL_TREE;
+  return arg0;
 }
 
 /* Based on the memory reference REF and its virtual use VUSE call

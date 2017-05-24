@@ -27,10 +27,18 @@ SA(!__is_trivially_constructible(C,C&));
 SA(__is_trivially_assignable(C,C&));
 SA(!__is_trivially_assignable(C,C));
 SA(!__is_trivially_assignable(C,C&&));
+SA(!__is_trivially_assignable(void,int));
+SA(!__is_trivially_assignable(const void,int));
+SA(!__is_trivially_assignable(volatile void,int));
+SA(!__is_trivially_assignable(const volatile void,int));
 
 SA(__is_trivially_constructible(int,int));
 SA(__is_trivially_constructible(int,double));
 SA(!__is_trivially_constructible(int,B));
+SA(!__is_trivially_constructible(void,int));
+SA(!__is_trivially_constructible(const void,int));
+SA(!__is_trivially_constructible(volatile void,int));
+SA(!__is_trivially_constructible(const volatile void,int));
 
 SA(!__is_trivially_constructible(D));
 

@@ -1,3 +1,24 @@
+2017-05-12  Than McIntosh  <thanm@google.com>
+
+	* go-gcc.cc (Gcc_backend::call_expression): Add caller parameter.
+
+2017-05-11  Ian Lance Taylor  <iant@google.com>
+
+	PR go/64238
+	* go-gcc.cc (Gcc_backend::implicit_variable_reference): Set
+	DECL_EXTERNAL, clear TREE_STATIC.
+
+2017-05-10  Than McIntosh  <thanm@google.com>
+
+	* go-backend.c: Include "go-c.h".
+	* go-gcc.cc (Gcc_backend::write_export_data): New method.
+
+2017-05-10  Ian Lance Taylor  <iant@google.com>
+
+	* go-gcc.cc (Gcc_backend::Gcc_backend): Declare
+	__builtin_prefetch.
+	* Make-lang.in (GO_OBJS): Add go/wb.o.
+
 2017-03-28  Than McIntosh  <thanm@google.com>
 
 	PR go/80226

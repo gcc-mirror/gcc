@@ -371,6 +371,7 @@ typedef unsigned char uchar;
 #include "input.h"
 #include "is-a.h"
 #include "memory-block.h"
+#include "dumpfile.h"
 #endif /* GENERATOR_FILE && !USED_FOR_TARGET */
 
 #endif /* coretypes.h */

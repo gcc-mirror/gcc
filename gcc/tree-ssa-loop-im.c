@@ -1010,7 +1010,7 @@ invariantness_dom_walker::before_dom_children (basic_block bb)
 
 	if (dump_file && (dump_flags & TDF_DETAILS))
 	  {
-	    print_gimple_stmt (dump_file, stmt, 2, 0);
+	    print_gimple_stmt (dump_file, stmt, 2);
 	    fprintf (dump_file, "  invariant up to level %d, cost %d.\n\n",
 		     loop_depth (lim_data->max_loop),
 		     lim_data->cost);
@@ -1086,7 +1086,7 @@ invariantness_dom_walker::before_dom_children (basic_block bb)
 
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{
-	  print_gimple_stmt (dump_file, stmt, 2, 0);
+	  print_gimple_stmt (dump_file, stmt, 2);
 	  fprintf (dump_file, "  invariant up to level %d, cost %d.\n\n",
 		   loop_depth (lim_data->max_loop),
 		   lim_data->cost);
@@ -1149,7 +1149,7 @@ move_computations_worker (basic_block bb)
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{
 	  fprintf (dump_file, "Moving PHI node\n");
-	  print_gimple_stmt (dump_file, stmt, 0, 0);
+	  print_gimple_stmt (dump_file, stmt, 0);
 	  fprintf (dump_file, "(cost %u) out of loop %d.\n\n",
 		   cost, level->num);
 	}
@@ -1218,7 +1218,7 @@ move_computations_worker (basic_block bb)
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{
 	  fprintf (dump_file, "Moving statement\n");
-	  print_gimple_stmt (dump_file, stmt, 0, 0);
+	  print_gimple_stmt (dump_file, stmt, 0);
 	  fprintf (dump_file, "(cost %u) out of loop %d.\n\n",
 		   cost, level->num);
 	}
@@ -1950,7 +1950,7 @@ execute_sm (struct loop *loop, vec<edge> exits, im_mem_ref *ref)
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
       fprintf (dump_file, "Executing store motion of ");
-      print_generic_expr (dump_file, ref->mem.ref, 0);
+      print_generic_expr (dump_file, ref->mem.ref);
       fprintf (dump_file, " from loop %d\n", loop->num);
     }
 

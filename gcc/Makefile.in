@@ -1340,6 +1340,7 @@ OBJS = \
 	ipa-chkp.o \
 	ipa-cp.o \
 	ipa-devirt.o \
+	ipa-fnsummary.o \
 	ipa-polymorphic-call.o \
 	ipa-split.o \
 	ipa-inline.o \
@@ -1347,6 +1348,7 @@ OBJS = \
 	ipa-visibility.o \
 	ipa-inline-analysis.o \
 	ipa-inline-transform.o \
+	ipa-predicate.o \
 	ipa-profile.o \
 	ipa-prop.o \
 	ipa-pure-const.o \
@@ -2484,7 +2486,7 @@ GTFILES = $(CPP_ID_DATA_H) $(srcdir)/input.h $(srcdir)/coretypes.h \
   $(srcdir)/gimple-ssa.h \
   $(srcdir)/tree-chkp.c \
   $(srcdir)/tree-ssanames.c $(srcdir)/tree-eh.c $(srcdir)/tree-ssa-address.c \
-  $(srcdir)/tree-cfg.c \
+  $(srcdir)/tree-cfg.c $(srcdir)/tree-ssa-loop-ivopts.c \
   $(srcdir)/tree-dfa.c \
   $(srcdir)/tree-iterator.c $(srcdir)/gimple-expr.c \
   $(srcdir)/tree-chrec.h \
@@ -2505,7 +2507,8 @@ GTFILES = $(CPP_ID_DATA_H) $(srcdir)/input.h $(srcdir)/coretypes.h \
   $(srcdir)/trans-mem.c \
   $(srcdir)/lto-streamer.h \
   $(srcdir)/target-globals.h \
-  $(srcdir)/ipa-inline.h \
+  $(srcdir)/ipa-predicate.h \
+  $(srcdir)/ipa-fnsummary.h \
   $(srcdir)/vtable-verify.c \
   $(srcdir)/asan.c \
   $(srcdir)/ubsan.c \
@@ -3810,7 +3813,9 @@ site.exp: ./config.status Makefile
 	@echo "set CFLAGS \"\"" >> ./site.tmp
 	@echo "set CXXFLAGS \"\"" >> ./site.tmp
 	@echo "set HOSTCC \"$(CC)\"" >> ./site.tmp
+	@echo "set HOSTCXX \"$(CXX)\"" >> ./site.tmp
 	@echo "set HOSTCFLAGS \"$(CFLAGS)\"" >> ./site.tmp
+	@echo "set HOSTCXXFLAGS \"$(CXXFLAGS)\"" >> ./site.tmp
 # TEST_ALWAYS_FLAGS are flags that should be passed to every compilation.
 # They are passed first to allow individual tests to override them.
 	@echo "set TEST_ALWAYS_FLAGS \"$(SYSROOT_CFLAGS_FOR_TARGET)\"" >> ./site.tmp

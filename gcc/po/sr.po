@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gcc 4.2.1\n"
 "Report-Msgid-Bugs-To: https://gcc.gnu.org/bugs/\n"
-"POT-Creation-Date: 2017-04-24 20:38+0000\n"
+"POT-Creation-Date: 2017-05-01 22:24+0000\n"
 "PO-Revision-Date: 2007-08-19 12:00+0200\n"
 "Last-Translator: Caslav Ilic <caslav.ilic@gmx.net>\n"
 "Language-Team: Serbian <gnu@prevod.org>\n"
@@ -3099,46 +3099,46 @@ msgstr "модификатор дужине у формату strfmon"
 msgid "<command-line>"
 msgstr "<командна-линија>"
 
-#: config/aarch64/aarch64.c:4926 config/arm/arm.c:21795 config/arm/arm.c:21808
-#: config/arm/arm.c:21833 config/nios2/nios2.c:2653
+#: config/aarch64/aarch64.c:4927 config/arm/arm.c:21832 config/arm/arm.c:21845
+#: config/arm/arm.c:21870 config/nios2/nios2.c:2653
 #, fuzzy, c-format
 #| msgid "invalid operand for code '%c'"
 msgid "Unsupported operand for code '%c'"
 msgstr "неисправан операнд за кôд ‘%c’"
 
-#: config/aarch64/aarch64.c:4938 config/aarch64/aarch64.c:4954
-#: config/aarch64/aarch64.c:4967 config/aarch64/aarch64.c:4979
-#: config/aarch64/aarch64.c:4990 config/aarch64/aarch64.c:5013
-#: config/aarch64/aarch64.c:5066 config/aarch64/aarch64.c:5269
+#: config/aarch64/aarch64.c:4939 config/aarch64/aarch64.c:4955
+#: config/aarch64/aarch64.c:4968 config/aarch64/aarch64.c:4980
+#: config/aarch64/aarch64.c:4991 config/aarch64/aarch64.c:5014
+#: config/aarch64/aarch64.c:5067 config/aarch64/aarch64.c:5270
 #, fuzzy, c-format
 #| msgid "invalid operand for code '%c'"
 msgid "invalid operand for '%%%c'"
 msgstr "неисправан операнд за кôд ‘%c’"
 
-#: config/aarch64/aarch64.c:5033 config/aarch64/aarch64.c:5046
-#: config/aarch64/aarch64.c:5056
+#: config/aarch64/aarch64.c:5034 config/aarch64/aarch64.c:5047
+#: config/aarch64/aarch64.c:5057
 #, c-format
 msgid "incompatible floating point / vector register operand for '%%%c'"
 msgstr ""
 
-#: config/aarch64/aarch64.c:5102 config/arm/arm.c:22340
+#: config/aarch64/aarch64.c:5103 config/arm/arm.c:22377
 #, c-format
 msgid "missing operand"
 msgstr "недостаје операнд"
 
-#: config/aarch64/aarch64.c:5164
+#: config/aarch64/aarch64.c:5165
 #, fuzzy, c-format
 #| msgid "invalid insn:"
 msgid "invalid constant"
 msgstr "неисправна ија:"
 
-#: config/aarch64/aarch64.c:5167
+#: config/aarch64/aarch64.c:5168
 #, fuzzy, c-format
 #| msgid "invalid %%d operand"
 msgid "invalid operand"
 msgstr "неисправан %%d операнд"
 
-#: config/aarch64/aarch64.c:5280
+#: config/aarch64/aarch64.c:5281
 #, fuzzy, c-format
 #| msgid "invalid operand code '%c'"
 msgid "invalid operand prefix '%%%c'"
@@ -3303,29 +3303,29 @@ msgstr "неисправан кôд излаза операнада"
 msgid "invalid UNSPEC as operand: %d"
 msgstr "неисправан УНСПЕЦ као операнд"
 
-#: config/arm/arm.c:18804 config/arm/arm.c:18829 config/arm/arm.c:18839
-#: config/arm/arm.c:18848 config/arm/arm.c:18857
+#: config/arm/arm.c:18841 config/arm/arm.c:18866 config/arm/arm.c:18876
+#: config/arm/arm.c:18885 config/arm/arm.c:18894
 #, c-format
 msgid "invalid shift operand"
 msgstr "неисправан операнд помака"
 
-#: config/arm/arm.c:21671 config/arm/arm.c:21689
+#: config/arm/arm.c:21708 config/arm/arm.c:21726
 #, c-format
 msgid "predicated Thumb instruction"
 msgstr "предикатна инструкција Тамба"
 
-#: config/arm/arm.c:21677
+#: config/arm/arm.c:21714
 #, c-format
 msgid "predicated instruction in conditional sequence"
 msgstr "предикатна инструкција у условном редоследу"
 
-#: config/arm/arm.c:21910 config/arm/arm.c:21932 config/arm/arm.c:21942
-#: config/arm/arm.c:21952 config/arm/arm.c:21962 config/arm/arm.c:22001
-#: config/arm/arm.c:22019 config/arm/arm.c:22044 config/arm/arm.c:22059
-#: config/arm/arm.c:22086 config/arm/arm.c:22093 config/arm/arm.c:22111
-#: config/arm/arm.c:22118 config/arm/arm.c:22126 config/arm/arm.c:22147
-#: config/arm/arm.c:22154 config/arm/arm.c:22287 config/arm/arm.c:22294
-#: config/arm/arm.c:22321 config/arm/arm.c:22328 config/bfin/bfin.c:1437
+#: config/arm/arm.c:21947 config/arm/arm.c:21969 config/arm/arm.c:21979
+#: config/arm/arm.c:21989 config/arm/arm.c:21999 config/arm/arm.c:22038
+#: config/arm/arm.c:22056 config/arm/arm.c:22081 config/arm/arm.c:22096
+#: config/arm/arm.c:22123 config/arm/arm.c:22130 config/arm/arm.c:22148
+#: config/arm/arm.c:22155 config/arm/arm.c:22163 config/arm/arm.c:22184
+#: config/arm/arm.c:22191 config/arm/arm.c:22324 config/arm/arm.c:22331
+#: config/arm/arm.c:22358 config/arm/arm.c:22365 config/bfin/bfin.c:1437
 #: config/bfin/bfin.c:1444 config/bfin/bfin.c:1451 config/bfin/bfin.c:1458
 #: config/bfin/bfin.c:1467 config/bfin/bfin.c:1474 config/bfin/bfin.c:1481
 #: config/bfin/bfin.c:1488
@@ -3333,14 +3333,14 @@ msgstr "предикатна инструкција у условном редо
 msgid "invalid operand for code '%c'"
 msgstr "неисправан операнд за кôд ‘%c’"
 
-#: config/arm/arm.c:22014
+#: config/arm/arm.c:22051
 #, fuzzy, c-format
 #| msgid "instruction never exectued"
 msgid "instruction never executed"
 msgstr "инструкција се никад не извршава"
 
 #. Former Maverick support, removed after GCC-4.7.
-#: config/arm/arm.c:22035
+#: config/arm/arm.c:22072
 #, c-format
 msgid "obsolete Maverick format code '%c'"
 msgstr ""
@@ -4210,112 +4210,112 @@ msgstr ""
 msgid "emit_fusion_p9_store not MEM"
 msgstr ""
 
-#: config/s390/s390.c:7314
+#: config/s390/s390.c:7482
 #, c-format
 msgid "symbolic memory references are only supported on z10 or later"
 msgstr ""
 
-#: config/s390/s390.c:7325
+#: config/s390/s390.c:7493
 #, c-format
 msgid "cannot decompose address"
 msgstr "не могу да разложим адресу"
 
-#: config/s390/s390.c:7394
+#: config/s390/s390.c:7562
 #, fuzzy, c-format
 #| msgid "invalid operand for 'b' modifier"
 msgid "invalid comparison operator for 'E' output modifier"
 msgstr "неисправан операнд за модификатор ‘b’"
 
-#: config/s390/s390.c:7417
+#: config/s390/s390.c:7585
 #, fuzzy, c-format
 #| msgid "invalid operand for 'b' modifier"
 msgid "invalid reference for 'J' output modifier"
 msgstr "неисправан операнд за модификатор ‘b’"
 
-#: config/s390/s390.c:7435
+#: config/s390/s390.c:7603
 #, fuzzy, c-format
 #| msgid "invalid operand for 'O' modifier"
 msgid "invalid address for 'O' output modifier"
 msgstr "неисправан операнд за модификатор ‘O’"
 
-#: config/s390/s390.c:7457
+#: config/s390/s390.c:7625
 #, fuzzy, c-format
 #| msgid "invalid operand for 'b' modifier"
 msgid "invalid address for 'R' output modifier"
 msgstr "неисправан операнд за модификатор ‘b’"
 
-#: config/s390/s390.c:7475
+#: config/s390/s390.c:7643
 #, c-format
 msgid "memory reference expected for 'S' output modifier"
 msgstr ""
 
-#: config/s390/s390.c:7485
+#: config/s390/s390.c:7653
 #, fuzzy, c-format
 #| msgid "invalid operand for 'b' modifier"
 msgid "invalid address for 'S' output modifier"
 msgstr "неисправан операнд за модификатор ‘b’"
 
-#: config/s390/s390.c:7506
+#: config/s390/s390.c:7674
 #, c-format
 msgid "register or memory expression expected for 'N' output modifier"
 msgstr ""
 
-#: config/s390/s390.c:7517
+#: config/s390/s390.c:7685
 #, c-format
 msgid "register or memory expression expected for 'M' output modifier"
 msgstr ""
 
-#: config/s390/s390.c:7603 config/s390/s390.c:7624
+#: config/s390/s390.c:7771 config/s390/s390.c:7792
 #, fuzzy, c-format
 #| msgid "invalid operand for 'o' modifier"
 msgid "invalid constant for output modifier '%c'"
 msgstr "неисправан операнд за модификатор ‘o’"
 
-#: config/s390/s390.c:7621
+#: config/s390/s390.c:7789
 #, fuzzy, c-format
 #| msgid "invalid operand output code"
 msgid "invalid constant - try using an output modifier"
 msgstr "неисправан кôд излаза операнада"
 
-#: config/s390/s390.c:7658
+#: config/s390/s390.c:7826
 #, fuzzy, c-format
 #| msgid "invalid operand for 'o' modifier"
 msgid "invalid constant vector for output modifier '%c'"
 msgstr "неисправан операнд за модификатор ‘o’"
 
-#: config/s390/s390.c:7665
+#: config/s390/s390.c:7833
 #, fuzzy, c-format
 #| msgid "invalid expression as operand"
 msgid "invalid expression - try using an output modifier"
 msgstr "неисправан израз као операнд"
 
-#: config/s390/s390.c:7668
+#: config/s390/s390.c:7836
 #, fuzzy, c-format
 #| msgid "invalid operand for 'o' modifier"
 msgid "invalid expression for output modifier '%c'"
 msgstr "неисправан операнд за модификатор ‘o’"
 
-#: config/s390/s390.c:11535
+#: config/s390/s390.c:11703
 #, fuzzy
 #| msgid "AltiVec argument passed to unprototyped function"
 msgid "vector argument passed to unprototyped function"
 msgstr "алтивек аргумент прослеђен непрототипизираној функцији"
 
-#: config/s390/s390.c:15354
+#: config/s390/s390.c:15522
 #, fuzzy
 #| msgid "pointer targets in return differ in signedness"
 msgid "types differ in signedness"
 msgstr "циљеви показивача у повратку разликују се у означености"
 
-#: config/s390/s390.c:15364
+#: config/s390/s390.c:15532
 msgid "binary operator does not support two vector bool operands"
 msgstr ""
 
-#: config/s390/s390.c:15367
+#: config/s390/s390.c:15535
 msgid "binary operator does not support vector bool operand"
 msgstr ""
 
-#: config/s390/s390.c:15375
+#: config/s390/s390.c:15543
 msgid "binary operator does not support mixing vector bool with floating point vector operands"
 msgstr ""
 
@@ -21227,7 +21227,7 @@ msgstr "претпостављам да се означено преливање
 msgid "assuming signed overflow does not occur when combining constants around a comparison"
 msgstr "претпостављам да се означено преливање не дешава при негирању дељења"
 
-#: fold-const.c:12046
+#: fold-const.c:12048
 #, gcc-internal-format
 msgid "fold check: original tree changed by fold"
 msgstr "провера сажимања: првобитно дрво измењено сажимањем"
@@ -21822,8 +21822,8 @@ msgstr ""
 msgid "null pointer dereference"
 msgstr "Одредба мора бити упућивач"
 
-#: gimple-ssa-isolate-paths.c:413 gimple-ssa-isolate-paths.c:531 tree.c:12872
-#: tree.c:12909 c/c-typeck.c:2906 c/c-typeck.c:2990 c/c-typeck.c:9913
+#: gimple-ssa-isolate-paths.c:413 gimple-ssa-isolate-paths.c:531 tree.c:12880
+#: tree.c:12917 c/c-typeck.c:2906 c/c-typeck.c:2990 c/c-typeck.c:9913
 #: c/c-typeck.c:9930 c/gimple-parser.c:1556 c/gimple-parser.c:1564
 #: cp/call.c:6454 cp/call.c:7933 cp/constexpr.c:777 cp/constexpr.c:2174
 #: cp/cvt.c:992 cp/cvt.c:1019 cp/decl.c:7224 cp/decl2.c:5072 cp/pt.c:7993
@@ -21838,299 +21838,299 @@ msgstr "%q+D декларисано овде"
 msgid "nonnull argument %qD compared to NULL"
 msgstr ""
 
-#: gimple-ssa-sprintf.c:2307 gimple-ssa-sprintf.c:2435
+#: gimple-ssa-sprintf.c:2308 gimple-ssa-sprintf.c:2436
 #, gcc-internal-format
 msgid "%qE output may be truncated before the last format character"
 msgstr ""
 
-#: gimple-ssa-sprintf.c:2309 gimple-ssa-sprintf.c:2437
+#: gimple-ssa-sprintf.c:2310 gimple-ssa-sprintf.c:2438
 #, gcc-internal-format
 msgid "%qE output truncated before the last format character"
 msgstr ""
 
-#: gimple-ssa-sprintf.c:2311 gimple-ssa-sprintf.c:2439
+#: gimple-ssa-sprintf.c:2312 gimple-ssa-sprintf.c:2440
 #, gcc-internal-format
 msgid "%qE may write a terminating nul past the end of the destination"
 msgstr ""
 
-#: gimple-ssa-sprintf.c:2313 gimple-ssa-sprintf.c:2441
+#: gimple-ssa-sprintf.c:2314 gimple-ssa-sprintf.c:2442
 #, gcc-internal-format
 msgid "%qE writing a terminating nul past the end of the destination"
 msgstr ""
 
-#: gimple-ssa-sprintf.c:2326
+#: gimple-ssa-sprintf.c:2327
 #, gcc-internal-format
 msgid "%<%.*s%> directive output may be truncated writing %wu byte into a region of size %wu"
 msgstr ""
 
-#: gimple-ssa-sprintf.c:2328
+#: gimple-ssa-sprintf.c:2329
 #, gcc-internal-format
 msgid "%<%.*s%> directive output truncated writing %wu byte into a region of size %wu"
 msgstr ""
 
-#: gimple-ssa-sprintf.c:2330
+#: gimple-ssa-sprintf.c:2331
 #, gcc-internal-format
 msgid "%<%.*s%> directive writing %wu byte into a region of size %wu"
 msgstr ""
 
-#: gimple-ssa-sprintf.c:2334
+#: gimple-ssa-sprintf.c:2335
 #, gcc-internal-format
 msgid "%<%.*s%> directive output may be truncated writing %wu bytes into a region of size %wu"
 msgstr ""
 
-#: gimple-ssa-sprintf.c:2336
+#: gimple-ssa-sprintf.c:2337
 #, gcc-internal-format
 msgid "%<%.*s%> directive output truncated writing %wu bytes into a region of size %wu"
 msgstr ""
 
-#: gimple-ssa-sprintf.c:2338
+#: gimple-ssa-sprintf.c:2339
 #, gcc-internal-format
 msgid "%<%.*s%> directive writing %wu bytes into a region of size %wu"
 msgstr ""
 
-#: gimple-ssa-sprintf.c:2351
+#: gimple-ssa-sprintf.c:2352
 #, gcc-internal-format
 msgid "%<%.*s%> directive output may be truncated writing up to %wu bytes into a region of size %wu"
 msgstr ""
 
-#: gimple-ssa-sprintf.c:2353
+#: gimple-ssa-sprintf.c:2354
 #, gcc-internal-format
 msgid "%<%.*s%> directive output truncated writing up to %wu bytes into a region of size %wu"
 msgstr ""
 
-#: gimple-ssa-sprintf.c:2355
+#: gimple-ssa-sprintf.c:2356
 #, gcc-internal-format
 msgid "%<%.*s%> directive writing up to %wu bytes into a region of size %wu"
 msgstr ""
 
-#: gimple-ssa-sprintf.c:2371
+#: gimple-ssa-sprintf.c:2372
 #, gcc-internal-format
 msgid "%<%.*s%> directive output may be truncated writing likely %wu or more bytes into a region of size %wu"
 msgstr ""
 
-#: gimple-ssa-sprintf.c:2373
+#: gimple-ssa-sprintf.c:2374
 #, gcc-internal-format
 msgid "%<%.*s%> directive output truncated writing likely %wu or more bytes into a region of size %wu"
 msgstr ""
 
-#: gimple-ssa-sprintf.c:2375
+#: gimple-ssa-sprintf.c:2376
 #, gcc-internal-format
 msgid "%<%.*s%> directive writing likely %wu or more bytes into a region of size %wu"
 msgstr ""
 
-#: gimple-ssa-sprintf.c:2388
+#: gimple-ssa-sprintf.c:2389
 #, gcc-internal-format
 msgid "%<%.*s%> directive output may be truncated writing between %wu and %wu bytes into a region of size %wu"
 msgstr ""
 
-#: gimple-ssa-sprintf.c:2390
+#: gimple-ssa-sprintf.c:2391
 #, gcc-internal-format
 msgid "%<%.*s%> directive output truncated writing between %wu and %wu bytes into a region of size %wu"
 msgstr ""
 
-#: gimple-ssa-sprintf.c:2392
+#: gimple-ssa-sprintf.c:2393
 #, gcc-internal-format
 msgid "%<%.*s%> directive writing between %wu and %wu bytes into a region of size %wu"
 msgstr ""
 
-#: gimple-ssa-sprintf.c:2404
+#: gimple-ssa-sprintf.c:2405
 #, gcc-internal-format
 msgid "%<%.*s%> directive output may be truncated writing %wu or more bytes into a region of size %wu"
 msgstr ""
 
-#: gimple-ssa-sprintf.c:2406
+#: gimple-ssa-sprintf.c:2407
 #, gcc-internal-format
 msgid "%<%.*s%> directive output truncated writing %wu or more bytes into a region of size %wu"
 msgstr ""
 
-#: gimple-ssa-sprintf.c:2408
+#: gimple-ssa-sprintf.c:2409
 #, gcc-internal-format
 msgid "%<%.*s%> directive writing %wu or more bytes into a region of size %wu"
 msgstr ""
 
-#: gimple-ssa-sprintf.c:2454
+#: gimple-ssa-sprintf.c:2455
 #, gcc-internal-format
 msgid "%<%.*s%> directive output may be truncated writing %wu byte into a region of size between %wu and %wu"
 msgstr ""
 
-#: gimple-ssa-sprintf.c:2456
+#: gimple-ssa-sprintf.c:2457
 #, gcc-internal-format
 msgid "%<%.*s%> directive output truncated writing %wu byte into a region of size between %wu and %wu"
 msgstr ""
 
-#: gimple-ssa-sprintf.c:2458
+#: gimple-ssa-sprintf.c:2459
 #, gcc-internal-format
 msgid "%<%.*s%> directive writing %wu byte into a region of size between %wu and %wu"
 msgstr ""
 
-#: gimple-ssa-sprintf.c:2462
+#: gimple-ssa-sprintf.c:2463
 #, gcc-internal-format
 msgid "%<%.*s%> directive output may be truncated writing %wu bytes into a region of size between %wu and %wu"
 msgstr ""
 
-#: gimple-ssa-sprintf.c:2464
+#: gimple-ssa-sprintf.c:2465
 #, gcc-internal-format
 msgid "%<%.*s%> directive output truncated writing %wu bytes into a region of size between %wu and %wu"
 msgstr ""
 
-#: gimple-ssa-sprintf.c:2466
+#: gimple-ssa-sprintf.c:2467
 #, gcc-internal-format
 msgid "%<%.*s%> directive writing %wu bytes into a region of size between %wu and %wu"
 msgstr ""
 
-#: gimple-ssa-sprintf.c:2480
+#: gimple-ssa-sprintf.c:2481
 #, gcc-internal-format
 msgid "%<%.*s%> directive output may be truncated writing up to %wu bytes into a region of size between %wu and %wu"
 msgstr ""
 
-#: gimple-ssa-sprintf.c:2483
+#: gimple-ssa-sprintf.c:2484
 #, gcc-internal-format
 msgid "%<%.*s%> directive output truncated writing up to %wu bytes into a region of size between %wu and %wu"
 msgstr ""
 
-#: gimple-ssa-sprintf.c:2486
+#: gimple-ssa-sprintf.c:2487
 #, gcc-internal-format
 msgid "%<%.*s%> directive writing up to %wu bytes into a region of size between %wu and %wu"
 msgstr ""
 
-#: gimple-ssa-sprintf.c:2502
+#: gimple-ssa-sprintf.c:2503
 #, gcc-internal-format
 msgid "%<%.*s%> directive output may be truncated writing likely %wu or more bytes into a region of size between %wu and %wu"
 msgstr ""
 
-#: gimple-ssa-sprintf.c:2505
+#: gimple-ssa-sprintf.c:2506
 #, gcc-internal-format
 msgid "%<%.*s%> directive output truncated writing likely %wu or more bytes into a region of size between %wu and %wu"
 msgstr ""
 
-#: gimple-ssa-sprintf.c:2508
+#: gimple-ssa-sprintf.c:2509
 #, gcc-internal-format
 msgid "%<%.*s%> directive writing likely %wu or more bytes into a region of size between %wu and %wu"
 msgstr ""
 
-#: gimple-ssa-sprintf.c:2521
+#: gimple-ssa-sprintf.c:2522
 #, gcc-internal-format
 msgid "%<%.*s%> directive output may be truncated writing between %wu and %wu bytes into a region of size between %wu and %wu"
 msgstr ""
 
-#: gimple-ssa-sprintf.c:2524
+#: gimple-ssa-sprintf.c:2525
 #, gcc-internal-format
 msgid "%<%.*s%> directive output truncated writing between %wu and %wu bytes into a region of size between %wu and %wu"
 msgstr ""
 
-#: gimple-ssa-sprintf.c:2527
+#: gimple-ssa-sprintf.c:2528
 #, gcc-internal-format
 msgid "%<%.*s%> directive writing between %wu and %wu bytes into a region of size between %wu and %wu"
 msgstr ""
 
-#: gimple-ssa-sprintf.c:2539
+#: gimple-ssa-sprintf.c:2540
 #, gcc-internal-format
 msgid "%<%.*s%> directive output may be truncated writing %wu or more bytes into a region of size between %wu and %wu"
 msgstr ""
 
-#: gimple-ssa-sprintf.c:2542
+#: gimple-ssa-sprintf.c:2543
 #, gcc-internal-format
 msgid "%<%.*s%> directive output truncated writing %wu or more bytes into a region of size between %wu and %wu"
 msgstr ""
 
-#: gimple-ssa-sprintf.c:2545
+#: gimple-ssa-sprintf.c:2546
 #, gcc-internal-format
 msgid "%<%.*s%> directive writing %wu or more bytes into a region of size between %wu and %wu"
 msgstr ""
 
-#: gimple-ssa-sprintf.c:2710
+#: gimple-ssa-sprintf.c:2711
 #, gcc-internal-format
 msgid "%<%.*s%> directive output between %wu and %wu bytes may exceed minimum required size of 4095"
 msgstr ""
 
-#: gimple-ssa-sprintf.c:2712
+#: gimple-ssa-sprintf.c:2713
 #, gcc-internal-format
 msgid "%<%.*s%> directive output between %wu and %wu bytes exceeds minimum required size of 4095"
 msgstr ""
 
-#: gimple-ssa-sprintf.c:2751
+#: gimple-ssa-sprintf.c:2752
 #, gcc-internal-format
 msgid "%<%.*s%> directive output between %wu and %wu bytes causes result to exceed %<INT_MAX%>"
 msgstr ""
 
-#: gimple-ssa-sprintf.c:2753
+#: gimple-ssa-sprintf.c:2754
 #, gcc-internal-format
 msgid "%<%.*s%> directive output between %wu and %wu bytes may cause result to exceed %<INT_MAX%>"
 msgstr ""
 
-#: gimple-ssa-sprintf.c:2767
+#: gimple-ssa-sprintf.c:2768
 #, gcc-internal-format
 msgid "assuming directive output of %wu byte"
 msgstr ""
 
-#: gimple-ssa-sprintf.c:2768
+#: gimple-ssa-sprintf.c:2769
 #, gcc-internal-format
 msgid "assuming directive output of %wu bytes"
 msgstr ""
 
-#: gimple-ssa-sprintf.c:2775
+#: gimple-ssa-sprintf.c:2776
 #, fuzzy, gcc-internal-format
 #| msgid "invalid option argument %qs"
 msgid "directive argument %qE"
 msgstr "неисправан аргумент опције %qs"
 
-#: gimple-ssa-sprintf.c:2777
+#: gimple-ssa-sprintf.c:2778
 #, gcc-internal-format
 msgid "directive argument in the range [%E, %E]"
 msgstr ""
 
-#: gimple-ssa-sprintf.c:2781
+#: gimple-ssa-sprintf.c:2782
 #, gcc-internal-format
 msgid "using the range [%E, %E] for directive argument"
 msgstr ""
 
-#: gimple-ssa-sprintf.c:2801
+#: gimple-ssa-sprintf.c:2802
 #, gcc-internal-format
 msgid "%qE output %wu byte into a destination of size %wu"
 msgstr ""
 
-#: gimple-ssa-sprintf.c:2802
+#: gimple-ssa-sprintf.c:2803
 #, gcc-internal-format
 msgid "%qE output %wu bytes into a destination of size %wu"
 msgstr ""
 
-#: gimple-ssa-sprintf.c:2806
+#: gimple-ssa-sprintf.c:2807
 #, gcc-internal-format
 msgid "%qE output between %wu and %wu bytes into a destination of size %wu"
 msgstr ""
 
-#: gimple-ssa-sprintf.c:2811
+#: gimple-ssa-sprintf.c:2812
 #, gcc-internal-format
 msgid "%qE output %wu or more bytes (assuming %wu) into a destination of size %wu"
 msgstr ""
 
-#: gimple-ssa-sprintf.c:2816
+#: gimple-ssa-sprintf.c:2817
 #, gcc-internal-format
 msgid "%qE output %wu or more bytes into a destination of size %wu"
 msgstr ""
 
-#: gimple-ssa-sprintf.c:3588
+#: gimple-ssa-sprintf.c:3591
 #, gcc-internal-format
 msgid "specified bound %wu exceeds maximum object size %wu"
 msgstr ""
 
-#: gimple-ssa-sprintf.c:3594
+#: gimple-ssa-sprintf.c:3597
 #, gcc-internal-format
 msgid "specified bound %wu exceeds %<INT_MAX %>"
 msgstr ""
 
-#: gimple-ssa-sprintf.c:3647
+#: gimple-ssa-sprintf.c:3650
 #, fuzzy, gcc-internal-format
 #| msgid "Maintain backchain pointer"
 msgid "null destination pointer"
 msgstr "Одржавај показивач контраланца"
 
-#: gimple-ssa-sprintf.c:3664
+#: gimple-ssa-sprintf.c:3667
 #, gcc-internal-format
 msgid "specified bound %wu exceeds the size %wu of the destination object"
 msgstr ""
 
-#: gimple-ssa-sprintf.c:3676
+#: gimple-ssa-sprintf.c:3679
 #, fuzzy, gcc-internal-format
 #| msgid "%s in format string at %C"
 msgid "null format string"
@@ -24463,165 +24463,165 @@ msgstr "форматирајућа ниска има неисправан бро
 msgid "%D renamed after being referenced in assembly"
 msgstr "%D преименован пошто је поменут у асемблеру"
 
-#: symtab.c:970
+#: symtab.c:978
 #, fuzzy, gcc-internal-format
 #| msgid "function returning a function"
 msgid "function symbol is not function"
 msgstr "функција враћа функцију"
 
-#: symtab.c:978
+#: symtab.c:986
 #, fuzzy, gcc-internal-format
 #| msgid "%qs attribute only applies to variables"
 msgid "variable symbol is not variable"
 msgstr "атрибут %qs примењује се само на променљиве"
 
-#: symtab.c:984
+#: symtab.c:992
 #, gcc-internal-format
 msgid "node has unknown type"
 msgstr ""
 
-#: symtab.c:993
+#: symtab.c:1001
 #, gcc-internal-format
 msgid "node not found node->decl->decl_with_vis.symtab_node"
 msgstr ""
 
-#: symtab.c:1001
+#: symtab.c:1009
 #, gcc-internal-format
 msgid "node differs from node->decl->decl_with_vis.symtab_node"
 msgstr ""
 
-#: symtab.c:1010
+#: symtab.c:1018
 #, gcc-internal-format
 msgid "assembler name hash list corrupted"
 msgstr ""
 
-#: symtab.c:1023
+#: symtab.c:1031
 #, fuzzy, gcc-internal-format
 #| msgid "node not found in cgraph_hash"
 msgid "node not found in symtab assembler name hash"
 msgstr "чвор није нађен у cgraph_hash"
 
-#: symtab.c:1030
+#: symtab.c:1038
 #, gcc-internal-format
 msgid "double linked list of assembler names corrupted"
 msgstr ""
 
-#: symtab.c:1035
+#: symtab.c:1043
 #, gcc-internal-format
 msgid "node has body_removed but is definition"
 msgstr ""
 
-#: symtab.c:1040
+#: symtab.c:1048
 #, fuzzy, gcc-internal-format
 #| msgid "called object %qE is not a function"
 msgid "node is analyzed but it is not a definition"
 msgstr "позвани објекат %qE није функција"
 
-#: symtab.c:1045
+#: symtab.c:1053
 #, gcc-internal-format
 msgid "node is alias but not implicit alias"
 msgstr ""
 
-#: symtab.c:1050
+#: symtab.c:1058
 #, fuzzy, gcc-internal-format
 #| msgid "%Jold-style function definition"
 msgid "node is alias but not definition"
 msgstr "%Jстаровремска дефиниција функције"
 
-#: symtab.c:1055
+#: symtab.c:1063
 #, gcc-internal-format
 msgid "node is weakref but not an transparent_alias"
 msgstr ""
 
-#: symtab.c:1060
+#: symtab.c:1068
 #, gcc-internal-format
 msgid "node is transparent_alias but not an alias"
 msgstr ""
 
-#: symtab.c:1069
+#: symtab.c:1077
 #, gcc-internal-format
 msgid "node is in same_comdat_group list but has no comdat_group"
 msgstr ""
 
-#: symtab.c:1074
+#: symtab.c:1082
 #, gcc-internal-format
 msgid "same_comdat_group list across different groups"
 msgstr ""
 
-#: symtab.c:1079
+#: symtab.c:1087
 #, gcc-internal-format
 msgid "mixing different types of symbol in same comdat groups is not supported"
 msgstr ""
 
-#: symtab.c:1084
+#: symtab.c:1092
 #, gcc-internal-format
 msgid "node is alone in a comdat group"
 msgstr ""
 
-#: symtab.c:1091
+#: symtab.c:1099
 #, gcc-internal-format
 msgid "same_comdat_group is not a circular list"
 msgstr ""
 
-#: symtab.c:1106
+#: symtab.c:1114
 #, gcc-internal-format, gfc-internal-format
 msgid "comdat-local symbol referred to by %s outside its comdat"
 msgstr ""
 
-#: symtab.c:1116
+#: symtab.c:1124
 #, gcc-internal-format
 msgid "implicit_section flag is set but section isn't"
 msgstr ""
 
-#: symtab.c:1123
+#: symtab.c:1131
 #, gcc-internal-format
 msgid "Both section and comdat group is set"
 msgstr ""
 
-#: symtab.c:1135
+#: symtab.c:1143
 #, gcc-internal-format
 msgid "Alias and target's section differs"
 msgstr ""
 
-#: symtab.c:1142
+#: symtab.c:1150
 #, gcc-internal-format
 msgid "Alias and target's comdat groups differs"
 msgstr ""
 
-#: symtab.c:1157
+#: symtab.c:1165
 #, gcc-internal-format
 msgid "Transparent alias and target's assembler names differs"
 msgstr ""
 
-#: symtab.c:1165
+#: symtab.c:1173
 #, gcc-internal-format
 msgid "Chained transparent aliases"
 msgstr ""
 
-#: symtab.c:1188 symtab.c:1225
+#: symtab.c:1196 symtab.c:1233
 #, fuzzy, gcc-internal-format
 #| msgid "verify_ssa failed"
 msgid "symtab_node::verify failed"
 msgstr "verify_ssa није успело"
 
-#: symtab.c:1221
+#: symtab.c:1229
 #, gcc-internal-format
 msgid "Two symbols with same comdat_group are not linked by the same_comdat_group list."
 msgstr ""
 
-#: symtab.c:1630
+#: symtab.c:1638
 #, fuzzy, gcc-internal-format
 #| msgid "function %q+D redeclared as inline"
 msgid "function %q+D part of alias cycle"
 msgstr "функција %q+D поново декларисана као уткана"
 
-#: symtab.c:1632
+#: symtab.c:1640
 #, fuzzy, gcc-internal-format
 #| msgid "variable %qD has function type"
 msgid "variable %q+D part of alias cycle"
 msgstr "променљива %qD има функцијски тип"
 
-#: symtab.c:1660
+#: symtab.c:1668
 #, gcc-internal-format
 msgid "section of alias %q+D must match section of its target"
 msgstr ""
@@ -26425,8 +26425,8 @@ msgstr "%q+D поново декларисано без атрибута dllimpo
 #: c-family/c-attribs.c:2898 c-family/c-attribs.c:2937
 #: c-family/c-attribs.c:3019 c-family/c-attribs.c:3062
 #: c-family/c-attribs.c:3078 c-family/c-attribs.c:3172
-#: c-family/c-common.c:5631 config/darwin.c:2062 config/arm/arm.c:6704
-#: config/arm/arm.c:6732 config/arm/arm.c:6749 config/avr/avr.c:9460
+#: c-family/c-common.c:5631 config/darwin.c:2062 config/arm/arm.c:6741
+#: config/arm/arm.c:6769 config/arm/arm.c:6786 config/avr/avr.c:9460
 #: config/h8300/h8300.c:5480 config/h8300/h8300.c:5504 config/i386/i386.c:7715
 #: config/i386/i386.c:41425 config/ia64/ia64.c:762
 #: config/rs6000/rs6000.c:35369 config/spu/spu.c:3741
@@ -26464,99 +26464,99 @@ msgstr "спољашња повезивост неопходна за симбо
 msgid "%qE implies default visibility, but %qD has already been declared with a different visibility"
 msgstr "%qD поново декларисано са другачијом видљивошћу"
 
-#: tree.c:8366
+#: tree.c:8373
 #, gcc-internal-format
 msgid "arrays of functions are not meaningful"
 msgstr "низови функција немају смисла"
 
-#: tree.c:8537
+#: tree.c:8545
 #, gcc-internal-format
 msgid "function return type cannot be function"
 msgstr "повратни тип функције не може бити функција"
 
-#: tree.c:9831 tree.c:9916 tree.c:9977
+#: tree.c:9839 tree.c:9924 tree.c:9985
 #, gcc-internal-format, gfc-internal-format
 msgid "tree check: %s, have %s in %s, at %s:%d"
 msgstr "провера стабла: %s, имам %s у %s, код %s:%d"
 
-#: tree.c:9868
+#: tree.c:9876
 #, gcc-internal-format, gfc-internal-format
 msgid "tree check: expected none of %s, have %s in %s, at %s:%d"
 msgstr "провера стабла: не очекивах ниједно од %s, имам %s у %s, код %s:%d"
 
-#: tree.c:9881
+#: tree.c:9889
 #, gcc-internal-format
 msgid "tree check: expected class %qs, have %qs (%s) in %s, at %s:%d"
 msgstr "провера стабла: очекивах класу %qs, имам %qs (%s) у %s, код %s:%d"
 
-#: tree.c:9930
+#: tree.c:9938
 #, gcc-internal-format
 msgid "tree check: did not expect class %qs, have %qs (%s) in %s, at %s:%d"
 msgstr "провера стабла: нисам очекивао класу %qs, имам %qs (%s) у %s, код %s:%d"
 
-#: tree.c:9943
+#: tree.c:9951
 #, gcc-internal-format, gfc-internal-format
 msgid "tree check: expected omp_clause %s, have %s in %s, at %s:%d"
 msgstr "провера стабла: очекивах omp_clause %s, имам %s у %s, код %s:%d"
 
-#: tree.c:10003
+#: tree.c:10011
 #, fuzzy, gcc-internal-format
 #| msgid "tree check: expected tree that contains %qs structure, have %qs  in %s, at %s:%d"
 msgid "tree check: expected tree that contains %qs structure, have %qs in %s, at %s:%d"
 msgstr "провера стабла: очекивах стабло које садржи структуру %qs, имам %qs у %s, код %s:%d"
 
-#: tree.c:10017
+#: tree.c:10025
 #, fuzzy, gcc-internal-format, gfc-internal-format
 #| msgid "tree check: accessed elt %d of tree_vec with %d elts in %s, at %s:%d"
 msgid "tree check: accessed elt %d of tree_int_cst with %d elts in %s, at %s:%d"
 msgstr "провера стабла: приступих елту %d у tree_vec са %d елтова у %s, код %s:%d"
 
-#: tree.c:10029
+#: tree.c:10037
 #, gcc-internal-format, gfc-internal-format
 msgid "tree check: accessed elt %d of tree_vec with %d elts in %s, at %s:%d"
 msgstr "провера стабла: приступих елту %d у tree_vec са %d елтова у %s, код %s:%d"
 
-#: tree.c:10042
+#: tree.c:10050
 #, gcc-internal-format, gfc-internal-format
 msgid "tree check: accessed operand %d of %s with %d operands in %s, at %s:%d"
 msgstr "провера стабла: приступих операнду %d од %s са %d операнада у %s, код %s:%d"
 
-#: tree.c:10055
+#: tree.c:10063
 #, gcc-internal-format, gfc-internal-format
 msgid "tree check: accessed operand %d of omp_clause %s with %d operands in %s, at %s:%d"
 msgstr "провера стабла: приступих операнду %d од omp_clause %s са %d операнада у %s, код %s:%d"
 
-#: tree.c:12867
+#: tree.c:12875
 #, fuzzy, gcc-internal-format
 #| msgid "%qs is deprecated"
 msgid "%qD is deprecated: %s"
 msgstr "%qs је превазиђено"
 
-#: tree.c:12870
+#: tree.c:12878
 #, fuzzy, gcc-internal-format
 #| msgid "%qs is deprecated"
 msgid "%qD is deprecated"
 msgstr "%qs је превазиђено"
 
-#: tree.c:12894 tree.c:12916
+#: tree.c:12902 tree.c:12924
 #, fuzzy, gcc-internal-format
 #| msgid "%qs is deprecated"
 msgid "%qE is deprecated: %s"
 msgstr "%qs је превазиђено"
 
-#: tree.c:12897 tree.c:12919
+#: tree.c:12905 tree.c:12927
 #, fuzzy, gcc-internal-format
 #| msgid "%qs is deprecated"
 msgid "%qE is deprecated"
 msgstr "%qs је превазиђено"
 
-#: tree.c:12903 tree.c:12924
+#: tree.c:12911 tree.c:12932
 #, fuzzy, gcc-internal-format, gfc-internal-format
 #| msgid "type is deprecated"
 msgid "type is deprecated: %s"
 msgstr "тип је превазиђен"
 
-#: tree.c:12906 tree.c:12927
+#: tree.c:12914 tree.c:12935
 #, gcc-internal-format
 msgid "type is deprecated"
 msgstr "тип је превазиђен"
@@ -26583,265 +26583,265 @@ msgstr "тип је превазиђен"
 #. main variant only.
 #.
 #. Convenience macro for matching individual fields.
-#: tree.c:13354
+#: tree.c:13362
 #, gcc-internal-format
 msgid "type variant differs by "
 msgstr ""
 
-#: tree.c:13395
+#: tree.c:13403
 #, gcc-internal-format
 msgid "type variant has different TYPE_SIZE_UNIT"
 msgstr ""
 
-#: tree.c:13397
+#: tree.c:13405
 #, gcc-internal-format
 msgid "type variant's TYPE_SIZE_UNIT"
 msgstr ""
 
-#: tree.c:13399
+#: tree.c:13407
 #, gcc-internal-format
 msgid "type's TYPE_SIZE_UNIT"
 msgstr ""
 
-#: tree.c:13419
+#: tree.c:13427
 #, gcc-internal-format
 msgid "type variant with TYPE_ALIAS_SET_KNOWN_P"
 msgstr ""
 
-#: tree.c:13432
+#: tree.c:13440
 #, gcc-internal-format
 msgid "type variant has different TYPE_VFIELD"
 msgstr ""
 
-#: tree.c:13449
+#: tree.c:13457
 #, gcc-internal-format
 msgid "type variant has TYPE_METHODS"
 msgstr ""
 
-#: tree.c:13474
+#: tree.c:13482
 #, gcc-internal-format
 msgid "type variant has different TYPE_BINFO"
 msgstr ""
 
-#: tree.c:13476
+#: tree.c:13484
 #, gcc-internal-format
 msgid "type variant's TYPE_BINFO"
 msgstr ""
 
-#: tree.c:13478
+#: tree.c:13486
 #, gcc-internal-format
 msgid "type's TYPE_BINFO"
 msgstr ""
 
-#: tree.c:13516
+#: tree.c:13524
 #, gcc-internal-format
 msgid "type variant has different TYPE_FIELDS"
 msgstr ""
 
-#: tree.c:13518
+#: tree.c:13526
 #, gcc-internal-format
 msgid "first mismatch is field"
 msgstr ""
 
-#: tree.c:13520
+#: tree.c:13528
 #, gcc-internal-format
 msgid "and field"
 msgstr ""
 
-#: tree.c:13537
+#: tree.c:13545
 #, gcc-internal-format
 msgid "type variant has different TREE_TYPE"
 msgstr ""
 
-#: tree.c:13539 tree.c:13550
+#: tree.c:13547 tree.c:13558
 #, gcc-internal-format
 msgid "type variant's TREE_TYPE"
 msgstr ""
 
-#: tree.c:13541 tree.c:13552
+#: tree.c:13549 tree.c:13560
 #, gcc-internal-format
 msgid "type's TREE_TYPE"
 msgstr ""
 
-#: tree.c:13548
+#: tree.c:13556
 #, fuzzy, gcc-internal-format
 #| msgid "assert: %s is assign compatible with %s"
 msgid "type is not compatible with its variant"
 msgstr "тврдња: %s је доделом сагласно са %s"
 
-#: tree.c:13851
+#: tree.c:13859
 #, fuzzy, gcc-internal-format
 #| msgid "environment variable DJGPP not defined"
 msgid "Main variant is not defined"
 msgstr "променљива окружења DJGPP није дефинисана"
 
-#: tree.c:13856
+#: tree.c:13864
 #, gcc-internal-format
 msgid "TYPE_MAIN_VARIANT has different TYPE_MAIN_VARIANT"
 msgstr ""
 
-#: tree.c:13868
+#: tree.c:13876
 #, gcc-internal-format
 msgid "TYPE_CANONICAL has different TYPE_CANONICAL"
 msgstr ""
 
-#: tree.c:13886
+#: tree.c:13894
 #, gcc-internal-format
 msgid "TYPE_CANONICAL is not compatible"
 msgstr ""
 
-#: tree.c:13894
+#: tree.c:13902
 #, gcc-internal-format
 msgid "TYPE_MODE of TYPE_CANONICAL is not compatible"
 msgstr ""
 
-#: tree.c:13902
+#: tree.c:13910
 #, gcc-internal-format
 msgid "TYPE_CANONICAL of main variant is not main variant"
 msgstr ""
 
-#: tree.c:13918
+#: tree.c:13926
 #, gcc-internal-format
 msgid "TYPE_VFIELD is not FIELD_DECL nor TREE_LIST"
 msgstr ""
 
-#: tree.c:13928
+#: tree.c:13936
 #, gcc-internal-format
 msgid "TYPE_NEXT_PTR_TO is not POINTER_TYPE"
 msgstr ""
 
-#: tree.c:13938
+#: tree.c:13946
 #, gcc-internal-format
 msgid "TYPE_NEXT_REF_TO is not REFERENCE_TYPE"
 msgstr ""
 
-#: tree.c:13956
+#: tree.c:13964
 #, gcc-internal-format
 msgid "TYPE_MINVAL non-NULL"
 msgstr ""
 
-#: tree.c:13968
+#: tree.c:13976
 #, gcc-internal-format
 msgid "TYPE_METHODS is not FUNCTION_DECL, TEMPLATE_DECL nor error_mark_node"
 msgstr ""
 
-#: tree.c:13979
+#: tree.c:13987
 #, gcc-internal-format
 msgid "TYPE_METHOD_BASETYPE is not record nor union"
 msgstr ""
 
-#: tree.c:13990
+#: tree.c:13998
 #, gcc-internal-format
 msgid "TYPE_OFFSET_BASETYPE is not record nor union"
 msgstr ""
 
-#: tree.c:14008
+#: tree.c:14016
 #, gcc-internal-format
 msgid "TYPE_ARRAY_MAX_SIZE not INTEGER_CST"
 msgstr ""
 
-#: tree.c:14015
+#: tree.c:14023
 #, gcc-internal-format
 msgid "TYPE_MAXVAL non-NULL"
 msgstr ""
 
-#: tree.c:14027
+#: tree.c:14035
 #, gcc-internal-format
 msgid "TYPE_BINFO is not TREE_BINFO"
 msgstr ""
 
-#: tree.c:14035
+#: tree.c:14043
 #, gcc-internal-format
 msgid "TYPE_BINFO type is not TYPE_MAIN_VARIANT"
 msgstr ""
 
-#: tree.c:14042
+#: tree.c:14050
 #, gcc-internal-format
 msgid "TYPE_LANG_SLOT_1 (binfo) field is non-NULL"
 msgstr ""
 
-#: tree.c:14058
+#: tree.c:14066
 #, gcc-internal-format
 msgid "Enum value is not CONST_DECL or INTEGER_CST"
 msgstr ""
 
-#: tree.c:14066
+#: tree.c:14074
 #, gcc-internal-format
 msgid "Enum value type is not INTEGER_TYPE nor convertible to the enum"
 msgstr ""
 
-#: tree.c:14073
+#: tree.c:14081
 #, gcc-internal-format
 msgid "Enum value name is not IDENTIFIER_NODE"
 msgstr ""
 
-#: tree.c:14083
+#: tree.c:14091
 #, gcc-internal-format
 msgid "Array TYPE_DOMAIN is not integer type"
 msgstr ""
 
-#: tree.c:14092
+#: tree.c:14100
 #, fuzzy, gcc-internal-format
 #| msgid "field %qs has incomplete type"
 msgid "TYPE_FIELDS defined in incomplete type"
 msgstr "поље %qs има непотпун тип"
 
-#: tree.c:14112
+#: tree.c:14120
 #, gcc-internal-format
 msgid "Wrong tree in TYPE_FIELDS list"
 msgstr ""
 
-#: tree.c:14127
+#: tree.c:14135
 #, gcc-internal-format
 msgid "TYPE_CACHED_VALUES_P is %i while TYPE_CACHED_VALUES is %p"
 msgstr ""
 
-#: tree.c:14133
+#: tree.c:14141
 #, gcc-internal-format
 msgid "TYPE_CACHED_VALUES is not TREE_VEC"
 msgstr ""
 
-#: tree.c:14146
+#: tree.c:14154
 #, gcc-internal-format
 msgid "wrong TYPE_CACHED_VALUES entry"
 msgstr ""
 
-#: tree.c:14159
+#: tree.c:14167
 #, gcc-internal-format
 msgid "TREE_PURPOSE is non-NULL in TYPE_ARG_TYPES list"
 msgstr ""
 
-#: tree.c:14165
+#: tree.c:14173
 #, gcc-internal-format
 msgid "Wrong entry in TYPE_ARG_TYPES list"
 msgstr ""
 
-#: tree.c:14172
+#: tree.c:14180
 #, gcc-internal-format
 msgid "TYPE_VALUES_RAW field is non-NULL"
 msgstr ""
 
-#: tree.c:14184
+#: tree.c:14192
 #, gcc-internal-format
 msgid "TYPE_CACHED_VALUES_P is set while it should not"
 msgstr ""
 
-#: tree.c:14190
+#: tree.c:14198
 #, gcc-internal-format
 msgid "TYPE_STRING_FLAG is set on wrong type code"
 msgstr ""
 
-#: tree.c:14202
+#: tree.c:14210
 #, gcc-internal-format
 msgid "TYPE_STRING_FLAG is set on type that does not look like char nor array of chars"
 msgstr ""
 
-#: tree.c:14214
+#: tree.c:14222
 #, gcc-internal-format
 msgid "TYPE_METHOD_BASETYPE is not main variant"
 msgstr ""
 
-#: tree.c:14221
+#: tree.c:14229
 #, fuzzy, gcc-internal-format
 #| msgid "verify_eh_tree failed"
 msgid "verify_type failed"
@@ -27914,13 +27914,13 @@ msgstr ""
 msgid "%<fallthrough%> attribute specified with a parameter"
 msgstr ""
 
-#: c-family/c-common.c:5762 c-family/c-common.c:6573 c-family/c-common.c:6644
+#: c-family/c-common.c:5762 c-family/c-common.c:6574 c-family/c-common.c:6645
 #: c/c-typeck.c:3557
 #, gcc-internal-format
 msgid "too few arguments to function %qE"
 msgstr "премало аргумената за функцију %qE"
 
-#: c-family/c-common.c:5767 c-family/c-common.c:6670 c/c-typeck.c:3286
+#: c-family/c-common.c:5767 c-family/c-common.c:6671 c/c-typeck.c:3286
 #, gcc-internal-format
 msgid "too many arguments to function %qE"
 msgstr "превише аргумената за функцију %qE"
@@ -28014,85 +28014,85 @@ msgstr "покушај узимања адресе битског поља %qD �
 msgid "index %E denotes an offset greater than size of %qT"
 msgstr ""
 
-#: c-family/c-common.c:6515 cp/init.c:2952 cp/init.c:2971
+#: c-family/c-common.c:6516 cp/init.c:2952 cp/init.c:2971
 #, fuzzy, gcc-internal-format
 #| msgid "size of array %qs is too large"
 msgid "size of array is too large"
 msgstr "величина низа %qs је превелика"
 
-#: c-family/c-common.c:6603
+#: c-family/c-common.c:6604
 #, fuzzy, gcc-internal-format
 #| msgid "incompatible type for argument %d of %qE"
 msgid "operand type %qT is incompatible with argument %d of %qE"
 msgstr "несагласни тип за аргумент %d у %qE"
 
-#: c-family/c-common.c:6737
+#: c-family/c-common.c:6738
 #, fuzzy, gcc-internal-format
 #| msgid "too few arguments to function %qE"
 msgid "incorrect number of arguments to function %qE"
 msgstr "премало аргумената за функцију %qE"
 
-#: c-family/c-common.c:6752
+#: c-family/c-common.c:6753
 #, fuzzy, gcc-internal-format
 #| msgid "argument to %qs must be a 2-bit unsigned literal"
 msgid "argument 1 of %qE must be a non-void pointer type"
 msgstr "аргумент за %qs мора бити двобитна неозначена константа"
 
-#: c-family/c-common.c:6761
+#: c-family/c-common.c:6762
 #, fuzzy, gcc-internal-format
 #| msgid "%Hfirst argument of %D must be a pointer, second integer constant"
 msgid "argument 1 of %qE must be a pointer to a constant size type"
 msgstr "%Hпрви аргумент за %D мора бити показивач, а други целобројна константа"
 
-#: c-family/c-common.c:6772
+#: c-family/c-common.c:6773
 #, fuzzy, gcc-internal-format
 #| msgid "%Hfirst argument of %D must be a pointer, second integer constant"
 msgid "argument 1 of %qE must be a pointer to a nonzero size object"
 msgstr "%Hпрви аргумент за %D мора бити показивач, а други целобројна константа"
 
-#: c-family/c-common.c:6787
+#: c-family/c-common.c:6788
 #, fuzzy, gcc-internal-format
 #| msgid "passing argument %d of %qE from incompatible pointer type"
 msgid "argument %d of %qE must be a pointer type"
 msgstr "прослеђивање аргумента %d од %qE из несагласног показивачког типа"
 
-#: c-family/c-common.c:6795
+#: c-family/c-common.c:6796
 #, fuzzy, gcc-internal-format
 #| msgid "argument %d of %qE might be a candidate for a format attribute"
 msgid "argument %d of %qE must be a pointer to a constant size type"
 msgstr "аргумент %d од %qE може бити кандидат за форматски атрибут"
 
-#: c-family/c-common.c:6801
+#: c-family/c-common.c:6802
 #, fuzzy, gcc-internal-format
 #| msgid "passing argument %d of %qE makes integer from pointer without a cast"
 msgid "argument %d of %qE must not be a pointer to a function"
 msgstr "прослеђивање аргумента %d од %qE прави целобројни од показивача без претапања"
 
-#: c-family/c-common.c:6809
+#: c-family/c-common.c:6810
 #, fuzzy, gcc-internal-format
 #| msgid "Type/rank mismatch in argument '%s' at %L"
 msgid "size mismatch in argument %d of %qE"
 msgstr "Неслагање типа/ранга у аргументу ‘%s’ код %L"
 
-#: c-family/c-common.c:6825
+#: c-family/c-common.c:6826
 #, fuzzy, gcc-internal-format
 #| msgid "invalid type argument of %qs"
 msgid "invalid memory model argument %d of %qE"
 msgstr "неисправан аргумент типа за %qs"
 
-#: c-family/c-common.c:6832
+#: c-family/c-common.c:6833
 #, fuzzy, gcc-internal-format
 #| msgid "incompatible type for argument %d of %qE"
 msgid "non-integer memory model argument %d of %qE"
 msgstr "несагласни тип за аргумент %d у %qE"
 
-#: c-family/c-common.c:7753
+#: c-family/c-common.c:7754
 #, fuzzy, gcc-internal-format
 #| msgid "index in dimension %d is out of bounds at %L"
 msgid "index value is out of bound"
 msgstr "Индекс у димензији %d је ван граница код %L"
 
-#: c-family/c-common.c:7794 c-family/c-common.c:7842 c-family/c-common.c:7857
+#: c-family/c-common.c:7795 c-family/c-common.c:7843 c-family/c-common.c:7858
 #: cp/call.c:4836 cp/call.c:4843
 #, fuzzy, gcc-internal-format
 #| msgid "conversion from %qT to %qT is ambiguous"
@@ -28101,25 +28101,25 @@ msgstr "двосмислено претварање из %qT у %qT"
 
 #. Reject arguments that are built-in functions with
 #. no library fallback.
-#: c-family/c-common.c:7943
+#: c-family/c-common.c:7944
 #, fuzzy, gcc-internal-format
 #| msgid "inline function %q+D used but never defined"
 msgid "built-in function %qE must be directly called"
 msgstr "уткана функција %q+D употребљена али недефинисана"
 
-#: c-family/c-common.c:7965 c/c-decl.c:6124
+#: c-family/c-common.c:7966 c/c-decl.c:6124
 #, fuzzy, gcc-internal-format
 #| msgid "size of array %qs is too large"
 msgid "size of array %qE is too large"
 msgstr "величина низа %qs је превелика"
 
-#: c-family/c-common.c:7967 c/c-decl.c:6127
+#: c-family/c-common.c:7968 c/c-decl.c:6127
 #, fuzzy, gcc-internal-format
 #| msgid "size of array %qs is too large"
 msgid "size of unnamed array is too large"
 msgstr "величина низа %qs је превелика"
 
-#: c-family/c-common.c:7997
+#: c-family/c-common.c:7998
 #, gcc-internal-format
 msgid "environment variable SOURCE_DATE_EPOCH must expand to a non-negative integer less than or equal to %wd"
 msgstr ""
@@ -30012,7 +30012,7 @@ msgstr "„%s“ није исправна опција предобрађива
 msgid "too many input files"
 msgstr "превише улазних датотека"
 
-#: common/config/aarch64/aarch64-common.c:313 config/aarch64/aarch64.c:8751
+#: common/config/aarch64/aarch64-common.c:313 config/aarch64/aarch64.c:8759
 #, fuzzy, gcc-internal-format
 #| msgid "bad value %qs for -mcpu switch"
 msgid "unknown value %qs for -mcpu"
@@ -30496,198 +30496,198 @@ msgstr "тврдња: %s је доделом сагласно са %s"
 msgid "%qs feature modifier is incompatible with %s %s"
 msgstr "тврдња: %s је доделом сагласно са %s"
 
-#: config/aarch64/aarch64.c:8374
+#: config/aarch64/aarch64.c:8382
 #, gcc-internal-format, gfc-internal-format
 msgid "unknown flag passed in -moverride=%s (%s)"
 msgstr ""
 
-#: config/aarch64/aarch64.c:8418
+#: config/aarch64/aarch64.c:8426
 #, gcc-internal-format, gfc-internal-format
 msgid "%s string ill-formed\n"
 msgstr ""
 
-#: config/aarch64/aarch64.c:8475
+#: config/aarch64/aarch64.c:8483
 #, gcc-internal-format, gfc-internal-format
 msgid "tuning string missing in option (%s)"
 msgstr ""
 
-#: config/aarch64/aarch64.c:8493
+#: config/aarch64/aarch64.c:8501
 #, fuzzy, gcc-internal-format, gfc-internal-format
 #| msgid "unknown spec function '%s'"
 msgid "unknown tuning option (%s)"
 msgstr "непозната функција навода ‘%s’"
 
-#: config/aarch64/aarch64.c:8707
+#: config/aarch64/aarch64.c:8715
 #, fuzzy, gcc-internal-format
 #| msgid "Invalid argument type %qs to %qs"
 msgid "valid arguments are: %s; did you mean %qs?"
 msgstr "Неисправан тип аргумента %qs за %qs"
 
-#: config/aarch64/aarch64.c:8748
+#: config/aarch64/aarch64.c:8756
 #, gcc-internal-format
 msgid "missing cpu name in %<-mcpu=%s%>"
 msgstr ""
 
-#: config/aarch64/aarch64.c:8755
+#: config/aarch64/aarch64.c:8763
 #, fuzzy, gcc-internal-format
 #| msgid "invalid thread pointer option: -mtp=%s"
 msgid "invalid feature modifier in %<-mcpu=%s%>"
 msgstr "неисправна опција показивача нити: -mtp=%s"
 
-#: config/aarch64/aarch64.c:8782
+#: config/aarch64/aarch64.c:8790
 #, gcc-internal-format
 msgid "missing arch name in %<-march=%s%>"
 msgstr ""
 
-#: config/aarch64/aarch64.c:8785
+#: config/aarch64/aarch64.c:8793
 #, fuzzy, gcc-internal-format
 #| msgid "Unknown value %qs of -mmacosx-version-min"
 msgid "unknown value %qs for -march"
 msgstr "Непозната вредност %qs за -mmacosx-version-min"
 
-#: config/aarch64/aarch64.c:8789
+#: config/aarch64/aarch64.c:8797
 #, fuzzy, gcc-internal-format
 #| msgid "invalid thread pointer option: -mtp=%s"
 msgid "invalid feature modifier in %<-march=%s%>"
 msgstr "неисправна опција показивача нити: -mtp=%s"
 
-#: config/aarch64/aarch64.c:8815
+#: config/aarch64/aarch64.c:8823
 #, gcc-internal-format
 msgid "missing cpu name in %<-mtune=%s%>"
 msgstr ""
 
-#: config/aarch64/aarch64.c:8818
+#: config/aarch64/aarch64.c:8826
 #, fuzzy, gcc-internal-format
 #| msgid "Unknown value %qs of -mmacosx-version-min"
 msgid "unknown value %qs for -mtune"
 msgstr "Непозната вредност %qs за -mmacosx-version-min"
 
-#: config/aarch64/aarch64.c:8921 config/arm/arm.c:3093
+#: config/aarch64/aarch64.c:8929 config/arm/arm.c:3094
 #, fuzzy, gcc-internal-format, gfc-internal-format
 #| msgid "switch -mcpu=%s conflicts with -march= switch"
 msgid "switch -mcpu=%s conflicts with -march=%s switch"
 msgstr "прекидач -mcpu=%s коси се са -march="
 
-#: config/aarch64/aarch64.c:8956
+#: config/aarch64/aarch64.c:8964
 #, fuzzy, gcc-internal-format
 #| msgid "does not support multilib"
 msgid "Assembler does not support -mabi=ilp32"
 msgstr "не подржава вишебиб"
 
-#: config/aarch64/aarch64.c:8960
+#: config/aarch64/aarch64.c:8968
 #, gcc-internal-format
 msgid "Return address signing is only supported for -mabi=lp64"
 msgstr ""
 
-#: config/aarch64/aarch64.c:9022
+#: config/aarch64/aarch64.c:9030
 #, gcc-internal-format
 msgid "code model %qs with -f%s"
 msgstr ""
 
-#: config/aarch64/aarch64.c:9187
+#: config/aarch64/aarch64.c:9195
 #, gcc-internal-format, gfc-internal-format
 msgid "missing architecture name in 'arch' target %s"
 msgstr ""
 
-#: config/aarch64/aarch64.c:9190
+#: config/aarch64/aarch64.c:9198
 #, gcc-internal-format
 msgid "unknown value %qs for 'arch' target %s"
 msgstr ""
 
-#: config/aarch64/aarch64.c:9194
+#: config/aarch64/aarch64.c:9202
 #, gcc-internal-format
 msgid "invalid feature modifier %qs for 'arch' target %s"
 msgstr ""
 
-#: config/aarch64/aarch64.c:9228
+#: config/aarch64/aarch64.c:9236
 #, fuzzy, gcc-internal-format, gfc-internal-format
 #| msgid "missing makefile target after %qs"
 msgid "missing cpu name in 'cpu' target %s"
 msgstr "недостаје справљачки циљ после %qs"
 
-#: config/aarch64/aarch64.c:9231
+#: config/aarch64/aarch64.c:9239
 #, gcc-internal-format
 msgid "unknown value %qs for 'cpu' target %s"
 msgstr ""
 
-#: config/aarch64/aarch64.c:9235
+#: config/aarch64/aarch64.c:9243
 #, gcc-internal-format
 msgid "invalid feature modifier %qs for 'cpu' target %s"
 msgstr ""
 
-#: config/aarch64/aarch64.c:9266
+#: config/aarch64/aarch64.c:9274
 #, gcc-internal-format
 msgid "unknown value %qs for 'tune' target %s"
 msgstr ""
 
-#: config/aarch64/aarch64.c:9307
+#: config/aarch64/aarch64.c:9315
 #, fuzzy, gcc-internal-format
 #| msgid "missing makefile target after %qs"
 msgid "missing feature modifier in target %s %qs"
 msgstr "недостаје справљачки циљ после %qs"
 
-#: config/aarch64/aarch64.c:9312
+#: config/aarch64/aarch64.c:9320
 #, fuzzy, gcc-internal-format
 #| msgid "invalid option argument %qs"
 msgid "invalid feature modifier in target %s %qs"
 msgstr "неисправан аргумент опције %qs"
 
-#: config/aarch64/aarch64.c:9364
+#: config/aarch64/aarch64.c:9372
 #, fuzzy, gcc-internal-format, gfc-internal-format
 #| msgid "malformed spec function arguments"
 msgid "malformed target %s"
 msgstr "лоше формирани аргументи функције навода"
 
-#: config/aarch64/aarch64.c:9412
+#: config/aarch64/aarch64.c:9420
 #, fuzzy, gcc-internal-format
 #| msgid "repository file '%s' does not contain command-line arguments"
 msgid "target %s %qs does not accept an argument"
 msgstr "датотека складишта „%s“ не садржи аргументе командне линије"
 
-#: config/aarch64/aarch64.c:9421
+#: config/aarch64/aarch64.c:9429
 #, fuzzy, gcc-internal-format
 #| msgid "matching constraint does not allow a register"
 msgid "target %s %qs does not allow a negated form"
 msgstr "поклапајуће ограничење не дозвољава регистар"
 
-#: config/aarch64/aarch64.c:9476
+#: config/aarch64/aarch64.c:9484
 #, fuzzy, gcc-internal-format, gfc-internal-format
 #| msgid "Argument of %s at %L is not a valid type"
 msgid "target %s %s=%s is not valid"
 msgstr "Аргумент у %s код %L није исправног типа"
 
-#: config/aarch64/aarch64.c:9536 config/arm/arm.c:30367
+#: config/aarch64/aarch64.c:9544 config/arm/arm.c:30411
 #: config/i386/i386.c:6772 config/rs6000/rs6000.c:39283
-#: config/s390/s390.c:14849
+#: config/s390/s390.c:15017
 #, fuzzy, gcc-internal-format
 #| msgid "alias argument not a string"
 msgid "attribute %<target%> argument not a string"
 msgstr "аргумент алијаса није ниска"
 
-#: config/aarch64/aarch64.c:9546
+#: config/aarch64/aarch64.c:9554
 #, fuzzy, gcc-internal-format, gfc-internal-format
 #| msgid "invalid target memregs value '%d'"
 msgid "malformed target %s value"
 msgstr "неисрпавна вредност „%d“ за memregs"
 
-#: config/aarch64/aarch64.c:9563
+#: config/aarch64/aarch64.c:9571
 #, fuzzy, gcc-internal-format
 #| msgid "template argument %d is invalid"
 msgid "target %s %qs is invalid"
 msgstr "неисправан шаблонски аргумент %d"
 
-#: config/aarch64/aarch64.c:9572
+#: config/aarch64/aarch64.c:9580
 #, fuzzy, gcc-internal-format
 #| msgid "Invalid argument type %qs to %qs"
 msgid "malformed target %s list %qs"
 msgstr "Неисправан тип аргумента %qs за %qs"
 
-#: config/aarch64/aarch64.c:11420
+#: config/aarch64/aarch64.c:11428
 #, gcc-internal-format
 msgid "%Klane %wd out of range %wd - %wd"
 msgstr ""
 
-#: config/aarch64/aarch64.c:11422
+#: config/aarch64/aarch64.c:11430
 #, gcc-internal-format
 msgid "lane %wd out of range %wd - %wd"
 msgstr ""
@@ -31109,66 +31109,66 @@ msgstr ""
 msgid "the count should be no less than 0.  please check the intrinsic _mm_sra_si64 in code."
 msgstr ""
 
-#: config/arm/arm.c:2799
+#: config/arm/arm.c:2800
 #, fuzzy, gcc-internal-format
 #| msgid "-fPIC and -G are incompatible"
 msgid "iWMMXt and NEON are incompatible"
 msgstr "-fPIC и -G нису сагласни"
 
-#: config/arm/arm.c:2805
+#: config/arm/arm.c:2806
 #, fuzzy, gcc-internal-format
 #| msgid "target CPU does not support interworking"
 msgid "target CPU does not support ARM mode"
 msgstr "циљни ЦПУ не подржава интерворкинг"
 
-#: config/arm/arm.c:2809
+#: config/arm/arm.c:2810
 #, gcc-internal-format
 msgid "enabling backtrace support is only meaningful when compiling for the Thumb"
 msgstr "укључивање подршке за контраход има смисла само када се компилује за Тамб"
 
-#: config/arm/arm.c:2812
+#: config/arm/arm.c:2813
 #, gcc-internal-format
 msgid "enabling callee interworking support is only meaningful when compiling for the Thumb"
 msgstr "укључивање подршке за интерворкинг позваних има смисла само када се компилује за Тамб"
 
-#: config/arm/arm.c:2820
+#: config/arm/arm.c:2821
 #, gcc-internal-format
 msgid "-g with -mno-apcs-frame may not give sensible debugging"
 msgstr "-g уз -mno-apcs-frame може дати бесмислено исправљање"
 
-#: config/arm/arm.c:2824
+#: config/arm/arm.c:2825
 #, gcc-internal-format
 msgid "iWMMXt unsupported under Thumb mode"
 msgstr ""
 
-#: config/arm/arm.c:2827
+#: config/arm/arm.c:2828
 #, fuzzy, gcc-internal-format
 #| msgid "can not use -mtp=cp15 with -mthumb"
 msgid "can not use -mtp=cp15 with 16-bit Thumb"
 msgstr "не може се користити -mtp=cp15 уз -mthumb"
 
-#: config/arm/arm.c:2831
+#: config/arm/arm.c:2832
 #, fuzzy, gcc-internal-format
 #| msgid "%<-G%> is incompatible with %<-mabicalls%>"
 msgid "RTP PIC is incompatible with Thumb"
 msgstr "%<-G%> није сагласно са %<-mabicalls%>"
 
-#: config/arm/arm.c:2839
+#: config/arm/arm.c:2840
 #, gcc-internal-format
 msgid "-mslow-flash-data only supports non-pic code on armv7-m targets"
 msgstr ""
 
-#: config/arm/arm.c:2844
+#: config/arm/arm.c:2845
 #, gcc-internal-format
 msgid "-mpure-code only supports non-pic code on armv7-m targets"
 msgstr ""
 
-#: config/arm/arm.c:2947
+#: config/arm/arm.c:2948
 #, gcc-internal-format
 msgid "target CPU does not support THUMB instructions"
 msgstr "циљни ЦПУ не подржава инструкције Тамба"
 
-#: config/arm/arm.c:2992
+#: config/arm/arm.c:2993
 #, fuzzy, gcc-internal-format
 #| msgid "target CPU does not support interworking"
 msgid "target CPU does not support unaligned accesses"
@@ -31176,136 +31176,142 @@ msgstr "циљни ЦПУ не подржава интерворкинг"
 
 #. To support this we need to be able to parse FPU feature options
 #. from the architecture string.
-#: config/arm/arm.c:3246
+#: config/arm/arm.c:3247
 #, gcc-internal-format
 msgid "-mfpu=auto not currently supported without an explicit CPU."
 msgstr ""
 
-#: config/arm/arm.c:3321
+#: config/arm/arm.c:3322
 #, gcc-internal-format
 msgid "target CPU does not support interworking"
 msgstr "циљни ЦПУ не подржава интерворкинг"
 
-#: config/arm/arm.c:3327
+#: config/arm/arm.c:3328
 #, gcc-internal-format
 msgid "-mapcs-stack-check incompatible with -mno-apcs-frame"
 msgstr "-mapcs-stack-check није сагласно са -mno-apcs-frame"
 
-#: config/arm/arm.c:3335
+#: config/arm/arm.c:3336
 #, gcc-internal-format
 msgid "-fpic and -mapcs-reent are incompatible"
 msgstr "-fpic и -mapcs-reent нису сагласни"
 
-#: config/arm/arm.c:3338
+#: config/arm/arm.c:3339
 #, gcc-internal-format
 msgid "APCS reentrant code not supported.  Ignored"
 msgstr "Вишеулазни кôд АПЦСа није подржан, игноришем"
 
-#: config/arm/arm.c:3372
+#: config/arm/arm.c:3373
 #, fuzzy, gcc-internal-format
 #| msgid "-mrelocatable and -msdata=%s are incompatible"
 msgid "selected fp16 options are incompatible"
 msgstr "-mrelocatable и -msdata=%s нису сагласни"
 
-#: config/arm/arm.c:3403
+#: config/arm/arm.c:3404
 #, gcc-internal-format
 msgid "iwmmxt requires an AAPCS compatible ABI for proper operation"
 msgstr "iWMMXt захтева ААПЦС-сагласан АБИ за правилан рад"
 
-#: config/arm/arm.c:3406
+#: config/arm/arm.c:3407
 #, gcc-internal-format
 msgid "iwmmxt abi requires an iwmmxt capable cpu"
 msgstr "iWMMXt АБИ захтева iWMMXt-способан ЦПУ"
 
-#: config/arm/arm.c:3417
+#: config/arm/arm.c:3418
 #, fuzzy, gcc-internal-format
 #| msgid "target CPU does not support interworking"
 msgid "AAPCS does not support -mcaller-super-interworking"
 msgstr "циљни ЦПУ не подржава интерворкинг"
 
-#: config/arm/arm.c:3420
+#: config/arm/arm.c:3421
 #, fuzzy, gcc-internal-format
 #| msgid "target CPU does not support interworking"
 msgid "AAPCS does not support -mcallee-super-interworking"
 msgstr "циљни ЦПУ не подржава интерворкинг"
 
-#: config/arm/arm.c:3425
+#: config/arm/arm.c:3426
 #, gcc-internal-format
 msgid "__fp16 and no ldrh"
 msgstr ""
 
-#: config/arm/arm.c:3436
+#: config/arm/arm.c:3437
 #, fuzzy, gcc-internal-format
 #| msgid "-mfloat-abi=hard and VFP"
 msgid "-mfloat-abi=hard: selected processor lacks an FPU"
 msgstr "-mfloat-abi=hard и ВФП"
 
-#: config/arm/arm.c:3444
+#: config/arm/arm.c:3445
 #, gcc-internal-format
 msgid "-mfloat-abi=hard and VFP"
 msgstr "-mfloat-abi=hard и ВФП"
 
-#: config/arm/arm.c:3480
+#: config/arm/arm.c:3481
 #, fuzzy, gcc-internal-format
 #| msgid "structure size boundary can only be set to %s"
 msgid "structure size boundary can only be set to 8, 32 or 64"
 msgstr "граница величине структура може бити постављена само на %s"
 
-#: config/arm/arm.c:3482
+#: config/arm/arm.c:3483
 #, fuzzy, gcc-internal-format
 #| msgid "structure size boundary can only be set to %s"
 msgid "structure size boundary can only be set to 8 or 32"
 msgstr "граница величине структура може бити постављена само на %s"
 
-#: config/arm/arm.c:3507
+#: config/arm/arm.c:3508
 #, fuzzy, gcc-internal-format
 #| msgid "%<-G%> is incompatible with %<-mabicalls%>"
 msgid "RTP PIC is incompatible with -msingle-pic-base"
 msgstr "%<-G%> није сагласно са %<-mabicalls%>"
 
-#: config/arm/arm.c:3519
+#: config/arm/arm.c:3520
 #, gcc-internal-format
 msgid "-mpic-register= is useless without -fpic"
 msgstr "-mpic-register= је бескорисно без -fpic"
 
-#: config/arm/arm.c:3528
+#: config/arm/arm.c:3529
 #, gcc-internal-format, gfc-internal-format
 msgid "unable to use '%s' for PIC register"
 msgstr "не могу да користим „%s“ за ПИЦ регистар"
 
-#: config/arm/arm.c:3547
+#: config/arm/arm.c:3548
 #, fuzzy, gcc-internal-format
 #| msgid "-freorder-blocks-and-partition does not work on this architecture"
 msgid "-freorder-blocks-and-partition not supported on this architecture"
 msgstr "-freorder-blocks-and-partition не ради на овој архитектури"
 
-#: config/arm/arm.c:3638
+#: config/arm/arm.c:3639
 #, fuzzy, gcc-internal-format
 #| msgid "target CPU does not support THUMB instructions"
 msgid "target CPU does not support ARMv8-M Security Extensions"
 msgstr "циљни ЦПУ не подржава инструкције Тамба"
 
-#: config/arm/arm.c:5706
+#: config/arm/arm.c:5707
 #, gcc-internal-format
 msgid "non-AAPCS derived PCS variant"
 msgstr ""
 
-#: config/arm/arm.c:5708
+#: config/arm/arm.c:5709
 #, gcc-internal-format
 msgid "variadic functions must use the base AAPCS variant"
 msgstr ""
 
-#: config/arm/arm.c:5727
+#: config/arm/arm.c:5728
 #, gcc-internal-format
 msgid "PCS variant"
 msgstr ""
 
-#: config/arm/arm.c:5922
+#: config/arm/arm.c:5923
 #, gcc-internal-format
 msgid "Thumb-1 hard-float VFP ABI"
 msgstr ""
 
-#: config/arm/arm.c:6672 config/arm/arm.c:6690 config/arm/arm.c:6865
+#: config/arm/arm.c:6362 config/arm/arm.c:6565 config/arm/arm.c:6593
+#: config/arm/arm.c:26560
+#, gcc-internal-format
+msgid "parameter passing for argument of type %qT changed in GCC 7.1"
+msgstr ""
+
+#: config/arm/arm.c:6709 config/arm/arm.c:6727 config/arm/arm.c:6902
 #: config/avr/avr.c:9480 config/avr/avr.c:9496 config/bfin/bfin.c:4673
 #: config/bfin/bfin.c:4734 config/bfin/bfin.c:4763
 #: config/epiphany/epiphany.c:475 config/h8300/h8300.c:5456
@@ -31322,77 +31328,77 @@ msgstr ""
 msgid "%qE attribute only applies to functions"
 msgstr "атрибут %qs примењује се само на функције"
 
-#: config/arm/arm.c:6814
+#: config/arm/arm.c:6851
 #, gcc-internal-format
 msgid "%qE attribute not available to functions with arguments passed on the stack"
 msgstr ""
 
-#: config/arm/arm.c:6826
+#: config/arm/arm.c:6863
 #, fuzzy, gcc-internal-format
 #| msgid "%qD must not have variable number of arguments"
 msgid "%qE attribute not available to functions with variable number of arguments"
 msgstr "%qD не може имати променљив број аргумената"
 
-#: config/arm/arm.c:6835
+#: config/arm/arm.c:6872
 #, gcc-internal-format
 msgid "%qE attribute not available to functions that return value on the stack"
 msgstr ""
 
-#: config/arm/arm.c:6857 config/arm/arm.c:6909
+#: config/arm/arm.c:6894 config/arm/arm.c:6946
 #, fuzzy, gcc-internal-format
 #| msgid "%qE attribute ignored on non-class types"
 msgid "%qE attribute ignored without -mcmse option."
 msgstr "атрибут %qE се игнорише на не-класним типовима"
 
-#: config/arm/arm.c:6876
+#: config/arm/arm.c:6913
 #, fuzzy, gcc-internal-format
 #| msgid "%qE attribute have effect only on public objects"
 msgid "%qE attribute has no effect on functions with static linkage"
 msgstr "атрибут %qE има утицаја само у јавним објектима"
 
-#: config/arm/arm.c:6925
+#: config/arm/arm.c:6962
 #, fuzzy, gcc-internal-format
 #| msgid "%qs attribute only applies to function types"
 msgid "%qE attribute only applies to base type of a function pointer"
 msgstr "атрибут %qs је примењив само на функцијске типове"
 
-#: config/arm/arm.c:12208
+#: config/arm/arm.c:12245
 #, gcc-internal-format
 msgid "%K%s %wd out of range %wd - %wd"
 msgstr ""
 
-#: config/arm/arm.c:12211
+#: config/arm/arm.c:12248
 #, gcc-internal-format
 msgid "%s %wd out of range %wd - %wd"
 msgstr ""
 
-#: config/arm/arm.c:23458
+#: config/arm/arm.c:23495
 #, gcc-internal-format
 msgid "unable to compute real location of stacked parameter"
 msgstr "не могу да срачунам стварну локацију параметра на стеку"
 
-#: config/arm/arm.c:24111
+#: config/arm/arm.c:24148
 #, fuzzy, gcc-internal-format
 #| msgid "Unexpected end of module"
 msgid "Unexpected thumb1 far jump"
 msgstr "Неочекиван крај модула"
 
-#: config/arm/arm.c:24375
+#: config/arm/arm.c:24412
 #, gcc-internal-format
 msgid "no low registers available for popping high registers"
 msgstr "нема доступних ниских регистара за подизање високих регистара"
 
-#: config/arm/arm.c:24624
+#: config/arm/arm.c:24661
 #, gcc-internal-format
 msgid "interrupt Service Routines cannot be coded in Thumb mode"
 msgstr "сервисне рутине прекида не могу бити кодиране у режиму Тамба"
 
-#: config/arm/arm.c:24853
+#: config/arm/arm.c:24890
 #, gcc-internal-format
 msgid "-fstack-check=specific for Thumb-1"
 msgstr ""
 
-#: config/arm/arm.c:30391
+#: config/arm/arm.c:30435
 #, fuzzy, gcc-internal-format, gfc-internal-format
 #| msgid "invalid vector type for attribute %qE"
 msgid "invalid fpu for attribute(target(\"%s\"))"
@@ -31401,13 +31407,13 @@ msgstr "неисправан тип вектора за атрибут %qE"
 #. This doesn't really make sense until we support
 #. general dynamic selection of the architecture and all
 #. sub-features.
-#: config/arm/arm.c:30399
+#: config/arm/arm.c:30443
 #, gcc-internal-format
 msgid "auto fpu selection not currently permitted here"
 msgstr ""
 
-#: config/arm/arm.c:30406 config/i386/i386.c:6838 config/i386/i386.c:6885
-#: config/s390/s390.c:14915 config/s390/s390.c:14965 config/s390/s390.c:14982
+#: config/arm/arm.c:30450 config/i386/i386.c:6838 config/i386/i386.c:6885
+#: config/s390/s390.c:15083 config/s390/s390.c:15133 config/s390/s390.c:15150
 #, gcc-internal-format, gfc-internal-format
 msgid "attribute(target(\"%s\")) is unknown"
 msgstr ""
@@ -34266,7 +34272,7 @@ msgstr ""
 msgid "vec_cmpne only accepts 2 arguments"
 msgstr ""
 
-#: config/rs6000/rs6000-c.c:5711
+#: config/rs6000/rs6000-c.c:5710
 #, gcc-internal-format
 msgid "vec_adde only accepts 3 arguments"
 msgstr ""
@@ -34276,47 +34282,47 @@ msgstr ""
 msgid "vec_addec only accepts 3 arguments"
 msgstr ""
 
-#: config/rs6000/rs6000-c.c:5861
+#: config/rs6000/rs6000-c.c:5862
 #, fuzzy, gcc-internal-format, gfc-internal-format
 #| msgid "%q+D takes only zero or two arguments"
 msgid "%s only accepts %d arguments"
 msgstr "%q+D прима или ниједан или два аргумента"
 
-#: config/rs6000/rs6000-c.c:5866
+#: config/rs6000/rs6000-c.c:5867
 #, fuzzy, gcc-internal-format, gfc-internal-format
 #| msgid "%q+D takes only zero or two arguments"
 msgid "%s only accepts 1 argument"
 msgstr "%q+D прима или ниједан или два аргумента"
 
-#: config/rs6000/rs6000-c.c:5871
+#: config/rs6000/rs6000-c.c:5872
 #, fuzzy, gcc-internal-format, gfc-internal-format
 #| msgid "%q+D takes only zero or two arguments"
 msgid "%s only accepts 2 arguments"
 msgstr "%q+D прима или ниједан или два аргумента"
 
-#: config/rs6000/rs6000-c.c:5937
+#: config/rs6000/rs6000-c.c:5938
 #, gcc-internal-format
 msgid "vec_extract only accepts 2 arguments"
 msgstr ""
 
-#: config/rs6000/rs6000-c.c:6106
+#: config/rs6000/rs6000-c.c:6107
 #, gcc-internal-format
 msgid "vec_insert only accepts 3 arguments"
 msgstr ""
 
-#: config/rs6000/rs6000-c.c:6380
+#: config/rs6000/rs6000-c.c:6381
 #, fuzzy, gcc-internal-format
 #| msgid "passing arg %d of %qE discards qualifiers frompointer target type"
 msgid "passing arg %d of %qE discards qualifiers from pointer target type"
 msgstr "прослеђивање арга %d за %qE одбацује одредбе типа показивачког циља"
 
-#: config/rs6000/rs6000-c.c:6434
+#: config/rs6000/rs6000-c.c:6435
 #, fuzzy, gcc-internal-format, gfc-internal-format
 #| msgid "%Jalias definitions not supported in this configuration"
 msgid "Builtin function %s not supported in this compiler configuration"
 msgstr "%Jдефиниције алијаса нису подржане у овој конфигурацији"
 
-#: config/rs6000/rs6000-c.c:6442
+#: config/rs6000/rs6000-c.c:6443
 #, fuzzy, gcc-internal-format, gfc-internal-format
 #| msgid "invalid parameter combination for AltiVec intrinsic"
 msgid "invalid parameter combination for AltiVec intrinsic %s"
@@ -35433,118 +35439,118 @@ msgstr "неисправан аргумент за уграђену функци
 msgid "requested %qE attribute is not a comma separated pair of non-negative integer constants or too large (max. %d)"
 msgstr ""
 
-#: config/s390/s390.c:9812
+#: config/s390/s390.c:9980
 #, gcc-internal-format
 msgid "total size of local variables exceeds architecture limit"
 msgstr "укупна величина локалних променљивих премашује ограничење архитектуре"
 
-#: config/s390/s390.c:10926
+#: config/s390/s390.c:11094
 #, gcc-internal-format
 msgid "frame size of function %qs is %wd bytes exceeding user provided stack limit of %d bytes.  An unconditional trap is added."
 msgstr ""
 
-#: config/s390/s390.c:10942
+#: config/s390/s390.c:11110
 #, gcc-internal-format
 msgid "frame size of function %qs is %wd bytes which is more than half the stack size. The dynamic check would not be reliable. No check emitted for this function."
 msgstr ""
 
-#: config/s390/s390.c:10970
+#: config/s390/s390.c:11138
 #, fuzzy, gcc-internal-format
 #| msgid "frame size of %qs is "
 msgid "frame size of %qs is %wd bytes"
 msgstr "величина оквира за %qs је "
 
-#: config/s390/s390.c:10974
+#: config/s390/s390.c:11142
 #, gcc-internal-format
 msgid "%qs uses dynamic stack allocation"
 msgstr "%qs користи динамичко резервисање стека"
 
-#: config/s390/s390.c:11352
+#: config/s390/s390.c:11520
 #, gcc-internal-format
 msgid "CPUs older than z900 are not supported for -fsplit-stack"
 msgstr ""
 
-#: config/s390/s390.c:14498
+#: config/s390/s390.c:14666
 #, gcc-internal-format, gfc-internal-format
 msgid "%sarch=%s%s is deprecated and will be removed in future releases; use at least %sarch=z900%s"
 msgstr ""
 
-#: config/s390/s390.c:14510
+#: config/s390/s390.c:14678
 #, gcc-internal-format, gfc-internal-format
 msgid "%stune=%s%s is deprecated and will be removed in future releases; use at least %stune=z900%s"
 msgstr ""
 
-#: config/s390/s390.c:14522
+#: config/s390/s390.c:14690
 #, gcc-internal-format, gfc-internal-format
 msgid "z/Architecture mode not supported on %s"
 msgstr "режим з/Архитектуре није подржан на %s"
 
-#: config/s390/s390.c:14525
+#: config/s390/s390.c:14693
 #, gcc-internal-format
 msgid "64-bit ABI not supported in ESA/390 mode"
 msgstr "64-битни АБИ није подржан у режиму ЕСЕ/390"
 
-#: config/s390/s390.c:14542
+#: config/s390/s390.c:14710
 #, gcc-internal-format, gfc-internal-format
 msgid "hardware vector support not available on %s"
 msgstr ""
 
-#: config/s390/s390.c:14545
+#: config/s390/s390.c:14713
 #, gcc-internal-format
 msgid "hardware vector support not available with -msoft-float"
 msgstr ""
 
-#: config/s390/s390.c:14573
+#: config/s390/s390.c:14741
 #, fuzzy, gcc-internal-format, gfc-internal-format
 #| msgid "Restrict the use of hardware floating-point instructions to 32-bit operations"
 msgid "hardware decimal floating point instructions not available on %s"
 msgstr "Ограничи употребу хардверских инструкција покретног зареза на 32-битне операције"
 
-#: config/s390/s390.c:14577
+#: config/s390/s390.c:14745
 #, gcc-internal-format
 msgid "hardware decimal floating point instructions not available in ESA/390 mode"
 msgstr ""
 
-#: config/s390/s390.c:14589
+#: config/s390/s390.c:14757
 #, gcc-internal-format
 msgid "-mhard-dfp can%'t be used in conjunction with -msoft-float"
 msgstr ""
 
-#: config/s390/s390.c:14597
+#: config/s390/s390.c:14765
 #, gcc-internal-format
 msgid "-mbackchain -mpacked-stack -mhard-float are not supported in combination"
 msgstr "-mbackchain -mpacked-stack -mhard-float нису подржани у комбинацији"
 
-#: config/s390/s390.c:14603
+#: config/s390/s390.c:14771
 #, gcc-internal-format
 msgid "stack size must be greater than the stack guard value"
 msgstr "величина стека мора бити већа од вредности браника стека"
 
-#: config/s390/s390.c:14605
+#: config/s390/s390.c:14773
 #, gcc-internal-format
 msgid "stack size must not be greater than 64k"
 msgstr "величина стека не сме бити већа од 64k"
 
-#: config/s390/s390.c:14608
+#: config/s390/s390.c:14776
 #, gcc-internal-format
 msgid "-mstack-guard implies use of -mstack-size"
 msgstr "-mstack-guard имплицира коришћење -mstack-size"
 
 #. argument is not a plain number
-#: config/s390/s390.c:14706
+#: config/s390/s390.c:14874
 #, fuzzy, gcc-internal-format
 #| msgid "argument to \"%s\" should be a non-negative integer"
 msgid "arguments to %qs should be non-negative integers"
 msgstr "аргумент за „%s“ треба да је ненегативан цео број"
 
-#: config/s390/s390.c:14713
+#: config/s390/s390.c:14881
 #, fuzzy, gcc-internal-format
 #| msgid "argument to %qs attribute larger than %d"
 msgid "argument to %qs is too large (max. %d)"
 msgstr "аргумент за атрибут %qs већи од %d"
 
 #. Value is not allowed for the target attribute.
-#: config/s390/s390.c:14921
+#: config/s390/s390.c:15089
 #, fuzzy, gcc-internal-format
 #| msgid "stack limits not supported on this target"
 msgid "value %qs is not supported by attribute %<target%>"

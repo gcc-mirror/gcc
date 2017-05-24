@@ -1196,6 +1196,8 @@ update_reg_eliminate (bitmap insns_with_changed_offsets)
   struct lra_elim_table *ep, *ep1;
   HARD_REG_SET temp_hard_reg_set;
 
+  targetm.compute_frame_layout ();
+
   /* Clear self elimination offsets.  */
   for (ep = reg_eliminate; ep < &reg_eliminate[NUM_ELIMINABLE_REGS]; ep++)
     self_elim_offsets[ep->from] = 0;

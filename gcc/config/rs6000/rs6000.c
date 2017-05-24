@@ -55,6 +55,7 @@
 #include "reload.h"
 #include "sched-int.h"
 #include "gimplify.h"
+#include "gimple-fold.h"
 #include "gimple-iterator.h"
 #include "gimple-ssa.h"
 #include "gimple-walk.h"
@@ -158,6 +159,7 @@ typedef struct GTY(()) machine_function
   /* The components already handled by separate shrink-wrapping, which should
      not be considered by the prologue and epilogue.  */
   bool gpr_is_wrapped_separately[32];
+  bool fpr_is_wrapped_separately[32];
   bool lr_is_wrapped_separately;
 } machine_function;
 
@@ -506,6 +508,91 @@ mode_supports_pre_modify_p (machine_mode mode)
 {
   return ((reg_addr[mode].addr_mask[RELOAD_REG_ANY] & RELOAD_REG_PRE_MODIFY)
 	  != 0);
+}
+
+/* Given that there exists at least one variable that is set (produced)
+   by OUT_INSN and read (consumed) by IN_INSN, return true iff
+   IN_INSN represents one or more memory store operations and none of
+   the variables set by OUT_INSN is used by IN_INSN as the address of a
+   store operation.  If either IN_INSN or OUT_INSN does not represent
+   a "single" RTL SET expression (as loosely defined by the
+   implementation of the single_set function) or a PARALLEL with only
+   SETs, CLOBBERs, and USEs inside, this function returns false.
+
+   This rs6000-specific version of store_data_bypass_p checks for
+   certain conditions that result in assertion failures (and internal
+   compiler errors) in the generic store_data_bypass_p function and
+   returns false rather than calling store_data_bypass_p if one of the
+   problematic conditions is detected.  */
+
+int
+rs6000_store_data_bypass_p (rtx_insn *out_insn, rtx_insn *in_insn)
+{
+  rtx out_set, in_set;
+  rtx out_pat, in_pat;
+  rtx out_exp, in_exp;
+  int i, j;
+
+  in_set = single_set (in_insn);
+  if (in_set)
+    {
+      if (MEM_P (SET_DEST (in_set)))
+	{
+	  out_set = single_set (out_insn);
+	  if (!out_set)
+	    {
+	      out_pat = PATTERN (out_insn);
+	      if (GET_CODE (out_pat) == PARALLEL)
+		{
+		  for (i = 0; i < XVECLEN (out_pat, 0); i++)
+		    {
+		      out_exp = XVECEXP (out_pat, 0, i);
+		      if ((GET_CODE (out_exp) == CLOBBER)
+			  || (GET_CODE (out_exp) == USE))
+			continue;
+		      else if (GET_CODE (out_exp) != SET)
+			return false;
+		    }
+		}
+	    }
+	}
+    }
+  else
+    {
+      in_pat = PATTERN (in_insn);
+      if (GET_CODE (in_pat) != PARALLEL)
+	return false;
+
+      for (i = 0; i < XVECLEN (in_pat, 0); i++)
+	{
+	  in_exp = XVECEXP (in_pat, 0, i);
+	  if ((GET_CODE (in_exp) == CLOBBER) || (GET_CODE (in_exp) == USE))
+	    continue;
+	  else if (GET_CODE (in_exp) != SET)
+	    return false;
+
+	  if (MEM_P (SET_DEST (in_exp)))
+	    {
+	      out_set = single_set (out_insn);
+	      if (!out_set)
+		{
+		  out_pat = PATTERN (out_insn);
+		  if (GET_CODE (out_pat) != PARALLEL)
+		    return false;
+		  for (j = 0; j < XVECLEN (out_pat, 0); j++)
+		    {
+		      out_exp = XVECEXP (out_pat, 0, j);
+		      if ((GET_CODE (out_exp) == CLOBBER)
+			  || (GET_CODE (out_exp) == USE))
+			continue;
+		      else if (GET_CODE (out_exp) != SET)
+			return false;
+		    }
+		}
+	    }
+	}
+    }
+  return store_data_bypass_p (out_insn, in_insn);
 }
 
 /* Return true if we have D-form addressing in altivec registers.  */
@@ -3788,6 +3875,7 @@ HOST_WIDE_INT
 rs6000_builtin_mask_calculate (void)
 {
   return (((TARGET_ALTIVEC)		    ? RS6000_BTM_ALTIVEC   : 0)
+	  | ((TARGET_CMPB)		    ? RS6000_BTM_CMPB	   : 0)
 	  | ((TARGET_VSX)		    ? RS6000_BTM_VSX	   : 0)
 	  | ((TARGET_SPE)		    ? RS6000_BTM_SPE	   : 0)
 	  | ((TARGET_PAIRED_FLOAT)	    ? RS6000_BTM_PAIRED	   : 0)
@@ -5764,8 +5852,20 @@ rs6000_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost,
 	if (SCALAR_FLOAT_TYPE_P (elem_type)
 	    && TYPE_PRECISION (elem_type) == 32)
 	  return 5;
+	/* On POWER9, integer vector types are built up in GPRs and then
+	   use a direct move (2 cycles).  For POWER8 this is even worse,
+	   as we need two direct moves and a merge, and the direct moves
+	   are five cycles.  */
+	else if (INTEGRAL_TYPE_P (elem_type))
+	  {
+	    if (TARGET_P9_VECTOR)
+	      return TYPE_VECTOR_SUBPARTS (vectype) - 1 + 2;
+	    else
+	      return TYPE_VECTOR_SUBPARTS (vectype) - 1 + 11;
+	  }
 	else
-	  return max (2, TYPE_VECTOR_SUBPARTS (vectype) - 1);
+	  /* V2DFmode doesn't need a direct move.  */
+	  return 2;
 
       default:
         gcc_unreachable ();
@@ -5873,6 +5973,10 @@ rs6000_density_test (rs6000_cost_data *data)
 
 /* Implement targetm.vectorize.init_cost.  */
 
+/* For each vectorized loop, this var holds TRUE iff a non-memory vector
+   instruction is needed by the vectorization.  */
+static bool rs6000_vect_nonmem;
+
 static void *
 rs6000_init_cost (struct loop *loop_info)
 {
@@ -5881,6 +5985,7 @@ rs6000_init_cost (struct loop *loop_info)
   data->cost[vect_prologue] = 0;
   data->cost[vect_body]     = 0;
   data->cost[vect_epilogue] = 0;
+  rs6000_vect_nonmem = false;
   return data;
 }
 
@@ -5907,6 +6012,15 @@ rs6000_add_stmt_cost (void *data, int count, enum vect_cost_for_stmt kind,
 
       retval = (unsigned) (count * stmt_cost);
       cost_data->cost[where] += retval;
+
+      /* Check whether we're doing something other than just a copy loop.
+	 Not all such loops may be profitably vectorized; see
+	 rs6000_finish_cost.  */
+      if ((kind == vec_to_scalar || kind == vec_perm
+	   || kind == vec_promote_demote || kind == vec_construct
+	   || kind == scalar_to_vec)
+	  || (where == vect_body && kind == vector_stmt))
+	rs6000_vect_nonmem = true;
     }
 
   return retval;
@@ -5922,6 +6036,19 @@ rs6000_finish_cost (void *data, unsigned *prologue_cost,
 
   if (cost_data->loop_info)
     rs6000_density_test (cost_data);
+
+  /* Don't vectorize minimum-vectorization-factor, simple copy loops
+     that require versioning for any reason.  The vectorization is at
+     best a wash inside the loop, and the versioning checks make
+     profitability highly unlikely and potentially quite harmful.  */
+  if (cost_data->loop_info)
+    {
+      loop_vec_info vec_info = loop_vec_info_for_loop (cost_data->loop_info);
+      if (!rs6000_vect_nonmem
+	  && LOOP_VINFO_VECT_FACTOR (vec_info) == 2
+	  && LOOP_REQUIRES_VERSIONING (vec_info))
+	cost_data->cost[vect_body] += 10000;
+    }
 
   *prologue_cost = cost_data->cost[vect_prologue];
   *body_cost     = cost_data->cost[vect_body];
@@ -17038,6 +17165,17 @@ rs6000_gimple_fold_builtin (gimple_stmt_iterator *gsi)
 	gsi_replace (gsi, g, true);
 	return true;
       }
+    case VSX_BUILTIN_XVMULSP:
+    case VSX_BUILTIN_XVMULDP:
+      {
+	arg0 = gimple_call_arg (stmt, 0);
+	arg1 = gimple_call_arg (stmt, 1);
+	lhs = gimple_call_lhs (stmt);
+	gimple *g = gimple_build_assign (lhs, MULT_EXPR, arg0, arg1);
+	gimple_set_location (g, gimple_location (stmt));
+	gsi_replace (gsi, g, true);
+	return true;
+      }
     /* Even element flavors of vec_mul (signed). */
     case ALTIVEC_BUILTIN_VMULESB:
     case ALTIVEC_BUILTIN_VMULESH:
@@ -17068,7 +17206,134 @@ rs6000_gimple_fold_builtin (gimple_stmt_iterator *gsi)
 	gsi_replace (gsi, g, true);
 	return true;
       }
-
+    /* Flavors of vec_div (Integer).  */
+    case VSX_BUILTIN_DIV_V2DI:
+    case VSX_BUILTIN_UDIV_V2DI:
+      {
+	arg0 = gimple_call_arg (stmt, 0);
+	arg1 = gimple_call_arg (stmt, 1);
+	lhs = gimple_call_lhs (stmt);
+	gimple *g = gimple_build_assign (lhs, TRUNC_DIV_EXPR, arg0, arg1);
+	gimple_set_location (g, gimple_location (stmt));
+	gsi_replace (gsi, g, true);
+	return true;
+      }
+    /* Flavors of vec_div (Float).  */
+    case VSX_BUILTIN_XVDIVSP:
+    case VSX_BUILTIN_XVDIVDP:
+      {
+	arg0 = gimple_call_arg (stmt, 0);
+	arg1 = gimple_call_arg (stmt, 1);
+	lhs = gimple_call_lhs (stmt);
+	gimple *g = gimple_build_assign (lhs, RDIV_EXPR, arg0, arg1);
+	gimple_set_location (g, gimple_location (stmt));
+	gsi_replace (gsi, g, true);
+	return true;
+      }
+    /* Flavors of vec_and.  */
+    case ALTIVEC_BUILTIN_VAND:
+      {
+	arg0 = gimple_call_arg (stmt, 0);
+	arg1 = gimple_call_arg (stmt, 1);
+	lhs = gimple_call_lhs (stmt);
+	gimple *g = gimple_build_assign (lhs, BIT_AND_EXPR, arg0, arg1);
+	gimple_set_location (g, gimple_location (stmt));
+	gsi_replace (gsi, g, true);
+	return true;
+      }
+    /* Flavors of vec_andc.  */
+    case ALTIVEC_BUILTIN_VANDC:
+      {
+	arg0 = gimple_call_arg (stmt, 0);
+	arg1 = gimple_call_arg (stmt, 1);
+	lhs = gimple_call_lhs (stmt);
+	tree temp = create_tmp_reg_or_ssa_name (TREE_TYPE (arg1));
+	gimple *g = gimple_build_assign(temp, BIT_NOT_EXPR, arg1);
+	gimple_set_location (g, gimple_location (stmt));
+	gsi_insert_before(gsi, g, GSI_SAME_STMT);
+	g = gimple_build_assign (lhs, BIT_AND_EXPR, arg0, temp);
+	gimple_set_location (g, gimple_location (stmt));
+	gsi_replace (gsi, g, true);
+	return true;
+      }
+    /* Flavors of vec_nand.  */
+    case P8V_BUILTIN_VEC_NAND:
+    case P8V_BUILTIN_NAND_V16QI:
+    case P8V_BUILTIN_NAND_V8HI:
+    case P8V_BUILTIN_NAND_V4SI:
+    case P8V_BUILTIN_NAND_V4SF:
+    case P8V_BUILTIN_NAND_V2DF:
+    case P8V_BUILTIN_NAND_V2DI:
+      {
+	arg0 = gimple_call_arg (stmt, 0);
+	arg1 = gimple_call_arg (stmt, 1);
+	lhs = gimple_call_lhs (stmt);
+	tree temp = create_tmp_reg_or_ssa_name (TREE_TYPE (arg1));
+	gimple *g = gimple_build_assign(temp, BIT_AND_EXPR, arg0, arg1);
+	gimple_set_location (g, gimple_location (stmt));
+	gsi_insert_before(gsi, g, GSI_SAME_STMT);
+	g = gimple_build_assign (lhs, BIT_NOT_EXPR, temp);
+	gimple_set_location (g, gimple_location (stmt));
+	gsi_replace (gsi, g, true);
+	return true;
+      }
+    /* Flavors of vec_or.  */
+    case ALTIVEC_BUILTIN_VOR:
+      {
+	arg0 = gimple_call_arg (stmt, 0);
+	arg1 = gimple_call_arg (stmt, 1);
+	lhs = gimple_call_lhs (stmt);
+	gimple *g = gimple_build_assign (lhs, BIT_IOR_EXPR, arg0, arg1);
+	gimple_set_location (g, gimple_location (stmt));
+	gsi_replace (gsi, g, true);
+	return true;
+      }
+    /* flavors of vec_orc.  */
+    case P8V_BUILTIN_ORC_V16QI:
+    case P8V_BUILTIN_ORC_V8HI:
+    case P8V_BUILTIN_ORC_V4SI:
+    case P8V_BUILTIN_ORC_V4SF:
+    case P8V_BUILTIN_ORC_V2DF:
+    case P8V_BUILTIN_ORC_V2DI:
+      {
+	arg0 = gimple_call_arg (stmt, 0);
+	arg1 = gimple_call_arg (stmt, 1);
+	lhs = gimple_call_lhs (stmt);
+	tree temp = create_tmp_reg_or_ssa_name (TREE_TYPE (arg1));
+	gimple *g = gimple_build_assign(temp, BIT_NOT_EXPR, arg1);
+	gimple_set_location (g, gimple_location (stmt));
+	gsi_insert_before(gsi, g, GSI_SAME_STMT);
+	g = gimple_build_assign (lhs, BIT_IOR_EXPR, arg0, temp);
+	gimple_set_location (g, gimple_location (stmt));
+	gsi_replace (gsi, g, true);
+	return true;
+      }
+    /* Flavors of vec_xor.  */
+    case ALTIVEC_BUILTIN_VXOR:
+      {
+	arg0 = gimple_call_arg (stmt, 0);
+	arg1 = gimple_call_arg (stmt, 1);
+	lhs = gimple_call_lhs (stmt);
+	gimple *g = gimple_build_assign (lhs, BIT_XOR_EXPR, arg0, arg1);
+	gimple_set_location (g, gimple_location (stmt));
+	gsi_replace (gsi, g, true);
+	return true;
+      }
+    /* Flavors of vec_nor.  */
+    case ALTIVEC_BUILTIN_VNOR:
+      {
+	arg0 = gimple_call_arg (stmt, 0);
+	arg1 = gimple_call_arg (stmt, 1);
+	lhs = gimple_call_lhs (stmt);
+	tree temp = create_tmp_reg_or_ssa_name (TREE_TYPE (arg1));
+	gimple *g = gimple_build_assign (temp, BIT_IOR_EXPR, arg0, arg1);
+	gimple_set_location (g, gimple_location (stmt));
+	gsi_insert_before(gsi, g, GSI_SAME_STMT);
+	g = gimple_build_assign (lhs, BIT_NOT_EXPR, temp);
+	gimple_set_location (g, gimple_location (stmt));
+	gsi_replace (gsi, g, true);
+	return true;
+      }
     default:
       break;
     }
@@ -18183,6 +18448,17 @@ altivec_init_builtins (void)
       def_builtin ("__builtin_vsx_st_elemrev_v16qi",
 		   void_ftype_v16qi_long_pvoid, VSX_BUILTIN_ST_ELEMREV_V16QI);
     }
+  else
+    {
+      rs6000_builtin_decls[(int) VSX_BUILTIN_LD_ELEMREV_V8HI]
+	= rs6000_builtin_decls[(int) VSX_BUILTIN_LXVW4X_V8HI];
+      rs6000_builtin_decls[(int) VSX_BUILTIN_LD_ELEMREV_V16QI]
+	= rs6000_builtin_decls[(int) VSX_BUILTIN_LXVW4X_V16QI];
+      rs6000_builtin_decls[(int) VSX_BUILTIN_ST_ELEMREV_V8HI]
+	= rs6000_builtin_decls[(int) VSX_BUILTIN_STXVW4X_V8HI];
+      rs6000_builtin_decls[(int) VSX_BUILTIN_ST_ELEMREV_V16QI]
+	= rs6000_builtin_decls[(int) VSX_BUILTIN_STXVW4X_V16QI];
+    }
 
   def_builtin ("__builtin_vec_vsx_ld", opaque_ftype_long_pcvoid,
 	       VSX_BUILTIN_VEC_LD);
@@ -18695,6 +18971,7 @@ builtin_function_type (machine_mode mode_ret, machine_mode mode_arg0,
     case MISC_BUILTIN_DIVWEUO:
     case MISC_BUILTIN_DIVDEU:
     case MISC_BUILTIN_DIVDEUO:
+    case VSX_BUILTIN_UDIV_V2DI:
       h.uns_p[0] = 1;
       h.uns_p[1] = 1;
       h.uns_p[2] = 1;
@@ -28945,17 +29222,25 @@ rs6000_get_separate_components (void)
   if (TARGET_SPE_ABI)
     return NULL;
 
-  sbitmap components = sbitmap_alloc (32);
-  bitmap_clear (components);
-
   gcc_assert (!(info->savres_strategy & SAVE_MULTIPLE)
 	      && !(info->savres_strategy & REST_MULTIPLE));
+
+  /* Component 0 is the save/restore of LR (done via GPR0).
+     Components 13..31 are the save/restore of GPR13..GPR31.
+     Components 46..63 are the save/restore of FPR14..FPR31.  */
+
+  int n_components = 64;
+
+  sbitmap components = sbitmap_alloc (n_components);
+  bitmap_clear (components);
+
+  int reg_size = TARGET_32BIT ? 4 : 8;
+  int fp_reg_size = 8;
 
   /* The GPRs we need saved to the frame.  */
   if ((info->savres_strategy & SAVE_INLINE_GPRS)
       && (info->savres_strategy & REST_INLINE_GPRS))
     {
-      int reg_size = TARGET_32BIT ? 4 : 8;
       int offset = info->gp_save_offset;
       if (info->push_p)
 	offset += info->total_size;
@@ -28979,6 +29264,23 @@ rs6000_get_separate_components (void)
       || (flag_pic == 1 && DEFAULT_ABI == ABI_V4)
       || (flag_pic && DEFAULT_ABI == ABI_DARWIN))
     bitmap_clear_bit (components, RS6000_PIC_OFFSET_TABLE_REGNUM);
+
+  /* The FPRs we need saved to the frame.  */
+  if ((info->savres_strategy & SAVE_INLINE_FPRS)
+      && (info->savres_strategy & REST_INLINE_FPRS))
+    {
+      int offset = info->fp_save_offset;
+      if (info->push_p)
+	offset += info->total_size;
+
+      for (unsigned regno = info->first_fp_reg_save; regno < 64; regno++)
+	{
+	  if (IN_RANGE (offset, -0x8000, 0x7fff) && save_reg_p (regno))
+	    bitmap_set_bit (components, regno);
+
+	  offset += fp_reg_size;
+	}
+    }
 
   /* Optimize LR save and restore if we can.  This is component 0.  Any
      out-of-line register save/restore routines need LR.  */
@@ -29014,14 +29316,23 @@ rs6000_components_for_bb (basic_block bb)
   sbitmap components = sbitmap_alloc (32);
   bitmap_clear (components);
 
-  /* GPRs are used in a bb if they are in the IN, GEN, or KILL sets.  */
+  /* A register is used in a bb if it is in the IN, GEN, or KILL sets.  */
+
+  /* GPRs.  */
   for (unsigned regno = info->first_gp_reg_save; regno < 32; regno++)
     if (bitmap_bit_p (in, regno)
 	|| bitmap_bit_p (gen, regno)
 	|| bitmap_bit_p (kill, regno))
       bitmap_set_bit (components, regno);
 
-  /* LR needs to be saved around a bb if it is killed in that bb.  */
+  /* FPRs.  */
+  for (unsigned regno = info->first_fp_reg_save; regno < 64; regno++)
+    if (bitmap_bit_p (in, regno)
+	|| bitmap_bit_p (gen, regno)
+	|| bitmap_bit_p (kill, regno))
+      bitmap_set_bit (components, regno);
+
+  /* The link register.  */
   if (bitmap_bit_p (in, LR_REGNO)
       || bitmap_bit_p (gen, LR_REGNO)
       || bitmap_bit_p (kill, LR_REGNO))
@@ -29055,13 +29366,18 @@ rs6000_emit_prologue_components (sbitmap components)
   rtx ptr_reg = gen_rtx_REG (Pmode, frame_pointer_needed
 			     ? HARD_FRAME_POINTER_REGNUM
 			     : STACK_POINTER_REGNUM);
+
+  machine_mode reg_mode = Pmode;
   int reg_size = TARGET_32BIT ? 4 : 8;
+  machine_mode fp_reg_mode = (TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT)
+			     ? DFmode : SFmode;
+  int fp_reg_size = 8;
 
   /* Prologue for LR.  */
   if (bitmap_bit_p (components, 0))
     {
-      rtx reg = gen_rtx_REG (Pmode, 0);
-      rtx_insn *insn = emit_move_insn (reg, gen_rtx_REG (Pmode, LR_REGNO));
+      rtx reg = gen_rtx_REG (reg_mode, 0);
+      rtx_insn *insn = emit_move_insn (reg, gen_rtx_REG (reg_mode, LR_REGNO));
       RTX_FRAME_RELATED_P (insn) = 1;
       add_reg_note (insn, REG_CFA_REGISTER, NULL);
 
@@ -29071,7 +29387,7 @@ rs6000_emit_prologue_components (sbitmap components)
 
       insn = emit_insn (gen_frame_store (reg, ptr_reg, offset));
       RTX_FRAME_RELATED_P (insn) = 1;
-      rtx lr = gen_rtx_REG (Pmode, LR_REGNO);
+      rtx lr = gen_rtx_REG (reg_mode, LR_REGNO);
       rtx mem = copy_rtx (SET_DEST (single_set (insn)));
       add_reg_note (insn, REG_CFA_OFFSET, gen_rtx_SET (mem, lr));
     }
@@ -29085,7 +29401,7 @@ rs6000_emit_prologue_components (sbitmap components)
     {
       if (bitmap_bit_p (components, i))
 	{
-	  rtx reg = gen_rtx_REG (Pmode, i);
+	  rtx reg = gen_rtx_REG (reg_mode, i);
 	  rtx_insn *insn = emit_insn (gen_frame_store (reg, ptr_reg, offset));
 	  RTX_FRAME_RELATED_P (insn) = 1;
 	  rtx set = copy_rtx (single_set (insn));
@@ -29093,6 +29409,25 @@ rs6000_emit_prologue_components (sbitmap components)
 	}
 
       offset += reg_size;
+    }
+
+  /* Prologue for the FPRs.  */
+  offset = info->fp_save_offset;
+  if (info->push_p)
+    offset += info->total_size;
+
+  for (int i = info->first_fp_reg_save; i < 64; i++)
+    {
+      if (bitmap_bit_p (components, i))
+	{
+	  rtx reg = gen_rtx_REG (fp_reg_mode, i);
+	  rtx_insn *insn = emit_insn (gen_frame_store (reg, ptr_reg, offset));
+	  RTX_FRAME_RELATED_P (insn) = 1;
+	  rtx set = copy_rtx (single_set (insn));
+	  add_reg_note (insn, REG_CFA_OFFSET, set);
+	}
+
+      offset += fp_reg_size;
     }
 }
 
@@ -29104,10 +29439,34 @@ rs6000_emit_epilogue_components (sbitmap components)
   rtx ptr_reg = gen_rtx_REG (Pmode, frame_pointer_needed
 			     ? HARD_FRAME_POINTER_REGNUM
 			     : STACK_POINTER_REGNUM);
+
+  machine_mode reg_mode = Pmode;
   int reg_size = TARGET_32BIT ? 4 : 8;
 
+  machine_mode fp_reg_mode = (TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT)
+			     ? DFmode : SFmode;
+  int fp_reg_size = 8;
+
+  /* Epilogue for the FPRs.  */
+  int offset = info->fp_save_offset;
+  if (info->push_p)
+    offset += info->total_size;
+
+  for (int i = info->first_fp_reg_save; i < 64; i++)
+    {
+      if (bitmap_bit_p (components, i))
+	{
+	  rtx reg = gen_rtx_REG (fp_reg_mode, i);
+	  rtx_insn *insn = emit_insn (gen_frame_load (reg, ptr_reg, offset));
+	  RTX_FRAME_RELATED_P (insn) = 1;
+	  add_reg_note (insn, REG_CFA_RESTORE, reg);
+	}
+
+      offset += fp_reg_size;
+    }
+
   /* Epilogue for the GPRs.  */
-  int offset = info->gp_save_offset;
+  offset = info->gp_save_offset;
   if (info->push_p)
     offset += info->total_size;
 
@@ -29115,7 +29474,7 @@ rs6000_emit_epilogue_components (sbitmap components)
     {
       if (bitmap_bit_p (components, i))
 	{
-	  rtx reg = gen_rtx_REG (Pmode, i);
+	  rtx reg = gen_rtx_REG (reg_mode, i);
 	  rtx_insn *insn = emit_insn (gen_frame_load (reg, ptr_reg, offset));
 	  RTX_FRAME_RELATED_P (insn) = 1;
 	  add_reg_note (insn, REG_CFA_RESTORE, reg);
@@ -29131,7 +29490,7 @@ rs6000_emit_epilogue_components (sbitmap components)
       if (info->push_p)
 	offset += info->total_size;
 
-      rtx reg = gen_rtx_REG (Pmode, 0);
+      rtx reg = gen_rtx_REG (reg_mode, 0);
       rtx_insn *insn = emit_insn (gen_frame_load (reg, ptr_reg, offset));
 
       rtx lr = gen_rtx_REG (Pmode, LR_REGNO);
@@ -29151,6 +29510,10 @@ rs6000_set_handled_components (sbitmap components)
     if (bitmap_bit_p (components, i))
       cfun->machine->gpr_is_wrapped_separately[i] = true;
 
+  for (int i = info->first_fp_reg_save; i < 64; i++)
+    if (bitmap_bit_p (components, i))
+      cfun->machine->fpr_is_wrapped_separately[i - 32] = true;
+
   if (bitmap_bit_p (components, 0))
     cfun->machine->lr_is_wrapped_separately = true;
 }
@@ -29163,6 +29526,9 @@ rs6000_emit_prologue (void)
   rs6000_stack_t *info = rs6000_stack_info ();
   machine_mode reg_mode = Pmode;
   int reg_size = TARGET_32BIT ? 4 : 8;
+  machine_mode fp_reg_mode = (TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT)
+			     ? DFmode : SFmode;
+  int fp_reg_size = 8;
   rtx sp_reg_rtx = gen_rtx_REG (Pmode, STACK_POINTER_REGNUM);
   rtx frame_reg_rtx = sp_reg_rtx;
   unsigned int cr_save_regno;
@@ -29460,15 +29826,16 @@ rs6000_emit_prologue (void)
      it ourselves.  Otherwise, call function.  */
   if (!WORLD_SAVE_P (info) && (strategy & SAVE_INLINE_FPRS))
     {
-      int i;
-      for (i = 0; i < 64 - info->first_fp_reg_save; i++)
-	if (save_reg_p (info->first_fp_reg_save + i))
-	  emit_frame_save (frame_reg_rtx,
-			   (TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT
-			    ? DFmode : SFmode),
-			   info->first_fp_reg_save + i,
-			   info->fp_save_offset + frame_off + 8 * i,
-			   sp_off - frame_off);
+      int offset = info->fp_save_offset + frame_off;
+      for (int i = info->first_fp_reg_save; i < 64; i++)
+	{
+	  if (save_reg_p (i)
+	      && !cfun->machine->fpr_is_wrapped_separately[i - 32])
+	    emit_frame_save (frame_reg_rtx, fp_reg_mode, i, offset,
+			     sp_off - frame_off);
+
+	  offset += fp_reg_size;
+	}
     }
   else if (!WORLD_SAVE_P (info) && info->first_fp_reg_save != 64)
     {
@@ -30542,6 +30909,9 @@ rs6000_emit_epilogue (int sibcall)
   rtx cr_save_reg = NULL_RTX;
   machine_mode reg_mode = Pmode;
   int reg_size = TARGET_32BIT ? 4 : 8;
+  machine_mode fp_reg_mode = (TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT)
+			     ? DFmode : SFmode;
+  int fp_reg_size = 8;
   int i;
   bool exit_func;
   unsigned ptr_regno;
@@ -31288,17 +31658,23 @@ rs6000_emit_epilogue (int sibcall)
 
   /* Restore fpr's if we need to do it without calling a function.  */
   if (restoring_FPRs_inline)
-    for (i = 0; i < 64 - info->first_fp_reg_save; i++)
-      if (save_reg_p (info->first_fp_reg_save + i))
+    {
+      int offset = info->fp_save_offset + frame_off;
+      for (i = info->first_fp_reg_save; i < 64; i++)
 	{
-	  rtx reg = gen_rtx_REG ((TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT
-				  ? DFmode : SFmode),
-				 info->first_fp_reg_save + i);
-	  emit_insn (gen_frame_load (reg, frame_reg_rtx,
-				     info->fp_save_offset + frame_off + 8 * i));
-	  if (DEFAULT_ABI == ABI_V4 || flag_shrink_wrap)
-	    cfa_restores = alloc_reg_note (REG_CFA_RESTORE, reg, cfa_restores);
+	  if (save_reg_p (i)
+	      && !cfun->machine->fpr_is_wrapped_separately[i - 32])
+	    {
+	      rtx reg = gen_rtx_REG (fp_reg_mode, i);
+	      emit_insn (gen_frame_load (reg, frame_reg_rtx, offset));
+	      if (DEFAULT_ABI == ABI_V4 || flag_shrink_wrap)
+		cfa_restores = alloc_reg_note (REG_CFA_RESTORE, reg,
+					       cfa_restores);
+	    }
+
+	  offset += fp_reg_size;
 	}
+    }
 
   /* If we saved cr, restore it here.  Just those that were used.  */
   if (info->cr_save_p)
@@ -33031,14 +33407,14 @@ rs6000_adjust_cost (rtx_insn *insn, int dep_type, rtx_insn *dep_insn, int cost,
                   case TYPE_LOAD:
                   case TYPE_CNTLZ:
                     {
-                      if (! store_data_bypass_p (dep_insn, insn))
+                      if (! rs6000_store_data_bypass_p (dep_insn, insn))
                         return get_attr_sign_extend (dep_insn)
                                == SIGN_EXTEND_YES ? 6 : 4;
                       break;
                     }
                   case TYPE_SHIFT:
                     {
-                      if (! store_data_bypass_p (dep_insn, insn))
+                      if (! rs6000_store_data_bypass_p (dep_insn, insn))
                         return get_attr_var_shift (dep_insn) == VAR_SHIFT_YES ?
                                6 : 3;
                       break;
@@ -33049,7 +33425,7 @@ rs6000_adjust_cost (rtx_insn *insn, int dep_type, rtx_insn *dep_insn, int cost,
                   case TYPE_EXTS:
                   case TYPE_INSERT:
                     {
-                      if (! store_data_bypass_p (dep_insn, insn))
+                      if (! rs6000_store_data_bypass_p (dep_insn, insn))
                         return 3;
                       break;
                     }
@@ -33058,19 +33434,19 @@ rs6000_adjust_cost (rtx_insn *insn, int dep_type, rtx_insn *dep_insn, int cost,
                   case TYPE_FPSTORE:
                     {
                       if (get_attr_update (dep_insn) == UPDATE_YES
-                          && ! store_data_bypass_p (dep_insn, insn))
+                          && ! rs6000_store_data_bypass_p (dep_insn, insn))
                         return 3;
                       break;
                     }
                   case TYPE_MUL:
                     {
-                      if (! store_data_bypass_p (dep_insn, insn))
+                      if (! rs6000_store_data_bypass_p (dep_insn, insn))
                         return 17;
                       break;
                     }
                   case TYPE_DIV:
                     {
-                      if (! store_data_bypass_p (dep_insn, insn))
+                      if (! rs6000_store_data_bypass_p (dep_insn, insn))
                         return get_attr_size (dep_insn) == SIZE_32 ? 45 : 57;
                       break;
                     }

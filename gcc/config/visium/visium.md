@@ -240,7 +240,7 @@
 ;;
 ;; Substitutions.
 ;;
-;; They are used to define the second instruction of the pairs required by
+;; They are used to define the first instruction of the pairs required by
 ;; the postreload compare elimination pass, with a first variant for the
 ;; logical insns and a second variant for the arithmetic insns.
 ;;
@@ -251,9 +251,9 @@
   [(set (match_operand 0 "") (match_operand 1 ""))
    (clobber (reg:CC R_FLAGS))]
   ""
-  [(set (match_dup 0) (match_dup 1))
-   (set (reg:CC R_FLAGS)
-	(compare:CC (match_dup 1) (const_int 0)))])
+  [(set (reg:CC R_FLAGS)
+	(compare:CC (match_dup 1) (const_int 0)))
+   (set (match_dup 0) (match_dup 1))])
 
 (define_subst_attr "subst_logic" "flags_subst_logic" "_flags" "_set_flags")
 
@@ -261,9 +261,9 @@
   [(set (match_operand 0 "") (match_operand 1 ""))
    (clobber (reg:CC R_FLAGS))]
   ""
-  [(set (match_dup 0) (match_dup 1))
-   (set (reg:CCNZ R_FLAGS)
-	(compare:CCNZ (match_dup 1) (const_int 0)))])
+  [(set (reg:CCNZ R_FLAGS)
+	(compare:CCNZ (match_dup 1) (const_int 0)))
+   (set (match_dup 0) (match_dup 1))])
 
 (define_subst_attr "subst_arith" "flags_subst_arith" "_flags" "_set_flags")
 
@@ -794,23 +794,23 @@
   [(set_attr "type" "arith")])
 
 (define_insn "*add<mode>3_insn_set_carry"
-  [(set (match_operand:QHI 0 "register_operand" "=r")
-	(plus:QHI (match_operand:QHI 1 "register_operand" "%r")
-		  (match_operand:QHI 2 "register_operand" "r")))
-   (set (reg:CCC R_FLAGS)
-	(compare:CCC (plus:QHI (match_dup 1) (match_dup 2))
-		     (match_dup 1)))]
+  [(set (reg:CCC R_FLAGS)
+	(compare:CCC (plus:QHI (match_operand:QHI 1 "register_operand" "%r")
+			       (match_operand:QHI 2 "register_operand" "r"))
+		     (match_dup 1)))
+   (set (match_operand:QHI 0 "register_operand" "=r")
+	(plus:QHI (match_dup 1) (match_dup 2)))]
   "reload_completed"
   "add<s>   %0,%1,%2"
   [(set_attr "type" "arith")])
 
 (define_insn "*add<mode>3_insn_set_overflow"
-  [(set (match_operand:QHI 0 "register_operand" "=r")
-	(plus:QHI (match_operand:QHI 1 "register_operand" "%r")
-		  (match_operand:QHI 2 "register_operand" "r")))
-   (set (reg:CCV R_FLAGS)
-	(compare:CCV (plus:QHI (match_dup 1) (match_dup 2))
-		     (unspec:QHI [(match_dup 1) (match_dup 2)] UNSPEC_ADDV)))]
+  [(set (reg:CCV R_FLAGS)
+	(compare:CCV (plus:QHI (match_operand:QHI 1 "register_operand" "%r")
+			       (match_operand:QHI 2 "register_operand" "r"))
+		     (unspec:QHI [(match_dup 1) (match_dup 2)] UNSPEC_ADDV)))
+   (set (match_operand:QHI 0 "register_operand" "=r")
+	(plus:QHI (match_dup 1) (match_dup 2)))]
   "reload_completed"
   "add<s>   %0,%1,%2"
   [(set_attr "type" "arith")])
@@ -858,12 +858,12 @@
   [(set_attr "type" "arith")])
 
 (define_insn "addsi3_insn_set_carry"
-  [(set (match_operand:SI 0 "register_operand"          "=r,r")
-	(plus:SI (match_operand:SI 1 "register_operand" "%r,0")
-		 (match_operand:SI 2 "real_add_operand" " r,J")))
-   (set (reg:CCC R_FLAGS)
-	(compare:CCC (plus:SI (match_dup 1) (match_dup 2))
-		     (match_dup 1)))]
+  [(set (reg:CCC R_FLAGS)
+	(compare:CCC (plus:SI (match_operand:SI 1 "register_operand" "%r,0")
+			      (match_operand:SI 2 "real_add_operand" " r,J"))
+		     (match_dup 1)))
+   (set (match_operand:SI 0 "register_operand"          "=r,r")
+	(plus:SI (match_dup 1) (match_dup 2)))]
   "reload_completed"
   "@
     add.l   %0,%1,%2
@@ -871,12 +871,12 @@
   [(set_attr "type" "arith")])
 
 (define_insn "*addsi3_insn_set_overflow"
-  [(set (match_operand:SI 0 "register_operand"          "=r,r")
-	(plus:SI (match_operand:SI 1 "register_operand" "%r,0")
-		 (match_operand:SI 2 "real_add_operand" " r,J")))
-   (set (reg:CCV R_FLAGS)
-	(compare:CCV (plus:SI (match_dup 1) (match_dup 2))
-		     (unspec:SI [(match_dup 1) (match_dup 2)] UNSPEC_ADDV)))]
+  [(set (reg:CCV R_FLAGS)
+	(compare:CCV (plus:SI (match_operand:SI 1 "register_operand" "%r,0")
+			      (match_operand:SI 2 "real_add_operand" " r,J"))
+		     (unspec:SI [(match_dup 1) (match_dup 2)] UNSPEC_ADDV)))
+   (set (match_operand:SI 0 "register_operand"          "=r,r")
+	(plus:SI (match_dup 1) (match_dup 2)))]
   "reload_completed"
   "@
     add.l   %0,%1,%2
@@ -1009,22 +1009,22 @@
   [(set_attr "type" "arith")])
 
 (define_insn "*sub<mode>3_insn_set_carry"
-  [(set (match_operand:QHI 0 "register_operand" "=r")
-	(minus:QHI (match_operand:QHI 1 "reg_or_0_operand" "rO")
-		   (match_operand:QHI 2 "register_operand" "r")))
-   (set (reg:CC R_FLAGS)
-	(compare:CC (match_dup 1) (match_dup 2)))]
+  [(set (reg:CC R_FLAGS)
+	(compare:CC (match_operand:QHI 1 "reg_or_0_operand" "r0")
+		    (match_operand:QHI 2 "register_operand" "r")))
+   (set (match_operand:QHI 0 "register_operand" "=r")
+	(minus:QHI (match_dup 1) (match_dup 2)))]
   "reload_completed"
   "sub<s>   %0,%r1,%2"
   [(set_attr "type" "arith")])
 
 (define_insn "*sub<mode>3_insn_set_overflow"
-  [(set (match_operand:QHI 0 "register_operand" "=r")
-	(minus:QHI (match_operand:QHI 1 "reg_or_0_operand" "rO")
-		   (match_operand:QHI 2 "register_operand" "r")))
-   (set (reg:CCV R_FLAGS)
-	(compare:CCV (minus:QHI (match_dup 1) (match_dup 2))
-		     (unspec:QHI [(match_dup 1) (match_dup 2)] UNSPEC_SUBV)))]
+  [(set (reg:CCV R_FLAGS)
+	(compare:CCV (minus:QHI (match_operand:QHI 1 "reg_or_0_operand" "r0")
+				(match_operand:QHI 2 "register_operand" "r"))
+		     (unspec:QHI [(match_dup 1) (match_dup 2)] UNSPEC_SUBV)))
+   (set (match_operand:QHI 0 "register_operand" "=r")
+	(minus:QHI (match_dup 1) (match_dup 2)))]
   "reload_completed"
   "sub<s>   %0,%r1,%2"
   [(set_attr "type" "arith")])
@@ -1072,11 +1072,11 @@
   [(set_attr "type" "arith")])
 
 (define_insn "subsi3_insn_set_carry"
-  [(set (match_operand:SI 0 "register_operand"           "=r,r")
-	(minus:SI (match_operand:SI 1 "register_operand" " r,0")
-		  (match_operand:SI 2 "real_add_operand" " r,J")))
-   (set (reg:CC R_FLAGS)
-	(compare:CC (match_dup 1) (match_dup 2)))]
+  [(set (reg:CC R_FLAGS)
+	(compare:CC (match_operand:SI 1 "register_operand" "r,0")
+		    (match_operand:SI 2 "real_add_operand" "r,J")))
+   (set (match_operand:SI 0 "register_operand"           "=r,r")
+	(minus:SI (match_dup 1) (match_dup 2)))]
   "reload_completed"
   "@
     sub.l   %0,%r1,%2
@@ -1084,12 +1084,12 @@
   [(set_attr "type" "arith")])
 
 (define_insn "*subsi3_insn_set_overflow"
-  [(set (match_operand:SI 0 "register_operand"           "=r,r")
-	(minus:SI (match_operand:SI 1 "register_operand" " r,0")
-		  (match_operand:SI 2 "real_add_operand" " r,J")))
-   (set (reg:CCV R_FLAGS)
-	(compare:CCV (minus:SI (match_dup 1) (match_dup 2))
-		     (unspec:SI [(match_dup 1) (match_dup 2)] UNSPEC_SUBV)))]
+  [(set (reg:CCV R_FLAGS)
+	(compare:CCV (minus:SI (match_operand:SI 1 "register_operand" "r,0")
+			       (match_operand:SI 2 "real_add_operand" "r,J"))
+		     (unspec:SI [(match_dup 1) (match_dup 2)] UNSPEC_SUBV)))
+   (set (match_operand:SI 0 "register_operand"           "=r,r")
+	(minus:SI (match_dup 1) (match_dup 2)))]
   "reload_completed"
   "@
     sub.l   %0,%1,%2
@@ -1209,20 +1209,21 @@
   [(set_attr "type" "arith")])
 
 (define_insn "negsi2_insn_set_carry"
-  [(set (match_operand:SI 0 "register_operand" "=r")
-        (neg:SI (match_operand:SI 1 "register_operand" "r")))
-   (set (reg:CCC R_FLAGS)
-	(compare:CCC (not:SI (match_dup 1)) (const_int -1)))]
+  [(set (reg:CCC R_FLAGS)
+	(compare:CCC (not:SI (match_operand:SI 1 "register_operand" "r"))
+		     (const_int -1)))
+   (set (match_operand:SI 0 "register_operand" "=r")
+        (neg:SI (match_dup 1)))]
   "reload_completed"
   "sub.l   %0,r0,%1"
   [(set_attr "type" "arith")])
 
 (define_insn "*neg<mode>2_insn_set_overflow"
-  [(set (match_operand:I 0 "register_operand" "=r")
-	(neg:I (match_operand:I 1 "register_operand" "r")))
-   (set (reg:CCV R_FLAGS)
-	(compare:CCV (neg:I (match_dup 1))
-		     (unspec:I [(match_dup 1)] UNSPEC_NEGV)))]
+  [(set (reg:CCV R_FLAGS)
+	(compare:CCV (neg:I (match_operand:I 1 "register_operand" "r"))
+		     (unspec:I [(match_dup 1)] UNSPEC_NEGV)))
+   (set (match_operand:I 0 "register_operand" "=r")
+	(neg:I (match_dup 1)))]
   "reload_completed"
   "sub<s>   %0,r0,%1"
   [(set_attr "type" "arith")])

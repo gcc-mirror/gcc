@@ -3821,6 +3821,7 @@ verify_initial_elim_offsets (void)
   if (!num_eliminable)
     return true;
 
+  targetm.compute_frame_layout ();
   for (ep = reg_eliminate; ep < &reg_eliminate[NUM_ELIMINABLE_REGS]; ep++)
     {
       INITIAL_ELIMINATION_OFFSET (ep->from, ep->to, t);
@@ -3838,6 +3839,7 @@ set_initial_elim_offsets (void)
 {
   struct elim_table *ep = reg_eliminate;
 
+  targetm.compute_frame_layout ();
   for (; ep < &reg_eliminate[NUM_ELIMINABLE_REGS]; ep++)
     {
       INITIAL_ELIMINATION_OFFSET (ep->from, ep->to, ep->initial_offset);

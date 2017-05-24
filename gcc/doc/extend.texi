@@ -15107,6 +15107,24 @@ Similar to @code{__builtin_nans}, except the return type is @code{__float128}.
 @end table
 
 The following built-in functions are available for the PowerPC family
+of processors, starting with ISA 2.05 or later (@option{-mcpu=power6}
+or @option{-mcmpb}):
+@smallexample
+unsigned long long __builtin_cmpb (unsigned long long int, unsigned long long int);
+unsigned int __builtin_cmpb (unsigned int, unsigned int);
+@end smallexample
+
+The @code{__builtin_cmpb} function
+performs a byte-wise compare on the contents of its two arguments,
+returning the result of the byte-wise comparison as the returned
+value.  For each byte comparison, the corresponding byte of the return
+value holds 0xff if the input bytes are equal and 0 if the input bytes
+are not equal.  If either of the arguments to this built-in function
+is wider than 32 bits, the function call expands into the form that
+expects @code{unsigned long long int} arguments
+which is only available on 64-bit targets.
+
+The following built-in functions are available for the PowerPC family
 of processors, starting with ISA 2.06 or later (@option{-mcpu=power7}
 or @option{-mpopcntd}):
 @smallexample
@@ -16303,6 +16321,10 @@ vector signed short vec_mule (vector signed char,
 vector unsigned int vec_mule (vector unsigned short,
                               vector unsigned short);
 vector signed int vec_mule (vector signed short, vector signed short);
+vector unsigned int vec_mule (vector unsigned int,
+                              vector unsigned int);
+vector signed int vec_mule (vector signed int,
+                            vector signed int);
 
 vector signed int vec_vmulesh (vector signed short,
                                vector signed short);
@@ -16322,6 +16344,7 @@ vector signed short vec_mulo (vector signed char, vector signed char);
 vector unsigned int vec_mulo (vector unsigned short,
                               vector unsigned short);
 vector signed int vec_mulo (vector signed short, vector signed short);
+vector unsigned int vec_mulo (vector unsigned short, vector unsigned short);
 
 vector signed int vec_vmulosh (vector signed short,
                                vector signed short);
@@ -16342,6 +16365,13 @@ vector signed short vec_nabs (vector signed short);
 vector signed int vec_nabs (vector signed int);
 vector float vec_nabs (vector float);
 vector double vec_nabs (vector double);
+
+vector signed char vec_neg (vector signed char);
+vector signed short vec_neg (vector signed short);
+vector signed int vec_neg (vector signed int);
+vector signed long long vec_neg (vector signed long long);
+vector float  char vec_neg (vector float);
+vector double vec_neg (vector double);
 
 vector float vec_nor (vector float, vector float);
 vector signed int vec_nor (vector signed int, vector signed int);
@@ -16616,6 +16646,31 @@ vector bool char vec_sld (vector bool char,
                           vector bool char,
                           const int);
 
+vector signed char vec_sldw (vector signed char,
+                             vector signed char,
+                             const int);
+vector unsigned char vec_sldw (vector unsigned char,
+                               vector unsigned char,
+                               const int);
+vector signed short vec_sldw (vector signed short,
+                              vector signed short,
+                              const int);
+vector unsigned short vec_sldw (vector unsigned short,
+                                vector unsigned short,
+                                const int);
+vector signed int vec_sldw (vector signed int,
+                            vector signed int,
+                            const int);
+vector unsigned int vec_sldw (vector unsigned int,
+                              vector unsigned int,
+                              const int);
+vector signed long long vec_sldw (vector signed long long,
+                                  vector signed long long,
+                                  const int);
+vector unsigned long long vec_sldw (vector unsigned long long,
+                                    vector unsigned long long,
+                                    const int);
+
 vector signed int vec_sll (vector signed int,
                            vector unsigned int);
 vector signed int vec_sll (vector signed int,
@@ -16684,6 +16739,10 @@ vector signed char vec_slo (vector signed char, vector unsigned char);
 vector unsigned char vec_slo (vector unsigned char, vector signed char);
 vector unsigned char vec_slo (vector unsigned char,
                               vector unsigned char);
+vector signed long long vec_slo (vector signed long long, vector signed char);
+vector signed long long vec_slo (vector signed long long, vector unsigned char);
+vector unsigned long long vec_slo (vector unsigned long long, vector signed char);
+vector unsigned long long vec_slo (vector unsigned long long, vector unsigned char);
 
 vector signed char vec_splat (vector signed char, const int);
 vector unsigned char vec_splat (vector unsigned char, const int);
@@ -17830,6 +17889,15 @@ vector unsigned int vec_packsu (vector long long, vector long long);
 vector unsigned int vec_packsu (vector unsigned long long,
                                 vector unsigned long long);
 
+vector unsigned char vec_popcnt (vector signed char);
+vector unsigned char vec_popcnt (vector unsigned char);
+vector unsigned short vec_popcnt (vector signed short);
+vector unsigned short vec_popcnt (vector unsigned short);
+vector unsigned int vec_popcnt (vector signed int);
+vector unsigned int vec_popcnt (vector unsigned int);
+vector unsigned long long vec_popcnt (vector signed long long);
+vector unsigned long long vec_popcnt (vector unsigned long long);
+
 vector long long vec_rl (vector long long,
                          vector unsigned long long);
 vector long long vec_rl (vector unsigned long long,
@@ -17871,6 +17939,8 @@ vector long long vec_vbpermq (vector signed char, vector signed char);
 vector long long vec_vbpermq (vector unsigned char, vector unsigned char);
 
 vector unsigned char vec_bperm (vector unsigned char, vector unsigned char);
+vector unsigned char vec_bperm (vector unsigned long long,
+                                vector unsigned char);
 vector unsigned long long vec_bperm (vector unsigned __int128,
                                      vector unsigned char);
 
@@ -22574,6 +22644,12 @@ true, else it is false.
 @item __underlying_type (type)
 The underlying type of @code{type}.  Requires: @code{type} shall be
 an enumeration type ([dcl.enum]).
+
+@item __integer_pack (length)
+When used as the pattern of a pack expansion within a template
+definition, expands to a template argument pack containing integers
+from @code{0} to @code{length-1}.  This is provided for efficient
+implementation of @code{std::make_integer_sequence}.
 
 @end table
 

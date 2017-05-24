@@ -22,6 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_GIMPLE_FOLD_H
 #define GCC_GIMPLE_FOLD_H
 
+extern tree create_tmp_reg_or_ssa_name (tree, gimple *stmt = NULL);
 extern tree canonicalize_constructor_val (tree, tree);
 extern tree get_symbol_constant_value (tree);
 extern bool get_range_strlen (tree, tree[2]);
@@ -53,6 +54,8 @@ extern tree gimple_get_virt_method_for_vtable (HOST_WIDE_INT, tree,
 					       unsigned HOST_WIDE_INT,
 					       bool *can_refer = NULL);
 extern tree gimple_fold_indirect_ref (tree);
+extern bool gimple_fold_builtin_sprintf (gimple_stmt_iterator *);
+extern bool gimple_fold_builtin_snprintf (gimple_stmt_iterator *);
 extern bool arith_code_with_undefined_signed_overflow (tree_code);
 extern gimple_seq rewrite_to_defined_overflow (gimple *);
 

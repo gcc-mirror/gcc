@@ -1608,7 +1608,7 @@
    (set_attr "btver2_decode" "direct,double")
    (set_attr "mode" "<MODE>")])
 
-(define_insn "<sse>_vm<multdiv_mnemonic><mode>3<round_name>"
+(define_insn "<sse>_vm<multdiv_mnemonic><mode>3<mask_name><round_name>"
   [(set (match_operand:VF_128 0 "register_operand" "=x,v")
 	(vec_merge:VF_128
 	  (multdiv:VF_128
@@ -1619,7 +1619,7 @@
   "TARGET_SSE"
   "@
    <multdiv_mnemonic><ssescalarmodesuffix>\t{%2, %0|%0, %<iptr>2}
-   v<multdiv_mnemonic><ssescalarmodesuffix>\t{<round_op3>%2, %1, %0|%0, %1, %<iptr>2<round_op3>}"
+   v<multdiv_mnemonic><ssescalarmodesuffix>\t{<round_mask_op3>%2, %1, %0<mask_operand3>|%0<mask_operand3>, %1, %<iptr>2<round_mask_op3>}"
   [(set_attr "isa" "noavx,avx")
    (set_attr "type" "sse<multdiv_mnemonic>")
    (set_attr "prefix" "<round_prefix>")
@@ -1717,6 +1717,23 @@
 	  (const_int 1)))]
   "TARGET_AVX512F"
   "vrcp14<ssescalarmodesuffix>\t{%1, %2, %0|%0, %2, %<iptr>1}"
+  [(set_attr "type" "sse")
+   (set_attr "prefix" "evex")
+   (set_attr "mode" "<MODE>")])
+
+(define_insn "srcp14<mode>_mask"
+  [(set (match_operand:VF_128 0 "register_operand" "=v")
+	(vec_merge:VF_128
+	  (vec_merge:VF_128
+	    (unspec:VF_128
+	      [(match_operand:VF_128 1 "nonimmediate_operand" "vm")]
+	    UNSPEC_RCP14)
+	      (match_operand:VF_128 3 "vector_move_operand" "0C")
+	    (match_operand:<avx512fmaskmode> 4 "register_operand" "Yk"))
+	  (match_operand:VF_128 2 "register_operand" "v")
+	  (const_int 1)))]
+  "TARGET_AVX512F"
+  "vrcp14<ssescalarmodesuffix>\t{%1, %2, %0%{%4%}%N3|%0%{%4%}%N3, %2, %<iptr>1}"
   [(set_attr "type" "sse")
    (set_attr "prefix" "evex")
    (set_attr "mode" "<MODE>")])
@@ -1830,6 +1847,23 @@
    (set_attr "prefix" "evex")
    (set_attr "mode" "<MODE>")])
 
+(define_insn "rsqrt14_<mode>_mask"
+  [(set (match_operand:VF_128 0 "register_operand" "=v")
+	(vec_merge:VF_128
+	  (vec_merge:VF_128
+	    (unspec:VF_128
+	      [(match_operand:VF_128 1 "nonimmediate_operand" "vm")]
+	      UNSPEC_RSQRT14)
+	      (match_operand:VF_128 3 "vector_move_operand" "0C")
+	      (match_operand:<avx512fmaskmode> 4 "register_operand" "Yk"))
+	  (match_operand:VF_128 2 "register_operand" "v")
+	  (const_int 1)))]
+  "TARGET_AVX512F"
+  "vrsqrt14<ssescalarmodesuffix>\t{%1, %2, %0%{%4%}%N3|%0%{%4%}%N3, %2, %<iptr>1}"
+  [(set_attr "type" "sse")
+   (set_attr "prefix" "evex")
+   (set_attr "mode" "<MODE>")])
+
 (define_insn "sse_vmrsqrtv4sf2"
   [(set (match_operand:V4SF 0 "register_operand" "=x,x")
 	(vec_merge:V4SF
@@ -1910,7 +1944,7 @@
    (set_attr "prefix" "<mask_prefix3>")
    (set_attr "mode" "<MODE>")])
 
-(define_insn "<sse>_vm<code><mode>3<round_saeonly_name>"
+(define_insn "<sse>_vm<code><mode>3<mask_name><round_saeonly_name>"
   [(set (match_operand:VF_128 0 "register_operand" "=x,v")
 	(vec_merge:VF_128
 	  (smaxmin:VF_128
@@ -1921,7 +1955,7 @@
   "TARGET_SSE"
   "@
    <maxmin_float><ssescalarmodesuffix>\t{%2, %0|%0, %<iptr>2}
-   v<maxmin_float><ssescalarmodesuffix>\t{<round_saeonly_op3>%2, %1, %0|%0, %1, %<iptr>2<round_saeonly_op3>}"
+   v<maxmin_float><ssescalarmodesuffix>\t{<round_saeonly_mask_op3>%2, %1, %0<mask_operand3>|%0<mask_operand3>, %1, %<iptr>2<round_saeonly_mask_op3>}"
   [(set_attr "isa" "noavx,avx")
    (set_attr "type" "sse")
    (set_attr "btver2_sse_attr" "maxmin")
@@ -13495,13 +13529,12 @@
   "#")
 
 (define_insn "*vec_extract<ssevecmodelower>_0"
-  [(set (match_operand:SWI48 0 "nonimmediate_operand"	       "=r ,r,v ,m")
+  [(set (match_operand:SWI48 0 "nonimmediate_operand"	       "=r ,v ,m")
 	(vec_select:SWI48
-	  (match_operand:<ssevecmode> 1 "nonimmediate_operand" "mYj,v,vm,v")
+	  (match_operand:<ssevecmode> 1 "nonimmediate_operand" "mYj,vm,v")
 	  (parallel [(const_int 0)])))]
   "TARGET_SSE && !(MEM_P (operands[0]) && MEM_P (operands[1]))"
-  "#"
-  [(set_attr "isa" "*,sse4,*,*")])
+  "#")
 
 (define_insn "*vec_extractv2di_0_sse"
   [(set (match_operand:DI 0 "nonimmediate_operand"     "=v,m")
@@ -13829,10 +13862,10 @@
 ;; movd instead of movq is required to handle broken assemblers.
 (define_insn "vec_concatv2di"
   [(set (match_operand:V2DI 0 "register_operand"
-	  "=Yr,*x,x ,v ,Yi,v ,!x,x,v ,x,x,v")
+	  "=Yr,*x,x ,v ,Yi,v ,x    ,x,v ,x,x,v")
 	(vec_concat:V2DI
 	  (match_operand:DI 1 "nonimmediate_operand"
-	  "  0, 0,x ,Yv,r ,vm,*y,0,Yv,0,0,v")
+	  "  0, 0,x ,Yv,r ,vm,?!*Yn,0,Yv,0,0,v")
 	  (match_operand:DI 2 "vector_move_operand"
 	  "*rm,rm,rm,rm,C ,C ,C ,x,Yv,x,m,m")))]
   "TARGET_SSE"
@@ -19997,3 +20030,40 @@
           (match_operand:VI48_512 1 "nonimmediate_operand" "vm")))]
   "TARGET_AVX512VPOPCNTDQ"
   "vpopcnt<ssemodesuffix>\t{%1, %0<mask_operand2>|%0<mask_operand2>, %1}")
+
+;; Save multiple registers out-of-line.
+(define_insn "save_multiple<mode>"
+  [(match_parallel 0 "save_multiple"
+    [(use (match_operand:P 1 "symbol_operand"))])]
+  "TARGET_SSE && TARGET_64BIT"
+  "call\t%P1")
+
+;; Restore multiple registers out-of-line.
+(define_insn "restore_multiple<mode>"
+  [(match_parallel 0 "restore_multiple"
+    [(use (match_operand:P 1 "symbol_operand"))])]
+  "TARGET_SSE && TARGET_64BIT"
+  "call\t%P1")
+
+;; Restore multiple registers out-of-line and return.
+(define_insn "restore_multiple_and_return<mode>"
+  [(match_parallel 0 "restore_multiple"
+    [(return)
+     (use (match_operand:P 1 "symbol_operand"))
+     (set (reg:DI SP_REG) (reg:DI R10_REG))
+    ])]
+  "TARGET_SSE && TARGET_64BIT"
+  "jmp\t%P1")
+
+;; Restore multiple registers out-of-line when hard frame pointer is used,
+;; perform the leave operation prior to returning (from the function).
+(define_insn "restore_multiple_leave_return<mode>"
+  [(match_parallel 0 "restore_multiple"
+    [(return)
+     (use (match_operand:P 1 "symbol_operand"))
+     (set (reg:DI SP_REG) (plus:DI (reg:DI BP_REG) (const_int 8)))
+     (set (reg:DI BP_REG) (mem:DI (reg:DI BP_REG)))
+     (clobber (mem:BLK (scratch)))
+    ])]
+  "TARGET_SSE && TARGET_64BIT"
+  "jmp\t%P1")

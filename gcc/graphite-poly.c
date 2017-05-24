@@ -39,8 +39,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-data-ref.h"
 #include "pretty-print.h"
 #include "gimple-pretty-print.h"
-#include "tree-dump.h"
 #include "graphite.h"
+#include "dumpfile.h"
 
 /* Print to STDERR the GMP value VAL.  */
 
@@ -192,7 +192,7 @@ print_pdr (FILE *file, poly_dr_p pdr)
     }
 
   fprintf (file, "in gimple stmt: ");
-  print_gimple_stmt (file, pdr->stmt, 0, 0);
+  print_gimple_stmt (file, pdr->stmt, 0);
   fprintf (file, "data accesses: ");
   print_isl_map (file, pdr->accesses);
   fprintf (file, "subscript sizes: ");
@@ -323,7 +323,7 @@ dump_gbb_cases (FILE *file, gimple_poly_bb_p gbb)
   fprintf (file, "cases bb_%d (\n", GBB_BB (gbb)->index);
 
   FOR_EACH_VEC_ELT (cases, i, stmt)
-    print_gimple_stmt (file, stmt, 0, 0);
+    print_gimple_stmt (file, stmt, 0);
 
   fprintf (file, ")\n");
 }
@@ -347,7 +347,7 @@ dump_gbb_conditions (FILE *file, gimple_poly_bb_p gbb)
   fprintf (file, "conditions bb_%d (\n", GBB_BB (gbb)->index);
 
   FOR_EACH_VEC_ELT (conditions, i, stmt)
-    print_gimple_stmt (file, stmt, 0, 0);
+    print_gimple_stmt (file, stmt, 0);
 
   fprintf (file, ")\n");
 }
@@ -435,7 +435,7 @@ print_scop_params (FILE *file, scop_p scop)
   fprintf (file, "parameters (");
   FOR_EACH_VEC_ELT (scop->scop_info->params, i, t)
     {
-      print_generic_expr (file, t, 0);
+      print_generic_expr (file, t);
       fprintf (file, ", ");
     }
   fprintf (file, ")\n");

@@ -773,7 +773,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 	__detail::_RegexExecutorPolicy, bool>
 	friend bool __detail::
 #if _GLIBCXX_INLINE_VERSION
-        __7:: // Required due to PR c++/59256
+        __8:: // Required due to PR c++/59256
 #endif
 	__regex_algo_impl(_Bp, _Bp, match_results<_Bp, _Ap>&,
                           const basic_regex<_Cp, _Rp>&,
@@ -1867,7 +1867,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 	__detail::_RegexExecutorPolicy, bool>
 	friend bool __detail::
 #if _GLIBCXX_INLINE_VERSION
-        __7:: // Required due to PR c++/59256
+        __8:: // Required due to PR c++/59256
 #endif
 	__regex_algo_impl(_Bp, _Bp, match_results<_Bp, _Ap>&,
                           const basic_regex<_Cp, _Rp>&,

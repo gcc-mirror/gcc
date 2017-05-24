@@ -280,8 +280,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Iterator, typename _NodeHandle>
     struct _Node_insert_return
     {
-      bool		inserted = false;
       _Iterator		position = _Iterator();
+      bool		inserted = false;
       _NodeHandle	node;
 
       template<size_t _Idx>
@@ -304,22 +304,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  return std::move(std::get<_Idx>(std::tie(inserted, position, node)));
 	}
     };
-
-  template<typename _Iterator, typename _NodeHandle>
-    struct tuple_size<_Node_insert_return<_Iterator, _NodeHandle>>
-    : integral_constant<size_t, 3> { };
-
-  template<typename _Iterator, typename _NodeHandle>
-    struct tuple_element<0, _Node_insert_return<_Iterator, _NodeHandle>>
-    { using type = bool; };
-
-  template<typename _Iterator, typename _NodeHandle>
-    struct tuple_element<1, _Node_insert_return<_Iterator, _NodeHandle>>
-    { using type = _Iterator; };
-
-  template<typename _Iterator, typename _NodeHandle>
-    struct tuple_element<2, _Node_insert_return<_Iterator, _NodeHandle>>
-    { using type = _NodeHandle; };
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std

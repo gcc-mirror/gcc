@@ -38,7 +38,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "print-tree.h"
 #include "langhooks.h"
 #include "tree-inline.h"
-#include "tree-dump.h"
+#include "dumpfile.h"
 #include "gimplify.h"
 #include "debug.h"
 

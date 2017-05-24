@@ -67,7 +67,7 @@
 #include <bits/stl_iterator.h>
 #include <bits/concept_check.h>
 #include <debug/debug.h>
-#include <bits/move.h> // For std::swap and _GLIBCXX_MOVE
+#include <bits/move.h> // For std::swap
 #include <bits/predefined_ops.h>
 
 namespace std _GLIBCXX_VISIBILITY(default)
@@ -82,14 +82,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct __iter_swap
     {
       template<typename _ForwardIterator1, typename _ForwardIterator2>
-        static void
-        iter_swap(_ForwardIterator1 __a, _ForwardIterator2 __b)
-        {
-          typedef typename iterator_traits<_ForwardIterator1>::value_type
-            _ValueType1;
-          _ValueType1 __tmp = _GLIBCXX_MOVE(*__a);
-          *__a = _GLIBCXX_MOVE(*__b);
-          *__b = _GLIBCXX_MOVE(__tmp);
+	static void
+	iter_swap(_ForwardIterator1 __a, _ForwardIterator2 __b)
+	{
+	  typedef typename iterator_traits<_ForwardIterator1>::value_type
+	    _ValueType1;
+	  _ValueType1 __tmp = *__a;
+	  *__a = *__b;
+	  *__b = __tmp;
 	}
     };
 
@@ -97,11 +97,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct __iter_swap<true>
     {
       template<typename _ForwardIterator1, typename _ForwardIterator2>
-        static void 
-        iter_swap(_ForwardIterator1 __a, _ForwardIterator2 __b)
-        {
-          swap(*__a, *__b);
-        }
+	static void
+	iter_swap(_ForwardIterator1 __a, _ForwardIterator2 __b)
+	{
+	  swap(*__a, *__b);
+	}
     };
 #endif
 
@@ -287,9 +287,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct __copy_move
     {
       template<typename _II, typename _OI>
-        static _OI
-        __copy_m(_II __first, _II __last, _OI __result)
-        {
+	static _OI
+	__copy_m(_II __first, _II __last, _OI __result)
+	{
 	  for (; __first != __last; ++__result, (void)++__first)
 	    *__result = *__first;
 	  return __result;
@@ -301,9 +301,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct __copy_move<true, false, _Category>
     {
       template<typename _II, typename _OI>
-        static _OI
-        __copy_m(_II __first, _II __last, _OI __result)
-        {
+	static _OI
+	__copy_m(_II __first, _II __last, _OI __result)
+	{
 	  for (; __first != __last; ++__result, (void)++__first)
 	    *__result = std::move(*__first);
 	  return __result;
@@ -315,9 +315,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct __copy_move<false, false, random_access_iterator_tag>
     {
       template<typename _II, typename _OI>
-        static _OI
-        __copy_m(_II __first, _II __last, _OI __result)
-        { 
+	static _OI
+	__copy_m(_II __first, _II __last, _OI __result)
+	{
 	  typedef typename iterator_traits<_II>::difference_type _Distance;
 	  for(_Distance __n = __last - __first; __n > 0; --__n)
 	    {
@@ -334,9 +334,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct __copy_move<true, false, random_access_iterator_tag>
     {
       template<typename _II, typename _OI>
-        static _OI
-        __copy_m(_II __first, _II __last, _OI __result)
-        { 
+	static _OI
+	__copy_m(_II __first, _II __last, _OI __result)
+	{
 	  typedef typename iterator_traits<_II>::difference_type _Distance;
 	  for(_Distance __n = __last - __first; __n > 0; --__n)
 	    {
@@ -353,9 +353,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct __copy_move<_IsMove, true, random_access_iterator_tag>
     {
       template<typename _Tp>
-        static _Tp*
-        __copy_m(const _Tp* __first, const _Tp* __last, _Tp* __result)
-        {
+	static _Tp*
+	__copy_m(const _Tp* __first, const _Tp* __last, _Tp* __result)
+	{
 #if __cplusplus >= 201103L
 	  using __assignable = conditional<_IsMove,
 					   is_move_assignable<_Tp>,
@@ -378,12 +378,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef typename iterator_traits<_OI>::value_type _ValueTypeO;
       typedef typename iterator_traits<_II>::iterator_category _Category;
       const bool __simple = (__is_trivial(_ValueTypeI)
-	                     && __is_pointer<_II>::__value
-	                     && __is_pointer<_OI>::__value
+			     && __is_pointer<_II>::__value
+			     && __is_pointer<_OI>::__value
 			     && __are_same<_ValueTypeI, _ValueTypeO>::__value);
 
       return std::__copy_move<_IsMove, __simple,
-	                      _Category>::__copy_m(__first, __last, __result);
+			      _Category>::__copy_m(__first, __last, __result);
     }
 
   // Helpers for streambuf iterators (either istream or ostream).
@@ -398,13 +398,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     class ostreambuf_iterator;
 
   template<bool _IsMove, typename _CharT>
-    typename __gnu_cxx::__enable_if<__is_char<_CharT>::__value, 
+    typename __gnu_cxx::__enable_if<__is_char<_CharT>::__value,
 	     ostreambuf_iterator<_CharT, char_traits<_CharT> > >::__type
     __copy_move_a2(_CharT*, _CharT*,
 		   ostreambuf_iterator<_CharT, char_traits<_CharT> >);
 
   template<bool _IsMove, typename _CharT>
-    typename __gnu_cxx::__enable_if<__is_char<_CharT>::__value, 
+    typename __gnu_cxx::__enable_if<__is_char<_CharT>::__value,
 	     ostreambuf_iterator<_CharT, char_traits<_CharT> > >::__type
     __copy_move_a2(const _CharT*, const _CharT*,
 		   ostreambuf_iterator<_CharT, char_traits<_CharT> >);
@@ -497,9 +497,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct __copy_move_backward
     {
       template<typename _BI1, typename _BI2>
-        static _BI2
-        __copy_move_b(_BI1 __first, _BI1 __last, _BI2 __result)
-        {
+	static _BI2
+	__copy_move_b(_BI1 __first, _BI1 __last, _BI2 __result)
+	{
 	  while (__first != __last)
 	    *--__result = *--__last;
 	  return __result;
@@ -511,9 +511,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct __copy_move_backward<true, false, _Category>
     {
       template<typename _BI1, typename _BI2>
-        static _BI2
-        __copy_move_b(_BI1 __first, _BI1 __last, _BI2 __result)
-        {
+	static _BI2
+	__copy_move_b(_BI1 __first, _BI1 __last, _BI2 __result)
+	{
 	  while (__first != __last)
 	    *--__result = std::move(*--__last);
 	  return __result;
@@ -525,9 +525,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct __copy_move_backward<false, false, random_access_iterator_tag>
     {
       template<typename _BI1, typename _BI2>
-        static _BI2
-        __copy_move_b(_BI1 __first, _BI1 __last, _BI2 __result)
-        {
+	static _BI2
+	__copy_move_b(_BI1 __first, _BI1 __last, _BI2 __result)
+	{
 	  typename iterator_traits<_BI1>::difference_type __n;
 	  for (__n = __last - __first; __n > 0; --__n)
 	    *--__result = *--__last;
@@ -540,9 +540,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct __copy_move_backward<true, false, random_access_iterator_tag>
     {
       template<typename _BI1, typename _BI2>
-        static _BI2
-        __copy_move_b(_BI1 __first, _BI1 __last, _BI2 __result)
-        {
+	static _BI2
+	__copy_move_b(_BI1 __first, _BI1 __last, _BI2 __result)
+	{
 	  typename iterator_traits<_BI1>::difference_type __n;
 	  for (__n = __last - __first; __n > 0; --__n)
 	    *--__result = std::move(*--__last);
@@ -555,9 +555,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct __copy_move_backward<_IsMove, true, random_access_iterator_tag>
     {
       template<typename _Tp>
-        static _Tp*
-        __copy_move_b(const _Tp* __first, const _Tp* __last, _Tp* __result)
-        {
+	static _Tp*
+	__copy_move_b(const _Tp* __first, const _Tp* __last, _Tp* __result)
+	{
 #if __cplusplus >= 201103L
 	  using __assignable = conditional<_IsMove,
 					   is_move_assignable<_Tp>,
@@ -580,12 +580,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef typename iterator_traits<_BI2>::value_type _ValueType2;
       typedef typename iterator_traits<_BI1>::iterator_category _Category;
       const bool __simple = (__is_trivial(_ValueType1)
-	                     && __is_pointer<_BI1>::__value
-	                     && __is_pointer<_BI2>::__value
+			     && __is_pointer<_BI1>::__value
+			     && __is_pointer<_BI2>::__value
 			     && __are_same<_ValueType1, _ValueType2>::__value);
 
       return std::__copy_move_backward<_IsMove, __simple,
-	                               _Category>::__copy_move_b(__first,
+				       _Category>::__copy_move_b(__first,
 								 __last,
 								 __result);
     }
@@ -684,7 +684,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       for (; __first != __last; ++__first)
 	*__first = __value;
     }
-    
+
   template<typename _ForwardIterator, typename _Tp>
     inline typename
     __gnu_cxx::__enable_if<__is_scalar<_Tp>::__value, void>::__type
@@ -793,9 +793,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct __equal
     {
       template<typename _II1, typename _II2>
-        static bool
-        equal(_II1 __first1, _II1 __last1, _II2 __first2)
-        {
+	static bool
+	equal(_II1 __first1, _II1 __last1, _II2 __first2)
+	{
 	  for (; __first1 != __last1; ++__first1, (void)++__first2)
 	    if (!(*__first1 == *__first2))
 	      return false;
@@ -807,9 +807,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct __equal<true>
     {
       template<typename _Tp>
-        static bool
-        equal(const _Tp* __first1, const _Tp* __last1, const _Tp* __first2)
-        {
+	static bool
+	equal(const _Tp* __first1, const _Tp* __last1, const _Tp* __first2)
+	{
 	  if (const size_t __len = (__last1 - __first1))
 	    return !__builtin_memcmp(__first1, __first2, sizeof(_Tp) * __len);
 	  return true;
@@ -824,8 +824,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef typename iterator_traits<_II2>::value_type _ValueType2;
       const bool __simple = ((__is_integer<_ValueType1>::__value
 			      || __is_pointer<_ValueType1>::__value)
-	                     && __is_pointer<_II1>::__value
-	                     && __is_pointer<_II2>::__value
+			     && __is_pointer<_II1>::__value
+			     && __is_pointer<_II2>::__value
 			     && __are_same<_ValueType1, _ValueType2>::__value);
 
       return std::__equal<__simple>::equal(__first1, __last1, __first2);
@@ -835,24 +835,24 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct __lc_rai
     {
       template<typename _II1, typename _II2>
-        static _II1
-        __newlast1(_II1, _II1 __last1, _II2, _II2)
-        { return __last1; }
+	static _II1
+	__newlast1(_II1, _II1 __last1, _II2, _II2)
+	{ return __last1; }
 
       template<typename _II>
-        static bool
-        __cnd2(_II __first, _II __last)
-        { return __first != __last; }
+	static bool
+	__cnd2(_II __first, _II __last)
+	{ return __first != __last; }
     };
 
   template<>
     struct __lc_rai<random_access_iterator_tag, random_access_iterator_tag>
     {
       template<typename _RAI1, typename _RAI2>
-        static _RAI1
-        __newlast1(_RAI1 __first1, _RAI1 __last1,
+	static _RAI1
+	__newlast1(_RAI1 __first1, _RAI1 __last1,
 		   _RAI2 __first2, _RAI2 __last2)
-        {
+	{
 	  const typename iterator_traits<_RAI1>::difference_type
 	    __diff1 = __last1 - __first1;
 	  const typename iterator_traits<_RAI2>::difference_type
@@ -861,9 +861,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
 
       template<typename _RAI>
-        static bool
-        __cnd2(_RAI, _RAI)
-        { return true; }
+	static bool
+	__cnd2(_RAI, _RAI)
+	{ return true; }
     };
 
   template<typename _II1, typename _II2, typename _Compare>
@@ -892,7 +892,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct __lexicographical_compare
     {
       template<typename _II1, typename _II2>
-        static bool __lc(_II1, _II1, _II2, _II2);
+	static bool __lc(_II1, _II1, _II2, _II2);
     };
 
   template<bool _BoolType>
@@ -910,8 +910,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct __lexicographical_compare<true>
     {
       template<typename _Tp, typename _Up>
-        static bool
-        __lc(const _Tp* __first1, const _Tp* __last1,
+	static bool
+	__lc(const _Tp* __first1, const _Tp* __last1,
 	     const _Up* __first2, const _Up* __last2)
 	{
 	  const size_t __len1 = __last1 - __first1;
@@ -975,7 +975,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  @param  __last    Another iterator.
    *  @param  __val     The search term.
    *  @return         An iterator pointing to the first element <em>not less
-   *                  than</em> @a val, or end() if every element is less than 
+   *                  than</em> @a val, or end() if every element is less than
    *                  @a val.
    *  @ingroup binary_search_algorithms
   */
@@ -1257,10 +1257,10 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
 	       _InputIterator2 __first2, _BinaryPredicate __binary_pred)
     {
       while (__first1 != __last1 && __binary_pred(__first1, __first2))
-        {
+	{
 	  ++__first1;
 	  ++__first2;
-        }
+	}
       return pair<_InputIterator1, _InputIterator2>(__first1, __first2);
     }
 
@@ -1336,10 +1336,10 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
     {
       while (__first1 != __last1 && __first2 != __last2
 	     && __binary_pred(__first1, __first2))
-        {
+	{
 	  ++__first1;
 	  ++__first2;
-        }
+	}
       return pair<_InputIterator1, _InputIterator2>(__first1, __first2);
     }
 
@@ -1415,7 +1415,7 @@ _GLIBCXX_END_NAMESPACE_ALGO
 
 // NB: This file is included within many other C++ includes, as a way
 // of getting the base algorithms. So, make sure that parallel bits
-// come in too if requested. 
+// come in too if requested.
 #ifdef _GLIBCXX_PARALLEL
 # include <parallel/algobase.h>
 #endif

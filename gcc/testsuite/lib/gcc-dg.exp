@@ -22,6 +22,7 @@ load_lib scanasm.exp
 load_lib scanrtl.exp
 load_lib scantree.exp
 load_lib scanipa.exp
+load_lib scanlang.exp
 load_lib timeout.exp
 load_lib timeout-dg.exp
 load_lib prune.exp
@@ -157,8 +158,8 @@ proc schedule-cleanups { opts } {
     }
     # Finally see if there are any dumps in opts, otherwise we are done
     if [regexp -- {(?=(?:^|[ \t]+)?)-fdump-[^ \t]+(?=(?:$|[ \t]+)?)} $opts] {
-        # Ipa, Rtl, Tree for simplicity
-        set ptn "{i,r,t}"
+        # Lang, Ipa, Rtl, Tree for simplicity
+        set ptn "{l,i,r,t}"
     } else {
         return $finalcode
     }

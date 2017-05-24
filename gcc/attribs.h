@@ -41,4 +41,10 @@ extern tree make_attribute (const char *, const char *, tree);
 extern struct scoped_attributes* register_scoped_attributes (const struct attribute_spec *,
 							     const char *);
 
+extern char *sorted_attr_string (tree);
+extern bool common_function_versions (tree, tree);
+extern char *make_unique_name (tree, const char *, bool);
+extern tree make_dispatcher_decl (const tree);
+extern bool is_function_default_version (const tree);
+
 #endif // GCC_ATTRIBS_H

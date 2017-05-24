@@ -99,7 +99,7 @@ def find_type(orig, name):
             raise ValueError("Cannot find type %s::%s" % (str(orig), name))
         typ = field.type
 
-_versioned_namespace = '__7::'
+_versioned_namespace = '__8::'
 
 # Test if a type is a given template instantiation.
 def is_specialization_of(type, template_name):

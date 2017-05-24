@@ -220,11 +220,11 @@ DEF_GO_RUNTIME(GROWSLICE, "runtime.growslice", P3(TYPE, SLICE, INT), R1(SLICE))
 
 
 // Register roots (global variables) for the garbage collector.
-DEF_GO_RUNTIME(REGISTER_GC_ROOTS, "__go_register_gc_roots", P1(POINTER), R0())
+DEF_GO_RUNTIME(REGISTER_GC_ROOTS, "runtime.registerGCRoots", P1(POINTER), R0())
 
 
 // Allocate memory.
-DEF_GO_RUNTIME(NEW, "__go_new", P2(TYPE, UINTPTR), R1(POINTER))
+DEF_GO_RUNTIME(NEW, "runtime.newobject", P1(TYPE), R1(POINTER))
 
 // Start a new goroutine.
 DEF_GO_RUNTIME(GO, "__go_go", P2(FUNC_PTR, POINTER), R0())
@@ -313,6 +313,15 @@ DEF_GO_RUNTIME(IFACEVALEQ, "runtime.ifacevaleq", P3(IFACE, TYPE, POINTER),
 // Compare a non-empty interface value to an interface value.
 DEF_GO_RUNTIME(IFACEEFACEEQ, "runtime.ifaceefaceeq", P2(IFACE, EFACE),
 	       R1(BOOL))
+
+
+// Set *dst = src where dst is a pointer to a pointer and src is a pointer.
+DEF_GO_RUNTIME(WRITEBARRIERPTR, "runtime.writebarrierptr",
+	       P2(POINTER, POINTER), R0())
+
+// Set *dst = *src for an arbitrary type.
+DEF_GO_RUNTIME(TYPEDMEMMOVE, "runtime.typedmemmove",
+	       P3(TYPE, POINTER, POINTER), R0())
 
 
 // Lock the printer (for print/println).

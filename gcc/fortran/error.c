@@ -789,7 +789,7 @@ gfc_warning (int opt, const char *gmsgid, va_list ap)
   diagnostic_set_info (&diagnostic, gmsgid, &argp, &rich_loc,
 		       DK_WARNING);
   diagnostic.option_index = opt;
-  bool ret = report_diagnostic (&diagnostic);
+  bool ret = diagnostic_report_diagnostic (global_dc, &diagnostic);
 
   if (buffered_p)
     {
@@ -1138,7 +1138,7 @@ gfc_warning_now_at (location_t loc, int opt, const char *gmsgid, ...)
   va_start (argp, gmsgid);
   diagnostic_set_info (&diagnostic, gmsgid, &argp, &rich_loc, DK_WARNING);
   diagnostic.option_index = opt;
-  ret = report_diagnostic (&diagnostic);
+  ret = diagnostic_report_diagnostic (global_dc, &diagnostic);
   va_end (argp);
   return ret;
 }
@@ -1157,7 +1157,7 @@ gfc_warning_now (int opt, const char *gmsgid, ...)
   diagnostic_set_info (&diagnostic, gmsgid, &argp, &rich_loc,
 		       DK_WARNING);
   diagnostic.option_index = opt;
-  ret = report_diagnostic (&diagnostic);
+  ret = diagnostic_report_diagnostic (global_dc, &diagnostic);
   va_end (argp);
   return ret;
 }
@@ -1176,7 +1176,7 @@ gfc_warning_internal (int opt, const char *gmsgid, ...)
   diagnostic_set_info (&diagnostic, gmsgid, &argp, &rich_loc,
 		       DK_WARNING);
   diagnostic.option_index = opt;
-  ret = report_diagnostic (&diagnostic);
+  ret = diagnostic_report_diagnostic (global_dc, &diagnostic);
   va_end (argp);
   return ret;
 }
@@ -1194,7 +1194,7 @@ gfc_error_now (const char *gmsgid, ...)
 
   va_start (argp, gmsgid);
   diagnostic_set_info (&diagnostic, gmsgid, &argp, &rich_loc, DK_ERROR);
-  report_diagnostic (&diagnostic);
+  diagnostic_report_diagnostic (global_dc, &diagnostic);
   va_end (argp);
 }
 
@@ -1210,7 +1210,7 @@ gfc_fatal_error (const char *gmsgid, ...)
 
   va_start (argp, gmsgid);
   diagnostic_set_info (&diagnostic, gmsgid, &argp, &rich_loc, DK_FATAL);
-  report_diagnostic (&diagnostic);
+  diagnostic_report_diagnostic (global_dc, &diagnostic);
   va_end (argp);
 
   gcc_unreachable ();
@@ -1295,7 +1295,7 @@ gfc_error_opt (int opt, const char *gmsgid, va_list ap)
     }
 
   diagnostic_set_info (&diagnostic, gmsgid, &argp, &richloc, DK_ERROR);
-  report_diagnostic (&diagnostic);
+  diagnostic_report_diagnostic (global_dc, &diagnostic);
 
   if (buffered_p)
     {
@@ -1345,7 +1345,7 @@ gfc_internal_error (const char *gmsgid, ...)
 
   va_start (argp, gmsgid);
   diagnostic_set_info (&diagnostic, gmsgid, &argp, &rich_loc, DK_ICE);
-  report_diagnostic (&diagnostic);
+  diagnostic_report_diagnostic (global_dc, &diagnostic);
   va_end (argp);
 
   gcc_unreachable ();

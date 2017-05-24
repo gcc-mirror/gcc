@@ -4280,9 +4280,13 @@ component_initializer (gfc_typespec *ts, gfc_component *c, bool generate)
 {
   gfc_expr *init = NULL;
 
-  /* See if we can find the initializer immediately.  */
+  /* See if we can find the initializer immediately.
+     Some components should never get initializers.  */
   if (c->initializer || !generate
-      || (ts->type == BT_CLASS && !c->attr.allocatable))
+      || (ts->type == BT_CLASS && !c->attr.allocatable)
+      || c->attr.pointer
+      || c->attr.class_pointer
+      || c->attr.proc_pointer)
     return c->initializer;
 
   /* Recursively handle derived type components.  */
@@ -4395,7 +4399,12 @@ gfc_generate_initializer (gfc_typespec *ts, bool generate)
 	  if ((comp->ts.type != tmp->ts.type
 	       || comp->ts.kind != tmp->ts.kind)
 	      && !comp->attr.pointer && !comp->attr.proc_pointer)
-	    gfc_convert_type_warn (ctor->expr, &comp->ts, 2, false);
+	    {
+	      bool val;
+	      val = gfc_convert_type_warn (ctor->expr, &comp->ts, 1, false);
+	      if (val == false)
+		return NULL;
+	    }
 	}
 
       if (comp->attr.allocatable

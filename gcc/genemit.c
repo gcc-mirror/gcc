@@ -797,7 +797,6 @@ from the machine description file `md'.  */\n\n");
   printf ("#include \"regs.h\"\n");
   printf ("#include \"tm-constrs.h\"\n");
   printf ("#include \"ggc.h\"\n");
-  printf ("#include \"dumpfile.h\"\n");
   printf ("#include \"target.h\"\n\n");
 
   /* Read the machine description.  */

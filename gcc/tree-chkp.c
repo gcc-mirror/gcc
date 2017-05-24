@@ -635,9 +635,9 @@ chkp_register_addr_bounds (tree obj, tree bnd)
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
       fprintf (dump_file, "Regsitered bound ");
-      print_generic_expr (dump_file, bnd, 0);
+      print_generic_expr (dump_file, bnd);
       fprintf (dump_file, " for address of ");
-      print_generic_expr (dump_file, obj, 0);
+      print_generic_expr (dump_file, obj);
       fprintf (dump_file, "\n");
     }
 }
@@ -659,7 +659,7 @@ chkp_mark_completed_bounds (tree bounds)
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
       fprintf (dump_file, "Marked bounds ");
-      print_generic_expr (dump_file, bounds, 0);
+      print_generic_expr (dump_file, bounds);
       fprintf (dump_file, " as completed\n");
     }
 }
@@ -688,9 +688,9 @@ chkp_register_incomplete_bounds (tree bounds, tree ptr)
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
       fprintf (dump_file, "Regsitered incomplete bounds ");
-      print_generic_expr (dump_file, bounds, 0);
+      print_generic_expr (dump_file, bounds);
       fprintf (dump_file, " for ");
-      print_generic_expr (dump_file, ptr, 0);
+      print_generic_expr (dump_file, ptr);
       fprintf (dump_file, "\n");
     }
 }
@@ -818,7 +818,7 @@ chkp_mark_invalid_bounds (tree bounds)
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
       fprintf (dump_file, "Marked bounds ");
-      print_generic_expr (dump_file, bounds, 0);
+      print_generic_expr (dump_file, bounds);
       fprintf (dump_file, " as invalid\n");
     }
 }
@@ -1209,9 +1209,9 @@ chkp_maybe_copy_and_register_bounds (tree ptr, tree bnd)
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    {
 	      fprintf (dump_file, "Using default def bounds ");
-	      print_generic_expr (dump_file, bnd, 0);
+	      print_generic_expr (dump_file, bnd);
 	      fprintf (dump_file, " for abnormal default def SSA name ");
-	      print_generic_expr (dump_file, ptr, 0);
+	      print_generic_expr (dump_file, ptr);
 	      fprintf (dump_file, "\n");
 	    }
 	}
@@ -1234,9 +1234,9 @@ chkp_maybe_copy_and_register_bounds (tree ptr, tree bnd)
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    {
 	      fprintf (dump_file, "Creating a copy of bounds ");
-	      print_generic_expr (dump_file, bnd, 0);
+	      print_generic_expr (dump_file, bnd);
 	      fprintf (dump_file, " for abnormal SSA name ");
-	      print_generic_expr (dump_file, ptr, 0);
+	      print_generic_expr (dump_file, ptr);
 	      fprintf (dump_file, "\n");
 	    }
 
@@ -1274,9 +1274,9 @@ chkp_maybe_copy_and_register_bounds (tree ptr, tree bnd)
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
       fprintf (dump_file, "Regsitered bound ");
-      print_generic_expr (dump_file, bnd, 0);
+      print_generic_expr (dump_file, bnd);
       fprintf (dump_file, " for pointer ");
-      print_generic_expr (dump_file, ptr, 0);
+      print_generic_expr (dump_file, ptr);
       fprintf (dump_file, "\n");
     }
 
@@ -2307,9 +2307,9 @@ chkp_build_returned_bound (gcall *call)
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
       fprintf (dump_file, "Built returned bounds (");
-      print_generic_expr (dump_file, bounds, 0);
+      print_generic_expr (dump_file, bounds);
       fprintf (dump_file, ") for call: ");
-      print_gimple_stmt (dump_file, call, 0, TDF_VOPS|TDF_MEMSYMS);
+      print_gimple_stmt (dump_file, call, 0, TDF_VOPS | TDF_MEMSYMS);
     }
 
   bounds = chkp_maybe_copy_and_register_bounds (lhs, bounds);
@@ -2390,7 +2390,7 @@ chkp_get_bound_for_parm (tree parm)
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    {
 	      fprintf (dump_file, "Built arg bounds (");
-	      print_generic_expr (dump_file, bounds, 0);
+	      print_generic_expr (dump_file, bounds);
 	      fprintf (dump_file, ") for arg: ");
 	      print_node (dump_file, "", decl, 0);
 	    }
@@ -2405,11 +2405,11 @@ chkp_get_bound_for_parm (tree parm)
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
       fprintf (dump_file, "Using bounds ");
-      print_generic_expr (dump_file, bounds, 0);
+      print_generic_expr (dump_file, bounds);
       fprintf (dump_file, " for parm ");
-      print_generic_expr (dump_file, parm, 0);
+      print_generic_expr (dump_file, parm);
       fprintf (dump_file, " of type ");
-      print_generic_expr (dump_file, TREE_TYPE (parm), 0);
+      print_generic_expr (dump_file, TREE_TYPE (parm));
       fprintf (dump_file, ".\n");
     }
 
@@ -2457,9 +2457,9 @@ chkp_build_bndldx (tree addr, tree ptr, gimple_stmt_iterator *gsi)
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
       fprintf (dump_file, "Generated bndldx for pointer ");
-      print_generic_expr (dump_file, ptr, 0);
+      print_generic_expr (dump_file, ptr);
       fprintf (dump_file, ": ");
-      print_gimple_stmt (dump_file, stmt, 0, TDF_VOPS|TDF_MEMSYMS);
+      print_gimple_stmt (dump_file, stmt, 0, TDF_VOPS | TDF_MEMSYMS);
     }
 
   return bounds;
@@ -2813,10 +2813,10 @@ chkp_get_bounds_by_definition (tree node, gimple *def_stmt,
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
       fprintf (dump_file, "Searching for bounds for node: ");
-      print_generic_expr (dump_file, node, 0);
+      print_generic_expr (dump_file, node);
 
       fprintf (dump_file, " using its definition: ");
-      print_gimple_stmt (dump_file, def_stmt, 0, TDF_VOPS|TDF_MEMSYMS);
+      print_gimple_stmt (dump_file, def_stmt, 0, TDF_VOPS | TDF_MEMSYMS);
     }
 
   switch (code)
@@ -2857,7 +2857,7 @@ chkp_get_bounds_by_definition (tree node, gimple *def_stmt,
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    {
 	      fprintf (dump_file, "Unexpected var with no definition\n");
-	      print_generic_expr (dump_file, var, 0);
+	      print_generic_expr (dump_file, var);
 	    }
 	  internal_error ("chkp_get_bounds_by_definition: Unexpected var of type %s",
 			  get_tree_code_name (TREE_CODE (var)));
@@ -3048,7 +3048,7 @@ chkp_generate_extern_var_bounds (tree var)
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
       fprintf (dump_file, "Generating bounds for extern symbol '");
-      print_generic_expr (dump_file, var, 0);
+      print_generic_expr (dump_file, var);
       fprintf (dump_file, "'\n");
     }
 
@@ -3132,7 +3132,7 @@ chkp_get_bounds_for_decl_addr (tree decl)
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
       fprintf (dump_file, "Building bounds for address of decl ");
-      print_generic_expr (dump_file, decl, 0);
+      print_generic_expr (dump_file, decl);
       fprintf (dump_file, "\n");
     }
 

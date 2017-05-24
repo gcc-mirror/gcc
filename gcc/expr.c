@@ -2192,7 +2192,8 @@ emit_group_load_1 (rtx *tmps, rtx dst, rtx orig_src, tree type, int ssize)
 		      && (!REG_P (tmps[i]) || GET_MODE (tmps[i]) != mode)))
 		tmps[i] = extract_bit_field (tmps[i], bytelen * BITS_PER_UNIT,
 					     subpos * BITS_PER_UNIT,
-					     1, NULL_RTX, mode, mode, false);
+					     1, NULL_RTX, mode, mode, false,
+					     NULL);
 	    }
 	  else
 	    {
@@ -2202,7 +2203,8 @@ emit_group_load_1 (rtx *tmps, rtx dst, rtx orig_src, tree type, int ssize)
 	      mem = assign_stack_temp (GET_MODE (src), slen);
 	      emit_move_insn (mem, src);
 	      tmps[i] = extract_bit_field (mem, bytelen * BITS_PER_UNIT,
-					   0, 1, NULL_RTX, mode, mode, false);
+					   0, 1, NULL_RTX, mode, mode, false,
+					   NULL);
 	    }
 	}
       /* FIXME: A SIMD parallel will eventually lead to a subreg of a
@@ -2245,7 +2247,7 @@ emit_group_load_1 (rtx *tmps, rtx dst, rtx orig_src, tree type, int ssize)
       else
 	tmps[i] = extract_bit_field (src, bytelen * BITS_PER_UNIT,
 				     bytepos * BITS_PER_UNIT, 1, NULL_RTX,
-				     mode, mode, false);
+				     mode, mode, false, NULL);
 
       if (shift)
 	tmps[i] = expand_shift (LSHIFT_EXPR, mode, tmps[i],
@@ -2697,7 +2699,7 @@ copy_blkmode_from_reg (rtx target, rtx srcreg, tree type)
 		       extract_bit_field (src, bitsize,
 					  xbitpos % BITS_PER_WORD, 1,
 					  NULL_RTX, copy_mode, copy_mode,
-					  false),
+					  false, NULL),
 		       false);
     }
 }
@@ -2776,7 +2778,7 @@ copy_blkmode_to_reg (machine_mode mode, tree src)
 		       extract_bit_field (src_word, bitsize,
 					  bitpos % BITS_PER_WORD, 1,
 					  NULL_RTX, word_mode, word_mode,
-					  false),
+					  false, NULL),
 		       false);
     }
 
@@ -3225,7 +3227,7 @@ read_complex_part (rtx cplx, bool imag_p)
     }
 
   return extract_bit_field (cplx, ibitsize, imag_p ? ibitsize : 0,
-			    true, NULL_RTX, imode, imode, false);
+			    true, NULL_RTX, imode, imode, false, NULL);
 }
 
 /* A subroutine of emit_move_insn_1.  Yet another lowpart generator.
@@ -6911,7 +6913,7 @@ store_field (rtx target, HOST_WIDE_INT bitsize, HOST_WIDE_INT bitpos,
 	{
 	  machine_mode temp_mode = smallest_mode_for_size (bitsize, MODE_INT);
 	  temp = extract_bit_field (temp, bitsize, 0, 1, NULL_RTX, temp_mode,
-				    temp_mode, false);
+				    temp_mode, false, NULL);
 	}
 
       /* Store the value in the bitfield.  */
@@ -9780,7 +9782,8 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 	    case GIMPLE_SINGLE_RHS:
 	      {
 		r = expand_expr_real (gimple_assign_rhs1 (g), target,
-				      tmode, modifier, NULL, inner_reference_p);
+				      tmode, modifier, alt_rtl,
+				      inner_reference_p);
 		break;
 	      }
 	    default:
@@ -10210,7 +10213,7 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 					0, TYPE_UNSIGNED (TREE_TYPE (exp)),
 					(modifier == EXPAND_STACK_PARM
 					 ? NULL_RTX : target),
-					mode, mode, false);
+					mode, mode, false, alt_rtl);
 	  }
 	if (reverse
 	    && modifier != EXPAND_MEMORY
@@ -10707,7 +10710,7 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 	    op0 = extract_bit_field (op0, bitsize, bitpos, unsignedp,
 				     (modifier == EXPAND_STACK_PARM
 				      ? NULL_RTX : target),
-				     ext_mode, ext_mode, reversep);
+				     ext_mode, ext_mode, reversep, alt_rtl);
 
 	    /* If the result has a record type and the mode of OP0 is an
 	       integral mode then, if BITSIZE is narrower than this mode
@@ -10928,7 +10931,7 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
       else if (reduce_bit_field)
 	return extract_bit_field (op0, TYPE_PRECISION (type), 0,
 				  TYPE_UNSIGNED (type), NULL_RTX,
-				  mode, mode, false);
+				  mode, mode, false, NULL);
       /* As a last resort, spill op0 to memory, and reload it in a
 	 different mode.  */
       else if (!MEM_P (op0))

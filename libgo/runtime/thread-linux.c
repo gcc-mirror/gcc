@@ -15,10 +15,6 @@ void
 runtime_osinit(void)
 {
 	runtime_ncpu = getproccount();
-}
-
-void
-runtime_goenvs(void)
-{
-	runtime_goenvs_unix();
+	setncpu(runtime_ncpu);
+	setpagesize(getpagesize());
 }

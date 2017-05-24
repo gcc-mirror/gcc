@@ -21,79 +21,100 @@ echo 'package runtime'
 echo
 echo 'var sigtable = [...]sigTabT{'
 
+SIGLIST=""
+
 # Handle signals valid on all Unix systems.
 
+addsig() {
+    echo "	$1: $2,"
+    # Get the signal number and add it to SIGLIST
+    signum=`grep "const $1 = " gen-sysinfo.go | sed -e 's/.* = //'`
+    if echo "$signum" | grep -q '^_SIG[A-Z0-9_]*$'; then
+        # Recurse once to obtain signal number
+        # This is needed for some MIPS signals defined as aliases of other signals
+        signum=`grep "const $signum = " gen-sysinfo.go | sed -e 's/.* = //'`
+    fi
+    SIGLIST=$SIGLIST"_${signum}_"
+}
+
 echo '	0:          {0, "SIGNONE: no trap"},'
-echo '	_SIGHUP:    {_SigNotify + _SigKill, "SIGHUP: terminal line hangup"},'
-echo '	_SIGINT:    {_SigNotify + _SigKill, "SIGINT: interrupt"},'
-echo '	_SIGQUIT:   {_SigNotify + _SigThrow, "SIGQUIT: quit"},'
-echo '	_SIGILL:    {_SigThrow + _SigUnblock, "SIGILL: illegal instruction"},'
-echo '	_SIGTRAP:   {_SigThrow + _SigUnblock, "SIGTRAP: trace trap"},'
-echo '	_SIGABRT:   {_SigNotify + _SigThrow, "SIGABRT: abort"},'
-echo '	_SIGBUS:    {_SigPanic + _SigUnblock, "SIGBUS: bus error"},'
-echo '	_SIGFPE:    {_SigPanic + _SigUnblock, "SIGFPE: floating-point exception"},'
-echo '	_SIGKILL:   {0, "SIGKILL: kill"},'
-echo '	_SIGUSR1:   {_SigNotify, "SIGUSR1: user-defined signal 1"},'
-echo '	_SIGSEGV:   {_SigPanic + _SigUnblock, "SIGSEGV: segmentation violation"},'
-echo '	_SIGUSR2:   {_SigNotify, "SIGUSR2: user-defined signal 2"},'
-echo '	_SIGPIPE:   {_SigNotify, "SIGPIPE: write to broken pipe"},'
-echo '	_SIGALRM:   {_SigNotify, "SIGALRM: alarm clock"},'
-echo '	_SIGTERM:   {_SigNotify + _SigKill, "SIGTERM: termination"},'
-echo '	_SIGCHLD:   {_SigNotify + _SigUnblock, "SIGCHLD: child status has changed"},'
-echo '	_SIGCONT:   {_SigNotify + _SigDefault, "SIGCONT: continue"},'
-echo '	_SIGSTOP:   {0, "SIGSTOP: stop"},'
-echo '	_SIGTSTP:   {_SigNotify + _SigDefault, "SIGTSTP: keyboard stop"},'
-echo '	_SIGTTIN:   {_SigNotify + _SigDefault, "SIGTTIN: background read from tty"},'
-echo '	_SIGTTOU:   {_SigNotify + _SigDefault, "SIGTTOU: background write to tty"},'
-echo '	_SIGURG:    {_SigNotify, "SIGURG: urgent condition on socket"},'
-echo '	_SIGXCPU:   {_SigNotify, "SIGXCPU: cpu limit exceeded"},'
-echo '	_SIGXFSZ:   {_SigNotify, "SIGXFSZ: file size limit exceeded"},'
-echo '	_SIGVTALRM: {_SigNotify, "SIGVTALRM: virtual alarm clock"},'
-echo '	_SIGPROF:   {_SigNotify + _SigUnblock, "SIGPROF: profiling alarm clock"},'
-echo '	_SIGWINCH:  {_SigNotify, "SIGWINCH: window size change"},'
-echo '	_SIGSYS:    {_SigThrow, "SIGSYS: bad system call"},'
+addsig _SIGHUP     '{_SigNotify + _SigKill, "SIGHUP: terminal line hangup"}'
+addsig _SIGINT     '{_SigNotify + _SigKill, "SIGINT: interrupt"}'
+addsig _SIGQUIT    '{_SigNotify + _SigThrow, "SIGQUIT: quit"}'
+addsig _SIGILL     '{_SigThrow + _SigUnblock, "SIGILL: illegal instruction"}'
+addsig _SIGTRAP    '{_SigThrow + _SigUnblock, "SIGTRAP: trace trap"}'
+addsig _SIGABRT    '{_SigNotify + _SigThrow, "SIGABRT: abort"}'
+addsig _SIGBUS     '{_SigPanic + _SigUnblock, "SIGBUS: bus error"}'
+addsig _SIGFPE     '{_SigPanic + _SigUnblock, "SIGFPE: floating-point exception"}'
+addsig _SIGKILL    '{0, "SIGKILL: kill"}'
+addsig _SIGUSR1    '{_SigNotify, "SIGUSR1: user-defined signal 1"}'
+addsig _SIGSEGV    '{_SigPanic + _SigUnblock, "SIGSEGV: segmentation violation"}'
+addsig _SIGUSR2    '{_SigNotify, "SIGUSR2: user-defined signal 2"}'
+addsig _SIGPIPE    '{_SigNotify, "SIGPIPE: write to broken pipe"}'
+addsig _SIGALRM    '{_SigNotify, "SIGALRM: alarm clock"}'
+addsig _SIGTERM    '{_SigNotify + _SigKill, "SIGTERM: termination"}'
+addsig _SIGCHLD    '{_SigNotify + _SigUnblock, "SIGCHLD: child status has changed"}'
+addsig _SIGCONT    '{_SigNotify + _SigDefault, "SIGCONT: continue"}'
+addsig _SIGSTOP    '{0, "SIGSTOP: stop"}'
+addsig _SIGTSTP    '{_SigNotify + _SigDefault, "SIGTSTP: keyboard stop"}'
+addsig _SIGTTIN    '{_SigNotify + _SigDefault, "SIGTTIN: background read from tty"}'
+addsig _SIGTTOU    '{_SigNotify + _SigDefault, "SIGTTOU: background write to tty"}'
+addsig _SIGURG     '{_SigNotify, "SIGURG: urgent condition on socket"}'
+addsig _SIGXCPU    '{_SigNotify, "SIGXCPU: cpu limit exceeded"}'
+addsig _SIGXFSZ    '{_SigNotify, "SIGXFSZ: file size limit exceeded"}'
+addsig _SIGVTALRM  '{_SigNotify, "SIGVTALRM: virtual alarm clock"}'
+addsig _SIGPROF    '{_SigNotify + _SigUnblock, "SIGPROF: profiling alarm clock"}'
+addsig _SIGWINCH   '{_SigNotify, "SIGWINCH: window size change"}'
+addsig _SIGSYS     '{_SigThrow, "SIGSYS: bad system call"}'
 
 # Handle signals that are not supported on all systems.
 
 checksig() {
     if grep "const $1 = " gen-sysinfo.go >/dev/null 2>&1 \
 	&& ! grep "const $1 = _SIG" gen-sysinfo.go > /dev/null 2>&1; then
-	echo "	$1: $2,"
+	addsig $1 "$2"
     fi
 }
 
-checksig _SIGSTKFLT ' {_SigThrow + _SigUnblock, "SIGSTKFLT: stack fault"}'
-checksig _SIGIO '     {_SigNotify, "SIGIO: i/o now possible"}'
-checksig _SIGPWR '    {_SigNotify, "SIGPWR: power failure restart"}'
-checksig _SIGEMT '    {_SigThrow, "SIGEMT: emulate instruction executed"}'
-checksig _SIGINFO '   {_SigNotify, "SIGINFO: status request from keyboard"}'
-checksig _SIGTHR '    {_SigNotify, "SIGTHR: reserved"}'
-checksig _SIGPOLL '   {_SigNotify, "SIGPOLL: pollable event occurred"}'
+checksig _SIGSTKFLT  '{_SigThrow + _SigUnblock, "SIGSTKFLT: stack fault"}'
+checksig _SIGIO      '{_SigNotify, "SIGIO: i/o now possible"}'
+checksig _SIGPWR     '{_SigNotify, "SIGPWR: power failure restart"}'
+checksig _SIGEMT     '{_SigThrow, "SIGEMT: emulate instruction executed"}'
+checksig _SIGINFO    '{_SigNotify, "SIGINFO: status request from keyboard"}'
+checksig _SIGTHR     '{_SigNotify, "SIGTHR: reserved"}'
+checksig _SIGPOLL    '{_SigNotify, "SIGPOLL: pollable event occurred"}'
 checksig _SIGWAITING '{_SigNotify, "SIGWAITING: reserved signal no longer used by"}'
-checksig _SIGLWP '    {_SigNotify, "SIGLWP: reserved signal no longer used by"}'
-checksig _SIGFREEZE ' {_SigNotify, "SIGFREEZE: special signal used by CPR"}'
-checksig _SIGTHAW '   {_SigNotify, "SIGTHAW: special signal used by CPR"}'
-checksig _SIGCANCEL ' {_SigSetStack + _SigUnblock, "SIGCANCEL: reserved signal for thread cancellation"}'
-checksig _SIGXRES '   {_SigNotify, "SIGXRES: resource control exceeded"}'
-checksig _SIGJVM1 '   {_SigNotify, "SIGJVM1: reserved signal for Java Virtual Machine"}'
-checksig _SIGJVM2 '   {_SigNotify, "SIGJVM2: reserved signal for Java Virtual Machine"}'
+checksig _SIGLWP     '{_SigNotify, "SIGLWP: reserved signal no longer used by"}'
+checksig _SIGFREEZE  '{_SigNotify, "SIGFREEZE: special signal used by CPR"}'
+checksig _SIGTHAW    '{_SigNotify, "SIGTHAW: special signal used by CPR"}'
+checksig _SIGCANCEL  '{_SigSetStack + _SigUnblock, "SIGCANCEL: reserved signal for thread cancellation"}'
+checksig _SIGXRES    '{_SigNotify, "SIGXRES: resource control exceeded"}'
+checksig _SIGJVM1    '{_SigNotify, "SIGJVM1: reserved signal for Java Virtual Machine"}'
+checksig _SIGJVM2    '{_SigNotify, "SIGJVM2: reserved signal for Java Virtual Machine"}'
 
 # Special handling of signals 32 and 33 on GNU/Linux systems,
 # because they are special to glibc.
 if test "${GOOS}" = "linux"; then
+    SIGLIST=$SIGLIST"_32__33_"
     echo '	32: {_SigSetStack + _SigUnblock, "signal 32"}, /* SIGCANCEL; see issue 6997 */'
     echo '	33: {_SigSetStack + _SigUnblock, "signal 33"}, /* SIGSETXID; see issues 3871, 9400, 12498 */'
 fi
 
-nsig=`grep 'const _*NSIG = [0-9]*$' gen-sysinfo.go | sed -e 's/.* = \([0-9]*\)/\1/'`
+if test "${GOOS}" = "aix"; then
+    # _NSIG = _NSIG32/_NSIG64 and _NSIG* = _SIGMAX* + 1
+    bits=`grep 'const _NSIG = _NSIG[0-9]*$' gen-sysinfo.go | sed -e 's/.* = _NSIG\([0-9]*\)/\1/'`
+    nsig=`grep "const _SIGMAX$bits = [0-9]*$" gen-sysinfo.go | sed -e 's/.* = \([0-9]*\)/\1/'`
+    nsig=`expr $nsig + 1`
+else
+    nsig=`grep 'const _*NSIG = [0-9]*$' gen-sysinfo.go | sed -e 's/.* = \([0-9]*\)/\1/'`
+fi
+
 i=1
+# Fill in the remaining signal numbers in sigtable
 while test "$i" -lt "$nsig"; do
-    if ! grep "const _SIG.* = $i" gen-sysinfo.go >/dev/null 2>&1; then
-	if test "${GOOS}" != "linux" || test "$i" -ne 32 -a "$i" -ne 33; then
-	    echo "	$i: {_SigNotify, \"signal $i\"},"
-	fi
+    if ! echo $SIGLIST | grep "_${i}_" >/dev/null 2>&1; then
+	echo "	$i: {_SigNotify, \"signal $i\"},"
     fi
     i=`expr "$i" + 1`
 done
-
 echo '}'

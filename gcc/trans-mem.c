@@ -1275,7 +1275,7 @@ tm_log_emit (void)
       if (dump_file)
 	{
 	  fprintf (dump_file, "TM thread private mem logging: ");
-	  print_generic_expr (dump_file, lp->addr, 0);
+	  print_generic_expr (dump_file, lp->addr);
 	  fprintf (dump_file, "\n");
 	}
 
@@ -3369,6 +3369,8 @@ pass_tm_edges::execute (function *fun)
      must be rebuilt completely.  Otherwise we'll crash trying to update
      the SSA web in the TODO section following this pass.  */
   free_dominance_info (CDI_DOMINATORS);
+  /* We'ge also wrecked loops badly with inserting of abnormal edges.  */
+  loops_state_set (LOOPS_NEED_FIXUP);
   bitmap_obstack_release (&tm_obstack);
   all_tm_regions = NULL;
 
@@ -3580,7 +3582,7 @@ tm_memopt_accumulate_memops (basic_block bb)
 	  fprintf (dump_file, "TM memopt (%s): value num=%d, BB=%d, addr=",
 		   is_tm_load (stmt) ? "LOAD" : "STORE", loc,
 		   gimple_bb (stmt)->index);
-	  print_generic_expr (dump_file, gimple_call_arg (stmt, 0), 0);
+	  print_generic_expr (dump_file, gimple_call_arg (stmt, 0));
 	  fprintf (dump_file, "\n");
 	}
     }
@@ -3608,7 +3610,7 @@ dump_tm_memopt_set (const char *set_name, bitmap bits)
       gcc_assert (mem->value_id == i);
       fprintf (dump_file, "%s", comma);
       comma = ", ";
-      print_generic_expr (dump_file, mem->addr, 0);
+      print_generic_expr (dump_file, mem->addr);
     }
   fprintf (dump_file, "]\n");
 }
@@ -3908,7 +3910,7 @@ dump_tm_memopt_transform (gimple *stmt)
   if (dump_file)
     {
       fprintf (dump_file, "TM memopt: transforming: ");
-      print_gimple_stmt (dump_file, stmt, 0, 0);
+      print_gimple_stmt (dump_file, stmt, 0);
       fprintf (dump_file, "\n");
     }
 }

@@ -1,3 +1,136 @@
+2017-05-23  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* openmp.c (OACC_KERNELS_CLAUSES): Add "OMP_CLAUSE_NUM_GANGS",
+	"OMP_CLAUSE_NUM_WORKERS", "OMP_CLAUSE_VECTOR_LENGTH".
+
+2017-05-22  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/80766
+	* resolve.c (resolve_fl_derived): Make sure that vtype symbols are
+	properly resolved.
+
+2017-05-19  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/80333
+	* trans-io.c (nml_get_addr_expr): If we are dealing with class
+	type data set tmp tree to get that address.
+	(transfer_namelist_element): Set the array spec to point to the
+	the class data.
+
+2017-05-19  David Malcolm  <dmalcolm@redhat.com>
+
+	PR fortran/79852
+	* bbt.c (insert): Remove trailing exclamation mark from message.
+	* decl.c (gfc_match_final_decl): Likewise.
+	* dump-parse-tree.c (show_expr): Likewise.
+	* module.c (gfc_use_module): Likewise.
+	* primary.c (build_actual_constructor): Likewise.
+	(gfc_convert_to_structure_constructor): Likewise.
+
+2017-05-19  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* gfortran.h (enum gfc_omp_default_sharing): Add
+	"OMP_DEFAULT_PRESENT".
+	* dump-parse-tree.c (show_omp_clauses): Handle it.
+	* openmp.c (gfc_match_omp_clauses): Likewise.
+	* trans-openmp.c (gfc_trans_omp_clauses): Likewise.
+
+2017-05-18  Fritz Reese <fritzoreese@gmail.com>
+
+	PR fortran/79968
+	* decl.c (match_attr_spec, gfc_match_automatic,
+	gfc_match_static, gfc_match_structure_decl): Unify diagnostic
+	errors regarding -fdec options.
+	* io.c (match_dec_etag, match_dec_vtag, match_dec_ftag): Ditto.
+
+2017-05-17  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/80741
+	* trans-io.c (transfer_namelist_element): Change check from
+	NULL_TREE to null_pointer_node.
+
+2017-05-17  Fritz Reese <fritzoreese@gmail.com>
+
+	PR fortran/80668
+	* expr.c (component_initializer): Don't generate initializers for
+	pointer components.
+	* invoke.texi (-finit-derived): Document.
+
+2017-05-16  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/80554
+	* decl.c (build_sym): In a submodule allow overriding of host
+	associated symbols from the ancestor module with a new
+	declaration.
+
+2017-05-15  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/80674
+	* trans-stmt.c (gfc_trans_integer_select): Remove redundant condition.
+
+2017-05-15  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/80752
+	* expr.c (gfc_generate_initializer):  If type conversion fails,
+	check for error and return NULL.
+
+2017-05-14  Nicolas Koenig  <koenigni@student.ethz.ch>
+
+	PR fortran/80442
+	* array.c (gfc_ref_dimen_size): Simplify stride
+	expression
+	* data.c (gfc_advance_section): Simplify start,
+	end and stride expressions
+	(gfc_advance_section): Simplify start and end
+	expressions
+	(gfc_get_section_index): Simplify start expression
+
+2017-05-13  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	* io.c (gfc_resolve_dt): Fix returns to bool type.
+
+2017-05-11  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/78659
+	* io.c (dtio_procs_present): Add new function to check for DTIO
+	procedures relative to I/O statement READ or WRITE.
+	(gfc_resolve_dt): Add namelist checks using the new function.
+	* resolve.c (dtio_procs_present): Remove function and related
+	namelist checks. (resolve_fl_namelist): Add check specific to
+	Fortran 95 restriction on namelist objects.
+
+2017-05-11  Nathan Sidwell  <nathan@acm.org>
+
+	* trans-decl.c: Include dumpfile.h not tree-dump.h,
+
+2017-05-09  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/79311
+	* resolve.c (gfc_resolve_finalizers): Ensure that derived-type
+	components have a their finalizers resolved, also if the superordinate
+	type itself has a finalizer.
+
+2017-05-08  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/79930
+	* frontend-passes.c (matmul_to_var_expr): New function,
+	add prototype.
+	(matmul_to_var_code):  Likewise.
+	(optimize_namespace):  Use them from gfc_code_walker.
+
+2017-05-05  David Malcolm  <dmalcolm@redhat.com>
+
+	* cpp.c (cb_cpp_error): Replace report_diagnostic
+	with diagnostic_report_diagnostic.
+	* error.c (gfc_warning): Likewise.
+	(gfc_warning_now_at): Likewise.
+	(gfc_warning_now): Likewise.
+	(gfc_warning_internal): Likewise.
+	(gfc_error_now): Likewise.
+	(gfc_fatal_error): Likewise.
+	(gfc_error_opt): Likewise.
+	(gfc_internal_error): Likewise.
+
 2017-05-01  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/37131

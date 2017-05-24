@@ -135,6 +135,12 @@ _GLIBCXX_MEM_FN_TRAITS( , true_type, true_type)
 _GLIBCXX_MEM_FN_TRAITS(&, true_type, false_type)
 _GLIBCXX_MEM_FN_TRAITS(&&, false_type, true_type)
 
+#if __cplusplus > 201402L
+_GLIBCXX_MEM_FN_TRAITS(noexcept, true_type, true_type)
+_GLIBCXX_MEM_FN_TRAITS(& noexcept, true_type, false_type)
+_GLIBCXX_MEM_FN_TRAITS(&& noexcept, false_type, true_type)
+#endif
+
 #undef _GLIBCXX_MEM_FN_TRAITS
 #undef _GLIBCXX_MEM_FN_TRAITS2
 

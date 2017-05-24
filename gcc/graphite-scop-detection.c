@@ -96,8 +96,8 @@ DEBUG_FUNCTION void
 dot_all_sese (FILE *file, vec<sese_l>& scops)
 {
   /* Disable debugging while printing graph.  */
-  int tmp_dump_flags = dump_flags;
-  dump_flags = 0;
+  dump_flags_t tmp_dump_flags = dump_flags;
+  dump_flags = TDF_NONE;
 
   fprintf (file, "digraph all {\n");
 
@@ -1748,10 +1748,10 @@ build_cross_bb_scalars_def (scop_p scop, tree def, basic_block def_bb,
       {
 	writes->safe_push (def);
 	DEBUG_PRINT (dp << "Adding scalar write: ";
-		     print_generic_expr (dump_file, def, 0);
+		     print_generic_expr (dump_file, def);
 		     dp << "\nFrom stmt: ";
 		     print_gimple_stmt (dump_file,
-					SSA_NAME_DEF_STMT (def), 0, 0));
+					SSA_NAME_DEF_STMT (def), 0));
 	/* This is required by the FOR_EACH_IMM_USE_STMT when we want to break
 	   before all the uses have been visited.  */
 	BREAK_FROM_IMM_USE_STMT (imm_iter);
@@ -1777,9 +1777,9 @@ build_cross_bb_scalars_use (scop_p scop, tree use, gimple *use_stmt,
   if (gimple_bb (def_stmt) != gimple_bb (use_stmt))
     {
       DEBUG_PRINT (dp << "Adding scalar read: ";
-		   print_generic_expr (dump_file, use, 0);
+		   print_generic_expr (dump_file, use);
 		   dp << "\nFrom stmt: ";
-		   print_gimple_stmt (dump_file, use_stmt, 0, 0));
+		   print_gimple_stmt (dump_file, use_stmt, 0));
       reads->safe_push (std::make_pair (use_stmt, use));
     }
 }
@@ -1973,9 +1973,9 @@ gather_bbs::before_dom_children (basic_block bb)
 		     dp << "read: ";
 		   else
 		     dp << "write: ";
-		   print_generic_expr (dump_file, dr->ref, 0);
+		   print_generic_expr (dump_file, dr->ref);
 		   dp << "\nFrom stmt: ";
-		   print_gimple_stmt (dump_file, dr->stmt, 0, 0));
+		   print_gimple_stmt (dump_file, dr->stmt, 0));
 
       scop->drs.safe_push (dr_info (dr, pbb));
     }

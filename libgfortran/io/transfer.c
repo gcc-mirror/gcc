@@ -272,12 +272,6 @@ read_sf_internal (st_parameter_dt *dtp, int *length)
       return NULL;
     }
 
-  if (base && *base == 0)
-    {
-      generate_error (&dtp->common, LIBERROR_EOR, NULL);
-      return NULL;
-    }
-
   dtp->u.p.current_unit->bytes_left -= *length;
 
   if (((dtp->common.flags & IOPARM_DT_HAS_SIZE) != 0) ||
@@ -470,11 +464,24 @@ read_block_form (st_parameter_dt *dtp, int *nbytes)
 		}
 	    }
 
-	  if (unlikely (dtp->u.p.current_unit->bytes_left == 0
-	      && !is_internal_unit(dtp)))
+	  if (is_internal_unit(dtp))
 	    {
-	      hit_eof (dtp);
-	      return NULL;
+	      if (*nbytes > 0 && dtp->u.p.current_unit->bytes_left == 0)
+	        {
+		  if (dtp->u.p.advance_status == ADVANCE_NO)
+		    {
+		      generate_error (&dtp->common, LIBERROR_EOR, NULL);
+		      return NULL;
+		    }
+		}
+	    }
+	  else
+	    {
+	      if (unlikely (dtp->u.p.current_unit->bytes_left == 0))
+		{
+		  hit_eof (dtp);
+		  return NULL;
+		}
 	    }
 
 	  *nbytes = dtp->u.p.current_unit->bytes_left;
@@ -3970,7 +3977,7 @@ finalize_transfer (st_parameter_dt *dtp)
       fbuf_seek (dtp->u.p.current_unit, 0, SEEK_END);
 
   dtp->u.p.current_unit->saved_pos = 0;
-
+  dtp->u.p.current_unit->last_char = EOF - 1;
   next_record (dtp, 1);
 
  done:

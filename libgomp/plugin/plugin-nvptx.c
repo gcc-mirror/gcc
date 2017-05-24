@@ -838,7 +838,11 @@ nvptx_get_num_devices (void)
   /* PR libgomp/65099: Currently, we only support offloading in 64-bit
      configurations.  */
   if (sizeof (void *) != 8)
-    return 0;
+    {
+      GOMP_PLUGIN_debug (0, "Disabling nvptx offloading;"
+			 " only 64-bit configurations are supported\n");
+      return 0;
+    }
 
   /* This function will be called before the plugin has been initialized in
      order to enumerate available devices, but CUDA API routines can't be used
@@ -852,7 +856,11 @@ nvptx_get_num_devices (void)
       /* This is not an error: e.g. we may have CUDA libraries installed but
          no devices available.  */
       if (r != CUDA_SUCCESS)
-        return 0;
+	{
+	  GOMP_PLUGIN_debug (0, "Disabling nvptx offloading; cuInit: %s\n",
+			     cuda_error (r));
+	  return 0;
+	}
     }
 
   CUDA_CALL_ERET (-1, cuDeviceGetCount, &n);

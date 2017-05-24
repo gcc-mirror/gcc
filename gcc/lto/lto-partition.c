@@ -33,7 +33,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "symbol-summary.h"
 #include "tree-vrp.h"
 #include "ipa-prop.h"
-#include "ipa-inline.h"
+#include "ipa-fnsummary.h"
 #include "lto-partition.h"
 
 vec<ltrans_partition> ltrans_partitions;
@@ -153,7 +153,7 @@ add_symbol_to_partition_1 (ltrans_partition part, symtab_node *node)
     {
       struct cgraph_edge *e;
       if (!node->alias)
-        part->insns += inline_summaries->get (cnode)->self_size;
+        part->insns += ipa_fn_summaries->get (cnode)->self_size;
 
       /* Add all inline clones and callees that are duplicated.  */
       for (e = cnode->callees; e; e = e->next_callee)
@@ -277,7 +277,7 @@ undo_partition (ltrans_partition partition, unsigned int n_nodes)
       partition->initializers_visited = NULL;
 
       if (!node->alias && (cnode = dyn_cast <cgraph_node *> (node)))
-        partition->insns -= inline_summaries->get (cnode)->self_size;
+        partition->insns -= ipa_fn_summaries->get (cnode)->self_size;
       lto_symtab_encoder_delete_node (partition->encoder, node);
       node->aux = (void *)((size_t)node->aux - 1);
     }
@@ -480,7 +480,7 @@ lto_balanced_map (int n_lto_partitions, int max_partition_size)
 	else
 	  order[n_nodes++] = node;
 	if (!node->alias)
-	  total_size += inline_summaries->get (node)->size;
+	  total_size += ipa_fn_summaries->get (node)->size;
       }
 
   original_total_size = total_size;
@@ -542,14 +542,14 @@ lto_balanced_map (int n_lto_partitions, int max_partition_size)
 	     && noreorder[noreorder_pos]->order < current_order)
 	{
 	  if (!noreorder[noreorder_pos]->alias)
-	    total_size -= inline_summaries->get (noreorder[noreorder_pos])->size;
+	    total_size -= ipa_fn_summaries->get (noreorder[noreorder_pos])->size;
 	  next_nodes.safe_push (noreorder[noreorder_pos++]);
 	}
       add_sorted_nodes (next_nodes, partition);
 
       add_symbol_to_partition (partition, order[i]);
       if (!order[i]->alias)
-        total_size -= inline_summaries->get (order[i])->size;
+        total_size -= ipa_fn_summaries->get (order[i])->size;
 	  
 
       /* Once we added a new node to the partition, we also want to add

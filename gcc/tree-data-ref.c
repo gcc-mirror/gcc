@@ -203,16 +203,16 @@ dump_data_reference (FILE *outf,
   fprintf (outf, "#(Data Ref: \n");
   fprintf (outf, "#  bb: %d \n", gimple_bb (DR_STMT (dr))->index);
   fprintf (outf, "#  stmt: ");
-  print_gimple_stmt (outf, DR_STMT (dr), 0, 0);
+  print_gimple_stmt (outf, DR_STMT (dr), 0);
   fprintf (outf, "#  ref: ");
-  print_generic_stmt (outf, DR_REF (dr), 0);
+  print_generic_stmt (outf, DR_REF (dr));
   fprintf (outf, "#  base_object: ");
-  print_generic_stmt (outf, DR_BASE_OBJECT (dr), 0);
+  print_generic_stmt (outf, DR_BASE_OBJECT (dr));
 
   for (i = 0; i < DR_NUM_DIMENSIONS (dr); i++)
     {
       fprintf (outf, "#  Access function %d: ", i);
-      print_generic_stmt (outf, DR_ACCESS_FN (dr, i), 0);
+      print_generic_stmt (outf, DR_ACCESS_FN (dr, i));
     }
   fprintf (outf, "#)\n");
 }
@@ -290,7 +290,7 @@ dump_subscript (FILE *outf, struct subscript *subscript)
     {
       tree last_iteration = SUB_LAST_CONFLICT (subscript);
       fprintf (outf, "\n  last_conflict: ");
-      print_generic_expr (outf, last_iteration, 0);
+      print_generic_expr (outf, last_iteration);
     }
 
   cf = SUB_CONFLICTS_IN_B (subscript);
@@ -300,11 +300,11 @@ dump_subscript (FILE *outf, struct subscript *subscript)
     {
       tree last_iteration = SUB_LAST_CONFLICT (subscript);
       fprintf (outf, "\n  last_conflict: ");
-      print_generic_expr (outf, last_iteration, 0);
+      print_generic_expr (outf, last_iteration);
     }
 
   fprintf (outf, "\n  (Subscript distance: ");
-  print_generic_expr (outf, SUB_DISTANCE (subscript), 0);
+  print_generic_expr (outf, SUB_DISTANCE (subscript));
   fprintf (outf, " ))\n");
 }
 
@@ -436,9 +436,9 @@ dump_data_dependence_relation (FILE *outf,
       for (i = 0; i < DDR_NUM_SUBSCRIPTS (ddr); i++)
 	{
 	  fprintf (outf, "  access_fn_A: ");
-	  print_generic_stmt (outf, DR_ACCESS_FN (dra, i), 0);
+	  print_generic_stmt (outf, DR_ACCESS_FN (dra, i));
 	  fprintf (outf, "  access_fn_B: ");
-	  print_generic_stmt (outf, DR_ACCESS_FN (drb, i), 0);
+	  print_generic_stmt (outf, DR_ACCESS_FN (drb, i));
 	  dump_subscript (outf, DDR_SUBSCRIPT (ddr, i));
 	}
 
@@ -3037,9 +3037,9 @@ analyze_overlapping_iterations (tree chrec_a,
     {
       fprintf (dump_file, "(analyze_overlapping_iterations \n");
       fprintf (dump_file, "  (chrec_a = ");
-      print_generic_expr (dump_file, chrec_a, 0);
+      print_generic_expr (dump_file, chrec_a);
       fprintf (dump_file, ")\n  (chrec_b = ");
-      print_generic_expr (dump_file, chrec_b, 0);
+      print_generic_expr (dump_file, chrec_b);
       fprintf (dump_file, ")\n");
     }
 

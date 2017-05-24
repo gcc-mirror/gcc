@@ -1,3 +1,220 @@
+2017-05-23  Xi Ruoyao  <ryxi@stu.xidian.edu.cn>
+	    Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/67578
+	* acinclude.m4: Bump libtool_VERSION.
+	* config/abi/pre/gnu.ver: Create GLIBCXX_3.4.24 with new symbol.
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac: Add test for <linux/random.h>.
+	* doc/xml/manual/abi.xml: Document new library version.
+	* include/bits/random.h (random_device::entropy)
+	[_GLIBCXX_USE_RANDOM_TR1]: Add call to new _M_getentropy member.
+	(random_device::_M_getentropy): Declare.
+	* src/c++11/random.cc (random_device::_M_getentropy): Define.
+	* testsuite/util/testsuite_abi.cc: Add GLIBCXX_3.4.24 to known
+	versions, and make it the latest version.
+
+2017-05-23  Xi Ruoyao  <ryxi@stu.xidian.edu.cn>
+
+	PR libstdc++/67214
+	* include/bits/locale_facets.tcc (num_get::_M_extract_int): Add
+	explicit conversion to avoid signed overflow.
+
+2017-05-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/80796
+	* include/bits/stl_algo.h (search): Add new overload for C++17.
+	* testsuite/25_algorithms/search/searcher.cc: New.
+
+2017-05-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/80478
+	* include/std/functional (_Mem_fn_traits_base): Add specializations
+	for noexcept member function types.
+	* testsuite/20_util/function_objects/mem_fn/80478.cc: New test.
+
+2017-05-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/policy_data_structures.xml: Fix typo.
+	* doc/xml/manual/test_policy_data_structures.xml: Likewise.
+	* doc/html/*: Regenerate.
+
+	* doc/xml/manual/abi.xml: Document latest library versions.
+	* doc/xml/manual/build_hacking.xml: Document requirement to update
+	abi.xml when bumping library versions.
+	* doc/html/*: Regenerate.
+
+2017-05-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/refwrap.h: Fix Doxygen warning.
+	* include/bits/specfun.h: Likewise.
+	* include/bits/std_function.h: Likewise.
+	* include/bits/stl_algo.h (set_union, set_intersection)
+	(set_difference, set_symmetric_difference): Add Doxygen @param tags
+	for output iterator parameters.
+	* include/bits/stl_iterator.h (inserter): Add Doxygen @param tag for
+	iterator parameter.
+	* include/std/mutex (try_lock, lock): Change Mutex to Lockable in
+	Doxygen comments.
+
+2017-05-17  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	Implement new C++ intrinsics __is_assignable and __is_constructible.
+	* include/std/type_traits (__do_is_static_castable_impl): Remove.
+	(__is_static_castable_impl, __is_static_castable_safe): Likewise.
+	(__is_static_castable, __do_is_direct_constructible_impl): Likewise.
+	(__is_direct_constructible_impl): Likewise.
+	(__is_direct_constructible_new_safe): Likewise.
+	(__is_base_to_derived_ref, __is_lvalue_to_rvalue_ref): Likewise.
+	(__is_direct_constructible_ref_cast): Likewise.
+	(__is_direct_constructible_new, __is_direct_constructible): Likewise.
+	(__do_is_nary_constructible_impl): Likewise.
+	(__is_nary_constructible_impl, __is_nary_constructible): Likewise.
+	(__is_constructible_impl): Likewise.
+	(is_constructible): Call the intrinsic.
+	(__is_assignable_helper): Remove.
+	(is_assignable): Call the intrinsic.
+	(is_trivially_constructible): Likewise.
+	(__is_trivially_copy_constructible_impl): New.
+	(is_trivially_copy_constructible): Use it.
+	(__is_trivially_move_constructible_impl): New.
+	(is_trivially_move_constructible): Use it.
+	(is_trivially_assignable): Call the intrinsic.
+	(__is_trivially_copy_assignable_impl): New.
+	(is_trivially_copy_assignable): Use it.
+	(__is_trivially_move_assignable_impl): New.
+	(is_trivially_move_assignable): Use it.
+	(testsuite/20_util/declval/requirements/1_neg.cc): Adjust.
+	(testsuite/20_util/is_trivially_copy_assignable/value.cc):
+	Add test for void.
+	(testsuite/20_util/is_trivially_copy_constructible/value.cc): Likewise.
+	(testsuite/20_util/is_trivially_move_assignable/value.cc): Likewise.
+	(testsuite/20_util/is_trivially_move_constructible/value.cc): Likewise.
+	(testsuite/20_util/make_signed/requirements/typedefs_neg.cc): Adjust.
+	(testsuite/20_util/make_unsigned/requirements/typedefs_neg.cc):
+	Likewise.
+
+2017-05-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/experimental/source_location/1.cc: Change expected result
+	for source_location::current() used in default member initializer.
+
+	* doc/xml/manual/status_cxx2017.xml: Update status table.
+	* doc/html/*: Regenerate.
+	* include/Makefile.am: Add new header.
+	* include/Makefile.in: Regenerate.
+	* include/experimental/source_location: New header implementing N4519.
+	* testsuite/experimental/source_location/1.cc: New test.
+
+	PR libstdc++/80285
+	* include/bits/shared_ptr_base.h [!__cpp_rtti] (type_info): Declare
+	outside versioned namespace.
+
+	* configure: Regenerate.
+
+2017-05-16  Marc Glisse  <marc.glisse@inria.fr>
+
+	* include/std/optional (_Optional_base::_M_get): Check precondition.
+	* testsuite/20_util/optional/cons/value_neg.cc: Update line numbers.
+
+2017-05-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/appendix_contributing.xml: Link to test docs and
+	note higher DejaGnu version requirement.
+	* doc/html/*: Regenerate.
+
+	* doc/xml/manual/appendix_contributing.xml: Link to the list of bad
+	identifiers.
+	* doc/html/*: Regenerate.
+
+2017-05-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/80761
+	* include/bits/node_handle.h (_Node_insert_return): Reorder members.
+	(tuple_size, tuple_element): Remove partial specializations.
+	* include/bits/stl_tree.h (_Rb_tree::insert_return_type): Use
+	const_iterator for std::set.
+	* testsuite/23_containers/map/modifiers/extract.cc: New.
+	* testsuite/23_containers/set/modifiers/extract.cc: New.
+	* testsuite/23_containers/unordered_map/modifiers/extract.cc: New.
+	* testsuite/23_containers/unordered_set/modifiers/extract.cc: New.
+
+2017-05-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/78939
+	* include/std/utility (tuple_size<cv T>): Only define partial
+	specializations when tuple_size<T>::value is valid.
+	* testsuite/20_util/tuple/78939.cc: New.
+	* testsuite/20_util/tuple/cv_tuple_size_neg.cc: New.
+
+2017-05-11  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/bits/stl_tree.h [_GLIBCXX_INLINE_VERSION]
+	(_Rb_tree_impl<>): Remove _Is_pod_comparator
+	template parameter.
+
+	* include/debug/formatter.h [_GLIBCXX_INLINE_VERSION]
+	(__gnu_debug::_Error_formatter::_Parameter::_M_print_field): Remove.
+	(__gnu_debug::_Error_formatter::_Parameter::_M_print_description):
+	Remove.
+	(__gnu_debug::_Error_formatter::_M_format_word): Remove.
+	(__gnu_debug::_Error_formatter::_M_print_word): Remove.
+	(__gnu_debug::_Error_formatter::_M_print_string): Remove.
+	(__gnu_debug::_Error_formatter::_M_get_max_length): Remove.
+	* src/c++11/debug.cc: Adapt.
+	* config/abi/pre/gnu-versioned-namespace.ver: Adapt.
+
+2017-05-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/allocator.xml: Fix ViewCVS URLs.
+	* doc/xml/manual/mt_allocator.xml: Likewise.
+	* doc/html/*: Regenerate.
+
+	PR libstdc++/80285
+	* include/bits/shared_ptr_base.h (_Sp_make_shared_tag::_S_ti): Define
+	function to get unique fake std::type_info reference.
+	(_Sp_counted_ptr_inplace::_M_get_deleter) [!__cpp_rtti]: Compare to
+	_S_ti() fake reference.
+	(__shared_ptr(_Sp_make_shared_tag, const Alloc&, Args&&...)): Share
+	single implementation with or without RTTI enable.
+	[!__cpp_rtti]: Pass fake reference to _M_get_deleter.
+	* testsuite/20_util/shared_ptr/creation/alloc.cc: Change expected
+	allocation and deallocation counts.
+	* testsuite/20_util/shared_ptr/creation/single_allocation.cc: New.
+	* testsuite/20_util/shared_ptr/creation/single_allocation_no_rtti.cc:
+	New.
+
+2017-05-10  François Dumont  <fdumont@gcc.gnu.org>
+
+	Bump version namespace.
+	* config/abi/pre/gnu-versioned-namespace.ver: Bump version namespace
+	from __7 to __8. Bump GLIBCXX_7.0 to GLIBCXX_8.0.
+	* acinclude.m4 (libtool_VERSION): Bump to 8:0:0.
+	* include/bits/c++config: Adapt.
+	* include/bits/regex.h: Adapt.
+	* include/experimental/bits/fs_fwd.h: Adapt.
+	* include/experimental/bits/lfts_config.h: Adapt.
+	* include/std/variant: Adapt.
+	* python/libstdcxx/v6/printers.py: Adapt.
+	* testsuite/libstdc++-prettyprinters/48362.cc: Adapt.
+
+	* include/bits/stl_algobase.h (std::__iter_swap<false>): Remove
+	_GLIBCXX_MOVE usage.
+
+2017-05-09  Jason Merrill  <jason@redhat.com>
+
+	* testsuite/24_iterators/container_access.cc (test03): Make il3 static.
+
+2017-05-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/optional: Use a separate static_assert per condition.
+	* testsuite/20_util/optional/cons/value_neg.cc: Update dg-error line
+	numbers.
+
+	* doc/xml/manual/mt_allocator.xml: Clarify deallocation behaviour.
+	* doc/html/*: Regenerate.
+
 2017-05-02  Hugo Beauzée-Luyssen <hugo@beauzee.fr>
 
 	PR libstdc++/69506

@@ -15,7 +15,6 @@
 #include "runtime.h"
 #include "array.h"
 #include "arch.h"
-#include "malloc.h"
 
 /* This is used when building a standalone Go library using the Go
    command's -buildmode=c-archive or -buildmode=c-shared option.  It
@@ -24,7 +23,12 @@
    and calls exported Go functions as needed.  */
 
 static void die (const char *, int);
-static void initfn (int, char **, char **);
+/* .init_array section does not exist in AIX XCOFF.
+   -Wl,-binitfini:__go_init option will be required to build go
+   libraries and make sure __go_init is called when the library is
+   loaded. This requires __go_init to be exported.  */
+
+void __go_init (int, char **, char **);
 static void *gostart (void *);
 
 /* Used to pass arguments to the thread that runs the Go startup.  */
@@ -34,6 +38,7 @@ struct args {
   char **argv;
 };
 
+#ifndef _AIX
 /* We use .init_array so that we can get the command line arguments.
    This obviously assumes .init_array support; different systems may
    require other approaches.  */
@@ -42,7 +47,8 @@ typedef void (*initarrayfn) (int, char **, char **);
 
 static initarrayfn initarray[1]
 __attribute__ ((section (".init_array"), used)) =
-  { initfn };
+  { __go_init };
+#endif
 
 /* This function is called at program startup time.  It starts a new
    thread to do the actual Go startup, so that program startup is not
@@ -50,8 +56,8 @@ __attribute__ ((section (".init_array"), used)) =
    functions will wait for initialization to complete if
    necessary.  */
 
-static void
-initfn (int argc, char **argv, char** env __attribute__ ((unused)))
+void
+__go_init (int argc, char **argv, char** env __attribute__ ((unused)))
 {
   int err;
   pthread_attr_t attr;
@@ -100,6 +106,7 @@ gostart (void *arg)
   runtime_check ();
   runtime_args (a->argc, (byte **) a->argv);
   runtime_osinit ();
+  runtime_sched = runtime_getsched();
   runtime_schedinit ();
   __go_go (runtime_main, NULL);
   runtime_mstart (runtime_m ());

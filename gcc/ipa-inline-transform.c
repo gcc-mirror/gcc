@@ -41,6 +41,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "symbol-summary.h"
 #include "tree-vrp.h"
 #include "ipa-prop.h"
+#include "ipa-fnsummary.h"
 #include "ipa-inline.h"
 #include "tree-inline.h"
 
@@ -203,7 +204,7 @@ clone_inlined_nodes (struct cgraph_edge *e, bool duplicate,
 	    {
 	      gcc_assert (!e->callee->alias);
 	      if (overall_size)
-	        *overall_size -= inline_summaries->get (e->callee)->size;
+	        *overall_size -= ipa_fn_summaries->get (e->callee)->size;
 	      nfunctions_inlined++;
 	    }
 	  duplicate = false;
@@ -287,7 +288,7 @@ mark_all_inlined_calls_cdtor (cgraph_node *node)
    indirect edges are discovered in the process, add them to NEW_EDGES, unless
    it is NULL. If UPDATE_OVERALL_SUMMARY is false, do not bother to recompute overall
    size of caller after inlining. Caller is required to eventually do it via
-   inline_update_overall_summary.
+   ipa_update_overall_fn_summary.
    If callee_removed is non-NULL, set it to true if we removed callee node.
 
    Return true iff any new callgraph edges were discovered as a
@@ -350,15 +351,15 @@ inline_call (struct cgraph_edge *e, bool update_original,
       cl_optimization_restore (&opts, opts_for_fn (to->decl));
       opts.x_flag_strict_aliasing = false;
       if (dump_file)
-	fprintf (dump_file, "Dropping flag_strict_aliasing on %s:%i\n",
-		 to->name (), to->order);
+	fprintf (dump_file, "Dropping flag_strict_aliasing on %s\n",
+		 to->dump_name ());
       DECL_FUNCTION_SPECIFIC_OPTIMIZATION (to->decl)
 	 = build_optimization_node (&opts);
       reload_optimization_node = true;
     }
 
-  inline_summary *caller_info = inline_summaries->get (to);
-  inline_summary *callee_info = inline_summaries->get (callee);
+  ipa_fn_summary *caller_info = ipa_fn_summaries->get (to);
+  ipa_fn_summary *callee_info = ipa_fn_summaries->get (callee);
   if (!caller_info->fp_expressions && callee_info->fp_expressions)
     {
       caller_info->fp_expressions = true;
@@ -411,8 +412,8 @@ inline_call (struct cgraph_edge *e, bool update_original,
 	  opts.x_flag_errno_math
 	    = opt_for_fn (callee->decl, flag_errno_math);
 	  if (dump_file)
-	    fprintf (dump_file, "Copying FP flags from %s:%i to %s:%i\n",
-		     callee->name (), callee->order, to->name (), to->order);
+	    fprintf (dump_file, "Copying FP flags from %s to %s\n",
+		     callee->dump_name (), to->dump_name ());
 	  DECL_FUNCTION_SPECIFIC_OPTIMIZATION (to->decl)
 	     = build_optimization_node (&opts);
 	  reload_optimization_node = true;
@@ -450,22 +451,22 @@ inline_call (struct cgraph_edge *e, bool update_original,
 
   gcc_assert (curr->callee->global.inlined_to == to);
 
-  old_size = inline_summaries->get (to)->size;
-  inline_merge_summary (e);
+  old_size = ipa_fn_summaries->get (to)->size;
+  ipa_merge_fn_summary_after_inlining (e);
   if (e->in_polymorphic_cdtor)
     mark_all_inlined_calls_cdtor (e->callee);
   if (opt_for_fn (e->caller->decl, optimize))
     new_edges_found = ipa_propagate_indirect_call_infos (curr, new_edges);
   check_speculations (e->callee);
   if (update_overall_summary)
-    inline_update_overall_summary (to);
+    ipa_update_overall_fn_summary (to);
   else
     /* Update self size by the estimate so overall function growth limits
        work for further inlining into this function.  Before inlining
        the function we inlined to again we expect the caller to update
        the overall summary.  */
-    inline_summaries->get (to)->size += estimated_growth;
-  new_size = inline_summaries->get (to)->size;
+    ipa_fn_summaries->get (to)->size += estimated_growth;
+  new_size = ipa_fn_summaries->get (to)->size;
 
   if (callee->calls_comdat_local)
     to->calls_comdat_local = true;
@@ -484,7 +485,7 @@ inline_call (struct cgraph_edge *e, bool update_original,
      See PR 65654.  */
 #if 0
   /* Verify that estimated growth match real growth.  Allow off-by-one
-     error due to INLINE_SIZE_SCALE roudoff errors.  */
+     error due to ipa_fn_summary::size_scale roudoff errors.  */
   gcc_assert (!update_overall_summary || !overall_size || new_edges_found
 	      || abs (estimated_growth - (new_size - old_size)) <= 1
 	      || speculation_removed
@@ -499,7 +500,7 @@ inline_call (struct cgraph_edge *e, bool update_original,
     *overall_size += new_size - old_size;
   ncalls_inlined++;
 
-  /* This must happen after inline_merge_summary that rely on jump
+  /* This must happen after ipa_merge_fn_summary_after_inlining that rely on jump
      functions of callee to not be updated.  */
   return new_edges_found;
 }

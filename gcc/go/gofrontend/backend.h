@@ -372,9 +372,11 @@ class Backend
   virtual Bexpression*
   array_index_expression(Bexpression* array, Bexpression* index, Location) = 0;
 
-  // Create an expression for a call to FN with ARGS.
+  // Create an expression for a call to FN with ARGS, taking place within
+  // caller CALLER.
   virtual Bexpression*
-  call_expression(Bexpression* fn, const std::vector<Bexpression*>& args,
+  call_expression(Bfunction *caller, Bexpression* fn,
+                  const std::vector<Bexpression*>& args,
 		  Bexpression* static_chain, Location) = 0;
 
   // Return an expression that allocates SIZE bytes on the stack.
@@ -750,6 +752,11 @@ class Backend
                            const std::vector<Bexpression*>& constant_decls,
                            const std::vector<Bfunction*>& function_decls,
                            const std::vector<Bvariable*>& variable_decls) = 0;
+
+  // Write SIZE bytes of export data from BYTES to the proper
+  // section in the output object file.
+  virtual void
+  write_export_data(const char* bytes, unsigned int size) = 0;
 };
 
 #endif // !defined(GO_BACKEND_H)

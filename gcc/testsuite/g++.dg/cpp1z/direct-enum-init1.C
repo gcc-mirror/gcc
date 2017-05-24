@@ -22,7 +22,7 @@ foo ()
   C c1 { s };
   D d1 { D(t) };	// { dg-error "invalid cast from type 'T' to type 'D {enum}'" }
   D d2 { t };		// { dg-error "cannot convert 'T' to 'D {enum}' in initialization" "" { target c++14_down } }
-			// { dg-error "invalid cast from type 'T' to type 'D'" "" { target c++1z } .-1 }
+			// { dg-error "invalid cast from type 'T' to type 'D {enum}'" "" { target c++1z } .-1 }
   D d3 { 9 };		// { dg-error "cannot convert 'int' to 'D {enum}' in initialization" "" { target c++14_down } }
   D d4 { l };		// { dg-error "cannot convert 'long int' to 'D {enum}' in initialization" "" { target c++14_down } }
   D d5 { D(l) };
@@ -89,7 +89,7 @@ foo2 ()
   C c1 { s };
   D d1 { D(t) };	// { dg-error "invalid cast from type 'T' to type 'D {enum}'" }
   D d2 { t };		// { dg-error "cannot convert 'T' to 'D {enum}' in initialization" "" { target c++14_down } }
-			// { dg-error "invalid cast from type 'T' to type 'D'" "" { target c++1z } .-1 }
+			// { dg-error "invalid cast from type 'T' to type 'D {enum}'" "" { target c++1z } .-1 }
   D d3 { 9 };		// { dg-error "cannot convert 'int' to 'D {enum}' in initialization" "" { target c++14_down } }
   D d4 { l };		// { dg-error "cannot convert 'long int' to 'D {enum}' in initialization" "" { target c++14_down } }
   D d5 { D(l) };

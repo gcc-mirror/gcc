@@ -45,7 +45,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-cfg.h"
 #include "tree-dfa.h"
 #include "tree-inline.h"
-#include "ipa-inline.h"
+#include "ipa-fnsummary.h"
 #include "gimple-pretty-print.h"
 #include "params.h"
 #include "ipa-utils.h"
@@ -257,7 +257,7 @@ ipa_dump_param (FILE *file, struct ipa_node_params *info, int i)
   if ((*info->descriptors)[i].decl_or_type)
     {
       fprintf (file, " ");
-      print_generic_expr (file, (*info->descriptors)[i].decl_or_type, 0);
+      print_generic_expr (file, (*info->descriptors)[i].decl_or_type);
     }
 }
 
@@ -315,13 +315,12 @@ ipa_print_node_jump_functions_for_edge (FILE *f, struct cgraph_edge *cs)
 	{
 	  tree val = jump_func->value.constant.value;
 	  fprintf (f, "CONST: ");
-	  print_generic_expr (f, val, 0);
+	  print_generic_expr (f, val);
 	  if (TREE_CODE (val) == ADDR_EXPR
 	      && TREE_CODE (TREE_OPERAND (val, 0)) == CONST_DECL)
 	    {
 	      fprintf (f, " -> ");
-	      print_generic_expr (f, DECL_INITIAL (TREE_OPERAND (val, 0)),
-				  0);
+	      print_generic_expr (f, DECL_INITIAL (TREE_OPERAND (val, 0)));
 	    }
 	  fprintf (f, "\n");
 	}
@@ -334,8 +333,7 @@ ipa_print_node_jump_functions_for_edge (FILE *f, struct cgraph_edge *cs)
 	  if (jump_func->value.pass_through.operation != NOP_EXPR)
 	    {
 	      fprintf (f, " ");
-	      print_generic_expr (f,
-				  jump_func->value.pass_through.operand, 0);
+	      print_generic_expr (f, jump_func->value.pass_through.operand);
 	    }
 	  if (jump_func->value.pass_through.agg_preserved)
 	    fprintf (f, ", agg_preserved");
@@ -369,7 +367,7 @@ ipa_print_node_jump_functions_for_edge (FILE *f, struct cgraph_edge *cs)
 	      else
 		{
 		  fprintf (f, "cst: ");
-		  print_generic_expr (f, item->value, 0);
+		  print_generic_expr (f, item->value);
 		}
 	      fprintf (f, "\n");
 	    }
@@ -418,17 +416,15 @@ ipa_print_node_jump_functions (FILE *f, struct cgraph_node *node)
 {
   struct cgraph_edge *cs;
 
-  fprintf (f, "  Jump functions of caller  %s/%i:\n", node->name (),
-	   node->order);
+  fprintf (f, "  Jump functions of caller  %s:\n", node->dump_name ());
   for (cs = node->callees; cs; cs = cs->next_callee)
     {
       if (!ipa_edge_args_info_available_for_edge_p (cs))
 	continue;
 
-      fprintf (f, "    callsite  %s/%i -> %s/%i : \n",
-	       xstrdup_for_dump (node->name ()), node->order,
-	       xstrdup_for_dump (cs->callee->name ()),
-	       cs->callee->order);
+      fprintf (f, "    callsite  %s -> %s : \n",
+	       node->dump_name (),
+	       cs->callee->dump_name ());
       ipa_print_node_jump_functions_for_edge (f, cs);
     }
 
@@ -2830,7 +2826,7 @@ ipa_make_edge_direct_to_target (struct cgraph_edge *ie, tree target,
 				bool speculative)
 {
   struct cgraph_node *callee;
-  struct inline_edge_summary *es = inline_edge_summary (ie);
+  struct ipa_call_summary *es = ipa_call_summaries->get (ie);
   bool unreachable = false;
 
   if (TREE_CODE (target) == ADDR_EXPR)
@@ -2856,9 +2852,8 @@ ipa_make_edge_direct_to_target (struct cgraph_edge *ie, tree target,
 		{
 		  location_t loc = gimple_location_safe (ie->call_stmt);
 		  dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, loc,
-				   "discovered direct call non-invariant "
-				   "%s/%i\n",
-				   ie->caller->name (), ie->caller->order);
+				   "discovered direct call non-invariant %s\n",
+				   ie->caller->dump_name ());
 		}
 	      return NULL;
 	    }
@@ -2868,9 +2863,9 @@ ipa_make_edge_direct_to_target (struct cgraph_edge *ie, tree target,
 	    {
 	      location_t loc = gimple_location_safe (ie->call_stmt);
 	      dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, loc,
-			       "discovered direct call to non-function in %s/%i, "
+			       "discovered direct call to non-function in %s, "
 			       "making it __builtin_unreachable\n",
-			       ie->caller->name (), ie->caller->order);
+			       ie->caller->dump_name ());
 	    }
 
 	  target = builtin_decl_implicit (BUILT_IN_UNREACHABLE);
@@ -2897,11 +2892,9 @@ ipa_make_edge_direct_to_target (struct cgraph_edge *ie, tree target,
 	{
 	  if (dump_file)
 	    fprintf (dump_file, "ipa-prop: Discovered call to a known target "
-		     "(%s/%i -> %s/%i) but can not refer to it. Giving up.\n",
-		     xstrdup_for_dump (ie->caller->name ()),
-		     ie->caller->order,
-		     xstrdup_for_dump (ie->callee->name ()),
-		     ie->callee->order);
+		     "(%s -> %s) but can not refer to it. Giving up.\n",
+		     ie->caller->dump_name (),
+		     ie->callee->dump_name ());
 	  return NULL;
 	}
       callee = cgraph_node::get_create (target);
@@ -2917,24 +2910,18 @@ ipa_make_edge_direct_to_target (struct cgraph_edge *ie, tree target,
 	  != callee->ultimate_alias_target ())
 	{
 	  if (dump_file)
-	    fprintf (dump_file, "ipa-prop: Discovered call to a speculative target "
-		     "(%s/%i -> %s/%i) but the call is already speculated to %s/%i. Giving up.\n",
-		     xstrdup_for_dump (ie->caller->name ()),
-		     ie->caller->order,
-		     xstrdup_for_dump (callee->name ()),
-		     callee->order,
-		     xstrdup_for_dump (e2->callee->name ()),
-		     e2->callee->order);
+	    fprintf (dump_file, "ipa-prop: Discovered call to a speculative "
+		     "target (%s -> %s) but the call is already "
+		     "speculated to %s. Giving up.\n",
+		     ie->caller->dump_name (), callee->dump_name (),
+		     e2->callee->dump_name ());
 	}
       else
 	{
 	  if (dump_file)
 	    fprintf (dump_file, "ipa-prop: Discovered call to a speculative target "
-		     "(%s/%i -> %s/%i) this agree with previous speculation.\n",
-		     xstrdup_for_dump (ie->caller->name ()),
-		     ie->caller->order,
-		     xstrdup_for_dump (callee->name ()),
-		     callee->order);
+		     "(%s -> %s) this agree with previous speculation.\n",
+		     ie->caller->dump_name (), callee->dump_name ());
 	}
       return NULL;
     }
@@ -2951,13 +2938,11 @@ ipa_make_edge_direct_to_target (struct cgraph_edge *ie, tree target,
   if (dump_file && !unreachable)
     {
       fprintf (dump_file, "ipa-prop: Discovered %s call to a %s target "
-	       "(%s/%i -> %s/%i), for stmt ",
+	       "(%s -> %s), for stmt ",
 	       ie->indirect_info->polymorphic ? "a virtual" : "an indirect",
 	       speculative ? "speculative" : "known",
-	       xstrdup_for_dump (ie->caller->name ()),
-	       ie->caller->order,
-	       xstrdup_for_dump (callee->name ()),
-	       callee->order);
+	       ie->caller->dump_name (),
+	       callee->dump_name ());
       if (ie->call_stmt)
 	print_gimple_stmt (dump_file, ie->call_stmt, 2, TDF_SLIM);
       else
@@ -2979,7 +2964,7 @@ ipa_make_edge_direct_to_target (struct cgraph_edge *ie, tree target,
 	 for direct call (adjusted by inline_edge_duplication_hook).  */
       if (ie == orig)
 	{
-	  es = inline_edge_summary (ie);
+	  es = ipa_call_summaries->get (ie);
 	  es->call_stmt_size -= (eni_size_weights.indirect_call_cost
 				 - eni_size_weights.call_cost);
 	  es->call_stmt_time -= (eni_time_weights.indirect_call_cost
@@ -3157,9 +3142,8 @@ remove_described_reference (symtab_node *symbol, struct ipa_cst_ref_desc *rdesc)
 
   to_del->remove_reference ();
   if (dump_file)
-    fprintf (dump_file, "ipa-prop: Removed a reference from %s/%i to %s.\n",
-	     xstrdup_for_dump (origin->caller->name ()),
-	     origin->caller->order, xstrdup_for_dump (symbol->name ()));
+    fprintf (dump_file, "ipa-prop: Removed a reference from %s to %s.\n",
+	     origin->caller->dump_name (), xstrdup_for_dump (symbol->name ()));
   return true;
 }
 
@@ -3274,13 +3258,13 @@ ipa_impossible_devirt_target (struct cgraph_edge *ie, tree target)
     {
       if (target)
 	fprintf (dump_file,
-		 "Type inconsistent devirtualization: %s/%i->%s\n",
-		 ie->caller->name (), ie->caller->order,
+		 "Type inconsistent devirtualization: %s->%s\n",
+		 ie->caller->dump_name (),
 		 IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (target)));
       else
 	fprintf (dump_file,
-		 "No devirtualization target in %s/%i\n",
-		 ie->caller->name (), ie->caller->order);
+		 "No devirtualization target in %s\n",
+		 ie->caller->dump_name ());
     }
   tree new_target = builtin_decl_implicit (BUILT_IN_UNREACHABLE);
   cgraph_node::get_create (new_target);
@@ -3609,10 +3593,9 @@ propagate_controlled_uses (struct cgraph_edge *cs)
 		{
 		  if (dump_file)
 		    fprintf (dump_file, "ipa-prop: Removing cloning-created "
-			     "reference from %s/%i to %s/%i.\n",
-			     xstrdup_for_dump (new_root->name ()),
-			     new_root->order,
-			     xstrdup_for_dump (n->name ()), n->order);
+			     "reference from %s to %s.\n",
+			     new_root->dump_name (),
+			     n->dump_name ());
 		  ref->remove_reference ();
 		}
 	    }
@@ -3650,11 +3633,9 @@ propagate_controlled_uses (struct cgraph_edge *cs)
 			  if (dump_file)
 			    fprintf (dump_file, "ipa-prop: Removing "
 				     "cloning-created reference "
-				     "from %s/%i to %s/%i.\n",
-				     xstrdup_for_dump (clone->name ()),
-				     clone->order,
-				     xstrdup_for_dump (n->name ()),
-				     n->order);
+				     "from %s to %s.\n",
+				     clone->dump_name (),
+				     n->dump_name ());
 			  ref->remove_reference ();
 			}
 		      clone = clone->callers->caller;
@@ -4032,8 +4013,7 @@ ipa_print_node_params (FILE *f, struct cgraph_node *node)
   if (!node->definition)
     return;
   info = IPA_NODE_REF (node);
-  fprintf (f, "  function  %s/%i parameter descriptors:\n",
-	   node->name (), node->order);
+  fprintf (f, "  function  %s parameter descriptors:\n", node->dump_name ());
   count = ipa_get_param_count (info);
   for (i = 0; i < count; i++)
     {
@@ -4465,7 +4445,7 @@ ipa_modify_call_arguments (struct cgraph_edge *cs, gcall *stmt,
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
       fprintf (dump_file, "replacing stmt:");
-      print_gimple_stmt (dump_file, gsi_stmt (gsi), 0, 0);
+      print_gimple_stmt (dump_file, gsi_stmt (gsi), 0);
     }
 
   new_stmt = gimple_build_call_vec (callee_decl, vargs);
@@ -4491,7 +4471,7 @@ ipa_modify_call_arguments (struct cgraph_edge *cs, gcall *stmt,
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
       fprintf (dump_file, "with stmt:");
-      print_gimple_stmt (dump_file, new_stmt, 0, 0);
+      print_gimple_stmt (dump_file, new_stmt, 0);
       fprintf (dump_file, "\n");
     }
   gsi_replace (&gsi, new_stmt, true);
@@ -4533,9 +4513,9 @@ ipa_modify_expr (tree *expr, bool convert,
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
       fprintf (dump_file, "About to replace expr ");
-      print_generic_expr (dump_file, *expr, 0);
+      print_generic_expr (dump_file, *expr);
       fprintf (dump_file, " with ");
-      print_generic_expr (dump_file, src, 0);
+      print_generic_expr (dump_file, src);
       fprintf (dump_file, "\n");
     }
 
@@ -4758,21 +4738,21 @@ ipa_dump_param_adjustments (FILE *file, ipa_parm_adjustment_vec adjustments,
 	first = false;
 
       fprintf (file, "%i. base_index: %i - ", i, adj->base_index);
-      print_generic_expr (file, parms[adj->base_index], 0);
+      print_generic_expr (file, parms[adj->base_index]);
       if (adj->base)
 	{
 	  fprintf (file, ", base: ");
-	  print_generic_expr (file, adj->base, 0);
+	  print_generic_expr (file, adj->base);
 	}
       if (adj->new_decl)
 	{
 	  fprintf (file, ", new_decl: ");
-	  print_generic_expr (file, adj->new_decl, 0);
+	  print_generic_expr (file, adj->new_decl);
 	}
       if (adj->new_ssa_base)
 	{
 	  fprintf (file, ", new_ssa_base: ");
-	  print_generic_expr (file, adj->new_ssa_base, 0);
+	  print_generic_expr (file, adj->new_ssa_base);
 	}
 
       if (adj->op == IPA_PARM_OP_COPY)
@@ -4800,7 +4780,7 @@ ipa_dump_agg_replacement_values (FILE *f, struct ipa_agg_replacement_value *av)
     {
       fprintf (f, "%s %i[" HOST_WIDE_INT_PRINT_DEC "]=", comma ? "," : "",
 	       av->index, av->offset);
-      print_generic_expr (f, av->value, 0);
+      print_generic_expr (f, av->value);
       comma = true;
     }
   fprintf (f, "\n");
@@ -5647,9 +5627,9 @@ ipcp_modif_dom_walker::before_dom_children (basic_block bb)
 	      if (dump_file)
 		{
 		  fprintf (dump_file, "    const ");
-		  print_generic_expr (dump_file, v->value, 0);
+		  print_generic_expr (dump_file, v->value);
 		  fprintf (dump_file, "  can't be converted to type of ");
-		  print_generic_expr (dump_file, rhs, 0);
+		  print_generic_expr (dump_file, rhs);
 		  fprintf (dump_file, "\n");
 		}
 	      continue;
@@ -5661,7 +5641,7 @@ ipcp_modif_dom_walker::before_dom_children (basic_block bb)
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{
 	  fprintf (dump_file, "Modifying stmt:\n  ");
-	  print_gimple_stmt (dump_file, stmt, 0, 0);
+	  print_gimple_stmt (dump_file, stmt, 0);
 	}
       gimple_assign_set_rhs_from_tree (&gsi, val);
       update_stmt (stmt);
@@ -5669,7 +5649,7 @@ ipcp_modif_dom_walker::before_dom_children (basic_block bb)
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{
 	  fprintf (dump_file, "into:\n  ");
-	  print_gimple_stmt (dump_file, stmt, 0, 0);
+	  print_gimple_stmt (dump_file, stmt, 0);
 	  fprintf (dump_file, "\n");
 	}
 
@@ -5851,8 +5831,8 @@ ipcp_transform_function (struct cgraph_node *node)
   gcc_checking_assert (current_function_decl);
 
   if (dump_file)
-    fprintf (dump_file, "Modification phase of node %s/%i\n",
-	     node->name (), node->order);
+    fprintf (dump_file, "Modification phase of node %s\n",
+	     node->dump_name ());
 
   ipcp_update_bits (node);
   ipcp_update_vr (node);

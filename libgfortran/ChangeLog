@@ -1,3 +1,100 @@
+2017-05-19  Paul Thomas  <pault@gcc.gnu.org>
+	    Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/80333
+	* list_read.c (nml_read_obj): Compute pointer into class/type
+	arrays from the nl->dim information. Update it for each iteration
+	of the loop for the given object.
+
+2017-05-17  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/80741
+	* transfer.c (finalize_transfer): Reset last_char to 'empty'.
+	* file_pos.c (formatted_backspace): Likewise.
+	(st_endfile): Likewise.
+	(st_rewind): Likewise.
+	(st_flush): Likewise.
+	
+2017-05-15  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/80727
+	* transfer.c (read_sf_internal): Remove bogus code to detect EOR.
+	(read_block_form): For internal units, generate EOR if no more
+	bytes left in unit and we are trying to read with ADVANCE='NO'.
+
+2017-05-15  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/80765
+        * m4/matmul_internal.m4: Set bystride to correct value in
+	vector-matrix multiplicatin for later calculation of buffer
+	size.
+        * generated/matmul_c10.c: Regenerated.
+        * generated/matmul_c16.c: Regenerated.
+        * generated/matmul_c4.c: Regenerated.
+        * generated/matmul_c8.c: Regenerated.
+        * generated/matmul_i1.c: Regenerated.
+        * generated/matmul_i16.c: Regenerated.
+        * generated/matmul_i2.c: Regenerated.
+        * generated/matmul_i4.c: Regenerated.
+        * generated/matmul_i8.c: Regenerated.
+        * generated/matmul_r10.c: Regenerated.
+        * generated/matmul_r16.c: Regenerated.
+        * generated/matmul_r4.c: Regenerated.
+        * generated/matmul_r8.c: Regenerated.
+
+2017-05-12  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* runtime/environ.c (weak_secure_getenv): Fix "__secure_gettime"
+	vs. "__secure_getenv" typo.
+	(secure_getenv): Fix "HAVE__SECURE_GETENV"
+	vs. "HAVE___SECURE_GETENV" typo.
+
+2017-05-11  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* libgfortran.h: HAVE_SECURE_GETENV: Don't check
+	HAVE___SECURE_GETENV.
+	* environ/runtime.c (secure_getenv): Use __secure_getenv via a
+        weak reference.
+
+2017-05-10  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+        PR fortran/80687
+        PR fortran/80696
+        * m4/matmul_internal.m4:  'matmul_name`:  Always
+        use malloc/free to allocate t1.
+        * generated/matmul_c10.c: Regenerated.
+        * generated/matmul_c16.c: Regenerated.
+        * generated/matmul_c4.c: Regenerated.
+        * generated/matmul_c8.c: Regenerated.
+        * generated/matmul_i1.c: Regenerated.
+        * generated/matmul_i16.c: Regenerated.
+        * generated/matmul_i2.c: Regenerated.
+        * generated/matmul_i4.c: Regenerated.
+        * generated/matmul_i8.c: Regenerated.
+        * generated/matmul_r10.c: Regenerated.
+        * generated/matmul_r16.c: Regenerated.
+        * generated/matmul_r4.c: Regenerated.
+        * generated/matmul_r8.c: Regenerated.
+
+2017-05-08  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/80602
+	* m4/matmul_internal.m4:  'matmul_name`:  Change
+	t1 to a VLA of the required size.
+        * generated/matmul_c10.c: Regenerated.
+        * generated/matmul_c16.c: Regenerated.
+        * generated/matmul_c4.c: Regenerated.
+        * generated/matmul_c8.c: Regenerated.
+        * generated/matmul_i1.c: Regenerated.
+        * generated/matmul_i16.c: Regenerated.
+        * generated/matmul_i2.c: Regenerated.
+        * generated/matmul_i4.c: Regenerated.
+        * generated/matmul_i8.c: Regenerated.
+        * generated/matmul_r10.c: Regenerated.
+        * generated/matmul_r16.c: Regenerated.
+        * generated/matmul_r4.c: Regenerated.
+        * generated/matmul_r8.c: Regenerated.
+
 2017-04-11  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	* close.c: Fix white space in pointer declarations and comment

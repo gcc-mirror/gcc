@@ -10,10 +10,15 @@ void f(void)
   int *a1;
   _Complex double b;
   gt = spu_cmpgt(a, N); /* { dg-error "parameter list" } */
+
   gt = spu_cmpgt(a, a1); /* { dg-error "integer from pointer without a cast" } */
+  /* { dg-message "note: expected 'int'" "" { target *-*-* } .-1 } */
+
   gt = spu_cmpgt(a, b); /* { dg-error "parameter list" } */
+
   gt = spu_cmpgt(a, a);
-  a = spu_cmpgt(a, a); /* { dg-message "note: use -flax-vector-conversions to permit conversions between vectors with differing element types or numbers of subparts" } */ 
-/* { dg-message "note: expected 'int'" "" { target *-*-* } 13 } */
-/* { dg-error "incompatible types when assigning" "" { target *-*-* } 16 } */
+
+  a = spu_cmpgt(a, a);
+  /* { dg-message "note: use -flax-vector-conversions to permit conversions between vectors with differing element types or numbers of subparts" "" { target *-*-* } .-1 } */
+  /* { dg-error "incompatible types when assigning" "" { target *-*-* } .-2 } */
 }

@@ -1364,7 +1364,7 @@ do { \
 
 /* To translate the return value of arc_function_type into a register number
    to jump through for function return.  */
-extern int arc_return_address_regs[4];
+extern int arc_return_address_regs[5];
 
 /* Debugging information.  */
 
@@ -1501,10 +1501,15 @@ enum arc_function_type {
   ARC_FUNCTION_UNKNOWN, ARC_FUNCTION_NORMAL,
   /* These are interrupt handlers.  The name corresponds to the register
      name that contains the return address.  */
-  ARC_FUNCTION_ILINK1, ARC_FUNCTION_ILINK2
+  ARC_FUNCTION_ILINK1, ARC_FUNCTION_ILINK2,
+  /* Fast interrupt is only available on ARCv2 processors.  */
+  ARC_FUNCTION_FIRQ
 };
-#define ARC_INTERRUPT_P(TYPE) \
-((TYPE) == ARC_FUNCTION_ILINK1 || (TYPE) == ARC_FUNCTION_ILINK2)
+#define ARC_INTERRUPT_P(TYPE)						\
+  (((TYPE) == ARC_FUNCTION_ILINK1) || ((TYPE) == ARC_FUNCTION_ILINK2)	\
+   || ((TYPE) == ARC_FUNCTION_FIRQ))
+
+#define ARC_FAST_INTERRUPT_P(TYPE) ((TYPE) == ARC_FUNCTION_FIRQ)
 
 /* Compute the type of a function from its DECL.  Needed for EPILOGUE_USES.  */
 struct function;

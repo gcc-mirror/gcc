@@ -1780,9 +1780,9 @@ handle_alias_ifunc_attribute (bool is_alias, tree *node, tree name, tree args,
       if (n && n->refuse_visibility_changes)
 	{
 	  if (is_alias)
-	    error ("%+D declared alias after being used", decl);
+	    error ("%+qD declared alias after being used", decl);
 	  else
-	    error ("%+D declared ifunc after being used", decl);
+	    error ("%+qD declared ifunc after being used", decl);
 	}
     }
 
@@ -1867,7 +1867,7 @@ handle_weakref_attribute (tree *node, tree ARG_UNUSED (name), tree args,
     {
       struct symtab_node *n = symtab_node::get (*node);
       if (n && n->refuse_visibility_changes)
-	error ("%+D declared weakref after being used", *node);
+	error ("%+qD declared weakref after being used", *node);
     }
 
   return NULL_TREE;

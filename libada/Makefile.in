@@ -61,7 +61,7 @@ PICFLAG = @PICFLAG@
 GNATLIBFLAGS= -W -Wall -gnatpg -nostdinc
 GNATLIBCFLAGS= -g -O2
 GNATLIBCFLAGS_FOR_C = -W -Wall $(GNATLIBCFLAGS) $(CFLAGS_FOR_TARGET) \
-	-fexceptions -DIN_RTS @have_getipinfo@
+	-fexceptions -DIN_RTS @have_getipinfo@ @have_capability@
 
 host_subdir = @host_subdir@
 GCC_DIR=$(MULTIBUILDTOP)../../$(host_subdir)/gcc

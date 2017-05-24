@@ -46,6 +46,8 @@ static tree dfs_initialize_vtbl_ptrs (tree, void *);
 static tree build_field_list (tree, tree, int *);
 static int diagnose_uninitialized_cst_or_ref_member_1 (tree, tree, bool, bool);
 
+static GTY(()) tree fn;
+
 /* We are about to generate some complex initialization code.
    Conceptually, it is all a single expression.  However, we may want
    to include conditionals, loops, and other such statement-level
@@ -2063,7 +2065,7 @@ build_offset_ref (tree type, tree member, bool address_p,
       if (TREE_CODE (t) != TEMPLATE_ID_EXPR && !really_overloaded_fn (t))
 	{
 	  /* Get rid of a potential OVERLOAD around it.  */
-	  t = OVL_CURRENT (t);
+	  t = OVL_FIRST (t);
 
 	  /* Unique functions are handled easily.  */
 
@@ -2402,10 +2404,15 @@ diagnose_uninitialized_cst_or_ref_member (tree type, bool using_new, bool compla
 tree
 throw_bad_array_new_length (void)
 {
-  tree fn = get_identifier ("__cxa_throw_bad_array_new_length");
-  if (!get_global_value_if_present (fn, &fn))
-    fn = push_throw_library_fn (fn, build_function_type_list (sizetype,
-							      NULL_TREE));
+  if (!fn)
+    {
+      tree name = get_identifier ("__cxa_throw_bad_array_new_length");
+
+      fn = IDENTIFIER_GLOBAL_VALUE (name);
+      if (!fn)
+	fn = push_throw_library_fn
+	  (name, build_function_type_list (sizetype, NULL_TREE));
+    }
 
   return build_cxx_call (fn, 0, NULL, tf_warning_or_error);
 }
@@ -4905,3 +4912,5 @@ build_vec_delete (tree base, tree maxindex,
 
   return rval;
 }
+
+#include "gt-cp-init.h"

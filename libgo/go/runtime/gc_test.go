@@ -434,8 +434,6 @@ func testIfaceEqual(x interface{}) {
 	}
 }
 
-/*
-
 func TestPageAccounting(t *testing.T) {
 	// Grow the heap in small increments. This used to drop the
 	// pages-in-use count below zero because of a rounding
@@ -452,5 +450,3 @@ func TestPageAccounting(t *testing.T) {
 		t.Fatalf("mheap_.pagesInUse is %d, but direct count is %d", pagesInUse, counted)
 	}
 }
-
-*/

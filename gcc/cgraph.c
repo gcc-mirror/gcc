@@ -51,7 +51,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "symbol-summary.h"
 #include "tree-vrp.h"
 #include "ipa-prop.h"
-#include "ipa-inline.h"
+#include "ipa-fnsummary.h"
 #include "cfgloop.h"
 #include "gimple-pretty-print.h"
 #include "tree-dfa.h"
@@ -539,12 +539,12 @@ cgraph_node::get_create (tree decl)
       node->decl->decl_with_vis.symtab_node = node;
       if (dump_file)
 	fprintf (dump_file, "Introduced new external node "
-		 "(%s/%i) and turned into root of the clone tree.\n",
-		 node->name (), node->order);
+		 "(%s) and turned into root of the clone tree.\n",
+		 node->dump_name ());
     }
   else if (dump_file)
     fprintf (dump_file, "Introduced new external node "
-	     "(%s/%i).\n", node->name (), node->order);
+	     "(%s).\n", node->dump_name ());
   return node;
 }
 
@@ -1055,12 +1055,8 @@ cgraph_edge::make_speculative (cgraph_node *n2, gcov_type direct_count,
   cgraph_edge *e2;
 
   if (dump_file)
-    {
-      fprintf (dump_file, "Indirect call -> speculative call"
-	       " %s/%i => %s/%i\n",
-	       xstrdup_for_dump (n->name ()), n->order,
-	       xstrdup_for_dump (n2->name ()), n2->order);
-    }
+    fprintf (dump_file, "Indirect call -> speculative call %s => %s\n",
+	     n->dump_name (), n2->dump_name ());
   speculative = true;
   e2 = n->create_edge (n2, call_stmt, direct_count, direct_frequency);
   initialize_inline_failed (e2);
@@ -1163,22 +1159,18 @@ cgraph_edge::resolve_speculation (tree callee_decl)
 	{
 	  if (callee_decl)
 	    {
-	      fprintf (dump_file, "Speculative indirect call %s/%i => %s/%i has "
+	      fprintf (dump_file, "Speculative indirect call %s => %s has "
 		       "turned out to have contradicting known target ",
-		       xstrdup_for_dump (edge->caller->name ()),
-		       edge->caller->order,
-		       xstrdup_for_dump (e2->callee->name ()),
-		       e2->callee->order);
-	      print_generic_expr (dump_file, callee_decl, 0);
+		       edge->caller->dump_name (),
+		       e2->callee->dump_name ());
+	      print_generic_expr (dump_file, callee_decl);
 	      fprintf (dump_file, "\n");
 	    }
 	  else
 	    {
-	      fprintf (dump_file, "Removing speculative call %s/%i => %s/%i\n",
-		       xstrdup_for_dump (edge->caller->name ()),
-		       edge->caller->order,
-		       xstrdup_for_dump (e2->callee->name ()),
-		       e2->callee->order);
+	      fprintf (dump_file, "Removing speculative call %s => %s\n",
+		       edge->caller->dump_name (),
+		       e2->callee->dump_name ());
 	    }
 	}
     }
@@ -1295,12 +1287,10 @@ cgraph_edge::redirect_call_stmt_to_callee (void)
 						  true))
 	{
 	  if (dump_file)
-	    fprintf (dump_file, "Not expanding speculative call of %s/%i -> %s/%i\n"
+	    fprintf (dump_file, "Not expanding speculative call of %s -> %s\n"
 		     "Type mismatch.\n",
-		     xstrdup_for_dump (e->caller->name ()),
-		     e->caller->order,
-		     xstrdup_for_dump (e->callee->name ()),
-		     e->callee->order);
+		     e->caller->dump_name (),
+		     e->callee->dump_name ());
 	  e = e->resolve_speculation ();
 	  /* We are producing the final function body and will throw away the
 	     callgraph edges really soon.  Reset the counts/frequencies to
@@ -1314,12 +1304,10 @@ cgraph_edge::redirect_call_stmt_to_callee (void)
 	{
 	  if (dump_file)
 	    fprintf (dump_file,
-		     "Expanding speculative call of %s/%i -> %s/%i count: "
+		     "Expanding speculative call of %s -> %s count: "
 		     "%" PRId64"\n",
-		     xstrdup_for_dump (e->caller->name ()),
-		     e->caller->order,
-		     xstrdup_for_dump (e->callee->name ()),
-		     e->callee->order,
+		     e->caller->dump_name (),
+		     e->callee->dump_name (),
 		     (int64_t)e->count);
 	  gcc_assert (e2->speculative);
 	  push_cfun (DECL_STRUCT_FUNCTION (e->caller->decl));
@@ -1399,9 +1387,8 @@ cgraph_edge::redirect_call_stmt_to_callee (void)
 
   if (symtab->dump_file)
     {
-      fprintf (symtab->dump_file, "updating call of %s/%i -> %s/%i: ",
-	       xstrdup_for_dump (e->caller->name ()), e->caller->order,
-	       xstrdup_for_dump (e->callee->name ()), e->callee->order);
+      fprintf (symtab->dump_file, "updating call of %s -> %s: ",
+	       e->caller->dump_name (), e->callee->dump_name ());
       print_gimple_stmt (symtab->dump_file, e->call_stmt, 0, dump_flags);
       if (e->callee->clone.combined_args_to_skip)
 	{
@@ -2064,15 +2051,11 @@ cgraph_node::dump (FILE *f)
   dump_base (f);
 
   if (global.inlined_to)
-    fprintf (f, "  Function %s/%i is inline copy in %s/%i\n",
-	     xstrdup_for_dump (name ()),
-	     order,
-	     xstrdup_for_dump (global.inlined_to->name ()),
-	     global.inlined_to->order);
+    fprintf (f, "  Function %s is inline copy in %s\n",
+	     dump_name (),
+	     global.inlined_to->dump_name ());
   if (clone_of)
-    fprintf (f, "  Clone of %s/%i\n",
-	     clone_of->asm_name (),
-	     clone_of->order);
+    fprintf (f, "  Clone of %s\n", clone_of->dump_asm_name ());
   if (symtab->function_flags_ready)
     fprintf (f, "  Availability: %s\n",
 	     cgraph_availability_names [get_availability ()]);
@@ -2088,14 +2071,12 @@ cgraph_node::dump (FILE *f)
       if (vi->prev != NULL)
 	{
 	  fprintf (f, "prev: ");
-	  fprintf (f, "%s/%i ", vi->prev->this_node->asm_name (),
-		   vi->prev->this_node->order);
+	  fprintf (f, "%s ", vi->prev->this_node->dump_asm_name ());
 	}
       if (vi->next != NULL)
 	{
 	  fprintf (f, "next: ");
-	  fprintf (f, "%s/%i ", vi->next->this_node->asm_name (),
-		   vi->next->this_node->order);
+	  fprintf (f, "%s ", vi->next->this_node->dump_asm_name ());
 	}
       if (vi->dispatcher_resolver != NULL_TREE)
 	fprintf (f, "dispatcher: %s",
@@ -2184,16 +2165,14 @@ cgraph_node::dump (FILE *f)
 
   for (edge = callers; edge; edge = edge->next_caller)
     {
-      fprintf (f, "%s/%i ", edge->caller->asm_name (),
-	       edge->caller->order);
+      fprintf (f, "%s ", edge->caller->dump_name ());
       edge->dump_edge_flags (f);
     }
 
   fprintf (f, "\n  Calls: ");
   for (edge = callees; edge; edge = edge->next_callee)
     {
-      fprintf (f, "%s/%i ", edge->callee->asm_name (),
-	       edge->callee->order);
+      fprintf (f, "%s ", edge->callee->dump_name ());
       edge->dump_edge_flags (f);
     }
   fprintf (f, "\n");
@@ -3652,7 +3631,7 @@ cgraph_node::get_body (void)
       opt_pass *saved_current_pass = current_pass;
       FILE *saved_dump_file = dump_file;
       const char *saved_dump_file_name = dump_file_name;
-      int saved_dump_flags = dump_flags;
+      dump_flags_t saved_dump_flags = dump_flags;
       dump_file_name = NULL;
       dump_file = NULL;
 

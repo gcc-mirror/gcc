@@ -1,4 +1,782 @@
+2017-05-23  Jason Merrill  <jason@redhat.com>
+
+	-Wunused and C++17 structured bindings
+	* decl.c (poplevel): Don't warn about unused structured bindings,
+	only real variables.
+	* error.c (dump_simple_decl): Handle structured bindings.
+	* expr.c (mark_exp_read): Look through DECL_VALUE_EXPR.
+
+2017-05-23  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-tree.h (PUSH_GLOBAL, PUSH_LOCAL, PUSH_USING): Delete.
+	* name-lookup.c (create_local_binding): New.
+	(update_binding): New.
+	(pushdecl_maybe_friend_1): Rename to ...
+	(do_pushdecl): ... this.  Reimplement.
+	(pushdecl): Adjust.
+	(push_overloaded_decl_1, push_overloaded_decl): Delete.
+
+2017-05-23  Jason Merrill  <jason@redhat.com>
+
+	PR c++/80396 - built-in for make_integer_sequence.
+	* pt.c (builtin_pack_fn_p, builtin_pack_call_p)
+	(expand_integer_pack, expand_builtin_pack_call): New.
+	(find_parameter_packs_r): Check builtin_pack_call_p.
+	(check_for_bare_parameter_packs): Handle it.
+	(tsubst_pack_expansion): Call expand_builtin_pack_call.
+	(declare_integer_pack): New.
+	(init_template_processing): Call it.
+	* decl2.c (mark_used): Check builtin_pack_fn_p.
+
+2017-05-23  Nathan Sidwell  <nathan@acm.org>
+
+	* name-lookup.c (find_namespace_binding): New.
+	(pushdecl_maybe_friend_1): Use CP_DECL_CONTEXT.
+	(set_identifier_type_value_with_scope): Use find_namespace_binding.
+	(find_binding, cp_binding_level_find_binding_for_name,
+	binding_for_name, namespace_binding_1): Delete.
+	(push_overloaded_decl_1): Use CP_DECL_CONTEXT.
+	(get_namespace_binding, set_namespace_binding,
+	finish_namespace_using_decl, unqualified_namespace_lookup_1,
+	qualified_lookup_using_namespace, lookup_type_scope_1,
+	lookup_name_innermost_nonclass_level_1): Use find_namespace_binding.
+
+	PR c++/80866
+	* parser.c (cp_parser_template_id): Keep the lookup when stashing
+	the template_id.
+
+	* cp-tree.h (DECL_HIDDEN_P): New.
+	* name-lookup.c (set_decl_context,
+	set_local_extern_decl_linkage):	New, broken out of ...
+	(pushdecl_maybe_friend_1): ... here.  Call them.
+
+2017-05-23  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* parser.c (OACC_KERNELS_CLAUSE_MASK): Add
+	"PRAGMA_OACC_CLAUSE_NUM_GANGS", "PRAGMA_OACC_CLAUSE_NUM_WORKERS",
+	"VECTOR_LENGTH".
+
+2017-05-23  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-tree.h (OVL_P): New.
+	* name-lookup.h (push_local_binding): Delete.
+	(do_toplevel_using_decl, do_local_using_decl): Rename to ...
+	(finish_namespace_using_decl, finish_local_using_decl): ... here
+	* name-lookup.c (add_decl_to_level): Swap args.
+	(pop_bindings_and_leave_scope): Look inside TREE_LIST.
+	(diagnose_name_conflict): Check contexts are same for redecl.
+	(update_local_overload): New.
+	(compparms_for_decl_and_using): Rename to ...
+	(matching_fn_p): ... here.
+	(pushdecl_maybe_friend_1): Adjust add_decl_to_level,
+	push_local_bindings call.
+	(push_local_binding): Make static, replace FLAGS arg with
+	IS_USING.
+	(validate_nonmember_using_decl): Use OVL_FIRST.
+	(do_nonmember_using_decl): Use in/out parameters.  Use
+	lkp_iterator and simplify.
+	(do_toplevel_using_decl, do_local_using_decl): Rename to ...
+	(finish_namespace_using_decl, finish_local_using_decl): ... here.
+	Adjust.
+	(lookup_type_current_level): Delete.
+	* parser.c (cp_parser_using_declaration): Adjust.
+	* pt.c (tsubst_expr): Adjust.
+
+2017-05-22  Nathan Sidwell  <nathan@acm.org>
+
+	* name-lookup.h (parse_using_directive): Replace with ...
+	(finish_namespace_using_directive): ... this and ...
+	(finish_local_using_directive): ... this.
+	* name-lookup.c (add_using_namespace_1): Move later.
+	(add_using_namespace): Move later, add namespace_p arg, remove
+	indirect arg.
+	(push_using_directive_1): Directly recurse.
+	(do_using_directive, parse_using_directive): Delete, split into ...
+	(finish_namespace_using_directive): ... this and ...
+	(finish_local_using_directive): ... this.
+	(push_namespace): Use add_using_namespace.
+	* parser.c (cp_parser_using_directive): Call
+	finish_namespace_using_directive or finish_local_using_directive.
+	* pt.c (tsubst_expr): Call finish_local_using_directive.
+
+	* cp-objcp-common.c (cp_register_dumps): Register raw dumper.
+	* cp-tree.h (raw_dump_id): Declare.
+	* decl2.c (raw_dump_id): Define.
+	(dump_tu): Use raw_dump_id.
+
+	* config-lang.in (gtfiles): Sort list, break lines.
+
+	* cp-tree.h (CPTI_TERMINATE, CPTI_CALL_UNEXPECTED): Rename to ...
+	(CPTI_TERMINATE_FN, CPTI_CALL_UNEXPECTED_FN): ... here.
+	( CPTI_GET_EXCEPTION_PTR_FN, CPTI_BEGIN_CATCH_FN, CPTI_END_CATCH_FN,
+	CPTI_ALLOCATE_EXCEPTION_FN, CPTI_FREE_EXCEPTION_FN, CPTI_THROW_FN,
+	CPTI_RETHROW_FN): New.
+	(noexcept_deferred_spec): New.
+	(terminate_node, call_unexpected_node): Rename to ...
+	(terminate_fn, call_unexpected_fn): ... here.
+	(get_exception_ptr_fn, begin_catch_fn, end_catch_fn,
+	allocate_exception_fn, free_exception_fn, throw_fn, rethrow_fn): New.
+	* except.c (fn1..fn5, throw_fn, rethrow_rn, spec): Delete.
+	(init_exception_processing): Adjust.
+	(declare_library_fn): Create and push the fns here.
+	(do_get_exception_ptr, do_begin_catch, do_end_catch,
+	do_allocate_exception_ptr, do_free_exception_ptr): Adjust
+	declare_library_fn use.
+	(unevaluated_noexcept_spec): Adjust.
+	* cp-gimplify.c (genericize_eh_spec_block,
+	gimplify_most_not_throw_expr): Adjust.
+
+	* name-lookup.c (pushdecl_top_level,
+	pushdecl_top_level_and_finish): Move after namespace pushing and
+	popping functions.
+	(push_to_top_level): Rename to ...
+	(do_push_to_top_level): ... here.  Remove timing code.
+	(pop_from_top_level_1): Rename to ...
+	(do_pop_from_top_level): ... here.
+	(do_push_nested_namespace, do_pop_nested_namespace)
+	(push_to_top_level): New wrapper for do_push_to_top_level.
+	(pop_from_top_level): Adjust.
+	(push_nested_namepace, pop_nested_namespace): Wrappers for workers.
+
+2017-05-19  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* config-lang.in (gtfiles): Add c-family/c-format.c,
+	except.c, init.c, lambda.c and friend.c.
+	* class.c (dvirt_fn): Move out of function scope,
+	add GTY attribute.
+	* except.c (fn1-5, throw_fn, rethrow_fn, spec): Likewise.
+	* init.c (fn): Likewise.
+	* lambda.c (ptr_id, max_id): Likewise.
+	* friend.c (global_friend): Add GTY attribute.
+
+2017-05-19  Nathan Sidwell  <nathan@acm.org>
+
+	* call.c (add_list_candidates): Use OVL_FIRST.
+	(build_new_method_call_1): Likewise.
+	* cp-tree.h (OVL_SINGLE_P): New.
+	(TYPE_HIDDEN_P): New.
+	* decl.c (xref_tag_1): Use TYPE_HIDDEN_P.
+	* dump.c (cp_tump_tree): Adjust overload dumping.
+	* error.c (dump_decl): Use OVL_SINGLE_P, simplify context
+	printing.
+	* method.c (lazily_declare_fn): Assert we added it.
+	* parser.c (cp_parser_nested_name_specifier): Use OVL_SINGLE_P,
+	OVL_FIRST.
+	(cp_parser_template_name): Use lkp_iterator.
+	* pt.c (begin_template_parm_list): Fixup comment.
+	(instantiate_class_template_1): Use TYPE_HIDDEN_P.
+	* tree.c (ovl_iterator::remove_node): Cope with inherited ctors.
+	(ovl_scope): Use lkp_iterator.
+
+2017-05-19  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* parser.c (cp_parser_omp_clause_default): Handle
+	"OMP_CLAUSE_DEFAULT_PRESENT".
+
+	* parser.c (cp_parser_omp_clause_default): Avoid printing more
+	than one syntax error message.
+
+2017-05-19  Nathan Sidwell  <nathan@acm.org>
+
+	* class.c (class_dump_id): Define.
+	(dump_class_hierarchy, dump_vtable, dump_vtt): Use it.
+	* cp-objcp-common.c (cp_register_dumps): New.
+	* cp-objcp-common.h (cp_register_dumps): Declare.
+	(LANG_HOOKS_REGISTER_DUMPS): Override.
+	* cp-tree.h (class_dump_id): Declare.
+
+2017-05-18  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-tree.h (OVL_ARG_DEPENDENT): Delete.
+	(OVL_USED_P): New.
+	(lookup_keep): Declare.
+	* name-lookup.c (add_function): Don't set OVL_ARG_DEPENDENT.
+	* pt.c (tsubst_copy): Assert lookup is persistent.
+	* semantics.c (finish_call_expr): Use lkp_iterator, call
+	lookup_keep.
+	* tree.c (ovl_copy): New.
+	(ovl_insert, ovl_iterator::remove_node): Copy immutable nodes.
+	(lookup_keep): New.
+
+	* cp-tree.h (OVL_USED): Replace with ...
+	(OVL_USING_P): ... this.
+	(ovl_iterator::using_p): Adjust.
+	* name-lookup.c (push_overloaded_decl_1,
+	do_nonmember_using_decl): Adjust.
+	* search.c (lookup_field_r): Adjust.
+	* tree.c (ovl_insert, ovl_scope): Adjust.
+
+	* cp-tree.h (lookup_add): Swap args.
+	(ovl_cons, build_overload): Delete.
+	* name-lookup.c (add_function, push_overloaded_decl_1,
+	do_nonmember_using_decl, merge_functions, remove_hidden_names):
+	Use lookup_add, ovl_insert.
+	* pt.c (check_explicit_specialization): Use lookup_add.
+	(do_class_deduction): Likewise. Refactor if.
+	* tree.c (lookup_add): Swap args.
+	(ovl_cons, build_overload): Delete.
+
+	* name-lookup.c (find_local_binding): New, broken out of ...
+	(lookup_name_innermost_nonclass_level_1): ... here.  Call it.
+	(set_namespace_binding): Swap scope & name args.
+	(namespace_binding_1): Likewise.
+	(pushdecl_maybe_friend_1): Adjust set_namespace_binding call.
+	(push_overloaded_decl_1): Likewise.
+	(set_global_binding): Likewise.
+	(get_namespace_binding): Adjust namespace_binding_1 call.
+
+2017-05-17  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-tree.h (default_hash_traits <lang_identifier *>): New
+	specialization.
+	* name-lookup.c (lookup_extern_c_fun_in_all_ns): Delete.
+	(extern_c_fns): New hash table.
+	(check_extern_c_conflict): New, broken out of ...
+	(pushdecl_maybe_friend_1): ... here.  Call it.
+	(c_linkage_bindings): Just look in hash table.
+
+2017-05-17  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	PR c++/80654
+	PR c++/80682
+	Implement new C++ intrinsics __is_assignable and __is_constructible.
+	* cp-tree.h (CPTK_IS_ASSIGNABLE, CPTK_IS_CONSTRUCTIBLE): New.
+	(is_xible): New.
+	* cxx-pretty-print.c (pp_cxx_trait_expression): Handle
+	CPTK_IS_ASSIGNABLE and CPTK_IS_CONSTRUCTIBLE.
+	* method.c (constructible_expr): Set cp_unevaluated.
+	(is_xible_helper): New.
+	(is_trivially_xible): Adjust.
+	(is_xible): New.
+	* parser.c (cp_parser_primary_expression): Handle
+	RID_IS_ASSIGNABLE and RID_IS_CONSTRUCTIBLE.
+	(cp_parser_trait_expr): Likewise.
+	* semantics.c (trait_expr_value): Handle
+	CPTK_IS_ASSIGNABLE and CPTK_IS_CONSTRUCTIBLE.
+
+2017-05-17  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-tree.h (ovl_iterator::using_p): New predicate.
+	(ovl_iterator::remove_node): New worker.
+	(ovl_insert): Declare.
+	* tree.c (ovl_insert): New.
+	(ovl_iterator::remove_node): New.
+	* class.c (add_method): Use ovl_iterator, ovl_insert.
+	(clone_function_decl): Fix description.
+	(clone_constructors_and_destructors): Use ovl_iterator.
+
+	* class.c (handle_using_decl): Use OVL_FIRST, ovl_iterator.
+	(maybe_warn_about_overly_private_class): Use ovl_iterator.
+	(method_name_cmp, resort_method_name_cmp): Use OVL_NAME.
+	(resort_type_method_vec, finish_struct_methods): Use OVL_FIRST.
+	(get_base_fndecls): Use ovl_iterator.
+	(warn_hidden): Use OVL_NAME, ovl_iterator.
+	(add_implicitly_declared_members): Use ovl_iterator.
+	* constraint.cc (normalize_template_id_expression): Use OVL_FIRST,
+	flatten nested if.
+	(finish_shorthand_constraint): Simplify, use ovl_make.
+	* pt.c (make_constrained_auto): Simplify.  Use ovl_make.
+	* search.c (shared_member_p): Use ovl_iterator.
+	(lookup_field_fuzzy_info::fuzzy_lookup_fn): Use OVL_NAME.
+	(lookup_conversion_operator): Use OVL_FIRST.
+	(lookup_fnfiels_idx_nolazy): Use OVL_FIRST, OVL_NAME.
+	(look_for_overrides_here): Use ovl_iterator.
+	(lookup_conversions_r): Use OVL_FIRST, OVL_NAME, ovl_iterator.
+	* typeck.c (build_x_unary_op): Use ovl_make.
+
+2017-05-17  Martin Liska  <mliska@suse.cz>
+
+	* class.c (dump_class_hierarchy): Introduce dump_flags_t type and
+	use it instead of int type.
+	(dump_vtable): Likewise.
+	(dump_vtt): Likewise.
+	* decl2.c (dump_tu): Likewise.
+
+2017-05-16  David Malcolm  <dmalcolm@redhat.com>
+
+	* call.c (enforce_access): Add access_failure_info * param and use
+	it to record access failures.
+	* cp-tree.h (class access_failure_info): New class.
+	(enforce_access): Add access_failure_info * param, defaulting to
+	NULL.
+	(lookup_member): Likewise.
+	(locate_field_accessor): New function decl.
+	(perform_or_defer_access_check): Add access_failure_info * param,
+	defaulting to NULL.
+	* search.c (lookup_member): Add access_failure_info * param and
+	pass it on to call to perform_or_defer_access_check.
+	(matches_code_and_type_p): New function.
+	(field_access_p): New function.
+	(direct_accessor_p): New function.
+	(reference_accessor_p): New function.
+	(field_accessor_p): New function.
+	(struct locate_field_data): New struct.
+	(dfs_locate_field_accessor_pre): New function.
+	(locate_field_accessor): New function.
+	* semantics.c (perform_or_defer_access_check): Add
+	access_failure_info * param, and pass it on to call to
+	enforce_access.
+	* typeck.c (access_failure_info::record_access_failure): New method.
+	(access_failure_info::maybe_suggest_accessor): New method.
+	(finish_class_member_access_expr): Pass an access_failure_info
+	instance to the lookup_member call, and call its
+	maybe_suggest_accessor method afterwards.
+
+2017-05-16  Marek Polacek  <polacek@redhat.com>
+
+	PR sanitizer/80536
+	PR sanitizer/80386
+	* cp-gimplify.c (cp_fold): Handle SAVE_EXPR.
+
+2017-05-16  Nathan Sidwell  <nathan@acm.org>
+
+	* name-lookup.c (check_local_shadow): New, broke out of ...
+	(pushdecl_maybe_friend_1): ... here.  Call it.
+
+	* cp-tree.h (OVL_NESTED_P, OVL_LOOKUP_P): New.
+	(ovl_first): Move inline definition to end of file.
+	(ovl_make, lookup_add): Declare.
+	(get_fns, get_first_fn): Make pure.
+	* tree.c (ovl_cache): New.
+	(ovl_make, lookup_add): New.
+	* pt.c (do_class_deduction): Don't add candidates that will be
+	elided.
+
+	* call.c (build_user_type_conversion_1): Use OVL_FIRST.
+	(print_error_for_call_failure): Use OVL_NAME.
+	(build_op_call_1): Use ovl_iterator.
+	(add_candidates): Use OVL_FIRST & lkp_iterator.
+	(build_op_delete_call): Use MAYBE_BASELINK_FUNCTIONS &
+	lkp_iterator.
+	* class.c (deduce_noexcept_on_destructors): Use ovl_iterator.
+	(type_has_user_nondefault_constructor,
+	in_class_defaulted_default_constructor,
+	type_has_user_provided_constructor,
+	type_has_user_provided_or_explicit_constructor,
+	type_has_non_user_provided_default_constructor,
+	vbase_has_user_provided_move_assign,
+	type_has_move_constructor, type_has_move_assign,
+	type_has_user_declared_move_constructor,
+	type_has_user_declared_move_assign,
+	type_build_ctor_call, type_build_dtor_call,
+	type_requires_array_cookie, explain_non_literal_class): Likewise.
+	(finish_struct): Use lkp_iterator.
+	(resolve_address_of_overloaded_function): Use OVL_NAME, lkp_iterator.
+	(note_name_declared_in_class): Use OVL_NAME.
+	* cxx-pretty-print.c (pp_cxx_unqualified_id): Use OVL_FIRST.
+	(pp_cxx_qualified_id, cxx_pretty_printer::id_expression,
+	cxx_pretty_printer::expression): Likewise.
+	* decl2.c (check_classfn): Use ovl_iterator.
+	* pt.c (retrieve_specialization): Use ovl_iterator.
+	* tree.c (cp_tree_equal): Use lkp_iterator.
+	(type_has_nontrivial_copy_init): Use ovl_iterator.
+
+	* typeck2.c (cxx_incomplete_type_diagnostic): Revert change and
+	check is_overloaded_fn.
+
+2017-05-16  Martin Liska  <mliska@suse.cz>
+
+	* parser.c (cp_lexer_print_token): Add default value for flags
+	argument of print_gimple_stmt, print_gimple_expr,
+	print_generic_stmt and print_generic_expr.
+
+2017-05-16  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-tree.h (class ovl_iterator, class lkp_iterator): New OVERLOAD
+	iterators.
+	(MAYBE_BASELINK_FUNCTIONS): New.
+	* constraint.cc	(resolve_constraint_check): Use lkp_iterator.
+	* decl2.c (maybe_warn_sized_delete): Use ovl_iterator.
+	* lambda.c (maybe_generic_this_capture): Use lkp_iterator.
+	* method.c (inherited_ctor_binfo): Use ovl_iterator.
+	(binfo_inherited_from): Likewise.
+	* parser.c (lookup_literal_operator): Use lkp_iterator.
+	* pt.c (iterative_hash_template_arg): Use lkp_iterator.
+	(print_candidates_1): Likewise.
+	(determine_specialization): Likewise.
+	(resolve_overloaded_unification): Likewise.
+	(resolve_nondeduced_context): Likewise.
+	(type_dependent_expression_p): Likewise.
+	(dependent_template_p): Likewise.
+	* ptree.c (cxx_print_xnode): Likewise.
+	* semantics.c (omp_reduction_lookup): Use lkp_iterator.
+	(classtype_has_nothrow_assign_or_copy_p): Use ovl_iterator.
+	* typeck.c (check_template_keyword): Use lkp_iterator.
+
+	* cp-tree.h (OVL_FIRST, OVL_NAME): New.
+	(ovl_first): New.
+	* constexpr.c (function_concept_check): Use OVL_FIRST.
+	* cvt.c (build_expr_type_conversion): Likewise.
+	* decl.c (poplevel, grokdeclarator): Use OVL_NAME.
+	* decl2.c (mark_used): Use OVL_FIRST.
+	* error.c (dump_decl): Use OVL_FIRST, OVL_NAME.
+	(dump_expr, location_of): Use OVL_FIRST.
+	* friend.c (do_friend): Use OVL_NAME.
+	* init.c (build_offset_ref): Use OVL_FIRST.
+	* mangle.c (write_member_name): Likewise.
+	(write_expression): Use OVL_NAME.
+	* method.c (strip_inheriting_ctors): Use OVL_FIRST.
+	* name-lookup.c (pushdecl_class_level): Use OVL_NAME.
+	* pt.c (check_explicit_specialization): Use OVL_FIRST.
+	(check_template_shadow): Likewise.
+	(tsubst_template_args): Use OVL_NAME.
+	(tsubst_baselink): Use OVL_FIRST.
+	* semantics.c (perform_koenig_lookup): Use OVL_NAME.
+	* tree.c (get_first_fn): Use OVL_FIRST.
+	* typeck.c (finish_class_member_access_expr): Use OVL_NAME.
+	(cp_build_addr_expr_1): Use OVL_FIRST.
+
+	* pt.c (tsubst_copy_and_build): Remove unnecessary COMPONENT_REF
+	peeking.
+	* semantics.c (finish_id_expression): Directly init local var.
+	(finish_omp_reduction_clause): Use really_overloaded_fn.
+	* tree.c (get_fns): Document.  Assert we got an overload.
+	(get_first_fn) Document.
+	* typeck.c (cp_build_addr_expr_1): Pass arg directly to
+	really_overloaded_fn.
+	* typeck2.c (cxx_incomplete_type_diagnostic): Use get_first_fn directly.
+
+	* cp-tree.h (SCOPE_DEPTH): New.
+	* name-lookup.h (is_nested_namespace): Declare.
+	* name-lookup.c (is_nested_namespace): New.
+	(is_ancestor): Use it.
+	(set_decl_namespace): Likewise.
+	(push_namespace): Set SCOPE_DEPTH.
+	* pt.c (check_specialization_namespace): Use is_nested_namespace.
+	(check_unqualigied_spec_or_inst): Likewise.
+
+2017-05-15  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/79369
+	* cp-tree.h (DECL_NAMESPACE_INLINE_P): New.
+	* name-lookup.h (push_namespace): Return int, add make_inline arg.
+	* name-lookup.c (push_namespace): Deal with inline directly.
+	Return pushed count.
+	* parser.c (cp_parser_namespace_definition): Adjust for
+	push_namespace change.
+
+2017-05-11  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-lang.c (get_global_decls, cxx_pushdecl, LANG_HOOK_GETDECLS,
+	LANG_HOOKS_PUSHDECL): Move to ...
+	* cp-objcp-common.c (cp_get_global_decls, cp_pushdec,
+	LANG_HOOK_DECLS, LANG_HOOKS_PUSHDECL): ... here.
+	* cp-objcp-common.h (cp_get_global_decls, cp_pushdecl): Declare.
+
+	* name-lookup.h (pushdecl): Add default friend parm.
+	(pushdecl_maybe_friend): Delete.
+	(pushdecl_top_level): Add default friend parm.
+	(pushdecl_top_level_maybe_friend): Delete.
+	* name-lookup.c (pushdecl_maybe_friend): Delete.
+	(pushdecl): Add is_friend parm.
+	(pushdecl_top_level): Add is friend_parm.
+	(pushdecl_top_level_maybe_friend, pushdecl_top_level_1): Delete.
+	(pushdecl_top_level_and_finish): Do pushing and finishing directly.
+	* friend.c (do_friend): Adjust.
+	* pt.c (tsubst_friend_class): Adjust.
+
+	Revert pushdecl_top_level_and_finish name change.
+	* name-lookup.h (pushdecl_top_level_and_finish): Resurrect old name.
+	* name-lookup.c (pushdecl_top_level_and_finish): Likewise.
+	* decl.c (cp_make_fname_decl): Adjust.
+	* decl2.c (get_guard, handle_tls_init):  Adjust.
+	* rtti.c (get_tinfo_decl, tinfo_base_init):  Adjust.
+
+	* name-lookup.c (pushdecl_outermost_localscope): Always
+	conditionally stop timer.
+
+	* decl.c (xref_tag_1): Don't frob ts_lambda scope here.
+	* name-lookup.c (pushtag_1): Deal with ts_lambda scope.
+
+	* cp-tree.h (pushdecl, pushdecl_maybe_friend, pushtag,
+	pushtag_top_level_maybe_friend,
+	pushdecl_top_level_and_finish):	Move declarations to ...
+	* name-lookup.h: ... here.  Group pushdecl variants.
+	(pushdecl_top_level_and_finish): Rename to ...
+	(pushdecl_top_level_with_init): ... here.
+	* decl.c (cp_make_fname_decl): Use pushdecl_top_level_with_init.
+	* decl2.c (get_guard, handle_tls_init): Likewise.
+	* rtti.c (get_tinfo_decl, tinfo_base_init): Likewise.
+	* lambda.c (maybe_add_lambda_conv_op): Use namespace_bindings_p.
+	* method.c (implicitly_declare_fn): Likewise.
+	* searchc (node_debug_info_needed): Likewise.
+	* name-lookup.c (pushdecl_top_level_and_finish): Rename to ...
+	(pushdecl_top_level_with_init): ... here.
+	(pop_everything): Use namespace_bindings_p.
+
+	* name-lookup.h (pop_binding): Rename to pop_local_binding.
+	(getdecls): Rename to get_local_decls.
+	* name-lookup.c (pop_binding): Rename to ...
+	(pop_local_binding): ... here.
+	(pop_bindings_and_leave_scope): Adjust.
+	(getdecls): Rename to ...
+	(get_local_decls): ... here.  Assert local scope.
+	* decl.c (poplevel): Assert not namespace.  Adjust and simplify
+	logic.
+	(store_parm_decls): Adjust get_local_decls call.
+	(parser.c (synthesize_implicit_template_parm): Likewise.
+
+2017-05-11  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	PR c++/80682
+	* method.c (is_trivially_xible): Reject void types.
+
+2017-05-10  Nathan Sidwell  <nathan@acm.org>
+
+	* class.c (handle_using_decl): Always use OVL_CURRENT.
+	(resolve_address_of_overloaded_function): Move iterator decl into
+	for scope.  Don't strip anticipated decls here.
+
+	* pt.c (print_candidates_1): Separate TREE_LIST and OVERLOAD
+	printing.
+	(print_candidates): Adjust.
+
+	* cp-tree.h (build_new_function_call): Lose koenig_p arg.  Fix
+	line breaking.
+	* call.c (build_new_function_call): Lose koenig_p arg.  Remove
+	koenig_p handling here.
+	* pt.c (push_template_decl_real): Unconditionally retrofit_lang_decl.
+	(tsubst_omp_clauses): Likewise.
+	(do_class_deduction): Adjust buld_new_function_call calls.
+	* semantics.c (finish_call_expr): Likewise.
+
+2017-05-10  Jason Merrill  <jason@redhat.com>
+
+	* pt.c (unify_parameter_deduction_failure, unify_cv_qual_mismatch)
+	(unify_type_mismatch, unify_parameter_pack_mismatch)
+	(unify_ptrmem_cst_mismatch, unify_expression_unequal)
+	(unify_parameter_pack_inconsistent, unify_inconsistency)
+	(unify_vla_arg, unify_method_type_error, unify_arity)
+	(unify_arg_conversion, unify_no_common_base)
+	(unify_inconsistent_template_template_parameters)
+	(unify_template_deduction_failure)
+	(unify_template_argument_mismatch)
+	(unify_overload_resolution_failure): Call unify_invalid.
+
+	CWG 1847 - Clarifying compatibility during partial ordering
+	* pt.c (more_specialized_fn): No order between two non-deducible
+	parameters.
+
+	* pt.c (dependent_type_p): Make sure we aren't called with
+	global_type_node.
+
+	PR c++/79549 - C++17 ICE with non-type auto template parameter pack
+	* pt.c (convert_template_argument): Just return an argument pack.
+	(coerce_template_parameter_pack, template_parm_to_arg)
+	(extract_fnparm_pack, make_argument_pack, tsubst_template_args)
+	(tsubst_decl, tsubst, type_unification_real, unify_pack_expansion):
+	Don't set the type of a NONTYPE_ARGUMENT_PACK.
+	* parser.c (make_char_string_pack, make_string_pack): Likewise.
+
+2017-05-10  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-tree.h (add_method, clone_function_decl): Change last arg to
+	bool.
+	* class.c (add_method): Change third arg to bool.  Adjust.
+	(one_inheriting_sig, one_inherited_ctor): Adjust.
+	(clone_function_decl): Change 2nd arg to bool.  Adjust.
+	(clone_constructors_and_destructors): Adjust.
+	* lambda.c (maybe_add_lambda_conv_op): Adjust.
+	* method.c (lazily_declare_fn): Adjust.
+	* pt.c (tsubst_decl, instantiate_template_1): Adjust.
+	* semantics.c (finish_member_declaration): Adjust.
+
+2017-05-10  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/80145
+	* decl.c (finish_function): To improve error recovery, change the
+	logic for calling apply_deduced_return_type.
+
+2017-05-09  Jason Merrill  <jason@redhat.com>
+
+	* class.c (check_bases): Ignore empty bases.
+
+	PR c++/70979 - literal class and closure types
+	* class.c (finalize_literal_type_property): Handle closures
+	specifically.
+	(explain_non_literal_class): Likewise.
+
+	PR c++/66297, DR 1684 - literal class and constexpr member fns
+	* constexpr.c (is_valid_constexpr_fn): Only complain about
+	non-literal enclosing class in C++11.
+	* class.c (finalize_literal_type_property): Likewise.
+
+2017-05-09  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/80186
+	* pt.c (tsubst_decl): Early return error_mark_node if
+	grok_ctor_properties returns false.
+
+2017-05-09  Jason Merrill  <jason@redhat.com>
+
+	PR c++/70167 - array prvalue treated as lvalue
+	* cp-tree.h (CONSTRUCTOR_C99_COMPOUND_LITERAL): New.
+	(enum fcl_t): New.
+	* semantics.c (finish_compound_literal): Add fcl_context parameter.
+	Only make a static variable for C99 syntax.
+	* parser.c (cp_parser_postfix_expression): Pass it.
+	* pt.c (tsubst_copy_and_build): Likewise.
+	* call.c (extend_ref_init_temps): Set
+	DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P.
+
+2017-05-09  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-lang.c (get_global_decls, cxx_pushdecl): New.
+	(LANG_HOOKS_GETDECLS, LANG_HOOKS_PUSHDECL): Override.
+	* name-lookup.h (pushdecl_top_level): Declare.
+
+2017-05-08  Jason Merrill  <jason@redhat.com>
+
+	PR c++/80178 - parameter passing for uncopyable classes
+	* tree.c (type_has_nontrivial_copy_init): True for classes with only
+	deleted copy/move ctors.
+	(remember_deleted_copy, maybe_warn_parm_abi): New.
+	* decl.c (require_complete_types_for_parms, check_function_type):
+	Call maybe_warn_parm_abi.
+	* call.c (convert_for_arg_passing, build_cxx_call): Likewise.
+
+2017-05-08  Nathan Sidwell  <nathan@acm.org>
+
+	* decl.c (builtin_function_1): Set DECL_ANTICIPATED before pushing.
+	(start_preparsed_function): Do decl pushing before setting
+	current_funciton_decl and announcing it.
+
+	* name-lookup.h (pushdecl_with_scope): Replace with ...
+	(pushdecl_outermost_localscope): ... this.
+	* name-lookup.c (pushdecl_with_scope): Replace with ...
+	(pushdecl_outermost_localscope): ... this.
+	(pushdecl_namespace_level): Adjust.
+	* decl.c (cp_make_fname_decl): Use pushdecl_outermost_localscope.
+	* lambda.c (insert_capture_proxy): Likewise.
+
+	* class.c (build_vtbl_initializer): Don't shadow outer variable
+	with static var.
+
+	Revert _binding -> _value change.
+	* name-lookup.h (get_namespace_value, set_global_value): Rename to ...
+	(get_namespace_binding, set_global_binding): ... these.
+	* name-lookup.c (get_namespace_value, set_global_value): Rename to ...
+	(get_namespace_binding, set_global_binding): ... these.
+	(arg_assoc_namespace, pushdecl_maybe_friend_1,
+	check_for_out_of_scope_variable, push_overloaded_decl_1,
+	lookup_name_innermost_nonclass_level, push_namespace): Adjust.
+	* cp-tree.h (IDENTIFIER_GLOBAL_VALUE,
+	SET_IDENTIFIER_GLOBAL_VALUE): Adjust.
+	* decl.c (poplevel): Adjust.
+	* pt.c (make_constrained_auto): Likewise.
+
+2017-05-07  Volker Reichelt  <v.reichelt@netcologne.de>
+
+	PR translation/80280
+	* call.c (print_z_candidate): Fix quoting.
+
+2017-05-05  David Malcolm  <dmalcolm@redhat.com>
+
+	* error.c (pedwarn_cxx98): Replace report_diagnostic
+	with diagnostic_report_diagnostic.
+
+2017-05-05  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-tree.h (IDENTIFIER_GLOBAL_VALUE): Use get_namespace_value.
+	(SET_IDENTIFIER_GLOBAL_VALUE): Use set_global_value.
+	(IDENTIFIER_NAMESPACE_VALUE): Delete.
+	* name-lookup.h (namespace_binding, set_namespace_binding): Replace
+	with ...
+	(get_namespace_value, set_global_value): ... these.
+	(get_global_value_if_present, is_typename_at_global_scope): Delete.
+	* decl.c (poplevel): Use get_namespace_value.
+	(grokdeclarator): Use IDENTIFIER_GLOBAL_VALUE.
+	* class.c (build_vtbl_initializer): Stash library decl in
+	static var. Use IDENTIFIER_GLOBAL_VALUE.
+	* except.c (do_get_exception_ptr, do_begin_catch, do_end_catch,
+	do_allocate_exception, do_free_exception, build_throw): Likewise.
+	* init.c (throw_bad_array_new_length): Likewise.
+	* rtti.c (throw_bad_cast, throw_bad_typeid): Likewise.
+	* name-lookup.c (arg_assoc_namespace, pushdecl_maybe_friend_1,
+	check_for_our_of_scope_variable, push_overloaded_decl_1): Use
+	get_namespace_value.
+	(set_namespace_binding_1): Rename to
+	(set_namespace_binding): ... here.
+	(set_global_value): New.
+	(lookup_name_innermost_nonclass_level_1, push_namespace): Use
+	get_namespace_value.
+	* pt.c (listify): Use get_namespace_value.
+
+	* call.c (make_temporary_var_for_ref_to_temp): Push decl into
+	current scope.
+	* lex.c (unqualified_name_lookup_error): Likewise.
+
+	* class.c (alter_class): Use retrofit_lang_decl directly.
+	* decl.c (push_local_name, dupliate_decls): Likewise.
+	* semantics.c (omp_privatize_field): Likewise.
+
+	Kill walk_namespaces.
+	* cp-tree.h (walk_namespaces_fn, walk_namespaces): Delete.
+	* decl.c (walk_namespaces_r, walk_namespaces): Delete.
+
+	Kill per-namespace static_decls.
+	* cp-tree.h (static_decls): Declare.
+	(wrapup_globals_for_namespace,
+	diagnose_inline_vars_for_namespace): Replace with ...
+	(wrapup_namespace_globals): ... this.
+	* decl.c (static_decls): Define.
+	(wrapup_globals_for_namespace,
+	diagnose_inline_vars_for_namespace): Replace with ...
+	(wrapup_namespace_globals): ... this.
+	(cxx_init_decl_processing): Initialize static_decls.
+	* decl2.c (c_parse_final_cleanups): Adjust.
+	* name-lookup.h (cp_binding_level): Remove static_decls member.
+	* name-lookup.c (add_decl_to_level): Adjust.
+	(begin_scope): Adjust.
+
+2017-05-05  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/71577
+	* decl.c (reshape_init): Unconditionally return error_mark_node
+	upon error about too many initializers.
+
 2017-05-04  Nathan Sidwell  <nathan@acm.org>
+
+	* constraint.cc (diagnose_check_constraint): Fix %E thinko.
+
+2017-05-04  Martin Sebor  <msebor@redhat.com>
+
+	PR translation/80280
+	* call.c (print_z_candidate): Add missing quoting to %D and other
+	like directives.
+	(build_op_call_1): Same.
+	* constraint.cc (diagnose_check_constraint): Same.
+	* mangle.c (mangle_decl): Same.
+	* name-lookup.c (cp_binding_level_debug): Same.
+	(set_decl_namespace): Same.
+	* parser.c (cp_parser_tx_qualifier_opt): Same.
+	* pt.c (print_candidates_1): Same.
+	(check_template_variable): Same.
+	(tsubst_default_argument): Same.
+	(most_specialized_partial_spec): Same.
+	* semantics.c (omp_reduction_lookup): Same.
+	* tree.c (check_abi_tag_redeclaration): Same.
+	* typeck.c (comptypes): Same.
+	* typeck2.c (abstract_virtuals_error_sfinae): Same.
+
+2017-05-04  Nathan Sidwell  <nathan@acm.org>
+
+	More global trees.
+	* cp-tree.h (enum cp_tree_index): Add CPTI_GLOBAL,
+	CPTI_GLOBAL_TYPE, CPTI_GLOBAL_IDENTIFIER, CPTI_ANON_IDENTIFIER,
+	CPTI_INIT_LIST_IDENTIFIER.
+	(global_namespace, global_type_node, global_identifier,
+	anon_identifier, init_list_identifier): New.
+	* decl.c (global_type_node, global_scope_name): Delete.
+	(initialize_predefined_identifiers): Add new identifiers.
+	(cxx_init_decl_processing): Adjust.
+	* name-lookup.h (global_namespace, global_type_node): Delete.
+	* name-lookup.c (global_namespace, anonymous_namespace_name,
+	get_anonymous_namespace_name): Delete.
+	(namespace_scope_ht_size, begin_scope, pushtag_1,
+	push_namespace): Adjust,
+	* call.c (type_has_extended_temps): Use init_list_identifier.
+	* pt.c (listify): Likewise.
 
 	* name-lookup.c: Reorder functions to make merging from modules
 	branch simpler.

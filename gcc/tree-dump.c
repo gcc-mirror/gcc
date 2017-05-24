@@ -153,22 +153,6 @@ dump_maybe_newline (dump_info_p di)
     }
 }
 
-/* Dump FUNCTION_DECL FN as tree dump PHASE.  */
-
-void
-dump_function (int phase, tree fn)
-{
-  FILE *stream;
-  int flags;
-
-  stream = dump_begin (phase, &flags);
-  if (stream)
-    {
-      dump_function_to_file (fn, stream, flags);
-      dump_end (phase, stream);
-    }
-}
-
 /* Dump pointer PTR using FIELD to identify it.  */
 
 void
@@ -729,7 +713,7 @@ dequeue_and_dump (dump_info_p di)
 /* Return nonzero if FLAG has been specified for the dump, and NODE
    is not the root node of the dump.  */
 
-int dump_flag (dump_info_p di, int flag, const_tree node)
+int dump_flag (dump_info_p di, dump_flags_t flag, const_tree node)
 {
   return (di->flags & flag) && (node != di->node);
 }
@@ -737,7 +721,7 @@ int dump_flag (dump_info_p di, int flag, const_tree node)
 /* Dump T, and all its children, on STREAM.  */
 
 void
-dump_node (const_tree t, int flags, FILE *stream)
+dump_node (const_tree t, dump_flags_t flags, FILE *stream)
 {
   struct dump_info di;
   dump_queue_p dq;

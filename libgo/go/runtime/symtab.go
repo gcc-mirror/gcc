@@ -115,11 +115,17 @@ func FuncForPC(pc uintptr) *Func {
 
 // Name returns the name of the function.
 func (f *Func) Name() string {
+	if f == nil {
+		return ""
+	}
 	return f.name
 }
 
 // Entry returns the entry address of the function.
 func (f *Func) Entry() uintptr {
+	if f == nil {
+		return 0
+	}
 	return f.entry
 }
 

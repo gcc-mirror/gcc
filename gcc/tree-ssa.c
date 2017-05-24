@@ -640,8 +640,8 @@ verify_vssa (basic_block bb, tree current_vdef, sbitmap visited)
 	  if (phi)
 	    {
 	      error ("multiple virtual PHI nodes in BB %d", bb->index);
-	      print_gimple_stmt (stderr, phi, 0, 0);
-	      print_gimple_stmt (stderr, si.phi (), 0, 0);
+	      print_gimple_stmt (stderr, phi, 0);
+	      print_gimple_stmt (stderr, si.phi (), 0);
 	      err = true;
 	    }
 	  else
@@ -654,7 +654,7 @@ verify_vssa (basic_block bb, tree current_vdef, sbitmap visited)
       if (TREE_CODE (current_vdef) != SSA_NAME)
 	{
 	  error ("virtual definition is not an SSA name");
-	  print_gimple_stmt (stderr, phi, 0, 0);
+	  print_gimple_stmt (stderr, phi, 0);
 	  err = true;
 	}
     }
@@ -672,7 +672,7 @@ verify_vssa (basic_block bb, tree current_vdef, sbitmap visited)
 	      error ("stmt with wrong VUSE");
 	      print_gimple_stmt (stderr, stmt, 0, TDF_VOPS);
 	      fprintf (stderr, "expected ");
-	      print_generic_expr (stderr, current_vdef, 0);
+	      print_generic_expr (stderr, current_vdef);
 	      fprintf (stderr, "\n");
 	      err = true;
 	    }
@@ -683,7 +683,7 @@ verify_vssa (basic_block bb, tree current_vdef, sbitmap visited)
 	      if (TREE_CODE (current_vdef) != SSA_NAME)
 		{
 		  error ("virtual definition is not an SSA name");
-		  print_gimple_stmt (stderr, phi, 0, 0);
+		  print_gimple_stmt (stderr, phi, 0);
 		  err = true;
 		}
 	    }
@@ -703,7 +703,7 @@ verify_vssa (basic_block bb, tree current_vdef, sbitmap visited)
 		 e->src->index);
 	  print_gimple_stmt (stderr, phi, 0, TDF_VOPS);
 	  fprintf (stderr, "expected ");
-	  print_generic_expr (stderr, current_vdef, 0);
+	  print_generic_expr (stderr, current_vdef);
 	  fprintf (stderr, "\n");
 	  err = true;
 	}
@@ -820,7 +820,7 @@ verify_def (basic_block bb, basic_block *definition_block, tree ssa_name,
 
 err:
   fprintf (stderr, "while verifying SSA_NAME ");
-  print_generic_expr (stderr, ssa_name, 0);
+  print_generic_expr (stderr, ssa_name);
   fprintf (stderr, " in statement\n");
   print_gimple_stmt (stderr, stmt, 4, TDF_VOPS);
 
@@ -1022,7 +1022,7 @@ verify_ssa (bool check_modified_stmt, bool check_ssa_operands)
   ssa_op_iter iter;
   tree op;
   enum dom_state orig_dom_state = dom_info_state (CDI_DOMINATORS);
-  bitmap names_defined_in_bb = BITMAP_ALLOC (NULL);
+  auto_bitmap names_defined_in_bb;
 
   gcc_assert (!need_ssa_update_p (cfun));
 
@@ -1062,9 +1062,9 @@ verify_ssa (bool check_modified_stmt, bool check_ssa_operands)
 	      if (existed)
 		{
 		  error ("shared SSA name info");
-		  print_generic_expr (stderr, val, 0);
+		  print_generic_expr (stderr, val);
 		  fprintf (stderr, " and ");
-		  print_generic_expr (stderr, name, 0);
+		  print_generic_expr (stderr, name);
 		  fprintf (stderr, "\n");
 		  goto err;
 		}
@@ -1176,7 +1176,6 @@ verify_ssa (bool check_modified_stmt, bool check_ssa_operands)
   else
     set_dom_info_availability (CDI_DOMINATORS, orig_dom_state);
 
-  BITMAP_FREE (names_defined_in_bb);
   timevar_pop (TV_TREE_SSA_VERIFY);
   return;
 
@@ -1565,7 +1564,7 @@ maybe_optimize_var (tree var, bitmap addresses_taken, bitmap not_reg_needs,
       if (dump_file)
 	{
 	  fprintf (dump_file, "No longer having address taken: ");
-	  print_generic_expr (dump_file, var, 0);
+	  print_generic_expr (dump_file, var);
 	  fprintf (dump_file, "\n");
 	}
     }
@@ -1582,7 +1581,7 @@ maybe_optimize_var (tree var, bitmap addresses_taken, bitmap not_reg_needs,
       if (dump_file)
 	{
 	  fprintf (dump_file, "Now a gimple register: ");
-	  print_generic_expr (dump_file, var, 0);
+	  print_generic_expr (dump_file, var);
 	  fprintf (dump_file, "\n");
 	}
     }
@@ -1622,9 +1621,9 @@ void
 execute_update_addresses_taken (void)
 {
   basic_block bb;
-  bitmap addresses_taken = BITMAP_ALLOC (NULL);
-  bitmap not_reg_needs = BITMAP_ALLOC (NULL);
-  bitmap suitable_for_renaming = BITMAP_ALLOC (NULL);
+  auto_bitmap addresses_taken;
+  auto_bitmap not_reg_needs;
+  auto_bitmap suitable_for_renaming;
   tree var;
   unsigned i;
 
@@ -2005,9 +2004,6 @@ execute_update_addresses_taken (void)
 	update_ssa (TODO_update_ssa);
     }
 
-  BITMAP_FREE (not_reg_needs);
-  BITMAP_FREE (addresses_taken);
-  BITMAP_FREE (suitable_for_renaming);
   timevar_pop (TV_ADDRESS_TAKEN);
 }
 

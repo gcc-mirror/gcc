@@ -923,7 +923,6 @@ get_loop_body_in_bfs_order (const struct loop *loop)
 {
   basic_block *blocks;
   basic_block bb;
-  bitmap visited;
   unsigned int i = 1;
   unsigned int vc = 0;
 
@@ -931,7 +930,7 @@ get_loop_body_in_bfs_order (const struct loop *loop)
   gcc_assert (loop->latch != EXIT_BLOCK_PTR_FOR_FN (cfun));
 
   blocks = XNEWVEC (basic_block, loop->num_nodes);
-  visited = BITMAP_ALLOC (NULL);
+  auto_bitmap visited;
   blocks[0] = loop->header;
   bitmap_set_bit (visited, loop->header->index);
   while (i < loop->num_nodes)
@@ -952,7 +951,6 @@ get_loop_body_in_bfs_order (const struct loop *loop)
 	}
     }
 
-  BITMAP_FREE (visited);
   return blocks;
 }
 

@@ -1047,13 +1047,9 @@ shared_member_p (tree t)
     return 1;
   if (is_overloaded_fn (t))
     {
-      t = get_fns (t);
-      for (; t; t = OVL_NEXT (t))
-	{
-	  tree fn = OVL_CURRENT (t);
-	  if (DECL_NONSTATIC_MEMBER_FUNCTION_P (fn))
-	    return 0;
-	}
+      for (ovl_iterator iter (get_fns (t)); iter; ++iter)
+	if (DECL_NONSTATIC_MEMBER_FUNCTION_P (*iter))
+	  return 0;
       return 1;
     }
   return 0;
@@ -1110,7 +1106,7 @@ lookup_field_r (tree binfo, void *data)
   if (!nval)
     /* Look for a data member or type.  */
     nval = lookup_field_1 (type, lfi->name, lfi->want_type);
-  else if (TREE_CODE (nval) == OVERLOAD && OVL_USED (nval))
+  else if (TREE_CODE (nval) == OVERLOAD && OVL_USING_P (nval))
     {
       /* If we have both dependent and non-dependent using-declarations, return
 	 the dependent one rather than an incomplete list of functions.  */
@@ -1232,11 +1228,13 @@ build_baselink (tree binfo, tree access_binfo, tree functions, tree optype)
 
    WANT_TYPE is 1 when we should only return TYPE_DECLs.
 
-   If nothing can be found return NULL_TREE and do not issue an error.  */
+   If nothing can be found return NULL_TREE and do not issue an error.
+
+   If non-NULL, failure information is written back to AFI.  */
 
 tree
 lookup_member (tree xbasetype, tree name, int protect, bool want_type,
-	       tsubst_flags_t complain)
+	       tsubst_flags_t complain, access_failure_info *afi)
 {
   tree rval, rval_binfo = NULL_TREE;
   tree type = NULL_TREE, basetype_path = NULL_TREE;
@@ -1337,7 +1335,7 @@ lookup_member (tree xbasetype, tree name, int protect, bool want_type,
       tree decl = is_overloaded_fn (rval) ? get_first_fn (rval) : rval;
       if (!DECL_NONSTATIC_MEMBER_FUNCTION_P (decl)
 	  && !perform_or_defer_access_check (basetype_path, decl, decl,
-					     complain))
+					     complain, afi))
 	rval = error_mark_node;
     }
 
@@ -1394,7 +1392,7 @@ lookup_field_fuzzy_info::fuzzy_lookup_fnfields (tree type)
 
   for (i = 0; vec_safe_iterate (method_vec, i, &fn); ++i)
     if (fn)
-      m_candidates.safe_push (DECL_NAME (OVL_CURRENT (fn)));
+      m_candidates.safe_push (OVL_NAME (fn));
 }
 
 /* Locate all fields within TYPE, append them to m_candidates.  */
@@ -1548,7 +1546,7 @@ lookup_conversion_operator (tree class_type, tree type)
 	     the class.  Therefore, if FN is not a conversion
 	     operator, there is no matching conversion operator in
 	     CLASS_TYPE.  */
-	  fn = OVL_CURRENT (fn);
+	  fn = OVL_FIRST (fn);
 	  if (!DECL_CONV_FN_P (fn))
 	    break;
 
@@ -1573,7 +1571,6 @@ lookup_fnfields_idx_nolazy (tree type, tree name)
 {
   vec<tree, va_gc> *method_vec;
   tree fn;
-  tree tmp;
   size_t i;
 
   if (!CLASS_TYPE_P (type))
@@ -1605,7 +1602,7 @@ lookup_fnfields_idx_nolazy (tree type, tree name)
   for (i = CLASSTYPE_FIRST_CONVERSION_SLOT;
        vec_safe_iterate (method_vec, i, &fn);
        ++i)
-    if (!DECL_CONV_FN_P (OVL_CURRENT (fn)))
+    if (!DECL_CONV_FN_P (OVL_FIRST (fn)))
       break;
 
   /* If the type is complete, use binary search.  */
@@ -1623,8 +1620,8 @@ lookup_fnfields_idx_nolazy (tree type, tree name)
 	  if (GATHER_STATISTICS)
 	    n_outer_fields_searched++;
 
-	  tmp = (*method_vec)[i];
-	  tmp = DECL_NAME (OVL_CURRENT (tmp));
+	  tree tmp = (*method_vec)[i];
+	  tmp = OVL_NAME (tmp);
 	  if (tmp > name)
 	    hi = i;
 	  else if (tmp < name)
@@ -1638,7 +1635,7 @@ lookup_fnfields_idx_nolazy (tree type, tree name)
       {
 	if (GATHER_STATISTICS)
 	  n_outer_fields_searched++;
-	if (DECL_NAME (OVL_CURRENT (fn)) == name)
+	if (OVL_NAME (fn) == name)
 	  return i;
       }
 
@@ -1993,6 +1990,238 @@ dfs_walk_once_accessible (tree binfo, bool friends_p,
   return rval;
 }
 
+/* Return true iff the code of T is CODE, and it has compatible
+   type with TYPE.  */
+
+static bool
+matches_code_and_type_p (tree t, enum tree_code code, tree type)
+{
+  if (TREE_CODE (t) != code)
+    return false;
+  if (!cxx_types_compatible_p (TREE_TYPE (t), type))
+    return false;
+  return true;
+}
+
+/* Subroutine of direct_accessor_p and reference_accessor_p.
+   Determine if COMPONENT_REF is a simple field lookup of this->FIELD_DECL.
+   We expect a tree of the form:
+	     <component_ref:
+	       <indirect_ref:S>
+		 <nop_expr:P*
+		   <parm_decl (this)>
+		 <field_decl (FIELD_DECL)>>>.  */
+
+static bool
+field_access_p (tree component_ref, tree field_decl, tree field_type)
+{
+  if (!matches_code_and_type_p (component_ref, COMPONENT_REF, field_type))
+    return false;
+
+  tree indirect_ref = TREE_OPERAND (component_ref, 0);
+  if (TREE_CODE (indirect_ref) != INDIRECT_REF)
+    return false;
+
+  tree ptr = STRIP_NOPS (TREE_OPERAND (indirect_ref, 0));
+  if (!is_this_parameter (ptr))
+    return false;
+
+  /* Must access the correct field.  */
+  if (TREE_OPERAND (component_ref, 1) != field_decl)
+    return false;
+  return true;
+}
+
+/* Subroutine of field_accessor_p.
+
+   Assuming that INIT_EXPR has already had its code and type checked,
+   determine if it is a simple accessor for FIELD_DECL
+   (of type FIELD_TYPE).
+
+   Specifically, a simple accessor within struct S of the form:
+       T get_field () { return m_field; }
+   should have a DECL_SAVED_TREE of the form:
+       <return_expr
+	 <init_expr:T
+	   <result_decl:T
+	   <nop_expr:T
+	     <component_ref:
+	       <indirect_ref:S>
+		 <nop_expr:P*
+		   <parm_decl (this)>
+		 <field_decl (FIELD_DECL)>>>.  */
+
+static bool
+direct_accessor_p (tree init_expr, tree field_decl, tree field_type)
+{
+  tree result_decl = TREE_OPERAND (init_expr, 0);
+  if (!matches_code_and_type_p (result_decl, RESULT_DECL, field_type))
+    return false;
+
+  tree component_ref = STRIP_NOPS (TREE_OPERAND (init_expr, 1));
+  if (!field_access_p (component_ref, field_decl, field_type))
+    return false;
+
+  return true;
+}
+
+/* Subroutine of field_accessor_p.
+
+   Assuming that INIT_EXPR has already had its code and type checked,
+   determine if it is a "reference" accessor for FIELD_DECL
+   (of type FIELD_REFERENCE_TYPE).
+
+   Specifically, a simple accessor within struct S of the form:
+       T& get_field () { return m_field; }
+   should have a DECL_SAVED_TREE of the form:
+       <return_expr
+	 <init_expr:T&
+	   <result_decl:T&
+	   <nop_expr: T&
+	     <addr_expr: T*
+	       <component_ref:T
+		 <indirect_ref:S
+		   <nop_expr
+		     <parm_decl (this)>>
+		   <field (FIELD_DECL)>>>>>>.  */
+static bool
+reference_accessor_p (tree init_expr, tree field_decl, tree field_type,
+		      tree field_reference_type)
+{
+  tree result_decl = TREE_OPERAND (init_expr, 0);
+  if (!matches_code_and_type_p (result_decl, RESULT_DECL, field_reference_type))
+    return false;
+
+  tree field_pointer_type = build_pointer_type (field_type);
+  tree addr_expr = STRIP_NOPS (TREE_OPERAND (init_expr, 1));
+  if (!matches_code_and_type_p (addr_expr, ADDR_EXPR, field_pointer_type))
+    return false;
+
+  tree component_ref = STRIP_NOPS (TREE_OPERAND (addr_expr, 0));
+
+  if (!field_access_p (component_ref, field_decl, field_type))
+    return false;
+
+  return true;
+}
+
+/* Return true if FN is an accessor method for FIELD_DECL.
+   i.e. a method of the form { return FIELD; }, with no
+   conversions.
+
+   If CONST_P, then additionally require that FN be a const
+   method.  */
+
+static bool
+field_accessor_p (tree fn, tree field_decl, bool const_p)
+{
+  if (TREE_CODE (fn) != FUNCTION_DECL)
+    return false;
+
+  /* We don't yet support looking up static data, just fields.  */
+  if (TREE_CODE (field_decl) != FIELD_DECL)
+    return false;
+
+  tree fntype = TREE_TYPE (fn);
+  if (TREE_CODE (fntype) != METHOD_TYPE)
+    return false;
+
+  /* If the field is accessed via a const "this" argument, verify
+     that the "this" parameter is const.  */
+  if (const_p)
+    {
+      tree this_type = type_of_this_parm (fntype);
+      if (!TYPE_READONLY (this_type))
+	return false;
+    }
+
+  tree saved_tree = DECL_SAVED_TREE (fn);
+
+  if (saved_tree == NULL_TREE)
+    return false;
+
+  if (TREE_CODE (saved_tree) != RETURN_EXPR)
+    return false;
+
+  tree init_expr = TREE_OPERAND (saved_tree, 0);
+  if (TREE_CODE (init_expr) != INIT_EXPR)
+    return false;
+
+  /* Determine if this is a simple accessor within struct S of the form:
+       T get_field () { return m_field; }.  */
+   tree field_type = TREE_TYPE (field_decl);
+  if (cxx_types_compatible_p (TREE_TYPE (init_expr), field_type))
+    return direct_accessor_p (init_expr, field_decl, field_type);
+
+  /* Failing that, determine if it is an accessor of the form:
+       T& get_field () { return m_field; }.  */
+  tree field_reference_type = cp_build_reference_type (field_type, false);
+  if (cxx_types_compatible_p (TREE_TYPE (init_expr), field_reference_type))
+    return reference_accessor_p (init_expr, field_decl, field_type,
+				 field_reference_type);
+
+  return false;
+}
+
+/* Callback data for dfs_locate_field_accessor_pre.  */
+
+struct locate_field_data
+{
+  locate_field_data (tree field_decl_, bool const_p_)
+  : field_decl (field_decl_), const_p (const_p_) {}
+
+  tree field_decl;
+  bool const_p;
+};
+
+/* Return a FUNCTION_DECL that is an "accessor" method for DATA, a FIELD_DECL,
+   callable via binfo, if one exists, otherwise return NULL_TREE.
+
+   Callback for dfs_walk_once_accessible for use within
+   locate_field_accessor.  */
+
+static tree
+dfs_locate_field_accessor_pre (tree binfo, void *data)
+{
+  locate_field_data *lfd = (locate_field_data *)data;
+  tree type = BINFO_TYPE (binfo);
+
+  vec<tree, va_gc> *method_vec;
+  tree fn;
+  size_t i;
+
+  if (!CLASS_TYPE_P (type))
+    return NULL_TREE;
+
+  method_vec = CLASSTYPE_METHOD_VEC (type);
+  if (!method_vec)
+    return NULL_TREE;
+
+  for (i = 0; vec_safe_iterate (method_vec, i, &fn); ++i)
+    if (fn)
+      if (field_accessor_p (fn, lfd->field_decl, lfd->const_p))
+	return fn;
+
+  return NULL_TREE;
+}
+
+/* Return a FUNCTION_DECL that is an "accessor" method for FIELD_DECL,
+   callable via BASETYPE_PATH, if one exists, otherwise return NULL_TREE.  */
+
+tree
+locate_field_accessor (tree basetype_path, tree field_decl, bool const_p)
+{
+  if (TREE_CODE (basetype_path) != TREE_BINFO)
+    return NULL_TREE;
+
+  /* Walk the hierarchy, looking for a method of some base class that allows
+     access to the field.  */
+  locate_field_data lfd (field_decl, const_p);
+  return dfs_walk_once_accessible (basetype_path, /*friends=*/true,
+				   dfs_locate_field_accessor_pre,
+				   NULL, &lfd);
+}
+
 /* Check that virtual overrider OVERRIDER is acceptable for base function
    BASEFN. Issue diagnostic, and return zero, if unacceptable.  */
 
@@ -2199,28 +2428,25 @@ look_for_overrides_here (tree type, tree fndecl)
   else
     ix = lookup_fnfields_1 (type, DECL_NAME (fndecl));
   if (ix >= 0)
-    {
-      tree fns = (*CLASSTYPE_METHOD_VEC (type))[ix];
+    for (ovl_iterator iter ((*CLASSTYPE_METHOD_VEC (type))[ix]); iter; ++iter)
+      {
+	tree fn = *iter;
 
-      for (; fns; fns = OVL_NEXT (fns))
-	{
-	  tree fn = OVL_CURRENT (fns);
+	if (!DECL_VIRTUAL_P (fn))
+	  /* Not a virtual.  */;
+	else if (DECL_CONTEXT (fn) != type)
+	  /* Introduced with a using declaration.  */;
+	else if (DECL_STATIC_FUNCTION_P (fndecl))
+	  {
+	    tree btypes = TYPE_ARG_TYPES (TREE_TYPE (fn));
+	    tree dtypes = TYPE_ARG_TYPES (TREE_TYPE (fndecl));
+	    if (compparms (TREE_CHAIN (btypes), dtypes))
+	      return fn;
+	  }
+	else if (same_signature_p (fndecl, fn))
+	  return fn;
+      }
 
-	  if (!DECL_VIRTUAL_P (fn))
-	    /* Not a virtual.  */;
-	  else if (DECL_CONTEXT (fn) != type)
-	    /* Introduced with a using declaration.  */;
-	  else if (DECL_STATIC_FUNCTION_P (fndecl))
-	    {
-	      tree btypes = TYPE_ARG_TYPES (TREE_TYPE (fn));
-	      tree dtypes = TYPE_ARG_TYPES (TREE_TYPE (fndecl));
-	      if (compparms (TREE_CHAIN (btypes), dtypes))
-		return fn;
-	    }
-	  else if (same_signature_p (fndecl, fn))
-	    return fn;
-	}
-    }
   return NULL_TREE;
 }
 
@@ -2365,7 +2591,7 @@ note_debug_info_needed (tree type)
   if (TYPE_DECL_SUPPRESS_DEBUG (TYPE_NAME (type)))
     {
       TYPE_DECL_SUPPRESS_DEBUG (TYPE_NAME (type)) = 0;
-      rest_of_type_compilation (type, toplevel_bindings_p ());
+      rest_of_type_compilation (type, namespace_bindings_p ());
     }
 
   dfs_walk_all (TYPE_BINFO (type), dfs_debug_mark, NULL, 0);
@@ -2563,35 +2789,31 @@ lookup_conversions_r (tree binfo,
        vec_safe_iterate (method_vec, i, &conv);
        ++i)
     {
-      tree cur = OVL_CURRENT (conv);
+      tree cur = OVL_FIRST (conv);
 
       if (!DECL_CONV_FN_P (cur))
 	break;
 
       if (TREE_CODE (cur) == TEMPLATE_DECL)
-	{
-	  /* Only template conversions can be overloaded, and we must
-	     flatten them out and check each one individually.  */
-	  tree tpls;
+	/* Only template conversions can be overloaded, and we must
+	   flatten them out and check each one individually.  */
+	for (ovl_iterator iter (conv); iter; ++iter)
+	  {
+	    tree tpl = *iter;
+	    tree type = DECL_CONV_FN_TYPE (tpl);
 
-	  for (tpls = conv; tpls; tpls = OVL_NEXT (tpls))
-	    {
-	      tree tpl = OVL_CURRENT (tpls);
-	      tree type = DECL_CONV_FN_TYPE (tpl);
-
-	      if (check_hidden_convs (binfo, virtual_depth, virtualness,
-				      type, parent_tpl_convs, other_tpl_convs))
-		{
-		  my_tpl_convs = tree_cons (binfo, tpl, my_tpl_convs);
-		  TREE_TYPE (my_tpl_convs) = type;
-		  if (virtual_depth)
-		    {
-		      TREE_STATIC (my_tpl_convs) = 1;
-		      my_virtualness = 1;
-		    }
-		}
-	    }
-	}
+	    if (check_hidden_convs (binfo, virtual_depth, virtualness,
+				    type, parent_tpl_convs, other_tpl_convs))
+	      {
+		my_tpl_convs = tree_cons (binfo, tpl, my_tpl_convs);
+		TREE_TYPE (my_tpl_convs) = type;
+		if (virtual_depth)
+		  {
+		    TREE_STATIC (my_tpl_convs) = 1;
+		    my_virtualness = 1;
+		  }
+	      }
+	  }
       else
 	{
 	  tree name = DECL_NAME (cur);
@@ -2657,7 +2879,7 @@ lookup_conversions_r (tree binfo,
 
   /* Unmark the conversions found at this level  */
   for (conv = my_convs; conv; conv = TREE_CHAIN (conv))
-    IDENTIFIER_MARKED (DECL_NAME (OVL_CURRENT (TREE_VALUE (conv)))) = 0;
+    IDENTIFIER_MARKED (OVL_NAME (TREE_VALUE (conv))) = 0;
 
   *convs = split_conversions (my_convs, parent_convs,
 			      child_convs, other_convs);

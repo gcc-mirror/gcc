@@ -386,11 +386,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // The _M_get operations have _M_engaged as a precondition.
       constexpr _Tp&
       _M_get() noexcept
-      { return this->_M_payload._M_payload; }
+      {
+	__glibcxx_assert(_M_is_engaged());
+	return this->_M_payload._M_payload;
+      }
 
       constexpr const _Tp&
       _M_get() const noexcept
-      { return this->_M_payload._M_payload; }
+      {
+	__glibcxx_assert(_M_is_engaged());
+	return this->_M_payload._M_payload;
+      }
 
       // The _M_construct operation has !_M_engaged as a precondition
       // while _M_destruct has _M_engaged as a precondition.
@@ -462,10 +468,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
         // Unique tag type.
         optional<_Tp>>
     {
-      static_assert(__and_<__not_<is_same<remove_cv_t<_Tp>, nullopt_t>>,
-			   __not_<is_same<remove_cv_t<_Tp>, in_place_t>>,
-			   __not_<is_reference<_Tp>>>(),
-                    "Invalid instantiation of optional<T>");
+      static_assert(!is_same_v<remove_cv_t<_Tp>, nullopt_t>);
+      static_assert(!is_same_v<remove_cv_t<_Tp>, in_place_t>);
+      static_assert(!is_reference_v<_Tp>);
 
     private:
       using _Base = _Optional_base<_Tp>;
@@ -756,9 +761,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	constexpr _Tp
 	value_or(_Up&& __u) const&
 	{
-	  static_assert(__and_<is_copy_constructible<_Tp>,
-			       is_convertible<_Up&&, _Tp>>(),
-			"Cannot return value");
+	  static_assert(is_copy_constructible_v<_Tp>);
+	  static_assert(is_convertible_v<_Up&&, _Tp>);
 
 	  return this->_M_is_engaged()
 	    ? this->_M_get()
@@ -769,9 +773,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_Tp
 	value_or(_Up&& __u) &&
 	{
-	  static_assert(__and_<is_move_constructible<_Tp>,
-			       is_convertible<_Up&&, _Tp>>(),
-			"Cannot return value" );
+	  static_assert(is_move_constructible_v<_Tp>);
+	  static_assert(is_convertible_v<_Up&&, _Tp>);
 
 	  return this->_M_is_engaged()
 	    ? std::move(this->_M_get())

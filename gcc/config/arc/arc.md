@@ -2157,6 +2157,18 @@
   "TARGET_ANY_MPY"
 "
 {
+  if (TARGET_PLUS_MACD)
+    {
+     if (CONST_INT_P (operands[2]))
+       {
+	emit_insn (gen_mpyd_imm_arcv2hs (operands[0], operands[1], operands[2]));
+       }
+     else
+       {
+	emit_insn (gen_mpyd_arcv2hs (operands[0], operands[1], operands[2]));
+       }
+     DONE;
+    }
   if (TARGET_MPY)
     {
       operands[2] = force_reg (SImode, operands[2]);
@@ -2237,7 +2249,7 @@
   [(set (match_operand:DI 0 "register_operand" "=&r")
 	(mult:DI (sign_extend:DI (match_operand:SI 1 "register_operand" "%c"))
 		 (sign_extend:DI (match_operand:SI 2 "extend_operand" "cL"))))]
-  "TARGET_MPY"
+  "TARGET_MPY && !TARGET_PLUS_MACD"
   "#"
   "&& reload_completed"
   [(const_int 0)]
@@ -2390,6 +2402,18 @@
 		 (zero_extend:DI (match_operand:SI 2 "nonmemory_operand" ""))))]
   ""
 {
+  if (TARGET_PLUS_MACD)
+    {
+     if (CONST_INT_P (operands[2]))
+       {
+	emit_insn (gen_mpydu_imm_arcv2hs (operands[0], operands[1], operands[2]));
+       }
+     else
+       {
+	emit_insn (gen_mpydu_arcv2hs (operands[0], operands[1], operands[2]));
+       }
+     DONE;
+    }
   if (TARGET_MPY)
     {
       operands[2] = force_reg (SImode, operands[2]);
@@ -2480,7 +2504,7 @@
   [(set (match_operand:DI 0 "dest_reg_operand" "=&r")
 	(mult:DI (zero_extend:DI (match_operand:SI 1 "register_operand" "%c"))
 		 (zero_extend:DI (match_operand:SI 2 "extend_operand" "cL"))))]
-  "TARGET_MPY"
+  "TARGET_MPY && !TARGET_PLUS_MACD"
   "#"
   "reload_completed"
   [(const_int 0)]
@@ -4740,8 +4764,8 @@
     = gen_rtx_REG (Pmode,
 		   arc_return_address_regs[arc_compute_function_type (cfun)]);
 
-  if (arc_compute_function_type (cfun) == ARC_FUNCTION_ILINK1
-      && TARGET_V2)
+  if (TARGET_V2
+      && ARC_INTERRUPT_P (arc_compute_function_type (cfun)))
   {
     return \"rtie\";
   }
@@ -4751,8 +4775,7 @@
   return \"\";
 }
   [(set (attr "type")
-	(cond [(and (eq (symbol_ref "arc_compute_function_type (cfun)")
-			(symbol_ref "ARC_FUNCTION_ILINK1"))
+	(cond [(and (match_test "ARC_INTERRUPT_P (arc_compute_function_type (cfun))")
 		    (match_test "TARGET_V2"))
 	       (const_string "brcc_no_delay_slot")]
 	      (const_string "return")))
@@ -4782,7 +4805,7 @@
 		      (simple_return) (pc)))]
   "reload_completed
    && !(TARGET_V2
-     && arc_compute_function_type (cfun) == ARC_FUNCTION_ILINK1)"
+     && ARC_INTERRUPT_P (arc_compute_function_type (cfun)))"
 {
   rtx xop[2];
   xop[0] = operands[0];
@@ -6240,6 +6263,252 @@
    && !reg_overlap_mentioned_p (operands[0], operands[3])"
   [(set (zero_extract:SI (match_dup 3) (match_dup 1) (match_dup 2))
 	(zero_extract:SI (match_dup 0) (match_dup 1) (match_dup 2)))])
+
+;; Dummy pattern used as a place holder for automatically saved
+;; registers.
+(define_insn "stack_irq_dwarf"
+  [(unspec_volatile [(const_int 1)] VUNSPEC_ARC_STACK_IRQ)]
+  ""
+  ""
+  [(set_attr "length" "0")])
+
+;; MAC and DMPY instructions
+(define_insn_and_split "maddsidi4"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(plus:DI
+	 (mult:DI
+	  (sign_extend:DI (match_operand:SI 1 "register_operand" "%r"))
+	  (sign_extend:DI (match_operand:SI 2 "extend_operand" "ri")))
+	 (match_operand:DI 3 "register_operand" "r")))]
+  "TARGET_PLUS_DMPY"
+  "#"
+  "TARGET_PLUS_DMPY && reload_completed"
+  [(const_int 0)]
+  "{
+   rtx acc_reg = gen_rtx_REG (DImode, ACC_REG_FIRST);
+   emit_move_insn (acc_reg, operands[3]);
+   if (TARGET_PLUS_MACD)
+     emit_insn (gen_macd (operands[0], operands[1], operands[2]));
+   else
+     {
+      emit_insn (gen_mac (operands[1], operands[2]));
+      emit_move_insn (operands[0], acc_reg);
+     }
+   DONE;
+   }"
+  [(set_attr "type" "multi")
+   (set_attr "length" "36")])
+
+(define_insn "macd"
+  [(set (match_operand:DI 0 "even_register_operand"	       "=Rcr,r,r")
+	(plus:DI
+	 (mult:DI
+	  (sign_extend:DI (match_operand:SI 1 "register_operand" "%0,c,c"))
+	  (sign_extend:DI (match_operand:SI 2 "extend_operand" " c,cI,Cal")))
+	 (reg:DI ARCV2_ACC)))
+   (set (reg:DI ARCV2_ACC)
+	(plus:DI
+	 (mult:DI (sign_extend:DI (match_dup 1))
+		  (sign_extend:DI (match_dup 2)))
+	 (reg:DI ARCV2_ACC)))]
+ "TARGET_PLUS_MACD"
+ "macd %0,%1,%2"
+  [(set_attr "length" "4,4,8")
+   (set_attr "type" "multi")
+   (set_attr "predicable" "yes,no,no")
+   (set_attr "cond" "canuse,nocond,nocond")])
+
+(define_insn "mac"
+  [(set (reg:DI ARCV2_ACC)
+	(plus:DI
+	 (mult:DI (sign_extend:DI (match_operand:SI 0 "register_operand" "%r,r"))
+		  (sign_extend:DI (match_operand:SI 1 "extend_operand" "rI,i")))
+	 (reg:DI ARCV2_ACC)))]
+ "TARGET_PLUS_DMPY"
+ "mac 0,%0,%1"
+  [(set_attr "length" "4,8")
+   (set_attr "type" "multi")
+   (set_attr "predicable" "no")
+   (set_attr "cond" "nocond")])
+
+(define_peephole2
+  [(set (reg:DI ARCV2_ACC)
+	(plus:DI
+	 (mult:DI (sign_extend:DI (match_operand:SI 0 "register_operand" ""))
+		  (sign_extend:DI (match_operand:SI 1 "extend_operand" "")))
+	 (reg:DI ARCV2_ACC)))
+   (set (match_operand:SI 2 "register_operand" "")
+	(match_operand:SI 3 "accl_operand" ""))]
+ "TARGET_PLUS_DMPY"
+ [(const_int 0)]
+ {
+  emit_insn (gen_mac_r (operands[2], operands[0], operands[1]));
+  DONE;
+ })
+
+(define_insn "mac_r"
+  [(set (match_operand:SI 0 "register_operand" "=r,r")
+	(truncate:SI
+	 (plus:DI
+	  (mult:DI (sign_extend:DI (match_operand:SI 1 "register_operand" "%r,r"))
+		   (sign_extend:DI (match_operand:SI 2 "extend_operand" "rI,i")))
+	  (reg:DI ARCV2_ACC))))
+   (clobber (reg:DI ARCV2_ACC))]
+ "TARGET_PLUS_DMPY"
+ "mac %0,%1,%2"
+  [(set_attr "length" "4,8")
+   (set_attr "type" "multi")
+   (set_attr "predicable" "no")
+   (set_attr "cond" "nocond")])
+
+(define_insn_and_split "umaddsidi4"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(plus:DI
+	 (mult:DI
+	  (zero_extend:DI (match_operand:SI 1 "register_operand" "%r"))
+	  (zero_extend:DI (match_operand:SI 2 "extend_operand" "ri")))
+	 (match_operand:DI 3 "register_operand" "r")))]
+  "TARGET_PLUS_DMPY"
+  "#"
+  "TARGET_PLUS_DMPY && reload_completed"
+  [(const_int 0)]
+  "{
+   rtx acc_reg = gen_rtx_REG (DImode, ACC_REG_FIRST);
+   emit_move_insn (acc_reg, operands[3]);
+   if (TARGET_PLUS_MACD)
+     emit_insn (gen_macdu (operands[0], operands[1], operands[2]));
+   else
+     {
+      emit_insn (gen_macu (operands[1], operands[2]));
+      emit_move_insn (operands[0], acc_reg);
+     }
+   DONE;
+   }"
+  [(set_attr "type" "multi")
+   (set_attr "length" "36")])
+
+(define_insn "macdu"
+  [(set (match_operand:DI 0 "even_register_operand"	       "=Rcr,r,r")
+	(plus:DI
+	 (mult:DI
+	  (zero_extend:DI (match_operand:SI 1 "register_operand" "%0,c,c"))
+	  (zero_extend:DI (match_operand:SI 2 "extend_operand" " c,cI,i")))
+	 (reg:DI ARCV2_ACC)))
+   (set (reg:DI ARCV2_ACC)
+	(plus:DI
+	 (mult:DI (zero_extend:DI (match_dup 1))
+		  (zero_extend:DI (match_dup 2)))
+	 (reg:DI ARCV2_ACC)))]
+ "TARGET_PLUS_MACD"
+ "macdu %0,%1,%2"
+  [(set_attr "length" "4,4,8")
+   (set_attr "type" "multi")
+   (set_attr "predicable" "yes,no,no")
+   (set_attr "cond" "canuse,nocond,nocond")])
+
+(define_insn "macu"
+  [(set (reg:DI ARCV2_ACC)
+	(plus:DI
+	 (mult:DI (zero_extend:DI (match_operand:SI 0 "register_operand" "%r,r"))
+		  (zero_extend:DI (match_operand:SI 1 "extend_operand" "rI,i")))
+	 (reg:DI ARCV2_ACC)))]
+ "TARGET_PLUS_DMPY"
+ "macu 0,%0,%1"
+  [(set_attr "length" "4,8")
+   (set_attr "type" "multi")
+   (set_attr "predicable" "no")
+   (set_attr "cond" "nocond")])
+
+(define_peephole2
+  [(set (reg:DI ARCV2_ACC)
+	(plus:DI
+	 (mult:DI (zero_extend:DI (match_operand:SI 0 "register_operand" ""))
+		  (zero_extend:DI (match_operand:SI 1 "extend_operand" "")))
+	 (reg:DI ARCV2_ACC)))
+   (set (match_operand:SI 2 "register_operand" "")
+	(match_operand:SI 3 "accl_operand" ""))]
+ "TARGET_PLUS_DMPY"
+ [(const_int 0)]
+ {
+  emit_insn (gen_macu_r (operands[2], operands[0], operands[1]));
+  DONE;
+ })
+
+(define_insn "macu_r"
+  [(set (match_operand:SI 0 "register_operand" "=r,r")
+	(truncate:SI
+	 (plus:DI
+	  (mult:DI (zero_extend:DI (match_operand:SI 1 "register_operand" "%r,r"))
+		   (zero_extend:DI (match_operand:SI 2 "extend_operand" "rI,i")))
+	  (reg:DI ARCV2_ACC))))
+   (clobber (reg:DI ARCV2_ACC))]
+ "TARGET_PLUS_DMPY"
+ "macu %0,%1,%2"
+  [(set_attr "length" "4,8")
+   (set_attr "type" "multi")
+   (set_attr "predicable" "no")
+   (set_attr "cond" "nocond")])
+
+(define_insn "mpyd_arcv2hs"
+  [(set (match_operand:DI 0 "even_register_operand"			"=Rcr, r")
+	(mult:DI (sign_extend:DI (match_operand:SI 1 "register_operand"	 "  0, c"))
+		 (sign_extend:DI (match_operand:SI 2 "register_operand"	 "  c, c"))))
+   (set (reg:DI ARCV2_ACC)
+	(mult:DI
+	  (sign_extend:DI (match_dup 1))
+	  (sign_extend:DI (match_dup 2))))]
+  "TARGET_PLUS_MACD"
+  "mpyd%? %0,%1,%2"
+  [(set_attr "length" "4,4")
+  (set_attr "iscompact" "false")
+  (set_attr "type" "multi")
+  (set_attr "predicable" "yes,no")
+  (set_attr "cond" "canuse,nocond")])
+
+(define_insn "mpyd_imm_arcv2hs"
+  [(set (match_operand:DI 0 "even_register_operand"			"=Rcr, r,r,Rcr,	 r")
+	(mult:DI (sign_extend:DI (match_operand:SI 1 "register_operand"	 "  0, c,0,  0,	 c"))
+		 (match_operand 2		    "immediate_operand"	 "  L, L,I,Cal,Cal")))
+   (set (reg:DI ARCV2_ACC)
+	(mult:DI (sign_extend:DI (match_dup 1))
+		 (match_dup 2)))]
+  "TARGET_PLUS_MACD"
+  "mpyd%? %0,%1,%2"
+  [(set_attr "length" "4,4,4,8,8")
+  (set_attr "iscompact" "false")
+  (set_attr "type" "multi")
+  (set_attr "predicable" "yes,no,no,yes,no")
+  (set_attr "cond" "canuse,nocond,nocond,canuse_limm,nocond")])
+
+(define_insn "mpydu_arcv2hs"
+  [(set (match_operand:DI 0 "even_register_operand"			"=Rcr, r")
+	(mult:DI (zero_extend:DI (match_operand:SI 1 "register_operand"	 "  0, c"))
+		 (zero_extend:DI (match_operand:SI 2 "register_operand" "   c, c"))))
+   (set (reg:DI ARCV2_ACC)
+	(mult:DI (zero_extend:DI (match_dup 1))
+		 (zero_extend:DI (match_dup 2))))]
+  "TARGET_PLUS_MACD"
+  "mpydu%? %0,%1,%2"
+  [(set_attr "length" "4,4")
+  (set_attr "iscompact" "false")
+  (set_attr "type" "multi")
+  (set_attr "predicable" "yes,no")
+  (set_attr "cond" "canuse,nocond")])
+
+(define_insn "mpydu_imm_arcv2hs"
+  [(set (match_operand:DI 0 "even_register_operand"			"=Rcr, r,r,Rcr,	 r")
+	(mult:DI (zero_extend:DI (match_operand:SI 1 "register_operand"	 "  0, c,0,  0,	 c"))
+		 (match_operand 2		    "immediate_operand"	 "  L, L,I,Cal,Cal")))
+   (set (reg:DI ARCV2_ACC)
+	(mult:DI (zero_extend:DI (match_dup 1))
+		 (match_dup 2)))]
+  "TARGET_PLUS_MACD"
+  "mpydu%? %0,%1,%2"
+  [(set_attr "length" "4,4,4,8,8")
+  (set_attr "iscompact" "false")
+  (set_attr "type" "multi")
+  (set_attr "predicable" "yes,no,no,yes,no")
+  (set_attr "cond" "canuse,nocond,nocond,canuse_limm,nocond")])
 
 ;; include the arc-FPX instructions
 (include "fpx.md")

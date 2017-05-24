@@ -444,7 +444,10 @@ nvptx-*-*)
 	;;
 powerpc*-*-*)
 	cpu_type=rs6000
-	extra_headers="ppc-asm.h altivec.h spe.h ppu_intrinsics.h paired.h spu2vmx.h vec_types.h si2vmx.h htmintrin.h htmxlintrin.h"
+	extra_headers="ppc-asm.h altivec.h htmintrin.h htmxlintrin.h"
+	extra_headers="${extra_headers} bmi2intrin.h bmiintrin.h x86intrin.h"
+	extra_headers="${extra_headers} ppu_intrinsics.h spu2vmx.h vec_types.h si2vmx.h"
+	extra_headers="${extra_headers} spe.h paired.h"
 	case x$with_cpu in
 	    xpowerpc64|xdefault64|x6[23]0|x970|xG5|xpower[3456789]|xpower6x|xrs64a|xcell|xa2|xe500mc64|xe5500|xe6500)
 		cpu_is_64bit=yes
@@ -3791,34 +3794,19 @@ case "${target}" in
 		# Add extra multilibs
 		if test "x$with_multilib_list" != x; then
 			arm_multilibs=`echo $with_multilib_list | sed -e 's/,/ /g'`
-			case ${arm_multilibs} in
-			aprofile)
-				# Note that arm/t-aprofile is a
-				# stand-alone make file fragment to be
-				# used only with itself.  We do not
-				# specifically use the
-				# TM_MULTILIB_OPTION framework because
-				# this shorthand is more
-				# pragmatic.
-				tmake_profile_file="arm/t-aprofile"
-				;;
-			rmprofile)
-				# Note that arm/t-rmprofile is a
-				# stand-alone make file fragment to be
-				# used only with itself.  We do not
-				# specifically use the
-				# TM_MULTILIB_OPTION framework because
-				# this shorthand is more
-				# pragmatic.
-				tmake_profile_file="arm/t-rmprofile"
-				;;
-			default)
-				;;
-			*)
-				echo "Error: --with-multilib-list=${with_multilib_list} not supported." 1>&2
-				exit 1
-				;;
-			esac
+			if test "x${arm_multilibs}" != xdefault ; then
+				for arm_multilib in ${arm_multilibs}; do
+					case ${arm_multilib} in
+					aprofile|rmprofile)
+						tmake_profile_file="arm/t-multilib"
+						;;
+					*)
+						echo "Error: --with-multilib-list=${with_multilib_list} not supported." 1>&2
+						exit 1
+						;;
+					esac
+				done
+			fi
 
 			if test "x${tmake_profile_file}" != x ; then
 				# arm/t-aprofile and arm/t-rmprofile are only
@@ -3835,6 +3823,7 @@ case "${target}" in
 				fi
 
 				tmake_file="${tmake_file} ${tmake_profile_file}"
+				TM_MULTILIB_CONFIG="$with_multilib_list"
 			fi
 		fi
 		;;

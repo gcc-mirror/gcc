@@ -45,11 +45,10 @@ lto_cgraph_replace_node (struct cgraph_node *node,
 
   if (symtab->dump_file)
     {
-      fprintf (symtab->dump_file, "Replacing cgraph node %s/%i by %s/%i"
+      fprintf (symtab->dump_file, "Replacing cgraph node %s by %s"
  	       " for symbol %s\n",
-	       node->name (), node->order,
-	       prevailing_node->name (),
-	       prevailing_node->order,
+	       node->dump_name (),
+	       prevailing_node->dump_name (),
 	       IDENTIFIER_POINTER ((*targetm.asm_out.mangle_assembler_name)
 		 (IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (node->decl)))));
     }

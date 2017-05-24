@@ -3,7 +3,7 @@
 
 /* { dg-do compile } */
 /* { dg-require-effective-target powerpc_vsx_ok } */
-/* { dg-options "-maltivec -mvsx" } */
+/* { dg-options "-mvsx" } */
 
 #include <altivec.h>
 

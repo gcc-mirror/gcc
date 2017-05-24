@@ -1,3 +1,121 @@
+2017-05-19  Jason Merrill  <jason@redhat.com>
+
+	* c-warn.c (match_case_to_enum_1): Don't warn about enums with no
+	enumerators.
+
+2017-05-19  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* c-format.c (locus): Move out of function scope,
+	add GTY attribute.
+
+2017-05-19  Nathan Sidwell  <nathan@acm.org>
+
+	* c-opts.c (class_dump_file, class_dump_flags): Delete.
+	(c_common_parse_file): Remove class dump handling.
+	(get_dump_info): Likewise.
+
+2017-05-19  Richard Biener  <rguenther@suse.de>
+
+	PR c++/80593
+	* c-warn.c (strict_aliasing_warning): Do not warn for accesses
+	to alias-set zero memory.
+
+2017-05-18  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* c-format.c (local_tree_type_node): Add GTY attribute.
+
+2017-05-18  Marek Polacek  <polacek@redhat.com>
+
+	* c-common.c (c_common_type_for_size): Use NULL_TREE instead of 0.
+	(c_common_fixed_point_type_for_size): Likewise.
+	(c_common_type_for_mode): Likewise.
+	(shorten_compare): Likewise.
+	(c_promoting_integer_type_p): Use false/true instead of 0/1.
+	* c-pragma.c (maybe_apply_renaming_pragma): Use NULL_TREE instead of 0.
+
+2017-05-18  Marek Polacek  <polacek@redhat.com>
+
+	* c-common.c (self_promoting_args_p): Change the return type to bool.
+	Use false/true instead of 0/1.
+	* c-common.h (self_promoting_args_p): Update.
+
+2017-05-17  Marek Polacek  <polacek@redhat.com>
+
+	* c-common.c: Use NULL_TREE instead of 0 where appropriate.
+	* c-warn.c: Likewise.
+
+2017-05-17  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	Implement new C++ intrinsics __is_assignable and __is_constructible.
+	* c-common.c (__is_assignable, __is_constructible): New.
+	* c-common.h (RID_IS_ASSIGNABLE, RID_IS_CONSTRUCTIBLE): Likewise.
+
+2017-05-17  Martin Liska  <mliska@suse.cz>
+
+	* c-common.h: Introduce dump_flags_t type and
+	use it instead of int type.
+	* c-gimplify.c (c_genericize): Likewise.
+	* c-opts.c: Likewise.
+
+2017-05-17  Marek Polacek  <polacek@redhat.com>
+
+	* c-common.c (c_save_expr): Remove.
+	(c_common_truthvalue_conversion): Remove a call to c_save_expr.
+	* c-common.h (c_save_expr): Remove declaration.
+
+2017-05-09  Volker Reichelt  <v.reichelt@netcologne.de>
+
+	PR c/35441
+	* c-pretty-print.c (c_pretty_printer::expression): Handle MAX_EXPR,
+	MIN_EXPR, EXACT_DIV_EXPR, RDIV_EXPR, LROTATE_EXPR, RROTATE_EXPR.
+	(c_pretty_printer::postfix_expression): Handle MAX_EXPR, MIN_EXPR.
+	(c_pretty_printer::multiplicative_expression): Handle EXACT_DIV_EXPR,
+	RDIV_EXPR.
+	(pp_c_shift_expression): Handle LROTATE_EXPR, RROTATE_EXPR.
+
+2017-05-09  Marek Polacek  <polacek@redhat.com>
+
+	PR c/80525
+	* c-warn.c (unwrap_c_maybe_const): New.
+	(warn_logical_operator): Call it.
+
+2017-05-09  Nathan Sidwell  <nathan@acm.org>
+
+	* c-common.c (c_register_builtin_type): Use pushdecl lang_hook.
+	* c-common.h (pushdecl_top_level, pushdecl): Don't declare here.
+
+2017-05-08  Martin Sebor  <msebor@redhat.com>
+
+	PR translation/80280
+	* c-format.h (struct format_flag_spec): Add new member.
+	(T89_T): New macro.
+	* c-format.c (local_tree_type_node): New global.
+	(printf_flag_specs, asm_fprintf_flag_spec): Initialize new data.
+	(gcc_diag_flag_specs, scanf_flag_specs, strftime_flag_specs): Ditto.
+	(strfmon_flag_specs): Likewise.
+	(gcc_diag_char_table, gcc_cdiag_char_table): Split up specifiers
+	with distinct quoting properties.
+	(gcc_tdiag_char_table, gcc_cxxdiag_char_table): Same.
+	(flag_chars_t::validate): Add argument and handle bad quoting.
+	(check_format_info_main): Handle quoting problems.
+	(init_dynamic_diag_info): Simplify.
+
+2017-05-08  Jason Merrill  <jason@redhat.com>
+
+	* c-opts.c (c_common_post_options): Update defaults for
+	flag_abi_version and flag_abi_compat_version.
+
+2017-05-05  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-common.c (c_cpp_error): Replace report_diagnostic
+	with diagnostic_report_diagnostic.
+
+2017-05-04  Martin Sebor  <msebor@redhat.com>
+
+	PR translation/80280
+	* c-attribs.c (handle_alias_ifunc_attribute): Quote a %D directive.
+	(handle_weakref_attribute): Same.
+
 2017-05-03  Nathan Sidwell  <nathan@acm.org>
 
 	Canonicalize canonical type hashing

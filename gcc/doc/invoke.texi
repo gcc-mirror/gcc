@@ -540,13 +540,16 @@ Objective-C and Objective-C++ Dialects}.
 -fdisable-tree-@var{pass_name} @gol
 -fdisable-tree-@var{pass-name}=@var{range-list} @gol
 -fdump-noaddr  -fdump-unnumbered  -fdump-unnumbered-links @gol
--fdump-translation-unit@r{[}-@var{n}@r{]} @gol
 -fdump-class-hierarchy@r{[}-@var{n}@r{]} @gol
+-fdump-final-insns@r{[}=@var{file}@r{]}
 -fdump-ipa-all  -fdump-ipa-cgraph  -fdump-ipa-inline @gol
+-fdump-lang-all @gol
+-fdump-lang-@var{switch} @gol
+-fdump-lang-@var{switch}-@var{options} @gol
+-fdump-lang-@var{switch}-@var{options}=@var{filename} @gol
 -fdump-passes @gol
 -fdump-rtl-@var{pass}  -fdump-rtl-@var{pass}=@var{filename} @gol
 -fdump-statistics @gol
--fdump-final-insns@r{[}=@var{file}@r{]}
 -fdump-tree-all @gol
 -fdump-tree-@var{switch} @gol
 -fdump-tree-@var{switch}-@var{options} @gol
@@ -606,7 +609,8 @@ Objective-C and Objective-C++ Dialects}.
 -mnorm  -mspfp  -mspfp-compact  -mspfp-fast  -msimd  -msoft-float  -mswap @gol
 -mcrc  -mdsp-packa  -mdvbf  -mlock  -mmac-d16  -mmac-24  -mrtsc  -mswape @gol
 -mtelephony  -mxy  -misize  -mannotate-align  -marclinux  -marclinux_prof @gol
--mlong-calls  -mmedium-calls  -msdata @gol
+-mlong-calls  -mmedium-calls  -msdata -mirq-ctrl-saved @gol
+-mrgf-banked-regs @gol
 -mvolatile-cache  -mtp-regno=@var{regno} @gol
 -malign-call  -mauto-modify-reg  -mbbit-peephole  -mno-brcc @gol
 -mcase-vector-pcrel  -mcompact-casesi  -mno-cond-exec  -mearly-cbranchsi @gol
@@ -975,6 +979,7 @@ See RS/6000 and PowerPC Options.
 -mtune=@var{processor-string} @gol
 -msmall-data-limit=@var{N-bytes} @gol
 -msave-restore  -mno-save-restore @gol
+-mstrict-align -mno-strict-align @gol
 -mcmodel=@var{code-model} @gol
 -mexplicit-relocs  -mno-explicit-relocs @gol}
 
@@ -1209,7 +1214,7 @@ See RS/6000 and PowerPC Options.
 -msse2avx  -mfentry  -mrecord-mcount  -mnop-mcount  -m8bit-idiv @gol
 -mavx256-split-unaligned-load  -mavx256-split-unaligned-store @gol
 -malign-data=@var{type}  -mstack-protector-guard=@var{guard} @gol
--mmitigate-rop  -mgeneral-regs-only}
+-mmitigate-rop  -mgeneral-regs-only  -mcall-ms2sysv-xlogues}
 
 @emph{x86 Windows Options}
 @gccoptlist{-mconsole  -mcygwin  -mno-cygwin  -mdll @gol
@@ -4278,10 +4283,10 @@ switch (cond)
 C++17 provides a standard way to suppress the @option{-Wimplicit-fallthrough}
 warning using @code{[[fallthrough]];} instead of the GNU attribute.  In C++11
 or C++14 users can use @code{[[gnu::fallthrough]];}, which is a GNU extension.
-Instead of the these attributes, it is also possible to add a fallthrough
-comment to silence the warning.  The whole body of the C or C++ style comment
-should match the given regular expressions listed below.  The option argument
-@var{n} specifies what kind of comments are accepted:
+Instead of these attributes, it is also possible to add a fallthrough comment
+to silence the warning.  The whole body of the C or C++ style comment should
+match the given regular expressions listed below.  The option argument @var{n}
+specifies what kind of comments are accepted:
 
 @itemize @bullet
 
@@ -12937,26 +12942,6 @@ When doing debugging dumps (see @option{-d} option above), suppress
 instruction numbers for the links to the previous and next instructions
 in a sequence.
 
-@item -fdump-translation-unit @r{(C++ only)}
-@itemx -fdump-translation-unit-@var{options} @r{(C++ only)}
-@opindex fdump-translation-unit
-Dump a representation of the tree structure for the entire translation
-unit to a file.  The file name is made by appending @file{.tu} to the
-source file name, and the file is created in the same directory as the
-output file.  If the @samp{-@var{options}} form is used, @var{options}
-controls the details of the dump as described for the
-@option{-fdump-tree} options.
-
-@item -fdump-class-hierarchy @r{(C++ only)}
-@itemx -fdump-class-hierarchy-@var{options} @r{(C++ only)}
-@opindex fdump-class-hierarchy
-Dump a representation of each class's hierarchy and virtual function
-table layout to a file.  The file name is made by appending
-@file{.class} to the source file name, and the file is created in the
-same directory as the output file.  If the @samp{-@var{options}} form
-is used, @var{options} controls the details of the dump as described
-for the @option{-fdump-tree} options.
-
 @item -fdump-ipa-@var{switch}
 @opindex fdump-ipa
 Control the dumping at various stages of inter-procedural analysis
@@ -12975,6 +12960,31 @@ and inlining decisions.
 
 @item inline
 Dump after function inlining.
+
+@end table
+
+@item -fdump-lang-all
+@itemx -fdump-lang-@var{switch}
+@itemx -fdump-lang-@var{switch}-@var{options}
+@itemx -fdump-lang-@var{switch}-@var{options}=@var{filename}
+@opindex fdump-lang-all
+@opindex fdump-lang
+Control the dumping of language-specific information.  The @var{options}
+and @var{filename} portions behave as described in the
+@option{-fdump-tree} option.  The following @var{switch} values are
+accepted:
+
+@table @samp
+@item all
+
+Enable all language-specific dumps.
+
+@item class
+Dump class hierarchy information.  Virtual table information is emitted
+unless '@option{slim}' is specified.  This option is applicable to C++ only.
+
+@item raw
+Dump the raw internal tree data.  This option is applicable to C++ only.
 
 @end table
 
@@ -13219,7 +13229,8 @@ gcc -O2 -ftree-vectorize -fopt-info-vec-missed
 prints information about missed optimization opportunities from
 vectorization passes on @file{stderr}.  
 Note that @option{-fopt-info-vec-missed} is equivalent to 
-@option{-fopt-info-missed-vec}.
+@option{-fopt-info-missed-vec}.  The order of the optimization group
+names and message types listed after @option{-fopt-info} does not matter.
 
 As another example,
 @smallexample
@@ -14544,6 +14555,24 @@ Enables support for all single- and double-precision floating-point
 hardware extensions.  Not available for ARC EM@.
 
 @end table
+
+@item -mirq-ctrl-saved=@var{register-range}, @var{blink}, @var{lp_count}
+@opindex mirq-ctrl-saved
+Specifies general-purposes registers that the processor automatically
+saves/restores on interrupt entry and exit.  @var{register-range} is
+specified as two registers separated by a dash.  The register range
+always starts with @code{r0}, the upper limit is @code{fp} register.
+@var{blink} and @var{lp_count} are optional.  This option is only
+valid for ARC EM and ARC HS cores.
+
+@item -mrgf-banked-regs=@var{number}
+@opindex mrgf-banked-regs
+Specifies the number of registers replicated in second register bank
+on entry to fast interrupt.  Fast interrupts are interrupts with the
+highest priority level P0.  These interrupts save only PC and STATUS32
+registers to avoid memory transactions during interrupt entry and exit
+sequences.  Use this option when you are using fast interrupts in an
+ARC V2 family processor.  Permitted values are 4, 8, 16, and 32.
 
 @end table
 
@@ -20913,6 +20942,11 @@ Put global and static data smaller than @var{n} bytes into a special section
 @opindex msave-restore
 Use smaller but slower prologue and epilogue code.
 
+@item -mstrict-align
+@itemx -mno-strict-align
+@opindex mstrict-align
+Do not generate unaligned memory accesses.
+
 @item -mcmodel=@var{code-model}
 @opindex mcmodel
 Specify the code model.
@@ -25275,6 +25309,17 @@ ABI when targeting Microsoft Windows and the SysV ABI on all other systems.
 You can control this behavior for specific functions by
 using the function attributes @code{ms_abi} and @code{sysv_abi}.
 @xref{Function Attributes}.
+
+@item -mcall-ms2sysv-xlogues
+@opindex mcall-ms2sysv-xlogues
+@opindex mno-call-ms2sysv-xlogues
+Due to differences in 64-bit ABIs, any Microsoft ABI function that calls a
+System V ABI function must consider RSI, RDI and XMM6-15 as clobbered.  By
+default, the code for saving and restoring these registers is emitted inline,
+resulting in fairly lengthy prologues and epilogues.  Using
+@option{-mcall-ms2sysv-xlogues} emits prologues and epilogues that
+use stubs in the static portion of libgcc to perform these saves and restores,
+thus reducing function size at the cost of a few extra instructions.
 
 @item -mtls-dialect=@var{type}
 @opindex mtls-dialect

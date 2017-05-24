@@ -12,11 +12,10 @@
 static void
 calc_sub (float *r, float *s1, float *s2)
 {
+  r[0] = s1[0] - s2[0];
   int i;
-  for (i = 0; i < SIZE; i++)
-    {
-      r[i] = s1[i] - s2[i];
-    }
+  for (i = 1; i < SIZE; i++)
+    r[i] = s1[i];
 }
 
 void
@@ -48,22 +47,24 @@ avx512f_test (void)
 
   calc_sub (res_ref, src1.a, src2.a);
 
-  MASK_MERGE () (res_ref, mask, SIZE);
+  MASK_MERGE () (res_ref, mask, 1);
   if (check_union128 (res1, res_ref))
     abort ();
 
-  MASK_ZERO () (res_ref, mask, SIZE);
+  MASK_ZERO () (res_ref, mask, 1);
   if (check_union128 (res2, res_ref))
     abort ();
+
+  calc_sub (res_ref, src1.a, src2.a);
 
   if (check_union128 (res3, res_ref))
     abort();
   
-  MASK_MERGE () (res_ref, mask, SIZE);
+  MASK_MERGE () (res_ref, mask, 1);
   if (check_union128 (res4, res_ref))
     abort ();
 
-  MASK_ZERO () (res_ref, mask, SIZE);
+  MASK_ZERO () (res_ref, mask, 1);
   if (check_union128 (res5, res_ref))
     abort ();
 }

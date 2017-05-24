@@ -165,6 +165,9 @@
        (match_test "aarch64_legitimate_address_p (mode, XEXP (op, 0), PARALLEL,
 					       0)")))
 
+(define_predicate "aarch64_prefetch_operand"
+  (match_test "aarch64_address_valid_for_prefetch_p (op, false)"))
+
 (define_predicate "aarch64_valid_symref"
   (match_code "const, symbol_ref, label_ref")
 {

@@ -339,6 +339,34 @@
 		     | RS6000_BTC_SPECIAL),				\
 		    CODE_FOR_nothing)			/* ICODE */
 
+/* ISA 2.05 (power6) convenience macros. */
+/* For functions that depend on the CMPB instruction */
+#define BU_P6_2(ENUM, NAME, ATTR, ICODE)				\
+  RS6000_BUILTIN_2 (P6_BUILTIN_ ## ENUM,		/* ENUM */	\
+		    "__builtin_p6_" NAME,		/* NAME */	\
+		    RS6000_BTM_CMPB,			/* MASK */	\
+		    (RS6000_BTC_ ## ATTR		/* ATTR */	\
+		     | RS6000_BTC_BINARY),				\
+		    CODE_FOR_ ## ICODE)			/* ICODE */
+
+/* For functions that depend on 64-BIT support and on the CMPB instruction */
+#define BU_P6_64BIT_2(ENUM, NAME, ATTR, ICODE)			\
+  RS6000_BUILTIN_2 (P6_BUILTIN_ ## ENUM,		/* ENUM */	\
+		    "__builtin_p6_" NAME,		/* NAME */	\
+		    RS6000_BTM_CMPB			   		\
+		      | RS6000_BTM_64BIT,		/* MASK */	\
+		    (RS6000_BTC_ ## ATTR		/* ATTR */	\
+		     | RS6000_BTC_BINARY),				\
+		    CODE_FOR_ ## ICODE)			/* ICODE */
+
+#define BU_P6_OVERLOAD_2(ENUM, NAME)					\
+  RS6000_BUILTIN_2 (P6_OV_BUILTIN_ ## ENUM,		/* ENUM */	\
+		    "__builtin_" NAME,			/* NAME */	\
+		    RS6000_BTM_CMPB,			/* MASK */	\
+		    (RS6000_BTC_OVERLOADED		/* ATTR */	\
+		     | RS6000_BTC_BINARY),				\
+		    CODE_FOR_nothing)			/* ICODE */
+
 /* ISA 2.07 (power8) vector convenience macros.  */
 /* For the instructions that are encoded as altivec instructions use
    __builtin_altivec_ as the builtin name.  */
@@ -1133,6 +1161,14 @@ BU_ALTIVEC_A (NABS_V16QI,     "nabs_v16qi",	CONST,	nabsv16qi2)
 BU_ALTIVEC_A (NABS_V4SF,      "nabs_v4sf",	CONST,	vsx_nabsv4sf2)
 BU_ALTIVEC_A (NABS_V2DF,      "nabs_v2df",	CONST,	vsx_nabsv2df2)
 
+/* Altivec NEG functions.  */
+BU_ALTIVEC_A (NEG_V2DI,      "neg_v2di",	CONST,	negv2di2)
+BU_ALTIVEC_A (NEG_V4SI,      "neg_v4si",	CONST,	negv4si2)
+BU_ALTIVEC_A (NEG_V8HI,      "neg_v8hi",	CONST,	negv8hi2)
+BU_ALTIVEC_A (NEG_V16QI,     "neg_v16qi",	CONST,	negv16qi2)
+BU_ALTIVEC_A (NEG_V4SF,      "neg_v4sf",	CONST,	negv4sf2)
+BU_ALTIVEC_A (NEG_V2DF,      "neg_v2df",	CONST,	negv2df2)
+
 /* 1 argument Altivec builtin functions.  */
 BU_ALTIVEC_1 (VEXPTEFP,	      "vexptefp",	FP,	altivec_vexptefp)
 BU_ALTIVEC_1 (VLOGEFP,	      "vlogefp",	FP,	altivec_vlogefp)
@@ -1420,6 +1456,7 @@ BU_ALTIVEC_OVERLOAD_1 (FLOOR,	   "floor")
 BU_ALTIVEC_OVERLOAD_1 (LOGE,	   "loge")
 BU_ALTIVEC_OVERLOAD_1 (MTVSCR,	   "mtvscr")
 BU_ALTIVEC_OVERLOAD_1 (NEARBYINT,  "nearbyint")
+BU_ALTIVEC_OVERLOAD_1 (NEG,	   "neg")
 BU_ALTIVEC_OVERLOAD_1 (RE,	   "re")
 BU_ALTIVEC_OVERLOAD_1 (RINT,       "rint")
 BU_ALTIVEC_OVERLOAD_1 (ROUND,	   "round")
@@ -1465,6 +1502,7 @@ BU_ALTIVEC_OVERLOAD_X (LVSR,	   "lvsr")
 BU_ALTIVEC_OVERLOAD_X (MUL,	   "mul")
 BU_ALTIVEC_OVERLOAD_X (PROMOTE,	   "promote")
 BU_ALTIVEC_OVERLOAD_X (SLD,	   "sld")
+BU_ALTIVEC_OVERLOAD_X (SLDW,	   "sldw")
 BU_ALTIVEC_OVERLOAD_X (SPLAT,	   "splat")
 BU_ALTIVEC_OVERLOAD_X (SPLATS,	   "splats")
 BU_ALTIVEC_OVERLOAD_X (ST,	   "st")
@@ -1778,6 +1816,10 @@ BU_VSX_OVERLOAD_X (ST,	     "st")
 BU_VSX_OVERLOAD_X (XL,	     "xl")
 BU_VSX_OVERLOAD_X (XST,	     "xst")
 
+/* 2 argument CMPB instructions added in ISA 2.05. */
+BU_P6_2 (CMPB_32,        "cmpb_32",	CONST,	cmpbsi3)
+BU_P6_64BIT_2 (CMPB,     "cmpb",	CONST,	cmpbdi3)
+
 /* 1 argument VSX instructions added in ISA 2.07.  */
 BU_P8V_VSX_1 (XSCVSPDPN,      "xscvspdpn",	CONST,	vsx_xscvspdpn)
 BU_P8V_VSX_1 (XSCVDPSPN,      "xscvdpspn",	CONST,	vsx_xscvdpspn)
@@ -1794,6 +1836,10 @@ BU_P8V_AV_1 (VPOPCNTB,	      "vpopcntb",	CONST,  popcountv16qi2)
 BU_P8V_AV_1 (VPOPCNTH,	      "vpopcnth",	CONST,  popcountv8hi2)
 BU_P8V_AV_1 (VPOPCNTW,	      "vpopcntw",	CONST,  popcountv4si2)
 BU_P8V_AV_1 (VPOPCNTD,	      "vpopcntd",	CONST,  popcountv2di2)
+BU_P8V_AV_1 (VPOPCNTUB,       "vpopcntub",	CONST,  popcountv16qi2)
+BU_P8V_AV_1 (VPOPCNTUH,       "vpopcntuh",	CONST,  popcountv8hi2)
+BU_P8V_AV_1 (VPOPCNTUW,       "vpopcntuw",	CONST,  popcountv4si2)
+BU_P8V_AV_1 (VPOPCNTUD,       "vpopcntud",	CONST,  popcountv2di2)
 BU_P8V_AV_1 (VGBBD,	      "vgbbd",		CONST,  p8v_vgbbd)
 
 /* 2 argument altivec instructions added in ISA 2.07.  */
@@ -1864,6 +1910,9 @@ BU_P8V_AV_P (VCMPEQUD_P,	"vcmpequd_p",	CONST,	vector_eq_v2di_p)
 BU_P8V_AV_P (VCMPGTSD_P,	"vcmpgtsd_p",	CONST,	vector_gt_v2di_p)
 BU_P8V_AV_P (VCMPGTUD_P,	"vcmpgtud_p",	CONST,	vector_gtu_v2di_p)
 
+/* ISA 2.05 overloaded 2 argument functions.  */
+BU_P6_OVERLOAD_2 (CMPB, "cmpb")
+
 /* ISA 2.07 vector overloaded 1 argument functions.  */
 BU_P8V_OVERLOAD_1 (VUPKHSW,	"vupkhsw")
 BU_P8V_OVERLOAD_1 (VUPKLSW,	"vupklsw")
@@ -1877,6 +1926,11 @@ BU_P8V_OVERLOAD_1 (VPOPCNTB,	"vpopcntb")
 BU_P8V_OVERLOAD_1 (VPOPCNTH,	"vpopcnth")
 BU_P8V_OVERLOAD_1 (VPOPCNTW,	"vpopcntw")
 BU_P8V_OVERLOAD_1 (VPOPCNTD,	"vpopcntd")
+BU_P8V_OVERLOAD_1 (VPOPCNTU,	"vpopcntu")
+BU_P8V_OVERLOAD_1 (VPOPCNTUB,	"vpopcntub")
+BU_P8V_OVERLOAD_1 (VPOPCNTUH,	"vpopcntuh")
+BU_P8V_OVERLOAD_1 (VPOPCNTUW,	"vpopcntuw")
+BU_P8V_OVERLOAD_1 (VPOPCNTUD,	"vpopcntud")
 BU_P8V_OVERLOAD_1 (VGBBD,	"vgbbd")
 
 /* ISA 2.07 vector overloaded 2 argument functions.  */

@@ -554,7 +554,7 @@ pass_dominator::execute (function *fun)
       if (dump_file && dump_flags & TDF_DETAILS)
 	{
 	  fprintf (dump_file, "Fixing up noreturn call ");
-	  print_gimple_stmt (dump_file, stmt, 0, 0);
+	  print_gimple_stmt (dump_file, stmt, 0);
 	  fprintf (dump_file, "\n");
 	}
       fixup_noreturn_call (stmt);
@@ -1360,9 +1360,9 @@ record_equivalences_from_stmt (gimple *stmt, int may_optimize_p,
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    {
 	      fprintf (dump_file, "==== ASGN ");
-	      print_generic_expr (dump_file, lhs, 0);
+	      print_generic_expr (dump_file, lhs);
 	      fprintf (dump_file, " = ");
-	      print_generic_expr (dump_file, rhs, 0);
+	      print_generic_expr (dump_file, rhs);
 	      fprintf (dump_file, "\n");
 	    }
 
@@ -1387,9 +1387,9 @@ record_equivalences_from_stmt (gimple *stmt, int may_optimize_p,
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{
 	  fprintf (dump_file, "==== ASGN ");
-	  print_generic_expr (dump_file, lhs, 0);
+	  print_generic_expr (dump_file, lhs);
 	  fprintf (dump_file, " = ");
-	  print_generic_expr (dump_file, new_rhs, 0);
+	  print_generic_expr (dump_file, new_rhs);
 	  fprintf (dump_file, "\n");
 	}
 

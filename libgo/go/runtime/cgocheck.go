@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// +build ignore
-
 // Code to check that pointer writes follow the cgo rules.
 // These functions are invoked via the write barrier when debug.cgocheck > 1.
 
@@ -110,17 +108,18 @@ func cgoCheckTypedBlock(typ *_type, src unsafe.Pointer, off, size uintptr) {
 	}
 
 	// The type has a GC program. Try to find GC bits somewhere else.
-	for _, datap := range activeModules() {
-		if cgoInRange(src, datap.data, datap.edata) {
-			doff := uintptr(src) - datap.data
-			cgoCheckBits(add(src, -doff), datap.gcdatamask.bytedata, off+doff, size)
-			return
+	roots := gcRoots
+	for roots != nil {
+		for i := 0; i < roots.count; i++ {
+			pr := roots.roots[i]
+			addr := uintptr(pr.decl)
+			if cgoInRange(src, addr, addr+pr.size) {
+				doff := uintptr(src) - addr
+				cgoCheckBits(add(src, -doff), pr.gcdata, off+doff, size)
+				return
+			}
 		}
-		if cgoInRange(src, datap.bss, datap.ebss) {
-			boff := uintptr(src) - datap.bss
-			cgoCheckBits(add(src, -boff), datap.gcbssmask.bytedata, off+boff, size)
-			return
-		}
+		roots = roots.next
 	}
 
 	aoff := uintptr(src) - mheap_.arena_start

@@ -812,7 +812,7 @@ safe_pushdecl_maybe_friend (tree decl, bool is_friend)
   save_oracle = cp_binding_oracle;
   cp_binding_oracle = NULL;
 
-  tree ret = pushdecl_maybe_friend (decl, is_friend);
+  tree ret = pushdecl (decl, is_friend);
 
   cp_binding_oracle = save_oracle;
 
@@ -1030,13 +1030,12 @@ plugin_add_using_decl (cc1_plugin::connection *,
 
       finish_member_declaration (decl);
     }
-  else if (!at_namespace_scope_p ())
-    {
-      gcc_unreachable ();
-      do_local_using_decl (target, tcontext, identifier);
-    }
   else
-    do_toplevel_using_decl (target, tcontext, identifier);
+    {
+      /* We can't be at local scope.  */
+      gcc_assert (at_namespace_scope_p ());
+      finish_namespace_using_decl (target, tcontext, identifier);
+    }
 
   return 1;
 }
@@ -1579,7 +1578,7 @@ plugin_build_decl (cc1_plugin::connection *self,
 	 reversal.  */
       tree save = DECL_CHAIN (decl);
       DECL_CHAIN (decl) = NULL_TREE;
-      clone_function_decl (decl, /*update_method_vec_p=*/1);
+      clone_function_decl (decl, /*update_methods=*/true);
       gcc_assert (TYPE_METHODS (current_class_type) == decl);
       TYPE_METHODS (current_class_type)
 	= nreverse (TYPE_METHODS (current_class_type));

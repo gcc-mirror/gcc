@@ -409,16 +409,18 @@ type g struct {
 	gcinitialsp   unsafe.Pointer
 	gcregs        g_ucontext_t
 
-	entry    unsafe.Pointer // goroutine entry point
-	fromgogo bool           // whether entered from gogo function
+	entry    func(unsafe.Pointer) // goroutine function to run
+	entryfn  uintptr              // function address passed to __go_go
+	fromgogo bool                 // whether entered from gogo function
 
-	issystem     bool // do not output in stack dump
-	isbackground bool // ignore in deadlock detector
+	scanningself bool // whether goroutine is scanning its own stack
+
+	isSystemGoroutine bool // whether goroutine is a "system" goroutine
 
 	traceback *tracebackg // stack traceback buffer
 
-	context      g_ucontext_t       // saved context for setcontext
-	stackcontext [10]unsafe.Pointer // split-stack context
+	context      g_ucontext_t // saved context for setcontext
+	stackcontext [10]uintptr  // split-stack context
 }
 
 type m struct {
@@ -431,7 +433,7 @@ type m struct {
 	gsignal *g     // signal-handling g
 	sigmask sigset // storage for saved signal mask
 	// Not for gccgo: tls           [6]uintptr // thread-local storage (for x86 extern register)
-	mstartfn    uintptr
+	mstartfn    func()
 	curg        *g       // current running goroutine
 	caughtsig   guintptr // goroutine running during fatal signal
 	p           puintptr // attached p for executing go code (nil if not executing go code)
@@ -541,7 +543,7 @@ type p struct {
 
 	tracebuf traceBufPtr
 
-	// Not for gccgo for now: palloc persistentAlloc // per-P to avoid mutex
+	palloc persistentAlloc // per-P to avoid mutex
 
 	// Per-P GC state
 	gcAssistTime     int64 // Nanoseconds in assistAlloc
@@ -551,7 +553,7 @@ type p struct {
 	// gcw is this P's GC work buffer cache. The work buffer is
 	// filled by write barriers, drained by mutator assists, and
 	// disposed on certain GC state transitions.
-	// Not for gccgo for now: gcw gcWork
+	gcw gcWork
 
 	runSafePointFn uint32 // if 1, run sched.safePointFn at next safe point
 
@@ -714,10 +716,6 @@ type _defer struct {
 	// function function will be somewhere in libffi, so __retaddr
 	// is not useful.
 	makefunccanrecover bool
-
-	// Set to true if this defer stack entry is not part of the
-	// defer pool.
-	special bool
 }
 
 // panics
@@ -790,8 +788,15 @@ var (
 // aligned to a 16-byte boundary.  We implement this by increasing the
 // required size and picking an appropriate offset when we use the
 // array.
-type g_ucontext_t [(_sizeof_ucontext_t + 15) / unsafe.Sizeof(unsafe.Pointer(nil))]unsafe.Pointer
+type g_ucontext_t [(_sizeof_ucontext_t + 15) / unsafe.Sizeof(uintptr(0))]uintptr
 
 // sigset is the Go version of the C type sigset_t.
 // _sigset_t is defined by the Makefile from <signal.h>.
 type sigset _sigset_t
+
+// getMemstats returns a pointer to the internal memstats variable,
+// for C code.
+//go:linkname getMemstats runtime.getMemstats
+func getMemstats() *mstats {
+	return &memstats
+}

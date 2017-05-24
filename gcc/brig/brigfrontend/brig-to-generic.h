@@ -169,7 +169,7 @@ private:
   FILE *m_dump_file;
 
   /* The original dump file flags.  */
-  int m_dump_flags;
+  dump_flags_t m_dump_flags;
 };
 
 /* Produce a "mangled name" for the given brig variable.  The mangling is used

@@ -1,3 +1,9 @@
+2017-05-18  Ian Lance Taylor  <iant@golang.org>
+
+	PR go/80814
+	* Makefile.am (AM_GOCFLAGS): Define.
+	* Makefile.in: Rebuild.
+
 2017-01-13  Ian Lance Taylor  <iant@golang.org>
 
 	Updates for Go 1.8rc1.

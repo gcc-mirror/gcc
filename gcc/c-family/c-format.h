@@ -151,7 +151,16 @@ struct format_char_info
      "W" if the argument is a pointer which is dereferenced and written into,
      "R" if the argument is a pointer which is dereferenced and read from,
      "i" for printf integer formats where the '0' flag is ignored with
-     precision, and "[" for the starting character of a scanf scanset.  */
+     precision, and "[" for the starting character of a scanf scanset,
+     "<" if the specifier introduces a quoted sequence (such as "%<"),
+     ">" if the specifier terminates a quoted sequence (such as "%>"),
+     "[" if the specifier introduces a color sequence (such as "%r"),
+     "]" if the specifier terminates a color sequence (such as "%R"),
+     "'" (single quote) if the specifier is expected to be quoted when
+     it appears outside a quoted sequence and unquoted otherwise (such
+     as the GCC internal printf format directive "%T"), and
+     "\"" (double quote) if the specifier is not expected to appear in
+     a quoted sequence (such as the GCC internal format directive "%K".  */
   const char *flags2;
   /* If this format conversion character consumes more than one argument,
      CHAIN points to information about the next argument.  For later
@@ -178,6 +187,8 @@ struct format_flag_spec
   /* Nonzero if the next character after this flag in the format should
      be skipped ('=' in strfmon), zero otherwise.  */
   int skip_next_char;
+  /* True if the flag introduces quoting (as in GCC's %qE).  */
+  bool quoting;
   /* The name to use for this flag in diagnostic messages.  For example,
      N_("'0' flag"), N_("field width").  */
   const char *name;
@@ -287,6 +298,7 @@ struct format_kind_info
 #define T_UC	&unsigned_char_type_node
 #define T99_UC	{ STD_C99, NULL, T_UC }
 #define T_V	&void_type_node
+#define T89_T   { STD_C89, NULL, &local_tree_type_node }
 #define T89_V	{ STD_C89, NULL, T_V }
 #define T_W	&wchar_type_node
 #define T94_W	{ STD_C94, "wchar_t", T_W }

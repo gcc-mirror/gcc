@@ -1,9 +1,9 @@
 // PR c++/79461
-// { dg-options -std=c++1z }
+// { dg-do compile { target c++14 } }
 
 struct S {
   constexpr S(int i) {
-    auto f = [i]{};
+    auto f = [i]{};		// { dg-error "literal" "" { target c++14_only } }
   }
 };
 int main() {}

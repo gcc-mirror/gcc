@@ -12385,26 +12385,23 @@ gfc_resolve_finalizers (gfc_symbol* derived, bool *finalizable)
   if (parent)
     gfc_resolve_finalizers (parent, finalizable);
 
-  /* Return early when not finalizable. Additionally, ensure that derived-type
-     components have a their finalizables resolved.  */
-  if (!derived->f2k_derived || !derived->f2k_derived->finalizers)
+  /* Ensure that derived-type components have a their finalizers resolved.  */
+  bool has_final = derived->f2k_derived && derived->f2k_derived->finalizers;
+  for (c = derived->components; c; c = c->next)
+    if (c->ts.type == BT_DERIVED
+	&& !c->attr.pointer && !c->attr.proc_pointer && !c->attr.allocatable)
+      {
+	bool has_final2 = false;
+	if (!gfc_resolve_finalizers (c->ts.u.derived, &has_final2))
+	  return false;  /* Error.  */
+	has_final = has_final || has_final2;
+      }
+  /* Return early if not finalizable.  */
+  if (!has_final)
     {
-      bool has_final = false;
-      for (c = derived->components; c; c = c->next)
-	if (c->ts.type == BT_DERIVED
-	    && !c->attr.pointer && !c->attr.proc_pointer && !c->attr.allocatable)
-	  {
-	    bool has_final2 = false;
-	    if (!gfc_resolve_finalizers (c->ts.u.derived, &has_final))
-	      return false;  /* Error.  */
-	    has_final = has_final || has_final2;
-	  }
-      if (!has_final)
-	{
-	  if (finalizable)
-	    *finalizable = false;
-	  return true;
-	}
+      if (finalizable)
+	*finalizable = false;
+      return true;
     }
 
   /* Walk over the list of finalizer-procedures, check them, and if any one
@@ -13835,6 +13832,8 @@ resolve_fl_derived (gfc_symbol *sym)
 	  gfc_symbol *vtab = gfc_find_derived_vtab (data->ts.u.derived);
 	  gcc_assert (vtab);
 	  vptr->ts.u.derived = vtab->ts.u.derived;
+	  if (!resolve_fl_derived0 (vptr->ts.u.derived))
+	    return false;
 	}
     }
 
@@ -13849,31 +13848,11 @@ resolve_fl_derived (gfc_symbol *sym)
 }
 
 
-/* Check for formatted read and write DTIO procedures.  */
-
-static bool
-dtio_procs_present (gfc_symbol *sym)
-{
-  gfc_symbol *derived;
-
-  if (sym->ts.type == BT_CLASS)
-    derived = CLASS_DATA (sym)->ts.u.derived;
-  else if (sym->ts.type == BT_DERIVED)
-    derived = sym->ts.u.derived;
-  else
-    return false;
-
-  return gfc_find_specific_dtio_proc (derived, true, true) != NULL
-	 && gfc_find_specific_dtio_proc (derived, false, true) != NULL;
-}
-
-
 static bool
 resolve_fl_namelist (gfc_symbol *sym)
 {
   gfc_namelist *nl;
   gfc_symbol *nlsym;
-  bool dtio;
 
   for (nl = sym->namelist; nl; nl = nl->next)
     {
@@ -13907,27 +13886,6 @@ resolve_fl_namelist (gfc_symbol *sym)
 			      sym->name, &sym->declared_at))
 	return false;
 
-      dtio = dtio_procs_present (nl->sym);
-
-      if (nl->sym->ts.type == BT_CLASS && !dtio)
-	{
-	  gfc_error ("NAMELIST object %qs in namelist %qs at %L is "
-		     "polymorphic and requires a defined input/output "
-		     "procedure", nl->sym->name, sym->name, &sym->declared_at);
-	  return false;
-	}
-
-      if (nl->sym->ts.type == BT_DERIVED
-	  && (nl->sym->ts.u.derived->attr.alloc_comp
-	      || nl->sym->ts.u.derived->attr.pointer_comp))
-	{
-	  if (!gfc_notify_std (GFC_STD_F2003, "NAMELIST object %qs in "
-			       "namelist %qs at %L with ALLOCATABLE "
-			       "or POINTER components", nl->sym->name,
-			       sym->name, &sym->declared_at))
-	    return false;
-	  return true;
-	}
     }
 
   /* Reject PRIVATE objects in a PUBLIC namelist.  */
@@ -13945,10 +13903,17 @@ resolve_fl_namelist (gfc_symbol *sym)
 	      return false;
 	    }
 
-	  /* If the derived type has specific DTIO procedures for both read and
-	     write then namelist objects with private components are OK.  */
-	  if (dtio_procs_present (nl->sym))
-	    continue;
+	  if (nl->sym->ts.type == BT_DERIVED
+	     && (nl->sym->ts.u.derived->attr.alloc_comp
+		 || nl->sym->ts.u.derived->attr.pointer_comp))
+	   {
+	     if (!gfc_notify_std (GFC_STD_F2003, "NAMELIST object %qs in "
+				  "namelist %qs at %L with ALLOCATABLE "
+				  "or POINTER components", nl->sym->name,
+				  sym->name, &sym->declared_at))
+	       return false;
+	     return true;
+	   }
 
 	  /* Types with private components that came here by USE-association.  */
 	  if (nl->sym->ts.type == BT_DERIVED

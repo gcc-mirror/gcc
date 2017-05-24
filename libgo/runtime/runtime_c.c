@@ -16,34 +16,6 @@
 #include "arch.h"
 #include "array.h"
 
-enum {
-	maxround = sizeof(uintptr),
-};
-
-extern volatile intgo runtime_MemProfileRate
-  __asm__ (GOSYM_PREFIX "runtime.MemProfileRate");
-
-struct gotraceback_ret {
-	int32 level;
-	bool  all;
-	bool  crash;
-};
-
-extern struct gotraceback_ret gotraceback(void)
-  __asm__ (GOSYM_PREFIX "runtime.gotraceback");
-
-// runtime_gotraceback is the C interface to runtime.gotraceback.
-int32
-runtime_gotraceback(bool *crash)
-{
-	struct gotraceback_ret r;
-
-	r = gotraceback();
-	if(crash != nil)
-		*crash = r.crash;
-	return r.level;
-}
-
 int32
 runtime_atoi(const byte *p, intgo len)
 {
@@ -116,15 +88,6 @@ runtime_setdebug(struct debugVars* d) {
   runtime_debug = *d;
 }
 
-void memclrBytes(Slice)
-     __asm__ (GOSYM_PREFIX "runtime.memclrBytes");
-
-void
-memclrBytes(Slice s)
-{
-	runtime_memclr(s.__values, s.__count);
-}
-
 int32 go_open(char *, int32, int32)
   __asm__ (GOSYM_PREFIX "runtime.open");
 
@@ -170,6 +133,22 @@ go_errno()
   return (intgo)errno;
 }
 
+uintptr getEnd(void)
+  __asm__ (GOSYM_PREFIX "runtime.getEnd");
+
+uintptr
+getEnd()
+{
+  uintptr end = 0;
+  uintptr *pend;
+
+  pend = &__go_end;
+  if (pend != nil) {
+    end = *pend;
+  }
+  return end;
+}
+
 // CPU-specific initialization.
 // Fetch CPUID info on x86.
 
@@ -187,4 +166,15 @@ runtime_cpuinit()
 	setSupportAES(true);
 #endif
 #endif
+}
+
+// A publication barrier: a store/store barrier.
+
+void publicationBarrier(void)
+  __asm__ (GOSYM_PREFIX "runtime.publicationBarrier");
+
+void
+publicationBarrier()
+{
+  __atomic_thread_fence(__ATOMIC_RELEASE);
 }

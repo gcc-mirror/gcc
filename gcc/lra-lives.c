@@ -1287,11 +1287,11 @@ lra_create_live_ranges_1 (bool all_p, bool dead_insn_p)
   point_freq_vec.truncate (0);
   point_freq_vec.reserve_exact (new_length);
   lra_point_freq = point_freq_vec.address ();
-  int *post_order_rev_cfg = XNEWVEC (int, last_basic_block_for_fn (cfun));
-  int n_blocks_inverted = inverted_post_order_compute (post_order_rev_cfg);
-  lra_assert (n_blocks_inverted == n_basic_blocks_for_fn (cfun));
+  auto_vec<int, 20> post_order_rev_cfg;
+  inverted_post_order_compute (&post_order_rev_cfg);
+  lra_assert (post_order_rev_cfg.length () == (unsigned) n_basic_blocks_for_fn (cfun));
   bb_live_change_p = false;
-  for (i = n_blocks_inverted - 1; i >= 0; --i)
+  for (i = post_order_rev_cfg.length () - 1; i >= 0; --i)
     {
       bb = BASIC_BLOCK_FOR_FN (cfun, post_order_rev_cfg[i]);
       if (bb == EXIT_BLOCK_PTR_FOR_FN (cfun) || bb
@@ -1338,7 +1338,6 @@ lra_create_live_ranges_1 (bool all_p, bool dead_insn_p)
 	    }
 	}
     }
-  free (post_order_rev_cfg);
   lra_live_max_point = curr_point;
   if (lra_dump_file != NULL)
     print_live_ranges (lra_dump_file);

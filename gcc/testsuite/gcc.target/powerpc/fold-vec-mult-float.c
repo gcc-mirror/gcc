@@ -2,8 +2,8 @@
    inputs produce the right results.  */
 
 /* { dg-do compile } */
-/* { dg-require-effective-target powerpc_altivec_ok } */
-/* { dg-options "-maltivec -mvsx" } */
+/* { dg-require-effective-target powerpc_vsx_ok } */
+/* { dg-options "-mvsx -O2" } */
 
 #include <altivec.h>
 

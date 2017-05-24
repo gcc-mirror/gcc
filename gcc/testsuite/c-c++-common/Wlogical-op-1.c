@@ -1,8 +1,6 @@
 /* PR c/63357 */
 /* { dg-do compile } */
-/* For -fwrapv see PR80525, xfailing the subtest isn't possible as it passes
-   with the C++ FE which doesn't have maybe_const_expr.  */
-/* { dg-options "-fwrapv -Wlogical-op" } */
+/* { dg-options "-Wlogical-op" } */
 
 #ifndef __cplusplus
 # define bool _Bool

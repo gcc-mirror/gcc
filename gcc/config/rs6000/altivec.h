@@ -213,6 +213,7 @@
 #define vec_lvebx __builtin_vec_lvebx
 #define vec_lvehx __builtin_vec_lvehx
 #define vec_lvewx __builtin_vec_lvewx
+#define vec_neg __builtin_vec_neg
 #define vec_pmsum_be __builtin_vec_vpmsum
 #define vec_shasigma_be __builtin_crypto_vshasigma
 /* Cell only intrinsics.  */
@@ -246,6 +247,7 @@
 #define vec_sel __builtin_vec_sel
 #define vec_sl __builtin_vec_sl
 #define vec_sld __builtin_vec_sld
+#define vec_sldw __builtin_vsx_xxsldwi
 #define vec_sll __builtin_vec_sll
 #define vec_slo __builtin_vec_slo
 #define vec_splat __builtin_vec_splat
@@ -379,6 +381,11 @@
 #define vec_vpopcntd __builtin_vec_vpopcntd
 #define vec_vpopcnth __builtin_vec_vpopcnth
 #define vec_vpopcntw __builtin_vec_vpopcntw
+#define vec_popcnt __builtin_vec_vpopcntu
+#define vec_popcntb __builtin_vec_vpopcntub
+#define vec_popcnth __builtin_vec_vpopcntuh
+#define vec_popcntw __builtin_vec_vpopcntuw
+#define vec_popcntd __builtin_vec_vpopcntud
 #define vec_vrld __builtin_vec_vrld
 #define vec_vsld __builtin_vec_vsld
 #define vec_vsrad __builtin_vec_vsrad

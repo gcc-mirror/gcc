@@ -723,7 +723,7 @@ compute_path_counts (struct redirection_data *rd,
      below to add up the counts of the other edges not included in this jump
      threading path.  */
   struct el *next, *el;
-  bitmap in_edge_srcs = BITMAP_ALLOC (NULL);
+  auto_bitmap in_edge_srcs;
   for (el = rd->incoming_edges; el; el = next)
     {
       next = el->next;
@@ -758,8 +758,6 @@ compute_path_counts (struct redirection_data *rd,
   /* This is needed due to insane incoming frequencies.  */
   if (path_in_freq > BB_FREQ_MAX)
     path_in_freq = BB_FREQ_MAX;
-
-  BITMAP_FREE (in_edge_srcs);
 
   /* Now compute the fraction of the total count coming into the first
      path bb that is from the current threading path.  */
@@ -1958,7 +1956,7 @@ mark_threaded_blocks (bitmap threaded_blocks)
 {
   unsigned int i;
   bitmap_iterator bi;
-  bitmap tmp = BITMAP_ALLOC (NULL);
+  auto_bitmap tmp;
   basic_block bb;
   edge e;
   edge_iterator ei;
@@ -2169,8 +2167,6 @@ mark_threaded_blocks (bitmap threaded_blocks)
 	    }
 	}
     }
-
-  BITMAP_FREE (tmp);
 }
 
 
@@ -2436,8 +2432,8 @@ thread_through_all_blocks (bool may_peel_loop_headers)
   bool retval = false;
   unsigned int i;
   bitmap_iterator bi;
-  bitmap threaded_blocks;
   struct loop *loop;
+  auto_bitmap threaded_blocks;
 
   if (!paths.exists ())
     {
@@ -2445,7 +2441,6 @@ thread_through_all_blocks (bool may_peel_loop_headers)
       goto out;
     }
 
-  threaded_blocks = BITMAP_ALLOC (NULL);
   memset (&thread_stats, 0, sizeof (thread_stats));
 
   /* Remove any paths that referenced removed edges.  */
@@ -2578,8 +2573,6 @@ thread_through_all_blocks (bool may_peel_loop_headers)
 
   free_original_copy_tables ();
 
-  BITMAP_FREE (threaded_blocks);
-  threaded_blocks = NULL;
   paths.release ();
 
   if (retval)
