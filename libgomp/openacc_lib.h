@@ -191,23 +191,9 @@
       end interface
 
       interface acc_pcopyin
-        subroutine acc_pcopyin_32_h (a, len)
-          use iso_c_binding, only: c_int32_t
-          !GCC$ ATTRIBUTES NO_ARG_CHECK :: a
-          type (*), dimension (*) :: a
-          integer (c_int32_t) len
-        end subroutine
-
-        subroutine acc_pcopyin_64_h (a, len)
-          use iso_c_binding, only: c_int64_t
-          !GCC$ ATTRIBUTES NO_ARG_CHECK :: a
-          type (*), dimension (*) :: a
-          integer (c_int64_t) len
-        end subroutine
-
-        subroutine acc_pcopyin_array_h (a)
-          type (*), dimension (..), contiguous :: a
-          end subroutine
+        procedure :: acc_present_or_copyin_32_h
+        procedure :: acc_present_or_copyin_64_h
+        procedure :: acc_present_or_copyin_array_h
       end interface
 
       interface acc_create
@@ -251,23 +237,9 @@
       end interface
 
       interface acc_pcreate
-        subroutine acc_pcreate_32_h (a, len)
-          use iso_c_binding, only: c_int32_t
-          !GCC$ ATTRIBUTES NO_ARG_CHECK :: a
-          type (*), dimension (*) :: a
-          integer (c_int32_t) len
-        end subroutine
-
-        subroutine acc_pcreate_64_h (a, len)
-          use iso_c_binding, only: c_int64_t
-          !GCC$ ATTRIBUTES NO_ARG_CHECK :: a
-          type (*), dimension (*) :: a
-          integer (c_int64_t) len
-        end subroutine
-
-        subroutine acc_pcreate_array_h (a)
-          type (*), dimension (..), contiguous :: a
-          end subroutine
+        procedure :: acc_present_or_create_32_h
+        procedure :: acc_present_or_create_64_h
+        procedure :: acc_present_or_create_array_h
       end interface
 
       interface acc_copyout
@@ -353,7 +325,7 @@
       ! acc_map_data: Only available in C/C++
       ! acc_unmap_data: Only available in C/C++
       ! acc_deviceptr: Only available in C/C++
-      ! acc_ostptr: Only available in C/C++
+      ! acc_hostptr: Only available in C/C++
 
       interface acc_is_present
         function acc_is_present_32_h (a, len)
