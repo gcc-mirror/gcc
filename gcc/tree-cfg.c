@@ -1726,7 +1726,6 @@ group_case_labels_stmt (gswitch *stmt)
 	    remove_edge_and_dominated_blocks (base_edge);
 	  gimple_switch_set_label (stmt, base_index, NULL_TREE);
 	  new_size--;
-	  i++;
 	}
     }
 
