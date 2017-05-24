@@ -1,3 +1,8 @@
+2017-05-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++11/random.cc (random_device::_M_getentropy): Use __CHAR_BIT__
+	instead of fixed number of bits.
+
 2017-05-24  Andreas Schwab  <schwab@suse.de>
 
 	* config/abi/post/ia64-linux-gnu/baseline_symbols.txt: Update.
