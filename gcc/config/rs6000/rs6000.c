@@ -156,6 +156,8 @@ typedef struct GTY(()) machine_function
   bool split_stack_argp_used;
   /* Flag if r2 setup is needed with ELFv2 ABI.  */
   bool r2_setup_needed;
+  /* The number of components we use for separate shrink-wrapping.  */
+  int n_components;
   /* The components already handled by separate shrink-wrapping, which should
      not be considered by the prologue and epilogue.  */
   bool gpr_is_wrapped_separately[32];
@@ -29229,9 +29231,9 @@ rs6000_get_separate_components (void)
      Components 13..31 are the save/restore of GPR13..GPR31.
      Components 46..63 are the save/restore of FPR14..FPR31.  */
 
-  int n_components = 64;
+  cfun->machine->n_components = 64;
 
-  sbitmap components = sbitmap_alloc (n_components);
+  sbitmap components = sbitmap_alloc (cfun->machine->n_components);
   bitmap_clear (components);
 
   int reg_size = TARGET_32BIT ? 4 : 8;
@@ -29313,7 +29315,7 @@ rs6000_components_for_bb (basic_block bb)
   bitmap gen = &DF_LIVE_BB_INFO (bb)->gen;
   bitmap kill = &DF_LIVE_BB_INFO (bb)->kill;
 
-  sbitmap components = sbitmap_alloc (32);
+  sbitmap components = sbitmap_alloc (cfun->machine->n_components);
   bitmap_clear (components);
 
   /* A register is used in a bb if it is in the IN, GEN, or KILL sets.  */

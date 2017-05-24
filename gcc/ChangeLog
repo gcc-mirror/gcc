@@ -1,3 +1,12 @@
+2017-05-24  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR bootstrap/80860
+	PR bootstrap/80843
+	* config/rs6000/rs6000.c (struct machine_function): Add new field
+	n_components.
+	(rs6000_get_separate_components): Init that field, use it.
+	(rs6000_components_for_bb): Use the field.
+
 2017-05-24  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	* config/arm/arm.c (arm_expand_prologue): Fix typo in comment.
