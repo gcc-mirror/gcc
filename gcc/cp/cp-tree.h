@@ -378,6 +378,7 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
       REF_PARENTHESIZED_P (in COMPONENT_REF, INDIRECT_REF, SCOPE_REF)
       AGGR_INIT_ZERO_FIRST (in AGGR_INIT_EXPR)
       CONSTRUCTOR_MUTABLE_POISON (in CONSTRUCTOR)
+      OVL_HIDDEN_P (in OVERLOAD)
    3: (TREE_REFERENCE_EXPR) (in NON_LVALUE_EXPR) (commented-out).
       ICS_BAD_FLAG (in _CONV)
       FN_TRY_BLOCK_P (in TRY_BLOCK)
@@ -659,6 +660,8 @@ typedef struct ptrmem_cst * ptrmem_cst_t;
 
 /* If set, this was imported in a using declaration.   */
 #define OVL_USING_P(NODE)	TREE_LANG_FLAG_1 (OVERLOAD_CHECK (NODE))
+/* If set, this overload is a hidden decl.  */
+#define OVL_HIDDEN_P(NODE)	TREE_LANG_FLAG_2 (OVERLOAD_CHECK (NODE))
 /* If set, this overload contains a nested overload.  */
 #define OVL_NESTED_P(NODE)	TREE_LANG_FLAG_3 (OVERLOAD_CHECK (NODE))
 /* If set, this overload was constructed during lookup.  */
@@ -729,15 +732,26 @@ class ovl_iterator
   {
     return TREE_CODE (ovl) == OVERLOAD && OVL_USING_P (ovl);
   }
+  bool hidden_p () const
+  {
+    return TREE_CODE (ovl) == OVERLOAD && OVL_HIDDEN_P (ovl);
+  }
+
+ public:
   tree remove_node (tree head)
   {
     return remove_node (head, ovl);
   }
+  tree reveal_node (tree head)
+  {
+    return reveal_node (head, ovl);
+  }
 
  private:
-  /* We make this a static function to avoid the address of the
+  /* We make these static functions to avoid the address of the
      iterator escaping the local context.  */
   static tree remove_node (tree head, tree node);
+  static tree reveal_node (tree ovl, tree node);
 };
 
 /* Iterator over a (potentially) 2 dimensional overload, which is

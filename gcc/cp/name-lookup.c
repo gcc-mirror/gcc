@@ -1077,6 +1077,26 @@ strip_using_decl (tree decl)
   return decl;
 }
 
+/* Return true if OVL is an overload for an anticipated builtin.  */
+
+static bool
+anticipated_builtin_p (tree ovl)
+{
+  if (TREE_CODE (ovl) != OVERLOAD)
+    return false;
+
+  if (!OVL_HIDDEN_P (ovl))
+    return false;
+
+  tree fn = OVL_FUNCTION (ovl);
+  gcc_checking_assert (DECL_ANTICIPATED (fn));
+
+  if (DECL_HIDDEN_FRIEND_P (fn))
+    return false;
+
+  return true;
+}
+
 /* BINDING records an existing declaration for a name in the current scope.
    But, DECL is another declaration for that same identifier in the
    same scope.  This is the `struct stat' hack whereby a non-typedef
@@ -1131,9 +1151,7 @@ supplement_binding_1 (cxx_binding *binding, tree decl)
 	   || target_bval == error_mark_node
 	   /* If TARGET_BVAL is anticipated but has not yet been
 	      declared, pretend it is not there at all.  */
-	   || (TREE_CODE (target_bval) == FUNCTION_DECL
-	       && DECL_ANTICIPATED (target_bval)
-	       && !DECL_HIDDEN_FRIEND_P (target_bval)))
+	   || anticipated_builtin_p (target_bval))
     binding->value = decl;
   else if (TREE_CODE (target_bval) == TYPE_DECL
 	   && DECL_ARTIFICIAL (target_bval)
@@ -1803,7 +1821,7 @@ set_local_extern_decl_linkage (tree decl, bool shadowed)
 	loc_value = NULL_TREE;
 
       for (ovl_iterator iter (loc_value); iter; ++iter)
-	if (!DECL_HIDDEN_P (*iter)
+	if (!iter.hidden_p ()
 	    && (TREE_STATIC (*iter) || DECL_EXTERNAL (*iter))
 	    && decls_match (*iter, decl))
 	  {
@@ -1931,15 +1949,34 @@ do_pushdecl (tree decl, bool is_friend)
 	if (iter.using_p ())
 	  ; /* Ignore using decls here.  */
 	else if (tree match = duplicate_decls (decl, *iter, is_friend))
-	  return match;
+	  {
+	    if (iter.hidden_p ()
+		&& match != error_mark_node
+		&& !DECL_HIDDEN_P (match))
+	      {
+		/* Unhiding a previously hidden decl.  */
+		tree head = iter.reveal_node (old);
+		if (head != old)
+		  {
+		    if (!ns)
+		      update_local_overload (binding, head);
+		    binding->value = head;
+		  }
+
+		if (TREE_CODE (match) == FUNCTION_DECL
+		    && DECL_EXTERN_C_P (match))
+		  /* We need to check and register the fn now.  */
+		  check_extern_c_conflict (match);
+	      }
+	    return match;
+	  }
 
       /* We are pushing a new decl.  */
 
-      /* Skip a hidden builtin we failed to match already.  */
-      if (old && TREE_CODE (old) == FUNCTION_DECL
-	  && DECL_ANTICIPATED (old)
-	  && !DECL_HIDDEN_FRIEND_P (old))
-	old = NULL_TREE;
+      /* Skip a hidden builtin we failed to match already.  There can
+	 only be one.  */
+      if (old && anticipated_builtin_p (old))
+	old = OVL_CHAIN (old);
 
       check_template_shadow (decl);
 
@@ -3045,8 +3082,7 @@ do_nonmember_using_decl (tree scope, tree name, tree *value_p, tree *type_p)
 		    found = true;
 		  else if (old.using_p ())
 		    continue; /* This is a using decl. */
-		  else if (DECL_ANTICIPATED (old_fn)
-			   && !DECL_HIDDEN_FRIEND_P (old_fn))
+		  else if (old.hidden_p () && !DECL_HIDDEN_FRIEND_P (old_fn))
 		    continue; /* This is an anticipated builtin.  */
 		  else if (!matching_fn_p (new_fn, old_fn))
 		    continue; /* Parameters do not match.  */
@@ -3069,9 +3105,7 @@ do_nonmember_using_decl (tree scope, tree name, tree *value_p, tree *type_p)
 	}
       else if (value
 	       /* Ignore anticipated builtins.  */
-	       && !(TREE_CODE (value) == FUNCTION_DECL
-		    && DECL_ANTICIPATED (value)
-		    && !DECL_HIDDEN_FRIEND_P (value))
+	       && !anticipated_builtin_p (value)
 	       && !decls_match (lookup.value, value))
 	diagnose_name_conflict (lookup.value, value);
       else
@@ -5244,7 +5278,7 @@ lookup_name_real_1 (tree name, int prefer_type, int nonclass, bool block_p,
 
 	if (binding)
 	  {
-	    if (hidden_name_p (binding))
+	    if (TREE_CODE (binding) == TYPE_DECL && DECL_HIDDEN_P (binding))
 	      {
 		/* A non namespace-scope binding can only be hidden in the
 		   presence of a local class, due to friend declarations.

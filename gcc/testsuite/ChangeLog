@@ -1,5 +1,8 @@
 2017-05-23  Nathan Sidwell  <nathan@acm.org>
 
+	* g++.dg/lookup/extern-c-hidden.C: New.
+	* g++.dg/lookup/extern-redecl1.C: New.
+
 	PR c++/80866
 	* g++.dg/parse/pr80866.C: New.
 
