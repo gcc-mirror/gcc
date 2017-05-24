@@ -1,3 +1,10 @@
+2017-05-24  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/66094
+	* frontend-passes.c (matrix_case):  Add A2TB2.
+	(inline_limit_check):  Handle MATMUL(TRANSPOSE(A),B)
+	(inline_matmul_assign):  Likewise.
+
 2017-05-23  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* openmp.c (OACC_KERNELS_CLAUSES): Add "OMP_CLAUSE_NUM_GANGS",

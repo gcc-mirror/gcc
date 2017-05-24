@@ -112,7 +112,7 @@ static int var_num = 1;
 
 /* What sort of matrix we are dealing with when inlining MATMUL.  */
 
-enum matrix_case { none=0, A2B2, A2B1, A1B2, A2B2T };
+enum matrix_case { none=0, A2B2, A2B1, A1B2, A2B2T, A2TB2 };
 
 /* Keep track of the number of expressions we have inserted so far
    using create_var.  */
@@ -2252,7 +2252,7 @@ inline_limit_check (gfc_expr *a, gfc_expr *b, enum matrix_case m_case)
   gfc_typespec ts;
   gfc_expr *cond;
 
-  gcc_assert (m_case == A2B2 || m_case == A2B2T);
+  gcc_assert (m_case == A2B2 || m_case == A2B2T || m_case == A2TB2);
 
   /* Calculation is done in real to avoid integer overflow.  */
 
@@ -2422,6 +2422,20 @@ matmul_lhs_realloc (gfc_expr *c, gfc_expr *a, gfc_expr *b,
       ne2 = build_logical_expr (INTRINSIC_NE,
 				get_array_inq_function (GFC_ISYM_SIZE, c, 2),
 				get_array_inq_function (GFC_ISYM_SIZE, b, 1));
+      cond = build_logical_expr (INTRINSIC_OR, ne1, ne2);
+      break;
+
+    case A2TB2:
+
+      ar->start[0] = get_array_inq_function (GFC_ISYM_SIZE, a, 2);
+      ar->start[1] = get_array_inq_function (GFC_ISYM_SIZE, b, 2);
+
+      ne1 = build_logical_expr (INTRINSIC_NE,
+				get_array_inq_function (GFC_ISYM_SIZE, c, 1),
+				get_array_inq_function (GFC_ISYM_SIZE, a, 2));
+      ne2 = build_logical_expr (INTRINSIC_NE,
+				get_array_inq_function (GFC_ISYM_SIZE, c, 2),
+				get_array_inq_function (GFC_ISYM_SIZE, b, 2));
       cond = build_logical_expr (INTRINSIC_OR, ne1, ne2);
       break;
 
@@ -3009,7 +3023,7 @@ inline_matmul_assign (gfc_code **c, int *walk_subtrees,
 
   a = expr2->value.function.actual;
   matrix_a = check_conjg_transpose_variable (a->expr, &conjg_a, &transpose_a);
-  if (transpose_a || matrix_a == NULL)
+  if (matrix_a == NULL)
     return 0;
 
   b = a->next;
@@ -3026,27 +3040,36 @@ inline_matmul_assign (gfc_code **c, int *walk_subtrees,
       || gfc_check_dependency (expr1, matrix_b, true))
     return 0;
 
+  m_case = none;
   if (matrix_a->rank == 2)
     {
-      if (matrix_b->rank == 1)
-	m_case = A2B1;
+      if (transpose_a)
+	{
+	  if (matrix_b->rank == 2 && !transpose_b)
+	    m_case = A2TB2;
+	}
       else
 	{
-	  if (transpose_b)
-	    m_case = A2B2T;
-	  else
-	    m_case = A2B2;
+	  if (matrix_b->rank == 1)
+	    m_case = A2B1;
+	  else /* matrix_b->rank == 2 */
+	    {
+	      if (transpose_b)
+		m_case = A2B2T;
+	      else
+		m_case = A2B2;
+	    }
 	}
     }
-  else
+  else /* matrix_a->rank == 1 */
     {
-      /* Vector * Transpose(B) not handled yet.  */
-      if (transpose_b)
-	m_case = none;
-      else
-	m_case = A1B2;
+      if (matrix_b->rank == 2)
+	{
+	  if (!transpose_b)
+	    m_case = A1B2;
+	}
     }
-
+    
   if (m_case == none)
     return 0;
 
@@ -3250,6 +3273,37 @@ inline_matmul_assign (gfc_code **c, int *walk_subtrees,
 	  next_code_point = &test->next;
 
 	}
+
+      if (m_case == A2TB2)
+	{
+	  c1 = get_array_inq_function (GFC_ISYM_SIZE, expr1, 1);
+	  a2 = get_array_inq_function (GFC_ISYM_SIZE, matrix_a, 2);
+
+	  test = runtime_error_ne (c1, a2, "Incorrect extent in return array in "
+				   "MATMUL intrinsic for dimension 1: "
+				   "is %ld, should be %ld");
+
+	  *next_code_point = test;
+	  next_code_point = &test->next;
+
+	  c2 = get_array_inq_function (GFC_ISYM_SIZE, expr1, 2);
+	  b2 = get_array_inq_function (GFC_ISYM_SIZE, matrix_b, 2);
+	  test = runtime_error_ne (c2, b2, "Incorrect extent in return array in "
+				   "MATMUL intrinsic for dimension 2: "
+				   "is %ld, should be %ld");
+	  *next_code_point = test;
+	  next_code_point = &test->next;
+
+	  a1 = get_array_inq_function (GFC_ISYM_SIZE, matrix_a, 1);
+	  b1 = get_array_inq_function (GFC_ISYM_SIZE, matrix_b, 1);
+
+	  test = runtime_error_ne (b1, a1, "Incorrect extent in argument B in "
+				   "MATMUL intrnisic for dimension 2: "
+				   "is %ld, should be %ld");
+	  *next_code_point = test;
+	  next_code_point = &test->next;
+
+	}
     }
 
   *next_code_point = assign_zero;
@@ -3326,6 +3380,39 @@ inline_matmul_assign (gfc_code **c, int *walk_subtrees,
       ascalar = scalarized_expr (matrix_a, list, 2);
 
       list[0] = var_1;
+      list[1] = var_2;
+      bscalar = scalarized_expr (matrix_b, list, 2);
+
+      break;
+
+    case A2TB2:
+      inline_limit_check (matrix_a, matrix_b, m_case);
+
+      u1 = get_size_m1 (matrix_a, 2);
+      u2 = get_size_m1 (matrix_b, 2);
+      u3 = get_size_m1 (matrix_a, 1);
+
+      do_1 = create_do_loop (gfc_copy_expr (zero), u1, NULL, &co->loc, ns);
+      do_2 = create_do_loop (gfc_copy_expr (zero), u2, NULL, &co->loc, ns);
+      do_3 = create_do_loop (gfc_copy_expr (zero), u3, NULL, &co->loc, ns);
+
+      do_1->block->next = do_2;
+      do_2->block->next = do_3;
+      do_3->block->next = assign_matmul;
+
+      var_1 = do_1->ext.iterator->var;
+      var_2 = do_2->ext.iterator->var;
+      var_3 = do_3->ext.iterator->var;
+
+      list[0] = var_1;
+      list[1] = var_2;
+      cscalar = scalarized_expr (co->expr1, list, 2);
+
+      list[0] = var_3;
+      list[1] = var_1;
+      ascalar = scalarized_expr (matrix_a, list, 2);
+
+      list[0] = var_3;
       list[1] = var_2;
       bscalar = scalarized_expr (matrix_b, list, 2);
 
