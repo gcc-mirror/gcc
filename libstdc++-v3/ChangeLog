@@ -1,3 +1,8 @@
+2017-05-24  Andreas Schwab  <schwab@suse.de>
+
+	* config/abi/post/ia64-linux-gnu/baseline_symbols.txt: Update.
+	* config/abi/post/m68k-linux-gnu/baseline_symbols.txt: Likewise.
+
 2017-05-23  Xi Ruoyao  <ryxi@stu.xidian.edu.cn>
 	    Jonathan Wakely  <jwakely@redhat.com>
 
