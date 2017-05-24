@@ -1,3 +1,7 @@
+2017-05-24  Tom de Vries  <tom@codesourcery.com>
+
+	* gcc.dg/cpp/19940712-1.c: Reinstate absolute line number.
+
 2017-05-24  Peter Bergner  <bergner@vnet.ibm.com>
 
 	PR middle-end/80823
