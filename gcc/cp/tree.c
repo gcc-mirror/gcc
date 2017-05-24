@@ -2143,7 +2143,8 @@ ovl_copy (tree ovl)
   TREE_TYPE (result) = TREE_TYPE (ovl);
   OVL_FUNCTION (result) = OVL_FUNCTION (ovl);
   OVL_CHAIN (result) = OVL_CHAIN (ovl);
-  OVL_USING_P (ovl) = OVL_USING_P (ovl);
+  OVL_HIDDEN_P (result) = OVL_HIDDEN_P (ovl);
+  OVL_USING_P (result) = OVL_USING_P (ovl);
 
   return result;
 }
@@ -2156,14 +2157,16 @@ tree
 ovl_insert (tree fn, tree maybe_ovl, bool using_p)
 {
   bool copying = false; /* Checking use only.  */
-  int weight = using_p;
+  bool hidden_p = DECL_HIDDEN_P (fn);
+  int weight = (hidden_p << 1) | (using_p << 0);
 
   tree result = NULL_TREE;
   tree insert_after = NULL_TREE;
 
   /* Find insertion point.  */
   while (maybe_ovl && TREE_CODE (maybe_ovl) == OVERLOAD
-	 && (weight < OVL_USING_P (maybe_ovl)))
+	 && (weight < ((OVL_HIDDEN_P (maybe_ovl) << 1)
+		       | (OVL_USING_P (maybe_ovl) << 0))))
     {
       gcc_checking_assert (!OVL_LOOKUP_P (maybe_ovl)
 			   && (!OVL_USED_P (maybe_ovl) || !copying));
@@ -2181,9 +2184,11 @@ ovl_insert (tree fn, tree maybe_ovl, bool using_p)
     }
 
   tree trail = fn;
-  if (maybe_ovl || using_p || TREE_CODE (fn) == TEMPLATE_DECL)
+  if (maybe_ovl || using_p || hidden_p || TREE_CODE (fn) == TEMPLATE_DECL)
     {
       trail = ovl_make (fn, maybe_ovl);
+      if (hidden_p)
+	OVL_HIDDEN_P (trail) = true;
       if (using_p)
 	OVL_USING_P (trail) = true;
     }
@@ -2197,6 +2202,28 @@ ovl_insert (tree fn, tree maybe_ovl, bool using_p)
     result = trail;
 
   return result;
+}
+
+/* NODE is an OVL_HIDDEN_P node which is now revealed.  */
+
+tree
+ovl_iterator::reveal_node (tree overload, tree node)
+{
+  /* We cannot have returned NODE as part of a lookup overload, so it
+     cannot be USED.  */
+  gcc_checking_assert (!OVL_USED_P (node));
+
+  OVL_HIDDEN_P (node) = false;
+  if (tree chain = OVL_CHAIN (node))
+    if (TREE_CODE (chain) == OVERLOAD
+	&& (OVL_USING_P (chain) || OVL_HIDDEN_P (chain)))
+      {
+	/* The node needs moving, and the simplest way is to remove it
+	   and reinsert.  */
+	overload = remove_node (overload, node);
+	overload = ovl_insert (OVL_FUNCTION (node), overload);
+      }
+  return overload;
 }
 
 /* NODE is on the overloads of OVL.  Remove it.  If a predecessor is

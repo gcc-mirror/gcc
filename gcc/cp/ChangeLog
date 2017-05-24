@@ -1,3 +1,19 @@
+2017-05-24  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-tree.h (OVL_HIDDEN_P): New.
+	(ovl_iterator::hidden_p, ovl_iterator::reveal_node): New.
+	(ovl_iterator::reveal_node): Declare.
+	* tree.c (ovl_copy): Copy OVL_HIDDEN_P.
+	(ovl_insert): Order on hiddenness.
+	(ovl_iterator::reveal_node): New.
+	* name-lookup.c (anticipated_builtin_p): New.
+	(supplement_binding_1): Use it.
+	(set_local_extern_decl_linkage): Use hidden_p.
+	(do_pushdecl): Deal with unhiding a hidden decl, use
+	anticipated_builtin_p.
+	(do_nonmember_using_decl): Use anticipated_decl_p.
+	(lookup_name_real_1): Use DECL_HIDDEN_P.
+
 2017-05-23  Jason Merrill  <jason@redhat.com>
 
 	-Wunused and C++17 structured bindings
