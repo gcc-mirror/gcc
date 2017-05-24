@@ -608,25 +608,8 @@ do_friend (tree ctype, tree declarator, tree decl,
 	       is instantiated.  */
 	    decl = push_template_decl_real (decl, /*is_friend=*/true);
 	  else if (current_function_decl)
-	    {
-	      /* This must be a local class.  11.5p11:
-
-		 If a friend declaration appears in a local class (9.8) and
-		 the name specified is an unqualified name, a prior
-		 declaration is looked up without considering scopes that
-		 are outside the innermost enclosing non-class scope. For a
-		 friend function declaration, if there is no prior
-		 declaration, the program is ill-formed.  */
-	      tree t = lookup_name_innermost_nonclass_level (DECL_NAME (decl));
-	      if (t)
-		decl = pushdecl (decl, /*is_friend=*/true);
-	      else
-		{
-		  error ("friend declaration %qD in local class without "
-			 "prior declaration", decl);
-		  return error_mark_node;
-		}
-	    }
+	    /* pushdecl will check there's a local decl already.  */
+	    decl = pushdecl (decl, /*is_friend=*/true);
 	  else
 	    {
 	      /* We can't use pushdecl, as we might be in a template

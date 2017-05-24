@@ -1,5 +1,11 @@
 2017-05-24  Nathan Sidwell  <nathan@acm.org>
 
+	* friend.c (do_friend): Remove check for existing decl.
+	* name-lookup.h (lookup_name_innermost_nonclass_level): Delete.
+	* name-lookup.c (push_local_binding): Directly look for binding.
+	(lookup_name_innermost_nonclass_level_1): Delete.
+	(lookup_name_innermost_nonclass_level): Delete.
+
 	* Make-lang.in (CXX_AND_OBJCXX_OBJS): Alphabetize.
 
 	* cp-tree.h (cp_free_lang_data): Add extern.
