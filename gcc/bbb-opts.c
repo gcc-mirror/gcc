@@ -3339,7 +3339,7 @@ namespace
   pass_bbb_optimizations::execute_bbb_optimizations (void)
   {
     be_very_verbose = strchr (string_bbb_opts, 'V');
-    be_verbose = be_very_verbose || strchr (string_bbb_opts, 'v') || 1;
+    be_verbose = be_very_verbose || strchr (string_bbb_opts, 'v');
 
     bool do_opt_strcpy = strchr (string_bbb_opts, 's') || strchr (string_bbb_opts, '+');
     bool do_commute_add_move = strchr (string_bbb_opts, 'a') || strchr (string_bbb_opts, '+');
