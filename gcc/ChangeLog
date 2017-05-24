@@ -1,3 +1,8 @@
+2017-05-24  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/powerpcspe: New port.  Files are copied from the rs6000
+	port, with "rs6000" in filenames replaced by "powerpcspe".
+
 2017-05-24  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	PR rtl-optimization/80754

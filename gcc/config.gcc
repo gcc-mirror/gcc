@@ -442,6 +442,16 @@ nios2-*-*)
 nvptx-*-*)
 	cpu_type=nvptx
 	;;
+powerpc*-*-*spe*)
+	cpu_type=powerpcspe
+	extra_headers="ppc-asm.h altivec.h spe.h ppu_intrinsics.h paired.h spu2vmx.h vec_types.h si2vmx.h htmintrin.h htmxlintrin.h"
+	case x$with_cpu in
+	    xpowerpc64|xdefault64|x6[23]0|x970|xG5|xpower[3456789]|xpower6x|xrs64a|xcell|xa2|xe500mc64|xe5500|xe6500)
+		cpu_is_64bit=yes
+		;;
+	esac
+	extra_options="${extra_options} g.opt fused-madd.opt powerpcspe/powerpcspe-tables.opt"
+	;;
 powerpc*-*-*)
 	cpu_type=rs6000
 	extra_headers="ppc-asm.h altivec.h htmintrin.h htmxlintrin.h"
@@ -2372,9 +2382,9 @@ powerpc-*-netbsd*)
 	extra_options="${extra_options} rs6000/sysv4.opt"
 	;;
 powerpc-*-eabispe*)
-	tm_file="${tm_file} dbxelf.h elfos.h freebsd-spec.h newlib-stdint.h rs6000/sysv4.h rs6000/eabi.h rs6000/e500.h rs6000/eabispe.h"
-	extra_options="${extra_options} rs6000/sysv4.opt"
-	tmake_file="rs6000/t-spe rs6000/t-ppccomm"
+	tm_file="${tm_file} dbxelf.h elfos.h freebsd-spec.h newlib-stdint.h ${cpu_type}/sysv4.h ${cpu_type}/eabi.h ${cpu_type}/e500.h ${cpu_type}/eabispe.h"
+	extra_options="${extra_options} ${cpu_type}/sysv4.opt"
+	tmake_file="${cpu_type}/t-spe ${cpu_type}/t-ppccomm"
 	use_gcc_stdint=wrap
 	;;
 powerpc-*-eabisimaltivec*)
@@ -2412,10 +2422,26 @@ powerpc-*-eabi*)
 	tmake_file="rs6000/t-fprules rs6000/t-ppcgas rs6000/t-ppccomm"
 	use_gcc_stdint=wrap
 	;;
+powerpc-*-rtems*spe*)
+	tm_file="${tm_file} dbxelf.h elfos.h freebsd-spec.h newlib-stdint.h powerpcspe/sysv4.h powerpcspe/eabi.h powerpcspe/e500.h powerpcspe/rtems.h rtems.h"
+	extra_options="${extra_options} powerpcspe/sysv4.opt"
+	tmake_file="${tmake_file} powerpcspe/t-fprules powerpcspe/t-rtems powerpcspe/t-ppccomm"
+	;;
 powerpc-*-rtems*)
 	tm_file="${tm_file} dbxelf.h elfos.h freebsd-spec.h newlib-stdint.h rs6000/sysv4.h rs6000/eabi.h rs6000/e500.h rs6000/rtems.h rtems.h"
 	extra_options="${extra_options} rs6000/sysv4.opt"
 	tmake_file="${tmake_file} rs6000/t-fprules rs6000/t-rtems rs6000/t-ppccomm"
+	;;
+powerpc*-*-linux*spe*)
+	tm_file="${tm_file} dbxelf.h elfos.h gnu-user.h freebsd-spec.h powerpcspe/sysv4.h"
+	extra_options="${extra_options} powerpcspe/sysv4.opt"
+	tmake_file="${tmake_file} powerpcspe/t-fprules powerpcspe/t-ppccomm"
+	extra_objs="$extra_objs powerpcspe-linux.o"
+	maybe_biarch=
+	tm_file="${tm_file} powerpcspe/linux.h glibc-stdint.h"
+	tmake_file="${tmake_file} powerpcspe/t-ppcos powerpcspe/t-linux"
+	tm_file="${tm_file} powerpcspe/linuxspe.h powerpcspe/e500.h"
+	default_gnu_indirect_function=yes
 	;;
 powerpc*-*-linux*)
 	tm_file="${tm_file} dbxelf.h elfos.h gnu-user.h freebsd-spec.h rs6000/sysv4.h"
@@ -2503,6 +2529,13 @@ powerpc*-*-linux*)
 		default_gnu_indirect_function=yes
 		    ;;
 	esac
+	;;
+powerpc-wrs-vxworksspe)
+	tm_file="${tm_file} elfos.h freebsd-spec.h powerpcspe/sysv4.h"
+	tmake_file="${tmake_file} powerpcspe/t-fprules powerpcspe/t-ppccomm powerpcspe/t-vxworks"
+	extra_options="${extra_options} powerpcspe/sysv4.opt"
+	extra_headers=ppc-asm.h
+	tm_file="${tm_file} vx-common.h vxworks.h powerpcspe/vxworks.h powerpcspe/e500.h"
 	;;
 powerpc-wrs-vxworks|powerpc-wrs-vxworksae|powerpc-wrs-vxworksmils)
 	tm_file="${tm_file} elfos.h freebsd-spec.h rs6000/sysv4.h"
@@ -3060,7 +3093,7 @@ i[34567]86-*-* | x86_64-*-*)
 	tmake_file="${tmake_file} i386/t-gmm_malloc i386/t-i386"
 	;;
 powerpc*-*-* | rs6000-*-*)
-	tm_file="${tm_file} rs6000/option-defaults.h"
+	tm_file="${tm_file} ${cpu_type}/option-defaults.h"
 esac
 
 # Build mkoffload tool
@@ -4554,10 +4587,10 @@ case ${target} in
 		then
 			target_cpu_default2="\\\"$with_cpu\\\""
 		fi
-		out_file=rs6000/rs6000.c
-		c_target_objs="${c_target_objs} rs6000-c.o"
-		cxx_target_objs="${cxx_target_objs} rs6000-c.o"
-		tmake_file="rs6000/t-rs6000 ${tmake_file}"
+		out_file="${cpu_type}/${cpu_type}.c"
+		c_target_objs="${c_target_objs} ${cpu_type}-c.o"
+		cxx_target_objs="${cxx_target_objs} ${cpu_type}-c.o"
+		tmake_file="${cpu_type}/t-${cpu_type} ${tmake_file}"
 		;;
 
 	sh[123456ble]*-*-* | sh-*-*)

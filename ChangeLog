@@ -1,3 +1,14 @@
+2017-05-24  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config.gcc (powerpc*-*-*spe*): New.
+	(powerpc-*-eabispe*): Use ${cpu_type} instead of hardcoded pathnames.
+	(powerpc-*-rtems*spe*): New.
+	(powerpc*-*-linux*spe*): New.
+	(powerpc-wrs-vxworksspe): New.
+	(powerpc*-*-*, rs6000-*-*): Use ${cpu_type}.
+	(misc flags) [powerpc*-*-*, rs6000-*-*): Use ${cpu_type}.
+	* config.host (powerpc*-*-*spe*): New.
+
 2017-05-19  Martin Liska  <mliska@suse.cz>
 
 	* configure.ac: Add --enable-werror-always just for
