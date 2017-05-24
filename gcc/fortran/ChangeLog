@@ -1,5 +1,10 @@
 2017-05-24  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
+	* dump-parse-tree.c (show_expr):  Replace stdout
+	with dumpfile for showing values.
+
+2017-05-24  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
 	PR fortran/66094
 	* frontend-passes.c (matrix_case):  Add A2TB2.
 	(inline_limit_check):  Handle MATMUL(TRANSPOSE(A),B)

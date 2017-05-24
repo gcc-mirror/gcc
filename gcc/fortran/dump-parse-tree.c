@@ -422,7 +422,7 @@ show_expr (gfc_expr *p)
       switch (p->ts.type)
 	{
 	case BT_INTEGER:
-	  mpz_out_str (stdout, 10, p->value.integer);
+	  mpz_out_str (dumpfile, 10, p->value.integer);
 
 	  if (p->ts.kind != gfc_default_integer_kind)
 	    fprintf (dumpfile, "_%d", p->ts.kind);
@@ -436,7 +436,7 @@ show_expr (gfc_expr *p)
 	  break;
 
 	case BT_REAL:
-	  mpfr_out_str (stdout, 10, 0, p->value.real, GFC_RND_MODE);
+	  mpfr_out_str (dumpfile, 10, 0, p->value.real, GFC_RND_MODE);
 	  if (p->ts.kind != gfc_default_real_kind)
 	    fprintf (dumpfile, "_%d", p->ts.kind);
 	  break;
@@ -449,7 +449,7 @@ show_expr (gfc_expr *p)
 	case BT_COMPLEX:
 	  fputs ("(complex ", dumpfile);
 
-	  mpfr_out_str (stdout, 10, 0, mpc_realref (p->value.complex),
+	  mpfr_out_str (dumpfile, 10, 0, mpc_realref (p->value.complex),
 			GFC_RND_MODE);
 	  if (p->ts.kind != gfc_default_complex_kind)
 	    fprintf (dumpfile, "_%d", p->ts.kind);
