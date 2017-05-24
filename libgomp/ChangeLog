@@ -1,5 +1,12 @@
 2017-05-24  Thomas Schwinge  <thomas@codesourcery.com>
 
+	* openacc_lib.h (acc_pcopyin, acc_pcreate): Route to
+	acc_present_or_copyin and acc_present_or_create procedures,
+	respectively.
+	* testsuite/libgomp.oacc-fortran/lib-32-1.f: Exercise these, and
+	generally different variants of OpenACC Runtime Library functions.
+	* testsuite/libgomp.oacc-fortran/lib-32-2.f: Likewise.
+
 	* testsuite/libgomp.oacc-fortran/lib-32-1.f: New file.
 	* testsuite/libgomp.oacc-fortran/lib-32-2.f: Likewise.
 

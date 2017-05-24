@@ -20,8 +20,8 @@
 
       SHARED_MEM = ACC_IS_PRESENT (H)
 
-      CALL ACC_PRESENT_OR_CREATE (H)
-      IF (.NOT. ACC_IS_PRESENT (H)) CALL ABORT
+      CALL ACC_PRESENT_OR_CREATE (H, INT (SIZEOF (H), 4))
+      IF (.NOT. ACC_IS_PRESENT (H, INT (SIZEOF (H), 8))) CALL ABORT
 
 !$ACC PARALLEL LOOP DEFAULT (PRESENT)
       DO I = 1, N
@@ -48,7 +48,7 @@
          H(I) = I + 4
       END DO
 
-      CALL ACC_PCREATE (H)
+      CALL ACC_PCREATE (H, INT (SIZEOF (H), 4))
 
 !$ACC PARALLEL LOOP DEFAULT (PRESENT)
       DO I = 1, N
@@ -62,7 +62,7 @@
          H(I) = I + 6
       END DO
 
-      CALL ACC_PRESENT_OR_COPYIN (H)
+      CALL ACC_PRESENT_OR_COPYIN (H, INT (SIZEOF (H), 8))
 
 !$ACC PARALLEL LOOP DEFAULT (PRESENT)
       DO I = 1, N
@@ -76,7 +76,7 @@
          H(I) = I + 8
       END DO
 
-      CALL ACC_PCOPYIN (H)
+      CALL ACC_PCOPYIN (H, INT (SIZEOF (H), 4))
 
 !$ACC PARALLEL LOOP DEFAULT (PRESENT)
       DO I = 1, N
@@ -90,9 +90,9 @@
          H(I) = I + 10
       END DO
 
-      CALL ACC_COPYOUT (H)
+      CALL ACC_COPYOUT (H, INT (SIZEOF (H), 4))
       IF (.NOT. SHARED_MEM) THEN
-         IF (ACC_IS_PRESENT (H)) CALL ABORT
+         IF (ACC_IS_PRESENT (H, INT (SIZEOF (H), 8))) CALL ABORT
       ENDIF
 
       DO I = 1, N
@@ -100,7 +100,7 @@
       END DO
 
       CALL ACC_PCOPYIN (H)
-      IF (.NOT. ACC_IS_PRESENT (H)) CALL ABORT
+      IF (.NOT. ACC_IS_PRESENT (H, INT (SIZEOF (H), 4))) CALL ABORT
 
 !$ACC PARALLEL LOOP DEFAULT (PRESENT)
       DO I = 1, N
@@ -114,7 +114,7 @@
          H(I) = I + 12
       END DO
 
-      CALL ACC_PCOPYIN (H)
+      CALL ACC_PCOPYIN (H, INT (SIZEOF (H), 8))
 
 !$ACC PARALLEL LOOP DEFAULT (PRESENT)
       DO I = 1, N
@@ -142,7 +142,7 @@
          H(I) = I + 16
       END DO
 
-      CALL ACC_PCREATE (H)
+      CALL ACC_PCREATE (H, INT (SIZEOF (H), 8))
 
 !$ACC PARALLEL LOOP DEFAULT (PRESENT)
       DO I = 1, N
@@ -156,8 +156,8 @@
          H(I) = I + 18
       END DO
 
-      CALL ACC_UPDATE_SELF (H)
-      IF (.NOT. ACC_IS_PRESENT (H)) CALL ABORT
+      CALL ACC_UPDATE_SELF (H, INT (SIZEOF (H), 4))
+      IF (.NOT. ACC_IS_PRESENT (H, INT (SIZEOF (H), 8))) CALL ABORT
 
       DO I = 1, N
          IF (H(I) .NE. I + MERGE (18, 17, SHARED_MEM)) CALL ABORT
@@ -165,7 +165,7 @@
 
       CALL ACC_DELETE (H)
       IF (.NOT. SHARED_MEM) THEN
-         IF (ACC_IS_PRESENT (H)) CALL ABORT
+         IF (ACC_IS_PRESENT (H, INT (SIZEOF (H), 4))) CALL ABORT
       ENDIF
 
       DEALLOCATE (H)
