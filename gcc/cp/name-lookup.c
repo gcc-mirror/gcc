@@ -399,12 +399,26 @@ private:
     return queue;
   }
 
+ private:
+  void add_fns (tree);
+
+  void adl_expr (tree);
+  void adl_type (tree);
+  void adl_template_arg (tree);
+  void adl_class (tree);
+  void adl_bases (tree);
+  void adl_class_only (tree);
+  void adl_namespace (tree);
+  void adl_namespace_only (tree);
+
 public:
   /* Search namespace + inlines + maybe usings as qualified lookup.  */
   bool search_qualified (tree scope, bool usings = true);
 
   /* Search namespace + inlines + usings as unqualified lookup.  */
   bool search_unqualified (tree scope, cp_binding_level *);
+
+  tree search_adl (tree fns, vec<tree, va_gc> *args);
 };
 
 /* Scopes to unmark.  */
@@ -854,60 +868,11 @@ name_lookup::search_unqualified (tree scope, cp_binding_level *level)
   return found;
 }
 
-struct adl_lookup : name_lookup
-{
-  typedef name_lookup parent;
-
- public:
-  adl_lookup (tree);
-
- public:
-  tree search_adl (tree fns, vec<tree, va_gc> *args);
-
- private:
-  void add_fns (tree);
-
-  void adl_expr (tree);
-  void adl_type (tree);
-  void adl_template_arg (tree);
-  void adl_class (tree);
-  void adl_bases (tree);
-  void adl_class_only (tree);
-  void adl_namespace (tree);
-  void adl_namespace_only (tree);
-};
-
-adl_lookup::adl_lookup (tree name)
-: parent (name, 0)
-{
-}
-
-tree
-adl_lookup::search_adl (tree fns, vec<tree, va_gc> *args)
-{
-  lookup_mark (fns, true);
-  value = fns;
-
-  unsigned ix;
-  tree arg;
-
-  FOR_EACH_VEC_ELT_REVERSE (*args, ix, arg)
-    /* OMP reduction operators put a type as the first arg.  I don't
-       suppose we should ADL on that?  */
-    if (!TYPE_P (arg))
-      adl_expr (arg);
-
-  fns = value;
-  lookup_mark (fns, false);
-
-  return fns;
-}
-
 /* FNS is a value binding.  If it is a (set of overloaded) functions,
    add them into the current value.  */
 
 void
-adl_lookup::add_fns (tree fns)
+name_lookup::add_fns (tree fns)
 {
   if (!fns)
     return;
@@ -925,7 +890,7 @@ adl_lookup::add_fns (tree fns)
 /* Add functions of a namespace to the lookup structure.  */
 
 void
-adl_lookup::adl_namespace_only (tree scope)
+name_lookup::adl_namespace_only (tree scope)
 {
   mark_seen (scope);
 
@@ -941,7 +906,7 @@ adl_lookup::adl_namespace_only (tree scope)
    inlinees.  */
 
 void
-adl_lookup::adl_namespace (tree scope)
+name_lookup::adl_namespace (tree scope)
 {
   if (seen_p (scope))
     return;
@@ -956,7 +921,7 @@ adl_lookup::adl_namespace (tree scope)
 /* Adds the class and its friends to the lookup structure.  */
 
 void
-adl_lookup::adl_class_only (tree type)
+name_lookup::adl_class_only (tree type)
 {
   /* Backend-built structures, such as __builtin_va_list, aren't
      affected by all this.  */
@@ -1001,7 +966,7 @@ adl_lookup::adl_class_only (tree type)
    Returns true on error.  */
 
 void
-adl_lookup::adl_bases (tree type)
+name_lookup::adl_bases (tree type)
 {
   adl_class_only (type);
 
@@ -1033,7 +998,7 @@ adl_lookup::adl_bases (tree type)
    namespaces.  --end note] */
 
 void
-adl_lookup::adl_class (tree type)
+name_lookup::adl_class (tree type)
 {
   /* Backend build structures, such as __builtin_va_list, aren't
      affected by all this.  */
@@ -1063,7 +1028,7 @@ adl_lookup::adl_class (tree type)
 }
 
 void
-adl_lookup::adl_expr (tree expr)
+name_lookup::adl_expr (tree expr)
 {
   if (!expr)
     return;
@@ -1105,7 +1070,7 @@ adl_lookup::adl_expr (tree expr)
 }
 
 void
-adl_lookup::adl_type (tree type)
+name_lookup::adl_type (tree type)
 {
   if (!type)
     return;
@@ -1170,7 +1135,7 @@ adl_lookup::adl_type (tree type)
    structure.  */
 
 void
-adl_lookup::adl_template_arg (tree arg)
+name_lookup::adl_template_arg (tree arg)
 {
   /* [basic.lookup.koenig]
 
@@ -1212,12 +1177,26 @@ adl_lookup::adl_template_arg (tree arg)
     adl_type (arg);
 }
 
-static tree
-do_lookup_arg_dependent (tree name, tree fns, vec<tree, va_gc> *args)
-{
-  adl_lookup lookup (name);
+/* Perform ADL lookup.  FNS is the existing lookup result and ARGS are
+   the call arguments.  */
 
-  fns = lookup.search_adl (fns, args);
+tree
+name_lookup::search_adl (tree fns, vec<tree, va_gc> *args)
+{
+  lookup_mark (fns, true);
+  value = fns;
+
+  unsigned ix;
+  tree arg;
+
+  FOR_EACH_VEC_ELT_REVERSE (*args, ix, arg)
+    /* OMP reduction operators put a type as the first arg.  I don't
+       suppose we should ADL on that?  */
+    if (!TYPE_P (arg))
+      adl_expr (arg);
+
+  fns = value;
+  lookup_mark (fns, false);
 
   return fns;
 }
@@ -5755,15 +5734,6 @@ lookup_name_nonclass (tree name)
 }
 
 tree
-lookup_function_nonclass (tree name, vec<tree, va_gc> *args, bool block_p)
-{
-  return
-    lookup_arg_dependent (name,
-			  lookup_name_real (name, 0, 1, block_p, 0, 0),
-			  args);
-}
-
-tree
 lookup_name (tree name)
 {
   return lookup_name_real (name, 0, 0, /*block_p=*/true, 0, 0);
@@ -5913,15 +5883,16 @@ is_local_extern (tree decl)
   return false;
 }
 
-/* Wrapper for do_lookup_arg_dependent.  */
+/* ADL lookup of NAME.  */
 
-cp_expr
+tree
 lookup_arg_dependent (tree name, tree fns, vec<tree, va_gc> *args)
 {
   bool subtime = timevar_cond_start (TV_NAME_LOOKUP);
-  cp_expr ret = do_lookup_arg_dependent (name, fns, args);
+  name_lookup lookup (name, 0);
+  fns = lookup.search_adl (fns, args);
   timevar_cond_stop (TV_NAME_LOOKUP, subtime);
-  return ret;
+  return fns;
 }
 
 /* Add TARGET to USINGS, if it does not already exist there.

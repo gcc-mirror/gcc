@@ -1,3 +1,15 @@
+2017-05-24  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* call.c (build_operator_new_call, build_new_op_1): Open code ADL
+	lookup.
+	* name-lookup.h (lookup_function_nonclass): Delete.
+	(lookup_arg_dependent): Adjust return type.
+	* name-lookup.c (name_lookup): Absorb adl_lookup.
+	(name_lookup::search_adl): New.
+	(lookup_function_nonclass): Delete.
+	(lookup_arg_dependent): Adjust.
+
 2017-05-23  Nathan Sidwell  <nathan@acm.org>
 
 	Merge trunk r248389.

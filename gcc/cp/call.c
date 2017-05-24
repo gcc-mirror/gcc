@@ -4318,7 +4318,8 @@ build_operator_new_call (tree fnname, vec<tree, va_gc> **args,
        up in the global scope.
 
      we disregard block-scope declarations of "operator new".  */
-  fns = lookup_function_nonclass (fnname, *args, /*block_p=*/false);
+  fns = lookup_name_real (fnname, 0, 1, /*block_p=*/false, 0, 0);
+  fns = lookup_arg_dependent (fnname, fns, *args);
 
   if (align_arg)
     {
@@ -5628,11 +5629,13 @@ build_new_op_1 (location_t loc, enum tree_code code, int flags, tree arg1,
   /* Add namespace-scope operators to the list of functions to
      consider.  */
   if (!memonly)
-    add_candidates (lookup_function_nonclass (fnname, arglist,
-					      /*block_p=*/true),
-		    NULL_TREE, arglist, NULL_TREE,
-		    NULL_TREE, false, NULL_TREE, NULL_TREE,
-		    flags, &candidates, complain);
+    {
+      tree fns = lookup_name_real (fnname, 0, 1, /*block_p=*/true, 0, 0);
+      fns = lookup_arg_dependent (fnname, fns, arglist);
+      add_candidates (fns, NULL_TREE, arglist, NULL_TREE,
+		      NULL_TREE, false, NULL_TREE, NULL_TREE,
+		      flags, &candidates, complain);
+    }
 
   args[0] = arg1;
   args[1] = arg2;
