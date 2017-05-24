@@ -1,3 +1,8 @@
+2017-05-24  Peter Bergner  <bergner@vnet.ibm.com>
+
+	PR middle-end/80823
+	* tree-cfg.c (group_case_labels_stmt): Delete increment of "i";
+
 2017-05-24  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
 	PR target/80725

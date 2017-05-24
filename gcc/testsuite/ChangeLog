@@ -1,3 +1,8 @@
+2017-05-24  Peter Bergner  <bergner@vnet.ibm.com>
+
+	PR middle-end/80823
+	* gcc.dg/pr80823.c: New test.
+
 2017-05-24  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
 	* gcc.target/s390/pr80725.c: New test.
