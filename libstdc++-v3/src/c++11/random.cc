@@ -187,8 +187,9 @@ namespace std _GLIBCXX_VISIBILITY(default)
     if (ent < 0)
       return 0.0;
 
-    if (static_cast<unsigned>(ent) > sizeof(result_type) * 8)
-      return static_cast<double>(sizeof(result_type) * 8);
+    const int max = sizeof(result_type) * __CHAR_BIT__;
+    if (ent > max)
+      ent = max;
 
     return static_cast<double>(ent);
 #else
