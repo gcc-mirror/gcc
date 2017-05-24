@@ -1,5 +1,7 @@
 2017-05-24  Nathan Sidwell  <nathan@acm.org>
 
+	* Make-lang.in (CXX_AND_OBJCXX_OBJS): Alphabetize.
+
 	* cp-tree.h (cp_free_lang_data): Add extern.
 	(ovl_skip_hidden, is_overloaded_fn, really_overloaded_fn): Add
 	ATTRIBUTE_PURE.
