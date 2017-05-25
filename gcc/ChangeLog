@@ -1,5 +1,8 @@
 2017-05-24  Nathan Sidwell  <nathan@acm.org>
 
+	* lto-streamer-in.c (lto_input_data_block): Adjust T const cast to
+	avoid warning.
+
 	* auto-profile.c (afdo_propagate): Adjust T const cast to avoid
 	warning.
 
