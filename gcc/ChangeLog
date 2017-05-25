@@ -1,5 +1,10 @@
 2017-05-25  Marc Glisse  <marc.glisse@inria.fr>
 
+	* match.pd ((A +- CST1) +- CST2): Allow some conversions.
+	* tree.c (drop_tree_overflow): Handle COMPLEX_CST and VECTOR_CST.
+
+2017-05-25  Marc Glisse  <marc.glisse@inria.fr>
+
 	* fold-const.c (fold_binary_loc) [(A & C) == D]: Remove transformation.
 	* match.pd (X == C): Rewrite it here.
 	(with_possible_nonzero_bits, with_possible_nonzero_bits2,

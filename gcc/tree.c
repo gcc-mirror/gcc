@@ -13138,6 +13138,25 @@ drop_tree_overflow (tree t)
      and drop the flag.  */
   t = copy_node (t);
   TREE_OVERFLOW (t) = 0;
+
+  /* For constants that contain nested constants, drop the flag
+     from those as well.  */
+  if (TREE_CODE (t) == COMPLEX_CST)
+    {
+      if (TREE_OVERFLOW (TREE_REALPART (t)))
+	TREE_REALPART (t) = drop_tree_overflow (TREE_REALPART (t));
+      if (TREE_OVERFLOW (TREE_IMAGPART (t)))
+	TREE_IMAGPART (t) = drop_tree_overflow (TREE_IMAGPART (t));
+    }
+  if (TREE_CODE (t) == VECTOR_CST)
+    {
+      for (unsigned i = 0; i < VECTOR_CST_NELTS (t); ++i)
+	{
+	  tree& elt = VECTOR_CST_ELT (t, i);
+	  if (TREE_OVERFLOW (elt))
+	    elt = drop_tree_overflow (elt);
+	}
+    }
   return t;
 }
 
