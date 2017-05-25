@@ -48,18 +48,6 @@ struct scope_binding {
 };
 #define EMPTY_SCOPE_BINDING { NULL_TREE, NULL_TREE }
 
-static bool lookup_using_namespace (tree, struct scope_binding *, tree,
-				    tree, int);
-static bool qualified_lookup_using_namespace (tree, tree,
-					      struct scope_binding *, int);
-static void consider_binding_level (tree name,
-				    best_match <tree, const char *> &bm,
-				    cp_binding_level *lvl,
-				    bool look_within_fields,
-				    enum lookup_name_fuzzy_kind kind);
-static tree push_using_directive (tree);
-static void diagnose_name_conflict (tree, tree);
-
 /* Create a local binding level for NAME.  */
 
 static cxx_binding *
@@ -166,6 +154,7 @@ public:
   tree name;	/* The identifier being looked for.  */
   tree value;	/* A (possibly ambiguous) set of things found.  */
   tree type;	/* A type that has been found.  */
+  int flags;	/* Lookup flags.  */
   vec<tree, va_heap, vl_embed> *scopes;
   name_lookup *previous; /* Previously active lookup.  */
   hash_set<tree> *fn_set;
@@ -177,8 +166,8 @@ protected:
   static name_lookup *active;
 
 public:
-  name_lookup (tree n)
-  : name (n), value (NULL_TREE), type (NULL_TREE),
+  name_lookup (tree n, int f = 0)
+  : name (n), value (NULL_TREE), type (NULL_TREE), flags (f),
     scopes (NULL), previous (NULL), fn_set (NULL)
   {
     preserve_state ();
@@ -222,7 +211,22 @@ private:
   void preserve_state ();
   void restore_state ();
 
- private:
+private:
+  static tree ambiguous (tree thing, tree current);
+  void add_value (tree new_val);
+  void add_type (tree new_type);
+  bool process_binding (tree val_bind, tree type_bind);
+
+  /* Look in only namespace.  */
+  bool search_namespace_only (tree scope);
+  /* Look in namespace and its (recursive) inlines. Ignore using
+     directives.  Return true if something found (inc dups). */
+  bool search_namespace (tree scope);
+  /* Look in the using directives of namespace + inlines using
+     qualified lookup rules.  */
+  bool search_usings (tree scope);
+
+private:
   void add_fns (tree);
 
   void adl_expr (tree);
@@ -235,6 +239,10 @@ private:
   void adl_namespace_only (tree);
 
 public:
+  /* Search namespace + inlines + maybe usings as qualified lookup.  */
+  bool search_qualified (tree scope, bool usings = true);
+
+  /* ADL lookup of ARGS.  */
   tree search_adl (tree fns, vec<tree, va_gc> *args);
 };
 
@@ -346,6 +354,207 @@ name_lookup::find_and_mark (tree scope)
     }
 
   return result;
+}
+
+/* THING and CURRENT are ambiguous, concatenate them.  */
+
+tree
+name_lookup::ambiguous (tree thing, tree current)
+{
+  if (TREE_CODE (current) != TREE_LIST)
+    {
+      current = build_tree_list (NULL_TREE, current);
+      TREE_TYPE (current) = error_mark_node;
+    }
+  current = tree_cons (NULL_TREE, thing, current);
+  TREE_TYPE (current) = error_mark_node;
+
+  return current;
+}
+
+/* Add a NEW_VAL, a found value binding into the current value binding.  */
+
+void
+name_lookup::add_value (tree new_val)
+{
+  if (!value)
+    value = new_val;
+  else if (value == new_val)
+    ;
+  else if ((TREE_CODE (value) == TYPE_DECL
+	    && TREE_CODE (new_val) == TYPE_DECL
+	    && same_type_p (TREE_TYPE (value), TREE_TYPE (new_val))))
+    ;
+  else if (OVL_P (value) && OVL_P (new_val))
+    {
+      for (ovl_iterator iter (new_val); iter; ++iter)
+	value = lookup_add (*iter, value);
+    }
+  else
+    value = ambiguous (new_val, value);
+}
+
+/* Add a NEW_TYPE, a found type binding into the current type binding.  */
+
+void
+name_lookup::add_type (tree new_type)
+{
+  if (!type)
+    type = new_type;
+  else if (TREE_CODE (type) == TREE_LIST
+	   || !same_type_p (TREE_TYPE (type), TREE_TYPE (new_type)))
+    type = ambiguous (new_type, type);
+}
+
+/* Process a found binding containing NEW_VAL and NEW_TYPE.  Returns
+   true if we actually found something noteworthy.  */
+
+bool
+name_lookup::process_binding (tree new_val, tree new_type)
+{
+  /* Did we really see a type? */
+  if (new_type
+      && (LOOKUP_NAMESPACES_ONLY (flags)
+	  || (!(flags & LOOKUP_HIDDEN)
+	      && DECL_LANG_SPECIFIC (new_type)
+	      && DECL_ANTICIPATED (new_type))))
+    new_type = NULL_TREE;
+
+  if (new_val && !(flags & LOOKUP_HIDDEN))
+    new_val = ovl_skip_hidden (new_val);
+
+  /* Do we really see a value? */
+  if (new_val)
+    switch (TREE_CODE (new_val))
+      {
+      case TEMPLATE_DECL:
+	/* If we expect types or namespaces, and not templates,
+	   or this is not a template class.  */
+	if ((LOOKUP_QUALIFIERS_ONLY (flags)
+	     && !DECL_TYPE_TEMPLATE_P (new_val)))
+	  new_val = NULL_TREE;
+	break;
+      case TYPE_DECL:
+	if (LOOKUP_NAMESPACES_ONLY (flags)
+	    || (new_type && (flags & LOOKUP_PREFER_TYPES)))
+	  new_val = NULL_TREE;
+	break;
+      case NAMESPACE_DECL:
+	if (LOOKUP_TYPES_ONLY (flags))
+	  new_val = NULL_TREE;
+	break;
+      default:
+	if (LOOKUP_QUALIFIERS_ONLY (flags))
+	  new_val = NULL_TREE;
+      }
+
+  if (!new_val)
+    {
+      new_val = new_type;
+      new_type = NULL_TREE;
+    }
+
+  /* Merge into the lookup  */
+  if (new_val)
+    add_value (new_val);
+  if (new_type)
+    add_type (new_type);
+
+  return new_val != NULL_TREE;
+}
+
+/* Look in exactly namespace SCOPE.  */
+
+bool
+name_lookup::search_namespace_only (tree scope)
+{
+  bool found = false;
+
+  if (cxx_binding *binding = find_namespace_binding (scope, name))
+    found |= process_binding (binding->value, binding->type);
+
+  return found;
+}
+
+/* Conditionally look in namespace SCOPE and inline children.  */
+
+bool
+name_lookup::search_namespace (tree scope)
+{
+  if (see_and_mark (scope))
+    /* We've visited this scope before.  Return what we found then.  */
+    return found_p (scope);
+
+  /* Look in exactly namespace. */
+  bool found = search_namespace_only (scope);
+  
+  /* Look down into inline namespaces.  */
+  for (tree inner = NAMESPACE_LEVEL (scope)->namespaces;
+       inner; inner = TREE_CHAIN (inner))
+    if (DECL_NAMESPACE_INLINE_P (inner))
+      found |= search_namespace (inner);
+
+  if (found)
+    mark_found (scope);
+
+  return found;
+}
+
+/* Recursively follow using directives of SCOPE & its inline children.
+   Such following is essentially a flood-fill algorithm.  */
+
+bool
+name_lookup::search_usings (tree scope)
+{
+  /* We do not check seen_p here, as that was already set during the
+     namespace_only walk.  */
+  if (found_p (scope))
+    return true;
+
+  bool found = false;
+
+  /* Look in direct usings.  */
+  for (tree usings = DECL_NAMESPACE_USING (scope);
+       usings; usings = TREE_CHAIN (usings))
+    if (!TREE_INDIRECT_USING (usings))
+      found |= search_qualified (TREE_PURPOSE (usings), true);
+
+  /* Look in its inline children.  */
+  for (tree inner = NAMESPACE_LEVEL (scope)->namespaces;
+       inner; inner = TREE_CHAIN (inner))
+    if (DECL_NAMESPACE_INLINE_P (inner))
+      found |= search_usings (inner);
+
+  if (found)
+    mark_found (scope);
+
+  return found;
+}
+
+/* Qualified namespace lookup in SCOPE.
+   1) Look in SCOPE (+inlines).  If found, we're done.
+   2) Otherwise, if USINGS is true,
+      recurse for every using directive of SCOPE (+inlines).
+
+   Trickiness is (a) loops and (b) multiple paths to same namespace.
+   In both cases we want to not repeat any lookups, and know whether
+   to stop the caller's step #2.  Do this via the FOUND_P marker.  */
+
+bool
+name_lookup::search_qualified (tree scope, bool usings)
+{
+  bool found = false;
+
+  if (seen_p (scope))
+    found = found_p (scope);
+  else 
+    {
+      found = search_namespace (scope);
+      if (!found && usings)
+	found = search_usings (scope);
+    }
+
+  return found;
 }
 
 /* FNS is a value binding.  If it is a (set of overloaded) functions,
@@ -691,6 +900,17 @@ name_lookup::search_adl (tree fns, vec<tree, va_gc> *args)
 
   return fns;
 }
+
+static bool lookup_using_namespace (tree, struct scope_binding *, tree,
+				    tree, int);
+static bool qualified_namespace_lookup (tree, name_lookup *);
+static void consider_binding_level (tree name,
+				    best_match <tree, const char *> &bm,
+				    cp_binding_level *lvl,
+				    bool look_within_fields,
+				    enum lookup_name_fuzzy_kind kind);
+static tree push_using_directive (tree);
+static void diagnose_name_conflict (tree, tree);
 
 /* ADL lookup of NAME.  FNS is the result of regular lookup, and we
    don't add duplicates to it.  ARGS is the vector of call
@@ -3073,9 +3293,9 @@ validate_nonmember_using_decl (tree decl, tree scope, tree name)
 static void
 do_nonmember_using_decl (tree scope, tree name, tree *value_p, tree *type_p)
 {
-  struct scope_binding lookup = EMPTY_SCOPE_BINDING;
+  name_lookup lookup (name, 0);
 
-  if (!qualified_lookup_using_namespace (name, scope, &lookup, 0))
+  if (!qualified_namespace_lookup (scope, &lookup))
     /* Lookup error */
     return;
 
@@ -4547,16 +4767,14 @@ suggest_alternatives_for (location_t location, tree name,
 	 && n_searched < max_to_search)
     {
       tree scope = namespaces_to_search.pop ();
-      struct scope_binding binding = EMPTY_SCOPE_BINDING;
+      name_lookup lookup (name, 0);
       cp_binding_level *level = NAMESPACE_LEVEL (scope);
-
-      /* Look in this namespace.  */
-      qualified_lookup_using_namespace (name, scope, &binding, 0);
 
       n_searched++;
 
-      if (binding.value)
-	candidates.safe_push (binding.value);
+      /* Look in this namespace.  */
+      if (qualified_namespace_lookup (scope, &lookup))
+	candidates.safe_push (lookup.value);
 
       /* Add child namespaces.  */
       for (t = level->namespaces; t; t = DECL_CHAIN (t))
@@ -4824,13 +5042,13 @@ lookup_qualified_name (tree scope, tree name, int prefer_type, bool complain,
 
   if (TREE_CODE (scope) == NAMESPACE_DECL)
     {
-      struct scope_binding binding = EMPTY_SCOPE_BINDING;
-
       int flags = lookup_flags (prefer_type, /*namespaces_only*/false);
       if (find_hidden)
 	flags |= LOOKUP_HIDDEN;
-      if (qualified_lookup_using_namespace (name, scope, &binding, flags))
-	t = binding.value;
+      name_lookup lookup (name, flags);
+
+      if (qualified_namespace_lookup (scope, &lookup))
+	t = lookup.value;
     }
   else if (cxx_dialect != cxx98 && TREE_CODE (scope) == ENUMERAL_TYPE)
     t = lookup_enumerator (scope, name);
@@ -4870,99 +5088,19 @@ lookup_using_namespace (tree name, struct scope_binding *val,
   return val->value != error_mark_node;
 }
 
-/* Returns true iff VEC contains TARGET.  */
-
-static bool
-tree_vec_contains (vec<tree, va_gc> *vec, tree target)
-{
-  unsigned int i;
-  tree elt;
-  FOR_EACH_VEC_SAFE_ELT (vec,i,elt)
-    if (elt == target)
-      return true;
-  return false;
-}
-
 /* [namespace.qual]
    Accepts the NAME to lookup and its qualifying SCOPE.
    Returns the name/type pair found into the cxx_binding *RESULT,
    or false on error.  */
 
 static bool
-qualified_lookup_using_namespace (tree name, tree scope,
-				  struct scope_binding *result, int flags)
+qualified_namespace_lookup (tree scope, name_lookup *lookup)
 {
-  /* Maintain a list of namespaces visited...  */
-  vec<tree, va_gc> *seen = NULL;
-  vec<tree, va_gc> *seen_inline = NULL;
-  /* ... and a list of namespace yet to see.  */
-  vec<tree, va_gc> *todo = NULL;
-  vec<tree, va_gc> *todo_maybe = NULL;
-  vec<tree, va_gc> *todo_inline = NULL;
-  tree usings;
   timevar_start (TV_NAME_LOOKUP);
-  /* Look through namespace aliases.  */
-  scope = ORIGINAL_NAMESPACE (scope);
-
-  query_oracle (name);
-
-  /* Algorithm: Starting with SCOPE, walk through the set of used
-     namespaces.  For each used namespace, look through its inline
-     namespace set for any bindings and usings.  If no bindings are
-     found, add any usings seen to the set of used namespaces.  */
-  vec_safe_push (todo, scope);
-
-  while (todo->length ())
-    {
-      bool found_here;
-      scope = todo->pop ();
-      if (tree_vec_contains (seen, scope))
-	continue;
-      vec_safe_push (seen, scope);
-      vec_safe_push (todo_inline, scope);
-
-      found_here = false;
-      while (todo_inline->length ())
-	{
-	  cxx_binding *binding;
-
-	  scope = todo_inline->pop ();
-	  if (tree_vec_contains (seen_inline, scope))
-	    continue;
-	  vec_safe_push (seen_inline, scope);
-
-	  binding = find_namespace_binding (scope, name);
-	  if (binding)
-	    {
-	      ambiguous_decl (result, binding, flags);
-	      if (result->type || result->value)
-		found_here = true;
-	    }
-
-	  for (usings = DECL_NAMESPACE_USING (scope); usings;
-	       usings = TREE_CHAIN (usings))
-	    if (!TREE_INDIRECT_USING (usings))
-	      {
-		if (is_associated_namespace (scope, TREE_PURPOSE (usings)))
-		  vec_safe_push (todo_inline, TREE_PURPOSE (usings));
-		else
-		  vec_safe_push (todo_maybe, TREE_PURPOSE (usings));
-	      }
-	}
-
-      if (found_here)
-	vec_safe_truncate (todo_maybe, 0);
-      else
-	while (vec_safe_length (todo_maybe))
-	  vec_safe_push (todo, todo_maybe->pop ());
-    }
-  vec_free (todo);
-  vec_free (todo_maybe);
-  vec_free (todo_inline);
-  vec_free (seen);
-  vec_free (seen_inline);
+  query_oracle (lookup->name);
+  bool found = lookup->search_qualified (ORIGINAL_NAMESPACE (scope));
   timevar_stop (TV_NAME_LOOKUP);
-  return result->value != error_mark_node;
+  return found;
 }
 
 /* Helper function for lookup_name_fuzzy.

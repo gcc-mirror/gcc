@@ -1,5 +1,19 @@
 2017-05-25  Nathan Sidwell  <nathan@acm.org>
 
+	Reimplement qualified namespace lookup.
+	* name-lookup.c (name_lookup::flags): New member.  Adjust ctor.
+	(name_lookup::ambiguous, name_lookup::add_value,
+	name_lookup::add_type, name_lookup::process_binding): New.
+	(name_lookup::search_namespace_only,
+	name_lookup::search_namespace, name_lookup::search_usings): New.
+	(name_lookup::search_qualified): New.
+	(do_nonmember_using_decl, suggest_alternatives_for,
+	lookup_qualified_name): Adjust.
+	(tree_vec_contains): Delete.
+	(qualified_lookup_using_namespace): Rename to ...
+	(qualified_namespace_lookup): ... here.  Reimplement.
+
+	Reimplement ADL.
 	* cp-tree.h (LOOKUP_SEEN_P, LOOKUP_FOUND_P): New.
 	* name-lookup.h (lookup_arg_dependent): Return plain tree.
 	* name-lookup.c (arg_lookup, arg_assoc, arg_assoc_args,
