@@ -1,3 +1,9 @@
+2017-05-25  Martin Liska  <mliska@suse.cz>
+
+	* dumpfile.c: Add TDF_FOLDING.
+	* dumpfile.h (enum dump_kind): Likewise.
+	* genmatch.c (dt_simplify::gen_1): Use it.
+
 2017-05-25  Marc Glisse  <marc.glisse@inria.fr>
 
 	* match.pd (view_convert (convert@0 @1)): Handle zero-extension.
