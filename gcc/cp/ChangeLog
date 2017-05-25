@@ -1,3 +1,23 @@
+2017-05-25  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-tree.h (LOOKUP_SEEN_P, LOOKUP_FOUND_P): New.
+	* name-lookup.h (lookup_arg_dependent): Return plain tree.
+	* name-lookup.c (arg_lookup, arg_assoc, arg_assoc_args,
+	arg_assoc_args_vec, arg_assoc_type, add_function,
+	arg_assoc_namespace, arg_assoc_class_only, arg_assoc_bases,
+	arg_assoc_class, arg_assoc_template_arg, arg_assoc,
+	lookup_arg_dependent_1): Delete.
+	(name_lookup): New lookup object.
+	(name_lookup::preserve_state, name_lookup::restore_state,
+	name_lookup::mark_seen, name_lookup::find_and_mark,
+	name_lookup::add_fns, name_lookup::adl_namespace_only,
+	name_lookup::adl_namespace, name_lookup::adl_class_only,
+	name_lookup::adl_bases, name_lookup::adl_class,
+	name_lookup::adl_expr, name_lookup::adl_type,
+	name_lookup::adl_template_arg, name_lookup::search_adl): New.
+	(lookup_arg_dependent): Return a plain tree.  Adjust.
+	(is_associated_namespace): Move later.
+	
 2017-05-24  Nathan Sidwell  <nathan@acm.org>
 
 	* friend.c (do_friend): Remove check for existing decl.

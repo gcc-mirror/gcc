@@ -160,49 +160,550 @@ find_local_binding (cp_binding_level *b, tree name)
   return NULL;
 }
 
-/* [basic.lookup.koenig] */
-/* A nonzero return value in the functions below indicates an error.  */
-
-struct arg_lookup
+struct name_lookup
 {
-  tree name;
-  vec<tree, va_gc> *args;
-  vec<tree, va_gc> *namespaces;
-  vec<tree, va_gc> *classes;
-  tree functions;
+public:
+  tree name;	/* The identifier being looked for.  */
+  tree value;	/* A (possibly ambiguous) set of things found.  */
+  tree type;	/* A type that has been found.  */
+  vec<tree, va_heap, vl_embed> *scopes;
+  name_lookup *previous; /* Previously active lookup.  */
   hash_set<tree> *fn_set;
+
+protected:
+  /* Marked scope stack for outermost name lookup.  */
+  static vec<tree, va_heap, vl_embed> *shared_scopes;
+  /* Currently active lookup.  */
+  static name_lookup *active;
+
+public:
+  name_lookup (tree n)
+  : name (n), value (NULL_TREE), type (NULL_TREE),
+    scopes (NULL), previous (NULL), fn_set (NULL)
+  {
+    preserve_state ();
+  }
+  ~name_lookup ()
+  {
+    gcc_checking_assert (!fn_set);
+    restore_state ();
+  }
+
+private: /* Uncopyable, unmovable, unassignable. I am a rock. */
+  name_lookup (const name_lookup &);
+  name_lookup &operator= (const name_lookup &);
+
+protected:
+  static bool seen_p (tree scope)
+  {
+    return LOOKUP_SEEN_P (scope);
+  }
+  static bool found_p (tree scope)
+  {
+    return LOOKUP_FOUND_P (scope);
+  }
+  
+  void mark_seen (tree scope); /* Mark and add to scope vector. */
+  static void mark_found (tree scope)
+  {
+    gcc_checking_assert (seen_p (scope));
+    LOOKUP_FOUND_P (scope) = true;
+  }
+  bool see_and_mark (tree scope)
+  {
+    bool ret = seen_p (scope);
+    if (!ret)
+      mark_seen (scope);
+    return ret;
+  }
+  bool find_and_mark (tree scope);
+
+private:
+  void preserve_state ();
+  void restore_state ();
+
+ private:
+  void add_fns (tree);
+
+  void adl_expr (tree);
+  void adl_type (tree);
+  void adl_template_arg (tree);
+  void adl_class (tree);
+  void adl_bases (tree);
+  void adl_class_only (tree);
+  void adl_namespace (tree);
+  void adl_namespace_only (tree);
+
+public:
+  tree search_adl (tree fns, vec<tree, va_gc> *args);
 };
 
-static bool arg_assoc (struct arg_lookup*, tree);
-static bool arg_assoc_args (struct arg_lookup*, tree);
-static bool arg_assoc_args_vec (struct arg_lookup*, vec<tree, va_gc> *);
-static bool arg_assoc_type (struct arg_lookup*, tree);
-static bool add_function (struct arg_lookup *, tree);
-static bool arg_assoc_namespace (struct arg_lookup *, tree);
-static bool arg_assoc_class_only (struct arg_lookup *, tree);
-static bool arg_assoc_bases (struct arg_lookup *, tree);
-static bool arg_assoc_class (struct arg_lookup *, tree);
-static bool arg_assoc_template_arg (struct arg_lookup*, tree);
+/* Scope stack shared by all outermost lookups.  This avoids us
+   allocating and freeing on every single lookup.  */
+vec<tree, va_heap, vl_embed> *name_lookup::shared_scopes;
 
-/* Add a function to the lookup structure.
+/* Currently active lookup.  */
+name_lookup *name_lookup::active;
+
+/* Name lookup is recursive, becase ADL can cause template
+   instatiation.  This is of course a rare event, so we optimize for
+   it not happening.  When we discover an active name-lookup, which
+   must be an ADL lookup,  we need to unmark the marked scopes and also
+   unmark the lookup we might have been accumulating.  */
+
+void
+name_lookup::preserve_state ()
+{
+  previous = active;
+  if (previous)
+    {
+      unsigned length = vec_safe_length (previous->scopes);
+      vec_safe_reserve (previous->scopes, length * 2);
+      for (unsigned ix = length; ix--;)
+	{
+	  tree decl = (*previous->scopes)[ix];
+
+	  gcc_checking_assert (LOOKUP_SEEN_P (decl));
+	  LOOKUP_SEEN_P (decl) = false;
+
+	  /* Preserve the FOUND_P state on the interrupted lookup's
+	     stack.  */
+	  if (LOOKUP_FOUND_P (decl))
+	    {
+	      LOOKUP_FOUND_P (decl) = false;
+	      previous->scopes->quick_push (decl);
+	    }
+	}
+    }
+  else
+    scopes = shared_scopes;
+  active = this;
+}
+
+/* Restore the marking state of a lookup we interrupted.  */
+
+void
+name_lookup::restore_state ()
+{
+  /* Unmark and empty this lookup's scope stack.  */
+  for (unsigned ix = vec_safe_length (scopes); ix--;)
+    {
+      tree decl = scopes->pop ();
+      gcc_checking_assert (LOOKUP_SEEN_P (decl));
+      LOOKUP_SEEN_P (decl) = false;
+      LOOKUP_FOUND_P (decl) = false;
+    }
+
+  active = previous;
+  if (previous)
+    {
+      unsigned length = vec_safe_length (previous->scopes);
+      for (unsigned ix = 0; ix != length; ix++)
+	{
+	  tree decl = (*previous->scopes)[ix];
+	  if (LOOKUP_SEEN_P (decl))
+	    {
+	      /* The remainder of the scope stack must be recording
+		 FOUND_P decls, which we want to pop off.  */
+	      do
+		{
+		  tree decl = previous->scopes->pop ();
+		  gcc_checking_assert (LOOKUP_SEEN_P (decl)
+				       && !LOOKUP_FOUND_P (decl));
+		  LOOKUP_FOUND_P (decl) = true;
+		}
+	      while (++ix != length);
+	      break;
+	    }
+
+	  gcc_checking_assert (!LOOKUP_FOUND_P (decl));
+	  LOOKUP_SEEN_P (decl) = true;
+	}
+
+      free (scopes);
+    }
+  else
+    shared_scopes = scopes;
+}
+
+void
+name_lookup::mark_seen (tree scope)
+{
+  gcc_checking_assert (!seen_p (scope));
+  LOOKUP_SEEN_P (scope) = true;
+  vec_safe_push (scopes, scope);
+}
+
+bool
+name_lookup::find_and_mark (tree scope)
+{
+  bool result = LOOKUP_FOUND_P (scope);
+  if (!result)
+    {
+      LOOKUP_FOUND_P (scope) = true;
+      if (!LOOKUP_SEEN_P (scope))
+	vec_safe_push (scopes, scope);
+    }
+
+  return result;
+}
+
+/* FNS is a value binding.  If it is a (set of overloaded) functions,
+   add them into the current value.  */
+
+void
+name_lookup::add_fns (tree fns)
+{
+  if (!fns)
+    return;
+  else if (TREE_CODE (fns) == OVERLOAD)
+    {
+      if (TREE_TYPE (fns) != unknown_type_node)
+	fns = OVL_FUNCTION (fns);
+    }
+  else if (!DECL_DECLARES_FUNCTION_P (fns))
+    return;
+
+  /* Only add those that aren't already there.  */
+  for (ovl_iterator iter (fns); iter; ++iter)
+    if (!fn_set->add (*iter))
+      value = lookup_add (*iter, value);
+}
+
+/* Add functions of a namespace to the lookup structure.  */
+
+void
+name_lookup::adl_namespace_only (tree scope)
+{
+  mark_seen (scope);
+
+  /* Look down into inline namespaces.  */
+  for (tree inner = NAMESPACE_LEVEL (scope)->namespaces;
+       inner; inner = TREE_CHAIN (inner))
+    if (DECL_NAMESPACE_INLINE_P (inner))
+      adl_namespace_only (inner);
+
+  if (cxx_binding *binding = find_namespace_binding (scope, name))
+    add_fns (ovl_skip_hidden (binding->value));
+}
+
+/* Find the containing non-inlined namespace, add it and all its
+   inlinees.  */
+
+void
+name_lookup::adl_namespace (tree scope)
+{
+  if (seen_p (scope))
+    return;
+
+  /* Find the containing non-inline namespace.  */
+  while (DECL_NAMESPACE_INLINE_P (scope))
+    scope = CP_DECL_CONTEXT (scope);
+
+  adl_namespace_only (scope);
+}
+
+/* Adds the class and its friends to the lookup structure.  */
+
+void
+name_lookup::adl_class_only (tree type)
+{
+  /* Backend-built structures, such as __builtin_va_list, aren't
+     affected by all this.  */
+  if (!CLASS_TYPE_P (type))
+    return;
+
+  type = TYPE_MAIN_VARIANT (type);
+
+  if (see_and_mark (type))
+    return;
+
+  tree context = decl_namespace_context (type);
+  adl_namespace (context);
+
+  complete_type (type);
+
+  /* Add friends.  */
+  for (tree list = DECL_FRIENDLIST (TYPE_MAIN_DECL (type)); list;
+       list = TREE_CHAIN (list))
+    if (name == FRIEND_NAME (list))
+      for (tree friends = FRIEND_DECLS (list); friends;
+	   friends = TREE_CHAIN (friends))
+	{
+	  tree fn = TREE_VALUE (friends);
+
+	  /* Only interested in global functions with potentially hidden
+	     (i.e. unqualified) declarations.  */
+	  if (CP_DECL_CONTEXT (fn) != context)
+	    continue;
+
+	  /* Template specializations are never found by name lookup.
+	     (Templates themselves can be found, but not template
+	     specializations.)  */
+	  if (TREE_CODE (fn) == FUNCTION_DECL && DECL_USE_TEMPLATE (fn))
+	    continue;
+
+	  add_fns (fn);
+	}
+}
+
+/* Adds the class and its bases to the lookup structure.
    Returns true on error.  */
 
-static bool
-add_function (struct arg_lookup *k, tree fn)
+void
+name_lookup::adl_bases (tree type)
 {
-  if (!is_overloaded_fn (fn))
-    /* All names except those of (possibly overloaded) functions and
-       function templates are ignored.  */;
-  else if (k->fn_set && k->fn_set->add (fn))
-    /* It's already in the list.  */;
-  else if (!k->functions && TREE_CODE (fn) != TEMPLATE_DECL)
-    k->functions = fn;
-  else if (fn == k->functions)
-    ;
-  else
-    k->functions = lookup_add (fn, k->functions);
+  adl_class_only (type);
 
-  return false;
+  /* Process baseclasses.  */
+  if (tree binfo = TYPE_BINFO (type))
+    {
+      tree base_binfo;
+      int i;
+
+      for (i = 0; BINFO_BASE_ITERATE (binfo, i, base_binfo); i++)
+	adl_bases (BINFO_TYPE (base_binfo));
+    }
+}
+
+/* Adds everything associated with a class argument type to the lookup
+   structure.  Returns true on error.
+
+   If T is a class type (including unions), its associated classes are: the
+   class itself; the class of which it is a member, if any; and its direct
+   and indirect base classes. Its associated namespaces are the namespaces
+   of which its associated classes are members. Furthermore, if T is a
+   class template specialization, its associated namespaces and classes
+   also include: the namespaces and classes associated with the types of
+   the template arguments provided for template type parameters (excluding
+   template template parameters); the namespaces of which any template
+   template arguments are members; and the classes of which any member
+   templates used as template template arguments are members. [ Note:
+   non-type template arguments do not contribute to the set of associated
+   namespaces.  --end note] */
+
+void
+name_lookup::adl_class (tree type)
+{
+  /* Backend build structures, such as __builtin_va_list, aren't
+     affected by all this.  */
+  if (!CLASS_TYPE_P (type))
+    return;
+
+  type = TYPE_MAIN_VARIANT (type);
+  /* We don't set found here because we have to have set seen first,
+     which is done in the adl_bases walk.  */
+  if (found_p (type))
+    return;
+
+  adl_bases (type);
+  mark_found (type);
+
+  if (TYPE_CLASS_SCOPE_P (type))
+    adl_class_only (TYPE_CONTEXT (type));
+
+  /* Process template arguments.  */
+  if (CLASSTYPE_TEMPLATE_INFO (type)
+      && PRIMARY_TEMPLATE_P (CLASSTYPE_TI_TEMPLATE (type)))
+    {
+      tree list = INNERMOST_TEMPLATE_ARGS (CLASSTYPE_TI_ARGS (type));
+      for (int i = 0; i < TREE_VEC_LENGTH (list); ++i)
+	adl_template_arg (TREE_VEC_ELT (list, i));
+    }
+}
+
+void
+name_lookup::adl_expr (tree expr)
+{
+  if (!expr)
+    return;
+
+  gcc_assert (!TYPE_P (expr));
+
+  if (TREE_TYPE (expr) != unknown_type_node)
+    {
+      adl_type (TREE_TYPE (expr));
+      return;
+    }
+
+  if (TREE_CODE (expr) == ADDR_EXPR)
+    expr = TREE_OPERAND (expr, 0);
+  if (TREE_CODE (expr) == COMPONENT_REF
+      || TREE_CODE (expr) == OFFSET_REF)
+    expr = TREE_OPERAND (expr, 1);
+  expr = MAYBE_BASELINK_FUNCTIONS (expr);
+
+  if (OVL_P (expr))
+    for (lkp_iterator iter (expr); iter; ++iter)
+      adl_type (TREE_TYPE (*iter));
+  else if (TREE_CODE (expr) == TEMPLATE_ID_EXPR)
+    {
+      /* The working paper doesn't currently say how to handle
+	 template-id arguments.  The sensible thing would seem to be
+	 to handle the list of template candidates like a normal
+	 overload set, and handle the template arguments like we do
+	 for class template specializations.  */
+
+      /* First the templates.  */
+      adl_expr (TREE_OPERAND (expr, 0));
+
+      /* Now the arguments.  */
+      if (tree args = TREE_OPERAND (expr, 1))
+	for (int ix = TREE_VEC_LENGTH (args); ix--;)
+	  adl_template_arg (TREE_VEC_ELT (args, ix));
+    }
+}
+
+void
+name_lookup::adl_type (tree type)
+{
+  if (!type)
+    return;
+
+  if (TYPE_PTRDATAMEM_P (type))
+    {
+      /* Pointer to member: associate class type and value type.  */
+      adl_type (TYPE_PTRMEM_CLASS_TYPE (type));
+      adl_type (TYPE_PTRMEM_POINTED_TO_TYPE (type));
+      return;
+    }
+
+  switch (TREE_CODE (type))
+    {
+    case RECORD_TYPE:
+      if (TYPE_PTRMEMFUNC_P (type))
+	{
+	  adl_type (TYPE_PTRMEMFUNC_FN_TYPE (type));
+	  return;
+	}
+      /* FALLTHRU */
+    case UNION_TYPE:
+      adl_class (type);
+      return;
+
+    case METHOD_TYPE:
+      /* The basetype is referenced in the first arg type, so just
+	 fall through.  */
+    case FUNCTION_TYPE:
+      /* Associate the parameter types.  */
+      for (tree args = TYPE_ARG_TYPES (type); args; args = TREE_CHAIN (args))
+	adl_type (TREE_VALUE (args));
+      /* FALLTHROUGH */
+
+    case POINTER_TYPE:
+    case REFERENCE_TYPE:
+    case ARRAY_TYPE:
+      adl_type (TREE_TYPE (type));
+      return;
+
+    case ENUMERAL_TYPE:
+      if (TYPE_CLASS_SCOPE_P (type))
+	adl_class_only (TYPE_CONTEXT (type));
+      adl_namespace (decl_namespace_context (type));
+      return;
+
+    case LANG_TYPE:
+      gcc_assert (type == unknown_type_node
+		  || type == init_list_type_node);
+      return;
+
+    case TYPE_PACK_EXPANSION:
+      adl_type (PACK_EXPANSION_PATTERN (type));
+      return;
+
+    default:
+      break;
+    }
+}
+
+/* Adds everything associated with a template argument to the lookup
+   structure.  */
+
+void
+name_lookup::adl_template_arg (tree arg)
+{
+  /* [basic.lookup.koenig]
+
+     If T is a template-id, its associated namespaces and classes are
+     ... the namespaces and classes associated with the types of the
+     template arguments provided for template type parameters
+     (excluding template template parameters); the namespaces in which
+     any template template arguments are defined; and the classes in
+     which any member templates used as template template arguments
+     are defined.  [Note: non-type template arguments do not
+     contribute to the set of associated namespaces.  ]  */
+
+  /* Consider first template template arguments.  */
+  if (TREE_CODE (arg) == TEMPLATE_TEMPLATE_PARM
+      || TREE_CODE (arg) == UNBOUND_CLASS_TEMPLATE)
+    ;
+  else if (TREE_CODE (arg) == TEMPLATE_DECL)
+    {
+      tree ctx = CP_DECL_CONTEXT (arg);
+
+      /* It's not a member template.  */
+      if (TREE_CODE (ctx) == NAMESPACE_DECL)
+	adl_namespace (ctx);
+      /* Otherwise, it must be member template.  */
+      else
+	adl_class_only (ctx);
+    }
+  /* It's an argument pack; handle it recursively.  */
+  else if (ARGUMENT_PACK_P (arg))
+    {
+      tree args = ARGUMENT_PACK_ARGS (arg);
+      int i, len = TREE_VEC_LENGTH (args);
+      for (i = 0; i < len; ++i) 
+	adl_template_arg (TREE_VEC_ELT (args, i));
+    }
+  /* It's not a template template argument, but it is a type template
+     argument.  */
+  else if (TYPE_P (arg))
+    adl_type (arg);
+}
+
+/* Perform ADL lookup.  FNS is the existing lookup result and ARGS are
+   the call arguments.  */
+
+tree
+name_lookup::search_adl (tree fns, vec<tree, va_gc> *args)
+{
+  value = fns;
+
+  /* Add the current overload set into the hash table.  */
+  fn_set = new hash_set<tree>;
+  for (lkp_iterator iter (fns); iter; ++iter)
+    fn_set->add (*iter);
+
+  unsigned ix;
+  tree arg;
+
+  FOR_EACH_VEC_ELT_REVERSE (*args, ix, arg)
+    /* OMP reduction operators put a type as the first arg.  I don't
+       suppose we should ADL on that?  */
+    if (!TYPE_P (arg))
+      adl_expr (arg);
+
+  delete fn_set;
+  fn_set = NULL;
+
+  fns = value;
+
+  return fns;
+}
+
+/* ADL lookup of NAME.  FNS is the result of regular lookup, and we
+   don't add duplicates to it.  ARGS is the vector of call
+   arguments (which will not be empty).  */
+
+tree
+lookup_arg_dependent (tree name, tree fns, vec<tree, va_gc> *args)
+{
+  bool subtime = timevar_cond_start (TV_NAME_LOOKUP);
+  name_lookup lookup (name);
+  fns = lookup.search_adl (fns, args);
+  timevar_cond_stop (TV_NAME_LOOKUP, subtime);
+  return fns;
 }
 
 /* Returns true iff CURRENT has declared itself to be an associated
@@ -243,450 +744,6 @@ is_associated_namespace (tree current, tree scope)
   release_tree_vector (seen);
   release_tree_vector (todo);
 
-  return ret;
-}
-
-/* Add functions of a namespace to the lookup structure.
-   Returns true on error.  */
-
-static bool
-arg_assoc_namespace (struct arg_lookup *k, tree scope)
-{
-  tree value;
-
-  if (vec_member (scope, k->namespaces))
-    return false;
-  vec_safe_push (k->namespaces, scope);
-
-  /* Check out our super-users.  */
-  for (value = DECL_NAMESPACE_ASSOCIATIONS (scope); value;
-       value = TREE_CHAIN (value))
-    if (arg_assoc_namespace (k, TREE_PURPOSE (value)))
-      return true;
-
-  /* Also look down into inline namespaces.  */
-  for (value = DECL_NAMESPACE_USING (scope); value;
-       value = TREE_CHAIN (value))
-    if (is_associated_namespace (scope, TREE_PURPOSE (value)))
-      if (arg_assoc_namespace (k, TREE_PURPOSE (value)))
-	return true;
-
-  value = get_namespace_binding (scope, k->name);
-  if (!value)
-    return false;
-
-  value = ovl_skip_hidden (value);
-  
-  for (; value; value = OVL_NEXT (value))
-    {
-      if (add_function (k, OVL_CURRENT (value)))
-	return true;
-    }
-
-  return false;
-}
-
-/* Adds everything associated with a template argument to the lookup
-   structure.  Returns true on error.  */
-
-static bool
-arg_assoc_template_arg (struct arg_lookup *k, tree arg)
-{
-  /* [basic.lookup.koenig]
-
-     If T is a template-id, its associated namespaces and classes are
-     ... the namespaces and classes associated with the types of the
-     template arguments provided for template type parameters
-     (excluding template template parameters); the namespaces in which
-     any template template arguments are defined; and the classes in
-     which any member templates used as template template arguments
-     are defined.  [Note: non-type template arguments do not
-     contribute to the set of associated namespaces.  ]  */
-
-  /* Consider first template template arguments.  */
-  if (TREE_CODE (arg) == TEMPLATE_TEMPLATE_PARM
-      || TREE_CODE (arg) == UNBOUND_CLASS_TEMPLATE)
-    return false;
-  else if (TREE_CODE (arg) == TEMPLATE_DECL)
-    {
-      tree ctx = CP_DECL_CONTEXT (arg);
-
-      /* It's not a member template.  */
-      if (TREE_CODE (ctx) == NAMESPACE_DECL)
-	return arg_assoc_namespace (k, ctx);
-      /* Otherwise, it must be member template.  */
-      else
-	return arg_assoc_class_only (k, ctx);
-    }
-  /* It's an argument pack; handle it recursively.  */
-  else if (ARGUMENT_PACK_P (arg))
-    {
-      tree args = ARGUMENT_PACK_ARGS (arg);
-      int i, len = TREE_VEC_LENGTH (args);
-      for (i = 0; i < len; ++i) 
-	if (arg_assoc_template_arg (k, TREE_VEC_ELT (args, i)))
-	  return true;
-
-      return false;
-    }
-  /* It's not a template template argument, but it is a type template
-     argument.  */
-  else if (TYPE_P (arg))
-    return arg_assoc_type (k, arg);
-  /* It's a non-type template argument.  */
-  else
-    return false;
-}
-
-/* Adds the class and its friends to the lookup structure.
-   Returns true on error.  */
-
-static bool
-arg_assoc_class_only (struct arg_lookup *k, tree type)
-{
-  tree list, friends, context;
-
-  /* Backend-built structures, such as __builtin_va_list, aren't
-     affected by all this.  */
-  if (!CLASS_TYPE_P (type))
-    return false;
-
-  context = decl_namespace_context (type);
-  if (arg_assoc_namespace (k, context))
-    return true;
-
-  complete_type (type);
-
-  /* Process friends.  */
-  for (list = DECL_FRIENDLIST (TYPE_MAIN_DECL (type)); list;
-       list = TREE_CHAIN (list))
-    if (k->name == FRIEND_NAME (list))
-      for (friends = FRIEND_DECLS (list); friends;
-	   friends = TREE_CHAIN (friends))
-	{
-	  tree fn = TREE_VALUE (friends);
-
-	  /* Only interested in global functions with potentially hidden
-	     (i.e. unqualified) declarations.  */
-	  if (CP_DECL_CONTEXT (fn) != context)
-	    continue;
-	  /* Template specializations are never found by name lookup.
-	     (Templates themselves can be found, but not template
-	     specializations.)  */
-	  if (TREE_CODE (fn) == FUNCTION_DECL && DECL_USE_TEMPLATE (fn))
-	    continue;
-	  if (add_function (k, fn))
-	    return true;
-	}
-
-  return false;
-}
-
-/* Adds the class and its bases to the lookup structure.
-   Returns true on error.  */
-
-static bool
-arg_assoc_bases (struct arg_lookup *k, tree type)
-{
-  if (arg_assoc_class_only (k, type))
-    return true;
-
-  if (TYPE_BINFO (type))
-    {
-      /* Process baseclasses.  */
-      tree binfo, base_binfo;
-      int i;
-
-      for (binfo = TYPE_BINFO (type), i = 0;
-	   BINFO_BASE_ITERATE (binfo, i, base_binfo); i++)
-	if (arg_assoc_bases (k, BINFO_TYPE (base_binfo)))
-	  return true;
-    }
-
-  return false;
-}
-
-/* Adds everything associated with a class argument type to the lookup
-   structure.  Returns true on error.
-
-   If T is a class type (including unions), its associated classes are: the
-   class itself; the class of which it is a member, if any; and its direct
-   and indirect base classes. Its associated namespaces are the namespaces
-   of which its associated classes are members. Furthermore, if T is a
-   class template specialization, its associated namespaces and classes
-   also include: the namespaces and classes associated with the types of
-   the template arguments provided for template type parameters (excluding
-   template template parameters); the namespaces of which any template
-   template arguments are members; and the classes of which any member
-   templates used as template template arguments are members. [ Note:
-   non-type template arguments do not contribute to the set of associated
-   namespaces.  --end note] */
-
-static bool
-arg_assoc_class (struct arg_lookup *k, tree type)
-{
-  tree list;
-  int i;
-
-  /* Backend build structures, such as __builtin_va_list, aren't
-     affected by all this.  */
-  if (!CLASS_TYPE_P (type))
-    return false;
-
-  if (vec_member (type, k->classes))
-    return false;
-  vec_safe_push (k->classes, type);
-
-  if (TYPE_CLASS_SCOPE_P (type)
-      && arg_assoc_class_only (k, TYPE_CONTEXT (type)))
-    return true;
-
-  if (arg_assoc_bases (k, type))
-    return true;
-
-  /* Process template arguments.  */
-  if (CLASSTYPE_TEMPLATE_INFO (type)
-      && PRIMARY_TEMPLATE_P (CLASSTYPE_TI_TEMPLATE (type)))
-    {
-      list = INNERMOST_TEMPLATE_ARGS (CLASSTYPE_TI_ARGS (type));
-      for (i = 0; i < TREE_VEC_LENGTH (list); ++i)
-	if (arg_assoc_template_arg (k, TREE_VEC_ELT (list, i)))
-	  return true;
-    }
-
-  return false;
-}
-
-/* Adds everything associated with a given type.
-   Returns 1 on error.  */
-
-static bool
-arg_assoc_type (struct arg_lookup *k, tree type)
-{
-  /* As we do not get the type of non-type dependent expressions
-     right, we can end up with such things without a type.  */
-  if (!type)
-    return false;
-
-  if (TYPE_PTRDATAMEM_P (type))
-    {
-      /* Pointer to member: associate class type and value type.  */
-      if (arg_assoc_type (k, TYPE_PTRMEM_CLASS_TYPE (type)))
-	return true;
-      return arg_assoc_type (k, TYPE_PTRMEM_POINTED_TO_TYPE (type));
-    }
-  else switch (TREE_CODE (type))
-    {
-    case ERROR_MARK:
-      return false;
-    case VOID_TYPE:
-    case INTEGER_TYPE:
-    case REAL_TYPE:
-    case COMPLEX_TYPE:
-    case VECTOR_TYPE:
-    case BOOLEAN_TYPE:
-    case FIXED_POINT_TYPE:
-    case DECLTYPE_TYPE:
-    case NULLPTR_TYPE:
-      return false;
-    case RECORD_TYPE:
-      if (TYPE_PTRMEMFUNC_P (type))
-	return arg_assoc_type (k, TYPE_PTRMEMFUNC_FN_TYPE (type));
-      /* FALLTHRU */
-    case UNION_TYPE:
-      return arg_assoc_class (k, type);
-    case POINTER_TYPE:
-    case REFERENCE_TYPE:
-    case ARRAY_TYPE:
-      return arg_assoc_type (k, TREE_TYPE (type));
-    case ENUMERAL_TYPE:
-      if (TYPE_CLASS_SCOPE_P (type)
-	  && arg_assoc_class_only (k, TYPE_CONTEXT (type)))
-	return true;
-      return arg_assoc_namespace (k, decl_namespace_context (type));
-    case METHOD_TYPE:
-      /* The basetype is referenced in the first arg type, so just
-	 fall through.  */
-    case FUNCTION_TYPE:
-      /* Associate the parameter types.  */
-      if (arg_assoc_args (k, TYPE_ARG_TYPES (type)))
-	return true;
-      /* Associate the return type.  */
-      return arg_assoc_type (k, TREE_TYPE (type));
-    case TEMPLATE_TYPE_PARM:
-    case BOUND_TEMPLATE_TEMPLATE_PARM:
-      return false;
-    case TYPENAME_TYPE:
-      return false;
-    case LANG_TYPE:
-      gcc_assert (type == unknown_type_node
-		  || type == init_list_type_node);
-      return false;
-    case TYPE_PACK_EXPANSION:
-      return arg_assoc_type (k, PACK_EXPANSION_PATTERN (type));
-
-    default:
-      gcc_unreachable ();
-    }
-  return false;
-}
-
-/* Adds everything associated with arguments.  Returns true on error.  */
-
-static bool
-arg_assoc_args (struct arg_lookup *k, tree args)
-{
-  for (; args; args = TREE_CHAIN (args))
-    if (arg_assoc (k, TREE_VALUE (args)))
-      return true;
-  return false;
-}
-
-/* Adds everything associated with an argument vector.  Returns true
-   on error.  */
-
-static bool
-arg_assoc_args_vec (struct arg_lookup *k, vec<tree, va_gc> *args)
-{
-  unsigned int ix;
-  tree arg;
-
-  FOR_EACH_VEC_SAFE_ELT (args, ix, arg)
-    if (arg_assoc (k, arg))
-      return true;
-  return false;
-}
-
-/* Adds everything associated with a given tree_node.  Returns 1 on error.  */
-
-static bool
-arg_assoc (struct arg_lookup *k, tree n)
-{
-  if (n == error_mark_node)
-    return false;
-
-  if (TYPE_P (n))
-    return arg_assoc_type (k, n);
-
-  if (! type_unknown_p (n))
-    return arg_assoc_type (k, TREE_TYPE (n));
-
-  if (TREE_CODE (n) == ADDR_EXPR)
-    n = TREE_OPERAND (n, 0);
-  if (TREE_CODE (n) == COMPONENT_REF)
-    n = TREE_OPERAND (n, 1);
-  if (TREE_CODE (n) == OFFSET_REF)
-    n = TREE_OPERAND (n, 1);
-  while (TREE_CODE (n) == TREE_LIST)
-    n = TREE_VALUE (n);
-  if (BASELINK_P (n))
-    n = BASELINK_FUNCTIONS (n);
-
-  if (TREE_CODE (n) == FUNCTION_DECL)
-    return arg_assoc_type (k, TREE_TYPE (n));
-  if (TREE_CODE (n) == TEMPLATE_ID_EXPR)
-    {
-      /* The working paper doesn't currently say how to handle template-id
-	 arguments.  The sensible thing would seem to be to handle the list
-	 of template candidates like a normal overload set, and handle the
-	 template arguments like we do for class template
-	 specializations.  */
-      tree templ = TREE_OPERAND (n, 0);
-      tree args = TREE_OPERAND (n, 1);
-      int ix;
-
-      /* First the templates.  */
-      if (arg_assoc (k, templ))
-	return true;
-
-      /* Now the arguments.  */
-      if (args)
-	for (ix = TREE_VEC_LENGTH (args); ix--;)
-	  if (arg_assoc_template_arg (k, TREE_VEC_ELT (args, ix)) == 1)
-	    return true;
-    }
-  else if (TREE_CODE (n) == OVERLOAD)
-    {
-      for (; n; n = OVL_NEXT (n))
-	if (arg_assoc_type (k, TREE_TYPE (OVL_CURRENT (n))))
-	  return true;
-    }
-
-  return false;
-}
-
-/* Performs Koenig lookup depending on arguments, where fns
-   are the functions found in normal lookup.  */
-
-static cp_expr
-lookup_arg_dependent_1 (tree name, tree fns, vec<tree, va_gc> *args)
-{
-  struct arg_lookup k;
-
-  /* Remove any hidden friend functions from the list of functions
-     found so far.  They will be added back by arg_assoc_class as
-     appropriate.  */
-  fns = ovl_skip_hidden (fns);
-
-  k.name = name;
-  k.args = args;
-  k.functions = fns;
-  k.classes = make_tree_vector ();
-
-  /* We previously performed an optimization here by setting
-     NAMESPACES to the current namespace when it was safe. However, DR
-     164 says that namespaces that were already searched in the first
-     stage of template processing are searched again (potentially
-     picking up later definitions) in the second stage. */
-  k.namespaces = make_tree_vector ();
-
-  /* We used to allow duplicates and let joust discard them, but
-     since the above change for DR 164 we end up with duplicates of
-     all the functions found by unqualified lookup.  So keep track
-     of which ones we've seen.  */
-  if (fns)
-    {
-      tree ovl;
-      /* We shouldn't be here if lookup found something other than
-	 namespace-scope functions.  */
-      gcc_assert (DECL_NAMESPACE_SCOPE_P (OVL_CURRENT (fns)));
-      k.fn_set = new hash_set<tree>;
-      for (ovl = fns; ovl; ovl = OVL_NEXT (ovl))
-	k.fn_set->add (OVL_CURRENT (ovl));
-    }
-  else
-    k.fn_set = NULL;
-
-  arg_assoc_args_vec (&k, args);
-
-  fns = k.functions;
-  
-  if (fns
-      && !VAR_P (fns)
-      && !is_overloaded_fn (fns))
-    {
-      error ("argument dependent lookup finds %q+D", fns);
-      error ("  in call to %qD", name);
-      fns = error_mark_node;
-    }
-
-  release_tree_vector (k.classes);
-  release_tree_vector (k.namespaces);
-  delete k.fn_set;
-    
-  return fns;
-}
-
-/* Wrapper for lookup_arg_dependent_1.  */
-
-cp_expr
-lookup_arg_dependent (tree name, tree fns, vec<tree, va_gc> *args)
-{
-  cp_expr ret;
-  bool subtime;
-  subtime = timevar_cond_start (TV_NAME_LOOKUP);
-  ret = lookup_arg_dependent_1 (name, fns, args);
-  timevar_cond_stop (TV_NAME_LOOKUP, subtime);
   return ret;
 }
 
