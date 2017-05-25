@@ -930,20 +930,10 @@ plugin_make_namespace_inline (cc1_plugin::connection *)
 
   tree parent_ns = CP_DECL_CONTEXT (inline_ns);
 
-  if (purpose_member (DECL_NAMESPACE_ASSOCIATIONS (inline_ns),
-		      parent_ns))
+  if (DECL_NAMESPACE_INLINE_P (inline_ns))
     return 0;
 
-  pop_namespace ();
-
-  gcc_assert (current_namespace == parent_ns);
-
-  DECL_NAMESPACE_ASSOCIATIONS (inline_ns)
-    = tree_cons (parent_ns, 0,
-		 DECL_NAMESPACE_ASSOCIATIONS (inline_ns));
-  do_using_directive (inline_ns);
-
-  push_namespace (DECL_NAME (inline_ns));
+  DECL_NAMESPACE_INLINE_P (inline_ns) = true;
 
   return 1;
 }
