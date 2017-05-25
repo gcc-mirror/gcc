@@ -1,0 +1,9 @@
+// { dg-do compile { target c++11 } }
+
+template < auto >  // { dg-error "parameter" }
+struct Outer
+{
+  template < int >
+  struct Inner { };
+};
+Outer<0> a{};
