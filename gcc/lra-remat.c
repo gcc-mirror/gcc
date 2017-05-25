@@ -1122,6 +1122,7 @@ do_remat (void)
 		  break;
 	    }
 	  int i, hard_regno, nregs;
+	  int dst_hard_regno, dst_nregs;
 	  rtx_insn *remat_insn = NULL;
 	  HOST_WIDE_INT cand_sp_offset = 0;
 	  if (cand != NULL)
@@ -1136,6 +1137,12 @@ do_remat (void)
 	      gcc_assert (REG_P (saved_op));
 	      int ignore_regno = REGNO (saved_op); 
 
+	      dst_hard_regno = dst_regno < FIRST_PSEUDO_REGISTER
+		? dst_regno : reg_renumber[dst_regno];
+	      gcc_assert (dst_hard_regno >= 0);
+	      machine_mode mode = GET_MODE (SET_DEST (set));
+	      dst_nregs = hard_regno_nregs[dst_hard_regno][mode];
+
 	      for (reg = cand_id->regs; reg != NULL; reg = reg->next)
 		if (reg->type != OP_IN && reg->regno != ignore_regno)
 		  {
@@ -1146,6 +1153,10 @@ do_remat (void)
 			break;
 		    if (i < nregs)
 		      break;
+		    /* Ensure the clobber also doesn't overlap dst_regno.  */
+		    if (hard_regno + nregs > dst_hard_regno
+			&& hard_regno < dst_hard_regno + dst_nregs)
+		      break;
 		  }
 
 	      if (reg == NULL)
@@ -1153,9 +1164,14 @@ do_remat (void)
 		  for (reg = static_cand_id->hard_regs;
 		       reg != NULL;
 		       reg = reg->next)
-		    if (reg->type != OP_IN
-			&& TEST_HARD_REG_BIT (live_hard_regs, reg->regno))
-		      break;
+		    if (reg->type != OP_IN)
+		      {
+			if (TEST_HARD_REG_BIT (live_hard_regs, reg->regno))
+			  break;
+			if (reg->regno >= dst_hard_regno
+			    && reg->regno < dst_hard_regno + dst_nregs)
+			  break;
+		      }
 		}
 
 	      if (reg == NULL)

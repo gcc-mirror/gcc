@@ -1,5 +1,11 @@
 2017-05-25  Wilco Dijkstra  <wdijkstr@arm.com>
 
+	Backport from mainlin
+	PR rtl-optimization/80754
+	* lra-remat.c (do_remat): Add overlap checks for dst_regno.
+
+2017-05-25  Wilco Dijkstra  <wdijkstr@arm.com>
+
 	Backport from mainline
 	PR target/80671
 	* config/aarch64/cortex-a57-fma-steering.c (merge_forest):
