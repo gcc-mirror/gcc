@@ -1,3 +1,8 @@
+2017-05-24  Nathan Sidwell  <nathan@acm.org>
+
+	* auto-profile.c (afdo_propagate): Adjust T const cast to avoid
+	warning.
+
 2017-05-24  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* config/powerpcspe: New port.  Files are copied from the rs6000
