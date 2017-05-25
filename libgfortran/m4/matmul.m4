@@ -106,6 +106,26 @@ static' include(matmul_internal.m4)dnl
 static' include(matmul_internal.m4)dnl
 `#endif  /* HAVE_AVX512F */
 
+/* AMD-specifix funtions with AVX128 and FMA3/FMA4.  */
+
+#if defined(HAVE_AVX) && defined(HAVE_FMA3) && defined(HAVE_AVX128)
+'define(`matmul_name',`matmul_'rtype_code`_avx128_fma3')dnl
+`void
+'matmul_name` ('rtype` * const restrict retarray, 
+	'rtype` * const restrict a, 'rtype` * const restrict b, int try_blas,
+	int blas_limit, blas_call gemm) __attribute__((__target__("avx,fma")));
+internal_proto('matmul_name`);
+#endif
+
+#if defined(HAVE_AVX) && defined(HAVE_FMA4) && defined(HAVE_AVX128)
+'define(`matmul_name',`matmul_'rtype_code`_avx128_fma4')dnl
+`void
+'matmul_name` ('rtype` * const restrict retarray, 
+	'rtype` * const restrict a, 'rtype` * const restrict b, int try_blas,
+	int blas_limit, blas_call gemm) __attribute__((__target__("avx,fma4")));
+internal_proto('matmul_name`);
+#endif
+
 /* Function to fall back to if there is no special processor-specific version.  */
 'define(`matmul_name',`matmul_'rtype_code`_vanilla')dnl
 `static' include(matmul_internal.m4)dnl
@@ -161,6 +181,26 @@ void matmul_'rtype_code` ('rtype` * const restrict retarray,
 	    }
 #endif  /* HAVE_AVX */
         }
+    else if (__cpu_model.__cpu_vendor == VENDOR_AMD)
+      {
+#if defined(HAVE_AVX) && defined(HAVE_FMA3) && defined(HAVE_AVX128)
+        if ((__cpu_model.__cpu_features[0] & (1 << FEATURE_AVX))
+	    && (__cpu_model.__cpu_features[0] & (1 << FEATURE_FMA)))
+	  {
+            matmul_fn = matmul_'rtype_code`_avx128_fma3;
+	    goto store;
+	  }
+#endif
+#if defined(HAVE_AVX) && defined(HAVE_FMA4) && defined(HAVE_AVX128)
+        if ((__cpu_model.__cpu_features[0] & (1 << FEATURE_AVX))
+	     && (__cpu_model.__cpu_features[0] & (1 << FEATURE_FMA4)))
+	  {
+            matmul_fn = matmul_'rtype_code`_avx128_fma4;
+	    goto store;
+	  }
+#endif
+
+      }
    store:
       __atomic_store_n (&matmul_p, matmul_fn, __ATOMIC_RELAXED);
    }

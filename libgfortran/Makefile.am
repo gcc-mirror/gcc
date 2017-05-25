@@ -460,6 +460,21 @@ $(srcdir)/generated/matmul_c8.c \
 $(srcdir)/generated/matmul_c10.c \
 $(srcdir)/generated/matmul_c16.c
 
+i_matmulavx128_c= \
+$(srcdir)/generated/matmulavx128_i1.c \
+$(srcdir)/generated/matmulavx128_i2.c \
+$(srcdir)/generated/matmulavx128_i4.c \
+$(srcdir)/generated/matmulavx128_i8.c \
+$(srcdir)/generated/matmulavx128_i16.c \
+$(srcdir)/generated/matmulavx128_r4.c \
+$(srcdir)/generated/matmulavx128_r8.c \
+$(srcdir)/generated/matmulavx128_r10.c \
+$(srcdir)/generated/matmulavx128_r16.c \
+$(srcdir)/generated/matmulavx128_c4.c \
+$(srcdir)/generated/matmulavx128_c8.c \
+$(srcdir)/generated/matmulavx128_c10.c \
+$(srcdir)/generated/matmulavx128_c16.c
+
 i_matmull_c= \
 $(srcdir)/generated/matmul_l4.c \
 $(srcdir)/generated/matmul_l8.c \
@@ -641,7 +656,7 @@ gfor_built_src= $(i_all_c) $(i_any_c) $(i_count_c) $(i_maxloc0_c) \
     $(i_iparity_c) $(i_norm2_c) $(i_parity_c) \
     $(i_matmul_c) $(i_matmull_c) $(i_shape_c) $(i_eoshift1_c) \
     $(i_eoshift3_c) $(i_cshift1_c) $(i_reshape_c) $(in_pack_c) $(in_unpack_c) \
-    $(i_pow_c) $(i_pack_c) $(i_unpack_c) \
+    $(i_pow_c) $(i_pack_c) $(i_unpack_c) $(i_matmulavx128_c) \
     $(i_spread_c) selected_int_kind.inc selected_real_kind.inc kinds.h \
     $(i_cshift0_c) kinds.inc c99_protos.inc fpu-target.h fpu-target.inc
 
@@ -796,7 +811,12 @@ intrinsics/dprod_r8.f90 \
 intrinsics/f2c_specifics.F90
 
 # Turn on vectorization and loop unrolling for matmul.
-$(patsubst %.c,%.lo,$(notdir $(i_matmul_c))): AM_CFLAGS += -ffast-math -ftree-vectorize -funroll-loops --param max-unroll-times=4 
+$(patsubst %.c,%.lo,$(notdir $(i_matmul_c))): AM_CFLAGS += -ffast-math -ftree-vectorize -funroll-loops --param max-unroll-times=4
+
+if HAVE_AVX128
+# Turn on AVX128 for AMD-specific matmul, but only if the compiler understands -mprefer-avx128
+$(patsubst %.c,%.lo,$(notdir $(i_matmulavx128_c))): AM_CFLAGS += -ffast-math -ftree-vectorize -funroll-loops --param max-unroll-times=4 -mprefer-avx128
+endif
 # Logical matmul doesn't vectorize.
 $(patsubst %.c,%.lo,$(notdir $(i_matmull_c))): AM_CFLAGS += -funroll-loops
 
@@ -935,6 +955,9 @@ $(i_sum_c): m4/sum.m4 $(I_M4_DEPS1)
 
 $(i_matmul_c): m4/matmul.m4 m4/matmul_internal.m4 $(I_M4_DEPS)
 	$(M4) -Dfile=$@ -I$(srcdir)/m4 matmul.m4 > $@
+
+$(i_matmulavx128_c): m4/matmulavx128.m4 m4/matmul_internal.m4 $(I_M4_DEPS)
+	$(M4) -Dfile=$@ -I$(srcdir)/m4 matmulavx128.m4 > $@
 
 $(i_matmull_c): m4/matmull.m4 $(I_M4_DEPS)
 	$(M4) -Dfile=$@ -I$(srcdir)/m4 matmull.m4 > $@

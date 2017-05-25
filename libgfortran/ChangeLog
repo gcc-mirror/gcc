@@ -1,3 +1,43 @@
+2017-05-25  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR libfortran/78379
+	* Makefile.am: Add generated/matmulavx128_*.c files.
+	Handle them for compiling and setting the right flags.
+	* acinclude.m4: Add tests for FMA3, FMA4 and AVX128.
+	* configure.ac: Call them.
+	* Makefile.in: Regenerated.
+	* config.h.in: Regenerated.
+	* configure: Regenerated.
+	* m4/matmul.m4:  Handle AMD chips by calling 128-bit AVX
+	versions which use FMA3 or FMA4.
+	* m4/matmulavx128.m4: New file.
+        * generated/matmul_c10.c: Regenerated.
+        * generated/matmul_c16.c: Regenerated.
+        * generated/matmul_c4.c: Regenerated.
+        * generated/matmul_c8.c: Regenerated.
+        * generated/matmul_i1.c: Regenerated.
+        * generated/matmul_i16.c: Regenerated.
+        * generated/matmul_i2.c: Regenerated.
+        * generated/matmul_i4.c: Regenerated.
+        * generated/matmul_i8.c: Regenerated.
+        * generated/matmul_r10.c: Regenerated.
+        * generated/matmul_r16.c: Regenerated.
+        * generated/matmul_r4.c: Regenerated.
+        * generated/matmul_r8.c: Regenerated.
+        * generated/matmulavx128_c10.c: New file.
+        * generated/matmulavx128_c16.c: New file.
+        * generated/matmulavx128_c4.c: New file.
+        * generated/matmulavx128_c8.c: New file.
+        * generated/matmulavx128_i1.c: New file.
+        * generated/matmulavx128_i16.c: New file.
+        * generated/matmulavx128_i2.c: New file.
+        * generated/matmulavx128_i4.c: New file.
+        * generated/matmulavx128_i8.c: New file.
+        * generated/matmulavx128_r10.c: New file.
+        * generated/matmulavx128_r16.c: New file.
+        * generated/matmulavx128_r4.c: New file.
+        * generated/matmulavx128_r8.c: New file.
+
 2017-05-19  Paul Thomas  <pault@gcc.gnu.org>
 	    Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
@@ -14,7 +54,7 @@
 	(st_endfile): Likewise.
 	(st_rewind): Likewise.
 	(st_flush): Likewise.
-	
+
 2017-05-15  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/80727

@@ -624,6 +624,15 @@ LIBGFOR_CHECK_AVX2
 # Check wether we support AVX512f extensions
 LIBGFOR_CHECK_AVX512F
 
+# Check for FMA3 extensions
+LIBGFOR_CHECK_FMA3
+
+# Check for FMA4 extensions
+LIBGFOR_CHECK_FMA4
+
+# Check if AVX128 works
+LIBGFOR_CHECK_AVX128
+
 # Determine what GCC version number to use in filesystem paths.
 GCC_BASE_VER
 
