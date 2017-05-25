@@ -6,6 +6,11 @@
 
 2017-05-25  Nathan Sidwell  <nathan@acm.org>
 
+	* g++.dg/lookup/using56.C: New.
+	* g++.dg/lookup/using57.C: New.
+	* g++.dg/lookup/using58.C: New.
+	* g++.dg/lookup/using59.C: New.
+
 	* g++.dg/lookup/using17.C: Adjust diagnostics.
 
 2017-05-25  Martin Sebor  <msebor@redhat.com>

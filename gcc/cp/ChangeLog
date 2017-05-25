@@ -1,3 +1,23 @@
+2017-05-25  Nathan Sidwell  <nathan@acm.org>
+
+	Kill DECL_NAMESPACE_USERS, DECL_NAMESPACE_ASSOCIATIONS.
+	* cp-tree.h (lang_decl_ns): Remove ns_users field.
+	(DECL_NAMESPACE_USERS, DECL_NAMESPACE_ASSOCIATIONS): Delete.
+	(TREE_INDIRECT_USING): Delete.
+	* name-lookup.h (is_associated_namespace): Delete.
+	* name-lookup.c (name_lookup::search_usings,
+	name_lookup::do_queue_usings): Usings are always direct.
+	(is_associated_namespace): Delete.
+	(handle_namespace_attrs): Use DECL_NAMESPACE_INLINE_P.
+	(namespace_ancestor_1, namespace_ancestor): Delete.
+	(push_using_directive_1, push_using_directive): Delete.
+	(add_using_namespace_1): Delete.
+	(add_using_namespace): Reimplement.
+	(emit_debug_info_using_namespace): New.
+	(finish_namespace_using_directive, finish_local_using_directive,
+	push_namespace): Adjust.
+	* tree.c (cp_free_lang_data): Remove DECL_NAMESPACE_USERS handling.
+
 2017-05-25  Volker Reichelt  <v.reichelt@netcologne.de>
 
 	* semantics.c (finish_handler_parms): Warn about non-reference type

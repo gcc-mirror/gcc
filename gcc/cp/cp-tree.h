@@ -328,7 +328,6 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
       BASELINK_QUALIFIED_P (in BASELINK)
       TARGET_EXPR_IMPLICIT_P (in TARGET_EXPR)
       TEMPLATE_PARM_PARAMETER_PACK (in TEMPLATE_PARM_INDEX)
-      TREE_INDIRECT_USING (in a TREE_LIST of using-directives)
       ATTR_IS_DEPENDENT (in the TREE_LIST for an attribute)
       ABI_TAG_IMPLICIT (in the TREE_LIST for the argument of abi_tag)
       CONSTRUCTOR_IS_DIRECT_INIT (in CONSTRUCTOR)
@@ -2513,7 +2512,6 @@ struct GTY(()) lang_decl_ns {
   struct lang_decl_base base;
   cp_binding_level *level;
   tree ns_using;
-  tree ns_users;
 };
 
 /* DECL_LANG_SPECIFIC for parameters.  */
@@ -3085,15 +3083,6 @@ struct GTY(()) lang_decl {
    that is the common ancestor.  */
 #define DECL_NAMESPACE_USING(NODE) (LANG_DECL_NS_CHECK (NODE)->ns_using)
 
-/* In a NAMESPACE_DECL, the DECL_INITIAL is used to record all users
-   of a namespace, to record the transitive closure of using namespace.  */
-#define DECL_NAMESPACE_USERS(NODE) (LANG_DECL_NS_CHECK (NODE)->ns_users)
-
-/* In a NAMESPACE_DECL, the list of namespaces which have associated
-   themselves with this one.  */
-#define DECL_NAMESPACE_ASSOCIATIONS(NODE) \
-  DECL_INITIAL (NAMESPACE_DECL_CHECK (NODE))
-
 /* In a NAMESPACE_DECL, points to the original namespace if this is
    a namespace alias.  */
 #define DECL_NAMESPACE_ALIAS(NODE) \
@@ -3106,10 +3095,6 @@ struct GTY(()) lang_decl {
   (TREE_CODE (NODE) == NAMESPACE_DECL			\
    && CP_DECL_CONTEXT (NODE) == global_namespace	\
    && DECL_NAME (NODE) == std_identifier)
-
-/* In a TREE_LIST concatenating using directives, indicate indirect
-   directives  */
-#define TREE_INDIRECT_USING(NODE) TREE_LANG_FLAG_0 (TREE_LIST_CHECK (NODE))
 
 /* In a TREE_LIST in an attribute list, indicates that the attribute
    must be applied at instantiation time.  */
