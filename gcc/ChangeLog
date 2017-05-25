@@ -1,3 +1,10 @@
+2017-05-25  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	Backport from mainline
+	PR target/80671
+	* config/aarch64/cortex-a57-fma-steering.c (merge_forest):
+	Move member access before delete.
+
 2017-05-23  Sheldon Lobo  <sheldon.lobo@oracle.com>
 
 	Backport from mainline
