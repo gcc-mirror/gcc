@@ -1,5 +1,50 @@
 2017-05-24  Nathan Sidwell  <nathan@acm.org>
 
+	* friend.c (do_friend): Remove check for existing decl.
+	* name-lookup.h (lookup_name_innermost_nonclass_level): Delete.
+	* name-lookup.c (push_local_binding): Directly look for binding.
+	(lookup_name_innermost_nonclass_level_1): Delete.
+	(lookup_name_innermost_nonclass_level): Delete.
+
+	* Make-lang.in (CXX_AND_OBJCXX_OBJS): Alphabetize.
+
+	* cp-tree.h (cp_free_lang_data): Add extern.
+	(ovl_skip_hidden, is_overloaded_fn, really_overloaded_fn): Add
+	ATTRIBUTE_PURE.
+	(type_unknown_p): Return bool, make inline, lose TREE_LIST check.
+	* typeck.c (type_unknown_p): Delete.
+	* tree.c (is_overloaded_fn): Use MAYBE_BASELINE_FUNCTIONS, adjust
+	overload management.
+	(dependent_name): Likewise.
+	(decl_anon_ns_mem_p): Simplify.
+
+2017-05-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR c++/80544
+	* tree.c (reshape_init): Use unqualified type for direct enum init.
+	* typeck.c (maybe_warn_about_cast_ignoring_quals): New.
+	(build_static_cast_1, build_reinterpret_cast_1): Strip cv-quals from
+	non-class destination types.
+	(build_const_cast_1): Strip cv-quals from destination types.
+	(build_static_cast, build_reinterpret_cast, build_const_cast)
+	(cp_build_c_cast): Add calls to maybe_warn_about_cast_ignoring_quals.
+
+2017-05-24  Martin Sebor  <msebor@redhat.com>
+
+	PR c/80731
+	* call.c (fully_fold_internal): Adjust.
+
+2017-05-24  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-tree.h (ovl_skip_hidden): Declare.
+	* tree.c (ovl_skip_hidden): New.
+	* name-lookup.c (arg_assoc_namespace): Call ovl_skip_hidden.
+	(lookup_arg_dependent_1): Likewise.
+	(ambiguous_decl): Use DECL_HIDDEN_P, ovl_skip_hidden.
+	(hidden_name_p, remove_hidden_names): Delete.
+	(lookup_name_real_1): Do not strip hidden names.
+	* name-lookup.h (hidden_name_p, remove_hidden_names): Delete.
+
 	* cp-tree.h (OVL_HIDDEN_P): New.
 	(ovl_iterator::hidden_p, ovl_iterator::reveal_node): New.
 	(ovl_iterator::reveal_node): Declare.

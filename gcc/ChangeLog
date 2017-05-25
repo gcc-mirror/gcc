@@ -1,3 +1,43 @@
+2017-05-24  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/powerpcspe: New port.  Files are copied from the rs6000
+	port, with "rs6000" in filenames replaced by "powerpcspe".
+
+2017-05-24  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	PR rtl-optimization/80754
+	* lra-remat.c (do_remat): Add overlap checks for dst_regno.
+
+2017-05-24  Sheldon Lobo  <smlobo@sheldon.us.oracle.com>
+
+	* config/sparc/sparc.md (length): Return the correct value for -mflat
+	sibcalls to match output_sibcall.
+
+2017-05-24  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR bootstrap/80860
+	PR bootstrap/80843
+	* config/rs6000/rs6000.c (struct machine_function): Add new field
+	n_components.
+	(rs6000_get_separate_components): Init that field, use it.
+	(rs6000_components_for_bb): Use the field.
+
+2017-05-24  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* config/arm/arm.c (arm_expand_prologue): Fix typo in comment.
+
+2017-05-24  Peter Bergner  <bergner@vnet.ibm.com>
+
+	PR middle-end/80823
+	* tree-cfg.c (group_case_labels_stmt): Delete increment of "i";
+
+2017-05-24  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
+	PR target/80725
+	* config/s390/s390.c (s390_check_qrst_address): Check incoming
+	address against address_operand predicate.
+	* config/s390/s390.md ("*indirect_jump"): Swap alternatives.
+
 2017-05-24  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* var-tracking.c (track_expr_p): Do not return 0 for tracked record

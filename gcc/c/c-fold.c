@@ -307,7 +307,7 @@ c_fully_fold_internal (tree expr, bool in_init, bool *maybe_const_operands,
       if (TREE_OVERFLOW_P (ret)
 	  && !TREE_OVERFLOW_P (op0)
 	  && !TREE_OVERFLOW_P (op1))
-	overflow_warning (EXPR_LOC_OR_LOC (expr, input_location), ret);
+	overflow_warning (EXPR_LOC_OR_LOC (expr, input_location), ret, expr);
       if (code == LSHIFT_EXPR
 	  && TREE_CODE (orig_op0) != INTEGER_CST
 	  && TREE_CODE (TREE_TYPE (orig_op0)) == INTEGER_TYPE
@@ -428,7 +428,7 @@ c_fully_fold_internal (tree expr, bool in_init, bool *maybe_const_operands,
 
 	default:
 	  if (TREE_OVERFLOW_P (ret) && !TREE_OVERFLOW_P (op0))
-	    overflow_warning (EXPR_LOCATION (expr), ret);
+	    overflow_warning (EXPR_LOCATION (expr), ret, op0);
 	  break;
 	}
       goto out;

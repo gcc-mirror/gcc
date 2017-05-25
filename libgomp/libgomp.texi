@@ -2095,12 +2095,15 @@ specified in @var{arg}.
 @item @emph{C/C++}:
 @multitable @columnfractions .20 .80
 @item @emph{Prototype}: @tab @code{acc_wait(arg);}
+@item @emph{Prototype (OpenACC 1.0 compatibility)}: @tab @code{acc_async_wait(arg);}
 @end multitable
 
 @item @emph{Fortran}:
 @multitable @columnfractions .20 .80
 @item @emph{Interface}: @tab @code{subroutine acc_wait(arg)}
 @item                   @tab @code{integer(acc_handle_kind) arg}
+@item @emph{Interface (OpenACC 1.0 compatibility)}: @tab @code{subroutine acc_async_wait(arg)}
+@item                                               @tab @code{integer(acc_handle_kind) arg}
 @end multitable
 
 @item @emph{Reference}:
@@ -2119,11 +2122,13 @@ This function waits for the completion of all asynchronous operations.
 @item @emph{C/C++}:
 @multitable @columnfractions .20 .80
 @item @emph{Prototype}: @tab @code{acc_wait_all(void);}
+@item @emph{Prototype (OpenACC 1.0 compatibility)}: @tab @code{acc_async_wait_all(void);}
 @end multitable
 
 @item @emph{Fortran}:
 @multitable @columnfractions .20 .80
-@item @emph{Interface}: @tab @code{subroutine acc_wait_async()}
+@item @emph{Interface}: @tab @code{subroutine acc_wait_all()}
+@item @emph{Interface (OpenACC 1.0 compatibility)}: @tab @code{subroutine acc_async_wait_all()}
 @end multitable
 
 @item @emph{Reference}:

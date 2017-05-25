@@ -102,14 +102,14 @@ void
 h2 (void)
 {
   fsc (SCHAR_MAX + 1);
-  fsc (SCHAR_MIN - 1); /* { dg-warning "overflow in implicit constant conversion" } */
+  fsc (SCHAR_MIN - 1); /* { dg-warning "overflow in conversion from .int. to .signed char. changes value" } */
   fsc (UCHAR_MAX);
-  fsc (UCHAR_MAX + 1); /* { dg-warning "overflow in implicit constant conversion" } */
+  fsc (UCHAR_MAX + 1); /* { dg-warning "overflow in conversion from .int. to .signed char. changes value" } */
   fuc (-1);
-  fuc (UCHAR_MAX + 1); /* { dg-warning "large integer implicitly truncated to unsigned type" } */
+  fuc (UCHAR_MAX + 1); /* { dg-warning "unsigned conversion from .int. to .unsigned char. changes value" } */
   fuc (SCHAR_MIN);
-  fuc (SCHAR_MIN - 1); /* { dg-warning "large integer implicitly truncated to unsigned type" } */
-  fuc (-UCHAR_MAX); /* { dg-warning "large integer implicitly truncated to unsigned type" } */
+  fuc (SCHAR_MIN - 1); /* { dg-warning "unsigned conversion from .int. to .unsigned char. changes value" } */
+  fuc (-UCHAR_MAX); /* { dg-warning "unsigned conversion from .int. to .unsigned char. changes value" } */
 }
 
 void fui (unsigned int);

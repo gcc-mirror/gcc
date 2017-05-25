@@ -5020,6 +5020,7 @@ finish_local_using_decl (tree decl, tree scope, tree name)
     }
   else
     /* Install the new binding.  */
+    // FIXME short circute P_L_B
     push_local_binding (name, value, true);
 
   if (!type)

@@ -1,5 +1,41 @@
 2017-05-24  Thomas Schwinge  <thomas@codesourcery.com>
 
+	* openacc.h (acc_async_wait, acc_async_wait_all): New prototypes.
+	* libgomp.map (OACC_2.0.1): Add these.
+	* oacc-async.c (acc_async_wait, acc_async_wait_all): New aliases
+	for "acc_wait", and "acc_wait_all", respectively.
+	* openacc.f90 (acc_async_wait, acc_async_wait_all): New interfaces
+	for "acc_wait", and "acc_wait_all", respectively.
+	* openacc_lib.h (acc_async_wait, acc_async_wait_all): Likewise.
+	* libgomp.texi (acc_wait, acc_wait_all): Update.
+	* testsuite/libgomp.oacc-c-c++-common/par-reduction-2.c: Update.
+	* testsuite/libgomp.oacc-fortran/par-reduction-2-1.f: New file.
+	* testsuite/libgomp.oacc-fortran/par-reduction-2-2.f: Likewise.
+
+	* openacc_lib.h (acc_pcopyin, acc_pcreate): Route to
+	acc_present_or_copyin and acc_present_or_create procedures,
+	respectively.
+	* testsuite/libgomp.oacc-fortran/lib-32-1.f: Exercise these, and
+	generally different variants of OpenACC Runtime Library functions.
+	* testsuite/libgomp.oacc-fortran/lib-32-2.f: Likewise.
+
+	* testsuite/libgomp.oacc-fortran/lib-32-1.f: New file.
+	* testsuite/libgomp.oacc-fortran/lib-32-2.f: Likewise.
+
+	* openacc.h (acc_pcopyin, acc_pcreate): Provide prototypes instead
+	of preprocessor definitions.
+	* libgomp.h (strong_alias): Guard by "#ifdef
+	HAVE_ATTRIBUTE_ALIAS".
+	* oacc-mem.c: Provide "acc_pcreate" as alias for
+	"acc_present_or_create", and "acc_pcopyin" as alias for
+	"acc_present_or_copyin".
+	* libgomp.map: New version "OACC_2.0.1".
+	(OACC_2.0.1): Add "acc_pcopyin", and "acc_pcreate".
+	* testsuite/libgomp.oacc-c-c++-common/lib-38.c: Remove, merging
+	its content into...
+	* testsuite/libgomp.oacc-c-c++-common/lib-32.c: ... this file.
+	Extend testing.
+
 	* plugin/plugin-nvptx.c (nvptx_get_num_devices): Debugging output
 	when disabling nvptx offloading.
 

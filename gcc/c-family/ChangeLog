@@ -1,3 +1,16 @@
+2017-05-24  Martin Sebor  <msebor@redhat.com>
+
+	PR c/80731
+	* c-common.h (unsafe_conversion_p): Add a function argument.
+	* c-common.c (unsafe_conversion_p): Same.
+	Add type names and values to diagnostics.
+	(scalar_to_vector): Adjust.
+	* c-warn.c (constant_expression_error): Add a function argument.
+	Add type names and values to diagnostics.
+	(conversion_warning): Add a function argument.
+	Add type names and values to diagnostics.
+	(warnings_for_convert_and_check): Same.
+
 2017-05-19  Jason Merrill  <jason@redhat.com>
 
 	* c-warn.c (match_case_to_enum_1): Don't warn about enums with no

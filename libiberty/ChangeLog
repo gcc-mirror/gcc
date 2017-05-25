@@ -1,3 +1,8 @@
+2017-05-24  Eli Zaretskii  <eliz@gnu.org>
+
+	* waitpid.c (wait) [__MINGW32__]: Define as a macro
+	that calls _cwait, so that this function works on MinGW.
+
 2017-05-02  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* d-demangle.c (dlang_hexdigit): New function.

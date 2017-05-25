@@ -1,0 +1,55 @@
+; Options for the 64-bit flavor of AIX.
+;
+; Copyright (C) 2005-2017 Free Software Foundation, Inc.
+; Contributed by Aldy Hernandez <aldy@quesejoda.com>.
+;
+; This file is part of GCC.
+;
+; GCC is free software; you can redistribute it and/or modify it under
+; the terms of the GNU General Public License as published by the Free
+; Software Foundation; either version 3, or (at your option) any later
+; version.
+;
+; GCC is distributed in the hope that it will be useful, but WITHOUT
+; ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+; or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+; License for more details.
+;
+; You should have received a copy of the GNU General Public License
+; along with GCC; see the file COPYING3.  If not see
+; <http://www.gnu.org/licenses/>.
+
+maix64
+Target Report RejectNegative Negative(maix32) Mask(64BIT) Var(rs6000_isa_flags)
+Compile for 64-bit pointers.
+
+maix32
+Target Report RejectNegative Negative(maix64) InverseMask(64BIT) Var(rs6000_isa_flags)
+Compile for 32-bit pointers.
+
+mcmodel=
+Target RejectNegative Joined Enum(rs6000_cmodel) Var(rs6000_current_cmodel)
+Select code model.
+
+Enum
+Name(rs6000_cmodel) Type(enum rs6000_cmodel)
+Known code models (for use with the -mcmodel= option):
+
+EnumValue
+Enum(rs6000_cmodel) String(small) Value(CMODEL_SMALL)
+
+EnumValue
+Enum(rs6000_cmodel) String(medium) Value(CMODEL_MEDIUM)
+
+EnumValue
+Enum(rs6000_cmodel) String(large) Value(CMODEL_LARGE)
+
+mpe
+Target Report RejectNegative Var(internal_nothing_1) Save
+Support message passing with the Parallel Environment.
+
+posix
+Driver
+
+pthread
+Driver
