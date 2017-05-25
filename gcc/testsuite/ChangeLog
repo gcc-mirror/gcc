@@ -1,3 +1,9 @@
+2017-05-25  Volker Reichelt  <v.reichelt@netcologne.de>
+
+	* g++.dg/warn/Wcatch-value-1.C: New test.
+	* g++.dg/warn/Wcatch-value-2.C: New test.
+	* g++.dg/warn/Wcatch-value-3.C: New test.
+
 2017-05-25  Nathan Sidwell  <nathan@acm.org>
 
 	* g++.dg/lookup/using17.C: Adjust diagnostics.
