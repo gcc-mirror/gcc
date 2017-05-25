@@ -1,5 +1,12 @@
 2017-05-25  Nathan Sidwell  <nathan@acm.org>
 
+	Kill OVL_CURRENT, OVL_NEXT.
+	* cp-tree.h (OVL_CURRENT, OVL_NEXT): Delete.
+	* name-lookup.c (set_decl_namespace): Use ovl_iterator.
+	(consider_binding_level): Use OVL_FIRST.
+	(cp_emit_debug_info_for_using): Use lkp_iterator.
+	* pt.c (check_explicit_specialization): Use ovl_iterator.	
+
 	Kill DECL_NAMESPACE_USERS, DECL_NAMESPACE_ASSOCIATIONS.
 	* cp-tree.h (lang_decl_ns): Remove ns_users field.
 	(DECL_NAMESPACE_USERS, DECL_NAMESPACE_ASSOCIATIONS): Delete.
