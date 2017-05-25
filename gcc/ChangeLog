@@ -1,5 +1,9 @@
 2017-05-25  Marc Glisse  <marc.glisse@inria.fr>
 
+	* match.pd (view_convert (convert@0 @1)): Handle zero-extension.
+
+2017-05-25  Marc Glisse  <marc.glisse@inria.fr>
+
 	* match.pd ((A +- CST1) +- CST2): Allow some conversions.
 	* tree.c (drop_tree_overflow): Handle COMPLEX_CST and VECTOR_CST.
 
