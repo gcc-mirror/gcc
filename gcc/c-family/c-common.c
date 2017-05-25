@@ -5866,8 +5866,8 @@ check_builtin_function_arguments (location_t loc, vec<location_t> arg_loc,
 int
 field_decl_cmp (const void *x_p, const void *y_p)
 {
-  const tree *const x = (const tree *const) x_p;
-  const tree *const y = (const tree *const) y_p;
+  const tree *const x = (const tree *) x_p;
+  const tree *const y = (const tree *) y_p;
 
   if (DECL_NAME (*x) == DECL_NAME (*y))
     /* A nontype is "greater" than a type.  */
@@ -5892,8 +5892,8 @@ pointer operator in resort_data.  */
 static int
 resort_field_decl_cmp (const void *x_p, const void *y_p)
 {
-  const tree *const x = (const tree *const) x_p;
-  const tree *const y = (const tree *const) y_p;
+  const tree *const x = (const tree *) x_p;
+  const tree *const y = (const tree *) y_p;
 
   if (DECL_NAME (*x) == DECL_NAME (*y))
     /* A nontype is "greater" than a type.  */
