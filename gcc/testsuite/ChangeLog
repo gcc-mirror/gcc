@@ -1,3 +1,7 @@
+2017-05-23  Jan Hubicka  <hubicka@ucw.cz>
+
+	* gfortran.dg/pr48636.f90: Fix template better.
+
 2017-05-25  Nathan Sidwell  <nathan@acm.org>
 
 	* g++.dg/lookup/koenig14.C: New.
