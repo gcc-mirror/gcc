@@ -1,5 +1,10 @@
 2017-05-25  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* cp-tree.h (ovl_iterator): Make unduplicatable.
+	(ovl_iterator::pop): New.
+	(lkp_iterator::operator++): Adjust.
+
 	Merge trunk r248454.
 
 	Merge trunk r248436.

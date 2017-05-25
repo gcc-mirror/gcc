@@ -713,17 +713,14 @@ class ovl_iterator
   const bool allow_inner; /* Only used when checking.  */
 
  public:
-  ovl_iterator (tree o, bool allow = false)
+  explicit ovl_iterator (tree o, bool allow = false)
     : ovl (o), allow_inner (allow)
   {}
 
-  ovl_iterator &operator= (const ovl_iterator &from)
-  {
-    ovl = from.ovl;
-    gcc_checking_assert (allow_inner == from.allow_inner);
-
-    return *this;
-  }
+ private:
+  /* Do not duplicate.  */
+  ovl_iterator &operator= (const ovl_iterator &);
+  ovl_iterator (const ovl_iterator &);
 
  public:
   operator bool () const
@@ -774,6 +771,8 @@ class ovl_iterator
   }
 
 protected:
+  /* If we have a nested overload, point at the inner overload and
+     return the next link on the outer one.  */
   tree maybe_push ()
   {
     tree r = NULL_TREE;
@@ -785,6 +784,12 @@ protected:
       }
     return r;
   }
+  /* Restore an outer nested overload.  */
+  void pop (tree outer)
+  {
+    gcc_checking_assert (!ovl);
+    ovl = outer;
+  }
 
  private:
   /* We make these static functions to avoid the address of the
@@ -793,7 +798,8 @@ protected:
   static tree reveal_node (tree ovl, tree node);
 };
 
-/* Iterator over a (potentially) 2 dimensional overload.  */
+/* Iterator over a (potentially) 2 dimensional overload, which is
+   produced by name lookup.  */
 
 class lkp_iterator : public ovl_iterator
 {
@@ -802,7 +808,7 @@ class lkp_iterator : public ovl_iterator
   tree outer;
 
  public:
-  lkp_iterator (tree o)
+  explicit lkp_iterator (tree o)
     : parent (o), outer (maybe_push ())
   {
   }
@@ -813,7 +819,7 @@ class lkp_iterator : public ovl_iterator
 
     if (!parent::operator++ () && !repush)
       {
-	parent::operator= (outer);
+	pop (outer);
 	repush = true;
       }
 
