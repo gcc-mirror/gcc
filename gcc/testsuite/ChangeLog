@@ -1,3 +1,8 @@
+2017-05-25  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/71451
+	* g++.dg/cpp0x/variadic170.C: New.
+
 2017-05-25  Volker Reichelt  <v.reichelt@netcologne.de>
 
 	* g++.dg/warn/Wcatch-value-1.C: New test.
