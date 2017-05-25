@@ -1097,6 +1097,33 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (if (TREE_INT_CST_LOW (@1) & 1)
    { constant_boolean_node (cmp == NE_EXPR, type); })))
 
+/* Arguments on which one can call get_nonzero_bits to get the bits
+   possibly set.  */
+(match with_possible_nonzero_bits
+ INTEGER_CST@0)
+(match with_possible_nonzero_bits
+ SSA_NAME@0
+ (if (INTEGRAL_TYPE_P (TREE_TYPE (@0)) || POINTER_TYPE_P (TREE_TYPE (@0)))))
+/* Slightly extended version, do not make it recursive to keep it cheap.  */
+(match (with_possible_nonzero_bits2 @0)
+ with_possible_nonzero_bits@0)
+(match (with_possible_nonzero_bits2 @0)
+ (bit_and:c with_possible_nonzero_bits@0 @2))
+
+/* Same for bits that are known to be set, but we do not have
+   an equivalent to get_nonzero_bits yet.  */
+(match (with_certain_nonzero_bits2 @0)
+ INTEGER_CST@0)
+(match (with_certain_nonzero_bits2 @0)
+ (bit_ior @1 INTEGER_CST@0))
+
+/* X == C (or X & Z == Y | C) is impossible if ~nonzero(X) & C != 0.  */
+(for cmp (eq ne)
+ (simplify
+  (cmp:c (with_possible_nonzero_bits2 @0) (with_certain_nonzero_bits2 @1))
+  (if ((~get_nonzero_bits (@0) & @1) != 0)
+   { constant_boolean_node (cmp == NE_EXPR, type); })))
+
 /* ((X inner_op C0) outer_op C1)
    With X being a tree where value_range has reasoned certain bits to always be
    zero throughout its computed value range,
