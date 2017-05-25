@@ -1,3 +1,8 @@
+2017-05-25  Sebastian Peryt  <sebastian.peryt@intel.com>
+
+	* doc/md.texi (Machine Constraints): Update x86 family
+	machine constraints section to match 'config/i386/constraints.md'.
+
 2017-05-25  Volker Reichelt  <v.reichelt@netcologne.de>
 
 	* doc/invoke.texi (-Wcatch-value=): Document new warning option.
