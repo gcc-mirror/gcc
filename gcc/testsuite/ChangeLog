@@ -1,3 +1,7 @@
+2017-05-25  Marc Glisse  <marc.glisse@inria.fr>
+
+	* gcc.dg/tree-ssa/addadd.c: New file.
+
 2017-05-24  Nathan Sidwell  <nathan@acm.org>
 
 	* g++.dg/lookup/friend12.C: Adjust diagnostics.
