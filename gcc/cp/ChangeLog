@@ -1,3 +1,8 @@
+2017-05-25  Jason Merrill  <jason@redhat.com>
+
+	PR c++/80605 - __is_standard_layout and zero-length array
+	* class.c (check_bases): Use DECL_FIELD_IS_BASE.
+
 2017-05-25  Nathan Sidwell  <nathan@acm.org>
 
 	Kill OVL_CURRENT, OVL_NEXT.
@@ -727,6 +732,7 @@
 
 2017-05-09  Jason Merrill  <jason@redhat.com>
 
+	PR c++/80605 - __is_standard_layout and empty base
 	* class.c (check_bases): Ignore empty bases.
 
 	PR c++/70979 - literal class and closure types
