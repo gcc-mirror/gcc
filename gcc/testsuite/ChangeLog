@@ -1,5 +1,10 @@
 2017-05-25  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	PR c++/79652
+	* g++.dg/cpp0x/pr79652.C: New.
+
+2017-05-25  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	PR c++/71451
 	* g++.dg/cpp0x/variadic170.C: New.
 
