@@ -2931,8 +2931,8 @@ check_explicit_specialization (tree declarator,
 
 		    /* Glue all these conversion functions together
 		       with those we already have.  */
-		    for (; ovl; ovl = OVL_NEXT (ovl))
-		      fns = lookup_add (OVL_CURRENT (ovl), fns);
+		    for (ovl_iterator iter (ovl); iter; ++iter)
+		      fns = lookup_add (*iter, fns);
 		  }
 	    }
 
