@@ -1,3 +1,7 @@
+2017-05-25  Nathan Sidwell  <nathan@acm.org>
+
+	* g++.dg/lookup/koenig14.C: New.
+
 2017-05-25  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/79583
