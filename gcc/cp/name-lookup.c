@@ -151,6 +151,10 @@ find_local_binding (cp_binding_level *b, tree name)
 struct name_lookup
 {
 public:
+  typedef std::pair<tree, tree> using_pair;
+  typedef vec<using_pair, va_heap, vl_embed> using_queue;
+
+public:
   tree name;	/* The identifier being looked for.  */
   tree value;	/* A (possibly ambiguous) set of things found.  */
   tree type;	/* A type that has been found.  */
@@ -227,6 +231,16 @@ private:
   bool search_usings (tree scope);
 
 private:
+  using_queue *queue_namespace (using_queue *queue, int depth, tree scope);
+  using_queue *do_queue_usings (using_queue *queue, int depth, tree usings);
+  using_queue *queue_usings (using_queue *queue, int depth, tree usings)
+  {
+    if (usings)
+      queue = do_queue_usings (queue, depth, usings);
+    return queue;
+  }
+
+private:
   void add_fns (tree);
 
   void adl_expr (tree);
@@ -241,6 +255,9 @@ private:
 public:
   /* Search namespace + inlines + maybe usings as qualified lookup.  */
   bool search_qualified (tree scope, bool usings = true);
+
+  /* Search namespace + inlines + usings as unqualified lookup.  */
+  bool search_unqualified (tree scope, cp_binding_level *);
 
   /* ADL lookup of ARGS.  */
   tree search_adl (tree fns, vec<tree, va_gc> *args);
@@ -553,6 +570,101 @@ name_lookup::search_qualified (tree scope, bool usings)
       if (!found && usings)
 	found = search_usings (scope);
     }
+
+  return found;
+}
+
+/* Add SCOPE to the unqualified search queue, recursively add its
+   inlines and those via using directives.  */
+
+name_lookup::using_queue *
+name_lookup::queue_namespace (using_queue *queue, int depth, tree scope)
+{
+  if (see_and_mark (scope))
+    return queue;
+
+  /* Record it.  */
+  tree common = scope;
+  while (SCOPE_DEPTH (common) > depth)
+    common = CP_DECL_CONTEXT (common);
+  vec_safe_push (queue, using_pair (common, scope));
+
+  /* Queue its inline children.  */
+  for (tree inner = NAMESPACE_LEVEL (scope)->namespaces;
+       inner; inner = TREE_CHAIN (inner))
+    if (DECL_NAMESPACE_INLINE_P (inner))
+      queue = queue_namespace (queue, depth, inner);
+
+  /* Queue its using targets.  */
+  queue = queue_usings (queue, depth, DECL_NAMESPACE_USING (scope));
+
+  return queue;
+}
+
+/* Add the namespaces in USINGS to the unqualified search queue.  */
+
+name_lookup::using_queue *
+name_lookup::do_queue_usings (using_queue *queue, int depth, tree usings)
+{
+  for (; usings; usings = TREE_CHAIN (usings))
+    if (!TREE_INDIRECT_USING (usings))
+      queue = queue_namespace (queue, depth, TREE_PURPOSE (usings));
+
+  return queue;
+}
+
+/* Unqualified namespace lookup in SCOPE.
+   1) add scope+inlins to worklist.
+   2) recursively add target of every using directive
+   3) for each worklist item where SCOPE is common ancestor, search it
+   4) if nothing find, scope=parent, goto 1.  */
+
+bool
+name_lookup::search_unqualified (tree scope, cp_binding_level *level)
+{
+  /* Make static to avoid continual reallocation.  We're not
+     recursive.  */
+  static using_queue *queue = NULL;
+  bool found = false;
+  int length = vec_safe_length (queue);
+
+  /* Queue local using-directives.  */
+  for (; level->kind != sk_namespace; level = level->level_chain)
+    queue = queue_usings (queue, SCOPE_DEPTH (scope), level->using_directives);
+
+  for (; !found; scope = CP_DECL_CONTEXT (scope))
+    {
+      gcc_assert (!DECL_NAMESPACE_ALIAS (scope));
+      int depth = SCOPE_DEPTH (scope);
+
+      /* Queue namespaces reachable from SCOPE. */
+      queue = queue_namespace (queue, depth, scope);
+
+      /* Search every queued namespace where SCOPE is the common
+	 ancestor.  Adjust the others.  */
+      unsigned ix = length;
+      do
+	{
+	  using_pair &pair = (*queue)[ix];
+	  while (pair.first == scope)
+	    {
+	      found |= search_namespace_only (pair.second);
+	      pair = queue->pop ();
+	      if (ix == queue->length ())
+		goto done;
+	    }
+	  /* The depth is the same as SCOPE, find the parent scope.  */
+	  if (SCOPE_DEPTH (pair.first) == depth)
+	    pair.first = CP_DECL_CONTEXT (pair.first);
+	  ix++;
+	}
+      while (ix < queue->length ());
+    done:;
+      if (scope == global_namespace)
+	break;
+    }
+
+  vec_safe_truncate (queue, length);
 
   return found;
 }
@@ -901,8 +1013,6 @@ name_lookup::search_adl (tree fns, vec<tree, va_gc> *args)
   return fns;
 }
 
-static bool lookup_using_namespace (tree, struct scope_binding *, tree,
-				    tree, int);
 static bool qualified_namespace_lookup (tree, name_lookup *);
 static void consider_binding_level (tree name,
 				    best_match <tree, const char *> &bm,
@@ -4549,153 +4659,6 @@ finish_local_using_decl (tree decl, tree scope, tree name)
     cp_emit_debug_info_for_using (orig_decl, current_scope ());
 }
 
-/* Combines two sets of overloaded functions into an OVERLOAD chain, removing
-   duplicates.  The first list becomes the tail of the result.
-
-   The algorithm is O(n^2).  We could get this down to O(n log n) by
-   doing a sort on the addresses of the functions, if that becomes
-   necessary.  */
-
-static tree
-merge_functions (tree s1, tree s2)
-{
-  for (; s2; s2 = OVL_NEXT (s2))
-    {
-      tree fn2 = OVL_CURRENT (s2);
-      tree fns1;
-
-      for (fns1 = s1; fns1; fns1 = OVL_NEXT (fns1))
-	{
-	  tree fn1 = OVL_CURRENT (fns1);
-
-	  /* If the function from S2 is already in S1, there is no
-	     need to add it again.  For `extern "C"' functions, we
-	     might have two FUNCTION_DECLs for the same function, in
-	     different namespaces, but let's leave them in case
-	     they have different default arguments.  */
-	  if (fn1 == fn2)
-	    break;
-	}
-
-      /* If we exhausted all of the functions in S1, FN2 is new.  */
-      if (!fns1)
-	s1 = lookup_add (fn2, s1);
-    }
-  return s1;
-}
-
-/* Returns TRUE iff OLD and NEW are the same entity.
-
-   3 [basic]/3: An entity is a value, object, reference, function,
-   enumerator, type, class member, template, template specialization,
-   namespace, parameter pack, or this.
-
-   7.3.4 [namespace.udir]/4: If name lookup finds a declaration for a name
-   in two different namespaces, and the declarations do not declare the
-   same entity and do not declare functions, the use of the name is
-   ill-formed.  */
-
-static bool
-same_entity_p (tree one, tree two)
-{
-  if (one == two)
-    return true;
-  if (!one || !two)
-    return false;
-  if (TREE_CODE (one) == TYPE_DECL
-      && TREE_CODE (two) == TYPE_DECL
-      && same_type_p (TREE_TYPE (one), TREE_TYPE (two)))
-    return true;
-  return false;
-}
-
-/* This should return an error not all definitions define functions.
-   It is not an error if we find two functions with exactly the
-   same signature, only if these are selected in overload resolution.
-   old is the current set of bindings, new_binding the freshly-found binding.
-   XXX Do we want to give *all* candidates in case of ambiguity?
-   XXX In what way should I treat extern declarations?
-   XXX I don't want to repeat the entire duplicate_decls here */
-
-static void
-ambiguous_decl (struct scope_binding *old, cxx_binding *new_binding, int flags)
-{
-  tree val, type;
-  gcc_assert (old != NULL);
-
-  /* Copy the type.  */
-  type = new_binding->type;
-  if (LOOKUP_NAMESPACES_ONLY (flags)
-      || (type && !(flags & LOOKUP_HIDDEN) && DECL_HIDDEN_P (type)))
-    type = NULL_TREE;
-
-  /* Copy the value.  */
-  val = new_binding->value;
-  if (val)
-    {
-      if (!(flags & LOOKUP_HIDDEN))
-	val = ovl_skip_hidden (val);
-      if (val)
-	switch (TREE_CODE (val))
-	  {
-	  case TEMPLATE_DECL:
-	    /* If we expect types or namespaces, and not templates,
-	       or this is not a template class.  */
-	    if ((LOOKUP_QUALIFIERS_ONLY (flags)
-		 && !DECL_TYPE_TEMPLATE_P (val)))
-	      val = NULL_TREE;
-	    break;
-	  case TYPE_DECL:
-	    if (LOOKUP_NAMESPACES_ONLY (flags)
-		|| (type && (flags & LOOKUP_PREFER_TYPES)))
-	      val = NULL_TREE;
-	    break;
-	  case NAMESPACE_DECL:
-	    if (LOOKUP_TYPES_ONLY (flags))
-	      val = NULL_TREE;
-	    break;
-	  case FUNCTION_DECL:
-	    /* Ignore built-in functions that are still anticipated.  */
-	    if (LOOKUP_QUALIFIERS_ONLY (flags))
-	      val = NULL_TREE;
-	    break;
-	  default:
-	    if (LOOKUP_QUALIFIERS_ONLY (flags))
-	      val = NULL_TREE;
-	  }
-    }
-
-  /* If val is hidden, shift down any class or enumeration name.  */
-  if (!val)
-    {
-      val = type;
-      type = NULL_TREE;
-    }
-
-  if (!old->value)
-    old->value = val;
-  else if (val && !same_entity_p (val, old->value))
-    {
-      if (is_overloaded_fn (old->value) && is_overloaded_fn (val))
-	old->value = merge_functions (old->value, val);
-      else
-	{
-	  old->value = tree_cons (NULL_TREE, old->value,
-				  build_tree_list (NULL_TREE, val));
-	  TREE_TYPE (old->value) = error_mark_node;
-	}
-    }
-
-  if (!old->type)
-    old->type = type;
-  else if (type && old->type != type)
-    {
-      old->type = tree_cons (NULL_TREE, old->type,
-			     build_tree_list (NULL_TREE, type));
-      TREE_TYPE (old->type) = error_mark_node;
-    }
-}
-
 /* Return the declarations that are members of the namespace NS.  */
 
 tree
@@ -4961,68 +4924,6 @@ suggest_alternative_in_explicit_scope (location_t location, tree name,
   return false;
 }
 
-/* Unscoped lookup of a global: iterate over current namespaces,
-   considering using-directives.  */
-
-static tree
-unqualified_namespace_lookup_1 (tree name, int flags)
-{
-  tree initial = current_decl_namespace ();
-  tree scope = initial;
-  tree siter;
-  cp_binding_level *level;
-  tree val = NULL_TREE;
-
-  for (; !val; scope = CP_DECL_CONTEXT (scope))
-    {
-      struct scope_binding binding = EMPTY_SCOPE_BINDING;
-      cxx_binding *b = find_namespace_binding (scope, name);
-
-      if (b)
-	ambiguous_decl (&binding, b, flags);
-
-      /* Add all _DECLs seen through local using-directives.  */
-      for (level = current_binding_level;
-	   level->kind != sk_namespace;
-	   level = level->level_chain)
-	if (!lookup_using_namespace (name, &binding, level->using_directives,
-				     scope, flags))
-	  /* Give up because of error.  */
-	  return error_mark_node;
-
-      /* Add all _DECLs seen through global using-directives.  */
-      /* XXX local and global using lists should work equally.  */
-      siter = initial;
-      while (1)
-	{
-	  if (!lookup_using_namespace (name, &binding,
-				       DECL_NAMESPACE_USING (siter),
-				       scope, flags))
-	    /* Give up because of error.  */
-	    return error_mark_node;
-	  if (siter == scope) break;
-	  siter = CP_DECL_CONTEXT (siter);
-	}
-
-      val = binding.value;
-      if (scope == global_namespace)
-	break;
-    }
-  return val;
-}
-
-/* Wrapper for unqualified_namespace_lookup_1.  */
-
-static tree
-unqualified_namespace_lookup (tree name, int flags)
-{
-  tree ret;
-  bool subtime = timevar_cond_start (TV_NAME_LOOKUP);
-  ret = unqualified_namespace_lookup_1 (name, flags);
-  timevar_cond_stop (TV_NAME_LOOKUP, subtime);
-  return ret;
-}
-
 /* Look up NAME (an IDENTIFIER_NODE) in SCOPE (either a NAMESPACE_DECL
    or a class TYPE).
 
@@ -5058,34 +4959,6 @@ lookup_qualified_name (tree scope, tree name, int prefer_type, bool complain,
   if (!t)
     return error_mark_node;
   return t;
-}
-
-/* Subroutine of unqualified_namespace_lookup:
-   Add the bindings of NAME in used namespaces to VAL.
-   We are currently looking for names in namespace SCOPE, so we
-   look through USINGS for using-directives of namespaces
-   which have SCOPE as a common ancestor with the current scope.
-   Returns false on errors.  */
-
-static bool
-lookup_using_namespace (tree name, struct scope_binding *val,
-			tree usings, tree scope, int flags)
-{
-  tree iter;
-  bool subtime = timevar_cond_start (TV_NAME_LOOKUP);
-  /* Iterate over all used namespaces in current, searching for using
-     directives of scope.  */
-  for (iter = usings; iter; iter = TREE_CHAIN (iter))
-    if (TREE_VALUE (iter) == scope)
-      {
-	tree used = ORIGINAL_NAMESPACE (TREE_PURPOSE (iter));
-	cxx_binding *val1 = find_namespace_binding (used, name);
-	/* Resolve ambiguities.  */
-	if (val1)
-	  ambiguous_decl (val, val1, flags);
-      }
-  timevar_cond_stop (TV_NAME_LOOKUP, subtime);
-  return val->value != error_mark_node;
 }
 
 /* [namespace.qual]
@@ -5479,7 +5352,12 @@ lookup_name_real_1 (tree name, int prefer_type, int nonclass, bool block_p,
 
   /* Now lookup in namespace scopes.  */
   if (!val)
-    val = unqualified_namespace_lookup (name, flags);
+    {
+      name_lookup lookup (name, flags);
+      if (lookup.search_unqualified
+	  (current_decl_namespace (), current_binding_level))
+	val = lookup.value;
+    }
 
   /* If we have a single function from a using decl, pull it out.  */
   if (val && TREE_CODE (val) == OVERLOAD && !really_overloaded_fn (val))

@@ -1,5 +1,16 @@
 2017-05-25  Nathan Sidwell  <nathan@acm.org>
 
+	Reimplement unqualified namespace lookup.
+	* name-lookup.c (name_lookup::using_pair,
+	name_lookup::using_queue): New typedefs.
+	(name_lookup::queue_namespace, name_lookup::do_queue_usings,
+	name_lookup::queue_usings): New.
+	(name_lookup::search_unqualified): New.
+	(merge_functions, same_entity_p, ambiguous_decl,
+	unqualified_namespace_lookup_1, unqualified_namespace_lookup,
+	lookup_using_namespace): Delete.
+	(lookup_name_real_1): Adjust.
+
 	Reimplement qualified namespace lookup.
 	* name-lookup.c (name_lookup::flags): New member.  Adjust ctor.
 	(name_lookup::ambiguous, name_lookup::add_value,
