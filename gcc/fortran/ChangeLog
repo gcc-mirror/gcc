@@ -1,3 +1,9 @@
+2017-05-25  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* dump-parse-tree.c (show_expr):  Also replace
+	with dumpfile for showing values for forgotten
+	case.
+
 2017-05-24  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	* dump-parse-tree.c (show_expr):  Replace stdout

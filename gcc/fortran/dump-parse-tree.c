@@ -456,7 +456,7 @@ show_expr (gfc_expr *p)
 
 	  fputc (' ', dumpfile);
 
-	  mpfr_out_str (stdout, 10, 0, mpc_imagref (p->value.complex),
+	  mpfr_out_str (dumpfile, 10, 0, mpc_imagref (p->value.complex),
 			GFC_RND_MODE);
 	  if (p->ts.kind != gfc_default_complex_kind)
 	    fprintf (dumpfile, "_%d", p->ts.kind);
