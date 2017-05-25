@@ -1097,6 +1097,33 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (if (TREE_INT_CST_LOW (@1) & 1)
    { constant_boolean_node (cmp == NE_EXPR, type); })))
 
+/* Arguments on which one can call get_nonzero_bits to get the bits
+   possibly set.  */
+(match with_possible_nonzero_bits
+ INTEGER_CST@0)
+(match with_possible_nonzero_bits
+ SSA_NAME@0
+ (if (INTEGRAL_TYPE_P (TREE_TYPE (@0)) || POINTER_TYPE_P (TREE_TYPE (@0)))))
+/* Slightly extended version, do not make it recursive to keep it cheap.  */
+(match (with_possible_nonzero_bits2 @0)
+ with_possible_nonzero_bits@0)
+(match (with_possible_nonzero_bits2 @0)
+ (bit_and:c with_possible_nonzero_bits@0 @2))
+
+/* Same for bits that are known to be set, but we do not have
+   an equivalent to get_nonzero_bits yet.  */
+(match (with_certain_nonzero_bits2 @0)
+ INTEGER_CST@0)
+(match (with_certain_nonzero_bits2 @0)
+ (bit_ior @1 INTEGER_CST@0))
+
+/* X == C (or X & Z == Y | C) is impossible if ~nonzero(X) & C != 0.  */
+(for cmp (eq ne)
+ (simplify
+  (cmp:c (with_possible_nonzero_bits2 @0) (with_certain_nonzero_bits2 @1))
+  (if ((~get_nonzero_bits (@0) & @1) != 0)
+   { constant_boolean_node (cmp == NE_EXPR, type); })))
+
 /* ((X inner_op C0) outer_op C1)
    With X being a tree where value_range has reasoned certain bits to always be
    zero throughout its computed value range,
@@ -1272,15 +1299,39 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   /* (A +- CST1) +- CST2 -> A + CST3  */
   (for outer_op (plus minus)
    (for inner_op (plus minus)
+	neg_inner_op (minus plus)
     (simplify
-     (outer_op (inner_op @0 CONSTANT_CLASS_P@1) CONSTANT_CLASS_P@2)
-     /* If the constant operation overflows we cannot do the transform
-	as we would introduce undefined overflow, for example
-	with (a - 1) + INT_MIN.  */
-     (with { tree cst = const_binop (outer_op == inner_op
-				     ? PLUS_EXPR : MINUS_EXPR, type, @1, @2); }
-      (if (cst && !TREE_OVERFLOW (cst))
-       (inner_op @0 { cst; } ))))))
+     (outer_op (convert? (inner_op @0 CONSTANT_CLASS_P@1)) CONSTANT_CLASS_P@2)
+     (if (tree_nop_conversion_p (type, TREE_TYPE (@0)))
+      /* If one of the types wraps, use that one.  */
+      (if (!ANY_INTEGRAL_TYPE_P (type) || TYPE_OVERFLOW_WRAPS (type))
+       (if (outer_op == PLUS_EXPR)
+	(plus (convert @0) (inner_op @2 (convert @1)))
+	(minus (convert @0) (neg_inner_op @2 (convert @1))))
+       (if (!ANY_INTEGRAL_TYPE_P (TREE_TYPE (@0))
+	    || TYPE_OVERFLOW_WRAPS (TREE_TYPE (@0)))
+	(if (outer_op == PLUS_EXPR)
+	 (convert (plus @0 (inner_op (convert @2) @1)))
+	 (convert (minus @0 (neg_inner_op (convert @2) @1))))
+	/* If the constant operation overflows we cannot do the transform
+	   directly as we would introduce undefined overflow, for example
+	   with (a - 1) + INT_MIN.  */
+	(if (types_match (type, @0))
+	 (with { tree cst = const_binop (outer_op == inner_op
+					 ? PLUS_EXPR : MINUS_EXPR,
+					 type, @1, @2); }
+	  (if (cst && !TREE_OVERFLOW (cst))
+	   (inner_op @0 { cst; } )
+	   /* X+INT_MAX+1 is X-INT_MIN.  */
+	   (if (INTEGRAL_TYPE_P (type) && cst
+		&& wi::eq_p (cst, wi::min_value (type)))
+	    (neg_inner_op @0 { wide_int_to_tree (type, cst); })
+	    /* Last resort, use some unsigned type.  */
+	    (with { tree utype = unsigned_type_for (type); }
+	     (convert (inner_op
+		       (convert:utype @0)
+		       (convert:utype
+			{ drop_tree_overflow (cst); }))))))))))))))
 
   /* (CST1 - A) +- CST2 -> CST3 - A  */
   (for outer_op (plus minus)
@@ -1805,13 +1856,16 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
        && TYPE_PRECISION (type) == TYPE_PRECISION (TREE_TYPE (@0)))
    (convert @0)))
 
-/* Strip inner integral conversions that do not change precision or size.  */
+/* Strip inner integral conversions that do not change precision or size, or
+   zero-extend while keeping the same size (for bool-to-char).  */
 (simplify
   (view_convert (convert@0 @1))
   (if ((INTEGRAL_TYPE_P (TREE_TYPE (@0)) || POINTER_TYPE_P (TREE_TYPE (@0)))
        && (INTEGRAL_TYPE_P (TREE_TYPE (@1)) || POINTER_TYPE_P (TREE_TYPE (@1)))
-       && (TYPE_PRECISION (TREE_TYPE (@0)) == TYPE_PRECISION (TREE_TYPE (@1)))
-       && (TYPE_SIZE (TREE_TYPE (@0)) == TYPE_SIZE (TREE_TYPE (@1))))
+       && TYPE_SIZE (TREE_TYPE (@0)) == TYPE_SIZE (TREE_TYPE (@1))
+       && (TYPE_PRECISION (TREE_TYPE (@0)) == TYPE_PRECISION (TREE_TYPE (@1))
+	   || (TYPE_PRECISION (TREE_TYPE (@0)) > TYPE_PRECISION (TREE_TYPE (@1))
+	       && TYPE_UNSIGNED (TREE_TYPE (@1)))))
    (view_convert @1)))
 
 /* Re-association barriers around constants and other re-association

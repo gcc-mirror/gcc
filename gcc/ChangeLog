@@ -1,3 +1,38 @@
+2017-05-25  Nathan Sidwell  <nathan@acm.org>
+
+	* doc/invoke.texi (--enable-languages): Update documentation.
+
+2017-05-25  Martin Liska  <mliska@suse.cz>
+
+	* dumpfile.c: Add TDF_FOLDING.
+	* dumpfile.h (enum dump_kind): Likewise.
+	* genmatch.c (dt_simplify::gen_1): Use it.
+
+2017-05-25  Marc Glisse  <marc.glisse@inria.fr>
+
+	* match.pd (view_convert (convert@0 @1)): Handle zero-extension.
+
+2017-05-25  Marc Glisse  <marc.glisse@inria.fr>
+
+	* match.pd ((A +- CST1) +- CST2): Allow some conversions.
+	* tree.c (drop_tree_overflow): Handle COMPLEX_CST and VECTOR_CST.
+
+2017-05-25  Marc Glisse  <marc.glisse@inria.fr>
+
+	* fold-const.c (fold_binary_loc) [(A & C) == D]: Remove transformation.
+	* match.pd (X == C): Rewrite it here.
+	(with_possible_nonzero_bits, with_possible_nonzero_bits2,
+	with_certain_nonzero_bits2): New predicates.
+	* tree-ssanames.c (get_nonzero_bits): Handle INTEGER_CST.
+
+2017-05-24  Nathan Sidwell  <nathan@acm.org>
+
+	* lto-streamer-in.c (lto_input_data_block): Adjust T const cast to
+	avoid warning.
+
+	* auto-profile.c (afdo_propagate): Adjust T const cast to avoid
+	warning.
+
 2017-05-24  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* config/powerpcspe: New port.  Files are copied from the rs6000

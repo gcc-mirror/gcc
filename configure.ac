@@ -1766,6 +1766,13 @@ AC_ARG_ENABLE(linker-plugin-flags,
   extra_linker_plugin_flags=)
 AC_SUBST(extra_linker_plugin_flags)
 
+# Enable --enable-host-shared.
+# Checked early to determine whether jit is an 'all' language
+AC_ARG_ENABLE(host-shared,
+[AS_HELP_STRING([--enable-host-shared],
+		[build host code as shared libraries])],
+[host_shared=$enableval], [host_shared=no])
+AC_SUBST(host_shared)
 
 # By default, C and C++ are the only stage 1 languages.
 stage1_languages=,c,
@@ -1784,7 +1791,7 @@ if test -d ${srcdir}/gcc; then
       enable_languages="${LANGUAGES}"
         echo configure.ac: warning: setting LANGUAGES is deprecated, use --enable-languages instead 1>&2
     else
-      enable_languages=all
+      enable_languages=default
     fi
   else
     if test x"${enable_languages}" = x ||
@@ -1836,6 +1843,7 @@ if test -d ${srcdir}/gcc; then
         for other in ${lang_requires} ${lang_requires_boot_languages}; do
           case ,${enable_languages}, in
 	    *,$other,*) ;;
+	    *,default,*) ;;
 	    *,all,*) ;;
 	    *,$language,*)
 	      echo " \`$other' language required by \`$language'; enabling" 1>&2
@@ -1847,6 +1855,7 @@ if test -d ${srcdir}/gcc; then
 	  if test "$other" != "c"; then
 	    case ,${enable_stage1_languages}, in
 	      *,$other,*) ;;
+	      *,default,*) ;;
 	      *,all,*) ;;
 	      *)
 		case ,${enable_languages}, in
@@ -1884,7 +1893,7 @@ if test -d ${srcdir}/gcc; then
     esac
   fi
 
-  missing_languages=`echo ",$enable_languages," | sed -e s/,all,/,/ -e s/,c,/,/ `
+  missing_languages=`echo ",$enable_languages," | sed -e s/,default,/,/ -e s/,all,/,/ -e s/,c,/,/ `
   potential_languages=,c,
 
   enabled_target_libs=
@@ -1916,29 +1925,35 @@ if test -d ${srcdir}/gcc; then
 	fi
 
         add_this_lang=no
-        case ,${enable_languages}, in
-          *,${language},*)
-            # Language was explicitly selected; include it
-	    # unless it is C, which is enabled by default.
-	    if test "$language" != "c"; then
+        # C is always enabled, so no need to add it again
+        if test "$language" != "c"; then
+          case ,${enable_languages}, in
+            *,${language},*)
+              # Language was explicitly selected; include it
 	      add_this_lang=yes
-	    fi
-            ;;
-          *,all,*)
-            # 'all' was selected, select it if it is a default language
-	    if test "$language" != "c"; then
+              ;;
+	    *,all,*)
+	      # All languages are enabled
+	      add_this_lang=all
+              ;;
+            *,default,*)
+              # 'default' was selected, select it if it is a default language
 	      add_this_lang=${build_by_default}
-	    fi
-            ;;
-        esac
+              ;;
+          esac
+        fi
 
         # Disable languages that need other directories if these aren't available.
 	for i in $subdir_requires; do
 	  test -f "$srcdir/gcc/$i/config-lang.in" && continue
-	  case ,${enable_languages}, in
-            *,${language},*)
+	  case ${add_this_lang} in
+	    yes)
               # Specifically requested language; tell them.
               AC_MSG_ERROR([The gcc/$i directory contains parts of $language but is missing])
+              ;;
+            all)
+              AC_MSG_WARN([The gcc/$i directory contains parts of $language but is missing])
+              add_this_lang=unsupported
               ;;
             *)
               # Silently disable.
@@ -1948,10 +1963,14 @@ if test -d ${srcdir}/gcc; then
 	done
 
         # Disable Ada if no preexisting GNAT is available.
-        case ,${enable_languages},:${language}:${have_gnat} in
-          *,${language},*:ada:no)
+        case ${add_this_lang}:${language}:${have_gnat} in
+          yes:ada:no)
             # Specifically requested language; tell them.
             AC_MSG_ERROR([GNAT is required to build $language])
+            ;;
+          all:ada:no)
+            AC_MSG_WARN([GNAT is required to build $language])
+            add_this_lang=unsupported
             ;;
           *:ada:no)
             # Silently disable.
@@ -1959,9 +1978,37 @@ if test -d ${srcdir}/gcc; then
             ;;
         esac
 
-	# Disable a language that is unsupported by the target.
-	case " $unsupported_languages " in
-	  *" $language "*)
+        # Disable jit if -enable-host-shared not specified
+        case ${add_this_lang}:${language}:${host_shared} in
+          yes:jit:no)
+	    # PR jit/64780: explicitly specify --enable-host-shared
+	    AC_MSG_ERROR([
+Enabling language "jit" requires --enable-host-shared.
+
+--enable-host-shared typically slows the rest of the compiler down by
+a few %, so you must explicitly enable it.
+
+If you want to build both the jit and the regular compiler, it is often
+best to do this via two separate configure/builds, in separate
+directories, to avoid imposing the performance cost of
+--enable-host-shared on the regular compiler.])
+	    ;;
+          all:jit:no)
+	    AC_MSG_WARN([--enable-host-shared required to build $language])
+            add_this_lang=unsupported
+            ;;
+          *:jit:no)
+            # Silently disable.
+            add_this_lang=unsupported
+            ;;
+	esac
+
+        # Disable a language that is unsupported by the target.
+	case "${add_this_lang}: $unsupported_languages " in
+	  no:*) ;;
+	  unsupported:*) ;;
+	  *:*" $language "*)
+	    AC_MSG_WARN([${language} not supported for this target])
 	    add_this_lang=unsupported
 	    ;;
 	esac
@@ -1978,7 +2025,7 @@ if test -d ${srcdir}/gcc; then
 	    noconfigdirs="$noconfigdirs $lang_dirs"
             potential_languages="${potential_languages}${language},"
 	    ;;
-          yes)
+          all|yes)
 	    new_enable_languages="${new_enable_languages}${language},"
             potential_languages="${potential_languages}${language},"
 	    missing_languages=`echo "$missing_languages" | sed "s/,$language,/,/"`
@@ -3477,37 +3524,6 @@ if test -d ${srcdir}/gcc && test x"`cat $srcdir/gcc/DEV-PHASE`" = xexperimental;
 fi
 
 AC_SUBST(stage2_werror_flag)
-
-# Enable --enable-host-shared.
-AC_ARG_ENABLE(host-shared,
-[AS_HELP_STRING([--enable-host-shared],
-		[build host code as shared libraries])],
-[host_shared=$enableval], [host_shared=no])
-AC_SUBST(host_shared)
-
-# PR jit/64780: Require the user to explicitly specify
-# --enable-host-shared if the jit is enabled, hinting
-# that they might want to do a separate configure/build of
-# the jit, to avoid users from slowing down the rest of the
-# compiler by enabling the jit.
-if test ${host_shared} = "no" ; then
-  case "${enable_languages}" in
-    *jit*)
-      AC_MSG_ERROR([
-Enabling language "jit" requires --enable-host-shared.
-
---enable-host-shared typically slows the rest of the compiler down by
-a few %, so you must explicitly enable it.
-
-If you want to build both the jit and the regular compiler, it is often
-best to do this via two separate configure/builds, in separate
-directories, to avoid imposing the performance cost of
---enable-host-shared on the regular compiler.])
-      ;;
-    *)
-      ;;
-  esac
-fi
 
 # Specify what files to not compare during bootstrap.
 

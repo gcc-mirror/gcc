@@ -1,3 +1,8 @@
+2017-05-24  Nathan Sidwell  <nathan@acm.org>
+
+	* c=common.c (field_decl_cmp, resort_field_decl_cmp): Adjust T
+	const casts to avoid warning.
+
 2017-05-24  Martin Sebor  <msebor@redhat.com>
 
 	PR c/80731

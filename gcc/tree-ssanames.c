@@ -427,11 +427,14 @@ set_nonzero_bits (tree name, const wide_int_ref &mask)
 }
 
 /* Return a widest_int with potentially non-zero bits in SSA_NAME
-   NAME, or -1 if unknown.  */
+   NAME, the constant for INTEGER_CST, or -1 if unknown.  */
 
 wide_int
 get_nonzero_bits (const_tree name)
 {
+  if (TREE_CODE (name) == INTEGER_CST)
+    return name;
+
   unsigned int precision = TYPE_PRECISION (TREE_TYPE (name));
   if (POINTER_TYPE_P (TREE_TYPE (name)))
     {

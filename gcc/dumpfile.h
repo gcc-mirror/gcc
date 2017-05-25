@@ -92,6 +92,7 @@ enum dump_kind
 #define TDF_SCEV	(1 << 24)	/* Dump SCEV details.  */
 #define TDF_COMMENT	(1 << 25)	/* Dump lines with prefix ";;"  */
 #define TDF_GIMPLE	(1 << 26)	/* Dump in GIMPLE FE syntax  */
+#define TDF_FOLDING	(1 << 27)	/* Dump folding details.  */
 #define MSG_OPTIMIZED_LOCATIONS	 (1 << 27)  /* -fopt-info optimized sources */
 #define MSG_MISSED_OPTIMIZATION	 (1 << 28)  /* missed opportunities */
 #define MSG_NOTE		 (1 << 29)  /* general optimization info */

@@ -118,6 +118,7 @@ static const struct dump_option_value_info dump_options[] =
   {"enumerate_locals", TDF_ENUMERATE_LOCALS},
   {"scev", TDF_SCEV},
   {"gimple", TDF_GIMPLE},
+  {"folding", TDF_FOLDING},
   {"optimized", MSG_OPTIMIZED_LOCATIONS},
   {"missed", MSG_MISSED_OPTIMIZATION},
   {"note", MSG_NOTE},
