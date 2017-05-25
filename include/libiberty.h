@@ -724,7 +724,7 @@ extern void *C_alloca (size_t) ATTRIBUTE_MALLOC;
 # define ASTRDUP(X) \
   (__extension__ ({ const char *const libiberty_optr = (X); \
    const unsigned long libiberty_len = strlen (libiberty_optr) + 1; \
-   char *const libiberty_nptr = (char *const) alloca (libiberty_len); \
+   char *const libiberty_nptr = (char *) alloca (libiberty_len); \
    (char *) memcpy (libiberty_nptr, libiberty_optr, libiberty_len); }))
 #else
 # define alloca(x) C_alloca(x)

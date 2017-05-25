@@ -1,3 +1,7 @@
+2017-05-24  Nathan Sidwell  <nathan@acm.org>
+
+	* libiberty.h (ASTRDUP): Adjust cast to avoid warning.
+
 2017-05-19  Eli Zaretskii <eliz@gnu.org>
 
 	* environ.h: Add #ifndef guard.
