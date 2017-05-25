@@ -1,3 +1,7 @@
+2017-05-25  Volker Reichelt  <v.reichelt@netcologne.de>
+
+	* c.opt (Wcatch-value=): New C++ warning flag.
+
 2017-05-24  Nathan Sidwell  <nathan@acm.org>
 
 	* c=common.c (field_decl_cmp, resort_field_decl_cmp): Adjust T

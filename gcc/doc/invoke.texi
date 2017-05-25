@@ -265,7 +265,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wno-builtin-declaration-mismatch @gol
 -Wno-builtin-macro-redefined  -Wc90-c99-compat  -Wc99-c11-compat @gol
 -Wc++-compat  -Wc++11-compat  -Wc++14-compat  -Wcast-align  -Wcast-qual  @gol
--Wchar-subscripts -Wchkp  -Wclobbered  -Wcomment  @gol
+-Wchar-subscripts  -Wchkp  -Wcatch-value=@var{n}  -Wclobbered  -Wcomment  @gol
 -Wconditionally-supported  @gol
 -Wconversion  -Wcoverage-mismatch  -Wno-cpp  -Wdangling-else  -Wdate-time @gol
 -Wdelete-incomplete @gol
@@ -5833,6 +5833,14 @@ these warnings.
 When compiling C++, warn about the deprecated conversion from string
 literals to @code{char *}.  This warning is enabled by default for C++
 programs.
+
+@item -Wcatch-value=@var{n} @r{(C++ and Objective-C++ only)}
+@opindex Wcatch-value
+Warn about catch handlers that do not catch via reference.
+With @option{-Wcatch-value=1} warn about polymorphic class types that
+are caught by value. With @option{-Wcatch-value=2} warn about all class
+types that are caught by value. With @option{-Wcatch-value=3} warn about
+all types that are not caught by reference.
 
 @item -Wclobbered
 @opindex Wclobbered

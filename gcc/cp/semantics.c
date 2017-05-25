@@ -1323,7 +1323,28 @@ finish_handler_parms (tree decl, tree handler)
 	}
     }
   else
-    type = expand_start_catch_block (decl);
+    {
+      type = expand_start_catch_block (decl);
+      if (warn_catch_value
+	  && type != NULL_TREE
+	  && type != error_mark_node
+	  && TREE_CODE (TREE_TYPE (decl)) != REFERENCE_TYPE)
+	{
+	  tree orig_type = TREE_TYPE (decl);
+	  if (CLASS_TYPE_P (orig_type))
+	    {
+	      if (TYPE_POLYMORPHIC_P (orig_type))
+		warning (OPT_Wcatch_value_,
+			 "catching polymorphic type %q#T by value", orig_type);
+	      else if (warn_catch_value > 1)
+		warning (OPT_Wcatch_value_,
+			 "catching type %q#T by value", orig_type);
+	    }
+	  else if (warn_catch_value > 2)
+	    warning (OPT_Wcatch_value_,
+		     "catching non-reference type %q#T", orig_type);
+	}
+    }
   HANDLER_TYPE (handler) = type;
 }
 
