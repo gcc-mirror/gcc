@@ -4003,6 +4003,8 @@ unsigned long long rdtsc (void)
 @}
 @end smallexample
 
+@item U
+The call-clobbered integer registers.
 
 @item f
 Any 80387 floating-point (stack) register.
@@ -4013,24 +4015,95 @@ Top of 80387 floating-point stack (@code{%st(0)}).
 @item u
 Second from top of 80387 floating-point stack (@code{%st(1)}).
 
+@ifset INTERNALS
+@item Yk
+Any mask register that can be used as a predicate, i.e. @code{k1-k7}.
+
+@item k
+Any mask register.
+@end ifset
+
 @item y
 Any MMX register.
 
 @item x
 Any SSE register.
 
+@item v
+Any EVEX encodable SSE register (@code{%xmm0-%xmm31}).
+
+@ifset INTERNALS
+@item w
+Any bound register.
+@end ifset
+
 @item Yz
 First SSE register (@code{%xmm0}).
 
 @ifset INTERNALS
-@item Y2
-Any SSE register, when SSE2 is enabled.
-
 @item Yi
 Any SSE register, when SSE2 and inter-unit moves are enabled.
 
+@item Yj
+Any SSE register, when SSE2 and inter-unit moves from vector registers are enabled.
+
 @item Ym
 Any MMX register, when inter-unit moves are enabled.
+
+@item Yn
+Any MMX register, when inter-unit moves from vector registers are enabled.
+
+@item Yp
+Any integer register when @code{TARGET_PARTIAL_REG_STALL} is disabled.
+
+@item Ya
+Any integer register when zero extensions with @code{AND} are disabled.
+
+@item Yb
+Any register that can be used as the GOT base when calling@*
+@code{___tls_get_addr}: that is, any general register except @code{a}
+and @code{sp} registers, for @option{-fno-plt} if linker supports it.
+Otherwise, @code{b} register.
+
+@item Yf
+Any x87 register when 80387 floating-point arithmetic is enabled.
+
+@item Yr
+Lower SSE register when avoiding REX prefix and all SSE registers otherwise.
+
+@item Yv
+For AVX512VL, any EVEX-encodable SSE register (@code{%xmm0-%xmm31}),
+otherwise any SSE register.
+
+@item Yh
+Any EVEX-encodable SSE register, that has number factor of four.
+
+@item Bf
+Flags register operand.
+
+@item Bg
+GOT memory operand.
+
+@item Bm
+Vector memory operand.
+
+@item Bc
+Constant memory operand.
+
+@item Bn
+Memory operand without REX prefix.
+
+@item Bs
+Sibcall memory operand.
+
+@item Bw
+Call memory operand.
+
+@item Bz
+Constant call address operand.
+
+@item BC
+SSE constant -1 operand.
 @end ifset
 
 @item I
@@ -4068,10 +4141,36 @@ SSE constant zero operand.
 to fit that range (for immediate operands in sign-extending x86-64
 instructions).
 
+@item We
+32-bit signed integer constant, or a symbolic reference known
+to fit that range (for sign-extending conversion operations that
+require non-@code{VOIDmode} immediate operands).
+
+@item Wz
+32-bit unsigned integer constant, or a symbolic reference known
+to fit that range (for zero-extending conversion operations that
+require non-@code{VOIDmode} immediate operands).
+
+@item Wd
+128-bit integer constant where both the high and low 64-bit word
+satisfy the @code{e} constraint.
+
 @item Z
 32-bit unsigned integer constant, or a symbolic reference known
 to fit that range (for immediate operands in zero-extending x86-64
 instructions).
+
+@item Tv
+VSIB address operand.
+
+@item Ts
+Address operand without segment register.
+
+@item Ti
+MPX address operand without index.
+
+@item Tb
+MPX address operand without base.
 
 @end table
 
