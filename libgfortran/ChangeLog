@@ -1,3 +1,10 @@
+2017-05-26  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR boostrap/80889
+	* acinclude.m4: Also set HAVE_AVX128 on the false
+	branch of LIBGFOR_CHECK_AVX128.
+	* configure:  Regenerated.
+
 2017-05-25  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR libfortran/78379

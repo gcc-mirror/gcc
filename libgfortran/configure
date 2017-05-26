@@ -26453,6 +26453,15 @@ else
   HAVE_AVX128_FALSE=
 fi
 
+else
+   if false; then
+  HAVE_AVX128_TRUE=
+  HAVE_AVX128_FALSE='#'
+else
+  HAVE_AVX128_TRUE='#'
+  HAVE_AVX128_FALSE=
+fi
+
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
   CFLAGS="$ac_save_CFLAGS"
@@ -26708,6 +26717,10 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${IEEE_SUPPORT_TRUE}" && test -z "${IEEE_SUPPORT_FALSE}"; then
   as_fn_error "conditional \"IEEE_SUPPORT\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${HAVE_AVX128_TRUE}" && test -z "${HAVE_AVX128_FALSE}"; then
+  as_fn_error "conditional \"HAVE_AVX128\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${HAVE_AVX128_TRUE}" && test -z "${HAVE_AVX128_FALSE}"; then
