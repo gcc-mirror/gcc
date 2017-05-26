@@ -903,6 +903,7 @@ int Mark_lvalue_varexprs::expression(Expression** ppexpr)
   if (aie != NULL)
     {
       Mark_lvalue_varexprs mlve;
+      aie->set_is_lvalue();
       aie->array()->traverse_subexpressions(&mlve);
       return TRAVERSE_EXIT;
     }
