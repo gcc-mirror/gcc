@@ -133,8 +133,8 @@ mark_exp_read (tree exp)
   switch (TREE_CODE (exp))
     {
     case VAR_DECL:
-      if (DECL_VALUE_EXPR (exp))
-	mark_exp_read (DECL_VALUE_EXPR (exp));
+      if (DECL_DECOMPOSITION_P (exp))
+	mark_exp_read (DECL_DECOMP_BASE (exp));
       gcc_fallthrough ();
     case PARM_DECL:
       DECL_READ_P (exp) = 1;

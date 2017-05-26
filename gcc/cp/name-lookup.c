@@ -38,6 +38,9 @@ static cxx_binding *cxx_binding_make (tree value, tree type);
 static cp_binding_level *innermost_nonclass_level (void);
 static void set_identifier_type_value_with_scope (tree id, tree decl,
 						  cp_binding_level *b);
+
+/* Create a local binding level for NAME.  */
+
 static cxx_binding *
 create_local_binding (cp_binding_level *level, tree name)
 {
@@ -4831,15 +4834,15 @@ handle_namespace_attrs (tree ns, tree attributes)
 	}
       else if (is_attribute_p ("abi_tag", name))
 	{
-	  if (!DECL_NAMESPACE_INLINE_P (ns))
-	    {
-	      warning (OPT_Wattributes, "ignoring %qD attribute on non-inline "
-		       "namespace", name);
-	      continue;
-	    }
 	  if (!DECL_NAME (ns))
 	    {
 	      warning (OPT_Wattributes, "ignoring %qD attribute on anonymous "
+		       "namespace", name);
+	      continue;
+	    }
+	  if (!DECL_NAMESPACE_INLINE_P (ns))
+	    {
+	      warning (OPT_Wattributes, "ignoring %qD attribute on non-inline "
 		       "namespace", name);
 	      continue;
 	    }
@@ -5951,7 +5954,7 @@ add_using_namespace (vec<tree, va_gc> *&usings, tree target)
 /* Notify debug system of a using directive.  */
 
 static void
-notify_debug_using_namespace (tree from, tree target)
+emit_debug_info_using_namespace (tree from, tree target)
 {
   /* Emit debugging info.  */
   tree context = from != global_namespace ? from : NULL_TREE;
@@ -6478,8 +6481,8 @@ finish_namespace_using_directive (tree target, tree attribs)
 
   add_using_namespace (DECL_NAMESPACE_USING (current_namespace),
 		       ORIGINAL_NAMESPACE (target));
-  notify_debug_using_namespace (current_namespace,
-				ORIGINAL_NAMESPACE (target));
+  emit_debug_info_using_namespace (current_namespace,
+				   ORIGINAL_NAMESPACE (target));
 
   if (attribs == error_mark_node)
     return;
@@ -6649,7 +6652,7 @@ push_namespace (tree name, bool make_inline)
 	    TREE_PUBLIC (ns) = 1;
 
 	  if (name == anon_identifier || make_inline)
-	    notify_debug_using_namespace (current_namespace, ns);
+	    emit_debug_info_using_namespace (current_namespace, ns);
 
 	  if (make_inline)
 	    {

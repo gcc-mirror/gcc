@@ -7,8 +7,8 @@
 
 foo \  
 bar
-/* { dg-warning "separated by space" "" { target *-*-* } 8 } */
+/* { dg-warning "separated by space" "" { target *-*-* } .-2 } */
 
 /* foo \   
    bar */
-/* { dg-bogus "separated by space" "" { target *-*-* } 12 } */
+/* { dg-bogus "separated by space" "" { target *-*-* } .-2 } */

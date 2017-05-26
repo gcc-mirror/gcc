@@ -1,3 +1,9 @@
+2017-05-26  Nathan Sidwell  <nathan@acm.org>
+
+	Merge trunk 248485.
+	gcc/cp/
+	* lex.c (maybe_retrofit_lang_decl): Add sel parm.
+
 2017-05-25  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/

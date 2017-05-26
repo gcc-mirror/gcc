@@ -25,10 +25,10 @@
 #undef __TIME__              /* Undefine while already undefined.  */
 
 #define __TIME__ "X"         /* Define while undefined.  */
-#define __TIME__ "X"         /* Re-define while defined.  */
+#define __TIME__ "X"         /* Re-define while defined.  */ /* { dg-line time_prev } */
 
 #define __TIME__ "Y"         /* { dg-warning "\"__TIME__\" redefined" } */
-/* { dg-message "previous definition" "" { target *-*-* } 28 } */
+/* { dg-message "previous definition" "" { target *-*-* } time_prev } */
 
 #undef __TIME__              /* Undefine while defined.  */
 
@@ -36,19 +36,19 @@
 #undef __DATE__              /* Undefine while already undefined.  */
 
 #define __DATE__ "X"         /* Define while undefined.  */
-#define __DATE__ "X"         /* Re-define while defined.  */
+#define __DATE__ "X"         /* Re-define while defined.  */ /* { dg-line date_prev } */
 
 #define __DATE__ "Y"         /* { dg-warning "\"__DATE__\" redefined" } */
-/* { dg-message "previous definition" "" { target *-*-* } 39 } */
+/* { dg-message "previous definition" "" { target *-*-* } date_prev } */
 
 #undef __DATE__              /* Undefine while defined.  */
 
 
 #define __TIMESTAMP__ "X"    /* Define while already defined.  */
-#define __TIMESTAMP__ "X"    /* Re-define while defined.  */
+#define __TIMESTAMP__ "X"    /* Re-define while defined.  */ /* { dg-line timestamp_prev } */
 
 #define __TIMESTAMP__ "Y"    /* { dg-warning "\"__TIMESTAMP__\" redefined" } */
-/* { dg-message "previous definition" "" { target *-*-* } 48 } */
+/* { dg-message "previous definition" "" { target *-*-* } timestamp_prev } */
 
 #undef __TIMESTAMP__         /* Undefine while defined.  */
 

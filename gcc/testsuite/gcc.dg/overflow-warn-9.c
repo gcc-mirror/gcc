@@ -56,9 +56,10 @@ const struct Types t1 = {
   .us = USHRT_MAX + 1,      /* { dg-warning "unsigned conversion from .int. to .short unsigned int. changes value from .65536. to .0." } */
 
   .si = INT_MAX + 1LU,      /* { dg-warning "signed conversion from 'long unsigned int. to 'int' changes value from .2147483648. to .-2147483648." } */
-  .ui = UINT_MAX + 1L,      /* { dg-warning "signed conversion from .long int. to .unsigned int. changes value from .4294967296. to .0." } */
-  .ui = UINT_MAX + 1LU,     /* { dg-warning "conversion from .long unsigned int. to .unsigned int. changes value from .4294967296. to .0." } */
+  .ui = UINT_MAX + 1L,      /* { dg-warning "signed conversion from .long int. to .unsigned int. changes value from .4294967296. to .0." "lp64" { target lp64 } } */
+  .ui = UINT_MAX + 1LU,     /* { dg-warning "conversion from .long unsigned int. to .unsigned int. changes value from .4294967296. to .0." "lp64" { target lp64 } } */
 
-  .sl = LONG_MAX + 1LU,     /* { dg-warning "signed conversion from .long unsigned int. to .long int. changes value from .9223372036854775808. to .-9223372036854775808." } */
+  .sl = LONG_MAX + 1LU,     /* { dg-warning "signed conversion from .long unsigned int. to .long int. changes value from .9223372036854775808. to .-9223372036854775808." "lp64" { target lp64 } } */
+  /* { dg-warning "signed conversion from .long unsigned int. to .long int. changes value from .2147483648. to .-2147483648." "ilp32" { target ilp32 } .-1 } */
   .ul = ULONG_MAX + 1LU     /* there should be some warning here */
 };

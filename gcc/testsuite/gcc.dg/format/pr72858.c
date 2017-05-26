@@ -389,19 +389,21 @@ test_LE (char *d, int iexpr, float fexpr, double dexpr, long double ldexpr)
 void
 test_everything (char *d, long lexpr)
 {
-  sprintf (d, "before %-+*.*lld after", lexpr, lexpr, lexpr); /* { dg-warning "26: field width specifier '\\*' expects argument of type 'int', but argument 3 has type 'long int'" } */
+  sprintf (d, "before %-+*.*lld after", lexpr, lexpr, lexpr); /* { dg-line test_everything_sprintf } */
+
+  /* { dg-warning "26: field width specifier '\\*' expects argument of type 'int', but argument 3 has type 'long int'" "" { target *-*-* } test_everything_sprintf } */
   /* { dg-begin-multiline-output "" }
    sprintf (d, "before %-+*.*lld after", lexpr, lexpr, lexpr);
                        ~~~^~~~~~
    { dg-end-multiline-output "" } */
 
-  /* { dg-warning "28: field precision specifier '\\.\\*' expects argument of type 'int', but argument 4 has type 'long int'" "" { target *-*-* } 392 } */
+  /* { dg-warning "28: field precision specifier '\\.\\*' expects argument of type 'int', but argument 4 has type 'long int'" "" { target *-*-* } test_everything_sprintf } */
   /* { dg-begin-multiline-output "" }
    sprintf (d, "before %-+*.*lld after", lexpr, lexpr, lexpr);
                        ~~~~~^~~~
    { dg-end-multiline-output "" } */
 
-  /* { dg-warning "31: format '%lld' expects argument of type 'long long int', but argument 5 has type 'long int'" "" { target *-*-* } 392 } */
+  /* { dg-warning "31: format '%lld' expects argument of type 'long long int', but argument 5 has type 'long int'" "" { target *-*-* } test_everything_sprintf } */
   /* { dg-begin-multiline-output "" }
    sprintf (d, "before %-+*.*lld after", lexpr, lexpr, lexpr);
                        ~~~~~~~~^

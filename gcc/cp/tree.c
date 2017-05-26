@@ -5251,8 +5251,8 @@ cp_free_lang_data (tree t)
       TREE_STATIC (t) = 0;
     }
   if (TREE_CODE (t) == NAMESPACE_DECL)
-    /* We do not need the leftover chaining of namespaces
-       from the binding level.  */
+    /* We do not need the leftover chaining of namespaces from the
+       binding level.  */
     DECL_CHAIN (t) = NULL_TREE;
 }
 

@@ -10,19 +10,23 @@ foo (void)
      behind these tests.  */
   int j = 0;
   for (int i = 1, bar (void); i <= 10; i++) /* { dg-bogus "warning" "warning in place of error" } */
+    /* { dg-error "bar" "function in for loop" { target *-*-* } .-1 } */
     j += i;
-  /* { dg-error "bar" "function in for loop" { target *-*-* } 12 } */
+
   for (static int i = 1; i <= 10; i++) /* { dg-bogus "warning" "warning in place of error" } */
+    /* { dg-error "static" "static in for loop" { target *-*-* } .-1 } */
     j += i;
-  /* { dg-error "static" "static in for loop" { target *-*-* } 15 } */
+
   for (extern int i; j <= 500; j++) /* { dg-bogus "warning" "warning in place of error" } */
+    /* { dg-error "extern" "extern in for loop" { target *-*-* } .-1 } */
     j += 5;
-  /* { dg-error "extern" "extern in for loop" { target *-*-* } 18 } */
+
   for (enum { FOO } i = FOO; i < 10; i++) /* { dg-bogus "warning" "warning in place of error" } */
+    /* { dg-error "FOO" "enum value in for loop" { target *-*-* } .-1 } */
     j += i;
-  /* { dg-error "FOO" "enum value in for loop" { target *-*-* } 21 } */
+
   for (enum BAR { FOO } i = FOO; i < 10; i++) /* { dg-bogus "warning" "warning in place of error" } */
+    /* { dg-error "FOO" "enum value in for loop" { target *-*-* } .-1 } */
+    /* { dg-error "BAR" "enum tag in for loop" { target *-*-* } .-2 } */
     j += i;
-  /* { dg-error "FOO" "enum value in for loop" { target *-*-* } 24 } */
-  /* { dg-error "BAR" "enum tag in for loop" { target *-*-* } 24 } */
 }

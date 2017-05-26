@@ -1,3 +1,116 @@
+2017-05-26  Nathan Sidwell  <nathan@acm.org>
+
+	* name-lookup.c (name_lookup::search_adl): ADL OMP UDR type args.
+
+2017-05-26  Jakub Jelinek  <jakub@redhat.com>
+
+	* cp-tree.h (struct lang_decl_decomp): New type.
+	(struct lang_decl): Add u.decomp.
+	(LANG_DECL_DECOMP_CHECK): Define.
+	(DECL_DECOMPOSITION_P): Note it is set also on the vars
+	for user identifiers.
+	(DECL_DECOMP_BASE): Define.
+	(retrofit_lang_decl): Add extra int = 0 argument.
+	* lex.c (retrofit_lang_decl): Add SEL argument, if non-zero
+	use it to influence the selector choices and for selector
+	0 to non-zero transition copy old content.
+	(cxx_dup_lang_specific_decl): Handle DECL_DECOMPOSITION_P.
+	* decl.c (poplevel): For DECL_DECOMPOSITION_P, check
+	!DECL_DECOMP_BASE instead of !DECL_VALUE_EXPR.  Adjust warning
+	wording if decl is a structured binding.
+	(cp_finish_decomp): Pass 4 as the new argument to retrofit_lang_decl.
+	Set DECL_DECOMP_BASE.  Ignore DECL_READ_P sets from initialization
+	of individual variables for tuple structured bindings.
+	(grokdeclarator): Pass 4 as the new argument to retrofit_lang_decl.
+	Clear DECL_DECOMP_BASE.
+	* decl2.c (mark_used): Mark DECL_DECOMP_BASE TREE_USED as well.
+	* pt.c (tsubst_decomp_names): Assert DECL_DECOMP_BASE matches what
+	is expected.
+	* expr.c (mark_exp_read): Recurse on DECL_DECOMP_BASE instead of
+	DECL_VALUE_EXPR.
+
+2017-05-25  Jason Merrill  <jason@redhat.com>
+
+	PR c++/80605 - __is_standard_layout and zero-length array
+	* class.c (check_bases): Use DECL_FIELD_IS_BASE.
+
+2017-05-25  Nathan Sidwell  <nathan@acm.org>
+
+	Kill OVL_CURRENT, OVL_NEXT.
+	* cp-tree.h (OVL_CURRENT, OVL_NEXT): Delete.
+	* name-lookup.c (set_decl_namespace): Use ovl_iterator.
+	(consider_binding_level): Use OVL_FIRST.
+	(cp_emit_debug_info_for_using): Use lkp_iterator.
+	* pt.c (check_explicit_specialization): Use ovl_iterator.	
+
+	Kill DECL_NAMESPACE_USERS, DECL_NAMESPACE_ASSOCIATIONS.
+	* cp-tree.h (lang_decl_ns): Remove ns_users field.
+	(DECL_NAMESPACE_USERS, DECL_NAMESPACE_ASSOCIATIONS): Delete.
+	(TREE_INDIRECT_USING): Delete.
+	* name-lookup.h (is_associated_namespace): Delete.
+	* name-lookup.c (name_lookup::search_usings,
+	name_lookup::do_queue_usings): Usings are always direct.
+	(is_associated_namespace): Delete.
+	(handle_namespace_attrs): Use DECL_NAMESPACE_INLINE_P.
+	(namespace_ancestor_1, namespace_ancestor): Delete.
+	(push_using_directive_1, push_using_directive): Delete.
+	(add_using_namespace_1): Delete.
+	(add_using_namespace): Reimplement.
+	(emit_debug_info_using_namespace): New.
+	(finish_namespace_using_directive, finish_local_using_directive,
+	push_namespace): Adjust.
+	* tree.c (cp_free_lang_data): Remove DECL_NAMESPACE_USERS handling.
+
+2017-05-25  Volker Reichelt  <v.reichelt@netcologne.de>
+
+	* semantics.c (finish_handler_parms): Warn about non-reference type
+	catch handlers.
+
+2017-05-25  Nathan Sidwell  <nathan@acm.org>
+
+	Reimplement unqualified namespace lookup.
+	* name-lookup.c (name_lookup::using_pair,
+	name_lookup::using_queue): New typedefs.
+	(name_lookup::queue_namespace, name_lookup::do_queue_usings,
+	name_lookup::queue_usings): New.
+	(name_lookup::search_unqualified): New.
+	(merge_functions, same_entity_p, ambiguous_decl,
+	unqualified_namespace_lookup_1, unqualified_namespace_lookup,
+	lookup_using_namespace): Delete.
+	(lookup_name_real_1): Adjust.
+
+	Reimplement qualified namespace lookup.
+	* name-lookup.c (name_lookup::flags): New member.  Adjust ctor.
+	(name_lookup::ambiguous, name_lookup::add_value,
+	name_lookup::add_type, name_lookup::process_binding): New.
+	(name_lookup::search_namespace_only,
+	name_lookup::search_namespace, name_lookup::search_usings): New.
+	(name_lookup::search_qualified): New.
+	(do_nonmember_using_decl, suggest_alternatives_for,
+	lookup_qualified_name): Adjust.
+	(tree_vec_contains): Delete.
+	(qualified_lookup_using_namespace): Rename to ...
+	(qualified_namespace_lookup): ... here.  Reimplement.
+
+	Reimplement ADL.
+	* cp-tree.h (LOOKUP_SEEN_P, LOOKUP_FOUND_P): New.
+	* name-lookup.h (lookup_arg_dependent): Return plain tree.
+	* name-lookup.c (arg_lookup, arg_assoc, arg_assoc_args,
+	arg_assoc_args_vec, arg_assoc_type, add_function,
+	arg_assoc_namespace, arg_assoc_class_only, arg_assoc_bases,
+	arg_assoc_class, arg_assoc_template_arg, arg_assoc,
+	lookup_arg_dependent_1): Delete.
+	(name_lookup): New lookup object.
+	(name_lookup::preserve_state, name_lookup::restore_state,
+	name_lookup::mark_seen, name_lookup::find_and_mark,
+	name_lookup::add_fns, name_lookup::adl_namespace_only,
+	name_lookup::adl_namespace, name_lookup::adl_class_only,
+	name_lookup::adl_bases, name_lookup::adl_class,
+	name_lookup::adl_expr, name_lookup::adl_type,
+	name_lookup::adl_template_arg, name_lookup::search_adl): New.
+	(lookup_arg_dependent): Return a plain tree.  Adjust.
+	(is_associated_namespace): Move later.
+	
 2017-05-24  Nathan Sidwell  <nathan@acm.org>
 
 	* friend.c (do_friend): Remove check for existing decl.
@@ -650,6 +763,7 @@
 
 2017-05-09  Jason Merrill  <jason@redhat.com>
 
+	PR c++/80605 - __is_standard_layout and empty base
 	* class.c (check_bases): Ignore empty bases.
 
 	PR c++/70979 - literal class and closure types

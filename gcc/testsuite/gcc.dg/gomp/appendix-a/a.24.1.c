@@ -10,7 +10,7 @@ a24 (int a)
   const int c = 1;
   int i = 0;
   int l = 0;
-#pragma omp parallel default(none) private(a) shared(z)
+#pragma omp parallel default(none) private(a) shared(z) /* { dg-line omp_parallel } */
   {
     int j = omp_get_num_threads ();
     /* O.K. - j is declared within parallel region */
@@ -20,8 +20,8 @@ a24 (int a)
     				/*       -  c has const-qualified type */
     z[i] = y;
     /* { dg-error "'i' not specified" "" { target *-*-* } .-1 } */
-    /* { dg-error "enclosing 'parallel'" "" { target *-*-* } 13 } */
-    /* { dg-error "'y' not specified" "" { target *-*-* } 21 }  */
+    /* { dg-error "enclosing 'parallel'" "" { target *-*-* } omp_parallel } */
+    /* { dg-error "'y' not specified" "" { target *-*-* } .-3 }  */
 #pragma omp for firstprivate(y)
     for (i = 0; i < 10; i++)
       {

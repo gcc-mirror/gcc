@@ -388,6 +388,10 @@ Wcast-qual
 C ObjC C++ ObjC++ Var(warn_cast_qual) Warning
 Warn about casts which discard qualifiers.
 
+Wcatch-value=
+C++ ObjC++ Var(warn_catch_value) Warning Joined RejectNegative UInteger
+Warn about catch handlers of non-reference type.
+
 Wchar-subscripts
 C ObjC C++ ObjC++ Var(warn_char_subscripts) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
 Warn about subscripts whose type is \"char\".

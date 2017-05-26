@@ -530,13 +530,21 @@ build_lang_decl_loc (location_t loc, enum tree_code code, tree name, tree type)
 /* Add a raw lang_decl to T, a decl.  */
 
 bool
-maybe_add_lang_decl_raw (tree t)
+maybe_add_lang_decl_raw (tree t, int sel)
 {
-  struct lang_decl *ld;
+  struct lang_decl *orig_ld = DECL_LANG_SPECIFIC (t);
   size_t size;
-  int sel;
 
-  if (TREE_CODE (t) == FUNCTION_DECL)
+  if (orig_ld)
+    {
+      if (orig_ld->u.base.selector == sel)
+	return false;
+      gcc_assert (!orig_ld->u.base.selector == 0);
+    }
+
+  if (sel == 4)
+    size = sizeof (struct lang_decl_decomp);
+  else if (TREE_CODE (t) == FUNCTION_DECL)
     sel = 1, size = sizeof (struct lang_decl_fn);
   else if (TREE_CODE (t) == NAMESPACE_DECL)
     sel = 2, size = sizeof (struct lang_decl_ns);
@@ -547,7 +555,10 @@ maybe_add_lang_decl_raw (tree t)
   else
     return false;
 
-  ld = (struct lang_decl *) ggc_internal_cleared_alloc (size);
+  struct lang_decl *ld
+    = (struct lang_decl *) ggc_internal_cleared_alloc (size);
+  if (orig_ld)
+    memcpy (ld, orig_ld, sizeof (struct lang_decl_min));
 
   ld->u.base.selector = sel;
 
@@ -569,12 +580,12 @@ maybe_add_lang_decl_raw (tree t)
    every C++ decl needs one, but C builtins etc do not.   */
 
 void
-retrofit_lang_decl (tree t)
+retrofit_lang_decl (tree t, int sel)
 {
-  if (DECL_LANG_SPECIFIC (t))
+  if (!sel && DECL_LANG_SPECIFIC (t))
     return;
 
-  if (maybe_add_lang_decl_raw (t))
+  if (maybe_add_lang_decl_raw (t, sel))
     {
       if (current_lang_name == lang_name_cplusplus
 	  || decl_linkage (t) == lk_none)
@@ -601,6 +612,8 @@ cxx_dup_lang_specific_decl (tree node)
     size = sizeof (struct lang_decl_ns);
   else if (TREE_CODE (node) == PARM_DECL)
     size = sizeof (struct lang_decl_parm);
+  else if (DECL_DECOMPOSITION_P (node))
+    size = sizeof (struct lang_decl_decomp);
   else if (LANG_DECL_HAS_MIN (node))
     size = sizeof (struct lang_decl_min);
   else
