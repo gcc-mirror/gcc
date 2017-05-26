@@ -111,6 +111,11 @@ log (char const * fmt, ...)
   return retval;
 }
 
+enum proepis
+{
+  IN_CODE, IN_PROLOGUE, IN_EPILOGUE, IN_EPILOGUE_PARALLEL_POP
+};
+
 /* Information for each insn to detect alive registers. Enough for m68k.
  * Why a class? Maybe extend it for general usage.
  *
@@ -126,7 +131,7 @@ class insn_info
   unsigned use;  // bit set if registers are used in program flow
   unsigned def;  // bit set if registers are defined here
 
-  int proepi; // 1 = in prologue, 2 = in epilogue, 0 = other
+  enum proepis proepi;
 
   bool stack; // part of stack frame insns
 
@@ -163,7 +168,7 @@ class insn_info
   int src_autoinc;
 
 public:
-  insn_info (rtx_insn * i = 0, int p = 0) :
+  insn_info (rtx_insn * i = 0, enum proepis p = IN_CODE) :
       insn (i), myuse (0), hard (0), use (0), def (0), proepi (p), stack (false), label (false), jump (false), call (
 	  false), compare (false), dst_mem (false), src_mem (false), dst_plus (false), src_plus (false), src_op (
 	  (rtx_code) 0), src_ee (false), src_const (false), mode (VOIDmode), dst_reg (0), dst_mem_reg (0), dst_symbol (
@@ -414,6 +419,12 @@ public:
   in_proepi () const
   {
     return proepi;
+  }
+
+  inline void
+  set_proepi (enum proepis p)
+  {
+    proepi = p;
   }
 
   inline void
@@ -784,6 +795,9 @@ insn_info::scan_rtx (rtx x)
 void
 insn_info::fledder (rtx set)
 {
+  if (GET_CODE(set) == PARALLEL)
+    return;
+
   rtx dst = SET_DEST(set);
   rtx src = SET_SRC(set);
 
@@ -1239,8 +1253,10 @@ append_reg_usage (FILE * f, rtx_insn * insn)
   insn_info & ii = *i->second;
 
   if (f != stderr)
-    fprintf (f, "\n\t\t\t\t\t\t|%c ",
-	     ii.is_stack () ? 's' : ii.in_proepi () == 1 ? 'p' : ii.in_proepi () == 2 ? 'e' : ' ');
+    fprintf (f, "\n\t\t\t\t\t\t|");
+
+  fprintf (f, "%c ",
+	   ii.is_stack () ? 's' : ii.in_proepi () == IN_PROLOGUE ? 'p' : ii.in_proepi () >= IN_EPILOGUE ? 'e' : ' ');
 
   for (int j = 0; j < 8; ++j)
     if (ii.is_use (j) || ii.is_def (j))
@@ -1336,7 +1352,7 @@ update_insn_infos (void)
 	    continue;
 
 	  /* no new information -> break. */
-	  if (pp.in_proepi () == 0 && pp.is_visited () && pp.contains (ii))
+	  if (pp.in_proepi () == IN_CODE && pp.is_visited () && pp.contains (ii))
 	    break;
 
 	  ii.clear_hard_def ();
@@ -1393,7 +1409,7 @@ update_insn_infos (void)
 	    }
 
 	  /* mark not renameable in prologue/epilogue. */
-	  if (infos[pos].in_proepi ())
+	  if (infos[pos].in_proepi () != IN_CODE)
 	    use.make_hard ();
 
 	  ii.merge (use);
@@ -1407,7 +1423,7 @@ update_insn_infos (void)
   for (unsigned i = 0; i < infos.size (); ++i)
     {
       insn_info & ii = infos[i];
-      if (ii.in_proepi () != 1)
+      if (ii.in_proepi () != IN_PROLOGUE)
 	break;
 
       zz.or_use (ii);
@@ -1441,7 +1457,7 @@ update_insns ()
 
   clear ();
 
-  char inproepilogue = 1;
+  enum proepis inproepilogue = IN_PROLOGUE;
   /* create a vector with relevant insn. */
   for (insn = get_insns (); insn; insn = next)
     {
@@ -1458,7 +1474,7 @@ update_insns ()
 	      if (inproepilogue || ANY_RETURN_P(PATTERN (insn)))
 		{
 		  returns.insert (infos.size () - 1);
-		  inproepilogue = 0;
+		  inproepilogue = IN_CODE;
 		  if (ANY_RETURN_P(PATTERN (insn)))
 		    continue;
 		}
@@ -1548,9 +1564,9 @@ update_insns ()
       else if (NOTE_P(insn))
 	{
 	  if (NOTE_KIND(insn) == NOTE_INSN_PROLOGUE_END)
-	    inproepilogue = 0;
+	    inproepilogue = IN_CODE;
 	  else if (NOTE_KIND(insn) == NOTE_INSN_EPILOGUE_BEG)
-	    inproepilogue = 2;
+	    inproepilogue = IN_EPILOGUE;
 	}
     }
 
@@ -2590,7 +2606,7 @@ track_sp ()
       for (unsigned index = startpos; index < infos.size (); ++index)
 	{
 	  insn_info & ii = infos[index];
-	  if (ii.in_proepi ())
+	  if (ii.in_proepi () != IN_CODE)
 	    continue;
 
 	  // already visited? sp_offset must match
@@ -2624,7 +2640,7 @@ track_sp ()
 	  if (ii.is_dst_reg () && ii.get_dst_regno () == STACK_POINTER_REGNUM)
 	    {
 	      // handle sp = sp + const_int
-	      if (!ii.is_src_reg () || ii.get_src_regno () != STACK_POINTER_REGNUM || ii.get_src_op () != PLUS)
+	      if (!ii.get_src_reg () || ii.get_src_regno () != STACK_POINTER_REGNUM || ii.get_src_op () != PLUS)
 		return E_SP_MISMATCH;
 
 	      sp_offset = sp_offset + ii.get_src_intval ();
@@ -2698,7 +2714,7 @@ opt_shrink_stack_frame (void)
       insn_info & ii = infos[pos];
       insn = ii.get_insn ();
 
-      if (ii.in_proepi () != 1)
+      if (ii.in_proepi () != IN_PROLOGUE)
 	break;
 
       rtx pattern = PATTERN (insn);
@@ -2770,7 +2786,7 @@ opt_shrink_stack_frame (void)
     {
       while (pos < infos.size ())
 	{
-	  if (infos[pos].in_proepi ())
+	  if (infos[pos].in_proepi () != IN_CODE)
 	    break;
 	  ++pos;
 	}
@@ -2780,7 +2796,7 @@ opt_shrink_stack_frame (void)
 	{
 	  insn_info & ii = infos[pos];
 	  insn = ii.get_insn ();
-	  if (JUMP_P(insn) || LABEL_P(insn) || !ii.in_proepi ())
+	  if (JUMP_P(insn) || LABEL_P(insn) || ii.in_proepi () == IN_CODE)
 	    break;
 
 	  /* omit the frame pointer a5. */
@@ -2831,7 +2847,7 @@ opt_shrink_stack_frame (void)
   for (unsigned i = 0; i < infos.size (); ++i)
     {
       insn_info & jj = infos[i];
-      if (jj.in_proepi ())
+      if (jj.in_proepi () == IN_CODE)
 	continue;
 
       ii.or_use (jj);
@@ -2843,6 +2859,8 @@ opt_shrink_stack_frame (void)
 
   unsigned changed = 0;
   unsigned adjust = 0;
+  unsigned regs_seen = 0;
+  unsigned regs_total_size = 0;
   /* now all push/pop insns are in temp. */
   for (unsigned i = 0; i < infos.size (); ++i)
     {
@@ -2861,6 +2879,11 @@ opt_shrink_stack_frame (void)
 	  if (REG_P(dst) && REGNO(dst) == FRAME_POINTER_REGNUM)
 	    continue;
 
+	  if (ii.in_proepi () == IN_EPILOGUE)
+	    ii.set_proepi (IN_EPILOGUE_PARALLEL_POP);
+
+	  regs_seen = 0;
+	  regs_total_size = 0;
 	  std::vector<rtx> regs;
 	  std::vector<rtx> clobbers;
 	  for (int j = 0; j < XVECLEN(pattern, 0); ++j)
@@ -2884,15 +2907,20 @@ opt_shrink_stack_frame (void)
 	      if (i < prologueend)
 		paramstart += 4;
 	      unsigned regbit = 1 << REGNO(reg);
+
+	      ++regs_seen;
 	      if (freemask & regbit)
 		{
 		  log (i < prologueend ? "(f) remove push for %s\n" : "(f) remove pop for %s\n",
 		  reg_names[REGNO(reg)]);
 		  if (i < prologueend)
-		    adjust += 4;
+		    adjust += GET_MODE_SIZE(GET_MODE(reg));
 		}
 	      else
-		regs.push_back (copy_reg (reg, -1));
+		{
+		  regs_total_size += GET_MODE_SIZE(GET_MODE(reg));
+		  regs.push_back (copy_reg (reg, -1));
+		}
 	    }
 
 	  /* add room for add.
@@ -2901,10 +2929,9 @@ opt_shrink_stack_frame (void)
 	   * Otherwise a7 is used and with (a7)+ addressing.
 	   */
 	  int add1 = i < prologueend || !usea5 ? 1 : 0;
-	  if ((int) regs.size () + add1 + (int) clobbers.size () < XVECLEN(pattern, 0) || regs.size () <= 2)
+	  if (regs.size () < regs_seen)
 	    {
-	      log ("(f) shrinking stack frame from %d to %d\n", XVECLEN(pattern, 0) - add1 - clobbers.size (),
-		   regs.size ());
+	      log ("(f) shrinking stack frame from %d to %d\n", regs_seen, regs.size ());
 	      if (regs.size () <= 2)
 		{
 		  changed = 1;
@@ -3033,7 +3060,7 @@ opt_shrink_stack_frame (void)
       for (unsigned index = 0; index < infos.size (); ++index)
 	{
 	  insn_info & ii = infos[index];
-	  if (ii.in_proepi ())
+	  if (ii.in_proepi () != IN_CODE)
 	    continue;
 
 	  rtx pattern = PATTERN (ii.get_insn ());
@@ -3043,11 +3070,14 @@ opt_shrink_stack_frame (void)
 	  // lea n(sp),ax
 	  if (ii.get_src_reg () && ii.get_src_regno () == STACK_POINTER_REGNUM && ii.get_src_op () == PLUS)
 	    {
-	      rtx src = XEXP(pattern, 1);
-	      XEXP(src, 1) = gen_rtx_CONST_INT (GET_MODE(XEXP(src, 1)), ii.get_src_intval () - adjust);
+	      // touch only if above pushed parameters
+	      if (ii.get_src_intval () > -ii.get_sp_offset ())
+		{
+		  rtx src = XEXP(pattern, 1);
+		  XEXP(src, 1) = gen_rtx_CONST_INT (GET_MODE(XEXP(src, 1)), ii.get_src_intval () - adjust);
+		}
 	    }
-
-	  if (ii.is_src_mem () && ii.is_src_mem_plus () && ii.get_src_mem_regno () == STACK_POINTER_REGNUM)
+	  else if (ii.is_src_mem () && ii.is_src_mem_plus () && ii.get_src_mem_regno () == STACK_POINTER_REGNUM)
 	    {
 	      rtx src = XEXP(pattern, 1);
 	      rtx plus = XEXP(src, 0);
@@ -3076,19 +3106,18 @@ opt_shrink_stack_frame (void)
 	    {
 	      unsigned index = *i;
 	      SET_INSN_DELETED(infos[index].get_insn ());
-	      while (index > 0 && infos[index].in_proepi () == 2)
+
+	      // move to last insn in epilogue
+	      while (index - 1 > 0 && infos[index - 1].in_proepi () >= IN_EPILOGUE)
 		--index;
 
 	      insn_info & ii = infos[index];
-	      if (!ii.in_proepi ())
+	      if (ii.get_sp_offset () != 0)
 		{
-		  if (ii.get_sp_offset () != 0)
-		    {
-		      log ("(f) adjusting exit sp\n");
-		      rtx pattern = gen_rtx_SET(
-			  a7, gen_rtx_PLUS(SImode, a7, gen_rtx_CONST_INT(SImode, - ii.get_sp_offset())));
-		      emit_insn_after (pattern, ii.get_insn ());
-		    }
+		  log ("(f) adjusting exit sp\n");
+		  rtx pattern = gen_rtx_SET(a7,
+					    gen_rtx_PLUS(SImode, a7, gen_rtx_CONST_INT(SImode, - ii.get_sp_offset())));
+		  emit_insn_before (pattern, ii.get_insn ());
 		}
 	    }
 
@@ -3097,7 +3126,43 @@ opt_shrink_stack_frame (void)
 	    {
 	      insn_info & ii = infos[i];
 	      if (ii.get_myuse () & (1 << FRAME_POINTER_REGNUM))
-		ii.a5_to_a7 (a7);
+		{
+		  ii.a5_to_a7 (a7);
+		  if (regs_seen && ii.in_proepi () == IN_EPILOGUE_PARALLEL_POP)
+		    {
+		      // exit sp insn needs an +
+		      rtx pattern = PATTERN (ii.get_insn ());
+		      unsigned sz = XVECLEN(pattern, 0);
+
+		      rtx parallel = gen_rtx_PARALLEL(VOIDmode, rtvec_alloc (sz + 1));
+		      unsigned n = 0;
+		      for (unsigned j = 0; j < sz; ++j)
+			{
+			  rtx set = XVECEXP(pattern, 0, j);
+			  rtx reg = SET_DEST(set);
+			  rtx mem = SET_SRC(set);
+			  rtx plus = XEXP(mem, 0);
+			  if (n)
+			    {
+			      XEXP(plus, 1) = gen_rtx_CONST_INT (SImode, n);
+			    }
+			  else
+			    {
+			      XEXP(mem, 0) = XEXP(plus, 0);
+			    }
+			  n += GET_MODE_SIZE(GET_MODE(reg));
+			  XVECEXP(parallel, 0, j + 1) = set;
+			}
+
+		      rtx a = copy_reg (a7, -1);
+		      a->frame_related = 1;
+		      rtx plus = gen_rtx_PLUS(SImode, a, gen_rtx_CONST_INT (SImode, regs_total_size));
+		      rtx set = gen_rtx_SET(a, plus);
+		      XVECEXP(parallel, 0, 0) = set;
+		      SET_INSN_DELETED(ii.get_insn ());
+		      ii.set_insn (emit_insn_after (parallel, ii.get_insn ()));
+		    }
+		}
 
 	      ii.unset (FRAME_POINTER_REGNUM);
 	    }
