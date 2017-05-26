@@ -497,9 +497,7 @@ set_lattice_value (tree var, ccp_prop_value_t *new_val)
      use the meet operator to retain a conservative value.
      Missed optimizations like PR65851 makes this necessary.
      It also ensures we converge to a stable lattice solution.  */
-  if (new_val->lattice_val == CONSTANT
-      && old_val->lattice_val == CONSTANT
-      && TREE_CODE (new_val->value) != SSA_NAME)
+  if (old_val->lattice_val != UNINITIALIZED)
     ccp_lattice_meet (new_val, old_val);
 
   gcc_checking_assert (valid_lattice_transition (*old_val, *new_val));
