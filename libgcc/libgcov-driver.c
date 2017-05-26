@@ -848,6 +848,15 @@ gcov_do_dump (struct gcov_info *list, int run_counted)
   free (gf.filename);
 }
 
+#if IN_GCOV_TOOL
+const char *
+__attribute__ ((unused))
+gcov_get_filename (struct gcov_info *list)
+{
+  return list->filename;
+}
+#endif
+
 #if !IN_GCOV_TOOL
 void
 __gcov_dump_one (struct gcov_root *root)

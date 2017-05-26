@@ -1,6 +1,15 @@
 2017-05-26  Martin Liska  <mliska@suse.cz>
 
 	Backport from mainline
+	2017-04-18  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/78783
+	* gcov-tool.c (gcov_output_files): Validate that destination
+	file is either removed by the tool or by a user.
+
+2017-05-26  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
 	2017-04-13  Martin Liska  <mliska@suse.cz>
 
 	PR gcov-profile/80413
