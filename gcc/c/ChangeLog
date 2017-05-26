@@ -1,3 +1,12 @@
+2017-05-26  Marek Polacek  <polacek@redhat.com>
+
+	Backported from mainline
+	2017-05-17  Marek Polacek  <polacek@redhat.com>
+
+	PR sanitizer/80659
+	* c-decl.c (build_compound_literal): Set DECL_ARTIFICIAL and
+	DECL_IGNORED_P even for non-static compound literals.
+
 2017-05-03  Jakub Jelinek <jakub@redhat.com>
 
 	Backported from mainline
