@@ -6057,6 +6057,23 @@ pushdecl_top_level_and_finish (tree x, tree init)
   return x;
 }
 
+/* Enter the namespaces from current_namerspace to NS.  */
+
+static int
+push_inline_namespaces (tree ns)
+{
+  int count = 0;
+  if (ns != current_namespace)
+    {
+      gcc_assert (ns != global_namespace);
+      count += push_inline_namespaces (CP_DECL_CONTEXT (ns));
+      resume_scope (NAMESPACE_LEVEL (ns));
+      current_namespace = ns;
+      count++;
+    }
+  return count;
+}
+
 /* Push into the scope of the NAME namespace.  If NAME is NULL_TREE,
    then we enter an anonymous namespace.  If MAKE_INLINE is true, then
    we create an inline namespace (it is up to the caller to check upon
@@ -6076,43 +6093,36 @@ push_namespace (tree name, bool make_inline)
   if (!name)
     name = anon_identifier;
 
-  /* Check whether this is an extended namespace definition.  */
-  tree ns = get_namespace_binding (current_namespace, name);
-  if (ns && TREE_CODE (ns) == NAMESPACE_DECL)
-    {
-      if (tree dna = DECL_NAMESPACE_ALIAS (ns))
-	{
-	  /* We do some error recovery for, eg, the redeclaration of M
-	     here:
-
-	     namespace N {}
-	     namespace M = N;
-	     namespace M {}
-
-	     However, in nasty cases like:
-
-	     namespace N
-	     {
-	       namespace M = N;
-	       namespace M {}
-	     }
-
-	     we just error out below, in duplicate_decls.  */
-	  if (NAMESPACE_LEVEL (dna)->level_chain == current_binding_level)
-	    {
-	      error ("namespace alias %qD not allowed here, "
-		     "assuming %qD", ns, dna);
-	      ns = dna;
-	    }
-	  else
-	    ns = NULL_TREE;
-	}
-    }
-  else
-    ns = NULL_TREE;
+  tree ns = NULL_TREE;
+  {
+    name_lookup lookup (name, 0);
+    if (!lookup.search_qualified (current_namespace, /*usings=*/false))
+      ;
+    else if (TREE_CODE (lookup.value) != NAMESPACE_DECL)
+      ;
+    else if (tree dna = DECL_NAMESPACE_ALIAS (lookup.value))
+      {
+	/* A namespace alias is not allowed here, but if the alias
+	   is for a namespace also inside the current scope,
+	   accept it with a diagnostic.  That's better than dying
+	   horribly.  */
+	if (is_nested_namespace (current_namespace, CP_DECL_CONTEXT (dna)))
+	  {
+	    error ("namespace alias %qD not allowed here, "
+		   "assuming %qD", lookup.value, dna);
+	    ns = dna;
+	  }
+      }
+    else
+      ns = lookup.value;
+  }
 
   bool new_ns = false;
-  if (!ns)
+  if (ns)
+    /* DR2061.  NS might be a member of an inline namespace.  We
+       need to push into those namespaces.  */
+    count += push_inline_namespaces (CP_DECL_CONTEXT (ns));
+  else
     {
       ns = build_lang_decl (NAMESPACE_DECL, name, void_type_node);
       SCOPE_DEPTH (ns) = SCOPE_DEPTH (current_namespace) + 1;

@@ -1,5 +1,9 @@
 2017-05-26  Nathan Sidwell  <nathan@acm.org>
 
+	Implement DR2061
+	* name-lookup.c (push_inline_namespaces): New.
+	(push_namespace): Look inside inline namespaces.
+
 	Inline and using namespace representation change.
 	* cp-tree.h (struct lang_decl_ns): Delete ns_using.  Add usings,
 	inlinees as vector.
