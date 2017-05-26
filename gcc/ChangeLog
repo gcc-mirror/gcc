@@ -1,6 +1,14 @@
 2017-05-26  Martin Liska  <mliska@suse.cz>
 
 	Backport from mainline
+	2017-04-19  Paulo J. Matos  <paulo@matos-sorge.com>
+
+	PR lto/50345
+	* doc/lto.texi: Remove an extra 'that'.
+
+2017-05-26  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
 	2017-04-18  Martin Liska  <mliska@suse.cz>
 
 	PR gcov-profile/78783
