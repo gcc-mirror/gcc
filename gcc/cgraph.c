@@ -2086,6 +2086,8 @@ cgraph_node::dump (FILE *f)
     fprintf (f, " only_called_at_exit");
   if (tm_clone)
     fprintf (f, " tm_clone");
+  if (calls_comdat_local)
+    fprintf (f, " calls_comdat_local");
   if (icf_merged)
     fprintf (f, " icf_merged");
   if (merged_comdat)

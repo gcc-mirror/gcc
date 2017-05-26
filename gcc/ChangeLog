@@ -4,6 +4,16 @@
 	2017-04-11  Martin Liska  <mliska@suse.cz>
 
 	PR ipa/80212
+	* cgraph.c (cgraph_node::dump): Dump calls_comdat_local.
+	* ipa-split.c (split_function): Create a local comdat symbol
+	if caller is in a comdat group.
+
+2017-05-26  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
+	2017-04-11  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/80212
 	* ipa-cp.c (determine_versionability): Handle calls_comdat_local
 	flags.
 
