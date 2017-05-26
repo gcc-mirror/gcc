@@ -1,6 +1,18 @@
 2017-05-26  Martin Liska  <mliska@suse.cz>
 
 	Backport from mainline
+	2017-04-10  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/80224
+	* gcov.c (print_usage): Fix usage string.
+	(get_gcov_intermediate_filename): Remove.
+	(output_gcov_file): Use both for normal and intermediate format.
+	(generate_results): Do not initialize special file for
+	intermediate format.
+
+2017-05-26  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
 	2017-03-28  Richard Biener  <rguenther@suse.de>
 
 	PR ipa/80205
