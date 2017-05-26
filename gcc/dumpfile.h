@@ -70,16 +70,12 @@ enum dump_kind
 #define TDF_LINENO	(1 << 10)	/* display statement line numbers */
 #define TDF_UID		(1 << 11)	/* display decl UIDs */
 
-#define TDF_STMTADDR	(1 << 12)	/* Address of stmt.  */
+#define TDF_STMTADDR	(1 << 12)       /* Address of stmt.  */
 
 #define TDF_GRAPH	(1 << 13)	/* a graph dump is being emitted */
 #define TDF_MEMSYMS	(1 << 14)	/* display memory symbols in expr.
 					   Implies TDF_VOPS.  */
 
-#define TDF_DIAGNOSTIC	(1 << 15)	/* A dump to be put in a diagnostic
-					   message.  */
-#define TDF_VERBOSE	(1 << 16)	/* A dump that uses the full tree
-					   dumper to print stmts.  */
 #define TDF_RHS_ONLY	(1 << 17)	/* a flag to only print the RHS of
 					   a gimple stmt.  */
 #define TDF_ASMNAME	(1 << 18)	/* display asm names of decls  */
@@ -90,7 +86,6 @@ enum dump_kind
 #define TDF_ENUMERATE_LOCALS (1 << 22)	/* Enumerate locals by uid.  */
 #define TDF_CSELIB	(1 << 23)	/* Dump cselib details.  */
 #define TDF_SCEV	(1 << 24)	/* Dump SCEV details.  */
-#define TDF_COMMENT	(1 << 25)	/* Dump lines with prefix ";;"  */
 #define TDF_GIMPLE	(1 << 26)	/* Dump in GIMPLE FE syntax  */
 #define TDF_FOLDING	(1 << 27)	/* Dump folding details.  */
 #define MSG_OPTIMIZED_LOCATIONS	 (1 << 27)  /* -fopt-info optimized sources */

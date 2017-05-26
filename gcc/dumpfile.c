@@ -111,7 +111,6 @@ static const struct dump_option_value_info dump_options[] =
   {"uid", TDF_UID},
   {"stmtaddr", TDF_STMTADDR},
   {"memsyms", TDF_MEMSYMS},
-  {"verbose", TDF_VERBOSE},
   {"eh", TDF_EH},
   {"alias", TDF_ALIAS},
   {"nouid", TDF_NOUID},
@@ -123,8 +122,7 @@ static const struct dump_option_value_info dump_options[] =
   {"missed", MSG_MISSED_OPTIMIZATION},
   {"note", MSG_NOTE},
   {"optall", MSG_ALL},
-  {"all", ~(TDF_RAW | TDF_SLIM | TDF_LINENO
-	    | TDF_STMTADDR | TDF_GRAPH | TDF_DIAGNOSTIC | TDF_VERBOSE
+  {"all", ~(TDF_RAW | TDF_SLIM | TDF_LINENO | TDF_GRAPH | TDF_STMTADDR
 	    | TDF_RHS_ONLY | TDF_NOUID | TDF_ENUMERATE_LOCALS | TDF_SCEV
 	    | TDF_GIMPLE)},
   {NULL, 0}
