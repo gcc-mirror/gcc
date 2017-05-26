@@ -1,6 +1,14 @@
 2017-05-26  Marek Polacek  <polacek@redhat.com>
 
 	Backported from mainline
+	2017-05-17  Marek Polacek  <polacek@redhat.com>
+
+	PR sanitizer/80659
+	* gcc.dg/asan/pr80659.c: New test.
+
+2017-05-26  Marek Polacek  <polacek@redhat.com>
+
+	Backported from mainline
 	2017-05-26  Marek Polacek  <polacek@redhat.com>
 
 	PR sanitizer/80875
