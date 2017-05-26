@@ -30,7 +30,7 @@ test_stringized_token_2 (int x)
   } while (0)
 
   EXAMPLE(x > 0, 1, 1, 6);
-  /* { dg-error "unable to read substring location: cpp_interpret_string_1 failed" "" { target *-*-* } 28 } */
+  /* { dg-error "unable to read substring location: cpp_interpret_string_1 failed" "" { target *-*-* } .-5 } */
 
 #undef EXAMPLE
 }
