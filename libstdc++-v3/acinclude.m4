@@ -4468,8 +4468,12 @@ AC_DEFUN([GLIBCXX_CHECK_SIZE_T_MANGLING], [
                        [glibcxx_cv_size_t_mangling=y], [
           AC_TRY_COMPILE([],
                          [extern __SIZE_TYPE__ x; extern unsigned short x;],
-                         [glibcxx_cv_size_t_mangling=t],
-                         [glibcxx_cv_size_t_mangling=x])
+                         [glibcxx_cv_size_t_mangling=t], [
+            AC_TRY_COMPILE([],
+                           [extern __SIZE_TYPE__ x; extern __int20 unsigned x;],
+                           [glibcxx_cv_size_t_mangling=u6uint20],
+                           [glibcxx_cv_size_t_mangling=x])
+          ])
         ])
       ])
     ])
