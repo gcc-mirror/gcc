@@ -1,3 +1,68 @@
+2017-05-26  Tom de Vries  <tom@codesourcery.com>
+
+	PR testsuite/80557
+	* gcc.dg/20011021-1.c: Replace absolute line numbers.
+	* gcc.dg/Wcxx-compat-8.c: Same.
+	* gcc.dg/Wobjsize-1.c: Same.
+	* gcc.dg/Wshadow-local-2.c: Same.
+	* gcc.dg/Wstrict-aliasing-converted-assigned.c: Same.
+	* gcc.dg/anon-struct-6.c: Same.
+	* gcc.dg/asm-wide-1.c: Same.
+	* gcc.dg/builtin-inf-1.c: Same.
+	* gcc.dg/builtin-redefine.c: Same.
+	* gcc.dg/c90-array-lval-6.c: Same.
+	* gcc.dg/c90-array-lval-7.c: Same.
+	* gcc.dg/c90-fordecl-1.c: Same.
+	* gcc.dg/c99-fordecl-2.c: Same.
+	* gcc.dg/cast-lvalue-1.c: Same.
+	* gcc.dg/cast-lvalue-2.c: Same.
+	* gcc.dg/compound-lvalue-1.c: Same.
+	* gcc.dg/cond-lvalue-1.c: Same.
+	* gcc.dg/cpp/20000419-1.c: Same.
+	* gcc.dg/cpp/backslash.c: Same.
+	* gcc.dg/cpp/backslash2.c: Same.
+	* gcc.dg/cpp/macspace1.c: Same.
+	* gcc.dg/cpp/macspace2.c: Same.
+	* gcc.dg/cpp/multiline-2.c: Same.
+	* gcc.dg/cpp/pr27777.c: Same.
+	* gcc.dg/cpp/pr30786.c: Same.
+	* gcc.dg/cpp/pr34602.c: Same.
+	* gcc.dg/cpp/redef1.c: Same.
+	* gcc.dg/cpp/tr-warn1.c: Same.
+	* gcc.dg/cpp/tr-warn3.c: Same.
+	* gcc.dg/cpp/tr-warn6.c: Same.
+	* gcc.dg/cpp/trad/hash.c: Same.
+	* gcc.dg/cpp/trad/redef1.c: Same.
+	* gcc.dg/cpp/ucs.c: Same.
+	* gcc.dg/declspec-10.c: Same.
+	* gcc.dg/declspec-11.c: Same.
+	* gcc.dg/declspec-18.c: Same.
+	* gcc.dg/format/c99-strftime-1.c: Same.
+	* gcc.dg/format/ext-3.c: Same.
+	* gcc.dg/format/pr72858.c: Same.
+	* gcc.dg/gomp/appendix-a/a.24.1.c: Same.
+	* gcc.dg/init-string-1.c: Same.
+	* gcc.dg/label-decl-3.c: Same.
+	* gcc.dg/m-un-2.c: Same.
+	* gcc.dg/nofixed-point-2.c: Same.
+	* gcc.dg/noncompile/20020213-1.c: Same.
+	* gcc.dg/pch/counter-2.c: Same.
+	* gcc.dg/plugin/diagnostic-test-string-literals-2.c: Same.
+	* gcc.dg/pr27528.c: Same.
+	* gcc.dg/pr27953.c: Same.
+	* gcc.dg/pr35899.c: Same.
+	* gcc.dg/pr37561.c: Same.
+	* gcc.dg/pr45461.c: Same.
+	* gcc.dg/pr45750.c: Same.
+	* gcc.dg/pr53196-2.c: Same.
+	* gcc.dg/pr53265.c: Same.
+	* gcc.dg/redecl-1.c: Same.
+	* gcc.dg/tls/thr-init-1.c: Same.
+	* gcc.dg/torture/pr51106-1.c: Same.
+	* gcc.dg/torture/pr51106-2.c: Same.
+	* gcc.dg/uninit-19.c: Same.
+	* gcc.dg/uninit-pr20644.c: Same.
+
 2017-05-26  Jakub Jelinek  <jakub@redhat.com>
 
 	* g++.dg/cpp1z/decomp29.C (p): New variable.

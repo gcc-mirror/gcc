@@ -63,6 +63,5 @@ void *
 f5 ()
 {
   return &((struct t8) { });  /* { dg-warning "invalid in C\[+\]\[+\]" } */
+  /* { dg-error "invalid use of undefined type" "" { target *-*-* } .-1 } */
 }
-
-/* { dg-error "invalid use of undefined type" "" { target *-*-* } 65 } */

@@ -16,7 +16,10 @@ void f6 (static int); /* { dg-error "storage class specified for unnamed paramet
 void f7 (typedef int); /* { dg-error "storage class specified for unnamed parameter" } */
 
 auto int x; /* { dg-error "file-scope declaration of 'x' specifies 'auto'" } */
-register int y; /* { dg-error "file-scope declaration of 'y' specifies 'register'" } */
+
+register int y;
+/* { dg-error "file-scope declaration of 'y' specifies 'register'" "" { target *-*-* } .-1 } */
+/* { dg-message "error: register name not specified for 'y'" "" { target *-*-* } .-2 } */
 
 void h (void) { extern void x (void) {} } /* { dg-error "nested function 'x' declared 'extern'" } */
 /* { dg-error "ISO C forbids nested functions" "nested" { target *-*-* } .-1 } */
@@ -43,5 +46,3 @@ void i (void) { auto void y (void) {} } /* { dg-error "ISO C forbids nested func
 /* { dg-error "function definition declared 'auto'" "nested" { target *-*-* } .-1 } */
 
 inline int main (void) { return 0; } /* { dg-error "cannot inline function 'main'" } */
-
-/* { dg-message "error: register name not specified for 'y'" "" { target *-*-* } 19 } */
