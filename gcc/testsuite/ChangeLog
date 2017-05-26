@@ -1,3 +1,8 @@
+2017-05-26  Nathan Sidwell  <nathan@acm.org>
+
+	* g++.dg/cpp0x/dr2061.C: New.
+	* g++.dg/parse/namespace-alias-1.C: Add more test.
+
 2017-05-26  Bin Cheng  <bin.cheng@arm.com>
 
 	PR tree-optimization/80815
