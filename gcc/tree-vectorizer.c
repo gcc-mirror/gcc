@@ -229,8 +229,11 @@ adjust_simduid_builtins (hash_table<simduid_to_vf> *htab)
 	    default:
 	      gcc_unreachable ();
 	    }
-	  update_call_from_tree (&i, t);
-	  gsi_next (&i);
+	  tree lhs = gimple_call_lhs (stmt);
+	  if (lhs)
+	    replace_uses_by (lhs, t);
+	  release_defs (stmt);
+	  gsi_remove (&i, true);
 	}
     }
 }
