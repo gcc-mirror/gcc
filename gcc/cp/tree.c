@@ -2150,8 +2150,8 @@ ovl_copy (tree ovl)
 }
 
 /* Add FN to the (potentially NULL) overload set OVL.  USING_P is
-   true, if FN is via a using declaration.  Overloads are ordered as
-   using, regular.  */
+   true, if FN is via a using declaration.  We also pay attention to
+   DECL_HIDDEN.  Overloads are ordered as hidden, using, regular.  */
 
 tree
 ovl_insert (tree fn, tree maybe_ovl, bool using_p)
@@ -2287,6 +2287,29 @@ ovl_iterator::remove_node (tree overload, tree node)
   return overload;
 }
 
+/* Mark or unmark a lookup set. */
+
+void
+lookup_mark (tree ovl, bool val)
+{
+  /* For every node that is a lookup, mark the thing it points to.  */
+  for (; ovl && TREE_CODE (ovl) == OVERLOAD && OVL_LOOKUP_P (ovl);
+       ovl = OVL_CHAIN (ovl))
+    {
+      tree targ = OVL_FUNCTION (ovl);
+      gcc_checking_assert (LOOKUP_SEEN_P (targ) != val);
+      LOOKUP_SEEN_P (targ) = val;
+    }
+
+  if (ovl && (TREE_CODE (ovl) == OVERLOAD ||
+	      TREE_CODE (ovl) == FUNCTION_DECL))
+    {
+      /* Mark the overload itsef.  */
+      gcc_checking_assert (LOOKUP_SEEN_P (ovl) != val);
+      LOOKUP_SEEN_P (ovl) = val;
+    }
+}
+
 /* Add a set of new FNS into a lookup.  */
 
 tree
@@ -2301,6 +2324,75 @@ lookup_add (tree fns, tree lookup)
     lookup = fns;
 
   return lookup;
+}
+
+/* FNS is a new overload set, add it to LOOKUP, if it is not already
+   present there.  */
+
+tree
+lookup_maybe_add (tree fns, tree lookup)
+{
+  if (LOOKUP_SEEN_P (fns))
+    return lookup;
+
+  if (lookup && TREE_CODE (fns) == OVERLOAD)
+    {
+      /* Determine if we already have some part of this overload in
+	 the overload set.  If so fix things up so we only have the
+	 overload set once.  */
+      tree marked = NULL_TREE;
+
+      for (tree probe = fns; probe; probe = OVL_CHAIN (probe))
+	if (LOOKUP_SEEN_P (probe))
+	  {
+	    marked = probe;
+	    break;
+	  }
+	else if (TREE_CODE (probe) != OVERLOAD)
+	  break;
+
+      if (marked)
+	{
+	  /* The tail of this overload is already in the lookup
+	     set.  Stitch out the tail case, which might involve
+	     copying.  */
+	  bool rewrite = false;
+
+	  LOOKUP_SEEN_P (marked) = false;
+	  for (tree *prev = &lookup, probe = *prev;
+	       ; prev = &OVL_CHAIN (probe), probe = *prev)
+	    {
+	      if (probe == marked)
+		{
+		  *prev = NULL_TREE;
+		  break;
+		}
+	      gcc_checking_assert (OVL_LOOKUP_P (probe));
+	      if (marked == OVL_FUNCTION (probe))
+		{
+		  *prev = OVL_CHAIN (probe);
+		  break;
+		}
+
+	      /* If we're in a used part of the lookup set, copy the
+		 node, so as to not disturb stored uses.  */
+	      gcc_checking_assert (!rewrite || OVL_USED_P (probe));
+	      if (OVL_USED_P (probe))
+		{
+		  rewrite = true;
+		  probe = ovl_copy (probe);
+		  OVL_LOOKUP_P (probe) = true;
+		  *prev = probe;
+		}
+	    }
+	}
+    }
+
+  /* Finally mark the new overload and prepend it to the current
+     lookup.  */
+  LOOKUP_SEEN_P (fns) = true;
+
+  return lookup_add (fns, lookup);
 }
 
 /* If KEEP is true, preserve the contents of a lookup so that it is

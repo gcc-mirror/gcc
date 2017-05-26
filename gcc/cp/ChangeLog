@@ -1,5 +1,23 @@
 2017-05-26  Nathan Sidwell  <nathan@acm.org>
 
+	* cp-tree.h (OVL_CHAIN): Check looking at OVERLOAD.
+	(ovl_iterator): Add allow_inner field.  Adjust ctor.  Make
+	unduplicatable.
+	(ovl_iterator::maybe_push, ovl_iterator::pop): New.
+	(lkp_iterator): Add outer field.  Adjust ctor.
+	(lkp_iterator::operator++): New.
+	(lookup_mark, lookup_maybe_add): Declare.
+	* name-lookup.c (name_lookup): Delete fn_set member.
+	(name_lookup::preserve_state, name_lookup::restore_state): Unmark
+	and mark lookup.
+	(name_lookup::add_value): Use lookup_add directly.
+	(name_lookup::add_fns: Use lookup_maybe_add.
+	(name_lookup::search_adl): Mark and unmark fns.
+	(pushdecl): Adjust.
+	* pt.c (check_explicit_specialization): Use lookup_add directly.
+	* ptree.c (cxx_print_xnode): Show complete overload structure.
+	* tree.c (lookup_mark, lookup_maybe_add): New.
+
 	* name-lookup.c (name_lookup::search_adl): ADL OMP UDR type args.
 
 2017-05-26  Jakub Jelinek  <jakub@redhat.com>
