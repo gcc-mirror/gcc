@@ -1,5 +1,11 @@
 2017-05-26  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/80842
+	* tree-ssa-ccp.c (set_lattice_value): Always meet with the old
+	value.
+
+2017-05-26  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/80844
 	* tree-vectorizer.c (adjust_simduid_builtins): Propagate
 	results.
