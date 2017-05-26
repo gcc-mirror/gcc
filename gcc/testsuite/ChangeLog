@@ -1,3 +1,8 @@
+2017-05-26  Marek Polacek  <polacek@redhat.com>
+
+	PR sanitizer/80875
+	* c-c++-common/ubsan/pr80875.c: New test.
+
 2017-05-26  Tom de Vries  <tom@codesourcery.com>
 
 	PR testsuite/80557

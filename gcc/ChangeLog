@@ -1,3 +1,9 @@
+2017-05-26  Marek Polacek  <polacek@redhat.com>
+
+	PR sanitizer/80875
+	* fold-const.c (fold_binary_loc) <case MULT_EXPR>: Check if OP1
+	can be negated.
+
 2017-05-26  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/80842
