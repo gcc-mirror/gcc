@@ -1,5 +1,18 @@
 2017-05-26  Nathan Sidwell  <nathan@acm.org>
 
+	* call.c (build_operator_new_call): Do namelookup and ADL here.
+	(build_new_op_1): Likewise.
+	* name-lookup.h (lookup_function_nonclass): Delete declaration.
+	(do_using_directive): Likewise.
+	* name-lookup.c (set_namespace_binding, push_local_binding): Don't
+	declare early.
+	(struct scope_binding): Delete.
+	(EMPTY_SCOPE_BINDING): Delete.
+	(set_decl_namespace): Use OVL_P.
+	(finish_local_using_decl): Lose unnecesary checks.
+	(lookup_function_nonclass): Delete.
+	(cp_emit_debug_info_for_using): Use MAYBE_BASELINK_P.
+
 	* cp-tree.h (OVL_CHAIN): Check looking at OVERLOAD.
 	(ovl_iterator): Add allow_inner field.  Adjust ctor.  Make
 	unduplicatable.

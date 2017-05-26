@@ -946,7 +946,7 @@ plugin_add_using_namespace (cc1_plugin::connection *,
 
   gcc_assert (TREE_CODE (used_ns) == NAMESPACE_DECL);
 
-  do_using_directive (used_ns);
+  finish_namespace_using_directive (used_ns, NULL_TREE);
 
   return 1;
 }
