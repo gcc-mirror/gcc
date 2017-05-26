@@ -1,3 +1,30 @@
+2017-05-26  Jakub Jelinek  <jakub@redhat.com>
+
+	* cp-tree.h (struct lang_decl_decomp): New type.
+	(struct lang_decl): Add u.decomp.
+	(LANG_DECL_DECOMP_CHECK): Define.
+	(DECL_DECOMPOSITION_P): Note it is set also on the vars
+	for user identifiers.
+	(DECL_DECOMP_BASE): Define.
+	(retrofit_lang_decl): Add extra int = 0 argument.
+	* lex.c (retrofit_lang_decl): Add SEL argument, if non-zero
+	use it to influence the selector choices and for selector
+	0 to non-zero transition copy old content.
+	(cxx_dup_lang_specific_decl): Handle DECL_DECOMPOSITION_P.
+	* decl.c (poplevel): For DECL_DECOMPOSITION_P, check
+	!DECL_DECOMP_BASE instead of !DECL_VALUE_EXPR.  Adjust warning
+	wording if decl is a structured binding.
+	(cp_finish_decomp): Pass 4 as the new argument to retrofit_lang_decl.
+	Set DECL_DECOMP_BASE.  Ignore DECL_READ_P sets from initialization
+	of individual variables for tuple structured bindings.
+	(grokdeclarator): Pass 4 as the new argument to retrofit_lang_decl.
+	Clear DECL_DECOMP_BASE.
+	* decl2.c (mark_used): Mark DECL_DECOMP_BASE TREE_USED as well.
+	* pt.c (tsubst_decomp_names): Assert DECL_DECOMP_BASE matches what
+	is expected.
+	* expr.c (mark_exp_read): Recurse on DECL_DECOMP_BASE instead of
+	DECL_VALUE_EXPR.
+
 2017-05-25  Jason Merrill  <jason@redhat.com>
 
 	PR c++/80605 - __is_standard_layout and zero-length array

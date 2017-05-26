@@ -15705,6 +15705,7 @@ tsubst_decomp_names (tree decl, tree pattern_decl, tree args,
 	  return error_mark_node;
 	}
       (*cnt)++;
+      gcc_assert (DECL_DECOMP_BASE (decl2) == pattern_decl);
       gcc_assert (DECL_HAS_VALUE_EXPR_P (decl2));
       tree v = DECL_VALUE_EXPR (decl2);
       DECL_HAS_VALUE_EXPR_P (decl2) = 0;

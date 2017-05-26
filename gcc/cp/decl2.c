@@ -5027,6 +5027,9 @@ mark_used (tree decl, tsubst_flags_t complain)
 
   /* Set TREE_USED for the benefit of -Wunused.  */
   TREE_USED (decl) = 1;
+  /* And for structured bindings also the underlying decl.  */
+  if (DECL_DECOMPOSITION_P (decl) && DECL_DECOMP_BASE (decl))
+    TREE_USED (DECL_DECOMP_BASE (decl)) = 1;
 
   if (TREE_CODE (decl) == TEMPLATE_DECL)
     return true;

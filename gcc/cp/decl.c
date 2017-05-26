@@ -658,7 +658,7 @@ poplevel (int keep, int reverse, int functionbody)
 	    && ! DECL_IN_SYSTEM_HEADER (decl)
 	    /* For structured bindings, consider only real variables, not
 	       subobjects.  */
-	    && (DECL_DECOMPOSITION_P (decl) ? !DECL_VALUE_EXPR (decl)
+	    && (DECL_DECOMPOSITION_P (decl) ? !DECL_DECOMP_BASE (decl)
 		: (DECL_NAME (decl) && !DECL_ARTIFICIAL (decl)))
 	    && type != error_mark_node
 	    && (!CLASS_TYPE_P (type)
@@ -667,16 +667,28 @@ poplevel (int keep, int reverse, int functionbody)
 				     TYPE_ATTRIBUTES (TREE_TYPE (decl)))))
 	  {
 	    if (! TREE_USED (decl))
-	      warning_at (DECL_SOURCE_LOCATION (decl),
-			  OPT_Wunused_variable, "unused variable %qD", decl);
+	      {
+		if (!DECL_NAME (decl) && DECL_DECOMPOSITION_P (decl))
+		  warning_at (DECL_SOURCE_LOCATION (decl),
+			      OPT_Wunused_variable,
+			      "unused structured binding declaration");
+		else
+		  warning_at (DECL_SOURCE_LOCATION (decl),
+			      OPT_Wunused_variable, "unused variable %qD", decl);
+	      }
 	    else if (DECL_CONTEXT (decl) == current_function_decl
 		     // For -Wunused-but-set-variable leave references alone.
 		     && TREE_CODE (TREE_TYPE (decl)) != REFERENCE_TYPE
 		     && errorcount == unused_but_set_errorcount)
 	      {
-		warning_at (DECL_SOURCE_LOCATION (decl),
-			    OPT_Wunused_but_set_variable,
-			    "variable %qD set but not used", decl);
+		if (!DECL_NAME (decl) && DECL_DECOMPOSITION_P (decl))
+		  warning_at (DECL_SOURCE_LOCATION (decl),
+			      OPT_Wunused_but_set_variable, "structured "
+			      "binding declaration set but not used");
+		else
+		  warning_at (DECL_SOURCE_LOCATION (decl),
+			      OPT_Wunused_but_set_variable,
+			      "variable %qD set but not used", decl);
 		unused_but_set_errorcount = errorcount;
 	      }
 	  }
@@ -7361,8 +7373,9 @@ cp_finish_decomp (tree decl, tree first, unsigned int count)
 	    }
 	  if (processing_template_decl)
 	    {
-	      retrofit_lang_decl (first);
+	      retrofit_lang_decl (first, 4);
 	      SET_DECL_DECOMPOSITION_P (first);
+	      DECL_DECOMP_BASE (first) = decl;
 	    }
 	  first = DECL_CHAIN (first);
 	}
@@ -7375,8 +7388,9 @@ cp_finish_decomp (tree decl, tree first, unsigned int count)
   for (unsigned int i = 0; i < count; i++, d = DECL_CHAIN (d))
     {
       v[count - i - 1] = d;
-      retrofit_lang_decl (d);
+      retrofit_lang_decl (d, 4);
       SET_DECL_DECOMPOSITION_P (d);
+      DECL_DECOMP_BASE (d) = decl;
     }
 
   tree type = TREE_TYPE (decl);
@@ -7482,6 +7496,7 @@ cp_finish_decomp (tree decl, tree first, unsigned int count)
       eltscnt = tree_to_uhwi (tsize);
       if (count != eltscnt)
 	goto cnt_mismatch;
+      int save_read = DECL_READ_P (decl);	
       for (unsigned i = 0; i < count; ++i)
 	{
 	  location_t sloc = input_location;
@@ -7514,6 +7529,10 @@ cp_finish_decomp (tree decl, tree first, unsigned int count)
 	    cp_finish_decl (v[i], init, /*constexpr*/false,
 			    /*asm*/NULL_TREE, LOOKUP_NORMAL);
 	}
+      /* Ignore reads from the underlying decl performed during initialization
+	 of the individual variables.  If those will be read, we'll mark
+	 the underlying decl as read at that point.  */
+      DECL_READ_P (decl) = save_read;
     }
   else if (TREE_CODE (type) == UNION_TYPE)
     {
@@ -12295,9 +12314,10 @@ grokdeclarator (const cp_declarator *declarator,
 	  {
 	    gcc_assert (declarator && declarator->kind == cdk_decomp);
 	    DECL_SOURCE_LOCATION (decl) = declarator->id_loc;
-	    retrofit_lang_decl (decl);
+	    retrofit_lang_decl (decl, 4);
 	    DECL_ARTIFICIAL (decl) = 1;
 	    SET_DECL_DECOMPOSITION_P (decl);
+	    DECL_DECOMP_BASE (decl) = NULL_TREE;
 	  }
       }
 
