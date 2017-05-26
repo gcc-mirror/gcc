@@ -146,34 +146,6 @@ typedef struct _slp_instance {
 
 
 
-/* This struct is used to store the information of a data reference,
-   including the data ref itself and the segment length for aliasing
-   checks.  This is used to merge alias checks.  */
-
-struct dr_with_seg_len
-{
-  dr_with_seg_len (data_reference_p d, tree len)
-    : dr (d), seg_len (len) {}
-
-  data_reference_p dr;
-  tree seg_len;
-};
-
-/* This struct contains two dr_with_seg_len objects with aliasing data
-   refs.  Two comparisons are generated from them.  */
-
-struct dr_with_seg_len_pair_t
-{
-  dr_with_seg_len_pair_t (const dr_with_seg_len& d1,
-			       const dr_with_seg_len& d2)
-    : first (d1), second (d2) {}
-
-  dr_with_seg_len first;
-  dr_with_seg_len second;
-};
-
-
-
 /* Vectorizer state common between loop and basic-block vectorization.  */
 struct vec_info {
   enum { bb, loop } kind;
