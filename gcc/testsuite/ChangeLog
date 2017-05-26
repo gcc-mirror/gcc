@@ -1,6 +1,14 @@
 2017-05-26  Martin Liska  <mliska@suse.cz>
 
 	Backport from mainline
+	2017-04-10  Martin Liska  <mliska@suse.cz>
+
+	PR sanitizer/80350
+	* c-c++-common/ubsan/pr80350.c: New test.
+
+2017-05-26  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
 	2017-04-06  Martin Liska  <mliska@suse.cz>
 
 	PR sanitizer/80166
