@@ -1,5 +1,20 @@
 2017-05-26  Bin Cheng  <bin.cheng@arm.com>
 
+	* tree-vect-data-refs.c (Operator==, comp_dr_with_seg_len_pair):
+	Move from ...
+	* tree-data-ref.c (Operator==, comp_dr_with_seg_len_pair): To here.
+	* tree-vect-data-refs.c (vect_prune_runtime_alias_test_list): Factor
+	out code pruning runtime alias checks.
+	* tree-data-ref.c (prune_runtime_alias_test_list): New function
+	factored out from above.
+	* tree-vectorizer.h (struct dr_with_seg_len, dr_with_seg_len_pair_t):
+	Move from ...
+	* tree-data-ref.h (struct dr_with_seg_len, dr_with_seg_len_pair_t):
+	... to here.
+	(prune_runtime_alias_test_list): New decalaration.
+
+2017-05-26  Bin Cheng  <bin.cheng@arm.com>
+
 	* tree-vect-data-refs.c (compare_tree): Rename and move ...
 	* tree-data-ref.c (data_ref_compare_tree): ... to here.
 	* tree-data-ref.h (data_ref_compare_tree): New decalaration.

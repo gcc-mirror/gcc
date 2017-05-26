@@ -148,6 +148,32 @@ struct data_reference
 
 typedef struct data_reference *data_reference_p;
 
+/* This struct is used to store the information of a data reference,
+   including the data ref itself and the segment length for aliasing
+   checks.  This is used to merge alias checks.  */
+
+struct dr_with_seg_len
+{
+  dr_with_seg_len (data_reference_p d, tree len)
+    : dr (d), seg_len (len) {}
+
+  data_reference_p dr;
+  tree seg_len;
+};
+
+/* This struct contains two dr_with_seg_len objects with aliasing data
+   refs.  Two comparisons are generated from them.  */
+
+struct dr_with_seg_len_pair_t
+{
+  dr_with_seg_len_pair_t (const dr_with_seg_len& d1,
+			       const dr_with_seg_len& d2)
+    : first (d1), second (d2) {}
+
+  dr_with_seg_len first;
+  dr_with_seg_len second;
+};
+
 enum data_dependence_direction {
   dir_positive,
   dir_negative,
@@ -343,6 +369,8 @@ extern bool dr_equal_offsets_p (struct data_reference *,
                                 struct data_reference *);
 
 extern int data_ref_compare_tree (tree, tree);
+extern void prune_runtime_alias_test_list (vec<dr_with_seg_len_pair_t> *,
+					   unsigned HOST_WIDE_INT);
 /* Return true when the base objects of data references A and B are
    the same memory object.  */
 
