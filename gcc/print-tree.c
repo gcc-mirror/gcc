@@ -1038,21 +1038,6 @@ debug (const tree_node *ptr)
 }
 
 DEBUG_FUNCTION void
-debug_verbose (const tree_node &ref)
-{
-  dump_tree_via_hooks (&ref, TDF_VERBOSE);
-}
-
-DEBUG_FUNCTION void
-debug_verbose (const tree_node *ptr)
-{
-  if (ptr)
-    debug_verbose (*ptr);
-  else
-    fprintf (stderr, "<nil>\n");
-}
-
-DEBUG_FUNCTION void
 debug_head (const tree_node &ref)
 {
   debug (ref);

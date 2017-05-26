@@ -1,3 +1,19 @@
+2017-05-26  Martin Liska  <mliska@suse.cz>
+
+	* cfg.c (check_bb_profile): Do not use TDF_COMMENT and print
+	always leading ';; '.
+	(dump_bb_info): Likewise.
+	(brief_dump_cfg): Likewise.
+	* cfgrtl.c (print_rtl_with_bb): Do not use TDF_COMMENT.
+	* dumpfile.c: Remove usage of TDF_VERBOSE.
+	* dumpfile.h (enum dump_kind): Likewise.
+	(dump_gimple_bb_header): Do not use TDF_COMMENT.
+	* print-tree.c (debug_verbose): Remove.
+	* tree-cfg.c (gimple_dump_cfg): Do not use TDF_COMMENT.
+	(dump_function_to_file): Remove dumps guarded with TDF_VERBOSE.
+	* tree-diagnostic.c (default_tree_printer): Replace
+	TDF_DIAGNOSTIC with TDF_SLIM.
+
 2017-05-26  Bin Cheng  <bin.cheng@arm.com>
 
 	* tree-vect-loop-manip.c (create_intersect_range_checks_index): Pass

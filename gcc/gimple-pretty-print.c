@@ -2641,8 +2641,7 @@ dump_gimple_bb_header (FILE *outf, basic_block bb, int indent,
 	{
 	  gimple_stmt_iterator gsi;
 
-	  if (flags & TDF_COMMENT)
-	    fputs (";; ", outf);
+	  fputs (";; ", outf);
 
 	  for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
 	    if (!is_gimple_debug (gsi_stmt (gsi))

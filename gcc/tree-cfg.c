@@ -2401,7 +2401,7 @@ gimple_dump_cfg (FILE *file, dump_flags_t flags)
 	       n_basic_blocks_for_fn (cfun), n_edges_for_fn (cfun),
 	       last_basic_block_for_fn (cfun));
 
-      brief_dump_cfg (file, flags | TDF_COMMENT);
+      brief_dump_cfg (file, flags);
       fprintf (file, "\n");
     }
 
@@ -7591,16 +7591,11 @@ dump_function_to_file (tree fndecl, FILE *file, dump_flags_t flags)
       print_generic_expr (file, TREE_TYPE (arg), dump_flags);
       fprintf (file, " ");
       print_generic_expr (file, arg, dump_flags);
-      if (flags & TDF_VERBOSE)
-	print_node (file, "", arg, 4);
       if (DECL_CHAIN (arg))
 	fprintf (file, ", ");
       arg = DECL_CHAIN (arg);
     }
   fprintf (file, ")\n");
-
-  if (flags & TDF_VERBOSE)
-    print_node (file, "", fndecl, 2);
 
   dsf = DECL_STRUCT_FUNCTION (fndecl);
   if (dsf && (flags & TDF_EH))
@@ -7654,8 +7649,6 @@ dump_function_to_file (tree fndecl, FILE *file, dump_flags_t flags)
 	FOR_EACH_LOCAL_DECL (fun, ix, var)
 	  {
 	    print_generic_decl (file, var, flags);
-	    if (flags & TDF_VERBOSE)
-	      print_node (file, "", var, 4);
 	    fprintf (file, "\n");
 
 	    any_var = true;
@@ -7691,7 +7684,7 @@ dump_function_to_file (tree fndecl, FILE *file, dump_flags_t flags)
 	fprintf (file, "\n");
 
       FOR_EACH_BB_FN (bb, fun)
-	dump_bb (file, bb, 2, flags | TDF_COMMENT);
+	dump_bb (file, bb, 2, flags);
 
       fprintf (file, "}\n");
     }
