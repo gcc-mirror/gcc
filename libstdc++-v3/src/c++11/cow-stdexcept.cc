@@ -208,6 +208,8 @@ extern void* _ZGTtnaX (size_t sz) __attribute__((weak));
 extern void _ZGTtdlPv (void* ptr) __attribute__((weak));
 extern uint8_t _ITM_RU1(const uint8_t *p)
   ITM_REGPARM __attribute__((weak));
+extern uint16_t _ITM_RU2(const uint16_t *p)
+  ITM_REGPARM __attribute__((weak));
 extern uint32_t _ITM_RU4(const uint32_t *p)
   ITM_REGPARM __attribute__((weak));
 extern uint64_t _ITM_RU8(const uint64_t *p)
@@ -272,12 +274,15 @@ _txnal_cow_string_C1_for_exceptions(void* that, const char* s,
 static void* txnal_read_ptr(void* const * ptr)
 {
   static_assert(sizeof(uint64_t) == sizeof(void*)
-		|| sizeof(uint32_t) == sizeof(void*),
-		"Pointers must be 32 bits or 64 bits wide");
+		|| sizeof(uint32_t) == sizeof(void*)
+		|| sizeof(uint16_t) == sizeof(void*),
+		"Pointers must be 16 bits, 32 bits or 64 bits wide");
 #if __UINTPTR_MAX__ == __UINT64_MAX__
   return (void*)_ITM_RU8((const uint64_t*)ptr);
-#else
+#elif __UINTPTR_MAX__ == __UINT32_MAX__
   return (void*)_ITM_RU4((const uint32_t*)ptr);
+#else
+  return (void*)_ITM_RU2((const uint16_t*)ptr);
 #endif
 }
 
