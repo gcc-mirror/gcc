@@ -52,7 +52,11 @@ extern "C" {
    Important: this could change and we could switch to 'typedef bool
    BOOL' in the future.  Do not depend on the type of BOOL.  */
 #undef BOOL
+#ifdef AMIGA
+typedef short  BOOL;
+#else
 typedef unsigned char  BOOL;
+#endif
 
 #define YES   (BOOL)1
 #define NO    (BOOL)0

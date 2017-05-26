@@ -64,6 +64,10 @@ static tokenrun *next_tokenrun (tokenrun *);
 
 static _cpp_buff *new_buff (size_t);
 
+/*
+ * SBF: This flag is set if an asm statement is parsed, to support multiline strings in __asm()
+ */
+int in_assembler_directive;
 
 /* Utility routine:
 
@@ -1063,7 +1067,10 @@ _cpp_process_line_notes (cpp_reader *pfile, int in_comment)
       else if (note->type == 0)
 	/* Already processed in lex_raw_string.  */;
       else
-	abort ();
+	{
+//	  abort ();
+	  printf("ups: note type=%d\n", note->type);
+	}
     }
 }
 
@@ -1875,6 +1882,20 @@ lex_string (cpp_reader *pfile, cpp_token *token, const uchar *base)
 	break;
       else if (c == '\n')
 	{
+	  /*
+	   *  SBF: allow multi-line strings
+	   *  Ignore the line end and move to next line.
+	   *  Only fail, if there is no next line
+	   */
+	  if (in_assembler_directive)
+	    {
+	      cpp_buffer *buffer = pfile->buffer;
+	      if (buffer->cur < buffer->rlimit)
+		CPP_INCREMENT_LINE (pfile, 0);
+	      buffer->need_line = true;
+	      if (_cpp_get_fresh_line (pfile))
+		  continue;
+	    }
 	  cur--;
 	  /* Unmatched quotes always yield undefined behavior, but
 	     greedy lexing means that what appears to be an unterminated

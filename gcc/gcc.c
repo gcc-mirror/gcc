@@ -10103,3 +10103,40 @@ driver_get_configure_time_options (void (*cb) (const char *option,
   obstack_free (&obstack, NULL);
   n_switches = 0;
 }
+
+#ifdef TARGET_AMIGA
+const char * amiga_m68k_prefix_func(int argc, const char ** argv) {
+  char * p = 0;
+  if (standard_libexec_prefix)
+    {
+      char * glp = concat(standard_libexec_prefix, "", NULL);
+      p = strrchr(glp, '/');
+      if (p)
+	{
+	  *p = 0;
+	  p = strrchr(glp, '/');
+	  if (p)
+	    {
+	      *p = 0;
+	      p = strrchr(glp, '/');
+	      if (p)
+		{
+		  p[1] = 0;
+		  p = concat(glp, "m68k-amigaos/", NULL);
+		}
+	    }
+        }
+      free(glp);
+    }
+  if (!p)
+    p = concat("../../../../", "", NULL);
+
+  for (int i = 0; i < argc; ++i) {
+      char * q = concat(p, argv[i], NULL);
+      free(p);
+      p = q;
+  }
+//  printf("amiga_m68k_prefix_func='%s'\n", p);
+  return p;
+}
+#endif

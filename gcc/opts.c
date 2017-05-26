@@ -530,8 +530,10 @@ static const struct default_options default_options_table[] =
     { OPT_LEVELS_1_PLUS_NOT_DEBUG, OPT_finline_functions_called_once, NULL, 1 },
     { OPT_LEVELS_3_PLUS, OPT_funswitch_loops, NULL, 1 },
     { OPT_LEVELS_3_PLUS, OPT_fgcse_after_reload, NULL, 1 },
+#ifndef TARGET_AMIGA    
     { OPT_LEVELS_3_PLUS, OPT_ftree_loop_vectorize, NULL, 1 },
     { OPT_LEVELS_3_PLUS, OPT_ftree_slp_vectorize, NULL, 1 },
+#endif
     { OPT_LEVELS_3_PLUS, OPT_fvect_cost_model_, NULL, VECT_COST_MODEL_DYNAMIC },
     { OPT_LEVELS_3_PLUS, OPT_fipa_cp_clone, NULL, 1 },
     { OPT_LEVELS_3_PLUS, OPT_ftree_partial_pre, NULL, 1 },

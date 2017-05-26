@@ -1199,6 +1199,7 @@ OBJS = \
 	auto-inc-dec.o \
 	auto-profile.o \
 	bb-reorder.o \
+	bbb-opts.o \
 	bitmap.o \
 	bt-load.o \
 	builtins.o \
@@ -1986,7 +1987,7 @@ gcc-nm.c: gcc-ar.c
 	cp $^ $@
 
 COLLECT2_OBJS = collect2.o collect2-aix.o tlink.o vec.o ggc-none.o \
-  collect-utils.o file-find.o hash-table.o
+  collect-utils.o file-find.o hash-table.o $(EXTRA_COLLECT2_OBJS)
 COLLECT2_LIBS = @COLLECT2_LIBS@
 collect2$(exeext): $(COLLECT2_OBJS) $(LIBDEPS)
 # Don't try modifying collect2 (aka ld) in place--it might be linking this.

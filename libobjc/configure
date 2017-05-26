@@ -7637,7 +7637,8 @@ $as_echo_n "checking for $compiler option to produce PIC... " >&6; }
             # FIXME: we need at least 68020 code to build shared libraries, but
             # adding the `-m68020' flag to GCC prevents building anything better,
             # like `-m68040'.
-            lt_prog_compiler_pic='-m68020 -resident32 -malways-restore-a4'
+            #lt_prog_compiler_pic='-m68020 -resident32 -malways-restore-a4'
+            enable_shared=no
         ;;
       esac
       ;;

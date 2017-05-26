@@ -1807,6 +1807,12 @@ df_ref_change_reg_with_loc_1 (struct df_reg_info *old_df,
 	  df_ref *ref_ptr;
 	  struct df_insn_info *insn_info = DF_REF_INSN_INFO (the_ref);
 
+	  if (DF_REF_FLAGS_IS_SET(the_ref, DF_HARD_REG_LIVE))
+	    {
+	      --df->hard_regs_live_count[DF_REF_REGNO(the_ref)];
+	      ++df->hard_regs_live_count[new_regno];
+	    }
+
 	  DF_REF_REGNO (the_ref) = new_regno;
 	  DF_REF_REG (the_ref) = regno_reg_rtx[new_regno];
 

@@ -816,6 +816,10 @@ m32r-*-linux*)
 m32rle-*-linux*)
 	tmake_file="$tmake_file m32r/t-linux t-fdpbit"
 	;;
+m68k-*-amiga*)
+	tmake_file="$tmake_file 
+# m68k/t-floatlib"
+	;;
 m68k-*-elf* | fido-*-elf)
 	tmake_file="$tmake_file m68k/t-floatlib"
 	;;

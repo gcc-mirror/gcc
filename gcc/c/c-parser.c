@@ -3837,10 +3837,26 @@ c_parser_parameter_declaration (c_parser *parser, tree attrs)
       c_parser_skip_until_found (parser, CPP_COMMA, NULL);
       return NULL;
     }
+  /**
+   * SBF: Add support for __asm("xy") register spec.
+   */
+#ifdef TARGET_AMIGAOS
+  tree asmspec = NULL_TREE;
+  if (c_parser_next_token_is_keyword (parser, RID_ASM))
+    {
+      asmspec = c_parser_simple_asm_expr (parser);
+//	printf("asmspec: %s\n", TREE_STRING_POINTER(asmspec));
+    }
+#endif
   if (c_parser_next_token_is_keyword (parser, RID_ATTRIBUTE))
     postfix_attrs = c_parser_attributes (parser);
-  return build_c_parm (specs, chainon (postfix_attrs, prefix_attrs),
+
+  struct c_parm * cparm = build_c_parm (specs, chainon (postfix_attrs, prefix_attrs),
 		       declarator);
+#ifdef TARGET_AMIGAOS
+  cparm->asmspec = asmspec;
+#endif
+  return cparm;
 }
 
 /* Parse a string literal in an asm expression.  It should not be
@@ -3892,6 +3908,7 @@ c_parser_asm_string_literal (c_parser *parser)
 static tree
 c_parser_simple_asm_expr (c_parser *parser)
 {
+  extern int in_assembler_directive;
   tree str;
   gcc_assert (c_parser_next_token_is_keyword (parser, RID_ASM));
   /* ??? Follow the C++ parser rather than using the
@@ -3903,7 +3920,13 @@ c_parser_simple_asm_expr (c_parser *parser)
       parser->lex_untranslated_string = false;
       return NULL_TREE;
     }
+
+  // SBF: set in_assembler_directive to enable multi-line strings. And yes, it's a HACK.
+  in_assembler_directive = 1;
   str = c_parser_asm_string_literal (parser);
+  // SBF: in_assembler_directive disabled
+  in_assembler_directive = 0;
+
   parser->lex_untranslated_string = false;
   if (!c_parser_require (parser, CPP_CLOSE_PAREN, "expected %<)%>"))
     {

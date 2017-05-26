@@ -226,6 +226,11 @@ case "${host_os}" in
     os_include_dir="os/generic"
     atomicity_dir="cpu/generic"
     ;;
+  amiga*)
+        os_include_dir="os/newlib"
+        CXXFLAGS="${CXXFLAGS} -noixemul"
+        CPPFLAGS="${CPPFLAGS} -noixemul"
+        ;;
   bsd*)
     # Plain BSD attempts to share FreeBSD files.
     os_include_dir="os/bsd/freebsd"

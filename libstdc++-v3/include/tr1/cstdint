@@ -30,7 +30,9 @@
 #define _GLIBCXX_TR1_CSTDINT 1
 
 #pragma GCC system_header
-
+#ifdef AMIGA
+#include <stdint.h>
+#endif
 #include <bits/c++config.h>
 
 // For 8.22.1/1 (see C99, Notes 219, 220, 222)

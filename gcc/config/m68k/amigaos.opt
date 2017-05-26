@@ -1,0 +1,48 @@
+
+mregparm=
+Target RejectNegative Var(amigaos_regparm) Joined UInteger Init(-1)
+Pass arguments through registers.
+
+noixemul
+Target RejectNegative
+Do not use ixemul.library - use libnix instead to link
+
+ramiga-lib
+Target RejectNegative
+Use libinit.o as start file
+
+ramiga-libr
+Target RejectNegative
+Use libinitr.o as start file
+
+ramiga-dev
+Target RejectNegative
+Use devinit.o as start file
+
+msmall-code
+Target RejectNegative Var(flag_smallcode,1)
+small code model
+
+fbaserel
+Target Report Var(flag_pic,3) 
+data is addressed relative to a4
+
+fbaserel32
+Target Report Var(flag_pic,4)
+data is addressed relative to a4 with 32 bit offsets
+
+resident
+Target Common Report Var(flag_pic,3)
+data is addressed relative to a4, linked as resident
+
+resident32
+Target Common Report Var(flag_pic,4)
+data is addressed relative to a4 with 32 bit offsets, linked as resident
+
+mcrt=
+Target RejectNegative Var(amigaos_crt) Joined
+Specify startup binary
+
+fbbb=
+Target RejectNegative Report Var(string_bbb_opts) Joined
+-fbbb=\t\tEnable Bebbo's optimizations. Default: -fbbb=+\n  valid letters:\n\t\t+\t\tenable all\n\t\t-\t\tdisable all\n\t\ta\t\tadd move optimization\n\t\tc\t\tcompare to sub\n\t\te\t\teliminate dead assignments\n\t\tf\t\tshrink stack frame\n\t\tm\t\tmerge add statements\n\t\tp\t\tpropagate move pairs from loops\n\t\tr\t\tadditional reg rename pass\n\t\tv\t\tbe verbose\n\t\tx or X\t\tdump insns 

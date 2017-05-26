@@ -2151,6 +2151,7 @@ call_from_call_insn (rtx_call_insn *insn)
    SEEN is used to track the end of the prologue, for emitting
    debug information.  We force the emission of a line note after
    both NOTE_INSN_PROLOGUE_END and NOTE_INSN_FUNCTION_BEG.  */
+rtx_insn * current_insn;
 
 rtx_insn *
 final_scan_insn (rtx_insn *insn, FILE *file, int optimize_p ATTRIBUTE_UNUSED,
@@ -2160,6 +2161,7 @@ final_scan_insn (rtx_insn *insn, FILE *file, int optimize_p ATTRIBUTE_UNUSED,
   rtx set;
 #endif
   rtx_insn *next;
+  current_insn = insn;
 
   insn_counter++;
 
@@ -3622,6 +3624,8 @@ do_assembler_dialects (const char *p, int *dialect)
 void
 output_asm_insn (const char *templ, rtx *operands)
 {
+  extern bool be_very_verbose;
+  extern void append_reg_usage(FILE *, rtx_insn *);
   const char *p;
   int c;
 #ifdef ASSEMBLER_DIALECT
@@ -3777,6 +3781,9 @@ output_asm_insn (const char *templ, rtx *operands)
       default:
 	putc (c, asm_out_file);
       }
+
+  if (be_very_verbose)
+    append_reg_usage(asm_out_file, current_insn);
 
   /* Write out the variable names for operands, if we know them.  */
   if (flag_verbose_asm)

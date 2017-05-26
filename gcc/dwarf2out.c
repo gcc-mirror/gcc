@@ -451,7 +451,7 @@ switch_to_eh_frame_section (bool back ATTRIBUTE_UNUSED)
 						       /*global=*/1);
 	  lsda_encoding = ASM_PREFERRED_EH_DATA_FORMAT (/*code=*/0,
 							/*global=*/0);
-	  flags = ((! flag_pic
+	  flags = (( (!flag_pic || flag_pic > 2)
 		    || ((fde_encoding & 0x70) != DW_EH_PE_absptr
 			&& (fde_encoding & 0x70) != DW_EH_PE_aligned
 			&& (per_encoding & 0x70) != DW_EH_PE_absptr

@@ -458,6 +458,7 @@ along with GCC; see the file COPYING3.  If not see
 	  NEXT_PASS (pass_cprop_hardreg);
 	  NEXT_PASS (pass_fast_rtl_dce);
 	  NEXT_PASS (pass_reorder_blocks);
+	  NEXT_PASS (pass_bbb_optimizations);
 	  NEXT_PASS (pass_branch_target_load_optimize2);
 	  NEXT_PASS (pass_leaf_regs);
 	  NEXT_PASS (pass_split_before_sched2);

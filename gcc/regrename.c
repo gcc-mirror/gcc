@@ -374,44 +374,45 @@ find_rename_reg (du_head_p this_head, enum reg_class super_class,
     = (enum reg_class) targetm.preferred_rename_class (super_class);
 
   /* Pick and check the register from the tied chain iff the tied chain
-     is not renamed.  */
+   is not renamed.  */
   if (this_head->tied_chain && !this_head->tied_chain->renamed
       && check_new_reg_p (old_reg, this_head->tied_chain->regno,
 			  this_head, *unavailable))
     return this_head->tied_chain->regno;
 
   /* If PREFERRED_CLASS is not NO_REGS, we iterate in the first pass
-     over registers that belong to PREFERRED_CLASS and try to find the
-     best register within the class.  If that failed, we iterate in
-     the second pass over registers that don't belong to the class.
-     If PREFERRED_CLASS is NO_REGS, we iterate over all registers in
-     ascending order without any preference.  */
+   over registers that belong to PREFERRED_CLASS and try to find the
+   best register within the class.  If that failed, we iterate in
+   the second pass over registers that don't belong to the class.
+   If PREFERRED_CLASS is NO_REGS, we iterate over all registers in
+   ascending order without any preference.  */
   has_preferred_class = (preferred_class != NO_REGS);
   for (pass = (has_preferred_class ? 0 : 1); pass < 2; pass++)
     {
       int new_reg;
-      for (new_reg = 0; new_reg < FIRST_PSEUDO_REGISTER; new_reg++)
-	{
-	  if (has_preferred_class
+  for (new_reg = 0; new_reg < FIRST_PSEUDO_REGISTER; new_reg++)
+    {
+      if (has_preferred_class
 	      && (pass == 0)
 	      != TEST_HARD_REG_BIT (reg_class_contents[preferred_class],
-				    new_reg))
-	    continue;
+				   new_reg))
+	continue;
 
-	  if (!check_new_reg_p (old_reg, new_reg, this_head, *unavailable))
-	    continue;
+      if (!check_new_reg_p (old_reg, new_reg, this_head, *unavailable))
+	continue;
 
-	  if (!best_rename)
-	    return new_reg;
+      if (!best_rename)
+	return new_reg;
 
-	  /* In the first pass, we force the renaming of registers that
-	     don't belong to PREFERRED_CLASS to registers that do, even
-	     though the latters were used not very long ago.  */
-	  if ((pass == 0
+      /* In the first pass, we force the renaming of registers that
+       don't belong to PREFERRED_CLASS to registers that do, even
+       though the latters were used not very long ago.
+       Also use a register if no best_new_reg was found till now  */
+	  if (((pass == 0 || !has_preferred_class)
 	      && !TEST_HARD_REG_BIT (reg_class_contents[preferred_class],
 				     best_new_reg))
 	      || tick[best_new_reg] > tick[new_reg])
-	    best_new_reg = new_reg;
+	  best_new_reg = new_reg;
 	}
       if (pass == 0 && best_new_reg != old_reg)
 	break;
@@ -897,7 +898,7 @@ regrename_analyze (bitmap bb_mask)
 	      if (!range_overlaps_hard_reg_set_p (live, chain->regno,
 						  chain->nregs))
 		continue;
-	      
+
 	      n_succs_used++;
 
 	      dest_ri = (struct bb_rename_info *)e->dest->aux;
@@ -921,7 +922,7 @@ regrename_analyze (bitmap bb_mask)
 			  printed = true;
 			  fprintf (dump_file,
 				   "  merging chains %d (->%d) and %d (->%d) [%s]\n",
-				   k, incoming_chain->id, j, chain->id, 
+				   k, incoming_chain->id, j, chain->id,
 				   reg_names[incoming_chain->regno]);
 			}
 
@@ -954,7 +955,7 @@ regrename_analyze (bitmap bb_mask)
    numbering in its subpatterns.  */
 
 bool
-regrename_do_replace (struct du_head *head, int reg)
+regrename_do_replace (struct du_head *head, int regno)
 {
   struct du_chain *chain;
   unsigned int base_regno = head->regno;
@@ -962,19 +963,20 @@ regrename_do_replace (struct du_head *head, int reg)
 
   for (chain = head->first; chain; chain = chain->next_use)
     {
-      unsigned int regno = ORIGINAL_REGNO (*chain->loc);
-      struct reg_attrs *attr = REG_ATTRS (*chain->loc);
-      int reg_ptr = REG_POINTER (*chain->loc);
+      unsigned int orig_regno = ORIGINAL_REGNO(*chain->loc);
+      struct reg_attrs *attr = REG_ATTRS(*chain->loc);
+      int reg_ptr = REG_POINTER(*chain->loc);
 
       if (DEBUG_INSN_P (chain->insn) && REGNO (*chain->loc) != base_regno)
-	validate_change (chain->insn, &(INSN_VAR_LOCATION_LOC (chain->insn)),
-			 gen_rtx_UNKNOWN_VAR_LOC (), true);
+	validate_change (chain->insn, &(INSN_VAR_LOCATION_LOC(chain->insn)),
+	gen_rtx_UNKNOWN_VAR_LOC (),
+			 true);
       else
 	{
-	  validate_change (chain->insn, chain->loc, 
-			   gen_raw_REG (GET_MODE (*chain->loc), reg), true);
-	  if (regno >= FIRST_PSEUDO_REGISTER)
-	    ORIGINAL_REGNO (*chain->loc) = regno;
+	  validate_change (chain->insn, chain->loc,
+			   gen_raw_REG (GET_MODE(*chain->loc), regno), true);
+	  if (orig_regno >= FIRST_PSEUDO_REGISTER)
+	    ORIGINAL_REGNO (*chain->loc) = orig_regno;
 	  REG_ATTRS (*chain->loc) = attr;
 	  REG_POINTER (*chain->loc) = reg_ptr;
 	}
@@ -983,10 +985,29 @@ regrename_do_replace (struct du_head *head, int reg)
   if (!apply_change_group ())
     return false;
 
-  mode = GET_MODE (*head->first->loc);
+  mode = GET_MODE(*head->first->loc);
   head->renamed = 1;
-  head->regno = reg;
-  head->nregs = hard_regno_nregs[reg][mode];
+  head->regno = regno;
+  head->nregs = hard_regno_nregs[regno][mode];
+
+  /* SBF: also update the current df info, move from base_regno -> regno. */
+  if (base_regno < FIRST_PSEUDO_REGISTER && regno < FIRST_PSEUDO_REGISTER)
+    for (chain = head->first; chain; chain = chain->next_use)
+      {
+	if (DEBUG_INSN_P (chain->insn) && VAR_LOC_UNKNOWN_P(INSN_VAR_LOCATION_LOC(chain->insn)))
+	  continue;
+	/* undo regno patch - will be patched again */
+	if (REGNO (*chain->loc) == regno)
+	  SET_REGNO(*chain->loc, base_regno);
+	df_ref_change_reg_with_loc (*chain->loc, regno);
+
+	SET_REGNO(*chain->loc, regno);
+      }
+
+  /* Mark the old regno as no longer used. */
+  if (!df->hard_regs_live_count[base_regno])
+    df_set_regs_ever_live (base_regno, false);
+
   return true;
 }
 
@@ -1912,7 +1933,6 @@ const pass_data pass_data_regrename =
   0, /* todo_flags_start */
   TODO_df_finish, /* todo_flags_finish */
 };
-
 class pass_regrename : public rtl_opt_pass
 {
 public:
@@ -1923,7 +1943,7 @@ public:
   /* opt_pass methods: */
   virtual bool gate (function *)
     {
-      return (optimize > 0 && (flag_rename_registers));
+      return (optimize > 0 && (flag_rename_registers) && !TARGET_AMIGA);
     }
 
   virtual unsigned int execute (function *) { return regrename_optimize (); }

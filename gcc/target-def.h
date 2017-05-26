@@ -108,3 +108,11 @@
 #include "hooks.h"
 #include "targhooks.h"
 #include "insn-target-def.h"
+
+#ifndef TARGET_GCC_EXCEPT_TABLE
+#define TARGET_GCC_EXCEPT_TABLE ".gcc_except_table"
+#endif
+
+#ifndef TARGET_GCC_EXCEPT_TABLE_S
+#define TARGET_GCC_EXCEPT_TABLE_S ".gcc_except_table.%s"
+#endif

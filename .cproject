@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<?fileVersion 4.0.0?><cproject storage_type_id="org.eclipse.cdt.core.XmlProjectDescriptionStorage">
+	<storageModule moduleId="org.eclipse.cdt.core.settings">
+		<cconfiguration id="cdt.managedbuild.config.gnu.cross.exe.debug.452878522">
+			<storageModule buildSystemId="org.eclipse.cdt.managedbuilder.core.configurationDataProvider" id="cdt.managedbuild.config.gnu.cross.exe.debug.452878522" moduleId="org.eclipse.cdt.core.settings" name="Debug">
+				<externalSettings/>
+				<extensions>
+					<extension id="org.eclipse.cdt.core.Cygwin_PE" point="org.eclipse.cdt.core.BinaryParser"/>
+					<extension id="org.eclipse.cdt.core.GASErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.core.GmakeErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.core.CWDLocator" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.core.GCCErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.core.GLDErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+				</extensions>
+			</storageModule>
+			<storageModule moduleId="cdtBuildSystem" version="4.0.0">
+				<configuration artifactName="${ProjName}" buildArtefactType="org.eclipse.cdt.build.core.buildArtefactType.exe" buildProperties="org.eclipse.cdt.build.core.buildArtefactType=org.eclipse.cdt.build.core.buildArtefactType.exe,org.eclipse.cdt.build.core.buildType=org.eclipse.cdt.build.core.buildType.debug" cleanCommand="rm -rf" description="" id="cdt.managedbuild.config.gnu.cross.exe.debug.452878522" name="Debug" parent="cdt.managedbuild.config.gnu.cross.exe.debug">
+					<folderInfo id="cdt.managedbuild.config.gnu.cross.exe.debug.452878522." name="/" resourcePath="">
+						<toolChain id="cdt.managedbuild.toolchain.gnu.cygwin.base.2053847551" name="Cygwin GCC" superClass="cdt.managedbuild.toolchain.gnu.cygwin.base">
+							<targetPlatform archList="all" binaryParser="org.eclipse.cdt.core.Cygwin_PE" id="cdt.managedbuild.target.gnu.platform.cygwin.base.2091243283" name="Debug Platform" osList="win32" superClass="cdt.managedbuild.target.gnu.platform.cygwin.base"/>
+							<builder buildPath="${workspace_loc:/debugwin}/Debug" id="cdt.managedbuild.target.gnu.builder.cygwin.base.1660320342" keepEnvironmentInBuildfile="false" managedBuildOn="false" name="Gnu Make Builder" superClass="cdt.managedbuild.target.gnu.builder.cygwin.base">
+								<outputEntries>
+									<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="outputPath" name=""/>
+								</outputEntries>
+							</builder>
+							<tool id="cdt.managedbuild.tool.gnu.assembler.cygwin.base.607722454" name="GCC Assembler" superClass="cdt.managedbuild.tool.gnu.assembler.cygwin.base">
+								<option id="gnu.both.asm.option.include.paths.2094451885" name="Include paths (-I)" superClass="gnu.both.asm.option.include.paths" valueType="includePath">
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/amigaos-cross-toolchain/.build-m68k/build/gcc-6/gcc}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;C:\cygwin\usr\include&quot;"/>
+								</option>
+								<inputType id="cdt.managedbuild.tool.gnu.assembler.input.1425989952" superClass="cdt.managedbuild.tool.gnu.assembler.input"/>
+							</tool>
+							<tool id="cdt.managedbuild.tool.gnu.archiver.cygwin.base.2119049474" name="GCC Archiver" superClass="cdt.managedbuild.tool.gnu.archiver.cygwin.base"/>
+							<tool id="cdt.managedbuild.tool.gnu.cpp.compiler.cygwin.base.1103847968" name="Cygwin C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.cygwin.base">
+								<option id="gnu.cpp.compiler.option.include.paths.466783605" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" useByScannerDiscovery="false" valueType="includePath">
+									<listOptionValue builtIn="false" value="&quot;C:\cygwin\usr\include&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/gcc-6/libcpp/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:\develop\workspaces\c1\amigaos-cross-toolchain\.build-m68k\build\gcc-6\gcc&quot;"/>
+								</option>
+								<option id="gnu.cpp.compiler.option.optimization.level.193715843" name="Optimization Level" superClass="gnu.cpp.compiler.option.optimization.level" useByScannerDiscovery="false" value="gnu.cpp.compiler.optimization.level.none" valueType="enumerated"/>
+								<option id="gnu.cpp.compiler.option.debugging.level.2136883244" name="Debug Level" superClass="gnu.cpp.compiler.option.debugging.level" useByScannerDiscovery="false" value="gnu.cpp.compiler.debugging.level.max" valueType="enumerated"/>
+								<option id="gnu.cpp.compiler.option.preprocessor.def.807277038" name="Defined symbols (-D)" superClass="gnu.cpp.compiler.option.preprocessor.def" useByScannerDiscovery="false" valueType="definedSymbols">
+									<listOptionValue builtIn="false" value="IN_GCC=1"/>
+									<listOptionValue builtIn="false" value="HAVE_cc0=1"/>
+									<listOptionValue builtIn="false" value="__ECLIPSE__=1"/>
+									<listOptionValue builtIn="false" value="TARGET_AMIGA=1"/>
+								</option>
+								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.cygwin.780175803" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input.cygwin"/>
+							</tool>
+							<tool id="cdt.managedbuild.tool.gnu.c.compiler.cygwin.base.1920331604" name="Cygwin C Compiler" superClass="cdt.managedbuild.tool.gnu.c.compiler.cygwin.base">
+								<option id="gnu.c.compiler.option.include.paths.692774379" name="Include paths (-I)" superClass="gnu.c.compiler.option.include.paths" useByScannerDiscovery="false" valueType="includePath">
+									<listOptionValue builtIn="false" value="&quot;C:\cygwin\usr\include&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/gcc-6/libcpp/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:\develop\workspaces\c1\amigaos-cross-toolchain\.build-m68k\build\gcc-6\gcc&quot;"/>
+								</option>
+								<option defaultValue="gnu.c.optimization.level.none" id="gnu.c.compiler.option.optimization.level.227992926" name="Optimization Level" superClass="gnu.c.compiler.option.optimization.level" useByScannerDiscovery="false" valueType="enumerated"/>
+								<option id="gnu.c.compiler.option.debugging.level.748883400" name="Debug Level" superClass="gnu.c.compiler.option.debugging.level" useByScannerDiscovery="false" value="gnu.c.debugging.level.max" valueType="enumerated"/>
+								<option id="gnu.c.compiler.option.preprocessor.def.symbols.1982594045" name="Defined symbols (-D)" superClass="gnu.c.compiler.option.preprocessor.def.symbols" useByScannerDiscovery="false" valueType="definedSymbols">
+									<listOptionValue builtIn="false" value="IN_GCC=1"/>
+									<listOptionValue builtIn="false" value="HAVE_cc0=1"/>
+									<listOptionValue builtIn="false" value="__ECLIPSE__=1"/>
+									<listOptionValue builtIn="false" value="TARGET_AMIGA=1"/>
+								</option>
+								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.cygwin.2078467313" superClass="cdt.managedbuild.tool.gnu.c.compiler.input.cygwin"/>
+							</tool>
+							<tool id="cdt.managedbuild.tool.gnu.c.linker.cygwin.base.344641511" name="Cygwin C Linker" superClass="cdt.managedbuild.tool.gnu.c.linker.cygwin.base"/>
+							<tool id="cdt.managedbuild.tool.gnu.cpp.linker.cygwin.base.968200320" name="Cygwin C++ Linker" superClass="cdt.managedbuild.tool.gnu.cpp.linker.cygwin.base">
+								<option id="gnu.cpp.link.option.libs.260033787" name="Libraries (-l)" superClass="gnu.cpp.link.option.libs"/>
+								<inputType id="cdt.managedbuild.tool.gnu.cpp.linker.input.1537937183" superClass="cdt.managedbuild.tool.gnu.cpp.linker.input">
+									<additionalInput kind="additionalinputdependency" paths="$(USER_OBJS)"/>
+									<additionalInput kind="additionalinput" paths="$(LIBS)"/>
+								</inputType>
+							</tool>
+						</toolChain>
+					</folderInfo>
+					<sourceEntries>
+						<entry excluding="ada/|doc/|fortran/|ginclude/|go/|java/|jit/|lto/|objc/|objcp/|po/|testsuite/|config/aarch64/|config/alpha/|config/arc/|config/arm/|config/avr/|config/bfin/|config/c6x/|config/cr16/|config/cris/|config/epiphany/|config/fr30/|config/frv/|config/ft32/|config/h8300/|config/i386/|config/ia64/|config/iq2000/|config/lm32/|config/m32c/|config/m32r/|config/mcore/|config/mep/|config/microblaze/|config/mips/|config/mmix/|config/mn10300/|config/moxie/|config/msp430/|config/nds32/|config/nios2/|config/nvptx/|config/pa/|config/pdp11/|config/rl78/|config/rs6000/|config/rx/|config/s390/|config/sh/|config/sparc/|config/spu/|config/stormy16/|config/tilegx/|config/tilepro/|config/v850/|config/vax/|config/visium/|config/vms/|config/xtensa/" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="gcc"/>
+					</sourceEntries>
+				</configuration>
+			</storageModule>
+			<storageModule moduleId="org.eclipse.cdt.core.externalSettings"/>
+		</cconfiguration>
+		<cconfiguration id="cdt.managedbuild.config.gnu.cross.exe.release.811454954">
+			<storageModule buildSystemId="org.eclipse.cdt.managedbuilder.core.configurationDataProvider" id="cdt.managedbuild.config.gnu.cross.exe.release.811454954" moduleId="org.eclipse.cdt.core.settings" name="Release">
+				<externalSettings/>
+				<extensions>
+					<extension id="org.eclipse.cdt.core.ELF" point="org.eclipse.cdt.core.BinaryParser"/>
+					<extension id="org.eclipse.cdt.core.GASErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.core.GmakeErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.core.CWDLocator" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.core.GCCErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.core.GLDErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+				</extensions>
+			</storageModule>
+			<storageModule moduleId="cdtBuildSystem" version="4.0.0">
+				<configuration artifactName="${ProjName}" buildArtefactType="org.eclipse.cdt.build.core.buildArtefactType.exe" buildProperties="org.eclipse.cdt.build.core.buildArtefactType=org.eclipse.cdt.build.core.buildArtefactType.exe,org.eclipse.cdt.build.core.buildType=org.eclipse.cdt.build.core.buildType.release" cleanCommand="rm -rf" description="" id="cdt.managedbuild.config.gnu.cross.exe.release.811454954" name="Release" parent="cdt.managedbuild.config.gnu.cross.exe.release">
+					<folderInfo id="cdt.managedbuild.config.gnu.cross.exe.release.811454954." name="/" resourcePath="">
+						<toolChain id="cdt.managedbuild.toolchain.gnu.cross.exe.release.101222491" name="Cross GCC" superClass="cdt.managedbuild.toolchain.gnu.cross.exe.release">
+							<targetPlatform archList="all" binaryParser="org.eclipse.cdt.core.ELF" id="cdt.managedbuild.targetPlatform.gnu.cross.1798723854" isAbstract="false" osList="all" superClass="cdt.managedbuild.targetPlatform.gnu.cross"/>
+							<builder buildPath="${workspace_loc:/debugwin}/Release" id="cdt.managedbuild.builder.gnu.cross.507087034" keepEnvironmentInBuildfile="false" managedBuildOn="true" name="Gnu Make Builder" superClass="cdt.managedbuild.builder.gnu.cross"/>
+							<tool id="cdt.managedbuild.tool.gnu.cross.c.compiler.1834281466" name="Cross GCC Compiler" superClass="cdt.managedbuild.tool.gnu.cross.c.compiler">
+								<option defaultValue="gnu.c.optimization.level.most" id="gnu.c.compiler.option.optimization.level.1686563067" name="Optimization Level" superClass="gnu.c.compiler.option.optimization.level" useByScannerDiscovery="false" valueType="enumerated"/>
+								<option id="gnu.c.compiler.option.debugging.level.60172226" name="Debug Level" superClass="gnu.c.compiler.option.debugging.level" useByScannerDiscovery="false" value="gnu.c.debugging.level.none" valueType="enumerated"/>
+								<option id="gnu.c.compiler.option.include.paths.696908692" name="Include paths (-I)" superClass="gnu.c.compiler.option.include.paths" useByScannerDiscovery="false" valueType="includePath">
+									<listOptionValue builtIn="false" value="&quot;C:\cygwin\usr\include&quot;"/>
+								</option>
+								<option id="gnu.c.compiler.option.preprocessor.def.symbols.652362073" name="Defined symbols (-D)" superClass="gnu.c.compiler.option.preprocessor.def.symbols" useByScannerDiscovery="false" valueType="definedSymbols">
+									<listOptionValue builtIn="false" value="IN_GCC=1"/>
+									<listOptionValue builtIn="false" value="HAVE_cc0=1"/>
+									<listOptionValue builtIn="false" value="__ECLIPSE__=1"/>
+									<listOptionValue builtIn="false" value="TARGET_AMIGA=1"/>
+								</option>
+								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.1150724656" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
+							</tool>
+							<tool id="cdt.managedbuild.tool.gnu.cross.cpp.compiler.1042604749" name="Cross G++ Compiler" superClass="cdt.managedbuild.tool.gnu.cross.cpp.compiler">
+								<option id="gnu.cpp.compiler.option.optimization.level.2088586809" name="Optimization Level" superClass="gnu.cpp.compiler.option.optimization.level" useByScannerDiscovery="false" value="gnu.cpp.compiler.optimization.level.most" valueType="enumerated"/>
+								<option id="gnu.cpp.compiler.option.debugging.level.1993778911" name="Debug Level" superClass="gnu.cpp.compiler.option.debugging.level" useByScannerDiscovery="false" value="gnu.cpp.compiler.debugging.level.none" valueType="enumerated"/>
+								<option id="gnu.cpp.compiler.option.include.paths.1936413739" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" useByScannerDiscovery="false" valueType="includePath">
+									<listOptionValue builtIn="false" value="&quot;C:\cygwin\usr\include&quot;"/>
+								</option>
+								<option id="gnu.cpp.compiler.option.preprocessor.def.625117841" name="Defined symbols (-D)" superClass="gnu.cpp.compiler.option.preprocessor.def" useByScannerDiscovery="false" valueType="definedSymbols">
+									<listOptionValue builtIn="false" value="IN_GCC=1"/>
+									<listOptionValue builtIn="false" value="HAVE_cc0=1"/>
+									<listOptionValue builtIn="false" value="__ECLIPSE__=1"/>
+									<listOptionValue builtIn="false" value="TARGET_AMIGA=1"/>
+								</option>
+								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.1133865092" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
+							</tool>
+							<tool id="cdt.managedbuild.tool.gnu.cross.c.linker.946489608" name="Cross GCC Linker" superClass="cdt.managedbuild.tool.gnu.cross.c.linker"/>
+							<tool id="cdt.managedbuild.tool.gnu.cross.cpp.linker.738916918" name="Cross G++ Linker" superClass="cdt.managedbuild.tool.gnu.cross.cpp.linker">
+								<inputType id="cdt.managedbuild.tool.gnu.cpp.linker.input.1880308865" superClass="cdt.managedbuild.tool.gnu.cpp.linker.input">
+									<additionalInput kind="additionalinputdependency" paths="$(USER_OBJS)"/>
+									<additionalInput kind="additionalinput" paths="$(LIBS)"/>
+								</inputType>
+							</tool>
+							<tool id="cdt.managedbuild.tool.gnu.cross.archiver.1813524686" name="Cross GCC Archiver" superClass="cdt.managedbuild.tool.gnu.cross.archiver"/>
+							<tool id="cdt.managedbuild.tool.gnu.cross.assembler.1395544547" name="Cross GCC Assembler" superClass="cdt.managedbuild.tool.gnu.cross.assembler">
+								<option id="gnu.both.asm.option.include.paths.1443815690" name="Include paths (-I)" superClass="gnu.both.asm.option.include.paths" valueType="includePath">
+									<listOptionValue builtIn="false" value="&quot;C:\cygwin\usr\include&quot;"/>
+								</option>
+								<inputType id="cdt.managedbuild.tool.gnu.assembler.input.1421786104" superClass="cdt.managedbuild.tool.gnu.assembler.input"/>
+							</tool>
+						</toolChain>
+					</folderInfo>
+					<sourceEntries>
+						<entry excluding="src" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src"/>
+					</sourceEntries>
+				</configuration>
+			</storageModule>
+			<storageModule moduleId="org.eclipse.cdt.core.externalSettings"/>
+		</cconfiguration>
+	</storageModule>
+	<storageModule moduleId="cdtBuildSystem" version="4.0.0">
+		<project id="debugwin.cdt.managedbuild.target.gnu.cross.exe.1884740625" name="Executable" projectType="cdt.managedbuild.target.gnu.cross.exe"/>
+	</storageModule>
+	<storageModule moduleId="org.eclipse.cdt.core.LanguageSettingsProviders"/>
+	<storageModule moduleId="refreshScope" versionNumber="2">
+		<configuration configurationName="Debug">
+			<resource resourceType="PROJECT" workspacePath="/gcc-6"/>
+		</configuration>
+		<configuration configurationName="Release">
+			<resource resourceType="PROJECT" workspacePath="/gcc-6"/>
+		</configuration>
+	</storageModule>
+	<storageModule moduleId="org.eclipse.cdt.make.core.buildtargets"/>
+	<storageModule moduleId="scannerConfiguration">
+		<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
+		<scannerConfigBuildInfo instanceId="cdt.managedbuild.config.gnu.cross.exe.release.811454954;cdt.managedbuild.config.gnu.cross.exe.release.811454954.;cdt.managedbuild.tool.gnu.cross.c.compiler.1834281466;cdt.managedbuild.tool.gnu.c.compiler.input.1150724656">
+			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
+		</scannerConfigBuildInfo>
+		<scannerConfigBuildInfo instanceId="cdt.managedbuild.config.gnu.cross.exe.debug.452878522;cdt.managedbuild.config.gnu.cross.exe.debug.452878522.;cdt.managedbuild.tool.gnu.cross.c.compiler.502147450;cdt.managedbuild.tool.gnu.c.compiler.input.1173428818">
+			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
+		</scannerConfigBuildInfo>
+		<scannerConfigBuildInfo instanceId="cdt.managedbuild.config.gnu.cross.exe.debug.452878522;cdt.managedbuild.config.gnu.cross.exe.debug.452878522.;cdt.managedbuild.tool.gnu.cpp.compiler.cygwin.base.1103847968;cdt.managedbuild.tool.gnu.cpp.compiler.input.cygwin.780175803">
+			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
+		</scannerConfigBuildInfo>
+		<scannerConfigBuildInfo instanceId="cdt.managedbuild.config.gnu.cross.exe.debug.452878522;cdt.managedbuild.config.gnu.cross.exe.debug.452878522.;cdt.managedbuild.tool.gnu.c.compiler.cygwin.base.1920331604;cdt.managedbuild.tool.gnu.c.compiler.input.cygwin.2078467313">
+			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
+		</scannerConfigBuildInfo>
+		<scannerConfigBuildInfo instanceId="cdt.managedbuild.config.gnu.cross.exe.debug.452878522;cdt.managedbuild.config.gnu.cross.exe.debug.452878522.;cdt.managedbuild.tool.gnu.cross.cpp.compiler.216739552;cdt.managedbuild.tool.gnu.cpp.compiler.input.1269341019">
+			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
+		</scannerConfigBuildInfo>
+		<scannerConfigBuildInfo instanceId="cdt.managedbuild.config.gnu.cross.exe.release.811454954;cdt.managedbuild.config.gnu.cross.exe.release.811454954.;cdt.managedbuild.tool.gnu.cross.cpp.compiler.1042604749;cdt.managedbuild.tool.gnu.cpp.compiler.input.1133865092">
+			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
+		</scannerConfigBuildInfo>
+	</storageModule>
+</cproject>

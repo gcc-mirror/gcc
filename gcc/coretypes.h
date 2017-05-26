@@ -52,9 +52,9 @@ typedef const struct bitmap_head *const_bitmap;
 struct simple_bitmap_def;
 typedef struct simple_bitmap_def *sbitmap;
 typedef const struct simple_bitmap_def *const_sbitmap;
-struct rtx_def;
-typedef struct rtx_def *rtx;
-typedef const struct rtx_def *const_rtx;
+class rtx_def;
+typedef class rtx_def *rtx;
+typedef const class rtx_def *const_rtx;
 
 /* Subclasses of rtx_def, using indentation to show the class
    hierarchy, along with the relevant invariant.
