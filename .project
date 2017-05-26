@@ -24,4 +24,11 @@
 		<nature>org.eclipse.cdt.managedbuilder.core.managedBuildNature</nature>
 		<nature>org.eclipse.cdt.managedbuilder.core.ScannerConfigNature</nature>
 	</natures>
+	<linkedResources>
+		<link>
+			<name>build-gcc</name>
+			<type>2</type>
+			<location>D:/develop/workspaces/c1/amigaos-cross-toolchain/.build-m68k/build/gcc-6</location>
+		</link>
+	</linkedResources>
 </projectDescription>
