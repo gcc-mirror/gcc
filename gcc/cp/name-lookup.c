@@ -998,9 +998,11 @@ name_lookup::search_adl (tree fns, vec<tree, va_gc> *args)
   tree arg;
 
   FOR_EACH_VEC_ELT_REVERSE (*args, ix, arg)
-    /* OMP reduction operators put a type as the first arg.  I don't
-       suppose we should ADL on that?  */
-    if (!TYPE_P (arg))
+    /* OMP reduction operators put an ADL-significant type as the
+       first arg. */
+    if (TYPE_P (arg))
+      adl_type (arg);
+    else
       adl_expr (arg);
 
   delete fn_set;
