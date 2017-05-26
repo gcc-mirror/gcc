@@ -1,6 +1,15 @@
 2017-05-26  Martin Liska  <mliska@suse.cz>
 
 	Backport from mainline
+	2017-03-28  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/80205
+	* tree-inline.c (copy_phis_for_bb): Do not create PHI node
+	without arguments, generate default definition of a SSA name.
+
+2017-05-26  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
 	2017-03-28  Martin Liska  <mliska@suse.cz>
 
 	PR ipa/80104

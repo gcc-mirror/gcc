@@ -2338,50 +2338,56 @@ copy_phis_for_bb (basic_block bb, copy_body_data *id)
 	{
 	  walk_tree (&new_res, copy_tree_body_r, id, NULL);
 	  new_phi = create_phi_node (new_res, new_bb);
-	  FOR_EACH_EDGE (new_edge, ei, new_bb->preds)
+	  if (EDGE_COUNT (new_bb->preds) == 0)
 	    {
-	      edge old_edge = find_edge ((basic_block) new_edge->src->aux, bb);
-	      tree arg;
-	      tree new_arg;
-	      edge_iterator ei2;
-	      location_t locus;
-
-	      /* When doing partial cloning, we allow PHIs on the entry block
-		 as long as all the arguments are the same.  Find any input
-		 edge to see argument to copy.  */
-	      if (!old_edge)
-		FOR_EACH_EDGE (old_edge, ei2, bb->preds)
-		  if (!old_edge->src->aux)
-		    break;
-
-	      arg = PHI_ARG_DEF_FROM_EDGE (phi, old_edge);
-	      new_arg = arg;
-	      walk_tree (&new_arg, copy_tree_body_r, id, NULL);
-	      gcc_assert (new_arg);
-	      /* With return slot optimization we can end up with
-	         non-gimple (foo *)&this->m, fix that here.  */
-	      if (TREE_CODE (new_arg) != SSA_NAME
-		  && TREE_CODE (new_arg) != FUNCTION_DECL
-		  && !is_gimple_val (new_arg))
-		{
-		  gimple_seq stmts = NULL;
-		  new_arg = force_gimple_operand (new_arg, &stmts, true, NULL);
-		  gsi_insert_seq_on_edge (new_edge, stmts);
-		  inserted = true;
-		}
-	      locus = gimple_phi_arg_location_from_edge (phi, old_edge);
-	      if (LOCATION_BLOCK (locus))
-		{
-		  tree *n;
-		  n = id->decl_map->get (LOCATION_BLOCK (locus));
-		  gcc_assert (n);
-		  locus = set_block (locus, *n);
-		}
-	      else
-		locus = LOCATION_LOCUS (locus);
-
-	      add_phi_arg (new_phi, new_arg, new_edge, locus);
+	      /* Technically we'd want a SSA_DEFAULT_DEF here... */
+	      SSA_NAME_DEF_STMT (new_res) = gimple_build_nop ();
 	    }
+	  else
+	    FOR_EACH_EDGE (new_edge, ei, new_bb->preds)
+	      {
+		edge old_edge = find_edge ((basic_block) new_edge->src->aux, bb);
+		tree arg;
+		tree new_arg;
+		edge_iterator ei2;
+		location_t locus;
+
+		/* When doing partial cloning, we allow PHIs on the entry block
+		   as long as all the arguments are the same.  Find any input
+		   edge to see argument to copy.  */
+		if (!old_edge)
+		  FOR_EACH_EDGE (old_edge, ei2, bb->preds)
+		    if (!old_edge->src->aux)
+		      break;
+
+		arg = PHI_ARG_DEF_FROM_EDGE (phi, old_edge);
+		new_arg = arg;
+		walk_tree (&new_arg, copy_tree_body_r, id, NULL);
+		gcc_assert (new_arg);
+		/* With return slot optimization we can end up with
+		   non-gimple (foo *)&this->m, fix that here.  */
+		if (TREE_CODE (new_arg) != SSA_NAME
+		    && TREE_CODE (new_arg) != FUNCTION_DECL
+		    && !is_gimple_val (new_arg))
+		  {
+		    gimple_seq stmts = NULL;
+		    new_arg = force_gimple_operand (new_arg, &stmts, true, NULL);
+		    gsi_insert_seq_on_edge (new_edge, stmts);
+		    inserted = true;
+		  }
+		locus = gimple_phi_arg_location_from_edge (phi, old_edge);
+		if (LOCATION_BLOCK (locus))
+		  {
+		    tree *n;
+		    n = id->decl_map->get (LOCATION_BLOCK (locus));
+		    gcc_assert (n);
+		    locus = set_block (locus, *n);
+		  }
+		else
+		  locus = LOCATION_LOCUS (locus);
+
+		add_phi_arg (new_phi, new_arg, new_edge, locus);
+	      }
 	}
     }
 
