@@ -1,3 +1,11 @@
+2017-05-26  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
+	2017-04-18  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/78783
+	* libgcov-driver.c (gcov_get_filename): New function.
+
 2017-05-19  Andreas Tobler  <andreast@gcc.gnu.org>
 
 	Backport from mainline

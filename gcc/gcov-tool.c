@@ -46,6 +46,7 @@ extern int gcov_profile_normalize (struct gcov_info*, gcov_type);
 extern int gcov_profile_scale (struct gcov_info*, float, int, int);
 extern struct gcov_info* gcov_read_profile_dir (const char*, int);
 extern void gcov_do_dump (struct gcov_info *, int);
+extern const char *gcov_get_filename (struct gcov_info *list);
 extern void gcov_set_verbose (void);
 
 /* Set to verbose output mode.  */
@@ -113,6 +114,14 @@ gcov_output_files (const char *out, struct gcov_info *profile)
   ret = chdir (out);
   if (ret)
     fatal_error (input_location, "Cannot change directory to %s", out);
+
+  /* Verify that output file does not exist (either was removed by
+     unlink_profile_data or removed by user).  */
+  const char *filename = gcov_get_filename (profile);
+
+  if (access (filename, F_OK) != -1)
+    fatal_error (input_location, "output file %s already exists in folder %s",
+		 filename, out);
 
   gcov_do_dump (profile, 0);
 
