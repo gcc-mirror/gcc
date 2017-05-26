@@ -220,8 +220,10 @@ private:
 
 private:
   using_queue *queue_namespace (using_queue *queue, int depth, tree scope);
-  using_queue *do_queue_usings (using_queue *queue, int depth, tree usings);
-  using_queue *queue_usings (using_queue *queue, int depth, tree usings)
+  using_queue *do_queue_usings (using_queue *queue, int depth,
+				vec<tree, va_gc> *usings);
+  using_queue *queue_usings (using_queue *queue, int depth,
+			     vec<tree, va_gc> *usings)
   {
     if (usings)
       queue = do_queue_usings (queue, depth, usings);
@@ -496,11 +498,10 @@ name_lookup::search_namespace (tree scope)
   /* Look in exactly namespace. */
   bool found = search_namespace_only (scope);
   
-  /* Look down into inline namespaces.  */
-  for (tree inner = NAMESPACE_LEVEL (scope)->namespaces;
-       inner; inner = TREE_CHAIN (inner))
-    if (DECL_NAMESPACE_INLINE_P (inner))
-      found |= search_namespace (inner);
+  /* Recursively look in its inline children.  */
+  if (vec<tree, va_gc> *inlinees = DECL_NAMESPACE_INLINEES (scope))
+    for (unsigned ix = inlinees->length (); ix--;)
+      found |= search_namespace ((*inlinees)[ix]);
 
   if (found)
     mark_found (scope);
@@ -520,17 +521,14 @@ name_lookup::search_usings (tree scope)
     return true;
 
   bool found = false;
-
-  /* Look in direct usings.  */
-  for (tree usings = DECL_NAMESPACE_USING (scope);
-       usings; usings = TREE_CHAIN (usings))
-    found |= search_qualified (TREE_PURPOSE (usings), true);
+  if (vec<tree, va_gc> *usings = DECL_NAMESPACE_USING (scope))
+    for (unsigned ix = usings->length (); ix--;)
+      found |= search_qualified ((*usings)[ix], true);
 
   /* Look in its inline children.  */
-  for (tree inner = NAMESPACE_LEVEL (scope)->namespaces;
-       inner; inner = TREE_CHAIN (inner))
-    if (DECL_NAMESPACE_INLINE_P (inner))
-      found |= search_usings (inner);
+  if (vec<tree, va_gc> *inlinees = DECL_NAMESPACE_INLINEES (scope))
+    for (unsigned ix = inlinees->length (); ix--;)
+      found |= search_usings ((*inlinees)[ix]);
 
   if (found)
     mark_found (scope);
@@ -580,10 +578,9 @@ name_lookup::queue_namespace (using_queue *queue, int depth, tree scope)
   vec_safe_push (queue, using_pair (common, scope));
 
   /* Queue its inline children.  */
-  for (tree inner = NAMESPACE_LEVEL (scope)->namespaces;
-       inner; inner = TREE_CHAIN (inner))
-    if (DECL_NAMESPACE_INLINE_P (inner))
-      queue = queue_namespace (queue, depth, inner);
+  if (vec<tree, va_gc> *inlinees = DECL_NAMESPACE_INLINEES (scope))
+    for (unsigned ix = inlinees->length (); ix--;)
+      queue = queue_namespace (queue, depth, (*inlinees)[ix]);
 
   /* Queue its using targets.  */
   queue = queue_usings (queue, depth, DECL_NAMESPACE_USING (scope));
@@ -594,10 +591,11 @@ name_lookup::queue_namespace (using_queue *queue, int depth, tree scope)
 /* Add the namespaces in USINGS to the unqualified search queue.  */
 
 name_lookup::using_queue *
-name_lookup::do_queue_usings (using_queue *queue, int depth, tree usings)
+name_lookup::do_queue_usings (using_queue *queue, int depth,
+			      vec<tree, va_gc> *usings)
 {
-  for (; usings; usings = TREE_CHAIN (usings))
-    queue = queue_namespace (queue, depth, TREE_PURPOSE (usings));
+  for (unsigned ix = usings->length (); ix--;)
+    queue = queue_namespace (queue, depth, (*usings)[ix]);
 
   return queue;
 }
@@ -686,10 +684,9 @@ name_lookup::adl_namespace_only (tree scope)
   mark_seen (scope);
 
   /* Look down into inline namespaces.  */
-  for (tree inner = NAMESPACE_LEVEL (scope)->namespaces;
-       inner; inner = TREE_CHAIN (inner))
-    if (DECL_NAMESPACE_INLINE_P (inner))
-      adl_namespace_only (inner);
+  if (vec<tree, va_gc> *inlinees = DECL_NAMESPACE_INLINEES (scope))
+    for (unsigned ix = inlinees->length (); ix--;)
+      adl_namespace_only ((*inlinees)[ix]);
 
   if (cxx_binding *binding = find_namespace_binding (scope, name))
     add_fns (ovl_skip_hidden (binding->value));
@@ -5962,13 +5959,14 @@ do_pop_nested_namespace (tree ns)
    the unqualified search.  */
 
 static void
-add_using_namespace (tree &usings, tree target)
+add_using_namespace (vec<tree, va_gc> *&usings, tree target)
 {
-  for (tree probe = usings; probe; probe = TREE_CHAIN (probe))
-    if (target == TREE_PURPOSE (probe))
-      return;
+  if (usings)
+    for (unsigned ix = usings->length (); ix--;)
+      if ((*usings)[ix] == target)
+	return;
 
-  usings = tree_cons (target, NULL_TREE, usings);
+  vec_safe_push (usings, target);
 }
 
 /* Tell the debug system of a using directive.  */
@@ -6142,8 +6140,14 @@ push_namespace (tree name, bool make_inline)
 	  else if (TREE_PUBLIC (current_namespace))
 	    TREE_PUBLIC (ns) = 1;
 
+	  if (name == anon_identifier || make_inline)
+	    emit_debug_info_using_namespace (current_namespace, ns);
+
 	  if (make_inline)
-	    DECL_NAMESPACE_INLINE_P (ns) = true;
+	    {
+	      DECL_NAMESPACE_INLINE_P (ns) = true;
+	      vec_safe_push (DECL_NAMESPACE_INLINEES (current_namespace), ns);
+	    }
 	}
     }
 
@@ -6171,10 +6175,14 @@ push_namespace (tree name, bool make_inline)
 void
 pop_namespace (void)
 {
+  bool subtime = timevar_cond_start (TV_NAME_LOOKUP);
+
   gcc_assert (current_namespace != global_namespace);
   current_namespace = CP_DECL_CONTEXT (current_namespace);
   /* The binding level is not popped, as it might be re-opened later.  */
   leave_scope ();
+
+  timevar_cond_stop (TV_NAME_LOOKUP, subtime);
 }
 
 /* External entry points for do_{push_to/pop_from}_top_level.  */

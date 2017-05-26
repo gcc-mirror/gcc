@@ -1,5 +1,20 @@
 2017-05-26  Nathan Sidwell  <nathan@acm.org>
 
+	Inline and using namespace representation change.
+	* cp-tree.h (struct lang_decl_ns): Delete ns_using.  Add usings,
+	inlinees as vector.
+	(DECL_NAMESPACE_USING): Adjust.
+	(DECL_NAMESPACE_INLINEES): New.
+	* name-lookup.h (struct cp_binding_level): Change usings
+	representation.
+	* name-lookup.c (name_lookup::do_queue_usings,
+	name_lookup::queue_usings): Adjust.
+	(name_lookup::search_namespace, name_lookup::search_usings,
+	name_lookup::queue_namespace): Adjust.
+	(name_lookup::adl_namespace_only): Adjust.
+	(add_using_namespace, push_namespace): Push onto vector.
+	(pop_namespace): Add timing logic.
+
 	* call.c (build_operator_new_call): Do namelookup and ADL here.
 	(build_new_op_1): Likewise.
 	* name-lookup.h (lookup_function_nonclass): Delete declaration.
