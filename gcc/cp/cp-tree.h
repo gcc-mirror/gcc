@@ -2516,6 +2516,15 @@ struct GTY(()) lang_decl_parm {
   int index;
 };
 
+/* Additional DECL_LANG_SPECIFIC information for structured bindings.  */
+
+struct GTY(()) lang_decl_decomp {
+  struct lang_decl_min min;
+  /* The artificial underlying "e" variable of the structured binding
+     variable.  */
+  tree base;
+};
+
 /* DECL_LANG_SPECIFIC for all types.  It would be nice to just make this a
    union rather than a struct containing a union as its only field, but
    tree.h declares it as a struct.  */
@@ -2527,6 +2536,7 @@ struct GTY(()) lang_decl {
     struct lang_decl_fn GTY ((tag ("1"))) fn;
     struct lang_decl_ns GTY((tag ("2"))) ns;
     struct lang_decl_parm GTY((tag ("3"))) parm;
+    struct lang_decl_decomp GTY((tag ("4"))) decomp;
   } u;
 };
 
@@ -2563,6 +2573,13 @@ struct GTY(()) lang_decl {
     lang_check_failed (__FILE__, __LINE__, __FUNCTION__);	\
   &lt->u.parm; })
 
+#define LANG_DECL_DECOMP_CHECK(NODE) __extension__		\
+({ struct lang_decl *lt = DECL_LANG_SPECIFIC (NODE);		\
+  if (!VAR_P (NODE)						\
+      || lt->u.base.selector != 4)				\
+    lang_check_failed (__FILE__, __LINE__, __FUNCTION__);	\
+  &lt->u.decomp; })
+
 #define LANG_DECL_U2_CHECK(NODE, TF) __extension__		\
 ({  struct lang_decl *lt = DECL_LANG_SPECIFIC (NODE);		\
     if (!LANG_DECL_HAS_MIN (NODE) || lt->u.base.u2sel != TF)	\
@@ -2582,6 +2599,9 @@ struct GTY(()) lang_decl {
 
 #define LANG_DECL_PARM_CHECK(NODE) \
   (&DECL_LANG_SPECIFIC (NODE)->u.parm)
+
+#define LANG_DECL_DECOMP_CHECK(NODE) \
+  (&DECL_LANG_SPECIFIC (NODE)->u.decomp)
 
 #define LANG_DECL_U2_CHECK(NODE, TF) \
   (&DECL_LANG_SPECIFIC (NODE)->u.min.u2)
@@ -3816,8 +3836,8 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
   (DECL_LANG_SPECIFIC (VAR_DECL_CHECK (NODE))->u.base.var_declared_inline_p \
    = true)
 
-/* Nonzero if NODE is an artificial VAR_DECL for a C++17 decomposition
-   declaration.  */
+/* Nonzero if NODE is an artificial VAR_DECL for a C++17 structured binding
+   declaration or one of VAR_DECLs for the user identifiers in it.  */
 #define DECL_DECOMPOSITION_P(NODE) \
   (VAR_P (NODE) && DECL_LANG_SPECIFIC (NODE)			\
    ? DECL_LANG_SPECIFIC (NODE)->u.base.decomposition_p		\
@@ -3825,6 +3845,10 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
 #define SET_DECL_DECOMPOSITION_P(NODE) \
   (DECL_LANG_SPECIFIC (VAR_DECL_CHECK (NODE))->u.base.decomposition_p \
    = true)
+
+/* The underlying artificial VAR_DECL for structured binding.  */
+#define DECL_DECOMP_BASE(NODE) \
+  (LANG_DECL_DECOMP_CHECK (NODE)->base)
 
 /* Nonzero if NODE is an inline VAR_DECL.  In C++17, static data members
    declared with constexpr specifier are implicitly inline variables.  */
@@ -6261,7 +6285,7 @@ extern tree unqualified_name_lookup_error	(tree,
 extern tree unqualified_fn_lookup_error		(cp_expr);
 extern tree build_lang_decl			(enum tree_code, tree, tree);
 extern tree build_lang_decl_loc			(location_t, enum tree_code, tree, tree);
-extern void retrofit_lang_decl			(tree);
+extern void retrofit_lang_decl			(tree, int = 0);
 extern tree copy_decl				(tree CXX_MEM_STAT_INFO);
 extern tree copy_type				(tree CXX_MEM_STAT_INFO);
 extern tree cxx_make_type			(enum tree_code);
