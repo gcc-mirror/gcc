@@ -1794,7 +1794,11 @@ instrument_object_size (gimple_stmt_iterator *gsi, bool is_lhs)
   bool decl_p = DECL_P (inner);
   tree base;
   if (decl_p)
-    base = inner;
+    {
+      if (DECL_REGISTER (inner))
+	return;
+      base = inner;
+    }
   else if (TREE_CODE (inner) == MEM_REF)
     base = TREE_OPERAND (inner, 0);
   else
