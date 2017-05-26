@@ -1,3 +1,12 @@
+2017-05-26  Bin Cheng  <bin.cheng@arm.com>
+
+	* tree-vect-data-refs.c (compare_tree): Rename and move ...
+	* tree-data-ref.c (data_ref_compare_tree): ... to here.
+	* tree-data-ref.h (data_ref_compare_tree): New decalaration.
+	* tree-vect-data-refs.c (dr_group_sort_cmp): Update uses.
+	(operator==, comp_dr_with_seg_len_pair): Ditto.
+	(vect_prune_runtime_alias_test_list): Ditto.
+
 2017-05-26  Martin Liska  <mliska@suse.cz>
 
 	PR ipa/80663

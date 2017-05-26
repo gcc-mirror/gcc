@@ -1107,6 +1107,81 @@ create_data_ref (loop_p nest, loop_p loop, tree memref, gimple *stmt,
   return dr;
 }
 
+/*  A helper function computes order between two tree epxressions T1 and T2.
+    This is used in comparator functions sorting objects based on the order
+    of tree expressions.  The function returns -1, 0, or 1.  */
+
+int
+data_ref_compare_tree (tree t1, tree t2)
+{
+  int i, cmp;
+  enum tree_code code;
+  char tclass;
+
+  if (t1 == t2)
+    return 0;
+  if (t1 == NULL)
+    return -1;
+  if (t2 == NULL)
+    return 1;
+
+  STRIP_NOPS (t1);
+  STRIP_NOPS (t2);
+
+  if (TREE_CODE (t1) != TREE_CODE (t2))
+    return TREE_CODE (t1) < TREE_CODE (t2) ? -1 : 1;
+
+  code = TREE_CODE (t1);
+  switch (code)
+    {
+    /* For const values, we can just use hash values for comparisons.  */
+    case INTEGER_CST:
+    case REAL_CST:
+    case FIXED_CST:
+    case STRING_CST:
+    case COMPLEX_CST:
+    case VECTOR_CST:
+      {
+	hashval_t h1 = iterative_hash_expr (t1, 0);
+	hashval_t h2 = iterative_hash_expr (t2, 0);
+	if (h1 != h2)
+	  return h1 < h2 ? -1 : 1;
+	break;
+      }
+
+    case SSA_NAME:
+      cmp = data_ref_compare_tree (SSA_NAME_VAR (t1), SSA_NAME_VAR (t2));
+      if (cmp != 0)
+	return cmp;
+
+      if (SSA_NAME_VERSION (t1) != SSA_NAME_VERSION (t2))
+	return SSA_NAME_VERSION (t1) < SSA_NAME_VERSION (t2) ? -1 : 1;
+      break;
+
+    default:
+      tclass = TREE_CODE_CLASS (code);
+
+      /* For var-decl, we could compare their UIDs.  */
+      if (tclass == tcc_declaration)
+	{
+	  if (DECL_UID (t1) != DECL_UID (t2))
+	    return DECL_UID (t1) < DECL_UID (t2) ? -1 : 1;
+	  break;
+	}
+
+      /* For expressions with operands, compare their operands recursively.  */
+      for (i = TREE_OPERAND_LENGTH (t1) - 1; i >= 0; --i)
+	{
+	  cmp = data_ref_compare_tree (TREE_OPERAND (t1, i),
+				       TREE_OPERAND (t2, i));
+	  if (cmp != 0)
+	    return cmp;
+	}
+    }
+
+  return 0;
+}
+
 /* Check if OFFSET1 and OFFSET2 (DR_OFFSETs of some data-refs) are identical
    expressions.  */
 static bool

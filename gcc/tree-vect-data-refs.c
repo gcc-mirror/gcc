@@ -2574,83 +2574,6 @@ vect_analyze_data_ref_access (struct data_reference *dr)
   return vect_analyze_group_access (dr);
 }
 
-
-
-/*  A helper function used in the comparator function to sort data
-    references.  T1 and T2 are two data references to be compared.
-    The function returns -1, 0, or 1.  */
-
-static int
-compare_tree (tree t1, tree t2)
-{
-  int i, cmp;
-  enum tree_code code;
-  char tclass;
-
-  if (t1 == t2)
-    return 0;
-  if (t1 == NULL)
-    return -1;
-  if (t2 == NULL)
-    return 1;
-
-  STRIP_NOPS (t1);
-  STRIP_NOPS (t2);
-
-  if (TREE_CODE (t1) != TREE_CODE (t2))
-    return TREE_CODE (t1) < TREE_CODE (t2) ? -1 : 1;
-
-  code = TREE_CODE (t1);
-  switch (code)
-    {
-    /* For const values, we can just use hash values for comparisons.  */
-    case INTEGER_CST:
-    case REAL_CST:
-    case FIXED_CST:
-    case STRING_CST:
-    case COMPLEX_CST:
-    case VECTOR_CST:
-      {
-	hashval_t h1 = iterative_hash_expr (t1, 0);
-	hashval_t h2 = iterative_hash_expr (t2, 0);
-	if (h1 != h2)
-	  return h1 < h2 ? -1 : 1;
-	break;
-      }
-
-    case SSA_NAME:
-      cmp = compare_tree (SSA_NAME_VAR (t1), SSA_NAME_VAR (t2));
-      if (cmp != 0)
-	return cmp;
-
-      if (SSA_NAME_VERSION (t1) != SSA_NAME_VERSION (t2))
-	return SSA_NAME_VERSION (t1) < SSA_NAME_VERSION (t2) ? -1 : 1;
-      break;
-
-    default:
-      tclass = TREE_CODE_CLASS (code);
-
-      /* For var-decl, we could compare their UIDs.  */
-      if (tclass == tcc_declaration)
-	{
-	  if (DECL_UID (t1) != DECL_UID (t2))
-	    return DECL_UID (t1) < DECL_UID (t2) ? -1 : 1;
-	  break;
-	}
-
-      /* For expressions with operands, compare their operands recursively.  */
-      for (i = TREE_OPERAND_LENGTH (t1) - 1; i >= 0; --i)
-	{
-	  cmp = compare_tree (TREE_OPERAND (t1, i), TREE_OPERAND (t2, i));
-	  if (cmp != 0)
-	    return cmp;
-	}
-    }
-
-  return 0;
-}
-
-
 /* Compare two data-references DRA and DRB to group them into chunks
    suitable for grouping.  */
 
@@ -2674,7 +2597,8 @@ dr_group_sort_cmp (const void *dra_, const void *drb_)
   /* Ordering of DRs according to base.  */
   if (!operand_equal_p (DR_BASE_ADDRESS (dra), DR_BASE_ADDRESS (drb), 0))
     {
-      cmp = compare_tree (DR_BASE_ADDRESS (dra), DR_BASE_ADDRESS (drb));
+      cmp = data_ref_compare_tree (DR_BASE_ADDRESS (dra),
+				   DR_BASE_ADDRESS (drb));
       if (cmp != 0)
         return cmp;
     }
@@ -2682,7 +2606,7 @@ dr_group_sort_cmp (const void *dra_, const void *drb_)
   /* And according to DR_OFFSET.  */
   if (!dr_equal_offsets_p (dra, drb))
     {
-      cmp = compare_tree (DR_OFFSET (dra), DR_OFFSET (drb));
+      cmp = data_ref_compare_tree (DR_OFFSET (dra), DR_OFFSET (drb));
       if (cmp != 0)
         return cmp;
     }
@@ -2695,8 +2619,8 @@ dr_group_sort_cmp (const void *dra_, const void *drb_)
   if (!operand_equal_p (TYPE_SIZE_UNIT (TREE_TYPE (DR_REF (dra))),
 			TYPE_SIZE_UNIT (TREE_TYPE (DR_REF (drb))), 0))
     {
-      cmp = compare_tree (TYPE_SIZE_UNIT (TREE_TYPE (DR_REF (dra))),
-                          TYPE_SIZE_UNIT (TREE_TYPE (DR_REF (drb))));
+      cmp = data_ref_compare_tree (TYPE_SIZE_UNIT (TREE_TYPE (DR_REF (dra))),
+				   TYPE_SIZE_UNIT (TREE_TYPE (DR_REF (drb))));
       if (cmp != 0)
         return cmp;
     }
@@ -2704,7 +2628,7 @@ dr_group_sort_cmp (const void *dra_, const void *drb_)
   /* And after step.  */
   if (!operand_equal_p (DR_STEP (dra), DR_STEP (drb), 0))
     {
-      cmp = compare_tree (DR_STEP (dra), DR_STEP (drb));
+      cmp = data_ref_compare_tree (DR_STEP (dra), DR_STEP (drb));
       if (cmp != 0)
         return cmp;
     }
@@ -2904,9 +2828,9 @@ operator == (const dr_with_seg_len& d1,
 {
   return operand_equal_p (DR_BASE_ADDRESS (d1.dr),
 			  DR_BASE_ADDRESS (d2.dr), 0)
-	   && compare_tree (DR_OFFSET (d1.dr), DR_OFFSET (d2.dr)) == 0
-	   && compare_tree (DR_INIT (d1.dr), DR_INIT (d2.dr)) == 0
-	   && compare_tree (d1.seg_len, d2.seg_len) == 0;
+	   && data_ref_compare_tree (DR_OFFSET (d1.dr), DR_OFFSET (d2.dr)) == 0
+	   && data_ref_compare_tree (DR_INIT (d1.dr), DR_INIT (d2.dr)) == 0
+	   && data_ref_compare_tree (d1.seg_len, d2.seg_len) == 0;
 }
 
 /* Function comp_dr_with_seg_len_pair.
@@ -2928,23 +2852,29 @@ comp_dr_with_seg_len_pair (const void *pa_, const void *pb_)
      and step, we don't care the order of those two pairs after sorting.  */
   int comp_res;
 
-  if ((comp_res = compare_tree (DR_BASE_ADDRESS (a1.dr),
-				DR_BASE_ADDRESS (b1.dr))) != 0)
+  if ((comp_res = data_ref_compare_tree (DR_BASE_ADDRESS (a1.dr),
+					 DR_BASE_ADDRESS (b1.dr))) != 0)
     return comp_res;
-  if ((comp_res = compare_tree (DR_BASE_ADDRESS (a2.dr),
-				DR_BASE_ADDRESS (b2.dr))) != 0)
+  if ((comp_res = data_ref_compare_tree (DR_BASE_ADDRESS (a2.dr),
+					 DR_BASE_ADDRESS (b2.dr))) != 0)
     return comp_res;
-  if ((comp_res = compare_tree (DR_STEP (a1.dr), DR_STEP (b1.dr))) != 0)
+  if ((comp_res = data_ref_compare_tree (DR_STEP (a1.dr),
+					 DR_STEP (b1.dr))) != 0)
     return comp_res;
-  if ((comp_res = compare_tree (DR_STEP (a2.dr), DR_STEP (b2.dr))) != 0)
+  if ((comp_res = data_ref_compare_tree (DR_STEP (a2.dr),
+					 DR_STEP (b2.dr))) != 0)
     return comp_res;
-  if ((comp_res = compare_tree (DR_OFFSET (a1.dr), DR_OFFSET (b1.dr))) != 0)
+  if ((comp_res = data_ref_compare_tree (DR_OFFSET (a1.dr),
+					 DR_OFFSET (b1.dr))) != 0)
     return comp_res;
-  if ((comp_res = compare_tree (DR_INIT (a1.dr), DR_INIT (b1.dr))) != 0)
+  if ((comp_res = data_ref_compare_tree (DR_INIT (a1.dr),
+					 DR_INIT (b1.dr))) != 0)
     return comp_res;
-  if ((comp_res = compare_tree (DR_OFFSET (a2.dr), DR_OFFSET (b2.dr))) != 0)
+  if ((comp_res = data_ref_compare_tree (DR_OFFSET (a2.dr),
+					 DR_OFFSET (b2.dr))) != 0)
     return comp_res;
-  if ((comp_res = compare_tree (DR_INIT (a2.dr), DR_INIT (b2.dr))) != 0)
+  if ((comp_res = data_ref_compare_tree (DR_INIT (a2.dr),
+					 DR_INIT (b2.dr))) != 0)
     return comp_res;
 
   return 0;
@@ -3128,9 +3058,11 @@ vect_prune_runtime_alias_test_list (loop_vec_info loop_vinfo)
       segment_length_a = vect_vfa_segment_size (dr_a, length_factor);
       segment_length_b = vect_vfa_segment_size (dr_b, length_factor);
 
-      comp_res = compare_tree (DR_BASE_ADDRESS (dr_a), DR_BASE_ADDRESS (dr_b));
+      comp_res = data_ref_compare_tree (DR_BASE_ADDRESS (dr_a),
+					DR_BASE_ADDRESS (dr_b));
       if (comp_res == 0)
-	comp_res = compare_tree (DR_OFFSET (dr_a), DR_OFFSET (dr_b));
+	comp_res = data_ref_compare_tree (DR_OFFSET (dr_a),
+					  DR_OFFSET (dr_b));
 
       /* Alias is known at compilation time.  */
       if (comp_res == 0
