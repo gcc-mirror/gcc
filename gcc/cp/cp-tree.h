@@ -696,7 +696,8 @@ typedef struct ptrmem_cst * ptrmem_cst_t;
 #define OVL_PLURAL_P(NODE) \
   (TREE_CODE (NODE) == OVERLOAD && TREE_TYPE (NODE) == unknown_type_node)
 
-/* We keep HIDDEN_P nodes at the front of the list.  */
+/* OVL_HIDDEN_P nodes come first, then OVL_USING_P nodes, then regular
+   fns.  */
 
 struct GTY(()) tree_overload {
   struct tree_common common;
@@ -714,7 +715,8 @@ class ovl_iterator
  public:
   explicit ovl_iterator (tree o, bool allow = false)
     : ovl (o), allow_inner (allow)
-  {}
+  {
+  }
 
  private:
   /* Do not duplicate.  */
@@ -769,7 +771,7 @@ class ovl_iterator
     return OVL_FUNCTION (ovl);
   }
 
-protected:
+ protected:
   /* If we have a nested overload, point at the inner overload and
      return the next link on the outer one.  */
   tree maybe_push ()
@@ -808,10 +810,11 @@ class lkp_iterator : public ovl_iterator
 
  public:
   explicit lkp_iterator (tree o)
-    : parent (o), outer (maybe_push ())
+    : parent (o, true), outer (maybe_push ())
   {
   }
 
+ public:
   lkp_iterator &operator++ ()
   {
     bool repush = !outer;

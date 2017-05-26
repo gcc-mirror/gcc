@@ -2362,7 +2362,8 @@ lookup_add (tree fns, tree lookup)
   return lookup;
 }
 
-/* Add a potential overload into a lookup set.  */
+/* FNS is a new overload set, add it to LOOKUP, if it is not already
+   present there.  */
 
 tree
 lookup_maybe_add (tree fns, tree lookup)
@@ -2430,8 +2431,9 @@ lookup_maybe_add (tree fns, tree lookup)
   return lookup_add (fns, lookup);
 }
 
-/* Preserve the contents of a lookup so that it is available for a
-   later instantiation.  */
+/* If KEEP is true, preserve the contents of a lookup so that it is
+   available for a later instantiation.  Otherwise release the LOOKUP
+   nodes for reuse.  */
 
 void
 lookup_keep (tree lookup, bool keep)

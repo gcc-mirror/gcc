@@ -1,5 +1,10 @@
 2017-05-26  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* cp-tree.h: Comment cleanup.
+	* name-lookup.c: Likewise.
+	* tree.c: Likewise.
+
 	Merge trunk 248485.
 	gcc/cp/
 	* lex.c (maybe_retrofit_lang_decl): Add sel parm.

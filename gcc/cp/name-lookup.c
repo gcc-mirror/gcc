@@ -318,7 +318,7 @@ public:
   tree name;	/* The identifier being looked for.  */
   tree value;	/* A (possibly ambiguous) set of things found.  */
   tree type;	/* A type that has been found.  */
-  int flags;
+  int flags;	/* Lookup flags.  */
   vec<tree, va_heap, vl_embed> *scopes;
   name_lookup *previous; /* Previously active lookup.  */
 
@@ -329,7 +329,7 @@ protected:
   static name_lookup *active;
 
 public:
-  name_lookup (tree n, int f)
+  name_lookup (tree n, int f = 0)
   : name (n), value (NULL_TREE), type (NULL_TREE), flags (f),
     scopes (NULL), previous (NULL)
   {
@@ -392,7 +392,7 @@ private:
 private:
   using_queue *queue_namespace (using_queue *queue, int depth, tree scope);
   using_queue *do_queue_usings (using_queue *queue, int depth,
-				vec<tree, va_gc> *);
+				vec<tree, va_gc> *usings);
   using_queue *queue_usings (using_queue *queue, int depth,
 			     vec<tree, va_gc> *usings)
   {
@@ -401,7 +401,7 @@ private:
     return queue;
   }
 
- private:
+private:
   void add_fns (tree);
 
   void adl_expr (tree);
@@ -420,6 +420,7 @@ public:
   /* Search namespace + inlines + usings as unqualified lookup.  */
   bool search_unqualified (tree scope, cp_binding_level *);
 
+  /* ADL lookup of ARGS.  */
   tree search_adl (tree fns, vec<tree, va_gc> *args);
 };
 
@@ -483,6 +484,8 @@ name_lookup::restore_state ()
   active = previous;
   if (previous)
     {
+      free (scopes);
+
       unsigned length = vec_safe_length (previous->scopes);
       for (unsigned ix = 0; ix != length; ix++)
 	{
@@ -507,7 +510,6 @@ name_lookup::restore_state ()
 	}
 
       lookup_mark (previous->value, true);
-      free (scopes);
     }
   else
     shared_scopes = scopes;
@@ -854,9 +856,8 @@ name_lookup::do_queue_usings (using_queue *queue, int depth,
    1) add scope+inlins to worklist.
    2) recursively add target of every using directive
    3) for each worklist item where SCOPE is common ancestor, search it
-   4) if nothing find, scope=parent, goto 1.
-   
-    */
+   4) if nothing find, scope=parent, goto 1.  */
+
 bool
 name_lookup::search_unqualified (tree scope, cp_binding_level *level)
 {
@@ -875,7 +876,7 @@ name_lookup::search_unqualified (tree scope, cp_binding_level *level)
       gcc_assert (!DECL_NAMESPACE_ALIAS (scope));
       int depth = SCOPE_DEPTH (scope);
 
-      /* Queue namespace reachable from SCOPE. */
+      /* Queue namespaces reachable from SCOPE. */
       queue = queue_namespace (queue, depth, scope);
 
       /* Search every queued namespace where SCOPE is the common
@@ -923,6 +924,7 @@ name_lookup::add_fns (tree fns)
   else if (!DECL_DECLARES_FUNCTION_P (fns))
     return;
 
+  /* Only add those that aren't already there.  */
   value = lookup_maybe_add (fns, value);
 }
 
@@ -938,7 +940,8 @@ name_lookup::adl_namespace_only (tree scope)
     for (unsigned ix = inlinees->length (); ix--;)
       adl_namespace_only ((*inlinees)[ix]);
 
-  add_fns (ovl_skip_hidden (find_namespace_value (scope, name)));
+  if (tree fns = find_namespace_value (scope, name))
+    add_fns (ovl_skip_hidden (fns));
 }
 
 /* Find the containing non-inlined namespace, add it and all its
@@ -1229,9 +1232,11 @@ name_lookup::search_adl (tree fns, vec<tree, va_gc> *args)
   tree arg;
 
   FOR_EACH_VEC_ELT_REVERSE (*args, ix, arg)
-    /* OMP reduction operators put a type as the first arg.  I don't
-       suppose we should ADL on that?  */
-    if (!TYPE_P (arg))
+    /* OMP reduction operators put an ADL-significant type as the
+       first arg. */
+    if (TYPE_P (arg))
+      adl_type (arg);
+    else
       adl_expr (arg);
 
   fns = value;
@@ -2390,10 +2395,9 @@ set_local_extern_decl_linkage (tree decl, bool shadowed)
 	loc_value = NULL_TREE;
 
       for (ovl_iterator iter (loc_value); iter; ++iter)
-	if (iter.hidden_p () && DECL_IS_BUILTIN (*iter))
-	  ;
-	else if ((TREE_STATIC (*iter) || DECL_EXTERNAL (*iter))
-		 && decls_match (*iter, decl))
+	if (!iter.hidden_p ()
+	    && (TREE_STATIC (*iter) || DECL_EXTERNAL (*iter))
+	    && decls_match (*iter, decl))
 	  {
 	    /* The standard only says that the local extern inherits
 	       linkage from the previous decl; in particular, default
