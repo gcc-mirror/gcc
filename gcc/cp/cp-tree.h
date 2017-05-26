@@ -2546,7 +2546,11 @@ struct GTY(()) lang_decl_fn {
 struct GTY(()) lang_decl_ns {
   struct lang_decl_base base;
   cp_binding_level *level;
-  tree ns_using;
+
+  /* using directives and inline children.  These need to be va_gc,
+     because of PCH.  */
+  vec<tree, va_gc> *usings;
+  vec<tree, va_gc> *inlinees;
 };
 
 /* DECL_LANG_SPECIFIC for parameters.  */
@@ -3133,10 +3137,13 @@ struct GTY(()) lang_decl {
 #define DECL_NAMESPACE_INLINE_P(NODE) \
   TREE_LANG_FLAG_0 (NAMESPACE_DECL_CHECK (NODE))
 
-/* For a NAMESPACE_DECL: the list of using namespace directives
-   The PURPOSE is the used namespace, the value is the namespace
-   that is the common ancestor.  */
-#define DECL_NAMESPACE_USING(NODE) (LANG_DECL_NS_CHECK (NODE)->ns_using)
+/* In a NAMESPACE_DECL, a vector of using directives.  */
+#define DECL_NAMESPACE_USING(NODE) \
+   (LANG_DECL_NS_CHECK (NODE)->usings)
+
+/* In a NAMESPACE_DECL, a vector of inline namespaces.  */
+#define DECL_NAMESPACE_INLINEES(NODE) \
+   (LANG_DECL_NS_CHECK (NODE)->inlinees)
 
 /* In a NAMESPACE_DECL, points to the original namespace if this is
    a namespace alias.  */

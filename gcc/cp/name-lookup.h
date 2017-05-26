@@ -194,9 +194,9 @@ struct GTY(()) cp_binding_level {
   /* A list of USING_DECL nodes.  */
   tree usings;
 
-  /* A list of used namespaces. PURPOSE is the namespace,
-      VALUE the common ancestor with this binding_level's namespace.  */
-  tree using_directives;
+
+  /* Using directives.  */
+  vec<tree, va_gc> *using_directives;
 
   /* For the binding level corresponding to a class, the entities
       declared in the class or its base classes.  */

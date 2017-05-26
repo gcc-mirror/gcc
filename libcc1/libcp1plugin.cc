@@ -934,6 +934,7 @@ plugin_make_namespace_inline (cc1_plugin::connection *)
     return 0;
 
   DECL_NAMESPACE_INLINE_P (inline_ns) = true;
+  vec_safe_push (DECL_NAMESPACE_INLINEES (parent_ns), inline_ns);
 
   return 1;
 }
