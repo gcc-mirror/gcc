@@ -3367,7 +3367,13 @@ dump_possible_polymorphic_call_targets (FILE *f,
       fprintf (f, "  Speculative targets:");
       dump_targets (f, targets);
     }
-  gcc_assert (targets.length () <= len);
+  /* Ugly: during callgraph construction the target cache may get populated
+     before all targets are found.  While this is harmless (because all local
+     types are discovered and only in those case we devirtualize fully and we
+     don't do speculative devirtualization before IPA stage) it triggers
+     assert here when dumping at that stage also populates the case with
+     speculative targets.  Quietly ignore this.  */
+  gcc_assert (symtab->state < IPA_SSA || targets.length () <= len);
   fprintf (f, "\n");
 }
 
