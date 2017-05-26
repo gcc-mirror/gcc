@@ -1,5 +1,12 @@
 2017-05-26  Bin Cheng  <bin.cheng@arm.com>
 
+	* tree-vect-loop-manip.c (create_intersect_range_checks_index): Pass
+	in parameter loop, rather than loop_vinfo.
+	(create_intersect_range_checks): Ditto.
+	(vect_create_cond_for_alias_checks): Update call to above functions.
+
+2017-05-26  Bin Cheng  <bin.cheng@arm.com>
+
 	PR tree-optimization/80815
 	* tree-data-ref.c (prune_runtime_alias_test_list): Simplify condition
 	for merging runtime alias checks.  Handle negative DR_STEPs.

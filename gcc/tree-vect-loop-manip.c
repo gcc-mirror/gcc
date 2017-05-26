@@ -2044,11 +2044,11 @@ vect_create_cond_for_align_checks (loop_vec_info loop_vinfo,
     *cond_expr = part_cond_expr;
 }
 
-/* Given two data references and segment lengths described by DR_A and DR_B,
-   create expression checking if the two addresses ranges intersect with
-   each other based on index of the two addresses.  This can only be done
-   if DR_A and DR_B referring to the same (array) object and the index is
-   the only difference.  For example:
+/* Given LOOP's two data references and segment lengths described by DR_A
+   and DR_B, create expression checking if the two addresses ranges intersect
+   with each other based on index of the two addresses.  This can only be
+   done if DR_A and DR_B referring to the same (array) object and the index
+   is the only difference.  For example:
 
                        DR_A                           DR_B
       data-ref         arr[i]                         arr[j]
@@ -2070,7 +2070,7 @@ vect_create_cond_for_align_checks (loop_vec_info loop_vinfo,
    Note evolution step of index needs to be considered in comparison.  */
 
 static bool
-create_intersect_range_checks_index (loop_vec_info loop_vinfo, tree *cond_expr,
+create_intersect_range_checks_index (struct loop *loop, tree *cond_expr,
 				     const dr_with_seg_len& dr_a,
 				     const dr_with_seg_len& dr_b)
 {
@@ -2109,7 +2109,6 @@ create_intersect_range_checks_index (loop_vec_info loop_vinfo, tree *cond_expr,
   unsigned HOST_WIDE_INT niter_len2 = (seg_len2 + abs_step - 1) / abs_step;
 
   unsigned int i;
-  struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
   for (i = 0; i < DR_NUM_DIMENSIONS (dr_a.dr); i++)
     {
       tree access1 = DR_ACCESS_FN (dr_a.dr, i);
@@ -2186,12 +2185,12 @@ create_intersect_range_checks_index (loop_vec_info loop_vinfo, tree *cond_expr,
      || (DR_B_addr_0 + DER_B_segment_length_0) <= DR_A_addr_0))  */
 
 static void
-create_intersect_range_checks (loop_vec_info loop_vinfo, tree *cond_expr,
+create_intersect_range_checks (struct loop *loop, tree *cond_expr,
 			       const dr_with_seg_len& dr_a,
 			       const dr_with_seg_len& dr_b)
 {
   *cond_expr = NULL_TREE;
-  if (create_intersect_range_checks_index (loop_vinfo, cond_expr, dr_a, dr_b))
+  if (create_intersect_range_checks_index (loop, cond_expr, dr_a, dr_b))
     return;
 
   tree segment_length_a = dr_a.seg_len;
@@ -2263,6 +2262,7 @@ vect_create_cond_for_alias_checks (loop_vec_info loop_vinfo, tree * cond_expr)
   if (comp_alias_ddrs.is_empty ())
     return;
 
+  struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
   for (size_t i = 0, s = comp_alias_ddrs.length (); i < s; ++i)
     {
       const dr_with_seg_len& dr_a = comp_alias_ddrs[i].first;
@@ -2279,7 +2279,7 @@ vect_create_cond_for_alias_checks (loop_vec_info loop_vinfo, tree * cond_expr)
 	}
 
       /* Create condition expression for each pair data references.  */
-      create_intersect_range_checks (loop_vinfo, &part_cond_expr, dr_a, dr_b);
+      create_intersect_range_checks (loop, &part_cond_expr, dr_a, dr_b);
       if (*cond_expr)
 	*cond_expr = fold_build2 (TRUTH_AND_EXPR, boolean_type_node,
 				  *cond_expr, part_cond_expr);
