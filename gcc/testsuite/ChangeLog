@@ -3,6 +3,14 @@
 	Backport from mainline
 	2017-04-11  Martin Liska  <mliska@suse.cz>
 
+	PR ipa/80212
+	* g++.dg/ipa/pr80212.C: New test.
+
+2017-05-26  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
+	2017-04-11  Martin Liska  <mliska@suse.cz>
+
 	PR sanitizer/70878
 	* gcc.dg/ubsan/pr70878.c: New test.
 
