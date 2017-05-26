@@ -1340,63 +1340,115 @@ prune_runtime_alias_test_list (vec<dr_with_seg_len_pair_t> *alias_pairs,
 	      != tree_int_cst_compare (DR_STEP (dr_a2->dr), size_zero_node))
 	    continue;
 
+	  bool neg_step
+	    = (tree_int_cst_compare (DR_STEP (dr_a1->dr), size_zero_node) < 0);
+
+	  /* We need to compute merged segment length at compilation time for
+	     dr_a1 and dr_a2, which is impossible if either one has non-const
+	     segment length.  */
+	  if ((!tree_fits_uhwi_p (dr_a1->seg_len)
+	       || !tree_fits_uhwi_p (dr_a2->seg_len))
+	      && tree_int_cst_compare (DR_STEP (dr_a1->dr),
+				       DR_STEP (dr_a2->dr)) != 0)
+	    continue;
+
 	  /* Make sure dr_a1 starts left of dr_a2.  */
 	  if (tree_int_cst_lt (DR_INIT (dr_a2->dr), DR_INIT (dr_a1->dr)))
 	    std::swap (*dr_a1, *dr_a2);
 
 	  bool do_remove = false;
-	  unsigned HOST_WIDE_INT diff
-	    = (tree_to_shwi (DR_INIT (dr_a2->dr))
-               - tree_to_shwi (DR_INIT (dr_a1->dr)));
+	  wide_int diff = wi::sub (DR_INIT (dr_a2->dr), DR_INIT (dr_a1->dr));
+	  wide_int min_seg_len_b;
+	  tree new_seg_len;
 
-	  /* If the left segment does not extend beyond the start of the
-	     right segment the new segment length is that of the right
-	     plus the segment distance.  */
-	  if (tree_fits_uhwi_p (dr_a1->seg_len)
-	      && compare_tree_int (dr_a1->seg_len, diff) <= 0)
+	  if (tree_fits_uhwi_p (dr_b1->seg_len))
 	    {
-	      dr_a1->seg_len = size_binop (PLUS_EXPR, dr_a2->seg_len,
-					   size_int (diff));
-	      do_remove = true;
+	      min_seg_len_b = dr_b1->seg_len;
+	      if (tree_int_cst_sign_bit (dr_b1->seg_len))
+		min_seg_len_b = wi::neg (min_seg_len_b);
 	    }
-	  /* Generally the new segment length is the maximum of the
-	     left segment size and the right segment size plus the distance.
-	     ???  We can also build tree MAX_EXPR here but it's not clear this
-	     is profitable.  */
-	  else if (tree_fits_uhwi_p (dr_a1->seg_len)
-		   && tree_fits_uhwi_p (dr_a2->seg_len))
+	  else
+	    min_seg_len_b = wi::uhwi (factor, TYPE_PRECISION (sizetype));
+
+	  /* Now we try to merge alias check dr_a1 & dr_b and dr_a2 & dr_b.
+
+	     Case A:
+	       check if the following condition is satisfied:
+
+	       DIFF - SEGMENT_LENGTH_A < SEGMENT_LENGTH_B
+
+	       where DIFF = DR_A2_INIT - DR_A1_INIT.  However,
+	       SEGMENT_LENGTH_A or SEGMENT_LENGTH_B may not be constant so we
+	       have to make a best estimation.  We can get the minimum value
+	       of SEGMENT_LENGTH_B as a constant, represented by MIN_SEG_LEN_B,
+	       then either of the following two conditions can guarantee the
+	       one above:
+
+	       1: DIFF <= MIN_SEG_LEN_B
+	       2: DIFF - SEGMENT_LENGTH_A < MIN_SEG_LEN_B
+		  Because DIFF - SEGMENT_LENGTH_A is done in sizetype, we need
+		  to take care of wrapping behavior in it.
+
+	     Case B:
+	       If the left segment does not extend beyond the start of the
+	       right segment the new segment length is that of the right
+	       plus the segment distance.  The condition is like:
+
+	       DIFF >= SEGMENT_LENGTH_A   ;SEGMENT_LENGTH_A is a constant.
+
+	     Note 1: Case A.2 and B combined together effectively merges every
+	     dr_a1 & dr_b and dr_a2 & dr_b when SEGMENT_LENGTH_A is const.
+
+	     Note 2: Above description is based on positive DR_STEP, we need to
+	     take care of negative DR_STEP for wrapping behavior.  See PR80815
+	     for more information.  */
+	  if (neg_step)
 	    {
-	      unsigned HOST_WIDE_INT seg_len_a1 = tree_to_uhwi (dr_a1->seg_len);
-	      unsigned HOST_WIDE_INT seg_len_a2 = tree_to_uhwi (dr_a2->seg_len);
-	      dr_a1->seg_len = size_int (MAX (seg_len_a1, diff + seg_len_a2));
-	      do_remove = true;
+	      /* Adjust diff according to access size of both references.  */
+	      tree size_a1 = TYPE_SIZE_UNIT (TREE_TYPE (DR_REF (dr_a1->dr)));
+	      tree size_a2 = TYPE_SIZE_UNIT (TREE_TYPE (DR_REF (dr_a2->dr)));
+	      diff = wi::add (diff, wi::sub (size_a2, size_a1));
+	      /* Case A.1.  */
+	      if (wi::leu_p (diff, min_seg_len_b)
+		  /* Case A.2 and B combined.  */
+		  || (tree_fits_uhwi_p (dr_a2->seg_len)))
+		{
+		  if (tree_fits_uhwi_p (dr_a1->seg_len)
+		      && tree_fits_uhwi_p (dr_a2->seg_len))
+		    new_seg_len
+		      = wide_int_to_tree (sizetype,
+					  wi::umin (wi::sub (dr_a1->seg_len,
+							     diff),
+						    dr_a2->seg_len));
+		  else
+		    new_seg_len
+		      = size_binop (MINUS_EXPR, dr_a2->seg_len,
+				    wide_int_to_tree (sizetype, diff));
+
+		  dr_a2->seg_len = new_seg_len;
+		  do_remove = true;
+		}
 	    }
-	  /* Now we check if the following condition is satisfied:
-
-	     DIFF - SEGMENT_LENGTH_A < SEGMENT_LENGTH_B
-
-	     where DIFF = DR_A2_INIT - DR_A1_INIT.  However,
-	     SEGMENT_LENGTH_A or SEGMENT_LENGTH_B may not be constant so we
-	     have to make a best estimation.  We can get the minimum value
-	     of SEGMENT_LENGTH_B as a constant, represented by MIN_SEG_LEN_B,
-	     then either of the following two conditions can guarantee the
-	     one above:
-
-	     1: DIFF <= MIN_SEG_LEN_B
-	     2: DIFF - SEGMENT_LENGTH_A < MIN_SEG_LEN_B  */
 	  else
 	    {
-	      unsigned HOST_WIDE_INT min_seg_len_b
-		= (tree_fits_uhwi_p (dr_b1->seg_len)
-		   ? tree_to_uhwi (dr_b1->seg_len)
-		   : factor);
-
-	      if (diff <= min_seg_len_b
-		  || (tree_fits_uhwi_p (dr_a1->seg_len)
-		      && diff - tree_to_uhwi (dr_a1->seg_len) < min_seg_len_b))
+	      /* Case A.1.  */
+	      if (wi::leu_p (diff, min_seg_len_b)
+		  /* Case A.2 and B combined.  */
+		  || (tree_fits_uhwi_p (dr_a1->seg_len)))
 		{
-		  dr_a1->seg_len = size_binop (PLUS_EXPR,
-					       dr_a2->seg_len, size_int (diff));
+		  if (tree_fits_uhwi_p (dr_a1->seg_len)
+		      && tree_fits_uhwi_p (dr_a2->seg_len))
+		    new_seg_len
+		      = wide_int_to_tree (sizetype,
+					  wi::umax (wi::add (dr_a2->seg_len,
+							     diff),
+						    dr_a1->seg_len));
+		  else
+		    new_seg_len
+		      = size_binop (PLUS_EXPR, dr_a2->seg_len,
+				    wide_int_to_tree (sizetype, diff));
+
+		  dr_a1->seg_len = new_seg_len;
 		  do_remove = true;
 		}
 	    }
@@ -1415,7 +1467,8 @@ prune_runtime_alias_test_list (vec<dr_with_seg_len_pair_t> *alias_pairs,
 		  dump_generic_expr (MSG_NOTE, TDF_SLIM, DR_REF (dr_b2->dr));
 		  dump_printf (MSG_NOTE, "\n");
 		}
-	      alias_pairs->ordered_remove (i--);
+	      alias_pairs->ordered_remove (neg_step ? i - 1 : i);
+	      i--;
 	    }
 	}
     }

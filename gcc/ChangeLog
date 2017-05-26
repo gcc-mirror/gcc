@@ -1,5 +1,11 @@
 2017-05-26  Bin Cheng  <bin.cheng@arm.com>
 
+	PR tree-optimization/80815
+	* tree-data-ref.c (prune_runtime_alias_test_list): Simplify condition
+	for merging runtime alias checks.  Handle negative DR_STEPs.
+
+2017-05-26  Bin Cheng  <bin.cheng@arm.com>
+
 	* tree-vect-data-refs.c (Operator==, comp_dr_with_seg_len_pair):
 	Move from ...
 	* tree-data-ref.c (Operator==, comp_dr_with_seg_len_pair): To here.
