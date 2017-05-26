@@ -1,6 +1,12 @@
 2017-05-26  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline
+	2017-01-20  Joe Seymour  <joe.s@somniumtech.com>
+
+	* acinclude.m4 (GLIBCXX_CHECK_SIZE_T_MANGLING): Support uint20_t.
+	* configure: Regenerate.
+
+	Backport from mainline
 	2016-12-06  Felipe Magno de Almeida  <felipe@expertisesolutions.com.br>
 
 	* src/c++11/cow-stdexcept.cc: Add special case for 16 bit pointers.

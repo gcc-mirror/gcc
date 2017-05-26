@@ -18386,7 +18386,7 @@ else
           cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 #define _GLIBCXX_INCLUDE_NEXT_C_HEADERS
-#include <math.h>
+             #include <math.h>
              #undef isnan
              namespace std {
                using ::isnan;
@@ -80555,7 +80555,25 @@ _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
   glibcxx_cv_size_t_mangling=t
 else
+
+            cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+extern __SIZE_TYPE__ x; extern __int20 unsigned x;
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  glibcxx_cv_size_t_mangling=u6uint20
+else
   glibcxx_cv_size_t_mangling=x
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 
