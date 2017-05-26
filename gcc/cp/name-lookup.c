@@ -37,16 +37,6 @@ static cxx_binding *cxx_binding_make (tree value, tree type);
 static cp_binding_level *innermost_nonclass_level (void);
 static void set_identifier_type_value_with_scope (tree id, tree decl,
 						  cp_binding_level *b);
-static void set_namespace_binding (tree scope, tree name, tree val);
-static void push_local_binding (tree, tree, bool);
-
-/* The bindings for a particular name in a particular scope.  */
-
-struct scope_binding {
-  tree value;
-  tree type;
-};
-#define EMPTY_SCOPE_BINDING { NULL_TREE, NULL_TREE }
 
 /* Create a local binding level for NAME.  */
 
@@ -4243,7 +4233,7 @@ set_decl_namespace (tree decl, tree scope, bool friendp)
       print_candidates (old);
       return;
     }
-  if (!is_overloaded_fn (decl))
+  if (!OVL_P (decl))
     {
       /* We might have found OLD in an inline namespace inside SCOPE.  */
       if (TREE_CODE (decl) == TREE_CODE (old))
@@ -4254,7 +4244,7 @@ set_decl_namespace (tree decl, tree scope, bool friendp)
       return;
     }
   /* Since decl is a function, old should contain a function decl.  */
-  if (!is_overloaded_fn (old))
+  if (!OVL_P (old))
     goto complain;
   /* We handle these in check_explicit_instantiation_namespace.  */
   if (processing_explicit_instantiation)
@@ -4411,6 +4401,7 @@ handle_namespace_attrs (tree ns, tree attributes)
 
   return saw_vis;
 }
+
 /* Temporarily set the namespace for the current declaration.  */
 
 void
@@ -4544,10 +4535,7 @@ finish_local_using_decl (tree decl, tree scope, tree name)
   if (decl == NULL_TREE)
     return;
 
-  gcc_assert (building_stmt_list_p ());
-  if (building_stmt_list_p ()
-      && at_function_scope_p ())
-    add_decl_expr (decl);
+  add_decl_expr (decl);
 
   cxx_binding *binding = find_local_binding (current_binding_level, name);
   tree value = binding ? binding->value : NULL_TREE;
@@ -5305,15 +5293,6 @@ tree
 lookup_name_nonclass (tree name)
 {
   return lookup_name_real (name, 0, 1, /*block_p=*/true, 0, 0);
-}
-
-tree
-lookup_function_nonclass (tree name, vec<tree, va_gc> *args, bool block_p)
-{
-  return
-    lookup_arg_dependent (name,
-			  lookup_name_real (name, 0, 1, block_p, 0, 0),
-			  args);
 }
 
 tree
@@ -6277,8 +6256,7 @@ cp_emit_debug_info_for_using (tree t, tree context)
   if (context == global_namespace)
     context = NULL_TREE;
 
-  if (BASELINK_P (t))
-    t = BASELINK_FUNCTIONS (t);
+  t = MAYBE_BASELINK_FUNCTIONS (t);
 
   /* FIXME: Handle TEMPLATE_DECLs.  */
   for (lkp_iterator iter (t); iter; ++iter)
