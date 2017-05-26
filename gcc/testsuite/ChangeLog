@@ -1,3 +1,9 @@
+2017-05-26  Bin Cheng  <bin.cheng@arm.com>
+
+	PR tree-optimization/80815
+	* gcc.dg/vect/pr80815-1.c: New test.
+	* gcc.dg/vect/pr80815-2.c: New test.
+
 2017-05-26  Martin Liska  <mliska@suse.cz>
 
 	PR ipa/80663
