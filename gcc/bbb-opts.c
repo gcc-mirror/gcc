@@ -177,6 +177,12 @@ public:
   {
   }
 
+  inline ptrdiff_t
+  operator < (insn_info const & o) const
+  {
+    return this - &o;
+  }
+
   int
   get_index () const;
 
@@ -1329,21 +1335,20 @@ static void
 update_insn_infos (void)
 {
   /* add all return (jump outs) and start analysis there. */
-  std::vector<std::pair<unsigned, insn_info> > todo;
+  std::set<unsigned> todo;
   for (su_iterator i = returns.begin (); i != returns.end (); ++i)
-    todo.push_back (std::make_pair (*i, insn_info ()));
+    todo.insert (*i);
 
   if (todo.begin () == todo.end ())
-    todo.push_back (std::make_pair (infos.size () - 1, insn_info ()));
+    todo.insert (infos.size () - 1);
 
   while (!todo.empty ())
     {
-      std::pair<unsigned, insn_info> p = *todo.rbegin ();
-      todo.pop_back ();
+      int start = *todo.begin ();
+      todo.erase (todo.begin ());
+      insn_info ii = infos[start];
 
-      insn_info ii = p.second;
-
-      for (int pos = p.first; pos >= 0; --pos)
+      for (int pos = start; pos >= 0; --pos)
 	{
 	  insn_info & pp = infos[pos];
 	  rtx_insn * insn = pp.get_insn ();
@@ -1352,7 +1357,7 @@ update_insn_infos (void)
 	    continue;
 
 	  /* no new information -> break. */
-	  if (pp.in_proepi () == IN_CODE && pp.is_visited () && pp.contains (ii))
+	  if (pos != start && pp.is_visited () && !JUMP_P(insn) && pp.contains (ii))
 	    break;
 
 	  ii.clear_hard_def ();
@@ -1366,8 +1371,20 @@ update_insn_infos (void)
 		{
 		  i2i_iterator j = insn2info.find (i->second);
 		  if (j != insn2info.end ())
-		    todo.push_back (std::make_pair (j->second->get_index (), ii));
+		    {
+		      unsigned index = j->second->get_index ();
+		      insn_info & jj = infos[index];
+		      if (!jj.is_visited () || !jj.contains (ii))
+			{
+			  jj.updateWith (ii);
+			  todo.insert (index);
+			}
+		    }
 		}
+
+	      if (pos == start)
+		pp.mark_visited ();
+//	      pp.update (ii);
 	      continue;
 	    }
 
@@ -1382,7 +1399,7 @@ update_insn_infos (void)
 	    }
 	  else if (JUMP_P(insn))
 	    {
-	      if ((unsigned) pos != p.first)
+	      if (pos != start)
 		{
 		  su_iterator k = returns.find (pos);
 		  if (k != returns.end ())
@@ -2607,7 +2624,10 @@ track_sp ()
 	{
 	  insn_info & ii = infos[index];
 	  if (ii.in_proepi () != IN_CODE)
-	    continue;
+	    {
+	      ii.set_sp_offset (sp_offset);
+	      continue;
+	    }
 
 	  // already visited? sp_offset must match
 	  if (ii.is_visited ())
@@ -2847,7 +2867,7 @@ opt_shrink_stack_frame (void)
   for (unsigned i = 0; i < infos.size (); ++i)
     {
       insn_info & jj = infos[i];
-      if (jj.in_proepi () == IN_CODE)
+      if (jj.in_proepi () != IN_CODE)
 	continue;
 
       ii.or_use (jj);
@@ -3104,7 +3124,7 @@ opt_shrink_stack_frame (void)
 	  log ("(f) dropping unused frame pointer\n");
 	  for (std::vector<int>::reverse_iterator i = a5pos.rbegin (); i != a5pos.rend (); ++i)
 	    {
-	      unsigned index = *i;
+	      int index = *i;
 	      SET_INSN_DELETED(infos[index].get_insn ());
 
 	      // move to last insn in epilogue
@@ -3112,7 +3132,7 @@ opt_shrink_stack_frame (void)
 		--index;
 
 	      insn_info & ii = infos[index];
-	      if (ii.get_sp_offset () != 0)
+	      if (ii.in_proepi () >= IN_EPILOGUE && ii.get_sp_offset () != 0)
 		{
 		  log ("(f) adjusting exit sp\n");
 		  rtx pattern = gen_rtx_SET(a7,
