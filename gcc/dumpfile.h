@@ -58,39 +58,39 @@ enum dump_kind
    the DUMP_OPTIONS array in dumpfile.c. The TDF_* flags coexist with
    MSG_* flags (for -fopt-info) and the bit values must be chosen to
    allow that.  */
-#define TDF_ADDRESS	(1 << 3)	/* dump node addresses */
-#define TDF_SLIM	(1 << 4)	/* don't go wild following links */
-#define TDF_RAW		(1 << 5)	/* don't unparse the function */
-#define TDF_DETAILS	(1 << 6)	/* show more detailed info about
+#define TDF_ADDRESS	(1 << 0)	/* dump node addresses */
+#define TDF_SLIM	(1 << 1)	/* don't go wild following links */
+#define TDF_RAW		(1 << 2)	/* don't unparse the function */
+#define TDF_DETAILS	(1 << 3)	/* show more detailed info about
 					   each pass */
-#define TDF_STATS	(1 << 7)	/* dump various statistics about
+#define TDF_STATS	(1 << 4)	/* dump various statistics about
 					   each pass */
-#define TDF_BLOCKS	(1 << 8)	/* display basic block boundaries */
-#define TDF_VOPS	(1 << 9)	/* display virtual operands */
-#define TDF_LINENO	(1 << 10)	/* display statement line numbers */
-#define TDF_UID		(1 << 11)	/* display decl UIDs */
+#define TDF_BLOCKS	(1 << 5)	/* display basic block boundaries */
+#define TDF_VOPS	(1 << 6)	/* display virtual operands */
+#define TDF_LINENO	(1 << 7)	/* display statement line numbers */
+#define TDF_UID		(1 << 8)	/* display decl UIDs */
 
-#define TDF_STMTADDR	(1 << 12)       /* Address of stmt.  */
+#define TDF_STMTADDR	(1 << 9)       /* Address of stmt.  */
 
-#define TDF_GRAPH	(1 << 13)	/* a graph dump is being emitted */
-#define TDF_MEMSYMS	(1 << 14)	/* display memory symbols in expr.
+#define TDF_GRAPH	(1 << 10)	/* a graph dump is being emitted */
+#define TDF_MEMSYMS	(1 << 11)	/* display memory symbols in expr.
 					   Implies TDF_VOPS.  */
 
-#define TDF_RHS_ONLY	(1 << 17)	/* a flag to only print the RHS of
+#define TDF_RHS_ONLY	(1 << 12)	/* a flag to only print the RHS of
 					   a gimple stmt.  */
-#define TDF_ASMNAME	(1 << 18)	/* display asm names of decls  */
-#define TDF_EH		(1 << 19)	/* display EH region number
+#define TDF_ASMNAME	(1 << 13)	/* display asm names of decls  */
+#define TDF_EH		(1 << 14)	/* display EH region number
 					   holding this gimple statement.  */
-#define TDF_NOUID	(1 << 20)	/* omit UIDs from dumps.  */
-#define TDF_ALIAS	(1 << 21)	/* display alias information  */
-#define TDF_ENUMERATE_LOCALS (1 << 22)	/* Enumerate locals by uid.  */
-#define TDF_CSELIB	(1 << 23)	/* Dump cselib details.  */
-#define TDF_SCEV	(1 << 24)	/* Dump SCEV details.  */
-#define TDF_GIMPLE	(1 << 26)	/* Dump in GIMPLE FE syntax  */
-#define TDF_FOLDING	(1 << 27)	/* Dump folding details.  */
-#define MSG_OPTIMIZED_LOCATIONS	 (1 << 27)  /* -fopt-info optimized sources */
-#define MSG_MISSED_OPTIMIZATION	 (1 << 28)  /* missed opportunities */
-#define MSG_NOTE		 (1 << 29)  /* general optimization info */
+#define TDF_NOUID	(1 << 15)	/* omit UIDs from dumps.  */
+#define TDF_ALIAS	(1 << 16)	/* display alias information  */
+#define TDF_ENUMERATE_LOCALS (1 << 17)	/* Enumerate locals by uid.  */
+#define TDF_CSELIB	(1 << 18)	/* Dump cselib details.  */
+#define TDF_SCEV	(1 << 19)	/* Dump SCEV details.  */
+#define TDF_GIMPLE	(1 << 20)	/* Dump in GIMPLE FE syntax  */
+#define TDF_FOLDING	(1 << 21)	/* Dump folding details.  */
+#define MSG_OPTIMIZED_LOCATIONS	 (1 << 22)  /* -fopt-info optimized sources */
+#define MSG_MISSED_OPTIMIZATION	 (1 << 23)  /* missed opportunities */
+#define MSG_NOTE		 (1 << 24)  /* general optimization info */
 #define MSG_ALL		(MSG_OPTIMIZED_LOCATIONS | MSG_MISSED_OPTIMIZATION \
 			 | MSG_NOTE)
 

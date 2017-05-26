@@ -1,5 +1,9 @@
 2017-05-26  Martin Liska  <mliska@suse.cz>
 
+	* dumpfile.h (enum dump_kind): Renumber TDF_* flags to be contiguous.
+
+2017-05-26  Martin Liska  <mliska@suse.cz>
+
 	* cfg.c (check_bb_profile): Do not use TDF_COMMENT and print
 	always leading ';; '.
 	(dump_bb_info): Likewise.
