@@ -657,7 +657,8 @@ typedef struct ptrmem_cst * ptrmem_cst_t;
    Other users should use iterators and convenience functions.  */
 #define OVL_FUNCTION(NODE) \
   (((struct tree_overload*)OVERLOAD_CHECK (NODE))->function)
-#define OVL_CHAIN(NODE)      TREE_CHAIN (NODE)
+#define OVL_CHAIN(NODE) \
+  (((struct tree_overload*)OVERLOAD_CHECK (NODE))->common.chain)
 
 /* If set, this was imported in a using declaration.   */
 #define OVL_USING_P(NODE)	TREE_LANG_FLAG_1 (OVERLOAD_CHECK (NODE))
@@ -684,6 +685,9 @@ typedef struct ptrmem_cst * ptrmem_cst_t;
 #define OVL_SINGLE_P(NODE) \
   (TREE_CODE (NODE) != OVERLOAD || !OVL_CHAIN (NODE))
 
+/* OVL_HIDDEN_P nodes come first, then OVL_USING_P nodes, then regular
+   fns.  */
+
 struct GTY(()) tree_overload {
   struct tree_common common;
   tree function;
@@ -694,18 +698,18 @@ struct GTY(()) tree_overload {
 class ovl_iterator 
 {
   tree ovl;
+  const bool allow_inner; /* Only used when checking.  */
 
  public:
-  ovl_iterator (tree o)
-  :ovl (o)
-    {}
-
-  ovl_iterator &operator= (const ovl_iterator &from)
+  explicit ovl_iterator (tree o, bool allow = false)
+    : ovl (o), allow_inner (allow)
   {
-    ovl = from.ovl;
-
-    return *this;
   }
+
+ private:
+  /* Do not duplicate.  */
+  ovl_iterator &operator= (const ovl_iterator &);
+  ovl_iterator (const ovl_iterator &);
 
  public:
   operator bool () const
@@ -722,7 +726,7 @@ class ovl_iterator
     tree fn = TREE_CODE (ovl) != OVERLOAD ? ovl : OVL_FUNCTION (ovl);
 
     /* Check this is not an unexpected 2-dimensional overload.  */
-    gcc_checking_assert (TREE_CODE (fn) != OVERLOAD);
+    gcc_checking_assert (allow_inner || TREE_CODE (fn) != OVERLOAD);
 
     return fn;
   }
@@ -748,6 +752,27 @@ class ovl_iterator
     return reveal_node (head, ovl);
   }
 
+ protected:
+  /* If we have a nested overload, point at the inner overload and
+     return the next link on the outer one.  */
+  tree maybe_push ()
+  {
+    tree r = NULL_TREE;
+
+    if (ovl && TREE_CODE (ovl) == OVERLOAD && OVL_NESTED_P (ovl))
+      {
+	r = OVL_CHAIN (ovl);
+	ovl = OVL_FUNCTION (ovl);
+      }
+    return r;
+  }
+  /* Restore an outer nested overload.  */
+  void pop (tree outer)
+  {
+    gcc_checking_assert (!ovl);
+    ovl = outer;
+  }
+
  private:
   /* We make these static functions to avoid the address of the
      iterator escaping the local context.  */
@@ -758,17 +783,33 @@ class ovl_iterator
 /* Iterator over a (potentially) 2 dimensional overload, which is
    produced by name lookup.  */
 
-/* Note this is currently a placeholder, as the name-lookup changes
-   are not yet committed.  */
-
 class lkp_iterator : public ovl_iterator
 {
   typedef ovl_iterator parent;
 
+  tree outer;
+
  public:
-  lkp_iterator (tree o)
-    : parent (o)
+  explicit lkp_iterator (tree o)
+    : parent (o, true), outer (maybe_push ())
   {
+  }
+
+ public:
+  lkp_iterator &operator++ ()
+  {
+    bool repush = !outer;
+
+    if (!parent::operator++ () && !repush)
+      {
+	pop (outer);
+	repush = true;
+      }
+
+    if (repush)
+      outer = maybe_push ();
+
+    return *this;
   }
 };
 
@@ -6865,7 +6906,9 @@ extern tree ovl_make				(tree fn,
 extern tree ovl_insert				(tree fn, tree maybe_ovl,
 						 bool using_p = false);
 extern tree ovl_skip_hidden			(tree) ATTRIBUTE_PURE;
+extern void lookup_mark				(tree lookup, bool val);
 extern tree lookup_add				(tree fns, tree lookup);
+extern tree lookup_maybe_add			(tree fns, tree lookup);
 extern void lookup_keep				(tree lookup, bool keep);
 extern int is_overloaded_fn			(tree) ATTRIBUTE_PURE;
 extern bool really_overloaded_fn		(tree) ATTRIBUTE_PURE;

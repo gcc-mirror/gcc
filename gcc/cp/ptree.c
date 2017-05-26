@@ -237,8 +237,10 @@ cxx_print_xnode (FILE *file, tree node, int indent)
       break;
     case OVERLOAD:
       print_node (file, "name", OVL_NAME (node), indent+4);
-      for (lkp_iterator iter (node); iter; ++iter)
-	print_node (file, "function", *iter, indent+4);
+      for (ovl_iterator iter (node, true); iter; ++iter)
+	print_node (file,
+		    TREE_CODE (*iter) == OVERLOAD ? "inner" : "function",
+		    *iter, indent+4);
       break;
     case TEMPLATE_PARM_INDEX:
       print_node (file, "decl", TEMPLATE_PARM_DECL (node), indent+4);

@@ -161,7 +161,6 @@ public:
   int flags;	/* Lookup flags.  */
   vec<tree, va_heap, vl_embed> *scopes;
   name_lookup *previous; /* Previously active lookup.  */
-  hash_set<tree> *fn_set;
 
 protected:
   /* Marked scope stack for outermost name lookup.  */
@@ -172,13 +171,12 @@ protected:
 public:
   name_lookup (tree n, int f = 0)
   : name (n), value (NULL_TREE), type (NULL_TREE), flags (f),
-    scopes (NULL), previous (NULL), fn_set (NULL)
+    scopes (NULL), previous (NULL)
   {
     preserve_state ();
   }
   ~name_lookup ()
   {
-    gcc_checking_assert (!fn_set);
     restore_state ();
   }
 
@@ -299,6 +297,9 @@ name_lookup::preserve_state ()
 	      previous->scopes->quick_push (decl);
 	    }
 	}
+
+      /* Unmark the outer partial lookup.  */
+      lookup_mark (previous->value, false);
     }
   else
     scopes = shared_scopes;
@@ -322,6 +323,8 @@ name_lookup::restore_state ()
   active = previous;
   if (previous)
     {
+      free (scopes);
+
       unsigned length = vec_safe_length (previous->scopes);
       for (unsigned ix = 0; ix != length; ix++)
 	{
@@ -345,7 +348,8 @@ name_lookup::restore_state ()
 	  LOOKUP_SEEN_P (decl) = true;
 	}
 
-      free (scopes);
+      /* Remark the outer partial lookup.  */
+      lookup_mark (previous->value, true);
     }
   else
     shared_scopes = scopes;
@@ -403,10 +407,7 @@ name_lookup::add_value (tree new_val)
 	    && same_type_p (TREE_TYPE (value), TREE_TYPE (new_val))))
     ;
   else if (OVL_P (value) && OVL_P (new_val))
-    {
-      for (ovl_iterator iter (new_val); iter; ++iter)
-	value = lookup_add (*iter, value);
-    }
+    value = lookup_add (new_val, value);
   else
     value = ambiguous (new_val, value);
 }
@@ -684,9 +685,7 @@ name_lookup::add_fns (tree fns)
     return;
 
   /* Only add those that aren't already there.  */
-  for (ovl_iterator iter (fns); iter; ++iter)
-    if (!fn_set->add (*iter))
-      value = lookup_add (*iter, value);
+  value = lookup_maybe_add (fns, value);
 }
 
 /* Add functions of a namespace to the lookup structure.  */
@@ -987,12 +986,8 @@ name_lookup::adl_template_arg (tree arg)
 tree
 name_lookup::search_adl (tree fns, vec<tree, va_gc> *args)
 {
+  lookup_mark (fns, true);
   value = fns;
-
-  /* Add the current overload set into the hash table.  */
-  fn_set = new hash_set<tree>;
-  for (lkp_iterator iter (fns); iter; ++iter)
-    fn_set->add (*iter);
 
   unsigned ix;
   tree arg;
@@ -1005,10 +1000,8 @@ name_lookup::search_adl (tree fns, vec<tree, va_gc> *args)
     else
       adl_expr (arg);
 
-  delete fn_set;
-  fn_set = NULL;
-
   fns = value;
+  lookup_mark (fns, false);
 
   return fns;
 }
@@ -2101,7 +2094,6 @@ check_local_shadow (tree decl)
   inform (DECL_SOURCE_LOCATION (shadowed), "shadowed declaration is here");
 }
 
-
 /* DECL is being pushed inside function CTX.  Set its context, if
    needed.  */
 
@@ -2394,14 +2386,14 @@ do_pushdecl (tree decl, bool is_friend)
 }
 
 /* Record a decl-node X as belonging to the current lexical scope.
-   It's a friend if IS_FRIEND is true.  */
+   It's a friend if IS_FRIEND is true -- which affects exactly where
+   we push it.  */
 
 tree
 pushdecl (tree x, bool is_friend)
 {
-  tree ret;
   bool subtime = timevar_cond_start (TV_NAME_LOOKUP);
-  ret = do_pushdecl (x, is_friend);
+  tree ret = do_pushdecl (x, is_friend);
   timevar_cond_stop (TV_NAME_LOOKUP, subtime);
   return ret;
 }
@@ -4199,7 +4191,7 @@ set_namespace_binding (tree scope, tree name, tree val)
     supplement_binding (binding, val);
 }
 
-/* Set value binding og NAME in the global namespace to VAL.  Does not
+/* Set value binding of NAME in the global namespace to VAL.  Does not
    add it to the list of things in the namespace.  */
 
 void
