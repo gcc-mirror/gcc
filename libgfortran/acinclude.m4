@@ -499,6 +499,6 @@ AC_DEFUN([LIBGFOR_CHECK_AVX128], [
 	AC_DEFINE(HAVE_AVX128, 1,
 	[Define if -mprefer-avx128 is supported.])
 	AM_CONDITIONAL([HAVE_AVX128],true),
-	[])
+	[AM_CONDITIONAL([HAVE_AVX128],false)])
   CFLAGS="$ac_save_CFLAGS"
 ])
