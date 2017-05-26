@@ -1,3 +1,12 @@
+2017-05-26  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
+	2017-04-10  Martin Liska  <mliska@suse.cz>
+
+	PR sanitizer/80350
+	* c-ubsan.c (ubsan_instrument_shift): Evaluate RHS before
+	doing an UBSAN check.
+
 2017-05-05  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
