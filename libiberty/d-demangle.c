@@ -1025,9 +1025,6 @@ dlang_parse_integer (string *decl, const char *mangled, char type)
 static const char *
 dlang_parse_real (string *decl, const char *mangled)
 {
-  char buffer[64];
-  int len = 0;
-
   /* Handle NAN and +-INF.  */
   if (strncmp (mangled, "NAN", 3) == 0)
     {
@@ -1051,23 +1048,22 @@ dlang_parse_real (string *decl, const char *mangled)
   /* Hexadecimal prefix and leading bit.  */
   if (*mangled == 'N')
     {
-      buffer[len++] = '-';
+      string_append (decl, "-");
       mangled++;
     }
 
   if (!ISXDIGIT (*mangled))
     return NULL;
 
-  buffer[len++] = '0';
-  buffer[len++] = 'x';
-  buffer[len++] = *mangled;
-  buffer[len++] = '.';
+  string_append (decl, "0x");
+  string_appendn (decl, mangled, 1);
+  string_append (decl, ".");
   mangled++;
 
   /* Significand.  */
   while (ISXDIGIT (*mangled))
     {
-      buffer[len++] = *mangled;
+      string_appendn (decl, mangled, 1);
       mangled++;
     }
 
@@ -1075,26 +1071,21 @@ dlang_parse_real (string *decl, const char *mangled)
   if (*mangled != 'P')
     return NULL;
 
-  buffer[len++] = 'p';
+  string_append (decl, "p");
   mangled++;
 
   if (*mangled == 'N')
     {
-      buffer[len++] = '-';
+      string_append (decl, "-");
       mangled++;
     }
 
   while (ISDIGIT (*mangled))
     {
-      buffer[len++] = *mangled;
+      string_appendn (decl, mangled, 1);
       mangled++;
     }
 
-  /* Write out the demangled hexadecimal, rather than trying to
-     convert the buffer into a floating-point value.  */
-  buffer[len] = '\0';
-  len = strlen (buffer);
-  string_appendn (decl, buffer, len);
   return mangled;
 }
 
