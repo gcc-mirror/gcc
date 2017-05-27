@@ -1,3 +1,8 @@
+2017-05-27  Bernd Schmidt  <bschmidt@redhat.com>
+
+	* MAINTAINERS: Update my email address, and remove myself as
+	maintainer in some areas.
+
 2017-05-25  Eric Gallager  <egall@gwmail.gwu.edu>
 
 	* MAINTAINERS: Add self to Write After Approval
