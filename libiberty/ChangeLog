@@ -1,5 +1,12 @@
 2017-05-27  Iain Buclaw  <ibuclaw@gdcproject.org>
 
+	* d-demangle.c (dlang_call_convention_p): Move declaration
+	before dlang_type.
+	(dlang_type): Handle function types.
+	* testsuite/d-demangle-expected: Add tests.
+
+2017-05-27  Iain Buclaw  <ibuclaw@gdcproject.org>
+
 	* d-demangle.c (dlang_parse_real): Remove stack buffer, write
 	the demangled hexadecimal directly to string.
 	* testsuite/d-demangle-expected: Add tests.

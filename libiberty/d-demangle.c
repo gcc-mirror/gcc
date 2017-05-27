@@ -251,6 +251,22 @@ dlang_hexdigit (const char *mangled, char *ret)
   return mangled;
 }
 
+/* Extract the function calling convention from MANGLED and
+   return 1 on success or 0 on failure.  */
+static int
+dlang_call_convention_p (const char *mangled)
+{
+  switch (*mangled)
+    {
+    case 'F': case 'U': case 'V':
+    case 'W': case 'R': case 'Y':
+      return 1;
+
+    default:
+      return 0;
+    }
+}
+
 /* Demangle the calling convention from MANGLED and append it to DECL.
    Return the remaining string on success or NULL on failure.  */
 static const char *
@@ -600,17 +616,22 @@ dlang_type (string *decl, const char *mangled)
     }
     case 'P': /* pointer (T*) */
       mangled++;
-      /* Function pointer types don't include the trailing asterisk.  */
-      switch (*mangled)
+      if (!dlang_call_convention_p (mangled))
 	{
-	case 'F': case 'U': case 'W':
-	case 'V': case 'R': case 'Y':
-	  mangled = dlang_function_type (decl, mangled);
-	  string_append (decl, "function");
+	  mangled = dlang_type (decl, mangled);
+	  string_append (decl, "*");
 	  return mangled;
 	}
-      mangled = dlang_type (decl, mangled);
-      string_append (decl, "*");
+      /* Fall through */
+    case 'F': /* function T (D) */
+    case 'U': /* function T (C) */
+    case 'W': /* function T (Windows) */
+    case 'V': /* function T (Pascal) */
+    case 'R': /* function T (C++) */
+    case 'Y': /* function T (Objective-C) */
+      /* Function pointer types don't include the trailing asterisk.  */
+      mangled = dlang_function_type (decl, mangled);
+      string_append (decl, "function");
       return mangled;
     case 'I': /* ident T */
     case 'C': /* class T */
@@ -1309,22 +1330,6 @@ dlang_value (string *decl, const char *mangled, const char *name, char type)
     }
 
   return mangled;
-}
-
-/* Extract the function calling convention from MANGLED and
-   return 1 on success or 0 on failure.  */
-static int
-dlang_call_convention_p (const char *mangled)
-{
-  switch (*mangled)
-    {
-    case 'F': case 'U': case 'V':
-    case 'W': case 'R': case 'Y':
-      return 1;
-
-    default:
-      return 0;
-    }
 }
 
 /* Extract and demangle the symbol in MANGLED and append it to DECL.
