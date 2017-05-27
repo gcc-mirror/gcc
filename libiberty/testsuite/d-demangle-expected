@@ -886,6 +886,10 @@ _D8demangle35__T4testVS8demangle1SS2i1a3_616263Zv
 demangle.test!(demangle.S(1, "abc"))
 #
 --format=dlang
+_D8demangle13__T4testTFZaZ6mangleFZv
+demangle.test!(char() function).mangle()
+#
+--format=dlang
 _D8demangle4testMxFZv
 demangle.test() const
 #
@@ -1298,3 +1302,7 @@ std.traits.fqnSym!(std).adjustIdent(immutable(char)[])
 --format=dlang
 _D2rt8lifetime36__T14_d_newarrayOpTS13_d_newarrayiTZ14_d_newarrayOpTFNaNbxC8TypeInfomPmZAv
 rt.lifetime._d_newarrayOpT!(_d_newarrayiT)._d_newarrayOpT(const(TypeInfo), ulong, ulong*)
+#
+--format=dlang
+_D4core8demangle16__T6mangleTFZPvZ6mangleFNaNbNfAxaAaZ11DotSplitter5emptyMxFNaNbNdNiNfZb
+core.demangle.mangle!(void*() function).mangle(const(char)[], char[]).DotSplitter.empty() const
