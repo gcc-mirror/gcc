@@ -1299,39 +1299,15 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   /* (A +- CST1) +- CST2 -> A + CST3  */
   (for outer_op (plus minus)
    (for inner_op (plus minus)
-	neg_inner_op (minus plus)
     (simplify
-     (outer_op (convert? (inner_op @0 CONSTANT_CLASS_P@1)) CONSTANT_CLASS_P@2)
-     (if (tree_nop_conversion_p (type, TREE_TYPE (@0)))
-      /* If one of the types wraps, use that one.  */
-      (if (!ANY_INTEGRAL_TYPE_P (type) || TYPE_OVERFLOW_WRAPS (type))
-       (if (outer_op == PLUS_EXPR)
-	(plus (convert @0) (inner_op @2 (convert @1)))
-	(minus (convert @0) (neg_inner_op @2 (convert @1))))
-       (if (!ANY_INTEGRAL_TYPE_P (TREE_TYPE (@0))
-	    || TYPE_OVERFLOW_WRAPS (TREE_TYPE (@0)))
-	(if (outer_op == PLUS_EXPR)
-	 (convert (plus @0 (inner_op (convert @2) @1)))
-	 (convert (minus @0 (neg_inner_op (convert @2) @1))))
-	/* If the constant operation overflows we cannot do the transform
-	   directly as we would introduce undefined overflow, for example
-	   with (a - 1) + INT_MIN.  */
-	(if (types_match (type, @0))
-	 (with { tree cst = const_binop (outer_op == inner_op
-					 ? PLUS_EXPR : MINUS_EXPR,
-					 type, @1, @2); }
-	  (if (cst && !TREE_OVERFLOW (cst))
-	   (inner_op @0 { cst; } )
-	   /* X+INT_MAX+1 is X-INT_MIN.  */
-	   (if (INTEGRAL_TYPE_P (type) && cst
-		&& wi::eq_p (cst, wi::min_value (type)))
-	    (neg_inner_op @0 { wide_int_to_tree (type, cst); })
-	    /* Last resort, use some unsigned type.  */
-	    (with { tree utype = unsigned_type_for (type); }
-	     (convert (inner_op
-		       (convert:utype @0)
-		       (convert:utype
-			{ drop_tree_overflow (cst); }))))))))))))))
+     (outer_op (inner_op @0 CONSTANT_CLASS_P@1) CONSTANT_CLASS_P@2)
+     /* If the constant operation overflows we cannot do the transform
+	as we would introduce undefined overflow, for example
+	with (a - 1) + INT_MIN.  */
+     (with { tree cst = const_binop (outer_op == inner_op
+				     ? PLUS_EXPR : MINUS_EXPR, type, @1, @2); }
+      (if (cst && !TREE_OVERFLOW (cst))
+       (inner_op @0 { cst; } ))))))
 
   /* (CST1 - A) +- CST2 -> CST3 - A  */
   (for outer_op (plus minus)

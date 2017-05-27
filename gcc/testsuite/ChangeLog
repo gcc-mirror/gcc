@@ -1,3 +1,8 @@
+2017-05-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/80887
+	* gcc.dg/tree-ssa/addadd.c: Xfail all scan-tree-dump*.
+
 2017-05-26  Nathan Sidwell  <nathan@acm.org>
 
 	* g++.dg/cpp0x/dr2061.C: New.
