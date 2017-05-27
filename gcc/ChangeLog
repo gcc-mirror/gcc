@@ -1,3 +1,14 @@
+2017-05-27  Michael Eager  <eager@eagercon.com>
+
+	Revert:
+	2016-01-21  Ajit Agarwal  <ajitkum@xilinx.com>
+
+	See https://gcc.gnu.org/ml/gcc/2017-05/msg00221.html.
+
+	* config/microblaze/microblaze.h
+	(FIXED_REGISTERS): Update in macro.
+	(CALL_USED_REGISTERS): Update in macro.
+
 2017-05-27  François-Xavier Coudett  <fxcoudert@gcc.gnu.org>
 
 	* doc/install.texi: Add links to macOS binary distributions.
