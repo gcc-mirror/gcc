@@ -1,3 +1,10 @@
+2017-05-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/80887
+	2017-05-25  Marc Glisse  <marc.glisse@inria.fr>
+
+	* match.pd ((A +- CST1) +- CST2): Allow some conversions.
+
 2017-05-26  Martin Liska  <mliska@suse.cz>
 
 	* dumpfile.h (enum dump_kind): Renumber TDF_* flags to be contiguous.
