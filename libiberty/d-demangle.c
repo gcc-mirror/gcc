@@ -864,7 +864,8 @@ dlang_identifier (string *decl, const char *mangled,
 	  else if (strncmp (mangled, "__initZ", len+1) == 0)
 	    {
 	      /* The static initialiser for a given symbol.  */
-	      string_append (decl, "init$");
+	      string_prepend (decl, "initializer for ");
+	      string_setlength (decl, string_length (decl) - 1);
 	      mangled += len;
 	      return mangled;
 	    }

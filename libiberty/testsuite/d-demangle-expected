@@ -587,7 +587,7 @@ demangle.test(scope char() scope function)
 #
 --format=dlang
 _D8demangle4test6__initZ
-demangle.test.init$
+initializer for demangle.test
 #
 --format=dlang
 _D8demangle4test6__vtblZ
