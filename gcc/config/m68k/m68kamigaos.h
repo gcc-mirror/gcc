@@ -528,6 +528,7 @@ if (target_flags & (MASK_RESTORE_A4|MASK_ALWAYS_RESTORE_A4))	\
   "%{m68020-60:-fl libm020} "                                     \
   "%{m68881:-fl libm881}"
 #else
+#define LINK_SPEC                                                 \
   "%{noixemul:%(link_libnix)} "                                   \
   "%{mcrt=nix*:%(link_libnix)} "                                  \
   "%{mcrt=ixemul:%(link_ixemul)} "                                \
