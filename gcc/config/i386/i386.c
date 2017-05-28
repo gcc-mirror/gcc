@@ -3536,7 +3536,16 @@ dimode_scalar_chain::make_vector_copies (unsigned regno)
 	rtx_insn *insn = DF_REF_INSN (ref);
 
 	start_sequence ();
-	if (TARGET_SSE4_1)
+	if (!TARGET_INTER_UNIT_MOVES_TO_VEC)
+	  {
+	    rtx tmp = assign_386_stack_local (DImode, SLOT_STV_TEMP);
+	    emit_move_insn (adjust_address (tmp, SImode, 0),
+			    gen_rtx_SUBREG (SImode, reg, 0));
+	    emit_move_insn (adjust_address (tmp, SImode, 4),
+			    gen_rtx_SUBREG (SImode, reg, 4));
+	    emit_move_insn (vreg, tmp);
+	  }
+	else if (TARGET_SSE4_1)
 	  {
 	    emit_insn (gen_sse2_loadld (gen_rtx_SUBREG (V4SImode, vreg, 0),
 					CONST0_RTX (V4SImode),
@@ -3546,7 +3555,7 @@ dimode_scalar_chain::make_vector_copies (unsigned regno)
 					  gen_rtx_SUBREG (SImode, reg, 4),
 					  GEN_INT (2)));
 	  }
-	else if (TARGET_INTER_UNIT_MOVES_TO_VEC)
+	else
 	  {
 	    rtx tmp = gen_reg_rtx (DImode);
 	    emit_insn (gen_sse2_loadld (gen_rtx_SUBREG (V4SImode, vreg, 0),
@@ -3559,15 +3568,6 @@ dimode_scalar_chain::make_vector_copies (unsigned regno)
 		       (gen_rtx_SUBREG (V4SImode, vreg, 0),
 			gen_rtx_SUBREG (V4SImode, vreg, 0),
 			gen_rtx_SUBREG (V4SImode, tmp, 0)));
-	  }
-	else
-	  {
-	    rtx tmp = assign_386_stack_local (DImode, SLOT_STV_TEMP);
-	    emit_move_insn (adjust_address (tmp, SImode, 0),
-			    gen_rtx_SUBREG (SImode, reg, 0));
-	    emit_move_insn (adjust_address (tmp, SImode, 4),
-			    gen_rtx_SUBREG (SImode, reg, 4));
-	    emit_move_insn (vreg, tmp);
 	  }
 	rtx_insn *seq = get_insns ();
 	end_sequence ();
@@ -3625,7 +3625,16 @@ dimode_scalar_chain::convert_reg (unsigned regno)
       if (scalar_copy)
 	{
 	  start_sequence ();
-	  if (TARGET_SSE4_1)
+	  if (!TARGET_INTER_UNIT_MOVES_FROM_VEC)
+	    {
+	      rtx tmp = assign_386_stack_local (DImode, SLOT_STV_TEMP);
+	      emit_move_insn (tmp, reg);
+	      emit_move_insn (gen_rtx_SUBREG (SImode, scopy, 0),
+			      adjust_address (tmp, SImode, 0));
+	      emit_move_insn (gen_rtx_SUBREG (SImode, scopy, 4),
+			      adjust_address (tmp, SImode, 4));
+	    }
+	  else if (TARGET_SSE4_1)
 	    {
 	      rtx tmp = gen_rtx_PARALLEL (VOIDmode, gen_rtvec (1, const0_rtx));
 	      emit_insn
@@ -3641,7 +3650,7 @@ dimode_scalar_chain::convert_reg (unsigned regno)
 		  gen_rtx_VEC_SELECT (SImode,
 				      gen_rtx_SUBREG (V4SImode, reg, 0), tmp)));
 	    }
-	  else if (TARGET_INTER_UNIT_MOVES_FROM_VEC)
+	  else
 	    {
 	      rtx vcopy = gen_reg_rtx (V2DImode);
 	      emit_move_insn (vcopy, gen_rtx_SUBREG (V2DImode, reg, 0));
@@ -3651,15 +3660,6 @@ dimode_scalar_chain::convert_reg (unsigned regno)
 			      gen_rtx_LSHIFTRT (V2DImode, vcopy, GEN_INT (32)));
 	      emit_move_insn (gen_rtx_SUBREG (SImode, scopy, 4),
 			      gen_rtx_SUBREG (SImode, vcopy, 0));
-	    }
-	  else
-	    {
-	      rtx tmp = assign_386_stack_local (DImode, SLOT_STV_TEMP);
-	      emit_move_insn (tmp, reg);
-	      emit_move_insn (gen_rtx_SUBREG (SImode, scopy, 0),
-			      adjust_address (tmp, SImode, 0));
-	      emit_move_insn (gen_rtx_SUBREG (SImode, scopy, 4),
-			      adjust_address (tmp, SImode, 4));
 	    }
 	  rtx_insn *seq = get_insns ();
 	  end_sequence ();
