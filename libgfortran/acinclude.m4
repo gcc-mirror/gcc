@@ -459,10 +459,13 @@ AC_DEFUN([LIBGFOR_CHECK_FMA3], [
   ac_save_CFLAGS="$CFLAGS"
   CFLAGS="-O2 -mfma -mno-fma4"
   AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
-	float
-	flt_mul_add (float a, float b, float c)
+        typedef float __m128 __attribute__ ((__vector_size__ (16)));
+	typedef float __v4sf __attribute__ ((__vector_size__ (16)));
+	__m128 _mm_macc_ps(__m128 __A, __m128 __B, __m128 __C)
 	{
-		return __builtin_fmaf (a, b, c);
+	    return (__m128) __builtin_ia32_vfmaddps ((__v4sf)__A,
+						     (__v4sf)__B,
+						     (__v4sf)__C);
         }]], [[]])],
 	AC_DEFINE(HAVE_FMA3, 1,
 	[Define if FMA3 instructions can be compiled.]),
@@ -476,10 +479,13 @@ AC_DEFUN([LIBGFOR_CHECK_FMA4], [
   ac_save_CFLAGS="$CFLAGS"
   CFLAGS="-O2 -mfma4 -mno-fma"
   AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
-	float
-	flt_mul_add (float a, float b, float c)
+        typedef float __m128 __attribute__ ((__vector_size__ (16)));
+	typedef float __v4sf __attribute__ ((__vector_size__ (16)));
+	__m128 _mm_macc_ps(__m128 __A, __m128 __B, __m128 __C)
 	{
-		return __builtin_fmaf (a, b, c);
+	    return (__m128) __builtin_ia32_vfmaddps ((__v4sf)__A,
+						     (__v4sf)__B,
+						     (__v4sf)__C);
         }]], [[]])],
 	AC_DEFINE(HAVE_FMA4, 1,
 	[Define if FMA4 instructions can be compiled.]),
