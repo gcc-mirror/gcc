@@ -1,3 +1,8 @@
+2017-05-28  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* frontend-passes.c (matmul_lhs_realloc):  Correct
+	allocation size for case A1B2.
+
 2017-05-25  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	* dump-parse-tree.c (show_expr):  Also replace
