@@ -31,6 +31,17 @@ along with GCC; see the file COPYING3.  If not see
 #define SWBEG_ASM_OP "\t.swbeg\t"
 #endif
 
+#ifdef TARGET_AMIGAOS_VASM
+#undef ASM_STABS_OP
+#define  ASM_STABS_OP "|\t.stabs\t"
+
+#undef ASM_STABD_OP
+#define ASM_STABD_OP "|\t.stabd\t"
+
+#undef ASM_STABN_OP
+#define ASM_STABN_OP "|\t.stabn\t"
+#endif
+
 #undef PIC_REG
 #define PIC_REG 12
 
@@ -410,11 +421,16 @@ if (target_flags & (MASK_RESTORE_A4|MASK_ALWAYS_RESTORE_A4))	\
   ")"
 
 #undef	STARTFILE_SPEC
+#ifdef TARGET_AMIGAOS_VASM
+#define STARTFILE_SPEC                                            \
+   "startup%O%s"
+#else
 #define STARTFILE_SPEC                                            \
   "%{noixemul:%(startfile_libnix)} "                              \
   "%{mcrt=nix*:%(startfile_libnix)} "                             \
   "%{mcrt=ixemul:%(startfile_ixemul)} "                           \
   "%{mcrt=clib2:%(startfile_clib2)}"
+#endif
 
 #define ENDFILE_IXEMUL_SPEC ""
 #define ENDFILE_LIBNIX_SPEC "-lstubs"
@@ -456,11 +472,16 @@ if (target_flags & (MASK_RESTORE_A4|MASK_ALWAYS_RESTORE_A4))	\
   "%{mstackcheck:-lstack} "                                       \
   "%{mstackextend:-lstack}"
 
+#ifdef TARGET_AMIGAOS_VASM
+#define LIB_SPEC                                                  \
+  "-lvc -lamiga "
+#else
 #define LIB_SPEC                                                  \
   "%{noixemul:%(lib_libnix)} "                                    \
   "%{mcrt=nix*:%(lib_libnix)} "                                   \
   "%{mcrt=ixemul:%(lib_ixemul)} "                                 \
   "%{mcrt=clib2:%(lib_clib2)}"
+#endif
 
 #define LIBGCC_IXEMUL_SPEC ""
 #define LIBGCC_LIBNIX_SPEC "-lnix -fl libnix "                    \
@@ -487,6 +508,26 @@ if (target_flags & (MASK_RESTORE_A4|MASK_ALWAYS_RESTORE_A4))	\
    Also, pass appropriate linker flavours depending on user-supplied
    commandline options.  */
 
+#ifdef TARGET_AMIGAOS_VASM
+#define LINK_SPEC                                                 \
+  "%{noixemul:%(link_libnix)} "                                   \
+  "%{mcrt=nix*:%(link_libnix)} "                                  \
+  "%{mcrt=ixemul:%(link_ixemul)} "                                \
+  "%{mcrt=clib2:%(link_clib2)} "                                  \
+  "%{fbaserel:%{!resident:-m amiga_bss -fl libb %{noixemul:-fl libnix} %{mcrt=nix*:-fl libnix}}} "               \
+  "%{resident:-m amiga_bss -amiga-datadata-reloc -fl libb %{noixemul:-fl libnix} %{mcrt=nix*:-fl libnix}} "      \
+  "%{fbaserel32:%{!resident32:-m amiga_bss -fl libb32 %{noixemul:-fl libnix} %{mcrt=nix*:-fl libnix}}} "         \
+  "%{resident32:-m amiga_bss -amiga-datadata-reloc -fl libb32 %{noixemul:-fl libnix} %{mcrt=nix*:-fl libnix}} "  \
+  "%{mcpu=68020:-fl libm020} "					  \
+  "%{m68020:-fl libm020} "                                        \
+  "%{mc68020:-fl libm020} "                                       \
+  "%{m68030:-fl libm020} "                                        \
+  "%{m68040:-fl libm020} "                                        \
+  "%{m68060:-fl libm020} "                                        \
+  "%{m68020-40:-fl libm020} "                                     \
+  "%{m68020-60:-fl libm020} "                                     \
+  "%{m68881:-fl libm881}"
+#else
 #define LINK_SPEC                                                 \
   "%{noixemul:%(link_libnix)} "                                   \
   "%{mcrt=nix*:%(link_libnix)} "                                  \
@@ -506,6 +547,7 @@ if (target_flags & (MASK_RESTORE_A4|MASK_ALWAYS_RESTORE_A4))	\
   "%{m68020-40:-fl libm020} "                                     \
   "%{m68020-60:-fl libm020} "                                     \
   "%{m68881:-fl libm881}"
+#endif
 
 /* Translate '-resident' to '-fbaserel' (they differ in linking stage only).
    Don't put function addresses in registers for PC-relative code.  */
@@ -524,6 +566,23 @@ if (target_flags & (MASK_RESTORE_A4|MASK_ALWAYS_RESTORE_A4))	\
    at the end of command line. Otherwise linker chooses generic functions
    from libgcc.a instead AmigaOS-specific counterparts from libnix.a. */
 
+#ifdef TARGET_AMIGAOS_VASM
+#define LINK_COMMAND_SPEC                                           \
+  "%{!fsyntax-only:"                                                \
+    "%{!c:"                                                         \
+      "%{!M:"                                                       \
+	"%{!MM:"                                                    \
+	  "%{!E:"                                                   \
+	    "%{!S:"                                                 \
+	      "%(linker) -Cvbcc %l %X %{o*} %{A} %{d} %{e*} %{m} "  \
+	      "%{N} %{n} %{r} %{s} %{t} %{u*} %{x} %{z} %{Z} "      \
+	      "%{!A:%{!nostdlib:%{!nostartfiles:%S}}} "             \
+	      "%{static:} %{L*} %D %o "                             \
+	      "%{!nostdlib:%{!nodefaultlibs:%L}} "                  \
+	      "%{!A:%{!nostdlib:%{!nostartfiles:%E}}} "             \
+	      "%{!nostdlib:%{!nodefaultlibs:%G}} "                  \
+	      "%{T*} }}}}}} "                                       
+#else
 #define LINK_COMMAND_SPEC                                           \
   "%{!fsyntax-only:"                                                \
     "%{!c:"                                                         \
@@ -538,7 +597,8 @@ if (target_flags & (MASK_RESTORE_A4|MASK_ALWAYS_RESTORE_A4))	\
 	      "%{!nostdlib:%{!nodefaultlibs:%L}} "                  \
 	      "%{!A:%{!nostdlib:%{!nostartfiles:%E}}} "             \
 	      "%{!nostdlib:%{!nodefaultlibs:%G}} "                  \
-	      "%{T*} }}}}}} "                                       \
+	      "%{T*} }}}}}} "                                       
+#endif
 
 extern const char * amiga_m68k_prefix_func(int, const char **);
 

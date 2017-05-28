@@ -4593,20 +4593,33 @@ print_operand (FILE *file, rtx op, int letter)
     {
       long l;
       REAL_VALUE_TO_TARGET_SINGLE (*CONST_DOUBLE_REAL_VALUE (op), l);
+#ifndef TARGET_AMIGAOS_VASM
       asm_fprintf (file, "%I0x%lx", l & 0xFFFFFFFF);
+#else
+      asm_fprintf (file, "%I$%lx", l & 0xFFFFFFFF);      
+#endif
     }
   else if (GET_CODE (op) == CONST_DOUBLE && GET_MODE (op) == XFmode)
     {
       long l[3];
       REAL_VALUE_TO_TARGET_LONG_DOUBLE (*CONST_DOUBLE_REAL_VALUE (op), l);
+#ifndef TARGET_AMIGAOS_VASM      
       asm_fprintf (file, "%I0x%lx%08lx%08lx", l[0] & 0xFFFFFFFF,
 		   l[1] & 0xFFFFFFFF, l[2] & 0xFFFFFFFF);
+#else
+      asm_fprintf (file, "%I$%lx%08lx%08lx", l[0] & 0xFFFFFFFF,
+		   l[1] & 0xFFFFFFFF, l[2] & 0xFFFFFFFF);
+#endif
     }
   else if (GET_CODE (op) == CONST_DOUBLE && GET_MODE (op) == DFmode)
     {
       long l[2];
       REAL_VALUE_TO_TARGET_DOUBLE (*CONST_DOUBLE_REAL_VALUE (op), l);
+#ifndef TARGET_AMIGAOS_VASM      
       asm_fprintf (file, "%I0x%lx%08lx", l[0] & 0xFFFFFFFF, l[1] & 0xFFFFFFFF);
+#else
+      asm_fprintf (file, "%I$%lx%08lx", l[0] & 0xFFFFFFFF, l[1] & 0xFFFFFFFF);
+#endif
     }
   else
     {
