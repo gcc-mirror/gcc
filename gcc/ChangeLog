@@ -1,3 +1,26 @@
+2017-05-28  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backport from mainline
+	2017-05-23  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*movdi_internal): Remove SSE4
+	alternative 18 (?r, *v).  Update insn attributes.
+	(*movsi_internal): Remove SSE4 alternative 13 (?r, *v).
+	Update insn attributes.
+	(*zero_extendsidi2): Remove SSE4 alternative (?r, *x).
+	Update insn attributes.
+	* config/i386/sse.md (vec_extract<ssevecmodelower>_0): Remove SSE4
+	alternative 1 (r, v). Remove isa attribute.
+	* config/i386/i386.c (dimode_scalar_chain::make_vector_copies):
+	Always move value through stack for !TARGET_INTER_UNIT_MOVES_TO_VEC
+	and !TARGET_INTER_UNIT_MOVES_TO_VEC targets.
+
+	2017-05-16  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*movsi_internal): Split (?rm,*y) alternative
+	to (?r,*Yn) and (?m,*y) alternatives, and (?*y,rm) to (?*Ym,r)
+	and (?*y,m).  Update insn attributes.
+
 2017-05-26  Sheldon Lobo  <smlobo@sheldon.us.oracle.com>
 
 	Backported from mainline
