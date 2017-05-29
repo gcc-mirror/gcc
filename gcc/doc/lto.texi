@@ -43,7 +43,7 @@ existing build systems, as one can, for instance, produce archives of
 the files.  Additionally, one might be able to ship one set of fat
 objects which could be used both for development and the production of
 optimized builds.  A, perhaps surprising, side effect of this feature
-is that any mistake in the toolchain that leads to LTO information not
+is that any mistake in the toolchain leads to LTO information not
 being used (e.g.@: an older @code{libtool} calling @code{ld} directly).
 This is both an advantage, as the system is more robust, and a
 disadvantage, as the user is not informed that the optimization has
