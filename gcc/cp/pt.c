@@ -21728,31 +21728,32 @@ most_specialized_instantiation (tree templates)
 
   champ = templates;
   for (fn = TREE_CHAIN (templates); fn; fn = TREE_CHAIN (fn))
-    {
-      int fate = more_specialized_inst (TREE_VALUE (champ), TREE_VALUE (fn));
-      if (fate == -1)
-	champ = fn;
-      else if (!fate)
-	{
-	  /* Equally specialized, move to next function.  If there
-	     is no next function, nothing's most specialized.  */
-	  fn = TREE_CHAIN (fn);
+    if (TREE_VALUE (champ) != TREE_VALUE (fn))
+      {
+	int fate = more_specialized_inst (TREE_VALUE (champ), TREE_VALUE (fn));
+	if (fate == -1)
 	  champ = fn;
-	  if (!fn)
-	    break;
-	}
-    }
+	else if (!fate)
+	  {
+	    /* Equally specialized, move to next function.  If there
+	       is no next function, nothing's most specialized.  */
+	    fn = TREE_CHAIN (fn);
+	    champ = fn;
+	    if (!fn)
+	      break;
+	  }
+      }
 
   if (champ)
     /* Now verify that champ is better than everything earlier in the
        instantiation list.  */
-    for (fn = templates; fn != champ; fn = TREE_CHAIN (fn)) {
-      if (more_specialized_inst (TREE_VALUE (champ), TREE_VALUE (fn)) != 1)
-      {
-        champ = NULL_TREE;
-        break;
-      }
-    }
+    for (fn = templates; fn != champ; fn = TREE_CHAIN (fn))
+      if (TREE_VALUE (champ) != TREE_VALUE (fn)
+	  && more_specialized_inst (TREE_VALUE (champ), TREE_VALUE (fn)) != 1)
+	{
+	  champ = NULL_TREE;
+	  break;
+	}
 
   processing_template_decl--;
 

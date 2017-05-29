@@ -1,5 +1,9 @@
 2017-05-29  Nathan Sidwell  <nathan@acm.org>
 
+	PR c++/80891 (#1)
+	* pt.c (most_specialized_instantiation): Cope with duplicate
+	instantiations.
+
 	PR c++/80891 (#3)
 	* cp-tree.h (build_min_nt_call_vec): Declare.
 	* decl.c (build_offset_ref_call_from_tree): Call it.
