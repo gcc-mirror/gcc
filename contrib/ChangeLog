@@ -1,5 +1,12 @@
 2017-05-29  Tom de Vries  <tom@codesourcery.com>
 
+	* check_GNU_style_lib.py (check_GNU_style_file): Treat file argument as
+	file handle.  Add and handle file_encoding argument.
+	* check_GNU_style.py (main): Handle '-' file argument.  Call
+	check_GNU_style_file with file handle as argument.
+
+2017-05-29  Tom de Vries  <tom@codesourcery.com>
+
 	* check_GNU_style_lib.py: Use import_pip3 to import pip3 packages.
 	(import_pip3): New function.
 
