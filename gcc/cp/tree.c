@@ -3216,12 +3216,13 @@ build_min_nt_loc (location_t loc, enum tree_code code, ...)
     {
       tree x = va_arg (p, tree);
       TREE_OPERAND (t, i) = x;
+      if (x && TREE_CODE (x) == OVERLOAD)
+	lookup_keep (x, true);
     }
 
   va_end (p);
   return t;
 }
-
 
 /* Similar to `build', but for template definitions.  */
 
@@ -3245,8 +3246,13 @@ build_min (enum tree_code code, tree tt, ...)
     {
       tree x = va_arg (p, tree);
       TREE_OPERAND (t, i) = x;
-      if (x && !TYPE_P (x) && TREE_SIDE_EFFECTS (x))
-	TREE_SIDE_EFFECTS (t) = 1;
+      if (x)
+	{
+	  if (!TYPE_P (x) && TREE_SIDE_EFFECTS (x))
+	    TREE_SIDE_EFFECTS (t) = 1;
+	  if (TREE_CODE (x) == OVERLOAD)
+	    lookup_keep (x, true);
+	}
     }
 
   va_end (p);
@@ -3281,6 +3287,8 @@ build_min_non_dep (enum tree_code code, tree non_dep, ...)
     {
       tree x = va_arg (p, tree);
       TREE_OPERAND (t, i) = x;
+      if (x && TREE_CODE (x) == OVERLOAD)
+	lookup_keep (x, true);
     }
 
   if (code == COMPOUND_EXPR && TREE_CODE (non_dep) != COMPOUND_EXPR)
@@ -3292,14 +3300,34 @@ build_min_non_dep (enum tree_code code, tree non_dep, ...)
   return convert_from_reference (t);
 }
 
-/* Similar to `build_nt_call_vec', but for template definitions of
+/* Similar to build_min_nt, but call expressions  */
+
+tree
+build_min_nt_call_vec (tree fn, vec<tree, va_gc> *args)
+{
+  tree ret, t;
+  unsigned int ix;
+
+  ret = build_vl_exp (CALL_EXPR, vec_safe_length (args) + 3);
+  CALL_EXPR_FN (ret) = fn;
+  CALL_EXPR_STATIC_CHAIN (ret) = NULL_TREE;
+  FOR_EACH_VEC_SAFE_ELT (args, ix, t)
+    {
+      CALL_EXPR_ARG (ret, ix) = t;
+      if (TREE_CODE (t) == OVERLOAD)
+	lookup_keep (t, true);
+    }
+  return ret;
+}
+
+/* Similar to `build_min_nt_call_vec', but for template definitions of
    non-dependent expressions. NON_DEP is the non-dependent expression
    that has been built.  */
 
 tree
 build_min_non_dep_call_vec (tree non_dep, tree fn, vec<tree, va_gc> *argvec)
 {
-  tree t = build_nt_call_vec (fn, argvec);
+  tree t = build_min_nt_call_vec (fn, argvec);
   if (REFERENCE_REF_P (non_dep))
     non_dep = TREE_OPERAND (non_dep, 0);
   TREE_TYPE (t) = TREE_TYPE (non_dep);
