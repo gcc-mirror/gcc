@@ -760,9 +760,9 @@ class ovl_iterator
     gcc_assert (using_p ());
     return remove_node (head, ovl);
   }
-  tree reveal_node (tree overload)
+  tree reveal_node (tree head)
   {
-    return reveal_node (overload, ovl);
+    return reveal_node (head, ovl);
   }
 
  public:
@@ -7019,7 +7019,6 @@ extern tree lookup_maybe_add			(tree fns, tree lookup);
 extern void lookup_keep				(tree lookup, bool keep);
 extern int is_overloaded_fn			(tree) ATTRIBUTE_PURE;
 extern bool really_overloaded_fn		(tree) ATTRIBUTE_PURE;
-extern bool really_overloaded_fn		(tree);
 extern tree dependent_name			(tree);
 extern tree get_fns				(tree) ATTRIBUTE_PURE;
 extern tree get_first_fn			(tree) ATTRIBUTE_PURE;

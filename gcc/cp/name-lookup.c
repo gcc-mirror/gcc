@@ -39,6 +39,31 @@ static cp_binding_level *innermost_nonclass_level (void);
 static void set_identifier_type_value_with_scope (tree id, tree decl,
 						  cp_binding_level *b);
 
+/* Create an overload suitable for recording an artificial TYPE_DECL
+   and another decl.  We use this machanism to implement the struct
+   stat hack within a namespace.  It'd be nice to use it everywhere.  */
+
+#define STAT_HACK_P(N) ((N) && TREE_CODE (N) == OVERLOAD && OVL_LOOKUP_P (N))
+#define STAT_TYPE(N) TREE_TYPE (N)
+#define STAT_DECL(N) OVL_FUNCTION (N)
+#define MAYBE_STAT_DECL(N) (STAT_HACK_P (N) ? STAT_DECL (N) : N)
+#define MAYBE_STAT_TYPE(N) (STAT_HACK_P (N) ? STAT_TYPE (N) : NULL_TREE)
+
+/* Create a STAT_HACK node with DECL as the value binding and TYPE as
+   the type binding.  */
+
+static tree
+stat_hack (tree decl = NULL_TREE, tree type = NULL_TREE)
+{
+  tree result = make_node (OVERLOAD);
+
+  /* Mark this as a lookup, so we can tell this is a stat hack.  */
+  OVL_LOOKUP_P (result) = true;
+  STAT_DECL (result) = decl;
+  STAT_TYPE (result) = type;
+  return result;
+}
+
 /* Create a local binding level for NAME.  */
 
 static cxx_binding *
@@ -54,6 +79,46 @@ create_local_binding (cp_binding_level *level, tree name)
   IDENTIFIER_BINDING (name) = binding;
   
   return binding;
+}
+
+/* Split a potentialy stat-hacked value binding into type and value.
+   Decapsulate is totally a word now.  */
+
+tree
+decapsulate_binding (tree value, tree *type_p)
+{
+  if (type_p)
+    *type_p = MAYBE_STAT_TYPE (value);
+  return MAYBE_STAT_DECL (value);
+}
+
+/* Return the binding for NAME in SCOPE, if any.  Otherwise create an
+   empty slot.  */
+
+static tree *
+find_or_create_namespace_slot (tree ns, tree name)
+{
+  bool existed;
+  tree *slot = &DECL_NAMESPACE_BINDINGS (ns)->get_or_insert (name, &existed);
+  if (!existed)
+    *slot = NULL_TREE;
+  return slot;
+}
+
+/* Return the binding for NAME in SCOPE, if any.  Otherwise, return NULL.  */
+
+static tree *
+find_namespace_slot (tree ns, tree name)
+{
+  return DECL_NAMESPACE_BINDINGS (ns)->get (name);
+}
+
+static tree
+find_namespace_value (tree ns, tree name)
+{
+  tree *b = find_namespace_slot (ns, name);
+
+  return b ? MAYBE_STAT_DECL (*b) : NULL_TREE;
 }
 
 /* *SLOT is a namespace binding slot.  Find or create the
@@ -177,93 +242,31 @@ module_binding_slot (tree *slot, unsigned ix, int create)
   return &cluster->slots[off];
 }
 
-/* Create an overload suitable for recording an artificial TYPE_DECL
-   and another decl.  We use this machanism to implement the struct
-   stat hack within a namespace.  It'd be nice to use it everywhere,
-   but that's more change than necessary.  */
-
-#define STAT_HACK_P(N) ((N) && TREE_CODE (N) == OVERLOAD && OVL_LOOKUP_P (N))
-#define STAT_TYPE(N) TREE_TYPE (N)
-#define STAT_DECL(N) OVL_FUNCTION (N)
-#define MAYBE_STAT_DECL(N) (STAT_HACK_P (N) ? STAT_DECL (N) : N)
-#define MAYBE_STAT_TYPE(N) (STAT_HACK_P (N) ? STAT_TYPE (N) : NULL_TREE)
-
-static tree stat_hack (tree decl = NULL_TREE, tree type = NULL_TREE)
-{
-  tree result = make_node (OVERLOAD);
-
-  /* Mark this as a lookup, so we can tell this is a stat hack.  */
-  OVL_LOOKUP_P (result) = true;
-  STAT_DECL (result) = decl;
-  STAT_TYPE (result) = type;
-  return result;
-}
-
-/* Split a potentialy stat-hacked value binding into type and value.
-   Decapsulate is totally a word now.  */
-
-tree
-decapsulate_binding (tree value, tree *type_p)
-{
-  if (type_p)
-    *type_p = MAYBE_STAT_TYPE (value);
-  return MAYBE_STAT_DECL (value);
-}
-
-/* Return the binding for NAME in SCOPE, if any.  Otherwise create an
-   empty slot.  */
-
-static tree *
-find_or_create_namespace_slot (tree ns, tree name)
-{
-  bool existed;
-  tree *slot = &DECL_NAMESPACE_BINDINGS (ns)->get_or_insert (name, &existed);
-  if (!existed)
-    *slot = NULL_TREE;
-  return slot;
-}
-
-/* Return the binding for NAME in SCOPE, if any.  Otherwise, return NULL.  */
-
-static tree *
-find_namespace_slot (tree ns, tree name)
-{
-  return DECL_NAMESPACE_BINDINGS (ns)->get (name);
-}
-
-static tree
-find_namespace_value (tree ns, tree name)
-{
-  tree *b = find_namespace_slot (ns, name);
-
-  return b ? MAYBE_STAT_DECL (*b) : NULL_TREE;
-}
-
-/* Add DECL to the list of things declared in a binding level.  */
+/* Add DECL to the list of things declared in binding level B.  */
 
 static void
-add_decl_to_level (cp_binding_level *level, tree decl)
+add_decl_to_level (cp_binding_level *b, tree decl)
 {
-  gcc_assert (level->kind != sk_class);
+  gcc_assert (b->kind != sk_class);
 
   if (TREE_CODE (decl) == NAMESPACE_DECL && !DECL_NAMESPACE_ALIAS (decl))
     {
       /* Inner namespaces get their own chain, to make walking
 	 simpler.  */
       //  FIXME: only because of spelling correction.
-      DECL_CHAIN (decl) = level->namespaces;
-      level->namespaces = decl;
+      DECL_CHAIN (decl) = b->namespaces;
+      b->namespaces = decl;
     }
   else
     {
-      TREE_CHAIN (decl) = level->names;
-      level->names = decl;
+      TREE_CHAIN (decl) = b->names;
+      b->names = decl;
     }
 
   /* If appropriate, add decl to separate list of statics.  We include
      extern variables because they might turn out to be static later.
      It's OK for this list to contain a few false positives.  */
-  if (level->kind != sk_namespace)
+  if (b->kind != sk_namespace)
     ;
   else if ((VAR_P (decl) && (TREE_STATIC (decl) || DECL_EXTERNAL (decl)))
 	   || (TREE_CODE (decl) == FUNCTION_DECL
@@ -291,21 +294,6 @@ find_local_binding (cp_binding_level *b, tree name)
 	  break;
       }
   return NULL;
-}
-
-/* Only look in the innermost non-class level.  */
-
-static tree
-lookup_name_innermost_nonclass_level (tree name)
-{
-  cp_binding_level *b = innermost_nonclass_level ();
-
-  if (b->kind == sk_namespace)
-    return find_namespace_value (current_namespace, name);
-  else if (cxx_binding *binding = find_local_binding (b, name))
-    return binding->value;
-  else
-   return NULL_TREE;
 }
 
 struct name_lookup
@@ -2430,7 +2418,7 @@ set_local_extern_decl_linkage (tree decl, bool shadowed)
   if (TREE_PUBLIC (decl))
     {
       /* DECL is externally visible.  Make sure it matches a matching
-	 decl in the namespace scpe.  We only really need to check
+	 decl in the namespace scope.  We only really need to check
 	 this when inserting the decl, not when we find an existing
 	 match in the current scope.  However, in practice we're
 	 going to be inserting a new decl in the majority of cases --
@@ -2912,13 +2900,12 @@ maybe_push_decl (tree decl)
 static void
 push_local_binding (tree id, tree decl, bool is_using)
 {
-  cp_binding_level *b;
-
   /* Skip over any local classes.  This makes sense if we call
      push_local_binding with a friend decl of a local class.  */
-  b = innermost_nonclass_level ();
+  cp_binding_level *b = innermost_nonclass_level ();
 
-  if (lookup_name_innermost_nonclass_level (id))
+  gcc_assert (b->kind != sk_namespace);
+  if (find_local_binding (b, id))
     {
       /* Supplement the existing binding.  */
       if (!supplement_binding (IDENTIFIER_BINDING (id), decl))
@@ -4634,8 +4621,7 @@ get_namespace_binding (tree ns, tree name)
   if (!ns)
     ns = global_namespace;
   gcc_checking_assert (!DECL_NAMESPACE_ALIAS (ns));
-  tree *slot = find_namespace_slot (ns, name);
-  tree ret = slot ? MAYBE_STAT_DECL (*slot) : NULL_TREE;
+  tree ret = find_namespace_value (ns, name);
   timevar_cond_stop (TV_NAME_LOOKUP, subtime);
   return ret;
 }
