@@ -1390,6 +1390,15 @@ split_function (basic_block return_bb, struct split_point *split_point,
 
   node->split_part = true;
 
+  if (cur_node->same_comdat_group)
+    {
+      /* TODO: call is versionable if we make sure that all
+	 callers are inside of a comdat group.  */
+      cur_node->calls_comdat_local = 1;
+      node->add_to_same_comdat_group (cur_node);
+    }
+
+
   /* Let's take a time profile for splitted function.  */
   node->tp_first_run = cur_node->tp_first_run + 1;
 
