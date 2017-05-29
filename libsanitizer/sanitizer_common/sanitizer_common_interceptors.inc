@@ -2733,7 +2733,8 @@ INTERCEPTOR(int, getgroups, int size, u32 *lst) {
   // its metadata. See
   // https://code.google.com/p/address-sanitizer/issues/detail?id=321.
   int res = REAL(getgroups)(size, lst);
-  if (res && lst) COMMON_INTERCEPTOR_WRITE_RANGE(ctx, lst, res * sizeof(*lst));
+  if (res >= 0 && lst && size > 0)
+    COMMON_INTERCEPTOR_WRITE_RANGE(ctx, lst, res * sizeof(*lst));
   return res;
 }
 #define INIT_GETGROUPS COMMON_INTERCEPT_FUNCTION(getgroups);

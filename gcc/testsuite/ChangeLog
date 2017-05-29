@@ -1,6 +1,14 @@
 2017-05-29  Martin Liska  <mliska@suse.cz>
 
 	Backport from mainline
+	2017-04-06  Martin Liska  <mliska@suse.cz>
+
+	PR sanitizer/80166
+	* gcc.dg/asan/pr80166.c: New test.
+
+2017-05-29  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
 	2017-03-28  Martin Liska  <mliska@suse.cz>
 
 	PR ipa/80205
