@@ -1,3 +1,8 @@
+2017-05-29  Tom de Vries  <tom@codesourcery.com>
+
+	* check_GNU_style_lib.py: Use import_pip3 to import pip3 packages.
+	(import_pip3): New function.
+
 2017-05-24  Tom de Vries  <tom@codesourcery.com>
 
 	* check_GNU_style_lib.py: New file, factored out of ...

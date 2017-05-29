@@ -28,17 +28,29 @@ import sys
 import re
 import unittest
 
-try:
-    from termcolor import colored
-except ImportError:
-    print('termcolor module is missing (run: pip3 install termcolor)')
-    exit(3)
+def import_pip3(*args):
+    missing=[]
+    for (module, names) in args:
+        try:
+            lib = __import__(module)
+        except ImportError:
+            missing.append(module)
+            continue
+        if not isinstance(names, list):
+            names=[names]
+        for name in names:
+            globals()[name]=getattr(lib, name)
+    if len(missing) > 0:
+        missing_and_sep = ' and '.join(missing)
+        missing_space_sep = ' '.join(missing)
+        print('%s %s missing (run: pip3 install %s)'
+              % (missing_and_sep,
+                 ("module is" if len(missing) == 1 else "modules are"),
+                 missing_space_sep))
+        exit(3)
 
-try:
-    from unidiff import PatchSet
-except ImportError:
-    print('unidiff module is missing (run: pip3 install unidiff)')
-    exit(3)
+import_pip3(('termcolor', 'colored'),
+            ('unidiff', 'PatchSet'))
 
 from itertools import *
 
