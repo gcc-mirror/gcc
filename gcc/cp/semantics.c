@@ -2322,7 +2322,7 @@ finish_call_expr (tree fn, vec<tree, va_gc> **args, bool disallow_virtual,
       if (type_dependent_expression_p (fn)
 	  || any_type_dependent_arguments_p (*args))
 	{
-	  result = build_nt_call_vec (fn, *args);
+	  result = build_min_nt_call_vec (fn, *args);
 	  SET_EXPR_LOCATION (result, EXPR_LOC_OR_LOC (fn, input_location));
 	  KOENIG_LOOKUP_P (result) = koenig_p;
 	  if (is_overloaded_fn (fn))

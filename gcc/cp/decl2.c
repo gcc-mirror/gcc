@@ -4891,7 +4891,7 @@ build_offset_ref_call_from_tree (tree fn, vec<tree, va_gc> **args,
 		  || TREE_CODE (fn) == MEMBER_REF);
       if (type_dependent_expression_p (fn)
 	  || any_type_dependent_arguments_p (*args))
-	return build_nt_call_vec (fn, *args);
+	return build_min_nt_call_vec (fn, *args);
 
       orig_args = make_tree_vector_copy (*args);
 
