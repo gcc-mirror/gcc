@@ -48,7 +48,11 @@ static void set_identifier_type_value_with_scope (tree id, tree decl,
 #define MAYBE_STAT_DECL(N) (STAT_HACK_P (N) ? STAT_DECL (N) : N)
 #define MAYBE_STAT_TYPE(N) (STAT_HACK_P (N) ? STAT_TYPE (N) : NULL_TREE)
 
-static tree stat_hack (tree decl = NULL_TREE, tree type = NULL_TREE)
+/* Create a STAT_HACK node with DECL as the value binding and TYPE as
+   the type binding.  */
+
+static tree
+stat_hack (tree decl = NULL_TREE, tree type = NULL_TREE)
 {
   tree result = make_node (OVERLOAD);
 
@@ -179,6 +183,8 @@ public:
   tree value;	/* A (possibly ambiguous) set of things found.  */
   tree type;	/* A type that has been found.  */
   int flags;	/* Lookup flags.  */
+  bool deduping; /* Full deduping is needed because using declarations
+		    are in play.  */
   vec<tree, va_heap, vl_embed> *scopes;
   name_lookup *previous; /* Previously active lookup.  */
 
@@ -191,7 +197,7 @@ protected:
 public:
   name_lookup (tree n, int f = 0)
   : name (n), value (NULL_TREE), type (NULL_TREE), flags (f),
-    scopes (NULL), previous (NULL)
+    deduping (false), scopes (NULL), previous (NULL)
   {
     preserve_state ();
   }
@@ -235,6 +241,7 @@ private:
 
 private:
   static tree ambiguous (tree thing, tree current);
+  void add_overload (tree fns);
   void add_value (tree new_val);
   void add_type (tree new_type);
   bool process_binding (tree val_bind, tree type_bind);
@@ -321,7 +328,8 @@ name_lookup::preserve_state ()
 	}
 
       /* Unmark the outer partial lookup.  */
-      lookup_mark (previous->value, false);
+      if (previous->deduping)
+	lookup_mark (previous->value, false);
     }
   else
     scopes = shared_scopes;
@@ -333,6 +341,9 @@ name_lookup::preserve_state ()
 void
 name_lookup::restore_state ()
 {
+  if (deduping)
+    lookup_mark (value, false);
+
   /* Unmark and empty this lookup's scope stack.  */
   for (unsigned ix = vec_safe_length (scopes); ix--;)
     {
@@ -371,7 +382,8 @@ name_lookup::restore_state ()
 	}
 
       /* Remark the outer partial lookup.  */
-      lookup_mark (previous->value, true);
+      if (previous->deduping)
+	lookup_mark (previous->value, true);
     }
   else
     shared_scopes = scopes;
@@ -415,12 +427,36 @@ name_lookup::ambiguous (tree thing, tree current)
   return current;
 }
 
+/* FNS is a new overload set to add to the exising set.  */
+
+void
+name_lookup::add_overload (tree fns)
+{
+  if (!deduping && TREE_CODE (fns) == OVERLOAD)
+    {
+      tree probe = fns;
+      if (flags & LOOKUP_HIDDEN)
+	probe = ovl_skip_hidden (probe);
+      if (probe && TREE_CODE (probe) == OVERLOAD && OVL_USING_P (probe))
+	{
+	  /* We're about to add something found by a using
+	     declaration, so need to engage deduping mode.  */
+	  lookup_mark (value, true);
+	  deduping = true;
+	}
+    }
+
+  value = lookup_maybe_add (fns, value, deduping);
+}
+
 /* Add a NEW_VAL, a found value binding into the current value binding.  */
 
 void
 name_lookup::add_value (tree new_val)
 {
-  if (!value)
+  if (OVL_P (new_val) && (!value || OVL_P (value)))
+    add_overload (new_val);
+  else if (!value)
     value = new_val;
   else if (value == new_val)
     ;
@@ -428,10 +464,16 @@ name_lookup::add_value (tree new_val)
 	    && TREE_CODE (new_val) == TYPE_DECL
 	    && same_type_p (TREE_TYPE (value), TREE_TYPE (new_val))))
     ;
-  else if (OVL_P (value) && OVL_P (new_val))
-    value = lookup_add (new_val, value);
   else
-    value = ambiguous (new_val, value);
+    {
+      if (deduping)
+	{
+	  /* Disengage deduping mode.  */
+	  lookup_mark (value, false);
+	  deduping = false;
+	}
+      value = ambiguous (new_val, value);
+    }
 }
 
 /* Add a NEW_TYPE, a found type binding into the current type binding.  */
@@ -703,8 +745,7 @@ name_lookup::add_fns (tree fns)
   else if (!DECL_DECLARES_FUNCTION_P (fns))
     return;
 
-  /* Only add those that aren't already there.  */
-  value = lookup_maybe_add (fns, value);
+  add_overload (fns);
 }
 
 /* Add functions of a namespace to the lookup structure.  */
@@ -1004,7 +1045,11 @@ name_lookup::adl_template_arg (tree arg)
 tree
 name_lookup::search_adl (tree fns, vec<tree, va_gc> *args)
 {
-  lookup_mark (fns, true);
+  if (fns)
+    {
+      deduping = true;
+      lookup_mark (fns, true);
+    }
   value = fns;
 
   unsigned ix;
@@ -1019,7 +1064,6 @@ name_lookup::search_adl (tree fns, vec<tree, va_gc> *args)
       adl_expr (arg);
 
   fns = value;
-  lookup_mark (fns, false);
 
   return fns;
 }

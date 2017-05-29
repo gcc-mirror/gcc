@@ -2293,21 +2293,10 @@ ovl_iterator::remove_node (tree overload, tree node)
 void
 lookup_mark (tree ovl, bool val)
 {
-  /* For every node that is a lookup, mark the thing it points to.  */
-  for (; ovl && TREE_CODE (ovl) == OVERLOAD && OVL_LOOKUP_P (ovl);
-       ovl = OVL_CHAIN (ovl))
+  for (lkp_iterator iter (ovl); iter; ++iter)
     {
-      tree targ = OVL_FUNCTION (ovl);
-      gcc_checking_assert (LOOKUP_SEEN_P (targ) != val);
-      LOOKUP_SEEN_P (targ) = val;
-    }
-
-  if (ovl && (TREE_CODE (ovl) == OVERLOAD ||
-	      TREE_CODE (ovl) == FUNCTION_DECL))
-    {
-      /* Mark the overload itsef.  */
-      gcc_checking_assert (LOOKUP_SEEN_P (ovl) != val);
-      LOOKUP_SEEN_P (ovl) = val;
+      gcc_checking_assert (LOOKUP_SEEN_P (*iter) != val);
+      LOOKUP_SEEN_P (*iter) = val;
     }
 }
 
@@ -2327,73 +2316,48 @@ lookup_add (tree fns, tree lookup)
   return lookup;
 }
 
-/* FNS is a new overload set, add it to LOOKUP, if it is not already
-   present there.  */
+/* FNS is a new overload set, add them to LOOKUP, if they are not
+   already present there.  */
 
 tree
-lookup_maybe_add (tree fns, tree lookup)
+lookup_maybe_add (tree fns, tree lookup, bool deduping)
 {
-  if (LOOKUP_SEEN_P (fns))
-    return lookup;
+  if (deduping)
+    for (tree next, probe = fns; probe; probe = next)
+      {
+	tree fn = probe;
+	next = NULL_TREE;
 
-  if (lookup && TREE_CODE (fns) == OVERLOAD)
-    {
-      /* Determine if we already have some part of this overload in
-	 the overload set.  If so fix things up so we only have the
-	 overload set once.  */
-      tree marked = NULL_TREE;
-
-      for (tree probe = fns; probe; probe = OVL_CHAIN (probe))
-	if (LOOKUP_SEEN_P (probe))
+	if (TREE_CODE (probe) == OVERLOAD)
 	  {
-	    marked = probe;
-	    break;
+	    fn = OVL_FUNCTION (probe);
+	    next = OVL_CHAIN (probe);
 	  }
-	else if (TREE_CODE (probe) != OVERLOAD)
-	  break;
 
-      if (marked)
-	{
-	  /* The tail of this overload is already in the lookup
-	     set.  Stitch out the tail case, which might involve
-	     copying.  */
-	  bool rewrite = false;
+	if (!LOOKUP_SEEN_P (fn))
+	  LOOKUP_SEEN_P (fn) = true;
+	else
+	  {
+	    /* This function was already seen.  Insert all the
+	       predecessors onto the lookup.  */
+	    for (; fns != probe; fns = OVL_CHAIN (fns))
+	      {
+		lookup = lookup_add (OVL_FUNCTION (fns), lookup);
+		/* Propagate OVL_USING, but OVL_HIDDEN doesn't matter.  */
+		if (OVL_USING_P (fns))
+		  OVL_USING_P (lookup) = true;
+	      }
 
-	  LOOKUP_SEEN_P (marked) = false;
-	  for (tree *prev = &lookup, probe = *prev;
-	       ; prev = &OVL_CHAIN (probe), probe = *prev)
-	    {
-	      if (probe == marked)
-		{
-		  *prev = NULL_TREE;
-		  break;
-		}
-	      gcc_checking_assert (OVL_LOOKUP_P (probe));
-	      if (marked == OVL_FUNCTION (probe))
-		{
-		  *prev = OVL_CHAIN (probe);
-		  break;
-		}
+	    /* And now skip this function.  */
+	    fns = next;
+	  }
+      }
 
-	      /* If we're in a used part of the lookup set, copy the
-		 node, so as to not disturb stored uses.  */
-	      gcc_checking_assert (!rewrite || OVL_USED_P (probe));
-	      if (OVL_USED_P (probe))
-		{
-		  rewrite = true;
-		  probe = ovl_copy (probe);
-		  OVL_LOOKUP_P (probe) = true;
-		  *prev = probe;
-		}
-	    }
-	}
-    }
+  if (fns)
+    /* We ended in a set of new functions.  Add them all in one go.  */
+    lookup = lookup_add (fns, lookup);
 
-  /* Finally mark the new overload and prepend it to the current
-     lookup.  */
-  LOOKUP_SEEN_P (fns) = true;
-
-  return lookup_add (fns, lookup);
+  return lookup;
 }
 
 /* Regular overload OVL is part of a kept lookup.  Mark the nodes on

@@ -6916,7 +6916,8 @@ extern tree ovl_insert				(tree fn, tree maybe_ovl,
 extern tree ovl_skip_hidden			(tree) ATTRIBUTE_PURE;
 extern void lookup_mark				(tree lookup, bool val);
 extern tree lookup_add				(tree fns, tree lookup);
-extern tree lookup_maybe_add			(tree fns, tree lookup);
+extern tree lookup_maybe_add			(tree fns, tree lookup,
+						 bool deduping);
 extern void lookup_keep				(tree lookup, bool keep);
 extern int is_overloaded_fn			(tree) ATTRIBUTE_PURE;
 extern bool really_overloaded_fn		(tree) ATTRIBUTE_PURE;
