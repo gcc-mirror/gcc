@@ -1,6 +1,14 @@
 2017-05-29  Martin Liska  <mliska@suse.cz>
 
 	Backport from mainline
+	2017-04-24  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR middle-end/79931
+	* ipa-devirt.c (dump_possible_polymorphic_call_targets): Fix ICE.
+
+2017-05-29  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
 	2017-04-19  Richard Biener  <rguenther@suse.de>
 
 	PR ipa/65972
