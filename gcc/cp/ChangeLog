@@ -1,5 +1,18 @@
 2017-05-29  Nathan Sidwell  <nathan@acm.org>
 
+	PR c++/80891 (#1,#5)
+	* cp-tree.h (lookup_maybe_add): Add DEDUPING argument.
+	* name-lookup.c (name_lookup): Add deduping field.
+	(name_lookup::preserve_state, name_lookup::restore_state): Deal
+	with deduping.
+	(name_lookup::add_overload): New.
+	(name_lookup::add_value, name_lookup::add_fns): Call add_overload.
+	(name_lookup::search_adl): Set deduping.  Don't unmark here.
+	* pt.c (most_specialized_instantiation): Revert previous change,
+	Assert not given duplicates.
+	* tree.c (lookup_mark): Just mark the underlying decls.
+	(lookup_maybe_add): Dedup using marked decls.
+
 	PR c++/80891 (#4)
 	* ptree.c (cxx_print_xnode): Show internal OVERLOAD structure.
 	* tree.c (ovl_insert, ovl_iterator_remove_node): Fix copying assert.

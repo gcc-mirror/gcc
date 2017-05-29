@@ -1,3 +1,8 @@
+2017-05-29  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/80891 (#5)
+	* g++.dg/lookup/pr80891-5.C: New.
+
 2017-05-29  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/53029
