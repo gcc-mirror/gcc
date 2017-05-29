@@ -1,3 +1,11 @@
+2017-05-29  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
+	2017-03-28  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/80104
+	* gcc.dg/ipa/pr80104.c: New test.
+
 2017-05-19  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backport from mainline
@@ -154,6 +162,7 @@
 	(diex, diexq): Update argument type.
 	* gcc.target/powerpc/pr80246.c: New test.
 
+>>>>>>> .r248557
 2017-03-22  Martin Liska  <mliska@suse.cz>
 
 	Backport from mainline
