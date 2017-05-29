@@ -49,6 +49,10 @@ static int inline_matmul_assign (gfc_code **, int *, void *);
 static gfc_code * create_do_loop (gfc_expr *, gfc_expr *, gfc_expr *,
 				  locus *, gfc_namespace *,
 				  char *vname=NULL);
+static gfc_expr* check_conjg_transpose_variable (gfc_expr *, bool *,
+						 bool *);
+static bool has_dimen_vector_ref (gfc_expr *);
+static int matmul_temp_args (gfc_code **, int *,void *data);
 
 #ifdef CHECKING_P
 static void check_locus (gfc_namespace *);
@@ -1087,11 +1091,13 @@ optimize_namespace (gfc_namespace *ns)
 			   (void *) &found);
 	}
       while (found);
-	
+
+      gfc_code_walker (&ns->code, matmul_temp_args, dummy_expr_callback,
+		       NULL);
       gfc_code_walker (&ns->code, inline_matmul_assign, dummy_expr_callback,
 		       NULL);
     }
-  
+
   /* BLOCKs are handled in the expression walker below.  */
   for (ns = ns->contained; ns; ns = ns->sibling)
     {
@@ -2156,6 +2162,92 @@ matmul_to_var_code (gfc_code **c, int *walk_subtrees ATTRIBUTE_UNUSED,
   return 0;
 }
 
+
+/* Take a statement of the shape c = matmul(a,b) and create temporaries
+   for a and b if there is a dependency between the arguments and the
+   result variable or if a or b are the result of calculations that cannot
+   be handled by the inliner.  */
+
+static int
+matmul_temp_args (gfc_code **c, int *walk_subtrees ATTRIBUTE_UNUSED,
+		  void *data ATTRIBUTE_UNUSED)
+{
+  gfc_expr *expr1, *expr2;
+  gfc_code *co;
+  gfc_actual_arglist *a, *b;
+  bool a_tmp, b_tmp;
+  gfc_expr *matrix_a, *matrix_b;
+  bool conjg_a, conjg_b, transpose_a, transpose_b;
+  
+  co = *c;
+
+  if (co->op != EXEC_ASSIGN)
+    return 0;
+
+  if (forall_level > 0 || iterator_level > 0 || in_omp_workshare
+      || in_where)
+    return 0;
+
+  /* This has some duplication with inline_matmul_assign.  This
+     is because the creation of temporary variables could still fail,
+     and inline_matmul_assign still needs to be able to handle these
+     cases.  */
+  expr1 = co->expr1;
+  expr2 = co->expr2;
+
+  if (expr2->expr_type != EXPR_FUNCTION
+      || expr2->value.function.isym == NULL
+      || expr2->value.function.isym->id != GFC_ISYM_MATMUL)
+    return 0;
+
+  a_tmp = false;
+  a = expr2->value.function.actual;
+  matrix_a = check_conjg_transpose_variable (a->expr, &conjg_a, &transpose_a);
+  if (matrix_a != NULL)
+    {
+      if (matrix_a->expr_type == EXPR_VARIABLE
+	  && (gfc_check_dependency (matrix_a, expr1, true)
+	      || has_dimen_vector_ref (matrix_a)))
+	a_tmp = true;
+    }
+  else
+    a_tmp = true;
+
+  b_tmp = false;
+  b = a->next;
+  matrix_b = check_conjg_transpose_variable (b->expr, &conjg_b, &transpose_b);
+  if (matrix_b != NULL)
+    {
+      if (matrix_b->expr_type == EXPR_VARIABLE
+	  && (gfc_check_dependency (matrix_b, expr1, true)
+	      || has_dimen_vector_ref (matrix_b)))
+	b_tmp = true;
+    }
+  else
+    b_tmp = true;
+
+  if (!a_tmp && !b_tmp)
+    return 0;
+  
+  current_code = c;
+  inserted_block = NULL;
+  changed_statement = NULL;
+  if (a_tmp)
+    {
+      gfc_expr *at;
+      at = create_var (a->expr,"mma");
+      if (at)
+	a->expr = at;
+    }
+  if (b_tmp)
+    {
+      gfc_expr *bt;
+      bt = create_var (b->expr,"mmb");
+      if (bt)
+	b->expr = bt;
+    }
+  return 0;
+}
 
 /* Auxiliary function to build and simplify an array inquiry function.
    dim is zero-based.  */

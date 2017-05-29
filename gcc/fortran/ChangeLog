@@ -1,3 +1,12 @@
+2017-05-29  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/37131
+	* frontend-passes.c (check_conjg_transpose_variable):
+	Add prototype.
+	(has_dimen_vector_ref):  Likewise
+	(matmul_temp_args):  New function. Add prototype.
+	(optimize_namespace):  Call matmul_temp_args.
+
 2017-05-28  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	* frontend-passes.c (matmul_lhs_realloc):  Correct
