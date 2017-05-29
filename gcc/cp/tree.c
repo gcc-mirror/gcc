@@ -2139,12 +2139,13 @@ ovl_copy (tree ovl)
   else
     result = make_node (OVERLOAD);
 
-  gcc_assert (!OVL_NESTED_P (ovl) && !OVL_LOOKUP_P (ovl));
+  gcc_checking_assert (!OVL_NESTED_P (ovl) && OVL_USED_P (ovl));
   TREE_TYPE (result) = TREE_TYPE (ovl);
   OVL_FUNCTION (result) = OVL_FUNCTION (ovl);
   OVL_CHAIN (result) = OVL_CHAIN (ovl);
   OVL_HIDDEN_P (result) = OVL_HIDDEN_P (ovl);
   OVL_USING_P (result) = OVL_USING_P (ovl);
+  OVL_LOOKUP_P (result) = OVL_LOOKUP_P (ovl);
 
   return result;
 }
@@ -2395,6 +2396,22 @@ lookup_maybe_add (tree fns, tree lookup)
   return lookup_add (fns, lookup);
 }
 
+/* Regular overload OVL is part of a kept lookup.  Mark the nodes on
+   it as immutable.  */
+
+static void
+ovl_used (tree ovl)
+{
+  for (;
+       ovl && TREE_CODE (ovl) == OVERLOAD
+	 && !OVL_USED_P (ovl);
+       ovl = OVL_CHAIN (ovl))
+    {
+      gcc_checking_assert (!OVL_LOOKUP_P (ovl));
+      OVL_USED_P (ovl) = true;
+    }
+}
+
 /* If KEEP is true, preserve the contents of a lookup so that it is
    available for a later instantiation.  Otherwise release the LOOKUP
    nodes for reuse.  */
@@ -2407,12 +2424,18 @@ lookup_keep (tree lookup, bool keep)
 	 && OVL_LOOKUP_P (lookup) && !OVL_USED_P (lookup);
        lookup = OVL_CHAIN (lookup))
     if (keep)
-      OVL_USED_P (lookup) = true;
+      {
+	OVL_USED_P (lookup) = true;
+	ovl_used (OVL_FUNCTION (lookup));
+      }
     else
       {
 	OVL_FUNCTION (lookup) = ovl_cache;
 	ovl_cache = lookup;
       }
+
+  if (keep)
+    ovl_used (lookup);
 }
 
 /* Returns nonzero if X is an expression for a (possibly overloaded)
