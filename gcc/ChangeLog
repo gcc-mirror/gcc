@@ -1,6 +1,15 @@
 2017-05-29  Martin Liska  <mliska@suse.cz>
 
 	Backport from mainline
+	2017-04-19  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/65972
+	* auto-profile.c (afdo_vpt_for_early_inline): Update SSA
+	when needed by AutoPGO.
+
+2017-05-29  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
 	2017-04-19  Paulo J. Matos  <paulo@matos-sorge.com>
 
 	PR lto/50345
