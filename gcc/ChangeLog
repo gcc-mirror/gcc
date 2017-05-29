@@ -3,6 +3,15 @@
 	Backport from mainline
 	2017-04-11  Martin Liska  <mliska@suse.cz>
 
+	PR ipa/80212
+	* ipa-cp.c (determine_versionability): Handle calls_comdat_local
+	flags.
+
+2017-05-29  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
+	2017-04-11  Martin Liska  <mliska@suse.cz>
+
 	PR sanitizer/70878
 	* ubsan.c (instrument_object_size): Do not instrument register
 	variables.
