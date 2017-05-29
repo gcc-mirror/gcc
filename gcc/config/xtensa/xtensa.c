@@ -2678,7 +2678,7 @@ xtensa_frame_pointer_required (void)
 }
 
 HOST_WIDE_INT
-xtensa_initial_elimination_offset (int from, int to)
+xtensa_initial_elimination_offset (int from, int to ATTRIBUTE_UNUSED)
 {
   long frame_size = compute_frame_size (get_frame_size ());
   HOST_WIDE_INT offset;
