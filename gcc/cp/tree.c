@@ -2170,7 +2170,7 @@ ovl_insert (tree fn, tree maybe_ovl, bool using_p)
 		       | (OVL_USING_P (maybe_ovl) << 0))))
     {
       gcc_checking_assert (!OVL_LOOKUP_P (maybe_ovl)
-			   && (!OVL_USED_P (maybe_ovl) || !copying));
+			   && (!copying || OVL_USED_P (maybe_ovl)));
       if (OVL_USED_P (maybe_ovl))
 	{
 	  copying = true;
@@ -2264,7 +2264,7 @@ ovl_iterator::remove_node (tree overload, tree node)
     {
       tree probe = *slot;
       gcc_checking_assert (!OVL_LOOKUP_P (probe)
-			   && (!OVL_USED_P (probe) || !copying));
+			   && (!copying || OVL_USED_P (probe)));
       if (OVL_USED_P (probe))
 	{
 	  copying = true;
