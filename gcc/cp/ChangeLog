@@ -1,5 +1,10 @@
 2017-05-26  Nathan Sidwell  <nathan@acm.org>
 
+	PR c++/80891 (#2)
+	* tree.c (ovl_copy): Adjust assert, copy OVL_LOOKUP.
+	(ovl_used): New.
+	(lookup_keep): Call it.
+
 	Implement DR2061
 	* name-lookup.c (push_inline_namespaces): New.
 	(push_namespace): Look inside inline namespaces.
