@@ -1,3 +1,7 @@
+2017-05-29  Alexandre Oliva <aoliva@redhat.com>
+
+	* cp-tree.h (lang_identifier): Drop oracle_looked_up, unused.
+
 2017-05-29  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/80891 (#1,#5)
