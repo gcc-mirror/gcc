@@ -1,3 +1,8 @@
+2017-05-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* doc/install.texi (Options specification): Restore entry of
+	--enable-sjlj-exceptions.
+
 2017-05-27  Michael Eager  <eager@eagercon.com>
 
 	Revert:
