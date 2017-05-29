@@ -1,3 +1,8 @@
+2017-05-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* doc/install.texi (Options specification): Restore entry of
+	--enable-sjlj-exceptions.
+
 2017-05-29  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
 	Backport from mainline
