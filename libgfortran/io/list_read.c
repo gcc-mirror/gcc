@@ -2298,11 +2298,16 @@ list_formatted_read_scalar (st_parameter_dt *dtp, bt type, void *p,
     free_saved (dtp);
 
 cleanup:
+  /* err may have been set above from finish_separator, so if it is set
+     trigger the hit_eof. The hit_eof will set bits in common.flags.  */
   if (err == LIBERROR_END)
     {
       free_line (dtp);
       hit_eof (dtp);
     }
+  /* Now we check common.flags for any errors that could have occurred in
+     a READ elsewhere such as in read_integer.  */
+  err = dtp->common.flags & IOPARM_LIBRETURN_MASK;
   fbuf_flush_list (dtp->u.p.current_unit, LIST_READING);
   return err;
 }
