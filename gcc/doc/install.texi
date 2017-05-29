@@ -1063,6 +1063,11 @@ and for cross builds configured with @option{--with-sysroot}, and without
 More documentation about multiarch can be found at
 @uref{https://wiki.debian.org/Multiarch}.
 
+@item --enable-sjlj-exceptions
+Force use of the @code{setjmp}/@code{longjmp}-based scheme for exceptions.
+@samp{configure} ordinarily picks the correct value based on the platform.
+Only use this option if you are sure you need a different setting.
+
 @item --enable-vtable-verify
 Specify whether to enable or disable the vtable verification feature.
 Enabling this feature causes libstdc++ to be built with its virtual calls
@@ -2278,11 +2283,6 @@ file to compile into a @file{.class} file.
 
 @item --with-libiconv-prefix=DIR
 Search for libiconv in @file{DIR/include} and @file{DIR/lib}.
-
-@item --enable-sjlj-exceptions
-Force use of the @code{setjmp}/@code{longjmp}-based scheme for exceptions.
-@samp{configure} ordinarily picks the correct value based on the platform.
-Only use this option if you are sure you need a different setting.
 
 @item --with-system-zlib
 Use installed @samp{zlib} rather than that included with GCC@.
