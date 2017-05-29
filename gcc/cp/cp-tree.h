@@ -332,7 +332,6 @@ struct GTY(()) lang_identifier {
   cxx_binding *bindings;
   tree class_template_info;
   tree label_value;
-  bool oracle_looked_up;
 };
 
 /* Return a typed pointer version of T if it designates a

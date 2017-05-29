@@ -1,3 +1,7 @@
+2017-05-29  Alexandre Oliva <aoliva@redhat.com>
+
+	* cp-tree.h (lang_identifier): Drop oracle_looked_up, unused.
+
 2017-05-02  Release Manager
 
 	* GCC 7.1.0 released.
