@@ -223,7 +223,7 @@ class LineLengthTest(unittest.TestCase):
         self.assertEqual(r.console_error,
             self.check.limit * 'a' + error_string(' = 123;'))
 
-def check_GNU_style_file(file, format):
+def check_GNU_style_file(file, file_encoding, format):
     checks = [LineLengthCheck(), SpacesCheck(), TrailingWhitespaceCheck(),
         SentenceSeparatorCheck(), SentenceEndOfCommentCheck(),
         SentenceDotEndCheck(), FunctionParenthesisCheck(),
@@ -231,8 +231,7 @@ def check_GNU_style_file(file, format):
         BracesOnSeparateLineCheck(), TrailinigOperatorCheck()]
     errors = []
 
-    with open(file, 'rb') as diff_file:
-        patch = PatchSet(diff_file, encoding = 'utf-8')
+    patch = PatchSet(file, encoding=file_encoding)
 
     for pfile in patch.added_files + patch.modified_files:
         t = pfile.target_file.lstrip('b/')
