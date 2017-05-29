@@ -1,5 +1,9 @@
 2017-05-29  Nathan Sidwell  <nathan@acm.org>
 
+	PR c++/80891 (#4)
+	* ptree.c (cxx_print_xnode): Show internal OVERLOAD structure.
+	* tree.c (ovl_insert, ovl_iterator_remove_node): Fix copying assert.
+
 	Stat hack representation
 	* name-lookup.c (STAT_HACK_P, STAT_TYPE, STAT_DECL,
 	MAYBE_STAT_DECL, MAYBE_STAT_TYPE): New.
