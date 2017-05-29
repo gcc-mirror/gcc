@@ -1,5 +1,28 @@
 2017-05-29  Nathan Sidwell  <nathan@acm.org>
 
+	Stat hack representation
+	* name-lookup.c (STAT_HACK_P, STAT_TYPE, STAT_DECL,
+	MAYBE_STAT_DECL, MAYBE_STAT_TYPE): New.
+	(stat_hack): New.
+	(find_namespace_binding): Replace with ...
+	(find_namespace_slot): ... this.
+	(find_namespace_value): New.
+	(name_lookup::search_namespace_only,
+	name_lookup::adl_namespace_only): Adjust.
+	(update_binding): Add SLOT parameter, adjust.
+	(check_local_shadow): Use find_namespace_value.
+	(set_local_extern_decl_linkage): Likewise.
+	(do_pushdecl): Adjust for namespace slot.
+	(push_local_binding): Assert not a namespace binding.
+	(check_for_out_of_scope_variable): Use find_namespace_value.
+	(set_identifier_type_value_with_scope): Likewise.
+	(get_namespace_binding): Likewise.
+	(set_namespace_binding): Delete.
+	(set_global_binding): Directly update the binding.
+	(finish_namespace_using_decl): Likewise.
+	(lookup_type_scope_1): Use find_namespace_slot and update.
+	(do_push_nested_namespace): Use find_namespace_value.
+
 	PR c++/80891 (#1)
 	* pt.c (most_specialized_instantiation): Cope with duplicate
 	instantiations.
