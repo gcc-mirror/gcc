@@ -3102,6 +3102,9 @@ s390_check_qrst_address (char c, rtx op, bool lit_pool_ok)
   struct s390_address addr;
   bool decomposed = false;
 
+  if (!address_operand (op, GET_MODE (op)))
+    return 0;
+
   /* This check makes sure that no symbolic address (except literal
      pool references) are accepted by the R or T constraints.  */
   if (s390_loadrelative_operand_p (op, NULL, NULL))

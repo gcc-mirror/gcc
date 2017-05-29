@@ -1,3 +1,13 @@
+2017-05-29  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
+	Backport from mainline
+	2017-05-24  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
+	PR target/80725
+	* config/s390/s390.c (s390_check_qrst_address): Check incoming
+	address against address_operand predicate.
+	* config/s390/s390.md ("*indirect_jump"): Swap alternatives.
+
 2017-05-28  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backport from mainline
