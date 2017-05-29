@@ -1,4 +1,73 @@
+2017-05-29  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/80891 (#3)
+	* cp-tree.h (build_min_nt_call_vec): Declare.
+	* decl.c (build_offset_ref_call_from_tree): Call it.
+	* parser.c (cp_parser_postfix_expression): Likewise.
+	* pt.c (tsubst_copy_and_build): Likewise.
+	* semantics.c (finish_call_expr): Likewise.
+	* tree.c (build_min_nt_loc): Keep unresolved lookups.
+	(build_min): Likewise.
+	(build_min_non_dep): Likewise.
+	(build_min_non_dep_call_vec): Likewise.
+	(build_min_nt_call_vec): New.
+
+	PR c++/80891 (#2)
+	* tree.c (ovl_copy): Adjust assert, copy OVL_LOOKUP.
+	(ovl_used): New.
+	(lookup_keep): Call it.
+
 2017-05-26  Nathan Sidwell  <nathan@acm.org>
+
+	Implement DR2061
+	* name-lookup.c (push_inline_namespaces): New.
+	(push_namespace): Look inside inline namespaces.
+
+	Inline and using namespace representation change.
+	* cp-tree.h (struct lang_decl_ns): Delete ns_using.  Add usings,
+	inlinees as vector.
+	(DECL_NAMESPACE_USING): Adjust.
+	(DECL_NAMESPACE_INLINEES): New.
+	* name-lookup.h (struct cp_binding_level): Change usings
+	representation.
+	* name-lookup.c (name_lookup::do_queue_usings,
+	name_lookup::queue_usings): Adjust.
+	(name_lookup::search_namespace, name_lookup::search_usings,
+	name_lookup::queue_namespace): Adjust.
+	(name_lookup::adl_namespace_only): Adjust.
+	(add_using_namespace, push_namespace): Push onto vector.
+	(pop_namespace): Add timing logic.
+
+	* call.c (build_operator_new_call): Do namelookup and ADL here.
+	(build_new_op_1): Likewise.
+	* name-lookup.h (lookup_function_nonclass): Delete declaration.
+	(do_using_directive): Likewise.
+	* name-lookup.c (set_namespace_binding, push_local_binding): Don't
+	declare early.
+	(struct scope_binding): Delete.
+	(EMPTY_SCOPE_BINDING): Delete.
+	(set_decl_namespace): Use OVL_P.
+	(finish_local_using_decl): Lose unnecesary checks.
+	(lookup_function_nonclass): Delete.
+	(cp_emit_debug_info_for_using): Use MAYBE_BASELINK_P.
+
+	* cp-tree.h (OVL_CHAIN): Check looking at OVERLOAD.
+	(ovl_iterator): Add allow_inner field.  Adjust ctor.  Make
+	unduplicatable.
+	(ovl_iterator::maybe_push, ovl_iterator::pop): New.
+	(lkp_iterator): Add outer field.  Adjust ctor.
+	(lkp_iterator::operator++): New.
+	(lookup_mark, lookup_maybe_add): Declare.
+	* name-lookup.c (name_lookup): Delete fn_set member.
+	(name_lookup::preserve_state, name_lookup::restore_state): Unmark
+	and mark lookup.
+	(name_lookup::add_value): Use lookup_add directly.
+	(name_lookup::add_fns: Use lookup_maybe_add.
+	(name_lookup::search_adl): Mark and unmark fns.
+	(pushdecl): Adjust.
+	* pt.c (check_explicit_specialization): Use lookup_add directly.
+	* ptree.c (cxx_print_xnode): Show complete overload structure.
+	* tree.c (lookup_mark, lookup_maybe_add): New.
 
 	* name-lookup.c (name_lookup::search_adl): ADL OMP UDR type args.
 

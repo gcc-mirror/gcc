@@ -1,3 +1,83 @@
+2017-05-27  Michael Eager  <eager@eagercon.com>
+
+	Revert:
+	2016-01-21  Ajit Agarwal  <ajitkum@xilinx.com>
+
+	See https://gcc.gnu.org/ml/gcc/2017-05/msg00221.html.
+
+	* config/microblaze/microblaze.h
+	(FIXED_REGISTERS): Update in macro.
+	(CALL_USED_REGISTERS): Update in macro.
+
+2017-05-27  François-Xavier Coudett  <fxcoudert@gcc.gnu.org>
+
+	* doc/install.texi: Add links to macOS binary distributions.
+
+2017-05-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/80887
+	Revert:
+	2017-05-25  Marc Glisse  <marc.glisse@inria.fr>
+
+	* match.pd ((A +- CST1) +- CST2): Allow some conversions.
+
+2017-05-26  Martin Liska  <mliska@suse.cz>
+
+	* dumpfile.h (enum dump_kind): Renumber TDF_* flags to be contiguous.
+
+2017-05-26  Martin Liska  <mliska@suse.cz>
+
+	* cfg.c (check_bb_profile): Do not use TDF_COMMENT and print
+	always leading ';; '.
+	(dump_bb_info): Likewise.
+	(brief_dump_cfg): Likewise.
+	* cfgrtl.c (print_rtl_with_bb): Do not use TDF_COMMENT.
+	* dumpfile.c: Remove usage of TDF_VERBOSE.
+	* dumpfile.h (enum dump_kind): Likewise.
+	(dump_gimple_bb_header): Do not use TDF_COMMENT.
+	* print-tree.c (debug_verbose): Remove.
+	* tree-cfg.c (gimple_dump_cfg): Do not use TDF_COMMENT.
+	(dump_function_to_file): Remove dumps guarded with TDF_VERBOSE.
+	* tree-diagnostic.c (default_tree_printer): Replace
+	TDF_DIAGNOSTIC with TDF_SLIM.
+
+2017-05-26  Bin Cheng  <bin.cheng@arm.com>
+
+	* tree-vect-loop-manip.c (create_intersect_range_checks_index): Pass
+	in parameter loop, rather than loop_vinfo.
+	(create_intersect_range_checks): Ditto.
+	(vect_create_cond_for_alias_checks): Update call to above functions.
+
+2017-05-26  Bin Cheng  <bin.cheng@arm.com>
+
+	PR tree-optimization/80815
+	* tree-data-ref.c (prune_runtime_alias_test_list): Simplify condition
+	for merging runtime alias checks.  Handle negative DR_STEPs.
+
+2017-05-26  Bin Cheng  <bin.cheng@arm.com>
+
+	* tree-vect-data-refs.c (Operator==, comp_dr_with_seg_len_pair):
+	Move from ...
+	* tree-data-ref.c (Operator==, comp_dr_with_seg_len_pair): To here.
+	* tree-vect-data-refs.c (vect_prune_runtime_alias_test_list): Factor
+	out code pruning runtime alias checks.
+	* tree-data-ref.c (prune_runtime_alias_test_list): New function
+	factored out from above.
+	* tree-vectorizer.h (struct dr_with_seg_len, dr_with_seg_len_pair_t):
+	Move from ...
+	* tree-data-ref.h (struct dr_with_seg_len, dr_with_seg_len_pair_t):
+	... to here.
+	(prune_runtime_alias_test_list): New decalaration.
+
+2017-05-26  Bin Cheng  <bin.cheng@arm.com>
+
+	* tree-vect-data-refs.c (compare_tree): Rename and move ...
+	* tree-data-ref.c (data_ref_compare_tree): ... to here.
+	* tree-data-ref.h (data_ref_compare_tree): New decalaration.
+	* tree-vect-data-refs.c (dr_group_sort_cmp): Update uses.
+	(operator==, comp_dr_with_seg_len_pair): Ditto.
+	(vect_prune_runtime_alias_test_list): Ditto.
+
 2017-05-26  Martin Liska  <mliska@suse.cz>
 
 	PR ipa/80663

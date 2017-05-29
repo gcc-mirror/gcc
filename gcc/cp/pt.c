@@ -17389,7 +17389,7 @@ tsubst_copy_and_build (tree t,
 			&& TREE_CODE (fn) != FIELD_DECL)
 		    || type_dependent_expression_p (fn)
 		    || any_type_dependent_arguments_p (call_args)))
-	      ret = build_nt_call_vec (function, call_args);
+	      ret = build_min_nt_call_vec (function, call_args);
 	    else if (!BASELINK_P (fn))
 	      ret = finish_call_expr (function, &call_args,
 				       /*disallow_virtual=*/false,

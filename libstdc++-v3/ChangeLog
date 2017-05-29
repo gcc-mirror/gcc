@@ -1,3 +1,9 @@
+2017-05-20  Tim Shen  <timshen@google.com>
+
+	PR libstdc++/80737
+	* include/std/variant(variant::variant): SFINAE on is_same first.
+	* testsuite/20_util/variant/any.cc: test case.
+
 2017-05-24  Jonathan Wakely  <jwakely@redhat.com>
 
 	* src/c++11/random.cc (random_device::_M_getentropy): Use __CHAR_BIT__

@@ -460,6 +460,8 @@ name_lookup::preserve_state ()
 	      previous->scopes->quick_push (decl);
 	    }
 	}
+
+      /* Unmark the outer partial lookup.  */
       lookup_mark (previous->value, false);
     }
   else
@@ -509,6 +511,7 @@ name_lookup::restore_state ()
 	  LOOKUP_SEEN_P (decl) = true;
 	}
 
+      /* Remark the outer partial lookup.  */
       lookup_mark (previous->value, true);
     }
   else
@@ -5939,32 +5942,6 @@ lookup_arg_dependent (tree name, tree fns, vec<tree, va_gc> *args)
   return fns;
 }
 
-/* Add TARGET to USINGS, if it does not already exist there.
-   We used to build the complete graph of usings at this point, from
-   the POV of the source namespaces.  Now we build that as we perform
-   the unqualified search.  */
-
-static void
-add_using_namespace (vec<tree, va_gc> *&usings, tree target)
-{
-  if (usings)
-    for (unsigned ix = usings->length (); ix--;)
-      if ((*usings)[ix] == target)
-	return;
-
-  vec_safe_push (usings, target);
-}
-
-/* Notify debug system of a using directive.  */
-
-static void
-emit_debug_info_using_namespace (tree from, tree target)
-{
-  /* Emit debugging info.  */
-  tree context = from != global_namespace ? from : NULL_TREE;
-  debug_hooks->imported_module_or_decl (target, NULL_TREE, context, false);
-}
-
 /* The type TYPE is being declared.  If it is a class template, or a
    specialization of a class template, do any processing required and
    perform error-checking.  If IS_FRIEND is nonzero, this TYPE is
@@ -6472,6 +6449,32 @@ do_pop_nested_namespace (tree ns)
     }
 
   do_pop_from_top_level ();
+}
+
+/* Add TARGET to USINGS, if it does not already exist there.
+   We used to build the complete graph of usings at this point, from
+   the POV of the source namespaces.  Now we build that as we perform
+   the unqualified search.  */
+
+static void
+add_using_namespace (vec<tree, va_gc> *&usings, tree target)
+{
+  if (usings)
+    for (unsigned ix = usings->length (); ix--;)
+      if ((*usings)[ix] == target)
+	return;
+
+  vec_safe_push (usings, target);
+}
+
+/* Notify debug system of a using directive.  */
+
+static void
+emit_debug_info_using_namespace (tree from, tree target)
+{
+  /* Emit debugging info.  */
+  tree context = from != global_namespace ? from : NULL_TREE;
+  debug_hooks->imported_module_or_decl (target, NULL_TREE, context, false);
 }
 
 /* Process a namespace-scope using directive.  */

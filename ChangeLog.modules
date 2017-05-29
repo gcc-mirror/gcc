@@ -1,4 +1,10 @@
+2017-05-29  Nathan Sidwell  <nathan@acm.org>
+
+	Merge trunk r248571.
+
 2017-05-26  Nathan Sidwell  <nathan@acm.org>
+
+	Merge trunk r248517.
 
 	gcc/cp/
 	* cp-tree.h: Comment cleanup.

@@ -3214,11 +3214,11 @@ struct GTY(()) lang_decl {
 #define DECL_NAMESPACE_INLINE_P(NODE) \
   TREE_LANG_FLAG_0 (NAMESPACE_DECL_CHECK (NODE))
 
-/* For a NAMESPACE_DECL: an OVERLOAD list of using namespace directives.  */
+/* In a NAMESPACE_DECL, a vector of using directives.  */
 #define DECL_NAMESPACE_USING(NODE) \
    (LANG_DECL_NS_CHECK (NODE)->usings)
 
-/* In a NAMESPACE_DECL, an OVERLOAD list of direct inline namespaces.  */
+/* In a NAMESPACE_DECL, a vector of inline namespaces.  */
 #define DECL_NAMESPACE_INLINEES(NODE) \
    (LANG_DECL_NS_CHECK (NODE)->inlinees)
 
@@ -6988,6 +6988,7 @@ extern tree build_min_nt_loc			(location_t, enum tree_code,
 						 ...);
 extern tree build_min_non_dep			(enum tree_code, tree, ...);
 extern tree build_min_non_dep_op_overload	(enum tree_code, tree, tree, ...);
+extern tree build_min_nt_call_vec (tree, vec<tree, va_gc> *);
 extern tree build_min_non_dep_call_vec		(tree, tree, vec<tree, va_gc> *);
 extern vec<tree, va_gc>* vec_copy_and_insert    (vec<tree, va_gc>*, tree, unsigned);
 extern tree build_cplus_new			(tree, tree, tsubst_flags_t);
@@ -7011,8 +7012,8 @@ extern tree ovl_make				(tree fn,
 extern tree ovl_skip_hidden			(tree);
 extern tree ovl_insert				(tree fn, tree maybe_ovl,
 						 bool using_p = false);
-extern void lookup_mark				(tree lookup, bool val);
 extern tree ovl_skip_hidden			(tree) ATTRIBUTE_PURE;
+extern void lookup_mark				(tree lookup, bool val);
 extern tree lookup_add				(tree fns, tree lookup);
 extern tree lookup_maybe_add			(tree fns, tree lookup);
 extern void lookup_keep				(tree lookup, bool keep);

@@ -2654,7 +2654,8 @@ class Array_index_expression : public Expression
   Array_index_expression(Expression* array, Expression* start,
 			 Expression* end, Expression* cap, Location location)
     : Expression(EXPRESSION_ARRAY_INDEX, location),
-      array_(array), start_(start), end_(end), cap_(cap), type_(NULL)
+      array_(array), start_(start), end_(end), cap_(cap), type_(NULL),
+      is_lvalue_(false)
   { }
 
   // Return the array.
@@ -2685,6 +2686,18 @@ class Array_index_expression : public Expression
   const Expression*
   end() const
   { return this->end_; }
+
+  // Return whether this array index expression appears in an lvalue
+  // (left hand side of assignment) context.
+  bool
+  is_lvalue() const
+  { return this->is_lvalue_; }
+
+  // Update this array index expression to indicate that it appears
+  // in a left-hand-side or lvalue context.
+  void
+  set_is_lvalue()
+  { this->is_lvalue_ = true; }
 
  protected:
   int
@@ -2753,6 +2766,8 @@ class Array_index_expression : public Expression
   Expression* cap_;
   // The type of the expression.
   Type* type_;
+  // Whether expr appears in an lvalue context.
+  bool is_lvalue_;
 };
 
 // A string index.  This is used for both indexing and slicing.

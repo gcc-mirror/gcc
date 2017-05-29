@@ -1,3 +1,39 @@
+2017-05-29  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/80891 (#3)
+	* g++.dg/lookup/pr80891-3.C: New.
+
+	PR c++/80891 (#2)
+	* g++.dg/lookup/pr80891-2.C: New.
+
+2017-05-29  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/37131
+	* gfortran.dg/promotion_2.f90: Add -finline-matmul-limit=0 to
+	flags.
+	* gfortran.dg/transpose_optimization_1.f90: Likewise.
+	* gfortran.dg/inline_matmul_17.f90:  New test.
+
+2017-05-28  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* gfortran.dg/matmul_bounds_12.f90:  New test.
+
+2017-05-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/80887
+	* gcc.dg/tree-ssa/addadd.c: Xfail all scan-tree-dump*.
+
+2017-05-26  Nathan Sidwell  <nathan@acm.org>
+
+	* g++.dg/cpp0x/dr2061.C: New.
+	* g++.dg/parse/namespace-alias-1.C: Add more test.
+
+2017-05-26  Bin Cheng  <bin.cheng@arm.com>
+
+	PR tree-optimization/80815
+	* gcc.dg/vect/pr80815-1.c: New test.
+	* gcc.dg/vect/pr80815-2.c: New test.
+
 2017-05-26  Martin Liska  <mliska@suse.cz>
 
 	PR ipa/80663

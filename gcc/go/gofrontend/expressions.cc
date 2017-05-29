@@ -6470,7 +6470,8 @@ Expression::comparison(Translate_context* context, Type* result_type,
 	  && left_type->array_type()->length() == NULL)
 	{
 	  Array_type* at = left_type->array_type();
-          left = at->get_value_pointer(context->gogo(), left);
+          bool is_lvalue = false;
+          left = at->get_value_pointer(context->gogo(), left, is_lvalue);
 	}
       else if (left_type->interface_type() != NULL)
 	{
@@ -11067,7 +11068,8 @@ Array_index_expression::do_get_backend(Translate_context* context)
 	{
 	  // Slice.
 	  Expression* valptr =
-              array_type->get_value_pointer(gogo, this->array_);
+              array_type->get_value_pointer(gogo, this->array_,
+                                            this->is_lvalue_);
 	  Bexpression* ptr = valptr->get_backend(context);
           ptr = gogo->backend()->pointer_offset_expression(ptr, start, loc);
 
@@ -11143,7 +11145,8 @@ Array_index_expression::do_get_backend(Translate_context* context)
   Bexpression* offset = gogo->backend()->conditional_expression(bfn, int_btype,
 								cond, zero,
 								start, loc);
-  Expression* valptr = array_type->get_value_pointer(gogo, this->array_);
+  Expression* valptr = array_type->get_value_pointer(gogo, this->array_,
+                                                     this->is_lvalue_);
   Bexpression* val = valptr->get_backend(context);
   val = gogo->backend()->pointer_offset_expression(val, offset, loc);
 

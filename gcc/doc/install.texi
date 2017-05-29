@@ -3079,6 +3079,15 @@ Solaris 2 (SPARC, Intel):
 @end itemize
 
 @item
+macOS:
+@itemize
+@item
+The @uref{https://brew.sh,,Homebrew} package manager;
+@item
+@uref{https://www.macports.org,,MacPorts}.
+@end itemize
+
+@item
 Microsoft Windows:
 @itemize
 @item

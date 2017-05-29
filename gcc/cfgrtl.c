@@ -2207,7 +2207,7 @@ print_rtl_with_bb (FILE *outf, const rtx_insn *rtx_first, dump_flags_t flags)
 	      bb = start[INSN_UID (tmp_rtx)];
 	      if (bb != NULL)
 		{
-		  dump_bb_info (outf, bb, 0, dump_flags | TDF_COMMENT, true, false);
+		  dump_bb_info (outf, bb, 0, dump_flags, true, false);
 		  if (df && (flags & TDF_DETAILS))
 		    df_dump_top (bb, outf);
 		}
@@ -2234,7 +2234,7 @@ print_rtl_with_bb (FILE *outf, const rtx_insn *rtx_first, dump_flags_t flags)
 	      bb = end[INSN_UID (tmp_rtx)];
 	      if (bb != NULL)
 		{
-		  dump_bb_info (outf, bb, 0, dump_flags | TDF_COMMENT, false, true);
+		  dump_bb_info (outf, bb, 0, dump_flags, false, true);
 		  if (df && (flags & TDF_DETAILS))
 		    df_dump_bottom (bb, outf);
 		  putc ('\n', outf);

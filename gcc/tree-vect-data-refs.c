@@ -2574,83 +2574,6 @@ vect_analyze_data_ref_access (struct data_reference *dr)
   return vect_analyze_group_access (dr);
 }
 
-
-
-/*  A helper function used in the comparator function to sort data
-    references.  T1 and T2 are two data references to be compared.
-    The function returns -1, 0, or 1.  */
-
-static int
-compare_tree (tree t1, tree t2)
-{
-  int i, cmp;
-  enum tree_code code;
-  char tclass;
-
-  if (t1 == t2)
-    return 0;
-  if (t1 == NULL)
-    return -1;
-  if (t2 == NULL)
-    return 1;
-
-  STRIP_NOPS (t1);
-  STRIP_NOPS (t2);
-
-  if (TREE_CODE (t1) != TREE_CODE (t2))
-    return TREE_CODE (t1) < TREE_CODE (t2) ? -1 : 1;
-
-  code = TREE_CODE (t1);
-  switch (code)
-    {
-    /* For const values, we can just use hash values for comparisons.  */
-    case INTEGER_CST:
-    case REAL_CST:
-    case FIXED_CST:
-    case STRING_CST:
-    case COMPLEX_CST:
-    case VECTOR_CST:
-      {
-	hashval_t h1 = iterative_hash_expr (t1, 0);
-	hashval_t h2 = iterative_hash_expr (t2, 0);
-	if (h1 != h2)
-	  return h1 < h2 ? -1 : 1;
-	break;
-      }
-
-    case SSA_NAME:
-      cmp = compare_tree (SSA_NAME_VAR (t1), SSA_NAME_VAR (t2));
-      if (cmp != 0)
-	return cmp;
-
-      if (SSA_NAME_VERSION (t1) != SSA_NAME_VERSION (t2))
-	return SSA_NAME_VERSION (t1) < SSA_NAME_VERSION (t2) ? -1 : 1;
-      break;
-
-    default:
-      tclass = TREE_CODE_CLASS (code);
-
-      /* For var-decl, we could compare their UIDs.  */
-      if (tclass == tcc_declaration)
-	{
-	  if (DECL_UID (t1) != DECL_UID (t2))
-	    return DECL_UID (t1) < DECL_UID (t2) ? -1 : 1;
-	  break;
-	}
-
-      /* For expressions with operands, compare their operands recursively.  */
-      for (i = TREE_OPERAND_LENGTH (t1) - 1; i >= 0; --i)
-	{
-	  cmp = compare_tree (TREE_OPERAND (t1, i), TREE_OPERAND (t2, i));
-	  if (cmp != 0)
-	    return cmp;
-	}
-    }
-
-  return 0;
-}
-
-
 /* Compare two data-references DRA and DRB to group them into chunks
    suitable for grouping.  */
 
@@ -2674,7 +2597,8 @@ dr_group_sort_cmp (const void *dra_, const void *drb_)
   /* Ordering of DRs according to base.  */
   if (!operand_equal_p (DR_BASE_ADDRESS (dra), DR_BASE_ADDRESS (drb), 0))
     {
-      cmp = compare_tree (DR_BASE_ADDRESS (dra), DR_BASE_ADDRESS (drb));
+      cmp = data_ref_compare_tree (DR_BASE_ADDRESS (dra),
+				   DR_BASE_ADDRESS (drb));
       if (cmp != 0)
         return cmp;
     }
@@ -2682,7 +2606,7 @@ dr_group_sort_cmp (const void *dra_, const void *drb_)
   /* And according to DR_OFFSET.  */
   if (!dr_equal_offsets_p (dra, drb))
     {
-      cmp = compare_tree (DR_OFFSET (dra), DR_OFFSET (drb));
+      cmp = data_ref_compare_tree (DR_OFFSET (dra), DR_OFFSET (drb));
       if (cmp != 0)
         return cmp;
     }
@@ -2695,8 +2619,8 @@ dr_group_sort_cmp (const void *dra_, const void *drb_)
   if (!operand_equal_p (TYPE_SIZE_UNIT (TREE_TYPE (DR_REF (dra))),
 			TYPE_SIZE_UNIT (TREE_TYPE (DR_REF (drb))), 0))
     {
-      cmp = compare_tree (TYPE_SIZE_UNIT (TREE_TYPE (DR_REF (dra))),
-                          TYPE_SIZE_UNIT (TREE_TYPE (DR_REF (drb))));
+      cmp = data_ref_compare_tree (TYPE_SIZE_UNIT (TREE_TYPE (DR_REF (dra))),
+				   TYPE_SIZE_UNIT (TREE_TYPE (DR_REF (drb))));
       if (cmp != 0)
         return cmp;
     }
@@ -2704,7 +2628,7 @@ dr_group_sort_cmp (const void *dra_, const void *drb_)
   /* And after step.  */
   if (!operand_equal_p (DR_STEP (dra), DR_STEP (drb), 0))
     {
-      cmp = compare_tree (DR_STEP (dra), DR_STEP (drb));
+      cmp = data_ref_compare_tree (DR_STEP (dra), DR_STEP (drb));
       if (cmp != 0)
         return cmp;
     }
@@ -2890,66 +2814,6 @@ vect_analyze_data_ref_accesses (vec_info *vinfo)
   return true;
 }
 
-
-/* Operator == between two dr_with_seg_len objects.
-
-   This equality operator is used to make sure two data refs
-   are the same one so that we will consider to combine the
-   aliasing checks of those two pairs of data dependent data
-   refs.  */
-
-static bool
-operator == (const dr_with_seg_len& d1,
-	     const dr_with_seg_len& d2)
-{
-  return operand_equal_p (DR_BASE_ADDRESS (d1.dr),
-			  DR_BASE_ADDRESS (d2.dr), 0)
-	   && compare_tree (DR_OFFSET (d1.dr), DR_OFFSET (d2.dr)) == 0
-	   && compare_tree (DR_INIT (d1.dr), DR_INIT (d2.dr)) == 0
-	   && compare_tree (d1.seg_len, d2.seg_len) == 0;
-}
-
-/* Function comp_dr_with_seg_len_pair.
-
-   Comparison function for sorting objects of dr_with_seg_len_pair_t
-   so that we can combine aliasing checks in one scan.  */
-
-static int
-comp_dr_with_seg_len_pair (const void *pa_, const void *pb_)
-{
-  const dr_with_seg_len_pair_t* pa = (const dr_with_seg_len_pair_t *) pa_;
-  const dr_with_seg_len_pair_t* pb = (const dr_with_seg_len_pair_t *) pb_;
-  const dr_with_seg_len &a1 = pa->first, &a2 = pa->second;
-  const dr_with_seg_len &b1 = pb->first, &b2 = pb->second;
-
-  /* For DR pairs (a, b) and (c, d), we only consider to merge the alias checks
-     if a and c have the same basic address snd step, and b and d have the same
-     address and step.  Therefore, if any a&c or b&d don't have the same address
-     and step, we don't care the order of those two pairs after sorting.  */
-  int comp_res;
-
-  if ((comp_res = compare_tree (DR_BASE_ADDRESS (a1.dr),
-				DR_BASE_ADDRESS (b1.dr))) != 0)
-    return comp_res;
-  if ((comp_res = compare_tree (DR_BASE_ADDRESS (a2.dr),
-				DR_BASE_ADDRESS (b2.dr))) != 0)
-    return comp_res;
-  if ((comp_res = compare_tree (DR_STEP (a1.dr), DR_STEP (b1.dr))) != 0)
-    return comp_res;
-  if ((comp_res = compare_tree (DR_STEP (a2.dr), DR_STEP (b2.dr))) != 0)
-    return comp_res;
-  if ((comp_res = compare_tree (DR_OFFSET (a1.dr), DR_OFFSET (b1.dr))) != 0)
-    return comp_res;
-  if ((comp_res = compare_tree (DR_INIT (a1.dr), DR_INIT (b1.dr))) != 0)
-    return comp_res;
-  if ((comp_res = compare_tree (DR_OFFSET (a2.dr), DR_OFFSET (b2.dr))) != 0)
-    return comp_res;
-  if ((comp_res = compare_tree (DR_INIT (a2.dr), DR_INIT (b2.dr))) != 0)
-    return comp_res;
-
-  return 0;
-}
-
 /* Function vect_vfa_segment_size.
 
    Create an expression that computes the size of segment
@@ -3064,34 +2928,6 @@ vect_prune_runtime_alias_test_list (loop_vec_info loop_vinfo)
   if (may_alias_ddrs.is_empty ())
     return true;
 
-  /* Basically, for each pair of dependent data refs store_ptr_0
-     and load_ptr_0, we create an expression:
-
-     ((store_ptr_0 + store_segment_length_0) <= load_ptr_0)
-     || (load_ptr_0 + load_segment_length_0) <= store_ptr_0))
-
-     for aliasing checks.  However, in some cases we can decrease
-     the number of checks by combining two checks into one.  For
-     example, suppose we have another pair of data refs store_ptr_0
-     and load_ptr_1, and if the following condition is satisfied:
-
-     load_ptr_0 < load_ptr_1  &&
-     load_ptr_1 - load_ptr_0 - load_segment_length_0 < store_segment_length_0
-
-     (this condition means, in each iteration of vectorized loop,
-     the accessed memory of store_ptr_0 cannot be between the memory
-     of load_ptr_0 and load_ptr_1.)
-
-     we then can use only the following expression to finish the
-     alising checks between store_ptr_0 & load_ptr_0 and
-     store_ptr_0 & load_ptr_1:
-
-     ((store_ptr_0 + store_segment_length_0) <= load_ptr_0)
-     || (load_ptr_1 + load_segment_length_1 <= store_ptr_0))
-
-     Note that we only consider that load_ptr_0 and load_ptr_1 have the
-     same basic address.  */
-
   comp_alias_ddrs.create (may_alias_ddrs.length ());
 
   /* First, we collect all data ref pairs for aliasing checks.  */
@@ -3128,9 +2964,11 @@ vect_prune_runtime_alias_test_list (loop_vec_info loop_vinfo)
       segment_length_a = vect_vfa_segment_size (dr_a, length_factor);
       segment_length_b = vect_vfa_segment_size (dr_b, length_factor);
 
-      comp_res = compare_tree (DR_BASE_ADDRESS (dr_a), DR_BASE_ADDRESS (dr_b));
+      comp_res = data_ref_compare_tree (DR_BASE_ADDRESS (dr_a),
+					DR_BASE_ADDRESS (dr_b));
       if (comp_res == 0)
-	comp_res = compare_tree (DR_OFFSET (dr_a), DR_OFFSET (dr_b));
+	comp_res = data_ref_compare_tree (DR_OFFSET (dr_a),
+					  DR_OFFSET (dr_b));
 
       /* Alias is known at compilation time.  */
       if (comp_res == 0
@@ -3160,144 +2998,8 @@ vect_prune_runtime_alias_test_list (loop_vec_info loop_vinfo)
       comp_alias_ddrs.safe_push (dr_with_seg_len_pair);
     }
 
-  /* Second, we sort the collected data ref pairs so that we can scan
-     them once to combine all possible aliasing checks.  */
-  comp_alias_ddrs.qsort (comp_dr_with_seg_len_pair);
-
-  /* Third, we scan the sorted dr pairs and check if we can combine
-     alias checks of two neighboring dr pairs.  */
-  for (size_t i = 1; i < comp_alias_ddrs.length (); ++i)
-    {
-      /* Deal with two ddrs (dr_a1, dr_b1) and (dr_a2, dr_b2).  */
-      dr_with_seg_len *dr_a1 = &comp_alias_ddrs[i-1].first,
-		      *dr_b1 = &comp_alias_ddrs[i-1].second,
-		      *dr_a2 = &comp_alias_ddrs[i].first,
-		      *dr_b2 = &comp_alias_ddrs[i].second;
-
-      /* Remove duplicate data ref pairs.  */
-      if (*dr_a1 == *dr_a2 && *dr_b1 == *dr_b2)
-	{
-	  if (dump_enabled_p ())
-	    {
-	      dump_printf_loc (MSG_NOTE, vect_location,
-			       "found equal ranges ");
-	      dump_generic_expr (MSG_NOTE, TDF_SLIM,
-				 DR_REF (dr_a1->dr));
-	      dump_printf (MSG_NOTE,  ", ");
-	      dump_generic_expr (MSG_NOTE, TDF_SLIM,
-				 DR_REF (dr_b1->dr));
-	      dump_printf (MSG_NOTE,  " and ");
-	      dump_generic_expr (MSG_NOTE, TDF_SLIM,
-				 DR_REF (dr_a2->dr));
-	      dump_printf (MSG_NOTE,  ", ");
-	      dump_generic_expr (MSG_NOTE, TDF_SLIM,
-				 DR_REF (dr_b2->dr));
-	      dump_printf (MSG_NOTE, "\n");
-	    }
-
-	  comp_alias_ddrs.ordered_remove (i--);
-	  continue;
-	}
-
-      if (*dr_a1 == *dr_a2 || *dr_b1 == *dr_b2)
-	{
-	  /* We consider the case that DR_B1 and DR_B2 are same memrefs,
-	     and DR_A1 and DR_A2 are two consecutive memrefs.  */
-	  if (*dr_a1 == *dr_a2)
-	    {
-	      std::swap (dr_a1, dr_b1);
-	      std::swap (dr_a2, dr_b2);
-	    }
-
-	  if (!operand_equal_p (DR_BASE_ADDRESS (dr_a1->dr),
-				DR_BASE_ADDRESS (dr_a2->dr), 0)
-	      || !operand_equal_p (DR_OFFSET (dr_a1->dr),
-				   DR_OFFSET (dr_a2->dr), 0)
-	      || !tree_fits_shwi_p (DR_INIT (dr_a1->dr))
-	      || !tree_fits_shwi_p (DR_INIT (dr_a2->dr)))
-	    continue;
-
-	  /* Make sure dr_a1 starts left of dr_a2.  */
-	  if (tree_int_cst_lt (DR_INIT (dr_a2->dr), DR_INIT (dr_a1->dr)))
-	    std::swap (*dr_a1, *dr_a2);
-
-	  bool do_remove = false;
-	  unsigned HOST_WIDE_INT diff
-	    = (tree_to_shwi (DR_INIT (dr_a2->dr))
-               - tree_to_shwi (DR_INIT (dr_a1->dr)));
-
-	  /* If the left segment does not extend beyond the start of the
-	     right segment the new segment length is that of the right
-	     plus the segment distance.  */
-	  if (tree_fits_uhwi_p (dr_a1->seg_len)
-	      && compare_tree_int (dr_a1->seg_len, diff) <= 0)
-	    {
-	      dr_a1->seg_len = size_binop (PLUS_EXPR, dr_a2->seg_len,
-					   size_int (diff));
-	      do_remove = true;
-	    }
-	  /* Generally the new segment length is the maximum of the
-	     left segment size and the right segment size plus the distance.
-	     ???  We can also build tree MAX_EXPR here but it's not clear this
-	     is profitable.  */
-	  else if (tree_fits_uhwi_p (dr_a1->seg_len)
-		   && tree_fits_uhwi_p (dr_a2->seg_len))
-	    {
-	      unsigned HOST_WIDE_INT seg_len_a1 = tree_to_uhwi (dr_a1->seg_len);
-	      unsigned HOST_WIDE_INT seg_len_a2 = tree_to_uhwi (dr_a2->seg_len);
-	      dr_a1->seg_len = size_int (MAX (seg_len_a1, diff + seg_len_a2));
-	      do_remove = true;
-	    }
-	  /* Now we check if the following condition is satisfied:
-
-	     DIFF - SEGMENT_LENGTH_A < SEGMENT_LENGTH_B
-
-	     where DIFF = DR_A2_INIT - DR_A1_INIT.  However,
-	     SEGMENT_LENGTH_A or SEGMENT_LENGTH_B may not be constant so we
-	     have to make a best estimation.  We can get the minimum value
-	     of SEGMENT_LENGTH_B as a constant, represented by MIN_SEG_LEN_B,
-	     then either of the following two conditions can guarantee the
-	     one above:
-
-	     1: DIFF <= MIN_SEG_LEN_B
-	     2: DIFF - SEGMENT_LENGTH_A < MIN_SEG_LEN_B  */
-	  else
-	    {
-	      unsigned HOST_WIDE_INT min_seg_len_b
-		= (tree_fits_uhwi_p (dr_b1->seg_len)
-		   ? tree_to_uhwi (dr_b1->seg_len)
-		   : vect_factor);
-
-	      if (diff <= min_seg_len_b
-		  || (tree_fits_uhwi_p (dr_a1->seg_len)
-		      && diff - tree_to_uhwi (dr_a1->seg_len) < min_seg_len_b))
-		{
-		  dr_a1->seg_len = size_binop (PLUS_EXPR,
-					       dr_a2->seg_len, size_int (diff));
-		  do_remove = true;
-		}
-	    }
-
-	  if (do_remove)
-	    {
-	      if (dump_enabled_p ())
-		{
-		  dump_printf_loc (MSG_NOTE, vect_location,
-				   "merging ranges for ");
-		  dump_generic_expr (MSG_NOTE, TDF_SLIM, DR_REF (dr_a1->dr));
-		  dump_printf (MSG_NOTE,  ", ");
-		  dump_generic_expr (MSG_NOTE, TDF_SLIM, DR_REF (dr_b1->dr));
-		  dump_printf (MSG_NOTE,  " and ");
-		  dump_generic_expr (MSG_NOTE, TDF_SLIM, DR_REF (dr_a2->dr));
-		  dump_printf (MSG_NOTE,  ", ");
-		  dump_generic_expr (MSG_NOTE, TDF_SLIM, DR_REF (dr_b2->dr));
-		  dump_printf (MSG_NOTE, "\n");
-		}
-	      comp_alias_ddrs.ordered_remove (i--);
-	    }
-	}
-    }
-
+  prune_runtime_alias_test_list (&comp_alias_ddrs,
+				 (unsigned HOST_WIDE_INT) vect_factor);
   dump_printf_loc (MSG_NOTE, vect_location,
 		   "improved number of alias checks from %d to %d\n",
 		   may_alias_ddrs.length (), comp_alias_ddrs.length ());
