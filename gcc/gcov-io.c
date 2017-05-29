@@ -372,8 +372,12 @@ gcov_write_string (const char *string)
   buffer = gcov_write_words (1 + alloc);
 
   buffer[0] = alloc;
-  buffer[alloc] = 0;
-  memcpy (&buffer[1], string, length);
+
+  if (alloc > 0)
+    {
+      buffer[alloc] = 0; /* place nul terminators.  */
+      memcpy (&buffer[1], string, length);
+    }
 }
 #endif
 
