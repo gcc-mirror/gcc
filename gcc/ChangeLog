@@ -1,5 +1,13 @@
 2017-05-30  Robin Dapp  <rdapp@linux.vnet.ibm.com>
 
+	* tree-vect-data-refs.c (vect_get_data_access_cost):
+	Workaround for SLP handling.
+	(vect_enhance_data_refs_alignment):
+	Compute costs for doing no peeling at all, compare to the best
+	peeling costs so far and avoid peeling if cheaper.
+
+2017-05-30  Robin Dapp  <rdapp@linux.vnet.ibm.com>
+
 	* tree-vect-data-refs.c (vect_peeling_hash_choose_best_peeling):
 	Return peeling info and set costs to zero for unlimited cost
 	model.
