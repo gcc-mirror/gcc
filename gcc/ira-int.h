@@ -784,7 +784,7 @@ struct target_ira_int {
 
   /* Initialized once.  It is a maximal possible size of the allocated
      struct costs.  */
-  int x_max_struct_costs_size;
+  size_t x_max_struct_costs_size;
 
   /* Allocated and initialized once, and used to initialize cost values
      for each insn.  */

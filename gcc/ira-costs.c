@@ -103,7 +103,7 @@ static struct costs *costs;
 static struct costs *total_allocno_costs;
 
 /* It is the current size of struct costs.  */
-static int struct_costs_size;
+static size_t struct_costs_size;
 
 /* Return pointer to structure containing costs of allocno or pseudo
    with given NUM in array ARR.  */
