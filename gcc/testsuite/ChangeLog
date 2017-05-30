@@ -1,6 +1,12 @@
 2017-05-30  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2016-09-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/77624
+	* c-c++-common/pr77624-1.c: New test.
+	* c-c++-common/pr77624-2.c: New test.
+
 	2016-09-19  Jakub Jelinek  <jakub@redhat.com>
 		    Jan Hubicka  <jh@suse.cz>
 
