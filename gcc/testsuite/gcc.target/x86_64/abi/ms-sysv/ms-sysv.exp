@@ -23,16 +23,46 @@
 # see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 # <http://www.gnu.org/licenses/>.
 
+load_lib gcc-dg.exp
+
+proc host_supports_c++11 {} {
+    global HOSTCXX HOSTCXXFLAGS
+
+    set pidstr [pid]
+    set src "host_supports_c++11_$pidstr.C"
+    set asm "host_supports_c++11_$pidstr.s"
+
+    set f [open $src "w"]
+    puts $f ""
+    close $f
+
+    set cxx "$HOSTCXX $HOSTCXXFLAGS"
+
+    # Temporarily switch to the environment for the host compiler.
+    restore_ld_library_path_env_vars
+    set status [remote_exec host "$cxx -S $src -std=c++11 -o $asm"]
+    # And switch back.
+    set_ld_library_path_env_vars
+
+    file delete $src $asm
+
+    set status [lindex $status 0]
+    if { $status != 0 } {
+	return 0
+    }
+
+    return 1
+}
+
 # Exit immediately if this isn't a native x86_64 target.
 if { (![istarget x86_64-*-*] && ![istarget i?86-*-*])
-     || ![is-effective-target lp64] || ![isnative] } then {
+     || ![is-effective-target lp64] || ![isnative]
+     || ![host_supports_c++11] } then {
     unsupported "$subdir"
     return
 }
 
 global GCC_RUNTEST_PARALLELIZE_DIR
-
-load_lib gcc-dg.exp
 
 proc runtest_ms_sysv { cflags generator_args } {
     global GCC_UNDER_TEST HOSTCXX HOSTCXXFLAGS tmpdir srcdir subdir \

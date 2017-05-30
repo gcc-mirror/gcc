@@ -1,3 +1,10 @@
+2017-05-30  Tom de Vries  <tom@codesourcery.com>
+
+	PR testsuite/80910
+	* gcc.target/x86_64/abi/ms-sysv/ms-sysv.exp: Exit with status
+	unsupported if host compiler does not support c++11.
+	(host_supports_c++11): New proc.
+
 2017-05-30  Martin Sebor  <msebor@redhat.com>
 
 	PR c/80731
