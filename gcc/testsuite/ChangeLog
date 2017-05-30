@@ -2,6 +2,11 @@
 
 	Backported from mainline
 	2016-09-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/77375
+	* g++.dg/cpp0x/mutable1.C: New test.
+
+	2016-09-16  Jakub Jelinek  <jakub@redhat.com>
 		    Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR middle-end/77594

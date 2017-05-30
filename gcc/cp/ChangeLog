@@ -1,6 +1,12 @@
 2017-05-30  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2016-09-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/77375
+	* class.c (check_bases): Set CLASSTYPE_HAS_MUTABLE if any
+	TYPE_HAS_MUTABLE_P for any bases.
+
 	2016-08-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/72868

@@ -1763,6 +1763,8 @@ check_bases (tree t,
       SET_CLASSTYPE_REF_FIELDS_NEED_INIT
 	(t, CLASSTYPE_REF_FIELDS_NEED_INIT (t)
 	 | CLASSTYPE_REF_FIELDS_NEED_INIT (basetype));
+      if (TYPE_HAS_MUTABLE_P (basetype))
+	CLASSTYPE_HAS_MUTABLE (t) = 1;
 
       /*  A standard-layout class is a class that:
 	  ...
