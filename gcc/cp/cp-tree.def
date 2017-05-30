@@ -228,8 +228,7 @@ DEFTREECODE (DEFERRED_NOEXCEPT, "deferred_noexcept", tcc_exceptional, 0)
    member template, the template may be an IDENTIFIER_NODE.  */
 DEFTREECODE (TEMPLATE_ID_EXPR, "template_id_expr", tcc_expression, 2)
 
-/* A list-like node for chaining overloading candidates. TREE_TYPE is
-   the original name, and the parameter is the FUNCTION_DECL.  */
+/* One of a set of overloaded functions.  */
 DEFTREECODE (OVERLOAD, "overload", tcc_exceptional, 0)
 
 /* A pseudo-destructor, of the form "OBJECT.~DESTRUCTOR" or

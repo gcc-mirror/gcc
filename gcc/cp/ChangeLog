@@ -1,5 +1,23 @@
 2017-05-30  Nathan Sidwell  <nathan@acm.org>
 
+	* cp-tree.def (OVERLOAD): Fix comment.
+	* cp-tree.h: Fix comments and whitespace.
+	* error.c (dump_decl): Use pp_cxx_colon_colon, ovl_scope.
+	* name-lookup.c (add_decl_to_level): Assert not class.
+	(check_local_shadow): Use OVL_P.
+	(pushdecl_with_scope_1): Rename to ...
+	(do_pushdecl_with_Scope): ... here.
+	(do_nonmember_using_decl): Use qualified_namespace_lookup return
+	value.
+	(push_class_level_binding_1): Use OVL_P.
+	(pushdecl_namespace_level): Use do_pushdecl_with_scope.
+	(pushtag_1): Rename to ...
+	(do_pushtag): ... here.  Adjust do_pushdecl_with_scope call.
+	(pushtag): Adjust.
+	(store_class_bindings): Do not time here.
+	* name-lookup.h (pushdecl_outermost_localscope): Reorder.
+	* pt.c (listify): Declare argvec at point of initialization.
+
 	PR c++/80913
 	* name-lookup.c (add_decl_to_level): Assert not making a circular
 	chain.

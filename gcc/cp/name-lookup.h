@@ -194,7 +194,6 @@ struct GTY(()) cp_binding_level {
   /* A list of USING_DECL nodes.  */
   tree usings;
 
-
   /* Using directives.  */
   vec<tree, va_gc> *using_directives;
 
@@ -331,8 +330,8 @@ extern void finish_namespace_using_decl (tree, tree, tree);
 extern void finish_local_using_decl (tree, tree, tree);
 extern void finish_namespace_using_directive (tree, tree);
 extern void finish_local_using_directive (tree, tree);
-extern tree pushdecl_outermost_localscope (tree);
 extern tree pushdecl (tree, bool is_friend = false);
+extern tree pushdecl_outermost_localscope (tree);
 extern tree pushdecl_top_level (tree, bool is_friend = false);
 extern tree pushdecl_top_level_and_finish (tree, tree);
 extern tree pushtag (tree, tree, tag_scope);
