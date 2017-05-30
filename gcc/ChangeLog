@@ -1,6 +1,16 @@
 2017-05-30  Max Filippov  <jcmvbkbc@gmail.com>
 
 	Backport from mainline
+	2017-05-29  Max Filippov  <jcmvbkbc@gmail.com>
+
+	* config/xtensa/xtensa.c (xtensa_emit_call): Use
+	HOST_WIDE_INT_PRINT_HEX instead of 0x%lx format string.
+	(print_operand): Use HOST_WIDE_INT_PRINT_DEC instead of %ld
+	format string.
+
+2017-05-30  Max Filippov  <jcmvbkbc@gmail.com>
+
+	Backport from mainline
 	2016-11-29  Max Filippov  <jcmvbkbc@gmail.com>
 
 	* config/xtensa/xtensa.c (hwloop_optimize): Don't emit zero
