@@ -1914,11 +1914,14 @@ cgraph_node::rtl_info (tree decl)
   cgraph_node *node = get (decl);
   if (!node)
     return NULL;
-  node = node->ultimate_alias_target ();
-  if (node->decl != current_function_decl
-      && !TREE_ASM_WRITTEN (node->decl))
+  enum availability avail;
+  node = node->ultimate_alias_target (&avail);
+  if (decl != current_function_decl
+      && (avail < AVAIL_AVAILABLE
+	  || (node->decl != current_function_decl
+	      && !TREE_ASM_WRITTEN (node->decl))))
     return NULL;
-  return &node->ultimate_alias_target ()->rtl;
+  return &node->rtl;
 }
 
 /* Return a string describing the failure REASON.  */
