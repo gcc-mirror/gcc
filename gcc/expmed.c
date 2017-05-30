@@ -3911,11 +3911,10 @@ expand_divmod (int rem_flag, enum tree_code code, machine_mode mode,
   op1_is_constant = CONST_INT_P (op1);
   if (op1_is_constant)
     {
-      unsigned HOST_WIDE_INT ext_op1 = UINTVAL (op1);
-      if (unsignedp)
-	ext_op1 &= GET_MODE_MASK (mode);
-      op1_is_pow2 = ((EXACT_POWER_OF_2_OR_ZERO_P (ext_op1)
-		     || (! unsignedp && EXACT_POWER_OF_2_OR_ZERO_P (-ext_op1))));
+      wide_int ext_op1 = rtx_mode_t (op1, mode);
+      op1_is_pow2 = (wi::popcount (ext_op1) == 1
+		     || (! unsignedp
+			 && wi::popcount (wi::neg (ext_op1)) == 1));
     }
 
   /*
@@ -3996,11 +3995,10 @@ expand_divmod (int rem_flag, enum tree_code code, machine_mode mode,
      not straightforward to generalize this.  Maybe we should make an array
      of possible modes in init_expmed?  Save this for GCC 2.7.  */
 
-  optab1 = ((op1_is_pow2 && op1 != const0_rtx)
+  optab1 = (op1_is_pow2
 	    ? (unsignedp ? lshr_optab : ashr_optab)
 	    : (unsignedp ? udiv_optab : sdiv_optab));
-  optab2 = ((op1_is_pow2 && op1 != const0_rtx)
-	    ? optab1
+  optab2 = (op1_is_pow2 ? optab1
 	    : (unsignedp ? udivmod_optab : sdivmod_optab));
 
   for (compute_mode = mode; compute_mode != VOIDmode;
@@ -4056,10 +4054,15 @@ expand_divmod (int rem_flag, enum tree_code code, machine_mode mode,
       /* convert_modes may have placed op1 into a register, so we
 	 must recompute the following.  */
       op1_is_constant = CONST_INT_P (op1);
-      op1_is_pow2 = (op1_is_constant
-		     && ((EXACT_POWER_OF_2_OR_ZERO_P (INTVAL (op1))
-			  || (! unsignedp
-			      && EXACT_POWER_OF_2_OR_ZERO_P (-UINTVAL (op1))))));
+      if (op1_is_constant)
+	{
+	  wide_int ext_op1 = rtx_mode_t (op1, compute_mode);
+	  op1_is_pow2 = (wi::popcount (ext_op1) == 1
+			 || (! unsignedp
+			     && wi::popcount (wi::neg (ext_op1)) == 1));
+	}
+      else
+	op1_is_pow2 = 0;
     }
 
   /* If one of the operands is a volatile MEM, copy it into a register.  */
@@ -4099,10 +4102,10 @@ expand_divmod (int rem_flag, enum tree_code code, machine_mode mode,
 		unsigned HOST_WIDE_INT mh, ml;
 		int pre_shift, post_shift;
 		int dummy;
-		unsigned HOST_WIDE_INT d = (INTVAL (op1)
-					    & GET_MODE_MASK (compute_mode));
+		wide_int wd = rtx_mode_t (op1, compute_mode);
+		unsigned HOST_WIDE_INT d = wd.to_uhwi ();
 
-		if (EXACT_POWER_OF_2_OR_ZERO_P (d))
+		if (wi::popcount (wd) == 1)
 		  {
 		    pre_shift = floor_log2 (d);
 		    if (rem_flag)
@@ -4242,7 +4245,7 @@ expand_divmod (int rem_flag, enum tree_code code, machine_mode mode,
 		else if (d == -1)
 		  quotient = expand_unop (compute_mode, neg_optab, op0,
 					  tquotient, 0);
-		else if (HOST_BITS_PER_WIDE_INT >= size
+		else if (size <= HOST_BITS_PER_WIDE_INT
 			 && abs_d == (unsigned HOST_WIDE_INT) 1 << (size - 1))
 		  {
 		    /* This case is not handled correctly below.  */
@@ -4252,6 +4255,7 @@ expand_divmod (int rem_flag, enum tree_code code, machine_mode mode,
 		      goto fail1;
 		  }
 		else if (EXACT_POWER_OF_2_OR_ZERO_P (d)
+			 && (size <= HOST_BITS_PER_WIDE_INT || d >= 0)
 			 && (rem_flag
 			     ? smod_pow2_cheap (speed, compute_mode)
 			     : sdiv_pow2_cheap (speed, compute_mode))
@@ -4265,7 +4269,9 @@ expand_divmod (int rem_flag, enum tree_code code, machine_mode mode,
 						compute_mode)
 				 != CODE_FOR_nothing)))
 		  ;
-		else if (EXACT_POWER_OF_2_OR_ZERO_P (abs_d))
+		else if (EXACT_POWER_OF_2_OR_ZERO_P (abs_d)
+			 && (size <= HOST_BITS_PER_WIDE_INT
+			     || abs_d != (unsigned HOST_WIDE_INT) d))
 		  {
 		    if (rem_flag)
 		      {
@@ -4400,7 +4406,7 @@ expand_divmod (int rem_flag, enum tree_code code, machine_mode mode,
       case FLOOR_DIV_EXPR:
       case FLOOR_MOD_EXPR:
       /* We will come here only for signed operations.  */
-	if (op1_is_constant && HOST_BITS_PER_WIDE_INT >= size)
+	if (op1_is_constant && size <= HOST_BITS_PER_WIDE_INT)
 	  {
 	    unsigned HOST_WIDE_INT mh, ml;
 	    int pre_shift, lgup, post_shift;
@@ -4469,9 +4475,8 @@ expand_divmod (int rem_flag, enum tree_code code, machine_mode mode,
 						  op0, constm1_rtx), NULL_RTX);
 		t2 = expand_binop (compute_mode, ior_optab, op0, t1, NULL_RTX,
 				   0, OPTAB_WIDEN);
-		nsign = expand_shift
-		  (RSHIFT_EXPR, compute_mode, t2,
-		   size - 1, NULL_RTX, 0);
+		nsign = expand_shift (RSHIFT_EXPR, compute_mode, t2,
+				      size - 1, NULL_RTX, 0);
 		t3 = force_operand (gen_rtx_MINUS (compute_mode, t1, nsign),
 				    NULL_RTX);
 		t4 = expand_divmod (0, TRUNC_DIV_EXPR, compute_mode, t3, op1,
@@ -4580,7 +4585,10 @@ expand_divmod (int rem_flag, enum tree_code code, machine_mode mode,
       case CEIL_MOD_EXPR:
 	if (unsignedp)
 	  {
-	    if (op1_is_constant && EXACT_POWER_OF_2_OR_ZERO_P (INTVAL (op1)))
+	    if (op1_is_constant
+		&& EXACT_POWER_OF_2_OR_ZERO_P (INTVAL (op1))
+		&& (size <= HOST_BITS_PER_WIDE_INT
+		    || INTVAL (op1) >= 0))
 	      {
 		rtx t1, t2, t3;
 		unsigned HOST_WIDE_INT d = INTVAL (op1);
@@ -4793,7 +4801,7 @@ expand_divmod (int rem_flag, enum tree_code code, machine_mode mode,
 	break;
 
       case EXACT_DIV_EXPR:
-	if (op1_is_constant && HOST_BITS_PER_WIDE_INT >= size)
+	if (op1_is_constant && size <= HOST_BITS_PER_WIDE_INT)
 	  {
 	    HOST_WIDE_INT d = INTVAL (op1);
 	    unsigned HOST_WIDE_INT ml;
