@@ -1,6 +1,13 @@
 2017-05-30  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2016-09-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/77722
+	* cp-gimplify.c (cp_ubsan_maybe_instrument_return): Instrument also
+	functions that have just a STATEMENT_LIST instead of BIND_EXPR, or
+	BIND_EXPR with some statement rather than STATEMENT_LIST as body.
+
 	2016-09-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/77637

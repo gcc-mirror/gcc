@@ -3,6 +3,11 @@
 	Backported from mainline
 	2016-09-27  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/77722
+	* g++.dg/ubsan/return-4.C: New test.
+	* g++.dg/ubsan/return-5.C: New test.
+	* g++.dg/ubsan/return-6.C: New test.
+
 	PR fortran/77666
 	* gfortran.dg/gomp/pr77666.f90: New test.
 
