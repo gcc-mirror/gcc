@@ -36236,6 +36236,8 @@ ix86_expand_multi_arg_builtin (enum insn_code icode, tree exp, rtx target,
       || GET_MODE (target) != tmode
       || !insn_data[icode].operand[0].predicate (target, tmode))
     target = gen_reg_rtx (tmode);
+  else if (memory_operand (target, tmode))
+    num_memory++;
 
   gcc_assert (nargs <= 4);
 
@@ -37561,6 +37563,8 @@ ix86_expand_args_builtin (const struct builtin_description *d,
 	  || GET_MODE (target) != tmode
 	  || !insn_p->operand[0].predicate (target, tmode))
 	target = gen_reg_rtx (tmode);
+      else if (memory_operand (target, tmode))
+	num_memory++;
       real_target = target;
     }
   else
