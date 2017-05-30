@@ -8,7 +8,7 @@ LIB2ADD = $(srcdir)/config/vxlib.c $(srcdir)/config/vxlib-tls.c
 # VxWorks system headers have names that collide with GCC's
 # internal (host) headers, e.g. regs.h.
 LIBGCC2_INCLUDES = -nostdinc -I \
-  `case "/$$(MULTIDIR)" in \
+  `case "/$(MULTIDIR)" in \
      */mrtp*) echo $(WIND_USR)/h ;; \
      *) echo $(WIND_BASE)/target/h ;; \
    esac`
