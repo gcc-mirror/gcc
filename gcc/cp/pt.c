@@ -12988,7 +12988,7 @@ tsubst_init (tree init, tree decl, tree args,
 
   init = tsubst_expr (init, args, complain, in_decl, false);
 
-  if (!init)
+  if (!init && TREE_TYPE (decl) != error_mark_node)
     {
       /* If we had an initializer but it
 	 instantiated to nothing,
