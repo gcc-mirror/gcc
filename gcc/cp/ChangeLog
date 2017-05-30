@@ -1,6 +1,14 @@
 2017-05-30  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2017-03-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/79896
+	* decl.c (finish_enum_value_list): If value is error_mark_node,
+	don't copy it and change its type.
+	* init.c (constant_value_1): Return error_mark_node if DECL_INITIAL
+	of CONST_DECL is error_mark_node.
+
 	2017-02-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/79664
