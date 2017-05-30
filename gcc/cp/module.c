@@ -2117,10 +2117,9 @@ cpms_out::lang_decl_bools (FILE *, tree t)
   WB (lang->u.base.u2sel);
   WB (lang->u.base.concept_p);
   WB (lang->u.base.var_declared_inline_p);
-  WB (lang->u.base.decomposition_p);
   switch (lang->u.base.selector)
     {
-    case 1:  /* lang_decl_fn.  */
+    case lds_fn:  /* lang_decl_fn.  */
       WB (lang->u.fn.global_ctor_p);
       WB (lang->u.fn.global_dtor_p);
       WB (lang->u.fn.assignment_operator_p);
@@ -2137,15 +2136,17 @@ cpms_out::lang_decl_bools (FILE *, tree t)
       WB (lang->u.fn.hidden_friend_p);
       WB (lang->u.fn.omp_declare_reduction_p);
       /* FALLTHROUGH.  */
-    case 0:  /* lang_decl_min.  */
+    case lds_min:  /* lang_decl_min.  */
       /* No bools.  */
       break;
-    case 2:  /* lang_decl_ns.  */
+    case lds_ns:  /* lang_decl_ns.  */
       /* No bools.  */
       break;
-    case 3:  /* lang_decl_parm.  */
+    case lds_parm:  /* lang_decl_parm.  */
       /* No bools.  */
       break;
+    default:
+      gcc_unreachable ();
     }
 #undef WB
 }
@@ -2172,10 +2173,9 @@ cpms_in::lang_decl_bools (FILE *, tree t)
   RB (lang->u.base.u2sel);
   RB (lang->u.base.concept_p);
   RB (lang->u.base.var_declared_inline_p);
-  RB (lang->u.base.decomposition_p);
   switch (lang->u.base.selector)
     {
-    case 1:  /* lang_decl_fn.  */
+    case lds_fn:  /* lang_decl_fn.  */
       RB (lang->u.fn.global_ctor_p);
       RB (lang->u.fn.global_dtor_p);
       RB (lang->u.fn.assignment_operator_p);
@@ -2190,15 +2190,17 @@ cpms_in::lang_decl_bools (FILE *, tree t)
       RB (lang->u.fn.hidden_friend_p);
       RB (lang->u.fn.omp_declare_reduction_p);
       /* FALLTHROUGH.  */
-    case 0:  /* lang_decl_min.  */
+    case lds_min:  /* lang_decl_min.  */
       /* No bools.  */
       break;
-    case 2:  /* lang_decl_ns.  */
+    case lds_ns:  /* lang_decl_ns.  */
       /* No bools.  */
       break;
-    case 3:  /* lang_decl_parm.  */
+    case lds_parm:  /* lang_decl_parm.  */
       /* No bools.  */
       break;
+    default:
+      gcc_unreachable ();
     }
 #undef RB
   return !r.error ();
@@ -2521,14 +2523,14 @@ cpms_out::lang_decl_vals (FILE *d, tree t)
   /* Module index already written.  */
   switch (lang->u.base.selector)
     {
-    case 1:  /* lang_decl_fn.  */
+    case lds_fn:  /* lang_decl_fn.  */
       WU (lang->u.fn.operator_code);
       if (lang->u.fn.thunk_p)
 	w.wi (lang->u.fn.u5.fixed_offset);
       else
 	WT (lang->u.fn.u5.cloned_function);
       /* FALLTHROUGH.  */
-    case 0:  /* lang_decl_min.  */
+    case lds_min:  /* lang_decl_min.  */
       // FIXME: no templates yet
       gcc_assert (!lang->u.min.template_info);
       if (lang->u.base.u2sel)
@@ -2536,10 +2538,12 @@ cpms_out::lang_decl_vals (FILE *d, tree t)
       else
 	WT (lang->u.min.u2.access);
       break;
-    case 2:  /* lang_decl_ns.  */
+    case lds_ns:  /* lang_decl_ns.  */
       break;
-    case 3:  /* lang_decl_parm.  */
+    case lds_parm:  /* lang_decl_parm.  */
       break;
+    default:
+      gcc_unreachable ();
     }
 #undef WU
 #undef WT
@@ -2556,7 +2560,7 @@ cpms_in::lang_decl_vals (FILE *d, tree t)
 
   switch (lang->u.base.selector)
     {
-    case 1:  /* lang_decl_fn.  */
+    case lds_fn:  /* lang_decl_fn.  */
       {
 	unsigned code = r.u ();
 	/* It seems to be hard to check this is in range.  */
@@ -2567,7 +2571,7 @@ cpms_in::lang_decl_vals (FILE *d, tree t)
 	  RT (lang->u.fn.u5.cloned_function);
       }
       /* FALLTHROUGH.  */
-    case 0:  /* lang_decl_min.  */
+    case lds_min:  /* lang_decl_min.  */
       // FIXME: no templates yet
       gcc_assert (!lang->u.min.template_info);
       if (lang->u.base.u2sel)
@@ -2575,10 +2579,12 @@ cpms_in::lang_decl_vals (FILE *d, tree t)
       else
 	RT (lang->u.min.u2.access);
       break;
-    case 2:  /* lang_decl_ns.  */
+    case lds_ns:  /* lang_decl_ns.  */
       break;
-    case 3:  /* lang_decl_parm.  */
+    case lds_parm:  /* lang_decl_parm.  */
       break;
+    default:
+      gcc_unreachable ();
     }
 #undef RU
 #undef RT
@@ -2830,7 +2836,8 @@ cpms_in::tree_node (FILE *d)
 	    ;
 	  else if (klass == tcc_type
 		   ? !maybe_add_lang_type_raw (t)
-		   : !maybe_add_lang_decl_raw (t))
+		   // FIXME: Decompositions
+		   : !maybe_add_lang_decl_raw (t, false))
 	    {
 	      specific = false;
 	      lied = true;

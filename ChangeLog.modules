@@ -1,5 +1,26 @@
 2017-05-30  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* cp-tree.h (lang_decl_base): Lose decomposition_p flag.
+	(lang_decl) Update GTY tags.
+	(enum lang_decl_selector): New.  Replace magic consts with this.
+	(DECL_DECOMPOSITION_P): Update.
+	(SET_DECL_DECOMPOSITION_P): Delete.
+	(maybe_add_lang_decl_raw): Second arg is bool.
+	(retrofit_lang_decl): Lose selector arg.
+	(fit_decomposition_lang_decl): Declare.
+	* decl.c (cp_finish_decomp): Use fit_decomposition_lang_decl.
+	(grokdeclarator): Likewise.
+	* lex.c (maybe_add_lang_decl_raw): Change 2nd arg to bool. Don't
+	to copying here.
+	(set_decl_linkage, fit_decomposition_lang_decl): New.
+	(retrofit_lang_decl): Lose selector arg.
+	(cxx_dup_lang_specific_decl): Use selector directly.
+	* module.c (cpms_out::lang_decl_bools, cpms_in::lang_decl_bools,
+	cpms_out::lang_decl_vals, cpms_in::lang_decl_vals): Use
+	lang_decl_selector.
+	(cpms_in::tree_node): Adjust maybe_add_lang_decl call.
+
 	gcc/
 	* REVISION: Add file.
 	gcc/c-family/

@@ -527,42 +527,34 @@ build_lang_decl_loc (location_t loc, enum tree_code code, tree name, tree type)
   return t;
 }
 
-/* Add a raw lang_decl to T, a decl.  */
+/* Maybe add a raw lang_decl to T, a decl.  Return true if it needed
+   one.  */
 
 bool
-maybe_add_lang_decl_raw (tree t, int sel)
+maybe_add_lang_decl_raw (tree t, bool decomp_p)
 {
-  struct lang_decl *orig_ld = DECL_LANG_SPECIFIC (t);
   size_t size;
+  lang_decl_selector sel;
 
-  if (orig_ld)
-    {
-      if (orig_ld->u.base.selector == sel)
-	return false;
-      gcc_assert (!orig_ld->u.base.selector == 0);
-    }
-
-  if (sel == 4)
-    size = sizeof (struct lang_decl_decomp);
+  if (decomp_p)
+    sel = lds_decomp, size = sizeof (struct lang_decl_decomp);
   else if (TREE_CODE (t) == FUNCTION_DECL)
-    sel = 1, size = sizeof (struct lang_decl_fn);
+    sel = lds_fn, size = sizeof (struct lang_decl_fn);
   else if (TREE_CODE (t) == NAMESPACE_DECL)
-    sel = 2, size = sizeof (struct lang_decl_ns);
+    sel = lds_ns, size = sizeof (struct lang_decl_ns);
   else if (TREE_CODE (t) == PARM_DECL)
-    sel = 3, size = sizeof (struct lang_decl_parm);
+    sel = lds_parm, size = sizeof (struct lang_decl_parm);
   else if (LANG_DECL_HAS_MIN (t))
-    sel = 0, size = sizeof (struct lang_decl_min);
+    sel = lds_min, size = sizeof (struct lang_decl_min);
   else
     return false;
 
   struct lang_decl *ld
     = (struct lang_decl *) ggc_internal_cleared_alloc (size);
-  if (orig_ld)
-    memcpy (ld, orig_ld, sizeof (struct lang_decl_min));
 
   ld->u.base.selector = sel;
 
-  if (sel == 2)
+  if (sel == lds_ns)
     /* Who'd create a namespace, only to put nothing in it?  */
     ld->u.ns.bindings = hash_map<lang_identifier *, tree>::create_ggc (499);
 
@@ -576,50 +568,92 @@ maybe_add_lang_decl_raw (tree t, int sel)
   return true;
 }
 
+/* T has just had a decl_lang_specific added.  Initialize its
+   linkage.  */
+
+static void
+set_decl_linkage (tree t)
+{
+  if (current_lang_name == lang_name_cplusplus
+      || decl_linkage (t) == lk_none)
+    SET_DECL_LANGUAGE (t, lang_cplusplus);
+  else if (current_lang_name == lang_name_c)
+    SET_DECL_LANGUAGE (t, lang_c);
+  else
+    gcc_unreachable ();
+}
+
+/* T is a VAR_DECL node that needs to be a decomposition of BASE.  */
+
+void
+fit_decomposition_lang_decl (tree t, tree base)
+{
+  if (struct lang_decl *orig_ld = DECL_LANG_SPECIFIC (t))
+    {
+      if (orig_ld->u.base.selector == lds_min)
+	{
+	  maybe_add_lang_decl_raw (t, true);
+	  memcpy (DECL_LANG_SPECIFIC (t), orig_ld,
+		  sizeof (struct lang_decl_min));
+	  /* Reset selector, which will have been bashed by the
+	     memcpy.  */
+	  DECL_LANG_SPECIFIC (t)->u.base.selector = lds_decomp;
+	}
+      else
+	gcc_checking_assert (orig_ld->u.base.selector == lds_decomp);
+    }
+  else
+    {
+      maybe_add_lang_decl_raw (t, true);
+      set_decl_linkage (t);
+    }
+
+  DECL_DECOMP_BASE (t) = base;
+}
+
 /* Add DECL_LANG_SPECIFIC info to T, if it needs one.  Generally
    every C++ decl needs one, but C builtins etc do not.   */
 
 void
-retrofit_lang_decl (tree t, int sel)
+retrofit_lang_decl (tree t)
 {
-  if (!sel && DECL_LANG_SPECIFIC (t))
+  if (DECL_LANG_SPECIFIC (t))
     return;
 
-  if (maybe_add_lang_decl_raw (t, sel))
-    {
-      if (current_lang_name == lang_name_cplusplus
-	  || decl_linkage (t) == lk_none)
-	SET_DECL_LANGUAGE (t, lang_cplusplus);
-      else if (current_lang_name == lang_name_c)
-	SET_DECL_LANGUAGE (t, lang_c);
-      else
-	gcc_unreachable ();
-    }
+  if (maybe_add_lang_decl_raw (t, false))
+    set_decl_linkage (t);
 }
 
 void
 cxx_dup_lang_specific_decl (tree node)
 {
   int size;
-  struct lang_decl *ld;
 
   if (! DECL_LANG_SPECIFIC (node))
     return;
 
-  if (TREE_CODE (node) == FUNCTION_DECL)
-    size = sizeof (struct lang_decl_fn);
-  else if (TREE_CODE (node) == NAMESPACE_DECL)
-    size = sizeof (struct lang_decl_ns);
-  else if (TREE_CODE (node) == PARM_DECL)
-    size = sizeof (struct lang_decl_parm);
-  else if (DECL_DECOMPOSITION_P (node))
-    size = sizeof (struct lang_decl_decomp);
-  else if (LANG_DECL_HAS_MIN (node))
-    size = sizeof (struct lang_decl_min);
-  else
-    gcc_unreachable ();
+  switch (DECL_LANG_SPECIFIC (node)->u.base.selector)
+    {
+    case lds_min:
+      size = sizeof (struct lang_decl_min);
+      break;
+    case lds_fn:
+      size = sizeof (struct lang_decl_fn);
+      break;
+    case lds_ns:
+      size = sizeof (struct lang_decl_ns);
+      break;
+    case lds_parm:
+      size = sizeof (struct lang_decl_parm);
+      break;
+    case lds_decomp:
+      size = sizeof (struct lang_decl_decomp);
+      break;
+    default:
+      gcc_unreachable ();
+    }
 
-  ld = (struct lang_decl *) ggc_internal_alloc (size);
+  struct lang_decl *ld = (struct lang_decl *) ggc_internal_alloc (size);
   memcpy (ld, DECL_LANG_SPECIFIC (node), size);
   DECL_LANG_SPECIFIC (node) = ld;
 
