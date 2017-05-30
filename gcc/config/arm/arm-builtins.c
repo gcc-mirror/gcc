@@ -3053,15 +3053,15 @@ arm_expand_builtin (tree exp,
     }
 
   for (i = 0, d = bdesc_2arg; i < ARRAY_SIZE (bdesc_2arg); i++, d++)
-    if (d->code == (const enum arm_builtins) fcode)
+    if (d->code == (enum arm_builtins) fcode)
       return arm_expand_binop_builtin (d->icode, exp, target);
 
   for (i = 0, d = bdesc_1arg; i < ARRAY_SIZE (bdesc_1arg); i++, d++)
-    if (d->code == (const enum arm_builtins) fcode)
+    if (d->code == (enum arm_builtins) fcode)
       return arm_expand_unop_builtin (d->icode, exp, target, 0);
 
   for (i = 0, d = bdesc_3arg; i < ARRAY_SIZE (bdesc_3arg); i++, d++)
-    if (d->code == (const enum arm_builtins) fcode)
+    if (d->code == (enum arm_builtins) fcode)
       return arm_expand_ternop_builtin (d->icode, exp, target);
 
   /* @@@ Should really do something sensible here.  */
