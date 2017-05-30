@@ -1,6 +1,16 @@
 2017-05-30  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2016-09-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/77396
+	* g++.dg/asan/pr77396-2.C: New test.
+
+	2016-09-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/77396
+	* g++.dg/asan/pr77396.C: New test.
+
 	2016-08-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/77363
