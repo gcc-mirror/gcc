@@ -86,25 +86,18 @@ create_local_binding (cp_binding_level *level, tree name)
 static tree *
 find_namespace_slot (tree ns, tree name, bool create_p = false)
 {
-  cp_binding_level *level = NAMESPACE_LEVEL (ns);
-  cxx_binding *binding = IDENTIFIER_NAMESPACE_BINDINGS (name);
-
-  for (;binding; binding = binding->previous)
-    if (binding->scope == level)
-      return &binding->value;
+  tree *slot;
 
   if (create_p)
     {
-      binding = cxx_binding_make (NULL, NULL);
-      binding->previous = IDENTIFIER_NAMESPACE_BINDINGS (name);
-      binding->scope = level;
-      binding->is_local = false;
-      binding->value_is_inherited = false;
-      IDENTIFIER_NAMESPACE_BINDINGS (name) = binding;
-      return &binding->value;
+      bool existed;
+      slot = &DECL_NAMESPACE_BINDINGS (ns)->get_or_insert (name, &existed);
+      if (!existed)
+	*slot = NULL_TREE;
     }
-
-  return NULL;
+  else
+    slot = DECL_NAMESPACE_BINDINGS (ns)->get (name);
+  return slot;
 }
 
 static tree

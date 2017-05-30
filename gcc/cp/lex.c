@@ -566,8 +566,12 @@ retrofit_lang_decl (tree t, int sel)
     memcpy (ld, DECL_LANG_SPECIFIC (t), oldsize);
 
   ld->u.base.selector = sel;
-
   DECL_LANG_SPECIFIC (t) = ld;
+
+  if (sel == 2)
+    /* Who'd create a namespace, only to put nothing in it?  */
+    ld->u.ns.bindings = hash_map<lang_identifier *, tree>::create_ggc (499);
+
   if (current_lang_name == lang_name_cplusplus
       || decl_linkage (t) == lk_none)
     SET_DECL_LANGUAGE (t, lang_cplusplus);
