@@ -3,6 +3,9 @@
 	Backported from mainline
 	2016-08-11  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/72868
+	* g++.dg/cpp1y/constexpr-switch4.C: New test.
+
 	PR c/72816
 	* gcc.dg/pr72816.c: Remove dg-error.
 
