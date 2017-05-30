@@ -1,3 +1,10 @@
+2017-05-30  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/80913
+	* name-lookup.c (add_decl_to_level): Assert not making a circular
+	chain.
+	(update_binding): Don't prematurely slide artificial decl.
+
 2017-05-29  Alexandre Oliva <aoliva@redhat.com>
 
 	* cp-tree.h (lang_identifier): Drop oracle_looked_up, unused.

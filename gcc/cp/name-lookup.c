@@ -132,6 +132,11 @@ add_decl_to_level (cp_binding_level *b, tree decl)
     }
   else
     {
+      /* Make sure we don't create a circular list.  xref_tag can end
+	 up pushing the same artificial decl more than once.  We
+	 should have already detected that in update_binding.  */
+      gcc_assert (b->names != decl);
+
       /* We build up the list in reverse order, and reverse it later if
 	 necessary.  */
       TREE_CHAIN (decl) = b->names;
@@ -1720,17 +1725,43 @@ update_binding (cp_binding_level *level, cxx_binding *binding, tree *slot,
 		tree old, tree decl, bool is_friend)
 {
   tree to_val = decl;
-  tree to_type = NULL_TREE;
+  tree old_type = slot ? MAYBE_STAT_TYPE (*slot) : binding->type;
+  tree to_type = old_type;
 
   gcc_assert (level->kind == sk_namespace ? !binding
 	      : level->kind != sk_class && !slot);
   if (old == error_mark_node)
     old = NULL_TREE;
 
+  if (TREE_CODE (decl) == TYPE_DECL && DECL_ARTIFICIAL (decl))
+    {
+      tree other = to_type;
+
+      if (old && TREE_CODE (old) == TYPE_DECL && DECL_ARTIFICIAL (old))
+	other = old;
+
+      /* Pushing an artificial typedef.  See if this matches either
+	 the type slot or the old value slot.  */
+      if (!other)
+	;
+      else if (same_type_p (TREE_TYPE (other), TREE_TYPE (decl)))
+	/* Two artificial decls to same type.  Do nothing.  */
+	return other;
+      else
+	goto conflict;
+
+      if (old)
+	{
+	  /* Slide decl into the type slot, keep old unaltered  */
+	  to_type = decl;
+	  to_val = old;
+	  goto done;
+	}
+    }
+
   if (old && TREE_CODE (old) == TYPE_DECL && DECL_ARTIFICIAL (old))
     {
-      /* Slide the tdef out of the way.  We'll undo this below, if
-	 we're pushing a matching tdef.  */
+      /* Slide old into the type slot.  */
       to_type = old;
       old = NULL_TREE;
     }
@@ -1767,39 +1798,14 @@ update_binding (cp_binding_level *level, cxx_binding *binding, tree *slot,
 
       to_val = ovl_insert (decl, old);
     }
-  else if (to_type && TREE_CODE (decl) == TYPE_DECL)
-    {
-      /* We thought we wanted to slide an artificial typedef out of
-	 the way, to make way for another typedef.  That's not always
-	 what we want to do.  */
-      if (!DECL_ARTIFICIAL (decl))
-	; /* Slide.  */
-      else if (same_type_p (TREE_TYPE (to_type), TREE_TYPE (decl)))
-	/* Two artificial decls to same type.  Do nothing.  */
-	return to_type;
-      else
-	goto conflict;
-    }
   else if (!old)
     ;
-  else if (TREE_CODE (decl) == TYPE_DECL && DECL_ARTIFICIAL (decl))
-    {
-      /* Slide DECL into the type slot.  */
-      to_type = decl;
-      to_val = old;
-    }
   else if (TREE_CODE (old) != TREE_CODE (decl))
     /* Different kinds of decls conflict.  */
     goto conflict;
   else if (TREE_CODE (old) == TYPE_DECL)
     {
-      if (DECL_ARTIFICIAL (decl))
-	{
-	  /* Slide DECL into the type slot instead.  */
-	  to_type = decl;
-	  to_val = old;
-	}
-      else if (same_type_p (TREE_TYPE (old), TREE_TYPE (decl)))
+      if (same_type_p (TREE_TYPE (old), TREE_TYPE (decl)))
 	/* Two type decls to the same type.  Do nothing.  */
 	return old;
       else
@@ -1835,6 +1841,7 @@ update_binding (cp_binding_level *level, cxx_binding *binding, tree *slot,
       to_val = NULL_TREE;
     }
 
+ done:
   if (to_val)
     {
       if (level->kind != sk_namespace
@@ -1854,12 +1861,10 @@ update_binding (cp_binding_level *level, cxx_binding *binding, tree *slot,
 	  add_decl_to_level (level, to_add);
 	}
 
-      if (to_type == (slot ? MAYBE_STAT_TYPE (*slot) : binding->type))
-	to_type = NULL_TREE;
-
-      if (to_type)
+      if (to_type != old_type)
 	{
-	  gcc_checking_assert (TREE_CODE (to_type) == TYPE_DECL
+	  gcc_checking_assert (!old_type
+			       && TREE_CODE (to_type) == TYPE_DECL
 			       && DECL_ARTIFICIAL (to_type));
 
 	  tree type = TREE_TYPE (to_type);
@@ -1875,8 +1880,7 @@ update_binding (cp_binding_level *level, cxx_binding *binding, tree *slot,
 	{
 	  if (STAT_HACK_P (*slot))
 	    {
-	      if (to_type)
-		STAT_TYPE (*slot) = to_type;
+	      STAT_TYPE (*slot) = to_type;
 	      STAT_DECL (*slot) = to_val;
 	    }
 	  else if (to_type)
@@ -1886,8 +1890,7 @@ update_binding (cp_binding_level *level, cxx_binding *binding, tree *slot,
 	}
       else
 	{
-	  if (to_type)
-	    binding->type = to_type;
+	  binding->type = to_type;
 	  binding->value = to_val;
 	}
     }

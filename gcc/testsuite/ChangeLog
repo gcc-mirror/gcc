@@ -1,3 +1,8 @@
+2017-05-30  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/80913
+	* g++.dg/lookup/pr80913.C: New.
+
 2017-05-30  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/80901
