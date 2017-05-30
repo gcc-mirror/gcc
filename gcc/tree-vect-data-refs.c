@@ -1134,7 +1134,7 @@ vect_get_data_access_cost (struct data_reference *dr,
   int nunits = TYPE_VECTOR_SUBPARTS (STMT_VINFO_VECTYPE (stmt_info));
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
   int vf = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
-  int ncopies = vf / nunits;
+  int ncopies = MAX (1, vf / nunits); /* TODO: Handle SLP properly  */
 
   if (DR_IS_READ (dr))
     vect_get_load_cost (dr, ncopies, true, inside_cost, outside_cost,
@@ -1517,10 +1517,8 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
 {
   vec<data_reference_p> datarefs = LOOP_VINFO_DATAREFS (loop_vinfo);
   struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
-  enum dr_alignment_support supportable_dr_alignment;
   struct data_reference *dr0 = NULL, *first_store = NULL;
   struct data_reference *dr;
-  struct data_reference *dr0_known_align = NULL;
   unsigned int i, j;
   bool do_peeling = false;
   bool do_versioning = false;
@@ -1601,7 +1599,6 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
 	  && !STMT_VINFO_GROUPED_ACCESS (stmt_info))
 	continue;
 
-      supportable_dr_alignment = vect_supportable_dr_alignment (dr, true);
       do_peeling = vector_alignment_reachable_p (dr);
       if (do_peeling)
         {
@@ -1690,16 +1687,6 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
 	      if (!first_store && DR_IS_WRITE (dr))
 		first_store = dr;
 
-              /* If there are both known and unknown misaligned accesses in the
-                 loop, we choose peeling amount according to the known
-                 accesses.  */
-              if (!supportable_dr_alignment)
-                {
-                  dr0 = dr;
-                  if (!first_store && DR_IS_WRITE (dr))
-                    first_store = dr;
-                }
-
 	      one_misalignment_unknown = true;
             }
         }
@@ -1721,81 +1708,85 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
       || loop->inner)
     do_peeling = false;
 
-  unsigned int unknown_align_inside_cost = INT_MAX;
-  unsigned int unknown_align_outside_cost = INT_MAX;
+  struct _vect_peel_extended_info peel_for_known_alignment;
+  struct _vect_peel_extended_info peel_for_unknown_alignment;
+  struct _vect_peel_extended_info best_peel;
+
+  peel_for_unknown_alignment.inside_cost = INT_MAX;
+  peel_for_unknown_alignment.outside_cost = INT_MAX;
+  peel_for_unknown_alignment.peel_info.count = 0;
 
   if (do_peeling
-      && one_misalignment_unknown
-      && vect_supportable_dr_alignment (dr0, false))
+      && one_misalignment_unknown)
     {
       /* Check if the target requires to prefer stores over loads, i.e., if
          misaligned stores are more expensive than misaligned loads (taking
          drs with same alignment into account).  */
-      if (first_store && DR_IS_READ (dr0))
-        {
-	  unsigned int load_inside_cost = 0;
-	  unsigned int load_outside_cost = 0;
-	  unsigned int store_inside_cost = 0;
-	  unsigned int store_outside_cost = 0;
-	  stmt_vector_for_cost dummy;
-	  dummy.create (2);
-	  vect_get_peeling_costs_all_drs (dr0,
-					  &load_inside_cost,
-					  &load_outside_cost,
-					  &dummy, vf / 2, vf);
-	  dummy.release ();
+      unsigned int load_inside_cost = 0;
+      unsigned int load_outside_cost = 0;
+      unsigned int store_inside_cost = 0;
+      unsigned int store_outside_cost = 0;
 
+      stmt_vector_for_cost dummy;
+      dummy.create (2);
+      vect_get_peeling_costs_all_drs (dr0,
+				      &load_inside_cost,
+				      &load_outside_cost,
+				      &dummy, vf / 2, vf);
+      dummy.release ();
+
+      if (first_store)
+	{
 	  dummy.create (2);
 	  vect_get_peeling_costs_all_drs (first_store,
 					  &store_inside_cost,
 					  &store_outside_cost,
 					  &dummy, vf / 2, vf);
 	  dummy.release ();
+	}
+      else
+	{
+	  store_inside_cost = INT_MAX;
+	  store_outside_cost = INT_MAX;
+	}
 
-          if (load_inside_cost > store_inside_cost
-              || (load_inside_cost == store_inside_cost
-		  && load_outside_cost > store_outside_cost))
-	    {
-	      dr0 = first_store;
-	      unknown_align_inside_cost = store_inside_cost;
-	      unknown_align_outside_cost = store_outside_cost;
-	    }
-	  else
-	    {
-	      unknown_align_inside_cost = load_inside_cost;
-	      unknown_align_outside_cost = load_outside_cost;
-	    }
+      if (load_inside_cost > store_inside_cost
+	  || (load_inside_cost == store_inside_cost
+	      && load_outside_cost > store_outside_cost))
+	{
+	  dr0 = first_store;
+	  peel_for_unknown_alignment.inside_cost = store_inside_cost;
+	  peel_for_unknown_alignment.outside_cost = store_outside_cost;
+	}
+      else
+	{
+	  peel_for_unknown_alignment.inside_cost = load_inside_cost;
+	  peel_for_unknown_alignment.outside_cost = load_outside_cost;
+	}
 
-	  stmt_vector_for_cost prologue_cost_vec, epilogue_cost_vec;
-	  prologue_cost_vec.create (2);
-	  epilogue_cost_vec.create (2);
+      stmt_vector_for_cost prologue_cost_vec, epilogue_cost_vec;
+      prologue_cost_vec.create (2);
+      epilogue_cost_vec.create (2);
 
-	  int dummy2;
-	  unknown_align_outside_cost += vect_get_known_peeling_cost
-	    (loop_vinfo, vf / 2, &dummy2,
-	     &LOOP_VINFO_SCALAR_ITERATION_COST (loop_vinfo),
-	     &prologue_cost_vec, &epilogue_cost_vec);
+      int dummy2;
+      peel_for_unknown_alignment.outside_cost += vect_get_known_peeling_cost
+	(loop_vinfo, vf / 2, &dummy2,
+	 &LOOP_VINFO_SCALAR_ITERATION_COST (loop_vinfo),
+	 &prologue_cost_vec, &epilogue_cost_vec);
 
-	  prologue_cost_vec.release ();
-	  epilogue_cost_vec.release ();
-        }
+      prologue_cost_vec.release ();
+      epilogue_cost_vec.release ();
 
-      /* Use peeling only if it may help to align other accesses in the loop or
-	 if it may help improving load bandwith when we'd end up using
-	 unaligned loads.  */
-      tree dr0_vt = STMT_VINFO_VECTYPE (vinfo_for_stmt (DR_STMT (dr0)));
-      if (STMT_VINFO_SAME_ALIGN_REFS
-	    (vinfo_for_stmt (DR_STMT (dr0))).length () == 0
-	  && (vect_supportable_dr_alignment (dr0, false)
-	      != dr_unaligned_supported
-	      || (DR_IS_READ (dr0)
-		  && (builtin_vectorization_cost (vector_load, dr0_vt, 0)
-		      == builtin_vectorization_cost (unaligned_load,
-						     dr0_vt, -1)))))
-        do_peeling = false;
+      peel_for_unknown_alignment.peel_info.count = 1
+	+ STMT_VINFO_SAME_ALIGN_REFS
+	(vinfo_for_stmt (DR_STMT (dr0))).length ();
     }
 
-  struct _vect_peel_extended_info peel_for_known_alignment;
+  peel_for_unknown_alignment.peel_info.npeel = 0;
+  peel_for_unknown_alignment.peel_info.dr = dr0;
+
+  best_peel = peel_for_unknown_alignment;
+
   peel_for_known_alignment.inside_cost = INT_MAX;
   peel_for_known_alignment.outside_cost = INT_MAX;
   peel_for_known_alignment.peel_info.count = 0;
@@ -1804,24 +1795,52 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
   if (do_peeling && one_misalignment_known)
     {
       /* Peeling is possible, but there is no data access that is not supported
-         unless aligned. So we try to choose the best possible peeling.  */
-
-      /* Choose the best peeling from the hash table.  */
+         unless aligned.  So we try to choose the best possible peeling from
+	 the hash table.  */
       peel_for_known_alignment = vect_peeling_hash_choose_best_peeling
 	(&peeling_htab, loop_vinfo, &npeel, &body_cost_vec);
-      dr0_known_align = peel_for_known_alignment.peel_info.dr;
     }
 
   /* Compare costs of peeling for known and unknown alignment. */
-  if (dr0_known_align != NULL
-      && unknown_align_inside_cost >= peel_for_known_alignment.inside_cost)
-    {
-      dr0 = dr0_known_align;
-      if (!npeel)
-	do_peeling = false;
-    }
+  if (peel_for_known_alignment.peel_info.dr != NULL
+      && peel_for_unknown_alignment.inside_cost
+      >= peel_for_known_alignment.inside_cost)
+    best_peel = peel_for_known_alignment;
 
-  if (dr0 == NULL)
+  /* Calculate the penalty for no peeling, i.e. leaving everything
+     unaligned.
+     TODO: use something like an adapted vect_get_peeling_costs_all_drs.  */
+  unsigned nopeel_inside_cost = 0;
+  unsigned nopeel_outside_cost = 0;
+
+  stmt_vector_for_cost dummy;
+  dummy.create (2);
+  FOR_EACH_VEC_ELT (datarefs, i, dr)
+    vect_get_data_access_cost (dr, &nopeel_inside_cost,
+			       &nopeel_outside_cost, &dummy);
+  dummy.release ();
+
+  /* Add epilogue costs.  As we do not peel for alignment here, no prologue
+     costs will be recorded.  */
+  stmt_vector_for_cost prologue_cost_vec, epilogue_cost_vec;
+  prologue_cost_vec.create (2);
+  epilogue_cost_vec.create (2);
+
+  int dummy2;
+  nopeel_outside_cost += vect_get_known_peeling_cost
+    (loop_vinfo, 0, &dummy2,
+     &LOOP_VINFO_SCALAR_ITERATION_COST (loop_vinfo),
+     &prologue_cost_vec, &epilogue_cost_vec);
+
+  prologue_cost_vec.release ();
+  epilogue_cost_vec.release ();
+
+  npeel = best_peel.peel_info.npeel;
+  dr0 = best_peel.peel_info.dr;
+
+  /* If no peeling is not more expensive than the best peeling we
+     have so far, don't perform any peeling.  */
+  if (nopeel_inside_cost <= best_peel.inside_cost)
     do_peeling = false;
 
   if (do_peeling)
@@ -2000,7 +2019,8 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
 	      break;
 	    }
 
-	  supportable_dr_alignment = vect_supportable_dr_alignment (dr, false);
+	  enum dr_alignment_support supportable_dr_alignment =
+	    vect_supportable_dr_alignment (dr, false);
 
           if (!supportable_dr_alignment)
             {
