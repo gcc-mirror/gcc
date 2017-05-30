@@ -903,7 +903,11 @@ vect_compute_data_ref_alignment (struct data_reference *dr)
 }
 
 
-/* Function vect_update_misalignment_for_peel
+/* Function vect_update_misalignment_for_peel.
+   Sets DR's misalignment
+   - to 0 if it has the same alignment as DR_PEEL,
+   - to the misalignment computed using NPEEL if DR's salignment is known,
+   - to -1 (unknown) otherwise.
 
    DR - the data reference whose misalignment is to be adjusted.
    DR_PEEL - the data reference whose misalignment is being made
@@ -916,7 +920,7 @@ vect_update_misalignment_for_peel (struct data_reference *dr,
                                    struct data_reference *dr_peel, int npeel)
 {
   unsigned int i;
-  vec<dr_p> same_align_drs;
+  vec<dr_p> same_aligned_drs;
   struct data_reference *current_dr;
   int dr_size = GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (DR_REF (dr))));
   int dr_peel_size = GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (DR_REF (dr_peel))));
@@ -932,9 +936,9 @@ vect_update_misalignment_for_peel (struct data_reference *dr,
 
   /* It can be assumed that the data refs with the same alignment as dr_peel
      are aligned in the vector loop.  */
-  same_align_drs
+  same_aligned_drs
     = STMT_VINFO_SAME_ALIGN_REFS (vinfo_for_stmt (DR_STMT (dr_peel)));
-  FOR_EACH_VEC_ELT (same_align_drs, i, current_dr)
+  FOR_EACH_VEC_ELT (same_aligned_drs, i, current_dr)
     {
       if (current_dr != dr)
         continue;
@@ -1234,27 +1238,23 @@ vect_peeling_hash_get_most_frequent (_vect_peel_info **slot,
   return 1;
 }
 
+/* Get the costs of peeling NPEEL iterations checking data access costs
+   for all data refs. */
 
-/* Traverse peeling hash table and calculate cost for each peeling option.
-   Find the one with the lowest cost.  */
-
-int
-vect_peeling_hash_get_lowest_cost (_vect_peel_info **slot,
-				   _vect_peel_extended_info *min)
+static void
+vect_get_peeling_costs_all_drs (struct data_reference *dr0,
+				unsigned int *inside_cost,
+				unsigned int *outside_cost,
+				stmt_vector_for_cost *body_cost_vec,
+				unsigned int npeel, unsigned int vf)
 {
-  vect_peel_info elem = *slot;
-  int save_misalignment, dummy;
-  unsigned int inside_cost = 0, outside_cost = 0, i;
-  gimple *stmt = DR_STMT (elem->dr);
+  gimple *stmt = DR_STMT (dr0);
   stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
   vec<data_reference_p> datarefs = LOOP_VINFO_DATAREFS (loop_vinfo);
-  struct data_reference *dr;
-  stmt_vector_for_cost prologue_cost_vec, body_cost_vec, epilogue_cost_vec;
 
-  prologue_cost_vec.create (2);
-  body_cost_vec.create (2);
-  epilogue_cost_vec.create (2);
+  unsigned i;
+  data_reference *dr;
 
   FOR_EACH_VEC_ELT (datarefs, i, dr)
     {
@@ -1272,12 +1272,40 @@ vect_peeling_hash_get_lowest_cost (_vect_peel_info **slot,
 	  && !STMT_VINFO_GROUPED_ACCESS (stmt_info))
 	continue;
 
+      int save_misalignment;
       save_misalignment = DR_MISALIGNMENT (dr);
-      vect_update_misalignment_for_peel (dr, elem->dr, elem->npeel);
-      vect_get_data_access_cost (dr, &inside_cost, &outside_cost,
-				 &body_cost_vec);
+      if (dr == dr0 && npeel == vf / 2)
+	SET_DR_MISALIGNMENT (dr, 0);
+      else
+	vect_update_misalignment_for_peel (dr, dr0, npeel);
+      vect_get_data_access_cost (dr, inside_cost, outside_cost,
+				 body_cost_vec);
       SET_DR_MISALIGNMENT (dr, save_misalignment);
     }
+}
+
+/* Traverse peeling hash table and calculate cost for each peeling option.
+   Find the one with the lowest cost.  */
+
+int
+vect_peeling_hash_get_lowest_cost (_vect_peel_info **slot,
+				   _vect_peel_extended_info *min)
+{
+  vect_peel_info elem = *slot;
+  int dummy;
+  unsigned int inside_cost = 0, outside_cost = 0;
+  gimple *stmt = DR_STMT (elem->dr);
+  stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
+  loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
+  stmt_vector_for_cost prologue_cost_vec, body_cost_vec,
+		       epilogue_cost_vec;
+
+  prologue_cost_vec.create (2);
+  body_cost_vec.create (2);
+  epilogue_cost_vec.create (2);
+
+  vect_get_peeling_costs_all_drs (elem->dr, &inside_cost, &outside_cost,
+				  &body_cost_vec, elem->npeel, 0);
 
   outside_cost += vect_get_known_peeling_cost
     (loop_vinfo, elem->npeel, &dummy,
@@ -1292,7 +1320,8 @@ vect_peeling_hash_get_lowest_cost (_vect_peel_info **slot,
   epilogue_cost_vec.release ();
 
   if (inside_cost < min->inside_cost
-      || (inside_cost == min->inside_cost && outside_cost < min->outside_cost))
+      || (inside_cost == min->inside_cost
+	  && outside_cost < min->outside_cost))
     {
       min->inside_cost = inside_cost;
       min->outside_cost = outside_cost;
@@ -1300,6 +1329,7 @@ vect_peeling_hash_get_lowest_cost (_vect_peel_info **slot,
       min->body_cost_vec = body_cost_vec;
       min->peel_info.dr = elem->dr;
       min->peel_info.npeel = elem->npeel;
+      min->peel_info.count = elem->count;
     }
   else
     body_cost_vec.release ();
@@ -1342,6 +1372,52 @@ vect_peeling_hash_choose_best_peeling (hash_table<peel_info_hasher> *peeling_hta
    return res.peel_info.dr;
 }
 
+/* Return true if the new peeling NPEEL is supported.  */
+
+static bool
+vect_peeling_supportable (loop_vec_info loop_vinfo, struct data_reference *dr0,
+			  unsigned npeel)
+{
+  unsigned i;
+  struct data_reference *dr = NULL;
+  vec<data_reference_p> datarefs = LOOP_VINFO_DATAREFS (loop_vinfo);
+  gimple *stmt;
+  stmt_vec_info stmt_info;
+  enum dr_alignment_support supportable_dr_alignment;
+
+  /* Ensure that all data refs can be vectorized after the peel.  */
+  FOR_EACH_VEC_ELT (datarefs, i, dr)
+    {
+      int save_misalignment;
+
+      if (dr == dr0)
+	continue;
+
+      stmt = DR_STMT (dr);
+      stmt_info = vinfo_for_stmt (stmt);
+      /* For interleaving, only the alignment of the first access
+	 matters.  */
+      if (STMT_VINFO_GROUPED_ACCESS (stmt_info)
+	  && GROUP_FIRST_ELEMENT (stmt_info) != stmt)
+	continue;
+
+      /* Strided accesses perform only component accesses, alignment is
+	 irrelevant for them.  */
+      if (STMT_VINFO_STRIDED_P (stmt_info)
+	  && !STMT_VINFO_GROUPED_ACCESS (stmt_info))
+	continue;
+
+      save_misalignment = DR_MISALIGNMENT (dr);
+      vect_update_misalignment_for_peel (dr, dr0, npeel);
+      supportable_dr_alignment = vect_supportable_dr_alignment (dr, false);
+      SET_DR_MISALIGNMENT (dr, save_misalignment);
+
+      if (!supportable_dr_alignment)
+	return false;
+    }
+
+  return true;
+}
 
 /* Function vect_enhance_data_refs_alignment
 
@@ -1780,40 +1856,11 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
                              "Try peeling by %d\n", npeel);
         }
 
-      /* Ensure that all data refs can be vectorized after the peel.  */
-      FOR_EACH_VEC_ELT (datarefs, i, dr)
-        {
-          int save_misalignment;
+      /* Ensure that all datarefs can be vectorized after the peel.  */
+      if (!vect_peeling_supportable (loop_vinfo, dr0, npeel))
+	do_peeling = false;
 
-	  if (dr == dr0)
-	    continue;
-
-	  stmt = DR_STMT (dr);
-	  stmt_info = vinfo_for_stmt (stmt);
-	  /* For interleaving, only the alignment of the first access
-            matters.  */
-	  if (STMT_VINFO_GROUPED_ACCESS (stmt_info)
-	      && GROUP_FIRST_ELEMENT (stmt_info) != stmt)
-	    continue;
-
-	  /* Strided accesses perform only component accesses, alignment is
-	     irrelevant for them.  */
-	  if (STMT_VINFO_STRIDED_P (stmt_info)
-	      && !STMT_VINFO_GROUPED_ACCESS (stmt_info))
-	    continue;
-
-	  save_misalignment = DR_MISALIGNMENT (dr);
-	  vect_update_misalignment_for_peel (dr, dr0, npeel);
-	  supportable_dr_alignment = vect_supportable_dr_alignment (dr, false);
-	  SET_DR_MISALIGNMENT (dr, save_misalignment);
-
-	  if (!supportable_dr_alignment)
-	    {
-	      do_peeling = false;
-	      break;
-	    }
-	}
-
+      /* Check if all datarefs are supportable and log.  */
       if (do_peeling && known_alignment_for_access_p (dr0) && npeel == 0)
         {
           stat = vect_verify_datarefs_alignment (loop_vinfo);
