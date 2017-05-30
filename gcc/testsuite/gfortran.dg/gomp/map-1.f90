@@ -70,7 +70,7 @@ subroutine test(aas)
   ! { dg-error "Rightmost upper bound of assumed size array section not specified" "" { target *-*-* } 68 }
   ! { dg-error "'aas' in MAP clause at \\\(1\\\) is not a proper array section" "" { target *-*-* } 68 }
 
-  !$omp target map(aas) ! { dg-error "The upper bound in the last dimension must appear" "" { xfail *-*-* } }
+  !$omp target map(aas) ! { dg-error "Assumed size array" }
   !$omp end target
 
   !$omp target map(aas(5:7))

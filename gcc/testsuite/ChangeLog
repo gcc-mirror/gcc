@@ -3,6 +3,11 @@
 	Backported from mainline
 	2016-12-21  Jakub Jelinek  <jakub@redhat.com>
 
+	PR fortran/78866
+	* gfortran.dg/gomp/map-1.f90: Add expected error.
+	* gfortran.dg/gomp/pr78866-1.f90: New test.
+	* gfortran.dg/gomp/pr78866-2.f90: New test.
+
 	PR c/77767
 	* gcc.c-torture/execute/pr77767.c: New test.
 

@@ -3166,6 +3166,11 @@ resolve_omp_clauses (gfc_code *code, locus *where,
 		    else
 		      resolve_oacc_data_clauses (n->sym, *where, name);
 		  }
+		else if (list != OMP_LIST_DEPEND
+			 && n->sym->as
+			 && n->sym->as->type == AS_ASSUMED_SIZE)
+		  gfc_error ("Assumed size array %qs in %s clause at %L",
+			     n->sym->name, name, where);
 	      }
 
 	    if (list != OMP_LIST_DEPEND)
