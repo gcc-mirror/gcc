@@ -1,6 +1,12 @@
 2017-05-30  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2017-02-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/79559
+	* config/i386/i386.c (ix86_print_operand): Use output_operand_lossage
+	instead of gcc_assert for K, r and R code checks.  Formatting fixes.
+
 	2017-02-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/79411
