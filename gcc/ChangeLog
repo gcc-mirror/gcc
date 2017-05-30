@@ -1,3 +1,22 @@
+2017-05-30  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/predicates.md (cc_reg_not_micro_cr0_operand): Delete.
+	(lwa_operand): Delete rs6000_gen_cell_microcode test.
+	* config/rs6000/rs6000.c (rs6000_option_override_internal): Delete
+	rs6000_gen_cell_microcode code.
+	(rs6000_final_prescan_insn): Delete.
+	(rs6000_opt_vars): Delete the "gen-cell-microcode" and
+	"warn-cell-microcode" entries.
+	* config/rs6000/rs6000.h (FINAL_PRESCAN_INSN): Delete.
+	* config/rs6000/rs6000.md: Delete rs6000_gen_cell_microcode tests
+	throughout.  Change cc_reg_not_micro_cr0_operand to
+	cc_reg_not_cr0_operand throughout.
+	(*extendhi<mode>2_noload): Delete.
+	* config/rs6000/rs6000.opt (mgen-cell-microcode): Replace by stub.
+	(mwarn-cell-microcode): Delete.
+	* doc/invoke.texi (RS/6000 and PowerPC Options): Delete
+	-mgen-cell-microcode and -mwarn-cell-microcode.
+
 2017-05-30  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/80833

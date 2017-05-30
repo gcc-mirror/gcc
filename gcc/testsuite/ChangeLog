@@ -1,3 +1,9 @@
+2017-05-30  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* gcc.target/powerpc/shift-dot.c: Delete -mgen-cell-microcode from
+	dg-options.
+	* gfortran.dg/pr80107.f: Delete testcase.
+
 2017-05-30  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/80833
