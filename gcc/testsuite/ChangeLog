@@ -1,6 +1,11 @@
 2017-05-30  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2017-02-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/79664
+	* g++.dg/gomp/pr79664.C: New test.
+
 	2017-02-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/79570
