@@ -1,6 +1,12 @@
 2017-05-30  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2017-02-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/79197
+	* gcc.target/powerpc/pr79197.c: New test.
+	* gcc.c-torture/compile/pr79197.c: New test.
+
 	2017-01-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/78341

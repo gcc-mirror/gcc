@@ -1,6 +1,13 @@
 2017-05-30  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2017-02-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/79197
+	* config/rs6000/rs6000.md (*fixuns_trunc<mode>di2_fctiduz): Rename to ...
+	(fixuns_trunc<mode>di2): ... this, remove previous expander.  Put all
+	conditions on a single line.
+
 	2016-12-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR ipa/77905
