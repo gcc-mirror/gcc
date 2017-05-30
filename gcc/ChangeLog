@@ -1,6 +1,18 @@
 2017-05-30  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2017-02-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/79568
+	* config/i386/i386.c (ix86_expand_builtin): Handle
+	OPTION_MASK_ISA_AVX512VL and OPTION_MASK_ISA_64BIT in
+	ix86_builtins_isa[fcode].isa as a requirement of those
+	flags and any other flag in the bitmask.
+	(ix86_init_mmx_sse_builtins): Use 0 instead of
+	~OPTION_MASK_ISA_64BIT as mask.
+	* config/i386/i386-builtin.def (bdesc_special_args,
+	bdesc_args): Likewise.
+
 	2017-02-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/79559
