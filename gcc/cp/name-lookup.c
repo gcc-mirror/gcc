@@ -2803,20 +2803,19 @@ merge_global_decl (tree ctx, tree decl)
   return old;
 }
 
-/* NAME is being bound within namespace NS and MODULE to OVL.  Unless
+/* NAME is being bound within namespace NS and MODULE.  Unless
    MODULE is GLOBAL_MODULE_INDEX, there should be no existing
-   binding.  */
+   binding.  VALUE and TYPE are the value and type bindings.  */
 
 bool
-push_module_binding (tree ns, unsigned mod, tree name, tree binding)
+push_module_binding (tree ns, unsigned mod, tree name, tree value, tree type)
 {
-  bool is_ns = (TREE_CODE (binding) == NAMESPACE_DECL
-		&& !DECL_NAMESPACE_ALIAS (binding));
+  bool is_ns = (TREE_CODE (value) == NAMESPACE_DECL
+		&& !DECL_NAMESPACE_ALIAS (value));
 
   tree *slot = find_or_create_namespace_slot (ns, name);
   tree *mslot = module_binding_slot (slot, mod, is_ns ? -1 : 1);
 
-  gcc_assert (!MAYBE_STAT_TYPE (binding)); // FIXME
   gcc_assert (!*mslot || !MAYBE_STAT_TYPE (*mslot)); // FIXME
 
   if (*mslot && anticipated_builtin_p (*mslot))
@@ -2826,7 +2825,7 @@ push_module_binding (tree ns, unsigned mod, tree name, tree binding)
       *mslot = NULL_TREE;
     }
 
-  for (ovl_iterator iter (MAYBE_STAT_DECL (binding)); iter; ++iter)
+  for (ovl_iterator iter (value); iter; ++iter)
     {
       tree decl = *iter;
       bool found = false;
@@ -2851,7 +2850,10 @@ push_module_binding (tree ns, unsigned mod, tree name, tree binding)
 
   if (!*mslot)
     /* There was nothing there, just install the whole binding.  */
-    *mslot = binding;
+    *mslot = value;
+
+  if (type)
+    gcc_unreachable (); // FIXME
 
   return true;
 }

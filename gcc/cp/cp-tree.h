@@ -7021,7 +7021,6 @@ extern tree make_module_vec			(unsigned clusters);
 inline tree ovl_first				(tree) ATTRIBUTE_PURE;
 extern tree ovl_make				(tree fn,
 						 tree next = NULL_TREE);
-extern tree ovl_skip_hidden			(tree);
 extern tree ovl_insert				(tree fn, tree maybe_ovl,
 						 bool using_p = false);
 extern tree ovl_skip_hidden			(tree) ATTRIBUTE_PURE;

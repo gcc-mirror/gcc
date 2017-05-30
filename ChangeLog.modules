@@ -1,6 +1,12 @@
 2017-05-30  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.c (cpms_out::tag_binding, cpms_in::tag_binding): Mark
+	type too.
+	(cpms_out::bindings): Adjust.
+	* name-lookup.c (push_module_binding): Add type arg.
+
+	gcc/cp/
 	* cp-tree.h (lang_decl_base): Lose decomposition_p flag.
 	(lang_decl) Update GTY tags.
 	(enum lang_decl_selector): New.  Replace magic consts with this.

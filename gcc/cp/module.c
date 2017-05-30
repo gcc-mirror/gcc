@@ -1477,31 +1477,49 @@ cpms_in::tag_import (FILE *d)
    NS must have already have a binding somewhere.
 
    tree:ns
-   u:main_p
    tree:name
+   b:main_p
+   b:stat_p
+   [tree:stat_type]
    tree:binding
 */
 
 void
-cpms_out::tag_binding (FILE *d, tree ns, bool main, tree name, tree binding)
+cpms_out::tag_binding (FILE *d, tree ns, bool main_p, tree name, tree binding)
 {
   if (TREE_CODE (binding) == TYPE_DECL)
     // FIXME: No typedefs
     return;
 
+  tree type = NULL_TREE;
+  tree value = ovl_skip_hidden (decapsulate_binding (binding, &type));
+
+  if (!value && !type)
+    return;
+
+  if (value && TREE_CODE (value) != OVERLOAD && DECL_IS_BUILTIN (value))
+    /* Don't write builtins.  */
+    return; // FIXME
+
   if (d)
     fprintf (d, "Writing '%s' %s bindings for '%s'\n",
 	     IDENTIFIER_POINTER (DECL_NAME (ns)), 
-	     main ? "main" : "global", IDENTIFIER_POINTER (name));
+	     main_p ? "main" : "global", IDENTIFIER_POINTER (name));
 
   w.u (rt_binding);
   tree_node (d, ns);
-  w.u (main);
   tree_node (d, name);
-  tree_node (d, binding);
+  w.b (main_p);
+  w.b (type != NULL_TREE);
+  w.bflush ();
+  if (type)
+    tree_node (d, type);
+  tree_node (d, value);
   w.checkpoint ();
 
-  for (ovl_iterator iter (binding); iter; ++iter)
+  if (type)
+    tag_definition (d, type);
+  for (ovl_iterator iter (value); iter; ++iter)
     tag_definition (d, *iter);
 }
 
@@ -1509,9 +1527,12 @@ bool
 cpms_in::tag_binding (FILE *d)
 {
   tree ns = tree_node (d);
-  unsigned main = r.u ();
   tree name = tree_node (d);
-  tree binding = tree_node (d);
+  unsigned main_p = r.b ();
+  unsigned stat_p = r.b ();
+  r.bflush ();
+  tree type = stat_p ? tree_node (d) : NULL_TREE;
+  tree value = tree_node (d);
 
   if (!r.checkpoint ())
     return false;
@@ -1519,12 +1540,11 @@ cpms_in::tag_binding (FILE *d)
   if (d)
     fprintf (d, "Reading '%s' %s binding for '%s'\n",
 	     IDENTIFIER_POINTER (DECL_NAME (ns)), 
-	     main ? "main" : "global",
+	     main_p ? "main" : "global",
 	     IDENTIFIER_POINTER (name));
-  return push_module_binding (ns, main ? mod_ix : GLOBAL_MODULE_INDEX,
-			      name, binding);
+  return push_module_binding (ns, main_p ? mod_ix : GLOBAL_MODULE_INDEX,
+			      name, value, type);
 }
-
 
 /* Write out DECL's definition, if importers need it.  */
 
@@ -2954,16 +2974,9 @@ cpms_out::bindings (FILE *d, tree ns)
 
       if (!global)
 	;
-      else if (TREE_CODE (global) == OVERLOAD
-	       && OVL_HIDDEN_P (global)
-	       && !DECL_HIDDEN_FRIEND_P (OVL_FUNCTION (global)))
-	/* Don't write anticipated builtin.  */;
       else if (TREE_CODE (global) == NAMESPACE_DECL
 	       && !DECL_NAMESPACE_ALIAS (global))
 	inner = global;
-      else if (TREE_CODE (global) != OVERLOAD
-	       && DECL_IS_BUILTIN (global))
-	/* Don't write builtins.  */;
       else
 	tag_binding (d, ns, false, name, global);
 
