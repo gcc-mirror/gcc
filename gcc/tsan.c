@@ -84,6 +84,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tsan.h"
 #include "asan.h"
 #include "builtins.h"
+#include "target.h"
 
 /* Number of instrumented memory accesses in the current function.  */
 
@@ -284,7 +285,8 @@ instrument_expr (gimple_stmt_iterator gsi, tree expr, bool is_write)
 enum tsan_atomic_action
 {
   check_last, add_seq_cst, add_acquire, weak_cas, strong_cas,
-  bool_cas, val_cas, lock_release, fetch_op, fetch_op_seq_cst
+  bool_cas, val_cas, lock_release, fetch_op, fetch_op_seq_cst,
+  bool_clear, bool_test_and_set
 };
 
 /* Table how to map sync/atomic builtins to their corresponding
@@ -318,6 +320,10 @@ static const struct tsan_map_atomic
   TRANSFORM (fcode, tsan_fcode, fetch_op, code)
 #define FETCH_OPS(fcode, tsan_fcode, code) \
   TRANSFORM (fcode, tsan_fcode, fetch_op_seq_cst, code)
+#define BOOL_CLEAR(fcode, tsan_fcode) \
+  TRANSFORM (fcode, tsan_fcode, bool_clear, ERROR_MARK)
+#define BOOL_TEST_AND_SET(fcode, tsan_fcode) \
+  TRANSFORM (fcode, tsan_fcode, bool_test_and_set, ERROR_MARK)
 
   CHECK_LAST (ATOMIC_LOAD_1, TSAN_ATOMIC8_LOAD),
   CHECK_LAST (ATOMIC_LOAD_2, TSAN_ATOMIC16_LOAD),
@@ -507,7 +513,11 @@ static const struct tsan_map_atomic
   LOCK_RELEASE (SYNC_LOCK_RELEASE_2, TSAN_ATOMIC16_STORE),
   LOCK_RELEASE (SYNC_LOCK_RELEASE_4, TSAN_ATOMIC32_STORE),
   LOCK_RELEASE (SYNC_LOCK_RELEASE_8, TSAN_ATOMIC64_STORE),
-  LOCK_RELEASE (SYNC_LOCK_RELEASE_16, TSAN_ATOMIC128_STORE)
+  LOCK_RELEASE (SYNC_LOCK_RELEASE_16, TSAN_ATOMIC128_STORE),
+
+  BOOL_CLEAR (ATOMIC_CLEAR, TSAN_ATOMIC8_STORE),
+
+  BOOL_TEST_AND_SET (ATOMIC_TEST_AND_SET, TSAN_ATOMIC8_EXCHANGE)
 };
 
 /* Instrument an atomic builtin.  */
@@ -658,6 +668,57 @@ instrument_builtin_call (gimple_stmt_iterator *gsi)
 				build_int_cst (t, 0),
 				build_int_cst (NULL_TREE,
 					       MEMMODEL_RELEASE));
+	    return;
+	  case bool_clear:
+	  case bool_test_and_set:
+	    if (BOOL_TYPE_SIZE != 8)
+	      {
+		decl = NULL_TREE;
+		for (j = 1; j < 5; j++)
+		  if (BOOL_TYPE_SIZE == (8 << j))
+		    {
+		      enum built_in_function tsan_fcode
+			= (enum built_in_function)
+			  (tsan_atomic_table[i].tsan_fcode + j);
+		      decl = builtin_decl_implicit (tsan_fcode);
+		      break;
+		    }
+		if (decl == NULL_TREE)
+		  return;
+	      }
+	    last_arg = gimple_call_arg (stmt, num - 1);
+	    if (!tree_fits_uhwi_p (last_arg)
+		|| memmodel_base (tree_to_uhwi (last_arg)) >= MEMMODEL_LAST)
+	      return;
+	    t = TYPE_ARG_TYPES (TREE_TYPE (decl));
+	    t = TREE_VALUE (TREE_CHAIN (t));
+	    if (tsan_atomic_table[i].action == bool_clear)
+	      {
+		update_gimple_call (gsi, decl, 3, gimple_call_arg (stmt, 0),
+				    build_int_cst (t, 0), last_arg);
+		return;
+	      }
+	    t = build_int_cst (t, targetm.atomic_test_and_set_trueval);
+	    update_gimple_call (gsi, decl, 3, gimple_call_arg (stmt, 0),
+				t, last_arg);
+	    stmt = gsi_stmt (*gsi);
+	    lhs = gimple_call_lhs (stmt);
+	    if (lhs == NULL_TREE)
+	      return;
+	    if (targetm.atomic_test_and_set_trueval != 1
+		|| !useless_type_conversion_p (TREE_TYPE (lhs),
+					       TREE_TYPE (t)))
+	      {
+		tree new_lhs = make_ssa_name (TREE_TYPE (t));
+		gimple_call_set_lhs (stmt, new_lhs);
+		if (targetm.atomic_test_and_set_trueval != 1)
+		  g = gimple_build_assign (lhs, NE_EXPR, new_lhs,
+					   build_int_cst (TREE_TYPE (t), 0));
+		else
+		  g = gimple_build_assign (lhs, NOP_EXPR, new_lhs);
+		gsi_insert_after (gsi, g, GSI_NEW_STMT);
+		update_stmt (stmt);
+	      }
 	    return;
 	  default:
 	    continue;
