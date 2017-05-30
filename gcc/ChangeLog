@@ -1,3 +1,12 @@
+2017-05-24  Robin Dapp  <rdapp@linux.vnet.ibm.com>
+
+	* tree-vect-data-refs.c (vect_get_peeling_costs_all_drs):
+	Introduce unknown_misalignment parameter and remove vf.
+	(vect_peeling_hash_get_lowest_cost):
+	Pass unknown_misalignment parameter.
+	(vect_enhance_data_refs_alignment):
+	Fix unsupportable data ref treatment.
+
 2017-05-30  Robin Dapp  <rdapp@linux.vnet.ibm.com>
 
 	* tree-vect-data-refs.c (vect_get_data_access_cost):
