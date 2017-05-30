@@ -984,6 +984,7 @@ dr_misalignment (struct data_reference *dr)
    taking into account peeling/versioning if applied.  */
 #define DR_MISALIGNMENT(DR) dr_misalignment (DR)
 #define SET_DR_MISALIGNMENT(DR, VAL) set_dr_misalignment (DR, VAL)
+#define DR_MISALIGNMENT_UNKNOWN (-1)
 
 /* Return TRUE if the data access is aligned, and FALSE otherwise.  */
 
@@ -999,7 +1000,7 @@ aligned_access_p (struct data_reference *data_ref_info)
 static inline bool
 known_alignment_for_access_p (struct data_reference *data_ref_info)
 {
-  return (DR_MISALIGNMENT (data_ref_info) != -1);
+  return (DR_MISALIGNMENT (data_ref_info) != DR_MISALIGNMENT_UNKNOWN);
 }
 
 
