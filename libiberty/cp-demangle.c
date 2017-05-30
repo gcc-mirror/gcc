@@ -2519,7 +2519,11 @@ cplus_demangle_type (struct d_info *di)
 	  /* auto */
 	  ret = d_make_name (di, "auto", 4);
 	  break;
-	  
+	case 'c':
+	  /* decltype(auto) */
+	  ret = d_make_name (di, "decltype(auto)", 14);
+	  break;
+
 	case 'f':
 	  /* 32-bit decimal floating point */
 	  ret = d_make_builtin_type (di, &cplus_demangle_builtin_types[26]);
