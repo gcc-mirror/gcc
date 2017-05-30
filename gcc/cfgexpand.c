@@ -2504,9 +2504,9 @@ expand_gimple_cond (basic_block bb, gcond *stmt)
   new_bb->count = false_edge->count;
   new_bb->frequency = EDGE_FREQUENCY (false_edge);
   add_bb_to_loop (new_bb, dest->loop_father);
-  if (bb->loop_father->latch == bb
-      && bb->loop_father->header == dest)
-    bb->loop_father->latch = new_bb;
+  if (dest->loop_father->latch == bb
+      && dest->loop_father->header == dest)
+    dest->loop_father->latch = new_bb;
   new_edge = make_edge (new_bb, dest, 0);
   new_edge->probability = REG_BR_PROB_BASE;
   new_edge->count = new_bb->count;
