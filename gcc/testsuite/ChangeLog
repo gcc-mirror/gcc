@@ -1,6 +1,11 @@
 2017-05-30  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2017-04-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/80363
+	* g++.dg/ext/pr80363.C: New test.
+
 	2017-04-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/80176

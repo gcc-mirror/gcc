@@ -2005,6 +2005,7 @@ dump_expr (cxx_pretty_printer *pp, tree t, int flags)
       break;
 
     case COND_EXPR:
+    case VEC_COND_EXPR:
       pp_cxx_left_paren (pp);
       dump_expr (pp, TREE_OPERAND (t, 0), flags | TFF_EXPR_IN_PARENS);
       pp_string (pp, " ? ");
