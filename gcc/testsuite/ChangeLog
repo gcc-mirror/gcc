@@ -1,3 +1,8 @@
+2017-05-30  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/80901
+	* gcc.dg/torture/pr80901.c: New testcase.
+
 2017-05-30  Robin Dapp  <rdapp@linux.vnet.ibm.com>
 
 	* gcc.target/s390/vector/vec-nopeel-2.c: New test.

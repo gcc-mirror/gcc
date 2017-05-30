@@ -1,3 +1,9 @@
+2017-05-30  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/80901
+	* cfgexpand.c (expand_gimple_cond): Match up loop fixup with
+	split_edge code.
+
 2017-05-24  Robin Dapp  <rdapp@linux.vnet.ibm.com>
 
 	* tree-vect-data-refs.c (vect_get_peeling_costs_all_drs):
