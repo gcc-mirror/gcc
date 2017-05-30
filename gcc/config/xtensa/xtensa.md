@@ -1867,7 +1867,12 @@
 				  UNSPEC_TLS_CALL))
 	      (match_operand 3 "" "i")))]
   "TARGET_THREADPTR && HAVE_AS_TLS"
-  "callx8.tls %1, %2@TLSCALL"
+{
+  if (TARGET_WINDOWED_ABI)
+    return "callx8.tls %1, %2@TLSCALL";
+  else
+    return "callx0.tls %1, %2@TLSCALL";
+}
   [(set_attr "type"	"call")
    (set_attr "mode"	"none")
    (set_attr "length"	"3")])
