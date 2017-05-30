@@ -1,5 +1,14 @@
 2017-05-30  Robin Dapp  <rdapp@linux.vnet.ibm.com>
 
+	* tree-vect-data-refs.c (vect_update_misalignment_for_peel): Rename.
+	(vect_get_peeling_costs_all_drs): Create function.
+	(vect_peeling_hash_get_lowest_cost):
+	Use vect_get_peeling_costs_all_drs.
+	(vect_peeling_supportable): Create function.
+	(vect_enhance_data_refs_alignment): Use vect_peeling_supportable.
+
+2017-05-30  Robin Dapp  <rdapp@linux.vnet.ibm.com>
+
 	* tree-vect-data-refs.c (vect_compute_data_ref_alignment): Create
 	DR_HAS_NEGATIVE_STEP.
 	(vect_update_misalignment_for_peel): Define DR_MISALIGNMENT.
