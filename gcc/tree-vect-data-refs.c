@@ -717,7 +717,7 @@ vect_compute_data_ref_alignment (struct data_reference *dr)
     loop = LOOP_VINFO_LOOP (loop_vinfo);
 
   /* Initialize misalignment to unknown.  */
-  SET_DR_MISALIGNMENT (dr, -1);
+  SET_DR_MISALIGNMENT (dr, DR_MISALIGNMENT_UNKNOWN);
 
   if (tree_fits_shwi_p (DR_STEP (dr)))
     misalign = DR_INIT (dr);
@@ -957,8 +957,9 @@ vect_update_misalignment_for_peel (struct data_reference *dr,
     }
 
   if (dump_enabled_p ())
-    dump_printf_loc (MSG_NOTE, vect_location, "Setting misalignment to -1.\n");
-  SET_DR_MISALIGNMENT (dr, -1);
+    dump_printf_loc (MSG_NOTE, vect_location, "Setting misalignment " \
+		     "to unknown (-1).\n");
+  SET_DR_MISALIGNMENT (dr, DR_MISALIGNMENT_UNKNOWN);
 }
 
 
@@ -1526,32 +1527,31 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
         {
           if (known_alignment_for_access_p (dr))
             {
-              unsigned int npeel_tmp;
+              unsigned int npeel_tmp = 0;
 	      bool negative = tree_int_cst_compare (DR_STEP (dr),
 						    size_zero_node) < 0;
 
-              /* Save info about DR in the hash table.  */
               vectype = STMT_VINFO_VECTYPE (stmt_info);
               nelements = TYPE_VECTOR_SUBPARTS (vectype);
               mis = DR_MISALIGNMENT (dr) / GET_MODE_SIZE (TYPE_MODE (
                                                 TREE_TYPE (DR_REF (dr))));
-              npeel_tmp = (negative
-			   ? (mis - nelements) : (nelements - mis))
-		  & (nelements - 1);
+	      if (DR_MISALIGNMENT (dr) != 0)
+		npeel_tmp = (negative ? (mis - nelements)
+			     : (nelements - mis)) & (nelements - 1);
 
               /* For multiple types, it is possible that the bigger type access
                  will have more than one peeling option.  E.g., a loop with two
                  types: one of size (vector size / 4), and the other one of
                  size (vector size / 8).  Vectorization factor will 8.  If both
-                 access are misaligned by 3, the first one needs one scalar
+                 accesses are misaligned by 3, the first one needs one scalar
                  iteration to be aligned, and the second one needs 5.  But the
 		 first one will be aligned also by peeling 5 scalar
                  iterations, and in that case both accesses will be aligned.
                  Hence, except for the immediate peeling amount, we also want
                  to try to add full vector size, while we don't exceed
                  vectorization factor.
-                 We do this automatically for cost model, since we calculate cost
-                 for every peeling option.  */
+                 We do this automatically for cost model, since we calculate
+		 cost for every peeling option.  */
               if (unlimited_cost_model (LOOP_VINFO_LOOP (loop_vinfo)))
 		{
 		  if (STMT_SLP_TYPE (stmt_info))
@@ -1559,17 +1559,15 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
 		      = (vf * GROUP_SIZE (stmt_info)) / nelements;
 		  else
 		    possible_npeel_number = vf / nelements;
+
+		  /* NPEEL_TMP is 0 when there is no misalignment, increment
+		     the peeling amount by one in order to ...  */
+		  if (DR_MISALIGNMENT (dr) == 0)
+		    possible_npeel_number++;
 		}
 
-              /* Handle the aligned case. We may decide to align some other
-                 access, making DR unaligned.  */
-              if (DR_MISALIGNMENT (dr) == 0)
-                {
-                  npeel_tmp = 0;
-                  if (unlimited_cost_model (LOOP_VINFO_LOOP (loop_vinfo)))
-                    possible_npeel_number++;
-                }
-
+	      /* Save info about DR in the hash table.  Also include peeling
+	         amounts according to the explanation above.  */
               for (j = 0; j < possible_npeel_number; j++)
                 {
                   vect_peeling_hash_insert (&peeling_htab, loop_vinfo,
@@ -3884,7 +3882,7 @@ vect_duplicate_ssa_name_ptr_info (tree name, data_reference *dr,
   duplicate_ssa_name_ptr_info (name, DR_PTR_INFO (dr));
   unsigned int align = TYPE_ALIGN_UNIT (STMT_VINFO_VECTYPE (stmt_info));
   int misalign = DR_MISALIGNMENT (dr);
-  if (misalign == -1)
+  if (misalign == DR_MISALIGNMENT_UNKNOWN)
     mark_ptr_info_alignment_unknown (SSA_NAME_PTR_INFO (name));
   else
     set_ptr_info_alignment (SSA_NAME_PTR_INFO (name), align, misalign);

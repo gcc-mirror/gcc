@@ -1,3 +1,13 @@
+2017-05-30  Robin Dapp  <rdapp@linux.vnet.ibm.com>
+
+	* tree-vect-data-refs.c (vect_compute_data_ref_alignment): Create
+	DR_HAS_NEGATIVE_STEP.
+	(vect_update_misalignment_for_peel): Define DR_MISALIGNMENT.
+	(vect_enhance_data_refs_alignment): Use.
+	(vect_duplicate_ssa_name_ptr_info): Use.
+	* tree-vectorizer.h (dr_misalignment): Use.
+	(known_alignment_for_access_p): Use.
+
 2017-05-30  Jozef Lawrynowicz  <jozef.l@somniumtech.com>
 
 	PR target/78838
