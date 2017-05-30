@@ -1,3 +1,7 @@
+2017-05-30  Martin Liska  <mliska@suse.cz>
+
+	* predict.def: Fix GNU coding style.
+
 2017-05-29  Max Filippov  <jcmvbkbc@gmail.com>
 
 	* config/xtensa/xtensa.c (xtensa_initial_elimination_offset):
