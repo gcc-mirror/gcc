@@ -1,6 +1,12 @@
 2017-05-30  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2016-12-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/77767
+	* c-decl.c (grokdeclarator): If *expr is non-NULL, append expression
+	to *expr instead of overwriting it.
+
 	2016-08-12  Jakub Jelinek  <jakub@redhat.com>
 		    Martin Liska  <mliska@suse.cz>
 

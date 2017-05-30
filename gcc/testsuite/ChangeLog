@@ -1,6 +1,11 @@
 2017-05-30  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2016-12-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/77767
+	* gcc.c-torture/execute/pr77767.c: New test.
+
 	2016-12-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR ipa/77905
