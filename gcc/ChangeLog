@@ -1,3 +1,9 @@
+2017-05-30  Martin Liska  <mliska@suse.cz>
+
+	PR other/80909
+	* auto-profile.c (get_function_decl_from_block): Fix
+	parenthesis.
+
 2017-05-30  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/80876
