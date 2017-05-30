@@ -1,6 +1,13 @@
 2017-05-30  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2016-10-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/78089
+	* parser.c (cp_parser_postfix_expression): Replace return statement in
+	the first switch with setting postfix_expression to the return
+	expression and break;.
+
 	2016-09-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/77467

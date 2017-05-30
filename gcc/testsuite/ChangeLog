@@ -1,6 +1,11 @@
 2017-05-30  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2016-10-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/78089
+	* c-c++-common/builtin-shuffle-1.c: New test.
+
 	2016-10-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/77919
