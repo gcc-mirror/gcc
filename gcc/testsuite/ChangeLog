@@ -1,10 +1,20 @@
 2017-05-30  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2016-08-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/72816
+	* gcc.dg/pr72816.c: Remove dg-error.
+
 	2016-08-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/72824
 	* gcc.c-torture/execute/ieee/pr72824.c: New test.
+
+	2016-08-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/72816
+	* gcc.dg/pr72816.c: New test.
 
 2017-05-29  Martin Liska  <mliska@suse.cz>
 
