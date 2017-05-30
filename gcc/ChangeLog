@@ -1,3 +1,135 @@
+2017-05-30  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/80833
+	* config/i386/constraints.md (Yd): New constraint.
+	(Ye): Ditto.
+	* config/i386/i386.md (*movti_internal): Add (?r, Ye)
+	and (?Yd, r) alternatives.  Update insn attributes.
+	* config/i386/i386.md (*movti_internal): Add (?r, *Ye)
+	and (?*Yd, r) alternatives.  Update insn attributes.
+	(double-mode inter-unit splitters): Add new GR<->XMM splitters.
+
+2017-05-30  Pierre-Marie de Rodat  <derodat@adacore.com>
+
+	* gimplify.c (gimplify_modify_expr): Don't create a
+	DECL_DEBUG_EXPR link if *FROM_P does not belong to the current
+	function.
+
+2017-05-30  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* config/arm/arm-builtins.c (arm_expand_builtin): Remove const.
+
+2017-05-30  Richard Biener  <rguenther@suse.de>
+
+	* tree-vectorizer.h (struct _stmt_vec_info): Add reduc_type
+	and reduc_def fields.
+	(STMT_VINFO_REDUC_TYPE): New define.
+	(STMT_VINFO_REDUC_DEF): Likewise.
+	(vect_force_simple_reduction): Adjust prototype.
+	* tree-vect-loop.c (vect_analyze_scalar_cycles_1): Adjust.
+	(vect_is_simple_reduction): Remove check_reduction argument.
+	(vect_force_simple_reduction): Adjust and set
+	STMT_VINFO_REDUC_TYPE and STMT_VINFO_REDUC_DEF.
+	(vectorizable_reduction): Do not re-do reduction analysis
+	but use STMT_VINFO_REDUC_TYPE and STMT_VINFO_REDUC_DEF.
+	* tree-parloops.c (gather_scalar_reductions): Adjust.
+
+2017-05-30  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/80901
+	* cfgexpand.c (expand_gimple_cond): Match up loop fixup with
+	split_edge code.
+
+2017-05-24  Robin Dapp  <rdapp@linux.vnet.ibm.com>
+
+	* tree-vect-data-refs.c (vect_get_peeling_costs_all_drs):
+	Introduce unknown_misalignment parameter and remove vf.
+	(vect_peeling_hash_get_lowest_cost):
+	Pass unknown_misalignment parameter.
+	(vect_enhance_data_refs_alignment):
+	Fix unsupportable data ref treatment.
+
+2017-05-30  Robin Dapp  <rdapp@linux.vnet.ibm.com>
+
+	* tree-vect-data-refs.c (vect_get_data_access_cost):
+	Workaround for SLP handling.
+	(vect_enhance_data_refs_alignment):
+	Compute costs for doing no peeling at all, compare to the best
+	peeling costs so far and avoid peeling if cheaper.
+
+2017-05-30  Robin Dapp  <rdapp@linux.vnet.ibm.com>
+
+	* tree-vect-data-refs.c (vect_peeling_hash_choose_best_peeling):
+	Return peeling info and set costs to zero for unlimited cost
+	model.
+	(vect_enhance_data_refs_alignment): Also inspect all datarefs
+	with unknown misalignment. Compute and costs for unknown
+	misalignment, compare them to the costs for known misalignment
+	and choose the cheapest for peeling.
+
+2017-05-30  Robin Dapp  <rdapp@linux.vnet.ibm.com>
+
+	* tree-vect-data-refs.c (vect_update_misalignment_for_peel): Rename.
+	(vect_get_peeling_costs_all_drs): Create function.
+	(vect_peeling_hash_get_lowest_cost):
+	Use vect_get_peeling_costs_all_drs.
+	(vect_peeling_supportable): Create function.
+	(vect_enhance_data_refs_alignment): Use vect_peeling_supportable.
+
+2017-05-30  Robin Dapp  <rdapp@linux.vnet.ibm.com>
+
+	* tree-vect-data-refs.c (vect_compute_data_ref_alignment): Create
+	DR_HAS_NEGATIVE_STEP.
+	(vect_update_misalignment_for_peel): Define DR_MISALIGNMENT.
+	(vect_enhance_data_refs_alignment): Use.
+	(vect_duplicate_ssa_name_ptr_info): Use.
+	* tree-vectorizer.h (dr_misalignment): Use.
+	(known_alignment_for_access_p): Use.
+
+2017-05-30  Jozef Lawrynowicz  <jozef.l@somniumtech.com>
+
+	PR target/78838
+	* config/msp430/msp430.c (gen_prefix): Return NULL when section name is
+	.lowtext.
+	(has_section_name): New function.
+
+2017-05-30  Martin Liska  <mliska@suse.cz>
+
+	PR other/80909
+	* auto-profile.c (get_function_decl_from_block): Fix
+	parenthesis.
+
+2017-05-30  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/80876
+	* cfgexpand.c (expand_gimple_cond): Fixup preserving loops again.
+
+2017-05-30  Martin Liska  <mliska@suse.cz>
+
+	* dumpfile.c: Use newly added macro DUMP_FILE_INFO.
+	* dumpfile.h (struct dump_file_info): Remove ctors.
+
+2017-05-30  Martin Liska  <mliska@suse.cz>
+
+	* predict.def: Fix GNU coding style.
+
+2017-05-29  Max Filippov  <jcmvbkbc@gmail.com>
+
+	* config/xtensa/xtensa.c (xtensa_initial_elimination_offset):
+	Mark 'to' argument with ATTRIBUTE_UNUSED.
+
+2017-05-29  Max Filippov  <jcmvbkbc@gmail.com>
+
+	* config/xtensa/xtensa.c (xtensa_emit_call): Use
+	HOST_WIDE_INT_PRINT_HEX instead of 0x%lx format string.
+	(print_operand): Use HOST_WIDE_INT_PRINT_DEC instead of %ld
+	format string.
+
+2017-05-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* doc/install.texi (Options specification): Restore entry of
+	--enable-sjlj-exceptions.
+
 2017-05-27  Michael Eager  <eager@eagercon.com>
 
 	Revert:

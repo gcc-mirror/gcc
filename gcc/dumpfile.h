@@ -120,13 +120,6 @@ typedef uint64_t dump_flags_t;
 /* Define a tree dump switch.  */
 struct dump_file_info
 {
-  /* Constructor.  */
-  CONSTEXPR dump_file_info ();
-
-  /* Constructor.  */
-  dump_file_info (const char *_suffix, const char *_swtch, dump_kind _dkind,
-		  int _num);
-
   /* Suffix to give output file.  */
   const char *suffix;
   /* Command line dump switch.  */

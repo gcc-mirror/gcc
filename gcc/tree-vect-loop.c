@@ -844,7 +844,6 @@ vect_analyze_scalar_cycles_1 (loop_vec_info loop_vinfo, struct loop *loop)
       tree def = PHI_RESULT (phi);
       stmt_vec_info stmt_vinfo = vinfo_for_stmt (phi);
       gimple *reduc_stmt;
-      bool nested_cycle;
 
       if (dump_enabled_p ())
         {
@@ -855,8 +854,7 @@ vect_analyze_scalar_cycles_1 (loop_vec_info loop_vinfo, struct loop *loop)
       gcc_assert (!virtual_operand_p (def)
 		  && STMT_VINFO_DEF_TYPE (stmt_vinfo) == vect_unknown_def_type);
 
-      nested_cycle = (loop != LOOP_VINFO_LOOP (loop_vinfo));
-      reduc_stmt = vect_force_simple_reduction (loop_vinfo, phi, !nested_cycle,
+      reduc_stmt = vect_force_simple_reduction (loop_vinfo, phi,
 						&double_reduc, false);
       if (reduc_stmt)
         {
@@ -872,7 +870,7 @@ vect_analyze_scalar_cycles_1 (loop_vec_info loop_vinfo, struct loop *loop)
             }
           else
             {
-              if (nested_cycle)
+              if (loop != LOOP_VINFO_LOOP (loop_vinfo))
                 {
                   if (dump_enabled_p ())
                     dump_printf_loc (MSG_NOTE, vect_location,
@@ -2633,7 +2631,7 @@ vect_is_slp_reduction (loop_vec_info loop_info, gimple *phi,
 }
 
 
-/* Function vect_is_simple_reduction_1
+/* Function vect_is_simple_reduction
 
    (1) Detect a cross-iteration def-use cycle that represents a simple
    reduction computation.  We look for the following pattern:
@@ -2652,7 +2650,7 @@ vect_is_slp_reduction (loop_vec_info loop_info, gimple *phi,
 
    such that:
    1. operation is commutative and associative and it is safe to
-      change the order of the computation (if CHECK_REDUCTION is true)
+      change the order of the computation
    2. no uses for a2 in the loop (a2 is used out of the loop)
    3. no uses of a1 in the loop besides the reduction operation
    4. no uses of a1 outside the loop.
@@ -2661,7 +2659,7 @@ vect_is_slp_reduction (loop_vec_info loop_info, gimple *phi,
    Conditions 2,3 are tested in vect_mark_stmts_to_be_vectorized.
 
    (2) Detect a cross-iteration def-use cycle in nested loops, i.e.,
-   nested cycles, if CHECK_REDUCTION is false.
+   nested cycles.
 
    (3) Detect cycles of phi nodes in outer-loop vectorization, i.e., double
    reductions:
@@ -2679,7 +2677,7 @@ vect_is_slp_reduction (loop_vec_info loop_info, gimple *phi,
 
 static gimple *
 vect_is_simple_reduction (loop_vec_info loop_info, gimple *phi,
-			  bool check_reduction, bool *double_reduc,
+			  bool *double_reduc,
 			  bool need_wrapping_integral_overflow,
 			  enum vect_reduction_type *v_reduc_type)
 {
@@ -2700,8 +2698,8 @@ vect_is_simple_reduction (loop_vec_info loop_info, gimple *phi,
   *double_reduc = false;
   *v_reduc_type = TREE_CODE_REDUCTION;
 
-  /* If CHECK_REDUCTION is true, we assume inner-most loop vectorization,
-     otherwise, we assume outer loop vectorization.  */
+  /* Check validity of the reduction only for the innermost loop.  */
+  bool check_reduction = ! flow_loop_nested_p (vect_loop, loop);
   gcc_assert ((check_reduction && loop == vect_loop)
               || (!check_reduction && flow_loop_nested_p (vect_loop, loop)));
 
@@ -3120,20 +3118,26 @@ vect_is_simple_reduction (loop_vec_info loop_info, gimple *phi,
   return NULL;
 }
 
-/* Wrapper around vect_is_simple_reduction_1, which will modify code
+/* Wrapper around vect_is_simple_reduction, which will modify code
    in-place if it enables detection of more reductions.  Arguments
    as there.  */
 
 gimple *
 vect_force_simple_reduction (loop_vec_info loop_info, gimple *phi,
-			     bool check_reduction, bool *double_reduc,
+			     bool *double_reduc,
 			     bool need_wrapping_integral_overflow)
 {
   enum vect_reduction_type v_reduc_type;
-  return vect_is_simple_reduction (loop_info, phi, check_reduction,
-				   double_reduc,
-				   need_wrapping_integral_overflow,
-				   &v_reduc_type);
+  gimple *def = vect_is_simple_reduction (loop_info, phi, double_reduc,
+					  need_wrapping_integral_overflow,
+					  &v_reduc_type);
+  if (def)
+    {
+      stmt_vec_info reduc_def_info = vinfo_for_stmt (phi);
+      STMT_VINFO_REDUC_TYPE (reduc_def_info) = v_reduc_type;
+      STMT_VINFO_REDUC_DEF (reduc_def_info) = def;
+    }
+  return def;
 }
 
 /* Calculate cost of peeling the loop PEEL_ITERS_PROLOGUE times.  */
@@ -5501,7 +5505,7 @@ vectorizable_reduction (gimple *stmt, gimple_stmt_iterator *gsi,
   tree ops[3];
   bool nested_cycle = false, found_nested_cycle_def = false;
   gimple *reduc_def_stmt = NULL;
-  bool double_reduc = false, dummy;
+  bool double_reduc = false;
   basic_block def_bb;
   struct loop * def_stmt_loop, *outer_loop = NULL;
   tree def_arg;
@@ -5702,10 +5706,10 @@ vectorizable_reduction (gimple *stmt, gimple_stmt_iterator *gsi,
       return false;
     }
 
-  enum vect_reduction_type v_reduc_type;
-  gimple *tmp = vect_is_simple_reduction (loop_vinfo, reduc_def_stmt,
-					  !nested_cycle, &dummy, false,
-					  &v_reduc_type);
+  stmt_vec_info reduc_def_info = vinfo_for_stmt (reduc_def_stmt);
+  enum vect_reduction_type v_reduc_type
+    = STMT_VINFO_REDUC_TYPE (reduc_def_info);
+  gimple *tmp = STMT_VINFO_REDUC_DEF (reduc_def_info);
 
   STMT_VINFO_VEC_REDUCTION_TYPE (stmt_info) = v_reduc_type;
   /* If we have a condition reduction, see if we can simplify it further.  */
