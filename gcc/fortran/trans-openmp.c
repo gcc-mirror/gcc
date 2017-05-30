@@ -2792,7 +2792,11 @@ gfc_trans_omp_atomic (gfc_code *code)
   gfc_start_block (&block);
 
   expr2 = code->expr2;
-  if (expr2->expr_type == EXPR_FUNCTION
+  if (((atomic_code->ext.omp_atomic & GFC_OMP_ATOMIC_MASK)
+       != GFC_OMP_ATOMIC_WRITE)
+      && (atomic_code->ext.omp_atomic & GFC_OMP_ATOMIC_SWAP) == 0
+      && expr2->expr_type == EXPR_FUNCTION
+      && expr2->value.function.isym
       && expr2->value.function.isym->id == GFC_ISYM_CONVERSION)
     expr2 = expr2->value.function.actual->expr;
 
@@ -2831,6 +2835,7 @@ gfc_trans_omp_atomic (gfc_code *code)
 	  var = code->expr1->symtree->n.sym;
 	  expr2 = code->expr2;
 	  if (expr2->expr_type == EXPR_FUNCTION
+	      && expr2->value.function.isym
 	      && expr2->value.function.isym->id == GFC_ISYM_CONVERSION)
 	    expr2 = expr2->value.function.actual->expr;
 	}
@@ -2888,6 +2893,7 @@ gfc_trans_omp_atomic (gfc_code *code)
 	}
       e = expr2->value.op.op1;
       if (e->expr_type == EXPR_FUNCTION
+	  && e->value.function.isym
 	  && e->value.function.isym->id == GFC_ISYM_CONVERSION)
 	e = e->value.function.actual->expr;
       if (e->expr_type == EXPR_VARIABLE
@@ -2901,6 +2907,7 @@ gfc_trans_omp_atomic (gfc_code *code)
 	{
 	  e = expr2->value.op.op2;
 	  if (e->expr_type == EXPR_FUNCTION
+	      && e->value.function.isym
 	      && e->value.function.isym->id == GFC_ISYM_CONVERSION)
 	    e = e->value.function.actual->expr;
 	  gcc_assert (e->expr_type == EXPR_VARIABLE
@@ -3015,6 +3022,7 @@ gfc_trans_omp_atomic (gfc_code *code)
 	  code = code->next;
 	  expr2 = code->expr2;
 	  if (expr2->expr_type == EXPR_FUNCTION
+	      && expr2->value.function.isym
 	      && expr2->value.function.isym->id == GFC_ISYM_CONVERSION)
 	    expr2 = expr2->value.function.actual->expr;
 
