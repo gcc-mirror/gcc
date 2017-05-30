@@ -1,6 +1,11 @@
 2017-05-30  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2016-08-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/67410
+	* gcc.dg/pr67410.c: New test.
+
 	2016-08-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/72868
