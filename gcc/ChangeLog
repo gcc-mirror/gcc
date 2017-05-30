@@ -1,3 +1,10 @@
+2017-05-30  Jozef Lawrynowicz  <jozef.l@somniumtech.com>
+
+	PR target/78838
+	* config/msp430/msp430.c (gen_prefix): Return NULL when section name is
+	.lowtext.
+	(has_section_name): New function.
+
 2017-05-30  Martin Liska  <mliska@suse.cz>
 
 	PR other/80909

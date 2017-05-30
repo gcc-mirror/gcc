@@ -1,3 +1,8 @@
+2017-05-30  Jozef Lawrynowicz  <jozef.l@somniumtech.com>
+
+	PR target/78838
+	* gcc.target/msp430/interrupt_fn_placement.c: New test.
+
 2017-05-30  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/80876
