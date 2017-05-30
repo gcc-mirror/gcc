@@ -90,6 +90,48 @@ def median(values):
     values.sort()
     return values[int(len(values) / 2)]
 
+class PredictDefFile:
+    def __init__(self, path):
+        self.path = path
+        self.predictors = {}
+
+    def parse_and_modify(self, heuristics, write_def_file):
+        lines = [x.rstrip() for x in open(self.path).readlines()]
+
+        p = None
+        modified_lines = []
+        for l in lines:
+            if l.startswith('DEF_PREDICTOR'):
+                m = re.match('.*"(.*)".*', l)
+                p = m.group(1)
+            elif l == '':
+                p = None
+
+            if p != None:
+                heuristic = [x for x in heuristics if x.name == p]
+                heuristic = heuristic[0] if len(heuristic) == 1 else None
+
+                m = re.match('.*HITRATE \(([^)]*)\).*', l)
+                if (m != None):
+                    self.predictors[p] = int(m.group(1))
+
+                    # modify the line
+                    if heuristic != None:
+                        new_line = (l[:m.start(1)]
+                            + str(round(heuristic.get_hitrate()))
+                            + l[m.end(1):])
+                        l = new_line
+                    p = None
+                elif 'PROB_VERY_LIKELY' in l:
+                    self.predictors[p] = 100
+            modified_lines.append(l)
+
+        # save the file
+        if write_def_file:
+            with open(self.path, 'w+') as f:
+                for l in modified_lines:
+                    f.write(l + '\n')
+
 class Summary:
     def __init__(self, name):
         self.name = name
@@ -113,7 +155,11 @@ class Summary:
             v /= 1000.0
         return "%.1f%s" % (v, 'Y')
 
-    def print(self, branches_max, count_max):
+    def print(self, branches_max, count_max, predict_def):
+        predicted_as = None
+        if predict_def != None and self.name in predict_def.predictors:
+            predicted_as = predict_def.predictors[self.name]
+
         print('%-40s %8i %5.1f%% %11.2f%% %7.2f%% / %6.2f%% %14i %8s %5.1f%%' %
             (self.name, self.branches,
                 percentage(self.branches, branches_max),
@@ -121,7 +167,12 @@ class Summary:
                 self.get_hitrate(),
                 percentage(self.fits, self.count),
                 self.count, self.count_formatted(),
-                percentage(self.count, count_max)))
+                percentage(self.count, count_max)), end = '')
+
+        if predicted_as != None:
+            print('%12i%% %5.1f%%' % (predicted_as,
+                self.get_hitrate() - predicted_as), end = '')
+        print()
 
 class Profile:
     def __init__(self, filename):
@@ -156,7 +207,7 @@ class Profile:
     def count_max(self):
         return max([v.count for k, v in self.heuristics.items()])
 
-    def print_group(self, sorting, group_name, heuristics):
+    def print_group(self, sorting, group_name, heuristics, predict_def):
         count_max = self.count_max()
         branches_max = self.branches_max()
 
@@ -170,11 +221,12 @@ class Profile:
         elif sorting == 'name':
             sorter = lambda x: x.name.lower()
 
-        print('%-40s %8s %6s %12s %18s %14s %8s %6s' %
+        print('%-40s %8s %6s %12s %18s %14s %8s %6s %12s %6s' %
             ('HEURISTICS', 'BRANCHES', '(REL)',
-            'BR. HITRATE', 'HITRATE', 'COVERAGE', 'COVERAGE', '(REL)'))
+            'BR. HITRATE', 'HITRATE', 'COVERAGE', 'COVERAGE', '(REL)',
+            'predict.def', '(REL)'))
         for h in sorted(heuristics, key = sorter):
-            h.print(branches_max, count_max)
+            h.print(branches_max, count_max, predict_def)
 
     def dump(self, sorting):
         heuristics = self.heuristics.values()
@@ -182,14 +234,19 @@ class Profile:
             print('No heuristics available')
             return
 
+        predict_def = None
+        if args.def_file != None:
+            predict_def = PredictDefFile(args.def_file)
+            predict_def.parse_and_modify(heuristics, args.write_def_file)
+
         special = list(filter(lambda x: x.name in counter_aggregates,
             heuristics))
         normal = list(filter(lambda x: x.name not in counter_aggregates,
             heuristics))
 
-        self.print_group(sorting, 'HEURISTICS', normal)
+        self.print_group(sorting, 'HEURISTICS', normal, predict_def)
         print()
-        self.print_group(sorting, 'HEURISTIC AGGREGATES', special)
+        self.print_group(sorting, 'HEURISTIC AGGREGATES', special, predict_def)
 
         if len(self.niter_vector) > 0:
             print ('\nLoop count: %d' % len(self.niter_vector)),
@@ -206,13 +263,16 @@ parser.add_argument('dump_file', metavar = 'dump_file',
 parser.add_argument('-s', '--sorting', dest = 'sorting',
     choices = ['branches', 'branch-hitrate', 'hitrate', 'coverage', 'name'],
     default = 'branches')
+parser.add_argument('-d', '--def-file', help = 'path to predict.def')
+parser.add_argument('-w', '--write-def-file', action = 'store_true',
+    help = 'Modify predict.def file in order to set new numbers')
 
 args = parser.parse_args()
 
-profile = Profile(sys.argv[1])
+profile = Profile(args.dump_file)
 r = re.compile('  (.*) heuristics( of edge [0-9]*->[0-9]*)?( \\(.*\\))?: (.*)%.*exec ([0-9]*) hit ([0-9]*)')
 loop_niter_str = ';;  profile-based iteration count: '
-for l in open(args.dump_file).readlines():
+for l in open(args.dump_file):
     m = r.match(l)
     if m != None and m.group(3) == None:
         name = m.group(1)
