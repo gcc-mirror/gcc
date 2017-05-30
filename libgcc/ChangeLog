@@ -1,3 +1,11 @@
+2017-05-30  Max Filippov  <jcmvbkbc@gmail.com>
+
+	Backport from mainline
+	2015-08-18  Max Filippov  <jcmvbkbc@gmail.com>
+
+	* config/xtensa/t-windowed (LIB2ADDEH): Replace unwind-dw2-fde
+	with unwind-dw2-fde-dip.
+
 2017-05-29  Martin Liska  <mliska@suse.cz>
 
 	Backport from mainline
