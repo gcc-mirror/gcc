@@ -7069,9 +7069,6 @@ aarch64_classify_symbol (rtx x, rtx offset,
 
   if (GET_CODE (x) == SYMBOL_REF)
     {
-      if (aarch64_cmodel == AARCH64_CMODEL_LARGE)
-	  return SYMBOL_FORCE_TO_MEM;
-
       if (aarch64_tls_symbol_p (x))
 	return aarch64_classify_tls_symbol (x);
 
@@ -7109,6 +7106,9 @@ aarch64_classify_symbol (rtx x, rtx offset,
 	  if (!aarch64_symbol_binds_local_p (x))
 	    return SYMBOL_SMALL_GOT;
 	  return SYMBOL_SMALL_ABSOLUTE;
+
+	case AARCH64_CMODEL_LARGE:
+	  return SYMBOL_FORCE_TO_MEM;
 
 	default:
 	  gcc_unreachable ();

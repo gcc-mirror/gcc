@@ -1,6 +1,13 @@
 2017-05-30  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2016-12-14  Wilco Dijkstra  <wdijkstr@arm.com>
+		    Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/78796
+	* config/aarch64/aarch64.c (aarch64_classify_symbol): Merge large
+	model checks into switch.
+
 	2016-11-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/78298

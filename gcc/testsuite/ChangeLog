@@ -1,6 +1,11 @@
 2017-05-30  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2016-12-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/78796
+	* gcc.dg/tls/pr78796.c: New test.
+
 	2016-12-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/78649
