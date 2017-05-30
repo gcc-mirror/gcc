@@ -1,6 +1,11 @@
 2017-05-30  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2016-10-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/77919
+	* g++.dg/torture/pr77919.C: New test.
+
 	2016-10-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR sanitizer/66343
