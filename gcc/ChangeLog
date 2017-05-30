@@ -1,5 +1,10 @@
 2017-05-30  Martin Liska  <mliska@suse.cz>
 
+	* dumpfile.c: Use newly added macro DUMP_FILE_INFO.
+	* dumpfile.h (struct dump_file_info): Remove ctors.
+
+2017-05-30  Martin Liska  <mliska@suse.cz>
+
 	* predict.def: Fix GNU coding style.
 
 2017-05-29  Max Filippov  <jcmvbkbc@gmail.com>
