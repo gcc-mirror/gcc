@@ -12946,7 +12946,9 @@ simd_clone_adjust_argument_types (struct cgraph_node *node)
 
 	  if (node->definition)
 	    node->simdclone->args[i].simd_array
-	      = create_tmp_simd_array (IDENTIFIER_POINTER (DECL_NAME (parm)),
+	      = create_tmp_simd_array (DECL_NAME (parm)
+				       ? IDENTIFIER_POINTER (DECL_NAME (parm))
+				       : NULL,
 				       parm_type, node->simdclone->simdlen);
 	}
       adjustments.safe_push (adj);
