@@ -1,6 +1,13 @@
 2017-05-30  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2017-03-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/80141
+	* semantics.c (finish_omp_clause) <case OMP_CLAUSE_SIMDLEN,
+	case OMP_CLAUSE_ALIGNED>: Call maybe_constant_value only when not
+	processing_template_decl.
+
 	2017-03-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/79896
