@@ -12698,6 +12698,8 @@ ix86_expand_split_stack_prologue (void)
 				GEN_INT (UNITS_PER_WORD), constm1_rtx,
 				NULL_RTX, false);
   add_function_usage_to (call_insn, call_fusage);
+  /* Indicate that this function can't jump to non-local gotos.  */
+  make_reg_eh_region_note_nothrow_nononlocal (as_a <rtx_insn *> (call_insn));
 
   /* In order to make call/return prediction work right, we now need
      to execute a return instruction.  See
