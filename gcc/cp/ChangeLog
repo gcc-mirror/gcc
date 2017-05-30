@@ -1,6 +1,12 @@
 2017-05-30  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2017-01-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/78341
+	* parser.c (cp_parser_std_attribute_spec): Remove over-eager
+	assertion.  Formatting fix.
+
 	2017-01-04  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/78949
