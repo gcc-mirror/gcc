@@ -1,6 +1,13 @@
 2017-05-30  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2017-04-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/80176
+	* tree.c (lvalue_kind): For COMPONENT_REF with BASELINK second
+	operand, if it is a static member function, recurse on the
+	BASELINK.
+
 	2017-03-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/80141

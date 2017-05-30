@@ -129,6 +129,17 @@ lvalue_kind (const_tree ref)
       return op1_lvalue_kind;
 
     case COMPONENT_REF:
+      if (BASELINK_P (TREE_OPERAND (ref, 1)))
+	{
+	  tree fn = BASELINK_FUNCTIONS (TREE_OPERAND (ref, 1));
+
+	  /* For static member function recurse on the BASELINK, we can get
+	     here e.g. from reference_binding.  If BASELINK_FUNCTIONS is
+	     OVERLOAD, the overload is resolved first if possible through
+	     resolve_address_of_overloaded_function.  */
+	  if (TREE_CODE (fn) == FUNCTION_DECL && DECL_STATIC_FUNCTION_P (fn))
+	    return lvalue_kind (TREE_OPERAND (ref, 1));
+	}
       op1_lvalue_kind = lvalue_kind (TREE_OPERAND (ref, 0));
       /* Look at the member designator.  */
       if (!op1_lvalue_kind)
