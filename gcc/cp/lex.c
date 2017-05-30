@@ -553,12 +553,11 @@ maybe_add_lang_decl_raw (tree t, bool decomp_p)
     = (struct lang_decl *) ggc_internal_cleared_alloc (size);
 
   ld->u.base.selector = sel;
+  DECL_LANG_SPECIFIC (t) = ld;
 
   if (sel == lds_ns)
     /* Who'd create a namespace, only to put nothing in it?  */
     ld->u.ns.bindings = hash_map<lang_identifier *, tree>::create_ggc (499);
-
-  DECL_LANG_SPECIFIC (t) = ld;
 
   if (GATHER_STATISTICS)
     {

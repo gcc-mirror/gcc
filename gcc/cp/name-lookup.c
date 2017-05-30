@@ -92,25 +92,24 @@ decapsulate_binding (tree value, tree *type_p)
   return MAYBE_STAT_DECL (value);
 }
 
-/* Return the binding for NAME in SCOPE, if any.  Otherwise create an
-   empty slot.  */
+/* Find the binding for NAME in namespace NS.  If CREATE_P is true,
+   make an empty binding if there wasn't one.  */
 
 static tree *
-find_or_create_namespace_slot (tree ns, tree name)
+find_namespace_slot (tree ns, tree name, bool create_p = false)
 {
-  bool existed;
-  tree *slot = &DECL_NAMESPACE_BINDINGS (ns)->get_or_insert (name, &existed);
-  if (!existed)
-    *slot = NULL_TREE;
+  tree *slot;
+
+  if (create_p)
+    {
+      bool existed;
+      slot = &DECL_NAMESPACE_BINDINGS (ns)->get_or_insert (name, &existed);
+      if (!existed)
+	*slot = NULL_TREE;
+    }
+  else
+    slot = DECL_NAMESPACE_BINDINGS (ns)->get (name);
   return slot;
-}
-
-/* Return the binding for NAME in SCOPE, if any.  Otherwise, return NULL.  */
-
-static tree *
-find_namespace_slot (tree ns, tree name)
-{
-  return DECL_NAMESPACE_BINDINGS (ns)->get (name);
 }
 
 static tree
@@ -259,6 +258,13 @@ add_decl_to_level (cp_binding_level *b, tree decl)
     }
   else
     {
+      /* Make sure we don't create a circular list.  xref_tag can end
+	 up pushing the same artificial decl more than once.  We
+	 should have already detected that in update_binding.  */
+      gcc_assert (b->names != decl);
+
+      /* We build up the list in reverse order, and reverse it later if
+	 necessary.  */
       TREE_CHAIN (decl) = b->names;
       b->names = decl;
     }
@@ -1928,17 +1934,43 @@ update_binding (cp_binding_level *level, cxx_binding *binding, tree *slot,
 		tree old, tree decl, bool is_friend)
 {
   tree to_val = decl;
-  tree to_type = NULL_TREE;
+  tree old_type = slot ? MAYBE_STAT_TYPE (*slot) : binding->type;
+  tree to_type = old_type;
 
   gcc_assert (level->kind == sk_namespace ? !binding
 	      : level->kind != sk_class && !slot);
   if (old == error_mark_node)
     old = NULL_TREE;
 
+  if (TREE_CODE (decl) == TYPE_DECL && DECL_ARTIFICIAL (decl))
+    {
+      tree other = to_type;
+
+      if (old && TREE_CODE (old) == TYPE_DECL && DECL_ARTIFICIAL (old))
+	other = old;
+
+      /* Pushing an artificial typedef.  See if this matches either
+	 the type slot or the old value slot.  */
+      if (!other)
+	;
+      else if (same_type_p (TREE_TYPE (other), TREE_TYPE (decl)))
+	/* Two artificial decls to same type.  Do nothing.  */
+	return other;
+      else
+	goto conflict;
+
+      if (old)
+	{
+	  /* Slide decl into the type slot, keep old unaltered  */
+	  to_type = decl;
+	  to_val = old;
+	  goto done;
+	}
+    }
+
   if (old && TREE_CODE (old) == TYPE_DECL && DECL_ARTIFICIAL (old))
     {
-      /* Slide the tdef out of the way.  We'll undo this below, if
-	 we're pushing a matching tdef.  */
+      /* Slide old into the type slot.  */
       to_type = old;
       old = NULL_TREE;
     }
@@ -1975,39 +2007,14 @@ update_binding (cp_binding_level *level, cxx_binding *binding, tree *slot,
 
       to_val = ovl_insert (decl, old);
     }
-  else if (to_type && TREE_CODE (decl) == TYPE_DECL)
-    {
-      /* We thought we wanted to slide an artificial typedef out of
-	 the way, to make way for another typedef.  That's not always
-	 what we want to do.  */
-      if (!DECL_ARTIFICIAL (decl))
-	; /* Slide.  */
-      else if (same_type_p (TREE_TYPE (to_type), TREE_TYPE (decl)))
-	/* Two artificial decls to same type.  Do nothing.  */
-	return to_type;
-      else
-	goto conflict;
-    }
   else if (!old)
     ;
-  else if (TREE_CODE (decl) == TYPE_DECL && DECL_ARTIFICIAL (decl))
-    {
-      /* Slide DECL into the type slot.  */
-      to_type = decl;
-      to_val = old;
-    }
   else if (TREE_CODE (old) != TREE_CODE (decl))
     /* Different kinds of decls conflict.  */
     goto conflict;
   else if (TREE_CODE (old) == TYPE_DECL)
     {
-      if (DECL_ARTIFICIAL (decl))
-	{
-	  /* Slide DECL into the type slot instead.  */
-	  to_type = decl;
-	  to_val = old;
-	}
-      else if (same_type_p (TREE_TYPE (old), TREE_TYPE (decl)))
+      if (same_type_p (TREE_TYPE (old), TREE_TYPE (decl)))
 	/* Two type decls to the same type.  Do nothing.  */
 	return old;
       else
@@ -2043,6 +2050,7 @@ update_binding (cp_binding_level *level, cxx_binding *binding, tree *slot,
       to_val = NULL_TREE;
     }
 
+ done:
   if (to_val)
     {
       if (level->kind != sk_namespace
@@ -2062,12 +2070,10 @@ update_binding (cp_binding_level *level, cxx_binding *binding, tree *slot,
 	  add_decl_to_level (level, to_add);
 	}
 
-      if (to_type == (slot ? MAYBE_STAT_TYPE (*slot) : binding->type))
-	to_type = NULL_TREE;
-
-      if (to_type)
+      if (to_type != old_type)
 	{
-	  gcc_checking_assert (TREE_CODE (to_type) == TYPE_DECL
+	  gcc_checking_assert (!old_type
+			       && TREE_CODE (to_type) == TYPE_DECL
 			       && DECL_ARTIFICIAL (to_type));
 
 	  tree type = TREE_TYPE (to_type);
@@ -2083,8 +2089,7 @@ update_binding (cp_binding_level *level, cxx_binding *binding, tree *slot,
 	{
 	  if (STAT_HACK_P (*slot))
 	    {
-	      if (to_type)
-		STAT_TYPE (*slot) = to_type;
+	      STAT_TYPE (*slot) = to_type;
 	      STAT_DECL (*slot) = to_val;
 	    }
 	  else if (to_type)
@@ -2094,8 +2099,7 @@ update_binding (cp_binding_level *level, cxx_binding *binding, tree *slot,
 	}
       else
 	{
-	  if (to_type)
-	    binding->type = to_type;
+	  binding->type = to_type;
 	  binding->value = to_val;
 	}
     }
@@ -2549,12 +2553,9 @@ do_pushdecl (tree decl, bool is_friend)
 	     namespace.  */
 	  ns = (DECL_NAMESPACE_SCOPE_P (decl)
 		? CP_DECL_CONTEXT (decl) : current_namespace);
-	  if (ns == current_namespace)
-	    /* Create the binding, if this is current namespace, because
-	       that's where we'll be pushing anyway.  */
-	    slot = find_or_create_namespace_slot (ns, name);
-	  else
-	    slot = find_namespace_slot (ns, name);
+	  /* Create the binding, if this is current namespace, because
+	     that's where we'll be pushing anyway.  */
+	  slot = find_namespace_slot (ns, name,ns == current_namespace);
 	  if (slot)
 	    {
 	      gcc_assert (current_module <= IMPORTED_MODULE_BASE);
@@ -2649,7 +2650,7 @@ do_pushdecl (tree decl, bool is_friend)
       else if (!slot)
 	{
 	  ns = current_namespace;
-	  slot = find_or_create_namespace_slot (ns, name);
+	  slot = find_namespace_slot (ns, name, true);
 	  mslot = module_binding_slot (slot, current_module, true);
 	}
 
@@ -2751,7 +2752,7 @@ merge_global_decl (tree ctx, tree decl)
   gcc_assert (DECL_CONTEXT (decl) == ctx);
   /* We know we'll eventually insert the decl, so we can create the
      slot now.  */
-  tree *slot = find_or_create_namespace_slot (ctx, DECL_NAME (decl));
+  tree *slot = find_namespace_slot (ctx, DECL_NAME (decl), true);
   tree *mslot = module_binding_slot (slot, GLOBAL_MODULE_INDEX, is_ns);
   tree old = NULL_TREE;
 
@@ -2813,7 +2814,7 @@ push_module_binding (tree ns, unsigned mod, tree name, tree value, tree type)
   bool is_ns = (TREE_CODE (value) == NAMESPACE_DECL
 		&& !DECL_NAMESPACE_ALIAS (value));
 
-  tree *slot = find_or_create_namespace_slot (ns, name);
+  tree *slot = find_namespace_slot (ns, name, true);
   tree *mslot = module_binding_slot (slot, mod, is_ns ? -1 : 1);
 
   gcc_assert (!*mslot || !MAYBE_STAT_TYPE (*mslot)); // FIXME
@@ -3609,7 +3610,7 @@ set_identifier_type_value_with_scope (tree id, tree decl, cp_binding_level *b)
     }
   else
     {
-      tree *slot = find_or_create_namespace_slot (current_namespace, id);
+      tree *slot = find_namespace_slot (current_namespace, id, true);
       gcc_assert (decl);
       update_binding (b, NULL, slot, MAYBE_STAT_DECL (*slot), decl, false);
 
@@ -4690,7 +4691,7 @@ set_global_binding (tree name, tree val)
 {
   bool subtime = timevar_cond_start (TV_NAME_LOOKUP);
 
-  tree *slot = find_or_create_namespace_slot (global_namespace, name);
+  tree *slot = find_namespace_slot (global_namespace, name, true);
   tree old = MAYBE_STAT_DECL (*slot);
 
   if (!old)
@@ -5022,7 +5023,7 @@ finish_namespace_using_decl (tree decl, tree scope, tree name)
   if (decl == NULL_TREE)
     return;
 
-  tree *slot = find_or_create_namespace_slot (current_namespace, name);
+  tree *slot = find_namespace_slot (current_namespace, name, true);
   tree val = slot ? MAYBE_STAT_DECL (*slot) : NULL_TREE;
   tree type = slot ? MAYBE_STAT_TYPE (*slot) : NULL_TREE;
   do_nonmember_using_decl (scope, name, &val, &type);

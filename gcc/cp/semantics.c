@@ -9091,7 +9091,7 @@ classtype_has_nothrow_assign_or_copy_p (tree type, bool assign_p)
     {
       tree fn = *iter;
  
-      if (assign_p) // FIXME, why this difference?
+      if (assign_p)
 	{
 	  if (copy_fn_p (fn) == 0)
 	    continue;

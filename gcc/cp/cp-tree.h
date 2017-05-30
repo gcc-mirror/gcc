@@ -542,7 +542,6 @@ struct GTY(()) lang_identifier {
   cxx_binding *bindings;
   tree class_template_info;
   tree label_value;
-  bool oracle_looked_up;
 };
 
 /* Return a typed pointer version of T if it designates a
@@ -691,10 +690,6 @@ typedef struct ptrmem_cst * ptrmem_cst_t;
 /* Whether this is a single member overload.  */
 #define OVL_SINGLE_P(NODE) \
   (TREE_CODE (NODE) != OVERLOAD || !OVL_CHAIN (NODE))
-/* Whether this is a plurality of overloaded functions (which could
-   include a single TEMPLATE_DECL).  */
-#define OVL_PLURAL_P(NODE) \
-  (TREE_CODE (NODE) == OVERLOAD && TREE_TYPE (NODE) == unknown_type_node)
 
 /* OVL_HIDDEN_P nodes come first, then OVL_USING_P nodes, then regular
    fns.  */

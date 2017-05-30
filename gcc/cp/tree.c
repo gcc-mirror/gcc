@@ -2528,8 +2528,6 @@ ovl_scope (tree ovl)
     return BINFO_TYPE (BASELINK_BINFO (ovl));
   if (TREE_CODE (ovl) == TEMPLATE_ID_EXPR)
     ovl = TREE_OPERAND (ovl, 0);
-  /* FIXME: What if it's all using declarations?  Prepend some kind
-     of context? */
   /* Skip using-declarations.  */
   lkp_iterator iter (ovl);
   do

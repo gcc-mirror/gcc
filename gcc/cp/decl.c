@@ -647,6 +647,9 @@ poplevel (int keep, int reverse, int functionbody)
       && !processing_template_decl)
     for (tree d = get_local_decls (); d; d = TREE_CHAIN (d))
       {
+	/* There are cases where D itself is a TREE_LIST.  See in
+	   push_local_binding where the list of decls returned by
+	   getdecls is built.  */
 	decl = TREE_CODE (d) == TREE_LIST ? TREE_VALUE (d) : d;
 
 	tree type = TREE_TYPE (decl);
