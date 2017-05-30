@@ -1,6 +1,11 @@
 2017-05-30  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2017-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/79411
+	* gcc.c-torture/compile/pr79411.c: New test.
+
 	2017-02-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/79197
