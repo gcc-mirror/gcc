@@ -1,6 +1,12 @@
 2017-05-30  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2017-02-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/79396
+	* tree-eh.c (operation_could_trap_p, stmt_could_throw_1_p): Handle
+	FMA_EXPR like tcc_binary or tcc_unary.
+
 	2017-02-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/79570
