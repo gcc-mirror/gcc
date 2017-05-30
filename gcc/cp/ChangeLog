@@ -1,6 +1,12 @@
 2017-05-30  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2017-01-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/78949
+	* typeck.c (cp_build_unary_op): Call mark_rvalue_use on arg if it has
+	vector type.
+
 	2016-12-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/78649
