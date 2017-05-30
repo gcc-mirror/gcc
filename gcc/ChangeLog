@@ -1,5 +1,20 @@
 2017-05-30  Richard Biener  <rguenther@suse.de>
 
+	* tree-vectorizer.h (struct _stmt_vec_info): Add reduc_type
+	and reduc_def fields.
+	(STMT_VINFO_REDUC_TYPE): New define.
+	(STMT_VINFO_REDUC_DEF): Likewise.
+	(vect_force_simple_reduction): Adjust prototype.
+	* tree-vect-loop.c (vect_analyze_scalar_cycles_1): Adjust.
+	(vect_is_simple_reduction): Remove check_reduction argument.
+	(vect_force_simple_reduction): Adjust and set
+	STMT_VINFO_REDUC_TYPE and STMT_VINFO_REDUC_DEF.
+	(vectorizable_reduction): Do not re-do reduction analysis
+	but use STMT_VINFO_REDUC_TYPE and STMT_VINFO_REDUC_DEF.
+	* tree-parloops.c (gather_scalar_reductions): Adjust.
+
+2017-05-30  Richard Biener  <rguenther@suse.de>
+
 	PR middle-end/80901
 	* cfgexpand.c (expand_gimple_cond): Match up loop fixup with
 	split_edge code.
