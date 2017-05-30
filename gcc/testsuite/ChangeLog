@@ -1,3 +1,9 @@
+2017-05-30  Martin Sebor  <msebor@redhat.com>
+
+	PR c/80731
+	* g++.dg/ext/utf16-4.C: Relax test.
+	* gcc.dg/fixed-point/int-warning.c: Adjust.
+
 2017-05-30  David Malcolm  <dmalcolm@redhat.com>
 
 	* g++.dg/plugin/plugin.exp (plugin_test_list): Add...
