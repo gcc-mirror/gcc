@@ -3,6 +3,10 @@
 	Backported from mainline
 	2017-02-21  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/79570
+	* sel-sched.c (moveup_expr_cached): Don't call sel_bb_head
+	on temporarily removed DEBUG_INSNs.
+
 	PR target/79494
 	* config/i386/i386.c (ix86_expand_split_stack_prologue): Call
 	make_reg_eh_region_note_nothrow_nononlocal on call_insn.

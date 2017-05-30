@@ -2559,6 +2559,7 @@ moveup_expr_cached (expr_t expr, insn_t insn, bool inside_insn_group)
     }
 
   if (DEBUG_INSN_P (EXPR_INSN_RTX (expr))
+      && BLOCK_FOR_INSN (EXPR_INSN_RTX (expr))
       && (sel_bb_head (BLOCK_FOR_INSN (EXPR_INSN_RTX (expr)))
 	  == EXPR_INSN_RTX (expr)))
     /* Don't use cached information for debug insns that are heads of
