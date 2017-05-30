@@ -10817,7 +10817,8 @@ modified_type_die (tree type, int cv_quals, dw_die_ref context_die)
 	 copy was created to help us keep track of typedef names) and
 	 that copy might have a different TYPE_UID from the original
 	 ..._TYPE node.  */
-      if (TREE_CODE (type) != VECTOR_TYPE)
+      if (TREE_CODE (type) != VECTOR_TYPE
+	  && TREE_CODE (type) != ARRAY_TYPE)
 	return lookup_type_die (type_main_variant (type));
       else
 	/* Vectors have the debugging information in the type,
