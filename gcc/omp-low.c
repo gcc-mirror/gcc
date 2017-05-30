@@ -1166,7 +1166,8 @@ build_receiver_ref (tree var, bool by_ref, omp_context *ctx)
    this is some variable.  */
 
 static tree
-build_outer_var_ref (tree var, omp_context *ctx)
+build_outer_var_ref (tree var, omp_context *ctx,
+		     enum omp_clause_code code = OMP_CLAUSE_ERROR)
 {
   tree x;
 
@@ -1175,7 +1176,7 @@ build_outer_var_ref (tree var, omp_context *ctx)
   else if (is_variable_sized (var))
     {
       x = TREE_OPERAND (DECL_VALUE_EXPR (var), 0);
-      x = build_outer_var_ref (x, ctx);
+      x = build_outer_var_ref (x, ctx, code);
       x = build_simple_mem_ref (x);
     }
   else if (is_taskreg_ctx (ctx))
@@ -1183,11 +1184,17 @@ build_outer_var_ref (tree var, omp_context *ctx)
       bool by_ref = use_pointer_for_field (var, NULL);
       x = build_receiver_ref (var, by_ref, ctx);
     }
-  else if (gimple_code (ctx->stmt) == GIMPLE_OMP_FOR
-	   && gimple_omp_for_kind (ctx->stmt) & GF_OMP_FOR_SIMD)
+  else if ((gimple_code (ctx->stmt) == GIMPLE_OMP_FOR
+	    && gimple_omp_for_kind (ctx->stmt) & GF_OMP_FOR_SIMD)
+	   || (code == OMP_CLAUSE_PRIVATE
+	       && (gimple_code (ctx->stmt) == GIMPLE_OMP_FOR
+		   || gimple_code (ctx->stmt) == GIMPLE_OMP_SECTIONS
+		   || gimple_code (ctx->stmt) == GIMPLE_OMP_SINGLE)))
     {
-      /* #pragma omp simd isn't a worksharing construct, and can reference even
-	 private vars in its linear etc. clauses.  */
+      /* #pragma omp simd isn't a worksharing construct, and can reference
+	 even private vars in its linear etc. clauses.
+	 Similarly for OMP_CLAUSE_PRIVATE with outer ref, that can refer
+	 to private vars in all worksharing constructs.  */
       x = NULL_TREE;
       if (ctx->outer && is_taskreg_ctx (ctx))
 	x = lookup_decl (var, ctx->outer);
@@ -3886,7 +3893,7 @@ lower_rec_input_clauses (tree clauses, gimple_seq *ilist, gimple_seq *dlist,
 		  if (is_task_ctx (ctx))
 		    x = build_receiver_ref (var, false, ctx);
 		  else
-		    x = build_outer_var_ref (var, ctx);
+		    x = build_outer_var_ref (var, ctx, OMP_CLAUSE_PRIVATE);
 		}
 	      else
 		x = NULL;
