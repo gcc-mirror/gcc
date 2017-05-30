@@ -1,6 +1,16 @@
 2017-05-30  Max Filippov  <jcmvbkbc@gmail.com>
 
 	Backport from mainline
+	2016-02-17  Max Filippov  <jcmvbkbc@gmail.com>
+
+	* config/xtensa/ieee754-df.S (__muldf3_aux, __divdf3_aux): Add
+	.literal_position before the function.
+	* config/xtensa/ieee754-sf.S (__mulsf3_aux, __divsf3_aux):
+	Likewise.
+
+2017-05-30  Max Filippov  <jcmvbkbc@gmail.com>
+
+	Backport from mainline
 	2015-09-15  Max Filippov  <jcmvbkbc@gmail.com>
 
 	* config/xtensa/linux-unwind.h (xtensa_fallback_frame_state):
