@@ -530,25 +530,6 @@
   return CR_REGNO_NOT_CR0_P (REGNO (op));
 })
 
-;; Return 1 if op is a register that is a condition register field and if generating microcode, not cr0.
-(define_predicate "cc_reg_not_micro_cr0_operand"
-  (match_operand 0 "register_operand")
-{
-  if (GET_CODE (op) == SUBREG)
-    op = SUBREG_REG (op);
-
-  if (!REG_P (op))
-    return 0;
-
-  if (REGNO (op) > LAST_VIRTUAL_REGISTER)
-    return 1;
-
-  if (rs6000_gen_cell_microcode)
-    return CR_REGNO_NOT_CR0_P (REGNO (op));
-  else
-    return CR_REGNO_P (REGNO (op));
-})
-
 ;; Return 1 if op is a constant integer valid for D field
 ;; or non-special register register.
 (define_predicate "reg_or_short_operand"
@@ -1068,8 +1049,6 @@
   if (gpc_reg_operand (inner, mode))
     return true;
   if (!memory_operand (inner, mode))
-    return false;
-  if (!rs6000_gen_cell_microcode)
     return false;
 
   addr = XEXP (inner, 0);

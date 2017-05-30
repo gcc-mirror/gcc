@@ -1,7 +1,7 @@
 /* Check that record-form instructions are used.  */
 
 /* { dg-do compile } */
-/* { dg-options "-O2 -mgen-cell-microcode" } */
+/* { dg-options "-O2" } */
 
 /* { dg-final { scan-assembler-times {\mrotl[wd]\.} 2 } } */
 /* { dg-final { scan-assembler-times {\msl[wd]\.} 2 } } */
