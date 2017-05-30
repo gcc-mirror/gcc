@@ -179,10 +179,13 @@ doloop_condition_get (rtx doloop_pat)
 	}
       else
         inc = PATTERN (prev_insn);
-      /* We expect the condition to be of the form (reg != 0)  */
-      cond = XEXP (SET_SRC (cmp), 0);
-      if (GET_CODE (cond) != NE || XEXP (cond, 1) != const0_rtx)
-        return 0;
+      if (GET_CODE (cmp) == SET && GET_CODE (SET_SRC (cmp)) == IF_THEN_ELSE)
+	{
+	  /* We expect the condition to be of the form (reg != 0)  */
+	  cond = XEXP (SET_SRC (cmp), 0);
+	  if (GET_CODE (cond) != NE || XEXP (cond, 1) != const0_rtx)
+	    return 0;
+	}
     }
   else
     {
