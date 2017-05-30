@@ -3402,7 +3402,7 @@ print_conversion_rejection (location_t loc, struct conversion_info *info)
 		from);
       else
 	inform (loc, "  no known conversion for implicit "
-		"%<this%> parameter from %qT to %qT",
+		"%<this%> parameter from %qH to %qI",
 		from, info->to_type);
     }
   else if (!TYPE_P (info->from))
@@ -3415,10 +3415,10 @@ print_conversion_rejection (location_t loc, struct conversion_info *info)
     }
   else if (info->n_arg == -2)
     /* Conversion of conversion function return value failed.  */
-    inform (loc, "  no known conversion from %qT to %qT",
+    inform (loc, "  no known conversion from %qH to %qI",
 	    from, info->to_type);
   else
-    inform (loc, "  no known conversion for argument %d from %qT to %qT",
+    inform (loc, "  no known conversion for argument %d from %qH to %qI",
 	    info->n_arg + 1, from, info->to_type);
 }
 
@@ -3925,7 +3925,7 @@ build_user_type_conversion_1 (tree totype, tree expr, int flags,
     {
       if (complain & tf_error)
 	{
-	  error ("conversion from %qT to %qT is ambiguous",
+	  error ("conversion from %qH to %qI is ambiguous",
 		 fromtype, totype);
 	  print_z_candidates (location_of (expr), candidates);
 	}
@@ -4052,7 +4052,7 @@ build_integral_nontype_arg_conv (tree type, tree expr, tsubst_flags_t complain)
 	  break;
 
 	if (complain & tf_error)
-	  error_at (loc, "conversion from %qT to %qT not considered for "
+	  error_at (loc, "conversion from %qH to %qI not considered for "
 		    "non-type template argument", t, type);
 	/* fall through.  */
 
@@ -4818,14 +4818,14 @@ build_conditional_expr_1 (location_t loc, tree arg1, tree arg2, tree arg3,
 	  if (unsafe_conversion_p (loc, stype, arg2, NULL_TREE, false))
 	    {
 	      if (complain & tf_error)
-		error_at (loc, "conversion of scalar %qT to vector %qT "
+		error_at (loc, "conversion of scalar %qH to vector %qI "
 			       "involves truncation", arg2_type, vtype);
 	      return error_mark_node;
 	    }
 	  if (unsafe_conversion_p (loc, stype, arg3, NULL_TREE, false))
 	    {
 	      if (complain & tf_error)
-		error_at (loc, "conversion of scalar %qT to vector %qT "
+		error_at (loc, "conversion of scalar %qH to vector %qI "
 			       "involves truncation", arg3_type, vtype);
 	      return error_mark_node;
 	    }
@@ -5214,7 +5214,7 @@ build_conditional_expr_1 (location_t loc, tree arg1, tree arg2, tree arg3,
 							     arg3_type);
       if (complain & tf_warning)
 	do_warn_double_promotion (result_type, arg2_type, arg3_type,
-				  "implicit conversion from %qT to %qT to "
+				  "implicit conversion from %qH to %qI to "
 				  "match other result of conditional",
 				  loc);
 
@@ -6593,7 +6593,7 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 	 from std::nullptr_t requires direct-initialization.  */
       if (NULLPTR_TYPE_P (TREE_TYPE (expr))
 	  && TREE_CODE (totype) == BOOLEAN_TYPE)
-	complained = permerror (loc, "converting to %qT from %qT requires "
+	complained = permerror (loc, "converting to %qH from %qI requires "
 				"direct-initialization",
 				totype, TREE_TYPE (expr));
 
@@ -6602,7 +6602,7 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 	  if (t->kind == ck_user && t->cand->reason)
 	    {
 	      complained = permerror (loc, "invalid user-defined conversion "
-				      "from %qT to %qT", TREE_TYPE (expr),
+				      "from %qH to %qI", TREE_TYPE (expr),
 				      totype);
 	      if (complained)
 		print_z_candidate (loc, "candidate is:", t->cand);
@@ -6638,7 +6638,7 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 	    break;
 	}
       if (!complained)
-	complained = permerror (loc, "invalid conversion from %qT to %qT",
+	complained = permerror (loc, "invalid conversion from %qH to %qI",
 				TREE_TYPE (expr), totype);
       if (complained && fn)
 	inform (DECL_SOURCE_LOCATION (fn),
@@ -6914,14 +6914,14 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 	    tree extype = TREE_TYPE (expr);
 	    if (TYPE_REF_IS_RVALUE (ref_type)
 		&& lvalue_p (expr))
-	      error_at (loc, "cannot bind rvalue reference of type %qT to "
-                        "lvalue of type %qT", totype, extype);
+	      error_at (loc, "cannot bind rvalue reference of type %qH to "
+                        "lvalue of type %qI", totype, extype);
 	    else if (!TYPE_REF_IS_RVALUE (ref_type) && !lvalue_p (expr)
 		     && !CP_TYPE_CONST_NON_VOLATILE_P (TREE_TYPE (ref_type)))
 	      error_at (loc, "cannot bind non-const lvalue reference of "
-			"type %qT to an rvalue of type %qT", totype, extype);
+			"type %qH to an rvalue of type %qI", totype, extype);
 	    else if (!reference_compatible_p (TREE_TYPE (totype), extype))
-	      error_at (loc, "binding reference of type %qT to %qT "
+	      error_at (loc, "binding reference of type %qH to %qI "
 			"discards qualifiers", totype, extype);
 	    else
 	      gcc_unreachable ();
@@ -7073,7 +7073,7 @@ convert_arg_to_ellipsis (tree arg, tsubst_flags_t complain)
       if ((complain & tf_warning)
 	  && warn_double_promotion && !c_inhibit_evaluation_warnings)
 	warning_at (loc, OPT_Wdouble_promotion,
-		    "implicit conversion from %qT to %qT when passing "
+		    "implicit conversion from %qH to %qI when passing "
 		    "argument to function",
 		    arg_type, double_type_node);
       arg = convert_to_real_nofold (double_type_node, arg);
@@ -9640,7 +9640,7 @@ joust (struct z_candidate *cand1, struct z_candidate *cand2, bool warn,
 	  if (! DECL_CONSTRUCTOR_P (w->fn))
 	    source = TREE_TYPE (source);
 	  if (warning (OPT_Wconversion, "choosing %qD over %qD", w->fn, l->fn)
-	      && warning (OPT_Wconversion, "  for conversion from %qT to %qT",
+	      && warning (OPT_Wconversion, "  for conversion from %qH to %qI",
 			  source, w->second_conv->type)) 
 	    {
 	      inform (input_location, "  because conversion sequence for the argument is better");
@@ -10096,7 +10096,7 @@ perform_implicit_conversion_flags (tree type, tree expr,
 	  else if (invalid_nonstatic_memfn_p (loc, expr, complain))
 	    /* We gave an error.  */;
 	  else
-	    error_at (loc, "could not convert %qE from %qT to %qT", expr,
+	    error_at (loc, "could not convert %qE from %qH to %qI", expr,
 		      TREE_TYPE (expr), type);
 	}
       expr = error_mark_node;
@@ -10412,11 +10412,11 @@ initialize_reference (tree type, tree expr,
 		   && !TYPE_REF_IS_RVALUE (type)
 		   && !lvalue_p (expr))
 	    error_at (loc, "invalid initialization of non-const reference of "
-		      "type %qT from an rvalue of type %qT",
+		      "type %qH from an rvalue of type %qI",
 		      type, TREE_TYPE (expr));
 	  else
 	    error_at (loc, "invalid initialization of reference of type "
-		      "%qT from expression of type %qT", type,
+		      "%qH from expression of type %qI", type,
 		      TREE_TYPE (expr));
 	}
       return error_mark_node;

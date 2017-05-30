@@ -1,3 +1,8 @@
+2017-05-30  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-objc-common.c (c_tree_printer): Gain bool and const char **
+	parameters.
+
 2017-05-24  Martin Sebor  <msebor@redhat.com>
 
 	PR c/80731

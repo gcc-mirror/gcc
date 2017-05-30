@@ -251,6 +251,7 @@ Objective-C and Objective-C++ Dialects}.
 -fdiagnostics-color=@r{[}auto@r{|}never@r{|}always@r{]}  @gol
 -fno-diagnostics-show-option  -fno-diagnostics-show-caret @gol
 -fdiagnostics-parseable-fixits  -fdiagnostics-generate-patch @gol
+-fdiagnostics-show-template-tree -fno-elide-type @gol
 -fno-show-column}
 
 @item Warning Options
@@ -3448,7 +3449,8 @@ The default @env{GCC_COLORS} is
 @smallexample
 error=01;31:warning=01;35:note=01;36:range1=32:range2=34:locus=01:\
 quote=01:fixit-insert=32:fixit-delete=31:\
-diff-filename=01:diff-hunk=32:diff-delete=31:diff-insert=32
+diff-filename=01:diff-hunk=32:diff-delete=31:diff-insert=32:\
+type-diff=01;32
 @end smallexample
 @noindent
 where @samp{01;31} is bold red, @samp{01;35} is bold magenta,
@@ -3512,6 +3514,11 @@ SGR substring for deleted lines within generated patches.
 @item diff-insert=
 @vindex diff-insert GCC_COLORS @r{capability}
 SGR substring for inserted lines within generated patches.
+
+@item type-diff=
+@vindex type-diff GCC_COLORS @r{capability}
+SGR substring for highlighting mismatching types within template
+arguments in the C++ frontend.
 @end table
 
 @item -fno-diagnostics-show-option
@@ -3583,6 +3590,47 @@ are printed.  For example:
 
 The diff may or may not be colorized, following the same rules
 as for diagnostics (see @option{-fdiagnostics-color}).
+
+@item -fdiagnostics-show-template-tree
+@opindex fdiagnostics-show-template-tree
+
+In the C++ frontend, when printing diagnostics showing mismatching
+template types, such as:
+
+@smallexample
+  could not convert 'std::map<int, std::vector<double> >()'
+    from 'map<[...],vector<double>>' to 'map<[...],vector<float>>
+@end smallexample
+
+the @option{-fdiagnostics-show-template-tree} flag enables printing a
+tree-like structure showing the common and differing parts of the types,
+such as:
+
+@smallexample
+  map<
+    [...],
+    vector<
+      [double != float]>>
+@end smallexample
+
+The parts that differ are highlighted with color (``double'' and
+``float'' in this case).
+
+@item -fno-elide-type
+@opindex fno-elide-type
+@opindex felide-type
+By default when the C++ frontend prints diagnostics showing mismatching
+template types, common parts of the types are printed as ``[...]'' to
+simplify the error message.  For example:
+
+@smallexample
+  could not convert 'std::map<int, std::vector<double> >()'
+    from 'map<[...],vector<double>>' to 'map<[...],vector<float>>
+@end smallexample
+
+Specifying the @option{-fno-elide-type} flag suppresses that behavior.
+This flag also affects the output of the
+@option{-fdiagnostics-show-template-tree} flag.
 
 @item -fno-show-column
 @opindex fno-show-column

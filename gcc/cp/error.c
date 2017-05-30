@@ -99,7 +99,50 @@ static void cp_diagnostic_starter (diagnostic_context *, diagnostic_info *);
 static void cp_print_error_function (diagnostic_context *, diagnostic_info *);
 
 static bool cp_printer (pretty_printer *, text_info *, const char *,
-			int, bool, bool, bool);
+			int, bool, bool, bool, bool, const char **);
+
+/* Struct for handling %H or %I, which require delaying printing the
+   type until a postprocessing stage.  */
+
+struct deferred_printed_type
+{
+  deferred_printed_type ()
+  : m_tree (NULL_TREE), m_buffer_ptr (NULL), m_verbose (false), m_quote (false)
+  {}
+
+  deferred_printed_type (tree type, const char **buffer_ptr, bool verbose,
+			 bool quote)
+  : m_tree (type), m_buffer_ptr (buffer_ptr), m_verbose (verbose),
+    m_quote (quote)
+  {
+    gcc_assert (type);
+    gcc_assert (buffer_ptr);
+  }
+
+  /* The tree is not GTY-marked: they are only non-NULL within a
+     call to pp_format.  */
+  tree m_tree;
+  const char **m_buffer_ptr;
+  bool m_verbose;
+  bool m_quote;
+};
+
+/* Subclass of format_postprocessor for the C++ frontend.
+   This handles the %H and %I formatting codes, printing them
+   in a postprocessing phase (since they affect each other).  */
+
+class cxx_format_postprocessor : public format_postprocessor
+{
+ public:
+  cxx_format_postprocessor ()
+  : m_type_a (), m_type_b ()
+  {}
+
+  void handle (pretty_printer *pp) FINAL OVERRIDE;
+
+  deferred_printed_type m_type_a;
+  deferred_printed_type m_type_b;
+};
 
 /* CONTEXT->printer is a basic pretty printer that was constructed
    presumably by diagnostic_initialize(), called early in the
@@ -123,6 +166,7 @@ cxx_initialize_diagnostics (diagnostic_context *context)
   diagnostic_starter (context) = cp_diagnostic_starter;
   /* diagnostic_finalizer is already c_diagnostic_finalizer.  */
   diagnostic_format_decoder (context) = cp_printer;
+  pp->m_format_postprocessor = new cxx_format_postprocessor ();
 }
 
 /* Dump a scope, if deemed necessary.  */
@@ -3563,6 +3607,388 @@ maybe_print_constexpr_context (diagnostic_context *context)
     }
 }
 
+
+/* Return true iff TYPE_A and TYPE_B are template types that are
+   meaningful to compare.  */
+
+static bool
+comparable_template_types_p (tree type_a, tree type_b)
+{
+  if (!CLASS_TYPE_P (type_a))
+    return false;
+  if (!CLASS_TYPE_P (type_b))
+    return false;
+
+  tree tinfo_a = TYPE_TEMPLATE_INFO (type_a);
+  tree tinfo_b = TYPE_TEMPLATE_INFO (type_b);
+  if (!tinfo_a || !tinfo_b)
+    return false;
+
+  return TI_TEMPLATE (tinfo_a) == TI_TEMPLATE (tinfo_b);
+}
+
+/* Start a new line indented by SPC spaces on PP.  */
+
+static void
+newline_and_indent (pretty_printer *pp, int spc)
+{
+  pp_newline (pp);
+  for (int i = 0; i < spc; i++)
+    pp_space (pp);
+}
+
+/* Generate a GC-allocated string for ARG, an expression or type.  */
+
+static const char *
+arg_to_string (tree arg, bool verbose)
+{
+  if (TYPE_P (arg))
+    return type_to_string (arg, verbose);
+  else
+    return expr_to_string (arg);
+}
+
+/* Subroutine to type_to_string_with_compare and
+   print_template_tree_comparison.
+
+   Print a representation of ARG (an expression or type) to PP,
+   colorizing it as "type-diff" if PP->show_color.  */
+
+static void
+print_nonequal_arg (pretty_printer *pp, tree arg, bool verbose)
+{
+  pp_printf (pp, "%r%s%R",
+	     "type-diff",
+	     (arg
+	      ? arg_to_string (arg, verbose)
+	      : G_("(no argument)")));
+}
+
+/* Recursively print template TYPE_A to PP, as compared to template TYPE_B.
+
+   The types must satisfy comparable_template_types_p.
+
+   If INDENT is 0, then this is equivalent to type_to_string (TYPE_A), but
+   potentially colorizing/eliding in comparison with TYPE_B.
+
+   For example given types:
+     vector<map<int,double>>
+   and
+     vector<map<int,float>>
+   then the result on PP would be:
+     vector<map<[...],double>>
+   with type elision, and:
+     vector<map<int,double>>
+   without type elision.
+
+   In both cases the parts of TYPE that differ from PEER will be colorized
+   if pp_show_color (pp) is true.  In the above example, this would be
+   "double".
+
+   If INDENT is non-zero, then the types are printed in a tree-like form
+   which shows both types.  In the above example, the result on PP would be:
+
+     vector<
+       map<
+         [...],
+         [double != float]>>
+
+   and without type-elision would be:
+
+     vector<
+       map<
+         int,
+         [double != float]>>
+
+   As before, the differing parts of the types are colorized if
+   pp_show_color (pp) is true ("double" and "float" in this example).
+
+   Template arguments in which both types are using the default arguments
+   are not printed; if at least one of the two types is using a non-default
+   argument, then that argument is printed (or both arguments for the
+   tree-like print format).  */
+
+static void
+print_template_differences (pretty_printer *pp, tree type_a, tree type_b,
+			    bool verbose, int indent)
+{
+  if (indent)
+    newline_and_indent (pp, indent);
+
+  tree tinfo_a = TYPE_TEMPLATE_INFO (type_a);
+  tree tinfo_b = TYPE_TEMPLATE_INFO (type_b);
+
+  pp_printf (pp, "%s<",
+	     IDENTIFIER_POINTER (DECL_NAME (TI_TEMPLATE (tinfo_a))));
+
+  tree args_a = TI_ARGS (tinfo_a);
+  tree args_b = TI_ARGS (tinfo_b);
+  gcc_assert (TREE_CODE (args_a) == TREE_VEC);
+  gcc_assert (TREE_CODE (args_b) == TREE_VEC);
+  int flags = 0;
+  int len_a = get_non_default_template_args_count (args_a, flags);
+  args_a = INNERMOST_TEMPLATE_ARGS (args_a);
+  int len_b = get_non_default_template_args_count (args_b, flags);
+  args_b = INNERMOST_TEMPLATE_ARGS (args_b);
+  /* Determine the maximum range of args for which non-default template args
+     were used; beyond this, only default args (if any) were used, and so
+     they will be equal from this point onwards.
+     One of the two peers might have used default arguments within this
+     range, but the other will be using non-default arguments, and so
+     it's more readable to print both within this range, to highlight
+     the differences.  */
+  int len_max = MAX (len_a, len_b);
+  gcc_assert (TREE_CODE (args_a) == TREE_VEC);
+  gcc_assert (TREE_CODE (args_b) == TREE_VEC);
+  for (int idx = 0; idx < len_max; idx++)
+    {
+      if (idx)
+	pp_character (pp, ',');
+
+      tree arg_a = TREE_VEC_ELT (args_a, idx);
+      tree arg_b = TREE_VEC_ELT (args_b, idx);
+      if (arg_a == arg_b)
+	{
+	  if (indent)
+	    newline_and_indent (pp, indent + 2);
+	  /* Can do elision here, printing "[...]".  */
+	  if (flag_elide_type)
+	    pp_string (pp, G_("[...]"));
+	  else
+	    pp_string (pp, arg_to_string (arg_a, verbose));
+	}
+      else
+	{
+	  int new_indent = indent ? indent + 2 : 0;
+	  if (comparable_template_types_p (arg_a, arg_b))
+	    print_template_differences (pp, arg_a, arg_b, verbose, new_indent);
+	  else
+	    if (indent)
+	      {
+		newline_and_indent (pp, indent + 2);
+		pp_character (pp, '[');
+		print_nonequal_arg (pp, arg_a, verbose);
+		pp_string (pp, " != ");
+		print_nonequal_arg (pp, arg_b, verbose);
+		pp_character (pp, ']');
+	      }
+	    else
+	      print_nonequal_arg (pp, arg_a, verbose);
+	}
+    }
+  pp_printf (pp, ">");
+}
+
+/* As type_to_string, but for a template, potentially colorizing/eliding
+   in comparison with PEER.
+   For example, if TYPE is map<int,double> and PEER is map<int,int>,
+   then the resulting string would be:
+     map<[...],double>
+   with type elision, and:
+     map<int,double>
+   without type elision.
+
+   In both cases the parts of TYPE that differ from PEER will be colorized
+   if SHOW_COLOR is true.  In the above example, this would be "double".
+
+   Template arguments in which both types are using the default arguments
+   are not printed; if at least one of the two types is using a non-default
+   argument, then both arguments are printed.
+
+   The resulting string is in a GC-allocated buffer.  */
+
+static const char *
+type_to_string_with_compare (tree type, tree peer, bool verbose,
+			     bool show_color)
+{
+  pretty_printer inner_pp;
+  pretty_printer *pp = &inner_pp;
+  pp_show_color (pp) = show_color;
+
+  print_template_differences (pp, type, peer, verbose, 0);
+  return pp_ggc_formatted_text (pp);
+}
+
+/* Recursively print a tree-like comparison of TYPE_A and TYPE_B to PP,
+   indented by INDENT spaces.
+
+   For example given types:
+
+     vector<map<int,double>>
+
+   and
+
+     vector<map<double,float>>
+
+   the output with type elision would be:
+
+     vector<
+       map<
+         [...],
+         [double != float]>>
+
+   and without type-elision would be:
+
+     vector<
+       map<
+         int,
+         [double != float]>>
+
+   TYPE_A and TYPE_B must both be comparable template types
+   (as per comparable_template_types_p).
+
+   Template arguments in which both types are using the default arguments
+   are not printed; if at least one of the two types is using a non-default
+   argument, then both arguments are printed.  */
+
+static void
+print_template_tree_comparison (pretty_printer *pp, tree type_a, tree type_b,
+				bool verbose, int indent)
+{
+  print_template_differences (pp, type_a, type_b, verbose, indent);
+}
+
+/* Subroutine for use in a format_postprocessor::handle
+   implementation.  Adds a chunk to the end of
+   formatted output, so that it will be printed
+   by pp_output_formatted_text.  */
+
+static void
+append_formatted_chunk (pretty_printer *pp, const char *content)
+{
+  output_buffer *buffer = pp_buffer (pp);
+  struct chunk_info *chunk_array = buffer->cur_chunk_array;
+  const char **args = chunk_array->args;
+
+  unsigned int chunk_idx;
+  for (chunk_idx = 0; args[chunk_idx]; chunk_idx++)
+    ;
+  args[chunk_idx++] = content;
+  args[chunk_idx] = NULL;
+}
+
+/* Create a copy of CONTENT, with quotes added, and,
+   potentially, with colorization.
+   No escaped is performed on CONTENT.
+   The result is in a GC-allocated buffer. */
+
+static const char *
+add_quotes (const char *content, bool show_color)
+{
+  pretty_printer tmp_pp;
+  pp_show_color (&tmp_pp) = show_color;
+
+  /* We have to use "%<%s%>" rather than "%qs" here in order to avoid
+     quoting colorization bytes within the results.  */
+  pp_printf (&tmp_pp, "%<%s%>", content);
+
+  return pp_ggc_formatted_text (&tmp_pp);
+}
+
+/* If we had %H and %I, and hence deferred printing them,
+   print them now, storing the result into the chunk_info
+   for pp_format.  Quote them if 'q' was provided.
+   Also print the difference in tree form, adding it as
+   an additional chunk.  */
+
+void
+cxx_format_postprocessor::handle (pretty_printer *pp)
+{
+  /* If we have one of %H and %I, the other should have
+     been present.  */
+  if (m_type_a.m_tree || m_type_b.m_tree)
+    {
+      /* Avoid reentrancy issues by working with a copy of
+	 m_type_a and m_type_b, resetting them now.  */
+      deferred_printed_type type_a = m_type_a;
+      deferred_printed_type type_b = m_type_b;
+      m_type_a = deferred_printed_type ();
+      m_type_b = deferred_printed_type ();
+
+      gcc_assert (type_a.m_buffer_ptr);
+      gcc_assert (type_b.m_buffer_ptr);
+
+      bool show_color = pp_show_color (pp);
+
+      const char *type_a_text;
+      const char *type_b_text;
+
+      if (comparable_template_types_p (type_a.m_tree, type_b.m_tree))
+	{
+	  type_a_text
+	    = type_to_string_with_compare (type_a.m_tree, type_b.m_tree,
+					   type_a.m_verbose, show_color);
+	  type_b_text
+	    = type_to_string_with_compare (type_b.m_tree, type_a.m_tree,
+					   type_b.m_verbose, show_color);
+
+	  if (flag_diagnostics_show_template_tree)
+	    {
+	      pretty_printer inner_pp;
+	      pp_show_color (&inner_pp) = pp_show_color (pp);
+	      print_template_tree_comparison
+		(&inner_pp, type_a.m_tree, type_b.m_tree, type_a.m_verbose, 2);
+	      append_formatted_chunk (pp, pp_ggc_formatted_text (&inner_pp));
+	    }
+	}
+      else
+	{
+	  /* If the types were not comparable, they are printed normally,
+	     and no difference tree is printed.  */
+	  type_a_text = type_to_string (type_a.m_tree, type_a.m_verbose);
+	  type_b_text = type_to_string (type_b.m_tree, type_b.m_verbose);
+	}
+
+      if (type_a.m_quote)
+	type_a_text = add_quotes (type_a_text, show_color);
+      *type_a.m_buffer_ptr = type_a_text;
+
+       if (type_b.m_quote)
+	type_b_text = add_quotes (type_b_text, show_color);
+      *type_b.m_buffer_ptr = type_b_text;
+   }
+}
+
+/* Subroutine for handling %H and %I, to support i18n of messages like:
+
+    error_at (loc, "could not convert %qE from %qH to %qI",
+	       expr, type_a, type_b);
+
+   so that we can print things like:
+
+     could not convert 'foo' from 'map<int,double>' to 'map<int,int>'
+
+   and, with type-elision:
+
+     could not convert 'foo' from 'map<[...],double>' to 'map<[...],int>'
+
+   (with color-coding of the differences between the types).
+
+   The %H and %I format codes are peers: both must be present,
+   and they affect each other.  Hence to handle them, we must
+   delay printing until we have both, deferring the printing to
+   pretty_printer's m_format_postprocessor hook.
+
+   This is called in phase 2 of pp_format, when it is accumulating
+   a series of formatted chunks.  We stash the location of the chunk
+   we're meant to have written to, so that we can write to it in the
+   m_format_postprocessor hook.
+
+   We also need to stash whether a 'q' prefix was provided (the QUOTE
+   param)  so that we can add the quotes when writing out the delayed
+   chunk.  */
+
+static void
+defer_phase_2_of_type_diff (deferred_printed_type *deferred,
+			    tree type, const char **buffer_ptr,
+			    bool verbose, bool quote)
+{
+  gcc_assert (deferred->m_tree == NULL_TREE);
+  gcc_assert (deferred->m_buffer_ptr == NULL);
+  *deferred = deferred_printed_type (type, buffer_ptr, verbose, quote);
+}
+
+
 /* Called from output_format -- during diagnostic message processing --
    to handle C++ specific format specifier with the following meanings:
    %A   function argument-list.
@@ -3577,11 +4003,18 @@ maybe_print_constexpr_context (diagnostic_context *context)
    %S   substitution (template + args)
    %T   type.
    %V   cv-qualifier.
-   %X   exception-specification.  */
+   %X   exception-specification.
+   %H   type difference (from)
+   %I   type difference (to).  */
 static bool
 cp_printer (pretty_printer *pp, text_info *text, const char *spec,
-	    int precision, bool wide, bool set_locus, bool verbose)
+	    int precision, bool wide, bool set_locus, bool verbose,
+	    bool quoted, const char **buffer_ptr)
 {
+  gcc_assert (pp->m_format_postprocessor);
+  cxx_format_postprocessor *postprocessor
+    = static_cast <cxx_format_postprocessor *> (pp->m_format_postprocessor);
+
   const char *result;
   tree t = NULL;
 #define next_tree    (t = va_arg (*text->args_ptr, tree))
@@ -3626,6 +4059,20 @@ cp_printer (pretty_printer *pp, text_info *text, const char *spec,
     case 'K':
       percent_K_format (text);
       return true;
+
+    case 'H':
+      {
+	defer_phase_2_of_type_diff (&postprocessor->m_type_a, next_tree,
+				    buffer_ptr, verbose, quoted);
+	return true;
+      }
+
+    case 'I':
+      {
+	defer_phase_2_of_type_diff (&postprocessor->m_type_b, next_tree,
+				    buffer_ptr, verbose, quoted);
+	return true;
+      }
 
     default:
       return false;

@@ -1,3 +1,30 @@
+2017-05-30  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic-color.c (color_dict): Add "type-diff".
+	(parse_gcc_colors): Update comment.
+	* doc/invoke.texi (Diagnostic Message Formatting Options): Add
+	-fdiagnostics-show-template-tree and -fno-elide-type.
+	(GCC_COLORS): Add type-diff to example.
+	(type-diff=): New.
+	(-fdiagnostics-show-template-tree): New.
+	(-fno-elide-type): New.
+	* pretty-print.c (pp_format): Pass quote and formatters[argno] to
+	the pp_format_decoder callback.  Call any m_format_postprocessor's
+	"handle" method.
+	(pretty_printer::pretty_printer): Initialize
+	m_format_postprocessor.
+	(pretty_printer::~pretty_printer): Delete any
+	m_format_postprocessor.
+	* pretty-print.h (printer_fn): Add bool and const char **
+	parameters.
+	(class format_postprocessor): New class.
+	(struct pretty_printer::format_decoder): Document the new
+	parameters.
+	(struct pretty_printer::m_format_postprocessor): New field.
+	* tree-diagnostic.c (default_tree_printer): Update for new
+	bool and const char ** params.
+	* tree-diagnostic.h (default_tree_printer): Likewise.
+
 2017-05-30  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* config/rs6000/predicates.md (cc_reg_not_micro_cr0_operand): Delete.

@@ -1346,6 +1346,10 @@ fdefault-inline
 C++ ObjC++ Ignore
 Does nothing.  Preserved for backward compatibility.
 
+fdiagnostics-show-template-tree
+C++ ObjC++ Var(flag_diagnostics_show_template_tree) Init(0)
+Print hierarchical comparisons when template types are mismatched.
+
 fdirectives-only
 C ObjC C++ ObjC++
 Preprocess directives only.
@@ -1364,6 +1368,10 @@ Write all declarations as Ada code for the given file only.
 
 felide-constructors
 C++ ObjC++ Var(flag_elide_constructors) Init(1)
+
+felide-type
+C++ ObjC++ Var(flag_elide_type) Init(1)
+-fno-elide-type Do not elide common elements in template comparisons.
 
 fenforce-eh-specs
 C++ ObjC++ Var(flag_enforce_eh_specs) Init(1)

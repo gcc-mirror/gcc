@@ -1,3 +1,45 @@
+2017-05-30  David Malcolm  <dmalcolm@redhat.com>
+
+	* call.c (perform_implicit_conversion_flags): Convert
+	"from %qT to %qT" to "from %qH to %qI" in diagnostic.
+	(print_conversion_rejection): Replace pairs of %qT with
+	%qH and %qI in various places.
+	(build_user_type_conversion_1): Likewise.
+	(build_integral_nontype_arg_conv): Likewise.
+	(build_conditional_expr_1): Likewise.
+	(convert_like_real): Likewise.
+	(convert_arg_to_ellipsis): Likewise.
+	(joust): Likewise.
+	(initialize_reference): Likewise.
+	* cvt.c (cp_convert_to_pointer): Likewise.
+	(cp_convert_to_pointer): Likewise.
+	(convert_to_reference): Likewise.
+	(ocp_convert): Likewise.
+	* error.c (cp_printer): Gain bool and const char ** parameters.
+	(struct deferred_printed_type): New struct.
+	(class cxx_format_postprocessor): New class.
+	(cxx_initialize_diagnostics): Wire up a cxx_format_postprocessor
+	to pp->m_format_postprocessor.
+	(comparable_template_types_p): New function.
+	(newline_and_indent): New function.
+	(arg_to_string): New function.
+	(print_nonequal_arg): New function.
+	(print_template_differences): New function.
+	(type_to_string_with_compare): New function.
+	(print_template_tree_comparison): New function.
+	(append_formatted_chunk): New function.
+	(add_quotes): New function.
+	(cxx_format_postprocessor::handle): New function.
+	(defer_phase_2_of_type_diff): New function.
+	(cp_printer): Add "quoted" and "buffer_ptr" params.  Implement
+	%H and %I.
+	* typeck.c (cp_build_binary_op): Replace pairs of %qT with
+	%qH and %qI in various places.
+	(convert_member_func_to_ptr): Likewise.
+	(build_reinterpret_cast_1): Likewise.
+	(convert_for_assignment): Likewise.
+	* typeck2.c (check_narrowing): Likewise.
+
 2017-05-30  Nathan Sidwell  <nathan@acm.org>
 
 	Kill IDENTIFIER_NAMESPACE_BINDINGS

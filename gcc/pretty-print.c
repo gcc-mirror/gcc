@@ -677,7 +677,8 @@ pp_format (pretty_printer *pp, text_info *text)
 
 	    gcc_assert (pp_format_decoder (pp));
 	    ok = pp_format_decoder (pp) (pp, text, p,
-					 precision, wide, plus, hash);
+					 precision, wide, plus, hash, quote,
+					 formatters[argno]);
 	    gcc_assert (ok);
 	  }
 	}
@@ -695,6 +696,11 @@ pp_format (pretty_printer *pp, text_info *text)
   if (CHECKING_P)
     for (; argno < PP_NL_ARGMAX; argno++)
       gcc_assert (!formatters[argno]);
+
+  /* If the client supplied a postprocessing object, call its "handle"
+     hook here.  */
+  if (pp->m_format_postprocessor)
+    pp->m_format_postprocessor->handle (pp);
 
   /* Revert to normal obstack and wrapping mode.  */
   buffer->obstack = &buffer->formatted_obstack;
@@ -847,6 +853,7 @@ pretty_printer::pretty_printer (const char *p, int l)
     indent_skip (),
     wrapping (),
     format_decoder (),
+    m_format_postprocessor (NULL),
     emitted_prefix (),
     need_newline (),
     translate_identifiers (true),
@@ -860,6 +867,8 @@ pretty_printer::pretty_printer (const char *p, int l)
 
 pretty_printer::~pretty_printer ()
 {
+  if (m_format_postprocessor)
+    delete m_format_postprocessor;
   buffer->~output_buffer ();
   XDELETE (buffer);
 }

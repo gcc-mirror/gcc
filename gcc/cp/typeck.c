@@ -5040,7 +5040,7 @@ cp_build_binary_op (location_t location,
       result_type = cp_common_type (type0, type1);
       if (complain & tf_warning)
 	do_warn_double_promotion (result_type, type0, type1,
-				  "implicit conversion from %qT to %qT "
+				  "implicit conversion from %qH to %qI "
 				  "to match other operand of binary "
 				  "expression",
 				  location);
@@ -7076,7 +7076,7 @@ convert_member_func_to_ptr (tree type, tree expr, tsubst_flags_t complain)
 
   if (pedantic || warn_pmf2ptr)
     pedwarn (input_location, pedantic ? OPT_Wpedantic : OPT_Wpmf_conversions,
-	     "converting from %qT to %qT", intype, type);
+	     "converting from %qH to %qI", intype, type);
 
   if (TREE_CODE (intype) == METHOD_TYPE)
     expr = build_addr_func (expr, complain);
@@ -7202,7 +7202,7 @@ build_reinterpret_cast_1 (tree type, tree expr, bool c_cast_p,
       if (TYPE_PRECISION (type) < TYPE_PRECISION (intype))
         {
           if (complain & tf_error)
-            permerror (input_location, "cast from %qT to %qT loses precision",
+            permerror (input_location, "cast from %qH to %qI loses precision",
                        intype, type);
           else
             return error_mark_node;
@@ -7242,7 +7242,7 @@ build_reinterpret_cast_1 (tree type, tree expr, bool c_cast_p,
 	  && COMPLETE_TYPE_P (TREE_TYPE (type))
 	  && COMPLETE_TYPE_P (TREE_TYPE (intype))
 	  && TYPE_ALIGN (TREE_TYPE (type)) > TYPE_ALIGN (TREE_TYPE (intype)))
-	warning (OPT_Wcast_align, "cast from %qT to %qT "
+	warning (OPT_Wcast_align, "cast from %qH to %qI "
                  "increases required alignment of target type", intype, type);
 
       /* We need to strip nops here, because the front end likes to
@@ -8569,33 +8569,33 @@ convert_for_assignment (tree type, tree rhs,
 		    return r;
 		}
 	      else if (fndecl)
-		error ("cannot convert %qT to %qT for argument %qP to %qD",
+		error ("cannot convert %qH to %qI for argument %qP to %qD",
 		       rhstype, type, parmnum, fndecl);
 	      else
 		switch (errtype)
 		  {
 		    case ICR_DEFAULT_ARGUMENT:
-		      error ("cannot convert %qT to %qT in default argument",
+		      error ("cannot convert %qH to %qI in default argument",
 			     rhstype, type);
 		      break;
 		    case ICR_ARGPASS:
-		      error ("cannot convert %qT to %qT in argument passing",
+		      error ("cannot convert %qH to %qI in argument passing",
 			     rhstype, type);
 		      break;
 		    case ICR_CONVERTING:
-		      error ("cannot convert %qT to %qT",
+		      error ("cannot convert %qH to %qI",
 			     rhstype, type);
 		      break;
 		    case ICR_INIT:
-		      error ("cannot convert %qT to %qT in initialization",
+		      error ("cannot convert %qH to %qI in initialization",
 			     rhstype, type);
 		      break;
 		    case ICR_RETURN:
-		      error ("cannot convert %qT to %qT in return",
+		      error ("cannot convert %qH to %qI in return",
 			     rhstype, type);
 		      break;
 		    case ICR_ASSIGN:
-		      error ("cannot convert %qT to %qT in assignment",
+		      error ("cannot convert %qH to %qI in assignment",
 			     rhstype, type);
 		      break;
 		    default:
