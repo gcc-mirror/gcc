@@ -1178,7 +1178,7 @@ handle_omp_display_env (unsigned long stacksize, int wait_policy)
 static void __attribute__((constructor))
 initialize_env (void)
 {
-  unsigned long thread_limit_var, stacksize;
+  unsigned long thread_limit_var, stacksize = 0;
   int wait_policy;
 
   /* Do a compile time check that mkomp_h.pl did good job.  */
