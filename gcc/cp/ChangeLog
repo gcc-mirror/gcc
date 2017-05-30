@@ -1,5 +1,15 @@
 2017-05-30  Nathan Sidwell  <nathan@acm.org>
 
+	Kill IDENTIFIER_NAMESPACE_BINDINGS
+	* cp-tree.h (lang_identifier): Delete namespace_bindings.
+	(IDENTIFIER_NAMESPACE_BINDINGS): Delete.
+	(lang_decl_ns): Add bindings.
+	(DECL_NAMESPACE_BINDINGS): New.
+	* lex.c (retrofit_lang_decl): Create namespace hash table.
+	* name-lookup.c (find_namespace_slot): Change to use hash-map.
+	* ptree.c (cxx_print_binding): Delete.
+	(cxx_print_identifier): Remove NAMESPACE_BINDING printing.
+
 	* cp-tree.def (OVERLOAD): Fix comment.
 	* cp-tree.h: Fix comments and whitespace.
 	* error.c (dump_decl): Use pp_cxx_colon_colon, ovl_scope.

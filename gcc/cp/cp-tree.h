@@ -535,7 +535,6 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
 
 struct GTY(()) lang_identifier {
   struct c_common_identifier c_common;
-  cxx_binding *namespace_bindings;
   cxx_binding *bindings;
   tree class_template_info;
   tree label_value;
@@ -965,8 +964,6 @@ enum GTY(()) abstract_class_use {
 
 /* Macros for access to language-specific slots in an identifier.  */
 
-#define IDENTIFIER_NAMESPACE_BINDINGS(NODE)	\
-  (LANG_IDENTIFIER_CAST (NODE)->namespace_bindings)
 #define IDENTIFIER_TEMPLATE(NODE)	\
   (LANG_IDENTIFIER_CAST (NODE)->class_template_info)
 
@@ -2552,6 +2549,9 @@ struct GTY(()) lang_decl_ns {
      because of PCH.  */
   vec<tree, va_gc> *usings;
   vec<tree, va_gc> *inlinees;
+
+  /* Map from IDENTIFIER nodes to DECLS.  */
+  hash_map<lang_identifier *, tree> *bindings;
 };
 
 /* DECL_LANG_SPECIFIC for parameters.  */
@@ -3145,6 +3145,10 @@ struct GTY(()) lang_decl {
 /* In a NAMESPACE_DECL, a vector of inline namespaces.  */
 #define DECL_NAMESPACE_INLINEES(NODE) \
    (LANG_DECL_NS_CHECK (NODE)->inlinees)
+
+/* Pointer to hash_map from IDENTIFIERS to DECLS  */
+#define DECL_NAMESPACE_BINDINGS(NODE) \
+   (LANG_DECL_NS_CHECK (NODE)->bindings)
 
 /* In a NAMESPACE_DECL, points to the original namespace if this is
    a namespace alias.  */
