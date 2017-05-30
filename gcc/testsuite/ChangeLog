@@ -3,6 +3,9 @@
 	Backported from mainline
 	2017-04-11  Jakub Jelinek  <jakub@redhat.com>
 
+	PR rtl-optimization/80385
+	* g++.dg/opt/pr80385.C: New test.
+
 	PR c++/80363
 	* g++.dg/ext/pr80363.C: New test.
 
