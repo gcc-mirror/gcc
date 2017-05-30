@@ -771,7 +771,7 @@ static const format_char_info gcc_cxxdiag_char_table[] =
   /* Custom conversion specifiers.  */
 
   /* These will require a "tree" at runtime.  */
-  { "ADFSTVX",1,STD_C89,{ T89_T,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q+#",   "'",   NULL },
+  { "ADFHISTVX",1,STD_C89,{ T89_T,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q+#",   "'",   NULL },
   { "E", 1,STD_C89,{ T89_T,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q+#",   "",   NULL },
   { "K", 1, STD_C89,{ T89_T,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "",   "\"",   NULL },
   { "v", 0,STD_C89, { T89_I,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q#",  "",   NULL },

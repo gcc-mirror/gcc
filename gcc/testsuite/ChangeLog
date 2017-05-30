@@ -1,3 +1,16 @@
+2017-05-30  David Malcolm  <dmalcolm@redhat.com>
+
+	* g++.dg/plugin/plugin.exp (plugin_test_list): Add...
+	* g++.dg/plugin/show-template-tree-color-no-elide-type.C: New
+	test case.
+	* g++.dg/plugin/show-template-tree-color.C: New test case.
+	* g++.dg/plugin/show_template_tree_color_plugin.c: New plugin.
+	* g++.dg/template/show-template-tree-2.C: New test case.
+	* g++.dg/template/show-template-tree-3.C: New test case.
+	* g++.dg/template/show-template-tree-4.C: New test case.
+	* g++.dg/template/show-template-tree-no-elide-type.C: New test case.
+	* g++.dg/template/show-template-tree.C: New test case.
+
 2017-05-30  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* gcc.target/powerpc/shift-dot.c: Delete -mgen-cell-microcode from

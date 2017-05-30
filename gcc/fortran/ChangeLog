@@ -1,3 +1,8 @@
+2017-05-30  David Malcolm  <dmalcolm@redhat.com>
+
+	* error.c (gfc_format_decoder): Update for new bool and
+	const char ** params.
+
 2017-05-29  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/37131

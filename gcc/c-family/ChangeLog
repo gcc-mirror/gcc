@@ -1,3 +1,10 @@
+2017-05-30  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-format.c (gcc_cxxdiag_char_table): Add 'H' and 'I' to
+	format_chars.
+	* c.opt (fdiagnostics-show-template-tree): New option.
+	(felide-type): New option.
+
 2017-05-25  Volker Reichelt  <v.reichelt@netcologne.de>
 
 	* c.opt (Wcatch-value=): New C++ warning flag.

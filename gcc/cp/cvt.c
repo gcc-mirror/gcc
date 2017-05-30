@@ -86,7 +86,7 @@ cp_convert_to_pointer (tree type, tree expr, bool dofold,
       if (!COMPLETE_TYPE_P (intype))
 	{
 	  if (complain & tf_error)
-	    error_at (loc, "can%'t convert from incomplete type %qT to %qT",
+	    error_at (loc, "can%'t convert from incomplete type %qH to %qI",
 		      intype, type);
 	  return error_mark_node;
 	}
@@ -96,7 +96,7 @@ cp_convert_to_pointer (tree type, tree expr, bool dofold,
 	{
 	  if ((complain & tf_error)
 	      && rval == error_mark_node)
-	    error_at (loc, "conversion of %qE from %qT to %qT is ambiguous",
+	    error_at (loc, "conversion of %qE from %qH to %qI is ambiguous",
 		      expr, intype, type);
 	  return rval;
 	}
@@ -168,7 +168,7 @@ cp_convert_to_pointer (tree type, tree expr, bool dofold,
       if (TYPE_PTRMEMFUNC_P (type))
 	{
 	  if (complain & tf_error)
-	    error_at (loc, "cannot convert %qE from type %qT to type %qT",
+	    error_at (loc, "cannot convert %qE from type %qH to type %qI",
 		      expr, intype, type);
 	  return error_mark_node;
 	}
@@ -195,7 +195,7 @@ cp_convert_to_pointer (tree type, tree expr, bool dofold,
 	    }
 	}
       if (complain & tf_error)
-	error_at (loc, "cannot convert %qE from type %qT to type %qT",
+	error_at (loc, "cannot convert %qE from type %qH to type %qI",
 		  expr, intype, type);
       return error_mark_node;
     }
@@ -221,7 +221,7 @@ cp_convert_to_pointer (tree type, tree expr, bool dofold,
   else if (TYPE_PTRMEM_P (type) && INTEGRAL_CODE_P (form))
     {
       if (complain & tf_error)
-	error_at (loc, "invalid conversion from %qT to %qT", intype, type);
+	error_at (loc, "invalid conversion from %qH to %qI", intype, type);
       return error_mark_node;
     }
 
@@ -244,7 +244,7 @@ cp_convert_to_pointer (tree type, tree expr, bool dofold,
     return instantiate_type (type, expr, complain);
 
   if (complain & tf_error)
-    error_at (loc, "cannot convert %qE from type %qT to type %qT",
+    error_at (loc, "cannot convert %qE from type %qH to type %qI",
 	      expr, intype, type);
   return error_mark_node;
 }
@@ -464,7 +464,7 @@ convert_to_reference (tree reftype, tree expr, int convtype,
 	    && !at_least_as_qualified_p (ttl, ttr))
 	  {
 	    if (complain & tf_error)
-	      permerror (loc, "conversion from %qT to %qT discards qualifiers",
+	      permerror (loc, "conversion from %qH to %qI discards qualifiers",
 			 ttr, reftype);
 	    else
 	      return error_mark_node;
@@ -514,7 +514,7 @@ convert_to_reference (tree reftype, tree expr, int convtype,
     }
 
   if (complain & tf_error)
-    error_at (loc, "cannot convert type %qT to type %qT", intype, reftype);
+    error_at (loc, "cannot convert type %qH to type %qI", intype, reftype);
 
   return error_mark_node;
 }
@@ -907,7 +907,7 @@ ocp_convert (tree type, tree expr, int convtype, int flags,
       if (invalid_nonstatic_memfn_p (loc, expr, complain))
 	/* We displayed the error message.  */;
       else
-	error_at (loc, "conversion from %qT to non-scalar type %qT requested",
+	error_at (loc, "conversion from %qH to non-scalar type %qI requested",
 		  TREE_TYPE (expr), type);
     }
   return error_mark_node;

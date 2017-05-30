@@ -180,10 +180,19 @@ struct pp_wrapping_mode_t
    A client-supplied formatter returns true if everything goes well,
    otherwise it returns false.  */
 typedef bool (*printer_fn) (pretty_printer *, text_info *, const char *,
-			    int, bool, bool, bool);
+			    int, bool, bool, bool, bool, const char **);
 
 /* Client supplied function used to decode formats.  */
 #define pp_format_decoder(PP) (PP)->format_decoder
+
+/* Base class for an optional client-supplied object for doing additional
+   processing between stages 2 and 3 of formatted printing.  */
+class format_postprocessor
+{
+ public:
+  virtual ~format_postprocessor () {}
+  virtual void handle (pretty_printer *) = 0;
+};
 
 /* TRUE if a newline character needs to be added before further
    formatting.  */
@@ -239,8 +248,15 @@ struct pretty_printer
      If the BUFFER needs additional characters from the format string, it
      should advance the TEXT->format_spec as it goes.  When FORMAT_DECODER
      returns, TEXT->format_spec should point to the last character processed.
-  */
+     The QUOTE and BUFFER_PTR are passed in, to allow for deferring-handling
+     of format codes (e.g. %H and %I in the C++ frontend).  */
   printer_fn format_decoder;
+
+  /* If non-NULL, this is called by pp_format once after all format codes
+     have been processed, to allow for client-specific postprocessing.
+     This is used by the C++ frontend for handling the %H and %I
+     format codes (which interract with each other).  */
+  format_postprocessor *m_format_postprocessor;
 
   /* Nonzero if current PREFIX was emitted at least once.  */
   bool emitted_prefix;
