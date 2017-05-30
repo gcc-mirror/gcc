@@ -1,6 +1,18 @@
 2017-05-30  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2017-04-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/80286
+	* config/i386/i386.c (ix86_expand_args_builtin): If op has scalar
+	int mode, convert_modes it to mode as unsigned, otherwise use
+	lowpart_subreg to mode rather than SImode.
+	* config/i386/sse.md (<mask_codefor>ashr<mode>3<mask_name>,
+	ashr<mode>3, ashr<mode>3<mask_name>, <shift_insn><mode>3<mask_name>):
+	Use DImode instead of SImode for the shift count operand.
+	* config/i386/mmx.md (mmx_ashr<mode>3, mmx_<shift_insn><mode>3):
+	Likewise.
+
 	2017-03-31  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/80025
