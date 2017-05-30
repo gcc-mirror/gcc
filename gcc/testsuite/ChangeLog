@@ -1,6 +1,11 @@
 2017-05-30  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2017-03-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/80025
+	* gcc.dg/torture/pr80025.c: New test.
+
 	2017-03-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR sanitizer/80168

@@ -1,6 +1,14 @@
 2017-05-30  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2017-03-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/80025
+	* cselib.c (cselib_hasher::equal): Pass 0 to rtx_equal_for_cselib_1.
+	(rtx_equal_for_cselib_1): Add depth argument.  If depth
+	is 128, don't look up VALUE locs and punt.  Increment
+	depth in recursive calls when walking VALUE locs.
+
 	2017-03-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR sanitizer/80168

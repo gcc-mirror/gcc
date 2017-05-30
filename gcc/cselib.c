@@ -71,7 +71,7 @@ static void unchain_one_value (cselib_val *);
 static void unchain_one_elt_list (struct elt_list **);
 static void unchain_one_elt_loc_list (struct elt_loc_list **);
 static void remove_useless_values (void);
-static int rtx_equal_for_cselib_1 (rtx, rtx, machine_mode);
+static int rtx_equal_for_cselib_1 (rtx, rtx, machine_mode, int);
 static unsigned int cselib_hash_rtx (rtx, int, machine_mode);
 static cselib_val *new_cselib_val (unsigned int, machine_mode, rtx);
 static void add_mem_for_addr (cselib_val *, cselib_val *, rtx);
@@ -147,7 +147,7 @@ cselib_hasher::equal (const value_type *v, const compare_type *x_arg)
   /* We don't guarantee that distinct rtx's have different hash values,
      so we need to do a comparison.  */
   for (l = v->locs; l; l = l->next)
-    if (rtx_equal_for_cselib_1 (l->loc, x, memmode))
+    if (rtx_equal_for_cselib_1 (l->loc, x, memmode, 0))
       {
 	promote_debug_loc (l);
 	return true;
@@ -812,7 +812,7 @@ cselib_reg_set_mode (const_rtx x)
 int
 rtx_equal_for_cselib_p (rtx x, rtx y)
 {
-  return rtx_equal_for_cselib_1 (x, y, VOIDmode);
+  return rtx_equal_for_cselib_1 (x, y, VOIDmode, 0);
 }
 
 /* If x is a PLUS or an autoinc operation, expand the operation,
@@ -862,7 +862,7 @@ autoinc_split (rtx x, rtx *off, machine_mode memmode)
    addresses, MEMMODE should be VOIDmode.  */
 
 static int
-rtx_equal_for_cselib_1 (rtx x, rtx y, machine_mode memmode)
+rtx_equal_for_cselib_1 (rtx x, rtx y, machine_mode memmode, int depth)
 {
   enum rtx_code code;
   const char *fmt;
@@ -895,6 +895,9 @@ rtx_equal_for_cselib_1 (rtx x, rtx y, machine_mode memmode)
       if (GET_CODE (y) == VALUE)
 	return e == canonical_cselib_val (CSELIB_VAL_PTR (y));
 
+      if (depth == 128)
+	return 0;
+
       for (l = e->locs; l; l = l->next)
 	{
 	  rtx t = l->loc;
@@ -904,7 +907,7 @@ rtx_equal_for_cselib_1 (rtx x, rtx y, machine_mode memmode)
 	     list.  */
 	  if (REG_P (t) || MEM_P (t) || GET_CODE (t) == VALUE)
 	    continue;
-	  else if (rtx_equal_for_cselib_1 (t, y, memmode))
+	  else if (rtx_equal_for_cselib_1 (t, y, memmode, depth + 1))
 	    return 1;
 	}
 
@@ -915,13 +918,16 @@ rtx_equal_for_cselib_1 (rtx x, rtx y, machine_mode memmode)
       cselib_val *e = canonical_cselib_val (CSELIB_VAL_PTR (y));
       struct elt_loc_list *l;
 
+      if (depth == 128)
+	return 0;
+
       for (l = e->locs; l; l = l->next)
 	{
 	  rtx t = l->loc;
 
 	  if (REG_P (t) || MEM_P (t) || GET_CODE (t) == VALUE)
 	    continue;
-	  else if (rtx_equal_for_cselib_1 (x, t, memmode))
+	  else if (rtx_equal_for_cselib_1 (x, t, memmode, depth + 1))
 	    return 1;
 	}
 
@@ -942,12 +948,12 @@ rtx_equal_for_cselib_1 (rtx x, rtx y, machine_mode memmode)
       if (!xoff != !yoff)
 	return 0;
 
-      if (xoff && !rtx_equal_for_cselib_1 (xoff, yoff, memmode))
+      if (xoff && !rtx_equal_for_cselib_1 (xoff, yoff, memmode, depth))
 	return 0;
 
       /* Don't recurse if nothing changed.  */
       if (x != xorig || y != yorig)
-	return rtx_equal_for_cselib_1 (x, y, memmode);
+	return rtx_equal_for_cselib_1 (x, y, memmode, depth);
 
       return 0;
     }
@@ -978,7 +984,8 @@ rtx_equal_for_cselib_1 (rtx x, rtx y, machine_mode memmode)
     case MEM:
       /* We have to compare any autoinc operations in the addresses
 	 using this MEM's mode.  */
-      return rtx_equal_for_cselib_1 (XEXP (x, 0), XEXP (y, 0), GET_MODE (x));
+      return rtx_equal_for_cselib_1 (XEXP (x, 0), XEXP (y, 0), GET_MODE (x),
+				     depth);
 
     default:
       break;
@@ -1013,17 +1020,20 @@ rtx_equal_for_cselib_1 (rtx x, rtx y, machine_mode memmode)
 	  /* And the corresponding elements must match.  */
 	  for (j = 0; j < XVECLEN (x, i); j++)
 	    if (! rtx_equal_for_cselib_1 (XVECEXP (x, i, j),
-					  XVECEXP (y, i, j), memmode))
+					  XVECEXP (y, i, j), memmode, depth))
 	      return 0;
 	  break;
 
 	case 'e':
 	  if (i == 1
 	      && targetm.commutative_p (x, UNKNOWN)
-	      && rtx_equal_for_cselib_1 (XEXP (x, 1), XEXP (y, 0), memmode)
-	      && rtx_equal_for_cselib_1 (XEXP (x, 0), XEXP (y, 1), memmode))
+	      && rtx_equal_for_cselib_1 (XEXP (x, 1), XEXP (y, 0), memmode,
+					 depth)
+	      && rtx_equal_for_cselib_1 (XEXP (x, 0), XEXP (y, 1), memmode,
+					 depth))
 	    return 1;
-	  if (! rtx_equal_for_cselib_1 (XEXP (x, i), XEXP (y, i), memmode))
+	  if (! rtx_equal_for_cselib_1 (XEXP (x, i), XEXP (y, i), memmode,
+					depth))
 	    return 0;
 	  break;
 
