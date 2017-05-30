@@ -1,5 +1,15 @@
 2017-05-30  Robin Dapp  <rdapp@linux.vnet.ibm.com>
 
+	* tree-vect-data-refs.c (vect_peeling_hash_choose_best_peeling):
+	Return peeling info and set costs to zero for unlimited cost
+	model.
+	(vect_enhance_data_refs_alignment): Also inspect all datarefs
+	with unknown misalignment. Compute and costs for unknown
+	misalignment, compare them to the costs for known misalignment
+	and choose the cheapest for peeling.
+
+2017-05-30  Robin Dapp  <rdapp@linux.vnet.ibm.com>
+
 	* tree-vect-data-refs.c (vect_update_misalignment_for_peel): Rename.
 	(vect_get_peeling_costs_all_drs): Create function.
 	(vect_peeling_hash_get_lowest_cost):
