@@ -1,3 +1,14 @@
+2017-05-30  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/80833
+	* config/i386/constraints.md (Yd): New constraint.
+	(Ye): Ditto.
+	* config/i386/i386.md (*movti_internal): Add (?r, Ye)
+	and (?Yd, r) alternatives.  Update insn attributes.
+	* config/i386/i386.md (*movti_internal): Add (?r, *Ye)
+	and (?*Yd, r) alternatives.  Update insn attributes.
+	(double-mode inter-unit splitters): Add new GR<->XMM splitters.
+
 2017-05-30  Pierre-Marie de Rodat  <derodat@adacore.com>
 
 	* gimplify.c (gimplify_modify_expr): Don't create a
