@@ -1,6 +1,11 @@
 2017-05-30  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2017-03-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/80168
+	* gcc.dg/asan/pr80168.c: New test.
+
 	2017-03-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/80112
