@@ -1,6 +1,11 @@
 2017-05-30  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2017-03-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/80129
+	* g++.dg/torture/pr80129.C: New test.
+
 	2017-03-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/80097

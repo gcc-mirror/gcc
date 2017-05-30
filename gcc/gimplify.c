@@ -4293,6 +4293,14 @@ gimplify_modify_expr_rhs (tree *expr_p, tree *from_p, tree *to_p,
 	      if (ret != GS_ERROR)
 		ret = GS_OK;
 
+	      /* If we are going to write RESULT more than once, clear
+		 TREE_READONLY flag, otherwise we might incorrectly promote
+		 the variable to static const and initialize it at compile
+		 time in one of the branches.  */
+	      if (VAR_P (result)
+		  && TREE_TYPE (TREE_OPERAND (cond, 1)) != void_type_node
+		  && TREE_TYPE (TREE_OPERAND (cond, 2)) != void_type_node)
+		TREE_READONLY (result) = 0;
 	      if (TREE_TYPE (TREE_OPERAND (cond, 1)) != void_type_node)
 		TREE_OPERAND (cond, 1)
 		  = build2 (code, void_type_node, result,
