@@ -1,6 +1,11 @@
 2017-05-30  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2016-12-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR ipa/77905
+	* g++.dg/ipa/pr77905.C: New test.
+
 	2016-12-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/78796

@@ -1,6 +1,13 @@
 2017-05-30  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2016-12-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR ipa/77905
+	* ipa-pure-const.c (cdtor_p): Return true for
+	DECL_STATIC_{CON,DE}STRUCTOR even when it is
+	DECL_LOOPING_CONST_OR_PURE_P.
+
 	2016-12-14  Wilco Dijkstra  <wdijkstr@arm.com>
 		    Jakub Jelinek  <jakub@redhat.com>
 
