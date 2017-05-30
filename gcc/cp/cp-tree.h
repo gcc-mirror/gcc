@@ -692,7 +692,8 @@ struct GTY(()) tree_overload {
   tree function;
 };
 
-/* Iterator for a 1 dimensional overload. */
+/* Iterator for a 1 dimensional overload.  Permits iterating over the
+   outer level of a 2-d overload when explicitly enabled.  */
 
 class ovl_iterator 
 {
@@ -970,7 +971,7 @@ enum GTY(()) abstract_class_use {
   (LANG_IDENTIFIER_CAST (NODE)->class_template_info)
 
 /* The IDENTIFIER_BINDING is the innermost cxx_binding for the
-    identifier.  It's PREVIOUS is the next outermost binding.  Each
+    identifier.  Its PREVIOUS is the next outermost binding.  Each
     VALUE field is a DECL for the associated declaration.  Thus,
     name lookup consists simply of pulling off the node at the front
     of the list (modulo oddities for looking up the names of types,
@@ -1454,6 +1455,7 @@ union GTY((desc ("cp_tree_node_structure (&%h)"),
     userdef_literal;
 };
 
+
 /* Global state.  */
 
 struct GTY(()) saved_scope {
@@ -2496,9 +2498,9 @@ struct GTY(()) lang_decl_fn {
   unsigned static_function : 1;
   unsigned pure_virtual : 1;
   unsigned defaulted_p : 1;
-
   unsigned has_in_charge_parm_p : 1;
   unsigned has_vtt_parm_p : 1;
+  
   unsigned pending_inline_p : 1;
   unsigned nonconverting : 1;
   unsigned thunk_p : 1;

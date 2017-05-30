@@ -24788,15 +24788,16 @@ static tree
 listify (tree arg)
 {
   tree std_init_list = get_namespace_binding (std_node, init_list_identifier);
-  tree argvec;
+
   if (!std_init_list || !DECL_CLASS_TEMPLATE_P (std_init_list))
     {    
       error ("deducing from brace-enclosed initializer list requires "
 	     "#include <initializer_list>");
       return error_mark_node;
     }
-  argvec = make_tree_vec (1);
+  tree argvec = make_tree_vec (1);
   TREE_VEC_ELT (argvec, 0) = arg;
+
   return lookup_template_class (std_init_list, argvec, NULL_TREE,
 				NULL_TREE, 0, tf_warning_or_error);
 }

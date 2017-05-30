@@ -1146,7 +1146,7 @@ dump_decl (cxx_pretty_printer *pp, tree t, int flags)
 
     case SCOPE_REF:
       dump_type (pp, TREE_OPERAND (t, 0), flags);
-      pp_colon_colon (pp);
+      pp_cxx_colon_colon (pp);
       dump_decl (pp, TREE_OPERAND (t, 1), TFF_UNQUALIFIED_NAME);
       break;
 
@@ -1193,8 +1193,7 @@ dump_decl (cxx_pretty_printer *pp, tree t, int flags)
     case OVERLOAD:
       if (!OVL_SINGLE_P (t))
 	{
-	  t = OVL_FIRST (t);
-	  tree ctx = CP_DECL_CONTEXT (t);
+	  tree ctx = ovl_scope (t);
 	  if (ctx != global_namespace)
 	    {
 	      if (TYPE_P (ctx))
@@ -1203,7 +1202,7 @@ dump_decl (cxx_pretty_printer *pp, tree t, int flags)
 		dump_decl (pp, ctx, flags);
 	      pp_cxx_colon_colon (pp);
 	    }
-	  dump_decl (pp, DECL_NAME (t), flags);
+	  dump_decl (pp, OVL_NAME (t), flags);
 	  break;
 	}
 
