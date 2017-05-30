@@ -812,7 +812,9 @@ typedef struct xtensa_args
    for debugging.  */
 #define INCOMING_RETURN_ADDR_RTX gen_rtx_REG (Pmode, 0)
 #define DWARF_FRAME_RETURN_COLUMN DWARF_FRAME_REGNUM (0)
-#define DWARF_FRAME_REGISTERS 16
+#define DWARF_ALT_FRAME_RETURN_COLUMN 16
+#define DWARF_FRAME_REGISTERS (DWARF_ALT_FRAME_RETURN_COLUMN		\
+			       + (TARGET_WINDOWED_ABI ? 0 : 1))
 #define EH_RETURN_DATA_REGNO(N) ((N) < 2 ? (N) + 2 : INVALID_REGNUM)
 #define ASM_PREFERRED_EH_DATA_FORMAT(CODE, GLOBAL)			\
   (flag_pic								\

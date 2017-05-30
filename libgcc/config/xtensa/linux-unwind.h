@@ -52,7 +52,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define ENTRY_BYTE 0x36
 #endif
 
-#ifdef __XTENSA_WINDOWED_ABI__
 #define MD_FALLBACK_FRAME_STATE_FOR xtensa_fallback_frame_state
 
 static _Unwind_Reason_Code
@@ -61,6 +60,10 @@ xtensa_fallback_frame_state (struct _Unwind_Context *context,
 {
   unsigned char *pc = context->ra;
   struct sigcontext *sc;
+#if defined(__XTENSA_CALL0_ABI__)
+  _Unwind_Ptr new_cfa;
+  int i;
+#endif
 
   struct rt_sigframe {
     siginfo_t info;
@@ -76,6 +79,7 @@ xtensa_fallback_frame_state (struct _Unwind_Context *context,
       || pc[5] != SYSC_BYTE2)
     return _URC_END_OF_STACK;
 
+#if defined(__XTENSA_WINDOWED_ABI__)
   rt_ = context->sp;
   sc = &rt_->uc.uc_mcontext;
   fs->signal_regs = (_Unwind_Word *) sc->sc_a;
@@ -90,11 +94,33 @@ xtensa_fallback_frame_state (struct _Unwind_Context *context,
    }
   else
     fs->signal_ra = sc->sc_pc;
+#elif defined(__XTENSA_CALL0_ABI__)
+  rt_ = context->cfa;
+  sc = &rt_->uc.uc_mcontext;
+
+  new_cfa = (_Unwind_Ptr) sc;
+  fs->regs.cfa_how = CFA_REG_OFFSET;
+  fs->regs.cfa_reg = __LIBGCC_STACK_POINTER_REGNUM__;
+  fs->regs.cfa_offset = new_cfa - (_Unwind_Ptr) context->cfa;
+
+  for (i = 0; i < 16; i++)
+    {
+      fs->regs.reg[i].how = REG_SAVED_OFFSET;
+      fs->regs.reg[i].loc.offset = (_Unwind_Ptr) &(sc->sc_a[i]) - new_cfa;
+    }
+
+  fs->regs.reg[__LIBGCC_DWARF_ALT_FRAME_RETURN_COLUMN__].how =
+    REG_SAVED_VAL_OFFSET;
+  fs->regs.reg[__LIBGCC_DWARF_ALT_FRAME_RETURN_COLUMN__].loc.offset =
+    (_Unwind_Ptr) (sc->sc_pc) - new_cfa;
+  fs->retaddr_column = __LIBGCC_DWARF_ALT_FRAME_RETURN_COLUMN__;
+#else
+#error Unsupported Xtensa ABI
+#endif
 
   fs->signal_frame = 1;
   return _URC_NO_REASON;
 }
 
-#endif /* __XTENSA_WINDOWED_ABI__ */
 
 #endif /* ifdef inhibit_libc  */

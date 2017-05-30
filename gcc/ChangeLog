@@ -3,6 +3,16 @@
 	Backport from mainline
 	2015-09-15  Max Filippov  <jcmvbkbc@gmail.com>
 
+	* config/xtensa/xtensa.h (DWARF_ALT_FRAME_RETURN_COLUMN): New
+	definition.
+	(DWARF_FRAME_REGISTERS): Reserve space for one extra register in
+	call0 ABI.
+
+2017-05-30  Max Filippov  <jcmvbkbc@gmail.com>
+
+	Backport from mainline
+	2015-09-15  Max Filippov  <jcmvbkbc@gmail.com>
+
 	* config/xtensa/xtensa.c (xtensa_call_tls_desc): Use a10 or a2
 	to pass TLS call argument, according to current ABI.
 	* config/xtensa/xtensa.md (tls_call pattern): Use callx8 or
