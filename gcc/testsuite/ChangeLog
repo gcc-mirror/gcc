@@ -1,6 +1,11 @@
 2017-05-30  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2017-03-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/80097
+	* gcc.dg/ubsan/pr80097.c: New test.
+
 	2017-03-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/79896
