@@ -1,3 +1,9 @@
+2017-05-30  Jason Merrill  <jason@redhat.com>
+
+	PR c++/80856 - ICE with local extern in template
+	* semantics.c (finish_call_expr): Replace a local extern overload
+	set in a template with the IDENTIFIER_NODE.
+
 2017-05-30  David Malcolm  <dmalcolm@redhat.com>
 
 	* call.c (perform_implicit_conversion_flags): Convert
