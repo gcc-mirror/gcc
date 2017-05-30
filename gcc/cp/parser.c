@@ -31566,6 +31566,11 @@ cp_parser_omp_target (cp_parser *parser, cp_token *pragma_tok,
 	}
     }
 
+  if (!flag_openmp)  /* flag_openmp_simd  */
+    {
+      cp_parser_skip_to_pragma_eol (parser, pragma_tok);
+      return false;
+    }
   tree stmt = make_node (OMP_TARGET);
   TREE_TYPE (stmt) = void_type_node;
 

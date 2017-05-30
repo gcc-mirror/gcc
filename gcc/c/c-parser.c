@@ -13980,6 +13980,11 @@ c_parser_omp_target (c_parser *parser, enum pragma_context context)
 	}
     }
 
+  if (!flag_openmp) /* flag_openmp_simd  */
+    {
+      c_parser_skip_to_pragma_eol (parser, false);
+      return false;
+    }
   tree stmt = make_node (OMP_TARGET);
   TREE_TYPE (stmt) = void_type_node;
 
