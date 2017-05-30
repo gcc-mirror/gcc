@@ -1,6 +1,12 @@
 2017-05-30  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2017-02-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/79729
+	* config/i386/i386.c (ix86_print_operand) <case 'R'>: Replace
+	gcc_unreachable with output_operand_lossage.
+
 	2017-02-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/79396
