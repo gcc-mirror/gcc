@@ -1,6 +1,12 @@
 2017-05-30  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2016-11-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/77285
+	* g++.dg/tls/pr77285-1.C: New test.
+	* g++.dg/tls/pr77285-2.C: New test.
+
 	2016-11-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/78378
