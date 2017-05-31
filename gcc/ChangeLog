@@ -1,3 +1,9 @@
+2017-05-31  Richard Biener  <rguenther@suse.de>
+
+	PR target/80880
+	* config/i386/i386.c (ix86_expand_builtin): Remove assert
+	for arg being an SSA name when expanding IX86_BUILTIN_BNDRET.
+
 2017-05-31  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	* tree-vect-data-refs.c (vect_find_same_alignment_drs): Remove

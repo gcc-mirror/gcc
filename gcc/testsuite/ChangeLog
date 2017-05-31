@@ -1,3 +1,8 @@
+2017-05-31  Richard Biener  <rguenther@suse.de>
+
+	PR target/80880
+	* gcc.target/i386/pr80880.c: New testcase.
+
 2017-05-31  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	* gcc.dg/vect/vect-103.c: Update wording of dump message.
