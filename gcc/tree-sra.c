@@ -949,10 +949,12 @@ create_access (tree expr, gimple *stmt, bool write)
 
 /* Return true iff TYPE is scalarizable - i.e. a RECORD_TYPE or fixed-length
    ARRAY_TYPE with fields that are either of gimple register types (excluding
-   bit-fields) or (recursively) scalarizable types.  */
+   bit-fields) or (recursively) scalarizable types.  CONST_DECL must be true if
+   we are considering a decl from constant pool.  If it is false, char arrays
+   will be refused.  */
 
 static bool
-scalarizable_type_p (tree type)
+scalarizable_type_p (tree type, bool const_decl)
 {
   gcc_assert (!is_gimple_reg_type (type));
   if (type_contains_placeholder_p (type))
@@ -970,7 +972,7 @@ scalarizable_type_p (tree type)
 	    return false;
 
 	  if (!is_gimple_reg_type (ft)
-	      && !scalarizable_type_p (ft))
+	      && !scalarizable_type_p (ft, const_decl))
 	    return false;
 	}
 
@@ -978,10 +980,16 @@ scalarizable_type_p (tree type)
 
   case ARRAY_TYPE:
     {
+      HOST_WIDE_INT min_elem_size;
+      if (const_decl)
+	min_elem_size = 0;
+      else
+	min_elem_size = BITS_PER_UNIT;
+
       if (TYPE_DOMAIN (type) == NULL_TREE
 	  || !tree_fits_shwi_p (TYPE_SIZE (type))
 	  || !tree_fits_shwi_p (TYPE_SIZE (TREE_TYPE (type)))
-	  || (tree_to_shwi (TYPE_SIZE (TREE_TYPE (type))) <= 0)
+	  || (tree_to_shwi (TYPE_SIZE (TREE_TYPE (type))) <= min_elem_size)
 	  || !tree_fits_shwi_p (TYPE_MIN_VALUE (TYPE_DOMAIN (type))))
 	return false;
       if (tree_to_shwi (TYPE_SIZE (type)) == 0
@@ -995,7 +1003,7 @@ scalarizable_type_p (tree type)
 
       tree elem = TREE_TYPE (type);
       if (!is_gimple_reg_type (elem)
-	 && !scalarizable_type_p (elem))
+	  && !scalarizable_type_p (elem, const_decl))
 	return false;
       return true;
     }
@@ -2660,13 +2668,16 @@ analyze_all_variable_accesses (void)
       {
 	tree var = candidate (i);
 
-	if (VAR_P (var) && scalarizable_type_p (TREE_TYPE (var)))
+	if (VAR_P (var) && scalarizable_type_p (TREE_TYPE (var),
+						constant_decl_p (var)))
 	  {
 	    if (tree_to_uhwi (TYPE_SIZE (TREE_TYPE (var)))
 		<= max_scalarization_size)
 	      {
 		create_total_scalarization_access (var);
 		completely_scalarize (var, TREE_TYPE (var), 0, var);
+		statistics_counter_event (cfun,
+					  "Totally-scalarized aggregates", 1);
 		if (dump_file && (dump_flags & TDF_DETAILS))
 		  {
 		    fprintf (dump_file, "Will attempt to totally scalarize ");
