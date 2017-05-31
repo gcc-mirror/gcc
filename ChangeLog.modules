@@ -1,5 +1,8 @@
 2017-05-31  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* module.c: Instrumentation.
+
 	Merge trunk r248748.
 
 2017-05-30  Nathan Sidwell  <nathan@acm.org>

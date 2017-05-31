@@ -222,7 +222,7 @@ public:
 protected:
   /* Finish bit packet.  Compute crc of bits used, rewind the bytes
      not used.  */
-  void bit_flush ()
+  unsigned bit_flush ()
   {
     gcc_assert (bit_pos);
     unsigned bytes = (bit_pos + 7) / 8;
@@ -230,6 +230,7 @@ protected:
     crc_unsigned_n (bit_val, bytes);
     bit_pos = 0;
     bit_val = 0;
+    return bytes;
   }
 
 protected:
@@ -277,18 +278,20 @@ cpm_serial::crc_buffer (const char *ptr, size_t l)
 /* Byte stream writer.  */
 class GTY((skip)) cpm_writer : public cpm_serial
 {
-  /* Instrumentation.  */
-  unsigned spans[2];
-  unsigned lengths[2];
+  /* Bit instrumentation.  */
+  unsigned spans[3];
+  unsigned lengths[3];
   int is_set;
+  unsigned checksums;
 
 public:
   cpm_writer (FILE *s, const char *n)
     : cpm_serial (s, n)
   {
-    spans[0] = spans[1] = 0;
-    lengths[0] = lengths[1] = 0;
+    spans[0] = spans[1] = spans[2] = 0;
+    lengths[0] = lengths[1] = lengths[2] = 0;
     is_set = -1;
+    checksums = 0;
   }
   ~cpm_writer ()
   {
@@ -303,6 +306,8 @@ public:
   int done ()
   {
     flush ();
+    if (fflush (stream))
+      bad (errno);
     return error ();
   }
 
@@ -378,6 +383,7 @@ public:
 inline void
 cpm_writer::checkpoint ()
 {
+  checksums++;
   bytes4 (crc);
 }
 
@@ -403,10 +409,17 @@ cpm_reader::checkpoint ()
 void
 cpm_writer::instrument (FILE *d)
 {
-  fprintf (d, "Wrote %u bits\n", lengths[0] + lengths[1]);
+  fprintf (d, "Wrote %lu bytes\n", ftell (stream));
+  fprintf (d, "Wrote %u bits in %u bytes\n", lengths[0] + lengths[1],
+	   lengths[2]);
   for (unsigned ix = 0; ix < 2; ix++)
-    fprintf (d, "%s %u spans of %.1f bits\n", ix ? "Ones" : "Zeroes",
-	     spans[ix], (float)lengths[ix] / (spans[ix] + !spans[ix]));
+    fprintf (d, "  %u %s spans of %.1f bits\n", spans[ix],
+	     ix ? "one" : "zero",
+	     (float) lengths[ix] / (spans[ix] + !spans[ix]));
+  fprintf (d, "  %u blocks with %.1f bits padding\n", spans[2],
+	   (float) (lengths[2] * 8 - (lengths[0] + lengths[1]))
+	   / (spans[2] + !spans[2]));
+  fprintf (d, "Wrote %u checksums\n", checksums);
 }
 
 /* Finish a set of bools.  */
@@ -417,8 +430,9 @@ cpm_writer::bflush ()
   if (bit_pos)
     {
       bytes4 (bit_val);
-      bit_flush ();
+      lengths[2] += bit_flush ();
     }
+  spans[2]++;
   is_set = -1;
 }
 
@@ -469,7 +483,7 @@ cpm_writer::b (bool x)
   if (bit_pos == 32)
     {
       bytes4 (bit_val);
-      bit_flush ();
+      lengths[2] += bit_flush ();
     }
 }
 
@@ -769,8 +783,8 @@ cpm_writer::flush ()
 {
   size_t bytes = fwrite (buffer, 1, pos, stream);
 
-  if (bytes != pos && !err)
-    err = errno;
+  if (bytes != pos)
+    bad (errno);
   pos = 0;
 }
 
@@ -806,6 +820,8 @@ cpm_reader::fill (size_t want)
 	  buffer = XRESIZEVEC (char, buffer, alloc);
 	}
       size_t bytes = fread (buffer + len, 1, alloc - len, stream);
+      if (!bytes)
+	bad (feof (stream) ? -1 : errno);
       len += bytes;
       have = len;
     }
@@ -905,6 +921,12 @@ class cpms_out : public cpm_stream
   cpm_writer w;
   hash_map<tree,unsigned> map; /* trees to ids  */
   
+  /* Tree instrumentation. */
+  unsigned unique;
+  unsigned refs;
+  unsigned nulls;
+  unsigned records;
+
 public:
   cpms_out (FILE *, const char *);
   ~cpms_out ();
@@ -917,7 +939,7 @@ public:
   void tag_conf (FILE *);
   void tag_import (FILE *, unsigned ix, const module_state *);
   void tag_trees (FILE *);
-  void tag_binding (FILE *, tree ns, bool, tree name, tree ovl);
+  tree tag_binding (FILE *, tree ns, bool, tree name, tree ovl);
   void tag_definition (FILE *, tree decl);
   int done ()
   {
@@ -925,9 +947,14 @@ public:
   }
 
 private:
+  void tag (record_tag rt)
+  {
+    records++;
+    w.u (rt);
+  }
   void start (tree_code, tree);
   void loc (FILE *, location_t);
-  bool mark_present (FILE *, bool, tree);
+  bool mark_present (tree);
   void globals (FILE *, unsigned, const gtp *);
   void core_bools (FILE *, tree);
   void core_vals (FILE *, tree);
@@ -942,6 +969,8 @@ public:
 cpms_out::cpms_out (FILE *s, const char *n)
   :w (s, n)
 {
+  unique = refs = nulls = 0;
+  records = 0;
 }
 
 cpms_out::~cpms_out ()
@@ -951,7 +980,13 @@ cpms_out::~cpms_out ()
 void
 cpms_out::instrument (FILE *d)
 {
+  fprintf (d, "\n");
   w.instrument (d);
+  fprintf (d, "Wrote %u trees\n", unique + refs + nulls);
+  fprintf (d, "  %u unique\n", unique);
+  fprintf (d, "  %u references\n", refs);
+  fprintf (d, "  %u nulls\n", nulls);
+  fprintf (d, "Wrote %u records\n", records);
 }
 
 /* Cpm_Stream in.  */
@@ -1003,7 +1038,7 @@ private:
   tree start (tree_code);
   tree finish (FILE *, tree);
   location_t loc (FILE *);
-  bool mark_present (FILE *, bool, tree);
+  bool mark_present (tree);
   bool globals (FILE *, unsigned, const gtp *);
   bool core_bools (FILE *, tree);
   bool core_vals (FILE *, tree);
@@ -1164,7 +1199,7 @@ cpms_in::header (FILE *d)
 void
 cpms_out::tag_eof ()
 {
-  w.u (rt_eof);
+  tag (rt_eof);
   w.checkpoint ();
 }
 
@@ -1191,7 +1226,7 @@ cpms_out::tag_conf (FILE *d)
   if (d)
     fprintf (d, "Writing target='%s', host='%s'\n",
 	     TARGET_MACHINE, HOST_MACHINE);
-  w.u (rt_conf);
+  tag (rt_conf);
   w.str (TARGET_MACHINE, strlen (TARGET_MACHINE));
   w.str (HOST_MACHINE, strlen (HOST_MACHINE));
   w.checkpoint ();
@@ -1242,7 +1277,7 @@ const cpm_stream::gtp cpm_stream::global_tree_arys[] =
 void
 cpms_out::tag_trees (FILE *d)
 {
-  w.u (rt_trees);
+  tag (rt_trees);
   for (unsigned ix = 0; global_tree_arys[ix].ptr; ix++)
     globals (d, ix, &global_tree_arys[ix]);
   w.u (0);
@@ -1259,7 +1294,7 @@ cpms_in::tag_trees (FILE *d)
 }
 
 bool
-cpms_out::mark_present (FILE *d, bool is_type, tree t)
+cpms_out::mark_present (tree t)
 {
   bool existed = true;
 
@@ -1270,19 +1305,15 @@ cpms_out::mark_present (FILE *d, bool is_type, tree t)
 	*val = next ();
     }
   w.b (existed);
-  if (d)
-    fprintf (d, is_type ? "(%d)" : "%d", !existed);
 
   return existed;
 }
 
 bool
-cpms_in::mark_present (FILE *d, bool is_type, tree t)
+cpms_in::mark_present (tree t)
 {
   bool existed = r.b ();
 
-  if (d)
-    fprintf (d, is_type ? "(%d)" : "%d", !existed);
   if (!existed)
     {
       unsigned tag = next ();
@@ -1303,29 +1334,38 @@ cpms_out::globals (FILE *d, unsigned ary_num, const gtp *ary_p)
   const tree *ary = ary_p->ptr;
   unsigned num = ary_p->num;
 
-  if (d)
-    fprintf (d, "Writing globals %d[%d] {", ary_num, num);
   w.u (ary_num);
   w.u (num);
 
-  unsigned n1 = 0, n2 = 0;
+  if (d)
+    fprintf (d, "Writing globals %d[%d]", ary_num, num);
+
+  unsigned outer = 0, inner = 0;
   for (unsigned ix = 0; ix != num; ix++)
     {
-      tree t = ary[ix];
+      if (d && !(ix & 31))
+	fprintf (d, "\n\t%3u:", ix);
 
-      if (!mark_present (d, false, t))
+      tree t = ary[ix];
+      unsigned first = !mark_present (t);
+      if (first)
 	{
-	  n1++;
+	  outer++;
 	  if (CODE_CONTAINS_STRUCT (TREE_CODE (t), TS_TYPED)
-	      && !mark_present (d, true, TREE_TYPE (t)))
-	    n2++;
-	  if (d && !(n1 & 15))
-	    fprintf (d, "\n\t%u:", ix + 1);
+	      && !mark_present (TREE_TYPE (t)))
+	    {
+	      first++;
+	      inner++;
+	    }
 	}
+      if (d)
+	fprintf (d, "%d", first);
     }
   w.bflush ();
   if (d)
-    fprintf (d, "}\nWrote %u globals %u types\n", n1, n2);
+    fprintf (d, "\nWrote %u unique %u inner\n", outer, inner);
+
+  w.checkpoint ();
 }
 
 bool
@@ -1338,27 +1378,34 @@ cpms_in::globals (FILE *d, unsigned ary_num, const gtp *ary_p)
     return false;
 
   if (d)
-    fprintf (d, "Reading globals %d[%d] {", ary_num, num);
-  unsigned n1 = 0, n2 = 0;
+    fprintf (d, "Reading globals %d[%d]", ary_num, num);
+
+  unsigned outer = 0, inner = 0;
   for (unsigned ix = 0; ix != num; ix++)
     {
-      tree t = ary[ix];
+      if (d && !(ix & 31))
+	fprintf (d, "\n\t%3u:", ix);
 
-      if (!mark_present (d, false, t))
+      tree t = ary[ix];
+      unsigned first = !mark_present (t);
+      if (first)
 	{
-	  n1++;
+	  outer++;
 	  if (CODE_CONTAINS_STRUCT (TREE_CODE (t), TS_TYPED)
-	      && !mark_present (d, true, TREE_TYPE (t)))
-	    n2++;
-	  if (d && !(n1 & 15))
-	    fprintf (d, "\n\t%u:", ix + 1);
+	      && !mark_present (TREE_TYPE (t)))
+	    {
+	      first++;
+	      inner++;
+	    }
 	}
+      if (d)
+	fprintf (d, "%d", first);
     }
   r.bflush ();
-
   if (d)
-    fprintf (d, "}\nRead %u globals %u types\n", n1, n2);
-  return true;
+    fprintf (d, "\nRead %u unique %u inner\n", outer, inner);
+
+  return r.checkpoint ();
 }
 
 /* Item import
@@ -1376,7 +1423,7 @@ cpms_out::tag_import (FILE *d, unsigned ix, const module_state *state)
 	     state->direct_import == 2 ? "export " :
 	     state->direct_import ? "" : "indirect ",
 	     IDENTIFIER_POINTER (state->name), state->crc);
-  w.u (rt_import);
+  tag (rt_import);
   w.u (ix);
   w.u (state->direct_import);
   w.u (state->crc);
@@ -1484,29 +1531,38 @@ cpms_in::tag_import (FILE *d)
    tree:binding
 */
 
-void
+/* Return a child namespace to walk.  */
+
+tree
 cpms_out::tag_binding (FILE *d, tree ns, bool main_p, tree name, tree binding)
 {
-  if (TREE_CODE (binding) == TYPE_DECL)
-    // FIXME: No typedefs
-    return;
-
   tree type = NULL_TREE;
   tree value = ovl_skip_hidden (decapsulate_binding (binding, &type));
 
-  if (!value && !type)
-    return;
+  type = NULL_TREE; // FIXME: typedefs
+  if (value)
+    {
+      if (TREE_CODE (value) == NAMESPACE_DECL && !DECL_NAMESPACE_ALIAS (value))
+	{
+	  gcc_assert (!type);
+	  return value;
+	}
+      else if (TREE_CODE (value) == FUNCTION_DECL && DECL_IS_BUILTIN (value))
+	/* Don't write builtins.  */
+	value = NULL_TREE;
+      else if (TREE_CODE (value) == TYPE_DECL)
+	value = NULL_TREE; // FIXME: typedefs
+    }
 
-  if (value && TREE_CODE (value) != OVERLOAD && DECL_IS_BUILTIN (value))
-    /* Don't write builtins.  */
-    return; // FIXME
+  if (!value && !type)
+    return NULL_TREE;
 
   if (d)
     fprintf (d, "Writing '%s' %s bindings for '%s'\n",
 	     IDENTIFIER_POINTER (DECL_NAME (ns)), 
 	     main_p ? "main" : "global", IDENTIFIER_POINTER (name));
 
-  w.u (rt_binding);
+  tag (rt_binding);
   tree_node (d, ns);
   tree_node (d, name);
   w.b (main_p);
@@ -1521,6 +1577,8 @@ cpms_out::tag_binding (FILE *d, tree ns, bool main_p, tree name, tree binding)
     tag_definition (d, type);
   for (ovl_iterator iter (value); iter; ++iter)
     tag_definition (d, *iter);
+
+  return NULL_TREE;
 }
 
 bool
@@ -1563,7 +1621,7 @@ cpms_out::tag_definition (FILE *d, tree decl)
 	return;
     }
 
-  w.u (rt_definition);
+  tag (rt_definition);
   tree_node (d, decl);
 
   switch (TREE_CODE (decl))
@@ -2649,15 +2707,19 @@ cpms_out::tree_node (FILE *d, tree t)
 {
   if (!t)
     {
+      nulls++;
       w.u (0); /* This also matches t_eof, but we cannot be confused. */
       return;
     }
   
   if (unsigned *val = map.get (t))
     {
+      refs++;
       w.u (*val);
       return;
     }
+
+  unique++;
 
   tree_code code = TREE_CODE (t);
   gcc_assert (rt_tree_base + code < rt_ref_base);
@@ -2961,31 +3023,24 @@ cpms_out::bindings (FILE *d, tree ns)
 
       if (TREE_CODE (global) == MODULE_VECTOR)
 	{
-	  tree main
-	    = MODULE_VECTOR_CLUSTER (global, 0).slots[THIS_MODULE_INDEX];
-	  global
-	    = MODULE_VECTOR_CLUSTER (global, 0) .slots[GLOBAL_MODULE_INDEX];
+	  const module_cluster *cluster = &MODULE_VECTOR_CLUSTER (global, 0);
+	  global = cluster->slots[GLOBAL_MODULE_INDEX];
 
-	  if (!main)
-	    ;
-	  else if (TREE_CODE (main) == NAMESPACE_DECL
-		   && !DECL_NAMESPACE_ALIAS (main))
-	    inner = main;
-	  else
-	    tag_binding (d, ns, true, name, main);
+	  if (tree main = cluster->slots[THIS_MODULE_INDEX])
+	    inner = tag_binding (d, ns, true, name, main);
 	}
 
-      if (!global)
-	;
-      else if (TREE_CODE (global) == NAMESPACE_DECL
-	       && !DECL_NAMESPACE_ALIAS (global))
-	inner = global;
-      else
-	tag_binding (d, ns, false, name, global);
+      if (global)
+	if (tree ginner = tag_binding (d, ns, false, name, global))
+	  {
+	    gcc_assert (!inner || inner == ginner);
+	    inner = ginner;
+	  }
 
       if (inner)
 	bindings (d, inner);
     }
+
   if (d)
     fprintf (d, "Walked namespace '%s'\n",
 	     IDENTIFIER_POINTER (DECL_NAME (ns)));
