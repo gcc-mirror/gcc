@@ -1,3 +1,8 @@
+2017-05-31  Mikhail Maltsev  <maltsevm@gmail.com>
+
+	PR testsuite/80580
+	* gimple-parser.c (c_parser_gimple_if_stmt): Check for empty labels.
+
 2017-05-30  David Malcolm  <dmalcolm@redhat.com>
 
 	* c-objc-common.c (c_tree_printer): Gain bool and const char **

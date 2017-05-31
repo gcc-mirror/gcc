@@ -1,3 +1,8 @@
+2017-05-31  Mikhail Maltsev  <maltsevm@gmail.com>
+
+	PR testsuite/80580
+	* gcc.dg/gimplefe-error-7.c: New test.
+
 2017-05-31  Graham Markall  <graham.markall@embecosm.com>
 
 	* gcc.target/arc/add_n-combine.c: New test.
