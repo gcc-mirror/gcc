@@ -1,3 +1,8 @@
+2017-05-31  Jason Merrill  <jason@redhat.com>
+
+	PR c++/80179 - ICE with initialized flexible array member.
+	* constexpr.c (verify_ctor_sanity): Handle flexible array members.
+
 2017-05-29  Alexandre Oliva <aoliva@redhat.com>
 
 	* cp-tree.h (lang_identifier): Drop oracle_looked_up, unused.

@@ -2643,8 +2643,16 @@ verify_ctor_sanity (const constexpr_ctx *ctx, tree type)
   /* We used to check that ctx->ctor was empty, but that isn't the case when
      the object is zero-initialized before calling the constructor.  */
   if (ctx->object)
-    gcc_assert (same_type_ignoring_top_level_qualifiers_p
-		(type, TREE_TYPE (ctx->object)));
+    {
+      tree otype = TREE_TYPE (ctx->object);
+      gcc_assert (same_type_ignoring_top_level_qualifiers_p (type, otype)
+		  /* Handle flexible array members.  */
+		  || (TREE_CODE (otype) == ARRAY_TYPE
+		      && TYPE_DOMAIN (otype) == NULL_TREE
+		      && TREE_CODE (type) == ARRAY_TYPE
+		      && (same_type_ignoring_top_level_qualifiers_p
+			  (TREE_TYPE (type), TREE_TYPE (otype)))));
+    }
   gcc_assert (!ctx->object || !DECL_P (ctx->object)
 	      || *(ctx->values->get (ctx->object)) == ctx->ctor);
 }
