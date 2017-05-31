@@ -1,3 +1,8 @@
+2017-05-31  Martin Liska  <mliska@suse.cz>
+
+	* filter_params.py:
+	Transform ENUM_BITFIELD and comments starting with '/**'
+
 2017-05-31  David Malcolm  <dmalcolm@redhat.com>
 	    Martin Liska  <mliska@suse.cz>
 

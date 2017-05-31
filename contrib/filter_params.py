@@ -34,6 +34,11 @@ def filter_src(text):
     # so that doxygen will parse them.
     #
     # Only comments that begin on the left-most column are converted.
+    #
+    text = re.sub(r'^/\*\* ',
+                  r'/** @verbatim ',
+                  text,
+                  flags=re.MULTILINE)
     text = re.sub(r'^/\* ',
                   r'/** @verbatim ',
                   text,
@@ -58,6 +63,11 @@ def filter_src(text):
                   r'(\1)',
                   text)
 
+    # Replace 'ENUM_BITFIELD(enum_name)' with 'enum enum_name'.
+    text = re.sub('ENUM_BITFIELD\s*\(([^\)]*)\)',
+                  r'enum \1',
+                  text)
+
     return text
 
 class FilteringTests(unittest.TestCase):
@@ -80,6 +90,21 @@ class FilteringTests(unittest.TestCase):
             ('/** @verbatim FIRST_LINE\n'
              '   NEXT_LINE\n'
              '   FINAL_LINE.   @endverbatim */\n'))
+
+    def test_comment_example_gengtype(self):
+        self.assert_filters_to(
+            ('/** Allocate and initialize an input buffer state.\n'
+             ' * @param file A readable stream.\n'
+             ' * @param size The character buffer size in bytes. When in doubt, use @c YY_BUF_SIZE.\n'
+             ' * \n'
+             ' * @return the allocated buffer state.\n'
+             ' */'),
+            ('/** @verbatim Allocate and initialize an input buffer state.\n'
+             ' * @param file A readable stream.\n'
+             ' * @param size The character buffer size in bytes. When in doubt, use @c YY_BUF_SIZE.\n'
+             ' * \n'
+             ' * @return the allocated buffer state.\n'
+             '  @endverbatim */'))
 
     def test_oneliner_comment(self):
         self.assert_filters_to(
@@ -130,6 +155,11 @@ class FilteringTests(unittest.TestCase):
         self.assert_filters_to(
             'char *strcpy PARAMS ((char *dest, char *source));\n',
             'char *strcpy (char *dest, char *source);\n')
+
+    def test_ENUM_BITFIELD(self):
+        self.assert_filters_to(
+            '  ENUM_BITFIELD (sym_intent) intent:2;\n',
+            '  enum sym_intent intent:2;\n')
 
 def act_on_files(argv):
     for filename in argv[1:]:
