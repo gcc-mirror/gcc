@@ -68,6 +68,7 @@ extern rtx xtensa_return_addr (int, rtx);
 extern void xtensa_setup_frame_addresses (void);
 extern int xtensa_dbx_register_number (int);
 extern long compute_frame_size (int);
+extern bool xtensa_use_return_instruction_p (void);
 extern void xtensa_expand_prologue (void);
 extern void xtensa_expand_epilogue (void);
 extern void order_regs_for_local_alloc (void);

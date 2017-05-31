@@ -1663,7 +1663,7 @@
 (define_insn "return"
   [(return)
    (use (reg:SI A0_REG))]
-  "(TARGET_WINDOWED_ABI || !xtensa_current_frame_size) && reload_completed"
+  "xtensa_use_return_instruction_p ()"
 {
   return TARGET_WINDOWED_ABI ?
       (TARGET_DENSITY ? "retw.n" : "retw") :
