@@ -156,6 +156,19 @@ get_strinfo (int idx)
   return (*stridx_to_strinfo)[idx];
 }
 
+/* Get the next strinfo in the chain after SI, or null if none.  */
+
+static inline strinfo *
+get_next_strinfo (strinfo *si)
+{
+  if (si->next == 0)
+    return NULL;
+  strinfo *nextsi = get_strinfo (si->next);
+  if (nextsi == NULL || nextsi->first != si->first || nextsi->prev != si->idx)
+    return NULL;
+  return nextsi;
+}
+
 /* Helper function for get_stridx.  */
 
 static int
@@ -665,10 +678,8 @@ get_stridx_plus_constant (strinfo *basesi, HOST_WIDE_INT off, tree ptr)
   gcc_checking_assert (compare_tree_int (si->length, off) != -1);
   for (chainsi = si; chainsi->next; chainsi = si)
     {
-      si = get_strinfo (chainsi->next);
+      si = get_next_strinfo (chainsi);
       if (si == NULL
-	  || si->first != chainsi->first
-	  || si->prev != chainsi->idx
 	  || si->length == NULL_TREE
 	  || TREE_CODE (si->length) != INTEGER_CST)
 	break;
@@ -736,26 +747,18 @@ zero_length_string (tree ptr, strinfo *chainsi)
       si = verify_related_strinfos (chainsi);
       if (si)
 	{
-	  chainsi = si;
-	  for (; chainsi->next; chainsi = si)
+	  do
 	    {
-	      if (chainsi->endptr == NULL_TREE)
+	      gcc_assert (si->length || si->stmt);
+	      if (si->endptr == NULL_TREE)
 		{
-		  chainsi = unshare_strinfo (chainsi);
-		  chainsi->endptr = ptr;
+		  si = unshare_strinfo (si);
+		  si->endptr = ptr;
 		}
-	      si = get_strinfo (chainsi->next);
-	      if (si == NULL
-		  || si->first != chainsi->first
-		  || si->prev != chainsi->idx)
-		break;
+	      chainsi = si;
+	      si = get_next_strinfo (si);
 	    }
-	  gcc_assert (chainsi->length || chainsi->stmt);
-	  if (chainsi->endptr == NULL_TREE)
-	    {
-	      chainsi = unshare_strinfo (chainsi);
-	      chainsi->endptr = ptr;
-	    }
+	  while (si != NULL);
 	  if (chainsi->length && integer_zerop (chainsi->length))
 	    {
 	      if (chainsi->next)
@@ -833,12 +836,8 @@ adjust_related_strinfos (location_t loc, strinfo *origsi, tree adj)
 	  si->endptr = NULL_TREE;
 	  si->dont_invalidate = true;
 	}
-      if (si->next == 0)
-	return;
-      nsi = get_strinfo (si->next);
-      if (nsi == NULL
-	  || nsi->first != si->first
-	  || nsi->prev != si->idx)
+      nsi = get_next_strinfo (si);
+      if (nsi == NULL)
 	return;
       si = nsi;
     }
@@ -995,15 +994,9 @@ adjust_last_stmt (strinfo *si, gimple *stmt, bool is_strcat)
 	return;
       while (firstsi != lastsi)
 	{
-	  strinfo *nextsi;
-	  if (firstsi->next == 0)
+	  firstsi = get_next_strinfo (firstsi);
+	  if (firstsi == NULL)
 	    return;
-	  nextsi = get_strinfo (firstsi->next);
-	  if (nextsi == NULL
-	      || nextsi->prev != firstsi->idx
-	      || nextsi->first != si->first)
-	    return;
-	  firstsi = nextsi;
 	}
     }
 

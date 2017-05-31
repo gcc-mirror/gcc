@@ -1,3 +1,72 @@
+2017-05-31  Nathan Sidwell  <nathan@acm.org>
+
+	* g++.dg/lookup/lambda1.C New.
+
+2017-05-31  Bin Cheng  <bin.cheng@arm.com>
+
+	* gcc.dg/tree-ssa/ivopt_mult_4.c: Explicitly check comparison
+	on pointer should not be replaced.
+
+2017-05-31  Mikhail Maltsev  <maltsevm@gmail.com>
+
+	PR testsuite/80580
+	* gcc.dg/gimplefe-error-7.c: New test.
+
+2017-05-31  Graham Markall  <graham.markall@embecosm.com>
+
+	* gcc.target/arc/add_n-combine.c: New test.
+	* gcc.target/arc/sub_n-combine.c: New test.
+
+2017-05-31  Richard Biener  <rguenther@suse.de>
+
+	PR target/80880
+	* gcc.target/i386/pr80880.c: New testcase.
+
+2017-05-31  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* gcc.dg/vect/vect-103.c: Update wording of dump message.
+
+2017-05-31  Bin Cheng  <bin.cheng@arm.com>
+
+	* gcc.dg/vect/pr80815-3.c: New test.
+
+2017-05-31  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/80906
+	* gcc.dg/graphite/pr80906.c: New testcase.
+
+2017-05-30  Tom de Vries  <tom@codesourcery.com>
+
+	PR testsuite/80910
+	* gcc.target/x86_64/abi/ms-sysv/ms-sysv.exp: Exit with status
+	unsupported if host compiler does not support c++11.
+	(host_supports_c++11): New proc.
+
+2017-05-30  Martin Sebor  <msebor@redhat.com>
+
+	PR c/80731
+	* g++.dg/ext/utf16-4.C: Relax test.
+	* gcc.dg/fixed-point/int-warning.c: Adjust.
+
+2017-05-30  David Malcolm  <dmalcolm@redhat.com>
+
+	* g++.dg/plugin/plugin.exp (plugin_test_list): Add...
+	* g++.dg/plugin/show-template-tree-color-no-elide-type.C: New
+	test case.
+	* g++.dg/plugin/show-template-tree-color.C: New test case.
+	* g++.dg/plugin/show_template_tree_color_plugin.c: New plugin.
+	* g++.dg/template/show-template-tree-2.C: New test case.
+	* g++.dg/template/show-template-tree-3.C: New test case.
+	* g++.dg/template/show-template-tree-4.C: New test case.
+	* g++.dg/template/show-template-tree-no-elide-type.C: New test case.
+	* g++.dg/template/show-template-tree.C: New test case.
+
+2017-05-30  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* gcc.target/powerpc/shift-dot.c: Delete -mgen-cell-microcode from
+	dg-options.
+	* gfortran.dg/pr80107.f: Delete testcase.
+
 2017-05-30  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/80833

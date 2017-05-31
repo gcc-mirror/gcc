@@ -28,7 +28,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "c-objc-common.h"
 
 static bool c_tree_printer (pretty_printer *, text_info *, const char *,
-			    int, bool, bool, bool);
+			    int, bool, bool, bool, bool, const char **);
 
 bool
 c_missing_noreturn_ok_p (tree decl)
@@ -75,7 +75,8 @@ c_objc_common_init (void)
    diagnostic machinery.  */
 static bool
 c_tree_printer (pretty_printer *pp, text_info *text, const char *spec,
-		int precision, bool wide, bool set_locus, bool hash)
+		int precision, bool wide, bool set_locus, bool hash,
+		bool, const char **)
 {
   tree t = NULL_TREE;
   tree name;

@@ -1335,9 +1335,14 @@ c_parser_gimple_if_stmt (c_parser *parser, gimple_seq *seq)
     {
       loc = c_parser_peek_token (parser)->location;
       c_parser_consume_token (parser);
+      if (! c_parser_next_token_is (parser, CPP_NAME))
+	{
+	  c_parser_error (parser, "expected label");
+	  return;
+	}
       label = c_parser_peek_token (parser)->value;
-      t_label = lookup_label_for_goto (loc, label);
       c_parser_consume_token (parser);
+      t_label = lookup_label_for_goto (loc, label);
       if (! c_parser_require (parser, CPP_SEMICOLON, "expected %<;%>"))
 	return;
     }
@@ -1359,6 +1364,11 @@ c_parser_gimple_if_stmt (c_parser *parser, gimple_seq *seq)
     {
       loc = c_parser_peek_token (parser)->location;
       c_parser_consume_token (parser);
+      if (! c_parser_next_token_is (parser, CPP_NAME))
+	{
+	  c_parser_error (parser, "expected label");
+	  return;
+	}
       label = c_parser_peek_token (parser)->value;
       f_label = lookup_label_for_goto (loc, label);
       c_parser_consume_token (parser);

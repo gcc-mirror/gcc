@@ -14641,12 +14641,12 @@ fi
 # Check whether --enable-werror was given.
 if test "${enable_werror+set}" = set; then :
   enableval=$enable_werror;
-fi
-
 case ${enable_werror} in
   yes) stage2_werror_flag="--enable-werror-always" ;;
   *) stage2_werror_flag="" ;;
 esac
+
+else
 
 if test -d ${srcdir}/gcc && test x"`cat $srcdir/gcc/DEV-PHASE`" = xexperimental; then
   case $BUILD_CONFIG in
@@ -14656,6 +14656,9 @@ if test -d ${srcdir}/gcc && test x"`cat $srcdir/gcc/DEV-PHASE`" = xexperimental;
       stage2_werror_flag="--enable-werror-always" ;;
   esac
 fi
+
+fi
+
 
 
 

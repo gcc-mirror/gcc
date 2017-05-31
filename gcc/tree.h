@@ -4112,7 +4112,6 @@ extern bool tree_fits_shwi_p (const_tree)
   ATTRIBUTE_PURE;
 extern bool tree_fits_uhwi_p (const_tree)
   ATTRIBUTE_PURE;
-
 extern HOST_WIDE_INT tree_to_shwi (const_tree);
 extern unsigned HOST_WIDE_INT tree_to_uhwi (const_tree);
 #if !defined ENABLE_TREE_CHECKING && (GCC_VERSION >= 4003)

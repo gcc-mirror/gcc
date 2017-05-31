@@ -760,12 +760,6 @@ class ovl_iterator
     return reveal_node (head, ovl);
   }
 
- public:
-  tree &ref () const
-  {
-    return OVL_FUNCTION (ovl);
-  }
-
  protected:
   /* If we have a nested overload, point at the inner overload and
      return the next link on the outer one.  */
@@ -1448,7 +1442,7 @@ check_constraint_info (tree t)
 #define GLOBAL_MODULE_INDEX 0
 #define THIS_MODULE_INDEX 1
 #define IMPORTED_MODULE_BASE 2
-#define MODULE_INDEX_LIMIT 8192
+#define MODULE_INDEX_LIMIT (1<<14)
 
 /* The owning module of a DECL.  */
 
@@ -2496,14 +2490,24 @@ struct GTY(()) lang_type {
 #define NAMESPACE_LEVEL(NODE) \
   (LANG_DECL_NS_CHECK (NODE)->level)
 
+/* Discriminator values for lang_decl.  */
+
+enum lang_decl_selector
+{
+  lds_min,
+  lds_fn,
+  lds_ns,
+  lds_parm,
+  lds_decomp
+};
+
 /* Flags shared by all forms of DECL_LANG_SPECIFIC.
 
    Some of the flags live here only to make lang_decl_min/fn smaller.  Do
    not make this struct larger than 32 bits.  */
 
 struct GTY(()) lang_decl_base {
-  unsigned selector : 3; /* Selectors [0-4] */
-  unsigned module_index : 13;		   /* Module index. */
+  ENUM_BITFIELD(lang_decl_selector) selector : 3;
   ENUM_BITFIELD(languages) language : 1;
   unsigned use_template : 2;
   unsigned not_really_extern : 1;	   /* var or fn */
@@ -2518,7 +2522,8 @@ struct GTY(()) lang_decl_base {
   unsigned u2sel : 1;
   unsigned concept_p : 1;                  /* applies to vars and functions */
   unsigned var_declared_inline_p : 1;	   /* var */
-  /* 2 spare bit */
+  /* 1 spare bit */
+  unsigned module_index : 14;		   /* Module index. */
 };
 
 /* True for DECL codes which have template info and access.  */
@@ -2661,17 +2666,6 @@ struct GTY(()) lang_decl {
     struct lang_decl_parm GTY((tag ("lds_parm"))) parm;
     struct lang_decl_decomp GTY((tag ("lds_decomp"))) decomp;
   } u;
-};
-
-/* Discriminator values for lang_decl.  */
-
-enum lang_decl_selector
-{
-  lds_min,
-  lds_fn,
-  lds_ns,
-  lds_parm,
-  lds_decomp
 };
 
 /* Looks through a template (if present) to find what it declares.  */

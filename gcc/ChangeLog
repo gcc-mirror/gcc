@@ -1,3 +1,136 @@
+2017-05-31  Martin Liska  <mliska@suse.cz>
+
+	* tree-vect-loop.c (vect_create_epilog_for_reduction):
+	Change comment style to one we normally use.
+	(vectorizable_reduction): Likewise.
+	(vectorizable_induction): Likewise.
+	* tree-vect-stmts.c (vectorizable_mask_load_store): Likewise.
+	(vectorizable_call): Likewise.
+	(vectorizable_simd_clone_call): Likewise.
+	(vectorizable_conversion): Likewise.
+	(vectorizable_assignment): Likewise.
+	(vectorizable_shift): Likewise.
+	(vectorizable_operation): Likewise.
+	(vectorizable_store): Likewise.
+	(vectorizable_load): Likewise.
+	* tree-vectorizer.h: Likewise.
+
+2017-05-31  Alexander Monakov  <amonakov@ispras.ru>
+
+	* passes.c (emergency_dump_function): New.
+	* tree-pass.h (emergency_dump_function): Declare.
+	* plugin.c (plugins_internal_error_function): Remove.
+	* plugin.h (plugins_internal_error_function): Remove declaration.
+	* toplev.c (internal_error_function): New static function.  Use it...
+	(general_init): ...here.
+
+2017-05-31  Graham Markall  <graham.markall@embecosm.com>
+
+	* config/arc/arc.c (arc_print_operand): Handle constant operands.
+	(arc_rtx_costs): Add costs for new patterns.
+	* config/arc/arc.md: Additional *add_n and *sub_n patterns.
+	* config/arc/predicates.md: Add _1_2_3_operand predicate.
+
+2017-05-31  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* tree-ssa-strlen.c (get_next_strinfo): New function.
+	(get_stridx_plus_constant): Use it.
+	(zero_length_string): Likewise.
+	(adjust_related_strinfos): Likewise.
+	(adjust_last_stmt): Likewise.
+
+2017-05-31  Richard Biener  <rguenther@suse.de>
+
+	PR target/80880
+	* config/i386/i386.c (ix86_expand_builtin): Remove assert
+	for arg being an SSA name when expanding IX86_BUILTIN_BNDRET.
+
+2017-05-31  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* tree-vect-data-refs.c (vect_find_same_alignment_drs): Remove
+	loop_vinfo argument and use of dependence distance vectors.
+	Check instead whether the two references differ only in their
+	initial value and assume that they have the same alignment if the
+	difference is a multiple of the vector alignment.
+	(vect_analyze_data_refs_alignment): Update call accordingly.
+
+2017-05-31  Martin Liska  <mliska@suse.cz>
+
+	PR target/79155
+	* config/i386/cpuid.h: Fix typo in a comment in cpuid.h.
+
+2017-05-31  Bin Cheng  <bin.cheng@arm.com>
+
+	* tree-vect-loop-manip.c (create_intersect_range_checks_index)
+	(create_intersect_range_checks): Move from ...
+	* tree-data-ref.c (create_intersect_range_checks_index)
+	(create_intersect_range_checks): ... to here.
+	(create_runtime_alias_checks): New function factored from ...
+	* tree-vect-loop-manip.c (vect_create_cond_for_alias_checks): ...
+	here.  Call above function.
+	* tree-data-ref.h (create_runtime_alias_checks): New function.
+
+2017-05-31  Bin Cheng  <bin.cheng@arm.com>
+
+	* tree-data-ref.c (prune_runtime_alias_test_list): Relax minimal
+	segment length for dr_b and compute it in wide_int.
+
+2017-05-31  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/80906
+	* graphite-isl-ast-to-gimple.c (copy_loop_close_phi_nodes): Get
+	and pass through iv_map.
+	(copy_bb_and_scalar_dependences): Adjust.
+	(translate_pending_phi_nodes): Likewise.
+	(copy_loop_close_phi_args): Handle code-generating IVs instead
+	of ICEing.
+
+2017-05-30  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic-color.c (color_dict): Add "type-diff".
+	(parse_gcc_colors): Update comment.
+	* doc/invoke.texi (Diagnostic Message Formatting Options): Add
+	-fdiagnostics-show-template-tree and -fno-elide-type.
+	(GCC_COLORS): Add type-diff to example.
+	(type-diff=): New.
+	(-fdiagnostics-show-template-tree): New.
+	(-fno-elide-type): New.
+	* pretty-print.c (pp_format): Pass quote and formatters[argno] to
+	the pp_format_decoder callback.  Call any m_format_postprocessor's
+	"handle" method.
+	(pretty_printer::pretty_printer): Initialize
+	m_format_postprocessor.
+	(pretty_printer::~pretty_printer): Delete any
+	m_format_postprocessor.
+	* pretty-print.h (printer_fn): Add bool and const char **
+	parameters.
+	(class format_postprocessor): New class.
+	(struct pretty_printer::format_decoder): Document the new
+	parameters.
+	(struct pretty_printer::m_format_postprocessor): New field.
+	* tree-diagnostic.c (default_tree_printer): Update for new
+	bool and const char ** params.
+	* tree-diagnostic.h (default_tree_printer): Likewise.
+
+2017-05-30  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/predicates.md (cc_reg_not_micro_cr0_operand): Delete.
+	(lwa_operand): Delete rs6000_gen_cell_microcode test.
+	* config/rs6000/rs6000.c (rs6000_option_override_internal): Delete
+	rs6000_gen_cell_microcode code.
+	(rs6000_final_prescan_insn): Delete.
+	(rs6000_opt_vars): Delete the "gen-cell-microcode" and
+	"warn-cell-microcode" entries.
+	* config/rs6000/rs6000.h (FINAL_PRESCAN_INSN): Delete.
+	* config/rs6000/rs6000.md: Delete rs6000_gen_cell_microcode tests
+	throughout.  Change cc_reg_not_micro_cr0_operand to
+	cc_reg_not_cr0_operand throughout.
+	(*extendhi<mode>2_noload): Delete.
+	* config/rs6000/rs6000.opt (mgen-cell-microcode): Replace by stub.
+	(mwarn-cell-microcode): Delete.
+	* doc/invoke.texi (RS/6000 and PowerPC Options): Delete
+	-mgen-cell-microcode and -mwarn-cell-microcode.
+
 2017-05-30  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/80833

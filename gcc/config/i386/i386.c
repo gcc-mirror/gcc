@@ -37584,7 +37584,6 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget,
 
     case IX86_BUILTIN_BNDRET:
       arg0 = CALL_EXPR_ARG (exp, 0);
-      gcc_assert (TREE_CODE (arg0) == SSA_NAME);
       target = chkp_get_rtl_bounds (arg0);
 
       /* If no bounds were specified for returned value,

@@ -2728,7 +2728,11 @@ cpms_out::tree_node (FILE *d, tree t)
 	  else if (klass == tcc_type)
 	    ; // FIXME: write type lang bools
 	  else
-	    lang_decl_bools (d, t);
+	    {
+	      if (code == VAR_DECL)
+		w.b (DECL_DECOMPOSITION_P (t));
+	      lang_decl_bools (d, t);
+	    }
 	}
       w.bflush ();
       w.checkpoint ();
@@ -2856,8 +2860,7 @@ cpms_in::tree_node (FILE *d)
 	    ;
 	  else if (klass == tcc_type
 		   ? !maybe_add_lang_type_raw (t)
-		   // FIXME: Decompositions
-		   : !maybe_add_lang_decl_raw (t, false))
+		   : !maybe_add_lang_decl_raw (t, code == VAR_DECL && r.b ()))
 	    {
 	      specific = false;
 	      lied = true;

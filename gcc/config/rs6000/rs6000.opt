@@ -441,13 +441,9 @@ mlongcall
 Target Report Var(rs6000_default_long_calls) Save
 Avoid all range limits on call instructions.
 
+; This option existed in the past, but now is always on.
 mgen-cell-microcode
-Target Report Var(rs6000_gen_cell_microcode) Init(-1) Save
-Generate Cell microcode.
-
-mwarn-cell-microcode
-Target Var(rs6000_warn_cell_microcode) Init(0) Warning Save
-Warn when a Cell microcoded instruction is emitted.
+Target RejectNegative Undocumented Ignore
 
 mwarn-altivec-long
 Target Var(rs6000_warn_altivec_long) Init(1) Save

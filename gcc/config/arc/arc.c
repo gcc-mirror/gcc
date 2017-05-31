@@ -3483,6 +3483,14 @@ arc_print_operand (FILE *file, rtx x, int code)
 
       return;
 
+    case 'c':
+      if (GET_CODE (x) == CONST_INT)
+        fprintf (file, "%d", INTVAL (x) );
+      else
+        output_operand_lossage ("invalid operands to %%c code");
+
+      return;
+
     case 'M':
       if (GET_CODE (x) == CONST_INT)
 	fprintf (file, "%d",exact_log2(~INTVAL (x)) );
@@ -4895,8 +4903,10 @@ arc_rtx_costs (rtx x, machine_mode mode, int outer_code,
 	*total = COSTS_N_INSNS (2);
       return false;
     case PLUS:
-      if (GET_CODE (XEXP (x, 0)) == MULT
-	  && _2_4_8_operand (XEXP (XEXP (x, 0), 1), VOIDmode))
+      if ((GET_CODE (XEXP (x, 0)) == ASHIFT
+	   && _1_2_3_operand (XEXP (XEXP (x, 0), 1), VOIDmode))
+          || (GET_CODE (XEXP (x, 0)) == MULT
+              && _2_4_8_operand (XEXP (XEXP (x, 0), 1), VOIDmode)))
 	{
 	  *total += (rtx_cost (XEXP (x, 1), mode, PLUS, 0, speed)
 		     + rtx_cost (XEXP (XEXP (x, 0), 0), mode, PLUS, 1, speed));
@@ -4904,8 +4914,10 @@ arc_rtx_costs (rtx x, machine_mode mode, int outer_code,
 	}
       return false;
     case MINUS:
-      if (GET_CODE (XEXP (x, 1)) == MULT
-	  && _2_4_8_operand (XEXP (XEXP (x, 1), 1), VOIDmode))
+      if ((GET_CODE (XEXP (x, 1)) == ASHIFT
+	   && _1_2_3_operand (XEXP (XEXP (x, 1), 1), VOIDmode))
+          || (GET_CODE (XEXP (x, 1)) == MULT
+              && _2_4_8_operand (XEXP (XEXP (x, 1), 1), VOIDmode)))
 	{
 	  *total += (rtx_cost (XEXP (x, 0), mode, PLUS, 0, speed)
 		     + rtx_cost (XEXP (XEXP (x, 1), 0), mode, PLUS, 1, speed));
