@@ -1,3 +1,11 @@
+2017-05-31  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* tree-ssa-strlen.c (get_next_strinfo): New function.
+	(get_stridx_plus_constant): Use it.
+	(zero_length_string): Likewise.
+	(adjust_related_strinfos): Likewise.
+	(adjust_last_stmt): Likewise.
+
 2017-05-31  Richard Biener  <rguenther@suse.de>
 
 	PR target/80880
