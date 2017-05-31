@@ -544,9 +544,9 @@ typedef struct _stmt_vec_info {
   gimple *vectorized_stmt;
 
 
-  /** The following is relevant only for stmts that contain a non-scalar
+  /* The following is relevant only for stmts that contain a non-scalar
      data-ref (array/pointer/struct access). A GIMPLE stmt is expected to have
-     at most one such data-ref.  **/
+     at most one such data-ref.  */
 
   /* Information about the data-ref (access function, etc),
      relative to the inner-most containing loop.  */
