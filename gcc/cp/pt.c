@@ -6669,7 +6669,11 @@ convert_nontype_argument (tree type, tree expr, tsubst_flags_t complain)
 	    }
 	}
 
-      if (!value_dependent_expression_p (expr))
+      if (TYPE_REF_OBJ_P (TREE_TYPE (expr))
+	  && value_dependent_expression_p (expr))
+	/* OK, dependent reference.  We don't want to ask whether a DECL is
+	   itself value-dependent, since what we want here is its address.  */;
+      else
 	{
 	  if (!DECL_P (expr))
 	    {
@@ -6691,8 +6695,11 @@ convert_nontype_argument (tree type, tree expr, tsubst_flags_t complain)
 	      return NULL_TREE;
 	    }
 
-	  expr = build_nop (type, build_address (expr));
+	  expr = build_address (expr);
 	}
+
+      if (!same_type_p (type, TREE_TYPE (expr)))
+	expr = build_nop (type, expr);
     }
   /* [temp.arg.nontype]/5, bullet 4
 
