@@ -1,5 +1,16 @@
 2017-05-31  Bin Cheng  <bin.cheng@arm.com>
 
+	* tree-vect-loop-manip.c (create_intersect_range_checks_index)
+	(create_intersect_range_checks): Move from ...
+	* tree-data-ref.c (create_intersect_range_checks_index)
+	(create_intersect_range_checks): ... to here.
+	(create_runtime_alias_checks): New function factored from ...
+	* tree-vect-loop-manip.c (vect_create_cond_for_alias_checks): ...
+	here.  Call above function.
+	* tree-data-ref.h (create_runtime_alias_checks): New function.
+
+2017-05-31  Bin Cheng  <bin.cheng@arm.com>
+
 	* tree-data-ref.c (prune_runtime_alias_test_list): Relax minimal
 	segment length for dr_b and compute it in wide_int.
 
