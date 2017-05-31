@@ -2140,20 +2140,12 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
    vectorization factor.  */
 
 static void
-vect_find_same_alignment_drs (struct data_dependence_relation *ddr,
-			      loop_vec_info loop_vinfo)
+vect_find_same_alignment_drs (struct data_dependence_relation *ddr)
 {
-  unsigned int i;
-  struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
-  int vectorization_factor = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
   struct data_reference *dra = DDR_A (ddr);
   struct data_reference *drb = DDR_B (ddr);
   stmt_vec_info stmtinfo_a = vinfo_for_stmt (DR_STMT (dra));
   stmt_vec_info stmtinfo_b = vinfo_for_stmt (DR_STMT (drb));
-  int dra_size = GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (DR_REF (dra))));
-  int drb_size = GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (DR_REF (drb))));
-  lambda_vector dist_v;
-  unsigned int loop_depth;
 
   if (DDR_ARE_DEPENDENT (ddr) == chrec_known)
     return;
@@ -2161,48 +2153,37 @@ vect_find_same_alignment_drs (struct data_dependence_relation *ddr,
   if (dra == drb)
     return;
 
-  if (DDR_ARE_DEPENDENT (ddr) == chrec_dont_know)
+  if (!operand_equal_p (DR_BASE_OBJECT (dra), DR_BASE_OBJECT (drb),
+			OEP_ADDRESS_OF)
+      || !operand_equal_p (DR_OFFSET (dra), DR_OFFSET (drb), 0)
+      || !operand_equal_p (DR_STEP (dra), DR_STEP (drb), 0))
     return;
 
-  /* Loop-based vectorization and known data dependence.  */
-  if (DDR_NUM_DIST_VECTS (ddr) == 0)
-    return;
-
-  /* Data-dependence analysis reports a distance vector of zero
-     for data-references that overlap only in the first iteration
-     but have different sign step (see PR45764).
-     So as a sanity check require equal DR_STEP.  */
-  if (!operand_equal_p (DR_STEP (dra), DR_STEP (drb), 0))
-    return;
-
-  loop_depth = index_in_loop_nest (loop->num, DDR_LOOP_NEST (ddr));
-  FOR_EACH_VEC_ELT (DDR_DIST_VECTS (ddr), i, dist_v)
+  /* Two references with distance zero have the same alignment.  */
+  offset_int diff = (wi::to_offset (DR_INIT (dra))
+		     - wi::to_offset (DR_INIT (drb)));
+  if (diff != 0)
     {
-      int dist = dist_v[loop_depth];
+      /* Get the wider of the two alignments.  */
+      unsigned int align_a = TYPE_ALIGN_UNIT (STMT_VINFO_VECTYPE (stmtinfo_a));
+      unsigned int align_b = TYPE_ALIGN_UNIT (STMT_VINFO_VECTYPE (stmtinfo_b));
+      unsigned int max_align = MAX (align_a, align_b);
 
-      if (dump_enabled_p ())
-	dump_printf_loc (MSG_NOTE, vect_location,
-	                 "dependence distance  = %d.\n", dist);
+      /* Require the gap to be a multiple of the larger vector alignment.  */
+      if (!wi::multiple_of_p (diff, max_align, SIGNED))
+	return;
+    }
 
-      /* Same loop iteration.  */
-      if (dist == 0
-	  || (dist % vectorization_factor == 0 && dra_size == drb_size))
-	{
-	  /* Two references with distance zero have the same alignment.  */
-	  STMT_VINFO_SAME_ALIGN_REFS (stmtinfo_a).safe_push (drb);
-	  STMT_VINFO_SAME_ALIGN_REFS (stmtinfo_b).safe_push (dra);
-	  if (dump_enabled_p ())
-	    {
-	      dump_printf_loc (MSG_NOTE, vect_location,
-	                       "accesses have the same alignment.\n");
-	      dump_printf (MSG_NOTE,
-	                   "dependence distance modulo vf == 0 between ");
-	      dump_generic_expr (MSG_NOTE, TDF_SLIM, DR_REF (dra));
-	      dump_printf (MSG_NOTE,  " and ");
-	      dump_generic_expr (MSG_NOTE, TDF_SLIM, DR_REF (drb));
-	      dump_printf (MSG_NOTE, "\n");
-	    }
-	}
+  STMT_VINFO_SAME_ALIGN_REFS (stmtinfo_a).safe_push (drb);
+  STMT_VINFO_SAME_ALIGN_REFS (stmtinfo_b).safe_push (dra);
+  if (dump_enabled_p ())
+    {
+      dump_printf_loc (MSG_NOTE, vect_location,
+		       "accesses have the same alignment: ");
+      dump_generic_expr (MSG_NOTE, TDF_SLIM, DR_REF (dra));
+      dump_printf (MSG_NOTE,  " and ");
+      dump_generic_expr (MSG_NOTE, TDF_SLIM, DR_REF (drb));
+      dump_printf (MSG_NOTE, "\n");
     }
 }
 
@@ -2226,7 +2207,7 @@ vect_analyze_data_refs_alignment (loop_vec_info vinfo)
   unsigned int i;
 
   FOR_EACH_VEC_ELT (ddrs, i, ddr)
-    vect_find_same_alignment_drs (ddr, vinfo);
+    vect_find_same_alignment_drs (ddr);
 
   vec<data_reference_p> datarefs = vinfo->datarefs;
   struct data_reference *dr;
