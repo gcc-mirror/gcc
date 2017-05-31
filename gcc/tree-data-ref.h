@@ -371,6 +371,8 @@ extern bool dr_equal_offsets_p (struct data_reference *,
 extern int data_ref_compare_tree (tree, tree);
 extern void prune_runtime_alias_test_list (vec<dr_with_seg_len_pair_t> *,
 					   unsigned HOST_WIDE_INT);
+extern void create_runtime_alias_checks (struct loop *,
+					 vec<dr_with_seg_len_pair_t> *, tree*);
 /* Return true when the base objects of data references A and B are
    the same memory object.  */
 
