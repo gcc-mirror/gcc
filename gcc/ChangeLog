@@ -1,3 +1,20 @@
+2017-05-31  Martin Liska  <mliska@suse.cz>
+
+	* tree-vect-loop.c (vect_create_epilog_for_reduction):
+	Change comment style to one we normally use.
+	(vectorizable_reduction): Likewise.
+	(vectorizable_induction): Likewise.
+	* tree-vect-stmts.c (vectorizable_mask_load_store): Likewise.
+	(vectorizable_call): Likewise.
+	(vectorizable_simd_clone_call): Likewise.
+	(vectorizable_conversion): Likewise.
+	(vectorizable_assignment): Likewise.
+	(vectorizable_shift): Likewise.
+	(vectorizable_operation): Likewise.
+	(vectorizable_store): Likewise.
+	(vectorizable_load): Likewise.
+	* tree-vectorizer.h: Likewise.
+
 2017-05-31  Alexander Monakov  <amonakov@ispras.ru>
 
 	* passes.c (emergency_dump_function): New.

@@ -4855,8 +4855,8 @@ vect_create_epilog_for_reduction (vec<tree> vect_defs, gimple *stmt,
       tree tmp;
       tree vec_elem_type;
 
-      /*** Case 1:  Create:
-           v_out2 = reduc_expr <v_out1>  */
+      /* Case 1:  Create:
+         v_out2 = reduc_expr <v_out1>  */
 
       if (dump_enabled_p ())
         dump_printf_loc (MSG_NOTE, vect_location,
@@ -4931,7 +4931,7 @@ vect_create_epilog_for_reduction (vec<tree> vect_defs, gimple *stmt,
           int elt_offset;
 
           tree zero_vec = build_zero_cst (vectype);
-          /*** Case 2: Create:
+          /* Case 2: Create:
              for (offset = nelements/2; offset >= 1; offset/=2)
                 {
                   Create:  va' = vec_shift <va, offset>
@@ -4982,7 +4982,7 @@ vect_create_epilog_for_reduction (vec<tree> vect_defs, gimple *stmt,
         }
       else
         {
-          /*** Case 3: Create:
+          /* Case 3: Create:
              s = extract_field <v_out2, 0>
              for (offset = element_size;
                   offset < vector_size;
@@ -6080,7 +6080,7 @@ vectorizable_reduction (gimple *stmt, gimple_stmt_iterator *gsi,
       return true;
     }
 
-  /** Transform.  **/
+  /* Transform.  */
 
   if (dump_enabled_p ())
     dump_printf_loc (MSG_NOTE, vect_location, "transform reduction.\n");
@@ -6508,7 +6508,7 @@ vectorizable_induction (gimple *phi,
       return true;
     }
 
-  /** Transform.  **/
+  /* Transform.  */
 
   if (dump_enabled_p ())
     dump_printf_loc (MSG_NOTE, vect_location, "transform induction phi.\n");
