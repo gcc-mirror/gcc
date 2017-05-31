@@ -1,5 +1,10 @@
 2017-05-31  Jason Merrill  <jason@redhat.com>
 
+	PR c++/66297, DR 1684 - literal class and constexpr member fns
+	* constexpr.c (is_valid_constexpr_fn): Only complain about
+	non-literal enclosing class in C++11.
+	* class.c (finalize_literal_type_property): Likewise.
+
 	PR c++/80179 - ICE with initialized flexible array member.
 	* constexpr.c (verify_ctor_sanity): Handle flexible array members.
 
