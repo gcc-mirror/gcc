@@ -2423,13 +2423,25 @@ struct GTY(()) lang_type {
 #define NAMESPACE_LEVEL(NODE) \
   (LANG_DECL_NS_CHECK (NODE)->level)
 
+/* Discriminator values for lang_decl.  */
+
+enum lang_decl_selector
+{
+  lds_min,
+  lds_fn,
+  lds_ns,
+  lds_parm,
+  lds_decomp
+};
+
 /* Flags shared by all forms of DECL_LANG_SPECIFIC.
 
    Some of the flags live here only to make lang_decl_min/fn smaller.  Do
    not make this struct larger than 32 bits; instead, make sel smaller.  */
 
 struct GTY(()) lang_decl_base {
-  unsigned selector : 16;   /* Larger than necessary for faster access.  */
+  /* Larger than necessary for faster access.  */
+  ENUM_BITFIELD(lang_decl_selector) selector : 16;
   ENUM_BITFIELD(languages) language : 1;
   unsigned use_template : 2;
   unsigned not_really_extern : 1;	   /* var or fn */
@@ -2444,8 +2456,7 @@ struct GTY(()) lang_decl_base {
   unsigned u2sel : 1;
   unsigned concept_p : 1;                  /* applies to vars and functions */
   unsigned var_declared_inline_p : 1;	   /* var */
-  unsigned decomposition_p : 1;		   /* var */
-  /* 1 spare bit */
+  /* 2 spare bits */
 };
 
 /* True for DECL codes which have template info and access.  */
@@ -2577,12 +2588,13 @@ struct GTY(()) lang_decl_decomp {
 
 struct GTY(()) lang_decl {
   union GTY((desc ("%h.base.selector"))) lang_decl_u {
+     /* Nothing of only the base type exists.  */
     struct lang_decl_base GTY ((default)) base;
-    struct lang_decl_min GTY((tag ("0"))) min;
-    struct lang_decl_fn GTY ((tag ("1"))) fn;
-    struct lang_decl_ns GTY((tag ("2"))) ns;
-    struct lang_decl_parm GTY((tag ("3"))) parm;
-    struct lang_decl_decomp GTY((tag ("4"))) decomp;
+    struct lang_decl_min GTY((tag ("lds_min"))) min;
+    struct lang_decl_fn GTY ((tag ("lds_fn"))) fn;
+    struct lang_decl_ns GTY((tag ("lds_ns"))) ns;
+    struct lang_decl_parm GTY((tag ("lds_parm"))) parm;
+    struct lang_decl_decomp GTY((tag ("lds_decomp"))) decomp;
   } u;
 };
 
@@ -2603,26 +2615,29 @@ struct GTY(()) lang_decl {
    lang_decl_fn, look down through a TEMPLATE_DECL into its result.  */
 #define LANG_DECL_FN_CHECK(NODE) __extension__				\
 ({ struct lang_decl *lt = DECL_LANG_SPECIFIC (STRIP_TEMPLATE (NODE));	\
-   if (!DECL_DECLARES_FUNCTION_P (NODE) || lt->u.base.selector != 1)	\
+   if (!DECL_DECLARES_FUNCTION_P (NODE)					\
+       || lt->u.base.selector != lds_fn)				\
      lang_check_failed (__FILE__, __LINE__, __FUNCTION__);		\
    &lt->u.fn; })
 
 #define LANG_DECL_NS_CHECK(NODE) __extension__				\
 ({ struct lang_decl *lt = DECL_LANG_SPECIFIC (NODE);			\
-   if (TREE_CODE (NODE) != NAMESPACE_DECL || lt->u.base.selector != 2)	\
+   if (TREE_CODE (NODE) != NAMESPACE_DECL				\
+       || lt->u.base.selector != lds_ns)				\
      lang_check_failed (__FILE__, __LINE__, __FUNCTION__);		\
    &lt->u.ns; })
 
 #define LANG_DECL_PARM_CHECK(NODE) __extension__		\
 ({ struct lang_decl *lt = DECL_LANG_SPECIFIC (NODE);		\
-  if (TREE_CODE (NODE) != PARM_DECL)				\
+  if (TREE_CODE (NODE) != PARM_DECL				\
+      || lt->u.base.selector != lds_parm)			\
     lang_check_failed (__FILE__, __LINE__, __FUNCTION__);	\
   &lt->u.parm; })
 
 #define LANG_DECL_DECOMP_CHECK(NODE) __extension__		\
 ({ struct lang_decl *lt = DECL_LANG_SPECIFIC (NODE);		\
   if (!VAR_P (NODE)						\
-      || lt->u.base.selector != 4)				\
+      || lt->u.base.selector != lds_decomp)			\
     lang_check_failed (__FILE__, __LINE__, __FUNCTION__);	\
   &lt->u.decomp; })
 
@@ -3893,11 +3908,8 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
    declaration or one of VAR_DECLs for the user identifiers in it.  */
 #define DECL_DECOMPOSITION_P(NODE) \
   (VAR_P (NODE) && DECL_LANG_SPECIFIC (NODE)			\
-   ? DECL_LANG_SPECIFIC (NODE)->u.base.decomposition_p		\
+   ? DECL_LANG_SPECIFIC (NODE)->u.base.selector == lds_decomp		\
    : false)
-#define SET_DECL_DECOMPOSITION_P(NODE) \
-  (DECL_LANG_SPECIFIC (VAR_DECL_CHECK (NODE))->u.base.decomposition_p \
-   = true)
 
 /* The underlying artificial VAR_DECL for structured binding.  */
 #define DECL_DECOMP_BASE(NODE) \
@@ -6338,7 +6350,8 @@ extern tree unqualified_name_lookup_error	(tree,
 extern tree unqualified_fn_lookup_error		(cp_expr);
 extern tree build_lang_decl			(enum tree_code, tree, tree);
 extern tree build_lang_decl_loc			(location_t, enum tree_code, tree, tree);
-extern void retrofit_lang_decl			(tree, int = 0);
+extern void retrofit_lang_decl			(tree);
+extern void fit_decomposition_lang_decl		(tree, tree);
 extern tree copy_decl				(tree CXX_MEM_STAT_INFO);
 extern tree copy_type				(tree CXX_MEM_STAT_INFO);
 extern tree cxx_make_type			(enum tree_code);
