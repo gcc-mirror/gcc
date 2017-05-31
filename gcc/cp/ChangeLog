@@ -1,3 +1,8 @@
+2017-05-31  Jason Merrill  <jason@redhat.com>
+
+	PR c++/80179 - ICE with initialized flexible array member.
+	* constexpr.c (verify_ctor_sanity): Handle flexible array members.
+
 2017-05-23  Jason Merrill  <jason@redhat.com>
 
 	PR c++/80267 - ICE with nested capture of reference
