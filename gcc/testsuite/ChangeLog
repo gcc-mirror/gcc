@@ -1,3 +1,7 @@
+2017-05-31  Bin Cheng  <bin.cheng@arm.com>
+
+	* gcc.dg/vect/pr80815-3.c: New test.
+
 2017-05-31  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/80906

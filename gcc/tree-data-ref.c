@@ -1361,14 +1361,10 @@ prune_runtime_alias_test_list (vec<dr_with_seg_len_pair_t> *alias_pairs,
 	  wide_int min_seg_len_b;
 	  tree new_seg_len;
 
-	  if (tree_fits_uhwi_p (dr_b1->seg_len))
-	    {
-	      min_seg_len_b = dr_b1->seg_len;
-	      if (tree_int_cst_sign_bit (dr_b1->seg_len))
-		min_seg_len_b = wi::neg (min_seg_len_b);
-	    }
+	  if (TREE_CODE (dr_b1->seg_len) == INTEGER_CST)
+	    min_seg_len_b = wi::abs (dr_b1->seg_len);
 	  else
-	    min_seg_len_b = wi::uhwi (factor, TYPE_PRECISION (sizetype));
+	    min_seg_len_b = wi::mul (factor, wi::abs (DR_STEP (dr_b1->dr)));
 
 	  /* Now we try to merge alias check dr_a1 & dr_b and dr_a2 & dr_b.
 
