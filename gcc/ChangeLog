@@ -1,3 +1,9 @@
+2017-05-31  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/80618
+	* config/rs6000/rs6000.md (*vector_uneq<mode>): Write the nor in the
+	splitter result in the canonical way.
+
 2017-05-31  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (*zero_extendsidi2): Enable alternative (?r, *Yj)
