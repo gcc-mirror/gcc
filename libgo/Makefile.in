@@ -3081,7 +3081,7 @@ s-version: Makefile
 
 runtime_sysinfo.go: s-runtime_sysinfo; @true
 s-runtime_sysinfo: $(srcdir)/mkrsysinfo.sh gen-sysinfo.go
-	GOOS=$(GOOS) $(SHELL) $(srcdir)/mkrsysinfo.sh
+	GOARCH=$(GOARCH) GOOS=$(GOOS) $(SHELL) $(srcdir)/mkrsysinfo.sh
 	$(SHELL) $(srcdir)/mvifdiff.sh tmp-runtime_sysinfo.go runtime_sysinfo.go
 	$(STAMP) $@
 
