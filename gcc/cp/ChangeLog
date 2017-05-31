@@ -1,3 +1,9 @@
+2017-05-31  Jason Merrill  <jason@redhat.com>
+
+	PR c++/80840 - ICE with constexpr and reference
+	* pt.c (convert_nontype_argument): Don't test whether a decl is
+	value-dependent when binding to a reference.
+
 2017-05-31  Nathan Sidwell  <nathan@acm.org>
 
 	* cp-tree.h (lang_decl_slector): New enum.
