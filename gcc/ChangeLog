@@ -1,3 +1,12 @@
+2017-05-31  Alexander Monakov  <amonakov@ispras.ru>
+
+	* passes.c (emergency_dump_function): New.
+	* tree-pass.h (emergency_dump_function): Declare.
+	* plugin.c (plugins_internal_error_function): Remove.
+	* plugin.h (plugins_internal_error_function): Remove declaration.
+	* toplev.c (internal_error_function): New static function.  Use it...
+	(general_init): ...here.
+
 2017-05-31  Graham Markall  <graham.markall@embecosm.com>
 
 	* config/arc/arc.c (arc_print_operand): Handle constant operands.

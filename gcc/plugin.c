@@ -858,16 +858,6 @@ warn_if_plugins (void)
 
 }
 
-/* Likewise, as a callback from the diagnostics code.  */
-
-void
-plugins_internal_error_function (diagnostic_context *context ATTRIBUTE_UNUSED,
-				 const char *msgid ATTRIBUTE_UNUSED,
-				 va_list *ap ATTRIBUTE_UNUSED)
-{
-  warn_if_plugins ();
-}
-
 /* The default version check. Compares every field in VERSION. */
 
 bool
