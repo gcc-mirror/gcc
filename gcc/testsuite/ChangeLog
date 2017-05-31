@@ -1,3 +1,8 @@
+2017-05-31  Bin Cheng  <bin.cheng@arm.com>
+
+	* gcc.dg/tree-ssa/ivopt_mult_4.c: Explicitly check comparison
+	on pointer should not be replaced.
+
 2017-05-31  Mikhail Maltsev  <maltsevm@gmail.com>
 
 	PR testsuite/80580
