@@ -1,3 +1,10 @@
+2017-05-31  Graham Markall  <graham.markall@embecosm.com>
+
+	* config/arc/arc.c (arc_print_operand): Handle constant operands.
+	(arc_rtx_costs): Add costs for new patterns.
+	* config/arc/arc.md: Additional *add_n and *sub_n patterns.
+	* config/arc/predicates.md: Add _1_2_3_operand predicate.
+
 2017-05-31  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	* tree-ssa-strlen.c (get_next_strinfo): New function.

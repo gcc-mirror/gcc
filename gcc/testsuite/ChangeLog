@@ -1,3 +1,8 @@
+2017-05-31  Graham Markall  <graham.markall@embecosm.com>
+
+	* gcc.target/arc/add_n-combine.c: New test.
+	* gcc.target/arc/sub_n-combine.c: New test.
+
 2017-05-31  Richard Biener  <rguenther@suse.de>
 
 	PR target/80880

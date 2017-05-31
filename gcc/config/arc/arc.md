@@ -2995,6 +2995,19 @@
 
 (define_insn "*add_n"
   [(set (match_operand:SI 0 "dest_reg_operand" "=Rcqq,Rcw,W,W,w,w")
+	(plus:SI (ashift:SI (match_operand:SI 1 "register_operand" "Rcqq,c,c,c,c,c")
+	                    (match_operand:SI 2 "_1_2_3_operand" ""))
+		 (match_operand:SI 3 "nonmemory_operand" "0,0,c,?Cal,?c,??Cal")))]
+  ""
+  "add%c2%? %0,%3,%1%&"
+  [(set_attr "type" "shift")
+   (set_attr "length" "*,4,4,8,4,8")
+   (set_attr "predicable" "yes,yes,no,no,no,no")
+   (set_attr "cond" "canuse,canuse,nocond,nocond,nocond,nocond")
+   (set_attr "iscompact" "maybe,false,false,false,false,false")])
+
+(define_insn "*add_n"
+  [(set (match_operand:SI 0 "dest_reg_operand" "=Rcqq,Rcw,W,W,w,w")
 	(plus:SI (mult:SI (match_operand:SI 1 "register_operand" "Rcqq,c,c,c,c,c")
 			  (match_operand:SI 2 "_2_4_8_operand" ""))
 		 (match_operand:SI 3 "nonmemory_operand" "0,0,c,?Cal,?c,??Cal")))]
@@ -3008,6 +3021,19 @@
 
 ;; N.B. sub[123] has the operands of the MINUS in the opposite order from
 ;; what synth_mult likes.
+(define_insn "*sub_n"
+  [(set (match_operand:SI 0 "dest_reg_operand" "=Rcw,w,w")
+	(minus:SI (match_operand:SI 1 "nonmemory_operand" "0,c,?Cal")
+		  (ashift:SI (match_operand:SI 2 "register_operand" "c,c,c")
+			     (match_operand:SI 3 "_1_2_3_operand" ""))))]
+  ""
+  "sub%c3%? %0,%1,%2"
+  [(set_attr "type" "shift")
+   (set_attr "length" "4,4,8")
+   (set_attr "predicable" "yes,no,no")
+   (set_attr "cond" "canuse,nocond,nocond")
+   (set_attr "iscompact" "false")])
+
 (define_insn "*sub_n"
   [(set (match_operand:SI 0 "dest_reg_operand" "=Rcw,w,w")
 	(minus:SI (match_operand:SI 1 "nonmemory_operand" "0,c,?Cal")
