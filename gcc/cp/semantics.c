@@ -2298,13 +2298,23 @@ finish_call_expr (tree fn, vec<tree, va_gc> **args, bool disallow_virtual,
 
   if (processing_template_decl)
     {
+      /* If FN is a local extern declaration or set thereof, look them up
+	 again at instantiation time.  */
+      if (is_overloaded_fn (fn))
+	{
+	  tree ifn = get_first_fn (fn);
+	  if (TREE_CODE (ifn) == FUNCTION_DECL
+	      && DECL_LOCAL_FUNCTION_P (ifn))
+	    orig_fn = DECL_NAME (ifn);
+	}
+
       /* If the call expression is dependent, build a CALL_EXPR node
 	 with no type; type_dependent_expression_p recognizes
 	 expressions with no type as being dependent.  */
       if (type_dependent_expression_p (fn)
 	  || any_type_dependent_arguments_p (*args))
 	{
-	  result = build_nt_call_vec (fn, *args);
+	  result = build_nt_call_vec (orig_fn, *args);
 	  SET_EXPR_LOCATION (result, EXPR_LOC_OR_LOC (fn, input_location));
 	  KOENIG_LOOKUP_P (result) = koenig_p;
 	  if (cfun)

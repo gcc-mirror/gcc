@@ -1,5 +1,9 @@
 2017-05-31  Jason Merrill  <jason@redhat.com>
 
+	PR c++/80856 - ICE with local extern in template
+	* semantics.c (finish_call_expr): Replace a local extern overload
+	set in a template with the IDENTIFIER_NODE.
+
 	PR c++/80605 - __is_standard_layout and zero-length array
 	* class.c (check_bases): Use DECL_FIELD_IS_BASE.
 
