@@ -1,3 +1,10 @@
+2017-05-31  Sebastian Peryt  <sebastian.peryt@intel.com>
+
+	* config/i386/avx512fintrin.h (_mm_mask_max_sd)
+        (_mm_maskz_max_sd, _mm_mask_max_ss, _mm_maskz_max_ss)
+        (_mm_mask_min_sd, _mm_maskz_min_sd, _mm_mask_min_ss)
+        (_mm_maskz_min_ss): New intrinsics.
+
 2017-05-31  Martin Liska  <mliska@suse.cz>
 
 	* tree-vect-loop.c (vect_create_epilog_for_reduction):
@@ -102,11 +109,9 @@
 	m_format_postprocessor.
 	(pretty_printer::~pretty_printer): Delete any
 	m_format_postprocessor.
-	* pretty-print.h (printer_fn): Add bool and const char **
-	parameters.
+	* pretty-print.h (printer_fn): Add bool and const char ** parameters.
 	(class format_postprocessor): New class.
-	(struct pretty_printer::format_decoder): Document the new
-	parameters.
+	(struct pretty_printer::format_decoder): Document the new parameters.
 	(struct pretty_printer::m_format_postprocessor): New field.
 	* tree-diagnostic.c (default_tree_printer): Update for new
 	bool and const char ** params.
@@ -363,8 +368,7 @@
 2017-05-26  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/80844
-	* tree-vectorizer.c (adjust_simduid_builtins): Propagate
-	results.
+	* tree-vectorizer.c (adjust_simduid_builtins): Propagate results.
 
 2017-05-25  Sebastian Peryt  <sebastian.peryt@intel.com>
 
