@@ -7372,11 +7372,7 @@ cp_finish_decomp (tree decl, tree first, unsigned int count)
 	      DECL_HAS_VALUE_EXPR_P (first) = 1;
 	    }
 	  if (processing_template_decl)
-	    {
-	      retrofit_lang_decl (first, 4);
-	      SET_DECL_DECOMPOSITION_P (first);
-	      DECL_DECOMP_BASE (first) = decl;
-	    }
+	    fit_decomposition_lang_decl (first, decl);
 	  first = DECL_CHAIN (first);
 	}
       return;
@@ -7388,9 +7384,7 @@ cp_finish_decomp (tree decl, tree first, unsigned int count)
   for (unsigned int i = 0; i < count; i++, d = DECL_CHAIN (d))
     {
       v[count - i - 1] = d;
-      retrofit_lang_decl (d, 4);
-      SET_DECL_DECOMPOSITION_P (d);
-      DECL_DECOMP_BASE (d) = decl;
+      fit_decomposition_lang_decl (d, decl);
     }
 
   tree type = TREE_TYPE (decl);
@@ -12314,10 +12308,8 @@ grokdeclarator (const cp_declarator *declarator,
 	  {
 	    gcc_assert (declarator && declarator->kind == cdk_decomp);
 	    DECL_SOURCE_LOCATION (decl) = declarator->id_loc;
-	    retrofit_lang_decl (decl, 4);
 	    DECL_ARTIFICIAL (decl) = 1;
-	    SET_DECL_DECOMPOSITION_P (decl);
-	    DECL_DECOMP_BASE (decl) = NULL_TREE;
+	    fit_decomposition_lang_decl (decl, NULL_TREE);
 	  }
       }
 

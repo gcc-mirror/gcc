@@ -1,3 +1,26 @@
+2017-05-31  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-tree.h (lang_decl_slector): New enum.
+	(lang_decl_base): Make selector an enum.  Drop decomposition_p
+	field.
+	(lang_decl): Use enum for discrimination.
+	(LANG_DECL_FN_CHECK, LANG_DECL_NS_CHECK, LANG_DECL_PARM_CHECK,
+	LANG_DECL_DEOMP_CHECK): Use enum.
+	(DECL_DECOMPOSITION_P): Use selector value.
+	(SET_DECL_DECOMPOSITION_P): Delete.
+	(retrofit_lang_decl): Lose SEL parm.
+	(fit_decomposition_lang_decl): Declare.
+	* decl.c (cp_finish_decomp, grokdeclarator): Use
+	fit_decomposition_lang_decl.
+	* lex.c (maybe_add_lang_decl_raw): New. Broken out of
+	retrofit_lang_decl.
+	(set_decl_linkage): New.  Broken out of retrofit_lang_decl.  Use enum.
+	(fit_decomposition_lang_decl): Likewise.
+	(retrofit_lang_decl): Use worker functions.
+	(cxx_dup_lang_specific_decl): Use selector enum.
+	(maybe_add_lang_type_raw): New.  Broken out of ...
+	(cxx_make_type_name): ... here.  Call it.
+
 2017-05-30  Jason Merrill  <jason@redhat.com>
 
 	PR c++/80856 - ICE with local extern in template
