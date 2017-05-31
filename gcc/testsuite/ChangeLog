@@ -1,3 +1,22 @@
+2017-05-31  Sebastian Peryt  <sebastian.peryt@intel.com>
+
+	* gcc.target/i386/avx512f-vmaxsd-1.c (_mm_mask_max_sd)
+	(_mm_maskz_max_sd): Test new intrinsics.
+	* gcc.target/i386/avx512f-vmaxsd-2.c (_mm_mask_max_sd)
+	(_mm_maskz_max_sd): Test new intrinsics.
+	* gcc.target/i386/avx512f-vmaxss-1.c (_mm_mask_max_ss)
+	(_mm_maskz_max_ss): Test new intrinsics.
+	* gcc.target/i386/avx512f-vmaxss-2.c (_mm_mask_max_ss)
+	(_mm_maskz_max_ss): Test new intrinsics.
+	* gcc.target/i386/avx512f-vminsd-1.c (_mm_mask_min_sd)
+	(_mm_maskz_min_sd): Test new intrinsics.
+	* gcc.target/i386/avx512f-vminsd-2.c (_mm_mask_min_sd)
+	(_mm_maskz_min_sd): Test new intrinsics.
+	* gcc.target/i386/avx512f-vminss-1.c (_mm_mask_min_ss)
+	(_mm_maskz_min_ss): Test new intrinsics.
+	* gcc.target/i386/avx512f-vminss-2.c (_mm_mask_min_ss)
+	(_mm_maskz_min_ss): Test new intrinsics.
+
 2017-05-31  Nathan Sidwell  <nathan@acm.org>
 
 	* g++.dg/lookup/lambda1.C New.
