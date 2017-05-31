@@ -1,3 +1,7 @@
+2017-05-31  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* gcc.dg/vect/vect-103.c: Update wording of dump message.
+
 2017-05-31  Bin Cheng  <bin.cheng@arm.com>
 
 	* gcc.dg/vect/pr80815-3.c: New test.

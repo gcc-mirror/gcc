@@ -1,3 +1,12 @@
+2017-05-31  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* tree-vect-data-refs.c (vect_find_same_alignment_drs): Remove
+	loop_vinfo argument and use of dependence distance vectors.
+	Check instead whether the two references differ only in their
+	initial value and assume that they have the same alignment if the
+	difference is a multiple of the vector alignment.
+	(vect_analyze_data_refs_alignment): Update call accordingly.
+
 2017-05-31  Martin Liska  <mliska@suse.cz>
 
 	PR target/79155
