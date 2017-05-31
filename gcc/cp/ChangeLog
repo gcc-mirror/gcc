@@ -1,5 +1,11 @@
 2017-05-31  Jason Merrill  <jason@redhat.com>
 
+	PR c++/80605 - __is_standard_layout and zero-length array
+	* class.c (check_bases): Use DECL_FIELD_IS_BASE.
+
+	PR c++/80605 - __is_standard_layout and empty base
+	* class.c (check_bases): Ignore empty bases.
+
 	PR c++/66297, DR 1684 - literal class and constexpr member fns
 	* constexpr.c (is_valid_constexpr_fn): Only complain about
 	non-literal enclosing class in C++11.

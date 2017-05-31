@@ -1861,7 +1861,9 @@ check_bases (tree t,
 	       members */
 	    for (basefield = TYPE_FIELDS (basetype); basefield;
 		 basefield = DECL_CHAIN (basefield))
-	      if (TREE_CODE (basefield) == FIELD_DECL)
+	      if (TREE_CODE (basefield) == FIELD_DECL
+		  && !(DECL_FIELD_IS_BASE (basefield)
+		       && integer_zerop (DECL_SIZE (basefield))))
 		{
 		  if (field)
 		    CLASSTYPE_NON_STD_LAYOUT (t) = 1;
