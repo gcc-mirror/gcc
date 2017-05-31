@@ -229,8 +229,9 @@ class translate_isl_ast_to_gimple
   tree add_close_phis_to_outer_loops (tree last_merge_name, edge merge_e,
 				      gimple *old_close_phi);
   bool copy_loop_close_phi_args (basic_block old_bb, basic_block new_bb,
-				 bool postpone);
-  bool copy_loop_close_phi_nodes (basic_block old_bb, basic_block new_bb);
+				 vec<tree> iv_map, bool postpone);
+  bool copy_loop_close_phi_nodes (basic_block old_bb, basic_block new_bb,
+				  vec<tree> iv_map);
   bool copy_cond_phi_args (gphi *phi, gphi *new_phi, vec<tree> iv_map,
 			   bool postpone);
   bool copy_cond_phi_nodes (basic_block bb, basic_block new_bb,
@@ -2079,7 +2080,8 @@ add_close_phis_to_merge_points (gphi *old_close_phi, gphi *new_close_phi,
 /* Copy all the loop-close phi args from BB to NEW_BB.  */
 
 bool translate_isl_ast_to_gimple::
-copy_loop_close_phi_args (basic_block old_bb, basic_block new_bb, bool postpone)
+copy_loop_close_phi_args (basic_block old_bb, basic_block new_bb,
+			  vec<tree> iv_map, bool postpone)
 {
   for (gphi_iterator psi = gsi_start_phis (old_bb); !gsi_end_p (psi);
        gsi_next (&psi))
@@ -2089,22 +2091,29 @@ copy_loop_close_phi_args (basic_block old_bb, basic_block new_bb, bool postpone)
       if (virtual_operand_p (res))
 	continue;
 
-      if (is_gimple_reg (res) && scev_analyzable_p (res, region->region))
-	/* Loop close phi nodes should not be scev_analyzable_p.  */
-	gcc_unreachable ();
-
       gphi *new_close_phi = create_phi_node (NULL_TREE, new_bb);
       tree new_res = create_new_def_for (res, new_close_phi,
 					 gimple_phi_result_ptr (new_close_phi));
       set_rename (res, new_res);
 
       tree old_name = gimple_phi_arg_def (old_close_phi, 0);
-      tree new_name = get_new_name (new_bb, old_name, old_bb, close_phi);
+      tree new_name;
+      if (is_gimple_reg (res) && scev_analyzable_p (res, region->region))
+	{
+	  gimple_seq stmts;
+	  new_name = get_rename_from_scev (old_name, &stmts,
+					   old_bb->loop_father,
+					   new_bb, old_bb, iv_map);
+	  if (! codegen_error_p ())
+	    gsi_insert_earliest (stmts);
+	}
+      else
+	new_name = get_new_name (new_bb, old_name, old_bb, close_phi);
 
       /* Predecessor basic blocks of a loop close phi should have been code
 	 generated before.  FIXME: This is fixable by merging PHIs from inner
 	 loops as well.  See: gfortran.dg/graphite/interchange-3.f90.  */
-      if (!new_name)
+      if (!new_name || codegen_error_p ())
 	return false;
 
       add_phi_arg (new_close_phi, new_name, single_pred_edge (new_bb),
@@ -2152,7 +2161,8 @@ copy_loop_close_phi_args (basic_block old_bb, basic_block new_bb, bool postpone)
 /* Copy loop close phi nodes from BB to NEW_BB.  */
 
 bool translate_isl_ast_to_gimple::
-copy_loop_close_phi_nodes (basic_block old_bb, basic_block new_bb)
+copy_loop_close_phi_nodes (basic_block old_bb, basic_block new_bb,
+			   vec<tree> iv_map)
 {
   if (dump_file)
     fprintf (dump_file, "[codegen] copying loop close phi nodes in bb_%d.\n",
@@ -2160,7 +2170,7 @@ copy_loop_close_phi_nodes (basic_block old_bb, basic_block new_bb)
   /* Loop close phi nodes should have only one argument.  */
   gcc_assert (1 == EDGE_COUNT (old_bb->preds));
 
-  return copy_loop_close_phi_args (old_bb, new_bb, true);
+  return copy_loop_close_phi_args (old_bb, new_bb, iv_map, true);
 }
 
 
@@ -2690,7 +2700,7 @@ copy_bb_and_scalar_dependences (basic_block bb, edge next_e, vec<tree> iv_map)
       gcc_assert (single_pred_edge (phi_bb)->src->loop_father
 		  != single_pred_edge (phi_bb)->dest->loop_father);
 
-      if (!copy_loop_close_phi_nodes (bb, phi_bb))
+      if (!copy_loop_close_phi_nodes (bb, phi_bb, iv_map))
 	{
 	  codegen_error = true;
 	  return NULL;
@@ -2824,7 +2834,7 @@ translate_pending_phi_nodes ()
 	codegen_error = !copy_loop_phi_args (old_phi, ibp_old_bb, new_phi,
 					    ibp_new_bb, false);
       else if (bb_contains_loop_close_phi_nodes (new_bb))
-	codegen_error = !copy_loop_close_phi_args (old_bb, new_bb, false);
+	codegen_error = !copy_loop_close_phi_args (old_bb, new_bb, iv_map, false);
       else
 	codegen_error = !copy_cond_phi_args (old_phi, new_phi, iv_map, false);
 
