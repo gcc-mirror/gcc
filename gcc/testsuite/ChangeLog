@@ -1,3 +1,11 @@
+2017-05-31  Martin Jambor  <mjambor@suse.cz>
+
+        Backport from mainline
+        2017-04-24  Martin Jambor  <mjambor@suse.cz>
+
+        PR tree-optimization/80293
+        * g++.dg/tree-ssa/pr80293.C: New test.
+
 2017-05-29  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
 	Backport from mainline
