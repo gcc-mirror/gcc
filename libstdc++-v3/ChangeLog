@@ -1,3 +1,13 @@
+2017-05-31  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/80893
+	* include/bits/stl_bvector.h (vector<bool>::_M_initialize): Avoid
+	null pointer dereference when size is zero.
+	* testsuite/23_containers/vector/bool/80893.cc: New.
+	* testsuite/util/testsuite_allocator.h (PointerBase::PointerBase):
+	Add non-explicit constructor from nullptr.
+	(PointerBase::derived() const): Add const-qualified overload.
+
 2017-05-20  Tim Shen  <timshen@google.com>
 
 	PR libstdc++/80737
