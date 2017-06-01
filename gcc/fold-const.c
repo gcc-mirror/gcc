@@ -6933,10 +6933,11 @@ fold_plusminus_mult_expr (location_t loc, enum tree_code code, tree type,
     }
   same = NULL_TREE;
 
-  if (operand_equal_p (arg01, arg11, 0))
-    same = arg01, alt0 = arg00, alt1 = arg10;
-  else if (operand_equal_p (arg00, arg10, 0))
+  /* Prefer factoring a common non-constant.  */
+  if (operand_equal_p (arg00, arg10, 0))
     same = arg00, alt0 = arg01, alt1 = arg11;
+  else if (operand_equal_p (arg01, arg11, 0))
+    same = arg01, alt0 = arg00, alt1 = arg10;
   else if (operand_equal_p (arg00, arg11, 0))
     same = arg00, alt0 = arg01, alt1 = arg10;
   else if (operand_equal_p (arg01, arg10, 0))
@@ -6981,14 +6982,36 @@ fold_plusminus_mult_expr (location_t loc, enum tree_code code, tree type,
 	}
     }
 
-  if (same)
+  if (!same)
+    return NULL_TREE;
+
+  if (! INTEGRAL_TYPE_P (type)
+      || TYPE_OVERFLOW_WRAPS (type)
+      /* We are neither factoring zero nor minus one.  */
+      || TREE_CODE (same) == INTEGER_CST)
     return fold_build2_loc (loc, MULT_EXPR, type,
 			fold_build2_loc (loc, code, type,
 				     fold_convert_loc (loc, type, alt0),
 				     fold_convert_loc (loc, type, alt1)),
 			fold_convert_loc (loc, type, same));
 
-  return NULL_TREE;
+  /* Same may be zero and thus the operation 'code' may overflow.  Likewise
+     same may be minus one and thus the multiplication may overflow.  Perform
+     the operations in an unsigned type.  */
+  tree utype = unsigned_type_for (type);
+  tree tem = fold_build2_loc (loc, code, utype,
+			      fold_convert_loc (loc, utype, alt0),
+			      fold_convert_loc (loc, utype, alt1));
+  /* If the sum evaluated to a constant that is not -INF the multiplication
+     cannot overflow.  */
+  if (TREE_CODE (tem) == INTEGER_CST
+      && ! wi::eq_p (tem, wi::min_value (TYPE_PRECISION (utype), SIGNED)))
+    return fold_build2_loc (loc, MULT_EXPR, type,
+			    fold_convert (type, tem), same);
+
+  return fold_convert_loc (loc, type,
+			   fold_build2_loc (loc, MULT_EXPR, utype, tem,
+					    fold_convert_loc (loc, utype, same)));
 }
 
 /* Subroutine of native_encode_expr.  Encode the INTEGER_CST

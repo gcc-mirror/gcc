@@ -1,3 +1,16 @@
+2017-06-01  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/66313
+	* fold-const.c (fold_plusminus_mult_expr): If the factored
+	factor may be zero use a wrapping type for the inner operation.
+	* tree-tailcall.c (independent_of_stmt_p): Pass in to_move bitmap
+	and handle moved defs.
+	(process_assignment): Properly guard the unary op case.  Return a
+	tri-state indicating that moving the stmt before the call may allow
+	to continue.  Pass through to_move.
+	(find_tail_calls): Handle moving unrelated defs before
+	the call.
+
 2017-05-31  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR target/80618
