@@ -1,3 +1,7 @@
+2017-06-01  Pierre-Marie de Rodat  <derodat@adacore.com>
+
+	* gnat.dg/debug11.adb: New testcase.
+
 2017-06-01  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/66313

@@ -1,3 +1,9 @@
+2017-06-01  Pierre-Marie de Rodat  <derodat@adacore.com>
+
+	* dwarf2out.c (get_discr_value): Call the get_debug_type hook on
+	the type of the input discriminant value.  Convert the
+	discriminant value of signedness vary.
+
 2017-06-01  Volker Reichelt  <v.reichelt@netcologne.de>
 
 	* doc/invoke.texi (-Wcatch-value): Document new shortcut.
