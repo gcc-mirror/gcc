@@ -68,9 +68,9 @@ _xend (void)
 #ifdef __OPTIMIZE__
 extern __inline void
 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
-_xabort (const unsigned int imm)
+_xabort (const unsigned int __imm)
 {
-  __builtin_ia32_xabort (imm);
+  __builtin_ia32_xabort (__imm);
 }
 #else
 #define _xabort(N)  __builtin_ia32_xabort (N)
