@@ -1,3 +1,9 @@
+2017-06-01  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	PR c++/80812
+	* method.c (constructible_expr): Strip array types before calling
+	build_value_init.
+
 2017-06-01  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/80896
