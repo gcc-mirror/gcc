@@ -4644,7 +4644,7 @@ arc_final_prescan_insn (rtx_insn *insn, rtx *opvec ATTRIBUTE_UNUSED,
 static bool
 arc_can_eliminate (const int from ATTRIBUTE_UNUSED, const int to)
 {
-  return to == FRAME_POINTER_REGNUM || !arc_frame_pointer_required ();
+  return ((to == FRAME_POINTER_REGNUM) || !arc_frame_pointer_needed ());
 }
 
 /* Define the offset between two registers, one to be eliminated, and
