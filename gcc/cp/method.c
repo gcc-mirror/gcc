@@ -1188,7 +1188,7 @@ constructible_expr (tree to, tree from)
   else
     {
       if (from == NULL_TREE)
-	return build_value_init (to, tf_none);
+	return build_value_init (strip_array_types (to), tf_none);
       else if (TREE_CHAIN (from))
 	return error_mark_node; // too many initializers
       from = build_stub_object (TREE_VALUE (from));
