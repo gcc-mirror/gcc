@@ -1,3 +1,7 @@
+2017-06-01  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* gcc.target/arc/pr9001195952.c: New test.
+
 2017-06-01  Tom de Vries  <tom@codesourcery.com>
 
 	* c-c++-common/pr43395.c: Add dg-require-effective-target label_values.

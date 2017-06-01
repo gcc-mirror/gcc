@@ -1,5 +1,9 @@
 2017-06-01  Claudiu Zissulescu  <claziss@synopsys.com>
 
+	* config/arc/arc.md (tst_movb): Add guard when splitting.
+
+2017-06-01  Claudiu Zissulescu  <claziss@synopsys.com>
+
 	* config/arc/arc.c (arc_can_eliminate): Test against
 	arc_frame_pointer_needed.
 
