@@ -694,21 +694,9 @@ static bool constant_decl_p (tree decl)
   return VAR_P (decl) && DECL_IN_CONSTANT_POOL (decl);
 }
 
-
-/* Mark LHS of assign links out of ACCESS and its children as written to.  */
-
-static void
-process_subtree_disqualification (struct access *access)
-{
-  struct access *child;
-  for (struct assign_link *link = access->first_link; link; link = link->next)
-    link->lacc->grp_write = true;
-  for (child = access->first_child; child; child = child->next_sibling)
-    process_subtree_disqualification (child);
-}
-
 /* Remove DECL from candidates for SRA and write REASON to the dump file if
    there is one.  */
+
 static void
 disqualify_candidate (tree decl, const char *reason)
 {
@@ -722,13 +710,6 @@ disqualify_candidate (tree decl, const char *reason)
       fprintf (dump_file, "! Disqualifying ");
       print_generic_expr (dump_file, decl);
       fprintf (dump_file, " - %s\n", reason);
-    }
-
-  struct access *access = get_first_repr_for_decl (decl);
-  while (access)
-    {
-      process_subtree_disqualification (access);
-      access = access->next_grp;
     }
 }
 
@@ -2679,6 +2660,26 @@ propagate_subaccesses_across_link (struct access *lacc, struct access *racc)
   return ret;
 }
 
+/* Beginning with ACCESS, traverse its whole access subtree and mark all
+   sub-trees as written to.  If any of them has not been marked so previously
+   and has assignment links leading from it, re-enqueue it.  */
+
+static void
+subtree_mark_written_and_enqueue (struct access *access)
+{
+  if (access->grp_write)
+    return;
+  access->grp_write = true;
+  if (access->first_link)
+    add_access_to_work_queue (access);
+
+  struct access *child;
+  for (child = access->first_child; child; child = child->next_sibling)
+    subtree_mark_written_and_enqueue (child);
+}
+
+
+
 /* Propagate all subaccesses across assignment links.  */
 
 static void
@@ -2698,7 +2699,20 @@ propagate_all_subaccesses (void)
 	  if (!bitmap_bit_p (candidate_bitmap, DECL_UID (lacc->base)))
 	    continue;
 	  lacc = lacc->group_representative;
-	  if (propagate_subaccesses_across_link (lacc, racc))
+
+	  bool reque_parents = false;
+	  if (!bitmap_bit_p (candidate_bitmap, DECL_UID (racc->base)))
+	    {
+	      if (!lacc->grp_write)
+		{
+		  subtree_mark_written_and_enqueue (lacc);
+		  reque_parents = true;
+		}
+	    }
+	  else if (propagate_subaccesses_across_link (lacc, racc))
+	    reque_parents = true;
+
+	  if (reque_parents)
 	    do
 	      {
 		if (lacc->first_link)
