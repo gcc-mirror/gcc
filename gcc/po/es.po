@@ -39,7 +39,7 @@ msgstr ""
 "Project-Id-Version: gcc 7.1.0\n"
 "Report-Msgid-Bugs-To: https://gcc.gnu.org/bugs/\n"
 "POT-Creation-Date: 2017-05-01 22:24+0000\n"
-"PO-Revision-Date: 2017-05-20 12:16+0200\n"
+"PO-Revision-Date: 2017-05-29 00:00+0200\n"
 "Last-Translator: Antonio Ceballos <aceballos@gmail.com>\n"
 "Language-Team: Spanish <es@tp.org.es>\n"
 "Language: es\n"
@@ -27705,22 +27705,19 @@ msgid "-mnop-mcount is not compatible with this target"
 msgstr "-mnop-mcount no es compatible con este objetivo"
 
 #: config/i386/i386.c:5980
-#, fuzzy, gcc-internal-format
-#| msgid "inter-module optimizations not implemented for C++"
+#, gcc-internal-format
 msgid "-mnop-mcount is not implemented for -fPIC"
-msgstr "no se han implementado las optimizaciones intermódulos para C++"
+msgstr "-mnop-mcount no está implementada para -fPIC"
 
 #: config/i386/i386.c:5986
-#, fuzzy, gcc-internal-format
-#| msgid "%ssseregparm%s used without SSE enabled"
+#, gcc-internal-format
 msgid "%<-msseregparm%> used without SSE enabled"
-msgstr "se usó %ssseregparm%s sin SSE activado"
+msgstr "se usó %<-msseregparm%> sin SSE activado"
 
 #: config/i386/i386.c:5987
-#, fuzzy, gcc-internal-format
-#| msgid "%ssseregparm%s used without SSE enabled"
+#, gcc-internal-format
 msgid "%<target(\"sseregparm\")%> used without SSE enabled"
-msgstr "se usó %ssseregparm%s sin SSE activado"
+msgstr "se usó %<target(\"ssseregparm\")%> sin SSE activado"
 
 #: config/i386/i386.c:5997
 #, gcc-internal-format
@@ -27733,28 +27730,24 @@ msgid "387 instruction set disabled, using SSE arithmetics"
 msgstr "el conjunto de instrucciones 387 está desactivado, usando la aritmética SSE"
 
 #: config/i386/i386.c:6054
-#, fuzzy, gcc-internal-format
-#| msgid "stack probing requires %saccumulate-outgoing-args%s for correctness"
+#, gcc-internal-format
 msgid "stack probing requires %<-maccumulate-outgoing-args%> for correctness"
-msgstr "actualmente la prueba de pila requiere un puntero de marco o %saccumulate-outgoing-args%s para ser correctas"
+msgstr "la prueba de pila requiere %<-maccumulate-outgoing-args%> para ser correcta"
 
 #: config/i386/i386.c:6056
-#, fuzzy, gcc-internal-format
-#| msgid "stack probing requires %saccumulate-outgoing-args%s for correctness"
+#, gcc-internal-format
 msgid "stack probing requires %<target(\"accumulate-outgoing-args\")%> for correctness"
-msgstr "actualmente la prueba de pila requiere un puntero de marco o %saccumulate-outgoing-args%s para ser correctas"
+msgstr "la prueba de pila requiere %<target(\"accumulate-outgoing-args\"%> para ser correcta"
 
 #: config/i386/i386.c:6070
-#, fuzzy, gcc-internal-format
-#| msgid "stack probing requires %saccumulate-outgoing-args%s for correctness"
+#, gcc-internal-format
 msgid "fixed ebp register requires %<-maccumulate-outgoing-args%>"
-msgstr "actualmente la prueba de pila requiere un puntero de marco o %saccumulate-outgoing-args%s para ser correctas"
+msgstr "el registro ebp fijo requiere %<-maccumulate-outgoing-args%>"
 
 #: config/i386/i386.c:6072
-#, fuzzy, gcc-internal-format
-#| msgid "stack probing requires %saccumulate-outgoing-args%s for correctness"
+#, gcc-internal-format
 msgid "fixed ebp register requires %<target(\"accumulate-outgoing-args\")%>"
-msgstr "actualmente la prueba de pila requiere un puntero de marco o %saccumulate-outgoing-args%s para ser correctas"
+msgstr "el registro ebp fijo requiere %<target(\"accumulate-outgoing-args\")%>"
 
 #: config/i386/i386.c:6178
 #, gcc-internal-format
@@ -27779,19 +27772,17 @@ msgstr "ya se había especificado option(\"%s\")"
 #: config/i386/i386.c:7168
 #, gcc-internal-format
 msgid "Only DWARF debug format is supported for interrupt service routine."
-msgstr ""
+msgstr "Solo se admite el formato de depuración DWARF para la rutina de servicio de interrupciones."
 
 #: config/i386/i386.c:7267
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "2 byte cop instructions are not allowed in 64-bit VLIW mode"
+#, gcc-internal-format, gfc-internal-format
 msgid "%s instructions aren't allowed in %s service routine"
-msgstr "las instrucciones cop de 2 bytes no se permiten en modo VLIW de 64-bit"
+msgstr "las instrucciones %s no se permiten en la rutina de servicio %s"
 
 #: config/i386/i386.c:7271
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Use a stack protection method for every function"
+#, gcc-internal-format, gfc-internal-format
 msgid "%s instructions aren't allowed in function with no_caller_saved_registers attribute"
-msgstr "Usa un método de protección de pila para cada función."
+msgstr "Las instrucciones %s no están permitidas en funciones con el atributo no_caller_saved_registers"
 
 #: config/i386/i386.c:7683 config/i386/i386.c:7734
 #, gcc-internal-format
@@ -27849,10 +27840,9 @@ msgid "cdecl and thiscall attributes are not compatible"
 msgstr "los atributos cdecl y thiscall no son compatibles"
 
 #: config/i386/i386.c:7779
-#, fuzzy, gcc-internal-format
-#| msgid "%qE attribute is used for none class-method"
+#, gcc-internal-format
 msgid "%qE attribute is used for non-class method"
-msgstr "se usó el atributo %qE para clases-métodos none"
+msgstr "se usó el atributo %qE para método no de clase"
 
 #: config/i386/i386.c:8023
 #, gcc-internal-format
@@ -27865,10 +27855,9 @@ msgid "calling %qT with attribute sseregparm without SSE/SSE2 enabled"
 msgstr "se llama a %qT con el atributo sseregparm sin activar SSE/SSE2"
 
 #: config/i386/i386.c:8342
-#, fuzzy, gcc-internal-format
-#| msgid "does not support multilib"
+#, gcc-internal-format
 msgid "X32 does not support ms_abi attribute"
-msgstr "no se admite multilib"
+msgstr "X32 no admite el atributo ms_abi"
 
 #: config/i386/i386.c:8374
 #, gcc-internal-format
@@ -27876,16 +27865,14 @@ msgid "ms_hook_prologue is not compatible with nested function"
 msgstr "ms_hook_prologue no es compatible con la función anidada"
 
 #: config/i386/i386.c:8687
-#, fuzzy, gcc-internal-format
-#| msgid "AVX vector argument without AVX enabled changes the ABI"
+#, gcc-internal-format
 msgid "AVX512F vector argument without AVX512F enabled changes the ABI"
-msgstr "el argumento de vector AVX sin AVX activado cambia la ABI"
+msgstr "el argumento de vector AVX512F sin AVX512F activado cambia la ABI"
 
 #: config/i386/i386.c:8693
-#, fuzzy, gcc-internal-format
-#| msgid "AVX vector argument without AVX enabled changes the ABI"
+#, gcc-internal-format
 msgid "AVX512F vector return without AVX512F enabled changes the ABI"
-msgstr "el argumento de vector AVX sin AVX activado cambia la ABI"
+msgstr "el retorno de vector AVX512F sin AVX512F activado cambia la ABI"
 
 #: config/i386/i386.c:8707
 #, gcc-internal-format
@@ -27893,10 +27880,9 @@ msgid "AVX vector argument without AVX enabled changes the ABI"
 msgstr "el argumento de vector AVX sin AVX activado cambia la ABI"
 
 #: config/i386/i386.c:8713
-#, fuzzy, gcc-internal-format
-#| msgid "AVX vector argument without AVX enabled changes the ABI"
+#, gcc-internal-format
 msgid "AVX vector return without AVX enabled changes the ABI"
-msgstr "el argumento de vector AVX sin AVX activado cambia la ABI"
+msgstr "el retorno de vector AVX sin AVX activado cambia la ABI"
 
 #: config/i386/i386.c:8729
 #, gcc-internal-format
@@ -27949,15 +27935,14 @@ msgid "x87 register return with x87 disabled"
 msgstr "se devuelve el registro x87 con x87 desactivado"
 
 #: config/i386/i386.c:9655 config/i386/i386.c:9926 config/i386/i386.c:10449
-#, fuzzy, gcc-internal-format
-#| msgid "calling %qD with attribute sseregparm without SSE/SSE2 enabled"
+#, gcc-internal-format
 msgid "calling %qD with SSE calling convention without SSE/SSE2 enabled"
-msgstr "se llama a %qD con el atributo sseregparm sin activar SSE/SSE2"
+msgstr "se llama a %qD con el convenio de llamadas SSE sin activar SSE/SSE2"
 
 #: config/i386/i386.c:9657 config/i386/i386.c:9928 config/i386/i386.c:10451
 #, gcc-internal-format
 msgid "this is a GCC bug that can be worked around by adding attribute used to function called"
-msgstr ""
+msgstr "esto es un error de GCC que se puede sortear añadiendo el atributo usado a la función llamada"
 
 #: config/i386/i386.c:10351
 #, gcc-internal-format, gfc-internal-format
@@ -27972,7 +27957,7 @@ msgstr "el atributo ms_hook_prologue no es compatible con -mfentry para 32-bit"
 #: config/i386/i386.c:13824
 #, gcc-internal-format
 msgid "Dynamic Realign Argument Pointer (DRAP) not supported in interrupt service routine.  This may be worked around by avoiding functions with aggregate return."
-msgstr ""
+msgstr "No se admite Puntero de Argumento de Realineamiento Dinámico (DRAP) en la rutina de servicio de interrupciones.  Esto puede sortearse evitando funciones con retorno agregado."
 
 #: config/i386/i386.c:14836
 #, gcc-internal-format
@@ -27980,8 +27965,7 @@ msgid "-fsplit-stack does not support fastcall with nested function"
 msgstr "-fsplit-stack no admite fastcall con funciones anidadas"
 
 #: config/i386/i386.c:14856
-#, fuzzy, gcc-internal-format
-#| msgid "-fsplit-stack does not support 2 register  parameters for a nested function"
+#, gcc-internal-format
 msgid "-fsplit-stack does not support 2 register parameters for a nested function"
 msgstr "-fsplit-stack no admite 2 parámetros de registro para una función anidada"
 
@@ -27993,10 +27977,9 @@ msgid "-fsplit-stack does not support 3 register parameters"
 msgstr "-fsplit-stack no admite 3 parámetros de registro"
 
 #: config/i386/i386.c:17672 config/i386/i386.c:17686
-#, fuzzy, gcc-internal-format
-#| msgid "unsupported operand size for extended register"
+#, gcc-internal-format
 msgid "unsupported size for integer register"
-msgstr "no se admite el tamaño de operando para el registro extendido"
+msgstr "no se admite el tamaño para registro de enteros"
 
 #: config/i386/i386.c:17718
 #, gcc-internal-format
@@ -28009,72 +27992,64 @@ msgid "unsupported operand size for extended register"
 msgstr "no se admite el tamaño de operando para el registro extendido"
 
 #: config/i386/i386.c:17924
-#, fuzzy, gcc-internal-format
-#| msgid "non-integer operand used with operand code '%c'"
+#, gcc-internal-format
 msgid "non-integer operand used with operand code 'z'"
-msgstr "se usó un operando que no es entero con el código de operando '%c'"
+msgstr "se usó un operando que no es entero con el código de operando 'z'"
 
 #: config/i386/i386.c:28283
-#, fuzzy, gcc-internal-format
-#| msgid "interrupt Service Routines cannot be coded in Thumb mode"
+#, gcc-internal-format
 msgid "interrupt service routine can't be called directly"
-msgstr "no se pueden codificar las Rutinas de Servicios de Interrupción en el modo Thumb"
+msgstr "no se puede llamar directamente a la rutina de servicio de interrupciones"
 
 #: config/i386/i386.c:32550
 #, gcc-internal-format
 msgid "No dispatcher found for the versioning attributes"
-msgstr ""
+msgstr "No se ha encontrado despachador para los atributos de versión"
 
 #: config/i386/i386.c:32600
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "No label definition found for %qs"
+#, gcc-internal-format, gfc-internal-format
 msgid "No dispatcher found for %s"
-msgstr "No se encontró una definición de etiqueta para %qs"
+msgstr "No se encontró despachador para %s"
 
 #: config/i386/i386.c:32610
 #, gcc-internal-format, gfc-internal-format
 msgid "No dispatcher found for the versioning attributes : %s"
-msgstr ""
+msgstr "No se encontró despachador para los atributos de versión : %s"
 
 #: config/i386/i386.c:32858
 #, gcc-internal-format
 msgid "Function versions cannot be marked as gnu_inline, bodies have to be generated"
-msgstr ""
+msgstr "Las versiones de funciones no pueden marcarse como gnu_inline; hay que generar cuerpos"
 
 #: config/i386/i386.c:32863 config/i386/i386.c:33291
-#, fuzzy, gcc-internal-format
-#| msgid "static linking is not supported"
+#, gcc-internal-format
 msgid "Virtual function multiversioning not supported"
-msgstr "no se admite enlace estático"
+msgstr "No se admiten versiones múltiples de funciones virtuales"
 
 #: config/i386/i386.c:32926
 #, gcc-internal-format
 msgid "missing %<target%> attribute for multi-versioned %D"
-msgstr ""
+msgstr "falta el atributo %<target%> para %D multiversionado"
 
 #: config/i386/i386.c:32929
-#, fuzzy, gcc-internal-format
-#| msgid "previous declaration of %q+D"
+#, gcc-internal-format
 msgid "previous declaration of %D"
-msgstr "declaración previa de %q+D"
+msgstr "declaración previa de %D"
 
 #: config/i386/i386.c:33148
-#, fuzzy, gcc-internal-format
-#| msgid "nested functions not supported on this target"
+#, gcc-internal-format
 msgid "multiversioning needs ifunc which is not supported on this target"
-msgstr "no se admiten funciones anidadas en este objetivo"
+msgstr "el versionado múltiple necesita ifunc, que no se admite en este objetivo"
 
 #: config/i386/i386.c:33540
-#, fuzzy, gcc-internal-format
-#| msgid "argument to %qs must be a 2-bit unsigned literal"
+#, gcc-internal-format
 msgid "Parameter to builtin must be a string constant or literal"
-msgstr "el argumento para %qs debe ser una literal sin signo de 2-bit"
+msgstr "El parámetro para la función interna debe ser una cadena constante o literal"
 
 #: config/i386/i386.c:33565 config/i386/i386.c:33615
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Argument to -ffpe-trap is not valid: %s"
+#, gcc-internal-format, gfc-internal-format
 msgid "Parameter to builtin not valid: %s"
-msgstr "El argumento para -ffpe-trap no es válido: %s"
+msgstr "El parámetro para la función interna no es válido: %s"
 
 #: config/i386/i386.c:34294 config/i386/i386.c:35692
 #, gcc-internal-format
@@ -28097,10 +28072,9 @@ msgid "the last argument must be an 1-bit immediate"
 msgstr "el último argumento debe ser un inmediato de 1-bit"
 
 #: config/i386/i386.c:35638
-#, fuzzy, gcc-internal-format
-#| msgid "the last argument must be a 32-bit immediate"
+#, gcc-internal-format
 msgid "the last argument must be a 3-bit immediate"
-msgstr "el último argumento debe ser un inmediato de 32-bit"
+msgstr "el último argumento debe ser un inmediato de 3-bit"
 
 #: config/i386/i386.c:35671
 #, gcc-internal-format
@@ -28128,40 +28102,34 @@ msgid "the last argument must be an 8-bit immediate"
 msgstr "el último argumento debe ser un inmediato de 8-bit"
 
 #: config/i386/i386.c:35907
-#, fuzzy, gcc-internal-format
-#| msgid "argument must be a constant"
+#, gcc-internal-format
 msgid "the third argument must be comparison constant"
-msgstr "el argumento debe ser una constante"
+msgstr "el tercer argumento debe ser una constante de comparación"
 
 #: config/i386/i386.c:35912
-#, fuzzy, gcc-internal-format
-#| msgid "incorrect insn:"
+#, gcc-internal-format
 msgid "incorrect comparison mode"
-msgstr "insn incorrecta:"
+msgstr "modo de comparación incorrecto"
 
 #: config/i386/i386.c:35918 config/i386/i386.c:36119
-#, fuzzy, gcc-internal-format
-#| msgid "incorrect sharing of tree nodes"
+#, gcc-internal-format
 msgid "incorrect rounding operand"
-msgstr "compartición incorrecta de nodos de árbol"
+msgstr "operando de redondeo incorrecto"
 
 #: config/i386/i386.c:36101
-#, fuzzy, gcc-internal-format
-#| msgid "the last argument must be a 4-bit immediate"
+#, gcc-internal-format
 msgid "the immediate argument must be a 4-bit immediate"
-msgstr "el último argumento debe ser un inmediato de 4-bit"
+msgstr "el argumento inmediato debe ser un inmediato de 4-bit"
 
 #: config/i386/i386.c:36107
-#, fuzzy, gcc-internal-format
-#| msgid "the last argument must be a 5-bit immediate"
+#, gcc-internal-format
 msgid "the immediate argument must be a 5-bit immediate"
-msgstr "el tercer argumento debe ser un inmediato de 5-bit"
+msgstr "el argumento inmediato debe ser un inmediato de 5-bit"
 
 #: config/i386/i386.c:36110
-#, fuzzy, gcc-internal-format
-#| msgid "the last argument must be an 8-bit immediate"
+#, gcc-internal-format
 msgid "the immediate argument must be an 8-bit immediate"
-msgstr "el último argumento debe ser un inmediato de 8-bit"
+msgstr "el argumento inmediato debe ser un inmediato de 8-bit"
 
 #: config/i386/i386.c:36527
 #, gcc-internal-format
@@ -28189,16 +28157,14 @@ msgid "last argument must be an immediate"
 msgstr "el último argumento debe ser un inmediato"
 
 #: config/i386/i386.c:38270 config/i386/i386.c:38452
-#, fuzzy, gcc-internal-format
-#| msgid "last argument must be scale 1, 2, 4, 8"
+#, gcc-internal-format
 msgid "the last argument must be scale 1, 2, 4, 8"
-msgstr "el argumento izquierdo debe ser un escalar 1, 2, 4, 8"
+msgstr "el último argumento debe ser un escalar 1, 2, 4, 8"
 
 #: config/i386/i386.c:38505
-#, fuzzy, gcc-internal-format
-#| msgid "last argument must be scale 1, 2, 4, 8"
+#, gcc-internal-format
 msgid "the forth argument must be scale 1, 2, 4, 8"
-msgstr "el argumento izquierdo debe ser un escalar 1, 2, 4, 8"
+msgstr "el argumento delantero debe ser un escalar 1, 2, 4, 8"
 
 #: config/i386/i386.c:38511
 #, fuzzy, gcc-internal-format
