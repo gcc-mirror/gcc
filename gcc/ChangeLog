@@ -1,3 +1,14 @@
+2017-06-01  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/80898
+	* tree-sra.c (process_subtree_disqualification): Removed.
+	(disqualify_candidate): Do not acll
+	process_subtree_disqualification.
+	(subtree_mark_written_and_enqueue): New function.
+	(propagate_all_subaccesses): Set grp_write of LHS subtree if the
+	RHS has been disqualified and re-queue LHS if necessary.  Apart
+	from that, ignore disqualified RHS.
+
 2017-06-01  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
 	* config/s390/s390.c (s390_emit_epilogue): Disable early return
