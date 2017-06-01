@@ -1,3 +1,8 @@
+2017-06-01  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
+	* config/s390/s390.c (s390_emit_epilogue): Disable early return
+	address fetch for z10 or later.
+
 2017-06-01  Claudiu Zissulescu  <claziss@synopsys.com>
 
 	* config/arc/arc.md (tst_movb): Add guard when splitting.
