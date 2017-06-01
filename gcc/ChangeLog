@@ -1,3 +1,7 @@
+2017-06-01  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/arc.md (mulsi3_700): Make it commutative.
+
 2017-06-01  Jose E. Marchesi  <jose.marchesi@oracle.com>
 
 	* config/sparc/sparc.md (*zero_extendsidi2_insn_sp64): Set insn
