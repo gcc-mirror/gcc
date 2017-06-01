@@ -1548,7 +1548,14 @@ arc_conditional_register_usage (void)
       /* For ARCv2 the core register set is changed.  */
       strcpy (rname29, "ilink");
       strcpy (rname30, "r30");
-      fixed_regs[30] = call_used_regs[30] = 1;
+      call_used_regs[30] = 1;
+      fixed_regs[30] = 0;
+
+      arc_regno_reg_class[30] = WRITABLE_CORE_REGS;
+      SET_HARD_REG_BIT (reg_class_contents[WRITABLE_CORE_REGS], 30);
+      SET_HARD_REG_BIT (reg_class_contents[CHEAP_CORE_REGS], 30);
+      SET_HARD_REG_BIT (reg_class_contents[GENERAL_REGS], 30);
+      SET_HARD_REG_BIT (reg_class_contents[MPY_WRITABLE_CORE_REGS], 30);
    }
 
   if (TARGET_MUL64_SET)
