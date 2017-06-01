@@ -641,7 +641,8 @@ extern enum reg_class arc_regno_reg_class[];
   ((REGNO) < 29 || ((REGNO) == ARG_POINTER_REGNUM) || ((REGNO) == 63)	\
    || ((unsigned) reg_renumber[REGNO] < 29)				\
    || ((unsigned) (REGNO) == (unsigned) arc_tp_regno)			\
-   || (fixed_regs[REGNO] == 0 && IN_RANGE (REGNO, 32, 59)))
+   || (fixed_regs[REGNO] == 0 && IN_RANGE (REGNO, 32, 59))		\
+   || ((REGNO) == 30 && fixed_regs[REGNO] == 0))
 
 #define REGNO_OK_FOR_INDEX_P(REGNO) REGNO_OK_FOR_BASE_P(REGNO)
 
