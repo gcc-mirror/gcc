@@ -127,9 +127,7 @@ AC_PROG_AWK
 AC_PROG_LN_S
 
 # Determine what to build for 'gnatlib'
-if test $build = $target \
-   && test ${enable_shared} = yes ; then
-  # Note that build=target is almost certainly the wrong test; FIXME
+if test ${enable_shared} = yes; then
   default_gnatlib_target="gnatlib-shared"
 else
   default_gnatlib_target="gnatlib-plain"
@@ -138,11 +136,12 @@ AC_SUBST([default_gnatlib_target])
 
 # Check for _Unwind_GetIPInfo
 GCC_CHECK_UNWIND_GETIPINFO
-have_getipinfo=
 if test x$have_unwind_getipinfo = xyes; then
   have_getipinfo=-DHAVE_GETIPINFO
+else
+  have_getipinfo=
 fi
-AC_SUBST(have_getipinfo)
+AC_SUBST([have_getipinfo])
 
 # Output: create a Makefile.
 AC_CONFIG_FILES([Makefile])

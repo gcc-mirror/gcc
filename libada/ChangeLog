@@ -1,3 +1,10 @@
+2017-06-01  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/80921
+	* configure.ac (default_gnatlib_target): Remove bogus condition.
+	(have_getipinfo): Tweak.
+	* configure: Regenerate.
+
 2016-12-21  Release Manager
 
 	* GCC 6.3.0 released.
