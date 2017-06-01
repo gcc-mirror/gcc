@@ -1,3 +1,8 @@
+2017-06-01  Pierre-Marie de Rodat  <derodat@adacore.com>
+
+	* dwarf2out.c (dwarf2out_late_global_decl): Add locations for
+	symbols that hold a DECL_VALUE_EXPR.
+
 2017-06-01  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/80898

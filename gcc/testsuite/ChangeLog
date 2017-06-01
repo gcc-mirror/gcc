@@ -1,3 +1,7 @@
+2017-06-01  Pierre-Marie de Rodat  <derodat@adacore.com>
+
+	* debug12.adb, debug12.ads: New testcase.
+
 2017-06-01  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/80898

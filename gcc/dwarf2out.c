@@ -25545,9 +25545,10 @@ dwarf2out_late_global_decl (tree decl)
 	{
 	  /* We get called via the symtab code invoking late_global_decl
 	     for symbols that are optimized out.  Do not add locations
-	     for those.  */
+	     for those, except if they have a DECL_VALUE_EXPR, in which case
+	     they are relevant for debuggers.  */
 	  varpool_node *node = varpool_node::get (decl);
-	  if (! node || ! node->definition)
+	  if ((! node || ! node->definition) && ! DECL_HAS_VALUE_EXPR_P (decl))
 	    tree_add_const_value_attribute_for_decl (die, decl);
 	  else
 	    add_location_or_const_value_attribute (die, decl, false);
