@@ -1,3 +1,10 @@
+2017-06-01  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/80921
+	* configure.ac (default_gnatlib_target): Remove bogus condition.
+	(have_getipinfo): Tweak.
+	* configure: Regenerate.
+
 2017-05-02  Release Manager
 
 	* GCC 7.1.0 released.
@@ -8,7 +15,7 @@
 	* configure.ac: Add GCC_BASE_VER.
 	* Makefile.in (version): Use @get_gcc_base_ver@ instead of cat to get
 	version from BASE-VER file.
-	* configure: Regenerated.
+	* configure: Regenerate.
 
 2017-01-04  Alan Modra  <amodra@gmail.com>
 
