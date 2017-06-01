@@ -948,15 +948,15 @@
   [(set (match_operand:CC_ZN 0 "cc_set_register" "")
 	(match_operator:CC_ZN 5 "zn_compare_operator"
 	  [(match_operator:SI 4 "commutative_operator"
-	     [(match_operand:SI 1 "register_operand" "%c,c,c")
-	      (match_operand:SI 2 "nonmemory_operand" "cL,I,?Cal")])
+	     [(match_operand:SI 1 "register_operand" "%c,c")
+	      (match_operand:SI 2 "nonmemory_operand" "cL,Cal")])
 	   (const_int 0)]))
-   (clobber (match_scratch:SI 3 "=X,1,X"))]
+   (clobber (match_scratch:SI 3 "=X,X"))]
   ""
   "%O4.f 0,%1,%2"
   [(set_attr "type" "compare")
    (set_attr "cond" "set_zn")
-   (set_attr "length" "4,4,8")])
+   (set_attr "length" "4,8")])
 
 ; for flag setting 'add' instructions like if (a+b) { ...}
 ; the combiner needs this pattern
@@ -1050,15 +1050,15 @@
   [(set (match_operand:CC_ZN 0 "cc_set_register" "")
 	(match_operator:CC_ZN 5 "zn_compare_operator"
 	  [(match_operator:SI 4 "noncommutative_operator"
-	     [(match_operand:SI 1 "register_operand" "c,c,c")
-	      (match_operand:SI 2 "nonmemory_operand" "cL,I,?Cal")])
+	     [(match_operand:SI 1 "register_operand" "c,c")
+	      (match_operand:SI 2 "nonmemory_operand" "cL,Cal")])
 	   (const_int 0)]))
-   (clobber (match_scratch:SI 3 "=X,1,X"))]
+   (clobber (match_scratch:SI 3 "=X,X"))]
   "TARGET_BARREL_SHIFTER || GET_CODE (operands[4]) == MINUS"
   "%O4.f 0,%1,%2"
   [(set_attr "type" "compare")
    (set_attr "cond" "set_zn")
-   (set_attr "length" "4,4,8")])
+   (set_attr "length" "4,8")])
 
 (define_expand "bic_f_zn"
   [(parallel
