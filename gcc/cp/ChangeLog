@@ -1,3 +1,9 @@
+2017-06-01  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/80896
+	* cvt.c (convert_to_void): Possibly call maybe_warn_nodiscard
+	for case INDIRECT_REF too in the main switch.
+
 2017-05-31  Jason Merrill  <jason@redhat.com>
 
 	PR c++/80840 - ICE with constexpr and reference
