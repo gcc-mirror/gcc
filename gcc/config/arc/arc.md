@@ -840,7 +840,7 @@
    (clobber (match_scratch:SI 3 "=X,X,X,X,X,X,Rrq,Rrq,c"))]
   "TARGET_NPS_BITOPS"
   "movb.f.cl %3,%1,%p2,%p2,%s2"
-  "reload_completed
+  "TARGET_NPS_BITOPS && reload_completed
    && (extract_constrain_insn_cached (insn), (which_alternative & ~1) != 6)"
   [(set (match_dup 0) (match_dup 4))])
 
