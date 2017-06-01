@@ -1,3 +1,15 @@
+2017-06-01  Tom de Vries  <tom@codesourcery.com>
+
+	* c-c++-common/pr43395.c: Add dg-require-effective-target label_values.
+	* gcc.c-torture/compile/asmgoto-1.c: Same.
+	* gcc.dg/20000707-1.c: Same.
+	* gcc.dg/pr38700.c: Same.
+	* gcc.dg/pr70169.c: Same.
+	* gcc.dg/pr80112.c: Same.
+	* gcc.dg/torture/pr51071-2.c: Same.
+	* gcc.dg/torture/pr51071.c: Same.
+	* gcc.dg/tree-ssa/alias-34.c: Same.
+
 2017-06-01  Pierre-Marie de Rodat  <derodat@adacore.com>
 
 	* gnat.dg/debug11.adb: New testcase.
