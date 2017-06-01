@@ -1,3 +1,8 @@
+2017-06-01  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	* gcc.target/powerpc/fold-vec-logical-ors-longlong.c:
+	Update the target to power8-vector.
+
 2017-06-01  David Malcolm  <dmalcolm@redhat.com>
 
 	* lib/gcc-dg.exp: Ensure GCC_COLORS is unset.
