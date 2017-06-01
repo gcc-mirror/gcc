@@ -1,3 +1,9 @@
+2017-06-01  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	(GLIBCXX_CROSSCONFIG): Handle *-solaris* like *-linux* etc.
+	Remove *-solaris* section.
+	* configure: Regenerate.
+
 2017-05-31  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/80893
