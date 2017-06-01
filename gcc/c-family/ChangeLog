@@ -1,3 +1,8 @@
+2017-06-01  Volker Reichelt  <v.reichelt@netcologne.de>
+
+	* c.opt (Wcatch-value): New shortcut for Wcatch-value=1.
+	(Wcatch-value=1): Enable by -Wall.
+
 2017-05-30  David Malcolm  <dmalcolm@redhat.com>
 
 	* c-format.c (gcc_cxxdiag_char_table): Add 'H' and 'I' to

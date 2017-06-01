@@ -1,3 +1,8 @@
+2017-06-01  Volker Reichelt  <v.reichelt@netcologne.de>
+
+	* doc/invoke.texi (-Wcatch-value): Document new shortcut.
+	Add to -Wall section.
+
 2017-06-01  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/66313
