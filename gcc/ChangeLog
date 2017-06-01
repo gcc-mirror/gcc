@@ -1,5 +1,14 @@
 2017-06-01  Claudiu Zissulescu  <claziss@synopsys.com>
 
+	* config/arc/arc.c (arc_expand_prologue): Emit a special barrier
+	to prevent store reordering.
+	* config/arc/arc.md (UNSPEC_ARC_STKTIE): Define.
+	(type): Add block type.
+	(stack_tie): Define special instruction to be used in
+	expand_prologue.
+
+2017-06-01  Claudiu Zissulescu  <claziss@synopsys.com>
+
 	* config/arc/arc.md (commutative_binary_comparison): Remove 'I'
 	constraint. It is not valid for the pattern.
 	(noncommutative_binary_comparison): Likewise.
