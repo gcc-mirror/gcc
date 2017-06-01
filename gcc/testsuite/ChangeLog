@@ -1,3 +1,17 @@
+2017-05-31  Steven Munroe  <munroesj@gcc.gnu.org>
+
+	* gcc.target/powerpc/bmi2-pdep32-1.c: Add -mcpu=power7 to
+        dg-options.  Change dg-require-effective-target powerpc_vsx_ok
+        to vsx_hw.  Add dg-skip-if directive to disable this test if
+	-mcpu overridden.
+	* gcc.target/powerpc/bmi2-pdep64-1.c: Likewise.
+	* gcc.target/powerpc/bmi2-pext32-1.c: Likewise.
+	* gcc.target/powerpc/bmi2-pext64-1.c: Likewise.
+	* gcc.target/powerpc/bmi2-pext64-1a.c: Add -mcpu=power7
+	to dg-option.  Add dg-skip-if directive to disable this test
+	for darwin.  Add dg-skip-if directive to disable this test if
+	-mcpu overridden.
+
 2017-05-31  Sebastian Peryt  <sebastian.peryt@intel.com>
 
 	* gcc.target/i386/avx512f-vmaxsd-1.c (_mm_mask_max_sd)
