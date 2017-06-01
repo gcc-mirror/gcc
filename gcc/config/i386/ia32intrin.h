@@ -249,9 +249,9 @@ __readeflags (void)
 /* Write flags register */
 extern __inline void
 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
-__writeeflags (unsigned long long X)
+__writeeflags (unsigned long long __X)
 {
-  __builtin_ia32_writeeflags_u64 (X);
+  __builtin_ia32_writeeflags_u64 (__X);
 }
 
 #define _bswap64(a)		__bswapq(a)
@@ -269,9 +269,9 @@ __readeflags (void)
 /* Write flags register */
 extern __inline void
 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
-__writeeflags (unsigned int X)
+__writeeflags (unsigned int __X)
 {
-  __builtin_ia32_writeeflags_u32 (X);
+  __builtin_ia32_writeeflags_u32 (__X);
 }
 
 #endif

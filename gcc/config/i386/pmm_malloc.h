@@ -35,23 +35,23 @@ extern "C" int posix_memalign (void **, size_t, size_t) throw ();
 #endif
 
 static __inline void *
-_mm_malloc (size_t size, size_t alignment)
+_mm_malloc (size_t __size, size_t __alignment)
 {
-  void *ptr;
-  if (alignment == 1)
-    return malloc (size);
-  if (alignment == 2 || (sizeof (void *) == 8 && alignment == 4))
-    alignment = sizeof (void *);
-  if (posix_memalign (&ptr, alignment, size) == 0)
-    return ptr;
+  void *__ptr;
+  if (__alignment == 1)
+    return malloc (__size);
+  if (__alignment == 2 || (sizeof (void *) == 8 && __alignment == 4))
+    __alignment = sizeof (void *);
+  if (posix_memalign (&__ptr, __alignment, __size) == 0)
+    return __ptr;
   else
     return NULL;
 }
 
 static __inline void
-_mm_free (void * ptr)
+_mm_free (void *__ptr)
 {
-  free (ptr);
+  free (__ptr);
 }
 
 #endif /* _MM_MALLOC_H_INCLUDED */
