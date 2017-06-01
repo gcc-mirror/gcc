@@ -1296,6 +1296,8 @@ convert_to_void (tree expr, impl_conv_void implicit, tsubst_flags_t complain)
                 && !is_reference)
               warning_at (loc, OPT_Wunused_value, "value computed is not used");
             expr = TREE_OPERAND (expr, 0);
+	    if (TREE_CODE (expr) == CALL_EXPR)
+	      maybe_warn_nodiscard (expr, implicit);
           }
 
 	break;
