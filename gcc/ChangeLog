@@ -1,5 +1,11 @@
 2017-06-01  Claudiu Zissulescu  <claziss@synopsys.com>
 
+	* config/arc/arc.md (commutative_binary_comparison): Remove 'I'
+	constraint. It is not valid for the pattern.
+	(noncommutative_binary_comparison): Likewise.
+
+2017-06-01  Claudiu Zissulescu  <claziss@synopsys.com>
+
 	* config/arc/simdext.md (movv2hi_insn): Change predicate to avoid
 	scaled addresses.
 
