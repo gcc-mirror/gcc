@@ -2127,7 +2127,7 @@
 ; like MPY or MPYU.
 (define_insn "mulsi3_700"
  [(set (match_operand:SI 0 "mpy_dest_reg_operand"        "=Rcr,r,r,Rcr,r")
-	(mult:SI (match_operand:SI 1 "register_operand"  " 0,c,0,0,c")
+	(mult:SI (match_operand:SI 1 "register_operand"  "%0,c,0,0,c")
 		 (match_operand:SI 2 "nonmemory_operand" "cL,cL,I,Cal,Cal")))]
  "TARGET_ARC700_MPY"
   "mpyu%? %0,%1,%2"
