@@ -1,3 +1,44 @@
+2017-06-01  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* config/i386/i386.c (x86_64_ms_sysv_extra_clobbered_registers): Make
+	static.
+	(xlogue_layout::get_stack_space_used, xlogue_layout::s_instances,
+	xlogue_layout::get_instance, logue_layout::xlogue_layout,
+	sp_valid_at, fp_valid_at, choose_basereg): Formatting.
+	(xlogue_layout::get_stub_rtx): Make static.
+	(xlogue_layout::get_stub_name): Avoid const-cast, make static.
+	(xlogue_layout::compute_stub_managed_regs): Rename to...
+	(xlogue_layout::count_stub_managed_regs): ...this.
+	(xlogue_layout::is_stub_managed_reg): New function.
+	(xlogue_layout::m_stub_names): Rename to...
+	(xlogue_layout::s_stub_names): ...this, make static.
+	(xlogue_layout::STUB_INDEX_OFFSET, xlogue_layout::MIN_REGS,
+	xlogue_layout::MAX_REGS, xlogue_layout::MAX_EXTRA_REGS,
+	xlogue_layout::VARIANT_COUNT, xlogue_layout::STUB_NAME_MAX_LEN,
+	xlogue_layout::s_stub_names): Instantiate statics.
+	(stub_managed_regs): Remove.
+	(ix86_save_reg): Use xlogue_layout::compute_stub_managed_regs.
+	(disable_call_ms2sysv_xlogues): Rename to...
+	(warn_once_call_ms2sysv_xlogues): ...this, and warn only once.
+	(ix86_initial_elimination_offset, ix86_expand_call): Fix call_ms2sysv
+	warning logic.
+	(ix86_static_chain): Make sure that ix86_static_chain_on_stack can't
+	change after reload_completed.
+	(ix86_can_use_return_insn_p): Use the ix86_frame data structure
+	directly.
+	(ix86_expand_prologue): Likewise.
+	(ix86_expand_epilogue): Likewise.
+	(ix86_expand_split_stack_prologue): Likewise.
+	(ix86_compute_frame_layout): Remove frame parameter ...
+	(TARGET_COMPUTE_FRAME_LAYOUT): ... and export it as a target hook.
+	(ix86_finalize_stack_realign_flags): Call ix86_compute_frame_layout
+	only if necessary.
+	(ix86_init_machine_status): Don't set use_fast_prologue_epilogue_nregs.
+	(ix86_frame): Move from here ...
+	* config/i386/i386.h (ix86_frame): ... to here.
+	(machine_function): Remove use_fast_prologue_epilogue_nregs, cache the
+	complete ix86_frame data structure instead.  Remove some_ld_name.
+
 2017-06-01  Pierre-Marie de Rodat  <derodat@adacore.com>
 
 	* dwarf2out.c (dwarf2out_late_global_decl): Add locations for

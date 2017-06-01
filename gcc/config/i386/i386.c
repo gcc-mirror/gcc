@@ -2425,7 +2425,9 @@ static int const x86_64_int_return_registers[4] =
 
 /* Additional registers that are clobbered by SYSV calls.  */
 
-unsigned const x86_64_ms_sysv_extra_clobbered_registers[12] =
+#define NUM_X86_64_MS_CLOBBERED_REGS 12
+static int const x86_64_ms_sysv_extra_clobbered_registers
+		 [NUM_X86_64_MS_CLOBBERED_REGS] =
 {
   SI_REG, DI_REG,
   XMM6_REG, XMM7_REG,
@@ -2472,25 +2474,26 @@ public:
     return m_regs[reg];
   }
 
-  const char *get_stub_name (enum xlogue_stub stub,
-			     unsigned n_extra_args) const;
+  static const char *get_stub_name (enum xlogue_stub stub,
+				    unsigned n_extra_args);
+
   /* Returns an rtx for the stub's symbol based upon
        1.) the specified stub (save, restore or restore_ret) and
        2.) the value of cfun->machine->call_ms2sysv_extra_regs and
        3.) rather or not stack alignment is being performed.  */
-  rtx get_stub_rtx (enum xlogue_stub stub) const;
+  static rtx get_stub_rtx (enum xlogue_stub stub);
 
   /* Returns the amount of stack space (including padding) that the stub
      needs to store registers based upon data in the machine_function.  */
   HOST_WIDE_INT get_stack_space_used () const
   {
-    const struct machine_function &m = *cfun->machine;
-    unsigned last_reg = m.call_ms2sysv_extra_regs + MIN_REGS - 1;
+    const struct machine_function *m = cfun->machine;
+    unsigned last_reg = m->call_ms2sysv_extra_regs + MIN_REGS - 1;
 
-    gcc_assert (m.call_ms2sysv_extra_regs <= MAX_EXTRA_REGS);
+    gcc_assert (m->call_ms2sysv_extra_regs <= MAX_EXTRA_REGS);
     return m_regs[last_reg].offset
-	    + (m.call_ms2sysv_pad_out ? 8 : 0)
-	    + STUB_INDEX_OFFSET;
+	   + (m->call_ms2sysv_pad_out ? 8 : 0)
+	   + STUB_INDEX_OFFSET;
   }
 
   /* Returns the offset for the base pointer used by the stub.  */
@@ -2500,7 +2503,8 @@ public:
   }
 
   static const struct xlogue_layout &get_instance ();
-  static unsigned compute_stub_managed_regs (HARD_REG_SET &stub_managed_regs);
+  static unsigned count_stub_managed_regs ();
+  static bool is_stub_managed_reg (unsigned regno, unsigned count);
 
   static const HOST_WIDE_INT STUB_INDEX_OFFSET = 0x70;
   static const unsigned MIN_REGS = NUM_X86_64_MS_CLOBBERED_REGS;
@@ -2530,9 +2534,10 @@ private:
   struct reginfo m_regs[MAX_REGS];
 
   /* Lazy-inited cache of symbol names for stubs.  */
-  char m_stub_names[XLOGUE_STUB_COUNT][VARIANT_COUNT][STUB_NAME_MAX_LEN];
+  static char s_stub_names[XLOGUE_STUB_COUNT][VARIANT_COUNT]
+			  [STUB_NAME_MAX_LEN];
 
-  static const struct xlogue_layout GTY(()) s_instances[XLOGUE_SET_COUNT];
+  static const xlogue_layout s_instances[XLOGUE_SET_COUNT];
 };
 
 const char * const xlogue_layout::STUB_BASE_NAMES[XLOGUE_STUB_COUNT] = {
@@ -2572,9 +2577,20 @@ const unsigned xlogue_layout::REG_ORDER[xlogue_layout::MAX_REGS] = {
     R15_REG,	/* 0xe0		0xe8		0xd8		0xe0	*/
 };
 
+/* Instantiate static const values.  */
+const HOST_WIDE_INT xlogue_layout::STUB_INDEX_OFFSET;
+const unsigned xlogue_layout::MIN_REGS;
+const unsigned xlogue_layout::MAX_REGS;
+const unsigned xlogue_layout::MAX_EXTRA_REGS;
+const unsigned xlogue_layout::VARIANT_COUNT;
+const unsigned xlogue_layout::STUB_NAME_MAX_LEN;
+
+/* Initialize xlogue_layout::s_stub_names to zero.  */
+char xlogue_layout::s_stub_names[XLOGUE_STUB_COUNT][VARIANT_COUNT]
+				[STUB_NAME_MAX_LEN];
+
 /* Instantiates all xlogue_layout instances.  */
-const struct xlogue_layout GTY(())
-xlogue_layout::s_instances[XLOGUE_SET_COUNT] = {
+const xlogue_layout xlogue_layout::s_instances[XLOGUE_SET_COUNT] = {
   xlogue_layout (0, false),
   xlogue_layout (8, false),
   xlogue_layout (0, true),
@@ -2583,7 +2599,8 @@ xlogue_layout::s_instances[XLOGUE_SET_COUNT] = {
 
 /* Return an appropriate const instance of xlogue_layout based upon values
    in cfun->machine and crtl.  */
-const struct xlogue_layout &xlogue_layout::get_instance ()
+const struct xlogue_layout &
+xlogue_layout::get_instance ()
 {
   enum xlogue_stub_sets stub_set;
   bool aligned_plus_8 = cfun->machine->call_ms2sysv_pad_in;
@@ -2600,38 +2617,44 @@ const struct xlogue_layout &xlogue_layout::get_instance ()
   return s_instances[stub_set];
 }
 
-/* Determine which clobbered registers can be saved by the stub and store
-   them in stub_managed_regs.  Returns the count of registers the stub will
-   save and restore.  */
+/* Determine how many clobbered registers can be saved by the stub.
+   Returns the count of registers the stub will save and restore.  */
 unsigned
-xlogue_layout::compute_stub_managed_regs (HARD_REG_SET &stub_managed_regs)
+xlogue_layout::count_stub_managed_regs ()
 {
   bool hfp = frame_pointer_needed || stack_realign_fp;
-
   unsigned i, count;
   unsigned regno;
 
-  for (i = 0; i < NUM_X86_64_MS_CLOBBERED_REGS; ++i)
-    {
-      regno = x86_64_ms_sysv_extra_clobbered_registers[i];
-      if (regno == BP_REG && hfp)
-	continue;
-      if (!ix86_save_reg (regno, false, false))
-	return 0;
-    }
-
-  for (count = i = 0; i < MAX_REGS; ++i)
+  for (count = i = MIN_REGS; i < MAX_REGS; ++i)
     {
       regno = REG_ORDER[i];
       if (regno == BP_REG && hfp)
 	continue;
       if (!ix86_save_reg (regno, false, false))
 	break;
-      add_to_hard_reg_set (&stub_managed_regs, DImode, regno);
       ++count;
     }
-    gcc_assert (count >= MIN_REGS && count <= MAX_REGS);
-    return count;
+  return count;
+}
+
+/* Determine if register REGNO is a stub managed register given the
+   total COUNT of stub managed registers.  */
+bool
+xlogue_layout::is_stub_managed_reg (unsigned regno, unsigned count)
+{
+  bool hfp = frame_pointer_needed || stack_realign_fp;
+  unsigned i;
+
+  for (i = 0; i < count; ++i)
+    {
+      gcc_assert (i < MAX_REGS);
+      if (REG_ORDER[i] == BP_REG && hfp)
+	++count;
+      else if (REG_ORDER[i] == regno)
+	return true;
+    }
+  return false;
 }
 
 /* Constructor for xlogue_layout.  */
@@ -2639,11 +2662,9 @@ xlogue_layout::xlogue_layout (HOST_WIDE_INT stack_align_off_in, bool hfp)
   : m_hfp (hfp) , m_nregs (hfp ? 17 : 18),
     m_stack_align_off_in (stack_align_off_in)
 {
-  memset (m_regs, 0, sizeof (m_regs));
-  memset (m_stub_names, 0, sizeof (m_stub_names));
-
   HOST_WIDE_INT offset = stack_align_off_in;
   unsigned i, j;
+
   for (i = j = 0; i < MAX_REGS; ++i)
     {
       unsigned regno = REG_ORDER[i];
@@ -2662,21 +2683,21 @@ xlogue_layout::xlogue_layout (HOST_WIDE_INT stack_align_off_in, bool hfp)
       m_regs[j].regno    = regno;
       m_regs[j++].offset = offset - STUB_INDEX_OFFSET;
     }
-    gcc_assert (j == m_nregs);
+  gcc_assert (j == m_nregs);
 }
 
-const char *xlogue_layout::get_stub_name (enum xlogue_stub stub,
-					  unsigned n_extra_regs) const
+const char *
+xlogue_layout::get_stub_name (enum xlogue_stub stub,
+			      unsigned n_extra_regs)
 {
-  xlogue_layout *writey_this = const_cast<xlogue_layout*>(this);
-  char *name = writey_this->m_stub_names[stub][n_extra_regs];
+  char *name = s_stub_names[stub][n_extra_regs];
 
   /* Lazy init */
   if (!*name)
     {
       int res = snprintf (name, STUB_NAME_MAX_LEN, "__%s_%u",
 			  STUB_BASE_NAMES[stub], MIN_REGS + n_extra_regs);
-      gcc_checking_assert (res <= (int)STUB_NAME_MAX_LEN);
+      gcc_checking_assert (res < (int)STUB_NAME_MAX_LEN);
     }
 
   return name;
@@ -2684,7 +2705,8 @@ const char *xlogue_layout::get_stub_name (enum xlogue_stub stub,
 
 /* Return rtx of a symbol ref for the entry point (based upon
    cfun->machine->call_ms2sysv_extra_regs) of the specified stub.  */
-rtx xlogue_layout::get_stub_rtx (enum xlogue_stub stub) const
+rtx
+xlogue_layout::get_stub_rtx (enum xlogue_stub stub)
 {
   const unsigned n_extra_regs = cfun->machine->call_ms2sysv_extra_regs;
   gcc_checking_assert (n_extra_regs <= MAX_EXTRA_REGS);
@@ -2701,73 +2723,6 @@ struct GTY(()) stack_local_entry {
   unsigned short n;
   rtx rtl;
   struct stack_local_entry *next;
-};
-
-/* Structure describing stack frame layout.
-   Stack grows downward:
-
-   [arguments]
-					<- ARG_POINTER
-   saved pc
-
-   saved static chain			if ix86_static_chain_on_stack
-
-   saved frame pointer			if frame_pointer_needed
-					<- HARD_FRAME_POINTER
-   [saved regs]
-					<- reg_save_offset
-   [padding0]
-					<- stack_realign_offset
-   [saved SSE regs]
-	OR
-   [stub-saved registers for ms x64 --> sysv clobbers
-			<- Start of out-of-line, stub-saved/restored regs
-			   (see libgcc/config/i386/(sav|res)ms64*.S)
-     [XMM6-15]
-     [RSI]
-     [RDI]
-     [?RBX]		only if RBX is clobbered
-     [?RBP]		only if RBP and RBX are clobbered
-     [?R12]		only if R12 and all previous regs are clobbered
-     [?R13]		only if R13 and all previous regs are clobbered
-     [?R14]		only if R14 and all previous regs are clobbered
-     [?R15]		only if R15 and all previous regs are clobbered
-			<- end of stub-saved/restored regs
-     [padding1]
-   ]
-					<- outlined_save_offset
-					<- sse_regs_save_offset
-   [padding2]
-		       |		<- FRAME_POINTER
-   [va_arg registers]  |
-		       |
-   [frame]	       |
-		       |
-   [padding2]	       | = to_allocate
-					<- STACK_POINTER
-  */
-struct ix86_frame
-{
-  int nsseregs;
-  int nregs;
-  int va_arg_size;
-  int red_zone_size;
-  int outgoing_arguments_size;
-
-  /* The offsets relative to ARG_POINTER.  */
-  HOST_WIDE_INT frame_pointer_offset;
-  HOST_WIDE_INT hard_frame_pointer_offset;
-  HOST_WIDE_INT stack_pointer_offset;
-  HOST_WIDE_INT hfp_save_offset;
-  HOST_WIDE_INT reg_save_offset;
-  HOST_WIDE_INT stack_realign_allocate_offset;
-  HOST_WIDE_INT stack_realign_offset;
-  HOST_WIDE_INT outlined_save_offset;
-  HOST_WIDE_INT sse_reg_save_offset;
-
-  /* When save_regs_using_mov is set, emit prologue using
-     move instead of push instructions.  */
-  bool save_regs_using_mov;
 };
 
 /* Which cpu are we scheduling for.  */
@@ -2861,7 +2816,7 @@ static unsigned int ix86_function_arg_boundary (machine_mode,
 						const_tree);
 static rtx ix86_static_chain (const_tree, bool);
 static int ix86_function_regparm (const_tree, const_tree);
-static void ix86_compute_frame_layout (struct ix86_frame *);
+static void ix86_compute_frame_layout (void);
 static bool ix86_expand_vector_init_one_nonzero (bool, machine_mode,
 						 rtx, rtx, int);
 static void ix86_add_new_builtins (HOST_WIDE_INT, HOST_WIDE_INT);
@@ -12293,7 +12248,7 @@ ix86_can_use_return_insn_p (void)
   if (crtl->args.pops_args && crtl->args.size >= 32768)
     return 0;
 
-  ix86_compute_frame_layout (&frame);
+  frame = cfun->machine->frame;
   return (frame.stack_pointer_offset == UNITS_PER_WORD
 	  && (frame.nregs + frame.nsseregs) == 0);
 }
@@ -12634,10 +12589,6 @@ ix86_hard_regno_scratch_ok (unsigned int regno)
 	      && df_regs_ever_live_p (regno)));
 }
 
-/* Registers who's save & restore will be managed by stubs called from
-   pro/epilogue.  */
-static HARD_REG_SET GTY(()) stub_managed_regs;
-
 /* Return true if register class CL should be an additional allocno
    class.  */
 
@@ -12718,9 +12669,13 @@ ix86_save_reg (unsigned int regno, bool maybe_eh_return, bool ignore_outlined)
 	}
     }
 
-  if (ignore_outlined && cfun->machine->call_ms2sysv
-      && in_hard_reg_set_p (stub_managed_regs, DImode, regno))
-    return false;
+  if (ignore_outlined && cfun->machine->call_ms2sysv)
+    {
+      unsigned count = cfun->machine->call_ms2sysv_extra_regs
+		       + xlogue_layout::MIN_REGS;
+      if (xlogue_layout::is_stub_managed_reg (regno, count))
+	return false;
+    }
 
   if (crtl->drap_reg
       && regno == REGNO (crtl->drap_reg)
@@ -12787,8 +12742,7 @@ ix86_can_eliminate (const int from, const int to)
 HOST_WIDE_INT
 ix86_initial_elimination_offset (int from, int to)
 {
-  struct ix86_frame frame;
-  ix86_compute_frame_layout (&frame);
+  struct ix86_frame frame = cfun->machine->frame;
 
   if (from == ARG_POINTER_REGNUM && to == HARD_FRAME_POINTER_REGNUM)
     return frame.hard_frame_pointer_offset;
@@ -12818,13 +12772,16 @@ ix86_builtin_setjmp_frame_value (void)
   return stack_realign_fp ? hard_frame_pointer_rtx : virtual_stack_vars_rtx;
 }
 
-/* Disables out-of-lined msabi to sysv pro/epilogues and emits a warning if
-   warn_once is null, or *warn_once is zero.  */
-static void disable_call_ms2sysv_xlogues (const char *feature)
+/* Emits a warning for unsupported msabi to sysv pro/epilogues.  */
+static void warn_once_call_ms2sysv_xlogues (const char *feature)
 {
-  cfun->machine->call_ms2sysv = false;
-  warning (OPT_mcall_ms2sysv_xlogues, "not currently compatible with %s.",
-	   feature);
+  static bool warned_once = false;
+  if (!warned_once)
+    {
+      warning (0, "-mcall-ms2sysv-xlogues is not compatible with %s",
+	       feature);
+      warned_once = true;
+    }
 }
 
 /* When using -fsplit-stack, the allocation routines set a field in
@@ -12836,8 +12793,9 @@ static void disable_call_ms2sysv_xlogues (const char *feature)
 /* Fill structure ix86_frame about frame of currently computed function.  */
 
 static void
-ix86_compute_frame_layout (struct ix86_frame *frame)
+ix86_compute_frame_layout (void)
 {
+  struct ix86_frame *frame = &cfun->machine->frame;
   struct machine_function *m = cfun->machine;
   unsigned HOST_WIDE_INT stack_alignment_needed;
   HOST_WIDE_INT offset;
@@ -12845,45 +12803,38 @@ ix86_compute_frame_layout (struct ix86_frame *frame)
   HOST_WIDE_INT size = get_frame_size ();
   HOST_WIDE_INT to_allocate;
 
-  CLEAR_HARD_REG_SET (stub_managed_regs);
-
   /* m->call_ms2sysv is initially enabled in ix86_expand_call for all 64-bit
    * ms_abi functions that call a sysv function.  We now need to prune away
    * cases where it should be disabled.  */
   if (TARGET_64BIT && m->call_ms2sysv)
-  {
-    gcc_assert (TARGET_64BIT_MS_ABI);
-    gcc_assert (TARGET_CALL_MS2SYSV_XLOGUES);
-    gcc_assert (!TARGET_SEH);
+    {
+      gcc_assert (TARGET_64BIT_MS_ABI);
+      gcc_assert (TARGET_CALL_MS2SYSV_XLOGUES);
+      gcc_assert (!TARGET_SEH);
+      gcc_assert (TARGET_SSE);
+      gcc_assert (!ix86_using_red_zone ());
 
-    if (!TARGET_SSE)
-      m->call_ms2sysv = false;
+      if (crtl->calls_eh_return)
+	{
+	  gcc_assert (!reload_completed);
+	  m->call_ms2sysv = false;
+	  warn_once_call_ms2sysv_xlogues ("__builtin_eh_return");
+	}
 
-    /* Don't break hot-patched functions.  */
-    else if (ix86_function_ms_hook_prologue (current_function_decl))
-      m->call_ms2sysv = false;
+      else if (ix86_static_chain_on_stack)
+	{
+	  gcc_assert (!reload_completed);
+	  m->call_ms2sysv = false;
+	  warn_once_call_ms2sysv_xlogues ("static call chains");
+	}
 
-    /* TODO: Cases not yet examined.  */
-    else if (crtl->calls_eh_return)
-      disable_call_ms2sysv_xlogues ("__builtin_eh_return");
-
-    else if (ix86_static_chain_on_stack)
-      disable_call_ms2sysv_xlogues ("static call chains");
-
-    else if (ix86_using_red_zone ())
-      disable_call_ms2sysv_xlogues ("red zones");
-
-    else if (flag_split_stack)
-      disable_call_ms2sysv_xlogues ("split stack");
-
-    /* Finally, compute which registers the stub will manage.  */
-    else
-      {
-	unsigned count = xlogue_layout
-			 ::compute_stub_managed_regs (stub_managed_regs);
-	m->call_ms2sysv_extra_regs = count - xlogue_layout::MIN_REGS;
-      }
-  }
+      /* Finally, compute which registers the stub will manage.  */
+      else
+	{
+	  unsigned count = xlogue_layout::count_stub_managed_regs ();
+	  m->call_ms2sysv_extra_regs = count - xlogue_layout::MIN_REGS;
+	}
+    }
 
   frame->nregs = ix86_nsaved_regs ();
   frame->nsseregs = ix86_nsaved_sseregs ();
@@ -12916,18 +12867,10 @@ ix86_compute_frame_layout (struct ix86_frame *frame)
      in doing anything except PUSHs.  */
   if (TARGET_SEH)
     m->use_fast_prologue_epilogue = false;
-
-  /* During reload iteration the amount of registers saved can change.
-     Recompute the value as needed.  Do not recompute when amount of registers
-     didn't change as reload does multiple calls to the function and does not
-     expect the decision to change within single iteration.  */
-  else if (!optimize_bb_for_size_p (ENTRY_BLOCK_PTR_FOR_FN (cfun))
-	   && m->use_fast_prologue_epilogue_nregs != frame->nregs)
+  else if (!optimize_bb_for_size_p (ENTRY_BLOCK_PTR_FOR_FN (cfun)))
     {
       int count = frame->nregs;
       struct cgraph_node *node = cgraph_node::get (current_function_decl);
-
-      m->use_fast_prologue_epilogue_nregs = count;
 
       /* The fast prologue uses move instead of push to save registers.  This
          is significantly longer, but also executes faster as modern hardware
@@ -13145,7 +13088,8 @@ choose_baseaddr_len (unsigned int regno, HOST_WIDE_INT offset)
 
 /* Determine if the stack pointer is valid for accessing the cfa_offset.  */
 
-static inline bool sp_valid_at (HOST_WIDE_INT cfa_offset)
+static inline bool
+sp_valid_at (HOST_WIDE_INT cfa_offset)
 {
   const struct machine_frame_state &fs = cfun->machine->fs;
   return fs.sp_valid && !(fs.sp_realigned
@@ -13154,7 +13098,8 @@ static inline bool sp_valid_at (HOST_WIDE_INT cfa_offset)
 
 /* Determine if the frame pointer is valid for accessing the cfa_offset.  */
 
-static inline bool fp_valid_at (HOST_WIDE_INT cfa_offset)
+static inline bool
+fp_valid_at (HOST_WIDE_INT cfa_offset)
 {
   const struct machine_frame_state &fs = cfun->machine->fs;
   return fs.fp_valid && !(fs.sp_valid && fs.sp_realigned
@@ -13164,9 +13109,10 @@ static inline bool fp_valid_at (HOST_WIDE_INT cfa_offset)
 /* Choose a base register based upon alignment requested, speed and/or
    size.  */
 
-static void choose_basereg (HOST_WIDE_INT cfa_offset, rtx &base_reg,
-			    HOST_WIDE_INT &base_offset,
-			    unsigned int align_reqested, unsigned int *align)
+static void
+choose_basereg (HOST_WIDE_INT cfa_offset, rtx &base_reg,
+		HOST_WIDE_INT &base_offset,
+		unsigned int align_reqested, unsigned int *align)
 {
   const struct machine_function *m = cfun->machine;
   unsigned int hfp_align;
@@ -14159,6 +14105,7 @@ ix86_finalize_stack_realign_flags (void)
        < (crtl->is_leaf && !ix86_current_function_calls_tls_descriptor
 	  ? crtl->max_used_stack_slot_alignment
 	  : crtl->stack_alignment_needed));
+  bool recompute_frame_layout_p = false;
 
   if (crtl->stack_realign_finalized)
     {
@@ -14208,8 +14155,12 @@ ix86_finalize_stack_realign_flags (void)
 		&& requires_stack_frame_p (insn, prologue_used,
 					   set_up_by_prologue))
 	      {
+		if (crtl->stack_realign_needed != stack_realign)
+		  recompute_frame_layout_p = true;
 		crtl->stack_realign_needed = stack_realign;
 		crtl->stack_realign_finalized = true;
+		if (recompute_frame_layout_p)
+		  ix86_compute_frame_layout ();
 		return;
 	      }
 	}
@@ -14240,10 +14191,15 @@ ix86_finalize_stack_realign_flags (void)
       df_scan_blocks ();
       df_compute_regs_ever_live (true);
       df_analyze ();
+      recompute_frame_layout_p = true;
     }
 
+  if (crtl->stack_realign_needed != stack_realign)
+    recompute_frame_layout_p = true;
   crtl->stack_realign_needed = stack_realign;
   crtl->stack_realign_finalized = true;
+  if (recompute_frame_layout_p)
+    ix86_compute_frame_layout ();
 }
 
 /* Delete SET_GOT right after entry block if it is allocated to reg.  */
@@ -14372,7 +14328,7 @@ ix86_expand_prologue (void)
   m->fs.sp_valid = true;
   m->fs.sp_realigned = false;
 
-  ix86_compute_frame_layout (&frame);
+  frame = m->frame;
 
   if (!TARGET_64BIT && ix86_function_ms_hook_prologue (current_function_decl))
     {
@@ -15212,7 +15168,7 @@ ix86_expand_epilogue (int style)
   bool restore_stub_is_tail = false;
 
   ix86_finalize_stack_realign_flags ();
-  ix86_compute_frame_layout (&frame);
+  frame = m->frame;
 
   m->fs.sp_realigned = stack_realign_fp;
   m->fs.sp_valid = stack_realign_fp
@@ -15757,7 +15713,7 @@ ix86_expand_split_stack_prologue (void)
   gcc_assert (flag_split_stack && reload_completed);
 
   ix86_finalize_stack_realign_flags ();
-  ix86_compute_frame_layout (&frame);
+  frame = cfun->machine->frame;
   allocate = frame.stack_pointer_offset - INCOMING_FRAME_SP_OFFSET;
 
   /* This is the label we will branch to if we have enough stack
@@ -29326,7 +29282,24 @@ ix86_expand_call (rtx retval, rtx fnaddr, rtx callarg1,
 
       /* Set here, but it may get cleared later.  */
       if (TARGET_CALL_MS2SYSV_XLOGUES)
-	cfun->machine->call_ms2sysv = true;
+	{
+	  if (!TARGET_SSE)
+	    ;
+
+	  /* Don't break hot-patched functions.  */
+	  else if (ix86_function_ms_hook_prologue (current_function_decl))
+	    ;
+
+	  /* TODO: Cases not yet examined.  */
+	  else if (flag_split_stack)
+	    warn_once_call_ms2sysv_xlogues ("-fsplit-stack");
+
+	  else
+	    {
+	      gcc_assert (!reload_completed);
+	      cfun->machine->call_ms2sysv = true;
+	    }
+	}
     }
 
   if (vec_len > 1)
@@ -29461,7 +29434,6 @@ ix86_init_machine_status (void)
   struct machine_function *f;
 
   f = ggc_cleared_alloc<machine_function> ();
-  f->use_fast_prologue_epilogue_nregs = -1;
   f->call_abi = ix86_abi;
 
   return f;
@@ -31521,8 +31493,12 @@ ix86_static_chain (const_tree fndecl_or_type, bool incoming_p)
 	     same once we're executing the nested function.  */
 	  if (incoming_p)
 	    {
-	      if (fndecl == current_function_decl)
-		ix86_static_chain_on_stack = true;
+	      if (fndecl == current_function_decl
+		  && !ix86_static_chain_on_stack)
+		{
+		  gcc_assert (!reload_completed);
+		  ix86_static_chain_on_stack = true;
+		}
 	      return gen_frame_mem (SImode,
 				    plus_constant (Pmode,
 						   arg_pointer_rtx, -8));
@@ -52832,6 +52808,9 @@ ix86_run_selftests (void)
 
 #undef TARGET_LEGITIMATE_CONSTANT_P
 #define TARGET_LEGITIMATE_CONSTANT_P ix86_legitimate_constant_p
+
+#undef TARGET_COMPUTE_FRAME_LAYOUT
+#define TARGET_COMPUTE_FRAME_LAYOUT ix86_compute_frame_layout
 
 #undef TARGET_FRAME_POINTER_REQUIRED
 #define TARGET_FRAME_POINTER_REQUIRED ix86_frame_pointer_required
