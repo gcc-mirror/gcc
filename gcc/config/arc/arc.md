@@ -176,6 +176,7 @@
    (ILINK2_REGNUM 30)
    (RETURN_ADDR_REGNUM 31)
    (MUL64_OUT_REG 58)
+   (MUL32x16_REG 56)
    (ARCV2_ACC 58)
 
    (LP_COUNT 60)
@@ -1940,29 +1941,17 @@
     }
   else if (TARGET_MUL64_SET)
     {
-      emit_insn (gen_mulsi_600 (operands[1], operands[2],
-				gen_mlo (), gen_mhi ()));
-      emit_move_insn (operands[0], gen_mlo ());
-      DONE;
+     rtx tmp = gen_reg_rtx (SImode);
+     emit_insn (gen_mulsi64 (tmp, operands[1], operands[2]));
+     emit_move_insn (operands[0], tmp);
+     DONE;
     }
   else if (TARGET_MULMAC_32BY16_SET)
     {
-      if (immediate_operand (operands[2], SImode)
-	  && INTVAL (operands[2]) >= 0
-	  && INTVAL (operands[2]) <= 65535)
-	{
-	  emit_insn (gen_umul_600 (operands[1], operands[2],
-				     gen_acc2 (), gen_acc1 ()));
-	  emit_move_insn (operands[0], gen_acc2 ());
-	  DONE;
-	}
-      operands[2] = force_reg (SImode, operands[2]);
-      emit_insn (gen_umul_600 (operands[1], operands[2],
-			       gen_acc2 (), gen_acc1 ()));
-      emit_insn (gen_mac_600 (operands[1], operands[2],
-			       gen_acc2 (), gen_acc1 ()));
-      emit_move_insn (operands[0], gen_acc2 ());
-      DONE;
+     rtx tmp = gen_reg_rtx (SImode);
+     emit_insn (gen_mulsi32x16 (tmp, operands[1], operands[2]));
+     emit_move_insn (operands[0], tmp);
+     DONE;
     }
   else
     {
@@ -1973,6 +1962,35 @@
       DONE;
     }
 })
+
+(define_insn_and_split "mulsi32x16"
+ [(set (match_operand:SI 0 "register_operand"            "=w")
+	(mult:SI (match_operand:SI 1 "register_operand"  "%c")
+		 (match_operand:SI 2 "nonmemory_operand" "ci")))
+  (clobber (reg:DI MUL32x16_REG))]
+ "TARGET_MULMAC_32BY16_SET"
+ "#"
+ "TARGET_MULMAC_32BY16_SET && reload_completed"
+ [(const_int 0)]
+ {
+  if (immediate_operand (operands[2], SImode)
+    && INTVAL (operands[2]) >= 0
+    && INTVAL (operands[2]) <= 65535)
+     {
+      emit_insn (gen_umul_600 (operands[1], operands[2],
+				       gen_acc2 (), gen_acc1 ()));
+      emit_move_insn (operands[0], gen_acc2 ());
+      DONE;
+     }
+   emit_insn (gen_umul_600 (operands[1], operands[2],
+				   gen_acc2 (), gen_acc1 ()));
+   emit_insn (gen_mac_600 (operands[1], operands[2],
+				   gen_acc2 (), gen_acc1 ()));
+   emit_move_insn (operands[0], gen_acc2 ());
+   DONE;
+  }
+ [(set_attr "type" "multi")
+  (set_attr "length" "8")])
 
 ; mululw conditional execution without a LIMM clobbers an input register;
 ; we'd need a different pattern to describe this.
@@ -2010,6 +2028,24 @@
    (set_attr "type" "mulmac_600, mulmac_600, mulmac_600")
    (set_attr "predicable" "no, no, yes")
    (set_attr "cond" "nocond, canuse_limm, canuse")])
+
+(define_insn_and_split "mulsi64"
+ [(set (match_operand:SI 0 "register_operand"            "=w")
+	(mult:SI (match_operand:SI 1 "register_operand"  "%c")
+		 (match_operand:SI 2 "nonmemory_operand" "ci")))
+  (clobber (reg:DI MUL64_OUT_REG))]
+ "TARGET_MUL64_SET"
+ "#"
+ "TARGET_MUL64_SET && reload_completed"
+  [(const_int 0)]
+{
+  emit_insn (gen_mulsi_600 (operands[1], operands[2],
+			gen_mlo (), gen_mhi ()));
+  emit_move_insn (operands[0], gen_mlo ());
+  DONE;
+}
+  [(set_attr "type" "multi")
+   (set_attr "length" "8")])
 
 (define_insn "mulsi_600"
   [(set (match_operand:SI 2 "mlo_operand" "")
@@ -2155,8 +2191,7 @@
 	(mult:DI (sign_extend:DI (match_operand:SI 1 "register_operand" ""))
 		 (sign_extend:DI (match_operand:SI 2 "nonmemory_operand" ""))))]
   "TARGET_ANY_MPY"
-"
-{
+  {
   if (TARGET_PLUS_MACD)
     {
      if (CONST_INT_P (operands[2]))
@@ -2189,18 +2224,37 @@
     }
   else if (TARGET_MULMAC_32BY16_SET)
     {
-      rtx result_hi = gen_highpart(SImode, operands[0]);
-      rtx result_low = gen_lowpart(SImode, operands[0]);
-
-      emit_insn (gen_mul64_600 (operands[1], operands[2]));
-      emit_insn (gen_mac64_600 (result_hi, operands[1], operands[2]));
-      emit_move_insn (result_low, gen_acc2 ());
+      operands[2] = force_reg (SImode, operands[2]);
+      emit_insn (gen_mulsidi64 (operands[0], operands[1], operands[2]));
       DONE;
     }
-}")
+  operands[2] = force_reg (SImode, operands[2]);
+  })
+
+(define_insn_and_split "mulsidi64"
+  [(set (match_operand:DI 0 "register_operand" "=w")
+	(mult:DI (sign_extend:DI (match_operand:SI 1 "register_operand" "%c"))
+		 (sign_extend:DI (match_operand:SI 2 "extend_operand" "ci"))))
+   (clobber (reg:DI MUL32x16_REG))]
+  "TARGET_MULMAC_32BY16_SET"
+  "#"
+  "TARGET_MULMAC_32BY16_SET && reload_completed"
+  [(const_int 0)]
+  {
+   rtx result_hi = gen_highpart (SImode, operands[0]);
+   rtx result_low = gen_lowpart (SImode, operands[0]);
+
+   emit_insn (gen_mul64_600 (operands[1], operands[2]));
+   emit_insn (gen_mac64_600 (result_hi, operands[1], operands[2]));
+   emit_move_insn (result_low, gen_acc2 ());
+   DONE;
+  }
+  [(set_attr "type" "multi")
+   (set_attr "length" "8")])
+
 
 (define_insn "mul64_600"
-  [(set (reg:DI 56)
+  [(set (reg:DI MUL32x16_REG)
 	(mult:DI (sign_extend:DI (match_operand:SI 0 "register_operand"
 				  "c,c,c"))
 		 (zero_extract:DI (match_operand:SI 1 "nonmemory_operand"
@@ -2218,14 +2272,14 @@
 
 ;; ??? check if this is canonical rtl
 (define_insn "mac64_600"
-  [(set (reg:DI 56)
+  [(set (reg:DI MUL32x16_REG)
 	(plus:DI
 	  (mult:DI (sign_extend:DI (match_operand:SI 1 "register_operand" "c,c,c"))
 		   (ashift:DI
 		     (sign_extract:DI (match_operand:SI 2 "nonmemory_operand" "c,L,Cal")
 				      (const_int 16) (const_int 16))
 		     (const_int 16)))
-	  (reg:DI 56)))
+	  (reg:DI MUL32x16_REG)))
    (set (match_operand:SI 0 "register_operand" "=w,w,w")
 	(zero_extract:SI
 	  (plus:DI
@@ -2234,7 +2288,7 @@
 		       (sign_extract:DI (match_dup 2)
 					(const_int 16) (const_int 16))
 			  (const_int 16)))
-	    (reg:DI 56))
+	    (reg:DI MUL32x16_REG))
 	  (const_int 32) (const_int 32)))]
   "TARGET_MULMAC_32BY16_SET"
   "machlw%? %0, %1, %2"
@@ -2428,20 +2482,14 @@
     }
   else if (TARGET_MUL64_SET)
     {
-      emit_insn (gen_umulsidi_600 (operands[0], operands[1], operands[2]));
+     operands[2] = force_reg (SImode, operands[2]);
+     emit_insn (gen_umulsidi_600 (operands[0], operands[1], operands[2]));
       DONE;
     }
   else if (TARGET_MULMAC_32BY16_SET)
     {
-      rtx result_hi = gen_reg_rtx (SImode);
-      rtx result_low = gen_reg_rtx (SImode);
-
-      result_hi = gen_highpart(SImode , operands[0]);
-      result_low = gen_lowpart(SImode , operands[0]);
-
-      emit_insn (gen_umul64_600 (operands[1], operands[2]));
-      emit_insn (gen_umac64_600 (result_hi, operands[1], operands[2]));
-      emit_move_insn (result_low, gen_acc2 ());
+     operands[2] = force_reg (SImode, operands[2]);
+     emit_insn (gen_umulsidi64 (operands[0], operands[1], operands[2]));
       DONE;
     }
   else
@@ -2454,8 +2502,32 @@
     }
 })
 
+(define_insn_and_split "umulsidi64"
+  [(set (match_operand:DI 0 "register_operand" "=w")
+	(mult:DI (zero_extend:DI (match_operand:SI 1 "register_operand" "%c"))
+		 (zero_extend:DI (match_operand:SI 2 "extend_operand" "ci"))))
+   (clobber (reg:DI MUL32x16_REG))]
+  "TARGET_MULMAC_32BY16_SET"
+  "#"
+  "TARGET_MULMAC_32BY16_SET && reload_completed"
+  [(const_int 0)]
+  {
+   rtx result_hi;
+   rtx result_low;
+
+   result_hi = gen_highpart (SImode, operands[0]);
+   result_low = gen_lowpart (SImode, operands[0]);
+
+   emit_insn (gen_umul64_600 (operands[1], operands[2]));
+   emit_insn (gen_umac64_600 (result_hi, operands[1], operands[2]));
+   emit_move_insn (result_low, gen_acc2 ());
+   DONE;
+   }
+  [(set_attr "type" "multi")
+   (set_attr "length" "8")])
+
 (define_insn "umul64_600"
-  [(set (reg:DI 56)
+  [(set (reg:DI MUL32x16_REG)
 	(mult:DI (zero_extend:DI (match_operand:SI 0 "register_operand"
 				  "c,c,c"))
 		 (zero_extract:DI (match_operand:SI 1 "nonmemory_operand"
@@ -2472,14 +2544,14 @@
 
 
 (define_insn "umac64_600"
-  [(set (reg:DI 56)
+  [(set (reg:DI MUL32x16_REG)
 	(plus:DI
 	  (mult:DI (zero_extend:DI (match_operand:SI 1 "register_operand" "c,c,c"))
 		   (ashift:DI
 		     (zero_extract:DI (match_operand:SI 2 "nonmemory_operand" "c,L,Cal")
 				      (const_int 16) (const_int 16))
 		     (const_int 16)))
-	  (reg:DI 56)))
+	  (reg:DI MUL32x16_REG)))
    (set (match_operand:SI 0 "register_operand" "=w,w,w")
 	(zero_extract:SI
 	  (plus:DI
@@ -2488,7 +2560,7 @@
 		       (zero_extract:DI (match_dup 2)
 					(const_int 16) (const_int 16))
 			  (const_int 16)))
-	    (reg:DI 56))
+	    (reg:DI MUL32x16_REG))
 	  (const_int 32) (const_int 32)))]
   "TARGET_MULMAC_32BY16_SET"
   "machulw%? %0, %1, %2"
@@ -2496,8 +2568,6 @@
    (set_attr "type" "mulmac_600")
    (set_attr "predicable" "no,no,yes")
    (set_attr "cond" "nocond, canuse_limm, canuse")])
-
-
 
 ;; DI <- DI(unsigned SI) * DI(unsigned SI)
 (define_insn_and_split "umulsidi3_700"

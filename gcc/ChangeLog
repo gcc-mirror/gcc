@@ -1,5 +1,21 @@
 2017-06-01  Claudiu Zissulescu  <claziss@synopsys.com>
 
+	* config/arc/arc.md (mulsi3): Avoid use of hard registers before
+	reg-alloc when having mul64 or mul32x16 instructions.
+	(mulsidi3): Likewise.
+	(umulsidi3): Likewise.
+	(mulsi32x16): New pattern.
+	(mulsi64): Likewise.
+	(mulsidi64): Likewise.
+	(umulsidi64): Likewise.
+	(MUL32x16_REG): Define.
+	(mul64_600): Use MUL32x16_REG.
+	(mac64_600): Likewise.
+	(umul64_600): Likewise.
+	(umac64_600): Likewise.
+
+2017-06-01  Claudiu Zissulescu  <claziss@synopsys.com>
+
 	* config/arc/arc.md (mulsi3_700): Make it commutative.
 
 2017-06-01  Jose E. Marchesi  <jose.marchesi@oracle.com>
