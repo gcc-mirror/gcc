@@ -3014,7 +3014,7 @@
    srl\t%1, 0, %0
    lduw\t%1, %0
    movstouw\t%1, %0"
-  [(set_attr "type" "shift,load,*")
+  [(set_attr "type" "shift,load,vismv")
    (set_attr "cpu_feature" "*,*,vis3")
    (set_attr "v3pipe" "*,*,true")])
 
@@ -3329,7 +3329,7 @@
   sra\t%1, 0, %0
   ldsw\t%1, %0
   movstosw\t%1, %0"
-  [(set_attr "type" "shift,sload,*")
+  [(set_attr "type" "shift,sload,vismv")
    (set_attr "us3load_type" "*,3cycle,*")
    (set_attr "cpu_feature" "*,*,vis3")
    (set_attr "v3pipe" "*,*,true")])

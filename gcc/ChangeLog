@@ -1,3 +1,9 @@
+2017-06-01  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* config/sparc/sparc.md (*zero_extendsidi2_insn_sp64): Set insn
+	type for movstouw.
+	(*sign_extendsidi2_insn): Likewise for movstosw.
+
 2017-06-01  Pierre-Marie de Rodat  <derodat@adacore.com>
 
 	* dwarf2out.c (get_discr_value): Call the get_debug_type hook on
