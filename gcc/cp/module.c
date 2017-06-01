@@ -129,7 +129,8 @@ module_state::set_name (tree name_)
   while (dot);
 }
 
-/* Return the IDENTIFIER_NODE naming module IX.  */
+/* Return the IDENTIFIER_NODE naming module IX.  This is the name
+   including dots.  */
 
 tree
 module_name (unsigned ix)
@@ -137,7 +138,8 @@ module_name (unsigned ix)
   return (*modules)[ix]->name;
 }
 
-/* Return the vector of IDENTIFIER_NODES naming module IX.  */
+/* Return the vector of IDENTIFIER_NODES naming module IX.  These are
+   individual identifers per sub-module component.  */
 
 vec<tree, va_gc> *
 module_name_parts (unsigned ix)
@@ -183,6 +185,23 @@ enum import_kind
 static unsigned do_module_import (location_t, tree, import_kind,
 				  unsigned HOST_WIDE_INT stamp,
 				  unsigned crc, FILE * = NULL);
+
+/* Return a string name for T.  */
+
+static const char *
+name_string (tree name)
+{
+  if (name && TYPE_P (name))
+    name = TYPE_NAME (name);
+
+  if (name && DECL_P (name))
+    name = DECL_NAME (name);
+
+  if (name && TREE_CODE (name) == IDENTIFIER_NODE)
+    return IDENTIFIER_POINTER (name);
+
+  return "";
+}
 
 /* Byte serializer base.  */
 class GTY((skip)) cpm_serial
@@ -819,11 +838,16 @@ cpm_reader::fill (size_t want)
 	  alloc = want + (want / 8); /* Some hysteresis.  */
 	  buffer = XRESIZEVEC (char, buffer, alloc);
 	}
-      size_t bytes = fread (buffer + len, 1, alloc - len, stream);
-      if (!bytes)
-	bad (feof (stream) ? -1 : errno);
-      len += bytes;
-      have = len;
+      if (size_t bytes = fread (buffer + len, 1, alloc - len, stream))
+	{
+	  len += bytes;
+	  have = len;
+	}
+      else if (ferror (stream))
+	{
+	  clearerr (stream);
+	  bad (errno);
+	}
     }
   return have < want ? have : want;
 }
@@ -958,6 +982,7 @@ private:
   void globals (FILE *, unsigned, const gtp *);
   void core_bools (FILE *, tree);
   void core_vals (FILE *, tree);
+  void lang_type_bools (FILE *, tree);
   void lang_decl_bools (FILE *, tree);
   void lang_decl_vals (FILE *, tree);
 
@@ -1042,6 +1067,7 @@ private:
   bool globals (FILE *, unsigned, const gtp *);
   bool core_bools (FILE *, tree);
   bool core_vals (FILE *, tree);
+  bool lang_type_bools (FILE *, tree);
   bool lang_decl_bools (FILE *, tree);
   bool lang_decl_vals (FILE *, tree);
 
@@ -1422,7 +1448,7 @@ cpms_out::tag_import (FILE *d, unsigned ix, const module_state *state)
     fprintf (d, "Writing %simport '%s' (crc=%x)\n",
 	     state->direct_import == 2 ? "export " :
 	     state->direct_import ? "" : "indirect ",
-	     IDENTIFIER_POINTER (state->name), state->crc);
+	     name_string (state->name), state->crc);
   tag (rt_import);
   w.u (ix);
   w.u (state->direct_import);
@@ -1494,7 +1520,7 @@ cpms_in::tag_import (FILE *d)
   if (d)
     fprintf (d, "Begin nested %simport '%s'\n",
 	     direct == 2 ? "export " : direct ? "" : "indirect ",
-	     IDENTIFIER_POINTER (imp));
+	     name_string (imp));
   int imp_ix = do_module_import (UNKNOWN_LOCATION, imp,
 				 direct ? ik_direct : ik_indirect,
 				 stamp, crc, d);
@@ -1506,16 +1532,14 @@ cpms_in::tag_import (FILE *d)
 	  bool is_export = direct == 2;
 	  if (d)
 	    fprintf (d, "Direct %simport '%s' %u\n",
-		     is_export ? "export " : "",
-		     IDENTIFIER_POINTER (imp), imp_ix);
+		     is_export ? "export " : "", name_string (imp), imp_ix);
 	  state->do_import (imp_ix, direct == 2);
 	}
     }
 
   if (d)
-    fprintf (d, "Completed nested import '%s' #%u %s\n",
-	     IDENTIFIER_POINTER (imp), imp_ix,
-	     imp_ix != GLOBAL_MODULE_INDEX ? "ok" : "failed");
+    fprintf (d, "Completed nested import '%s' #%u %s\n", name_string (imp),
+	     imp_ix, imp_ix != GLOBAL_MODULE_INDEX ? "ok" : "failed");
   return imp_ix != GLOBAL_MODULE_INDEX;
 }
 
@@ -1539,7 +1563,10 @@ cpms_out::tag_binding (FILE *d, tree ns, bool main_p, tree name, tree binding)
   tree type = NULL_TREE;
   tree value = ovl_skip_hidden (decapsulate_binding (binding, &type));
 
-  type = NULL_TREE; // FIXME: typedefs
+  type = NULL_TREE; // FIXME: implicit typedefs
+
+  if (type && DECL_IS_BUILTIN (type))
+    type = NULL_TREE;
   if (value)
     {
       if (TREE_CODE (value) == NAMESPACE_DECL && !DECL_NAMESPACE_ALIAS (value))
@@ -1547,20 +1574,22 @@ cpms_out::tag_binding (FILE *d, tree ns, bool main_p, tree name, tree binding)
 	  gcc_assert (!type);
 	  return value;
 	}
-      else if (TREE_CODE (value) == FUNCTION_DECL && DECL_IS_BUILTIN (value))
-	/* Don't write builtins.  */
+
+      /* Don't write builtins (mostly).  */
+      while (TREE_CODE (value) == OVERLOAD
+	     && DECL_IS_BUILTIN (OVL_FUNCTION (value)))
+	value = OVL_CHAIN (value);
+
+      if (TREE_CODE (value) != OVERLOAD && DECL_IS_BUILTIN (value))
 	value = NULL_TREE;
-      else if (TREE_CODE (value) == TYPE_DECL)
-	value = NULL_TREE; // FIXME: typedefs
     }
 
   if (!value && !type)
     return NULL_TREE;
 
   if (d)
-    fprintf (d, "Writing '%s' %s bindings for '%s'\n",
-	     IDENTIFIER_POINTER (DECL_NAME (ns)), 
-	     main_p ? "main" : "global", IDENTIFIER_POINTER (name));
+    fprintf (d, "Writing '%s' %s bindings for '%s'\n", name_string (ns), 
+	     main_p ? "main" : "global", name_string (name));
 
   tag (rt_binding);
   tree_node (d, ns);
@@ -1576,7 +1605,10 @@ cpms_out::tag_binding (FILE *d, tree ns, bool main_p, tree name, tree binding)
   if (type)
     tag_definition (d, type);
   for (ovl_iterator iter (value); iter; ++iter)
-    tag_definition (d, *iter);
+    /* We could still meet a builtin, if the user did something funky
+       with a using declaration.  */
+    if (!DECL_IS_BUILTIN (*iter))
+      tag_definition (d, *iter);
 
   return NULL_TREE;
 }
@@ -1589,17 +1621,16 @@ cpms_in::tag_binding (FILE *d)
   unsigned main_p = r.b ();
   unsigned stat_p = r.b ();
   r.bflush ();
+  if (d)
+    fprintf (d, "Reading '%s' %s binding for '%s'\n", name_string (ns), 
+	     main_p ? "main" : "global", name_string (name));
+
   tree type = stat_p ? tree_node (d) : NULL_TREE;
   tree value = tree_node (d);
 
   if (!r.checkpoint ())
     return false;
 
-  if (d)
-    fprintf (d, "Reading '%s' %s binding for '%s'\n",
-	     IDENTIFIER_POINTER (DECL_NAME (ns)), 
-	     main_p ? "main" : "global",
-	     IDENTIFIER_POINTER (name));
   return push_module_binding (ns, main_p ? mod_ix : GLOBAL_MODULE_INDEX,
 			      name, value, type);
 }
@@ -1621,6 +1652,10 @@ cpms_out::tag_definition (FILE *d, tree decl)
 	return;
     }
 
+  if (d)
+    fprintf (d, "Writing definition for %s:'%s'\n",
+	     get_tree_code_name (TREE_CODE (decl)), name_string (decl));
+
   tag (rt_definition);
   tree_node (d, decl);
 
@@ -1640,10 +1675,11 @@ cpms_out::tag_definition (FILE *d, tree decl)
 bool
 cpms_in::tag_definition (FILE *d)
 {
-  tree decl = tree_node (d);;
+  tree decl = tree_node (d);
   if (d)
-    fprintf (d, "Reading definition of %s\n",
-	     IDENTIFIER_POINTER (DECL_NAME (decl)));
+    fprintf (d, "Reading definition for %s:'%s'\n",
+	     get_tree_code_name (TREE_CODE (decl)), name_string (decl));
+
   switch (TREE_CODE (decl))
     {
     default:
@@ -1732,7 +1768,7 @@ cpms_in::read_item (FILE *d)
 
       if (d)
 	fprintf (d, "Assigning '%s' module index %u\n",
-		 IDENTIFIER_POINTER (state->name), mod_ix);
+		 name_string (state->name), mod_ix);
     }
 
   switch (rt)
@@ -1876,7 +1912,7 @@ cpms_in::finish (FILE *d, tree t)
 	    error ("failed to merge %#qD", t);
 	  else if (d)
 	    fprintf (d, "%s decl '%s', (%p)\n", old == t ? "New" : "Existing",
-		     IDENTIFIER_POINTER (DECL_NAME (old)), (void *)old);
+		     name_string (old), (void *)old);
 
 	  return old;
 	}
@@ -2279,6 +2315,137 @@ cpms_in::lang_decl_bools (FILE *, tree t)
       break;
     default:
       gcc_unreachable ();
+    }
+#undef RB
+  return !r.error ();
+}
+
+void
+cpms_out::lang_type_bools (FILE *, tree t)
+{
+#define WB(X) (w.b (X))
+  const struct lang_type *lang = TYPE_LANG_SPECIFIC (t);
+
+  /* lang->u.header.is_lang_type_class already written.  */
+  if (lang->u.h.is_lang_type_class)
+    {
+      WB (lang->u.h.has_type_conversion);
+      WB (lang->u.h.has_copy_ctor);
+      WB (lang->u.h.has_default_ctor);
+      WB (lang->u.h.const_needs_init);
+      WB (lang->u.h.ref_needs_init);
+      WB (lang->u.h.has_const_copy_assign);
+
+      WB (lang->u.c.has_mutable);
+      WB (lang->u.c.com_interface);
+      WB (lang->u.c.non_pod_class);
+      WB (lang->u.c.nearly_empty_p);
+      WB (lang->u.c.user_align);
+      WB (lang->u.c.has_copy_assign);
+      WB (lang->u.c.has_new);
+      WB (lang->u.c.has_array_new);
+      WB (lang->u.c.interface_only);
+      WB (lang->u.c.interface_unknown);
+      WB (lang->u.c.contains_empty_class_p);
+      WB (lang->u.c.anon_aggr);
+      WB (lang->u.c.non_zero_init);
+      WB (lang->u.c.empty_p);
+      WB (lang->u.c.vec_new_uses_cookie);
+      WB (lang->u.c.declared_class);
+      WB (lang->u.c.diamond_shaped);
+      WB (lang->u.c.repeated_base);
+      gcc_assert (!lang->u.c.being_defined);
+      WB (lang->u.c.debug_requested);
+      WB (lang->u.c.fields_readonly);
+      WB (lang->u.c.ptrmemfunc_flag);
+      WB ((lang->u.c.use_template >> 0) & 1);
+      WB ((lang->u.c.use_template >> 1) & 1);
+      WB (lang->u.c.was_anonymous);
+      WB (lang->u.c.lazy_default_ctor);
+      WB (lang->u.c.lazy_copy_ctor);
+      WB (lang->u.c.lazy_copy_assign);
+      WB (lang->u.c.lazy_destructor);
+      WB (lang->u.c.has_const_copy_ctor);
+      WB (lang->u.c.has_complex_copy_ctor);
+      WB (lang->u.c.has_complex_copy_assign);
+      WB (lang->u.c.non_aggregate);
+      WB (lang->u.c.has_complex_dflt);
+      WB (lang->u.c.has_list_ctor);
+      WB (lang->u.c.non_std_layout);
+      WB (lang->u.c.is_literal);
+      WB (lang->u.c.lazy_move_ctor);
+      WB (lang->u.c.lazy_move_assign);
+      WB (lang->u.c.has_complex_move_ctor);
+      WB (lang->u.c.has_complex_move_assign);
+      WB (lang->u.c.has_constexpr_ctor);
+      WB (lang->u.c.unique_obj_representations);
+      WB (lang->u.c.unique_obj_representations_set);
+    }
+#undef WB
+}
+
+bool
+cpms_in::lang_type_bools (FILE *, tree t)
+{
+#define RB(X) ((X) = r.b ())
+  struct lang_type *lang = TYPE_LANG_SPECIFIC (t);
+
+  /* lang->u.header.is_lang_type_class already written.  */
+  if (lang->u.h.is_lang_type_class)
+    {
+      RB (lang->u.h.has_type_conversion);
+      RB (lang->u.h.has_copy_ctor);
+      RB (lang->u.h.has_default_ctor);
+      RB (lang->u.h.const_needs_init);
+      RB (lang->u.h.ref_needs_init);
+      RB (lang->u.h.has_const_copy_assign);
+
+      RB (lang->u.c.has_mutable);
+      RB (lang->u.c.com_interface);
+      RB (lang->u.c.non_pod_class);
+      RB (lang->u.c.nearly_empty_p);
+      RB (lang->u.c.user_align);
+      RB (lang->u.c.has_copy_assign);
+      RB (lang->u.c.has_new);
+      RB (lang->u.c.has_array_new);
+      RB (lang->u.c.interface_only);
+      RB (lang->u.c.interface_unknown);
+      RB (lang->u.c.contains_empty_class_p);
+      RB (lang->u.c.anon_aggr);
+      RB (lang->u.c.non_zero_init);
+      RB (lang->u.c.empty_p);
+      RB (lang->u.c.vec_new_uses_cookie);
+      RB (lang->u.c.declared_class);
+      RB (lang->u.c.diamond_shaped);
+      RB (lang->u.c.repeated_base);
+      gcc_assert (!lang->u.c.being_defined);
+      RB (lang->u.c.debug_requested);
+      RB (lang->u.c.fields_readonly);
+      RB (lang->u.c.ptrmemfunc_flag);
+      unsigned v = 0;
+      v |= r.b () << 0;
+      v |= r.b () << 1;
+      lang->u.c.use_template = v;
+      RB (lang->u.c.was_anonymous);
+      RB (lang->u.c.lazy_default_ctor);
+      RB (lang->u.c.lazy_copy_ctor);
+      RB (lang->u.c.lazy_copy_assign);
+      RB (lang->u.c.lazy_destructor);
+      RB (lang->u.c.has_const_copy_ctor);
+      RB (lang->u.c.has_complex_copy_ctor);
+      RB (lang->u.c.has_complex_copy_assign);
+      RB (lang->u.c.non_aggregate);
+      RB (lang->u.c.has_complex_dflt);
+      RB (lang->u.c.has_list_ctor);
+      RB (lang->u.c.non_std_layout);
+      RB (lang->u.c.is_literal);
+      RB (lang->u.c.lazy_move_ctor);
+      RB (lang->u.c.lazy_move_assign);
+      RB (lang->u.c.has_complex_move_ctor);
+      RB (lang->u.c.has_complex_move_assign);
+      RB (lang->u.c.has_constexpr_ctor);
+      RB (lang->u.c.unique_obj_representations);
+      RB (lang->u.c.unique_obj_representations_set);
     }
 #undef RB
   return !r.error ();
@@ -2742,10 +2909,9 @@ cpms_out::tree_node (FILE *d, tree t)
 	  unsigned key = key_module_instance (ctx, mod, DECL_NAME (t), t);
 	  w.u (key);
 	  if (d)
-	    fprintf (d, "Writing import %s::'%s'[%u]@%s\n",
-		     IDENTIFIER_POINTER (DECL_NAME (ctx)),
-		     IDENTIFIER_POINTER (DECL_NAME (t)), key,
-		     IDENTIFIER_POINTER (module_name (mod)));
+	    fprintf (d, "Writing imported %s::'%s'[%u]@%s\n",
+		     name_string (ctx), name_string (t), key,
+		     name_string (module_name (mod)));
 	  body = -1;
 	}
     }
@@ -2757,21 +2923,10 @@ cpms_out::tree_node (FILE *d, tree t)
   bool existed = map.put (t, tag);
   gcc_assert (!existed);
   if (d)
-    {
-      tree name = t;
-      
-      if (TYPE_P (name))
-	name = TYPE_NAME (name);
-      if (!name)
-	;
-      else if (DECL_P (name))
-	name = DECL_NAME (name);
-      else if (TREE_CODE (name) != IDENTIFIER_NODE)
-	name = NULL_TREE;
-      fprintf (d, "Writing:%u %p (%s:'%s')\n", tag, (void *)t,
-	       get_tree_code_name (TREE_CODE (t)),
-	       name ? IDENTIFIER_POINTER (name) : "");
-    }
+    fprintf (d, "Writing:%u %s:'%s'%s\n", tag,
+	     get_tree_code_name (TREE_CODE (t)), name_string (t),
+	     klass == tcc_declaration && DECL_MODULE_EXPORT_P (t)
+	     ? " (exported)": "");
 
   if (body > 0)
     {
@@ -2788,7 +2943,10 @@ cpms_out::tree_node (FILE *d, tree t)
 	  if (!specific)
 	    ;
 	  else if (klass == tcc_type)
-	    ; // FIXME: write type lang bools
+	    {
+	      w.b (!TYPE_LANG_SPECIFIC (t)->u.h.is_lang_type_class);
+	      lang_type_bools (d, t);
+	    }
 	  else
 	    {
 	      if (code == VAR_DECL)
@@ -2836,8 +2994,9 @@ cpms_in::tree_node (FILE *d)
 
       tree res = *val;
       if (d)
-	fprintf (d, "Reading:%u found %p (%s)\n", tag, (void *)res,
-		 get_tree_code_name (TREE_CODE (res)));
+	fprintf (d, "Read:%u found %s:'%s'\n", tag,
+		 get_tree_code_name (TREE_CODE (res)), name_string (res));
+      
       return res;
     }
 
@@ -2892,9 +3051,8 @@ cpms_in::tree_node (FILE *d)
 	    }
 	  if (d)
 	    fprintf (d, "Importing %s::'%s'[%u]@%s\n",
-		     IDENTIFIER_POINTER (DECL_NAME (ctx)),
-		     IDENTIFIER_POINTER (name), key,
-		     IDENTIFIER_POINTER (module_name (mod)));
+		     name_string (ctx), name_string (name), key,
+		     name_string (module_name (mod)));
 	}
     }
 
@@ -2906,7 +3064,8 @@ cpms_in::tree_node (FILE *d)
   bool existed = map.put (tag, t);
   gcc_assert (!existed);
   if (d)
-    fprintf (d, "Reading:%u %s\n", tag, get_tree_code_name (code));
+    fprintf (d, "Reading:%u %s:'%s'\n", tag,
+	     get_tree_code_name (code), name_string (name));
 
   if (body > 0)
     {
@@ -2921,7 +3080,7 @@ cpms_in::tree_node (FILE *d)
 	  if (!specific)
 	    ;
 	  else if (klass == tcc_type
-		   ? !maybe_add_lang_type_raw (t)
+		   ? !maybe_add_lang_type_raw (t, r.b ())
 		   : !maybe_add_lang_decl_raw (t, code == VAR_DECL && r.b ()))
 	    {
 	      specific = false;
@@ -2931,7 +3090,7 @@ cpms_in::tree_node (FILE *d)
 	  if (!specific)
 	    ;
 	  else if (klass == tcc_type
-		   ? !true // FIXME: read lang_type bools
+		   ? !lang_type_bools (d, t)
 		   : !lang_decl_bools (d, t))
 	    lied = true;
 	}
@@ -2977,24 +3136,11 @@ cpms_in::tree_node (FILE *d)
 	  /* Update the mapping.  */
 	  t = found;
 	  map.put (tag, t);
+	  if (d)
+	    fprintf (d, "Index %u remapping %s:'%s'\n", tag,
+		     get_tree_code_name (TREE_CODE (t)),
+		     name_string (t));
 	}
-    }
-
-  if (d && t)
-    {
-      tree name = t;
-      
-      if (TYPE_P (name))
-	name = TYPE_NAME (name);
-      if (!name)
-	;
-      else if (DECL_P (name))
-	name = DECL_NAME (name);
-      else if (TREE_CODE (name) != IDENTIFIER_NODE)
-	name = NULL_TREE;
-      fprintf (d, "Index %u inserting %p (%s:'%s')\n", tag, (void *)t,
-	       get_tree_code_name (TREE_CODE (t)),
-	       name ? IDENTIFIER_POINTER (name) : "");
     }
 
   return t;
@@ -3007,8 +3153,7 @@ void
 cpms_out::bindings (FILE *d, tree ns)
 {
   if (d)
-    fprintf (d, "Walking namespace '%s'\n",
-	     IDENTIFIER_POINTER (DECL_NAME (ns)));
+    fprintf (d, "Walking namespace '%s'\n", name_string (ns));
 
   hash_map<lang_identifier *, tree>::iterator end
     (DECL_NAMESPACE_BINDINGS (ns)->end ());
@@ -3042,8 +3187,7 @@ cpms_out::bindings (FILE *d, tree ns)
     }
 
   if (d)
-    fprintf (d, "Walked namespace '%s'\n",
-	     IDENTIFIER_POINTER (DECL_NAME (ns)));
+    fprintf (d, "Walked namespace '%s'\n", name_string (ns));
 }
 
 /* Mangling for module files.  */
@@ -3097,7 +3241,8 @@ cpms_in::finish_type (FILE *d, tree type)
          correctly already us.  FIXME:Are we sure about this?  */
     found_variant:;
     }
-  else if (!TYPE_STRUCTURAL_EQUALITY_P (type))
+  else if (!TYPE_STRUCTURAL_EQUALITY_P (type)
+	   && !TYPE_NAME (type))
     {
       gcc_assert (TYPE_ALIGN (type));
       hashval_t hash = type_hash_canon_hash (type);
@@ -3106,7 +3251,7 @@ cpms_in::finish_type (FILE *d, tree type)
       // FIXME: This is where it'd be nice to determine if type
       // was already found.  See above.
       if (d)
-	fprintf (d, "Adding type %p as canonical %p\n",
+	fprintf (d, "Adding type %p with canonical %p\n",
 		 (void *)main, (void *)type);
     }
 
@@ -3156,7 +3301,10 @@ decl_set_module (tree decl)
   if (export_depth)
     DECL_MODULE_EXPORT_P (decl) = true;
   if (this_module && this_module->name)
-    DECL_MODULE_INDEX (decl) = THIS_MODULE_INDEX;
+    {
+      retrofit_lang_decl (decl);
+      DECL_MODULE_INDEX (decl) = THIS_MODULE_INDEX;
+    }
 }
 
 /* Return true iff we're in the purview of a named module.  */
@@ -3213,7 +3361,7 @@ read_module (FILE *stream, const char *fname, module_state *state,
     d = dump_begin (module_dump_id, NULL);
 
   if (d)
-    fprintf (d, "Importing '%s'\n", IDENTIFIER_POINTER (state->name));
+    fprintf (d, "Importing '%s'\n", name_string (state->name));
 
   int ok = in.header (d);
   if (ok)
@@ -3401,7 +3549,7 @@ write_module (FILE *stream, const char *fname, tree name)
   FILE *d = dump_begin (module_dump_id, NULL);
 
   if (d)
-    fprintf (d, "Writing module '%s'\n", IDENTIFIER_POINTER (name));
+    fprintf (d, "Writing module '%s'\n", name_string (name));
 
   out.header (d, name);
   out.tag_conf (d);

@@ -748,6 +748,7 @@ class ovl_iterator
   {
     return TREE_CODE (ovl) == OVERLOAD && OVL_HIDDEN_P (ovl);
   }
+  inline tree export_tail (tree tail) const;
 
  public:
   tree remove_node (tree head)
@@ -4362,19 +4363,8 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
 
 /* These are use to manipulate the canonical RECORD_TYPE from the
    hashed POINTER_TYPE, and can only be used on the POINTER_TYPE.  */
-#define TYPE_GET_PTRMEMFUNC_TYPE(NODE) \
-  (TYPE_LANG_SPECIFIC (NODE) ? LANG_TYPE_PTRMEM_CHECK (NODE)->record : NULL)
-#define TYPE_SET_PTRMEMFUNC_TYPE(NODE, VALUE)				\
-  do {									\
-    if (TYPE_LANG_SPECIFIC (NODE) == NULL)				\
-      {									\
-	TYPE_LANG_SPECIFIC (NODE)                                       \
-	= (struct lang_type *) ggc_internal_cleared_alloc		\
-	 (sizeof (struct lang_type_ptrmem));				\
-	TYPE_LANG_SPECIFIC (NODE)->u.ptrmem.h.is_lang_type_class = 0;	\
-      }									\
-    TYPE_LANG_SPECIFIC (NODE)->u.ptrmem.record = (VALUE);		\
-  } while (0)
+#define TYPE_PTRMEMFUNC_TYPE(NODE) \
+  (LANG_TYPE_PTRMEM_CHECK (NODE)->record)
 
 /* For a pointer-to-member type of the form `T X::*', this is `X'.
    For a type like `void (X::*)() const', this type is `X', not `const
@@ -4399,7 +4389,8 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
 
 /* For a pointer-to-member constant `X::Y' this is the _DECL for
    `Y'.  */
-#define PTRMEM_CST_MEMBER(NODE) (((ptrmem_cst_t)PTRMEM_CST_CHECK (NODE))->member)
+#define PTRMEM_CST_MEMBER(NODE) \
+  (((ptrmem_cst_t)PTRMEM_CST_CHECK (NODE))->member)
 
 /* The expression in question for a TYPEOF_TYPE.  */
 #define TYPEOF_TYPE_EXPR(NODE) (TYPE_VALUES_RAW (TYPEOF_TYPE_CHECK (NODE)))
@@ -6416,9 +6407,10 @@ extern tree unqualified_fn_lookup_error		(cp_expr);
 extern tree build_lang_decl			(enum tree_code, tree, tree);
 extern tree build_lang_decl_loc			(location_t, enum tree_code, tree, tree);
 extern bool maybe_add_lang_decl_raw		(tree, bool decomp_p);
-extern bool maybe_add_lang_type_raw		(tree);
+extern bool maybe_add_lang_type_raw		(tree, bool ptrmem_p);
 extern void retrofit_lang_decl			(tree);
 extern void fit_decomposition_lang_decl		(tree, tree);
+extern void fit_ptrmem_type_decl		(tree, tree);
 extern tree copy_decl				(tree CXX_MEM_STAT_INFO);
 extern tree copy_type				(tree CXX_MEM_STAT_INFO);
 extern tree cxx_make_type			(enum tree_code);
@@ -7011,7 +7003,8 @@ inline tree ovl_first				(tree) ATTRIBUTE_PURE;
 extern tree ovl_make				(tree fn,
 						 tree next = NULL_TREE);
 extern tree ovl_insert				(tree fn, tree maybe_ovl,
-						 bool using_p = false);
+						 bool using_p = false,
+						 tree *export_tail = NULL);
 extern tree ovl_skip_hidden			(tree) ATTRIBUTE_PURE;
 extern void lookup_mark				(tree lookup, bool val);
 extern tree lookup_add				(tree fns, tree lookup);
@@ -7465,6 +7458,16 @@ extern tree cp_ubsan_maybe_instrument_cast_to_vbase (location_t, tree, tree);
 extern void cp_ubsan_maybe_initialize_vtbl_ptrs (tree);
 
 /* Inline bodies.  */
+  
+inline tree
+ovl_iterator::export_tail (tree tail) const
+{
+  if (!tail && (TREE_CODE (ovl) == OVERLOAD
+		? OVL_EXPORT_P (ovl) : DECL_MODULE_EXPORT_P (ovl)))
+    return ovl;
+  else
+    return tail;
+}
 
 inline tree
 ovl_first (tree node)

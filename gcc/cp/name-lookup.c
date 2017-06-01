@@ -46,6 +46,7 @@ static void set_identifier_type_value_with_scope (tree id, tree decl,
 #define STAT_HACK_P(N) ((N) && TREE_CODE (N) == OVERLOAD && OVL_LOOKUP_P (N))
 #define STAT_TYPE(N) TREE_TYPE (N)
 #define STAT_DECL(N) OVL_FUNCTION (N)
+#define STAT_EXPORTS(N) OVL_CHAIN (N)
 #define MAYBE_STAT_DECL(N) (STAT_HACK_P (N) ? STAT_DECL (N) : N)
 #define MAYBE_STAT_TYPE(N) (STAT_HACK_P (N) ? STAT_TYPE (N) : NULL_TREE)
 
@@ -684,37 +685,51 @@ unsigned
 name_lookup::process_module_binding (bitmap imports, unsigned marker,
 				     unsigned ix, unsigned span, tree bind)
 {
+  if (!bind)
+    return marker;
+
   tree new_type = MAYBE_STAT_TYPE (bind);
   tree new_val = MAYBE_STAT_DECL (bind);
 
   if (ix != GLOBAL_MODULE_INDEX
-      && !(ix <= current_module && ix + span > current_module))
+      && (ix > current_module || ix + span <= current_module))
     {
-      bool found = false;
+      /* Looking at something other than the global or current
+	 module.  */
 
-      if (imports)
-	for (; !found && span--; ix++)
-	  if (bitmap_bit_p (imports, ix))
-	    found = true;
+      if (!imports)
+	return marker;
+
+      /* Figure out what's being exported.  */
+      if (new_type && !DECL_MODULE_EXPORT_P (new_type))
+	new_type = NULL_TREE;
+
+      if (TREE_CODE (new_val) == OVERLOAD)
+	{
+	  if (STAT_HACK_P (bind))
+	    new_val = STAT_EXPORTS (bind);
+	  else
+	    new_val = NULL_TREE;
+	}
+      else if (!DECL_MODULE_EXPORT_P (new_val))
+	new_val = NULL_TREE;
+
+      if (!new_type && !new_val)
+	/* You aint seen nuthin', right?  */
+	return marker;
+
+      /* Are we importing this module?  */
+      bool found = false;
+      for (; !found && span--; ix++)
+	if (bitmap_bit_p (imports, ix))
+	  found = true;
 
       if (!found)
 	return marker;
-
-      /* Not the current or global module, so we only see exports.  */
-      if (new_type && !DECL_MODULE_EXPORT_P (new_type))
-	new_type = NULL_TREE;
-      // FIXME:have stat_hack point directly to the exported set Right
-      // now, the ordering of this with the bitmap check is
-      // unfortunate.
-      while (new_val && TREE_CODE (new_val) == OVERLOAD
-	     && !OVL_EXPORT_P (new_val))
-	new_val = OVL_CHAIN (new_val);
-      if (new_val && TREE_CODE (new_val) != OVERLOAD
-	  && !DECL_MODULE_EXPORT_P (new_val))
-	new_val = NULL_TREE;
     }
 
-  /* Optimize for (re-)finding a namespace.  */
+  /* Optimize for (re-)finding a namespace.  We only need to look
+     once.  */
   if (new_val && !new_type
       && TREE_CODE (new_val) == NAMESPACE_DECL
       && !DECL_NAMESPACE_ALIAS (new_val))
@@ -1936,6 +1951,7 @@ update_binding (cp_binding_level *level, cxx_binding *binding, tree *slot,
   tree to_val = decl;
   tree old_type = slot ? MAYBE_STAT_TYPE (*slot) : binding->type;
   tree to_type = old_type;
+  tree export_tail = NULL;
 
   gcc_assert (level->kind == sk_namespace ? !binding
 	      : level->kind != sk_class && !slot);
@@ -2005,7 +2021,7 @@ update_binding (cp_binding_level *level, cxx_binding *binding, tree *slot,
       else
 	goto conflict;
 
-      to_val = ovl_insert (decl, old);
+      to_val = ovl_insert (decl, old, false, &export_tail);
     }
   else if (!old)
     ;
@@ -2092,10 +2108,12 @@ update_binding (cp_binding_level *level, cxx_binding *binding, tree *slot,
 	      STAT_TYPE (*slot) = to_type;
 	      STAT_DECL (*slot) = to_val;
 	    }
-	  else if (to_type)
+	  else if (to_type || export_tail)
 	    *slot = stat_hack (to_val, to_type);
 	  else
 	    *slot = to_val;
+	  if (export_tail && STAT_HACK_P (*slot))
+	    STAT_EXPORTS (*slot) = export_tail;
 	}
       else
 	{
@@ -2514,6 +2532,40 @@ set_local_extern_decl_linkage (tree decl, bool shadowed)
     }
 }
 
+/* DECL has just been bound at LEVEL.  finish up the bookkeeping.  */
+
+static void
+newbinding_bookkeeping (tree name, tree decl, cp_binding_level *level)
+{
+  if (TREE_CODE (decl) == TYPE_DECL)
+    {
+      tree type = TREE_TYPE (decl);
+
+      if (type != error_mark_node)
+	{
+	  if (TYPE_NAME (type) != decl)
+	    set_underlying_type (decl);
+
+	  if (level->kind == sk_namespace)
+	    SET_IDENTIFIER_TYPE_VALUE (name, global_type_node);
+	  else
+	    {
+	      set_identifier_type_value_with_scope (name, decl, level);
+
+	      /* If this is a locally defined typedef in a function
+		 that is not a template instantation, record it to
+		 implement -Wunused-local-typedefs.  */
+	      if (!instantiating_current_function_p ())
+		record_locally_defined_typedef (decl);
+	    }
+	}
+    }
+  else if (VAR_P (decl))
+    maybe_register_incomplete_var (decl);
+  else if (TREE_CODE (decl) == FUNCTION_DECL && DECL_EXTERN_C_P (decl))
+    check_extern_c_conflict (decl);
+}
+
 /* Record DECL as belonging to the current lexical scope.  Check for
    errors (such as an incompatible declaration for the same name
    already seen in the same scope).  IS_FRIEND is true if DECL is
@@ -2659,31 +2711,8 @@ do_pushdecl (tree decl, bool is_friend)
       if (old != decl)
 	/* An existing decl matched, use it.  */
 	decl = old;
-      else if (TREE_CODE (decl) == TYPE_DECL)
-	{
-	  tree type = TREE_TYPE (decl);
-
-	  if (type != error_mark_node)
-	    {
-	      if (TYPE_NAME (type) != decl)
-		set_underlying_type (decl);
-
-	      if (!ns)
-		set_identifier_type_value_with_scope (name, decl, level);
-	      else
-		SET_IDENTIFIER_TYPE_VALUE (name, global_type_node);
-	    }
-
-	  /* If this is a locally defined typedef in a function that
-	     is not a template instantation, record it to implement
-	     -Wunused-local-typedefs.  */
-	  if (!instantiating_current_function_p ())
-	    record_locally_defined_typedef (decl);
-	}
-      else if (VAR_P (decl))
-	maybe_register_incomplete_var (decl);
-      else if (TREE_CODE (decl) == FUNCTION_DECL && DECL_EXTERN_C_P (decl))
-	check_extern_c_conflict (decl);
+      else
+	newbinding_bookkeeping (name, decl, level);
     }
   else
     add_decl_to_level (level, decl);
@@ -2712,7 +2741,9 @@ pushdecl (tree x, bool is_friend)
 static tree
 find_namespace_partition (tree slot_val)
 {
-  if (TREE_CODE (slot_val) == MODULE_VECTOR)
+  if (!slot_val)
+    ;
+  else if (TREE_CODE (slot_val) == MODULE_VECTOR)
     {
       module_cluster *cluster
 	= &MODULE_VECTOR_CLUSTER (slot_val,
@@ -2791,6 +2822,7 @@ merge_global_decl (tree ctx, tree decl)
 	  scope->this_entity = old;
 	  scope->more_cleanups_ok = true;
 	  scope->kind = sk_namespace;
+	  scope->level_chain = NAMESPACE_LEVEL (ctx);
 	  NAMESPACE_LEVEL (old) = scope;
 	}
       else
@@ -2826,6 +2858,7 @@ push_module_binding (tree ns, unsigned mod, tree name, tree value, tree type)
       *mslot = NULL_TREE;
     }
 
+  tree export_tail = NULL_TREE;
   for (ovl_iterator iter (value); iter; ++iter)
     {
       tree decl = *iter;
@@ -2833,25 +2866,48 @@ push_module_binding (tree ns, unsigned mod, tree name, tree value, tree type)
 
       if (*mslot)
 	{
+	  tree old = MAYBE_STAT_DECL (*mslot);
+
 	  // FIXME:Hidden names?
-	  for (ovl_iterator old (MAYBE_STAT_DECL (*mslot));
-	       !found && old; ++old)
-	    /* We'll already have done lookup when reading in the fn
+	  for (ovl_iterator cur (old); !found && cur; ++cur)
+	    /* We'll already have done lookup when reading in the decl
 	       itself, so pointer equality is sufficient.  */
-	    if (*old == decl)
+	    if (*cur == decl)
 	      found = true;
 
 	  if (!found)
-	    *mslot = ovl_insert (decl, *mslot, iter.using_p ());
+	    {
+	      old = update_binding (NAMESPACE_LEVEL (ns), NULL, mslot,
+				    old, decl, DECL_FRIEND_P (decl));
+	      if (old != decl)
+		// Should we bail out at this point?
+		found = true;
+	    }
 	}
-
-      if (!found && !iter.using_p () && !is_ns)
-	add_decl_to_level (NAMESPACE_LEVEL (ns), decl);
+      else if (!iter.using_p () && !is_ns)
+	{
+	  export_tail = iter.export_tail (export_tail);
+	  add_decl_to_level (NAMESPACE_LEVEL (ns), decl);
+	}
+      if (!found)
+	newbinding_bookkeeping (name, decl, NAMESPACE_LEVEL (ns));
     }
 
   if (!*mslot)
-    /* There was nothing there, just install the whole binding.  */
-    *mslot = value;
+    {
+      /* There was nothing there, just install the whole binding.  */
+      if (export_tail == value && TREE_CODE (value) != OVERLOAD)
+	/* We only use the export-tail linky when there's an actual
+	   overload.  */
+	export_tail = NULL_TREE;
+      if (export_tail)
+	{
+	  *mslot = stat_hack (value, NULL_TREE);
+	  STAT_EXPORTS (*mslot) = export_tail;
+	}
+      else
+	*mslot = value;
+    }
 
   if (type)
     gcc_unreachable (); // FIXME

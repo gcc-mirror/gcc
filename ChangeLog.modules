@@ -1,3 +1,37 @@
+2017-06-01  Nathan Sidwell  <nathan@acm.org>
+
+	Incomplete or empty classes.
+	gcc/cp/
+	* cp-tree.h (ovl_iterator::export_tail): New.
+	(TYPE_GET_PTRMEMFUNC_TYPE, TYPE_SET_PTRMEMFUNC_TYPE): Delete.
+	(TYPE_PTRMEMFUNC_TYPE): New.
+	(maybe_add_lang_type_raw): Add ptrmem_p arg.
+	(fit_ptrmem_type_decl): Declare.
+	(ovl_insert): Add export_tail.
+	* decl.c (build_ptrmemfunc_type): Use fit_ptrmem_type_decl,
+	adjust.
+	(xref_tag_1): Call decl_set_module.
+	* lex.c (maybe_add_lang_type_raw): Add ptrmem_p arg.  Adjust.
+	(fit_ptrmem_type_decl): New.
+	(cxx_make_type): Adjust.
+	* module.c (name_string): New. Use it everywhere.
+	(cpm_reader::fill): Check ferror.
+	(cpms_out::tag_binding): Skip builtins.  Write types.
+	(cpms_out::lang_type_bools, cpms_in::lang_type_bools): New.
+	* name-lookup.c (STAT_EXPORTS): New.
+	(name_lookup::process_module_binding): Use it.
+	(update_binding): Set it.
+	(newbinding_bookkeeping): New. Broken out of ...
+	(do_pushdecl): ... here.  Call it.
+	(push_module_binding): And call it here.  Set STAT_EXPORTS.
+	* rtti.c (create_pseudo_type_info): Mark as builtins.
+	(get_pseudo_ti_index): Likewise.
+	(emit_support_tinfos): Use regular lookup to find type.  Set
+	builtins location.
+	* tree.c (ovl_insert): Add export_tail arg.
+	gcc/testsuite/
+	* g++.dg/modules/class-1_[abcd].C: New.
+
 2017-05-31  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/

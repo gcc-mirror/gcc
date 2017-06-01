@@ -2165,11 +2165,14 @@ ovl_copy (tree ovl)
 
 /* Add FN to the (potentially NULL) overload set OVL.  USING_P is
    true, if FN is via a using declaration.  We also pay attention to
-   DECL_HIDDEN.  Overloads are ordered as hidden, using, regular,
-   exported.  */
+   DECL_HIDDEN.  If EXPORT_TAIL is non-null, store through it with an
+   updated export list change.  Overloads are ordered as hidden,
+   using, regular, exported.
+
+   I'm not sure if using decls can be exported?  */
 
 tree
-ovl_insert (tree fn, tree maybe_ovl, bool using_p)
+ovl_insert (tree fn, tree maybe_ovl, bool using_p, tree *export_tail)
 {
   bool copying = false; /* Checking use only.  */
   bool hidden_p = DECL_HIDDEN_P (fn);
@@ -2185,6 +2188,7 @@ ovl_insert (tree fn, tree maybe_ovl, bool using_p)
 		       | (OVL_USING_P (maybe_ovl) << 0))))
     {
       gcc_checking_assert (!OVL_LOOKUP_P (maybe_ovl)
+			   && !OVL_EXPORT_P (maybe_ovl)
 			   && (!copying || OVL_USED_P (maybe_ovl)));
       if (OVL_USED_P (maybe_ovl))
 	{
@@ -2203,14 +2207,15 @@ ovl_insert (tree fn, tree maybe_ovl, bool using_p)
   if (maybe_ovl && TREE_CODE (maybe_ovl) != OVERLOAD
       && !DECL_MODULE_EXPORT_P (maybe_ovl) && DECL_MODULE_EXPORT_P (fn))
     {
-      /* We must place FN after MAYBE_OVL, which isa raw _DECL  */
+      /* We must place FN after MAYBE_OVL, which is a raw _DECL  */
       gcc_assert (!using_p && !hidden_p);
       if (TREE_CODE (fn) == TEMPLATE_DECL)
 	{
 	  trail = ovl_make (fn, NULL_TREE);
-	  if (DECL_MODULE_EXPORT_P (fn))
-	    OVL_EXPORT_P (trail) = true;
+	  OVL_EXPORT_P (trail) = true;
 	}
+      if (export_tail)
+	*export_tail = trail;
       /* Now swap things round, so it looks like we're prepending as
 	 normal.  */
       fn = maybe_ovl;
@@ -2235,6 +2240,9 @@ ovl_insert (tree fn, tree maybe_ovl, bool using_p)
     }
   else
     result = trail;
+
+  if (export_tail && DECL_MODULE_EXPORT_P (fn) && result != fn)
+    *export_tail = trail;
 
   return result;
 }
@@ -2275,7 +2283,7 @@ ovl_iterator::reveal_node (tree overload, tree node)
 	&& (OVL_USING_P (chain) || OVL_HIDDEN_P (chain)))
       {
 	/* The node needs moving, and the simplest way is to remove it
-	   and reinsert.  */
+	   and reinsert.  What about this making it exported?  */
 	overload = remove_node (overload, node);
 	overload = ovl_insert (OVL_FUNCTION (node), overload);
       }

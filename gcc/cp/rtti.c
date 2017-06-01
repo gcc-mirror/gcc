@@ -1237,7 +1237,7 @@ create_pseudo_type_info (int tk, const char *real_name, ...)
     sprintf (pseudo_name + strlen (pseudo_name), "%d", tk - TK_FIXED);
 
   /* First field is the pseudo type_info base class.  */
-  fields = build_decl (input_location,
+  fields = build_decl (BUILTINS_LOCATION,
 		       FIELD_DECL, NULL_TREE,
 		       (*tinfo_descs)[TK_TYPE_INFO_TYPE].type);
 
@@ -1359,11 +1359,11 @@ get_pseudo_ti_index (tree type)
 	      push_abi_namespace ();
 	      create_pseudo_type_info
 		(ix, "__vmi_class_type_info",
-		 build_decl (input_location,
+		 build_decl (BUILTINS_LOCATION,
 			     FIELD_DECL, NULL_TREE, integer_type_node),
-		 build_decl (input_location,
+		 build_decl (BUILTINS_LOCATION,
 			     FIELD_DECL, NULL_TREE, integer_type_node),
-		 build_decl (input_location,
+		 build_decl (BUILTINS_LOCATION,
 			     FIELD_DECL, NULL_TREE, base_array),
 		 NULL);
 	      pop_abi_namespace ();
@@ -1545,18 +1545,23 @@ emit_support_tinfos (void)
     0
   };
   int ix;
-  tree bltn_type, dtor;
 
-  push_abi_namespace ();
-  bltn_type = xref_tag (class_type,
-			get_identifier ("__fundamental_type_info"),
-			/*tag_scope=*/ts_current, false);
-  pop_abi_namespace ();
+  /* Look for a defined class.  */
+  tree bltn_type = lookup_qualified_name
+    (abi_node, get_identifier ("__fundamental_type_info"), true, false, false);
+  if (TREE_CODE (bltn_type) != TYPE_DECL)
+    return;
+
+  bltn_type = TREE_TYPE (bltn_type);
   if (!COMPLETE_TYPE_P (bltn_type))
     return;
-  dtor = CLASSTYPE_DESTRUCTORS (bltn_type);
+  tree dtor = CLASSTYPE_DESTRUCTORS (bltn_type);
   if (!dtor || DECL_EXTERNAL (dtor))
     return;
+
+  /* All these are really builtins.  So set the location.  */
+  location_t saved_loc = input_location;
+  input_location = BUILTINS_LOCATION;
   doing_runtime = 1;
   for (ix = 0; fundamentals[ix]; ix++)
     emit_support_tinfo_1 (*fundamentals[ix]);
@@ -1568,6 +1573,7 @@ emit_support_tinfos (void)
       }
   for (tree t = registered_builtin_types; t; t = TREE_CHAIN (t))
     emit_support_tinfo_1 (TREE_VALUE (t));
+  input_location = saved_loc;
 }
 
 /* Finish a type info decl. DECL_PTR is a pointer to an unemitted

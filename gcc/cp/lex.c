@@ -716,26 +716,31 @@ copy_type (tree type MEM_STAT_DECL)
 /* Add a raw lang_type to T, a type, should it need one.  */
 
 bool
-maybe_add_lang_type_raw (tree t)
+maybe_add_lang_type_raw (tree t, bool ptrmem_p)
 {
-  bool add = (RECORD_OR_UNION_CODE_P (TREE_CODE (t))
-	      || TREE_CODE (t) == BOUND_TEMPLATE_TEMPLATE_PARM);
-  if (add)
+  size_t size = 0;
+
+  if (ptrmem_p)
+    size = sizeof (struct lang_type_ptrmem);
+  else if (RECORD_OR_UNION_CODE_P (TREE_CODE (t))
+	   || TREE_CODE (t) == BOUND_TEMPLATE_TEMPLATE_PARM)
+    size = sizeof (struct lang_type_class);
+  else
+    return false;
+
+  struct lang_type *lt = (struct lang_type *) ggc_internal_cleared_alloc
+	(size);
+
+  lt->u.c.h.is_lang_type_class = !ptrmem_p;
+  TYPE_LANG_SPECIFIC (t) = lt;
+
+  if (GATHER_STATISTICS)
     {
-      struct lang_type *pi
-	= (struct lang_type *) ggc_internal_cleared_alloc
-	(sizeof (struct lang_type));
-
-      TYPE_LANG_SPECIFIC (t) = pi;
-      pi->u.c.h.is_lang_type_class = 1;
-
-      if (GATHER_STATISTICS)
-	{
-	  tree_node_counts[(int)lang_type] += 1;
-	  tree_node_sizes[(int)lang_type] += sizeof (struct lang_type);
-	}
+      tree_node_counts[(int)lang_type] += 1;
+      tree_node_sizes[(int)lang_type] += size;
     }
-  return add;
+
+  return true;
 }
 
 tree
@@ -743,7 +748,7 @@ cxx_make_type (enum tree_code code)
 {
   tree t = make_node (code);
 
-  maybe_add_lang_type_raw (t);
+  maybe_add_lang_type_raw (t, false);
 
   /* Set up some flags that give proper default behavior.  */
   if (RECORD_OR_UNION_CODE_P (code))
