@@ -2968,7 +2968,15 @@ arc_expand_prologue (void)
   frame_size_to_allocate -= first_offset;
   /* Allocate the stack frame.  */
   if (frame_size_to_allocate > 0)
-    frame_stack_add ((HOST_WIDE_INT) 0 - frame_size_to_allocate);
+    {
+      frame_stack_add ((HOST_WIDE_INT) 0 - frame_size_to_allocate);
+      /* If the frame pointer is needed, emit a special barrier that
+	 will prevent the scheduler from moving stores to the frame
+	 before the stack adjustment.  */
+      if (arc_frame_pointer_needed ())
+	emit_insn (gen_stack_tie (stack_pointer_rtx,
+				  hard_frame_pointer_rtx));
+    }
 
   /* Setup the gp register, if needed.  */
   if (crtl->uses_pic_offset_table)

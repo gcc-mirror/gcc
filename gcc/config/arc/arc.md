@@ -135,6 +135,7 @@
   UNSPEC_ARC_VMAC2HU
   UNSPEC_ARC_VMPY2H
   UNSPEC_ARC_VMPY2HU
+  UNSPEC_ARC_STKTIE
   ])
 
 (define_c_enum "vunspec" [
@@ -205,7 +206,7 @@
    simd_vcompare, simd_vpermute, simd_vpack, simd_vpack_with_acc,
    simd_valign, simd_valign_with_acc, simd_vcontrol,
    simd_vspecial_3cycle, simd_vspecial_4cycle, simd_dma, mul16_em, div_rem,
-   fpu"
+   fpu, block"
   (cond [(eq_attr "is_sfunc" "yes")
 	 (cond [(match_test "!TARGET_LONG_CALLS_SET && (!TARGET_MEDIUM_CALLS || GET_CODE (PATTERN (insn)) != COND_EXEC)") (const_string "call")
 		(match_test "flag_pic") (const_string "sfunc")]
@@ -6605,6 +6606,18 @@
   (set_attr "type" "multi")
   (set_attr "predicable" "yes,no,no,yes,no")
   (set_attr "cond" "canuse,nocond,nocond,canuse_limm,nocond")])
+
+(define_insn "stack_tie"
+  [(set (mem:BLK (scratch))
+	(unspec:BLK [(match_operand:SI 0 "register_operand" "rb")
+		     (match_operand:SI 1 "register_operand" "rb")]
+		    UNSPEC_ARC_STKTIE))]
+  ""
+  ""
+  [(set_attr "length" "0")
+   (set_attr "iscompact" "false")
+   (set_attr "type" "block")]
+  )
 
 ;; include the arc-FPX instructions
 (include "fpx.md")
