@@ -1356,7 +1356,7 @@
    }")
 
 (define_insn_and_split "*movv2hi_insn"
-  [(set (match_operand:V2HI 0 "nonimmediate_operand" "=r,r,r,m")
+  [(set (match_operand:V2HI 0 "move_dest_operand" "=r,r,r,m")
 	(match_operand:V2HI 1 "general_operand"       "i,r,m,r"))]
   "(register_operand (operands[0], V2HImode)
     || register_operand (operands[1], V2HImode))"
