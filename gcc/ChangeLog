@@ -1,3 +1,22 @@
+2017-06-02  Prakhar Bahuguna  <prakhar.bahuguna@arm.com>
+
+	Backport from mainline
+	2017-05-05  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+		    Prakhar Bahuguna  <prakhar.bahuguna@arm.com>
+
+	PR target/71607
+	* config/arm/arm.md (use_literal_pool): Remove.
+	(64-bit immediate split): No longer takes cost into consideration
+	if arm_disable_literal_pool is enabled.
+	* config/arm/arm.c (arm_tls_referenced_p): Add diagnostic if TLS is
+	used when arm_disable_literal_pool is enabled.
+	(arm_max_const_double_inline_cost): Remove use of
+	arm_disable_literal_pool.
+	(push_minipool_fix): Add assert.
+	(arm_reorg): Add return if arm_disable_literal_pool is enabled.
+	* config/arm/vfp.md (no_literal_pool_df_immediate): New.
+	(no_literal_pool_sf_immediate): New.
+
 2017-06-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/80903
