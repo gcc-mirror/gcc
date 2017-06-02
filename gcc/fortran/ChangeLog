@@ -1,3 +1,9 @@
+2017-06-02  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/80904
+	* frontend-passes.c (matmul_lhs_realloc):  Correct
+	allocation size for case A1B2.
+
 2017-06-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/80918
