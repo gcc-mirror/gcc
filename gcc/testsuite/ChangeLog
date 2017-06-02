@@ -1,3 +1,7 @@
+2017-06-02  Sudakshina Das  <sudi.das@arm.com>
+
+	* gcc.target/aarch64/cmp_shifted_reg_1.c: New.
+
 2017-06-02  Will Schmidt  <will_schmidt@vnet.ibm.com>
 
 	* gcc.target/powerpc/fold-vec-minmax-char.c: New.
