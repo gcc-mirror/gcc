@@ -1,3 +1,15 @@
+2017-06-02  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	* gcc.target/powerpc/fold-vec-abs-char.c: New.
+	* gcc.target/powerpc/fold-vec-abs-floatdouble.c: New.
+	* gcc.target/powerpc/fold-vec-abs-int.c: New.
+	* gcc.target/powerpc/fold-vec-abs-longlong.c: New.
+	* gcc.target/powerpc/fold-vec-abs-short.c: New.
+	* gcc.target/powerpc/fold-vec-abs-char-fwrapv.c: New.
+	* gcc.target/powerpc/fold-vec-abs-int-fwrapv.c: New.
+	* gcc.target/powerpc/fold-vec-abs-longlong-fwrapv.c: New.
+	* gcc.target/powerpc/fold-vec-abs-short-fwrapv.c: New.
+
 2017-06-02  Nathan Sidwell  <nathan@acm.org>
 
 	* g++.dg/pr45330.C: Adjust.  Check breadth-firstness.

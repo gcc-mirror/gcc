@@ -1,3 +1,8 @@
+2017-06-02  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	* config/rs6000/rs6000.c (rs6000_gimple_fold_builtin): Add handling
+	for early expansion of vector absolute builtins.
+
 2017-06-02  Richard Biener  <rguenther@suse.de>
 
 	* tree-vect-slp.c (vect_detect_hybrid_slp_2): Match up
