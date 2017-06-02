@@ -565,14 +565,14 @@
 )
 
 (define_insn "*aarch64_simd_vec_copy_lane<mode>"
-  [(set (match_operand:VALL 0 "register_operand" "=w")
-	(vec_merge:VALL
-	    (vec_duplicate:VALL
+  [(set (match_operand:VALL_F16 0 "register_operand" "=w")
+	(vec_merge:VALL_F16
+	    (vec_duplicate:VALL_F16
 	      (vec_select:<VEL>
-		(match_operand:VALL 3 "register_operand" "w")
+		(match_operand:VALL_F16 3 "register_operand" "w")
 		(parallel
 		  [(match_operand:SI 4 "immediate_operand" "i")])))
-	    (match_operand:VALL 1 "register_operand" "0")
+	    (match_operand:VALL_F16 1 "register_operand" "0")
 	    (match_operand:SI 2 "immediate_operand" "i")))]
   "TARGET_SIMD"
   {
