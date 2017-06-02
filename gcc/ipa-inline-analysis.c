@@ -110,7 +110,10 @@ void
 free_growth_caches (void)
 {
   if (edge_removal_hook_holder)
-    symtab->remove_edge_removal_hook (edge_removal_hook_holder);
+    {
+      symtab->remove_edge_removal_hook (edge_removal_hook_holder);
+      edge_removal_hook_holder = NULL;
+    }
   edge_growth_cache.release ();
 }
 
