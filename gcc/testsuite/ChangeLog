@@ -1,3 +1,7 @@
+2017-06-02  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/aarch64/atomic_cmp_exchange_zero_strong_1.c: New test.
+
 2017-06-02  Will Schmidt  <will_schmidt@vnet.ibm.com>
 
 	* gcc.target/powerpc/fold-vec-abs-char.c: New.
