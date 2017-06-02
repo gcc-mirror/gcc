@@ -1,3 +1,9 @@
+2017-06-02  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_split_compare_and_swap):
+	Emit CBNZ inside loop when doing a strong exchange and comparing
+	against zero.  Generate the CC flags after the loop.
+
 2017-06-02  David Edelsohn  <dje.gcc@gmail.com>
 
 	* dwarf2out.c (DWARF_INITIAL_LENGTH_SIZE_STR): New.
