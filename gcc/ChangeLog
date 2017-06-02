@@ -1,3 +1,9 @@
+2017-06-02  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/80954
+	* ipa-inline-analysis.c (free_growth_caches): Set
+	edge_removal_hook_holder to NULL after removing it.
+
 2017-06-02  Sudakshina Das  <sudi.das@arm.com>
 
 	* config/aarch64/aarch64.c (aarch64_select_cc_mode): Return CC_SWP for
