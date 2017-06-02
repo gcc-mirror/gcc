@@ -1,3 +1,8 @@
+2017-06-02  Olivier Hainque  <hainque@adacore.com>
+
+	* config/vxlib.c (__gthread_once): Add missing value to
+	return statement.
+
 2017-05-30  Olivier Hainque  <hainque@adacore.com>
 
 	* config/t-vxworks (LIBGCC2_INCLUDES): Remove extraneous
