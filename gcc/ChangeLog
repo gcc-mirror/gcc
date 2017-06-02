@@ -1,3 +1,11 @@
+2017-06-02  David Edelsohn  <dje.gcc@gmail.com>
+
+	* dwarf2out.c (DWARF_INITIAL_LENGTH_SIZE_STR): New.
+	(dl_section_ref): New.
+	(dwarf2out_finish): Copy debug_line_section_label to dl_section_ref.
+	On AIX, append an expression to subtract the size of the
+	section length to dl_section_ref.
+
 2017-06-02  Will Schmidt  <will_schmidt@vnet.ibm.com>
 
 	* config/rs6000/rs6000.c (rs6000_gimple_fold_builtin): Add handling
