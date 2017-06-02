@@ -17329,6 +17329,24 @@ rs6000_gimple_fold_builtin (gimple_stmt_iterator *gsi)
 	gsi_replace (gsi, g, true);
 	return true;
       }
+    /* flavors of vec_abs.  */
+    case ALTIVEC_BUILTIN_ABS_V16QI:
+    case ALTIVEC_BUILTIN_ABS_V8HI:
+    case ALTIVEC_BUILTIN_ABS_V4SI:
+    case ALTIVEC_BUILTIN_ABS_V4SF:
+    case P8V_BUILTIN_ABS_V2DI:
+    case VSX_BUILTIN_XVABSDP:
+      {
+	arg0 = gimple_call_arg (stmt, 0);
+	if (INTEGRAL_TYPE_P (TREE_TYPE (TREE_TYPE (arg0)))
+	    && !TYPE_OVERFLOW_WRAPS (TREE_TYPE (TREE_TYPE (arg0))))
+	      return false;
+	lhs = gimple_call_lhs (stmt);
+	gimple *g = gimple_build_assign (lhs, ABS_EXPR, arg0);
+	gimple_set_location (g, gimple_location (stmt));
+	gsi_replace (gsi, g, true);
+	return true;
+      }
     default:
       break;
     }
