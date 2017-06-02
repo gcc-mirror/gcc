@@ -367,6 +367,7 @@ add_test (rtx cond, edge *e, basic_block dest)
     }
 
   seq = get_insns ();
+  unshare_all_rtl_in_chain (seq);
   end_sequence ();
 
   /* There always is at least the jump insn in the sequence.  */
