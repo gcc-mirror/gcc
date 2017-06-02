@@ -680,24 +680,19 @@ copy_decl (tree decl MEM_STAT_DECL)
 static void
 copy_lang_type (tree node)
 {
-  int size;
-  struct lang_type *lt;
-
   if (! TYPE_LANG_SPECIFIC (node))
     return;
 
-  if (TYPE_LANG_SPECIFIC (node)->u.h.is_lang_type_class)
-    size = sizeof (struct lang_type);
-  else
-    size = sizeof (struct lang_type_ptrmem);
-  lt = (struct lang_type *) ggc_internal_alloc (size);
-  memcpy (lt, TYPE_LANG_SPECIFIC (node), size);
+  struct lang_type *lt
+    = (struct lang_type *) ggc_internal_alloc (sizeof (struct lang_type));
+
+  memcpy (lt, TYPE_LANG_SPECIFIC (node), (sizeof (struct lang_type)));
   TYPE_LANG_SPECIFIC (node) = lt;
 
   if (GATHER_STATISTICS)
     {
       tree_node_counts[(int)lang_type] += 1;
-      tree_node_sizes[(int)lang_type] += size;
+      tree_node_sizes[(int)lang_type] += sizeof (struct lang_type);
     }
 }
 
@@ -716,28 +711,20 @@ copy_type (tree type MEM_STAT_DECL)
 /* Add a raw lang_type to T, a type, should it need one.  */
 
 bool
-maybe_add_lang_type_raw (tree t, bool ptrmem_p)
+maybe_add_lang_type_raw (tree t)
 {
-  size_t size = 0;
-
-  if (ptrmem_p)
-    size = sizeof (struct lang_type_ptrmem);
-  else if (RECORD_OR_UNION_CODE_P (TREE_CODE (t))
-	   || TREE_CODE (t) == BOUND_TEMPLATE_TEMPLATE_PARM)
-    size = sizeof (struct lang_type_class);
-  else
+  if (!(RECORD_OR_UNION_CODE_P (TREE_CODE (t))
+	|| TREE_CODE (t) == BOUND_TEMPLATE_TEMPLATE_PARM))
     return false;
-
-  struct lang_type *lt = (struct lang_type *) ggc_internal_cleared_alloc
-	(size);
-
-  lt->u.c.h.is_lang_type_class = !ptrmem_p;
-  TYPE_LANG_SPECIFIC (t) = lt;
+  
+  TYPE_LANG_SPECIFIC (t)
+    = (struct lang_type *) (ggc_internal_cleared_alloc
+			    (sizeof (struct lang_type)));
 
   if (GATHER_STATISTICS)
     {
       tree_node_counts[(int)lang_type] += 1;
-      tree_node_sizes[(int)lang_type] += size;
+      tree_node_sizes[(int)lang_type] += sizeof (struct lang_type);
     }
 
   return true;
@@ -748,7 +735,7 @@ cxx_make_type (enum tree_code code)
 {
   tree t = make_node (code);
 
-  maybe_add_lang_type_raw (t, false);
+  maybe_add_lang_type_raw (t);
 
   /* Set up some flags that give proper default behavior.  */
   if (RECORD_OR_UNION_CODE_P (code))

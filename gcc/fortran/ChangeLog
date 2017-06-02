@@ -1,3 +1,8 @@
+2017-06-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/80918
+	* openmp.c (resolve_omp_clauses): Fix a typo.
+
 2017-05-30  David Malcolm  <dmalcolm@redhat.com>
 
 	* error.c (gfc_format_decoder): Update for new bool and

@@ -1,3 +1,206 @@
+2017-06-02  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-slp.c (vect_detect_hybrid_slp_2): Match up
+	what we consider a relevant use stmt with vect_detect_hybrid_slp_stmts.
+
+2017-06-02  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/80948
+	* tree-tailcall.c (find_tail_calls): Track stmts to move in
+	stmt order as well.
+
+2017-06-02  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-loop.c (vect_analyze_loop_operations): Not relevant
+	PHIs are ok.
+	* tree-vect-stmts.c (process_use): Do not mark backedge defs
+	for inductions as relevant.
+
+2017-06-02  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-loop.c (get_initial_def_for_induction): Inline into ...
+	(vectorizable_induction): ... this.  Remove dead code.
+
+2017-06-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* builtins. (expand_builtin_alloca): Remove second parameter and
+	infer its value from the first parameter instead.
+	(expand_builtin) <BUILT_IN_ALLOCA>: Adjust call to above.
+
+2017-06-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/80903
+	* loop-doloop.c (add_test): Unshare sequence.
+
+2017-06-02  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* doc/invoke.texi: Document the -Wsizeof-pointer-div warning.
+
+2017-06-01  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* config/i386/i386.c (x86_64_ms_sysv_extra_clobbered_registers): Make
+	static.
+	(xlogue_layout::get_stack_space_used, xlogue_layout::s_instances,
+	xlogue_layout::get_instance, logue_layout::xlogue_layout,
+	sp_valid_at, fp_valid_at, choose_basereg): Formatting.
+	(xlogue_layout::get_stub_rtx): Make static.
+	(xlogue_layout::get_stub_name): Avoid const-cast, make static.
+	(xlogue_layout::compute_stub_managed_regs): Rename to...
+	(xlogue_layout::count_stub_managed_regs): ...this.
+	(xlogue_layout::is_stub_managed_reg): New function.
+	(xlogue_layout::m_stub_names): Rename to...
+	(xlogue_layout::s_stub_names): ...this, make static.
+	(xlogue_layout::STUB_INDEX_OFFSET, xlogue_layout::MIN_REGS,
+	xlogue_layout::MAX_REGS, xlogue_layout::MAX_EXTRA_REGS,
+	xlogue_layout::VARIANT_COUNT, xlogue_layout::STUB_NAME_MAX_LEN,
+	xlogue_layout::s_stub_names): Instantiate statics.
+	(stub_managed_regs): Remove.
+	(ix86_save_reg): Use xlogue_layout::compute_stub_managed_regs.
+	(disable_call_ms2sysv_xlogues): Rename to...
+	(warn_once_call_ms2sysv_xlogues): ...this, and warn only once.
+	(ix86_initial_elimination_offset, ix86_expand_call): Fix call_ms2sysv
+	warning logic.
+	(ix86_static_chain): Make sure that ix86_static_chain_on_stack can't
+	change after reload_completed.
+	(ix86_can_use_return_insn_p): Use the ix86_frame data structure
+	directly.
+	(ix86_expand_prologue): Likewise.
+	(ix86_expand_epilogue): Likewise.
+	(ix86_expand_split_stack_prologue): Likewise.
+	(ix86_compute_frame_layout): Remove frame parameter ...
+	(TARGET_COMPUTE_FRAME_LAYOUT): ... and export it as a target hook.
+	(ix86_finalize_stack_realign_flags): Call ix86_compute_frame_layout
+	only if necessary.
+	(ix86_init_machine_status): Don't set use_fast_prologue_epilogue_nregs.
+	(ix86_frame): Move from here ...
+	* config/i386/i386.h (ix86_frame): ... to here.
+	(machine_function): Remove use_fast_prologue_epilogue_nregs, cache the
+	complete ix86_frame data structure instead.  Remove some_ld_name.
+
+2017-06-01  Pierre-Marie de Rodat  <derodat@adacore.com>
+
+	* dwarf2out.c (dwarf2out_late_global_decl): Add locations for
+	symbols that hold a DECL_VALUE_EXPR.
+
+2017-06-01  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/80898
+	* tree-sra.c (process_subtree_disqualification): Removed.
+	(disqualify_candidate): Do not acll
+	process_subtree_disqualification.
+	(subtree_mark_written_and_enqueue): New function.
+	(propagate_all_subaccesses): Set grp_write of LHS subtree if the
+	RHS has been disqualified and re-queue LHS if necessary.  Apart
+	from that, ignore disqualified RHS.
+
+2017-06-01  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
+	* config/s390/s390.c (s390_emit_epilogue): Disable early return
+	address fetch for z10 or later.
+
+2017-06-01  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/arc.md (tst_movb): Add guard when splitting.
+
+2017-06-01  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/arc.c (arc_can_eliminate): Test against
+	arc_frame_pointer_needed.
+
+2017-06-01  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/arc.c (arc_expand_prologue): Emit a special barrier
+	to prevent store reordering.
+	* config/arc/arc.md (UNSPEC_ARC_STKTIE): Define.
+	(type): Add block type.
+	(stack_tie): Define special instruction to be used in
+	expand_prologue.
+
+2017-06-01  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/arc.md (commutative_binary_comparison): Remove 'I'
+	constraint. It is not valid for the pattern.
+	(noncommutative_binary_comparison): Likewise.
+
+2017-06-01  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/simdext.md (movv2hi_insn): Change predicate to avoid
+	scaled addresses.
+
+2017-06-01  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/arc.c (arc_conditional_register_usage): Allow r30 to
+	be used by the reg-alloc.
+
+2017-06-01  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/arc.md (mulsi3): Avoid use of hard registers before
+	reg-alloc when having mul64 or mul32x16 instructions.
+	(mulsidi3): Likewise.
+	(umulsidi3): Likewise.
+	(mulsi32x16): New pattern.
+	(mulsi64): Likewise.
+	(mulsidi64): Likewise.
+	(umulsidi64): Likewise.
+	(MUL32x16_REG): Define.
+	(mul64_600): Use MUL32x16_REG.
+	(mac64_600): Likewise.
+	(umul64_600): Likewise.
+	(umac64_600): Likewise.
+
+2017-06-01  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/arc.md (mulsi3_700): Make it commutative.
+
+2017-06-01  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* config/sparc/sparc.md (*zero_extendsidi2_insn_sp64): Set insn
+	type for movstouw.
+	(*sign_extendsidi2_insn): Likewise for movstosw.
+
+2017-06-01  Pierre-Marie de Rodat  <derodat@adacore.com>
+
+	* dwarf2out.c (get_discr_value): Call the get_debug_type hook on
+	the type of the input discriminant value.  Convert the
+	discriminant value of signedness vary.
+
+2017-06-01  Volker Reichelt  <v.reichelt@netcologne.de>
+
+	* doc/invoke.texi (-Wcatch-value): Document new shortcut.
+	Add to -Wall section.
+
+2017-06-01  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/66313
+	* fold-const.c (fold_plusminus_mult_expr): If the factored
+	factor may be zero use a wrapping type for the inner operation.
+	* tree-tailcall.c (independent_of_stmt_p): Pass in to_move bitmap
+	and handle moved defs.
+	(process_assignment): Properly guard the unary op case.  Return a
+	tri-state indicating that moving the stmt before the call may allow
+	to continue.  Pass through to_move.
+	(find_tail_calls): Handle moving unrelated defs before
+	the call.
+
+2017-05-31  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/80618
+	* config/rs6000/vector.md (*vector_uneq<mode>): Write the nor in the
+	splitter result in the canonical way.
+
+2017-05-31  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*zero_extendsidi2): Enable alternative (?r, *Yj)
+	also for 32bit target.  Update insn attributes.
+	(zero-extendsidi2 splitter): Allow all registers for operand 1.
+
+2017-05-31  Sebastian Peryt  <sebastian.peryt@intel.com>
+
+	* config/i386/avx512fintrin.h (_mm_mask_max_sd)
+        (_mm_maskz_max_sd, _mm_mask_max_ss, _mm_maskz_max_ss)
+        (_mm_mask_min_sd, _mm_maskz_min_sd, _mm_mask_min_ss)
+        (_mm_maskz_min_ss): New intrinsics.
+
 2017-05-31  Martin Liska  <mliska@suse.cz>
 
 	* tree-vect-loop.c (vect_create_epilog_for_reduction):
@@ -102,11 +305,9 @@
 	m_format_postprocessor.
 	(pretty_printer::~pretty_printer): Delete any
 	m_format_postprocessor.
-	* pretty-print.h (printer_fn): Add bool and const char **
-	parameters.
+	* pretty-print.h (printer_fn): Add bool and const char ** parameters.
 	(class format_postprocessor): New class.
-	(struct pretty_printer::format_decoder): Document the new
-	parameters.
+	(struct pretty_printer::format_decoder): Document the new parameters.
 	(struct pretty_printer::m_format_postprocessor): New field.
 	* tree-diagnostic.c (default_tree_printer): Update for new
 	bool and const char ** params.
@@ -363,8 +564,7 @@
 2017-05-26  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/80844
-	* tree-vectorizer.c (adjust_simduid_builtins): Propagate
-	results.
+	* tree-vectorizer.c (adjust_simduid_builtins): Propagate results.
 
 2017-05-25  Sebastian Peryt  <sebastian.peryt@intel.com>
 

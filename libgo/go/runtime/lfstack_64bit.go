@@ -32,9 +32,18 @@ const (
 	// bottom, because node must be pointer-aligned, giving a total of 19 bits
 	// of count.
 	cntBits = 64 - addrBits + 3
+
+	// On sparc64-linux, user addresses are 52-bit numbers sign extended to 64.
+	// We shift the address left 12 to eliminate the sign extended part and make
+	// room in the bottom for the count.
+	sparcLinuxAddrBits = 52
+	sparcLinuxCntBits  = 64 - sparcLinuxAddrBits + 3
 )
 
 func lfstackPack(node *lfnode, cnt uintptr) uint64 {
+	if GOARCH == "sparc64" && GOOS == "linux" {
+		return uint64(uintptr(unsafe.Pointer(node)))<<(64-sparcLinuxAddrBits) | uint64(cnt&(1<<sparcLinuxCntBits-1))
+	}
 	return uint64(uintptr(unsafe.Pointer(node)))<<(64-addrBits) | uint64(cnt&(1<<cntBits-1))
 }
 
@@ -43,6 +52,9 @@ func lfstackUnpack(val uint64) *lfnode {
 		// amd64 or Solaris systems can place the stack above the VA hole, so we need to sign extend
 		// val before unpacking.
 		return (*lfnode)(unsafe.Pointer(uintptr(int64(val) >> cntBits << 3)))
+	}
+	if GOARCH == "sparc64" && GOOS == "linux" {
+		return (*lfnode)(unsafe.Pointer(uintptr(int64(val) >> sparcLinuxCntBits << 3)))
 	}
 	return (*lfnode)(unsafe.Pointer(uintptr(val >> cntBits << 3)))
 }

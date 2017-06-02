@@ -23,7 +23,7 @@ test (unsigned int *v)
   
   u.x = _mm_set_epi32 (v[3], v[2], v[1], v[0]);
 
-  for (i = 0; i < sizeof (v) / sizeof (v[0]); i++)
+  for (i = 0; i < sizeof (u) / sizeof (v[0]); i++)
     if (v[i] != u.i[i])
       {
 #ifdef DEBUG

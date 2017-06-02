@@ -23701,14 +23701,33 @@ analyze_discr_in_predicate (tree operand, tree struct_type)
 static bool
 get_discr_value (tree src, dw_discr_value *dest)
 {
-  bool is_unsigned = TYPE_UNSIGNED (TREE_TYPE (src));
+  tree discr_type = TREE_TYPE (src);
 
-  if (TREE_CODE (src) != INTEGER_CST
-      || !(is_unsigned ? tree_fits_uhwi_p (src) : tree_fits_shwi_p (src)))
+  if (lang_hooks.types.get_debug_type)
+    {
+      tree debug_type = lang_hooks.types.get_debug_type (discr_type);
+      if (debug_type != NULL)
+	discr_type = debug_type;
+    }
+
+  if (TREE_CODE (src) != INTEGER_CST || !INTEGRAL_TYPE_P (discr_type))
     return false;
 
-  dest->pos = is_unsigned;
-  if (is_unsigned)
+  /* Signedness can vary between the original type and the debug type. This
+     can happen for character types in Ada for instance: the character type
+     used for code generation can be signed, to be compatible with the C one,
+     but from a debugger point of view, it must be unsigned.  */
+  bool is_orig_unsigned = TYPE_UNSIGNED (TREE_TYPE (src));
+  bool is_debug_unsigned = TYPE_UNSIGNED (discr_type);
+
+  if (is_orig_unsigned != is_debug_unsigned)
+    src = fold_convert (discr_type, src);
+
+  if (!(is_debug_unsigned ? tree_fits_uhwi_p (src) : tree_fits_shwi_p (src)))
+    return false;
+
+  dest->pos = is_debug_unsigned;
+  if (is_debug_unsigned)
     dest->v.uval = tree_to_uhwi (src);
   else
     dest->v.sval = tree_to_shwi (src);
@@ -25526,9 +25545,10 @@ dwarf2out_late_global_decl (tree decl)
 	{
 	  /* We get called via the symtab code invoking late_global_decl
 	     for symbols that are optimized out.  Do not add locations
-	     for those.  */
+	     for those, except if they have a DECL_VALUE_EXPR, in which case
+	     they are relevant for debuggers.  */
 	  varpool_node *node = varpool_node::get (decl);
-	  if (! node || ! node->definition)
+	  if ((! node || ! node->definition) && ! DECL_HAS_VALUE_EXPR_P (decl))
 	    tree_add_const_value_attribute_for_decl (die, decl);
 	  else
 	    add_location_or_const_value_attribute (die, decl, false);

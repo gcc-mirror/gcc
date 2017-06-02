@@ -2,8 +2,8 @@
  * long long inputs produce the right results.  */
 
 /* { dg-do compile } */
-/* { dg-require-effective-target powerpc_vsx_ok } */
-/* { dg-options "-mvsx -O2" } */
+/* { dg-require-effective-target powerpc_p8vector_ok } */
+/* { dg-options "-mpower8-vector -O2" } */
 
 #include <altivec.h>
 
@@ -151,11 +151,11 @@ test6_nor (vector unsigned long long x, vector unsigned long long y)
   return *foo;
 }
 
-// Codegen on power7 is such that the vec_or() tests generate more xxlor
-// instructions than what is seen on power8 or newer.
-// Thus, an additional target clause for the xxlor instruction check.
-/* { dg-final { scan-assembler-times {\mxxlor\M} 6 { target p8vector_hw }  } } */
-/* { dg-final { scan-assembler-times {\mxxlor\M} 24 { target { ! p8vector_hw }  }  } } */
+// The number of xxlor instructions generated varies between 6 and 24 for
+// older systems (power6,power7), as well as for 32-bit versus 64-bit targets.
+// For simplicity, this test now only targets "powerpc_p8vector_ok" environments
+// where the answer is expected to be 6.
 
+/* { dg-final { scan-assembler-times {\mxxlor\M} 6 } } */
 /* { dg-final { scan-assembler-times {\mxxlxor\M} 6 } } */
 /* { dg-final { scan-assembler-times {\mxxlnor\M} 6 } } */

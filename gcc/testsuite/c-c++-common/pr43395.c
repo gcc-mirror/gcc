@@ -1,5 +1,6 @@
 /* PR c/43395 */
 /* { dg-do compile } */
+/* { dg-require-effective-target label_values } */
 
 void *
 foo (void)

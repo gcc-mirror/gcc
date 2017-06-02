@@ -2272,8 +2272,8 @@ cpms_in::lang_decl_bools (FILE *, tree t)
   struct lang_decl *lang = DECL_LANG_SPECIFIC (t);
 
   lang->u.base.language = r.b () ? lang_cplusplus : lang_c;
-  unsigned v = 0;
-  v |= r.b () << 0;
+  unsigned v;
+  v = r.b () << 0;
   v |= r.b () << 1;
   lang->u.base.use_template = v;
   RB (lang->u.base.not_really_extern);
@@ -2326,61 +2326,59 @@ cpms_out::lang_type_bools (FILE *, tree t)
 #define WB(X) (w.b (X))
   const struct lang_type *lang = TYPE_LANG_SPECIFIC (t);
 
-  /* lang->u.header.is_lang_type_class already written.  */
-  if (lang->u.h.is_lang_type_class)
-    {
-      WB (lang->u.h.has_type_conversion);
-      WB (lang->u.h.has_copy_ctor);
-      WB (lang->u.h.has_default_ctor);
-      WB (lang->u.h.const_needs_init);
-      WB (lang->u.h.ref_needs_init);
-      WB (lang->u.h.has_const_copy_assign);
+  WB (lang->has_type_conversion);
+  WB (lang->has_copy_ctor);
+  WB (lang->has_default_ctor);
+  WB (lang->const_needs_init);
+  WB (lang->ref_needs_init);
+  WB (lang->has_const_copy_assign);
+  WB ((lang->use_template >> 0) & 1);
+  WB ((lang->use_template >> 1) & 1);
 
-      WB (lang->u.c.has_mutable);
-      WB (lang->u.c.com_interface);
-      WB (lang->u.c.non_pod_class);
-      WB (lang->u.c.nearly_empty_p);
-      WB (lang->u.c.user_align);
-      WB (lang->u.c.has_copy_assign);
-      WB (lang->u.c.has_new);
-      WB (lang->u.c.has_array_new);
-      WB (lang->u.c.interface_only);
-      WB (lang->u.c.interface_unknown);
-      WB (lang->u.c.contains_empty_class_p);
-      WB (lang->u.c.anon_aggr);
-      WB (lang->u.c.non_zero_init);
-      WB (lang->u.c.empty_p);
-      WB (lang->u.c.vec_new_uses_cookie);
-      WB (lang->u.c.declared_class);
-      WB (lang->u.c.diamond_shaped);
-      WB (lang->u.c.repeated_base);
-      gcc_assert (!lang->u.c.being_defined);
-      WB (lang->u.c.debug_requested);
-      WB (lang->u.c.fields_readonly);
-      WB (lang->u.c.ptrmemfunc_flag);
-      WB ((lang->u.c.use_template >> 0) & 1);
-      WB ((lang->u.c.use_template >> 1) & 1);
-      WB (lang->u.c.was_anonymous);
-      WB (lang->u.c.lazy_default_ctor);
-      WB (lang->u.c.lazy_copy_ctor);
-      WB (lang->u.c.lazy_copy_assign);
-      WB (lang->u.c.lazy_destructor);
-      WB (lang->u.c.has_const_copy_ctor);
-      WB (lang->u.c.has_complex_copy_ctor);
-      WB (lang->u.c.has_complex_copy_assign);
-      WB (lang->u.c.non_aggregate);
-      WB (lang->u.c.has_complex_dflt);
-      WB (lang->u.c.has_list_ctor);
-      WB (lang->u.c.non_std_layout);
-      WB (lang->u.c.is_literal);
-      WB (lang->u.c.lazy_move_ctor);
-      WB (lang->u.c.lazy_move_assign);
-      WB (lang->u.c.has_complex_move_ctor);
-      WB (lang->u.c.has_complex_move_assign);
-      WB (lang->u.c.has_constexpr_ctor);
-      WB (lang->u.c.unique_obj_representations);
-      WB (lang->u.c.unique_obj_representations_set);
-    }
+  WB (lang->has_mutable);
+  WB (lang->com_interface);
+  WB (lang->non_pod_class);
+  WB (lang->nearly_empty_p);
+  WB (lang->user_align);
+  WB (lang->has_copy_assign);
+  WB (lang->has_new);
+  WB (lang->has_array_new);
+  WB ((lang->gets_delete >> 0) & 1);
+  WB ((lang->gets_delete >> 1) & 1);
+  WB (lang->interface_only);
+  WB (lang->interface_unknown);
+  WB (lang->contains_empty_class_p);
+  WB (lang->anon_aggr);
+  WB (lang->non_zero_init);
+  WB (lang->empty_p);
+  WB (lang->vec_new_uses_cookie);
+  WB (lang->declared_class);
+  WB (lang->diamond_shaped);
+  WB (lang->repeated_base);
+  gcc_assert (!lang->being_defined);
+  WB (lang->debug_requested);
+  WB (lang->fields_readonly);
+  WB (lang->ptrmemfunc_flag);
+  WB (lang->was_anonymous);
+  WB (lang->lazy_default_ctor);
+  WB (lang->lazy_copy_ctor);
+  WB (lang->lazy_copy_assign);
+  WB (lang->lazy_destructor);
+  WB (lang->has_const_copy_ctor);
+  WB (lang->has_complex_copy_ctor);
+  WB (lang->has_complex_copy_assign);
+  WB (lang->non_aggregate);
+  WB (lang->has_complex_dflt);
+  WB (lang->has_list_ctor);
+  WB (lang->non_std_layout);
+  WB (lang->is_literal);
+  WB (lang->lazy_move_ctor);
+  WB (lang->lazy_move_assign);
+  WB (lang->has_complex_move_ctor);
+  WB (lang->has_complex_move_assign);
+  WB (lang->has_constexpr_ctor);
+  WB (lang->unique_obj_representations);
+  WB (lang->unique_obj_representations_set);
 #undef WB
 }
 
@@ -2390,63 +2388,62 @@ cpms_in::lang_type_bools (FILE *, tree t)
 #define RB(X) ((X) = r.b ())
   struct lang_type *lang = TYPE_LANG_SPECIFIC (t);
 
-  /* lang->u.header.is_lang_type_class already written.  */
-  if (lang->u.h.is_lang_type_class)
-    {
-      RB (lang->u.h.has_type_conversion);
-      RB (lang->u.h.has_copy_ctor);
-      RB (lang->u.h.has_default_ctor);
-      RB (lang->u.h.const_needs_init);
-      RB (lang->u.h.ref_needs_init);
-      RB (lang->u.h.has_const_copy_assign);
+  RB (lang->has_type_conversion);
+  RB (lang->has_copy_ctor);
+  RB (lang->has_default_ctor);
+  RB (lang->const_needs_init);
+  RB (lang->ref_needs_init);
+  RB (lang->has_const_copy_assign);
+  unsigned v;
+  v = r.b () << 0;
+  v |= r.b () << 1;
+  lang->use_template = v;
 
-      RB (lang->u.c.has_mutable);
-      RB (lang->u.c.com_interface);
-      RB (lang->u.c.non_pod_class);
-      RB (lang->u.c.nearly_empty_p);
-      RB (lang->u.c.user_align);
-      RB (lang->u.c.has_copy_assign);
-      RB (lang->u.c.has_new);
-      RB (lang->u.c.has_array_new);
-      RB (lang->u.c.interface_only);
-      RB (lang->u.c.interface_unknown);
-      RB (lang->u.c.contains_empty_class_p);
-      RB (lang->u.c.anon_aggr);
-      RB (lang->u.c.non_zero_init);
-      RB (lang->u.c.empty_p);
-      RB (lang->u.c.vec_new_uses_cookie);
-      RB (lang->u.c.declared_class);
-      RB (lang->u.c.diamond_shaped);
-      RB (lang->u.c.repeated_base);
-      gcc_assert (!lang->u.c.being_defined);
-      RB (lang->u.c.debug_requested);
-      RB (lang->u.c.fields_readonly);
-      RB (lang->u.c.ptrmemfunc_flag);
-      unsigned v = 0;
-      v |= r.b () << 0;
-      v |= r.b () << 1;
-      lang->u.c.use_template = v;
-      RB (lang->u.c.was_anonymous);
-      RB (lang->u.c.lazy_default_ctor);
-      RB (lang->u.c.lazy_copy_ctor);
-      RB (lang->u.c.lazy_copy_assign);
-      RB (lang->u.c.lazy_destructor);
-      RB (lang->u.c.has_const_copy_ctor);
-      RB (lang->u.c.has_complex_copy_ctor);
-      RB (lang->u.c.has_complex_copy_assign);
-      RB (lang->u.c.non_aggregate);
-      RB (lang->u.c.has_complex_dflt);
-      RB (lang->u.c.has_list_ctor);
-      RB (lang->u.c.non_std_layout);
-      RB (lang->u.c.is_literal);
-      RB (lang->u.c.lazy_move_ctor);
-      RB (lang->u.c.lazy_move_assign);
-      RB (lang->u.c.has_complex_move_ctor);
-      RB (lang->u.c.has_complex_move_assign);
-      RB (lang->u.c.has_constexpr_ctor);
-      RB (lang->u.c.unique_obj_representations);
-      RB (lang->u.c.unique_obj_representations_set);
-    }
+  RB (lang->has_mutable);
+  RB (lang->com_interface);
+  RB (lang->non_pod_class);
+  RB (lang->nearly_empty_p);
+  RB (lang->user_align);
+  RB (lang->has_copy_assign);
+  RB (lang->has_new);
+  RB (lang->has_array_new);
+  v = r.b () << 0;
+  v |= r.b () << 1;
+  lang->gets_delete = v;
+  RB (lang->interface_only);
+  RB (lang->interface_unknown);
+  RB (lang->contains_empty_class_p);
+  RB (lang->anon_aggr);
+  RB (lang->non_zero_init);
+  RB (lang->empty_p);
+  RB (lang->vec_new_uses_cookie);
+  RB (lang->declared_class);
+  RB (lang->diamond_shaped);
+  RB (lang->repeated_base);
+  gcc_assert (!lang->being_defined);
+  RB (lang->debug_requested);
+  RB (lang->fields_readonly);
+  RB (lang->ptrmemfunc_flag);
+  RB (lang->was_anonymous);
+  RB (lang->lazy_default_ctor);
+  RB (lang->lazy_copy_ctor);
+  RB (lang->lazy_copy_assign);
+  RB (lang->lazy_destructor);
+  RB (lang->has_const_copy_ctor);
+  RB (lang->has_complex_copy_ctor);
+  RB (lang->has_complex_copy_assign);
+  RB (lang->non_aggregate);
+  RB (lang->has_complex_dflt);
+  RB (lang->has_list_ctor);
+  RB (lang->non_std_layout);
+  RB (lang->is_literal);
+  RB (lang->lazy_move_ctor);
+  RB (lang->lazy_move_assign);
+  RB (lang->has_complex_move_ctor);
+  RB (lang->has_complex_move_assign);
+  RB (lang->has_constexpr_ctor);
+  RB (lang->unique_obj_representations);
+  RB (lang->unique_obj_representations_set);
 #undef RB
   return !r.error ();
 }
@@ -2955,10 +2952,7 @@ cpms_out::tree_node (FILE *d, tree t)
 	  if (!specific)
 	    ;
 	  else if (klass == tcc_type)
-	    {
-	      w.b (!TYPE_LANG_SPECIFIC (t)->u.h.is_lang_type_class);
-	      lang_type_bools (d, t);
-	    }
+	    lang_type_bools (d, t);
 	  else
 	    {
 	      if (code == VAR_DECL)
@@ -3092,7 +3086,7 @@ cpms_in::tree_node (FILE *d)
 	  if (!specific)
 	    ;
 	  else if (klass == tcc_type
-		   ? !maybe_add_lang_type_raw (t, r.b ())
+		   ? !maybe_add_lang_type_raw (t)
 		   : !maybe_add_lang_decl_raw (t, code == VAR_DECL && r.b ()))
 	    {
 	      specific = false;

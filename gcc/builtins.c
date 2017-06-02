@@ -140,7 +140,7 @@ static rtx expand_builtin_memset_with_bounds (tree, rtx, machine_mode);
 static rtx expand_builtin_memset_args (tree, tree, tree, rtx, machine_mode, tree);
 static rtx expand_builtin_bzero (tree);
 static rtx expand_builtin_strlen (tree, rtx, machine_mode);
-static rtx expand_builtin_alloca (tree, bool);
+static rtx expand_builtin_alloca (tree);
 static rtx expand_builtin_unop (machine_mode, tree, rtx, rtx, optab);
 static rtx expand_builtin_frame_address (tree, tree);
 static tree stabilize_va_list_loc (location_t, tree, int);
@@ -4914,11 +4914,10 @@ expand_builtin_frame_address (tree fndecl, tree exp)
 }
 
 /* Expand EXP, a call to the alloca builtin.  Return NULL_RTX if we
-   failed and the caller should emit a normal call.  CANNOT_ACCUMULATE
-   is the same as for allocate_dynamic_stack_space.  */
+   failed and the caller should emit a normal call.  */
 
 static rtx
-expand_builtin_alloca (tree exp, bool cannot_accumulate)
+expand_builtin_alloca (tree exp)
 {
   rtx op0;
   rtx result;
@@ -4926,7 +4925,7 @@ expand_builtin_alloca (tree exp, bool cannot_accumulate)
   tree fndecl = get_callee_fndecl (exp);
   bool alloca_with_align = (DECL_FUNCTION_CODE (fndecl)
 			    == BUILT_IN_ALLOCA_WITH_ALIGN);
-
+  bool alloca_for_var = CALL_ALLOCA_FOR_VAR_P (exp);
   bool valid_arglist
     = (alloca_with_align
        ? validate_arglist (exp, INTEGER_TYPE, INTEGER_TYPE, VOID_TYPE)
@@ -4955,8 +4954,9 @@ expand_builtin_alloca (tree exp, bool cannot_accumulate)
 	   ? TREE_INT_CST_LOW (CALL_EXPR_ARG (exp, 1))
 	   : BIGGEST_ALIGNMENT);
 
-  /* Allocate the desired space.  */
-  result = allocate_dynamic_stack_space (op0, 0, align, cannot_accumulate);
+  /* Allocate the desired space.  If the allocation stems from the declaration
+     of a variable-sized object, it cannot accumulate.  */
+  result = allocate_dynamic_stack_space (op0, 0, align, alloca_for_var);
   result = convert_memory_address (ptr_mode, result);
 
   return result;
@@ -6752,9 +6752,7 @@ expand_builtin (tree exp, rtx target, rtx subtarget, machine_mode mode,
 
     case BUILT_IN_ALLOCA:
     case BUILT_IN_ALLOCA_WITH_ALIGN:
-      /* If the allocation stems from the declaration of a variable-sized
-	 object, it cannot accumulate.  */
-      target = expand_builtin_alloca (exp, CALL_ALLOCA_FOR_VAR_P (exp));
+      target = expand_builtin_alloca (exp);
       if (target)
 	return target;
       break;

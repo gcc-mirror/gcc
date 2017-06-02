@@ -43,6 +43,12 @@ if { [ishost "*-*-cygwin*"] } {
   setenv LANG C.ASCII
 }
 
+# Ensure GCC_COLORS is unset, for the rare testcases that verify
+# how output is colorized.
+if [info exists ::env(GCC_COLORS) ] {
+    unsetenv GCC_COLORS
+}
+
 global GCC_UNDER_TEST
 if ![info exists GCC_UNDER_TEST] {
     set GCC_UNDER_TEST "[find_gcc]"

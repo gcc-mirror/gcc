@@ -1,7 +1,8 @@
 /* { dg-do run } */
-/* { dg-options "-O3" } */
+/* { dg-options "-O3 -mcpu=power7" } */
 /* { dg-require-effective-target lp64 } */
-/* { dg-require-effective-target powerpc_vsx_ok } */
+/* { dg-require-effective-target vsx_hw } */
+/* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power7" } } */
 
 #define NO_WARN_X86_INTRINSICS 1
 #include <x86intrin.h>

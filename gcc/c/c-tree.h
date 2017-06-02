@@ -611,6 +611,7 @@ extern int in_sizeof;
 extern int in_typeof;
 
 extern tree c_last_sizeof_arg;
+extern location_t c_last_sizeof_loc;
 
 extern struct c_switch *c_switch_stack;
 
