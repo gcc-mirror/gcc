@@ -1,3 +1,12 @@
+2017-06-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	* libsupc++/Makefile.am: Remove custom targets for files that need to
+	be compiled as C++11 or C++14.
+	* libsupc++/Makefile.in: Regenerate.
+	* libsupc++/del_ops.cc: Use pragma to disable -Wsized-deallocation
+	warnings.
+	* libsupc++/del_opvs.cc: Likewise.
+
 2017-06-02  Richard Biener  <rguenther@suse.de>
 	Markus Eisenmann  <meisenmann.lba@fh-salzburg.ac.at>
 
