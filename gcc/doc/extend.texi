@@ -15872,6 +15872,22 @@ vector signed long vec_cts (vector double, const int);
 vector unsigned int vec_ctu (vector float, const int);
 vector unsigned long vec_ctu (vector double, const int);
 
+vector double vec_doublee (vector float);
+vector double vec_doublee (vector signed int);
+vector double vec_doublee (vector unsigned int);
+
+vector double vec_doubleo (vector float);
+vector double vec_doubleo (vector signed int);
+vector double vec_doubleo (vector unsigned int);
+
+vector double vec_doubleh (vector float);
+vector double vec_doubleh (vector signed int);
+vector double vec_doubleh (vector unsigned int);
+
+vector double vec_doublel (vector float);
+vector double vec_doublel (vector signed int);
+vector double vec_doublel (vector unsigned int);
+
 void vec_dss (const int);
 
 void vec_dssall (void);

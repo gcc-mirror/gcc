@@ -128,6 +128,10 @@
 #define vec_ctu __builtin_vec_ctu
 #define vec_cpsgn __builtin_vec_copysign
 #define vec_double __builtin_vec_double
+#define vec_doublee __builtin_vec_doublee
+#define vec_doubleo __builtin_vec_doubleo
+#define vec_doublel __builtin_vec_doublel
+#define vec_doubleh __builtin_vec_doubleh
 #define vec_expte __builtin_vec_expte
 #define vec_floor __builtin_vec_floor
 #define vec_loge __builtin_vec_loge

@@ -1,3 +1,10 @@
+2017-06-02  Carl Love  <cel@us.ibm.com>
+
+gcc/testsuite/ChangeLog:
+
+	* gcc.target/powerpc/builtins-3-runnable.c: New file of runnable tests
+	for the new built-ins.
+
 2017-06-02  Sudakshina Das  <sudi.das@arm.com>
 
 	* gcc.target/aarch64/cmp_shifted_reg_1.c: New.
