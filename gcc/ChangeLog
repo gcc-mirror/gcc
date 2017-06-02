@@ -1,3 +1,30 @@
+2017-06-02  Carl Love  <cel@us.ibm.com>
+
+	* config/rs6000/rs6000-c: Add support for built-in functions
+	vector double vec_doublee (vector signed int);
+	vector double vec_doublee (vector unsigned int);
+	vector double vec_doublee (vector float);
+	vector double vec_doubleh (vector signed int);
+	vector double vec_doubleh (vector unsigned int);
+	vector double vec_doubleh (vector float);
+	vector double vec_doublel (vector signed int);
+	vector double vec_doublel (vector unsigned int);
+	vector double vec_doublel (vector float);
+	vector double vec_doubleo (vector signed int);
+	vector double vec_doubleo (vector unsigned int);
+	vector double vec_doubleo (vector float);.
+	* config/rs6000/rs6000-builtin.def: Add definitions for DOUBLEE,
+	DOUBLEO, DOUBLEH, DOUBLEL, UNS_DOUBLEO, UNS_DOUBLEE, UNS_DOUBLEH,
+	UNS_DOUBLEL.
+	* config/rs6000/altivec.md: Add code generator for doublee<mode>2,
+	unsdoubleev4si2, doubleo<mode>2, unsdoubleov4si2, doubleh<mode>2,
+	unsdoublehv4si2, doublel<mode>2, unsdoublelv4si2, add mode attribute
+	VS_sxwsp.
+	* config/rs6000/altivec.h: Add define for vec_doublee, vec_doubleo,
+	vec_doublel, vec_doubleh.
+	* doc/extend.texi: Update the built-in documentation file for the
+	new built-in functions.
+
 2017-06-02  David Malcolm  <dmalcolm@redhat.com>
 
 	PR jit/80954

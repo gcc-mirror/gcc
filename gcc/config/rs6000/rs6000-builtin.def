@@ -1719,6 +1719,19 @@ BU_VSX_1 (XSRDPIM,	      "xsrdpim",	CONST,	floordf2)
 BU_VSX_1 (XSRDPIP,	      "xsrdpip",	CONST,	ceildf2)
 BU_VSX_1 (XSRDPIZ,	      "xsrdpiz",	CONST,	btruncdf2)
 
+BU_VSX_1 (DOUBLEE_V4SI,      "doublee_v4si",     CONST,	doubleev4si2)
+BU_VSX_1 (DOUBLEE_V4SF,      "doublee_v4sf",     CONST,	doubleev4sf2)
+BU_VSX_1 (UNS_DOUBLEE_V4SI,  "uns_doublee_v4si", CONST,	unsdoubleev4si2)
+BU_VSX_1 (DOUBLEO_V4SI,      "doubleo_v4si",     CONST,	doubleov4si2)
+BU_VSX_1 (DOUBLEO_V4SF,      "doubleo_v4sf",     CONST,	doubleov4sf2)
+BU_VSX_1 (UNS_DOUBLEO_V4SI,  "uns_doubleo_v4si", CONST,	unsdoubleov4si2)
+BU_VSX_1 (DOUBLEH_V4SI,      "doubleh_v4si",     CONST,	doublehv4si2)
+BU_VSX_1 (DOUBLEH_V4SF,      "doubleh_v4sf",     CONST,	doublehv4sf2)
+BU_VSX_1 (UNS_DOUBLEH_V4SI,  "uns_doubleh_v4si", CONST,	unsdoublehv4si2)
+BU_VSX_1 (DOUBLEL_V4SI,      "doublel_v4si",     CONST,	doublelv4si2)
+BU_VSX_1 (DOUBLEL_V4SF,      "doublel_v4sf",     CONST,	doublelv4sf2)
+BU_VSX_1 (UNS_DOUBLEL_V4SI,  "uns_doublel_v4si", CONST,	unsdoublelv4si2)
+
 /* VSX predicate functions.  */
 BU_VSX_P (XVCMPEQSP_P,	      "xvcmpeqsp_p",	CONST,	vector_eq_v4sf_p)
 BU_VSX_P (XVCMPGESP_P,	      "xvcmpgesp_p",	CONST,	vector_ge_v4sf_p)
@@ -1809,6 +1822,14 @@ BU_VSX_OVERLOAD_2 (XXSPLTW,  "xxspltw")
 
 /* 1 argument VSX overloaded builtin functions.  */
 BU_VSX_OVERLOAD_1 (DOUBLE,   "double")
+BU_VSX_OVERLOAD_1 (DOUBLEE,  "doublee")
+BU_VSX_OVERLOAD_1 (UNS_DOUBLEE,  "uns_doublee")
+BU_VSX_OVERLOAD_1 (DOUBLEO,  "doubleo")
+BU_VSX_OVERLOAD_1 (UNS_DOUBLEO,  "uns_doubleo")
+BU_VSX_OVERLOAD_1 (DOUBLEH,  "doubleh")
+BU_VSX_OVERLOAD_1 (UNS_DOUBLEH,  "uns_doubleh")
+BU_VSX_OVERLOAD_1 (DOUBLEL,  "doublel")
+BU_VSX_OVERLOAD_1 (UNS_DOUBLEL,  "uns_doublel")
 
 /* VSX builtins that are handled as special cases.  */
 BU_VSX_OVERLOAD_X (LD,	     "ld")
