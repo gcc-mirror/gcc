@@ -1,3 +1,10 @@
+2017-06-02  Richard Biener  <rguenther@suse.de>
+	Markus Eisenmann  <meisenmann.lba@fh-salzburg.ac.at>
+
+	PR libstdc++/80721
+	* libsupc++/eh_alloc.cc (pool::free): Keep list properly
+	sorted and add missing freelist item merging cases.
+
 2017-06-01  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	(GLIBCXX_CROSSCONFIG): Handle *-solaris* like *-linux* etc.
