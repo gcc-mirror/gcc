@@ -70,7 +70,7 @@ __gthread_once (__gthread_once_t *guard, void (*func)(void))
       /* This can happen on powerpc, which is using all 32 bits
 	 of the gthread_once_t structure.  */
       if (guard->done)
-	return;
+	return 0;
 #endif
       taskDelay (1);
     }
