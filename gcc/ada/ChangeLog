@@ -1,3 +1,10 @@
+2017-06-02  Olivier Hainque  <hainque@adacore.com>
+
+	* vx_crtbegin_auto.c: New file.
+	* vx_crtbegin.c: New file.
+	* vx_crtbegin.inc: New file.
+	* vx_crtend.c: New file.
+
 2017-05-25  Jonathan Wakely  <jwakely@redhat.com>
 
 	* gcc-interface/utils2.c (compare_elmt_bitpos): Remove redundant
