@@ -1,6 +1,9 @@
-2017-06-02  Carl Love  <cel@us.ibm.com>
+2017-06-02  Paolo Carlini  <paolo.carlini@oracle.com>
 
-gcc/testsuite/ChangeLog:
+	PR c++/68754
+	* g++.dg/cpp1y/constexpr-68754.C: New.
+
+2017-06-02  Carl Love  <cel@us.ibm.com>
 
 	* gcc.target/powerpc/builtins-3-runnable.c: New file of runnable tests
 	for the new built-ins.
