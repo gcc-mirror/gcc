@@ -460,6 +460,7 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
    TYPE_LANG_SLOT_1
      For an ENUMERAL_TYPE, this is ENUM_TEMPLATE_INFO.
      For a FUNCTION_TYPE or METHOD_TYPE, this is TYPE_RAISES_EXCEPTIONS
+     For a POINTER_TYPE (to a METHOD_TYPE), this is TYPE_PTRMEMFUNC_TYPE
 
   BINFO_VIRTUALS
      For a binfo, this is a TREE_LIST.  There is an entry for each
@@ -1849,22 +1850,6 @@ struct GTY (()) tree_pair_s {
 };
 typedef tree_pair_s *tree_pair_p;
 
-/* This is a few header flags for 'struct lang_type'.  Actually,
-   all but the first are used only for lang_type_class; they
-   are put in this structure to save space.  */
-struct GTY(()) lang_type_header {
-  BOOL_BITFIELD is_lang_type_class : 1;
-
-  BOOL_BITFIELD has_type_conversion : 1;
-  BOOL_BITFIELD has_copy_ctor : 1;
-  BOOL_BITFIELD has_default_ctor : 1;
-  BOOL_BITFIELD const_needs_init : 1;
-  BOOL_BITFIELD ref_needs_init : 1;
-  BOOL_BITFIELD has_const_copy_assign : 1;
-
-  BOOL_BITFIELD spare : 1;
-};
-
 /* This structure provides additional information above and beyond
    what is provide in the ordinary tree_type.  In the past, we used it
    for the types of class types, template parameters types, typename
@@ -1878,10 +1863,16 @@ struct GTY(()) lang_type_header {
    many (i.e., thousands) of classes can easily be generated.
    Therefore, we should endeavor to keep the size of this structure to
    a minimum.  */
-struct GTY(()) lang_type_class {
-  struct lang_type_header h;
-
+struct GTY(()) lang_type {
   unsigned char align;
+
+  unsigned has_type_conversion : 1;
+  unsigned has_copy_ctor : 1;
+  unsigned has_default_ctor : 1;
+  unsigned const_needs_init : 1;
+  unsigned ref_needs_init : 1;
+  unsigned has_const_copy_assign : 1;
+  unsigned use_template : 2;
 
   unsigned has_mutable : 1;
   unsigned com_interface : 1;
@@ -1899,6 +1890,7 @@ struct GTY(()) lang_type_class {
   unsigned anon_aggr : 1;
   unsigned non_zero_init : 1;
   unsigned empty_p : 1;
+  /* 32 bits allocated.  */
 
   unsigned vec_new_uses_cookie : 1;
   unsigned declared_class : 1;
@@ -1909,25 +1901,24 @@ struct GTY(()) lang_type_class {
   unsigned fields_readonly : 1;
   unsigned ptrmemfunc_flag : 1;
 
-  unsigned use_template : 2;
   unsigned was_anonymous : 1;
   unsigned lazy_default_ctor : 1;
   unsigned lazy_copy_ctor : 1;
   unsigned lazy_copy_assign : 1;
   unsigned lazy_destructor : 1;
   unsigned has_const_copy_ctor : 1;
-
   unsigned has_complex_copy_ctor : 1;
   unsigned has_complex_copy_assign : 1;
+
   unsigned non_aggregate : 1;
   unsigned has_complex_dflt : 1;
   unsigned has_list_ctor : 1;
   unsigned non_std_layout : 1;
   unsigned is_literal : 1;
   unsigned lazy_move_ctor : 1;
-
   unsigned lazy_move_assign : 1;
   unsigned has_complex_move_ctor : 1;
+
   unsigned has_complex_move_assign : 1;
   unsigned has_constexpr_ctor : 1;
   unsigned unique_obj_representations : 1;
@@ -1940,7 +1931,7 @@ struct GTY(()) lang_type_class {
   /* There are some bits left to fill out a 32-bit word.  Keep track
      of this by updating the size of this bitfield whenever you add or
      remove a flag.  */
-  unsigned dummy : 2;
+  unsigned dummy : 4;
 
   tree primary_base;
   vec<tree_pair_s, va_gc> *vcall_indices;
@@ -1968,40 +1959,9 @@ struct GTY(()) lang_type_class {
   tree lambda_expr;
 };
 
-struct GTY(()) lang_type_ptrmem {
-  struct lang_type_header h;
-  tree record;
-};
-
-struct GTY(()) lang_type {
-  union lang_type_u
-  {
-    struct lang_type_header GTY((skip (""))) h;
-    struct lang_type_class  GTY((tag ("1"))) c;
-    struct lang_type_ptrmem GTY((tag ("0"))) ptrmem;
-  } GTY((desc ("%h.h.is_lang_type_class"))) u;
-};
-
-#if defined ENABLE_TREE_CHECKING && (GCC_VERSION >= 2007)
-
-#define LANG_TYPE_CLASS_CHECK(NODE) __extension__		\
-({  struct lang_type *lt = TYPE_LANG_SPECIFIC (NODE);		\
-    if (! lt->u.h.is_lang_type_class)				\
-      lang_check_failed (__FILE__, __LINE__, __FUNCTION__);	\
-    &lt->u.c; })
-
-#define LANG_TYPE_PTRMEM_CHECK(NODE) __extension__		\
-({  struct lang_type *lt = TYPE_LANG_SPECIFIC (NODE);		\
-    if (lt->u.h.is_lang_type_class)				\
-      lang_check_failed (__FILE__, __LINE__, __FUNCTION__);	\
-    &lt->u.ptrmem; })
-
-#else
-
-#define LANG_TYPE_CLASS_CHECK(NODE) (&TYPE_LANG_SPECIFIC (NODE)->u.c)
-#define LANG_TYPE_PTRMEM_CHECK(NODE) (&TYPE_LANG_SPECIFIC (NODE)->u.ptrmem)
-
-#endif /* ENABLE_TREE_CHECKING */
+/* We used to have a variant type for lang_type.  Keep the name of the
+   checking accessor for the sole survivor.  */
+#define LANG_TYPE_CLASS_CHECK(NODE) (TYPE_LANG_SPECIFIC (NODE))
 
 /* Nonzero for _CLASSTYPE means that operator delete is defined.  */
 #define TYPE_GETS_DELETE(NODE) (LANG_TYPE_CLASS_CHECK (NODE)->gets_delete)
@@ -2016,7 +1976,7 @@ struct GTY(()) lang_type {
 /* Nonzero means that this _CLASSTYPE node defines ways of converting
    itself to other types.  */
 #define TYPE_HAS_CONVERSION(NODE) \
-  (LANG_TYPE_CLASS_CHECK (NODE)->h.has_type_conversion)
+  (LANG_TYPE_CLASS_CHECK (NODE)->has_type_conversion)
 
 /* Nonzero means that NODE (a class type) has a default constructor --
    but that it has not yet been declared.  */
@@ -2059,10 +2019,10 @@ struct GTY(()) lang_type {
 /* True iff the class type NODE has an "operator =" whose parameter
    has a parameter of type "const X&".  */
 #define TYPE_HAS_CONST_COPY_ASSIGN(NODE) \
-  (LANG_TYPE_CLASS_CHECK (NODE)->h.has_const_copy_assign)
+  (LANG_TYPE_CLASS_CHECK (NODE)->has_const_copy_assign)
 
 /* Nonzero means that this _CLASSTYPE node has an X(X&) constructor.  */
-#define TYPE_HAS_COPY_CTOR(NODE) (LANG_TYPE_CLASS_CHECK (NODE)->h.has_copy_ctor)
+#define TYPE_HAS_COPY_CTOR(NODE) (LANG_TYPE_CLASS_CHECK (NODE)->has_copy_ctor)
 #define TYPE_HAS_CONST_COPY_CTOR(NODE) \
   (LANG_TYPE_CLASS_CHECK (NODE)->has_const_copy_ctor)
 
@@ -2214,7 +2174,7 @@ struct GTY(()) lang_type {
 
 /* Nonzero means that this type has an X() constructor.  */
 #define TYPE_HAS_DEFAULT_CONSTRUCTOR(NODE) \
-  (LANG_TYPE_CLASS_CHECK (NODE)->h.has_default_ctor)
+  (LANG_TYPE_CLASS_CHECK (NODE)->has_default_ctor)
 
 /* Nonzero means that this type contains a mutable member.  */
 #define CLASSTYPE_HAS_MUTABLE(NODE) (LANG_TYPE_CLASS_CHECK (NODE)->has_mutable)
@@ -2283,17 +2243,17 @@ struct GTY(()) lang_type {
    which have no specified initialization.  */
 #define CLASSTYPE_READONLY_FIELDS_NEED_INIT(NODE)	\
   (TYPE_LANG_SPECIFIC (NODE)				\
-   ? LANG_TYPE_CLASS_CHECK (NODE)->h.const_needs_init : 0)
+   ? LANG_TYPE_CLASS_CHECK (NODE)->const_needs_init : 0)
 #define SET_CLASSTYPE_READONLY_FIELDS_NEED_INIT(NODE, VALUE) \
-  (LANG_TYPE_CLASS_CHECK (NODE)->h.const_needs_init = (VALUE))
+  (LANG_TYPE_CLASS_CHECK (NODE)->const_needs_init = (VALUE))
 
 /* Nonzero if this class has ref members
    which have no specified initialization.  */
 #define CLASSTYPE_REF_FIELDS_NEED_INIT(NODE)		\
   (TYPE_LANG_SPECIFIC (NODE)				\
-   ? LANG_TYPE_CLASS_CHECK (NODE)->h.ref_needs_init : 0)
+   ? LANG_TYPE_CLASS_CHECK (NODE)->ref_needs_init : 0)
 #define SET_CLASSTYPE_REF_FIELDS_NEED_INIT(NODE, VALUE) \
-  (LANG_TYPE_CLASS_CHECK (NODE)->h.ref_needs_init = (VALUE))
+  (LANG_TYPE_CLASS_CHECK (NODE)->ref_needs_init = (VALUE))
 
 /* Nonzero if this class is included from a header file which employs
    `#pragma interface', and it is not included in its implementation file.  */
@@ -4296,21 +4256,10 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
 #define TYPE_PTRMEMFUNC_OBJECT_TYPE(NODE) \
   TYPE_METHOD_BASETYPE (TREE_TYPE (TYPE_PTRMEMFUNC_FN_TYPE (NODE)))
 
-/* These are use to manipulate the canonical RECORD_TYPE from the
-   hashed POINTER_TYPE, and can only be used on the POINTER_TYPE.  */
-#define TYPE_GET_PTRMEMFUNC_TYPE(NODE) \
-  (TYPE_LANG_SPECIFIC (NODE) ? LANG_TYPE_PTRMEM_CHECK (NODE)->record : NULL)
-#define TYPE_SET_PTRMEMFUNC_TYPE(NODE, VALUE)				\
-  do {									\
-    if (TYPE_LANG_SPECIFIC (NODE) == NULL)				\
-      {									\
-	TYPE_LANG_SPECIFIC (NODE)                                       \
-	= (struct lang_type *) ggc_internal_cleared_alloc		\
-	 (sizeof (struct lang_type_ptrmem));				\
-	TYPE_LANG_SPECIFIC (NODE)->u.ptrmem.h.is_lang_type_class = 0;	\
-      }									\
-    TYPE_LANG_SPECIFIC (NODE)->u.ptrmem.record = (VALUE);		\
-  } while (0)
+/* The canonical internal RECORD_TYPE from the POINTER_TYPE to
+   METHOD_TYPE.  */
+#define TYPE_PTRMEMFUNC_TYPE(NODE) \
+  TYPE_LANG_SLOT_1 (NODE)
 
 /* For a pointer-to-member type of the form `T X::*', this is `X'.
    For a type like `void (X::*)() const', this type is `X', not `const
