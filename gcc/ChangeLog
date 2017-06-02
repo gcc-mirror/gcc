@@ -1,3 +1,7 @@
+2017-06-02  Olivier Hainque  <hainque@adacore.com>
+
+	* config/vx-common.h (DWARF_UNWIND_INFO): Switch #define to 1.
+
 2017-06-02  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/aarch64/aarch64.c (aarch64_split_compare_and_swap):
