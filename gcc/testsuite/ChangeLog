@@ -1,5 +1,8 @@
 2017-06-02  Jakub Jelinek  <jakub@redhat.com>
 
+	PR rtl-optimization/80903
+	* gcc.dg/pr80903.c: New test.
+
 	PR fortran/80918
 	* gfortran.dg/gomp/pr80918.f90: New test.
 
