@@ -1708,8 +1708,7 @@ vect_analyze_loop_operations (loop_vec_info loop_vinfo)
                  are not used in the outerloop (unless it is double reduction,
                  i.e., this phi is vect_reduction_def), cause this case
                  requires to actually do something here.  */
-              if ((!STMT_VINFO_RELEVANT_P (stmt_info)
-                   || STMT_VINFO_LIVE_P (stmt_info))
+              if (STMT_VINFO_LIVE_P (stmt_info)
                   && STMT_VINFO_DEF_TYPE (stmt_info)
                      != vect_double_reduction_def)
                 {
