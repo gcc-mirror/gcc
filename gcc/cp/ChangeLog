@@ -1,3 +1,14 @@
+2017-06-02  Nathan Sidwell  <nathan@acm.org>
+
+	* name-lookup.h (cp_binding_level): Lose namespaces field.
+	* name-lookup.c (add_decl_to_level): Chain namespaces on the names
+	list.
+	(suggest_alternatives_for): Adjust for namespace list.  Do
+	breadth-first search.
+	* decl2.c (collect_source_refs): Namespaces are on the regulr
+	list.
+	(collect_ada_namespace): Likewise.
+
 2017-06-02  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	* typeck.c (cp_build_binary_op): Implement the -Wsizeof_pointer_div

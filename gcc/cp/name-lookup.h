@@ -188,9 +188,6 @@ struct GTY(()) cp_binding_level {
       are wrapped in TREE_LISTs; the TREE_VALUE is the OVERLOAD.  */
   tree names;
 
-  /* A chain of NAMESPACE_DECL nodes.  */
-  tree namespaces;
-
   /* A list of USING_DECL nodes.  */
   tree usings;
 
