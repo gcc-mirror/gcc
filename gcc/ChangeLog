@@ -1,5 +1,11 @@
 2017-06-02  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/80948
+	* tree-tailcall.c (find_tail_calls): Track stmts to move in
+	stmt order as well.
+
+2017-06-02  Richard Biener  <rguenther@suse.de>
+
 	* tree-vect-loop.c (vect_analyze_loop_operations): Not relevant
 	PHIs are ok.
 	* tree-vect-stmts.c (process_use): Do not mark backedge defs
