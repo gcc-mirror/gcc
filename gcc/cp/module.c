@@ -980,11 +980,14 @@ private:
   void loc (FILE *, location_t);
   bool mark_present (tree);
   void globals (FILE *, unsigned, const gtp *);
+  void tree_vec (FILE *, tree *, unsigned);
   void core_bools (FILE *, tree);
   void core_vals (FILE *, tree);
   void lang_type_bools (FILE *, tree);
   void lang_decl_bools (FILE *, tree);
   void lang_decl_vals (FILE *, tree);
+  void define_function (FILE *, tree);
+  void define_class (FILE *, tree);
 
 public:
   void tree_node (FILE *, tree);
@@ -1065,11 +1068,14 @@ private:
   location_t loc (FILE *);
   bool mark_present (tree);
   bool globals (FILE *, unsigned, const gtp *);
+  bool tree_vec (FILE *, tree *, unsigned);
   bool core_bools (FILE *, tree);
   bool core_vals (FILE *, tree);
   bool lang_type_bools (FILE *, tree);
   bool lang_decl_bools (FILE *, tree);
   bool lang_decl_vals (FILE *, tree);
+  bool define_function (FILE *, tree);
+  bool define_class (FILE *, tree);
 
 public:
   tree tree_node (FILE *);
@@ -1635,6 +1641,110 @@ cpms_in::tag_binding (FILE *d)
 			      name, value, type);
 }
 
+/* Stream a function definition.  */
+
+void
+cpms_out::define_function (FILE *d, tree decl)
+{
+  tree_node (d, DECL_ARGUMENTS (decl));
+  tree_node (d, DECL_RESULT (decl));
+  tree_node (d, DECL_INITIAL (decl));
+  tree_node (d, DECL_SAVED_TREE (decl));
+}
+
+bool
+cpms_in::define_function (FILE *d, tree decl)
+{
+  tree args = tree_node (d);
+  tree result = tree_node (d);
+  tree initial = tree_node (d);
+  tree saved = tree_node (d);
+
+  if (r.error ())
+    return false;
+
+  unsigned mod = MAYBE_DECL_MODULE_INDEX (decl);
+  if (mod == GLOBAL_MODULE_INDEX
+      && DECL_SAVED_TREE (decl))
+    ; // FIXME check same
+  else if (mod != mod_ix)
+    {
+      error ("unexpected definition of %q#D", decl);
+      r.bad ();
+    }
+  else
+    {
+      DECL_ARGUMENTS (decl) = args;
+      DECL_RESULT (decl) = result;
+      DECL_INITIAL (decl) = initial;
+      DECL_SAVED_TREE (decl) = saved;
+
+      comdat_linkage (decl);
+      note_vague_linkage_fn (decl);
+      current_function_decl = decl;
+      allocate_struct_function (decl, false);
+      cfun->language = ggc_cleared_alloc<language_function> ();
+      cfun->language->base.x_stmt_tree.stmts_are_full_exprs_p = 1;
+      set_cfun (NULL);
+      current_function_decl = NULL_TREE;
+      cgraph_node::finalize_function (decl, false);
+    }
+
+  return true;
+}
+
+/* Stream a class definition.  */
+
+void
+cpms_out::define_class (FILE *d, tree type)
+{
+  /* Stream the fields.  */
+  for (tree field = TYPE_FIELDS (type); field; field = TREE_CHAIN (field))
+    {
+      // FIXME: other field types.
+      if (TREE_CODE (field) == FIELD_DECL)
+	tree_node (d, field);
+    }
+  tree_node (d, NULL_TREE);
+  // TYPE_METHODS (decl)
+  // TYPE_VFIELD (decl)
+  tree_node (d, TYPE_BINFO (type));
+}
+
+bool
+cpms_in::define_class (FILE *d, tree type)
+{
+  /* Stream the fields.  */
+  tree fields = NULL_TREE;
+  for (tree field, *chain = &fields;
+       (field = tree_node (d));
+       chain = &TREE_CHAIN (field))
+    {
+      // FIXME: Other field types
+      gcc_assert (TREE_CODE (field) == FIELD_DECL);
+      if (DECL_CONTEXT (field) != type)
+	r.bad ();
+      else
+	{
+	  gcc_assert (!TREE_CHAIN (field));
+	  *chain = field;
+	}
+      if (r.error ())
+	return false;
+    }
+
+  // TYPE_METHODS (decl)
+  // TYPE_VFIELD (decl)
+  tree binfo = tree_node (d);
+  // FIXME: Sanity check binfo
+
+  TYPE_FIELDS (type) = fields;
+  TYPE_BINFO (type) = binfo;
+  create_classtype_sorted_fields (fields, type);
+
+  return true;
+}
+
 /* Write out DECL's definition, if importers need it.  */
 
 void
@@ -1644,6 +1754,23 @@ cpms_out::tag_definition (FILE *d, tree decl)
     {
     default:
       return;
+
+    case TYPE_DECL:
+      {
+	tree type = TREE_TYPE (decl);
+
+	switch (TREE_CODE (type))
+	  {
+	  default:
+	    return;
+
+	  case RECORD_TYPE:
+	  case UNION_TYPE:
+	    if (!COMPLETE_TYPE_P (type))
+	      return;
+	  }
+      }
+      break;
 
     case FUNCTION_DECL:
       if (!DECL_SAVED_TREE (decl))
@@ -1664,10 +1791,21 @@ cpms_out::tag_definition (FILE *d, tree decl)
     default:
       gcc_unreachable ();
     case FUNCTION_DECL:
-      tree_node (d, DECL_ARGUMENTS (decl));
-      tree_node (d, DECL_RESULT (decl));
-      tree_node (d, DECL_INITIAL (decl));
-      tree_node (d, DECL_SAVED_TREE (decl));
+      define_function (d, decl);
+      break;
+    case TYPE_DECL:
+      {
+	tree type = TREE_TYPE (decl);
+	switch (TREE_CODE (type))
+	  {
+	  default:
+	    gcc_unreachable ();
+	  case RECORD_TYPE:
+	  case UNION_TYPE:
+	    define_class (d, type);
+	    break;
+	  }
+      }
       break;
     }
 }
@@ -1680,6 +1818,9 @@ cpms_in::tag_definition (FILE *d)
     fprintf (d, "Reading definition for %s:'%s'\n",
 	     get_tree_code_name (TREE_CODE (decl)), name_string (decl));
 
+  if (r.error ())
+    return false;
+
   switch (TREE_CODE (decl))
     {
     default:
@@ -1687,45 +1828,22 @@ cpms_in::tag_definition (FILE *d)
       return false;
 
     case FUNCTION_DECL:
+      return define_function (d, decl);
+    case TYPE_DECL:
       {
-	tree args = tree_node (d);
-	tree result = tree_node (d);
-	tree initial = tree_node (d);
-	tree saved = tree_node (d);
-
-	if (r.error ())
-	  break;
-	unsigned mod = MAYBE_DECL_MODULE_INDEX (decl);
-	if (mod == GLOBAL_MODULE_INDEX
-	    && DECL_SAVED_TREE (decl))
-	  ; // FIXME check same
-	else if (mod != mod_ix)
+	tree type = TREE_TYPE (decl);
+	switch (TREE_CODE (type))
 	  {
-	    error ("unexpected definition of %q#D", decl);
-	    r.bad ();
-	  }
-	else
-	  {
-	    DECL_ARGUMENTS (decl) = args;
-	    DECL_RESULT (decl) = result;
-	    DECL_INITIAL (decl) = initial;
-	    DECL_SAVED_TREE (decl) = saved;
+	  default:
+	    return false;
 
-	    comdat_linkage (decl);
-	    note_vague_linkage_fn (decl);
-	    current_function_decl = decl;
-	    allocate_struct_function (decl, false);
-	    cfun->language = ggc_cleared_alloc<language_function> ();
-	    cfun->language->base.x_stmt_tree.stmts_are_full_exprs_p = 1;
-	    set_cfun (NULL);
-	    current_function_decl = NULL_TREE;
-	    cgraph_node::finalize_function (decl, false);
+	  case RECORD_TYPE:
+	  case UNION_TYPE:
+	    return define_class (d, type);
 	  }
-	break;
       }
     }
-
-  return !r.error ();
+  gcc_unreachable ();
 }
 
 int
@@ -2448,6 +2566,23 @@ cpms_in::lang_type_bools (FILE *, tree t)
   return !r.error ();
 }
 
+/* Read and write a vec<tree, va_gc>  */
+
+void
+cpms_out::tree_vec (FILE *d, tree *vec, unsigned n)
+{
+  while (n--)
+    tree_node (d, vec[n]);
+}
+
+bool
+cpms_in::tree_vec (FILE *d, tree *vec, unsigned n)
+{
+  while (n--)
+    vec[n] = tree_node (d);
+  return !r.error ();
+}
+
 /* Read & write the core values and pointers.  */
 
 void
@@ -2486,6 +2621,23 @@ cpms_out::core_vals (FILE *d, tree t)
       WT (t->list.common.chain);
       WT (t->list.purpose);
       WT (t->list.value);
+    }
+
+  if (CODE_CONTAINS_STRUCT (code, TS_BINFO))
+    {
+      WT (t->binfo.offset);
+      WT (t->binfo.vtable);
+      WT (t->binfo.virtuals);
+      WT (t->binfo.vptr_field);
+      WT (t->binfo.inheritance);
+      WT (t->binfo.vtt_subvtt);
+      WT (t->binfo.vtt_vptr);
+      if (unsigned num = BINFO_N_BASE_BINFOS (t))
+	{
+	  // FIXME: acces binfo maybe shared.
+	  tree_vec (d, t->binfo.base_accesses->address (), num);
+	  tree_vec (d, t->binfo.base_binfos.address (), num);
+	}
     }
 
   if (CODE_CONTAINS_STRUCT (code, TS_TYPE_COMMON))
@@ -2559,7 +2711,16 @@ cpms_out::core_vals (FILE *d, tree t)
     }
 
   /* TS_DECL_WITH_RTL.  */
-  /* TS_FIELD_DECL.  */
+
+  if (CODE_CONTAINS_STRUCT (code, TS_FIELD_DECL))
+    {
+      WT (t->field_decl.offset);
+      WT (t->field_decl.bit_field_type);
+      WT (t->field_decl.qualifier);
+      WT (t->field_decl.bit_offset);
+      WT (t->field_decl.fcontext);
+    }
+
   /* TS_RESULT_DECL. */
   /* TS_CONST_DECL.  */
   /* TS_PARM_DECL.  */
@@ -2649,6 +2810,24 @@ cpms_in::core_vals (FILE *d, tree t)
       RT (t->list.value);
     }
 
+  if (CODE_CONTAINS_STRUCT (code, TS_BINFO))
+    {
+      RT (t->binfo.offset);
+      RT (t->binfo.vtable);
+      RT (t->binfo.virtuals);
+      RT (t->binfo.vptr_field);
+      RT (t->binfo.inheritance);
+      RT (t->binfo.vtt_subvtt);
+      RT (t->binfo.vtt_vptr);
+      if (unsigned num = BINFO_N_BASE_BINFOS (t))
+	{
+	  // FIXME: acces binfo maybe shared.
+	  vec_alloc (t->binfo.base_accesses, num);
+	  tree_vec (d, t->binfo.base_accesses->address (), num);
+	  tree_vec (d, t->binfo.base_binfos.address (), num);
+	}
+    }
+
   if (CODE_CONTAINS_STRUCT (code, TS_TYPE_COMMON))
     {
       RT (t->type_common.main_variant);
@@ -2720,7 +2899,16 @@ cpms_in::core_vals (FILE *d, tree t)
     }
 
   /* TS_DECL_WITH_RTL.  */
-  /* TS_FIELD_DECL.  */
+
+  if (CODE_CONTAINS_STRUCT (code, TS_FIELD_DECL))
+    {
+      RT (t->field_decl.offset);
+      RT (t->field_decl.bit_field_type);
+      RT (t->field_decl.qualifier);
+      RT (t->field_decl.bit_offset);
+      RT (t->field_decl.fcontext);
+    }
+
   /* TS_RESULT_DECL. */
   /* TS_CONST_DECL.  */
   /* TS_PARM_DECL.  */

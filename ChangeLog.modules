@@ -1,5 +1,19 @@
 2017-06-02  Nathan Sidwell  <nathan@acm.org>
 
+	Pod struct
+	gcc/cp/
+	* cp-tree.h (create_classtype_sorted_fields): Declare.
+	* class.c (finish_struct_1): Adjust sorted field call.
+	(insert_into_classtype_sorted_fields): Rename to ...
+	(create_classtype_sorted_fields): ... here.  Export
+	* module.c (cpms_{out,in}::tree_vec): New.
+	(cpms_{out,in}::define_function): New.
+	(cpms_{out,in}::define_class): New.
+	(cpms_{out,in}::tag_definition): Adjust.
+	(cpms_{out,in}::core_vals): Stream binfo, field_decl.
+	gcc/testsuite/
+	* g++.dg/modules/class-1_[abcd].C: Add field accesses.
+
 	Merge r248828.
 
 	gcc/cp/

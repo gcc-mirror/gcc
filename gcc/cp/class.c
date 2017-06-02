@@ -7273,14 +7273,7 @@ finish_struct_1 (tree t)
 	&& same_type_p (TYPE_MAIN_VARIANT (TREE_TYPE (x)), t))
       SET_DECL_MODE (x, TYPE_MODE (t));
 
-  /* Done with FIELDS...now decide whether to sort these for
-     faster lookups later.
-
-     We use a small number because most searches fail (succeeding
-     ultimately as the search bores through the inheritance
-     hierarchy), and we want this failure to occur quickly.  */
-
-  insert_into_classtype_sorted_fields (TYPE_FIELDS (t), t, 8);
+  create_classtype_sorted_fields (TYPE_FIELDS (t), t);
 
   /* Complain if one of the field types requires lower visibility.  */
   constrain_class_visibility (t);
@@ -7348,14 +7341,13 @@ finish_struct_1 (tree t)
     }
 }
 
-/* Insert FIELDS into T for the sorted case if the FIELDS count is
-   equal to THRESHOLD or greater than THRESHOLD.  */
+/* Create the sorted field vec from FIELDS into T.  */
 
-static void 
-insert_into_classtype_sorted_fields (tree fields, tree t, int threshold)
+void
+create_classtype_sorted_fields (tree fields, tree t)
 {
   int n_fields = count_fields (fields);
-  if (n_fields >= threshold)
+  if (n_fields >= 8)
     {
       struct sorted_fields_type *field_vec = sorted_fields_type_new (n_fields);
       add_fields_to_record_type (fields, field_vec, 0);

@@ -4,5 +4,5 @@ export module One;
 namespace Bob 
 {
   struct X;
-  export struct Y {};
+  export struct Y {int a; int b;};
 }
