@@ -1,3 +1,9 @@
+2017-06-02  Will Schmidt  <will_schmidt@vnet.ibm.com>
+	* config/rs6000/rs6000.c (rs6000_gimple_fold_builtin): Add handling
+	for early expansion of vec_min and vec_max builtins.
+	(builtin_function_type): Add min/max unsigned variants to those
+	identified as having unsigned arguments.
+
 2017-06-02  Olivier Hainque  <hainque@adacore.com>
 
 	* config/vx-common.h (DWARF_UNWIND_INFO): Switch #define to 1.

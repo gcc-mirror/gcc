@@ -17347,6 +17347,46 @@ rs6000_gimple_fold_builtin (gimple_stmt_iterator *gsi)
 	gsi_replace (gsi, g, true);
 	return true;
       }
+    /* flavors of vec_min.  */
+    case VSX_BUILTIN_XVMINDP:
+    case P8V_BUILTIN_VMINSD:
+    case P8V_BUILTIN_VMINUD:
+    case ALTIVEC_BUILTIN_VMINSB:
+    case ALTIVEC_BUILTIN_VMINSH:
+    case ALTIVEC_BUILTIN_VMINSW:
+    case ALTIVEC_BUILTIN_VMINUB:
+    case ALTIVEC_BUILTIN_VMINUH:
+    case ALTIVEC_BUILTIN_VMINUW:
+    case ALTIVEC_BUILTIN_VMINFP:
+      {
+	arg0 = gimple_call_arg (stmt, 0);
+	arg1 = gimple_call_arg (stmt, 1);
+	lhs = gimple_call_lhs (stmt);
+	gimple *g = gimple_build_assign (lhs, MIN_EXPR, arg0, arg1);
+	gimple_set_location (g, gimple_location (stmt));
+	gsi_replace (gsi, g, true);
+	return true;
+      }
+    /* flavors of vec_max.  */
+    case VSX_BUILTIN_XVMAXDP:
+    case P8V_BUILTIN_VMAXSD:
+    case P8V_BUILTIN_VMAXUD:
+    case ALTIVEC_BUILTIN_VMAXSB:
+    case ALTIVEC_BUILTIN_VMAXSH:
+    case ALTIVEC_BUILTIN_VMAXSW:
+    case ALTIVEC_BUILTIN_VMAXUB:
+    case ALTIVEC_BUILTIN_VMAXUH:
+    case ALTIVEC_BUILTIN_VMAXUW:
+    case ALTIVEC_BUILTIN_VMAXFP:
+      {
+	arg0 = gimple_call_arg (stmt, 0);
+	arg1 = gimple_call_arg (stmt, 1);
+	lhs = gimple_call_lhs (stmt);
+	gimple *g = gimple_build_assign (lhs, MAX_EXPR, arg0, arg1);
+	gimple_set_location (g, gimple_location (stmt));
+	gsi_replace (gsi, g, true);
+	return true;
+      }
     default:
       break;
     }
@@ -18985,6 +19025,14 @@ builtin_function_type (machine_mode mode_ret, machine_mode mode_arg0,
     case MISC_BUILTIN_DIVDEU:
     case MISC_BUILTIN_DIVDEUO:
     case VSX_BUILTIN_UDIV_V2DI:
+    case ALTIVEC_BUILTIN_VMAXUB:
+    case ALTIVEC_BUILTIN_VMINUB:
+    case ALTIVEC_BUILTIN_VMAXUH:
+    case ALTIVEC_BUILTIN_VMINUH:
+    case ALTIVEC_BUILTIN_VMAXUW:
+    case ALTIVEC_BUILTIN_VMINUW:
+    case P8V_BUILTIN_VMAXUD:
+    case P8V_BUILTIN_VMINUD:
       h.uns_p[0] = 1;
       h.uns_p[1] = 1;
       h.uns_p[2] = 1;

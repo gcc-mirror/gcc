@@ -1,3 +1,11 @@
+2017-06-02  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	* gcc.target/powerpc/fold-vec-minmax-char.c: New.
+	* gcc.target/powerpc/fold-vec-minmax-floatdouble.c: New.
+	* gcc.target/powerpc/fold-vec-minmax-int.c: New.
+	* gcc.target/powerpc/fold-vec-minmax-longlong.c: New.
+	* gcc.target/powerpc/fold-vec-minmax-short.c: New.
+
 2017-06-02  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* gcc.target/aarch64/atomic_cmp_exchange_zero_strong_1.c: New test.
