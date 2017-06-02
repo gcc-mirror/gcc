@@ -1,3 +1,18 @@
+2017-06-02  Prakhar Bahuguna  <prakhar.bahuguna@arm.com>
+
+	Backport from mainline
+	2017-05-05  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+		    Prakhar Bahuguna  <prakhar.bahuguna@arm.com>
+
+	PR target/71607
+	* gcc.target/arm/thumb2-slow-flash-data.c: Renamed to ...
+	* gcc.target/arm/thumb2-slow-flash-data-1.c: ... this.
+	* gcc.target/arm/thumb2-slow-flash-data-2.c: New.
+	* gcc.target/arm/thumb2-slow-flash-data-3.c: New.
+	* gcc.target/arm/thumb2-slow-flash-data-4.c: New.
+	* gcc.target/arm/thumb2-slow-flash-data-5.c: New.
+	* gcc.target/arm/tls-disable-literal-pool.c: New.
+
 2017-06-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/80903
