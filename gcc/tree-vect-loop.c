@@ -3813,347 +3813,6 @@ vect_model_induction_cost (stmt_vec_info stmt_info, int ncopies)
 }
 
 
-/* Function get_initial_def_for_induction
-
-   Input:
-   STMT - a stmt that performs an induction operation in the loop.
-   IV_PHI - the initial value of the induction variable
-
-   Output:
-   Return a vector variable, initialized with the first VF values of
-   the induction variable.  E.g., for an iv with IV_PHI='X' and
-   evolution S, for a vector of 4 units, we want to return:
-   [X, X + S, X + 2*S, X + 3*S].  */
-
-static tree
-get_initial_def_for_induction (gimple *iv_phi)
-{
-  stmt_vec_info stmt_vinfo = vinfo_for_stmt (iv_phi);
-  loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_vinfo);
-  struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
-  tree vectype;
-  int nunits;
-  edge pe = loop_preheader_edge (loop);
-  struct loop *iv_loop;
-  basic_block new_bb;
-  tree new_vec, vec_init, vec_step, t;
-  tree new_name;
-  gimple *new_stmt;
-  gphi *induction_phi;
-  tree induc_def, vec_def, vec_dest;
-  tree init_expr, step_expr;
-  int vf = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
-  int i;
-  int ncopies;
-  tree expr;
-  stmt_vec_info phi_info = vinfo_for_stmt (iv_phi);
-  bool nested_in_vect_loop = false;
-  gimple_seq stmts;
-  imm_use_iterator imm_iter;
-  use_operand_p use_p;
-  gimple *exit_phi;
-  edge latch_e;
-  tree loop_arg;
-  gimple_stmt_iterator si;
-  basic_block bb = gimple_bb (iv_phi);
-  tree stepvectype;
-  tree resvectype;
-
-  /* Is phi in an inner-loop, while vectorizing an enclosing outer-loop?  */
-  if (nested_in_vect_loop_p (loop, iv_phi))
-    {
-      nested_in_vect_loop = true;
-      iv_loop = loop->inner;
-    }
-  else
-    iv_loop = loop;
-  gcc_assert (iv_loop == (gimple_bb (iv_phi))->loop_father);
-
-  latch_e = loop_latch_edge (iv_loop);
-  loop_arg = PHI_ARG_DEF_FROM_EDGE (iv_phi, latch_e);
-
-  step_expr = STMT_VINFO_LOOP_PHI_EVOLUTION_PART (phi_info);
-  gcc_assert (step_expr != NULL_TREE);
-
-  pe = loop_preheader_edge (iv_loop);
-  init_expr = PHI_ARG_DEF_FROM_EDGE (iv_phi,
-				     loop_preheader_edge (iv_loop));
-
-  vectype = get_vectype_for_scalar_type (TREE_TYPE (init_expr));
-  resvectype = get_vectype_for_scalar_type (TREE_TYPE (PHI_RESULT (iv_phi)));
-  gcc_assert (vectype);
-  nunits = TYPE_VECTOR_SUBPARTS (vectype);
-  ncopies = vf / nunits;
-
-  gcc_assert (phi_info);
-  gcc_assert (ncopies >= 1);
-
-  /* Convert the step to the desired type.  */
-  stmts = NULL;
-  step_expr = gimple_convert (&stmts, TREE_TYPE (vectype), step_expr);
-  if (stmts)
-    {
-      new_bb = gsi_insert_seq_on_edge_immediate (pe, stmts);
-      gcc_assert (!new_bb);
-    }
-
-  /* Find the first insertion point in the BB.  */
-  si = gsi_after_labels (bb);
-
-  /* Create the vector that holds the initial_value of the induction.  */
-  if (nested_in_vect_loop)
-    {
-      /* iv_loop is nested in the loop to be vectorized.  init_expr had already
-	 been created during vectorization of previous stmts.  We obtain it
-	 from the STMT_VINFO_VEC_STMT of the defining stmt.  */
-      vec_init = vect_get_vec_def_for_operand (init_expr, iv_phi);
-      /* If the initial value is not of proper type, convert it.  */
-      if (!useless_type_conversion_p (vectype, TREE_TYPE (vec_init)))
-	{
-	  new_stmt
-	    = gimple_build_assign (vect_get_new_ssa_name (vectype,
-							  vect_simple_var,
-							  "vec_iv_"),
-				   VIEW_CONVERT_EXPR,
-				   build1 (VIEW_CONVERT_EXPR, vectype,
-					   vec_init));
-	  vec_init = gimple_assign_lhs (new_stmt);
-	  new_bb = gsi_insert_on_edge_immediate (loop_preheader_edge (iv_loop),
-						 new_stmt);
-	  gcc_assert (!new_bb);
-	  set_vinfo_for_stmt (new_stmt,
-			      new_stmt_vec_info (new_stmt, loop_vinfo));
-	}
-    }
-  else
-    {
-      vec<constructor_elt, va_gc> *v;
-
-      /* iv_loop is the loop to be vectorized. Create:
-	 vec_init = [X, X+S, X+2*S, X+3*S] (S = step_expr, X = init_expr)  */
-      stmts = NULL;
-      new_name = gimple_convert (&stmts, TREE_TYPE (vectype), init_expr);
-
-      vec_alloc (v, nunits);
-      bool constant_p = is_gimple_min_invariant (new_name);
-      CONSTRUCTOR_APPEND_ELT (v, NULL_TREE, new_name);
-      for (i = 1; i < nunits; i++)
-	{
-	  /* Create: new_name_i = new_name + step_expr  */
-	  new_name = gimple_build (&stmts, PLUS_EXPR, TREE_TYPE (new_name),
-				   new_name, step_expr);
-	  if (!is_gimple_min_invariant (new_name))
-	    constant_p = false;
-	  CONSTRUCTOR_APPEND_ELT (v, NULL_TREE, new_name);
-	}
-      if (stmts)
-	{
-	  new_bb = gsi_insert_seq_on_edge_immediate (pe, stmts);
-	  gcc_assert (!new_bb);
-	}
-
-      /* Create a vector from [new_name_0, new_name_1, ..., new_name_nunits-1]  */
-      if (constant_p)
-	new_vec = build_vector_from_ctor (vectype, v);
-      else
-	new_vec = build_constructor (vectype, v);
-      vec_init = vect_init_vector (iv_phi, new_vec, vectype, NULL);
-    }
-
-
-  /* Create the vector that holds the step of the induction.  */
-  if (nested_in_vect_loop)
-    /* iv_loop is nested in the loop to be vectorized. Generate:
-       vec_step = [S, S, S, S]  */
-    new_name = step_expr;
-  else
-    {
-      /* iv_loop is the loop to be vectorized. Generate:
-	  vec_step = [VF*S, VF*S, VF*S, VF*S]  */
-      if (SCALAR_FLOAT_TYPE_P (TREE_TYPE (step_expr)))
-	{
-	  expr = build_int_cst (integer_type_node, vf);
-	  expr = fold_convert (TREE_TYPE (step_expr), expr);
-	}
-      else
-	expr = build_int_cst (TREE_TYPE (step_expr), vf);
-      new_name = fold_build2 (MULT_EXPR, TREE_TYPE (step_expr),
-			      expr, step_expr);
-      if (TREE_CODE (step_expr) == SSA_NAME)
-	new_name = vect_init_vector (iv_phi, new_name,
-				     TREE_TYPE (step_expr), NULL);
-    }
-
-  t = unshare_expr (new_name);
-  gcc_assert (CONSTANT_CLASS_P (new_name)
-	      || TREE_CODE (new_name) == SSA_NAME);
-  stepvectype = get_vectype_for_scalar_type (TREE_TYPE (new_name));
-  gcc_assert (stepvectype);
-  new_vec = build_vector_from_val (stepvectype, t);
-  vec_step = vect_init_vector (iv_phi, new_vec, stepvectype, NULL);
-
-
-  /* Create the following def-use cycle:
-     loop prolog:
-         vec_init = ...
-	 vec_step = ...
-     loop:
-         vec_iv = PHI <vec_init, vec_loop>
-         ...
-         STMT
-         ...
-         vec_loop = vec_iv + vec_step;  */
-
-  /* Create the induction-phi that defines the induction-operand.  */
-  vec_dest = vect_get_new_vect_var (vectype, vect_simple_var, "vec_iv_");
-  induction_phi = create_phi_node (vec_dest, iv_loop->header);
-  set_vinfo_for_stmt (induction_phi,
-		      new_stmt_vec_info (induction_phi, loop_vinfo));
-  induc_def = PHI_RESULT (induction_phi);
-
-  /* Create the iv update inside the loop  */
-  new_stmt = gimple_build_assign (vec_dest, PLUS_EXPR, induc_def, vec_step);
-  vec_def = make_ssa_name (vec_dest, new_stmt);
-  gimple_assign_set_lhs (new_stmt, vec_def);
-  gsi_insert_before (&si, new_stmt, GSI_SAME_STMT);
-  set_vinfo_for_stmt (new_stmt, new_stmt_vec_info (new_stmt, loop_vinfo));
-
-  /* Set the arguments of the phi node:  */
-  add_phi_arg (induction_phi, vec_init, pe, UNKNOWN_LOCATION);
-  add_phi_arg (induction_phi, vec_def, loop_latch_edge (iv_loop),
-	       UNKNOWN_LOCATION);
-
-
-  /* In case that vectorization factor (VF) is bigger than the number
-     of elements that we can fit in a vectype (nunits), we have to generate
-     more than one vector stmt - i.e - we need to "unroll" the
-     vector stmt by a factor VF/nunits.  For more details see documentation
-     in vectorizable_operation.  */
-
-  if (ncopies > 1)
-    {
-      stmt_vec_info prev_stmt_vinfo;
-      /* FORNOW. This restriction should be relaxed.  */
-      gcc_assert (!nested_in_vect_loop);
-
-      /* Create the vector that holds the step of the induction.  */
-      if (SCALAR_FLOAT_TYPE_P (TREE_TYPE (step_expr)))
-	{
-	  expr = build_int_cst (integer_type_node, nunits);
-	  expr = fold_convert (TREE_TYPE (step_expr), expr);
-	}
-      else
-	expr = build_int_cst (TREE_TYPE (step_expr), nunits);
-      new_name = fold_build2 (MULT_EXPR, TREE_TYPE (step_expr),
-			      expr, step_expr);
-      if (TREE_CODE (step_expr) == SSA_NAME)
-	new_name = vect_init_vector (iv_phi, new_name,
-				     TREE_TYPE (step_expr), NULL);
-      t = unshare_expr (new_name);
-      gcc_assert (CONSTANT_CLASS_P (new_name)
-		  || TREE_CODE (new_name) == SSA_NAME);
-      new_vec = build_vector_from_val (stepvectype, t);
-      vec_step = vect_init_vector (iv_phi, new_vec, stepvectype, NULL);
-
-      vec_def = induc_def;
-      prev_stmt_vinfo = vinfo_for_stmt (induction_phi);
-      for (i = 1; i < ncopies; i++)
-	{
-	  /* vec_i = vec_prev + vec_step  */
-	  new_stmt = gimple_build_assign (vec_dest, PLUS_EXPR,
-					  vec_def, vec_step);
-	  vec_def = make_ssa_name (vec_dest, new_stmt);
-	  gimple_assign_set_lhs (new_stmt, vec_def);
- 
-	  gsi_insert_before (&si, new_stmt, GSI_SAME_STMT);
-	  if (!useless_type_conversion_p (resvectype, vectype))
-	    {
-	      new_stmt
-		= gimple_build_assign
-			(vect_get_new_vect_var (resvectype, vect_simple_var,
-						"vec_iv_"),
-			 VIEW_CONVERT_EXPR,
-			 build1 (VIEW_CONVERT_EXPR, resvectype,
-				 gimple_assign_lhs (new_stmt)));
-	      gimple_assign_set_lhs (new_stmt,
-				     make_ssa_name
-				       (gimple_assign_lhs (new_stmt), new_stmt));
-	      gsi_insert_before (&si, new_stmt, GSI_SAME_STMT);
-	    }
-	  set_vinfo_for_stmt (new_stmt,
-			      new_stmt_vec_info (new_stmt, loop_vinfo));
-	  STMT_VINFO_RELATED_STMT (prev_stmt_vinfo) = new_stmt;
-	  prev_stmt_vinfo = vinfo_for_stmt (new_stmt);
-	}
-    }
-
-  if (nested_in_vect_loop)
-    {
-      /* Find the loop-closed exit-phi of the induction, and record
-         the final vector of induction results:  */
-      exit_phi = NULL;
-      FOR_EACH_IMM_USE_FAST (use_p, imm_iter, loop_arg)
-        {
-	  gimple *use_stmt = USE_STMT (use_p);
-	  if (is_gimple_debug (use_stmt))
-	    continue;
-
-	  if (!flow_bb_inside_loop_p (iv_loop, gimple_bb (use_stmt)))
-	    {
-	      exit_phi = use_stmt;
-	      break;
-	    }
-        }
-      if (exit_phi)
-	{
-	  stmt_vec_info stmt_vinfo = vinfo_for_stmt (exit_phi);
-	  /* FORNOW. Currently not supporting the case that an inner-loop induction
-	     is not used in the outer-loop (i.e. only outside the outer-loop).  */
-	  gcc_assert (STMT_VINFO_RELEVANT_P (stmt_vinfo)
-		      && !STMT_VINFO_LIVE_P (stmt_vinfo));
-
-	  STMT_VINFO_VEC_STMT (stmt_vinfo) = new_stmt;
-	  if (dump_enabled_p ())
-	    {
-	      dump_printf_loc (MSG_NOTE, vect_location,
-			       "vector of inductions after inner-loop:");
-	      dump_gimple_stmt (MSG_NOTE, TDF_SLIM, new_stmt, 0);
-	    }
-	}
-    }
-
-
-  if (dump_enabled_p ())
-    {
-      dump_printf_loc (MSG_NOTE, vect_location,
-		       "transform induction: created def-use cycle: ");
-      dump_gimple_stmt (MSG_NOTE, TDF_SLIM, induction_phi, 0);
-      dump_gimple_stmt (MSG_NOTE, TDF_SLIM,
-			SSA_NAME_DEF_STMT (vec_def), 0);
-    }
-
-  STMT_VINFO_VEC_STMT (phi_info) = induction_phi;
-  if (!useless_type_conversion_p (resvectype, vectype))
-    {
-      new_stmt = gimple_build_assign (vect_get_new_vect_var (resvectype,
-							     vect_simple_var,
-							     "vec_iv_"),
-				      VIEW_CONVERT_EXPR,
-				      build1 (VIEW_CONVERT_EXPR, resvectype,
-					      induc_def));
-      induc_def = make_ssa_name (gimple_assign_lhs (new_stmt), new_stmt);
-      gimple_assign_set_lhs (new_stmt, induc_def);
-      si = gsi_after_labels (bb);
-      gsi_insert_before (&si, new_stmt, GSI_SAME_STMT);
-      set_vinfo_for_stmt (new_stmt,
-			  new_stmt_vec_info (new_stmt, loop_vinfo));
-      STMT_VINFO_RELATED_STMT (vinfo_for_stmt (new_stmt))
-	= STMT_VINFO_RELATED_STMT (vinfo_for_stmt (induction_phi));
-    }
-
-  return induc_def;
-}
-
 
 /* Function get_initial_def_for_reduction
 
@@ -6431,14 +6090,52 @@ vectorizable_induction (gimple *phi,
 			gimple **vec_stmt)
 {
   stmt_vec_info stmt_info = vinfo_for_stmt (phi);
-  tree vectype = STMT_VINFO_VECTYPE (stmt_info);
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
   struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
-  int nunits = TYPE_VECTOR_SUBPARTS (vectype);
-  int ncopies = LOOP_VINFO_VECT_FACTOR (loop_vinfo) / nunits;
+  unsigned ncopies;
+  bool nested_in_vect_loop = false;
+  struct loop *iv_loop;
   tree vec_def;
+  edge pe = loop_preheader_edge (loop);
+  basic_block new_bb;
+  tree new_vec, vec_init, vec_step, t;
+  tree new_name;
+  gimple *new_stmt;
+  gphi *induction_phi;
+  tree induc_def, vec_dest;
+  tree init_expr, step_expr;
+  int vf = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
+  unsigned i;
+  tree expr;
+  gimple_seq stmts;
+  imm_use_iterator imm_iter;
+  use_operand_p use_p;
+  gimple *exit_phi;
+  edge latch_e;
+  tree loop_arg;
+  gimple_stmt_iterator si;
+  basic_block bb = gimple_bb (phi);
 
+  if (gimple_code (phi) != GIMPLE_PHI)
+    return false;
+
+  if (!STMT_VINFO_RELEVANT_P (stmt_info))
+    return false;
+
+  /* Make sure it was recognized as induction computation.  */
+  if (STMT_VINFO_DEF_TYPE (stmt_info) != vect_induction_def)
+    return false;
+
+  /* FORNOW: SLP not supported.  */
+  if (STMT_SLP_TYPE (stmt_info))
+    return false;
+
+  tree vectype = STMT_VINFO_VECTYPE (stmt_info);
+  unsigned nunits = TYPE_VECTOR_SUBPARTS (vectype);
+
+  ncopies = vf / nunits;
   gcc_assert (ncopies >= 1);
+
   /* FORNOW. These restrictions should be relaxed.  */
   if (nested_in_vect_loop_p (loop, phi))
     {
@@ -6455,6 +6152,10 @@ vectorizable_induction (gimple *phi,
 			     "multiple types in nested loop.\n");
 	  return false;
 	}
+
+      /* FORNOW: outer loop induction with SLP not supported.  */
+      if (STMT_SLP_TYPE (stmt_info))
+	return false;
 
       exit_phi = NULL;
       latch_e = loop_latch_edge (loop->inner);
@@ -6484,19 +6185,13 @@ vectorizable_induction (gimple *phi,
 	      return false;
 	    }
 	}
+
+      nested_in_vect_loop = true;
+      iv_loop = loop->inner;
     }
-
-  if (!STMT_VINFO_RELEVANT_P (stmt_info))
-    return false;
-
-  /* FORNOW: SLP not supported.  */
-  if (STMT_SLP_TYPE (stmt_info))
-    return false;
-
-  gcc_assert (STMT_VINFO_DEF_TYPE (stmt_info) == vect_induction_def);
-
-  if (gimple_code (phi) != GIMPLE_PHI)
-    return false;
+  else
+    iv_loop = loop;
+  gcc_assert (iv_loop == (gimple_bb (phi))->loop_father);
 
   if (!vec_stmt) /* transformation not required.  */
     {
@@ -6510,11 +6205,252 @@ vectorizable_induction (gimple *phi,
 
   /* Transform.  */
 
+  /* Compute a vector variable, initialized with the first VF values of
+     the induction variable.  E.g., for an iv with IV_PHI='X' and
+     evolution S, for a vector of 4 units, we want to compute:
+     [X, X + S, X + 2*S, X + 3*S].  */
+
   if (dump_enabled_p ())
     dump_printf_loc (MSG_NOTE, vect_location, "transform induction phi.\n");
 
-  vec_def = get_initial_def_for_induction (phi);
-  *vec_stmt = SSA_NAME_DEF_STMT (vec_def);
+  latch_e = loop_latch_edge (iv_loop);
+  loop_arg = PHI_ARG_DEF_FROM_EDGE (phi, latch_e);
+
+  step_expr = STMT_VINFO_LOOP_PHI_EVOLUTION_PART (stmt_info);
+  gcc_assert (step_expr != NULL_TREE);
+
+  pe = loop_preheader_edge (iv_loop);
+  init_expr = PHI_ARG_DEF_FROM_EDGE (phi,
+				     loop_preheader_edge (iv_loop));
+
+  /* Convert the step to the desired type.  */
+  stmts = NULL;
+  step_expr = gimple_convert (&stmts, TREE_TYPE (vectype), step_expr);
+  if (stmts)
+    {
+      new_bb = gsi_insert_seq_on_edge_immediate (pe, stmts);
+      gcc_assert (!new_bb);
+    }
+
+  /* Find the first insertion point in the BB.  */
+  si = gsi_after_labels (bb);
+
+  /* Create the vector that holds the initial_value of the induction.  */
+  if (nested_in_vect_loop)
+    {
+      /* iv_loop is nested in the loop to be vectorized.  init_expr had already
+	 been created during vectorization of previous stmts.  We obtain it
+	 from the STMT_VINFO_VEC_STMT of the defining stmt.  */
+      vec_init = vect_get_vec_def_for_operand (init_expr, phi);
+      /* If the initial value is not of proper type, convert it.  */
+      if (!useless_type_conversion_p (vectype, TREE_TYPE (vec_init)))
+	{
+	  new_stmt
+	    = gimple_build_assign (vect_get_new_ssa_name (vectype,
+							  vect_simple_var,
+							  "vec_iv_"),
+				   VIEW_CONVERT_EXPR,
+				   build1 (VIEW_CONVERT_EXPR, vectype,
+					   vec_init));
+	  vec_init = gimple_assign_lhs (new_stmt);
+	  new_bb = gsi_insert_on_edge_immediate (loop_preheader_edge (iv_loop),
+						 new_stmt);
+	  gcc_assert (!new_bb);
+	  set_vinfo_for_stmt (new_stmt,
+			      new_stmt_vec_info (new_stmt, loop_vinfo));
+	}
+    }
+  else
+    {
+      vec<constructor_elt, va_gc> *v;
+
+      /* iv_loop is the loop to be vectorized. Create:
+	 vec_init = [X, X+S, X+2*S, X+3*S] (S = step_expr, X = init_expr)  */
+      stmts = NULL;
+      new_name = gimple_convert (&stmts, TREE_TYPE (vectype), init_expr);
+
+      vec_alloc (v, nunits);
+      bool constant_p = is_gimple_min_invariant (new_name);
+      CONSTRUCTOR_APPEND_ELT (v, NULL_TREE, new_name);
+      for (i = 1; i < nunits; i++)
+	{
+	  /* Create: new_name_i = new_name + step_expr  */
+	  new_name = gimple_build (&stmts, PLUS_EXPR, TREE_TYPE (new_name),
+				   new_name, step_expr);
+	  if (!is_gimple_min_invariant (new_name))
+	    constant_p = false;
+	  CONSTRUCTOR_APPEND_ELT (v, NULL_TREE, new_name);
+	}
+      if (stmts)
+	{
+	  new_bb = gsi_insert_seq_on_edge_immediate (pe, stmts);
+	  gcc_assert (!new_bb);
+	}
+
+      /* Create a vector from [new_name_0, new_name_1, ..., new_name_nunits-1]  */
+      if (constant_p)
+	new_vec = build_vector_from_ctor (vectype, v);
+      else
+	new_vec = build_constructor (vectype, v);
+      vec_init = vect_init_vector (phi, new_vec, vectype, NULL);
+    }
+
+
+  /* Create the vector that holds the step of the induction.  */
+  if (nested_in_vect_loop)
+    /* iv_loop is nested in the loop to be vectorized. Generate:
+       vec_step = [S, S, S, S]  */
+    new_name = step_expr;
+  else
+    {
+      /* iv_loop is the loop to be vectorized. Generate:
+	  vec_step = [VF*S, VF*S, VF*S, VF*S]  */
+      if (SCALAR_FLOAT_TYPE_P (TREE_TYPE (step_expr)))
+	{
+	  expr = build_int_cst (integer_type_node, vf);
+	  expr = fold_convert (TREE_TYPE (step_expr), expr);
+	}
+      else
+	expr = build_int_cst (TREE_TYPE (step_expr), vf);
+      new_name = fold_build2 (MULT_EXPR, TREE_TYPE (step_expr),
+			      expr, step_expr);
+      if (TREE_CODE (step_expr) == SSA_NAME)
+	new_name = vect_init_vector (phi, new_name,
+				     TREE_TYPE (step_expr), NULL);
+    }
+
+  t = unshare_expr (new_name);
+  gcc_assert (CONSTANT_CLASS_P (new_name)
+	      || TREE_CODE (new_name) == SSA_NAME);
+  new_vec = build_vector_from_val (vectype, t);
+  vec_step = vect_init_vector (phi, new_vec, vectype, NULL);
+
+
+  /* Create the following def-use cycle:
+     loop prolog:
+         vec_init = ...
+	 vec_step = ...
+     loop:
+         vec_iv = PHI <vec_init, vec_loop>
+         ...
+         STMT
+         ...
+         vec_loop = vec_iv + vec_step;  */
+
+  /* Create the induction-phi that defines the induction-operand.  */
+  vec_dest = vect_get_new_vect_var (vectype, vect_simple_var, "vec_iv_");
+  induction_phi = create_phi_node (vec_dest, iv_loop->header);
+  set_vinfo_for_stmt (induction_phi,
+		      new_stmt_vec_info (induction_phi, loop_vinfo));
+  induc_def = PHI_RESULT (induction_phi);
+
+  /* Create the iv update inside the loop  */
+  vec_def = make_ssa_name (vec_dest);
+  new_stmt = gimple_build_assign (vec_def, PLUS_EXPR, induc_def, vec_step);
+  gsi_insert_before (&si, new_stmt, GSI_SAME_STMT);
+  set_vinfo_for_stmt (new_stmt, new_stmt_vec_info (new_stmt, loop_vinfo));
+
+  /* Set the arguments of the phi node:  */
+  add_phi_arg (induction_phi, vec_init, pe, UNKNOWN_LOCATION);
+  add_phi_arg (induction_phi, vec_def, loop_latch_edge (iv_loop),
+	       UNKNOWN_LOCATION);
+
+  STMT_VINFO_VEC_STMT (stmt_info) = *vec_stmt = induction_phi;
+
+  /* In case that vectorization factor (VF) is bigger than the number
+     of elements that we can fit in a vectype (nunits), we have to generate
+     more than one vector stmt - i.e - we need to "unroll" the
+     vector stmt by a factor VF/nunits.  For more details see documentation
+     in vectorizable_operation.  */
+
+  if (ncopies > 1)
+    {
+      stmt_vec_info prev_stmt_vinfo;
+      /* FORNOW. This restriction should be relaxed.  */
+      gcc_assert (!nested_in_vect_loop);
+
+      /* Create the vector that holds the step of the induction.  */
+      if (SCALAR_FLOAT_TYPE_P (TREE_TYPE (step_expr)))
+	{
+	  expr = build_int_cst (integer_type_node, nunits);
+	  expr = fold_convert (TREE_TYPE (step_expr), expr);
+	}
+      else
+	expr = build_int_cst (TREE_TYPE (step_expr), nunits);
+      new_name = fold_build2 (MULT_EXPR, TREE_TYPE (step_expr),
+			      expr, step_expr);
+      if (TREE_CODE (step_expr) == SSA_NAME)
+	new_name = vect_init_vector (phi, new_name,
+				     TREE_TYPE (step_expr), NULL);
+      t = unshare_expr (new_name);
+      gcc_assert (CONSTANT_CLASS_P (new_name)
+		  || TREE_CODE (new_name) == SSA_NAME);
+      new_vec = build_vector_from_val (vectype, t);
+      vec_step = vect_init_vector (phi, new_vec, vectype, NULL);
+
+      vec_def = induc_def;
+      prev_stmt_vinfo = vinfo_for_stmt (induction_phi);
+      for (i = 1; i < ncopies; i++)
+	{
+	  /* vec_i = vec_prev + vec_step  */
+	  new_stmt = gimple_build_assign (vec_dest, PLUS_EXPR,
+					  vec_def, vec_step);
+	  vec_def = make_ssa_name (vec_dest, new_stmt);
+	  gimple_assign_set_lhs (new_stmt, vec_def);
+ 
+	  gsi_insert_before (&si, new_stmt, GSI_SAME_STMT);
+	  set_vinfo_for_stmt (new_stmt,
+			      new_stmt_vec_info (new_stmt, loop_vinfo));
+	  STMT_VINFO_RELATED_STMT (prev_stmt_vinfo) = new_stmt;
+	  prev_stmt_vinfo = vinfo_for_stmt (new_stmt);
+	}
+    }
+
+  if (nested_in_vect_loop)
+    {
+      /* Find the loop-closed exit-phi of the induction, and record
+         the final vector of induction results:  */
+      exit_phi = NULL;
+      FOR_EACH_IMM_USE_FAST (use_p, imm_iter, loop_arg)
+        {
+	  gimple *use_stmt = USE_STMT (use_p);
+	  if (is_gimple_debug (use_stmt))
+	    continue;
+
+	  if (!flow_bb_inside_loop_p (iv_loop, gimple_bb (use_stmt)))
+	    {
+	      exit_phi = use_stmt;
+	      break;
+	    }
+        }
+      if (exit_phi)
+	{
+	  stmt_vec_info stmt_vinfo = vinfo_for_stmt (exit_phi);
+	  /* FORNOW. Currently not supporting the case that an inner-loop induction
+	     is not used in the outer-loop (i.e. only outside the outer-loop).  */
+	  gcc_assert (STMT_VINFO_RELEVANT_P (stmt_vinfo)
+		      && !STMT_VINFO_LIVE_P (stmt_vinfo));
+
+	  STMT_VINFO_VEC_STMT (stmt_vinfo) = new_stmt;
+	  if (dump_enabled_p ())
+	    {
+	      dump_printf_loc (MSG_NOTE, vect_location,
+			       "vector of inductions after inner-loop:");
+	      dump_gimple_stmt (MSG_NOTE, TDF_SLIM, new_stmt, 0);
+	    }
+	}
+    }
+
+
+  if (dump_enabled_p ())
+    {
+      dump_printf_loc (MSG_NOTE, vect_location,
+		       "transform induction: created def-use cycle: ");
+      dump_gimple_stmt (MSG_NOTE, TDF_SLIM, induction_phi, 0);
+      dump_gimple_stmt (MSG_NOTE, TDF_SLIM,
+			SSA_NAME_DEF_STMT (vec_def), 0);
+    }
+
   return true;
 }
 
