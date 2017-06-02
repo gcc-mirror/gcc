@@ -115,38 +115,28 @@ add_decl_to_level (cp_binding_level *b, tree decl)
 {
   gcc_assert (b->kind != sk_class);
 
-  if (TREE_CODE (decl) == NAMESPACE_DECL && !DECL_NAMESPACE_ALIAS (decl))
-    {
-      /* Inner namespaces get their own chain, to make walking
-	 simpler.  */
-      DECL_CHAIN (decl) = b->namespaces;
-      b->namespaces = decl;
-    }
-  else
-    {
-      /* Make sure we don't create a circular list.  xref_tag can end
-	 up pushing the same artificial decl more than once.  We
-	 should have already detected that in update_binding.  */
-      gcc_assert (b->names != decl);
+  /* Make sure we don't create a circular list.  xref_tag can end
+     up pushing the same artificial decl more than once.  We
+     should have already detected that in update_binding.  */
+  gcc_assert (b->names != decl);
 
-      /* We build up the list in reverse order, and reverse it later if
-	 necessary.  */
-      TREE_CHAIN (decl) = b->names;
-      b->names = decl;
+  /* We build up the list in reverse order, and reverse it later if
+     necessary.  */
+  TREE_CHAIN (decl) = b->names;
+  b->names = decl;
 
-      /* If appropriate, add decl to separate list of statics.  We
-	 include extern variables because they might turn out to be
-	 static later.  It's OK for this list to contain a few false
-	 positives.  */
-      if (b->kind == sk_namespace)
-	if ((VAR_P (decl)
-	     && (TREE_STATIC (decl) || DECL_EXTERNAL (decl)))
-	    || (TREE_CODE (decl) == FUNCTION_DECL
-		&& (!TREE_PUBLIC (decl)
-		    || decl_anon_ns_mem_p (decl)
-		    || DECL_DECLARED_INLINE_P (decl))))
-	  vec_safe_push (static_decls, decl);
-    }
+  /* If appropriate, add decl to separate list of statics.  We
+     include extern variables because they might turn out to be
+     static later.  It's OK for this list to contain a few false
+     positives.  */
+  if (b->kind == sk_namespace
+      && ((VAR_P (decl)
+	   && (TREE_STATIC (decl) || DECL_EXTERNAL (decl)))
+	  || (TREE_CODE (decl) == FUNCTION_DECL
+	      && (!TREE_PUBLIC (decl)
+		  || decl_anon_ns_mem_p (decl)
+		  || DECL_DECLARED_INLINE_P (decl)))))
+    vec_safe_push (static_decls, decl);
 }
 
 /* Find the binding for NAME in the local binding level B.  */
@@ -4708,70 +4698,74 @@ suggest_alternatives_for (location_t location, tree name,
 			  bool suggest_misspellings)
 {
   vec<tree> candidates = vNULL;
-  vec<tree> namespaces_to_search = vNULL;
-  int max_to_search = PARAM_VALUE (CXX_MAX_NAMESPACES_FOR_DIAGNOSTIC_HELP);
-  int n_searched = 0;
-  tree t;
-  unsigned ix;
+  vec<tree> worklist = vNULL;
+  unsigned limit = PARAM_VALUE (CXX_MAX_NAMESPACES_FOR_DIAGNOSTIC_HELP);
+  bool limited = false;
 
-  namespaces_to_search.safe_push (global_namespace);
-
-  while (!namespaces_to_search.is_empty ()
-	 && n_searched < max_to_search)
+  /* Breadth-first search of namespaces.  Up to limit namespaces
+     searched (limit zero == unlimited).  */
+  worklist.safe_push (global_namespace);
+  for (unsigned ix = 0; ix != worklist.length (); ix++)
     {
-      tree scope = namespaces_to_search.pop ();
-      name_lookup lookup (name, 0);
-      cp_binding_level *level = NAMESPACE_LEVEL (scope);
+      tree ns = worklist[ix];
 
-      n_searched++;
+      if (tree value = ovl_skip_hidden (find_namespace_value (ns, name)))
+	candidates.safe_push (value);
 
-      /* Look in this namespace.  */
-      if (qualified_namespace_lookup (scope, &lookup))
-	candidates.safe_push (lookup.value);
-
-      /* Add child namespaces.  */
-      for (t = level->namespaces; t; t = DECL_CHAIN (t))
-	namespaces_to_search.safe_push (t);
-    }
-
-  /* If we stopped before we could examine all namespaces, inform the
-     user.  Do this even if we don't have any candidates, since there
-     might be more candidates further down that we weren't able to
-     find.  */
-  if (n_searched >= max_to_search
-      && !namespaces_to_search.is_empty ())
-    inform (location,
-	    "maximum limit of %d namespaces searched for %qE",
-	    max_to_search, name);
-
-  namespaces_to_search.release ();
-
-  /* Nothing useful to report for NAME.  Report on likely misspellings,
-     or do nothing.  */
-  if (candidates.is_empty ())
-    {
-      if (suggest_misspellings)
+      if (!limited)
 	{
-	  const char *fuzzy_name = lookup_name_fuzzy (name, FUZZY_LOOKUP_NAME);
-	  if (fuzzy_name)
+	  /* Look for child namespaces.  We have to do this
+	     indirectly because they are chained in reverse order,
+	     which is confusing to the user.  */
+	  vec<tree> children = vNULL;
+
+	  for (tree decl = NAMESPACE_LEVEL (ns)->names;
+	       decl; decl = TREE_CHAIN (decl))
+	    if (TREE_CODE (decl) == NAMESPACE_DECL
+		&& !DECL_NAMESPACE_ALIAS (decl))
+	      children.safe_push (decl);
+
+	  while (!limited && !children.is_empty ())
 	    {
-	      gcc_rich_location richloc (location);
-	      richloc.add_fixit_replace (fuzzy_name);
-	      inform_at_rich_loc (&richloc, "suggested alternative: %qs",
-				  fuzzy_name);
+	      if (worklist.length () == limit)
+		{
+		  /* Unconditionally warn that the search was truncated.  */
+		  inform (location,
+			  "maximum limit of %d namespaces searched for %qE",
+			  limit, name);
+		  limited = true;
+		}
+	      else
+		worklist.safe_push (children.pop ());
 	    }
+	  children.release ();
 	}
-      return;
     }
+  worklist.release ();
 
-  inform_n (location, candidates.length (),
-	    "suggested alternative:",
-	    "suggested alternatives:");
+  if (candidates.length ())
+    {
+      inform_n (location, candidates.length (),
+		"suggested alternative:",
+		"suggested alternatives:");
+      for (unsigned ix = 0; ix != candidates.length (); ix++)
+	{
+	  tree val = candidates[ix];
 
-  FOR_EACH_VEC_ELT (candidates, ix, t)
-    inform (location_of (t), "  %qE", t);
+	  inform (location_of (val), "  %qE", val);
+	}
+      candidates.release ();
+    }
+  else if (!suggest_misspellings)
+    ;
+  else if (const char *fuzzy = lookup_name_fuzzy (name, FUZZY_LOOKUP_NAME))
+    {
+      /* Show a spelling correction.  */
+      gcc_rich_location richloc (location);
 
-  candidates.release ();
+      richloc.add_fixit_replace (fuzzy);
+      inform_at_rich_loc (&richloc, "suggested alternative: %qs", fuzzy);
+    }
 }
 
 /* Subroutine of maybe_suggest_missing_header for handling unrecognized names

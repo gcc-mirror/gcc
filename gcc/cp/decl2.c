@@ -4052,21 +4052,14 @@ cpp_check (tree t, cpp_operation op)
 static void 
 collect_source_refs (tree namespc) 
 {
-  tree t;
-
-  if (!namespc) 
-    return;
-
   /* Iterate over names in this name space.  */
-  for (t = NAMESPACE_LEVEL (namespc)->names; t; t = TREE_CHAIN (t))
-    if (!DECL_IS_BUILTIN (t) )
+  for (tree t = NAMESPACE_LEVEL (namespc)->names; t; t = TREE_CHAIN (t))
+    if (DECL_IS_BUILTIN (t))
+      ;
+    else if (TREE_CODE (t) == NAMESPACE_DECL && !DECL_NAMESPACE_ALIAS (t))
+      collect_source_refs (t);
+    else
       collect_source_ref (DECL_SOURCE_FILE (t));
-  
-  /* Dump siblings, if any */
-  collect_source_refs (TREE_CHAIN (namespc));
-
-  /* Dump children, if any */
-  collect_source_refs (NAMESPACE_LEVEL (namespc)->namespaces);
 }
 
 /* Collect decls relevant to SOURCE_FILE from all namespaces recursively,
@@ -4075,17 +4068,16 @@ collect_source_refs (tree namespc)
 static void
 collect_ada_namespace (tree namespc, const char *source_file)
 {
-  if (!namespc)
-    return;
+  tree decl = NAMESPACE_LEVEL (namespc)->names;
 
-  /* Collect decls from this namespace */
-  collect_ada_nodes (NAMESPACE_LEVEL (namespc)->names, source_file);
+  /* Collect decls from this namespace.  This will skip
+     NAMESPACE_DECLs (both aliases and regular, it cannot tell).  */
+  collect_ada_nodes (decl, source_file);
 
-  /* Collect siblings, if any */
-  collect_ada_namespace (TREE_CHAIN (namespc), source_file);
-
-  /* Collect children, if any */
-  collect_ada_namespace (NAMESPACE_LEVEL (namespc)->namespaces, source_file);
+  /* Now scan for namespace children, and dump them.  */
+  for (; decl; decl = TREE_CHAIN (decl))
+    if (TREE_CODE (decl) == NAMESPACE_DECL && !DECL_NAMESPACE_ALIAS (decl))
+      collect_ada_namespace (decl, source_file);
 }
 
 /* Returns true iff there is a definition available for variable or
