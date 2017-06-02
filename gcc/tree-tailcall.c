@@ -531,7 +531,8 @@ find_tail_calls (basic_block bb, struct tailcall **ret)
      since we are running after dce.  */
   m = NULL_TREE;
   a = NULL_TREE;
-  auto_bitmap to_move;
+  auto_bitmap to_move_defs;
+  auto_vec<gimple *> to_move_stmts;
 
   abb = bb;
   agsi = gsi;
@@ -563,7 +564,7 @@ find_tail_calls (basic_block bb, struct tailcall **ret)
 
       /* This is a gimple assign. */
       par ret = process_assignment (as_a <gassign *> (stmt), gsi,
-				    &tmp_m, &tmp_a, &ass_var, to_move);
+				    &tmp_m, &tmp_a, &ass_var, to_move_defs);
       if (ret == FAIL)
 	return;
       else if (ret == TRY_MOVE)
@@ -573,10 +574,12 @@ find_tail_calls (basic_block bb, struct tailcall **ret)
 	  for (unsigned opno = 1; opno < gimple_num_ops (stmt); ++opno)
 	    {
 	      tree op = gimple_op (stmt, opno);
-	      if (independent_of_stmt_p (op, stmt, gsi, to_move) != op)
+	      if (independent_of_stmt_p (op, stmt, gsi, to_move_defs) != op)
 		return;
 	    }
-	  bitmap_set_bit (to_move, SSA_NAME_VERSION (gimple_assign_lhs (stmt)));
+	  bitmap_set_bit (to_move_defs,
+			  SSA_NAME_VERSION (gimple_assign_lhs (stmt)));
+	  to_move_stmts.safe_push (stmt);
 	  continue;
 	}
 
@@ -622,11 +625,9 @@ find_tail_calls (basic_block bb, struct tailcall **ret)
   /* Move queued defs.  */
   if (tail_recursion)
     {
-      bitmap_iterator bi;
       unsigned i;
-      EXECUTE_IF_SET_IN_BITMAP (to_move, 0, i, bi)
+      FOR_EACH_VEC_ELT (to_move_stmts, i, stmt)
 	{
-	  stmt = SSA_NAME_DEF_STMT (ssa_name (i));
 	  gimple_stmt_iterator mgsi = gsi_for_stmt (stmt);
 	  gsi_move_before (&mgsi, &gsi);
 	}
