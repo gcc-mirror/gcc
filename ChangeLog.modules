@@ -1,3 +1,9 @@
+2017-06-02  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* modules.c (cpms_out::core_vals, cpms_in::core_vals): Don't
+	stream structure fields etc.
+
 2017-06-01  Nathan Sidwell  <nathan@acm.org>
 
 	Incomplete or empty classes.

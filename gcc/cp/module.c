@@ -2517,11 +2517,17 @@ cpms_out::core_vals (FILE *d, tree t)
 
   if (CODE_CONTAINS_STRUCT (code, TS_TYPE_NON_COMMON))
     {
-      WT (t->type_non_common.values);
-      if (!POINTER_TYPE_P (t))
-	WT (t->type_non_common.minval);
-      WT (t->type_non_common.maxval);
-      WT (t->type_non_common.binfo);
+      /* Records and unions hold FIELDS, METHODS, VFIELD & BINFO
+	 on these things.  */
+      if (!RECORD_OR_UNION_CODE_P (code))
+	{
+	  WT (t->type_non_common.values);
+	  /* POINTER and REFERENCE types hold NEXT_{PTR,REF}_TO */
+	  if (!POINTER_TYPE_P (t))
+	    WT (t->type_non_common.minval);
+	  WT (t->type_non_common.maxval);
+	  WT (t->type_non_common.binfo);
+	}
     }
 
   if (CODE_CONTAINS_STRUCT (code, TS_DECL_MINIMAL))
@@ -2669,11 +2675,17 @@ cpms_in::core_vals (FILE *d, tree t)
 
   if (CODE_CONTAINS_STRUCT (code, TS_TYPE_NON_COMMON))
     {
-      RT (t->type_non_common.values);
-      if (!POINTER_TYPE_P (t))
-	RT (t->type_non_common.minval);
-      RT (t->type_non_common.maxval);
-      RT (t->type_non_common.binfo);
+      /* Records and unions hold FIELDS, METHODS, VFIELD & BINFO
+	 on these things.  */
+      if (!RECORD_OR_UNION_CODE_P (code))
+	{
+	  RT (t->type_non_common.values);
+	  /* POINTER and REFERENCE types hold NEXT_{PTR,REF}_TO */
+	  if (!POINTER_TYPE_P (t))
+	    RT (t->type_non_common.minval);
+	  RT (t->type_non_common.maxval);
+	  RT (t->type_non_common.binfo);
+	}
     }
 
   if (CODE_CONTAINS_STRUCT (code, TS_DECL_MINIMAL))
