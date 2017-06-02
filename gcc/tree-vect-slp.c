@@ -2245,9 +2245,16 @@ static tree
 vect_detect_hybrid_slp_2 (gimple_stmt_iterator *gsi, bool *handled,
 			  walk_stmt_info *)
 {
+  stmt_vec_info use_vinfo = vinfo_for_stmt (gsi_stmt (*gsi));
   /* If the stmt is in a SLP instance then this isn't a reason
      to mark use definitions in other SLP instances as hybrid.  */
-  if (STMT_SLP_TYPE (vinfo_for_stmt (gsi_stmt (*gsi))) != loop_vect)
+  if (! STMT_SLP_TYPE (use_vinfo)
+      && (STMT_VINFO_RELEVANT (use_vinfo)
+	  || VECTORIZABLE_CYCLE_DEF (STMT_VINFO_DEF_TYPE (use_vinfo)))
+      && ! (gimple_code (gsi_stmt (*gsi)) == GIMPLE_PHI
+	    && STMT_VINFO_DEF_TYPE (use_vinfo) == vect_reduction_def))
+    ;
+  else
     *handled = true;
   return NULL_TREE;
 }
