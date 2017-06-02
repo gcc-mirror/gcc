@@ -1,3 +1,8 @@
+2017-06-02  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* typeck.c (cp_build_binary_op): Implement the -Wsizeof_pointer_div
+	warning.
+
 2017-06-01  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	PR c++/80812

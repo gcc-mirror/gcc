@@ -306,7 +306,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wshift-overflow  -Wshift-overflow=@var{n} @gol
 -Wshift-count-negative  -Wshift-count-overflow  -Wshift-negative-value @gol
 -Wsign-compare  -Wsign-conversion  -Wfloat-conversion @gol
--Wno-scalar-storage-order @gol
+-Wno-scalar-storage-order  -Wsizeof-pointer-div @gol
 -Wsizeof-pointer-memaccess  -Wsizeof-array-argument @gol
 -Wstack-protector  -Wstack-usage=@var{len}  -Wstrict-aliasing @gol
 -Wstrict-aliasing=n  -Wstrict-overflow  -Wstrict-overflow=@var{n} @gol
@@ -3832,6 +3832,7 @@ Options} and @ref{Objective-C and Objective-C++ Dialect Options}.
 -Wreturn-type  @gol
 -Wsequence-point  @gol
 -Wsign-compare @r{(only in C++)}  @gol
+-Wsizeof-pointer-div @gol
 -Wsizeof-pointer-memaccess @gol
 -Wstrict-aliasing  @gol
 -Wstrict-overflow=1  @gol
@@ -6092,6 +6093,15 @@ void operator delete[] (void *, std::size_t) noexcept;
 @end smallexample
 or vice versa.  Enabled by @option{-Wextra} along with
 @option{-fsized-deallocation}.
+
+@item -Wsizeof-pointer-div
+@opindex Wsizeof-pointer-div
+@opindex Wno-sizeof-pointer-div
+Warn for suspicious divisions of two sizeof expressions that divide
+the pointer size by the element size, which is the usual way to compute
+the array size but won't work out correctly with pointers.  This warning
+warns e.g.@: about @code{sizeof (ptr) / sizeof (ptr[0])} if @code{ptr} is
+not an array, but a pointer.  This warning is enabled by @option{-Wall}.
 
 @item -Wsizeof-pointer-memaccess
 @opindex Wsizeof-pointer-memaccess
