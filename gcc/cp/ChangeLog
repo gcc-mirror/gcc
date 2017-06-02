@@ -1,5 +1,23 @@
 2017-06-02  Nathan Sidwell  <nathan@acm.org>
 
+	Remove lang_type_ptrmem.
+	* cp-tree.h (lang_type_header): Remove is_lang_type_class. Move
+	into ...
+	(lang_type_class): ... this.  Reorder bitfields.  Rename to ...
+	(lang_type): ... this.  Delete old definition.
+	(lang_type_ptrmem): Delete.
+	(LANG_TYPE_CLASS_CHECK): Simply get TYPE_LANG_SPECIFIC.  Adjust uses.
+	(LANG_TYPE_PTRMEM_CHECK): Delete.
+	(TYPE_GET_PTRMEMFUNC_TYPE, TYPE_SET_PTRMEMFUNC_TYPE): Delete.
+	(TYPE_PTRMEMFUNC_TYPE): New.  Use TYPE_LANG_SLOT_1.
+	* decl.c (build_ptrmemfunc_type): Adjust.
+	* lex.c (copy_lang_type): Remove lang_type_ptrmem handling.
+	(maybe_add_lang_type_raw): Don't set u.c.h.is_lang_type_class.
+	
+	* class.c (check_bases_and_members): Adjust vec_new_uses_cookie
+	setting.
+	
+	Remove cp_binding_level::namespaces
 	* name-lookup.h (cp_binding_level): Lose namespaces field.
 	* name-lookup.c (add_decl_to_level): Chain namespaces on the names
 	list.
