@@ -678,24 +678,19 @@ copy_decl (tree decl MEM_STAT_DECL)
 static void
 copy_lang_type (tree node)
 {
-  int size;
-  struct lang_type *lt;
-
   if (! TYPE_LANG_SPECIFIC (node))
     return;
 
-  if (TYPE_LANG_SPECIFIC (node)->u.h.is_lang_type_class)
-    size = sizeof (struct lang_type);
-  else
-    size = sizeof (struct lang_type_ptrmem);
-  lt = (struct lang_type *) ggc_internal_alloc (size);
-  memcpy (lt, TYPE_LANG_SPECIFIC (node), size);
+  struct lang_type *lt
+    = (struct lang_type *) ggc_internal_alloc (sizeof (struct lang_type));
+
+  memcpy (lt, TYPE_LANG_SPECIFIC (node), (sizeof (struct lang_type)));
   TYPE_LANG_SPECIFIC (node) = lt;
 
   if (GATHER_STATISTICS)
     {
       tree_node_counts[(int)lang_type] += 1;
-      tree_node_sizes[(int)lang_type] += size;
+      tree_node_sizes[(int)lang_type] += sizeof (struct lang_type);
     }
 }
 
@@ -720,12 +715,9 @@ maybe_add_lang_type_raw (tree t)
 	      || TREE_CODE (t) == BOUND_TEMPLATE_TEMPLATE_PARM);
   if (add)
     {
-      struct lang_type *pi
-	= (struct lang_type *) ggc_internal_cleared_alloc
-	(sizeof (struct lang_type));
-
-      TYPE_LANG_SPECIFIC (t) = pi;
-      pi->u.c.h.is_lang_type_class = 1;
+      TYPE_LANG_SPECIFIC (t)
+	= (struct lang_type *) (ggc_internal_cleared_alloc
+				(sizeof (struct lang_type)));
 
       if (GATHER_STATISTICS)
 	{

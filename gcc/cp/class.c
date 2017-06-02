@@ -6025,7 +6025,7 @@ check_bases_and_members (tree t)
 
   /* Figure out whether or not we will need a cookie when dynamically
      allocating an array of this type.  */
-  TYPE_LANG_SPECIFIC (t)->u.c.vec_new_uses_cookie
+  LANG_TYPE_CLASS_CHECK (t)->vec_new_uses_cookie
     = type_requires_array_cookie (t);
 }
 

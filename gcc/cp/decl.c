@@ -9154,7 +9154,9 @@ build_ptrmemfunc_type (tree type)
      this method instead of type_hash_canon, because it only does a
      simple equality check on the list of field members.  */
 
-  if ((t = TYPE_GET_PTRMEMFUNC_TYPE (type)))
+
+  t = TYPE_PTRMEMFUNC_TYPE (type);
+  if (t)
     return t;
 
   t = make_node (RECORD_TYPE);
@@ -9178,7 +9180,7 @@ build_ptrmemfunc_type (tree type)
 
   /* Cache this pointer-to-member type so that we can find it again
      later.  */
-  TYPE_SET_PTRMEMFUNC_TYPE (type, t);
+  TYPE_PTRMEMFUNC_TYPE (type) = t;
 
   if (TYPE_STRUCTURAL_EQUALITY_P (type))
     SET_TYPE_STRUCTURAL_EQUALITY (t);
