@@ -6657,6 +6657,8 @@ c_parser_binary_expression (c_parser *parser, struct c_expr *after,
     enum tree_code op;
     /* The source location of this operation.  */
     location_t loc;
+    /* The sizeof argument if expr.original_code == SIZEOF_EXPR.  */
+    tree sizeof_arg;
   } stack[NUM_PRECS];
   int sp;
   /* Location of the binary operator.  */
@@ -6672,6 +6674,31 @@ c_parser_binary_expression (c_parser *parser, struct c_expr *after,
       case TRUTH_ORIF_EXPR:						      \
 	c_inhibit_evaluation_warnings -= (stack[sp - 1].expr.value	      \
 					  == truthvalue_true_node);	      \
+	break;								      \
+      case TRUNC_DIV_EXPR: 						      \
+	if (stack[sp - 1].expr.original_code == SIZEOF_EXPR		      \
+	    && stack[sp].expr.original_code == SIZEOF_EXPR)		      \
+	  {								      \
+	    tree type0 = stack[sp - 1].sizeof_arg;			      \
+	    tree type1 = stack[sp].sizeof_arg;				      \
+	    tree first_arg = type0;					      \
+	    if (!TYPE_P (type0))					      \
+	      type0 = TREE_TYPE (type0);				      \
+	    if (!TYPE_P (type1))					      \
+	      type1 = TREE_TYPE (type1);				      \
+	    if (POINTER_TYPE_P (type0)					      \
+		&& comptypes (TREE_TYPE (type0), type1)			      \
+		&& !(TREE_CODE (first_arg) == PARM_DECL			      \
+		     && C_ARRAY_PARAMETER (first_arg)			      \
+		     && warn_sizeof_array_argument))			      \
+	      if (warning_at (stack[sp].loc, OPT_Wsizeof_pointer_div,	      \
+			      "division %<sizeof (%T) / sizeof (%T)%> does "  \
+			      "not compute the number of array elements",     \
+			      type0, type1))				      \
+		if (DECL_P (first_arg))					      \
+		  inform (DECL_SOURCE_LOCATION (first_arg),		      \
+			  "first %<sizeof%> operand was declared here");      \
+	  }								      \
 	break;								      \
       default:								      \
 	break;								      \
@@ -6706,6 +6733,7 @@ c_parser_binary_expression (c_parser *parser, struct c_expr *after,
   stack[0].loc = c_parser_peek_token (parser)->location;
   stack[0].expr = c_parser_cast_expression (parser, after);
   stack[0].prec = PREC_NONE;
+  stack[0].sizeof_arg = c_last_sizeof_arg;
   sp = 0;
   while (true)
     {
@@ -6829,6 +6857,7 @@ c_parser_binary_expression (c_parser *parser, struct c_expr *after,
       stack[sp].expr = c_parser_cast_expression (parser, NULL);
       stack[sp].prec = oprec;
       stack[sp].op = ocode;
+      stack[sp].sizeof_arg = c_last_sizeof_arg;
     }
  out:
   while (sp > 0)
@@ -7720,7 +7749,8 @@ c_parser_postfix_expression (c_parser *parser)
 	  expr = c_parser_expression (parser);
 	  if (TREE_CODE (expr.value) == MODIFY_EXPR)
 	    TREE_NO_WARNING (expr.value) = 1;
-	  if (expr.original_code != C_MAYBE_CONST_EXPR)
+	  if (expr.original_code != C_MAYBE_CONST_EXPR
+	      && expr.original_code != SIZEOF_EXPR)
 	    expr.original_code = ERROR_MARK;
 	  /* Don't change EXPR.ORIGINAL_TYPE.  */
 	  location_t loc_close_paren = c_parser_peek_token (parser)->location;
@@ -8679,7 +8709,6 @@ c_parser_expr_list (c_parser *parser, bool convert_p, bool fold_p,
   vec<tree, va_gc> *orig_types;
   struct c_expr expr;
   location_t loc = c_parser_peek_token (parser)->location;
-  location_t cur_sizeof_arg_loc = UNKNOWN_LOCATION;
   unsigned int idx = 0;
 
   ret = make_tree_vector ();
@@ -8688,9 +8717,6 @@ c_parser_expr_list (c_parser *parser, bool convert_p, bool fold_p,
   else
     orig_types = make_tree_vector ();
 
-  if (sizeof_arg != NULL
-      && c_parser_next_token_is_keyword (parser, RID_SIZEOF))
-    cur_sizeof_arg_loc = c_parser_peek_2nd_token (parser)->location;
   if (literal_zero_mask)
     c_parser_check_literal_zero (parser, literal_zero_mask, 0);
   expr = c_parser_expr_no_commas (parser, NULL);
@@ -8704,21 +8730,15 @@ c_parser_expr_list (c_parser *parser, bool convert_p, bool fold_p,
   if (locations)
     locations->safe_push (loc);
   if (sizeof_arg != NULL
-      && cur_sizeof_arg_loc != UNKNOWN_LOCATION
       && expr.original_code == SIZEOF_EXPR)
     {
       sizeof_arg[0] = c_last_sizeof_arg;
-      sizeof_arg_loc[0] = cur_sizeof_arg_loc;
+      sizeof_arg_loc[0] = c_last_sizeof_loc;
     }
   while (c_parser_next_token_is (parser, CPP_COMMA))
     {
       c_parser_consume_token (parser);
       loc = c_parser_peek_token (parser)->location;
-      if (sizeof_arg != NULL
-	  && c_parser_next_token_is_keyword (parser, RID_SIZEOF))
-	cur_sizeof_arg_loc = c_parser_peek_2nd_token (parser)->location;
-      else
-	cur_sizeof_arg_loc = UNKNOWN_LOCATION;
       if (literal_zero_mask)
 	c_parser_check_literal_zero (parser, literal_zero_mask, idx + 1);
       expr = c_parser_expr_no_commas (parser, NULL);
@@ -8733,11 +8753,10 @@ c_parser_expr_list (c_parser *parser, bool convert_p, bool fold_p,
 	locations->safe_push (loc);
       if (++idx < 3
 	  && sizeof_arg != NULL
-	  && cur_sizeof_arg_loc != UNKNOWN_LOCATION
 	  && expr.original_code == SIZEOF_EXPR)
 	{
 	  sizeof_arg[idx] = c_last_sizeof_arg;
-	  sizeof_arg_loc[idx] = cur_sizeof_arg_loc;
+	  sizeof_arg_loc[idx] = c_last_sizeof_loc;
 	}
     }
   if (orig_types)

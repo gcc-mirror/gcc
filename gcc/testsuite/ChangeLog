@@ -1,3 +1,25 @@
+2017-06-02  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* c-c++-common/Wsizeof-pointer-div.c: New test.
+	* gcc.dg/Wsizeof-pointer-memaccess1.c: Add test cases with parens.
+	* gcc.dg/torture/Wsizeof-pointer-memaccess1.c: Likewise.
+	* gcc.target/i386/sse-init-v4hi-1.c: Fix test case.
+	* gcc.target/i386/sse-init-v4sf-1.c: Likewise.
+	* gcc.target/i386/sse-set-ps-1.c: Likewise.
+	* gcc.target/i386/sse2-init-v16qi-1.c: Likewise.
+	* gcc.target/i386/sse2-init-v2di-1.c: Likewise.
+	* gcc.target/i386/sse2-init-v4si-1.c: Likewise.
+	* gcc.target/i386/sse2-init-v8hi-1.c: Likewise.
+	* gcc.target/i386/sse2-set-epi32-1.c: Likewise.
+	* gcc.target/i386/sse2-set-epi64x-1.c: Likewise.
+	* gcc.target/i386/sse4_1-init-v16qi-1.c: Likewise.
+	* gcc.target/i386/sse4_1-init-v2di-1.c: Likewise.
+	* gcc.target/i386/sse4_1-init-v4sf-1.c: Likewise.
+	* gcc.target/i386/sse4_1-init-v4si-1.c: Likewise.
+	* gcc.target/i386/sse4_1-set-epi32-1.c: Likewise.
+	* gcc.target/i386/sse4_1-set-epi64x-1.c: Likewise.
+	* gcc.target/i386/sse4_1-set-ps-1.c: Likewise.
+
 2017-06-01  Will Schmidt  <will_schmidt@vnet.ibm.com>
 
 	* gcc.target/powerpc/fold-vec-logical-ors-longlong.c:

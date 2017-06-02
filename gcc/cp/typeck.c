@@ -4357,6 +4357,29 @@ cp_build_binary_op (location_t location,
     case FLOOR_DIV_EXPR:
     case ROUND_DIV_EXPR:
     case EXACT_DIV_EXPR:
+      if (TREE_CODE (op0) == SIZEOF_EXPR && TREE_CODE (op1) == SIZEOF_EXPR)
+	{
+	  tree type0 = TREE_OPERAND (op0, 0);
+	  tree type1 = TREE_OPERAND (op1, 0);
+	  tree first_arg = type0;
+	  if (!TYPE_P (type0))
+	    type0 = TREE_TYPE (type0);
+	  if (!TYPE_P (type1))
+	    type1 = TREE_TYPE (type1);
+	  if (POINTER_TYPE_P (type0) && same_type_p (TREE_TYPE (type0), type1)
+	      && !(TREE_CODE (first_arg) == PARM_DECL
+		   && DECL_ARRAY_PARAMETER_P (first_arg)
+		   && warn_sizeof_array_argument)
+	      && (complain & tf_warning))
+	    if (warning_at (location, OPT_Wsizeof_pointer_div,
+			    "division %<sizeof (%T) / sizeof (%T)%> does "
+			    "not compute the number of array elements",
+			    type0, type1))
+	      if (DECL_P (first_arg))
+		inform (DECL_SOURCE_LOCATION (first_arg),
+			"first %<sizeof%> operand was declared here");
+	}
+
       if ((code0 == INTEGER_TYPE || code0 == REAL_TYPE
 	   || code0 == COMPLEX_TYPE || code0 == VECTOR_TYPE)
 	  && (code1 == INTEGER_TYPE || code1 == REAL_TYPE

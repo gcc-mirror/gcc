@@ -1,3 +1,8 @@
+2017-06-02  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* testsuite/libgomp.c/pr39591-2.c: Fix test case.
+	* testsuite/libgomp.c/pr39591-3.c: Likewise.
+
 2017-05-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR libgomp/80822

@@ -1,3 +1,7 @@
+2017-06-02  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* doc/invoke.texi: Document the -Wsizeof-pointer-div warning.
+
 2017-06-01  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	* config/i386/i386.c (x86_64_ms_sysv_extra_clobbered_registers): Make
