@@ -10,6 +10,11 @@
 
 2017-06-02  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
+	* config/aarch64/aarch64-simd.md (*aarch64_simd_vec_copy_lane<mode>):
+	Use VALL_F16 iterator rather than VALL.
+
+2017-06-02  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
 	* config/aarch64/aarch64.c (aarch64_split_compare_and_swap):
 	Emit CBNZ inside loop when doing a strong exchange and comparing
 	against zero.  Generate the CC flags after the loop.
