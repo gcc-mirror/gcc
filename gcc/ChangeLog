@@ -1,5 +1,12 @@
 2017-06-02  Richard Biener  <rguenther@suse.de>
 
+	* tree-vect-loop.c (vect_analyze_loop_operations): Not relevant
+	PHIs are ok.
+	* tree-vect-stmts.c (process_use): Do not mark backedge defs
+	for inductions as relevant.
+
+2017-06-02  Richard Biener  <rguenther@suse.de>
+
 	* tree-vect-loop.c (get_initial_def_for_induction): Inline into ...
 	(vectorizable_induction): ... this.  Remove dead code.
 
