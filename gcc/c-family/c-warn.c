@@ -1043,10 +1043,19 @@ conversion_warning (location_t loc, tree type, tree expr, tree result)
 		    "conversion from %qT to to %qT discards imaginary "
 		    "component",
 		    expr_type, type);
-      else if (conversion_kind == UNSAFE_REAL || conversion_kind)
-	warning_at (loc, OPT_Wfloat_conversion,
-		    "conversion from %qT to %qT may change value",
-		    expr_type, type);
+      else
+	{
+	  int warnopt;
+	  if (conversion_kind == UNSAFE_REAL)
+	    warnopt = OPT_Wfloat_conversion;
+	  else if (conversion_kind)
+	    warnopt = OPT_Wconversion;
+	  else
+	    break;
+	  warning_at (loc, warnopt,
+		      "conversion from %qT to %qT may change value",
+		      expr_type, type);
+	}
     }
 }
 
