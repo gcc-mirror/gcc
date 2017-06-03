@@ -1,3 +1,7 @@
+2017-06-03  Andreas Schwab  <schwab@linux-m68k.org>
+
+	* config/abi/post/powerpc-linux-gnu/baseline_symbols.txt: Update.
+
 2017-06-03  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* src/filesystem/dir.cc (fs::_Dir::advance): Use std::exchange.
