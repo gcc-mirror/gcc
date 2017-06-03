@@ -1,3 +1,7 @@
+2017-06-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* mt-android: New file.
+
 2017-02-13  Richard Biener  <rguenther@suse.de>
 
 	* isl.m4: Remove support for ISL 0.14.
