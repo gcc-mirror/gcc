@@ -1,3 +1,7 @@
+2017-06-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* src/filesystem/dir.cc (fs::_Dir::advance): Use std::exchange.
+
 2017-06-02  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/80624

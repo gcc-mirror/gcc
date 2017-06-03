@@ -2521,6 +2521,9 @@ case "${target}" in
   nios2-*-elf*)
     target_makefile_frag="config/mt-nios2-elf"
     ;;
+  *-*-linux-android*)
+    target_makefile_frag="config/mt-android"
+    ;;
   *-*-linux* | *-*-gnu* | *-*-k*bsd*-gnu | *-*-kopensolaris*-gnu)
     target_makefile_frag="config/mt-gnu"
     ;;
