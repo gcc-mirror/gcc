@@ -4449,6 +4449,27 @@ gfc_intrinsic_func_interface (gfc_expr *expr, int error_flag)
       return MATCH_ERROR;
     }
 
+  /* F95, 7.1.6.1: Only transformational functions REPEAT, RESHAPE,
+     SELECTED_INT_KIND, SELECTED_REAL_KIND, TRANSFER, and TRIM are allowed in
+     initialization expressions.  */
+
+  if (gfc_init_expr_flag && isym->transformational)
+    {
+      gfc_isym_id id = isym->id;
+      if (id != GFC_ISYM_REPEAT && id != GFC_ISYM_RESHAPE
+	  && id != GFC_ISYM_SI_KIND && id != GFC_ISYM_SR_KIND
+	  && id != GFC_ISYM_TRANSFER && id != GFC_ISYM_TRIM
+	  && !gfc_notify_std (GFC_STD_F2003, "Transformational function %qs "
+			      "at %L is invalid in an initialization "
+			      "expression", name, &expr->where))
+	{
+	  if (!error_flag)
+	    gfc_pop_suppress_errors ();
+
+	  return MATCH_ERROR;
+	}
+    }
+
   gfc_current_intrinsic_where = &expr->where;
 
   /* Bypass the generic list for min, max and ISO_C_Binding's c_loc.  */

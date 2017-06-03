@@ -1,3 +1,11 @@
+2017-05-03  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/65542
+	Backport from trunk
+	* intrinsic.c (gfc_intrinsic_func_interface):  Return an error
+	for -std=f95 for disallowed transformational functions in
+	initialization expressions.
+
 2017-06-02  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/80904
