@@ -566,7 +566,7 @@ slpeel_add_loop_guard (basic_block guard_bb, tree cond,
 
   new_e->count = guard_bb->count;
   new_e->probability = probability;
-  new_e->count = apply_probability (enter_e->count, probability);
+  new_e->count = enter_e->count.apply_probability (probability);
   if (irreducible_p)
     new_e->flags |= EDGE_IRREDUCIBLE_LOOP;
 

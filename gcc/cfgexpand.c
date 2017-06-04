@@ -3783,7 +3783,6 @@ expand_gimple_tailcall (basic_block bb, gcall *stmt, bool *can_fallthru)
   edge e;
   edge_iterator ei;
   int probability;
-  gcov_type count;
 
   last2 = last = expand_gimple_stmt (stmt);
 
@@ -3809,7 +3808,7 @@ expand_gimple_tailcall (basic_block bb, gcall *stmt, bool *can_fallthru)
      the exit block.  */
 
   probability = 0;
-  count = 0;
+  profile_count count = profile_count::zero ();
 
   for (ei = ei_start (bb->succs); (e = ei_safe_edge (ei)); )
     {
@@ -3819,8 +3818,6 @@ expand_gimple_tailcall (basic_block bb, gcall *stmt, bool *can_fallthru)
 	    {
 	      e->dest->count -= e->count;
 	      e->dest->frequency -= EDGE_FREQUENCY (e);
-	      if (e->dest->count < 0)
-		e->dest->count = 0;
 	      if (e->dest->frequency < 0)
 		e->dest->frequency = 0;
 	    }
@@ -5931,10 +5928,6 @@ construct_exit_block (void)
 	exit_block->count -= e2->count;
 	exit_block->frequency -= EDGE_FREQUENCY (e2);
       }
-  if (e->count < 0)
-    e->count = 0;
-  if (exit_block->count < 0)
-    exit_block->count = 0;
   if (exit_block->frequency < 0)
     exit_block->frequency = 0;
   update_bb_for_insn (exit_block);

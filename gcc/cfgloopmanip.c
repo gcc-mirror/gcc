@@ -533,7 +533,7 @@ scale_loop_profile (struct loop *loop, int scale, gcov_type iteration_bound)
 	{
 	  edge other_e;
 	  int freq_delta;
-	  gcov_type count_delta;
+	  profile_count count_delta;
 
           FOR_EACH_EDGE (other_e, ei, e->src->succs)
 	    if (!(other_e->flags & (EDGE_ABNORMAL | EDGE_FAKE))
@@ -548,8 +548,8 @@ scale_loop_profile (struct loop *loop, int scale, gcov_type iteration_bound)
 
 	  /* Adjust counts accordingly.  */
 	  count_delta = e->count;
-	  e->count = apply_probability (e->src->count, e->probability);
-	  other_e->count = apply_probability (e->src->count, other_e->probability);
+	  e->count = e->src->count.apply_probability (e->probability);
+	  other_e->count = e->src->count.apply_probability (other_e->probability);
 	  count_delta -= e->count;
 
 	  /* If latch exists, change its frequency and count, since we changed
@@ -562,8 +562,6 @@ scale_loop_profile (struct loop *loop, int scale, gcov_type iteration_bound)
 	      if (loop->latch->frequency < 0)
 		loop->latch->frequency = 0;
 	      loop->latch->count += count_delta;
-	      if (loop->latch->count < 0)
-		loop->latch->count = 0;
 	    }
 	}
 
@@ -571,19 +569,25 @@ scale_loop_profile (struct loop *loop, int scale, gcov_type iteration_bound)
 	 difference of loop iterations.  We however can do better if
 	 we look at the actual profile, if it is available.  */
       scale = RDIV (iteration_bound * scale, iterations);
-      if (loop->header->count)
+
+      bool determined = false;
+      if (loop->header->count.initialized_p ())
 	{
-	  gcov_type count_in = 0;
+	  profile_count count_in = profile_count::zero ();
 
 	  FOR_EACH_EDGE (e, ei, loop->header->preds)
 	    if (e->src != loop->latch)
 	      count_in += e->count;
 
-	  if (count_in != 0)
-	    scale = GCOV_COMPUTE_SCALE (count_in * iteration_bound,
-                                        loop->header->count);
+	  if (count_in > profile_count::zero () )
+	    {
+	      scale = GCOV_COMPUTE_SCALE (count_in.to_gcov_type ()
+					  * iteration_bound,
+                                          loop->header->count.to_gcov_type ());
+	      determined = true;
+	    }
 	}
-      else if (loop->header->frequency)
+      if (!determined)
 	{
 	  int freq_in = 0;
 
@@ -864,7 +868,7 @@ loopify (edge latch_edge, edge header_edge,
   struct loop *loop = alloc_loop ();
   struct loop *outer = loop_outer (succ_bb->loop_father);
   int freq;
-  gcov_type cnt;
+  profile_count cnt;
   edge e;
   edge_iterator ei;
 
@@ -907,7 +911,7 @@ loopify (edge latch_edge, edge header_edge,
       switch_bb->count = cnt;
       FOR_EACH_EDGE (e, ei, switch_bb->succs)
 	{
-	  e->count = apply_probability (switch_bb->count, e->probability);
+	  e->count = switch_bb->count.apply_probability (e->probability);
 	}
     }
   scale_loop_frequencies (loop, false_scale, REG_BR_PROB_BASE);
@@ -1107,11 +1111,11 @@ set_zero_probability (edge e)
   edge_iterator ei;
   edge ae, last = NULL;
   unsigned n = EDGE_COUNT (bb->succs);
-  gcov_type cnt = e->count, cnt1;
+  profile_count cnt = e->count, cnt1;
   unsigned prob = e->probability, prob1;
 
   gcc_assert (n > 1);
-  cnt1 = cnt / (n - 1);
+  cnt1 = cnt.apply_scale (1, (n - 1));
   prob1 = prob / (n - 1);
 
   FOR_EACH_EDGE (ae, ei, bb->succs)
@@ -1126,10 +1130,12 @@ set_zero_probability (edge e)
 
   /* Move the rest to one of the edges.  */
   last->probability += prob % (n - 1);
-  last->count += cnt % (n - 1);
+  /* TODO: Remove once we have fractional counts.  */
+  if (cnt.initialized_p ())
+    last->count += profile_count::from_gcov_type (cnt.to_gcov_type () % (n - 1));
 
   e->probability = 0;
-  e->count = 0;
+  e->count = profile_count::zero ();
 }
 
 /* Duplicates body of LOOP to given edge E NDUPL times.  Takes care of updating
@@ -1672,8 +1678,8 @@ lv_adjust_loop_entry_edge (basic_block first_head, basic_block second_head,
 		  current_ir_type () == IR_GIMPLE ? EDGE_TRUE_VALUE : 0);
   e1->probability = then_prob;
   e->probability = else_prob;
-  e1->count = apply_probability (e->count, e1->probability);
-  e->count = apply_probability (e->count, e->probability);
+  e1->count = e->count.apply_probability (e1->probability);
+  e->count = e->count.apply_probability (e->probability);
 
   set_immediate_dominator (CDI_DOMINATORS, first_head, new_head);
   set_immediate_dominator (CDI_DOMINATORS, second_head, new_head);

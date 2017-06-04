@@ -799,12 +799,10 @@ adjust_return_value (basic_block bb, tree m, tree a)
 /* Subtract COUNT and FREQUENCY from the basic block and it's
    outgoing edge.  */
 static void
-decrease_profile (basic_block bb, gcov_type count, int frequency)
+decrease_profile (basic_block bb, profile_count count, int frequency)
 {
   edge e;
-  bb->count -= count;
-  if (bb->count < 0)
-    bb->count = 0;
+  bb->count = bb->count - count;
   bb->frequency -= frequency;
   if (bb->frequency < 0)
     bb->frequency = 0;
@@ -815,8 +813,6 @@ decrease_profile (basic_block bb, gcov_type count, int frequency)
     }
   e = single_succ_edge (bb);
   e->count -= count;
-  if (e->count < 0)
-    e->count = 0;
 }
 
 /* Returns true if argument PARAM of the tail recursive call needs to be copied

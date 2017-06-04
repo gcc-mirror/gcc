@@ -202,10 +202,10 @@ report_unroll (struct loop *loop, location_t locus)
   dump_printf_loc (report_flags, locus,
                    "loop unrolled %d times",
                    loop->lpt_decision.times);
-  if (profile_info)
+  if (profile_info && loop->header->count.initialized_p ())
     dump_printf (report_flags,
                  " (header execution count %d)",
-                 (int)loop->header->count);
+                 (int)loop->header->count.to_gcov_type ());
 
   dump_printf (report_flags, "\n");
 }
@@ -860,7 +860,7 @@ unroll_loop_runtime_iterations (struct loop *loop)
   unsigned i, j, p;
   basic_block preheader, *body, swtch, ezc_swtch = NULL;
   int may_exit_copy, iter_freq, new_freq;
-  gcov_type iter_count, new_count;
+  profile_count iter_count, new_count;
   unsigned n_peel;
   edge e;
   bool extra_zero_check, last_may_exit;
@@ -970,7 +970,7 @@ unroll_loop_runtime_iterations (struct loop *loop)
      innermost switch block.  Switch blocks and peeled loop copies are built
      from innermost outward.  */
   iter_freq = new_freq = swtch->frequency / (max_unroll + 1);
-  iter_count = new_count = swtch->count / (max_unroll + 1);
+  iter_count = new_count = swtch->count.apply_scale (1, max_unroll + 1);
   swtch->frequency = new_freq;
   swtch->count = new_count;
   single_succ_edge (swtch)->count = new_count;
@@ -1027,7 +1027,7 @@ unroll_loop_runtime_iterations (struct loop *loop)
       /* Recompute frequency/count adjustments since initial peel copy may
 	 have exited and reduced those values that were computed above.  */
       iter_freq = swtch->frequency / (max_unroll + 1);
-      iter_count = swtch->count / (max_unroll + 1);
+      iter_count = swtch->count.apply_scale (1, max_unroll + 1);
       /* Add in frequency/count of edge from switch block.  */
       preheader->frequency += iter_freq;
       preheader->count += iter_count;

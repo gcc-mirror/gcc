@@ -35,6 +35,7 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GENERATOR_FILE
 #include "alias.h"
 #include "tree.h"
+#include "basic-block.h"
 #include "cfg.h"
 #include "print-tree.h"
 #include "flags.h"

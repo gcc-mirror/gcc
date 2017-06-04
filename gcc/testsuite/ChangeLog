@@ -1,3 +1,7 @@
+2017-05-23  Jan Hubicka  <hubicka@ucw.cz>
+
+	* gcc.dg/tree-ssa/attr-hotcold-2.c: Update template.
+
 2017-06-04  Dominique d'Humieres  <dominiq@lps.ens.fr>
 
 	* lib/fortran-modules.exp (igrep): New procedure, case insensitive
@@ -77,6 +81,7 @@
 	* gfortran.dg/warn_unused_function.f90: Likewise.
 	* gfortran.dg/warn_unused_function_2.f90: Likewise.
 	* gfortran.dg/ieee/ieee_8.f90: Likewise.
+
 2017-06-04  Marek Polacek  <polacek@redhat.com>
 
 	PR c/80919

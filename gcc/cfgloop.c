@@ -543,7 +543,7 @@ find_subloop_latch_edge_by_profile (vec<edge> latches)
 {
   unsigned i;
   edge e, me = NULL;
-  gcov_type mcount = 0, tcount = 0;
+  profile_count mcount = profile_count::zero (), tcount = profile_count::zero ();
 
   FOR_EACH_VEC_ELT (latches, i, e)
     {
@@ -555,8 +555,8 @@ find_subloop_latch_edge_by_profile (vec<edge> latches)
       tcount += e->count;
     }
 
-  if (tcount < HEAVY_EDGE_MIN_SAMPLES
-      || (tcount - mcount) * HEAVY_EDGE_RATIO > tcount)
+  if (!tcount.initialized_p () || tcount < HEAVY_EDGE_MIN_SAMPLES
+      || (tcount - mcount).apply_scale (HEAVY_EDGE_RATIO, 1) > tcount)
     return NULL;
 
   if (dump_file)
@@ -1899,7 +1899,7 @@ get_estimated_loop_iterations (struct loop *loop, widest_int *nit)
      profile.  */
   if (!loop->any_estimate)
     {
-      if (loop->header->count)
+      if (loop->header->count.reliable_p ())
 	{
           *nit = gcov_type_to_wide_int
 		   (expected_loop_iterations_unbounded (loop) + 1);

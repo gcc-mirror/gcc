@@ -89,7 +89,7 @@ cgraph_edge::clone (cgraph_node *n, gcall *call_stmt, unsigned stmt_uid,
 		    gcov_type count_scale, int freq_scale, bool update_original)
 {
   cgraph_edge *new_edge;
-  gcov_type gcov_count = apply_probability (count, count_scale);
+  profile_count gcov_count = count.apply_scale (count_scale, REG_BR_PROB_BASE);
   gcov_type freq;
 
   /* We do not want to ignore loop nest after frequency drops to 0.  */
@@ -142,8 +142,6 @@ cgraph_edge::clone (cgraph_node *n, gcall *call_stmt, unsigned stmt_uid,
   if (update_original)
     {
       count -= new_edge->count;
-      if (count < 0)
-	count = 0;
     }
   symtab->call_edge_duplication_hooks (this, new_edge);
   return new_edge;
@@ -336,7 +334,7 @@ duplicate_thunk_for_node (cgraph_node *thunk, cgraph_node *node)
   new_thunk->clone.args_to_skip = node->clone.args_to_skip;
   new_thunk->clone.combined_args_to_skip = node->clone.combined_args_to_skip;
 
-  cgraph_edge *e = new_thunk->create_edge (node, NULL, 0,
+  cgraph_edge *e = new_thunk->create_edge (node, NULL, new_thunk->count,
 						  CGRAPH_FREQ_BASE);
   symtab->call_edge_duplication_hooks (thunk->callees, e);
   symtab->call_cgraph_duplication_hooks (thunk, new_thunk);
@@ -421,7 +419,7 @@ dump_callgraph_transformation (const cgraph_node *original,
    node is not inlined.  */
 
 cgraph_node *
-cgraph_node::create_clone (tree new_decl, gcov_type gcov_count, int freq,
+cgraph_node::create_clone (tree new_decl, profile_count prof_count, int freq,
 			   bool update_original,
 			   vec<cgraph_edge *> redirect_callers,
 			   bool call_duplication_hook,
@@ -436,6 +434,7 @@ cgraph_node::create_clone (tree new_decl, gcov_type gcov_count, int freq,
   if (new_inlined_to)
     dump_callgraph_transformation (this, new_inlined_to, "inlining to");
 
+  new_node->count = prof_count;
   new_node->decl = new_decl;
   new_node->register_symbol ();
   new_node->origin = origin;
@@ -476,21 +475,17 @@ cgraph_node::create_clone (tree new_decl, gcov_type gcov_count, int freq,
   else
     new_node->clone.combined_args_to_skip = args_to_skip;
 
-  if (count)
+  if (count.initialized_p ())
     {
       if (new_node->count > count)
         count_scale = REG_BR_PROB_BASE;
       else
-	count_scale = GCOV_COMPUTE_SCALE (new_node->count, count);
+	count_scale = new_node->count.probability_in (count);
     }
   else
     count_scale = 0;
   if (update_original)
-    {
-      count -= gcov_count;
-      if (count < 0)
-	count = 0;
-    }
+    count -= prof_count;
 
   FOR_EACH_VEC_ELT (redirect_callers, i, e)
     {
@@ -785,7 +780,7 @@ cgraph_node::set_call_stmt_including_clones (gimple *old_stmt,
 void
 cgraph_node::create_edge_including_clones (cgraph_node *callee,
 					   gimple *old_stmt, gcall *stmt,
-					   gcov_type count,
+					   profile_count count,
 					   int freq,
 					   cgraph_inline_failed_t reason)
 {

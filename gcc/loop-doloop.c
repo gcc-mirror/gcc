@@ -506,7 +506,7 @@ doloop_modify (struct loop *loop, struct niter_desc *desc,
       redirect_edge_and_branch_force (single_succ_edge (preheader), new_preheader);
       set_immediate_dominator (CDI_DOMINATORS, new_preheader, preheader);
 
-      set_zero->count = 0;
+      set_zero->count = profile_count::uninitialized ();
       set_zero->frequency = 0;
 
       te = single_succ_edge (preheader);

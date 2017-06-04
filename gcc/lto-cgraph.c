@@ -256,7 +256,7 @@ lto_output_edge (struct lto_simple_output_block *ob, struct cgraph_edge *edge,
       streamer_write_hwi_stream (ob->main_stream, ref);
     }
 
-  streamer_write_gcov_count_stream (ob->main_stream, edge->count);
+  edge->count.stream_out (ob->main_stream);
 
   bp = bitpack_create (ob->main_stream);
   uid = (!gimple_has_body_p (edge->caller->decl) || edge->caller->thunk.thunk_p
@@ -458,7 +458,7 @@ lto_output_node (struct lto_simple_output_block *ob, struct cgraph_node *node,
 
 
   lto_output_fn_decl_index (ob->decl_state, ob->main_stream, node->decl);
-  streamer_write_gcov_count_stream (ob->main_stream, node->count);
+  node->count.stream_out (ob->main_stream);
   streamer_write_hwi_stream (ob->main_stream, node->count_materialization_scale);
 
   streamer_write_hwi_stream (ob->main_stream,
@@ -1246,7 +1246,7 @@ input_node (struct lto_file_decl_data *file_data,
   if (clone_ref != LCC_NOT_FOUND)
     {
       node = dyn_cast<cgraph_node *> (nodes[clone_ref])->create_clone (fn_decl,
-	0, CGRAPH_FREQ_BASE, false,
+	profile_count::uninitialized (), CGRAPH_FREQ_BASE, false,
 	vNULL, false, NULL, NULL);
     }
   else
@@ -1263,7 +1263,7 @@ input_node (struct lto_file_decl_data *file_data,
   if (order >= symtab->order)
     symtab->order = order + 1;
 
-  node->count = streamer_read_gcov_count (ib);
+  node->count = profile_count::stream_in (ib);
   node->count_materialization_scale = streamer_read_hwi (ib);
 
   count = streamer_read_hwi (ib);
@@ -1461,7 +1461,7 @@ input_edge (struct lto_input_block *ib, vec<symtab_node *> nodes,
   struct cgraph_node *caller, *callee;
   struct cgraph_edge *edge;
   unsigned int stmt_id;
-  gcov_type count;
+  profile_count count;
   int freq;
   cgraph_inline_failed_t inline_failed;
   struct bitpack_d bp;
@@ -1480,7 +1480,7 @@ input_edge (struct lto_input_block *ib, vec<symtab_node *> nodes,
   else
     callee = NULL;
 
-  count = streamer_read_gcov_count (ib);
+  count = profile_count::stream_in (ib);
 
   bp = streamer_read_bitpack (ib);
   inline_failed = bp_unpack_enum (&bp, cgraph_inline_failed_t, CIF_N_REASONS);
@@ -1821,8 +1821,8 @@ merge_profile_summaries (struct lto_file_decl_data **file_data_vec)
 	if (scale == REG_BR_PROB_BASE)
 	  continue;
 	for (edge = node->callees; edge; edge = edge->next_callee)
-	  edge->count = apply_scale (edge->count, scale);
-	node->count = apply_scale (node->count, scale);
+	  edge->count = edge->count.apply_scale (scale, REG_BR_PROB_BASE);
+	node->count = node->count.apply_scale (scale, REG_BR_PROB_BASE);
       }
 }
 

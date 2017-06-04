@@ -1422,13 +1422,16 @@ sms_schedule (void)
       get_ebb_head_tail (bb, bb, &head, &tail);
       latch_edge = loop_latch_edge (loop);
       gcc_assert (single_exit (loop));
-      if (single_exit (loop)->count)
-	trip_count = latch_edge->count / single_exit (loop)->count;
+      if (single_exit (loop)->count > profile_count::zero ())
+	trip_count = latch_edge->count.to_gcov_type ()
+		     / single_exit (loop)->count.to_gcov_type ();
 
       /* Perform SMS only on loops that their average count is above threshold.  */
 
-      if ( latch_edge->count
-          && (latch_edge->count < single_exit (loop)->count * SMS_LOOP_AVERAGE_COUNT_THRESHOLD))
+      if ( latch_edge->count > profile_count::zero ()
+          && (latch_edge->count
+	      < single_exit (loop)->count.apply_scale
+				 (SMS_LOOP_AVERAGE_COUNT_THRESHOLD, 1)))
 	{
 	  if (dump_file)
 	    {
@@ -1438,7 +1441,7 @@ sms_schedule (void)
 	    	{
 	      	  fprintf (dump_file, "SMS loop-count ");
 	      	  fprintf (dump_file, "%" PRId64,
-	             	   (int64_t) bb->count);
+	             	   (int64_t) bb->count.to_gcov_type ());
 	      	  fprintf (dump_file, "\n");
                   fprintf (dump_file, "SMS trip-count ");
                   fprintf (dump_file, "%" PRId64,
@@ -1549,8 +1552,9 @@ sms_schedule (void)
 
       latch_edge = loop_latch_edge (loop);
       gcc_assert (single_exit (loop));
-      if (single_exit (loop)->count)
-	trip_count = latch_edge->count / single_exit (loop)->count;
+      if (single_exit (loop)->count > profile_count::zero ())
+	trip_count = latch_edge->count.to_gcov_type ()
+		     / single_exit (loop)->count.to_gcov_type ();
 
       if (dump_file)
 	{
@@ -1560,7 +1564,7 @@ sms_schedule (void)
 	    {
 	      fprintf (dump_file, "SMS loop-count ");
 	      fprintf (dump_file, "%" PRId64,
-	               (int64_t) bb->count);
+	               (int64_t) bb->count.to_gcov_type ());
 	      fprintf (dump_file, "\n");
 	      fprintf (dump_file, "SMS profile-sum-max ");
 	      fprintf (dump_file, "%" PRId64,

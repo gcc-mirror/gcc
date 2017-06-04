@@ -132,7 +132,8 @@ count_insns (basic_block bb)
 static bool
 better_p (const_edge e1, const_edge e2)
 {
-  if (e1->count != e2->count)
+  if (e1->count.initialized_p () && e2->count.initialized_p ()
+      && !(e1->count == e2->count))
     return e1->count > e2->count;
   if (e1->src->frequency * e1->probability !=
       e2->src->frequency * e2->probability)

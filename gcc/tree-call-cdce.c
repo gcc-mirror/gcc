@@ -906,7 +906,7 @@ shrink_wrap_one_built_in_call_with_conds (gcall *bi_call, vec <gimple *> conds,
 
      Here we take the second approach because it's slightly simpler
      and because it's easy to see that it doesn't lose profile counts.  */
-  bi_call_bb->count = 0;
+  bi_call_bb->count = profile_count::zero ();
   bi_call_bb->frequency = 0;
   while (!edges.is_empty ())
     {
@@ -917,8 +917,8 @@ shrink_wrap_one_built_in_call_with_conds (gcall *bi_call, vec <gimple *> conds,
       gcc_assert (src_bb == nocall_edge->src);
 
       call_edge->probability = REG_BR_PROB_BASE * ERR_PROB;
-      call_edge->count = apply_probability (src_bb->count,
-					    call_edge->probability);
+      call_edge->count
+	 = src_bb->count.apply_probability (call_edge->probability);
       nocall_edge->probability = inverse_probability (call_edge->probability);
       nocall_edge->count = src_bb->count - call_edge->count;
 

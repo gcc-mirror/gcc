@@ -921,7 +921,7 @@ try_shrink_wrapping (edge *entry_edge, rtx_insn *prologue_seq)
 
 	bb->frequency = RDIV (num * bb->frequency, den);
 	dup->frequency -= bb->frequency;
-	bb->count = RDIV (num * bb->count, den);
+	bb->count = bb->count.apply_scale (num, den);
 	dup->count -= bb->count;
       }
 
@@ -993,7 +993,7 @@ try_shrink_wrapping (edge *entry_edge, rtx_insn *prologue_seq)
 	  continue;
 	}
 
-      new_bb->count += RDIV (e->src->count * e->probability, REG_BR_PROB_BASE);
+      new_bb->count += e->src->count.apply_probability (e->probability);
       new_bb->frequency += EDGE_FREQUENCY (e);
 
       redirect_edge_and_branch_force (e, new_bb);

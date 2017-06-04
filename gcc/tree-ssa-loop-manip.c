@@ -1213,7 +1213,7 @@ tree_transform_and_unroll_loop (struct loop *loop, unsigned factor,
   use_operand_p op;
   bool ok;
   unsigned i, prob, prob_entry, scale_unrolled, scale_rest;
-  gcov_type freq_e, freq_h;
+  profile_count freq_e, freq_h;
   gcov_type new_est_niter = niter_for_unrolled_loop (loop, factor);
   unsigned irr = loop_preheader_edge (loop)->flags & EDGE_IRREDUCIBLE_LOOP;
   auto_vec<edge> to_remove;
@@ -1281,8 +1281,6 @@ tree_transform_and_unroll_loop (struct loop *loop, unsigned factor,
   new_nonexit->probability = REG_BR_PROB_BASE - exit->probability;
   new_nonexit->flags = EDGE_TRUE_VALUE;
   new_nonexit->count -= exit->count;
-  if (new_nonexit->count < 0)
-    new_nonexit->count = 0;
   scale_bbs_frequencies_int (&loop->latch, 1, new_nonexit->probability,
 			     REG_BR_PROB_BASE);
 
@@ -1356,19 +1354,21 @@ tree_transform_and_unroll_loop (struct loop *loop, unsigned factor,
   freq_h = loop->header->count;
   freq_e = (loop_preheader_edge (loop))->count;
   /* Use frequency only if counts are zero.  */
-  if (freq_h == 0 && freq_e == 0)
+  if (!(freq_h > 0) && !(freq_e > 0))
     {
-      freq_h = loop->header->frequency;
-      freq_e = EDGE_FREQUENCY (loop_preheader_edge (loop));
+      freq_h = profile_count::from_gcov_type (loop->header->frequency);
+      freq_e = profile_count::from_gcov_type
+		 (EDGE_FREQUENCY (loop_preheader_edge (loop)));
     }
-  if (freq_h != 0)
+  if (freq_h > 0)
     {
       gcov_type scale;
       /* Avoid dropping loop body profile counter to 0 because of zero count
 	 in loop's preheader.  */
-      freq_e = MAX (freq_e, 1);
+      if (freq_e == profile_count::zero ())
+        freq_e = profile_count::from_gcov_type (1);
       /* This should not overflow.  */
-      scale = GCOV_COMPUTE_SCALE (freq_e * (new_est_niter + 1), freq_h);
+      scale = freq_e.probability_in (freq_h);
       scale_loop_frequencies (loop, scale, REG_BR_PROB_BASE);
     }
 
@@ -1384,8 +1384,6 @@ tree_transform_and_unroll_loop (struct loop *loop, unsigned factor,
   prob = new_nonexit->probability;
   new_nonexit->probability = REG_BR_PROB_BASE - new_exit->probability;
   new_nonexit->count = exit_bb->count - new_exit->count;
-  if (new_nonexit->count < 0)
-    new_nonexit->count = 0;
   if (prob > 0)
     scale_bbs_frequencies_int (&loop->latch, 1, new_nonexit->probability,
 			       prob);

@@ -1328,7 +1328,8 @@ sem_function::merge (sem_item *alias_item)
       alias->icf_merged = true;
       local_original->icf_merged = true;
 
-      ipa_merge_profiles (local_original, alias, true);
+      /* FIXME update local_original counts.  */
+      ipa_merge_profiles (original, alias, true);
       alias->create_wrapper (local_original);
 
       if (dump_file)

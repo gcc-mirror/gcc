@@ -542,7 +542,7 @@ compute_outgoing_frequencies (basic_block b)
 	  probability = XINT (note, 0);
 	  e = BRANCH_EDGE (b);
 	  e->probability = probability;
-	  e->count = apply_probability (b->count, probability);
+	  e->count = b->count.apply_probability (probability);
 	  f = FALLTHRU_EDGE (b);
 	  f->probability = REG_BR_PROB_BASE - probability;
 	  f->count = b->count - e->count;
@@ -577,9 +577,9 @@ compute_outgoing_frequencies (basic_block b)
         guess_outgoing_edge_probabilities (b);
     }
 
-  if (b->count)
+  if (b->count > profile_count::zero ())
     FOR_EACH_EDGE (e, ei, b->succs)
-      e->count = apply_probability (b->count, e->probability);
+      e->count = b->count.apply_probability (e->probability);
 }
 
 /* Assume that some pass has inserted labels or control flow
@@ -624,7 +624,7 @@ find_many_sub_basic_blocks (sbitmap blocks)
 	  continue;
 	if (STATE (bb) == BLOCK_NEW)
 	  {
-	    bb->count = 0;
+	    bb->count = profile_count::zero ();
 	    bb->frequency = 0;
 	    FOR_EACH_EDGE (e, ei, bb->preds)
 	      {

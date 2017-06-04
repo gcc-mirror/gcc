@@ -1058,8 +1058,10 @@ afdo_indirect_call (gimple_stmt_iterator *gsi, const icall_target_map &map,
       fprintf (dump_file, "\n");
     }
 
+  /* FIXME: Count should be initialized.  */
   struct cgraph_edge *new_edge
-      = indirect_edge->make_speculative (direct_call, 0, 0);
+      = indirect_edge->make_speculative (direct_call,
+					 profile_count::uninitialized (), 0);
   new_edge->redirect_call_stmt_to_callee ();
   gimple_remove_histogram_value (cfun, stmt, hist);
   inline_call (new_edge, true, NULL, NULL, false);
@@ -1149,7 +1151,7 @@ afdo_set_bb_count (basic_block bb, const stmt_set &promoted)
   FOR_EACH_EDGE (e, ei, bb->succs)
   afdo_source_profile->mark_annotated (e->goto_locus);
 
-  bb->count = max_count;
+  bb->count = profile_count::from_gcov_type (max_count);
   return true;
 }
 
@@ -1226,7 +1228,7 @@ afdo_propagate_edge (bool is_succ, bb_set *annotated_bb,
     edge e, unknown_edge = NULL;
     edge_iterator ei;
     int num_unknown_edge = 0;
-    gcov_type total_known_count = 0;
+    profile_count total_known_count = profile_count::zero ();
 
     FOR_EACH_EDGE (e, ei, is_succ ? bb->succs : bb->preds)
       if (!is_edge_annotated (e, *annotated_edge))
@@ -1249,10 +1251,7 @@ afdo_propagate_edge (bool is_succ, bb_set *annotated_bb,
       }
     else if (num_unknown_edge == 1 && is_bb_annotated (bb, *annotated_bb))
       {
-        if (bb->count >= total_known_count)
-          unknown_edge->count = bb->count - total_known_count;
-        else
-          unknown_edge->count = 0;
+        unknown_edge->count = bb->count - total_known_count;
         set_edge_annotated (unknown_edge, annotated_edge);
         changed = true;
       }
@@ -1350,7 +1349,7 @@ afdo_propagate_circuit (const bb_set &annotated_bb, edge_set *annotated_edge)
           if (e->probability == 0 && !is_edge_annotated (ep, *annotated_edge))
             {
               ep->probability = 0;
-              ep->count = 0;
+              ep->count = profile_count::zero ();
               set_edge_annotated (ep, annotated_edge);
             }
         }
@@ -1404,7 +1403,7 @@ afdo_calculate_branch_prob (bb_set *annotated_bb, edge_set *annotated_edge)
 
   FOR_EACH_BB_FN (bb, cfun)
   {
-    if (bb->count > 0)
+    if (bb->count > profile_count::zero ())
       {
 	has_sample = true;
 	break;
@@ -1426,7 +1425,7 @@ afdo_calculate_branch_prob (bb_set *annotated_bb, edge_set *annotated_edge)
     edge e;
     edge_iterator ei;
     int num_unknown_succ = 0;
-    gcov_type total_count = 0;
+    profile_count total_count = profile_count::zero ();
 
     FOR_EACH_EDGE (e, ei, bb->succs)
     {
@@ -1435,10 +1434,10 @@ afdo_calculate_branch_prob (bb_set *annotated_bb, edge_set *annotated_edge)
       else
         total_count += e->count;
     }
-    if (num_unknown_succ == 0 && total_count > 0)
+    if (num_unknown_succ == 0 && total_count > profile_count::zero ())
       {
         FOR_EACH_EDGE (e, ei, bb->succs)
-        e->probability = (double)e->count * REG_BR_PROB_BASE / total_count;
+        e->probability = e->count.probability_in (total_count);
       }
   }
   FOR_ALL_BB_FN (bb, cfun)
@@ -1447,7 +1446,7 @@ afdo_calculate_branch_prob (bb_set *annotated_bb, edge_set *annotated_edge)
     edge_iterator ei;
 
     FOR_EACH_EDGE (e, ei, bb->succs)
-      e->count = (double)bb->count * e->probability / REG_BR_PROB_BASE;
+      e->count = bb->count.apply_probability (e->probability);
     bb->aux = NULL;
   }
 
@@ -1536,18 +1535,20 @@ afdo_annotate_cfg (const stmt_set &promoted_stmts)
 
   if (s == NULL)
     return;
-  cgraph_node::get (current_function_decl)->count = s->head_count ();
-  ENTRY_BLOCK_PTR_FOR_FN (cfun)->count = s->head_count ();
-  gcov_type max_count = ENTRY_BLOCK_PTR_FOR_FN (cfun)->count;
+  cgraph_node::get (current_function_decl)->count
+     = profile_count::from_gcov_type (s->head_count ());
+  ENTRY_BLOCK_PTR_FOR_FN (cfun)->count
+     = profile_count::from_gcov_type (s->head_count ());
+  profile_count max_count = ENTRY_BLOCK_PTR_FOR_FN (cfun)->count;
 
   FOR_EACH_BB_FN (bb, cfun)
   {
     edge e;
     edge_iterator ei;
 
-    bb->count = 0;
+    bb->count = profile_count::uninitialized ();
     FOR_EACH_EDGE (e, ei, bb->succs)
-      e->count = 0;
+      e->count = profile_count::uninitialized ();
 
     if (afdo_set_bb_count (bb, promoted_stmts))
       set_bb_annotated (bb, &annotated_bb);
@@ -1572,7 +1573,7 @@ afdo_annotate_cfg (const stmt_set &promoted_stmts)
       DECL_SOURCE_LOCATION (current_function_decl));
   afdo_source_profile->mark_annotated (cfun->function_start_locus);
   afdo_source_profile->mark_annotated (cfun->function_end_locus);
-  if (max_count > 0)
+  if (max_count > profile_count::zero ())
     {
       afdo_calculate_branch_prob (&annotated_bb, &annotated_edge);
       counts_to_freqs ();
@@ -1721,7 +1722,7 @@ afdo_callsite_hot_enough_for_early_inline (struct cgraph_edge *edge)
       /* At early inline stage, profile_info is not set yet. We need to
          temporarily set it to afdo_profile_info to calculate hotness.  */
       profile_info = autofdo::afdo_profile_info;
-      is_hot = maybe_hot_count_p (NULL, count);
+      is_hot = maybe_hot_count_p (NULL, profile_count::from_gcov_type (count));
       profile_info = saved_profile_info;
       return is_hot;
     }
