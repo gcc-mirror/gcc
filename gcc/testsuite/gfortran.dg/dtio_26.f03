@@ -65,5 +65,3 @@ program p
   read( unit=s, fmt=*, iostat=istat, iomsg=imsg) foo
   if (imsg.ne."End of record") call abort
 end program p
-
-! { dg-final { cleanup-modules "t_m" } }

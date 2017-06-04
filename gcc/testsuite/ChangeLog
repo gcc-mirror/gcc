@@ -1,3 +1,82 @@
+2017-06-04  Dominique d'Humieres  <dominiq@lps.ens.fr>
+
+	* lib/fortran-modules.exp (igrep): New procedure, case insensitive
+	vesrion of the dejagnu grep.
+	(list-module-names): Use it and adjust the regular expressions for
+	modules and submodules.
+	* gfortran.dg/prof/prof.exp: Cleanup modules.
+	* gfortran.dg/allocate_class_4.f90: Remove cleanup-(sub)?modules
+	directives.
+	* gfortran.dg/altreturn_8.f90: Likewise.
+	* gfortran.dg/associate_12.f90: Likewise.
+	* gfortran.dg/c_f_pointer_shape_test.f90: Likewise.
+	* gfortran.dg/charlen_15.f90: Likewise.
+	* gfortran.dg/class_4a.f03: Likewise.
+	* gfortran.dg/class_54.f90: Likewise.
+	* gfortran.dg/class_dummy_4.f03: Likewise.
+	* gfortran.dg/class_dummy_5.f90: Likewise.
+	* gfortran.dg/constructor_9.f90: Likewise.
+	* gfortran.dg/dec_structure_15.f90: Likewise.
+	* gfortran.dg/do_check_8.f90: Likewise.
+	* gfortran.dg/dtio_26.f03: Likewise.
+	* gfortran.dg/dynamic_dispatch_12.f90: Likewise.
+	* gfortran.dg/equiv_9.f90: Likewise.
+	* gfortran.dg/extends_15.f90: Likewise.
+	* gfortran.dg/finalize_22.f90: Likewise.
+	* gfortran.dg/finalize_23.f90: Likewise.
+	* gfortran.dg/generic_26.f90: Likewise.
+	* gfortran.dg/generic_27.f90: Likewise.
+	* gfortran.dg/namelist_76.f90: Likewise.
+	* gfortran.dg/pointer_init_8.f90: Likewise.
+	* gfortran.dg/pr61318.f90: Likewise.
+	* gfortran.dg/pr77260_1.f90: Likewise.
+	* gfortran.dg/pr77260_2.f90: Likewise.
+	* gfortran.dg/pr77420_3.f90: Likewise.
+	* gfortran.dg/proc_ptr_39.f90: Likewise.
+	* gfortran.dg/proc_ptr_41.f90: Likewise.
+	* gfortran.dg/proc_ptr_42.f90: Likewise.
+	* gfortran.dg/proc_ptr_comp_43.f90: Likewise.
+	* gfortran.dg/submodule_1.f08: Likewise.
+	* gfortran.dg/submodule_10.f08: Likewise.
+	* gfortran.dg/submodule_14.f08: Likewise.
+	* gfortran.dg/submodule_15.f08: Likewise.
+	* gfortran.dg/submodule_2.f08: Likewise.
+	* gfortran.dg/submodule_5.f08: Likewise.
+	* gfortran.dg/submodule_6.f08: Likewise.
+	* gfortran.dg/submodule_7.f08: Likewise.
+	* gfortran.dg/submodule_8.f08: Likewise.
+	* gfortran.dg/submodule_9.f08: Likewise.
+	* gfortran.dg/transfer_class_2.f90: Likewise.
+	* gfortran.dg/typebound_assignment_7.f90: Likewise.
+	* gfortran.dg/typebound_call_24.f03: Likewise.
+	* gfortran.dg/typebound_call_25.f90: Likewise.
+	* gfortran.dg/typebound_deferred_1.f90: Likewise.
+	* gfortran.dg/typebound_generic_12.f03: Likewise.
+	* gfortran.dg/typebound_generic_13.f03: Likewise.
+	* gfortran.dg/typebound_generic_14.f03: Likewise.
+	* gfortran.dg/typebound_generic_15.f90: Likewise.
+	* gfortran.dg/typebound_operator_16.f03: Likewise.
+	* gfortran.dg/typebound_operator_18.f90: Likewise.
+	* gfortran.dg/typebound_operator_20.f90: Likewise.
+	* gfortran.dg/typebound_override_3.f90: Likewise.
+	* gfortran.dg/typebound_override_4.f90: Likewise.
+	* gfortran.dg/typebound_override_5.f90: Likewise.
+	* gfortran.dg/typebound_override_6.f90: Likewise.
+	* gfortran.dg/typebound_override_7.f90: Likewise.
+	* gfortran.dg/typebound_proc_28.f03: Likewise.
+	* gfortran.dg/typebound_proc_29.f90: Likewise.
+	* gfortran.dg/typebound_proc_30.f90: Likewise.
+	* gfortran.dg/typebound_proc_31.f90: Likewise.
+	* gfortran.dg/typebound_proc_32.f90: Likewise.
+	* gfortran.dg/typebound_proc_33.f90: Likewise.
+	* gfortran.dg/unlimited_polymorphic_16.f90: Likewise.
+	* gfortran.dg/unlimited_polymorphic_19.f90: Likewise.
+	* gfortran.dg/unlimited_polymorphic_24.f03: Likewise.
+	* gfortran.dg/use_only_3.f90: Likewise.
+	* gfortran.dg/use_without_only_1.f90: Likewise.
+	* gfortran.dg/warn_unused_function.f90: Likewise.
+	* gfortran.dg/warn_unused_function_2.f90: Likewise.
+	* gfortran.dg/ieee/ieee_8.f90: Likewise.
 2017-06-04  Marek Polacek  <polacek@redhat.com>
 
 	PR c/80919

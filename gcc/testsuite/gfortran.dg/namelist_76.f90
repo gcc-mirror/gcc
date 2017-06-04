@@ -24,5 +24,3 @@ subroutine write_data()
   write(10, nml=write_data_list)
   close(10)
 end subroutine write_data
-
-! { dg-final { cleanup-modules "data" } }

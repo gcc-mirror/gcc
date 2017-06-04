@@ -22,5 +22,3 @@ end module m
   if (.not. associated(py, y))   call abort()
   if (.not. same_type_as(py, y)) call abort()
 end 
-
-! { dg-final { cleanup-modules "m" } }
