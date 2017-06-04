@@ -755,13 +755,13 @@ input_cfg (struct lto_input_block *ib, struct data_in *data_in,
 	  unsigned int edge_flags;
 	  basic_block dest;
 	  int probability;
-	  gcov_type count;
+	  profile_count count;
 	  edge e;
 
 	  dest_index = streamer_read_uhwi (ib);
 	  probability = (int) streamer_read_hwi (ib);
-	  count = apply_scale ((gcov_type) streamer_read_gcov_count (ib),
-                               count_materialization_scale);
+	  count = profile_count::stream_in (ib).apply_scale
+			 (count_materialization_scale, REG_BR_PROB_BASE);
 	  edge_flags = streamer_read_uhwi (ib);
 
 	  dest = BASIC_BLOCK_FOR_FN (fn, dest_index);

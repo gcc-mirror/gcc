@@ -26,6 +26,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "vec.h"
 #include "tree.h"
 #include "dominance.h"
+#include "basic-block.h"
 #include "cfg.h"
 #include "cfganal.h"
 #include "function.h"

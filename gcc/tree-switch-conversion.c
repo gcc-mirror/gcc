@@ -236,8 +236,10 @@ case_bit_test_cmp (const void *p1, const void *p2)
   const struct case_bit_test *const d1 = (const struct case_bit_test *) p1;
   const struct case_bit_test *const d2 = (const struct case_bit_test *) p2;
 
-  if (d2->target_edge->count != d1->target_edge->count)
-    return d2->target_edge->count - d1->target_edge->count;
+  if (d2->target_edge->count < d1->target_edge->count)
+    return -1;
+  if (d2->target_edge->count > d1->target_edge->count)
+    return 1;
   if (d2->bits != d1->bits)
     return d2->bits - d1->bits;
 
@@ -559,10 +561,10 @@ struct switch_conv_info
   int default_prob;
 
   /* The count of the default edge in the replaced switch.  */
-  gcov_type default_count;
+  profile_count default_count;
 
   /* Combined count of all other (non-default) edges in the replaced switch.  */
-  gcov_type other_count;
+  profile_count other_count;
 
   /* Number of phi nodes in the final bb (that we'll be replacing).  */
   int phi_count;

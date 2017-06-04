@@ -243,7 +243,7 @@ redirect_to_unreachable (struct cgraph_edge *e)
   struct ipa_call_summary *es = ipa_call_summaries->get (e);
   e->inline_failed = CIF_UNREACHABLE;
   e->frequency = 0;
-  e->count = 0;
+  e->count = profile_count::zero ();
   es->call_stmt_size = 0;
   es->call_stmt_time = 0;
   if (callee)

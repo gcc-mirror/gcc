@@ -1,3 +1,215 @@
+2017-05-23  Jan Hubicka  <hubicka@ucw.cz>
+
+	* config/i386/i386.c (make_resolver_func): Update.
+	* Makefile.in: Add profile-count.h and profile-count.o
+	* auto-profile.c (afdo_indirect_call): Update to new API.
+	(afdo_set_bb_count): Update.
+	(afdo_propagate_edge): Update.
+	(afdo_propagate_circuit): Update.
+	(afdo_calculate_branch_prob): Update.
+	(afdo_annotate_cfg): Update.
+	* basic-block.h: Include profile-count.h
+	(struct edge_def): Turn count to profile_count.
+	(struct basic_block_def): Likewie.
+	(REG_BR_PROB_BASE): Move to profile-count.h
+	(RDIV): Move to profile-count.h
+	* bb-reorder.c (max_entry_count): Turn to profile_count.
+	(find_traces): Update.
+	(rotate_loop):Update.
+	(connect_traces):Update.
+	(sanitize_hot_paths):Update.
+	* bt-load.c (migrate_btr_defs): Update.
+	* cfg.c (RDIV): Remove.
+	(init_flow): Use alloc_block.
+	(alloc_block): Uninitialize count.
+	(unchecked_make_edge): Uninitialize count.
+	(check_bb_profile): Update.
+	(dump_edge_info): Update.
+	(dump_bb_info): Update.
+	(update_bb_profile_for_threading): Update.
+	(scale_bbs_frequencies_int): Update.
+	(scale_bbs_frequencies_gcov_type): Update.
+	(scale_bbs_frequencies_profile_count): New.
+	* cfg.h (update_bb_profile_for_threading): Update.
+	(scale_bbs_frequencies_profile_count): Declare.
+	* cfgbuild.c (compute_outgoing_frequencies): Update.
+	(find_many_sub_basic_blocks): Update.
+	* cfgcleanup.c (try_forward_edges): Update.
+	(try_crossjump_to_edge): Update.
+	* cfgexpand.c (expand_gimple_tailcall): Update.
+	(construct_exit_block): Update.
+	* cfghooks.c (verify_flow_info): Update.
+	(dump_bb_for_graph): Update.
+	(split_edge): Update.
+	(make_forwarder_block): Update.
+	(duplicate_block): Update.
+	(account_profile_record): Update.
+	* cfgloop.c (find_subloop_latch_edge_by_profile): Update.
+	(get_estimated_loop_iterations): Update.
+	* cfgloopanal.c (expected_loop_iterations_unbounded): Update.
+	(single_likely_exit): Update.
+	* cfgloopmanip.c (scale_loop_profile): Update.
+	(loopify): Update.
+	(set_zero_probability): Update.
+	(lv_adjust_loop_entry_edge): Update.
+	* cfgrtl.c (force_nonfallthru_and_redirect): Update.
+	(purge_dead_edges): Update.
+	(rtl_account_profile_record): Update.
+	* cgraph.c (cgraph_node::create): Uninitialize count.
+	(symbol_table::create_edge): Uninitialize count.
+	(cgraph_update_edges_for_call_stmt_node): Update.
+	(cgraph_edge::dump_edge_flags): Update.
+	(cgraph_node::dump): Update.
+	(cgraph_edge::maybe_hot_p): Update.
+	* cgraph.h: Include profile-count.h
+	(create_clone), create_edge, create_indirect_edge): Update.
+	(cgraph_node): Turn count to profile_count.
+	(cgraph_edge0: Likewise.
+	(make_speculative, clone): Update.
+	(create_edge): Update.
+	(init_lowered_empty_function): Update.
+	* cgraphclones.c (cgraph_edge::clone): Update.
+	(duplicate_thunk_for_node): Update.
+	(cgraph_node::create_clone): Update.
+	* cgraphunit.c (cgraph_node::analyze): Update.
+	(cgraph_node::expand_thunk): Update.
+	* final.c (dump_basic_block_info): Update.
+	* gimple-streamer-in.c (input_bb): Update.
+	* gimple-streamer-out.c (output_bb): Update.
+	* graphite.c (print_global_statistics): Update.
+	(print_graphite_scop_statistics): Update.
+	* hsa-brig.c: Include basic-block.h.
+	* hsa-dump.c: Include basic-block.h.
+	* hsa-gen.c (T sum_slice): Update.
+	(convert_switch_statements):Update.
+	* hsa-regalloc.c: Include basic-block.h.
+	* ipa-chkp.c (chkp_produce_thunks): Update.
+	* ipa-cp.c (struct caller_statistics): Update.
+	(init_caller_stats): Update.
+	(gather_caller_stats): Update.
+	(ipcp_cloning_candidate_p): Update.
+	(good_cloning_opportunity_p): Update.
+	(get_info_about_necessary_edges): Update.
+	(dump_profile_updates): Update.
+	(update_profiling_info): Update.
+	(update_specialized_profile): Update.
+	(perhaps_add_new_callers): Update.
+	(decide_about_value): Update.
+	(ipa_cp_c_finalize): Update.
+	* ipa-devirt.c (struct odr_type_warn_count): Update.
+	(struct decl_warn_count): Update.
+	(struct final_warning_record): Update.
+	(possible_polymorphic_call_targets): Update.
+	(ipa_devirt): Update.
+	* ipa-fnsummary.c (redirect_to_unreachable): Update.
+	* ipa-icf.c (sem_function::merge): Update.
+	* ipa-inline-analysis.c (do_estimate_edge_time): Update.
+	* ipa-inline.c (compute_uninlined_call_time): Update.
+	(compute_inlined_call_time): Update.
+	(want_inline_small_function_p): Update.
+	(want_inline_self_recursive_call_p): Update.
+	(edge_badness): Update.
+	(lookup_recursive_calls): Update.
+	(recursive_inlining): Update.
+	(inline_small_functions): Update.
+	(dump_overall_stats): Update.
+	(dump_inline_stats): Update.
+	* ipa-profile.c (ipa_profile_generate_summary): Update.
+	(ipa_propagate_frequency): Update.
+	(ipa_profile): Update.
+	* ipa-prop.c (ipa_make_edge_direct_to_target): Update.
+	* ipa-utils.c (ipa_merge_profiles): Update.
+	* loop-doloop.c (doloop_modify): Update.
+	* loop-unroll.c (report_unroll): Update.
+	(unroll_loop_runtime_iterations): Update.
+	* lto-cgraph.c (lto_output_edge): Update.
+	(lto_output_node): Update.
+	(input_node): Update.
+	(input_edge): Update.
+	(merge_profile_summaries): Update.
+	* lto-streamer-in.c (input_cfg): Update.
+	* lto-streamer-out.c (output_cfg): Update.
+	* mcf.c (create_fixup_graph): Update.
+	(adjust_cfg_counts): Update.
+	(sum_edge_counts): Update.
+	* modulo-sched.c (sms_schedule): Update.
+	* postreload-gcse.c (eliminate_partially_redundant_load): Update.
+	* predict.c (maybe_hot_count_p): Update.
+	(probably_never_executed): Update.
+	(dump_prediction): Update.
+	(combine_predictions_for_bb): Update.
+	(propagate_freq): Update.
+	(handle_missing_profiles): Update.
+	(counts_to_freqs): Update.
+	(rebuild_frequencies): Update.
+	(force_edge_cold): Update.
+	* predict.h: Include profile-count.h
+	(maybe_hot_count_p, counts_to_freqs): UPdate.
+	* print-rtl-function.c: Do not include cfg.h
+	* print-rtl.c: Include basic-block.h
+	* profile-count.c: New file.
+	* profile-count.h: New file.
+	* profile.c (is_edge_inconsistent): Update.
+	(correct_negative_edge_counts): Update.
+	(is_inconsistent): Update.
+	(set_bb_counts): Update.
+	(read_profile_edge_counts): Update.
+	(compute_frequency_overlap): Update.
+	(compute_branch_probabilities): Update; Initialize and deinitialize
+	gcov_count tables.
+	(branch_prob): Update.
+	* profile.h (bb_gcov_counts, edge_gcov_counts): New.
+	(edge_gcov_count): New.
+	(bb_gcov_count): New.
+	* shrink-wrap.c (try_shrink_wrapping): Update.
+	* tracer.c (better_p): Update.
+	* trans-mem.c (expand_transaction): Update.
+	(ipa_tm_insert_irr_call): Update.
+	(ipa_tm_insert_gettmclone_call): Update.
+	* tree-call-cdce.c: Update.
+	* tree-cfg.c (gimple_duplicate_sese_region): Update.
+	(gimple_duplicate_sese_tail): Update.
+	(gimple_account_profile_record): Update.
+	(execute_fixup_cfg): Update.
+	* tree-inline.c (copy_bb): Update.
+	(copy_edges_for_bb): Update.
+	(initialize_cfun): Update.
+	(freqs_to_counts): Update.
+	(copy_cfg_body): Update.
+	(expand_call_inline): Update.
+	* tree-ssa-ifcombine.c (update_profile_after_ifcombine): Update.
+	* tree-ssa-loop-ivcanon.c (unloop_loops): Update.
+	(try_unroll_loop_completely): Update.
+	(try_peel_loop): Update.
+	* tree-ssa-loop-manip.c (tree_transform_and_unroll_loop): Update.
+	* tree-ssa-loop-niter.c (estimate_numbers_of_iterations_loop): Update.
+	* tree-ssa-loop-split.c (connect_loops): Update.
+	* tree-ssa-loop-unswitch.c (hoist_guard): Update.
+	* tree-ssa-reassoc.c (branch_fixup): Update.
+	* tree-ssa-tail-merge.c (replace_block_by): Update.
+	* tree-ssa-threadupdate.c (create_block_for_threading): Update.
+	(compute_path_counts): Update.
+	(update_profile): Update.
+	(recompute_probabilities): Update.
+	(update_joiner_offpath_counts): Update.
+	(estimated_freqs_path): Update.
+	(freqs_to_counts_path): Update.
+	(clear_counts_path): Update.
+	(ssa_fix_duplicate_block_edges): Update.
+	(duplicate_thread_path): Update.
+	* tree-switch-conversion.c (case_bit_test_cmp): Update.
+	(struct switch_conv_info): Update.
+	* tree-tailcall.c (decrease_profile): Update.
+	* tree-vect-loop-manip.c (slpeel_add_loop_guard): Update.
+	* tree-vect-loop.c (scale_profile_for_vect_loop): Update.
+	* value-prof.c (check_counter): Update.
+	(gimple_divmod_fixed_value): Update.
+	(gimple_mod_pow2): Update.
+	(gimple_mod_subtract): Update.
+	(gimple_ic_transform): Update.
+	(gimple_stringop_fixed_value): Update.
+	* value-prof.h (gimple_ic): Update.
+
 2017-06-02  Carl Love  <cel@us.ibm.com>
 
 	* config/rs6000/rs6000-c: Add support for built-in functions

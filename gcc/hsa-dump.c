@@ -26,6 +26,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "is-a.h"
 #include "vec.h"
 #include "tree.h"
+#include "basic-block.h"
 #include "cfg.h"
 #include "function.h"
 #include "dumpfile.h"

@@ -588,8 +588,9 @@ free_histograms (struct function *fn)
 
 static bool
 check_counter (gimple *stmt, const char * name,
-	       gcov_type *count, gcov_type *all, gcov_type bb_count)
+	       gcov_type *count, gcov_type *all, profile_count bb_count_d)
 {
+  gcov_type bb_count = bb_count_d.to_gcov_type ();
   if (*all != bb_count || *count > *all)
     {
       location_t locus;
@@ -740,31 +741,31 @@ gimple_divmod_fixed_value (gassign *stmt, tree value, int prob,
   /* Edge e23 connects bb2 to bb3, etc. */
   e12 = split_block (bb, bb1end);
   bb2 = e12->dest;
-  bb2->count = count;
+  bb2->count = profile_count::from_gcov_type (count);
   e23 = split_block (bb2, bb2end);
   bb3 = e23->dest;
-  bb3->count = all - count;
+  bb3->count = profile_count::from_gcov_type (all - count);
   e34 = split_block (bb3, bb3end);
   bb4 = e34->dest;
-  bb4->count = all;
+  bb4->count = profile_count::from_gcov_type (all);
 
   e12->flags &= ~EDGE_FALLTHRU;
   e12->flags |= EDGE_FALSE_VALUE;
   e12->probability = prob;
-  e12->count = count;
+  e12->count = profile_count::from_gcov_type (count);
 
   e13 = make_edge (bb, bb3, EDGE_TRUE_VALUE);
   e13->probability = REG_BR_PROB_BASE - prob;
-  e13->count = all - count;
+  e13->count = profile_count::from_gcov_type (all - count);
 
   remove_edge (e23);
 
   e24 = make_edge (bb2, bb4, EDGE_FALLTHRU);
   e24->probability = REG_BR_PROB_BASE;
-  e24->count = count;
+  e24->count = profile_count::from_gcov_type (count);
 
   e34->probability = REG_BR_PROB_BASE;
-  e34->count = all - count;
+  e34->count = profile_count::from_gcov_type (all - count);
 
   return tmp2;
 }
@@ -905,31 +906,31 @@ gimple_mod_pow2 (gassign *stmt, int prob, gcov_type count, gcov_type all)
   /* Edge e23 connects bb2 to bb3, etc. */
   e12 = split_block (bb, bb1end);
   bb2 = e12->dest;
-  bb2->count = count;
+  bb2->count = profile_count::from_gcov_type (count);
   e23 = split_block (bb2, bb2end);
   bb3 = e23->dest;
-  bb3->count = all - count;
+  bb3->count = profile_count::from_gcov_type (all - count);
   e34 = split_block (bb3, bb3end);
   bb4 = e34->dest;
-  bb4->count = all;
+  bb4->count = profile_count::from_gcov_type (all);
 
   e12->flags &= ~EDGE_FALLTHRU;
   e12->flags |= EDGE_FALSE_VALUE;
   e12->probability = prob;
-  e12->count = count;
+  e12->count = profile_count::from_gcov_type (count);
 
   e13 = make_edge (bb, bb3, EDGE_TRUE_VALUE);
   e13->probability = REG_BR_PROB_BASE - prob;
-  e13->count = all - count;
+  e13->count = profile_count::from_gcov_type (all - count);
 
   remove_edge (e23);
 
   e24 = make_edge (bb2, bb4, EDGE_FALLTHRU);
   e24->probability = REG_BR_PROB_BASE;
-  e24->count = count;
+  e24->count = profile_count::from_gcov_type (count);
 
   e34->probability = REG_BR_PROB_BASE;
-  e34->count = all - count;
+  e34->count = profile_count::from_gcov_type (all - count);
 
   return result;
 }
@@ -1065,42 +1066,42 @@ gimple_mod_subtract (gassign *stmt, int prob1, int prob2, int ncounts,
      to 3 really refer to block 2. */
   e12 = split_block (bb, bb1end);
   bb2 = e12->dest;
-  bb2->count = all - count1;
+  bb2->count = profile_count::from_gcov_type (all - count1);
 
   if (ncounts)	/* Assumed to be 0 or 1.  */
     {
       e23 = split_block (bb2, bb2end);
       bb3 = e23->dest;
-      bb3->count = all - count1 - count2;
+      bb3->count = profile_count::from_gcov_type (all - count1 - count2);
     }
 
   e34 = split_block (ncounts ? bb3 : bb2, bb3end);
   bb4 = e34->dest;
-  bb4->count = all;
+  bb4->count = profile_count::from_gcov_type (all);
 
   e12->flags &= ~EDGE_FALLTHRU;
   e12->flags |= EDGE_FALSE_VALUE;
   e12->probability = REG_BR_PROB_BASE - prob1;
-  e12->count = all - count1;
+  e12->count = profile_count::from_gcov_type (all - count1);
 
   e14 = make_edge (bb, bb4, EDGE_TRUE_VALUE);
   e14->probability = prob1;
-  e14->count = count1;
+  e14->count = profile_count::from_gcov_type (count1);
 
   if (ncounts)  /* Assumed to be 0 or 1.  */
     {
       e23->flags &= ~EDGE_FALLTHRU;
       e23->flags |= EDGE_FALSE_VALUE;
-      e23->count = all - count1 - count2;
+      e23->count = profile_count::from_gcov_type (all - count1 - count2);
       e23->probability = REG_BR_PROB_BASE - prob2;
 
       e24 = make_edge (bb2, bb4, EDGE_TRUE_VALUE);
       e24->probability = prob2;
-      e24->count = count2;
+      e24->count = profile_count::from_gcov_type (count2);
     }
 
   e34->probability = REG_BR_PROB_BASE;
-  e34->count = all - count1 - count2;
+  e34->count = profile_count::from_gcov_type (all - count1 - count2);
 
   return result;
 }
@@ -1317,7 +1318,7 @@ check_ic_target (gcall *call_stmt, struct cgraph_node *target)
 
 gcall *
 gimple_ic (gcall *icall_stmt, struct cgraph_node *direct_call,
-	   int prob, gcov_type count, gcov_type all)
+	   int prob, profile_count count, profile_count all)
 {
   gcall *dcall_stmt;
   gassign *load_stmt;
@@ -1543,12 +1544,13 @@ gimple_ic_transform (gimple_stmt_iterator *gsi)
   count = histogram->hvalue.counters [1];
   all = histogram->hvalue.counters [2];
 
-  bb_all = gimple_bb (stmt)->count;
+  bb_all = gimple_bb (stmt)->count.to_gcov_type ();
   /* The order of CHECK_COUNTER calls is important -
      since check_counter can correct the third parameter
      and we want to make count <= all <= bb_all. */
-  if ( check_counter (stmt, "ic", &all, &bb_all, bb_all)
-      || check_counter (stmt, "ic", &count, &all, all))
+  if (check_counter (stmt, "ic", &all, &bb_all, gimple_bb (stmt)->count)
+      || check_counter (stmt, "ic", &count, &all,
+		        profile_count::from_gcov_type (all)))
     {
       gimple_remove_histogram_value (cfun, stmt, histogram);
       return false;
@@ -1694,32 +1696,32 @@ gimple_stringop_fixed_value (gcall *vcall_stmt, tree icall_size, int prob,
   /* Edge e_ci connects cond_bb to icall_bb, etc. */
   e_ci = split_block (cond_bb, cond_stmt);
   icall_bb = e_ci->dest;
-  icall_bb->count = count;
+  icall_bb->count = profile_count::from_gcov_type (count);
 
   e_iv = split_block (icall_bb, icall_stmt);
   vcall_bb = e_iv->dest;
-  vcall_bb->count = all - count;
+  vcall_bb->count = profile_count::from_gcov_type (all - count);
 
   e_vj = split_block (vcall_bb, vcall_stmt);
   join_bb = e_vj->dest;
-  join_bb->count = all;
+  join_bb->count = profile_count::from_gcov_type (all);
 
   e_ci->flags = (e_ci->flags & ~EDGE_FALLTHRU) | EDGE_TRUE_VALUE;
   e_ci->probability = prob;
-  e_ci->count = count;
+  e_ci->count = profile_count::from_gcov_type (count);
 
   e_cv = make_edge (cond_bb, vcall_bb, EDGE_FALSE_VALUE);
   e_cv->probability = REG_BR_PROB_BASE - prob;
-  e_cv->count = all - count;
+  e_cv->count = profile_count::from_gcov_type (all - count);
 
   remove_edge (e_iv);
 
   e_ij = make_edge (icall_bb, join_bb, EDGE_FALLTHRU);
   e_ij->probability = REG_BR_PROB_BASE;
-  e_ij->count = count;
+  e_ij->count = profile_count::from_gcov_type (count);
 
   e_vj->probability = REG_BR_PROB_BASE;
-  e_vj->count = all - count;
+  e_vj->count = profile_count::from_gcov_type (all - count);
 
   /* Insert PHI node for the call result if necessary.  */
   if (gimple_call_lhs (vcall_stmt)

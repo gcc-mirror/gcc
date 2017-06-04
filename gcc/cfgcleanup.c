@@ -558,7 +558,7 @@ try_forward_edges (int mode, basic_block b)
       else
 	{
 	  /* Save the values now, as the edge may get removed.  */
-	  gcov_type edge_count = e->count;
+	  profile_count edge_count = e->count;
 	  int edge_probability = e->probability;
 	  int edge_frequency;
 	  int n = 0;
@@ -603,8 +603,6 @@ try_forward_edges (int mode, basic_block b)
 	      else
 		{
 		  first->count -= edge_count;
-		  if (first->count < 0)
-		    first->count = 0;
 		  first->frequency -= edge_frequency;
 		  if (first->frequency < 0)
 		    first->frequency = 0;
@@ -619,8 +617,6 @@ try_forward_edges (int mode, basic_block b)
 		}
 
 	      t->count -= edge_count;
-	      if (t->count < 0)
-		t->count = 0;
 	      first = t->dest;
 	    }
 	  while (first != target);
@@ -2146,14 +2142,10 @@ try_crossjump_to_edge (int mode, edge e1, edge e2,
       if (FORWARDER_BLOCK_P (s2->dest))
 	{
 	  single_succ_edge (s2->dest)->count -= s2->count;
-	  if (single_succ_edge (s2->dest)->count < 0)
-	    single_succ_edge (s2->dest)->count = 0;
 	  s2->dest->count -= s2->count;
 	  s2->dest->frequency -= EDGE_FREQUENCY (s);
 	  if (s2->dest->frequency < 0)
 	    s2->dest->frequency = 0;
-	  if (s2->dest->count < 0)
-	    s2->dest->count = 0;
 	}
 
       if (!redirect_edges_to->frequency && !src1->frequency)

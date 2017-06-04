@@ -361,7 +361,7 @@ update_profile_after_ifcombine (basic_block inner_cond_bb,
   outer_to_inner->count = outer_cond_bb->count;
   inner_cond_bb->count = outer_cond_bb->count;
   inner_taken->count += outer2->count;
-  outer2->count = 0;
+  outer2->count = profile_count::zero ();
 
   inner_taken->probability = outer2->probability
 			     + RDIV (outer_to_inner->probability

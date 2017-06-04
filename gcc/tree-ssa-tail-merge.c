@@ -1562,7 +1562,7 @@ replace_block_by (basic_block bb1, basic_block bb2)
   bb2->count += bb1->count;
 
   /* Merge the outgoing edge counts from bb1 onto bb2.  */
-  gcov_type out_sum = 0;
+  profile_count out_sum = profile_count::zero ();
   FOR_EACH_EDGE (e1, ei, bb1->succs)
     {
       e2 = find_edge (bb2, e1->dest);
@@ -1576,7 +1576,7 @@ replace_block_by (basic_block bb1, basic_block bb2)
      making the bb count inconsistent with the edge weights.  */
   FOR_EACH_EDGE (e2, ei, bb2->succs)
     {
-      e2->probability = GCOV_COMPUTE_SCALE (e2->count, out_sum);
+      e2->probability = e2->count.probability_in (out_sum);
     }
 
   /* Move over any user labels from bb1 after the bb2 labels.  */
