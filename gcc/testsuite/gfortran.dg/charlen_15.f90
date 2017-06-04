@@ -10,5 +10,3 @@ program foo
   use m
   if (trim(x%c(1)) /= 'ab') call abort
 end program foo
-! { dg-final { cleanup-modules "m" } }
-

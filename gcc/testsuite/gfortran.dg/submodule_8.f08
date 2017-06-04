@@ -41,4 +41,3 @@ program a_s
     call abort
   end if
 end program
-! { dg-final { cleanup-submodules "mod_a@mod_s" } }

@@ -19,4 +19,3 @@ subroutine another()
    implicit none
    if (x2 /= 2) call abort
 end subroutine
-! { dg-final { cleanup-modules "constant" } }

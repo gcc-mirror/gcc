@@ -111,5 +111,3 @@ subroutine gee(n, rounding, flag)
   if (len(s8) /= x8) call abort
 
 end subroutine
-
-! { dg-final { cleanup-modules "foo bar" } }
