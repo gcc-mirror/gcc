@@ -23677,7 +23677,7 @@ cp_parser_base_specifier (cp_parser* parser)
 	  if (virtual_p && !duplicate_virtual_error_issued_p)
 	    {
 	      cp_parser_error (parser,
-			       "%<virtual%> specified more than once in base-specified");
+			       "%<virtual%> specified more than once in base-specifier");
 	      duplicate_virtual_error_issued_p = true;
 	    }
 
@@ -23697,7 +23697,7 @@ cp_parser_base_specifier (cp_parser* parser)
 	      && !duplicate_access_error_issued_p)
 	    {
 	      cp_parser_error (parser,
-			       "more than one access specifier in base-specified");
+			       "more than one access specifier in base-specifier");
 	      duplicate_access_error_issued_p = true;
 	    }
 
