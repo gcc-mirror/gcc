@@ -1,3 +1,10 @@
+2017-06-05  Chenghua Xu  <paul.hua.gm@gmail.com>
+
+	* gcc.target/mips/div-9.c: Delete duplicate test.
+	* gcc.target/mips/div-10.c: Ditto.
+	* gcc.target/mips/div-11.c: Ditto.
+	* gcc.target/mips/div-12.c: Ditto.
+
 2017-05-23  Jan Hubicka  <hubicka@ucw.cz>
 
 	* gcc.dg/tree-ssa/attr-hotcold-2.c: Update template.
