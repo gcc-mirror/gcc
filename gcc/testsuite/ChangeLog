@@ -1,3 +1,7 @@
+2017-06-05  Jan Hubicka  <hubicka@ucw.cz>
+
+	* gcc.dg/tree-prof/cold_partition_label.c: Update template.
+
 2017-06-05  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* gcc.target/aarch64/store_lane0_str_1.c: New test.
