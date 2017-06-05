@@ -32,6 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pass.h"
 #include "target.h"
 #include "target-globals.h"
+#include "profile-count.h"
 #include "cfg.h"
 #include "cgraph.h"
 #include "function.h"
