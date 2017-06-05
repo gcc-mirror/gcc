@@ -221,6 +221,8 @@ public:
   profile_count apply_probability (int prob) const
     {
       gcc_checking_assert (prob >= 0 && prob <= REG_BR_PROB_BASE);
+      if (*this == profile_count::zero ())
+	return *this;
       if (!initialized_p ())
 	return profile_count::uninitialized ();
       profile_count ret;
@@ -230,6 +232,8 @@ public:
   /* Return *THIS * NUM / DEN.  */
   profile_count apply_scale (int64_t num, int64_t den) const
     {
+      if (*this == profile_count::zero ())
+	return *this;
       if (!initialized_p ())
 	return profile_count::uninitialized ();
       profile_count ret;
@@ -243,7 +247,7 @@ public:
     }
   profile_count apply_scale (profile_count num, profile_count den) const
     {
-      if (*this == profile_count::zero ())
+      if (*this == profile_count::zero () || num == profile_count::zero ())
 	return profile_count::zero ();
       if (!initialized_p () || !num.initialized_p () || !den.initialized_p ())
 	return profile_count::uninitialized ();

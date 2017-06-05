@@ -912,7 +912,7 @@ want_inline_self_recursive_call_p (struct cgraph_edge *edge,
      methods.  */
   else
     {
-      if (max_count > profile_count::zero ()
+      if (max_count > profile_count::zero () && edge->count.initialized_p ()
 	  && (edge->count.to_gcov_type () * 100
 	      / outer_node->count.to_gcov_type ()
 	      <= PARAM_VALUE (PARAM_MIN_INLINE_RECURSIVE_PROBABILITY)))
@@ -920,7 +920,8 @@ want_inline_self_recursive_call_p (struct cgraph_edge *edge,
 	  reason = "profile of recursive call is too small";
 	  want_inline = false;
 	}
-      else if (max_count == profile_count::zero ()
+      else if ((max_count == profile_count::zero ()
+	        || !edge->count.initialized_p ())
 	       && (edge->frequency * 100 / caller_freq
 	           <= PARAM_VALUE (PARAM_MIN_INLINE_RECURSIVE_PROBABILITY)))
 	{

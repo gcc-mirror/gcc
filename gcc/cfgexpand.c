@@ -3850,8 +3850,8 @@ expand_gimple_tailcall (basic_block bb, gcall *stmt, bool *can_fallthru)
 
   e = make_edge (bb, EXIT_BLOCK_PTR_FOR_FN (cfun), EDGE_ABNORMAL
 		 | EDGE_SIBCALL);
-  e->probability += probability;
-  e->count += count;
+  e->probability = probability;
+  e->count = count;
   BB_END (bb) = last;
   update_bb_for_insn (bb);
 

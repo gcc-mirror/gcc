@@ -1,3 +1,17 @@
+2017-06-05  Jan Hubicka  <hubicka@ucw.cz>
+
+	* cfgexpand.c (expand_gimple_tailcall): Initialize profile of
+	new edge.
+	* ipa-inline.c (want_inline_self_recursive_call_p): Watch for missing
+	profile in callgraph edge.
+	* profile-count.h (apply_probability): If THIS is 0, then result is 0
+	(apply_scale): Likewise.
+	* tree-inline.c (copy_bb, copy_edges_for_bb, copy_cfg_body):
+	Also scale profile when inlining function with zero profile.
+	(initialize_cfun): Update exit block profile even when it is zero.
+	* tree-ssa-threadupdate.c (clear_counts_path): Handle correctly case
+	when profile is read.
+
 2017-06-05  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* config/rs6000/rs6000.c (toplevel): Include attribs.h.
