@@ -13835,6 +13835,8 @@ resolve_fl_derived (gfc_symbol *sym)
 	  gfc_symbol *vtab = gfc_find_derived_vtab (data->ts.u.derived);
 	  gcc_assert (vtab);
 	  vptr->ts.u.derived = vtab->ts.u.derived;
+	  if (!resolve_fl_derived0 (vptr->ts.u.derived))
+	    return false;
 	}
     }
 
