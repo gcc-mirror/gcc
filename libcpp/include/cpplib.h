@@ -609,6 +609,15 @@ struct cpp_callbacks
 
   /* Callback for providing suggestions for misspelled directives.  */
   const char *(*get_suggestion) (cpp_reader *, const char *, const char *const *);
+
+  /* Callback for when a comment is encountered, giving the location
+     of the opening slash, a pointer to the content (which is not
+     necessarily 0-terminated), and the length of the content.
+     The content contains the opening slash-star (or slash-slash),
+     and for C-style comments contains the closing star-slash.  For
+     C++-style comments it does not include the terminating newline.  */
+  void (*comment) (cpp_reader *, source_location, const unsigned char *,
+		   size_t);
 };
 
 #ifdef VMS

@@ -68,6 +68,7 @@ set plugin_test_list [list \
     { show_template_tree_color_plugin.c \
     	  show-template-tree-color.C \
     	  show-template-tree-color-no-elide-type.C } \
+    { comment_plugin.c comments-1.C } \
 ]
 
 foreach plugin_test $plugin_test_list {
