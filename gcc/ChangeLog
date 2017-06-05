@@ -1,3 +1,11 @@
+2017-06-05  Jan Hubicka  <hubicka@ucw.cz>
+
+	* tree-ssa-loop-im.c (execute_sm_if_changed): Add FLAG_BBS parameter;
+	update profile.
+	(sm_set_flag_if_changed): Add bbs field.
+	(execute_sm_if_changed_flag_set): Pass BBS.
+	(execute_sm): Update.
+
 2017-06-05  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/aarch64/aarch64-simd.md (aarch64_store_lane0<mode>):
