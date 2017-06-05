@@ -1,3 +1,12 @@
+2017-06-05  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* doc/invoke.texi: Document the -fprofile-abs-path option.
+	* common.opt (fprofile-abs-path): New option.
+	* gcov-io.h (gcov_write_filename): Declare.
+	* gcov-io.c (gcov_write_filename): New function.
+	* coverage.c (coverage_begin_function): Use gcov_write_filename.
+	* profile.c (output_location): Likewise.
+
 2017-06-05  Jan Hubicka  <hubicka@ucw.cz>
 
 	* shring-wrap.c: Revert accidental commit.
