@@ -1,3 +1,8 @@
+2017-06-05 Renlin Li <renlin.li@arm.com>
+
+	* c-c++-common/Wfloat-conversion.c: Add large_long_double target
+	selector to related line.
+
 2017-06-05  Jan Hubicka  <hubicka@ucw.cz>
 
 	* gcc.dg/tree-prof/cold_partition_label.c: Update template.
