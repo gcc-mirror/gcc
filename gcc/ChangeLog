@@ -1,3 +1,33 @@
+2017-06-05  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000.c (toplevel): Include attribs.h.
+	(CLONE_*): New constants to define the processors we can generate
+	code for with the target_clone attribute.
+	(rs6000_clone_map): New array to identify which clone processors
+	the current program is running on.
+	(TARGET_COMPARE_VERSION_PRIORITY): Define to enable the
+	target_clone attribute.
+	(TARGET_GENERATE_VERSION_DISPATCHER_BODY): Likewise.
+	(TARGET_GET_FUNCTION_VERSIONS_DISPATCHER): Likewise.
+	(TARGET_OPTION_FUNCTION_VERSIONS): Likewise.
+	(cpu_expand_builtin): Add support for target_clone attribute.
+	(rs6000_valid_attribute_p): Allow "default" attribute.
+	(get_decl_name): New debug function to simplify printing the
+	current function name in debugging statements.
+	(rs6000_clone_priority): New functions to support the target_clone
+	attribute, and be able to generate code to switch between ISA 2.05
+	through ISA 3.0 (power6 through power9).
+	(rs6000_compare_version_priority): Likewise.
+	(rs6000_get_function_versions_dispatcher): Likewise.
+	(make_resolver_func): Likewise.
+	(add_condition_to_bb): Likewise.
+	(dispatch_function_versions): Likewise.
+	(rs6000_generate_version_dispatcher_body): Likewise.
+	(rs6000_can_inline_p): Call get_decl_name for debugging usage.
+	(fusion_gpr_load_p): Fix a spacing issue.
+	* doc/extend.texi (Common Function Attributes): Document that the
+	PowerPC supports the target_clone attribute.
+
 2017-06-05  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	* config/arm/arm.h: explain F symbol found in description of ARM
