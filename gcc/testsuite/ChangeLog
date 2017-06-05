@@ -1,5 +1,9 @@
 2017-06-05  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
+	* gcc.target/aarch64/store_lane0_str_1.c: New test.
+
+2017-06-05  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
 	* gcc.target/aarch64/subs_compare_2.c: New test.
 
 2017-06-05  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
