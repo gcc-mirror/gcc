@@ -1,5 +1,10 @@
 2017-06-05  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
+	* config/aarch64/aarch64-simd.md (aarch64_store_lane0<mode>):
+	New pattern.
+
+2017-06-05  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
 	* config/aarch64/aarch64.md (sub<mode>3_compare1_imm): New define_insn.
 	(peephole2): New peephole2 to emit the above.
 	* config/aarch64/predicates.md (aarch64_sub_immediate): New predicate.
