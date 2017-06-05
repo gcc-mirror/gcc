@@ -1,5 +1,10 @@
 2017-06-05  Jan Hubicka  <hubicka@ucw.cz>
 
+	* config/mips/frame-header-opt.c: Include profile-count.h.
+	* config/riscv/riscv.c: Include profile-count.h
+
+2017-06-05  Jan Hubicka  <hubicka@ucw.cz>
+
 	* tree-ssa-loop-im.c (execute_sm_if_changed): Add FLAG_BBS parameter;
 	update profile.
 	(sm_set_flag_if_changed): Add bbs field.
