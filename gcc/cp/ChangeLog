@@ -1,3 +1,7 @@
+2017-06-05  Volker Reichelt  <v.reichelt@netcologne.de>
+
+	* parser.c (cp_parser_base_specifier): Fix typos in error messages.
+
 2017-05-31  Jason Merrill  <jason@redhat.com>
 
 	PR c++/80840 - ICE with constexpr and reference
