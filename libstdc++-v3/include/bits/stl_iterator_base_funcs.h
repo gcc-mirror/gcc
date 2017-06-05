@@ -177,7 +177,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // concept requirements
       __glibcxx_function_requires(_RandomAccessIteratorConcept<
 				  _RandomAccessIterator>)
-      __i += __n;
+      if (__builtin_constant_p(__n) && __n == 1)
+	++__i;
+      else if (__builtin_constant_p(__n) && __n == -1)
+	--__i;
+      else
+	__i += __n;
     }
 
   /**
