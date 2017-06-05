@@ -1,3 +1,7 @@
+2017-06-05  Volker Reichelt  <v.reichelt@netcologne.de>
+
+	* doc/invoke.texi (-Wduplicated-branches): Add to warning list.
+
 2017-06-02  Prakhar Bahuguna  <prakhar.bahuguna@arm.com>
 
 	Backport from mainline
