@@ -2234,6 +2234,19 @@
   [(set_attr "type" "alus_sreg")]
 )
 
+(define_insn "sub<mode>3_compare1_imm"
+  [(set (reg:CC CC_REGNUM)
+	(compare:CC
+	  (match_operand:GPI 1 "register_operand" "r")
+	  (match_operand:GPI 3 "const_int_operand" "n")))
+   (set (match_operand:GPI 0 "register_operand" "=r")
+	(plus:GPI (match_dup 1)
+		  (match_operand:GPI 2 "aarch64_sub_immediate" "J")))]
+  "INTVAL (operands[3]) == -INTVAL (operands[2])"
+  "subs\\t%<w>0, %<w>1, #%n2"
+  [(set_attr "type" "alus_sreg")]
+)
+
 (define_peephole2
   [(set (match_operand:GPI 0 "register_operand")
 	(minus:GPI (match_operand:GPI 1 "aarch64_reg_or_zero")
@@ -2248,6 +2261,24 @@
   {
     emit_insn (gen_sub<mode>3_compare1 (operands[0], operands[1],
 					 operands[2]));
+    DONE;
+  }
+)
+
+(define_peephole2
+  [(set (match_operand:GPI 0 "register_operand")
+	(plus:GPI (match_operand:GPI 1 "register_operand")
+		  (match_operand:GPI 2 "aarch64_sub_immediate")))
+   (set (reg:CC CC_REGNUM)
+	(compare:CC
+	  (match_dup 1)
+	  (match_operand:GPI 3 "const_int_operand")))]
+  "!reg_overlap_mentioned_p (operands[0], operands[1])
+   && INTVAL (operands[3]) == -INTVAL (operands[2])"
+  [(const_int 0)]
+  {
+    emit_insn (gen_sub<mode>3_compare1_imm (operands[0], operands[1],
+					 operands[2], operands[3]));
     DONE;
   }
 )
