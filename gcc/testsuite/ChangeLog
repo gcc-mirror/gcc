@@ -1,3 +1,8 @@
+2017-06-05  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/70601
+	* gfortran.dg/proc_ptr_comp_50.f90: New test.
+
 2017-06-05  Nicolas Koenig  <koenigni@student.ethz.ch>
 
 	PR fortran/35339
