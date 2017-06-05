@@ -444,6 +444,7 @@ Objective-C and Objective-C++ Dialects}.
 @item Program Instrumentation Options
 @xref{Instrumentation Options,,Program Instrumentation Options}.
 @gccoptlist{-p  -pg  -fprofile-arcs  --coverage  -ftest-coverage @gol
+-fprofile-abs-path @gol
 -fprofile-dir=@var{path}  -fprofile-generate  -fprofile-generate=@var{path} @gol
 -fsanitize=@var{style}  -fsanitize-recover  -fsanitize-recover=@var{style} @gol
 -fasan-shadow-offset=@var{number}  -fsanitize-sections=@var{s1},@var{s2},... @gol
@@ -10695,6 +10696,12 @@ additional @option{-ftest-coverage} option.  You do not need to profile
 every source file in a program.
 
 @item
+Compile the source files additionally with @option{-fprofile-abs-path}
+to create absolute path names in the @file{.gcno} files.  This allows
+@command{gcov} to find the correct sources in projects where compilations
+occur with different working directories.
+
+@item
 Link your object files with @option{-lgcov} or @option{-fprofile-arcs}
 (the latter implies the former).
 
@@ -10737,6 +10744,13 @@ show program coverage.  Each source file's note file is called
 above for a description of @var{auxname} and instructions on how to
 generate test coverage data.  Coverage data matches the source files
 more closely if you do not optimize.
+
+@item -fprofile-abs-path
+@opindex fprofile-abs-path
+Automatically convert relative source file names to absolute path names
+in the @file{.gcno} files.  This allows @command{gcov} to find the correct
+sources in projects where compilations occur with different working
+directories.
 
 @item -fprofile-dir=@var{path}
 @opindex fprofile-dir
