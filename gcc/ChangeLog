@@ -1,3 +1,7 @@
+2017-06-05  Jan Hubicka  <hubicka@ucw.cz>
+
+	* shring-wrap.c: Revert accidental commit.
+
 2017-06-05  Volker Reichelt  <v.reichelt@netcologne.de>
 
 	* doc/invoke.texi (-Wduplicated-branches): Add to warning list.
