@@ -2234,6 +2234,24 @@
   [(set_attr "type" "alus_sreg")]
 )
 
+(define_peephole2
+  [(set (match_operand:GPI 0 "register_operand")
+	(minus:GPI (match_operand:GPI 1 "aarch64_reg_or_zero")
+		    (match_operand:GPI 2 "aarch64_reg_or_zero")))
+   (set (reg:CC CC_REGNUM)
+	(compare:CC
+	  (match_dup 1)
+	  (match_dup 2)))]
+  "!reg_overlap_mentioned_p (operands[0], operands[1])
+   && !reg_overlap_mentioned_p (operands[0], operands[2])"
+  [(const_int 0)]
+  {
+    emit_insn (gen_sub<mode>3_compare1 (operands[0], operands[1],
+					 operands[2]));
+    DONE;
+  }
+)
+
 (define_insn "*sub_<shift>_<mode>"
   [(set (match_operand:GPI 0 "register_operand" "=r")
 	(minus:GPI (match_operand:GPI 3 "register_operand" "r")
