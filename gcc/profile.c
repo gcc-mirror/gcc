@@ -976,7 +976,7 @@ output_location (char const *file_name, int line,
     {
       prev_file_name = file_name;
       gcov_write_unsigned (0);
-      gcov_write_string (prev_file_name);
+      gcov_write_filename (prev_file_name);
     }
   if (line_differs)
     {

@@ -357,6 +357,38 @@ gcov_write_string (const char *string)
 #endif
 
 #if !IN_LIBGCOV
+/* Write FILENAME to coverage file.  Sets error flag on file
+   error, overflow flag on overflow */
+
+GCOV_LINKAGE void
+gcov_write_filename (const char *filename)
+{
+  if (profile_abs_path_flag && filename && filename[0]
+      && !(IS_DIR_SEPARATOR (filename[0])
+#if HAVE_DOS_BASED_FILE_SYSTEM
+	   || filename[1] == ':'
+#endif
+	  ))
+    {
+      char *buf = getcwd (NULL, 0);
+      if (buf != NULL && buf[0])
+	{
+	  size_t len = strlen (buf);
+	  buf = (char*)xrealloc (buf, len + strlen (filename) + 2);
+	  if (!IS_DIR_SEPARATOR (buf[len - 1]))
+	    strcat (buf, "/");
+	  strcat (buf, filename);
+	  gcov_write_string (buf);
+	  free (buf);
+	  return;
+	}
+    }
+
+  gcov_write_string (filename);
+}
+#endif
+
+#if !IN_LIBGCOV
 /* Write a tag TAG and reserve space for the record length. Return a
    value to be used for gcov_write_length.  */
 

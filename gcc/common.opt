@@ -1969,6 +1969,10 @@ fprofile
 Common Report Var(profile_flag)
 Enable basic program profiling code.
 
+fprofile-abs-path
+Common Report Var(profile_abs_path_flag)
+Generate absolute source path names for gcov.
+
 fprofile-arcs
 Common Report Var(profile_arc_flag)
 Insert arc-based program profiling code.
