@@ -1,3 +1,7 @@
+2017-06-05  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/aarch64/subs_compare_1.c: New test.
+
 2017-06-05  Chenghua Xu  <paul.hua.gm@gmail.com>
 
 	* gcc.target/mips/div-9.c: Delete duplicate test.
