@@ -1,3 +1,11 @@
+2017-06-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/80939
+	* include/std/variant (__erased_ctor, __erased_assign, __erased_swap)
+	(__erased_hash): Remove constexpr specifier and qualify calls to
+	__ref_cast.
+	(__erased_dtor): Remove constexpr specifier and use _Destroy.
+
 2017-06-05  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/stl_iterator_base_funcs.h
