@@ -1,3 +1,19 @@
+2017-06-05  Nathan Sidwell  <nathan@acm.org>
+
+	More Pod struct
+	gcc/cp/
+	* cp-tree.h (default_hash_traits): Make non-deletable.
+	(cpms_out::non_null): New hash trait.
+	(cpms_in::traits): Use simple_hashmap_traits.
+	(cpms_in::define_class, cpms_in::finish_type): Propagate
+	completeness.
+	(cpms_in::finish_type): Deal with pointer/ref to.
+	(cpms_{out,in}::core_vals): Stream ints, pointer/ref to.
+	(cpms_{out,in}::tree_node): Interstitial typedef.
+	gcc/testsuite/
+	* g++.dg/modules/class-1_[abc].C: Extend.
+	* g++.dg/modules/class-2_[ab].C: New.
+
 2017-06-02  Nathan Sidwell  <nathan@acm.org>
 
 	Pod struct

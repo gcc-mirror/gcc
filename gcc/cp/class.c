@@ -140,7 +140,6 @@ static void build_vtbl_initializer (tree, tree, tree, tree, int *,
 				    vec<constructor_elt, va_gc> **);
 static int count_fields (tree);
 static int add_fields_to_record_type (tree, struct sorted_fields_type*, int);
-static void insert_into_classtype_sorted_fields (tree, tree, int);
 static bool check_bitfield_decl (tree);
 static bool check_field_decl (tree, tree, int *, int *);
 static void check_field_decls (tree, tree *, int *, int *);

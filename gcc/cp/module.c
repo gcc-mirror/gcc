@@ -868,10 +868,11 @@ public:
     rt_binding,		/* A name-binding.  */
     rt_definition,	/* A definition. */
     rt_trees,		/* Global trees.  */
+    rt_type_name,	/* An interstitial type name.  */
     rt_tree_base = 0x100,	/* Tree codes.  */
     rt_ref_base = 0x1000	/* Back-reference indices.  */
   };
-  struct gtp 
+  struct gtp
   {
     const tree *ptr;
     unsigned num;
@@ -943,8 +944,15 @@ cpm_stream::version ()
 class cpms_out : public cpm_stream
 {
   cpm_writer w;
-  hash_map<tree,unsigned> map; /* trees to ids  */
-  
+
+  struct non_null : pointer_hash <void>
+  {
+    static bool is_deleted (value_type) {return false;}
+    static void remove (value_type) {}
+  };
+  typedef simple_hashmap_traits<non_null, unsigned> traits;
+  hash_map<void *,unsigned,traits> tree_map; /* trees to ids  */
+
   /* Tree instrumentation. */
   unsigned unique;
   unsigned refs;
@@ -980,7 +988,6 @@ private:
   void loc (FILE *, location_t);
   bool mark_present (tree);
   void globals (FILE *, unsigned, const gtp *);
-  void tree_vec (FILE *, tree *, unsigned);
   void core_bools (FILE *, tree);
   void core_vals (FILE *, tree);
   void lang_type_bools (FILE *, tree);
@@ -1025,9 +1032,8 @@ class cpms_in : public cpm_stream
   /* Module state being initialized.  */
   module_state *state;
 
-  // FIXME: specialize default_hash_traits
-  typedef unbounded_int_hashmap_traits<unsigned,tree> traits;
-  hash_map<unsigned,tree,traits> map; /* ids to trees  */
+  typedef simple_hashmap_traits<int_hash<unsigned,0>,void *> traits;
+  hash_map<unsigned,void *,traits> tree_map; /* ids to trees  */
 
   unsigned mod_ix; /* Module index.  */
   unsigned HOST_WIDE_INT stamp;  /* Expected time stamp.  */
@@ -1068,7 +1074,6 @@ private:
   location_t loc (FILE *);
   bool mark_present (tree);
   bool globals (FILE *, unsigned, const gtp *);
-  bool tree_vec (FILE *, tree *, unsigned);
   bool core_bools (FILE *, tree);
   bool core_vals (FILE *, tree);
   bool lang_type_bools (FILE *, tree);
@@ -1332,7 +1337,7 @@ cpms_out::mark_present (tree t)
 
   if (t)
     {
-      unsigned *val = &map.get_or_insert (t, &existed);
+      unsigned *val = &tree_map.get_or_insert (t, &existed);
       if (!existed)
 	*val = next ();
     }
@@ -1351,7 +1356,7 @@ cpms_in::mark_present (tree t)
       unsigned tag = next ();
 
       gcc_assert (t);
-      map.put (tag, t);
+      tree_map.put (tag, t);
     }
   return existed;
 }
@@ -1714,6 +1719,8 @@ cpms_out::define_class (FILE *d, tree type)
 bool
 cpms_in::define_class (FILE *d, tree type)
 {
+  gcc_assert (TYPE_MAIN_VARIANT (type) == type);
+
   /* Stream the fields.  */
   tree fields = NULL_TREE;
   for (tree field, *chain = &fields;
@@ -1741,6 +1748,9 @@ cpms_in::define_class (FILE *d, tree type)
   TYPE_FIELDS (type) = fields;
   TYPE_BINFO (type) = binfo;
   create_classtype_sorted_fields (fields, type);
+
+  /* Propagate to all variants.  */
+  fixup_type_variants (type);
 
   return true;
 }
@@ -1953,6 +1963,7 @@ cpms_out::start (tree_code code, tree t)
     case INTEGER_CST:
       w.u (TREE_INT_CST_NUNITS (t));
       w.u (TREE_INT_CST_EXT_NUNITS (t));
+      w.u (TREE_INT_CST_OFFSET_NUNITS (t));
       break;
     case OMP_CLAUSE:
       gcc_unreachable (); // FIXME:
@@ -1999,6 +2010,7 @@ cpms_in::start (tree_code code)
 	unsigned n = r.u ();
 	unsigned e = r.u ();
 	t = make_int_cst (n, e);
+	TREE_INT_CST_OFFSET_NUNITS(t) = r.u ();
       }
       break;
     case OMP_CLAUSE:
@@ -2015,7 +2027,48 @@ tree
 cpms_in::finish (FILE *d, tree t)
 {
   if (TYPE_P (t))
-    return finish_type (d, t);
+    {
+      bool on_pr_list = false;
+      if (POINTER_TYPE_P (t))
+	{
+	  on_pr_list = t->type_non_common.minval != NULL;
+
+	  t->type_non_common.minval = NULL;
+
+	  tree probe = TREE_TYPE (t);
+	  for (probe = (TREE_CODE (t) == POINTER_TYPE
+			? TYPE_POINTER_TO (probe)
+			: TYPE_REFERENCE_TO (probe));
+	       probe;
+	       probe = (TREE_CODE (t) == POINTER_TYPE
+			? TYPE_NEXT_PTR_TO (probe)
+			: TYPE_NEXT_REF_TO (probe)))
+	    if (TYPE_MODE_RAW (probe) == TYPE_MODE_RAW (t)
+		&& (TYPE_REF_CAN_ALIAS_ALL (probe)
+		    == TYPE_REF_CAN_ALIAS_ALL (t)))
+	      return probe;
+	}
+
+      tree remap = finish_type (d, t);
+      if (remap == t && on_pr_list)
+	{
+	  tree to_type = TREE_TYPE (remap);
+	  gcc_assert ((TREE_CODE (remap) == POINTER_TYPE
+		       ? TYPE_POINTER_TO (to_type)
+		       : TYPE_REFERENCE_TO (to_type)) != remap);
+	  if (TREE_CODE (remap) == POINTER_TYPE)
+	    {
+	      TYPE_NEXT_PTR_TO (remap) = TYPE_POINTER_TO (to_type);
+	      TYPE_POINTER_TO (to_type) = remap;
+	    }
+	  else
+	    {
+	      TYPE_NEXT_REF_TO (remap) = TYPE_REFERENCE_TO (to_type);
+	      TYPE_REFERENCE_TO (to_type) = remap;
+	    }
+	}
+      return remap;
+    }
 
   if (DECL_P (t) && MAYBE_DECL_MODULE_INDEX (t) == GLOBAL_MODULE_INDEX)
     {
@@ -2034,6 +2087,11 @@ cpms_in::finish (FILE *d, tree t)
 
 	  return old;
 	}
+    }
+
+  if (TREE_CODE (t) == INTEGER_CST)
+    {
+      // FIXME:Remap small ints?
     }
 
   return t;
@@ -2566,23 +2624,6 @@ cpms_in::lang_type_bools (FILE *, tree t)
   return !r.error ();
 }
 
-/* Read and write a vec<tree, va_gc>  */
-
-void
-cpms_out::tree_vec (FILE *d, tree *vec, unsigned n)
-{
-  while (n--)
-    tree_node (d, vec[n]);
-}
-
-bool
-cpms_in::tree_vec (FILE *d, tree *vec, unsigned n)
-{
-  while (n--)
-    vec[n] = tree_node (d);
-  return !r.error ();
-}
-
 /* Read & write the core values and pointers.  */
 
 void
@@ -2618,9 +2659,31 @@ cpms_out::core_vals (FILE *d, tree t)
 
   if (CODE_CONTAINS_STRUCT (code, TS_LIST))
     {
-      WT (t->list.common.chain);
       WT (t->list.purpose);
       WT (t->list.value);
+      WT (t->list.common.chain);
+    }
+
+  if (CODE_CONTAINS_STRUCT (code, TS_VECTOR))
+    {
+      gcc_unreachable (); // FIXME
+    }
+
+  if (CODE_CONTAINS_STRUCT (code, TS_INT_CST))
+    {
+      unsigned num = TREE_INT_CST_EXT_NUNITS (t);
+      for (unsigned ix = 0; ix != num; ix++)
+	w.wu (TREE_INT_CST_ELT (t, ix));
+    }
+
+  if (CODE_CONTAINS_STRUCT (code, TS_REAL_CST))
+    {
+      gcc_unreachable (); // FIXME
+    }
+  
+  if (CODE_CONTAINS_STRUCT (code, TS_FIXED_CST))
+    {
+      gcc_unreachable (); // FIXME
     }
 
   if (CODE_CONTAINS_STRUCT (code, TS_BINFO))
@@ -2633,11 +2696,11 @@ cpms_out::core_vals (FILE *d, tree t)
       WT (t->binfo.vtt_subvtt);
       WT (t->binfo.vtt_vptr);
       if (unsigned num = BINFO_N_BASE_BINFOS (t))
-	{
-	  // FIXME: acces binfo maybe shared.
-	  tree_vec (d, t->binfo.base_accesses->address (), num);
-	  tree_vec (d, t->binfo.base_binfos.address (), num);
-	}
+	for (unsigned ix = 0; ix != num; ix++)
+	  {
+	    WT (BINFO_BASE_ACCESS (t, ix));
+	    WT (BINFO_BASE_BINFO (t, ix));
+	  }
     }
 
   if (CODE_CONTAINS_STRUCT (code, TS_TYPE_COMMON))
@@ -2647,6 +2710,7 @@ cpms_out::core_vals (FILE *d, tree t)
 	 now.  */
       WT (t->type_common.main_variant);
       WT (t->type_common.canonical);
+
       /* type_common.next_variant is internally manipulated.  */
       /* type_common.pointer_to, type_common.reference_to.  */
 
@@ -2672,7 +2736,24 @@ cpms_out::core_vals (FILE *d, tree t)
 	{
 	  WT (t->type_non_common.values);
 	  /* POINTER and REFERENCE types hold NEXT_{PTR,REF}_TO */
-	  if (!POINTER_TYPE_P (t))
+	  if (POINTER_TYPE_P (t))
+	    {
+	      /* We need to record whether we're on the
+		 TYPE_{POINTER,REFERENCE}_TO list of the type we refer
+		 to.  Do that by recording NULL or self reference
+		 here.  */
+	      tree probe = TREE_TYPE (t);
+	      for (probe = (TREE_CODE (t) == POINTER_TYPE
+			    ? TYPE_POINTER_TO (probe)
+			    : TYPE_REFERENCE_TO (probe));
+		   probe && probe != t;
+		   probe = (TREE_CODE (t) == POINTER_TYPE
+			    ? TYPE_NEXT_PTR_TO (probe)
+			    : TYPE_NEXT_REF_TO (probe)))
+		continue;
+	      WT (probe);
+	    }
+	  else
 	    WT (t->type_non_common.minval);
 	  WT (t->type_non_common.maxval);
 	  WT (t->type_non_common.binfo);
@@ -2805,9 +2886,31 @@ cpms_in::core_vals (FILE *d, tree t)
 
   if (CODE_CONTAINS_STRUCT (code, TS_LIST))
     {
-      RT (t->list.common.chain);
       RT (t->list.purpose);
       RT (t->list.value);
+      RT (t->list.common.chain);
+    }
+
+  if (CODE_CONTAINS_STRUCT (code, TS_VECTOR))
+    {
+      gcc_unreachable (); // FIXME
+    }
+
+  if (CODE_CONTAINS_STRUCT (code, TS_INT_CST))
+    {
+      unsigned num = TREE_INT_CST_EXT_NUNITS (t);
+      for (unsigned ix = 0; ix != num; ix++)
+	TREE_INT_CST_ELT (t, ix) = r.wu ();
+    }
+
+  if (CODE_CONTAINS_STRUCT (code, TS_REAL_CST))
+    {
+      gcc_unreachable (); // FIXME
+    }
+  
+  if (CODE_CONTAINS_STRUCT (code, TS_FIXED_CST))
+    {
+      gcc_unreachable (); // FIXME
     }
 
   if (CODE_CONTAINS_STRUCT (code, TS_BINFO))
@@ -2821,10 +2924,12 @@ cpms_in::core_vals (FILE *d, tree t)
       RT (t->binfo.vtt_vptr);
       if (unsigned num = BINFO_N_BASE_BINFOS (t))
 	{
-	  // FIXME: acces binfo maybe shared.
 	  vec_alloc (t->binfo.base_accesses, num);
-	  tree_vec (d, t->binfo.base_accesses->address (), num);
-	  tree_vec (d, t->binfo.base_binfos.address (), num);
+	  for (unsigned ix = 0; ix != num; ix++)
+	    {
+	      BINFO_BASE_ACCESS_APPEND (t, tree_node (d));
+	      BINFO_BASE_APPEND (t, tree_node (d));
+	    }
 	}
     }
 
@@ -2832,6 +2937,7 @@ cpms_in::core_vals (FILE *d, tree t)
     {
       RT (t->type_common.main_variant);
       RT (t->type_common.canonical);
+
       /* type_common.next_variant is internally manipulated.  */
       /* type_common.pointer_to, type_common.reference_to.  */
 
@@ -2856,9 +2962,16 @@ cpms_in::core_vals (FILE *d, tree t)
       if (!RECORD_OR_UNION_CODE_P (code))
 	{
 	  RT (t->type_non_common.values);
-	  /* POINTER and REFERENCE types hold NEXT_{PTR,REF}_TO */
-	  if (!POINTER_TYPE_P (t))
-	    RT (t->type_non_common.minval);
+	  /* POINTER and REFERENCE types hold NEXT_{PTR,REF}_TO.  We
+	     store a marker there to indicate whether we're on the
+	     referred to type's pointer/reference to list.  */
+	  RT (t->type_non_common.minval);
+	  if (POINTER_TYPE_P (t) && t->type_non_common.minval
+	      && t->type_non_common.minval != t)
+	    {
+	      t->type_non_common.minval = NULL_TREE;
+	      r.bad ();
+	    }
 	  RT (t->type_non_common.maxval);
 	  RT (t->type_non_common.binfo);
 	}
@@ -3075,22 +3188,45 @@ cpms_out::tree_node (FILE *d, tree t)
       w.u (0); /* This also matches t_eof, but we cannot be confused. */
       return;
     }
-  
-  if (unsigned *val = map.get (t))
+
+  if (unsigned *val = tree_map.get (t))
     {
       refs++;
       w.u (*val);
+      if (d)
+	fprintf (d, "Wrote:%u referenced %s:'%s'\n", *val,
+		 get_tree_code_name (TREE_CODE (t)), name_string (t));
       return;
     }
 
-  unique++;
+  if (TREE_CODE_CLASS (TREE_CODE (t)) == tcc_type && TYPE_NAME (t)
+      && !tree_map.get (TYPE_NAME (t)))
+    {
+      /* T is a named type whose name we have not met yet.  Write the
+	 type name as an intrestitial, and then start over.  */
+      tree name = TYPE_NAME (t);
+      gcc_assert (TREE_CODE (name) == TYPE_DECL);
+      if (d)
+	fprintf (d, "Writing interstitial type name %s:'%s'\n",
+		 get_tree_code_name (TREE_CODE (name)), name_string (name));
+      w.u (rt_type_name);
+      tree_node (d, name);
+      if (d)
+	fprintf (d, "Wrote interstitial type name %s:'%s'\n",
+		 get_tree_code_name (TREE_CODE (name)), name_string (name));
+      /* The type could be a variant of TREE_TYPE (name).  */
+      tree_node (d, t);
+      return;
+    }
 
   tree_code code = TREE_CODE (t);
-  gcc_assert (rt_tree_base + code < rt_ref_base);
-  w.u (rt_tree_base + code);
   tree_code_class klass = TREE_CODE_CLASS (code);
-  int body = 1;
+  gcc_assert (rt_tree_base + code < rt_ref_base);
 
+  unique++;
+  w.u (rt_tree_base + code);
+
+  int body = 1;
   if (code == IDENTIFIER_NODE)
     body = 0;
   else if (klass == tcc_declaration)
@@ -3117,7 +3253,7 @@ cpms_out::tree_node (FILE *d, tree t)
     start (code, t);
 
   unsigned tag = next ();
-  bool existed = map.put (t, tag);
+  bool existed = tree_map.put (t, tag);
   gcc_assert (!existed);
   if (d)
     fprintf (d, "Writing:%u %s:'%s'%s\n", tag,
@@ -3127,24 +3263,34 @@ cpms_out::tree_node (FILE *d, tree t)
 
   if (body > 0)
     {
-      core_bools (d, t);
       bool specific = false;
 
       if (klass == tcc_type || klass == tcc_declaration)
 	{
-	  if (klass == tcc_type)
-	    specific = TYPE_LANG_SPECIFIC (t) != NULL;
-	  else if (klass == tcc_declaration)
+	  if (klass == tcc_declaration)
 	    specific = DECL_LANG_SPECIFIC (t) != NULL;
+	  else if (TYPE_MAIN_VARIANT (t) == t)
+	    specific = TYPE_LANG_SPECIFIC (t) != NULL;
+	  else
+	    gcc_assert (TYPE_LANG_SPECIFIC (t)
+			== TYPE_LANG_SPECIFIC (TYPE_MAIN_VARIANT (t)));
 	  w.b (specific);
-	  if (!specific)
-	    ;
-	  else if (klass == tcc_type)
+	  if (specific && code == VAR_DECL)
+	    w.b (DECL_DECOMPOSITION_P (t));
+
+	  if (specific && d)
+	    fprintf (d, "%u %s:'%s' has lang_specific\n",
+		     tag, get_tree_code_name (TREE_CODE (t)),
+		     name_string (t));
+	}
+
+      core_bools (d, t);
+      if (specific)
+	{
+	  if (klass == tcc_type)
 	    lang_type_bools (d, t);
 	  else
 	    {
-	      if (code == VAR_DECL)
-		w.b (DECL_DECOMPOSITION_P (t));
 	      lang_decl_bools (d, t);
 	    }
 	}
@@ -3152,12 +3298,13 @@ cpms_out::tree_node (FILE *d, tree t)
       w.checkpoint ();
 
       core_vals (d, t);
-      if (!specific)
-	;
-      else if (klass == tcc_type)
-	; // FIXME: write lang_type vals
-      else
-	lang_decl_vals (d, t);
+      if (specific)
+	{
+	  if (klass == tcc_type)
+	    ; // FIXME: write lang_type vals
+	  else
+	    lang_decl_vals (d, t);
+	}
     }
 
   w.checkpoint ();
@@ -3179,7 +3326,7 @@ cpms_in::tree_node (FILE *d)
 
   if (tag >= rt_ref_base)
     {
-      tree *val = map.get (tag);
+      tree *val = (tree *)tree_map.get (tag);
       if (!val || !*val)
 	{
 	  r.bad ();
@@ -3192,6 +3339,19 @@ cpms_in::tree_node (FILE *d)
 		 get_tree_code_name (TREE_CODE (res)), name_string (res));
       
       return res;
+    }
+
+  if (tag == rt_type_name)
+    {
+      /* An interstitial type name.  Read the name and then start
+	 over.  */
+      tree name = tree_node (d);
+      if (!name || TREE_CODE (name) != TYPE_DECL)
+	r.bad ();
+      if (d)
+	fprintf (d, "Read interstitial type name %s:'%s'\n",
+		 get_tree_code_name (TREE_CODE (name)), name_string (name));
+      return tree_node (d);
     }
 
   if (tag < rt_tree_base || tag >= rt_tree_base + MAX_TREE_CODES)
@@ -3255,7 +3415,7 @@ cpms_in::tree_node (FILE *d)
 
   /* Insert into map.  */
   tag = next ();
-  bool existed = map.put (tag, t);
+  bool existed = tree_map.put (tag, t);
   gcc_assert (!existed);
   if (d)
     fprintf (d, "Reading:%u %s:'%s'\n", tag,
@@ -3266,26 +3426,31 @@ cpms_in::tree_node (FILE *d)
       bool specific = false;
       bool lied = false;
 
-      if (!core_bools (d, t))
-	lied = true;
-      else if (klass == tcc_type || klass == tcc_declaration)
+      if (klass == tcc_type || klass == tcc_declaration)
 	{
 	  specific = r.b ();
-	  if (!specific)
-	    ;
-	  else if (klass == tcc_type
-		   ? !maybe_add_lang_type_raw (t)
-		   : !maybe_add_lang_decl_raw (t, code == VAR_DECL && r.b ()))
+	  if (specific)
 	    {
-	      specific = false;
-	      lied = true;
-	    }
+	      if (d)
+		fprintf (d, "%u %s:'%s' has lang_specific\n",
+			 tag, get_tree_code_name (code),
+			 name_string (name));
 
-	  if (!specific)
-	    ;
-	  else if (klass == tcc_type
-		   ? !lang_type_bools (d, t)
-		   : !lang_decl_bools (d, t))
+	      if (klass == tcc_type
+		  ? !maybe_add_lang_type_raw (t)
+		  : !maybe_add_lang_decl_raw (t,
+					      code == VAR_DECL && r.b ()))
+		lied = true;
+	    }
+	}
+
+      if (!core_bools (d, t))
+	lied = true;
+      else if (specific)
+	{
+	  if (klass == tcc_type
+	      ? !lang_type_bools (d, t)
+	      : !lang_decl_bools (d, t))
 	    lied = true;
 	}
       r.bflush ();
@@ -3301,23 +3466,29 @@ cpms_in::tree_node (FILE *d)
       if (!core_vals (d, t))
 	goto barf;
 
-      if (!specific)
-	;
-      else if (klass == tcc_type)
-	; // FIXME read lang_type vals
-      else
+      if (specific)
 	{
-	  DECL_MODULE_INDEX (t) = mod;
-	  if (!lang_decl_vals (d, t))
-	    goto barf;
+	  if (klass == tcc_type)
+	    {
+	      gcc_assert (TYPE_MAIN_VARIANT (t) == t);
+	      // FIXME read lang_type vals
+	    }
+	  else
+	    {
+	      DECL_MODULE_INDEX (t) = mod;
+	      if (!lang_decl_vals (d, t))
+		goto barf;
+	    }
 	}
+      else if (klass == tcc_type)
+	TYPE_LANG_SPECIFIC (t) = TYPE_LANG_SPECIFIC (TYPE_MAIN_VARIANT (t));
     }
 
   if (body >= 0 && !r.checkpoint ())
     {
     barf:
       r.bad ();
-      map.put (tag, NULL_TREE);
+      tree_map.put (tag, NULL_TREE);
       return NULL_TREE;
     }
 
@@ -3329,7 +3500,7 @@ cpms_in::tree_node (FILE *d)
 	{
 	  /* Update the mapping.  */
 	  t = found;
-	  map.put (tag, t);
+	  tree_map.put (tag, t);
 	  if (d)
 	    fprintf (d, "Index %u remapping %s:'%s'\n", tag,
 		     get_tree_code_name (TREE_CODE (t)),
@@ -3401,7 +3572,7 @@ tree
 cpms_in::finish_type (FILE *d, tree type)
 {
   tree main = TYPE_MAIN_VARIANT (type);
-  
+
   if (main != type)
     {
       /* See if we have this type already on the variant
@@ -3425,12 +3596,21 @@ cpms_in::finish_type (FILE *d, tree type)
 	    goto found_variant;
 	  }
 
-      /* Splice it into the main variant list.  */
+      /* Splice it into the variant list.  */
       if (d)
 	fprintf (d, "Type %p added as variant of %p\n",
 		 (void *)type, (void *)main);
       TYPE_NEXT_VARIANT (type) = TYPE_NEXT_VARIANT (main);
       TYPE_NEXT_VARIANT (main) = type;
+      if (RECORD_OR_UNION_CODE_P (TREE_CODE (type)))
+	{
+	  /* The main variant might already have been defined, copy
+	     the bits of its definition that we need.  */
+	  TYPE_BINFO (type) = TYPE_BINFO (main);
+	  TYPE_VFIELD (type) = TYPE_VFIELD (main);
+	  TYPE_FIELDS (type) = TYPE_FIELDS (main);
+	}
+
       /* CANONICAL_TYPE is either already correctly remapped.  Or
          correctly already us.  FIXME:Are we sure about this?  */
     found_variant:;

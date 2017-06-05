@@ -1,8 +1,15 @@
+// { dg-module-do run }
+
 export module One;
 // { dg-module-if "One" }
 
 namespace Bob 
 {
   struct X;
-  export struct Y {int a; int b;};
+  export struct Y {
+    unsigned a;
+    unsigned b;
+  };
 }
+
+export void copy (Bob::Y *, const Bob::Y *);
