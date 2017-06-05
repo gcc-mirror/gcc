@@ -1,5 +1,9 @@
 2017-06-05  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/stl_iterator_base_funcs.h
+	(__advance<_RandomAccessIterator, _Distance>): Optimize for next/prev
+	cases where incrementing or decrementing a single step.
+
 	* include/bits/shared_ptr_base.h (__shared_ptr::owner_before)
 	(__weak_ptr::owner_before, _Sp_owner_less::operator()): Add noexcept
 	specifiers as per LWG 2873 and LWG 2942.
