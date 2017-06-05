@@ -682,7 +682,7 @@ extern int arm_arch_cmse;
 /* Standard register usage.  */
 
 /* Register allocation in ARM Procedure Call Standard
-   (S - saved over call).
+   (S - saved over call, F - Frame-related).
 
 	r0	   *	argument word/integer result
 	r1-r3		argument word

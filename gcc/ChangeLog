@@ -1,3 +1,8 @@
+2017-06-05  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* config/arm/arm.h: explain F symbol found in description of ARM
+	register allocation in its legend.
+
 2017-06-05  Jan Hubicka  <hubicka@ucw.cz>
 
 	* config/mips/frame-header-opt.c: Include profile-count.h.
