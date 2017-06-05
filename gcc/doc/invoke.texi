@@ -272,7 +272,8 @@ Objective-C and Objective-C++ Dialects}.
 -Wno-deprecated  -Wno-deprecated-declarations  -Wno-designated-init @gol
 -Wdisabled-optimization @gol
 -Wno-discarded-qualifiers  -Wno-discarded-array-qualifiers @gol
--Wno-div-by-zero  -Wdouble-promotion  -Wduplicated-cond @gol
+-Wno-div-by-zero  -Wdouble-promotion @gol
+-Wduplicated-branches  -Wduplicated-cond @gol
 -Wempty-body  -Wenum-compare  -Wno-endif-labels  -Wexpansion-to-defined @gol
 -Werror  -Werror=*  -Wfatal-errors  -Wfloat-equal  -Wformat  -Wformat=2 @gol
 -Wno-format-contains-nul  -Wno-format-extra-args  @gol
