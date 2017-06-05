@@ -1763,7 +1763,8 @@ copy_bb (copy_body_data *id, basic_block bb, int frequency_scale,
   tree decl;
   gcov_type freq;
   basic_block prev;
-  bool scale = num.initialized_p () && den.initialized_p () && den > 0;
+  bool scale = num.initialized_p ()
+	       && (den > 0 || num == profile_count::zero ());
 
   /* Search for previous copied basic block.  */
   prev = bb->prev_bb;
@@ -2211,7 +2212,8 @@ copy_edges_for_bb (basic_block bb, profile_count num, profile_count den,
   gimple_stmt_iterator si;
   int flags;
   bool need_debug_cleanup = false;
-  bool scale = num.initialized_p () && den.initialized_p () && den > 0;
+  bool scale = num.initialized_p ()
+	       && (den > 0 || num == profile_count::zero ());
 
   /* Use the indices from the original blocks to create edges for the
      new ones.  */
@@ -2472,7 +2474,7 @@ initialize_cfun (tree new_fndecl, tree callee_fndecl, profile_count count)
    */
   if (ENTRY_BLOCK_PTR_FOR_FN (src_cfun)->count.initialized_p ()
       && count.initialized_p ()
-      && ENTRY_BLOCK_PTR_FOR_FN (src_cfun)->count > 0)
+      && ENTRY_BLOCK_PTR_FOR_FN (src_cfun)->count.initialized_p ())
     {
       ENTRY_BLOCK_PTR_FOR_FN (cfun)->count =
 	ENTRY_BLOCK_PTR_FOR_FN (src_cfun)->count.apply_scale (count,
@@ -2683,7 +2685,8 @@ copy_cfg_body (copy_body_data * id, profile_count count, int frequency_scale,
   profile_count incoming_count = profile_count::zero ();
   profile_count num = count;
   profile_count den = ENTRY_BLOCK_PTR_FOR_FN (src_cfun)->count;
-  bool scale = num.initialized_p () && den.initialized_p () && den > 0;
+  bool scale = num.initialized_p ()
+	       && (den > 0 || num == profile_count::zero ());
 
   /* This can happen for COMDAT routines that end up with 0 counts
      despite being called (see the comments for handle_missing_profiles()

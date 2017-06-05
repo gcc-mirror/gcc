@@ -1084,16 +1084,20 @@ clear_counts_path (struct redirection_data *rd)
   vec<jump_thread_edge *> *path = THREAD_PATH (e);
   edge ein, esucc;
   edge_iterator ei;
+  profile_count val = profile_count::uninitialized ();
+  if (profile_status_for_fn (cfun) == PROFILE_READ)
+    val = profile_count::zero ();
+
   FOR_EACH_EDGE (ein, ei, e->dest->preds)
-    ein->count = profile_count::uninitialized ();
+    ein->count = val;
 
   /* First clear counts along original path.  */
   for (unsigned int i = 1; i < path->length (); i++)
     {
       edge epath = (*path)[i]->e;
       FOR_EACH_EDGE (esucc, ei, epath->src->succs)
-	esucc->count = profile_count::uninitialized ();
-      epath->src->count = profile_count::uninitialized ();
+	esucc->count = val;
+      epath->src->count = val;
     }
   /* Also need to clear the counts along duplicated path.  */
   for (unsigned int i = 0; i < 2; i++)
@@ -1102,8 +1106,8 @@ clear_counts_path (struct redirection_data *rd)
       if (!dup)
 	continue;
       FOR_EACH_EDGE (esucc, ei, dup->succs)
-	esucc->count = profile_count::uninitialized ();
-      dup->count = profile_count::uninitialized ();
+	esucc->count = val;
+      dup->count = val;
     }
 }
 
