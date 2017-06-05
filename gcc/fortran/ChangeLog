@@ -1,3 +1,11 @@
+2017-06-05  Nicolas Koenig  <koenigni@student.ethz.ch>
+
+	PR fortran/35339
+	* frontend-passes.c (traverse_io_block): New function.
+	(simplify_io_impl_do): New function.
+	(optimize_namespace): Invoke gfc_code_walker with
+	simplify_io_impl_do.
+
 2017-06-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/80918

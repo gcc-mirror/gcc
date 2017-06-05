@@ -1064,6 +1064,264 @@ convert_elseif (gfc_code **c, int *walk_subtrees ATTRIBUTE_UNUSED,
   return 0;
 }
 
+struct do_stack
+{
+  struct do_stack *prev;
+  gfc_iterator *iter;
+  gfc_code *code;
+} *stack_top;
+
+/* Recursively traverse the block of a WRITE or READ statement, and maybe
+   optimize by replacing do loops with their analog array slices.  For
+   example:
+
+     write (*,*) (a(i), i=1,4)
+
+   is replaced with
+
+     write (*,*) a(1:4:1) .  */
+
+static bool
+traverse_io_block (gfc_code *code, bool *has_reached, gfc_code *prev)
+{
+  gfc_code *curr;
+  gfc_expr *new_e, *expr, *start;
+  gfc_ref *ref;
+  struct do_stack ds_push;
+  int i, future_rank = 0;
+  gfc_iterator *iters[GFC_MAX_DIMENSIONS];
+  gfc_expr *e;
+
+  /* Find the first transfer/do statement.  */
+  for (curr = code; curr; curr = curr->next)
+    {
+      if (curr->op == EXEC_DO || curr->op == EXEC_TRANSFER)
+	break;
+    }
+
+  /* Ensure it is the only transfer/do statement because cases like
+
+     write (*,*) (a(i), b(i), i=1,4)
+
+     cannot be optimized.  */
+
+  if (!curr || curr->next)
+    return false;
+
+  if (curr->op == EXEC_DO)
+    {
+      if (curr->ext.iterator->var->ref)
+	return false;
+      ds_push.prev = stack_top;
+      ds_push.iter = curr->ext.iterator;
+      ds_push.code = curr;
+      stack_top = &ds_push;
+      if (traverse_io_block (curr->block->next, has_reached, prev))
+	{
+	  if (curr != stack_top->code && !*has_reached)
+	    {
+	      curr->block->next = NULL;
+	      gfc_free_statements (curr);
+	    }
+	  else
+	    *has_reached = true;
+	  return true;
+	}
+      return false;
+    }
+
+  gcc_assert (curr->op == EXEC_TRANSFER);
+
+  /* FIXME: Workaround for PR 80945 - array slices with deferred character
+     lenghts do not work.  Remove this section when the PR is fixed.  */
+  e = curr->expr1;
+  if (e->expr_type == EXPR_VARIABLE && e->ts.type == BT_CHARACTER
+      && e->ts.deferred)
+    return false;
+  /* End of section to be removed.  */
+
+  ref = e->ref;
+  if (!ref || ref->type != REF_ARRAY || ref->u.ar.codimen != 0 || ref->next)
+    return false;
+
+  /* Find the iterators belonging to each variable and check conditions.  */
+  for (i = 0; i < ref->u.ar.dimen; i++)
+    {
+      if (!ref->u.ar.start[i] || ref->u.ar.start[i]->ref
+	  || ref->u.ar.dimen_type[i] != DIMEN_ELEMENT)
+	return false;
+
+      start = ref->u.ar.start[i];
+      gfc_simplify_expr (start, 0);
+      switch (start->expr_type)
+	{
+	case EXPR_VARIABLE:
+
+	  /* write (*,*) (a(i), i=a%b,1) not handled yet.  */
+	  if (start->ref)
+	    return false;
+
+	  /*  Check for (a(k), i=1,4) or ((a(j, i), i=1,4), j=1,4).  */
+	  if (!stack_top || !stack_top->iter
+	      || stack_top->iter->var->symtree != start->symtree)
+	    iters[i] = NULL;
+	  else
+	    {
+	      iters[i] = stack_top->iter;
+	      stack_top = stack_top->prev;
+	      future_rank++;
+	    }
+	  break;
+	case EXPR_CONSTANT:
+	  iters[i] = NULL;
+	  break;
+	case EXPR_OP:
+	  switch (start->value.op.op)
+	    {
+	    case INTRINSIC_PLUS:
+	    case INTRINSIC_TIMES:
+	      if (start->value.op.op1->expr_type != EXPR_VARIABLE)
+		std::swap (start->value.op.op1, start->value.op.op2);
+	      gcc_fallthrough ();
+	    case INTRINSIC_MINUS:
+	      if ((start->value.op.op1->expr_type!= EXPR_VARIABLE
+		   && start->value.op.op2->expr_type != EXPR_CONSTANT)
+		  || start->value.op.op1->ref)
+		return false;
+	      if (!stack_top || !stack_top->iter
+		  || stack_top->iter->var->symtree
+		  != start->value.op.op1->symtree)
+		return false;
+	      iters[i] = stack_top->iter;
+	      stack_top = stack_top->prev;
+	      break;
+	    default:
+	      return false;
+	    }
+	  future_rank++;
+	  break;
+	default:
+	  return false;
+	}
+    }
+
+  /* Create new expr.  */
+  new_e = gfc_copy_expr (curr->expr1);
+  new_e->expr_type = EXPR_VARIABLE;
+  new_e->rank = future_rank;
+  if (curr->expr1->shape)
+    new_e->shape = gfc_get_shape (new_e->rank);
+
+  /* Assign new starts, ends and strides if necessary.  */
+  for (i = 0; i < ref->u.ar.dimen; i++)
+    {
+      if (!iters[i])
+	continue;
+      start = ref->u.ar.start[i];
+      switch (start->expr_type)
+	{
+	case EXPR_CONSTANT:
+	  gfc_internal_error ("bad expression");
+	  break;
+	case EXPR_VARIABLE:
+	  new_e->ref->u.ar.dimen_type[i] = DIMEN_RANGE;
+	  new_e->ref->u.ar.type = AR_SECTION;
+	  gfc_free_expr (new_e->ref->u.ar.start[i]);
+	  new_e->ref->u.ar.start[i] = gfc_copy_expr (iters[i]->start);
+	  new_e->ref->u.ar.end[i] = gfc_copy_expr (iters[i]->end);
+	  new_e->ref->u.ar.stride[i] = gfc_copy_expr (iters[i]->step);
+	  break;
+	case EXPR_OP:
+	  new_e->ref->u.ar.dimen_type[i] = DIMEN_RANGE;
+	  new_e->ref->u.ar.type = AR_SECTION;
+	  gfc_free_expr (new_e->ref->u.ar.start[i]);
+	  expr = gfc_copy_expr (start);
+	  expr->value.op.op1 = gfc_copy_expr (iters[i]->start);
+	  new_e->ref->u.ar.start[i] = expr;
+	  gfc_simplify_expr (new_e->ref->u.ar.start[i], 0);
+	  expr = gfc_copy_expr (start);
+	  expr->value.op.op1 = gfc_copy_expr (iters[i]->end);
+	  new_e->ref->u.ar.end[i] = expr;
+	  gfc_simplify_expr (new_e->ref->u.ar.end[i], 0);
+	  switch (start->value.op.op)
+	    {
+	    case INTRINSIC_MINUS:
+	    case INTRINSIC_PLUS:
+	      new_e->ref->u.ar.stride[i] = gfc_copy_expr (iters[i]->step);
+	      break;
+	    case INTRINSIC_TIMES:
+	      expr = gfc_copy_expr (start);
+	      expr->value.op.op1 = gfc_copy_expr (iters[i]->step);
+	      new_e->ref->u.ar.stride[i] = expr;
+	      gfc_simplify_expr (new_e->ref->u.ar.stride[i], 0);
+	      break;
+	    default:
+	      gfc_internal_error ("bad op");
+	    }
+	  break;
+	default:
+	  gfc_internal_error ("bad expression");
+	}
+    }
+  curr->expr1 = new_e;
+
+  /* Insert modified statement. Check whether the statement needs to be
+     inserted at the lowest level.  */
+  if (!stack_top->iter)
+    {
+      if (prev)
+	{
+	  curr->next = prev->next->next;
+	  prev->next = curr;
+	}
+      else
+	{
+	  curr->next = stack_top->code->block->next->next->next;
+	  stack_top->code->block->next = curr;
+	}
+    }
+  else
+    stack_top->code->block->next = curr;
+  return true;
+}
+
+/* Function for the gfc_code_walker.  If code is a READ or WRITE statement, it
+   tries to optimize its block.  */
+
+static int
+simplify_io_impl_do (gfc_code **code, int *walk_subtrees,
+		     void *data ATTRIBUTE_UNUSED)
+{
+  gfc_code **curr, *prev = NULL;
+  struct do_stack write, first;
+  bool b = false;
+  *walk_subtrees = 1;
+  if (!(*code)->block
+      || ((*code)->block->op != EXEC_WRITE
+	  && (*code)->block->op != EXEC_READ))
+    return 0;
+
+  *walk_subtrees = 0;
+  write.prev = NULL;
+  write.iter = NULL;
+  write.code = *code;
+
+  for (curr = &(*code)->block; *curr; curr = &(*curr)->next)
+    {
+      if ((*curr)->op == EXEC_DO)
+	{
+	  first.prev = &write;
+	  first.iter = (*curr)->ext.iterator;
+	  first.code = *curr;
+	  stack_top = &first;
+	  traverse_io_block ((*curr)->block->next, &b, prev);
+	  stack_top = NULL;
+	}
+      prev = *curr;
+    }
+  return 0;
+}
+
 /* Optimize a namespace, including all contained namespaces.  */
 
 static void
@@ -1077,6 +1335,7 @@ optimize_namespace (gfc_namespace *ns)
   in_assoc_list = false;
   in_omp_workshare = false;
 
+  gfc_code_walker (&ns->code, simplify_io_impl_do, dummy_expr_callback, NULL);
   gfc_code_walker (&ns->code, convert_do_while, dummy_expr_callback, NULL);
   gfc_code_walker (&ns->code, convert_elseif, dummy_expr_callback, NULL);
   gfc_code_walker (&ns->code, cfe_code, cfe_expr_0, NULL);
