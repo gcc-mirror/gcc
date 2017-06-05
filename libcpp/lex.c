@@ -2889,6 +2889,13 @@ _cpp_lex_direct (cpp_reader *pfile)
       if (fallthrough_comment_p (pfile, comment_start))
 	fallthrough_comment = true;
 
+      if (pfile->cb.comment)
+	{
+	  size_t len = pfile->buffer->cur - comment_start;
+	  pfile->cb.comment (pfile, result->src_loc, comment_start - 1,
+			     len + 1);
+	}
+
       if (!pfile->state.save_comments)
 	{
 	  result->flags |= PREV_WHITE;
