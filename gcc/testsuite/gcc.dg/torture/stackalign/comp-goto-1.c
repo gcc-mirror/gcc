@@ -1,4 +1,5 @@
 /* { dg-do run } */
+/* { dg-require-effective-target label_values } */
 
 #ifdef STACK_SIZE
 #define DEPTH ((STACK_SIZE) / 512 + 1)
@@ -9,7 +10,7 @@
 extern void abort (void);
 extern void exit (int);
 
-#if ! defined (NO_LABEL_VALUES) && !defined (NO_TRAMPOLINES)
+#if !defined (NO_TRAMPOLINES)
 int
 x(int a)
 {
@@ -33,7 +34,7 @@ x(int a)
 int
 main ()
 {
-#if ! defined (NO_LABEL_VALUES) && !defined (NO_TRAMPOLINES)
+#if !defined (NO_TRAMPOLINES)
   if (x (DEPTH) != DEPTH)
     abort ();
 #endif

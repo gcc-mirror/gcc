@@ -749,14 +749,11 @@ proc check_effective_target_global_constructor {} {
 # Return 1 if taking label values is supported, 0 otherwise.
 
 proc check_effective_target_label_values {} {
-    if { [istarget nvptx-*-*] } {
+    if { [istarget nvptx-*-*] || [target_info exists gcc,no_label_values] } {
 	return 0
     }
-    return [check_no_compiler_messages label_values assembly {
-	#ifdef NO_LABEL_VALUES
-	#error NO
-	#endif
-    }]
+
+    return 1
 }
 
 # Return 1 if builtin_return_address and builtin_frame_address are

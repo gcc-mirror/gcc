@@ -2604,7 +2604,7 @@ you wish to test for the presence or absence of compiler warnings.
 While special options can be set, and tests disabled on specific
 platforms, by the use of @file{.x} files, mostly these test cases
 should not contain platform dependencies.  FIXME: discuss how defines
-such as @code{NO_LABEL_VALUES} and @code{STACK_SIZE} are used.
+such as @code{STACK_SIZE} are used.
 @item gcc.c-torture/execute
 This testsuite contains test cases that should compile, link and run;
 otherwise the same comments as for @file{gcc.c-torture/compile} apply.
