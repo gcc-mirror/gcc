@@ -1,3 +1,8 @@
+2017-06-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/80974
+	* gcc.dg/torture/pr80974.c: New testcase.
+
 2017-06-06  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	* gcc.dg/utf16-4.c: Accept "long unsigned int" as well as
