@@ -307,14 +307,14 @@ matmul_c16_avx (gfc_array_c16 * const restrict retarray,
       b_offset = 1 + b_dim1;
       b -= b_offset;
 
-      /* Early exit if possible */
-      if (m == 0 || n == 0 || k == 0)
-	return;
-
       /* Empty c first.  */
       for (j=1; j<=n; j++)
 	for (i=1; i<=m; i++)
 	  c[i + j * c_dim1] = (GFC_COMPLEX_16)0;
+
+      /* Early exit if possible */
+      if (m == 0 || n == 0 || k == 0)
+	return;
 
       /* Start turning the crank. */
       i1 = n;
@@ -850,14 +850,14 @@ matmul_c16_avx2 (gfc_array_c16 * const restrict retarray,
       b_offset = 1 + b_dim1;
       b -= b_offset;
 
-      /* Early exit if possible */
-      if (m == 0 || n == 0 || k == 0)
-	return;
-
       /* Empty c first.  */
       for (j=1; j<=n; j++)
 	for (i=1; i<=m; i++)
 	  c[i + j * c_dim1] = (GFC_COMPLEX_16)0;
+
+      /* Early exit if possible */
+      if (m == 0 || n == 0 || k == 0)
+	return;
 
       /* Start turning the crank. */
       i1 = n;
@@ -1393,14 +1393,14 @@ matmul_c16_avx512f (gfc_array_c16 * const restrict retarray,
       b_offset = 1 + b_dim1;
       b -= b_offset;
 
-      /* Early exit if possible */
-      if (m == 0 || n == 0 || k == 0)
-	return;
-
       /* Empty c first.  */
       for (j=1; j<=n; j++)
 	for (i=1; i<=m; i++)
 	  c[i + j * c_dim1] = (GFC_COMPLEX_16)0;
+
+      /* Early exit if possible */
+      if (m == 0 || n == 0 || k == 0)
+	return;
 
       /* Start turning the crank. */
       i1 = n;
@@ -1932,14 +1932,14 @@ matmul_c16_vanilla (gfc_array_c16 * const restrict retarray,
       b_offset = 1 + b_dim1;
       b -= b_offset;
 
-      /* Early exit if possible */
-      if (m == 0 || n == 0 || k == 0)
-	return;
-
       /* Empty c first.  */
       for (j=1; j<=n; j++)
 	for (i=1; i<=m; i++)
 	  c[i + j * c_dim1] = (GFC_COMPLEX_16)0;
+
+      /* Early exit if possible */
+      if (m == 0 || n == 0 || k == 0)
+	return;
 
       /* Start turning the crank. */
       i1 = n;
@@ -2529,14 +2529,14 @@ matmul_c16 (gfc_array_c16 * const restrict retarray,
       b_offset = 1 + b_dim1;
       b -= b_offset;
 
-      /* Early exit if possible */
-      if (m == 0 || n == 0 || k == 0)
-	return;
-
       /* Empty c first.  */
       for (j=1; j<=n; j++)
 	for (i=1; i<=m; i++)
 	  c[i + j * c_dim1] = (GFC_COMPLEX_16)0;
+
+      /* Early exit if possible */
+      if (m == 0 || n == 0 || k == 0)
+	return;
 
       /* Start turning the crank. */
       i1 = n;
