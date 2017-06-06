@@ -1,3 +1,9 @@
+2017-06-06  David S. Miller  <davem@davemloft.net>
+
+	PR target/80968
+	* config/sparc/sparc.c (sparc_expand_prologue): Emit frame
+	blockage if function uses alloca.
+
 2017-06-06  Maxim Kuvyrkov  <maxim.kuvyrkov@linaro.org>
 
         * tree-ssa-loop-prefetch.c (struct mem_ref_group, struct mem_ref):

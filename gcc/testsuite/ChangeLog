@@ -1,3 +1,7 @@
+2017-06-06  David S. Miller  <davem@davemloft.net>
+
+	* gcc.target/sparc/sparc-ret-3.c: New test.
+
 2017-06-06  Tom de Vries  <tom@codesourcery.com>
 
 	* gcc.c-torture/compile/20000326-2.c: Use dg-require-effective-target
