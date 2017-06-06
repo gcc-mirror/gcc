@@ -1,3 +1,10 @@
+2017-06-06  Marek Polacek  <polacek@redhat.com>
+
+	PR c/79983
+	* c-decl.c (start_struct): Use the location of TYPE_STUB_DECL of
+	ref.
+	(start_enum): Use the location of TYPE_STUB_DECL of enumtype.
+
 2017-06-02  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	* c-parser.c (c_parser_binary_expression): Implement the
