@@ -48,6 +48,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-inline.h"
 #include "tree-data-ref.h"
 #include "diagnostic-core.h"
+#include "dbgcnt.h"
 
 /* This pass inserts prefetch instructions to optimize cache usage during
    accesses to arrays in loops.  It processes loops sequentially and:
@@ -1056,6 +1057,10 @@ schedule_prefetches (struct mem_ref_group *groups, unsigned unroll_factor,
 	/* If more than half of the prefetches would be lost anyway, do not
 	   issue the prefetch.  */
 	if (2 * remaining_prefetch_slots < prefetch_slots)
+	  continue;
+
+	/* Stop prefetching if debug counter is activated.  */
+	if (!dbg_cnt (prefetch))
 	  continue;
 
 	ref->issue_prefetch_p = true;
