@@ -2396,10 +2396,9 @@ nvptx_print_operand (FILE *file, rtx x, int code)
       if (x_code == SUBREG)
 	{
 	  mode = GET_MODE (SUBREG_REG (x));
-	  if (mode == TImode)
-	    mode = DImode;
-	  else if (COMPLEX_MODE_P (mode))
-	    mode = GET_MODE_INNER (mode);
+	  machine_mode split = maybe_split_mode (mode);
+	  if (split != VOIDmode)
+	    mode = split;
 	}
       fprintf (file, "%s", nvptx_ptx_type_from_mode (mode, code == 't'));
       break;
