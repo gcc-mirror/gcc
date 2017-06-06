@@ -1,3 +1,7 @@
+2017-06-06  Nathan Sidwell  <nathan@acm.org>
+
+	* g++.dg/pr45330.C: Add inline namespace case.
+
 2017-06-06  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/80975

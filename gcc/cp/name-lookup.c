@@ -4714,9 +4714,10 @@ suggest_alternatives_for (location_t location, tree name,
   for (unsigned ix = 0; ix != worklist.length (); ix++)
     {
       tree ns = worklist[ix];
+      name_lookup lookup (name);
 
-      if (tree value = ovl_skip_hidden (find_namespace_value (ns, name)))
-	candidates.safe_push (value);
+      if (lookup.search_qualified (ns, false))
+	candidates.safe_push (lookup.value);
 
       if (!limited)
 	{
@@ -4728,7 +4729,8 @@ suggest_alternatives_for (location_t location, tree name,
 	  for (tree decl = NAMESPACE_LEVEL (ns)->names;
 	       decl; decl = TREE_CHAIN (decl))
 	    if (TREE_CODE (decl) == NAMESPACE_DECL
-		&& !DECL_NAMESPACE_ALIAS (decl))
+		&& !DECL_NAMESPACE_ALIAS (decl)
+		&& !DECL_NAMESPACE_INLINE_P (decl))
 	      children.safe_push (decl);
 
 	  while (!limited && !children.is_empty ())
