@@ -1,3 +1,10 @@
+2017-06-06  Maxim Kuvyrkov  <maxim.kuvyrkov@linaro.org>
+
+        * dbgcnt.def (prefetch): New debug counter.
+        * tree-ssa-loop-prefetch.c (dbgcnt.h): New include.
+        (schedule_prefetches): Stop issueing prefetches if debug counter
+        tripped.
+
 2017-06-06  Tom de Vries  <tom@codesourcery.com>
 
 	* doc/sourcebuild.texi (Testsuites, C Language Testsuites,
