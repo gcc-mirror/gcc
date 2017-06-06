@@ -1,6 +1,8 @@
+/* { dg-require-effective-target label_values } */
+
 #include <stdlib.h>
 
-#if !defined(NO_LABEL_VALUES) && (!defined(STACK_SIZE) || STACK_SIZE >= 4000) && __INT_MAX__ >= 2147483647
+#if (!defined(STACK_SIZE) || STACK_SIZE >= 4000) && __INT_MAX__ >= 2147483647
 typedef unsigned int uint32;
 typedef signed int sint32;
 

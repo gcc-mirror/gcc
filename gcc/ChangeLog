@@ -1,3 +1,8 @@
+2017-06-06  Tom de Vries  <tom@codesourcery.com>
+
+	* doc/sourcebuild.texi (Testsuites, C Language Testsuites,
+	gcc.c-torture/compile): Remove mention of NO_LABEL_VALUES in fixme.
+
 2017-06-06  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/aarch64/atomics.md (atomic_compare_and_swap<mode> expander):

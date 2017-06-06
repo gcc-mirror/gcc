@@ -1,5 +1,6 @@
 /* { dg-do run } */
 /* { dg-require-effective-target nonlocal_goto } */
+/* { dg-require-effective-target label_values } */
 
 extern void abort (void);
 extern void exit (int);
@@ -10,7 +11,7 @@ extern void exit (int);
 #define DEPTH 1000
 #endif
 
-#if ! defined (NO_LABEL_VALUES) && !defined (NO_TRAMPOLINES)
+#if !defined (NO_TRAMPOLINES)
 int
 x(int a)
 {
@@ -30,7 +31,7 @@ x(int a)
 int
 main ()
 {
-#if ! defined (NO_LABEL_VALUES) && !defined (NO_TRAMPOLINES)
+#if !defined (NO_TRAMPOLINES)
   if (x (DEPTH) != DEPTH)
     abort ();
 #endif

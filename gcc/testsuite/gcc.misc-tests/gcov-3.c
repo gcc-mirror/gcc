@@ -1,3 +1,5 @@
+/* { dg-require-effective-target label_values } */
+
 /* Test Gcov with computed gotos.
    This is the same as test gcc.c-torture/execute/980526-1.c */
 
@@ -38,10 +40,8 @@ static void do2(void){
 }
  
 int main(void){			/* count(1) */
-#ifndef NO_LABEL_VALUES
   do1();
   do2();
-#endif
   exit(0);			/* count(1) */
 }
 
