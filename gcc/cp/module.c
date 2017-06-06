@@ -204,7 +204,7 @@ name_string (tree name)
 }
 
 /* Byte serializer base.  */
-class GTY((skip)) cpm_serial
+class cpm_serial
 {
 protected:
   FILE *stream;
@@ -295,7 +295,7 @@ cpm_serial::crc_buffer (const char *ptr, size_t l)
 }
 
 /* Byte stream writer.  */
-class GTY((skip)) cpm_writer : public cpm_serial
+class cpm_writer : public cpm_serial
 {
   /* Bit instrumentation.  */
   unsigned spans[3];
@@ -350,7 +350,7 @@ public:
 };
 
 /* Byte stream reader.  */
-class GTY((skip)) cpm_reader : public cpm_serial
+class cpm_reader : public cpm_serial
 {
 public:
   cpm_reader (FILE *s, const char *n)
@@ -991,10 +991,12 @@ private:
   void core_bools (FILE *, tree);
   void core_vals (FILE *, tree);
   void lang_type_bools (FILE *, tree);
+  void lang_type_vals (FILE *, tree);
   void lang_decl_bools (FILE *, tree);
   void lang_decl_vals (FILE *, tree);
   void define_function (FILE *, tree);
   void define_class (FILE *, tree);
+  void ident_imported_decl (FILE *, tree ctx, unsigned mod, tree decl);
 
 public:
   void tree_node (FILE *, tree);
@@ -1077,10 +1079,12 @@ private:
   bool core_bools (FILE *, tree);
   bool core_vals (FILE *, tree);
   bool lang_type_bools (FILE *, tree);
+  bool lang_type_vals (FILE *, tree);
   bool lang_decl_bools (FILE *, tree);
   bool lang_decl_vals (FILE *, tree);
   bool define_function (FILE *, tree);
   bool define_class (FILE *, tree);
+  tree ident_imported_decl (FILE *, tree ctx, unsigned mod, tree name);
 
 public:
   tree tree_node (FILE *);
@@ -1706,14 +1710,39 @@ cpms_out::define_class (FILE *d, tree type)
   /* Stream the fields.  */
   for (tree field = TYPE_FIELDS (type); field; field = TREE_CHAIN (field))
     {
-      // FIXME: other field types.
-      if (TREE_CODE (field) == FIELD_DECL)
-	tree_node (d, field);
+      switch (TREE_CODE (field))
+	{
+	case TYPE_DECL:
+	  break;
+	case FIELD_DECL:
+	  tree_node (d, field);
+	  break;
+	default:
+	  gcc_unreachable ();
+	}
     }
   tree_node (d, NULL_TREE);
+
   // TYPE_METHODS (decl)
   // TYPE_VFIELD (decl)
   tree_node (d, TYPE_BINFO (type));
+
+#if 0
+  WT (lang->primary_base);
+  gcc_assert (!lang->vcall_indices);
+  WT (lang->vtables);
+  WT (lang->typeinfo_var);
+  gcc_assert (!lang->vbases);
+  // lang->nested_udts
+  WT (lang->as_base);
+  gcc_assert (!lang->pure_virtuals);
+  WT (lang->friend_classes);
+  // lang->methods
+  WT (lang->key_method);
+  WT (lang->decl_list);
+  // lang->template_info
+  // lang->lambda_expr
+#endif
 }
 
 bool
@@ -1727,15 +1756,19 @@ cpms_in::define_class (FILE *d, tree type)
        (field = tree_node (d));
        chain = &TREE_CHAIN (field))
     {
-      // FIXME: Other field types
-      gcc_assert (TREE_CODE (field) == FIELD_DECL);
-      if (DECL_CONTEXT (field) != type)
+      if (!DECL_P (field)
+	  || DECL_CONTEXT (field) != type)
 	r.bad ();
       else
-	{
-	  gcc_assert (!TREE_CHAIN (field));
-	  *chain = field;
-	}
+	switch (TREE_CODE (field))
+	  {
+	  case FIELD_DECL:
+	  case TYPE_DECL:
+	    *chain = field;
+	    break;
+	  default:
+	    r.bad ();
+	  }
       if (r.error ())
 	return false;
     }
@@ -1743,6 +1776,22 @@ cpms_in::define_class (FILE *d, tree type)
   // TYPE_METHODS (decl)
   // TYPE_VFIELD (decl)
   tree binfo = tree_node (d);
+#if 0
+  RT (lang->primary_base);
+  gcc_assert (!lang->vcall_indices);
+  RT (lang->vtables);
+  RT (lang->typeinfo_var);
+  gcc_assert (!lang->vbases);
+  // lang->nested_udts
+  RT (lang->as_base);
+  gcc_assert (!lang->pure_virtuals);
+  RT (lang->friend_classes);
+  // lang->methods
+  RT (lang->key_method);
+  RT (lang->decl_list);
+  // lang->template_info
+  // lang->lambda_expr
+#endif
   // FIXME: Sanity check binfo
 
   TYPE_FIELDS (type) = fields;
@@ -2138,6 +2187,10 @@ cpms_out::core_bools (FILE *, tree t)
       /* These use different base.u fields.  */
       break;
 
+    case BLOCK:
+      WB (t->block.abstract_flag);
+      /* FALLTHROUGH  */
+
     default:
       WB (t->base.u.bits.lang_flag_0);
       WB (t->base.u.bits.lang_flag_1);
@@ -2278,6 +2331,10 @@ cpms_in::core_bools (FILE *, tree t)
     case TARGET_MEM_REF:
       /* These use different base.u fields.  */
       break;
+
+    case BLOCK:
+      RB (t->block.abstract_flag);
+      /* FALLTHROUGH.  */
 
     default:
       RB (t->base.u.bits.lang_flag_0);
@@ -2823,11 +2880,20 @@ cpms_out::core_vals (FILE *d, tree t)
       
     }
 
-  if (CODE_CONTAINS_STRUCT (code, TS_EXP))
+  if (CODE_CONTAINS_STRUCT (code, TS_BLOCK))
+    {
+      WT (t->block.supercontext);
+      // FIXME vars, nonlocalized_vars, abstract_origin
+      // fragment_origin, fragment_chain
+      WT (t->block.subblocks);
+      WT (t->block.chain);
+    }
+
+  if (CODE_CONTAINS_STRUCT (code, TS_EXP)
+      || TREE_CODE_CLASS (code) == tcc_expression)
     for (unsigned ix = TREE_OPERAND_LENGTH (t); ix--;)
       WT (TREE_OPERAND (t, ix));
 
-  
   if (CODE_CONTAINS_STRUCT (code, TS_STATEMENT_LIST))
     {
       for (tree_stmt_iterator iter = tsi_start (t);
@@ -3042,7 +3108,17 @@ cpms_in::core_vals (FILE *d, tree t)
       
     }
 
-  if (CODE_CONTAINS_STRUCT (code, TS_EXP))
+  if (CODE_CONTAINS_STRUCT (code, TS_BLOCK))
+    {
+      RT (t->block.supercontext);
+      // FIXME vars, nonlocalized_vars, abstract_origin
+      // fragment_origin, fragment_chain
+      RT (t->block.subblocks);
+      RT (t->block.chain);
+    }
+
+  if (CODE_CONTAINS_STRUCT (code, TS_EXP)
+      || TREE_CODE_CLASS (code) == tcc_expression)
     for (unsigned ix = TREE_OPERAND_LENGTH (t); ix--;)
       RT (TREE_OPERAND (t, ix));
 
@@ -3146,6 +3222,102 @@ cpms_in::lang_decl_vals (FILE *d, tree t)
   return !r.error ();
 }
 
+/* Most of the value contents of lang_type is streamed in
+   define_class.  */
+
+void
+cpms_out::lang_type_vals (FILE *d, tree t)
+{
+  const struct lang_type *lang = TYPE_LANG_SPECIFIC (t);
+#define WU(X) (w.u (X))
+#define WT(X) (tree_node (d, X))
+  WU (lang->align);
+  WT (lang->befriending_classes);
+#undef WU
+#undef WT
+}
+
+bool
+cpms_in::lang_type_vals (FILE *d, tree t)
+{
+  struct lang_type *lang = TYPE_LANG_SPECIFIC (t);
+#define RU(X) ((X) = r.u ())
+#define RT(X) ((X) = tree_node (d))
+  RU (lang->align);
+  RT (lang->befriending_classes);
+#undef RU
+#undef RT
+  return !r.error ();
+}
+
+/* Refer to imported decls via reference information, not directly.  */
+
+void
+cpms_out::ident_imported_decl (FILE *d, tree ctx, unsigned mod, tree decl)
+{
+  if (TREE_CODE (ctx) == NAMESPACE_DECL)
+    {
+      unsigned key = get_ident_in_namespace (ctx, mod, DECL_NAME (decl), decl);
+      w.u (key);
+    }
+  else if (TYPE_P (ctx))
+    {
+      /* Until class scopes look like namespace scopes, we'll have to
+	 search the TYPE_FIELDS and TYPE_METHODS array.  Ew.  */
+      int key = 0, inc = +1;
+      tree probe = TYPE_FIELDS (ctx);
+
+      if (DECL_DECLARES_FUNCTION_P (decl))
+	{
+	  inc = -1;
+	  key = -1;
+	  probe = TYPE_METHODS (ctx);
+	}
+      for (; probe != decl; probe = TREE_CHAIN (probe))
+	key += inc;
+      w.s (key);
+    }
+  else
+    gcc_unreachable ();
+}
+
+tree
+cpms_in::ident_imported_decl (FILE *d, tree ctx, unsigned mod, tree name)
+{
+  tree res;
+
+  if (TREE_CODE (ctx) == NAMESPACE_DECL)
+    {
+      unsigned key = r.u ();
+      res = find_by_ident_in_namespace (ctx, mod, name, key);
+    }
+  else if (TYPE_P (ctx))
+    {
+      /* Until class scopes look like namespace scopes, we'll have to
+	 search the TYPE_FIELDS and TYPE_METHODS array.  Ew.  */
+      int key = r.s (), inc = 1;
+      tree probe = TYPE_FIELDS (ctx);
+
+      if (key < 0)
+	{
+	  inc = -1;
+	  key -= inc;
+	  probe = TYPE_METHODS (ctx);
+	}
+      for (; key; probe = TREE_CHAIN (probe))
+	{
+	  if (!probe)
+	    break;
+	  key -= inc;
+	}
+      res = probe;
+    }
+  else
+    gcc_unreachable ();
+
+  return res;
+}
+
 /* Write either the decl (as a declaration) itself (and create a
    mapping for it), or write the existing mapping or write null.  This
    is essentially the lisp self-referential structure pretty-printer,
@@ -3203,7 +3375,7 @@ cpms_out::tree_node (FILE *d, tree t)
       && !tree_map.get (TYPE_NAME (t)))
     {
       /* T is a named type whose name we have not met yet.  Write the
-	 type name as an intrestitial, and then start over.  */
+	 type name as an interstitial, and then start over.  */
       tree name = TYPE_NAME (t);
       gcc_assert (TREE_CODE (name) == TYPE_DECL);
       if (d)
@@ -3231,19 +3403,30 @@ cpms_out::tree_node (FILE *d, tree t)
     body = 0;
   else if (klass == tcc_declaration)
     {
-      /* Write out ctx/name/module and maybe tag.  */
+      /* Write out ctx, name & maybe import reference info.  */
       tree ctx = CP_DECL_CONTEXT (t);
       tree_node (d, ctx);
       tree_node (d, DECL_NAME (t));
-      unsigned mod = MAYBE_DECL_MODULE_INDEX (t);
-      w.u (mod);
+      unsigned mod = GLOBAL_MODULE_INDEX;
+
+      tree outer = ctx, probe = t;
+      while (TYPE_P (outer))
+	{
+	  probe = TYPE_NAME (outer);
+	  outer = CP_DECL_CONTEXT (probe);
+	}
+      if (TREE_CODE (outer) == NAMESPACE_DECL)
+	{
+	  mod = MAYBE_DECL_MODULE_INDEX (probe);
+	  w.u (mod);
+	}
+
       if (mod >= IMPORTED_MODULE_BASE)
 	{
-	  unsigned key = key_module_instance (ctx, mod, DECL_NAME (t), t);
-	  w.u (key);
+	  ident_imported_decl (d, ctx, mod, t);
 	  if (d)
-	    fprintf (d, "Writing imported %s::'%s'[%u]@%s\n",
-		     name_string (ctx), name_string (t), key,
+	    fprintf (d, "Writing imported %s::'%s'@%s\n",
+		     name_string (ctx), name_string (t),
 		     name_string (module_name (mod)));
 	  body = -1;
 	}
@@ -3301,10 +3484,25 @@ cpms_out::tree_node (FILE *d, tree t)
       if (specific)
 	{
 	  if (klass == tcc_type)
-	    ; // FIXME: write lang_type vals
+	    lang_type_vals (d, t);
 	  else
 	    lang_decl_vals (d, t);
 	}
+    }
+  else if (body < 0 && TREE_TYPE (t))
+    {
+      tree type = TREE_TYPE (t);
+      unsigned *val = &tree_map.get_or_insert (type, &existed);
+      if (!existed)
+	{
+	  tag = next ();
+	  *val = tag;
+	  if (d)
+	    fprintf (d, "Writing:%u %s:'%s' imported type\n", tag,
+		     get_tree_code_name (TREE_CODE (type)),
+		     name_string (type));
+	}
+      w.u (existed);
     }
 
   w.checkpoint ();
@@ -3368,7 +3566,6 @@ cpms_in::tree_node (FILE *d)
   tree name = NULL_TREE;
   tree ctx = NULL_TREE;
   unsigned mod = GLOBAL_MODULE_INDEX;
-  unsigned key = ~0u;
 
   if (code == IDENTIFIER_NODE)
     body = 0;
@@ -3379,34 +3576,40 @@ cpms_in::tree_node (FILE *d)
       if (r.error ())
 	return NULL_TREE;
 
-      mod = r.u ();
-      if (mod >= IMPORTED_MODULE_BASE)
+      bool is_imported = false;
+      tree outer = ctx;
+      while (TYPE_P (outer))
+	outer = CP_DECL_CONTEXT (TYPE_NAME (outer));
+      if (TREE_CODE (outer) == NAMESPACE_DECL)
 	{
-	  key = r.u ();
-	  body = -1;
+	  mod = r.u ();
+
+	  is_imported = mod >= IMPORTED_MODULE_BASE;
+	  if (mod < remap_num)
+	    mod = remap_vec[mod];
+	  else
+	    r.bad ();
 	}
 
-      if (mod >= remap_num)
-	r.bad ();
-      else
-	mod = remap_vec[mod];
-      if (body < 0)
+      if (is_imported)
 	{
-	  if (!r.checkpoint ())
-	    return NULL_TREE;
-
-	  t = find_module_instance (ctx, mod, name, key);
+	  t = ident_imported_decl (d, ctx, mod, name);
 	  if (!t || TREE_CODE (t) != code)
 	    {
-	      error ("failed to find %<%E::%E@%E%>",
-		     ctx, name, module_name (mod));
+	      if (ctx != global_namespace)
+		error ("failed to find %<%E::%E@%E%>",
+		       ctx, name, module_name (mod));
+	      else
+		error ("failed to find %<%E@%E%>",
+		       name, module_name (mod));
 	      r.bad ();
 	      t = NULL_TREE;
 	    }
 	  if (d)
-	    fprintf (d, "Importing %s::'%s'[%u]@%s\n",
-		     name_string (ctx), name_string (name), key,
+	    fprintf (d, "Importing %s::'%s'@%s\n",
+		     name_string (ctx), name_string (name),
 		     name_string (module_name (mod)));
+	  body = -1;
 	}
     }
 
@@ -3418,7 +3621,7 @@ cpms_in::tree_node (FILE *d)
   bool existed = tree_map.put (tag, t);
   gcc_assert (!existed);
   if (d)
-    fprintf (d, "Reading:%u %s:'%s'\n", tag,
+    fprintf (d, "%s:%u %s:'%s'\n", body < 0 ? "Imported" : "Reading", tag,
 	     get_tree_code_name (code), name_string (name));
 
   if (body > 0)
@@ -3471,7 +3674,8 @@ cpms_in::tree_node (FILE *d)
 	  if (klass == tcc_type)
 	    {
 	      gcc_assert (TYPE_MAIN_VARIANT (t) == t);
-	      // FIXME read lang_type vals
+	      if (!lang_type_vals (d, t))
+		goto barf;
 	    }
 	  else
 	    {
@@ -3483,8 +3687,19 @@ cpms_in::tree_node (FILE *d)
       else if (klass == tcc_type)
 	TYPE_LANG_SPECIFIC (t) = TYPE_LANG_SPECIFIC (TYPE_MAIN_VARIANT (t));
     }
+  else if (body < 0 && TREE_TYPE (t) && !r.u ())
+    {
+      tree type = TREE_TYPE (t);
+      tag = next ();
+      existed = tree_map.put (tag, type);
+      gcc_assert (!existed);
+      if (d)
+	fprintf (d, "Read:%u %s:'%s' imported type\n", tag,
+		 get_tree_code_name (TREE_CODE (type)),
+		 name_string (type));
+    }
 
-  if (body >= 0 && !r.checkpoint ())
+  if (!r.checkpoint ())
     {
     barf:
       r.bad ();

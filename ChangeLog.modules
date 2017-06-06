@@ -1,3 +1,16 @@
+2017-06-06  Nathan Sidwell  <nathan@acm.org>
+
+	More PoD struct
+	gcc/cp/
+	* module.c (cpms_{out,in}::ident_imported_decl): New.
+	(cpms_{out,in}::lang_type_vals): New.
+	(cpms_{out,in}::core_vals): Blocks and statements.
+	(cpms_{out,in}::tree_node): More general import referencing.
+	* name-lookup.c (name_lookup::add_module_fns): New.
+	(name_lookup::adl_namespace_only): Use it.
+	gcc/testsuite/
+	* g++.dg/modules/class-3_[abc].C: New.
+
 2017-06-05  Nathan Sidwell  <nathan@acm.org>
 
 	More Pod struct

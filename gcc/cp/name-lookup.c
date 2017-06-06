@@ -364,8 +364,7 @@ private:
   void add_value (tree new_val);
   void add_type (tree new_type);
   bool process_binding (tree val_bind, tree type_bind);
-  unsigned process_module_binding (bitmap, unsigned,
-				   unsigned, unsigned, tree);
+  unsigned process_module_binding (bitmap, unsigned, tree, unsigned, unsigned);
   /* Look in only namespace.  */
   bool search_namespace_only (tree scope);
   /* Look in namespace and its (recursive) inlines. Ignore using
@@ -389,7 +388,7 @@ private:
 
 private:
   void add_fns (tree);
-
+  void add_module_fns (bitmap, tree, unsigned, unsigned);
   void adl_expr (tree);
   void adl_type (tree);
   void adl_template_arg (tree);
@@ -671,11 +670,8 @@ name_lookup::process_binding (tree new_val, tree new_type)
 
 unsigned
 name_lookup::process_module_binding (bitmap imports, unsigned marker,
-				     unsigned ix, unsigned span, tree bind)
+				     tree bind, unsigned ix, unsigned span)
 {
-  if (!bind)
-    return marker;
-
   tree new_type = MAYBE_STAT_TYPE (bind);
   tree new_val = MAYBE_STAT_DECL (bind);
 
@@ -756,19 +752,11 @@ name_lookup::search_namespace_only (tree scope)
 	  module_cluster *cluster = MODULE_VECTOR_CLUSTER_BASE (val);
 	  int marker = 0;
 	  for (unsigned ix = MODULE_VECTOR_NUM_CLUSTERS (val); ix--; cluster++)
-	    {
-	      if (cluster->spans[0])
-		marker = process_module_binding (imports, marker,
-						 cluster->bases[0],
-						 cluster->spans[0],
-						 cluster->slots[0]);
-	      
-	      if (cluster->spans[1])
-		marker = process_module_binding (imports, marker,
-						 cluster->bases[1],
-						 cluster->spans[1],
-						 cluster->slots[1]);
-	    }
+	    for (unsigned jx = 2; jx--;)
+	      if (cluster->slots[jx])
+		marker = process_module_binding
+		  (imports, marker, cluster->slots[jx],
+		   cluster->bases[jx], cluster->spans[jx]);
 	  found |= marker & 1;
 	}
     }
@@ -965,6 +953,48 @@ name_lookup::add_fns (tree fns)
   add_overload (fns);
 }
 
+void
+name_lookup::add_module_fns (bitmap imports, tree bind,
+			     unsigned ix, unsigned span)
+{
+  tree val = MAYBE_STAT_DECL (bind);
+
+  if (ix != GLOBAL_MODULE_INDEX
+      && (ix > current_module || ix + span <= current_module))
+    {
+      /* Looking at something other than the global or current
+	 module.  */
+
+      if (!imports)
+	return;
+
+      /* Figure out what's being exported.  */
+      if (TREE_CODE (val) == OVERLOAD)
+	{
+	  if (STAT_HACK_P (bind))
+	    val = STAT_EXPORTS (bind);
+	  else
+	    val = NULL_TREE;
+	}
+      else if (!DECL_MODULE_EXPORT_P (val))
+	val = NULL_TREE;
+
+      if (!val)
+	/* You aint seen nuthin', right?  */
+	return;
+
+      /* Are we importing this module?  */
+      bool found = false;
+      for (; !found && span--; ix++)
+	if (bitmap_bit_p (imports, ix))
+	  found = true;
+
+      if (!found)
+	return;
+    }
+  add_fns (val);
+}
+
 /* Add functions of a namespace to the lookup structure.  */
 
 void
@@ -977,8 +1007,22 @@ name_lookup::adl_namespace_only (tree scope)
     for (unsigned ix = inlinees->length (); ix--;)
       adl_namespace_only ((*inlinees)[ix]);
 
-  if (tree fns = find_namespace_value (scope, name))
-    add_fns (ovl_skip_hidden (fns));
+  if (tree *binding = find_namespace_slot (scope, name))
+    {
+      tree val = *binding;
+      if (TREE_CODE (val) != MODULE_VECTOR)
+	add_fns (ovl_skip_hidden (MAYBE_STAT_DECL (val)));
+      else
+	{
+	  bitmap imports = module_import_bitmap (current_module);
+	  module_cluster *cluster = MODULE_VECTOR_CLUSTER_BASE (val);
+	  for (unsigned ix = MODULE_VECTOR_NUM_CLUSTERS (val); ix--; cluster++)
+	    for (unsigned jx = 2; jx--;)
+	      if (cluster->slots[jx])
+		add_module_fns (imports, cluster->slots[jx],
+				cluster->bases[jx], cluster->spans[jx]);
+	}
+    }
 }
 
 /* Find the containing non-inlined namespace, add it and all its
@@ -2907,7 +2951,7 @@ push_module_binding (tree ns, unsigned mod, tree name, tree value, tree type)
    distinguishing KEY so we can find it again upon import.  */
 
 unsigned
-key_module_instance (tree ctx, unsigned mod, tree name, tree decl)
+get_ident_in_namespace (tree ctx, unsigned mod, tree name, tree decl)
 {
   gcc_assert (TREE_CODE (decl) != NAMESPACE_DECL
 	      || DECL_NAMESPACE_ALIAS (decl));
@@ -2934,7 +2978,7 @@ key_module_instance (tree ctx, unsigned mod, tree name, tree decl)
    error).  */
 
 tree
-find_module_instance (tree ctx, unsigned mod, tree name, unsigned key)
+find_by_ident_in_namespace (tree ctx, unsigned mod, tree name, unsigned key)
 {
   /* This will need extending for other kinds of context.  */
   gcc_assert (TREE_CODE (ctx) == NAMESPACE_DECL);
