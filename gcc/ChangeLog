@@ -1,5 +1,12 @@
 2017-06-06  Jan Hubicka  <hubicka@ucw.cz>
 
+	* predict.c (tree_estimate_probability_bb): Add LOCAL_ONLY.
+	(tree_guess_outgoing_edge_probabilities): New.
+	* predict.h (tree_guess_outgoing_edge_probabilities): Declare.
+	* tree-cfg.c (gimple_find_sub_bbs): Propagate profile.
+
+2017-06-06  Jan Hubicka  <hubicka@ucw.cz>
+
 	* ipa-split.c (split_function): Initialize return bb profile.
 
 2017-06-06  Jan Hubicka  <hubicka@ucw.cz>

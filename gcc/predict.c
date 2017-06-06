@@ -2665,10 +2665,11 @@ assert_is_empty (const_basic_block const &, edge_prediction *const &value,
   return false;
 }
 
-/* Predict branch probabilities and estimate profile for basic block BB.  */
+/* Predict branch probabilities and estimate profile for basic block BB.
+   When LOCAL_ONLY is set do not use any global properties of CFG.  */
 
 static void
-tree_estimate_probability_bb (basic_block bb)
+tree_estimate_probability_bb (basic_block bb, bool local_only)
 {
   edge e;
   edge_iterator ei;
@@ -2742,6 +2743,7 @@ tree_estimate_probability_bb (basic_block bb)
       /* Look for block we are guarding (ie we dominate it,
 	 but it doesn't postdominate us).  */
       if (e->dest != EXIT_BLOCK_PTR_FOR_FN (cfun) && e->dest != bb
+	  && !local_only
 	  && dominated_by_p (CDI_DOMINATORS, e->dest, e->src)
 	  && !dominated_by_p (CDI_POST_DOMINATORS, e->src, e->dest))
 	{
@@ -2800,7 +2802,7 @@ tree_estimate_probability (bool dry_run)
     predict_loops ();
 
   FOR_EACH_BB_FN (bb, cfun)
-    tree_estimate_probability_bb (bb);
+    tree_estimate_probability_bb (bb, false);
 
   FOR_EACH_BB_FN (bb, cfun)
     combine_predictions_for_bb (bb, dry_run);
@@ -2815,6 +2817,19 @@ tree_estimate_probability (bool dry_run)
     estimate_bb_frequencies (false);
   free_dominance_info (CDI_POST_DOMINATORS);
   remove_fake_exit_edges ();
+}
+
+/* Set edge->probability for each successor edge of BB.  */
+void
+tree_guess_outgoing_edge_probabilities (basic_block bb)
+{
+  bb_predictions = new hash_map<const_basic_block, edge_prediction *>;
+  tree_estimate_probability_bb (bb, true);
+  combine_predictions_for_bb (bb, false);
+  if (flag_checking)
+    bb_predictions->traverse<void *, assert_is_empty> (NULL);
+  delete bb_predictions;
+  bb_predictions = NULL;
 }
 
 /* Predict edges to successors of CUR whose sources are not postdominated by
