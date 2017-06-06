@@ -801,6 +801,12 @@ name_lookup::adl_class_only (tree type)
 	  if (CP_DECL_CONTEXT (fn) != context)
 	    continue;
 
+	  /* Only interested in anticipated friends.  (Non-anticipated
+	     ones will have been inserted during the namespace
+	     adl.)  */
+	  if (!DECL_ANTICIPATED (fn))
+	    continue;
+
 	  /* Template specializations are never found by name lookup.
 	     (Templates themselves can be found, but not template
 	     specializations.)  */
