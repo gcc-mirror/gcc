@@ -1,3 +1,11 @@
+2017-06-06  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/atomics.md (atomic_compare_and_swap<mode> expander):
+	Use aarch64_reg_or_zero predicate for operand 4.
+	(aarch64_compare_and_swap<mode> define_insn_and_split):
+	Use aarch64_reg_or_zero predicate for operand 3.  Add 'Z' constraint.
+	(aarch64_store_exclusive<mode>): Likewise for operand 2.
+
 2017-06-06  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	* config/arm/arm.c (arm_compute_save_reg_mask): Rename into ...
