@@ -1,5 +1,21 @@
 2017-06-06  Maxim Kuvyrkov  <maxim.kuvyrkov@linaro.org>
 
+        * tree-ssa-loop-prefetch.c (struct mem_ref_group, struct mem_ref):
+        New "uid" fields to hold pretty-print IDs of group and ref.
+        Memory references are now identified as <group_id>:<ref_id>
+        instead of using [random] addresses.
+        (dump_mem_details): Simplify, no functional change.
+        (dump_mem_ref): Simplify and make output more concise.
+        Replace couple of fprintf's throughout code with calls to dump_mem_ref.
+        (find_or_create_group): Initialize group uid.
+        (record_ref): Initialize ref uid.  Improve debug output.
+        (prune_group_by_reuse, should_issue_prefetch_p,)
+        (should_issue_prefetch_p, schedule_prefetches, issue_prefetch_ref,)
+        (mark_nontemporal_store, determine_loop_nest_reuse):
+        Improve debug output.
+
+2017-06-06  Maxim Kuvyrkov  <maxim.kuvyrkov@linaro.org>
+
         * dbgcnt.def (prefetch): New debug counter.
         * tree-ssa-loop-prefetch.c (dbgcnt.h): New include.
         (schedule_prefetches): Stop issueing prefetches if debug counter
