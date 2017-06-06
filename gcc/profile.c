@@ -826,7 +826,7 @@ compute_branch_probabilities (unsigned cfg_checksum, unsigned lineno_checksum)
 	}
     }
 
-  FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR_FOR_FN (cfun), NULL, next_bb)
+  FOR_ALL_BB_FN (bb, cfun)
     {
       edge e;
       edge_iterator ei;
