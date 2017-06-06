@@ -272,6 +272,11 @@ matmul_i2_avx128_fma3 (gfc_array_i2 * const restrict retarray,
       b_offset = 1 + b_dim1;
       b -= b_offset;
 
+      /* Empty c first.  */
+      for (j=1; j<=n; j++)
+	for (i=1; i<=m; i++)
+	  c[i + j * c_dim1] = (GFC_INTEGER_2)0;
+
       /* Early exit if possible */
       if (m == 0 || n == 0 || k == 0)
 	return;
@@ -283,11 +288,6 @@ matmul_i2_avx128_fma3 (gfc_array_i2 * const restrict retarray,
 	t1_dim = 65536;
 
       t1 = malloc (t1_dim * sizeof(GFC_INTEGER_2));
-
-      /* Empty c first.  */
-      for (j=1; j<=n; j++)
-	for (i=1; i<=m; i++)
-	  c[i + j * c_dim1] = (GFC_INTEGER_2)0;
 
       /* Start turning the crank. */
       i1 = n;
@@ -825,6 +825,11 @@ matmul_i2_avx128_fma4 (gfc_array_i2 * const restrict retarray,
       b_offset = 1 + b_dim1;
       b -= b_offset;
 
+      /* Empty c first.  */
+      for (j=1; j<=n; j++)
+	for (i=1; i<=m; i++)
+	  c[i + j * c_dim1] = (GFC_INTEGER_2)0;
+
       /* Early exit if possible */
       if (m == 0 || n == 0 || k == 0)
 	return;
@@ -836,11 +841,6 @@ matmul_i2_avx128_fma4 (gfc_array_i2 * const restrict retarray,
 	t1_dim = 65536;
 
       t1 = malloc (t1_dim * sizeof(GFC_INTEGER_2));
-
-      /* Empty c first.  */
-      for (j=1; j<=n; j++)
-	for (i=1; i<=m; i++)
-	  c[i + j * c_dim1] = (GFC_INTEGER_2)0;
 
       /* Start turning the crank. */
       i1 = n;
