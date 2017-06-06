@@ -1,5 +1,8 @@
 2017-06-06  Nathan Sidwell  <nathan@acm.org>
 
+	* name-lookup.c (suggest_alternatives_for): Use qualified lookup
+	sans using directives.  Don't walk into inline namespaces.
+
 	PR c++/80979
 	* name-lookup.c (adl_class_only): Don't add visible friends.
 
