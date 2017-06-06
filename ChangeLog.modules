@@ -1,5 +1,16 @@
 2017-06-06  Nathan Sidwell  <nathan@acm.org>
 
+	Inline ctors/dtors
+	gcc/cp/
+	* module.c (cpms_in::define_function): Deal with non-namespace
+	fn definitions.
+	(cpms_{out,in}::define_class): Define member fns.
+	(cpms_in::tag_definition): Clone fn.
+	* semantics.c (expand_or_defer_fn_1): Keep cloned fns body when
+	modules.
+	gcc/testsuite/
+	* g++.dg/modules/class-3_[abcd].C: Augment.
+
 	Member functions
 	gcc/cp/
 	* class.c (resort_type_method_vec): Avoid signed/unsigned compare.
@@ -25,7 +36,7 @@
 
 2017-06-05  Nathan Sidwell  <nathan@acm.org>
 
-	More Pod struct
+	More PoD struct
 	gcc/cp/
 	* cp-tree.h (default_hash_traits): Make non-deletable.
 	(cpms_out::non_null): New hash trait.

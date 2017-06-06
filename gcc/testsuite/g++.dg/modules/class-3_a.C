@@ -6,6 +6,10 @@ export module One;
 export struct X
 {
   X (int, int);
+  X (int a_)
+    : a(a_), b (a_ << 16)
+  {
+  }
   int a;
   int b;
 };

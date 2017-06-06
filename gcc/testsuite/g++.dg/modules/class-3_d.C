@@ -18,5 +18,9 @@ int main ()
   if (x.b != 0xdead)
     return 2;
 
+  X y (0xcafe);
+  if (y.a != 0xcafe || y.b != 0xcafe << 16)
+    return 3;
+
   return 0;
 }

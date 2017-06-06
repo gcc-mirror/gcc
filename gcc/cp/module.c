@@ -1675,31 +1675,33 @@ cpms_in::define_function (FILE *d, tree decl)
   if (r.error ())
     return NULL_TREE;
 
-  unsigned mod = MAYBE_DECL_MODULE_INDEX (decl);
-  if (mod == GLOBAL_MODULE_INDEX
-      && DECL_SAVED_TREE (decl))
-    ; // FIXME check same
-  else if (mod != mod_ix)
+  if (TREE_CODE (CP_DECL_CONTEXT (decl)) == NAMESPACE_DECL)
     {
-      error ("unexpected definition of %q#D", decl);
-      r.bad ();
+      unsigned mod = MAYBE_DECL_MODULE_INDEX (decl);
+      if (mod == GLOBAL_MODULE_INDEX
+	  && DECL_SAVED_TREE (decl))
+	return decl; // FIXME check same
+      else if (mod != mod_ix)
+	{
+	  error ("unexpected definition of %q#D", decl);
+	  r.bad ();
+	  return NULL_TREE;
+	}
     }
-  else
-    {
-      DECL_RESULT (decl) = result;
-      DECL_INITIAL (decl) = initial;
-      DECL_SAVED_TREE (decl) = saved;
 
-      comdat_linkage (decl);
-      note_vague_linkage_fn (decl);
-      current_function_decl = decl;
-      allocate_struct_function (decl, false);
-      cfun->language = ggc_cleared_alloc<language_function> ();
-      cfun->language->base.x_stmt_tree.stmts_are_full_exprs_p = 1;
-      set_cfun (NULL);
-      current_function_decl = NULL_TREE;
-      cgraph_node::finalize_function (decl, false);
-    }
+  DECL_RESULT (decl) = result;
+  DECL_INITIAL (decl) = initial;
+  DECL_SAVED_TREE (decl) = saved;
+
+  comdat_linkage (decl);
+  note_vague_linkage_fn (decl);
+  current_function_decl = decl;
+  allocate_struct_function (decl, false);
+  cfun->language = ggc_cleared_alloc<language_function> ();
+  cfun->language->base.x_stmt_tree.stmts_are_full_exprs_p = 1;
+  set_cfun (NULL);
+  current_function_decl = NULL_TREE;
+  cgraph_node::finalize_function (decl, false);
 
   return decl;
 }
@@ -1794,6 +1796,11 @@ cpms_out::define_class (FILE *d, tree type)
   // lang->template_info
   // lang->lambda_expr
 #endif
+
+  /* Now define all the members.  */
+  for (tree method = TYPE_METHODS (type); method; method = TREE_CHAIN (method))
+    maybe_tag_definition (d, method);
+  tree_node (d, NULL_TREE);
 }
 
 /* Nop sorted needed for resorting the method vec.  */
@@ -1858,6 +1865,11 @@ cpms_in::define_class (FILE *d, tree type)
   /* Propagate to all variants.  */
   fixup_type_variants (type);
 
+  /* Now define all the members.  */
+  while (tree_node (d))
+    if (r.error ())
+      break;
+
   return type;
 }
 
@@ -1884,6 +1896,8 @@ cpms_out::maybe_tag_definition (FILE *d, tree t)
       if (!DECL_SAVED_TREE (t))
 	return;
       if (!DECL_DECLARED_INLINE_P (t))
+	return;
+      if (DECL_CLONED_FUNCTION_P (t))
 	return;
     }
 
@@ -1936,6 +1950,8 @@ cpms_in::tag_definition (FILE *d)
 
     case FUNCTION_DECL:
       t = define_function (d, t);
+      if (t && maybe_clone_body (t) && !DECL_DECLARED_CONSTEXPR_P (t))
+	DECL_SAVED_TREE (t) = NULL_TREE;
       break;
 
     case RECORD_TYPE:

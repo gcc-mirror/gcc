@@ -4275,7 +4275,8 @@ expand_or_defer_fn_1 (tree fn)
 	 it out, even though we haven't.  */
       TREE_ASM_WRITTEN (fn) = 1;
       /* If this is a constexpr function, keep DECL_SAVED_TREE.  */
-      if (!DECL_DECLARED_CONSTEXPR_P (fn))
+      if (!DECL_DECLARED_CONSTEXPR_P (fn)
+	  && !(flag_modules && DECL_DECLARED_INLINE_P (fn)))
 	DECL_SAVED_TREE (fn) = NULL_TREE;
       return false;
     }
