@@ -1,5 +1,10 @@
 2017-06-06  Tom de Vries  <tom@codesourcery.com>
 
+	* config/nvptx/nvptx.c (split_mode_p): New function.
+	(nvptx_declare_function_name, nvptx_print_operand): Use split_mode_p.
+
+2017-06-06  Tom de Vries  <tom@codesourcery.com>
+
 	* config/nvptx/nvptx.c (nvptx_print_operand): Use maybe_split_mode.
 
 2017-06-06  Jan Hubicka  <hubicka@ucw.cz>
