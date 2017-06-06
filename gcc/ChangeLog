@@ -1,5 +1,10 @@
 2017-06-06  Jan Hubicka  <hubicka@ucw.cz>
 
+	* shrink-wrap.c (handle_simple_exit): Update profile.
+	(try_shrink_wrapping): Upate profile.
+
+2017-06-06  Jan Hubicka  <hubicka@ucw.cz>
+
 	* predict.c (tree_estimate_probability_bb): Add LOCAL_ONLY.
 	(tree_guess_outgoing_edge_probabilities): New.
 	* predict.h (tree_guess_outgoing_edge_probabilities): Declare.

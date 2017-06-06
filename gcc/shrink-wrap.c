@@ -561,9 +561,11 @@ handle_simple_exit (edge e)
       BB_END (old_bb) = end;
 
       redirect_edge_succ (e, new_bb);
+      new_bb->count = e->count;
+      new_bb->frequency = EDGE_FREQUENCY (e);
       e->flags |= EDGE_FALLTHRU;
 
-      e = make_edge (new_bb, EXIT_BLOCK_PTR_FOR_FN (cfun), 0);
+      e = make_single_succ_edge (new_bb, EXIT_BLOCK_PTR_FOR_FN (cfun), 0);
     }
 
   e->flags &= ~EDGE_FALLTHRU;
@@ -981,6 +983,7 @@ try_shrink_wrapping (edge *entry_edge, rtx_insn *prologue_seq)
 
   basic_block new_bb = create_empty_bb (EXIT_BLOCK_PTR_FOR_FN (cfun)->prev_bb);
   BB_COPY_PARTITION (new_bb, pro);
+  new_bb->count = profile_count::zero ();
   if (dump_file)
     fprintf (dump_file, "Made prologue block %d\n", new_bb->index);
 
