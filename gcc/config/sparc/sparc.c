@@ -5792,6 +5792,9 @@ sparc_expand_epilogue (bool for_eh)
 {
   HOST_WIDE_INT size = sparc_frame_size;
 
+  if (cfun->calls_alloca)
+    emit_insn (gen_frame_blockage ());
+
   if (sparc_n_global_fp_regs > 0)
     emit_save_or_restore_global_fp_regs (sparc_frame_base_reg,
 				         sparc_frame_base_offset
