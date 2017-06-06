@@ -972,7 +972,8 @@ public:
   void tag_import (FILE *, unsigned ix, const module_state *);
   void tag_trees (FILE *);
   tree tag_binding (FILE *, tree ns, bool, tree name, tree ovl);
-  void tag_definition (FILE *, tree decl);
+  void maybe_tag_definition (FILE *, tree decl);
+  void tag_definition (FILE *, tree node);
   int done ()
   {
     return w.done ();
@@ -994,6 +995,8 @@ private:
   void lang_type_vals (FILE *, tree);
   void lang_decl_bools (FILE *, tree);
   void lang_decl_vals (FILE *, tree);
+  void chained_decls (FILE *, tree);
+  void tree_vec (FILE *, vec<tree, va_gc> *);
   void define_function (FILE *, tree);
   void define_class (FILE *, tree);
   void ident_imported_decl (FILE *, tree ctx, unsigned mod, tree decl);
@@ -1054,7 +1057,7 @@ public:
   bool tag_conf (FILE *);
   bool tag_import (FILE *);
   bool tag_binding (FILE *);
-  bool tag_definition (FILE *);
+  tree tag_definition (FILE *);
   bool tag_trees (FILE *);
   int read_item (FILE *);
   int done ()
@@ -1082,8 +1085,10 @@ private:
   bool lang_type_vals (FILE *, tree);
   bool lang_decl_bools (FILE *, tree);
   bool lang_decl_vals (FILE *, tree);
-  bool define_function (FILE *, tree);
-  bool define_class (FILE *, tree);
+  tree chained_decls (FILE *);
+  vec<tree, va_gc> *tree_vec (FILE *);
+  tree define_function (FILE *, tree);
+  tree define_class (FILE *, tree);
   tree ident_imported_decl (FILE *, tree ctx, unsigned mod, tree name);
 
 public:
@@ -1618,12 +1623,12 @@ cpms_out::tag_binding (FILE *d, tree ns, bool main_p, tree name, tree binding)
   w.checkpoint ();
 
   if (type)
-    tag_definition (d, type);
+    maybe_tag_definition (d, type);
   for (ovl_iterator iter (value); iter; ++iter)
     /* We could still meet a builtin, if the user did something funky
        with a using declaration.  */
     if (!DECL_IS_BUILTIN (*iter))
-      tag_definition (d, *iter);
+      maybe_tag_definition (d, *iter);
 
   return NULL_TREE;
 }
@@ -1655,22 +1660,20 @@ cpms_in::tag_binding (FILE *d)
 void
 cpms_out::define_function (FILE *d, tree decl)
 {
-  tree_node (d, DECL_ARGUMENTS (decl));
   tree_node (d, DECL_RESULT (decl));
   tree_node (d, DECL_INITIAL (decl));
   tree_node (d, DECL_SAVED_TREE (decl));
 }
 
-bool
+tree
 cpms_in::define_function (FILE *d, tree decl)
 {
-  tree args = tree_node (d);
   tree result = tree_node (d);
   tree initial = tree_node (d);
   tree saved = tree_node (d);
 
   if (r.error ())
-    return false;
+    return NULL_TREE;
 
   unsigned mod = MAYBE_DECL_MODULE_INDEX (decl);
   if (mod == GLOBAL_MODULE_INDEX
@@ -1683,7 +1686,6 @@ cpms_in::define_function (FILE *d, tree decl)
     }
   else
     {
-      DECL_ARGUMENTS (decl) = args;
       DECL_RESULT (decl) = result;
       DECL_INITIAL (decl) = initial;
       DECL_SAVED_TREE (decl) = saved;
@@ -1699,33 +1701,82 @@ cpms_in::define_function (FILE *d, tree decl)
       cgraph_node::finalize_function (decl, false);
     }
 
-  return true;
+  return decl;
 }
 
+/* A chained set of decls.  */
+
+void
+cpms_out::chained_decls (FILE *d, tree decls)
+{
+  for (; decls; decls = TREE_CHAIN (decls))
+    tree_node (d, decls);
+  tree_node (d, NULL_TREE);
+}
+
+tree
+cpms_in::chained_decls (FILE *d)
+{
+  tree decls = NULL_TREE;
+  for (tree *chain = &decls; chain && !r.error ();)
+    if (tree decl = tree_node (d))
+      {
+	if (!DECL_P (decl))
+	  r.bad ();
+	else
+	  {
+	    *chain = decl;
+	    chain = &TREE_CHAIN (decl);
+	  }
+      }
+    else
+      chain = NULL;
+  return decls;
+}
+
+/* A vector of trees.  */
+
+void
+cpms_out::tree_vec (FILE *d, vec<tree, va_gc> *v)
+{
+  unsigned len = vec_safe_length (v);
+  w.u (len);
+  if (len)
+    for (unsigned ix = 0; ix != len; ix++)
+      tree_node (d, (*v)[ix]);
+}
+
+vec<tree, va_gc> *
+cpms_in::tree_vec (FILE *d)
+{
+  vec<tree, va_gc> *v = NULL;
+  if (unsigned len = r.u ())
+    {
+      vec_alloc (v, len);
+      for (unsigned ix = 0; ix != len; ix++)
+	v->quick_push (tree_node (d));
+    }
+  return v;
+}
+  
 /* Stream a class definition.  */
 
 void
 cpms_out::define_class (FILE *d, tree type)
 {
-  /* Stream the fields.  */
-  for (tree field = TYPE_FIELDS (type); field; field = TREE_CHAIN (field))
-    {
-      switch (TREE_CODE (field))
-	{
-	case TYPE_DECL:
-	  break;
-	case FIELD_DECL:
-	  tree_node (d, field);
-	  break;
-	default:
-	  gcc_unreachable ();
-	}
-    }
-  tree_node (d, NULL_TREE);
-
-  // TYPE_METHODS (decl)
+  chained_decls (d, TYPE_FIELDS (type));
+  chained_decls (d, TYPE_METHODS (type));
   // TYPE_VFIELD (decl)
   tree_node (d, TYPE_BINFO (type));
+  if (TYPE_LANG_SPECIFIC (type))
+    {
+      tree base = CLASSTYPE_AS_BASE (type);
+      if (base == type)
+	tree_node (d, base);
+      else
+	tag_definition (d, base);
+      tree_vec (d, CLASSTYPE_METHOD_VEC (type));
+    }
 
 #if 0
   WT (lang->primary_base);
@@ -1745,37 +1796,31 @@ cpms_out::define_class (FILE *d, tree type)
 #endif
 }
 
-bool
+/* Nop sorted needed for resorting the method vec.  */
+
+static void
+nop (void *, void *)
+{
+}
+
+tree
 cpms_in::define_class (FILE *d, tree type)
 {
   gcc_assert (TYPE_MAIN_VARIANT (type) == type);
 
-  /* Stream the fields.  */
-  tree fields = NULL_TREE;
-  for (tree field, *chain = &fields;
-       (field = tree_node (d));
-       chain = &TREE_CHAIN (field))
-    {
-      if (!DECL_P (field)
-	  || DECL_CONTEXT (field) != type)
-	r.bad ();
-      else
-	switch (TREE_CODE (field))
-	  {
-	  case FIELD_DECL:
-	  case TYPE_DECL:
-	    *chain = field;
-	    break;
-	  default:
-	    r.bad ();
-	  }
-      if (r.error ())
-	return false;
-    }
-
-  // TYPE_METHODS (decl)
+  tree fields = chained_decls (d);
+  tree methods = chained_decls (d);
   // TYPE_VFIELD (decl)
   tree binfo = tree_node (d);
+  tree base = NULL_TREE;
+  vec<tree, va_gc> *method_vec = NULL;
+
+  if (TYPE_LANG_SPECIFIC (type))
+    {
+      base = tree_node (d);
+      method_vec = tree_vec (d);
+    }
+
 #if 0
   RT (lang->primary_base);
   gcc_assert (!lang->vcall_indices);
@@ -1794,115 +1839,112 @@ cpms_in::define_class (FILE *d, tree type)
 #endif
   // FIXME: Sanity check binfo
 
+  if (r.error ())
+    return NULL_TREE;
+
   TYPE_FIELDS (type) = fields;
+  TYPE_METHODS (type) = methods;
   TYPE_BINFO (type) = binfo;
-  create_classtype_sorted_fields (fields, type);
+
+  if (TYPE_LANG_SPECIFIC (type))
+    {
+      CLASSTYPE_AS_BASE (type) = base;
+      CLASSTYPE_METHOD_VEC (type) = method_vec;
+      /* Resort things that need to be sorted.  */
+      resort_type_method_vec (method_vec, NULL, nop, NULL);
+      create_classtype_sorted_fields (fields, type);
+    }
 
   /* Propagate to all variants.  */
   fixup_type_variants (type);
 
-  return true;
+  return type;
 }
 
 /* Write out DECL's definition, if importers need it.  */
 
 void
-cpms_out::tag_definition (FILE *d, tree decl)
+cpms_out::maybe_tag_definition (FILE *d, tree t)
 {
-  switch (TREE_CODE (decl))
+  if (TREE_CODE (t) == TYPE_DECL)
+    t = TREE_TYPE (t);
+
+  switch (TREE_CODE (t))
     {
     default:
       return;
 
-    case TYPE_DECL:
-      {
-	tree type = TREE_TYPE (decl);
-
-	switch (TREE_CODE (type))
-	  {
-	  default:
-	    return;
-
-	  case RECORD_TYPE:
-	  case UNION_TYPE:
-	    if (!COMPLETE_TYPE_P (type))
-	      return;
-	  }
-      }
+    case RECORD_TYPE:
+    case UNION_TYPE:
+      if (!COMPLETE_TYPE_P (t))
+	return;
       break;
 
     case FUNCTION_DECL:
-      if (!DECL_SAVED_TREE (decl))
+      if (!DECL_SAVED_TREE (t))
 	return;
-      if (!DECL_DECLARED_INLINE_P (decl))
+      if (!DECL_DECLARED_INLINE_P (t))
 	return;
     }
 
+  tag_definition (d, t);
+}
+
+/* Write out T's definition  */
+
+void
+cpms_out::tag_definition (FILE *d, tree t)
+{
   if (d)
     fprintf (d, "Writing definition for %s:'%s'\n",
-	     get_tree_code_name (TREE_CODE (decl)), name_string (decl));
+	     get_tree_code_name (TREE_CODE (t)), name_string (t));
 
   tag (rt_definition);
-  tree_node (d, decl);
+  tree_node (d, t);
 
-  switch (TREE_CODE (decl))
+  switch (TREE_CODE (t))
     {
     default:
       gcc_unreachable ();
     case FUNCTION_DECL:
-      define_function (d, decl);
+      define_function (d, t);
       break;
-    case TYPE_DECL:
-      {
-	tree type = TREE_TYPE (decl);
-	switch (TREE_CODE (type))
-	  {
-	  default:
-	    gcc_unreachable ();
-	  case RECORD_TYPE:
-	  case UNION_TYPE:
-	    define_class (d, type);
-	    break;
-	  }
-      }
+    case RECORD_TYPE:
+    case UNION_TYPE:
+      define_class (d, t);
       break;
     }
 }
 
-bool
+tree
 cpms_in::tag_definition (FILE *d)
 {
-  tree decl = tree_node (d);
+  tree t = tree_node (d);
   if (d)
     fprintf (d, "Reading definition for %s:'%s'\n",
-	     get_tree_code_name (TREE_CODE (decl)), name_string (decl));
+	     get_tree_code_name (TREE_CODE (t)), name_string (t));
 
   if (r.error ())
-    return false;
+    return NULL_TREE;
 
-  switch (TREE_CODE (decl))
+  switch (TREE_CODE (t))
     {
     default:
       // FIXME: read other things
-      return false;
+      t = NULL_TREE;
+      break;
 
     case FUNCTION_DECL:
-      return define_function (d, decl);
-    case TYPE_DECL:
-      {
-	tree type = TREE_TYPE (decl);
-	switch (TREE_CODE (type))
-	  {
-	  default:
-	    return false;
+      t = define_function (d, t);
+      break;
 
-	  case RECORD_TYPE:
-	  case UNION_TYPE:
-	    return define_class (d, type);
-	  }
-      }
+    case RECORD_TYPE:
+    case UNION_TYPE:
+      t = define_class (d, t);
+      break;
     }
-  gcc_unreachable ();
+
+  return t;
 }
 
 int
@@ -1955,7 +1997,7 @@ cpms_in::read_item (FILE *d)
     case rt_binding:
       return tag_binding (d);
     case rt_definition:
-      return tag_definition (d);
+      return tag_definition (d) != NULL_TREE;
     case rt_trees:
       return tag_trees (d);
 
@@ -2877,7 +2919,7 @@ cpms_out::core_vals (FILE *d, tree t)
 
   if (CODE_CONTAINS_STRUCT (code, TS_FUNCTION_DECL))
     {
-      
+      chained_decls (d, t->function_decl.arguments);
     }
 
   if (CODE_CONTAINS_STRUCT (code, TS_BLOCK))
@@ -3105,7 +3147,7 @@ cpms_in::core_vals (FILE *d, tree t)
 
   if (CODE_CONTAINS_STRUCT (code, TS_FUNCTION_DECL))
     {
-      
+      t->function_decl.arguments = chained_decls (d);
     }
 
   if (CODE_CONTAINS_STRUCT (code, TS_BLOCK))
@@ -3413,7 +3455,7 @@ cpms_out::tree_node (FILE *d, tree t)
       while (TYPE_P (outer))
 	{
 	  probe = TYPE_NAME (outer);
-	  outer = CP_DECL_CONTEXT (probe);
+	  outer = CP_TYPE_CONTEXT (outer);
 	}
       if (TREE_CODE (outer) == NAMESPACE_DECL)
 	{
@@ -3552,6 +3594,16 @@ cpms_in::tree_node (FILE *d)
       return tree_node (d);
     }
 
+  if (tag == rt_definition)
+    {
+      /* An immediate definition.  */
+      tree res = tag_definition (d);
+      if (d)
+	fprintf (d, "Read immediate definition %s:'%s'\n",
+		 get_tree_code_name (TREE_CODE (res)), name_string (res));
+      return res;
+    }
+
   if (tag < rt_tree_base || tag >= rt_tree_base + MAX_TREE_CODES)
     {
       r.bad ();
@@ -3579,7 +3631,7 @@ cpms_in::tree_node (FILE *d)
       bool is_imported = false;
       tree outer = ctx;
       while (TYPE_P (outer))
-	outer = CP_DECL_CONTEXT (TYPE_NAME (outer));
+	outer = CP_TYPE_CONTEXT (outer);
       if (TREE_CODE (outer) == NAMESPACE_DECL)
 	{
 	  mod = r.u ();

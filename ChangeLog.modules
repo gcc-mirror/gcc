@@ -1,5 +1,17 @@
 2017-06-06  Nathan Sidwell  <nathan@acm.org>
 
+	Member functions
+	gcc/cp/
+	* class.c (resort_type_method_vec): Avoid signed/unsigned compare.
+	* module.c (cpms_out::maybe_tag_definition): New.
+	(cpms_{out,in}::tag_definition): Always tag, return tagged thing.
+	(cpms_{out,in}::chained_decls, tree_vec): New.
+	(cpms_{out,in}::define_class): Stream methods, as_base.
+	(cpms_{out,in}::core_vals): Stream ARGUMENTs here.
+	(cpms_in::tree_node): Cope with immediate definitions.
+	gcc/testsuite/
+	g++.dg/modules/class-3_[abcd].C: Augment.
+
 	More PoD struct
 	gcc/cp/
 	* module.c (cpms_{out,in}::ident_imported_decl): New.

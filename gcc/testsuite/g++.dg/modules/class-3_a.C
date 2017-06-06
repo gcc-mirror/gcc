@@ -5,6 +5,7 @@ export module One;
 
 export struct X
 {
+  X (int, int);
   int a;
   int b;
 };
