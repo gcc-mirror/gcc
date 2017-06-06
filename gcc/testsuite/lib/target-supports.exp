@@ -1424,6 +1424,14 @@ proc check_effective_target_static_libgfortran { } {
     } "-static"]
 }
 
+# Return 1 if we can use the -rdynamic option, 0 otherwise.
+
+proc check_effective_target_rdynamic { } {
+  return [check_no_compiler_messages rdynamic executable {
+     int main() { return 0; }
+  } "-rdynamic"]
+}
+
 # Return 1 if cilk-plus is supported by the target, 0 otherwise.
  
 proc check_effective_target_cilkplus { } {

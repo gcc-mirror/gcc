@@ -1950,6 +1950,9 @@ Target supports @option{-mpe-aligned-commons}.
 @item pie
 Target supports @option{-pie}, @option{-fpie} and @option{-fPIE}.
 
+@item rdynamic
+Target supports @option{-rdynamic}.
+
 @item section_anchors
 Target supports section anchors.
 

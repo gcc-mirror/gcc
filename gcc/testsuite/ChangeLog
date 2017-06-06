@@ -1,3 +1,13 @@
+2017-06-06  Toma Tabacu  <toma.tabacu@imgtec.com>
+
+	Backported from mainline
+	2017-03-09  Toma Tabacu  <toma.tabacu@imgtec.com>
+
+	* g++.dg/lto/pr69589_0.C: Add dg-require-effective-target for
+	rdynamic.
+	* lib/target-supports.exp (check_effective_target_rdynamic):
+	New proc.
+
 2017-05-03  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/65542
