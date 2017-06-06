@@ -100,6 +100,8 @@ vect_create_new_slp_node (vec<gimple *> scalar_stmts)
       if (gimple_assign_rhs_code (stmt) == COND_EXPR)
 	nops++;
     }
+  else if (gimple_code (stmt) == GIMPLE_PHI)
+    nops = 0;
   else
     return NULL;
 
@@ -401,9 +403,10 @@ again:
 	{
 	case vect_constant_def:
 	case vect_external_def:
-        case vect_reduction_def:
+	case vect_reduction_def:
 	  break;
 
+	case vect_induction_def:
 	case vect_internal_def:
 	  oprnd_info->def_stmts.quick_push (def_stmt);
 	  break;
@@ -935,8 +938,22 @@ vect_build_slp_tree (vec_info *vinfo,
       if (gimple_assign_rhs_code (stmt) == COND_EXPR)
 	nops++;
     }
+  else if (gimple_code (stmt) == GIMPLE_PHI)
+    nops = 0;
   else
     return NULL;
+
+  /* If the SLP node is a PHI (induction), terminate the recursion.  */
+  if (gimple_code (stmt) == GIMPLE_PHI)
+    {
+      FOR_EACH_VEC_ELT (stmts, i, stmt)
+	if (stmt != stmts[0])
+	  /* Induction from different IVs is not supported.  */
+	  return NULL;
+      node = vect_create_new_slp_node (stmts);
+      return node;
+    }
+
 
   bool two_operators = false;
   unsigned char *swap = XALLOCAVEC (unsigned char, group_size);
@@ -987,7 +1004,8 @@ vect_build_slp_tree (vec_info *vinfo,
       unsigned old_tree_size = this_tree_size;
       unsigned int j;
 
-      if (oprnd_info->first_dt != vect_internal_def)
+      if (oprnd_info->first_dt != vect_internal_def
+	  && oprnd_info->first_dt != vect_induction_def)
         continue;
 
       if (++this_tree_size > max_tree_size)
@@ -1611,6 +1629,28 @@ vect_analyze_slp_cost_1 (slp_instance instance, slp_tree node,
 	  return;
 	}
     }
+  else if (STMT_VINFO_TYPE (stmt_info) == induc_vec_info_type)
+    {
+      /* ncopies_for_cost is the number of IVs we generate.  */
+      record_stmt_cost (body_cost_vec, ncopies_for_cost, vector_stmt,
+			stmt_info, 0, vect_body);
+
+      /* Prologue cost for the initial values and step vector.  */
+      record_stmt_cost (prologue_cost_vec, ncopies_for_cost,
+			CONSTANT_CLASS_P
+			  (STMT_VINFO_LOOP_PHI_EVOLUTION_BASE_UNCHANGED
+			     (stmt_info))
+			? vector_load : vec_construct,
+			stmt_info, 0, vect_prologue);
+      record_stmt_cost (prologue_cost_vec, 1,
+			CONSTANT_CLASS_P
+			  (STMT_VINFO_LOOP_PHI_EVOLUTION_PART (stmt_info))
+			? vector_load : vec_construct,
+			stmt_info, 0, vect_prologue);
+      
+      /* ???  No easy way to get at the actual number of vector stmts
+         to be geneated and thus the derived IVs.  */
+    }
   else
     {
       record_stmt_cost (body_cost_vec, ncopies_for_cost, vector_stmt,
@@ -2169,8 +2209,13 @@ vect_detect_hybrid_slp_stmts (slp_tree node, unsigned i, slp_vect_type stype)
       if (! STMT_VINFO_IN_PATTERN_P (stmt_vinfo)
 	  && STMT_VINFO_RELATED_STMT (stmt_vinfo))
 	stmt = STMT_VINFO_RELATED_STMT (stmt_vinfo);
-      if (TREE_CODE (gimple_op (stmt, 0)) == SSA_NAME)
-	FOR_EACH_IMM_USE_STMT (use_stmt, imm_iter, gimple_op (stmt, 0))
+      tree def;
+      if (gimple_code (stmt) == GIMPLE_PHI)
+	def = gimple_phi_result (stmt);
+      else
+	def = SINGLE_SSA_TREE_OPERAND (stmt, SSA_OP_DEF);
+      if (def)
+	FOR_EACH_IMM_USE_STMT (use_stmt, imm_iter, def)
 	  {
 	    if (!flow_bb_inside_loop_p (loop, gimple_bb (use_stmt)))
 	      continue;
@@ -3277,7 +3322,10 @@ vect_get_slp_vect_defs (slp_tree slp_node, vec<tree> *vec_oprnds)
   FOR_EACH_VEC_ELT (SLP_TREE_VEC_STMTS (slp_node), i, vec_def_stmt)
     {
       gcc_assert (vec_def_stmt);
-      vec_oprnd = gimple_get_lhs (vec_def_stmt);
+      if (gimple_code (vec_def_stmt) == GIMPLE_PHI)
+	vec_oprnd = gimple_phi_result (vec_def_stmt);
+      else
+	vec_oprnd = gimple_get_lhs (vec_def_stmt);
       vec_oprnds->quick_push (vec_oprnd);
     }
 }
@@ -3331,8 +3379,13 @@ vect_get_slp_defs (vec<tree> ops, slp_tree slp_node,
 	      gimple *first_def = SLP_TREE_SCALAR_STMTS (child)[0];
 	      gimple *related
 		= STMT_VINFO_RELATED_STMT (vinfo_for_stmt (first_def));
+	      tree first_def_op;
 
-	      if (operand_equal_p (oprnd, gimple_get_lhs (first_def), 0)
+	      if (gimple_code (first_def) == GIMPLE_PHI)
+		first_def_op = gimple_phi_result (first_def);
+	      else
+		first_def_op = gimple_get_lhs (first_def);
+	      if (operand_equal_p (oprnd, first_def_op, 0)
 		  || (related
 		      && operand_equal_p (oprnd, gimple_get_lhs (related), 0)))
 		{
@@ -3372,9 +3425,9 @@ vect_get_slp_defs (vec<tree> ops, slp_tree slp_node,
         /* The defs are already vectorized.  */
 	vect_get_slp_vect_defs (child, &vec_defs);
       else
-        /* Build vectors from scalar defs.  */
+	/* Build vectors from scalar defs.  */
 	vect_get_constant_vectors (oprnd, slp_node, &vec_defs, i,
-                                   number_of_vects, reduc_index);
+				   number_of_vects, reduc_index);
 
       vec_oprnds->quick_push (vec_defs);
 

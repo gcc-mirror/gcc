@@ -1,3 +1,25 @@
+2017-06-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/80928
+	* tree-vect-loop.c (vect_update_vf_for_slp): Amend dumps.
+	(vect_analyze_loop_operations): Properly guard analysis for
+	pure SLP case.
+	(vect_transform_loop): Likewise.
+	(vect_analyze_loop_2): Also reset SLP type on PHIs.
+	(vect_model_induction_cost): Do not cost for pure SLP.
+	(vectorizable_induction): Pass in SLP node, implement SLP vectorization
+	of induction in inner loop vectorization.
+	* tree-vect-slp.c (vect_create_new_slp_node): Handle PHIs.
+	(vect_get_and_check_slp_defs): Handle vect_induction_def.
+	(vect_build_slp_tree): Likewise.  Handle PHIs as terminating the
+	recursion.
+	(vect_analyze_slp_cost_1): Cost induction.
+	(vect_detect_hybrid_slp_stmts): Handle PHIs.
+	(vect_get_slp_vect_defs): Likewise.
+	* tree-vect-stmts.c (vect_analyze_stmt): Handle induction.
+	(vect_transform_stmt): Handle SLP reductions.
+	* tree-vectorizer.h (vectorizable_induction): Adjust.
+
 2017-06-05  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* config/rs6000/rs6000.c (make_resolver_func): Update

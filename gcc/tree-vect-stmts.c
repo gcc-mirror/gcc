@@ -8520,6 +8520,9 @@ vect_analyze_stmt (gimple *stmt, bool *need_to_vectorize, slp_tree node)
          break;
 
       case vect_induction_def:
+	gcc_assert (!bb_vinfo);
+	break;
+
       case vect_constant_def:
       case vect_external_def:
       case vect_unknown_def_type:
@@ -8598,6 +8601,7 @@ vect_analyze_stmt (gimple *stmt, bool *need_to_vectorize, slp_tree node)
 	  || vectorizable_call (stmt, NULL, NULL, node)
 	  || vectorizable_store (stmt, NULL, NULL, node)
 	  || vectorizable_reduction (stmt, NULL, NULL, node)
+	  || vectorizable_induction (stmt, NULL, NULL, node)
 	  || vectorizable_condition (stmt, NULL, NULL, NULL, 0, node)
 	  || vectorizable_comparison (stmt, NULL, NULL, NULL, node));
   else
@@ -8681,8 +8685,7 @@ vect_transform_stmt (gimple *stmt, gimple_stmt_iterator *gsi,
       break;
 
     case induc_vec_info_type:
-      gcc_assert (!slp_node);
-      done = vectorizable_induction (stmt, gsi, &vec_stmt);
+      done = vectorizable_induction (stmt, gsi, &vec_stmt, slp_node);
       gcc_assert (done);
       break;
 
