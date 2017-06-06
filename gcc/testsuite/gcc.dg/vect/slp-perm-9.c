@@ -42,6 +42,7 @@ int main (int argc, const char* argv[])
       check_results[3*i] = 9 * i + 6;
       check_results[3*i+1] = 9 * i + 15;
       check_results[3*i+2] = 9 * i + 4;
+      __asm__ volatile ("" : : : "memory");
     }
 
   foo (input, output);
