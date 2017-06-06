@@ -9077,7 +9077,9 @@ execute_fixup_cfg (void)
   cgraph_node *node = cgraph_node::get (current_function_decl);
   profile_count num = node->count;
   profile_count den = ENTRY_BLOCK_PTR_FOR_FN (cfun)->count;
-  bool scale = num.initialized_p () && den.initialized_p () && !(num == den);
+  bool scale = num.initialized_p ()
+	       && (den > 0 || num == profile_count::zero ())
+	       && !(num == den);
 
   if (scale)
     {

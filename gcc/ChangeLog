@@ -1,5 +1,11 @@
 2017-06-06  Jan Hubicka  <hubicka@ucw.cz>
 
+	PR bootstrap/80978
+	* tree-cfg.c (execute_fixup_cfg): Fix condition on when to rescale
+	profile.
+
+2017-06-06  Jan Hubicka  <hubicka@ucw.cz>
+
 	* shrink-wrap.c (handle_simple_exit): Update profile.
 	(try_shrink_wrapping): Upate profile.
 
