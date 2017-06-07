@@ -31,7 +31,6 @@
    (TSTTFGT_GPR		1015)
    (CMPTFLT_GPR		1016)
    (TSTTFLT_GPR		1017)
-   (E500_CR_IOR_COMPARE 1018)
    ])
 
 ;; Modes using a 64-bit register.
@@ -42,59 +41,6 @@
 
 ;; DImode and TImode.
 (define_mode_iterator DITI [DI TI])
-
-(define_insn "*negsf2_gpr"
-  [(set (match_operand:SF 0 "gpc_reg_operand" "=r")
-        (neg:SF (match_operand:SF 1 "gpc_reg_operand" "r")))]
-  "TARGET_HARD_FLOAT && !TARGET_FPRS"
-  "efsneg %0,%1"
-  [(set_attr "type" "fpsimple")])
-
-(define_insn "*abssf2_gpr"
-  [(set (match_operand:SF 0 "gpc_reg_operand" "=r")
-	(abs:SF (match_operand:SF 1 "gpc_reg_operand" "r")))]
-  "TARGET_HARD_FLOAT && !TARGET_FPRS"
-  "efsabs %0,%1"
-  [(set_attr "type" "fpsimple")])
-
-(define_insn "*nabssf2_gpr"
-  [(set (match_operand:SF 0 "gpc_reg_operand" "=r")
-	(neg:SF (abs:SF (match_operand:SF 1 "gpc_reg_operand" "r"))))]
-  "TARGET_HARD_FLOAT && !TARGET_FPRS"
-  "efsnabs %0,%1"
-  [(set_attr "type" "fpsimple")])
-
-(define_insn "*addsf3_gpr"
-  [(set (match_operand:SF 0 "gpc_reg_operand" "=r")
-	(plus:SF (match_operand:SF 1 "gpc_reg_operand" "%r")
-		 (match_operand:SF 2 "gpc_reg_operand" "r")))]
-  "TARGET_HARD_FLOAT && !TARGET_FPRS"
-  "efsadd %0,%1,%2"
-  [(set_attr "type" "fp")])
-
-(define_insn "*subsf3_gpr"
-  [(set (match_operand:SF 0 "gpc_reg_operand" "=r")
-	(minus:SF (match_operand:SF 1 "gpc_reg_operand" "r")
-		  (match_operand:SF 2 "gpc_reg_operand" "r")))]
-  "TARGET_HARD_FLOAT && !TARGET_FPRS"
-  "efssub %0,%1,%2"
-  [(set_attr "type" "fp")])
-
-(define_insn "*mulsf3_gpr"
-  [(set (match_operand:SF 0 "gpc_reg_operand" "=r")
-        (mult:SF (match_operand:SF 1 "gpc_reg_operand" "%r")
-                 (match_operand:SF 2 "gpc_reg_operand" "r")))]
-  "TARGET_HARD_FLOAT && !TARGET_FPRS"
-  "efsmul %0,%1,%2"
-  [(set_attr "type" "fp")])
-
-(define_insn "*divsf3_gpr"
-  [(set (match_operand:SF 0 "gpc_reg_operand" "=r")
-        (div:SF (match_operand:SF 1 "gpc_reg_operand" "r")
-                (match_operand:SF 2 "gpc_reg_operand" "r")))]
-  "TARGET_HARD_FLOAT && !TARGET_FPRS"
-  "efsdiv %0,%1,%2"
-  [(set_attr "type" "vecfdiv")])
 
 ;; Floating point conversion instructions.
 
@@ -112,20 +58,6 @@
   "efdcfs %0,%1"
   [(set_attr "type" "fp")])
 
-(define_insn "spe_fixuns_truncsfsi2"
-  [(set (match_operand:SI 0 "gpc_reg_operand" "=r")
-	(unsigned_fix:SI (match_operand:SF 1 "gpc_reg_operand" "r")))]
-  "TARGET_HARD_FLOAT && !TARGET_FPRS"
-  "efsctuiz %0,%1"
-  [(set_attr "type" "fp")])
-
-(define_insn "spe_fix_truncsfsi2"
-  [(set (match_operand:SI 0 "gpc_reg_operand" "=r")
-	(fix:SI (match_operand:SF 1 "gpc_reg_operand" "r")))]
-  "TARGET_HARD_FLOAT && !TARGET_FPRS"
-  "efsctsiz %0,%1"
-  [(set_attr "type" "fp")])
-
 (define_insn "spe_fix_truncdfsi2"
   [(set (match_operand:SI 0 "gpc_reg_operand" "=r")
 	(fix:SI (match_operand:DF 1 "gpc_reg_operand" "r")))]
@@ -133,25 +65,11 @@
   "efdctsiz %0,%1"
   [(set_attr "type" "fp")])
 
-(define_insn "spe_floatunssisf2"
-  [(set (match_operand:SF 0 "gpc_reg_operand" "=r")
-        (unsigned_float:SF (match_operand:SI 1 "gpc_reg_operand" "r")))]
-  "TARGET_HARD_FLOAT && !TARGET_FPRS"
-  "efscfui %0,%1"
-  [(set_attr "type" "fp")])
-
 (define_insn "spe_floatunssidf2"
   [(set (match_operand:DF 0 "gpc_reg_operand" "=r")
         (unsigned_float:DF (match_operand:SI 1 "gpc_reg_operand" "r")))]
   "TARGET_HARD_FLOAT && TARGET_E500_DOUBLE"
   "efdcfui %0,%1"
-  [(set_attr "type" "fp")])
-
-(define_insn "spe_floatsisf2"
-  [(set (match_operand:SF 0 "gpc_reg_operand" "=r")
-        (float:SF (match_operand:SI 1 "gpc_reg_operand" "r")))]
-  "TARGET_HARD_FLOAT && !TARGET_FPRS"
-  "efscfsi %0,%1"
   [(set_attr "type" "fp")])
 
 (define_insn "spe_floatsidf2"
@@ -3233,87 +3151,9 @@
   "mfspefscr %0"
   [(set_attr "type" "vecsimple")])
 
-;; Flip the GT bit.
-(define_insn "e500_flip_gt_bit"
-  [(set (match_operand:CCFP 0 "cc_reg_operand" "=y")
-	(unspec:CCFP
-	 [(match_operand:CCFP 1 "cc_reg_operand" "y")] 999))]
-  "!TARGET_FPRS && TARGET_HARD_FLOAT"
-  "*
-{
-  return output_e500_flip_gt_bit (operands[0], operands[1]);
-}"
-  [(set_attr "type" "cr_logical")])
-
 ;; MPC8540 single-precision FP instructions on GPRs.
 ;; We have 2 variants for each.  One for IEEE compliant math and one
 ;; for non IEEE compliant math.
-
-(define_insn "cmpsfeq_gpr"
-  [(set (match_operand:CCFP 0 "cc_reg_operand" "=y")
-	(unspec:CCFP
-	 [(compare:CCFP (match_operand:SF 1 "gpc_reg_operand" "r")
-			(match_operand:SF 2 "gpc_reg_operand" "r"))]
-	 1000))]
-  "TARGET_HARD_FLOAT && !TARGET_FPRS
-   && !(flag_finite_math_only && !flag_trapping_math)"
-  "efscmpeq %0,%1,%2"
-  [(set_attr "type" "veccmp")])
-
-(define_insn "tstsfeq_gpr"
-  [(set (match_operand:CCFP 0 "cc_reg_operand" "=y")
-	(unspec:CCFP
-	 [(compare:CCFP (match_operand:SF 1 "gpc_reg_operand" "r")
-			(match_operand:SF 2 "gpc_reg_operand" "r"))]
-	 1001))]
-  "TARGET_HARD_FLOAT && !TARGET_FPRS
-   && flag_finite_math_only && !flag_trapping_math"
-  "efststeq %0,%1,%2"
-  [(set_attr "type" "veccmpsimple")])
-
-(define_insn "cmpsfgt_gpr"
-  [(set (match_operand:CCFP 0 "cc_reg_operand" "=y")
-	(unspec:CCFP
-	 [(compare:CCFP (match_operand:SF 1 "gpc_reg_operand" "r")
-			(match_operand:SF 2 "gpc_reg_operand" "r"))]
-	 1002))]
-  "TARGET_HARD_FLOAT && !TARGET_FPRS
-   && !(flag_finite_math_only && !flag_trapping_math)"
-  "efscmpgt %0,%1,%2"
-  [(set_attr "type" "veccmp")])
-
-(define_insn "tstsfgt_gpr"
-  [(set (match_operand:CCFP 0 "cc_reg_operand" "=y")
-	(unspec:CCFP
-	 [(compare:CCFP (match_operand:SF 1 "gpc_reg_operand" "r")
-			(match_operand:SF 2 "gpc_reg_operand" "r"))]
-	 1003))]
-  "TARGET_HARD_FLOAT && !TARGET_FPRS
-   && flag_finite_math_only && !flag_trapping_math"
-  "efststgt %0,%1,%2"
-  [(set_attr "type" "veccmpsimple")])
-
-(define_insn "cmpsflt_gpr"
-  [(set (match_operand:CCFP 0 "cc_reg_operand" "=y")
-	(unspec:CCFP
-	 [(compare:CCFP (match_operand:SF 1 "gpc_reg_operand" "r")
-			(match_operand:SF 2 "gpc_reg_operand" "r"))]
-	 1004))]
-  "TARGET_HARD_FLOAT && !TARGET_FPRS
-   && !(flag_finite_math_only && !flag_trapping_math)"
-  "efscmplt %0,%1,%2"
-  [(set_attr "type" "veccmp")])
-
-(define_insn "tstsflt_gpr"
-  [(set (match_operand:CCFP 0 "cc_reg_operand" "=y")
-	(unspec:CCFP
-	 [(compare:CCFP (match_operand:SF 1 "gpc_reg_operand" "r")
-			(match_operand:SF 2 "gpc_reg_operand" "r"))]
-	 1005))]
-  "TARGET_HARD_FLOAT && !TARGET_FPRS
-   && flag_finite_math_only && !flag_trapping_math"
-  "efststlt %0,%1,%2"
-  [(set_attr "type" "veccmpsimple")])
 
 ;; Same thing, but for double-precision.
 
@@ -3462,16 +3302,6 @@
   "efdtstlt %0,%1,%2\;bgt %0,$+16\;efdtsteq %0,%1,%2\;bng %0,$+8\;efdtstlt %0,%L1,%L2"
   [(set_attr "type" "veccmpsimple")
    (set_attr "length" "20")])
-
-;; Like cceq_ior_compare, but compare the GT bits.
-(define_insn "e500_cr_ior_compare"
-  [(set (match_operand:CCFP 0 "cc_reg_operand" "=y")
-	(unspec:CCFP [(match_operand 1 "cc_reg_operand" "y")
-		      (match_operand 2 "cc_reg_operand" "y")]
-		     E500_CR_IOR_COMPARE))]
-  "TARGET_HARD_FLOAT && !TARGET_FPRS"
-  "cror 4*%0+gt,4*%1+gt,4*%2+gt"
-  [(set_attr "type" "cr_logical")])
 
 ;; Out-of-line prologues and epilogues.
 (define_insn "*save_gpregs_spe"

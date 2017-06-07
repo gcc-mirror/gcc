@@ -449,8 +449,7 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 
 #define FLOAT128_IBM_P(MODE)						\
   ((!TARGET_IEEEQUAD && ((MODE) == TFmode || (MODE) == TCmode))		\
-   || (TARGET_HARD_FLOAT && TARGET_FPRS					\
-       && ((MODE) == IFmode || (MODE) == ICmode)))
+   || (TARGET_HARD_FLOAT && ((MODE) == IFmode || (MODE) == ICmode)))
 
 /* Helper macros to say whether a 128-bit floating point type can go in a
    single vector register, or whether it needs paired scalar values.  */
@@ -573,7 +572,6 @@ extern int rs6000_vector_align[];
 #define TARGET_SPE_ABI 0
 #define TARGET_SPE 0
 #define TARGET_ISEL64 (TARGET_ISEL && TARGET_POWERPC64)
-#define TARGET_FPRS 1
 #define TARGET_E500_SINGLE 0
 #define TARGET_E500_DOUBLE 0
 #define CHECK_E500_OPTIONS do { } while (0)
@@ -724,39 +722,26 @@ extern int rs6000_vector_align[];
 			  || rs6000_cpu == PROCESSOR_PPC8548)
 
 
-/* Whether SF/DF operations are supported on the E500.  */
-#define TARGET_SF_SPE	(TARGET_HARD_FLOAT && TARGET_SINGLE_FLOAT	\
-			 && !TARGET_FPRS)
-
-#define TARGET_DF_SPE	(TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT	\
-			 && !TARGET_FPRS && TARGET_E500_DOUBLE)
-
 /* Whether SF/DF operations are supported by the normal floating point unit
    (or the vector/scalar unit).  */
-#define TARGET_SF_FPR	(TARGET_HARD_FLOAT && TARGET_FPRS		\
-			 && TARGET_SINGLE_FLOAT)
-
-#define TARGET_DF_FPR	(TARGET_HARD_FLOAT && TARGET_FPRS		\
-			 && TARGET_DOUBLE_FLOAT)
+#define TARGET_SF_FPR	(TARGET_HARD_FLOAT && TARGET_SINGLE_FLOAT)
+#define TARGET_DF_FPR	(TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT)
 
 /* Whether SF/DF operations are supported by any hardware.  */
-#define TARGET_SF_INSN	(TARGET_SF_FPR || TARGET_SF_SPE)
-#define TARGET_DF_INSN	(TARGET_DF_FPR || TARGET_DF_SPE)
+#define TARGET_SF_INSN	TARGET_SF_FPR
+#define TARGET_DF_INSN	TARGET_DF_FPR
 
 /* Which machine supports the various reciprocal estimate instructions.  */
 #define TARGET_FRES	(TARGET_HARD_FLOAT && TARGET_PPC_GFXOPT \
-			 && TARGET_FPRS && TARGET_SINGLE_FLOAT)
+			 && TARGET_SINGLE_FLOAT)
 
-#define TARGET_FRE	(TARGET_HARD_FLOAT && TARGET_FPRS \
-			 && TARGET_DOUBLE_FLOAT \
+#define TARGET_FRE	(TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT \
 			 && (TARGET_POPCNTB || VECTOR_UNIT_VSX_P (DFmode)))
 
 #define TARGET_FRSQRTES	(TARGET_HARD_FLOAT && TARGET_POPCNTB \
-			 && TARGET_PPC_GFXOPT && TARGET_FPRS \
-			 && TARGET_SINGLE_FLOAT)
+			 && TARGET_PPC_GFXOPT && TARGET_SINGLE_FLOAT)
 
-#define TARGET_FRSQRTE	(TARGET_HARD_FLOAT && TARGET_FPRS \
-			 && TARGET_DOUBLE_FLOAT \
+#define TARGET_FRSQRTE	(TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT \
 			 && (TARGET_PPC_GFXOPT || VECTOR_UNIT_VSX_P (DFmode)))
 
 /* Conditions to allow TOC fusion for loading/storing integers.  */
@@ -771,7 +756,6 @@ extern int rs6000_vector_align[];
 				 && (TARGET_CMODEL != CMODEL_SMALL)	\
 				 && TARGET_POWERPC64			\
 				 && TARGET_HARD_FLOAT			\
-				 && TARGET_FPRS				\
 				 && TARGET_SINGLE_FLOAT			\
 				 && TARGET_DOUBLE_FLOAT)
 
@@ -1875,7 +1859,7 @@ extern enum reg_class rs6000_constraints[RS6000_CONSTRAINT_MAX];
 #define FUNCTION_VALUE_REGNO_P(N)					\
   ((N) == GP_ARG_RETURN							\
    || (IN_RANGE ((N), FP_ARG_RETURN, FP_ARG_MAX_RETURN)			\
-       && TARGET_HARD_FLOAT && TARGET_FPRS)				\
+       && TARGET_HARD_FLOAT)						\
    || (IN_RANGE ((N), ALTIVEC_ARG_RETURN, ALTIVEC_ARG_MAX_RETURN)	\
        && TARGET_ALTIVEC && TARGET_ALTIVEC_ABI))
 
@@ -1887,7 +1871,7 @@ extern enum reg_class rs6000_constraints[RS6000_CONSTRAINT_MAX];
    || (IN_RANGE ((N), ALTIVEC_ARG_MIN_REG, ALTIVEC_ARG_MAX_REG)		\
        && TARGET_ALTIVEC && TARGET_ALTIVEC_ABI)				\
    || (IN_RANGE ((N), FP_ARG_MIN_REG, FP_ARG_MAX_REG)			\
-       && TARGET_HARD_FLOAT && TARGET_FPRS))
+       && TARGET_HARD_FLOAT))
 
 /* Define a data type for recording info about an argument list
    during the scan of that argument list.  This data type should
