@@ -1,5 +1,9 @@
 2017-06-07  Bin Cheng  <bin.cheng@arm.com>
 
+	* tree-affine.c (tree_to_aff_combination): Handle (T1)(X + X).
+
+2017-06-07  Bin Cheng  <bin.cheng@arm.com>
+
 	(aff_combination_expand): Move (T1)(X *+- CST) simplification to ...
 	(tree_to_aff_combination): ... here.
 

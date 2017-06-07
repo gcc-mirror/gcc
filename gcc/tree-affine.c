@@ -375,17 +375,24 @@ tree_to_aff_combination (tree expr, tree type, aff_tree *comb)
 	if ((icode == PLUS_EXPR || icode == MINUS_EXPR || icode == MULT_EXPR)
 	    && TREE_CODE (itype) == INTEGER_TYPE
 	    && TREE_CODE (otype) == INTEGER_TYPE
-	    && TYPE_PRECISION (otype) > TYPE_PRECISION (itype)
-	    && TYPE_OVERFLOW_UNDEFINED (itype)
-	    && TREE_CODE (TREE_OPERAND (inner, 1)) == INTEGER_CST)
+	    && TYPE_PRECISION (otype) > TYPE_PRECISION (itype))
 	  {
-	    /* Convert (T1)(X *+- CST) into (T1)X *+- (T1)CST if X's type has
-	       undefined overflow behavior.  */
-	    tree op0 = fold_convert (otype, TREE_OPERAND (inner, 0));
-	    tree op1 = fold_convert (otype, TREE_OPERAND (inner, 1));
-	    expr = fold_build2 (icode, otype, op0, op1);
-	    tree_to_aff_combination (expr, type, comb);
-	    return;
+	    tree op0 = TREE_OPERAND (inner, 0), op1 = TREE_OPERAND (inner, 1);
+
+	    /* If inner type has undefined overflow behavior, fold conversion
+	       for below two cases:
+		 (T1)(X *+- CST) -> (T1)X *+- (T1)CST
+		 (T1)(X + X)     -> (T1)X + (T1)X.  */
+	    if (TYPE_OVERFLOW_UNDEFINED (itype)
+		&& (TREE_CODE (op1) == INTEGER_CST
+		    || (icode == PLUS_EXPR && operand_equal_p (op0, op1, 0))))
+	      {
+		op0 = fold_convert (otype, op0);
+		op1 = fold_convert (otype, op1);
+		expr = fold_build2 (icode, otype, op0, op1);
+		tree_to_aff_combination (expr, type, comb);
+		return;
+	      }
 	  }
       }
       break;
