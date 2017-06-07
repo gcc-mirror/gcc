@@ -1238,10 +1238,6 @@
 						   GET_MODE (XEXP (op, 0))),
 			  1"))))
 
-;; Return 1 if OP is a valid comparison operator for "cbranch" instructions.
-(define_predicate "rs6000_cbranch_operator"
-  (match_operand 0 "comparison_operator"))
-
 ;; Return 1 if OP is an unsigned comparison operator.
 (define_predicate "unsigned_comparison_operator"
   (match_code "ltu,gtu,leu,geu"))
