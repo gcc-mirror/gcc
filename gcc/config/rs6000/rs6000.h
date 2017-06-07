@@ -1017,7 +1017,7 @@ enum data_align { align_abi, align_opt, align_both };
 
    The 3 HTM registers aren't also included in DWARF_FRAME_REGISTERS.  */
 
-#define FIRST_PSEUDO_REGISTER 117
+#define FIRST_PSEUDO_REGISTER 115
 
 /* This must be included for pre gcc 3.0 glibc compatibility.  */
 #define PRE_GCC3_DWARF_FRAME_REGISTERS 77
@@ -1056,7 +1056,7 @@ enum data_align { align_abi, align_opt, align_both };
    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
    1, 1						   \
-   , 1, 1, 1, 1, 1, 1				   \
+   , 1, 1, 1, 1					   \
 }
 
 /* 1 for registers not available across function calls.
@@ -1076,7 +1076,7 @@ enum data_align { align_abi, align_opt, align_both };
    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
    1, 1						   \
-   , 1, 1, 1, 1, 1, 1				   \
+   , 1, 1, 1, 1					   \
 }
 
 /* Like `CALL_USED_REGISTERS' except this macro doesn't require that
@@ -1095,7 +1095,7 @@ enum data_align { align_abi, align_opt, align_both };
    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
    0, 0						   \
-   , 0, 0, 0, 0, 0, 0				   \
+   , 0, 0, 0, 0					   \
 }
 
 #define TOTAL_ALTIVEC_REGS	(LAST_ALTIVEC_REGNO - FIRST_ALTIVEC_REGNO + 1)
@@ -1133,7 +1133,6 @@ enum data_align { align_abi, align_opt, align_both };
 	v19 - v14	(not saved or used for anything)
 	v31 - v20	(saved; order given to save least number)
 	vrsave, vscr	(fixed)
-	spe_acc, spefscr (fixed)
 	sfp		(fixed)
 	tfhar		(fixed)
 	tfiar		(fixed)
@@ -1179,7 +1178,7 @@ enum data_align { align_abi, align_opt, align_both };
    96, 95, 94, 93, 92, 91,					\
    108, 107, 106, 105, 104, 103, 102, 101, 100, 99, 98, 97,	\
    109, 110,							\
-   111, 112, 113, 114, 115, 116					\
+   111, 112, 113, 114						\
 }
 
 /* True if register is floating-point.  */
@@ -1351,7 +1350,7 @@ enum data_align { align_abi, align_opt, align_both };
 #define HARD_FRAME_POINTER_REGNUM 31
 
 /* Base register for access to local variables of the function.  */
-#define FRAME_POINTER_REGNUM 113
+#define FRAME_POINTER_REGNUM 111
 
 /* Base register for access to arguments of the function.  */
 #define ARG_POINTER_REGNUM 67
@@ -1404,8 +1403,6 @@ enum reg_class
   VSX_REGS,
   VRSAVE_REGS,
   VSCR_REGS,
-  SPE_ACC_REGS,
-  SPEFSCR_REGS,
   SPR_REGS,
   NON_SPECIAL_REGS,
   LINK_REGS,
@@ -1435,8 +1432,6 @@ enum reg_class
   "VSX_REGS",								\
   "VRSAVE_REGS",							\
   "VSCR_REGS",								\
-  "SPE_ACC_REGS",                                                       \
-  "SPEFSCR_REGS",                                                       \
   "SPR_REGS",								\
   "NON_SPECIAL_REGS",							\
   "LINK_REGS",								\
@@ -1460,9 +1455,9 @@ enum reg_class
   /* NO_REGS.  */							\
   { 0x00000000, 0x00000000, 0x00000000, 0x00000000 },			\
   /* BASE_REGS.  */							\
-  { 0xfffffffe, 0x00000000, 0x00000008, 0x00020000 },			\
+  { 0xfffffffe, 0x00000000, 0x00000008, 0x00008000 },			\
   /* GENERAL_REGS.  */							\
-  { 0xffffffff, 0x00000000, 0x00000008, 0x00020000 },			\
+  { 0xffffffff, 0x00000000, 0x00000008, 0x00008000 },			\
   /* FLOAT_REGS.  */							\
   { 0x00000000, 0xffffffff, 0x00000000, 0x00000000 },			\
   /* ALTIVEC_REGS.  */							\
@@ -1473,14 +1468,10 @@ enum reg_class
   { 0x00000000, 0x00000000, 0x00000000, 0x00002000 },			\
   /* VSCR_REGS.  */							\
   { 0x00000000, 0x00000000, 0x00000000, 0x00004000 },			\
-  /* SPE_ACC_REGS.  */							\
-  { 0x00000000, 0x00000000, 0x00000000, 0x00008000 },			\
-  /* SPEFSCR_REGS.  */							\
-  { 0x00000000, 0x00000000, 0x00000000, 0x00010000 },			\
   /* SPR_REGS.  */							\
-  { 0x00000000, 0x00000000, 0x00000000, 0x00040000 },			\
+  { 0x00000000, 0x00000000, 0x00000000, 0x00010000 },			\
   /* NON_SPECIAL_REGS.  */						\
-  { 0xffffffff, 0xffffffff, 0x00000008, 0x00020000 },			\
+  { 0xffffffff, 0xffffffff, 0x00000008, 0x00008000 },			\
   /* LINK_REGS.  */							\
   { 0x00000000, 0x00000000, 0x00000002, 0x00000000 },			\
   /* CTR_REGS.  */							\
@@ -1490,17 +1481,17 @@ enum reg_class
   /* SPECIAL_REGS.  */							\
   { 0x00000000, 0x00000000, 0x00000006, 0x00002000 },			\
   /* SPEC_OR_GEN_REGS.  */						\
-  { 0xffffffff, 0x00000000, 0x0000000e, 0x00022000 },			\
+  { 0xffffffff, 0x00000000, 0x0000000e, 0x0000a000 },			\
   /* CR0_REGS.  */							\
   { 0x00000000, 0x00000000, 0x00000010, 0x00000000 },			\
   /* CR_REGS.  */							\
   { 0x00000000, 0x00000000, 0x00000ff0, 0x00000000 },			\
   /* NON_FLOAT_REGS.  */						\
-  { 0xffffffff, 0x00000000, 0x00000ffe, 0x00020000 },			\
+  { 0xffffffff, 0x00000000, 0x00000ffe, 0x00008000 },			\
   /* CA_REGS.  */							\
   { 0x00000000, 0x00000000, 0x00001000, 0x00000000 },			\
   /* ALL_REGS.  */							\
-  { 0xffffffff, 0xffffffff, 0xfffffffe, 0x0007ffff }			\
+  { 0xffffffff, 0xffffffff, 0xfffffffe, 0x0001ffff }			\
 }
 
 /* The same information, inverted:
@@ -2429,12 +2420,10 @@ extern char rs6000_reg_names[][8];	/* register names (0 vs. %r0).  */
   &rs6000_reg_names[108][0],	/* v31  */				\
   &rs6000_reg_names[109][0],	/* vrsave  */				\
   &rs6000_reg_names[110][0],	/* vscr  */				\
-  &rs6000_reg_names[111][0],	/* spe_acc */				\
-  &rs6000_reg_names[112][0],	/* spefscr */				\
-  &rs6000_reg_names[113][0],	/* sfp  */				\
-  &rs6000_reg_names[114][0],	/* tfhar  */				\
-  &rs6000_reg_names[115][0],	/* tfiar  */				\
-  &rs6000_reg_names[116][0],	/* texasr  */				\
+  &rs6000_reg_names[111][0],	/* sfp  */				\
+  &rs6000_reg_names[112][0],	/* tfhar  */				\
+  &rs6000_reg_names[113][0],	/* tfiar  */				\
+  &rs6000_reg_names[114][0],	/* texasr  */				\
 }
 
 /* Table of additional register names to use in user input.  */
@@ -2465,7 +2454,6 @@ extern char rs6000_reg_names[][8];	/* register names (0 vs. %r0).  */
   {"v24",  101},{"v25",  102},{"v26",  103},{"v27",  104},      \
   {"v28",  105},{"v29",  106},{"v30",  107},{"v31",  108},      \
   {"vrsave", 109}, {"vscr", 110},				\
-  {"spe_acc", 111}, {"spefscr", 112},				\
   /* no additional names for: lr, ctr, ap */			\
   {"cr0",  68}, {"cr1",  69}, {"cr2",  70}, {"cr3",  71},	\
   {"cr4",  72}, {"cr5",  73}, {"cr6",  74}, {"cr7",  75},	\
@@ -2490,7 +2478,7 @@ extern char rs6000_reg_names[][8];	/* register names (0 vs. %r0).  */
   {"vs56", 101},{"vs57", 102},{"vs58", 103},{"vs59", 104},      \
   {"vs60", 105},{"vs61", 106},{"vs62", 107},{"vs63", 108},	\
   /* Transactional Memory Facility (HTM) Registers.  */		\
-  {"tfhar",  114}, {"tfiar",  115}, {"texasr",  116},		\
+  {"tfhar",  112}, {"tfiar",  113}, {"texasr",  114},		\
 }
 
 /* This is how to output an element of a case-vector that is relative.  */
