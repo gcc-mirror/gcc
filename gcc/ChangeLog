@@ -1,5 +1,11 @@
 2017-06-07  Carl Love  <cel@us.ibm.com>
 
+	PR target/80982
+	* config/rs6000/altivec.md (double<mode>2): Fix the implementation of
+	for BE.
+
+2017-06-07  Carl Love  <cel@us.ibm.com>
+
 	* config/rs6000/altivec.md: Fix argument swizzle in vec_doublel
 	support, Generate	doublehv for signed int/float for BE case only.
 
