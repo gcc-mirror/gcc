@@ -299,7 +299,7 @@
 (define_predicate "gpc_reg_operand"
   (match_operand 0 "register_operand")
 {
-  if ((TARGET_E500_DOUBLE || TARGET_SPE) && invalid_e500_subreg (op, mode))
+  if (TARGET_SPE && invalid_e500_subreg (op, mode))
     return 0;
 
   if (GET_CODE (op) == SUBREG)
@@ -331,7 +331,7 @@
 (define_predicate "int_reg_operand"
   (match_operand 0 "register_operand")
 {
-  if ((TARGET_E500_DOUBLE || TARGET_SPE) && invalid_e500_subreg (op, mode))
+  if (TARGET_SPE && invalid_e500_subreg (op, mode))
     return 0;
 
   if (GET_CODE (op) == SUBREG)
@@ -357,7 +357,7 @@
 (define_predicate "int_reg_operand_not_pseudo"
   (match_operand 0 "register_operand")
 {
-  if ((TARGET_E500_DOUBLE || TARGET_SPE) && invalid_e500_subreg (op, mode))
+  if (TARGET_SPE && invalid_e500_subreg (op, mode))
     return 0;
 
   if (GET_CODE (op) == SUBREG)
@@ -606,7 +606,7 @@
     return 0;
 
   /* Consider all constants with -msoft-float to be easy.  */
-  if ((TARGET_SOFT_FLOAT || TARGET_E500_SINGLE 
+  if ((TARGET_SOFT_FLOAT
       || (TARGET_HARD_FLOAT && (TARGET_SINGLE_FLOAT && ! TARGET_DOUBLE_FLOAT)))
       && mode != DImode)
     return 1;
@@ -1014,10 +1014,9 @@
 ;; Return 1 if the operand is either an easy FP constant or memory or reg.
 (define_predicate "reg_or_none500mem_operand"
   (if_then_else (match_code "mem")
-     (and (match_test "!TARGET_E500_DOUBLE")
-	  (ior (match_operand 0 "memory_operand")
-	       (ior (match_test "macho_lo_sum_memory_operand (op, mode)")
-		    (match_operand 0 "volatile_mem_operand"))))
+     (ior (match_operand 0 "memory_operand")
+	  (match_test "macho_lo_sum_memory_operand (op, mode)")
+	  (match_operand 0 "volatile_mem_operand"))
      (match_operand 0 "gpc_reg_operand")))
 
 ;; Return 1 if the operand is CONST_DOUBLE 0, register or memory operand.
@@ -1137,7 +1136,7 @@
     return 1;
 
   /* Do not allow invalid E500 subregs.  */
-  if ((TARGET_E500_DOUBLE || TARGET_SPE)
+  if (TARGET_SPE
       && GET_CODE (op) == SUBREG
       && invalid_e500_subreg (op, mode))
     return 0;
@@ -1205,7 +1204,7 @@
 (define_predicate "rs6000_nonimmediate_operand"
   (match_code "reg,subreg,mem")
 {
-  if ((TARGET_E500_DOUBLE || TARGET_SPE)
+  if (TARGET_SPE
       && GET_CODE (op) == SUBREG
       && invalid_e500_subreg (op, mode))
     return 0;

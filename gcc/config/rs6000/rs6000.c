@@ -2082,15 +2082,6 @@ rs6000_hard_regno_nregs_internal (int regno, machine_mode mode)
   else if (ALTIVEC_REGNO_P (regno))
     reg_size = UNITS_PER_ALTIVEC_WORD;
 
-  /* The value returned for SCmode in the E500 double case is 2 for
-     ABI compatibility; storing an SCmode value in a single register
-     would require function_arg and rs6000_spe_function_arg to handle
-     SCmode so as to pass the value correctly in a pair of
-     registers.  */
-  else if (TARGET_E500_DOUBLE && FLOAT_MODE_P (mode) && mode != SCmode
-	   && !DECIMAL_FLOAT_MODE_P (mode) && SPE_SIMD_REGNO_P (regno))
-    reg_size = UNITS_PER_FP_WORD;
-
   else
     reg_size = UNITS_PER_WORD;
 
@@ -2862,12 +2853,6 @@ rs6000_debug_reg_global (void)
   fprintf (stderr, DEBUG_FMT_S, "soft_float",
 	   (TARGET_SOFT_FLOAT ? "true" : "false"));
 
-  fprintf (stderr, DEBUG_FMT_S, "e500_single",
-	   (TARGET_E500_SINGLE ? "true" : "false"));
-
-  fprintf (stderr, DEBUG_FMT_S, "e500_double",
-	   (TARGET_E500_DOUBLE ? "true" : "false"));
-
   if (TARGET_LINK_STACK)
     fprintf (stderr, DEBUG_FMT_S, "link_stack", "true");
 
@@ -2989,8 +2974,7 @@ rs6000_setup_reg_addr_masks (void)
 		  && !complex_p
 		  && !small_int_vsx_p
 		  && (m2 != DFmode || !TARGET_UPPER_REGS_DF)
-		  && (m2 != SFmode || !TARGET_UPPER_REGS_SF)
-		  && !(TARGET_E500_DOUBLE && msize == 8))
+		  && (m2 != SFmode || !TARGET_UPPER_REGS_SF))
 		{
 		  addr_mask |= RELOAD_REG_PRE_INCDEC;
 
@@ -3737,9 +3721,6 @@ rs6000_init_hard_regno_mode_ok (bool global_init_p)
 	    = (GET_MODE_SIZE (m2) + reg_size2 - 1) / reg_size2;
 	}
     }
-
-  if (TARGET_E500_DOUBLE)
-    rs6000_class_max_nregs[DFmode][GENERAL_REGS] = 1;
 
   /* Calculate which modes to automatically generate code to use a the
      reciprocal divide and square root instructions.  In the future, possibly
@@ -5147,8 +5128,8 @@ rs6000_option_override_internal (bool global_init_p)
     case PROCESSOR_PPCE5500:
     case PROCESSOR_PPCE6500:
 
-      rs6000_single_float = TARGET_E500_SINGLE || TARGET_E500_DOUBLE;
-      rs6000_double_float = TARGET_E500_DOUBLE;
+      rs6000_single_float = 0;
+      rs6000_double_float = 0;
 
       rs6000_isa_flags &= ~OPTION_MASK_STRING;
 
@@ -5171,9 +5152,6 @@ rs6000_option_override_internal (bool global_init_p)
 	error ("target attribute or pragma changes double precision floating "
 	       "point");
     }
-
-  /* Detect invalid option combinations with E500.  */
-  CHECK_E500_OPTIONS;
 
   rs6000_always_hint = (rs6000_cpu != PROCESSOR_POWER4
 			&& rs6000_cpu != PROCESSOR_POWER5
@@ -8232,36 +8210,6 @@ rs6000_split_v4si_init (rtx operands[])
 bool
 invalid_e500_subreg (rtx op, machine_mode mode)
 {
-  if (TARGET_E500_DOUBLE)
-    {
-      /* Reject (subreg:SI (reg:DF)); likewise with subreg:DI or
-	 subreg:TI and reg:TF.  Decimal float modes are like integer
-	 modes (only low part of each register used) for this
-	 purpose.  */
-      if (GET_CODE (op) == SUBREG
-	  && (mode == SImode || mode == DImode || mode == TImode
-	      || mode == DDmode || mode == TDmode || mode == PTImode)
-	  && REG_P (SUBREG_REG (op))
-	  && (GET_MODE (SUBREG_REG (op)) == DFmode
-	      || GET_MODE (SUBREG_REG (op)) == TFmode
-	      || GET_MODE (SUBREG_REG (op)) == IFmode
-	      || GET_MODE (SUBREG_REG (op)) == KFmode))
-	return true;
-
-      /* Reject (subreg:DF (reg:DI)); likewise with subreg:TF and
-	 reg:TI.  */
-      if (GET_CODE (op) == SUBREG
-	  && (mode == DFmode || mode == TFmode || mode == IFmode
-	      || mode == KFmode)
-	  && REG_P (SUBREG_REG (op))
-	  && (GET_MODE (SUBREG_REG (op)) == DImode
-	      || GET_MODE (SUBREG_REG (op)) == TImode
-	      || GET_MODE (SUBREG_REG (op)) == PTImode
-	      || GET_MODE (SUBREG_REG (op)) == DDmode
-	      || GET_MODE (SUBREG_REG (op)) == TDmode))
-	return true;
-    }
-
   if (TARGET_SPE
       && GET_CODE (op) == SUBREG
       && mode == SImode
@@ -8291,13 +8239,6 @@ rs6000_data_alignment (tree type, unsigned int align, enum data_align how)
 	    }
 	  else if (align < 128)
 	    align = 128;
-	}
-      else if (TARGET_E500_DOUBLE
-	       && TREE_CODE (type) == REAL_TYPE
-	       && TYPE_MODE (type) == DFmode)
-	{
-	  if (align < 64)
-	    align = 64;
 	}
     }
 
@@ -8952,14 +8893,6 @@ rs6000_legitimate_offset_address_p (machine_mode mode, rtx x,
     case DFmode:
     case DDmode:
     case DImode:
-      /* On e500v2, we may have:
-
-	   (subreg:DF (mem:DI (plus (reg) (const_int))) 0).
-
-         Which gets addressed with evldd instructions.  */
-      if (TARGET_E500_DOUBLE)
-	return SPE_CONST_OFFSET_OK (offset);
-
       /* If we are using VSX scalar loads, restrict ourselves to reg+reg
 	 addressing.  */
       if (VECTOR_MEM_VSX_P (mode))
@@ -8979,10 +8912,6 @@ rs6000_legitimate_offset_address_p (machine_mode mode, rtx x,
     case TDmode:
     case TImode:
     case PTImode:
-      if (TARGET_E500_DOUBLE)
-	return (SPE_CONST_OFFSET_OK (offset)
-		&& SPE_CONST_OFFSET_OK (offset + 8));
-
       extra = 8;
       if (!worst_case)
 	break;
@@ -9070,9 +8999,6 @@ legitimate_lo_sum_address_p (machine_mode mode, rtx x, int strict)
     return false;
   /* quad word addresses are restricted, and we can't use LO_SUM.  */
   if (mode_supports_vsx_dform_quad (mode))
-    return false;
-  /* Restrict addressing for DI because of our SUBREG hackery.  */
-  if (TARGET_E500_DOUBLE && GET_MODE_SIZE (mode) > UNITS_PER_WORD)
     return false;
   x = XEXP (x, 1);
 
@@ -9190,8 +9116,7 @@ rs6000_legitimize_address (rtx x, rtx oldx ATTRIBUTE_UNUSED,
       && GET_CODE (XEXP (x, 1)) == CONST_INT
       && ((unsigned HOST_WIDE_INT) (INTVAL (XEXP (x, 1)) + 0x8000)
 	  >= 0x10000 - extra)
-      && !(SPE_VECTOR_MODE (mode)
-	   || (TARGET_E500_DOUBLE && GET_MODE_SIZE (mode) > UNITS_PER_WORD)))
+      && !SPE_VECTOR_MODE (mode))
     {
       HOST_WIDE_INT high_int, low_int;
       rtx sum;
@@ -9216,8 +9141,7 @@ rs6000_legitimize_address (rtx x, rtx oldx ATTRIBUTE_UNUSED,
       return gen_rtx_PLUS (Pmode, XEXP (x, 0),
 			   force_reg (Pmode, force_operand (XEXP (x, 1), 0)));
     }
-  else if (SPE_VECTOR_MODE (mode)
-	   || (TARGET_E500_DOUBLE && GET_MODE_SIZE (mode) > UNITS_PER_WORD))
+  else if (SPE_VECTOR_MODE (mode))
     {
       if (mode == DImode)
 	return x;
@@ -9981,7 +9905,6 @@ rs6000_legitimize_reload_address (rtx x, machine_mode mode,
       && CONST_INT_P (XEXP (x, 1))
       && reg_offset_p
       && !SPE_VECTOR_MODE (mode)
-      && !(TARGET_E500_DOUBLE && GET_MODE_SIZE (mode) > UNITS_PER_WORD)
       && (quad_offset_p || !VECTOR_MODE_P (mode) || VECTOR_MEM_NONE_P (mode)))
     {
       HOST_WIDE_INT val = INTVAL (XEXP (x, 1));
@@ -10240,8 +10163,7 @@ rs6000_legitimate_address_p (machine_mode mode, rtx x, bool reg_ok_strict)
   if (!FLOAT128_2REG_P (mode)
       && ((TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT)
 	  || TARGET_POWERPC64
-	  || (mode != DFmode && mode != DDmode)
-	  || (TARGET_E500_DOUBLE && mode != DDmode))
+	  || (mode != DFmode && mode != DDmode))
       && (TARGET_POWERPC64 || mode != DImode)
       && (mode != TImode || VECTOR_MEM_VSX_P (TImode))
       && mode != PTImode
@@ -11429,10 +11351,9 @@ rs6000_emit_move (rtx dest, rtx source, machine_mode mode)
    fit into 1, whereas DI still needs two.  */
 
 static bool
-rs6000_member_type_forces_blk (const_tree field, machine_mode mode)
+rs6000_member_type_forces_blk (const_tree field, machine_mode)
 {
-  return ((TARGET_SPE && TREE_CODE (TREE_TYPE (field)) == VECTOR_TYPE)
-	  || (TARGET_E500_DOUBLE && mode == DFmode));
+  return (TARGET_SPE && TREE_CODE (TREE_TYPE (field)) == VECTOR_TYPE);
 }
 
 /* Nonzero if we can use a floating-point register to pass this arg.  */
@@ -12547,42 +12468,6 @@ rs6000_function_arg_advance (cumulative_args_t cum, machine_mode mode,
 				 0);
 }
 
-static rtx
-spe_build_register_parallel (machine_mode mode, int gregno)
-{
-  rtx r1, r3, r5, r7;
-
-  switch (mode)
-    {
-    case DFmode:
-      r1 = gen_rtx_REG (DImode, gregno);
-      r1 = gen_rtx_EXPR_LIST (VOIDmode, r1, const0_rtx);
-      return gen_rtx_PARALLEL (mode, gen_rtvec (1, r1));
-
-    case DCmode:
-    case TFmode:
-      r1 = gen_rtx_REG (DImode, gregno);
-      r1 = gen_rtx_EXPR_LIST (VOIDmode, r1, const0_rtx);
-      r3 = gen_rtx_REG (DImode, gregno + 2);
-      r3 = gen_rtx_EXPR_LIST (VOIDmode, r3, GEN_INT (8));
-      return gen_rtx_PARALLEL (mode, gen_rtvec (2, r1, r3));
-
-    case TCmode:
-      r1 = gen_rtx_REG (DImode, gregno);
-      r1 = gen_rtx_EXPR_LIST (VOIDmode, r1, const0_rtx);
-      r3 = gen_rtx_REG (DImode, gregno + 2);
-      r3 = gen_rtx_EXPR_LIST (VOIDmode, r3, GEN_INT (8));
-      r5 = gen_rtx_REG (DImode, gregno + 4);
-      r5 = gen_rtx_EXPR_LIST (VOIDmode, r5, GEN_INT (16));
-      r7 = gen_rtx_REG (DImode, gregno + 6);
-      r7 = gen_rtx_EXPR_LIST (VOIDmode, r7, GEN_INT (24));
-      return gen_rtx_PARALLEL (mode, gen_rtvec (4, r1, r3, r5, r7));
-
-    default:
-      gcc_unreachable ();
-    }
-}
-
 /* Determine where to put a SIMD argument on the SPE.  */
 static rtx
 rs6000_spe_function_arg (const CUMULATIVE_ARGS *cum, machine_mode mode,
@@ -12590,23 +12475,6 @@ rs6000_spe_function_arg (const CUMULATIVE_ARGS *cum, machine_mode mode,
 {
   int gregno = cum->sysv_gregno;
 
-  /* On E500 v2, double arithmetic is done on the full 64-bit GPR, but
-     are passed and returned in a pair of GPRs for ABI compatibility.  */
-  if (TARGET_E500_DOUBLE && (mode == DFmode || mode == TFmode
-			     || mode == DCmode || mode == TCmode))
-    {
-      int n_words = rs6000_arg_size (mode, type);
-
-      /* Doubles go in an odd/even register pair (r5/r6, etc).  */
-      if (mode == DFmode)
-	gregno += (1 - gregno) & 1;
-
-      /* Multi-reg args are not split between registers and stack.  */
-      if (gregno + n_words - 1 > GP_ARG_MAX_REG)
-	return NULL_RTX;
-
-      return spe_build_register_parallel (mode, gregno);
-    }
   if (cum->stdarg)
     {
       int n_words = rs6000_arg_size (mode, type);
@@ -13099,12 +12967,7 @@ rs6000_function_arg (cumulative_args_t cum_v, machine_mode mode,
 	  return gen_rtx_REG (part_mode, GP_ARG_MIN_REG + align_words);
 	}
     }
-  else if (TARGET_SPE_ABI && TARGET_SPE
-	   && (SPE_VECTOR_MODE (mode)
-	       || (TARGET_E500_DOUBLE && (mode == DFmode
-					  || mode == DCmode
-					  || mode == TFmode
-					  || mode == TCmode))))
+  else if (TARGET_SPE_ABI && TARGET_SPE && SPE_VECTOR_MODE (mode))
     return rs6000_spe_function_arg (cum, mode, type);
 
   else if (abi == ABI_V4)
@@ -23350,16 +23213,6 @@ rs6000_cannot_change_mode_class (machine_mode from,
 	return false;
     }
 
-  if (TARGET_E500_DOUBLE
-      && ((((to) == DFmode) + ((from) == DFmode)) == 1
-	  || (((to) == TFmode) + ((from) == TFmode)) == 1
-	  || (((to) == IFmode) + ((from) == IFmode)) == 1
-	  || (((to) == KFmode) + ((from) == KFmode)) == 1
-	  || (((to) == DDmode) + ((from) == DDmode)) == 1
-	  || (((to) == TDmode) + ((from) == TDmode)) == 1
-	  || (((to) == DImode) + ((from) == DImode)) == 1))
-    return true;
-
   /* Since the VSX register set includes traditional floating point registers
      and altivec registers, just check for the size being different instead of
      trying to check whether the modes are vector modes.  Otherwise it won't
@@ -24220,7 +24073,7 @@ print_operand (FILE *file, rtx x, int code)
 	tmp = XEXP (x, 0);
 
 	/* Ugly hack because %y is overloaded.  */
-	if ((TARGET_SPE || TARGET_E500_DOUBLE)
+	if (TARGET_SPE
 	    && (GET_MODE_SIZE (GET_MODE (x)) == 8
 		|| FLOAT128_2REG_P (GET_MODE (x))
 		|| GET_MODE (x) == TImode
@@ -26562,8 +26415,6 @@ rs6000_split_multireg_move (rtx dst, rtx src)
 	((TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT) ? DFmode : SFmode);
   else if (ALTIVEC_REGNO_P (reg))
     reg_mode = V16QImode;
-  else if (TARGET_E500_DOUBLE && FLOAT128_2REG_P (mode))
-    reg_mode = DFmode;
   else
     reg_mode = word_mode;
   reg_mode_size = GET_MODE_SIZE (reg_mode);
@@ -27684,9 +27535,6 @@ spe_func_has_64bit_regs_p (void)
 
 	      if (SPE_VECTOR_MODE (mode))
 		return true;
-	      if (TARGET_E500_DOUBLE
-		  && (mode == DFmode || FLOAT128_2REG_P (mode)))
-		return true;
 	    }
 	}
     }
@@ -28635,7 +28483,6 @@ emit_frame_save (rtx frame_reg, machine_mode mode,
   /* Some cases that need register indexed addressing.  */
   gcc_checking_assert (!((TARGET_ALTIVEC_ABI && ALTIVEC_VECTOR_MODE (mode))
 			 || (TARGET_VSX && ALTIVEC_OR_VSX_VECTOR_MODE (mode))
-			 || (TARGET_E500_DOUBLE && mode == DFmode)
 			 || (TARGET_SPE_ABI
 			     && SPE_VECTOR_MODE (mode)
 			     && !SPE_CONST_OFFSET_OK (offset))));
@@ -28656,8 +28503,7 @@ gen_frame_mem_offset (machine_mode mode, rtx reg, int offset)
 
   int_rtx = GEN_INT (offset);
 
-  if ((TARGET_SPE_ABI && SPE_VECTOR_MODE (mode) && !SPE_CONST_OFFSET_OK (offset))
-      || (TARGET_E500_DOUBLE && mode == DFmode))
+  if (TARGET_SPE_ABI && SPE_VECTOR_MODE (mode) && !SPE_CONST_OFFSET_OK (offset))
     {
       offset_rtx = gen_rtx_REG (Pmode, FIXED_SCRATCH);
       emit_move_insn (offset_rtx, int_rtx);
@@ -38762,10 +38608,6 @@ rs6000_function_value (const_tree valtype,
 	   && TARGET_ALTIVEC && TARGET_ALTIVEC_ABI
 	   && ALTIVEC_OR_VSX_VECTOR_MODE (mode))
     regno = ALTIVEC_ARG_RETURN;
-  else if (TARGET_E500_DOUBLE && TARGET_HARD_FLOAT
-	   && (mode == DFmode || mode == DCmode
-	       || FLOAT128_IBM_P (mode) || mode == TCmode))
-    return spe_build_register_parallel (mode, GP_ARG_RETURN);
   else
     regno = GP_ARG_RETURN;
 
@@ -38798,10 +38640,6 @@ rs6000_libcall_value (machine_mode mode)
     regno = ALTIVEC_ARG_RETURN;
   else if (COMPLEX_MODE_P (mode) && targetm.calls.split_complex_arg)
     return rs6000_complex_function_value (mode);
-  else if (TARGET_E500_DOUBLE && TARGET_HARD_FLOAT
-	   && (mode == DFmode || mode == DCmode
-	       || FLOAT128_IBM_P (mode) || mode == TCmode))
-    return spe_build_register_parallel (mode, GP_ARG_RETURN);
   else
     regno = GP_ARG_RETURN;
 
@@ -38904,9 +38742,7 @@ rs6000_dwarf_register_span (rtx reg)
 
   if (TARGET_SPE
       && regno < 32
-      && (SPE_VECTOR_MODE (GET_MODE (reg))
-	  || (TARGET_E500_DOUBLE && FLOAT_MODE_P (mode)
-	      && mode != SFmode && mode != SDmode && mode != SCmode)))
+      && SPE_VECTOR_MODE (GET_MODE (reg)))
     ;
   else
     return NULL_RTX;

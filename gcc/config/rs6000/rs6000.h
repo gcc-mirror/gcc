@@ -572,9 +572,6 @@ extern int rs6000_vector_align[];
 #define TARGET_SPE_ABI 0
 #define TARGET_SPE 0
 #define TARGET_ISEL64 (TARGET_ISEL && TARGET_POWERPC64)
-#define TARGET_E500_SINGLE 0
-#define TARGET_E500_DOUBLE 0
-#define CHECK_E500_OPTIONS do { } while (0)
 
 /* ISA 2.01 allowed FCFID to be done in 32-bit, previously it was 64-bit only.
    Enable 32-bit fcfid's on any of the switches for newer ISA machines or
@@ -1276,13 +1273,9 @@ enum data_align { align_abi, align_opt, align_both };
      && ((MODE) == VOIDmode || ALTIVEC_OR_VSX_VECTOR_MODE (MODE))	\
      && FP_REGNO_P (REGNO)						\
    ? V2DFmode								\
-   : TARGET_E500_DOUBLE && (MODE) == SImode				\
-   ? SImode								\
-   : TARGET_E500_DOUBLE && ((MODE) == VOIDmode || (MODE) == DFmode)	\
+   : FLOAT128_IBM_P (MODE) && FP_REGNO_P (REGNO)			\
    ? DFmode								\
-   : !TARGET_E500_DOUBLE && FLOAT128_IBM_P (MODE) && FP_REGNO_P (REGNO)	\
-   ? DFmode								\
-   : !TARGET_E500_DOUBLE && (MODE) == TDmode && FP_REGNO_P (REGNO)	\
+   : (MODE) == TDmode && FP_REGNO_P (REGNO)				\
    ? DImode								\
    : choose_hard_reg_mode ((REGNO), (NREGS), false))
 
