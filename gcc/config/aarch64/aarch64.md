@@ -4973,14 +4973,16 @@
    (match_operand:SF 2 "register_operand")]
   "TARGET_FLOAT && TARGET_SIMD"
 {
-  rtx mask = gen_reg_rtx (DImode);
+  rtx v_bitmask = gen_reg_rtx (V2SImode);
 
   /* Juggle modes to get us in to a vector mode for BSL.  */
-  rtx op1 = lowpart_subreg (V2SFmode, operands[1], SFmode);
+  rtx op1 = lowpart_subreg (DImode, operands[1], SFmode);
   rtx op2 = lowpart_subreg (V2SFmode, operands[2], SFmode);
   rtx tmp = gen_reg_rtx (V2SFmode);
-  emit_move_insn (mask, GEN_INT (HOST_WIDE_INT_1U << 31));
-  emit_insn (gen_aarch64_simd_bslv2sf (tmp, mask, op2, op1));
+  emit_move_insn (v_bitmask,
+		  aarch64_simd_gen_const_vector_dup (V2SImode,
+						     HOST_WIDE_INT_M1U << 31));
+  emit_insn (gen_aarch64_simd_bslv2sf (tmp, v_bitmask, op2, op1));
   emit_move_insn (operands[0], lowpart_subreg (SFmode, tmp, V2SFmode));
   DONE;
 }
