@@ -1,3 +1,8 @@
+2017-06-07  Nathan Sidwell  <nathan@acm.org>
+
+	* class.c (layout_class_type): Restructure overlong-bitfield tpe
+	search.
+
 2017-06-07  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR c++/80990
