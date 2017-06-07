@@ -141,10 +141,10 @@ ucontext_for (struct _Unwind_Context *context)
     {
       /* unix_64 */
       if (*(ra - 6) == 0x7d000164)  /* mtmsrd  r8 */
-        {
-          /* AIX 6.1, 7.1 and 7.2 */
-          return (ucontext_t *)(context->cfa + 0x70);
-        }
+	{
+	  /* AIX 6.1, 7.1 and 7.2 */
+	  return (ucontext_t *)(context->cfa + 0x70);
+	}
     }
 #else
   if (*(ra - 5) == 0x4c00012c     /* isync             */
