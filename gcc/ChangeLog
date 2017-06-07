@@ -1,5 +1,11 @@
 2017-06-07  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	* config/rs6000/rs6000.c (rs6000_option_override_internal): Delete
+	handling of SPE flags.
+	* config/rs6000/rs6000.opt (-mspe, -mspe=no, -mspe=yes): Delete.
+
+2017-06-07  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	* config/rs6000/rs6000-common.c (rs6000_handle_option): Remove
 	SPE ABI handling.
 	* config/rs6000/paired.md (paired_negv2sf2): Rename to negv2sf2.

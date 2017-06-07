@@ -353,21 +353,9 @@ misel=yes
 Target RejectNegative Alias(misel)
 Deprecated option.  Use -misel instead.
 
-mspe
-Target Var(rs6000_spe) Save
-Generate SPE SIMD instructions on E500.
-
 mpaired
 Target Var(rs6000_paired_float) Save
 Generate PPC750CL paired-single instructions.
-
-mspe=no
-Target RejectNegative Alias(mspe) NegativeAlias
-Deprecated option.  Use -mno-spe instead.
-
-mspe=yes
-Target RejectNegative Alias(mspe)
-Deprecated option.  Use -mspe instead.
 
 mdebug=
 Target RejectNegative Joined

@@ -4190,24 +4190,6 @@ rs6000_option_override_internal (bool global_init_p)
   gcc_assert (tune_index >= 0);
   rs6000_cpu = processor_target_table[tune_index].processor;
 
-  /* Pick defaults for SPE related control flags.  Do this early to make sure
-     that the TARGET_ macros are representative ASAP.  */
-  {
-    int spe_capable_cpu =
-      (rs6000_cpu == PROCESSOR_PPC8540
-       || rs6000_cpu == PROCESSOR_PPC8548);
-
-    if (!global_options_set.x_rs6000_spe)
-      rs6000_spe = spe_capable_cpu;
-  }
-
-  if (global_options_set.x_rs6000_spe && rs6000_spe)
-    error ("not configured for SPE instruction set");
-
-  if (main_target_opt != NULL
-      && main_target_opt->x_rs6000_spe != rs6000_spe)
-    error ("target attribute or pragma changes SPE ABI");
-
   if (rs6000_cpu == PROCESSOR_PPCE300C2 || rs6000_cpu == PROCESSOR_PPCE300C3
       || rs6000_cpu == PROCESSOR_PPCE500MC || rs6000_cpu == PROCESSOR_PPCE500MC64
       || rs6000_cpu == PROCESSOR_PPCE5500)
