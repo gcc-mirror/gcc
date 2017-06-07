@@ -1,5 +1,19 @@
 2017-06-07  Bin Cheng  <bin.cheng@arm.com>
 
+	* graphds.c (add_edge): Intitialize edge's attached data.
+	(foll_in_subgraph, dfs_fst_edge, dfs_next_edge): New function
+	pointer parameter.  Call pointed function on each edge during
+	graph traversing.  Skip traversing the edge when the function
+	returns true.
+	(graphds_dfs, graphds_scc): Ditto.
+	(for_each_edge): New parameter.  Pass the new parameter to callback
+	function.
+	* graphds.h (skip_edge_callback): New function pointer type.
+	(graphds_dfs, graphds_scc): New function pointer parameter.
+	(graphds_edge_callback, for_each_edge): New parameter.
+
+2017-06-07  Bin Cheng  <bin.cheng@arm.com>
+
 	* tree-vect-data-refs.c (vect_mark_for_runtime_alias_test): Factor
 	out code checking if runtime alias check is possible to below ...
 	Call the new function.
