@@ -1,3 +1,10 @@
+2017-06-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/81002
+	* include/bits/regex_compiler.h (__compile_nfa): Add template argument
+	list to specify traits type.
+	* testsuite/28_regex/basic_regex/ctors/basic/iter.cc: New.
+
 2017-05-19  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/80796
