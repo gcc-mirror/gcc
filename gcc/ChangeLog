@@ -1,3 +1,10 @@
+2017-06-06  Jan Hubicka  <hubicka@ucw.cz>
+
+	* cfgbuild.c (find_bb_boundaries): Initialize profile of split blocks.
+	(compute_outgoing_frequencies): Also initialize zero counts.
+	(find_many_sub_basic_blocks): Do not produce uninitialized profile
+	around loops; preserve more of profile when nothing changes.
+
 2017-06-06  Jim Wilson  <jim.wilson@linaro.org>
 
 	* config/aarch64/aarch64-cost-tables.h (qdf24xx_extra_costs): Move to
