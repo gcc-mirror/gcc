@@ -25262,13 +25262,12 @@ This option instructs GCC to use 128-bit AVX instructions instead of
 
 @item -mcx16
 @opindex mcx16
-This option enables GCC to generate @code{CMPXCHG16B} instructions.
-@code{CMPXCHG16B} allows for atomic operations on 128-bit double quadword
-(or oword) data types.  
-This is useful for high-resolution counters that can be updated
-by multiple processors (or cores).  This instruction is generated as part of
-atomic built-in functions: see @ref{__sync Builtins} or
-@ref{__atomic Builtins} for details.
+This option enables GCC to generate @code{CMPXCHG16B} instructions in 64-bit
+code to implement compare-and-exchange operations on 16-byte aligned 128-bit
+objects.  This is useful for atomic updates of data structures exceeding one
+machine word in size.  The compiler uses this instruction to implement
+@ref{__sync Builtins}.  However, for @ref{__atomic Builtins} operating on
+128-bit integers, a library call is always used.
 
 @item -msahf
 @opindex msahf
