@@ -1,5 +1,10 @@
 2017-06-07  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	* config/rs6000/rs6000-protos.h (output_e500_flip_gt_bit): Delete.
+	* config/rs6000/rs6000.c: Ditto.
+
+2017-06-07  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	* config/rs6000/predicated.md (rs6000_cbranch_operator): Delete.
 	* config/rs6000/rs6000.md: Replace rs6000_cbranch_operator by
 	comparison_operator.
