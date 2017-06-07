@@ -1,5 +1,12 @@
 2017-06-07  Bin Cheng  <bin.cheng@arm.com>
 
+	* tree-vect-loop-manip.c (vect_do_peeling): Don't skip vector loop
+	if versioning is required.
+	* tree-vect-loop.c (vect_analyze_loop_2): Merge niter check for loop
+	peeling with the check for versioning.
+
+2017-06-07  Bin Cheng  <bin.cheng@arm.com>
+
 	* tree-vectorizer.h (vect_build_loop_niters): New parameter.
 	* tree-vect-loop-manip.c (vect_build_loop_niters): New parameter.
 	Set true to new parameter if new ssa variable is defined.

@@ -2220,6 +2220,36 @@ start_over:
         }
     }
 
+  /* During peeling, we need to check if number of loop iterations is
+     enough for both peeled prolog loop and vector loop.  This check
+     can be merged along with threshold check of loop versioning, so
+     increase threshold for this case if necessary.  */
+  if (LOOP_REQUIRES_VERSIONING (loop_vinfo)
+      && (LOOP_VINFO_PEELING_FOR_GAPS (loop_vinfo)
+	  || LOOP_VINFO_PEELING_FOR_NITER (loop_vinfo)))
+    {
+      unsigned niters_th;
+
+      /* Niters for peeled prolog loop.  */
+      if (LOOP_VINFO_PEELING_FOR_ALIGNMENT (loop_vinfo) < 0)
+	{
+	  struct data_reference *dr = LOOP_VINFO_UNALIGNED_DR (loop_vinfo);
+	  tree vectype = STMT_VINFO_VECTYPE (vinfo_for_stmt (DR_STMT (dr)));
+
+	  niters_th = TYPE_VECTOR_SUBPARTS (vectype) - 1;
+	}
+      else
+	niters_th = LOOP_VINFO_PEELING_FOR_ALIGNMENT (loop_vinfo);
+
+      /* Niters for at least one iteration of vectorized loop.  */
+      niters_th += LOOP_VINFO_VECT_FACTOR (loop_vinfo);
+      /* One additional iteration because of peeling for gap.  */
+      if (!LOOP_VINFO_PEELING_FOR_GAPS (loop_vinfo))
+	niters_th++;
+      if (LOOP_VINFO_COST_MODEL_THRESHOLD (loop_vinfo) < niters_th)
+	LOOP_VINFO_COST_MODEL_THRESHOLD (loop_vinfo) = niters_th;
+    }
+
   gcc_assert (vectorization_factor
 	      == (unsigned)LOOP_VINFO_VECT_FACTOR (loop_vinfo));
 
