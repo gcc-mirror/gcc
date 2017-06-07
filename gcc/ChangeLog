@@ -1,5 +1,28 @@
 2017-06-07  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	* config/rs6000/darwin.h (REGISTER_NAMES): Delete the SPE_ACC and
+	SPEFSCR registers.
+	* config/rs6000/rs6000.c (rs6000_reg_names, alt_reg_names): Ditto.
+	(enum rs6000_reg_type): Delete SPE_ACC_TYPE and SPEFSCR_REG_TYPE.
+	(rs6000_debug_reg_global): Adjust.
+	(rs6000_init_hard_regno_mode_ok): Adjust.
+	(rs6000_dbx_register_number): Adjust.
+	* config/rs6000/rs6000.h (FIRST_PSEUDO_REGISTER): Change to 115.
+	(FIXED_REGISTERS, CALL_USED_REGISTERS, CALL_REALLY_USED_REGISTERS):
+	Remove SPE_ACC and SPEFSCR.
+	(REG_ALLOC_ORDER): Ditto.
+	(FRAME_POINTER_REGNUM): Change to 111.
+	(enum reg_class): Remove the SPE_ACC and SPEFSCR registers.
+	(REG_CLASS_NAMES): Ditto.
+	(REG_CLASS_CONTENTS): Delete the SPE_ACC and SPEFSCR registers.
+	(REGISTER_NAMES): Ditto.
+	(ADDITIONAL_REG_NAMES): Ditto.
+	(rs6000_reg_names): Ditto.
+	* config/rs6000/rs6000.md: Renumber some register number
+	define_constants.
+
+2017-06-07  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	* config/rs6000/darwin.h (REGISTER_NAMES): Delete the SPE high
 	registers.
 	* config/rs6000/rs6000.c (rs6000_reg_names, alt_reg_names): Ditto.

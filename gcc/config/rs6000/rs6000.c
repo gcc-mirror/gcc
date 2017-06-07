@@ -437,8 +437,6 @@ enum rs6000_reg_type {
   FPR_REG_TYPE,
   SPR_REG_TYPE,
   CR_REG_TYPE,
-  SPE_ACC_TYPE,
-  SPEFSCR_REG_TYPE
 };
 
 /* Map register class to register type.  */
@@ -1502,8 +1500,6 @@ char rs6000_reg_names[][8] =
       "16", "17", "18", "19", "20", "21", "22", "23",
       "24", "25", "26", "27", "28", "29", "30", "31",
       "vrsave", "vscr",
-      /* SPE registers.  */
-      "spe_acc", "spefscr",
       /* Soft frame pointer.  */
       "sfp",
       /* HTM SPR registers.  */
@@ -1530,8 +1526,6 @@ static const char alt_reg_names[][8] =
   "%v16", "%v17", "%v18", "%v19", "%v20", "%v21", "%v22", "%v23",
   "%v24", "%v25", "%v26", "%v27", "%v28", "%v29", "%v30", "%v31",
   "vrsave", "vscr",
-  /* SPE registers.  */
-  "spe_acc", "spefscr",
   /* Soft frame pointer.  */
   "sfp",
   /* HTM SPR registers.  */
@@ -2514,8 +2508,6 @@ rs6000_debug_reg_global (void)
   rs6000_debug_reg_print (CA_REGNO, CA_REGNO, "ca");
   rs6000_debug_reg_print (VRSAVE_REGNO, VRSAVE_REGNO, "vrsave");
   rs6000_debug_reg_print (VSCR_REGNO, VSCR_REGNO, "vscr");
-  rs6000_debug_reg_print (SPE_ACC_REGNO, SPE_ACC_REGNO, "spe_a");
-  rs6000_debug_reg_print (SPEFSCR_REGNO, SPEFSCR_REGNO, "spe_f");
 
   fputs ("\nVirtual/stack/frame registers:\n", stderr);
   for (v = 0; v < ARRAY_SIZE (virtual_regs); v++)
@@ -3024,8 +3016,6 @@ rs6000_init_hard_regno_mode_ok (bool global_init_p)
   rs6000_regno_regclass[CA_REGNO] = NO_REGS;
   rs6000_regno_regclass[VRSAVE_REGNO] = VRSAVE_REGS;
   rs6000_regno_regclass[VSCR_REGNO] = VRSAVE_REGS;
-  rs6000_regno_regclass[SPE_ACC_REGNO] = SPE_ACC_REGS;
-  rs6000_regno_regclass[SPEFSCR_REGNO] = SPEFSCR_REGS;
   rs6000_regno_regclass[TFHAR_REGNO] = SPR_REGS;
   rs6000_regno_regclass[TFIAR_REGNO] = SPR_REGS;
   rs6000_regno_regclass[TEXASR_REGNO] = SPR_REGS;
@@ -3048,8 +3038,6 @@ rs6000_init_hard_regno_mode_ok (bool global_init_p)
   reg_class_to_reg_type[(int)LINK_OR_CTR_REGS] = SPR_REG_TYPE;
   reg_class_to_reg_type[(int)CR_REGS] = CR_REG_TYPE;
   reg_class_to_reg_type[(int)CR0_REGS] = CR_REG_TYPE;
-  reg_class_to_reg_type[(int)SPE_ACC_REGS] = SPE_ACC_TYPE;
-  reg_class_to_reg_type[(int)SPEFSCR_REGS] = SPEFSCR_REG_TYPE;
 
   if (TARGET_VSX)
     {
@@ -37481,10 +37469,6 @@ rs6000_dbx_register_number (unsigned int regno, unsigned int format)
     return 356;
   if (regno == VSCR_REGNO)
     return 67;
-  if (regno == SPE_ACC_REGNO)
-    return 99;
-  if (regno == SPEFSCR_REGNO)
-    return 612;
 #endif
   return regno;
 }
