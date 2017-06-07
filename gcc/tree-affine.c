@@ -24,6 +24,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "rtl.h"
 #include "tree.h"
 #include "gimple.h"
+#include "ssa.h"
 #include "tree-pretty-print.h"
 #include "fold-const.h"
 #include "tree-affine.h"
@@ -392,6 +393,30 @@ tree_to_aff_combination (tree expr, tree type, aff_tree *comb)
 		expr = fold_build2 (icode, otype, op0, op1);
 		tree_to_aff_combination (expr, type, comb);
 		return;
+	      }
+	    wide_int minv, maxv;
+	    /* If inner type has wrapping overflow behavior, fold conversion
+	       for below case:
+		 (T1)(X - CST) -> (T1)X - (T1)CST
+	       if X - CST doesn't overflow by range information.  Also handle
+	       (T1)(X + CST) as (T1)(X - (-CST)).  */
+	    if (TYPE_UNSIGNED (itype)
+		&& TYPE_OVERFLOW_WRAPS (itype)
+		&& TREE_CODE (op0) == SSA_NAME
+		&& TREE_CODE (op1) == INTEGER_CST
+		&& icode != MULT_EXPR
+		&& get_range_info (op0, &minv, &maxv) == VR_RANGE)
+	      {
+		if (icode == PLUS_EXPR)
+		  op1 = wide_int_to_tree (itype, wi::neg (op1));
+		if (wi::geu_p (minv, op1))
+		  {
+		    op0 = fold_convert (otype, op0);
+		    op1 = fold_convert (otype, op1);
+		    expr = fold_build2 (MINUS_EXPR, otype, op0, op1);
+		    tree_to_aff_combination (expr, type, comb);
+		    return;
+		  }
 	      }
 	  }
       }
