@@ -196,7 +196,7 @@ struct trace
 
 /* Maximum frequency and count of one of the entry blocks.  */
 static int max_entry_frequency;
-static gcov_type max_entry_count;
+static profile_count max_entry_count;
 
 /* Local function prototypes.  */
 static void find_traces (int *, struct trace *);
@@ -286,14 +286,14 @@ find_traces (int *n_traces, struct trace *traces)
 
   /* Insert entry points of function into heap.  */
   max_entry_frequency = 0;
-  max_entry_count = 0;
+  max_entry_count = profile_count::zero ();
   FOR_EACH_EDGE (e, ei, ENTRY_BLOCK_PTR_FOR_FN (cfun)->succs)
     {
       bbd[e->dest->index].heap = heap;
       bbd[e->dest->index].node = heap->insert (bb_to_key (e->dest), e->dest);
       if (e->dest->frequency > max_entry_frequency)
 	max_entry_frequency = e->dest->frequency;
-      if (e->dest->count > max_entry_count)
+      if (e->dest->count.initialized_p () && e->dest->count > max_entry_count)
 	max_entry_count = e->dest->count;
     }
 
@@ -306,9 +306,9 @@ find_traces (int *n_traces, struct trace *traces)
 	fprintf (dump_file, "STC - round %d\n", i + 1);
 
       if (max_entry_count < INT_MAX / 1000)
-	count_threshold = max_entry_count * exec_threshold[i] / 1000;
+	count_threshold = max_entry_count.to_gcov_type () * exec_threshold[i] / 1000;
       else
-	count_threshold = max_entry_count / 1000 * exec_threshold[i];
+	count_threshold = max_entry_count.to_gcov_type () / 1000 * exec_threshold[i];
 
       find_traces_1_round (REG_BR_PROB_BASE * branch_threshold[i] / 1000,
 			   max_entry_frequency * exec_threshold[i] / 1000,
@@ -346,7 +346,7 @@ rotate_loop (edge back_edge, struct trace *trace, int trace_n)
   basic_block best_bb = NULL;
   edge best_edge = NULL;
   int best_freq = -1;
-  gcov_type best_count = -1;
+  profile_count best_count = profile_count::uninitialized ();
   /* The best edge is preferred when its destination is not visited yet
      or is a start block of some trace.  */
   bool is_preferred = false;
@@ -375,7 +375,8 @@ rotate_loop (edge back_edge, struct trace *trace, int trace_n)
 		  if (freq > best_freq || e->count > best_count)
 		    {
 		      best_freq = freq;
-		      best_count = e->count;
+		      if (e->count.initialized_p ())
+		        best_count = e->count;
 		      best_edge = e;
 		      best_bb = bb;
 		    }
@@ -1068,10 +1069,10 @@ connect_traces (int n_traces, struct trace *traces)
   bool for_size = optimize_function_for_size_p (cfun);
 
   freq_threshold = max_entry_frequency * DUPLICATION_THRESHOLD / 1000;
-  if (max_entry_count < INT_MAX / 1000)
-    count_threshold = max_entry_count * DUPLICATION_THRESHOLD / 1000;
+  if (max_entry_count.to_gcov_type () < INT_MAX / 1000)
+    count_threshold = max_entry_count.to_gcov_type () * DUPLICATION_THRESHOLD / 1000;
   else
-    count_threshold = max_entry_count / 1000 * DUPLICATION_THRESHOLD;
+    count_threshold = max_entry_count.to_gcov_type () / 1000 * DUPLICATION_THRESHOLD;
 
   connected = XCNEWVEC (bool, n_traces);
   last_trace = -1;
@@ -1495,7 +1496,7 @@ sanitize_hot_paths (bool walk_up, unsigned int cold_bb_count,
       edge_iterator ei;
       int highest_probability = 0;
       int highest_freq = 0;
-      gcov_type highest_count = 0;
+      profile_count highest_count = profile_count::uninitialized ();
       bool found = false;
 
       /* Walk the preds/succs and check if there is at least one already
@@ -1540,7 +1541,7 @@ sanitize_hot_paths (bool walk_up, unsigned int cold_bb_count,
           /* Select the hottest edge using the edge count, if it is non-zero,
              then fallback to the edge frequency and finally the edge
              probability.  */
-          if (highest_count)
+          if (highest_count > 0)
             {
               if (e->count < highest_count)
                 continue;

@@ -402,7 +402,9 @@ ipa_merge_profiles (struct cgraph_node *dst,
   if (src->profile_id && !dst->profile_id)
     dst->profile_id = src->profile_id;
 
-  if (!dst->count)
+  /* FIXME when we merge in unknown profile, we ought to set counts as
+     unsafe.  */
+  if (!dst->count.initialized_p ())
     return;
   if (symtab->dump_file)
     {
@@ -543,7 +545,7 @@ ipa_merge_profiles (struct cgraph_node *dst,
       for (e = dst->indirect_calls, e2 = src->indirect_calls; e;
 	   e2 = (e2 ? e2->next_callee : NULL), e = e->next_callee)
 	{
-	  gcov_type count = gimple_bb (e->call_stmt)->count;
+	  profile_count count = gimple_bb (e->call_stmt)->count;
 	  int freq = compute_call_stmt_bb_frequency
 			(dst->decl,
 			 gimple_bb (e->call_stmt));
@@ -561,7 +563,8 @@ ipa_merge_profiles (struct cgraph_node *dst,
 	      gcc_assert (e == indirect);
 	      if (e2 && e2->speculative)
 	        e2->speculative_call_info (direct2, indirect2, ref);
-	      if (indirect->count || direct->count)
+	      if (indirect->count > profile_count::zero ()
+		  || direct->count > profile_count::zero ())
 		{
 		  /* We should mismatch earlier if there is no matching
 		     indirect edge.  */
@@ -594,8 +597,8 @@ ipa_merge_profiles (struct cgraph_node *dst,
 			   indirect->count += indirect2->count;
 			}
 		    }
-		  int  prob = RDIV (direct->count * REG_BR_PROB_BASE ,
-				    direct->count + indirect->count);
+		  int  prob = direct->count.probability_in (direct->count
+							    + indirect->count);
 		  direct->frequency = RDIV (freq * prob, REG_BR_PROB_BASE);
 		  indirect->frequency = RDIV (freq * (REG_BR_PROB_BASE - prob),
 					      REG_BR_PROB_BASE);
@@ -613,7 +616,7 @@ ipa_merge_profiles (struct cgraph_node *dst,
 	      e2->speculative_call_info (direct, indirect, ref);
 	      e->count = count;
 	      e->frequency = freq;
-	      int prob = RDIV (direct->count * REG_BR_PROB_BASE, e->count);
+	      int prob = direct->count.probability_in (e->count);
 	      e->make_speculative (direct->callee, direct->count,
 				   RDIV (freq * prob, REG_BR_PROB_BASE));
 	    }

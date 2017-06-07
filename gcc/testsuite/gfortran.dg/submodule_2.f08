@@ -98,5 +98,3 @@
    if (any (arg%greeting .ne. ["adieu, people!", "adieu, people!"])) call abort
  contains
  end program
-! { dg-final { cleanup-submodules "foo_interface@foo_interface_son" } }
-! { dg-final { cleanup-submodules "foo_interface@foo_interface_daughter" } }

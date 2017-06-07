@@ -34,6 +34,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-iterator.h"
 #include "stor-layout.h"
 #include "output.h"
+#include "basic-block.h"
 #include "cfg.h"
 #include "function.h"
 #include "fold-const.h"

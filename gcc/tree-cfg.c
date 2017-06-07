@@ -1048,10 +1048,27 @@ gimple_find_sub_bbs (gimple_seq seq, gimple_stmt_iterator *gsi)
   while (bb != afterbb)
     {
       struct omp_region *cur_region = NULL;
+      profile_count cnt = profile_count::zero ();
+      int freq = 0;
+
       int cur_omp_region_idx = 0;
       int mer = make_edges_bb (bb, &cur_region, &cur_omp_region_idx);
       gcc_assert (!mer && !cur_region);
       add_bb_to_loop (bb, afterbb->loop_father);
+
+      edge e;
+      edge_iterator ei;
+      FOR_EACH_EDGE (e, ei, bb->preds)
+	{
+	  cnt += e->count;
+	  freq += EDGE_FREQUENCY (e);
+	}
+      bb->count = cnt;
+      bb->frequency = freq;
+      tree_guess_outgoing_edge_probabilities (bb);
+      FOR_EACH_EDGE (e, ei, bb->succs)
+	e->count = bb->count.apply_probability (e->probability);
+
       bb = bb->next_bb;
     }
   return true;
@@ -6200,7 +6217,8 @@ gimple_duplicate_sese_region (edge entry, edge exit,
   vec<basic_block> doms;
   edge redirected;
   int total_freq = 0, entry_freq = 0;
-  gcov_type total_count = 0, entry_count = 0;
+  profile_count total_count = profile_count::uninitialized ();
+  profile_count entry_count = profile_count::uninitialized ();
 
   if (!can_copy_bbs_p (region, n_region))
     return false;
@@ -6257,7 +6275,7 @@ gimple_duplicate_sese_region (edge entry, edge exit,
       doms = get_dominated_by_region (CDI_DOMINATORS, region, n_region);
     }
 
-  if (entry->dest->count)
+  if (entry->dest->count.initialized_p ())
     {
       total_count = entry->dest->count;
       entry_count = entry->count;
@@ -6266,7 +6284,7 @@ gimple_duplicate_sese_region (edge entry, edge exit,
       if (entry_count > total_count)
 	entry_count = total_count;
     }
-  else
+  if (!(total_count > 0) || !(entry_count > 0))
     {
       total_freq = entry->dest->frequency;
       entry_freq = EDGE_FREQUENCY (entry);
@@ -6280,13 +6298,13 @@ gimple_duplicate_sese_region (edge entry, edge exit,
 
   copy_bbs (region, n_region, region_copy, &exit, 1, &exit_copy, loop,
 	    split_edge_bb_loc (entry), update_dominance);
-  if (total_count)
+  if (total_count > 0 && entry_count > 0)
     {
-      scale_bbs_frequencies_gcov_type (region, n_region,
-				       total_count - entry_count,
-				       total_count);
-      scale_bbs_frequencies_gcov_type (region_copy, n_region, entry_count,
-				       total_count);
+      scale_bbs_frequencies_profile_count (region, n_region,
+				           total_count - entry_count,
+				           total_count);
+      scale_bbs_frequencies_profile_count (region_copy, n_region, entry_count,
+				           total_count);
     }
   else
     {
@@ -6383,7 +6401,8 @@ gimple_duplicate_sese_tail (edge entry ATTRIBUTE_UNUSED, edge exit ATTRIBUTE_UNU
   basic_block switch_bb, entry_bb, nentry_bb;
   vec<basic_block> doms;
   int total_freq = 0, exit_freq = 0;
-  gcov_type total_count = 0, exit_count = 0;
+  profile_count total_count = profile_count::uninitialized (),
+		exit_count = profile_count::uninitialized ();
   edge exits[2], nexits[2], e;
   gimple_stmt_iterator gsi;
   gimple *cond_stmt;
@@ -6426,7 +6445,7 @@ gimple_duplicate_sese_tail (edge entry ATTRIBUTE_UNUSED, edge exit ATTRIBUTE_UNU
      inside.  */
   doms = get_dominated_by_region (CDI_DOMINATORS, region, n_region);
 
-  if (exit->src->count)
+  if (exit->src->count > 0)
     {
       total_count = exit->src->count;
       exit_count = exit->count;
@@ -6449,13 +6468,13 @@ gimple_duplicate_sese_tail (edge entry ATTRIBUTE_UNUSED, edge exit ATTRIBUTE_UNU
 
   copy_bbs (region, n_region, region_copy, exits, 2, nexits, orig_loop,
 	    split_edge_bb_loc (exit), true);
-  if (total_count)
+  if (total_count.initialized_p ())
     {
-      scale_bbs_frequencies_gcov_type (region, n_region,
-				       total_count - exit_count,
-				       total_count);
-      scale_bbs_frequencies_gcov_type (region_copy, n_region, exit_count,
-				       total_count);
+      scale_bbs_frequencies_profile_count (region, n_region,
+				           total_count - exit_count,
+				           total_count);
+      scale_bbs_frequencies_profile_count (region_copy, n_region, exit_count,
+				           total_count);
     }
   else
     {
@@ -8522,10 +8541,10 @@ gimple_account_profile_record (basic_block bb, int after_pass,
     {
       record->size[after_pass]
 	+= estimate_num_insns (gsi_stmt (i), &eni_size_weights);
-      if (profile_status_for_fn (cfun) == PROFILE_READ)
+      if (bb->count.initialized_p ())
 	record->time[after_pass]
 	  += estimate_num_insns (gsi_stmt (i),
-				 &eni_time_weights) * bb->count;
+				 &eni_time_weights) * bb->count.to_gcov_type ();
       else if (profile_status_for_fn (cfun) == PROFILE_GUESSED)
 	record->time[after_pass]
 	  += estimate_num_insns (gsi_stmt (i),
@@ -9053,24 +9072,29 @@ execute_fixup_cfg (void)
   basic_block bb;
   gimple_stmt_iterator gsi;
   int todo = 0;
-  gcov_type count_scale;
   edge e;
   edge_iterator ei;
   cgraph_node *node = cgraph_node::get (current_function_decl);
+  profile_count num = node->count;
+  profile_count den = ENTRY_BLOCK_PTR_FOR_FN (cfun)->count;
+  bool scale = num.initialized_p ()
+	       && (den > 0 || num == profile_count::zero ())
+	       && !(num == den);
 
-  count_scale
-    = GCOV_COMPUTE_SCALE (node->count, ENTRY_BLOCK_PTR_FOR_FN (cfun)->count);
+  if (scale)
+    {
+      ENTRY_BLOCK_PTR_FOR_FN (cfun)->count = node->count;
+      EXIT_BLOCK_PTR_FOR_FN (cfun)->count
+        = EXIT_BLOCK_PTR_FOR_FN (cfun)->count.apply_scale (num, den);
 
-  ENTRY_BLOCK_PTR_FOR_FN (cfun)->count = node->count;
-  EXIT_BLOCK_PTR_FOR_FN (cfun)->count
-    = apply_scale (EXIT_BLOCK_PTR_FOR_FN (cfun)->count, count_scale);
-
-  FOR_EACH_EDGE (e, ei, ENTRY_BLOCK_PTR_FOR_FN (cfun)->succs)
-    e->count = apply_scale (e->count, count_scale);
+      FOR_EACH_EDGE (e, ei, ENTRY_BLOCK_PTR_FOR_FN (cfun)->succs)
+	e->count = e->count.apply_scale (num, den);
+    }
 
   FOR_EACH_BB_FN (bb, cfun)
     {
-      bb->count = apply_scale (bb->count, count_scale);
+      if (scale)
+        bb->count = bb->count.apply_scale (num, den);
       for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi);)
 	{
 	  gimple *stmt = gsi_stmt (gsi);
@@ -9139,8 +9163,9 @@ execute_fixup_cfg (void)
 	  gsi_next (&gsi);
 	}
 
-      FOR_EACH_EDGE (e, ei, bb->succs)
-        e->count = apply_scale (e->count, count_scale);
+      if (scale)
+	FOR_EACH_EDGE (e, ei, bb->succs)
+	  e->count = e->count.apply_scale (num, den);
 
       /* If we have a basic block with no successors that does not
 	 end with a control statement or a noreturn call end it with
@@ -9172,7 +9197,7 @@ execute_fixup_cfg (void)
 	    }
 	}
     }
-  if (count_scale != REG_BR_PROB_BASE)
+  if (scale)
     compute_function_frequency ();
 
   if (current_loops

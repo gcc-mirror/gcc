@@ -146,7 +146,8 @@ fs::_Dir::advance(error_code* ec, directory_options options)
 
   int err = std::exchange(errno, 0);
   const auto entp = readdir(dirp);
-  std::swap(errno, err);
+  // std::swap cannot be used with Bionic's errno
+  err = std::exchange(errno, err);
 
   if (entp)
     {

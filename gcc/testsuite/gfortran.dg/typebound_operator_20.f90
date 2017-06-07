@@ -49,5 +49,3 @@ program drive
   if (h1%sum(h2) /= 1) call abort()
 
 end
-
-! { dg-final { cleanup-modules "overwrite" } }

@@ -5531,17 +5531,46 @@ determine_iv_costs (struct ivopts_data *data)
     fprintf (dump_file, "\n");
 }
 
-/* Calculates cost for having N_REGS registers.  This number includes
-   induction variables, invariant variables and invariant expressions.  */
+/* Estimate register pressure for loop having N_INVS invariants and N_CANDS
+   induction variables.  Note N_INVS includes both invariant variables and
+   invariant expressions.  */
 
 static unsigned
-ivopts_global_cost_for_size (struct ivopts_data *data, unsigned n_regs)
+ivopts_estimate_reg_pressure (struct ivopts_data *data, unsigned n_invs,
+			      unsigned n_cands)
 {
-  unsigned cost = estimate_reg_pressure_cost (n_regs,
-					      data->regs_used, data->speed,
-					      data->body_includes_call);
-  /* Add n_regs to the cost, so that we prefer eliminating ivs if possible.  */
-  return n_regs + cost;
+  unsigned cost;
+  unsigned n_old = data->regs_used, n_new = n_invs + n_cands;
+  unsigned regs_needed = n_new + n_old, available_regs = target_avail_regs;
+  bool speed = data->speed;
+
+  /* If there is a call in the loop body, the call-clobbered registers
+     are not available for loop invariants.  */
+  if (data->body_includes_call)
+    available_regs = available_regs - target_clobbered_regs;
+
+  /* If we have enough registers.  */
+  if (regs_needed + target_res_regs < available_regs)
+    cost = n_new;
+  /* If close to running out of registers, try to preserve them.  */
+  else if (regs_needed <= available_regs)
+    cost = target_reg_cost [speed] * regs_needed;
+  /* If we run out of available registers but the number of candidates
+     does not, we penalize extra registers using target_spill_cost.  */
+  else if (n_cands <= available_regs)
+    cost = target_reg_cost [speed] * available_regs
+	   + target_spill_cost [speed] * (regs_needed - available_regs);
+  /* If the number of candidates runs out available registers, we penalize
+     extra candidate registers using target_spill_cost * 2.  Because it is
+     more expensive to spill induction variable than invariant.  */
+  else
+    cost = target_reg_cost [speed] * available_regs
+	   + target_spill_cost [speed] * (n_cands - available_regs) * 2
+	   + target_spill_cost [speed] * (regs_needed - n_cands);
+
+  /* Finally, add the number of candidates, so that we prefer eliminating
+     induction variables if possible.  */
+  return cost + n_cands;
 }
 
 /* For each size of the induction variable set determine the penalty.  */
@@ -5602,7 +5631,7 @@ determine_set_costs (struct ivopts_data *data)
       fprintf (dump_file, "  ivs\tcost\n");
       for (j = 0; j <= 2 * target_avail_regs; j++)
 	fprintf (dump_file, "  %d\t%d\n", j,
-		 ivopts_global_cost_for_size (data, j));
+		 ivopts_estimate_reg_pressure (data, 0, j));
       fprintf (dump_file, "\n");
     }
 }
@@ -5661,7 +5690,7 @@ iv_ca_recount_cost (struct ivopts_data *data, struct iv_ca *ivs)
   comp_cost cost = ivs->cand_use_cost;
 
   cost += ivs->cand_cost;
-  cost += ivopts_global_cost_for_size (data, ivs->n_invs + ivs->n_cands);
+  cost += ivopts_estimate_reg_pressure (data, ivs->n_invs, ivs->n_cands);
   ivs->cost = cost;
 }
 

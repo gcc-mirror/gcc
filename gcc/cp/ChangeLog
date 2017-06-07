@@ -1,3 +1,25 @@
+2017-06-07  Nathan Sidwell  <nathan@acm.org>
+
+	* class.c (layout_class_type): Restructure overlong-bitfield tpe
+	search.
+
+2017-06-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR c++/80990
+	* pt.c (do_class_deduction): Build qualified type.
+
+2017-06-06  Nathan Sidwell  <nathan@acm.org>
+
+	* name-lookup.c (suggest_alternatives_for): Use qualified lookup
+	sans using directives.  Don't walk into inline namespaces.
+
+	PR c++/80979
+	* name-lookup.c (adl_class_only): Don't add visible friends.
+
+2017-06-05  Volker Reichelt  <v.reichelt@netcologne.de>
+
+	* parser.c (cp_parser_base_specifier): Fix typos in error messages.
+
 2017-06-02  Nathan Sidwell  <nathan@acm.org>
 
 	Remove lang_type_ptrmem.

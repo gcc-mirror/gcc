@@ -21,6 +21,7 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_CGRAPH_H
 #define GCC_CGRAPH_H
 
+#include "profile-count.h"
 #include "ipa-ref.h"
 #include "plugin-api.h"
 
@@ -910,7 +911,7 @@ public:
      All hooks will see this in node's global.inlined_to, when invoked.
      Can be NULL if the node is not inlined.  SUFFIX is string that is appended
      to the original name.  */
-  cgraph_node *create_clone (tree decl, gcov_type count, int freq,
+  cgraph_node *create_clone (tree decl, profile_count count, int freq,
 			     bool update_original,
 			     vec<cgraph_edge *> redirect_callers,
 			     bool call_duplication_hook,
@@ -1078,14 +1079,14 @@ public:
 
   /* Create edge from a given function to CALLEE in the cgraph.  */
   cgraph_edge *create_edge (cgraph_node *callee,
-			    gcall *call_stmt, gcov_type count,
+			    gcall *call_stmt, profile_count count,
 			    int freq);
 
   /* Create an indirect edge with a yet-undetermined callee where the call
      statement destination is a formal parameter of the caller with index
      PARAM_INDEX. */
   cgraph_edge *create_indirect_edge (gcall *call_stmt, int ecf_flags,
-				     gcov_type count, int freq,
+				     profile_count count, int freq,
 				     bool compute_indirect_info = true);
 
   /* Like cgraph_create_edge walk the clone tree and update all clones sharing
@@ -1093,7 +1094,7 @@ public:
    update the edge same way as cgraph_set_call_stmt_including_clones does.  */
   void create_edge_including_clones (cgraph_node *callee,
 				     gimple *old_stmt, gcall *stmt,
-				     gcov_type count,
+				     profile_count count,
 				     int freq,
 				     cgraph_inline_failed_t reason);
 
@@ -1356,7 +1357,7 @@ public:
   cgraph_thunk_info thunk;
 
   /* Expected number of executions: calculated in profile.c.  */
-  gcov_type count;
+  profile_count count;
   /* How to scale counts at materialization time; used to merge
      LTO units with different number of profile runs.  */
   int count_materialization_scale;
@@ -1629,7 +1630,7 @@ struct GTY((chain_next ("%h.next_caller"), chain_prev ("%h.prev_caller"),
   /* Turn edge into speculative call calling N2. Update
      the profile so the direct call is taken COUNT times
      with FREQUENCY.  */
-  cgraph_edge *make_speculative (cgraph_node *n2, gcov_type direct_count,
+  cgraph_edge *make_speculative (cgraph_node *n2, profile_count direct_count,
 				 int direct_frequency);
 
    /* Given speculative call edge, return all three components.  */
@@ -1648,7 +1649,8 @@ struct GTY((chain_next ("%h.next_caller"), chain_prev ("%h.prev_caller"),
   /* Create clone of edge in the node N represented
      by CALL_EXPR the callgraph.  */
   cgraph_edge * clone (cgraph_node *n, gcall *call_stmt, unsigned stmt_uid,
-		       gcov_type count_scale, int freq_scale, bool update_original);
+		       gcov_type count_scale, int freq_scale,
+		       bool update_original);
 
   /* Verify edge count and frequency.  */
   bool verify_count_and_frequency ();
@@ -1673,7 +1675,7 @@ struct GTY((chain_next ("%h.next_caller"), chain_prev ("%h.prev_caller"),
   static void rebuild_references (void);
 
   /* Expected number of executions: calculated in profile.c.  */
-  gcov_type count;
+  profile_count count;
   cgraph_node *caller;
   cgraph_node *callee;
   cgraph_edge *prev_caller;
@@ -2250,7 +2252,7 @@ private:
      parameters of which only CALLEE can be NULL (when creating an indirect call
      edge).  */
   cgraph_edge *create_edge (cgraph_node *caller, cgraph_node *callee,
-			    gcall *call_stmt, gcov_type count, int freq,
+			    gcall *call_stmt, profile_count count, int freq,
 			    bool indir_unknown_callee);
 
   /* Put the edge onto the free list.  */
@@ -2321,7 +2323,7 @@ void cgraphunit_c_finalize (void);
 
 /*  Initialize datastructures so DECL is a function in lowered gimple form.
     IN_SSA is true if the gimple is in SSA.  */
-basic_block init_lowered_empty_function (tree, bool, gcov_type);
+basic_block init_lowered_empty_function (tree, bool, profile_count);
 
 tree thunk_adjust (gimple_stmt_iterator *, tree, bool, HOST_WIDE_INT, tree);
 /* In cgraphclones.c  */

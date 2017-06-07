@@ -73,6 +73,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "common/common-target.h"
 #include "langhooks.h"
 #include "dominance.h"
+#include "profile-count.h"
 #include "cfg.h"
 #include "cfgrtl.h"
 #include "cfganal.h"

@@ -24,7 +24,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "rtl.h"
 #include "alias.h"
 #include "tree.h"
-#include "cfg.h"
 #include "flags.h"
 #include "predict.h"
 #include "function.h"

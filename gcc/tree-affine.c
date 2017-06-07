@@ -24,6 +24,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "rtl.h"
 #include "tree.h"
 #include "gimple.h"
+#include "ssa.h"
 #include "tree-pretty-print.h"
 #include "fold-const.h"
 #include "tree-affine.h"
@@ -363,6 +364,64 @@ tree_to_aff_combination (tree expr, tree type, aff_tree *comb)
       aff_combination_add (comb, &tmp);
       return;
 
+    CASE_CONVERT:
+      {
+	tree otype = TREE_TYPE (expr);
+	tree inner = TREE_OPERAND (expr, 0);
+	tree itype = TREE_TYPE (inner);
+	enum tree_code icode = TREE_CODE (inner);
+
+	/* In principle this is a valid folding, but it isn't necessarily
+	   an optimization, so do it here and not in fold_unary.  */
+	if ((icode == PLUS_EXPR || icode == MINUS_EXPR || icode == MULT_EXPR)
+	    && TREE_CODE (itype) == INTEGER_TYPE
+	    && TREE_CODE (otype) == INTEGER_TYPE
+	    && TYPE_PRECISION (otype) > TYPE_PRECISION (itype))
+	  {
+	    tree op0 = TREE_OPERAND (inner, 0), op1 = TREE_OPERAND (inner, 1);
+
+	    /* If inner type has undefined overflow behavior, fold conversion
+	       for below two cases:
+		 (T1)(X *+- CST) -> (T1)X *+- (T1)CST
+		 (T1)(X + X)     -> (T1)X + (T1)X.  */
+	    if (TYPE_OVERFLOW_UNDEFINED (itype)
+		&& (TREE_CODE (op1) == INTEGER_CST
+		    || (icode == PLUS_EXPR && operand_equal_p (op0, op1, 0))))
+	      {
+		op0 = fold_convert (otype, op0);
+		op1 = fold_convert (otype, op1);
+		expr = fold_build2 (icode, otype, op0, op1);
+		tree_to_aff_combination (expr, type, comb);
+		return;
+	      }
+	    wide_int minv, maxv;
+	    /* If inner type has wrapping overflow behavior, fold conversion
+	       for below case:
+		 (T1)(X - CST) -> (T1)X - (T1)CST
+	       if X - CST doesn't overflow by range information.  Also handle
+	       (T1)(X + CST) as (T1)(X - (-CST)).  */
+	    if (TYPE_UNSIGNED (itype)
+		&& TYPE_OVERFLOW_WRAPS (itype)
+		&& TREE_CODE (op0) == SSA_NAME
+		&& TREE_CODE (op1) == INTEGER_CST
+		&& icode != MULT_EXPR
+		&& get_range_info (op0, &minv, &maxv) == VR_RANGE)
+	      {
+		if (icode == PLUS_EXPR)
+		  op1 = wide_int_to_tree (itype, wi::neg (op1));
+		if (wi::geu_p (minv, op1))
+		  {
+		    op0 = fold_convert (otype, op0);
+		    op1 = fold_convert (otype, op1);
+		    expr = fold_build2 (MINUS_EXPR, otype, op0, op1);
+		    tree_to_aff_combination (expr, type, comb);
+		    return;
+		  }
+	      }
+	  }
+      }
+      break;
+
     default:
       break;
     }
@@ -639,28 +698,10 @@ aff_combination_expand (aff_tree *comb ATTRIBUTE_UNUSED,
 	  exp = XNEW (struct name_expansion);
 	  exp->in_progress = 1;
 	  *slot = exp;
-	  /* In principle this is a generally valid folding, but
-	     it is not unconditionally an optimization, so do it
-	     here and not in fold_unary.  */
-	  /* Convert (T1)(X *+- CST) into (T1)X *+- (T1)CST if T1 is wider
-	     than the type of X and overflow for the type of X is
-	     undefined.  */
-	  if (e != name
-	      && INTEGRAL_TYPE_P (type)
-	      && INTEGRAL_TYPE_P (TREE_TYPE (name))
-	      && TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (name))
-	      && TYPE_PRECISION (type) > TYPE_PRECISION (TREE_TYPE (name))
-	      && (code == PLUS_EXPR || code == MINUS_EXPR || code == MULT_EXPR)
-	      && TREE_CODE (gimple_assign_rhs2 (def)) == INTEGER_CST)
-	    rhs = fold_build2 (code, type,
-			       fold_convert (type, gimple_assign_rhs1 (def)),
-			       fold_convert (type, gimple_assign_rhs2 (def)));
-	  else
-	    {
-	      rhs = gimple_assign_rhs_to_tree (def);
-	      if (e != name)
-		rhs = fold_convert (type, rhs);
-	    }
+	  rhs = gimple_assign_rhs_to_tree (def);
+	  if (e != name)
+	    rhs = fold_convert (type, rhs);
+
 	  tree_to_aff_combination_expand (rhs, comb->type, &current, cache);
 	  exp->expansion = current;
 	  exp->in_progress = 0;

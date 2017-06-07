@@ -1,4 +1,54 @@
+2017-06-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/alloc_traits.h (__is_allocator, _RequireAllocator):
+	New trait and alias for detecting Allocator-like types.
+	* include/bits/basic_string.h (basic_string): Add deduction guide
+	from P0433.
+	* include/ext/alloc_traits.h (__gnu_cxx::__alloc_traits): Add template
+	parameter with default template argument that causes substitution
+	failures for types that cannot be allocators.
+	* testsuite/21_strings/basic_string/cons/char/deduction.cc: New.
+	* testsuite/21_strings/basic_string/cons/wchar_t/deduction.cc: New.
+
 2017-06-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/80939
+	* include/std/variant (__erased_ctor, __erased_assign, __erased_swap)
+	(__erased_hash): Remove constexpr specifier and qualify calls to
+	__ref_cast.
+	(__erased_dtor): Remove constexpr specifier and use _Destroy.
+
+2017-06-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_iterator_base_funcs.h
+	(__advance<_RandomAccessIterator, _Distance>): Optimize for next/prev
+	cases where incrementing or decrementing a single step.
+
+	* include/bits/shared_ptr_base.h (__shared_ptr::owner_before)
+	(__weak_ptr::owner_before, _Sp_owner_less::operator()): Add noexcept
+	specifiers as per LWG 2873 and LWG 2942.
+	* testsuite/20_util/owner_less/noexcept.cc: New.
+	* testsuite/20_util/shared_ptr/observers/owner_before.cc: Test
+	noexcept guarantees.
+	* testsuite/20_util/weak_ptr/observers/owner_before.cc: Likewise.
+
+2017-06-03  Andreas Schwab  <schwab@linux-m68k.org>
+
+	* config/abi/post/powerpc-linux-gnu/baseline_symbols.txt: Update.
+
+2017-06-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* src/filesystem/dir.cc (fs::_Dir::advance): Use std::exchange.
+
+2017-06-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/80624
+	* doc/xml/manual/status_cxx2011.xml: Document to_int_type behaviour.
+	* include/bits/char_traits.h (char_traits<char16_t>::to_int_type):
+	Transform eof value to U+FFFD.
+	* testsuite/21_strings/char_traits/requirements/char16_t/eof.cc: New.
+	* testsuite/27_io/basic_streambuf/sgetc/char16_t/80624.cc: New.
+	* testsuite/27_io/basic_streambuf/sputc/char16_t/80624.cc: New.
 
 	* libsupc++/Makefile.am: Remove custom targets for files that need to
 	be compiled as C++11 or C++14.

@@ -1649,11 +1649,19 @@ vect_update_vf_for_slp (loop_vec_info loop_vinfo)
     }
 
   if (only_slp_in_loop)
-    vectorization_factor = LOOP_VINFO_SLP_UNROLLING_FACTOR (loop_vinfo);
+    {
+      dump_printf_loc (MSG_NOTE, vect_location,
+		       "Loop contains only SLP stmts\n");
+      vectorization_factor = LOOP_VINFO_SLP_UNROLLING_FACTOR (loop_vinfo);
+    }
   else
-    vectorization_factor
-      = least_common_multiple (vectorization_factor,
-			       LOOP_VINFO_SLP_UNROLLING_FACTOR (loop_vinfo));
+    {
+      dump_printf_loc (MSG_NOTE, vect_location,
+		       "Loop contains SLP and non-SLP stmts\n");
+      vectorization_factor
+	= least_common_multiple (vectorization_factor,
+				 LOOP_VINFO_SLP_UNROLLING_FACTOR (loop_vinfo));
+    }
 
   LOOP_VINFO_VECT_FACTOR (loop_vinfo) = vectorization_factor;
   if (dump_enabled_p ())
@@ -1765,8 +1773,9 @@ vect_analyze_loop_operations (loop_vec_info loop_vinfo)
           if (STMT_VINFO_RELEVANT_P (stmt_info))
             {
               need_to_vectorize = true;
-              if (STMT_VINFO_DEF_TYPE (stmt_info) == vect_induction_def)
-                ok = vectorizable_induction (phi, NULL, NULL);
+              if (STMT_VINFO_DEF_TYPE (stmt_info) == vect_induction_def
+		  && ! PURE_SLP_STMT (stmt_info))
+                ok = vectorizable_induction (phi, NULL, NULL, NULL);
             }
 
 	  if (ok && STMT_VINFO_LIVE_P (stmt_info))
@@ -2211,6 +2220,36 @@ start_over:
         }
     }
 
+  /* During peeling, we need to check if number of loop iterations is
+     enough for both peeled prolog loop and vector loop.  This check
+     can be merged along with threshold check of loop versioning, so
+     increase threshold for this case if necessary.  */
+  if (LOOP_REQUIRES_VERSIONING (loop_vinfo)
+      && (LOOP_VINFO_PEELING_FOR_GAPS (loop_vinfo)
+	  || LOOP_VINFO_PEELING_FOR_NITER (loop_vinfo)))
+    {
+      unsigned niters_th;
+
+      /* Niters for peeled prolog loop.  */
+      if (LOOP_VINFO_PEELING_FOR_ALIGNMENT (loop_vinfo) < 0)
+	{
+	  struct data_reference *dr = LOOP_VINFO_UNALIGNED_DR (loop_vinfo);
+	  tree vectype = STMT_VINFO_VECTYPE (vinfo_for_stmt (DR_STMT (dr)));
+
+	  niters_th = TYPE_VECTOR_SUBPARTS (vectype) - 1;
+	}
+      else
+	niters_th = LOOP_VINFO_PEELING_FOR_ALIGNMENT (loop_vinfo);
+
+      /* Niters for at least one iteration of vectorized loop.  */
+      niters_th += LOOP_VINFO_VECT_FACTOR (loop_vinfo);
+      /* One additional iteration because of peeling for gap.  */
+      if (!LOOP_VINFO_PEELING_FOR_GAPS (loop_vinfo))
+	niters_th++;
+      if (LOOP_VINFO_COST_MODEL_THRESHOLD (loop_vinfo) < niters_th)
+	LOOP_VINFO_COST_MODEL_THRESHOLD (loop_vinfo) = niters_th;
+    }
+
   gcc_assert (vectorization_factor
 	      == (unsigned)LOOP_VINFO_VECT_FACTOR (loop_vinfo));
 
@@ -2275,6 +2314,12 @@ again:
   for (i = 0; i < LOOP_VINFO_LOOP (loop_vinfo)->num_nodes; ++i)
     {
       basic_block bb = LOOP_VINFO_BBS (loop_vinfo)[i];
+      for (gimple_stmt_iterator si = gsi_start_phis (bb);
+	   !gsi_end_p (si); gsi_next (&si))
+	{
+	  stmt_vec_info stmt_info = vinfo_for_stmt (gsi_stmt (si));
+	  STMT_SLP_TYPE (stmt_info) = loop_vect;
+	}
       for (gimple_stmt_iterator si = gsi_start_bb (bb);
 	   !gsi_end_p (si); gsi_next (&si))
 	{
@@ -3796,6 +3841,9 @@ vect_model_induction_cost (stmt_vec_info stmt_info, int ncopies)
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
   void *target_cost_data = LOOP_VINFO_TARGET_COST_DATA (loop_vinfo);
   unsigned inside_cost, prologue_cost;
+
+  if (PURE_SLP_STMT (stmt_info))
+    return;
 
   /* loop cost for vec_loop.  */
   inside_cost = add_stmt_cost (target_cost_data, ncopies, vector_stmt,
@@ -6086,7 +6134,7 @@ vect_min_worthwhile_factor (enum tree_code code)
 bool
 vectorizable_induction (gimple *phi,
 			gimple_stmt_iterator *gsi ATTRIBUTE_UNUSED,
-			gimple **vec_stmt)
+			gimple **vec_stmt, slp_tree slp_node)
 {
   stmt_vec_info stmt_info = vinfo_for_stmt (phi);
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
@@ -6125,14 +6173,13 @@ vectorizable_induction (gimple *phi,
   if (STMT_VINFO_DEF_TYPE (stmt_info) != vect_induction_def)
     return false;
 
-  /* FORNOW: SLP not supported.  */
-  if (STMT_SLP_TYPE (stmt_info))
-    return false;
-
   tree vectype = STMT_VINFO_VECTYPE (stmt_info);
   unsigned nunits = TYPE_VECTOR_SUBPARTS (vectype);
 
-  ncopies = vf / nunits;
+  if (slp_node)
+    ncopies = 1;
+  else
+    ncopies = vf / nunits;
   gcc_assert (ncopies >= 1);
 
   /* FORNOW. These restrictions should be relaxed.  */
@@ -6233,6 +6280,147 @@ vectorizable_induction (gimple *phi,
 
   /* Find the first insertion point in the BB.  */
   si = gsi_after_labels (bb);
+
+  /* For SLP induction we have to generate several IVs as for example
+     with group size 3 we need [i, i, i, i + S] [i + S, i + S, i + 2*S, i + 2*S]
+     [i + 2*S, i + 3*S, i + 3*S, i + 3*S].  The step is the same uniform
+     [VF*S, VF*S, VF*S, VF*S] for all.  */
+  if (slp_node)
+    {
+      /* Convert the init to the desired type.  */
+      stmts = NULL;
+      init_expr = gimple_convert (&stmts, TREE_TYPE (vectype), init_expr);
+      if (stmts)
+	{
+	  new_bb = gsi_insert_seq_on_edge_immediate (pe, stmts);
+	  gcc_assert (!new_bb);
+	}
+
+      /* Generate [VF*S, VF*S, ... ].  */
+      if (SCALAR_FLOAT_TYPE_P (TREE_TYPE (step_expr)))
+	{
+	  expr = build_int_cst (integer_type_node, vf);
+	  expr = fold_convert (TREE_TYPE (step_expr), expr);
+	}
+      else
+	expr = build_int_cst (TREE_TYPE (step_expr), vf);
+      new_name = fold_build2 (MULT_EXPR, TREE_TYPE (step_expr),
+			      expr, step_expr);
+      if (! CONSTANT_CLASS_P (new_name))
+	new_name = vect_init_vector (phi, new_name,
+				     TREE_TYPE (step_expr), NULL);
+      new_vec = build_vector_from_val (vectype, new_name);
+      vec_step = vect_init_vector (phi, new_vec, vectype, NULL);
+
+      /* Now generate the IVs.  */
+      unsigned group_size = SLP_TREE_SCALAR_STMTS (slp_node).length ();
+      unsigned nvects = SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node);
+      unsigned elts = nunits * nvects;
+      unsigned nivs = least_common_multiple (group_size, nunits) / nunits;
+      gcc_assert (elts % group_size == 0);
+      tree elt = init_expr;
+      unsigned ivn;
+      for (ivn = 0; ivn < nivs; ++ivn)
+	{
+	  tree *elts = XALLOCAVEC (tree, nunits);
+	  bool constant_p = true;
+	  for (unsigned eltn = 0; eltn < nunits; ++eltn)
+	    {
+	      if (ivn*nunits + eltn >= group_size
+		  && (ivn*nunits + eltn) % group_size == 0)
+		{
+		  stmts = NULL;
+		  elt = gimple_build (&stmts, PLUS_EXPR, TREE_TYPE (elt),
+				      elt, step_expr);
+		  if (stmts)
+		    {
+		      new_bb = gsi_insert_seq_on_edge_immediate (pe, stmts);
+		      gcc_assert (!new_bb);
+		    }
+		}
+	      if (! CONSTANT_CLASS_P (elt))
+		constant_p = false;
+	      elts[eltn] = elt;
+	    }
+	  if (constant_p)
+	    new_vec = build_vector (vectype, elts);
+	  else
+	    {
+	      vec<constructor_elt, va_gc> *v;
+	      vec_alloc (v, nunits);
+	      for (i = 0; i < nunits; ++i)
+		CONSTRUCTOR_APPEND_ELT (v, NULL_TREE, elts[i]);
+	      new_vec = build_constructor (vectype, v);
+	    }
+	  vec_init = vect_init_vector (phi, new_vec, vectype, NULL);
+
+	  /* Create the induction-phi that defines the induction-operand.  */
+	  vec_dest = vect_get_new_vect_var (vectype, vect_simple_var, "vec_iv_");
+	  induction_phi = create_phi_node (vec_dest, iv_loop->header);
+	  set_vinfo_for_stmt (induction_phi,
+			      new_stmt_vec_info (induction_phi, loop_vinfo));
+	  induc_def = PHI_RESULT (induction_phi);
+
+	  /* Create the iv update inside the loop  */
+	  vec_def = make_ssa_name (vec_dest);
+	  new_stmt = gimple_build_assign (vec_def, PLUS_EXPR, induc_def, vec_step);
+	  gsi_insert_before (&si, new_stmt, GSI_SAME_STMT);
+	  set_vinfo_for_stmt (new_stmt, new_stmt_vec_info (new_stmt, loop_vinfo));
+
+	  /* Set the arguments of the phi node:  */
+	  add_phi_arg (induction_phi, vec_init, pe, UNKNOWN_LOCATION);
+	  add_phi_arg (induction_phi, vec_def, loop_latch_edge (iv_loop),
+		       UNKNOWN_LOCATION);
+
+	  SLP_TREE_VEC_STMTS (slp_node).quick_push (induction_phi);
+	}
+
+      /* Re-use IVs when we can.  */
+      if (ivn < nvects)
+	{
+	  unsigned vfp
+	    = least_common_multiple (group_size, nunits) / group_size;
+	  /* Generate [VF'*S, VF'*S, ... ].  */
+	  if (SCALAR_FLOAT_TYPE_P (TREE_TYPE (step_expr)))
+	    {
+	      expr = build_int_cst (integer_type_node, vfp);
+	      expr = fold_convert (TREE_TYPE (step_expr), expr);
+	    }
+	  else
+	    expr = build_int_cst (TREE_TYPE (step_expr), vfp);
+	  new_name = fold_build2 (MULT_EXPR, TREE_TYPE (step_expr),
+				  expr, step_expr);
+	  if (! CONSTANT_CLASS_P (new_name))
+	    new_name = vect_init_vector (phi, new_name,
+					 TREE_TYPE (step_expr), NULL);
+	  new_vec = build_vector_from_val (vectype, new_name);
+	  vec_step = vect_init_vector (phi, new_vec, vectype, NULL);
+	  for (; ivn < nvects; ++ivn)
+	    {
+	      gimple *iv = SLP_TREE_VEC_STMTS (slp_node)[ivn - nivs];
+	      tree def;
+	      if (gimple_code (iv) == GIMPLE_PHI)
+		def = gimple_phi_result (iv);
+	      else
+		def = gimple_assign_lhs (iv);
+	      new_stmt = gimple_build_assign (make_ssa_name (vectype),
+					      PLUS_EXPR,
+					      def, vec_step);
+	      if (gimple_code (iv) == GIMPLE_PHI)
+		gsi_insert_before (&si, new_stmt, GSI_SAME_STMT);
+	      else
+		{
+		  gimple_stmt_iterator tgsi = gsi_for_stmt (iv);
+		  gsi_insert_after (&tgsi, new_stmt, GSI_CONTINUE_LINKING);
+		}
+	      set_vinfo_for_stmt (new_stmt,
+				  new_stmt_vec_info (new_stmt, loop_vinfo));
+	      SLP_TREE_VEC_STMTS (slp_node).quick_push (new_stmt);
+	    }
+	}
+
+      return true;
+    }
 
   /* Create the vector that holds the initial_value of the induction.  */
   if (nested_in_vect_loop)
@@ -6666,23 +6854,24 @@ scale_profile_for_vect_loop (struct loop *loop, unsigned vf)
   edge preheader = loop_preheader_edge (loop);
   /* Reduce loop iterations by the vectorization factor.  */
   gcov_type new_est_niter = niter_for_unrolled_loop (loop, vf);
-  gcov_type freq_h = loop->header->count, freq_e = preheader->count;
+  profile_count freq_h = loop->header->count, freq_e = preheader->count;
 
   /* Use frequency only if counts are zero.  */
-  if (freq_h == 0 && freq_e == 0)
+  if (!(freq_h > 0) && !(freq_e > 0))
     {
-      freq_h = loop->header->frequency;
-      freq_e = EDGE_FREQUENCY (preheader);
+      freq_h = profile_count::from_gcov_type (loop->header->frequency);
+      freq_e = profile_count::from_gcov_type (EDGE_FREQUENCY (preheader));
     }
-  if (freq_h != 0)
+  if (freq_h > 0)
     {
       gcov_type scale;
 
       /* Avoid dropping loop body profile counter to 0 because of zero count
 	 in loop's preheader.  */
-      freq_e = MAX (freq_e, 1);
+      if (!(freq_e > profile_count::from_gcov_type (1)))
+       freq_e = profile_count::from_gcov_type (1);
       /* This should not overflow.  */
-      scale = GCOV_COMPUTE_SCALE (freq_e * (new_est_niter + 1), freq_h);
+      scale = freq_e.apply_scale (new_est_niter + 1, 1).probability_in (freq_h);
       scale_loop_frequencies (loop, scale, REG_BR_PROB_BASE);
     }
 
@@ -6695,8 +6884,6 @@ scale_profile_for_vect_loop (struct loop *loop, unsigned vf)
   int prob = exit_l->probability;
   exit_l->probability = REG_BR_PROB_BASE - exit_e->probability;
   exit_l->count = exit_bb->count - exit_e->count;
-  if (exit_l->count < 0)
-    exit_l->count = 0;
   if (prob > 0)
     scale_bbs_frequencies_int (&loop->latch, 1, exit_l->probability, prob);
 }
@@ -6842,7 +7029,8 @@ vect_transform_loop (loop_vec_info loop_vinfo)
 	      && dump_enabled_p ())
 	    dump_printf_loc (MSG_NOTE, vect_location, "multiple-types.\n");
 
-	  if (STMT_VINFO_DEF_TYPE (stmt_info) == vect_induction_def)
+	  if (STMT_VINFO_DEF_TYPE (stmt_info) == vect_induction_def
+	      && ! PURE_SLP_STMT (stmt_info))
 	    {
 	      if (dump_enabled_p ())
 		dump_printf_loc (MSG_NOTE, vect_location, "transform phi.\n");

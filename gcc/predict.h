@@ -20,6 +20,8 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_PREDICT_H
 #define GCC_PREDICT_H
 
+#include "profile-count.h"
+
 /* Random guesstimation given names.
    PROB_VERY_UNLIKELY should be small enough so basic block predicted
    by it gets below HOT_BB_FREQUENCY_FRACTION.  */
@@ -47,7 +49,7 @@ enum prediction
 
 extern gcov_type get_hot_bb_threshold (void);
 extern void set_hot_bb_threshold (gcov_type);
-extern bool maybe_hot_count_p (struct function *, gcov_type);
+extern bool maybe_hot_count_p (struct function *, profile_count);
 extern bool maybe_hot_bb_p (struct function *, const_basic_block);
 extern bool maybe_hot_edge_p (edge);
 extern bool probably_never_executed_bb_p (struct function *, const_basic_block);
@@ -81,9 +83,10 @@ extern void remove_predictions_associated_with_edge (edge);
 extern void predict_edge_def (edge, enum br_predictor, enum prediction);
 extern void invert_br_probabilities (rtx);
 extern void guess_outgoing_edge_probabilities (basic_block);
+extern void tree_guess_outgoing_edge_probabilities (basic_block);
 extern void tree_estimate_probability (bool);
 extern void handle_missing_profiles (void);
-extern int counts_to_freqs (void);
+extern bool counts_to_freqs (void);
 extern bool expensive_function_p (int);
 extern void estimate_bb_frequencies (bool);
 extern void compute_function_frequency (void);

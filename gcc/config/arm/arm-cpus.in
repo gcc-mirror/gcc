@@ -1020,20 +1020,6 @@ begin cpu exynos-m1
  costs exynosm1
 end cpu exynos-m1
 
-begin cpu falkor
- tune for cortex-a57
- tune flags LDSCHED
- architecture armv8-a+crc
- costs qdf24xx
-end cpu falkor
-
-begin cpu qdf24xx
- tune for cortex-a57
- tune flags LDSCHED
- architecture armv8-a+crc
- costs qdf24xx
-end cpu qdf24xx
-
 begin cpu xgene1
  tune flags LDSCHED
  architecture armv8-a

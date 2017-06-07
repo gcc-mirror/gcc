@@ -1278,6 +1278,7 @@ split_function (basic_block return_bb, struct split_point *split_point,
       basic_block new_return_bb = create_basic_block (NULL, 0, return_bb);
       gimple_stmt_iterator gsi = gsi_start_bb (new_return_bb);
       gsi_insert_after (&gsi, gimple_build_return (NULL), GSI_NEW_STMT);
+      new_return_bb->count = profile_count::zero ();
       while (redirected)
 	{
 	  redirected = false;

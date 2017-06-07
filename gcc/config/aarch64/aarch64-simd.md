@@ -153,6 +153,19 @@
    (set_attr "length" "4,4,4,8,8,8,4")]
 )
 
+;; When storing lane zero we can use the normal STR and its more permissive
+;; addressing modes.
+
+(define_insn "aarch64_store_lane0<mode>"
+  [(set (match_operand:<VEL> 0 "memory_operand" "=m")
+	(vec_select:<VEL> (match_operand:VALL_F16 1 "register_operand" "w")
+			(parallel [(match_operand 2 "const_int_operand" "n")])))]
+  "TARGET_SIMD
+   && ENDIAN_LANE_N (<MODE>mode, INTVAL (operands[2])) == 0"
+  "str\\t%<Vetype>1, %0"
+  [(set_attr "type" "neon_store1_1reg<q>")]
+)
+
 (define_insn "load_pair<mode>"
   [(set (match_operand:VD 0 "register_operand" "=w")
 	(match_operand:VD 1 "aarch64_mem_pair_operand" "Ump"))
@@ -565,14 +578,14 @@
 )
 
 (define_insn "*aarch64_simd_vec_copy_lane<mode>"
-  [(set (match_operand:VALL 0 "register_operand" "=w")
-	(vec_merge:VALL
-	    (vec_duplicate:VALL
+  [(set (match_operand:VALL_F16 0 "register_operand" "=w")
+	(vec_merge:VALL_F16
+	    (vec_duplicate:VALL_F16
 	      (vec_select:<VEL>
-		(match_operand:VALL 3 "register_operand" "w")
+		(match_operand:VALL_F16 3 "register_operand" "w")
 		(parallel
 		  [(match_operand:SI 4 "immediate_operand" "i")])))
-	    (match_operand:VALL 1 "register_operand" "0")
+	    (match_operand:VALL_F16 1 "register_operand" "0")
 	    (match_operand:SI 2 "immediate_operand" "i")))]
   "TARGET_SIMD"
   {

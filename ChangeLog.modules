@@ -1,5 +1,7 @@
 2017-06-07  Nathan Sidwell  <nathan@acm.org>
 
+	Merge trunk r248972.
+
 	gcc/cp/
 	* module.c (cpms_{out,in}::core_vals): Stream block vars &
 	abstract origin.
@@ -27,7 +29,7 @@
 	(cpms_{out,in}::core_vals): Stream ARGUMENTs here.
 	(cpms_in::tree_node): Cope with immediate definitions.
 	gcc/testsuite/
-	g++.dg/modules/class-3_[abcd].C: Augment.
+	* g++.dg/modules/class-3_[abcd].C: Augment.
 
 	More PoD struct
 	gcc/cp/

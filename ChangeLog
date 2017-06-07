@@ -1,3 +1,8 @@
+2017-06-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* configure.ac (*-*-linux-android*): Set target_makefile_frag.
+	* configure: Regenerate.
+
 2017-05-31  Martin Liska  <mliska@suse.cz>
 
 	* configure.ac: Add handling of stage2_werror_flags to

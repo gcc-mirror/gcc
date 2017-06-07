@@ -2287,7 +2287,7 @@ class Call_expression : public Expression
 
   Expression*
   interface_method_function(Interface_field_reference_expression*,
-			    Expression**);
+			    Expression**, Location);
 
   Bexpression*
   set_results(Translate_context*);

@@ -307,6 +307,11 @@ matmul_r10_avx (gfc_array_r10 * const restrict retarray,
       b_offset = 1 + b_dim1;
       b -= b_offset;
 
+      /* Empty c first.  */
+      for (j=1; j<=n; j++)
+	for (i=1; i<=m; i++)
+	  c[i + j * c_dim1] = (GFC_REAL_10)0;
+
       /* Early exit if possible */
       if (m == 0 || n == 0 || k == 0)
 	return;
@@ -318,11 +323,6 @@ matmul_r10_avx (gfc_array_r10 * const restrict retarray,
 	t1_dim = 65536;
 
       t1 = malloc (t1_dim * sizeof(GFC_REAL_10));
-
-      /* Empty c first.  */
-      for (j=1; j<=n; j++)
-	for (i=1; i<=m; i++)
-	  c[i + j * c_dim1] = (GFC_REAL_10)0;
 
       /* Start turning the crank. */
       i1 = n;
@@ -859,6 +859,11 @@ matmul_r10_avx2 (gfc_array_r10 * const restrict retarray,
       b_offset = 1 + b_dim1;
       b -= b_offset;
 
+      /* Empty c first.  */
+      for (j=1; j<=n; j++)
+	for (i=1; i<=m; i++)
+	  c[i + j * c_dim1] = (GFC_REAL_10)0;
+
       /* Early exit if possible */
       if (m == 0 || n == 0 || k == 0)
 	return;
@@ -870,11 +875,6 @@ matmul_r10_avx2 (gfc_array_r10 * const restrict retarray,
 	t1_dim = 65536;
 
       t1 = malloc (t1_dim * sizeof(GFC_REAL_10));
-
-      /* Empty c first.  */
-      for (j=1; j<=n; j++)
-	for (i=1; i<=m; i++)
-	  c[i + j * c_dim1] = (GFC_REAL_10)0;
 
       /* Start turning the crank. */
       i1 = n;
@@ -1411,6 +1411,11 @@ matmul_r10_avx512f (gfc_array_r10 * const restrict retarray,
       b_offset = 1 + b_dim1;
       b -= b_offset;
 
+      /* Empty c first.  */
+      for (j=1; j<=n; j++)
+	for (i=1; i<=m; i++)
+	  c[i + j * c_dim1] = (GFC_REAL_10)0;
+
       /* Early exit if possible */
       if (m == 0 || n == 0 || k == 0)
 	return;
@@ -1422,11 +1427,6 @@ matmul_r10_avx512f (gfc_array_r10 * const restrict retarray,
 	t1_dim = 65536;
 
       t1 = malloc (t1_dim * sizeof(GFC_REAL_10));
-
-      /* Empty c first.  */
-      for (j=1; j<=n; j++)
-	for (i=1; i<=m; i++)
-	  c[i + j * c_dim1] = (GFC_REAL_10)0;
 
       /* Start turning the crank. */
       i1 = n;
@@ -1977,6 +1977,11 @@ matmul_r10_vanilla (gfc_array_r10 * const restrict retarray,
       b_offset = 1 + b_dim1;
       b -= b_offset;
 
+      /* Empty c first.  */
+      for (j=1; j<=n; j++)
+	for (i=1; i<=m; i++)
+	  c[i + j * c_dim1] = (GFC_REAL_10)0;
+
       /* Early exit if possible */
       if (m == 0 || n == 0 || k == 0)
 	return;
@@ -1988,11 +1993,6 @@ matmul_r10_vanilla (gfc_array_r10 * const restrict retarray,
 	t1_dim = 65536;
 
       t1 = malloc (t1_dim * sizeof(GFC_REAL_10));
-
-      /* Empty c first.  */
-      for (j=1; j<=n; j++)
-	for (i=1; i<=m; i++)
-	  c[i + j * c_dim1] = (GFC_REAL_10)0;
 
       /* Start turning the crank. */
       i1 = n;
@@ -2603,6 +2603,11 @@ matmul_r10 (gfc_array_r10 * const restrict retarray,
       b_offset = 1 + b_dim1;
       b -= b_offset;
 
+      /* Empty c first.  */
+      for (j=1; j<=n; j++)
+	for (i=1; i<=m; i++)
+	  c[i + j * c_dim1] = (GFC_REAL_10)0;
+
       /* Early exit if possible */
       if (m == 0 || n == 0 || k == 0)
 	return;
@@ -2614,11 +2619,6 @@ matmul_r10 (gfc_array_r10 * const restrict retarray,
 	t1_dim = 65536;
 
       t1 = malloc (t1_dim * sizeof(GFC_REAL_10));
-
-      /* Empty c first.  */
-      for (j=1; j<=n; j++)
-	for (i=1; i<=m; i++)
-	  c[i + j * c_dim1] = (GFC_REAL_10)0;
 
       /* Start turning the crank. */
       i1 = n;

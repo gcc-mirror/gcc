@@ -1948,7 +1948,7 @@ scalarize_intrinsic_call (gfc_expr *e)
 {
   gfc_actual_arglist *a, *b;
   gfc_constructor_base ctor;
-  gfc_constructor *args[5];
+  gfc_constructor *args[5] = {};  /* Avoid uninitialized warnings.  */
   gfc_constructor *ci, *new_ctor;
   gfc_expr *expr, *old;
   int n, i, rank[5], array_arg;

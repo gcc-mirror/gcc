@@ -4767,7 +4767,7 @@ aarch64_select_cc_mode (RTX_CODE code, rtx x, rtx y)
      the comparison will have to be swapped when we emit the assembly
      code.  */
   if ((GET_MODE (x) == SImode || GET_MODE (x) == DImode)
-      && (REG_P (y) || GET_CODE (y) == SUBREG)
+      && (REG_P (y) || GET_CODE (y) == SUBREG || y == const0_rtx)
       && (GET_CODE (x) == ASHIFT || GET_CODE (x) == ASHIFTRT
 	  || GET_CODE (x) == LSHIFTRT
 	  || GET_CODE (x) == ZERO_EXTEND || GET_CODE (x) == SIGN_EXTEND))
@@ -7544,17 +7544,13 @@ cost_plus:
     case UMOD:
       if (speed)
 	{
+	  /* Slighly prefer UMOD over SMOD.  */
 	  if (VECTOR_MODE_P (mode))
 	    *cost += extra_cost->vect.alu;
 	  else if (GET_MODE_CLASS (mode) == MODE_INT)
 	    *cost += (extra_cost->mult[mode == DImode].add
-		      + extra_cost->mult[mode == DImode].idiv);
-	  else if (mode == DFmode)
-	    *cost += (extra_cost->fp[1].mult
-		      + extra_cost->fp[1].div);
-	  else if (mode == SFmode)
-	    *cost += (extra_cost->fp[0].mult
-		      + extra_cost->fp[0].div);
+		      + extra_cost->mult[mode == DImode].idiv
+		      + (code == MOD ? 1 : 0));
 	}
       return false;  /* All arguments need to be in registers.  */
 
@@ -7568,7 +7564,9 @@ cost_plus:
 	  else if (GET_MODE_CLASS (mode) == MODE_INT)
 	    /* There is no integer SQRT, so only DIV and UDIV can get
 	       here.  */
-	    *cost += extra_cost->mult[mode == DImode].idiv;
+	    *cost += (extra_cost->mult[mode == DImode].idiv
+		     /* Slighly prefer UDIV over SDIV.  */
+		     + (code == DIV ? 1 : 0));
 	  else
 	    *cost += extra_cost->fp[mode == DFmode].div;
 	}
@@ -12111,6 +12109,17 @@ aarch64_split_compare_and_swap (rtx operands[])
   mode = GET_MODE (mem);
   model = memmodel_from_int (INTVAL (model_rtx));
 
+  /* When OLDVAL is zero and we want the strong version we can emit a tighter
+    loop:
+    .label1:
+	LD[A]XR	rval, [mem]
+	CBNZ	rval, .label2
+	ST[L]XR	scratch, newval, [mem]
+	CBNZ	scratch, .label1
+    .label2:
+	CMP	rval, 0.  */
+  bool strong_zero_p = !is_weak && oldval == const0_rtx;
+
   label1 = NULL;
   if (!is_weak)
     {
@@ -12127,11 +12136,21 @@ aarch64_split_compare_and_swap (rtx operands[])
   else
     aarch64_emit_load_exclusive (mode, rval, mem, model_rtx);
 
-  cond = aarch64_gen_compare_reg (NE, rval, oldval);
-  x = gen_rtx_NE (VOIDmode, cond, const0_rtx);
-  x = gen_rtx_IF_THEN_ELSE (VOIDmode, x,
-			    gen_rtx_LABEL_REF (Pmode, label2), pc_rtx);
-  aarch64_emit_unlikely_jump (gen_rtx_SET (pc_rtx, x));
+  if (strong_zero_p)
+    {
+      x = gen_rtx_NE (VOIDmode, rval, const0_rtx);
+      x = gen_rtx_IF_THEN_ELSE (VOIDmode, x,
+				gen_rtx_LABEL_REF (Pmode, label2), pc_rtx);
+      aarch64_emit_unlikely_jump (gen_rtx_SET (pc_rtx, x));
+    }
+  else
+    {
+      cond = aarch64_gen_compare_reg (NE, rval, oldval);
+      x = gen_rtx_NE (VOIDmode, cond, const0_rtx);
+      x = gen_rtx_IF_THEN_ELSE (VOIDmode, x,
+				 gen_rtx_LABEL_REF (Pmode, label2), pc_rtx);
+      aarch64_emit_unlikely_jump (gen_rtx_SET (pc_rtx, x));
+    }
 
   aarch64_emit_store_exclusive (mode, scratch, mem, newval, model_rtx);
 
@@ -12150,7 +12169,15 @@ aarch64_split_compare_and_swap (rtx operands[])
     }
 
   emit_label (label2);
-
+  /* If we used a CBNZ in the exchange loop emit an explicit compare with RVAL
+     to set the condition flags.  If this is not used it will be removed by
+     later passes.  */
+  if (strong_zero_p)
+    {
+      cond = gen_rtx_REG (CCmode, CC_REGNUM);
+      x = gen_rtx_COMPARE (CCmode, rval, const0_rtx);
+      emit_insn (gen_rtx_SET (cond, x));
+    }
   /* Emit any final barrier needed for a __sync operation.  */
   if (is_mm_sync (model))
     aarch64_emit_post_barrier (model);

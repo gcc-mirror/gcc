@@ -92,6 +92,3 @@ program p
   call p_a(a, create_b([3,4,5]))
   call print(a)
 end program p
-! { dg-final { cleanup-submodules "mod_a@imp_p_a" } }
-! { dg-final { cleanup-submodules "mod_b@imp_create" } }
-

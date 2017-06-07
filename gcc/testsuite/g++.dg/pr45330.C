@@ -1,4 +1,4 @@
-// { dg-do compile }
+// { dg-do compile { target c++11 } }
 // Search std, __cxxabiv1, and global namespaces, plus two more,
 // breadth first
 
@@ -17,7 +17,10 @@ namespace A
 
 namespace B
 {
-  int foo;			// { dg-message "B::foo" "suggested alternative" }
+  inline namespace I
+  {
+    int foo;			// { dg-message "B::I::foo" "suggested alternative" }
+  }
 }
 
 namespace C

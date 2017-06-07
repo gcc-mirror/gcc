@@ -507,7 +507,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       static constexpr int_type
       to_int_type(const char_type& __c) noexcept
-      { return int_type(__c); }
+      { return __c == eof() ? int_type(0xfffd) : int_type(__c); }
 
       static constexpr bool
       eq_int_type(const int_type& __c1, const int_type& __c2) noexcept

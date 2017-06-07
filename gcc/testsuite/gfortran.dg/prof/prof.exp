@@ -18,6 +18,7 @@
 # ordering using -fprofile-generate followed by -fprofile-use.
 
 load_lib target-supports.exp
+load_lib fortran-modules.exp
 
 # Some targets don't support tree profiling.
 if { ![check_profiling_available "-fprofile-generate"] } {
@@ -50,7 +51,9 @@ foreach src [lsort [glob -nocomplain $srcdir/$subdir/*.f*]] {
     if ![runtest_file_p $runtests $src] then {
         continue
     }
+    list-module-names $src
     profopt-execute $src
+    cleanup-modules ""
 }
 
 foreach src [lsort [glob -nocomplain $srcdir/$subdir/*.f*]] {

@@ -6178,6 +6178,7 @@ extract_muldiv_1 (tree t, tree c, enum tree_code code, tree wide_type,
       t1 = extract_muldiv (op0, c, code, wide_type, &sub_strict_overflow_p);
       t2 = extract_muldiv (op1, c, code, wide_type, &sub_strict_overflow_p);
       if (t1 != 0 && t2 != 0
+	  && TYPE_OVERFLOW_WRAPS (ctype)
 	  && (code == MULT_EXPR
 	      /* If not multiplication, we can only do this if both operands
 		 are divisible by c.  */

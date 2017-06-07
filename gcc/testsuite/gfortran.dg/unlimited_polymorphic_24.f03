@@ -214,5 +214,3 @@ program main
     end select
   end do
 end program main
-
-! { dg-final { cleanup-modules "list_mod link_mod" } }

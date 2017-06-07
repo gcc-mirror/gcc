@@ -44,6 +44,9 @@
 #include <bits/invoke.h>
 #include <ext/aligned_buffer.h>
 #include <bits/parse_numbers.h>
+#include <bits/stl_iterator_base_types.h>
+#include <bits/stl_iterator_base_funcs.h>
+#include <bits/stl_construct.h>
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -238,30 +241,32 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // Various functions as "vtable" entries, where those vtables are used by
   // polymorphic operations.
   template<typename _Lhs, typename _Rhs>
-    constexpr void
+    void
     __erased_ctor(void* __lhs, void* __rhs)
-    { ::new (__lhs) remove_reference_t<_Lhs>(__ref_cast<_Rhs>(__rhs)); }
+    {
+      using _Type = remove_reference_t<_Lhs>;
+      ::new (__lhs) _Type(__variant::__ref_cast<_Rhs>(__rhs));
+    }
 
   template<typename _Variant, size_t _Np>
-    constexpr void
+    void
     __erased_dtor(_Variant&& __v)
+    { std::_Destroy(std::__addressof(__get<_Np>(__v))); }
+
+  template<typename _Lhs, typename _Rhs>
+    void
+    __erased_assign(void* __lhs, void* __rhs)
     {
-      auto&& __element = __get<_Np>(std::forward<_Variant>(__v));
-      using _Type = std::remove_reference_t<decltype(__element)>;
-      __element.~_Type();
+      __variant::__ref_cast<_Lhs>(__lhs) = __variant::__ref_cast<_Rhs>(__rhs);
     }
 
   template<typename _Lhs, typename _Rhs>
-    constexpr void
-    __erased_assign(void* __lhs, void* __rhs)
-    { __ref_cast<_Lhs>(__lhs) = __ref_cast<_Rhs>(__rhs); }
-
-  template<typename _Lhs, typename _Rhs>
-    constexpr void
+    void
     __erased_swap(void* __lhs, void* __rhs)
     {
       using std::swap;
-      swap(__ref_cast<_Lhs>(__lhs), __ref_cast<_Rhs>(__rhs));
+      swap(__variant::__ref_cast<_Lhs>(__lhs),
+	   __variant::__ref_cast<_Rhs>(__rhs));
     }
 
 #define _VARIANT_RELATION_FUNCTION_TEMPLATE(__OP, __NAME) \
@@ -283,11 +288,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #undef _VARIANT_RELATION_FUNCTION_TEMPLATE
 
   template<typename _Tp>
-    constexpr size_t
+    size_t
     __erased_hash(void* __t)
     {
       return std::hash<remove_cv_t<remove_reference_t<_Tp>>>{}(
-	  __ref_cast<_Tp>(__t));
+	  __variant::__ref_cast<_Tp>(__t));
     }
 
   // Defines members and ctors.

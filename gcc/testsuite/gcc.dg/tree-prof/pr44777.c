@@ -1,4 +1,5 @@
 /* PR middle-end/44777 */
+/* { dg-require-effective-target label_values } */
 /* { dg-options "-O0" } */
 /* A variant of gcc.c-torture/execute/comp-goto-2.c.  */
 
@@ -11,7 +12,7 @@ extern void exit (int);
 #define DEPTH 1000
 #endif
 
-#if ! defined (NO_LABEL_VALUES) && !defined (NO_TRAMPOLINES)
+#if !defined (NO_TRAMPOLINES)
 int
 x (int a)
 {
@@ -35,7 +36,7 @@ x (int a)
 int
 main ()
 {
-#if ! defined (NO_LABEL_VALUES) && !defined (NO_TRAMPOLINES)
+#if !defined (NO_TRAMPOLINES)
   if (x (DEPTH) != DEPTH)
     abort ();
 #endif

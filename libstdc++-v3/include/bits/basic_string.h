@@ -5674,6 +5674,18 @@ _GLIBCXX_END_NAMESPACE_CXX11
   };
 #endif  // !_GLIBCXX_USE_CXX11_ABI
 
+#if __cpp_deduction_guides >= 201606
+_GLIBCXX_BEGIN_NAMESPACE_CXX11
+  template<typename _InputIterator, typename _CharT
+	     = typename iterator_traits<_InputIterator>::value_type,
+	   typename _Allocator = allocator<_CharT>,
+	   typename = _RequireInputIter<_InputIterator>,
+	   typename = _RequireAllocator<_Allocator>>
+    basic_string(_InputIterator, _InputIterator, _Allocator = _Allocator())
+      -> basic_string<_CharT, char_traits<_CharT>, _Allocator>;
+_GLIBCXX_END_NAMESPACE_CXX11
+#endif
+
   // operator+
   /**
    *  @brief  Concatenate two strings.

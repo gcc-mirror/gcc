@@ -7453,6 +7453,9 @@ start_struct (location_t loc, enum tree_code code, tree name,
     ref = lookup_tag (code, name, true, &refloc);
   if (ref && TREE_CODE (ref) == code)
     {
+      if (TYPE_STUB_DECL (ref))
+	refloc = DECL_SOURCE_LOCATION (TYPE_STUB_DECL (ref));
+
       if (TYPE_SIZE (ref))
 	{
 	  if (code == UNION_TYPE)
@@ -8185,7 +8188,10 @@ start_enum (location_t loc, struct c_enum_contents *the_enum, tree name)
   /* Update type location to the one of the definition, instead of e.g.
      a forward declaration.  */
   else if (TYPE_STUB_DECL (enumtype))
-    DECL_SOURCE_LOCATION (TYPE_STUB_DECL (enumtype)) = loc;
+    {
+      enumloc = DECL_SOURCE_LOCATION (TYPE_STUB_DECL (enumtype));
+      DECL_SOURCE_LOCATION (TYPE_STUB_DECL (enumtype)) = loc;
+    }
 
   if (C_TYPE_BEING_DEFINED (enumtype))
     error_at (loc, "nested redefinition of %<enum %E%>", name);

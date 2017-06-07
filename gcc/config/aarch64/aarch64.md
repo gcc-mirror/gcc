@@ -2234,6 +2234,55 @@
   [(set_attr "type" "alus_sreg")]
 )
 
+(define_insn "sub<mode>3_compare1_imm"
+  [(set (reg:CC CC_REGNUM)
+	(compare:CC
+	  (match_operand:GPI 1 "register_operand" "r")
+	  (match_operand:GPI 3 "const_int_operand" "n")))
+   (set (match_operand:GPI 0 "register_operand" "=r")
+	(plus:GPI (match_dup 1)
+		  (match_operand:GPI 2 "aarch64_sub_immediate" "J")))]
+  "INTVAL (operands[3]) == -INTVAL (operands[2])"
+  "subs\\t%<w>0, %<w>1, #%n2"
+  [(set_attr "type" "alus_sreg")]
+)
+
+(define_peephole2
+  [(set (match_operand:GPI 0 "register_operand")
+	(minus:GPI (match_operand:GPI 1 "aarch64_reg_or_zero")
+		    (match_operand:GPI 2 "aarch64_reg_or_zero")))
+   (set (reg:CC CC_REGNUM)
+	(compare:CC
+	  (match_dup 1)
+	  (match_dup 2)))]
+  "!reg_overlap_mentioned_p (operands[0], operands[1])
+   && !reg_overlap_mentioned_p (operands[0], operands[2])"
+  [(const_int 0)]
+  {
+    emit_insn (gen_sub<mode>3_compare1 (operands[0], operands[1],
+					 operands[2]));
+    DONE;
+  }
+)
+
+(define_peephole2
+  [(set (match_operand:GPI 0 "register_operand")
+	(plus:GPI (match_operand:GPI 1 "register_operand")
+		  (match_operand:GPI 2 "aarch64_sub_immediate")))
+   (set (reg:CC CC_REGNUM)
+	(compare:CC
+	  (match_dup 1)
+	  (match_operand:GPI 3 "const_int_operand")))]
+  "!reg_overlap_mentioned_p (operands[0], operands[1])
+   && INTVAL (operands[3]) == -INTVAL (operands[2])"
+  [(const_int 0)]
+  {
+    emit_insn (gen_sub<mode>3_compare1_imm (operands[0], operands[1],
+					 operands[2], operands[3]));
+    DONE;
+  }
+)
+
 (define_insn "*sub_<shift>_<mode>"
   [(set (match_operand:GPI 0 "register_operand" "=r")
 	(minus:GPI (match_operand:GPI 3 "register_operand" "r")
@@ -4924,14 +4973,16 @@
    (match_operand:SF 2 "register_operand")]
   "TARGET_FLOAT && TARGET_SIMD"
 {
-  rtx mask = gen_reg_rtx (DImode);
+  rtx v_bitmask = gen_reg_rtx (V2SImode);
 
   /* Juggle modes to get us in to a vector mode for BSL.  */
-  rtx op1 = lowpart_subreg (V2SFmode, operands[1], SFmode);
+  rtx op1 = lowpart_subreg (DImode, operands[1], SFmode);
   rtx op2 = lowpart_subreg (V2SFmode, operands[2], SFmode);
   rtx tmp = gen_reg_rtx (V2SFmode);
-  emit_move_insn (mask, GEN_INT (HOST_WIDE_INT_1U << 31));
-  emit_insn (gen_aarch64_simd_bslv2sf (tmp, mask, op2, op1));
+  emit_move_insn (v_bitmask,
+		  aarch64_simd_gen_const_vector_dup (V2SImode,
+						     HOST_WIDE_INT_M1U << 31));
+  emit_insn (gen_aarch64_simd_bslv2sf (tmp, v_bitmask, op2, op1));
   emit_move_insn (operands[0], lowpart_subreg (SFmode, tmp, V2SFmode));
   DONE;
 }

@@ -29,9 +29,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "vec.h"
 #include "tree.h"
 #include "tree-pass.h"
-#include "cfg.h"
 #include "function.h"
 #include "basic-block.h"
+#include "cfg.h"
 #include "fold-const.h"
 #include "gimple.h"
 #include "gimple-iterator.h"
@@ -6047,9 +6047,10 @@ struct phi_definition
 
 template <typename T>
 static
-T sum_slice (const auto_vec <T> &v, unsigned start, unsigned end)
+T sum_slice (const auto_vec <T> &v, unsigned start, unsigned end,
+	     T zero)
 {
-  T s = 0;
+  T s = zero;
 
   for (unsigned i = start; i < end; i++)
     s += v[i];
@@ -6137,7 +6138,7 @@ convert_switch_statements (void)
 
 	auto_vec <edge> new_edges;
 	auto_vec <phi_definition *> phi_todo_list;
-	auto_vec <gcov_type> edge_counts;
+	auto_vec <profile_count> edge_counts;
 	auto_vec <int> edge_probabilities;
 
 	/* Investigate all labels that and PHI nodes in these edges which
@@ -6230,7 +6231,7 @@ convert_switch_statements (void)
 	    basic_block label_bb
 	      = label_to_block_fn (func, CASE_LABEL (label));
 	    edge new_edge = make_edge (cur_bb, label_bb, EDGE_TRUE_VALUE);
-	    int prob_sum = sum_slice <int> (edge_probabilities, i, labels) +
+	    int prob_sum = sum_slice <int> (edge_probabilities, i, labels, 0) +
 	       edge_probabilities[0];
 
 	    if (prob_sum)
@@ -6255,7 +6256,8 @@ convert_switch_statements (void)
 		next_edge->probability
 		  = inverse_probability (new_edge->probability);
 		next_edge->count = edge_counts[0]
-		  + sum_slice <gcov_type> (edge_counts, i, labels);
+		  + sum_slice <profile_count> (edge_counts, i, labels,
+					       profile_count::zero ());
 		next_bb->frequency = EDGE_FREQUENCY (next_edge);
 		cur_bb = next_bb;
 	      }

@@ -1,3 +1,633 @@
+2017-06-07  Bin Cheng  <bin.cheng@arm.com>
+
+	* passes.def (pass_iv_canon): Move before pass_loop_distribution.
+
+2017-06-07  Bin Cheng  <bin.cheng@arm.com>
+
+	* graphds.c (add_edge): Intitialize edge's attached data.
+	(foll_in_subgraph, dfs_fst_edge, dfs_next_edge): New function
+	pointer parameter.  Call pointed function on each edge during
+	graph traversing.  Skip traversing the edge when the function
+	returns true.
+	(graphds_dfs, graphds_scc): Ditto.
+	(for_each_edge): New parameter.  Pass the new parameter to callback
+	function.
+	* graphds.h (skip_edge_callback): New function pointer type.
+	(graphds_dfs, graphds_scc): New function pointer parameter.
+	(graphds_edge_callback, for_each_edge): New parameter.
+
+2017-06-07  Bin Cheng  <bin.cheng@arm.com>
+
+	* tree-vect-data-refs.c (vect_mark_for_runtime_alias_test): Factor
+	out code checking if runtime alias check is possible to below ...
+	Call the new function.
+	* tree-data-ref.c (runtime_alias_check_p): ... to new function.
+	* tree-data-ref.h (runtime_alias_check_p): New decalaration.
+
+2017-06-07  Marek Polacek  <polacek@redhat.com>
+
+	PR sanitizer/80932
+	* fold-const.c (extract_muldiv_1) <case MINUS_EXPR>: Add
+	TYPE_OVERFLOW_WRAPS check. 
+
+2017-06-07  Bin Cheng  <bin.cheng@arm.com>
+
+	* tree-vect-loop-manip.c (vect_do_peeling): Don't skip vector loop
+	if versioning is required.
+	* tree-vect-loop.c (vect_analyze_loop_2): Merge niter check for loop
+	peeling with the check for versioning.
+
+2017-06-07  Bin Cheng  <bin.cheng@arm.com>
+
+	* tree-vectorizer.h (vect_build_loop_niters): New parameter.
+	* tree-vect-loop-manip.c (vect_build_loop_niters): New parameter.
+	Set true to new parameter if new ssa variable is defined.
+	(vect_gen_vector_loop_niters): Refactor.  Set range information
+	for the new vector loop bound variable.
+	(vect_do_peeling): Ditto.
+
+2017-06-07  Bin Cheng  <bin.cheng@arm.com>
+
+	* tree-affine.c (ssa.h): Include header file.
+	(tree_to_aff_combination): Handle (T1)(X - CST) when inner type
+	has wrapping overflow behavior.
+
+2017-06-07  Bin Cheng  <bin.cheng@arm.com>
+
+	* tree-affine.c (tree_to_aff_combination): Handle (T1)(X + X).
+
+2017-06-07  Bin Cheng  <bin.cheng@arm.com>
+
+	(aff_combination_expand): Move (T1)(X *+- CST) simplification to ...
+	(tree_to_aff_combination): ... here.
+
+2017-06-07  Bin Cheng  <bin.cheng@arm.com>
+
+	* tree-ssa-loop-ivopts.c (ivopts_estimate_reg_pressure): New
+	reg_pressure model function.
+	(ivopts_global_cost_for_size): Delete.
+	(determine_set_costs, iv_ca_recount_cost): Call new model function
+	ivopts_estimate_reg_pressure.
+
+2017-06-07  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_rtx_costs): Make sdiv more expensive than udiv.
+	Remove floating point cases from mod.
+
+2017-06-07  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/arm/aarch-cost-tables.h (cortexa53_extra_cost): Increase idiv cost.
+
+2017-06-07  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/aarch64/aarch64.md
+	(copysignsf3): Fix mask generation.
+
+2017-06-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* dumpfile.h (enum tree_dump_index): Rename TDI_generic to
+	TDI_gimple.
+	(class dump_manager): Add register_dumps method.
+	* dumpfile.c: Include langhooks.h.
+	(dump_files): Use 0 instead of 3/4/5 for TDI_{original,gimple,nested}.
+	(FIRST_AUTO_NUMBERED_DUMP): Decrease to 1.
+	(FIRST_ME_AUTO_NUMBERED_DUMP): Define.
+	(dump_manager::dump_register): Start with 512 entries instead of 32.
+	(dump_manager::register_dumps): New method.
+	* toplev.c (general_init): Instead of invoking register_dumps
+	langhook, invoke register_dumps method on the dump manager.
+	* gimplify.c (gimplify_function_tree): Use TDI_gimple instead of
+	TDI_generic.
+
+2017-06-07  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* doc/md.texi: Clarify the restrictions on a define_insn condition.
+	Say that # requires an associated define_split to exist, and that
+	the define_split must be suitable for use after register allocation.
+
+2017-06-06  Jan Hubicka  <hubicka@ucw.cz>
+
+	* cfgbuild.c (find_bb_boundaries): Initialize profile of split blocks.
+	(compute_outgoing_frequencies): Also initialize zero counts.
+	(find_many_sub_basic_blocks): Do not produce uninitialized profile
+	around loops; preserve more of profile when nothing changes.
+
+2017-06-06  Jim Wilson  <jim.wilson@linaro.org>
+
+	* config/aarch64/aarch64-cost-tables.h (qdf24xx_extra_costs): Move to
+	here.
+	* config/arm/aarch-cost-tables.h (qdf24xx_extra_costs): From here.
+	* config/arm/arm-cpu-cdata.h: Regenerate.
+	* config/arm/arm-cpu-data.h, config/arm/arm-cpu.h: Likewise.
+	* config/arm/arm-tables.opt, config/arm/arm-tune.md: Likewise.
+	* config/arm/arm-cpus.in: Delete falkor and qdf24xx entries.
+	* config/arm/arm.c (arm_qdf24xx_tune): Delete.
+	* config/arm/bpabi.h (BE8_LINK_SPEC): Delete falkor and qdf24xx
+	support.
+	* config/arm/t-aprofile (MULTILIB_MATCHES): Delete falkor and qdf24xx
+	support.
+	* config/arm/t-rmprofile: Likewise.
+	* doc/invoke.texi (ARM Options): Drop falkor and qdf24xx support.
+
+2017-06-06  David S. Miller  <davem@davemloft.net>
+
+	PR target/80968
+	* config/sparc/sparc.c (sparc_expand_prologue): Emit frame
+	blockage if function uses alloca.
+
+2017-06-06  Maxim Kuvyrkov  <maxim.kuvyrkov@linaro.org>
+
+        * tree-ssa-loop-prefetch.c (struct mem_ref_group, struct mem_ref):
+        New "uid" fields to hold pretty-print IDs of group and ref.
+        Memory references are now identified as <group_id>:<ref_id>
+        instead of using [random] addresses.
+        (dump_mem_details): Simplify, no functional change.
+        (dump_mem_ref): Simplify and make output more concise.
+        Replace couple of fprintf's throughout code with calls to dump_mem_ref.
+        (find_or_create_group): Initialize group uid.
+        (record_ref): Initialize ref uid.  Improve debug output.
+        (prune_group_by_reuse, should_issue_prefetch_p,)
+        (should_issue_prefetch_p, schedule_prefetches, issue_prefetch_ref,)
+        (mark_nontemporal_store, determine_loop_nest_reuse):
+        Improve debug output.
+
+2017-06-06  Maxim Kuvyrkov  <maxim.kuvyrkov@linaro.org>
+
+        * dbgcnt.def (prefetch): New debug counter.
+        * tree-ssa-loop-prefetch.c (dbgcnt.h): New include.
+        (schedule_prefetches): Stop issueing prefetches if debug counter
+        tripped.
+
+2017-06-06  Tom de Vries  <tom@codesourcery.com>
+
+	* doc/sourcebuild.texi (Testsuites, C Language Testsuites,
+	gcc.c-torture/compile): Remove mention of NO_LABEL_VALUES in fixme.
+
+2017-06-06  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/atomics.md (atomic_compare_and_swap<mode> expander):
+	Use aarch64_reg_or_zero predicate for operand 4.
+	(aarch64_compare_and_swap<mode> define_insn_and_split):
+	Use aarch64_reg_or_zero predicate for operand 3.  Add 'Z' constraint.
+	(aarch64_store_exclusive<mode>): Likewise for operand 2.
+
+2017-06-06  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* config/arm/arm.c (arm_compute_save_reg_mask): Rename into ...
+	(arm_compute_save_core_reg_mask): This.
+	(thumb1_compute_save_reg_mask): Rename into ...
+	(thumb1_compute_save_core_reg_mask): This.
+	(arm_compute_save_reg0_reg12_mask): Adapt comment.
+	(arm_compute_frame_layout): Likewise.
+
+2017-06-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/80974
+	* tree-ssa-sccvn.c (set_ssa_val_to): Do not change but only
+	keep or clear leaders SSA info.
+
+2017-06-06  Tom de Vries  <tom@codesourcery.com>
+
+	* config/nvptx/nvptx.c (split_mode_p): New function.
+	(nvptx_declare_function_name, nvptx_print_operand): Use split_mode_p.
+
+2017-06-06  Tom de Vries  <tom@codesourcery.com>
+
+	* config/nvptx/nvptx.c (nvptx_print_operand): Use maybe_split_mode.
+
+2017-06-06  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR bootstrap/80978
+	* tree-cfg.c (execute_fixup_cfg): Fix condition on when to rescale
+	profile.
+
+2017-06-06  Jan Hubicka  <hubicka@ucw.cz>
+
+	* shrink-wrap.c (handle_simple_exit): Update profile.
+	(try_shrink_wrapping): Upate profile.
+
+2017-06-06  Jan Hubicka  <hubicka@ucw.cz>
+
+	* predict.c (tree_estimate_probability_bb): Add LOCAL_ONLY.
+	(tree_guess_outgoing_edge_probabilities): New.
+	* predict.h (tree_guess_outgoing_edge_probabilities): Declare.
+	* tree-cfg.c (gimple_find_sub_bbs): Propagate profile.
+
+2017-06-06  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-split.c (split_function): Initialize return bb profile.
+
+2017-06-06  Jan Hubicka  <hubicka@ucw.cz>
+
+	* profile.c (compute_branch_probabilities): Also initialize
+	EXIT_BLOCK profile.
+
+2017-06-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/80928
+	* tree-vect-loop.c (vect_update_vf_for_slp): Amend dumps.
+	(vect_analyze_loop_operations): Properly guard analysis for
+	pure SLP case.
+	(vect_transform_loop): Likewise.
+	(vect_analyze_loop_2): Also reset SLP type on PHIs.
+	(vect_model_induction_cost): Do not cost for pure SLP.
+	(vectorizable_induction): Pass in SLP node, implement SLP vectorization
+	of induction in inner loop vectorization.
+	* tree-vect-slp.c (vect_create_new_slp_node): Handle PHIs.
+	(vect_get_and_check_slp_defs): Handle vect_induction_def.
+	(vect_build_slp_tree): Likewise.  Handle PHIs as terminating the
+	recursion.
+	(vect_analyze_slp_cost_1): Cost induction.
+	(vect_detect_hybrid_slp_stmts): Handle PHIs.
+	(vect_get_slp_vect_defs): Likewise.
+	* tree-vect-stmts.c (vect_analyze_stmt): Handle induction.
+	(vect_transform_stmt): Handle SLP reductions.
+	* tree-vectorizer.h (vectorizable_induction): Adjust.
+
+2017-06-05  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000.c (make_resolver_func): Update
+	init_lowered_empty_function call.
+
+2017-06-05  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* doc/invoke.texi: Document the -fprofile-abs-path option.
+	* common.opt (fprofile-abs-path): New option.
+	* gcov-io.h (gcov_write_filename): Declare.
+	* gcov-io.c (gcov_write_filename): New function.
+	* coverage.c (coverage_begin_function): Use gcov_write_filename.
+	* profile.c (output_location): Likewise.
+
+2017-06-05  Jan Hubicka  <hubicka@ucw.cz>
+
+	* shring-wrap.c: Revert accidental commit.
+
+2017-06-05  Volker Reichelt  <v.reichelt@netcologne.de>
+
+	* doc/invoke.texi (-Wduplicated-branches): Add to warning list.
+
+2017-06-05  Jan Hubicka  <hubicka@ucw.cz>
+
+	* cfgexpand.c (expand_gimple_tailcall): Initialize profile of
+	new edge.
+	* ipa-inline.c (want_inline_self_recursive_call_p): Watch for missing
+	profile in callgraph edge.
+	* profile-count.h (apply_probability): If THIS is 0, then result is 0
+	(apply_scale): Likewise.
+	* tree-inline.c (copy_bb, copy_edges_for_bb, copy_cfg_body):
+	Also scale profile when inlining function with zero profile.
+	(initialize_cfun): Update exit block profile even when it is zero.
+	* tree-ssa-threadupdate.c (clear_counts_path): Handle correctly case
+	when profile is read.
+
+2017-06-05  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000.c (toplevel): Include attribs.h.
+	(CLONE_*): New constants to define the processors we can generate
+	code for with the target_clone attribute.
+	(rs6000_clone_map): New array to identify which clone processors
+	the current program is running on.
+	(TARGET_COMPARE_VERSION_PRIORITY): Define to enable the
+	target_clone attribute.
+	(TARGET_GENERATE_VERSION_DISPATCHER_BODY): Likewise.
+	(TARGET_GET_FUNCTION_VERSIONS_DISPATCHER): Likewise.
+	(TARGET_OPTION_FUNCTION_VERSIONS): Likewise.
+	(cpu_expand_builtin): Add support for target_clone attribute.
+	(rs6000_valid_attribute_p): Allow "default" attribute.
+	(get_decl_name): New debug function to simplify printing the
+	current function name in debugging statements.
+	(rs6000_clone_priority): New functions to support the target_clone
+	attribute, and be able to generate code to switch between ISA 2.05
+	through ISA 3.0 (power6 through power9).
+	(rs6000_compare_version_priority): Likewise.
+	(rs6000_get_function_versions_dispatcher): Likewise.
+	(make_resolver_func): Likewise.
+	(add_condition_to_bb): Likewise.
+	(dispatch_function_versions): Likewise.
+	(rs6000_generate_version_dispatcher_body): Likewise.
+	(rs6000_can_inline_p): Call get_decl_name for debugging usage.
+	(fusion_gpr_load_p): Fix a spacing issue.
+	* doc/extend.texi (Common Function Attributes): Document that the
+	PowerPC supports the target_clone attribute.
+
+2017-06-05  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* config/arm/arm.h: explain F symbol found in description of ARM
+	register allocation in its legend.
+
+2017-06-05  Jan Hubicka  <hubicka@ucw.cz>
+
+	* config/mips/frame-header-opt.c: Include profile-count.h.
+	* config/riscv/riscv.c: Include profile-count.h
+
+2017-06-05  Jan Hubicka  <hubicka@ucw.cz>
+
+	* tree-ssa-loop-im.c (execute_sm_if_changed): Add FLAG_BBS parameter;
+	update profile.
+	(sm_set_flag_if_changed): Add bbs field.
+	(execute_sm_if_changed_flag_set): Pass BBS.
+	(execute_sm): Update.
+
+2017-06-05  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64-simd.md (aarch64_store_lane0<mode>):
+	New pattern.
+
+2017-06-05  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64.md (sub<mode>3_compare1_imm): New define_insn.
+	(peephole2): New peephole2 to emit the above.
+	* config/aarch64/predicates.md (aarch64_sub_immediate): New predicate.
+
+2017-06-05  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64.c (define_peephole2 above
+	*sub_<shift>_<mode>): New peephole.
+
+2017-05-23  Jan Hubicka  <hubicka@ucw.cz>
+
+	* config/i386/i386.c (make_resolver_func): Update.
+	* Makefile.in: Add profile-count.h and profile-count.o
+	* auto-profile.c (afdo_indirect_call): Update to new API.
+	(afdo_set_bb_count): Update.
+	(afdo_propagate_edge): Update.
+	(afdo_propagate_circuit): Update.
+	(afdo_calculate_branch_prob): Update.
+	(afdo_annotate_cfg): Update.
+	* basic-block.h: Include profile-count.h
+	(struct edge_def): Turn count to profile_count.
+	(struct basic_block_def): Likewie.
+	(REG_BR_PROB_BASE): Move to profile-count.h
+	(RDIV): Move to profile-count.h
+	* bb-reorder.c (max_entry_count): Turn to profile_count.
+	(find_traces): Update.
+	(rotate_loop):Update.
+	(connect_traces):Update.
+	(sanitize_hot_paths):Update.
+	* bt-load.c (migrate_btr_defs): Update.
+	* cfg.c (RDIV): Remove.
+	(init_flow): Use alloc_block.
+	(alloc_block): Uninitialize count.
+	(unchecked_make_edge): Uninitialize count.
+	(check_bb_profile): Update.
+	(dump_edge_info): Update.
+	(dump_bb_info): Update.
+	(update_bb_profile_for_threading): Update.
+	(scale_bbs_frequencies_int): Update.
+	(scale_bbs_frequencies_gcov_type): Update.
+	(scale_bbs_frequencies_profile_count): New.
+	* cfg.h (update_bb_profile_for_threading): Update.
+	(scale_bbs_frequencies_profile_count): Declare.
+	* cfgbuild.c (compute_outgoing_frequencies): Update.
+	(find_many_sub_basic_blocks): Update.
+	* cfgcleanup.c (try_forward_edges): Update.
+	(try_crossjump_to_edge): Update.
+	* cfgexpand.c (expand_gimple_tailcall): Update.
+	(construct_exit_block): Update.
+	* cfghooks.c (verify_flow_info): Update.
+	(dump_bb_for_graph): Update.
+	(split_edge): Update.
+	(make_forwarder_block): Update.
+	(duplicate_block): Update.
+	(account_profile_record): Update.
+	* cfgloop.c (find_subloop_latch_edge_by_profile): Update.
+	(get_estimated_loop_iterations): Update.
+	* cfgloopanal.c (expected_loop_iterations_unbounded): Update.
+	(single_likely_exit): Update.
+	* cfgloopmanip.c (scale_loop_profile): Update.
+	(loopify): Update.
+	(set_zero_probability): Update.
+	(lv_adjust_loop_entry_edge): Update.
+	* cfgrtl.c (force_nonfallthru_and_redirect): Update.
+	(purge_dead_edges): Update.
+	(rtl_account_profile_record): Update.
+	* cgraph.c (cgraph_node::create): Uninitialize count.
+	(symbol_table::create_edge): Uninitialize count.
+	(cgraph_update_edges_for_call_stmt_node): Update.
+	(cgraph_edge::dump_edge_flags): Update.
+	(cgraph_node::dump): Update.
+	(cgraph_edge::maybe_hot_p): Update.
+	* cgraph.h: Include profile-count.h
+	(create_clone), create_edge, create_indirect_edge): Update.
+	(cgraph_node): Turn count to profile_count.
+	(cgraph_edge0: Likewise.
+	(make_speculative, clone): Update.
+	(create_edge): Update.
+	(init_lowered_empty_function): Update.
+	* cgraphclones.c (cgraph_edge::clone): Update.
+	(duplicate_thunk_for_node): Update.
+	(cgraph_node::create_clone): Update.
+	* cgraphunit.c (cgraph_node::analyze): Update.
+	(cgraph_node::expand_thunk): Update.
+	* final.c (dump_basic_block_info): Update.
+	* gimple-streamer-in.c (input_bb): Update.
+	* gimple-streamer-out.c (output_bb): Update.
+	* graphite.c (print_global_statistics): Update.
+	(print_graphite_scop_statistics): Update.
+	* hsa-brig.c: Include basic-block.h.
+	* hsa-dump.c: Include basic-block.h.
+	* hsa-gen.c (T sum_slice): Update.
+	(convert_switch_statements):Update.
+	* hsa-regalloc.c: Include basic-block.h.
+	* ipa-chkp.c (chkp_produce_thunks): Update.
+	* ipa-cp.c (struct caller_statistics): Update.
+	(init_caller_stats): Update.
+	(gather_caller_stats): Update.
+	(ipcp_cloning_candidate_p): Update.
+	(good_cloning_opportunity_p): Update.
+	(get_info_about_necessary_edges): Update.
+	(dump_profile_updates): Update.
+	(update_profiling_info): Update.
+	(update_specialized_profile): Update.
+	(perhaps_add_new_callers): Update.
+	(decide_about_value): Update.
+	(ipa_cp_c_finalize): Update.
+	* ipa-devirt.c (struct odr_type_warn_count): Update.
+	(struct decl_warn_count): Update.
+	(struct final_warning_record): Update.
+	(possible_polymorphic_call_targets): Update.
+	(ipa_devirt): Update.
+	* ipa-fnsummary.c (redirect_to_unreachable): Update.
+	* ipa-icf.c (sem_function::merge): Update.
+	* ipa-inline-analysis.c (do_estimate_edge_time): Update.
+	* ipa-inline.c (compute_uninlined_call_time): Update.
+	(compute_inlined_call_time): Update.
+	(want_inline_small_function_p): Update.
+	(want_inline_self_recursive_call_p): Update.
+	(edge_badness): Update.
+	(lookup_recursive_calls): Update.
+	(recursive_inlining): Update.
+	(inline_small_functions): Update.
+	(dump_overall_stats): Update.
+	(dump_inline_stats): Update.
+	* ipa-profile.c (ipa_profile_generate_summary): Update.
+	(ipa_propagate_frequency): Update.
+	(ipa_profile): Update.
+	* ipa-prop.c (ipa_make_edge_direct_to_target): Update.
+	* ipa-utils.c (ipa_merge_profiles): Update.
+	* loop-doloop.c (doloop_modify): Update.
+	* loop-unroll.c (report_unroll): Update.
+	(unroll_loop_runtime_iterations): Update.
+	* lto-cgraph.c (lto_output_edge): Update.
+	(lto_output_node): Update.
+	(input_node): Update.
+	(input_edge): Update.
+	(merge_profile_summaries): Update.
+	* lto-streamer-in.c (input_cfg): Update.
+	* lto-streamer-out.c (output_cfg): Update.
+	* mcf.c (create_fixup_graph): Update.
+	(adjust_cfg_counts): Update.
+	(sum_edge_counts): Update.
+	* modulo-sched.c (sms_schedule): Update.
+	* postreload-gcse.c (eliminate_partially_redundant_load): Update.
+	* predict.c (maybe_hot_count_p): Update.
+	(probably_never_executed): Update.
+	(dump_prediction): Update.
+	(combine_predictions_for_bb): Update.
+	(propagate_freq): Update.
+	(handle_missing_profiles): Update.
+	(counts_to_freqs): Update.
+	(rebuild_frequencies): Update.
+	(force_edge_cold): Update.
+	* predict.h: Include profile-count.h
+	(maybe_hot_count_p, counts_to_freqs): UPdate.
+	* print-rtl-function.c: Do not include cfg.h
+	* print-rtl.c: Include basic-block.h
+	* profile-count.c: New file.
+	* profile-count.h: New file.
+	* profile.c (is_edge_inconsistent): Update.
+	(correct_negative_edge_counts): Update.
+	(is_inconsistent): Update.
+	(set_bb_counts): Update.
+	(read_profile_edge_counts): Update.
+	(compute_frequency_overlap): Update.
+	(compute_branch_probabilities): Update; Initialize and deinitialize
+	gcov_count tables.
+	(branch_prob): Update.
+	* profile.h (bb_gcov_counts, edge_gcov_counts): New.
+	(edge_gcov_count): New.
+	(bb_gcov_count): New.
+	* shrink-wrap.c (try_shrink_wrapping): Update.
+	* tracer.c (better_p): Update.
+	* trans-mem.c (expand_transaction): Update.
+	(ipa_tm_insert_irr_call): Update.
+	(ipa_tm_insert_gettmclone_call): Update.
+	* tree-call-cdce.c: Update.
+	* tree-cfg.c (gimple_duplicate_sese_region): Update.
+	(gimple_duplicate_sese_tail): Update.
+	(gimple_account_profile_record): Update.
+	(execute_fixup_cfg): Update.
+	* tree-inline.c (copy_bb): Update.
+	(copy_edges_for_bb): Update.
+	(initialize_cfun): Update.
+	(freqs_to_counts): Update.
+	(copy_cfg_body): Update.
+	(expand_call_inline): Update.
+	* tree-ssa-ifcombine.c (update_profile_after_ifcombine): Update.
+	* tree-ssa-loop-ivcanon.c (unloop_loops): Update.
+	(try_unroll_loop_completely): Update.
+	(try_peel_loop): Update.
+	* tree-ssa-loop-manip.c (tree_transform_and_unroll_loop): Update.
+	* tree-ssa-loop-niter.c (estimate_numbers_of_iterations_loop): Update.
+	* tree-ssa-loop-split.c (connect_loops): Update.
+	* tree-ssa-loop-unswitch.c (hoist_guard): Update.
+	* tree-ssa-reassoc.c (branch_fixup): Update.
+	* tree-ssa-tail-merge.c (replace_block_by): Update.
+	* tree-ssa-threadupdate.c (create_block_for_threading): Update.
+	(compute_path_counts): Update.
+	(update_profile): Update.
+	(recompute_probabilities): Update.
+	(update_joiner_offpath_counts): Update.
+	(estimated_freqs_path): Update.
+	(freqs_to_counts_path): Update.
+	(clear_counts_path): Update.
+	(ssa_fix_duplicate_block_edges): Update.
+	(duplicate_thread_path): Update.
+	* tree-switch-conversion.c (case_bit_test_cmp): Update.
+	(struct switch_conv_info): Update.
+	* tree-tailcall.c (decrease_profile): Update.
+	* tree-vect-loop-manip.c (slpeel_add_loop_guard): Update.
+	* tree-vect-loop.c (scale_profile_for_vect_loop): Update.
+	* value-prof.c (check_counter): Update.
+	(gimple_divmod_fixed_value): Update.
+	(gimple_mod_pow2): Update.
+	(gimple_mod_subtract): Update.
+	(gimple_ic_transform): Update.
+	(gimple_stringop_fixed_value): Update.
+	* value-prof.h (gimple_ic): Update.
+
+2017-06-02  Carl Love  <cel@us.ibm.com>
+
+	* config/rs6000/rs6000-c: Add support for built-in functions
+	vector double vec_doublee (vector signed int);
+	vector double vec_doublee (vector unsigned int);
+	vector double vec_doublee (vector float);
+	vector double vec_doubleh (vector signed int);
+	vector double vec_doubleh (vector unsigned int);
+	vector double vec_doubleh (vector float);
+	vector double vec_doublel (vector signed int);
+	vector double vec_doublel (vector unsigned int);
+	vector double vec_doublel (vector float);
+	vector double vec_doubleo (vector signed int);
+	vector double vec_doubleo (vector unsigned int);
+	vector double vec_doubleo (vector float);.
+	* config/rs6000/rs6000-builtin.def: Add definitions for DOUBLEE,
+	DOUBLEO, DOUBLEH, DOUBLEL, UNS_DOUBLEO, UNS_DOUBLEE, UNS_DOUBLEH,
+	UNS_DOUBLEL.
+	* config/rs6000/altivec.md: Add code generator for doublee<mode>2,
+	unsdoubleev4si2, doubleo<mode>2, unsdoubleov4si2, doubleh<mode>2,
+	unsdoublehv4si2, doublel<mode>2, unsdoublelv4si2, add mode attribute
+	VS_sxwsp.
+	* config/rs6000/altivec.h: Add define for vec_doublee, vec_doubleo,
+	vec_doublel, vec_doubleh.
+	* doc/extend.texi: Update the built-in documentation file for the
+	new built-in functions.
+
+2017-06-02  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/80954
+	* ipa-inline-analysis.c (free_growth_caches): Set
+	edge_removal_hook_holder to NULL after removing it.
+
+2017-06-02  Sudakshina Das  <sudi.das@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_select_cc_mode): Return CC_SWP for
+	comparision with zero.
+
+2017-06-02  Will Schmidt  <will_schmidt@vnet.ibm.com>
+	* config/rs6000/rs6000.c (rs6000_gimple_fold_builtin): Add handling
+	for early expansion of vec_min and vec_max builtins.
+	(builtin_function_type): Add min/max unsigned variants to those
+	identified as having unsigned arguments.
+
+2017-06-02  Olivier Hainque  <hainque@adacore.com>
+
+	* config/vx-common.h (DWARF_UNWIND_INFO): Switch #define to 1.
+
+2017-06-02  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64-simd.md (*aarch64_simd_vec_copy_lane<mode>):
+	Use VALL_F16 iterator rather than VALL.
+
+2017-06-02  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_split_compare_and_swap):
+	Emit CBNZ inside loop when doing a strong exchange and comparing
+	against zero.  Generate the CC flags after the loop.
+
+2017-06-02  David Edelsohn  <dje.gcc@gmail.com>
+
+	* dwarf2out.c (DWARF_INITIAL_LENGTH_SIZE_STR): New.
+	(dl_section_ref): New.
+	(dwarf2out_finish): Copy debug_line_section_label to dl_section_ref.
+	On AIX, append an expression to subtract the size of the
+	section length to dl_section_ref.
+
+2017-06-02  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	* config/rs6000/rs6000.c (rs6000_gimple_fold_builtin): Add handling
+	for early expansion of vector absolute builtins.
+
 2017-06-02  Richard Biener  <rguenther@suse.de>
 
 	* tree-vect-slp.c (vect_detect_hybrid_slp_2): Match up

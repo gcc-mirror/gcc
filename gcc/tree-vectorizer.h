@@ -1150,7 +1150,7 @@ extern gimple *vect_force_simple_reduction (loop_vec_info, gimple *,
 					    bool *, bool);
 /* Drive for loop analysis stage.  */
 extern loop_vec_info vect_analyze_loop (struct loop *, loop_vec_info);
-extern tree vect_build_loop_niters (loop_vec_info);
+extern tree vect_build_loop_niters (loop_vec_info, bool * = NULL);
 extern void vect_gen_vector_loop_niters (loop_vec_info, tree, tree *, bool);
 /* Drive for loop transformation stage.  */
 extern struct loop *vect_transform_loop (loop_vec_info);
@@ -1159,7 +1159,8 @@ extern bool vectorizable_live_operation (gimple *, gimple_stmt_iterator *,
 					 slp_tree, int, gimple **);
 extern bool vectorizable_reduction (gimple *, gimple_stmt_iterator *,
 				    gimple **, slp_tree);
-extern bool vectorizable_induction (gimple *, gimple_stmt_iterator *, gimple **);
+extern bool vectorizable_induction (gimple *, gimple_stmt_iterator *,
+				    gimple **, slp_tree);
 extern tree get_initial_def_for_reduction (gimple *, tree, tree *);
 extern int vect_min_worthwhile_factor (enum tree_code);
 extern int vect_get_known_peeling_cost (loop_vec_info, int, int *,

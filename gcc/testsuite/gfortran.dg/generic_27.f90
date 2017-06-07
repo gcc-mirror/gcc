@@ -30,5 +30,3 @@ program test
   if (testIF(cos)/=1.0) call abort()
 
 end program
-
-! { dg-final { cleanup-modules "m" } }

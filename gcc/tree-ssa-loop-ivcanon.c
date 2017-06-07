@@ -641,12 +641,12 @@ unloop_loops (bitmap loop_closed_ssa_invalidated,
       stmt = gimple_build_call (builtin_decl_implicit (BUILT_IN_UNREACHABLE), 0);
       latch_edge = make_edge (latch, create_basic_block (NULL, NULL, latch), flags);
       latch_edge->probability = 0;
-      latch_edge->count = 0;
+      latch_edge->count = profile_count::zero ();
       latch_edge->flags |= flags;
       latch_edge->goto_locus = locus;
 
       add_bb_to_loop (latch_edge->dest, current_loops->tree_root);
-      latch_edge->dest->count = 0;
+      latch_edge->dest->count = profile_count::zero ();
       latch_edge->dest->frequency = 0;
       set_immediate_dominator (CDI_DOMINATORS, latch_edge->dest, latch_edge->src);
 
@@ -916,10 +916,10 @@ try_unroll_loop_completely (struct loop *loop,
           dump_printf_loc (MSG_OPTIMIZED_LOCATIONS | TDF_DETAILS, locus,
                            "loop with %d iterations completely unrolled",
 			   (int) (n_unroll + 1));
-          if (profile_info)
+          if (loop->header->count.initialized_p ())
             dump_printf (MSG_OPTIMIZED_LOCATIONS | TDF_DETAILS,
                          " (header execution count %d)",
-                         (int)loop->header->count);
+                         (int)loop->header->count.to_gcov_type ());
           dump_printf (MSG_OPTIMIZED_LOCATIONS | TDF_DETAILS, "\n");
         }
     }
@@ -1088,7 +1088,7 @@ try_peel_loop (struct loop *loop,
 	  loop->nb_iterations_likely_upper_bound = 0;
 	}
     }
-  gcov_type entry_count = 0;
+  profile_count entry_count = profile_count::zero ();
   int entry_freq = 0;
 
   edge e;
@@ -1096,13 +1096,14 @@ try_peel_loop (struct loop *loop,
   FOR_EACH_EDGE (e, ei, loop->header->preds)
     if (e->src != loop->latch)
       {
-	entry_count += e->src->count;
+	if (e->src->count.initialized_p ())
+	  entry_count = e->src->count + e->src->count;
 	entry_freq += e->src->frequency;
 	gcc_assert (!flow_bb_inside_loop_p (loop, e->src));
       }
   int scale = 1;
-  if (loop->header->count)
-    scale = RDIV (entry_count * REG_BR_PROB_BASE, loop->header->count);
+  if (loop->header->count > 0)
+    scale = entry_count.probability_in (loop->header->count);
   else if (loop->header->frequency)
     scale = RDIV (entry_freq * REG_BR_PROB_BASE, loop->header->frequency);
   scale_loop_profile (loop, scale, 0);

@@ -18,5 +18,3 @@ subroutine sub2
   use m
   class(t), pointer :: a2
 end subroutine
-
-! { dg-final { cleanup-modules "m" } }

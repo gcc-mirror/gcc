@@ -61,9 +61,9 @@ along with GCC; see the file COPYING3.  If not see
 #undef WINT_TYPE_SIZE
 #define WINT_TYPE_SIZE 16
 
-/* Dwarf2 unwind info is not supported.  */
+/* Dwarf2 unwind info is supported.  */
 #undef DWARF2_UNWIND_INFO
-#define DWARF2_UNWIND_INFO 0
+#define DWARF2_UNWIND_INFO 1
 
 /* VxWorks uses DWARF2.  */
 #define DWARF2_DEBUGGING_INFO 1

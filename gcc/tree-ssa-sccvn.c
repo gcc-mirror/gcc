@@ -3328,6 +3328,9 @@ set_ssa_val_to (tree from, tree to)
 	       == get_addr_base_and_unit_offset (TREE_OPERAND (to, 0), &toff))
 	   && coff == toff))
     {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file, " (changed)\n");
+
       /* If we equate two SSA names we have to make the side-band info
          of the leader conservative (and remember whatever original value
 	 was present).  */
@@ -3342,22 +3345,6 @@ set_ssa_val_to (tree from, tree to)
 			 gimple_bb (SSA_NAME_DEF_STMT (to))))
 		/* Keep the info from the dominator.  */
 		;
-	      else if (SSA_NAME_IS_DEFAULT_DEF (from)
-		       || dominated_by_p_w_unex
-			    (gimple_bb (SSA_NAME_DEF_STMT (to)),
-			     gimple_bb (SSA_NAME_DEF_STMT (from))))
-		{
-		  /* Save old info.  */
-		  if (! VN_INFO (to)->info.range_info)
-		    {
-		      VN_INFO (to)->info.range_info = SSA_NAME_RANGE_INFO (to);
-		      VN_INFO (to)->range_info_anti_range_p
-			= SSA_NAME_ANTI_RANGE_P (to);
-		    }
-		  /* Use that from the dominator.  */
-		  SSA_NAME_RANGE_INFO (to) = SSA_NAME_RANGE_INFO (from);
-		  SSA_NAME_ANTI_RANGE_P (to) = SSA_NAME_ANTI_RANGE_P (from);
-		}
 	      else
 		{
 		  /* Save old info.  */
@@ -3369,6 +3356,12 @@ set_ssa_val_to (tree from, tree to)
 		    }
 		  /* Rather than allocating memory and unioning the info
 		     just clear it.  */
+		  if (dump_file && (dump_flags & TDF_DETAILS))
+		    {
+		      fprintf (dump_file, "clearing range info of ");
+		      print_generic_expr (dump_file, to);
+		      fprintf (dump_file, "\n");
+		    }
 		  SSA_NAME_RANGE_INFO (to) = NULL;
 		}
 	    }
@@ -3381,17 +3374,6 @@ set_ssa_val_to (tree from, tree to)
 			 gimple_bb (SSA_NAME_DEF_STMT (to))))
 		/* Keep the info from the dominator.  */
 		;
-	      else if (SSA_NAME_IS_DEFAULT_DEF (from)
-		       || dominated_by_p_w_unex
-			    (gimple_bb (SSA_NAME_DEF_STMT (to)),
-			     gimple_bb (SSA_NAME_DEF_STMT (from))))
-		{
-		  /* Save old info.  */
-		  if (! VN_INFO (to)->info.ptr_info)
-		    VN_INFO (to)->info.ptr_info = SSA_NAME_PTR_INFO (to);
-		  /* Use that from the dominator.  */
-		  SSA_NAME_PTR_INFO (to) = SSA_NAME_PTR_INFO (from);
-		}
 	      else if (! SSA_NAME_PTR_INFO (from)
 		       /* Handle the case of trivially equivalent info.  */
 		       || memcmp (SSA_NAME_PTR_INFO (to),
@@ -3403,14 +3385,18 @@ set_ssa_val_to (tree from, tree to)
 		    VN_INFO (to)->info.ptr_info = SSA_NAME_PTR_INFO (to);
 		  /* Rather than allocating memory and unioning the info
 		     just clear it.  */
+		  if (dump_file && (dump_flags & TDF_DETAILS))
+		    {
+		      fprintf (dump_file, "clearing points-to info of ");
+		      print_generic_expr (dump_file, to);
+		      fprintf (dump_file, "\n");
+		    }
 		  SSA_NAME_PTR_INFO (to) = NULL;
 		}
 	    }
 	}
 
       VN_INFO (from)->valnum = to;
-      if (dump_file && (dump_flags & TDF_DETAILS))
-	fprintf (dump_file, " (changed)\n");
       return true;
     }
   if (dump_file && (dump_flags & TDF_DETAILS))

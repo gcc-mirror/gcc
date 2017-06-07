@@ -928,7 +928,7 @@ TREE_CORE_H = tree-core.h coretypes.h all-tree.def tree.def \
 TREE_H = tree.h $(TREE_CORE_H)  tree-check.h
 REGSET_H = regset.h $(BITMAP_H) hard-reg-set.h
 BASIC_BLOCK_H = basic-block.h $(PREDICT_H) $(VEC_H) $(FUNCTION_H) \
-	cfg-flags.def cfghooks.h
+	cfg-flags.def cfghooks.h profile-count.h
 GIMPLE_H = gimple.h gimple.def gsstruct.def $(VEC_H) \
 	$(GGC_H) $(BASIC_BLOCK_H) $(TREE_H) tree-ssa-operands.h \
 	tree-ssa-alias.h $(INTERNAL_FN_H) $(HASH_TABLE_H) is-a.h
@@ -1417,6 +1417,7 @@ OBJS = \
 	print-rtl-function.o \
 	print-tree.o \
 	profile.o \
+	profile-count.o \
 	read-md.o \
 	read-rtl.o \
 	read-rtl-function.o \
@@ -2459,7 +2460,7 @@ GTFILES = $(CPP_ID_DATA_H) $(srcdir)/input.h $(srcdir)/coretypes.h \
   $(srcdir)/libfuncs.h $(SYMTAB_H) \
   $(srcdir)/real.h $(srcdir)/function.h $(srcdir)/insn-addr.h $(srcdir)/hwint.h \
   $(srcdir)/fixed-value.h \
-  $(srcdir)/output.h $(srcdir)/cfgloop.h $(srcdir)/cfg.h \
+  $(srcdir)/output.h $(srcdir)/cfgloop.h $(srcdir)/cfg.h $(srcdir)/profile-count.h \
   $(srcdir)/cselib.h $(srcdir)/basic-block.h  $(srcdir)/ipa-ref.h $(srcdir)/cgraph.h \
   $(srcdir)/reload.h $(srcdir)/caller-save.c $(srcdir)/symtab.c \
   $(srcdir)/alias.c $(srcdir)/bitmap.c $(srcdir)/cselib.c $(srcdir)/cgraph.c \
