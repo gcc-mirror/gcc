@@ -1,5 +1,11 @@
 2017-06-07  Bin Cheng  <bin.cheng@arm.com>
 
+	* tree-affine.c (ssa.h): Include header file.
+	(tree_to_aff_combination): Handle (T1)(X - CST) when inner type
+	has wrapping overflow behavior.
+
+2017-06-07  Bin Cheng  <bin.cheng@arm.com>
+
 	* tree-affine.c (tree_to_aff_combination): Handle (T1)(X + X).
 
 2017-06-07  Bin Cheng  <bin.cheng@arm.com>
