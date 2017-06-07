@@ -1095,10 +1095,11 @@ vect_update_inits_of_drs (loop_vec_info loop_vinfo, tree niters)
 
 
 /* This function builds ni_name = number of iterations.  Statements
-   are emitted on the loop preheader edge.  */
+   are emitted on the loop preheader edge.  If NEW_VAR_P is not NULL, set
+   it to TRUE if new ssa_var is generated.  */
 
 tree
-vect_build_loop_niters (loop_vec_info loop_vinfo)
+vect_build_loop_niters (loop_vec_info loop_vinfo, bool *new_var_p)
 {
   tree ni = unshare_expr (LOOP_VINFO_NITERS (loop_vinfo));
   if (TREE_CODE (ni) == INTEGER_CST)
@@ -1112,7 +1113,11 @@ vect_build_loop_niters (loop_vec_info loop_vinfo)
       var = create_tmp_var (TREE_TYPE (ni), "niters");
       ni_name = force_gimple_operand (ni, &stmts, false, var);
       if (stmts)
-	gsi_insert_seq_on_edge_immediate (pe, stmts);
+	{
+	  gsi_insert_seq_on_edge_immediate (pe, stmts);
+	  if (new_var_p != NULL)
+	    *new_var_p = true;
+	}
 
       return ni_name;
     }
@@ -1177,22 +1182,21 @@ vect_gen_vector_loop_niters (loop_vec_info loop_vinfo, tree niters,
 			     tree *niters_vector_ptr, bool niters_no_overflow)
 {
   tree ni_minus_gap, var;
-  tree niters_vector;
+  tree niters_vector, type = TREE_TYPE (niters);
   int vf = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
   edge pe = loop_preheader_edge (LOOP_VINFO_LOOP (loop_vinfo));
-  tree log_vf = build_int_cst (TREE_TYPE (niters), exact_log2 (vf));
+  tree log_vf = build_int_cst (type, exact_log2 (vf));
 
   /* If epilogue loop is required because of data accesses with gaps, we
      subtract one iteration from the total number of iterations here for
      correct calculation of RATIO.  */
   if (LOOP_VINFO_PEELING_FOR_GAPS (loop_vinfo))
     {
-      ni_minus_gap = fold_build2 (MINUS_EXPR, TREE_TYPE (niters),
-				  niters,
-				  build_one_cst (TREE_TYPE (niters)));
+      ni_minus_gap = fold_build2 (MINUS_EXPR, type, niters,
+				  build_one_cst (type));
       if (!is_gimple_val (ni_minus_gap))
 	{
-	  var = create_tmp_var (TREE_TYPE (niters), "ni_gap");
+	  var = create_tmp_var (type, "ni_gap");
 	  gimple *stmts = NULL;
 	  ni_minus_gap = force_gimple_operand (ni_minus_gap, &stmts,
 					       true, var);
@@ -1208,25 +1212,28 @@ vect_gen_vector_loop_niters (loop_vec_info loop_vinfo, tree niters,
      (niters - vf) >> log2(vf) + 1 by using the fact that we know ratio
      will be at least one.  */
   if (niters_no_overflow)
-    niters_vector = fold_build2 (RSHIFT_EXPR, TREE_TYPE (niters),
-				 ni_minus_gap, log_vf);
+    niters_vector = fold_build2 (RSHIFT_EXPR, type, ni_minus_gap, log_vf);
   else
     niters_vector
-      = fold_build2 (PLUS_EXPR, TREE_TYPE (niters),
-		     fold_build2 (RSHIFT_EXPR, TREE_TYPE (niters),
-				  fold_build2 (MINUS_EXPR, TREE_TYPE (niters),
-					       ni_minus_gap,
-					       build_int_cst
-						 (TREE_TYPE (niters), vf)),
+      = fold_build2 (PLUS_EXPR, type,
+		     fold_build2 (RSHIFT_EXPR, type,
+				  fold_build2 (MINUS_EXPR, type, ni_minus_gap,
+					       build_int_cst (type, vf)),
 				  log_vf),
-		     build_int_cst (TREE_TYPE (niters), 1));
+		     build_int_cst (type, 1));
 
   if (!is_gimple_val (niters_vector))
     {
-      var = create_tmp_var (TREE_TYPE (niters), "bnd");
-      gimple *stmts = NULL;
+      var = create_tmp_var (type, "bnd");
+      gimple_seq stmts = NULL;
       niters_vector = force_gimple_operand (niters_vector, &stmts, true, var);
       gsi_insert_seq_on_edge_immediate (pe, stmts);
+      /* Peeling algorithm guarantees that vector loop bound is at least ONE,
+	 we set range information to make niters analyzer's life easier.  */
+      if (stmts != NULL)
+	set_range_info (niters_vector, VR_RANGE, build_int_cst (type, 1),
+			fold_build2 (RSHIFT_EXPR, type,
+				     TYPE_MAX_VALUE (type), log_vf));
     }
   *niters_vector_ptr = niters_vector;
 
@@ -1771,7 +1778,13 @@ vect_do_peeling (loop_vec_info loop_vinfo, tree niters, tree nitersm1,
       LOOP_VINFO_NITERSM1 (loop_vinfo)
 	= fold_build2 (MINUS_EXPR, type,
 		       LOOP_VINFO_NITERSM1 (loop_vinfo), niters_prolog);
-      niters = vect_build_loop_niters (loop_vinfo);
+      bool new_var_p = false;
+      niters = vect_build_loop_niters (loop_vinfo, &new_var_p);
+      /* It's guaranteed that vector loop bound before vectorization is at
+	 least VF, so set range information for newly generated var.  */
+      if (new_var_p)
+	set_range_info (niters, VR_RANGE,
+			build_int_cst (type, vf), TYPE_MAX_VALUE (type));
 
       /* Prolog iterates at most bound_prolog times, latch iterates at
 	 most bound_prolog - 1 times.  */

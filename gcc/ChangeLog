@@ -1,5 +1,14 @@
 2017-06-07  Bin Cheng  <bin.cheng@arm.com>
 
+	* tree-vectorizer.h (vect_build_loop_niters): New parameter.
+	* tree-vect-loop-manip.c (vect_build_loop_niters): New parameter.
+	Set true to new parameter if new ssa variable is defined.
+	(vect_gen_vector_loop_niters): Refactor.  Set range information
+	for the new vector loop bound variable.
+	(vect_do_peeling): Ditto.
+
+2017-06-07  Bin Cheng  <bin.cheng@arm.com>
+
 	* tree-affine.c (ssa.h): Include header file.
 	(tree_to_aff_combination): Handle (T1)(X - CST) when inner type
 	has wrapping overflow behavior.
