@@ -1,3 +1,12 @@
+2017-06-07  Tony Reix  <tony.reix@atos.net>
+	    Matthieu Sarter  <matthieu.sarter.external@atos.net>
+	    David Edelsohn  <dje.gcc@gmail.com>
+
+        * config/rs6000/aix-unwind.h (MD_FALLBACK_FRAME_STATE_FOR): Define
+        unconditionally.
+        (ucontext_for): Add 64-bit AIX 6.1, 7.1, 7.2 support.  Add 32-bit
+        AIX 7.2 support.
+
 2017-06-02  Olivier Hainque  <hainque@adacore.com>
 
 	* config/vxlib.c (__gthread_once): Add missing value to
