@@ -1,3 +1,32 @@
+2017-06-07  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2017-05-02  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/80549
+	* gcc.dg/torture/pr80549.c: New testcase.
+
+	2017-05-19  Richard Biener  <rguenther@suse.de>
+
+	PR c++/80593
+	* g++.dg/warn/Wstrict-aliasing-bogus-char-2.C: New testcase.
+	* g++.dg/warn/Wstrict-aliasing-6.C: Adjust expected outcome.
+
+	2017-05-26  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/80842
+	* gcc.dg/torture/pr80842.c: New testcase.
+
+	2017-05-31  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/80906
+	* gcc.dg/graphite/pr80906.c: New testcase.
+
+	2017-05-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/80705
+	* gcc.dg/vect/bb-slp-pr80705.c: New testcase.
+
 2017-06-07  Marek Polacek  <polacek@redhat.com>
 
 	Backport from mainline

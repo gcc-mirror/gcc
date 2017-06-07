@@ -1,3 +1,12 @@
+2017-06-07  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2017-05-19  Richard Biener  <rguenther@suse.de>
+
+	PR c++/80593
+	* c-warn.c (strict_aliasing_warning): Do not warn for accesses
+	to alias-set zero memory.
+
 2017-06-07  Marek Polacek  <polacek@redhat.com>
 
 	Backport from mainline
