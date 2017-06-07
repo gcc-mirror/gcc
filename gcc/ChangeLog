@@ -1,5 +1,19 @@
 2017-06-07  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	* config/rs6000/predicates.md: Replace TARGET_E500_DOUBLE and
+	TARGET_E500_SINGLE by 0, simplify.
+	* config/rs6000/rs6000.c: Ditto.
+	(rs6000_option_override_internal): Delete CHECK_E500_OPTIONS.
+	(spe_build_register_parallel): Delete.
+	* config/rs6000/rs6000.h: Delete TARGET_E500_SINGLE,
+	TARGET_E500_DOUBLE, and CHECK_E500_OPTIONS.
+	* config/rs6000/rs6000.md: Replace TARGET_E500_DOUBLE,
+	TARGET_E500_SINGLE, and <E500_CONVERT> by 0, simplify.
+	(E500_CONVERT): Delete.
+	* config/rs6000/spe.md: Remove many patterns and all define_constants.
+
+2017-06-07  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	* config/rs6000/darwin.md: Replace TARGET_FPRS by 1 and simplify.
 	* config/rs6000/dfp.md: Ditto.
 	(negdd2, *negdd2_fpr): Merge.
