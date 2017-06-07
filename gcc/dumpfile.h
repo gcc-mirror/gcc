@@ -31,7 +31,7 @@ enum tree_dump_index
   TDI_inheritance,		/* dump type inheritance graph.  */
   TDI_clones,			/* dump IPA cloning decisions.  */
   TDI_original,			/* dump each function before optimizing it */
-  TDI_generic,			/* dump each function after genericizing it */
+  TDI_gimple,			/* dump each function after gimplifying it */
   TDI_nested,			/* dump each function after unnesting it */
 
   TDI_lang_all,			/* enable all the language dumps.  */
@@ -211,6 +211,11 @@ public:
   unsigned int
   dump_register (const char *suffix, const char *swtch, const char *glob,
 		 dump_kind dkind, int optgroup_flags, bool take_ownership);
+
+  /* Allow languages and middle-end to register their dumps before the
+     optimization passes.  */
+  void
+  register_dumps ();
 
   /* Return the dump_file_info for the given phase.  */
   struct dump_file_info *

@@ -116,7 +116,7 @@ c_parser_parse_gimple_body (c_parser *parser)
      we have to go through lowering again.  */
   cfun->curr_properties = PROP_gimple_any;
 
-  dump_function (TDI_generic, current_function_decl);
+  dump_function (TDI_gimple, current_function_decl);
 }
 
 /* Parse a compound statement in gimple function body.

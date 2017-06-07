@@ -1,3 +1,19 @@
+2017-06-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* dumpfile.h (enum tree_dump_index): Rename TDI_generic to
+	TDI_gimple.
+	(class dump_manager): Add register_dumps method.
+	* dumpfile.c: Include langhooks.h.
+	(dump_files): Use 0 instead of 3/4/5 for TDI_{original,gimple,nested}.
+	(FIRST_AUTO_NUMBERED_DUMP): Decrease to 1.
+	(FIRST_ME_AUTO_NUMBERED_DUMP): Define.
+	(dump_manager::dump_register): Start with 512 entries instead of 32.
+	(dump_manager::register_dumps): New method.
+	* toplev.c (general_init): Instead of invoking register_dumps
+	langhook, invoke register_dumps method on the dump manager.
+	* gimplify.c (gimplify_function_tree): Use TDI_gimple instead of
+	TDI_generic.
+
 2017-06-07  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	* doc/md.texi: Clarify the restrictions on a define_insn condition.
