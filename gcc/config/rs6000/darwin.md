@@ -30,7 +30,7 @@ You should have received a copy of the GNU General Public License
   [(set (match_operand:DF 0 "gpc_reg_operand" "=f,!r")
         (mem:DF (lo_sum:SI (match_operand:SI 1 "gpc_reg_operand" "b,b")
                            (match_operand 2 "" ""))))]
-  "TARGET_MACHO && TARGET_HARD_FLOAT && TARGET_FPRS && !TARGET_64BIT"
+  "TARGET_MACHO && TARGET_HARD_FLOAT && !TARGET_64BIT"
   "*
 {
   switch (which_alternative)
@@ -61,7 +61,7 @@ You should have received a copy of the GNU General Public License
   [(set (match_operand:DF 0 "gpc_reg_operand" "=f,!r")
         (mem:DF (lo_sum:DI (match_operand:DI 1 "gpc_reg_operand" "b,b")
                            (match_operand 2 "" ""))))]
-  "TARGET_MACHO && TARGET_HARD_FLOAT && TARGET_FPRS && TARGET_64BIT"
+  "TARGET_MACHO && TARGET_HARD_FLOAT && TARGET_64BIT"
   "*
 {
   switch (which_alternative)
@@ -81,7 +81,7 @@ You should have received a copy of the GNU General Public License
   [(set (mem:DF (lo_sum:SI (match_operand:SI 1 "gpc_reg_operand" "b")
                            (match_operand 2 "" "")))
 	(match_operand:DF 0 "gpc_reg_operand" "f"))]
-  "TARGET_MACHO && TARGET_HARD_FLOAT && TARGET_FPRS && ! TARGET_64BIT"
+  "TARGET_MACHO && TARGET_HARD_FLOAT && ! TARGET_64BIT"
   "stfd %0,lo16(%2)(%1)"
   [(set_attr "type" "store")
    (set_attr "length" "4")])
@@ -90,7 +90,7 @@ You should have received a copy of the GNU General Public License
   [(set (mem:DF (lo_sum:DI (match_operand:DI 1 "gpc_reg_operand" "b")
                            (match_operand 2 "" "")))
 	(match_operand:DF 0 "gpc_reg_operand" "f"))]
-  "TARGET_MACHO && TARGET_HARD_FLOAT && TARGET_FPRS && TARGET_64BIT"
+  "TARGET_MACHO && TARGET_HARD_FLOAT && TARGET_64BIT"
   "stfd %0,lo16(%2)(%1)"
   [(set_attr "type" "store")
    (set_attr "length" "4")])
@@ -99,7 +99,7 @@ You should have received a copy of the GNU General Public License
   [(set (match_operand:SF 0 "gpc_reg_operand" "=f,!r")
         (mem:SF (lo_sum:SI (match_operand:SI 1 "gpc_reg_operand" "b,b")
                            (match_operand 2 "" ""))))]
-  "TARGET_MACHO && TARGET_HARD_FLOAT && TARGET_FPRS && ! TARGET_64BIT"
+  "TARGET_MACHO && TARGET_HARD_FLOAT && ! TARGET_64BIT"
   "@
    lfs %0,lo16(%2)(%1)
    lwz %0,lo16(%2)(%1)"
@@ -110,7 +110,7 @@ You should have received a copy of the GNU General Public License
   [(set (match_operand:SF 0 "gpc_reg_operand" "=f,!r")
         (mem:SF (lo_sum:DI (match_operand:DI 1 "gpc_reg_operand" "b,b")
                            (match_operand 2 "" ""))))]
-  "TARGET_MACHO && TARGET_HARD_FLOAT && TARGET_FPRS && TARGET_64BIT"
+  "TARGET_MACHO && TARGET_HARD_FLOAT && TARGET_64BIT"
   "@
    lfs %0,lo16(%2)(%1)
    lwz %0,lo16(%2)(%1)"
@@ -121,7 +121,7 @@ You should have received a copy of the GNU General Public License
   [(set (mem:SF (lo_sum:SI (match_operand:SI 1 "gpc_reg_operand" "b,b")
                            (match_operand 2 "" "")))
 	(match_operand:SF 0 "gpc_reg_operand" "f,!r"))]
-  "TARGET_MACHO && TARGET_HARD_FLOAT && TARGET_FPRS && ! TARGET_64BIT"
+  "TARGET_MACHO && TARGET_HARD_FLOAT && ! TARGET_64BIT"
   "@
    stfs %0,lo16(%2)(%1)
    stw %0,lo16(%2)(%1)"
@@ -132,7 +132,7 @@ You should have received a copy of the GNU General Public License
   [(set (mem:SF (lo_sum:DI (match_operand:DI 1 "gpc_reg_operand" "b,b")
                            (match_operand 2 "" "")))
 	(match_operand:SF 0 "gpc_reg_operand" "f,!r"))]
-  "TARGET_MACHO && TARGET_HARD_FLOAT && TARGET_FPRS && TARGET_64BIT"
+  "TARGET_MACHO && TARGET_HARD_FLOAT && TARGET_64BIT"
   "@
    stfs %0,lo16(%2)(%1)
    stw %0,lo16(%2)(%1)"

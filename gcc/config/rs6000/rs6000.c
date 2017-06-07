@@ -2853,9 +2853,6 @@ rs6000_debug_reg_global (void)
   if (rs6000_float_gprs)
     fprintf (stderr, DEBUG_FMT_S, "float_gprs", "true");
 
-  fprintf (stderr, DEBUG_FMT_S, "fprs",
-	   (TARGET_FPRS ? "true" : "false"));
-
   fprintf (stderr, DEBUG_FMT_S, "single_float",
 	   (TARGET_SINGLE_FLOAT ? "true" : "false"));
 
@@ -3295,10 +3292,10 @@ rs6000_init_hard_regno_mode_ok (bool global_init_p)
 	wJ - VSX register if QImode/HImode are allowed in VSX registers.
 	wK - Altivec register if QImode/HImode are allowed in VSX registers.  */
 
-  if (TARGET_HARD_FLOAT && TARGET_FPRS)
+  if (TARGET_HARD_FLOAT)
     rs6000_constraints[RS6000_CONSTRAINT_f] = FLOAT_REGS;	/* SFmode  */
 
-  if (TARGET_HARD_FLOAT && TARGET_FPRS && TARGET_DOUBLE_FLOAT)
+  if (TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT)
     rs6000_constraints[RS6000_CONSTRAINT_d]  = FLOAT_REGS;	/* DFmode  */
 
   if (TARGET_VSX)
@@ -3663,8 +3660,7 @@ rs6000_init_hard_regno_mode_ok (bool global_init_p)
 	  if (addis_insns[i].pmode != cur_pmode)
 	    continue;
 
-	  if (rtype == RELOAD_REG_FPR
-	      && (!TARGET_HARD_FLOAT || !TARGET_FPRS))
+	  if (rtype == RELOAD_REG_FPR && !TARGET_HARD_FLOAT)
 	    continue;
 
 	  reg_addr[xmode].fusion_addis_ld[rtype] = addis_insns[i].load;
@@ -3689,7 +3685,7 @@ rs6000_init_hard_regno_mode_ok (bool global_init_p)
       reg_addr[HImode].fused_toc = true;
       reg_addr[SImode].fused_toc = true;
       reg_addr[DImode].fused_toc = true;
-      if (TARGET_HARD_FLOAT && TARGET_FPRS)
+      if (TARGET_HARD_FLOAT)
 	{
 	  if (TARGET_SINGLE_FLOAT)
 	    reg_addr[SFmode].fused_toc = true;
@@ -4355,8 +4351,7 @@ rs6000_option_override_internal (bool global_init_p)
   if (TARGET_VSX)
     {
       const char *msg = NULL;
-      if (!TARGET_HARD_FLOAT || !TARGET_FPRS
-	  || !TARGET_SINGLE_FLOAT || !TARGET_DOUBLE_FLOAT)
+      if (!TARGET_HARD_FLOAT || !TARGET_SINGLE_FLOAT || !TARGET_DOUBLE_FLOAT)
 	{
 	  if (rs6000_isa_flags_explicit & OPTION_MASK_VSX)
 	    msg = N_("-mvsx requires hardware floating point");
@@ -5550,8 +5545,7 @@ rs6000_option_override_internal (bool global_init_p)
   /* Set up single/double float flags.  
      If TARGET_HARD_FLOAT is set, but neither single or double is set, 
      then set both flags. */
-  if (TARGET_HARD_FLOAT && TARGET_FPRS 
-      && rs6000_single_float == 0 && rs6000_double_float == 0)
+  if (TARGET_HARD_FLOAT && rs6000_single_float == 0 && rs6000_double_float == 0)
     rs6000_single_float = rs6000_double_float = 1;
 
   /* If not explicitly specified via option, decide whether to generate indexed
@@ -9104,7 +9098,7 @@ legitimate_lo_sum_address_p (machine_mode mode, rtx x, int strict)
 	return false;
       if (GET_MODE_SIZE (mode) > UNITS_PER_WORD
 	  && !(/* ??? Assume floating point reg based on mode?  */
-	       TARGET_HARD_FLOAT && TARGET_FPRS && TARGET_DOUBLE_FLOAT
+	       TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT
 	       && (mode == DFmode || mode == DDmode)))
 	return false;
 
@@ -9215,7 +9209,7 @@ rs6000_legitimize_address (rtx x, rtx oldx ATTRIBUTE_UNUSED,
 	   && GET_MODE_NUNITS (mode) == 1
 	   && (GET_MODE_SIZE (mode) <= UNITS_PER_WORD
 	       || (/* ??? Assume floating point reg based on mode?  */
-		   (TARGET_HARD_FLOAT && TARGET_FPRS && TARGET_DOUBLE_FLOAT)
+		   (TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT)
 		   && (mode == DFmode || mode == DDmode)))
 	   && !avoiding_indexed_address_p (mode))
     {
@@ -9271,7 +9265,7 @@ rs6000_legitimize_address (rtx x, rtx oldx ATTRIBUTE_UNUSED,
 	   && GET_MODE_NUNITS (mode) == 1
 	   && (GET_MODE_SIZE (mode) <= UNITS_PER_WORD
 	       || (/* ??? Assume floating point reg based on mode?  */
-		   (TARGET_HARD_FLOAT && TARGET_FPRS && TARGET_DOUBLE_FLOAT)
+		   (TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT)
 		   && (mode == DFmode || mode == DDmode))))
     {
       rtx reg = gen_reg_rtx (Pmode);
@@ -10063,7 +10057,7 @@ rs6000_legitimize_reload_address (rtx x, machine_mode mode,
       && mode != PTImode
       && (mode != DImode || TARGET_POWERPC64)
       && ((mode != DFmode && mode != DDmode) || TARGET_POWERPC64
-	  || (TARGET_HARD_FLOAT && TARGET_FPRS && TARGET_DOUBLE_FLOAT)))
+	  || (TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT)))
     {
 #if TARGET_MACHO
       if (flag_pic)
@@ -10244,7 +10238,7 @@ rs6000_legitimate_address_p (machine_mode mode, rtx x, bool reg_ok_strict)
   if (rs6000_legitimate_offset_address_p (mode, x, reg_ok_strict, false))
     return 1;
   if (!FLOAT128_2REG_P (mode)
-      && ((TARGET_HARD_FLOAT && TARGET_FPRS && TARGET_DOUBLE_FLOAT)
+      && ((TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT)
 	  || TARGET_POWERPC64
 	  || (mode != DFmode && mode != DDmode)
 	  || (TARGET_E500_DOUBLE && mode != DDmode))
@@ -10476,7 +10470,7 @@ rs6000_conditional_register_usage (void)
       = call_really_used_regs[13] = 1;
 
   /* Conditionally disable FPRs.  */
-  if (TARGET_SOFT_FLOAT || !TARGET_FPRS)
+  if (TARGET_SOFT_FLOAT)
     for (i = 32; i < 64; i++)
       fixed_regs[i] = call_used_regs[i]
 	= call_really_used_regs[i] = 1;
@@ -11445,7 +11439,7 @@ rs6000_member_type_forces_blk (const_tree field, machine_mode mode)
 #define USE_FP_FOR_ARG_P(CUM,MODE)		\
   (SCALAR_FLOAT_MODE_NOT_VECTOR_P (MODE)		\
    && (CUM)->fregno <= FP_ARG_MAX_REG		\
-   && TARGET_HARD_FLOAT && TARGET_FPRS)
+   && TARGET_HARD_FLOAT)
 
 /* Nonzero if we can use an AltiVec register to pass this arg.  */
 #define USE_ALTIVEC_FOR_ARG_P(CUM,MODE,NAMED)			\
@@ -11971,7 +11965,7 @@ is_complex_IBM_long_double (machine_mode mode)
 static bool
 abi_v4_pass_in_fpr (machine_mode mode)
 {
-  if (!TARGET_FPRS || !TARGET_HARD_FLOAT)
+  if (!TARGET_HARD_FLOAT)
     return false;
   if (TARGET_SINGLE_FLOAT && mode == SFmode)
     return true;
@@ -12071,7 +12065,6 @@ rs6000_function_arg_boundary (machine_mode mode, const_tree type)
   if (DEFAULT_ABI == ABI_V4
       && (GET_MODE_SIZE (mode) == 8
 	  || (TARGET_HARD_FLOAT
-	      && TARGET_FPRS
 	      && !is_complex_IBM_long_double (mode)
 	      && FLOAT128_2REG_P (mode))))
     return 64;
@@ -12524,7 +12517,7 @@ rs6000_function_arg_advance_1 (CUMULATIVE_ARGS *cum, machine_mode mode,
 
       cum->words = align_words + n_words;
 
-      if (SCALAR_FLOAT_MODE_P (elt_mode) && TARGET_HARD_FLOAT && TARGET_FPRS)
+      if (SCALAR_FLOAT_MODE_P (elt_mode) && TARGET_HARD_FLOAT)
 	{
 	  /* _Decimal128 must be passed in an even/odd float register pair.
 	     This assumes that the register number is odd when fregno is
@@ -13016,7 +13009,7 @@ rs6000_function_arg (cumulative_args_t cum_v, machine_mode mode,
 	  /* For the SPE, we need to crxor CR6 always.  */
 	  if (TARGET_SPE_ABI)
 	    return GEN_INT (cum->call_cookie | CALL_V4_SET_FP_ARGS);
-	  else if (TARGET_HARD_FLOAT && TARGET_FPRS)
+	  else if (TARGET_HARD_FLOAT)
 	    return GEN_INT (cum->call_cookie
 			    | ((cum->fregno == FP_ARG_MIN_REG)
 			       ? CALL_V4_SET_FP_ARGS
@@ -13652,7 +13645,7 @@ setup_incoming_varargs (cumulative_args_t cum, machine_mode mode,
 	     anything.  */
 	  if (cfun->va_list_gpr_size && first_reg_offset < GP_ARG_NUM_REG)
 	    gpr_reg_num = GP_ARG_NUM_REG - first_reg_offset;
-	  if (TARGET_HARD_FLOAT && TARGET_FPRS
+	  if (TARGET_HARD_FLOAT
 	      && next_cum.fregno <= FP_ARG_V4_MAX_REG
 	      && cfun->va_list_fpr_size)
 	    {
@@ -13741,7 +13734,7 @@ setup_incoming_varargs (cumulative_args_t cum, machine_mode mode,
 
   /* Save FP registers if needed.  */
   if (DEFAULT_ABI == ABI_V4
-      && TARGET_HARD_FLOAT && TARGET_FPRS
+      && TARGET_HARD_FLOAT
       && ! no_rtl
       && next_cum.fregno <= FP_ARG_V4_MAX_REG
       && cfun->va_list_fpr_size)
@@ -14112,9 +14105,7 @@ rs6000_gimplify_va_arg (tree valist, tree type, gimple_seq *pre_p,
 
       /* _Decimal32 varargs are located in the second word of the 64-bit
 	 FP register for 32-bit binaries.  */
-      if (TARGET_32BIT
-	  && TARGET_HARD_FLOAT && TARGET_FPRS
-	  && mode == SDmode)
+      if (TARGET_32BIT && TARGET_HARD_FLOAT && mode == SDmode)
 	t = fold_build_pointer_plus_hwi (t, size);
 
       /* Args are passed right-aligned.  */
@@ -19506,7 +19497,7 @@ init_float128_ibm (machine_mode mode)
       set_optab_libfunc (smul_optab, mode, "__gcc_qmul");
       set_optab_libfunc (sdiv_optab, mode, "__gcc_qdiv");
 
-      if (!(TARGET_HARD_FLOAT && (TARGET_FPRS || TARGET_E500_DOUBLE)))
+      if (!TARGET_HARD_FLOAT)
 	{
 	  set_optab_libfunc (neg_optab, mode, "__gcc_qneg");
 	  set_optab_libfunc (eq_optab, mode, "__gcc_qeq");
@@ -19515,6 +19506,7 @@ init_float128_ibm (machine_mode mode)
 	  set_optab_libfunc (ge_optab, mode, "__gcc_qge");
 	  set_optab_libfunc (lt_optab, mode, "__gcc_qlt");
 	  set_optab_libfunc (le_optab, mode, "__gcc_qle");
+	  set_optab_libfunc (unord_optab, mode, "__gcc_qunord");
 
 	  set_conv_libfunc (sext_optab, mode, SFmode, "__gcc_stoq");
 	  set_conv_libfunc (sext_optab, mode, DFmode, "__gcc_dtoq");
@@ -19525,9 +19517,6 @@ init_float128_ibm (machine_mode mode)
 	  set_conv_libfunc (sfloat_optab, mode, SImode, "__gcc_itoq");
 	  set_conv_libfunc (ufloat_optab, mode, SImode, "__gcc_utoq");
 	}
-
-      if (!(TARGET_HARD_FLOAT && TARGET_FPRS))
-	set_optab_libfunc (unord_optab, mode, "__gcc_qunord");
     }
   else
     {
@@ -24593,187 +24582,9 @@ rs6000_generate_compare (rtx cmp, machine_mode mode)
   /* First, the compare.  */
   compare_result = gen_reg_rtx (comp_mode);
 
-  /* E500 FP compare instructions on the GPRs.  Yuck!  */
-  if ((!TARGET_FPRS && TARGET_HARD_FLOAT)
-      && FLOAT_MODE_P (mode))
-    {
-      rtx cmp, or_result, compare_result2;
-      machine_mode op_mode = GET_MODE (op0);
-      bool reverse_p;
-
-      if (op_mode == VOIDmode)
-	op_mode = GET_MODE (op1);
-
-      /* First reverse the condition codes that aren't directly supported.  */
-      switch (code)
-	{
-	  case NE:
-	  case UNLT:
-	  case UNLE:
-	  case UNGT:
-	  case UNGE:
-	    code = reverse_condition_maybe_unordered (code);
-	    reverse_p = true;
-	    break;
-
-	  case EQ:
-	  case LT:
-	  case LE:
-	  case GT:
-	  case GE:
-	    reverse_p = false;
-	    break;
-
-	  default:
-	    gcc_unreachable ();
-	}
-
-      /* The E500 FP compare instructions toggle the GT bit (CR bit 1) only.
-	 This explains the following mess.  */
-
-      switch (code)
-	{
-	case EQ:
-	  switch (op_mode)
-	    {
-	    case SFmode:
-	      cmp = (flag_finite_math_only && !flag_trapping_math)
-		? gen_tstsfeq_gpr (compare_result, op0, op1)
-		: gen_cmpsfeq_gpr (compare_result, op0, op1);
-	      break;
-
-	    case DFmode:
-	      cmp = (flag_finite_math_only && !flag_trapping_math)
-		? gen_tstdfeq_gpr (compare_result, op0, op1)
-		: gen_cmpdfeq_gpr (compare_result, op0, op1);
-	      break;
-
-	    case TFmode:
-	    case IFmode:
-	    case KFmode:
-	      cmp = (flag_finite_math_only && !flag_trapping_math)
-		? gen_tsttfeq_gpr (compare_result, op0, op1)
-		: gen_cmptfeq_gpr (compare_result, op0, op1);
-	      break;
-
-	    default:
-	      gcc_unreachable ();
-	    }
-	  break;
-
-	case GT:
-	case GE:
-	  switch (op_mode)
-	    {
-	    case SFmode:
-	      cmp = (flag_finite_math_only && !flag_trapping_math)
-		? gen_tstsfgt_gpr (compare_result, op0, op1)
-		: gen_cmpsfgt_gpr (compare_result, op0, op1);
-	      break;
-
-	    case DFmode:
-	      cmp = (flag_finite_math_only && !flag_trapping_math)
-		? gen_tstdfgt_gpr (compare_result, op0, op1)
-		: gen_cmpdfgt_gpr (compare_result, op0, op1);
-	      break;
-
-	    case TFmode:
-	    case IFmode:
-	    case KFmode:
-	      cmp = (flag_finite_math_only && !flag_trapping_math)
-		? gen_tsttfgt_gpr (compare_result, op0, op1)
-		: gen_cmptfgt_gpr (compare_result, op0, op1);
-	      break;
-
-	    default:
-	      gcc_unreachable ();
-	    }
-	  break;
-
-	case LT: 
-	case LE:
-	  switch (op_mode)
-	    {
-	    case SFmode:
-	      cmp = (flag_finite_math_only && !flag_trapping_math)
-		? gen_tstsflt_gpr (compare_result, op0, op1)
-		: gen_cmpsflt_gpr (compare_result, op0, op1);
-	      break;
-
-	    case DFmode:
-	      cmp = (flag_finite_math_only && !flag_trapping_math)
-		? gen_tstdflt_gpr (compare_result, op0, op1)
-		: gen_cmpdflt_gpr (compare_result, op0, op1);
-	      break;
-
-	    case TFmode:
-	    case IFmode:
-	    case KFmode:
-	      cmp = (flag_finite_math_only && !flag_trapping_math)
-		? gen_tsttflt_gpr (compare_result, op0, op1)
-		: gen_cmptflt_gpr (compare_result, op0, op1);
-	      break;
-
-	    default:
-	      gcc_unreachable ();
-	    }
-	  break;
-
-        default:
-          gcc_unreachable ();
-	}
-
-      /* Synthesize LE and GE from LT/GT || EQ.  */
-      if (code == LE || code == GE)
-	{
-	  emit_insn (cmp);
-
-	  compare_result2 = gen_reg_rtx (CCFPmode);
-
-	  /* Do the EQ.  */
-	  switch (op_mode)
-	    {
-	    case SFmode:
-	      cmp = (flag_finite_math_only && !flag_trapping_math)
-		? gen_tstsfeq_gpr (compare_result2, op0, op1)
-		: gen_cmpsfeq_gpr (compare_result2, op0, op1);
-	      break;
-
-	    case DFmode:
-	      cmp = (flag_finite_math_only && !flag_trapping_math)
-		? gen_tstdfeq_gpr (compare_result2, op0, op1)
-		: gen_cmpdfeq_gpr (compare_result2, op0, op1);
-	      break;
-
-	    case TFmode:
-	    case IFmode:
-	    case KFmode:
-	      cmp = (flag_finite_math_only && !flag_trapping_math)
-		? gen_tsttfeq_gpr (compare_result2, op0, op1)
-		: gen_cmptfeq_gpr (compare_result2, op0, op1);
-	      break;
-
-	    default:
-	      gcc_unreachable ();
-	    }
-
-	  emit_insn (cmp);
-
-	  /* OR them together.  */
-	  or_result = gen_reg_rtx (CCFPmode);
-	  cmp = gen_e500_cr_ior_compare (or_result, compare_result,
-					 compare_result2);
-	  compare_result = or_result;
-	}
-
-      code = reverse_p ? NE : EQ;
-
-      emit_insn (cmp);
-    }
-
   /* IEEE 128-bit support in VSX registers when we do not have hardware
      support.  */
-  else if (!TARGET_FLOAT128_HW && FLOAT128_VECTOR_P (mode))
+  if (!TARGET_FLOAT128_HW && FLOAT128_VECTOR_P (mode))
     {
       rtx libfunc = NULL_RTX;
       bool check_nan = false;
@@ -24890,7 +24701,7 @@ rs6000_generate_compare (rtx cmp, machine_mode mode)
 	 CLOBBERs to match cmptf_internal2 pattern.  */
       if (comp_mode == CCFPmode && TARGET_XL_COMPAT
 	  && FLOAT128_IBM_P (GET_MODE (op0))
-	  && TARGET_HARD_FLOAT && TARGET_FPRS)
+	  && TARGET_HARD_FLOAT)
 	emit_insn (gen_rtx_PARALLEL (VOIDmode,
 	  gen_rtvec (10,
 		     gen_rtx_SET (compare_result,
@@ -24925,7 +24736,6 @@ rs6000_generate_compare (rtx cmp, machine_mode mode)
   if (FLOAT_MODE_P (mode)
       && (!FLOAT128_IEEE_P (mode) || TARGET_FLOAT128_HW)
       && !flag_finite_math_only
-      && !(TARGET_HARD_FLOAT && !TARGET_FPRS)
       && (code == LE || code == GE
 	  || code == UNEQ || code == LTGT
 	  || code == UNGT || code == UNLT))
@@ -25287,23 +25097,6 @@ rs6000_emit_sCOND (machine_mode mode, rtx operands[])
   condition_rtx = rs6000_generate_compare (operands[1], mode);
   cond_code = GET_CODE (condition_rtx);
 
-  if (FLOAT_MODE_P (mode)
-      && !TARGET_FPRS && TARGET_HARD_FLOAT)
-    {
-      rtx t;
-
-      PUT_MODE (condition_rtx, SImode);
-      t = XEXP (condition_rtx, 0);
-
-      gcc_assert (cond_code == NE || cond_code == EQ);
-
-      if (cond_code == NE)
-	emit_insn (gen_e500_flip_gt_bit (t, t));
-
-      emit_insn (gen_move_from_CR_gt_bit (result, t));
-      return;
-    }
-
   if (cond_code == NE
       || cond_code == GE || cond_code == LE
       || cond_code == GEU || cond_code == LEU
@@ -25392,26 +25185,6 @@ output_cbranch (rtx op, const char *label, int reversed, rtx_insn *insn)
 	code = reverse_condition_maybe_unordered (code);
       else
 	code = reverse_condition (code);
-    }
-
-  if ((!TARGET_FPRS && TARGET_HARD_FLOAT) && mode == CCFPmode)
-    {
-      /* The efscmp/tst* instructions twiddle bit 2, which maps nicely
-	 to the GT bit.  */
-      switch (code)
-	{
-	case EQ:
-	  /* Opposite of GT.  */
-	  code = GT;
-	  break;
-
-	case NE:
-	  code = UNLE;
-	  break;
-
-	default:
-	  gcc_unreachable ();
-	}
     }
 
   switch (code)
@@ -25937,9 +25710,6 @@ rs6000_emit_cmove (rtx dest, rtx op, rtx true_cond, rtx false_cond)
 	return rs6000_emit_int_cmove (dest, op, true_cond, false_cond);
       return 0;
     }
-  else if (TARGET_HARD_FLOAT && !TARGET_FPRS
-	   && SCALAR_FLOAT_MODE_P (compare_mode))
-    return 0;
 
   is_against_zero = op1 == CONST0_RTX (compare_mode);
 
@@ -36643,9 +36413,9 @@ rs6000_elf_file_end (void)
     {
       int fp;
 
-      if (TARGET_DF_FPR | TARGET_DF_SPE)
+      if (TARGET_DF_FPR)
 	fp = 1;
-      else if (TARGET_SF_FPR | TARGET_SF_SPE)
+      else if (TARGET_SF_FPR)
 	fp = 3;
       else
 	fp = 2;
@@ -37716,8 +37486,7 @@ rs6000_rtx_costs (rtx x, machine_mode mode, int outer_code,
 	  *total = COSTS_N_INSNS (1);
 	  return true;
 	}
-      else if (FLOAT_MODE_P (mode)
-	       && TARGET_PPC_GFXOPT && TARGET_HARD_FLOAT && TARGET_FPRS)
+      else if (FLOAT_MODE_P (mode) && TARGET_PPC_GFXOPT && TARGET_HARD_FLOAT)
 	{
 	  *total = rs6000_cost->fp;
 	  return false;
@@ -38855,7 +38624,7 @@ rs6000_complex_function_value (machine_mode mode)
 	  || (mode == TCmode && TARGET_IEEEQUAD)))
     regno = ALTIVEC_ARG_RETURN;
 
-  else if (FLOAT_MODE_P (mode) && TARGET_HARD_FLOAT && TARGET_FPRS)
+  else if (FLOAT_MODE_P (mode) && TARGET_HARD_FLOAT)
     regno = FP_ARG_RETURN;
 
   else
@@ -38976,10 +38745,10 @@ rs6000_function_value (const_tree valtype,
       || POINTER_TYPE_P (valtype))
     mode = TARGET_32BIT ? SImode : DImode;
 
-  if (DECIMAL_FLOAT_MODE_P (mode) && TARGET_HARD_FLOAT && TARGET_FPRS)
+  if (DECIMAL_FLOAT_MODE_P (mode) && TARGET_HARD_FLOAT)
     /* _Decimal128 must use an even/odd register pair.  */
     regno = (mode == TDmode) ? FP_ARG_RETURN + 1 : FP_ARG_RETURN;
-  else if (SCALAR_FLOAT_TYPE_P (valtype) && TARGET_HARD_FLOAT && TARGET_FPRS
+  else if (SCALAR_FLOAT_TYPE_P (valtype) && TARGET_HARD_FLOAT
 	   && !FLOAT128_VECTOR_P (mode)
 	   && ((TARGET_SINGLE_FLOAT && (mode == SFmode)) || TARGET_DOUBLE_FLOAT))
     regno = FP_ARG_RETURN;
@@ -39014,11 +38783,11 @@ rs6000_libcall_value (machine_mode mode)
   if (TARGET_32BIT && TARGET_POWERPC64 && mode == DImode)
     return rs6000_parallel_return (mode, 2, SImode, GP_ARG_RETURN, 1);
 
-  if (DECIMAL_FLOAT_MODE_P (mode) && TARGET_HARD_FLOAT && TARGET_FPRS)
+  if (DECIMAL_FLOAT_MODE_P (mode) && TARGET_HARD_FLOAT)
     /* _Decimal128 must use an even/odd register pair.  */
     regno = (mode == TDmode) ? FP_ARG_RETURN + 1 : FP_ARG_RETURN;
   else if (SCALAR_FLOAT_MODE_NOT_VECTOR_P (mode)
-	   && TARGET_HARD_FLOAT && TARGET_FPRS
+	   && TARGET_HARD_FLOAT
            && ((TARGET_SINGLE_FLOAT && mode == SFmode) || TARGET_DOUBLE_FLOAT))
     regno = FP_ARG_RETURN;
   /* VSX is a superset of Altivec and adds V2DImode/V2DFmode.  Since the same
@@ -39064,7 +38833,7 @@ rs6000_compute_pressure_classes (enum reg_class *pressure_classes)
     {
       if (TARGET_ALTIVEC)
 	pressure_classes[n++] = ALTIVEC_REGS;
-      if (TARGET_HARD_FLOAT && TARGET_FPRS)
+      if (TARGET_HARD_FLOAT)
 	pressure_classes[n++] = FLOAT_REGS;
     }
   pressure_classes[n++] = CR_REGS;
@@ -44008,7 +43777,7 @@ static tree atomic_hold_decl, atomic_clear_decl, atomic_update_decl;
 static void
 rs6000_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
 {
-  if (!TARGET_HARD_FLOAT || !TARGET_FPRS)
+  if (!TARGET_HARD_FLOAT)
     {
 #ifdef RS6000_GLIBC_ATOMIC_FENV
       if (atomic_hold_decl == NULL_TREE)

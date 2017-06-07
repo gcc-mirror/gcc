@@ -1,3 +1,27 @@
+2017-06-07  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/darwin.md: Replace TARGET_FPRS by 1 and simplify.
+	* config/rs6000/dfp.md: Ditto.
+	(negdd2, *negdd2_fpr): Merge.
+	(absdd2, *absdd2_fpr): Merge.
+	(negtd2, *negtd2_fpr): Merge.
+	(abstd2, *abstd2_fpr): Merge.
+	* config/rs6000/e500.h: Delete file.
+	* config/rs6000/predicates.md (rs6000_cbranch_operator): Replace
+	TARGET_FPRS by 1 and simplify.
+	* config/rs6000/rs6000-c.c: Ditto.
+	* config/rs6000/rs6000.c: Ditto.  Also replace TARGET_SF_SPE and
+	TARGET_DF_SPE by 0.
+	* config/rs6000/rs6000.h: Ditto.  Delete TARGET_SF_SPE and
+	TARGET_DF_SPE.
+	* config/rs6000/rs6000.md: Ditto.
+	(floatdidf2, *floatdidf2_fpr): Merge.
+	(move_from_CR_gt_bit): Delete.
+	* config/rs6000/spe.md: Replace TARGET_FPRS by 1 and simplify.
+	(E500_CR_IOR_COMPARE): Delete.
+	(All patterns that require !TARGET_FPRS): Delete.
+	* config/rs6000/vsx.md: Replace TARGET_FPRS by 1 and simplify.
+
 2017-06-07  Bin Cheng  <bin.cheng@arm.com>
 
 	* passes.def (pass_iv_canon): Move before pass_loop_distribution.
