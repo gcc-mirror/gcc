@@ -1150,13 +1150,6 @@
   return gpc_reg_operand (op, mode);
 })
 
-;; Return true if OP is a non-immediate operand.
-(define_predicate "rs6000_nonimmediate_operand"
-  (match_code "reg,subreg,mem")
-{
-  return nonimmediate_operand (op, mode);
-})
-
 ;; Return true if operand is an operator used in rotate-and-mask instructions.
 (define_predicate "rotate_mask_operator"
   (match_code "rotate,ashift,lshiftrt"))

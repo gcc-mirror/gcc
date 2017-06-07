@@ -1,5 +1,12 @@
 2017-06-07  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	* config/rs6000/predicates.md (rs6000_nonimmediate_operand): Delete.
+	* config/rs6000/rs6000.md (*movsi_internal1, movsi_from_sf,
+	*mov<mode>_softfloat, and an anonymous splitter): Use
+	nonimmediate_operand instead of rs6000_nonimmediate_operand.
+
+2017-06-07  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	* config/rs6000/darwin.h (REGISTER_NAMES): Delete the SPE_ACC and
 	SPEFSCR registers.
 	* config/rs6000/rs6000.c (rs6000_reg_names, alt_reg_names): Ditto.
