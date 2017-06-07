@@ -1,3 +1,7 @@
+2017-06-07  Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc.target/aarch64/sdiv_costs_1.c: New.
+
 2017-06-07  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/80928
