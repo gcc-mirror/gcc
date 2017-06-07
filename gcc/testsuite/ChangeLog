@@ -1,6 +1,12 @@
 2017-06-07  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/80928
+	* gcc.dg/vect/slp-13.c: Adjust patterns with vect_pack_trunc.
+	* gcc.dg/vect/slp-13-big-array.c: Likewise.
+
+2017-06-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/80928
 	* gcc.dg/vect/slp-perm-8.c: Avoid vectorizing loop computing
 	check_results.
 
