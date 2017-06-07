@@ -1,3 +1,8 @@
+2017-06-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR c++/80990
+	* pt.c (do_class_deduction): Build qualified type.
+
 2017-06-06  Nathan Sidwell  <nathan@acm.org>
 
 	* name-lookup.c (suggest_alternatives_for): Use qualified lookup

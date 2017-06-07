@@ -25367,7 +25367,7 @@ do_class_deduction (tree ptype, tree tmpl, tree init, int flags,
   --cp_unevaluated_operand;
   release_tree_vector (args);
 
-  return TREE_TYPE (t);
+  return cp_build_qualified_type (TREE_TYPE (t), cp_type_quals (ptype));
 }
 
 /* Replace occurrences of 'auto' in TYPE with the appropriate type deduced
