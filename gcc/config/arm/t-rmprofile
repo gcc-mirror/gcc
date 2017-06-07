@@ -112,7 +112,6 @@ MULTILIB_MATCHES       += march?armv7=mcpu?cortex-a73
 MULTILIB_MATCHES       += march?armv7=mcpu?cortex-a73.cortex-a35
 MULTILIB_MATCHES       += march?armv7=mcpu?cortex-a73.cortex-a53
 MULTILIB_MATCHES       += march?armv7=mcpu?exynos-m1
-MULTILIB_MATCHES       += march?armv7=mcpu?qdf24xx
 MULTILIB_MATCHES       += march?armv7=mcpu?xgene1
 
 # Arch Matches
