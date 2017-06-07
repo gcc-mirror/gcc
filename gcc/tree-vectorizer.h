@@ -1150,7 +1150,7 @@ extern gimple *vect_force_simple_reduction (loop_vec_info, gimple *,
 					    bool *, bool);
 /* Drive for loop analysis stage.  */
 extern loop_vec_info vect_analyze_loop (struct loop *, loop_vec_info);
-extern tree vect_build_loop_niters (loop_vec_info);
+extern tree vect_build_loop_niters (loop_vec_info, bool * = NULL);
 extern void vect_gen_vector_loop_niters (loop_vec_info, tree, tree *, bool);
 /* Drive for loop transformation stage.  */
 extern struct loop *vect_transform_loop (loop_vec_info);
