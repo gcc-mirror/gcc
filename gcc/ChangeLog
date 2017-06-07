@@ -1,5 +1,11 @@
 2017-06-07  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	* config/rs6000/rs6000.c: Remove everything related to -mfloat-gprs.
+	* config/rs6000/rs6000.opt: Ditto.
+	* config/rs6000/t-rtems: Ditto.
+
+2017-06-07  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	* config/rs6000/predicates.md: Replace TARGET_E500_DOUBLE and
 	TARGET_E500_SINGLE by 0, simplify.
 	* config/rs6000/rs6000.c: Ditto.
