@@ -1182,6 +1182,55 @@ data_ref_compare_tree (tree t1, tree t2)
   return 0;
 }
 
+/* Return TRUE it's possible to resolve data dependence DDR by runtime alias
+   check.  */
+
+bool
+runtime_alias_check_p (ddr_p ddr, struct loop *loop, bool speed_p)
+{
+  if (dump_enabled_p ())
+    {
+      dump_printf (MSG_NOTE, "consider run-time aliasing test between ");
+      dump_generic_expr (MSG_NOTE, TDF_SLIM, DR_REF (DDR_A (ddr)));
+      dump_printf (MSG_NOTE,  " and ");
+      dump_generic_expr (MSG_NOTE, TDF_SLIM, DR_REF (DDR_B (ddr)));
+      dump_printf (MSG_NOTE, "\n");
+    }
+
+  if (!speed_p)
+    {
+      if (dump_enabled_p ())
+	dump_printf (MSG_MISSED_OPTIMIZATION,
+		     "runtime alias check not supported when optimizing "
+		     "for size.\n");
+      return false;
+    }
+
+  /* FORNOW: We don't support versioning with outer-loop in either
+     vectorization or loop distribution.  */
+  if (loop != NULL && loop->inner != NULL)
+    {
+      if (dump_enabled_p ())
+	dump_printf (MSG_MISSED_OPTIMIZATION,
+		     "runtime alias check not supported for outer loop.\n");
+      return false;
+    }
+
+  /* FORNOW: We don't support creating runtime alias tests for non-constant
+     step.  */
+  if (TREE_CODE (DR_STEP (DDR_A (ddr))) != INTEGER_CST
+      || TREE_CODE (DR_STEP (DDR_B (ddr))) != INTEGER_CST)
+    {
+      if (dump_enabled_p ())
+	dump_printf (MSG_MISSED_OPTIMIZATION,
+                     "runtime alias check not supported for non-constant "
+		     "step\n");
+      return false;
+    }
+
+  return true;
+}
+
 /* Operator == between two dr_with_seg_len objects.
 
    This equality operator is used to make sure two data refs
