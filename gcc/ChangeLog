@@ -1,5 +1,9 @@
 2017-06-07  Tamar Christina  <tamar.christina@arm.com>
 
+	* config/arm/aarch-cost-tables.h (cortexa53_extra_cost): Increase idiv cost.
+
+2017-06-07  Tamar Christina  <tamar.christina@arm.com>
+
 	* config/aarch64/aarch64.md
 	(copysignsf3): Fix mask generation.
 

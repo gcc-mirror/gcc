@@ -154,7 +154,7 @@ const struct cpu_cost_table cortexa53_extra_costs =
       COSTS_N_INSNS (1),	/* extend.  */
       COSTS_N_INSNS (1),	/* add.  */
       COSTS_N_INSNS (1),	/* extend_add.  */
-      COSTS_N_INSNS (7)		/* idiv.  */
+      COSTS_N_INSNS (9)		/* idiv.  */
     },
     /* MULT DImode */
     {
