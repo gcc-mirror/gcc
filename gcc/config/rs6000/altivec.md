@@ -3003,8 +3003,8 @@
 					 operands[1], rtx_val));
 
       rtx_val = GEN_INT (8);
-      emit_insn (gen_vsx_xxsldwi_<mode> (rtx_tmp, operands[1],
-					 rtx_tmp, rtx_val));
+      emit_insn (gen_vsx_xxsldwi_<mode> (rtx_tmp, rtx_tmp,
+					 operands[1],rtx_val));
       emit_insn (gen_vsx_xvcv<VS_sxwsp>dp (operands[0], rtx_tmp));
     }
   else
