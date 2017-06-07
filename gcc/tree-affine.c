@@ -363,6 +363,33 @@ tree_to_aff_combination (tree expr, tree type, aff_tree *comb)
       aff_combination_add (comb, &tmp);
       return;
 
+    CASE_CONVERT:
+      {
+	tree otype = TREE_TYPE (expr);
+	tree inner = TREE_OPERAND (expr, 0);
+	tree itype = TREE_TYPE (inner);
+	enum tree_code icode = TREE_CODE (inner);
+
+	/* In principle this is a valid folding, but it isn't necessarily
+	   an optimization, so do it here and not in fold_unary.  */
+	if ((icode == PLUS_EXPR || icode == MINUS_EXPR || icode == MULT_EXPR)
+	    && TREE_CODE (itype) == INTEGER_TYPE
+	    && TREE_CODE (otype) == INTEGER_TYPE
+	    && TYPE_PRECISION (otype) > TYPE_PRECISION (itype)
+	    && TYPE_OVERFLOW_UNDEFINED (itype)
+	    && TREE_CODE (TREE_OPERAND (inner, 1)) == INTEGER_CST)
+	  {
+	    /* Convert (T1)(X *+- CST) into (T1)X *+- (T1)CST if X's type has
+	       undefined overflow behavior.  */
+	    tree op0 = fold_convert (otype, TREE_OPERAND (inner, 0));
+	    tree op1 = fold_convert (otype, TREE_OPERAND (inner, 1));
+	    expr = fold_build2 (icode, otype, op0, op1);
+	    tree_to_aff_combination (expr, type, comb);
+	    return;
+	  }
+      }
+      break;
+
     default:
       break;
     }
@@ -639,28 +666,10 @@ aff_combination_expand (aff_tree *comb ATTRIBUTE_UNUSED,
 	  exp = XNEW (struct name_expansion);
 	  exp->in_progress = 1;
 	  *slot = exp;
-	  /* In principle this is a generally valid folding, but
-	     it is not unconditionally an optimization, so do it
-	     here and not in fold_unary.  */
-	  /* Convert (T1)(X *+- CST) into (T1)X *+- (T1)CST if T1 is wider
-	     than the type of X and overflow for the type of X is
-	     undefined.  */
-	  if (e != name
-	      && INTEGRAL_TYPE_P (type)
-	      && INTEGRAL_TYPE_P (TREE_TYPE (name))
-	      && TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (name))
-	      && TYPE_PRECISION (type) > TYPE_PRECISION (TREE_TYPE (name))
-	      && (code == PLUS_EXPR || code == MINUS_EXPR || code == MULT_EXPR)
-	      && TREE_CODE (gimple_assign_rhs2 (def)) == INTEGER_CST)
-	    rhs = fold_build2 (code, type,
-			       fold_convert (type, gimple_assign_rhs1 (def)),
-			       fold_convert (type, gimple_assign_rhs2 (def)));
-	  else
-	    {
-	      rhs = gimple_assign_rhs_to_tree (def);
-	      if (e != name)
-		rhs = fold_convert (type, rhs);
-	    }
+	  rhs = gimple_assign_rhs_to_tree (def);
+	  if (e != name)
+	    rhs = fold_convert (type, rhs);
+
 	  tree_to_aff_combination_expand (rhs, comb->type, &current, cache);
 	  exp->expansion = current;
 	  exp->in_progress = 0;
