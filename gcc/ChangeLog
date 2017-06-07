@@ -1,5 +1,10 @@
 2017-06-07  Bin Cheng  <bin.cheng@arm.com>
 
+	(aff_combination_expand): Move (T1)(X *+- CST) simplification to ...
+	(tree_to_aff_combination): ... here.
+
+2017-06-07  Bin Cheng  <bin.cheng@arm.com>
+
 	* tree-ssa-loop-ivopts.c (ivopts_estimate_reg_pressure): New
 	reg_pressure model function.
 	(ivopts_global_cost_for_size): Delete.
