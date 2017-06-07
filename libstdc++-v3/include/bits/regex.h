@@ -765,7 +765,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 	: _M_flags((__f & (ECMAScript | basic | extended | awk | grep | egrep))
 		   ? __f : (__f | ECMAScript)),
 	_M_loc(std::move(__loc)),
-	_M_automaton(__detail::__compile_nfa<_FwdIter, _Rx_traits>(
+	_M_automaton(__detail::__compile_nfa<_Rx_traits>(
 	  std::move(__first), std::move(__last), _M_loc, _M_flags))
 	{ }
 

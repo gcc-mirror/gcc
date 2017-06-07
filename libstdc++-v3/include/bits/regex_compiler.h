@@ -191,7 +191,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       = typename enable_if< !__is_contiguous_normal_iter<_Iter>::value,
                            std::shared_ptr<const _NFA<_TraitsT>> >::type;
 
-  template<typename _FwdIter, typename _TraitsT>
+  template<typename _TraitsT, typename _FwdIter>
     inline __enable_if_contiguous_normal_iter<_FwdIter, _TraitsT>
     __compile_nfa(_FwdIter __first, _FwdIter __last,
 		  const typename _TraitsT::locale_type& __loc,
@@ -203,15 +203,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return _Cmplr(__cfirst, __cfirst + __len, __loc, __flags)._M_get_nfa();
     }
 
-  template<typename _FwdIter, typename _TraitsT>
+  template<typename _TraitsT, typename _FwdIter>
     inline __disable_if_contiguous_normal_iter<_FwdIter, _TraitsT>
     __compile_nfa(_FwdIter __first, _FwdIter __last,
 		  const typename _TraitsT::locale_type& __loc,
 		  regex_constants::syntax_option_type __flags)
     {
-      basic_string<typename _TraitsT::char_type> __str(__first, __last);
-      return __compile_nfa(__str.data(), __str.data() + __str.size(), __loc,
-          __flags);
+      const basic_string<typename _TraitsT::char_type> __str(__first, __last);
+      return __compile_nfa<_TraitsT>(__str.data(), __str.data() + __str.size(),
+				     __loc, __flags);
     }
 
   // [28.13.14]

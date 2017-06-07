@@ -1,5 +1,12 @@
 2017-06-07  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/81002
+	* include/bits/regex.h (basic_regex): Adjust call to __compile_nfa
+	so iterator type is deduced.
+	* include/bits/regex_compiler.h (__compile_nfa): Reorder template
+	parameters to allow iterator type to be deduced.
+	* testsuite/28_regex/basic_regex/ctors/basic/iter.cc: New.
+
 	* include/bits/alloc_traits.h (__is_allocator, _RequireAllocator):
 	New trait and alias for detecting Allocator-like types.
 	* include/bits/basic_string.h (basic_string): Add deduction guide
