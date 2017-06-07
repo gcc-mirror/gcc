@@ -1507,12 +1507,7 @@ char rs6000_reg_names[][8] =
       /* Soft frame pointer.  */
       "sfp",
       /* HTM SPR registers.  */
-      "tfhar", "tfiar", "texasr",
-      /* SPE High registers.  */
-      "0",  "1",  "2",  "3",  "4",  "5",  "6",  "7",
-      "8",  "9", "10", "11", "12", "13", "14", "15",
-     "16", "17", "18", "19", "20", "21", "22", "23",
-     "24", "25", "26", "27", "28", "29", "30", "31"
+      "tfhar", "tfiar", "texasr"
 };
 
 #ifdef TARGET_REGNAMES
@@ -1540,12 +1535,7 @@ static const char alt_reg_names[][8] =
   /* Soft frame pointer.  */
   "sfp",
   /* HTM SPR registers.  */
-  "tfhar", "tfiar", "texasr",
-  /* SPE High registers.  */
-  "%rh0",  "%rh1",  "%rh2",  "%rh3",  "%rh4",  "%rh5",  "%rh6",   "%rh7",
-  "%rh8",  "%rh9",  "%rh10", "%r11",  "%rh12", "%rh13", "%rh14", "%rh15",
-  "%rh16", "%rh17", "%rh18", "%rh19", "%rh20", "%rh21", "%rh22", "%rh23",
-  "%rh24", "%rh25", "%rh26", "%rh27", "%rh28", "%rh29", "%rh30", "%rh31"
+  "tfhar", "tfiar", "texasr"
 };
 #endif
 

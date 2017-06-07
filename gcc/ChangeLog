@@ -1,5 +1,24 @@
 2017-06-07  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	* config/rs6000/darwin.h (REGISTER_NAMES): Delete the SPE high
+	registers.
+	* config/rs6000/rs6000.c (rs6000_reg_names, alt_reg_names): Ditto.
+	* config/rs6000/rs6000.h (FIRST_PSEUDO_REGISTER): Change from 149
+	to 117.
+	(DWARF_REG_TO_UNWIND_COLUMN): Do not define.
+	(FIXED_REGISTERS, CALL_USED_REGISTERS, CALL_REALLY_USED_REGISTERS):
+	Delete the SPE high registers.
+	(REG_ALLOC_ORDER): Ditto.
+	(enum reg_class): Remove SPE_HIGH_REGS.
+	(REG_CLASS_NAMES): Ditto.
+	(REG_CLASS_CONTENTS): Delete the SPE high registers.
+	(REGISTER_NAMES): Ditto.
+	(rs6000_reg_names): Ditto.
+	* doc/tm.texi.in: Remove SPE as example.
+	* doc/tm.texi: Regenerate.
+
+2017-06-07  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	* config/rs6000/8540.md (ppc8540_brinc): Delete.
 	* config/rs6000/e500mc.md (e500mc_brinc): Delete.
 	* config/rs6000/e500mc64.md (e500mc64_brinc): Delete.
