@@ -1,3 +1,9 @@
+2017-06-07  Marek Polacek  <polacek@redhat.com>
+
+	PR sanitizer/80932
+	* fold-const.c (extract_muldiv_1) <case MINUS_EXPR>: Add
+	TYPE_OVERFLOW_WRAPS check. 
+
 2017-06-07  Bin Cheng  <bin.cheng@arm.com>
 
 	* tree-vect-loop-manip.c (vect_do_peeling): Don't skip vector loop

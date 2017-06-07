@@ -1,3 +1,8 @@
+2017-06-07  Marek Polacek  <polacek@redhat.com>
+
+	PR sanitizer/80932
+	* c-c++-common/ubsan/pr80932.c: New test.
+
 2017-06-07  Bin Cheng  <bin.cheng@arm.com>
 
 	* gcc.target/i386/l_fma_double_1.c: Adjust test strings.
