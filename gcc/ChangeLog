@@ -1,5 +1,12 @@
 2017-06-07  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	* config/rs6000/8540.md (ppc8540_brinc): Delete.
+	* config/rs6000/e500mc.md (e500mc_brinc): Delete.
+	* config/rs6000/e500mc64.md (e500mc64_brinc): Delete.
+	* config/rs6000/rs6000.md (type): Remove "brinc".
+
+2017-06-07  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	* config.gcc (powerpc*-*-*): Don't add spe.h to extra_headers.
 	(powerpc*-linux*spe*): Use ${cpu_type} instead of rs6000.
 	* config/rs6000/linuxspe.h: Delete file.
