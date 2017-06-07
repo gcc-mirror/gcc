@@ -150,45 +150,9 @@ vect_mark_for_runtime_alias_test (ddr_p ddr, loop_vec_info loop_vinfo)
   if ((unsigned) PARAM_VALUE (PARAM_VECT_MAX_VERSION_FOR_ALIAS_CHECKS) == 0)
     return false;
 
-  if (dump_enabled_p ())
-    {
-      dump_printf_loc (MSG_NOTE, vect_location,
-                       "mark for run-time aliasing test between ");
-      dump_generic_expr (MSG_NOTE, TDF_SLIM, DR_REF (DDR_A (ddr)));
-      dump_printf (MSG_NOTE,  " and ");
-      dump_generic_expr (MSG_NOTE, TDF_SLIM, DR_REF (DDR_B (ddr)));
-      dump_printf (MSG_NOTE, "\n");
-    }
-
-  if (optimize_loop_nest_for_size_p (loop))
-    {
-      if (dump_enabled_p ())
-	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-                         "versioning not supported when optimizing"
-                         " for size.\n");
-      return false;
-    }
-
-  /* FORNOW: We don't support versioning with outer-loop vectorization.  */
-  if (loop->inner)
-    {
-      if (dump_enabled_p ())
-	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-                         "versioning not yet supported for outer-loops.\n");
-      return false;
-    }
-
-  /* FORNOW: We don't support creating runtime alias tests for non-constant
-     step.  */
-  if (TREE_CODE (DR_STEP (DDR_A (ddr))) != INTEGER_CST
-      || TREE_CODE (DR_STEP (DDR_B (ddr))) != INTEGER_CST)
-    {
-      if (dump_enabled_p ())
-	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-                         "versioning not yet supported for non-constant "
-                         "step\n");
-      return false;
-    }
+  if (!runtime_alias_check_p (ddr, loop,
+			      optimize_loop_nest_for_speed_p (loop)))
+    return false;
 
   LOOP_VINFO_MAY_ALIAS_DDRS (loop_vinfo).safe_push (ddr);
   return true;

@@ -1,3 +1,11 @@
+2017-06-07  Bin Cheng  <bin.cheng@arm.com>
+
+	* tree-vect-data-refs.c (vect_mark_for_runtime_alias_test): Factor
+	out code checking if runtime alias check is possible to below ...
+	Call the new function.
+	* tree-data-ref.c (runtime_alias_check_p): ... to new function.
+	* tree-data-ref.h (runtime_alias_check_p): New decalaration.
+
 2017-06-07  Marek Polacek  <polacek@redhat.com>
 
 	PR sanitizer/80932
