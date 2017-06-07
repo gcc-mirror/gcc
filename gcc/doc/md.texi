@@ -115,7 +115,7 @@ A @code{define_insn} is an RTL expression containing four or five operands:
 
 @enumerate
 @item
-An optional name.  The presence of a name indicate that this instruction
+An optional name.  The presence of a name indicates that this instruction
 pattern can perform a certain standard job for the RTL-generation
 pass of the compiler.  This pass knows certain names and will use
 the instruction patterns with those names, if the names are defined
@@ -166,9 +166,21 @@ individual insn, and only after the insn has matched the pattern's
 recognition template.  The insn's operands may be found in the vector
 @code{operands}.
 
-For an insn where the condition has once matched, it
-cannot later be used to control register allocation by excluding
-certain register or value combinations.
+An instruction condition cannot become more restrictive as compilation
+progresses.  If the condition accepts a particular RTL instruction at
+one stage of compilation, it must continue to accept that instruction
+until the final pass.  For example, @samp{!reload_completed} and
+@samp{can_create_pseudo_p ()} are both invalid instruction conditions,
+because they are true during the earlier RTL passes and false during
+the later ones.  For the same reason, if a condition accepts an
+instruction before register allocation, it cannot later try to control
+register allocation by excluding certain register or value combinations.
+
+Although a condition cannot become more restrictive as compilation
+progresses, the condition for a nameless pattern @emph{can} become
+more permissive.  For example, a nameless instruction can require
+@samp{reload_completed} to be true, in which case it only matches
+after register allocation.
 
 @item
 The @dfn{output template} or @dfn{output statement}: This is either
@@ -560,6 +572,11 @@ multiple assembler instructions, and there is a matching @code{define_split}
 already defined, then you can simply use @code{#} as the output template
 instead of writing an output template that emits the multiple assembler
 instructions.
+
+Note that @code{#} only has an effect while generating assembly code;
+it does not affect whether a split occurs earlier.  An associated
+@code{define_split} must exist and it must be suitable for use after
+register allocation.
 
 If the macro @code{ASSEMBLER_DIALECT} is defined, you can use construct
 of the form @samp{@{option0|option1|option2@}} in the templates.  These
