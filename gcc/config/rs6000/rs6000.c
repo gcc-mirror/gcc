@@ -25105,24 +25105,6 @@ output_cbranch (rtx op, const char *label, int reversed, rtx_insn *insn)
   return string;
 }
 
-/* Return the string to flip the GT bit on a CR.  */
-char *
-output_e500_flip_gt_bit (rtx dst, rtx src)
-{
-  static char string[64];
-  int a, b;
-
-  gcc_assert (GET_CODE (dst) == REG && CR_REGNO_P (REGNO (dst))
-	      && GET_CODE (src) == REG && CR_REGNO_P (REGNO (src)));
-
-  /* GT bit.  */
-  a = 4 * (REGNO (dst) - CR0_REGNO) + 1;
-  b = 4 * (REGNO (src) - CR0_REGNO) + 1;
-
-  sprintf (string, "crnot %d,%d", a, b);
-  return string;
-}
-
 /* Return insn for VSX or Altivec comparisons.  */
 
 static rtx
