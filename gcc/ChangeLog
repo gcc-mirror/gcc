@@ -1,5 +1,15 @@
 2017-06-07  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	* config.gcc (powerpc*-*-*): Don't add spe.h to extra_headers.
+	(powerpc*-linux*spe*): Use ${cpu_type} instead of rs6000.
+	* config/rs6000/linuxspe.h: Delete file.
+	* config/rs6000/rs6000.md: Don't include spe.md.
+	* config/rs6000/spe.h: Delete file.
+	* config/rs6000/spe.md: Delete file.
+	* config/rs6000/t-rs6000: Remove spe.md.
+
+2017-06-07  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	* config/rs6000/predicates.md (reg_or_mem_operand): Reformat.
 	(reg_or_none500mem_operand): Delete.
 	* config/rs6000/rs6000.md (extendsfdf2): Use reg_or_mem_operand
