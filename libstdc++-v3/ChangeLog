@@ -1,5 +1,8 @@
 2017-06-07  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/regex.h (basic_regex): Add deduction guide from P0433.
+	* testsuite/28_regex/basic_regex/ctors/deduction.cc: New.
+
 	PR libstdc++/81002
 	* include/bits/regex.h (basic_regex): Adjust call to __compile_nfa
 	so iterator type is deduced.

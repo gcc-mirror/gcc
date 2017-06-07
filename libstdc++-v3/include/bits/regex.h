@@ -787,6 +787,13 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       _AutomatonPtr          _M_automaton;
     };
 
+#if __cpp_deduction_guides >= 201606
+  template<typename _ForwardIterator>
+    basic_regex(_ForwardIterator, _ForwardIterator,
+		regex_constants::syntax_option_type = {})
+      -> basic_regex<typename iterator_traits<_ForwardIterator>::value_type>;
+#endif
+
   /** @brief Standard regular expressions. */
   typedef basic_regex<char>    regex;
 
