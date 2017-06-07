@@ -1144,28 +1144,6 @@ static const struct processors all_cores[] =
     &arm_exynosm1_tune
   },
   {
-    "falkor",
-    TARGET_CPU_cortexa57,
-    (TF_LDSCHED),
-    "8A", BASE_ARCH_8A,
-    {
-      ISA_ARMv8a,isa_bit_crc32,
-      isa_nobit
-    },
-    &arm_qdf24xx_tune
-  },
-  {
-    "qdf24xx",
-    TARGET_CPU_cortexa57,
-    (TF_LDSCHED),
-    "8A", BASE_ARCH_8A,
-    {
-      ISA_ARMv8a,isa_bit_crc32,
-      isa_nobit
-    },
-    &arm_qdf24xx_tune
-  },
-  {
     "xgene1",
     TARGET_CPU_xgene1,
     (TF_LDSCHED),

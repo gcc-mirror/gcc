@@ -123,8 +123,6 @@ enum processor_type
   TARGET_CPU_cortexa72,
   TARGET_CPU_cortexa73,
   TARGET_CPU_exynosm1,
-  TARGET_CPU_falkor,
-  TARGET_CPU_qdf24xx,
   TARGET_CPU_xgene1,
   TARGET_CPU_cortexa57cortexa53,
   TARGET_CPU_cortexa72cortexa53,
