@@ -1691,9 +1691,11 @@ vect_do_peeling (loop_vec_info loop_vinfo, tree niters, tree nitersm1,
 
   /* Prolog loop may be skipped.  */
   bool skip_prolog = (prolog_peeling != 0);
-  /* Skip to epilog if scalar loop may be preferred.  It's only used when
-     we peel for epilog loop.  */
-  bool skip_vector = (!LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo));
+  /* Skip to epilog if scalar loop may be preferred.  It's only needed
+     when we peel for epilog loop and when it hasn't been checked with
+     loop versioning.  */
+  bool skip_vector = (!LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo)
+		      && !LOOP_REQUIRES_VERSIONING (loop_vinfo));
   /* Epilog loop must be executed if the number of iterations for epilog
      loop is known at compile time, otherwise we need to add a check at
      the end of vector loop and skip to the end of epilog loop.  */
