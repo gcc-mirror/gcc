@@ -277,6 +277,7 @@ along with GCC; see the file COPYING3.  If not see
 	     empty loops.  Remove them now.  */
 	  NEXT_PASS (pass_cd_dce);
 	  NEXT_PASS (pass_record_bounds);
+	  NEXT_PASS (pass_iv_canon);
 	  NEXT_PASS (pass_loop_distribution);
 	  NEXT_PASS (pass_copy_prop);
 	  NEXT_PASS (pass_graphite);
@@ -286,7 +287,6 @@ along with GCC; see the file COPYING3.  If not see
 	      NEXT_PASS (pass_copy_prop);
 	      NEXT_PASS (pass_dce);
 	  POP_INSERT_PASSES ()
-	  NEXT_PASS (pass_iv_canon);
 	  NEXT_PASS (pass_parallelize_loops, false /* oacc_kernels_p */);
 	  NEXT_PASS (pass_expand_omp_ssa);
 	  NEXT_PASS (pass_ch_vect);

@@ -1,5 +1,9 @@
 2017-06-07  Bin Cheng  <bin.cheng@arm.com>
 
+	* passes.def (pass_iv_canon): Move before pass_loop_distribution.
+
+2017-06-07  Bin Cheng  <bin.cheng@arm.com>
+
 	* graphds.c (add_edge): Intitialize edge's attached data.
 	(foll_in_subgraph, dfs_fst_edge, dfs_next_edge): New function
 	pointer parameter.  Call pointed function on each edge during
