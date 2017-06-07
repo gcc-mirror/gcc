@@ -739,6 +739,11 @@ cleanup_tree_cfg_1 (void)
   return retval;
 }
 
+static bool
+mfb_keep_latches (edge e)
+{
+  return ! dominated_by_p (CDI_DOMINATORS, e->src, e->dest);
+}
 
 /* Remove unreachable blocks and other miscellaneous clean up work.
    Return true if the flowgraph was modified, false otherwise.  */
@@ -764,6 +769,64 @@ cleanup_tree_cfg_noloop (void)
     {
       checking_verify_dominators (CDI_DOMINATORS);
       changed = false;
+    }
+
+  /* Ensure that we have single entries into loop headers.  Otherwise
+     if one of the entries is becoming a latch due to CFG cleanup
+     (from formerly being part of an irreducible region) then we mess
+     up loop fixup and associate the old loop with a different region
+     which makes niter upper bounds invalid.  See for example PR80549.
+     This needs to be done before we remove trivially dead edges as
+     we need to capture the dominance state before the pending transform.  */
+  if (current_loops)
+    {
+      loop_p loop;
+      unsigned i;
+      FOR_EACH_VEC_ELT (*get_loops (cfun), i, loop)
+	if (loop && loop->header)
+	  {
+	    basic_block bb = loop->header;
+	    edge_iterator ei;
+	    edge e;
+	    bool found_latch = false;
+	    bool any_abnormal = false;
+	    unsigned n = 0;
+	    /* We are only interested in preserving existing loops, but
+	       we need to check whether they are still real and of course
+	       if we need to add a preheader at all.  */
+	    FOR_EACH_EDGE (e, ei, bb->preds)
+	      {
+		if (e->flags & EDGE_ABNORMAL)
+		  {
+		    any_abnormal = true;
+		    break;
+		  }
+		if (dominated_by_p (CDI_DOMINATORS, e->src, bb))
+		  {
+		    found_latch = true;
+		    continue;
+		  }
+		n++;
+	      }
+	    /* If we have more than one entry to the loop header
+	       create a forwarder.  */
+	    if (found_latch && ! any_abnormal && n > 1)
+	      {
+		edge fallthru = make_forwarder_block (bb, mfb_keep_latches,
+						      NULL);
+		loop->header = fallthru->dest;
+		if (! loops_state_satisfies_p (LOOPS_NEED_FIXUP))
+		  {
+		    /* The loop updating from the CFG hook is incomplete
+		       when we have multiple latches, fixup manually.  */
+		    remove_bb_from_loops (fallthru->src);
+		    loop_p cloop = loop;
+		    FOR_EACH_EDGE (e, ei, fallthru->src->preds)
+		      cloop = find_common_loop (cloop, e->src->loop_father);
+		    add_bb_to_loop (fallthru->src, cloop);
+		  }
+	      }
+	  }
     }
 
   changed |= cleanup_tree_cfg_1 ();
