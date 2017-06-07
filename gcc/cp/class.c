@@ -6426,41 +6426,39 @@ layout_class_type (tree t, tree *virtuals_p)
       if (DECL_C_BIT_FIELD (field)
 	  && tree_int_cst_lt (TYPE_SIZE (type), DECL_SIZE (field)))
 	{
-	  unsigned int itk;
-	  tree integer_type;
 	  bool was_unnamed_p = false;
 	  /* We must allocate the bits as if suitably aligned for the
-	     longest integer type that fits in this many bits.  type
-	     of the field.  Then, we are supposed to use the left over
-	     bits as additional padding.  */
-	  for (itk = itk_char; itk != itk_none; ++itk)
-	    if (integer_types[itk] != NULL_TREE
-		&& (tree_int_cst_lt (size_int (MAX_FIXED_MODE_SIZE),
-				     TYPE_SIZE (integer_types[itk]))
-		    || tree_int_cst_lt (DECL_SIZE (field),
-					TYPE_SIZE (integer_types[itk]))))
-	      break;
+	     longest integer type that fits in this many bits.  Then,
+	     we are supposed to use the left over bits as additional
+	     padding.  */
 
-	  /* ITK now indicates a type that is too large for the
-	     field.  We have to back up by one to find the largest
-	     type that fits.  */
-	  do
-	  {
-            --itk;
-	    integer_type = integer_types[itk];
-	  } while (itk > 0 && integer_type == NULL_TREE);
+	  /* Do not pick a type bigger than MAX_FIXED_MODE_SIZE.  */
+	  tree limit = size_int (MAX_FIXED_MODE_SIZE);
+	  if (tree_int_cst_lt (DECL_SIZE (field), limit))
+	    limit = DECL_SIZE (field);
+
+	  tree integer_type = integer_types[itk_char];
+	  for (unsigned itk = itk_char; itk != itk_none; itk++)
+	    if (tree next = integer_types[itk])
+	      {
+		if (tree_int_cst_lt (limit, TYPE_SIZE (next)))
+		  /* Too big, so our current guess is what we want.  */
+		  break;
+		/* Not bigger than limit, ok  */
+		integer_type = next;
+	      }
 
 	  /* Figure out how much additional padding is required.  */
-	  if (tree_int_cst_lt (TYPE_SIZE (integer_type), DECL_SIZE (field)))
-	    {
-	      if (TREE_CODE (t) == UNION_TYPE)
-		/* In a union, the padding field must have the full width
-		   of the bit-field; all fields start at offset zero.  */
-		padding = DECL_SIZE (field);
-	      else
-		padding = size_binop (MINUS_EXPR, DECL_SIZE (field),
-				      TYPE_SIZE (integer_type));
-	    }
+	  if (TREE_CODE (t) == UNION_TYPE)
+	    /* In a union, the padding field must have the full width
+	       of the bit-field; all fields start at offset zero.  */
+	    padding = DECL_SIZE (field);
+	  else
+	    padding = size_binop (MINUS_EXPR, DECL_SIZE (field),
+				  TYPE_SIZE (integer_type));
+
+ 	  if (integer_zerop (padding))
+	    padding = NULL_TREE;
 
 	  /* An unnamed bitfield does not normally affect the
 	     alignment of the containing class on a target where
