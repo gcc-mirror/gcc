@@ -2841,9 +2841,6 @@ rs6000_debug_reg_global (void)
   if (rs6000_darwin64_abi)
     fprintf (stderr, DEBUG_FMT_S, "darwin64_abi", "true");
 
-  if (rs6000_float_gprs)
-    fprintf (stderr, DEBUG_FMT_S, "float_gprs", "true");
-
   fprintf (stderr, DEBUG_FMT_S, "single_float",
 	   (TARGET_SINGLE_FLOAT ? "true" : "false"));
 
@@ -4242,12 +4239,6 @@ rs6000_option_override_internal (bool global_init_p)
 
     if (!global_options_set.x_rs6000_spe)
       rs6000_spe = spe_capable_cpu;
-
-    if (!global_options_set.x_rs6000_float_gprs)
-      rs6000_float_gprs =
-        (rs6000_cpu == PROCESSOR_PPC8540 ? 1
-         : rs6000_cpu == PROCESSOR_PPC8548 ? 2
-         : 0);
   }
 
   if (global_options_set.x_rs6000_spe_abi
@@ -4262,8 +4253,7 @@ rs6000_option_override_internal (bool global_init_p)
 
   if (main_target_opt != NULL
       && ((main_target_opt->x_rs6000_spe_abi != rs6000_spe_abi)
-          || (main_target_opt->x_rs6000_spe != rs6000_spe)
-          || (main_target_opt->x_rs6000_float_gprs != rs6000_float_gprs)))
+          || (main_target_opt->x_rs6000_spe != rs6000_spe)))
     error ("target attribute or pragma changes SPE ABI");
 
   if (rs6000_cpu == PROCESSOR_PPCE300C2 || rs6000_cpu == PROCESSOR_PPCE300C3

@@ -449,26 +449,6 @@ mwarn-altivec-long
 Target Var(rs6000_warn_altivec_long) Init(1) Save
 Warn about deprecated 'vector long ...' AltiVec type usage.
 
-mfloat-gprs=
-Target RejectNegative Joined Enum(rs6000_float_gprs) Var(rs6000_float_gprs) Save
--mfloat-gprs=	Select GPR floating point method.
-
-Enum
-Name(rs6000_float_gprs) Type(unsigned char)
-Valid arguments to -mfloat-gprs=:
-
-EnumValue
-Enum(rs6000_float_gprs) String(yes) Value(1)
-
-EnumValue
-Enum(rs6000_float_gprs) String(single) Value(1)
-
-EnumValue
-Enum(rs6000_float_gprs) String(double) Value(2)
-
-EnumValue
-Enum(rs6000_float_gprs) String(no) Value(0)
-
 mlong-double-
 Target RejectNegative Joined UInteger Var(rs6000_long_double_type_size) Save
 -mlong-double-<n>	Specify size of long double (64 or 128 bits).
