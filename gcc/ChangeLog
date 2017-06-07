@@ -1,3 +1,9 @@
+2017-06-07  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* doc/md.texi: Clarify the restrictions on a define_insn condition.
+	Say that # requires an associated define_split to exist, and that
+	the define_split must be suitable for use after register allocation.
+
 2017-06-06  Jan Hubicka  <hubicka@ucw.cz>
 
 	* cfgbuild.c (find_bb_boundaries): Initialize profile of split blocks.
