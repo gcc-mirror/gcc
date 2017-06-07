@@ -1,3 +1,9 @@
+2017-06-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/80928
+	* gcc.dg/vect/slp-perm-8.c: Avoid vectorizing loop computing
+	check_results.
+
 2017-06-06  Nathan Sidwell  <nathan@acm.org>
 
 	* g++.dg/pr45330.C: Add inline namespace case.
