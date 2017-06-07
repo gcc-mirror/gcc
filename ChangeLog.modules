@@ -1,3 +1,9 @@
+2017-06-07  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* module.c (cpms_{out,in}::core_vals): Stream block vars &
+	abstract origin.
+
 2017-06-06  Nathan Sidwell  <nathan@acm.org>
 
 	Inline ctors/dtors

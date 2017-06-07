@@ -2941,8 +2941,9 @@ cpms_out::core_vals (FILE *d, tree t)
   if (CODE_CONTAINS_STRUCT (code, TS_BLOCK))
     {
       WT (t->block.supercontext);
-      // FIXME vars, nonlocalized_vars, abstract_origin
-      // fragment_origin, fragment_chain
+      chained_decls (d, t->block.vars);
+      WT (t->block.abstract_origin);
+      // FIXME nonlocalized_vars, fragment_origin, fragment_chain
       WT (t->block.subblocks);
       WT (t->block.chain);
     }
@@ -3169,8 +3170,9 @@ cpms_in::core_vals (FILE *d, tree t)
   if (CODE_CONTAINS_STRUCT (code, TS_BLOCK))
     {
       RT (t->block.supercontext);
-      // FIXME vars, nonlocalized_vars, abstract_origin
-      // fragment_origin, fragment_chain
+      t->block.vars = chained_decls (d);
+      RT (t->block.abstract_origin);
+      // FIXME nonlocalized_vars, fragment_origin, fragment_chain
       RT (t->block.subblocks);
       RT (t->block.chain);
     }
