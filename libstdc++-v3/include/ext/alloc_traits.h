@@ -46,7 +46,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
  * @brief  Uniform interface to C++98 and C++11 allocators.
  * @ingroup allocators
 */
-template<typename _Alloc>
+template<typename _Alloc, typename = typename _Alloc::value_type>
   struct __alloc_traits
 #if __cplusplus >= 201103L
   : std::allocator_traits<_Alloc>
