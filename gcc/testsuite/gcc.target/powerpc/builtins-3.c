@@ -112,26 +112,26 @@ test_vull_slo_vull_vuc (vector unsigned long long x, vector unsigned char y)
 	return vec_slo (x, y);
 }
 
-vector signed int
-test_vsi_mule_vsi_vsi (vector signed int x, vector signed int y)
+vector signed long long
+test_vsll_mule_vsi_vsi (vector signed int x, vector signed int y)
 {
 	return vec_mule (x, y);
 }
 
-vector unsigned int
-test_vui_mule_vui_vui (vector unsigned int x, vector unsigned int y)
+vector unsigned long long
+test_vull_mule_vui_vui (vector unsigned int x, vector unsigned int y)
 {
 	return vec_mule (x, y);
 }
 
-vector signed int
-test_vsi_mulo_vsi_vsi (vector signed int x, vector signed int y)
+vector signed long long
+test_vsll_mulo_vsi_vsi (vector signed int x, vector signed int y)
 {
 	return vec_mulo (x, y);
 }
 
-vector unsigned int
-test_vui_mulo_vui_vui (vector unsigned int x, vector unsigned int y)
+vector unsigned long long
+test_vull_mulo_vui_vui (vector unsigned int x, vector unsigned int y)
 {
 	return vec_mulo (x, y);
 }
@@ -207,10 +207,10 @@ test_vul_sldw_vul_vul (vector unsigned long long x,
      test_vsll_slo_vsll_vuc    1 vslo
      test_vull_slo_vsll_vsc    1 vslo
      test_vull_slo_vsll_vuc    1 vslo
-     test_vsi_mulo_vsi_vsi     1 vmulosh
-     test_vui_mulo_vui_vui     1 vmulosh
-     test_vsi_mule_vsi_vsi     1 vmulesh
-     test_vui_mule_vui_vui     1 vmulesh
+     test_vsll_mulo_vsi_vsi    1 vmulosh
+     test_vull_mulo_vui_vui    1 vmulouh
+     test_vsll_mule_vsi_vsi    1 vmulesh
+     test_vull_mule_vui_vui    1 vmuleuh
      test_vsc_mulo_vsc_vsc     1 xxsldwi
      test_vuc_mulo_vuc_vuc     1 xxsldwi
      test_vssi_mulo_vssi_vssi  1 xxsldwi
@@ -236,6 +236,8 @@ test_vul_sldw_vul_vul (vector unsigned long long x,
 /* { dg-final { scan-assembler-times "xvnegsp"  1 } } */
 /* { dg-final { scan-assembler-times "xvnegdp"  1 } } */
 /* { dg-final { scan-assembler-times "vslo"     4 } } */
-/* { dg-final { scan-assembler-times "vmulosh"  2 } } */
-/* { dg-final { scan-assembler-times "vmulesh"  2 } } */
+/* { dg-final { scan-assembler-times "vmulosh"  1 } } */
+/* { dg-final { scan-assembler-times "vmulouh"  1 } } */
+/* { dg-final { scan-assembler-times "vmulesh"  1 } } */
+/* { dg-final { scan-assembler-times "vmuleuh"  1 } } */
 /* { dg-final { scan-assembler-times "xxsldwi"  8 } } */

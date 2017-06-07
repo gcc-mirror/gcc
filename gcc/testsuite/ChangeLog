@@ -1,3 +1,6 @@
+2017-06-07  Carl Love  <cel@us.ibm.com>
+	* gcc.target/powerpc/builtins-3.c: Fix vec_mule, vec_mulo test cases.
+
 2017-06-07  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR c++/80990

@@ -1,5 +1,23 @@
 2017-06-07  Carl Love  <cel@us.ibm.com>
 
+	* config/rs6000/rs6000-c: The return type of the following
+	built-in functions was implemented as int not long long.  Fix sign
+	of return value for the unsigned version of vec_mulo and vec_mule.
+	vector unsigned long long vec_bperm (vector unsigned long long,
+	                                     vector unsigned char)
+	vector signed long long vec_mule (vector signed int,
+	                                  vector signed int)
+	vector unsigned long long vec_mule (vector unsigned int,
+	                                    vector unsigned int)
+	vector signed long long vec_mulo (vector signed int,
+	                                  vector signed int)
+	vector unsigned long long vec_mulo (vector unsigned int,
+	                                    vector unsigned int)
+	* doc/extend.texi: Fix the documentation for the built-in
+	functions.
+
+2017-06-07  Carl Love  <cel@us.ibm.com>
+
 	PR target/80982
 	* config/rs6000/altivec.md (double<mode>2): Fix the implementation of
 	for BE.
