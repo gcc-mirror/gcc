@@ -1,3 +1,8 @@
+2017-06-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR c++/80990
+	* g++.dg/cpp1z/class-deduction39.C: New.
+
 2017-06-07  Marek Polacek  <polacek@redhat.com>
 
 	PR sanitizer/80932
