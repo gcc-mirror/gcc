@@ -1,3 +1,11 @@
+2017-06-07  Bin Cheng  <bin.cheng@arm.com>
+
+	* tree-ssa-loop-ivopts.c (ivopts_estimate_reg_pressure): New
+	reg_pressure model function.
+	(ivopts_global_cost_for_size): Delete.
+	(determine_set_costs, iv_ca_recount_cost): Call new model function
+	ivopts_estimate_reg_pressure.
+
 2017-06-07  Tamar Christina  <tamar.christina@arm.com>
 
 	* config/aarch64/aarch64.c (aarch64_rtx_costs): Make sdiv more expensive than udiv.
