@@ -381,14 +381,6 @@ mabi=no-altivec
 Target RejectNegative Var(rs6000_altivec_abi, 0)
 Do not use the AltiVec ABI extensions.
 
-mabi=spe
-Target RejectNegative Var(rs6000_spe_abi) Save
-Use the SPE ABI extensions.
-
-mabi=no-spe
-Target RejectNegative Var(rs6000_spe_abi, 0)
-Do not use the SPE ABI extensions.
-
 mabi=elfv1
 Target RejectNegative Var(rs6000_elf_abi, 1) Save
 Use the ELFv1 ABI.

@@ -611,10 +611,6 @@ rs6000_target_modify_macros (bool define_p, HOST_WIDE_INT flags,
     rs6000_define_or_undefine_macro (define_p, "__UPPER_REGS_SF__");
 
   /* options from the builtin masks.  */
-  /* Note that RS6000_BTM_SPE is enabled only if TARGET_SPE
-     (e.g. -mspe).  */
-  if ((bu_mask & RS6000_BTM_SPE) != 0)
-    rs6000_define_or_undefine_macro (define_p, "__SPE__");
   /* Note that RS6000_BTM_PAIRED is enabled only if
      TARGET_PAIRED_FLOAT is enabled (e.g. -mpaired).  */
   if ((bu_mask & RS6000_BTM_PAIRED) != 0)
