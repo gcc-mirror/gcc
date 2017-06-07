@@ -200,9 +200,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		  const typename _TraitsT::locale_type& __loc,
 		  regex_constants::syntax_option_type __flags)
     {
-      basic_string<typename _TraitsT::char_type> __str(__first, __last);
-      return __compile_nfa(__str.data(), __str.data() + __str.size(), __loc,
-          __flags);
+      using char_type = typename _TraitsT::char_type;
+      const basic_string<char_type> __str(__first, __last);
+      return __compile_nfa<const char_type*, _TraitsT>(__str.data(),
+	  __str.data() + __str.size(), __loc, __flags);
     }
 
   // [28.13.14]
