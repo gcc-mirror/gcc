@@ -299,9 +299,6 @@
 (define_predicate "gpc_reg_operand"
   (match_operand 0 "register_operand")
 {
-  if (TARGET_SPE && invalid_e500_subreg (op, mode))
-    return 0;
-
   if (GET_CODE (op) == SUBREG)
     {
       if (TARGET_NO_SF_SUBREG && sf_subreg_operand (op, mode))
@@ -331,9 +328,6 @@
 (define_predicate "int_reg_operand"
   (match_operand 0 "register_operand")
 {
-  if (TARGET_SPE && invalid_e500_subreg (op, mode))
-    return 0;
-
   if (GET_CODE (op) == SUBREG)
     {
       if (TARGET_NO_SF_SUBREG && sf_subreg_operand (op, mode))
@@ -357,9 +351,6 @@
 (define_predicate "int_reg_operand_not_pseudo"
   (match_operand 0 "register_operand")
 {
-  if (TARGET_SPE && invalid_e500_subreg (op, mode))
-    return 0;
-
   if (GET_CODE (op) == SUBREG)
     op = SUBREG_REG (op);
 
@@ -709,32 +700,6 @@
 	return true;
 
       return easy_altivec_constant (op, mode);
-    }
-
-  if (SPE_VECTOR_MODE (mode))
-    {
-      int cst, cst2;
-      if (zero_constant (op, mode))
-	return true;
-      if (GET_MODE_CLASS (mode) != MODE_VECTOR_INT)
-        return false;
-
-      /* Limit SPE vectors to 15 bits signed.  These we can generate with:
-	   li r0, CONSTANT1
-	   evmergelo r0, r0, r0
-	   li r0, CONSTANT2
-
-	 I don't know how efficient it would be to allow bigger constants,
-	 considering we'll have an extra 'ori' for every 'li'.  I doubt 5
-	 instructions is better than a 64-bit memory load, but I don't
-	 have the e500 timing specs.  */
-      if (mode == V2SImode)
-	{
-	  cst  = INTVAL (CONST_VECTOR_ELT (op, 0));
-	  cst2 = INTVAL (CONST_VECTOR_ELT (op, 1));
-	  return cst  >= -0x7fff && cst <= 0x7fff
-	         && cst2 >= -0x7fff && cst2 <= 0x7fff;
-	}
     }
 
   return false;
@@ -1135,12 +1100,6 @@
       && easy_vector_constant (op, mode))
     return 1;
 
-  /* Do not allow invalid E500 subregs.  */
-  if (TARGET_SPE
-      && GET_CODE (op) == SUBREG
-      && invalid_e500_subreg (op, mode))
-    return 0;
-
   /* For floating-point or multi-word mode, the only remaining valid type
      is a register.  */
   if (SCALAR_FLOAT_MODE_P (mode)
@@ -1199,16 +1158,10 @@
   return gpc_reg_operand (op, mode);
 })
 
-;; Return true if OP is a non-immediate operand and not an invalid
-;; SUBREG operation on the e500.
+;; Return true if OP is a non-immediate operand.
 (define_predicate "rs6000_nonimmediate_operand"
   (match_code "reg,subreg,mem")
 {
-  if (TARGET_SPE
-      && GET_CODE (op) == SUBREG
-      && invalid_e500_subreg (op, mode))
-    return 0;
-
   return nonimmediate_operand (op, mode);
 })
 

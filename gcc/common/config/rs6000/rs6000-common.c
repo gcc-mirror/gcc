@@ -207,15 +207,6 @@ rs6000_handle_option (struct gcc_options *opts, struct gcc_options *opts_set,
       break;
 #endif
 
-    case OPT_mabi_altivec:
-      /* Enabling the AltiVec ABI turns off the SPE ABI.  */
-      opts->x_rs6000_spe_abi = 0;
-      break;
-
-    case OPT_mabi_spe:
-      opts->x_rs6000_altivec_abi = 0;
-      break;
-
     case OPT_mlong_double_:
       if (value != 64 && value != 128)
 	{

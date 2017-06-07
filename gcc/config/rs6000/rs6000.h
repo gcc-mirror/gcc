@@ -569,8 +569,6 @@ extern int rs6000_vector_align[];
 #define TARGET_ALTIVEC_ABI rs6000_altivec_abi
 #define TARGET_LDBRX (TARGET_POPCNTD || rs6000_cpu == PROCESSOR_CELL)
 
-#define TARGET_SPE_ABI 0
-#define TARGET_SPE 0
 #define TARGET_ISEL64 (TARGET_ISEL && TARGET_POWERPC64)
 
 /* ISA 2.01 allowed FCFID to be done in 32-bit, previously it was 64-bit only.
@@ -704,7 +702,7 @@ extern int rs6000_vector_align[];
    the compiler for those builtins, and those machines don't support altivec or
    VSX.  */
 
-#define TARGET_EXTRA_BUILTINS	(!TARGET_SPE && !TARGET_PAIRED_FLOAT	 \
+#define TARGET_EXTRA_BUILTINS	(!TARGET_PAIRED_FLOAT			 \
 				 && ((TARGET_POWERPC64			 \
 				      || TARGET_PPC_GPOPT /* 970/power4 */ \
 				      || TARGET_POPCNTB	  /* ISA 2.02 */ \
@@ -869,7 +867,6 @@ extern unsigned char rs6000_recip_bits[];
 #define UNITS_PER_FP_WORD 8
 #define UNITS_PER_ALTIVEC_WORD 16
 #define UNITS_PER_VSX_WORD 16
-#define UNITS_PER_SPE_WORD 8
 #define UNITS_PER_PAIRED_WORD 8
 
 /* Type used for ptrdiff_t, as a string used in a declaration.  */
@@ -971,8 +968,7 @@ enum data_align { align_abi, align_opt, align_both };
 #define DATA_ALIGNMENT(TYPE, ALIGN) \
   rs6000_data_alignment (TYPE, ALIGN, align_opt)
 
-/* Align vectors to 128 bits.  Align SPE vectors and E500 v2 doubles to
-   64 bits.  */
+/* Align vectors to 128 bits.  */
 #define DATA_ABI_ALIGNMENT(TYPE, ALIGN) \
   rs6000_data_alignment (TYPE, ALIGN, align_abi)
 
@@ -983,9 +979,8 @@ enum data_align { align_abi, align_opt, align_both };
 /* Define this macro to be the value 1 if unaligned accesses have a cost
    many times greater than aligned accesses, for example if they are
    emulated in a trap handler.  */
-/* Altivec vector memory instructions simply ignore the low bits; SPE vector
-   memory instructions trap on unaligned accesses; VSX memory instructions are
-   aligned to 4 or 8 bytes.  */
+/* Altivec vector memory instructions simply ignore the low bits; VSX memory
+   instructions are aligned to 4 or 8 bytes.  */
 #define SLOW_UNALIGNED_ACCESS(MODE, ALIGN)				\
   (STRICT_ALIGNMENT							\
    || (!TARGET_EFFICIENT_UNALIGNED_VSX					\
@@ -1027,12 +1022,7 @@ enum data_align { align_abi, align_opt, align_both };
 /* This must be included for pre gcc 3.0 glibc compatibility.  */
 #define PRE_GCC3_DWARF_FRAME_REGISTERS 77
 
-/* True if register is an SPE High register.  */
-#define SPE_HIGH_REGNO_P(N) \
-  ((N) >= FIRST_SPE_HIGH_REGNO && (N) <= LAST_SPE_HIGH_REGNO)
-
-/* SPE high registers added as hard regs.
-   The sfp register and 3 HTM registers
+/* The sfp register and 3 HTM registers
    aren't included in DWARF_FRAME_REGISTERS.  */
 #define DWARF_FRAME_REGISTERS (FIRST_PSEUDO_REGISTER - 4)
 
@@ -1227,9 +1217,6 @@ enum data_align { align_abi, align_opt, align_both };
 #define INT_REGNO_P(N) \
   ((N) <= 31 || (N) == ARG_POINTER_REGNUM || (N) == FRAME_POINTER_REGNUM)
 
-/* SPE SIMD registers are just the GPRs.  */
-#define SPE_SIMD_REGNO_P(N) ((N) <= 31)
-
 /* PAIRED SIMD registers are just the FPRs.  */
 #define PAIRED_SIMD_REGNO_P(N) ((N) >= 32 && (N) <= 63)
 
@@ -1305,12 +1292,6 @@ enum data_align { align_abi, align_opt, align_both };
   (ALTIVEC_VECTOR_MODE (MODE) || VSX_VECTOR_MODE (MODE)			\
    || (MODE) == V2DImode || (MODE) == V1TImode)
 
-#define SPE_VECTOR_MODE(MODE)		\
-	((MODE) == V4HImode          	\
-         || (MODE) == V2SFmode          \
-         || (MODE) == V1DImode          \
-         || (MODE) == V2SImode)
-
 #define PAIRED_VECTOR_MODE(MODE)        \
          ((MODE) == V2SFmode)            
 
@@ -1347,9 +1328,9 @@ enum data_align { align_abi, align_opt, align_both };
    ? GET_MODE_CLASS (MODE2) == MODE_CC		\
    : GET_MODE_CLASS (MODE2) == MODE_CC		\
    ? 0						\
-   : SPE_VECTOR_MODE (MODE1)			\
-   ? SPE_VECTOR_MODE (MODE2)			\
-   : SPE_VECTOR_MODE (MODE2)			\
+   : PAIRED_VECTOR_MODE (MODE1)			\
+   ? PAIRED_VECTOR_MODE (MODE2)			\
+   : PAIRED_VECTOR_MODE (MODE2)			\
    ? 0						\
    : 1)
 
@@ -2684,7 +2665,7 @@ extern int frame_pointer_needed;
 #define RS6000_BTC_SAT		RS6000_BTC_MISC	/* saturate sets VSCR.  */
 
 /* Builtin targets.  For now, we reuse the masks for those options that are in
-   target flags, and pick three random bits for SPE, paired and ldbl128 which
+   target flags, and pick two random bits for paired and ldbl128, which
    aren't in target_flags.  */
 #define RS6000_BTM_ALWAYS	0		/* Always enabled.  */
 #define RS6000_BTM_ALTIVEC	MASK_ALTIVEC	/* VMX/altivec vectors.  */
@@ -2695,7 +2676,6 @@ extern int frame_pointer_needed;
 #define RS6000_BTM_P9_MISC	MASK_P9_MISC	/* ISA 3.0 misc. non-vector */
 #define RS6000_BTM_CRYPTO	MASK_CRYPTO	/* crypto funcs.  */
 #define RS6000_BTM_HTM		MASK_HTM	/* hardware TM funcs.  */
-#define RS6000_BTM_SPE		MASK_STRING	/* E500 */
 #define RS6000_BTM_PAIRED	MASK_MULHW	/* 750CL paired insns.  */
 #define RS6000_BTM_FRE		MASK_POPCNTB	/* FRE instruction.  */
 #define RS6000_BTM_FRES		MASK_PPC_GFXOPT	/* FRES instruction.  */
@@ -2736,11 +2716,9 @@ extern int frame_pointer_needed;
 #undef RS6000_BUILTIN_3
 #undef RS6000_BUILTIN_A
 #undef RS6000_BUILTIN_D
-#undef RS6000_BUILTIN_E
 #undef RS6000_BUILTIN_H
 #undef RS6000_BUILTIN_P
 #undef RS6000_BUILTIN_Q
-#undef RS6000_BUILTIN_S
 #undef RS6000_BUILTIN_X
 
 #define RS6000_BUILTIN_0(ENUM, NAME, MASK, ATTR, ICODE) ENUM,
@@ -2749,11 +2727,9 @@ extern int frame_pointer_needed;
 #define RS6000_BUILTIN_3(ENUM, NAME, MASK, ATTR, ICODE) ENUM,
 #define RS6000_BUILTIN_A(ENUM, NAME, MASK, ATTR, ICODE) ENUM,
 #define RS6000_BUILTIN_D(ENUM, NAME, MASK, ATTR, ICODE) ENUM,
-#define RS6000_BUILTIN_E(ENUM, NAME, MASK, ATTR, ICODE) ENUM,
 #define RS6000_BUILTIN_H(ENUM, NAME, MASK, ATTR, ICODE) ENUM,
 #define RS6000_BUILTIN_P(ENUM, NAME, MASK, ATTR, ICODE) ENUM,
 #define RS6000_BUILTIN_Q(ENUM, NAME, MASK, ATTR, ICODE) ENUM,
-#define RS6000_BUILTIN_S(ENUM, NAME, MASK, ATTR, ICODE) ENUM,
 #define RS6000_BUILTIN_X(ENUM, NAME, MASK, ATTR, ICODE) ENUM,
 
 enum rs6000_builtins
@@ -2769,11 +2745,9 @@ enum rs6000_builtins
 #undef RS6000_BUILTIN_3
 #undef RS6000_BUILTIN_A
 #undef RS6000_BUILTIN_D
-#undef RS6000_BUILTIN_E
 #undef RS6000_BUILTIN_H
 #undef RS6000_BUILTIN_P
 #undef RS6000_BUILTIN_Q
-#undef RS6000_BUILTIN_S
 #undef RS6000_BUILTIN_X
 
 enum rs6000_builtin_type_index

@@ -1,5 +1,61 @@
 2017-06-07  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	* config/rs6000/rs6000-common.c (rs6000_handle_option): Remove
+	SPE ABI handling.
+	* config/rs6000/paired.md (paired_negv2sf2): Rename to negv2sf2.
+	(paired_absv2sf2, paired_addv2sf3, paired_subv2sf3, paired_mulv2sf3,
+	paired_divv2sf3): Similar.
+	* config/rs6000/predicates.md: Replace TARGET_SPE, TARGET_SPE_ABI,
+	SPE_VECTOR_MODE and SPE_HIGH_REGNO_P by 0; simplify.
+	* config/rs6000/rs6000-builtin.def: Delete RS6000_BUILTIN_E and
+	RS6000_BUILTIN_S.
+	Delete BU_SPE_1, BU_SPE_2, BU_SPE_3, BU_SPE_E, BU_SPE_P, and BU_SPE_X.
+	Rename the paired_* instruction patterns.
+	* config/rs6000/rs6000-c.c (rs6000_target_modify_macros): Do not
+	define __SPE__.
+	* config/rs6000/rs6000-protos.h (invalid_e500_subreg): Delete.
+	* config/rs6000/rs6000.c: Delete RS6000_BUILTIN_E and RS6000_BUILTIN_S.
+	(struct rs6000_stack): Delete fields spe_gp_save_offset, spe_gp_size,
+	spe_padding_size, and spe_64bit_regs_used.  Replace TARGET_SPE and
+	TARGET_SPE_ABI with 0, simplify.  Replace SPE_VECTOR_MODE with
+	PAIRED_VECTOR_MODE.
+	(struct machine_function): Delete field spe_insn_chain_scanned_p.
+	(spe_func_has_64bit_regs_p): Delete.
+	(spe_expand_predicate_builtin): Delete.
+	(spe_expand_evsel_builtin): Delete.
+	(TARGET_DWARF_REGISTER_SPAN): Do not define.
+	(TARGET_MEMBER_TYPE_FORCES_BLK): Do not define.
+	(invalid_e500_subreg): Delete.
+	(rs6000_legitimize_address): Always force_reg op2 as well, for
+	paired single memory accesses.
+	(rs6000_member_type_forces_blk): Delete.
+	(rs6000_spe_function_arg): Delete.
+	(rs6000_expand_unop_builtin): Delete SPE handling.
+	(rs6000_expand_binop_builtin): Ditto.
+	(spe_expand_stv_builtin): Delete.
+	(bdesc_2arg_spe): Delete.
+	(spe_expand_builtin): Delete.
+	(spe_expand_predicate_builtin): Delete.
+	(spe_expand_evsel_builtin): Delete.
+	(rs6000_invalid_builtin): Remove RS6000_BTM_SPE handling.
+	(spe_init_builtins): Delete.
+	(spe_func_has_64bit_regs_p): Delete.
+	(savres_routine_name): Delete "info" parameter.  Adjust callers.
+	(rs6000_emit_stack_reset): Ditto.
+	(rs6000_dwarf_register_span): Delete.
+	* config/rs6000/rs6000.h (TARGET_SPE_ABI, TARGET_SPE,
+	UNITS_PER_SPE_WORD, SPE_HIGH_REGNO_P, SPE_SIMD_REGNO_P,
+	SPE_VECTOR_MODE, RS6000_BTM_SPE, RS6000_BUILTIN_E, RS6000_BUILTIN_S):
+	Delete.
+	* config/rs6000/rs6000.md (FIRST_SPE_HIGH_REGNO, LAST_SPE_HIGH_REGNO):
+	Delete.
+	* config/rs6000/rs6000.opt (-mabi=spe, -mabi=no-spe): Delete.
+	* config/rs6000/spe.md: Delete every pattern that uses TARGET_SPE.
+	* config/rs6000/vector.md (absv2sf2, negv2sf2, addv2sf3, subv2sf3,
+	mulv2sf3, divv2sf3): Delete expanders.
+
+2017-06-07  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	config/rs6000/rs6000.md (UNSPEC_MV_CR_GT): Delete.
 
 2017-06-07  Segher Boessenkool  <segher@kernel.crashing.org>
