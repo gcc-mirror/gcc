@@ -3147,6 +3147,12 @@ matching_type_p (tree spec_type, tree arg_type)
   gcc_assert (spec_type);
   gcc_assert (arg_type);
 
+  /* If any of the types requires structural equality, we can't compare
+     their canonical types.  */
+  if (TYPE_STRUCTURAL_EQUALITY_P (spec_type)
+      || TYPE_STRUCTURAL_EQUALITY_P (arg_type))
+    return false;
+
   spec_type = TYPE_CANONICAL (spec_type);
   arg_type = TYPE_CANONICAL (arg_type);
 
