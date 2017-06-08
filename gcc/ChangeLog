@@ -1,3 +1,9 @@
+2017-06-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/81005
+	* ubsan.c (instrument_null): Avoid pointless code temporary.
+	(pass_ubsan::execute): Instrument aggregate arguments of calls.
+
 2017-06-08  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/81015
