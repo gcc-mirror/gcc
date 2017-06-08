@@ -1,5 +1,18 @@
 2017-06-08  Jan Hubicka  <hubicka@ucw.cz>
 
+	* cgraph.c (cgraph_edge::maybe_hot_p): Do not check
+	flag_branch_probabilities.
+	* ipa-inline.c (edge_badness): Likewise.
+	* ipa-profile.c (ipa_propagate_frequency_1): Likewise.
+	* postreload-gcse.c (eliminate_partially_redundant_load): Likewise.
+	* predict.c (maybe_hot_frequency_p): Likewise.
+	(probably_never_executed): Likewise.
+	* sched-ebb.c (schedule_ebbs): Likewise.
+	* sched-rgn.c (find_single_block_region): Likewise.
+	* tracer.c (tail_duplicate): Likewise.
+
+2017-06-08  Jan Hubicka  <hubicka@ucw.cz>
+
 	* opts.c (finish_options): x_flag_reorder_blocks_and_partition no
 	longer requires x_flag_profile_use.
 

@@ -123,8 +123,7 @@ static inline bool
 maybe_hot_frequency_p (struct function *fun, int freq)
 {
   struct cgraph_node *node = cgraph_node::get (fun->decl);
-  if (!profile_info
-      || !opt_for_fn (fun->decl, flag_branch_probabilities))
+  if (!profile_info || profile_status_for_fn (fun) != PROFILE_READ)
     {
       if (node->frequency == NODE_FREQUENCY_UNLIKELY_EXECUTED)
         return false;
@@ -222,7 +221,7 @@ probably_never_executed (struct function *fun,
 	return false;
       return true;
     }
-  if ((!profile_info || !(opt_for_fn (fun->decl, flag_branch_probabilities)))
+  if ((!profile_info || profile_status_for_fn (fun) != PROFILE_READ)
       && (cgraph_node::get (fun->decl)->frequency
 	  == NODE_FREQUENCY_UNLIKELY_EXECUTED))
     return true;

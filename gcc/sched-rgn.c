@@ -477,7 +477,7 @@ find_single_block_region (bool ebbs_p)
 
   if (ebbs_p) {
     int probability_cutoff;
-    if (profile_info && flag_branch_probabilities)
+    if (profile_info && profile_status_for_fn (cfun) == PROFILE_READ)
       probability_cutoff = PARAM_VALUE (TRACER_MIN_BRANCH_PROBABILITY_FEEDBACK);
     else
       probability_cutoff = PARAM_VALUE (TRACER_MIN_BRANCH_PROBABILITY);

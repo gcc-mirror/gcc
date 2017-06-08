@@ -2729,10 +2729,7 @@ cgraph_edge::cannot_lead_to_return_p (void)
 bool
 cgraph_edge::maybe_hot_p (void)
 {
-  /* TODO: Export profile_status from cfun->cfg to cgraph_node.  */
-  if (profile_info
-      && opt_for_fn (caller->decl, flag_branch_probabilities)
-      && !maybe_hot_count_p (NULL, count))
+  if (!maybe_hot_count_p (NULL, count))
     return false;
   if (caller->frequency == NODE_FREQUENCY_UNLIKELY_EXECUTED
       || (callee

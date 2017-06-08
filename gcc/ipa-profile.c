@@ -330,7 +330,7 @@ ipa_propagate_frequency_1 (struct cgraph_node *node, void *data)
 	 it is executed by the train run.  Transfer the function only if all
 	 callers are unlikely executed.  */
       if (profile_info
-	  && opt_for_fn (d->function_symbol->decl, flag_branch_probabilities)
+	  && edge->callee->count.initialized_p ()
 	  /* Thunks are not profiled.  This is more or less implementation
 	     bug.  */
 	  && !d->function_symbol->thunk.thunk_p
