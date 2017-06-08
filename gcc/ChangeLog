@@ -1,3 +1,14 @@
+2017-06-08  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+
+	* tree-chkp.c (chkp_get_hard_register_var_fake_base_address):
+	New function.
+	(chkp_get_hard_register_fake_addr_expr): Ditto.
+	(chkp_build_addr_expr): Add check for hard reg case.
+	(chkp_parse_array_and_component_ref): Ditto.
+	(chkp_find_bounds_1): Ditto.
+	(chkp_process_stmt): Don't generate bounds store for
+	hard reg case.
+
 2017-06-08  Jan Hubicka  <hubicka@ucw.cz>
 
 	* predict.c (maybe_hot_bb_p): Do not check profile status.

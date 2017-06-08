@@ -1,3 +1,9 @@
+2017-06-08  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+
+	* gcc.target/i386/mpx/hard-reg-2-lbv.c: New test.
+	* gcc.target/i386/mpx/hard-reg-2-nov.c: New test.
+	* gcc.target/i386/mpx/hard-reg-2-ubv.c: New test.
+
 2017-06-08  Jan Hubicka  <hubicka@ucw.cz>
 
 	* g++.dg/tree-ssa/counts-1.C: New testcase.
