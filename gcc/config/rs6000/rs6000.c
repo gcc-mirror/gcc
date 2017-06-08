@@ -16568,6 +16568,26 @@ rs6000_gimple_fold_builtin (gimple_stmt_iterator *gsi)
 	gsi_replace (gsi, g, true);
 	return true;
       }
+    /* Flavors of vec_eqv.  */
+    case P8V_BUILTIN_EQV_V16QI:
+    case P8V_BUILTIN_EQV_V8HI:
+    case P8V_BUILTIN_EQV_V4SI:
+    case P8V_BUILTIN_EQV_V4SF:
+    case P8V_BUILTIN_EQV_V2DF:
+    case P8V_BUILTIN_EQV_V2DI:
+      {
+	arg0 = gimple_call_arg (stmt, 0);
+	arg1 = gimple_call_arg (stmt, 1);
+	lhs = gimple_call_lhs (stmt);
+	tree temp = create_tmp_reg_or_ssa_name (TREE_TYPE (arg1));
+	gimple *g = gimple_build_assign (temp, BIT_XOR_EXPR, arg0, arg1);
+	gimple_set_location (g, gimple_location (stmt));
+	gsi_insert_before (gsi, g, GSI_SAME_STMT);
+	g = gimple_build_assign (lhs, BIT_NOT_EXPR, temp);
+	gimple_set_location (g, gimple_location (stmt));
+	gsi_replace (gsi, g, true);
+	return true;
+      }
     default:
       break;
     }

@@ -1,3 +1,8 @@
+2017-06-08  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	* config/rs6000/rs6000.c (rs6000_gimple_fold_builtin): Add handling
+	for early expansion of vec_eqv.
+
 2017-06-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/81005
