@@ -2854,15 +2854,21 @@ class Interface_type : public Type
   Interface_type(Typed_identifier_list* methods, Location location)
     : Type(TYPE_INTERFACE),
       parse_methods_(methods), all_methods_(NULL), location_(location),
-      interface_btype_(NULL), bmethods_(NULL), assume_identical_(NULL),
-      methods_are_finalized_(false), bmethods_is_placeholder_(false),
-      seen_(false)
+      package_(NULL), interface_btype_(NULL), bmethods_(NULL),
+      assume_identical_(NULL), methods_are_finalized_(false),
+      bmethods_is_placeholder_(false), seen_(false)
   { go_assert(methods == NULL || !methods->empty()); }
 
   // The location where the interface type was defined.
   Location
   location() const
   { return this->location_; }
+
+  // The package where the interface type was defined.  Returns NULL
+  // for the package currently being compiled.
+  Package*
+  package() const
+  { return this->package_; }
 
   // Return whether this is an empty interface.
   bool
@@ -3008,6 +3014,9 @@ class Interface_type : public Type
   Typed_identifier_list* all_methods_;
   // The location where the interface was defined.
   Location location_;
+  // The package where the interface was defined.  This is NULL for
+  // the package being compiled.
+  Package* package_;
   // The backend representation of this type during backend conversion.
   Btype* interface_btype_;
   // The backend representation of the pointer to the method table.
