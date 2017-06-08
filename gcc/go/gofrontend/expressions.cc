@@ -4370,7 +4370,7 @@ Unary_expression::do_get_backend(Translate_context* context)
 	  gogo->backend()->implicit_variable_set_init(implicit, buf, btype,
 						      true, copy_to_heap, false,
 						      bexpr);
-	  bexpr = gogo->backend()->var_expression(implicit, VE_lvalue, loc);
+	  bexpr = gogo->backend()->var_expression(implicit, VE_rvalue, loc);
 
 	  // If we are not copying a slice initializer to the heap,
 	  // then it can be changed by the program, so if it can
@@ -4380,7 +4380,7 @@ Unary_expression::do_get_backend(Translate_context* context)
 	      && this->expr_->type()->has_pointer())
 	    {
 	      Bexpression* root =
-                  gogo->backend()->var_expression(implicit, VE_lvalue, loc);
+                  gogo->backend()->var_expression(implicit, VE_rvalue, loc);
 	      root = gogo->backend()->address_expression(root, loc);
 	      Type* type = Type::make_pointer_type(this->expr_->type());
 	      gogo->add_gc_root(Expression::make_backend(root, type, loc));
@@ -4400,7 +4400,7 @@ Unary_expression::do_get_backend(Translate_context* context)
                                                 true, false, btype, loc);
           gogo->backend()->immutable_struct_set_init(decl, buf, true, false,
                                                      btype, loc, bexpr);
-          bexpr = gogo->backend()->var_expression(decl, VE_lvalue, loc);
+          bexpr = gogo->backend()->var_expression(decl, VE_rvalue, loc);
         }
 
       go_assert(!this->create_temp_ || this->expr_->is_variable());
