@@ -1,3 +1,8 @@
+2017-06-08  Jan Hubicka  <hubicka@ucw.cz>
+
+	* predict.c (unlikely_executed_edge_p): Move ahead.
+	(probably_never_executed_edge_p): Use it.
+
 2017-06-08  Alexander Ivchenko  <alexander.ivchenko@intel.com>
 
 	PR middle-end/79988

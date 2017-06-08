@@ -238,11 +238,22 @@ probably_never_executed_bb_p (struct function *fun, const_basic_block bb)
 }
 
 
+/* Return true if E is unlikely executed for obvious reasons.  */
+
+static bool
+unlikely_executed_edge_p (edge e)
+{
+  return e->count == profile_count::zero ()
+	 || (e->flags & (EDGE_EH | EDGE_FAKE));
+}
+
 /* Return true in case edge E is probably never executed.  */
 
 bool
 probably_never_executed_edge_p (struct function *fun, edge e)
 {
+  if (e->count.initialized_p ())
+    unlikely_executed_edge_p (e);
   return probably_never_executed (fun, e->count, EDGE_FREQUENCY (e));
 }
 
@@ -759,15 +770,6 @@ dump_prediction (FILE *file, enum br_predictor predictor, int probability,
     }
 
   fprintf (file, "\n");
-}
-
-/* Return true if E is unlikely executed.  */
-
-static bool
-unlikely_executed_edge_p (edge e)
-{
-  return e->count == profile_count::zero ()
-	 || (e->flags & (EDGE_EH | EDGE_FAKE));
 }
 
 /* Return true if STMT is known to be unlikely executed.  */
