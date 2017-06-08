@@ -6,5 +6,5 @@
 unsigned int
 foo (unsigned short x)
 {
-  return x ? __builtin_clz (x) : 16U;
+  return x ? __builtin_clzs (x) : 16U;
 }
