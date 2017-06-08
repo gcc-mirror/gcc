@@ -1,5 +1,8 @@
 2017-06-08  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/81011
+	* g++.dg/gomp/pr81011.C: New test.
+
 	PR middle-end/81005
 	* c-c++-common/ubsan/align-10.c: New test.
 	* c-c++-common/ubsan/null-13.c: New test.
