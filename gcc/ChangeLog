@@ -1,3 +1,10 @@
+2017-08-08  Julia Koval  <julia.koval@intel.com>
+
+	PR target/73350,80862
+	* config/i386/subst.md (round): Fix round pattern.
+	* config/i386/i386.c (ix86_erase_embedded_rounding):
+	Fix erasing rounding for the fixed pattern.
+
 2017-06-08  Jan Hubicka  <hubicka@ucw.cz>
 
 	* cfgbuild.c (find_many_sub_basic_blocks): Fix thinko.
