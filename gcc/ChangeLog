@@ -1,3 +1,14 @@
+2017-06-08  David Edelsohn  <dje.gcc@gmail.com>
+
+	Backport from mainline
+	2017-06-02  David Edelsohn  <dje.gcc@gmail.com>
+
+	* dwarf2out.c (DWARF_INITIAL_LENGTH_SIZE_STR): New.
+	(dl_section_ref): New.
+	(dwarf2out_finish): Copy debug_line_section_label to dl_section_ref.
+	On AIX, append an expression to subtract the size of the
+	section length to dl_section_ref.
+
 2017-06-07  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline
