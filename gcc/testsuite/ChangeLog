@@ -1,3 +1,8 @@
+2017-08-08  Julia Koval  <julia.koval@intel.com>
+
+	PR target/73350,80862
+	* gcc.target/i386/pr73350.c: New test.
+
 2017-06-08  Tamar Christina  <tamar.christina@arm.com>
 
 	* gcc.target/aarch64/builtin-fpclassify.c: New codegen test.

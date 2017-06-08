@@ -137,12 +137,13 @@
 
 (define_subst "round"
   [(set (match_operand:SUBST_A 0)
-        (match_operand:SUBST_A 1))]
+	(match_operand:SUBST_A 1))]
   "TARGET_AVX512F"
-  [(parallel[
-     (set (match_dup 0)
-          (match_dup 1))
-     (unspec [(match_operand:SI 2 "const_4_or_8_to_11_operand")] UNSPEC_EMBEDDED_ROUNDING)])])
+  [(set (match_dup 0)
+	(unspec:SUBST_A [(match_dup 1)
+	  (match_operand:SI 2 "const_4_or_8_to_11_operand")]
+	  UNSPEC_EMBEDDED_ROUNDING))
+])
 
 (define_subst_attr "round_saeonly_name" "round_saeonly" "" "_round")
 (define_subst_attr "round_saeonly_mask_operand2" "mask" "%r2" "%r4")
