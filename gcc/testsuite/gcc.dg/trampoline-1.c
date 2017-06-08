@@ -5,8 +5,6 @@
 /* { dg-require-effective-target trampolines } */
 /* { dg-options "-O2" } */
 
-#ifndef NO_TRAMPOLINES
-
 /* This used to fail on various versions of Solaris 2 because the
    trampoline couldn't be made executable.  */
 
@@ -46,12 +44,9 @@ void foo (void)
       abort();
   }
 }
-#endif
 
 int main (void)
 {
-#ifndef NO_TRAMPOLINES
   foo ();
-#endif
   return 0;
 }

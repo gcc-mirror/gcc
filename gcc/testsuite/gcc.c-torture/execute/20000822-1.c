@@ -1,4 +1,5 @@
-#ifndef NO_TRAMPOLINES
+/* { dg-require-effective-target trampolines } */
+
 int f0(int (*fn)(int *), int *p)
 {
   return (*fn) (p);
@@ -16,13 +17,11 @@ int f1(void)
 
   return f0(f2, &i);
 }
-#endif
 
 int main()
 {
-#ifndef NO_TRAMPOLINES
   if (f1() != 2)
     abort ();
-#endif
+
   return 0;
 }
