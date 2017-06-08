@@ -132,6 +132,9 @@ struct block_location_info
 
 typedef struct block_info
 {
+  /* Constructor.  */
+  block_info ();
+
   /* Chain of exit and entry arcs.  */
   arc_t *succ;
   arc_t *pred;
@@ -172,6 +175,14 @@ typedef struct block_info
   struct block_info *chain;
 
 } block_t;
+
+block_info::block_info (): succ (NULL), pred (NULL), num_succ (0), num_pred (0),
+  id (0), count (0), count_valid (0), valid_chain (0), invalid_chain (0),
+  exceptional (0), is_call_site (0), is_call_return (0), is_nonlocal_return (0),
+  locations (), chain (NULL)
+{
+  cycle.arc = NULL;
+}
 
 /* Describes a single function. Contains an array of basic blocks.  */
 
