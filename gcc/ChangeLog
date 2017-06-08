@@ -1,5 +1,10 @@
 2017-06-08  Jan Hubicka  <hubicka@ucw.cz>
 
+	* opts.c (finish_options): x_flag_reorder_blocks_and_partition no
+	longer requires x_flag_profile_use.
+
+2017-06-08  Jan Hubicka  <hubicka@ucw.cz>
+
 	* cfgrtl.c (cfg_layout_initialize): Check crtl->has_bb_partition
 	instead of flag_reorder_blocks_and_partition.
 	* dbxout.c (dbxout_function_end): Likewise.
