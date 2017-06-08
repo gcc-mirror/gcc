@@ -6819,7 +6819,8 @@ extern void cp_free_lang_data 			(tree t);
 extern tree force_target_expr			(tree, tree, tsubst_flags_t);
 extern tree build_target_expr_with_type		(tree, tree, tsubst_flags_t);
 extern void lang_check_failed			(const char *, int,
-						 const char *) ATTRIBUTE_NORETURN;
+						 const char *) ATTRIBUTE_NORETURN
+						 ATTRIBUTE_COLD;
 extern tree stabilize_expr			(tree, tree *);
 extern void stabilize_call			(tree, tree *);
 extern bool stabilize_init			(tree, tree *);

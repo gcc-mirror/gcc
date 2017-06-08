@@ -1,3 +1,7 @@
+2017-06-08  Jan Hubicka  <hubicka@ucw.cz>
+
+	* cp-tree.h (lang_check_failed): Annotate by ATTRIBUTE_COLD.
+
 2017-06-07  Nathan Sidwell  <nathan@acm.org>
 
 	* class.c (layout_class_type): Restructure overlong-bitfield tpe
