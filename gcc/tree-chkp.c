@@ -327,6 +327,8 @@ static void chkp_parse_array_and_component_ref (tree node, tree *ptr,
 						bool innermost_bounds);
 static void chkp_parse_bit_field_ref (tree node, location_t loc,
 				      tree *offset, tree *size);
+static tree
+chkp_make_addressed_object_bounds (tree obj, gimple_stmt_iterator *iter);
 
 #define chkp_bndldx_fndecl \
   (targetm.builtin_chkp_function (BUILT_IN_CHKP_BNDLDX))
@@ -677,6 +679,45 @@ chkp_erase_completed_bounds (void)
 {
   delete chkp_completed_bounds_set;
   chkp_completed_bounds_set = new hash_set<tree>;
+}
+
+/* This function is used to provide a base address for
+   chkp_get_hard_register_fake_addr_expr.  */
+static tree
+chkp_get_hard_register_var_fake_base_address ()
+{
+  tree base = fold_convert (ptr_type_node, integer_zero_node);
+  unsigned HOST_WIDE_INT offset = 1 << (TYPE_PRECISION (ptr_type_node) - 1);
+  return fold_build_pointer_plus_hwi (base, offset);
+}
+
+/* If we check bounds for a hard register variable, we cannot
+   use its address - it is illegal, so instead of that we use
+   this fake value.  */
+static tree
+chkp_get_hard_register_fake_addr_expr (tree obj)
+{
+  tree addr = chkp_get_hard_register_var_fake_base_address ();
+  tree outer = obj;
+  while (TREE_CODE (outer) == COMPONENT_REF || TREE_CODE (outer) == ARRAY_REF)
+    {
+      if (TREE_CODE (outer) == COMPONENT_REF)
+	{
+	  addr = fold_build_pointer_plus (addr,
+					  component_ref_field_offset (outer));
+	  outer = TREE_OPERAND (outer, 0);
+	}
+      else if (TREE_CODE (outer) == ARRAY_REF)
+	{
+	  tree indx = fold_convert(size_type_node, TREE_OPERAND(outer, 1));
+	  tree offset = size_binop (MULT_EXPR,
+				    array_ref_element_size (outer), indx);
+	  addr = fold_build_pointer_plus (addr, offset);
+	  outer = TREE_OPERAND (outer, 0);
+	}
+    }
+
+  return addr;
 }
 
 /* Mark BOUNDS associated with PTR as incomplete.  */
@@ -1044,6 +1085,12 @@ chkp_add_modification_to_stmt_list (tree lhs,
 static tree
 chkp_build_addr_expr (tree obj)
 {
+  /* We first check whether it is a "hard reg case".  */
+  tree base = get_base_address (obj);
+  if (VAR_P (base) && DECL_HARD_REGISTER (base))
+    return chkp_get_hard_register_fake_addr_expr (obj);
+
+  /* If not - return regular ADDR_EXPR.  */
   return TREE_CODE (obj) == TARGET_MEM_REF
     ? tree_mem_ref_addr (ptr_type_node, obj)
     : build_fold_addr_expr (obj);
@@ -3442,6 +3489,13 @@ chkp_parse_array_and_component_ref (tree node, tree *ptr,
 		  || TREE_CODE (var) == SSA_NAME);
 
       *ptr = chkp_build_addr_expr (var);
+
+      /* For hard register cases chkp_build_addr_expr returns INTEGER_CST
+	 and later on chkp_find_bounds will fail to find proper bounds.
+	 In order to avoid that, we find/create bounds right aways using
+	 the var itself.  */
+      if (VAR_P (var) && DECL_HARD_REGISTER (var))
+	*bounds = chkp_make_addressed_object_bounds (var, iter);
     }
 
   /* In this loop we are trying to find a field access
@@ -3646,6 +3700,11 @@ chkp_find_bounds_1 (tree ptr, tree ptr_src, gimple_stmt_iterator *iter)
     case ARRAY_REF:
     case COMPONENT_REF:
       addr = get_base_address (ptr_src);
+      if (VAR_P (addr) && DECL_HARD_REGISTER (addr))
+	{
+	  bounds = chkp_get_zero_bounds ();
+	  break;
+	}
       if (DECL_P (addr)
 	  || TREE_CODE (addr) == MEM_REF
 	  || TREE_CODE (addr) == TARGET_MEM_REF)
@@ -3989,6 +4048,7 @@ chkp_process_stmt (gimple_stmt_iterator *iter, tree node,
   tree addr_last = NULL_TREE; /* address of the last accessed byte */
   tree ptr = NULL_TREE; /* a pointer used for dereference */
   tree bounds = NULL_TREE;
+  bool reg_store = false;
 
   /* We do not need instrumentation for clobbers.  */
   if (dirflag == integer_one_node
@@ -4103,6 +4163,13 @@ chkp_process_stmt (gimple_stmt_iterator *iter, tree node,
       addr_last = fold_build_pointer_plus_loc (loc, addr_last, access_offs);
     }
 
+  if (dirflag == integer_one_node)
+    {
+      tree base = get_base_address (node);
+      if (VAR_P (base) && DECL_HARD_REGISTER (base))
+	reg_store = true;
+    }
+
   /* Generate bndcl/bndcu checks if memory access is not safe.  */
   if (!safe)
     {
@@ -4117,6 +4184,7 @@ chkp_process_stmt (gimple_stmt_iterator *iter, tree node,
 
   /* We need to store bounds in case pointer is stored.  */
   if (dirflag == integer_one_node
+      && !reg_store
       && chkp_type_has_pointer (node_type)
       && flag_chkp_store_bounds)
     {
