@@ -655,7 +655,7 @@ find_many_sub_basic_blocks (sbitmap blocks)
 		    initialized_src = true;
 		  }
 		else
-		  uninitialized_src = false;
+		  uninitialized_src = true;
 		bb->frequency += EDGE_FREQUENCY (e);
 	      }
 	    /* When some edges are missing with read profile, this is
