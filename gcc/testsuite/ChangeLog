@@ -1,3 +1,8 @@
+2017-06-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/81011
+	* g++.dg/gomp/pr81011.C: New test.
+
 2017-06-06  David S. Miller  <davem@davemloft.net>
 
 	* gcc.target/sparc/sparc-ret-3.c: New test.

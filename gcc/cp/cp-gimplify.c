@@ -1888,7 +1888,11 @@ cxx_omp_finish_clause (tree c, gimple_seq *)
     make_shared = true;
 
   if (make_shared)
-    OMP_CLAUSE_CODE (c) = OMP_CLAUSE_SHARED;
+    {
+      OMP_CLAUSE_CODE (c) = OMP_CLAUSE_SHARED;
+      OMP_CLAUSE_SHARED_FIRSTPRIVATE (c) = 0;
+      OMP_CLAUSE_SHARED_READONLY (c) = 0;
+    }
 }
 
 /* Return true if DECL's DECL_VALUE_EXPR (if any) should be
