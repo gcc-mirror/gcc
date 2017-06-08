@@ -1,3 +1,16 @@
+2017-06-08  Jan Hubicka  <hubicka@ucw.cz>
+
+	* cfgrtl.c (cfg_layout_initialize): Check crtl->has_bb_partition
+	instead of flag_reorder_blocks_and_partition.
+	* dbxout.c (dbxout_function_end): Likewise.
+	* dwarf2out.c (gen_subprogram_die): Likewise.
+	* haifa-sched.c (sched_create_recovery_edges): Likewise.
+	* hw-doloop.c (reorg_loops): Likewise.
+	* varasm.c (assemble_start_function,
+	assemble_end_function): Likewise.
+	(decide_function_section): Do not check for
+	flag_reorder_blocks_and_partition.
+
 2017-06-08  Alexander Ivchenko  <alexander.ivchenko@intel.com>
 
 	* tree-chkp.c (chkp_get_hard_register_var_fake_base_address):

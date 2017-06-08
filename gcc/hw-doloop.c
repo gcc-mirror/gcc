@@ -634,7 +634,7 @@ reorg_loops (bool do_reorder, struct hw_doloop_hooks *hooks)
 
   /* We can't enter cfglayout mode anymore if basic block partitioning
      already happened.  */
-  if (do_reorder && !flag_reorder_blocks_and_partition)
+  if (do_reorder && !crtl->has_bb_partition)
     {
       reorder_loops (loops);
       free_loops (loops);
