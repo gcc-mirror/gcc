@@ -1,3 +1,9 @@
+2017-06-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/81006
+	* semantics.c (handle_omp_array_sections_1): Convert TYPE_MAX_VALUE
+	to sizetype before size_binop.
+
 2017-05-30  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
