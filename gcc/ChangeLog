@@ -1,3 +1,9 @@
+2017-06-08  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+
+	PR middle-end/79988
+	* tree-chkp.c (chkp_gimple_call_builtin_p): Remove
+	gimple_call_builtin_p call.
+
 2017-06-08  Jan Hubicka  <hubicka@ucw.cz>
 
 	* system.h (fancy_abort): Annotate by ATTRIBUTE_COLD.

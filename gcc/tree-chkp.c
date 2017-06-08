@@ -435,7 +435,11 @@ chkp_gimple_call_builtin_p (gimple *call,
 			    enum built_in_function code)
 {
   tree fndecl;
-  if (gimple_call_builtin_p (call, BUILT_IN_MD)
+  /* We are skipping the check for address-spaces, that's
+     why we don't use gimple_call_builtin_p directly here.  */
+  if (is_gimple_call (call)
+      && (fndecl = gimple_call_fndecl (call)) != NULL
+      && DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_MD
       && (fndecl = targetm.builtin_chkp_function (code))
       && (DECL_FUNCTION_CODE (gimple_call_fndecl (call))
 	  == DECL_FUNCTION_CODE (fndecl)))

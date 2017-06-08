@@ -1,5 +1,10 @@
 2017-06-08  Alexander Ivchenko  <alexander.ivchenko@intel.com>
 
+	PR middle-end/79988
+	* gcc.target/i386/mpx/pr79988.c: New test.
+
+2017-06-08  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+
 	* gcc.target/i386/mpx/hard-reg-2-lbv.c: New test.
 	* gcc.target/i386/mpx/hard-reg-2-nov.c: New test.
 	* gcc.target/i386/mpx/hard-reg-2-ubv.c: New test.
