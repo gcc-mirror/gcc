@@ -189,6 +189,10 @@ static GTY(()) section *debug_frame_section;
 #define DWARF_INITIAL_LENGTH_SIZE (DWARF_OFFSET_SIZE == 4 ? 4 : 12)
 #endif
 
+#ifndef DWARF_INITIAL_LENGTH_SIZE_STR
+#define DWARF_INITIAL_LENGTH_SIZE_STR (DWARF_OFFSET_SIZE == 4 ? "-4" : "-12")
+#endif
+
 /* Round SIZE up to the nearest BOUNDARY.  */
 #define DWARF_ROUND(SIZE,BOUNDARY) \
   ((((SIZE) + (BOUNDARY) - 1) / (BOUNDARY)) * (BOUNDARY))
@@ -29649,6 +29653,7 @@ dwarf2out_finish (const char *)
   comdat_type_node *ctnode;
   dw_die_ref main_comp_unit_die;
   unsigned char checksum[16];
+  char dl_section_ref[MAX_ARTIFICIAL_LABEL_BYTES];
 
   /* Flush out any latecomers to the limbo party.  */
   flush_limbo_die_list ();
@@ -29766,9 +29771,15 @@ dwarf2out_finish (const char *)
 	}
     }
 
+  /* AIX Assembler inserts the length, so adjust the reference to match the
+     offset expected by debuggers.  */
+  strcpy (dl_section_ref, debug_line_section_label);
+  if (XCOFF_DEBUGGING_INFO)
+    strcat (dl_section_ref, DWARF_INITIAL_LENGTH_SIZE_STR);
+
   if (debug_info_level >= DINFO_LEVEL_TERSE)
     add_AT_lineptr (main_comp_unit_die, DW_AT_stmt_list,
-		    debug_line_section_label);
+		    dl_section_ref);
 
   if (have_macinfo)
     add_AT_macptr (comp_unit_die (),
@@ -29844,7 +29855,7 @@ dwarf2out_finish (const char *)
       if (debug_info_level >= DINFO_LEVEL_TERSE)
         add_AT_lineptr (ctnode->root_die, DW_AT_stmt_list,
                         (!dwarf_split_debug_info
-                         ? debug_line_section_label
+                         ? dl_section_ref
                          : debug_skeleton_line_section_label));
 
       output_comdat_type_unit (ctnode);
