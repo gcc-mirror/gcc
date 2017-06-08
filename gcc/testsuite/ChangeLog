@@ -1,3 +1,12 @@
+2017-06-08  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	* testsuite/gcc.target/powerpc/fold-vec-logical-eqv-char.c: New.
+	* testsuite/gcc.target/powerpc/fold-vec-logical-eqv-float.c: New.
+	* testsuite/gcc.target/powerpc/fold-vec-logical-eqv-floatdouble.c: New.
+	* testsuite/gcc.target/powerpc/fold-vec-logical-eqv-int.c: New.
+	* testsuite/gcc.target/powerpc/fold-vec-logical-eqv-longlong.c: New.
+	* testsuite/gcc.target/powerpc/fold-vec-logical-eqv-short.c: New.
+
 2017-06-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/81006
