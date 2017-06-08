@@ -1078,7 +1078,7 @@ edge_badness (struct cgraph_edge *edge, bool dump)
 	numerator = ((sreal) 1 >> 8);
       if (caller->count > profile_count::zero ())
 	numerator *= caller->count.to_gcov_type ();
-      else if (opt_for_fn (caller->decl, flag_branch_probabilities))
+      else if (caller->count.initialized_p ())
 	numerator = numerator >> 11;
       denominator = growth;
 
