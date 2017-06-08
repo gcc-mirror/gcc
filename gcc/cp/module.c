@@ -972,8 +972,8 @@ cpm_stream::dump (const char *format, ...)
       if (depth)
 	{
 	  /* Module import indenting.  */
-	  const char *indent = "++++";
-	  const char *dots   = "+...+";
+	  const char *indent = ">>>>";
+	  const char *dots   = ">...>";
 	  if (depth > strlen (indent))
 	    indent = dots;
 	  else
@@ -1407,7 +1407,6 @@ cpms_in::header ()
 	  /* Dates differ, decline.  */
 	  error ("%qs built by version %s, this is version %s",
 		 r.name, v_dform, ver_dform);
-	  r.bad ();
 	  return false;
 	}
       else
@@ -2155,6 +2154,9 @@ cpms_in::tag_definition ()
 int
 cpms_in::read_item ()
 {
+  if (r.error ())
+    return false;
+
   unsigned rt = r.u ();
 
   switch (rt)
@@ -2167,7 +2169,7 @@ cpms_in::read_item ()
     default:
       break;
     }
-  
+
   if (mod_ix == GLOBAL_MODULE_INDEX)
     {
       if (state == this_module)
@@ -2205,7 +2207,9 @@ cpms_in::read_item ()
       return tag_trees ();
 
     default:
-      error ("unknown key %qd", rt);
+      error (rt < rt_tree_base ? "unknown key %qd"
+	     : rt < rt_ref_base ? "unexpected tree code %qd"
+	     : "unexpected tree reference %qd",rt);
       r.bad ();
       return false;
     }
@@ -2235,6 +2239,8 @@ cpms_out::start (tree_code code, tree t)
   switch (code)
     {
     default:
+      if (TREE_CODE_CLASS (code) == tcc_vl_exp)
+	w.u (VL_EXP_OPERAND_LENGTH (t));
       break;
     case IDENTIFIER_NODE:
       w.str (IDENTIFIER_POINTER (t), IDENTIFIER_LENGTH (t));
@@ -2244,9 +2250,6 @@ cpms_out::start (tree_code code, tree t)
       break;
     case TREE_VEC:
       w.u (TREE_VEC_LENGTH (t));
-      break;
-    case CALL_EXPR:
-      w.u (VL_EXP_OPERAND_LENGTH (t));
       break;
     case STRING_CST:
       w.str (TREE_STRING_POINTER (t), TREE_STRING_LENGTH (t));
@@ -2274,7 +2277,13 @@ cpms_in::start (tree_code code)
   switch (code)
     {
     default:
-      t = make_node (code);
+      if (TREE_CODE_CLASS (code) == tcc_vl_exp)
+	{
+	  unsigned ops = r.u ();
+	  t = build_vl_exp (code, ops);
+	}
+      else
+	t = make_node (code);
       break;
     case IDENTIFIER_NODE:
     case STRING_CST:
@@ -2292,9 +2301,6 @@ cpms_in::start (tree_code code)
       break;
     case TREE_VEC:
       t = make_tree_vec (r.u ());
-      break;
-    case CALL_EXPR:
-      t = build_vl_exp (CALL_EXPR, r.s ());
       break;
     case VECTOR_CST:
       t = make_vector (r.u ());
@@ -3136,8 +3142,13 @@ cpms_out::core_vals (tree t)
       WT (t->block.chain);
     }
 
-  if (CODE_CONTAINS_STRUCT (code, TS_EXP)
-      || TREE_CODE_CLASS (code) == tcc_expression)
+  if (TREE_CODE_CLASS (code) == tcc_vl_exp)
+    for (unsigned ix = VL_EXP_OPERAND_LENGTH (t); --ix;)
+      WT (TREE_OPERAND (t, ix));
+  else if (CODE_CONTAINS_STRUCT (code, TS_EXP)
+	   /* For some reason, some tcc_expression nodes do not claim
+	      to contain TS_EXP.  */
+	   || TREE_CODE_CLASS (code) == tcc_expression)
     for (unsigned ix = TREE_OPERAND_LENGTH (t); ix--;)
       WT (TREE_OPERAND (t, ix));
 
@@ -3368,8 +3379,11 @@ cpms_in::core_vals (tree t)
       RT (t->block.chain);
     }
 
-  if (CODE_CONTAINS_STRUCT (code, TS_EXP)
-      || TREE_CODE_CLASS (code) == tcc_expression)
+  if (TREE_CODE_CLASS (code) == tcc_vl_exp)
+    for (unsigned ix = VL_EXP_OPERAND_LENGTH (t); --ix;)
+      RT (TREE_OPERAND (t, ix));
+  else if (CODE_CONTAINS_STRUCT (code, TS_EXP)
+	   || TREE_CODE_CLASS (code) == tcc_expression)
     for (unsigned ix = TREE_OPERAND_LENGTH (t); ix--;)
       RT (TREE_OPERAND (t, ix));
 
@@ -3778,6 +3792,7 @@ cpms_in::tree_node ()
       tree *val = (tree *)tree_map.get (tag);
       if (!val || !*val)
 	{
+	  error ("unknown tree reference %qd", tag);
 	  r.bad ();
 	  return NULL_TREE;
 	}
@@ -3796,8 +3811,9 @@ cpms_in::tree_node ()
       tree name = tree_node ();
       if (!name || TREE_CODE (name) != TYPE_DECL)
 	r.bad ();
-      dump () && dump ("Read interstitial type name %C:%N%M",
-		       TREE_CODE (name), name, name);
+      else
+	dump () && dump ("Read interstitial type name %C:%N%M",
+			 TREE_CODE (name), name, name);
       unnest ();
       return tree_node ();
     }
@@ -3806,14 +3822,17 @@ cpms_in::tree_node ()
     {
       /* An immediate definition.  */
       tree res = tag_definition ();
-      dump () && dump ("Read immediate definition %C:%N%M",
-		       TREE_CODE (res), res, res);
+      if (res)
+	dump () && dump ("Read immediate definition %C:%N%M",
+			 TREE_CODE (res), res, res);
       unnest ();
       return res;
     }
 
   if (tag < rt_tree_base || tag >= rt_tree_base + MAX_TREE_CODES)
     {
+      error (tag < rt_tree_base ? "unexpected key %qd"
+	     : "unknown tree code %qd" , tag);
       r.bad ();
       unnest ();
       return NULL_TREE;
@@ -4203,8 +4222,10 @@ read_module (FILE *stream, const char *fname, module_state *state,
 
   if (int e = in.done ())
     {
-      error ("failed to read module %qE (%qs): %s", state->name, fname,
-	     e >= 0 ? xstrerror (e) : "Bad file data");
+      /* strerror and friends returns capitalized strings.  */
+      char const *err = e >= 0 ? xstrerror (e) : "Bad file data";
+      char c = TOLOWER (err[0]);
+      error ("%c%s", c, err + 1);
       ok = false;
     }
 
@@ -4213,6 +4234,11 @@ read_module (FILE *stream, const char *fname, module_state *state,
       ok = in.get_mod ();
       gcc_assert (ok >= THIS_MODULE_INDEX);
     }
+  else
+    /* Failure to read a module is going to cause big problems, so
+       bail out now.  */
+    fatal_error (input_location,
+		 "failed to read module %qE (%qs)", state->name, fname);
 
   return ok;
 }

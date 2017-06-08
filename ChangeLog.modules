@@ -1,6 +1,14 @@
 2017-06-08  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.c (cpms_in::read_item, cpms_in::tree_node): More
+	diagnostics.
+	(cpms_{out,in}::start, cpms_{out,in}::core_vals): Fix call
+	handling.
+	gcc/testsuite/
+	* g++.dg/modules/class-4_[ab].C: New.
+
+	gcc/cp/
 	* module.c: Implement dump printf.
 
 2017-06-07  Nathan Sidwell  <nathan@acm.org>
