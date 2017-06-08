@@ -1,5 +1,23 @@
 2017-06-08  Jan Hubicka  <hubicka@ucw.cz>
 
+	* system.h (fancy_abort): Annotate by ATTRIBUTE_COLD.
+	* rtl.h (rtl_check_failed_bounds, rtl_check_failed_type1,
+	rtl_check_failed_type2, rtl_check_failed_code1,
+	rtl_check_failed_code2, rtl_check_failed_code_mode,
+	rtl_check_failed_block_symbol, cwi_check_failed_bounds,
+	rtvec_check_failed_bounds, rtl_check_failed_flag,
+	_fatal_insn_not_found, _fatal_insn): Likewise.
+	* tree.h (tree_contains_struct_check_failed,
+	tree_check_failed, tree_not_check_failed,
+	tree_class_check_failed, tree_range_check_failed,
+	tree_not_class_check_failed, tree_int_cst_elt_check_failed,
+	tree_vec_elt_check_failed, phi_node_elt_check_failed,
+	tree_operand_check_failed, omp_clause_check_failed,
+	omp_clause_operand_check_failed, omp_clause_range_check_failed):
+	Likewise.
+
+2017-06-08  Jan Hubicka  <hubicka@ucw.cz>
+
 	* cgraph.c (cgraph_edge::maybe_hot_p): Do not check
 	flag_branch_probabilities.
 	* ipa-inline.c (edge_badness): Likewise.
