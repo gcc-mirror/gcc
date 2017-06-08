@@ -1,3 +1,8 @@
+2017-06-08  Jan Hubicka  <hubicka@ucw.cz>
+
+	* g++.dg/tree-ssa/counts-1.C: New testcase.
+	* gcc.dg/tree-ssa/counts-1.c: New testcase.
+
 2017-08-08  Julia Koval  <julia.koval@intel.com>
 
 	* gcc.target/i386/avx512bw-vpmovswb-1.c: Add new intrinsics to test.
