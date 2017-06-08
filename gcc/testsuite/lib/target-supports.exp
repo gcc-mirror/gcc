@@ -491,7 +491,7 @@ proc check_gc_sections_available { } {
 # target is supposed to support trampolines.
  
 proc check_effective_target_trampolines { } {
-    if [target_info exists no_trampolines] {
+    if [target_info exists gcc,no_trampolines] {
       return 0
     }
     if { [istarget avr-*-*]
