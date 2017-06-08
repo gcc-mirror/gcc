@@ -1,3 +1,10 @@
+2017-06-08  Olivier Hainque  <hainque@adacore.com>
+
+	* vx_crtbegin_auto.c: Update year in copyright notice.
+	* vx_crtbegin.c: Likewise.
+	* vx_crtbegin.inc: Likewise. 
+	* vx_crtend.c:  Likewise.
+
 2017-06-07  Sebastian Huber  <sebastian.huber@embedded-brains.de>
 
 	* Makefile.in (rtems): Use TLS implementation for s-tpopsp.adb.
