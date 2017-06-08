@@ -1,3 +1,13 @@
+2017-06-08  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/81015
+	Revert:
+	2016-12-14  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/59874
+	* config/i386/i386.md (*ctzhi2): New insn_and_split pattern.
+	(*clzhi2): Ditto.
+
 2017-06-08  Jan Hubicka  <hubicka@ucw.cz>
 
 	* predict.c (unlikely_executed_edge_p): Move ahead.
@@ -183,15 +193,15 @@
 	built-in functions was implemented as int not long long.  Fix sign
 	of return value for the unsigned version of vec_mulo and vec_mule.
 	vector unsigned long long vec_bperm (vector unsigned long long,
-	                                     vector unsigned char)
+					     vector unsigned char)
 	vector signed long long vec_mule (vector signed int,
-	                                  vector signed int)
+					  vector signed int)
 	vector unsigned long long vec_mule (vector unsigned int,
-	                                    vector unsigned int)
+					    vector unsigned int)
 	vector signed long long vec_mulo (vector signed int,
-	                                  vector signed int)
+					  vector signed int)
 	vector unsigned long long vec_mulo (vector unsigned int,
-	                                    vector unsigned int)
+					    vector unsigned int)
 	* doc/extend.texi: Fix the documentation for the built-in
 	functions.
 
@@ -543,26 +553,26 @@
 
 2017-06-06  Maxim Kuvyrkov  <maxim.kuvyrkov@linaro.org>
 
-        * tree-ssa-loop-prefetch.c (struct mem_ref_group, struct mem_ref):
-        New "uid" fields to hold pretty-print IDs of group and ref.
-        Memory references are now identified as <group_id>:<ref_id>
-        instead of using [random] addresses.
-        (dump_mem_details): Simplify, no functional change.
-        (dump_mem_ref): Simplify and make output more concise.
-        Replace couple of fprintf's throughout code with calls to dump_mem_ref.
-        (find_or_create_group): Initialize group uid.
-        (record_ref): Initialize ref uid.  Improve debug output.
-        (prune_group_by_reuse, should_issue_prefetch_p,)
-        (should_issue_prefetch_p, schedule_prefetches, issue_prefetch_ref,)
-        (mark_nontemporal_store, determine_loop_nest_reuse):
-        Improve debug output.
+	* tree-ssa-loop-prefetch.c (struct mem_ref_group, struct mem_ref):
+	New "uid" fields to hold pretty-print IDs of group and ref.
+	Memory references are now identified as <group_id>:<ref_id>
+	instead of using [random] addresses.
+	(dump_mem_details): Simplify, no functional change.
+	(dump_mem_ref): Simplify and make output more concise.
+	Replace couple of fprintf's throughout code with calls to dump_mem_ref.
+	(find_or_create_group): Initialize group uid.
+	(record_ref): Initialize ref uid.  Improve debug output.
+	(prune_group_by_reuse, should_issue_prefetch_p,)
+	(should_issue_prefetch_p, schedule_prefetches, issue_prefetch_ref,)
+	(mark_nontemporal_store, determine_loop_nest_reuse):
+	Improve debug output.
 
 2017-06-06  Maxim Kuvyrkov  <maxim.kuvyrkov@linaro.org>
 
-        * dbgcnt.def (prefetch): New debug counter.
-        * tree-ssa-loop-prefetch.c (dbgcnt.h): New include.
-        (schedule_prefetches): Stop issueing prefetches if debug counter
-        tripped.
+	* dbgcnt.def (prefetch): New debug counter.
+	* tree-ssa-loop-prefetch.c (dbgcnt.h): New include.
+	(schedule_prefetches): Stop issueing prefetches if debug counter
+	tripped.
 
 2017-06-06  Tom de Vries  <tom@codesourcery.com>
 
@@ -1233,9 +1243,9 @@
 2017-05-31  Sebastian Peryt  <sebastian.peryt@intel.com>
 
 	* config/i386/avx512fintrin.h (_mm_mask_max_sd)
-        (_mm_maskz_max_sd, _mm_mask_max_ss, _mm_maskz_max_ss)
-        (_mm_mask_min_sd, _mm_maskz_min_sd, _mm_mask_min_ss)
-        (_mm_maskz_min_ss): New intrinsics.
+	(_mm_maskz_max_sd, _mm_mask_max_ss, _mm_maskz_max_ss)
+	(_mm_mask_min_sd, _mm_maskz_min_sd, _mm_mask_min_ss)
+	(_mm_maskz_min_ss): New intrinsics.
 
 2017-05-31  Martin Liska  <mliska@suse.cz>
 
@@ -2438,39 +2448,39 @@
 
 	* config/rs6000/rs6000-c: Add support for built-in functions
 	vector unsigned long long vec_bperm (vector unsigned long long,
-	                                     vector unsigned char)
+					     vector unsigned char)
 	vector signed long long vec_mule (vector signed int,
-	                                  vector signed int)
+					  vector signed int)
 	vector unsigned long long vec_mule (vector unsigned int,
-	                                    vector unsigned int)
+					    vector unsigned int)
 	vector signed long long vec_mulo (vector signed int,
-	                                  vector signed int)
+					  vector signed int)
 	vector unsigned long long vec_mulo (vector unsigned int,
-	                                    vector unsigned int)
+					    vector unsigned int)
 	vector signed char vec_sldw (vector signed char,
-	                             vector signed char,
-	                             const int)
+				     vector signed char,
+				     const int)
 	vector unsigned char vec_sldw (vector unsigned char,
-	                               vector unsigned char,
-	                               const int)
+				       vector unsigned char,
+				       const int)
 	vector signed short vec_sldw (vector signed short,
-	                              vector signed short,
-	                              const int)
+				      vector signed short,
+				      const int)
 	vector unsigned short vec_sldw (vector unsigned short,
-	                                vector unsigned short,
-	                                const int)
+					vector unsigned short,
+					const int)
 	vector signed int vec_sldw (vector signed int,
-	                            vector signed int,
-	                            const int)
+				    vector signed int,
+				    const int)
 	vector unsigned int vec_sldw (vector unsigned int,
-	                              vector unsigned int,
-	                              const int)
+				      vector unsigned int,
+				      const int)
 	vector signed long long vec_sldw (vector signed long long,
-	                                  vector signed long long,
-	                                  const int)
+					  vector signed long long,
+					  const int)
 	vector unsigned long long vec_sldw (vector unsigned long long,
-	                                    vector unsigned long long,
-	                                    const int)
+					    vector unsigned long long,
+					    const int)
 	* config/rs6000/rs6000-c: Add support for built-in functions
 	* config/rs6000/rs6000-builtin.def: Add definition for SLDW.
 	* config/rs6000/altivec.h: Add defintion for vec_sldw.
@@ -3562,12 +3572,12 @@
 2017-05-10  Carl Love  <cel@us.ibm.com>
 
 	* config/rs6000/rs6000-c: Add support for built-in functions
-	vector signed char        vec_neg (vector signed char)
-	vector signed short int   vec_neg (vector short int)
-	vector signed int         vec_neg (vector signed int)
-	vector signed long long   vec_neg (vector signed long long)
-	vector float              vec_neg (vector float)
-	vector double             vec_neg (vector double)
+	vector signed char	vec_neg (vector signed char)
+	vector signed short int	vec_neg (vector short int)
+	vector signed int	vec_neg (vector signed int)
+	vector signed long long	vec_neg (vector signed long long)
+	vector float		vec_neg (vector float)
+	vector double		vec_neg (vector double)
 	* config/rs6000/rs6000-builtin.def: Add definitions for NEG function
 	overload.
 	* config/rs6000/altivec.h: Add define for vec_neg
