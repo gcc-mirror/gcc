@@ -2902,6 +2902,7 @@ push_module_binding (tree ns, unsigned mod, tree name, tree value, tree type)
       tree decl = *iter;
       bool found = false;
 
+      gcc_assert (!TREE_CHAIN (decl));
       if (*mslot)
 	{
 	  tree old = MAYBE_STAT_DECL (*mslot);

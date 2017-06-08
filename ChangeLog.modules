@@ -1,3 +1,8 @@
+2017-06-08  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* module.c: Implement dump printf.
+
 2017-06-07  Nathan Sidwell  <nathan@acm.org>
 
 	Merge trunk r248972.

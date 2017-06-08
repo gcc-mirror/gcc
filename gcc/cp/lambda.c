@@ -1102,7 +1102,10 @@ maybe_add_lambda_conv_op (tree type)
   DECL_ARTIFICIAL (fn) = 1;
   DECL_NOT_REALLY_EXTERN (fn) = 1;
   DECL_DECLARED_INLINE_P (fn) = 1;
-  DECL_ARGUMENTS (fn) = build_this_parm (fntype, TYPE_QUAL_CONST);
+  tree this_parm = build_this_parm (fntype, TYPE_QUAL_CONST);
+  DECL_CONTEXT (this_parm) = fn;
+  DECL_ARGUMENTS (fn) = this_parm;
+
   if (nested_def)
     DECL_INTERFACE_KNOWN (fn) = 1;
 

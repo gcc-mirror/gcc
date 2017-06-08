@@ -266,6 +266,7 @@ maybe_retrofit_in_chrg (tree fn)
   if (CLASSTYPE_VBASECLASSES (DECL_CONTEXT (fn)))
     {
       parm = build_artificial_parm (vtt_parm_identifier, vtt_parm_type);
+      DECL_CONTEXT (parm) = fn;
 
       /* First add it to DECL_ARGUMENTS between 'this' and the real args...  */
       DECL_CHAIN (parm) = parms;
@@ -279,6 +280,7 @@ maybe_retrofit_in_chrg (tree fn)
 
   /* Then add the in-charge parm (before the VTT parm).  */
   parm = build_artificial_parm (in_charge_identifier, integer_type_node);
+  DECL_CONTEXT (parm) = fn;
   DECL_CHAIN (parm) = parms;
   parms = parm;
   arg_types = hash_tree_chain (integer_type_node, arg_types);

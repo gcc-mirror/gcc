@@ -1,6 +1,6 @@
 // { dg-additional-options "-fdump-lang-module" }
-// { dg-final { scan-lang-dump "Direct export import 'Baz'" "module" } }
-// { dg-final { scan-lang-dump "Direct export import 'Bar'" "module" } }
+// { dg-final { scan-lang-dump "Direct export import Baz" "module" } }
+// { dg-final { scan-lang-dump "Direct export import Bar" "module" } }
 import Foo;
 
 int main ()
