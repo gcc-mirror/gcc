@@ -1,5 +1,24 @@
 2017-08-08  Julia Koval  <julia.koval@intel.com>
 
+	* config/i386/avx512bwintrin.h (_mm512_mask_cvtepi16_storeu_epi8,
+	_mm512_mask_cvtsepi16_storeu_epi8,
+	_mm512_mask_cvtusepi16_storeu_epi8): New intrinsics.
+	* config/i386/avx512vlbwintrin.h (_mm256_mask_cvtepi16_storeu_epi8,
+	_mm_mask_cvtsepi16_storeu_epi8, _mm256_mask_cvtsepi16_storeu_epi8,
+	_mm_mask_cvtusepi16_storeu_epi8, _mm256_mask_cvtusepi16_storeu_epi8,
+	_mm_mask_cvtepi16_storeu_epi8): New intrinsics.
+	* config/i386/i386-builtin-types.def (PV8Q, V8QI): New pointer type.
+	(VOID_FTYPE_PV32QI_V32HI_USI, VOID_FTYPE_PV8QI_V8HI_UQI,
+	VOID_FTYPE_PV16QI_V16HI_UHI): New function types.
+	* config/i386/i386-builtin.def (__builtin_ia32_pmovwb128mem_mask,
+	__builtin_ia32_pmovwb256mem_mask, __builtin_ia32_pmovswb128mem_mask,
+	__builtin_ia32_pmovswb256mem_mask, __builtin_ia32_pmovuswb128mem_mask,
+	__builtin_ia32_pmovuswb256mem_mask,
+	__builtin_ia32_pmovuswb512mem_mask, __builtin_ia32_pmovswb512mem_mask)
+	__builtin_ia32_pmovwb512mem_mask): New builtins.
+
+2017-08-08  Julia Koval  <julia.koval@intel.com>
+
 	PR target/73350,80862
 	* config/i386/subst.md (round): Fix round pattern.
 	* config/i386/i386.c (ix86_erase_embedded_rounding):
