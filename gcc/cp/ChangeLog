@@ -1,5 +1,9 @@
 2017-06-08  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c/81006
+	* semantics.c (handle_omp_array_sections_1): Convert TYPE_MAX_VALUE
+	to sizetype before size_binop.
+
 	PR c++/81011
 	* cp-gimplify.c (cxx_omp_finish_clause): When changing clause
 	to OMP_CLAUSE_SHARED, also clear OMP_CLAUSE_SHARED_FIRSTPRIVATE

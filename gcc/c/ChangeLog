@@ -1,3 +1,9 @@
+2017-06-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/81006
+	* c-typeck.c (handle_omp_array_sections_1): Convert TYPE_MAX_VALUE
+	to sizetype before size_binop.
+
 2017-05-05  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
