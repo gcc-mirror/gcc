@@ -1,4 +1,10 @@
+2017-06-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/80928
+	* gcc.dg/vect/slp-perm-8.c: Do not expect check loop to be vectorized.
+
 2017-06-07  Carl Love  <cel@us.ibm.com>
+
 	* gcc.target/powerpc/builtins-3.c: Fix vec_mule, vec_mulo test cases.
 
 2017-06-07  Jonathan Wakely  <jwakely@redhat.com>
