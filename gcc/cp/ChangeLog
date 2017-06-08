@@ -1,3 +1,10 @@
+2017-06-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/81011
+	* cp-gimplify.c (cxx_omp_finish_clause): When changing clause
+	to OMP_CLAUSE_SHARED, also clear OMP_CLAUSE_SHARED_FIRSTPRIVATE
+	and OMP_CLAUSE_SHARED_READONLY flags.
+
 2017-06-08  Jan Hubicka  <hubicka@ucw.cz>
 
 	* cp-tree.h (lang_check_failed): Annotate by ATTRIBUTE_COLD.
