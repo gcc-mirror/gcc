@@ -916,7 +916,7 @@ dbxout_function_end (tree decl ATTRIBUTE_UNUSED)
 
   /* By convention, GCC will mark the end of a function with an N_FUN
      symbol and an empty string.  */
-  if (flag_reorder_blocks_and_partition)
+  if (crtl->has_bb_partition)
     {
       dbxout_begin_empty_stabs (N_FUN);
       dbxout_stab_value_label_diff (crtl->subsections.hot_section_end_label,
