@@ -1,3 +1,12 @@
+2017-08-08  Julia Koval  <julia.koval@intel.com>
+
+	* gcc.target/i386/avx512bw-vpmovswb-1.c: Add new intrinsics to test.
+	* gcc.target/i386/avx512bw-vpmovswb-2.c: Ditto.
+	* gcc.target/i386/avx512bw-vpmovuswb-1.c: Ditto.
+	* gcc.target/i386/avx512bw-vpmovuswb-2.c: Ditto.
+	* gcc.target/i386/avx512bw-vpmovwb-1.c: Ditto.
+	* gcc.target/i386/avx512bw-vpmovwb-2.c: Ditto.
+
 2017-06-08  Marek Polacek  <polacek@redhat.com>
 
 	PR sanitize/80932
