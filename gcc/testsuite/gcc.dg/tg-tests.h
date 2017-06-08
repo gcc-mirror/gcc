@@ -11,6 +11,7 @@ void __attribute__ ((__noinline__))
 foo_1 (float f, double d, long double ld,
        int res_unord, int res_isnan, int res_isinf,
        int res_isinf_sign, int res_isfin, int res_isnorm,
+       int res_iszero, int res_issubnorm,
        int res_signbit, int classification)
 {
   if (__builtin_isunordered (f, 0) != res_unord)
@@ -80,6 +81,29 @@ foo_1 (float f, double d, long double ld,
   if (__builtin_finitel (ld) != res_isfin)
     __builtin_abort ();
 
+/* On CPUs which flush denormals to zero these tests can never work one
+   denormals for the floating point version of the implementation. The integer
+   versions would work fine but we can't detect which version we have here.  */
+#ifdef UNSAFE
+if (!res_issubnorm) {
+#endif
+  if (__builtin_iszero (f) != res_iszero)
+    __builtin_abort ();
+  if (__builtin_iszero (d) != res_iszero)
+    __builtin_abort ();
+  if (__builtin_iszero (ld) != res_iszero)
+    __builtin_abort ();
+
+  if (__builtin_issubnormal (f) != res_issubnorm)
+    __builtin_abort ();
+  if (__builtin_issubnormal (d) != res_issubnorm)
+    __builtin_abort ();
+  if (__builtin_issubnormal (ld) != res_issubnorm)
+    __builtin_abort ();
+#ifdef UNSAFE
+}
+#endif
+
   /* Sign bit of zeros and nans is not preserved in unsafe math mode.  */
 #ifdef UNSAFE
   if (!res_isnan && f != 0 && d != 0 && ld != 0)
@@ -115,12 +139,13 @@ foo_1 (float f, double d, long double ld,
 void __attribute__ ((__noinline__))
 foo (float f, double d, long double ld,
      int res_unord, int res_isnan, int res_isinf,
-     int res_isfin, int res_isnorm, int classification)
+     int res_isfin, int res_isnorm, int res_iszero,
+     int res_issubnorm, int classification)
 {
-  foo_1 (f, d, ld, res_unord, res_isnan, res_isinf, res_isinf, res_isfin, res_isnorm, 0, classification);
+  foo_1 (f, d, ld, res_unord, res_isnan, res_isinf, res_isinf, res_isfin, res_isnorm, res_iszero, res_issubnorm, 0, classification);
   /* Try all the values negated as well.  All will have the sign bit set,
      except for the nan.  */
-  foo_1 (-f, -d, -ld, res_unord, res_isnan, res_isinf, -res_isinf, res_isfin, res_isnorm, 1, classification);
+  foo_1 (-f, -d, -ld, res_unord, res_isnan, res_isinf, -res_isinf, res_isfin, res_isnorm, res_iszero, res_issubnorm, 1, classification);
 }
 
 int __attribute__ ((__noinline__))
@@ -132,35 +157,35 @@ main_tests (void)
   
   /* Test NaN.  */
   f = __builtin_nanf(""); d = __builtin_nan(""); ld = __builtin_nanl("");
-  foo(f, d, ld, /*unord=*/ 1, /*isnan=*/ 1, /*isinf=*/ 0, /*isfin=*/ 0, /*isnorm=*/ 0, FP_NAN);
+  foo(f, d, ld, /*unord=*/ 1, /*isnan=*/ 1, /*isinf=*/ 0, /*isfin=*/ 0, /*isnorm=*/ 0, /*iszero=*/0, /*issubnorm=*/0, FP_NAN);
 
   /* Test infinity.  */
   f = __builtin_inff(); d = __builtin_inf(); ld = __builtin_infl();
-  foo(f, d, ld, /*unord=*/ 0, /*isnan=*/ 0, /*isinf=*/ 1, /*isfin=*/ 0, /*isnorm=*/ 0, FP_INFINITE);
+  foo(f, d, ld, /*unord=*/ 0, /*isnan=*/ 0, /*isinf=*/ 1, /*isfin=*/ 0, /*isnorm=*/ 0, /*iszero=*/0, /*issubnorm=*/0, FP_INFINITE);
 
   /* Test zero.  */
   f = 0; d = 0; ld = 0;
-  foo(f, d, ld, /*unord=*/ 0, /*isnan=*/ 0, /*isinf=*/ 0, /*isfin=*/ 1, /*isnorm=*/ 0, FP_ZERO);
+  foo(f, d, ld, /*unord=*/ 0, /*isnan=*/ 0, /*isinf=*/ 0, /*isfin=*/ 1, /*isnorm=*/ 0, /*iszero=*/1, /*issubnorm=*/0, FP_ZERO);
 
   /* Test one.  */
   f = 1; d = 1; ld = 1;
-  foo(f, d, ld, /*unord=*/ 0, /*isnan=*/ 0, /*isinf=*/ 0, /*isfin=*/ 1, /*isnorm=*/ 1, FP_NORMAL);
+  foo(f, d, ld, /*unord=*/ 0, /*isnan=*/ 0, /*isinf=*/ 0, /*isfin=*/ 1, /*isnorm=*/ 1, /*iszero=*/0, /*issubnorm=*/0, FP_NORMAL);
 
   /* Test minimum values.  */
   f = __FLT_MIN__; d = __DBL_MIN__; ld = __LDBL_MIN__;
-  foo(f, d, ld, /*unord=*/ 0, /*isnan=*/ 0, /*isinf=*/ 0, /*isfin=*/ 1, /*isnorm=*/ 1, FP_NORMAL);
+  foo(f, d, ld, /*unord=*/ 0, /*isnan=*/ 0, /*isinf=*/ 0, /*isfin=*/ 1, /*isnorm=*/ 1, /*iszero=*/0, /*issubnorm=*/0, FP_NORMAL);
 
   /* Test subnormal values.  */
   f = __FLT_MIN__/2; d = __DBL_MIN__/2; ld = __LDBL_MIN__/2;
-  foo(f, d, ld, /*unord=*/ 0, /*isnan=*/ 0, /*isinf=*/ 0, /*isfin=*/ 1, /*isnorm=*/ 0, FP_SUBNORMAL);
+  foo(f, d, ld, /*unord=*/ 0, /*isnan=*/ 0, /*isinf=*/ 0, /*isfin=*/ 1, /*isnorm=*/ 0, /*iszero=*/0, /*issubnorm=*/1, FP_SUBNORMAL);
 
   /* Test maximum values.  */
   f = __FLT_MAX__; d = __DBL_MAX__; ld = __LDBL_MAX__;
-  foo(f, d, ld, /*unord=*/ 0, /*isnan=*/ 0, /*isinf=*/ 0, /*isfin=*/ 1, /*isnorm=*/ 1, FP_NORMAL);
+  foo(f, d, ld, /*unord=*/ 0, /*isnan=*/ 0, /*isinf=*/ 0, /*isfin=*/ 1, /*isnorm=*/ 1, /*iszero=*/0, /*issubnorm=*/0, FP_NORMAL);
 
   /* Test overflow values.  */
   f = __FLT_MAX__*2; d = __DBL_MAX__*2; ld = __LDBL_MAX__*2;
-  foo(f, d, ld, /*unord=*/ 0, /*isnan=*/ 0, /*isinf=*/ 1, /*isfin=*/ 0, /*isnorm=*/ 0, FP_INFINITE);
+  foo(f, d, ld, /*unord=*/ 0, /*isnan=*/ 0, /*isinf=*/ 1, /*isfin=*/ 0, /*isnorm=*/ 0, /*iszero=*/0, /*issubnorm=*/0, FP_INFINITE);
 
   return 0;
 }

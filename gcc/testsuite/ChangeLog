@@ -1,3 +1,20 @@
+2017-06-08  Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc.target/aarch64/builtin-fpclassify.c: New codegen test.
+	* gcc.dg/fold-notunord.c: Removed.
+	* gcc.dg/torture/floatn-tg-4.h: Add tests for iszero and issubnormal.
+	* gcc.dg/torture/float128-tg-4.c: Likewise.
+	* gcc.dg/torture/float128x-tg-4: Likewise.
+	* gcc.dg/torture/float16-tg-4.c: Likewise.
+	* gcc.dg/torture/float32-tg-4.c: Likewise.
+	* gcc.dg/torture/float32x-tg-4.c: Likewise.
+	* gcc.dg/torture/float64-tg-4.c: Likewise.
+	* gcc.dg/torture/float64x-tg-4.c: Likewise.
+	* gcc.dg/pr28796-1.c: Add -O2.
+	* gcc.dg/builtins-43.c: Check lower instead of gimple.
+	* gcc.dg/tg-tests.h: Add iszero and issubnormal.
+	* gcc.dg/pr77925.c: Add to test safe cases.
+
 2017-06-08  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/80928

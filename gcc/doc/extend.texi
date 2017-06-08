@@ -10501,6 +10501,10 @@ in the Cilk Plus language manual which can be found at
 @findex __builtin_isgreater
 @findex __builtin_isgreaterequal
 @findex __builtin_isinf_sign
+@findex __builtin_isinf
+@findex __builtin_isnan
+@findex __builtin_iszero
+@findex __builtin_issubnormal
 @findex __builtin_isless
 @findex __builtin_islessequal
 @findex __builtin_islessgreater
@@ -11564,7 +11568,54 @@ constant values and they must appear in this order: @code{FP_NAN},
 @code{FP_INFINITE}, @code{FP_NORMAL}, @code{FP_SUBNORMAL} and
 @code{FP_ZERO}.  The ellipsis is for exactly one floating-point value
 to classify.  GCC treats the last argument as type-generic, which
-means it does not do default promotion from float to double.
+means it does not do default promotion from @code{float} to @code{double}.
+@end deftypefn
+
+@deftypefn {Built-in Function} int __builtin_isnan (...)
+This built-in implements the C99 isnan functionality which checks if
+the given argument represents a NaN.  The return value of the
+function will either be a 0 (false) or a 1 (true).
+On most systems, when an IEEE 754 floating-point type is used this
+built-in does not produce a signal when a signaling NaN is used.
+
+GCC treats the argument as type-generic, which means it does
+not do default promotion from @code{float} to @code{double}.
+@end deftypefn
+
+@deftypefn {Built-in Function} int __builtin_isinf (...)
+This built-in implements the C99 isinf functionality which checks if
+the given argument represents an infinite number.  The return
+value of the function will either be a 0 (false) or a 1 (true).
+
+GCC treats the argument as type-generic, which means it does
+not do default promotion from @code{float} to @code{double}.
+@end deftypefn
+
+@deftypefn {Built-in Function} int __builtin_isnormal (...)
+This built-in implements the C99 isnormal functionality which checks if
+the given argument represents a normal number.  The return
+value of the function will either be a 0 (false) or a 1 (true).
+
+GCC treats the argument as type-generic, which means it does
+not do default promotion from @code{float} to @code{double}.
+@end deftypefn
+
+@deftypefn {Built-in Function} int __builtin_iszero (...)
+This built-in implements the TS 18661-1:2014 iszero functionality which checks if
+the given argument represents the number 0 or -0.  The return
+value of the function will either be a 0 (false) or a 1 (true).
+
+GCC treats the argument as type-generic, which means it does
+not do default promotion from @code{float} to @code{double}.
+@end deftypefn
+
+@deftypefn {Built-in Function} int __builtin_issubnormal (...)
+This built-in implements the TS 18661-1:2014 issubnormal functionality which checks if
+the given argument represents a subnormal number.  The return
+value of the function will either be a 0 (false) or a 1 (true).
+
+GCC treats the argument as type-generic, which means it does
+not do default promotion from @code{float} to @code{double}.
 @end deftypefn
 
 @deftypefn {Built-in Function} double __builtin_inf (void)
