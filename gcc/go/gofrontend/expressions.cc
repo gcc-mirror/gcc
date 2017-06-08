@@ -15430,27 +15430,32 @@ Interface_mtable_expression::do_get_backend(Translate_context* context)
 			      + "__"
 			      + this->type_->mangled_name(gogo));
 
-  // See whether this interface has any hidden methods.
-  bool has_hidden_methods = false;
-  for (Typed_identifier_list::const_iterator p = interface_methods->begin();
-       p != interface_methods->end();
-       ++p)
+  // Set is_public if we are converting a named type to an interface
+  // type that is defined in the same package as the named type, and
+  // the interface has hidden methods.  In that case the interface
+  // method table will be defined by the package that defines the
+  // types.
+  bool is_public = false;
+  if (this->type_->named_type() != NULL
+      && (this->type_->named_type()->named_object()->package()
+	  == this->itype_->package()))
     {
-      if (Gogo::is_hidden_name(p->name()))
+      for (Typed_identifier_list::const_iterator p = interface_methods->begin();
+	   p != interface_methods->end();
+	   ++p)
 	{
-	  has_hidden_methods = true;
-	  break;
+	  if (Gogo::is_hidden_name(p->name()))
+	    {
+	      is_public = true;
+	      break;
+	    }
 	}
     }
 
-  // We already know that the named type is convertible to the
-  // interface.  If the interface has hidden methods, and the named
-  // type is defined in a different package, then the interface
-  // conversion table will be defined by that other package.
-  if (has_hidden_methods
-      && this->type_->named_type() != NULL
+  if (is_public
       && this->type_->named_type()->named_object()->package() != NULL)
     {
+      // The interface conversion table is defined elsewhere.
       Btype* btype = this->type()->get_backend(gogo);
       std::string asm_name(go_selectively_encode_id(mangled_name));
       this->bvar_ =
@@ -15517,7 +15522,6 @@ Interface_mtable_expression::do_get_backend(Translate_context* context)
   Bexpression* ctor =
       gogo->backend()->constructor_expression(btype, ctor_bexprs, loc);
 
-  bool is_public = has_hidden_methods && this->type_->named_type() != NULL;
   std::string asm_name(go_selectively_encode_id(mangled_name));
   this->bvar_ = gogo->backend()->immutable_struct(mangled_name, asm_name, false,
 						  !is_public, btype, loc);
