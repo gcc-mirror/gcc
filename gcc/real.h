@@ -161,6 +161,19 @@ struct real_format
   bool has_signed_zero;
   bool qnan_msb_set;
   bool canonical_nan_lsbs_set;
+
+  /* This flag indicates whether the format is suitable for the optimized
+     code paths for the __builtin_fpclassify function and friends.  For
+     this, the format must be a base 2 representation with the sign bit as
+     the most-significant bit followed by (exp <= 32) exponent bits
+     followed by the mantissa bits.  It must be possible to interpret the
+     bits of the floating-point representation as an integer.  NaNs and
+     INFs (if available) must be represented by the same schema used by
+     IEEE 754.  (NaNs must be represented by an exponent with all bits 1,
+     any mantissa except all bits 0 and any sign bit.  +INF and -INF must be
+     represented by an exponent with all bits 1, a mantissa with all bits 0 and
+     a sign bit of 0 and 1 respectively.)  */
+  bool is_binary_ieee_compatible;
   const char *name;
 };
 
@@ -510,6 +523,11 @@ extern bool real_isinteger (const REAL_VALUE_TYPE *, HOST_WIDE_INT *);
    number, (1 - b**-p) * b**emax for a given FP format FMT as a hex
    float string.  BUF must be large enough to contain the result.  */
 extern void get_max_float (const struct real_format *, char *, size_t);
+
+/* Write into BUF the smallest positive normalized number x,
+   such that b**(x-1) is normalized.  BUF must be large enough
+   to contain the result.  */
+extern void get_min_float (const struct real_format *, char *, size_t);
 
 #ifndef GENERATOR_FILE
 /* real related routines.  */

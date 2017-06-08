@@ -1,3 +1,57 @@
+2017-06-08  Tamar Christina  <tamar.christina@arm.com>
+
+	PR middle-end/77925
+	PR middle-end/77926
+	PR middle-end/66462
+
+	* gcc/builtins.c (fold_builtin_fpclassify): Remove.
+	(fold_builtin_interclass_mathfn): Remove.
+	(expand_builtin): Add builtins to lowering list.
+	(fold_builtin_n): Remove fold_builtin_varargs.
+	(fold_builtin_varargs): Remove.
+	* gcc/builtins.def (BUILT_IN_ISZERO, BUILT_IN_ISSUBNORMAL): New.
+	* gcc/real.h (get_min_float): New.
+	(real_format): Add is_ieee_compatible field.
+	* gcc/real.c (get_min_float): New.
+	(ieee_single_format): Set is_ieee_compatible flag.
+	* gcc/gimple-low.c (lower_stm): Define BUILT_IN_FPCLASSIFY,
+	CASE_FLT_FN (BUILT_IN_ISINF), BUILT_IN_ISINFD32, BUILT_IN_ISINFD64,
+	BUILT_IN_ISINFD128, BUILT_IN_ISNAND32, BUILT_IN_ISNAND64,
+	BUILT_IN_ISNAND128, BUILT_IN_ISNAN, BUILT_IN_ISNORMAL, BUILT_IN_ISZERO,
+	BUILT_IN_ISSUBNORMAL, CASE_FLT_FN (BUILT_IN_FINITE), BUILT_IN_FINITED32
+	BUILT_IN_FINITED64, BUILT_IN_FINITED128, BUILT_IN_ISFINITE.
+	(lower_builtin_fpclassify, is_nan, is_normal, is_infinity): New.
+	(is_zero, is_subnormal, is_finite, use_ieee_int_mode): Likewise.
+	(lower_builtin_isnan, lower_builtin_isinfinite): Likewise.
+	(lower_builtin_isnormal, lower_builtin_iszero): Likewise.
+	(lower_builtin_issubnormal, lower_builtin_isfinite): Likewise.
+	(emit_tree_cond, get_num_as_int, emit_tree_and_return_var): New.
+	(mips_single_format): Likewise.
+	(motorola_single_format): Likewise.
+	(spu_single_format): Likewise.
+	(ieee_double_format): Likewise.
+	(mips_double_format): Likewise.
+	(motorola_double_format): Likewise.
+	(ieee_extended_motorola_format): Likewise.
+	(ieee_extended_intel_128_format): Likewise.
+	(ieee_extended_intel_96_round_53_format): Likewise.
+	(ibm_extended_format): Likewise.
+	(mips_extended_format): Likewise.
+	(ieee_quad_format): Likewise.
+	(mips_quad_format): Likewise.
+	(vax_f_format): Likewise.
+	(vax_d_format): Likewise.
+	(vax_g_format): Likewise.
+	(decimal_single_format): Likewise.
+	(decimal_quad_format): Likewise.
+	(iee_half_format): Likewise.
+	(mips_single_format): Likewise.
+	(arm_half_format): Likewise.
+	(real_internal_format): Likewise.
+	* gcc/doc/extend.texi: Add documentation for built-ins.
+	* gcc/c/c-typeck.c (convert_arguments): Add BUILT_IN_ISZERO
+	and BUILT_IN_ISSUBNORMAL.
+
 2017-06-07  Carl Love  <cel@us.ibm.com>
 
 	* config/rs6000/rs6000-c: The return type of the following
