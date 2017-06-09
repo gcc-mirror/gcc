@@ -1,5 +1,12 @@
 2017-06-09  Jonathan Wakely  <jwakely@redhat.com>
 
+	* doc/xml/manual/intro.xml: Document LWG 2802, 2873 and 2942 changes.
+	* include/bits/shared_ptr.h (shared_ptr): Use rvalues for deleters
+	(LWG 2802).
+	* include/bits/shared_ptr_base.h (_Sp_ebo_helper, _Sp_counted_deleter
+	(_Sp_counted_deleter::_Impl, __shared_count, __shared_ptr): Likewise.
+	* testsuite/20_util/shared_ptr/cons/lwg2802.cc: New.
+
 	* include/bits/forward_list.h (forward_list): Add deduction guide.
 	* include/bits/stl_deque.h (deque): Likewise.
 	* include/bits/stl_list.h (list): Likewise.
