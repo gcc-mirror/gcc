@@ -1,3 +1,8 @@
+2017-06-09  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/81007
+	* g++.dg/pr81007.C: New testcase.
+
 2017-06-09  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.target/i386/mpx/hard-reg-1-nov.c (mpx_test): Use "esp"
