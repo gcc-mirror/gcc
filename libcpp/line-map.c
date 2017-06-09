@@ -2012,7 +2012,8 @@ rich_location::rich_location (line_maps *set, source_location loc) :
   m_column_override (0),
   m_have_expanded_location (false),
   m_fixit_hints (),
-  m_seen_impossible_fixit (false)
+  m_seen_impossible_fixit (false),
+  m_fixits_cannot_be_auto_applied (false)
 {
   add_range (loc, true);
 }
