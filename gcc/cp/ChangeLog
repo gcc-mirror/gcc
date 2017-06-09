@@ -1,5 +1,9 @@
 2017-06-09  Jason Merrill  <jason@redhat.com>
 
+	* call.c (convert_like_real): Remove "inner" parameter.
+	Don't replace a constant with its value.
+	* cp-gimplify.c (cp_fully_fold): Use cp_fold_rvalue.
+
 	* pt.c (convert_nontype_argument): Check NULLPTR_TYPE_P rather than
 	nullptr_node.
 

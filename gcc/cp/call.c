@@ -147,14 +147,14 @@ static int joust (struct z_candidate *, struct z_candidate *, bool,
 static int compare_ics (conversion *, conversion *);
 static tree build_over_call (struct z_candidate *, int, tsubst_flags_t);
 #define convert_like(CONV, EXPR, COMPLAIN)			\
-  convert_like_real ((CONV), (EXPR), NULL_TREE, 0, 0,		\
+  convert_like_real ((CONV), (EXPR), NULL_TREE, 0,		\
 		     /*issue_conversion_warnings=*/true,	\
 		     /*c_cast_p=*/false, (COMPLAIN))
 #define convert_like_with_context(CONV, EXPR, FN, ARGNO, COMPLAIN )	\
-  convert_like_real ((CONV), (EXPR), (FN), (ARGNO), 0,			\
+  convert_like_real ((CONV), (EXPR), (FN), (ARGNO),			\
 		     /*issue_conversion_warnings=*/true,		\
 		     /*c_cast_p=*/false, (COMPLAIN))
-static tree convert_like_real (conversion *, tree, tree, int, int, bool,
+static tree convert_like_real (conversion *, tree, tree, int, bool,
 			       bool, tsubst_flags_t);
 static void op_error (location_t, enum tree_code, enum tree_code, tree,
 		      tree, tree, bool);
@@ -6552,7 +6552,7 @@ maybe_print_user_conv_context (conversion *convs)
 
 static tree
 convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
-		   int inner, bool issue_conversion_warnings,
+		   bool issue_conversion_warnings,
 		   bool c_cast_p, tsubst_flags_t complain)
 {
   tree totype = convs->type;
@@ -6606,7 +6606,7 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 				      totype);
 	      if (complained)
 		print_z_candidate (loc, "candidate is:", t->cand);
-	      expr = convert_like_real (t, expr, fn, argnum, 1,
+	      expr = convert_like_real (t, expr, fn, argnum,
 					/*issue_conversion_warnings=*/false,
 					/*c_cast_p=*/false,
 					complain);
@@ -6623,14 +6623,14 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 	    }
 	  else if (t->kind == ck_user || !t->bad_p)
 	    {
-	      expr = convert_like_real (t, expr, fn, argnum, 1,
+	      expr = convert_like_real (t, expr, fn, argnum,
 					/*issue_conversion_warnings=*/false,
 					/*c_cast_p=*/false,
 					complain);
 	      break;
 	    }
 	  else if (t->kind == ck_ambig)
-	    return convert_like_real (t, expr, fn, argnum, 1,
+	    return convert_like_real (t, expr, fn, argnum,
 				      /*issue_conversion_warnings=*/false,
 				      /*c_cast_p=*/false,
 				      complain);
@@ -6734,18 +6734,6 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 
       if (type_unknown_p (expr))
 	expr = instantiate_type (totype, expr, complain);
-      /* Convert a constant to its underlying value, unless we are
-	 about to bind it to a reference, in which case we need to
-	 leave it as an lvalue.  */
-      if (inner >= 0)
-        {   
-          expr = scalar_constant_value (expr);
-          if (expr == null_node && INTEGRAL_OR_UNSCOPED_ENUMERATION_TYPE_P (totype))
-            /* If __null has been converted to an integer type, we do not
-               want to warn about uses of EXPR as an integer, rather than
-               as a pointer.  */
-            expr = build_int_cst (totype, 0);
-        }
       return expr;
     case ck_ambig:
       /* We leave bad_p off ck_ambig because overload resolution considers
@@ -6776,7 +6764,7 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 	FOR_EACH_CONSTRUCTOR_VALUE (CONSTRUCTOR_ELTS (expr), ix, val)
 	  {
 	    tree sub = convert_like_real (convs->u.list[ix], val, fn, argnum,
-					  1, false, false, complain);
+					  false, false, complain);
 	    if (sub == error_mark_node)
 	      return sub;
 	    if (!BRACE_ENCLOSED_INITIALIZER_P (val)
@@ -6832,7 +6820,6 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
     };
 
   expr = convert_like_real (next_conversion (convs), expr, fn, argnum,
-			    convs->kind == ck_ref_bind ? -1 : 1,
 			    convs->kind == ck_ref_bind ? issue_conversion_warnings : false, 
 			    c_cast_p,
 			    complain);
@@ -10173,7 +10160,7 @@ perform_direct_initialization_if_possible (tree type,
   if (!conv || conv->bad_p)
     expr = NULL_TREE;
   else
-    expr = convert_like_real (conv, expr, NULL_TREE, 0, 0,
+    expr = convert_like_real (conv, expr, NULL_TREE, 0,
 			      /*issue_conversion_warnings=*/false,
 			      c_cast_p,
 			      complain);

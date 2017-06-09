@@ -1935,20 +1935,6 @@ cxx_omp_disregard_value_expr (tree decl, bool shared)
 	 && DECL_OMP_PRIVATIZED_MEMBER (decl);
 }
 
-/* Perform folding on expression X.  */
-
-tree
-cp_fully_fold (tree x)
-{
-  if (processing_template_decl)
-    return x;
-  /* FIXME cp_fold ought to be a superset of maybe_constant_value so we don't
-     have to call both.  */
-  if (cxx_dialect >= cxx11)
-    x = maybe_constant_value (x);
-  return cp_fold (x);
-}
-
 /* Fold expression X which is used as an rvalue if RVAL is true.  */
 
 static tree
@@ -1978,6 +1964,20 @@ static tree
 cp_fold_rvalue (tree x)
 {
   return cp_fold_maybe_rvalue (x, true);
+}
+
+/* Perform folding on expression X.  */
+
+tree
+cp_fully_fold (tree x)
+{
+  if (processing_template_decl)
+    return x;
+  /* FIXME cp_fold ought to be a superset of maybe_constant_value so we don't
+     have to call both.  */
+  if (cxx_dialect >= cxx11)
+    x = maybe_constant_value (x);
+  return cp_fold_rvalue (x);
 }
 
 /* c-common interface to cp_fold.  If IN_INIT, this is in a static initializer
