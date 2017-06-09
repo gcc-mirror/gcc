@@ -1,3 +1,9 @@
+2017-06-09  Tom de Vries  <tom@codesourcery.com>
+
+	PR target/80855
+	* config/nvptx/nvptx.md (define_expand "mov<QHSDISDFM>"): Error out with
+	"target cannot support label values" when encountering LABEL_REF.
+
 2017-06-09  Martin Liska  <mliska@suse.cz>
 
 	* tree-profile.c (gimple_gen_ic_profiler): Update comment.
