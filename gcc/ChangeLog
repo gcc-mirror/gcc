@@ -1,6 +1,12 @@
+2017-06-09  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-loop-im.c (execute_sm): Do not force multi-threaded
+	model if the ref is always written to.
+
 2017-06-09  Tamar Christina  <tamar.christina@arm.com>
 
-	* config/arm/arm.c (arm_rtx_costs_internal): Make sdiv more expensive than udiv.
+	* config/arm/arm.c (arm_rtx_costs_internal): Make sdiv more expensive
+	than udiv.
 
 2017-06-09  Tom de Vries  <tom@codesourcery.com>
 
