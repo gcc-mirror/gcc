@@ -1,5 +1,12 @@
 2017-06-09  Jan Hubicka  <hubicka@ucw.cz>
 
+	* profile.c (edge_gcov_counts): Turn to pointer.
+	(compute_branch_probabilities, compute_branch_probabilities): Update.
+	* profile.h (edge_gcov_counts): Turn to pointer.
+	(edge_gcov_count): Update.
+
+2017-06-09  Jan Hubicka  <hubicka@ucw.cz>
+
 	* gimple.h (gimple_check_failed): Mark cold.
 
 2017-06-09  Richard Biener  <rguenther@suse.de>

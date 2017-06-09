@@ -69,7 +69,7 @@ along with GCC; see the file COPYING3.  If not see
 
 /* Map from BBs/edges to gcov counters.  */
 vec<gcov_type> bb_gcov_counts;
-hash_map<edge,gcov_type> edge_gcov_counts;
+hash_map<edge,gcov_type> *edge_gcov_counts;
 
 struct bb_profile_info {
   unsigned int count_valid : 1;
@@ -532,6 +532,7 @@ compute_branch_probabilities (unsigned cfg_checksum, unsigned lineno_checksum)
     return;
 
   bb_gcov_counts.safe_grow_cleared (last_basic_block_for_fn (cfun));
+  edge_gcov_counts = new hash_map<edge,gcov_type>;
 
   if (profile_info->sum_all < profile_info->sum_max)
     {
@@ -836,7 +837,8 @@ compute_branch_probabilities (unsigned cfg_checksum, unsigned lineno_checksum)
         e->count = profile_count::from_gcov_type (edge_gcov_count (e));
     }
   bb_gcov_counts.release ();
-  edge_gcov_counts.empty ();
+  delete edge_gcov_counts;
+  edge_gcov_counts = NULL;
 
   counts_to_freqs ();
 
