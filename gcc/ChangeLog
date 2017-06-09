@@ -1,3 +1,7 @@
+2017-06-09  Jan Hubicka  <hubicka@ucw.cz>
+
+	* gimple.h (gimple_check_failed): Mark cold.
+
 2017-06-09  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/66623
