@@ -1,5 +1,13 @@
 2017-06-09  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/66623
+	* tree-vect-loop.c (vect_is_simple_reduction): Cleanup,
+	refactor check_reduction into two parts, properly computing
+	whether we have to check reduction validity for outer loop
+	vectorization.
+
+2017-06-09  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/79483
 	* graphite-scop-detection.c (order): New global.
 	(get_order): Compute bb to order mapping that satisfies code

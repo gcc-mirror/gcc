@@ -2727,8 +2727,6 @@ vect_is_simple_reduction (loop_vec_info loop_info, gimple *phi,
 {
   struct loop *loop = (gimple_bb (phi))->loop_father;
   struct loop *vect_loop = LOOP_VINFO_LOOP (loop_info);
-  edge latch_e = loop_latch_edge (loop);
-  tree loop_arg = PHI_ARG_DEF_FROM_EDGE (phi, latch_e);
   gimple *def_stmt, *def1 = NULL, *def2 = NULL, *phi_use_stmt = NULL;
   enum tree_code orig_code, code;
   tree op1, op2, op3 = NULL_TREE, op4 = NULL_TREE;
@@ -2741,11 +2739,6 @@ vect_is_simple_reduction (loop_vec_info loop_info, gimple *phi,
 
   *double_reduc = false;
   *v_reduc_type = TREE_CODE_REDUCTION;
-
-  /* Check validity of the reduction only for the innermost loop.  */
-  bool check_reduction = ! flow_loop_nested_p (vect_loop, loop);
-  gcc_assert ((check_reduction && loop == vect_loop)
-              || (!check_reduction && flow_loop_nested_p (vect_loop, loop)));
 
   name = PHI_RESULT (phi);
   /* ???  If there are no uses of the PHI result the inner loop reduction
@@ -2775,13 +2768,15 @@ vect_is_simple_reduction (loop_vec_info loop_info, gimple *phi,
         {
           if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			     "reduction used in loop.\n");
+			     "reduction value used in loop.\n");
           return NULL;
         }
 
       phi_use_stmt = use_stmt;
     }
 
+  edge latch_e = loop_latch_edge (loop);
+  tree loop_arg = PHI_ARG_DEF_FROM_EDGE (phi, latch_e);
   if (TREE_CODE (loop_arg) != SSA_NAME)
     {
       if (dump_enabled_p ())
@@ -2795,18 +2790,22 @@ vect_is_simple_reduction (loop_vec_info loop_info, gimple *phi,
     }
 
   def_stmt = SSA_NAME_DEF_STMT (loop_arg);
-  if (!def_stmt)
+  if (gimple_nop_p (def_stmt))
     {
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			 "reduction: no def_stmt.\n");
+			 "reduction: no def_stmt\n");
       return NULL;
     }
 
   if (!is_gimple_assign (def_stmt) && gimple_code (def_stmt) != GIMPLE_PHI)
     {
       if (dump_enabled_p ())
-	dump_gimple_stmt (MSG_NOTE, TDF_SLIM, def_stmt, 0);
+	{
+	  dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			   "reduction: unhandled reduction operation: ");
+	  dump_gimple_stmt (MSG_MISSED_OPTIMIZATION, TDF_SLIM, def_stmt, 0);
+	}
       return NULL;
     }
 
@@ -2822,6 +2821,7 @@ vect_is_simple_reduction (loop_vec_info loop_info, gimple *phi,
     }
 
   nloop_uses = 0;
+  auto_vec<gphi *, 3> lcphis;
   FOR_EACH_IMM_USE_FAST (use_p, imm_iter, name)
     {
       gimple *use_stmt = USE_STMT (use_p);
@@ -2829,6 +2829,9 @@ vect_is_simple_reduction (loop_vec_info loop_info, gimple *phi,
 	continue;
       if (flow_bb_inside_loop_p (loop, gimple_bb (use_stmt)))
 	nloop_uses++;
+      else
+	/* We can have more than one loop-closed PHI.  */
+	lcphis.safe_push (as_a <gphi *> (use_stmt));
       if (nloop_uses > 1)
 	{
 	  if (dump_enabled_p ())
@@ -2873,6 +2876,27 @@ vect_is_simple_reduction (loop_vec_info loop_info, gimple *phi,
       return NULL;
     }
 
+  /* If we are vectorizing an inner reduction we are executing that
+     in the original order only in case we are not dealing with a
+     double reduction.  */
+  bool check_reduction = true;
+  if (flow_loop_nested_p (vect_loop, loop))
+    {
+      gphi *lcphi;
+      unsigned i;
+      check_reduction = false;
+      FOR_EACH_VEC_ELT (lcphis, i, lcphi)
+	FOR_EACH_IMM_USE_FAST (use_p, imm_iter, gimple_phi_result (lcphi))
+	  {
+	    gimple *use_stmt = USE_STMT (use_p);
+	    if (is_gimple_debug (use_stmt))
+	      continue;
+	    if (! flow_bb_inside_loop_p (vect_loop, gimple_bb (use_stmt)))
+	      check_reduction = true;
+	  }
+    }
+
+  bool nested_in_vect_loop = flow_loop_nested_p (vect_loop, loop);
   code = orig_code = gimple_assign_rhs_code (def_stmt);
 
   /* We can handle "res -= x[i]", which is non-associative by
@@ -2887,27 +2911,8 @@ vect_is_simple_reduction (loop_vec_info loop_info, gimple *phi,
 
   if (code == COND_EXPR)
     {
-      if (check_reduction)
+      if (! nested_in_vect_loop)
 	*v_reduc_type = COND_REDUCTION;
-    }
-  else if (!commutative_tree_code (code) || !associative_tree_code (code))
-    {
-      if (dump_enabled_p ())
-	report_vect_op (MSG_MISSED_OPTIMIZATION, def_stmt,
-			"reduction: not commutative/associative: ");
-      return NULL;
-    }
-
-  if (get_gimple_rhs_class (code) != GIMPLE_BINARY_RHS)
-    {
-      if (code != COND_EXPR)
-        {
-	  if (dump_enabled_p ())
-	    report_vect_op (MSG_MISSED_OPTIMIZATION, def_stmt,
-			    "reduction: not binary operation: ");
-
-          return NULL;
-        }
 
       op3 = gimple_assign_rhs1 (def_stmt);
       if (COMPARISON_CLASS_P (op3))
@@ -2918,30 +2923,35 @@ vect_is_simple_reduction (loop_vec_info loop_info, gimple *phi,
 
       op1 = gimple_assign_rhs2 (def_stmt);
       op2 = gimple_assign_rhs3 (def_stmt);
-
-      if (TREE_CODE (op1) != SSA_NAME && TREE_CODE (op2) != SSA_NAME)
-        {
-          if (dump_enabled_p ())
-            report_vect_op (MSG_MISSED_OPTIMIZATION, def_stmt,
-			    "reduction: uses not ssa_names: ");
-
-          return NULL;
-        }
     }
-  else
+  else if (!commutative_tree_code (code) || !associative_tree_code (code))
+    {
+      if (dump_enabled_p ())
+	report_vect_op (MSG_MISSED_OPTIMIZATION, def_stmt,
+			"reduction: not commutative/associative: ");
+      return NULL;
+    }
+  else if (get_gimple_rhs_class (code) == GIMPLE_BINARY_RHS)
     {
       op1 = gimple_assign_rhs1 (def_stmt);
       op2 = gimple_assign_rhs2 (def_stmt);
+    }
+  else
+    {
+      if (dump_enabled_p ())
+	report_vect_op (MSG_MISSED_OPTIMIZATION, def_stmt,
+			"reduction: not handled operation: ");
+      return NULL;
+    }
 
-      if (TREE_CODE (op1) != SSA_NAME && TREE_CODE (op2) != SSA_NAME)
-        {
-          if (dump_enabled_p ())
-	    report_vect_op (MSG_MISSED_OPTIMIZATION, def_stmt,
-			    "reduction: uses not ssa_names: ");
+  if (TREE_CODE (op1) != SSA_NAME && TREE_CODE (op2) != SSA_NAME)
+    {
+      if (dump_enabled_p ())
+	report_vect_op (MSG_MISSED_OPTIMIZATION, def_stmt,
+			"reduction: both uses not ssa_names: ");
 
-          return NULL;
-        }
-   }
+      return NULL;
+    }
 
   type = TREE_TYPE (gimple_assign_lhs (def_stmt));
   if ((TREE_CODE (op1) == SSA_NAME
@@ -3091,7 +3101,7 @@ vect_is_simple_reduction (loop_vec_info loop_info, gimple *phi,
 			   == vect_internal_def
 		      && !is_loop_header_bb_p (gimple_bb (def2)))))))
     {
-      if (check_reduction && orig_code != MINUS_EXPR)
+      if (! nested_in_vect_loop && orig_code != MINUS_EXPR)
 	{
 	  /* Check if we can swap operands (just for simplicity - so that
 	     the rest of the code can assume that the reduction variable
@@ -3145,7 +3155,8 @@ vect_is_simple_reduction (loop_vec_info loop_info, gimple *phi,
     }
 
   /* Try to find SLP reduction chain.  */
-  if (check_reduction && code != COND_EXPR
+  if (! nested_in_vect_loop
+      && code != COND_EXPR
       && vect_is_slp_reduction (loop_info, phi, def_stmt))
     {
       if (dump_enabled_p ())
