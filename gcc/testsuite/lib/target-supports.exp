@@ -3772,12 +3772,13 @@ proc check_effective_target_arm_fp16_hw { } {
 # can be selected and a routine to give the flags to select that architecture
 # Note: Extra flags may be added to disable options from newer compilers
 # (Thumb in particular - but others may be added in the future).
-# -march=armv7ve is special and is handled explicitly after this loop because
-# it needs more than one predefine check to identify.
+# Warning: Do not use check_effective_target_arm_arch_*_ok for architecture
+# extension (eg. ARMv8.1-A) since there is no macro defined for them.  See
+# how only __ARM_ARCH_8A__ is checked for ARMv8.1-A.
 # Usage: /* { dg-require-effective-target arm_arch_v5_ok } */
 #        /* { dg-add-options arm_arch_v5 } */
 #	 /* { dg-require-effective-target arm_arch_v5_multilib } */
-foreach { armfunc armflag armdef } {
+foreach { armfunc armflag armdefs } {
 	v4 "-march=armv4 -marm" __ARM_ARCH_4__
 	v4t "-march=armv4t" __ARM_ARCH_4T__
 	v5 "-march=armv5 -marm" __ARM_ARCH_5__
@@ -3792,20 +3793,23 @@ foreach { armfunc armflag armdef } {
 	v7r "-march=armv7-r" __ARM_ARCH_7R__
 	v7m "-march=armv7-m -mthumb" __ARM_ARCH_7M__
 	v7em "-march=armv7e-m -mthumb" __ARM_ARCH_7EM__
+	v7ve "-march=armv7ve -marm"
+		"__ARM_ARCH_7A__ && __ARM_FEATURE_IDIV"
 	v8a "-march=armv8-a" __ARM_ARCH_8A__
 	v8_1a "-march=armv8.1a" __ARM_ARCH_8A__
 	v8_2a "-march=armv8.2a" __ARM_ARCH_8A__
-	v8m_base "-march=armv8-m.base -mthumb -mfloat-abi=soft" __ARM_ARCH_8M_BASE__
+	v8m_base "-march=armv8-m.base -mthumb -mfloat-abi=soft"
+		__ARM_ARCH_8M_BASE__
 	v8m_main "-march=armv8-m.main -mthumb" __ARM_ARCH_8M_MAIN__ } {
-    eval [string map [list FUNC $armfunc FLAG $armflag DEF $armdef ] {
+    eval [string map [list FUNC $armfunc FLAG $armflag DEFS $armdefs ] {
 	proc check_effective_target_arm_arch_FUNC_ok { } {
 	    if { [ string match "*-marm*" "FLAG" ] &&
 		![check_effective_target_arm_arm_ok] } {
 		return 0
 	    }
 	    return [check_no_compiler_messages arm_arch_FUNC_ok assembly {
-		#if !defined (DEF)
-		#error !DEF
+		#if !(DEFS)
+		#error !(DEFS)
 		#endif
 	    } "FLAG" ]
 	}
@@ -3824,26 +3828,6 @@ foreach { armfunc armflag armdef } {
 	    } [add_options_for_arm_arch_FUNC ""]]
         }
     }]
-}
-
-# Same functions as above but for -march=armv7ve.  To uniquely identify
-# -march=armv7ve we need to check for __ARM_ARCH_7A__ as well as
-# __ARM_FEATURE_IDIV otherwise it aliases with armv7-a.
-
-proc check_effective_target_arm_arch_v7ve_ok { } {
-  if { [ string match "*-marm*" "-march=armv7ve" ] &&
-	![check_effective_target_arm_arm_ok] } {
-		return 0
-    }
-  return [check_no_compiler_messages arm_arch_v7ve_ok assembly {
-  #if !defined (__ARM_ARCH_7A__) || !defined (__ARM_FEATURE_IDIV)
-  #error !armv7ve
-  #endif
-  } "-march=armv7ve" ]
-}
-
-proc add_options_for_arm_arch_v7ve { flags } {
-    return "$flags -march=armv7ve"
 }
 
 # Return 1 if GCC was configured with --with-mode=

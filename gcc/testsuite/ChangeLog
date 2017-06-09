@@ -1,3 +1,12 @@
+2017-06-09  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* lib/target-supports.exp (check_effective_target_arm_arch_FUNC_ok):
+	Test for null definitions instead of them being undefined.  Add entry
+	for ARMv7VE.  Reindent entry for ARMv8-M Baseline.  Add comment warning
+	about using the effective target for architecture extension.
+	(check_effective_target_arm_arch_v7ve_ok): Remove.
+	(add_options_for_arm_arch_v7ve): Likewise.
+
 2017-06-09  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/66623
