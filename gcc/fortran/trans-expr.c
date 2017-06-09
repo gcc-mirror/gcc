@@ -5855,7 +5855,7 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
      after use. This necessitates the creation of a temporary to
      hold the result to prevent duplicate calls.  */
   if (!byref && sym->ts.type != BT_CHARACTER
-      && sym->attr.allocatable && !sym->attr.dimension)
+      && sym->attr.allocatable && !sym->attr.dimension && !comp)
     {
       tmp = gfc_create_var (TREE_TYPE (se->expr), NULL);
       gfc_add_modify (&se->pre, tmp, se->expr);
