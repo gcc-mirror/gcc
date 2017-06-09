@@ -1,5 +1,5 @@
 /* { dg-do link } */
-/* { dg-options "-ffinite-math-only -O2" } */
+/* { dg-options "-ffinite-math-only" } */
 
 extern void link_error(void);
 

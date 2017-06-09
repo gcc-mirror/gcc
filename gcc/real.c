@@ -3052,7 +3052,6 @@ const struct real_format ieee_single_format =
     true,
     true,
     false,
-    true,
     "ieee_single"
   };
 
@@ -3076,7 +3075,6 @@ const struct real_format mips_single_format =
     true,
     false,
     true,
-    true,
     "mips_single"
   };
 
@@ -3093,7 +3091,6 @@ const struct real_format motorola_single_format =
     31,
     32,
     false,
-    true,
     true,
     true,
     true,
@@ -3133,7 +3130,6 @@ const struct real_format spu_single_format =
     false,
     true,
     true,
-    false,
     false,
     false,
     "spu_single"
@@ -3347,7 +3343,6 @@ const struct real_format ieee_double_format =
     true,
     true,
     false,
-    true,
     "ieee_double"
   };
 
@@ -3371,7 +3366,6 @@ const struct real_format mips_double_format =
     true,
     false,
     true,
-    true,
     "mips_double"
   };
 
@@ -3388,7 +3382,6 @@ const struct real_format motorola_double_format =
     63,
     64,
     false,
-    true,
     true,
     true,
     true,
@@ -3742,7 +3735,6 @@ const struct real_format ieee_extended_motorola_format =
     true,
     true,
     true,
-    false,
     "ieee_extended_motorola"
   };
 
@@ -3766,7 +3758,6 @@ const struct real_format ieee_extended_intel_96_format =
     true,
     true,
     false,
-    false,
     "ieee_extended_intel_96"
   };
 
@@ -3789,7 +3780,6 @@ const struct real_format ieee_extended_intel_128_format =
     true,
     true,
     true,
-    false,
     false,
     "ieee_extended_intel_128"
   };
@@ -3815,7 +3805,6 @@ const struct real_format ieee_extended_intel_96_round_53_format =
     true,
     true,
     true,
-    false,
     false,
     "ieee_extended_intel_96_round_53"
   };
@@ -3907,7 +3896,6 @@ const struct real_format ibm_extended_format =
     true,
     true,
     false,
-    false,
     "ibm_extended"
   };
 
@@ -3931,7 +3919,6 @@ const struct real_format mips_extended_format =
     true,
     false,
     true,
-    false,
     "mips_extended"
   };
 
@@ -4197,7 +4184,6 @@ const struct real_format ieee_quad_format =
     true,
     true,
     false,
-    true,
     "ieee_quad"
   };
 
@@ -4220,7 +4206,6 @@ const struct real_format mips_quad_format =
     true,
     true,
     false,
-    true,
     true,
     "mips_quad"
   };
@@ -4524,7 +4509,6 @@ const struct real_format vax_f_format =
     false,
     false,
     false,
-    false,
     "vax_f"
   };
 
@@ -4548,7 +4532,6 @@ const struct real_format vax_d_format =
     false,
     false,
     false,
-    false,
     "vax_d"
   };
 
@@ -4564,7 +4547,6 @@ const struct real_format vax_g_format =
     15,
     15,
     0,
-    false,
     false,
     false,
     false,
@@ -4651,7 +4633,6 @@ const struct real_format decimal_single_format =
     true,
     true,
     false,
-    false,
     "decimal_single"
   };
 
@@ -4676,7 +4657,6 @@ const struct real_format decimal_double_format =
     true,
     true,
     false,
-    false,
     "decimal_double"
   };
 
@@ -4700,7 +4680,6 @@ const struct real_format decimal_quad_format =
     true,
     true,
     true,
-    false,
     false,
     "decimal_quad"
   };
@@ -4841,7 +4820,6 @@ const struct real_format ieee_half_format =
     true,
     true,
     false,
-    true,
     "ieee_half"
   };
 
@@ -4866,7 +4844,6 @@ const struct real_format arm_half_format =
     false,
     true,
     true,
-    false,
     false,
     false,
     "arm_half"
@@ -4915,7 +4892,6 @@ const struct real_format real_internal_format =
     false,
     true,
     true,
-    false,
     false,
     "real_internal"
   };
@@ -5101,16 +5077,6 @@ get_max_float (const struct real_format *fmt, char *buf, size_t len)
       buf[4 + fmt->pnan / 4] = "7bde"[fmt->pnan % 4];
     }
 
-  gcc_assert (strlen (buf) < len);
-}
-
-/* Write into BUF the minimum negative representable finite floating-point
-   number, x, such that b**(x-1) is normalized.
-   BUF must be large enough to contain the result.  */
-void
-get_min_float (const struct real_format *fmt, char *buf, size_t len)
-{
-  sprintf (buf, "0x1p%d", fmt->emin - 1);
   gcc_assert (strlen (buf) < len);
 }
 
