@@ -1,3 +1,7 @@
+2017-06-09  Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc.target/arm/sdiv_costs_1.c: New.
+
 2017-06-09  Tom de Vries  <tom@codesourcery.com>
 
 	PR target/80855
