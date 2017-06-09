@@ -1,5 +1,8 @@
 2017-06-09  Jason Merrill  <jason@redhat.com>
 
+	* pt.c (convert_nontype_argument): Check NULLPTR_TYPE_P rather than
+	nullptr_node.
+
 	* parser.c (cp_parser_constant_expression): Check
 	potential_rvalue_constant_expression after decay_conversion.
 	* pt.c (convert_nontype_argument): Don't require linkage in C++17.
