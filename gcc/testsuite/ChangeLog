@@ -1,3 +1,8 @@
+2017-06-09  Jan Hubicka  <hubicka@ucw.cz>
+
+	* gcc.dg/predict-14.c: Avoid cold function detection.
+	* gcc.target/i386/umod-3.c: Likewise.
+
 2017-06-09  Tamar Christina  <tamar.christina@arm.com>
 
 	* gcc.target/aarch64/lrint-matherr.h: New.

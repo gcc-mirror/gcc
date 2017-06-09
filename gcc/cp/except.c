@@ -54,9 +54,10 @@ init_exception_processing (void)
   push_namespace (std_identifier);
   tmp = build_function_type_list (void_type_node, NULL_TREE);
   terminate_fn = build_cp_library_fn_ptr ("terminate", tmp,
-					   ECF_NOTHROW | ECF_NORETURN);
-  TREE_THIS_VOLATILE (terminate_fn) = 1;
-  TREE_NOTHROW (terminate_fn) = 1;
+					   ECF_NOTHROW | ECF_NORETURN
+					   | ECF_COLD);
+  gcc_checking_assert (TREE_THIS_VOLATILE (terminate_fn)
+		       && TREE_NOTHROW (terminate_fn));
   pop_namespace ();
 
   /* void __cxa_call_unexpected(void *); */

@@ -9727,7 +9727,7 @@ build_vtbl_initializer (tree binfo,
 		    dvirt_fn = push_library_fn
 		      (name,
 		       build_function_type_list (void_type_node, NULL_TREE),
-		       NULL_TREE, ECF_NORETURN);
+		       NULL_TREE, ECF_NORETURN | ECF_COLD);
 		}
 	      fn = dvirt_fn;
 	      if (!TARGET_VTABLE_USES_DESCRIPTORS)

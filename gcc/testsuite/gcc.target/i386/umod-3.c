@@ -1,7 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -mtune=atom" } */
 
-extern void abort (void);
 extern void exit (int);
 
 unsigned char cx = 7;
@@ -11,8 +10,8 @@ main ()
 {
   unsigned char cy;
   
-  cy = cx / 6; if (cy != 1) abort ();
-  cy = cx % 6; if (cy != 1) abort ();
+  cy = cx / 6; if (cy != 1) exit (1);
+  cy = cx % 6; if (cy != 1) exit (1);
 
   exit(0);
 }
