@@ -1,5 +1,10 @@
 2017-06-09  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/79483
+	* gcc.dg/graphite/pr79483.c: New testcase.
+
+2017-06-09  Richard Biener  <rguenther@suse.de>
+
 	PR middle-end/81007
 	* g++.dg/pr81007.C: New testcase.
 
