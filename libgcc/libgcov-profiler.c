@@ -336,6 +336,8 @@ __gcov_indirect_call_profiler_v2 (gcov_type value, void* cur_func)
       || (__LIBGCC_VTABLE_USES_DESCRIPTORS__ && __gcov_indirect_call_callee
           && *(void **) cur_func == *(void **) __gcov_indirect_call_callee))
     __gcov_one_value_profiler_body (__gcov_indirect_call_counters, value, 0);
+
+  __gcov_indirect_call_callee = NULL;
 }
 #endif
 
