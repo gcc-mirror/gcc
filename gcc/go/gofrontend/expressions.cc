@@ -962,7 +962,7 @@ Set_and_use_temporary_expression::do_get_backend(Translate_context* context)
   Location loc = this->location();
   Gogo* gogo = context->gogo();
   Bvariable* bvar = this->statement_->get_backend_variable(context);
-  Bexpression* lvar_ref = gogo->backend()->var_expression(bvar, VE_rvalue, loc);
+  Bexpression* lvar_ref = gogo->backend()->var_expression(bvar, VE_lvalue, loc);
 
   Named_object* fn = context->function();
   go_assert(fn != NULL);
@@ -970,7 +970,7 @@ Set_and_use_temporary_expression::do_get_backend(Translate_context* context)
   Bexpression* bexpr = this->expr_->get_backend(context);
   Bstatement* set = gogo->backend()->assignment_statement(bfn, lvar_ref,
                                                           bexpr, loc);
-  Bexpression* var_ref = gogo->backend()->var_expression(bvar, VE_lvalue, loc);
+  Bexpression* var_ref = gogo->backend()->var_expression(bvar, VE_rvalue, loc);
   Bexpression* ret = gogo->backend()->compound_expression(set, var_ref, loc);
   return ret;
 }

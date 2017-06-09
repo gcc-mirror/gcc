@@ -912,6 +912,21 @@ int Mark_lvalue_varexprs::expression(Expression** ppexpr)
   if (ue && ue->op() == OPERATOR_MULT)
     return TRAVERSE_CONTINUE;
 
+  Type_conversion_expression* ce = e->conversion_expression();
+  if (ce)
+    return TRAVERSE_CONTINUE;
+
+  Temporary_reference_expression* tre =
+      e->temporary_reference_expression();
+  if (tre)
+    {
+      tre = new Temporary_reference_expression(tre->statement(),
+                                               tre->location());
+      *ppexpr = tre;
+      tre->set_is_lvalue();
+      return TRAVERSE_EXIT;
+    }
+
   return TRAVERSE_EXIT;
 }
 
