@@ -5296,7 +5296,7 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict,
       {
         tree x = TREE_OPERAND (t, 0);
         STRIP_NOPS (x);
-        if (is_this_parameter (x))
+        if (is_this_parameter (x) && !is_capture_proxy (x))
 	  {
 	    if (DECL_CONTEXT (x)
 		&& !DECL_DECLARED_CONSTEXPR_P (DECL_CONTEXT (x)))
