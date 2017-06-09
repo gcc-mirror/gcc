@@ -306,6 +306,30 @@ test_show_locus (function *fun)
       warning_at_rich_loc (&richloc, 0, "example of a replacement hint");
     }
 
+  if (0 == strcmp (fnname, "test_mutually_exclusive_suggestions"))
+    {
+      const int line = fnstart_line + 2;
+      location_t start = get_loc (line, 2);
+      location_t finish = get_loc (line, 9);
+      source_range src_range;
+      src_range.m_start = start;
+      src_range.m_finish = finish;
+
+      {
+	rich_location richloc (line_table, make_location (start, start, finish));
+	richloc.add_fixit_replace (src_range, "replacement_1");
+	richloc.fixits_cannot_be_auto_applied ();
+	warning_at_rich_loc (&richloc, 0, "warning 1");
+      }
+
+      {
+	rich_location richloc (line_table, make_location (start, start, finish));
+	richloc.add_fixit_replace (src_range, "replacement_2");
+	richloc.fixits_cannot_be_auto_applied ();
+	warning_at_rich_loc (&richloc, 0, "warning 2");
+      }
+    }  
+
   /* Example of two carets where both carets appear to have an off-by-one
      error appearing one column early.
      Seen with gfortran.dg/associate_5.f03.
