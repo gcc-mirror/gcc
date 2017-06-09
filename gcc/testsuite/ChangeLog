@@ -1,5 +1,13 @@
 2017-06-09  Tamar Christina  <tamar.christina@arm.com>
 
+	* gcc.target/aarch64/lrint-matherr.h: New.
+	* gcc.target/aarch64/inline-lrint_1.c: New.
+	* gcc.target/aarch64/inline-lrint_2.c: New.
+	* gcc.target/aarch64/no-inline-lrint_1.c: New.
+	* gcc.target/aarch64/no-inline-lrint_2.c: New.
+
+2017-06-09  Tamar Christina  <tamar.christina@arm.com>
+
 	* gcc.target/arm/sdiv_costs_1.c: New.
 
 2017-06-09  Tom de Vries  <tom@codesourcery.com>
