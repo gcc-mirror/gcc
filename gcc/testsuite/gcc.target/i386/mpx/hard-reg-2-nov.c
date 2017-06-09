@@ -1,5 +1,5 @@
-/* { dg-do run } */
-/* { dg-options "-fcheck-pointer-bounds -mmpx" } */
+/* { dg-do run { target sse2_runtime } } */
+/* { dg-options "-fcheck-pointer-bounds -mmpx -msse2" } */
 
 #include "mpx-check.h"
 

@@ -1,3 +1,12 @@
+2017-06-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.target/i386/mpx/hard-reg-1-nov.c (mpx_test): Use "esp"
+	instead of "rsp" for -m32.
+	* gcc.target/i386/mpx/hard-reg-2-lbv.c: Require sse2_runtime effective
+	target, add -msse2 to dg-options.
+	* gcc.target/i386/mpx/hard-reg-2-nov.c: Likewise.
+	* gcc.target/i386/mpx/hard-reg-2-ubv.c: Likewise.
+
 2017-06-09  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR target/80966

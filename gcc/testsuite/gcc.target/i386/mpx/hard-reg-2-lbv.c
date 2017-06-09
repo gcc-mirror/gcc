@@ -1,6 +1,6 @@
-/* { dg-do run } */
+/* { dg-do run { target sse2_runtime } } */
 /* { dg-shouldfail "bounds violation" } */
-/* { dg-options "-fcheck-pointer-bounds -mmpx" } */
+/* { dg-options "-fcheck-pointer-bounds -mmpx -msse2" } */
 
 
 #define SHOULDFAIL
