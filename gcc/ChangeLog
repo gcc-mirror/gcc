@@ -1,3 +1,11 @@
+2017-06-09  Martin Liska  <mliska@suse.cz>
+
+	* predict.c (struct branch_predictor): New struct.
+	(test_prediction_value_range): New test.
+	(predict_c_tests): New function.
+	* selftest-run-tests.c (selftest::run_tests): Run the function.
+	* selftest.h: Declare new tests.
+
 2017-06-09  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR target/80966
