@@ -42,9 +42,9 @@ along with GCC; see the file COPYING3.  If not see
   NEXT_PASS (pass_build_cfg);
   NEXT_PASS (pass_warn_function_return);
   NEXT_PASS (pass_expand_omp);
-  NEXT_PASS (pass_build_cgraph_edges);
   NEXT_PASS (pass_sprintf_length, false);
   NEXT_PASS (pass_walloca, /*strict_mode_p=*/true);
+  NEXT_PASS (pass_build_cgraph_edges);
   TERMINATE_PASS_LIST (all_lowering_passes)
 
   /* Interprocedural optimization passes.  */

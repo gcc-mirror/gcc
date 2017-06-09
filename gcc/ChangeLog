@@ -1,3 +1,12 @@
+2017-06-09  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/81007
+	* ipa-polymorphic-call.c
+	(ipa_polymorphic_call_context::restrict_to_inner_class):
+	Skip FIELD_DECLs with error_mark_node type.
+	* passes.def (all_lowering_passes): Run pass_build_cgraph_edges
+	last again.
+
 2017-06-09  Martin Liska  <mliska@suse.cz>
 
 	* predict.c (struct branch_predictor): New struct.
