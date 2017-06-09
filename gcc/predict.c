@@ -780,7 +780,7 @@ unlikely_executed_stmt_p (gimple *stmt)
 {
   if (!is_gimple_call (stmt))
     return false;
-  /* NORETURN attribute enough is not strong enough: exit() may be quite
+  /* NORETURN attribute alone is not strong enough: exit() may be quite
      likely executed once during program run.  */
   if (gimple_call_fntype (stmt)
       && lookup_attribute ("cold",
