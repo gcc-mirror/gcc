@@ -1,3 +1,11 @@
+2017-06-09  Martin Liska  <mliska@suse.cz>
+
+	* tree-profile.c (gimple_gen_ic_profiler): Update comment.
+	(gimple_gen_ic_func_profiler): Emit direct comparison
+	of __gcov_indirect_call_callee with NULL.
+	(gimple_gen_time_profiler): Change probability from
+	PROB_VERY_UNLIKELY to PROB_UNLIKELY.
+
 2017-06-09  Jan Hubicka  <hubicka@ucw.cz>
 
 	* profile.c (edge_gcov_counts): Turn to pointer.
