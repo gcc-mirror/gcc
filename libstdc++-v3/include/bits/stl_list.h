@@ -1867,6 +1867,17 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       }
 #endif
     };
+
+#if __cpp_deduction_guides >= 201606
+  template<typename _InputIterator, typename _ValT
+	     = typename iterator_traits<_InputIterator>::value_type,
+	   typename _Allocator = allocator<_ValT>,
+	   typename = _RequireInputIter<_InputIterator>,
+	   typename = _RequireAllocator<_Allocator>>
+    list(_InputIterator, _InputIterator, _Allocator = _Allocator())
+      -> list<_ValT, _Allocator>;
+#endif
+
 _GLIBCXX_END_NAMESPACE_CXX11
 
   /**

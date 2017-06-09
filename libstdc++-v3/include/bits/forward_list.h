@@ -1359,6 +1359,16 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       }
     };
 
+#if __cpp_deduction_guides >= 201606
+  template<typename _InputIterator, typename _ValT
+	     = typename iterator_traits<_InputIterator>::value_type,
+	   typename _Allocator = allocator<_ValT>,
+	   typename = _RequireInputIter<_InputIterator>,
+	   typename = _RequireAllocator<_Allocator>>
+    forward_list(_InputIterator, _InputIterator, _Allocator = _Allocator())
+      -> forward_list<_ValT, _Allocator>;
+#endif
+
   /**
    *  @brief  Forward list equality comparison.
    *  @param  __lx  A %forward_list
