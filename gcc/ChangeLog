@@ -1,5 +1,15 @@
 2017-06-09  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/79483
+	* graphite-scop-detection.c (order): New global.
+	(get_order): Compute bb to order mapping that satisfies code
+	generation constraints.
+	(cmp_pbbs): New helper.
+	(build_scops): Start domwalk at entry block, sort generated
+	pbbs.
+
+2017-06-09  Richard Biener  <rguenther@suse.de>
+
 	PR middle-end/81007
 	* ipa-polymorphic-call.c
 	(ipa_polymorphic_call_context::restrict_to_inner_class):
