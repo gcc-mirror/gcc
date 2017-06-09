@@ -40,13 +40,13 @@ struct edge_profile_info
 /* Helpers annotating edges/basic blocks to GCOV counts.  */
 
 extern vec<gcov_type> bb_gcov_counts;
-extern hash_map<edge,gcov_type> edge_gcov_counts;
+extern hash_map<edge,gcov_type> *edge_gcov_counts;
 
 inline gcov_type &
 edge_gcov_count (edge e)
 {
   bool existed;
-  gcov_type &c = edge_gcov_counts.get_or_insert (e, &existed);
+  gcov_type &c = edge_gcov_counts->get_or_insert (e, &existed);
   if (!existed)
     c = 0;
   return c;
