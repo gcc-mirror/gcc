@@ -6368,7 +6368,10 @@
 (define_expand "return"
   [(return)]
   "sparc_can_use_return_insn_p ()"
-  "")
+{
+  if (cfun->calls_alloca)
+    emit_insn (gen_frame_blockage ());
+})
 
 (define_insn "*return_internal"
   [(return)]
