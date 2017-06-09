@@ -144,7 +144,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       template<typename _Yp, typename _Deleter,
 	       typename = _Constructible<_Yp*, _Deleter>>
 	shared_ptr(_Yp* __p, _Deleter __d)
-        : __shared_ptr<_Tp>(__p, __d) { }
+        : __shared_ptr<_Tp>(__p, std::move(__d)) { }
 
       /**
        *  @brief  Construct a %shared_ptr that owns a null pointer
@@ -161,7 +161,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        */
       template<typename _Deleter>
 	shared_ptr(nullptr_t __p, _Deleter __d)
-        : __shared_ptr<_Tp>(__p, __d) { }
+        : __shared_ptr<_Tp>(__p, std::move(__d)) { }
 
       /**
        *  @brief  Construct a %shared_ptr that owns the pointer @a __p
@@ -181,7 +181,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       template<typename _Yp, typename _Deleter, typename _Alloc,
 	       typename = _Constructible<_Yp*, _Deleter, _Alloc>>
 	shared_ptr(_Yp* __p, _Deleter __d, _Alloc __a)
-	: __shared_ptr<_Tp>(__p, __d, std::move(__a)) { }
+	: __shared_ptr<_Tp>(__p, std::move(__d), std::move(__a)) { }
 
       /**
        *  @brief  Construct a %shared_ptr that owns a null pointer
@@ -200,7 +200,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        */
       template<typename _Deleter, typename _Alloc>
 	shared_ptr(nullptr_t __p, _Deleter __d, _Alloc __a)
-	: __shared_ptr<_Tp>(__p, __d, std::move(__a)) { }
+	: __shared_ptr<_Tp>(__p, std::move(__d), std::move(__a)) { }
 
       // Aliasing constructor
 
