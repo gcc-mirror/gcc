@@ -1,5 +1,9 @@
 2017-06-09  Jason Merrill  <jason@redhat.com>
 
+	PR c++/80384 - ICE with dependent noexcept-specifier
+	* pt.c (dependent_type_p_r) [FUNCTION_TYPE]: Check for dependent
+	noexcept-specifier.
+
 	* constexpr.c (potential_constant_expression_1): Allow 'this' capture.
 
 2017-06-09  Jan Hubicka  <hubicka@ucw.cz>

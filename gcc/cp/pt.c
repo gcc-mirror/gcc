@@ -23438,6 +23438,14 @@ dependent_type_p_r (tree type)
 	   arg_type = TREE_CHAIN (arg_type))
 	if (dependent_type_p (TREE_VALUE (arg_type)))
 	  return true;
+      if (cxx_dialect >= cxx1z)
+	{
+	  /* A value-dependent noexcept-specifier makes the type dependent.  */
+	  tree spec = TYPE_RAISES_EXCEPTIONS (type);
+	  if (spec && TREE_PURPOSE (spec)
+	      && value_dependent_expression_p (TREE_PURPOSE (spec)))
+	    return true;
+	}
       return false;
     }
   /* -- an array type constructed from any dependent type or whose
