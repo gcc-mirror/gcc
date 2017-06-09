@@ -1,5 +1,23 @@
 2017-06-09  Nathan Sidwell  <nathan@acm.org>
 
+	Vtable streaming.  Change keyed_classes representation.
+	gcc/cp/
+	* class.c (finish_struct_1): Adjust keyed_classes pushing.
+	* cp-tree.h (CPTI_KEYED_CLASSES): Delete.
+	(keyed_classes): Now a vector.
+	* decl.c (keyed_classes): Define.
+	(cxx_init_decl_processing): Initialize it.
+	(record_key_method_defined): Adjust pushing.
+	* decl2.c (decl_needed_p): Formatting fixes.
+	(c_parse_final_cleanups): Reset current module.
+	Call finish_module earlier.  Adjust keyed_classes iteration.
+	* pt.c (instantiate_class_template_1): Adjust keyed_classes pushing.
+	* module.c (cpms_{out,in}::define_class): Adjust key method
+	streaming.
+	(cpms_{out,in}::lang_type_bools): Don't srtream interface flags.
+	gcc/testsuite/
+	* g++.dg/modules/class-5_[abc].C: New.
+
 	Typeinfo streaming
 	gcc/cp/
 	* cp-tree.h (DECL_TINFO_P): Also for TYPE_DECLs.

@@ -1921,7 +1921,7 @@ cpms_in::define_function (tree decl)
 void
 cpms_out::chained_decls (tree decls)
 {
-  for (; decls; decls = TREE_CHAIN (decls))
+  for (; decls; decls = DECL_CHAIN (decls))
     tree_node (decls);
   tree_node (NULL_TREE);
 }
@@ -1937,9 +1937,9 @@ cpms_in::chained_decls ()
 	  r.bad ();
 	else
 	  {
-	    gcc_assert (!TREE_CHAIN (decl));
+	    gcc_assert (!DECL_CHAIN (decl));
 	    *chain = decl;
-	    chain = &TREE_CHAIN (decl);
+	    chain = &DECL_CHAIN (decl);
 	  }
       }
     else
@@ -1991,7 +1991,8 @@ cpms_out::define_class (tree type)
       tree_vec (CLASSTYPE_METHOD_VEC (type));
       tree_node (CLASSTYPE_PRIMARY_BINFO (type));
       tree_vec (CLASSTYPE_VBASECLASSES (type));
-      tree_node (CLASSTYPE_KEY_METHOD (type));
+      if (TYPE_CONTAINS_VPTR_P (type))
+	tree_node (CLASSTYPE_KEY_METHOD (type));
 
       tree vtables = CLASSTYPE_VTABLES (type);
       chained_decls (vtables);
@@ -2002,7 +2003,6 @@ cpms_out::define_class (tree type)
 
 #if 0
   gcc_assert (!lang->vcall_indices);
-  WT (lang->vtables);
   // lang->nested_udts
   gcc_assert (!lang->pure_virtuals);
   WT (lang->friend_classes);
@@ -2045,7 +2045,9 @@ cpms_in::define_class (tree type)
       method_vec = tree_vec ();
       primary = tree_node ();
       vbases = tree_vec ();
-      key_method = tree_node ();
+      /* TYPE_VBASECLASSES is not set yet.  */
+      if (TYPE_POLYMORPHIC_P (type) || vbases)
+	key_method = tree_node ();
       vtables = chained_decls ();
     }
 
@@ -2074,7 +2076,10 @@ cpms_in::define_class (tree type)
       CLASSTYPE_METHOD_VEC (type) = method_vec;
       CLASSTYPE_PRIMARY_BINFO (type) = primary;
       CLASSTYPE_VBASECLASSES (type) = vbases;
+
       CLASSTYPE_KEY_METHOD (type) = key_method;
+      if (!key_method && TYPE_CONTAINS_VPTR_P (type))
+	vec_safe_push (keyed_classes, type);
 
       CLASSTYPE_VTABLES (type) = vtables;
       /* Read the vtable initializers.  */
@@ -2862,8 +2867,9 @@ cpms_out::lang_type_bools (tree t)
   WB (lang->has_array_new);
   WB ((lang->gets_delete >> 0) & 1);
   WB ((lang->gets_delete >> 1) & 1);
-  WB (lang->interface_only);
-  WB (lang->interface_unknown);
+  // Interfaceness is recalculated upon reading.  May have to revisit?
+  // lang->interface_only
+  // lang->interface_unknown
   WB (lang->contains_empty_class_p);
   WB (lang->anon_aggr);
   WB (lang->non_zero_init);
@@ -2927,8 +2933,9 @@ cpms_in::lang_type_bools (tree t)
   v = r.b () << 0;
   v |= r.b () << 1;
   lang->gets_delete = v;
-  RB (lang->interface_only);
-  RB (lang->interface_unknown);
+  // lang->interface_only
+  // lang->interface_unknown
+  lang->interface_unknown = true; // Redetermine interface
   RB (lang->contains_empty_class_p);
   RB (lang->anon_aggr);
   RB (lang->non_zero_init);

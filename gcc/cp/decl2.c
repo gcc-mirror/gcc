@@ -1991,12 +1991,14 @@ decl_needed_p (tree decl)
   /* If this entity was used, let the back end see it; it will decide
      whether or not to emit it into the object file.  */
   if (TREE_USED (decl))
-      return true;
+    return true;
+
   /* Virtual functions might be needed for devirtualization.  */
   if (flag_devirtualize
       && TREE_CODE (decl) == FUNCTION_DECL
       && DECL_VIRTUAL_P (decl))
     return true;
+
   /* Otherwise, DECL does not need to be emitted -- yet.  A subsequent
      reference to DECL might cause it to be emitted later.  */
   return false;
@@ -4436,6 +4438,7 @@ c_parse_final_cleanups (void)
   int retries = 0;
   tree decl;
 
+  current_module = GLOBAL_MODULE_INDEX;
   locus_at_end_of_parsing = input_location;
   at_eof = 1;
 
@@ -4462,6 +4465,7 @@ c_parse_final_cleanups (void)
     }
 
   timevar_stop (TV_PHASE_PARSING);
+  finish_module ();
   timevar_start (TV_PHASE_DEFERRED);
 
   symtab->process_same_body_aliases ();
@@ -4509,37 +4513,18 @@ c_parse_final_cleanups (void)
       instantiate_pending_templates (retries);
       ggc_collect ();
 
-      /* Write out virtual tables as required.  Note that writing out
-	 the virtual table for a template class may cause the
+      /* Write out virtual tables as required.  Writing out the
+	 virtual table for a template class may cause the
 	 instantiation of members of that class.  If we write out
 	 vtables then we remove the class from our list so we don't
 	 have to look at it again.  */
-
-      while (keyed_classes != NULL_TREE
-	     && maybe_emit_vtables (TREE_VALUE (keyed_classes)))
-	{
-	  reconsider = true;
-	  keyed_classes = TREE_CHAIN (keyed_classes);
-	}
-
-      t = keyed_classes;
-      if (t != NULL_TREE)
-	{
-	  tree next = TREE_CHAIN (t);
-
-	  while (next)
-	    {
-	      if (maybe_emit_vtables (TREE_VALUE (next)))
-		{
-		  reconsider = true;
-		  TREE_CHAIN (t) = TREE_CHAIN (next);
-		}
-	      else
-		t = next;
-
-	      next = TREE_CHAIN (t);
-	    }
-	}
+      for (i = keyed_classes->length ();
+	   keyed_classes->iterate (--i, &t);)
+	if (maybe_emit_vtables (t))
+	  {
+	    reconsider = true;
+	    keyed_classes->unordered_remove (i);
+	  }
 
       /* Write out needed type info variables.  We have to be careful
 	 looping through unemitted decls, because emit_tinfo_decl may
@@ -4810,7 +4795,6 @@ c_parse_final_cleanups (void)
   perform_deferred_noexcept_checks ();
 
   finish_repo ();
-  finish_module ();
   fini_constexpr ();
 
   /* The entire file is now complete.  If requested, dump everything
