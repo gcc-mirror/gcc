@@ -5,6 +5,10 @@
 
 2017-06-09  Tamar Christina  <tamar.christina@arm.com>
 
+	* config/aarch64/aarch64.md (lrint<GPF:mode><GPI:mode>2): New.
+
+2017-06-09  Tamar Christina  <tamar.christina@arm.com>
+
 	* config/arm/arm.c (arm_rtx_costs_internal): Make sdiv more expensive
 	than udiv.
 
