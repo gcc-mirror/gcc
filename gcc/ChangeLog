@@ -2,6 +2,7 @@
 
 	* profile.c (edge_gcov_counts): Turn to pointer.
 	(compute_branch_probabilities, compute_branch_probabilities): Update.
+	(branch_prob): Do not clear edge_gcov_count.
 	* profile.h (edge_gcov_counts): Turn to pointer.
 	(edge_gcov_count): Update.
 
