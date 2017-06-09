@@ -829,7 +829,9 @@ public:
     rt_binding,		/* A name-binding.  */
     rt_definition,	/* A definition. */
     rt_trees,		/* Global trees.  */
-    rt_type_name,	/* An interstitial type name.  */
+    rt_type_name,	/* A type name.  */
+    rt_typeinfo_var,	/* A typeinfo object.  */
+    rt_typeinfo_pseudo, /* A typeinfo pseudo type.  */
     rt_tree_base = 0x100,	/* Tree codes.  */
     rt_ref_base = 0x1000	/* Back-reference indices.  */
   };
@@ -1170,6 +1172,7 @@ private:
     records++;
     w.u (rt);
   }
+  unsigned insert (tree);
   void start (tree_code, tree);
   void loc (location_t);
   bool mark_present (tree);
@@ -1273,6 +1276,7 @@ public:
   }
 
 private:
+  unsigned insert (tree);
   tree finish_type (tree);
 
 private:
@@ -1310,6 +1314,24 @@ cpms_in::cpms_in (FILE *s, const char *n,
 cpms_in::~cpms_in ()
 {
   free (remap_vec);
+}
+
+unsigned
+cpms_out::insert (tree t)
+{
+  unsigned tag = next ();
+  bool existed = tree_map.put (t, tag);
+  gcc_assert (!existed);
+  return tag;
+}
+
+unsigned
+cpms_in::insert (tree t)
+{
+  unsigned tag = next ();
+  bool existed = tree_map.put (tag, t);
+  gcc_assert (!existed);
+  return tag;
 }
 
 static unsigned do_module_import (location_t, tree, import_kind,
@@ -1515,6 +1537,7 @@ cpms_in::tag_conf ()
 
 const cpm_stream::gtp cpm_stream::global_tree_arys[] =
   {
+    {sizetype_tab, stk_type_kind_last},
     {global_trees, TI_MAX},
     {cp_global_trees, CPTI_MAX},
     {NULL, 0}
@@ -1772,6 +1795,7 @@ cpms_out::tag_binding (tree ns, bool main_p, tree name, tree binding)
 
   if (type && DECL_IS_BUILTIN (type))
     type = NULL_TREE;
+
   if (value)
     {
       if (TREE_CODE (value) == NAMESPACE_DECL && !DECL_NAMESPACE_ALIAS (value))
@@ -1787,6 +1811,8 @@ cpms_out::tag_binding (tree ns, bool main_p, tree name, tree binding)
 
       if (TREE_CODE (value) != OVERLOAD
 	  && (DECL_IS_BUILTIN (value) || CP_DECL_CONTEXT (value) != ns))
+	value = NULL_TREE;
+      else if (TREE_CODE (value) == VAR_DECL && DECL_TINFO_P (value))
 	value = NULL_TREE;
     }
 
@@ -1965,8 +1991,13 @@ cpms_out::define_class (tree type)
       tree_vec (CLASSTYPE_METHOD_VEC (type));
       tree_node (CLASSTYPE_PRIMARY_BINFO (type));
       tree_vec (CLASSTYPE_VBASECLASSES (type));
-      tree_node (CLASSTYPE_TYPEINFO_VAR (type));
       tree_node (CLASSTYPE_KEY_METHOD (type));
+
+      tree vtables = CLASSTYPE_VTABLES (type);
+      chained_decls (vtables);
+      /* Write the vtable initializers.  */
+      for (; vtables; vtables = TREE_CHAIN (vtables))
+	tree_node (DECL_INITIAL (vtables));
     }
 
 #if 0
@@ -1975,8 +2006,7 @@ cpms_out::define_class (tree type)
   // lang->nested_udts
   gcc_assert (!lang->pure_virtuals);
   WT (lang->friend_classes);
-  // lang->methods
-  WT (lang->decl_list);
+  // lang->decl_list
   // lang->template_info
   // lang->lambda_expr
 #endif
@@ -2007,26 +2037,24 @@ cpms_in::define_class (tree type)
   vec<tree, va_gc> *method_vec = NULL;
   tree primary = NULL_TREE;
   vec<tree, va_gc> *vbases = NULL;
-  tree typeinfo = NULL_TREE;
   tree key_method = NULL_TREE;
+  tree vtables = NULL_TREE;
   if (TYPE_LANG_SPECIFIC (type))
     {
       base = tree_node ();
       method_vec = tree_vec ();
       primary = tree_node ();
       vbases = tree_vec ();
-      typeinfo = tree_node ();
       key_method = tree_node ();
+      vtables = chained_decls ();
     }
 
 #if 0
   gcc_assert (!lang->vcall_indices);
-  RT (lang->vtables);
   // lang->nested_udts
   gcc_assert (!lang->pure_virtuals);
   RT (lang->friend_classes);
-  // lang->methods
-  RT (lang->decl_list);
+  // lang->decl_list
   // lang->template_info
   // lang->lambda_expr
 #endif
@@ -2046,8 +2074,12 @@ cpms_in::define_class (tree type)
       CLASSTYPE_METHOD_VEC (type) = method_vec;
       CLASSTYPE_PRIMARY_BINFO (type) = primary;
       CLASSTYPE_VBASECLASSES (type) = vbases;
-      CLASSTYPE_TYPEINFO_VAR (type) = typeinfo;
       CLASSTYPE_KEY_METHOD (type) = key_method;
+
+      CLASSTYPE_VTABLES (type) = vtables;
+      /* Read the vtable initializers.  */
+      for (; vtables; vtables = TREE_CHAIN (vtables))
+	DECL_INITIAL (vtables) = tree_node ();
 
       /* Resort things that need to be sorted.  */
       resort_type_method_vec (method_vec, NULL, nop, NULL);
@@ -3142,6 +3174,20 @@ cpms_out::core_vals (tree t)
       WT (t->block.chain);
     }
 
+  if (CODE_CONTAINS_STRUCT (code, TS_CONSTRUCTOR))
+    {
+      unsigned len = vec_safe_length (t->constructor.elts);
+      WU (len);
+      if (len)
+	for (unsigned ix = 0; ix != len; ix++)
+	  {
+	    const constructor_elt &elt = (*t->constructor.elts)[ix];
+
+	    WT (elt.index);
+	    WT (elt.value);
+	  }
+    }
+
   if (TREE_CODE_CLASS (code) == tcc_vl_exp)
     for (unsigned ix = VL_EXP_OPERAND_LENGTH (t); --ix;)
       WT (TREE_OPERAND (t, ix));
@@ -3377,6 +3423,22 @@ cpms_in::core_vals (tree t)
       // FIXME nonlocalized_vars, fragment_origin, fragment_chain
       RT (t->block.subblocks);
       RT (t->block.chain);
+    }
+
+  if (CODE_CONTAINS_STRUCT (code, TS_CONSTRUCTOR))
+    {
+      if (unsigned len = r.u ())
+	{
+	  vec_alloc (t->constructor.elts, len);
+	  for (unsigned ix = 0; ix != len; ix++)
+	    {
+	      constructor_elt elt;
+
+	      RT (elt.index);
+	      RT (elt.value);
+	      t->constructor.elts->quick_push (elt);
+	    }
+	}
     }
 
   if (TREE_CODE_CLASS (code) == tcc_vl_exp)
@@ -3642,22 +3704,52 @@ cpms_out::tree_node (tree t)
       return;
     }
 
-  if (TREE_CODE_CLASS (TREE_CODE (t)) == tcc_type && TYPE_NAME (t)
-      && !tree_map.get (TYPE_NAME (t)))
+  if (TREE_CODE_CLASS (TREE_CODE (t)) == tcc_type && TYPE_NAME (t))
     {
-      /* T is a named type whose name we have not met yet.  Write the
-	 type name as an interstitial, and then start over.  */
       tree name = TYPE_NAME (t);
+
       gcc_assert (TREE_CODE (name) == TYPE_DECL);
-      dump () && dump ("Writing interstitial type name %C:%N%M",
-		       TREE_CODE (name), name, name);
-      w.u (rt_type_name);
-      tree_node (name);
-      dump () && dump ("Wrote interstitial type name %C:%N%M",
-		       TREE_CODE (name), name, name);
+      if (DECL_TINFO_P (name))
+	{
+	  unsigned ix = get_pseudo_tinfo_index (t);
+
+	  /* Make sure we're identifying this exact variant.  */
+	  gcc_assert (get_pseudo_tinfo_type (ix) == t);
+	  w.u (rt_typeinfo_pseudo);
+	  w.u (ix);
+	  unsigned tag = insert (t);
+	  dump () && dump ("Wrote:%u typeinfo pseudo %u %N", tag, ix, t);
+	  unnest ();
+	  return;
+	}
+      else if (!tree_map.get (TYPE_NAME (t)))
+	{
+	  /* T is a named type whose name we have not met yet.  Write the
+	     type name as an interstitial, and then start over.  */
+	  dump () && dump ("Writing interstitial type name %C:%N%M",
+			   TREE_CODE (name), name, name);
+	  w.u (rt_type_name);
+	  tree_node (name);
+	  dump () && dump ("Wrote interstitial type name %C:%N%M",
+			   TREE_CODE (name), name, name);
+	  unnest ();
+	  /* The type could be a variant of TREE_TYPE (name).  */
+	  tree_node (t);
+	  return;
+	}
+    }
+
+  if (TREE_CODE (t) == VAR_DECL && DECL_TINFO_P (t))
+    {
+      /* T is a typeinfo object.  These need recreating by the loader.
+	 The type it is for is stashed on the name's TREE_TYPE.  */
+      tree type = TREE_TYPE (DECL_NAME (t));
+      dump () && dump ("Writing typeinfo %M for %N", t, type);
+      w.u (rt_typeinfo_var);
+      tree_node (type);
+      unsigned tag = insert (t);
+      dump () && dump ("Wrote:%u typeinfo %M for %N", tag, t, type);
       unnest ();
-      /* The type could be a variant of TREE_TYPE (name).  */
-      tree_node (t);
       return;
     }
 
@@ -3702,9 +3794,7 @@ cpms_out::tree_node (tree t)
   if (body >= 0)
     start (code, t);
 
-  unsigned tag = next ();
-  bool existed = tree_map.put (t, tag);
-  gcc_assert (!existed);
+  unsigned tag = insert (t);
   dump () && dump ("Writing:%u %C:%N%M%s", tag, TREE_CODE (t), t, t,
 		   klass == tcc_declaration && DECL_MODULE_EXPORT_P (t)
 		   ? " (exported)": "");
@@ -3756,6 +3846,7 @@ cpms_out::tree_node (tree t)
   else if (body < 0 && TREE_TYPE (t))
     {
       tree type = TREE_TYPE (t);
+      bool existed;
       unsigned *val = &tree_map.get_or_insert (type, &existed);
       if (!existed)
 	{
@@ -3817,8 +3908,39 @@ cpms_in::tree_node ()
       unnest ();
       return tree_node ();
     }
+  else if (tag == rt_typeinfo_var)
+    {
+      /* A typeinfo.  Get the type and recreate the var decl.  */
+      tree var = NULL_TREE, type = tree_node ();
+      if (!type || !TYPE_P (type))
+	r.bad ();
+      else
+	{
+	  var = get_tinfo_decl (type);
+	  unsigned tag = insert (var);
+	  dump () && dump ("Created:%u typeinfo var %M for %N",
+			   tag, var, type);
+	}
+      unnest ();
+      return var;
+    }
+  else if (tag == rt_typeinfo_pseudo)
+    {
+      /* A pseuto typeinfo.  Get the index and recreate the pseudo.  */
+      unsigned ix = r.u ();
+      tree type = NULL_TREE;
 
-  if (tag == rt_definition)
+      if (ix >= 1000)
+	r.bad ();
+      else
+	type = get_pseudo_tinfo_type (ix);
+
+      unsigned tag = insert (type);
+      dump () && dump ("Created:%u typeinfo pseudo %u %N", tag, ix, type);
+      unnest ();
+      return type;
+    }
+  else if (tag == rt_definition)
     {
       /* An immediate definition.  */
       tree res = tag_definition ();
@@ -3828,8 +3950,7 @@ cpms_in::tree_node ()
       unnest ();
       return res;
     }
-
-  if (tag < rt_tree_base || tag >= rt_tree_base + MAX_TREE_CODES)
+  else if (tag < rt_tree_base || tag >= rt_tree_base + MAX_TREE_CODES)
     {
       error (tag < rt_tree_base ? "unexpected key %qd"
 	     : "unknown tree code %qd" , tag);
@@ -3898,9 +4019,7 @@ cpms_in::tree_node ()
     t = start (code);
 
   /* Insert into map.  */
-  tag = next ();
-  bool existed = tree_map.put (tag, t);
-  gcc_assert (!existed);
+  tag = insert (t);
   dump () && dump ("%s:%u %C:%N", body < 0 ? "Imported" : "Reading", tag,
 		   code, name);
 
@@ -3966,9 +4085,7 @@ cpms_in::tree_node ()
   else if (body < 0 && TREE_TYPE (t) && !r.u ())
     {
       tree type = TREE_TYPE (t);
-      tag = next ();
-      existed = tree_map.put (tag, type);
-      gcc_assert (!existed);
+      tag = insert (type);
       dump () && dump ("Read:%u %C:%N%M imported type", tag,
 		       TREE_CODE (type), type, type);
     }

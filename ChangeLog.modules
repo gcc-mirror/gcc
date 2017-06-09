@@ -1,3 +1,27 @@
+2017-06-09  Nathan Sidwell  <nathan@acm.org>
+
+	Typeinfo streaming
+	gcc/cp/
+	* cp-tree.h (DECL_TINFO_P): Also for TYPE_DECLs.
+	(get_pseudo_tinfo_index, get_pseudo_tinfo_type): Declare.
+	* rtti.c (enum tinfo_kind): Add TK_DERIVED_TYPES,
+	TK_VMI_CLASS_TYPES, TK_MAX, delete TK_FIXED.
+	(tinfo_names): New.
+	(typeid_ok_p): Lool at TYPE_MAIN_VARIANT.
+	(get_pseudo_to_index): Only determine index, don't create type.
+	(get_tinfo_desc): New.  Create the pseudo type.  Set DCL_TINFO_P.
+	(create_pseudo_type_info): Delete.
+	(get_pseudo_ti_init): Use get_tinfo_desc.
+	(get_pseudo_tinfo_index, get_pseudo_tinfo_type): New.
+	(create_tinfo_types): Only allocate the vector.
+	* module.c (cpms_{out,in}::insert): New.
+	(cpm_stream::global_tree_arys): Add sizetype_tab.
+	(cpms_out::tag_binding): Don't stream DECL_TINFO_P bindings.
+	(cpms_{out,in}::define_class): Don't stream
+	CLASSTYPE_TYPEINFO_VAR.  Stream CLASSTYPE_VTABLES.
+	(cpms_{out,in}::core_vals): Stream CONSTRUCTORs.
+	(cpms_{out,in}::tree_node): Detect DECL_TINFO_P things.
+
 2017-06-08  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
