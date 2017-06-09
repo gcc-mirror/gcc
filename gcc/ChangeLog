@@ -1,3 +1,11 @@
+2017-06-9  Ian Lance Taylor  <iant@golang.org>
+
+	* opts.c (finish_options): If -fsplit-stack, disable implicit
+	-forder-blocks-and-partition.
+	* doc/invoke.texi (Optimize Options): Document that when using
+	-fsplit-stack -forder-blocks-and-partition is not implicitly
+	enabled.
+
 2017-06-09  Jan Hubicka  <hubicka@ucw.cz>
 
 	* builtin-attrs.def (ATTR_NORETURN_NOTHROW_LEAF_COLD_LIST,
