@@ -1,3 +1,12 @@
+2017-06-09  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/80966
+	* config/rs6000/rs6000.c (rs6000_emit_allocate_stack): Assert that
+	gen_add3_insn did not fail.
+	* config/rs6000/rs6000.md (add<mode>3): If asked to add a constant to
+	r0, construct that number in a temporary reg and add that reg to r0.
+	If asked to put the result in r0 as well, fail.
+
 2017-06-08  Will Schmidt  <will_schmidt@vnet.ibm.com>
 
 	* config/rs6000/rs6000.c (rs6000_gimple_fold_builtin): Add handling

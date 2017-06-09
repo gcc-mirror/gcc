@@ -1,3 +1,8 @@
+2017-06-09  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/80966
+	* gcc.target/powerpc/stack-limit.c: New testcase.
+
 2017-06-08  Will Schmidt  <will_schmidt@vnet.ibm.com>
 
 	* testsuite/gcc.target/powerpc/fold-vec-logical-eqv-char.c: New.
