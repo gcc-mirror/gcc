@@ -1,5 +1,9 @@
 2017-06-09  Jason Merrill  <jason@redhat.com>
 
+	* parser.c (cp_parser_constant_expression): Check
+	potential_rvalue_constant_expression after decay_conversion.
+	* pt.c (convert_nontype_argument): Don't require linkage in C++17.
+
 	PR c++/80384 - ICE with dependent noexcept-specifier
 	* pt.c (dependent_type_p_r) [FUNCTION_TYPE]: Check for dependent
 	noexcept-specifier.
