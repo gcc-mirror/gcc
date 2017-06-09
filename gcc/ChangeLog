@@ -1,3 +1,7 @@
+2017-06-09  Jan Hubicka  <hubicka@ucw.cz>
+
+	* predict.c (unlikely_executed_stmt_p): Cleanup.
+
 2017-06-09  Richard Biener  <rguenther@suse.de>
 
 	* tree-ssa-loop-im.c (execute_sm): Do not force multi-threaded

@@ -797,10 +797,11 @@ unlikely_executed_stmt_p (gimple *stmt)
   cgraph_node *n = cgraph_node::get (decl);
   if (!n)
     return false;
-  enum availability avail;
+
+  availability avail;
   n = n->ultimate_alias_target (&avail);
   if (avail < AVAIL_AVAILABLE)
-    return NULL;
+    return false;
   if (!n->analyzed
       || n->decl == current_function_decl)
     return false;
