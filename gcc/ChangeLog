@@ -1,5 +1,16 @@
 2017-06-09  Jan Hubicka  <hubicka@ucw.cz>
 
+	* builtin-attrs.def (ATTR_NORETURN_NOTHROW_LEAF_COLD_LIST,
+	ATTR_CONST_NORETURN_NOTHROW_LEAF_COLD_LIST,
+	ATTR_TMPURE_NORETURN_NOTHROW_LEAF_COLD_LIST): New.
+	* builtins.def (abort, trap, unreachable): Declare cold.
+	* calls.c (flags_from_decl_or_type): Lookup ECF_COLD.
+	* tree-core.h (ECF_COLD): New.
+	* tree.c (set_call_expr_flags): Handle ECF_COLD.
+	(build_common_builtin_nodes): Mark unreachable and abort as cold.
+
+2017-06-09  Jan Hubicka  <hubicka@ucw.cz>
+
 	* predict.c (unlikely_executed_stmt_p): Cleanup.
 
 2017-06-09  Richard Biener  <rguenther@suse.de>

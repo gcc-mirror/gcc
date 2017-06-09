@@ -10625,6 +10625,9 @@ set_call_expr_flags (tree decl, int flags)
   if (flags & ECF_LEAF)
     DECL_ATTRIBUTES (decl) = tree_cons (get_identifier ("leaf"),
 					NULL, DECL_ATTRIBUTES (decl));
+  if (flags & ECF_COLD)
+    DECL_ATTRIBUTES (decl) = tree_cons (get_identifier ("cold"),
+					NULL, DECL_ATTRIBUTES (decl));
   if (flags & ECF_RET1)
     DECL_ATTRIBUTES (decl)
       = tree_cons (get_identifier ("fn spec"),
@@ -10674,11 +10677,11 @@ build_common_builtin_nodes (void)
 			      BUILT_IN_UNREACHABLE,
 			      "__builtin_unreachable",
 			      ECF_NOTHROW | ECF_LEAF | ECF_NORETURN
-			      | ECF_CONST);
+			      | ECF_CONST | ECF_COLD);
       if (!builtin_decl_explicit_p (BUILT_IN_ABORT))
 	local_define_builtin ("__builtin_abort", ftype, BUILT_IN_ABORT,
 			      "abort",
-			      ECF_LEAF | ECF_NORETURN | ECF_CONST);
+			      ECF_LEAF | ECF_NORETURN | ECF_CONST | ECF_COLD);
     }
 
   if (!builtin_decl_explicit_p (BUILT_IN_MEMCPY)

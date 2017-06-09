@@ -1,3 +1,9 @@
+2017-06-09  Jan Hubicka  <hubicka@ucw.cz>
+
+	* class.c (build_vtbl_initializer): Mark dvirt_fn as cold.
+	* decl.c (cxx_init_decl_processing, push_throw_library_fn): Likewise.
+	(excpet.c): Mark terminate as cold.
+
 2017-06-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/81006
