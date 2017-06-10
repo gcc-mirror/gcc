@@ -1,5 +1,12 @@
 2017-06-09  Jason Merrill  <jason@redhat.com>
 
+	Missing bits from N4268, constant evaluation for all non-type args.
+	* call.c (build_converted_constant_expr): Rename from
+	build_integral_nontype_arg_conv, handle all types.
+	* pt.c (convert_nontype_argument): In C++17 call it for all types.
+	Move NOP stripping inside pointer case, don't strip ADDR_EXPR.
+	* cvt.c (strip_fnptr_conv): Also strip conversions to the same type.
+
 	Overhaul pointer-to-member conversion and template argument handling.
 	* call.c (standard_conversion): Avoid creating ck_pmem when the
 	class type is the same.
