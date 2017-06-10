@@ -28106,6 +28106,51 @@ rs6000_set_handled_components (sbitmap components)
     cfun->machine->lr_is_wrapped_separately = true;
 }
 
+/* Set up the arg pointer (r12) for -fsplit-stack code.  If __morestack was
+   called, it left the arg pointer to the old stack in r29.  Otherwise, the
+   arg pointer is the top of the current frame.  */
+static void
+emit_split_stack_prologue (rs6000_stack_t *info, rtx_insn *sp_adjust,
+			   HOST_WIDE_INT frame_off, rtx frame_reg_rtx)
+{
+  cfun->machine->split_stack_argp_used = true;
+
+  if (sp_adjust)
+    {
+      rtx r12 = gen_rtx_REG (Pmode, 12);
+      rtx sp_reg_rtx = gen_rtx_REG (Pmode, STACK_POINTER_REGNUM);
+      rtx set_r12 = gen_rtx_SET (r12, sp_reg_rtx);
+      emit_insn_before (set_r12, sp_adjust);
+    }
+  else if (frame_off != 0 || REGNO (frame_reg_rtx) != 12)
+    {
+      rtx r12 = gen_rtx_REG (Pmode, 12);
+      if (frame_off == 0)
+	emit_move_insn (r12, frame_reg_rtx);
+      else
+	emit_insn (gen_add3_insn (r12, frame_reg_rtx, GEN_INT (frame_off)));
+    }
+
+  if (info->push_p)
+    {
+      rtx r12 = gen_rtx_REG (Pmode, 12);
+      rtx r29 = gen_rtx_REG (Pmode, 29);
+      rtx cr7 = gen_rtx_REG (CCUNSmode, CR7_REGNO);
+      rtx not_more = gen_label_rtx ();
+      rtx jump;
+
+      jump = gen_rtx_IF_THEN_ELSE (VOIDmode,
+				   gen_rtx_GEU (VOIDmode, cr7, const0_rtx),
+				   gen_rtx_LABEL_REF (VOIDmode, not_more),
+				   pc_rtx);
+      jump = emit_jump_insn (gen_rtx_SET (pc_rtx, jump));
+      JUMP_LABEL (jump) = not_more;
+      LABEL_NUSES (not_more) += 1;
+      emit_move_insn (r12, r29);
+      emit_label (not_more);
+    }
+}
+
 /* Emit function prologue as insns.  */
 
 void
@@ -29006,46 +29051,9 @@ rs6000_emit_prologue (void)
       emit_insn (gen_frame_store (reg, sp_reg_rtx, RS6000_TOC_SAVE_SLOT));
     }
 
+  /* Set up the arg pointer (r12) for -fsplit-stack code.  */
   if (using_split_stack && split_stack_arg_pointer_used_p ())
-    {
-      /* Set up the arg pointer (r12) for -fsplit-stack code.  If
-	 __morestack was called, it left the arg pointer to the old
-	 stack in r29.  Otherwise, the arg pointer is the top of the
-	 current frame.  */
-      cfun->machine->split_stack_argp_used = true;
-      if (sp_adjust)
-	{
-	  rtx r12 = gen_rtx_REG (Pmode, 12);
-	  rtx set_r12 = gen_rtx_SET (r12, sp_reg_rtx);
-	  emit_insn_before (set_r12, sp_adjust);
-	}
-      else if (frame_off != 0 || REGNO (frame_reg_rtx) != 12)
-	{
-	  rtx r12 = gen_rtx_REG (Pmode, 12);
-	  if (frame_off == 0)
-	    emit_move_insn (r12, frame_reg_rtx);
-	  else
-	    emit_insn (gen_add3_insn (r12, frame_reg_rtx, GEN_INT (frame_off)));
-	}
-      if (info->push_p)
-	{
-	  rtx r12 = gen_rtx_REG (Pmode, 12);
-	  rtx r29 = gen_rtx_REG (Pmode, 29);
-	  rtx cr7 = gen_rtx_REG (CCUNSmode, CR7_REGNO);
-	  rtx not_more = gen_label_rtx ();
-	  rtx jump;
-
-	  jump = gen_rtx_IF_THEN_ELSE (VOIDmode,
-				       gen_rtx_GEU (VOIDmode, cr7, const0_rtx),
-				       gen_rtx_LABEL_REF (VOIDmode, not_more),
-				       pc_rtx);
-	  jump = emit_jump_insn (gen_rtx_SET (pc_rtx, jump));
-	  JUMP_LABEL (jump) = not_more;
-	  LABEL_NUSES (not_more) += 1;
-	  emit_move_insn (r12, r29);
-	  emit_label (not_more);
-	}
-    }
+    emit_split_stack_prologue (info, sp_adjust, frame_off, frame_reg_rtx);
 }
 
 /* Output .extern statements for the save/restore routines we use.  */
