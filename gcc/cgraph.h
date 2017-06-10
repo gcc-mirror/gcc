@@ -1649,7 +1649,7 @@ struct GTY((chain_next ("%h.next_caller"), chain_prev ("%h.prev_caller"),
   /* Create clone of edge in the node N represented
      by CALL_EXPR the callgraph.  */
   cgraph_edge * clone (cgraph_node *n, gcall *call_stmt, unsigned stmt_uid,
-		       gcov_type count_scale, int freq_scale,
+		       profile_count num, profile_count den, int freq_scale,
 		       bool update_original);
 
   /* Verify edge count and frequency.  */

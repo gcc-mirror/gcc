@@ -86,10 +86,13 @@ along with GCC; see the file COPYING3.  If not see
 
 cgraph_edge *
 cgraph_edge::clone (cgraph_node *n, gcall *call_stmt, unsigned stmt_uid,
-		    gcov_type count_scale, int freq_scale, bool update_original)
+		    profile_count num, profile_count den,
+		    int freq_scale, bool update_original)
 {
   cgraph_edge *new_edge;
-  profile_count gcov_count = count.apply_scale (count_scale, REG_BR_PROB_BASE);
+  profile_count gcov_count
+	 = (num == profile_count::zero () || den > 0)
+	   ? count.apply_scale (num, den) : count;
   gcov_type freq;
 
   /* We do not want to ignore loop nest after frequency drops to 0.  */
@@ -116,7 +119,7 @@ cgraph_edge::clone (cgraph_node *n, gcall *call_stmt, unsigned stmt_uid,
 	{
 	  new_edge = n->create_indirect_edge (call_stmt,
 					      indirect_info->ecf_flags,
-					      count, freq, false);
+					      gcov_count, freq, false);
 	  *new_edge->indirect_info = *indirect_info;
 	}
     }
@@ -428,7 +431,6 @@ cgraph_node::create_clone (tree new_decl, profile_count prof_count, int freq,
 {
   cgraph_node *new_node = symtab->create_empty ();
   cgraph_edge *e;
-  gcov_type count_scale;
   unsigned i;
 
   if (new_inlined_to)
@@ -453,7 +455,6 @@ cgraph_node::create_clone (tree new_decl, profile_count prof_count, int freq,
   new_node->global = global;
   new_node->global.inlined_to = new_inlined_to;
   new_node->rtl = rtl;
-  new_node->count = count;
   new_node->frequency = frequency;
   new_node->tp_first_run = tp_first_run;
   new_node->tm_clone = tm_clone;
@@ -475,18 +476,6 @@ cgraph_node::create_clone (tree new_decl, profile_count prof_count, int freq,
   else
     new_node->clone.combined_args_to_skip = args_to_skip;
 
-  if (count.initialized_p ())
-    {
-      if (new_node->count > count)
-        count_scale = REG_BR_PROB_BASE;
-      else
-	count_scale = new_node->count.probability_in (count);
-    }
-  else
-    count_scale = 0;
-  if (update_original)
-    count -= prof_count;
-
   FOR_EACH_VEC_ELT (redirect_callers, i, e)
     {
       /* Redirect calls to the old version node to point to its new
@@ -500,12 +489,12 @@ cgraph_node::create_clone (tree new_decl, profile_count prof_count, int freq,
   new_node->expand_all_artificial_thunks ();
 
   for (e = callees;e; e=e->next_callee)
-    e->clone (new_node, e->call_stmt, e->lto_stmt_uid, count_scale,
+    e->clone (new_node, e->call_stmt, e->lto_stmt_uid, new_node->count, count,
 	      freq, update_original);
 
   for (e = indirect_calls; e; e = e->next_callee)
     e->clone (new_node, e->call_stmt, e->lto_stmt_uid,
-	      count_scale, freq, update_original);
+	      new_node->count, count, freq, update_original);
   new_node->clone_references (this);
 
   new_node->next_sibling_clone = clones;
@@ -513,6 +502,9 @@ cgraph_node::create_clone (tree new_decl, profile_count prof_count, int freq,
     clones->prev_sibling_clone = new_node;
   clones = new_node;
   new_node->clone_of = this;
+
+  if (update_original)
+    count -= prof_count;
 
   if (call_duplication_hook)
     symtab->call_cgraph_duplication_hooks (this, new_node);
@@ -911,14 +903,14 @@ cgraph_node::create_version_clone (tree new_decl,
      if (!bbs_to_copy
 	 || bitmap_bit_p (bbs_to_copy, gimple_bb (e->call_stmt)->index))
        e->clone (new_version, e->call_stmt,
-		 e->lto_stmt_uid, REG_BR_PROB_BASE,
+		 e->lto_stmt_uid, count, count,
 		 CGRAPH_FREQ_BASE,
 		 true);
    for (e = indirect_calls; e; e=e->next_callee)
      if (!bbs_to_copy
 	 || bitmap_bit_p (bbs_to_copy, gimple_bb (e->call_stmt)->index))
        e->clone (new_version, e->call_stmt,
-		 e->lto_stmt_uid, REG_BR_PROB_BASE,
+		 e->lto_stmt_uid, count, count,
 		 CGRAPH_FREQ_BASE,
 		 true);
    FOR_EACH_VEC_ELT (redirect_callers, i, e)

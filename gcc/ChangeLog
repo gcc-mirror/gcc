@@ -1,3 +1,12 @@
+2017-06-10  Jan Hubicka  <hubicka@ucw.cz>
+
+	* cgraph.h (cgraph_edge::clone): Update prototype.
+	* cgraphclones.c (cgraph_edge::clone): Update profile scaling.
+	(cgraph_node::create_clone): Update.
+	(cgraph_node::create_version_clone): Update.
+	* tree-inline.c (copy_bb): Update.
+	(expand_call_inline): Update.
+
 2017-06-10  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* config/rs6000/rs6000.c (emit_vrsave_prologue): New function,

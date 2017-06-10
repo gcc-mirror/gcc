@@ -2009,7 +2009,9 @@ copy_bb (copy_body_data *id, basic_block bb, int frequency_scale,
 		      struct cgraph_edge *old_edge = edge;
 		      edge = edge->clone (id->dst_node, call_stmt,
 					  gimple_uid (stmt),
-					  REG_BR_PROB_BASE, CGRAPH_FREQ_BASE,
+					  profile_count::one (),
+					  profile_count::one (),
+					  CGRAPH_FREQ_BASE,
 					  true);
 		      /* We could also just rescale the frequency, but
 		         doing so would introduce roundoff errors and make
@@ -2028,7 +2030,9 @@ copy_bb (copy_body_data *id, basic_block bb, int frequency_scale,
 			  old_edge->speculative_call_info (direct, indirect, ref);
 			  indirect = indirect->clone (id->dst_node, call_stmt,
 						      gimple_uid (stmt),
-						      REG_BR_PROB_BASE, CGRAPH_FREQ_BASE,
+						      profile_count::one (),
+						      profile_count::one (),
+						      CGRAPH_FREQ_BASE,
 						      true);
 			  if (old_edge->frequency + indirect->frequency)
 			    {
@@ -4509,7 +4513,9 @@ expand_call_inline (basic_block bb, gimple *stmt, copy_body_data *id)
       cg_edge->remove ();
       edge = id->src_node->callees->clone (id->dst_node, call_stmt,
 		   		           gimple_uid (stmt),
-				   	   REG_BR_PROB_BASE, CGRAPH_FREQ_BASE,
+				   	   profile_count::one (),
+					   profile_count::one (),
+					   CGRAPH_FREQ_BASE,
 				           true);
       edge->frequency = freq;
       edge->count = count;
