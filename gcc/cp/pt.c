@@ -6124,8 +6124,14 @@ static bool
 check_valid_ptrmem_cst_expr (tree type, tree expr,
 			     tsubst_flags_t complain)
 {
+  location_t loc = EXPR_LOC_OR_LOC (expr, input_location);
+  tree orig_expr = expr;
   STRIP_NOPS (expr);
-  if (expr && (null_ptr_cst_p (expr) || TREE_CODE (expr) == PTRMEM_CST))
+  if (null_ptr_cst_p (expr))
+    return true;
+  if (TREE_CODE (expr) == PTRMEM_CST
+      && same_type_p (TYPE_PTRMEM_CLASS_TYPE (type),
+		      PTRMEM_CST_CLASS (expr)))
     return true;
   if (cxx_dialect >= cxx11 && null_member_pointer_value_p (expr))
     return true;
@@ -6135,9 +6141,12 @@ check_valid_ptrmem_cst_expr (tree type, tree expr,
     return true;
   if (complain & tf_error)
     {
-      error ("%qE is not a valid template argument for type %qT",
-	     expr, type);
-      error ("it must be a pointer-to-member of the form %<&X::Y%>");
+      error_at (loc, "%qE is not a valid template argument for type %qT",
+		orig_expr, type);
+      if (TREE_CODE (expr) != PTRMEM_CST)
+	inform (loc, "it must be a pointer-to-member of the form %<&X::Y%>");
+      else
+	inform (loc, "because it is a member of %qT", PTRMEM_CST_CLASS (expr));
     }
   return false;
 }
@@ -6880,36 +6889,12 @@ convert_nontype_argument (tree type, tree expr, tsubst_flags_t complain)
          expression must be a pointer-to-member constant.  */
       if (!value_dependent_expression_p (expr)
 	  && !check_valid_ptrmem_cst_expr (type, expr, complain))
-	return error_mark_node;
+	return NULL_TREE;
 
       /* Repeated conversion can't deal with a conversion that turns PTRMEM_CST
 	 into a CONSTRUCTOR, so build up a new PTRMEM_CST instead.  */
       if (fnptr_conv_p (type, TREE_TYPE (expr)))
 	expr = make_ptrmem_cst (type, PTRMEM_CST_MEMBER (expr));
-
-      /* There is no way to disable standard conversions in
-	 resolve_address_of_overloaded_function (called by
-	 instantiate_type). It is possible that the call succeeded by
-	 converting &B::I to &D::I (where B is a base of D), so we need
-	 to reject this conversion here.
-
-	 Actually, even if there was a way to disable standard conversions,
-	 it would still be better to reject them here so that we can
-	 provide a superior diagnostic.  */
-      if (!same_type_p (TREE_TYPE (expr), type))
-	{
-	  if (complain & tf_error)
-	    {
-	      error ("%qE is not a valid template argument for type %qT "
-		     "because it is of type %qT", expr, type,
-		     TREE_TYPE (expr));
-	      /* If we are just one standard conversion off, explain.  */
-	      if (can_convert_standard (type, TREE_TYPE (expr), complain))
-		inform (input_location,
-			"standard conversions are not allowed in this context");
-	    }
-	  return NULL_TREE;
-	}
     }
   /* [temp.arg.nontype]/5, bullet 7
 
@@ -6921,7 +6906,7 @@ convert_nontype_argument (tree type, tree expr, tsubst_flags_t complain)
          expression must be a pointer-to-member constant.  */
       if (!value_dependent_expression_p (expr)
 	  && !check_valid_ptrmem_cst_expr (type, expr, complain))
-	return error_mark_node;
+	return NULL_TREE;
 
       expr = perform_qualification_conversions (type, expr);
       if (expr == error_mark_node)

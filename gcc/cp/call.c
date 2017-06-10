@@ -1262,14 +1262,16 @@ standard_conversion (tree to, tree from, tree expr, bool c_cast_p,
 	  tree fbase = TYPE_PTRMEM_CLASS_TYPE (from);
 	  tree tbase = TYPE_PTRMEM_CLASS_TYPE (to);
 
-	  if (DERIVED_FROM_P (fbase, tbase)
-	      && (same_type_ignoring_top_level_qualifiers_p
-		  (from_pointee, to_pointee)))
+	  if (same_type_p (fbase, tbase))
+	    /* No base conversion needed.  */;
+	  else if (DERIVED_FROM_P (fbase, tbase)
+		   && (same_type_ignoring_top_level_qualifiers_p
+		       (from_pointee, to_pointee)))
 	    {
 	      from = build_ptrmem_type (tbase, from_pointee);
 	      conv = build_conv (ck_pmem, from, conv);
 	    }
-	  else if (!same_type_p (fbase, tbase))
+	  else
 	    return NULL;
 	}
       else if (CLASS_TYPE_P (from_pointee)

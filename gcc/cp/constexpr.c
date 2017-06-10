@@ -4399,7 +4399,8 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 	if (TREE_CODE (op) == PTRMEM_CST && tcode == NOP_EXPR)
 	  {
 	    if (same_type_ignoring_top_level_qualifiers_p (type,
-							   TREE_TYPE (op)))
+							   TREE_TYPE (op))
+		|| can_convert_qual (type, op))
 	      return cp_fold_convert (type, op);
 	    else
 	      {

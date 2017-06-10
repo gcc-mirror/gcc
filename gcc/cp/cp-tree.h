@@ -6022,6 +6022,7 @@ extern tree convert_force			(tree, tree, int,
 						 tsubst_flags_t);
 extern tree build_expr_type_conversion		(int, tree, bool);
 extern tree type_promotes_to			(tree);
+extern bool can_convert_qual			(tree, tree);
 extern tree perform_qualification_conversions	(tree, tree);
 extern bool tx_safe_fn_type_p			(tree);
 extern tree tx_unsafe_fn_variant		(tree);
