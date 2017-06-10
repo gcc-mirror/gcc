@@ -1,5 +1,12 @@
 2017-06-10  Jan Hubicka  <hubicka@ucw.cz>
 
+	* predict.c (drop_profile): Also drop individual bb/edge and cgraph
+	edge counts.
+	(handle_missing_profiles): Fix computation of tp_first_run.
+	(counts_to_freqs): Do not touch freqs when count is 0.
+
+2017-06-10  Jan Hubicka  <hubicka@ucw.cz>
+
 	* cgraphbuild.c (cgraph_edge::rebuild_references): Do not touch
 	profile.
 

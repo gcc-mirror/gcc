@@ -3251,6 +3251,26 @@ drop_profile (struct cgraph_node *node, profile_count call_count)
 		 node->dump_name ());
     }
 
+  basic_block bb;
+  FOR_ALL_BB_FN (bb, fn)
+    {
+      bb->count = profile_count::uninitialized ();
+
+      edge_iterator ei;
+      edge e;
+      FOR_EACH_EDGE (e, ei, bb->preds)
+	e->count = profile_count::uninitialized ();
+    }
+
+  struct cgraph_edge *e;
+  for (e = node->callees; e; e = e->next_caller)
+    {
+      e->count = profile_count::uninitialized ();
+      e->frequency = compute_call_stmt_bb_frequency (e->caller->decl,
+						     gimple_bb (e->call_stmt));
+    }
+  node->count = profile_count::uninitialized ();
+  
   profile_status_for_fn (fn)
       = (flag_guess_branch_prob ? PROFILE_GUESSED : PROFILE_ABSENT);
   node->frequency
@@ -3289,15 +3309,13 @@ handle_missing_profiles (void)
       if (!(node->count == profile_count::zero ()))
         continue;
       for (e = node->callers; e; e = e->next_caller)
-      {
-	if (e->count.initialized_p () > 0)
+	if (e->count.initialized_p () && e->count > 0)
 	  {
             call_count = call_count + e->count;
 
 	    if (e->caller->tp_first_run > max_tp_first_run)
 	      max_tp_first_run = e->caller->tp_first_run;
 	  }
-      }
 
       /* If time profile is missing, let assign the maximum that comes from
 	 caller functions.  */
@@ -3306,7 +3324,8 @@ handle_missing_profiles (void)
 
       if (call_count > 0
           && fn && fn->cfg
-          && (call_count.apply_scale (unlikely_count_fraction, 1) >= profile_info->runs))
+          && (call_count.apply_scale (unlikely_count_fraction, 1)
+	      >= profile_info->runs))
         {
           drop_profile (node, call_count);
           worklist.safe_push (node);
@@ -3327,7 +3346,8 @@ handle_missing_profiles (void)
 
           if (callee->count > 0)
             continue;
-          if (DECL_COMDAT (callee->decl) && fn && fn->cfg
+          if ((DECL_COMDAT (callee->decl) || DECL_EXTERNAL (callee->decl))
+	      && fn && fn->cfg
               && profile_status_for_fn (fn) == PROFILE_READ)
             {
               drop_profile (node, profile_count::zero ());
@@ -3352,19 +3372,24 @@ counts_to_freqs (void)
      later in drop_profile ().  */
   if (!ENTRY_BLOCK_PTR_FOR_FN (cfun)->count.initialized_p ()
       || ENTRY_BLOCK_PTR_FOR_FN (cfun)->count == profile_count::zero ())
-    return 0;
+    return false;
 
   FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR_FOR_FN (cfun), NULL, next_bb)
     if (bb->count > true_count_max)
       true_count_max = bb->count;
 
-  count_max = MAX (true_count_max.to_gcov_type (), 1);
+  /* If we have no counts to base frequencies on, keep those that are
+     already there.  */
+  if (!(true_count_max > 0))
+    return false;
 
-  FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR_FOR_FN (cfun), NULL, next_bb)
+  count_max = true_count_max.to_gcov_type ();
+
+  FOR_ALL_BB_FN (bb, cfun)
     if (bb->count.initialized_p ())
       bb->frequency = RDIV (bb->count.to_gcov_type () * BB_FREQ_MAX, count_max);
 
-  return !(true_count_max == profile_count::zero ());
+  return true;
 }
 
 /* Return true if function is likely to be expensive, so there is no point to
