@@ -1973,6 +1973,9 @@ time) should be run on this target.  This can be enabled by setting the
 Test system runs executables on a simulator (i.e. slowly) rather than
 hardware (i.e. fast).
 
+@item signal
+Target has @code{signal.h}.
+
 @item stabs
 Target supports the stabs debugging format.
 
