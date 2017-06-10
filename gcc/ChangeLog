@@ -1,3 +1,8 @@
+2017-06-10  Jan Hubicka  <hubicka@ucw.cz>
+
+	* cgraphbuild.c (cgraph_edge::rebuild_references): Do not touch
+	profile.
+
 2017-06-10  Tom de Vries  <tom@codesourcery.com>
 
 	* doc/sourcebuild.texi (Effective-Target Keywords, Environment

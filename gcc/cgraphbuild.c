@@ -473,8 +473,6 @@ cgraph_edge::rebuild_references (void)
     else
       i++;
 
-  node->count = ENTRY_BLOCK_PTR_FOR_FN (cfun)->count;
-
   FOR_EACH_BB_FN (bb, cfun)
     {
       for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
