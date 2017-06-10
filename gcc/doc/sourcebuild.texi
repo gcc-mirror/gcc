@@ -2093,6 +2093,13 @@ Target supports section anchors.
 @item short_enums
 Target defaults to short enums.
 
+@item stack_size
+Target has limited stack size.  The stack size limit can be obtained using
+@code{[dg-effective-target-value stack_size]}.  For example:
+@smallexample
+/* @{ dg-additional-options "-DSTACK_SIZE=[dg-effective-target-value stack_size]" @{ target @{ stack_size @} @} @} */
+@end smallexample
+
 @item static
 Target supports @option{-static}.
 

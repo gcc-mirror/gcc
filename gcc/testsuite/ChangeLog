@@ -1,3 +1,50 @@
+2017-06-10  Tom de Vries  <tom@codesourcery.com>
+
+	* lib/target-supports.exp (check_effective_target_stack_size)
+	(dg-effective-target-value): New proc.
+	* lib/gcc.exp (gcc_target_compile): Remove adding of DSTACK_SIZE to
+	additional_flags.
+	* lib/objc.exp (objc_target_compile): Same.
+	* lib/profopt.exp (profopt-get-options): Allow dg-additional-options.
+	* g++.old-deja/g++.eh/badalloc1.C: Add -DSTACK_SIZE=<value> using
+	dg-additional-options.
+	* gcc.c-torture/compile/20080806-1.c: Same.
+	* gcc.c-torture/compile/920723-1.c: Same.
+	* gcc.c-torture/compile/930621-1.c: Same.
+	* gcc.c-torture/compile/991214-2.c: Same.
+	* gcc.c-torture/compile/bcopy.c: Same.
+	* gcc.c-torture/compile/memtst.c: Same.
+	* gcc.c-torture/compile/msp.c: Same.
+	* gcc.c-torture/compile/stuct.c: Same.
+	* gcc.c-torture/execute/20011008-3.c: Same.
+	* gcc.c-torture/execute/20030209-1.c: Same.
+	* gcc.c-torture/execute/20031012-1.c: Same.
+	* gcc.c-torture/execute/20040805-1.c: Same.
+	* gcc.c-torture/execute/920410-1.c: Same.
+	* gcc.c-torture/execute/920501-7.c: Same.
+	* gcc.c-torture/execute/921113-1.c: Same.
+	* gcc.c-torture/execute/921202-1.c: Same.
+	* gcc.c-torture/execute/921208-2.c: Same.
+	* gcc.c-torture/execute/930106-1.c: Same.
+	* gcc.c-torture/execute/930406-1.c: Same.
+	* gcc.c-torture/execute/950221-1.c: Same.
+	* gcc.c-torture/execute/960521-1.c: Same.
+	* gcc.c-torture/execute/980605-1.c: Same.
+	* gcc.c-torture/execute/comp-goto-1.c: Same.
+	* gcc.c-torture/execute/comp-goto-2.c: Same.
+	* gcc.c-torture/execute/memcpy-1.c: Same.
+	* gcc.c-torture/execute/multi-ix.c: Same.
+	* gcc.c-torture/execute/nestfunc-4.c: Same.
+	* gcc.c-torture/execute/pr20621-1.c: Same.
+	* gcc.c-torture/execute/pr23135.c: Same.
+	* gcc.c-torture/execute/pr28982b.c: Same.
+	* gcc.dg/loop-3.c: Same.
+	* gcc.dg/struct-ret-3.c: Same.
+	* gcc.dg/torture/stackalign/comp-goto-1.c: Same.
+	* gcc.dg/torture/stackalign/non-local-goto-4.c: Same.
+	* gcc.dg/tree-prof/comp-goto-1.c: Same.
+	* gcc.dg/tree-prof/pr44777.c: Same.
+
 2017-06-09  David Malcolm  <dmalcolm@redhat.com>
 
 	* gcc.dg/plugin/diagnostic-test-show-locus-bw.c
