@@ -1,3 +1,5 @@
+/* { dg-additional-options "-DSTACK_SIZE=[dg-effective-target-value stack_size]" { target { stack_size } } } */
+
 /* Test for a reload bug:
    if you have a memory reference using the indexed addressing
    mode, and the base address is a pseudo containing an address in the frame

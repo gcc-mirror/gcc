@@ -141,9 +141,6 @@ proc gcc_target_compile { source dest type options } {
 	lappend options "ldflags=$TEST_EXTRA_LIBS"
     }
 
-    if [target_info exists gcc,stack_size] {
-	lappend options "additional_flags=-DSTACK_SIZE=[target_info gcc,stack_size]"
-    }
     if [target_info exists gcc,signal_suppress] {
 	lappend options "additional_flags=-DSIGNAL_SUPPRESS"
     }

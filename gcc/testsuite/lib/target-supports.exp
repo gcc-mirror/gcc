@@ -504,6 +504,27 @@ proc check_effective_target_trampolines { } {
     return 1
 }
 
+# Return 1 if target has limited stack size.
+
+proc check_effective_target_stack_size { } {
+    if [target_info exists gcc,stack_size] {
+	return 1
+    }
+    return 0
+}
+
+# Return the value attribute of an effective target, otherwise return 0.
+
+proc dg-effective-target-value { effective_target } {
+    if { "$effective_target" == "stack_size" } {
+	if [check_effective_target_stack_size] {
+	    return [target_info gcc,stack_size]
+	}
+    }
+
+    return 0
+}
+
 # Return 1 if according to target_info struct and explicit target list
 # target disables -fdelete-null-pointer-checks.  Targets should return 0
 # if they simply default to -fno-delete-null-pointer-checks but obey
