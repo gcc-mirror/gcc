@@ -1,5 +1,11 @@
 2017-06-10  Jan Hubicka  <hubicka@ucw.cz>
 
+	* ipa-inline-transform.c: Include function.h, cfg.h and basic-block.h
+	(mark_all_inlined_calls_cdtor): Fix formating.
+	(inline_transform): Rescale profile before inlining.
+
+2017-06-10  Jan Hubicka  <hubicka@ucw.cz>
+
 	* cgraph.h (cgraph_edge::clone): Update prototype.
 	* cgraphclones.c (cgraph_edge::clone): Update profile scaling.
 	(cgraph_node::create_clone): Update.
