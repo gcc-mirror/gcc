@@ -6710,12 +6710,13 @@ tree
 convert_ptrmem (tree type, tree expr, bool allow_inverse_p,
 		bool c_cast_p, tsubst_flags_t complain)
 {
+  if (same_type_p (type, TREE_TYPE (expr)))
+    return expr;
+
   if (TYPE_PTRDATAMEM_P (type))
     {
       tree delta;
 
-      if (TREE_CODE (expr) == PTRMEM_CST)
-	expr = cplus_expand_constant (expr);
       delta = get_delta_difference (TYPE_PTRMEM_CLASS_TYPE (TREE_TYPE (expr)),
 				    TYPE_PTRMEM_CLASS_TYPE (type),
 				    allow_inverse_p,
@@ -6727,6 +6728,8 @@ convert_ptrmem (tree type, tree expr, bool allow_inverse_p,
 	{
 	  tree cond, op1, op2;
 
+	  if (TREE_CODE (expr) == PTRMEM_CST)
+	    expr = cplus_expand_constant (expr);
 	  cond = cp_build_binary_op (input_location,
 				     EQ_EXPR,
 				     expr,

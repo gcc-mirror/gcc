@@ -1,5 +1,16 @@
 2017-06-09  Jason Merrill  <jason@redhat.com>
 
+	Overhaul pointer-to-member conversion and template argument handling.
+	* call.c (standard_conversion): Avoid creating ck_pmem when the
+	class type is the same.
+	* cvt.c (can_convert_qual): Split from
+	perform_qualification_conversions.
+	* constexpr.c (cxx_eval_constant_expression): Check it.
+	* typeck.c (convert_ptrmem): Only cplus_expand_constant if
+	adjustment is necessary.
+	* pt.c (check_valid_ptrmem_cst_expr): Compare class types.
+	(convert_nontype_argument): Avoid redundant error.
+
 	* call.c (convert_like_real): Remove "inner" parameter.
 	Don't replace a constant with its value.
 	* cp-gimplify.c (cp_fully_fold): Use cp_fold_rvalue.
