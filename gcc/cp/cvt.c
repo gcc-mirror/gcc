@@ -2020,8 +2020,8 @@ fnptr_conv_p (tree to, tree from)
 	  || can_convert_tx_safety (t, f));
 }
 
-/* Return FN with any NOP_EXPRs that represent function pointer
-   conversions stripped.  */
+/* Return FN with any NOP_EXPRs stripped that represent function pointer
+   conversions or conversions to the same type.  */
 
 tree
 strip_fnptr_conv (tree fn)
@@ -2029,7 +2029,10 @@ strip_fnptr_conv (tree fn)
   while (TREE_CODE (fn) == NOP_EXPR)
     {
       tree op = TREE_OPERAND (fn, 0);
-      if (fnptr_conv_p (TREE_TYPE (fn), TREE_TYPE (op)))
+      tree ft = TREE_TYPE (fn);
+      tree ot = TREE_TYPE (op);
+      if (same_type_p (ft, ot)
+	  || fnptr_conv_p (ft, ot))
 	fn = op;
       else
 	break;

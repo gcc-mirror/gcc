@@ -4005,15 +4005,16 @@ build_user_type_conversion (tree totype, tree expr, int flags,
 
 /* Subroutine of convert_nontype_argument.
 
-   EXPR is an argument for a template non-type parameter of integral or
-   enumeration type.  Do any necessary conversions (that are permitted for
-   non-type arguments) to convert it to the parameter type.
+   EXPR is an expression used in a context that requires a converted
+   constant-expression, such as a template non-type parameter.  Do any
+   necessary conversions (that are permitted for converted
+   constant-expressions) to convert it to the desired type.
 
    If conversion is successful, returns the converted expression;
    otherwise, returns error_mark_node.  */
 
 tree
-build_integral_nontype_arg_conv (tree type, tree expr, tsubst_flags_t complain)
+build_converted_constant_expr (tree type, tree expr, tsubst_flags_t complain)
 {
   conversion *conv;
   void *p;
@@ -4023,8 +4024,6 @@ build_integral_nontype_arg_conv (tree type, tree expr, tsubst_flags_t complain)
   if (error_operand_p (expr))
     return error_mark_node;
 
-  gcc_assert (INTEGRAL_OR_ENUMERATION_TYPE_P (type));
-
   /* Get the high-water mark for the CONVERSION_OBSTACK.  */
   p = conversion_obstack_alloc (0);
 
@@ -4032,36 +4031,86 @@ build_integral_nontype_arg_conv (tree type, tree expr, tsubst_flags_t complain)
 			      /*c_cast_p=*/false,
 			      LOOKUP_IMPLICIT, complain);
 
-  /* for a non-type template-parameter of integral or
-     enumeration type, integral promotions (4.5) and integral
-     conversions (4.7) are applied.  */
-  /* It should be sufficient to check the outermost conversion step, since
-     there are no qualification conversions to integer type.  */
-  if (conv)
-    switch (conv->kind)
-      {
-	/* A conversion function is OK.  If it isn't constexpr, we'll
-	   complain later that the argument isn't constant.  */
-      case ck_user:
-	/* The lvalue-to-rvalue conversion is OK.  */
-      case ck_rvalue:
-      case ck_identity:
-	break;
+  /* A converted constant expression of type T is an expression, implicitly
+     converted to type T, where the converted expression is a constant
+     expression and the implicit conversion sequence contains only
 
-      case ck_std:
-	t = next_conversion (conv)->type;
-	if (INTEGRAL_OR_ENUMERATION_TYPE_P (t))
+       * user-defined conversions,
+       * lvalue-to-rvalue conversions (7.1),
+       * array-to-pointer conversions (7.2),
+       * function-to-pointer conversions (7.3),
+       * qualification conversions (7.5),
+       * integral promotions (7.6),
+       * integral conversions (7.8) other than narrowing conversions (11.6.4),
+       * null pointer conversions (7.11) from std::nullptr_t,
+       * null member pointer conversions (7.12) from std::nullptr_t, and
+       * function pointer conversions (7.13),
+
+     and where the reference binding (if any) binds directly.  */
+
+  for (conversion *c = conv;
+       conv && c->kind != ck_identity;
+       c = next_conversion (c))
+    {
+      switch (c->kind)
+	{
+	  /* A conversion function is OK.  If it isn't constexpr, we'll
+	     complain later that the argument isn't constant.  */
+	case ck_user:
+	  /* The lvalue-to-rvalue conversion is OK.  */
+	case ck_rvalue:
+	  /* Array-to-pointer and function-to-pointer.  */
+	case ck_lvalue:
+	  /* Function pointer conversions.  */
+	case ck_fnptr:
+	  /* Qualification conversions.  */
+	case ck_qual:
 	  break;
 
-	if (complain & tf_error)
-	  error_at (loc, "conversion from %qH to %qI not considered for "
-		    "non-type template argument", t, type);
-	/* fall through.  */
+	case ck_ref_bind:
+	  if (c->need_temporary_p)
+	    {
+	      if (complain & tf_error)
+		error_at (loc, "initializing %qH with %qI in converted "
+			  "constant expression does not bind directly",
+			  type, next_conversion (c)->type);
+	      conv = NULL;
+	    }
+	  break;
 
-      default:
-	conv = NULL;
-	break;
-      }
+	case ck_base:
+	case ck_pmem:
+	case ck_ptr:
+	case ck_std:
+	  t = next_conversion (c)->type;
+	  if (INTEGRAL_OR_ENUMERATION_TYPE_P (t)
+	      && INTEGRAL_OR_ENUMERATION_TYPE_P (type))
+	    /* Integral promotion or conversion.  */
+	    break;
+	  if (NULLPTR_TYPE_P (t))
+	    /* Conversion from nullptr to pointer or pointer-to-member.  */
+	    break;
+
+	  if (complain & tf_error)
+	    error_at (loc, "conversion from %qH to %qI in a "
+		      "converted constant expression", t, type);
+	  /* fall through.  */
+
+	default:
+	  conv = NULL;
+	  break;
+	}
+    }
+
+  /* Avoid confusing convert_nontype_argument by introducing
+     a redundant conversion to the same reference type.  */
+  if (conv && conv->kind == ck_ref_bind
+      && REFERENCE_REF_P (expr))
+    {
+      tree ref = TREE_OPERAND (expr, 0);
+      if (same_type_p (type, TREE_TYPE (ref)))
+	return ref;
+    }
 
   if (conv)
     expr = convert_like (conv, expr, complain);
