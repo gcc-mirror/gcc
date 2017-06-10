@@ -28106,6 +28106,34 @@ rs6000_set_handled_components (sbitmap components)
     cfun->machine->lr_is_wrapped_separately = true;
 }
 
+/* VRSAVE is a bit vector representing which AltiVec registers
+   are used.  The OS uses this to determine which vector
+   registers to save on a context switch.  We need to save
+   VRSAVE on the stack frame, add whatever AltiVec registers we
+   used in this function, and do the corresponding magic in the
+   epilogue.  */
+static void
+emit_vrsave_prologue (rs6000_stack_t *info, int save_regno,
+		      HOST_WIDE_INT frame_off, rtx frame_reg_rtx)
+{
+  /* Get VRSAVE into a GPR.  */
+  rtx reg = gen_rtx_REG (SImode, save_regno);
+  rtx vrsave = gen_rtx_REG (SImode, VRSAVE_REGNO);
+  if (TARGET_MACHO)
+    emit_insn (gen_get_vrsave_internal (reg));
+  else
+    emit_insn (gen_rtx_SET (reg, vrsave));
+
+  /* Save VRSAVE.  */
+  int offset = info->vrsave_save_offset + frame_off;
+  emit_insn (gen_frame_store (reg, frame_reg_rtx, offset));
+
+  /* Include the registers in the mask.  */
+  emit_insn (gen_iorsi3 (reg, reg, GEN_INT (info->vrsave_mask)));
+
+  emit_insn (generate_set_vrsave (reg, info, 0));
+}
+
 /* Set up the arg pointer (r12) for -fsplit-stack code.  If __morestack was
    called, it left the arg pointer to the old stack in r29.  Otherwise, the
    arg pointer is the top of the current frame.  */
@@ -28933,17 +28961,12 @@ rs6000_emit_prologue (void)
      used in this function, and do the corresponding magic in the
      epilogue.  */
 
-  if (!WORLD_SAVE_P (info)
-      && info->vrsave_size != 0)
+  if (!WORLD_SAVE_P (info) && info->vrsave_size != 0)
     {
-      rtx reg, vrsave;
-      int offset;
-      int save_regno;
-
-      /* Get VRSAVE onto a GPR.  Note that ABI_V4 and ABI_DARWIN might
+      /* Get VRSAVE into a GPR.  Note that ABI_V4 and ABI_DARWIN might
 	 be using r12 as frame_reg_rtx and r11 as the static chain
 	 pointer for nested functions.  */
-      save_regno = 12;
+      int save_regno = 12;
       if ((DEFAULT_ABI == ABI_AIX || DEFAULT_ABI == ABI_ELFv2)
 	  && !using_static_chain_p)
 	save_regno = 11;
@@ -28953,23 +28976,9 @@ rs6000_emit_prologue (void)
 	  if (using_static_chain_p)
 	    save_regno = 0;
 	}
-
       NOT_INUSE (save_regno);
-      reg = gen_rtx_REG (SImode, save_regno);
-      vrsave = gen_rtx_REG (SImode, VRSAVE_REGNO);
-      if (TARGET_MACHO)
-	emit_insn (gen_get_vrsave_internal (reg));
-      else
-	emit_insn (gen_rtx_SET (reg, vrsave));
 
-      /* Save VRSAVE.  */
-      offset = info->vrsave_save_offset + frame_off;
-      insn = emit_insn (gen_frame_store (reg, frame_reg_rtx, offset));
-
-      /* Include the registers in the mask.  */
-      emit_insn (gen_iorsi3 (reg, reg, GEN_INT ((int) info->vrsave_mask)));
-
-      insn = emit_insn (generate_set_vrsave (reg, info, 0));
+      emit_vrsave_prologue (info, save_regno, frame_off, frame_reg_rtx);
     }
 
   /* If we are using RS6000_PIC_OFFSET_TABLE_REGNUM, we need to set it up.  */

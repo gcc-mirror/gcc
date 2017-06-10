@@ -1,5 +1,11 @@
 2017-06-10  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	* config/rs6000/rs6000.c (emit_vrsave_prologue): New function,
+	factored out from ...
+	(rs6000_emit_prologue): ... here.
+
+2017-06-10  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	* config/rs6000/rs6000.c (emit_split_stack_prologue): New function,
 	factored out from ...
 	(rs6000_emit_prologue): ... here.
