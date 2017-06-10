@@ -1,5 +1,20 @@
 2017-06-10  Tom de Vries  <tom@codesourcery.com>
 
+	* lib/target-supports.exp (check_effective_target_signal): New proc.
+	* lib/gcc.exp (gcc_target_compile): Remove appending of
+	-DSIGNAL_SUPPRESS to additional_flags.
+	* gcc.c-torture/execute/ieee/ieee.exp: Add -DSIGNAL_SUPPRESS to
+	additional_flags if effective target signal is not supported by the
+	target.
+	* gcc.c-torture/execute/20101011-1.c: Same.
+	* gcc.dg/c99-stdint-1.c: Same.
+	* gcc.dg/c99-stdint-2.c: Same.
+	* gcc.dg/c99-stdint-5.c: Same.
+	* gcc.dg/c99-stdint-6.c: Same.
+	* gcc.dg/stdint-width-1.c: Same.
+
+2017-06-10  Tom de Vries  <tom@codesourcery.com>
+
 	* lib/target-supports.exp (check_effective_target_stack_size)
 	(dg-effective-target-value): New proc.
 	* lib/gcc.exp (gcc_target_compile): Remove adding of DSTACK_SIZE to

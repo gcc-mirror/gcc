@@ -141,10 +141,6 @@ proc gcc_target_compile { source dest type options } {
 	lappend options "ldflags=$TEST_EXTRA_LIBS"
     }
 
-    if [target_info exists gcc,signal_suppress] {
-	lappend options "additional_flags=-DSIGNAL_SUPPRESS"
-    }
-
     # TEST_ALWAYS_FLAGS are flags that should be passed to every
     # compilation.  They are passed first to allow individual
     # tests to override them.

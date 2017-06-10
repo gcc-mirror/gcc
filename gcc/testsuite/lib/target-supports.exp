@@ -525,6 +525,15 @@ proc dg-effective-target-value { effective_target } {
     return 0
 }
 
+# Return 1 if signal.h is supported.
+
+proc check_effective_target_signal { } {
+    if [target_info exists gcc,signal_suppress] {
+      return 0
+    }
+    return 1
+}
+
 # Return 1 if according to target_info struct and explicit target list
 # target disables -fdelete-null-pointer-checks.  Targets should return 0
 # if they simply default to -fno-delete-null-pointer-checks but obey

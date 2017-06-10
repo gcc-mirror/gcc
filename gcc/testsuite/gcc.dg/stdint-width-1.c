@@ -1,6 +1,7 @@
 /* Test TS 18661-1 width macros in <stdint.h>.  */
 /* { dg-do compile } */
 /* { dg-options "-std=c11 -ffreestanding" } */
+/* { dg-additional-options "-DSIGNAL_SUPPRESS" { target { ! signal } } } */
 
 #include <stddef.h>
 #define __STDC_WANT_IEC_60559_BFP_EXT__
