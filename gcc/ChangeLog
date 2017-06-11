@@ -1,3 +1,10 @@
+2017-06-11  Jason Merrill  <jason@redhat.com>
+
+	* tree.h (id_equal): New.
+	* dwarf2out.c, hsa-gen.c, ipa-devirt.c, omp-expand.c,
+	omp-simd-clone.c, read-rtl-function.c, tree-chkp.c, tree.c: Use it
+	instead of strcmp of IDENTIFIER_POINTER.
+
 2017-06-10  Jan Hubicka  <hubicka@ucw.cz>
 
 	* ipa-inline-transform.c: Include function.h, cfg.h and basic-block.h

@@ -827,7 +827,7 @@ grokfield (const cp_declarator *declarator,
 	}
 
       if (IDENTIFIER_POINTER (name)[0] == '_'
-	  && ! strcmp (IDENTIFIER_POINTER (name), "_vptr"))
+	  && id_equal (name, "_vptr"))
 	error ("member %qD conflicts with virtual function table field name",
 	       value);
     }

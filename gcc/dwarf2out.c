@@ -20625,7 +20625,7 @@ add_calling_convention_attribute (dw_die_ref subr_die, tree decl)
 	   targetm.dwarf_calling_convention (TREE_TYPE (decl)));
 
   if (is_fortran ()
-      && !strcmp (IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl)), "MAIN__"))
+      && id_equal (DECL_ASSEMBLER_NAME (decl), "MAIN__"))
     {
       /* DWARF 2 doesn't provide a way to identify a program's source-level
 	entry point.  DW_AT_calling_convention attributes are only meant

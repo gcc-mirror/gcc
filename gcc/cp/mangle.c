@@ -2900,7 +2900,7 @@ write_expression (tree expr)
     write_template_arg_literal (expr);
   else if (code == PARM_DECL && DECL_ARTIFICIAL (expr))
     {
-      gcc_assert (!strcmp ("this", IDENTIFIER_POINTER (DECL_NAME (expr))));
+      gcc_assert (id_equal (DECL_NAME (expr), "this"));
       write_string ("fpT");
     }
   else if (code == PARM_DECL)

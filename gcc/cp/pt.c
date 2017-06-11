@@ -3425,7 +3425,7 @@ builtin_pack_fn_p (tree fn)
       || !DECL_IS_BUILTIN (fn))
     return false;
 
-  if (strcmp (IDENTIFIER_POINTER (DECL_NAME (fn)), "__integer_pack") == 0)
+  if (id_equal (DECL_NAME (fn), "__integer_pack"))
     return true;
 
   return false;
@@ -3503,7 +3503,7 @@ expand_builtin_pack_call (tree call, tree args, tsubst_flags_t complain,
 
   tree fn = CALL_EXPR_FN (call);
 
-  if (strcmp (IDENTIFIER_POINTER (DECL_NAME (fn)), "__integer_pack") == 0)
+  if (id_equal (DECL_NAME (fn), "__integer_pack"))
     return expand_integer_pack (call, args, complain, in_decl);
 
   return NULL_TREE;
