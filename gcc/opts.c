@@ -863,19 +863,6 @@ finish_options (struct gcc_options *opts, struct gcc_options *opts_set,
       opts->x_flag_reorder_blocks = 1;
     }
 
-  /* If stack splitting is turned on, and the user did not explicitly
-     request function partitioning, turn off partitioning, as it
-     confuses the linker when trying to handle partitioned split-stack
-     code that calls a non-split-stack functions.  But if partitioning
-     was turned on explicitly just hope for the best.  */
-  if (opts->x_flag_split_stack
-      && opts->x_flag_reorder_blocks_and_partition
-      && !opts_set->x_flag_reorder_blocks_and_partition)
-    opts->x_flag_reorder_blocks_and_partition = 0;
-
-  if (opts->x_flag_reorder_blocks_and_partition
-      && !opts_set->x_flag_reorder_functions)
-    opts->x_flag_reorder_functions = 1;
 
   /* Pipelining of outer loops is only possible when general pipelining
      capabilities are requested.  */
@@ -926,6 +913,20 @@ finish_options (struct gcc_options *opts, struct gcc_options *opts_set,
 	  opts->x_flag_split_stack = 0;
 	}
     }
+
+  /* If stack splitting is turned on, and the user did not explicitly
+     request function partitioning, turn off partitioning, as it
+     confuses the linker when trying to handle partitioned split-stack
+     code that calls a non-split-stack functions.  But if partitioning
+     was turned on explicitly just hope for the best.  */
+  if (opts->x_flag_split_stack
+      && opts->x_flag_reorder_blocks_and_partition
+      && !opts_set->x_flag_reorder_blocks_and_partition)
+    opts->x_flag_reorder_blocks_and_partition = 0;
+
+  if (opts->x_flag_reorder_blocks_and_partition
+      && !opts_set->x_flag_reorder_functions)
+    opts->x_flag_reorder_functions = 1;
 
   /* Tune vectorization related parametees according to cost model.  */
   if (opts->x_flag_vect_cost_model == VECT_COST_MODEL_CHEAP)
