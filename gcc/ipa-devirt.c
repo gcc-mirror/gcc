@@ -2359,7 +2359,7 @@ is_cxa_pure_virtual_p (tree target)
 {
   return target && TREE_CODE (TREE_TYPE (target)) != METHOD_TYPE
 	 && DECL_NAME (target)
-	 && !strcmp (IDENTIFIER_POINTER (DECL_NAME (target)),
+	 && id_equal (DECL_NAME (target),
 		     "__cxa_pure_virtual");
 }
 

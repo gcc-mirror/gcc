@@ -3201,7 +3201,7 @@ cp_parser_diagnose_invalid_type_name (cp_parser *parser, tree id,
 		"-std=c++11 or -std=gnu++11");
       else if (cxx_dialect < cxx11
 	       && TREE_CODE (id) == IDENTIFIER_NODE
-	       && !strcmp (IDENTIFIER_POINTER (id), "thread_local"))
+	       && id_equal (id, "thread_local"))
 	inform (location, "C++11 %<thread_local%> only available with "
 		"-std=c++11 or -std=gnu++11");
       else if (!flag_concepts && id == ridpointers[(int)RID_CONCEPT])
@@ -7823,7 +7823,7 @@ cp_parser_unary_expression (cp_parser *parser, cp_id_kind * pidk,
 		/* ISO C++ defines alignof only with types, not with
 		   expressions. So pedwarn if alignof is used with a non-
 		   type expression. However, __alignof__ is ok.  */
-		if (!strcmp (IDENTIFIER_POINTER (token->u.value), "alignof"))
+		if (id_equal (token->u.value, "alignof"))
 		  pedwarn (token->location, OPT_Wpedantic,
 			   "ISO C++ does not allow %<alignof%> "
 			   "with a non-type");
@@ -20401,17 +20401,17 @@ cp_parser_virt_specifier_seq_opt (cp_parser* parser)
       /* See if it's a virt-specifier-qualifier.  */
       if (token->type != CPP_NAME)
         break;
-      if (!strcmp (IDENTIFIER_POINTER(token->u.value), "override"))
+      if (id_equal (token->u.value, "override"))
         {
           maybe_warn_cpp0x (CPP0X_OVERRIDE_CONTROLS);
           virt_specifier = VIRT_SPEC_OVERRIDE;
         }
-      else if (!strcmp (IDENTIFIER_POINTER(token->u.value), "final"))
+      else if (id_equal (token->u.value, "final"))
         {
           maybe_warn_cpp0x (CPP0X_OVERRIDE_CONTROLS);
           virt_specifier = VIRT_SPEC_FINAL;
         }
-      else if (!strcmp (IDENTIFIER_POINTER(token->u.value), "__final"))
+      else if (id_equal (token->u.value, "__final"))
         {
           virt_specifier = VIRT_SPEC_FINAL;
         }
@@ -27648,7 +27648,7 @@ static bool
 token_is__thread (cp_token *token)
 {
   gcc_assert (token->keyword == RID_THREAD);
-  return !strcmp (IDENTIFIER_POINTER (token->u.value), "__thread");
+  return id_equal (token->u.value, "__thread");
 }
 
 /* Set the location for a declarator specifier and check if it is
@@ -31258,7 +31258,7 @@ cp_parser_oacc_shape_clause (cp_parser *parser, omp_clause_code kind,
 	    }
 	  /* Worker num: argument and vector length: arguments.  */
 	  else if (cp_lexer_next_token_is (lexer, CPP_NAME)
-		   && strcmp (id, IDENTIFIER_POINTER (next->u.value)) == 0
+		   && id_equal (next->u.value, id)
 		   && cp_lexer_nth_token_is (lexer, 2, CPP_COLON))
 	    {
 	      cp_lexer_consume_token (lexer);  /* id  */
@@ -37129,10 +37129,8 @@ cp_parser_omp_declare_reduction (cp_parser *parser, cp_token *pragma_tok,
       else if (ARITHMETIC_TYPE_P (type)
 	       && (orig_reduc_id == NULL_TREE
 		   || (TREE_CODE (type) != COMPLEX_TYPE
-		       && (strcmp (IDENTIFIER_POINTER (orig_reduc_id),
-				   "min") == 0
-			   || strcmp (IDENTIFIER_POINTER (orig_reduc_id),
-				      "max") == 0))))
+		       && (id_equal (orig_reduc_id, "min")
+			   || id_equal (orig_reduc_id, "max")))))
 	error_at (loc, "predeclared arithmetic type %qT in "
 		       "%<#pragma omp declare reduction%>", type);
       else if (TREE_CODE (type) == FUNCTION_TYPE
@@ -38669,15 +38667,15 @@ cp_parser_cilk_simd_clause_name (cp_parser *parser)
     clause_type = PRAGMA_CILK_CLAUSE_PRIVATE;
   else if (!token->u.value || token->type != CPP_NAME)
     return PRAGMA_CILK_CLAUSE_NONE;
-  else if (!strcmp (IDENTIFIER_POINTER (token->u.value), "vectorlength"))
+  else if (id_equal (token->u.value, "vectorlength"))
     clause_type = PRAGMA_CILK_CLAUSE_VECTORLENGTH;
-  else if (!strcmp (IDENTIFIER_POINTER (token->u.value), "linear"))
+  else if (id_equal (token->u.value, "linear"))
     clause_type = PRAGMA_CILK_CLAUSE_LINEAR;
-  else if (!strcmp (IDENTIFIER_POINTER (token->u.value), "firstprivate"))
+  else if (id_equal (token->u.value, "firstprivate"))
     clause_type = PRAGMA_CILK_CLAUSE_FIRSTPRIVATE;
-  else if (!strcmp (IDENTIFIER_POINTER (token->u.value), "lastprivate"))
+  else if (id_equal (token->u.value, "lastprivate"))
     clause_type = PRAGMA_CILK_CLAUSE_LASTPRIVATE;
-  else if (!strcmp (IDENTIFIER_POINTER (token->u.value), "reduction"))
+  else if (id_equal (token->u.value, "reduction"))
     clause_type = PRAGMA_CILK_CLAUSE_REDUCTION;
   else
     return PRAGMA_CILK_CLAUSE_NONE;

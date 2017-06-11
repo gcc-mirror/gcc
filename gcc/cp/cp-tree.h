@@ -3015,7 +3015,7 @@ struct GTY(()) lang_decl {
    template function.  */
 #define DECL_PRETTY_FUNCTION_P(NODE) \
   (DECL_NAME (NODE) \
-   && !strcmp (IDENTIFIER_POINTER (DECL_NAME (NODE)), "__PRETTY_FUNCTION__"))
+   && id_equal (DECL_NAME (NODE), "__PRETTY_FUNCTION__"))
 
 /* Nonzero if the variable was declared to be thread-local.
    We need a special C++ version of this test because the middle-end

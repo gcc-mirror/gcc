@@ -3924,7 +3924,7 @@ get_hsa_kernel_dispatch_offset (const char *field_name)
 
   for (tree chain = TYPE_FIELDS (*hsa_kernel_dispatch_type);
        chain != NULL_TREE; chain = TREE_CHAIN (chain))
-    if (strcmp (field_name, IDENTIFIER_POINTER (DECL_NAME (chain))) == 0)
+    if (id_equal (DECL_NAME (chain), field_name))
       return int_byte_position (chain);
 
   gcc_unreachable ();
