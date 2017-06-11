@@ -1,5 +1,7 @@
 2017-06-11  Jason Merrill  <jason@redhat.com>
 
+	* error.c (dump_expr): Use is_this_parameter.
+
 	* cp-tree.h, decl2.c, mangle.c, parser.c, pt.c, semantics.c: Use
 	id_equal.
 
