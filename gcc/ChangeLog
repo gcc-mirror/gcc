@@ -1,3 +1,11 @@
+2017-06-11  Tom de Vries  <tom@codesourcery.com>
+
+	PR target/79939
+	* config/nvptx/nvptx.c (nvptx_cannot_force_const_mem): New function.
+	Return true.
+	(TARGET_CANNOT_FORCE_CONST_MEM): Redefine to
+	nvptx_cannot_force_const_mem.
+
 2017-06-10  Jan Hubicka  <hubicka@ucw.cz>
 
 	* opts.c (finish_options): Move test for flag_split_stack after
