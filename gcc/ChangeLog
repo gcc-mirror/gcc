@@ -1,3 +1,8 @@
+2017-06-10  Jan Hubicka  <hubicka@ucw.cz>
+
+	* opts.c (finish_options): Move test for flag_split_stack after
+	it has been initialized.
+
 2017-06-11  Jason Merrill  <jason@redhat.com>
 
 	* tree.h (id_equal): New.
