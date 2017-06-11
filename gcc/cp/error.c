@@ -2194,8 +2194,7 @@ dump_expr (cxx_pretty_printer *pp, tree t, int flags)
                            flags | TFF_EXPR_IN_PARENS);
 		pp_cxx_dot (pp);
 	      }
-	    else if (TREE_CODE (ob) != PARM_DECL
-		     || strcmp (IDENTIFIER_POINTER (DECL_NAME (ob)), "this"))
+	    else if (!is_this_parameter (ob))
 	      {
 		dump_expr (pp, ob, flags | TFF_EXPR_IN_PARENS);
 		pp_cxx_arrow (pp);
@@ -2276,9 +2275,7 @@ dump_expr (cxx_pretty_printer *pp, tree t, int flags)
 	if (INDIRECT_REF_P (ob))
 	  {
 	    ob = TREE_OPERAND (ob, 0);
-	    if (TREE_CODE (ob) != PARM_DECL
-		|| (DECL_NAME (ob)
-		    && strcmp (IDENTIFIER_POINTER (DECL_NAME (ob)), "this")))
+	    if (!is_this_parameter (ob))
 	      {
 		dump_expr (pp, ob, flags | TFF_EXPR_IN_PARENS);
 		if (TREE_CODE (TREE_TYPE (ob)) == REFERENCE_TYPE)
