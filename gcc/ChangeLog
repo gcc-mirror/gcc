@@ -1,3 +1,9 @@
+2017-06-12  David S. Miller  <davem@davemloft.net>
+
+	PR target/80968
+	* config/sparc/sparc.md (return expander): Emit frame blockage if
+	function uses alloca.
+
 2017-06-08  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/81015
