@@ -198,6 +198,7 @@ static bitmap_obstack lim_bitmap_obstack;
 static obstack mem_ref_obstack;
 
 static bool ref_indep_loop_p (struct loop *, im_mem_ref *, struct loop *);
+static bool ref_always_accessed_p (struct loop *, im_mem_ref *, bool);
 
 /* Minimum cost of an expensive expression.  */
 #define LIM_EXPENSIVE ((unsigned) PARAM_VALUE (PARAM_LIM_EXPENSIVE))
@@ -2025,7 +2026,8 @@ execute_sm (struct loop *loop, vec<edge> exits, im_mem_ref *ref)
   for_each_index (&ref->mem.ref, force_move_till, &fmt_data);
 
   if (bb_in_transaction (loop_preheader_edge (loop)->src)
-      || !PARAM_VALUE (PARAM_ALLOW_STORE_DATA_RACES))
+      || (! PARAM_VALUE (PARAM_ALLOW_STORE_DATA_RACES)
+	  && ! ref_always_accessed_p (loop, ref, true)))
     multi_threaded_model_p = true;
 
   if (multi_threaded_model_p)

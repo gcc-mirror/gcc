@@ -1,3 +1,7 @@
+2017-06-12  Nathan Sidwell  <nathan@acm.org>
+
+	Merge trunk r249076.
+
 2017-06-09  Nathan Sidwell  <nathan@acm.org>
 
 	Vtable streaming.  Change keyed_classes representation.

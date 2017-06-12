@@ -192,13 +192,8 @@ extern int darwin_emit_branch_islands;
     "v16", "v17", "v18", "v19", "v20", "v21", "v22", "v23",             \
     "v24", "v25", "v26", "v27", "v28", "v29", "v30", "v31",             \
     "vrsave", "vscr",							\
-    "spe_acc", "spefscr",                                               \
     "sfp",								\
-    "tfhar", "tfiar", "texasr",						\
-    "rh0",  "rh1",  "rh2",  "rh3",  "rh4",  "rh5",  "rh6",  "rh7",	\
-    "rh8",  "rh9",  "rh10", "rh11", "rh12", "rh13", "rh14", "rh15",	\
-    "rh16", "rh17", "rh18", "rh19", "rh20", "rh21", "rh22", "rh23",	\
-    "rh24", "rh25", "rh26", "rh27", "rh28", "rh29", "rh30", "rh31"	\
+    "tfhar", "tfiar", "texasr"						\
 }
 
 /* This outputs NAME to FILE.  */

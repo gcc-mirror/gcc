@@ -1,3 +1,10 @@
+2017-06-07  Tony Reix  <tony.reix@atos.net>
+	    Matthieu Sarter  <matthieu.sarter.external@atos.net>
+	    David Edelsohn  <dje.gcc@gmail.com>
+
+	* simple-object-xcoff.c (simple_object_xcoff_find_sections):
+	Search symbol table for .go_export symbol and apply pfn if found.
+
 2017-05-31  DJ Delorie  <dj@redhat.com>
 
 	* configure.ac (strnlen): Add to AC_CHECK_DECLS.

@@ -1,4 +1,40 @@
+2017-06-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/intro.xml: Document LWG 2802, 2873 and 2942 changes.
+	* include/bits/shared_ptr.h (shared_ptr): Use rvalues for deleters
+	(LWG 2802).
+	* include/bits/shared_ptr_base.h (_Sp_ebo_helper, _Sp_counted_deleter
+	(_Sp_counted_deleter::_Impl, __shared_count, __shared_ptr): Likewise.
+	* testsuite/20_util/shared_ptr/cons/lwg2802.cc: New.
+
+	* include/bits/forward_list.h (forward_list): Add deduction guide.
+	* include/bits/stl_deque.h (deque): Likewise.
+	* include/bits/stl_list.h (list): Likewise.
+	* include/bits/stl_vector.h (vector): Likewise.
+	* testsuite/23_containers/deque/cons/deduction.cc: New.
+	* testsuite/23_containers/forward_list/cons/deduction.cc: New.
+	* testsuite/23_containers/list/cons/deduction.cc: New.
+	* testsuite/23_containers/vector/cons/deduction.cc: New.
+
+2017-06-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/81017
+	* include/bits/std_function.h (function::function(function&&))
+	(function::operator=(funtion&&)): Add noexcept.
+	* testsuite/20_util/function/assign/move.cc: Check for noexcept.
+	* testsuite/20_util/function/cons/move.cc: Likewise.
+
 2017-06-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/regex.h (basic_regex): Add deduction guide from P0433.
+	* testsuite/28_regex/basic_regex/ctors/deduction.cc: New.
+
+	PR libstdc++/81002
+	* include/bits/regex.h (basic_regex): Adjust call to __compile_nfa
+	so iterator type is deduced.
+	* include/bits/regex_compiler.h (__compile_nfa): Reorder template
+	parameters to allow iterator type to be deduced.
+	* testsuite/28_regex/basic_regex/ctors/basic/iter.cc: New.
 
 	* include/bits/alloc_traits.h (__is_allocator, _RequireAllocator):
 	New trait and alias for detecting Allocator-like types.

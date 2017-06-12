@@ -46,7 +46,8 @@ template<typename T> struct remove_pointer<T *> { typedef T type; };
 #define gcc_gimple_checking_assert(EXPR) gcc_assert (EXPR)
 extern void gimple_check_failed (const gimple *, const char *, int,        \
                                  const char *, enum gimple_code,           \
-				 enum tree_code) ATTRIBUTE_NORETURN;
+				 enum tree_code) ATTRIBUTE_NORETURN 	   \
+						 ATTRIBUTE_COLD;
 
 #define GIMPLE_CHECK(GS, CODE)						\
   do {									\

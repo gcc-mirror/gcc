@@ -299,9 +299,6 @@
 (define_predicate "gpc_reg_operand"
   (match_operand 0 "register_operand")
 {
-  if ((TARGET_E500_DOUBLE || TARGET_SPE) && invalid_e500_subreg (op, mode))
-    return 0;
-
   if (GET_CODE (op) == SUBREG)
     {
       if (TARGET_NO_SF_SUBREG && sf_subreg_operand (op, mode))
@@ -331,9 +328,6 @@
 (define_predicate "int_reg_operand"
   (match_operand 0 "register_operand")
 {
-  if ((TARGET_E500_DOUBLE || TARGET_SPE) && invalid_e500_subreg (op, mode))
-    return 0;
-
   if (GET_CODE (op) == SUBREG)
     {
       if (TARGET_NO_SF_SUBREG && sf_subreg_operand (op, mode))
@@ -357,9 +351,6 @@
 (define_predicate "int_reg_operand_not_pseudo"
   (match_operand 0 "register_operand")
 {
-  if ((TARGET_E500_DOUBLE || TARGET_SPE) && invalid_e500_subreg (op, mode))
-    return 0;
-
   if (GET_CODE (op) == SUBREG)
     op = SUBREG_REG (op);
 
@@ -606,7 +597,7 @@
     return 0;
 
   /* Consider all constants with -msoft-float to be easy.  */
-  if ((TARGET_SOFT_FLOAT || TARGET_E500_SINGLE 
+  if ((TARGET_SOFT_FLOAT
       || (TARGET_HARD_FLOAT && (TARGET_SINGLE_FLOAT && ! TARGET_DOUBLE_FLOAT)))
       && mode != DImode)
     return 1;
@@ -709,32 +700,6 @@
 	return true;
 
       return easy_altivec_constant (op, mode);
-    }
-
-  if (SPE_VECTOR_MODE (mode))
-    {
-      int cst, cst2;
-      if (zero_constant (op, mode))
-	return true;
-      if (GET_MODE_CLASS (mode) != MODE_VECTOR_INT)
-        return false;
-
-      /* Limit SPE vectors to 15 bits signed.  These we can generate with:
-	   li r0, CONSTANT1
-	   evmergelo r0, r0, r0
-	   li r0, CONSTANT2
-
-	 I don't know how efficient it would be to allow bigger constants,
-	 considering we'll have an extra 'ori' for every 'li'.  I doubt 5
-	 instructions is better than a 64-bit memory load, but I don't
-	 have the e500 timing specs.  */
-      if (mode == V2SImode)
-	{
-	  cst  = INTVAL (CONST_VECTOR_ELT (op, 0));
-	  cst2 = INTVAL (CONST_VECTOR_ELT (op, 1));
-	  return cst  >= -0x7fff && cst <= 0x7fff
-	         && cst2 >= -0x7fff && cst2 <= 0x7fff;
-	}
     }
 
   return false;
@@ -1005,20 +970,11 @@
 
 ;; Return 1 if the operand is a general non-special register or memory operand.
 (define_predicate "reg_or_mem_operand"
-     (ior (match_operand 0 "memory_operand")
-	  (ior (and (match_code "mem")
-		    (match_test "macho_lo_sum_memory_operand (op, mode)"))
-	       (ior (match_operand 0 "volatile_mem_operand")
-		    (match_operand 0 "gpc_reg_operand")))))
-
-;; Return 1 if the operand is either an easy FP constant or memory or reg.
-(define_predicate "reg_or_none500mem_operand"
-  (if_then_else (match_code "mem")
-     (and (match_test "!TARGET_E500_DOUBLE")
-	  (ior (match_operand 0 "memory_operand")
-	       (ior (match_test "macho_lo_sum_memory_operand (op, mode)")
-		    (match_operand 0 "volatile_mem_operand"))))
-     (match_operand 0 "gpc_reg_operand")))
+  (ior (match_operand 0 "memory_operand")
+       (and (match_code "mem")
+	    (match_test "macho_lo_sum_memory_operand (op, mode)"))
+       (match_operand 0 "volatile_mem_operand")
+       (match_operand 0 "gpc_reg_operand")))
 
 ;; Return 1 if the operand is CONST_DOUBLE 0, register or memory operand.
 (define_predicate "zero_reg_mem_operand"
@@ -1136,12 +1092,6 @@
       && easy_vector_constant (op, mode))
     return 1;
 
-  /* Do not allow invalid E500 subregs.  */
-  if ((TARGET_E500_DOUBLE || TARGET_SPE)
-      && GET_CODE (op) == SUBREG
-      && invalid_e500_subreg (op, mode))
-    return 0;
-
   /* For floating-point or multi-word mode, the only remaining valid type
      is a register.  */
   if (SCALAR_FLOAT_MODE_P (mode)
@@ -1200,19 +1150,6 @@
   return gpc_reg_operand (op, mode);
 })
 
-;; Return true if OP is a non-immediate operand and not an invalid
-;; SUBREG operation on the e500.
-(define_predicate "rs6000_nonimmediate_operand"
-  (match_code "reg,subreg,mem")
-{
-  if ((TARGET_E500_DOUBLE || TARGET_SPE)
-      && GET_CODE (op) == SUBREG
-      && invalid_e500_subreg (op, mode))
-    return 0;
-
-  return nonimmediate_operand (op, mode);
-})
-
 ;; Return true if operand is an operator used in rotate-and-mask instructions.
 (define_predicate "rotate_mask_operator"
   (match_code "rotate,ashift,lshiftrt"))
@@ -1238,18 +1175,6 @@
 	     (match_test "validate_condition_mode (GET_CODE (op),
 						   GET_MODE (XEXP (op, 0))),
 			  1"))))
-
-;; Return 1 if OP is a valid comparison operator for "cbranch" instructions.
-;; If we're assuming that FP operations cannot generate user-visible traps,
-;; then on e500 we can use the ordered-signaling instructions to implement
-;; the unordered-quiet FP comparison predicates modulo a reversal.
-(define_predicate "rs6000_cbranch_operator"
-  (if_then_else (match_test "TARGET_HARD_FLOAT && !TARGET_FPRS")
-		(if_then_else (match_test "flag_trapping_math")
-			      (match_operand 0 "ordered_comparison_operator")
-			      (ior (match_operand 0 "ordered_comparison_operator")
-				   (match_code ("unlt,unle,ungt,unge"))))
-		(match_operand 0 "comparison_operator")))
 
 ;; Return 1 if OP is an unsigned comparison operator.
 (define_predicate "unsigned_comparison_operator"

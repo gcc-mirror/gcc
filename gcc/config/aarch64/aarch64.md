@@ -4940,6 +4940,18 @@
   [(set_attr "type" "f_minmax<stype>")]
 )
 
+(define_expand "lrint<GPF:mode><GPI:mode>2"
+  [(match_operand:GPI 0 "register_operand")
+   (match_operand:GPF 1 "register_operand")]
+  "TARGET_FLOAT"
+{
+  rtx cvt = gen_reg_rtx (<GPF:MODE>mode);
+  emit_insn (gen_rint<GPF:mode>2 (cvt, operands[1]));
+  emit_insn (gen_lbtrunc<GPF:mode><GPI:mode>2 (operands[0], cvt));
+  DONE;
+}
+)
+
 ;; For copysign (x, y), we want to generate:
 ;;
 ;;   LDR d2, #(1 << 63)

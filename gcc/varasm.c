@@ -1670,10 +1670,6 @@ decide_function_section (tree decl)
 {
   first_function_block_is_cold = false;
 
-  if (flag_reorder_blocks_and_partition)
-    /* We will decide in assemble_start_function.  */
-    return;
-
  if (DECL_SECTION_NAME (decl))
     {
       struct cgraph_node *node = cgraph_node::get (current_function_decl);
@@ -1711,7 +1707,7 @@ assemble_start_function (tree decl, const char *fnname)
   char tmp_label[100];
   bool hot_label_written = false;
 
-  if (flag_reorder_blocks_and_partition)
+  if (crtl->has_bb_partition)
     {
       ASM_GENERATE_INTERNAL_LABEL (tmp_label, "LHOTB", const_labelno);
       crtl->subsections.hot_section_label = ggc_strdup (tmp_label);
@@ -1746,7 +1742,7 @@ assemble_start_function (tree decl, const char *fnname)
      has both hot and cold sections, because we don't want to re-set
      the alignment when the section switch happens mid-function.  */
 
-  if (flag_reorder_blocks_and_partition)
+  if (crtl->has_bb_partition)
     {
       first_function_block_is_cold = false;
 
@@ -1773,8 +1769,7 @@ assemble_start_function (tree decl, const char *fnname)
   /* Switch to the correct text section for the start of the function.  */
 
   switch_to_section (function_section (decl));
-  if (flag_reorder_blocks_and_partition
-      && !hot_label_written)
+  if (crtl->has_bb_partition && !hot_label_written)
     ASM_OUTPUT_LABEL (asm_out_file, crtl->subsections.hot_section_label);
 
   /* Tell assembler to move to target machine's alignment for functions.  */
@@ -1850,7 +1845,7 @@ assemble_end_function (tree decl, const char *fnname ATTRIBUTE_UNUSED)
 {
 #ifdef ASM_DECLARE_FUNCTION_SIZE
   /* We could have switched section in the middle of the function.  */
-  if (flag_reorder_blocks_and_partition)
+  if (crtl->has_bb_partition)
     switch_to_section (function_section (decl));
   ASM_DECLARE_FUNCTION_SIZE (asm_out_file, fnname, decl);
 #endif
@@ -1861,7 +1856,7 @@ assemble_end_function (tree decl, const char *fnname ATTRIBUTE_UNUSED)
     }
   /* Output labels for end of hot/cold text sections (to be used by
      debug info.)  */
-  if (flag_reorder_blocks_and_partition)
+  if (crtl->has_bb_partition)
     {
       section *save_text_section;
 

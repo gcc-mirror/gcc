@@ -36,7 +36,7 @@ along with GCC; see the file COPYING3.  If not see
    profile counts known while other do not - for example when LTO optimizing
    partly profiled program or when profile was lost due to COMDAT merging.
 
-   For this information profile_count tracks more information than
+   For this reason profile_count tracks more information than
    just unsigned integer and it is also ready for profile mismatches.
    The API of this data type represent operations that are natural
    on profile counts - sum, difference and operation with scales and

@@ -9816,7 +9816,9 @@ Interface_type::do_import(Import* imp)
       methods = NULL;
     }
 
-  return Type::make_interface_type(methods, imp->location());
+  Interface_type* ret = Type::make_interface_type(methods, imp->location());
+  ret->package_ = imp->package();
+  return ret;
 }
 
 // Make an interface type.

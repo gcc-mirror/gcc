@@ -13,7 +13,11 @@ int rd (int *p, int i)
 
 int mpx_test (int argc, const char **argv)
 {
+#ifdef __x86_64__
   register int *frame __asm__("rsp");
+#else
+  register int *frame __asm__("esp");
+#endif
   rd (frame, 1);
 
   return 0;

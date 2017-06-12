@@ -1,3 +1,24 @@
+2017-06-09  Jan Hubicka  <hubicka@ucw.cz>
+
+	* class.c (build_vtbl_initializer): Mark dvirt_fn as cold.
+	* decl.c (cxx_init_decl_processing, push_throw_library_fn): Likewise.
+	(excpet.c): Mark terminate as cold.
+
+2017-06-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/81006
+	* semantics.c (handle_omp_array_sections_1): Convert TYPE_MAX_VALUE
+	to sizetype before size_binop.
+
+	PR c++/81011
+	* cp-gimplify.c (cxx_omp_finish_clause): When changing clause
+	to OMP_CLAUSE_SHARED, also clear OMP_CLAUSE_SHARED_FIRSTPRIVATE
+	and OMP_CLAUSE_SHARED_READONLY flags.
+
+2017-06-08  Jan Hubicka  <hubicka@ucw.cz>
+
+	* cp-tree.h (lang_check_failed): Annotate by ATTRIBUTE_COLD.
+
 2017-06-07  Nathan Sidwell  <nathan@acm.org>
 
 	* class.c (layout_class_type): Restructure overlong-bitfield tpe

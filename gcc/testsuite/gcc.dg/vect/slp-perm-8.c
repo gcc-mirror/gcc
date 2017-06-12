@@ -53,8 +53,7 @@ int main (int argc, const char* argv[])
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 2 "vect" { target { vect_perm_byte && vect_char_mult } } } } */
-/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" { target { vect_perm_byte && {! vect_char_mult } } } } } */
+/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" { target { vect_perm_byte } } } } */
 /* { dg-final { scan-tree-dump-times "vectorizing stmts using SLP" 1 "vect" { target { vect_perm_byte && {! vect_load_lanes } } } } } */
 /* { dg-final { scan-tree-dump-times "vectorizing stmts using SLP" 0 "vect" { target vect_load_lanes } } } */
 /* { dg-final { scan-tree-dump "note: Built SLP cancelled: can use load/store-lanes" "vect" { target { vect_perm_byte && vect_load_lanes } } } } */

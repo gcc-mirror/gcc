@@ -863,14 +863,14 @@ finish_options (struct gcc_options *opts, struct gcc_options *opts_set,
       opts->x_flag_reorder_blocks = 1;
     }
 
-  /* Disable -freorder-blocks-and-partition when -fprofile-use is not in
-     effect. Function splitting was not actually being performed in that case,
-     as probably_never_executed_bb_p does not distinguish any basic blocks as
-     being cold vs hot when there is no profile data. Leaving it enabled,
-     however, causes the assembly code generator to create (empty) cold
-     sections and labels, leading to unnecessary size overhead.  */
-  if (opts->x_flag_reorder_blocks_and_partition
-      && !opts_set->x_flag_profile_use)
+  /* If stack splitting is turned on, and the user did not explicitly
+     request function partitioning, turn off partitioning, as it
+     confuses the linker when trying to handle partitioned split-stack
+     code that calls a non-split-stack functions.  But if partitioning
+     was turned on explicitly just hope for the best.  */
+  if (opts->x_flag_split_stack
+      && opts->x_flag_reorder_blocks_and_partition
+      && !opts_set->x_flag_reorder_blocks_and_partition)
     opts->x_flag_reorder_blocks_and_partition = 0;
 
   if (opts->x_flag_reorder_blocks_and_partition

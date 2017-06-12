@@ -22152,7 +22152,7 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
 
       struct function *fun = DECL_STRUCT_FUNCTION (decl);
 
-      if (!flag_reorder_blocks_and_partition)
+      if (!crtl->has_bb_partition)
 	{
 	  dw_fde_ref fde = fun->fde;
 	  if (fde->dw_fde_begin)
@@ -26472,7 +26472,7 @@ set_cur_line_info_table (section *sec)
     {
       const char *end_label;
 
-      if (flag_reorder_blocks_and_partition)
+      if (crtl->has_bb_partition)
 	{
 	  if (in_cold_section_p)
 	    end_label = crtl->subsections.cold_section_end_label;
@@ -26514,7 +26514,7 @@ dwarf2out_begin_function (tree fun)
   if (sec != text_section)
     have_multiple_function_sections = true;
 
-  if (flag_reorder_blocks_and_partition && !cold_text_section)
+  if (crtl->has_bb_partition && !cold_text_section)
     {
       gcc_assert (current_function_decl == fun);
       cold_text_section = unlikely_text_section ();

@@ -4249,8 +4249,7 @@ cfg_layout_initialize (int flags)
      layout required moving a block from the hot to the cold
      section. This would create an illegal partitioning unless some
      manual fixup was performed.  */
-  gcc_assert (!(crtl->bb_reorder_complete
-		&& flag_reorder_blocks_and_partition));
+  gcc_assert (!crtl->bb_reorder_complete || !crtl->has_bb_partition);
 
   initialize_original_copy_tables ();
 

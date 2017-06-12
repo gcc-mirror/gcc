@@ -1,3 +1,483 @@
+2017-06-9  Ian Lance Taylor  <iant@golang.org>
+
+	* opts.c (finish_options): If -fsplit-stack, disable implicit
+	-forder-blocks-and-partition.
+	* doc/invoke.texi (Optimize Options): Document that when using
+	-fsplit-stack -forder-blocks-and-partition is not implicitly
+	enabled.
+
+2017-06-09  Jan Hubicka  <hubicka@ucw.cz>
+
+	* builtin-attrs.def (ATTR_NORETURN_NOTHROW_LEAF_COLD_LIST,
+	ATTR_CONST_NORETURN_NOTHROW_LEAF_COLD_LIST,
+	ATTR_TMPURE_NORETURN_NOTHROW_LEAF_COLD_LIST): New.
+	* builtins.def (abort, trap, unreachable): Declare cold.
+	* calls.c (flags_from_decl_or_type): Lookup ECF_COLD.
+	* tree-core.h (ECF_COLD): New.
+	* tree.c (set_call_expr_flags): Handle ECF_COLD.
+	(build_common_builtin_nodes): Mark unreachable and abort as cold.
+
+2017-06-09  Jan Hubicka  <hubicka@ucw.cz>
+
+	* predict.c (unlikely_executed_stmt_p): Cleanup.
+
+2017-06-09  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-loop-im.c (execute_sm): Do not force multi-threaded
+	model if the ref is always written to.
+
+2017-06-09  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/aarch64/aarch64.md (lrint<GPF:mode><GPI:mode>2): New.
+
+2017-06-09  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/arm/arm.c (arm_rtx_costs_internal): Make sdiv more expensive
+	than udiv.
+
+2017-06-09  Tom de Vries  <tom@codesourcery.com>
+
+	PR target/80855
+	* config/nvptx/nvptx.md (define_expand "mov<QHSDISDFM>"): Error out with
+	"target cannot support label values" when encountering LABEL_REF.
+
+2017-06-09  Martin Liska  <mliska@suse.cz>
+
+	* tree-profile.c (gimple_gen_ic_profiler): Update comment.
+	(gimple_gen_ic_func_profiler): Emit direct comparison
+	of __gcov_indirect_call_callee with NULL.
+	(gimple_gen_time_profiler): Change probability from
+	PROB_VERY_UNLIKELY to PROB_UNLIKELY.
+
+2017-06-09  Jan Hubicka  <hubicka@ucw.cz>
+
+	* profile.c (edge_gcov_counts): Turn to pointer.
+	(compute_branch_probabilities, compute_branch_probabilities): Update.
+	(branch_prob): Do not clear edge_gcov_count.
+	* profile.h (edge_gcov_counts): Turn to pointer.
+	(edge_gcov_count): Update.
+
+2017-06-09  Jan Hubicka  <hubicka@ucw.cz>
+
+	* gimple.h (gimple_check_failed): Mark cold.
+
+2017-06-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/66623
+	* tree-vect-loop.c (vect_is_simple_reduction): Cleanup,
+	refactor check_reduction into two parts, properly computing
+	whether we have to check reduction validity for outer loop
+	vectorization.
+
+2017-06-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/79483
+	* graphite-scop-detection.c (order): New global.
+	(get_order): Compute bb to order mapping that satisfies code
+	generation constraints.
+	(cmp_pbbs): New helper.
+	(build_scops): Start domwalk at entry block, sort generated
+	pbbs.
+
+2017-06-09  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/81007
+	* ipa-polymorphic-call.c
+	(ipa_polymorphic_call_context::restrict_to_inner_class):
+	Skip FIELD_DECLs with error_mark_node type.
+	* passes.def (all_lowering_passes): Run pass_build_cgraph_edges
+	last again.
+
+2017-06-09  Martin Liska  <mliska@suse.cz>
+
+	* predict.c (struct branch_predictor): New struct.
+	(test_prediction_value_range): New test.
+	(predict_c_tests): New function.
+	* selftest-run-tests.c (selftest::run_tests): Run the function.
+	* selftest.h: Declare new tests.
+
+2017-06-09  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/80966
+	* config/rs6000/rs6000.c (rs6000_emit_allocate_stack): Assert that
+	gen_add3_insn did not fail.
+	* config/rs6000/rs6000.md (add<mode>3): If asked to add a constant to
+	r0, construct that number in a temporary reg and add that reg to r0.
+	If asked to put the result in r0 as well, fail.
+
+2017-06-08  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	* config/rs6000/rs6000.c (rs6000_gimple_fold_builtin): Add handling
+	for early expansion of vec_eqv.
+
+2017-06-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/81005
+	* ubsan.c (instrument_null): Avoid pointless code temporary.
+	(pass_ubsan::execute): Instrument aggregate arguments of calls.
+
+2017-06-08  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/81015
+	Revert:
+	2016-12-14  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/59874
+	* config/i386/i386.md (*ctzhi2): New insn_and_split pattern.
+	(*clzhi2): Ditto.
+
+2017-06-08  Jan Hubicka  <hubicka@ucw.cz>
+
+	* predict.c (unlikely_executed_edge_p): Move ahead.
+	(probably_never_executed_edge_p): Use it.
+
+2017-06-08  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+
+	PR middle-end/79988
+	* tree-chkp.c (chkp_gimple_call_builtin_p): Remove
+	gimple_call_builtin_p call.
+
+2017-06-08  Jan Hubicka  <hubicka@ucw.cz>
+
+	* system.h (fancy_abort): Annotate by ATTRIBUTE_COLD.
+	* rtl.h (rtl_check_failed_bounds, rtl_check_failed_type1,
+	rtl_check_failed_type2, rtl_check_failed_code1,
+	rtl_check_failed_code2, rtl_check_failed_code_mode,
+	rtl_check_failed_block_symbol, cwi_check_failed_bounds,
+	rtvec_check_failed_bounds, rtl_check_failed_flag,
+	_fatal_insn_not_found, _fatal_insn): Likewise.
+	* tree.h (tree_contains_struct_check_failed,
+	tree_check_failed, tree_not_check_failed,
+	tree_class_check_failed, tree_range_check_failed,
+	tree_not_class_check_failed, tree_int_cst_elt_check_failed,
+	tree_vec_elt_check_failed, phi_node_elt_check_failed,
+	tree_operand_check_failed, omp_clause_check_failed,
+	omp_clause_operand_check_failed, omp_clause_range_check_failed):
+	Likewise.
+
+2017-06-08  Jan Hubicka  <hubicka@ucw.cz>
+
+	* cgraph.c (cgraph_edge::maybe_hot_p): Do not check
+	flag_branch_probabilities.
+	* ipa-inline.c (edge_badness): Likewise.
+	* ipa-profile.c (ipa_propagate_frequency_1): Likewise.
+	* postreload-gcse.c (eliminate_partially_redundant_load): Likewise.
+	* predict.c (maybe_hot_frequency_p): Likewise.
+	(probably_never_executed): Likewise.
+	* sched-ebb.c (schedule_ebbs): Likewise.
+	* sched-rgn.c (find_single_block_region): Likewise.
+	* tracer.c (tail_duplicate): Likewise.
+
+2017-06-08  Jan Hubicka  <hubicka@ucw.cz>
+
+	* opts.c (finish_options): x_flag_reorder_blocks_and_partition no
+	longer requires x_flag_profile_use.
+
+2017-06-08  Jan Hubicka  <hubicka@ucw.cz>
+
+	* cfgrtl.c (cfg_layout_initialize): Check crtl->has_bb_partition
+	instead of flag_reorder_blocks_and_partition.
+	* dbxout.c (dbxout_function_end): Likewise.
+	* dwarf2out.c (gen_subprogram_die): Likewise.
+	* haifa-sched.c (sched_create_recovery_edges): Likewise.
+	* hw-doloop.c (reorg_loops): Likewise.
+	* varasm.c (assemble_start_function,
+	assemble_end_function): Likewise.
+	(decide_function_section): Do not check for
+	flag_reorder_blocks_and_partition.
+
+2017-06-08  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+
+	* tree-chkp.c (chkp_get_hard_register_var_fake_base_address):
+	New function.
+	(chkp_get_hard_register_fake_addr_expr): Ditto.
+	(chkp_build_addr_expr): Add check for hard reg case.
+	(chkp_parse_array_and_component_ref): Ditto.
+	(chkp_find_bounds_1): Ditto.
+	(chkp_process_stmt): Don't generate bounds store for
+	hard reg case.
+
+2017-06-08  Jan Hubicka  <hubicka@ucw.cz>
+
+	* predict.c (maybe_hot_bb_p): Do not check profile status.
+	(maybe_hot_edge_p): Likewise.
+	(probably_never_executed): Check for zero counts even if profile
+	is not read.
+	(unlikely_executed_edge_p): New function.
+	(unlikely_executed_stmt_p): New function.
+	(unlikely_executed_bb_p): New function.
+	(set_even_probabilities): Use unlikely predicates.
+	(combine_predictions_for_bb): Likewise.
+	(predict_paths_for_bb): Likewise.
+	(predict_paths_leading_to_edge): Likewise.
+	(determine_unlikely_bbs): New function.
+	(estimate_bb_frequencies): Use it.
+	(compute_function_frequency): Use zero counts even if profile is
+	not read.
+	* profile-count.h: Fix typo.
+
+2017-08-08  Julia Koval  <julia.koval@intel.com>
+
+	* config/i386/avx512bwintrin.h (_mm512_mask_cvtepi16_storeu_epi8,
+	_mm512_mask_cvtsepi16_storeu_epi8,
+	_mm512_mask_cvtusepi16_storeu_epi8): New intrinsics.
+	* config/i386/avx512vlbwintrin.h (_mm256_mask_cvtepi16_storeu_epi8,
+	_mm_mask_cvtsepi16_storeu_epi8, _mm256_mask_cvtsepi16_storeu_epi8,
+	_mm_mask_cvtusepi16_storeu_epi8, _mm256_mask_cvtusepi16_storeu_epi8,
+	_mm_mask_cvtepi16_storeu_epi8): New intrinsics.
+	* config/i386/i386-builtin-types.def (PV8Q, V8QI): New pointer type.
+	(VOID_FTYPE_PV32QI_V32HI_USI, VOID_FTYPE_PV8QI_V8HI_UQI,
+	VOID_FTYPE_PV16QI_V16HI_UHI): New function types.
+	* config/i386/i386-builtin.def (__builtin_ia32_pmovwb128mem_mask,
+	__builtin_ia32_pmovwb256mem_mask, __builtin_ia32_pmovswb128mem_mask,
+	__builtin_ia32_pmovswb256mem_mask, __builtin_ia32_pmovuswb128mem_mask,
+	__builtin_ia32_pmovuswb256mem_mask,
+	__builtin_ia32_pmovuswb512mem_mask, __builtin_ia32_pmovswb512mem_mask)
+	__builtin_ia32_pmovwb512mem_mask): New builtins.
+
+2017-08-08  Julia Koval  <julia.koval@intel.com>
+
+	PR target/73350,80862
+	* config/i386/subst.md (round): Fix round pattern.
+	* config/i386/i386.c (ix86_erase_embedded_rounding):
+	Fix erasing rounding for the fixed pattern.
+
+2017-06-08  Jan Hubicka  <hubicka@ucw.cz>
+
+	* cfgbuild.c (find_many_sub_basic_blocks): Fix thinko.
+
+2017-06-08  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/80911
+	* gcov.c (block_info::block_info): New constructor.
+
+2017-06-07  Carl Love  <cel@us.ibm.com>
+
+	* config/rs6000/rs6000-c: The return type of the following
+	built-in functions was implemented as int not long long.  Fix sign
+	of return value for the unsigned version of vec_mulo and vec_mule.
+	vector unsigned long long vec_bperm (vector unsigned long long,
+					     vector unsigned char)
+	vector signed long long vec_mule (vector signed int,
+					  vector signed int)
+	vector unsigned long long vec_mule (vector unsigned int,
+					    vector unsigned int)
+	vector signed long long vec_mulo (vector signed int,
+					  vector signed int)
+	vector unsigned long long vec_mulo (vector unsigned int,
+					    vector unsigned int)
+	* doc/extend.texi: Fix the documentation for the built-in
+	functions.
+
+2017-06-07  Carl Love  <cel@us.ibm.com>
+
+	PR target/80982
+	* config/rs6000/altivec.md (double<mode>2): Fix the implementation of
+	for BE.
+
+2017-06-07  Carl Love  <cel@us.ibm.com>
+
+	* config/rs6000/altivec.md: Fix argument swizzle in vec_doublel
+	support, Generate	doublehv for signed int/float for BE case only.
+
+2017-06-07  Alexander Monakov  <amonakov@ispras.ru>
+
+	* doc/invoke.texi (mcx16): Rewrite.
+
+2017-06-07  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/predicates.md (rs6000_nonimmediate_operand): Delete.
+	* config/rs6000/rs6000.md (*movsi_internal1, movsi_from_sf,
+	*mov<mode>_softfloat, and an anonymous splitter): Use
+	nonimmediate_operand instead of rs6000_nonimmediate_operand.
+
+2017-06-07  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/darwin.h (REGISTER_NAMES): Delete the SPE_ACC and
+	SPEFSCR registers.
+	* config/rs6000/rs6000.c (rs6000_reg_names, alt_reg_names): Ditto.
+	(enum rs6000_reg_type): Delete SPE_ACC_TYPE and SPEFSCR_REG_TYPE.
+	(rs6000_debug_reg_global): Adjust.
+	(rs6000_init_hard_regno_mode_ok): Adjust.
+	(rs6000_dbx_register_number): Adjust.
+	* config/rs6000/rs6000.h (FIRST_PSEUDO_REGISTER): Change to 115.
+	(FIXED_REGISTERS, CALL_USED_REGISTERS, CALL_REALLY_USED_REGISTERS):
+	Remove SPE_ACC and SPEFSCR.
+	(REG_ALLOC_ORDER): Ditto.
+	(FRAME_POINTER_REGNUM): Change to 111.
+	(enum reg_class): Remove the SPE_ACC and SPEFSCR registers.
+	(REG_CLASS_NAMES): Ditto.
+	(REG_CLASS_CONTENTS): Delete the SPE_ACC and SPEFSCR registers.
+	(REGISTER_NAMES): Ditto.
+	(ADDITIONAL_REG_NAMES): Ditto.
+	(rs6000_reg_names): Ditto.
+	* config/rs6000/rs6000.md: Renumber some register number
+	define_constants.
+
+2017-06-07  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/darwin.h (REGISTER_NAMES): Delete the SPE high
+	registers.
+	* config/rs6000/rs6000.c (rs6000_reg_names, alt_reg_names): Ditto.
+	* config/rs6000/rs6000.h (FIRST_PSEUDO_REGISTER): Change from 149
+	to 117.
+	(DWARF_REG_TO_UNWIND_COLUMN): Do not define.
+	(FIXED_REGISTERS, CALL_USED_REGISTERS, CALL_REALLY_USED_REGISTERS):
+	Delete the SPE high registers.
+	(REG_ALLOC_ORDER): Ditto.
+	(enum reg_class): Remove SPE_HIGH_REGS.
+	(REG_CLASS_NAMES): Ditto.
+	(REG_CLASS_CONTENTS): Delete the SPE high registers.
+	(REGISTER_NAMES): Ditto.
+	(rs6000_reg_names): Ditto.
+	* doc/tm.texi.in: Remove SPE as example.
+	* doc/tm.texi: Regenerate.
+
+2017-06-07  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/8540.md (ppc8540_brinc): Delete.
+	* config/rs6000/e500mc.md (e500mc_brinc): Delete.
+	* config/rs6000/e500mc64.md (e500mc64_brinc): Delete.
+	* config/rs6000/rs6000.md (type): Remove "brinc".
+
+2017-06-07  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config.gcc (powerpc*-*-*): Don't add spe.h to extra_headers.
+	(powerpc*-linux*spe*): Use ${cpu_type} instead of rs6000.
+	* config/rs6000/linuxspe.h: Delete file.
+	* config/rs6000/rs6000.md: Don't include spe.md.
+	* config/rs6000/spe.h: Delete file.
+	* config/rs6000/spe.md: Delete file.
+	* config/rs6000/t-rs6000: Remove spe.md.
+
+2017-06-07  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/predicates.md (reg_or_mem_operand): Reformat.
+	(reg_or_none500mem_operand): Delete.
+	* config/rs6000/rs6000.md (extendsfdf2): Use reg_or_mem_operand
+	instead of reg_or_none500mem_operand.
+
+2017-06-07  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.c (rs6000_option_override_internal): Delete
+	handling of SPE flags.
+	* config/rs6000/rs6000.opt (-mspe, -mspe=no, -mspe=yes): Delete.
+
+2017-06-07  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000-common.c (rs6000_handle_option): Remove
+	SPE ABI handling.
+	* config/rs6000/paired.md (paired_negv2sf2): Rename to negv2sf2.
+	(paired_absv2sf2, paired_addv2sf3, paired_subv2sf3, paired_mulv2sf3,
+	paired_divv2sf3): Similar.
+	* config/rs6000/predicates.md: Replace TARGET_SPE, TARGET_SPE_ABI,
+	SPE_VECTOR_MODE and SPE_HIGH_REGNO_P by 0; simplify.
+	* config/rs6000/rs6000-builtin.def: Delete RS6000_BUILTIN_E and
+	RS6000_BUILTIN_S.
+	Delete BU_SPE_1, BU_SPE_2, BU_SPE_3, BU_SPE_E, BU_SPE_P, and BU_SPE_X.
+	Rename the paired_* instruction patterns.
+	* config/rs6000/rs6000-c.c (rs6000_target_modify_macros): Do not
+	define __SPE__.
+	* config/rs6000/rs6000-protos.h (invalid_e500_subreg): Delete.
+	* config/rs6000/rs6000.c: Delete RS6000_BUILTIN_E and RS6000_BUILTIN_S.
+	(struct rs6000_stack): Delete fields spe_gp_save_offset, spe_gp_size,
+	spe_padding_size, and spe_64bit_regs_used.  Replace TARGET_SPE and
+	TARGET_SPE_ABI with 0, simplify.  Replace SPE_VECTOR_MODE with
+	PAIRED_VECTOR_MODE.
+	(struct machine_function): Delete field spe_insn_chain_scanned_p.
+	(spe_func_has_64bit_regs_p): Delete.
+	(spe_expand_predicate_builtin): Delete.
+	(spe_expand_evsel_builtin): Delete.
+	(TARGET_DWARF_REGISTER_SPAN): Do not define.
+	(TARGET_MEMBER_TYPE_FORCES_BLK): Do not define.
+	(invalid_e500_subreg): Delete.
+	(rs6000_legitimize_address): Always force_reg op2 as well, for
+	paired single memory accesses.
+	(rs6000_member_type_forces_blk): Delete.
+	(rs6000_spe_function_arg): Delete.
+	(rs6000_expand_unop_builtin): Delete SPE handling.
+	(rs6000_expand_binop_builtin): Ditto.
+	(spe_expand_stv_builtin): Delete.
+	(bdesc_2arg_spe): Delete.
+	(spe_expand_builtin): Delete.
+	(spe_expand_predicate_builtin): Delete.
+	(spe_expand_evsel_builtin): Delete.
+	(rs6000_invalid_builtin): Remove RS6000_BTM_SPE handling.
+	(spe_init_builtins): Delete.
+	(spe_func_has_64bit_regs_p): Delete.
+	(savres_routine_name): Delete "info" parameter.  Adjust callers.
+	(rs6000_emit_stack_reset): Ditto.
+	(rs6000_dwarf_register_span): Delete.
+	* config/rs6000/rs6000.h (TARGET_SPE_ABI, TARGET_SPE,
+	UNITS_PER_SPE_WORD, SPE_HIGH_REGNO_P, SPE_SIMD_REGNO_P,
+	SPE_VECTOR_MODE, RS6000_BTM_SPE, RS6000_BUILTIN_E, RS6000_BUILTIN_S):
+	Delete.
+	* config/rs6000/rs6000.md (FIRST_SPE_HIGH_REGNO, LAST_SPE_HIGH_REGNO):
+	Delete.
+	* config/rs6000/rs6000.opt (-mabi=spe, -mabi=no-spe): Delete.
+	* config/rs6000/spe.md: Delete every pattern that uses TARGET_SPE.
+	* config/rs6000/vector.md (absv2sf2, negv2sf2, addv2sf3, subv2sf3,
+	mulv2sf3, divv2sf3): Delete expanders.
+
+2017-06-07  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	config/rs6000/rs6000.md (UNSPEC_MV_CR_GT): Delete.
+
+2017-06-07  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000-protos.h (output_e500_flip_gt_bit): Delete.
+	* config/rs6000/rs6000.c: Ditto.
+
+2017-06-07  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/predicated.md (rs6000_cbranch_operator): Delete.
+	* config/rs6000/rs6000.md: Replace rs6000_cbranch_operator by
+	comparison_operator.
+
+2017-06-07  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.c: Remove everything related to -mfloat-gprs.
+	* config/rs6000/rs6000.opt: Ditto.
+	* config/rs6000/t-rtems: Ditto.
+
+2017-06-07  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/predicates.md: Replace TARGET_E500_DOUBLE and
+	TARGET_E500_SINGLE by 0, simplify.
+	* config/rs6000/rs6000.c: Ditto.
+	(rs6000_option_override_internal): Delete CHECK_E500_OPTIONS.
+	(spe_build_register_parallel): Delete.
+	* config/rs6000/rs6000.h: Delete TARGET_E500_SINGLE,
+	TARGET_E500_DOUBLE, and CHECK_E500_OPTIONS.
+	* config/rs6000/rs6000.md: Replace TARGET_E500_DOUBLE,
+	TARGET_E500_SINGLE, and <E500_CONVERT> by 0, simplify.
+	(E500_CONVERT): Delete.
+	* config/rs6000/spe.md: Remove many patterns and all define_constants.
+
+2017-06-07  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/darwin.md: Replace TARGET_FPRS by 1 and simplify.
+	* config/rs6000/dfp.md: Ditto.
+	(negdd2, *negdd2_fpr): Merge.
+	(absdd2, *absdd2_fpr): Merge.
+	(negtd2, *negtd2_fpr): Merge.
+	(abstd2, *abstd2_fpr): Merge.
+	* config/rs6000/e500.h: Delete file.
+	* config/rs6000/predicates.md (rs6000_cbranch_operator): Replace
+	TARGET_FPRS by 1 and simplify.
+	* config/rs6000/rs6000-c.c: Ditto.
+	* config/rs6000/rs6000.c: Ditto.  Also replace TARGET_SF_SPE and
+	TARGET_DF_SPE by 0.
+	* config/rs6000/rs6000.h: Ditto.  Delete TARGET_SF_SPE and
+	TARGET_DF_SPE.
+	* config/rs6000/rs6000.md: Ditto.
+	(floatdidf2, *floatdidf2_fpr): Merge.
+	(move_from_CR_gt_bit): Delete.
+	* config/rs6000/spe.md: Replace TARGET_FPRS by 1 and simplify.
+	(E500_CR_IOR_COMPARE): Delete.
+	(All patterns that require !TARGET_FPRS): Delete.
+	* config/rs6000/vsx.md: Replace TARGET_FPRS by 1 and simplify.
+
 2017-06-07  Bin Cheng  <bin.cheng@arm.com>
 
 	* passes.def (pass_iv_canon): Move before pass_loop_distribution.
@@ -137,26 +617,26 @@
 
 2017-06-06  Maxim Kuvyrkov  <maxim.kuvyrkov@linaro.org>
 
-        * tree-ssa-loop-prefetch.c (struct mem_ref_group, struct mem_ref):
-        New "uid" fields to hold pretty-print IDs of group and ref.
-        Memory references are now identified as <group_id>:<ref_id>
-        instead of using [random] addresses.
-        (dump_mem_details): Simplify, no functional change.
-        (dump_mem_ref): Simplify and make output more concise.
-        Replace couple of fprintf's throughout code with calls to dump_mem_ref.
-        (find_or_create_group): Initialize group uid.
-        (record_ref): Initialize ref uid.  Improve debug output.
-        (prune_group_by_reuse, should_issue_prefetch_p,)
-        (should_issue_prefetch_p, schedule_prefetches, issue_prefetch_ref,)
-        (mark_nontemporal_store, determine_loop_nest_reuse):
-        Improve debug output.
+	* tree-ssa-loop-prefetch.c (struct mem_ref_group, struct mem_ref):
+	New "uid" fields to hold pretty-print IDs of group and ref.
+	Memory references are now identified as <group_id>:<ref_id>
+	instead of using [random] addresses.
+	(dump_mem_details): Simplify, no functional change.
+	(dump_mem_ref): Simplify and make output more concise.
+	Replace couple of fprintf's throughout code with calls to dump_mem_ref.
+	(find_or_create_group): Initialize group uid.
+	(record_ref): Initialize ref uid.  Improve debug output.
+	(prune_group_by_reuse, should_issue_prefetch_p,)
+	(should_issue_prefetch_p, schedule_prefetches, issue_prefetch_ref,)
+	(mark_nontemporal_store, determine_loop_nest_reuse):
+	Improve debug output.
 
 2017-06-06  Maxim Kuvyrkov  <maxim.kuvyrkov@linaro.org>
 
-        * dbgcnt.def (prefetch): New debug counter.
-        * tree-ssa-loop-prefetch.c (dbgcnt.h): New include.
-        (schedule_prefetches): Stop issueing prefetches if debug counter
-        tripped.
+	* dbgcnt.def (prefetch): New debug counter.
+	* tree-ssa-loop-prefetch.c (dbgcnt.h): New include.
+	(schedule_prefetches): Stop issueing prefetches if debug counter
+	tripped.
 
 2017-06-06  Tom de Vries  <tom@codesourcery.com>
 
@@ -827,9 +1307,9 @@
 2017-05-31  Sebastian Peryt  <sebastian.peryt@intel.com>
 
 	* config/i386/avx512fintrin.h (_mm_mask_max_sd)
-        (_mm_maskz_max_sd, _mm_mask_max_ss, _mm_maskz_max_ss)
-        (_mm_mask_min_sd, _mm_maskz_min_sd, _mm_mask_min_ss)
-        (_mm_maskz_min_ss): New intrinsics.
+	(_mm_maskz_max_sd, _mm_mask_max_ss, _mm_maskz_max_ss)
+	(_mm_mask_min_sd, _mm_maskz_min_sd, _mm_mask_min_ss)
+	(_mm_maskz_min_ss): New intrinsics.
 
 2017-05-31  Martin Liska  <mliska@suse.cz>
 
@@ -2032,39 +2512,39 @@
 
 	* config/rs6000/rs6000-c: Add support for built-in functions
 	vector unsigned long long vec_bperm (vector unsigned long long,
-	                                     vector unsigned char)
+					     vector unsigned char)
 	vector signed long long vec_mule (vector signed int,
-	                                  vector signed int)
+					  vector signed int)
 	vector unsigned long long vec_mule (vector unsigned int,
-	                                    vector unsigned int)
+					    vector unsigned int)
 	vector signed long long vec_mulo (vector signed int,
-	                                  vector signed int)
+					  vector signed int)
 	vector unsigned long long vec_mulo (vector unsigned int,
-	                                    vector unsigned int)
+					    vector unsigned int)
 	vector signed char vec_sldw (vector signed char,
-	                             vector signed char,
-	                             const int)
+				     vector signed char,
+				     const int)
 	vector unsigned char vec_sldw (vector unsigned char,
-	                               vector unsigned char,
-	                               const int)
+				       vector unsigned char,
+				       const int)
 	vector signed short vec_sldw (vector signed short,
-	                              vector signed short,
-	                              const int)
+				      vector signed short,
+				      const int)
 	vector unsigned short vec_sldw (vector unsigned short,
-	                                vector unsigned short,
-	                                const int)
+					vector unsigned short,
+					const int)
 	vector signed int vec_sldw (vector signed int,
-	                            vector signed int,
-	                            const int)
+				    vector signed int,
+				    const int)
 	vector unsigned int vec_sldw (vector unsigned int,
-	                              vector unsigned int,
-	                              const int)
+				      vector unsigned int,
+				      const int)
 	vector signed long long vec_sldw (vector signed long long,
-	                                  vector signed long long,
-	                                  const int)
+					  vector signed long long,
+					  const int)
 	vector unsigned long long vec_sldw (vector unsigned long long,
-	                                    vector unsigned long long,
-	                                    const int)
+					    vector unsigned long long,
+					    const int)
 	* config/rs6000/rs6000-c: Add support for built-in functions
 	* config/rs6000/rs6000-builtin.def: Add definition for SLDW.
 	* config/rs6000/altivec.h: Add defintion for vec_sldw.
@@ -3156,12 +3636,12 @@
 2017-05-10  Carl Love  <cel@us.ibm.com>
 
 	* config/rs6000/rs6000-c: Add support for built-in functions
-	vector signed char        vec_neg (vector signed char)
-	vector signed short int   vec_neg (vector short int)
-	vector signed int         vec_neg (vector signed int)
-	vector signed long long   vec_neg (vector signed long long)
-	vector float              vec_neg (vector float)
-	vector double             vec_neg (vector double)
+	vector signed char	vec_neg (vector signed char)
+	vector signed short int	vec_neg (vector short int)
+	vector signed int	vec_neg (vector signed int)
+	vector signed long long	vec_neg (vector signed long long)
+	vector float		vec_neg (vector float)
+	vector double		vec_neg (vector double)
 	* config/rs6000/rs6000-builtin.def: Add definitions for NEG function
 	overload.
 	* config/rs6000/altivec.h: Add define for vec_neg

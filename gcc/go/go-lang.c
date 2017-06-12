@@ -304,6 +304,15 @@ go_langhook_post_options (const char **pfilename ATTRIBUTE_UNUSED)
       && targetm_common.supports_split_stack (false, &global_options))
     global_options.x_flag_split_stack = 1;
 
+  /* If stack splitting is turned on, and the user did not explicitly
+     request function partitioning, turn off partitioning, as it
+     confuses the linker when trying to handle partitioned split-stack
+     code that calls a non-split-stack function.  */
+  if (global_options.x_flag_split_stack
+      && global_options.x_flag_reorder_blocks_and_partition
+      && !global_options_set.x_flag_reorder_blocks_and_partition)
+    global_options.x_flag_reorder_blocks_and_partition = 0;
+
   /* Returning false means that the backend should be used.  */
   return false;
 }

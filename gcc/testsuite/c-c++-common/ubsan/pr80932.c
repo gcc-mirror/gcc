@@ -4,10 +4,10 @@
 
 int x = 1;
 
-long int
+int
 foo (void)
 {
-  return ((long) (13801962912760474560ULL * x) - (long) (15334142073106273231ULL * x)) * -6;
+  return ((int) (2855545792U * x) - (int) (3269399503U * x)) * -5;
 }
 
 int

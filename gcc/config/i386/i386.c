@@ -36460,38 +36460,48 @@ ix86_erase_embedded_rounding (rtx pat)
   if (GET_CODE (pat) == INSN)
     pat = PATTERN (pat);
 
-  gcc_assert (GET_CODE (pat) == PARALLEL);
+  if (GET_CODE (pat) == PARALLEL)
+  {
+    if (XVECLEN (pat, 0) == 2)
+      {
+	rtx p0 = XVECEXP (pat, 0, 0);
+	rtx p1 = XVECEXP (pat, 0, 1);
+	gcc_assert (GET_CODE (p0) == SET
+		    && GET_CODE (p1) == UNSPEC
+		    && XINT (p1, 1) == UNSPEC_EMBEDDED_ROUNDING);
+	return p0;
+      }
+    else
+      {
+	rtx *res = XALLOCAVEC (rtx, XVECLEN (pat, 0));
+	int i = 0;
+	int j = 0;
 
-  if (XVECLEN (pat, 0) == 2)
-    {
-      rtx p0 = XVECEXP (pat, 0, 0);
-      rtx p1 = XVECEXP (pat, 0, 1);
+	for (; i < XVECLEN (pat, 0); ++i)
+	  {
+	    rtx elem = XVECEXP (pat, 0, i);
+	    if (GET_CODE (elem) != UNSPEC
+		|| XINT (elem, 1) != UNSPEC_EMBEDDED_ROUNDING)
+	      res[j++] = elem;
+	  }
 
-      gcc_assert (GET_CODE (p0) == SET
-		  && GET_CODE (p1) == UNSPEC
-		  && XINT (p1, 1) == UNSPEC_EMBEDDED_ROUNDING);
+	/*  No more than 1 occurence was removed.  */
+	gcc_assert (j >= XVECLEN (pat, 0) - 1);
 
-      return p0;
+	return gen_rtx_PARALLEL (GET_MODE (pat), gen_rtvec_v (j, res));
     }
+  }
   else
-    {
-      rtx *res = XALLOCAVEC (rtx, XVECLEN (pat, 0));
-      int i = 0;
-      int j = 0;
-
-      for (; i < XVECLEN (pat, 0); ++i)
-	{
-	  rtx elem = XVECEXP (pat, 0, i);
-	  if (GET_CODE (elem) != UNSPEC
-	      || XINT (elem, 1) != UNSPEC_EMBEDDED_ROUNDING)
-	    res [j++] = elem;
-	}
-
-      /*  No more than 1 occurence was removed.  */
-      gcc_assert (j >= XVECLEN (pat, 0) - 1);
-
-      return gen_rtx_PARALLEL (GET_MODE (pat), gen_rtvec_v (j, res));
-    }
+  {
+    gcc_assert (GET_CODE (pat) == SET);
+    rtx src = SET_SRC (pat);
+    gcc_assert (XVECLEN (src, 0) == 2);
+    rtx p0 = XVECEXP (src, 0, 0);
+    gcc_assert (GET_CODE (src) == UNSPEC
+		&& XINT (src, 1) == UNSPEC_EMBEDDED_ROUNDING);
+    rtx res = gen_rtx_SET (SET_DEST (pat), p0);
+    return res;
+  }
 }
 
 /* Subroutine of ix86_expand_round_builtin to take care of comi insns
@@ -37023,6 +37033,9 @@ ix86_expand_special_args_builtin (const struct builtin_description *d,
     case VOID_FTYPE_PFLOAT_V16SF_UHI:
     case VOID_FTYPE_PFLOAT_V8SF_UQI:
     case VOID_FTYPE_PFLOAT_V4SF_UQI:
+    case VOID_FTYPE_PV32QI_V32HI_USI:
+    case VOID_FTYPE_PV16QI_V16HI_UHI:
+    case VOID_FTYPE_PV8QI_V8HI_UQI:
       nargs = 2;
       klass = store;
       /* Reserve memory operand for target.  */

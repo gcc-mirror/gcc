@@ -1212,8 +1212,7 @@ instrument_null (gimple_stmt_iterator gsi, bool is_lhs)
   if (TREE_CODE (t) == ADDR_EXPR)
     t = TREE_OPERAND (t, 0);
   tree base = get_base_address (t);
-  const enum tree_code code = TREE_CODE (base);
-  if (code == MEM_REF
+  if (TREE_CODE (base) == MEM_REF
       && TREE_CODE (TREE_OPERAND (base, 0)) == SSA_NAME)
     instrument_mem_ref (t, base, &gsi, is_lhs);
 }
@@ -2003,6 +2002,20 @@ pass_ubsan::execute (function *fun)
 		instrument_null (gsi, true);
 	      if (gimple_assign_single_p (stmt))
 		instrument_null (gsi, false);
+	      if (is_gimple_call (stmt))
+		{
+		  unsigned args_num = gimple_call_num_args (stmt);
+		  for (unsigned i = 0; i < args_num; ++i)
+		    {
+		      tree arg = gimple_call_arg (stmt, i);
+		      if (is_gimple_reg (arg) || is_gimple_min_invariant (arg))
+			continue;
+		      tree base = get_base_address (arg);
+		      if (TREE_CODE (base) == MEM_REF
+			  && TREE_CODE (TREE_OPERAND (base, 0)) == SSA_NAME)
+			instrument_mem_ref (arg, base, &gsi, false);
+		    }
+		}
 	    }
 
 	  if (flag_sanitize & (SANITIZE_BOOL | SANITIZE_ENUM)

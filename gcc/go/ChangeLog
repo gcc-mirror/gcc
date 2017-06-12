@@ -1,3 +1,8 @@
+2017-06-09  Ian Lance Taylor  <iant@golang.org>
+
+	* go-lang.c (go_langhook_post_options): If -fsplit-stack is turned
+	on, disable implicit -forder-blocks-and-partition.
+
 2017-05-12  Than McIntosh  <thanm@google.com>
 
 	* go-gcc.cc (Gcc_backend::call_expression): Add caller parameter.

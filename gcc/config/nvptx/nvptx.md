@@ -254,6 +254,9 @@
       emit_move_insn (operands[0], tmp);
       DONE;
     }
+
+  if (GET_CODE (operands[1]) == LABEL_REF)
+    sorry ("target cannot support label values");
 })
 
 (define_insn "zero_extendqihi2"

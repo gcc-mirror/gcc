@@ -57,6 +57,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-scalar-evolution.h"
 #include "ipa-utils.h"
 #include "gimple-pretty-print.h"
+#include "selftest.h"
 
 /* Enum with reasons why a predictor is ignored.  */
 
@@ -123,8 +124,7 @@ static inline bool
 maybe_hot_frequency_p (struct function *fun, int freq)
 {
   struct cgraph_node *node = cgraph_node::get (fun->decl);
-  if (!profile_info
-      || !opt_for_fn (fun->decl, flag_branch_probabilities))
+  if (!profile_info || profile_status_for_fn (fun) != PROFILE_READ)
     {
       if (node->frequency == NODE_FREQUENCY_UNLIKELY_EXECUTED)
         return false;
@@ -189,8 +189,8 @@ bool
 maybe_hot_bb_p (struct function *fun, const_basic_block bb)
 {
   gcc_checking_assert (fun);
-  if (profile_status_for_fn (fun) == PROFILE_READ)
-    return maybe_hot_count_p (fun, bb->count);
+  if (!maybe_hot_count_p (fun, bb->count))
+    return false;
   return maybe_hot_frequency_p (fun, bb->frequency);
 }
 
@@ -200,8 +200,8 @@ maybe_hot_bb_p (struct function *fun, const_basic_block bb)
 bool
 maybe_hot_edge_p (edge e)
 {
-  if (profile_status_for_fn (cfun) == PROFILE_READ)
-    return maybe_hot_count_p (cfun, e->count);
+  if (!maybe_hot_count_p (cfun, e->count))
+    return false;
   return maybe_hot_frequency_p (cfun, EDGE_FREQUENCY (e));
 }
 
@@ -213,17 +213,16 @@ probably_never_executed (struct function *fun,
                          profile_count count, int)
 {
   gcc_checking_assert (fun);
+  if (count == profile_count::zero ())
+    return true;
   if (count.initialized_p () && profile_status_for_fn (fun) == PROFILE_READ)
     {
-      if (count == profile_count::zero ())
-	return true;
-
       int unlikely_count_fraction = PARAM_VALUE (UNLIKELY_BB_COUNT_FRACTION);
       if (count.apply_scale (unlikely_count_fraction, 1) >= profile_info->runs)
 	return false;
       return true;
     }
-  if ((!profile_info || !(opt_for_fn (fun->decl, flag_branch_probabilities)))
+  if ((!profile_info || profile_status_for_fn (fun) != PROFILE_READ)
       && (cgraph_node::get (fun->decl)->frequency
 	  == NODE_FREQUENCY_UNLIKELY_EXECUTED))
     return true;
@@ -240,11 +239,22 @@ probably_never_executed_bb_p (struct function *fun, const_basic_block bb)
 }
 
 
+/* Return true if E is unlikely executed for obvious reasons.  */
+
+static bool
+unlikely_executed_edge_p (edge e)
+{
+  return e->count == profile_count::zero ()
+	 || (e->flags & (EDGE_EH | EDGE_FAKE));
+}
+
 /* Return true in case edge E is probably never executed.  */
 
 bool
 probably_never_executed_edge_p (struct function *fun, edge e)
 {
+  if (e->count.initialized_p ())
+    unlikely_executed_edge_p (e);
   return probably_never_executed (fun, e->count, EDGE_FREQUENCY (e));
 }
 
@@ -763,6 +773,61 @@ dump_prediction (FILE *file, enum br_predictor predictor, int probability,
   fprintf (file, "\n");
 }
 
+/* Return true if STMT is known to be unlikely executed.  */
+
+static bool
+unlikely_executed_stmt_p (gimple *stmt)
+{
+  if (!is_gimple_call (stmt))
+    return false;
+  /* NORETURN attribute alone is not strong enough: exit() may be quite
+     likely executed once during program run.  */
+  if (gimple_call_fntype (stmt)
+      && lookup_attribute ("cold",
+			   TYPE_ATTRIBUTES (gimple_call_fntype (stmt)))
+      && !lookup_attribute ("cold", DECL_ATTRIBUTES (current_function_decl)))
+    return true;
+  tree decl = gimple_call_fndecl (stmt);
+  if (!decl)
+    return false;
+  if (lookup_attribute ("cold", DECL_ATTRIBUTES (decl))
+      && !lookup_attribute ("cold", DECL_ATTRIBUTES (current_function_decl)))
+    return true;
+
+  cgraph_node *n = cgraph_node::get (decl);
+  if (!n)
+    return false;
+
+  availability avail;
+  n = n->ultimate_alias_target (&avail);
+  if (avail < AVAIL_AVAILABLE)
+    return false;
+  if (!n->analyzed
+      || n->decl == current_function_decl)
+    return false;
+  return n->frequency == NODE_FREQUENCY_UNLIKELY_EXECUTED;
+}
+
+/* Return true if BB is unlikely executed.  */
+
+static bool
+unlikely_executed_bb_p (basic_block bb)
+{
+  if (bb->count == profile_count::zero ())
+    return true;
+  if (bb == ENTRY_BLOCK_PTR_FOR_FN (cfun) || bb == EXIT_BLOCK_PTR_FOR_FN (cfun))
+    return false;
+  for (gimple_stmt_iterator gsi = gsi_start_bb (bb);
+       !gsi_end_p (gsi); gsi_next (&gsi))
+    {
+      if (unlikely_executed_stmt_p (gsi_stmt (gsi)))
+        return true;
+      if (stmt_can_terminate_bb_p (gsi_stmt (gsi)))
+	return false;
+    }
+  return false;
+}
+
 /* We can not predict the probabilities of outgoing edges of bb.  Set them
    evenly and hope for the best.  If UNLIKELY_EDGES is not null, distribute
    even probability for all edges not mentioned in the set.  These edges
@@ -777,7 +842,7 @@ set_even_probabilities (basic_block bb,
   edge_iterator ei;
 
   FOR_EACH_EDGE (e, ei, bb->succs)
-    if (!(e->flags & (EDGE_EH | EDGE_FAKE)))
+    if (!unlikely_executed_edge_p (e))
       nedges ++;
 
   /* Make the distribution even if all edges are unlikely.  */
@@ -791,7 +856,7 @@ set_even_probabilities (basic_block bb,
   unsigned c = nedges - unlikely_count;
 
   FOR_EACH_EDGE (e, ei, bb->succs)
-    if (!(e->flags & (EDGE_EH | EDGE_FAKE)))
+    if (!unlikely_executed_edge_p (e))
       {
 	if (unlikely_edges != NULL && unlikely_edges->contains (e))
 	  e->probability = PROB_VERY_UNLIKELY;
@@ -1056,7 +1121,7 @@ combine_predictions_for_bb (basic_block bb, bool dry_run)
   edge_iterator ei;
 
   FOR_EACH_EDGE (e, ei, bb->succs)
-    if (!(e->flags & (EDGE_EH | EDGE_FAKE)))
+    if (!unlikely_executed_edge_p (e))
       {
 	nedges ++;
 	if (first && !second)
@@ -1107,7 +1172,7 @@ combine_predictions_for_bb (basic_block bb, bool dry_run)
 		       "%i edges in bb %i predicted with some unlikely edges\n",
 		       nedges, bb->index);
 	      FOR_EACH_EDGE (e, ei, bb->succs)
-		if (!(e->flags & (EDGE_EH | EDGE_FAKE)))
+		if (!unlikely_executed_edge_p (e))
 		  dump_prediction (dump_file, PRED_COMBINED, e->probability,
 		   bb, REASON_NONE, e);
 	    }
@@ -1758,7 +1823,7 @@ predict_loops (void)
 
       exits = get_loop_exit_edges (loop);
       FOR_EACH_VEC_ELT (exits, j, ex)
-	if (!(ex->flags & (EDGE_EH | EDGE_ABNORMAL_CALL | EDGE_FAKE)))
+	if (!unlikely_executed_edge_p (ex) && !(ex->flags & EDGE_ABNORMAL_CALL))
 	  n_exits ++;
       if (!n_exits)
 	{
@@ -1792,7 +1857,8 @@ predict_loops (void)
 	  enum br_predictor predictor;
 	  widest_int nit;
 
-	  if (ex->flags & (EDGE_EH | EDGE_ABNORMAL_CALL | EDGE_FAKE))
+	  if (unlikely_executed_edge_p (ex)
+	      || (ex->flags & EDGE_ABNORMAL_CALL))
 	    continue;
 	  /* Loop heuristics do not expect exit conditional to be inside
 	     inner loop.  We predict from innermost to outermost loop.  */
@@ -2609,7 +2675,7 @@ tree_bb_level_predictions (void)
   edge_iterator ei;
 
   FOR_EACH_EDGE (e, ei, EXIT_BLOCK_PTR_FOR_FN (cfun)->preds)
-    if (!(e->flags & (EDGE_ABNORMAL | EDGE_FAKE | EDGE_EH)))
+    if (!unlikely_executed_edge_p (e) && !(e->flags & EDGE_ABNORMAL_CALL))
       {
         has_return_edges = true;
 	break;
@@ -2863,7 +2929,7 @@ predict_paths_for_bb (basic_block cur, basic_block bb,
       bool found = false;
 
       /* Ignore fake edges and eh, we predict them as not taken anyway.  */
-      if (e->flags & (EDGE_EH | EDGE_FAKE))
+      if (unlikely_executed_edge_p (e))
 	continue;
       gcc_assert (bb == cur || dominated_by_p (CDI_POST_DOMINATORS, cur, bb));
 
@@ -2871,7 +2937,7 @@ predict_paths_for_bb (basic_block cur, basic_block bb,
 	 and does not lead to BB and does not exit the loop.  */
       FOR_EACH_EDGE (e2, ei2, e->src->succs)
 	if (e2 != e
-	    && !(e2->flags & (EDGE_EH | EDGE_FAKE))
+	    && !unlikely_executed_edge_p (e2)
 	    && !dominated_by_p (CDI_POST_DOMINATORS, e2->dest, bb)
 	    && (!in_loop || !loop_exit_edge_p (in_loop, e2)))
 	  {
@@ -2923,7 +2989,7 @@ predict_paths_leading_to_edge (edge e, enum br_predictor pred,
   basic_block bb = e->src;
   FOR_EACH_EDGE (e2, ei, bb->succs)
     if (e2->dest != e->src && e2->dest != e->dest
-	&& !(e->flags & (EDGE_EH | EDGE_FAKE))
+	&& !unlikely_executed_edge_p (e)
 	&& !dominated_by_p (CDI_POST_DOMINATORS, e->src, e2->dest))
       {
 	has_nonloop_edge = true;
@@ -3341,6 +3407,142 @@ expensive_function_p (int threshold)
   return false;
 }
 
+/* Determine basic blocks/edges that are known to be unlikely executed and set
+   their counters to zero.
+   This is done with first identifying obviously unlikely BBs/edges and then
+   propagating in both directions.  */
+
+static void
+determine_unlikely_bbs ()
+{
+  basic_block bb;
+  auto_vec<basic_block, 64> worklist;
+  edge_iterator ei;
+  edge e;
+
+  FOR_EACH_BB_FN (bb, cfun)
+    {
+      if (!(bb->count == profile_count::zero ())
+	  && unlikely_executed_bb_p (bb))
+	{
+          if (dump_file && (dump_flags & TDF_DETAILS))
+	    fprintf (dump_file, "Basic block %i is locally unlikely\n",
+		     bb->index);
+	  bb->count = profile_count::zero ();
+	}
+
+      if (bb->count == profile_count::zero ())
+	{
+	  bb->frequency = 0;
+          FOR_EACH_EDGE (e, ei, bb->preds)
+	    e->count = profile_count::zero ();
+	}
+
+      FOR_EACH_EDGE (e, ei, bb->succs)
+	if (!(e->count == profile_count::zero ())
+	    && unlikely_executed_edge_p (e))
+	  {
+            if (dump_file && (dump_flags & TDF_DETAILS))
+	      fprintf (dump_file, "Edge %i->%i is locally unlikely\n",
+		       bb->index, e->dest->index);
+	    e->count = profile_count::zero ();
+	  }
+
+      gcc_checking_assert (!bb->aux);
+    }
+
+  if (!(ENTRY_BLOCK_PTR_FOR_FN (cfun)->count == profile_count::zero ()))
+    {
+      ENTRY_BLOCK_PTR_FOR_FN (cfun)->aux = (void *)(size_t) 1;
+      worklist.safe_push (ENTRY_BLOCK_PTR_FOR_FN (cfun));
+
+      while (worklist.length () > 0)
+	{
+	  bb = worklist.pop ();
+	  FOR_EACH_EDGE (e, ei, bb->succs)
+	    if (!(e->count == profile_count::zero ())
+		&& !(e->dest->count == profile_count::zero ())
+		&& !e->dest->aux)
+	      {
+		e->dest->aux = (void *)(size_t) 1;
+		worklist.safe_push (e->dest);
+	      }
+	}
+    }
+
+  FOR_ALL_BB_FN (bb, cfun)
+    {
+      if (!bb->aux)
+	{
+	  if (!(bb->count == profile_count::zero ())
+	      && (dump_file && (dump_flags & TDF_DETAILS)))
+	    fprintf (dump_file,
+		     "Basic block %i is marked unlikely by forward prop\n",
+		     bb->index);
+	  bb->count = profile_count::zero ();
+	  bb->frequency = 0;
+          FOR_EACH_EDGE (e, ei, bb->succs)
+	    e->count = profile_count::zero ();
+	}
+      else
+        bb->aux = NULL;
+    }
+
+  auto_vec<int, 64> nsuccs;
+  nsuccs.safe_grow_cleared (last_basic_block_for_fn (cfun));
+  FOR_ALL_BB_FN (bb, cfun)
+    if (!(bb->count == profile_count::zero ())
+	&& bb != EXIT_BLOCK_PTR_FOR_FN (cfun))
+      {
+	nsuccs[bb->index] = 0;
+        FOR_EACH_EDGE (e, ei, bb->succs)
+	  if (!(e->count == profile_count::zero ()))
+	    nsuccs[bb->index]++;
+	if (!nsuccs[bb->index])
+	  worklist.safe_push (bb);
+      }
+  while (worklist.length () > 0)
+    {
+      bb = worklist.pop ();
+      if (bb != ENTRY_BLOCK_PTR_FOR_FN (cfun))
+	{
+	  bool found = false;
+          for (gimple_stmt_iterator gsi = gsi_start_bb (bb);
+               !gsi_end_p (gsi); gsi_next (&gsi))
+	    if (stmt_can_terminate_bb_p (gsi_stmt (gsi))
+		/* stmt_can_terminate_bb_p special cases noreturns because it
+		   assumes that fake edges are created.  We want to know that
+		   noreturn alone does not imply BB to be unlikely.  */
+		|| (is_gimple_call (gsi_stmt (gsi))
+		    && (gimple_call_flags (gsi_stmt (gsi)) & ECF_NORETURN)))
+	      {
+		found = true;
+		break;
+	      }
+	  if (found)
+	    continue;
+	}
+      if (!(bb->count == profile_count::zero ())
+	  && (dump_file && (dump_flags & TDF_DETAILS)))
+	fprintf (dump_file,
+		 "Basic block %i is marked unlikely by backward prop\n",
+		 bb->index);
+      bb->count = profile_count::zero ();
+      bb->frequency = 0;
+      FOR_EACH_EDGE (e, ei, bb->preds)
+	if (!(e->count == profile_count::zero ()))
+	  {
+	    e->count = profile_count::zero ();
+	    if (!(e->src->count == profile_count::zero ()))
+	      {
+	        nsuccs[e->src->index]--;
+	        if (!nsuccs[e->src->index])
+		  worklist.safe_push (e->src);
+	      }
+	  }
+    }
+}
+
 /* Estimate and propagate basic block frequencies using the given branch
    probabilities.  If FORCE is true, the frequencies are used to estimate
    the counts even when there are already non-zero profile counts.  */
@@ -3351,7 +3553,10 @@ estimate_bb_frequencies (bool force)
   basic_block bb;
   sreal freq_max;
 
-  if (force || profile_status_for_fn (cfun) != PROFILE_READ || !counts_to_freqs ())
+  determine_unlikely_bbs ();
+
+  if (force || profile_status_for_fn (cfun) != PROFILE_READ
+      || !counts_to_freqs ())
     {
       static int real_values_initialized = 0;
 
@@ -3423,8 +3628,9 @@ compute_function_frequency (void)
   if (profile_status_for_fn (cfun) != PROFILE_READ)
     {
       int flags = flags_from_decl_or_type (current_function_decl);
-      if (lookup_attribute ("cold", DECL_ATTRIBUTES (current_function_decl))
-	  != NULL)
+      if (ENTRY_BLOCK_PTR_FOR_FN (cfun)->count == profile_count::zero ()
+	  || lookup_attribute ("cold", DECL_ATTRIBUTES (current_function_decl))
+	     != NULL)
         node->frequency = NODE_FREQUENCY_UNLIKELY_EXECUTED;
       else if (lookup_attribute ("hot", DECL_ATTRIBUTES (current_function_decl))
 	       != NULL)
@@ -3812,3 +4018,46 @@ force_edge_cold (edge e, bool impossible)
 		 impossible ? "impossible" : "cold");
     }
 }
+
+#if CHECKING_P
+
+namespace selftest {
+
+/* Test that value range of predictor values defined in predict.def is
+   within range (50, 100].  */
+
+struct branch_predictor
+{
+  const char *name;
+  unsigned probability;
+};
+
+#define DEF_PREDICTOR(ENUM, NAME, HITRATE, FLAGS) { NAME, HITRATE },
+
+static void
+test_prediction_value_range ()
+{
+  branch_predictor predictors[] = {
+#include "predict.def"
+    {NULL, -1}
+  };
+
+  for (unsigned i = 0; predictors[i].name != NULL; i++)
+    {
+      unsigned p = 100 * predictors[i].probability / REG_BR_PROB_BASE;
+      ASSERT_TRUE (p > 50 && p <= 100);
+    }
+}
+
+#undef DEF_PREDICTOR
+
+/* Run all of the selfests within this file.  */
+
+void
+predict_c_tests ()
+{
+  test_prediction_value_range ();
+}
+
+} // namespace selftest
+#endif /* CHECKING_P.  */
