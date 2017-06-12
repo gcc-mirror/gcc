@@ -1,3 +1,28 @@
+2017-06-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.c (c_parser_omp_clause_name): Handle
+	in_reduction and task_reduction clauses.
+	(c_parser_omp_variable_list): Handle
+	OMP_CLAUSE_IN_REDUCTION and OMP_CLAUSE_TASK_REDUCTION.
+	(c_parser_omp_clause_reduction): Add KIND argument.  Pass
+	it to c_parser_omp_variable_list.
+	(c_parser_oacc_all_clauses): Adjust c_parser_omp_clause_reduction
+	caller.
+	(c_parser_omp_all_clauses): Likewise.  Handle
+	PRAGMA_OMP_CLAUSE_IN_REDUCTION and PRAGMA_OMP_CLAUSE_TASK_REDUCTION.
+	(OMP_TASK_CLAUSE_MASK): Add in_reduction clause.
+	(OMP_TASKGROUP_CLAUSE_MASK): Define.
+	(c_parser_omp_taskgroup): Add LOC argument.  Parse taskgroup clauses.
+	(OMP_TASKLOOP_CLAUSE_MASK): Add reduction and in_reduction clauses.
+	(c_parser_omp_taskloop): Don't mask off PRAGMA_OMP_CLAUSE_REDUCTION.
+	(c_parser_omp_construct): Adjust c_parser_omp_taskgroup caller.
+	(c_parser_cilk_all_clauses): Adjust c_parser_omp_clause_reduction
+	caller.
+	* c-typeck.c (handle_omp_array_sections_1): Handle
+	OMP_CLAUSE_{IN,TASK}_REDUCTION like OMP_CLAUSE_REDUCTION.
+	(handle_omp_array_sections): Likewise.
+	(c_finish_omp_clauses): Likewise.
+
 2017-05-10  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-parser.c (c_parser_omp_clause_lastprivate): Parse optional

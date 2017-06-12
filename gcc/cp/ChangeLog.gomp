@@ -1,3 +1,34 @@
+2017-06-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* parser.c (cp_parser_omp_clause_name): Handle
+	in_reduction and task_reduction clauses.
+	(cp_parser_omp_var_list_no_open): Handle
+	OMP_CLAUSE_IN_REDUCTION and OMP_CLAUSE_TASK_REDUCTION.
+	(cp_parser_omp_clause_reduction): Add KIND argument.  Pass
+	it to cp_parser_omp_var_list_no_open.
+	(cp_parser_omp_clause_lastprivate): Remove unused loc argument.
+	(cp_parser_oacc_all_clauses): Adjust cp_parser_omp_clause_reduction
+	caller.
+	(cp_parser_omp_all_clauses): Likewise.  Handle
+	PRAGMA_OMP_CLAUSE_IN_REDUCTION and PRAGMA_OMP_CLAUSE_TASK_REDUCTION.
+	Adjust cp_parser_omp_clause_lastprivate caller.
+	(cp_parser_omp_for_loop): Handle OMP_CLAUSE_IN_REDUCTION like
+	OMP_CLAUSE_REDUCTION.
+	(OMP_TASK_CLAUSE_MASK): Add in_reduction clause.
+	(OMP_TASKGROUP_CLAUSE_MASK): Define.
+	(cp_parser_omp_taskgroup): Parse taskgroup clauses, adjust
+	c_finish_omp_taskgroup caller.
+	(OMP_TASKLOOP_CLAUSE_MASK): Add reduction and in_reduction clauses.
+	(cp_parser_cilk_simd_all_clauses): Adjust
+	cp_parser_omp_clause_reduction caller.
+	* semantics.c (handle_omp_array_sections_1): Handle
+	OMP_CLAUSE_{IN,TASK}_REDUCTION like OMP_CLAUSE_REDUCTION.
+	(handle_omp_array_sections): Likewise.
+	(finish_omp_clauses): Likewise.
+	* cp-gimplify.c (cp_genericize_r): Handle OMP_CLAUSE_IN_REDUCTION
+	and OMP_CLAUSE_TASK_REDUCTION.
+	* pt.c (tsubst_expr): Handle clauses on OMP_TASKGROUP.
+
 2017-05-10  Jakub Jelinek  <jakub@redhat.com>
 
 	* parser.c (cp_parser_omp_clause_lastprivate): New function.

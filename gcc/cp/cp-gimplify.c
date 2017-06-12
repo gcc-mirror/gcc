@@ -1171,6 +1171,8 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
 	  *walk_subtrees = 0;
 	break;
       case OMP_CLAUSE_REDUCTION:
+      case OMP_CLAUSE_IN_REDUCTION:
+      case OMP_CLAUSE_TASK_REDUCTION:
 	/* Don't dereference an invisiref in reduction clause's
 	   OMP_CLAUSE_DECL either.  OMP_CLAUSE_REDUCTION_{INIT,MERGE}
 	   still needs to be genericized.  */

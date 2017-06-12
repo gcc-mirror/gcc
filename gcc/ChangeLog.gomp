@@ -1,3 +1,51 @@
+2017-06-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree.def (OMP_TASKGROUP): Add another operand, move next to other
+	OpenMP constructs with body and clauses operands.
+	* gimple-pretty-print.c (dump_gimple_omp_taskgroup): New function.
+	(pp_gimple_stmt_1): Handle GIMPLE_OMP_TASKGROUP.
+	* gimple.h (gimple_build_omp_taskgroup): Add clauses argument.
+	(gimple_omp_taskgroup_clauses): New inline function.
+	(gimple_omp_taskgroup_clauses_ptr): Likewise.
+	(gimple_omp_taskgroup_set_clauses): Likewise.
+	* tree.h (OMP_BODY): Use OMP_MASTER instead of OMP_TASKGROUP.
+	(OMP_CLAUSES): Use OMP_TASKGROUP instead of OMP_SINGLE.
+	(OMP_TASKGROUP_CLAUSES): Define.
+	(OMP_CLAUSE_REDUCTION_CODE): Handle OMP_CLAUSE_{,IN_,TASK_}REDUCTION.
+	(OMP_CLAUSE_REDUCTION_INIT): Likewise.
+	(OMP_CLAUSE_REDUCTION_MERGE): Likewise.
+	(OMP_CLAUSE_REDUCTION_PLACEHOLDER): Likewise.
+	(OMP_CLAUSE_REDUCTION_DECL_PLACEHOLDER): Likewise.
+	(OMP_CLAUSE_REDUCTION_OMP_ORIG_REF): Likewise.
+	* tree-pretty-print.c (dump_omp_clause): Handle
+	OMP_CLAUSE_{TASK,IN}_REDUCTION.
+	(dump_generic_node): Print taskgroup clauses.
+	* gimple.def (GIMPLE_OMP_TASKGROUP): Use GSS_OMP_SINGLE_LAYOUT
+	instead of GSS_OMP.
+	* tree.c (omp_clause_num_ops): Add in_reduction and task_reduction
+	clause entries.
+	(omp_clause_code_name): Likewise.
+	(walk_tree_1): Handle OMP_CLAUSE_{TASK,IN}_REDUCTION.
+	* tree-streamer-out.c (pack_ts_omp_clause_value_fields): Likewise.
+	(write_ts_omp_clause_tree_pointers): Likewise.
+	* tree-streamer-in.c (unpack_ts_omp_clause_value_fields): Likewise.
+	* gimple.c (gimple_build_omp_taskgroup): Add CLAUSES argument.  Call
+	gimple_omp_taskgroup_set_clauses.
+	(gimple_copy): Copy taskgroup clauses.
+	* omp-low.c (scan_sharing_clauses): Handle
+	OMP_CLAUSE_{TASK,IN}_REDUCTION like OMP_CLAUSE_REDUCTION.
+	(lower_rec_input_clauses): Likewise.
+	(scan_omp_for): Fix comment formatting.
+	* lto-streamer-out.c (hash_tree): Handle
+	OMP_CLAUSE_{TASK,IN}_REDUCTION.
+	* tree-core.h (enum omp_clause_code): Add OMP_CLAUSE_TASK_REDUCTION
+	and OMP_CLAUSE_IN_REDUCTION.
+	* gimplify.c (gimplify_scan_omp_clauses): Handle
+	OMP_CLAUSE_{TASK,IN}_REDUCTION.
+	(gimplify_adjust_omp_clauses): Likewise.
+	(gimplify_expr): Handle taskgroup clauses.
+	* tree-inline.c (remap_gimple_stmt): Remap taskgroup clauses.
+
 2017-05-10  Jakub Jelinek  <jakub@redhat.com>
 
 	* tree.h (OMP_CLAUSE_LASTPRIVATE_CONDITIONAL): Define.

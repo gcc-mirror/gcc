@@ -269,6 +269,12 @@ enum omp_clause_code {
 		reductions.  */
   OMP_CLAUSE_REDUCTION,
 
+  /* OpenMP clause: task_reduction (operator:variable_list).  */
+  OMP_CLAUSE_TASK_REDUCTION,
+
+  /* OpenMP clause: in_reduction (operator:variable_list).  */
+  OMP_CLAUSE_IN_REDUCTION,
+
   /* OpenMP clause: copyin (variable_list).  */
   OMP_CLAUSE_COPYIN,
 
@@ -1086,7 +1092,7 @@ struct GTY(()) tree_base {
 	   OMP_CLAUSE_MAP
 
        OMP_CLAUSE_REDUCTION_OMP_ORIG_REF in
-	   OMP_CLAUSE_REDUCTION
+	   OMP_CLAUSE_{,TASK_,IN_}REDUCTION
 
        TRANSACTION_EXPR_RELAXED in
 	   TRANSACTION_EXPR

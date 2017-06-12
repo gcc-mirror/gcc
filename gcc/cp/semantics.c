@@ -4591,7 +4591,9 @@ handle_omp_array_sections_1 (tree c, tree t, vec<tree> &types,
     }
 
   if (ort == C_ORT_OMP
-      && OMP_CLAUSE_CODE (c) == OMP_CLAUSE_REDUCTION
+      && (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_REDUCTION
+	  || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_IN_REDUCTION
+	  || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_TASK_REDUCTION)
       && TREE_CODE (TREE_CHAIN (t)) == FIELD_DECL)
     TREE_CHAIN (t) = omp_privatize_field (TREE_CHAIN (t), false);
   ret = handle_omp_array_sections_1 (c, TREE_CHAIN (t), types,
@@ -4650,7 +4652,9 @@ handle_omp_array_sections_1 (tree c, tree t, vec<tree> &types,
       if (!integer_nonzerop (length))
 	{
 	  if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_DEPEND
-	      || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_REDUCTION)
+	      || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_REDUCTION
+	      || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_IN_REDUCTION
+	      || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_TASK_REDUCTION)
 	    {
 	      if (integer_zerop (length))
 		{
@@ -4716,7 +4720,9 @@ handle_omp_array_sections_1 (tree c, tree t, vec<tree> &types,
 	      if (tree_int_cst_equal (size, low_bound))
 		{
 		  if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_DEPEND
-		      || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_REDUCTION)
+		      || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_REDUCTION
+		      || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_IN_REDUCTION
+		      || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_TASK_REDUCTION)
 		    {
 		      error_at (OMP_CLAUSE_LOCATION (c),
 				"zero length array section in %qs clause",
@@ -4735,7 +4741,9 @@ handle_omp_array_sections_1 (tree c, tree t, vec<tree> &types,
 	  else if (length == NULL_TREE)
 	    {
 	      if (OMP_CLAUSE_CODE (c) != OMP_CLAUSE_DEPEND
-		  && OMP_CLAUSE_CODE (c) != OMP_CLAUSE_REDUCTION)
+		  && OMP_CLAUSE_CODE (c) != OMP_CLAUSE_REDUCTION
+		  && OMP_CLAUSE_CODE (c) != OMP_CLAUSE_IN_REDUCTION
+		  && OMP_CLAUSE_CODE (c) != OMP_CLAUSE_TASK_REDUCTION)
 		maybe_zero_len = true;
 	      if (first_non_one == types.length ())
 		first_non_one++;
@@ -4771,7 +4779,9 @@ handle_omp_array_sections_1 (tree c, tree t, vec<tree> &types,
       else if (length == NULL_TREE)
 	{
 	  if (OMP_CLAUSE_CODE (c) != OMP_CLAUSE_DEPEND
-	      && OMP_CLAUSE_CODE (c) != OMP_CLAUSE_REDUCTION)
+	      && OMP_CLAUSE_CODE (c) != OMP_CLAUSE_REDUCTION
+	      && OMP_CLAUSE_CODE (c) != OMP_CLAUSE_IN_REDUCTION
+	      && OMP_CLAUSE_CODE (c) != OMP_CLAUSE_TASK_REDUCTION)
 	    maybe_zero_len = true;
 	  if (first_non_one == types.length ())
 	    first_non_one++;
@@ -4949,7 +4959,9 @@ handle_omp_array_sections (tree c, enum c_omp_region_type ort)
 
 	      if (i > first_non_one
 		  && ((length && integer_nonzerop (length))
-		      || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_REDUCTION))
+		      || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_REDUCTION
+		      || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_IN_REDUCTION
+		      || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_TASK_REDUCTION))
 		continue;
 	      if (length)
 		l = fold_convert (sizetype, length);
@@ -4977,7 +4989,9 @@ handle_omp_array_sections (tree c, enum c_omp_region_type ort)
 		  tree eltype = TREE_TYPE (types[num - 1]);
 		  while (TREE_CODE (eltype) == ARRAY_TYPE)
 		    eltype = TREE_TYPE (eltype);
-		  if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_REDUCTION)
+		  if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_REDUCTION
+		      || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_IN_REDUCTION
+		      || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_TASK_REDUCTION)
 		    size = size_binop (EXACT_DIV_EXPR, size,
 				       size_in_bytes (eltype));
 		  size = size_binop (MULT_EXPR, size, l);
@@ -4993,7 +5007,9 @@ handle_omp_array_sections (tree c, enum c_omp_region_type ort)
 	{
 	  if (side_effects)
 	    size = build2 (COMPOUND_EXPR, sizetype, side_effects, size);
-	  if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_REDUCTION)
+	  if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_REDUCTION
+	      || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_IN_REDUCTION
+	      || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_TASK_REDUCTION)
 	    {
 	      size = size_binop (MINUS_EXPR, size, size_one_node);
 	      tree index_type = build_index_type (size);
@@ -5869,6 +5885,8 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	  field_ok = ((ort & C_ORT_OMP_DECLARE_SIMD) == C_ORT_OMP);
 	  goto check_dup_generic;
 	case OMP_CLAUSE_REDUCTION:
+	case OMP_CLAUSE_IN_REDUCTION:
+	case OMP_CLAUSE_TASK_REDUCTION:
 	  field_ok = ((ort & C_ORT_OMP_DECLARE_SIMD) == C_ORT_OMP);
 	  t = OMP_CLAUSE_DECL (c);
 	  if (TREE_CODE (t) == TREE_LIST)
@@ -7208,6 +7226,8 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	  need_implicitly_determined = true;
 	  break;
 	case OMP_CLAUSE_REDUCTION:
+	case OMP_CLAUSE_IN_REDUCTION:
+	case OMP_CLAUSE_TASK_REDUCTION:
 	  need_implicitly_determined = true;
 	  break;
 	case OMP_CLAUSE_LINEAR:
@@ -7294,6 +7314,8 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	  break;
 
 	case OMP_CLAUSE_REDUCTION:
+	case OMP_CLAUSE_IN_REDUCTION:
+	case OMP_CLAUSE_TASK_REDUCTION:
 	  if (finish_omp_reduction_clause (c, &need_default_ctor,
 					   &need_dtor))
 	    remove = true;
@@ -7358,7 +7380,9 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
       inner_type = type = TREE_TYPE (t);
       if ((need_complete_type
 	   || need_copy_assignment
-	   || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_REDUCTION)
+	   || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_REDUCTION
+	   || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_IN_REDUCTION
+	   || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_TASK_REDUCTION)
 	  && TREE_CODE (inner_type) == REFERENCE_TYPE)
 	inner_type = TREE_TYPE (inner_type);
       while (TREE_CODE (inner_type) == ARRAY_TYPE)

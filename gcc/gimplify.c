@@ -7550,10 +7550,14 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 	    }
 	  goto do_add;
 	case OMP_CLAUSE_REDUCTION:
+	case OMP_CLAUSE_IN_REDUCTION:
+	case OMP_CLAUSE_TASK_REDUCTION:
 	  flags = GOVD_REDUCTION | GOVD_SEEN | GOVD_EXPLICIT;
 	  /* OpenACC permits reductions on private variables.  */
-	  if (!(region_type & ORT_ACC))
-	    check_non_private = "reduction";
+	  if (!(region_type & ORT_ACC)
+	      /* taskgroup is actually not a worksharing region.  */
+	      && code != OMP_TASKGROUP)
+	    check_non_private = omp_clause_code_name[OMP_CLAUSE_CODE (c)];
 	  decl = OMP_CLAUSE_DECL (c);
 	  if (TREE_CODE (decl) == MEM_REF)
 	    {
@@ -8239,7 +8243,9 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 	      && OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_FIRSTPRIVATE_POINTER)
 	    flags |= GOVD_MAP_0LEN_ARRAY;
 	  omp_add_variable (ctx, decl, flags);
-	  if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_REDUCTION
+	  if ((OMP_CLAUSE_CODE (c) == OMP_CLAUSE_REDUCTION
+	       || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_IN_REDUCTION
+	       || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_TASK_REDUCTION)
 	      && OMP_CLAUSE_REDUCTION_PLACEHOLDER (c))
 	    {
 	      omp_add_variable (ctx, OMP_CLAUSE_REDUCTION_PLACEHOLDER (c),
@@ -9155,6 +9161,8 @@ gimplify_adjust_omp_clauses (gimple_seq *pre_p, gimple_seq body, tree *list_p,
 	  break;
 
 	case OMP_CLAUSE_REDUCTION:
+	case OMP_CLAUSE_IN_REDUCTION:
+	case OMP_CLAUSE_TASK_REDUCTION:
 	  decl = OMP_CLAUSE_DECL (c);
 	  /* OpenACC reductions need a present_or_copy data clause.
 	     Add one if necessary.  Error is the reduction is private.  */
@@ -11859,7 +11867,12 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 		  g = gimple_build_try (body, cleanup, GIMPLE_TRY_FINALLY);
 		  body = NULL;
 		  gimple_seq_add_stmt (&body, g);
-		  g = gimple_build_omp_taskgroup (body);
+		  tree *pclauses = &OMP_TASKGROUP_CLAUSES (*expr_p);
+		  gimplify_scan_omp_clauses (pclauses, pre_p, ORT_WORKSHARE,
+					     OMP_TASKGROUP);
+		  gimplify_adjust_omp_clauses (pre_p, body, pclauses,
+					       OMP_TASKGROUP);
+		  g = gimple_build_omp_taskgroup (body, *pclauses);
 		}
 		break;
 	      case OMP_ORDERED:

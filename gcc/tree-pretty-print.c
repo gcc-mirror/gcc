@@ -428,6 +428,11 @@ dump_omp_clause (pretty_printer *pp, tree clause, int spc, dump_flags_t flags)
       pp_right_paren (pp);
       break;
 
+    case OMP_CLAUSE_TASK_REDUCTION:
+    case OMP_CLAUSE_IN_REDUCTION:
+      pp_string (pp, OMP_CLAUSE_CODE (clause) == OMP_CLAUSE_IN_REDUCTION
+		     ? "in_" : "task_");
+      /* FALLTHRU */
     case OMP_CLAUSE_REDUCTION:
       pp_string (pp, "reduction(");
       if (OMP_CLAUSE_REDUCTION_CODE (clause) != ERROR_MARK)
@@ -3130,6 +3135,7 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, dump_flags_t flags,
 
     case OMP_TASKGROUP:
       pp_string (pp, "#pragma omp taskgroup");
+      dump_omp_clauses (pp, OMP_TASKGROUP_CLAUSES (node), spc, flags);
       goto dump_omp_body;
 
     case OMP_ORDERED:

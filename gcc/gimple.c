@@ -857,7 +857,7 @@ gimple_build_omp_critical (gimple_seq body, tree name, tree clauses)
 
    BODY is sequence of statements inside the for loop.
    KIND is the `for' variant.
-   CLAUSES, are any of the construct's clauses.
+   CLAUSES are any of the construct's clauses.
    COLLAPSE is the collapse count.
    PRE_BODY is the sequence of statements that are loop invariant.  */
 
@@ -883,7 +883,7 @@ gimple_build_omp_for (gimple_seq body, int kind, tree clauses, size_t collapse,
 /* Build a GIMPLE_OMP_PARALLEL statement.
 
    BODY is sequence of statements which are executed in parallel.
-   CLAUSES, are the OMP parallel construct's clauses.
+   CLAUSES are the OMP parallel construct's clauses.
    CHILD_FN is the function created for the parallel threads to execute.
    DATA_ARG are the shared data argument(s).  */
 
@@ -906,7 +906,7 @@ gimple_build_omp_parallel (gimple_seq body, tree clauses, tree child_fn,
 /* Build a GIMPLE_OMP_TASK statement.
 
    BODY is sequence of statements which are executed by the explicit task.
-   CLAUSES, are the OMP parallel construct's clauses.
+   CLAUSES are the OMP task construct's clauses.
    CHILD_FN is the function created for the parallel threads to execute.
    DATA_ARG are the shared data argument(s).
    COPY_FN is the optional function for firstprivate initialization.
@@ -977,12 +977,14 @@ gimple_build_omp_grid_body (gimple_seq body)
 /* Build a GIMPLE_OMP_TASKGROUP statement.
 
    BODY is the sequence of statements to be executed by the taskgroup
-   construct.  */
+   construct.
+   CLAUSES are any of the construct's clauses.  */
 
 gimple *
-gimple_build_omp_taskgroup (gimple_seq body)
+gimple_build_omp_taskgroup (gimple_seq body, tree clauses)
 {
   gimple *p = gimple_alloc (GIMPLE_OMP_TASKGROUP, 0);
+  gimple_omp_taskgroup_set_clauses (p, clauses);
   if (body)
     gimple_omp_set_body (p, body);
 
@@ -1817,6 +1819,11 @@ gimple_copy (gimple *stmt)
 	  gimple_omp_ordered_set_clauses (as_a <gomp_ordered *> (copy), t);
 	  goto copy_omp_body;
 
+	case GIMPLE_OMP_TASKGROUP:
+	  t = unshare_expr (gimple_omp_taskgroup_clauses (stmt));
+	  gimple_omp_taskgroup_set_clauses (copy, t);
+	  goto copy_omp_body;
+
 	case GIMPLE_OMP_SECTIONS:
 	  t = unshare_expr (gimple_omp_sections_clauses (stmt));
 	  gimple_omp_sections_set_clauses (copy, t);
@@ -1829,7 +1836,6 @@ gimple_copy (gimple *stmt)
 	case GIMPLE_OMP_TEAMS:
 	case GIMPLE_OMP_SECTION:
 	case GIMPLE_OMP_MASTER:
-	case GIMPLE_OMP_TASKGROUP:
 	case GIMPLE_OMP_GRID_BODY:
 	copy_omp_body:
 	  new_seq = gimple_seq_copy (gimple_omp_body (stmt));

@@ -16267,6 +16267,7 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
     case OMP_SINGLE:
     case OMP_TEAMS:
     case OMP_CRITICAL:
+    case OMP_TASKGROUP:
       r = push_omp_privatization_clauses (TREE_CODE (t) == OMP_TEAMS
 					  && OMP_TEAMS_COMBINED (t));
       tmp = tsubst_omp_clauses (OMP_CLAUSES (t), C_ORT_OMP, args, complain,
@@ -16373,7 +16374,6 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
 
     case OMP_SECTION:
     case OMP_MASTER:
-    case OMP_TASKGROUP:
       stmt = push_stmt_list ();
       RECUR (OMP_BODY (t));
       stmt = pop_stmt_list (stmt);

@@ -10515,7 +10515,9 @@ c_parser_omp_clause_name (c_parser *parser)
 	    result = PRAGMA_OACC_CLAUSE_HOST;
 	  break;
 	case 'i':
-	  if (!strcmp ("inbranch", p))
+	  if (!strcmp ("in_reduction", p))
+	    result = PRAGMA_OMP_CLAUSE_IN_REDUCTION;
+	  else if (!strcmp ("inbranch", p))
 	    result = PRAGMA_OMP_CLAUSE_INBRANCH;
 	  else if (!strcmp ("independent", p))
 	    result = PRAGMA_OACC_CLAUSE_INDEPENDENT;
@@ -10609,7 +10611,9 @@ c_parser_omp_clause_name (c_parser *parser)
 	    result = PRAGMA_OACC_CLAUSE_SELF;
 	  break;
 	case 't':
-	  if (!strcmp ("taskgroup", p))
+	  if (!strcmp ("task_reduction", p))
+	    result = PRAGMA_OMP_CLAUSE_TASK_REDUCTION;
+	  else if (!strcmp ("taskgroup", p))
 	    result = PRAGMA_OMP_CLAUSE_TASKGROUP;
 	  else if (!strcmp ("thread_limit", p))
 	    result = PRAGMA_OMP_CLAUSE_THREAD_LIMIT;
@@ -10868,6 +10872,8 @@ c_parser_omp_variable_list (c_parser *parser,
 	      /* FALLTHROUGH  */
 	    case OMP_CLAUSE_DEPEND:
 	    case OMP_CLAUSE_REDUCTION:
+	    case OMP_CLAUSE_IN_REDUCTION:
+	    case OMP_CLAUSE_TASK_REDUCTION:
 	      while (c_parser_next_token_is (parser, CPP_OPEN_SQUARE))
 		{
 		  tree low_bound = NULL_TREE, length = NULL_TREE;
@@ -12164,10 +12170,15 @@ c_parser_omp_clause_private (c_parser *parser, tree list)
 
    reduction-operator:
      One of: + * - & ^ | && ||
-     identifier  */
+     identifier
+
+   OpenMP 5.0:
+   in_reduction ( reduction-operator : variable-list )
+   task_reduction ( reduction-operator : variable-list )  */
 
 static tree
-c_parser_omp_clause_reduction (c_parser *parser, tree list)
+c_parser_omp_clause_reduction (c_parser *parser, enum omp_clause_code kind,
+			       tree list)
 {
   location_t clause_loc = c_parser_peek_token (parser)->location;
   if (c_parser_require (parser, CPP_OPEN_PAREN, "expected %<(%>"))
@@ -12231,8 +12242,7 @@ c_parser_omp_clause_reduction (c_parser *parser, tree list)
 	{
 	  tree nl, c;
 
-	  nl = c_parser_omp_variable_list (parser, clause_loc,
-					   OMP_CLAUSE_REDUCTION, list);
+	  nl = c_parser_omp_variable_list (parser, clause_loc, kind, list);
 	  for (c = nl; c != list; c = OMP_CLAUSE_CHAIN (c))
 	    {
 	      tree d = OMP_CLAUSE_DECL (c), type;
@@ -13374,7 +13384,9 @@ c_parser_oacc_all_clauses (c_parser *parser, omp_clause_mask mask,
 	  c_name = "private";
 	  break;
 	case PRAGMA_OACC_CLAUSE_REDUCTION:
-	  clauses = c_parser_omp_clause_reduction (parser, clauses);
+	  clauses
+	    = c_parser_omp_clause_reduction (parser, OMP_CLAUSE_REDUCTION,
+					     clauses);
 	  c_name = "reduction";
 	  break;
 	case PRAGMA_OACC_CLAUSE_SELF:
@@ -13504,6 +13516,12 @@ c_parser_omp_all_clauses (c_parser *parser, omp_clause_mask mask,
 	  clauses = c_parser_omp_clause_if (parser, clauses, true);
 	  c_name = "if";
 	  break;
+	case PRAGMA_OMP_CLAUSE_IN_REDUCTION:
+	  clauses
+	    = c_parser_omp_clause_reduction (parser, OMP_CLAUSE_IN_REDUCTION,
+					     clauses);
+	  c_name = "in_reduction";
+	  break;
 	case PRAGMA_OMP_CLAUSE_LASTPRIVATE:
 	  clauses = c_parser_omp_clause_lastprivate (parser, clauses);
 	  c_name = "lastprivate";
@@ -13537,7 +13555,9 @@ c_parser_omp_all_clauses (c_parser *parser, omp_clause_mask mask,
 	  c_name = "private";
 	  break;
 	case PRAGMA_OMP_CLAUSE_REDUCTION:
-	  clauses = c_parser_omp_clause_reduction (parser, clauses);
+	  clauses
+	    = c_parser_omp_clause_reduction (parser, OMP_CLAUSE_REDUCTION,
+					     clauses);
 	  c_name = "reduction";
 	  break;
 	case PRAGMA_OMP_CLAUSE_SCHEDULE:
@@ -13547,6 +13567,12 @@ c_parser_omp_all_clauses (c_parser *parser, omp_clause_mask mask,
 	case PRAGMA_OMP_CLAUSE_SHARED:
 	  clauses = c_parser_omp_clause_shared (parser, clauses);
 	  c_name = "shared";
+	  break;
+	case PRAGMA_OMP_CLAUSE_TASK_REDUCTION:
+	  clauses
+	    = c_parser_omp_clause_reduction (parser, OMP_CLAUSE_TASK_REDUCTION,
+					     clauses);
+	  c_name = "task_reduction";
 	  break;
 	case PRAGMA_OMP_CLAUSE_UNTIED:
 	  clauses = c_parser_omp_clause_untied (parser, clauses);
@@ -15817,7 +15843,8 @@ c_parser_omp_single (location_t loc, c_parser *parser, bool *if_p)
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_FINAL)	\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_MERGEABLE)	\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_DEPEND)	\
-	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_PRIORITY))
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_PRIORITY)	\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_IN_REDUCTION))
 
 static tree
 c_parser_omp_task (location_t loc, c_parser *parser, bool *if_p)
@@ -15862,15 +15889,22 @@ c_parser_omp_taskyield (c_parser *parser)
 
 /* OpenMP 4.0:
    # pragma omp taskgroup new-line
+
+   OpenMP 5.0:
+   # pragma omp taskgroup taskgroup-clause[optseq] new-line
 */
 
+#define OMP_TASKGROUP_CLAUSE_MASK				\
+	( (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_TASK_REDUCTION))
+
 static tree
-c_parser_omp_taskgroup (c_parser *parser, bool *if_p)
+c_parser_omp_taskgroup (location_t loc, c_parser *parser, bool *if_p)
 {
-  location_t loc = c_parser_peek_token (parser)->location;
-  c_parser_skip_to_pragma_eol (parser);
-  return c_finish_omp_taskgroup (loc, c_parser_omp_structured_block (parser,
-								     if_p));
+  tree clauses = c_parser_omp_all_clauses (parser, OMP_TASKGROUP_CLAUSE_MASK,
+					   "#pragma omp taskgroup");
+
+  tree body = c_parser_omp_structured_block (parser, if_p);
+  return c_finish_omp_taskgroup (loc, body, clauses);
 }
 
 /* OpenMP 4.0:
@@ -17380,7 +17414,9 @@ c_parser_omp_declare (c_parser *parser, enum pragma_context context)
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_FINAL)	\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_MERGEABLE)	\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_NOGROUP)	\
-	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_PRIORITY))
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_PRIORITY)	\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_REDUCTION)	\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_IN_REDUCTION))
 
 static tree
 c_parser_omp_taskloop (location_t loc, c_parser *parser,
@@ -17401,7 +17437,6 @@ c_parser_omp_taskloop (location_t loc, c_parser *parser,
 	  tree cclauses_buf[C_OMP_CLAUSE_SPLIT_COUNT];
 	  if (cclauses == NULL)
 	    cclauses = cclauses_buf;
-	  mask &= ~(OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_REDUCTION);
 	  c_parser_consume_token (parser);
 	  if (!flag_openmp)  /* flag_openmp_simd  */
 	    return c_parser_omp_simd (loc, parser, p_name, mask, cclauses,
@@ -17521,7 +17556,7 @@ c_parser_omp_construct (c_parser *parser, bool *if_p)
       stmt = c_parser_omp_task (loc, parser, if_p);
       break;
     case PRAGMA_OMP_TASKGROUP:
-      stmt = c_parser_omp_taskgroup (parser, if_p);
+      stmt = c_parser_omp_taskgroup (loc, parser, if_p);
       break;
     case PRAGMA_OMP_TASKLOOP:
       strcpy (p_name, "#pragma omp");
@@ -17838,7 +17873,9 @@ c_parser_cilk_all_clauses (c_parser *parser)
 	  break;
 	case PRAGMA_CILK_CLAUSE_REDUCTION:
 	  /* Use the OpenMP counterpart.  */
-	  clauses = c_parser_omp_clause_reduction (parser, clauses);
+	  clauses
+	    = c_parser_omp_clause_reduction (parser, OMP_CLAUSE_REDUCTION,
+					     clauses);
 	  break;
 	default:
 	  c_parser_error (parser, "expected %<#pragma simd%> clause");

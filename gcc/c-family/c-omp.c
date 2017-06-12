@@ -70,7 +70,7 @@ c_finish_oacc_wait (location_t loc, tree parms, tree clauses)
 }
 
 /* Complete a #pragma omp master construct.  STMT is the structured-block
-   that follows the pragma.  LOC is the l*/
+   that follows the pragma.  LOC is the location of the #pragma.  */
 
 tree
 c_finish_omp_master (location_t loc, tree stmt)
@@ -80,18 +80,21 @@ c_finish_omp_master (location_t loc, tree stmt)
   return t;
 }
 
-/* Complete a #pragma omp taskgroup construct.  STMT is the structured-block
-   that follows the pragma.  LOC is the l*/
+/* Complete a #pragma omp taskgroup construct.  BODY is the structured-block
+   that follows the pragma.  LOC is the location of the #pragma.  */
 
 tree
-c_finish_omp_taskgroup (location_t loc, tree stmt)
+c_finish_omp_taskgroup (location_t loc, tree body, tree clauses)
 {
-  tree t = add_stmt (build1 (OMP_TASKGROUP, void_type_node, stmt));
-  SET_EXPR_LOCATION (t, loc);
-  return t;
+  tree stmt = make_node (OMP_TASKGROUP);
+  TREE_TYPE (stmt) = void_type_node;
+  OMP_TASKGROUP_BODY (stmt) = body;
+  OMP_TASKGROUP_CLAUSES (stmt) = clauses;
+  SET_EXPR_LOCATION (stmt, loc);
+  return add_stmt (stmt);
 }
 
-/* Complete a #pragma omp critical construct.  STMT is the structured-block
+/* Complete a #pragma omp critical construct.  BODY is the structured-block
    that follows the pragma, NAME is the identifier in the pragma, or null
    if it was omitted.  LOC is the location of the #pragma.  */
 
@@ -1031,6 +1034,7 @@ c_omp_split_clauses (location_t loc, enum tree_code code,
 	case OMP_CLAUSE_MERGEABLE:
 	case OMP_CLAUSE_NOGROUP:
 	case OMP_CLAUSE_PRIORITY:
+	case OMP_CLAUSE_IN_REDUCTION:
 	  s = C_OMP_CLAUSE_SPLIT_TASKLOOP;
 	  break;
 	/* Duplicate this to all of taskloop, distribute, for and simd.  */
@@ -1298,7 +1302,24 @@ c_omp_split_clauses (location_t loc, enum tree_code code,
 	  else if (code == OMP_SECTIONS || code == OMP_PARALLEL)
 	    s = C_OMP_CLAUSE_SPLIT_PARALLEL;
 	  else if (code == OMP_SIMD)
-	    s = C_OMP_CLAUSE_SPLIT_SIMD;
+	    {
+	      if ((mask & (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_NOGROUP))
+		  != 0)
+		{
+		  c = build_omp_clause (OMP_CLAUSE_LOCATION (clauses),
+					OMP_CLAUSE_REDUCTION);
+		  OMP_CLAUSE_DECL (c) = OMP_CLAUSE_DECL (clauses);
+		  OMP_CLAUSE_REDUCTION_CODE (c)
+		    = OMP_CLAUSE_REDUCTION_CODE (clauses);
+		  OMP_CLAUSE_REDUCTION_PLACEHOLDER (c)
+		    = OMP_CLAUSE_REDUCTION_PLACEHOLDER (clauses);
+		  OMP_CLAUSE_REDUCTION_DECL_PLACEHOLDER (c)
+		    = OMP_CLAUSE_REDUCTION_DECL_PLACEHOLDER (clauses);
+		  OMP_CLAUSE_CHAIN (c) = cclauses[C_OMP_CLAUSE_SPLIT_TASKLOOP];
+		  cclauses[C_OMP_CLAUSE_SPLIT_TASKLOOP] = c;
+		}
+	      s = C_OMP_CLAUSE_SPLIT_SIMD;
+	    }
 	  else
 	    s = C_OMP_CLAUSE_SPLIT_TEAMS;
 	  break;

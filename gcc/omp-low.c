@@ -1053,9 +1053,9 @@ scan_sharing_clauses (tree clauses, omp_context *ctx,
 	  goto do_private;
 
 	case OMP_CLAUSE_REDUCTION:
+	case OMP_CLAUSE_IN_REDUCTION:
 	  decl = OMP_CLAUSE_DECL (c);
-	  if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_REDUCTION
-	      && TREE_CODE (decl) == MEM_REF)
+	  if (TREE_CODE (decl) == MEM_REF)
 	    {
 	      tree t = TREE_OPERAND (decl, 0);
 	      if (TREE_CODE (t) == POINTER_PLUS_EXPR)
@@ -1382,6 +1382,7 @@ scan_sharing_clauses (tree clauses, omp_context *ctx,
 	  break;
 
 	case OMP_CLAUSE_REDUCTION:
+	case OMP_CLAUSE_IN_REDUCTION:
 	  decl = OMP_CLAUSE_DECL (c);
 	  if (TREE_CODE (decl) != MEM_REF)
 	    {
@@ -1510,7 +1511,9 @@ scan_sharing_clauses (tree clauses, omp_context *ctx,
   if (scan_array_reductions)
     {
       for (c = clauses; c; c = OMP_CLAUSE_CHAIN (c))
-	if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_REDUCTION
+	if ((OMP_CLAUSE_CODE (c) == OMP_CLAUSE_REDUCTION
+	     || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_IN_REDUCTION
+	     || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_TASK_REDUCTION)
 	    && OMP_CLAUSE_REDUCTION_PLACEHOLDER (c))
 	  {
 	    scan_omp (&OMP_CLAUSE_REDUCTION_GIMPLE_INIT (c), ctx);
@@ -2196,7 +2199,7 @@ scan_omp_for (gomp_for *stmt, omp_context *outer_ctx)
 
       if (tgt && is_oacc_kernels (tgt))
 	{
-	  /* Strip out reductions, as they are not  handled yet.  */
+	  /* Strip out reductions, as they are not handled yet.  */
 	  tree *prev_ptr = &clauses;
 
 	  while (tree probe = *prev_ptr)
@@ -3616,6 +3619,7 @@ lower_rec_input_clauses (tree clauses, gimple_seq *ilist, gimple_seq *dlist,
 	    sctx.max_vf = 1;
 	  break;
 	case OMP_CLAUSE_REDUCTION:
+	case OMP_CLAUSE_IN_REDUCTION:
 	  if (TREE_CODE (OMP_CLAUSE_DECL (c)) == MEM_REF
 	      || is_variable_sized (OMP_CLAUSE_DECL (c)))
 	    sctx.max_vf = 1;
@@ -3666,6 +3670,7 @@ lower_rec_input_clauses (tree clauses, gimple_seq *ilist, gimple_seq *dlist,
 		lastprivate_firstprivate = true;
 	      break;
 	    case OMP_CLAUSE_REDUCTION:
+	    case OMP_CLAUSE_IN_REDUCTION:
 	      if (OMP_CLAUSE_REDUCTION_OMP_ORIG_REF (c))
 		reduction_omp_orig_ref = true;
 	      break;
@@ -3732,7 +3737,9 @@ lower_rec_input_clauses (tree clauses, gimple_seq *ilist, gimple_seq *dlist,
 	    }
 
 	  new_var = var = OMP_CLAUSE_DECL (c);
-	  if (c_kind == OMP_CLAUSE_REDUCTION && TREE_CODE (var) == MEM_REF)
+	  if ((c_kind == OMP_CLAUSE_REDUCTION
+	       || c_kind == OMP_CLAUSE_IN_REDUCTION)
+	      && TREE_CODE (var) == MEM_REF)
 	    {
 	      var = TREE_OPERAND (var, 0);
 	      if (TREE_CODE (var) == POINTER_PLUS_EXPR)
@@ -3759,7 +3766,8 @@ lower_rec_input_clauses (tree clauses, gimple_seq *ilist, gimple_seq *dlist,
 		continue;
 	    }
 	  /* C/C++ array section reductions.  */
-	  else if (c_kind == OMP_CLAUSE_REDUCTION
+	  else if ((c_kind == OMP_CLAUSE_REDUCTION
+		    || c_kind == OMP_CLAUSE_IN_REDUCTION)
 		   && var != OMP_CLAUSE_DECL (c))
 	    {
 	      if (pass == 0)
@@ -4111,7 +4119,8 @@ lower_rec_input_clauses (tree clauses, gimple_seq *ilist, gimple_seq *dlist,
 
 	      new_var = build_simple_mem_ref_loc (clause_loc, new_var);
 	    }
-	  else if (c_kind == OMP_CLAUSE_REDUCTION
+	  else if ((c_kind == OMP_CLAUSE_REDUCTION
+		    || c_kind == OMP_CLAUSE_IN_REDUCTION)
 		   && OMP_CLAUSE_REDUCTION_PLACEHOLDER (c))
 	    {
 	      if (pass == 0)
@@ -4346,6 +4355,7 @@ lower_rec_input_clauses (tree clauses, gimple_seq *ilist, gimple_seq *dlist,
 	      break;
 
 	    case OMP_CLAUSE_REDUCTION:
+	    case OMP_CLAUSE_IN_REDUCTION:
 	      /* OpenACC reductions are initialized using the
 		 GOACC_REDUCTION internal function.  */
 	      if (is_gimple_omp_oacc (ctx->stmt))

@@ -80,8 +80,8 @@ enum pragma_kind {
 };
 
 
-/* All clauses defined by OpenACC 2.0, and OpenMP 2.5, 3.0, 3.1, 4.0 and 4.5.
-   Used internally by both C and C++ parsers.  */
+/* All clauses defined by OpenACC 2.0, and OpenMP 2.5, 3.0, 3.1, 4.0, 4.5
+   and 5.0.  Used internally by both C and C++ parsers.  */
 enum pragma_omp_clause {
   PRAGMA_OMP_CLAUSE_NONE = 0,
 
@@ -101,6 +101,7 @@ enum pragma_omp_clause {
   PRAGMA_OMP_CLAUSE_GRAINSIZE,
   PRAGMA_OMP_CLAUSE_HINT,
   PRAGMA_OMP_CLAUSE_IF,
+  PRAGMA_OMP_CLAUSE_IN_REDUCTION,
   PRAGMA_OMP_CLAUSE_INBRANCH,
   PRAGMA_OMP_CLAUSE_IS_DEVICE_PTR,
   PRAGMA_OMP_CLAUSE_LASTPRIVATE,
@@ -126,6 +127,7 @@ enum pragma_omp_clause {
   PRAGMA_OMP_CLAUSE_SHARED,
   PRAGMA_OMP_CLAUSE_SIMD,
   PRAGMA_OMP_CLAUSE_SIMDLEN,
+  PRAGMA_OMP_CLAUSE_TASK_REDUCTION,
   PRAGMA_OMP_CLAUSE_TASKGROUP,
   PRAGMA_OMP_CLAUSE_THREAD_LIMIT,
   PRAGMA_OMP_CLAUSE_THREADS,

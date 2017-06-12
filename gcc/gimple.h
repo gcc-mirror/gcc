@@ -738,7 +738,8 @@ struct GTY((tag("GSS_OMP_CONTINUE")))
   tree control_use;
 };
 
-/* GIMPLE_OMP_SINGLE, GIMPLE_OMP_TEAMS, GIMPLE_OMP_ORDERED */
+/* GIMPLE_OMP_SINGLE, GIMPLE_OMP_TEAMS, GIMPLE_OMP_ORDERED,
+   GIMPLE_OMP_TASKGROUP.  */
 
 struct GTY((tag("GSS_OMP_SINGLE_LAYOUT")))
   gimple_statement_omp_single_layout : public gimple_statement_omp
@@ -1467,7 +1468,7 @@ gomp_task *gimple_build_omp_task (gimple_seq, tree, tree, tree, tree,
 gimple *gimple_build_omp_section (gimple_seq);
 gimple *gimple_build_omp_master (gimple_seq);
 gimple *gimple_build_omp_grid_body (gimple_seq);
-gimple *gimple_build_omp_taskgroup (gimple_seq);
+gimple *gimple_build_omp_taskgroup (gimple_seq, tree);
 gomp_continue *gimple_build_omp_continue (tree, tree);
 gomp_ordered *gimple_build_omp_ordered (gimple_seq, tree);
 gimple *gimple_build_omp_return (bool);
@@ -4845,6 +4846,40 @@ static inline void
 gimple_omp_ordered_set_clauses (gomp_ordered *ord_stmt, tree clauses)
 {
   ord_stmt->clauses = clauses;
+}
+
+
+/* Return the clauses associated with OMP_TASKGROUP statement GS.  */
+
+static inline tree
+gimple_omp_taskgroup_clauses (const gimple *gs)
+{
+  GIMPLE_CHECK (gs, GIMPLE_OMP_TASKGROUP);
+  return
+    static_cast <const gimple_statement_omp_single_layout *> (gs)->clauses;
+}
+
+
+/* Return a pointer to the clauses associated with OMP taskgroup statement
+   GS.  */
+
+static inline tree *
+gimple_omp_taskgroup_clauses_ptr (gimple *gs)
+{
+  GIMPLE_CHECK (gs, GIMPLE_OMP_TASKGROUP);
+  return &static_cast <gimple_statement_omp_single_layout *> (gs)->clauses;
+}
+
+
+/* Set CLAUSES to be the clauses associated with OMP taskgroup statement
+   GS.  */
+
+static inline void
+gimple_omp_taskgroup_set_clauses (gimple *gs, tree clauses)
+{
+  GIMPLE_CHECK (gs, GIMPLE_OMP_TASKGROUP);
+  static_cast <gimple_statement_omp_single_layout *> (gs)->clauses
+    = clauses;
 }
 
 
