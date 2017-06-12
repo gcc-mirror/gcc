@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -489,6 +489,9 @@ package body Switch.B is
             case Switch_Chars (Ptr) is
                when 'e' =>
                   Warning_Mode := Treat_As_Error;
+
+               when 'E' =>
+                  Warning_Mode := Treat_Run_Time_Warnings_As_Errors;
 
                when 's' =>
                   Warning_Mode := Suppress;

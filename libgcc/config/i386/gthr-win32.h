@@ -545,6 +545,7 @@ __gthread_recursive_mutex_destroy (__gthread_recursive_mutex_t *__mutex)
 
 #else /* ! __GTHREAD_HIDE_WIN32API */
 
+#define NOGDI
 #include <windows.h>
 #include <errno.h>
 

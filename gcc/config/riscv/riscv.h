@@ -126,10 +126,11 @@ along with GCC; see the file COPYING3.  If not see
 /* There is no point aligning anything to a rounder boundary than this.  */
 #define BIGGEST_ALIGNMENT 128
 
-/* The user-level ISA permits misaligned accesses, but they may execute
-   extremely slowly and non-atomically.  Some privileged architectures
-   do not permit them at all.  It is best to enforce strict alignment.  */
-#define STRICT_ALIGNMENT 1
+/* The user-level ISA permits unaligned accesses, but they are not required
+   of the privileged architecture.  */
+#define STRICT_ALIGNMENT TARGET_STRICT_ALIGN
+
+#define SLOW_UNALIGNED_ACCESS(MODE, ALIGN) riscv_slow_unaligned_access
 
 /* Define this if you wish to imitate the way many other C compilers
    handle alignment of bitfields and the structures that contain
@@ -864,6 +865,7 @@ while (0)
 #ifndef USED_FOR_TARGET
 extern const enum reg_class riscv_regno_to_class[];
 extern bool riscv_hard_regno_mode_ok[][FIRST_PSEUDO_REGISTER];
+extern bool riscv_slow_unaligned_access;
 #endif
 
 #define ASM_PREFERRED_EH_DATA_FORMAT(CODE,GLOBAL) \

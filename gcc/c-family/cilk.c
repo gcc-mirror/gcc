@@ -109,6 +109,10 @@ cilk_set_spawn_marker (location_t loc, tree fcall)
   else
     {
       cfun->calls_cilk_spawn = true;
+      if (TREE_CODE (fcall) == CALL_EXPR)
+        EXPR_CILK_SPAWN (fcall) = 1;
+      else /* TREE_CODE (fcall) == TARGET_EXPR */
+        EXPR_CILK_SPAWN (TREE_OPERAND (fcall, 1)) = 1;
       return true;
     }
 }
@@ -775,37 +779,6 @@ create_cilk_wrapper (tree exp, tree *args_out)
   return fndecl;
 }
 
-/* Gimplify all the parameters for the Spawned function.  *EXPR_P can be a
-   CALL_EXPR, INIT_EXPR, MODIFY_EXPR or TARGET_EXPR.  *PRE_P and *POST_P are
-   gimple sequences from the caller of gimplify_cilk_spawn.  */
-
-void
-cilk_gimplify_call_params_in_spawned_fn (tree *expr_p, gimple_seq *pre_p)
-{
-  int ii = 0;
-  tree *fix_parm_expr = expr_p;
-
-  /* Remove CLEANUP_POINT_EXPR and EXPR_STMT from *spawn_p.  */
-  while (TREE_CODE (*fix_parm_expr) == CLEANUP_POINT_EXPR
-	 || TREE_CODE (*fix_parm_expr) == EXPR_STMT)
-    *fix_parm_expr = TREE_OPERAND (*fix_parm_expr, 0);
-
-  if ((TREE_CODE (*expr_p) == INIT_EXPR)
-      || (TREE_CODE (*expr_p) == TARGET_EXPR)
-      || (TREE_CODE (*expr_p) == MODIFY_EXPR))
-    fix_parm_expr = &TREE_OPERAND (*expr_p, 1);
-
-  if (TREE_CODE (*fix_parm_expr) == CALL_EXPR)
-    {
-      /* Cilk outlining assumes GENERIC bodies, avoid leaking SSA names
-         via parameters.  */
-      for (ii = 0; ii < call_expr_nargs (*fix_parm_expr); ii++)
-	gimplify_arg (&CALL_EXPR_ARG (*fix_parm_expr, ii), pre_p,
-		      EXPR_LOCATION (*fix_parm_expr), false);
-    }
-}
-
-
 /* Transform *SPAWN_P, a spawned CALL_EXPR, to gimple.  *SPAWN_P can be a
    CALL_EXPR, INIT_EXPR or MODIFY_EXPR.  Returns GS_OK if everything is fine,
    and GS_UNHANDLED, otherwise.  */
@@ -823,6 +796,12 @@ gimplify_cilk_spawn (tree *spawn_p)
 
   cfun->calls_cilk_spawn = 1;
   cfun->is_cilk_function = 1;
+
+  /* Remove CLEANUP_POINT_EXPR and EXPR_STMT from *spawn_p.  */
+  while (TREE_CODE (expr) == CLEANUP_POINT_EXPR
+         || TREE_CODE (expr) == EXPR_STMT)
+    expr = TREE_OPERAND (expr, 0);
+
   new_args = NULL;
   function = create_cilk_wrapper (expr, &new_args);
 
@@ -887,67 +866,6 @@ make_cilk_frame (tree fn)
   DECL_SEEN_IN_BIND_EXPR_P (decl) = 1;
   f->cilk_frame_decl = decl;
   return decl;
-}
-
-/* Returns a STATEMENT_LIST with all the pedigree operations required for
-   install body with frame cleanup functions.  FRAME_PTR is the pointer to
-   __cilkrts_stack_frame created by make_cilk_frame.  */
-
-tree
-cilk_install_body_pedigree_operations (tree frame_ptr)
-{
-  tree body_list = alloc_stmt_list ();
-  tree enter_frame = build_call_expr (cilk_enter_fast_fndecl, 1, frame_ptr); 
-  append_to_statement_list (enter_frame, &body_list);
-  
-  tree parent = cilk_arrow (frame_ptr, CILK_TI_FRAME_PARENT, 0);
-  tree worker = cilk_arrow (frame_ptr, CILK_TI_FRAME_WORKER, 0);
-
-  tree pedigree = cilk_arrow (frame_ptr, CILK_TI_FRAME_PEDIGREE, 0);
-  tree pedigree_rank = cilk_dot (pedigree, CILK_TI_PEDIGREE_RANK, 0);
-  tree parent_pedigree = cilk_dot (pedigree, CILK_TI_PEDIGREE_PARENT, 0);
-  tree pedigree_parent = cilk_arrow (parent, CILK_TI_FRAME_PEDIGREE, 0);
-  tree pedigree_parent_rank = cilk_dot (pedigree_parent, 
-					CILK_TI_PEDIGREE_RANK, 0);
-  tree pedigree_parent_parent = cilk_dot (pedigree_parent, 
-				     CILK_TI_PEDIGREE_PARENT, 0);
-  tree worker_pedigree = cilk_arrow (worker, CILK_TI_WORKER_PEDIGREE, 1);
-  tree w_pedigree_rank = cilk_dot (worker_pedigree, CILK_TI_PEDIGREE_RANK, 0);
-  tree w_pedigree_parent = cilk_dot (worker_pedigree, 
-				     CILK_TI_PEDIGREE_PARENT, 0);
-
-  /* sf.pedigree.rank = worker->pedigree.rank.  */
-  tree exp1 = build2 (MODIFY_EXPR, void_type_node, pedigree_rank,
-		     w_pedigree_rank);
-  append_to_statement_list (exp1, &body_list);
-
-  /* sf.pedigree.parent = worker->pedigree.parent.  */
-  exp1 = build2 (MODIFY_EXPR, void_type_node, parent_pedigree,
-		 w_pedigree_parent);
-  append_to_statement_list (exp1, &body_list);
-
-  /* sf.call_parent->pedigree.rank = worker->pedigree.rank.  */
-  exp1 = build2 (MODIFY_EXPR, void_type_node, pedigree_parent_rank,
-		 w_pedigree_rank);
-  append_to_statement_list (exp1, &body_list);
-
-  /* sf.call_parent->pedigree.parent = worker->pedigree.parent.  */
-  exp1 = build2 (MODIFY_EXPR, void_type_node, pedigree_parent_parent,
-		 w_pedigree_parent);
-  append_to_statement_list (exp1, &body_list);
-
-  /* sf->worker.pedigree.rank = 0.  */
-  exp1 = build2 (MODIFY_EXPR, void_type_node, w_pedigree_rank, 
-		 build_zero_cst (uint64_type_node));
-  append_to_statement_list (exp1, &body_list);
-
-  /* sf->pedigree.parent = &sf->pedigree.  */
-  exp1 = build2 (MODIFY_EXPR, void_type_node, w_pedigree_parent,
-		 build1 (ADDR_EXPR,
-			 build_pointer_type (cilk_pedigree_type_decl),
-			 pedigree));
-  append_to_statement_list (exp1, &body_list);
-  return body_list;
 }
 
 /* Add a new variable, VAR to a variable list in WD->DECL_MAP.  HOW indicates

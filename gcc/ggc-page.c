@@ -522,7 +522,6 @@ static bool in_gc = false;
 /* Initial guess as to how many page table entries we might need.  */
 #define INITIAL_PTE_COUNT 128
 
-static int ggc_allocated_p (const void *);
 static page_entry *lookup_page_table_entry (const void *);
 static void set_page_table_entry (void *, page_entry *);
 #ifdef USING_MMAP
@@ -587,10 +586,11 @@ push_by_depth (page_entry *p, unsigned long *s)
 #define save_in_use_p(__p) \
   (save_in_use_p_i (__p->index_by_depth))
 
-/* Returns nonzero if P was allocated in GC'able memory.  */
+/* Traverse the page table and find the entry for a page.
+   If the object wasn't allocated in GC return NULL.  */
 
-static inline int
-ggc_allocated_p (const void *p)
+static inline page_entry *
+safe_lookup_page_table_entry (const void *p)
 {
   page_entry ***base;
   size_t L1, L2;
@@ -603,7 +603,7 @@ ggc_allocated_p (const void *p)
   while (1)
     {
       if (table == NULL)
-	return 0;
+	return NULL;
       if (table->high_bits == high_bits)
 	break;
       table = table->next;
@@ -614,8 +614,10 @@ ggc_allocated_p (const void *p)
   /* Extract the level 1 and 2 indices.  */
   L1 = LOOKUP_L1 (p);
   L2 = LOOKUP_L2 (p);
+  if (! base[L1])
+    return NULL;
 
-  return base[L1] && base[L1][L2];
+  return base[L1][L2];
 }
 
 /* Traverse the page table and find the entry for a page.
@@ -1455,12 +1457,14 @@ gt_ggc_m_S (const void *p)
   unsigned long mask;
   unsigned long offset;
 
-  if (!p || !ggc_allocated_p (p))
+  if (!p)
     return;
 
-  /* Look up the page on which the object is alloced.  .  */
-  entry = lookup_page_table_entry (p);
-  gcc_assert (entry);
+  /* Look up the page on which the object is alloced.  If it was not
+     GC allocated, gracefully bail out.  */
+  entry = safe_lookup_page_table_entry (p);
+  if (!entry)
+    return;
 
   /* Calculate the index of the object on the page; this is its bit
      position in the in_use_p bitmap.  Note that because a char* might
@@ -2503,8 +2507,6 @@ ggc_pch_finish (struct ggc_pch_data *d, FILE *f)
 static void
 move_ptes_to_front (int count_old_page_tables, int count_new_page_tables)
 {
-  unsigned i;
-
   /* First, we swap the new entries to the front of the varrays.  */
   page_entry **new_by_depth;
   unsigned long **new_save_in_use;
@@ -2532,10 +2534,10 @@ move_ptes_to_front (int count_old_page_tables, int count_new_page_tables)
   G.save_in_use = new_save_in_use;
 
   /* Now update all the index_by_depth fields.  */
-  for (i = G.by_depth_in_use; i > 0; --i)
+  for (unsigned i = G.by_depth_in_use; i--;)
     {
-      page_entry *p = G.by_depth[i-1];
-      p->index_by_depth = i-1;
+      page_entry *p = G.by_depth[i];
+      p->index_by_depth = i;
     }
 
   /* And last, we update the depth pointers in G.depth.  The first

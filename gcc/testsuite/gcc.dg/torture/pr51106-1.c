@@ -6,9 +6,9 @@ int
 foo (int x)
 {
   asm goto ("" : : "i" (x) : : lab); /* { dg-error "impossible constraint" } */
+  /* { dg-warning "probably doesn.t match constraints" "" { target *-*-* } .-1 } */
   return 1;
 lab:
   return 0;
 }
 
-/* { dg-warning "probably doesn.t match constraints" "" { target *-*-* } 8 } */

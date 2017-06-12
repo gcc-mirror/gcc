@@ -48,7 +48,7 @@ bool operator<(const X&, const X&) {
   if (++count_X >= throw_after_X) {
     throw 666;
   }
-  return true;
+  return false;
 }
 
 

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2009-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 2009-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -208,14 +208,14 @@ package GNAT.Secure_Hashes is
       --  KL is 0 for a normal hash context, > 0 for HMAC
 
       type Context (KL : Key_Length := 0) is record
-         Key : Stream_Element_Array (1 .. KL);
-         --  HMAC key
-
          H_State : Hash_State.State (0 .. State_Words - 1) := Initial_State;
          --  Function-specific state
 
          M_State : Message_State (Block_Length);
          --  Function-independent state (block buffer)
+
+         Key : Stream_Element_Array (1 .. KL);
+         --  HMAC key
       end record;
 
       Initial_Context : constant Context (KL => 0) := (others => <>);

@@ -582,13 +582,12 @@
 	(gt:VEC_F (match_dup 2)
 		  (match_dup 1)))
    (set (match_dup 0)
-	(not:VEC_F (ior:VEC_F (match_dup 3)
-			      (match_dup 4))))]
-  "
+	(and:VEC_F (not:VEC_F (match_dup 3))
+		   (not:VEC_F (match_dup 4))))]
 {
   operands[3] = gen_reg_rtx (<MODE>mode);
   operands[4] = gen_reg_rtx (<MODE>mode);
-}")
+})
 
 (define_insn_and_split "*vector_ltgt<mode>"
   [(set (match_operand:VEC_F 0 "vfloat_operand" "")
@@ -693,19 +692,45 @@
   "")
 
 ;; This expansion handles the V16QI, V8HI, and V4SI modes in the
-;; implementation of the vec_all_ne and vec_any_eq built-in functions
-;; on Power9.
+;; implementation of the vec_all_ne built-in functions on Power9.
 (define_expand "vector_ne_<mode>_p"
   [(parallel
     [(set (reg:CC CR6_REGNO)
 	  (unspec:CC [(ne:CC (match_operand:VI 1 "vlogical_operand")
 			     (match_operand:VI 2 "vlogical_operand"))]
 	   UNSPEC_PREDICATE))
-     (set (match_operand:VI 0 "vlogical_operand")
+     (set (match_dup 3)
 	  (ne:VI (match_dup 1)
-		 (match_dup 2)))])]
+		 (match_dup 2)))])
+   (set (match_operand:SI 0 "register_operand" "=r")
+	(lt:SI (reg:CC CR6_REGNO)
+	       (const_int 0)))]
   "TARGET_P9_VECTOR"
-  "")
+{
+  operands[3] = gen_reg_rtx (<MODE>mode);
+})
+
+;; This expansion handles the V16QI, V8HI, and V4SI modes in the
+;; implementation of the vec_any_eq built-in functions on Power9.
+(define_expand "vector_ae_<mode>_p"
+  [(parallel
+    [(set (reg:CC CR6_REGNO)
+	  (unspec:CC [(ne:CC (match_operand:VI 1 "vlogical_operand")
+			     (match_operand:VI 2 "vlogical_operand"))]
+	   UNSPEC_PREDICATE))
+     (set (match_dup 3)
+	  (ne:VI (match_dup 1)
+		 (match_dup 2)))])
+   (set (match_operand:SI 0 "register_operand" "=r")
+	(lt:SI (reg:CC CR6_REGNO)
+	       (const_int 0)))
+   (set (match_dup 0)
+	(xor:SI (match_dup 0)
+		(const_int 1)))]
+  "TARGET_P9_VECTOR"
+{
+  operands[3] = gen_reg_rtx (<MODE>mode);
+})
 
 ;; This expansion handles the V16QI, V8HI, and V4SI modes in the
 ;; implementation of the vec_all_nez and vec_any_eqz built-in
@@ -725,41 +750,101 @@
   "TARGET_P9_VECTOR"
   "")
 
-;; This expansion handles the V4DI mode in the implementation of the
-;; vec_all_ne and vec_any_eq built-in function on Power9.
+;; This expansion handles the V2DI mode in the implementation of the
+;; vec_all_ne built-in function on Power9.
 ;;
-;; Since the "xvcmpne<mode>." instruction does not support DImode,
-;; we'll use a V4SI comparison, which will set the values of the CR6
-;; flags to be the same as if we had performed a DImode comparison.
-;; (All of the entries in a V2DI vector are not equal iff all of the
-;; entries in the same vector, interpeted as V4SI are not equal, and
-;; likewise in the test for "any equal".)
+;; Since the Power9 "xvcmpne<mode>." instruction does not support DImode,
+;; this expands into the same rtl that would be used for the Power8
+;; architecture.
 (define_expand "vector_ne_v2di_p"
   [(parallel
     [(set (reg:CC CR6_REGNO)
-	  (unspec:CC [(ne:CC (match_operand:V4SI 1 "vlogical_operand")
-			     (match_operand:V4SI 2 "vlogical_operand"))]
-	   UNSPEC_PREDICATE))
-     (set (match_operand:V4SI 0 "vlogical_operand")
-	  (ne:V4SI (match_dup 1)
-		   (match_dup 2)))])]
+	  (unspec:CC [(eq:CC (match_operand:V2DI 1 "vlogical_operand")
+			     (match_operand:V2DI 2 "vlogical_operand"))]
+		     UNSPEC_PREDICATE))
+     (set (match_dup 3)
+	  (eq:V2DI (match_dup 1)
+		   (match_dup 2)))])
+   (set (match_operand:SI 0 "register_operand" "=r")
+	(eq:SI (reg:CC CR6_REGNO)
+	       (const_int 0)))]
   "TARGET_P9_VECTOR"
-  "")
+{
+  operands[3] = gen_reg_rtx (V2DImode);
+})
+
+;; This expansion handles the V2DI mode in the implementation of the
+;; vec_any_eq built-in function on Power9.
+;;
+;; Since the Power9 "xvcmpne<mode>." instruction does not support DImode,
+;; this expands into the same rtl that would be used for the Power8
+;; architecture.
+(define_expand "vector_ae_v2di_p"
+  [(parallel
+    [(set (reg:CC CR6_REGNO)
+	  (unspec:CC [(eq:CC (match_operand:V2DI 1 "vlogical_operand")
+			     (match_operand:V2DI 2 "vlogical_operand"))]
+		     UNSPEC_PREDICATE))
+     (set (match_dup 3)
+	  (eq:V2DI (match_dup 1)
+		   (match_dup 2)))])
+   (set (match_operand:SI 0 "register_operand" "=r")
+	(eq:SI (reg:CC CR6_REGNO)
+	       (const_int 0)))
+   (set (match_dup 0)
+	(xor:SI (match_dup 0)
+		(const_int 1)))]
+  "TARGET_P9_VECTOR"
+{
+  operands[3] = gen_reg_rtx (V2DImode);
+})
 
 ;; This expansion handles the V4SF and V2DF modes in the Power9
-;; implementation of the vec_all_ne and vec_any_eq built-in
-;; functions.
+;; implementation of the vec_all_ne built-in functions.  Note that the
+;; expansions for this pattern with these modes makes no use of power9-
+;; specific instructions since there are no new power9 instructions
+;; for vector compare not equal with floating point arguments.
 (define_expand "vector_ne_<mode>_p"
   [(parallel
     [(set (reg:CC CR6_REGNO)
-	  (unspec:CC [(ne:CC (match_operand:VEC_F 1 "vlogical_operand")
+	  (unspec:CC [(eq:CC (match_operand:VEC_F 1 "vlogical_operand")
 			     (match_operand:VEC_F 2 "vlogical_operand"))]
-	   UNSPEC_PREDICATE))
-     (set (match_operand:VEC_F 0 "vlogical_operand")
-	  (ne:VEC_F (match_dup 1)
-		    (match_dup 2)))])]
+		     UNSPEC_PREDICATE))
+     (set (match_dup 3)
+	  (eq:VEC_F (match_dup 1)
+		    (match_dup 2)))])
+   (set (match_operand:SI 0 "register_operand" "=r")
+	(eq:SI (reg:CC CR6_REGNO)
+	       (const_int 0)))]
   "TARGET_P9_VECTOR"
-  "")
+{
+  operands[3] = gen_reg_rtx (<MODE>mode);
+})
+
+;; This expansion handles the V4SF and V2DF modes in the Power9
+;; implementation of the vec_any_eq built-in functions.  Note that the
+;; expansions for this pattern with these modes makes no use of power9-
+;; specific instructions since there are no new power9 instructions
+;; for vector compare not equal with floating point arguments.
+(define_expand "vector_ae_<mode>_p"
+  [(parallel
+    [(set (reg:CC CR6_REGNO)
+	  (unspec:CC [(eq:CC (match_operand:VEC_F 1 "vlogical_operand")
+			     (match_operand:VEC_F 2 "vlogical_operand"))]
+		     UNSPEC_PREDICATE))
+     (set (match_dup 3)
+	  (eq:VEC_F (match_dup 1)
+		    (match_dup 2)))])
+   (set (match_operand:SI 0 "register_operand" "=r")
+	(eq:SI (reg:CC CR6_REGNO)
+	       (const_int 0)))
+   (set (match_dup 0)
+	(xor:SI (match_dup 0)
+		(const_int 1)))]
+  "TARGET_P9_VECTOR"
+{
+  operands[3] = gen_reg_rtx (<MODE>mode);
+})
 
 (define_expand "vector_gt_<mode>_p"
   [(parallel
@@ -1224,98 +1309,3 @@
     emit_insn (gen_vsx_extract_<VEC_F:mode> (operand0, vec, elt));
     DONE;
   })
-
-
-;;; Expanders for vector insn patterns shared between the SPE and TARGET_PAIRED systems.
-
-(define_expand "absv2sf2"
-  [(set (match_operand:V2SF 0 "gpc_reg_operand" "")
-	(abs:V2SF (match_operand:V2SF 1 "gpc_reg_operand" "")))]
-  "TARGET_PAIRED_FLOAT || TARGET_SPE"
-  "")
-
-(define_expand "negv2sf2"
-  [(set (match_operand:V2SF 0 "gpc_reg_operand" "")
-	(neg:V2SF (match_operand:V2SF 1 "gpc_reg_operand" "")))]
-  "TARGET_PAIRED_FLOAT || TARGET_SPE"
-  "")
-
-(define_expand "addv2sf3"
-  [(set (match_operand:V2SF 0 "gpc_reg_operand" "")
-	(plus:V2SF (match_operand:V2SF 1 "gpc_reg_operand" "")
-		   (match_operand:V2SF 2 "gpc_reg_operand" "")))]
-  "TARGET_PAIRED_FLOAT || TARGET_SPE"
-  "
-{
-  if (TARGET_SPE)
-    {
-      /* We need to make a note that we clobber SPEFSCR.  */
-      rtx par = gen_rtx_PARALLEL (VOIDmode, rtvec_alloc (2));
-
-      XVECEXP (par, 0, 0) = gen_rtx_SET (operands[0],
-                                         gen_rtx_PLUS (V2SFmode, operands[1], operands[2]));
-      XVECEXP (par, 0, 1) = gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (SImode, SPEFSCR_REGNO));
-      emit_insn (par);
-      DONE;
-    }
-}")
-
-(define_expand "subv2sf3"
-  [(set (match_operand:V2SF 0 "gpc_reg_operand" "")
-	(minus:V2SF (match_operand:V2SF 1 "gpc_reg_operand" "")
-		    (match_operand:V2SF 2 "gpc_reg_operand" "")))]
-  "TARGET_PAIRED_FLOAT || TARGET_SPE"
-  "
-{
-  if (TARGET_SPE)
-    {
-      /* We need to make a note that we clobber SPEFSCR.  */
-      rtx par = gen_rtx_PARALLEL (VOIDmode, rtvec_alloc (2));
-
-      XVECEXP (par, 0, 0) = gen_rtx_SET (operands[0],
-                                         gen_rtx_MINUS (V2SFmode, operands[1], operands[2]));
-      XVECEXP (par, 0, 1) = gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (SImode, SPEFSCR_REGNO));
-      emit_insn (par);
-      DONE;
-    }
-}")
-
-(define_expand "mulv2sf3"
-  [(set (match_operand:V2SF 0 "gpc_reg_operand" "")
-	(mult:V2SF (match_operand:V2SF 1 "gpc_reg_operand" "")
-		   (match_operand:V2SF 2 "gpc_reg_operand" "")))]
-  "TARGET_PAIRED_FLOAT || TARGET_SPE"
-  "
-{
-  if (TARGET_SPE)
-    {
-      /* We need to make a note that we clobber SPEFSCR.  */
-      rtx par = gen_rtx_PARALLEL (VOIDmode, rtvec_alloc (2));
-
-      XVECEXP (par, 0, 0) = gen_rtx_SET (operands[0],
-                                         gen_rtx_MULT (V2SFmode, operands[1], operands[2]));
-      XVECEXP (par, 0, 1) = gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (SImode, SPEFSCR_REGNO));
-      emit_insn (par);
-      DONE;
-    }
-}")
-
-(define_expand "divv2sf3"
-  [(set (match_operand:V2SF 0 "gpc_reg_operand" "")
-	(div:V2SF (match_operand:V2SF 1 "gpc_reg_operand" "")
-		  (match_operand:V2SF 2 "gpc_reg_operand" "")))]
-  "TARGET_PAIRED_FLOAT || TARGET_SPE"
-  "
-{
-  if (TARGET_SPE)
-    {
-      /* We need to make a note that we clobber SPEFSCR.  */
-      rtx par = gen_rtx_PARALLEL (VOIDmode, rtvec_alloc (2));
-
-      XVECEXP (par, 0, 0) = gen_rtx_SET (operands[0],
-                                         gen_rtx_DIV (V2SFmode, operands[1], operands[2]));
-      XVECEXP (par, 0, 1) = gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (SImode, SPEFSCR_REGNO));
-      emit_insn (par);
-      DONE;
-    }
-}")

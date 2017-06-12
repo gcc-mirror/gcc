@@ -179,7 +179,7 @@
 
 
 /* Return highest supported input value for cpuid instruction.  ext can
-   be either 0x0 or 0x8000000 to return highest supported value for
+   be either 0x0 or 0x80000000 to return highest supported value for
    basic or extended cpuid information.  Function returns 0 if cpuid
    is not supported or whatever cpuid returns in eax register.  If sig
    pointer is non-null, then first four bytes of the signature
@@ -246,8 +246,9 @@ __get_cpuid (unsigned int __leaf,
 	     unsigned int *__ecx, unsigned int *__edx)
 {
   unsigned int __ext = __leaf & 0x80000000;
+  unsigned int __maxlevel = __get_cpuid_max (__ext, 0);
 
-  if (__get_cpuid_max (__ext, 0) < __leaf)
+  if (__maxlevel == 0 || __maxlevel < __leaf)
     return 0;
 
   __cpuid (__leaf, *__eax, *__ebx, *__ecx, *__edx);
@@ -262,8 +263,9 @@ __get_cpuid_count (unsigned int __leaf, unsigned int __subleaf,
 		   unsigned int *__ecx, unsigned int *__edx)
 {
   unsigned int __ext = __leaf & 0x80000000;
+  unsigned int __maxlevel = __get_cpuid_max (__ext, 0);
 
-  if (__get_cpuid_max (__ext, 0) < __leaf)
+  if (__maxlevel == 0 || __maxlevel < __leaf)
     return 0;
 
   __cpuid_count (__leaf, __subleaf, *__eax, *__ebx, *__ecx, *__edx);

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// +build darwin dragonfly freebsd netbsd openbsd solaris
+// +build aix darwin dragonfly freebsd netbsd openbsd solaris
 
 package syscall
 
@@ -235,6 +235,10 @@ func forkAndExecInChild(argv0 *byte, argv, envv []*byte, chroot, dir *byte, attr
 
 	// Set the controlling TTY to Ctty
 	if sys.Setctty {
+		if TIOCSCTTY == 0 {
+			err1 = ENOSYS
+			goto childerror
+		}
 		_, err1 = raw_ioctl(sys.Ctty, TIOCSCTTY, 0)
 		if err1 != 0 {
 			goto childerror

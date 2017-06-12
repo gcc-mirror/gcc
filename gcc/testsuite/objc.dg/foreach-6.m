@@ -48,7 +48,7 @@ int main (void)
     ;
 
   for (12 in array) /* { dg-error "invalid iterating variable in fast enumeration" } */
-    ;               /* { dg-error "iterating variable in fast enumeration is not an object" "" { target *-*-* } 50 } */
+    ;               /* { dg-error "iterating variable in fast enumeration is not an object" "" { target *-*-* } .-1 } */
 
   for (object in 12) /* { dg-error "collection in fast enumeration is not an object" } */
     ;

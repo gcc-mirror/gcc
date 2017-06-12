@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *          Copyright (C) 1992-2016, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2017, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -359,7 +359,7 @@ tree
 make_dummy_type (Entity_Id gnat_type)
 {
   Entity_Id gnat_equiv = Gigi_Equivalent_Type (Underlying_Type (gnat_type));
-  tree gnu_type;
+  tree gnu_type, debug_type;
 
   /* If there was no equivalent type (can only happen when just annotating
      types) or underlying type, go back to the original type.  */
@@ -383,6 +383,17 @@ make_dummy_type (Entity_Id gnat_type)
     TYPE_BY_REFERENCE_P (gnu_type) = 1;
 
   SET_DUMMY_NODE (gnat_equiv, gnu_type);
+
+  /* Create a debug type so that debug info consumers only see an unspecified
+     type.  */
+  if (Needs_Debug_Info (gnat_type))
+    {
+      debug_type = make_node (LANG_TYPE);
+      SET_TYPE_DEBUG_TYPE (gnu_type, debug_type);
+
+      TYPE_NAME (debug_type) = TYPE_NAME (gnu_type);
+      TYPE_ARTIFICIAL (debug_type) = TYPE_ARTIFICIAL (gnu_type);
+    }
 
   return gnu_type;
 }
@@ -2981,7 +2992,7 @@ process_deferred_decl_context (bool force)
   struct deferred_decl_context_node **it = &deferred_decl_context_queue;
   struct deferred_decl_context_node *node;
 
-  while (*it != NULL)
+  while (*it)
     {
       bool processed = false;
       tree context = NULL_TREE;
@@ -2989,7 +3000,7 @@ process_deferred_decl_context (bool force)
 
       node = *it;
 
-      /* If FORCE, get the innermost elaborated scope. Otherwise, just try to
+      /* If FORCE, get the innermost elaborated scope.  Otherwise, just try to
 	 get the first scope.  */
       gnat_scope = node->gnat_scope;
       while (Present (gnat_scope))
@@ -3046,7 +3057,6 @@ process_deferred_decl_context (bool force)
 	it = &node->next;
     }
 }
-
 
 /* Return VALUE scaled by the biggest power-of-2 factor of EXPR.  */
 
@@ -3210,10 +3220,19 @@ create_subprog_decl (tree name, tree asm_name, tree type, tree param_decl_list,
 
     case is_required:
       if (Back_End_Inlining)
-	decl_attributes (&subprog_decl,
-			 tree_cons (get_identifier ("always_inline"),
-				    NULL_TREE, NULL_TREE),
-			 ATTR_FLAG_TYPE_IN_PLACE);
+	{
+	  decl_attributes (&subprog_decl,
+			   tree_cons (get_identifier ("always_inline"),
+				      NULL_TREE, NULL_TREE),
+			   ATTR_FLAG_TYPE_IN_PLACE);
+
+	  /* Inline_Always guarantees that every direct call is inlined and
+	     that there is no indirect reference to the subprogram, so the
+	     instance in the original package (as well as its clones in the
+	     client packages created for inter-unit inlining) can be made
+	     private, which causes the out-of-line body to be eliminated.  */
+	  TREE_PUBLIC (subprog_decl) = 0;
+	}
 
       /* ... fall through ... */
 
@@ -3384,6 +3403,7 @@ gnat_type_for_size (unsigned precision, int unsignedp)
     t = make_unsigned_type (precision);
   else
     t = make_signed_type (precision);
+  TYPE_ARTIFICIAL (t) = 1;
 
   if (precision <= 2 * MAX_BITS_PER_WORD)
     signed_and_unsigned_types[precision][unsignedp] = t;
@@ -5411,11 +5431,16 @@ can_materialize_object_renaming_p (Node_Id expr)
 {
   while (true)
     {
+      expr = Original_Node (expr);
+
       switch Nkind (expr)
 	{
 	case N_Identifier:
 	case N_Expanded_Name:
-	  return true;
+	  if (!Present (Renamed_Object (Entity (expr))))
+	    return true;
+	  expr = Renamed_Object (Entity (expr));
+	  break;
 
 	case N_Selected_Component:
 	  {

@@ -294,7 +294,7 @@ extern bool mips_const_vector_shuffle_set_p (rtx, machine_mode);
 extern bool mips_const_vector_bitimm_set_p (rtx, machine_mode);
 extern bool mips_const_vector_bitimm_clr_p (rtx, machine_mode);
 extern rtx mips_msa_vec_parallel_const_half (machine_mode, bool);
-extern rtx mips_gen_const_int_vector (machine_mode, int);
+extern rtx mips_gen_const_int_vector (machine_mode, HOST_WIDE_INT);
 extern bool mips_secondary_memory_needed (enum reg_class, enum reg_class,
 					  machine_mode);
 extern bool mips_cannot_change_mode_class (machine_mode,

@@ -2052,14 +2052,18 @@ package body Scng is
             --  T'Digits'Img. Strings literals are included for things like
             --  "abs"'Address. Other literals are included to give better error
             --  behavior for illegal cases like 123'Img.
+            --
+            --  In Ada 2020, a target name (i.e. @) is a valid prefix of an
+            --  attribute, and functions like a name.
 
-            if Prev_Token = Tok_Identifier
-               or else Prev_Token = Tok_Right_Paren
-               or else Prev_Token = Tok_All
-               or else Prev_Token = Tok_Delta
-               or else Prev_Token = Tok_Digits
-               or else Prev_Token = Tok_Project
-               or else Prev_Token in Token_Class_Literal
+            if Prev_Token = Tok_All
+              or else Prev_Token = Tok_At_Sign
+              or else Prev_Token = Tok_Delta
+              or else Prev_Token = Tok_Digits
+              or else Prev_Token = Tok_Identifier
+              or else Prev_Token = Tok_Project
+              or else Prev_Token = Tok_Right_Paren
+              or else Prev_Token in Token_Class_Literal
             then
                Token := Tok_Apostrophe;
 
@@ -2529,9 +2533,11 @@ package body Scng is
 
       --  End loop past format effectors. The exit from this loop is by
       --  executing a return statement following completion of token scan
-      --  (control never falls out of this loop to the code which follows)
+      --  (control never falls out of this loop to the code that follows).
 
       end loop;
+
+      pragma Assert (False);
 
       --  Wide_Character scanning routine. On entry we have encountered the
       --  initial character of a wide character sequence.

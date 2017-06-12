@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2012-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 2012-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -36,7 +36,9 @@
 generic
    type Float_Type is digits <>;
 
-package Ada.Numerics.Generic_Elementary_Functions is
+package Ada.Numerics.Generic_Elementary_Functions with
+  SPARK_Mode => On
+is
    pragma Pure;
 
    function Sqrt (X : Float_Type'Base) return Float_Type'Base with

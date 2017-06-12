@@ -812,7 +812,7 @@ safe_pushdecl_maybe_friend (tree decl, bool is_friend)
   save_oracle = cp_binding_oracle;
   cp_binding_oracle = NULL;
 
-  tree ret = pushdecl_maybe_friend (decl, is_friend);
+  tree ret = pushdecl (decl, is_friend);
 
   cp_binding_oracle = save_oracle;
 
@@ -930,20 +930,11 @@ plugin_make_namespace_inline (cc1_plugin::connection *)
 
   tree parent_ns = CP_DECL_CONTEXT (inline_ns);
 
-  if (purpose_member (DECL_NAMESPACE_ASSOCIATIONS (inline_ns),
-		      parent_ns))
+  if (DECL_NAMESPACE_INLINE_P (inline_ns))
     return 0;
 
-  pop_namespace ();
-
-  gcc_assert (current_namespace == parent_ns);
-
-  DECL_NAMESPACE_ASSOCIATIONS (inline_ns)
-    = tree_cons (parent_ns, 0,
-		 DECL_NAMESPACE_ASSOCIATIONS (inline_ns));
-  do_using_directive (inline_ns);
-
-  push_namespace (DECL_NAME (inline_ns));
+  DECL_NAMESPACE_INLINE_P (inline_ns) = true;
+  vec_safe_push (DECL_NAMESPACE_INLINEES (parent_ns), inline_ns);
 
   return 1;
 }
@@ -956,7 +947,7 @@ plugin_add_using_namespace (cc1_plugin::connection *,
 
   gcc_assert (TREE_CODE (used_ns) == NAMESPACE_DECL);
 
-  do_using_directive (used_ns);
+  finish_namespace_using_directive (used_ns, NULL_TREE);
 
   return 1;
 }
@@ -1030,13 +1021,12 @@ plugin_add_using_decl (cc1_plugin::connection *,
 
       finish_member_declaration (decl);
     }
-  else if (!at_namespace_scope_p ())
-    {
-      gcc_unreachable ();
-      do_local_using_decl (target, tcontext, identifier);
-    }
   else
-    do_toplevel_using_decl (target, tcontext, identifier);
+    {
+      /* We can't be at local scope.  */
+      gcc_assert (at_namespace_scope_p ());
+      finish_namespace_using_decl (target, tcontext, identifier);
+    }
 
   return 1;
 }
@@ -1494,6 +1484,15 @@ plugin_build_decl (cc1_plugin::connection *self,
 
   set_access_flags (decl, acc_flags);
 
+  /* If this is the typedef that names an otherwise anonymous type,
+     propagate the typedef name to the type.  In normal compilation,
+     this is done in grokdeclarator.  */
+  if (sym_kind == GCC_CP_SYMBOL_TYPEDEF
+      && !template_decl_p
+      && DECL_CONTEXT (decl) == TYPE_CONTEXT (sym_type)
+      && TYPE_UNNAMED_P (sym_type))
+    name_unnamed_type (sym_type, decl);
+
   if (sym_kind != GCC_CP_SYMBOL_TYPEDEF
       && sym_kind != GCC_CP_SYMBOL_CLASS
       && sym_kind != GCC_CP_SYMBOL_UNION
@@ -1570,7 +1569,7 @@ plugin_build_decl (cc1_plugin::connection *self,
 	 reversal.  */
       tree save = DECL_CHAIN (decl);
       DECL_CHAIN (decl) = NULL_TREE;
-      clone_function_decl (decl, /*update_method_vec_p=*/1);
+      clone_function_decl (decl, /*update_methods=*/true);
       gcc_assert (TYPE_METHODS (current_class_type) == decl);
       TYPE_METHODS (current_class_type)
 	= nreverse (TYPE_METHODS (current_class_type));

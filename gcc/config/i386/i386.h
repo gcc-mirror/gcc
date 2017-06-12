@@ -2163,8 +2163,6 @@ extern int const dbx_register_map[FIRST_PSEUDO_REGISTER];
 extern int const dbx64_register_map[FIRST_PSEUDO_REGISTER];
 extern int const svr4_dbx_register_map[FIRST_PSEUDO_REGISTER];
 
-extern int const x86_64_ms_sysv_extra_clobbered_registers[12];
-
 /* Before the prologue, RA is at 0(%esp).  */
 #define INCOMING_RETURN_ADDR_RTX \
   gen_rtx_MEM (Pmode, gen_rtx_REG (Pmode, STACK_POINTER_REGNUM))
@@ -2446,9 +2444,76 @@ enum avx_u128_state
 
 #define FASTCALL_PREFIX '@'
 
+#ifndef USED_FOR_TARGET
+/* Structure describing stack frame layout.
+   Stack grows downward:
+
+   [arguments]
+					<- ARG_POINTER
+   saved pc
+
+   saved static chain			if ix86_static_chain_on_stack
+
+   saved frame pointer			if frame_pointer_needed
+					<- HARD_FRAME_POINTER
+   [saved regs]
+					<- reg_save_offset
+   [padding0]
+					<- stack_realign_offset
+   [saved SSE regs]
+	OR
+   [stub-saved registers for ms x64 --> sysv clobbers
+			<- Start of out-of-line, stub-saved/restored regs
+			   (see libgcc/config/i386/(sav|res)ms64*.S)
+     [XMM6-15]
+     [RSI]
+     [RDI]
+     [?RBX]		only if RBX is clobbered
+     [?RBP]		only if RBP and RBX are clobbered
+     [?R12]		only if R12 and all previous regs are clobbered
+     [?R13]		only if R13 and all previous regs are clobbered
+     [?R14]		only if R14 and all previous regs are clobbered
+     [?R15]		only if R15 and all previous regs are clobbered
+			<- end of stub-saved/restored regs
+     [padding1]
+   ]
+					<- outlined_save_offset
+					<- sse_regs_save_offset
+   [padding2]
+		       |		<- FRAME_POINTER
+   [va_arg registers]  |
+		       |
+   [frame]	       |
+		       |
+   [padding2]	       | = to_allocate
+					<- STACK_POINTER
+  */
+struct GTY(()) ix86_frame
+{
+  int nsseregs;
+  int nregs;
+  int va_arg_size;
+  int red_zone_size;
+  int outgoing_arguments_size;
+
+  /* The offsets relative to ARG_POINTER.  */
+  HOST_WIDE_INT frame_pointer_offset;
+  HOST_WIDE_INT hard_frame_pointer_offset;
+  HOST_WIDE_INT stack_pointer_offset;
+  HOST_WIDE_INT hfp_save_offset;
+  HOST_WIDE_INT reg_save_offset;
+  HOST_WIDE_INT stack_realign_allocate_offset;
+  HOST_WIDE_INT stack_realign_offset;
+  HOST_WIDE_INT outlined_save_offset;
+  HOST_WIDE_INT sse_reg_save_offset;
+
+  /* When save_regs_using_mov is set, emit prologue using
+     move instead of push instructions.  */
+  bool save_regs_using_mov;
+};
+
 /* Machine specific frame tracking during prologue/epilogue generation.  */
 
-#ifndef USED_FOR_TARGET
 struct GTY(()) machine_frame_state
 {
   /* This pair tracks the currently active CFA as reg+offset.  When reg
@@ -2482,6 +2547,17 @@ struct GTY(()) machine_frame_state
      set, the SP/FP offsets above are relative to the aligned frame
      and not the CFA.  */
   BOOL_BITFIELD realigned : 1;
+
+  /* Indicates whether the stack pointer has been re-aligned.  When set,
+     SP/FP continue to be relative to the CFA, but the stack pointer
+     should only be used for offsets >= sp_realigned_offset, while
+     the frame pointer should be used for offsets < sp_realigned_offset.
+     The flags realigned and sp_realigned are mutually exclusive.  */
+  BOOL_BITFIELD sp_realigned : 1;
+
+  /* If sp_realigned is set, this is the offset from the CFA that the
+     stack pointer was realigned to.  */
+  HOST_WIDE_INT sp_realigned_offset;
 };
 
 /* Private to winnt.c.  */
@@ -2502,14 +2578,12 @@ enum function_type
 
 struct GTY(()) machine_function {
   struct stack_local_entry *stack_locals;
-  const char *some_ld_name;
   int varargs_gpr_size;
   int varargs_fpr_size;
   int optimize_mode_switching[MAX_386_ENTITIES];
 
-  /* Number of saved registers USE_FAST_PROLOGUE_EPILOGUE
-     has been computed for.  */
-  int use_fast_prologue_epilogue_nregs;
+  /* Cached initial frame layout for the current function.  */
+  struct ix86_frame frame;
 
   /* For -fsplit-stack support: A stack local which holds a pointer to
      the stack arguments for a function with a variable number of
@@ -2564,6 +2638,24 @@ struct GTY(()) machine_function {
      64-bit, rax, r10 and r11 are scratch registers which aren't used to
      pass arguments and can be used for indirect sibcall.  */
   BOOL_BITFIELD arg_reg_available : 1;
+
+  /* If true, we're out-of-lining reg save/restore for regs clobbered
+     by ms_abi functions calling a sysv function.  */
+  BOOL_BITFIELD call_ms2sysv : 1;
+
+  /* If true, the incoming 16-byte aligned stack has an offset (of 8) and
+     needs padding.  */
+  BOOL_BITFIELD call_ms2sysv_pad_in : 1;
+
+  /* If true, the size of the stub save area plus inline int reg saves will
+     result in an 8 byte offset, so needs padding.  */
+  BOOL_BITFIELD call_ms2sysv_pad_out : 1;
+
+  /* This is the number of extra registers saved by stub (valid range is
+     0-6). Each additional register is only saved/restored by the stubs
+     if all successive ones are. (Will always be zero when using a hard
+     frame pointer.) */
+  unsigned int call_ms2sysv_extra_regs:3;
 
   /* During prologue/epilogue generation, the current frame state.
      Otherwise, the frame state at the end of the prologue.  */

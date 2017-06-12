@@ -517,12 +517,8 @@ CROSS_SYSTEM_HEADER_DIR = @CROSS_SYSTEM_HEADER_DIR@
 # macro is also used in a double-quoted context.
 SYSTEM_HEADER_DIR = `echo @SYSTEM_HEADER_DIR@ | sed -e :a -e 's,[^/]*/\.\.\/,,' -e ta`
 
-# Path to the system headers on the build machine
-ifeq ($(build),$(host))
-BUILD_SYSTEM_HEADER_DIR = $(SYSTEM_HEADER_DIR)
-else
-BUILD_SYSTEM_HEADER_DIR = `echo $(CROSS_SYSTEM_HEADER_DIR) | sed -e :a -e 's,[^/]*/\.\.\/,,' -e ta`
-endif
+# Path to the system headers on the build machine.
+BUILD_SYSTEM_HEADER_DIR = `echo @BUILD_SYSTEM_HEADER_DIR@ | sed -e :a -e 's,[^/]*/\.\.\/,,' -e ta`
 
 # Control whether to run fixincludes.
 STMP_FIXINC = @STMP_FIXINC@
@@ -806,6 +802,7 @@ GCC_TARGET_INSTALL_NAME := $(target_noncanonical)-$(shell echo gcc|sed '$(progra
 CPP_INSTALL_NAME := $(shell echo cpp|sed '$(program_transform_name)')
 GCOV_INSTALL_NAME := $(shell echo gcov|sed '$(program_transform_name)')
 GCOV_TOOL_INSTALL_NAME := $(shell echo gcov-tool|sed '$(program_transform_name)')
+GCOV_DUMP_INSTALL_NAME := $(shell echo gcov-dump|sed '$(program_transform_name)')
 
 # Setup the testing framework, if you have one
 EXPECT = `if [ -f $${rootme}/../expect/expect ] ; then \
@@ -931,7 +928,7 @@ TREE_CORE_H = tree-core.h coretypes.h all-tree.def tree.def \
 TREE_H = tree.h $(TREE_CORE_H)  tree-check.h
 REGSET_H = regset.h $(BITMAP_H) hard-reg-set.h
 BASIC_BLOCK_H = basic-block.h $(PREDICT_H) $(VEC_H) $(FUNCTION_H) \
-	cfg-flags.def cfghooks.h
+	cfg-flags.def cfghooks.h profile-count.h
 GIMPLE_H = gimple.h gimple.def gsstruct.def $(VEC_H) \
 	$(GGC_H) $(BASIC_BLOCK_H) $(TREE_H) tree-ssa-operands.h \
 	tree-ssa-alias.h $(INTERNAL_FN_H) $(HASH_TABLE_H) is-a.h
@@ -1343,6 +1340,7 @@ OBJS = \
 	ipa-chkp.o \
 	ipa-cp.o \
 	ipa-devirt.o \
+	ipa-fnsummary.o \
 	ipa-polymorphic-call.o \
 	ipa-split.o \
 	ipa-inline.o \
@@ -1350,6 +1348,7 @@ OBJS = \
 	ipa-visibility.o \
 	ipa-inline-analysis.o \
 	ipa-inline-transform.o \
+	ipa-predicate.o \
 	ipa-profile.o \
 	ipa-prop.o \
 	ipa-pure-const.o \
@@ -1418,6 +1417,7 @@ OBJS = \
 	print-rtl-function.o \
 	print-tree.o \
 	profile.o \
+	profile-count.o \
 	read-md.o \
 	read-rtl.o \
 	read-rtl-function.o \
@@ -2145,6 +2145,7 @@ s-specs : Makefile
 
 optionlist: s-options ; @true
 s-options: $(ALL_OPT_FILES) Makefile $(srcdir)/opt-gather.awk
+	LC_ALL=C ; export LC_ALL ; \
 	$(AWK) -f $(srcdir)/opt-gather.awk $(ALL_OPT_FILES) > tmp-optionlist
 	$(SHELL) $(srcdir)/../move-if-change tmp-optionlist optionlist
 	$(STAMP) s-options
@@ -2459,7 +2460,7 @@ GTFILES = $(CPP_ID_DATA_H) $(srcdir)/input.h $(srcdir)/coretypes.h \
   $(srcdir)/libfuncs.h $(SYMTAB_H) \
   $(srcdir)/real.h $(srcdir)/function.h $(srcdir)/insn-addr.h $(srcdir)/hwint.h \
   $(srcdir)/fixed-value.h \
-  $(srcdir)/output.h $(srcdir)/cfgloop.h $(srcdir)/cfg.h \
+  $(srcdir)/output.h $(srcdir)/cfgloop.h $(srcdir)/cfg.h $(srcdir)/profile-count.h \
   $(srcdir)/cselib.h $(srcdir)/basic-block.h  $(srcdir)/ipa-ref.h $(srcdir)/cgraph.h \
   $(srcdir)/reload.h $(srcdir)/caller-save.c $(srcdir)/symtab.c \
   $(srcdir)/alias.c $(srcdir)/bitmap.c $(srcdir)/cselib.c $(srcdir)/cgraph.c \
@@ -2486,7 +2487,7 @@ GTFILES = $(CPP_ID_DATA_H) $(srcdir)/input.h $(srcdir)/coretypes.h \
   $(srcdir)/gimple-ssa.h \
   $(srcdir)/tree-chkp.c \
   $(srcdir)/tree-ssanames.c $(srcdir)/tree-eh.c $(srcdir)/tree-ssa-address.c \
-  $(srcdir)/tree-cfg.c \
+  $(srcdir)/tree-cfg.c $(srcdir)/tree-ssa-loop-ivopts.c \
   $(srcdir)/tree-dfa.c \
   $(srcdir)/tree-iterator.c $(srcdir)/gimple-expr.c \
   $(srcdir)/tree-chrec.h \
@@ -2507,7 +2508,8 @@ GTFILES = $(CPP_ID_DATA_H) $(srcdir)/input.h $(srcdir)/coretypes.h \
   $(srcdir)/trans-mem.c \
   $(srcdir)/lto-streamer.h \
   $(srcdir)/target-globals.h \
-  $(srcdir)/ipa-inline.h \
+  $(srcdir)/ipa-predicate.h \
+  $(srcdir)/ipa-fnsummary.h \
   $(srcdir)/vtable-verify.c \
   $(srcdir)/asan.c \
   $(srcdir)/ubsan.c \
@@ -2517,6 +2519,7 @@ GTFILES = $(CPP_ID_DATA_H) $(srcdir)/input.h $(srcdir)/coretypes.h \
   $(srcdir)/ipa-devirt.c \
   $(srcdir)/internal-fn.h \
   $(srcdir)/hsa-common.c \
+  $(srcdir)/calls.c \
   @all_gtfiles@
 
 # Compute the list of GT header files from the corresponding C sources,
@@ -3080,7 +3083,7 @@ TEXI_GCC_FILES = gcc.texi gcc-common.texi gcc-vers.texi frontends.texi	\
 	 gcov.texi trouble.texi bugreport.texi service.texi		\
 	 contribute.texi compat.texi funding.texi gnu.texi gpl_v3.texi	\
 	 fdl.texi contrib.texi cppenv.texi cppopts.texi avr-mmcu.texi	\
-	 implement-c.texi implement-cxx.texi gcov-tool.texi
+	 implement-c.texi implement-cxx.texi gcov-tool.texi gcov-dump.texi
 
 # we explicitly use $(srcdir)/doc/tm.texi here to avoid confusion with
 # the generated tm.texi; the latter might have a more recent timestamp,
@@ -3203,7 +3206,7 @@ $(build_htmldir)/gccinstall/index.html: $(TEXI_GCCINSTALL_FILES)
 	$(SHELL) $(srcdir)/doc/install.texi2html
 
 MANFILES = doc/gcov.1 doc/cpp.1 doc/gcc.1 doc/gfdl.7 doc/gpl.7 \
-           doc/fsf-funding.7 doc/gcov-tool.1
+           doc/fsf-funding.7 doc/gcov-tool.1 doc/gcov-dump.1
 
 generated-manpages: man
 
@@ -3519,6 +3522,15 @@ install-common: native lang.install-common installdirs
 	    gcov-tool$(exeext) $(DESTDIR)$(bindir)/$(GCOV_TOOL_INSTALL_NAME)$(exeext); \
 	  fi; \
 	fi
+# Install gcov-dump if it was compiled.
+	-if test "$(enable_as_accelerator)" != "yes" ; then \
+	  if [ -f gcov-dump$(exeext) ]; \
+	  then \
+	    rm -f $(DESTDIR)$(bindir)/$(GCOV_DUMP_INSTALL_NAME)$(exeext); \
+	    $(INSTALL_PROGRAM) \
+	    gcov-dump$(exeext) $(DESTDIR)$(bindir)/$(GCOV_DUMP_INSTALL_NAME)$(exeext); \
+	  fi; \
+	fi
 
 # Install the driver program as $(target_noncanonical)-gcc,
 # $(target_noncanonical)-gcc-$(version), and also as gcc if native.
@@ -3602,6 +3614,8 @@ install-man: lang.install-man \
 	$(DESTDIR)$(man1dir)/$(GCC_INSTALL_NAME)$(man1ext) \
 	$(DESTDIR)$(man1dir)/$(CPP_INSTALL_NAME)$(man1ext) \
 	$(DESTDIR)$(man1dir)/$(GCOV_INSTALL_NAME)$(man1ext) \
+	$(DESTDIR)$(man1dir)/$(GCOV_TOOL_INSTALL_NAME)$(man1ext) \
+	$(DESTDIR)$(man1dir)/$(GCOV_DUMP_INSTALL_NAME)$(man1ext) \
 	$(DESTDIR)$(man7dir)/fsf-funding$(man7ext) \
 	$(DESTDIR)$(man7dir)/gfdl$(man7ext) \
 	$(DESTDIR)$(man7dir)/gpl$(man7ext)
@@ -3627,6 +3641,11 @@ $(DESTDIR)$(man1dir)/$(GCOV_INSTALL_NAME)$(man1ext): doc/gcov.1 installdirs
 	-chmod a-x $@
 
 $(DESTDIR)$(man1dir)/$(GCOV_TOOL_INSTALL_NAME)$(man1ext): doc/gcov-tool.1 installdirs
+	-rm -f $@
+	-$(INSTALL_DATA) $< $@
+	-chmod a-x $@
+
+$(DESTDIR)$(man1dir)/$(GCOV_DUMP_INSTALL_NAME)$(man1ext): doc/gcov-dump.1 installdirs
 	-rm -f $@
 	-$(INSTALL_DATA) $< $@
 	-chmod a-x $@
@@ -3795,7 +3814,9 @@ site.exp: ./config.status Makefile
 	@echo "set CFLAGS \"\"" >> ./site.tmp
 	@echo "set CXXFLAGS \"\"" >> ./site.tmp
 	@echo "set HOSTCC \"$(CC)\"" >> ./site.tmp
+	@echo "set HOSTCXX \"$(CXX)\"" >> ./site.tmp
 	@echo "set HOSTCFLAGS \"$(CFLAGS)\"" >> ./site.tmp
+	@echo "set HOSTCXXFLAGS \"$(CXXFLAGS)\"" >> ./site.tmp
 # TEST_ALWAYS_FLAGS are flags that should be passed to every compilation.
 # They are passed first to allow individual tests to override them.
 	@echo "set TEST_ALWAYS_FLAGS \"$(SYSROOT_CFLAGS_FOR_TARGET)\"" >> ./site.tmp

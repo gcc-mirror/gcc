@@ -561,9 +561,11 @@ handle_simple_exit (edge e)
       BB_END (old_bb) = end;
 
       redirect_edge_succ (e, new_bb);
+      new_bb->count = e->count;
+      new_bb->frequency = EDGE_FREQUENCY (e);
       e->flags |= EDGE_FALLTHRU;
 
-      e = make_edge (new_bb, EXIT_BLOCK_PTR_FOR_FN (cfun), 0);
+      e = make_single_succ_edge (new_bb, EXIT_BLOCK_PTR_FOR_FN (cfun), 0);
     }
 
   e->flags &= ~EDGE_FALLTHRU;
@@ -758,7 +760,7 @@ try_shrink_wrapping (edge *entry_edge, rtx_insn *prologue_seq)
      reachable from PRO that we already found, and in VEC a stack of
      those we still need to consider (to find successors).  */
 
-  bitmap bb_with = BITMAP_ALLOC (NULL);
+  auto_bitmap bb_with;
   bitmap_set_bit (bb_with, pro->index);
 
   vec<basic_block> vec;
@@ -822,7 +824,7 @@ try_shrink_wrapping (edge *entry_edge, rtx_insn *prologue_seq)
     {
       calculate_dominance_info (CDI_POST_DOMINATORS);
 
-      bitmap bb_tmp = BITMAP_ALLOC (NULL);
+      auto_bitmap bb_tmp;
       bitmap_copy (bb_tmp, bb_with);
       basic_block last_ok = pro;
       vec.truncate (0);
@@ -859,7 +861,6 @@ try_shrink_wrapping (edge *entry_edge, rtx_insn *prologue_seq)
 
       pro = last_ok;
 
-      BITMAP_FREE (bb_tmp);
       free_dominance_info (CDI_POST_DOMINATORS);
     }
 
@@ -871,7 +872,6 @@ try_shrink_wrapping (edge *entry_edge, rtx_insn *prologue_seq)
 
   if (pro == entry)
     {
-      BITMAP_FREE (bb_with);
       free_dominance_info (CDI_DOMINATORS);
       return;
     }
@@ -923,7 +923,7 @@ try_shrink_wrapping (edge *entry_edge, rtx_insn *prologue_seq)
 
 	bb->frequency = RDIV (num * bb->frequency, den);
 	dup->frequency -= bb->frequency;
-	bb->count = RDIV (num * bb->count, den);
+	bb->count = bb->count.apply_scale (num, den);
 	dup->count -= bb->count;
       }
 
@@ -983,6 +983,7 @@ try_shrink_wrapping (edge *entry_edge, rtx_insn *prologue_seq)
 
   basic_block new_bb = create_empty_bb (EXIT_BLOCK_PTR_FOR_FN (cfun)->prev_bb);
   BB_COPY_PARTITION (new_bb, pro);
+  new_bb->count = profile_count::zero ();
   if (dump_file)
     fprintf (dump_file, "Made prologue block %d\n", new_bb->index);
 
@@ -995,7 +996,7 @@ try_shrink_wrapping (edge *entry_edge, rtx_insn *prologue_seq)
 	  continue;
 	}
 
-      new_bb->count += RDIV (e->src->count * e->probability, REG_BR_PROB_BASE);
+      new_bb->count += e->src->count.apply_probability (e->probability);
       new_bb->frequency += EDGE_FREQUENCY (e);
 
       redirect_edge_and_branch_force (e, new_bb);
@@ -1006,7 +1007,6 @@ try_shrink_wrapping (edge *entry_edge, rtx_insn *prologue_seq)
   *entry_edge = make_single_succ_edge (new_bb, pro, EDGE_FALLTHRU);
   force_nonfallthru (*entry_edge);
 
-  BITMAP_FREE (bb_with);
   free_dominance_info (CDI_DOMINATORS);
 }
 
@@ -1265,9 +1265,9 @@ spread_components (sbitmap components)
      on that stack.  */
   vec<basic_block> todo;
   todo.create (n_basic_blocks_for_fn (cfun));
-  bitmap seen = BITMAP_ALLOC (NULL);
+  auto_bitmap seen;
 
-  sbitmap old = sbitmap_alloc (SBITMAP_SIZE (components));
+  auto_sbitmap old (SBITMAP_SIZE (components));
 
   /* Find for every block the components that are *not* needed on some path
      from the entry to that block.  Do this with a flood fill from the entry
@@ -1393,9 +1393,6 @@ spread_components (sbitmap components)
 	  fprintf (dump_file, "\n");
 	}
     }
-
-  sbitmap_free (old);
-  BITMAP_FREE (seen);
 }
 
 /* If we cannot handle placing some component's prologues or epilogues where
@@ -1404,8 +1401,8 @@ spread_components (sbitmap components)
 static void
 disqualify_problematic_components (sbitmap components)
 {
-  sbitmap pro = sbitmap_alloc (SBITMAP_SIZE (components));
-  sbitmap epi = sbitmap_alloc (SBITMAP_SIZE (components));
+  auto_sbitmap pro (SBITMAP_SIZE (components));
+  auto_sbitmap epi (SBITMAP_SIZE (components));
 
   basic_block bb;
   FOR_EACH_BB_FN (bb, cfun)
@@ -1470,9 +1467,6 @@ disqualify_problematic_components (sbitmap components)
 	    }
 	}
     }
-
-  sbitmap_free (pro);
-  sbitmap_free (epi);
 }
 
 /* Place code for prologues and epilogues for COMPONENTS where we can put
@@ -1480,9 +1474,9 @@ disqualify_problematic_components (sbitmap components)
 static void
 emit_common_heads_for_components (sbitmap components)
 {
-  sbitmap pro = sbitmap_alloc (SBITMAP_SIZE (components));
-  sbitmap epi = sbitmap_alloc (SBITMAP_SIZE (components));
-  sbitmap tmp = sbitmap_alloc (SBITMAP_SIZE (components));
+  auto_sbitmap pro (SBITMAP_SIZE (components));
+  auto_sbitmap epi (SBITMAP_SIZE (components));
+  auto_sbitmap tmp (SBITMAP_SIZE (components));
 
   basic_block bb;
   FOR_ALL_BB_FN (bb, cfun)
@@ -1558,10 +1552,6 @@ emit_common_heads_for_components (sbitmap components)
 	  bitmap_ior (SW (bb)->head_components, SW (bb)->head_components, epi);
 	}
     }
-
-  sbitmap_free (pro);
-  sbitmap_free (epi);
-  sbitmap_free (tmp);
 }
 
 /* Place code for prologues and epilogues for COMPONENTS where we can put
@@ -1569,9 +1559,9 @@ emit_common_heads_for_components (sbitmap components)
 static void
 emit_common_tails_for_components (sbitmap components)
 {
-  sbitmap pro = sbitmap_alloc (SBITMAP_SIZE (components));
-  sbitmap epi = sbitmap_alloc (SBITMAP_SIZE (components));
-  sbitmap tmp = sbitmap_alloc (SBITMAP_SIZE (components));
+  auto_sbitmap pro (SBITMAP_SIZE (components));
+  auto_sbitmap epi (SBITMAP_SIZE (components));
+  auto_sbitmap tmp (SBITMAP_SIZE (components));
 
   basic_block bb;
   FOR_ALL_BB_FN (bb, cfun)
@@ -1668,10 +1658,6 @@ emit_common_tails_for_components (sbitmap components)
 	  bitmap_ior (SW (bb)->tail_components, SW (bb)->tail_components, pro);
 	}
     }
-
-  sbitmap_free (pro);
-  sbitmap_free (epi);
-  sbitmap_free (tmp);
 }
 
 /* Place prologues and epilogues for COMPONENTS on edges, if we haven't already
@@ -1679,8 +1665,8 @@ emit_common_tails_for_components (sbitmap components)
 static void
 insert_prologue_epilogue_for_components (sbitmap components)
 {
-  sbitmap pro = sbitmap_alloc (SBITMAP_SIZE (components));
-  sbitmap epi = sbitmap_alloc (SBITMAP_SIZE (components));
+  auto_sbitmap pro (SBITMAP_SIZE (components));
+  auto_sbitmap epi (SBITMAP_SIZE (components));
 
   basic_block bb;
   FOR_EACH_BB_FN (bb, cfun)
@@ -1757,9 +1743,6 @@ insert_prologue_epilogue_for_components (sbitmap components)
 	    }
 	}
     }
-
-  sbitmap_free (pro);
-  sbitmap_free (epi);
 
   commit_edge_insertions ();
 }

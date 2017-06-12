@@ -948,15 +948,49 @@ names can be used together with @code{_Complex} to declare complex
 types.
 
 As an extension, GNU C and GNU C++ support additional floating
-types, @code{__float80} and @code{__float128} to support 80-bit
-(@code{XFmode}) and 128-bit (@code{TFmode}) floating types; these are
-aliases for the type names @code{_Float64x} and @code{_Float128}.
-Support for additional types includes the arithmetic operators:
+types, which are not supported by all targets.
+@itemize @bullet
+@item @code{__float128} is available on i386, x86_64, IA-64, and
+hppa HP-UX, as well as on PowerPC GNU/Linux targets that enable
+the vector scalar (VSX) instruction set.  @code{__float128} supports
+the 128-bit floating type.  On i386, x86_64, PowerPC, and IA-64
+other than HP-UX, @code{__float128} is an alias for @code{_Float128}.
+On hppa and IA-64 HP-UX, @code{__float128} is an alias for @code{long
+double}.
+
+@item @code{__float80} is available on the i386, x86_64, and IA-64
+targets, and supports the 80-bit (@code{XFmode}) floating type.  It is
+an alias for the type name @code{_Float64x} on these targets.
+
+@item @code{__ibm128} is available on PowerPC targets, and provides
+access to the IBM extended double format which is the current format
+used for @code{long double}.  When @code{long double} transitions to
+@code{__float128} on PowerPC in the future, @code{__ibm128} will remain
+for use in conversions between the two types.
+@end itemize
+
+Support for these additional types includes the arithmetic operators:
 add, subtract, multiply, divide; unary arithmetic operators;
 relational operators; equality operators; and conversions to and from
 integer and other floating types.  Use a suffix @samp{w} or @samp{W}
 in a literal constant of type @code{__float80} or type
 @code{__ibm128}.  Use a suffix @samp{q} or @samp{Q} for @code{_float128}.
+
+In order to use @code{_Float128}, @code{__float128}, and @code{__ibm128}
+on PowerPC Linux systems, you must use the @option{-mfloat128} option. It is
+expected in future versions of GCC that @code{_Float128} and @code{__float128}
+will be enabled automatically.
+
+The @code{_Float128} type is supported on all systems where
+@code{__float128} is supported or where @code{long double} has the
+IEEE binary128 format.  The @code{_Float64x} type is supported on all
+systems where @code{__float128} is supported.  The @code{_Float32}
+type is supported on all systems supporting IEEE binary32; the
+@code{_Float64} and @code{_Float32x} types are supported on all systems
+supporting IEEE binary64.  The @code{_Float16} type is supported on AArch64
+systems by default, and on ARM systems when the IEEE format for 16-bit
+floating-point types is selected with @option{-mfp16-format=ieee}.
+GCC does not currently support @code{_Float128x} on any systems.
 
 On the i386, x86_64, IA-64, and HP-UX targets, you can declare complex
 types using the corresponding internal complex type, @code{XCmode} for
@@ -967,16 +1001,6 @@ typedef _Complex float __attribute__((mode(TC))) _Complex128;
 typedef _Complex float __attribute__((mode(XC))) _Complex80;
 @end smallexample
 
-In order to use @code{_Float128}, @code{__float128} and
-@code{__ibm128} on PowerPC Linux
-systems, you must use the @option{-mfloat128}. It is expected in
-future versions of GCC that @code{_Float128} and @code{__float128}
-will be enabled
-automatically.  In addition, there are currently problems in using the
-complex @code{__float128} type.  When these problems are fixed, you
-would use the following syntax to declare @code{_Complex128} to be a
-complex @code{__float128} type:
-
 On the PowerPC Linux VSX targets, you can declare complex types using
 the corresponding internal complex type, @code{KCmode} for
 @code{__float128} type and @code{ICmode} for @code{__ibm128} type:
@@ -985,27 +1009,6 @@ the corresponding internal complex type, @code{KCmode} for
 typedef _Complex float __attribute__((mode(KC))) _Complex_float128;
 typedef _Complex float __attribute__((mode(IC))) _Complex_ibm128;
 @end smallexample
-
-Not all targets support additional floating-point types.
-@code{__float80} and @code{__float128} types are supported on x86 and
-IA-64 targets.  The @code{__float128} type is supported on hppa HP-UX.
-The @code{__float128} type is supported on PowerPC 64-bit Linux
-systems by default if the vector scalar instruction set (VSX) is
-enabled.  The @code{_Float128} type is supported on all systems where
-@code{__float128} is supported or where @code{long double} has the
-IEEE binary128 format.  The @code{_Float64x} type is supported on all
-systems where @code{__float128} is supported.  The @code{_Float32}
-type is supported on all systems supporting IEEE binary32; the
-@code{_Float64} and @code{Float32x} types are supported on all systems
-supporting IEEE binary64.  The @code{_Float16} type is supported on AArch64
-systems by default, and on ARM systems when the IEEE format for 16-bit
-floating-point types is selected with @option{-mfp16-format=ieee}.
-GCC does not currently support @code{_Float128x} on any systems.
-
-On the PowerPC, @code{__ibm128} provides access to the IBM extended
-double format, and it is intended to be used by the library functions
-that handle conversions if/when long double is changed to be IEEE
-128-bit floating point.
 
 @node Half-Precision
 @section Half-Precision Floating Point
@@ -2510,7 +2513,11 @@ if you have a constructor that allocates a resource and a destructor
 that deallocates the same resource, both functions typically have the
 same priority.  The priorities for constructor and destructor
 functions are the same as those specified for namespace-scope C++
-objects (@pxref{C++ Attributes}).
+objects (@pxref{C++ Attributes}).  However, at present, the order in which
+constructors for C++ objects with static storage duration and functions
+decorated with attribute @code{constructor} are invoked is unspecified.
+In mixed declarations, attribute @code{init_priority} can be used to
+impose a specific ordering.
 
 @item deprecated
 @itemx deprecated (@var{msg})
@@ -3250,7 +3257,15 @@ For instance, on an x86, you could compile a function with
 @code{target_clones("sse4.1,avx")}.  GCC creates two function clones,
 one compiled with @option{-msse4.1} and another with @option{-mavx}.
 It also creates a resolver function (see the @code{ifunc} attribute
-above) that dynamically selects a clone suitable for current architecture.
+above) that dynamically selects a clone suitable for current
+architecture.
+
+On a PowerPC, you can compile a function with
+@code{target_clones("cpu=power9,default")}.  GCC will create two
+function clones, one compiled with @option{-mcpu=power9} and another
+with the default options.  It also creates a resolver function (see
+the @code{ifunc} attribute above) that dynamically selects a clone
+suitable for current architecture.
 
 @item unused
 @cindex @code{unused} function attribute
@@ -7509,7 +7524,7 @@ In this case, GCC does not actually output assembler code for the
 function, unless you specify the option @option{-fkeep-inline-functions}.
 If there is a nonintegrated call, then the function is compiled to
 assembler code as usual.  The function must also be compiled as usual if
-the program refers to its address, because that can't be inlined.
+the program refers to its address, because that cannot be inlined.
 
 @opindex Winline
 Note that certain usages in a function definition can make it unsuitable
@@ -9176,7 +9191,7 @@ This results in an incomplete type, much like what you get if you write
 @code{struct foo} without describing the elements.  A later declaration
 that does specify the possible values completes the type.
 
-You can't allocate variables or storage using the type while it is
+You cannot allocate variables or storage using the type while it is
 incomplete.  However, you can work with pointers to that type.
 
 This extension may not be very useful, but it makes the handling of
@@ -10202,14 +10217,14 @@ assert (__builtin_object_size (q, 1) == sizeof (var.b));
 There are built-in functions added for many common string operation
 functions, e.g., for @code{memcpy} @code{__builtin___memcpy_chk}
 built-in is provided.  This built-in has an additional last argument,
-which is the number of bytes remaining in object the @var{dest}
+which is the number of bytes remaining in the object the @var{dest}
 argument points to or @code{(size_t) -1} if the size is not known.
 
 The built-in functions are optimized into the normal string functions
 like @code{memcpy} if the last argument is @code{(size_t) -1} or if
 it is known at compile time that the destination object will not
-be overflown.  If the compiler can determine at compile time the
-object will be always overflown, it issues a warning.
+be overflowed.  If the compiler can determine at compile time that the
+object will always be overflowed, it issues a warning.
 
 The intended use can be e.g.@:
 
@@ -15100,6 +15115,24 @@ Similar to @code{__builtin_nans}, except the return type is @code{__float128}.
 @end table
 
 The following built-in functions are available for the PowerPC family
+of processors, starting with ISA 2.05 or later (@option{-mcpu=power6}
+or @option{-mcmpb}):
+@smallexample
+unsigned long long __builtin_cmpb (unsigned long long int, unsigned long long int);
+unsigned int __builtin_cmpb (unsigned int, unsigned int);
+@end smallexample
+
+The @code{__builtin_cmpb} function
+performs a byte-wise compare on the contents of its two arguments,
+returning the result of the byte-wise comparison as the returned
+value.  For each byte comparison, the corresponding byte of the return
+value holds 0xff if the input bytes are equal and 0 if the input bytes
+are not equal.  If either of the arguments to this built-in function
+is wider than 32 bits, the function call expands into the form that
+expects @code{unsigned long long int} arguments
+which is only available on 64-bit targets.
+
+The following built-in functions are available for the PowerPC family
 of processors, starting with ISA 2.06 or later (@option{-mcpu=power7}
 or @option{-mpopcntd}):
 @smallexample
@@ -15420,14 +15453,14 @@ The following built-in functions are available for the PowerPC family
 of processors when hardware decimal floating point
 (@option{-mhard-dfp}) is available:
 @smallexample
-_Decimal64 __builtin_dxex (_Decimal64);
-_Decimal128 __builtin_dxexq (_Decimal128);
+long long __builtin_dxex (_Decimal64);
+long long __builtin_dxexq (_Decimal128);
 _Decimal64 __builtin_ddedpd (int, _Decimal64);
 _Decimal128 __builtin_ddedpdq (int, _Decimal128);
 _Decimal64 __builtin_denbcd (int, _Decimal64);
 _Decimal128 __builtin_denbcdq (int, _Decimal128);
-_Decimal64 __builtin_diex (_Decimal64, _Decimal64);
-_Decimal128 _builtin_diexq (_Decimal128, _Decimal128);
+_Decimal64 __builtin_diex (long long, _Decimal64);
+_Decimal128 _builtin_diexq (long long, _Decimal128);
 _Decimal64 __builtin_dscli (_Decimal64, int);
 _Decimal128 __builtin_dscliq (_Decimal128, int);
 _Decimal64 __builtin_dscri (_Decimal64, int);
@@ -15531,6 +15564,15 @@ parentheses for this to work.
 Internally, GCC uses built-in functions to achieve the functionality in
 the aforementioned header file, but they are not supported and are
 subject to change without notice.
+
+GCC complies with the OpenPOWER 64-Bit ELF V2 ABI Specification,
+which may be found at
+@uref{http://openpowerfoundation.org/wp-content/uploads/resources/leabi-prd/content/index.html}.
+Appendix A of this document lists the vector API interfaces that must be
+provided by compliant compilers.  Programmers should preferentially use
+the interfaces described therein.  However, historically GCC has provided
+additional interfaces for access to vector instructions.  These are
+briefly described below.
 
 The following interfaces are supported for the generic and specific
 AltiVec operations and the AltiVec predicates.  In cases where there
@@ -15837,6 +15879,22 @@ vector signed long vec_cts (vector double, const int);
 
 vector unsigned int vec_ctu (vector float, const int);
 vector unsigned long vec_ctu (vector double, const int);
+
+vector double vec_doublee (vector float);
+vector double vec_doublee (vector signed int);
+vector double vec_doublee (vector unsigned int);
+
+vector double vec_doubleo (vector float);
+vector double vec_doubleo (vector signed int);
+vector double vec_doubleo (vector unsigned int);
+
+vector double vec_doubleh (vector float);
+vector double vec_doubleh (vector signed int);
+vector double vec_doubleh (vector unsigned int);
+
+vector double vec_doublel (vector float);
+vector double vec_doublel (vector signed int);
+vector double vec_doublel (vector unsigned int);
 
 void vec_dss (const int);
 
@@ -16287,6 +16345,10 @@ vector signed short vec_mule (vector signed char,
 vector unsigned int vec_mule (vector unsigned short,
                               vector unsigned short);
 vector signed int vec_mule (vector signed short, vector signed short);
+vector unsigned long long vec_mule (vector unsigned int,
+                                    vector unsigned int);
+vector signed long long vec_mule (vector signed int,
+                                  vector signed int);
 
 vector signed int vec_vmulesh (vector signed short,
                                vector signed short);
@@ -16306,6 +16368,10 @@ vector signed short vec_mulo (vector signed char, vector signed char);
 vector unsigned int vec_mulo (vector unsigned short,
                               vector unsigned short);
 vector signed int vec_mulo (vector signed short, vector signed short);
+vector unsigned long long vec_mulo (vector unsigned int,
+                                    vector unsigned int);
+vector signed long long vec_mulo (vector signed int,
+                                  vector signed int);
 
 vector signed int vec_vmulosh (vector signed short,
                                vector signed short);
@@ -16326,6 +16392,13 @@ vector signed short vec_nabs (vector signed short);
 vector signed int vec_nabs (vector signed int);
 vector float vec_nabs (vector float);
 vector double vec_nabs (vector double);
+
+vector signed char vec_neg (vector signed char);
+vector signed short vec_neg (vector signed short);
+vector signed int vec_neg (vector signed int);
+vector signed long long vec_neg (vector signed long long);
+vector float  char vec_neg (vector float);
+vector double vec_neg (vector double);
 
 vector float vec_nor (vector float, vector float);
 vector signed int vec_nor (vector signed int, vector signed int);
@@ -16600,6 +16673,31 @@ vector bool char vec_sld (vector bool char,
                           vector bool char,
                           const int);
 
+vector signed char vec_sldw (vector signed char,
+                             vector signed char,
+                             const int);
+vector unsigned char vec_sldw (vector unsigned char,
+                               vector unsigned char,
+                               const int);
+vector signed short vec_sldw (vector signed short,
+                              vector signed short,
+                              const int);
+vector unsigned short vec_sldw (vector unsigned short,
+                                vector unsigned short,
+                                const int);
+vector signed int vec_sldw (vector signed int,
+                            vector signed int,
+                            const int);
+vector unsigned int vec_sldw (vector unsigned int,
+                              vector unsigned int,
+                              const int);
+vector signed long long vec_sldw (vector signed long long,
+                                  vector signed long long,
+                                  const int);
+vector unsigned long long vec_sldw (vector unsigned long long,
+                                    vector unsigned long long,
+                                    const int);
+
 vector signed int vec_sll (vector signed int,
                            vector unsigned int);
 vector signed int vec_sll (vector signed int,
@@ -16668,6 +16766,10 @@ vector signed char vec_slo (vector signed char, vector unsigned char);
 vector unsigned char vec_slo (vector unsigned char, vector signed char);
 vector unsigned char vec_slo (vector unsigned char,
                               vector unsigned char);
+vector signed long long vec_slo (vector signed long long, vector signed char);
+vector signed long long vec_slo (vector signed long long, vector unsigned char);
+vector unsigned long long vec_slo (vector unsigned long long, vector signed char);
+vector unsigned long long vec_slo (vector unsigned long long, vector unsigned char);
 
 vector signed char vec_splat (vector signed char, const int);
 vector unsigned char vec_splat (vector unsigned char, const int);
@@ -17607,20 +17709,21 @@ void vec_vsx_st (vector bool char, int, vector bool char *);
 void vec_vsx_st (vector bool char, int, unsigned char *);
 void vec_vsx_st (vector bool char, int, signed char *);
 
-vector double vec_xxpermdi (vector double, vector double, int);
-vector float vec_xxpermdi (vector float, vector float, int);
-vector long long vec_xxpermdi (vector long long, vector long long, int);
+vector double vec_xxpermdi (vector double, vector double, const int);
+vector float vec_xxpermdi (vector float, vector float, const int);
+vector long long vec_xxpermdi (vector long long, vector long long, const int);
 vector unsigned long long vec_xxpermdi (vector unsigned long long,
-                                        vector unsigned long long, int);
-vector int vec_xxpermdi (vector int, vector int, int);
+                                        vector unsigned long long, const int);
+vector int vec_xxpermdi (vector int, vector int, const int);
 vector unsigned int vec_xxpermdi (vector unsigned int,
-                                  vector unsigned int, int);
-vector short vec_xxpermdi (vector short, vector short, int);
+                                  vector unsigned int, const int);
+vector short vec_xxpermdi (vector short, vector short, const int);
 vector unsigned short vec_xxpermdi (vector unsigned short,
-                                    vector unsigned short, int);
-vector signed char vec_xxpermdi (vector signed char, vector signed char, int);
+                                    vector unsigned short, const int);
+vector signed char vec_xxpermdi (vector signed char, vector signed char,
+                                 const int);
 vector unsigned char vec_xxpermdi (vector unsigned char,
-                                   vector unsigned char, int);
+                                   vector unsigned char, const int);
 
 vector double vec_xxsldi (vector double, vector double, int);
 vector float vec_xxsldi (vector float, vector float, int);
@@ -17813,6 +17916,15 @@ vector unsigned int vec_packsu (vector long long, vector long long);
 vector unsigned int vec_packsu (vector unsigned long long,
                                 vector unsigned long long);
 
+vector unsigned char vec_popcnt (vector signed char);
+vector unsigned char vec_popcnt (vector unsigned char);
+vector unsigned short vec_popcnt (vector signed short);
+vector unsigned short vec_popcnt (vector unsigned short);
+vector unsigned int vec_popcnt (vector signed int);
+vector unsigned int vec_popcnt (vector unsigned int);
+vector unsigned long long vec_popcnt (vector signed long long);
+vector unsigned long long vec_popcnt (vector unsigned long long);
+
 vector long long vec_rl (vector long long,
                          vector unsigned long long);
 vector long long vec_rl (vector unsigned long long,
@@ -17854,6 +17966,8 @@ vector long long vec_vbpermq (vector signed char, vector signed char);
 vector long long vec_vbpermq (vector unsigned char, vector unsigned char);
 
 vector unsigned char vec_bperm (vector unsigned char, vector unsigned char);
+vector unsigned char vec_bperm (vector unsigned long long,
+                                vector unsigned char);
 vector unsigned long long vec_bperm (vector unsigned __int128,
                                      vector unsigned char);
 
@@ -22557,6 +22671,12 @@ true, else it is false.
 @item __underlying_type (type)
 The underlying type of @code{type}.  Requires: @code{type} shall be
 an enumeration type ([dcl.enum]).
+
+@item __integer_pack (length)
+When used as the pattern of a pack expansion within a template
+definition, expands to a template argument pack containing integers
+from @code{0} to @code{length-1}.  This is provided for efficient
+implementation of @code{std::make_integer_sequence}.
 
 @end table
 

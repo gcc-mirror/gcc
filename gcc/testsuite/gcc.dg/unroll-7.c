@@ -2,7 +2,9 @@
 /* { dg-options "-O2 -fdump-rtl-loop2_unroll -funroll-loops" } */
 /* { dg-require-effective-target int32plus } */
 
-int t(int *a)
+extern int *a;
+
+int t(void)
 {
   int i;
   for (i=0;i<1000000;i++)

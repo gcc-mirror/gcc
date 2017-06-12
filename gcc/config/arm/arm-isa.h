@@ -58,6 +58,7 @@ enum isa_feature
     isa_bit_VFPv3,	/* Vector floating point v3.  */
     isa_bit_VFPv4,	/* Vector floating point v4.  */
     isa_bit_FPv5,	/* Floating point v5.  */
+    isa_bit_lpae,	/* ARMv7-A LPAE.  */
     isa_bit_FP_ARMv8,	/* ARMv8 floating-point extension.  */
     isa_bit_neon,	/* Advanced SIMD instructions.  */
     isa_bit_fp16conv,	/* Conversions to/from fp16 (VFPv3 extension).  */
@@ -116,7 +117,7 @@ enum isa_feature
    integer SIMD instructions that are in ARMv6T2.  */
 #define ISA_ARMv7	ISA_ARMv6m, isa_bit_thumb2, isa_bit_ARMv7
 #define ISA_ARMv7a	ISA_ARMv7, isa_bit_notm, isa_bit_ARMv6k
-#define ISA_ARMv7ve	ISA_ARMv7a, isa_bit_adiv, isa_bit_tdiv
+#define ISA_ARMv7ve	ISA_ARMv7a, isa_bit_adiv, isa_bit_tdiv, isa_bit_lpae
 #define ISA_ARMv7r	ISA_ARMv7a, isa_bit_tdiv
 #define ISA_ARMv7m	ISA_ARMv7, isa_bit_tdiv
 #define ISA_ARMv7em	ISA_ARMv7m, isa_bit_ARMv7em

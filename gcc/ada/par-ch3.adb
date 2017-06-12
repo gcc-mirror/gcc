@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -3494,7 +3494,7 @@ package body Ch3 is
    procedure P_Component_Items (Decls : List_Id) is
       Aliased_Present  : Boolean := False;
       CompDef_Node     : Node_Id;
-      Decl_Node        : Node_Id;
+      Decl_Node        : Node_Id := Empty;  -- initialize to prevent warning
       Scan_State       : Saved_Scan_State;
       Not_Null_Present : Boolean := False;
       Num_Idents       : Nat;
@@ -3754,7 +3754,7 @@ package body Ch3 is
 
    function P_Discrete_Choice_List return List_Id is
       Choices     : List_Id;
-      Expr_Node   : Node_Id;
+      Expr_Node   : Node_Id := Empty;  -- initialize to prevent warning
       Choice_Node : Node_Id;
 
    begin
@@ -4319,7 +4319,11 @@ package body Ch3 is
       end if;
 
       case Token is
-         when Tok_Function =>
+         when Tok_Function
+            | Tok_Not
+            | Tok_Overriding
+            | Tok_Procedure
+         =>
             Check_Bad_Layout;
             Append (P_Subprogram (Pf_Decl_Gins_Pbod_Rnam_Stub_Pexp), Decls);
             Done := False;
@@ -4374,20 +4378,6 @@ package body Ch3 is
                P_Identifier_Declarations (Decls, Done, In_Spec);
             end if;
 
-         --  Ada 2005: A subprogram declaration can start with "not" or
-         --  "overriding". In older versions, "overriding" is handled
-         --  like an identifier, with the appropriate messages.
-
-         when Tok_Not =>
-            Check_Bad_Layout;
-            Append (P_Subprogram (Pf_Decl_Gins_Pbod_Rnam_Stub_Pexp), Decls);
-            Done := False;
-
-         when Tok_Overriding =>
-            Check_Bad_Layout;
-            Append (P_Subprogram (Pf_Decl_Gins_Pbod_Rnam_Stub_Pexp), Decls);
-            Done := False;
-
          when Tok_Package =>
             Check_Bad_Layout;
             Append (P_Package (Pf_Decl_Gins_Pbod_Rnam_Stub_Pexp), Decls);
@@ -4395,11 +4385,6 @@ package body Ch3 is
 
          when Tok_Pragma =>
             Append (P_Pragma, Decls);
-            Done := False;
-
-         when Tok_Procedure =>
-            Check_Bad_Layout;
-            Append (P_Subprogram (Pf_Decl_Gins_Pbod_Rnam_Stub_Pexp), Decls);
             Done := False;
 
          when Tok_Protected =>

@@ -758,9 +758,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        *  @brief  Set value to string constructed from a string_view.
        *  @param  __sv  A string_view.
        */
-      basic_string&
-      operator=(__sv_type __sv)
-      {	return this->assign(__sv); }
+      template<typename _Tp>
+	_If_sv<_Tp, basic_string&>
+	operator=(_Tp __sv)
+	{ return this->assign(__sv); }
 
       /**
        *  @brief  Convert to a string_view.
@@ -3560,9 +3561,10 @@ _GLIBCXX_END_NAMESPACE_CXX11
        *  @brief  Set value to string constructed from a string_view.
        *  @param  __sv  A string_view.
        */
-      basic_string&
-      operator=(__sv_type __sv)
-      { return this->assign(__sv); }
+      template<typename _Tp>
+	_If_sv<_Tp, basic_string&>
+	operator=(_Tp __sv)
+	{ return this->assign(__sv); }
 
       /**
        *  @brief  Convert to a string_view.
@@ -5671,6 +5673,18 @@ _GLIBCXX_END_NAMESPACE_CXX11
 # endif
   };
 #endif  // !_GLIBCXX_USE_CXX11_ABI
+
+#if __cpp_deduction_guides >= 201606
+_GLIBCXX_BEGIN_NAMESPACE_CXX11
+  template<typename _InputIterator, typename _CharT
+	     = typename iterator_traits<_InputIterator>::value_type,
+	   typename _Allocator = allocator<_CharT>,
+	   typename = _RequireInputIter<_InputIterator>,
+	   typename = _RequireAllocator<_Allocator>>
+    basic_string(_InputIterator, _InputIterator, _Allocator = _Allocator())
+      -> basic_string<_CharT, char_traits<_CharT>, _Allocator>;
+_GLIBCXX_END_NAMESPACE_CXX11
+#endif
 
   // operator+
   /**

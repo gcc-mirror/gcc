@@ -13,8 +13,8 @@ namespace N
 
 using namespace N;
 
-int A::i; // { dg-message "ambiguous|declared here" "" }
-int A::i; // { dg-message "ambiguous|redefinition of" "" }
+int A::i; // { dg-message "ambiguous|declared here" }
+int A::i; // { dg-message "ambiguous|redefinition of" }
 
 namespace N
 {

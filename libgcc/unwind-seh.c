@@ -221,7 +221,7 @@ _GCC_specific_handler (PEXCEPTION_RECORD ms_exc, void *this_frame,
 	 test is that we're the target frame.  */
       if (ms_exc->ExceptionInformation[1] == (_Unwind_Ptr) this_frame)
 	{
-	  RtlUnwindEx (this_frame, ms_exc->ExceptionInformation[2],
+	  RtlUnwindEx (this_frame, (PVOID) ms_exc->ExceptionInformation[2],
 		       ms_exc, gcc_exc, ms_orig_context,
 		       ms_disp->HistoryTable);
 	  abort ();
@@ -313,7 +313,7 @@ _GCC_specific_handler (PEXCEPTION_RECORD ms_exc, void *this_frame,
 	  ms_exc->ExceptionInformation[3] = gcc_context.reg[1];
 
 	  /* Begin phase 2.  Perform the unwinding.  */
-	  RtlUnwindEx (this_frame, gcc_context.ra, ms_exc,
+	  RtlUnwindEx (this_frame, (PVOID)gcc_context.ra, ms_exc,
 		       (PVOID)gcc_context.reg[0], ms_orig_context,
 		       ms_disp->HistoryTable);
 	}
@@ -365,7 +365,7 @@ _Unwind_Resume (struct _Unwind_Exception *gcc_exc)
   ms_context.ContextFlags = CONTEXT_ALL;
   RtlCaptureContext (&ms_context);
 
-  RtlUnwindEx ((void *) gcc_exc->private_[1], gcc_exc->private_[2],
+  RtlUnwindEx ((void *) gcc_exc->private_[1], (PVOID)gcc_exc->private_[2],
 	       &ms_exc, gcc_exc, &ms_context, &ms_history);
 
   /* Is RtlUnwindEx declared noreturn?  */

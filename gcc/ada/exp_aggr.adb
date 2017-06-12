@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -37,7 +37,6 @@ with Exp_Ch7;  use Exp_Ch7;
 with Exp_Ch9;  use Exp_Ch9;
 with Exp_Disp; use Exp_Disp;
 with Exp_Tss;  use Exp_Tss;
-with Fname;    use Fname;
 with Freeze;   use Freeze;
 with Itypes;   use Itypes;
 with Lib;      use Lib;
@@ -352,7 +351,7 @@ package body Exp_Aggr is
       --  which hit memory limits in the backend.
 
       function Component_Count (T : Entity_Id) return Nat;
-      --  The limit is applied to the total number of components that the
+      --  The limit is applied to the total number of subcomponents that the
       --  aggregate will have, which is the number of static expressions
       --  that will appear in the flattened array. This requires a recursive
       --  computation of the number of scalar components of the structure.
@@ -399,8 +398,20 @@ package body Exp_Aggr is
                   return 0;
 
                else
-                  return
-                    Siz * UI_To_Int (Expr_Value (Hi) - Expr_Value (Lo) + 1);
+                  --  If the number of components is greater than Int'Last,
+                  --  then return Int'Last, so caller will return False (Aggr
+                  --  size is not OK). Otherwise, UI_To_Int will crash.
+
+                  declare
+                     UI : constant Uint :=
+                            Expr_Value (Hi) - Expr_Value (Lo) + 1;
+                  begin
+                     if UI_Is_In_Int_Range (UI) then
+                        return Siz * UI_To_Int (UI);
+                     else
+                        return Int'Last;
+                     end if;
+                  end;
                end if;
             end;
 
@@ -3030,15 +3041,7 @@ package body Exp_Aggr is
            and then Root_Type (Etype (N)) = Root_Type (Entity (Prefix (Expr)))
          then
             if Is_Entity_Name (Lhs) then
-               Rewrite (Prefix (Expr),
-                 New_Occurrence_Of (Entity (Lhs), Loc));
-
-            elsif Nkind (Lhs) = N_Selected_Component then
-               Rewrite (Expr,
-                 Make_Attribute_Reference (Loc,
-                   Attribute_Name => Name_Unrestricted_Access,
-                   Prefix         => New_Copy_Tree (Lhs)));
-               Set_Analyzed (Parent (Expr), False);
+               Rewrite (Prefix (Expr), New_Occurrence_Of (Entity (Lhs), Loc));
 
             else
                Rewrite (Expr,
@@ -4274,7 +4277,7 @@ package body Exp_Aggr is
       --  Check whether all components of the aggregate are compile-time known
       --  values, and can be passed as is to the back-end without further
       --  expansion.
-      --  An Iterated_component_Association is treated as non-static, but there
+      --  An Iterated_Component_Association is treated as non-static, but there
       --  are possibilities for optimization here.
 
       function Flatten
@@ -4528,8 +4531,7 @@ package body Exp_Aggr is
                                           and then
                                             Is_Preelaborated (Spec_Entity (P)))
                                 or else
-                                  Is_Predefined_File_Name
-                                    (Unit_File_Name (Get_Source_Unit (P)))
+                                  Is_Predefined_Unit (Get_Source_Unit (P))
                               then
                                  null;
 

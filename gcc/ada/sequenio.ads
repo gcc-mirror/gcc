@@ -13,11 +13,11 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-pragma Ada_2005;
---  Explicit setting of Ada 2005 mode is required here, since we want to with a
+pragma Ada_2012;
+--  Explicit setting of Ada 2012 mode is required here, since we want to with a
 --  child unit (not possible in Ada 83 mode), and Sequential_IO is not
 --  considered to be an internal unit that is automatically compiled in Ada
---  2005 mode (since a user is allowed to redeclare Sequential_IO).
+--  2012 mode (since a user is allowed to redeclare Sequential_IO).
 
 with Ada.Sequential_IO;
 

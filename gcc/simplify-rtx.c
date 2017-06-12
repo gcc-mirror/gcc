@@ -932,8 +932,10 @@ simplify_unary_operation_1 (enum rtx_code code, machine_mode mode, rtx op)
 	  && XEXP (op, 1) == constm1_rtx)
 	return simplify_gen_unary (NEG, mode, XEXP (op, 0), mode);
 
-      /* Similarly, (not (neg X)) is (plus X -1).  */
-      if (GET_CODE (op) == NEG)
+      /* Similarly, (not (neg X)) is (plus X -1).  Only do this for
+	 modes that have CONSTM1_RTX, i.e. MODE_INT, MODE_PARTIAL_INT
+	 and MODE_VECTOR_INT.  */
+      if (GET_CODE (op) == NEG && CONSTM1_RTX (mode))
 	return simplify_gen_binary (PLUS, mode, XEXP (op, 0),
 				    CONSTM1_RTX (mode));
 
@@ -2306,10 +2308,10 @@ simplify_binary_operation_1 (enum rtx_code code, machine_mode mode,
 	      return xop00;
 
 	    if (REG_P (xop00) && REG_P (xop10)
-		&& GET_MODE (xop00) == GET_MODE (xop10)
 		&& REGNO (xop00) == REGNO (xop10)
-		&& GET_MODE_CLASS (GET_MODE (xop00)) == MODE_CC
-		&& GET_MODE_CLASS (GET_MODE (xop10)) == MODE_CC)
+		&& GET_MODE (xop00) == mode
+		&& GET_MODE (xop10) == mode
+		&& GET_MODE_CLASS (mode) == MODE_CC)
 	      return xop00;
 	}
       break;
@@ -2739,8 +2741,8 @@ simplify_binary_operation_1 (enum rtx_code code, machine_mode mode,
           && CONST_INT_P (XEXP (op0, 1))
           && INTVAL (XEXP (op0, 1)) < HOST_BITS_PER_WIDE_INT)
         {
-          int count = INTVAL (XEXP (op0, 1));
-          HOST_WIDE_INT mask = INTVAL (trueop1) << count;
+	  int count = INTVAL (XEXP (op0, 1));
+	  HOST_WIDE_INT mask = UINTVAL (trueop1) << count;
 
           if (mask >> count == INTVAL (trueop1)
 	      && trunc_int_for_mode (mask, mode) == mask
@@ -3343,19 +3345,21 @@ simplify_binary_operation_1 (enum rtx_code code, machine_mode mode,
 	  && UINTVAL (trueop0) == GET_MODE_MASK (mode)
 	  && ! side_effects_p (op1))
 	return op0;
+
+    canonicalize_shift:
       /* Given:
 	 scalar modes M1, M2
 	 scalar constants c1, c2
 	 size (M2) > size (M1)
 	 c1 == size (M2) - size (M1)
 	 optimize:
-	 (ashiftrt:M1 (subreg:M1 (lshiftrt:M2 (reg:M2) (const_int <c1>))
+	 ([a|l]shiftrt:M1 (subreg:M1 (lshiftrt:M2 (reg:M2) (const_int <c1>))
 				 <low_part>)
 		      (const_int <c2>))
 	 to:
-	 (subreg:M1 (ashiftrt:M2 (reg:M2) (const_int <c1 + c2>))
+	 (subreg:M1 ([a|l]shiftrt:M2 (reg:M2) (const_int <c1 + c2>))
 		    <low_part>).  */
-      if (code == ASHIFTRT
+      if ((code == ASHIFTRT || code == LSHIFTRT)
 	  && !VECTOR_MODE_P (mode)
 	  && SUBREG_P (op0)
 	  && CONST_INT_P (op1)
@@ -3372,13 +3376,13 @@ simplify_binary_operation_1 (enum rtx_code code, machine_mode mode,
 	  rtx tmp = GEN_INT (INTVAL (XEXP (SUBREG_REG (op0), 1))
 			     + INTVAL (op1));
 	  machine_mode inner_mode = GET_MODE (SUBREG_REG (op0));
-	  tmp = simplify_gen_binary (ASHIFTRT,
+	  tmp = simplify_gen_binary (code,
 				     GET_MODE (SUBREG_REG (op0)),
 				     XEXP (SUBREG_REG (op0), 0),
 				     tmp);
 	  return lowpart_subreg (mode, tmp, inner_mode);
 	}
-    canonicalize_shift:
+
       if (SHIFT_COUNT_TRUNCATED && CONST_INT_P (op1))
 	{
 	  val = INTVAL (op1) & (GET_MODE_PRECISION (mode) - 1);
@@ -5312,34 +5316,14 @@ simplify_const_relational_operation (enum rtx_code code,
 	{
 	case LT:
 	  /* Optimize abs(x) < 0.0.  */
-	  if (!HONOR_SNANS (mode)
-	      && (!INTEGRAL_MODE_P (mode)
-		  || (!flag_wrapv && !flag_trapv && flag_strict_overflow)))
-	    {
-	      if (INTEGRAL_MODE_P (mode)
-		  && (issue_strict_overflow_warning
-		      (WARN_STRICT_OVERFLOW_CONDITIONAL)))
-		warning (OPT_Wstrict_overflow,
-			 ("assuming signed overflow does not occur when "
-			  "assuming abs (x) < 0 is false"));
-	       return const0_rtx;
-	    }
+	  if (!INTEGRAL_MODE_P (mode) && !HONOR_SNANS (mode))
+	    return const0_rtx;
 	  break;
 
 	case GE:
 	  /* Optimize abs(x) >= 0.0.  */
-	  if (!HONOR_NANS (mode)
-	      && (!INTEGRAL_MODE_P (mode)
-		  || (!flag_wrapv && !flag_trapv && flag_strict_overflow)))
-	    {
-	      if (INTEGRAL_MODE_P (mode)
-	          && (issue_strict_overflow_warning
-	    	  (WARN_STRICT_OVERFLOW_CONDITIONAL)))
-	        warning (OPT_Wstrict_overflow,
-			 ("assuming signed overflow does not occur when "
-			  "assuming abs (x) >= 0 is true"));
-	      return const_true_rtx;
-	    }
+	  if (!INTEGRAL_MODE_P (mode) && !HONOR_NANS (mode))
+	    return const_true_rtx;
 	  break;
 
 	case UNGE:
@@ -5711,7 +5695,7 @@ simplify_immed_subreg (machine_mode outermode, rtx op,
   int num_elem;
   rtx * elems;
   int elem_bitsize;
-  rtx result_s;
+  rtx result_s = NULL;
   rtvec result_v = NULL;
   enum mode_class outer_class;
   machine_mode outer_submode;

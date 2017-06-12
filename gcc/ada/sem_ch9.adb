@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -32,7 +32,6 @@ with Einfo;     use Einfo;
 with Errout;    use Errout;
 with Exp_Ch9;   use Exp_Ch9;
 with Elists;    use Elists;
-with Fname;     use Fname;
 with Freeze;    use Freeze;
 with Layout;    use Layout;
 with Lib;       use Lib;
@@ -128,7 +127,7 @@ package body Sem_Ch9 is
      (N               : Node_Id;
       Lock_Free_Given : Boolean := False) return Boolean
    is
-      Errors_Count : Nat;
+      Errors_Count : Nat := 0;
       --  Errors_Count is a count of errors detected by the compiler so far
       --  when Lock_Free_Given is True.
 
@@ -258,7 +257,7 @@ package body Sem_Ch9 is
                Comp : Entity_Id := Empty;
                --  Track the current component which the body references
 
-               Errors_Count : Nat;
+               Errors_Count : Nat := 0;
                --  Errors_Count is a count of errors detected by the compiler
                --  so far when Lock_Free_Given is True.
 
@@ -773,7 +772,7 @@ package body Sem_Ch9 is
       Entry_Nam : Entity_Id;
       E         : Entity_Id;
       Kind      : Entity_Kind;
-      Task_Nam  : Entity_Id;
+      Task_Nam  : Entity_Id := Empty;  -- initialize to prevent warning
 
    begin
       Tasking_Used := True;
@@ -1169,12 +1168,7 @@ package body Sem_Ch9 is
       --  force the loading of the Ada.Real_Time package.
 
       if GNATprove_Mode then
-         declare
-            Unused : Entity_Id;
-
-         begin
-            Unused := RTE (RO_RT_Time);
-         end;
+         SPARK_Implicit_Load (RO_RT_Time);
       end if;
    end Analyze_Delay_Relative;
 
@@ -2029,7 +2023,7 @@ package body Sem_Ch9 is
       --  implemented.
 
       if In_Private_Part (Current_Scope)
-        and then Is_Internal_File_Name (Unit_File_Name (Current_Sem_Unit))
+        and then Is_Internal_Unit (Current_Sem_Unit)
       then
          Set_Has_Protected (T, False);
       else
@@ -2259,16 +2253,11 @@ package body Sem_Ch9 is
       end if;
 
       --  In GNATprove mode, force the loading of a Interrupt_Priority, which
-      --  is required for the ceiling priority protocol checks trigerred by
+      --  is required for the ceiling priority protocol checks triggered by
       --  calls originating from protected subprograms and entries.
 
       if GNATprove_Mode then
-         declare
-            Unused : Entity_Id;
-
-         begin
-            Unused := RTE (RE_Interrupt_Priority);
-         end;
+         SPARK_Implicit_Load (RE_Interrupt_Priority);
       end if;
    end Analyze_Protected_Type_Declaration;
 
@@ -3211,16 +3200,11 @@ package body Sem_Ch9 is
       end if;
 
       --  In GNATprove mode, force the loading of a Interrupt_Priority, which
-      --  is required for the ceiling priority protocol checks trigerred by
+      --  is required for the ceiling priority protocol checks triggered by
       --  calls originating from tasks.
 
       if GNATprove_Mode then
-         declare
-            Unused : Entity_Id;
-
-         begin
-            Unused := RTE (RE_Interrupt_Priority);
-         end;
+         SPARK_Implicit_Load (RE_Interrupt_Priority);
       end if;
    end Analyze_Task_Type_Declaration;
 

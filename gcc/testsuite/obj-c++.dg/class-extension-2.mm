@@ -22,8 +22,8 @@
 
 @implementation MyObject
 @end /* { dg-warning "incomplete implementation of class .MyObject." } */
-     /* { dg-warning "method definition for .-test. not found" "" { target *-*-* } 24 } */
-     /* { dg-warning "class .MyObject. does not fully implement the .MyProtocol. protocol" "" { target *-*-* } 24 } */
+     /* { dg-warning "method definition for .-test. not found" "" { target *-*-* } .-1 } */
+     /* { dg-warning "class .MyObject. does not fully implement the .MyProtocol. protocol" "" { target *-*-* } .-2 } */
 
 
 
@@ -48,9 +48,9 @@
 
 @implementation MyObject2
 @end /* { dg-warning "incomplete implementation of class .MyObject2." } */
-     /* { dg-warning "method definition for .-test. not found" "" { target *-*-* } 50 } */
-     /* { dg-warning "class .MyObject2. does not fully implement the .MyProtocol. protocol" "" { target *-*-* } 50 } */
-     /* { dg-warning "method definition for .-test2. not found" "" { target *-*-* } 50 } */
-     /* { dg-warning "class .MyObject2. does not fully implement the .MyProtocol2. protocol" "" { target *-*-* } 50 } */
-     /* { dg-warning "method definition for .-test3. not found" "" { target *-*-* } 50 } */
-     /* { dg-warning "class .MyObject2. does not fully implement the .MyProtocol3. protocol" "" { target *-*-* } 50 } */
+     /* { dg-warning "method definition for .-test. not found" "" { target *-*-* } .-1 } */
+     /* { dg-warning "class .MyObject2. does not fully implement the .MyProtocol. protocol" "" { target *-*-* } .-2 } */
+     /* { dg-warning "method definition for .-test2. not found" "" { target *-*-* } .-3 } */
+     /* { dg-warning "class .MyObject2. does not fully implement the .MyProtocol2. protocol" "" { target *-*-* } .-4 } */
+     /* { dg-warning "method definition for .-test3. not found" "" { target *-*-* } .-5 } */
+     /* { dg-warning "class .MyObject2. does not fully implement the .MyProtocol3. protocol" "" { target *-*-* } .-6 } */

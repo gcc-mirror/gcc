@@ -11,5 +11,5 @@ template <typename T> T A::* Foo (); // { dg-error "reference" }
 
 void Baz ()
 {
-  Foo <int &> (); // { dg-error "no matching function" "" }
+  Foo <int &> (); // { dg-error "no matching function" }
 }

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,7 +29,6 @@ with Debug_A;   use Debug_A;
 with Elists;    use Elists;
 with Exp_SPARK; use Exp_SPARK;
 with Expander;  use Expander;
-with Fname;     use Fname;
 with Ghost;     use Ghost;
 with Lib;       use Lib;
 with Lib.Load;  use Lib.Load;
@@ -102,8 +101,8 @@ package body Sem is
    --  Ghost mode.
 
    procedure Analyze (N : Node_Id) is
-      Mode     : Ghost_Mode_Type;
-      Mode_Set : Boolean := False;
+      Saved_GM : constant Ghost_Mode_Type := Ghost_Mode;
+      --  Save the Ghost mode to restore on exit
 
    begin
       Debug_A_Entry ("analyzing  ", N);
@@ -120,8 +119,7 @@ package body Sem is
       --  marked as Ghost.
 
       if Is_Declaration (N) then
-         Mark_And_Set_Ghost_Declaration (N, Mode);
-         Mode_Set := True;
+         Mark_And_Set_Ghost_Declaration (N);
       end if;
 
       --  Otherwise processing depends on the node kind
@@ -655,6 +653,15 @@ package body Sem is
          =>
             null;
 
+         --  A quantified expression with a missing "all" or "some" qualifier
+         --  looks identical to an iterated component association. By language
+         --  definition, the latter must be present within array aggregates. If
+         --  this is not the case, then the iterated component association is
+         --  really an illegal quantified expression. Diagnose this scenario.
+
+         when N_Iterated_Component_Association =>
+            Diagnose_Iterated_Component_Association (N);
+
          --  For the remaining node types, we generate compiler abort, because
          --  these nodes are always analyzed within the Sem_Chn routines and
          --  there should never be a case of making a call to the main Analyze
@@ -705,7 +712,6 @@ package body Sem is
             | N_Function_Specification
             | N_Generic_Association
             | N_Index_Or_Discriminant_Constraint
-            | N_Iterated_Component_Association
             | N_Iteration_Scheme
             | N_Mod_Clause
             | N_Modular_Type_Definition
@@ -762,9 +768,7 @@ package body Sem is
          Expand_SPARK_Potential_Renaming (N);
       end if;
 
-      if Mode_Set then
-         Restore_Ghost_Mode (Mode);
-      end if;
+      Restore_Ghost_Mode (Saved_GM);
    end Analyze;
 
    --  Version with check(s) suppressed
@@ -1184,32 +1188,6 @@ package body Sem is
       end if;
    end Insert_List_After_And_Analyze;
 
-   --  Version with check(s) suppressed
-
-   procedure Insert_List_After_And_Analyze
-     (N : Node_Id; L : List_Id; Suppress : Check_Id)
-   is
-   begin
-      if Suppress = All_Checks then
-         declare
-            Svs : constant Suppress_Array := Scope_Suppress.Suppress;
-         begin
-            Scope_Suppress.Suppress := (others => True);
-            Insert_List_After_And_Analyze (N, L);
-            Scope_Suppress.Suppress := Svs;
-         end;
-
-      else
-         declare
-            Svg : constant Boolean := Scope_Suppress.Suppress (Suppress);
-         begin
-            Scope_Suppress.Suppress (Suppress) := True;
-            Insert_List_After_And_Analyze (N, L);
-            Scope_Suppress.Suppress (Suppress) := Svg;
-         end;
-      end if;
-   end Insert_List_After_And_Analyze;
-
    ------------------------------------
    -- Insert_List_Before_And_Analyze --
    ------------------------------------
@@ -1242,40 +1220,14 @@ package body Sem is
       end if;
    end Insert_List_Before_And_Analyze;
 
-   --  Version with check(s) suppressed
-
-   procedure Insert_List_Before_And_Analyze
-     (N : Node_Id; L : List_Id; Suppress : Check_Id)
-   is
-   begin
-      if Suppress = All_Checks then
-         declare
-            Svs : constant Suppress_Array := Scope_Suppress.Suppress;
-         begin
-            Scope_Suppress.Suppress := (others => True);
-            Insert_List_Before_And_Analyze (N, L);
-            Scope_Suppress.Suppress := Svs;
-         end;
-
-      else
-         declare
-            Svg : constant Boolean := Scope_Suppress.Suppress (Suppress);
-         begin
-            Scope_Suppress.Suppress (Suppress) := True;
-            Insert_List_Before_And_Analyze (N, L);
-            Scope_Suppress.Suppress (Suppress) := Svg;
-         end;
-      end if;
-   end Insert_List_Before_And_Analyze;
-
    ----------
    -- Lock --
    ----------
 
    procedure Lock is
    begin
-      Scope_Stack.Locked := True;
       Scope_Stack.Release;
+      Scope_Stack.Locked := True;
    end Lock;
 
    ----------------
@@ -1472,8 +1424,8 @@ package body Sem is
       --  Sequential_IO) as this would prevent pragma Extend_System from being
       --  taken into account, for example when Text_IO is renaming DEC.Text_IO.
 
-      if Is_Predefined_File_Name
-           (Unit_File_Name (Current_Sem_Unit), Renamings_Included => False)
+      if Is_Predefined_Unit (Current_Sem_Unit)
+        and then not Is_Predefined_Renaming (Current_Sem_Unit)
       then
          GNAT_Mode := True;
       end if;
@@ -1521,7 +1473,7 @@ package body Sem is
 
       Save_Opt_Config_Switches (Save_Config_Switches);
       Set_Opt_Config_Switches
-        (Is_Internal_File_Name (Unit_File_Name (Current_Sem_Unit)),
+        (Is_Internal_Unit (Current_Sem_Unit),
          Is_Main_Unit_Or_Main_Unit_Spec);
 
       --  Save current non-partition-wide restrictions

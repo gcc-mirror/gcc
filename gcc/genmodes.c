@@ -1789,7 +1789,9 @@ emit_min_insn_modes_c (void)
   emit_min_insn_modes_c_header ();
   emit_mode_name ();
   emit_mode_class ();
+  emit_mode_nunits ();
   emit_mode_wider ();
+  emit_mode_inner ();
   emit_class_narrowest_mode ();
 }
 

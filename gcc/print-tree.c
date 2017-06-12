@@ -32,7 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-iterator.h"
 #include "gimple-pretty-print.h" /* FIXME */
 #include "tree-cfg.h"
-#include "tree-dump.h"
+#include "dumpfile.h"
 #include "print-tree.h"
 
 /* Define the hash table of nodes already seen.
@@ -400,6 +400,8 @@ print_node (FILE *file, const char *prefix, tree node, int indent,
 	fputs (" in-constant-pool", file);
       if (code == VAR_DECL && DECL_COMMON (node))
 	fputs (" common", file);
+      if ((code == VAR_DECL || code == PARM_DECL) && DECL_READ_P (node))
+	fputs (" read", file);
       if (code == VAR_DECL && DECL_THREAD_LOCAL_P (node))
 	{
 	  fputs (" ", file);
@@ -1007,7 +1009,7 @@ debug_raw (const tree_node *ptr)
 }
 
 static void
-dump_tree_via_hooks (const tree_node *ptr, int options)
+dump_tree_via_hooks (const tree_node *ptr, dump_flags_t options)
 {
   if (DECL_P (ptr))
     lang_hooks.print_decl (stderr, const_cast <tree_node*> (ptr), 0);
@@ -1031,21 +1033,6 @@ debug (const tree_node *ptr)
 {
   if (ptr)
     debug (*ptr);
-  else
-    fprintf (stderr, "<nil>\n");
-}
-
-DEBUG_FUNCTION void
-debug_verbose (const tree_node &ref)
-{
-  dump_tree_via_hooks (&ref, TDF_VERBOSE);
-}
-
-DEBUG_FUNCTION void
-debug_verbose (const tree_node *ptr)
-{
-  if (ptr)
-    debug_verbose (*ptr);
   else
     fprintf (stderr, "<nil>\n");
 }

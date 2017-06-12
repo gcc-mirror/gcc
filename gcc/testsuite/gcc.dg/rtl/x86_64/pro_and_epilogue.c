@@ -1,4 +1,4 @@
-/* { dg-do compile { target i?86-*-* x86_64-*-* } } */
+/* { dg-do compile { target { { i?86-*-* x86_64-*-* } && lp64 } } } */
 /* { dg-options "-fdump-rtl-pro_and_epilogue" } */
 
 /* Lightly-modified dump of test.c.274r.split2 for x86_64.  */

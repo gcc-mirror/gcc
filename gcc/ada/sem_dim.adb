@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2011-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 2011-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1343,7 +1343,11 @@ package body Sem_Dim is
       function Dimensions_Of_Operand (N : Node_Id) return Dimension_Type;
       --  If the operand is a numeric literal that comes from a declared
       --  constant, use the dimensions of the constant which were computed
-      --  from the expression of the constant declaration.
+      --  from the expression of the constant declaration. Otherwise the
+      --  dimensions are those of the operand, or the type of the operand.
+      --  This takes care of node rewritings from validity checks, where the
+      --  dimensions of the operand itself may not be preserved, while the
+      --  type comes from context and must have dimension information.
 
       procedure Error_Dim_Msg_For_Binary_Op (N, L, R : Node_Id);
       --  Error using Error_Msg_NE and Error_Msg_N at node N. Output the
@@ -1354,13 +1358,35 @@ package body Sem_Dim is
       ---------------------------
 
       function Dimensions_Of_Operand (N : Node_Id) return Dimension_Type is
+         Dims : constant Dimension_Type := Dimensions_Of (N);
+
       begin
-         if Nkind (N) = N_Real_Literal
-           and then Present (Original_Entity (N))
-         then
-            return Dimensions_Of (Original_Entity (N));
+         if Exists (Dims) then
+            return Dims;
+
+         elsif Is_Entity_Name (N) then
+            return Dimensions_Of (Etype (Entity (N)));
+
+         elsif Nkind (N) = N_Real_Literal then
+
+            if Present (Original_Entity (N)) then
+               return Dimensions_Of (Original_Entity (N));
+
+            else
+               return Dimensions_Of (Etype (N));
+            end if;
+
+         --  A type conversion may have been inserted to rewrite other
+         --  expressions, e.g. function returns. Dimensions are those of
+         --  the target type.
+
+         elsif Nkind (N) = N_Type_Conversion then
+            return Dimensions_Of (Etype (N));
+
+         --  Otherwise return the default dimensions
+
          else
-            return Dimensions_Of (N);
+            return Dims;
          end if;
       end Dimensions_Of_Operand;
 
@@ -1380,6 +1406,14 @@ package body Sem_Dim is
    --  Start of processing for Analyze_Dimension_Binary_Op
 
    begin
+      --  If the node is already analyzed, do not examine the operands. At the
+      --  end of the analysis their dimensions have been removed, and the node
+      --  itself may have been rewritten.
+
+      if Analyzed (N) then
+         return;
+      end if;
+
       if Nkind_In (N_Kind, N_Op_Add, N_Op_Expon, N_Op_Subtract)
         or else N_Kind in N_Multiplying_Operator
         or else N_Kind in N_Op_Compare
@@ -2120,9 +2154,9 @@ package body Sem_Dim is
 
          if Dim_Of_Expr /= Dim_Of_Etyp then
 
-            --  Numeric literal case. Issue a warning if the object type is not
-            --  dimensionless to indicate the literal is treated as if its
-            --  dimension matches the type dimension.
+            --  Numeric literal case. Issue a warning if the object type is
+            --  not dimensionless to indicate the literal is treated as if
+            --  its dimension matches the type dimension.
 
             if Nkind_In (Original_Node (Expr), N_Real_Literal,
                                                N_Integer_Literal)
@@ -2137,6 +2171,12 @@ package body Sem_Dim is
 
                Set_Dimensions (Id, Dim_Of_Expr);
 
+            --  Expression may have been constant-folded. If nominal type has
+            --  dimensions, verify that expression has same type.
+
+            elsif Exists (Dim_Of_Etyp) and then Etype (Expr) = Etyp then
+               null;
+
             --  For all other cases, issue an error message
 
             else
@@ -2144,8 +2184,8 @@ package body Sem_Dim is
             end if;
          end if;
 
-         --  Remove dimensions in expression after checking consistency
-         --  with given type.
+         --  Remove dimensions in expression after checking consistency with
+         --  given type.
 
          Remove_Dimensions (Expr);
       end if;
@@ -2328,7 +2368,7 @@ package body Sem_Dim is
    -- Copy_Dimensions --
    ---------------------
 
-   procedure Copy_Dimensions (From, To : Node_Id) is
+   procedure Copy_Dimensions (From : Node_Id; To : Node_Id) is
       Dims_Of_From : constant Dimension_Type := Dimensions_Of (From);
 
    begin
@@ -2521,8 +2561,9 @@ package body Sem_Dim is
             Add_Str_To_Name_Buffer ("has dimension ");
          end if;
 
-         Add_String_To_Name_Buffer
-           (From_Dim_To_Str_Of_Dim_Symbols (Dims_Of_N, System, True));
+         Append
+           (Global_Name_Buffer,
+            From_Dim_To_Str_Of_Dim_Symbols (Dims_Of_N, System, True));
 
       --  N is dimensionless
 
@@ -2562,16 +2603,27 @@ package body Sem_Dim is
 
       Name_Len := 0;
 
-      Add_String_To_Name_Buffer (String_From_Numeric_Literal (N));
+      Append (Global_Name_Buffer, String_From_Numeric_Literal (N));
 
       --  Insert a blank between the literal and the symbol
 
       Add_Str_To_Name_Buffer (" ");
-      Add_String_To_Name_Buffer (Symbol_Of (Typ));
+      Append (Global_Name_Buffer, Symbol_Of (Typ));
 
       Error_Msg_Name_1 := Name_Find;
       Error_Msg_N ("assumed to be%%??", N);
    end Dim_Warning_For_Numeric_Literal;
+
+   ----------------------
+   -- Dimensions_Match --
+   ----------------------
+
+   function Dimensions_Match (T1 : Entity_Id; T2 : Entity_Id) return Boolean is
+   begin
+      return
+        not Has_Dimension_System (Base_Type (T1))
+          or else Dimensions_Of (T1) = Dimensions_Of (T2);
+   end Dimensions_Match;
 
    ----------------------------------------
    -- Eval_Op_Expon_For_Dimensioned_Type --

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -492,10 +492,13 @@ package body Styleg is
    --  Start of processing for Check_Comment
 
    begin
-      --  Can never have a non-blank character preceding the first minus
+      --  Can never have a non-blank character preceding the first minus.
+      --  The "+ 3" is to leave room for a possible byte order mark (BOM);
+      --  we want to avoid a warning for a comment at the start of the
+      --  file just after the BOM.
 
       if Style_Check_Comments then
-         if Scan_Ptr > Source_First (Current_Source_File)
+         if Scan_Ptr > Source_First (Current_Source_File) + 3
            and then Source (Scan_Ptr - 1) > ' '
          then
             Error_Msg_S -- CODEFIX

@@ -20,10 +20,16 @@ along with GCC; see the file COPYING3.  If not see
 /* This file defines all the codes that may appear on individual
    EXPR_LIST, INSN_LIST and INT_LIST rtxes in the REG_NOTES chain of an insn.
    The codes are stored in the mode field of the rtx.  Source files
-   define DEF_REG_NOTE appropriately before including this file.  */
+   define DEF_REG_NOTE appropriately before including this file.
+
+   CFA related notes meant for RTX_FRAME_RELATED_P instructions
+   should be declared with REG_CFA_NOTE macro instead of REG_NOTE.  */
 
 /* Shorthand.  */
 #define REG_NOTE(NAME) DEF_REG_NOTE (REG_##NAME)
+#ifndef REG_CFA_NOTE
+# define REG_CFA_NOTE(NAME) REG_NOTE (NAME)
+#endif
 
 /* REG_DEP_TRUE is used in scheduler dependencies lists to represent a
    read-after-write dependency (i.e. a true data dependency).  This is
@@ -112,7 +118,7 @@ REG_NOTE (BR_PRED)
 /* Attached to insns that are RTX_FRAME_RELATED_P, but are too complex
    for DWARF to interpret what they imply.  The attached rtx is used
    instead of intuition.  */
-REG_NOTE (FRAME_RELATED_EXPR)
+REG_CFA_NOTE (FRAME_RELATED_EXPR)
 
 /* Attached to insns that are RTX_FRAME_RELATED_P, but are too complex
    for FRAME_RELATED_EXPR intuition.  The insn's first pattern must be
@@ -122,7 +128,7 @@ REG_NOTE (FRAME_RELATED_EXPR)
    with a base register and a constant offset.  In the most complicated
    cases, this will result in a DW_CFA_def_cfa_expression with the rtx
    expression rendered in a dwarf location expression.  */
-REG_NOTE (CFA_DEF_CFA)
+REG_CFA_NOTE (CFA_DEF_CFA)
 
 /* Attached to insns that are RTX_FRAME_RELATED_P, but are too complex
    for FRAME_RELATED_EXPR intuition.  This note adjusts the expression
@@ -130,57 +136,57 @@ REG_NOTE (CFA_DEF_CFA)
    expression, relative to the old CFA expression.  This rtx must be of
    the form (SET new-cfa-reg (PLUS old-cfa-reg const_int)).  If the note
    rtx is NULL, we use the first SET of the insn.  */
-REG_NOTE (CFA_ADJUST_CFA)
+REG_CFA_NOTE (CFA_ADJUST_CFA)
 
 /* Similar to FRAME_RELATED_EXPR, with the additional information that
    this is a save to memory, i.e. will result in DW_CFA_offset or the
    like.  The pattern or the insn should be a simple store relative to
    the CFA.  */
-REG_NOTE (CFA_OFFSET)
+REG_CFA_NOTE (CFA_OFFSET)
 
 /* Similar to FRAME_RELATED_EXPR, with the additional information that this
    is a save to a register, i.e. will result in DW_CFA_register.  The insn
    or the pattern should be simple reg-reg move.  */
-REG_NOTE (CFA_REGISTER)
+REG_CFA_NOTE (CFA_REGISTER)
 
 /* Attached to insns that are RTX_FRAME_RELATED_P, but are too complex
    for FRAME_RELATED_EXPR intuition.  This is a save to memory, i.e. will
    result in a DW_CFA_expression.  The pattern or the insn should be a
    store of a register to an arbitrary (non-validated) memory address.  */
-REG_NOTE (CFA_EXPRESSION)
+REG_CFA_NOTE (CFA_EXPRESSION)
 
 /* Attached to insns that are RTX_FRAME_RELATED_P, but are too complex
    for FRAME_RELATED_EXPR intuition.  The DWARF expression computes the value of
    the given register.  */
-REG_NOTE (CFA_VAL_EXPRESSION)
+REG_CFA_NOTE (CFA_VAL_EXPRESSION)
 
 /* Attached to insns that are RTX_FRAME_RELATED_P, with the information
    that this is a restore operation, i.e. will result in DW_CFA_restore
    or the like.  Either the attached rtx, or the destination of the insn's
    first pattern is the register to be restored.  */
-REG_NOTE (CFA_RESTORE)
+REG_CFA_NOTE (CFA_RESTORE)
 
 /* Attached to insns that are RTX_FRAME_RELATED_P, marks insn that sets
    vDRAP from DRAP.  If vDRAP is a register, vdrap_reg is initalized
    to the argument, if it is a MEM, it is ignored.  */
-REG_NOTE (CFA_SET_VDRAP)
+REG_CFA_NOTE (CFA_SET_VDRAP)
 
 /* Attached to insns that are RTX_FRAME_RELATED_P, indicating a window
    save operation, i.e. will result in a DW_CFA_GNU_window_save.
    The argument is ignored.  */
-REG_NOTE (CFA_WINDOW_SAVE)
+REG_CFA_NOTE (CFA_WINDOW_SAVE)
 
 /* Attached to insns that are RTX_FRAME_RELATED_P, marks the insn as
    requiring that all queued information should be flushed *before* insn,
    regardless of what is visible in the rtl.  The argument is ignored.
    This is normally used for a call instruction which is not exposed to
    the rest of the compiler as a CALL_INSN.  */
-REG_NOTE (CFA_FLUSH_QUEUE)
+REG_CFA_NOTE (CFA_FLUSH_QUEUE)
 
 /* Attached to insns that are RTX_FRAME_RELATED_P, toggling the mangling status
    of return address.  Currently it's only used by AArch64.  The argument is
    ignored.  */
-REG_NOTE (CFA_TOGGLE_RA_MANGLE)
+REG_CFA_NOTE (CFA_TOGGLE_RA_MANGLE)
 
 /* Indicates what exception region an INSN belongs in.  This is used
    to indicate what region to which a call may throw.  REGION 0

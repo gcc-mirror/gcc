@@ -322,6 +322,12 @@ lhd_initialize_diagnostics (diagnostic_context *ctx ATTRIBUTE_UNUSED)
 {
 }
 
+/* Called to register dumps.  */
+void
+lhd_register_dumps (gcc::dump_manager *)
+{
+}
+
 /* Called to perform language-specific options initialization.  */
 void
 lhd_init_options (unsigned int decoded_options_count ATTRIBUTE_UNUSED,

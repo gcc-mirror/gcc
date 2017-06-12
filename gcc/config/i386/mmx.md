@@ -78,9 +78,9 @@
 
 (define_insn "*mov<mode>_internal"
   [(set (match_operand:MMXMODE 0 "nonimmediate_operand"
-    "=r ,o ,r,r ,m ,?!y,!y,?!y,m  ,r   ,?!Ym,v,v,v,m,*x,*x,*x,m ,r ,Yi,!Ym,*Yi")
+    "=r ,o ,r,r ,m ,?!y,!y,?!y,m  ,r   ,?!Ym,v,v,v,m,r ,Yi,!Ym,*Yi")
 	(match_operand:MMXMODE 1 "vector_move_operand"
-    "rCo,rC,C,rm,rC,C  ,!y,m  ,?!y,?!Yn,r   ,C,v,m,v,C ,*x,m ,*x,Yj,r ,*Yj,!Yn"))]
+    "rCo,rC,C,rm,rC,C  ,!y,m  ,?!y,?!Yn,r   ,C,v,m,v,Yj,r ,*Yj,!Yn"))]
   "TARGET_MMX
    && !(MEM_P (operands[0]) && MEM_P (operands[1]))"
 {
@@ -146,7 +146,7 @@
   [(set (attr "isa")
      (cond [(eq_attr "alternative" "0,1")
 	      (const_string "nox64")
-	    (eq_attr "alternative" "2,3,4,9,10,11,12,13,14,19,20")
+	    (eq_attr "alternative" "2,3,4,9,10,15,16")
 	      (const_string "x64")
 	   ]
 	   (const_string "*")))
@@ -159,14 +159,14 @@
 	      (const_string "mmx")
 	    (eq_attr "alternative" "6,7,8,9,10")
 	      (const_string "mmxmov")
-	    (eq_attr "alternative" "11,15")
+	    (eq_attr "alternative" "11")
 	      (const_string "sselog1")
-	    (eq_attr "alternative" "21,22")
+	    (eq_attr "alternative" "17,18")
 	      (const_string "ssecvt")
 	   ]
 	   (const_string "ssemov")))
    (set (attr "prefix_rex")
-     (if_then_else (eq_attr "alternative" "9,10,19,20")
+     (if_then_else (eq_attr "alternative" "9,10,15,16")
        (const_string "1")
        (const_string "*")))
    (set (attr "prefix")
@@ -181,7 +181,7 @@
    (set (attr "mode")
      (cond [(eq_attr "alternative" "2")
 	      (const_string "SI")
-	    (eq_attr "alternative" "11,12,15,16")
+	    (eq_attr "alternative" "11,12")
 	      (cond [(ior (match_operand 0 "ext_sse_reg_operand")
 			  (match_operand 1 "ext_sse_reg_operand"))
 			(const_string "XI")
@@ -197,7 +197,7 @@
 		    ]
 		    (const_string "TI"))
 
-	    (and (eq_attr "alternative" "13,14,17,18")
+	    (and (eq_attr "alternative" "13,14")
 	    	 (ior (match_test "<MODE>mode == V2SFmode")
 		      (not (match_test "TARGET_SSE2"))))
 	      (const_string "V2SF")
@@ -930,7 +930,7 @@
   [(set (match_operand:MMXMODE24 0 "register_operand" "=y")
         (ashiftrt:MMXMODE24
 	  (match_operand:MMXMODE24 1 "register_operand" "0")
-	  (match_operand:SI 2 "nonmemory_operand" "yN")))]
+	  (match_operand:DI 2 "nonmemory_operand" "yN")))]
   "TARGET_MMX"
   "psra<mmxvecsize>\t{%2, %0|%0, %2}"
   [(set_attr "type" "mmxshft")
@@ -944,7 +944,7 @@
   [(set (match_operand:MMXMODE248 0 "register_operand" "=y")
         (any_lshift:MMXMODE248
 	  (match_operand:MMXMODE248 1 "register_operand" "0")
-	  (match_operand:SI 2 "nonmemory_operand" "yN")))]
+	  (match_operand:DI 2 "nonmemory_operand" "yN")))]
   "TARGET_MMX"
   "p<vshift><mmxvecsize>\t{%2, %0|%0, %2}"
   [(set_attr "type" "mmxshft")

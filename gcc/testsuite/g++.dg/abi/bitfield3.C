@@ -11,7 +11,7 @@
 struct A
 {
   char a;
-  int b : 224;	// { dg-warning "exceeds its type" "" }
+  int b : 224;	// { dg-warning "exceeds its type" }
   char c;
 } a, a4[4];
 
@@ -39,7 +39,7 @@ struct D
 struct E
 {
   char m;
-  long long n : 160;	// { dg-warning "exceeds its type" "" }
+  long long n : 160;	// { dg-warning "exceeds its type" }
   char o;
 } e, e4[4];
 

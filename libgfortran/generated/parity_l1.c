@@ -167,9 +167,9 @@ parity_l1 (gfc_array_l1 * const restrict retarray,
 	  base -= sstride[n] * extent[n];
 	  dest -= dstride[n] * extent[n];
 	  n++;
-	  if (n == rank)
+	  if (n >= rank)
 	    {
-	      /* Break out of the look.  */
+	      /* Break out of the loop.  */
 	      continue_loop = 0;
 	      break;
 	    }

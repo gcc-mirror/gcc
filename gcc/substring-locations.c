@@ -150,7 +150,7 @@ format_warning_va (const substring_loc &fmt_loc,
   diagnostic_info diagnostic;
   diagnostic_set_info (&diagnostic, gmsgid, ap, &richloc, DK_WARNING);
   diagnostic.option_index = opt;
-  bool warned = report_diagnostic (&diagnostic);
+  bool warned = diagnostic_report_diagnostic (global_dc, &diagnostic);
 
   if (!err && fmt_substring_loc && !substring_within_range)
     /* Case 2.  */

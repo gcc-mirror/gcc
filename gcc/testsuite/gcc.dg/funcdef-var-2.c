@@ -6,6 +6,6 @@
 /* { dg-options "-Wmissing-prototypes" } */
 
 int foo;
-/* { dg-message "note: previous declaration" "previous declaration" { target *-*-* } 8 } */
+/* { dg-message "note: previous declaration" "previous declaration" { target *-*-* } .-1 } */
 void foo () {} /* { dg-error "redeclared as different kind of symbol" } */
-/* { dg-warning "no previous prototype" "no previous prototype" { target *-*-* } 10 } */
+/* { dg-warning "no previous prototype" "no previous prototype" { target *-*-* } .-1 } */

@@ -30,6 +30,12 @@ grep -v '^// ' gen-sysinfo.go | \
       -e 's/\([^a-zA-Z0-9_]\)_timespec\([^a-zA-Z0-9_]\)/\1timespec\2/g' \
     >> ${OUT}
 
+# On AIX, the _arpcom struct, is filtered by the above grep sequence, as it as
+# a field of type _in6_addr, but other types depend on _arpcom, so we need to
+# put it back.
+grep '^type _arpcom ' gen-sysinfo.go | \
+  sed -e 's/_in6_addr/[16]byte/' >> ${OUT}
+
 # The time structures need special handling: we need to name the
 # types, so that we can cast integers to the right types when
 # assigning to the structures.
@@ -77,7 +83,11 @@ if grep '^const _epoll_data_offset ' ${OUT} >/dev/null 2>&1; then
   if test "$val" = "4"; then
       echo 'type epollevent struct { events uint32; data [8]byte }' >> ${OUT}
   elif test "$val" = "8"; then
-      echo 'type epollevent struct { events uint32; pad [4]byte; data [8]byte }' >> ${OUT}
+      if test "$GOARCH" = "sparc64" -a "$GOOS" = "linux"; then
+          echo 'type epollevent struct { events uint32; pad [4]byte; data [8]byte; _align [0]int64 }' >> ${OUT}
+      else
+          echo 'type epollevent struct { events uint32; pad [4]byte; data [8]byte }' >> ${OUT}
+      fi
   else
       echo 1>&2 "unknown epoll data offset value ${val}"
       exit 1
@@ -95,6 +105,44 @@ if ! grep '^const _EPOLLRDHUP' ${OUT} >/dev/null 2>&1; then
 fi
 if ! grep '^const _EPOLL_CLOEXEC' ${OUT} >/dev/null 2>&1; then
   echo "const _EPOLL_CLOEXEC = 02000000" >> ${OUT}
+fi
+
+# AIX 7.1 is a 64 bits value for _FCLOEXEC (referenced by O_CLOEXEC)
+# which leads to a constant overflow when using O_CLOEXEC in some
+# go code. Issue wan not present in 6.1 (no O_CLOEXEC) and is no
+# more present in 7.2 (_FCLOEXEC is a 32 bit value).
+if test "${GOOS}" = "aix" && `oslevel | grep -q "^7.1"`; then
+    sed -e 's/const __FCLOEXEC = .*/const __FCLOEXEC = 0/' ${OUT} > ${OUT}-2
+    mv ${OUT}-2 ${OUT}
+fi
+
+# Make sure _MAP_FAILED is defined.
+if ! grep '^const _MAP_FAILED =' gen-sysinfo.go > /dev/null 2>&1; then
+  echo "const _MAP_FAILED = ^uintptr(0)" >> ${OUT}
+fi
+# Make sure _MAP_ANON is defined.
+if ! grep '^const _MAP_ANON =' gen-sysinfo.go > /dev/null 2>&1; then
+  if grep '^const _MAP_ANONYMOUS ' gen-sysinfo.go > /dev/null 2>&1; then
+    echo "const _MAP_ANON = _MAP_ANONYMOUS" >> ${OUT}
+  else
+    echo "const _MAP_ANON = 0" >> ${OUT}
+  fi
+fi
+# Make sure _MADV_DONTNEED is defined.
+if ! grep '^const _MADV_DONTNEED =' gen-sysinfo.go > /dev/null 2>&1; then
+  echo "const _MADV_DONTNEED = 0" >> ${OUT}
+fi
+# Make sure _MADV_FREE is defined.
+if ! grep '^const _MADV_FREE =' gen-sysinfo.go > /dev/null 2>&1; then
+  echo "const _MADV_FREE = 0" >> ${OUT}
+fi
+# Make sure _MADV_HUGEPAGE is defined.
+if ! grep '^const _MADV_HUGEPAGE =' gen-sysinfo.go > /dev/null 2>&1; then
+  echo "const _MADV_HUGEPAGE = 0" >> ${OUT}
+fi
+# Make sure _MADV_NOHUGEPAGE is defined.
+if ! grep '^const _MADV_NOHUGEPAGE =' gen-sysinfo.go > /dev/null 2>&1; then
+  echo "const _MADV_NOHUGEPAGE = 0" >> ${OUT}
 fi
 
 # The semt structure, for Solaris.

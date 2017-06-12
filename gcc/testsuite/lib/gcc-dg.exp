@@ -22,6 +22,7 @@ load_lib scanasm.exp
 load_lib scanrtl.exp
 load_lib scantree.exp
 load_lib scanipa.exp
+load_lib scanlang.exp
 load_lib timeout.exp
 load_lib timeout-dg.exp
 load_lib prune.exp
@@ -40,6 +41,12 @@ setenv LANG C
 if { [ishost "*-*-cygwin*"] } {
   setenv LC_ALL C.ASCII
   setenv LANG C.ASCII
+}
+
+# Ensure GCC_COLORS is unset, for the rare testcases that verify
+# how output is colorized.
+if [info exists ::env(GCC_COLORS) ] {
+    unsetenv GCC_COLORS
 }
 
 global GCC_UNDER_TEST
@@ -157,8 +164,8 @@ proc schedule-cleanups { opts } {
     }
     # Finally see if there are any dumps in opts, otherwise we are done
     if [regexp -- {(?=(?:^|[ \t]+)?)-fdump-[^ \t]+(?=(?:$|[ \t]+)?)} $opts] {
-        # Ipa, Rtl, Tree for simplicity
-        set ptn "{i,r,t}"
+        # Lang, Ipa, Rtl, Tree for simplicity
+        set ptn "{l,i,r,t}"
     } else {
         return $finalcode
     }
@@ -902,6 +909,7 @@ if { [info procs saved-dg-test] == [list] } {
 	global keep_saved_temps_suffixes
 	global multiline_expected_outputs
 	global freeform_regexps
+	global save_linenr_varnames
 
 	set additional_files ""
 	set additional_sources ""
@@ -928,6 +936,27 @@ if { [info procs saved-dg-test] == [list] } {
 	}
 	set multiline_expected_outputs []
 	set freeform_regexps []
+
+	if { [info exists save_linenr_varnames] } {
+	    foreach varname $save_linenr_varnames {
+		# Cleanup varname
+		eval global $varname
+		eval unset $varname
+
+		# Cleanup varname_used, or generate defined-but-not-used
+		# warning.
+		set varname_used used_$varname
+		eval global $varname_used
+		eval set used [info exists $varname_used]
+		if { $used } {
+		    eval unset $varname_used
+		} else {
+		    regsub {^saved_linenr_} $varname "" org_varname
+		    warning "dg-line var $org_varname defined, but not used"
+		}
+	    }
+	    unset save_linenr_varnames
+	}
     }
 
     proc dg-test { args } {
@@ -979,6 +1008,32 @@ if { [info procs saved-dg-error] == [list] \
     }
 }
 
+# Set variable VARNAME to LINENR
+
+proc dg-line { linenr varname } {
+    set org_varname $varname
+    set varname "saved_linenr_$varname"
+    eval global $varname
+
+    # Generate defined-but-previously-defined error.
+    eval set var_defined [info exists $varname]
+    if { $var_defined } {
+	eval set deflinenr \$$varname
+	error "dg-line var $org_varname defined at line $linenr, but previously defined at line $deflinenr"
+	return
+    }
+
+    eval set $varname $linenr
+
+    # Schedule cleanup of varname by cleanup-after-saved-dg-test
+    global save_linenr_varnames
+    if { [info exists save_linenr_varnames] } {
+	lappend save_linenr_varnames $varname
+    } else {
+	set save_linenr_varnames [list $varname]
+    }
+}
+
 # Modify the regular expression saved by a DejaGnu message directive to
 # include a prefix and to force the expression to match a single line.
 # MSGPROC is the procedure to call.
@@ -988,11 +1043,35 @@ if { [info procs saved-dg-error] == [list] \
 proc process-message { msgproc msgprefix dgargs } {
     upvar dg-messages dg-messages
 
-    # Handle relative line specification, .+1 or .-1 etc.
-    if { [llength $dgargs] == 5
-	 && [regsub "^\.\[+-\](\[0-9\]+)$" [lindex $dgargs 4] "\\1" num] } {
-	set num [expr [lindex $dgargs 0] [string index [lindex $dgargs 4] 1] $num]
-	set dgargs [lreplace $dgargs 4 4 $num]
+    if { [llength $dgargs] == 5 } {
+	if { [regsub "^\.\[+-\](\[0-9\]+)$" [lindex $dgargs 4] "\\1" num] } {
+	    # Handle relative line specification, .+1 or .-1 etc.
+	    set num [expr [lindex $dgargs 0] [string index [lindex $dgargs 4] 1] $num]
+	    set dgargs [lreplace $dgargs 4 4 $num]
+	} elseif { [regsub "^(\[a-zA-Z\]\[a-zA-Z0-9_\]*)$" [lindex $dgargs 4] "\\1" varname] } {
+	    # Handle linenr variable defined by dg-line
+
+	    set org_varname $varname
+	    set varname "saved_linenr_$varname"
+	    eval global $varname
+
+	    # Generate used-but-not-defined error.
+	    eval set var_defined [info exists $varname]
+	    if { ! $var_defined } {
+		set linenr [expr [lindex $dgargs 0]]
+		error "dg-line var $org_varname used at line $linenr, but not defined"
+		return
+	    }
+
+	    # Note that varname has been used.
+	    set varname_used "used_$varname"
+	    eval global $varname_used
+	    eval set $varname_used 1
+
+	    # Get line number from var and use it.
+	    eval set num \$$varname
+	    set dgargs [lreplace $dgargs 4 4 $num]
+	}
     }
 
     # Process the dg- directive, including adding the regular expression

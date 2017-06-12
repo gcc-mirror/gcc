@@ -42,9 +42,9 @@ along with GCC; see the file COPYING3.  If not see
   NEXT_PASS (pass_build_cfg);
   NEXT_PASS (pass_warn_function_return);
   NEXT_PASS (pass_expand_omp);
-  NEXT_PASS (pass_build_cgraph_edges);
   NEXT_PASS (pass_sprintf_length, false);
   NEXT_PASS (pass_walloca, /*strict_mode_p=*/true);
+  NEXT_PASS (pass_build_cgraph_edges);
   TERMINATE_PASS_LIST (all_lowering_passes)
 
   /* Interprocedural optimization passes.  */
@@ -75,7 +75,7 @@ along with GCC; see the file COPYING3.  If not see
   PUSH_INSERT_PASSES_WITHIN (pass_local_optimization_passes)
       NEXT_PASS (pass_fixup_cfg);
       NEXT_PASS (pass_rebuild_cgraph_edges);
-      NEXT_PASS (pass_inline_parameters);
+      NEXT_PASS (pass_local_fn_summary);
       NEXT_PASS (pass_early_inline);
       NEXT_PASS (pass_all_early_optimizations);
       PUSH_INSERT_PASSES_WITHIN (pass_all_early_optimizations)
@@ -110,7 +110,7 @@ along with GCC; see the file COPYING3.  If not see
       POP_INSERT_PASSES ()
       NEXT_PASS (pass_release_ssa_names);
       NEXT_PASS (pass_rebuild_cgraph_edges);
-      NEXT_PASS (pass_inline_parameters);
+      NEXT_PASS (pass_local_fn_summary);
   POP_INSERT_PASSES ()
 
   NEXT_PASS (pass_ipa_oacc);
@@ -139,11 +139,11 @@ along with GCC; see the file COPYING3.  If not see
   NEXT_PASS (pass_target_clone);
   NEXT_PASS (pass_ipa_chkp_produce_thunks);
   NEXT_PASS (pass_ipa_auto_profile);
-  NEXT_PASS (pass_ipa_free_inline_summary);
   NEXT_PASS (pass_ipa_tree_profile);
   PUSH_INSERT_PASSES_WITHIN (pass_ipa_tree_profile)
       NEXT_PASS (pass_feedback_split_functions);
   POP_INSERT_PASSES ()
+  NEXT_PASS (pass_ipa_free_fn_summary);
   NEXT_PASS (pass_ipa_increase_alignment);
   NEXT_PASS (pass_ipa_tm);
   NEXT_PASS (pass_ipa_lower_emutls);
@@ -157,6 +157,7 @@ along with GCC; see the file COPYING3.  If not see
   NEXT_PASS (pass_ipa_cp);
   NEXT_PASS (pass_ipa_cdtor_merge);
   NEXT_PASS (pass_ipa_hsa);
+  NEXT_PASS (pass_ipa_fn_summary);
   NEXT_PASS (pass_ipa_inline);
   NEXT_PASS (pass_ipa_pure_const);
   NEXT_PASS (pass_ipa_reference);
@@ -276,6 +277,7 @@ along with GCC; see the file COPYING3.  If not see
 	     empty loops.  Remove them now.  */
 	  NEXT_PASS (pass_cd_dce);
 	  NEXT_PASS (pass_record_bounds);
+	  NEXT_PASS (pass_iv_canon);
 	  NEXT_PASS (pass_loop_distribution);
 	  NEXT_PASS (pass_copy_prop);
 	  NEXT_PASS (pass_graphite);
@@ -285,7 +287,6 @@ along with GCC; see the file COPYING3.  If not see
 	      NEXT_PASS (pass_copy_prop);
 	      NEXT_PASS (pass_dce);
 	  POP_INSERT_PASSES ()
-	  NEXT_PASS (pass_iv_canon);
 	  NEXT_PASS (pass_parallelize_loops, false /* oacc_kernels_p */);
 	  NEXT_PASS (pass_expand_omp_ssa);
 	  NEXT_PASS (pass_ch_vect);

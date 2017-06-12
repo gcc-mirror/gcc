@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -36,7 +36,6 @@ pragma Style_Checks (All_Checks);
 with Atree;    use Atree;
 with Csets;    use Csets;
 with Einfo;    use Einfo;
-with Fname;    use Fname;
 with Nlists;   use Nlists;
 with Opt;      use Opt;
 with Output;   use Output;
@@ -126,6 +125,21 @@ package body Lib is
    begin
       return Units.Table (U).Has_RACW;
    end Has_RACW;
+
+   function Is_Predefined_Renaming (U : Unit_Number_Type) return Boolean is
+   begin
+      return Units.Table (U).Is_Predefined_Renaming;
+   end Is_Predefined_Renaming;
+
+   function Is_Internal_Unit       (U : Unit_Number_Type) return Boolean is
+   begin
+      return Units.Table (U).Is_Internal_Unit;
+   end Is_Internal_Unit;
+
+   function Is_Predefined_Unit     (U : Unit_Number_Type) return Boolean is
+   begin
+      return Units.Table (U).Is_Predefined_Unit;
+   end Is_Predefined_Unit;
 
    function Ident_String (U : Unit_Number_Type) return Node_Id is
    begin
@@ -576,7 +590,7 @@ package body Lib is
    -- Generic_May_Lack_ALI --
    --------------------------
 
-   function Generic_May_Lack_ALI (Sfile : File_Name_Type) return Boolean is
+   function Generic_May_Lack_ALI (Unum : Unit_Number_Type) return Boolean is
    begin
       --  We allow internal generic units to be used without having a
       --  corresponding ALI files to help bootstrapping with older compilers
@@ -585,9 +599,7 @@ package body Lib is
       --  is the elaboration boolean, and we are careful to elaborate all
       --  predefined units first anyway.
 
-      return Is_Internal_File_Name
-               (Fname              => Sfile,
-                Renamings_Included => True);
+      return Is_Internal_Unit (Unum);
    end Generic_May_Lack_ALI;
 
    -----------------------------
@@ -893,6 +905,36 @@ package body Lib is
       end if;
    end In_Extended_Main_Source_Unit;
 
+   ----------------------
+   -- In_Internal_Unit --
+   ----------------------
+
+   function In_Internal_Unit (N : Node_Or_Entity_Id) return Boolean is
+   begin
+      return In_Internal_Unit (Sloc (N));
+   end In_Internal_Unit;
+
+   function In_Internal_Unit (S : Source_Ptr) return Boolean is
+      Unit : constant Unit_Number_Type := Get_Source_Unit (S);
+   begin
+      return Is_Internal_Unit (Unit);
+   end In_Internal_Unit;
+
+   ----------------------------
+   -- In_Predefined_Renaming --
+   ----------------------------
+
+   function In_Predefined_Renaming (N : Node_Or_Entity_Id) return Boolean is
+   begin
+      return In_Predefined_Renaming (Sloc (N));
+   end In_Predefined_Renaming;
+
+   function In_Predefined_Renaming (S : Source_Ptr) return Boolean is
+      Unit : constant Unit_Number_Type := Get_Source_Unit (S);
+   begin
+      return Is_Predefined_Renaming (Unit);
+   end In_Predefined_Renaming;
+
    ------------------------
    -- In_Predefined_Unit --
    ------------------------
@@ -904,9 +946,8 @@ package body Lib is
 
    function In_Predefined_Unit (S : Source_Ptr) return Boolean is
       Unit : constant Unit_Number_Type := Get_Source_Unit (S);
-      File : constant File_Name_Type   := Unit_File_Name (Unit);
    begin
-      return Is_Predefined_File_Name (File);
+      return Is_Predefined_Unit (Unit);
    end In_Predefined_Unit;
 
    -----------------------
@@ -1029,12 +1070,12 @@ package body Lib is
 
    procedure Lock is
    begin
-      Linker_Option_Lines.Locked := True;
-      Load_Stack.Locked := True;
-      Units.Locked := True;
       Linker_Option_Lines.Release;
+      Linker_Option_Lines.Locked := True;
       Load_Stack.Release;
+      Load_Stack.Locked := True;
       Units.Release;
+      Units.Locked := True;
    end Lock;
 
    ---------------

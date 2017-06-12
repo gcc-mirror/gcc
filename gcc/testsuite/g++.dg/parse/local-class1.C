@@ -9,6 +9,6 @@ void f ()
 {
   class c
     {
-      friend void g () { } // { dg-error "local class" "" }
+      friend void g () { } // { dg-error "local class" }
     };
 }

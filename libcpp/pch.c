@@ -630,7 +630,7 @@ cpp_valid_state (cpp_reader *r, const char *name, int fd)
 	     attempting to use it without -g.  Restoring the PCH file
 	     is supposed to bring in this definition *and* enable the
 	     generation of call frame information, so that precompiled
-	     definitions that take this macro into accout, to decide
+	     definitions that take this macro into account, to decide
 	     what asm to emit, won't issue .cfi directives when the
 	     compiler doesn't.  */
 	  if (!(h->flags & NODE_USED)

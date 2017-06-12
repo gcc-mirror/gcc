@@ -100,6 +100,8 @@ vect_create_new_slp_node (vec<gimple *> scalar_stmts)
       if (gimple_assign_rhs_code (stmt) == COND_EXPR)
 	nops++;
     }
+  else if (gimple_code (stmt) == GIMPLE_PHI)
+    nops = 0;
   else
     return NULL;
 
@@ -129,8 +131,8 @@ typedef struct _slp_oprnd_info
   /* Information about the first statement, its vector def-type, type, the
      operand itself in case it's constant, and an indication if it's a pattern
      stmt.  */
-  enum vect_def_type first_dt;
   tree first_op_type;
+  enum vect_def_type first_dt;
   bool first_pattern;
   bool second_pattern;
 } *slp_oprnd_info;
@@ -401,9 +403,10 @@ again:
 	{
 	case vect_constant_def:
 	case vect_external_def:
-        case vect_reduction_def:
+	case vect_reduction_def:
 	  break;
 
+	case vect_induction_def:
 	case vect_internal_def:
 	  oprnd_info->def_stmts.quick_push (def_stmt);
 	  break;
@@ -935,8 +938,22 @@ vect_build_slp_tree (vec_info *vinfo,
       if (gimple_assign_rhs_code (stmt) == COND_EXPR)
 	nops++;
     }
+  else if (gimple_code (stmt) == GIMPLE_PHI)
+    nops = 0;
   else
     return NULL;
+
+  /* If the SLP node is a PHI (induction), terminate the recursion.  */
+  if (gimple_code (stmt) == GIMPLE_PHI)
+    {
+      FOR_EACH_VEC_ELT (stmts, i, stmt)
+	if (stmt != stmts[0])
+	  /* Induction from different IVs is not supported.  */
+	  return NULL;
+      node = vect_create_new_slp_node (stmts);
+      return node;
+    }
+
 
   bool two_operators = false;
   unsigned char *swap = XALLOCAVEC (unsigned char, group_size);
@@ -987,7 +1004,8 @@ vect_build_slp_tree (vec_info *vinfo,
       unsigned old_tree_size = this_tree_size;
       unsigned int j;
 
-      if (oprnd_info->first_dt != vect_internal_def)
+      if (oprnd_info->first_dt != vect_internal_def
+	  && oprnd_info->first_dt != vect_induction_def)
         continue;
 
       if (++this_tree_size > max_tree_size)
@@ -1220,7 +1238,7 @@ fail:
 /* Dump a slp tree NODE using flags specified in DUMP_KIND.  */
 
 static void
-vect_print_slp_tree (int dump_kind, location_t loc, slp_tree node)
+vect_print_slp_tree (dump_flags_t dump_kind, location_t loc, slp_tree node)
 {
   int i;
   gimple *stmt;
@@ -1610,6 +1628,28 @@ vect_analyze_slp_cost_1 (slp_instance instance, slp_tree node,
 				body_cost_vec);
 	  return;
 	}
+    }
+  else if (STMT_VINFO_TYPE (stmt_info) == induc_vec_info_type)
+    {
+      /* ncopies_for_cost is the number of IVs we generate.  */
+      record_stmt_cost (body_cost_vec, ncopies_for_cost, vector_stmt,
+			stmt_info, 0, vect_body);
+
+      /* Prologue cost for the initial values and step vector.  */
+      record_stmt_cost (prologue_cost_vec, ncopies_for_cost,
+			CONSTANT_CLASS_P
+			  (STMT_VINFO_LOOP_PHI_EVOLUTION_BASE_UNCHANGED
+			     (stmt_info))
+			? vector_load : vec_construct,
+			stmt_info, 0, vect_prologue);
+      record_stmt_cost (prologue_cost_vec, 1,
+			CONSTANT_CLASS_P
+			  (STMT_VINFO_LOOP_PHI_EVOLUTION_PART (stmt_info))
+			? vector_load : vec_construct,
+			stmt_info, 0, vect_prologue);
+      
+      /* ???  No easy way to get at the actual number of vector stmts
+         to be geneated and thus the derived IVs.  */
     }
   else
     {
@@ -2169,8 +2209,13 @@ vect_detect_hybrid_slp_stmts (slp_tree node, unsigned i, slp_vect_type stype)
       if (! STMT_VINFO_IN_PATTERN_P (stmt_vinfo)
 	  && STMT_VINFO_RELATED_STMT (stmt_vinfo))
 	stmt = STMT_VINFO_RELATED_STMT (stmt_vinfo);
-      if (TREE_CODE (gimple_op (stmt, 0)) == SSA_NAME)
-	FOR_EACH_IMM_USE_STMT (use_stmt, imm_iter, gimple_op (stmt, 0))
+      tree def;
+      if (gimple_code (stmt) == GIMPLE_PHI)
+	def = gimple_phi_result (stmt);
+      else
+	def = SINGLE_SSA_TREE_OPERAND (stmt, SSA_OP_DEF);
+      if (def)
+	FOR_EACH_IMM_USE_STMT (use_stmt, imm_iter, def)
 	  {
 	    if (!flow_bb_inside_loop_p (loop, gimple_bb (use_stmt)))
 	      continue;
@@ -2245,9 +2290,16 @@ static tree
 vect_detect_hybrid_slp_2 (gimple_stmt_iterator *gsi, bool *handled,
 			  walk_stmt_info *)
 {
+  stmt_vec_info use_vinfo = vinfo_for_stmt (gsi_stmt (*gsi));
   /* If the stmt is in a SLP instance then this isn't a reason
      to mark use definitions in other SLP instances as hybrid.  */
-  if (STMT_SLP_TYPE (vinfo_for_stmt (gsi_stmt (*gsi))) != loop_vect)
+  if (! STMT_SLP_TYPE (use_vinfo)
+      && (STMT_VINFO_RELEVANT (use_vinfo)
+	  || VECTORIZABLE_CYCLE_DEF (STMT_VINFO_DEF_TYPE (use_vinfo)))
+      && ! (gimple_code (gsi_stmt (*gsi)) == GIMPLE_PHI
+	    && STMT_VINFO_DEF_TYPE (use_vinfo) == vect_reduction_def))
+    ;
+  else
     *handled = true;
   return NULL_TREE;
 }
@@ -3270,7 +3322,10 @@ vect_get_slp_vect_defs (slp_tree slp_node, vec<tree> *vec_oprnds)
   FOR_EACH_VEC_ELT (SLP_TREE_VEC_STMTS (slp_node), i, vec_def_stmt)
     {
       gcc_assert (vec_def_stmt);
-      vec_oprnd = gimple_get_lhs (vec_def_stmt);
+      if (gimple_code (vec_def_stmt) == GIMPLE_PHI)
+	vec_oprnd = gimple_phi_result (vec_def_stmt);
+      else
+	vec_oprnd = gimple_get_lhs (vec_def_stmt);
       vec_oprnds->quick_push (vec_oprnd);
     }
 }
@@ -3324,8 +3379,13 @@ vect_get_slp_defs (vec<tree> ops, slp_tree slp_node,
 	      gimple *first_def = SLP_TREE_SCALAR_STMTS (child)[0];
 	      gimple *related
 		= STMT_VINFO_RELATED_STMT (vinfo_for_stmt (first_def));
+	      tree first_def_op;
 
-	      if (operand_equal_p (oprnd, gimple_get_lhs (first_def), 0)
+	      if (gimple_code (first_def) == GIMPLE_PHI)
+		first_def_op = gimple_phi_result (first_def);
+	      else
+		first_def_op = gimple_get_lhs (first_def);
+	      if (operand_equal_p (oprnd, first_def_op, 0)
 		  || (related
 		      && operand_equal_p (oprnd, gimple_get_lhs (related), 0)))
 		{
@@ -3365,9 +3425,9 @@ vect_get_slp_defs (vec<tree> ops, slp_tree slp_node,
         /* The defs are already vectorized.  */
 	vect_get_slp_vect_defs (child, &vec_defs);
       else
-        /* Build vectors from scalar defs.  */
+	/* Build vectors from scalar defs.  */
 	vect_get_constant_vectors (oprnd, slp_node, &vec_defs, i,
-                                   number_of_vects, reduc_index);
+				   number_of_vects, reduc_index);
 
       vec_oprnds->quick_push (vec_defs);
 
@@ -3378,66 +3438,6 @@ vect_get_slp_defs (vec<tree> ops, slp_tree slp_node,
       first_iteration = false;
     }
 }
-
-
-/* Create NCOPIES permutation statements using the mask MASK_BYTES (by
-   building a vector of type MASK_TYPE from it) and two input vectors placed in
-   DR_CHAIN at FIRST_VEC_INDX and SECOND_VEC_INDX for the first copy and
-   shifting by STRIDE elements of DR_CHAIN for every copy.
-   (STRIDE is the number of vectorized stmts for NODE divided by the number of
-   copies).
-   VECT_STMTS_COUNTER specifies the index in the vectorized stmts of NODE, where
-   the created stmts must be inserted.  */
-
-static inline void
-vect_create_mask_and_perm (gimple *stmt,
-                           tree mask, int first_vec_indx, int second_vec_indx,
-                           gimple_stmt_iterator *gsi, slp_tree node,
-                           tree vectype, vec<tree> dr_chain,
-                           int ncopies, int vect_stmts_counter)
-{
-  tree perm_dest;
-  gimple *perm_stmt = NULL;
-  int i, stride_in, stride_out;
-  tree first_vec, second_vec, data_ref;
-
-  stride_out = SLP_TREE_NUMBER_OF_VEC_STMTS (node) / ncopies;
-  stride_in = dr_chain.length () / ncopies;
-
-  /* Initialize the vect stmts of NODE to properly insert the generated
-     stmts later.  */
-  for (i = SLP_TREE_VEC_STMTS (node).length ();
-       i < (int) SLP_TREE_NUMBER_OF_VEC_STMTS (node); i++)
-    SLP_TREE_VEC_STMTS (node).quick_push (NULL);
-
-  perm_dest = vect_create_destination_var (gimple_assign_lhs (stmt), vectype);
-  for (i = 0; i < ncopies; i++)
-    {
-      first_vec = dr_chain[first_vec_indx];
-      second_vec = dr_chain[second_vec_indx];
-
-      /* Generate the permute statement if necessary.  */
-      if (mask)
-	{
-	  perm_stmt = gimple_build_assign (perm_dest, VEC_PERM_EXPR,
-					   first_vec, second_vec, mask);
-	  data_ref = make_ssa_name (perm_dest, perm_stmt);
-	  gimple_set_lhs (perm_stmt, data_ref);
-	  vect_finish_stmt_generation (stmt, perm_stmt, gsi);
-	}
-      else
-	/* If mask was NULL_TREE generate the requested identity transform.  */
-	perm_stmt = SSA_NAME_DEF_STMT (first_vec);
-
-      /* Store the vector statement in NODE.  */
-      SLP_TREE_VEC_STMTS (node)[stride_out * i + vect_stmts_counter]
-	= perm_stmt;
-
-      first_vec_indx += stride_in;
-      second_vec_indx += stride_in;
-    }
-}
-
 
 /* Generate vector permute statements from a list of loads in DR_CHAIN.
    If ANALYZE_ONLY is TRUE, only check that it is possible to create valid
@@ -3456,7 +3456,7 @@ vect_transform_slp_perm_load (slp_tree node, vec<tree> dr_chain,
   int nunits, vec_index = 0;
   tree vectype = STMT_VINFO_VECTYPE (stmt_info);
   int group_size = SLP_INSTANCE_GROUP_SIZE (slp_node_instance);
-  int unroll_factor, mask_element, ncopies;
+  int mask_element;
   unsigned char *mask;
   machine_mode mode;
 
@@ -3474,11 +3474,13 @@ vect_transform_slp_perm_load (slp_tree node, vec<tree> dr_chain,
   mask_type = get_vectype_for_scalar_type (mask_element_type);
   nunits = TYPE_VECTOR_SUBPARTS (vectype);
   mask = XALLOCAVEC (unsigned char, nunits);
-  unroll_factor = SLP_INSTANCE_UNROLLING_FACTOR (slp_node_instance);
 
-  /* Number of copies is determined by the final vectorization factor
-     relatively to SLP_NODE_INSTANCE unrolling factor.  */
-  ncopies = vf / SLP_INSTANCE_UNROLLING_FACTOR (slp_node_instance);
+  /* Initialize the vect stmts of NODE to properly insert the generated
+     stmts later.  */
+  if (! analyze_only)
+    for (unsigned i = SLP_TREE_VEC_STMTS (node).length ();
+	 i < SLP_TREE_NUMBER_OF_VEC_STMTS (node); i++)
+      SLP_TREE_VEC_STMTS (node).quick_push (NULL);
 
   /* Generate permutation masks for every NODE. Number of masks for each NODE
      is equal to GROUP_SIZE.
@@ -3505,7 +3507,7 @@ vect_transform_slp_perm_load (slp_tree node, vec<tree> dr_chain,
   bool noop_p = true;
   *n_perms = 0;
 
-  for (int j = 0; j < unroll_factor; j++)
+  for (int j = 0; j < vf; j++)
     {
       for (int k = 0; k < group_size; k++)
 	{
@@ -3578,10 +3580,30 @@ vect_transform_slp_perm_load (slp_tree node, vec<tree> dr_chain,
 
 		  if (second_vec_index == -1)
 		    second_vec_index = first_vec_index;
-		  vect_create_mask_and_perm (stmt, mask_vec, first_vec_index,
-					     second_vec_index,
-					     gsi, node, vectype, dr_chain,
-					     ncopies, vect_stmts_counter++);
+
+		  /* Generate the permute statement if necessary.  */
+		  tree first_vec = dr_chain[first_vec_index];
+		  tree second_vec = dr_chain[second_vec_index];
+		  gimple *perm_stmt;
+		  if (! noop_p)
+		    {
+		      tree perm_dest
+			= vect_create_destination_var (gimple_assign_lhs (stmt),
+						       vectype);
+		      perm_dest = make_ssa_name (perm_dest);
+		      perm_stmt = gimple_build_assign (perm_dest,
+						       VEC_PERM_EXPR,
+						       first_vec, second_vec,
+						       mask_vec);
+		      vect_finish_stmt_generation (stmt, perm_stmt, gsi);
+		    }
+		  else
+		    /* If mask was NULL_TREE generate the requested
+		       identity transform.  */
+		    perm_stmt = SSA_NAME_DEF_STMT (first_vec);
+
+		  /* Store the vector statement in NODE.  */
+		  SLP_TREE_VEC_STMTS (node)[vect_stmts_counter++] = perm_stmt;
 		}
 
 	      index = 0;

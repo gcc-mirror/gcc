@@ -86,7 +86,7 @@ static void rtl_delete_block (basic_block);
 static basic_block rtl_redirect_edge_and_branch_force (edge, basic_block);
 static edge rtl_redirect_edge_and_branch (edge, basic_block);
 static basic_block rtl_split_block (basic_block, void *);
-static void rtl_dump_bb (FILE *, basic_block, int, int);
+static void rtl_dump_bb (FILE *, basic_block, int, dump_flags_t);
 static int rtl_verify_flow_info_1 (void);
 static void rtl_make_forwarder_block (edge);
 
@@ -1505,14 +1505,11 @@ force_nonfallthru_and_redirect (edge e, basic_block target, rtx jump_label)
 	  int prob = XINT (note, 0);
 
 	  b->probability = prob;
-          /* Update this to use GCOV_COMPUTE_SCALE.  */
-	  b->count = e->count * prob / REG_BR_PROB_BASE;
+	  b->count = e->count.apply_probability (prob);
 	  e->probability -= e->probability;
 	  e->count -= b->count;
 	  if (e->probability < 0)
 	    e->probability = 0;
-	  if (e->count < 0)
-	    e->count = 0;
 	}
     }
 
@@ -1620,7 +1617,7 @@ force_nonfallthru_and_redirect (edge e, basic_block target, rtx jump_label)
   if (EDGE_COUNT (e->src->succs) >= 2 || abnormal_edge_flags || asm_goto_edge)
     {
       rtx_insn *new_head;
-      gcov_type count = e->count;
+      profile_count count = e->count;
       int probability = e->probability;
       /* Create the new structures.  */
 
@@ -1660,13 +1657,13 @@ force_nonfallthru_and_redirect (edge e, basic_block target, rtx jump_label)
       if (asm_goto_edge)
 	{
 	  new_edge->probability /= 2;
-	  new_edge->count /= 2;
-	  jump_block->count /= 2;
+	  new_edge->count = new_edge->count.apply_scale (1, 2);
+	  jump_block->count = jump_block->count.apply_scale (1, 2);
 	  jump_block->frequency /= 2;
-	  new_edge = make_edge (new_edge->src, target,
-				e->flags & ~EDGE_FALLTHRU);
-	  new_edge->probability = probability - probability / 2;
-	  new_edge->count = count - count / 2;
+	  edge new_edge2 = make_edge (new_edge->src, target,
+				      e->flags & ~EDGE_FALLTHRU);
+	  new_edge2->probability = probability - new_edge->probability;
+	  new_edge2->count = count - new_edge->count;
 	}
 
       new_bb = jump_block;
@@ -2112,7 +2109,7 @@ commit_edge_insertions (void)
    documented in dumpfile.h.  */
 
 static void
-rtl_dump_bb (FILE *outf, basic_block bb, int indent, int flags)
+rtl_dump_bb (FILE *outf, basic_block bb, int indent, dump_flags_t flags)
 {
   rtx_insn *insn;
   rtx_insn *last;
@@ -2155,7 +2152,7 @@ rtl_dump_bb (FILE *outf, basic_block bb, int indent, int flags)
    in dumpfile.h.  */
 
 void
-print_rtl_with_bb (FILE *outf, const rtx_insn *rtx_first, int flags)
+print_rtl_with_bb (FILE *outf, const rtx_insn *rtx_first, dump_flags_t flags)
 {
   const rtx_insn *tmp_rtx;
   if (rtx_first == 0)
@@ -2207,7 +2204,7 @@ print_rtl_with_bb (FILE *outf, const rtx_insn *rtx_first, int flags)
 	      bb = start[INSN_UID (tmp_rtx)];
 	      if (bb != NULL)
 		{
-		  dump_bb_info (outf, bb, 0, dump_flags | TDF_COMMENT, true, false);
+		  dump_bb_info (outf, bb, 0, dump_flags, true, false);
 		  if (df && (flags & TDF_DETAILS))
 		    df_dump_top (bb, outf);
 		}
@@ -2234,7 +2231,7 @@ print_rtl_with_bb (FILE *outf, const rtx_insn *rtx_first, int flags)
 	      bb = end[INSN_UID (tmp_rtx)];
 	      if (bb != NULL)
 		{
-		  dump_bb_info (outf, bb, 0, dump_flags | TDF_COMMENT, false, true);
+		  dump_bb_info (outf, bb, 0, dump_flags, false, true);
 		  if (df && (flags & TDF_DETAILS))
 		    df_dump_bottom (bb, outf);
 		  putc ('\n', outf);
@@ -2527,7 +2524,7 @@ rtl_verify_edges (void)
 	    && JUMP_P (BB_END (bb))
 	    && CROSSING_JUMP_P (BB_END (bb)))
           {
-            print_rtl_with_bb (stderr, get_insns (), TDF_RTL | TDF_BLOCKS | TDF_DETAILS);
+	    print_rtl_with_bb (stderr, get_insns (), TDF_BLOCKS | TDF_DETAILS);
             error ("Region crossing jump across same section in bb %i",
                    bb->index);
             err = 1;
@@ -3159,9 +3156,8 @@ purge_dead_edges (basic_block bb)
 	  f = FALLTHRU_EDGE (bb);
 	  b->probability = XINT (note, 0);
 	  f->probability = REG_BR_PROB_BASE - b->probability;
-          /* Update these to use GCOV_COMPUTE_SCALE.  */
-	  b->count = bb->count * b->probability / REG_BR_PROB_BASE;
-	  f->count = bb->count * f->probability / REG_BR_PROB_BASE;
+	  b->count = bb->count.apply_probability (b->probability);
+	  f->count = bb->count.apply_probability (f->probability);
 	}
 
       return purged;
@@ -4242,7 +4238,7 @@ cfg_layout_duplicate_bb (basic_block bb)
    FLAGS is a set of additional flags to pass to cleanup_cfg().  */
 
 void
-cfg_layout_initialize (unsigned int flags)
+cfg_layout_initialize (int flags)
 {
   rtx_insn_list *x;
   basic_block bb;
@@ -4253,8 +4249,7 @@ cfg_layout_initialize (unsigned int flags)
      layout required moving a block from the hot to the cold
      section. This would create an illegal partitioning unless some
      manual fixup was performed.  */
-  gcc_assert (!(crtl->bb_reorder_complete
-		&& flag_reorder_blocks_and_partition));
+  gcc_assert (!crtl->bb_reorder_complete || !crtl->has_bb_partition);
 
   initialize_original_copy_tables ();
 
@@ -5030,9 +5025,9 @@ rtl_account_profile_record (basic_block bb, int after_pass,
       {
 	record->size[after_pass]
 	  += insn_rtx_cost (PATTERN (insn), false);
-	if (profile_status_for_fn (cfun) == PROFILE_READ)
+	if (bb->count.initialized_p ())
 	  record->time[after_pass]
-	    += insn_rtx_cost (PATTERN (insn), true) * bb->count;
+	    += insn_rtx_cost (PATTERN (insn), true) * bb->count.to_gcov_type ();
 	else if (profile_status_for_fn (cfun) == PROFILE_GUESSED)
 	  record->time[after_pass]
 	    += insn_rtx_cost (PATTERN (insn), true) * bb->frequency;

@@ -1,7 +1,7 @@
 /* PR target/70465 */
 /* { dg-do compile } */
 /* { dg-options "-Ofast -mfpmath=387 -fomit-frame-pointer" } */
-/* { dg-final { scan-assembler-not "fxch\t%st.1" } } */
+/* { dg-final { scan-assembler-not "fxch\t%st.1" { xfail *-*-* } } } */
 
 extern float d[1024];
 

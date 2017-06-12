@@ -127,7 +127,7 @@ verify_ssaname_freelists (struct function *fun)
   if (!gimple_in_ssa_p (fun))
     return;
 
-  bitmap names_in_il = BITMAP_ALLOC (NULL);
+  auto_bitmap names_in_il;
 
   /* Walk the entire IL noting every SSA_NAME we see.  */
   basic_block bb;
@@ -165,7 +165,7 @@ verify_ssaname_freelists (struct function *fun)
 
   /* Now walk the free list noting what we find there and verifying
      there are no duplicates.  */
-  bitmap names_in_freelists = BITMAP_ALLOC (NULL);
+  auto_bitmap names_in_freelists;
   if (FREE_SSANAMES (fun))
     {
       for (unsigned int i = 0; i < FREE_SSANAMES (fun)->length (); i++)
@@ -221,7 +221,7 @@ verify_ssaname_freelists (struct function *fun)
 
   unsigned int i;
   bitmap_iterator bi;
-  bitmap all_names = BITMAP_ALLOC (NULL);
+  auto_bitmap all_names;
   bitmap_set_range (all_names, UNUSED_NAME_VERSION + 1, num_ssa_names - 1);
   bitmap_ior_into (names_in_il, names_in_freelists);
 
@@ -230,10 +230,6 @@ verify_ssaname_freelists (struct function *fun)
   EXECUTE_IF_AND_COMPL_IN_BITMAP(all_names, names_in_il,
 				 UNUSED_NAME_VERSION + 1, i, bi)
     gcc_assert (!ssa_name (i));
-
-  BITMAP_FREE (all_names);
-  BITMAP_FREE (names_in_freelists);
-  BITMAP_FREE (names_in_il);
 }
 
 /* Move all SSA_NAMEs from FREE_SSA_NAMES_QUEUE to FREE_SSA_NAMES.
@@ -431,11 +427,14 @@ set_nonzero_bits (tree name, const wide_int_ref &mask)
 }
 
 /* Return a widest_int with potentially non-zero bits in SSA_NAME
-   NAME, or -1 if unknown.  */
+   NAME, the constant for INTEGER_CST, or -1 if unknown.  */
 
 wide_int
 get_nonzero_bits (const_tree name)
 {
+  if (TREE_CODE (name) == INTEGER_CST)
+    return name;
+
   unsigned int precision = TYPE_PRECISION (TREE_TYPE (name));
   if (POINTER_TYPE_P (TREE_TYPE (name)))
     {

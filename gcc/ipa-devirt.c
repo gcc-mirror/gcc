@@ -124,7 +124,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "symbol-summary.h"
 #include "tree-vrp.h"
 #include "ipa-prop.h"
-#include "ipa-inline.h"
+#include "ipa-fnsummary.h"
 #include "demangle.h"
 #include "dbgcnt.h"
 #include "gimple-pretty-print.h"
@@ -138,10 +138,11 @@ struct type_pair
 };
 
 template <>
-struct default_hash_traits <type_pair> : typed_noop_remove <type_pair>
+struct default_hash_traits <type_pair>
+  : typed_noop_remove <type_pair>
 {
-  typedef type_pair value_type;
-  typedef type_pair compare_type;
+  GTY((skip)) typedef type_pair value_type;
+  GTY((skip)) typedef type_pair compare_type;
   static hashval_t
   hash (type_pair p)
   {
@@ -1139,7 +1140,7 @@ warn_types_mismatch (tree t1, tree t2, location_t loc1, location_t loc2)
       if (name1 && name2 && strcmp (name1, name2))
 	{
 	  inform (loc_t1,
-		  "type name %<%s%> should match type name %<%s%>",
+		  "type name %qs should match type name %qs",
 		  name1, name2);
 	  if (loc_t2_useful)
 	    inform (loc_t2,
@@ -1226,7 +1227,7 @@ warn_types_mismatch (tree t1, tree t2, location_t loc1, location_t loc2)
   if (types_odr_comparable (t1, t2, true)
       && types_same_for_odr (t1, t2, true))
     inform (loc_t1,
-	    "type %qT itself violate the C++ One Definition Rule", t1);
+	    "type %qT itself violates the C++ One Definition Rule", t1);
   /* Prevent pointless warnings like "struct aa" should match "struct aa".  */
   else if (TYPE_NAME (t1) == TYPE_NAME (t2)
 	   && TREE_CODE (t1) == TREE_CODE (t2) && !loc_t2_useful)
@@ -1573,7 +1574,7 @@ odr_types_equivalent_p (tree t1, tree t2, bool warn, bool *warned,
 		    if (DECL_ARTIFICIAL (f1))
 		      break;
 		    warn_odr (t1, t2, f1, f2, warn, warned,
-			      G_("fields has different layout "
+			      G_("fields have different layout "
 				 "in another translation unit"));
 		    return false;
 		  }
@@ -2259,7 +2260,7 @@ build_type_inheritance_graph (void)
 {
   struct symtab_node *n;
   FILE *inheritance_dump_file;
-  int flags;
+  dump_flags_t flags;
 
   if (odr_hash)
     return;
@@ -2358,7 +2359,7 @@ is_cxa_pure_virtual_p (tree target)
 {
   return target && TREE_CODE (TREE_TYPE (target)) != METHOD_TYPE
 	 && DECL_NAME (target)
-	 && !strcmp (IDENTIFIER_POINTER (DECL_NAME (target)),
+	 && id_equal (DECL_NAME (target),
 		     "__cxa_pure_virtual");
 }
 
@@ -2462,10 +2463,19 @@ maybe_record_node (vec <cgraph_node *> &nodes,
 	  nodes.safe_push (target_node);
 	}
     }
-  else if (completep
-	   && (!type_in_anonymous_namespace_p
-		 (DECL_CONTEXT (target))
-	       || flag_ltrans))
+  else if (!completep)
+    ;
+  /* We have definition of __cxa_pure_virtual that is not accessible (it is
+     optimized out or partitioned to other unit) so we can not add it.  When
+     not sanitizing, there is nothing to do.
+     Otherwise declare the list incomplete.  */
+  else if (pure_virtual)
+    {
+      if (flag_sanitize & SANITIZE_UNREACHABLE)
+	*completep = false;
+    }
+  else if (flag_ltrans
+	   || !type_in_anonymous_namespace_p (DECL_CONTEXT (target)))
     *completep = false;
 }
 
@@ -2929,7 +2939,7 @@ struct odr_type_warn_count
 {
   tree type;
   int count;
-  gcov_type dyn_count;
+  profile_count dyn_count;
 };
 
 /* Record about how many calls would benefit from given method to be final.  */
@@ -2938,14 +2948,14 @@ struct decl_warn_count
 {
   tree decl;
   int count;
-  gcov_type dyn_count;
+  profile_count dyn_count;
 };
 
 /* Information about type and decl warnings.  */
 
 struct final_warning_record
 {
-  gcov_type dyn_count;
+  profile_count dyn_count;
   auto_vec<odr_type_warn_count> type_warnings;
   hash_map<tree, decl_warn_count> decl_warnings;
 };
@@ -3083,15 +3093,22 @@ possible_polymorphic_call_targets (tree otr_type,
       if ((*slot)->type_warning && final_warning_records)
 	{
 	  final_warning_records->type_warnings[(*slot)->type_warning - 1].count++;
-	  final_warning_records->type_warnings[(*slot)->type_warning - 1].dyn_count
-	    += final_warning_records->dyn_count;
+	  if (!final_warning_records->type_warnings
+		[(*slot)->type_warning - 1].dyn_count.initialized_p ())
+	    final_warning_records->type_warnings
+		[(*slot)->type_warning - 1].dyn_count = profile_count::zero ();
+	  if (final_warning_records->dyn_count > 0)
+	    final_warning_records->type_warnings[(*slot)->type_warning - 1].dyn_count
+	      = final_warning_records->type_warnings[(*slot)->type_warning - 1].dyn_count
+	        + final_warning_records->dyn_count;
 	}
       if (!speculative && (*slot)->decl_warning && final_warning_records)
 	{
 	  struct decl_warn_count *c =
 	     final_warning_records->decl_warnings.get ((*slot)->decl_warning);
 	  c->count++;
-	  c->dyn_count += final_warning_records->dyn_count;
+	  if (final_warning_records->dyn_count > 0)
+	    c->dyn_count += final_warning_records->dyn_count;
 	}
       return (*slot)->targets;
     }
@@ -3217,6 +3234,10 @@ possible_polymorphic_call_targets (tree otr_type,
 			final_warning_records->type_warnings.safe_grow_cleared
 			  (odr_types.length ());
 		      final_warning_records->type_warnings[outer_type->id].count++;
+		      if (!final_warning_records->type_warnings
+				[outer_type->id].dyn_count.initialized_p ())
+			final_warning_records->type_warnings
+			   [outer_type->id].dyn_count = profile_count::zero ();
 		      final_warning_records->type_warnings[outer_type->id].dyn_count
 			+= final_warning_records->dyn_count;
 		      final_warning_records->type_warnings[outer_type->id].type
@@ -3306,7 +3327,8 @@ dump_targets (FILE *f, vec <cgraph_node *> targets)
       char *name = NULL;
       if (in_lto_p)
 	name = cplus_demangle_v3 (targets[i]->asm_name (), 0);
-      fprintf (f, " %s/%i", name ? name : targets[i]->name (), targets[i]->order);
+      fprintf (f, " %s/%i", name ? name : targets[i]->name (),
+	       targets[i]->order);
       if (in_lto_p)
 	free (name);
       if (!targets[i]->definition)
@@ -3358,7 +3380,13 @@ dump_possible_polymorphic_call_targets (FILE *f,
       fprintf (f, "  Speculative targets:");
       dump_targets (f, targets);
     }
-  gcc_assert (targets.length () <= len);
+  /* Ugly: during callgraph construction the target cache may get populated
+     before all targets are found.  While this is harmless (because all local
+     types are discovered and only in those case we devirtualize fully and we
+     don't do speculative devirtualization before IPA stage) it triggers
+     assert here when dumping at that stage also populates the case with
+     speculative targets.  Quietly ignore this.  */
+  gcc_assert (symtab->state < IPA_SSA || targets.length () <= len);
   fprintf (f, "\n");
 }
 
@@ -3570,7 +3598,9 @@ ipa_devirt (void)
   if (warn_suggest_final_methods || warn_suggest_final_types)
     {
       final_warning_records = new (final_warning_record);
-      final_warning_records->type_warnings.safe_grow_cleared (odr_types.length ());
+      final_warning_records->dyn_count = profile_count::zero ();
+      final_warning_records->type_warnings.safe_grow_cleared
+						 (odr_types.length ());
       free_polymorphic_call_targets_hash ();
     }
 
@@ -3580,8 +3610,8 @@ ipa_devirt (void)
       if (!opt_for_fn (n->decl, flag_devirtualize))
 	continue;
       if (dump_file && n->indirect_calls)
-	fprintf (dump_file, "\n\nProcesing function %s/%i\n",
-		 n->name (), n->order);
+	fprintf (dump_file, "\n\nProcesing function %s\n",
+		 n->dump_name ());
       for (e = n->indirect_calls; e; e = e->next_callee)
 	if (e->indirect_info->polymorphic)
 	  {
@@ -3736,10 +3766,10 @@ ipa_devirt (void)
                   {
                     location_t locus = gimple_location_safe (e->call_stmt);
                     dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, locus,
-                                     "speculatively devirtualizing call in %s/%i to %s/%i\n",
-                                     n->name (), n->order,
-                                     likely_target->name (),
-                                     likely_target->order);
+				     "speculatively devirtualizing call "
+				     "in %s to %s\n",
+				     n->dump_name (),
+				     likely_target->dump_name ());
                   }
 		if (!likely_target->can_be_discarded_p ())
 		  {
@@ -3751,11 +3781,12 @@ ipa_devirt (void)
 		nconverted++;
 		update = true;
 		e->make_speculative
-		  (likely_target, e->count * 8 / 10, e->frequency * 8 / 10);
+		  (likely_target, e->count.apply_scale (8, 10),
+		   e->frequency * 8 / 10);
 	      }
 	  }
       if (update)
-	inline_update_overall_summary (n);
+	ipa_update_overall_fn_summary (n);
     }
   if (warn_suggest_final_methods || warn_suggest_final_types)
     {
@@ -3768,10 +3799,10 @@ ipa_devirt (void)
 	      {
 	        tree type = final_warning_records->type_warnings[i].type;
 	        int count = final_warning_records->type_warnings[i].count;
-	        long long dyn_count
+	        profile_count dyn_count
 		  = final_warning_records->type_warnings[i].dyn_count;
 
-		if (!dyn_count)
+		if (!(dyn_count > 0))
 		  warning_n (DECL_SOURCE_LOCATION (TYPE_NAME (type)),
 			     OPT_Wsuggest_final_types, count,
 			     "Declaring type %qD final "
@@ -3791,7 +3822,7 @@ ipa_devirt (void)
 			     "executed %lli times",
 			     type,
 			     count,
-			     dyn_count);
+			     (long long) dyn_count.to_gcov_type ());
 	      }
 	}
 
@@ -3806,9 +3837,10 @@ ipa_devirt (void)
 	    {
 	      tree decl = decl_warnings_vec[i]->decl;
 	      int count = decl_warnings_vec[i]->count;
-	      long long dyn_count = decl_warnings_vec[i]->dyn_count;
+	      profile_count dyn_count
+		  = decl_warnings_vec[i]->dyn_count;
 
-	      if (!dyn_count)
+	      if (!(dyn_count > 0))
 		if (DECL_CXX_DESTRUCTOR_P (decl))
 		  warning_n (DECL_SOURCE_LOCATION (decl),
 			      OPT_Wsuggest_final_methods, count,
@@ -3834,7 +3866,8 @@ ipa_devirt (void)
 			      "Declaring virtual destructor of %qD final "
 			      "would enable devirtualization of %i calls "
 			      "executed %lli times",
-			      DECL_CONTEXT (decl), count, dyn_count);
+			      DECL_CONTEXT (decl), count,
+			      (long long)dyn_count.to_gcov_type ());
 		else
 		  warning_n (DECL_SOURCE_LOCATION (decl),
 			      OPT_Wsuggest_final_methods, count,
@@ -3844,7 +3877,8 @@ ipa_devirt (void)
 			      "Declaring method %qD final "
 			      "would enable devirtualization of %i calls "
 			      "executed %lli times",
-			      decl, count, dyn_count);
+			      decl, count,
+			      (long long)dyn_count.to_gcov_type ());
 	    }
 	}
 

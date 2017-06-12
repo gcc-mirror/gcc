@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2014-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 2014-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -294,13 +294,13 @@ package Exp_Unst is
 
    --    What we do is to always generate a local constant for any dynamic
    --    bound in a dynamic subtype xx with name xx_FIRST or xx_LAST. The one
-   --    case where we can skip this is where the bound is e.g. in the third
-   --    example above, subtype dynam is expanded as
+   --    case where we can skip this is where the bound is already a constant.
+   --    E.g. in the third example above, subtype dynam is expanded as
 
-   --      dynam_LAST  : constant Integer := y + 3;
+   --      dynam_LAST : constant Integer := y + 3;
    --      subtype dynam is integer range x .. dynam_LAST;
 
-   --    Now if type dynam is uplevel referenced (as it is this case), then
+   --    Now if type dynam is uplevel referenced (as it is in this case), then
    --    the bounds x and dynam_LAST are marked as uplevel references
    --    so that appropriate entries are made in the activation record. Any
    --    explicit reference to such a bound in the front end generated code
@@ -310,7 +310,7 @@ package Exp_Unst is
    --    these bounds can be replaced by an appropriate reference to the entry
    --    in the activation record for xx_FIRST or xx_LAST. Thus the back end
    --    can eliminate the problematical uplevel reference without the need to
-   --    do the heavy tree modification to do that at the code expansion level
+   --    do the heavy tree modification to do that at the code expansion level.
 
    --  Looking at case 3 again, here is the normal -gnatG expanded code
 
@@ -347,7 +347,7 @@ package Exp_Unst is
    --  we ignore that detail to clarify the examples.
 
    --  Here we see that some of the bounds references are expanded by the
-   --  front end, so that we get explicit references to y or dynamLast. These
+   --  front end, so that we get explicit references to y or dynam_Last. These
    --  cases are handled by the normal uplevel reference mechanism described
    --  above for case 2. This is the case for the constraint check for the
    --  initialization of xx, and the range check in function inner.

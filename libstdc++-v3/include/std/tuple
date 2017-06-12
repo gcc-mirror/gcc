@@ -872,6 +872,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { _Inherited::_M_swap(__in); }
     };
 
+#if __cpp_deduction_guides >= 201606
+  template<typename... _UTypes>
+    tuple(_UTypes...) -> tuple<_UTypes...>;
+  template<typename _T1, typename _T2>
+    tuple(pair<_T1, _T2>) -> tuple<_T1, _T2>;
+  template<typename _Alloc, typename... _UTypes>
+    tuple(allocator_arg_t, _Alloc, _UTypes...) -> tuple<_UTypes...>;
+  template<typename _Alloc, typename _T1, typename _T2>
+    tuple(allocator_arg_t, _Alloc, pair<_T1, _T2>) -> tuple<_T1, _T2>;
+  template<typename _Alloc, typename... _UTypes>
+    tuple(allocator_arg_t, _Alloc, tuple<_UTypes...>) -> tuple<_UTypes...>;
+#endif
+
   // Explicit specialization, zero-element tuple.
   template<>
     class tuple<>
@@ -1255,7 +1268,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #if __cplusplus > 201402L
   template <typename _Tp>
-    constexpr size_t tuple_size_v = tuple_size<_Tp>::value;
+    inline constexpr size_t tuple_size_v = tuple_size<_Tp>::value;
 #endif
 
   /**
@@ -1597,16 +1610,20 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
 
   // A class (and instance) which can be used in 'tie' when an element
-  // of a tuple is not required
+  // of a tuple is not required.
+  // _GLIBCXX14_CONSTEXPR
+  // 2933. PR for LWG 2773 could be clearer
   struct _Swallow_assign
   {
     template<class _Tp>
-      const _Swallow_assign&
+      _GLIBCXX14_CONSTEXPR const _Swallow_assign&
       operator=(const _Tp&) const
       { return *this; }
   };
 
-  const _Swallow_assign ignore{};
+  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+  // 2773. Making std::ignore constexpr
+  _GLIBCXX17_INLINE constexpr _Swallow_assign ignore{};
 
   /// Partial specialization for tuples
   template<typename... _Types, typename _Alloc>

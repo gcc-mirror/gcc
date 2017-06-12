@@ -1047,6 +1047,11 @@ and for cross builds configured with @option{--with-sysroot}, and without
 More documentation about multiarch can be found at
 @uref{https://wiki.debian.org/Multiarch}.
 
+@item --enable-sjlj-exceptions
+Force use of the @code{setjmp}/@code{longjmp}-based scheme for exceptions.
+@samp{configure} ordinarily picks the correct value based on the platform.
+Only use this option if you are sure you need a different setting.
+
 @item --enable-vtable-verify
 Specify whether to enable or disable the vtable verification feature.
 Enabling this feature causes libstdc++ to be built with its virtual calls
@@ -1092,14 +1097,18 @@ for each target is given below.
 
 @table @code
 @item arm*-*-*
-@var{list} is one of@code{default}, @code{aprofile} or @code{rmprofile}.
-Specifying @code{default} is equivalent to omitting this option, ie. only the
-default runtime library will be enabled.  Specifying @code{aprofile} or
-@code{rmprofile} builds multilibs for a combination of ISA, architecture,
-FPU available and floating-point ABI.
+@var{list} is a comma separated list of @code{aprofile} and @code{rmprofile}
+to build multilibs for A or R and M architecture profiles respectively.  Note
+that, due to some limitation of the current multilib framework, using the
+combined @code{aprofile,rmprofile} multilibs selects in some cases a less
+optimal multilib than when using the multilib profile for the architecture
+targetted.  The special value @code{default} is also accepted and is equivalent
+to omitting the option, ie. only the default run-time library will be enabled.
 
 The table below gives the combination of ISAs, architectures, FPUs and
 floating-point ABIs for which multilibs are built for each accepted value.
+The union of these options is considered when specifying both @code{aprofile}
+and @code{rmprofile}.
 
 @multitable @columnfractions .15 .28 .30
 @item Option @tab aprofile @tab rmprofile
@@ -1512,7 +1521,7 @@ linker does search for @samp{libNAME.so} before @samp{libNAME.a} library
 filenames with the @samp{-lNAME} linker flag.
 
 @anchor{AixLdCommand}For detailed information please refer to the AIX
-@uref{http://www-01.ibm.com/support/knowledgecenter/search/%22the%20ld%20command%2C%20also%20called%20the%20linkage%20editor%20or%20binder%22,,ld
+@uref{https://www.ibm.com/support/knowledgecenter/search/%22the%20ld%20command%2C%20also%20called%20the%20linkage%20editor%20or%20binder%22,,ld
 Command} reference.
 
 As long as shared library creation is enabled, upon:
@@ -1617,14 +1626,17 @@ their runtime libraries should be built.  For a list of valid values for
 grep ^language= */config-lang.in
 @end smallexample
 Currently, you can use any of the following:
-@code{all}, @code{ada}, @code{c}, @code{c++}, @code{fortran},
+@code{all}, @code{default}, @code{ada}, @code{c}, @code{c++}, @code{fortran},
 @code{go}, @code{jit}, @code{lto}, @code{objc}, @code{obj-c++}.
 Building the Ada compiler has special requirements, see below.
-If you do not pass this flag, or specify the option @code{all}, then all
+If you do not pass this flag, or specify the option @code{default}, then the
 default languages available in the @file{gcc} sub-tree will be configured.
 Ada, Go, Jit, and Objective-C++ are not default languages.  LTO is not a
 default language, but is built by default because @option{--enable-lto} is
-enabled by default.  The other languages are default languages.
+enabled by default.  The other languages are default languages.  If
+@code{all} is specified, then all available languages are built.  An
+exception is @code{jit} language, which requires
+@option{--enable-host-shared} to be included with @code{all}.
 
 @item --enable-stage1-languages=@var{lang1},@var{lang2},@dots{}
 Specify that a particular subset of compilers and their runtime
@@ -3072,6 +3084,15 @@ Solaris 2 (SPARC, Intel):
 @end itemize
 
 @item
+macOS:
+@itemize
+@item
+The @uref{https://brew.sh,,Homebrew} package manager;
+@item
+@uref{https://www.macports.org,,MacPorts}.
+@end itemize
+
+@item
 Microsoft Windows:
 @itemize
 @item
@@ -3210,6 +3231,14 @@ information have to.
 @uref{#powerpcle-x-eabisim,,powerpcle-*-eabisim}
 @item
 @uref{#powerpcle-x-eabi,,powerpcle-*-eabi}
+@item
+@uref{#riscv32-x-elf,,riscv32-*-elf}
+@item
+@uref{#riscv32-x-linux,,riscv32-*-linux}
+@item
+@uref{#riscv64-x-elf,,riscv64-*-elf}
+@item
+@uref{#riscv64-x-linux,,riscv64-*-linux}
 @item
 @uref{#s390-x-linux,,s390-*-linux*}
 @item
@@ -3359,10 +3388,7 @@ Use @samp{configure --target=arc-linux-uclibc --with-cpu=arc700 --enable-languag
 @end html
 @anchor{arm-x-eabi}
 @heading arm-*-eabi
-ARM-family processors.  Subtargets that use the ELF object format
-require GNU binutils 2.13 or newer.  Such subtargets include:
-@code{arm-*-netbsdelf}, @code{arm-*-*linux-*}
-and @code{arm-*-rtemseabi}.
+ARM-family processors.
 
 Building the Ada frontend commonly fails (an infinite loop executing
 @code{xsinfo}) if the host compiler is GNAT 4.8.  Host compilers built from the
@@ -3395,8 +3421,6 @@ can also be obtained from:
 @item
 @uref{http://www.amelek.gda.pl/avr/,,http://www.amelek.gda.pl/avr/}
 @end itemize
-
-We @emph{strongly} recommend using binutils 2.13 or newer.
 
 The following error:
 @smallexample
@@ -3471,9 +3495,6 @@ Mainly for monolithic embedded systems.  Includes a multilib for the
 A GNU/Linux port for the CRIS architecture, currently targeting
 @samp{ETRAX 100 LX} by default.
 @end table
-
-For @code{cris-axis-elf} you need binutils 2.11
-or newer.  For @code{cris-axis-linux-gnu} you need binutils 2.12 or newer.
 
 Pre-packaged tools can be obtained from
 @uref{ftp://ftp.axis.com/@/pub/@/axis/@/tools/@/cris/@/compiler-kit/}.  More
@@ -3638,7 +3659,7 @@ The libffi library haven't been ported to 64-bit HP-UX@ and doesn't build.
 
 Refer to @uref{binaries.html,,binaries} for information about obtaining
 precompiled GCC binaries for HP-UX@.  Precompiled binaries must be obtained
-to build the Ada language as it can't be bootstrapped using C@.  Ada is
+to build the Ada language as it cannot be bootstrapped using C@.  Ada is
 only available for the 32-bit PA-RISC runtime.
 
 Starting with GCC 3.4 an ISO C compiler is required to bootstrap.  The
@@ -3718,12 +3739,12 @@ Although the HP and GNU linkers are both supported for the
 HP linker be used for link editing on this target.
 
 At this time, the GNU linker does not support the creation of long
-branch stubs.  As a result, it can't successfully link binaries
+branch stubs.  As a result, it cannot successfully link binaries
 containing branch offsets larger than 8 megabytes.  In addition,
 there are problems linking shared libraries, linking executables
 with @option{-static}, and with dwarf2 unwind and exception support.
 It also doesn't provide stubs for internal calls to global functions
-in shared libraries, so these calls can't be overloaded.
+in shared libraries, so these calls cannot be overloaded.
 
 The HP dynamic loader does not support GNU symbol versioning, so symbol
 versioning is not supported.  It may be necessary to disable symbol
@@ -4125,14 +4146,6 @@ the use of break, use the @option{--with-divide=breaks}
 @command{configure} option when configuring GCC@.  The default is to
 use traps on systems that support them.
 
-The assembler from GNU binutils 2.17 and earlier has a bug in the way
-it sorts relocations for REL targets (o32, o64, EABI).  This can cause
-bad code to be generated for simple C++ programs.  Also the linker
-from GNU binutils versions prior to 2.17 has a bug which causes the
-runtime linker stubs in very large programs to
-be incorrectly generated.  GNU Binutils 2.18 and later (and snapshots
-made after Nov. 9, 2006) should be free from both of these problems.
-
 @html
 <hr />
 @end html
@@ -4207,9 +4220,7 @@ Use the @option{--disable-sjlj-exceptions} and
 You can specify a default version for the @option{-mcpu=@var{cpu_type}}
 switch by using the configure option @option{--with-cpu-@var{cpu_type}}.
 
-You will need
-@uref{ftp://ftp.kernel.org/pub/linux/devel/binutils,,binutils 2.15}
-or newer for a working GCC@.
+You will need GNU binutils 2.15 or newer.
 
 @html
 <hr />
@@ -4301,6 +4312,17 @@ This configuration is intended for embedded systems.
 @heading riscv32-*-elf
 The RISC-V RV32 instruction set.
 This configuration is intended for embedded systems.
+This (and all other RISC-V) targets are supported upstream as of the
+binutils 2.28 release.
+
+@html
+<hr />
+@end html
+@anchor{riscv32-x-linux}
+@heading riscv32-*-linux
+The RISC-V RV32 instruction set running GNU/Linux.
+This (and all other RISC-V) targets are supported upstream as of the
+binutils 2.28 release.
 
 @html
 <hr />
@@ -4309,13 +4331,8 @@ This configuration is intended for embedded systems.
 @heading riscv64-*-elf
 The RISC-V RV64 instruction set.
 This configuration is intended for embedded systems.
-
-@html
-<hr />
-@end html
-@anchor{riscv32-x-linux}
-@heading riscv32-*-linux
-The RISC-V RV32 instruction set running GNU/Linux.
+This (and all other RISC-V) targets are supported upstream as of the
+binutils 2.28 release.
 
 @html
 <hr />
@@ -4323,6 +4340,8 @@ The RISC-V RV32 instruction set running GNU/Linux.
 @anchor{riscv64-x-linux}
 @heading riscv64-*-linux
 The RISC-V RV64 instruction set running GNU/Linux.
+This (and all other RISC-V) targets are supported upstream as of the
+binutils 2.28 release.
 
 @html
 <hr />
@@ -4511,11 +4530,6 @@ This bug is fixed in Sun patch 118683-03 or later.
 @end html
 @anchor{sparc-x-linux}
 @heading sparc-*-linux*
-
-GCC versions 3.0 and higher require binutils 2.11.2 and glibc 2.2.4
-or newer on this platform.  All earlier binutils and glibc
-releases mishandled unaligned relocations on @code{sparc-*-*} targets.
-
 
 @html
 <hr />

@@ -5,5 +5,5 @@ namespace Out {
   }
 }
 
-class Klasse : public Out::In {  // { dg-error ".*" "" }
+class Klasse : public Out::In {  // { dg-error ".*" }
 };

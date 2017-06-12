@@ -93,6 +93,9 @@ struct die_struct;
 /* Nonzero if this is an indirect call by descriptor.  */
 #define ECF_BY_DESCRIPTOR	  (1 << 14)
 
+/* Nonzero if this is a cold function.  */
+#define ECF_COLD		  (1 << 15)
+
 /* Call argument flags.  */
 /* Nonzero if the argument is not dereferenced recursively, thus only
    directly reachable memory is read or written.  */
@@ -357,7 +360,7 @@ enum omp_clause_code {
   /* OpenMP clause: ordered [(constant-integer-expression)].  */
   OMP_CLAUSE_ORDERED,
 
-  /* OpenMP clause: default.  */
+  /* OpenACC/OpenMP clause: default.  */
   OMP_CLAUSE_DEFAULT,
 
   /* OpenACC/OpenMP clause: collapse (constant-integer-expression).  */
@@ -499,6 +502,7 @@ enum omp_clause_default_kind {
   OMP_CLAUSE_DEFAULT_NONE,
   OMP_CLAUSE_DEFAULT_PRIVATE,
   OMP_CLAUSE_DEFAULT_FIRSTPRIVATE,
+  OMP_CLAUSE_DEFAULT_PRESENT,
   OMP_CLAUSE_DEFAULT_LAST
 };
 
@@ -1194,6 +1198,10 @@ struct GTY(()) tree_base {
        SSA_NAME_OCCURS_IN_ABNORMAL_PHI in
            SSA_NAME
 
+       EXPR_CILK_SPAWN in
+           CALL_EXPR
+           AGGR_INIT_EXPR
+
    used_flag:
 
        TREE_USED in
@@ -1511,7 +1519,9 @@ struct GTY(()) tree_type_common {
      so we need to store the value 32 (not 31, as we need the zero
      as well), hence six bits.  */
   unsigned align : 6;
-  unsigned spare : 25;
+  unsigned typeless_storage : 1;
+  unsigned spare : 24;
+
   alias_set_type alias_set;
   tree pointer_to;
   tree reference_to;

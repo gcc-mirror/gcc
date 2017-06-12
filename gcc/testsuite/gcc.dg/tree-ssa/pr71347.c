@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-optimized" } */
+/* { dg-options "-O2 -fdump-tree-optimized -fpredictive-commoning" } */
 
 double in;
 extern void Write (double);

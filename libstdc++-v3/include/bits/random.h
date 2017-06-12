@@ -1603,7 +1603,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     double
     entropy() const noexcept
-    { return 0.0; }
+    {
+#ifdef _GLIBCXX_USE_RANDOM_TR1
+      return this->_M_getentropy();
+#else
+      return 0.0;
+#endif
+    }
 
     result_type
     operator()()
@@ -1627,6 +1633,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     result_type _M_getval();
     result_type _M_getval_pretr1();
+    double _M_getentropy() const noexcept;
 
     union
     {

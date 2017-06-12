@@ -1,3 +1,140 @@
+2017-06-09  Martin Liska  <mliska@suse.cz>
+
+	* libgcov-profiler.c (__gcov_indirect_call_profiler_v2):
+	Reset __gcov_indirect_call_callee to NULL.
+
+2017-06-08  Olivier Hainque  <hainque@adacore.com>
+
+	* config/t-vxworks (LIBGCC2_INCLUDES): Add path to wrn/coreip to
+	the set of -I options, support for direct inclusions of net/uio.h
+	by VxWorks header files via ioLib.h.
+
+2017-06-07  Tony Reix  <tony.reix@atos.net>
+	    Matthieu Sarter  <matthieu.sarter.external@atos.net>
+	    David Edelsohn  <dje.gcc@gmail.com>
+
+        * config/rs6000/aix-unwind.h (MD_FALLBACK_FRAME_STATE_FOR): Define
+        unconditionally.
+        (ucontext_for): Add 64-bit AIX 6.1, 7.1, 7.2 support.  Add 32-bit
+        AIX 7.2 support.
+
+2017-06-02  Olivier Hainque  <hainque@adacore.com>
+
+	* config/vxlib.c (__gthread_once): Add missing value to
+	return statement.
+
+2017-05-30  Olivier Hainque  <hainque@adacore.com>
+
+	* config/t-vxworks (LIBGCC2_INCLUDES): Remove extraneous
+	dollar sign before $(MULTIDIR).
+
+2017-05-26  Richard Henderson  <rth@redhat.com>
+
+	PR libgcc/80037
+	* config/alpha/t-alpha (CRTSTUFF_T_CFLAGS): New.
+
+2017-05-17  Andreas Tobler  <andreast@gcc.gnu.org>
+
+	* config/arm/unwind-arm.h: Make _Unwind_GetIP, _Unwind_GetIPInfo and
+	_Unwind_SetIP available as functions for arm*-*-freebsd*.
+	* config/arm/unwind-arm.c: Implement the above.
+
+2017-05-15  Adhemerval Zanella  <adhemerval.zanella@linaro.org>
+
+	* config/sparc/lb1spc.S [__ELF__ && __linux__]: Emit .note.GNU-stack
+	section for a non-executable stack.
+
+2017-05-14  Krister Walfridsson  <krister.walfridsson@gmail.com>
+
+	PR target/80600
+	* config.host (*-*-netbsd*): Add t-slibgcc-libgcc to tmake_file.
+
+2017-05-14  Daniel Santos  <daniel.santos@pobox.com>
+
+	* config.host: Add i386/t-msabi to i386/t-linux file list.
+	* config/i386/i386-asm.h: New file.
+	* config/i386/resms64.S: New file.
+	* config/i386/resms64f.S: New file.
+	* config/i386/resms64fx.S: New file.
+	* config/i386/resms64x.S: New file.
+	* config/i386/savms64.S: New file.
+	* config/i386/savms64f.S: New file.
+	* config/i386/t-msabi: New file.
+
+2017-05-09  Andreas Tobler  <andreast@gcc.gnu.org>
+
+	* config.host: Use the generic FreeBSD t-slibgcc-elf-ver for
+	arm*-*-freebsd* instead of the t-slibgcc-libgcc.
+
+2017-05-05  Joshua Conner  <joshconner@google.com>
+
+	* config/arm/unwind-arm.h (_Unwind_decode_typeinfo_ptr): Use
+	pc-relative indirect handling for fuchsia.
+	* config/t-slibgcc-fuchsia: New file.
+	* config.host (*-*-fuchsia*, aarch64*-*-fuchsia*, arm*-*-fuchsia*,
+	x86_64-*-fuchsia*): Add definitions.
+
+2017-04-19  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/80435
+	* Makefile.in: Install gcov.h.
+	* gcov.h: New file.
+	* libgcov.h: Use the header and make __gcov_flush publicly
+	visible.
+
+2017-04-18  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/78783
+	* libgcov-driver.c (gcov_get_filename): New function.
+
+2017-04-07  Jeff Law  <law@redhat.com>
+
+	* Makefile.in: Swap definition of LIBGCC_LINKS and inclusion of
+	target makefile fragment.
+	* config/sh/t-sh (unwind-dw2-Os-4-200.o): Depend on LIBGCC_LINKS.
+
+2017-04-07  Alan Modra  <amodra@gmail.com>
+
+	PR target/45053
+	* config/rs6000/t-crtstuff (CRTSTUFF_T_CFLAGS): Add -O2.
+
+2017-04-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	* config/c6x/pr-support.c (__gnu_unwind_execute): Fix typo in comment.
+
+2017-03-27  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/ieee-754/divdf3.S (__divdf3): Use __ARCEM__.
+
+2017-03-10  John Marino  <gnugcc@marino.st>
+
+	* config/aarch64/freebsd-unwind.h: New file.
+	* config.host: Add aarch64-*-freebsd unwinder.
+
+2017-03-10  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/crtrestvr.s: Use .machine altivec.
+	* config/rs6000/crtsavevr.s: Ditto.
+
+2017-03-10  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* configure.ac (test for libgcc_cv_powerpc_float128): Temporarily
+	modify CFLAGS.  Add -mabi=altivec -mvsx -mfloat128.
+	(test for libgcc_cv_powerpc_float128_hw): Add -mpower9-vector and
+	-mfloat128-hardware to the CFLAGS.  Fix syntax error in the C snippet.
+	* configure: Regenerate.
+	* config.in: Regenerate.
+
+2017-03-02  Jonathan Yong <10walls@gmail.com>
+
+	* config/i386/gthr-win32.h: Define NOGDI before
+	windows.h include to prevent w32api CC_NONE macro
+	clash with libgfortran.
+
+2017-03-02  Jonathan Yong <10walls@gmail.com>
+
+	* unwind-seh.c: Suppress warnings for RtlUnwindEx calls.
+
 2017-02-16  Andrew Pinski  <apinski@cavium.com>
 
 	* config/aarch64/value-unwind.h: New file.

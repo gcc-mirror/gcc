@@ -69,6 +69,7 @@
 #include "tree-phinodes.h"
 #include "cfgloop.h"
 #include "fold-const.h"
+#include "intl.h"
 
 /* This file should be included last.  */
 #include "target-def.h"
@@ -325,6 +326,14 @@ maybe_split_mode (machine_mode mode)
     return DImode;
 
   return VOIDmode;
+}
+
+/* Return true if mode should be treated as two registers.  */
+
+static bool
+split_mode_p (machine_mode mode)
+{
+  return maybe_split_mode (mode) != VOIDmode;
 }
 
 /* Output a register, subreg, or register pair (with optional
@@ -1047,11 +1056,6 @@ init_softstack_frame (FILE *file, unsigned alignment, HOST_WIDE_INT size)
   fprintf (file, "\t\tsub.u%d %s, %s, " HOST_WIDE_INT_PRINT_DEC ";\n",
 	   bits, reg_stack, reg_frame, size);
 
-  /* Usually 'crtl->is_leaf' is computed during register allocator
-     initialization (which is not done on NVPTX) or for pressure-sensitive
-     optimizations.  Initialize it here, except if already set.  */
-  if (!crtl->is_leaf)
-    crtl->is_leaf = leaf_function_p ();
   if (!crtl->is_leaf)
     fprintf (file, "\t\tst.shared.u%d [%s], %s;\n",
 	     bits, reg_sspslot, reg_stack);
@@ -1079,24 +1083,29 @@ nvptx_init_axis_predicate (FILE *file, int regno, const char *name)
 static void
 nvptx_init_unisimt_predicate (FILE *file)
 {
+  cfun->machine->unisimt_location = gen_reg_rtx (Pmode);
+  int loc = REGNO (cfun->machine->unisimt_location);
   int bits = POINTER_SIZE;
-  int master = REGNO (cfun->machine->unisimt_master);
-  int pred = REGNO (cfun->machine->unisimt_predicate);
+  fprintf (file, "\t.reg.u%d %%r%d;\n", bits, loc);
   fprintf (file, "\t{\n");
   fprintf (file, "\t\t.reg.u32 %%ustmp0;\n");
   fprintf (file, "\t\t.reg.u%d %%ustmp1;\n", bits);
-  fprintf (file, "\t\t.reg.u%d %%ustmp2;\n", bits);
   fprintf (file, "\t\tmov.u32 %%ustmp0, %%tid.y;\n");
   fprintf (file, "\t\tmul%s.u32 %%ustmp1, %%ustmp0, 4;\n",
 	   bits == 64 ? ".wide" : ".lo");
-  fprintf (file, "\t\tmov.u%d %%ustmp2, __nvptx_uni;\n", bits);
-  fprintf (file, "\t\tadd.u%d %%ustmp2, %%ustmp2, %%ustmp1;\n", bits);
-  fprintf (file, "\t\tld.shared.u32 %%r%d, [%%ustmp2];\n", master);
-  fprintf (file, "\t\tmov.u32 %%ustmp0, %%tid.x;\n");
-  /* Compute 'master lane index' as 'tid.x & __nvptx_uni[tid.y]'.  */
-  fprintf (file, "\t\tand.b32 %%r%d, %%r%d, %%ustmp0;\n", master, master);
-  /* Compute predicate as 'tid.x == master'.  */
-  fprintf (file, "\t\tsetp.eq.u32 %%r%d, %%r%d, %%ustmp0;\n", pred, master);
+  fprintf (file, "\t\tmov.u%d %%r%d, __nvptx_uni;\n", bits, loc);
+  fprintf (file, "\t\tadd.u%d %%r%d, %%r%d, %%ustmp1;\n", bits, loc, loc);
+  if (cfun->machine->unisimt_predicate)
+    {
+      int master = REGNO (cfun->machine->unisimt_master);
+      int pred = REGNO (cfun->machine->unisimt_predicate);
+      fprintf (file, "\t\tld.shared.u32 %%r%d, [%%r%d];\n", master, loc);
+      fprintf (file, "\t\tmov.u32 %%ustmp0, %%laneid;\n");
+      /* Compute 'master lane index' as 'laneid & __nvptx_uni[tid.y]'.  */
+      fprintf (file, "\t\tand.b32 %%r%d, %%r%d, %%ustmp0;\n", master, master);
+      /* Compute predicate as 'tid.x == master'.  */
+      fprintf (file, "\t\tsetp.eq.u32 %%r%d, %%r%d, %%ustmp0;\n", pred, master);
+    }
   fprintf (file, "\t}\n");
   need_unisimt_decl = true;
 }
@@ -1223,6 +1232,12 @@ nvptx_declare_function_name (FILE *file, const char *name, const_tree decl)
 
   fprintf (file, "%s", s.str().c_str());
 
+  /* Usually 'crtl->is_leaf' is computed during register allocator
+     initialization (which is not done on NVPTX) or for pressure-sensitive
+     optimizations.  Initialize it here, except if already set.  */
+  if (!crtl->is_leaf)
+    crtl->is_leaf = leaf_function_p ();
+
   HOST_WIDE_INT sz = get_frame_size ();
   bool need_frameptr = sz || cfun->machine->has_chain;
   int alignment = crtl->stack_alignment_needed / BITS_PER_UNIT;
@@ -1239,9 +1254,28 @@ nvptx_declare_function_name (FILE *file, const char *name, const_tree decl)
 	init_frame (file, FRAME_POINTER_REGNUM, alignment,
 		    ROUND_UP (sz, GET_MODE_SIZE (DImode)));
     }
-  else if (need_frameptr || cfun->machine->has_varadic || cfun->calls_alloca)
+  else if (need_frameptr || cfun->machine->has_varadic || cfun->calls_alloca
+	   || (cfun->machine->has_simtreg && !crtl->is_leaf))
     init_softstack_frame (file, alignment, sz);
 
+  if (cfun->machine->has_simtreg)
+    {
+      unsigned HOST_WIDE_INT &simtsz = cfun->machine->simt_stack_size;
+      unsigned HOST_WIDE_INT &align = cfun->machine->simt_stack_align;
+      align = MAX (align, GET_MODE_SIZE (DImode));
+      if (!crtl->is_leaf || cfun->calls_alloca)
+	simtsz = HOST_WIDE_INT_M1U;
+      if (simtsz == HOST_WIDE_INT_M1U)
+	simtsz = nvptx_softstack_size;
+      if (cfun->machine->has_softstack)
+	simtsz += POINTER_SIZE / 8;
+      simtsz = ROUND_UP (simtsz, GET_MODE_SIZE (DImode));
+      if (align > GET_MODE_SIZE (DImode))
+	simtsz += align - GET_MODE_SIZE (DImode);
+      if (simtsz)
+	fprintf (file, "\t.local.align 8 .b8 %%simtstack_ar["
+		HOST_WIDE_INT_PRINT_DEC "];\n", simtsz);
+    }
   /* Declare the pseudos we have as ptx registers.  */
   int maxregs = max_reg_num ();
   for (int i = LAST_VIRTUAL_REGISTER + 1; i < maxregs; i++)
@@ -1251,7 +1285,7 @@ nvptx_declare_function_name (FILE *file, const char *name, const_tree decl)
 	  machine_mode mode = PSEUDO_REGNO_MODE (i);
 	  machine_mode split = maybe_split_mode (mode);
 
-	  if (split != VOIDmode)
+	  if (split_mode_p (mode))
 	    mode = split;
 	  fprintf (file, "\t.reg%s ", nvptx_ptx_type_from_mode (mode, true));
 	  output_reg (file, i, split, -2);
@@ -1266,8 +1300,111 @@ nvptx_declare_function_name (FILE *file, const char *name, const_tree decl)
   if (cfun->machine->axis_predicate[1])
     nvptx_init_axis_predicate (file,
 			       REGNO (cfun->machine->axis_predicate[1]), "x");
-  if (cfun->machine->unisimt_predicate)
+  if (cfun->machine->unisimt_predicate
+      || (cfun->machine->has_simtreg && !crtl->is_leaf))
     nvptx_init_unisimt_predicate (file);
+}
+
+/* Output code for switching uniform-simt state.  ENTERING indicates whether
+   we are entering or leaving non-uniform execution region.  */
+
+static void
+nvptx_output_unisimt_switch (FILE *file, bool entering)
+{
+  if (crtl->is_leaf && !cfun->machine->unisimt_predicate)
+    return;
+  fprintf (file, "\t{\n");
+  fprintf (file, "\t\t.reg.u32 %%ustmp2;\n");
+  fprintf (file, "\t\tmov.u32 %%ustmp2, %d;\n", entering ? -1 : 0);
+  if (!crtl->is_leaf)
+    {
+      int loc = REGNO (cfun->machine->unisimt_location);
+      fprintf (file, "\t\tst.shared.u32 [%%r%d], %%ustmp2;\n", loc);
+    }
+  if (cfun->machine->unisimt_predicate)
+    {
+      int master = REGNO (cfun->machine->unisimt_master);
+      int pred = REGNO (cfun->machine->unisimt_predicate);
+      fprintf (file, "\t\tmov.u32 %%ustmp2, %%laneid;\n");
+      fprintf (file, "\t\tmov.u32 %%r%d, %s;\n",
+	       master, entering ? "%ustmp2" : "0");
+      fprintf (file, "\t\tsetp.eq.u32 %%r%d, %%r%d, %%ustmp2;\n", pred, master);
+    }
+  fprintf (file, "\t}\n");
+}
+
+/* Output code for allocating per-lane storage and switching soft-stack pointer.
+   ENTERING indicates whether we are entering or leaving non-uniform execution.
+   PTR is the register pointing to allocated storage, it is assigned to on
+   entering and used to restore state on leaving.  SIZE and ALIGN are used only
+   on entering.  */
+
+static void
+nvptx_output_softstack_switch (FILE *file, bool entering,
+			       rtx ptr, rtx size, rtx align)
+{
+  gcc_assert (REG_P (ptr) && !HARD_REGISTER_P (ptr));
+  if (crtl->is_leaf && !cfun->machine->simt_stack_size)
+    return;
+  int bits = POINTER_SIZE, regno = REGNO (ptr);
+  fprintf (file, "\t{\n");
+  if (entering)
+    {
+      fprintf (file, "\t\tcvta.local.u%d %%r%d, %%simtstack_ar + "
+	       HOST_WIDE_INT_PRINT_DEC ";\n", bits, regno,
+	       cfun->machine->simt_stack_size);
+      fprintf (file, "\t\tsub.u%d %%r%d, %%r%d, ", bits, regno, regno);
+      if (CONST_INT_P (size))
+	fprintf (file, HOST_WIDE_INT_PRINT_DEC,
+		 ROUND_UP (UINTVAL (size), GET_MODE_SIZE (DImode)));
+      else
+	output_reg (file, REGNO (size), VOIDmode);
+      fputs (";\n", file);
+      if (!CONST_INT_P (size) || UINTVAL (align) > GET_MODE_SIZE (DImode))
+	fprintf (file,
+		 "\t\tand.u%d %%r%d, %%r%d, -" HOST_WIDE_INT_PRINT_DEC ";\n",
+		 bits, regno, regno, UINTVAL (align));
+    }
+  if (cfun->machine->has_softstack)
+    {
+      const char *reg_stack = reg_names[STACK_POINTER_REGNUM];
+      if (entering)
+	{
+	  fprintf (file, "\t\tst.u%d [%%r%d + -%d], %s;\n",
+		   bits, regno, bits / 8, reg_stack);
+	  fprintf (file, "\t\tsub.u%d %s, %%r%d, %d;\n",
+		   bits, reg_stack, regno, bits / 8);
+	}
+      else
+	{
+	  fprintf (file, "\t\tld.u%d %s, [%%r%d + -%d];\n",
+		   bits, reg_stack, regno, bits / 8);
+	}
+      nvptx_output_set_softstack (REGNO (stack_pointer_rtx));
+    }
+  fprintf (file, "\t}\n");
+}
+
+/* Output code to enter non-uniform execution region.  DEST is a register
+   to hold a per-lane allocation given by SIZE and ALIGN.  */
+
+const char *
+nvptx_output_simt_enter (rtx dest, rtx size, rtx align)
+{
+  nvptx_output_unisimt_switch (asm_out_file, true);
+  nvptx_output_softstack_switch (asm_out_file, true, dest, size, align);
+  return "";
+}
+
+/* Output code to leave non-uniform execution region.  SRC is the register
+   holding per-lane storage previously allocated by omp_simt_enter insn.  */
+
+const char *
+nvptx_output_simt_exit (rtx src)
+{
+  nvptx_output_unisimt_switch (asm_out_file, false);
+  nvptx_output_softstack_switch (asm_out_file, false, src, NULL_RTX, NULL_RTX);
+  return "";
 }
 
 /* Output instruction that sets soft stack pointer in shared memory to the
@@ -2267,10 +2404,8 @@ nvptx_print_operand (FILE *file, rtx x, int code)
       if (x_code == SUBREG)
 	{
 	  mode = GET_MODE (SUBREG_REG (x));
-	  if (mode == TImode)
-	    mode = DImode;
-	  else if (COMPLEX_MODE_P (mode))
-	    mode = GET_MODE_INNER (mode);
+	  if (split_mode_p (mode))
+	    mode = maybe_split_mode (mode);
 	}
       fprintf (file, "%s", nvptx_ptx_type_from_mode (mode, code == 't'));
       break;
@@ -2371,7 +2506,7 @@ nvptx_print_operand (FILE *file, rtx x, int code)
 	    machine_mode inner_mode = GET_MODE (inner_x);
 	    machine_mode split = maybe_split_mode (inner_mode);
 
-	    if (split != VOIDmode
+	    if (split_mode_p (inner_mode)
 		&& (GET_MODE_SIZE (inner_mode) == GET_MODE_SIZE (mode)))
 	      output_reg (file, REGNO (inner_x), split);
 	    else
@@ -5193,6 +5328,13 @@ nvptx_goacc_reduction (gcall *call)
     }
 }
 
+static bool
+nvptx_cannot_force_const_mem (machine_mode mode ATTRIBUTE_UNUSED,
+			      rtx x ATTRIBUTE_UNUSED)
+{
+  return true;
+}
+
 #undef TARGET_OPTION_OVERRIDE
 #define TARGET_OPTION_OVERRIDE nvptx_option_override
 
@@ -5306,6 +5448,9 @@ nvptx_goacc_reduction (gcall *call)
 
 #undef TARGET_GOACC_REDUCTION
 #define TARGET_GOACC_REDUCTION nvptx_goacc_reduction
+
+#undef TARGET_CANNOT_FORCE_CONST_MEM
+#define TARGET_CANNOT_FORCE_CONST_MEM nvptx_cannot_force_const_mem
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

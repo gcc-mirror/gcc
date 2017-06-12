@@ -128,6 +128,10 @@
 #define vec_ctu __builtin_vec_ctu
 #define vec_cpsgn __builtin_vec_copysign
 #define vec_double __builtin_vec_double
+#define vec_doublee __builtin_vec_doublee
+#define vec_doubleo __builtin_vec_doubleo
+#define vec_doublel __builtin_vec_doublel
+#define vec_doubleh __builtin_vec_doubleh
 #define vec_expte __builtin_vec_expte
 #define vec_floor __builtin_vec_floor
 #define vec_loge __builtin_vec_loge
@@ -213,6 +217,7 @@
 #define vec_lvebx __builtin_vec_lvebx
 #define vec_lvehx __builtin_vec_lvehx
 #define vec_lvewx __builtin_vec_lvewx
+#define vec_neg __builtin_vec_neg
 #define vec_pmsum_be __builtin_vec_vpmsum
 #define vec_shasigma_be __builtin_crypto_vshasigma
 /* Cell only intrinsics.  */
@@ -246,6 +251,7 @@
 #define vec_sel __builtin_vec_sel
 #define vec_sl __builtin_vec_sl
 #define vec_sld __builtin_vec_sld
+#define vec_sldw __builtin_vsx_xxsldwi
 #define vec_sll __builtin_vec_sll
 #define vec_slo __builtin_vec_slo
 #define vec_splat __builtin_vec_splat
@@ -379,6 +385,11 @@
 #define vec_vpopcntd __builtin_vec_vpopcntd
 #define vec_vpopcnth __builtin_vec_vpopcnth
 #define vec_vpopcntw __builtin_vec_vpopcntw
+#define vec_popcnt __builtin_vec_vpopcntu
+#define vec_popcntb __builtin_vec_vpopcntub
+#define vec_popcnth __builtin_vec_vpopcntuh
+#define vec_popcntw __builtin_vec_vpopcntuw
+#define vec_popcntd __builtin_vec_vpopcntud
 #define vec_vrld __builtin_vec_vrld
 #define vec_vsld __builtin_vec_vsld
 #define vec_vsrad __builtin_vec_vsrad
@@ -390,7 +401,7 @@
 #define vec_vupklsw __builtin_vec_vupklsw
 #endif
 
-#ifdef _ARCH_PWR9
+#ifdef __POWER9_VECTOR__
 /* Vector additions added in ISA 3.0.  */
 #define vec_vctz __builtin_vec_vctz
 #define vec_cnttz __builtin_vec_vctz
@@ -510,7 +521,7 @@ __altivec_unary_pred(vec_any_numeric,
 __altivec_scalar_pred(vec_all_eq,
   __builtin_vec_vcmpeq_p (__CR6_LT, a1, a2))
 
-#ifndef _ARCH_PWR9
+#ifndef __POWER9_VECTOR__
 __altivec_scalar_pred(vec_all_ne,
   __builtin_vec_vcmpeq_p (__CR6_EQ, a1, a2))
 __altivec_scalar_pred(vec_any_eq,
@@ -521,9 +532,9 @@ __altivec_scalar_pred(vec_all_nez,
 __altivec_scalar_pred(vec_any_eqz,
   __builtin_vec_vcmpnez_p (__CR6_LT_REV, a1, a2))
 __altivec_scalar_pred(vec_all_ne,
-  __builtin_vec_vcmpne_p (__CR6_LT, a1, a2))
+  __builtin_vec_vcmpne_p (a1, a2))
 __altivec_scalar_pred(vec_any_eq,
-  __builtin_vec_vcmpne_p (__CR6_LT_REV, a1, a2))
+  __builtin_vec_vcmpae_p (a1, a2))
 #endif
 
 __altivec_scalar_pred(vec_any_ne,
@@ -586,11 +597,11 @@ __altivec_scalar_pred(vec_any_nle,
 
 #define vec_all_eq(a1, a2) __builtin_vec_vcmpeq_p (__CR6_LT, (a1), (a2))
 
-#ifdef _ARCH_PWR9
+#ifdef __POWER9_VECTOR__
 #define vec_all_nez(a1, a2) __builtin_vec_vcmpnez_p (__CR6_LT, (a1), (a2))
 #define vec_any_eqz(a1, a2) __builtin_vec_vcmpnez_p (__CR6_LT_REV, (a1), (a2))
-#define vec_all_ne(a1, a2) __builtin_vec_vcmpne_p (__CR6_LT, (a1), (a2))
-#define vec_any_eq(a1, a2) __builtin_vec_vcmpne_p (__CR6_LT_REV, (a1), (a2))
+#define vec_all_ne(a1, a2) __builtin_vec_vcmpne_p ((a1), (a2))
+#define vec_any_eq(a1, a2) __builtin_vec_vcmpae_p ((a1), (a2))
 #else
 #define vec_all_ne(a1, a2) __builtin_vec_vcmpeq_p (__CR6_EQ, (a1), (a2))
 #define vec_any_eq(a1, a2) __builtin_vec_vcmpeq_p (__CR6_EQ_REV, (a1), (a2))

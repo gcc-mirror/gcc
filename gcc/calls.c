@@ -206,6 +206,9 @@ prepare_call_address (tree fndecl_or_type, rtx funexp, rtx static_chain_value,
 	  DECL_STATIC_CHAIN (fndecl_or_type) = 1;
 	  rtx chain = targetm.calls.static_chain (fndecl_or_type, false);
 
+	  if (GET_MODE (funexp) != Pmode)
+	    funexp = convert_memory_address (Pmode, funexp);
+
 	  /* Avoid long live ranges around function calls.  */
 	  funexp = copy_to_mode_reg (Pmode, funexp);
 
@@ -818,6 +821,8 @@ flags_from_decl_or_type (const_tree exp)
 	flags |= ECF_NOVOPS;
       if (lookup_attribute ("leaf", DECL_ATTRIBUTES (exp)))
 	flags |= ECF_LEAF;
+      if (lookup_attribute ("cold", DECL_ATTRIBUTES (exp)))
+	flags |= ECF_COLD;
 
       if (TREE_NOTHROW (exp))
 	flags |= ECF_NOTHROW;
@@ -1161,7 +1166,7 @@ store_unaligned_arguments_into_pseudos (struct arg_data *args, int num_actuals)
 
 	    args[i].aligned_regs[j] = reg;
 	    word = extract_bit_field (word, bitsize, 0, 1, NULL_RTX,
-				      word_mode, word_mode, false);
+				      word_mode, word_mode, false, NULL);
 
 	    /* There is no need to restrict this code to loading items
 	       in TYPE_ALIGN sized hunks.  The bitfield instructions can
@@ -1267,7 +1272,7 @@ get_size_range (tree exp, tree range[2])
 
   wide_int min, max;
   enum value_range_type range_type
-    = (TREE_CODE (exp) == SSA_NAME
+    = ((TREE_CODE (exp) == SSA_NAME && INTEGRAL_TYPE_P (TREE_TYPE (exp)))
        ? get_range_info (exp, &min, &max) : VR_VARYING);
 
   if (range_type == VR_VARYING)
@@ -2554,7 +2559,8 @@ load_register_parameters (struct arg_data *args, int num_actuals,
 		  unsigned int bitoff = (nregs - 1) * BITS_PER_WORD;
 		  unsigned int bitsize = size * BITS_PER_UNIT - bitoff;
 		  rtx x = extract_bit_field (mem, bitsize, bitoff, 1, dest,
-					     word_mode, word_mode, false);
+					     word_mode, word_mode, false,
+					     NULL);
 		  if (BYTES_BIG_ENDIAN)
 		    x = expand_shift (LSHIFT_EXPR, word_mode, x,
 				      BITS_PER_WORD - bitsize, dest, 1);
@@ -2641,13 +2647,8 @@ combine_pending_stack_adjustment_and_call (int unadjusted_args_size,
   adjustment = pending_stack_adjust;
   /* Push enough additional bytes that the stack will be aligned
      after the arguments are pushed.  */
-  if (preferred_unit_stack_boundary > 1)
-    {
-      if (unadjusted_alignment > 0)
-	adjustment -= preferred_unit_stack_boundary - unadjusted_alignment;
-      else
-	adjustment += unadjusted_alignment;
-    }
+  if (preferred_unit_stack_boundary > 1 && unadjusted_alignment)
+    adjustment -= preferred_unit_stack_boundary - unadjusted_alignment;
 
   /* Now, sets ARGS_SIZE->CONSTANT so that we pop the right number of
      bytes after the call.  The right number is the entire
@@ -5649,3 +5650,6 @@ must_pass_in_stack_var_size_or_pad (machine_mode mode, const_tree type)
 
   return false;
 }
+
+/* Tell the garbage collector about GTY markers in this source file.  */
+#include "gt-calls.h"

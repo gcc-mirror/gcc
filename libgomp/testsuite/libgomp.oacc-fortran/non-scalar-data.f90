@@ -1,5 +1,6 @@
 ! Ensure that a non-scalar dummy arguments which are implicitly used inside
-! offloaded regions are properly mapped using present_or_copy.
+! offloaded regions are properly mapped using present_or_copy, or (default)
+! present.
 
 ! { dg-do run }
 
@@ -12,6 +13,7 @@ program main
   n = size
 
   !$acc data copy(array)
+
   call kernels(array, n)
 
   !$acc update host(array)
@@ -20,11 +22,28 @@ program main
      if (array(i) .ne. i) call abort
   end do
 
+  call kernels_default_present(array, n)
+
+  !$acc update host(array)
+
+  do i = 1, n
+     if (array(i) .ne. i+1) call abort
+  end do
+
   call parallel(array, n)
-  !$acc end data
+
+  !$acc update host(array)
 
   do i = 1, n
      if (array(i) .ne. i+i) call abort
+  end do
+
+  call parallel_default_present(array, n)
+
+  !$acc end data
+
+  do i = 1, n
+     if (array(i) .ne. i+i+1) call abort
   end do
 end program main
 
@@ -39,6 +58,16 @@ subroutine kernels (array, n)
   !$acc end kernels
 end subroutine kernels
 
+subroutine kernels_default_present (array, n)
+  integer, dimension (n) :: array
+  integer :: n, i
+
+  !$acc kernels default(present)
+  do i = 1, n
+     array(i) = i+1
+  end do
+  !$acc end kernels
+end subroutine kernels_default_present
 
 subroutine parallel (array, n)
   integer, dimension (n) :: array
@@ -50,3 +79,14 @@ subroutine parallel (array, n)
   end do
   !$acc end parallel
 end subroutine parallel
+
+subroutine parallel_default_present (array, n)
+  integer, dimension (n) :: array
+  integer :: n, i
+
+  !$acc parallel default(present)
+  do i = 1, n
+     array(i) = i+i+1
+  end do
+  !$acc end parallel
+end subroutine parallel_default_present

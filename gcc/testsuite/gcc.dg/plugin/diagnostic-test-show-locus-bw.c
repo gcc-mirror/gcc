@@ -249,3 +249,43 @@ void test_many_nested_locations (void)
      MOLLIT ANIM ID EST LABORUM
    { dg-end-multiline-output "" } */
 }
+
+/* Unit test for rendering of fix-it hints that add new lines.  */
+
+void test_fixit_insert_newline (void)
+{
+#if 0
+  switch (op)
+    {
+    case 'a':
+      x = a;
+    case 'b':  /* { dg-warning "newline insertion" } */
+      x = b;
+    }
+/* { dg-begin-multiline-output "" }
++      break;
+     case 'b':
+     ^~~~~~~~
+   { dg-end-multiline-output "" } */
+#endif
+}
+
+/* Unit test for mutually-exclusive suggestions.  */
+
+void test_mutually_exclusive_suggestions (void)
+{
+#if 0
+  original; /* { dg-warning "warning 1" } */
+/* { dg-warning "warning 2" "" { target *-*-* } .-1 } */
+/* { dg-begin-multiline-output "" }
+   original;
+   ^~~~~~~~
+   replacement_1
+   { dg-end-multiline-output "" } */
+/* { dg-begin-multiline-output "" }
+   original;
+   ^~~~~~~~
+   replacement_2
+   { dg-end-multiline-output "" } */
+#endif
+}

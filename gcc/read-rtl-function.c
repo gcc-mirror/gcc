@@ -103,7 +103,7 @@ class function_reader : public rtx_reader
   void read_rtx_operand_u (rtx x, int idx);
   void read_rtx_operand_i_or_n (rtx x, int idx, char format_char);
   rtx read_rtx_operand_r (rtx x);
-  void extra_parsing_for_operand_code_0 (rtx x, int idx);
+  rtx extra_parsing_for_operand_code_0 (rtx x, int idx);
 
   void add_fixup_insn_uid (file_location loc, rtx insn, int operand_idx,
 			   int insn_uid);
@@ -405,6 +405,9 @@ function_reader::handle_unknown_directive (file_location start_loc,
   if (strcmp (name, "function"))
     fatal_at (start_loc, "expected 'function'");
 
+  if (flag_lto)
+    error ("%<__RTL%> function cannot be compiled with %<-flto%>");
+
   parse_function ();
 }
 
@@ -533,7 +536,7 @@ static tree
 find_param_by_name (tree fndecl, const char *name)
 {
   for (tree arg = DECL_ARGUMENTS (fndecl); arg; arg = TREE_CHAIN (arg))
-    if (strcmp (name, IDENTIFIER_POINTER (DECL_NAME (arg))) == 0)
+    if (id_equal (DECL_NAME (arg), name))
       return arg;
   return NULL_TREE;
 }
@@ -920,7 +923,7 @@ function_reader::read_rtx_operand (rtx x, int idx)
   switch (format_char)
     {
     case '0':
-      extra_parsing_for_operand_code_0 (x, idx);
+      x = extra_parsing_for_operand_code_0 (x, idx);
       break;
 
     case 'w':
@@ -1113,9 +1116,10 @@ function_reader::read_rtx_operand_r (rtx x)
 }
 
 /* Additional parsing for format code '0' in dumps, handling a variety
-   of special-cases in print_rtx, when parsing operand IDX of X.  */
+   of special-cases in print_rtx, when parsing operand IDX of X.
+   Return X, or possibly a reallocated copy of X.  */
 
-void
+rtx
 function_reader::extra_parsing_for_operand_code_0 (rtx x, int idx)
 {
   RTX_CODE code = GET_CODE (x);
@@ -1134,9 +1138,26 @@ function_reader::extra_parsing_for_operand_code_0 (rtx x, int idx)
 	  read_name (&name);
 	  SYMBOL_REF_FLAGS (x) = strtol (name.string, NULL, 16);
 
-	  /* We can't reconstruct SYMBOL_REF_BLOCK; set it to NULL.  */
+	  /* The standard RTX_CODE_SIZE (SYMBOL_REF) used when allocating
+	     x doesn't have space for the block_symbol information, so
+	     we must reallocate it if this flag is set.  */
 	  if (SYMBOL_REF_HAS_BLOCK_INFO_P (x))
-	    SYMBOL_REF_BLOCK (x) = NULL;
+	    {
+	      /* Emulate the allocation normally done by
+		 varasm.c:create_block_symbol.  */
+	      unsigned int size = RTX_HDR_SIZE + sizeof (struct block_symbol);
+	      rtx new_x = (rtx) ggc_internal_alloc (size);
+
+	      /* Copy data over from the smaller SYMBOL_REF.  */
+	      memcpy (new_x, x, RTX_CODE_SIZE (SYMBOL_REF));
+	      x = new_x;
+
+	      /* We can't reconstruct SYMBOL_REF_BLOCK; set it to NULL.  */
+	      SYMBOL_REF_BLOCK (x) = NULL;
+
+	      /* Zero the offset.  */
+	      SYMBOL_REF_BLOCK_OFFSET (x) = 0;
+	    }
 
 	  require_char (']');
 	}
@@ -1182,6 +1203,8 @@ function_reader::extra_parsing_for_operand_code_0 (rtx x, int idx)
       else
 	unread_char (c);
     }
+
+  return x;
 }
 
 /* Implementation of rtx_reader::handle_any_trailing_information.
@@ -1301,7 +1324,7 @@ function_reader::parse_mem_expr (const char *desc)
   int i;
   tree t;
   FOR_EACH_VEC_ELT (m_fake_scope, i, t)
-    if (strcmp (desc, IDENTIFIER_POINTER (DECL_NAME (t))) == 0)
+    if (id_equal (DECL_NAME (t), desc))
       return t;
 
   /* Not found?  Create it.

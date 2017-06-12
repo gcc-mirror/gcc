@@ -527,9 +527,9 @@ forward_propagate_into_gimple_cond (gcond *stmt)
       if (dump_file && tmp)
 	{
 	  fprintf (dump_file, "  Replaced '");
-	  print_gimple_expr (dump_file, stmt, 0, 0);
+	  print_gimple_expr (dump_file, stmt, 0);
 	  fprintf (dump_file, "' with '");
-	  print_generic_expr (dump_file, tmp, 0);
+	  print_generic_expr (dump_file, tmp);
 	  fprintf (dump_file, "'\n");
 	}
 
@@ -605,9 +605,9 @@ forward_propagate_into_cond (gimple_stmt_iterator *gsi_p)
       if (dump_file && tmp)
 	{
 	  fprintf (dump_file, "  Replaced '");
-	  print_generic_expr (dump_file, cond, 0);
+	  print_generic_expr (dump_file, cond);
 	  fprintf (dump_file, "' with '");
-	  print_generic_expr (dump_file, tmp, 0);
+	  print_generic_expr (dump_file, tmp);
 	  fprintf (dump_file, "'\n");
 	}
 
@@ -2527,7 +2527,7 @@ pass_forwprop::execute (function *fun)
       if (dump_file && dump_flags & TDF_DETAILS)
 	{
 	  fprintf (dump_file, "Fixing up noreturn call ");
-	  print_gimple_stmt (dump_file, stmt, 0, 0);
+	  print_gimple_stmt (dump_file, stmt, 0);
 	  fprintf (dump_file, "\n");
 	}
       cfg_changed |= fixup_noreturn_call (stmt);

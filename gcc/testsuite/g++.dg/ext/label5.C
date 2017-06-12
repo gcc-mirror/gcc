@@ -3,4 +3,4 @@
 
 struct A { };
 int main() { b: A() && && b; } // { dg-error "operand types are 'A' and 'void\\*'" }
-// { dg-message "candidate|operator&&|no known conversion" "additional" { target *-*-* } 5 }
+// { dg-message "candidate|operator&&|no known conversion" "additional" { target *-*-* } .-1 }

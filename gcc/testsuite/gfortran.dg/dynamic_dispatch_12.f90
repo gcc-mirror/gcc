@@ -70,5 +70,3 @@ contains
   end subroutine
 
 end
-
-! { dg-final { cleanup-modules "TestResult_mod BaseTestRunner_mod TestRunner_mod" } }

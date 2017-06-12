@@ -62,5 +62,3 @@ program test_assign
   end select
 
 end
-
-! { dg-final { cleanup-modules "mod1 mod2" } }

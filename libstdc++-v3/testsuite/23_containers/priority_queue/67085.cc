@@ -16,6 +16,7 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-do run { target c++11 } }
+// { dg-require-normal-mode "" }
 
 #include <queue>
 #include <testsuite_hooks.h>

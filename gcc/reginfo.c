@@ -468,19 +468,29 @@ init_reg_sets_1 (void)
   memset (contains_reg_of_mode, 0, sizeof (contains_reg_of_mode));
   for (m = 0; m < (unsigned int) MAX_MACHINE_MODE; m++)
     {
-      HARD_REG_SET ok_regs;
+      HARD_REG_SET ok_regs, ok_regs2;
       CLEAR_HARD_REG_SET (ok_regs);
+      CLEAR_HARD_REG_SET (ok_regs2);
       for (j = 0; j < FIRST_PSEUDO_REGISTER; j++)
-	if (!fixed_regs [j] && HARD_REGNO_MODE_OK (j, (machine_mode) m))
-	  SET_HARD_REG_BIT (ok_regs, j);
+	if (!TEST_HARD_REG_BIT (fixed_nonglobal_reg_set, j)
+	    && HARD_REGNO_MODE_OK (j, (machine_mode) m))
+	  {
+	    SET_HARD_REG_BIT (ok_regs, j);
+	    if (!fixed_regs[j])
+	      SET_HARD_REG_BIT (ok_regs2, j);
+	  }
 
       for (i = 0; i < N_REG_CLASSES; i++)
 	if ((targetm.class_max_nregs ((reg_class_t) i, (machine_mode) m)
 	     <= reg_class_size[i])
 	    && hard_reg_set_intersect_p (ok_regs, reg_class_contents[i]))
 	  {
-	     contains_reg_of_mode [i][m] = 1;
-	     have_regs_of_mode [m] = 1;
+	     contains_reg_of_mode[i][m] = 1;
+	     if (hard_reg_set_intersect_p (ok_regs2, reg_class_contents[i]))
+	       {
+		 have_regs_of_mode[m] = 1;
+		 contains_allocatable_reg_of_mode[i][m] = 1;
+	       }
 	  }
      }
 }

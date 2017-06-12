@@ -22,7 +22,7 @@
 // see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 // <http://www.gnu.org/licenses/>.
 
-/** @file include/bits/bind.h
+/** @file include/bits/refwrap.h
  *  This is an internal header file, included by other library headers.
  *  Do not attempt to use it directly. @headername{functional}
  */
@@ -361,17 +361,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp>
     void cref(const _Tp&&) = delete;
 
-  /// Partial specialization.
+  /// std::ref overload to prevent wrapping a reference_wrapper
   template<typename _Tp>
     inline reference_wrapper<_Tp>
     ref(reference_wrapper<_Tp> __t) noexcept
-    { return ref(__t.get()); }
+    { return __t; }
 
-  /// Partial specialization.
+  /// std::cref overload to prevent wrapping a reference_wrapper
   template<typename _Tp>
     inline reference_wrapper<const _Tp>
     cref(reference_wrapper<_Tp> __t) noexcept
-    { return cref(__t.get()); }
+    { return { __t.get() }; }
 
   // @} group functors
 

@@ -24,9 +24,9 @@ namespace N
   template<int> void f() {}
 }
 
-using N;             // { dg-error "(using-declaration)|(nested-name)" "" }
-using ::N;           // { dg-error "using-declaration" "" }
-using N::f< 0 >;     // { dg-error "using-declaration" "" }
+using N;             // { dg-error "(using-declaration)|(nested-name)" }
+using ::N;           // { dg-error "using-declaration" }
+using N::f< 0 >;     // { dg-error "using-declaration" }
 
 struct  A {
   template <class T> void f(T);
@@ -39,7 +39,7 @@ struct B : A {
 };
 
 struct C : A {
-  using A::f<double>; // { dg-error "using-declaration" "" }
-  using A::X<int>;    // { dg-error "using-declaration" "" }
+  using A::f<double>; // { dg-error "using-declaration" }
+  using A::X<int>;    // { dg-error "using-declaration" }
 };
 

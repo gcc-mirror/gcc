@@ -277,7 +277,7 @@ struct type {
     /* when TYPE_STRUCT or TYPE_UNION or TYPE_LANG_STRUCT, we have an
        aggregate type containing fields: */
     struct {
-      const char *tag;          /* the aggragate tag, if any.  */
+      const char *tag;          /* the aggregate tag, if any.  */
       struct fileloc line;      /* the source location.  */
       pair_p fields;            /* the linked list of fields.  */
       options_p opt;            /* the GTY options if any.  */

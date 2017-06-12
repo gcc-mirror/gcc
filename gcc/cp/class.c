@@ -37,6 +37,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimplify.h"
 #include "intl.h"
 
+/* Id for dumping the class hierarchy.  */
+int class_dump_id;
+ 
 /* The number of nested classes being processed.  If we are not in the
    scope of any class, this is zero.  */
 
@@ -172,9 +175,9 @@ static tree find_final_overrider (tree, tree, tree);
 static int make_new_vtable (tree, tree);
 static tree get_primary_binfo (tree);
 static int maybe_indent_hierarchy (FILE *, int, int);
-static tree dump_class_hierarchy_r (FILE *, int, tree, tree, int);
+static tree dump_class_hierarchy_r (FILE *, dump_flags_t, tree, tree, int);
 static void dump_class_hierarchy (tree);
-static void dump_class_hierarchy_1 (FILE *, int, tree);
+static void dump_class_hierarchy_1 (FILE *, dump_flags_t, tree);
 static void dump_array (FILE *, tree);
 static void dump_vtable (tree, tree, tree);
 static void dump_vtt (tree, tree);
@@ -1002,15 +1005,14 @@ modify_vtable_entry (tree t,
 }
 
 
-/* Add method METHOD to class TYPE.  If USING_DECL is non-null, it is
-   the USING_DECL naming METHOD.  Returns true if the method could be
-   added to the method vec.  */
+/* Add method METHOD to class TYPE.  If VIA_USING indicates whether
+   METHOD is being injected via a using_decl.  Returns true if the
+   method could be added to the method vec.  */
 
 bool
-add_method (tree type, tree method, tree using_decl)
+add_method (tree type, tree method, bool via_using)
 {
   unsigned slot;
-  tree overload;
   bool template_conv_p = false;
   bool conv_p;
   vec<tree, va_gc> *method_vec;
@@ -1059,7 +1061,7 @@ add_method (tree type, tree method, tree using_decl)
 	   vec_safe_iterate (method_vec, slot, &m);
 	   ++slot)
 	{
-	  m = OVL_CURRENT (m);
+	  m = OVL_FIRST (m);
 	  if (template_conv_p)
 	    {
 	      if (TREE_CODE (m) == TEMPLATE_DECL
@@ -1083,24 +1085,23 @@ add_method (tree type, tree method, tree using_decl)
   current_fns = insert_p ? NULL_TREE : (*method_vec)[slot];
 
   /* Check to see if we've already got this method.  */
-  for (tree *p = &current_fns; *p; )
+  for (ovl_iterator iter (current_fns); iter; ++iter)
     {
-      tree fns = *p;
-      tree fn = OVL_CURRENT (fns);
+      tree fn = *iter;
       tree fn_type;
       tree method_type;
       tree parms1;
       tree parms2;
 
       if (TREE_CODE (fn) != TREE_CODE (method))
-	goto cont;
+	continue;
 
       /* Two using-declarations can coexist, we'll complain about ambiguity in
 	 overload resolution.  */
-      if (using_decl && TREE_CODE (fns) == OVERLOAD && OVL_USED (fns)
+      if (via_using && iter.using_p ()
 	  /* Except handle inherited constructors specially.  */
 	  && ! DECL_CONSTRUCTOR_P (fn))
-	goto cont;
+	continue;
 
       /* [over.load] Member function declarations with the
 	 same name and the same parameter types cannot be
@@ -1134,7 +1135,7 @@ add_method (tree type, tree method, tree using_decl)
 	      == FUNCTION_REF_QUALIFIED (method_type))
 	  && (type_memfn_quals (fn_type) != type_memfn_quals (method_type)
 	      || type_memfn_rqual (fn_type) != type_memfn_rqual (method_type)))
-	  goto cont;
+	  continue;
 
       /* For templates, the return type and template parameters
 	 must be identical.  */
@@ -1143,7 +1144,7 @@ add_method (tree type, tree method, tree using_decl)
 			    TREE_TYPE (method_type))
 	      || !comp_template_parms (DECL_TEMPLATE_PARMS (fn),
 				       DECL_TEMPLATE_PARMS (method))))
-	goto cont;
+	continue;
 
       if (! DECL_STATIC_FUNCTION_P (fn))
 	parms1 = TREE_CHAIN (parms1);
@@ -1187,8 +1188,9 @@ add_method (tree type, tree method, tree using_decl)
 		    mangle_decl (method);
 		}
 	      cgraph_node::record_function_versions (fn, method);
-	      goto cont;
+	      continue;
 	    }
+
 	  if (DECL_INHERITED_CTOR (method))
 	    {
 	      if (DECL_INHERITED_CTOR (fn))
@@ -1202,7 +1204,7 @@ add_method (tree type, tree method, tree using_decl)
 			  /* Inheriting the same constructor along different
 			     paths, combine them.  */
 			  SET_DECL_INHERITED_CTOR
-			    (fn, ovl_cons (DECL_INHERITED_CTOR (method),
+			    (fn, ovl_make (DECL_INHERITED_CTOR (method),
 					   DECL_INHERITED_CTOR (fn)));
 			  /* And discard the new one.  */
 			  return false;
@@ -1210,7 +1212,7 @@ add_method (tree type, tree method, tree using_decl)
 		      else
 			/* Inherited ctors can coexist until overload
 			   resolution.  */
-			goto cont;
+			continue;
 		    }
 		  error_at (DECL_SOURCE_LOCATION (method),
 			    "%q#D", method);
@@ -1221,56 +1223,36 @@ add_method (tree type, tree method, tree using_decl)
 	      /* Otherwise defer to the other function.  */
 	      return false;
 	    }
-	  if (using_decl)
-	    {
-	      if (DECL_CONTEXT (fn) == type)
-		/* Defer to the local function.  */
-		return false;
-	    }
+
+	  if (via_using)
+	    /* Defer to the local function.  */
+	    return false;
 	  else if (flag_new_inheriting_ctors
 		   && DECL_INHERITED_CTOR (fn))
 	    {
-	      /* Hide the inherited constructor.  */
-	      *p = OVL_NEXT (fns);
+	      /* Remove the inherited constructor.  */
+	      current_fns = iter.remove_node (current_fns);
 	      continue;
 	    }
 	  else
 	    {
 	      error ("%q+#D cannot be overloaded", method);
 	      error ("with %q+#D", fn);
+	      return false;
 	    }
-
-	  /* We don't call duplicate_decls here to merge the
-	     declarations because that will confuse things if the
-	     methods have inline definitions.  In particular, we
-	     will crash while processing the definitions.  */
-	  return false;
 	}
-
-    cont:
-      if (TREE_CODE (fns) == OVERLOAD)
-	p = &OVL_CHAIN (fns);
-      else
-	break;
     }
 
   /* A class should never have more than one destructor.  */
   if (current_fns && DECL_MAYBE_IN_CHARGE_DESTRUCTOR_P (method))
     return false;
 
-  /* Add the new binding.  */
-  if (using_decl)
-    {
-      overload = ovl_cons (method, current_fns);
-      OVL_USED (overload) = true;
-    }
-  else
-    overload = build_overload (method, current_fns);
+  current_fns = ovl_insert (method, current_fns, via_using);
 
   if (conv_p)
     TYPE_HAS_CONVERSION (type) = 1;
   else if (slot >= CLASSTYPE_FIRST_CONVERSION_SLOT && !complete_p)
-    push_class_level_binding (DECL_NAME (method), overload);
+    push_class_level_binding (DECL_NAME (method), current_fns);
 
   if (insert_p)
     {
@@ -1285,13 +1267,13 @@ add_method (tree type, tree method, tree using_decl)
       if (reallocated)
 	CLASSTYPE_METHOD_VEC (type) = method_vec;
       if (slot == method_vec->length ())
-	method_vec->quick_push (overload);
+	method_vec->quick_push (current_fns);
       else
-	method_vec->quick_insert (slot, overload);
+	method_vec->quick_insert (slot, current_fns);
     }
   else
     /* Replace the current slot.  */
-    (*method_vec)[slot] = overload;
+    (*method_vec)[slot] = current_fns;
   return true;
 }
 
@@ -1305,8 +1287,7 @@ alter_access (tree t, tree fdecl, tree access)
 {
   tree elem;
 
-  if (!DECL_LANG_SPECIFIC (fdecl))
-    retrofit_lang_decl (fdecl);
+  retrofit_lang_decl (fdecl);
 
   gcc_assert (!DECL_DISCRIMINATOR_P (fdecl));
 
@@ -1366,8 +1347,7 @@ handle_using_decl (tree using_decl, tree t)
 			     tf_warning_or_error);
   if (old_value)
     {
-      if (is_overloaded_fn (old_value))
-	old_value = OVL_CURRENT (old_value);
+      old_value = OVL_FIRST (old_value);
 
       if (DECL_P (old_value) && DECL_CONTEXT (old_value) == t)
 	/* OK */;
@@ -1391,7 +1371,7 @@ handle_using_decl (tree using_decl, tree t)
 	{
 	  error ("%q+D invalid in %q#T", using_decl, t);
 	  error ("  because of local method %q+#D with same name",
-		 OVL_CURRENT (old_value));
+		 old_value);
 	  return;
 	}
     }
@@ -1404,10 +1384,10 @@ handle_using_decl (tree using_decl, tree t)
 
   /* Make type T see field decl FDECL with access ACCESS.  */
   if (flist)
-    for (; flist; flist = OVL_NEXT (flist))
+    for (ovl_iterator iter (flist); iter; ++iter)
       {
-	add_method (t, OVL_CURRENT (flist), using_decl);
-	alter_access (t, OVL_CURRENT (flist), access);
+	add_method (t, *iter, true);
+	alter_access (t, *iter, access);
       }
   else
     alter_access (t, decl, access);
@@ -1861,7 +1841,9 @@ check_bases (tree t,
 	       members */
 	    for (basefield = TYPE_FIELDS (basetype); basefield;
 		 basefield = DECL_CHAIN (basefield))
-	      if (TREE_CODE (basefield) == FIELD_DECL)
+	      if (TREE_CODE (basefield) == FIELD_DECL
+		  && !(DECL_FIELD_IS_BASE (basefield)
+		       && integer_zerop (DECL_SIZE (basefield))))
 		{
 		  if (field)
 		    CLASSTYPE_NON_STD_LAYOUT (t) = 1;
@@ -2060,12 +2042,14 @@ fixup_type_variants (tree t)
 static void
 fixup_may_alias (tree klass)
 {
-  tree t;
+  tree t, v;
 
   for (t = TYPE_POINTER_TO (klass); t; t = TYPE_NEXT_PTR_TO (t))
-    TYPE_REF_CAN_ALIAS_ALL (t) = true;
+    for (v = TYPE_MAIN_VARIANT (t); v; v = TYPE_NEXT_VARIANT (v))
+      TYPE_REF_CAN_ALIAS_ALL (v) = true;
   for (t = TYPE_REFERENCE_TO (klass); t; t = TYPE_NEXT_REF_TO (t))
-    TYPE_REF_CAN_ALIAS_ALL (t) = true;
+    for (v = TYPE_MAIN_VARIANT (t); v; v = TYPE_NEXT_VARIANT (v))
+      TYPE_REF_CAN_ALIAS_ALL (v) = true;
 }
 
 /* Early variant fixups: we apply attributes at the beginning of the class
@@ -2249,7 +2233,7 @@ maybe_warn_about_overly_private_class (tree t)
       && (!CLASSTYPE_LAZY_DEFAULT_CTOR (t)
 	  || !CLASSTYPE_LAZY_COPY_CTOR (t)))
     {
-      int nonprivate_ctor = 0;
+      bool nonprivate_ctor = false;
 
       /* If a non-template class does not define a copy
 	 constructor, one is defined for it, enabling it to avoid
@@ -2262,25 +2246,20 @@ maybe_warn_about_overly_private_class (tree t)
 	 complete non-template or fully instantiated classes have this
 	 flag set.  */
       if (!TYPE_HAS_COPY_CTOR (t))
-	nonprivate_ctor = 1;
+	nonprivate_ctor = true;
       else
-	for (fn = CLASSTYPE_CONSTRUCTORS (t); fn; fn = OVL_NEXT (fn))
-	  {
-	    tree ctor = OVL_CURRENT (fn);
-	    /* Ideally, we wouldn't count copy constructors (or, in
-	       fact, any constructor that takes an argument of the
-	       class type as a parameter) because such things cannot
-	       be used to construct an instance of the class unless
-	       you already have one.  But, for now at least, we're
-	       more generous.  */
-	    if (! TREE_PRIVATE (ctor))
-	      {
-		nonprivate_ctor = 1;
-		break;
-	      }
-	  }
+	for (ovl_iterator iter (CLASSTYPE_CONSTRUCTORS (t));
+	     !nonprivate_ctor && iter; ++iter)
+	  /* Ideally, we wouldn't count copy constructors (or, in
+	     fact, any constructor that takes an argument of the class
+	     type as a parameter) because such things cannot be used
+	     to construct an instance of the class unless you already
+	     have one.  But, for now at least, we're more
+	     generous.  */
+	  if (! TREE_PRIVATE (*iter))
+	    nonprivate_ctor = true;
 
-      if (nonprivate_ctor == 0)
+      if (!nonprivate_ctor)
 	{
 	  warning (OPT_Wctor_dtor_privacy,
 		   "%q#T only defines private constructors and has no friends",
@@ -2309,7 +2288,7 @@ method_name_cmp (const void* m1_p, const void* m2_p)
     return -1;
   if (*m2 == NULL_TREE)
     return 1;
-  if (DECL_NAME (OVL_CURRENT (*m1)) < DECL_NAME (OVL_CURRENT (*m2)))
+  if (OVL_NAME (*m1) < OVL_NAME (*m2))
     return -1;
   return 1;
 }
@@ -2329,8 +2308,8 @@ resort_method_name_cmp (const void* m1_p, const void* m2_p)
   if (*m2 == NULL_TREE)
     return 1;
   {
-    tree d1 = DECL_NAME (OVL_CURRENT (*m1));
-    tree d2 = DECL_NAME (OVL_CURRENT (*m2));
+    tree d1 = OVL_NAME (*m1);
+    tree d2 = OVL_NAME (*m2);
     resort_data.new_value (&d1, resort_data.cookie);
     resort_data.new_value (&d2, resort_data.cookie);
     if (d1 < d2)
@@ -2357,7 +2336,7 @@ resort_type_method_vec (void* obj,
   for (slot = CLASSTYPE_FIRST_CONVERSION_SLOT;
        vec_safe_iterate (method_vec, slot, &fn);
        ++slot)
-    if (!DECL_CONV_FN_P (OVL_CURRENT (fn)))
+    if (!DECL_CONV_FN_P (OVL_FIRST (fn)))
       break;
 
   if (len - slot > 1)
@@ -2402,7 +2381,7 @@ finish_struct_methods (tree t)
   for (slot = CLASSTYPE_FIRST_CONVERSION_SLOT;
        method_vec->iterate (slot, &fn_fields);
        ++slot)
-    if (!DECL_CONV_FN_P (OVL_CURRENT (fn_fields)))
+    if (!DECL_CONV_FN_P (OVL_FIRST (fn_fields)))
       break;
   if (len - slot > 1)
     qsort (method_vec->address () + slot,
@@ -2789,7 +2768,7 @@ update_vtable_entry_for_fn (tree t, tree binfo, tree fn, tree* virtuals,
      determined by which bases the function overrides, so we need to be
      sure that we're using a thunk for some overridden base; even if we
      know that the necessary this adjustment is zero, there may not be an
-     appropriate zero-this-adjusment thunk for us to use since thunks for
+     appropriate zero-this-adjustment thunk for us to use since thunks for
      overriding virtual bases always use the vcall offset.
 
      Furthermore, just choosing any base that overrides this function isn't
@@ -2977,7 +2956,6 @@ modify_all_vtables (tree t, tree virtuals)
 static void
 get_basefndecls (tree name, tree t, vec<tree> *base_fndecls)
 {
-  tree methods;
   int n_baseclasses = BINFO_N_BASE_BINFOS (TYPE_BINFO (t));
   int i;
 
@@ -2985,11 +2963,9 @@ get_basefndecls (tree name, tree t, vec<tree> *base_fndecls)
   i = lookup_fnfields_1 (t, name);
   bool found_decls = false;
   if (i != -1)
-    for (methods = (*CLASSTYPE_METHOD_VEC (t))[i];
-	 methods;
-	 methods = OVL_NEXT (methods))
+    for (ovl_iterator iter ((*CLASSTYPE_METHOD_VEC (t))[i]); iter; ++iter)
       {
-	tree method = OVL_CURRENT (methods);
+	tree method = *iter;
 
 	if (TREE_CODE (method) == FUNCTION_DECL
 	    && DECL_VINDEX (method))
@@ -3069,8 +3045,6 @@ warn_hidden (tree t)
        vec_safe_iterate (method_vec, i, &fns);
        ++i)
     {
-      tree fn;
-      tree name;
       tree fndecl;
       tree base_binfo;
       tree binfo;
@@ -3078,7 +3052,7 @@ warn_hidden (tree t)
 
       /* All functions in this slot in the CLASSTYPE_METHOD_VEC will
 	 have the same name.  Figure out what name that is.  */
-      name = DECL_NAME (OVL_CURRENT (fns));
+      tree name = OVL_NAME (fns);
       /* There are no possibly hidden functions yet.  */
       auto_vec<tree, 20> base_fndecls;
       /* Iterate through all of the base classes looking for possibly
@@ -3095,9 +3069,9 @@ warn_hidden (tree t)
 	continue;
 
       /* Remove any overridden functions.  */
-      for (fn = fns; fn; fn = OVL_NEXT (fn))
+      for (ovl_iterator iter (fns); iter; ++iter)
 	{
-	  fndecl = OVL_CURRENT (fn);
+	  fndecl = *iter;
 	  if (TREE_CODE (fndecl) == FUNCTION_DECL
 	      && DECL_VINDEX (fndecl))
 	    {
@@ -3337,7 +3311,7 @@ one_inheriting_sig (tree t, tree ctor, tree *parms, int nparms)
   tree fn = implicitly_declare_fn (sfk_inheriting_constructor,
 				   t, false, ctor, parmlist);
   gcc_assert (TYPE_MAIN_VARIANT (t) == t);
-  if (add_method (t, fn, NULL_TREE))
+  if (add_method (t, fn, false))
     {
       DECL_CHAIN (fn) = TYPE_METHODS (t);
       TYPE_METHODS (t) = fn;
@@ -3356,7 +3330,7 @@ one_inherited_ctor (tree ctor, tree t, tree using_decl)
     {
       ctor = implicitly_declare_fn (sfk_inheriting_constructor,
 				    t, /*const*/false, ctor, parms);
-      add_method (t, ctor, using_decl);
+      add_method (t, ctor, using_decl != NULL_TREE);
       TYPE_HAS_USER_CONSTRUCTOR (t) = true;
       return;
     }
@@ -3459,9 +3433,8 @@ add_implicitly_declared_members (tree t, tree* access_decls,
 	  tree ctor_list = decl;
 	  location_t loc = input_location;
 	  input_location = DECL_SOURCE_LOCATION (using_decl);
-	  if (ctor_list)
-	    for (; ctor_list; ctor_list = OVL_NEXT (ctor_list))
-	      one_inherited_ctor (OVL_CURRENT (ctor_list), t, using_decl);
+	  for (ovl_iterator iter (ctor_list); iter; ++iter)
+	    one_inherited_ctor (*iter, t, using_decl);
 	  *access_decls = TREE_CHAIN (*access_decls);
 	  input_location = loc;
 	}
@@ -4887,11 +4860,11 @@ decl_cloned_function_p (const_tree decl, bool just_testing)
 }
 
 /* Produce declarations for all appropriate clones of FN.  If
-   UPDATE_METHOD_VEC_P is nonzero, the clones are added to the
-   CLASTYPE_METHOD_VEC as well.  */
+   UPDATE_METHODS is true, the clones are added to the
+   CLASSTYPE_METHOD_VEC.  */
 
 void
-clone_function_decl (tree fn, int update_method_vec_p)
+clone_function_decl (tree fn, bool update_methods)
 {
   tree clone;
 
@@ -4905,11 +4878,11 @@ clone_function_decl (tree fn, int update_method_vec_p)
       /* For each constructor, we need two variants: an in-charge version
 	 and a not-in-charge version.  */
       clone = build_clone (fn, complete_ctor_identifier);
-      if (update_method_vec_p)
-	add_method (DECL_CONTEXT (clone), clone, NULL_TREE);
+      if (update_methods)
+	add_method (DECL_CONTEXT (clone), clone, false);
       clone = build_clone (fn, base_ctor_identifier);
-      if (update_method_vec_p)
-	add_method (DECL_CONTEXT (clone), clone, NULL_TREE);
+      if (update_methods)
+	add_method (DECL_CONTEXT (clone), clone, false);
     }
   else
     {
@@ -4927,15 +4900,15 @@ clone_function_decl (tree fn, int update_method_vec_p)
       if (DECL_VIRTUAL_P (fn))
 	{
 	  clone = build_clone (fn, deleting_dtor_identifier);
-	  if (update_method_vec_p)
-	    add_method (DECL_CONTEXT (clone), clone, NULL_TREE);
+	  if (update_methods)
+	    add_method (DECL_CONTEXT (clone), clone, false);
 	}
       clone = build_clone (fn, complete_dtor_identifier);
-      if (update_method_vec_p)
-	add_method (DECL_CONTEXT (clone), clone, NULL_TREE);
+      if (update_methods)
+	add_method (DECL_CONTEXT (clone), clone, false);
       clone = build_clone (fn, base_dtor_identifier);
-      if (update_method_vec_p)
-	add_method (DECL_CONTEXT (clone), clone, NULL_TREE);
+      if (update_methods)
+	add_method (DECL_CONTEXT (clone), clone, false);
     }
 
   /* Note that this is an abstract function that is never emitted.  */
@@ -5031,17 +5004,17 @@ adjust_clone_args (tree decl)
 static void
 clone_constructors_and_destructors (tree t)
 {
-  tree fns;
-
   /* If for some reason we don't have a CLASSTYPE_METHOD_VEC, we bail
      out now.  */
   if (!CLASSTYPE_METHOD_VEC (t))
     return;
 
-  for (fns = CLASSTYPE_CONSTRUCTORS (t); fns; fns = OVL_NEXT (fns))
-    clone_function_decl (OVL_CURRENT (fns), /*update_method_vec_p=*/1);
-  for (fns = CLASSTYPE_DESTRUCTORS (t); fns; fns = OVL_NEXT (fns))
-    clone_function_decl (OVL_CURRENT (fns), /*update_method_vec_p=*/1);
+  /* While constructors can be via a using declaration, at this point
+     we no longer need to know that.  */
+  for (ovl_iterator iter (CLASSTYPE_CONSTRUCTORS (t)); iter; ++iter)
+    clone_function_decl (*iter, /*update_methods=*/true);
+  for (ovl_iterator iter (CLASSTYPE_DESTRUCTORS (t)); iter; ++iter)
+    clone_function_decl (*iter, /*update_methods=*/true);
 }
 
 /* Deduce noexcept for a destructor DTOR.  */
@@ -5070,8 +5043,8 @@ deduce_noexcept_on_destructors (tree t)
   if (!CLASSTYPE_METHOD_VEC (t))
     return;
 
-  for (tree fns = CLASSTYPE_DESTRUCTORS (t); fns; fns = OVL_NEXT (fns))
-    deduce_noexcept_on_destructor (OVL_CURRENT (fns));
+  for (ovl_iterator iter (CLASSTYPE_DESTRUCTORS (t)); iter; ++iter)
+    deduce_noexcept_on_destructor (*iter);
 }
 
 /* Subroutine of set_one_vmethod_tm_attributes.  Search base classes
@@ -5231,14 +5204,12 @@ default_ctor_p (tree fn)
 bool
 type_has_user_nondefault_constructor (tree t)
 {
-  tree fns;
-
   if (!TYPE_HAS_USER_CONSTRUCTOR (t))
     return false;
 
-  for (fns = CLASSTYPE_CONSTRUCTORS (t); fns; fns = OVL_NEXT (fns))
+  for (ovl_iterator iter (CLASSTYPE_CONSTRUCTORS (t)); iter; ++iter)
     {
-      tree fn = OVL_CURRENT (fns);
+      tree fn = *iter;
       if (!DECL_ARTIFICIAL (fn)
 	  && (TREE_CODE (fn) == TEMPLATE_DECL
 	      || (skip_artificial_parms_for (fn, DECL_ARGUMENTS (fn))
@@ -5258,9 +5229,9 @@ in_class_defaulted_default_constructor (tree t)
   if (!TYPE_HAS_USER_CONSTRUCTOR (t))
     return NULL_TREE;
 
-  for (tree fns = CLASSTYPE_CONSTRUCTORS (t); fns; fns = OVL_NEXT (fns))
+  for (ovl_iterator iter (CLASSTYPE_CONSTRUCTORS (t)); iter; ++iter)
     {
-      tree fn = OVL_CURRENT (fns);
+      tree fn = *iter;
 
       if (DECL_DEFAULTED_IN_CLASS_P (fn)
 	  && default_ctor_p (fn))
@@ -5289,8 +5260,6 @@ user_provided_p (tree fn)
 bool
 type_has_user_provided_constructor (tree t)
 {
-  tree fns;
-
   if (!CLASS_TYPE_P (t))
     return false;
 
@@ -5301,8 +5270,8 @@ type_has_user_provided_constructor (tree t)
   if (!CLASSTYPE_METHOD_VEC (t))
     return false;
 
-  for (fns = CLASSTYPE_CONSTRUCTORS (t); fns; fns = OVL_NEXT (fns))
-    if (user_provided_p (OVL_CURRENT (fns)))
+  for (ovl_iterator iter (CLASSTYPE_CONSTRUCTORS (t)); iter; ++iter)
+    if (user_provided_p (*iter))
       return true;
 
   return false;
@@ -5313,8 +5282,6 @@ type_has_user_provided_constructor (tree t)
 bool
 type_has_user_provided_or_explicit_constructor (tree t)
 {
-  tree fns;
-
   if (!CLASS_TYPE_P (t))
     return false;
 
@@ -5325,9 +5292,9 @@ type_has_user_provided_or_explicit_constructor (tree t)
   if (!CLASSTYPE_METHOD_VEC (t))
     return false;
 
-  for (fns = CLASSTYPE_CONSTRUCTORS (t); fns; fns = OVL_NEXT (fns))
+  for (ovl_iterator iter (CLASSTYPE_CONSTRUCTORS (t)); iter; ++iter)
     {
-      tree fn = OVL_CURRENT (fns);
+      tree fn = *iter;
       if (user_provided_p (fn) || DECL_NONCONVERTING_P (fn))
 	return true;
     }
@@ -5342,16 +5309,14 @@ type_has_user_provided_or_explicit_constructor (tree t)
 bool
 type_has_non_user_provided_default_constructor (tree t)
 {
-  tree fns;
-
   if (!TYPE_HAS_DEFAULT_CONSTRUCTOR (t))
     return false;
   if (CLASSTYPE_LAZY_DEFAULT_CTOR (t))
     return true;
 
-  for (fns = CLASSTYPE_CONSTRUCTORS (t); fns; fns = OVL_NEXT (fns))
+  for (ovl_iterator iter (CLASSTYPE_CONSTRUCTORS (t)); iter; ++iter)
     {
-      tree fn = OVL_CURRENT (fns);
+      tree fn = *iter;
       if (TREE_CODE (fn) == FUNCTION_DECL
 	  && default_ctor_p (fn)
 	  && !user_provided_p (fn))
@@ -5370,11 +5335,11 @@ bool
 vbase_has_user_provided_move_assign (tree type)
 {
   /* Does the type itself have a user-provided move assignment operator?  */
-  for (tree fns
-	 = lookup_fnfields_slot_nolazy (type, cp_assignment_operator_id (NOP_EXPR));
-       fns; fns = OVL_NEXT (fns))
+  for (ovl_iterator iter (lookup_fnfields_slot_nolazy
+			  (type, cp_assignment_operator_id (NOP_EXPR)));
+       iter; ++iter)
     {
-      tree fn = OVL_CURRENT (fns);
+      tree fn = *iter;
       if (move_fn_p (fn) && user_provided_p (fn))
 	return true;
     }
@@ -5504,8 +5469,6 @@ type_has_virtual_destructor (tree type)
 bool
 type_has_move_constructor (tree t)
 {
-  tree fns;
-
   if (CLASSTYPE_LAZY_MOVE_CTOR (t))
     {
       gcc_assert (COMPLETE_TYPE_P (t));
@@ -5515,8 +5478,8 @@ type_has_move_constructor (tree t)
   if (!CLASSTYPE_METHOD_VEC (t))
     return false;
 
-  for (fns = CLASSTYPE_CONSTRUCTORS (t); fns; fns = OVL_NEXT (fns))
-    if (move_fn_p (OVL_CURRENT (fns)))
+  for (ovl_iterator iter (CLASSTYPE_CONSTRUCTORS (t)); iter; ++iter)
+    if (move_fn_p (*iter))
       return true;
 
   return false;
@@ -5527,17 +5490,16 @@ type_has_move_constructor (tree t)
 bool
 type_has_move_assign (tree t)
 {
-  tree fns;
-
   if (CLASSTYPE_LAZY_MOVE_ASSIGN (t))
     {
       gcc_assert (COMPLETE_TYPE_P (t));
       lazily_declare_fn (sfk_move_assignment, t);
     }
 
-  for (fns = lookup_fnfields_slot_nolazy (t, cp_assignment_operator_id (NOP_EXPR));
-       fns; fns = OVL_NEXT (fns))
-    if (move_fn_p (OVL_CURRENT (fns)))
+  for (ovl_iterator iter (lookup_fnfields_slot_nolazy
+			  (t, cp_assignment_operator_id (NOP_EXPR)));
+       iter; ++iter)
+    if (move_fn_p (*iter))
       return true;
 
   return false;
@@ -5551,17 +5513,15 @@ type_has_move_assign (tree t)
 bool
 type_has_user_declared_move_constructor (tree t)
 {
-  tree fns;
-
   if (CLASSTYPE_LAZY_MOVE_CTOR (t))
     return false;
 
   if (!CLASSTYPE_METHOD_VEC (t))
     return false;
 
-  for (fns = CLASSTYPE_CONSTRUCTORS (t); fns; fns = OVL_NEXT (fns))
+  for (ovl_iterator iter (CLASSTYPE_CONSTRUCTORS (t)); iter; ++iter)
     {
-      tree fn = OVL_CURRENT (fns);
+      tree fn = *iter;
       if (move_fn_p (fn) && !DECL_ARTIFICIAL (fn))
 	return true;
     }
@@ -5575,15 +5535,14 @@ type_has_user_declared_move_constructor (tree t)
 bool
 type_has_user_declared_move_assign (tree t)
 {
-  tree fns;
-
   if (CLASSTYPE_LAZY_MOVE_ASSIGN (t))
     return false;
 
-  for (fns = lookup_fnfields_slot_nolazy (t, cp_assignment_operator_id (NOP_EXPR));
-       fns; fns = OVL_NEXT (fns))
+  for (ovl_iterator iter (lookup_fnfields_slot_nolazy
+			  (t, cp_assignment_operator_id (NOP_EXPR)));
+       iter; ++iter)
     {
-      tree fn = OVL_CURRENT (fns);
+      tree fn = *iter;
       if (move_fn_p (fn) && !DECL_ARTIFICIAL (fn))
 	return true;
     }
@@ -5616,10 +5575,11 @@ type_build_ctor_call (tree t)
     return false;
   /* A user-declared constructor might be private, and a constructor might
      be trivial but deleted.  */
-  for (tree fns = lookup_fnfields_slot (inner, complete_ctor_identifier);
-       fns; fns = OVL_NEXT (fns))
+  for (ovl_iterator iter
+	 (lookup_fnfields_slot (inner, complete_ctor_identifier));
+       iter; ++iter)
     {
-      tree fn = OVL_CURRENT (fns);
+      tree fn = *iter;
       if (!DECL_ARTIFICIAL (fn)
 	  || DECL_DELETED_FN (fn))
 	return true;
@@ -5643,10 +5603,11 @@ type_build_dtor_call (tree t)
     return false;
   /* A user-declared destructor might be private, and a destructor might
      be trivial but deleted.  */
-  for (tree fns = lookup_fnfields_slot (inner, complete_dtor_identifier);
-       fns; fns = OVL_NEXT (fns))
+  for (ovl_iterator iter
+	 (lookup_fnfields_slot (inner, complete_dtor_identifier));
+       iter; ++iter)
     {
-      tree fn = OVL_CURRENT (fns);
+      tree fn = *iter;
       if (!DECL_ARTIFICIAL (fn)
 	  || DECL_DELETED_FN (fn))
 	return true;
@@ -5708,16 +5669,13 @@ type_requires_array_cookie (tree type)
   if (!fns || fns == error_mark_node)
     return false;
   /* Loop through all of the functions.  */
-  for (fns = BASELINK_FUNCTIONS (fns); fns; fns = OVL_NEXT (fns))
+  for (lkp_iterator iter (BASELINK_FUNCTIONS (fns)); iter; ++iter)
     {
-      tree fn;
-      tree second_parm;
+      tree fn = *iter;
 
-      /* Select the current function.  */
-      fn = OVL_CURRENT (fns);
       /* See if this function is a one-argument delete function.  If
 	 it is, then it will be the usual deallocation function.  */
-      second_parm = TREE_CHAIN (TYPE_ARG_TYPES (TREE_TYPE (fn)));
+      tree second_parm = TREE_CHAIN (TYPE_ARG_TYPES (TREE_TYPE (fn)));
       if (second_parm == void_list_node)
 	return false;
       /* Do not consider this function if its second argument is an
@@ -5751,12 +5709,16 @@ finalize_literal_type_property (tree t)
   if (cxx_dialect < cxx11
       || TYPE_HAS_NONTRIVIAL_DESTRUCTOR (t))
     CLASSTYPE_LITERAL_P (t) = false;
+  else if (CLASSTYPE_LITERAL_P (t) && LAMBDA_TYPE_P (t))
+    CLASSTYPE_LITERAL_P (t) = (cxx_dialect >= cxx1z);
   else if (CLASSTYPE_LITERAL_P (t) && !TYPE_HAS_TRIVIAL_DFLT (t)
 	   && CLASSTYPE_NON_AGGREGATE (t)
 	   && !TYPE_HAS_CONSTEXPR_CTOR (t))
     CLASSTYPE_LITERAL_P (t) = false;
 
-  if (!CLASSTYPE_LITERAL_P (t))
+  /* C++14 DR 1684 removed this restriction.  */
+  if (cxx_dialect < cxx14
+      && !CLASSTYPE_LITERAL_P (t) && !LAMBDA_TYPE_P (t))
     for (fn = TYPE_METHODS (t); fn; fn = DECL_CHAIN (fn))
       if (DECL_DECLARED_CONSTEXPR_P (fn)
 	  && TREE_CODE (fn) != TEMPLATE_DECL
@@ -5764,12 +5726,11 @@ finalize_literal_type_property (tree t)
 	  && !DECL_CONSTRUCTOR_P (fn))
 	{
 	  DECL_DECLARED_CONSTEXPR_P (fn) = false;
-	  if (!DECL_GENERATED_P (fn) && !LAMBDA_TYPE_P (t))
-	    {
-	      error ("enclosing class of constexpr non-static member "
-		     "function %q+#D is not a literal type", fn);
-	      explain_non_literal_class (t);
-	    }
+	  if (!DECL_GENERATED_P (fn)
+	      && pedwarn (DECL_SOURCE_LOCATION (fn), OPT_Wpedantic,
+			  "enclosing class of constexpr non-static member "
+			  "function %q+#D is not a literal type", fn))
+	    explain_non_literal_class (t);
 	}
 }
 
@@ -5792,36 +5753,37 @@ explain_non_literal_class (tree t)
     return;
 
   inform (0, "%q+T is not literal because:", t);
-  if (TYPE_HAS_NONTRIVIAL_DESTRUCTOR (t))
+  if (cxx_dialect < cxx1z && LAMBDA_TYPE_P (t))
+    inform (0, "  %qT is a closure type, which is only literal in "
+	    "C++1z and later", t);
+  else if (TYPE_HAS_NONTRIVIAL_DESTRUCTOR (t))
     inform (0, "  %q+T has a non-trivial destructor", t);
   else if (CLASSTYPE_NON_AGGREGATE (t)
 	   && !TYPE_HAS_TRIVIAL_DFLT (t)
+	   && !LAMBDA_TYPE_P (t)
 	   && !TYPE_HAS_CONSTEXPR_CTOR (t))
     {
       inform (0, "  %q+T is not an aggregate, does not have a trivial "
 	      "default constructor, and has no constexpr constructor that "
 	      "is not a copy or move constructor", t);
       if (type_has_non_user_provided_default_constructor (t))
-	{
-	  /* Note that we can't simply call locate_ctor because when the
-	     constructor is deleted it just returns NULL_TREE.  */
-	  tree fns;
-	  for (fns = CLASSTYPE_CONSTRUCTORS (t); fns; fns = OVL_NEXT (fns))
-	    {
-	      tree fn = OVL_CURRENT (fns);
-	      tree parms = TYPE_ARG_TYPES (TREE_TYPE (fn));
+	/* Note that we can't simply call locate_ctor because when the
+	   constructor is deleted it just returns NULL_TREE.  */
+	for (ovl_iterator iter (CLASSTYPE_CONSTRUCTORS (t)); iter; ++iter)
+	  {
+	    tree fn = *iter;
+	    tree parms = TYPE_ARG_TYPES (TREE_TYPE (fn));
 
-	      parms = skip_artificial_parms_for (fn, parms);
+	    parms = skip_artificial_parms_for (fn, parms);
 
-	      if (sufficient_parms_p (parms))
-		{
-		  if (DECL_DELETED_FN (fn))
-		    maybe_explain_implicit_delete (fn);
-		  else
-		    explain_invalid_constexpr_fn (fn);
-		  break;
-		}
-	    }
+	    if (sufficient_parms_p (parms))
+	      {
+		if (DECL_DELETED_FN (fn))
+		  maybe_explain_implicit_delete (fn);
+		else
+		  explain_invalid_constexpr_fn (fn);
+		break;
+	      }
 	}
     }
   else
@@ -6063,7 +6025,7 @@ check_bases_and_members (tree t)
 
   /* Figure out whether or not we will need a cookie when dynamically
      allocating an array of this type.  */
-  TYPE_LANG_SPECIFIC (t)->u.c.vec_new_uses_cookie
+  LANG_TYPE_CLASS_CHECK (t)->vec_new_uses_cookie
     = type_requires_array_cookie (t);
 }
 
@@ -6464,41 +6426,39 @@ layout_class_type (tree t, tree *virtuals_p)
       if (DECL_C_BIT_FIELD (field)
 	  && tree_int_cst_lt (TYPE_SIZE (type), DECL_SIZE (field)))
 	{
-	  unsigned int itk;
-	  tree integer_type;
 	  bool was_unnamed_p = false;
 	  /* We must allocate the bits as if suitably aligned for the
-	     longest integer type that fits in this many bits.  type
-	     of the field.  Then, we are supposed to use the left over
-	     bits as additional padding.  */
-	  for (itk = itk_char; itk != itk_none; ++itk)
-	    if (integer_types[itk] != NULL_TREE
-		&& (tree_int_cst_lt (size_int (MAX_FIXED_MODE_SIZE),
-				     TYPE_SIZE (integer_types[itk]))
-		    || tree_int_cst_lt (DECL_SIZE (field),
-					TYPE_SIZE (integer_types[itk]))))
-	      break;
+	     longest integer type that fits in this many bits.  Then,
+	     we are supposed to use the left over bits as additional
+	     padding.  */
 
-	  /* ITK now indicates a type that is too large for the
-	     field.  We have to back up by one to find the largest
-	     type that fits.  */
-	  do
-	  {
-            --itk;
-	    integer_type = integer_types[itk];
-	  } while (itk > 0 && integer_type == NULL_TREE);
+	  /* Do not pick a type bigger than MAX_FIXED_MODE_SIZE.  */
+	  tree limit = size_int (MAX_FIXED_MODE_SIZE);
+	  if (tree_int_cst_lt (DECL_SIZE (field), limit))
+	    limit = DECL_SIZE (field);
+
+	  tree integer_type = integer_types[itk_char];
+	  for (unsigned itk = itk_char; itk != itk_none; itk++)
+	    if (tree next = integer_types[itk])
+	      {
+		if (tree_int_cst_lt (limit, TYPE_SIZE (next)))
+		  /* Too big, so our current guess is what we want.  */
+		  break;
+		/* Not bigger than limit, ok  */
+		integer_type = next;
+	      }
 
 	  /* Figure out how much additional padding is required.  */
-	  if (tree_int_cst_lt (TYPE_SIZE (integer_type), DECL_SIZE (field)))
-	    {
-	      if (TREE_CODE (t) == UNION_TYPE)
-		/* In a union, the padding field must have the full width
-		   of the bit-field; all fields start at offset zero.  */
-		padding = DECL_SIZE (field);
-	      else
-		padding = size_binop (MINUS_EXPR, DECL_SIZE (field),
-				      TYPE_SIZE (integer_type));
-	    }
+	  if (TREE_CODE (t) == UNION_TYPE)
+	    /* In a union, the padding field must have the full width
+	       of the bit-field; all fields start at offset zero.  */
+	    padding = DECL_SIZE (field);
+	  else
+	    padding = size_binop (MINUS_EXPR, DECL_SIZE (field),
+				  TYPE_SIZE (integer_type));
+
+ 	  if (integer_zerop (padding))
+	    padding = NULL_TREE;
 
 	  /* An unnamed bitfield does not normally affect the
 	     alignment of the containing class on a target where
@@ -7502,8 +7462,8 @@ finish_struct (tree t, tree attributes)
 	  {
 	    tree fn = strip_using_decl (x);
 	    if (is_overloaded_fn (fn))
-	      for (; fn; fn = OVL_NEXT (fn))
-		add_method (t, OVL_CURRENT (fn), x);
+	      for (lkp_iterator iter (fn); iter; ++iter)
+		add_method (t, *iter, true);
 	  }
 
       /* Remember current #pragma pack value.  */
@@ -8159,7 +8119,7 @@ resolve_address_of_overloaded_function (tree target_type,
       if (complain & tf_error)
 	error ("cannot resolve overloaded function %qD based on"
 	       " conversion to type %qT",
-	       DECL_NAME (OVL_FUNCTION (overload)), target_type);
+	       OVL_NAME (overload), target_type);
       return error_mark_node;
     }
 
@@ -8177,39 +8137,29 @@ resolve_address_of_overloaded_function (tree target_type,
      if we're just going to throw them out anyhow.  But, of course, we
      can only do this when we don't *need* a template function.  */
   if (!template_only)
-    {
-      tree fns;
+    for (lkp_iterator iter (overload); iter; ++iter)
+      {
+	tree fn = *iter;
 
-      for (fns = overload; fns; fns = OVL_NEXT (fns))
-	{
-	  tree fn = OVL_CURRENT (fns);
+	if (TREE_CODE (fn) == TEMPLATE_DECL)
+	  /* We're not looking for templates just yet.  */
+	  continue;
 
-	  if (TREE_CODE (fn) == TEMPLATE_DECL)
-	    /* We're not looking for templates just yet.  */
-	    continue;
+	if ((TREE_CODE (TREE_TYPE (fn)) == METHOD_TYPE) != is_ptrmem)
+	  /* We're looking for a non-static member, and this isn't
+	     one, or vice versa.  */
+	  continue;
 
-	  if ((TREE_CODE (TREE_TYPE (fn)) == METHOD_TYPE)
-	      != is_ptrmem)
-	    /* We're looking for a non-static member, and this isn't
-	       one, or vice versa.  */
-	    continue;
+	/* In C++17 we need the noexcept-qualifier to compare types.  */
+	if (flag_noexcept_type)
+	  maybe_instantiate_noexcept (fn);
 
-	  /* Ignore functions which haven't been explicitly
-	     declared.  */
-	  if (DECL_ANTICIPATED (fn))
-	    continue;
-
-	  /* In C++17 we need the noexcept-qualifier to compare types.  */
-	  if (flag_noexcept_type)
-	    maybe_instantiate_noexcept (fn);
-
-	  /* See if there's a match.  */
-	  tree fntype = static_fn_type (fn);
-	  if (same_type_p (target_fn_type, fntype)
-	      || fnptr_conv_p (target_fn_type, fntype))
-	    matches = tree_cons (fn, NULL_TREE, matches);
-	}
-    }
+	/* See if there's a match.  */
+	tree fntype = static_fn_type (fn);
+	if (same_type_p (target_fn_type, fntype)
+	    || fnptr_conv_p (target_fn_type, fntype))
+	  matches = tree_cons (fn, NULL_TREE, matches);
+      }
 
   /* Now, if we've already got a match (or matches), there's no need
      to proceed to the template functions.  But, if we don't have a
@@ -8218,7 +8168,6 @@ resolve_address_of_overloaded_function (tree target_type,
     {
       tree target_arg_types;
       tree target_ret_type;
-      tree fns;
       tree *args;
       unsigned int nargs, ia;
       tree arg;
@@ -8234,9 +8183,9 @@ resolve_address_of_overloaded_function (tree target_type,
 	args[ia] = TREE_VALUE (arg);
       nargs = ia;
 
-      for (fns = overload; fns; fns = OVL_NEXT (fns))
+      for (lkp_iterator iter (overload); iter; ++iter)
 	{
-	  tree fn = OVL_CURRENT (fns);
+	  tree fn = *iter;
 	  tree instantiation;
 	  tree targs;
 
@@ -8313,8 +8262,7 @@ resolve_address_of_overloaded_function (tree target_type,
       if (complain & tf_error)
 	{
 	  error ("no matches converting function %qD to type %q#T",
-		 DECL_NAME (OVL_CURRENT (overload)),
-		 target_type);
+		 OVL_NAME (overload), target_type);
 
 	  print_candidates (overload);
 	}
@@ -8341,8 +8289,7 @@ resolve_address_of_overloaded_function (tree target_type,
 	  if (complain & tf_error)
 	    {
 	      error ("converting overloaded function %qD to type %q#T is ambiguous",
-		     DECL_NAME (OVL_FUNCTION (overload)),
-		     target_type);
+		     OVL_NAME (overload), target_type);
 
 	      /* Since print_candidates expects the functions in the
 		 TREE_VALUE slot, we flip them here.  */
@@ -8754,7 +8701,7 @@ note_name_declared_in_class (tree name, tree decl)
       permerror (input_location, "declaration of %q#D", decl);
       permerror (location_of ((tree) n->value),
 		 "changes meaning of %qD from %q#D",
-		 DECL_NAME (OVL_CURRENT (decl)), (tree) n->value);
+		 OVL_NAME (decl), (tree) n->value);
     }
 }
 
@@ -8848,7 +8795,7 @@ maybe_indent_hierarchy (FILE * stream, int indent, int indented_p)
 
 static tree
 dump_class_hierarchy_r (FILE *stream,
-			int flags,
+			dump_flags_t flags,
 			tree binfo,
 			tree igo,
 			int indent)
@@ -8941,7 +8888,7 @@ dump_class_hierarchy_r (FILE *stream,
 /* Dump the BINFO hierarchy for T.  */
 
 static void
-dump_class_hierarchy_1 (FILE *stream, int flags, tree t)
+dump_class_hierarchy_1 (FILE *stream, dump_flags_t flags, tree t)
 {
   fprintf (stream, "Class %s\n", type_as_string (t, TFF_PLAIN_IDENTIFIER));
   fprintf (stream, "   size=%lu align=%lu\n",
@@ -8967,12 +8914,11 @@ debug_class (tree t)
 static void
 dump_class_hierarchy (tree t)
 {
-  int flags;
-  FILE *stream = get_dump_info (TDI_class, &flags);
-
-  if (stream)
+  dump_flags_t flags;
+  if (FILE *stream = dump_begin (class_dump_id, &flags))
     {
       dump_class_hierarchy_1 (stream, flags, t);
+      dump_end (class_dump_id, stream);
     }
 }
 
@@ -9001,8 +8947,8 @@ dump_array (FILE * stream, tree decl)
 static void
 dump_vtable (tree t, tree binfo, tree vtable)
 {
-  int flags;
-  FILE *stream = get_dump_info (TDI_class, &flags);
+  dump_flags_t flags;
+  FILE *stream = dump_begin (class_dump_id, &flags);
 
   if (!stream)
     return;
@@ -9025,13 +8971,15 @@ dump_vtable (tree t, tree binfo, tree vtable)
       dump_array (stream, vtable);
       fprintf (stream, "\n");
     }
+
+  dump_end (class_dump_id, stream);
 }
 
 static void
 dump_vtt (tree t, tree vtt)
 {
-  int flags;
-  FILE *stream = get_dump_info (TDI_class, &flags);
+  dump_flags_t flags;
+  FILE *stream = dump_begin (class_dump_id, &flags);
 
   if (!stream)
     return;
@@ -9043,6 +8991,8 @@ dump_vtt (tree t, tree vtt)
       dump_array (stream, vtt);
       fprintf (stream, "\n");
     }
+
+  dump_end (class_dump_id, stream);
 }
 
 /* Dump a function or thunk and its thunkees.  */
@@ -9595,6 +9545,7 @@ dfs_accumulate_vtbl_inits (tree binfo,
 }
 
 static GTY(()) tree abort_fndecl_addr;
+static GTY(()) tree dvirt_fn;
 
 /* Construct the initializer for BINFO's virtual function table.  BINFO
    is part of the hierarchy dominated by T.  If we're building a
@@ -9768,11 +9719,17 @@ build_vtbl_initializer (tree binfo,
 	  /* Likewise for deleted virtuals.  */
 	  else if (DECL_DELETED_FN (fn_original))
 	    {
-	      fn = get_identifier ("__cxa_deleted_virtual");
-	      if (!get_global_value_if_present (fn, &fn))
-		fn = push_library_fn (fn, (build_function_type_list
-					   (void_type_node, NULL_TREE)),
-				      NULL_TREE, ECF_NORETURN);
+	      if (!dvirt_fn)
+		{
+		  tree name = get_identifier ("__cxa_deleted_virtual");
+		  dvirt_fn = IDENTIFIER_GLOBAL_VALUE (name);
+		  if (!dvirt_fn)
+		    dvirt_fn = push_library_fn
+		      (name,
+		       build_function_type_list (void_type_node, NULL_TREE),
+		       NULL_TREE, ECF_NORETURN | ECF_COLD);
+		}
+	      fn = dvirt_fn;
 	      if (!TARGET_VTABLE_USES_DESCRIPTORS)
 		init = fold_convert (vfunc_ptr_type_node,
 				     build_fold_addr_expr (fn));
@@ -9781,7 +9738,8 @@ build_vtbl_initializer (tree binfo,
 	    {
 	      if (!integer_zerop (delta) || vcall_index)
 		{
-		  fn = make_thunk (fn, /*this_adjusting=*/1, delta, vcall_index);
+		  fn = make_thunk (fn, /*this_adjusting=*/1,
+				   delta, vcall_index);
 		  if (!DECL_NAME (fn))
 		    finish_thunk (fn);
 		}

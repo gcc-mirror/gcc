@@ -3,7 +3,7 @@
 
 struct s { int a; };
 
-inline void f (x)	/* { dg-warning "inlining .* mismatched arg" "" } */
+inline void f (x)	/* { dg-warning "inlining .* mismatched arg" } */
      int x;
 {
   asm ("");

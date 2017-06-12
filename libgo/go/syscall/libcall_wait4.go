@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+// +build !aix
+
 // For systems with the wait4 library call.
 
 package syscall

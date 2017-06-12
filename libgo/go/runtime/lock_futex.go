@@ -198,13 +198,10 @@ func notetsleep_internal(n *note, ns int64) bool {
 }
 
 func notetsleep(n *note, ns int64) bool {
-	// Currently OK to sleep in non-g0 for gccgo.  It happens in
-	// stoptheworld because our version of systemstack does not
-	// change to g0.
-	// gp := getg()
-	// if gp != gp.m.g0 && gp.m.preemptoff != "" {
-	//	throw("notetsleep not on g0")
-	// }
+	gp := getg()
+	if gp != gp.m.g0 && gp.m.preemptoff != "" {
+		throw("notetsleep not on g0")
+	}
 
 	return notetsleep_internal(n, ns)
 }

@@ -1555,7 +1555,7 @@ match_actual_arg (gfc_expr **result)
 	  gfc_set_sym_referenced (sym);
 	  if (sym->attr.flavor == FL_NAMELIST)
 	    {
-	      gfc_error ("Namelist '%s' can not be an argument at %L",
+	      gfc_error ("Namelist %qs can not be an argument at %L",
 	      sym->name, &where);
 	      break;
 	    }
@@ -2670,14 +2670,14 @@ build_actual_constructor (gfc_structure_ctor_component **comp_head,
 		       && CLASS_DATA (comp)->attr.allocatable))
 	    {
 	      if (!gfc_notify_std (GFC_STD_F2008, "No initializer for "
-				   "allocatable component '%qs' given in the "
+				   "allocatable component %qs given in the "
 				   "structure constructor at %C", comp->name))
 		return false;
 	    }
 	  else if (!comp->attr.artificial)
 	    {
 	      gfc_error ("No initializer for component %qs given in the"
-			 " structure constructor at %C!", comp->name);
+			 " structure constructor at %C", comp->name);
 	      return false;
 	    }
 	}
@@ -2760,13 +2760,13 @@ gfc_convert_to_structure_constructor (gfc_expr *e, gfc_symbol *sym, gfc_expr **c
 	    {
 	      if (last_name)
 		gfc_error ("Component initializer without name after component"
-			   " named %s at %L!", last_name,
+			   " named %s at %L", last_name,
 			   actual->expr ? &actual->expr->where
 					: &gfc_current_locus);
 	      else
 		gfc_error ("Too many components in structure constructor at "
-			   "%L!", actual->expr ? &actual->expr->where
-					       : &gfc_current_locus);
+			   "%L", actual->expr ? &actual->expr->where
+					      : &gfc_current_locus);
 	      goto cleanup;
 	    }
 
@@ -2802,7 +2802,7 @@ gfc_convert_to_structure_constructor (gfc_expr *e, gfc_symbol *sym, gfc_expr **c
 	  if (!strcmp (comp_iter->name, comp_tail->name))
 	    {
 	      gfc_error ("Component %qs is initialized twice in the structure"
-			 " constructor at %L!", comp_tail->name,
+			 " constructor at %L", comp_tail->name,
 			 comp_tail->val ? &comp_tail->where
 					: &gfc_current_locus);
 	      goto cleanup;
@@ -2814,7 +2814,7 @@ gfc_convert_to_structure_constructor (gfc_expr *e, gfc_symbol *sym, gfc_expr **c
 	  && gfc_is_coindexed (comp_tail->val))
      	{
 	  gfc_error ("Coindexed expression to pointer component %qs in "
-		     "structure constructor at %L!", comp_tail->name,
+		     "structure constructor at %L", comp_tail->name,
 		     &comp_tail->where);
 	  goto cleanup;
 	}
@@ -3571,7 +3571,7 @@ match_variable (gfc_expr **result, int equiv_flag, int host_flag)
       && (dt_sym = gfc_find_dt_in_generic (sym)))
     {
       if (dt_sym->attr.flavor == FL_DERIVED)
-        gfc_error ("Derived type '%s' cannot be used as a variable at %C",
+        gfc_error ("Derived type %qs cannot be used as a variable at %C",
                    sym->name);
       return MATCH_ERROR;
     }

@@ -3091,7 +3091,7 @@ The three modes are:
 
 Note that these modes apply only to the evaluation of predefined
 arithmetic, membership, and comparison operators for signed integer
-aritmetic.
+arithmetic.
 
 For fixed-point arithmetic, checks can be suppressed. But if checks
 are enabled
@@ -3354,7 +3354,7 @@ and similarly for `Mass`, `Time`, `Electric_Current`,
 The package also defines conventional names for values of each unit, for
 example:
 
-  .. code-block":: ada
+  .. code-block:: ada
 
      m   : constant Length           := 1.0;
      kg  : constant Mass             := 1.0;

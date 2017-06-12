@@ -48,7 +48,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    */
 
 #if _GLIBCXX_USE_DEPRECATED
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
   template<typename> class auto_ptr;
+#pragma GCC diagnostic pop
 #endif
 
   /// Primary template of default_delete, used by unique_ptr
@@ -254,10 +257,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	{ }
 
 #if _GLIBCXX_USE_DEPRECATED
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
       /// Converting constructor from @c auto_ptr
       template<typename _Up, typename = _Require<
 	       is_convertible<_Up*, _Tp*>, is_same<_Dp, default_delete<_Tp>>>>
 	unique_ptr(auto_ptr<_Up>&& __u) noexcept;
+#pragma GCC diagnostic pop
 #endif
 
       /// Destructor, invokes the deleter if the stored pointer is not null.

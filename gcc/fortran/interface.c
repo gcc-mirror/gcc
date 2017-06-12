@@ -4694,7 +4694,7 @@ check_dtio_interface1 (gfc_symbol *derived, gfc_symtree *tb_io_st,
 
   gcc_assert (dtio_sub);
   if (!dtio_sub->attr.subroutine)
-    gfc_error ("DTIO procedure '%s' at %L must be a subroutine",
+    gfc_error ("DTIO procedure %qs at %L must be a subroutine",
 	       dtio_sub->name, &dtio_sub->declared_at);
 
   arg_num = 0;
@@ -4703,14 +4703,14 @@ check_dtio_interface1 (gfc_symbol *derived, gfc_symtree *tb_io_st,
 
   if (arg_num < (formatted ? 6 : 4))
     {
-      gfc_error ("Too few dummy arguments in DTIO procedure '%s' at %L",
+      gfc_error ("Too few dummy arguments in DTIO procedure %qs at %L",
 		 dtio_sub->name, &dtio_sub->declared_at);
       return;
     }
 
   if (arg_num > (formatted ? 6 : 4))
     {
-      gfc_error ("Too many dummy arguments in DTIO procedure '%s' at %L",
+      gfc_error ("Too many dummy arguments in DTIO procedure %qs at %L",
 		 dtio_sub->name, &dtio_sub->declared_at);
       return;
     }

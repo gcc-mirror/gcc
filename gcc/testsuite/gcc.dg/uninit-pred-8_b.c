@@ -1,6 +1,6 @@
 
 /* { dg-do compile } */
-/* { dg-options "-Wuninitialized -fno-tree-dominator-opts -O2" } */
+/* { dg-options "-Wuninitialized -O2" } */
 
 int g;
 void bar();

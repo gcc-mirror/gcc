@@ -1,6 +1,8 @@
 /* { dg-do compile } */
 /* { dg-options "-O2" } */
-void *malloc(unsigned long x);
+
+__extension__ typedef __SIZE_TYPE__ size_t;
+void *malloc(size_t x);
 
 void foo(void)
 {

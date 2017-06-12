@@ -26,7 +26,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic.h"
 #include "tree-pretty-print.h"
 #include "tree-diagnostic.h"
-#include "dumpfile.h" /* TDF_DIAGNOSTIC */
 #include "langhooks.h"
 #include "intl.h"
 
@@ -243,9 +242,10 @@ virt_loc_aware_diagnostic_finalizer (diagnostic_context *context,
 }
 
 /* Default tree printer.   Handles declarations only.  */
-static bool
+bool
 default_tree_printer (pretty_printer *pp, text_info *text, const char *spec,
-		      int precision, bool wide, bool set_locus, bool hash)
+		      int precision, bool wide, bool set_locus, bool hash,
+		      bool, const char **)
 {
   tree t;
 
@@ -294,7 +294,7 @@ default_tree_printer (pretty_printer *pp, text_info *text, const char *spec,
       pp_string (pp, n);
     }
   else
-    dump_generic_node (pp, t, 0, TDF_DIAGNOSTIC, 0);
+    dump_generic_node (pp, t, 0, TDF_SLIM, 0);
 
   return true;
 }

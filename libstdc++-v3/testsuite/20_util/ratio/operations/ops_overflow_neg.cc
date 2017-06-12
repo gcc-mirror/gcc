@@ -41,7 +41,7 @@ test02()
 // { dg-error "required from here" "" { target *-*-* } 28 }
 // { dg-error "expected initializer" "" { target *-*-* } 35 }
 // { dg-error "expected initializer" "" { target *-*-* } 37 }
-// { dg-error "overflow in addition" "" { target *-*-* } 451 }
+// { dg-error "overflow in addition" "" { target *-*-* } 452 }
 // { dg-error "overflow in multiplication" "" { target *-*-* } 97 }
 // { dg-error "overflow in multiplication" "" { target *-*-* } 99 }
 // { dg-error "overflow in multiplication" "" { target *-*-* } 101 }

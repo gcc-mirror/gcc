@@ -3,4 +3,4 @@
 
 void (*g() throw())();		// { dg-message "g\\(\\) throw" "" { target { ! c++1z } } }
 				// { dg-message "g\\(\\) noexcept" "" { target c++1z } .-1 }
-void (*g())();			// { dg-error "" "" }
+void (*g())();			// { dg-error "" }

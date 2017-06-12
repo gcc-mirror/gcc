@@ -73,6 +73,7 @@ match gfc_match_elseif (void);
 match gfc_match_event_post (void);
 match gfc_match_event_wait (void);
 match gfc_match_critical (void);
+match gfc_match_fail_image (void);
 match gfc_match_block (void);
 match gfc_match_associate (void);
 match gfc_match_do (void);

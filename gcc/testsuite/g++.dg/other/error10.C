@@ -10,5 +10,5 @@ void foo(const A<N> &a)
 
 void bar()
 {
-    foo(A<0>()); // { dg-message "required from here" "" }
+    foo(A<0>()); // { dg-message "required from here" }
 }

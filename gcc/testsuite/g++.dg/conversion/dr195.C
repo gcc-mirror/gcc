@@ -27,6 +27,6 @@ void foo ()
   po = reinterpret_cast <PO>(pf);
 
   /* These will never be ok, as they are implicit.  */
-  pv = pf; // { dg-error "invalid conversion" "" }
-  pf = pv; // { dg-error "invalid conversion" "" }
+  pv = pf; // { dg-error "invalid conversion" }
+  pf = pv; // { dg-error "invalid conversion" }
 }

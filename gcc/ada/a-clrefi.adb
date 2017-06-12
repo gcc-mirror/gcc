@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2007-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 2007-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -105,7 +105,10 @@ package body Ada.Command_Line.Response_File is
       -------------
 
       procedure Recurse (File_Name : String) is
-         FD : File_Descriptor;
+         --  Open the response file. If not found, fail or report a warning,
+         --  depending on the value of Ignore_Non_Existing_Files.
+
+         FD : constant File_Descriptor := Open_Read (File_Name, Text);
 
          Buffer_Size : constant := 1500;
          Buffer : String (1 .. Buffer_Size);
@@ -221,11 +224,6 @@ package body Ada.Command_Line.Response_File is
 
       begin
          Last_Arg := 0;
-
-         --  Open the response file. If not found, fail or report a warning,
-         --  depending on the value of Ignore_Non_Existing_Files.
-
-         FD := Open_Read (File_Name, Text);
 
          if FD = Invalid_FD then
             if Ignore_Non_Existing_Files then

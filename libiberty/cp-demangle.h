@@ -111,10 +111,6 @@ struct d_info
   int next_sub;
   /* The number of available entries in the subs array.  */
   int num_subs;
-  /* The number of substitutions which we actually made from the subs
-     array, plus the number of template parameter references we
-     saw.  */
-  int did_subs;
   /* The last name we saw, for constructors and destructors.  */
   struct demangle_component *last_name;
   /* A running total of the length of large expansions from the

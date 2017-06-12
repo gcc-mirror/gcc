@@ -376,6 +376,8 @@ unpack_ts_type_common_value_fields (struct bitpack_d *bp, tree expr)
     }
   else if (TREE_CODE (expr) == ARRAY_TYPE)
     TYPE_NONALIASED_COMPONENT (expr) = (unsigned) bp_unpack_value (bp, 1);
+  if (AGGREGATE_TYPE_P (expr))
+    TYPE_TYPELESS_STORAGE (expr) = (unsigned) bp_unpack_value (bp, 1);
   TYPE_PRECISION (expr) = bp_unpack_var_len_unsigned (bp);
   SET_TYPE_ALIGN (expr, bp_unpack_var_len_unsigned (bp));
 #ifdef ACCEL_COMPILER
@@ -564,19 +566,8 @@ streamer_alloc_tree (struct lto_input_block *ib, struct data_in *data_in,
 {
   enum tree_code code;
   tree result;
-#ifdef LTO_STREAMER_DEBUG
-  HOST_WIDE_INT orig_address_in_writer;
-#endif
 
   result = NULL_TREE;
-
-#ifdef LTO_STREAMER_DEBUG
-  /* Read the word representing the memory address for the tree
-     as it was written by the writer.  This is useful when
-     debugging differences between the writer and reader.  */
-  orig_address_in_writer = streamer_read_hwi (ib);
-  gcc_assert ((intptr_t) orig_address_in_writer == orig_address_in_writer);
-#endif
 
   code = lto_tag_to_tree_code (tag);
 
@@ -627,15 +618,6 @@ streamer_alloc_tree (struct lto_input_block *ib, struct data_in *data_in,
 	 make_node call.  */
       result = make_node (code);
     }
-
-#ifdef LTO_STREAMER_DEBUG
-  /* Store the original address of the tree as seen by the writer
-     in RESULT's aux field.  This is useful when debugging streaming
-     problems.  This way, a debugging session can be started on
-     both writer and reader with a breakpoint using this address
-     value in both.  */
-  lto_orig_address_map (result, (intptr_t) orig_address_in_writer);
-#endif
 
   return result;
 }

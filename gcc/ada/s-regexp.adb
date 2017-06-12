@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 1999-2016, AdaCore                     --
+--                     Copyright (C) 1999-2017, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -68,9 +68,9 @@ package body System.Regexp is
       Num_States    : State_Index) is
    record
       Map            : Mapping;
+      Case_Sensitive : Boolean;
       States         : Regexp_Array (1 .. Num_States, 0 .. Alphabet_Size);
       Is_Final       : Boolean_Array (1 .. Num_States);
-      Case_Sensitive : Boolean;
    end record;
    --  Deterministic finite-state machine
 

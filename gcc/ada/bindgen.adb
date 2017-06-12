@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -93,6 +93,12 @@ package body Bindgen is
    --  is in the closure of the partition. This is set by procedure
    --  Resolve_Binder_Options, and it is used to call a procedure that starts
    --  slave processors.
+
+   System_Version_Control_Used : Boolean := False;
+   --  Flag indicating whether unit System.Version_Control is in the closure.
+   --  This unit is implicitly withed by the compiler when Version or
+   --  Body_Version attributes are used. If the package is not in the closure,
+   --  the version definitions can be removed.
 
    Lib_Final_Built : Boolean := False;
    --  Flag indicating whether the finalize_library rountine has been built
@@ -1117,9 +1123,13 @@ package body Bindgen is
             then
                --  In the case of a body with a separate spec, where the
                --  separate spec has an elaboration entity defined, this is
-               --  where we increment the elaboration entity if one exists
+               --  where we increment the elaboration entity if one exists.
 
-               if U.Utype = Is_Body
+               --  Likewise for lone specs with an elaboration entity defined
+               --  despite No_Elaboration_Code, e.g. when requested to preserve
+               --  control flow.
+
+               if (U.Utype = Is_Body or else U.Utype = Is_Spec_Only)
                  and then Units.Table (Unum_Spec).Set_Elab_Entity
                  and then not CodePeer_Mode
                then
@@ -1275,6 +1285,7 @@ package body Bindgen is
                 (No_Run_Time_Mode
                   and then Is_Predefined_File_Name (U.Sfile))
             then
+               Get_Name_String (U.Sfile);
                Set_String ("   ");
                Set_String ("E");
                Set_Unit_Number (Unum);
@@ -1298,6 +1309,7 @@ package body Bindgen is
 
    procedure Gen_Elab_Order (Elab_Order : Unit_Id_Array) is
    begin
+      WBI ("");
       WBI ("   --  BEGIN ELABORATION ORDER");
 
       for J in Elab_Order'Range loop
@@ -1308,7 +1320,6 @@ package body Bindgen is
       end loop;
 
       WBI ("   --  END ELABORATION ORDER");
-      WBI ("");
    end Gen_Elab_Order;
 
    --------------------------
@@ -2072,8 +2083,8 @@ package body Bindgen is
       --  handle use of Ada 2005 keywords as identifiers in Ada 95 mode. None
       --  of the Ada 2005 or Ada 2012 constructs are needed by the binder file.
 
-      WBI ("pragma Ada_95;");
       WBI ("pragma Warnings (Off);");
+      WBI ("pragma Ada_95;");
 
       --  If we are operating in Restrictions (No_Exception_Handlers) mode,
       --  then we need to make sure that the binder program is compiled with
@@ -2254,7 +2265,16 @@ package body Bindgen is
            Get_Main_Name & """);");
       end if;
 
-      Gen_Versions;
+      --  Generate version numbers for units, only if needed. Be very safe on
+      --  the condition.
+
+      if not Configurable_Run_Time_On_Target
+        or else System_Version_Control_Used
+        or else not Bind_Main_Program
+      then
+         Gen_Versions;
+      end if;
+
       Gen_Elab_Order (Elab_Order);
 
       --  Spec is complete
@@ -2271,8 +2291,8 @@ package body Bindgen is
       --  handle use of Ada 2005 keywords as identifiers in Ada 95 mode. None
       --  of the Ada 2005/2012 constructs are needed by the binder file.
 
-      WBI ("pragma Ada_95;");
       WBI ("pragma Warnings (Off);");
+      WBI ("pragma Ada_95;");
 
       --  Output Source_File_Name pragmas which look like
 
@@ -2712,7 +2732,7 @@ package body Bindgen is
       --  every file, then we could use the encoding of the initial specified
       --  file, but this information is passed only for potential main
       --  programs. We could fix this sometime, but it is a very minor point
-      --  (wide character default encoding for [Wide_[Wide_]Text_IO when there
+      --  (wide character default encoding for [Wide_[Wide_]]Text_IO when there
       --  is no main program).
 
       elsif No_Main_Subprogram then
@@ -2860,6 +2880,11 @@ package body Bindgen is
          Check_Package (System_BB_CPU_Primitives_Multiprocessors_Used,
                         "system.bb.cpu_primitives.multiprocessors%s");
 
+         --  Ditto for System.Version_Control, which is used for Version and
+         --  Body_Version attributes.
+
+         Check_Package (System_Version_Control_Used,
+                        "system.version_control%s");
       end loop;
    end Resolve_Binder_Options;
 

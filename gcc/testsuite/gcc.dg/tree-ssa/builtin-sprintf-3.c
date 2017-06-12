@@ -2,7 +2,7 @@
    Test case derived from the one submitted in the bug.  It verifies
    that the sprintf return value (or value range) optimization is not
    performed for an unknown string.  */
-/* { dg-compile } */
+/* { dg-do compile } */
 /* { dg-options "-O2 -Wall -Werror -fdump-tree-optimized -fprintf-return-value" } */
 
 #define INT_MAX   __INT_MAX__

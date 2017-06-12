@@ -1,3 +1,22 @@
+2017-05-16  Sylvestre Ledru  <sylvestre@debian.org>
+
+	* objc-runtime-shared-support.c (build_module_descriptor):
+	Remove unnecessary conditional when building instance of
+	objc_module. CID 1406758
+
+2017-05-09  Nathan Sidwell  <nathan@acm.org>
+
+	* objc-gnu-runtime-abi-01.c (objc_add_static_instance): Use
+	pushdecl lang_hook.
+
+2017-05-04  Martin Sebor  <msebor@redhat.com>
+
+	PR translation/80280
+	* objc-gnu-runtime-abi-01.c (objc_eh_runtime_type): Add missing
+	quoting to directives.
+	* objc-next-runtime-abi-01.c (objc_eh_runtime_type): Ditto.
+	* objc-next-runtime-abi-02.c (next_runtime_02_eh_type): Ditto.
+
 2017-01-01  Jakub Jelinek  <jakub@redhat.com>
 
 	Update copyright years.

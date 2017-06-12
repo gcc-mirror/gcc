@@ -170,6 +170,3 @@
      message2 = ""
    end subroutine
  end program
-! { dg-final { cleanup-submodules "foo_interface@foo_interface_son" } }
-! { dg-final { cleanup-submodules "foo_interface@foo_interface_grandson" } }
-! { dg-final { cleanup-submodules "foo_interface@foo_interface_daughter" } }

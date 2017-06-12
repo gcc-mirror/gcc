@@ -43,8 +43,7 @@ along with GCC; see the file COPYING3.  If not see
 #define C_TYPE_INCOMPLETE_VARS(TYPE) TYPE_VFIELD (TYPE)
 
 /* In an IDENTIFIER_NODE, nonzero if this identifier is actually a
-   keyword.  C_RID_CODE (node) is then the RID_* value of the keyword,
-   and C_RID_YYCODE is the token number wanted by Yacc.  */
+   keyword.  C_RID_CODE (node) is then the RID_* value of the keyword.  */
 #define C_IS_RESERVED_WORD(ID) TREE_LANG_FLAG_0 (ID)
 
 /* Record whether a type or decl was written with nonconstant size.
@@ -113,6 +112,10 @@ along with GCC; see the file COPYING3.  If not see
 /* For a CONSTRUCTOR, whether some initializer contains a
    subexpression meaning it is not a constant expression.  */
 #define CONSTRUCTOR_NON_CONST(EXPR) TREE_LANG_FLAG_1 (CONSTRUCTOR_CHECK (EXPR))
+
+/* For a SAVE_EXPR, nonzero if the operand of the SAVE_EXPR has already
+   been folded.  */
+#define SAVE_EXPR_FOLDED_P(EXP)	TREE_LANG_FLAG_1 (SAVE_EXPR_CHECK (EXP))
 
 /* Record parser information about an expression that is irrelevant
    for code generation alongside a tree representing its value.  */
@@ -507,6 +510,7 @@ extern tree c_break_label;
 extern tree c_cont_label;
 
 extern bool global_bindings_p (void);
+extern tree pushdecl (tree);
 extern void push_scope (void);
 extern tree pop_scope (void);
 extern void c_bindings_start_stmt_expr (struct c_spot_bindings *);
@@ -557,7 +561,7 @@ extern tree c_builtin_function_ext_scope (tree);
 extern void shadow_tag (const struct c_declspecs *);
 extern void shadow_tag_warned (const struct c_declspecs *, int);
 extern tree start_enum (location_t, struct c_enum_contents *, tree);
-extern int  start_function (struct c_declspecs *, struct c_declarator *, tree);
+extern bool start_function (struct c_declspecs *, struct c_declarator *, tree);
 extern tree start_decl (struct c_declarator *, struct c_declspecs *, bool,
 			tree);
 extern tree start_struct (location_t, enum tree_code, tree,
@@ -607,16 +611,17 @@ extern int in_sizeof;
 extern int in_typeof;
 
 extern tree c_last_sizeof_arg;
+extern location_t c_last_sizeof_loc;
 
 extern struct c_switch *c_switch_stack;
 
 extern tree c_objc_common_truthvalue_conversion (location_t, tree);
 extern tree require_complete_type (location_t, tree);
-extern int same_translation_unit_p (const_tree, const_tree);
+extern bool same_translation_unit_p (const_tree, const_tree);
 extern int comptypes (tree, tree);
 extern int comptypes_check_different_types (tree, tree, bool *);
 extern bool c_vla_type_p (const_tree);
-extern bool c_mark_addressable (tree);
+extern bool c_mark_addressable (tree, bool = false);
 extern void c_incomplete_type_error (location_t, const_tree, const_tree);
 extern tree c_type_promotes_to (tree);
 extern struct c_expr default_function_array_conversion (location_t,

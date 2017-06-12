@@ -2472,16 +2472,6 @@ package body Sinfo is
       return Flag18 (N);
    end Non_Aliased_Prefix;
 
-   function Null_Present
-      (N : Node_Id) return Boolean is
-   begin
-      pragma Assert (False
-        or else NT (N).Nkind = N_Component_List
-        or else NT (N).Nkind = N_Procedure_Specification
-        or else NT (N).Nkind = N_Record_Definition);
-      return Flag13 (N);
-   end Null_Present;
-
    function Null_Excluding_Subtype
       (N : Node_Id) return Boolean is
    begin
@@ -2519,6 +2509,16 @@ package body Sinfo is
       return Flag14 (N);
    end Null_Exclusion_In_Return_Present;
 
+   function Null_Present
+      (N : Node_Id) return Boolean is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Component_List
+        or else NT (N).Nkind = N_Procedure_Specification
+        or else NT (N).Nkind = N_Record_Definition);
+      return Flag13 (N);
+   end Null_Present;
+
    function Null_Record_Present
       (N : Node_Id) return Boolean is
    begin
@@ -2527,6 +2527,14 @@ package body Sinfo is
         or else NT (N).Nkind = N_Extension_Aggregate);
       return Flag17 (N);
    end Null_Record_Present;
+
+   function Null_Statement
+      (N : Node_Id) return Node_Id is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Procedure_Specification);
+      return Node2 (N);
+   end Null_Statement;
 
    function Object_Definition
       (N : Node_Id) return Node_Id is
@@ -5774,16 +5782,6 @@ package body Sinfo is
       Set_Flag18 (N, Val);
    end Set_Non_Aliased_Prefix;
 
-   procedure Set_Null_Present
-      (N : Node_Id; Val : Boolean := True) is
-   begin
-      pragma Assert (False
-        or else NT (N).Nkind = N_Component_List
-        or else NT (N).Nkind = N_Procedure_Specification
-        or else NT (N).Nkind = N_Record_Definition);
-      Set_Flag13 (N, Val);
-   end Set_Null_Present;
-
    procedure Set_Null_Excluding_Subtype
       (N : Node_Id; Val : Boolean := True) is
    begin
@@ -5821,6 +5819,16 @@ package body Sinfo is
       Set_Flag14 (N, Val);
    end Set_Null_Exclusion_In_Return_Present;
 
+   procedure Set_Null_Present
+      (N : Node_Id; Val : Boolean := True) is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Component_List
+        or else NT (N).Nkind = N_Procedure_Specification
+        or else NT (N).Nkind = N_Record_Definition);
+      Set_Flag13 (N, Val);
+   end Set_Null_Present;
+
    procedure Set_Null_Record_Present
       (N : Node_Id; Val : Boolean := True) is
    begin
@@ -5829,6 +5837,14 @@ package body Sinfo is
         or else NT (N).Nkind = N_Extension_Aggregate);
       Set_Flag17 (N, Val);
    end Set_Null_Record_Present;
+
+   procedure Set_Null_Statement
+      (N : Node_Id; Val : Node_Id) is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Procedure_Specification);
+      Set_Node2 (N, Val);
+   end Set_Null_Statement;
 
    procedure Set_Object_Definition
       (N : Node_Id; Val : Node_Id) is

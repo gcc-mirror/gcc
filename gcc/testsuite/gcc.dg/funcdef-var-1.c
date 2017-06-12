@@ -5,6 +5,6 @@
 /* { dg-options "-Wmissing-prototypes" } */
 
 extern __typeof(foo) foo __asm__(""); /* { dg-error "undeclared" } */
-/* { dg-message "note: previous declaration" "previous declaration" { target *-*-* } 7 } */
+/* { dg-message "note: previous declaration" "previous declaration" { target *-*-* } .-1 } */
 void *foo (void) {} /* { dg-error "redeclared as different kind of symbol" } */
-/* { dg-warning "no previous prototype" "no previous prototype" { target *-*-* } 9 } */
+/* { dg-warning "no previous prototype" "no previous prototype" { target *-*-* } .-1 } */

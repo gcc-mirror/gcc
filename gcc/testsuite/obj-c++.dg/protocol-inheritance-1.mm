@@ -48,7 +48,6 @@
 
 @implementation MySubClass2
 @end /* Warnings here, below.  */
-
-/* { dg-warning "incomplete implementation of class .MySubClass2." "" { target *-*-* } 50 } */
-/* { dg-warning "method definition for .\\-method2. not found" "" { target *-*-* } 50 } */
-/* { dg-warning "class .MySubClass2. does not fully implement the .MyProtocol2. protocol" "" { target *-*-* } 50 } */
+/* { dg-warning "incomplete implementation of class .MySubClass2." "" { target *-*-* } .-1 } */
+/* { dg-warning "method definition for .\\-method2. not found" "" { target *-*-* } .-2 } */
+/* { dg-warning "class .MySubClass2. does not fully implement the .MyProtocol2. protocol" "" { target *-*-* } .-3 } */

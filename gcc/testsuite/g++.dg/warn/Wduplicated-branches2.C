@@ -1,4 +1,4 @@
-// PR c/6427
+// PR c/64279
 // { dg-do compile { target c++11 } }
 // { dg-options "-Wduplicated-branches" }
 

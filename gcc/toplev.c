@@ -79,6 +79,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "omp-offload.h"
 #include "hsa-common.h"
 #include "edit-context.h"
+#include "tree-pass.h"
 
 #if defined(DBX_DEBUGGING_INFO) || defined(XCOFF_DEBUGGING_INFO)
 #include "dbxout.h"
@@ -1063,6 +1064,15 @@ open_auxiliary_file (const char *ext)
   return file;
 }
 
+/* Auxiliary callback for the diagnostics code.  */
+
+static void
+internal_error_function (diagnostic_context *, const char *, va_list *)
+{
+  warn_if_plugins ();
+  emergency_dump_function ();
+}
+
 /* Initialization of the front end environment, before command line
    options are parsed.  Signal handlers, internationalization etc.
    ARGV0 is main's argv[0].  */
@@ -1101,7 +1111,7 @@ general_init (const char *argv0, bool init_signals)
     = global_options_init.x_flag_diagnostics_show_option;
   global_dc->show_column
     = global_options_init.x_flag_show_column;
-  global_dc->internal_error = plugins_internal_error_function;
+  global_dc->internal_error = internal_error_function;
   global_dc->option_enabled = option_enabled;
   global_dc->option_state = &global_options;
   global_dc->option_name = option_name;
@@ -1154,9 +1164,17 @@ general_init (const char *argv0, bool init_signals)
      processing.  */
   init_ggc_heuristics ();
 
-  /* Create the singleton holder for global state.
-     Doing so also creates the pass manager and with it the passes.  */
+  /* Create the singleton holder for global state.  This creates the
+     dump manager.  */
   g = new gcc::context ();
+
+  /* Allow languages and middle-end to register their dumps before the
+     optimization passes.  */
+  g->get_dumps ()->register_dumps ();
+
+  /* Create the passes.  */
+  g->set_passes (new gcc::pass_manager (g));
+
   symtab = new (ggc_cleared_alloc <symbol_table> ()) symbol_table ();
 
   statistics_early_init ();
@@ -1270,26 +1288,42 @@ process_options (void)
       if (targetm.chkp_bound_mode () == VOIDmode)
 	{
 	  error_at (UNKNOWN_LOCATION,
-		    "-fcheck-pointer-bounds is not supported for this target");
+		    "%<-fcheck-pointer-bounds%> is not supported for this "
+		    "target");
+	  flag_check_pointer_bounds = 0;
+	}
+
+      if (flag_sanitize & SANITIZE_BOUNDS_STRICT)
+	{
+	  error_at (UNKNOWN_LOCATION,
+		    "%<-fcheck-pointer-bounds%> is not supported with "
+		    "%<-fsanitize=bounds-strict%>");
+	  flag_check_pointer_bounds = 0;
+	}
+      else if (flag_sanitize & SANITIZE_BOUNDS)
+	{
+	  error_at (UNKNOWN_LOCATION,
+		    "%<-fcheck-pointer-bounds%> is not supported with "
+		    "%<-fsanitize=bounds%>");
 	  flag_check_pointer_bounds = 0;
 	}
 
       if (flag_sanitize & SANITIZE_ADDRESS)
 	{
 	  error_at (UNKNOWN_LOCATION,
-		    "-fcheck-pointer-bounds is not supported with "
+		    "%<-fcheck-pointer-bounds%> is not supported with "
 		    "Address Sanitizer");
 	  flag_check_pointer_bounds = 0;
 	}
 
-      if (flag_sanitize & SANITIZE_BOUNDS)
+      if (flag_sanitize & SANITIZE_THREAD)
 	{
 	  error_at (UNKNOWN_LOCATION,
-		    "-fcheck-pointer-bounds is not supported with "
-		    "-fsanitize=bounds");
+		    "%<-fcheck-pointer-bounds%> is not supported with "
+		    "Thread Sanitizer");
+
 	  flag_check_pointer_bounds = 0;
 	}
-
     }
 
   /* One region RA really helps to decrease the code size.  */
@@ -1898,6 +1932,9 @@ finalize (bool no_backend)
       fclose (stack_usage_file);
       stack_usage_file = NULL;
     }
+
+  if (seen_error ())
+    coverage_remove_note_file ();
 
   if (!no_backend)
     {

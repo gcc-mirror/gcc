@@ -32,6 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "trans-array.h"
 #include "trans-types.h"
 #include "trans-const.h"
+#include "options.h"
 
 /* Members of the ioparm structure.  */
 
@@ -219,7 +220,12 @@ gfc_build_st_parameter (enum ioparam_type ptype, tree *types)
 	  gcc_unreachable ();
 	}
 
+  /* -Wpadded warnings on these artificially created structures are not
+     helpful; suppress them. */
+  int save_warn_padded = warn_padded;
+  warn_padded = 0;
   gfc_finish_type (t);
+  warn_padded = save_warn_padded;
   st_parameter[ptype].type = t;
 }
 
@@ -1607,6 +1613,10 @@ nml_get_addr_expr (gfc_symbol * sym, gfc_component * c,
     tmp = fold_build3_loc (input_location, COMPONENT_REF, TREE_TYPE (tmp),
 			   base_addr, tmp, NULL_TREE);
 
+  if (GFC_CLASS_TYPE_P (TREE_TYPE (tmp))
+      && GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (gfc_class_data_get (tmp))))
+    tmp = gfc_class_data_get (tmp);
+
   if (GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (tmp)))
     tmp = gfc_conv_array_data (tmp);
   else
@@ -1664,8 +1674,12 @@ transfer_namelist_element (stmtblock_t * block, const char * var_name,
 
   /* Build ts, as and data address using symbol or component.  */
 
-  ts = (sym) ? &sym->ts : &c->ts;
-  as = (sym) ? sym->as : c->as;
+  ts = sym ? &sym->ts : &c->ts;
+
+  if (ts->type != BT_CLASS)
+    as = sym ? sym->as : c->as;
+  else
+    as = sym ? CLASS_DATA (sym)->as : CLASS_DATA (c)->as;
 
   addr_expr = nml_get_addr_expr (sym, c, base_addr);
 
@@ -1674,9 +1688,12 @@ transfer_namelist_element (stmtblock_t * block, const char * var_name,
 
   if (rank)
     {
-      decl = (sym) ? sym->backend_decl : c->backend_decl;
+      decl = sym ? sym->backend_decl : c->backend_decl;
       if (sym && sym->attr.dummy)
         decl = build_fold_indirect_ref_loc (input_location, decl);
+
+      if (ts->type == BT_CLASS)
+	decl = gfc_class_data_get (decl);
       dt =  TREE_TYPE (decl);
       dtype = gfc_get_dtype (dt);
     }
@@ -1695,22 +1712,53 @@ transfer_namelist_element (stmtblock_t * block, const char * var_name,
   /* Check if the derived type has a specific DTIO for the mode.
      Note that although namelist io is forbidden to have a format
      list, the specific subroutine is of the formatted kind.  */
-  if (ts->type == BT_DERIVED)
+  if (ts->type == BT_DERIVED || ts->type == BT_CLASS)
     {
-      gfc_symbol *dtio_sub = NULL;
-      gfc_symbol *vtab;
-      dtio_sub = gfc_find_specific_dtio_proc (ts->u.derived,
-					      last_dt == WRITE,
-					      true);
-      if (dtio_sub != NULL)
+      gfc_symbol *derived;
+      if (ts->type==BT_CLASS)
+	derived = ts->u.derived->components->ts.u.derived;
+      else
+	derived = ts->u.derived;
+
+      gfc_symtree *tb_io_st = gfc_find_typebound_dtio_proc (derived,
+							last_dt == WRITE, true);
+
+      if (ts->type == BT_CLASS && tb_io_st)
 	{
-	  dtio_proc = gfc_get_symbol_decl (dtio_sub);
-	  dtio_proc = gfc_build_addr_expr (NULL, dtio_proc);
-	  vtab = gfc_find_derived_vtab (ts->u.derived);
-	  vtable = vtab->backend_decl;
-	  if (vtable == NULL_TREE)
-	    vtable = gfc_get_symbol_decl (vtab);
-	  vtable = gfc_build_addr_expr (pvoid_type_node, vtable);
+	  // polymorphic DTIO call  (based on the dynamic type)
+	  gfc_se se;
+	  gfc_symtree *st = gfc_find_symtree (sym->ns->sym_root, sym->name);
+	  // build vtable expr
+	  gfc_expr *expr = gfc_get_variable_expr (st);
+	  gfc_add_vptr_component (expr);
+	  gfc_init_se (&se, NULL);
+	  se.want_pointer = 1;
+	  gfc_conv_expr (&se, expr);
+	  vtable = se.expr;
+	  // build dtio expr
+	  gfc_add_component_ref (expr,
+				tb_io_st->n.tb->u.generic->specific_st->name);
+	  gfc_init_se (&se, NULL);
+	  se.want_pointer = 1;
+	  gfc_conv_expr (&se, expr);
+	  gfc_free_expr (expr);
+	  dtio_proc = se.expr;
+	}
+      else
+	{
+	  // non-polymorphic DTIO call (based on the declared type)
+	  gfc_symbol *dtio_sub = gfc_find_specific_dtio_proc (derived,
+							last_dt == WRITE, true);
+	  if (dtio_sub != NULL)
+	    {
+	      dtio_proc = gfc_get_symbol_decl (dtio_sub);
+	      dtio_proc = gfc_build_addr_expr (NULL, dtio_proc);
+	      gfc_symbol *vtab = gfc_find_derived_vtab (derived);
+	      vtable = vtab->backend_decl;
+	      if (vtable == NULL_TREE)
+		vtable = gfc_get_symbol_decl (vtab);
+	      vtable = gfc_build_addr_expr (pvoid_type_node, vtable);
+	    }
 	}
     }
 
@@ -1719,7 +1767,7 @@ transfer_namelist_element (stmtblock_t * block, const char * var_name,
   else
     tmp = build_int_cst (gfc_charlen_type_node, 0);
 
-  if (dtio_proc == NULL_TREE)
+  if (dtio_proc == null_pointer_node)
     tmp = build_call_expr_loc (input_location,
 			   iocall[IOCALL_SET_NML_VAL], 6,
 			   dt_parm_addr, addr_expr, string,

@@ -26,6 +26,7 @@ if ![istarget s390*-*-*] then {
 
 # Load support procs.
 load_lib gcc-dg.exp
+load_lib target-supports.exp
 
 # Return 1 if the the assembler understands .machine and .machinemode.  The
 # target attribute needs that feature to work.
@@ -53,21 +54,6 @@ proc check_effective_target_htm { } {
 	    return nd;
 	}
     }] "-march=zEC12 -mzarch" ] } { return 0 } else { return 1 }
-}
-
-# Return 1 if vector (va - vector add) instructions are understood by
-# the assembler and can be executed.  This also covers checking for
-# the VX kernel feature.  A kernel without that feature does not
-# enable the vector facility and the following check will die with a
-# signal.
-proc check_effective_target_vector { } {
-    if { ![check_runtime s390_check_vector [subst {
-	int main (void)
-	{
-	    asm ("va %%v24, %%v26, %%v28, 3" : : : "v24", "v26", "v28");
-	    return 0;
-	}
-    }] "-march=z13 -mzarch" ] } { return 0 } else { return 1 }
 }
 
 global s390_cached_flags
@@ -222,6 +208,12 @@ dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*vector*/*.{c,S,C}]] \
 
 dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/target-attribute/*.{c,S,C}]] \
 	"" $DEFAULT_CFLAGS
+
+dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/arch12/*.{c,S,C}]] \
+	"" "-O3 -march=arch12 -mzarch"
+
+dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/vxe/*.{c,S}]] \
+	"" "-O3 -march=arch12 -mzarch"
 
 dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/md/*.{c,S,C}]] \
 	"" $DEFAULT_CFLAGS

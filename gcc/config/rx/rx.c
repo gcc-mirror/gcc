@@ -267,7 +267,7 @@ rx_is_legitimate_address (machine_mode mode, rtx x,
   return rx_small_data_operand (x);
 }
 
-/* Returns TRUE for simple memory addreses, ie ones
+/* Returns TRUE for simple memory addresses, ie ones
    that do not involve register indirect addressing
    or pre/post increment/decrement.  */
 
@@ -3205,7 +3205,7 @@ rx_match_ccmode (rtx insn, machine_mode cc_mode)
 
   gcc_checking_assert (XVECLEN (PATTERN (insn), 0) == 2);
 
-  op1 = XVECEXP (PATTERN (insn), 0, 1);
+  op1 = XVECEXP (PATTERN (insn), 0, 0);
   gcc_checking_assert (GET_CODE (SET_SRC (op1)) == COMPARE);
 
   flags = SET_DEST (op1);

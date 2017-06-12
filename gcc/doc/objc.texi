@@ -1157,7 +1157,7 @@ GCC version 4.6.
 
 The GNU Objective-C runtime provides a hook, called
 @code{__objc_msg_forward2}, which is called by
-@code{objc_msg_lookup()} when it can't find a method implementation in
+@code{objc_msg_lookup()} when it cannot find a method implementation in
 the runtime tables and after calling @code{+resolveInstanceMethod:}
 and @code{+resolveClassMethod:} has been attempted and did not succeed
 in dynamically registering the method.

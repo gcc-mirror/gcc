@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---         Copyright (C) 1992-2016, Free Software Foundation, Inc.          --
+--         Copyright (C) 1992-2017, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -37,8 +37,6 @@ pragma Polling (Off);
 --  Turn polling off for this package. We don't need polling during any of the
 --  routines in this package, and more to the point, if we try to poll it can
 --  cause infinite loops.
-
-with Ada.Exceptions;
 
 with System.Task_Primitives;
 with System.Task_Primitives.Operations;
@@ -234,7 +232,6 @@ package body System.Tasking.Initialization is
    --  Call only when holding no locks
 
    procedure Do_Pending_Action (Self_ID : Task_Id) is
-      use type Ada.Exceptions.Exception_Id;
 
    begin
       pragma Assert (Self_ID = Self and then Self_ID.Deferral_Level = 0);

@@ -9,7 +9,7 @@
 void
 f (void)
 {
-  float a = 1e+100000000f; /* { dg-warning "floating constant exceeds range of 'float'" "" } */
+  float a = 1e+100000000f; /* { dg-warning "floating constant exceeds range of 'float'" } */
   double b = 1e+100000000; /* { dg-warning "floating constant exceeds range of 'double'" } */
   long double c = 1e+100000000l; /* { dg-warning "floating constant exceeds range of 'long double'" } */
 }

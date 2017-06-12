@@ -7,19 +7,19 @@
 
 struct test
 {
-  char test;  // { dg-error "with same name as class" "" }
+  char test;  // { dg-error "with same name as class" }
   test();
 };
 
 template <typename T> struct X
 {
-  char X;  // { dg-error "with same name as class" "" }
+  char X;  // { dg-error "with same name as class" }
   X ();
 };
 
 template <> struct X<int> {
-  char X;  // { dg-error "with same name as class" "" }
+  char X;  // { dg-error "with same name as class" }
   X();
 };
 
-X<float> i; // { dg-message "required from" "" }
+X<float> i; // { dg-message "required from" }

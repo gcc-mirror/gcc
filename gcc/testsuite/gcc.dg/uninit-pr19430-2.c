@@ -10,7 +10,7 @@ int foo (int b)
   p = &i;
   q = &j;
   if (b)
-    x = p;
+    x = p;  /* { dg-warning "i. may be used uninitialized" } */
   else
     x = q;
   return *x;

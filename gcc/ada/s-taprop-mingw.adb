@@ -958,6 +958,7 @@ package body System.Task_Primitives.Operations is
 
    procedure Finalize_TCB (T : Task_Id) is
       Succeeded : BOOL;
+      pragma Unreferenced (Succeeded);
 
    begin
       if not Single_Lock then
@@ -976,7 +977,10 @@ package body System.Task_Primitives.Operations is
          --  is needed to release system resources.
 
          Succeeded := CloseHandle (T.Common.LL.Thread);
-         pragma Assert (Succeeded = Win32.TRUE);
+         --  Note that we do not check for the returned value, this is
+         --  because the above call will fail for a foreign thread. But
+         --  we still need to call it to properly close Ada tasks created
+         --  with CreateThread() in Create_Task above.
       end if;
 
       ATCB_Allocation.Free_ATCB (T);

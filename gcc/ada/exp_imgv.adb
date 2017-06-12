@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1165,7 +1165,7 @@ package body Exp_Imgv is
          pragma Assert (Is_Enumeration_Type (Rtyp));
 
          --  Whenever pragma Discard_Names is in effect, the value we need
-         --  is the value needed to accomodate the largest integer pos value
+         --  is the value needed to accommodate the largest integer pos value
          --  in the range of the subtype + 1 for the space at the start. We
          --  build:
 

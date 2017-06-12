@@ -2503,7 +2503,11 @@ expand_gimple_cond (basic_block bb, gcond *stmt)
   false_edge->flags |= EDGE_FALLTHRU;
   new_bb->count = false_edge->count;
   new_bb->frequency = EDGE_FREQUENCY (false_edge);
-  add_bb_to_loop (new_bb, bb->loop_father);
+  loop_p loop = find_common_loop (bb->loop_father, dest->loop_father);
+  add_bb_to_loop (new_bb, loop);
+  if (loop->latch == bb
+      && loop->header == dest)
+    loop->latch = new_bb;
   new_edge = make_edge (new_bb, dest, 0);
   new_edge->probability = REG_BR_PROB_BASE;
   new_edge->count = new_bb->count;
@@ -3779,7 +3783,6 @@ expand_gimple_tailcall (basic_block bb, gcall *stmt, bool *can_fallthru)
   edge e;
   edge_iterator ei;
   int probability;
-  gcov_type count;
 
   last2 = last = expand_gimple_stmt (stmt);
 
@@ -3805,7 +3808,7 @@ expand_gimple_tailcall (basic_block bb, gcall *stmt, bool *can_fallthru)
      the exit block.  */
 
   probability = 0;
-  count = 0;
+  profile_count count = profile_count::zero ();
 
   for (ei = ei_start (bb->succs); (e = ei_safe_edge (ei)); )
     {
@@ -3815,8 +3818,6 @@ expand_gimple_tailcall (basic_block bb, gcall *stmt, bool *can_fallthru)
 	    {
 	      e->dest->count -= e->count;
 	      e->dest->frequency -= EDGE_FREQUENCY (e);
-	      if (e->dest->count < 0)
-		e->dest->count = 0;
 	      if (e->dest->frequency < 0)
 		e->dest->frequency = 0;
 	    }
@@ -3849,8 +3850,8 @@ expand_gimple_tailcall (basic_block bb, gcall *stmt, bool *can_fallthru)
 
   e = make_edge (bb, EXIT_BLOCK_PTR_FOR_FN (cfun), EDGE_ABNORMAL
 		 | EDGE_SIBCALL);
-  e->probability += probability;
-  e->count += count;
+  e->probability = probability;
+  e->count = count;
   BB_END (bb) = last;
   update_bb_for_insn (bb);
 
@@ -5927,10 +5928,6 @@ construct_exit_block (void)
 	exit_block->count -= e2->count;
 	exit_block->frequency -= EDGE_FREQUENCY (e2);
       }
-  if (e->count < 0)
-    e->count = 0;
-  if (exit_block->count < 0)
-    exit_block->count = 0;
   if (exit_block->frequency < 0)
     exit_block->frequency = 0;
   update_bb_for_insn (exit_block);
@@ -6541,6 +6538,14 @@ pass_expand::execute (function *fun)
      the common parent easily.  */
   set_block_levels (DECL_INITIAL (fun->decl), 0);
   default_rtl_profile ();
+
+  /* For -dx discard loops now, otherwise IL verify in clean_state will
+     ICE.  */
+  if (rtl_dump_and_exit)
+    {
+      cfun->curr_properties &= ~PROP_loops;
+      loop_optimizer_finalize ();
+    }
 
   timevar_pop (TV_POST_EXPAND);
 

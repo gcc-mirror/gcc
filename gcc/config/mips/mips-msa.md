@@ -366,7 +366,20 @@
   "#"
   "&& reload_completed"
   [(set (match_dup 0) (match_dup 1))]
-  "operands[1] = gen_rtx_REG (<UNITMODE>mode, REGNO (operands[1]));"
+{
+  /* An MSA register cannot be reinterpreted as a single precision
+     register when using -mno-odd-spreg and the MSA register is
+     an odd number.  */
+  if (<UNITMODE>mode == SFmode && !TARGET_ODD_SPREG
+      && (REGNO (operands[1]) & 1))
+    {
+      emit_move_insn (gen_rtx_REG (<MODE>mode, REGNO (operands[0])),
+		      operands[1]);
+      operands[1] = operands[0];
+    }
+  else
+    operands[1] = gen_rtx_REG (<UNITMODE>mode, REGNO (operands[1]));
+}
   [(set_attr "move_type" "fmove")
    (set_attr "mode" "<UNITMODE>")])
 
@@ -1230,10 +1243,10 @@
 		(parallel [(const_int 0) (const_int 2)]))))
 	  (mult:V2DI
 	    (any_extend:V2DI
-	      (vec_select:V4SI (match_dup 1)
+	      (vec_select:V2SI (match_dup 1)
 		(parallel [(const_int 1) (const_int 3)])))
 	    (any_extend:V2DI
-	      (vec_select:V4SI (match_dup 2)
+	      (vec_select:V2SI (match_dup 2)
 		(parallel [(const_int 1) (const_int 3)]))))))]
   "ISA_HAS_MSA"
   "dotp_<su>.d\t%w0,%w1,%w2"
@@ -1319,10 +1332,10 @@
 		  (parallel [(const_int 0) (const_int 2)]))))
 	    (mult:V2DI
 	      (any_extend:V2DI
-		(vec_select:V4SI (match_dup 2)
+		(vec_select:V2SI (match_dup 2)
 		  (parallel [(const_int 1) (const_int 3)])))
 	      (any_extend:V2DI
-		(vec_select:V4SI (match_dup 3)
+		(vec_select:V2SI (match_dup 3)
 		  (parallel [(const_int 1) (const_int 3)])))))
 	  (match_operand:V2DI 1 "register_operand" "0")))]
   "ISA_HAS_MSA"
@@ -1414,10 +1427,10 @@
 		  (parallel [(const_int 0) (const_int 2)]))))
 	    (mult:V2DI
 	      (any_extend:V2DI
-		(vec_select:V4SI (match_dup 2)
+		(vec_select:V2SI (match_dup 2)
 		  (parallel [(const_int 1) (const_int 3)])))
 	      (any_extend:V2DI
-		(vec_select:V4SI (match_dup 3)
+		(vec_select:V2SI (match_dup 3)
 		  (parallel [(const_int 1) (const_int 3)])))))))]
   "ISA_HAS_MSA"
   "dpsub_<su>.d\t%w0,%w2,%w3"
@@ -1688,7 +1701,7 @@
 
 (define_insn "msa_fmax_a_<msafmt>"
   [(set (match_operand:FMSA 0 "register_operand" "=f")
-	(if_then_else
+	(if_then_else:FMSA
 	   (gt (abs:FMSA (match_operand:FMSA 1 "register_operand" "f"))
 	       (abs:FMSA (match_operand:FMSA 2 "register_operand" "f")))
 	   (match_dup 1)
@@ -1709,7 +1722,7 @@
 
 (define_insn "msa_fmin_a_<msafmt>"
   [(set (match_operand:FMSA 0 "register_operand" "=f")
-	(if_then_else
+	(if_then_else:FMSA
 	   (lt (abs:FMSA (match_operand:FMSA 1 "register_operand" "f"))
 	       (abs:FMSA (match_operand:FMSA 2 "register_operand" "f")))
 	   (match_dup 1)
@@ -2174,7 +2187,7 @@
 
 (define_insn "msa_max_a_<msafmt>"
   [(set (match_operand:IMSA 0 "register_operand" "=f")
-	(if_then_else
+	(if_then_else:IMSA
 	   (gt (abs:IMSA (match_operand:IMSA 1 "register_operand" "f"))
 	       (abs:IMSA (match_operand:IMSA 2 "register_operand" "f")))
 	   (match_dup 1)
@@ -2191,7 +2204,7 @@
   "ISA_HAS_MSA"
   "@
    max_s.<msafmt>\t%w0,%w1,%w2
-   maxi_s.<msafmt>\t%w0,%w1,%B2"
+   maxi_s.<msafmt>\t%w0,%w1,%E2"
   [(set_attr "type" "simd_int_arith")
    (set_attr "mode" "<MODE>")])
 
@@ -2208,7 +2221,7 @@
 
 (define_insn "msa_min_a_<msafmt>"
   [(set (match_operand:IMSA 0 "register_operand" "=f")
-	(if_then_else
+	(if_then_else:IMSA
 	   (lt (abs:IMSA (match_operand:IMSA 1 "register_operand" "f"))
 	       (abs:IMSA (match_operand:IMSA 2 "register_operand" "f")))
 	   (match_dup 1)
@@ -2225,7 +2238,7 @@
   "ISA_HAS_MSA"
   "@
    min_s.<msafmt>\t%w0,%w1,%w2
-   mini_s.<msafmt>\t%w0,%w1,%B2"
+   mini_s.<msafmt>\t%w0,%w1,%E2"
   [(set_attr "type" "simd_int_arith")
    (set_attr "mode" "<MODE>")])
 

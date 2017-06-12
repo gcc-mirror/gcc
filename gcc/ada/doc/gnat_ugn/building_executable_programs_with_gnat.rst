@@ -2713,6 +2713,8 @@ of the pragma in the :title:`GNAT_Reference_manual`).
 
   * :samp:`-gnatw.h` (holes in record layouts)
 
+  * :samp:`-gnatw.j` (late primitives of tagged types)
+
   * :samp:`-gnatw.k` (redefinition of names in standard)
 
   * :samp:`-gnatwl` (elaboration warnings)
@@ -3184,6 +3186,24 @@ of the pragma in the :title:`GNAT_Reference_manual`).
   *Suppress warnings on obsolescent features (Annex J).*
 
   This switch disables warnings on use of obsolescent features.
+
+
+.. index:: -gnatw.j  (gcc)
+
+:samp:`-gnatw.j`
+  *Activate warnings on late declarations of tagged type primitives.*
+
+  This switch activates warnings on visible primitives added to a
+  tagged type after deriving a private extension from it.
+
+
+.. index:: -gnatw.J  (gcc)
+
+:samp:`-gnatw.J`
+  *Suppress warnings on late declarations of tagged type primitives.*
+
+  This switch suppresses warnings on visible primitives added to a
+  tagged type after deriving a private extension from it.
 
 
 .. index:: -gnatwk  (gcc)
@@ -6114,7 +6134,7 @@ be presented in subsequent sections.
   sized result, for example a function returning an unconstrained
   String. There are two ways in which this secondary stack is allocated.
 
-  For most targets, the secondary stack is growing on demand and is allocated
+  For most targets, the secondary stack grows on demand and is allocated
   as a chain of blocks in the heap. The -D option is not very
   relevant. It only give some control over the size of the allocated
   blocks (whose size is the minimum of the default secondary stack size value,

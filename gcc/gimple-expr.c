@@ -124,7 +124,7 @@ useless_type_conversion_p (tree outer_type, tree inner_type)
   /* Fixed point types with the same mode are compatible.  */
   else if (FIXED_POINT_TYPE_P (inner_type)
 	   && FIXED_POINT_TYPE_P (outer_type))
-    return true;
+    return TYPE_SATURATING (inner_type) == TYPE_SATURATING (outer_type);
 
   /* We need to take special care recursing to pointed-to types.  */
   else if (POINTER_TYPE_P (inner_type)

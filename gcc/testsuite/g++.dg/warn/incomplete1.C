@@ -9,14 +9,14 @@
 // (But the deletion does not constitute an ill-formed program. So the
 // program should nevertheless compile, but it should give a warning.)
 
-class A;	// { dg-message "forward declaration of 'class A'" "" }
+class A;	// { dg-message "forward declaration of 'class A'" }
 
-A *a;		// { dg-warning "'a' has incomplete type" "" }
+A *a;		// { dg-warning "'a' has incomplete type" }
 
 int
 main (int argc, char **argv)
 {
   delete a;	// { dg-warning "delete" "warn" }
-  // { dg-message "note" "note" { target *-*-* } 19 }
+  // { dg-message "note" "note" { target *-*-* } .-1 }
   return 0;
 }

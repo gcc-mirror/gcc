@@ -64,10 +64,10 @@ print_global_statistics (FILE* file)
   long n_loops = 0;
   long n_stmts = 0;
   long n_conditions = 0;
-  long n_p_bbs = 0;
-  long n_p_loops = 0;
-  long n_p_stmts = 0;
-  long n_p_conditions = 0;
+  profile_count n_p_bbs = profile_count::zero ();
+  profile_count n_p_loops = profile_count::zero ();
+  profile_count n_p_stmts = profile_count::zero ();
+  profile_count n_p_conditions = profile_count::zero ();
 
   basic_block bb;
 
@@ -76,7 +76,8 @@ print_global_statistics (FILE* file)
       gimple_stmt_iterator psi;
 
       n_bbs++;
-      n_p_bbs += bb->count;
+      if (bb->count.initialized_p ())
+        n_p_bbs += bb->count;
 
       /* Ignore artificial surrounding loop.  */
       if (bb == bb->loop_father->header
@@ -89,13 +90,15 @@ print_global_statistics (FILE* file)
       if (EDGE_COUNT (bb->succs) > 1)
 	{
 	  n_conditions++;
-	  n_p_conditions += bb->count;
+	  if (bb->count.initialized_p ())
+	    n_p_conditions += bb->count;
 	}
 
       for (psi = gsi_start_bb (bb); !gsi_end_p (psi); gsi_next (&psi))
 	{
 	  n_stmts++;
-	  n_p_stmts += bb->count;
+	  if (bb->count.initialized_p ())
+	    n_p_stmts += bb->count;
 	}
     }
 
@@ -105,10 +108,15 @@ print_global_statistics (FILE* file)
   fprintf (file, "CONDITIONS:%ld, ", n_conditions);
   fprintf (file, "STMTS:%ld)\n", n_stmts);
   fprintf (file, "\nGlobal profiling statistics (");
-  fprintf (file, "BBS:%ld, ", n_p_bbs);
-  fprintf (file, "LOOPS:%ld, ", n_p_loops);
-  fprintf (file, "CONDITIONS:%ld, ", n_p_conditions);
-  fprintf (file, "STMTS:%ld)\n", n_p_stmts);
+  fprintf (file, "BBS:");
+  n_p_bbs.dump (file);
+  fprintf (file, ", LOOPS:");
+  n_p_loops.dump (file);
+  fprintf (file, ", CONDITIONS:");
+  n_p_conditions.dump (file);
+  fprintf (file, ", STMTS:");
+  n_p_stmts.dump (file);
+  fprintf (file, ")\n");
 }
 
 /* Print statistics for SCOP to FILE.  */
@@ -120,10 +128,10 @@ print_graphite_scop_statistics (FILE* file, scop_p scop)
   long n_loops = 0;
   long n_stmts = 0;
   long n_conditions = 0;
-  long n_p_bbs = 0;
-  long n_p_loops = 0;
-  long n_p_stmts = 0;
-  long n_p_conditions = 0;
+  profile_count n_p_bbs = profile_count::zero ();
+  profile_count n_p_loops = profile_count::zero ();
+  profile_count n_p_stmts = profile_count::zero ();
+  profile_count n_p_conditions = profile_count::zero ();
 
   basic_block bb;
 
@@ -136,7 +144,8 @@ print_graphite_scop_statistics (FILE* file, scop_p scop)
 	continue;
 
       n_bbs++;
-      n_p_bbs += bb->count;
+      if (bb->count.initialized_p ())
+        n_p_bbs += bb->count;
 
       if (EDGE_COUNT (bb->succs) > 1)
 	{
@@ -173,10 +182,15 @@ print_graphite_scop_statistics (FILE* file, scop_p scop)
   fprintf (file, "CONDITIONS:%ld, ", n_conditions);
   fprintf (file, "STMTS:%ld)\n", n_stmts);
   fprintf (file, "\nSCoP profiling statistics (");
-  fprintf (file, "BBS:%ld, ", n_p_bbs);
-  fprintf (file, "LOOPS:%ld, ", n_p_loops);
-  fprintf (file, "CONDITIONS:%ld, ", n_p_conditions);
-  fprintf (file, "STMTS:%ld)\n", n_p_stmts);
+  fprintf (file, "BBS:");
+  n_p_bbs.dump (file);
+  fprintf (file, ", LOOPS:");
+  n_p_loops.dump (file);
+  fprintf (file, ", CONDITIONS:");
+  n_p_conditions.dump (file);
+  fprintf (file, ", STMTS:");
+  n_p_stmts.dump (file);
+  fprintf (file, ")\n");
 }
 
 /* Print statistics for SCOPS to FILE.  */

@@ -24,7 +24,7 @@
     [Cls meth1], 
     [2 + 1] = 3, 
     [2 * 2 ... 5] = (size_t)[0 meth4], /* { dg-warning "invalid receiver type" } */ 
-       /* { dg-warning "no .\\-meth4. method found" "" { target *-*-* } 26 } */
+       /* { dg-warning "no .\\-meth4. method found" "" { target *-*-* } .-1 } */
     [2] [Cls meth2],
     /* Since invalid receivers are treated as 'id' for purposes of message
        lookup, we _should_ find a meth2 to call below.  */

@@ -473,6 +473,7 @@ public:
   type *get_pointer ();
   type *get_const ();
   type *get_volatile ();
+  type *get_aligned (size_t alignment_in_bytes);
 
   /* Get the type obtained when dereferencing this type.
 
@@ -489,7 +490,7 @@ public:
   virtual bool accepts_writes_from (type *rtype)
   {
     gcc_assert (rtype);
-    return this == rtype->unqualified ();
+    return this->unqualified () == rtype->unqualified ();
   }
 
   /* Strip off "const" etc */
@@ -599,15 +600,34 @@ private:
   type *m_other_type;
 };
 
-/* Result of "gcc_jit_type_get_const".  */
-class memento_of_get_const : public type
+/* A decorated version of a type, for get_const, get_volatile and
+   get_aligned.  */
+
+class decorated_type : public type
 {
 public:
-  memento_of_get_const (type *other_type)
+  decorated_type (type *other_type)
   : type (other_type->m_ctxt),
     m_other_type (other_type) {}
 
   type *dereference () FINAL OVERRIDE { return m_other_type->dereference (); }
+
+  bool is_int () const FINAL OVERRIDE { return m_other_type->is_int (); }
+  bool is_float () const FINAL OVERRIDE { return m_other_type->is_float (); }
+  bool is_bool () const FINAL OVERRIDE { return m_other_type->is_bool (); }
+  type *is_pointer () FINAL OVERRIDE { return m_other_type->is_pointer (); }
+  type *is_array () FINAL OVERRIDE { return m_other_type->is_array (); }
+
+protected:
+  type *m_other_type;
+};
+
+/* Result of "gcc_jit_type_get_const".  */
+class memento_of_get_const : public decorated_type
+{
+public:
+  memento_of_get_const (type *other_type)
+  : decorated_type (other_type) {}
 
   bool accepts_writes_from (type */*rtype*/) FINAL OVERRIDE
   {
@@ -618,40 +638,40 @@ public:
   /* Strip off the "const", giving the underlying type.  */
   type *unqualified () FINAL OVERRIDE { return m_other_type; }
 
-  bool is_int () const FINAL OVERRIDE { return m_other_type->is_int (); }
-  bool is_float () const FINAL OVERRIDE { return m_other_type->is_float (); }
-  bool is_bool () const FINAL OVERRIDE { return m_other_type->is_bool (); }
-  type *is_pointer () FINAL OVERRIDE { return m_other_type->is_pointer (); }
-  type *is_array () FINAL OVERRIDE { return m_other_type->is_array (); }
-
   void replay_into (replayer *) FINAL OVERRIDE;
 
 private:
   string * make_debug_string () FINAL OVERRIDE;
   void write_reproducer (reproducer &r) FINAL OVERRIDE;
-
-private:
-  type *m_other_type;
 };
 
 /* Result of "gcc_jit_type_get_volatile".  */
-class memento_of_get_volatile : public type
+class memento_of_get_volatile : public decorated_type
 {
 public:
   memento_of_get_volatile (type *other_type)
-  : type (other_type->m_ctxt),
-    m_other_type (other_type) {}
-
-  type *dereference () FINAL OVERRIDE { return m_other_type->dereference (); }
+  : decorated_type (other_type) {}
 
   /* Strip off the "volatile", giving the underlying type.  */
   type *unqualified () FINAL OVERRIDE { return m_other_type; }
 
-  bool is_int () const FINAL OVERRIDE { return m_other_type->is_int (); }
-  bool is_float () const FINAL OVERRIDE { return m_other_type->is_float (); }
-  bool is_bool () const FINAL OVERRIDE { return m_other_type->is_bool (); }
-  type *is_pointer () FINAL OVERRIDE { return m_other_type->is_pointer (); }
-  type *is_array () FINAL OVERRIDE { return m_other_type->is_array (); }
+  void replay_into (replayer *) FINAL OVERRIDE;
+
+private:
+  string * make_debug_string () FINAL OVERRIDE;
+  void write_reproducer (reproducer &r) FINAL OVERRIDE;
+};
+
+/* Result of "gcc_jit_type_get_aligned".  */
+class memento_of_get_aligned : public decorated_type
+{
+public:
+  memento_of_get_aligned (type *other_type, size_t alignment_in_bytes)
+  : decorated_type (other_type),
+    m_alignment_in_bytes (alignment_in_bytes) {}
+
+  /* Strip off the alignment, giving the underlying type.  */
+  type *unqualified () FINAL OVERRIDE { return m_other_type; }
 
   void replay_into (replayer *) FINAL OVERRIDE;
 
@@ -660,7 +680,7 @@ private:
   void write_reproducer (reproducer &r) FINAL OVERRIDE;
 
 private:
-  type *m_other_type;
+  size_t m_alignment_in_bytes;
 };
 
 class array_type : public type

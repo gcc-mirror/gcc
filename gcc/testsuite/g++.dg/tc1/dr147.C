@@ -21,7 +21,7 @@ void A::f()
 void f()
 {
   A::A a; // { dg-error "constructor" "constructor" }
-} // { dg-error "" "error cascade" { target *-*-* } 23 } error cascade
+} // { dg-error "" "error cascade" { target *-*-* } .-1 } error cascade
 }
 
 namespace N2 {

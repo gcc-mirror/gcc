@@ -31,5 +31,5 @@
 
 void foo()
 {
- assert(true);  // { dg-error "not declared" "" { target *-*-* } } 
+  assert(true);  // { dg-error "not declared" }
 }

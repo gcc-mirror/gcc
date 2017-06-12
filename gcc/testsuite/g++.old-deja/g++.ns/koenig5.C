@@ -15,5 +15,5 @@ void g()
 			 // foo variable first, and therefore do not
 			 // perform argument-dependent lookup.
   bar(new X);            // { dg-error "3:'bar' was not declared" }
-  // { dg-message "suggested alternative" "suggested alternative" { target *-*-* } 17 }
+  // { dg-message "suggested alternative" "suggested alternative" { target *-*-* } .-1 }
 }

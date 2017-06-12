@@ -247,8 +247,8 @@ namespace __gnu_test
     static unsigned int _M_count;
   };
 
-  // An class of objects that can be used for validating various
-  // behaviours and guarantees of containers and algorithms defined in
+  // A class of objects that can be used for validating various
+  // behaviors and guarantees of containers and algorithms defined in
   // the standard library.
   class copy_tracker
   {

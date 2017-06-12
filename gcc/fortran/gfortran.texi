@@ -1125,7 +1125,7 @@ of @code{BIND(C) procedures.}
 @item GNU Fortran's implementation for variables with @code{ASYNCHRONOUS}
 attribute is compatible with TS 29113.
 
-@item Assumed types (@code{TYPE(*)}.
+@item Assumed types (@code{TYPE(*)}).
 
 @item Assumed-rank (@code{DIMENSION(..)}). However, the array descriptor
 of the TS is not yet supported.
@@ -1147,6 +1147,10 @@ do not support polymorphic types or types with allocatable, pointer or
 polymorphic components.
 
 @item Events (@code{EVENT POST}, @code{EVENT WAIT}, @code{EVENT_QUERY})
+
+@item Failed images (@code{FAIL IMAGE}, @code{IMAGE_STATUS},
+@code{FAILED_IMAGES}, @code{STOPPED_IMAGES})
+
 @end itemize
 
 
@@ -3873,6 +3877,7 @@ of such a type
 * caf_register_t::
 * caf_deregister_t::
 * caf_reference_t::
+* caf_team_t::
 @end menu
 
 @node caf_token_t
@@ -4035,6 +4040,11 @@ type conversion still needs to take place the type is transported here.
 At the moment @code{CAF_ARR_REF_VECTOR} is not implemented in the front end for
 descriptor-less arrays.  The library caf_single has untested support for it.
 
+@node caf_team_t
+@subsection @code{caf_team_t}
+
+Opaque pointer to represent a team-handle.  This type is a stand-in for the
+future implementation of teams.  It is about to change without further notice.
 
 @node Function ABI Documentation
 @section Function ABI Documentation
@@ -4044,6 +4054,9 @@ descriptor-less arrays.  The library caf_single has untested support for it.
 * _gfortran_caf_finish:: Finalization function
 * _gfortran_caf_this_image:: Querying the image number
 * _gfortran_caf_num_images:: Querying the maximal number of images
+* _gfortran_caf_image_status :: Query the status of an image
+* _gfortran_caf_failed_images :: Get an array of the indexes of the failed images
+* _gfortran_caf_stopped_images :: Get an array of the indexes of the stopped images
 * _gfortran_caf_register:: Registering coarrays
 * _gfortran_caf_deregister:: Deregistering coarrays
 * _gfortran_caf_is_present:: Query whether an allocatable or pointer component in a derived type coarray is allocated
@@ -4063,6 +4076,7 @@ descriptor-less arrays.  The library caf_single has untested support for it.
 * _gfortran_caf_sync_memory:: Wait for completion of segment-memory operations
 * _gfortran_caf_error_stop:: Error termination with exit code
 * _gfortran_caf_error_stop_str:: Error termination with string
+* _gfortran_caf_fail_image :: Mark the image failed and end its execution
 * _gfortran_caf_atomic_define:: Atomic variable assignment
 * _gfortran_caf_atomic_ref:: Atomic variable reference
 * _gfortran_caf_atomic_cas:: Atomic compare and swap
@@ -4179,6 +4193,90 @@ Shall be positive.
 @item @emph{NOTES}
 This function follows TS18508. If the num_image intrinsic has no arguments,
 then the compiler passes @code{distance=0} and @code{failed=-1} to the function.
+@end table
+
+
+@node _gfortran_caf_image_status
+@subsection @code{_gfortran_caf_image_status} --- Query the status of an image
+@cindex Coarray, _gfortran_caf_image_status
+
+@table @asis
+@item @emph{Description}:
+Get the status of the image given by the id @var{image} of the team given by
+@var{team}.  Valid results are zero, for image is ok, @code{STAT_STOPPED_IMAGE}
+from the ISO_FORTRAN_ENV module to indicate that the image has been stopped and
+@code{STAT_FAILED_IMAGE} also from ISO_FORTRAN_ENV to indicate that the image
+has executed a @code{FAIL IMAGE} statement.
+
+@item @emph{Syntax}:
+@code{int _gfortran_caf_image_status (int image, caf_team_t * team)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{image} @tab the positive scalar id of the image in the current TEAM.
+@item @var{team} @tab optional; team on the which the inquiry is to be
+performed.
+@end multitable
+
+@item @emph{NOTES}
+This function follows TS18508.  Because team-functionality is not yet
+implemented a null-pointer is passed for the @var{team} argument at the moment.
+@end table
+
+
+@node _gfortran_caf_failed_images
+@subsection @code{_gfortran_caf_failed_images} --- Get an array of the indexes of the failed images
+@cindex Coarray, _gfortran_caf_failed_images
+
+@table @asis
+@item @emph{Description}:
+Get an array of image indexes in the current @var{team} that have failed.  The
+array is sorted ascendingly.  When @var{team} is not provided the current team
+is to be used.  When @var{kind} is provided then the resulting array is of that
+integer kind else it is of default integer kind.  The returns an unallocated
+size zero array when no images have failed.
+
+@item @emph{Syntax}:
+@code{int _gfortran_caf_failed_images (caf_team_t * team, int * kind)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{team} @tab optional; team on the which the inquiry is to be
+performed.
+@item @var{image} @tab optional; the kind of the resulting integer array.
+@end multitable
+
+@item @emph{NOTES}
+This function follows TS18508.  Because team-functionality is not yet
+implemented a null-pointer is passed for the @var{team} argument at the moment.
+@end table
+
+
+@node _gfortran_caf_stopped_images
+@subsection @code{_gfortran_caf_stopped_images} --- Get an array of the indexes of the stopped images
+@cindex Coarray, _gfortran_caf_stopped_images
+
+@table @asis
+@item @emph{Description}:
+Get an array of image indexes in the current @var{team} that have stopped.  The
+array is sorted ascendingly.  When @var{team} is not provided the current team
+is to be used.  When @var{kind} is provided then the resulting array is of that
+integer kind else it is of default integer kind.  The returns an unallocated
+size zero array when no images have failed.
+
+@item @emph{Syntax}:
+@code{int _gfortran_caf_stopped_images (caf_team_t * team, int * kind)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{team} @tab optional; team on the which the inquiry is to be
+performed.
+@item @var{image} @tab optional; the kind of the resulting integer array.
+@end multitable
+
+@item @emph{NOTES}
+This function follows TS18508.  Because team-functionality is not yet
+implemented a null-pointer is passed for the @var{team} argument at the moment.
 @end table
 
 
@@ -4989,6 +5087,24 @@ function should terminate the program with a nonzero-exit code.
 @item @var{string} @tab intent(in)  the error message (not zero terminated)
 @item @var{len} @tab intent(in)  the length of the string
 @end multitable
+@end table
+
+
+
+@node _gfortran_caf_fail_image
+@subsection @code{_gfortran_caf_fail_image} --- Mark the image failed and end its execution
+@cindex Coarray, _gfortran_caf_fail_image
+
+@table @asis
+@item @emph{Description}:
+Invoked for an @code{FAIL IMAGE} statement.  The function should terminate the
+current image.
+
+@item @emph{Syntax}:
+@code{void _gfortran_caf_fail_image ()}
+
+@item @emph{NOTES}
+This function follows TS18508.
 @end table
 
 

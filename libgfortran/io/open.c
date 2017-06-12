@@ -168,7 +168,7 @@ static const st_option async_opt[] =
    AT_ENDFILE.  */
 
 static void
-test_endfile (gfc_unit * u)
+test_endfile (gfc_unit *u)
 {
   if (u->endfile == NO_ENDFILE)
     { 
@@ -183,7 +183,7 @@ test_endfile (gfc_unit * u)
    changed.  */
 
 static void
-edit_modes (st_parameter_open *opp, gfc_unit * u, unit_flags * flags)
+edit_modes (st_parameter_open *opp, gfc_unit *u, unit_flags *flags)
 {
   /* Complain about attempts to change the unchangeable.  */
 
@@ -329,7 +329,7 @@ edit_modes (st_parameter_open *opp, gfc_unit * u, unit_flags * flags)
 /* Open an unused unit.  */
 
 gfc_unit *
-new_unit (st_parameter_open *opp, gfc_unit *u, unit_flags * flags)
+new_unit (st_parameter_open *opp, gfc_unit *u, unit_flags *flags)
 {
   gfc_unit *u2;
   stream *s;
@@ -671,7 +671,7 @@ new_unit (st_parameter_open *opp, gfc_unit *u, unit_flags * flags)
    modes or closing what is there now and opening the new file.  */
 
 static void
-already_open (st_parameter_open *opp, gfc_unit * u, unit_flags * flags)
+already_open (st_parameter_open *opp, gfc_unit *u, unit_flags *flags)
 {
   if ((opp->common.flags & IOPARM_OPEN_HAS_FILE) == 0)
     {

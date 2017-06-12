@@ -81,7 +81,7 @@ struct copy_body_data
 
   /* GIMPLE_CALL if va arg parameter packs should be expanded or NULL
      is not.  */
-  gimple *call_stmt;
+  gcall *call_stmt;
 
   /* Exception landing pad the inlined call lies in.  */
   int eh_lp_nr;
@@ -144,6 +144,10 @@ struct copy_body_data
   /* A map from the inlined functions dependence info cliques to
      equivalents in the function into which it is being inlined.  */
   hash_map<dependence_hash, unsigned short> *dependence_map;
+
+  /* A list of addressable local variables remapped into the caller
+     when inlining a call within an OpenMP SIMD-on-SIMT loop.  */
+  vec<tree> *dst_simt_vars;
 
   /* Cilk keywords currently need to replace some variables that
      ordinary nested functions do not.  */

@@ -1,5 +1,5 @@
-/* { dg-require-alias "" } */
 /* { dg-do compile { target fpic } } *
+/* { dg-require-alias "" } */
 /* { dg-options "-O2 -fPIC -fdump-tree-optimized" } */
 void do_not_optimize(int b)
 {

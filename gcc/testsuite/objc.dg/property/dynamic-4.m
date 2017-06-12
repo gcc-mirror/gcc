@@ -41,5 +41,5 @@
   return 0;
 }
 @end /* { dg-warning "incomplete implementation" } */
-/* { dg-warning "method definition for .-setA:. not found" "" { target *-*-* } 43 } */
-/* { dg-warning "class .MyClass2. does not fully implement the .MyProtocol. protocol" "" { target *-*-* } 43 } */
+/* { dg-warning "method definition for .-setA:. not found" "" { target *-*-* } .-1 } */
+/* { dg-warning "class .MyClass2. does not fully implement the .MyProtocol. protocol" "" { target *-*-* } .-2 } */

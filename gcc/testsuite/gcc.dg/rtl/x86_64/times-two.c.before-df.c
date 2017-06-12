@@ -1,4 +1,4 @@
-/* { dg-do compile { target x86_64-*-* } } */
+/* { dg-do compile { target { { i?86-*-* x86_64-*-* } && lp64 } } } */
 /* { dg-options "-fdump-rtl-dfinit" } */
 
 int __RTL (startwith ("rtl-dfinit")) times_two (int i)

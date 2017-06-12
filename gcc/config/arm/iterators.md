@@ -45,6 +45,9 @@
 ;; A list of the 32bit and 64bit integer modes
 (define_mode_iterator SIDI [SI DI])
 
+;; A list of atomic compare and swap success return modes
+(define_mode_iterator CCSI [(CC_Z "TARGET_32BIT") (SI "TARGET_THUMB1")])
+
 ;; A list of modes which the VFP unit can handle
 (define_mode_iterator SDF [(SF "") (DF "TARGET_VFP_DOUBLE")])
 
@@ -410,6 +413,10 @@
 ;;----------------------------------------------------------------------------
 ;; Mode attributes
 ;;----------------------------------------------------------------------------
+
+;; Determine name of atomic compare and swap from success result mode.  This
+;; distinguishes between 16-bit Thumb and 32-bit Thumb/ARM.
+(define_mode_attr arch [(CC_Z "32") (SI "t1")])
 
 ;; Determine element size suffix from vector mode.
 (define_mode_attr MMX_char [(V8QI "b") (V4HI "h") (V2SI "w") (DI "d")])

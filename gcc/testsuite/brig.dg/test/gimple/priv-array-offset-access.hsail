@@ -1,0 +1,87 @@
+module &__llvm_hsail_module:1:0:$full:$large:$near;
+
+/* Regression test for a private array access case which used to assert.  */
+
+/* { dg-do compile } */
+/* { dg-options "-fdump-tree-gimple" } */
+
+decl prog function &vec_sum()(
+	arg_u32 %a,
+	arg_u32 %b,
+	arg_u32 %res,
+	arg_u32 %N);
+
+prog function &vec_sum()(
+	arg_u32 %a,
+	arg_u32 %b,
+	arg_u32 %res,
+	arg_u32 %N)
+{
+
+	ld_arg_align(4)_u32	$s0, [%N];
+	ld_arg_align(4)_u32	$s1, [%res];
+	ld_arg_align(4)_u32	$s2, [%b];
+	ld_arg_align(4)_u32	$s3, [%a];
+	cmp_le_b1_s32	$c0, $s0, 0;
+	cbr_b1	$c0, @BB0_2;
+@BB0_1:
+	ld_private_align(4)_u32	$s4, [$s3];
+	ld_private_align(4)_u32	$s5, [$s2];
+	add_u32	$s4, $s5, $s4;
+	st_private_align(4)_u32	$s4, [$s1];
+	add_u32	$s1, $s1, 4;
+	add_u32	$s2, $s2, 4;
+	add_u32	$s3, $s3, 4;
+	add_u32	$s0, $s0, 4294967295;
+	cmp_ne_b1_s32	$c0, $s0, 0;
+	cbr_b1	$c0, @BB0_1;
+@BB0_2:
+	ret;
+};
+
+prog kernel &test(
+	kernarg_u64 %in,
+	kernarg_u64 %out)
+{
+
+	align(4) private_u8 %__privateStack[1200];
+	mov_b64	$d1, 0;
+/* This used to crash when gcc asserts enabled:  */
+	lda_private_u32	$s0, [%__privateStack][400];
+	lda_private_u32	$s1, [%__privateStack];
+	ld_kernarg_align(8)_width(all)_u64	$d0, [%out];
+	ld_kernarg_align(8)_width(all)_u64	$d2, [%in];
+@BB1_1:
+	add_u64	$d3, $d2, $d1;
+	ld_global_align(4)_u32	$s2, [$d3];
+	st_private_align(4)_u32	$s2, [$s0];
+	st_private_align(4)_u32	$s2, [$s1];
+	add_u32	$s1, $s1, 4;
+	add_u32	$s0, $s0, 4;
+	add_u64	$d1, $d1, 4;
+	cmp_ne_b1_s64	$c0, $d1, 400;
+	cbr_b1	$c0, @BB1_1;
+	mov_b32	$s1, 0;
+	lda_private_u32	$s0, [%__privateStack][800];
+@BB1_3:
+	ld_private_align(4)_u32	$s2, [%__privateStack][$s1];
+	ld_private_align(4)_u32	$s3, [%__privateStack][$s1+400];
+	add_u32	$s2, $s3, $s2;
+	st_private_align(4)_u32	$s2, [%__privateStack][$s1+800];
+	add_u32	$s1, $s1, 4;
+	cmp_ne_b1_s32	$c0, $s1, 400;
+	cbr_b1	$c0, @BB1_3;
+	mov_b64	$d1, 0;
+@BB1_5:
+	add_u64	$d2, $d0, $d1;
+	ld_private_align(4)_u32	$s1, [$s0];
+	st_global_align(4)_u32	$s1, [$d2];
+	add_u32	$s0, $s0, 4;
+	add_u64	$d1, $d1, 4;
+	cmp_ne_b1_s64	$c0, $d1, 400;
+	cbr_b1	$c0, @BB1_5;
+	ret;
+};
+
+/* br @skip converted to a goto */
+/* { dg-final { scan-tree-dump "= \\\(void \\\*\\\) priv_var_offset" "gimple"} } */

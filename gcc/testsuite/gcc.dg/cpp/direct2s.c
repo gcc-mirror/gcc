@@ -13,8 +13,8 @@
 #define HASHINCLUDE #include
 
 HASH include "somerandomfile" /*{ dg-error "stray" "non-include" }*/
-/*{ dg-bogus "No such" "don't execute non-include" { target *-*-* } 15 }*/
-int resync_parser_1; /*{ dg-error "parse|syntax|expected" "" { target *-*-* } 15 }*/
+/*{ dg-bogus "No such" "don't execute non-include" { target *-*-* } .-1 }*/
+int resync_parser_1; /*{ dg-error "parse|syntax|expected" "" { target *-*-* } .-2 }*/
 
 HASHINCLUDE <somerandomfile> /*{ dg-error "stray|expected" "non-include 2" }*/
 /*{ dg-bogus "No such" "don't execute non-include 2" { target *-*-* } 18 }*/

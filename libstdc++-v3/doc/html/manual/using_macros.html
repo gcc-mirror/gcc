@@ -17,13 +17,24 @@
       features, or provide versioning information for the API.  Only
       those macros listed below are offered for consideration by the
       general public.
-   </p><p>Below is the macro which users may check for library version
-      information. </p><div class="variablelist"><dl class="variablelist"><dt><span class="term"><code class="code">__GLIBCXX__</code></span></dt><dd><p>The current version of
-    libstdc++ in compressed ISO date format, as an unsigned
-    long. For details on the value of this particular macro for a
-    particular release, please consult the <a class="link" href="abi.html" title="ABI Policy and Guidelines">
-    ABI Policy and Guidelines</a> appendix.
-    </p></dd></dl></div><p>Below are the macros which users may change with #define/#undef or
+   </p><p>Below are the macros which users may check for library version
+      information. </p><div class="variablelist"><dl class="variablelist"><dt><span class="term"><code class="code">_GLIBCXX_RELEASE</code></span></dt><dd><p>The major release number for libstdc++.  This macro is defined
+        to the GCC major version that the libstdc++ headers belong to,
+        as an integer constant.
+        When compiling with GCC it has the same value as GCC's pre-defined
+        macro <span class="symbol">__GNUC__</span>.
+        This macro can be used when libstdc++ is used with a non-GNU
+        compiler where <span class="symbol">__GNUC__</span> is not defined, or has a
+        different value that doesn't correspond to the libstdc++ version.
+        This macro first appeared in the GCC 7.1 release and is not defined
+        for GCC 6.x or older releases.
+      </p></dd><dt><span class="term"><code class="code">__GLIBCXX__</code></span></dt><dd><p>The revision date of the libstdc++ source code,
+        in compressed ISO date format, as an unsigned
+        long. For notes about using this macro and details on the value of
+        this macro for a particular release, please consult the
+        <a class="link" href="abi.html#abi.versioning.__GLIBCXX__">ABI History</a>
+        appendix.
+        </p></dd></dl></div><p>Below are the macros which users may change with #define/#undef or
       with -D/-U compiler flags.  The default state of the symbol is
       listed.</p><p><span class="quote">“<span class="quote">Configurable</span>”</span> (or <span class="quote">“<span class="quote">Not configurable</span>”</span>) means
       that the symbol is initially chosen (or not) based on

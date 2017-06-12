@@ -187,4 +187,4 @@ single precision and to 32 bits for double precision.
 
 mverbose-cost-dump
 Common Undocumented Var(flag_aarch64_verbose_cost)
-Enables verbose cost model dummping in the debug dump files.
+Enables verbose cost model dumping in the debug dump files.

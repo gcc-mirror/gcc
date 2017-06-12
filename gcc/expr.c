@@ -2192,7 +2192,8 @@ emit_group_load_1 (rtx *tmps, rtx dst, rtx orig_src, tree type, int ssize)
 		      && (!REG_P (tmps[i]) || GET_MODE (tmps[i]) != mode)))
 		tmps[i] = extract_bit_field (tmps[i], bytelen * BITS_PER_UNIT,
 					     subpos * BITS_PER_UNIT,
-					     1, NULL_RTX, mode, mode, false);
+					     1, NULL_RTX, mode, mode, false,
+					     NULL);
 	    }
 	  else
 	    {
@@ -2202,7 +2203,8 @@ emit_group_load_1 (rtx *tmps, rtx dst, rtx orig_src, tree type, int ssize)
 	      mem = assign_stack_temp (GET_MODE (src), slen);
 	      emit_move_insn (mem, src);
 	      tmps[i] = extract_bit_field (mem, bytelen * BITS_PER_UNIT,
-					   0, 1, NULL_RTX, mode, mode, false);
+					   0, 1, NULL_RTX, mode, mode, false,
+					   NULL);
 	    }
 	}
       /* FIXME: A SIMD parallel will eventually lead to a subreg of a
@@ -2245,7 +2247,7 @@ emit_group_load_1 (rtx *tmps, rtx dst, rtx orig_src, tree type, int ssize)
       else
 	tmps[i] = extract_bit_field (src, bytelen * BITS_PER_UNIT,
 				     bytepos * BITS_PER_UNIT, 1, NULL_RTX,
-				     mode, mode, false);
+				     mode, mode, false, NULL);
 
       if (shift)
 	tmps[i] = expand_shift (LSHIFT_EXPR, mode, tmps[i],
@@ -2697,7 +2699,7 @@ copy_blkmode_from_reg (rtx target, rtx srcreg, tree type)
 		       extract_bit_field (src, bitsize,
 					  xbitpos % BITS_PER_WORD, 1,
 					  NULL_RTX, copy_mode, copy_mode,
-					  false),
+					  false, NULL),
 		       false);
     }
 }
@@ -2776,7 +2778,7 @@ copy_blkmode_to_reg (machine_mode mode, tree src)
 		       extract_bit_field (src_word, bitsize,
 					  bitpos % BITS_PER_WORD, 1,
 					  NULL_RTX, word_mode, word_mode,
-					  false),
+					  false, NULL),
 		       false);
     }
 
@@ -3225,7 +3227,7 @@ read_complex_part (rtx cplx, bool imag_p)
     }
 
   return extract_bit_field (cplx, ibitsize, imag_p ? ibitsize : 0,
-			    true, NULL_RTX, imode, imode, false);
+			    true, NULL_RTX, imode, imode, false, NULL);
 }
 
 /* A subroutine of emit_move_insn_1.  Yet another lowpart generator.
@@ -6911,7 +6913,7 @@ store_field (rtx target, HOST_WIDE_INT bitsize, HOST_WIDE_INT bitpos,
 	{
 	  machine_mode temp_mode = smallest_mode_for_size (bitsize, MODE_INT);
 	  temp = extract_bit_field (temp, bitsize, 0, 1, NULL_RTX, temp_mode,
-				    temp_mode, false);
+				    temp_mode, false, NULL);
 	}
 
       /* Store the value in the bitfield.  */
@@ -8333,7 +8335,8 @@ expand_expr_real_2 (sepops ops, rtx target, machine_mode tmode,
 	}
 
       else if (modifier == EXPAND_INITIALIZER)
-	op0 = gen_rtx_fmt_e (unsignedp ? ZERO_EXTEND : SIGN_EXTEND, mode, op0);
+	op0 = gen_rtx_fmt_e (TYPE_UNSIGNED (TREE_TYPE (treeop0))
+			     ? ZERO_EXTEND : SIGN_EXTEND, mode, op0);
 
       else if (target == 0)
 	op0 = convert_to_mode (mode, op0,
@@ -8791,54 +8794,71 @@ expand_expr_real_2 (sepops ops, rtx target, machine_mode tmode,
       expand_operands (treeop0, treeop1, subtarget, &op0, &op1, EXPAND_NORMAL);
       return REDUCE_BIT_FIELD (expand_mult (mode, op0, op1, target, unsignedp));
 
+    case TRUNC_MOD_EXPR:
+    case FLOOR_MOD_EXPR:
+    case CEIL_MOD_EXPR:
+    case ROUND_MOD_EXPR:
+
     case TRUNC_DIV_EXPR:
     case FLOOR_DIV_EXPR:
     case CEIL_DIV_EXPR:
     case ROUND_DIV_EXPR:
     case EXACT_DIV_EXPR:
-      /* If this is a fixed-point operation, then we cannot use the code
-	 below because "expand_divmod" doesn't support sat/no-sat fixed-point
-         divisions.   */
-      if (ALL_FIXED_POINT_MODE_P (mode))
-	goto binop;
+     {
+       /* If this is a fixed-point operation, then we cannot use the code
+	  below because "expand_divmod" doesn't support sat/no-sat fixed-point
+	  divisions.   */
+       if (ALL_FIXED_POINT_MODE_P (mode))
+	 goto binop;
 
-      if (modifier == EXPAND_STACK_PARM)
-	target = 0;
-      /* Possible optimization: compute the dividend with EXPAND_SUM
-	 then if the divisor is constant can optimize the case
-	 where some terms of the dividend have coeffs divisible by it.  */
-      expand_operands (treeop0, treeop1,
-		       subtarget, &op0, &op1, EXPAND_NORMAL);
-      if (SCALAR_INT_MODE_P (mode)
-	  && optimize >= 2
-	  && get_range_pos_neg (treeop0) == 1
-	  && get_range_pos_neg (treeop1) == 1)
-	{
-	  /* If both arguments are known to be positive when interpreted
-	     as signed, we can expand it as both signed and unsigned
-	     division or modulo.  Choose the cheaper sequence in that case.  */
-	  bool speed_p = optimize_insn_for_speed_p ();
-	  do_pending_stack_adjust ();
-	  start_sequence ();
-	  rtx uns_ret = expand_divmod (0, code, mode, op0, op1, target, 1);
-	  rtx_insn *uns_insns = get_insns ();
-	  end_sequence ();
-	  start_sequence ();
-	  rtx sgn_ret = expand_divmod (0, code, mode, op0, op1, target, 0);
-	  rtx_insn *sgn_insns = get_insns ();
-	  end_sequence ();
-	  unsigned uns_cost = seq_cost (uns_insns, speed_p);
-	  unsigned sgn_cost = seq_cost (sgn_insns, speed_p);
-	  if (uns_cost < sgn_cost || (uns_cost == sgn_cost && unsignedp))
-	    {
-	      emit_insn (uns_insns);
-	      return uns_ret;
-	    }
-	  emit_insn (sgn_insns);
-	  return sgn_ret;
-	}
-      return expand_divmod (0, code, mode, op0, op1, target, unsignedp);
+       if (modifier == EXPAND_STACK_PARM)
+	 target = 0;
+       /* Possible optimization: compute the dividend with EXPAND_SUM
+	  then if the divisor is constant can optimize the case
+	  where some terms of the dividend have coeffs divisible by it.  */
+       expand_operands (treeop0, treeop1,
+			subtarget, &op0, &op1, EXPAND_NORMAL);
+       bool mod_p = code == TRUNC_MOD_EXPR || code == FLOOR_MOD_EXPR
+		    || code == CEIL_MOD_EXPR || code == ROUND_MOD_EXPR;
+       if (SCALAR_INT_MODE_P (mode)
+	   && optimize >= 2
+	   && get_range_pos_neg (treeop0) == 1
+	   && get_range_pos_neg (treeop1) == 1)
+	 {
+	   /* If both arguments are known to be positive when interpreted
+	      as signed, we can expand it as both signed and unsigned
+	      division or modulo.  Choose the cheaper sequence in that case.  */
+	   bool speed_p = optimize_insn_for_speed_p ();
+	   do_pending_stack_adjust ();
+	   start_sequence ();
+	   rtx uns_ret = expand_divmod (mod_p, code, mode, op0, op1, target, 1);
+	   rtx_insn *uns_insns = get_insns ();
+	   end_sequence ();
+	   start_sequence ();
+	   rtx sgn_ret = expand_divmod (mod_p, code, mode, op0, op1, target, 0);
+	   rtx_insn *sgn_insns = get_insns ();
+	   end_sequence ();
+	   unsigned uns_cost = seq_cost (uns_insns, speed_p);
+	   unsigned sgn_cost = seq_cost (sgn_insns, speed_p);
 
+	   /* If costs are the same then use as tie breaker the other
+	      other factor.  */
+	   if (uns_cost == sgn_cost)
+	     {
+		uns_cost = seq_cost (uns_insns, !speed_p);
+		sgn_cost = seq_cost (sgn_insns, !speed_p);
+	     }
+
+	   if (uns_cost < sgn_cost || (uns_cost == sgn_cost && unsignedp))
+	     {
+	       emit_insn (uns_insns);
+	       return uns_ret;
+	     }
+	   emit_insn (sgn_insns);
+	   return sgn_ret;
+	 }
+       return expand_divmod (mod_p, code, mode, op0, op1, target, unsignedp);
+     }
     case RDIV_EXPR:
       goto binop;
 
@@ -8847,16 +8867,6 @@ expand_expr_real_2 (sepops ops, rtx target, machine_mode tmode,
       temp = expand_mult_highpart (mode, op0, op1, target, unsignedp);
       gcc_assert (temp);
       return temp;
-
-    case TRUNC_MOD_EXPR:
-    case FLOOR_MOD_EXPR:
-    case CEIL_MOD_EXPR:
-    case ROUND_MOD_EXPR:
-      if (modifier == EXPAND_STACK_PARM)
-	target = 0;
-      expand_operands (treeop0, treeop1,
-		       subtarget, &op0, &op1, EXPAND_NORMAL);
-      return expand_divmod (1, code, mode, op0, op1, target, unsignedp);
 
     case FIXED_CONVERT_EXPR:
       op0 = expand_normal (treeop0);
@@ -8942,6 +8952,18 @@ expand_expr_real_2 (sepops ops, rtx target, machine_mode tmode,
 			   OPTAB_WIDEN);
       if (temp != 0)
 	return temp;
+
+      /* For vector MIN <x, y>, expand it a VEC_COND_EXPR <x <= y, x, y>
+	 and similarly for MAX <x, y>.  */
+      if (VECTOR_TYPE_P (type))
+	{
+	  tree t0 = make_tree (type, op0);
+	  tree t1 = make_tree (type, op1);
+	  tree comparison = build2 (code == MIN_EXPR ? LE_EXPR : GE_EXPR,
+				    type, t0, t1);
+	  return expand_vec_cond_expr (type, comparison, t0, t1,
+				       original_target);
+	}
 
       /* At this point, a MEM target is no longer useful; we will get better
 	 code without it.  */
@@ -9760,7 +9782,8 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 	    case GIMPLE_SINGLE_RHS:
 	      {
 		r = expand_expr_real (gimple_assign_rhs1 (g), target,
-				      tmode, modifier, NULL, inner_reference_p);
+				      tmode, modifier, alt_rtl,
+				      inner_reference_p);
 		break;
 	      }
 	    default:
@@ -10190,7 +10213,7 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 					0, TYPE_UNSIGNED (TREE_TYPE (exp)),
 					(modifier == EXPAND_STACK_PARM
 					 ? NULL_RTX : target),
-					mode, mode, false);
+					mode, mode, false, alt_rtl);
 	  }
 	if (reverse
 	    && modifier != EXPAND_MEMORY
@@ -10687,7 +10710,7 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 	    op0 = extract_bit_field (op0, bitsize, bitpos, unsignedp,
 				     (modifier == EXPAND_STACK_PARM
 				      ? NULL_RTX : target),
-				     ext_mode, ext_mode, reversep);
+				     ext_mode, ext_mode, reversep, alt_rtl);
 
 	    /* If the result has a record type and the mode of OP0 is an
 	       integral mode then, if BITSIZE is narrower than this mode
@@ -10908,7 +10931,7 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
       else if (reduce_bit_field)
 	return extract_bit_field (op0, TYPE_PRECISION (type), 0,
 				  TYPE_UNSIGNED (type), NULL_RTX,
-				  mode, mode, false);
+				  mode, mode, false, NULL);
       /* As a last resort, spill op0 to memory, and reload it in a
 	 different mode.  */
       else if (!MEM_P (op0))

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -70,8 +70,8 @@ function Par (Configuration_Pragmas : Boolean) return List_Id is
    --  Par.Ch5.Get_Loop_Block_Name).
 
    Inside_Record_Definition : Boolean := False;
-   --  Flag set True within a record definition. Used to control warning
-   --  for redefinition of standard entities (not issued for field names).
+   --  True within a record definition. Used to control warning for
+   --  redefinition of standard entities (not issued for field names).
 
    --------------------
    -- Error Recovery --
@@ -594,6 +594,12 @@ function Par (Configuration_Pragmas : Boolean) return List_Id is
    --  Note: we actually have enough information to patch up the tree, but
    --  this may not be worth the effort. Also we could deal with the same
    --  situation for EXIT with a label, but for now don't bother with that.
+
+   Current_Assign_Node : Node_Id := Empty;
+   --  This is the node of the current assignment statement being compiled.
+   --  It is used to record the presence of target_names on its RHS. This
+   --  context-dependent trick simplifies the analysis of such nodes, where
+   --  the RHS must first be analyzed with expansion disabled.
 
    ---------------------------------
    -- Parsing Routines by Chapter --
@@ -1451,6 +1457,8 @@ function Par (Configuration_Pragmas : Boolean) return List_Id is
    procedure Labl is separate;
    procedure Load is separate;
 
+   Result : List_Id := Empty_List;
+
 --  Start of processing for Par
 
 begin
@@ -1466,13 +1474,13 @@ begin
       begin
          loop
             if Token = Tok_EOF then
-               Compiler_State := Analyzing;
-               return Pragmas;
+               Result := Pragmas;
+               exit;
 
             elsif Token /= Tok_Pragma then
                Error_Msg_SC ("only pragmas allowed in configuration file");
-               Compiler_State := Analyzing;
-               return Error_List;
+               Result := Error_List;
+               exit;
 
             else
                P_Node := P_Pragma;
@@ -1518,8 +1526,8 @@ begin
 
       for Ucount in Pos loop
          Set_Opt_Config_Switches
-           (Is_Internal_File_Name (File_Name (Current_Source_File)),
-            Current_Source_Unit = Main_Unit);
+           (Is_Internal_Unit (Current_Source_Unit),
+            Main_Unit => Current_Source_Unit = Main_Unit);
 
          --  Initialize scope table and other parser control variables
 
@@ -1684,7 +1692,9 @@ begin
 
       Restore_Opt_Config_Switches (Save_Config_Switches);
       Set_Comes_From_Source_Default (False);
-      Compiler_State := Analyzing;
-      return Empty_List;
    end if;
+
+   Compiler_State      := Analyzing;
+   Current_Source_File := No_Source_File;
+   return Result;
 end Par;

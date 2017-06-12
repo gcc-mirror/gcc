@@ -23,7 +23,7 @@ f2 ()
 {
   using N::bar;
   baz++;		// { dg-error "'baz' was not declared in this scope" }
-}			// { dg-message "note: suggested alternative: 'bar'" "" { target *-*-* } 25 }
+}			// { dg-message "note: suggested alternative: 'bar'" "" { target *-*-* } .-1 }
 
 int
 bar ()
@@ -45,7 +45,7 @@ f3 ()
 {
   using M::bar;
   baz ();		// { dg-error "'baz' was not declared in this scope" }
-}			// { dg-message "note: suggested alternative: 'bar'" "" { target *-*-* } 47 }
+}			// { dg-message "note: suggested alternative: 'bar'" "" { target *-*-* } .-1 }
 
 namespace O
 {
@@ -71,6 +71,6 @@ f4 ()
   using O::foo;
   using P::bar;
   fooo ();		// { dg-error "'fooo' was not declared in this scope" }
-			// { dg-message "note: suggested alternative: 'foo'" "" { target *-*-* } 73 }
+			// { dg-message "note: suggested alternative: 'foo'" "" { target *-*-* } .-1 }
   baz ();		// { dg-error "'baz' was not declared in this scope" }
-}			// { dg-message "note: suggested alternative: 'bar'" "" { target *-*-* } 75 }
+}			// { dg-message "note: suggested alternative: 'bar'" "" { target *-*-* } .-1 }

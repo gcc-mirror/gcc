@@ -66,8 +66,9 @@ Aspect Abstract_State
 
 This aspect is equivalent to :ref:`pragma Abstract_State<Pragma-Abstract_State>`.
 
-Annotate
-========
+Aspect Annotate
+===============
+
 .. index:: Annotate
 
 There are three forms of this aspect (where ID is an identifier,
@@ -147,7 +148,7 @@ used when doing formatted output of dimensioned quantities. The syntax is::
 
 
 This aspect can only be applied to a subtype whose parent type has
-a `Dimension_Systen` aspect. The aspect must specify values for
+a `Dimension_System` aspect. The aspect must specify values for
 all dimensions of the system. The rational values are the powers of the
 corresponding dimensions that are used by the compiler to verify that
 physical (numeric) computations are dimensionally consistent. For example,
@@ -361,7 +362,6 @@ This boolean aspect is equivalent to :ref:`pragma Lock_Free<Pragma-Lock_Free>`.
 
 Aspect Max_Queue_Length
 =======================
-
 .. index:: Max_Queue_Length
 
 This aspect is equivalent to :ref:`pragma Max_Queue_Length<Pragma-Max_Queue_Length>`.

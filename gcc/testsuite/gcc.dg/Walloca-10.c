@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-require-effective-target alloca } */
 /* { dg-options "-Walloca-larger-than=2000 -O2" } */
 
 // Test when the conditionals are incorrectly reversed.

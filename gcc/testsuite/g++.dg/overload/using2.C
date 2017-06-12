@@ -47,11 +47,11 @@ using std::C1;
 
   void abort (void) throw (); // { dg-message "previous" }
   void _exit (int) throw (); // { dg-error "conflicts" "conflicts" }
-                             // { dg-message "void _exit" "_exit" { target *-*-* } 49 }
+                             // { dg-message "void _exit" "_exit" { target *-*-* } .-1 }
 
   extern "C" void c1 (void) throw ();
   void C1 (void) throw (); // { dg-error "conflicts" "conflicts" }
-                           // { dg-message "void C1" "C1" { target *-*-* } 53 }
+                           // { dg-message "void C1" "C1" { target *-*-* } .-1 }
 
   extern "C" void c2 (void) throw ();
   void C2 (void) throw (); // { dg-message "previous" }

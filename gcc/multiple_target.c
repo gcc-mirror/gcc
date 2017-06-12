@@ -68,6 +68,13 @@ create_dispatcher_calls (struct cgraph_node *node)
 		    " supported by this target");
 	  break;
 	}
+      else if (!targetm.get_function_versions_dispatcher)
+	{
+	  error_at (gimple_location (call),
+		    "target does not support function version dispatcher");
+	  break;
+	}
+
       e_next = e->next_caller;
       idecl = targetm.get_function_versions_dispatcher (decl);
       if (!idecl)
@@ -296,10 +303,7 @@ expand_target_clones (struct cgraph_node *node, bool definition)
       if (!targetm.target_option.valid_attribute_p (new_node->decl, NULL,
 						    TREE_VALUE (attributes),
 						    0))
-	{
-	  input_location = saved_loc;
-	  continue;
-	}
+	return false;
 
       input_location = saved_loc;
       decl2_v = new_node->function_version ();
@@ -327,6 +331,7 @@ expand_target_clones (struct cgraph_node *node, bool definition)
   tree attributes = make_attribute ("target", "default",
 				    DECL_ATTRIBUTES (node->decl));
   DECL_ATTRIBUTES (node->decl) = attributes;
+  node->local.local = false;
   location_t saved_loc = input_location;
   input_location = DECL_SOURCE_LOCATION (node->decl);
   bool ret

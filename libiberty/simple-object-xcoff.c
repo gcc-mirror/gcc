@@ -138,15 +138,15 @@ struct external_syment
   union {
     struct {
       union {
-        /* The name of the symbol.  There is an implicit null character
-           after the end of the array.  */
-        char n_name[N_SYMNMLEN];
-        struct {
-          /* If n_zeroes is zero, n_offset is the offset the name from
-             the start of the string table.  */
-          unsigned char n_zeroes[4];
-          unsigned char n_offset[4];
-        } n;
+/* The name of the symbol.  There is an implicit null character
+   after the end of the array.  */
+	char n_name[N_SYMNMLEN];
+	struct {
+	  /* If n_zeroes is zero, n_offset is the offset the name from
+	     the start of the string table.  */
+	  unsigned char n_zeroes[4];
+	  unsigned char n_offset[4];
+	} n;
       } n;
 
       /* The symbol's value.  */
@@ -257,6 +257,8 @@ union external_auxent
 
 #define C_STAT		(3)
 #define C_FILE		(103)
+
+#define DBXMASK		0x80
 
 /* Private data for an simple_object_read.  */
 
@@ -403,7 +405,9 @@ simple_object_xcoff_find_sections (simple_object_read *sobj,
   unsigned int nscns;
   char *strtab;
   size_t strtab_size;
+  struct external_syment *symtab = NULL;
   unsigned int i;
+  off_t textptr = 0;
 
   scnhdr_size = u64 ? SCNHSZ64 : SCNHSZ32;
   scnbuf = XNEWVEC (unsigned char, scnhdr_size * ocr->nscns);
@@ -485,10 +489,118 @@ simple_object_xcoff_find_sections (simple_object_read *sobj,
 					      u.xcoff32.s_size));
 	}
 
+      if (strcmp (name, ".text") == 0)
+	textptr = scnptr;
       if (!(*pfn) (data, name, scnptr, size))
 	break;
     }
 
+  /* Special handling for .go_export CSECT. */
+  if (textptr != 0 && ocr->nsyms > 0)
+    {
+      unsigned char *sym, *aux;
+      const char *n_name;
+      unsigned long n_value, n_offset, n_zeroes, x_scnlen;
+
+      /* Read symbol table. */
+      symtab = XNEWVEC (struct external_syment, ocr->nsyms * SYMESZ);
+      if (!simple_object_internal_read (sobj->descriptor,
+					sobj->offset + ocr->symptr,
+					(unsigned char *)symtab,
+					ocr->nsyms * SYMESZ,
+					&errmsg, err))
+	{
+	  XDELETEVEC (symtab);
+	  XDELETEVEC (scnbuf);
+	  return NULL;
+	}
+
+      /* Search in symbol table if we have a ".go_export" symbol. */
+      for (i = 0; i < ocr->nsyms; ++i)
+	{
+	  sym = (unsigned char *)&symtab[i];
+
+	  if (symtab[i].n_sclass[0] & DBXMASK)
+	    {
+	      /* Skip debug symbols whose names are in stabs. */
+	      i += symtab[i].n_numaux[0];
+	      continue;
+	    }
+	  if (u64)
+	    {
+	      n_value = fetch_64 (sym + offsetof (struct external_syment,
+						  u.xcoff64.n_value));
+	      n_offset = fetch_32 (sym + offsetof (struct external_syment,
+						   u.xcoff64.n_offset));
+	    }
+	  else
+	    {
+	      /* ".go_export" is longer than N_SYMNMLEN */
+	      n_zeroes = fetch_32 (sym + offsetof (struct external_syment,
+						   u.xcoff32.n.n.n_zeroes));
+	      if (n_zeroes != 0)
+		{
+		  /* Skip auxiliary entries. */
+		  i += symtab[i].n_numaux[0];
+		  continue;
+		}
+	      n_value = fetch_32 (sym + offsetof (struct external_syment,
+						  u.xcoff32.n_value));
+	      n_offset = fetch_32 (sym + offsetof (struct external_syment,
+						   u.xcoff32.n.n.n_offset));
+	    }
+
+	  /* The real section name is found in the string table.  */
+	  if (strtab == NULL)
+	    {
+	      strtab = simple_object_xcoff_read_strtab (sobj,
+	  					        &strtab_size,
+							&errmsg, err);
+	      if (strtab == NULL)
+	        {
+                  XDELETEVEC (symtab);
+	          XDELETEVEC (scnbuf);
+		  return errmsg;
+	        }
+	    }
+
+	  if (n_offset >= strtab_size)
+            {
+	      XDELETEVEC (strtab);
+	      XDELETEVEC (symtab);
+	      XDELETEVEC (scnbuf);
+	      *err = 0;
+   	      return "section string index out of range";
+            }
+          n_name = strtab + n_offset;
+
+	  if (!strcmp(n_name, ".go_export"))
+	    {
+	      /* Found .go_export symbol, read auxiliary entry. */
+	      if (i + 1 >= ocr->nsyms)
+		break;
+
+	      aux = (unsigned char *)&symtab[i + 1];
+	      if (u64)
+		{
+		  x_scnlen = fetch_32 (aux + offsetof (union external_auxent,
+						       u.xcoff64.x_csect.x_scnlen_lo));
+		}
+	      else
+		{
+		  x_scnlen = fetch_32 (aux + offsetof (union external_auxent,
+						       u.xcoff32.x_csect.x_scnlen));
+		}
+	      (*pfn) (data, ".go_export", textptr + n_value, x_scnlen);
+	      break;
+	    }
+	  /* Skip auxiliary entries. */
+	  i += symtab[i].n_numaux[0];
+	}
+    }
+
+  if (symtab != NULL)
+    XDELETEVEC (symtab);
   if (strtab != NULL)
     XDELETEVEC (strtab);
   XDELETEVEC (scnbuf);

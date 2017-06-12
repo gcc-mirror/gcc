@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 2011-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 2011-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -185,6 +185,11 @@ package System.Dim.Mks is
         Second   => -3,
         Ampere   => -1,
         others   =>  0);
+
+   --  Note the type punning below. The Symbol is a single "ohm" character
+   --  encoded in UTF-8 (ce a9 in hexadecimal), but this file is not compiled
+   --  with -gnatW8, so we're treating the string literal as a two-character
+   --  String.
 
    subtype Electric_Resistance is Mks_Type
      with

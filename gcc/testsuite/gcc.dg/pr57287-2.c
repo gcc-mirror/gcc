@@ -26,7 +26,7 @@ int baz (void)
       if (!varseen)
 	varseen = 1;
 
-      jmp_buf *buf = bar ();  /* { dg-bogus "may be used uninitialized" "" } */
+      jmp_buf *buf = bar ();  /* { dg-bogus "may be used uninitialized" } */
       setjmp (*buf);
     }
 

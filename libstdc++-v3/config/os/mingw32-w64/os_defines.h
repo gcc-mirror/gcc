@@ -76,6 +76,8 @@
 
 #ifdef __x86_64__
 #define _GLIBCXX_LLP64 1
+// See libstdc++/69506
+#define _GLIBCXX_USE_WEAK_REF 0
 #endif
 
 // Enable use of GetModuleHandleEx (requires Windows XP/2003) in

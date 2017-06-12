@@ -9,5 +9,5 @@ void
 foo (void)
 {
   myprintf ("%d\n", 0UL); /* { dg-bogus "expects argument of type.*expects argument of type" } */
- /* { dg-warning "expects argument of type" "" { target *-*-* } 11 } */
+ /* { dg-warning "expects argument of type" "" { target *-*-* } .-1 } */
 }

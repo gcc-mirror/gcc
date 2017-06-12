@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -24,7 +24,6 @@
 ------------------------------------------------------------------------------
 
 with Atree;    use Atree;
-with Checks;   use Checks;
 with Einfo;    use Einfo;
 with Elists;   use Elists;
 with Errout;   use Errout;
@@ -63,6 +62,7 @@ with Stand;    use Stand;
 with Targparm; use Targparm;
 with Tbuild;   use Tbuild;
 with Uintp;    use Uintp;
+with Validsw;  use Validsw;
 
 package body Exp_Ch9 is
 
@@ -419,9 +419,6 @@ package body Exp_Ch9 is
    --  with the protection entry index in the Protected_Body_Subprogram or
    --  the Task_Body_Procedure of Spec_Id. The returned entity denotes formal
    --  parameter _E.
-
-   function Is_Exception_Safe (Subprogram : Node_Id) return Boolean;
-   --  Tell whether a given subprogram cannot raise an exception
 
    function Is_Potentially_Large_Family
      (Base_Index : Entity_Id;
@@ -2955,7 +2952,7 @@ package body Exp_Ch9 is
                              Ekind (Corresponding_Spec (N)) = E_Procedure;
             --  Indicates if N is a protected procedure body
 
-            Block_Decls   : List_Id;
+            Block_Decls   : List_Id := No_List;
             Try_Write     : Entity_Id;
             Desired_Comp  : Entity_Id;
             Decl          : Node_Id;
@@ -3888,30 +3885,28 @@ package body Exp_Ch9 is
       Pid       : Node_Id;
       N_Op_Spec : Node_Id) return Node_Id
    is
-      Loc         : constant Source_Ptr := Sloc (N);
-      Op_Spec     : Node_Id;
-      P_Op_Spec   : Node_Id;
-      Uactuals    : List_Id;
-      Pformal     : Node_Id;
-      Unprot_Call : Node_Id;
-      Sub_Body    : Node_Id;
+      Exc_Safe : constant Boolean := not Might_Raise (N);
+      --  True if N cannot raise an exception
+
+      Loc       : constant Source_Ptr := Sloc (N);
+      Op_Spec   : constant Node_Id := Specification (N);
+      P_Op_Spec : constant Node_Id :=
+                    Build_Protected_Sub_Specification (N, Pid, Protected_Mode);
+
+      Lock_Kind   : RE_Id;
       Lock_Name   : Node_Id;
       Lock_Stmt   : Node_Id;
+      Object_Parm : Node_Id;
+      Pformal     : Node_Id;
       R           : Node_Id;
       Return_Stmt : Node_Id := Empty;    -- init to avoid gcc 3 warning
       Pre_Stmts   : List_Id := No_List;  -- init to avoid gcc 3 warning
       Stmts       : List_Id;
-      Object_Parm : Node_Id;
-      Exc_Safe    : Boolean;
-      Lock_Kind   : RE_Id;
+      Sub_Body    : Node_Id;
+      Uactuals    : List_Id;
+      Unprot_Call : Node_Id;
 
    begin
-      Op_Spec := Specification (N);
-      Exc_Safe := Is_Exception_Safe (N);
-
-      P_Op_Spec :=
-        Build_Protected_Sub_Specification (N, Pid, Protected_Mode);
-
       --  Build a list of the formal parameters of the protected version of
       --  the subprogram to use as the actual parameters of the unprotected
       --  version.
@@ -5927,13 +5922,12 @@ package body Exp_Ch9 is
    --------------------------
 
    procedure Expand_Entry_Barrier (N : Node_Id; Ent : Entity_Id) is
-      Cond      : constant Node_Id   :=
-                    Condition (Entry_Body_Formal_Part (N));
+      Cond      : constant Node_Id   := Condition (Entry_Body_Formal_Part (N));
       Prot      : constant Entity_Id := Scope (Ent);
       Spec_Decl : constant Node_Id   := Parent (Prot);
-      Func      : Entity_Id          := Empty;
-      B_F       : Node_Id;
-      Body_Decl : Node_Id;
+
+      Func_Id : Entity_Id := Empty;
+      --  The entity of the barrier function
 
       function Is_Global_Entity (N : Node_Id) return Traverse_Result;
       --  Check whether entity in Barrier is external to protected type.
@@ -5966,7 +5960,7 @@ package body Exp_Ch9 is
                --  during expansion, it is ok. If expansion is not performed,
                --  then Func is Empty so this test cannot succeed.
 
-               if Scope (E) = Func then
+               if Scope (E) = Func_Id then
                   null;
 
                --  A protected call from a barrier to another object is ok
@@ -6112,6 +6106,13 @@ package body Exp_Ch9 is
 
       function Check_Pure_Barriers is new Traverse_Func (Is_Pure_Barrier);
 
+      --  Local variables
+
+      Cond_Id    : Entity_Id;
+      Entry_Body : Node_Id;
+      Func_Body  : Node_Id;
+      pragma Warnings (Off, Func_Body);
+
    --  Start of processing for Expand_Entry_Barrier
 
    begin
@@ -6130,20 +6131,20 @@ package body Exp_Ch9 is
       --  version of it because it is never called.
 
       if Expander_Active then
-         B_F  := Build_Barrier_Function (N, Ent, Prot);
-         Func := Barrier_Function (Ent);
-         Set_Corresponding_Spec (B_F, Func);
+         Func_Body := Build_Barrier_Function (N, Ent, Prot);
+         Func_Id   := Barrier_Function (Ent);
+         Set_Corresponding_Spec (Func_Body, Func_Id);
 
-         Body_Decl := Parent (Corresponding_Body (Spec_Decl));
+         Entry_Body := Parent (Corresponding_Body (Spec_Decl));
 
-         if Nkind (Parent (Body_Decl)) = N_Subunit then
-            Body_Decl := Corresponding_Stub (Parent (Body_Decl));
+         if Nkind (Parent (Entry_Body)) = N_Subunit then
+            Entry_Body := Corresponding_Stub (Parent (Entry_Body));
          end if;
 
-         Insert_Before_And_Analyze (Body_Decl, B_F);
+         Insert_Before_And_Analyze (Entry_Body, Func_Body);
 
          Set_Discriminals (Spec_Decl);
-         Set_Scope (Func, Scope (Prot));
+         Set_Scope (Func_Id, Scope (Prot));
 
       else
          Analyze_And_Resolve (Cond, Any_Boolean);
@@ -6167,20 +6168,25 @@ package body Exp_Ch9 is
       --  scope.
 
       if Is_Entity_Name (Cond) then
+         Cond_Id := Entity (Cond);
 
-         --  A small optimization of useless renamings. If the scope of the
-         --  entity of the condition is not the barrier function, then the
-         --  condition does not reference any of the generated renamings
-         --  within the function.
+         --  Perform a small optimization of simple barrier functions. If the
+         --  scope of the condition's entity is not the barrier function, then
+         --  the condition does not depend on any of the generated renamings.
+         --  If this is the case, eliminate the renamings as they are useless.
+         --  This optimization is not performed when the condition was folded
+         --  and validity checks are in effect because the original condition
+         --  may have produced at least one check that depends on the generated
+         --  renamings.
 
-         if Expander_Active and then Scope (Entity (Cond)) /= Func then
-            Set_Declarations (B_F, Empty_List);
+         if Expander_Active
+           and then Scope (Cond_Id) /= Func_Id
+           and then not Validity_Check_Operands
+         then
+            Set_Declarations (Func_Body, Empty_List);
          end if;
 
-         if Entity (Cond) = Standard_False
-              or else
-            Entity (Cond) = Standard_True
-         then
+         if Cond_Id = Standard_False or else Cond_Id = Standard_True then
             return;
 
          elsif Is_Simple_Barrier_Name (Cond) then
@@ -7509,13 +7515,17 @@ package body Exp_Ch9 is
 
          Cancel_Param := Make_Defining_Identifier (Loc, Name_uC);
 
-         --  Insert declaration of C in declarations of existing block
+         --  Insert the declaration of C in the declarations of the existing
+         --  block. The variable is initialized to something (True or False,
+         --  does not matter) to prevent CodePeer from complaining about a
+         --  possible read of an uninitialized variable.
 
          Prepend_To (Decls,
            Make_Object_Declaration (Loc,
              Defining_Identifier => Cancel_Param,
-             Object_Definition   =>
-               New_Occurrence_Of (Standard_Boolean, Loc)));
+             Object_Definition   => New_Occurrence_Of (Standard_Boolean, Loc),
+             Expression          => New_Occurrence_Of (Standard_False, Loc),
+             Has_Init_Expression => True));
 
          --  Remove and save the call to Call_Simple
 
@@ -8715,12 +8725,6 @@ package body Exp_Ch9 is
       --  to the internal body, for possible inlining later on. The source
       --  operation is invisible to the back-end and is never actually called.
 
-      function Discriminated_Size (Comp : Entity_Id) return Boolean;
-      --  If a component size is not static then a warning will be emitted
-      --  in Ravenscar or other restricted contexts. When a component is non-
-      --  static because of a discriminant constraint we can specialize the
-      --  warning by mentioning discriminants explicitly.
-
       procedure Expand_Entry_Declaration (Decl : Node_Id);
       --  Create the entry barrier and the procedure body for entry declaration
       --  Decl. All generated subprograms are added to Entry_Bodies_Array.
@@ -8747,63 +8751,6 @@ package body Exp_Ch9 is
             Set_Is_Inlined (Subp, False);
          end if;
       end Check_Inlining;
-
-      ------------------------
-      -- Discriminated_Size --
-      ------------------------
-
-      function Discriminated_Size (Comp : Entity_Id) return Boolean is
-         Typ   : constant Entity_Id := Etype (Comp);
-         Index : Node_Id;
-
-         function Non_Static_Bound (Bound : Node_Id) return Boolean;
-         --  Check whether the bound of an index is non-static and does denote
-         --  a discriminant, in which case any protected object of the type
-         --  will have a non-static size.
-
-         ----------------------
-         -- Non_Static_Bound --
-         ----------------------
-
-         function Non_Static_Bound (Bound : Node_Id) return Boolean is
-         begin
-            if Is_OK_Static_Expression (Bound) then
-               return False;
-
-            elsif Is_Entity_Name (Bound)
-              and then Present (Discriminal_Link (Entity (Bound)))
-            then
-               return False;
-
-            else
-               return True;
-            end if;
-         end Non_Static_Bound;
-
-      --  Start of processing for Discriminated_Size
-
-      begin
-         if not Is_Array_Type (Typ) then
-            return False;
-         end if;
-
-         if Ekind (Typ) = E_Array_Subtype then
-            Index := First_Index (Typ);
-            while Present (Index) loop
-               if Non_Static_Bound (Low_Bound (Index))
-                 or else Non_Static_Bound (High_Bound (Index))
-               then
-                  return False;
-               end if;
-
-               Next_Index (Index);
-            end loop;
-
-            return True;
-         end if;
-
-         return False;
-      end Discriminated_Size;
 
       ---------------------------
       -- Static_Component_Size --
@@ -9970,6 +9917,7 @@ package body Exp_Ch9 is
          declare
             Elmt : Elmt_Id;
             Op   : Entity_Id;
+            pragma Warnings (Off, Op);
 
          begin
             Elmt := First_Elmt (Primitive_Operations (Etype (Conc_Typ)));
@@ -12026,9 +11974,11 @@ package body Exp_Ch9 is
 
       --  Add the _Relative_Deadline component if a Relative_Deadline pragma is
       --  present. If we are using a restricted run time this component will
-      --  not be added (deadlines are not allowed by the Ravenscar profile).
+      --  not be added (deadlines are not allowed by the Ravenscar profile),
+      --  unless the task dispatching policy is EDF (for GNAT_Ravenscar_EDF
+      --  profile).
 
-      if not Restricted_Profile
+      if (not Restricted_Profile or else Task_Dispatching_Policy = 'E')
         and then Present (Taskdef)
         and then Has_Relative_Deadline_Pragma (Taskdef)
       then
@@ -13526,103 +13476,6 @@ package body Exp_Ch9 is
       end if;
    end Install_Private_Data_Declarations;
 
-   -----------------------
-   -- Is_Exception_Safe --
-   -----------------------
-
-   function Is_Exception_Safe (Subprogram : Node_Id) return Boolean is
-
-      function Has_Side_Effect (N : Node_Id) return Boolean;
-      --  Return True whenever encountering a subprogram call or raise
-      --  statement of any kind in the sequence of statements
-
-      ---------------------
-      -- Has_Side_Effect --
-      ---------------------
-
-      --  What is this doing buried two levels down in exp_ch9. It seems like a
-      --  generally useful function, and indeed there may be code duplication
-      --  going on here ???
-
-      function Has_Side_Effect (N : Node_Id) return Boolean is
-         Stmt : Node_Id;
-         Expr : Node_Id;
-
-         function Is_Call_Or_Raise (N : Node_Id) return Boolean;
-         --  Indicate whether N is a subprogram call or a raise statement
-
-         ----------------------
-         -- Is_Call_Or_Raise --
-         ----------------------
-
-         function Is_Call_Or_Raise (N : Node_Id) return Boolean is
-         begin
-            return Nkind_In (N, N_Procedure_Call_Statement,
-                                N_Function_Call,
-                                N_Raise_Statement,
-                                N_Raise_Constraint_Error,
-                                N_Raise_Program_Error,
-                                N_Raise_Storage_Error);
-         end Is_Call_Or_Raise;
-
-      --  Start of processing for Has_Side_Effect
-
-      begin
-         Stmt := N;
-         while Present (Stmt) loop
-            if Is_Call_Or_Raise (Stmt) then
-               return True;
-            end if;
-
-            --  An object declaration can also contain a function call or a
-            --  raise statement.
-
-            if Nkind (Stmt) = N_Object_Declaration then
-               Expr := Expression (Stmt);
-
-               if Present (Expr) and then Is_Call_Or_Raise (Expr) then
-                  return True;
-               end if;
-            end if;
-
-            Next (Stmt);
-         end loop;
-
-         return False;
-      end Has_Side_Effect;
-
-   --  Start of processing for Is_Exception_Safe
-
-   begin
-      --  When exceptions can't be propagated, the subprogram returns normally
-
-      if No_Exception_Handlers_Set then
-         return True;
-      end if;
-
-      --  If the checks handled by the back end are not disabled, we cannot
-      --  ensure that no exception will be raised.
-
-      if not Access_Checks_Suppressed (Empty)
-        or else not Discriminant_Checks_Suppressed (Empty)
-        or else not Range_Checks_Suppressed (Empty)
-        or else not Index_Checks_Suppressed (Empty)
-        or else Opt.Stack_Checking_Enabled
-      then
-         return False;
-      end if;
-
-      if Has_Side_Effect (First (Declarations (Subprogram)))
-        or else
-          Has_Side_Effect
-            (First (Statements (Handled_Statement_Sequence (Subprogram))))
-      then
-         return False;
-      else
-         return True;
-      end if;
-   end Is_Exception_Safe;
-
    ---------------------------------
    -- Is_Potentially_Large_Family --
    ---------------------------------
@@ -13820,6 +13673,46 @@ package body Exp_Ch9 is
          else
             Append_To (Args,
               New_Occurrence_Of (RTE (RE_Unspecified_Priority), Loc));
+         end if;
+
+         --  Deadline_Floor parameter for GNAT_Ravenscar_EDF runtimes
+
+         if Restricted_Profile and Task_Dispatching_Policy = 'E' then
+            Deadline_Floor : declare
+               Item : constant Node_Id :=
+                        Get_Rep_Item
+                          (Ptyp, Name_Deadline_Floor, Check_Parents => False);
+
+               Deadline : Node_Id;
+
+            begin
+               if Present (Item) then
+
+                  --  Pragma Deadline_Floor
+
+                  if Nkind (Item) = N_Pragma then
+                     Deadline :=
+                       Expression
+                         (First (Pragma_Argument_Associations (Item)));
+
+                  --  Attribute definition clause Deadline_Floor
+
+                  else
+                     pragma Assert
+                       (Nkind (Item) = N_Attribute_Definition_Clause);
+
+                     Deadline := Expression (Item);
+                  end if;
+
+                  Append_To (Args, Deadline);
+
+               --  Unusual case: default deadline
+
+               else
+                  Append_To (Args,
+                    New_Occurrence_Of (RTE (RE_Time_Span_Zero), Loc));
+               end if;
+            end Deadline_Floor;
          end if;
 
          --  Test for Compiler_Info parameter. This parameter allows entry body
@@ -14127,15 +14020,18 @@ package body Exp_Ch9 is
 
       --  Priority parameter. Set to Unspecified_Priority unless there is a
       --  Priority rep item, in which case we take the value from the rep item.
+      --  Not used on Ravenscar_EDF profile.
 
-      if Has_Rep_Item (Ttyp, Name_Priority, Check_Parents => False) then
-         Append_To (Args,
-           Make_Selected_Component (Loc,
-             Prefix        => Make_Identifier (Loc, Name_uInit),
-             Selector_Name => Make_Identifier (Loc, Name_uPriority)));
-      else
-         Append_To (Args,
-           New_Occurrence_Of (RTE (RE_Unspecified_Priority), Loc));
+      if not (Restricted_Profile and then Task_Dispatching_Policy = 'E') then
+         if Has_Rep_Item (Ttyp, Name_Priority, Check_Parents => False) then
+            Append_To (Args,
+              Make_Selected_Component (Loc,
+                Prefix        => Make_Identifier (Loc, Name_uInit),
+                Selector_Name => Make_Identifier (Loc, Name_uPriority)));
+         else
+            Append_To (Args,
+              New_Occurrence_Of (RTE (RE_Unspecified_Priority), Loc));
+         end if;
       end if;
 
       --  Optional Stack parameter
@@ -14231,7 +14127,7 @@ package body Exp_Ch9 is
            New_Occurrence_Of (RTE (RE_Unspecified_CPU), Loc));
       end if;
 
-      if not Restricted_Profile then
+      if not Restricted_Profile or else Task_Dispatching_Policy = 'E' then
 
          --  Deadline parameter. If no Relative_Deadline pragma is present,
          --  then the deadline is Time_Span_Zero. If a pragma is present, then
@@ -14255,6 +14151,9 @@ package body Exp_Ch9 is
             Append_To (Args,
               New_Occurrence_Of (RTE (RE_Time_Span_Zero), Loc));
          end if;
+      end if;
+
+      if not Restricted_Profile then
 
          --  Dispatching_Domain parameter. If no Dispatching_Domain rep item is
          --  present, then the dispatching domain is null. If a rep item is

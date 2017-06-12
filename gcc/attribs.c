@@ -690,3 +690,242 @@ make_attribute (const char *name, const char *arg_name, tree chain)
   attr = tree_cons (attr_name, attr_args, chain);
   return attr;
 }
+
+
+/* Common functions used for target clone support.  */
+
+/* Comparator function to be used in qsort routine to sort attribute
+   specification strings to "target".  */
+
+static int
+attr_strcmp (const void *v1, const void *v2)
+{
+  const char *c1 = *(char *const*)v1;
+  const char *c2 = *(char *const*)v2;
+  return strcmp (c1, c2);
+}
+
+/* ARGLIST is the argument to target attribute.  This function tokenizes
+   the comma separated arguments, sorts them and returns a string which
+   is a unique identifier for the comma separated arguments.   It also
+   replaces non-identifier characters "=,-" with "_".  */
+
+char *
+sorted_attr_string (tree arglist)
+{
+  tree arg;
+  size_t str_len_sum = 0;
+  char **args = NULL;
+  char *attr_str, *ret_str;
+  char *attr = NULL;
+  unsigned int argnum = 1;
+  unsigned int i;
+
+  for (arg = arglist; arg; arg = TREE_CHAIN (arg))
+    {
+      const char *str = TREE_STRING_POINTER (TREE_VALUE (arg));
+      size_t len = strlen (str);
+      str_len_sum += len + 1;
+      if (arg != arglist)
+	argnum++;
+      for (i = 0; i < strlen (str); i++)
+	if (str[i] == ',')
+	  argnum++;
+    }
+
+  attr_str = XNEWVEC (char, str_len_sum);
+  str_len_sum = 0;
+  for (arg = arglist; arg; arg = TREE_CHAIN (arg))
+    {
+      const char *str = TREE_STRING_POINTER (TREE_VALUE (arg));
+      size_t len = strlen (str);
+      memcpy (attr_str + str_len_sum, str, len);
+      attr_str[str_len_sum + len] = TREE_CHAIN (arg) ? ',' : '\0';
+      str_len_sum += len + 1;
+    }
+
+  /* Replace "=,-" with "_".  */
+  for (i = 0; i < strlen (attr_str); i++)
+    if (attr_str[i] == '=' || attr_str[i]== '-')
+      attr_str[i] = '_';
+
+  if (argnum == 1)
+    return attr_str;
+
+  args = XNEWVEC (char *, argnum);
+
+  i = 0;
+  attr = strtok (attr_str, ",");
+  while (attr != NULL)
+    {
+      args[i] = attr;
+      i++;
+      attr = strtok (NULL, ",");
+    }
+
+  qsort (args, argnum, sizeof (char *), attr_strcmp);
+
+  ret_str = XNEWVEC (char, str_len_sum);
+  str_len_sum = 0;
+  for (i = 0; i < argnum; i++)
+    {
+      size_t len = strlen (args[i]);
+      memcpy (ret_str + str_len_sum, args[i], len);
+      ret_str[str_len_sum + len] = i < argnum - 1 ? '_' : '\0';
+      str_len_sum += len + 1;
+    }
+
+  XDELETEVEC (args);
+  XDELETEVEC (attr_str);
+  return ret_str;
+}
+
+
+/* This function returns true if FN1 and FN2 are versions of the same function,
+   that is, the target strings of the function decls are different.  This assumes
+   that FN1 and FN2 have the same signature.  */
+
+bool
+common_function_versions (tree fn1, tree fn2)
+{
+  tree attr1, attr2;
+  char *target1, *target2;
+  bool result;
+
+  if (TREE_CODE (fn1) != FUNCTION_DECL
+      || TREE_CODE (fn2) != FUNCTION_DECL)
+    return false;
+
+  attr1 = lookup_attribute ("target", DECL_ATTRIBUTES (fn1));
+  attr2 = lookup_attribute ("target", DECL_ATTRIBUTES (fn2));
+
+  /* At least one function decl should have the target attribute specified.  */
+  if (attr1 == NULL_TREE && attr2 == NULL_TREE)
+    return false;
+
+  /* Diagnose missing target attribute if one of the decls is already
+     multi-versioned.  */
+  if (attr1 == NULL_TREE || attr2 == NULL_TREE)
+    {
+      if (DECL_FUNCTION_VERSIONED (fn1) || DECL_FUNCTION_VERSIONED (fn2))
+	{
+	  if (attr2 != NULL_TREE)
+	    {
+	      std::swap (fn1, fn2);
+	      attr1 = attr2;
+	    }
+	  error_at (DECL_SOURCE_LOCATION (fn2),
+		    "missing %<target%> attribute for multi-versioned %qD",
+		    fn2);
+	  inform (DECL_SOURCE_LOCATION (fn1),
+		  "previous declaration of %qD", fn1);
+	  /* Prevent diagnosing of the same error multiple times.  */
+	  DECL_ATTRIBUTES (fn2)
+	    = tree_cons (get_identifier ("target"),
+			 copy_node (TREE_VALUE (attr1)),
+			 DECL_ATTRIBUTES (fn2));
+	}
+      return false;
+    }
+
+  target1 = sorted_attr_string (TREE_VALUE (attr1));
+  target2 = sorted_attr_string (TREE_VALUE (attr2));
+
+  /* The sorted target strings must be different for fn1 and fn2
+     to be versions.  */
+  if (strcmp (target1, target2) == 0)
+    result = false;
+  else
+    result = true;
+
+  XDELETEVEC (target1);
+  XDELETEVEC (target2);
+
+  return result;
+}
+
+/* Return a new name by appending SUFFIX to the DECL name.  If make_unique
+   is true, append the full path name of the source file.  */
+
+char *
+make_unique_name (tree decl, const char *suffix, bool make_unique)
+{
+  char *global_var_name;
+  int name_len;
+  const char *name;
+  const char *unique_name = NULL;
+
+  name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
+
+  /* Get a unique name that can be used globally without any chances
+     of collision at link time.  */
+  if (make_unique)
+    unique_name = IDENTIFIER_POINTER (get_file_function_name ("\0"));
+
+  name_len = strlen (name) + strlen (suffix) + 2;
+
+  if (make_unique)
+    name_len += strlen (unique_name) + 1;
+  global_var_name = XNEWVEC (char, name_len);
+
+  /* Use '.' to concatenate names as it is demangler friendly.  */
+  if (make_unique)
+    snprintf (global_var_name, name_len, "%s.%s.%s", name, unique_name,
+	      suffix);
+  else
+    snprintf (global_var_name, name_len, "%s.%s", name, suffix);
+
+  return global_var_name;
+}
+
+/* Make a dispatcher declaration for the multi-versioned function DECL.
+   Calls to DECL function will be replaced with calls to the dispatcher
+   by the front-end.  Return the decl created.  */
+
+tree
+make_dispatcher_decl (const tree decl)
+{
+  tree func_decl;
+  char *func_name;
+  tree fn_type, func_type;
+  bool is_uniq = false;
+
+  if (TREE_PUBLIC (decl) == 0)
+    is_uniq = true;
+
+  func_name = make_unique_name (decl, "ifunc", is_uniq);
+
+  fn_type = TREE_TYPE (decl);
+  func_type = build_function_type (TREE_TYPE (fn_type),
+				   TYPE_ARG_TYPES (fn_type));
+  
+  func_decl = build_fn_decl (func_name, func_type);
+  XDELETEVEC (func_name);
+  TREE_USED (func_decl) = 1;
+  DECL_CONTEXT (func_decl) = NULL_TREE;
+  DECL_INITIAL (func_decl) = error_mark_node;
+  DECL_ARTIFICIAL (func_decl) = 1;
+  /* Mark this func as external, the resolver will flip it again if
+     it gets generated.  */
+  DECL_EXTERNAL (func_decl) = 1;
+  /* This will be of type IFUNCs have to be externally visible.  */
+  TREE_PUBLIC (func_decl) = 1;
+
+  return func_decl;  
+}
+
+/* Returns true if decl is multi-versioned and DECL is the default function,
+   that is it is not tagged with target specific optimization.  */
+
+bool
+is_function_default_version (const tree decl)
+{
+  if (TREE_CODE (decl) != FUNCTION_DECL
+      || !DECL_FUNCTION_VERSIONED (decl))
+    return false;
+  tree attr = lookup_attribute ("target", DECL_ATTRIBUTES (decl));
+  gcc_assert (attr);
+  attr = TREE_VALUE (TREE_VALUE (attr));
+  return (TREE_CODE (attr) == STRING_CST
+	  && strcmp (TREE_STRING_POINTER (attr), "default") == 0);
+}

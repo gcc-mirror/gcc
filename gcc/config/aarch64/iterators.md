@@ -101,7 +101,6 @@
 			     V2SF V4SF V2DF])
 
 ;; Vector Float modes, and DF.
-(define_mode_iterator VDQF_DF [V2SF V4SF V2DF DF])
 (define_mode_iterator VHSDF_DF [(V4HF "TARGET_SIMD_F16INST")
 				(V8HF "TARGET_SIMD_F16INST")
 				V2SF V4SF V2DF DF])
@@ -132,6 +131,10 @@
 ;; All vector modes suitable for moving, loading, and storing.
 (define_mode_iterator VALL_F16 [V8QI V16QI V4HI V8HI V2SI V4SI V2DI
 				V4HF V8HF V2SF V4SF V2DF])
+
+;; The VALL_F16 modes except the 128-bit 2-element ones.
+(define_mode_iterator VALL_F16_NO_V2Q [V8QI V16QI V4HI V8HI V2SI V4SI
+				V4HF V8HF V2SF V4SF])
 
 ;; All vector modes barring HF modes, plus DI.
 (define_mode_iterator VALLDI [V8QI V16QI V4HI V8HI V2SI V4SI V2DI V2SF V4SF V2DF DI])
@@ -746,11 +749,11 @@
 				    (DF   "to_128") (V2DF  "to_64")])
 
 ;; For certain vector-by-element multiplication instructions we must
-;; constrain the HI cases to use only V0-V15.  This is covered by
+;; constrain the 16-bit cases to use only V0-V15.  This is covered by
 ;; the 'x' constraint.  All other modes may use the 'w' constraint.
 (define_mode_attr h_con [(V2SI "w") (V4SI "w")
 			 (V4HI "x") (V8HI "x")
-			 (V4HF "w") (V8HF "w")
+			 (V4HF "x") (V8HF "x")
 			 (V2SF "w") (V4SF "w")
 			 (V2DF "w") (DF "w")])
 

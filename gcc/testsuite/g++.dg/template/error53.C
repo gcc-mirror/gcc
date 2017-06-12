@@ -10,4 +10,4 @@ void f()
 {
   S<1000> t;
   g(t);         // { dg-error "no matching" }
-}  // { dg-message "mismatched types 'long long int' and 'int'" "" { target *-*-* } 12 }
+}  // { dg-message "mismatched types 'long long int' and 'int'" "" { target *-*-* } .-1 }

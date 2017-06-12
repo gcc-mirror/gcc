@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,7 +29,6 @@ with Casing;   use Casing;
 with Csets;    use Csets;
 with Debug;    use Debug;
 with Einfo;    use Einfo;
-with Fname;    use Fname;
 with Lib;      use Lib;
 with Namet;    use Namet;
 with Nlists;   use Nlists;
@@ -4806,9 +4805,7 @@ package body Sprint is
             Ent : constant Entity_Id := Entity (N);
          begin
             if not In_Extended_Main_Source_Unit (Ent)
-              and then
-                Is_Predefined_File_Name
-                  (Unit_File_Name (Get_Source_Unit (Ent)))
+              and then In_Predefined_Unit (Ent)
             then
                --  Run-time routine name, output name with a preceding dollar
                --  making sure that we do not get a line split between them.

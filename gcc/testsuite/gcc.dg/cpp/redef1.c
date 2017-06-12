@@ -5,15 +5,14 @@
 
 #define foo bar
 #define /* x */ foo /* x */ bar /* x */
+/* { dg-bogus "redefined" "foo redefined"	{ target *-*-* } .-1 } */
+/* { dg-bogus "previous def" "foo prev def"	{ target *-*-* } .-3 } */
 
-#define quux(thud) a one and a thud and a two
-#define /**/ quux( thud ) /**/ a one and a /**/ thud /**/ and /**/ a two
-#define quux(thud) a one	and a thud and a 	two /* bah */
+#define quux(thud) a one and a thud and a two /* { dg-line quux_def_1 } */
+#define /**/ quux( thud ) /**/ a one and a /**/ thud /**/ and /**/ a two /* { dg-line quux_def_2 } */
+/* { dg-bogus "redefined" "quux redefined"	{ target *-*-* } quux_def_2 } */
+/* { dg-bogus "previous def" "quux prev def"	{ target *-*-* } quux_def_1 } */
 
-/* { dg-bogus "redefined" "foo redefined"	{ target *-*-* } 7 } */
-/* { dg-bogus "redefined" "quux redefined"	{ target *-*-* } 10 } */
-/* { dg-bogus "redefined" "quux redefined"	{ target *-*-* } 11 } */
-
-/* { dg-bogus "previous def" "foo prev def"	{ target *-*-* } 6 } */
-/* { dg-bogus "previous def" "quux prev def"	{ target *-*-* } 9 } */
-/* { dg-bogus "previous def" "quux prev def"	{ target *-*-* } 10 } */
+#define quux(thud) a one	and a thud and a 	two /* bah */ /* { dg-line quux_def_3 } */
+/* { dg-bogus "redefined" "quux redefined"	{ target *-*-* } quux_def_3 } */
+/* { dg-bogus "previous def" "quux prev def"	{ target *-*-* } quux_def_2 } */

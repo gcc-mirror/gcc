@@ -517,8 +517,16 @@ ifeq ($(strip $(filter-out powerpc% wrs vxworks vxworksspe vxworks7 vxworks7spe,
 
   ifeq ($(strip $(filter-out e500%, $(target_alias))),)
      ARCH_STR=e500
+     # gcc config translates the target e500v2-wrs-vxworks to
+     # powerpc-wrs-vxworksspe. Let's keep the original alias here when
+     # generating s-oscons.ads.
+     target=$(target_alias)
   else
-     ARCH_STR=ppc
+     ifeq ($(strip $(filter-out powerpc64, $(target_cpu))),)
+        ARCH_STR=ppc64
+     else
+        ARCH_STR=ppc
+     endif
   endif
 
   ifeq ($(strip $(filter-out vxworks7%, $(target_os))),)
@@ -622,8 +630,7 @@ ifeq ($(strip $(filter-out powerpc% wrs vxworks vxworksspe vxworks7 vxworks7spe,
           system.ads<system-vxworks-ppc.ads
         endif
       endif
-      EXTRA_GNATRTL_NONTASKING_OBJS=i-vxinco.o i-vxwork.o i-vxwoio.o
-      EXTRA_GNATRTL_TASKING_OBJS=s-vxwork.o s-vxwext.o
+      EXTRA_GNATRTL_NONTASKING_OBJS+=i-vxinco.o i-vxwork.o i-vxwoio.o
     endif
   endif
 
@@ -645,10 +652,14 @@ ifeq ($(strip $(filter-out powerpc% wrs vxworks vxworksspe vxworks7 vxworks7spe,
 endif
 
 # PowerPC and e500v2 VxWorks 653
-ifeq ($(strip $(filter-out powerpc% wrs vxworksae,$(target_cpu) $(target_vendor) $(target_os))),)
+ifeq ($(strip $(filter-out powerpc% wrs vxworksae vxworksaespe,$(target_cpu) $(target_vendor) $(target_os))),)
 
   ifeq ($(strip $(filter-out e500%, $(target_alias))),)
      ARCH_STR=e500
+     # gcc config translates the target e500v2-wrs-vxworks to
+     # powerpc-wrs-vxworksspe. Let's keep the original alias here when
+     # generating s-oscons.ads.
+     target=$(target_alias)
   else
      ARCH_STR=ppc
   endif
@@ -1734,7 +1745,7 @@ ifeq ($(strip $(filter-out rtems%,$(target_os))),)
   s-parame.adb<s-parame-rtems.adb \
   s-taprop.adb<s-taprop-posix.adb \
   s-taspri.ads<s-taspri-posix.ads \
-  s-tpopsp.adb<s-tpopsp-rtems.adb \
+  s-tpopsp.adb<s-tpopsp-tls.adb \
   s-stchop.adb<s-stchop-rtems.adb \
   s-interr.adb<s-interr-vxworks.adb
 endif
@@ -1871,12 +1882,7 @@ ifeq ($(strip $(filter-out mips% linux%,$(target_cpu) $(target_os))),)
   s-taspri.ads<s-taspri-posix-noaltstack.ads \
   s-tpopsp.adb<s-tpopsp-posix-foreign.adb \
   g-sercom.adb<g-sercom-linux.adb \
-
-  ifeq ($(strip $(filter-out %el,$(target_cpu))),)
-    LIBGNAT_TARGET_PAIRS += system.ads<system-linux-mipsel.ads
-  else
-    LIBGNAT_TARGET_PAIRS += system.ads<system-linux-mips.ads
-  endif
+  system.ads<system-linux-mips.ads
 
   TOOLS_TARGET_PAIRS =  \
     mlib-tgt-specific.adb<mlib-tgt-specific-linux.adb \
@@ -1956,16 +1962,13 @@ ifeq ($(strip $(filter-out arm% linux-gnueabi%,$(target_cpu) $(target_os))),)
   s-taspri.ads<s-taspri-posix-noaltstack.ads \
   s-tpopsp.adb<s-tpopsp-posix-foreign.adb \
   $(ATOMICS_TARGET_PAIRS) \
-  $(ATOMICS_BUILTINS_TARGET_PAIRS)
+  $(ATOMICS_BUILTINS_TARGET_PAIRS) \
+  system.ads<system-linux-arm.ads
 
   ifeq ($(strip $(filter-out arm%b,$(target_cpu))),)
     EH_MECHANISM=
-    LIBGNAT_TARGET_PAIRS += \
-    system.ads<system-linux-armeb.ads
   else
     EH_MECHANISM=-arm
-    LIBGNAT_TARGET_PAIRS += \
-    system.ads<system-linux-arm.ads
   endif
 
   TOOLS_TARGET_PAIRS =  \
@@ -2411,30 +2414,18 @@ endif
 
 ifeq ($(EH_MECHANISM),-gcc)
   LIBGNAT_TARGET_PAIRS += \
-    a-exexpr.adb<a-exexpr-gcc.adb \
-    s-excmac.ads<s-excmac-gcc.ads
+    s-excmac.ads<s-excmac-gcc.ads \
+    s-excmac.adb<s-excmac-gcc.adb
   EXTRA_LIBGNAT_OBJS+=raise-gcc.o
   EXTRA_GNATRTL_NONTASKING_OBJS+=g-cppexc.o s-excmac.o
 endif
 
 ifeq ($(EH_MECHANISM),-arm)
   LIBGNAT_TARGET_PAIRS += \
-    a-exexpr.adb<a-exexpr-gcc.adb \
-    s-excmac.ads<s-excmac-arm.ads
+    s-excmac.ads<s-excmac-arm.ads \
+    s-excmac.adb<s-excmac-arm.adb
   EXTRA_LIBGNAT_OBJS+=raise-gcc.o
   EXTRA_GNATRTL_NONTASKING_OBJS+=g-cppexc.o s-excmac.o
-endif
-
-# Use the Ada 2005 version of Ada.Exceptions by default, unless specified
-# explicitly already. The base files (a-except.ad?) are used only for building
-# the compiler and other basic tools.
-# These base versions lack Ada 2005 additions which would cause bootstrap
-# problems if included in the compiler and other basic tools.
-
-ifeq ($(filter a-except%,$(LIBGNAT_TARGET_PAIRS)),)
-  LIBGNAT_TARGET_PAIRS += \
-    a-except.ads<a-except-2005.ads \
-    a-except.adb<a-except-2005.adb
 endif
 
 # Configuration of host tools
@@ -2489,7 +2480,6 @@ ADA_EXCLUDE_SRCS =\
   g-altive.ads g-alveop.adb g-alveop.ads g-alvety.ads g-alvevi.ads \
   g-intpri.ads g-regist.adb g-regist.ads g-sse.ads    g-ssvety.ads \
   i-vxinco.adb i-vxinco.ads i-vxwoio.adb i-vxwoio.ads i-vxwork.ads \
-  i-bit_types.ads \
   s-bb.ads     s-bbbosu.ads s-bbcaco.ads s-bbcppr.ads s-bbexti.adb \
   s-bbexti.ads s-bbinte.adb s-bbinte.ads s-bbprot.adb s-bbprot.ads \
   s-bbsle3.ads s-bbsuer.ads s-bbsule.ads s-bbthqu.adb s-bbthqu.ads \
@@ -2501,8 +2491,7 @@ ADA_EXCLUDE_SRCS =\
   s-memcom.adb s-memcom.ads s-memmov.adb s-memmov.ads s-memset.adb \
   s-memset.ads s-mufalo.adb s-mufalo.ads s-musplo.adb s-musplo.ads \
   s-sam4.ads   s-sopco3.adb s-sopco3.ads s-sopco4.adb s-sopco4.ads \
-  s-sopco5.adb s-sopco5.ads s-stchop.ads s-stchop.adb \
-  s-stm32.ads \
+  s-sopco5.adb s-sopco5.ads s-stchop.ads s-stchop.adb s-stm32.ads \
   s-strcom.adb s-strcom.ads s-thread.ads \
   s-vxwexc.adb s-vxwexc.ads s-vxwext.adb s-vxwext.ads \
   s-win32.ads  s-winext.ads

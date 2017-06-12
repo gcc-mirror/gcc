@@ -1,0 +1,43 @@
+#   Copyright (C) 2000-2017 Free Software Foundation, Inc.
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+# Various utilities for scanning tree dump output, used by gcc-dg.exp and
+# g++-dg.exp.
+
+load_lib scandump.exp
+
+# Utility for scanning compiler result, invoked via dg-final.
+# Call pass if pattern is present, otherwise fail.
+#
+# Argument 0 is the regexp to match
+# Argument 1 is the name of the dumped lang pass
+# Argument 2 handles expected failures and the like
+proc scan-lang-dump { args } {
+
+    if { [llength $args] < 2 } {
+	error "scan-tree-dump: too few arguments"
+	return
+    }
+    if { [llength $args] > 3 } {
+	error "scan-tree-dump: too many arguments"
+	return
+    }
+    if { [llength $args] >= 3 } {
+	scan-dump "lang" [lindex $args 0] "\[0-9\]\[0-9\]\[0-9\]l.[lindex $args 1]" [lindex $args 2]
+    } else {
+	scan-dump "lang" [lindex $args 0] "\[0-9\]\[0-9\]\[0-9\]l.[lindex $args 1]"
+    }
+}

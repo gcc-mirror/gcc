@@ -43,6 +43,9 @@ template<typename T>
 void test01()
 {
   do_test<std::error_code>();
+#if __cplusplus > 201402L
+  do_test<std::error_condition>();
+#endif
 }
 
 int main()

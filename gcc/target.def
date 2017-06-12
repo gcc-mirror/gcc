@@ -3660,6 +3660,16 @@ and uses a multiple of @code{BRANCH_COST} otherwise.",
 unsigned int, (edge e),
 default_max_noce_ifcvt_seq_cost)
 
+/* Return true if the given instruction sequence is a good candidate
+   as a replacement for the if-convertible sequence.  */
+DEFHOOK
+(noce_conversion_profitable_p,
+ "This hook returns true if the instruction sequence @code{seq} is a good\n\
+candidate as a replacement for the if-convertible sequence described in\n\
+@code{if_info}.",
+bool, (rtx_insn *seq, struct noce_if_info *if_info),
+default_noce_conversion_profitable_p)
+
 /* Permit speculative instructions in delay slots during delayed-branch 
    scheduling.  */
 DEFHOOK
@@ -5384,6 +5394,18 @@ The default is four for machines with a @code{casesi} instruction and\n\
 five otherwise.  This is best for most machines.",
  unsigned int, (void),
  default_case_values_threshold)
+
+/* Optional callback to advise the target to compute the frame layout.  */
+DEFHOOK
+(compute_frame_layout,
+ "This target hook is called once each time the frame layout needs to be\n\
+recalculated.  The calculations can be cached by the target and can then\n\
+be used by @code{INITIAL_ELIMINATION_OFFSET} instead of re-computing the\n\
+layout on every invocation of that hook.  This is particularly useful\n\
+for targets that have an expensive frame layout function.  Implementing\n\
+this callback is optional.",
+ void, (void),
+ hook_void_void)
 
 /* Return true if a function must have and use a frame pointer.  */
 DEFHOOK

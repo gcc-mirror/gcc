@@ -172,6 +172,7 @@ ubsan_instrument_shift (location_t loc, enum tree_code code,
   /* In case we have a SAVE_EXPR in a conditional context, we need to
      make sure it gets evaluated before the condition.  */
   t = fold_build2 (COMPOUND_EXPR, TREE_TYPE (t), unshare_expr (op0), t);
+  t = fold_build2 (COMPOUND_EXPR, TREE_TYPE (t), unshare_expr (op1), t);
 
   enum sanitize_code recover_kind = SANITIZE_SHIFT_EXPONENT;
   tree else_t = void_node;
@@ -458,17 +459,26 @@ ubsan_maybe_instrument_reference_or_call (location_t loc, tree op, tree ptype,
   return fold_build2 (COMPOUND_EXPR, TREE_TYPE (op), call, op);
 }
 
-/* Instrument a NOP_EXPR to REFERENCE_TYPE if needed.  */
+/* Instrument a NOP_EXPR to REFERENCE_TYPE or INTEGER_CST with REFERENCE_TYPE
+   type if needed.  */
 
 void
-ubsan_maybe_instrument_reference (tree stmt)
+ubsan_maybe_instrument_reference (tree *stmt_p)
 {
-  tree op = TREE_OPERAND (stmt, 0);
+  tree stmt = *stmt_p;
+  tree op = stmt;
+  if (TREE_CODE (stmt) == NOP_EXPR)
+    op = TREE_OPERAND (stmt, 0);
   op = ubsan_maybe_instrument_reference_or_call (EXPR_LOCATION (stmt), op,
 						 TREE_TYPE (stmt),
 						 UBSAN_REF_BINDING);
   if (op)
-    TREE_OPERAND (stmt, 0) = op;
+    {
+      if (TREE_CODE (stmt) == NOP_EXPR) 
+	TREE_OPERAND (stmt, 0) = op;
+      else
+	*stmt_p = op;
+    }
 }
 
 /* Instrument a CALL_EXPR to a method if needed.  */

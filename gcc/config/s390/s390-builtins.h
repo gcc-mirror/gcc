@@ -145,6 +145,8 @@ extern const unsigned int opflags_builtin[S390_BUILTIN_MAX + 1];
 extern const unsigned int
   bflags_overloaded_builtin[S390_OVERLOADED_BUILTIN_MAX + 1];
 extern const unsigned int
+  bflags_overloaded_builtin_var[S390_OVERLOADED_BUILTIN_VAR_MAX + 1];
+extern const unsigned int
   opflags_overloaded_builtin_var[S390_OVERLOADED_BUILTIN_VAR_MAX + 1];
 
 static inline unsigned int

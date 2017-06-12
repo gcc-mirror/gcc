@@ -92,12 +92,16 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	   typename _Alloc = std::allocator<_Key> >
     class set
     {
+#ifdef _GLIBCXX_CONCEPT_CHECKS
       // concept requirements
-      typedef typename _Alloc::value_type                   _Alloc_value_type;
+      typedef typename _Alloc::value_type		_Alloc_value_type;
+# if __cplusplus < 201103L
       __glibcxx_class_requires(_Key, _SGIAssignableConcept)
+# endif
       __glibcxx_class_requires4(_Compare, bool, _Key, _Key,
 				_BinaryFunctionConcept)
       __glibcxx_class_requires2(_Key, _Alloc_value_type, _SameTypeConcept)
+#endif
 
     public:
       // typedefs:
@@ -123,19 +127,19 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     public:
       //@{
       ///  Iterator-related typedefs.
-      typedef typename _Alloc_traits::pointer		    pointer;
-      typedef typename _Alloc_traits::const_pointer	    const_pointer;
-      typedef typename _Alloc_traits::reference		    reference;
-      typedef typename _Alloc_traits::const_reference	    const_reference;
+      typedef typename _Alloc_traits::pointer		 pointer;
+      typedef typename _Alloc_traits::const_pointer	 const_pointer;
+      typedef typename _Alloc_traits::reference		 reference;
+      typedef typename _Alloc_traits::const_reference	 const_reference;
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // DR 103. set::iterator is required to be modifiable,
       // but this allows modification of keys.
-      typedef typename _Rep_type::const_iterator            iterator;
-      typedef typename _Rep_type::const_iterator            const_iterator;
-      typedef typename _Rep_type::const_reverse_iterator    reverse_iterator;
+      typedef typename _Rep_type::const_iterator	 iterator;
+      typedef typename _Rep_type::const_iterator	 const_iterator;
+      typedef typename _Rep_type::const_reverse_iterator reverse_iterator;
       typedef typename _Rep_type::const_reverse_iterator const_reverse_iterator;
-      typedef typename _Rep_type::size_type                 size_type;
-      typedef typename _Rep_type::difference_type           difference_type;
+      typedef typename _Rep_type::size_type		 size_type;
+      typedef typename _Rep_type::difference_type	 difference_type;
       //@}
 
 #if __cplusplus > 201402L
@@ -195,7 +199,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	    const _Compare& __comp,
 	    const allocator_type& __a = allocator_type())
 	: _M_t(__comp, _Key_alloc_type(__a))
-        { _M_t._M_insert_unique(__first, __last); }
+	{ _M_t._M_insert_unique(__first, __last); }
 
       /**
        *  @brief  %Set copy constructor.
@@ -254,10 +258,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       /// Allocator-extended range constructor.
       template<typename _InputIterator>
-        set(_InputIterator __first, _InputIterator __last,
+	set(_InputIterator __first, _InputIterator __last,
 	    const allocator_type& __a)
 	: _M_t(_Compare(), _Key_alloc_type(__a))
-        { _M_t._M_insert_unique(__first, __last); }
+	{ _M_t._M_insert_unique(__first, __last); }
 
       /**
        *  The dtor only erases the elements, and note that if the elements

@@ -32,6 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-inline.h"
 #include "ubsan.h"
 #include "gimple-fold.h"
+#include "timevar.h"
 
 static bool verify_constant (tree, bool, bool *, bool *);
 #define VERIFY_CONSTANT(X)						\
@@ -209,16 +210,17 @@ is_valid_constexpr_fn (tree fun, bool complain)
 	    }
 	}
 
-      if (DECL_NONSTATIC_MEMBER_FUNCTION_P (fun)
+      /* C++14 DR 1684 removed this restriction.  */
+      if (cxx_dialect < cxx14
+	  && DECL_NONSTATIC_MEMBER_FUNCTION_P (fun)
 	  && !CLASSTYPE_LITERAL_P (DECL_CONTEXT (fun)))
 	{
 	  ret = false;
-	  if (complain)
-	    {
-	      error ("enclosing class of constexpr non-static member "
-		     "function %q+#D is not a literal type", fun);
-	      explain_non_literal_class (DECL_CONTEXT (fun));
-	    }
+	  if (complain
+	      && pedwarn (DECL_SOURCE_LOCATION (fun), OPT_Wpedantic,
+			  "enclosing class of constexpr non-static member "
+			  "function %q+#D is not a literal type", fun))
+	    explain_non_literal_class (DECL_CONTEXT (fun));
 	}
     }
   else if (CLASSTYPE_VBASECLASSES (DECL_CONTEXT (fun)))
@@ -1478,7 +1480,8 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
 	  else
 	    op = build1 (INDIRECT_REF, TREE_TYPE (TREE_TYPE (op)), op);
 	  tree set = build2 (MODIFY_EXPR, TREE_TYPE (op), op, init);
-	  return cxx_eval_constant_expression (ctx, set, lval,
+	  new_ctx.call = &new_call;
+	  return cxx_eval_constant_expression (&new_ctx, set, lval,
 					       non_constant_p, overflow_p);
 	}
     }
@@ -1496,7 +1499,7 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
     }
 
   /* If in direct recursive call, optimize definition search.  */
-  if (ctx && ctx->call && ctx->call->fundef->decl == fun)
+  if (ctx && ctx->call && ctx->call->fundef && ctx->call->fundef->decl == fun)
     new_call.fundef = ctx->call->fundef;
   else
     {
@@ -1715,8 +1718,13 @@ reduced_constant_expression_p (tree t)
       /* And we need to handle PTRMEM_CST wrapped in a CONSTRUCTOR.  */
       tree elt; unsigned HOST_WIDE_INT idx;
       FOR_EACH_CONSTRUCTOR_VALUE (CONSTRUCTOR_ELTS (t), idx, elt)
-	if (!reduced_constant_expression_p (elt))
-	  return false;
+	{
+	  if (!elt)
+	    /* We're in the middle of initializing this element.  */
+	    return false;
+	  if (!reduced_constant_expression_p (elt))
+	    return false;
+	}
       return true;
 
     default:
@@ -2637,8 +2645,16 @@ verify_ctor_sanity (const constexpr_ctx *ctx, tree type)
   /* We used to check that ctx->ctor was empty, but that isn't the case when
      the object is zero-initialized before calling the constructor.  */
   if (ctx->object)
-    gcc_assert (same_type_ignoring_top_level_qualifiers_p
-		(type, TREE_TYPE (ctx->object)));
+    {
+      tree otype = TREE_TYPE (ctx->object);
+      gcc_assert (same_type_ignoring_top_level_qualifiers_p (type, otype)
+		  /* Handle flexible array members.  */
+		  || (TREE_CODE (otype) == ARRAY_TYPE
+		      && TYPE_DOMAIN (otype) == NULL_TREE
+		      && TREE_CODE (type) == ARRAY_TYPE
+		      && (same_type_ignoring_top_level_qualifiers_p
+			  (TREE_TYPE (type), TREE_TYPE (otype)))));
+    }
   gcc_assert (!ctx->object || !DECL_P (ctx->object)
 	      || *(ctx->values->get (ctx->object)) == ctx->ctor);
 }
@@ -3152,12 +3168,10 @@ cxx_eval_indirect_ref (const constexpr_ctx *ctx, tree t,
   if (*non_constant_p)
     return t;
 
-  /* If we're pulling out the value of an empty base, make sure
-     that the whole object is constant and then return an empty
+  /* If we're pulling out the value of an empty base, just return an empty
      CONSTRUCTOR.  */
   if (empty_base && !lval)
     {
-      VERIFY_CONSTANT (r);
       r = build_constructor (TREE_TYPE (t), NULL);
       TREE_CONSTANT (r) = true;
     }
@@ -3725,8 +3739,9 @@ cxx_eval_statement_list (const constexpr_ctx *ctx, tree t,
 {
   tree_stmt_iterator i;
   tree local_target;
-  /* In a statement-expression we want to return the last value.  */
-  tree r = NULL_TREE;
+  /* In a statement-expression we want to return the last value.
+     For empty statement expression return void_node.  */
+  tree r = void_node;
   if (!jump_target)
     {
       local_target = NULL_TREE;
@@ -3824,6 +3839,38 @@ cxx_eval_switch_expr (const constexpr_ctx *ctx, tree t,
   if (breaks (jump_target) || switches (jump_target))
     *jump_target = NULL_TREE;
   return NULL_TREE;
+}
+
+/* Find the object of TYPE under initialization in CTX.  */
+
+static tree
+lookup_placeholder (const constexpr_ctx *ctx, bool lval, tree type)
+{
+  if (!ctx)
+    return NULL_TREE;
+
+  /* We could use ctx->object unconditionally, but using ctx->ctor when we
+     can is a minor optimization.  */
+  if (!lval && ctx->ctor && same_type_p (TREE_TYPE (ctx->ctor), type))
+    return ctx->ctor;
+
+  if (!ctx->object)
+    return NULL_TREE;
+
+  /* Since an object cannot have a field of its own type, we can search outward
+     from ctx->object to find the unique containing object of TYPE.  */
+  tree ob = ctx->object;
+  while (ob)
+    {
+      if (same_type_ignoring_top_level_qualifiers_p (TREE_TYPE (ob), type))
+	break;
+      if (handled_component_p (ob))
+	ob = TREE_OPERAND (ob, 0);
+      else
+	ob = NULL_TREE;
+    }
+
+  return ob;
 }
 
 /* Attempt to reduce the expression T to a constant value.
@@ -4352,7 +4399,8 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 	if (TREE_CODE (op) == PTRMEM_CST && tcode == NOP_EXPR)
 	  {
 	    if (same_type_ignoring_top_level_qualifiers_p (type,
-							   TREE_TYPE (op)))
+							   TREE_TYPE (op))
+		|| can_convert_qual (type, op))
 	      return cp_fold_convert (type, op);
 	    else
 	      {
@@ -4467,27 +4515,15 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
       break;
 
     case PLACEHOLDER_EXPR:
-      if (!ctx || !ctx->ctor || (lval && !ctx->object)
-	  || !(same_type_ignoring_top_level_qualifiers_p
-	       (TREE_TYPE (t), TREE_TYPE (ctx->ctor))))
-	{
-	  /* A placeholder without a referent.  We can get here when
-	     checking whether NSDMIs are noexcept, or in massage_init_elt;
-	     just say it's non-constant for now.  */
-	  gcc_assert (ctx->quiet);
-	  *non_constant_p = true;
-	  break;
-	}
-      else
-	{
-	  /* Use of the value or address of the current object.  We could
-	     use ctx->object unconditionally, but using ctx->ctor when we
-	     can is a minor optimization.  */
-	  tree ctor = lval ? ctx->object : ctx->ctor;
-	  return cxx_eval_constant_expression
-	    (ctx, ctor, lval,
-	     non_constant_p, overflow_p);
-	}
+      /* Use of the value or address of the current object.  */
+      if (tree ctor = lookup_placeholder (ctx, lval, TREE_TYPE (t)))
+	return cxx_eval_constant_expression (ctx, ctor, lval,
+					     non_constant_p, overflow_p);
+      /* A placeholder without a referent.  We can get here when
+	 checking whether NSDMIs are noexcept, or in massage_init_elt;
+	 just say it's non-constant for now.  */
+      gcc_assert (ctx->quiet);
+      *non_constant_p = true;
       break;
 
     case EXIT_EXPR:
@@ -4573,6 +4609,8 @@ static tree
 cxx_eval_outermost_constant_expr (tree t, bool allow_non_constant,
 				  bool strict = true, tree object = NULL_TREE)
 {
+  auto_timevar time (TV_CONSTEXPR);
+
   bool non_constant_p = false;
   bool overflow_p = false;
   hash_map<tree,tree> map;
@@ -5259,7 +5297,7 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict,
       {
         tree x = TREE_OPERAND (t, 0);
         STRIP_NOPS (x);
-        if (is_this_parameter (x))
+        if (is_this_parameter (x) && !is_capture_proxy (x))
 	  {
 	    if (DECL_CONTEXT (x)
 		&& !DECL_DECLARED_CONSTEXPR_P (DECL_CONTEXT (x)))

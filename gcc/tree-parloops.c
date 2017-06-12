@@ -2040,16 +2040,20 @@ create_parallel_loop (struct loop *loop, tree loop_fn, tree data,
   tree cvar, cvar_init, initvar, cvar_next, cvar_base, type;
   edge exit, nexit, guard, end, e;
 
-  /* Prepare the GIMPLE_OMP_PARALLEL statement.  */
   if (oacc_kernels_p)
     {
-      tree clause = build_omp_clause (loc, OMP_CLAUSE_NUM_GANGS);
-      OMP_CLAUSE_NUM_GANGS_EXPR (clause)
-	= build_int_cst (integer_type_node, n_threads);
-      oacc_set_fn_attrib (cfun->decl, clause, true, NULL);
+      gcc_checking_assert (lookup_attribute ("oacc kernels",
+					     DECL_ATTRIBUTES (cfun->decl)));
+      /* Indicate to later processing that this is a parallelized OpenACC
+	 kernels construct.  */
+      DECL_ATTRIBUTES (cfun->decl)
+	= tree_cons (get_identifier ("oacc kernels parallelized"),
+		     NULL_TREE, DECL_ATTRIBUTES (cfun->decl));
     }
   else
     {
+      /* Prepare the GIMPLE_OMP_PARALLEL statement.  */
+
       basic_block bb = loop_preheader_edge (loop)->src;
       basic_block paral_bb = single_pred (bb);
       gsi = gsi_last_bb (paral_bb);
@@ -2151,7 +2155,8 @@ create_parallel_loop (struct loop *loop, tree loop_fn, tree data,
 
   /* Emit GIMPLE_OMP_FOR.  */
   if (oacc_kernels_p)
-    /* In combination with the NUM_GANGS on the parallel.  */
+    /* Parallelized OpenACC kernels constructs use gang parallelism.  See also
+       omp-offload.c:execute_oacc_device_lower.  */
     t = build_omp_clause (loc, OMP_CLAUSE_GANG);
   else
     {
@@ -2473,7 +2478,7 @@ build_new_reduction (reduction_info_table_type *reduction_list,
     {
       fprintf (dump_file,
 	       "Detected reduction. reduction stmt is:\n");
-      print_gimple_stmt (dump_file, reduc_stmt, 0, 0);
+      print_gimple_stmt (dump_file, reduc_stmt, 0);
       fprintf (dump_file, "\n");
     }
 
@@ -2538,7 +2543,7 @@ gather_scalar_reductions (loop_p loop, reduction_info_table_type *reduction_list
 	continue;
 
       gimple *reduc_stmt
-	= vect_force_simple_reduction (simple_loop_info, phi, true,
+	= vect_force_simple_reduction (simple_loop_info, phi,
 				       &double_reduc, true);
       if (!reduc_stmt)
 	continue;
@@ -2584,7 +2589,7 @@ gather_scalar_reductions (loop_p loop, reduction_info_table_type *reduction_list
 
 	      gimple *inner_reduc_stmt
 		= vect_force_simple_reduction (simple_loop_info, inner_phi,
-					       true, &double_reduc, true);
+					       &double_reduc, true);
 	      gcc_assert (!double_reduc);
 	      if (inner_reduc_stmt == NULL)
 		continue;
@@ -2719,9 +2724,9 @@ try_create_reduction_list (loop_p loop,
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    {
 	      fprintf (dump_file, "phi is ");
-	      print_gimple_stmt (dump_file, phi, 0, 0);
+	      print_gimple_stmt (dump_file, phi, 0);
 	      fprintf (dump_file, "arg of phi to exit:   value ");
-	      print_generic_expr (dump_file, val, 0);
+	      print_generic_expr (dump_file, val);
 	      fprintf (dump_file, " used outside loop\n");
 	      fprintf (dump_file,
 		       "  checking if it is part of reduction pattern:\n");
@@ -2762,9 +2767,9 @@ try_create_reduction_list (loop_p loop,
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    {
 	      fprintf (dump_file, "reduction phi is  ");
-	      print_gimple_stmt (dump_file, red->reduc_phi, 0, 0);
+	      print_gimple_stmt (dump_file, red->reduc_phi, 0);
 	      fprintf (dump_file, "reduction stmt is  ");
-	      print_gimple_stmt (dump_file, red->reduc_stmt, 0, 0);
+	      print_gimple_stmt (dump_file, red->reduc_stmt, 0);
 	    }
 	}
     }
@@ -2872,7 +2877,7 @@ ref_conflicts_with_region (gimple_stmt_iterator gsi, ao_ref *ref,
 	      if (dump_file)
 		{
 		  fprintf (dump_file, "skipping reduction store: ");
-		  print_gimple_stmt (dump_file, stmt, 0, 0);
+		  print_gimple_stmt (dump_file, stmt, 0);
 		}
 	      continue;
 	    }
@@ -2891,7 +2896,7 @@ ref_conflicts_with_region (gimple_stmt_iterator gsi, ao_ref *ref,
 		  if (dump_file)
 		    {
 		      fprintf (dump_file, "Stmt ");
-		      print_gimple_stmt (dump_file, stmt, 0, 0);
+		      print_gimple_stmt (dump_file, stmt, 0);
 		    }
 		  return true;
 		}
@@ -2903,7 +2908,7 @@ ref_conflicts_with_region (gimple_stmt_iterator gsi, ao_ref *ref,
 		  if (dump_file)
 		    {
 		      fprintf (dump_file, "Stmt ");
-		      print_gimple_stmt (dump_file, stmt, 0, 0);
+		      print_gimple_stmt (dump_file, stmt, 0);
 		    }
 		  return true;
 		}
@@ -2982,7 +2987,7 @@ oacc_entry_exit_ok_1 (bitmap in_loop_bbs, vec<basic_block> region_bbs,
 			      if (dump_file)
 				{
 				  fprintf (dump_file, "found reduction load: ");
-				  print_gimple_stmt (dump_file, stmt, 0, 0);
+				  print_gimple_stmt (dump_file, stmt, 0);
 				}
 			    }
 			}
@@ -3013,7 +3018,7 @@ oacc_entry_exit_ok_1 (bitmap in_loop_bbs, vec<basic_block> region_bbs,
 	      if (dump_file)
 		{
 		  fprintf (dump_file, "Unhandled stmt in entry/exit: ");
-		  print_gimple_stmt (dump_file, stmt, 0, 0);
+		  print_gimple_stmt (dump_file, stmt, 0);
 		}
 	      return false;
 	    }
@@ -3024,7 +3029,7 @@ oacc_entry_exit_ok_1 (bitmap in_loop_bbs, vec<basic_block> region_bbs,
 	      if (dump_file)
 		{
 		  fprintf (dump_file, "conflicts with entry/exit stmt: ");
-		  print_gimple_stmt (dump_file, stmt, 0, 0);
+		  print_gimple_stmt (dump_file, stmt, 0);
 		}
 	      return false;
 	    }
@@ -3072,7 +3077,7 @@ oacc_entry_exit_single_gang (bitmap in_loop_bbs, vec<basic_block> region_bbs,
 		  fprintf (dump_file,
 			   "skipped reduction store for single-gang"
 			   " neutering: ");
-		  print_gimple_stmt (dump_file, stmt, 0, 0);
+		  print_gimple_stmt (dump_file, stmt, 0);
 		}
 
 	      /* Update gsi to point to next stmt.  */
@@ -3100,7 +3105,7 @@ oacc_entry_exit_single_gang (bitmap in_loop_bbs, vec<basic_block> region_bbs,
 	    {
 	      fprintf (dump_file,
 		       "found store that needs single-gang neutering: ");
-	      print_gimple_stmt (dump_file, stmt, 0, 0);
+	      print_gimple_stmt (dump_file, stmt, 0);
 	    }
 
 	  {

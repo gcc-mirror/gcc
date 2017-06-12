@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -33,6 +33,7 @@ with Exp_Ch11; use Exp_Ch11;
 with Exp_Util; use Exp_Util;
 with Expander; use Expander;
 with Inline;   use Inline;
+with Lib;      use Lib;
 with Namet;    use Namet;
 with Nlists;   use Nlists;
 with Nmake;    use Nmake;
@@ -161,19 +162,23 @@ package body Exp_Prag is
    ---------------------
 
    procedure Expand_N_Pragma (N : Node_Id) is
-      Pname : constant Name_Id := Pragma_Name (N);
+      Pname   : constant Name_Id   := Pragma_Name (N);
+      Prag_Id : constant Pragma_Id := Get_Pragma_Id (Pname);
 
    begin
       --  Rewrite pragma ignored by Ignore_Pragma to null statement, so that
-      --  the back end or the expander here does not get overenthusiastic and
-      --  start processing such a pragma!
+      --  the back end doesn't see it. The same goes for pragma
+      --  Default_Scalar_Storage_Order if the -gnatI switch was given.
 
-      if Get_Name_Table_Boolean3 (Pname) then
+      if Should_Ignore_Pragma_Sem (N)
+        or else (Prag_Id = Pragma_Default_Scalar_Storage_Order
+                  and then Ignore_Rep_Clauses)
+      then
          Rewrite (N, Make_Null_Statement (Sloc (N)));
          return;
       end if;
 
-      case Get_Pragma_Id (Pname) is
+      case Prag_Id is
 
          --  Pragmas requiring special expander action
 
@@ -432,11 +437,12 @@ package body Exp_Prag is
                   Add_Str_To_Name_Buffer ("failed invariant from ");
 
                --  For all other checks, the string is "xxx failed at yyy"
-               --  where xxx is the check name with current source file casing.
+               --  where xxx is the check name with appropriate casing.
 
                else
                   Get_Name_String (Nam);
-                  Set_Casing (Identifier_Casing (Current_Source_File));
+                  Set_Casing
+                    (Identifier_Casing (Source_Index (Current_Sem_Unit)));
                   Add_Str_To_Name_Buffer (" failed at ");
                end if;
 
@@ -994,7 +1000,7 @@ package body Exp_Prag is
       Flag          : Entity_Id;
       Flag_Decl     : Node_Id;
       If_Stmt       : Node_Id;
-      Msg_Str       : Entity_Id;
+      Msg_Str       : Entity_Id := Empty;
       Multiple_PCs  : Boolean;
       Old_Evals     : Node_Id   := Empty;
       Others_Decl   : Node_Id;

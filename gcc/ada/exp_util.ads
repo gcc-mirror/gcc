@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -248,10 +248,11 @@ package Exp_Util is
    --  not install a call to Abort_Defer.
 
    procedure Build_Class_Wide_Expression
-     (Prag        : Node_Id;
-      Subp        : Entity_Id;
-      Par_Subp    : Entity_Id;
-      Adjust_Sloc : Boolean);
+     (Prag          : Node_Id;
+      Subp          : Entity_Id;
+      Par_Subp      : Entity_Id;
+      Adjust_Sloc   : Boolean;
+      Needs_Wrapper : out Boolean);
    --  Build the expression for an inherited class-wide condition. Prag is
    --  the pragma constructed from the corresponding aspect of the parent
    --  subprogram, and Subp is the overriding operation, and Par_Subp is
@@ -264,6 +265,11 @@ package Exp_Util is
    --  is the expression of the original class-wide aspect. In SPARK_Mode, such
    --  operation which are just inherited but have modified pre/postconditions
    --  are illegal.
+   --  If there are calls to overridden operations in the condition, and the
+   --  pragma applies to an inherited operation, a wrapper must be built for
+   --  it to capture the new inherited condition. The flag Needs_Wrapper is
+   --  set in that case so that the wrapper can be built, when the controlling
+   --  type is frozen.
 
    function Build_DIC_Call
      (Loc    : Source_Ptr;
@@ -272,13 +278,32 @@ package Exp_Util is
    --  Build a call to the DIC procedure of type Typ with Obj_Id as the actual
    --  parameter.
 
-   procedure Build_DIC_Procedure_Body (Typ : Entity_Id);
+   procedure Build_DIC_Procedure_Body
+     (Typ        : Entity_Id;
+      For_Freeze : Boolean := False);
    --  Create the body of the procedure which verifies the assertion expression
-   --  of pragma Default_Initial_Condition at run time.
+   --  of pragma Default_Initial_Condition at run time. Flag For_Freeze should
+   --  be set when the body is constructed as part of the freezing actions for
+   --  Typ.
 
    procedure Build_DIC_Procedure_Declaration (Typ : Entity_Id);
    --  Create the declaration of the procedure which verifies the assertion
    --  expression of pragma Default_Initial_Condition at run time.
+
+   procedure Build_Invariant_Procedure_Body
+     (Typ               : Entity_Id;
+      Partial_Invariant : Boolean := False);
+   --  Create the body of the procedure which verifies the invariants of type
+   --  Typ at runtime. Flag Partial_Invariant should be set when Typ denotes a
+   --  private type, otherwise it is assumed that Typ denotes the full view of
+   --  a private type.
+
+   procedure Build_Invariant_Procedure_Declaration
+     (Typ               : Entity_Id;
+      Partial_Invariant : Boolean := False);
+   --  Create the declaration of the procedure which verifies the invariants of
+   --  type Typ at runtime. Flag Partial_Invariant should be set when building
+   --  the invariant procedure for a private type.
 
    procedure Build_Procedure_Form (N : Node_Id);
    --  Create a procedure declaration which emulates the behavior of a function
@@ -493,8 +518,11 @@ package Exp_Util is
 
    procedure Evaluate_Name (Nam : Node_Id);
    --  Remove all side effects from a name which appears as part of an object
-   --  renaming declaration. More comments are needed here that explain how
-   --  this differs from Force_Evaluation and Remove_Side_Effects ???
+   --  renaming declaration. Similarly to Force_Evaluation, it removes the
+   --  side effects and captures the values of the variables, except for the
+   --  variable being renamed. Hence this differs from Force_Evaluation and
+   --  Remove_Side_Effects (but it calls Force_Evaluation on subexpressions
+   --  whose value needs to be fixed).
 
    procedure Evolve_And_Then (Cond : in out Node_Id; Cond1 : Node_Id);
    --  Rewrites Cond with the expression: Cond and then Cond1. If Cond is
@@ -509,6 +537,10 @@ package Exp_Util is
    --  series of checks evolved by this routine, with a final result of Empty
    --  indicating that no checks were required). The Sloc field of the
    --  constructed N_Or_Else node is copied from Cond1.
+
+   function Exceptions_In_Finalization_OK return Boolean;
+   --  Determine whether the finalization machinery can safely add exception
+   --  handlers and recovery circuitry.
 
    procedure Expand_Static_Predicates_In_Choices (N : Node_Id);
    --  N is either a case alternative or a variant. The Discrete_Choices field
@@ -526,6 +558,12 @@ package Exp_Util is
    --  declarations and/or allocations when the type is indefinite (including
    --  class-wide). Set Related_Id to request an external name for the subtype
    --  rather than an internal temporary.
+
+   function Expression_Contains_Primitives_Calls_Of
+     (Expr : Node_Id;
+      Typ  : Entity_Id) return Boolean;
+   --  Return True if the expression Expr contains a nondispatching call to a
+   --  function which is a primitive of the tagged type Typ.
 
    function Finalize_Address (Typ : Entity_Id) return Entity_Id;
    --  Locate TSS primitive Finalize_Address in type Typ. Return Empty if the
@@ -554,11 +592,9 @@ package Exp_Util is
    function Find_Prim_Op
      (T    : Entity_Id;
       Name : TSS_Name_Type) return Entity_Id;
-   --  Find the first primitive operation of type T whose name has the form
-   --  indicated by the name parameter (i.e. is a type support subprogram
-   --  with the indicated suffix). This function allows use of a primitive
-   --  operation which is not directly visible. If T is a class wide type,
-   --  then the reference is to an operation of the corresponding root type.
+   --  Same as Find_Prim_Op above, except we're searching for an op that has
+   --  the form indicated by Name (i.e. is a type support subprogram with the
+   --  indicated suffix).
 
    function Find_Optional_Prim_Op
      (T : Entity_Id; Name : Name_Id) return Entity_Id;
@@ -795,6 +831,12 @@ package Exp_Util is
    --  Returns true if type T is not tagged and is a derived type,
    --  or is a private type whose completion is such a type.
 
+   function Is_Untagged_Private_Derivation
+     (Priv_Typ : Entity_Id;
+      Full_Typ : Entity_Id) return Boolean;
+   --  Determine whether private type Priv_Typ and its full view Full_Typ
+   --  represent an untagged derivation from a private parent.
+
    function Is_Volatile_Reference (N : Node_Id) return Boolean;
    --  Checks if the node N represents a volatile reference, which can be
    --  either a direct reference to a variable treated as volatile, or an
@@ -818,18 +860,6 @@ package Exp_Util is
    --  Given a node for a subexpression, determines if it represents a value
    --  that cannot possibly be negative, and if so returns True. A value of
    --  False means that it is not known if the value is positive or negative.
-
-   function Known_Non_Null (N : Node_Id) return Boolean;
-   --  Given a node N for a subexpression of an access type, determines if
-   --  this subexpression yields a value that is known at compile time to
-   --  be non-null and returns True if so. Returns False otherwise. It is
-   --  an error to call this function if N is not of an access type.
-
-   function Known_Null (N : Node_Id) return Boolean;
-   --  Given a node N for a subexpression of an access type, determines if this
-   --  subexpression yields a value that is known at compile time to be null
-   --  and returns True if so. Returns False otherwise. It is an error to call
-   --  this function if N is not of an access type.
 
    function Make_Invariant_Call (Expr : Node_Id) return Node_Id;
    --  Expr is an object of a type which Has_Invariants set (and which thus
@@ -863,6 +893,19 @@ package Exp_Util is
    --  expression E. Unc_Typ is an unconstrained array or record, or a class-
    --  wide type. Set Related_Id to request an external name for the subtype
    --  rather than an internal temporary.
+
+   procedure Map_Types (Parent_Type : Entity_Id; Derived_Type : Entity_Id);
+   --  Establish the following mapping between the attributes of tagged parent
+   --  type Parent_Type and tagged derived type Derived_Type.
+   --
+   --    * Map each discriminant of Parent_Type to ether the corresponding
+   --      discriminant of Derived_Type or come constraint.
+
+   --    * Map each primitive operation of Parent_Type to the corresponding
+   --      primitive of Derived_Type.
+   --
+   --  The mapping Parent_Type -> Derived_Type is also added to the table in
+   --  order to prevent subsequent attempts of the same mapping.
 
    function Matching_Standard_Type (Typ : Entity_Id) return Entity_Id;
    --  Given a scalar subtype Typ, returns a matching type in standard that
@@ -989,6 +1032,37 @@ package Exp_Util is
    --  renaming cannot be elaborated without evaluating the subexpression, so
    --  gigi would resort to method 1) or 3) under the hood for them.
 
+   procedure Replace_References
+     (Expr      : Node_Id;
+      Par_Typ   : Entity_Id;
+      Deriv_Typ : Entity_Id;
+      Par_Obj   : Entity_Id := Empty;
+      Deriv_Obj : Entity_Id := Empty);
+   --  Expr denotes an arbitrary expression. Par_Typ is a tagged parent type
+   --  in a type hierarchy. Deriv_Typ is a tagged type derived from Par_Typ
+   --  with optional ancestors in between. Par_Obj is a formal parameter
+   --  which emulates the current instance of Par_Typ. Deriv_Obj is a formal
+   --  parameter which emulates the current instance of Deriv_Typ. Perform the
+   --  following substitutions in Expr:
+   --
+   --    * Replace a reference to Par_Obj with a reference to Deriv_Obj
+   --
+   --    * Replace a reference to a discriminant of Par_Typ with a suitable
+   --      value from the point of view of Deriv_Typ.
+   --
+   --    * Replace a call to an overridden primitive of Par_Typ with a call to
+   --      an overriding primitive of Deriv_Typ.
+   --
+   --    * Replace a call to an inherited primitive of Par_Type with a call to
+   --      the internally-generated inherited primitive of Deriv_Typ.
+
+   procedure Replace_Type_References
+     (Expr   : Node_Id;
+      Typ    : Entity_Id;
+      Obj_Id : Entity_Id);
+   --  Substitute all references of the current instance of type Typ with
+   --  references to formal parameter Obj_Id within expression Expr.
+
    function Represented_As_Scalar (T : Entity_Id) return Boolean;
    --  Returns True iff the implementation of this type in code generation
    --  terms is scalar. This is true for scalars in the Ada sense, and for
@@ -1097,19 +1171,15 @@ package Exp_Util is
    --  when elaborating a contract for a subprogram, and when freezing a type
    --  extension to verify legality rules on inherited conditions.
 
-   procedure Update_Primitives_Mapping_Of_Types
-     (Par_Typ   : Entity_Id;
-      Deriv_Typ : Entity_Id);
-   --  Map the primitive operations of parent type Par_Typ to the corresponding
-   --  primitives of derived type Deriv_Typ.
-
    function Within_Case_Or_If_Expression (N : Node_Id) return Boolean;
    --  Determine whether arbitrary node N is within a case or an if expression
 
    function Within_Internal_Subprogram return Boolean;
    --  Indicates that some expansion is taking place within the body of a
    --  predefined primitive operation. Some expansion activity (e.g. predicate
-   --  checks) is disabled in such.
+   --  checks) is disabled in such. Because we want to detect invalid uses
+   --  of function calls within predicates (which lead to infinite recursion)
+   --  predicate functions themselves are not considered internal here.
 
 private
    pragma Inline (Duplicate_Subexpr);

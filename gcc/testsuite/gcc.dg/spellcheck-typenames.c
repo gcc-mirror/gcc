@@ -54,7 +54,7 @@ int64 i; /* { dg-error "unknown type name 'int64'; did you mean 'int64_t'?" } */
 /* Verify that gcc doesn't offer nonsensical suggestions.  */
 
 nonsensical_suggestion_t var; /* { dg-bogus "did you mean" } */
-/* { dg-error "unknown type name" "" { target { *-*-* } } 56 } */
+/* { dg-error "unknown type name" "" { target { *-*-* } } .-1 } */
 /* { dg-begin-multiline-output "" }
  nonsensical_suggestion_t var;
  ^~~~~~~~~~~~~~~~~~~~~~~~

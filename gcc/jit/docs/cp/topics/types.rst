@@ -82,8 +82,6 @@ Pointers, `const`, and `volatile`
 
    Given type "T", get type "T*".
 
-.. FIXME: get_const doesn't seem to exist
-
 .. function::  gccjit::type gccjit::type::get_const ()
 
    Given type "T", get type "const T".
@@ -91,6 +89,16 @@ Pointers, `const`, and `volatile`
 .. function::  gccjit::type gccjit::type::get_volatile ()
 
    Given type "T", get type "volatile T".
+
+.. function::  gccjit::type gccjit::type::get_aligned (size_t alignment_in_bytes)
+
+   Given type "T", get type:
+
+   .. code-block:: c
+
+      T __attribute__ ((aligned (ALIGNMENT_IN_BYTES)))
+
+   The alignment must be a power of two.
 
 .. function::  gccjit::type \
                gccjit::context::new_array_type (gccjit::type element_type, \

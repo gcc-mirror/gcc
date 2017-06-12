@@ -16,8 +16,7 @@ void vx1(void)
 __attribute__ ((target("arch=z10")))
 void vx0(void)
 {
-  vec_load_bndry ((const signed char *)0, 64); /* { dg-error "is not supported without -mvx" } */
-  __builtin_s390_vll ((unsigned int)0, (const void *)8); /* { dg-error "is not supported without -mvx" } */
+  __builtin_s390_vll ((unsigned int)0, (const void *)8); /* { dg-error "requires -mvx" } */
 }
 
 void vxd(void)

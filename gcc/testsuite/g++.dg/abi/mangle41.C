@@ -5,4 +5,4 @@
 #include <x86intrin.h>
 void f(__m128) { }		// { dg-message "previous declaration" }
 void f(__m256) { }		// { dg-error "conflicts" }
-// { dg-message "mangling" "" { target *-*-* } 7 }
+// { dg-message "mangling" "" { target *-*-* } .-1 }

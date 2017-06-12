@@ -73,9 +73,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /// Invoke a callable object.
   template<typename _Callable, typename... _Args>
-    inline result_of_t<_Callable&&(_Args&&...)>
+    inline invoke_result_t<_Callable, _Args...>
     invoke(_Callable&& __fn, _Args&&... __args)
-    noexcept(is_nothrow_callable_v<_Callable&&(_Args&&...)>)
+    noexcept(is_nothrow_invocable_v<_Callable, _Args...>)
     {
       return std::__invoke(std::forward<_Callable>(__fn),
 			   std::forward<_Args>(__args)...);
@@ -134,6 +134,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 _GLIBCXX_MEM_FN_TRAITS( , true_type, true_type)
 _GLIBCXX_MEM_FN_TRAITS(&, true_type, false_type)
 _GLIBCXX_MEM_FN_TRAITS(&&, false_type, true_type)
+
+#if __cplusplus > 201402L
+_GLIBCXX_MEM_FN_TRAITS(noexcept, true_type, true_type)
+_GLIBCXX_MEM_FN_TRAITS(& noexcept, true_type, false_type)
+_GLIBCXX_MEM_FN_TRAITS(&& noexcept, false_type, true_type)
+#endif
 
 #undef _GLIBCXX_MEM_FN_TRAITS
 #undef _GLIBCXX_MEM_FN_TRAITS2
@@ -242,9 +248,9 @@ _GLIBCXX_MEM_FN_TRAITS(&&, false_type, true_type)
     { };
 
 #if __cplusplus > 201402L
-  template <typename _Tp> constexpr bool is_bind_expression_v
+  template <typename _Tp> inline constexpr bool is_bind_expression_v
     = is_bind_expression<_Tp>::value;
-  template <typename _Tp> constexpr int is_placeholder_v
+  template <typename _Tp> inline constexpr int is_placeholder_v
     = is_placeholder<_Tp>::value;
 #endif // C++17
 
@@ -502,7 +508,7 @@ _GLIBCXX_MEM_FN_TRAITS(&&, false_type, true_type)
 
       template<typename _Fn, typename _CallArgs, typename... _BArgs>
 	using _Res_type_impl
-	  = typename result_of< _Fn&(_Mu_type<_BArgs, _CallArgs>...) >::type;
+	  = typename result_of< _Fn&(_Mu_type<_BArgs, _CallArgs>&&...) >::type;
 
       template<typename _CallArgs>
 	using _Res_type = _Res_type_impl<_Functor, _CallArgs, _Bound_args...>;
@@ -902,15 +908,12 @@ _GLIBCXX_MEM_FN_TRAITS(&&, false_type, true_type)
   template<typename _Fn>
     class _Not_fn
     {
-      template<typename _Tp>
-	using __is_nothrow_negatable
-	  = __bool_constant<noexcept(!std::declval<_Tp>())>;
-
       template<typename _Fn2, typename... _Args>
-	using __noexcept_cond = __and_<
-	  __is_nothrow_callable<_Fn2(_Args&&...)>,
-	  __is_nothrow_negatable<result_of_t<_Fn2(_Args&&...)>>
-	>;
+	using __inv_res_t = typename __invoke_result<_Fn2, _Args...>::type;
+
+      template<typename _Tp>
+	static decltype(!std::declval<_Tp>())
+	_S_not() noexcept(noexcept(!std::declval<_Tp>()));
 
     public:
       template<typename _Fn2>
@@ -921,39 +924,23 @@ _GLIBCXX_MEM_FN_TRAITS(&&, false_type, true_type)
       _Not_fn(_Not_fn&& __fn) = default;
       ~_Not_fn() = default;
 
-      template<typename... _Args>
-	auto
-	operator()(_Args&&... __args) &
-	noexcept(__noexcept_cond<_Fn&, _Args&&...>::value)
-	-> decltype(!std::declval<result_of_t<_Fn&(_Args&&...)>>())
-	{ return !std::__invoke(_M_fn, std::forward<_Args>(__args)...); }
-
-      template<typename... _Args>
-	auto
-	operator()(_Args&&... __args) const &
-	noexcept(__noexcept_cond<const _Fn&, _Args&&...>::value)
-	-> decltype(!std::declval<result_of_t<const _Fn&(_Args&&...)>>())
-	{ return !std::__invoke(_M_fn, std::forward<_Args>(__args)...); }
-
-      template<typename... _Args>
-	auto
-	operator()(_Args&&... __args) &&
-	noexcept(__noexcept_cond<_Fn&&, _Args&&...>::value)
-	-> decltype(!std::declval<result_of_t<_Fn&&(_Args&&...)>>())
-	{
-	  return !std::__invoke(std::move(_M_fn),
-				std::forward<_Args>(__args)...);
+      // Macro to define operator() with given cv-qualifiers ref-qualifiers,
+      // forwarding _M_fn and the function arguments with the same qualifiers,
+      // and deducing the return type and exception-specification.
+#define _GLIBCXX_NOT_FN_CALL_OP( _QUALS )				\
+      template<typename... _Args>					\
+	decltype(_S_not<__inv_res_t<_Fn _QUALS, _Args...>>())		\
+	operator()(_Args&&... __args) _QUALS				\
+	noexcept(noexcept(_S_not<__inv_res_t<_Fn _QUALS, _Args...>>()))	\
+	{								\
+	  return !std::__invoke(std::forward< _Fn _QUALS >(_M_fn),	\
+				std::forward<_Args>(__args)...);	\
 	}
-
-      template<typename... _Args>
-	auto
-	operator()(_Args&&... __args) const &&
-	noexcept(__noexcept_cond<const _Fn&&, _Args&&...>::value)
-	-> decltype(!std::declval<result_of_t<const _Fn&&(_Args&&...)>>())
-	{
-	  return !std::__invoke(std::move(_M_fn),
-				std::forward<_Args>(__args)...);
-	}
+      _GLIBCXX_NOT_FN_CALL_OP( & )
+      _GLIBCXX_NOT_FN_CALL_OP( const & )
+      _GLIBCXX_NOT_FN_CALL_OP( && )
+      _GLIBCXX_NOT_FN_CALL_OP( const && )
+#undef _GLIBCXX_NOT_FN_CALL
 
     private:
       _Fn _M_fn;
@@ -988,17 +975,17 @@ _GLIBCXX_MEM_FN_TRAITS(&&, false_type, true_type)
 	operator()(_ForwardIterator2 __first, _ForwardIterator2 __last) const
 	{
 	  _ForwardIterator2 __first_ret =
-	    std::search(__first, __last,
-			std::get<0>(_M_m), std::get<1>(_M_m),
+	    std::search(__first, __last, std::get<0>(_M_m), std::get<1>(_M_m),
 			std::get<2>(_M_m));
-	  _ForwardIterator2 __second_ret = __first_ret == __last ?
-	    __last :  std::next(__first_ret, std::distance(std::get<0>(_M_m),
-							   std::get<1>(_M_m)));
-	  return std::make_pair(__first_ret, __second_ret);
+	  auto __ret = std::make_pair(__first_ret, __first_ret);
+	  if (__ret.first != __last)
+	    std::advance(__ret.second, std::distance(std::get<0>(_M_m),
+						     std::get<1>(_M_m)));
+	  return __ret;
 	}
 
     private:
-      std::tuple<_ForwardIterator1, _ForwardIterator1, _BinaryPredicate> _M_m;
+      tuple<_ForwardIterator1, _ForwardIterator1, _BinaryPredicate> _M_m;
     };
 
   template<typename _Key, typename _Tp, typename _Hash, typename _Pred>
@@ -1044,7 +1031,7 @@ _GLIBCXX_MEM_FN_TRAITS(&&, false_type, true_type)
 	    for (__diff_type __i = 0; __i < __patlen - 1; ++__i)
 	      {
 		auto __ch = __pat[__i];
-		using _UCh = std::make_unsigned_t<decltype(__ch)>;
+		using _UCh = make_unsigned_t<decltype(__ch)>;
 		auto __uch = static_cast<_UCh>(__ch);
 		std::get<0>(_M_bad_char)[__uch] = __patlen - 1 - __i;
 	      }
@@ -1056,7 +1043,7 @@ _GLIBCXX_MEM_FN_TRAITS(&&, false_type, true_type)
 	__diff_type
 	_M_lookup(_Key __key, __diff_type __not_found) const
 	{
-	  auto __ukey = static_cast<std::make_unsigned_t<_Key>>(__key);
+	  auto __ukey = static_cast<make_unsigned_t<_Key>>(__key);
 	  if (__ukey >= _Len)
 	    return __not_found;
 	  return std::get<0>(_M_bad_char)[__ukey];
@@ -1065,14 +1052,14 @@ _GLIBCXX_MEM_FN_TRAITS(&&, false_type, true_type)
       const _Pred&
       _M_pred() const { return std::get<1>(_M_bad_char); }
 
-      std::tuple<_GLIBCXX_STD_C::array<_Tp, _Len>, _Pred> _M_bad_char;
+      tuple<_GLIBCXX_STD_C::array<_Tp, _Len>, _Pred> _M_bad_char;
     };
 
   template<typename _Pred>
-    struct __is_std_equal_to : std::false_type { };
+    struct __is_std_equal_to : false_type { };
 
   template<>
-    struct __is_std_equal_to<std::equal_to<void>> : std::true_type { };
+    struct __is_std_equal_to<equal_to<void>> : true_type { };
 
   // Use __boyer_moore_array_base when pattern consists of narrow characters
   // and uses std::equal_to as the predicate.
@@ -1080,14 +1067,14 @@ _GLIBCXX_MEM_FN_TRAITS(&&, false_type, true_type)
            typename _Val = typename iterator_traits<_RAIter>::value_type,
 	   typename _Diff = typename iterator_traits<_RAIter>::difference_type>
     using __boyer_moore_base_t
-      = std::conditional_t<sizeof(_Val) == 1 && is_integral<_Val>::value
-			   && __is_std_equal_to<_Pred>::value,
-			   __boyer_moore_array_base<_Diff, 256, _Pred>,
-			   __boyer_moore_map_base<_Val, _Diff, _Hash, _Pred>>;
+      = conditional_t<sizeof(_Val) == 1 && is_integral<_Val>::value
+		      && __is_std_equal_to<_Pred>::value,
+		      __boyer_moore_array_base<_Diff, 256, _Pred>,
+		      __boyer_moore_map_base<_Val, _Diff, _Hash, _Pred>>;
 
   template<typename _RAIter, typename _Hash
-	     = std::hash<typename std::iterator_traits<_RAIter>::value_type>,
-	   typename _BinaryPredicate = std::equal_to<>>
+	     = hash<typename iterator_traits<_RAIter>::value_type>,
+	   typename _BinaryPredicate = equal_to<>>
     class boyer_moore_searcher
     : __boyer_moore_base_t<_RAIter, _Hash, _BinaryPredicate>
     {
@@ -1142,8 +1129,8 @@ _GLIBCXX_MEM_FN_TRAITS(&&, false_type, true_type)
     };
 
   template<typename _RAIter, typename _Hash
-	     = std::hash<typename std::iterator_traits<_RAIter>::value_type>,
-	   typename _BinaryPredicate = std::equal_to<>>
+	     = hash<typename iterator_traits<_RAIter>::value_type>,
+	   typename _BinaryPredicate = equal_to<>>
     class boyer_moore_horspool_searcher
     : __boyer_moore_base_t<_RAIter, _Hash, _BinaryPredicate>
     {
@@ -1175,8 +1162,7 @@ _GLIBCXX_MEM_FN_TRAITS(&&, false_type, true_type)
 	      for (auto __scan = __patlen - 1;
 		   __pred(__first[__scan], _M_pat[__scan]); --__scan)
 		if (__scan == 0)
-		  return std::make_pair(__first,
-					std::next(__first, __patlen));
+		  return std::make_pair(__first, __first + __patlen);
 	      auto __shift = _M_bad_char_shift(__first[__patlen - 1]);
 	      __len -= __shift;
 	      __first += __shift;
@@ -1193,36 +1179,6 @@ _GLIBCXX_MEM_FN_TRAITS(&&, false_type, true_type)
       _RAIter _M_pat;
       _RAIter _M_pat_end;
     };
-
-  /// Generator function for default_searcher
-  template<typename _ForwardIterator,
-	   typename _BinaryPredicate = std::equal_to<>>
-    inline default_searcher<_ForwardIterator, _BinaryPredicate>
-    make_default_searcher(_ForwardIterator __pat_first,
-			  _ForwardIterator __pat_last,
-			  _BinaryPredicate __pred = _BinaryPredicate())
-    { return { __pat_first, __pat_last, __pred }; }
-
-  /// Generator function for boyer_moore_searcher
-  template<typename _RAIter, typename _Hash
-	     = std::hash<typename std::iterator_traits<_RAIter>::value_type>,
-	   typename _BinaryPredicate = equal_to<>>
-    inline boyer_moore_searcher<_RAIter, _Hash, _BinaryPredicate>
-    make_boyer_moore_searcher(_RAIter __pat_first, _RAIter __pat_last,
-			      _Hash __hf = _Hash(),
-			      _BinaryPredicate __pred = _BinaryPredicate())
-    { return { __pat_first, __pat_last, std::move(__hf), std::move(__pred) }; }
-
-  /// Generator function for boyer_moore_horspool_searcher
-  template<typename _RAIter, typename _Hash
-	     = std::hash<typename std::iterator_traits<_RAIter>::value_type>,
-	   typename _BinaryPredicate = equal_to<>>
-    inline boyer_moore_horspool_searcher<_RAIter, _Hash, _BinaryPredicate>
-    make_boyer_moore_horspool_searcher(_RAIter __pat_first, _RAIter __pat_last,
-				       _Hash __hf = _Hash(),
-				       _BinaryPredicate __pred
-				       = _BinaryPredicate())
-    { return { __pat_first, __pat_last, std::move(__hf), std::move(__pred) }; }
 
   template<typename _RAIter, typename _Hash, typename _BinaryPredicate>
     boyer_moore_searcher<_RAIter, _Hash, _BinaryPredicate>::
@@ -1272,8 +1228,10 @@ _GLIBCXX_MEM_FN_TRAITS(&&, false_type, true_type)
 	      --__j;
 	    }
 	  if (__j < 0)
-	    return std::make_pair(__first + __i + 1, std::next(__first,
-							       __patlen));
+	    {
+	      const auto __match = __first + __i + 1;
+	      return std::make_pair(__match, __match + __patlen);
+	    }
 	  __i += std::max(_M_bad_char_shift(__first[__i]),
 			  _M_good_suffix[__j]);
 	}

@@ -112,8 +112,8 @@ extern void s390_expand_vec_strlen (rtx, rtx, rtx);
 extern void s390_expand_vec_movstr (rtx, rtx, rtx);
 extern bool s390_expand_addcc (enum rtx_code, rtx, rtx, rtx, rtx, rtx);
 extern bool s390_expand_insv (rtx, rtx, rtx, rtx);
-extern void s390_expand_cs_hqi (machine_mode, rtx, rtx, rtx,
-				rtx, rtx, bool);
+extern void s390_expand_cs (machine_mode, rtx, rtx, rtx, rtx, rtx, bool);
+extern void s390_expand_atomic_exchange_tdsi (rtx, rtx, rtx);
 extern void s390_expand_atomic (machine_mode, enum rtx_code,
 				rtx, rtx, rtx, bool);
 extern void s390_expand_tbegin (rtx, rtx, rtx, bool);

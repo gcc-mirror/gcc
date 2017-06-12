@@ -6,7 +6,7 @@
  *                                                                          *
  *                              C Header File                               *
  *                                                                          *
- *          Copyright (C) 1992-2016, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2017, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -358,6 +358,9 @@ extern struct Node *Nodes_Ptr;
 
 #define Parent atree__parent
 extern Node_Id Parent (Node_Id);
+
+#define Original_Node atree__original_node
+extern Node_Id Original_Node (Node_Id);
 
 /* The auxiliary flags array which is allocated in parallel to Nodes */
 
@@ -866,7 +869,7 @@ extern Node_Id Current_Error_Node;
 #define Flag287(N)     (Nodes_Ptr[(N) - First_Node_Id + 5].U.K.in_list)
 #define Flag288(N)     (Nodes_Ptr[(N) - First_Node_Id + 5].U.K.has_aspects)
 #define Flag289(N)     (Nodes_Ptr[(N) - First_Node_Id + 5].U.K.rewrite_ins)
-#define Flag290(N)     (Nodes_Ptr[(N) - First_Node_Id + 5].U.K.analyzed
+#define Flag290(N)     (Nodes_Ptr[(N) - First_Node_Id + 5].U.K.analyzed)
 #define Flag291(N)     (Nodes_Ptr[(N) - First_Node_Id + 5].U.K.c_f_s)
 #define Flag292(N)     (Nodes_Ptr[(N) - First_Node_Id + 5].U.K.error_posted)
 #define Flag293(N)     (Nodes_Ptr[(N) - First_Node_Id + 5].U.K.flag4)

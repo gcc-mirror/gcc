@@ -1,5 +1,5 @@
 /* { dg-do run { target { s390*-*-* } } } */
-/* { dg-require-effective-target vector } */
+/* { dg-require-effective-target s390_vx } */
 /* { dg-options "-O3 -mzarch -march=z13" } */
 
 /* For FP zero checks we use the ltdbr instruction.  Since this is an

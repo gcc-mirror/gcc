@@ -6,7 +6,7 @@
  *                                                                          *
  *                              C Header File                               *
  *                                                                          *
- *            Copyright (C) 2014, Free Software Foundation, Inc.            *
+ *           Copyright (C) 2014-2017, Free Software Foundation, Inc.        *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -45,14 +45,16 @@ struct SCO_Unit_Table_Entry
 
 typedef struct SCO_Unit_Table_Entry *SCO_Unit_Table_Type;
 
-extern SCO_Unit_Table_Type scos__sco_unit_table__table;
-#define SCO_Unit_Table scos__sco_unit_table__table
+/* The following depends on the fact that The_Instance.Table
+   is the first component. */
+extern SCO_Unit_Table_Type scos__sco_unit_table__the_instance;
+#define SCO_Unit_Table scos__sco_unit_table__the_instance
 
-extern Int scos__sco_unit_table__min;
-#define SCO_Unit_Table_Min scos__sco_unit_table__min
+extern Int scos__sco_unit_table__first(void);
+#define SCO_Unit_Table_First scos__sco_unit_table__first
 
-extern Int scos__sco_unit_table__last_val;
-#define SCO_Unit_Table_Last_Val scos__sco_unit_table__last_val
+extern Int scos__sco_unit_table__last(void);
+#define SCO_Unit_Table_Last scos__sco_unit_table__last
 
 
 /* SCOs table:  */
@@ -74,14 +76,16 @@ struct SCO_Table_Entry
 
 typedef struct SCO_Table_Entry *SCO_Table_Type;
 
-extern SCO_Table_Type scos__sco_table__table;
-#define SCO_Table scos__sco_table__table
+/* The following depends on the fact that The_Instance.Table
+   is the first component. */
+extern SCO_Table_Type scos__sco_table__the_instance;
+#define SCO_Table scos__sco_table__the_instance
 
-extern Int scos__sco_table__min;
-#define SCO_Table_Min scos__sco_table__min
+extern Int scos__sco_table__first(void);
+#define SCO_Table_First scos__sco_table__first
 
-extern Int scos__sco_table__last_val;
-#define SCO_Table_Last_Val scos__sco_table__last_val
+extern Int scos__sco_table__last(void);
+#define SCO_Table_Last scos__sco_table__last
 
 #ifdef __cplusplus
 }

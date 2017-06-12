@@ -922,8 +922,8 @@ empty_delay_slot (rtx_insn *insn)
   return 1;
 }
 
-/* Wrapper around single_set which returns the first SET of a pair if the
-   second SET is to the flags register.  */
+/* Wrapper around single_set which returns the second SET of a pair if the
+   first SET is to the flags register.  */
 
 static rtx
 single_set_and_flags (rtx_insn *insn)
@@ -932,10 +932,10 @@ single_set_and_flags (rtx_insn *insn)
     {
       rtx pat = PATTERN (insn);
       if (XVECLEN (pat, 0) == 2
-	  && GET_CODE (XVECEXP (pat, 0, 1)) == SET
-	  && REG_P (SET_DEST (XVECEXP (pat, 0, 1)))
-	  && REGNO (SET_DEST (XVECEXP (pat, 0, 1))) == FLAGS_REGNUM)
-	return XVECEXP (pat, 0, 0);
+	  && GET_CODE (XVECEXP (pat, 0, 0)) == SET
+	  && REG_P (SET_DEST (XVECEXP (pat, 0, 0)))
+	  && REGNO (SET_DEST (XVECEXP (pat, 0, 0))) == FLAGS_REGNUM)
+	return XVECEXP (pat, 0, 1);
     }
 
   return single_set (insn);

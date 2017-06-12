@@ -2,6 +2,7 @@
    Test to verify the correctness of ranges of output computed for floating
    point directives.
    { dg-do compile }
+   { dg-require-effective-target double64plus }
    { dg-options "-O2 -Wformat -Wformat-overflow -ftrack-macro-expansion=0" } */
 
 typedef __builtin_va_list va_list;
@@ -239,9 +240,11 @@ void test_g_va (va_list va)
   T ("%g");         /* { dg-warning "between 1 and 13 bytes" } */
   T ("%+g");        /* { dg-warning "between 2 and 13 bytes" } */
   T ("% g");        /* { dg-warning "between 2 and 13 bytes" } */
-  T ("%#g");        /* { dg-warning "between 1 and 13 bytes" } */
-  T ("%#+g");       /* { dg-warning "between 2 and 13 bytes" } */
-  T ("%# g");       /* { dg-warning "between 2 and 13 bytes" } */
+
+  /* The pound flag means the radix character is always present.  */
+  T ("%#g");        /* { dg-warning "between 2 and 13 bytes" } */
+  T ("%#+g");       /* { dg-warning "between 3 and 13 bytes" } */
+  T ("%# g");       /* { dg-warning "between 3 and 13 bytes" } */
 
   T ("%.g");        /* { dg-warning "between 1 and 7 bytes" } */
   T ("%.0g");       /* { dg-warning "between 1 and 7 bytes" } */

@@ -193,11 +193,16 @@
 )
 
 (define_insn "vst64_insn"
-  [(set	(mem:V4HI (plus:SI (zero_extend:SI (vec_select:HI (match_operand:V8HI 0 "vector_register_operand"  "v")
-							  (parallel [(match_operand:SI 1 "immediate_operand" "L")])))
-			   (match_operand:SI 2 "immediate_operand" "P")))
-	(vec_select:V4HI (match_operand:V8HI 3 "vector_register_operand" "=v")
-			 (parallel [(const_int 0)])))]
+  [(set	(mem:V4HI
+	 (plus:SI
+	  (zero_extend:SI
+	   (vec_select:HI (match_operand:V8HI 0 "vector_register_operand"  "v")
+			  (parallel
+			   [(match_operand:SI 1 "immediate_operand" "L")])))
+	  (match_operand:SI 2 "immediate_operand" "P")))
+	(vec_select:V4HI
+	 (match_operand:V8HI 3 "vector_register_operand" "=v")
+	 (parallel [(const_int 0) (const_int 1) (const_int 2) (const_int 3)])))]
  "TARGET_SIMD_SET"
  "vst64 %3, [i%1, %2]"
  [(set_attr "type" "simd_vstore")
@@ -1191,12 +1196,20 @@
    (set_attr "cond" "nocond")])
 
 (define_insn "vld32wh_insn"
-  [(set (match_operand:V8HI 0 "vector_register_operand"           "=v")
-	(vec_concat:V8HI (zero_extend:V4HI (mem:V4QI (plus:SI (match_operand:SI 1 "immediate_operand" "P")
-							      (zero_extend: SI (vec_select:HI (match_operand:V8HI 2 "vector_register_operand"  "v")
-											      (parallel [(match_operand:SI 3 "immediate_operand" "L")]))))))
-			 (vec_select:V4HI (match_dup 0)
-					  (parallel [(const_int 0)]))))]
+  [(set (match_operand:V8HI 0 "vector_register_operand" "=v")
+	(vec_concat:V8HI
+	 (zero_extend:V4HI
+	  (mem:V4QI
+	   (plus:SI
+	    (match_operand:SI 1 "immediate_operand" "P")
+	    (zero_extend:SI
+	     (vec_select:HI
+	      (match_operand:V8HI 2 "vector_register_operand"  "v")
+	      (parallel [(match_operand:SI 3 "immediate_operand" "L")]))))))
+	 (vec_select:V4HI
+	  (match_dup 0)
+	  (parallel [(const_int 0) (const_int 1) (const_int 2) (const_int 3)])
+	  )))]
   "TARGET_SIMD_SET"
   "vld32wh %0, [i%3,%1]"
   [(set_attr "type" "simd_vload")
@@ -1204,12 +1217,20 @@
    (set_attr "cond" "nocond")])
 
 (define_insn "vld32wl_insn"
-  [(set (match_operand:V8HI 0 "vector_register_operand"           "=v")
-	(vec_concat:V8HI (vec_select:V4HI (match_dup 0)
-					  (parallel [(const_int 1)]))
-			 (zero_extend:V4HI (mem:V4QI (plus:SI (match_operand:SI 1 "immediate_operand" "P")
-							      (zero_extend: SI (vec_select:HI (match_operand:V8HI 2 "vector_register_operand"  "v")
-											      (parallel [(match_operand:SI 3 "immediate_operand" "L")])))))) ))]
+  [(set (match_operand:V8HI 0 "vector_register_operand" "=v")
+	(vec_concat:V8HI
+	 (vec_select:V4HI
+	  (match_dup 0)
+	  (parallel [(const_int 4) (const_int 5) (const_int 6) (const_int 7)]))
+	 (zero_extend:V4HI
+	  (mem:V4QI
+	   (plus:SI
+	    (match_operand:SI 1 "immediate_operand" "P")
+	    (zero_extend:SI
+	     (vec_select:HI (match_operand:V8HI 2 "vector_register_operand" "v")
+			    (parallel
+			     [(match_operand:SI 3 "immediate_operand" "L")]))
+	     ))))))]
   "TARGET_SIMD_SET"
   "vld32wl %0, [i%3,%1]"
   [(set_attr "type" "simd_vload")
@@ -1229,12 +1250,19 @@
 )
 
 (define_insn "vld64_insn"
-  [(set (match_operand:V8HI 0 "vector_register_operand"           "=v")
-	(vec_concat:V8HI (vec_select:V4HI (match_dup 0)
-					  (parallel [(const_int 1)]))
-			 (mem:V4HI (plus:SI (match_operand:SI 1 "immediate_operand" "P")
-					    (zero_extend: SI (vec_select:HI (match_operand:V8HI 2 "vector_register_operand"  "v")
-									    (parallel [(match_operand:SI 3 "immediate_operand" "L")]))))) ))]
+  [(set (match_operand:V8HI 0 "vector_register_operand" "=v")
+	(vec_concat:V8HI
+	 (vec_select:V4HI
+	  (match_dup 0)
+	  (parallel [(const_int 4) (const_int 5) (const_int 6) (const_int 7)]))
+	 (mem:V4HI
+	  (plus:SI
+	   (match_operand:SI 1 "immediate_operand" "P")
+	   (zero_extend:SI
+	    (vec_select:HI
+	     (match_operand:V8HI 2 "vector_register_operand"  "v")
+	     (parallel [(match_operand:SI 3 "immediate_operand" "L")]))
+	    )))))]
   "TARGET_SIMD_SET"
   "vld64 %0, [i%3,%1]"
   [(set_attr "type" "simd_vload")
@@ -1242,14 +1270,22 @@
    (set_attr "cond" "nocond")])
 
 (define_insn "vld32_insn"
-  [(set (match_operand:V8HI 0 "vector_register_operand"           "=v")
-	(vec_concat:V8HI (vec_select:V4HI (match_dup 0)
-					  (parallel [(const_int 1)]))
-			 (vec_concat:V4HI  (vec_select:V2HI (match_dup 0)
-							    (parallel [(const_int 1)]))
-					   (mem:V2HI (plus:SI (match_operand:SI 1 "immediate_operand" "P")
-							      (zero_extend: SI (vec_select:HI (match_operand:V8HI 2 "vector_register_operand"  "v")
-											      (parallel [(match_operand:SI 3 "immediate_operand" "L")])))))) ))]
+  [(set (match_operand:V8HI 0 "vector_register_operand" "=v")
+	(vec_concat:V8HI
+	 (vec_select:V4HI
+	  (match_dup 0)
+	  (parallel [(const_int 4) (const_int 5) (const_int 6) (const_int 7)]))
+	 (vec_concat:V4HI
+	  (vec_select:V2HI
+	   (match_dup 0)
+	   (parallel [(const_int 2) (const_int 3)]))
+	  (mem:V2HI
+	   (plus:SI
+	    (match_operand:SI 1 "immediate_operand" "P")
+	    (zero_extend:SI
+	     (vec_select:HI
+	      (match_operand:V8HI 2 "vector_register_operand"  "v")
+	      (parallel [(match_operand:SI 3 "immediate_operand" "L")]))))))))]
   "TARGET_SIMD_SET"
   "vld32 %0, [i%3,%1]"
   [(set_attr "type" "simd_vload")
@@ -1320,7 +1356,7 @@
    }")
 
 (define_insn_and_split "*movv2hi_insn"
-  [(set (match_operand:V2HI 0 "nonimmediate_operand" "=r,r,r,m")
+  [(set (match_operand:V2HI 0 "move_dest_operand" "=r,r,r,m")
 	(match_operand:V2HI 1 "general_operand"       "i,r,m,r"))]
   "(register_operand (operands[0], V2HImode)
     || register_operand (operands[1], V2HImode))"
@@ -1544,7 +1580,7 @@
 	   (SE:SI (vec_select:HI (match_dup 1) (parallel [(const_int 1)])))
 	   (SE:SI (vec_select:HI (match_dup 2) (parallel [(const_int 1)])))))))]
   "TARGET_PLUS_DMPY"
-  "dmpy<V_US_suffix>%? %0, %1, %2"
+  "dmpyh<V_US_suffix>%? %0, %1, %2"
   [(set_attr "length" "4")
    (set_attr "type" "multi")
    (set_attr "predicable" "yes,no")

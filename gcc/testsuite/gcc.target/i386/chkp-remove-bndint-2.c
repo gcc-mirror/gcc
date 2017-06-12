@@ -12,5 +12,5 @@ struct S
 int test (struct S *ps)
 {
   int *pi = &ps->b;
-  return *(pi + 1); /* { dg-warning "memory access check always fail" "" } */
+  return *(pi + 1); /* { dg-warning "memory access check always fail" } */
 }

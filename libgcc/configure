@@ -4779,6 +4779,8 @@ case ${host} in
 # software libraries, and whether the assembler can handle xsaddqp
 # for hardware support.
 powerpc*-*-linux*)
+  saved_CFLAGS="$CFLAGS"
+  CFLAGS="$CFLAGS -mabi=altivec -mvsx -mfloat128"
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for PowerPC ISA 2.06 to build __float128 libraries" >&5
 $as_echo_n "checking for PowerPC ISA 2.06 to build __float128 libraries... " >&6; }
 if test "${libgcc_cv_powerpc_float128+set}" = set; then :
@@ -4786,8 +4788,7 @@ if test "${libgcc_cv_powerpc_float128+set}" = set; then :
 else
   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
-#pragma GCC target ("vsx")
-     vector double dadd (vector double a, vector double b) { return a + b; }
+vector double dadd (vector double a, vector double b) { return a + b; }
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
   libgcc_cv_powerpc_float128=yes
@@ -4799,6 +4800,7 @@ fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $libgcc_cv_powerpc_float128" >&5
 $as_echo "$libgcc_cv_powerpc_float128" >&6; }
 
+  CFLAGS="$CFLAGS -mpower9-vector -mfloat128-hardware"
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for PowerPC ISA 3.0 to build hardware __float128 libraries" >&5
 $as_echo_n "checking for PowerPC ISA 3.0 to build hardware __float128 libraries... " >&6; }
 if test "${libgcc_cv_powerpc_float128_hw+set}" = set; then :
@@ -4806,12 +4808,11 @@ if test "${libgcc_cv_powerpc_float128_hw+set}" = set; then :
 else
   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
-#pragma GCC target ("vsx,power9-vector")
-     #include <sys/auxv.h>
+#include <sys/auxv.h>
      #ifndef AT_PLATFORM
      #error "AT_PLATFORM is not defined"
      #endif
-     vector unsigned char (vector unsigned char a, vector unsigned char b)
+     vector unsigned char add (vector unsigned char a, vector unsigned char b)
      {
        vector unsigned char ret;
        __asm__ ("xsaddqp %0,%1,%2" : "=v" (ret) : "v" (a), "v" (b));
@@ -4830,6 +4831,7 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $libgcc_cv_powerpc_float128_hw" >&5
 $as_echo "$libgcc_cv_powerpc_float128_hw" >&6; }
+  CFLAGS="$saved_CFLAGS"
 esac
 
 # Collect host-machine-specific information.

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1999-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1999-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -38,15 +38,24 @@ package Warnsw is
    --  here as time goes by. And in fact a really nice idea would be to put
    --  them all in a Warn_Record so that they would be easy to save/restore.
 
-   Warn_On_Record_Holes : Boolean := False;
-   --  Warn when explicit record component clauses leave uncovered holes (gaps)
-   --  in a record layout. Off by default, set by -gnatw.h (but not -gnatwa).
+   Warn_On_Late_Primitives : Boolean := False;
+   --  Warn when tagged type public primitives are defined after its private
+   --  extensions.
 
    Warn_On_Overridden_Size : Boolean := False;
    --  Warn when explicit record component clause or array component_size
    --  clause specifies a size that overrides a size for the type which was
    --  set with an explicit size clause. Off by default, modified by use of
    --  -gnatw.s/.S (but not -gnatwa).
+
+   Warn_On_Questionable_Layout : Boolean := False;
+   --  Warn when default layout of a record type is questionable for run-time
+   --  efficiency reasons and would be improved by reordering the components.
+   --  Off by default, modified by use of -gnatw.q/.Q (but not -gnatwa).
+
+   Warn_On_Record_Holes : Boolean := False;
+   --  Warn when explicit record component clauses leave uncovered holes (gaps)
+   --  in a record layout. Off by default, set by -gnatw.h (but not -gnatwa).
 
    Warn_On_Size_Alignment : Boolean := True;
    --  Warn when explicit Size and Alignment clauses are given for a type, and
@@ -91,6 +100,7 @@ package Warnsw is
       Warn_On_Dereference                 : Boolean;
       Warn_On_Export_Import               : Boolean;
       Warn_On_Hiding                      : Boolean;
+      Warn_On_Late_Primitives             : Boolean;
       Warn_On_Modified_Unread             : Boolean;
       Warn_On_No_Value_Assigned           : Boolean;
       Warn_On_Non_Local_Exception         : Boolean;
@@ -99,6 +109,7 @@ package Warnsw is
       Warn_On_Overlap                     : Boolean;
       Warn_On_Overridden_Size             : Boolean;
       Warn_On_Parameter_Order             : Boolean;
+      Warn_On_Questionable_Layout         : Boolean;
       Warn_On_Questionable_Missing_Parens : Boolean;
       Warn_On_Record_Holes                : Boolean;
       Warn_On_Redundant_Constructs        : Boolean;
@@ -139,9 +150,9 @@ package Warnsw is
    procedure Set_GNAT_Mode_Warnings;
    --  This is called in -gnatg mode to set the warnings for gnat mode. It is
    --  also used to set the proper warning statuses for -gnatw.g. Note that
-   --  this set of warnings is disjoint from -gnatwa, it enables warnings that
-   --  are not included in -gnatwa, and it disables warnings that are included
-   --  in -gnatwa (such as Warn_On_Implementation_Units, which we clearly want
-   --  to be False for units built with -gnatg).
+   --  this set of warnings is neither a subset nor a superset of -gnatwa, it
+   --  enables warnings that are not included in -gnatwa and disables warnings
+   --  that are included in -gnatwa (such as Warn_On_Implementation_Units, that
+   --  we clearly want to be False for units built with -gnatg).
 
 end Warnsw;

@@ -1201,6 +1201,9 @@ lto_init (void)
 {
   int i;
 
+  /* Initialize LTO-specific data structures.  */
+  in_lto_p = true;
+
   /* We need to generate LTO if running in WPA mode.  */
   flag_generate_lto = (flag_wpa != NULL);
 
@@ -1282,9 +1285,6 @@ lto_init (void)
 	NAME_TYPE (int_n_trees[i].signed_type, name);
       }
 #undef NAME_TYPE
-
-  /* Initialize LTO-specific data structures.  */
-  in_lto_p = true;
 
   return true;
 }

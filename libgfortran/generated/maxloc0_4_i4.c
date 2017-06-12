@@ -148,7 +148,7 @@ maxloc0_4_i4 (gfc_array_i4 * const restrict retarray,
 	     frequently used path so probably not worth it.  */
 	  base -= sstride[n] * extent[n];
 	  n++;
-	  if (n == rank)
+	  if (n >= rank)
 	    {
 	      /* Break out of the loop.  */
 	      base = NULL;
@@ -315,7 +315,7 @@ mmaxloc0_4_i4 (gfc_array_i4 * const restrict retarray,
 	  base -= sstride[n] * extent[n];
 	  mbase -= mstride[n] * extent[n];
 	  n++;
-	  if (n == rank)
+	  if (n >= rank)
 	    {
 	      /* Break out of the loop.  */
 	      base = NULL;

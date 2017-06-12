@@ -118,6 +118,25 @@ test_tuple_cat()
   constexpr auto cat1 __attribute__((unused)) = std::tuple_cat(t1, t2);
 }
 
+namespace {
+
+template<class T>
+constexpr int zero_from_anything(T)
+{
+  return 0;
+}
+
+}
+
+// ignore, see LWG 2773
+void
+test_ignore()
+{
+  constexpr auto ign1 __attribute__((unused)) = std::ignore;
+  constexpr auto ign2 __attribute__((unused)) = std::make_tuple(std::ignore);
+  constexpr int ign3 __attribute__((unused)) = zero_from_anything(std::ignore);
+}
+
 int
 main()
 {
@@ -126,6 +145,7 @@ main()
   test_tie();
   test_get();
   test_tuple_cat();
+  test_ignore();
 
   return 0;
 }

@@ -581,7 +581,7 @@ extern int vsnprintf (char *, size_t, const char *, va_list);
 #define HAVE_DESIGNATED_INITIALIZERS 0
 #else
 #define HAVE_DESIGNATED_INITIALIZERS \
-  (((GCC_VERSION >= 2007) || (__STDC_VERSION__ >= 199901L))
+  ((GCC_VERSION >= 2007) || (__STDC_VERSION__ >= 199901L))
 #endif
 #endif
 
@@ -590,7 +590,7 @@ extern int vsnprintf (char *, size_t, const char *, va_list);
 #define HAVE_DESIGNATED_UNION_INITIALIZERS (GCC_VERSION >= 4007)
 #else
 #define HAVE_DESIGNATED_UNION_INITIALIZERS \
-  (((GCC_VERSION >= 2007) || (__STDC_VERSION__ >= 199901L))
+  ((GCC_VERSION >= 2007) || (__STDC_VERSION__ >= 199901L))
 #endif
 #endif
 
@@ -722,7 +722,8 @@ extern int vsnprintf (char *, size_t, const char *, va_list);
 
 /* Redefine abort to report an internal error w/o coredump, and
    reporting the location of the error in the source file.  */
-extern void fancy_abort (const char *, int, const char *) ATTRIBUTE_NORETURN;
+extern void fancy_abort (const char *, int, const char *)
+					 ATTRIBUTE_NORETURN ATTRIBUTE_COLD;
 #define abort() fancy_abort (__FILE__, __LINE__, __FUNCTION__)
 
 /* Use gcc_assert(EXPR) to test invariants.  */

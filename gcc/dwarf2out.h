@@ -163,7 +163,7 @@ enum dw_val_class
 /* Describe a floating point constant value, or a vector constant value.  */
 
 struct GTY(()) dw_vec_const {
-  unsigned char * GTY((atomic)) array;
+  void * GTY((atomic)) array;
   unsigned length;
   unsigned elt_size;
 };

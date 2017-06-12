@@ -2466,6 +2466,37 @@ gfc_simplify_exponent (gfc_expr *x)
 
 
 gfc_expr *
+gfc_simplify_failed_or_stopped_images (gfc_expr *team ATTRIBUTE_UNUSED,
+				       gfc_expr *kind)
+{
+  if (flag_coarray == GFC_FCOARRAY_NONE)
+    {
+      gfc_current_locus = *gfc_current_intrinsic_where;
+      gfc_fatal_error ("Coarrays disabled at %C, use %<-fcoarray=%> to enable");
+      return &gfc_bad_expr;
+    }
+
+  if (flag_coarray == GFC_FCOARRAY_SINGLE)
+    {
+      gfc_expr *result;
+      int actual_kind;
+      if (kind)
+	gfc_extract_int (kind, &actual_kind);
+      else
+	actual_kind = gfc_default_integer_kind;
+
+      result = gfc_get_array_expr (BT_INTEGER, actual_kind, &gfc_current_locus);
+      result->rank = 1;
+      return result;
+    }
+
+  /* For fcoarray = lib no simplification is possible, because it is not known
+     what images failed or are stopped at compile time.  */
+  return NULL;
+}
+
+
+gfc_expr *
 gfc_simplify_float (gfc_expr *a)
 {
   gfc_expr *result;
@@ -6761,6 +6792,36 @@ gfc_simplify_image_index (gfc_expr *coarray, gfc_expr *sub)
     mpz_set_si (result->value.integer, 0);
 
   return result;
+}
+
+gfc_expr *
+gfc_simplify_image_status (gfc_expr *image, gfc_expr *team ATTRIBUTE_UNUSED)
+{
+  if (flag_coarray == GFC_FCOARRAY_NONE)
+    {
+      gfc_current_locus = *gfc_current_intrinsic_where;
+      gfc_fatal_error ("Coarrays disabled at %C, use %<-fcoarray=%> to enable");
+      return &gfc_bad_expr;
+    }
+
+  /* Simplification is possible for fcoarray = single only.  For all other modes
+     the result depends on runtime conditions.  */
+  if (flag_coarray != GFC_FCOARRAY_SINGLE)
+    return NULL;
+
+  if (gfc_is_constant_expr (image))
+    {
+      gfc_expr *result;
+      result = gfc_get_constant_expr (BT_INTEGER, gfc_default_integer_kind,
+				      &image->where);
+      if (mpz_get_si (image->value.integer) == 1)
+	mpz_set_si (result->value.integer, 0);
+      else
+	mpz_set_si (result->value.integer, GFC_STAT_STOPPED_IMAGE);
+      return result;
+    }
+  else
+    return NULL;
 }
 
 

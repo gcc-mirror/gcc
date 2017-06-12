@@ -241,6 +241,24 @@ arm_early_load_addr_dep (rtx producer, rtx consumer)
   return reg_overlap_mentioned_p (value, addr);
 }
 
+/* Return nonzero if the CONSUMER instruction (a load) does need
+   a Pmode PRODUCER's value to calculate the address.  */
+
+int
+arm_early_load_addr_dep_ptr (rtx producer, rtx consumer)
+{
+  rtx value = arm_find_sub_rtx_with_code (PATTERN (producer), SET, false);
+  rtx addr = arm_find_sub_rtx_with_code (PATTERN (consumer), SET, false);
+
+  if (!value || !addr || !MEM_P (SET_SRC (value)))
+    return 0;
+
+  value = SET_DEST (value);
+  addr = SET_SRC (addr);
+
+  return GET_MODE (value) == Pmode && reg_overlap_mentioned_p (value, addr);
+}
+
 /* Return nonzero if the CONSUMER instruction (an ALU op) does not
    have an early register shift value or amount dependency on the
    result of PRODUCER.  */
@@ -334,6 +352,24 @@ int
 arm_early_store_addr_dep (rtx producer, rtx consumer)
 {
   return !arm_no_early_store_addr_dep (producer, consumer);
+}
+
+/* Return nonzero if the CONSUMER instruction (a store) does need
+   a Pmode PRODUCER's value to calculate the address.  */
+
+int
+arm_early_store_addr_dep_ptr (rtx producer, rtx consumer)
+{
+  rtx value = arm_find_sub_rtx_with_code (PATTERN (producer), SET, false);
+  rtx addr = arm_find_sub_rtx_with_code (PATTERN (consumer), SET, false);
+
+  if (!value || !addr || !MEM_P (SET_SRC (value)))
+    return 0;
+
+  value = SET_DEST (value);
+  addr = SET_DEST (addr);
+
+  return GET_MODE (value) == Pmode && reg_overlap_mentioned_p (value, addr);
 }
 
 /* Return non-zero iff the consumer (a multiply-accumulate or a

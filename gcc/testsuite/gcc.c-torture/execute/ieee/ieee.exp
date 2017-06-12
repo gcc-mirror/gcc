@@ -53,6 +53,10 @@ if { [istarget "alpha*-*-*"]
   lappend additional_flags "-mieee"
 }
 
+if { ![check_effective_target_signal] } {
+    lappend additional_flags "-DSIGNAL_SUPPRESS"
+}
+
 # load support procs
 load_lib c-torture.exp
 

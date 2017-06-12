@@ -25,7 +25,7 @@ main (int argc, char **argv)
 
 #pragma acc cache /* { dg-error "expected '\\\(' before end of line" } */
 #pragma acc cache a[0:N] /* { dg-error "expected '\\\(' before 'a'" } */
-	/* { dg-bogus "expected end of line before 'a'" "" { xfail c++ } 27 } */
+	/* { dg-bogus "expected end of line before 'a'" "" { xfail c++ } .-1 } */
 #pragma acc cache (a) /* { dg-error "expected '\\\['" } */
 #pragma acc cache ( /* { dg-error "expected (identifier|unqualified-id) before end of line" } */
 #pragma acc cache () /* { dg-error "expected (identifier|unqualified-id) before '\\\)' token" } */
@@ -36,7 +36,7 @@ main (int argc, char **argv)
 #pragma acc cache () /* { dg-error "expected (identifier|unqualified-id) before '\\\)' token" } */
 #pragma acc cache (a[0:N] b[0:N]) /* { dg-error "expected '\\\)' before 'b'" } */
 #pragma acc cache (a[0:N] b[0:N}) /* { dg-error "expected '\\\)' before 'b'" } */
-	/* { dg-bogus "expected end of line before '\\\}' token" "" { xfail c++ } 38 } */
+	/* { dg-bogus "expected end of line before '\\\}' token" "" { xfail c++ } .-1 } */
 #pragma acc cache (a[0:N] /* { dg-error "expected '\\\)' before end of line" } */
 #pragma acc cache (a[0:N]) ( /* { dg-error "expected end of line before '\\(' token" } */
 #pragma acc cache (a[0:N]) ii /* { dg-error "expected end of line before 'ii'" } */

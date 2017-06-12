@@ -7,8 +7,8 @@ LIB2ADD = $(srcdir)/config/vxlib.c $(srcdir)/config/vxlib-tls.c
 # This ensures that the correct target headers are used; some
 # VxWorks system headers have names that collide with GCC's
 # internal (host) headers, e.g. regs.h.
-LIBGCC2_INCLUDES = -nostdinc -I \
-  `case "/$$(MULTIDIR)" in \
-     */mrtp*) echo $(WIND_USR)/h ;; \
-     *) echo $(WIND_BASE)/target/h ;; \
+LIBGCC2_INCLUDES = -nostdinc \
+  `case "/$(MULTIDIR)" in \
+     */mrtp*) echo -I$(WIND_USR)/h -I$(WIND_USR)/h/wrn/coreip ;; \
+     *) echo -I$(WIND_BASE)/target/h -I$(WIND_BASE)/target/h/wrn/coreip ;; \
    esac`

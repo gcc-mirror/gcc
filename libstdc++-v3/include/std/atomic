@@ -909,7 +909,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /// atomic_char32_t
   typedef atomic<char32_t>		atomic_char32_t;
 
-
+#ifdef _GLIBCXX_USE_C99_STDINT_TR1
   // _GLIBCXX_RESOLVE_LIB_DEFECTS
   // 2441. Exact-width atomic typedefs should be provided
 
@@ -986,6 +986,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /// atomic_uint_fast64_t
   typedef atomic<uint_fast64_t>		atomic_uint_fast64_t;
+#endif
 
 
   /// atomic_intptr_t
@@ -997,15 +998,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /// atomic_size_t
   typedef atomic<size_t>		atomic_size_t;
 
+  /// atomic_ptrdiff_t
+  typedef atomic<ptrdiff_t>		atomic_ptrdiff_t;
+
+#ifdef _GLIBCXX_USE_C99_STDINT_TR1
   /// atomic_intmax_t
   typedef atomic<intmax_t>		atomic_intmax_t;
 
   /// atomic_uintmax_t
   typedef atomic<uintmax_t>		atomic_uintmax_t;
-
-  /// atomic_ptrdiff_t
-  typedef atomic<ptrdiff_t>		atomic_ptrdiff_t;
-
+#endif
 
   // Function definitions, atomic_flag operations.
   inline bool

@@ -19,11 +19,11 @@ void Foo () {
   
   (c.f<int>) (2);
 
-  c.g;			// { dg-error "statement cannot resolve" "" }
-  c.f;		        // { dg-error "statement cannot resolve" "" }
-  c.f<int>;		// { dg-error "statement cannot resolve" "" }
+  c.g;			// { dg-error "statement cannot resolve" }
+  c.f;		        // { dg-error "statement cannot resolve" }
+  c.f<int>;		// { dg-error "statement cannot resolve" }
   
-  c.g == 1;		// { dg-error "invalid" "" }
-  c.f == 1;		// { dg-error "invalid" "" }
-  c.f<int> == 1;	// { dg-error "invalid" "" }
+  c.g == 1;		// { dg-error "invalid" }
+  c.f == 1;		// { dg-error "invalid" }
+  c.f<int> == 1;	// { dg-error "invalid" }
 }

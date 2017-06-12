@@ -79,7 +79,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
    *  @tparam _Key  Type of key objects.
    *  @tparam  _Tp  Type of mapped objects.
    *  @tparam _Compare  Comparison function object type, defaults to less<_Key>.
-   *  @tparam _Alloc  Allocator type, defaults to 
+   *  @tparam _Alloc  Allocator type, defaults to
    *                  allocator<pair<const _Key, _Tp>.
    *
    *  Meets the requirements of a <a href="tables.html#65">container</a>, a
@@ -95,23 +95,27 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
    *  called (*_unique versus *_equal, same as the standard).
   */
   template <typename _Key, typename _Tp, typename _Compare = std::less<_Key>,
-            typename _Alloc = std::allocator<std::pair<const _Key, _Tp> > >
+	    typename _Alloc = std::allocator<std::pair<const _Key, _Tp> > >
     class map
     {
     public:
-      typedef _Key                                          key_type;
-      typedef _Tp                                           mapped_type;
-      typedef std::pair<const _Key, _Tp>                    value_type;
-      typedef _Compare                                      key_compare;
-      typedef _Alloc                                        allocator_type;
+      typedef _Key					key_type;
+      typedef _Tp					mapped_type;
+      typedef std::pair<const _Key, _Tp>		value_type;
+      typedef _Compare					key_compare;
+      typedef _Alloc					allocator_type;
 
     private:
+#ifdef _GLIBCXX_CONCEPT_CHECKS
       // concept requirements
-      typedef typename _Alloc::value_type                   _Alloc_value_type;
+      typedef typename _Alloc::value_type		_Alloc_value_type;
+# if __cplusplus < 201103L
       __glibcxx_class_requires(_Tp, _SGIAssignableConcept)
+# endif
       __glibcxx_class_requires4(_Compare, bool, _Key, _Key,
 				_BinaryFunctionConcept)
       __glibcxx_class_requires2(value_type, _Alloc_value_type, _SameTypeConcept)
+#endif
 
     public:
       class value_compare
@@ -130,7 +134,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       };
 
     private:
-      /// This turns a red-black tree into a [multi]map. 
+      /// This turns a red-black tree into a [multi]map.
       typedef typename __gnu_cxx::__alloc_traits<_Alloc>::template
 	rebind<value_type>::other _Pair_alloc_type;
 
@@ -145,15 +149,15 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     public:
       // many of these are specified differently in ISO, but the following are
       // "functionally equivalent"
-      typedef typename _Alloc_traits::pointer            pointer;
-      typedef typename _Alloc_traits::const_pointer      const_pointer;
-      typedef typename _Alloc_traits::reference          reference;
-      typedef typename _Alloc_traits::const_reference    const_reference;
-      typedef typename _Rep_type::iterator               iterator;
-      typedef typename _Rep_type::const_iterator         const_iterator;
-      typedef typename _Rep_type::size_type              size_type;
-      typedef typename _Rep_type::difference_type        difference_type;
-      typedef typename _Rep_type::reverse_iterator       reverse_iterator;
+      typedef typename _Alloc_traits::pointer		 pointer;
+      typedef typename _Alloc_traits::const_pointer	 const_pointer;
+      typedef typename _Alloc_traits::reference		 reference;
+      typedef typename _Alloc_traits::const_reference	 const_reference;
+      typedef typename _Rep_type::iterator		 iterator;
+      typedef typename _Rep_type::const_iterator	 const_iterator;
+      typedef typename _Rep_type::size_type		 size_type;
+      typedef typename _Rep_type::difference_type	 difference_type;
+      typedef typename _Rep_type::reverse_iterator	 reverse_iterator;
       typedef typename _Rep_type::const_reverse_iterator const_reverse_iterator;
 
 #if __cplusplus > 201402L
@@ -241,10 +245,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       /// Allocator-extended range constructor.
       template<typename _InputIterator>
-        map(_InputIterator __first, _InputIterator __last,
+	map(_InputIterator __first, _InputIterator __last,
 	    const allocator_type& __a)
 	: _M_t(_Compare(), _Pair_alloc_type(__a))
-        { _M_t._M_insert_unique(__first, __last); }
+	{ _M_t._M_insert_unique(__first, __last); }
 #endif
 
       /**
@@ -258,9 +262,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  distance(__first,__last)).
        */
       template<typename _InputIterator>
-        map(_InputIterator __first, _InputIterator __last)
+	map(_InputIterator __first, _InputIterator __last)
 	: _M_t()
-        { _M_t._M_insert_unique(__first, __last); }
+	{ _M_t._M_insert_unique(__first, __last); }
 
       /**
        *  @brief  Builds a %map from a range.
@@ -275,11 +279,11 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  distance(__first,__last)).
        */
       template<typename _InputIterator>
-        map(_InputIterator __first, _InputIterator __last,
+	map(_InputIterator __first, _InputIterator __last,
 	    const _Compare& __comp,
 	    const allocator_type& __a = allocator_type())
 	: _M_t(__comp, _Pair_alloc_type(__a))
-        { _M_t._M_insert_unique(__first, __last); }
+	{ _M_t._M_insert_unique(__first, __last); }
 
 #if __cplusplus >= 201103L
       /**
@@ -490,7 +494,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 					    std::tuple<const key_type&>(__k),
 					    std::tuple<>());
 #else
-          __i = insert(__i, value_type(__k, mapped_type()));
+	  __i = insert(__i, value_type(__k, mapped_type()));
 #endif
 	return (*__i).second;
       }
@@ -659,7 +663,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *
        *  @param __k    Key to use for finding a possibly existing pair in
        *                the map.
-       *  @param __args  Arguments used to generate the .second for a new pair 
+       *  @param __args  Arguments used to generate the .second for a new pair
        *                instance.
        *
        *  @return  A pair, of which the first element is an iterator that points
@@ -675,37 +679,37 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  Insertion requires logarithmic time.
        */
       template <typename... _Args>
-        pair<iterator, bool>
-        try_emplace(const key_type& __k, _Args&&... __args)
-        {
-          iterator __i = lower_bound(__k);
-          if (__i == end() || key_comp()(__k, (*__i).first))
-            {
-              __i = emplace_hint(__i, std::piecewise_construct,
-                                 std::forward_as_tuple(__k),
-                                 std::forward_as_tuple(
-                                   std::forward<_Args>(__args)...));
-              return {__i, true};
-            }
-          return {__i, false};
-        }
+	pair<iterator, bool>
+	try_emplace(const key_type& __k, _Args&&... __args)
+	{
+	  iterator __i = lower_bound(__k);
+	  if (__i == end() || key_comp()(__k, (*__i).first))
+	    {
+	      __i = emplace_hint(__i, std::piecewise_construct,
+				 std::forward_as_tuple(__k),
+				 std::forward_as_tuple(
+				   std::forward<_Args>(__args)...));
+	      return {__i, true};
+	    }
+	  return {__i, false};
+	}
 
       // move-capable overload
       template <typename... _Args>
-        pair<iterator, bool>
-        try_emplace(key_type&& __k, _Args&&... __args)
-        {
-          iterator __i = lower_bound(__k);
-          if (__i == end() || key_comp()(__k, (*__i).first))
-            {
-              __i = emplace_hint(__i, std::piecewise_construct,
-                                 std::forward_as_tuple(std::move(__k)),
-                                 std::forward_as_tuple(
-                                   std::forward<_Args>(__args)...));
-              return {__i, true};
-            }
-          return {__i, false};
-        }
+	pair<iterator, bool>
+	try_emplace(key_type&& __k, _Args&&... __args)
+	{
+	  iterator __i = lower_bound(__k);
+	  if (__i == end() || key_comp()(__k, (*__i).first))
+	    {
+	      __i = emplace_hint(__i, std::piecewise_construct,
+				 std::forward_as_tuple(std::move(__k)),
+				 std::forward_as_tuple(
+				   std::forward<_Args>(__args)...));
+	      return {__i, true};
+	    }
+	  return {__i, false};
+	}
 
       /**
        *  @brief Attempts to build and insert a std::pair into the %map.
@@ -714,14 +718,14 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *                  pair should be inserted.
        *  @param __k    Key to use for finding a possibly existing pair in
        *                the map.
-       *  @param __args  Arguments used to generate the .second for a new pair 
+       *  @param __args  Arguments used to generate the .second for a new pair
        *                instance.
        *  @return An iterator that points to the element with key of the
        *          std::pair built from @a __args (may or may not be that
        *          std::pair).
        *
        *  This function is not concerned about whether the insertion took place,
-       *  and thus does not return a boolean like the single-argument 
+       *  and thus does not return a boolean like the single-argument
        *  try_emplace() does. However, if insertion did not take place,
        *  this function has no effect.
        *  Note that the first parameter is only a hint and can potentially
@@ -735,40 +739,40 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  Insertion requires logarithmic time (if the hint is not taken).
        */
       template <typename... _Args>
-        iterator
-        try_emplace(const_iterator __hint, const key_type& __k,
-                    _Args&&... __args)
-        {
-          iterator __i;
-          auto __true_hint = _M_t._M_get_insert_hint_unique_pos(__hint, __k);
-          if (__true_hint.second)
-            __i = emplace_hint(iterator(__true_hint.second),
-                               std::piecewise_construct,
-                               std::forward_as_tuple(__k),
-                               std::forward_as_tuple(
-                                 std::forward<_Args>(__args)...));
-          else
-            __i = iterator(__true_hint.first);
-          return __i;
-        }
+	iterator
+	try_emplace(const_iterator __hint, const key_type& __k,
+		    _Args&&... __args)
+	{
+	  iterator __i;
+	  auto __true_hint = _M_t._M_get_insert_hint_unique_pos(__hint, __k);
+	  if (__true_hint.second)
+	    __i = emplace_hint(iterator(__true_hint.second),
+			       std::piecewise_construct,
+			       std::forward_as_tuple(__k),
+			       std::forward_as_tuple(
+				 std::forward<_Args>(__args)...));
+	  else
+	    __i = iterator(__true_hint.first);
+	  return __i;
+	}
 
       // move-capable overload
       template <typename... _Args>
-        iterator
-        try_emplace(const_iterator __hint, key_type&& __k, _Args&&... __args)
-        {
-          iterator __i;
-          auto __true_hint = _M_t._M_get_insert_hint_unique_pos(__hint, __k);
-          if (__true_hint.second)
-            __i = emplace_hint(iterator(__true_hint.second),
-                               std::piecewise_construct,
-                               std::forward_as_tuple(std::move(__k)),
-                               std::forward_as_tuple(
-                                 std::forward<_Args>(__args)...));
-          else
-            __i = iterator(__true_hint.first);
-          return __i;
-        }
+	iterator
+	try_emplace(const_iterator __hint, key_type&& __k, _Args&&... __args)
+	{
+	  iterator __i;
+	  auto __true_hint = _M_t._M_get_insert_hint_unique_pos(__hint, __k);
+	  if (__true_hint.second)
+	    __i = emplace_hint(iterator(__true_hint.second),
+			       std::piecewise_construct,
+			       std::forward_as_tuple(std::move(__k)),
+			       std::forward_as_tuple(
+				 std::forward<_Args>(__args)...));
+	  else
+	    __i = iterator(__true_hint.first);
+	  return __i;
+	}
 #endif
 
       /**
@@ -777,8 +781,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  @param __x Pair to be inserted (see std::make_pair for easy
        *	     creation of pairs).
        *
-       *  @return  A pair, of which the first element is an iterator that 
-       *           points to the possibly inserted pair, and the second is 
+       *  @return  A pair, of which the first element is an iterator that
+       *           points to the possibly inserted pair, and the second is
        *           a bool that is true if the pair was actually inserted.
        *
        *  This function attempts to insert a (key, value) %pair into the %map.
@@ -795,9 +799,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       template<typename _Pair, typename = typename
 	       std::enable_if<std::is_constructible<value_type,
 						    _Pair&&>::value>::type>
-        std::pair<iterator, bool>
-        insert(_Pair&& __x)
-        { return _M_t._M_insert_unique(std::forward<_Pair>(__x)); }
+	std::pair<iterator, bool>
+	insert(_Pair&& __x)
+	{ return _M_t._M_insert_unique(std::forward<_Pair>(__x)); }
 #endif
 
 #if __cplusplus >= 201103L
@@ -848,9 +852,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       template<typename _Pair, typename = typename
 	       std::enable_if<std::is_constructible<value_type,
 						    _Pair&&>::value>::type>
-        iterator
-        insert(const_iterator __position, _Pair&& __x)
-        { return _M_t._M_insert_unique_(__position,
+	iterator
+	insert(const_iterator __position, _Pair&& __x)
+	{ return _M_t._M_insert_unique_(__position,
 					std::forward<_Pair>(__x)); }
 #endif
 
@@ -863,9 +867,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  Complexity similar to that of the range constructor.
        */
       template<typename _InputIterator>
-        void
-        insert(_InputIterator __first, _InputIterator __last)
-        { _M_t._M_insert_unique(__first, __last); }
+	void
+	insert(_InputIterator __first, _InputIterator __last)
+	{ _M_t._M_insert_unique(__first, __last); }
 
 #if __cplusplus > 201402L
 #define __cpp_lib_map_insertion 201411
@@ -873,11 +877,11 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  @brief Attempts to insert or assign a std::pair into the %map.
        *  @param __k    Key to use for finding a possibly existing pair in
        *                the map.
-       *  @param __obj  Argument used to generate the .second for a pair 
+       *  @param __obj  Argument used to generate the .second for a pair
        *                instance.
        *
-       *  @return  A pair, of which the first element is an iterator that 
-       *           points to the possibly inserted pair, and the second is 
+       *  @return  A pair, of which the first element is an iterator that
+       *           points to the possibly inserted pair, and the second is
        *           a bool that is true if the pair was actually inserted.
        *
        *  This function attempts to insert a (key, value) %pair into the %map.
@@ -889,39 +893,39 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  Insertion requires logarithmic time.
        */
       template <typename _Obj>
-        pair<iterator, bool>
-        insert_or_assign(const key_type& __k, _Obj&& __obj)
-        {
-          iterator __i = lower_bound(__k);
-          if (__i == end() || key_comp()(__k, (*__i).first))
-            {
-              __i = emplace_hint(__i, std::piecewise_construct,
-                                 std::forward_as_tuple(__k),
-                                 std::forward_as_tuple(
-                                   std::forward<_Obj>(__obj)));
-              return {__i, true};
-            }
-          (*__i).second = std::forward<_Obj>(__obj);
-          return {__i, false};
-        }
+	pair<iterator, bool>
+	insert_or_assign(const key_type& __k, _Obj&& __obj)
+	{
+	  iterator __i = lower_bound(__k);
+	  if (__i == end() || key_comp()(__k, (*__i).first))
+	    {
+	      __i = emplace_hint(__i, std::piecewise_construct,
+				 std::forward_as_tuple(__k),
+				 std::forward_as_tuple(
+				   std::forward<_Obj>(__obj)));
+	      return {__i, true};
+	    }
+	  (*__i).second = std::forward<_Obj>(__obj);
+	  return {__i, false};
+	}
 
       // move-capable overload
       template <typename _Obj>
-        pair<iterator, bool>
-        insert_or_assign(key_type&& __k, _Obj&& __obj)
-        {
-          iterator __i = lower_bound(__k);
-          if (__i == end() || key_comp()(__k, (*__i).first))
-            {
-              __i = emplace_hint(__i, std::piecewise_construct,
-                                 std::forward_as_tuple(std::move(__k)),
-                                 std::forward_as_tuple(
-                                   std::forward<_Obj>(__obj)));
-              return {__i, true};
-            }
-          (*__i).second = std::forward<_Obj>(__obj);
-          return {__i, false};
-        }
+	pair<iterator, bool>
+	insert_or_assign(key_type&& __k, _Obj&& __obj)
+	{
+	  iterator __i = lower_bound(__k);
+	  if (__i == end() || key_comp()(__k, (*__i).first))
+	    {
+	      __i = emplace_hint(__i, std::piecewise_construct,
+				 std::forward_as_tuple(std::move(__k)),
+				 std::forward_as_tuple(
+				   std::forward<_Obj>(__obj)));
+	      return {__i, true};
+	    }
+	  (*__i).second = std::forward<_Obj>(__obj);
+	  return {__i, false};
+	}
 
       /**
        *  @brief Attempts to insert or assign a std::pair into the %map.
@@ -929,7 +933,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *                  pair should be inserted.
        *  @param __k    Key to use for finding a possibly existing pair in
        *                the map.
-       *  @param __obj  Argument used to generate the .second for a pair 
+       *  @param __obj  Argument used to generate the .second for a pair
        *                instance.
        *
        *  @return An iterator that points to the element with key of
@@ -944,44 +948,44 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  Insertion requires logarithmic time.
        */
       template <typename _Obj>
-        iterator
-        insert_or_assign(const_iterator __hint,
-                         const key_type& __k, _Obj&& __obj)
-        {
-          iterator __i;
-          auto __true_hint = _M_t._M_get_insert_hint_unique_pos(__hint, __k);
-          if (__true_hint.second)
-            {
-              return emplace_hint(iterator(__true_hint.second),
-                                  std::piecewise_construct,
-                                  std::forward_as_tuple(__k),
-                                  std::forward_as_tuple(
-                                    std::forward<_Obj>(__obj)));
-            }
-          __i = iterator(__true_hint.first);
-          (*__i).second = std::forward<_Obj>(__obj);
-          return __i;
-        }
+	iterator
+	insert_or_assign(const_iterator __hint,
+			 const key_type& __k, _Obj&& __obj)
+	{
+	  iterator __i;
+	  auto __true_hint = _M_t._M_get_insert_hint_unique_pos(__hint, __k);
+	  if (__true_hint.second)
+	    {
+	      return emplace_hint(iterator(__true_hint.second),
+				  std::piecewise_construct,
+				  std::forward_as_tuple(__k),
+				  std::forward_as_tuple(
+				    std::forward<_Obj>(__obj)));
+	    }
+	  __i = iterator(__true_hint.first);
+	  (*__i).second = std::forward<_Obj>(__obj);
+	  return __i;
+	}
 
       // move-capable overload
       template <typename _Obj>
-        iterator
-        insert_or_assign(const_iterator __hint, key_type&& __k, _Obj&& __obj)
-        {
-          iterator __i;
-          auto __true_hint = _M_t._M_get_insert_hint_unique_pos(__hint, __k);
-          if (__true_hint.second)
-            {
-              return emplace_hint(iterator(__true_hint.second),
-                                  std::piecewise_construct,
-                                  std::forward_as_tuple(std::move(__k)),
-                                  std::forward_as_tuple(
-                                    std::forward<_Obj>(__obj)));
-            }
-          __i = iterator(__true_hint.first);
-          (*__i).second = std::forward<_Obj>(__obj);
-          return __i;
-        }
+	iterator
+	insert_or_assign(const_iterator __hint, key_type&& __k, _Obj&& __obj)
+	{
+	  iterator __i;
+	  auto __true_hint = _M_t._M_get_insert_hint_unique_pos(__hint, __k);
+	  if (__true_hint.second)
+	    {
+	      return emplace_hint(iterator(__true_hint.second),
+				  std::piecewise_construct,
+				  std::forward_as_tuple(std::move(__k)),
+				  std::forward_as_tuple(
+				    std::forward<_Obj>(__obj)));
+	    }
+	  __i = iterator(__true_hint.first);
+	  (*__i).second = std::forward<_Obj>(__obj);
+	  return __i;
+	}
 #endif
 
 #if __cplusplus >= 201103L
@@ -991,7 +995,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  @brief Erases an element from a %map.
        *  @param  __position  An iterator pointing to the element to be erased.
        *  @return An iterator pointing to the element immediately following
-       *          @a position prior to the element being erased. If no such 
+       *          @a position prior to the element being erased. If no such
        *          element exists, end() is returned.
        *
        *  This function erases an element, pointed to by the given
@@ -1351,13 +1355,13 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       //@}
 
       template<typename _K1, typename _T1, typename _C1, typename _A1>
-        friend bool
-        operator==(const map<_K1, _T1, _C1, _A1>&,
+	friend bool
+	operator==(const map<_K1, _T1, _C1, _A1>&,
 		   const map<_K1, _T1, _C1, _A1>&);
 
       template<typename _K1, typename _T1, typename _C1, typename _A1>
-        friend bool
-        operator<(const map<_K1, _T1, _C1, _A1>&,
+	friend bool
+	operator<(const map<_K1, _T1, _C1, _A1>&,
 		  const map<_K1, _T1, _C1, _A1>&);
     };
 
@@ -1374,7 +1378,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
   template<typename _Key, typename _Tp, typename _Compare, typename _Alloc>
     inline bool
     operator==(const map<_Key, _Tp, _Compare, _Alloc>& __x,
-               const map<_Key, _Tp, _Compare, _Alloc>& __y)
+	       const map<_Key, _Tp, _Compare, _Alloc>& __y)
     { return __x._M_t == __y._M_t; }
 
   /**
@@ -1391,35 +1395,35 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
   template<typename _Key, typename _Tp, typename _Compare, typename _Alloc>
     inline bool
     operator<(const map<_Key, _Tp, _Compare, _Alloc>& __x,
-              const map<_Key, _Tp, _Compare, _Alloc>& __y)
+	      const map<_Key, _Tp, _Compare, _Alloc>& __y)
     { return __x._M_t < __y._M_t; }
 
   /// Based on operator==
   template<typename _Key, typename _Tp, typename _Compare, typename _Alloc>
     inline bool
     operator!=(const map<_Key, _Tp, _Compare, _Alloc>& __x,
-               const map<_Key, _Tp, _Compare, _Alloc>& __y)
+	       const map<_Key, _Tp, _Compare, _Alloc>& __y)
     { return !(__x == __y); }
 
   /// Based on operator<
   template<typename _Key, typename _Tp, typename _Compare, typename _Alloc>
     inline bool
     operator>(const map<_Key, _Tp, _Compare, _Alloc>& __x,
-              const map<_Key, _Tp, _Compare, _Alloc>& __y)
+	      const map<_Key, _Tp, _Compare, _Alloc>& __y)
     { return __y < __x; }
 
   /// Based on operator<
   template<typename _Key, typename _Tp, typename _Compare, typename _Alloc>
     inline bool
     operator<=(const map<_Key, _Tp, _Compare, _Alloc>& __x,
-               const map<_Key, _Tp, _Compare, _Alloc>& __y)
+	       const map<_Key, _Tp, _Compare, _Alloc>& __y)
     { return !(__y < __x); }
 
   /// Based on operator<
   template<typename _Key, typename _Tp, typename _Compare, typename _Alloc>
     inline bool
     operator>=(const map<_Key, _Tp, _Compare, _Alloc>& __x,
-               const map<_Key, _Tp, _Compare, _Alloc>& __y)
+	       const map<_Key, _Tp, _Compare, _Alloc>& __y)
     { return !(__x < __y); }
 
   /// See std::map::swap().

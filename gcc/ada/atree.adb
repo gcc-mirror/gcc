@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -519,9 +519,9 @@ package body Atree is
       Table_Component_Type => Node_Id,
       Table_Index_Type     => Node_Id'Base,
       Table_Low_Bound      => First_Node_Id,
-      Table_Initial        => Alloc.Orig_Nodes_Initial,
-      Table_Increment      => Alloc.Orig_Nodes_Increment,
-      Release_Threshold    => Alloc.Orig_Nodes_Release_Threshold,
+      Table_Initial        => Alloc.Nodes_Initial,
+      Table_Increment      => Alloc.Nodes_Increment,
+      Release_Threshold    => Alloc.Nodes_Release_Threshold,
       Table_Name           => "Orig_Nodes");
 
    --------------------------
@@ -767,16 +767,12 @@ package body Atree is
       --  Deal with copying extension nodes if present. No need to copy flags
       --  table entries, since they are always zero for extending components.
 
-      if Has_Extension (Source) then
-         pragma Assert (Has_Extension (Destination));
+      pragma Assert (Has_Extension (Source) = Has_Extension (Destination));
 
+      if Has_Extension (Source) then
          for J in 1 .. Num_Extension_Nodes loop
             Nodes.Table (Destination + J) := Nodes.Table (Source + J);
          end loop;
-
-      else
-         pragma Assert (not Has_Extension (Source));
-         null;
       end if;
    end Copy_Node;
 
@@ -1583,12 +1579,16 @@ package body Atree is
 
    procedure Lock is
    begin
+      --  We used to Release the tables, as in the comments below, but that is
+      --  a waste of time. We're only wasting virtual memory here, and the
+      --  release calls copy large amounts of data.
+
+      --  Nodes.Release;
       Nodes.Locked := True;
+      --  Flags.Release;
       Flags.Locked := True;
+      --  Orig_Nodes.Release;
       Orig_Nodes.Locked := True;
-      Nodes.Release;
-      Flags.Release;
-      Orig_Nodes.Release;
    end Lock;
 
    ----------------

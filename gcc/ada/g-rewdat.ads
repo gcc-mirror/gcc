@@ -5,7 +5,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---            Copyright (C) 2014, Free Software Foundation, Inc.            --
+--           Copyright (C) 2014-2017, Free Software Foundation, Inc.        --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -128,6 +128,12 @@ private
    type Buffer
      (Size, Size_Pattern, Size_Value : Stream_Element_Offset) is
    limited record
+      Pos_C : Stream_Element_Offset; -- last valid element in Current
+      Pos_B : Stream_Element_Offset; -- last valid element in Buffer
+
+      Next  : Buffer_Ref;
+      --  A link to another rewriter if any
+
       Buffer : Stream_Element_Array (1 .. Size);
       --  Fully prepared/rewritten data waiting to be output
 
@@ -141,12 +147,6 @@ private
 
       Value : Stream_Element_Array (1 .. Size_Value);
       --  The value the pattern is replaced by
-
-      Pos_C : Stream_Element_Offset; -- last valid element in Current
-      Pos_B : Stream_Element_Offset; -- last valid element in Buffer
-
-      Next  : Buffer_Ref;
-      --  A link to another rewriter if any
    end record;
 
 end GNAT.Rewrite_Data;

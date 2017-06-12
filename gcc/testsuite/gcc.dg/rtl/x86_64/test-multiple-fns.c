@@ -1,4 +1,4 @@
-/* { dg-do run { target x86_64-*-* } } */
+/* { dg-do run { target { { i?86-*-* x86_64-*-* } && lp64 } } } */
 
 /* Verify that we can have multiple __RTL functions in one test case.
    Each of these __RTL functions returns a const, dumped immediately after

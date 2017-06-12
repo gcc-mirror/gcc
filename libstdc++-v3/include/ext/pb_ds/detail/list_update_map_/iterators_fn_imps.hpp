@@ -75,6 +75,6 @@ inline typename PB_DS_CLASS_C_DEC::const_iterator
 PB_DS_CLASS_C_DEC::
 end() const
 {
-  return const_iterator(0, 0, const_cast<PB_DS_CLASS_C_DEC* const>(this));
+  return const_iterator(0, 0, const_cast<PB_DS_CLASS_C_DEC*>(this));
 }
 

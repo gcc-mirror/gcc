@@ -1,4 +1,5 @@
 /* { dg-require-effective-target vect_int } */
+/* { dg-additional-options "--param max-completely-peel-times=1" } */
 
 #include <stdlib.h>
 #include <stdarg.h>

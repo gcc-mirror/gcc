@@ -71,15 +71,22 @@ CXX_C_OBJS = attribs.o incpath.o \
 	$(C_COMMON_OBJS) $(CXX_TARGET_OBJS)
 
 # Language-specific object files for C++ and Objective C++.
-CXX_AND_OBJCXX_OBJS = cp/call.o cp/decl.o cp/expr.o cp/pt.o cp/typeck2.o \
- cp/class.o cp/decl2.o cp/error.o cp/lex.o cp/parser.o cp/ptree.o cp/rtti.o \
- cp/typeck.o cp/cvt.o cp/except.o cp/friend.o cp/init.o cp/method.o \
- cp/search.o cp/semantics.o cp/tree.o cp/repo.o cp/dump.o cp/optimize.o \
- cp/mangle.o cp/cp-objcp-common.o cp/name-lookup.o cp/cxx-pretty-print.o \
- cp/cp-cilkplus.o \
- cp/cp-gimplify.o cp/cp-array-notation.o cp/lambda.o \
- cp/vtable-class-hierarchy.o cp/constexpr.o cp/cp-ubsan.o \
- cp/constraint.o cp/logic.o $(CXX_C_OBJS)
+CXX_AND_OBJCXX_OBJS = \
+	cp/call.o cp/class.o cp/constexpr.o cp/constraint.o \
+	cp/cp-array-notation.o cp/cp-cilkplus.o cp/cp-gimplify.o \
+	cp/cp-objcp-common.o cp/cp-ubsan.o \
+	cp/cvt.o cp/cxx-pretty-print.o \
+	cp/decl.o cp/decl2.o cp/dump.o \
+	cp/error.o cp/except.o cp/expr.o \
+	cp/friend.o cp/init.o \
+	cp/lambda.o cp/lex.o cp/logic.o \
+	cp/mangle.o cp/method.o \
+	cp/name-lookup.o cp/optimize.o \
+	cp/parser.o cp/pt.o cp/ptree.o \
+	cp/repo.o cp/rtti.o \
+	cp/search.o cp/semantics.o \
+	cp/tree.o cp/typeck.o cp/typeck2.o \
+	cp/vtable-class-hierarchy.o $(CXX_C_OBJS)
 
 ifeq ($(if $(wildcard ../stage_current),$(shell cat \
   ../stage_current)),stageautofeedback)

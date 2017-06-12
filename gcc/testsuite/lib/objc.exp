@@ -191,16 +191,6 @@ proc objc_target_compile { source dest type options } {
 	lappend options "ldflags=$wrap_flags"
     }
 
-    if [target_info exists objc,stack_size] {
-	lappend options "additional_flags=-DSTACK_SIZE=[target_info objc,stack_size]"
-    }
-    if [target_info exists objc,no_trampolines] {
-	lappend options "additional_flags=-DNO_TRAMPOLINES"
-    }
-    if [target_info exists objc,no_label_values] {
-	lappend options "additional_flags=-DNO_LABEL_VALUES"
-    }
-
     # TEST_ALWAYS_FLAGS are flags that should be passed to every
     # compilation.  They are passed first to allow individual
     # tests to override them.

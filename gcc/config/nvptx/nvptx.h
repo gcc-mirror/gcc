@@ -213,12 +213,18 @@ struct GTY(()) machine_function
   bool has_varadic;  /* Current function has a varadic call.  */
   bool has_chain; /* Current function has outgoing static chain.  */
   bool has_softstack; /* Current function has a soft stack frame.  */
+  bool has_simtreg; /* Current function has an OpenMP SIMD region.  */
   int num_args;	/* Number of args of current call.  */
   int return_mode; /* Return mode of current fn.
 		      (machine_mode not defined yet.) */
   rtx axis_predicate[2]; /* Neutering predicates.  */
   rtx unisimt_master; /* 'Master lane index' for -muniform-simt.  */
   rtx unisimt_predicate; /* Predicate for -muniform-simt.  */
+  rtx unisimt_location; /* Mask location for -muniform-simt.  */
+  /* The following two fields hold the maximum size resp. alignment required
+     for per-lane storage in OpenMP SIMD regions.  */
+  unsigned HOST_WIDE_INT simt_stack_size;
+  unsigned HOST_WIDE_INT simt_stack_align;
 };
 #endif
 

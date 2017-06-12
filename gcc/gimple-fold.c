@@ -161,8 +161,8 @@ can_refer_decl_in_current_unit_p (tree decl, tree from_decl)
    is in SSA form, a SSA name is created.  Otherwise a temporary register
    is made.  */
 
-static tree
-create_tmp_reg_or_ssa_name (tree type, gimple *stmt = NULL)
+tree
+create_tmp_reg_or_ssa_name (tree type, gimple *stmt)
 {
   if (gimple_in_ssa_p (cfun))
     return make_ssa_name (type, stmt);
@@ -1235,7 +1235,7 @@ get_range_strlen (tree arg, tree length[2], bitmap *visited, int type,
 		 the NUL.
 		 Set *FLEXP to true if the array whose bound is being
 		 used is at the end of a struct.  */
-	      if (array_at_struct_end_p (arg, true))
+	      if (array_at_struct_end_p (arg))
 		*flexp = true;
 
 	      arg = TREE_OPERAND (arg, 1);
@@ -2670,11 +2670,9 @@ gimple_fold_builtin_sprintf_chk (gimple_stmt_iterator *gsi,
    ORIG may be null if this is a 2-argument call.  We don't attempt to
    simplify calls with more than 3 arguments.
 
-   Return NULL_TREE if no simplification was possible, otherwise return the
-   simplified form of the call as a tree.  If IGNORED is true, it means that
-   the caller does not use the returned value of the function.  */
+   Return true if simplification was possible, otherwise false.  */
 
-static bool
+bool
 gimple_fold_builtin_sprintf (gimple_stmt_iterator *gsi)
 {
   gimple *stmt = gsi_stmt (*gsi);
@@ -2795,11 +2793,9 @@ gimple_fold_builtin_sprintf (gimple_stmt_iterator *gsi)
    FMT, and ORIG.  ORIG may be null if this is a 3-argument call.  We don't
    attempt to simplify calls with more than 4 arguments.
 
-   Return NULL_TREE if no simplification was possible, otherwise return the
-   simplified form of the call as a tree.  If IGNORED is true, it means that
-   the caller does not use the returned value of the function.  */
+   Return true if simplification was possible, otherwise false.  */
 
-static bool
+bool
 gimple_fold_builtin_snprintf (gimple_stmt_iterator *gsi)
 {
   gcall *stmt = as_a <gcall *> (gsi_stmt (*gsi));
@@ -3251,6 +3247,28 @@ gimple_fold_builtin_acc_on_device (gimple_stmt_iterator *gsi, tree arg0)
   return true;
 }
 
+/* Fold realloc (0, n) -> malloc (n).  */
+
+static bool
+gimple_fold_builtin_realloc (gimple_stmt_iterator *gsi)
+{
+  gimple *stmt = gsi_stmt (*gsi);
+  tree arg = gimple_call_arg (stmt, 0);
+  tree size = gimple_call_arg (stmt, 1);
+
+  if (operand_equal_p (arg, null_pointer_node, 0))
+    {
+      tree fn_malloc = builtin_decl_implicit (BUILT_IN_MALLOC);
+      if (fn_malloc)
+	{
+	  gcall *repl = gimple_build_call (fn_malloc, 1, size);
+	  replace_call_with_call_and_fold (gsi, repl);
+	  return true;
+	}
+    }
+  return false;
+}
+
 /* Fold the non-target builtin at *GSI and return whether any simplification
    was made.  */
 
@@ -3362,10 +3380,7 @@ gimple_fold_builtin (gimple_stmt_iterator *gsi)
     case BUILT_IN_SNPRINTF_CHK:
     case BUILT_IN_VSNPRINTF_CHK:
       return gimple_fold_builtin_snprintf_chk (gsi, fcode);
-    case BUILT_IN_SNPRINTF:
-      return gimple_fold_builtin_snprintf (gsi);
-    case BUILT_IN_SPRINTF:
-      return gimple_fold_builtin_sprintf (gsi);
+
     case BUILT_IN_FPRINTF:
     case BUILT_IN_FPRINTF_UNLOCKED:
     case BUILT_IN_VFPRINTF:
@@ -3409,6 +3424,9 @@ gimple_fold_builtin (gimple_stmt_iterator *gsi)
     case BUILT_IN_ACC_ON_DEVICE:
       return gimple_fold_builtin_acc_on_device (gsi,
 						gimple_call_arg (stmt, 0));
+    case BUILT_IN_REALLOC:
+      return gimple_fold_builtin_realloc (gsi);
+
     default:;
     }
 
@@ -3533,6 +3551,8 @@ fold_builtin_atomic_compare_exchange (gimple_stmt_iterator *gsi)
   tree itype = TREE_VALUE (TREE_CHAIN (TREE_CHAIN (parmt)));
   tree ctype = build_complex_type (itype);
   tree expected = TREE_OPERAND (gimple_call_arg (stmt, 1), 0);
+  bool throws = false;
+  edge e = NULL;
   gimple *g = gimple_build_assign (make_ssa_name (TREE_TYPE (expected)),
 				   expected);
   gsi_insert_before (gsi, g, GSI_SAME_STMT);
@@ -3558,19 +3578,39 @@ fold_builtin_atomic_compare_exchange (gimple_stmt_iterator *gsi)
   gimple_set_vdef (g, gimple_vdef (stmt));
   gimple_set_vuse (g, gimple_vuse (stmt));
   SSA_NAME_DEF_STMT (gimple_vdef (g)) = g;
-  if (gimple_call_lhs (stmt))
+  tree oldlhs = gimple_call_lhs (stmt);
+  if (stmt_can_throw_internal (stmt))
     {
-      gsi_insert_before (gsi, g, GSI_SAME_STMT);
+      throws = true;
+      e = find_fallthru_edge (gsi_bb (*gsi)->succs);
+    }
+  gimple_call_set_nothrow (as_a <gcall *> (g),
+			   gimple_call_nothrow_p (as_a <gcall *> (stmt)));
+  gimple_call_set_lhs (stmt, NULL_TREE);
+  gsi_replace (gsi, g, true);
+  if (oldlhs)
+    {
       g = gimple_build_assign (make_ssa_name (itype), IMAGPART_EXPR,
 			       build1 (IMAGPART_EXPR, itype, lhs));
-      gsi_insert_before (gsi, g, GSI_SAME_STMT);
-      g = gimple_build_assign (gimple_call_lhs (stmt), NOP_EXPR,
-			       gimple_assign_lhs (g));
+      if (throws)
+	{
+	  gsi_insert_on_edge_immediate (e, g);
+	  *gsi = gsi_for_stmt (g);
+	}
+      else
+	gsi_insert_after (gsi, g, GSI_NEW_STMT);
+      g = gimple_build_assign (oldlhs, NOP_EXPR, gimple_assign_lhs (g));
+      gsi_insert_after (gsi, g, GSI_NEW_STMT);
     }
-  gsi_replace (gsi, g, true);
   g = gimple_build_assign (make_ssa_name (itype), REALPART_EXPR,
 			   build1 (REALPART_EXPR, itype, lhs));
-  gsi_insert_after (gsi, g, GSI_NEW_STMT);
+  if (throws && oldlhs == NULL_TREE)
+    {
+      gsi_insert_on_edge_immediate (e, g);
+      *gsi = gsi_for_stmt (g);
+    }
+  else
+    gsi_insert_after (gsi, g, GSI_NEW_STMT);
   if (!useless_type_conversion_p (TREE_TYPE (expected), itype))
     {
       g = gimple_build_assign (make_ssa_name (TREE_TYPE (expected)),
@@ -5701,7 +5741,7 @@ gimple_fold_stmt_to_constant_1 (gimple *stmt, tree (*valueize) (tree),
 	      fprintf (dump_file, "Match-and-simplified ");
 	      print_gimple_expr (dump_file, stmt, 0, TDF_SLIM);
 	      fprintf (dump_file, " to ");
-	      print_generic_expr (dump_file, res, 0);
+	      print_generic_expr (dump_file, res);
 	      fprintf (dump_file, "\n");
 	    }
 	  return res;
@@ -6217,9 +6257,12 @@ fold_ctor_reference (tree type, tree ctor, unsigned HOST_WIDE_INT offset,
       && !compare_tree_int (TYPE_SIZE (TREE_TYPE (ctor)), size))
     {
       ret = canonicalize_constructor_val (unshare_expr (ctor), from_decl);
-      ret = fold_unary (VIEW_CONVERT_EXPR, type, ret);
       if (ret)
-	STRIP_USELESS_TYPE_CONVERSION (ret);
+	{
+	  ret = fold_unary (VIEW_CONVERT_EXPR, type, ret);
+	  if (ret)
+	    STRIP_USELESS_TYPE_CONVERSION (ret);
+	}
       return ret;
     }
   /* For constants and byte-aligned/sized reads try to go through
@@ -6514,8 +6557,8 @@ gimple_get_virt_method_for_binfo (HOST_WIDE_INT token, tree known_binfo,
   return gimple_get_virt_method_for_vtable (token, v, offset, can_refer);
 }
 
-/* Given a pointer value OP0, return a simplified version of an
-   indirection through OP0, or NULL_TREE if no simplification is
+/* Given a pointer value T, return a simplified version of an
+   indirection through T, or NULL_TREE if no simplification is
    possible.  Note that the resulting type may be different from
    the type pointed to in the sense that it is still compatible
    from the langhooks point of view. */
@@ -6529,7 +6572,8 @@ gimple_fold_indirect_ref (tree t)
 
   STRIP_NOPS (sub);
   subtype = TREE_TYPE (sub);
-  if (!POINTER_TYPE_P (subtype))
+  if (!POINTER_TYPE_P (subtype)
+      || TYPE_REF_CAN_ALIAS_ALL (ptype))
     return NULL_TREE;
 
   if (TREE_CODE (sub) == ADDR_EXPR)

@@ -21,4 +21,4 @@ AClass <MyProtocol> *object1; /* This is fine.  */
 Integer <MyProtocol> *object2; /* { dg-error "only Objective-C object types can be qualified with a protocol" } */
 
 Integer <NonExistingProtocol> *object3; /* { dg-error "only Objective-C object types can be qualified with a protocol" } */
-/* { dg-error "cannot find protocol" "" { target *-*-* } 23 } */
+/* { dg-error "cannot find protocol" "" { target *-*-* } .-1 } */

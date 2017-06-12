@@ -1,3 +1,67 @@
+2017-05-31  Martin Liska  <mliska@suse.cz>
+
+	* filter_params.py:
+	Transform ENUM_BITFIELD and comments starting with '/**'
+
+2017-05-31  David Malcolm  <dmalcolm@redhat.com>
+	    Martin Liska  <mliska@suse.cz>
+
+	* filter_params.py: New, porting the perl script to python,
+	adding a test suite.
+	* filter_gcc_for_doxygen_new: New file.
+
+2017-05-30  Martin Liska  <mliska@suse.cz>
+
+	* analyze_brprob.py: Add new argument to parse and modify
+	predict.def file.
+	* analyze_brprob_spec.py: Likewise.
+
+2017-05-29  Tom de Vries  <tom@codesourcery.com>
+
+	* check_GNU_style_lib.py (TrailingWhitespaceCheck.check): Assert no
+	trailing eol.
+	(TrailingWhitespaceTest): New unit test.
+	(check_GNU_style_file): Remove eol before checking.
+
+2017-05-29  Tom de Vries  <tom@codesourcery.com>
+
+	* check_GNU_style_lib.py (check_GNU_style_file): Treat file argument as
+	file handle.  Add and handle file_encoding argument.
+	* check_GNU_style.py (main): Handle '-' file argument.  Call
+	check_GNU_style_file with file handle as argument.
+
+2017-05-29  Tom de Vries  <tom@codesourcery.com>
+
+	* check_GNU_style_lib.py: Use import_pip3 to import pip3 packages.
+	(import_pip3): New function.
+
+2017-05-24  Tom de Vries  <tom@codesourcery.com>
+
+	* check_GNU_style_lib.py: New file, factored out of ...
+	* check_GNU_style.py: ... here.  Call main unconditionally.
+
+2017-05-19  Martin Liska  <mliska@suse.cz>
+
+	* check_GNU_style.py: New file.
+
+2007-05-03  Jeff Law  <law@redhat.com>
+
+	* config-list.mk (am33_2.0-linux): Remove from list of targets
+	to build.
+
+2017-05-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* gennews (files): Add files for GCC 7.
+
+2017-04-26  Tom de Vries  <tom@codesourcery.com>
+
+	* gen_autofdo_event.py: Fix comment.
+
+2017-04-11  Damian Rouson  <damian@sourceryinstitute.org>
+
+        * download_prerequisites (md5_check): New function emulates Linux
+        'md5 --check' on macOS.  Modified script for macOS compatibility.
+
 2017-02-06  Palmer Dabbelt  <palmer@dabbelt.com>
 
 	* config-list.mki (LIST): Add riscv32-unknown-linux-gun and

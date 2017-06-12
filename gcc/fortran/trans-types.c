@@ -2617,9 +2617,10 @@ gfc_get_derived_type (gfc_symbol * derived, int codimen)
 	 the same as derived, by forcing the procedure pointer component to
 	 be built as if the explicit interface does not exist.  */
       if (c->attr.proc_pointer
-	  && ((c->ts.type != BT_DERIVED && c->ts.type != BT_CLASS)
-	       || (c->ts.u.derived
-		   && !gfc_compare_derived_types (derived, c->ts.u.derived))))
+	  && (c->ts.type != BT_DERIVED || (c->ts.u.derived
+		    && !gfc_compare_derived_types (derived, c->ts.u.derived)))
+	  && (c->ts.type != BT_CLASS || (CLASS_DATA (c)->ts.u.derived
+		    && !gfc_compare_derived_types (derived, CLASS_DATA (c)->ts.u.derived))))
 	field_type = gfc_get_ppc_type (c);
       else if (c->attr.proc_pointer && derived->backend_decl)
 	{

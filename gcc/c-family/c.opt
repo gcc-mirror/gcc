@@ -293,7 +293,7 @@ Warn about 'new' of type with extended alignment without -faligned-new.
 
 Waligned-new=
 C++ ObjC++ Var(warn_aligned_new) Enum(warn_aligned_new_level) Joined RejectNegative Warning LangEnabledBy(C++ ObjC++,Wall,1,0)
--Waligned-new=all Warn even if 'new' uses a class member allocation function.
+-Waligned-new=[none|global|all]	Warn even if 'new' uses a class member allocation function.
 
 Wall
 C ObjC C++ ObjC++ Warning
@@ -304,7 +304,7 @@ C ObjC C++ ObjC++ Var(warn_alloca) Warning
 Warn on any use of alloca.
 
 Walloc-size-larger-than=
-C ObjC C++ ObjC++ Var(warn_alloc_size_limit) Warning Joined
+C ObjC C++ ObjC++ Var(warn_alloc_size_limit) Warning Joined LangEnabledBy(C ObjC C++ ObjC++,Wall)
 -Walloc-size-larger-than=<bytes> Warn for calls to allocation functions that
 attempt to allocate objects larger than the specified number of bytes.
 
@@ -314,7 +314,7 @@ C ObjC C++ ObjC++ Var(warn_alloc_zero) Warning
 
 Walloca-larger-than=
 C ObjC C++ LTO ObjC++ Var(warn_alloca_limit) Warning Joined RejectNegative UInteger
--Walloca-larger-than=<number> Warn on unbounded uses of
+-Walloca-larger-than=<number>	Warn on unbounded uses of
 alloca, and on bounded uses of alloca whose bound can be larger than
 <number> bytes.
 
@@ -387,6 +387,14 @@ C++ ObjC++ Warning Alias(Wc++1z-compat) Undocumented
 Wcast-qual
 C ObjC C++ ObjC++ Var(warn_cast_qual) Warning
 Warn about casts which discard qualifiers.
+
+Wcatch-value
+C++ ObjC++ Warning Alias(Wcatch-value=, 1, 0)
+Warn about catch handlers of non-reference type.
+
+Wcatch-value=
+C++ ObjC++ Var(warn_catch_value) Warning Joined RejectNegative UInteger LangEnabledBy(C++ ObjC++,Wall, 1, 0)
+Warn about catch handlers of non-reference type.
 
 Wchar-subscripts
 C ObjC C++ ObjC++ Var(warn_char_subscripts) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
@@ -486,7 +494,7 @@ Warn about an empty body in an if or else statement.
 
 Wendif-labels
 C ObjC C++ ObjC++ CPP(warn_endif_labels) CppReason(CPP_W_ENDIF_LABELS) Var(cpp_warn_endif_labels) Init(1) Warning LangEnabledBy(C ObjC C++ ObjC++,Wpedantic)
-Warn about stray tokens after #elif and #endif.
+Warn about stray tokens after #else and #endif.
 
 Wenum-compare
 C ObjC C++ ObjC++ Var(warn_enum_compare) Init(-1) Warning LangEnabledBy(C ObjC,Wall || Wc++-compat)
@@ -503,6 +511,10 @@ This switch is deprecated; use -Werror=implicit-function-declaration instead.
 Wextra
 C ObjC C++ ObjC++ Warning
 ; in common.opt
+
+Wextra-semi
+C++ ObjC++ Var(warn_extra_semi) Warning
+Warn about semicolon after in-class function definition.
 
 Wfloat-conversion
 C ObjC C++ ObjC++ Var(warn_float_conversion) Warning LangEnabledBy(C ObjC C++ ObjC++,Wconversion)
@@ -698,6 +710,10 @@ Wsized-deallocation
 C++ ObjC++ Var(warn_sized_deallocation) Warning EnabledBy(Wextra)
 Warn about missing sized deallocation functions.
 
+Wsizeof-pointer-div
+C ObjC C++ ObjC++ Var(warn_sizeof_pointer_div) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
+Warn about suspicious divisions of two sizeof expressions that don't work correctly with pointers.
+
 Wsizeof-pointer-memaccess
 C ObjC C++ ObjC++ Var(warn_sizeof_pointer_memaccess) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
 Warn about suspicious length parameters to certain string functions if the argument uses sizeof.
@@ -712,7 +728,7 @@ Warn about buffer overflow in string manipulation functions like memcpy
 and strcpy.
 
 Wstringop-overflow=
-C ObjC C++ ObjC++ Joined RejectNegative UInteger Var(warn_stringop_overflow) Init(2) Warning
+C ObjC C++ ObjC++ Joined RejectNegative UInteger Var(warn_stringop_overflow) Init(2) Warning LangEnabledBy(C ObjC C++ ObjC++, Wall)
 Under the control of Object Size type, warn about buffer overflow in string
 manipulation functions like memcpy and strcpy.
 
@@ -779,6 +795,10 @@ Warn about \"extern\" declarations not at file scope.
 Wnoexcept
 C++ ObjC++ Var(warn_noexcept) Warning
 Warn when a noexcept expression evaluates to false even though the expression can't actually throw.
+
+Wnoexcept-type
+C++ ObjC++ Warning Var(warn_noexcept_type) LangEnabledBy(C++ ObjC++,Wabi || Wc++1z-compat)
+Warn if C++1z noexcept function type will change the mangled name of a symbol.
 
 Wnon-template-friend
 C++ ObjC++ Var(warn_nontemplate_friend) Init(1) Warning
@@ -1097,7 +1117,7 @@ Warn if a variable length array is used.
 
 Wvla-larger-than=
 C ObjC C++ ObjC++ Var(warn_vla_limit) Warning Joined RejectNegative UInteger
--Wvla-larger-than=<number> Warn on unbounded uses of variable-length arrays, and
+-Wvla-larger-than=<number>	Warn on unbounded uses of variable-length arrays, and
 on bounded uses of variable-length arrays whose bound can be
 larger than <number> bytes.
 
@@ -1334,6 +1354,10 @@ fdefault-inline
 C++ ObjC++ Ignore
 Does nothing.  Preserved for backward compatibility.
 
+fdiagnostics-show-template-tree
+C++ ObjC++ Var(flag_diagnostics_show_template_tree) Init(0)
+Print hierarchical comparisons when template types are mismatched.
+
 fdirectives-only
 C ObjC C++ ObjC++
 Preprocess directives only.
@@ -1352,6 +1376,10 @@ Write all declarations as Ada code for the given file only.
 
 felide-constructors
 C++ ObjC++ Var(flag_elide_constructors) Init(1)
+
+felide-type
+C++ ObjC++ Var(flag_elide_type) Init(1)
+-fno-elide-type Do not elide common elements in template comparisons.
 
 fenforce-eh-specs
 C++ ObjC++ Var(flag_enforce_eh_specs) Init(1)

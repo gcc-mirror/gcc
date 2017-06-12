@@ -93,10 +93,11 @@ package body Ada.Task_Attributes is
    function To_Attribute is new
      Ada.Unchecked_Conversion (Atomic_Address, Attribute);
 
+   type Unsigned is mod 2 ** Integer'Size;
    function To_Address is new
      Ada.Unchecked_Conversion (Attribute, System.Address);
-   function To_Int is new
-     Ada.Unchecked_Conversion (Attribute, Integer);
+   function To_Unsigned is new
+     Ada.Unchecked_Conversion (Attribute, Unsigned);
 
    pragma Warnings (On);
 
@@ -121,7 +122,7 @@ package body Ada.Task_Attributes is
    Fast_Path : constant Boolean :=
                  (Attribute'Size = Integer'Size
                    and then Attribute'Alignment <= Atomic_Address'Alignment
-                   and then To_Int (Initial_Value) = 0)
+                   and then To_Unsigned (Initial_Value) = 0)
                  or else (Attribute'Size = System.Address'Size
                    and then Attribute'Alignment <= Atomic_Address'Alignment
                    and then To_Address (Initial_Value) = System.Null_Address);
@@ -302,7 +303,11 @@ package body Ada.Task_Attributes is
 
          --  No finalization needed, simply set to Val
 
-         TT.Attributes (Index) := To_Address (Val);
+         if Attribute'Size = Integer'Size then
+            TT.Attributes (Index) := Atomic_Address (To_Unsigned (Val));
+         else
+            TT.Attributes (Index) := To_Address (Val);
+         end if;
 
       else
          Self_Id := STPO.Self;

@@ -417,8 +417,7 @@ simd_clone_mangle (struct cgraph_node *node,
      if the simdlen is assumed to be 8 for the first one, etc.  */
   for (struct cgraph_node *clone = node->simd_clones; clone;
        clone = clone->simdclone->next_clone)
-    if (strcmp (IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (clone->decl)),
-		str) == 0)
+    if (id_equal (DECL_ASSEMBLER_NAME (clone->decl), str))
       return NULL_TREE;
 
   return get_identifier (str);

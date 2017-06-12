@@ -46,7 +46,7 @@ sancov_pass (function *fun)
   basic_block bb;
   FOR_EACH_BB_FN (bb, fun)
     {
-      gimple_stmt_iterator gsi = gsi_after_labels (bb);
+      gimple_stmt_iterator gsi = gsi_start_nondebug_after_labels_bb (bb);
       if (gsi_end_p (gsi))
 	continue;
       gimple *stmt = gsi_stmt (gsi);

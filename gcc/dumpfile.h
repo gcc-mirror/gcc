@@ -27,19 +27,30 @@ along with GCC; see the file COPYING3.  If not see
 enum tree_dump_index
 {
   TDI_none,			/* No dump */
-  TDI_cgraph,                   /* dump function call graph.  */
-  TDI_inheritance,              /* dump type inheritance graph.  */
+  TDI_cgraph,			/* dump function call graph.  */
+  TDI_inheritance,		/* dump type inheritance graph.  */
   TDI_clones,			/* dump IPA cloning decisions.  */
-  TDI_tu,			/* dump the whole translation unit.  */
-  TDI_class,			/* dump class hierarchy.  */
   TDI_original,			/* dump each function before optimizing it */
-  TDI_generic,			/* dump each function after genericizing it */
+  TDI_gimple,			/* dump each function after gimplifying it */
   TDI_nested,			/* dump each function after unnesting it */
-  TDI_tree_all,                 /* enable all the GENERIC/GIMPLE dumps.  */
-  TDI_rtl_all,                  /* enable all the RTL dumps.  */
-  TDI_ipa_all,                  /* enable all the IPA dumps.  */
+
+  TDI_lang_all,			/* enable all the language dumps.  */
+  TDI_tree_all,			/* enable all the GENERIC/GIMPLE dumps.  */
+  TDI_rtl_all,			/* enable all the RTL dumps.  */
+  TDI_ipa_all,			/* enable all the IPA dumps.  */
 
   TDI_end
+};
+
+/* Enum used to distinguish dump files to types.  */
+
+enum dump_kind
+{
+  DK_none,
+  DK_lang,
+  DK_tree,
+  DK_rtl,
+  DK_ipa
 };
 
 /* Bit masks to control dumping. Not all values are applicable to all
@@ -49,7 +60,7 @@ enum tree_dump_index
    allow that.  */
 #define TDF_ADDRESS	(1 << 0)	/* dump node addresses */
 #define TDF_SLIM	(1 << 1)	/* don't go wild following links */
-#define TDF_RAW  	(1 << 2)	/* don't unparse the function */
+#define TDF_RAW		(1 << 2)	/* don't unparse the function */
 #define TDF_DETAILS	(1 << 3)	/* show more detailed info about
 					   each pass */
 #define TDF_STATS	(1 << 4)	/* dump various statistics about
@@ -59,105 +70,122 @@ enum tree_dump_index
 #define TDF_LINENO	(1 << 7)	/* display statement line numbers */
 #define TDF_UID		(1 << 8)	/* display decl UIDs */
 
-#define TDF_TREE	(1 << 9)	/* is a tree dump */
-#define TDF_RTL		(1 << 10)	/* is a RTL dump */
-#define TDF_IPA		(1 << 11)	/* is an IPA dump */
-#define TDF_STMTADDR	(1 << 12)	/* Address of stmt.  */
+#define TDF_STMTADDR	(1 << 9)       /* Address of stmt.  */
 
-#define TDF_GRAPH	(1 << 13)	/* a graph dump is being emitted */
-#define TDF_MEMSYMS	(1 << 14)	/* display memory symbols in expr.
-                                           Implies TDF_VOPS.  */
+#define TDF_GRAPH	(1 << 10)	/* a graph dump is being emitted */
+#define TDF_MEMSYMS	(1 << 11)	/* display memory symbols in expr.
+					   Implies TDF_VOPS.  */
 
-#define TDF_DIAGNOSTIC	(1 << 15)	/* A dump to be put in a diagnostic
-					   message.  */
-#define TDF_VERBOSE     (1 << 16)       /* A dump that uses the full tree
-					   dumper to print stmts.  */
-#define TDF_RHS_ONLY	(1 << 17)	/* a flag to only print the RHS of
+#define TDF_RHS_ONLY	(1 << 12)	/* a flag to only print the RHS of
 					   a gimple stmt.  */
-#define TDF_ASMNAME	(1 << 18)	/* display asm names of decls  */
-#define TDF_EH		(1 << 19)	/* display EH region number
+#define TDF_ASMNAME	(1 << 13)	/* display asm names of decls  */
+#define TDF_EH		(1 << 14)	/* display EH region number
 					   holding this gimple statement.  */
-#define TDF_NOUID	(1 << 20)	/* omit UIDs from dumps.  */
-#define TDF_ALIAS	(1 << 21)	/* display alias information  */
-#define TDF_ENUMERATE_LOCALS (1 << 22)	/* Enumerate locals by uid.  */
-#define TDF_CSELIB	(1 << 23)	/* Dump cselib details.  */
-#define TDF_SCEV	(1 << 24)	/* Dump SCEV details.  */
-#define TDF_COMMENT	(1 << 25)	/* Dump lines with prefix ";;"  */
-#define TDF_GIMPLE	(1 << 26)	/* Dump in GIMPLE FE syntax  */
-#define MSG_OPTIMIZED_LOCATIONS  (1 << 27)  /* -fopt-info optimized sources */
-#define MSG_MISSED_OPTIMIZATION  (1 << 28)  /* missed opportunities */
-#define MSG_NOTE                 (1 << 29)  /* general optimization info */
-#define MSG_ALL         (MSG_OPTIMIZED_LOCATIONS | MSG_MISSED_OPTIMIZATION \
-                         | MSG_NOTE)
+#define TDF_NOUID	(1 << 15)	/* omit UIDs from dumps.  */
+#define TDF_ALIAS	(1 << 16)	/* display alias information  */
+#define TDF_ENUMERATE_LOCALS (1 << 17)	/* Enumerate locals by uid.  */
+#define TDF_CSELIB	(1 << 18)	/* Dump cselib details.  */
+#define TDF_SCEV	(1 << 19)	/* Dump SCEV details.  */
+#define TDF_GIMPLE	(1 << 20)	/* Dump in GIMPLE FE syntax  */
+#define TDF_FOLDING	(1 << 21)	/* Dump folding details.  */
+#define MSG_OPTIMIZED_LOCATIONS	 (1 << 22)  /* -fopt-info optimized sources */
+#define MSG_MISSED_OPTIMIZATION	 (1 << 23)  /* missed opportunities */
+#define MSG_NOTE		 (1 << 24)  /* general optimization info */
+#define MSG_ALL		(MSG_OPTIMIZED_LOCATIONS | MSG_MISSED_OPTIMIZATION \
+			 | MSG_NOTE)
 
+
+/* Value of TDF_NONE is used just for bits filtered by TDF_KIND_MASK.  */
+
+#define TDF_NONE 0
 
 /* Flags to control high-level -fopt-info dumps.  Usually these flags
    define a group of passes.  An optimization pass can be part of
    multiple groups.  */
-#define OPTGROUP_NONE        (0)
-#define OPTGROUP_IPA         (1 << 1)   /* IPA optimization passes */
-#define OPTGROUP_LOOP        (1 << 2)   /* Loop optimization passes */
-#define OPTGROUP_INLINE      (1 << 3)   /* Inlining passes */
-#define OPTGROUP_OMP         (1 << 4)   /* OMP (Offloading and Multi
+#define OPTGROUP_NONE	     (0)
+#define OPTGROUP_IPA	     (1 << 1)	/* IPA optimization passes */
+#define OPTGROUP_LOOP	     (1 << 2)	/* Loop optimization passes */
+#define OPTGROUP_INLINE	     (1 << 3)	/* Inlining passes */
+#define OPTGROUP_OMP	     (1 << 4)	/* OMP (Offloading and Multi
 					   Processing) transformations */
-#define OPTGROUP_VEC         (1 << 5)   /* Vectorization passes */
-#define OPTGROUP_OTHER       (1 << 6)   /* All other passes */
+#define OPTGROUP_VEC	     (1 << 5)	/* Vectorization passes */
+#define OPTGROUP_OTHER	     (1 << 6)	/* All other passes */
 #define OPTGROUP_ALL	     (OPTGROUP_IPA | OPTGROUP_LOOP | OPTGROUP_INLINE \
-                              | OPTGROUP_OMP | OPTGROUP_VEC | OPTGROUP_OTHER)
+			      | OPTGROUP_OMP | OPTGROUP_VEC | OPTGROUP_OTHER)
+
+/* Dump flags type.  */
+
+typedef uint64_t dump_flags_t;
 
 /* Define a tree dump switch.  */
 struct dump_file_info
 {
-  const char *suffix;           /* suffix to give output file.  */
-  const char *swtch;            /* command line dump switch */
-  const char *glob;             /* command line glob  */
-  const char *pfilename;        /* filename for the pass-specific stream  */
-  const char *alt_filename;     /* filename for the -fopt-info stream  */
-  FILE *pstream;                /* pass-specific dump stream  */
-  FILE *alt_stream;             /* -fopt-info stream */
-  int pflags;                   /* dump flags */
-  int optgroup_flags;           /* optgroup flags for -fopt-info */
-  int alt_flags;                /* flags for opt-info */
-  int pstate;                   /* state of pass-specific stream */
-  int alt_state;                /* state of the -fopt-info stream */
-  int num;                      /* dump file number */
-  bool owns_strings;            /* fields "suffix", "swtch", "glob" can be
-				   const strings, or can be dynamically
-				   allocated, needing free.  */
-  bool graph_dump_initialized;  /* When a given dump file is being initialized,
-				   this flag is set to true if the corresponding
-				   TDF_graph dump file has also been
-				   initialized.  */
+  /* Suffix to give output file.  */
+  const char *suffix;
+  /* Command line dump switch.  */
+  const char *swtch;
+  /* Command line glob.  */
+  const char *glob;
+  /* Filename for the pass-specific stream.  */
+  const char *pfilename;
+  /* Filename for the -fopt-info stream.  */
+  const char *alt_filename;
+  /* Pass-specific dump stream.  */
+  FILE *pstream;
+  /* -fopt-info stream.  */
+  FILE *alt_stream;
+  /* Dump kind.  */
+  dump_kind dkind;
+  /* Dump flags.  */
+  dump_flags_t pflags;
+  /* A pass flags for -fopt-info.  */
+  int alt_flags;
+  /* Flags for -fopt-info given by a user.  */
+  int optgroup_flags;
+  /* State of pass-specific stream.  */
+  int pstate;
+  /* State of the -fopt-info stream.  */
+  int alt_state;
+  /* Dump file number.  */
+  int num;
+  /* Fields "suffix", "swtch", "glob" can be const strings,
+     or can be dynamically allocated, needing free.  */
+  bool owns_strings;
+  /* When a given dump file is being initialized, this flag is set to true
+     if the corresponding TDF_graph dump file has also been initialized.  */
+  bool graph_dump_initialized;
 };
 
 /* In dumpfile.c */
-extern FILE *dump_begin (int, int *);
+extern FILE *dump_begin (int, dump_flags_t *);
 extern void dump_end (int, FILE *);
 extern int opt_info_switch_p (const char *);
 extern const char *dump_flag_name (int);
-extern void dump_printf (int, const char *, ...) ATTRIBUTE_PRINTF_2;
-extern void dump_printf_loc (int, source_location,
+extern void dump_printf (dump_flags_t, const char *, ...) ATTRIBUTE_PRINTF_2;
+extern void dump_printf_loc (dump_flags_t, source_location,
                              const char *, ...) ATTRIBUTE_PRINTF_3;
+extern void dump_function (int phase, tree fn);
 extern void dump_basic_block (int, basic_block, int);
 extern void dump_generic_expr_loc (int, source_location, int, tree);
-extern void dump_generic_expr (int, int, tree);
-extern void dump_gimple_stmt_loc (int, source_location, int, gimple *, int);
-extern void dump_gimple_stmt (int, int, gimple *, int);
+extern void dump_generic_expr (dump_flags_t, dump_flags_t, tree);
+extern void dump_gimple_stmt_loc (dump_flags_t, source_location, dump_flags_t,
+				  gimple *, int);
+extern void dump_gimple_stmt (dump_flags_t, dump_flags_t, gimple *, int);
 extern void print_combine_total_stats (void);
 extern bool enable_rtl_dump_file (void);
 
 /* In tree-dump.c  */
-extern void dump_node (const_tree, int, FILE *);
+extern void dump_node (const_tree, dump_flags_t, FILE *);
 
 /* In combine.c  */
 extern void dump_combine_total_stats (FILE *);
 /* In cfghooks.c  */
-extern void dump_bb (FILE *, basic_block, int, int);
+extern void dump_bb (FILE *, basic_block, int, dump_flags_t);
 
 /* Global variables used to communicate with passes.  */
 extern FILE *dump_file;
 extern FILE *alt_dump_file;
-extern int dump_flags;
+extern dump_flags_t dump_flags;
 extern const char *dump_file_name;
 
 /* Return true if any of the dumps is enabled, false otherwise. */
@@ -182,8 +210,12 @@ public:
      SUFFIX, SWTCH, and GLOB. */
   unsigned int
   dump_register (const char *suffix, const char *swtch, const char *glob,
-		 int flags, int optgroup_flags,
-		 bool take_ownership);
+		 dump_kind dkind, int optgroup_flags, bool take_ownership);
+
+  /* Allow languages and middle-end to register their dumps before the
+     optimization passes.  */
+  void
+  register_dumps ();
 
   /* Return the dump_file_info for the given phase.  */
   struct dump_file_info *
@@ -209,7 +241,7 @@ public:
      set dump_flags appropriately for both pass dump stream and
      -fopt-info stream. */
   int
-  dump_start (int phase, int *flag_ptr);
+  dump_start (int phase, dump_flags_t *flag_ptr);
 
   /* Finish a tree dump for PHASE and close associated dump streams.  Also
      reset the globals DUMP_FILE, ALT_DUMP_FILE, and DUMP_FLAGS.  */
@@ -217,7 +249,7 @@ public:
   dump_finish (int phase);
 
   FILE *
-  dump_begin (int phase, int *flag_ptr);
+  dump_begin (int phase, dump_flags_t *flag_ptr);
 
   /* Returns nonzero if tree dump PHASE has been initialized.  */
   int
@@ -236,10 +268,11 @@ private:
   dump_switch_p_1 (const char *arg, struct dump_file_info *dfi, bool doglob);
 
   int
-  dump_enable_all (int flags, const char *filename);
+  dump_enable_all (dump_kind dkind, dump_flags_t flags, const char *filename);
 
   int
-  opt_info_enable_passes (int optgroup_flags, int flags, const char *filename);
+  opt_info_enable_passes (int optgroup_flags, dump_flags_t flags,
+			  const char *filename);
 
 private:
 

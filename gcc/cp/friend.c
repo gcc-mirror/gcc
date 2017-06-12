@@ -32,7 +32,7 @@ along with GCC; see the file COPYING3.  If not see
    template overload resolution results when accessibility matters
    (e.g. tests for an accessible member).  */
 
-static tree global_friend;
+static GTY(()) tree global_friend;
 
 /* Set the GLOBAL_FRIEND for this compilation session.  It might be
    set multiple times, but always to the same scope.  */
@@ -494,8 +494,7 @@ do_friend (tree ctype, tree declarator, tree decl,
   if (TREE_CODE (declarator) == TEMPLATE_ID_EXPR)
     {
       declarator = TREE_OPERAND (declarator, 0);
-      if (is_overloaded_fn (declarator))
-	declarator = DECL_NAME (get_first_fn (declarator));
+      declarator = OVL_NAME (declarator);
     }
 
   if (ctype)
@@ -609,25 +608,8 @@ do_friend (tree ctype, tree declarator, tree decl,
 	       is instantiated.  */
 	    decl = push_template_decl_real (decl, /*is_friend=*/true);
 	  else if (current_function_decl)
-	    {
-	      /* This must be a local class.  11.5p11:
-
-		 If a friend declaration appears in a local class (9.8) and
-		 the name specified is an unqualified name, a prior
-		 declaration is looked up without considering scopes that
-		 are outside the innermost enclosing non-class scope. For a
-		 friend function declaration, if there is no prior
-		 declaration, the program is ill-formed.  */
-	      tree t = lookup_name_innermost_nonclass_level (DECL_NAME (decl));
-	      if (t)
-		decl = pushdecl_maybe_friend (decl, /*is_friend=*/true);
-	      else
-		{
-		  error ("friend declaration %qD in local class without "
-			 "prior declaration", decl);
-		  return error_mark_node;
-		}
-	    }
+	    /* pushdecl will check there's a local decl already.  */
+	    decl = pushdecl (decl, /*is_friend=*/true);
 	  else
 	    {
 	      /* We can't use pushdecl, as we might be in a template
@@ -669,3 +651,5 @@ do_friend (tree ctype, tree declarator, tree decl,
 
   return decl;
 }
+
+#include "gt-cp-friend.h"

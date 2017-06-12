@@ -221,7 +221,7 @@ EOF
   # Create a "MD5SUMS" file to use for checking the validity of the release.
   echo \
 "# This file contains the MD5 checksums of the files in the 
-# gcc-"${RELEASE}".tar.bz2 tarball.
+# gcc-"${RELEASE}".tar.xz tarball.
 #
 # Besides verifying that all files in the tarball were correctly expanded,
 # it also can be used to determine if any files have changed since the
@@ -244,11 +244,11 @@ EOF
 
 build_tarfile() {
   # Get the name of the destination tar file.
-  TARFILE="$1.tar.bz2"
+  TARFILE="$1.tar.xz"
   shift
 
   # Build the tar file itself.
-  (${TAR} cf - "$@" | ${BZIP2} > ${TARFILE}) || \
+  (${TAR} cf - "$@" | ${XZ} > ${TARFILE}) || \
     error "Could not build tarfile"
   FILE_LIST="${FILE_LIST} ${TARFILE}"
 }
@@ -273,8 +273,8 @@ build_tarfiles() {
 # Build .gz files.
 build_gzip() {
   for f in ${FILE_LIST}; do
-    target=${f%.bz2}.gz
-    (${BZIP2} -d -c $f | ${GZIP} > ${target}) || error "Could not create ${target}"
+    target=${f%.xz}.gz
+    (${XZ} -d -c $f | ${GZIP} > ${target}) || error "Could not create ${target}"
   done
 }
 
@@ -282,19 +282,26 @@ build_gzip() {
 build_diffs() {
   old_dir=${1%/*}
   old_file=${1##*/}
-  old_vers=${old_file%.tar.bz2}
+  case "$old_file" in
+    *.tar.xz) old_vers=${old_file%.tar.xz};;
+    *) old_vers=${old_file%.tar.bz2};;
+  esac
   old_vers=${old_vers#gcc-}
   inform "Building diffs against version $old_vers"
   for f in gcc; do
-    old_tar=${old_dir}/${f}-${old_vers}.tar.bz2
-    new_tar=${WORKING_DIRECTORY}/${f}-${RELEASE}.tar.bz2
+    if [ -e ${old_dir}/${f}-${old_vers}.tar.xz ]; then
+      old_tar=${old_dir}/${f}-${old_vers}.tar.xz
+    else
+      old_tar=${old_dir}/${f}-${old_vers}.tar.bz2
+    fi
+    new_tar=${WORKING_DIRECTORY}/${f}-${RELEASE}.tar.xz
     if [ ! -e $old_tar ]; then
       inform "$old_tar not found; not generating diff file"
     elif [ ! -e $new_tar ]; then
       inform "$new_tar not found; not generating diff file"
     else
       build_diff $old_tar gcc-${old_vers} $new_tar gcc-${RELEASE} \
-        ${f}-${old_vers}-${RELEASE}.diff.bz2
+        ${f}-${old_vers}-${RELEASE}.diff.xz
     fi
   done
 }
@@ -305,13 +312,20 @@ build_diff() {
   tmpdir=gccdiff.$$
   mkdir $tmpdir || error "Could not create directory $tmpdir"
   changedir $tmpdir
-  (${BZIP2} -d -c $1 | ${TAR} xf - ) || error "Could not unpack $1 for diffs"
-  (${BZIP2} -d -c $3 | ${TAR} xf - ) || error "Could not unpack $3 for diffs"
-  ${DIFF} $2 $4 > ../${5%.bz2}
+  case "$1" in
+    *.tar.bz2)
+      (${BZIP2} -d -c $1 | ${TAR} xf - ) || error "Could not unpack $1 for diffs"
+      ;;
+    *.tar.xz)
+      (${XZ} -d -c $1 | ${TAR} xf - ) || error "Could not unpack $1 for diffs"
+      ;;
+  esac
+  (${XZ} -d -c $3 | ${TAR} xf - ) || error "Could not unpack $3 for diffs"
+  ${DIFF} $2 $4 > ../${5%.xz}
   if [ $? -eq 2 ]; then
     error "Trouble making diffs from $1 to $3"
   fi
-  ${BZIP2} ../${5%.bz2} || error "Could not generate ../$5"
+  ${XZ} ../${5%.xz} || error "Could not generate ../$5"
   changedir ..
   rm -rf $tmpdir
   FILE_LIST="${FILE_LIST} $5"
@@ -335,7 +349,7 @@ upload_files() {
   fi
 
   # Then copy files to their respective (sub)directories.
-  for x in gcc*.gz gcc*.bz2; do
+  for x in gcc*.gz gcc*.xz; do
     if [ -e ${x} ]; then
       # Make sure the file will be readable on the server.
       chmod a+r ${x}
@@ -356,7 +370,7 @@ upload_files() {
 # Print description if snapshot exists.
 snapshot_print() {
   if [ -e ${RELEASE}/$1 ]; then
-    hash=`openssl  md5  ${RELEASE}/$1 | sed -e 's#(.*)##' -e 's# *= *#=#'`
+    hash=`openssl  sha256  ${RELEASE}/$1 | sed -e 's#(.*)##' -e 's# *= *#=#'`
     hash2=`openssl sha1 ${RELEASE}/$1 | sed -e 's#(.*)##' -e 's# *= *#=#'`
 
     printf " %-37s%s\n\n  %s\n  %s\n\n" "$1" "$2" "$hash" "$hash2" \
@@ -410,7 +424,7 @@ with the following options: <code>"svn://gcc.gnu.org/svn/gcc/${SVNBRANCH} revisi
 
 <table>" > ${SNAPSHOT_INDEX}
        
-  snapshot_print gcc-${RELEASE}.tar.bz2 "Complete GCC"
+  snapshot_print gcc-${RELEASE}.tar.xz "Complete GCC"
 
   echo \
 "Diffs from "${BRANCH}"-"${LAST_DATE}" are available in the diffs/ subdirectory.
@@ -528,12 +542,13 @@ MODE_SOURCES=0
 MODE_TARFILES=0
 MODE_UPLOAD=0
 
-# List of archive files generated; used to create .gz files from .bz2.
+# List of archive files generated; used to create .gz files from .xz.
 FILE_LIST=""
 
 # Programs we use.
 
 BZIP2="${BZIP2:-bzip2}"
+XZ="${XZ:-xz --best}"
 CVS="${CVS:-cvs -f -Q -z9}"
 DIFF="${DIFF:-diff -Nrcpad}"
 ENV="${ENV:-env}"
@@ -644,6 +659,9 @@ else
   if [ $MODE_DIFFS -ne 0 ] && [ $LOCAL -ne 0 ] && [ -z "${OLD_TARS}" ]; then
     LAST_DATE=`cat ~/.snapshot_date-${BRANCH}`
     OLD_TARS=${SNAPSHOTS_DIR}/${BRANCH}-${LAST_DATE}/gcc-${BRANCH}-${LAST_DATE}.tar.bz2
+    if [ ! -e $OLD_TARS ]; then
+      OLD_TARS=${SNAPSHOTS_DIR}/${BRANCH}-${LAST_DATE}/gcc-${BRANCH}-${LAST_DATE}.tar.xz
+    fi
   fi
 fi
 

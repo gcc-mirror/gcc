@@ -3,7 +3,7 @@
 # This file is distributed under the same license as the gcc package.
 # Michel Robitaille <robitail@IRO.UMontreal.CA>, traducteur depuis/since 1996.
 # François-Xavier Coudert <fxcoudert@gcc.gnu.org>, 2008.
-# Stéphane Aulery <lkppo@free.fr>, 2015, 2016.
+# Stéphane Aulery <lkppo@free.fr>, 2015, 2016, 2017.
 #
 # Vocabulaire utilisé
 # 	lvalue	 	= membre gauche
@@ -119,10 +119,10 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: GNU cpplib 6.1.0\n"
+"Project-Id-Version: GNU cpplib 7.1-b20170101\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2017-01-01 00:51+0000\n"
-"PO-Revision-Date: 2016-04-27 23:10+0200\n"
+"PO-Revision-Date: 2017-04-29 19:28+0200\n"
 "Last-Translator: Stéphane Aulery <lkppo@free.fr>\n"
 "Language-Team: French <traduc@traduc.org>\n"
 "Language: fr\n"
@@ -251,7 +251,7 @@ msgstr "conversion d’une séquence d’échappement vers le jeu de caractères
 
 #: charset.c:1614
 msgid "missing open quote"
-msgstr ""
+msgstr "guillemet ouvrant de chaîne de caractères manquant"
 
 #: charset.c:1827 charset.c:1891
 msgid "character constant too long for its type"
@@ -655,10 +655,9 @@ msgid "imaginary number in preprocessor expression"
 msgstr "constante complexe dans une expression pour le préprocesseur"
 
 #: expr.c:1162
-#, fuzzy, c-format
-#| msgid "\"%s\" is not defined"
+#, c-format
 msgid "\"%s\" is not defined, evaluates to 0"
-msgstr "« %s » n’est pas défini"
+msgstr "« %s » n’est pas défini, évalué à 0"
 
 #: expr.c:1175
 msgid "assertions are a GCC extension"
@@ -1085,16 +1084,3 @@ msgstr "récursion détectée lors de l’expansion de la macro « %s »"
 #: traditional.c:1108
 msgid "syntax error in macro parameter list"
 msgstr "erreur de syntaxe dans la liste des paramètres de macro"
-
-#~ msgid "NULL directory in find_file"
-#~ msgstr "répertoire NULL dans find_file"
-
-# FIXME
-#~ msgid "%s is a block device"
-#~ msgstr "%s est un périphérique de blocs"
-
-#~ msgid "%s is too large"
-#~ msgstr "%s est trop grand"
-
-#~ msgid "%s is shorter than expected"
-#~ msgstr "%s est plus petit que prévu"

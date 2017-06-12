@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1995-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1995-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -366,7 +366,7 @@ package System.OS_Lib is
 
    type Large_File_Size is range -2**63 .. 2**63 - 1;
    --  Maximum supported size for a file (8 exabytes = 8 million terabytes,
-   --  should be enough to accomodate all possible needs for quite a while).
+   --  should be enough to accommodate all possible needs for quite a while).
 
    function File_Length64 (FD : File_Descriptor) return Large_File_Size;
    pragma Import (C, File_Length64, "__gnat_file_length");
@@ -936,6 +936,12 @@ package System.OS_Lib is
    --
    --  This function will always set success to False under VxWorks, since
    --  there is no notion of executables under this OS.
+
+   procedure Non_Blocking_Wait_Process
+     (Pid : out Process_Id; Success : out Boolean);
+   --  Same as Wait_Process, except if there are no completed child processes,
+   --  return immediately without blocking, and return Invalid_Pid in Pid.
+   --  Not supported on all platforms; Success = False if not supported.
 
    -------------------------------------
    -- NOTE: Spawn in Tasking Programs --

@@ -171,9 +171,9 @@ mark_operand_necessary (tree op)
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
       fprintf (dump_file, "marking necessary through ");
-      print_generic_expr (dump_file, op, 0);
+      print_generic_expr (dump_file, op);
       fprintf (dump_file, " stmt ");
-      print_gimple_stmt (dump_file, stmt, 0, 0);
+      print_gimple_stmt (dump_file, stmt, 0);
     }
 
   gimple_set_plf (stmt, STMT_NECESSARY, true);
@@ -233,6 +233,8 @@ mark_stmt_if_obviously_necessary (gimple *stmt, bool aggressive)
 	    case BUILT_IN_CALLOC:
 	    case BUILT_IN_ALLOCA:
 	    case BUILT_IN_ALLOCA_WITH_ALIGN:
+	    case BUILT_IN_STRDUP:
+	    case BUILT_IN_STRNDUP:
 	      return;
 
 	    default:;
@@ -1038,14 +1040,12 @@ remove_dead_stmt (gimple_stmt_iterator *i, basic_block bb)
 	{
 	  if (!bb_postorder)
 	    {
-	      int *postorder = XNEWVEC (int, n_basic_blocks_for_fn (cfun));
-	      int postorder_num
-		 = inverted_post_order_compute (postorder,
-						&bb_contains_live_stmts);
+	      auto_vec<int, 20> postorder;
+		 inverted_post_order_compute (&postorder,
+					      &bb_contains_live_stmts);
 	      bb_postorder = XNEWVEC (int, last_basic_block_for_fn (cfun));
-	      for (int i = 0; i < postorder_num; ++i)
+	      for (unsigned int i = 0; i < postorder.length (); ++i)
 		 bb_postorder[postorder[i]] = i;
-	      free (postorder);
 	    }
           FOR_EACH_EDGE (e2, ei, bb->succs)
 	    if (!e || e2->dest == EXIT_BLOCK_PTR_FOR_FN (cfun)

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -47,12 +47,11 @@ package body Ch4 is
       Attribute_Version      => True,
       Attribute_Type_Key     => True,
       others                 => False);
-   --  This map contains True for parameterless attributes that return a
-   --  string or a type. For those attributes, a left parenthesis after
-   --  the attribute should not be analyzed as the beginning of a parameters
-   --  list because it may denote a slice operation (X'Img (1 .. 2)) or
-   --  a type conversion (X'Class (Y)). The Ada2012 attribute 'Old is in
-   --  this category.
+   --  This map contains True for parameterless attributes that return a string
+   --  or a type. For those attributes, a left parenthesis after the attribute
+   --  should not be analyzed as the beginning of a parameters list because it
+   --  may denote a slice operation (X'Img (1 .. 2)) or a type conversion
+   --  (X'Class (Y)). The Ada 2012 attribute 'Old is in this category.
 
    --  Note: Loop_Entry is in this list because, although it can take an
    --  optional argument (the loop name), we can't distinguish that at parse
@@ -235,6 +234,10 @@ package body Ch4 is
 
       if Token = Tok_At_Sign then
          Scan_Reserved_Identifier (Force_Msg => False);
+
+         if Present (Current_Assign_Node) then
+            Set_Has_Target_Names (Current_Assign_Node);
+         end if;
       end if;
 
       Name_Node := Token_Node;
@@ -583,8 +586,35 @@ package body Ch4 is
                         --  Here for normal case (not => for named parameter)
 
                         else
-                           Append (Expr, Expressions (Name_Node));
-                           exit when not Comma_Present;
+                           --  Special handling for 'Image in Ada 2012, where
+                           --  the attribute can be parameterless and its value
+                           --  can be the prefix of a slice. Rewrite name as a
+                           --  slice, Expr is its low bound.
+
+                           if Token = Tok_Dot_Dot
+                             and then Attr_Name = Name_Image
+                             and then Ada_Version >= Ada_2012
+                           then
+                              Set_Expressions (Name_Node, No_List);
+                              Prefix_Node := Name_Node;
+                              Name_Node :=
+                                New_Node (N_Slice, Sloc (Prefix_Node));
+                              Set_Prefix (Name_Node, Prefix_Node);
+                              Range_Node := New_Node (N_Range, Token_Ptr);
+                              Set_Low_Bound (Range_Node, Expr);
+                              Scan; -- past ..
+                              Expr_Node := P_Expression;
+                              Check_Simple_Expression (Expr_Node);
+                              Set_High_Bound (Range_Node, Expr_Node);
+                              Set_Discrete_Range (Name_Node, Range_Node);
+                              T_Right_Paren;
+
+                              goto Scan_Name_Extension;
+
+                           else
+                              Append (Expr, Expressions (Name_Node));
+                              exit when not Comma_Present;
+                           end if;
                         end if;
                      end;
                   end loop;
@@ -3198,6 +3228,20 @@ package body Ch4 is
 
          if Token = Tok_When then
             T_Comma;
+
+         --  A semicolon followed by "when" is probably meant to be a comma
+
+         elsif Token = Tok_Semicolon then
+            Save_Scan_State (Save_State);
+            Scan; -- past the semicolon
+
+            if Token /= Tok_When then
+               Restore_Scan_State (Save_State);
+               exit;
+            end if;
+
+            Error_Msg_SP -- CODEFIX
+              ("|"";"" should be "",""");
 
          --  If comma/WHEN, skip comma and we have another alternative
 

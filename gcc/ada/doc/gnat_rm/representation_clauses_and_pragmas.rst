@@ -1576,10 +1576,9 @@ check Alignment_Check is suppressed, or if
 `pragma Restrictions (No_Elaboration_Code)` is in effect. It is also
 suppressed by default on non-strict alignment machines (such as the x86).
 
-Finally, GNAT does not permit overlaying of objects of controlled types or
-composite types containing a controlled component. In most cases, the compiler
-can detect an attempt at such overlays and will generate a warning at compile
-time and a Program_Error exception at run time.
+Finally, GNAT does not permit overlaying of objects of class-wide types. In
+most cases, the compiler can detect an attempt at such overlays and will
+generate a warning at compile time and a Program_Error exception at run time.
 
 .. index:: Export
 

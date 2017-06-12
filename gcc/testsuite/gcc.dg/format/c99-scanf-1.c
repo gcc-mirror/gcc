@@ -82,7 +82,7 @@ foo (int *ip, unsigned int *uip, short int *hp, unsigned short int *uhp,
   scanf ("%ll[ac]", s); /* { dg-warning "length" "bad use of %ll" } */
   scanf ("%llc", s); /* { dg-warning "length" "bad use of %ll" } */
   scanf ("%llp", pp); /* { dg-warning "length" "bad use of %ll" } */
-  scanf ("%jd%ji%jo%ju%jx%jX%jn", jp, jp, ujp, ujp, ujp, ujp, jn); /* { dg-bogus "length" "bogus %j warning" { target *-*-* } } */
+  scanf ("%jd%ji%jo%ju%jx%jX%jn", jp, jp, ujp, ujp, ujp, ujp, jn); /* { dg-bogus "length" "bogus %j warning" } */
   scanf ("%ja", fp); /* { dg-warning "length" "bad use of %j" } */
   scanf ("%jA", fp); /* { dg-warning "length" "bad use of %j" } */
   scanf ("%je", fp); /* { dg-warning "length" "bad use of %j" } */

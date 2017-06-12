@@ -456,7 +456,7 @@ build_tm_abort_call (location_t loc, bool is_outer)
 					     | (is_outer ? AR_OUTERABORT : 0)));
 }
 
-/* Map for aribtrary function replacement under TM, as created
+/* Map for arbitrary function replacement under TM, as created
    by the tm_wrap attribute.  */
 
 struct tm_wrapper_hasher : ggc_cache_ptr_hash<tree_map>
@@ -1275,7 +1275,7 @@ tm_log_emit (void)
       if (dump_file)
 	{
 	  fprintf (dump_file, "TM thread private mem logging: ");
-	  print_generic_expr (dump_file, lp->addr, 0);
+	  print_generic_expr (dump_file, lp->addr);
 	  fprintf (dump_file, "\n");
 	}
 
@@ -2937,8 +2937,8 @@ expand_transaction (struct tm_region *region, void *data ATTRIBUTE_UNUSED)
       ei->probability = PROB_ALWAYS;
       et->probability = PROB_LIKELY;
       ef->probability = PROB_UNLIKELY;
-      et->count = apply_probability (test_bb->count, et->probability);
-      ef->count = apply_probability (test_bb->count, ef->probability);
+      et->count = test_bb->count.apply_probability (et->probability);
+      ef->count = test_bb->count.apply_probability (ef->probability);
 
       code_bb->count = et->count;
       code_bb->frequency = EDGE_FREQUENCY (et);
@@ -2974,15 +2974,15 @@ expand_transaction (struct tm_region *region, void *data ATTRIBUTE_UNUSED)
       redirect_edge_pred (fallthru_edge, test_bb);
       fallthru_edge->flags = EDGE_FALSE_VALUE;
       fallthru_edge->probability = PROB_VERY_LIKELY;
-      fallthru_edge->count
-	= apply_probability (test_bb->count, fallthru_edge->probability);
+      fallthru_edge->count = test_bb->count.apply_probability
+				(fallthru_edge->probability);
 
       // Abort/over edge.
       redirect_edge_pred (abort_edge, test_bb);
       abort_edge->flags = EDGE_TRUE_VALUE;
       abort_edge->probability = PROB_VERY_UNLIKELY;
-      abort_edge->count
-	= apply_probability (test_bb->count, abort_edge->probability);
+      abort_edge->count = test_bb->count.apply_probability
+				(abort_edge->probability);
 
       transaction_bb = test_bb;
     }
@@ -3022,13 +3022,13 @@ expand_transaction (struct tm_region *region, void *data ATTRIBUTE_UNUSED)
       inst_edge->flags = EDGE_FALSE_VALUE;
       inst_edge->probability = REG_BR_PROB_BASE / 2;
       inst_edge->count
-	= apply_probability (test_bb->count, inst_edge->probability);
+	= test_bb->count.apply_probability (inst_edge->probability);
 
       redirect_edge_pred (uninst_edge, test_bb);
       uninst_edge->flags = EDGE_TRUE_VALUE;
       uninst_edge->probability = REG_BR_PROB_BASE / 2;
       uninst_edge->count
-	= apply_probability (test_bb->count, uninst_edge->probability);
+	= test_bb->count.apply_probability (uninst_edge->probability);
     }
 
   // If we have no previous special cases, and we have PHIs at the beginning
@@ -3369,6 +3369,8 @@ pass_tm_edges::execute (function *fun)
      must be rebuilt completely.  Otherwise we'll crash trying to update
      the SSA web in the TODO section following this pass.  */
   free_dominance_info (CDI_DOMINATORS);
+  /* We'ge also wrecked loops badly with inserting of abnormal edges.  */
+  loops_state_set (LOOPS_NEED_FIXUP);
   bitmap_obstack_release (&tm_obstack);
   all_tm_regions = NULL;
 
@@ -3580,7 +3582,7 @@ tm_memopt_accumulate_memops (basic_block bb)
 	  fprintf (dump_file, "TM memopt (%s): value num=%d, BB=%d, addr=",
 		   is_tm_load (stmt) ? "LOAD" : "STORE", loc,
 		   gimple_bb (stmt)->index);
-	  print_generic_expr (dump_file, gimple_call_arg (stmt, 0), 0);
+	  print_generic_expr (dump_file, gimple_call_arg (stmt, 0));
 	  fprintf (dump_file, "\n");
 	}
     }
@@ -3608,7 +3610,7 @@ dump_tm_memopt_set (const char *set_name, bitmap bits)
       gcc_assert (mem->value_id == i);
       fprintf (dump_file, "%s", comma);
       comma = ", ";
-      print_generic_expr (dump_file, mem->addr, 0);
+      print_generic_expr (dump_file, mem->addr);
     }
   fprintf (dump_file, "]\n");
 }
@@ -3908,7 +3910,7 @@ dump_tm_memopt_transform (gimple *stmt)
   if (dump_file)
     {
       fprintf (dump_file, "TM memopt: transforming: ");
-      print_gimple_stmt (dump_file, stmt, 0, 0);
+      print_gimple_stmt (dump_file, stmt, 0);
       fprintf (dump_file, "\n");
     }
 }
@@ -5074,7 +5076,7 @@ ipa_tm_insert_irr_call (struct cgraph_node *node, struct tm_region *region,
 
   node->create_edge (cgraph_node::get_create
 		       (builtin_decl_explicit (BUILT_IN_TM_IRREVOCABLE)),
-		     g, 0,
+		     g, gimple_bb (g)->count,
 		     compute_call_stmt_bb_frequency (node->decl,
 						     gimple_bb (g)));
 }
@@ -5125,7 +5127,7 @@ ipa_tm_insert_gettmclone_call (struct cgraph_node *node,
 
   gsi_insert_before (gsi, g, GSI_SAME_STMT);
 
-  node->create_edge (cgraph_node::get_create (gettm_fn), g, 0,
+  node->create_edge (cgraph_node::get_create (gettm_fn), g, gimple_bb (g)->count,
 		     compute_call_stmt_bb_frequency (node->decl,
 						     gimple_bb (g)));
 

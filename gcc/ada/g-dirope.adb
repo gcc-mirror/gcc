@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 1998-2014, AdaCore                     --
+--                     Copyright (C) 1998-2017, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,6 +29,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+with Ada.IO_Exceptions;
 with Ada.Characters.Handling;
 with Ada.Strings.Fixed;
 
@@ -572,6 +573,11 @@ package body GNAT.Directory_Operations is
 
    begin
       Local_Get_Current_Dir (Buffer'Address, Path_Len'Address);
+
+      if Path_Len = 0 then
+         raise Ada.IO_Exceptions.Use_Error
+           with "current directory does not exist";
+      end if;
 
       Last :=
         (if Dir'Length > Path_Len then Dir'First + Path_Len - 1 else Dir'Last);

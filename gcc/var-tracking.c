@@ -2555,7 +2555,7 @@ val_reset (dataflow_set *set, decl_or_value dv)
     {
       decl_or_value cdv = dv_from_value (cval);
 
-      /* Keep the remaining values connected, accummulating links
+      /* Keep the remaining values connected, accumulating links
 	 in the canonical value.  */
       for (node = var->var_part[0].loc_chain; node; node = node->next)
 	{
@@ -5220,8 +5220,9 @@ track_expr_p (tree expr, bool need_rtl)
   if (decl_rtl && MEM_P (decl_rtl))
     {
       /* Do not track structures and arrays.  */
-      if (GET_MODE (decl_rtl) == BLKmode
-	  || AGGREGATE_TYPE_P (TREE_TYPE (realdecl)))
+      if ((GET_MODE (decl_rtl) == BLKmode
+	   || AGGREGATE_TYPE_P (TREE_TYPE (realdecl)))
+	  && !tracked_record_parameter_p (realdecl))
 	return 0;
       if (MEM_SIZE_KNOWN_P (decl_rtl)
 	  && MEM_SIZE (decl_rtl) > MAX_VAR_PARTS)

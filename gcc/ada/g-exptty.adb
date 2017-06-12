@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                    Copyright (C) 2000-2014, AdaCore                      --
+--                    Copyright (C) 2000-2016, AdaCore                      --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -146,6 +146,17 @@ package body GNAT.Expect.TTY is
    begin
       Internal (Pid);
    end Interrupt;
+
+   -----------------------
+   -- Terminate_Process --
+   -----------------------
+
+   procedure Terminate_Process (Pid : Integer) is
+      procedure Internal (Pid : Integer);
+      pragma Import (C, Internal, "__gnat_terminate_pid");
+   begin
+      Internal (Pid);
+   end Terminate_Process;
 
    -----------------------
    -- Pseudo_Descriptor --

@@ -2009,6 +2009,12 @@
 #endif
 
 
+/* Value to set mingw's _dowildcard to. */
+#ifndef USED_FOR_TARGET
+#undef MINGW_DOWILDCARD
+#endif
+
+
 /* Define if host mkdir takes a single argument. */
 #ifndef USED_FOR_TARGET
 #undef MKDIR_TAKES_ONE_ARG

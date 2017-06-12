@@ -41,7 +41,6 @@ extern int small_data_operand (rtx, machine_mode);
 extern bool mem_operand_gpr (rtx, machine_mode);
 extern bool mem_operand_ds_form (rtx, machine_mode);
 extern bool toc_relative_expr_p (const_rtx, bool);
-extern bool invalid_e500_subreg (rtx, machine_mode);
 extern void validate_condition_mode (enum rtx_code, machine_mode);
 extern bool legitimate_constant_pool_address_p (const_rtx, machine_mode,
 						bool);
@@ -133,7 +132,6 @@ extern void rs6000_emit_sISEL (machine_mode, rtx[]);
 extern void rs6000_emit_sCOND (machine_mode, rtx[]);
 extern void rs6000_emit_cbranch (machine_mode, rtx[]);
 extern char * output_cbranch (rtx, const char *, int, rtx_insn *);
-extern char * output_e500_flip_gt_bit (rtx, rtx);
 extern const char * output_probe_stack_range (rtx, rtx);
 extern bool rs6000_emit_set_const (rtx, rtx);
 extern int rs6000_emit_cmove (rtx, rtx, rtx, rtx);
@@ -226,6 +224,7 @@ extern void rs6000_aix_asm_output_dwarf_table_ref (char *);
 extern void get_ppc476_thunk_name (char name[32]);
 extern bool rs6000_overloaded_builtin_p (enum rs6000_builtins);
 extern const char *rs6000_overloaded_builtin_name (enum rs6000_builtins);
+extern int rs6000_store_data_bypass_p (rtx_insn *, rtx_insn *);
 extern HOST_WIDE_INT rs6000_builtin_mask_calculate (void);
 extern void rs6000_asm_output_dwarf_pcrel (FILE *file, int size,
 					   const char *label);

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 1995-2016, AdaCore                     --
+--                     Copyright (C) 1995-2017, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1927,6 +1927,28 @@ package body System.OS_Lib is
       return Result;
    end Non_Blocking_Spawn;
 
+   -------------------------------
+   -- Non_Blocking_Wait_Process --
+   -------------------------------
+
+   procedure Non_Blocking_Wait_Process
+     (Pid : out Process_Id; Success : out Boolean)
+   is
+      Status : Integer;
+
+      function Portable_No_Block_Wait (S : Address) return Process_Id;
+      pragma Import
+        (C, Portable_No_Block_Wait, "__gnat_portable_no_block_wait");
+
+   begin
+      Pid := Portable_No_Block_Wait (Status'Address);
+      Success := (Status = 0);
+
+      if Pid = 0 then
+         Pid := Invalid_Pid;
+      end if;
+   end Non_Blocking_Wait_Process;
+
    -------------------------
    -- Normalize_Arguments --
    -------------------------
@@ -2168,6 +2190,10 @@ package body System.OS_Lib is
 
             begin
                Get_Current_Dir (Buffer'Address, Path_Len'Address);
+
+               if Path_Len = 0 then
+                  raise Program_Error;
+               end if;
 
                if Buffer (Path_Len) /= Directory_Separator then
                   Path_Len := Path_Len + 1;

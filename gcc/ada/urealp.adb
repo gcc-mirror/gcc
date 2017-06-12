@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1468,14 +1468,17 @@ package body Urealp is
          Write_Str ("#1.0#E");
          UI_Write (-Val.Den);
 
-      --  Other constants with a base other than 10 are written using one
-      --  of the following forms, depending on the sign of the number
-      --  and the sign of the exponent (= minus denominator value)
+      --  Other constants with a base other than 10 are written using one of
+      --  the following forms, depending on the sign of the number and the
+      --  sign of the exponent (= minus denominator value). See that we are
+      --  replacing the division by a multiplication (updating accordingly the
+      --  sign of the exponent) to generate an expression whose computation
+      --  does not cause a division by 0 when base**exponent is very small.
 
       --    numerator.0*base**exponent
       --    numerator.0*base**-exponent
 
-      --  And of course an exponent of 0 can be omitted
+      --  And of course an exponent of 0 can be omitted.
 
       elsif Val.Rbase /= 0 then
          if Brackets then

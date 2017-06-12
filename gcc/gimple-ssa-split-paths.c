@@ -249,13 +249,17 @@ is_feasible_trace (basic_block bb)
 		  imm_use_iterator iter2;
 		  FOR_EACH_IMM_USE_FAST (use2_p, iter2, gimple_phi_result (stmt))
 		    {
-		      if (is_gimple_debug (USE_STMT (use2_p)))
+		      gimple *use_stmt = USE_STMT (use2_p);
+		      if (is_gimple_debug (use_stmt))
 			continue;
-		      basic_block use_bb = gimple_bb (USE_STMT (use2_p));
+		      basic_block use_bb = gimple_bb (use_stmt);
 		      if (use_bb != bb
 			  && dominated_by_p (CDI_DOMINATORS, bb, use_bb))
 			{
-			  found_useful_phi = true;
+			  if (gcond *cond = dyn_cast <gcond *> (use_stmt))
+			    if (gimple_cond_code (cond) == EQ_EXPR
+				|| gimple_cond_code (cond) == NE_EXPR)
+			      found_useful_phi = true;
 			  break;
 			}
 		    }

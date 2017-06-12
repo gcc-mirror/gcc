@@ -368,13 +368,11 @@ package body System.Secondary_Stack is
                             To_Fixed_Stack_Ptr (SSL.Get_Sec_Stack_Addr.all);
 
          begin
-            Put_Line (
-                      "  Total size              : "
+            Put_Line ("  Total size              : "
                       & SS_Ptr'Image (Fixed_Stack.Last)
                       & " bytes");
 
-            Put_Line (
-                      "  Current allocated space : "
+            Put_Line ("  Current allocated space : "
                       & SS_Ptr'Image (Fixed_Stack.Top)
                       & " bytes");
          end;
@@ -400,22 +398,22 @@ package body System.Secondary_Stack is
 
             --  Current Chunk information
 
-            Put_Line (
-                      "  Total size              : "
+            --  Note that First of each chunk is one more than Last of the
+            --  previous one, so Chunk.Last is the total size of all chunks; we
+            --  don't need to walk all the chunks to compute the total size.
+
+            Put_Line ("  Total size              : "
                       & SS_Ptr'Image (Chunk.Last)
                       & " bytes");
 
-            Put_Line (
-                      "  Current allocated space : "
+            Put_Line ("  Current allocated space : "
                       & SS_Ptr'Image (Stack.Top - 1)
                       & " bytes");
 
-            Put_Line (
-                      "  Number of Chunks       : "
+            Put_Line ("  Number of Chunks       : "
                       & Integer'Image (Nb_Chunks));
 
-            Put_Line (
-                      "  Default size of Chunks : "
+            Put_Line ("  Default size of Chunks : "
                       & SSE.Storage_Count'Image (Stack.Default_Size));
          end;
       end if;

@@ -188,9 +188,9 @@ minloc1_4_r4 (gfc_array_i4 * const restrict retarray,
 	  base -= sstride[n] * extent[n];
 	  dest -= dstride[n] * extent[n];
 	  n++;
-	  if (n == rank)
+	  if (n >= rank)
 	    {
-	      /* Break out of the look.  */
+	      /* Break out of the loop.  */
 	      continue_loop = 0;
 	      break;
 	    }
@@ -398,9 +398,9 @@ mminloc1_4_r4 (gfc_array_i4 * const restrict retarray,
 	  mbase -= mstride[n] * extent[n];
 	  dest -= dstride[n] * extent[n];
 	  n++;
-	  if (n == rank)
+	  if (n >= rank)
 	    {
-	      /* Break out of the look.  */
+	      /* Break out of the loop.  */
 	      base = NULL;
 	      break;
 	    }
@@ -538,7 +538,7 @@ sminloc1_4_r4 (gfc_array_i4 * const restrict retarray,
 	     frequently used path so probably not worth it.  */
 	  dest -= dstride[n] * extent[n];
 	  n++;
-	  if (n == rank)
+	  if (n >= rank)
 	    return;
 	  else
 	    {

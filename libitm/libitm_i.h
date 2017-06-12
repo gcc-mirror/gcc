@@ -258,7 +258,7 @@ struct gtm_thread
   atomic<gtm_word> shared_state;
 
   // The lock that provides access to serial mode.  Non-serialized
-  // transactions acquire read locks; a serialized transaction aquires
+  // transactions acquire read locks; a serialized transaction acquires
   // a write lock.
   // Accessed from assembly language, thus the "asm" specifier on
   // the name, avoiding complex name mangling.

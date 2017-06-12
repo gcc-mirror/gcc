@@ -2796,9 +2796,9 @@ The preprocessing language allows such constructs as
 .. code-block:: c
 
        #if DEBUG or else (PRIORITY > 4) then
-          bunch of declarations
+          sequence of declarations
        #else
-          completely different bunch of declarations
+          completely different sequence of declarations
        #end if;
 
 The values of the symbols `DEBUG` and `PRIORITY` can be
@@ -2806,7 +2806,7 @@ defined either on the command line or in a separate file.
 
 The other way of running the preprocessor is even closer to the C style and
 often more convenient. In this approach the preprocessing is integrated into
-the compilation process. The compiler is fed the preprocessor input which
+the compilation process. The compiler is given the preprocessor input which
 includes `#if` lines etc, and then the compiler carries out the
 preprocessing internally and processes the resulting output.
 For more details on this approach, see :ref:`Integrated_Preprocessing`.
@@ -2831,8 +2831,8 @@ For further discussion of conditional compilation in general, see
 Preprocessing Symbols
 ^^^^^^^^^^^^^^^^^^^^^
 
-Preprocessing symbols are defined in definition files and referred to in
-sources to be preprocessed. A Preprocessing symbol is an identifier, following
+Preprocessing symbols are defined in *definition files* and referenced in the
+sources to be preprocessed. A preprocessing symbol is an identifier, following
 normal Ada (case-insensitive) rules for its syntax, with the restriction that
 all characters need to be in the ASCII set (no accented letters).
 
@@ -2859,7 +2859,7 @@ where
 * *outfile*
     is the full name of the output file, which is an Ada source
     in standard Ada form. When used with GNAT, this file name will
-    normally have an ads or adb suffix.
+    normally have an *ads* or *adb* suffix.
 
 * *deffile*
     is the full name of a text file containing definitions of
@@ -2880,7 +2880,7 @@ Switches for `gnatprep`
 .. index:: --help (gnatprep)
 
 :samp:`--help`
-  If *--version* was not used, display usage, then exit disregarding
+  If :option:`--version` was not used, display usage and then exit disregarding
   all other options.
 
 .. index:: -b (gnatprep)
@@ -2904,15 +2904,15 @@ Switches for `gnatprep`
   Causes comments to be scanned. Normally comments are ignored by gnatprep.
   If this option is specified, then comments are scanned and any $symbol
   substitutions performed as in program text. This is particularly useful
-  when structured comments are used (e.g., when writing programs in the
-  SPARK dialect of Ada). Note that this switch is not available when
-  doing integrated preprocessing (it would be useless in this context
-  since comments are ignored by the compiler in any case).
+  when structured comments are used (e.g., for programs written in a
+  pre-2014 version of the SPARK Ada subset). Note that this switch is not
+  available when  doing integrated preprocessing (it would be useless in
+  this context since comments are ignored by the compiler in any case).
 
 .. index:: -D (gnatprep)
 
-:samp:`-D{symbol}={value}`
-  Defines a new preprocessing symbol, associated with value. If no value is given
+:samp:`-D{symbol}[={value}]`
+  Defines a new preprocessing symbol with the specified value. If no value is given
   on the command line, then symbol is considered to be `True`. This switch
   can be used in place of a definition file.
 
@@ -3119,84 +3119,134 @@ and then the substitution will occur as desired.
 Integrated Preprocessing
 ------------------------
 
-GNAT sources may be preprocessed immediately before compilation.
-In this case, the actual
-text of the source is not the text of the source file, but is derived from it
-through a process called preprocessing. Integrated preprocessing is specified
-through switches *-gnatep* and/or *-gnateD*. *-gnatep*
-indicates, through a text file, the preprocessing data to be used.
-:samp:`-gnateD` specifies or modifies the values of preprocessing symbol.
-Note that integrated preprocessing applies only to Ada source files, it is
+As noted above, a file to be preprocessed consists of Ada source code
+in which preprocessing lines have been inserted. However,
+instead of using *gnatprep* to explicitly preprocess a file as a separate
+step before compilation, you can carry out the preprocessing implicitly
+as part of compilation. Such *integrated preprocessing*, which is the common
+style with C, is performed when either or both of the following switches
+are passed to the compiler:
+
+   *   :option:`-gnatep`, which specifies the *preprocessor data file*.
+       This file dictates how the source files will be preprocessed (e.g., which
+       symbol definition files apply to which sources).
+
+   *   :option:`-gnateD`, which defines values for preprocessing symbols.
+
+Integrated preprocessing applies only to Ada source files, it is
 not available for configuration pragma files.
 
-Note that when integrated preprocessing is used, the output from the
-preprocessor is not written to any external file. Instead it is passed
-internally to the compiler. If you need to preserve the result of
-preprocessing in a file, then you should use *gnatprep*
-to perform the desired preprocessing in stand-alone mode.
+With integrated preprocessing, the output from the preprocessor is not,
+by default, written to any external file. Instead it is passed
+internally to the compiler. To preserve the result of
+preprocessing in a file, either run *gnatprep*
+in standalone mode or else supply the :option:`-gnateG` switch
+(described below) to the compiler.
 
-It is recommended that *gnatmake* switch -s should be
-used when Integrated Preprocessing is used. The reason is that preprocessing
-with another Preprocessing Data file without changing the sources will
-not trigger recompilation without this switch.
+The *gnatmake* switch :option:`-s` should be used with integrated
+preprocessing; otherwise the use of a different preprocessor data file
+without changing the sources will not cause recompilation.
 
-Note that *gnatmake* switch -m will almost
+Note that the *gnatmake* switch :option:`-m` will almost
 always trigger recompilation for sources that are preprocessed,
 because *gnatmake* cannot compute the checksum of the source after
 preprocessing.
 
-The actual preprocessing function is described in detail in section
-:ref:`Preprocessing_with_gnatprep`. This section only describes how integrated
-preprocessing is triggered and parameterized.
-
+The actual preprocessing function is described in detail in
+:ref:`Preprocessing_with_gnatprep`. This section explains the switches
+that relate to integrated preprocessing.
 
 .. index:: -gnatep (gcc)
 
-:samp:`-gnatep={file}`
-  This switch indicates to the compiler the file name (without directory
-  information) of the preprocessor data file to use. The preprocessor data file
-  should be found in the source directories. Alternatively when using project
-  files, you can reference to the project file's directory via the
-  ``project name'Project_Dir`` project attribute, e.g:
+:samp:`-gnatep={preprocessor_data_file}`
+  This switch specifies the file name (without directory
+  information) of the preprocessor data file. Either place this file
+  in one of the source directories, or, when using project
+  files, reference the project file's directory via the
+  ``project_name'Project_Dir`` project attribute; e.g:
 
-  .. code-block:: gpr
+     .. code-block:: gpr
 
-      project Prj is
-         package Compiler is
-            for Switches ("Ada") use
-              ("-gnatep=" & Prj'Project_Dir & "prep.def");
-         end Compiler;
-      end Prj;
+         project Prj is
+            package Compiler is
+               for Switches ("Ada") use
+                 ("-gnatep=" & Prj'Project_Dir & "prep.def");
+            end Compiler;
+         end Prj;
 
-  A preprocessing data file is a text file with significant lines indicating
-  how should be preprocessed either a specific source or all sources not
-  mentioned in other lines. A significant line is a nonempty, non-comment line.
-  Comments are similar to Ada comments.
+  A preprocessor data file is a text file that contains *preprocessor
+  control lines*.  A preprocessor control line directs the preprocessing of
+  either a particular source file, or, analogous to *others* in Ada,
+  all sources not specified elsewhere in  the preprocessor data file.
+  A preprocessor control line
+  can optionally identify a *definition file* that assigns values to
+  preprocessor symbols, as well as a list of switches that relate to
+  preprocessing.
+  Empty lines and comments (using Ada syntax) are also permitted, with no
+  semantic effect.
 
-  Each significant line starts with either a literal string or the character '*'.
-  A literal string is the file name (without directory information) of the source
-  to preprocess. A character '*' indicates the preprocessing for all the sources
-  that are not specified explicitly on other lines (order of the lines is not
-  significant). It is an error to have two lines with the same file name or two
+  Here's an example of a preprocessor data file:
+
+    .. code-block:: ada
+
+        "toto.adb"  "prep.def" -u
+        --  Preprocess toto.adb, using definition file prep.def
+        --  Undefined symbols are treated as False
+
+        * -c -DVERSION=V101
+        --  Preprocess all other sources without using a definition file
+        --  Suppressed lined are commented
+        --  Symbol VERSION has the value V101
+
+        "tata.adb" "prep2.def" -s
+        --  Preprocess tata.adb, using definition file prep2.def
+        --  List all symbols with their values
+
+  A preprocessor control line has the following syntax:
+
+    ::
+
+        <preprocessor_control_line> ::=
+           <preprocessor_input> [ <definition_file_name> ] { <switch> }
+
+        <preprocessor_input> ::= <source_file_name> | '*'
+
+        <definition_file_name> ::= <string_literal>
+
+        <source_file_name> := <string_literal>
+
+        <switch> := (See below for list)
+
+  Thus  each preprocessor control line starts with either a literal string or
+  the character '*':
+
+  *  A literal string is the file name (without directory information) of the source
+     file that will be input to the preprocessor.
+
+  *  The character '*' is a wild-card indicator; the additional parameters on the line
+     indicate the preprocessing for all the sources
+     that are not specified explicitly on other lines (the order of the lines is not
+     significant).
+
+  It is an error to have two lines with the same file name or two
   lines starting with the character '*'.
 
-  After the file name or the character '*', another optional literal string
-  indicating the file name of the definition file to be used for preprocessing
+  After the file name or '*', an optional literal string specifies the name of
+  the definition file to be used for preprocessing
   (:ref:`Form_of_Definitions_File`). The definition files are found by the
   compiler in one of the source directories. In some cases, when compiling
   a source in a directory other than the current directory, if the definition
   file is in the current directory, it may be necessary to add the current
-  directory as a source directory through switch -I., otherwise
+  directory as a source directory through the :option:`-I` switch; otherwise
   the compiler would not find the definition file.
 
-  Then, optionally, switches similar to those of `gnatprep` may
-  be found. Those switches are:
+  Finally, switches similar to those of *gnatprep* may optionally appear:
 
   :samp:`-b`
     Causes both preprocessor lines and the lines deleted by
     preprocessing to be replaced by blank lines, preserving the line number.
-    This switch is always implied; however, if specified after *-c*
-    it cancels the effect of *-c*.
+    This switch is always implied; however, if specified after :option:`-c`
+    it cancels the effect of :option:`-c`.
 
 
   :samp:`-c`
@@ -3205,11 +3255,12 @@ preprocessing is triggered and parameterized.
     with the special string '`--!`'.
 
 
-  :samp:`-Dsymbol={value}`
-    Define or redefine a symbol, associated with value. A symbol is an Ada
-    identifier, or an Ada reserved word, with the exception of `if`,
+  :samp:`-D{symbol}={new_value}`
+    Define or redefine *symbol* to have *new_value* as its value.
+    The permitted form for *symbol* is either an Ada identifier, or any Ada reserved word
+    aside from `if`,
     `else`, `elsif`, `end`, `and`, `or` and `then`.
-    `value` is either a literal string, an Ada identifier or any Ada reserved
+    The permitted form for `new_value` is a literal string, an Ada identifier or any Ada reserved
     word. A symbol declared with this switch replaces a symbol with the
     same name defined in a definition file.
 
@@ -3226,51 +3277,39 @@ preprocessing is triggered and parameterized.
     a `#if` or `#elsif` test will be treated as an error.
 
 
-  Examples of valid lines in a preprocessor data file:
-
-  .. code-block:: ada
-
-      "toto.adb"  "prep.def" -u
-      --  preprocess "toto.adb", using definition file "prep.def",
-      --  undefined symbol are False.
-
-      * -c -DVERSION=V101
-      --  preprocess all other sources without a definition file;
-      --  suppressed lined are commented; symbol VERSION has the value V101.
-
-      "titi.adb" "prep2.def" -s
-      --  preprocess "titi.adb", using definition file "prep2.def";
-      --  list all symbols with their values.
-
 .. index:: -gnateD (gcc)
 
-:samp:`-gnateDsymbol[=value]`
-  Define or redefine a preprocessing symbol, associated with value. If no value
-  is given on the command line, then the value of the symbol is `True`.
-  A symbol is an identifier, following normal Ada (case-insensitive)
-  rules for its syntax, and value is either an arbitrary string between double
+:samp:`-gnateD{symbol}[={new_value}]`
+  Define or redefine *symbol* to have *new_value* as its value. If no value
+  is supplied, then the value of *symbol* is `True`.
+  The form of *symbol* is an identifier, following normal Ada (case-insensitive)
+  rules for its syntax, and *new_value* is either an arbitrary string between double
   quotes or any sequence (including an empty sequence) of characters from the
   set (letters, digits, period, underline).
   Ada reserved words may be used as symbols, with the exceptions of `if`,
   `else`, `elsif`, `end`, `and`, `or` and `then`.
 
-  Examples::
+  Examples:
 
-       -gnateDToto=Titi
-       -gnateDFoo
-       -gnateDFoo=\"Foo-Bar\"
+    ::
+
+        -gnateDToto=Tata
+        -gnateDFoo
+        -gnateDFoo=\"Foo-Bar\"
 
   A symbol declared with this switch on the command line replaces a
   symbol with the same name either in a definition file or specified with a
-  switch -D in the preprocessor data file.
+  switch :option:`-D` in the preprocessor data file.
 
-  This switch is similar to switch *-D* of `gnatprep`.
+  This switch is similar to switch :option:`-D` of `gnatprep`.
 
 
 :samp:`-gnateG`
-  When integrated preprocessing is performed and the preprocessor modifies
-  the source text, write the result of this preprocessing into a file
-  <source>.prep.
+  When integrated preprocessing is performed on source file :file:`filename.extension`,
+  create or overwrite :file:`filename.extension.prep` to contain
+  the result of the preprocessing.
+  For example if the source file is :file:`foo.adb` then
+  the output file will be :file:`foo.adb.prep`.
 
 
 .. _Mixed_Language_Programming:
@@ -3340,7 +3379,7 @@ the main subprogram in Ada:
        --  Declare an Ada procedure spec for Print_Num, then use
        --  C function print_num for the implementation.
        procedure Print_Num (Num : Integer);
-       pragma Import (C, Print_Num, "print_num";
+       pragma Import (C, Print_Num, "print_num");
 
     begin
        Print_Num (Get_Num);

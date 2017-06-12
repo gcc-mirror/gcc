@@ -78,7 +78,8 @@ pass_walloca::gate (function *fun ATTRIBUTE_UNUSED)
   if (first_time_p)
     return warn_alloca != 0;
 
-  return warn_alloca_limit > 0 || warn_vla_limit > 0;
+  return ((unsigned HOST_WIDE_INT) warn_alloca_limit > 0
+	  || (unsigned HOST_WIDE_INT) warn_vla_limit > 0);
 }
 
 // Possible problematic uses of alloca.
@@ -278,8 +279,8 @@ alloca_call_type (gimple *stmt, bool is_vla, tree *invalid_casted_type)
   wide_int min, max;
   struct alloca_type_and_limit ret = alloca_type_and_limit (ALLOCA_UNBOUNDED);
 
-  gcc_assert (!is_vla || warn_vla_limit > 0);
-  gcc_assert (is_vla || warn_alloca_limit > 0);
+  gcc_assert (!is_vla || (unsigned HOST_WIDE_INT) warn_vla_limit > 0);
+  gcc_assert (is_vla || (unsigned HOST_WIDE_INT) warn_alloca_limit > 0);
 
   // Adjust warn_alloca_max_size for VLAs, by taking the underlying
   // type into account.
@@ -299,8 +300,9 @@ alloca_call_type (gimple *stmt, bool is_vla, tree *invalid_casted_type)
       ret = alloca_type_and_limit (ALLOCA_OK);
     }
   // Check the range info if available.
-  else if (value_range_type range_type = get_range_info (len, &min, &max))
+  else if (TREE_CODE (len) == SSA_NAME)
     {
+      value_range_type range_type = get_range_info (len, &min, &max);
       if (range_type == VR_RANGE)
 	{
 	  if (wi::leu_p (max, max_size))
@@ -325,12 +327,20 @@ alloca_call_type (gimple *stmt, bool is_vla, tree *invalid_casted_type)
 	      // away with better range information.  But it gets
 	      // most of the cases.
 	      gimple *def = SSA_NAME_DEF_STMT (len);
-	      if (gimple_assign_cast_p (def)
-		  && TYPE_UNSIGNED (TREE_TYPE (gimple_assign_rhs1 (def))))
-
+	      if (gimple_assign_cast_p (def))
 		{
-		  len_casted = gimple_assign_rhs1 (def);
-		  range_type = get_range_info (len_casted, &min, &max);
+		  tree rhs1 = gimple_assign_rhs1 (def);
+		  tree rhs1type = TREE_TYPE (rhs1);
+
+		  // Bail if the argument type is not valid.
+		  if (!INTEGRAL_TYPE_P (rhs1type))
+		    return alloca_type_and_limit (ALLOCA_OK);
+
+		  if (TYPE_UNSIGNED (rhs1type))
+		    {
+		      len_casted = rhs1;
+		      range_type = get_range_info (len_casted, &min, &max);
+		    }
 		}
 	      // An unknown range or a range of the entire domain is
 	      // really no range at all.
@@ -343,8 +353,7 @@ alloca_call_type (gimple *stmt, bool is_vla, tree *invalid_casted_type)
 	      else if (range_type == VR_ANTI_RANGE)
 		return alloca_type_and_limit (ALLOCA_UNBOUNDED);
 	      else if (range_type != VR_VARYING)
-		return
-		  alloca_type_and_limit (ALLOCA_BOUND_MAYBE_LARGE, max);
+		return alloca_type_and_limit (ALLOCA_BOUND_MAYBE_LARGE, max);
 	    }
 	}
       else if (range_type == VR_ANTI_RANGE)

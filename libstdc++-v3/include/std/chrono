@@ -211,7 +211,7 @@ _GLIBCXX_END_NAMESPACE_VERSION
 
 #if __cplusplus > 201402L
     template <typename _Rep>
-      constexpr bool treat_as_floating_point_v =
+      inline constexpr bool treat_as_floating_point_v =
         treat_as_floating_point<_Rep>::value;
 #endif // C++17
 

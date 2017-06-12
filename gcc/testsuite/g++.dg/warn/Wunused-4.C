@@ -10,11 +10,11 @@
 
 struct C1 {
   // Only use in-charge ctor
-  C1(int bi) {}  // { dg-warning "unused parameter" "" }
+  C1(int bi) {}  // { dg-warning "unused parameter" }
 };
 struct C2 {
   // Only use base ctor
-  C2(int bi) {}  // { dg-warning "unused parameter" "" }
+  C2(int bi) {}  // { dg-warning "unused parameter" }
 };
 
 struct D : C2

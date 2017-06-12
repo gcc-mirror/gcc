@@ -1,0 +1,65 @@
+#   Copyright (C) 2004-2017 Free Software Foundation, Inc.
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+# GCC testsuite that uses the `dg.exp' driver.
+
+# Load support procs.
+load_lib gfortran-dg.exp
+
+# If a testcase doesn't have special options, use these.
+global DEFAULT_FFLAGS
+if ![info exists DEFAULT_FFLAGS] then {
+    set DEFAULT_FFLAGS " -pedantic-errors"
+}
+
+# Initialize `dg'.
+dg-init
+
+global gfortran_test_path
+global gfortran_aux_module_flags
+set gfortran_test_path $srcdir/$subdir
+set gfortran_aux_module_flags $DEFAULT_FFLAGS
+proc dg-compile-aux-modules { args } {
+    global gfortran_test_path
+    global gfortran_aux_module_flags
+    if { [llength $args] != 2 } {
+	error "dg-set-target-env-var: needs one argument"
+	return
+    }
+
+    set level [info level]
+    if { [info procs dg-save-unknown] != [list] } {
+	rename dg-save-unknown dg-save-unknown-level-$level
+    }
+
+    dg-test $gfortran_test_path/[lindex $args 1] "" $gfortran_aux_module_flags
+    # cleanup-modules is intentionally not invoked here.
+
+    if { [info procs dg-save-unknown-level-$level] != [list] } {
+	rename dg-save-unknown-level-$level dg-save-unknown
+    }
+}
+
+# Main loop.
+gfortran-dg-runtest [lsort \
+       [glob -nocomplain $srcdir/$subdir/*.\[fF\]{,90,95,03,08} ] ] "" $DEFAULT_FFLAGS
+
+gfortran-dg-runtest [lsort \
+       [glob -nocomplain $srcdir/$subdir/g77/*.\[fF\] ] ] "" $DEFAULT_FFLAGS
+
+
+# All done.
+dg-finish

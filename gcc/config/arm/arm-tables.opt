@@ -328,12 +328,6 @@ EnumValue
 Enum(processor_type) String(exynos-m1) Value( TARGET_CPU_exynosm1)
 
 EnumValue
-Enum(processor_type) String(falkor) Value( TARGET_CPU_falkor)
-
-EnumValue
-Enum(processor_type) String(qdf24xx) Value( TARGET_CPU_qdf24xx)
-
-EnumValue
 Enum(processor_type) String(xgene1) Value( TARGET_CPU_xgene1)
 
 EnumValue

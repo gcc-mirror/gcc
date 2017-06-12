@@ -25,7 +25,7 @@ where people's opinions differ as to what is best.
                         This is necessary, but doesn't always work smoothly.
 * Standard Libraries::  GCC uses the system C library, which might not be
                         compliant with the ISO C standard.
-* Disappointments::     Regrettable things we can't change, but not quite bugs.
+* Disappointments::     Regrettable things we cannot change, but not quite bugs.
 * C++ Misunderstandings:: Common misunderstandings with GNU C++.
 * Non-bugs::            Things we think are right, but some others disagree.
 * Warnings and Errors:: Which problems in your code get warnings,
@@ -743,7 +743,7 @@ In @code{get_i()}, @code{i} is not used in a dependent context, so the
 compiler will look for a name declared at the enclosing namespace scope
 (which is the global scope here).  It will not look into the base class,
 since that is dependent and you may declare specializations of
-@code{Base} even after declaring @code{Derived}, so the compiler can't
+@code{Base} even after declaring @code{Derived}, so the compiler cannot
 really know what @code{i} would refer to.  If there is no global
 variable @code{i}, then you will get an error message.
 

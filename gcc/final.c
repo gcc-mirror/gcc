@@ -1951,9 +1951,11 @@ dump_basic_block_info (FILE *file, rtx_insn *insn, basic_block *start_to_bb,
       fprintf (file, "%s BLOCK %d", ASM_COMMENT_START, bb->index);
       if (bb->frequency)
         fprintf (file, " freq:%d", bb->frequency);
-      if (bb->count)
-        fprintf (file, " count:%" PRId64,
-                 bb->count);
+      if (bb->count.initialized_p ())
+	{
+          fprintf (file, ", count:");
+	  bb->count.dump (file);
+	}
       fprintf (file, " seq:%d", (*bb_seqn)++);
       fprintf (file, "\n%s PRED:", ASM_COMMENT_START);
       FOR_EACH_EDGE (e, ei, bb->preds)
@@ -4308,6 +4310,9 @@ int
 leaf_function_p (void)
 {
   rtx_insn *insn;
+
+  /* Ensure we walk the entire function body.  */
+  gcc_assert (!in_sequence_p ());
 
   /* Some back-ends (e.g. s390) want leaf functions to stay leaf
      functions even if they call mcount.  */

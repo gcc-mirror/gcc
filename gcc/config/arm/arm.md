@@ -233,10 +233,6 @@
 	       (match_test "arm_restrict_it"))
 	  (const_string "no")
 
-	  (and (eq_attr "use_literal_pool" "yes")
-	       (match_test "arm_disable_literal_pool"))
-	  (const_string "no")
-
 	  (eq_attr "arch_enabled" "no")
 	  (const_string "no")]
 	 (const_string "yes")))
@@ -5878,8 +5874,9 @@
 	(match_operand:ANY64 1 "immediate_operand" ""))]
   "TARGET_32BIT
    && reload_completed
-   && (arm_const_double_inline_cost (operands[1])
-       <= arm_max_const_double_inline_cost ())"
+   && (arm_disable_literal_pool
+       || (arm_const_double_inline_cost (operands[1])
+	   <= arm_max_const_double_inline_cost ()))"
   [(const_int 0)]
   "
   arm_split_constant (SET, SImode, curr_insn,
@@ -5972,7 +5969,7 @@
   {
   rtx base, offset, tmp;
 
-  if (TARGET_32BIT)
+  if (TARGET_32BIT || TARGET_HAVE_MOVT)
     {
       /* Everything except mem = const or mem = mem can be done easily.  */
       if (MEM_P (operands[0]))
@@ -5996,7 +5993,7 @@
 	     }
         }
     }
-  else /* TARGET_THUMB1...  */
+  else /* Target doesn't have MOVT...  */
     {
       if (can_create_pseudo_p ())
         {
@@ -6096,7 +6093,7 @@
 (define_split
   [(set (match_operand:SI 0 "arm_general_register_operand" "")
 	(match_operand:SI 1 "const_int_operand" ""))]
-  "TARGET_32BIT
+  "(TARGET_32BIT || TARGET_HAVE_MOVT)
   && (!(const_ok_for_arm (INTVAL (operands[1]))
         || const_ok_for_arm (~INTVAL (operands[1]))))"
   [(clobber (const_int 0))]
@@ -11832,12 +11829,15 @@
 
 ;; Patterns in ldmstm.md don't cover more than 4 registers. This pattern covers
 ;; large lists without explicit writeback generated for APCS_FRAME epilogue.
+;; The operands are validated through the load_multiple_operation
+;; match_parallel predicate rather than through constraints so enable it only
+;; after reload.
 (define_insn "*load_multiple"
   [(match_parallel 0 "load_multiple_operation"
     [(set (match_operand:SI 2 "s_register_operand" "=rk")
           (mem:SI (match_operand:SI 1 "s_register_operand" "rk")))
         ])]
-  "TARGET_32BIT"
+  "TARGET_32BIT && reload_completed"
   "*
   {
     arm_output_multireg_pop (operands, /*return_pc=*/false,
@@ -12006,7 +12006,7 @@
 
 (define_insn "<mrc>"
   [(set (match_operand:SI 0 "s_register_operand" "=r")
-	(unspec_volatile [(match_operand:SI 1 "immediate_operand" "n")
+	(unspec_volatile:SI [(match_operand:SI 1 "immediate_operand" "n")
 			  (match_operand:SI 2 "immediate_operand" "n")
 			  (match_operand:SI 3 "immediate_operand" "n")
 			  (match_operand:SI 4 "immediate_operand" "n")
@@ -12041,7 +12041,7 @@
 
 (define_insn "<mrrc>"
   [(set (match_operand:DI 0 "s_register_operand" "=r")
-	(unspec_volatile [(match_operand:SI 1 "immediate_operand" "n")
+	(unspec_volatile:DI [(match_operand:SI 1 "immediate_operand" "n")
 			  (match_operand:SI 2 "immediate_operand" "n")
 			  (match_operand:SI 3 "immediate_operand" "n")] MRRCI))]
   "arm_coproc_builtin_available (VUNSPEC_<MRRC>)"

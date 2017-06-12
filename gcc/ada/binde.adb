@@ -2234,10 +2234,13 @@ package body Binde is
 
          begin
             while S /= No_Successor loop
-               pragma Assert
-                 (UNR.Table (Succ.Table (S).After).Elab_Position >
-                  UNR.Table (U).Elab_Position,
-                  Msg & " elab order failed");
+               if UNR.Table (Succ.Table (S).After).Elab_Position <=
+                    UNR.Table (U).Elab_Position
+               then
+                  OK := False;
+                  Write_Line (Msg & " elab order failed");
+               end if;
+
                S := Succ.Table (S).Next;
             end loop;
          end;

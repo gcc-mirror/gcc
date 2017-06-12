@@ -26,7 +26,7 @@
    UNSPEC_EXTODD_V2SF
   ])
 
-(define_insn "paired_negv2sf2"
+(define_insn "negv2sf2"
   [(set (match_operand:V2SF 0 "gpc_reg_operand" "=f")
 	(neg:V2SF (match_operand:V2SF 1 "gpc_reg_operand" "f")))]
   "TARGET_PAIRED_FLOAT"
@@ -40,7 +40,7 @@
   "ps_rsqrte %0,%1"
   [(set_attr "type" "fp")])
 
-(define_insn "paired_absv2sf2"
+(define_insn "absv2sf2"
   [(set (match_operand:V2SF 0 "gpc_reg_operand" "=f")
 	(abs:V2SF (match_operand:V2SF 1 "gpc_reg_operand" "f")))]
   "TARGET_PAIRED_FLOAT"
@@ -54,7 +54,7 @@
   "ps_nabs %0,%1"
   [(set_attr "type" "fp")])
 
-(define_insn "paired_addv2sf3"
+(define_insn "addv2sf3"
   [(set (match_operand:V2SF 0 "gpc_reg_operand" "=f")
 	(plus:V2SF (match_operand:V2SF 1 "gpc_reg_operand" "%f")
 		   (match_operand:V2SF 2 "gpc_reg_operand" "f")))]
@@ -62,7 +62,7 @@
   "ps_add %0,%1,%2"
   [(set_attr "type" "fp")])
 
-(define_insn "paired_subv2sf3"
+(define_insn "subv2sf3"
   [(set (match_operand:V2SF 0 "gpc_reg_operand" "=f")
         (minus:V2SF (match_operand:V2SF 1 "gpc_reg_operand" "f")
                     (match_operand:V2SF 2 "gpc_reg_operand" "f")))]
@@ -70,7 +70,7 @@
   "ps_sub %0,%1,%2"
   [(set_attr "type" "fp")])
 
-(define_insn "paired_mulv2sf3"
+(define_insn "mulv2sf3"
   [(set (match_operand:V2SF 0 "gpc_reg_operand" "=f")
 	(mult:V2SF (match_operand:V2SF 1 "gpc_reg_operand" "%f")
 		   (match_operand:V2SF 2 "gpc_reg_operand" "f")))]
@@ -85,7 +85,7 @@
   "ps_res %0,%1"
   [(set_attr "type" "fp")])
 
-(define_insn "paired_divv2sf3"
+(define_insn "divv2sf3"
   [(set (match_operand:V2SF 0 "gpc_reg_operand" "=f")
 	(div:V2SF (match_operand:V2SF 1 "gpc_reg_operand" "f")
 		  (match_operand:V2SF 2 "gpc_reg_operand" "f")))]

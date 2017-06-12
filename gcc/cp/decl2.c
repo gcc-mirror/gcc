@@ -49,6 +49,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "c-family/c-ada-spec.h"
 #include "asan.h"
 
+/* Id for dumping the raw trees.  */
+int raw_dump_id;
+ 
 extern cpp_reader *parse_in;
 
 /* This structure contains information about the initializations
@@ -608,18 +611,12 @@ check_classfn (tree ctype, tree function, tree template_parms)
   if (ix >= 0)
     {
       vec<tree, va_gc> *methods = CLASSTYPE_METHOD_VEC (ctype);
-      tree fndecls, fndecl = 0;
-      bool is_conv_op;
-      const char *format = NULL;
 
-      for (fndecls = (*methods)[ix];
-	   fndecls; fndecls = OVL_NEXT (fndecls))
+      for (ovl_iterator iter ((*methods)[ix]); iter; ++iter)
 	{
-	  tree p1, p2;
-
-	  fndecl = OVL_CURRENT (fndecls);
-	  p1 = TYPE_ARG_TYPES (TREE_TYPE (function));
-	  p2 = TYPE_ARG_TYPES (TREE_TYPE (fndecl));
+	  tree fndecl = *iter;
+	  tree p1 = TYPE_ARG_TYPES (TREE_TYPE (function));
+	  tree p2 = TYPE_ARG_TYPES (TREE_TYPE (fndecl));
 
 	  /* We cannot simply call decls_match because this doesn't
 	     work for static member functions that are pretending to
@@ -662,49 +659,47 @@ check_classfn (tree ctype, tree function, tree template_parms)
 	      && (!DECL_TEMPLATE_SPECIALIZATION (function)
 		  || (DECL_TI_TEMPLATE (function)
 		      == DECL_TI_TEMPLATE (fndecl))))
-	    break;
+	    {
+	      if (pushed_scope)
+		pop_scope (pushed_scope);
+	      return fndecl;
+	    }
 	}
-      if (fndecls)
-	{
-	  if (pushed_scope)
-	    pop_scope (pushed_scope);
-	  return OVL_CURRENT (fndecls);
-	}
-      
+
       error_at (DECL_SOURCE_LOCATION (function),
 		"prototype for %q#D does not match any in class %qT",
 		function, ctype);
-      is_conv_op = DECL_CONV_FN_P (fndecl);
+
+      const char *format = NULL;
+      tree first = OVL_FIRST ((*methods)[ix]);
+      bool is_conv_op = DECL_CONV_FN_P (first);
+      tree prev = NULL_TREE;
 
       if (is_conv_op)
 	ix = CLASSTYPE_FIRST_CONVERSION_SLOT;
-      fndecls = (*methods)[ix];
-      while (fndecls)
+      do
 	{
-	  fndecl = OVL_CURRENT (fndecls);
-	  fndecls = OVL_NEXT (fndecls);
-
-	  if (!fndecls && is_conv_op)
+	  ovl_iterator iter ((*methods)[ix++]);
+	  if (is_conv_op && !DECL_CONV_FN_P (*iter))
+	    break;
+	  for (; iter; ++iter)
 	    {
-	      if (methods->length () > (size_t) ++ix)
+	      if (prev)
 		{
-		  fndecls = (*methods)[ix];
-		  if (!DECL_CONV_FN_P (OVL_CURRENT (fndecls)))
-		    {
-		      fndecls = NULL_TREE;
-		      is_conv_op = false;
-		    }
+		  if (!format)
+		    format = N_("candidates are: %+#D");
+		  error (format, prev);
+		  format = "                %+#D";
 		}
-	      else
-		is_conv_op = false;
+	      prev = *iter;
 	    }
-	  if (format)
-	    format = "                %+#D";
-	  else if (fndecls)
-	    format = N_("candidates are: %+#D");
-	  else
+	}
+      while (is_conv_op && size_t (ix) < methods->length ());
+      if (prev)
+	{
+	  if (!format)
 	    format = N_("candidate is: %+#D");
-	  error (format, fndecl);
+	  error (format, prev);
 	}
     }
   else if (!COMPLETE_TYPE_P (ctype))
@@ -832,7 +827,7 @@ grokfield (const cp_declarator *declarator,
 	}
 
       if (IDENTIFIER_POINTER (name)[0] == '_'
-	  && ! strcmp (IDENTIFIER_POINTER (name), "_vptr"))
+	  && id_equal (name, "_vptr"))
 	error ("member %qD conflicts with virtual function table field name",
 	       value);
     }
@@ -3648,10 +3643,10 @@ one_static_initialization_or_destruction (tree decl, tree init, bool initp)
 
   /* Make sure temporary variables in the initialiser all have
      their DECL_CONTEXT() set to a value different from NULL_TREE.
-     This can happen when global variables initialisers are built.
+     This can happen when global variables initializers are built.
      In that case, the DECL_CONTEXT() of the global variables _AND_ of all 
      the temporary variables that might have been generated in the
-     accompagning initialisers is NULL_TREE, meaning the variables have been
+     accompanying initializers is NULL_TREE, meaning the variables have been
      declared in the global namespace.
      What we want to do here is to fix that and make sure the DECL_CONTEXT()
      of the temporaries are set to the current function decl.  */
@@ -4057,21 +4052,14 @@ cpp_check (tree t, cpp_operation op)
 static void 
 collect_source_refs (tree namespc) 
 {
-  tree t;
-
-  if (!namespc) 
-    return;
-
   /* Iterate over names in this name space.  */
-  for (t = NAMESPACE_LEVEL (namespc)->names; t; t = TREE_CHAIN (t))
-    if (!DECL_IS_BUILTIN (t) )
+  for (tree t = NAMESPACE_LEVEL (namespc)->names; t; t = TREE_CHAIN (t))
+    if (DECL_IS_BUILTIN (t))
+      ;
+    else if (TREE_CODE (t) == NAMESPACE_DECL && !DECL_NAMESPACE_ALIAS (t))
+      collect_source_refs (t);
+    else
       collect_source_ref (DECL_SOURCE_FILE (t));
-  
-  /* Dump siblings, if any */
-  collect_source_refs (TREE_CHAIN (namespc));
-
-  /* Dump children, if any */
-  collect_source_refs (NAMESPACE_LEVEL (namespc)->namespaces);
 }
 
 /* Collect decls relevant to SOURCE_FILE from all namespaces recursively,
@@ -4080,17 +4068,16 @@ collect_source_refs (tree namespc)
 static void
 collect_ada_namespace (tree namespc, const char *source_file)
 {
-  if (!namespc)
-    return;
+  tree decl = NAMESPACE_LEVEL (namespc)->names;
 
-  /* Collect decls from this namespace */
-  collect_ada_nodes (NAMESPACE_LEVEL (namespc)->names, source_file);
+  /* Collect decls from this namespace.  This will skip
+     NAMESPACE_DECLs (both aliases and regular, it cannot tell).  */
+  collect_ada_nodes (decl, source_file);
 
-  /* Collect siblings, if any */
-  collect_ada_namespace (TREE_CHAIN (namespc), source_file);
-
-  /* Collect children, if any */
-  collect_ada_namespace (NAMESPACE_LEVEL (namespc)->namespaces, source_file);
+  /* Now scan for namespace children, and dump them.  */
+  for (; decl; decl = TREE_CHAIN (decl))
+    if (TREE_CODE (decl) == NAMESPACE_DECL && !DECL_NAMESPACE_ALIAS (decl))
+      collect_ada_namespace (decl, source_file);
 }
 
 /* Returns true iff there is a definition available for variable or
@@ -4369,13 +4356,11 @@ generate_mangling_aliases ()
 static void
 dump_tu (void)
 {
-  int flags;
-  FILE *stream = dump_begin (TDI_tu, &flags);
-
-  if (stream)
+  dump_flags_t flags;
+  if (FILE *stream = dump_begin (raw_dump_id, &flags))
     {
       dump_node (global_namespace, flags & ~TDF_SLIM, stream);
-      dump_end (TDI_tu, stream);
+      dump_end (raw_dump_id, stream);
     }
 }
 
@@ -4390,10 +4375,10 @@ maybe_warn_sized_delete (enum tree_code code)
   tree sized = NULL_TREE;
   tree unsized = NULL_TREE;
 
-  for (tree ovl = IDENTIFIER_GLOBAL_VALUE (cp_operator_id (code));
-       ovl; ovl = OVL_NEXT (ovl))
+  for (ovl_iterator iter (IDENTIFIER_GLOBAL_VALUE (cp_operator_id (code)));
+       iter; ++iter)
     {
-      tree fn = OVL_CURRENT (ovl);
+      tree fn = *iter;
       /* We're only interested in usual deallocation functions.  */
       if (!usual_deallocation_fn_p (fn))
 	continue;
@@ -4724,7 +4709,7 @@ c_parse_final_cleanups (void)
 	    }
 	}
 
-      if (walk_namespaces (wrapup_globals_for_namespace, /*data=*/0))
+      if (wrapup_namespace_globals ())
 	reconsider = true;
 
       /* Static data members are just like namespace-scope globals.  */
@@ -4748,8 +4733,6 @@ c_parse_final_cleanups (void)
       retries++;
     }
   while (reconsider);
-
-  walk_namespaces (diagnose_inline_vars_for_namespace, /*data=*/0);
 
   lower_var_init ();
 
@@ -4900,7 +4883,7 @@ build_offset_ref_call_from_tree (tree fn, vec<tree, va_gc> **args,
 		  || TREE_CODE (fn) == MEMBER_REF);
       if (type_dependent_expression_p (fn)
 	  || any_type_dependent_arguments_p (*args))
-	return build_nt_call_vec (fn, *args);
+	return build_min_nt_call_vec (fn, *args);
 
       orig_args = make_tree_vector_copy (*args);
 
@@ -5031,11 +5014,14 @@ mark_used (tree decl, tsubst_flags_t complain)
       decl = BASELINK_FUNCTIONS (decl);
       if (really_overloaded_fn (decl))
 	return true;
-      decl = OVL_CURRENT (decl);
+      decl = OVL_FIRST (decl);
     }
 
   /* Set TREE_USED for the benefit of -Wunused.  */
   TREE_USED (decl) = 1;
+  /* And for structured bindings also the underlying decl.  */
+  if (DECL_DECOMPOSITION_P (decl) && DECL_DECOMP_BASE (decl))
+    TREE_USED (DECL_DECOMP_BASE (decl)) = 1;
 
   if (TREE_CODE (decl) == TEMPLATE_DECL)
     return true;
@@ -5117,6 +5103,13 @@ mark_used (tree decl, tsubst_flags_t complain)
 
   if (!require_deduced_type (decl, complain))
     return false;
+
+  if (builtin_pack_fn_p (decl))
+    {
+      error ("use of built-in parameter pack %qD outside of a template",
+	     DECL_NAME (decl));
+      return false;
+    }
 
   /* If we don't need a value, then we don't need to synthesize DECL.  */
   if (cp_unevaluated_operand || in_discarded_stmt)

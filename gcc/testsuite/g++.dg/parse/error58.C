@@ -4,4 +4,4 @@
 
 struct A;
 void foo ();
-void f() { alignas (foo (A)); } // { dg-error "expected" "" }
+void f() { alignas (foo (A)); } // { dg-error "expected" }

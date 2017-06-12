@@ -184,9 +184,9 @@ suggest_attribute (int option, tree decl, bool known_finite,
   warning_at (DECL_SOURCE_LOCATION (decl),
 	      option,
 	      known_finite
-	      ? _("function might be candidate for attribute %<%s%>")
-	      : _("function might be candidate for attribute %<%s%>"
-		  " if it is known to return normally"), attrib_name);
+	      ? G_("function might be candidate for attribute %qs")
+	      : G_("function might be candidate for attribute %qs"
+		   " if it is known to return normally"), attrib_name);
   return warned_about;
 }
 
@@ -218,11 +218,17 @@ warn_function_const (tree decl, bool known_finite)
 static void
 warn_function_noreturn (tree decl)
 {
+  tree original_decl = decl;
+
+  cgraph_node *node = cgraph_node::get (decl);
+  if (node->instrumentation_clone)
+    decl = node->instrumented_version->decl;
+
   static hash_set<tree> *warned_about;
   if (!lang_hooks.missing_noreturn_ok_p (decl)
       && targetm.warn_func_return (decl))
     warned_about 
-      = suggest_attribute (OPT_Wsuggest_attribute_noreturn, decl,
+      = suggest_attribute (OPT_Wsuggest_attribute_noreturn, original_decl,
 			   true, warned_about, "noreturn");
 }
 
@@ -733,7 +739,7 @@ check_stmt (gimple_stmt_iterator *gsip, funct_state local, bool ipa)
   if (dump_file)
     {
       fprintf (dump_file, "  scanning: ");
-      print_gimple_stmt (dump_file, stmt, 0, 0);
+      print_gimple_stmt (dump_file, stmt, 0);
     }
 
   if (gimple_has_volatile_ops (stmt)
@@ -1124,9 +1130,7 @@ pure_const_read_summary (void)
 	      if (dump_file)
 		{
 		  int flags = flags_from_decl_or_type (node->decl);
-		  fprintf (dump_file, "Read info for %s/%i ",
-			   node->name (),
-			   node->order);
+		  fprintf (dump_file, "Read info for %s ", node->dump_name ());
 		  if (flags & ECF_CONST)
 		    fprintf (dump_file, " const");
 		  if (flags & ECF_PURE)
@@ -1263,9 +1267,8 @@ propagate_pure_const (void)
 
 	  funct_state w_l = get_function_state (w);
 	  if (dump_file && (dump_flags & TDF_DETAILS))
-	    fprintf (dump_file, "  Visiting %s/%i state:%s looping %i\n",
-		     w->name (),
-		     w->order,
+	    fprintf (dump_file, "  Visiting %s state:%s looping %i\n",
+		     w->dump_name (),
 		     pure_const_names[w_l->pure_const_state],
 		     w_l->looping);
 
@@ -1299,10 +1302,8 @@ propagate_pure_const (void)
 
 	      if (dump_file && (dump_flags & TDF_DETAILS))
 		{
-		  fprintf (dump_file,
-			   "    Call to %s/%i",
-			   e->callee->name (),
-			   e->callee->order);
+		  fprintf (dump_file, "    Call to %s",
+			   e->callee->dump_name ());
 		}
 	      if (avail > AVAIL_INTERPOSABLE)
 		{
@@ -2007,7 +2008,7 @@ pass_nothrow::execute (function *)
 	    if (dump_file)
 	      {
 		fprintf (dump_file, "Statement can throw: ");
-		print_gimple_stmt (dump_file, gsi_stmt (gsi), 0, 0);
+		print_gimple_stmt (dump_file, gsi_stmt (gsi), 0);
 	      }
 	    return 0;
 	  }

@@ -1706,7 +1706,8 @@ open_base_files (void)
   {
     /* The order of files here matters very much.  */
     static const char *const ifiles[] = {
-      "config.h", "system.h", "coretypes.h", "backend.h", "predict.h", "tree.h",
+      "config.h", "system.h", "coretypes.h",
+      "backend.h", "predict.h", "tree.h",
       "rtl.h", "gimple.h", "fold-const.h", "insn-codes.h", "splay-tree.h",
       "alias.h", "insn-config.h", "flags.h", "expmed.h", "dojump.h",
       "explow.h", "calls.h", "cilk.h", "memmodel.h", "emit-rtl.h", "varasm.h",
@@ -1719,7 +1720,7 @@ open_base_files (void)
       "tree-dfa.h", "tree-ssa.h", "reload.h", "cpp-id-data.h", "tree-chrec.h",
       "except.h", "output.h",  "cfgloop.h", "target.h", "lto-streamer.h",
       "target-globals.h", "ipa-ref.h", "cgraph.h", "symbol-summary.h",
-      "ipa-prop.h", "ipa-inline.h", "dwarf2out.h", "omp-offload.h", NULL
+      "ipa-prop.h", "ipa-fnsummary.h", "dwarf2out.h", "omp-offload.h", NULL
     };
     const char *const *ifp;
     outf_p gtype_desc_c;

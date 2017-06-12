@@ -137,6 +137,10 @@ GNATRTL_NONTASKING_OBJS= \
   a-coboho$(objext) \
   a-cobove$(objext) \
   a-cofove$(objext) \
+  a-cofuba$(objext) \
+  a-cofuma$(objext) \
+  a-cofuse$(objext) \
+  a-cofuve$(objext) \
   a-cogeso$(objext) \
   a-cohama$(objext) \
   a-cohase$(objext) \

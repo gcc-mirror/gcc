@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -75,14 +75,9 @@ package body Stringt is
    --  Release to get a snapshot of the tables and to restore them to their
    --  previous situation.
 
-   -------------------------------
-   -- Add_String_To_Name_Buffer --
-   -------------------------------
-
-   procedure Add_String_To_Name_Buffer (S : String_Id) is
-   begin
-      Append (Global_Name_Buffer, S);
-   end Add_String_To_Name_Buffer;
+   ------------
+   -- Append --
+   ------------
 
    procedure Append (Buf : in out Bounded_String; S : String_Id) is
    begin
@@ -133,10 +128,10 @@ package body Stringt is
 
    procedure Lock is
    begin
-      String_Chars.Locked := True;
-      Strings.Locked := True;
       String_Chars.Release;
+      String_Chars.Locked := True;
       Strings.Release;
+      Strings.Locked := True;
    end Lock;
 
    ----------
@@ -323,6 +318,17 @@ package body Stringt is
    begin
       return Strings.Table (Id).Length;
    end String_Length;
+
+   --------------------
+   -- String_To_Name --
+   --------------------
+
+   function String_To_Name (S : String_Id) return Name_Id is
+      Buf : Bounded_String;
+   begin
+      Append (Buf, S);
+      return Name_Find (Buf);
+   end String_To_Name;
 
    ---------------------------
    -- String_To_Name_Buffer --

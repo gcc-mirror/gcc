@@ -258,7 +258,6 @@ merge_and_complain (struct cl_decoded_option **decoded_options,
 	  break;
 
 	case OPT_ftrapv:
-	case OPT_fstrict_overflow:
 	case OPT_ffp_contract_:
 	  /* For selected options we can merge conservatively.  */
 	  for (j = 0; j < *decoded_options_count; ++j)
@@ -522,7 +521,6 @@ append_compiler_options (obstack *argv_obstack, struct cl_decoded_option *opts,
 	case OPT_fopenacc_dim_:
 	case OPT_fcilkplus:
 	case OPT_ftrapv:
-	case OPT_fstrict_overflow:
 	case OPT_foffload_abi_:
 	case OPT_O:
 	case OPT_Ofast:

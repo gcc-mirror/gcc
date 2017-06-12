@@ -9,5 +9,5 @@
       real  x
       namelist /mynml/ x
       x = 1
-      print mynml  ! { dg-error "PRINT namelist.*extension" "" }
+      print mynml  ! { dg-error "PRINT namelist.*extension" }
       end

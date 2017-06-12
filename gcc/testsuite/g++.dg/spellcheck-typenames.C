@@ -70,7 +70,7 @@ int64 i; // { dg-error "1: 'int64' does not name a type; did you mean 'int64_t'?
 /* Verify that gcc doesn't offer nonsensical suggestions.  */
 
 nonsensical_suggestion_t var; /* { dg-bogus "did you mean" } */
-/* { dg-error "'nonsensical_suggestion_t' does not name a type" "" { target { *-*-* } } 72 } */
+/* { dg-error "'nonsensical_suggestion_t' does not name a type" "" { target { *-*-* } } .-1 } */
 /* { dg-begin-multiline-output "" }
  nonsensical_suggestion_t var;
  ^~~~~~~~~~~~~~~~~~~~~~~~

@@ -133,6 +133,22 @@ go_errno()
   return (intgo)errno;
 }
 
+uintptr getEnd(void)
+  __asm__ (GOSYM_PREFIX "runtime.getEnd");
+
+uintptr
+getEnd()
+{
+  uintptr end = 0;
+  uintptr *pend;
+
+  pend = &__go_end;
+  if (pend != nil) {
+    end = *pend;
+  }
+  return end;
+}
+
 // CPU-specific initialization.
 // Fetch CPUID info on x86.
 
@@ -150,4 +166,15 @@ runtime_cpuinit()
 	setSupportAES(true);
 #endif
 #endif
+}
+
+// A publication barrier: a store/store barrier.
+
+void publicationBarrier(void)
+  __asm__ (GOSYM_PREFIX "runtime.publicationBarrier");
+
+void
+publicationBarrier()
+{
+  __atomic_thread_fence(__ATOMIC_RELEASE);
 }

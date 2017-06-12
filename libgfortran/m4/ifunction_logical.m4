@@ -184,9 +184,9 @@ define(FINISH_ARRAY_FUNCTION,
           base -= sstride[n] * extent[n];
           dest -= dstride[n] * extent[n];
           n++;
-          if (n == rank)
+          if (n >= rank)
             {
-              /* Break out of the look.  */
+              /* Break out of the loop.  */
               continue_loop = 0;
               break;
             }

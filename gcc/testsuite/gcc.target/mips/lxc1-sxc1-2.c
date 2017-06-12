@@ -1,4 +1,4 @@
-/* { dg-options "(HAS_LXC1) -mlxc1-sxc1" } */
+/* { dg-options "(HAS_LXC1) -mhard-float -mlxc1-sxc1" } */
 /* { dg-skip-if "code quality test" { *-*-* } { "-O0" } { "" } } */
 /* { dg-final { scan-assembler "\tldxc1\t" } } */
 

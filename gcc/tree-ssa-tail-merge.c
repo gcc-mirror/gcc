@@ -205,6 +205,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa-sccvn.h"
 #include "cfgloop.h"
 #include "tree-eh.h"
+#include "tree-cfgcleanup.h"
 
 /* Describes a group of bbs with the same successors.  The successor bbs are
    cached in succs, and the successor edge flags are cached in succ_flags.
@@ -1561,7 +1562,7 @@ replace_block_by (basic_block bb1, basic_block bb2)
   bb2->count += bb1->count;
 
   /* Merge the outgoing edge counts from bb1 onto bb2.  */
-  gcov_type out_sum = 0;
+  profile_count out_sum = profile_count::zero ();
   FOR_EACH_EDGE (e1, ei, bb1->succs)
     {
       e2 = find_edge (bb2, e1->dest);
@@ -1575,7 +1576,7 @@ replace_block_by (basic_block bb1, basic_block bb2)
      making the bb count inconsistent with the edge weights.  */
   FOR_EACH_EDGE (e2, ei, bb2->succs)
     {
-      e2->probability = GCOV_COMPUTE_SCALE (e2->count, out_sum);
+      e2->probability = e2->count.probability_in (out_sum);
     }
 
   /* Move over any user labels from bb1 after the bb2 labels.  */
@@ -1716,6 +1717,16 @@ tail_merge_optimize (unsigned int todo)
     return 0;
 
   timevar_push (TV_TREE_TAIL_MERGE);
+
+  /* We enter from PRE which has critical edges split.  Elimination
+     does not process trivially dead code so cleanup the CFG if we
+     are told so.  And re-split critical edges then.  */
+  if (todo & TODO_cleanup_cfg)
+    {
+      cleanup_tree_cfg ();
+      todo &= ~TODO_cleanup_cfg;
+      split_critical_edges ();
+    }
 
   if (!dom_info_available_p (CDI_DOMINATORS))
     {

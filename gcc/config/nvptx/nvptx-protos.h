@@ -53,5 +53,7 @@ extern const char *nvptx_output_mov_insn (rtx, rtx);
 extern const char *nvptx_output_call_insn (rtx_insn *, rtx, rtx);
 extern const char *nvptx_output_return (void);
 extern const char *nvptx_output_set_softstack (unsigned);
+extern const char *nvptx_output_simt_enter (rtx, rtx, rtx);
+extern const char *nvptx_output_simt_exit (rtx);
 #endif
 #endif

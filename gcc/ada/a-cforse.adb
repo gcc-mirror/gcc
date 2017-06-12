@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2010-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 2010-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -251,7 +251,7 @@ is
             Node  => Target_Node);
       end Append_Element;
 
-      --  Start of processing for Assign
+   --  Start of processing for Assign
 
    begin
       if Target'Address = Source'Address then
@@ -359,34 +359,6 @@ is
 
       return Target;
    end Copy;
-
-   ---------------------
-   -- Current_To_Last --
-   ---------------------
-
-   function Current_To_Last (Container : Set; Current : Cursor) return Set is
-      Curs : Cursor := First (Container);
-      C    : Set (Container.Capacity) := Copy (Container, Container.Capacity);
-      Node : Count_Type;
-
-   begin
-      if Curs = No_Element then
-         Clear (C);
-         return C;
-      end if;
-
-      if Current /= No_Element and not Has_Element (Container, Current) then
-         raise Constraint_Error;
-      end if;
-
-      while Curs.Node /= Current.Node loop
-         Node := Curs.Node;
-         Delete (C, Curs);
-         Curs := Next (Container, (Node => Node));
-      end loop;
-
-      return C;
-   end Current_To_Last;
 
    ------------
    -- Delete --
@@ -596,36 +568,6 @@ is
       end;
    end First_Element;
 
-   -----------------------
-   -- First_To_Previous --
-   -----------------------
-
-   function First_To_Previous
-     (Container : Set;
-      Current   : Cursor) return Set
-   is
-      Curs : Cursor := Current;
-      C    : Set (Container.Capacity) := Copy (Container, Container.Capacity);
-      Node : Count_Type;
-
-   begin
-      if Curs = No_Element then
-         return C;
-
-      elsif not Has_Element (Container, Curs) then
-         raise Constraint_Error;
-
-      else
-         while Curs.Node /= 0 loop
-            Node := Curs.Node;
-            Delete (C, Curs);
-            Curs := Next (Container, (Node => Node));
-         end loop;
-
-         return C;
-      end if;
-   end First_To_Previous;
-
    -----------
    -- Floor --
    -----------
@@ -643,6 +585,337 @@ is
          return (Node => Node);
       end;
    end Floor;
+
+   ------------------
+   -- Formal_Model --
+   ------------------
+
+   package body Formal_Model is
+
+      -------------------------
+      -- E_Bigger_Than_Range --
+      -------------------------
+
+      function E_Bigger_Than_Range
+        (Container : E.Sequence;
+         Fst       : Positive_Count_Type;
+         Lst       : Count_Type;
+         Item      : Element_Type) return Boolean
+      is
+      begin
+         for I in Fst .. Lst loop
+            if not (E.Get (Container, I) < Item) then
+               return False;
+            end if;
+         end loop;
+
+         return True;
+      end E_Bigger_Than_Range;
+
+      -------------------------
+      -- E_Elements_Included --
+      -------------------------
+
+      function E_Elements_Included
+        (Left  : E.Sequence;
+         Right : E.Sequence) return Boolean
+      is
+      begin
+         for I in 1 .. E.Length (Left) loop
+            if not E.Contains (Right, 1, E.Length (Right), E.Get (Left, I))
+            then
+               return False;
+            end if;
+         end loop;
+
+         return True;
+      end E_Elements_Included;
+
+      function E_Elements_Included
+        (Left  : E.Sequence;
+         Model : M.Set;
+         Right : E.Sequence) return Boolean
+      is
+      begin
+         for I in 1 .. E.Length (Left) loop
+            declare
+               Item : constant Element_Type := E.Get (Left, I);
+            begin
+               if M.Contains (Model, Item) then
+                  if not E.Contains (Right, 1, E.Length (Right), Item) then
+                     return False;
+                  end if;
+               end if;
+            end;
+         end loop;
+
+         return True;
+      end E_Elements_Included;
+
+      function E_Elements_Included
+        (Container : E.Sequence;
+         Model     : M.Set;
+         Left      : E.Sequence;
+         Right     : E.Sequence) return Boolean
+      is
+      begin
+         for I in 1 .. E.Length (Container) loop
+            declare
+               Item : constant Element_Type := E.Get (Container, I);
+            begin
+               if M.Contains (Model, Item) then
+                  if not E.Contains (Left, 1, E.Length (Left), Item) then
+                     return False;
+                  end if;
+               else
+                  if not E.Contains (Right, 1, E.Length (Right), Item) then
+                     return False;
+                  end if;
+               end if;
+            end;
+         end loop;
+
+         return True;
+      end E_Elements_Included;
+
+      ---------------
+      -- E_Is_Find --
+      ---------------
+
+      function E_Is_Find
+        (Container : E.Sequence;
+         Item      : Element_Type;
+         Position  : Count_Type) return Boolean
+      is
+      begin
+         for I in 1 .. Position - 1 loop
+            if Item < E.Get (Container, I) then
+               return False;
+            end if;
+         end loop;
+
+         if Position < E.Length (Container) then
+            for I in Position + 1 .. E.Length (Container) loop
+               if E.Get (Container, I) < Item then
+                  return False;
+               end if;
+            end loop;
+         end if;
+
+         return True;
+      end E_Is_Find;
+
+      --------------------------
+      -- E_Smaller_Than_Range --
+      --------------------------
+
+      function E_Smaller_Than_Range
+        (Container : E.Sequence;
+         Fst       : Positive_Count_Type;
+         Lst       : Count_Type;
+         Item      : Element_Type) return Boolean
+      is
+      begin
+         for I in Fst .. Lst loop
+            if not (Item < E.Get (Container, I)) then
+               return False;
+            end if;
+         end loop;
+
+         return True;
+      end E_Smaller_Than_Range;
+
+      ----------
+      -- Find --
+      ----------
+
+      function Find
+        (Container : E.Sequence;
+         Item      : Element_Type) return Count_Type
+      is
+      begin
+         for I in 1 .. E.Length (Container) loop
+            if Equivalent_Elements (Item, E.Get (Container, I)) then
+               return I;
+            end if;
+         end loop;
+
+         return 0;
+      end Find;
+
+      --------------
+      -- Elements --
+      --------------
+
+      function Elements (Container : Set) return E.Sequence is
+         Position : Count_Type := Container.First;
+         R        : E.Sequence;
+
+      begin
+         --  Can't use First, Next or Element here, since they depend on models
+         --  for their postconditions.
+
+         while Position /= 0 loop
+            R := E.Add (R, Container.Nodes (Position).Element);
+            Position := Tree_Operations.Next (Container, Position);
+         end loop;
+
+         return R;
+      end Elements;
+
+      ----------------------------
+      -- Lift_Abstraction_Level --
+      ----------------------------
+
+      procedure Lift_Abstraction_Level (Container : Set) is null;
+
+      -----------------------
+      -- Mapping_Preserved --
+      -----------------------
+
+      function Mapping_Preserved
+        (E_Left  : E.Sequence;
+         E_Right : E.Sequence;
+         P_Left  : P.Map;
+         P_Right : P.Map) return Boolean
+      is
+      begin
+         for C of P_Left loop
+            if not P.Has_Key (P_Right, C)
+              or else P.Get (P_Left,  C) > E.Length (E_Left)
+              or else P.Get (P_Right, C) > E.Length (E_Right)
+              or else E.Get (E_Left,  P.Get (P_Left,  C)) /=
+                      E.Get (E_Right, P.Get (P_Right, C))
+            then
+               return False;
+            end if;
+         end loop;
+
+         return True;
+      end Mapping_Preserved;
+
+      ------------------------------
+      -- Mapping_Preserved_Except --
+      ------------------------------
+
+      function Mapping_Preserved_Except
+        (E_Left   : E.Sequence;
+         E_Right  : E.Sequence;
+         P_Left   : P.Map;
+         P_Right  : P.Map;
+         Position : Cursor) return Boolean
+      is
+      begin
+         for C of P_Left loop
+            if C /= Position
+              and (not P.Has_Key (P_Right, C)
+                    or else P.Get (P_Left,  C) > E.Length (E_Left)
+                    or else P.Get (P_Right, C) > E.Length (E_Right)
+                    or else E.Get (E_Left,  P.Get (P_Left,  C)) /=
+                            E.Get (E_Right, P.Get (P_Right, C)))
+            then
+               return False;
+            end if;
+         end loop;
+
+         return True;
+      end Mapping_Preserved_Except;
+
+      -------------------------
+      -- P_Positions_Shifted --
+      -------------------------
+
+      function P_Positions_Shifted
+        (Small : P.Map;
+         Big   : P.Map;
+         Cut   : Positive_Count_Type;
+         Count : Count_Type := 1) return Boolean
+      is
+      begin
+         for Cu of Small loop
+            if not P.Has_Key (Big, Cu) then
+               return False;
+            end if;
+         end loop;
+
+         for Cu of Big loop
+            declare
+               Pos : constant Positive_Count_Type := P.Get (Big, Cu);
+
+            begin
+               if Pos < Cut then
+                  if not P.Has_Key (Small, Cu)
+                    or else Pos /= P.Get (Small, Cu)
+                  then
+                     return False;
+                  end if;
+
+               elsif Pos >= Cut + Count then
+                  if not P.Has_Key (Small, Cu)
+                    or else Pos /= P.Get (Small, Cu) + Count
+                  then
+                     return False;
+                  end if;
+
+               else
+                  if P.Has_Key (Small, Cu) then
+                     return False;
+                  end if;
+               end if;
+            end;
+         end loop;
+
+         return True;
+      end P_Positions_Shifted;
+
+      -----------
+      -- Model --
+      -----------
+
+      function Model (Container : Set) return M.Set is
+         Position : Count_Type := Container.First;
+         R        : M.Set;
+
+      begin
+         --  Can't use First, Next or Element here, since they depend on models
+         --  for their postconditions.
+
+         while Position /= 0 loop
+            R :=
+              M.Add
+                (Container => R,
+                 Item      => Container.Nodes (Position).Element);
+
+            Position := Tree_Operations.Next (Container, Position);
+         end loop;
+
+         return R;
+      end Model;
+
+      ---------------
+      -- Positions --
+      ---------------
+
+      function Positions (Container : Set) return P.Map is
+         I        : Count_Type := 1;
+         Position : Count_Type := Container.First;
+         R        : P.Map;
+
+      begin
+         --  Can't use First, Next or Element here, since they depend on models
+         --  for their postconditions.
+
+         while Position /= 0 loop
+            R := P.Add (R, (Node => Position), I);
+            pragma Assert (P.Length (R) = I);
+            Position := Tree_Operations.Next (Container, Position);
+            I := I + 1;
+         end loop;
+
+         return R;
+      end Positions;
+
+   end Formal_Model;
 
    ----------
    -- Free --
@@ -806,6 +1079,116 @@ is
       begin
          return (if Node = 0 then No_Element else (Node => Node));
       end Floor;
+
+      ------------------
+      -- Formal_Model --
+      ------------------
+
+      package body Formal_Model is
+
+         -------------------------
+         -- E_Bigger_Than_Range --
+         -------------------------
+
+         function E_Bigger_Than_Range
+           (Container : E.Sequence;
+            Fst       : Positive_Count_Type;
+            Lst       : Count_Type;
+            Key       : Key_Type) return Boolean
+         is
+         begin
+            for I in Fst .. Lst loop
+               if not (Generic_Keys.Key (E.Get (Container, I)) < Key) then
+                  return False;
+               end if;
+            end loop;
+            return True;
+         end E_Bigger_Than_Range;
+
+         ---------------
+         -- E_Is_Find --
+         ---------------
+
+         function E_Is_Find
+           (Container : E.Sequence;
+            Key       : Key_Type;
+            Position  : Count_Type) return Boolean
+         is
+         begin
+            for I in 1 .. Position - 1 loop
+               if Key < Generic_Keys.Key (E.Get (Container, I)) then
+                  return False;
+               end if;
+            end loop;
+
+            if Position < E.Length (Container) then
+               for I in Position + 1 .. E.Length (Container) loop
+                  if Generic_Keys.Key (E.Get (Container, I)) < Key then
+                     return False;
+                  end if;
+               end loop;
+            end if;
+            return True;
+         end E_Is_Find;
+
+         --------------------------
+         -- E_Smaller_Than_Range --
+         --------------------------
+
+         function E_Smaller_Than_Range
+           (Container : E.Sequence;
+            Fst       : Positive_Count_Type;
+            Lst       : Count_Type;
+            Key       : Key_Type) return Boolean
+         is
+         begin
+            for I in Fst .. Lst loop
+               if not (Key < Generic_Keys.Key (E.Get (Container, I))) then
+                  return False;
+               end if;
+            end loop;
+            return True;
+         end E_Smaller_Than_Range;
+
+         ----------
+         -- Find --
+         ----------
+
+         function Find
+           (Container : E.Sequence;
+            Key       : Key_Type) return Count_Type
+         is
+         begin
+            for I in 1 .. E.Length (Container) loop
+               if Equivalent_Keys
+                   (Key, Generic_Keys.Key (E.Get (Container, I)))
+               then
+                  return I;
+               end if;
+            end loop;
+            return 0;
+         end Find;
+
+         -----------------------
+         -- M_Included_Except --
+         -----------------------
+
+         function M_Included_Except
+           (Left  : M.Set;
+            Right : M.Set;
+            Key   : Key_Type) return Boolean
+         is
+         begin
+            for E of Left loop
+               if not Contains (Right, E)
+                 and not Equivalent_Keys (Generic_Keys.Key (E), Key)
+               then
+                  return False;
+               end if;
+            end loop;
+            return True;
+         end M_Included_Except;
+      end Formal_Model;
 
       -------------------------
       -- Is_Greater_Key_Node --
@@ -1440,35 +1823,6 @@ is
    begin
       Node.Right := Right;
    end Set_Right;
-
-   ------------------
-   -- Strict_Equal --
-   ------------------
-
-   function Strict_Equal (Left, Right : Set) return Boolean is
-      LNode : Count_Type := First (Left).Node;
-      RNode : Count_Type := First (Right).Node;
-
-   begin
-      if Length (Left) /= Length (Right) then
-         return False;
-      end if;
-
-      while LNode = RNode loop
-         if LNode = 0 then
-            return True;
-         end if;
-
-         if Left.Nodes (LNode).Element /= Right.Nodes (RNode).Element then
-            exit;
-         end if;
-
-         LNode := Next (Left, LNode);
-         RNode := Next (Right, RNode);
-      end loop;
-
-      return False;
-   end Strict_Equal;
 
    --------------------------
    -- Symmetric_Difference --

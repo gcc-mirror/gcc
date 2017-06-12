@@ -136,8 +136,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     };
 
   template<typename _Tp>
-    inline mask_array<_Tp>::mask_array(const mask_array<_Tp>& a)
-    : _M_sz(a._M_sz), _M_mask(a._M_mask), _M_array(a._M_array) {}
+    inline mask_array<_Tp>::mask_array(const mask_array<_Tp>& __a)
+    : _M_sz(__a._M_sz), _M_mask(__a._M_mask), _M_array(__a._M_array) {}
 
   template<typename _Tp>
     inline

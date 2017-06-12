@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1431,6 +1431,15 @@ package body Exp_Ch3 is
 
       if Is_Null_Init_Proc (Proc) and then not Init_Or_Norm_Scalars then
          return Empty_List;
+
+      --  Nothing to do for an array of controlled components that have only
+      --  the inherited Initialize primitive. This is a useful optimization
+      --  for CodePeer.
+
+      elsif Is_Trivial_Subprogram (Proc)
+        and then Is_Array_Type (Full_Init_Type)
+      then
+         return New_List (Make_Null_Statement (Loc));
       end if;
 
       --  Use the [underlying] full view when dealing with a private type. This
@@ -1450,6 +1459,12 @@ package body Exp_Ch3 is
 
             elsif Is_Generic_Actual_Type (Full_Type) then
                Full_Type := Base_Type (Full_Type);
+
+            elsif Ekind (Full_Type) = E_Private_Subtype
+              and then (not Has_Discriminants (Full_Type)
+                         or else No (Discriminant_Constraint (Full_Type)))
+            then
+               Full_Type := Etype (Full_Type);
 
             --  The loop has recovered the [underlying] full view, stop the
             --  traversal.
@@ -2869,6 +2884,7 @@ package body Exp_Ch3 is
                   declare
                      Exp   : Node_Id;
                      Nam   : Name_Id;
+                     pragma Warnings (Off, Nam);
                      Ritem : Node_Id;
 
                   begin
@@ -2944,6 +2960,11 @@ package body Exp_Ch3 is
                            Exp :=
                              Unchecked_Convert_To
                                (RTE (RE_Dispatching_Domain_Access), Exp);
+
+                        --  Conversion for Secondary_Stack_Size value
+
+                        elsif Nam = Name_Secondary_Stack_Size then
+                           Exp := Convert_To (RTE (RE_Size_Type), Exp);
                         end if;
 
                         Actions := Build_Assignment (Id, Exp);
@@ -3163,7 +3184,7 @@ package body Exp_Ch3 is
          if Present (Variant_Part (Comp_List)) then
             declare
                Variant_Alts : constant List_Id := New_List;
-               Var_Loc      : Source_Ptr;
+               Var_Loc      : Source_Ptr := No_Location;
                Variant      : Node_Id;
 
             begin
@@ -7182,9 +7203,10 @@ package body Exp_Ch3 is
 
       Def_Id : constant Entity_Id := Entity (N);
 
-      Mode     : Ghost_Mode_Type;
-      Mode_Set : Boolean := False;
-      Result   : Boolean := False;
+      Saved_GM : constant Ghost_Mode_Type := Ghost_Mode;
+      --  Save the Ghost mode to restore on exit
+
+      Result : Boolean := False;
 
    --  Start of processing for Freeze_Type
 
@@ -7193,8 +7215,7 @@ package body Exp_Ch3 is
       --  now to ensure that any nodes generated during freezing are properly
       --  marked as Ghost.
 
-      Set_Ghost_Mode (Def_Id, Mode);
-      Mode_Set := True;
+      Set_Ghost_Mode (Def_Id);
 
       --  Process any remote access-to-class-wide types designating the type
       --  being frozen.
@@ -7509,7 +7530,7 @@ package body Exp_Ch3 is
       --  verification of pragma Default_Initial_Condition's expression.
 
       if Has_DIC (Def_Id) then
-         Build_DIC_Procedure_Body (Def_Id);
+         Build_DIC_Procedure_Body (Def_Id, For_Freeze => True);
       end if;
 
       --  Generate the [spec and] body of the invariant procedure tasked with
@@ -7518,21 +7539,43 @@ package body Exp_Ch3 is
       --  class-wide invariants from parent types or interfaces, and invariants
       --  on array elements or record components.
 
-      if Has_Invariants (Def_Id) then
-         Build_Invariant_Procedure_Body (Def_Id);
+      if Is_Interface (Def_Id) then
+
+         --  Interfaces are treated as the partial view of a private type in
+         --  order to achieve uniformity with the general case. As a result, an
+         --  interface receives only a "partial" invariant procedure which is
+         --  never called.
+
+         if Has_Own_Invariants (Def_Id) then
+            Build_Invariant_Procedure_Body
+              (Typ               => Def_Id,
+               Partial_Invariant => Is_Interface (Def_Id));
+         end if;
+
+      --  Non-interface types
+
+      --  Do not generate invariant procedure within other assertion
+      --  subprograms, which may involve local declarations of local
+      --  subtypes to which these checks don't apply.
+
+      elsif Has_Invariants (Def_Id) then
+         if Within_Internal_Subprogram
+          or else (Ekind (Current_Scope) = E_Function
+                    and then Is_Predicate_Function (Current_Scope))
+         then
+            null;
+         else
+            Build_Invariant_Procedure_Body (Def_Id);
+         end if;
       end if;
 
-      if Mode_Set then
-         Restore_Ghost_Mode (Mode);
-      end if;
+      Restore_Ghost_Mode (Saved_GM);
 
       return Result;
 
    exception
       when RE_Not_Available =>
-         if Mode_Set then
-            Restore_Ghost_Mode (Mode);
-         end if;
+         Restore_Ghost_Mode (Saved_GM);
 
          return False;
    end Freeze_Type;

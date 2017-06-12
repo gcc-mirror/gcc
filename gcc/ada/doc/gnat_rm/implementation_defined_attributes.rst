@@ -1168,7 +1168,7 @@ used in contexts (e.g., preelaborable packages) which require a
 static expression and where the function call could not be used
 (since the function call is always nonstatic, even if its
 argument is static). The argument must be in the range
--(2**(m-1) .. 2**m-1, where m is the memory size
+-(2**(m-1)) .. 2**m-1, where m is the memory size
 (typically 32 or 64). Negative values are intepreted in a
 modular manner (e.g., -1 means the same as 16#FFFF_FFFF# on
 a 32 bits machine).

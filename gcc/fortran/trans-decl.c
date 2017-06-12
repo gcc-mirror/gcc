@@ -35,7 +35,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "stor-layout.h"
 #include "varasm.h"
 #include "attribs.h"
-#include "tree-dump.h"
+#include "dumpfile.h"
 #include "toplev.h"	/* For announce_function.  */
 #include "debug.h"
 #include "constructor.h"
@@ -153,6 +153,10 @@ tree gfor_fndecl_caf_unlock;
 tree gfor_fndecl_caf_event_post;
 tree gfor_fndecl_caf_event_wait;
 tree gfor_fndecl_caf_event_query;
+tree gfor_fndecl_caf_fail_image;
+tree gfor_fndecl_caf_failed_images;
+tree gfor_fndecl_caf_image_status;
+tree gfor_fndecl_caf_stopped_images;
 tree gfor_fndecl_co_broadcast;
 tree gfor_fndecl_co_max;
 tree gfor_fndecl_co_min;
@@ -3732,6 +3736,28 @@ gfc_build_builtin_function_decls (void)
 	void_type_node, 5, pvoid_type_node, size_type_node, integer_type_node,
 	pint_type, pint_type);
 
+      gfor_fndecl_caf_fail_image = gfc_build_library_function_decl (
+	get_identifier (PREFIX("caf_fail_image")), void_type_node, 0);
+      /* CAF's FAIL doesn't return.  */
+      TREE_THIS_VOLATILE (gfor_fndecl_caf_fail_image) = 1;
+
+      gfor_fndecl_caf_failed_images
+	= gfc_build_library_function_decl_with_spec (
+	    get_identifier (PREFIX("caf_failed_images")), "WRR",
+	    void_type_node, 3, pvoid_type_node, ppvoid_type_node,
+	    integer_type_node);
+
+      gfor_fndecl_caf_image_status
+	= gfc_build_library_function_decl_with_spec (
+	    get_identifier (PREFIX("caf_image_status")), "RR",
+	    integer_type_node, 2, integer_type_node, ppvoid_type_node);
+
+      gfor_fndecl_caf_stopped_images
+	= gfc_build_library_function_decl_with_spec (
+	    get_identifier (PREFIX("caf_stopped_images")), "WRR",
+	    void_type_node, 3, pvoid_type_node, ppvoid_type_node,
+	    integer_type_node);
+
       gfor_fndecl_co_broadcast = gfc_build_library_function_decl_with_spec (
 	get_identifier (PREFIX("caf_co_broadcast")), "W.WW",
 	void_type_node, 5, pvoid_type_node, integer_type_node,
@@ -6107,7 +6133,7 @@ finish_oacc_declare (gfc_namespace *ns, gfc_symbol *sym, bool block)
 	continue;
 
       if (block)
-	gfc_error ("Sorry, $!ACC DECLARE at %L is not allowed "
+	gfc_error ("Sorry, !$ACC DECLARE at %L is not allowed "
 		   "in BLOCK construct", &oc->loc);
 
 

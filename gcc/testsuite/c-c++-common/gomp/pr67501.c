@@ -7,6 +7,6 @@ foo (void)
 {
   int i, j;
   #pragma omp for simd copyprivate(j	/* { dg-error "before end of line" } */
-  for (i = 0; i < 16; ++i)		/* { dg-error "is not valid for" "" { target *-*-* } 9 } */
+  for (i = 0; i < 16; ++i)		/* { dg-error "is not valid for" "" { target *-*-* } .-1 } */
     ;
 }

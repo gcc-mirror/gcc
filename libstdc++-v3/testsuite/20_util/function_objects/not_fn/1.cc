@@ -103,7 +103,7 @@ test06()
   F f;
   auto notf = std::not_fn(f);
   using NotF = decltype(notf);
-  static_assert( std::is_callable<NotF()>::value, "cannot negate" );
+  static_assert( std::is_invocable<NotF>::value, "cannot negate" );
   static_assert( !noexcept(notf()), "conversion to bool affects noexcept" );
 }
 
@@ -117,7 +117,7 @@ test07()
   F f;
   auto notf = std::not_fn(f);
   using NotF = decltype(notf);
-  static_assert( !std::is_callable<NotF()>::value, "cannot negate" );
+  static_assert( !std::is_invocable<NotF>::value, "cannot negate" );
 }
 
 int

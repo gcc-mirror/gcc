@@ -1572,7 +1572,6 @@ package body Prep is
             then
                Start_Of_Processing := Token_Ptr + 2;
             else
-               pragma Assert (Sinput.Source (Token_Ptr) = ASCII.LF);
                Start_Of_Processing := Token_Ptr + 1;
             end if;
          end if;

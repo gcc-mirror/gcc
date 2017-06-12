@@ -8,7 +8,7 @@
 
 template<typename T> struct A
 {
-  typedef typename T::X Y; // { dg-error "not a class" "" }
+  typedef typename T::X Y; // { dg-error "not a class" }
 };
 
-A<int>::Y y; // { dg-message "required from here" "" }
+A<int>::Y y; // { dg-message "required from here" }

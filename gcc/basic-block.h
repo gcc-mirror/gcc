@@ -20,12 +20,7 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_BASIC_BLOCK_H
 #define GCC_BASIC_BLOCK_H
 
-
-/* Use gcov_type to hold basic block counters.  Should be at least
-   64bit.  Although a counter cannot be negative, we use a signed
-   type, because erroneous negative counts can be generated when the
-   flow graph is manipulated by various optimizations.  A signed type
-   makes those easy to detect.  */
+#include <profile-count.h>
 
 /* Control flow edge information.  */
 struct GTY((user)) edge_def {
@@ -51,7 +46,7 @@ struct GTY((user)) edge_def {
 
   int flags;			/* see cfg-flags.def */
   int probability;		/* biased by REG_BR_PROB_BASE */
-  gcov_type count;		/* Expected number of executions calculated
+  profile_count count;		/* Expected number of executions calculated
 				   in profile.c  */
 };
 
@@ -150,7 +145,7 @@ struct GTY((chain_next ("%h.next_bb"), chain_prev ("%h.prev_bb"))) basic_block_d
   int index;
 
   /* Expected number of executions: calculated in profile.c.  */
-  gcov_type count;
+  profile_count count;
 
   /* Expected frequency.  Normalized to be in range 0 to BB_FREQ_MAX.  */
   int frequency;
@@ -278,9 +273,6 @@ enum cfg_bb_flags
 /* The two blocks that are always in the cfg.  */
 #define NUM_FIXED_BLOCKS (2)
 
-/* The base value for branch probability notes and edge probabilities.  */
-#define REG_BR_PROB_BASE  10000
-
 /* This is the value which indicates no edge is present.  */
 #define EDGE_INDEX_NO_EDGE	-1
 
@@ -307,7 +299,6 @@ enum cfg_bb_flags
 #define BRANCH_EDGE(bb)			(EDGE_SUCC ((bb), 0)->flags & EDGE_FALLTHRU \
 					 ? EDGE_SUCC ((bb), 1) : EDGE_SUCC ((bb), 0))
 
-#define RDIV(X,Y) (((X) + (Y) / 2) / (Y))
 /* Return expected execution frequency of the edge E.  */
 #define EDGE_FREQUENCY(e)		RDIV ((e)->src->frequency * (e)->probability, \
 					      REG_BR_PROB_BASE)

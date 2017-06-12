@@ -5454,6 +5454,16 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 	      if (fsym && fsym->attr.allocatable
 		  && fsym->attr.intent == INTENT_OUT)
 		{
+		  if (fsym->ts.type == BT_DERIVED
+		      && fsym->ts.u.derived->attr.alloc_comp)
+		  {
+		    // deallocate the components first
+		    tmp = gfc_deallocate_alloc_comp (fsym->ts.u.derived,
+						     parmse.expr, e->rank);
+		    if (tmp != NULL_TREE)
+		      gfc_add_expr_to_block (&se->pre, tmp);
+		  }
+
 		  tmp = build_fold_indirect_ref_loc (input_location,
 						     parmse.expr);
 		  if (GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (tmp)))
@@ -6122,7 +6132,7 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
      after use. This necessitates the creation of a temporary to
      hold the result to prevent duplicate calls.  */
   if (!byref && sym->ts.type != BT_CHARACTER
-      && sym->attr.allocatable && !sym->attr.dimension)
+      && sym->attr.allocatable && !sym->attr.dimension && !comp)
     {
       tmp = gfc_create_var (TREE_TYPE (se->expr), NULL);
       gfc_add_modify (&se->pre, tmp, se->expr);
@@ -6228,13 +6238,15 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
       gfc_add_block_to_block (&se->pre, &post);
 
       /* Transformational functions of derived types with allocatable
-         components must have the result allocatable components copied.  */
+	 components must have the result allocatable components copied when the
+	 argument is actually given.  */
       arg = expr->value.function.actual;
       if (result && arg && expr->rank
-	    && expr->value.function.isym
-	    && expr->value.function.isym->transformational
-	    && arg->expr->ts.type == BT_DERIVED
-	    && arg->expr->ts.u.derived->attr.alloc_comp)
+	  && expr->value.function.isym
+	  && expr->value.function.isym->transformational
+	  && arg->expr
+	  && arg->expr->ts.type == BT_DERIVED
+	  && arg->expr->ts.u.derived->attr.alloc_comp)
 	{
 	  tree tmp2;
 	  /* Copy the allocatable components.  We have to use a

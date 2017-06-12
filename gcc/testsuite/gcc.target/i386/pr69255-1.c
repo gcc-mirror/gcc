@@ -13,7 +13,6 @@ void
 foo (const long long *p)
 {
   a = __builtin_ia32_gather3siv4di (a, p, b, 1, 1);	/* { dg-error "needs isa option -m32 -mavx512vl" } */
+  /* { dg-warning "AVX vector return without AVX enabled changes the ABI" "" { target *-*-* } .-1 } */
+  /* { dg-warning "AVX vector argument without AVX enabled changes the ABI" "" { target *-*-* } .-2 } */
 }
-
-/* { dg-warning "AVX vector return without AVX enabled changes the ABI" "" { target *-*-* } 15 } */
-/* { dg-warning "AVX vector argument without AVX enabled changes the ABI" "" { target *-*-* } 15 } */

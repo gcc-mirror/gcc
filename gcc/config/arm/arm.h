@@ -251,7 +251,7 @@ extern tree arm_fp16_type_node;
 				  || (arm_arch8 && !arm_arch_notm))
 
 /* Nonzero if this chip supports LPAE.  */
-#define TARGET_HAVE_LPAE (arm_arch7ve)
+#define TARGET_HAVE_LPAE (arm_arch_lpae)
 
 /* Nonzero if this chip supports ldrex{bh} and strex{bh}.  */
 #define TARGET_HAVE_LDREXBH ((arm_arch6k && TARGET_ARM)		\
@@ -341,6 +341,12 @@ extern int arm_fpu_attr;
 
 #ifndef ARM_DEFAULT_ABI
 #define ARM_DEFAULT_ABI ARM_ABI_APCS
+#endif
+
+/* AAPCS based ABIs use short enums by default.  */
+#ifndef ARM_DEFAULT_SHORT_ENUMS
+#define ARM_DEFAULT_SHORT_ENUMS \
+  (TARGET_AAPCS_BASED && arm_abi != ARM_ABI_AAPCS_LINUX)
 #endif
 
 /* Map each of the micro-architecture variants to their corresponding
@@ -676,7 +682,7 @@ extern int arm_arch_cmse;
 /* Standard register usage.  */
 
 /* Register allocation in ARM Procedure Call Standard
-   (S - saved over call).
+   (S - saved over call, F - Frame-related).
 
 	r0	   *	argument word/integer result
 	r1-r3		argument word

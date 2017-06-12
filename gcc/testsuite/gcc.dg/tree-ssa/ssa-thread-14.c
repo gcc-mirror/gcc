@@ -1,4 +1,4 @@
-/* { dg-do compile { target { ! { logical_op_short_circuit || { m68k*-*-* mmix*-*-* mep*-*-* bfin*-*-* v850*-*-* moxie*-*-* cris*-*-* m32c*-*-* fr30*-*-* mcore*-*-* powerpc*-*-* xtensa*-*-* hppa*-*-* nios2*-*-* } } } } }  */
+/* { dg-do compile { target { ! { logical_op_short_circuit || { m68k*-*-* mmix*-*-* mep*-*-* bfin*-*-* v850*-*-* moxie*-*-* cris*-*-* m32c*-*-* fr30*-*-* mcore*-*-* powerpc*-*-* xtensa*-*-* hppa*-*-* nios2*-*-* riscv*-*-* } } } } }  */
 /* { dg-additional-options "-O2 -fdump-tree-vrp-details" }  */
 /* { dg-additional-options "-mbranch-cost=2" { target i?86-*-* x86_64-*-* } }  */
 /* { dg-final { scan-tree-dump-times "Threaded jump" 8 "vrp1" } }  */

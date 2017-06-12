@@ -18,8 +18,8 @@ class B {
     int _j;
   };
   A<U,SubB1>::SubA<SubB2> _a; // { dg-error "not a base type" "not base" }
-		// { dg-message "note" "note" { target *-*-* } 20 }
-		// { dg-error "non-template" "non-template" { target *-*-* } 20 }
+		// { dg-message "note" "note" { target *-*-* } .-1 }
+		// { dg-error "non-template" "non-template" { target *-*-* } .-2 }
 };
 
 

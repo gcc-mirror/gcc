@@ -9,7 +9,7 @@ int high(T a, T b, T c) { return a + b + c; } // { dg-message "template" }
 int test (void)
 {
   low (5, 6);			// { dg-error "no matching function" }
-  // { dg-message "(candidate|3 arguments, 2 provided)" "" { target *-*-* } 11 }
+  // { dg-message "(candidate|3 arguments, 2 provided)" "" { target *-*-* } .-1 }
   high (5, 6, 7, 8);		// { dg-error "no matching function" }
-  // { dg-message "(candidate|3 arguments, 4 provided)" "" { target *-*-* } 13 }
+  // { dg-message "(candidate|3 arguments, 4 provided)" "" { target *-*-* } .-1 }
 }

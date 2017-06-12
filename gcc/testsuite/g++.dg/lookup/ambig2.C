@@ -7,11 +7,11 @@
 // Bug 16889:Undetected ambiguity.
 
 struct B { 
-  int i; // { dg-message "int B::i" "" }
+  int i; // { dg-message "int B::i" }
 }; 
  
 struct B1 : virtual B {}; 
 struct B2 : B {}; 
 struct BB : B1, B2 {}; 
  
-int i = BB().i;  // { dg-error "ambiguous" "" }
+int i = BB().i;  // { dg-error "ambiguous" }

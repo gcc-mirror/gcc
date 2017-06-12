@@ -2944,7 +2944,9 @@ package body Make is
             Fname : constant File_Name_Type := Strip_Directory (S);
 
          begin
-            if Is_Predefined_File_Name (Fname, False) then
+            if Is_Predefined_File_Name
+                 (Fname, Renamings_Included => False)
+            then
                if Check_Readonly_Files or else Must_Compile then
                   Comp_Args (Comp_Args'First + 2 .. Comp_Last + 1) :=
                     Comp_Args (Comp_Args'First + 1 .. Comp_Last);

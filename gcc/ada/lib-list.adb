@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -78,9 +78,7 @@ begin
 
    for R in Sorted_Units'Range loop
       if File_Names_Only then
-         if not Is_Internal_File_Name
-                  (File_Name (Source_Index (Sorted_Units (R))))
-         then
+         if not Is_Internal_Unit (Sorted_Units (R)) then
             Write_Name (Full_File_Name (Source_Index (Sorted_Units (R))));
             Write_Eol;
          end if;

@@ -1,3 +1,4 @@
+/* { dg-bogus "-feliminate-dwarf2-dups is broken for C\\+\\+, ignoring" "broken -feliminate-dwarf2-dups" { xfail *-*-* } } */
 // PR debug/46123
 // { dg-do compile }
 // { dg-options "-g -feliminate-dwarf2-dups" }
@@ -45,5 +46,3 @@ int main ()
     return 1;
   return 0;
 }
-
-/* { dg-bogus "-feliminate-dwarf2-dups is broken for C\\+\\+, ignoring" "broken -feliminate-dwarf2-dups" { xfail *-*-* } 1 } */

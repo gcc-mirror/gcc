@@ -13,8 +13,8 @@ template <typename T> struct A
 template <typename T> void foo()
 {
     typedef typename A<T>::B<T>::X Y; // { dg-error "non-template" "non" }
-    // { dg-error "not declare" "decl" { target *-*-* } 15 }
-    // { dg-message "note" "note" { target *-*-* } 15 }
+    // { dg-error "not declare" "decl" { target *-*-* } .-1 }
+    // { dg-message "note" "note" { target *-*-* } .-2 }
 }
 
 void bar()

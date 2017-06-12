@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2004-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -510,9 +510,9 @@ package body Ada.Containers.Red_Black_Trees.Generic_Operations is
    --------------------
 
    procedure Generic_Adjust (Tree : in out Tree_Type) is
-      N    : constant Count_Type := Tree.Length;
+      N    : constant Count_Type  := Tree.Length;
       Root : constant Node_Access := Tree.Root;
-      use type Helpers.Tamper_Counts;
+
    begin
       --  If the counts are nonzero, execution is technically erroneous, but
       --  it seems friendly to allow things like concurrent "=" on shared

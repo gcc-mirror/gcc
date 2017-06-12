@@ -193,3 +193,23 @@ void test_fixit_replace (void)
    { dg-end-multiline-output "" } */
 #endif
 }
+
+/* Unit test for rendering of fix-it hints that add new lines.  */
+
+void test_fixit_insert_newline (void)
+{
+#if 0
+  switch (op)
+    {
+    case 'a':
+      x = a;
+    case 'b':  /* { dg-warning "newline insertion" } */
+      x = b;
+    }
+/* { dg-begin-multiline-output "" }
++[32m[K      break;[m[K
+     [01;35m[Kcase 'b'[m[K:
+     [01;35m[K^~~~~~~~[m[K
+   { dg-end-multiline-output "" } */
+#endif
+}

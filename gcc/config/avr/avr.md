@@ -1062,8 +1062,8 @@
                    (match_operand 2 "const_int_operand" ""))
               (use (match_operand:HI 1 "const_int_operand" ""))
               (use (match_operand:HI 3 "const_int_operand" ""))
-              (clobber (match_scratch:HI 4 ""))
-              (clobber (match_dup 5))])]
+              (clobber (match_scratch:HI 5 ""))
+              (clobber (match_dup 4))])]
   ""
   {
     rtx addr0;
@@ -1077,7 +1077,7 @@
       FAIL;
 
     mode = u8_operand (operands[1], VOIDmode) ? QImode : HImode;
-    operands[5] = gen_rtx_SCRATCH (mode);
+    operands[4] = gen_rtx_SCRATCH (mode);
     operands[1] = copy_to_mode_reg (mode,
                                     gen_int_mode (INTVAL (operands[1]), mode));
     addr0 = copy_to_mode_reg (Pmode, XEXP (operands[0], 0));
@@ -4580,7 +4580,7 @@
   [(set (cc0)
         (compare (neg:QI (match_operand:QI 0 "register_operand" "r"))
                  (const_int 0)))]
-  "!flag_wrapv && !flag_trapv && flag_strict_overflow"
+  "!flag_wrapv && !flag_trapv"
   "cp __zero_reg__,%0"
   [(set_attr "cc" "compare")
    (set_attr "length" "1")])
@@ -4598,7 +4598,7 @@
   [(set (cc0)
         (compare (neg:HI (match_operand:HI 0 "register_operand" "r"))
                  (const_int 0)))]
-  "!flag_wrapv && !flag_trapv && flag_strict_overflow"
+  "!flag_wrapv && !flag_trapv"
   "cp __zero_reg__,%A0
 	cpc __zero_reg__,%B0"
 [(set_attr "cc" "compare")
@@ -4621,7 +4621,7 @@
   [(set (cc0)
         (compare (neg:PSI (match_operand:PSI 0 "register_operand" "r"))
                  (const_int 0)))]
-  "!flag_wrapv && !flag_trapv && flag_strict_overflow"
+  "!flag_wrapv && !flag_trapv"
   "cp __zero_reg__,%A0\;cpc __zero_reg__,%B0\;cpc __zero_reg__,%C0"
   [(set_attr "cc" "compare")
    (set_attr "length" "3")])
@@ -4640,7 +4640,7 @@
   [(set (cc0)
         (compare (neg:SI (match_operand:SI 0 "register_operand" "r"))
                  (const_int 0)))]
-  "!flag_wrapv && !flag_trapv && flag_strict_overflow"
+  "!flag_wrapv && !flag_trapv"
   "cp __zero_reg__,%A0
 	cpc __zero_reg__,%B0
 	cpc __zero_reg__,%C0

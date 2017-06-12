@@ -373,9 +373,9 @@
 		   (match_operand:BLK 1 "general_operand" "g,g"))
 	      (use (match_operand:HI 2 "general_operand" "n,mr"))
 	      (use (match_operand:HI 3 "immediate_operand" "i,i"))
-	      (clobber (match_scratch:HI 4 "=&r,X"))
+	      (clobber (match_scratch:HI 6 "=&r,X"))
+	      (clobber (match_dup 4))
 	      (clobber (match_dup 5))
-	      (clobber (match_dup 6))
 	      (clobber (match_dup 2))])]
   "(TARGET_BCOPY_BUILTIN)"
   "
@@ -387,8 +387,8 @@
     = replace_equiv_address (operands[1],
 			     copy_to_mode_reg (Pmode, XEXP (operands[1], 0)));
 
-  operands[5] = XEXP (operands[0], 0);
-  operands[6] = XEXP (operands[1], 0);
+  operands[4] = XEXP (operands[0], 0);
+  operands[5] = XEXP (operands[1], 0);
 }")
 
 

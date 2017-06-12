@@ -29,35 +29,19 @@ if ![info exists DEFAULT_CXXFLAGS] then {
 # Initialize `dg'.
 dg-init
 
-# Gather a list of all tests, with the exception of those in directories
-# that are handled specially.
-set tests [lsort [find $srcdir/$subdir *.C]]
-set tests [prune $tests $srcdir/$subdir/bprob/*]
-set tests [prune $tests $srcdir/$subdir/charset/*]
-set tests [prune $tests $srcdir/$subdir/cilk-plus/AN/*]
-set tests [prune $tests $srcdir/$subdir/compat/*]
-set tests [prune $tests $srcdir/$subdir/debug/*]
-set tests [prune $tests $srcdir/$subdir/dfp/*]
-set tests [prune $tests $srcdir/$subdir/gcov/*]
-set tests [prune $tests $srcdir/$subdir/lto/*]
-set tests [prune $tests $srcdir/$subdir/pch/*]
-set tests [prune $tests $srcdir/$subdir/plugin/*]
-set tests [prune $tests $srcdir/$subdir/special/*]
-set tests [prune $tests $srcdir/$subdir/tls/*]
-set tests [prune $tests $srcdir/$subdir/vect/*]
-set tests [prune $tests $srcdir/$subdir/goacc/*]
-set tests [prune $tests $srcdir/$subdir/goacc-gomp/*]
-set tests [prune $tests $srcdir/$subdir/gomp/*]
-set tests [prune $tests $srcdir/$subdir/tree-prof/*]
-set tests [prune $tests $srcdir/$subdir/torture/*]
-set tests [prune $tests $srcdir/$subdir/graphite/*]
-set tests [prune $tests $srcdir/$subdir/tm/*]
-set tests [prune $tests $srcdir/$subdir/cilk-plus/*]
-set tests [prune $tests $srcdir/$subdir/guality/*]
-set tests [prune $tests $srcdir/$subdir/simulate-thread/*]
-set tests [prune $tests $srcdir/$subdir/asan/*]
-set tests [prune $tests $srcdir/$subdir/ubsan/*]
-set tests [prune $tests $srcdir/$subdir/tsan/*]
+# Recursively find files in $dir and subdirs, do not walk into subdirs
+# that contain their own .exp file.
+proc find-cxx-tests { dir suffix } {
+    set tests [lsort [glob -nocomplain -directory $dir "*.$suffix" ]]
+    foreach subdir [lsort [glob -nocomplain -type d -directory $dir *]] {
+	if { [glob -nocomplain -directory $subdir *.exp] eq "" } {
+	    eval lappend tests [find-cxx-tests $subdir $suffix]
+	}
+    }
+    return $tests
+}
+
+set tests [find-cxx-tests $srcdir/$subdir {C}]
 
 # Main loop.
 g++-dg-runtest $tests "" $DEFAULT_CXXFLAGS

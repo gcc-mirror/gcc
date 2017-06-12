@@ -191,7 +191,7 @@ static rtx get_expansion (struct var_to_expand *);
 static void
 report_unroll (struct loop *loop, location_t locus)
 {
-  int report_flags = MSG_OPTIMIZED_LOCATIONS | TDF_RTL | TDF_DETAILS;
+  dump_flags_t report_flags = MSG_OPTIMIZED_LOCATIONS | TDF_DETAILS;
 
   if (loop->lpt_decision.decision == LPT_NONE)
     return;
@@ -202,10 +202,10 @@ report_unroll (struct loop *loop, location_t locus)
   dump_printf_loc (report_flags, locus,
                    "loop unrolled %d times",
                    loop->lpt_decision.times);
-  if (profile_info)
+  if (profile_info && loop->header->count.initialized_p ())
     dump_printf (report_flags,
                  " (header execution count %d)",
-                 (int)loop->header->count);
+                 (int)loop->header->count.to_gcov_type ());
 
   dump_printf (report_flags, "\n");
 }
@@ -223,7 +223,7 @@ decide_unrolling (int flags)
       location_t locus = get_loop_location (loop);
 
       if (dump_enabled_p ())
-	dump_printf_loc (TDF_RTL, locus,
+	dump_printf_loc (MSG_NOTE, locus,
                          ";; *** Considering loop %d at BB %d for "
                          "unrolling ***\n",
                          loop->num, loop->header->index);
@@ -860,7 +860,7 @@ unroll_loop_runtime_iterations (struct loop *loop)
   unsigned i, j, p;
   basic_block preheader, *body, swtch, ezc_swtch = NULL;
   int may_exit_copy, iter_freq, new_freq;
-  gcov_type iter_count, new_count;
+  profile_count iter_count, new_count;
   unsigned n_peel;
   edge e;
   bool extra_zero_check, last_may_exit;
@@ -970,7 +970,7 @@ unroll_loop_runtime_iterations (struct loop *loop)
      innermost switch block.  Switch blocks and peeled loop copies are built
      from innermost outward.  */
   iter_freq = new_freq = swtch->frequency / (max_unroll + 1);
-  iter_count = new_count = swtch->count / (max_unroll + 1);
+  iter_count = new_count = swtch->count.apply_scale (1, max_unroll + 1);
   swtch->frequency = new_freq;
   swtch->count = new_count;
   single_succ_edge (swtch)->count = new_count;
@@ -1027,7 +1027,7 @@ unroll_loop_runtime_iterations (struct loop *loop)
       /* Recompute frequency/count adjustments since initial peel copy may
 	 have exited and reduced those values that were computed above.  */
       iter_freq = swtch->frequency / (max_unroll + 1);
-      iter_count = swtch->count / (max_unroll + 1);
+      iter_count = swtch->count.apply_scale (1, max_unroll + 1);
       /* Add in frequency/count of edge from switch block.  */
       preheader->frequency += iter_freq;
       preheader->count += iter_count;
@@ -1454,7 +1454,7 @@ analyze_insn_to_expand_var (struct loop *loop, rtx_insn *insn)
   if (debug_uses)
     /* Instead of resetting the debug insns, we could replace each
        debug use in the loop with the sum or product of all expanded
-       accummulators.  Since we'll only know of all expansions at the
+       accumulators.  Since we'll only know of all expansions at the
        end, we'd have to keep track of which vars_to_expand a debug
        insn in the loop references, take note of each copy of the
        debug insn during unrolling, and when it's all done, compute
@@ -1913,6 +1913,9 @@ combine_var_copies_in_loop_exit (struct var_to_expand *ve, basic_block place)
   if (ve->var_expansions.length () == 0)
     return;
 
+  /* ve->reg might be SUBREG or some other non-shareable RTL, and we use
+     it both here and as the destination of the assignment.  */
+  sum = copy_rtx (sum);
   start_sequence ();
   switch (ve->op)
     {

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -44,9 +44,6 @@ package body Fmap is
    --  Set to True when the specified mapping file cannot be read in
    --  procedure Initialize, so that no attempt is made to open the mapping
    --  file in procedure Update_Mapping_File.
-
-   function To_Big_String_Ptr is new Unchecked_Conversion
-     (Source_Buffer_Ptr, Big_String_Ptr);
 
    Max_Buffer : constant := 1_500;
    Buffer : String (1 .. Max_Buffer);
@@ -180,11 +177,9 @@ package body Fmap is
    procedure Initialize (File_Name : String) is
       Src : Source_Buffer_Ptr;
       Hi  : Source_Ptr;
-      BS  : Big_String_Ptr;
-      SP  : String_Ptr;
 
-      First : Positive := 1;
-      Last  : Natural  := 0;
+      First : Source_Ptr := 1;
+      Last  : Source_Ptr := 0;
 
       Uname : Unit_Name_Type;
       Fname : File_Name_Type;
@@ -204,7 +199,7 @@ package body Fmap is
       --  the name buffer contains "/".
 
       procedure Get_Line;
-      --  Get a line from the mapping file, where a line is SP (First .. Last)
+      --  Get a line from the mapping file, where a line is Src (First .. Last)
 
       procedure Report_Truncated;
       --  Report a warning when the mapping file is truncated
@@ -263,23 +258,23 @@ package body Fmap is
 
          --  If not at the end of file, skip the end of line
 
-         while First < SP'Last
-           and then (SP (First) = CR
-                      or else SP (First) = LF
-                      or else SP (First) = EOF)
+         while First < Src'Last
+           and then (Src (First) = CR
+                      or else Src (First) = LF
+                      or else Src (First) = EOF)
          loop
             First := First + 1;
          end loop;
 
          --  If not at the end of file, find the end of this new line
 
-         if First < SP'Last and then SP (First) /= EOF then
+         if First < Src'Last and then Src (First) /= EOF then
             Last := First;
 
-            while Last < SP'Last
-              and then SP (Last + 1) /= CR
-              and then SP (Last + 1) /= LF
-              and then SP (Last + 1) /= EOF
+            while Last < Src'Last
+              and then Src (Last + 1) /= CR
+              and then Src (Last + 1) /= LF
+              and then Src (Last + 1) /= EOF
             loop
                Last := Last + 1;
             end loop;
@@ -302,20 +297,15 @@ package body Fmap is
 
    begin
       Empty_Tables;
-      Name_Len := File_Name'Length;
-      Name_Buffer (1 .. Name_Len) := File_Name;
-      Read_Source_File (Name_Enter, 0, Hi, Src, Config);
+      Read_Source_File (Name_Enter (File_Name), 1, Hi, Src, Config);
 
-      if Src = null then
+      if Null_Source_Buffer_Ptr (Src) then
          Write_Str ("warning: could not read mapping file """);
          Write_Str (File_Name);
          Write_Line ("""");
          No_Mapping_File := True;
 
       else
-         BS := To_Big_String_Ptr (Src);
-         SP := BS (1 .. Natural (Hi))'Unrestricted_Access;
-
          loop
             --  Get the unit name
 
@@ -325,19 +315,19 @@ package body Fmap is
 
             exit when First > Last;
 
-            if (Last < First + 2) or else (SP (Last - 1) /= '%')
-              or else (SP (Last) /= 's' and then SP (Last) /= 'b')
+            if (Last < First + 2) or else (Src (Last - 1) /= '%')
+              or else (Src (Last) /= 's' and then Src (Last) /= 'b')
             then
                Write_Line
                  ("warning: mapping file """ & File_Name &
                   """ is incorrectly formatted");
-               Write_Line ("Line = """ & SP (First .. Last) & '"');
+               Write_Line ("Line = """ & String (Src (First .. Last)) & '"');
                Empty_Tables;
                return;
             end if;
 
-            Name_Len := Last - First + 1;
-            Name_Buffer (1 .. Name_Len) := SP (First .. Last);
+            Name_Len := Integer (Last - First + 1);
+            Name_Buffer (1 .. Name_Len) := String (Src (First .. Last));
             Uname := Find_Unit_Name;
 
             --  Get the file name
@@ -352,8 +342,8 @@ package body Fmap is
                return;
             end if;
 
-            Name_Len := Last - First + 1;
-            Name_Buffer (1 .. Name_Len) := SP (First .. Last);
+            Name_Len := Integer (Last - First + 1);
+            Name_Buffer (1 .. Name_Len) := String (Src (First .. Last));
             Canonical_Case_File_Name (Name_Buffer (1 .. Name_Len));
             Fname := Find_File_Name;
 
@@ -369,8 +359,8 @@ package body Fmap is
                return;
             end if;
 
-            Name_Len := Last - First + 1;
-            Name_Buffer (1 .. Name_Len) := SP (First .. Last);
+            Name_Len := Integer (Last - First + 1);
+            Name_Buffer (1 .. Name_Len) := String (Src (First .. Last));
             Pname := Find_File_Name;
 
             --  Add the mappings for this unit name

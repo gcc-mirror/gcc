@@ -1,4 +1,4 @@
-/* { dg-options "(HAS_LXC1) -mno-lxc1-sxc1" } */
+/* { dg-options "(HAS_LXC1) -mhard-float -mno-lxc1-sxc1" } */
 /* { dg-final { scan-assembler-not "\tldxc1\t" } } */
 /* { dg-final { scan-assembler-not "\tsdxc1\t" } } */
 

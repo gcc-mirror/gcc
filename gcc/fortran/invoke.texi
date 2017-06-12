@@ -1665,6 +1665,8 @@ according to these flags only with @option{-finit-derived}.  These options do
 not initialize
 @itemize @bullet
 @item
+objects with the POINTER attribute
+@item
 allocatable arrays
 @item
 variables that appear in an @code{EQUIVALENCE} statement.

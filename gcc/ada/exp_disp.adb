@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -58,6 +58,7 @@ with Sem_Res;  use Sem_Res;
 with Sem_Type; use Sem_Type;
 with Sem_Util; use Sem_Util;
 with Sinfo;    use Sinfo;
+with Sinput;   use Sinput;
 with Snames;   use Snames;
 with Stand;    use Stand;
 with Stringt;  use Stringt;
@@ -649,10 +650,118 @@ package body Exp_Disp is
       Eq_Prim_Op      : Entity_Id := Empty;
       Controlling_Tag : Node_Id;
 
+      procedure Build_Class_Wide_Check;
+      --  If the denoted subprogram has a class-wide precondition, generate a
+      --  check using that precondition before the dispatching call, because
+      --  this is the only class-wide precondition that applies to the call.
+
       function New_Value (From : Node_Id) return Node_Id;
       --  From is the original Expression. New_Value is equivalent to a call
       --  to Duplicate_Subexpr with an explicit dereference when From is an
       --  access parameter.
+
+      ----------------------------
+      -- Build_Class_Wide_Check --
+      ----------------------------
+
+      procedure Build_Class_Wide_Check is
+         function Replace_Formals (N : Node_Id) return Traverse_Result;
+         --  Replace occurrences of the formals of the subprogram by the
+         --  corresponding actuals in the call, given that this check is
+         --  performed outside of the body of the subprogram.
+
+         ---------------------
+         -- Replace_Formals --
+         ---------------------
+
+         function Replace_Formals (N : Node_Id) return Traverse_Result is
+         begin
+            if Is_Entity_Name (N)
+              and then Present (Entity (N))
+              and then Is_Formal (Entity (N))
+            then
+               declare
+                  A : Node_Id;
+                  F : Entity_Id;
+
+               begin
+                  F := First_Formal (Subp);
+                  A := First_Actual (Call_Node);
+                  while Present (F) loop
+                     if F = Entity (N) then
+                        Rewrite (N, New_Copy_Tree (A));
+                        exit;
+                     end if;
+
+                     Next_Formal (F);
+                     Next_Actual (A);
+                  end loop;
+               end;
+            end if;
+
+            return OK;
+         end Replace_Formals;
+
+         procedure Update is new Traverse_Proc (Replace_Formals);
+
+         --  Local variables
+
+         Str_Loc : constant String := Build_Location_String (Loc);
+
+         Cond : Node_Id;
+         Msg  : Node_Id;
+         Prec : Node_Id;
+
+      --  Start of processing for Build_Class_Wide_Check
+
+      begin
+
+         --  Locate class-wide precondition, if any
+
+         if Present (Contract (Subp))
+           and then Present (Pre_Post_Conditions (Contract (Subp)))
+         then
+            Prec := Pre_Post_Conditions (Contract (Subp));
+
+            while Present (Prec) loop
+               exit when Pragma_Name (Prec) = Name_Precondition
+                 and then Class_Present (Prec);
+               Prec := Next_Pragma (Prec);
+            end loop;
+
+            if No (Prec) then
+               return;
+            end if;
+
+            --  The expression for the precondition is analyzed within the
+            --  generated pragma. The message text is the last parameter of
+            --  the generated pragma, indicating source of precondition.
+
+            Cond :=
+              New_Copy_Tree
+                (Expression (First (Pragma_Argument_Associations (Prec))));
+            Update (Cond);
+
+            --  Build message indicating the failed precondition and the
+            --  dispatching call that caused it.
+
+            Msg := Expression (Last (Pragma_Argument_Associations (Prec)));
+            Name_Len := 0;
+            Append (Global_Name_Buffer, Strval (Msg));
+            Append (Global_Name_Buffer, " in dispatching call at ");
+            Append (Global_Name_Buffer, Str_Loc);
+            Msg := Make_String_Literal (Loc, Name_Buffer (1 .. Name_Len));
+
+            Insert_Action (Call_Node,
+              Make_If_Statement (Loc,
+                Condition       => Make_Op_Not (Loc, Cond),
+                Then_Statements => New_List (
+                  Make_Procedure_Call_Statement (Loc,
+                    Name                   =>
+                      New_Occurrence_Of (RTE (RE_Raise_Assert_Failure), Loc),
+                    Parameter_Associations => New_List (Msg)))));
+         end if;
+      end Build_Class_Wide_Check;
 
       ---------------
       -- New_Value --
@@ -673,7 +782,7 @@ package body Exp_Disp is
       --  Local variables
 
       New_Node          : Node_Id;
-      SCIL_Node         : Node_Id;
+      SCIL_Node         : Node_Id := Empty;
       SCIL_Related_Node : Node_Id := Call_Node;
 
    --  Start of processing for Expand_Dispatching_Call
@@ -713,6 +822,8 @@ package body Exp_Disp is
       then
          Subp := Alias (Subp);
       end if;
+
+      Build_Class_Wide_Check;
 
       --  Definition of the class-wide type and the tagged type
 
@@ -1174,7 +1285,7 @@ package body Exp_Disp is
       if not Tagged_Type_Expansion then
          return;
 
-      --  A static conversion to an interface type that is not classwide is
+      --  A static conversion to an interface type that is not class-wide is
       --  curious but legal if the interface operation is a null procedure.
       --  If the operation is abstract it will be rejected later.
 
@@ -1190,7 +1301,7 @@ package body Exp_Disp is
 
       if not Is_Static then
 
-         --  Give error if configurable run time and Displace not available
+         --  Give error if configurable run-time and Displace not available
 
          if not RTE_Available (RE_Displace) then
             Error_Msg_CRT ("dynamic interface conversion", N);
@@ -1435,8 +1546,8 @@ package body Exp_Disp is
       Formal     : Entity_Id;
       Formal_Typ : Entity_Id;
       Subp       : Entity_Id;
-      Formal_DDT : Entity_Id;
-      Actual_DDT : Entity_Id;
+      Formal_DDT : Entity_Id := Empty;  -- initialize to prevent warning
+      Actual_DDT : Entity_Id := Empty;  -- initialize to prevent warning
 
    begin
       --  This subprogram is called directly from the semantics, so we need a
@@ -1618,7 +1729,7 @@ package body Exp_Disp is
       Expr          : Node_Id;
       Formal        : Node_Id;
       Ftyp          : Entity_Id;
-      Iface_Formal  : Node_Id;
+      Iface_Formal  : Node_Id := Empty;  -- initialize to prevent warning
       New_Arg       : Node_Id;
       Offset_To_Top : Node_Id;
       Target_Formal : Entity_Id;
@@ -4396,6 +4507,9 @@ package body Exp_Disp is
       Name_TSD          : constant Name_Id :=
                             New_External_Name (Tname, 'B', Suffix_Index => -1);
 
+      Saved_GM : constant Ghost_Mode_Type := Ghost_Mode;
+      --  Save the Ghost mode to restore on exit
+
       AI                 : Elmt_Id;
       AI_Tag_Elmt        : Elmt_Id;
       AI_Tag_Comp        : Elmt_Id;
@@ -4408,7 +4522,6 @@ package body Exp_Disp is
       ITable             : Node_Id;
       I_Depth            : Nat := 0;
       Iface_Table_Node   : Node_Id;
-      Mode               : Ghost_Mode_Type;
       Name_ITable        : Name_Id;
       Nb_Predef_Prims    : Nat := 0;
       Nb_Prim            : Nat := 0;
@@ -4436,7 +4549,7 @@ package body Exp_Disp is
       --  the mode now to ensure that any nodes generated during dispatch table
       --  creation are properly marked as Ghost.
 
-      Set_Ghost_Mode (Typ, Mode);
+      Set_Ghost_Mode (Typ);
 
       --  Handle cases in which there is no need to build the dispatch table
 
@@ -4508,10 +4621,13 @@ package body Exp_Disp is
 
       if Building_Static_DT (Typ) then
          declare
-            Save      : constant Boolean := Freezing_Library_Level_Tagged_Type;
+            Saved_FLLTT : constant Boolean :=
+                            Freezing_Library_Level_Tagged_Type;
+
+            Formal    : Entity_Id;
+            Frnodes   : List_Id;
             Prim      : Entity_Id;
             Prim_Elmt : Elmt_Id;
-            Frnodes   : List_Id;
 
          begin
             Freezing_Library_Level_Tagged_Type := True;
@@ -4521,18 +4637,21 @@ package body Exp_Disp is
                Prim    := Node (Prim_Elmt);
                Frnodes := Freeze_Entity (Prim, Typ);
 
-               declare
-                  F : Entity_Id;
+               --  We disable this check for abstract subprograms, given that
+               --  they cannot be called directly and thus the state of their
+               --  untagged formals is of no concern. The RM is unclear in any
+               --  case concerning the need for this check, and this topic may
+               --  go back to the ARG.
 
-               begin
-                  F := First_Formal (Prim);
-                  while Present (F) loop
-                     Check_Premature_Freezing (Prim, Typ, Etype (F));
-                     Next_Formal (F);
+               if not Is_Abstract_Subprogram (Prim)  then
+                  Formal := First_Formal (Prim);
+                  while Present (Formal) loop
+                     Check_Premature_Freezing (Prim, Typ, Etype (Formal));
+                     Next_Formal (Formal);
                   end loop;
 
                   Check_Premature_Freezing (Prim, Typ, Etype (Prim));
-               end;
+               end if;
 
                if Present (Frnodes) then
                   Append_List_To (Result, Frnodes);
@@ -4541,7 +4660,7 @@ package body Exp_Disp is
                Next_Elmt (Prim_Elmt);
             end loop;
 
-            Freezing_Library_Level_Tagged_Type := Save;
+            Freezing_Library_Level_Tagged_Type := Saved_FLLTT;
          end;
       end if;
 
@@ -4833,7 +4952,7 @@ package body Exp_Disp is
       --            External_Tag       => Cstring_Ptr!(Exname'Address))
       --            HT_Link            => HT_Link'Address,
       --            Transportable      => <<boolean-value>>,
-      --            Type_Is_Abstract   => <<boolean-value>>,
+      --            Is_Abstract        => <<boolean-value>>,
       --            Needs_Finalization => <<boolean-value>>,
       --            [ Size_Func         => Size_Prim'Access, ]
       --            [ Interfaces_Table  => <<access-value>>, ]
@@ -5113,16 +5232,16 @@ package body Exp_Disp is
             New_Occurrence_Of (Transportable, Loc));
       end;
 
-      --  Type_Is_Abstract (Ada 2012: AI05-0173). This functionality is
-      --  not available in the HIE runtime.
+      --  Is_Abstract (Ada 2012: AI05-0173). This functionality is not
+      --  available in the HIE runtime.
 
-      if RTE_Record_Component_Available (RE_Type_Is_Abstract) then
+      if RTE_Record_Component_Available (RE_Is_Abstract) then
          declare
-            Type_Is_Abstract : Entity_Id;
+            Is_Abstract : Entity_Id;
          begin
-            Type_Is_Abstract := Boolean_Literals (Is_Abstract_Type (Typ));
+            Is_Abstract := Boolean_Literals (Is_Abstract_Type (Typ));
             Append_To (TSD_Aggr_List,
-              New_Occurrence_Of (Type_Is_Abstract, Loc));
+              New_Occurrence_Of (Is_Abstract, Loc));
          end;
       end if;
 
@@ -5155,7 +5274,7 @@ package body Exp_Disp is
             declare
                Prim_Elmt : Elmt_Id;
                Prim      : Entity_Id;
-               Size_Comp : Node_Id;
+               Size_Comp : Node_Id := Empty;
 
             begin
                Prim_Elmt := First_Elmt (Primitive_Operations (Typ));
@@ -6242,7 +6361,7 @@ package body Exp_Disp is
       Register_CG_Node (Typ);
 
    <<Leave>>
-      Restore_Ghost_Mode (Mode);
+      Restore_Ghost_Mode (Saved_GM);
 
       return Result;
    end Make_DT;
@@ -6258,7 +6377,7 @@ package body Exp_Disp is
       Loc         : constant Source_Ptr := Sloc (Typ);
 
       Conc_Typ  : Entity_Id;
-      Decls     : List_Id;
+      Decls     : List_Id := No_List;
       Prim      : Entity_Id;
       Prim_Als  : Entity_Id;
       Prim_Elmt : Elmt_Id;
@@ -7311,8 +7430,6 @@ package body Exp_Disp is
       ------------------------
 
       function In_Predef_Prims_DT (Prim : Entity_Id) return Boolean is
-         E : Entity_Id;
-
       begin
          --  Predefined primitives
 
@@ -7327,20 +7444,19 @@ package body Exp_Disp is
             if Chars (Ultimate_Alias (Prim)) /= Name_Op_Eq then
                return True;
 
-            --  User-defined renamings of predefined equality have their own
-            --  slot in the primary dispatch table
+            --  An overriding operation that is a user-defined renaming of
+            --  predefined equality inherits its slot from the overridden
+            --  operation. Otherwise it is treated as a predefined op and
+            --  occupies the same predefined slot as equality. A call to it is
+            --  transformed into a call to its alias, which is the predefined
+            --  equality op. A dispatching call thus uses the proper slot if
+            --  operation is further inherited and called with class-wide
+            --  arguments.
 
             else
-               E := Prim;
-               while Present (Alias (E)) loop
-                  if Comes_From_Source (E) then
-                     return False;
-                  end if;
-
-                  E := Alias (E);
-               end loop;
-
-               return not Comes_From_Source (E);
+               return
+                 not Comes_From_Source (Prim)
+                   or else No (Overridden_Operation (Prim));
             end if;
 
          --  User-defined primitives

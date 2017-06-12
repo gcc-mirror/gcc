@@ -267,6 +267,9 @@
 /* Define if futex syscall is available. */
 #undef HAVE_LINUX_FUTEX
 
+/* Define to 1 if you have the <linux/random.h> header file. */
+#undef HAVE_LINUX_RANDOM_H
+
 /* Define to 1 if you have the <locale.h> header file. */
 #undef HAVE_LOCALE_H
 
@@ -454,7 +457,7 @@
 /* Define if S_IFREG is available in <sys/stat.h>. */
 #undef HAVE_S_IFREG
 
-/* Define if S_IFREG is available in <sys/stat.h>. */
+/* Define if S_ISREG is available in <sys/stat.h>. */
 #undef HAVE_S_ISREG
 
 /* Define to 1 if you have the `tanf' function. */

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -63,27 +63,42 @@ package Fname is
    -----------------
 
    function Is_Predefined_File_Name
+     (Fname              : String;
+      Renamings_Included : Boolean := True) return Boolean;
+   function Is_Predefined_File_Name
      (Fname              : File_Name_Type;
       Renamings_Included : Boolean := True) return Boolean;
-   --  This function determines if the given file name (which must be a simple
-   --  file name with no directory information) is the file name for one of the
-   --  predefined library units (i.e. part of the Ada, System, or Interface
-   --  hierarchies). Note that units in the GNAT hierarchy are not considered
-   --  predefined (see Is_Internal_File_Name below). On return, Name_Buffer
-   --  contains the file name. The Renamings_Included parameter indicates
-   --  whether annex J renamings such as Text_IO are to be considered as
-   --  predefined. If Renamings_Included is True, then Text_IO will return
-   --  True, otherwise only children of Ada, Interfaces and System return True.
+   --  These functions determine if the given file name (which must be a simple
+   --  file name with no directory information) is the source or ALI file name
+   --  for one of the predefined library units (i.e. part of the Ada, System,
+   --  or Interface hierarchies). Note that units in the GNAT hierarchy are not
+   --  considered predefined (see Is_Internal_File_Name below).
+   --
+   --  The Renamings_Included parameter indicates whether annex J renamings
+   --  such as Text_IO are to be considered as predefined. If
+   --  Renamings_Included is True, then Text_IO will return True, otherwise
+   --  only children of Ada, Interfaces and System return True.
 
-   function Is_Predefined_File_Name
-     (Renamings_Included : Boolean := True) return Boolean;
-   --  This version is called with the file name already in Name_Buffer
+   function Is_Predefined_Renaming_File_Name
+     (Fname : String) return Boolean;
+   function Is_Predefined_Renaming_File_Name
+     (Fname : File_Name_Type) return Boolean;
+   --  True if Fname is the file name for a predefined renaming (the same file
+   --  names that are included if Renamings_Included => True is passed to
+   --  Is_Predefined_File_Name).
 
+   function Is_Internal_File_Name
+     (Fname              : String;
+      Renamings_Included : Boolean := True) return Boolean;
    function Is_Internal_File_Name
      (Fname              : File_Name_Type;
       Renamings_Included : Boolean := True) return Boolean;
-   --  Similar to Is_Predefined_File_Name. The internal file set is a superset
-   --  of the predefined file set including children of GNAT.
+   --  Same as Is_Predefined_File_Name, except units in the GNAT hierarchy are
+   --  included.
+
+   function Is_GNAT_File_Name (Fname : String) return Boolean;
+   function Is_GNAT_File_Name (Fname : File_Name_Type) return Boolean;
+   --  True for units in the GNAT hierarchy
 
    procedure Tree_Read;
    --  Dummy procedure (reads dummy table values from tree file)

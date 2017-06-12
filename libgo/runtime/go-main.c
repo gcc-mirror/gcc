@@ -17,7 +17,6 @@
 #include "runtime.h"
 #include "array.h"
 #include "arch.h"
-#include "malloc.h"
 
 #undef int
 #undef char

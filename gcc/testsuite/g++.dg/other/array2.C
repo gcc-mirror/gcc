@@ -2,5 +2,5 @@
 // { dg-do compile }
 
 int x[1/0];  // { dg-warning "division by zero" }
-             // { dg-error "constant" "constant" { target *-*-* } 4 }
+             // { dg-error "constant" "constant" { target *-*-* } .-1 }
 

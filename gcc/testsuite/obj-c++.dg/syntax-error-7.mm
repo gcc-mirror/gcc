@@ -10,4 +10,4 @@
 {
 }
 @end /* { dg-warning "incomplete implementation of class" } */
-/* { dg-warning "method definition for ..someMethod. not found" "" { target *-*-* } 12 } */
+/* { dg-warning "method definition for ..someMethod. not found" "" { target *-*-* } .-1 } */

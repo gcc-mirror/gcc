@@ -424,17 +424,33 @@ __hsail_fract_f64 (double a)
 uint32_t
 __hsail_class_f32 (float a, uint32_t flags)
 {
-  return (flags & 0x0001 && isnan (a) && !(*(uint32_t *) &a & 0x40000000))
-	 || (flags & 0x0002 && isnan (a) && (*(uint32_t *) &a & 0x40000000))
-	 || (flags & 0x0004 && isinf (a) && a < 0.0f)
-	 || (flags & 0x0008 && isnormal (a) && signbit (a))
-	 || (flags & 0x0010 && a < 0.0f && a > -FLT_MIN)
-	 || (flags & 0x0020 && a == 0.0f && signbit (a))
-	 || (flags & 0x0040 && a == 0.0f && !signbit (a))
-	 || (flags & 0x0080 && a > 0.0f && a < FLT_MIN)
-	 || (flags & 0x0100 && isnormal (a) && !signbit (a))
-	 || (flags & 0x0200 && isinf (a) && a >= 0.0f);
+  return (flags & 0x0001 && isnan (a) && !(*(uint32_t *) &a & (1ul << 22)))
+    || (flags & 0x0002 && isnan (a) && (*(uint32_t *) &a & (1ul << 22)))
+    || (flags & 0x0004 && isinf (a) && a < 0.0f)
+    || (flags & 0x0008 && isnormal (a) && signbit (a))
+    || (flags & 0x0010 && a < 0.0f && a > -FLT_MIN)
+    || (flags & 0x0020 && a == 0.0f && signbit (a))
+    || (flags & 0x0040 && a == 0.0f && !signbit (a))
+    || (flags & 0x0080 && a > 0.0f && a < FLT_MIN)
+    || (flags & 0x0100 && isnormal (a) && !signbit (a))
+    || (flags & 0x0200 && isinf (a) && a >= 0.0f);
 }
+
+uint32_t
+__hsail_class_f64 (double a, uint32_t flags)
+{
+  return (flags & 0x0001 && isnan (a) && !(*(uint64_t *) &a & (1ul << 51)))
+    || (flags & 0x0002 && isnan (a) && (*(uint64_t *) &a & (1ul << 51)))
+    || (flags & 0x0004 && isinf (a) && a < 0.0f)
+    || (flags & 0x0008 && isnormal (a) && signbit (a))
+    || (flags & 0x0010 && a < 0.0f && a > -FLT_MIN)
+    || (flags & 0x0020 && a == 0.0f && signbit (a))
+    || (flags & 0x0040 && a == 0.0f && !signbit (a))
+    || (flags & 0x0080 && a > 0.0f && a < FLT_MIN)
+    || (flags & 0x0100 && isnormal (a) && !signbit (a))
+    || (flags & 0x0200 && isinf (a) && a >= 0.0f);
+}
+
 
 /* 'class' for a f32-converted f16 which should otherwise be treated like f32
  except for its limits.  */

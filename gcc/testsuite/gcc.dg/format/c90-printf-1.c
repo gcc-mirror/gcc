@@ -42,9 +42,9 @@ foo (int i, int i1, int i2, unsigned int u, double d, char *s, void *p,
      construct should be warned about.
   */
   printf ("%.-5d\n", i); /* { dg-warning "14:format|precision" "negative precision warning" } */
-  /* { dg-warning "too many arguments for format" "too many arguments" { target *-*-* } 44 } */
+  /* { dg-warning "too many arguments for format" "too many arguments" { target *-*-* } .-1 } */
   printf ("%.-*d\n", i); /* { dg-warning "14:format" "broken %.-*d format" } */
-  /* { dg-warning "too many arguments for format" "too many arguments" { target *-*-* } 46 } */
+  /* { dg-warning "too many arguments for format" "too many arguments" { target *-*-* } .-1 } */
   printf ("%.3c\n", i); /* { dg-warning "15:precision" "precision with %c" } */
   printf ("%.3p\n", p); /* { dg-warning "15:precision" "precision with %p" } */
   printf ("%.3n\n", n); /* { dg-warning "15:precision" "precision with %n" } */
@@ -54,15 +54,15 @@ foo (int i, int i1, int i2, unsigned int u, double d, char *s, void *p,
   */
   printf ("%%");
   printf ("%.3%"); /* { dg-warning "14:type" "missing type" } */
-  /* { dg-warning "15:trailing" "bogus %%" { target *-*-* } 56 } */
+  /* { dg-warning "15:trailing" "bogus %%" { target *-*-* } .-1 } */
   printf ("%-%"); /* { dg-warning "13:type" "missing type" } */
-  /* { dg-warning "14:trailing" "bogus %%" { target *-*-* } 58 } */
+  /* { dg-warning "14:trailing" "bogus %%" { target *-*-* } .-1 } */
   printf ("%-%\n"); /* { dg-warning "13:format" "bogus %%" } */
-  /* { dg-warning "15:format" "bogus %%" { target *-*-* } 60 } */
+  /* { dg-warning "15:format" "bogus %%" { target *-*-* } .-1 } */
   printf ("%5%\n"); /* { dg-warning "13:format" "bogus %%" } */
-  /* { dg-warning "15:format" "bogus %%" { target *-*-* } 62 } */
+  /* { dg-warning "15:format" "bogus %%" { target *-*-* } .-1 } */
   printf ("%h%\n"); /* { dg-warning "13:format" "bogus %%" } */
-  /* { dg-warning "15:format" "bogus %%" { target *-*-* } 64 } */
+  /* { dg-warning "15:format" "bogus %%" { target *-*-* } .-1 } */
   /* Valid and invalid %h, %l, %L constructions.  */
   printf ("%hd", i);
   printf ("%hi", i);

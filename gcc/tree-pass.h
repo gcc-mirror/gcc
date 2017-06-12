@@ -494,10 +494,10 @@ extern ipa_opt_pass_d *make_pass_ipa_whole_program_visibility (gcc::context
 							       *ctxt);
 extern simple_ipa_opt_pass *make_pass_ipa_increase_alignment (gcc::context
 							      *ctxt);
+extern ipa_opt_pass_d *make_pass_ipa_fn_summary (gcc::context *ctxt);
 extern ipa_opt_pass_d *make_pass_ipa_inline (gcc::context *ctxt);
 extern simple_ipa_opt_pass *make_pass_ipa_free_lang_data (gcc::context *ctxt);
-extern simple_ipa_opt_pass *make_pass_ipa_free_inline_summary (gcc::context
-							       *ctxt);
+extern simple_ipa_opt_pass *make_pass_ipa_free_fn_summary (gcc::context *ctxt);
 extern ipa_opt_pass_d *make_pass_ipa_cp (gcc::context *ctxt);
 extern ipa_opt_pass_d *make_pass_ipa_icf (gcc::context *ctxt);
 extern ipa_opt_pass_d *make_pass_ipa_devirt (gcc::context *ctxt);
@@ -618,7 +618,7 @@ extern rtl_opt_pass *make_pass_final (gcc::context *ctxt);
 extern rtl_opt_pass *make_pass_rtl_seqabstr (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_release_ssa_names (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_early_inline (gcc::context *ctxt);
-extern gimple_opt_pass *make_pass_inline_parameters (gcc::context *ctxt);
+extern gimple_opt_pass *make_pass_local_fn_summary (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_update_address_taken (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_convert_switch (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_lower_vaarg (gcc::context *ctxt);
@@ -634,6 +634,7 @@ extern void execute_all_ipa_transforms (void);
 extern void execute_all_ipa_stmt_fixups (struct cgraph_node *, gimple **);
 extern bool pass_init_dump_file (opt_pass *);
 extern void pass_fini_dump_file (opt_pass *);
+extern void emergency_dump_function (void);
 
 extern void print_current_pass (FILE *);
 extern void debug_pass (void);

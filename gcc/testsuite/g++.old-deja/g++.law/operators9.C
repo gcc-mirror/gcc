@@ -10,7 +10,7 @@ class B
 {
 public:
       operator=(B &); // { dg-error "no type" }
-      // { dg-message "B::operator=|no known conversion" "note" { target *-*-* } 12 }
+      // { dg-message "B::operator=|no known conversion" "note" { target *-*-* } .-1 }
 };
 
 void

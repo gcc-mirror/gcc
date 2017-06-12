@@ -2704,7 +2704,7 @@ nds32_option_override (void)
 
   /* Currently, we don't support PIC code generation yet.  */
   if (flag_pic)
-    sorry ("not support -fpic");
+    sorry ("position-independent code not supported");
 }
 
 

@@ -229,8 +229,11 @@ adjust_simduid_builtins (hash_table<simduid_to_vf> *htab)
 	    default:
 	      gcc_unreachable ();
 	    }
-	  update_call_from_tree (&i, t);
-	  gsi_next (&i);
+	  tree lhs = gimple_call_lhs (stmt);
+	  if (lhs)
+	    replace_uses_by (lhs, t);
+	  release_defs (stmt);
+	  gsi_remove (&i, true);
 	}
     }
 }
@@ -651,6 +654,7 @@ vectorize_loops (void)
 				     "basic block vectorized\n");
 		    fold_loop_vectorized_call (loop_vectorized_call,
 					       boolean_true_node);
+		    loop_vectorized_call = NULL;
 		    ret |= TODO_cleanup_cfg;
 		  }
 	      }
@@ -703,6 +707,7 @@ vectorize_loops (void)
 	if (loop_vectorized_call)
 	  {
 	    fold_loop_vectorized_call (loop_vectorized_call, boolean_true_node);
+	    loop_vectorized_call = NULL;
 	    ret |= TODO_cleanup_cfg;
 	  }
 

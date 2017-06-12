@@ -26,7 +26,7 @@ int main()
    // Two typedefs lead to the instant. of the less spec. ("wrong") template
   typedef int& r_type;
   typedef const r_type cr_type;
-  call_traits<cr_type>::type_less_spec var  = num; // { dg-error "" "" }
+  call_traits<cr_type>::type_less_spec var  = num; // { dg-error "" }
   
    // The explicit type leads to the instantiation of the "correct" one
   call_traits<const int&>::type_more_spec var2 = num;

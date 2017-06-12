@@ -16,4 +16,4 @@ static ThingEntry KeyWordTable[] = {
         &Thing::FunctionA,
         Thing::OverloadFn,
 };				// { dg-error "assuming" "assuming" } implicit &
-// { dg-message "note" "note" { target *-*-* } 18 }
+// { dg-message "note" "note" { target *-*-* } .-1 }

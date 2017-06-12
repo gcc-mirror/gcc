@@ -1387,6 +1387,22 @@ extern void
 gcc_jit_rvalue_set_bool_require_tail_call (gcc_jit_rvalue *call,
 					   int require_tail_call);
 
+#define LIBGCCJIT_HAVE_gcc_jit_type_get_aligned
+
+/* Given type "T", get type:
+
+     T __attribute__ ((aligned (ALIGNMENT_IN_BYTES)))
+
+   The alignment must be a power of two.
+
+   This API entrypoint was added in LIBGCCJIT_ABI_7; you can test for its
+   presence using
+     #ifdef LIBGCCJIT_HAVE_gcc_jit_type_get_aligned
+*/
+extern gcc_jit_type *
+gcc_jit_type_get_aligned (gcc_jit_type *type,
+			  size_t alignment_in_bytes);
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

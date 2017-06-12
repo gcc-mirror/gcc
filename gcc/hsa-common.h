@@ -27,6 +27,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "vec.h"
 #include "hash-table.h"
 #include "basic-block.h"
+#include "bitmap.h"
 
 
 /* Return true if the compiler should produce HSAIL.  */
@@ -1027,7 +1028,6 @@ class hsa_bb
 public:
   hsa_bb (basic_block cfg_bb);
   hsa_bb (basic_block cfg_bb, int idx);
-  ~hsa_bb ();
 
   /* Append an instruction INSN into the basic block.  */
   void append_insn (hsa_insn_basic *insn);
@@ -1049,7 +1049,7 @@ public:
   /* Just a number to construct names from.  */
   int m_index;
 
-  bitmap m_liveout, m_livein;
+  auto_bitmap m_liveout, m_livein;
 private:
   /* Make the default constructor inaccessible.  */
   hsa_bb ();

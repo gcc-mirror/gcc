@@ -45,7 +45,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /// [allocator.tag]
   struct allocator_arg_t { explicit allocator_arg_t() = default; };
 
-  constexpr allocator_arg_t allocator_arg = allocator_arg_t();
+  _GLIBCXX17_INLINE constexpr allocator_arg_t allocator_arg =
+    allocator_arg_t();
 
   template<typename _Tp, typename _Alloc, typename = __void_t<>>
     struct __uses_allocator_helper
@@ -110,7 +111,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 #if __cplusplus > 201402L
   template <typename _Tp, typename _Alloc>
-    constexpr bool uses_allocator_v = uses_allocator<_Tp, _Alloc>::value;
+    inline constexpr bool uses_allocator_v =
+      uses_allocator<_Tp, _Alloc>::value;
 #endif // C++17
 
   template<template<typename...> class _Predicate,
@@ -128,7 +130,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #if __cplusplus >= 201402L
   template<typename _Tp, typename _Alloc, typename... _Args>
-    constexpr bool __is_uses_allocator_constructible_v =
+    _GLIBCXX17_INLINE constexpr bool __is_uses_allocator_constructible_v =
       __is_uses_allocator_constructible<_Tp, _Alloc, _Args...>::value;
 #endif // C++14
 
@@ -141,7 +143,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #if __cplusplus >= 201402L
   template<typename _Tp, typename _Alloc, typename... _Args>
-    constexpr bool __is_nothrow_uses_allocator_constructible_v =
+    _GLIBCXX17_INLINE constexpr bool
+    __is_nothrow_uses_allocator_constructible_v =
       __is_nothrow_uses_allocator_constructible<_Tp, _Alloc, _Args...>::value;
 #endif // C++14
 

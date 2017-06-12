@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2001-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -42,7 +42,7 @@ package Fmap is
 
    procedure Initialize (File_Name : String);
    --  Initialize the mappings from the mapping file File_Name.
-   --  If the mapping file is incorrect (non existent file, truncated file,
+   --  If the mapping file is incorrect (nonexistent file, truncated file,
    --  duplicate entries), output a warning and do not initialize the mappings.
    --  Record the state of the mapping tables in case Update is called
    --  later on.

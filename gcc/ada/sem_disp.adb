@@ -52,6 +52,7 @@ with Snames;   use Snames;
 with Sinfo;    use Sinfo;
 with Tbuild;   use Tbuild;
 with Uintp;    use Uintp;
+with Warnsw;   use Warnsw;
 
 package body Sem_Disp is
 
@@ -108,11 +109,11 @@ package body Sem_Disp is
       Append_Unique_Elmt (New_Op, List);
    end Add_Dispatching_Operation;
 
-   ---------------------------
-   -- Covers_Some_Interface --
-   ---------------------------
+   --------------------------
+   -- Covered_Interface_Op --
+   --------------------------
 
-   function Covers_Some_Interface (Prim : Entity_Id) return Boolean is
+   function Covered_Interface_Op (Prim : Entity_Id) return Entity_Id is
       Tagged_Type : constant Entity_Id := Find_Dispatching_Type (Prim);
       Elmt        : Elmt_Id;
       E           : Entity_Id;
@@ -138,14 +139,14 @@ package body Sem_Disp is
                if Present (Interface_Alias (E))
                  and then Alias (E) = Prim
                then
-                  return True;
+                  return Interface_Alias (E);
                end if;
 
                Next_Elmt (Elmt);
             end loop;
 
          --  Otherwise we must collect all the interface primitives and check
-         --  if the Prim will override some interface primitive.
+         --  if the Prim overrides (implements) some interface primitive.
 
          else
             declare
@@ -164,11 +165,11 @@ package body Sem_Disp is
                   while Present (Elmt) loop
                      Iface_Prim := Node (Elmt);
 
-                     if Chars (Iface) = Chars (Prim)
+                     if Chars (Iface_Prim) = Chars (Prim)
                        and then Is_Interface_Conformant
                                   (Tagged_Type, Iface_Prim, Prim)
                      then
-                        return True;
+                        return Iface_Prim;
                      end if;
 
                      Next_Elmt (Elmt);
@@ -180,8 +181,8 @@ package body Sem_Disp is
          end if;
       end if;
 
-      return False;
-   end Covers_Some_Interface;
+      return Empty;
+   end Covered_Interface_Op;
 
    -------------------------------
    -- Check_Controlling_Formals --
@@ -548,12 +549,19 @@ package body Sem_Disp is
       --  Start of processing for Check_Dispatching_Context
 
       begin
+         --  If the called subprogram is a private overriding, replace it
+         --  with its alias, which has the correct body. Verify that the
+         --  two subprograms have the same controlling type (this is not the
+         --  case for an inherited subprogram that has become abstract).
+
          if Is_Abstract_Subprogram (Subp)
            and then No (Controlling_Argument (Call))
          then
             if Present (Alias (Subp))
               and then not Is_Abstract_Subprogram (Alias (Subp))
               and then No (DTC_Entity (Subp))
+              and then Find_Dispatching_Type (Subp) =
+                         Find_Dispatching_Type (Alias (Subp))
             then
                --  Private overriding of inherited abstract operation, call is
                --  legal.
@@ -573,10 +581,8 @@ package body Sem_Disp is
             --  a primitive of an abstract type. The call is non-dispatching
             --  but will be legal in overridings of the operation.
 
-            elsif In_Spec_Expression
-              and then
-                (Is_Subprogram (Scop)
-                  or else Chars (Scop) = Name_Postcondition)
+            elsif (Is_Subprogram (Scop)
+                    or else Chars (Scop) = Name_Postcondition)
               and then
                 (Is_Abstract_Subprogram (Scop)
                   or else
@@ -932,10 +938,63 @@ package body Sem_Disp is
    ---------------------------------
 
    procedure Check_Dispatching_Operation (Subp, Old_Subp : Entity_Id) is
+      procedure Warn_On_Late_Primitive_After_Private_Extension
+        (Typ  : Entity_Id;
+         Prim : Entity_Id);
+      --  Prim is a dispatching primitive of the tagged type Typ. Warn on Prim
+      --  if it is a public primitive defined after some private extension of
+      --  the tagged type.
+
+      ----------------------------------------------------
+      -- Warn_On_Late_Primitive_After_Private_Extension --
+      ----------------------------------------------------
+
+      procedure Warn_On_Late_Primitive_After_Private_Extension
+        (Typ  : Entity_Id;
+         Prim : Entity_Id)
+      is
+         E : Entity_Id;
+
+      begin
+         if Warn_On_Late_Primitives
+           and then Comes_From_Source (Prim)
+           and then Has_Private_Extension (Typ)
+           and then Is_Package_Or_Generic_Package (Current_Scope)
+           and then not In_Private_Part (Current_Scope)
+         then
+            E := Next_Entity (Typ);
+
+            while E /= Prim loop
+               if Ekind (E) = E_Record_Type_With_Private
+                 and then Etype (E) = Typ
+               then
+                  Error_Msg_Name_1 := Chars (Typ);
+                  Error_Msg_Name_2 := Chars (E);
+                  Error_Msg_Sloc := Sloc (E);
+                  Error_Msg_N
+                    ("?j?primitive of type % defined after private extension "
+                     & "% #?", Prim);
+                  Error_Msg_Name_1 := Chars (Prim);
+                  Error_Msg_Name_2 := Chars (E);
+                  Error_Msg_N
+                    ("\spec of % should appear before declaration of type %!",
+                     Prim);
+                  exit;
+               end if;
+
+               Next_Entity (E);
+            end loop;
+         end if;
+      end Warn_On_Late_Primitive_After_Private_Extension;
+
+      --  Local variables
+
       Body_Is_Last_Primitive : Boolean   := False;
       Has_Dispatching_Parent : Boolean   := False;
       Ovr_Subp               : Entity_Id := Empty;
       Tagged_Type            : Entity_Id;
+
+   --  Start of processing for Check_Dispatching_Operation
 
    begin
       if not Ekind_In (Subp, E_Function, E_Procedure) then
@@ -1028,8 +1087,8 @@ package body Sem_Disp is
                then
                   Error_Msg_N ("??declaration of& is too late!", Subp);
                   Error_Msg_NE -- CODEFIX??
-                    ("\??spec should appear immediately after declaration "
-                     & "of & !", Subp, Typ);
+                    ("\??spec should appear immediately after declaration of "
+                     & "& !", Subp, Typ);
                   exit;
                end if;
 
@@ -1057,8 +1116,8 @@ package body Sem_Disp is
                then
                   Error_Msg_N ("??declaration of& is too late!", Subp);
                   Error_Msg_NE
-                    ("\??spec should appear immediately after declaration "
-                     & "of & !", Subp, Typ);
+                    ("\??spec should appear immediately after declaration of "
+                     & "& !", Subp, Typ);
                end if;
             end if;
          end;
@@ -1090,6 +1149,11 @@ package body Sem_Disp is
          --  3. Subprograms associated with stream attributes (built by
          --     New_Stream_Subprogram)
 
+         --  4. Wrapper built for inherited operations with inherited class-
+         --     wide conditions, where the conditions include calls to other
+         --     overridden primitives. The wrappers include checks on these
+         --     modified conditions. (AI12-113).
+
          if Present (Old_Subp)
            and then Present (Overridden_Operation (Subp))
            and then Is_Dispatching_Operation (Old_Subp)
@@ -1098,14 +1162,18 @@ package body Sem_Disp is
               ((Ekind (Subp) = E_Function
                  and then Is_Dispatching_Operation (Old_Subp)
                  and then Is_Null_Extension (Base_Type (Etype (Subp))))
+
               or else
                (Ekind (Subp) = E_Procedure
                  and then Is_Dispatching_Operation (Old_Subp)
                  and then Present (Alias (Old_Subp))
                  and then Is_Null_Interface_Primitive
                              (Ultimate_Alias (Old_Subp)))
+
               or else Get_TSS_Name (Subp) = TSS_Stream_Read
-              or else Get_TSS_Name (Subp) = TSS_Stream_Write);
+              or else Get_TSS_Name (Subp) = TSS_Stream_Write
+
+              or else Present (Contract (Overridden_Operation (Subp))));
 
             Check_Controlling_Formals (Tagged_Type, Subp);
             Override_Dispatching_Operation (Tagged_Type, Old_Subp, Subp);
@@ -1582,6 +1650,13 @@ package body Sem_Disp is
             end if;
          end;
       end if;
+
+      --  For similarity with record extensions, in Ada 9X the language should
+      --  have disallowed adding visible operations to a tagged type after
+      --  deriving a private extension from it. Report a warning if this
+      --  primitive is defined after a private extension of Tagged_Type.
+
+      Warn_On_Late_Primitive_After_Private_Extension (Tagged_Type, Subp);
    end Check_Dispatching_Operation;
 
    ------------------------------------------

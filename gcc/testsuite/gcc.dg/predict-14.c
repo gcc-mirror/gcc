@@ -1,16 +1,18 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -fdump-tree-profile_estimate" } */
 
+void test(void) __attribute__ ((noreturn));
+
 int main(int argc, char **argv)
 {
   switch (argc)
     {
     case 1:
-      __builtin_unreachable();
+      test();
     case 4:
-      __builtin_unreachable();
+      test();
     default:
-      __builtin_unreachable();
+      test();
     }
 
   return 10;

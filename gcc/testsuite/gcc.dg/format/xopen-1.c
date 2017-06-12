@@ -110,15 +110,15 @@ foo (int i, unsigned int u, wint_t lc, wchar_t *ls, int *ip, double d,
      warning about unused arguments rather than the more serious one about
      argument gaps.  */
   scanf ("%3$d%1$d", ip, ip, ip); /* { dg-bogus "before used" "unused $ scanf pointer operand" } */
-  /* { dg-warning "unused" "unused $ scanf pointer operand" { target *-*-* } 112 } */
+  /* { dg-warning "unused" "unused $ scanf pointer operand" { target *-*-* } .-1 } */
   /* If there are non-pointer arguments unused at the end, this is also OK.  */
   scanf ("%3$d%1$d", ip, ip, ip, i); /* { dg-bogus "before used" "unused $ scanf pointer operand" } */
-  /* { dg-warning "unused" "unused $ scanf pointer operand" { target *-*-* } 115 } */
+  /* { dg-warning "unused" "unused $ scanf pointer operand" { target *-*-* } .-1 } */
   scanf ("%3$d%1$d", ip, i, ip); /* { dg-warning "before used" "unused $ scanf non-pointer operand" } */
   /* Can't check the arguments in the vscanf case, so should suppose the
      lesser problem.  */
   vscanf ("%3$d%1$d", va); /* { dg-bogus "before used" "unused $ scanf pointer operand" } */
-  /* { dg-warning "unused" "unused $ scanf pointer operand" { target *-*-* } 120 } */
+  /* { dg-warning "unused" "unused $ scanf pointer operand" { target *-*-* } .-1 } */
   scanf ("%2$*d%1$d", ip, ip); /* { dg-warning "operand" "operand number with suppression" } */
   printf ("%1$d%1$d", i);
   scanf ("%1$d%1$d", ip); /* { dg-warning "more than once" "multiple use of scanf argument" } */

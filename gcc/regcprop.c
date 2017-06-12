@@ -396,6 +396,13 @@ maybe_mode_change (machine_mode orig_mode, machine_mode copy_mode,
       && GET_MODE_SIZE (copy_mode) < GET_MODE_SIZE (new_mode))
     return NULL_RTX;
 
+  /* Avoid creating multiple copies of the stack pointer.  Some ports
+     assume there is one and only one stack pointer.
+
+     It's unclear if we need to do the same for other special registers.  */
+  if (regno == STACK_POINTER_REGNUM)
+    return NULL_RTX;
+
   if (orig_mode == new_mode)
     return gen_raw_REG (new_mode, regno);
   else if (mode_change_ok (orig_mode, new_mode, regno))

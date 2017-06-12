@@ -765,7 +765,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 	: _M_flags((__f & (ECMAScript | basic | extended | awk | grep | egrep))
 		   ? __f : (__f | ECMAScript)),
 	_M_loc(std::move(__loc)),
-	_M_automaton(__detail::__compile_nfa<_FwdIter, _Rx_traits>(
+	_M_automaton(__detail::__compile_nfa<_Rx_traits>(
 	  std::move(__first), std::move(__last), _M_loc, _M_flags))
 	{ }
 
@@ -773,7 +773,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 	__detail::_RegexExecutorPolicy, bool>
 	friend bool __detail::
 #if _GLIBCXX_INLINE_VERSION
-        __7:: // Required due to PR c++/59256
+        __8:: // Required due to PR c++/59256
 #endif
 	__regex_algo_impl(_Bp, _Bp, match_results<_Bp, _Ap>&,
                           const basic_regex<_Cp, _Rp>&,
@@ -786,6 +786,13 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       locale_type            _M_loc;
       _AutomatonPtr          _M_automaton;
     };
+
+#if __cpp_deduction_guides >= 201606
+  template<typename _ForwardIterator>
+    basic_regex(_ForwardIterator, _ForwardIterator,
+		regex_constants::syntax_option_type = {})
+      -> basic_regex<typename iterator_traits<_ForwardIterator>::value_type>;
+#endif
 
   /** @brief Standard regular expressions. */
   typedef basic_regex<char>    regex;
@@ -1867,7 +1874,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 	__detail::_RegexExecutorPolicy, bool>
 	friend bool __detail::
 #if _GLIBCXX_INLINE_VERSION
-        __7:: // Required due to PR c++/59256
+        __8:: // Required due to PR c++/59256
 #endif
 	__regex_algo_impl(_Bp, _Bp, match_results<_Bp, _Ap>&,
                           const basic_regex<_Cp, _Rp>&,
@@ -2674,9 +2681,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 			   initializer_list<int>,
 			   regex_constants::match_flag_type =
 			   regex_constants::match_default) = delete;
-      template <std::size_t N>
+      template <std::size_t _Nm>
 	regex_token_iterator(_Bi_iter, _Bi_iter, const regex_type&&,
-			     const int (&)[N],
+			     const int (&)[_Nm],
 			     regex_constants::match_flag_type =
 			     regex_constants::match_default) = delete;
 

@@ -182,9 +182,9 @@ struct change_t
 {
   rtx object;
   int old_code;
+  bool unshare;
   rtx *loc;
   rtx old;
-  bool unshare;
 };
 
 static change_t *changes;

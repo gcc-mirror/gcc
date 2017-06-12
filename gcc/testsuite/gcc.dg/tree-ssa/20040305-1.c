@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-cddce3 -fdump-tree-forwprop1-details" } */
+/* { dg-options "-O2 -fdump-tree-dce2 -fdump-tree-forwprop1-details" } */
   
 int abarney[2];
 int afred[1];
@@ -25,6 +25,6 @@ void foo(int edx, int eax)
 /* Verify that we did a forward propagation.  */
 /* { dg-final { scan-tree-dump-times "gimple_simplified" 1 "forwprop1"} } */
 
-/* After cddce we should have two IF statements remaining as the other
+/* After dce we should have two IF statements remaining as the other
    two tests can be threaded.  */
-/* { dg-final { scan-tree-dump-times "if " 2 "cddce3"} } */
+/* { dg-final { scan-tree-dump-times "if " 2 "dce2"} } */

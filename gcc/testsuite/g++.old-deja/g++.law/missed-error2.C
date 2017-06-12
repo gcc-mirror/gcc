@@ -15,9 +15,9 @@
 #endif
 
 inline int max(int a, int b) {return a > b ? a : b;}; // { dg-message "note" } 
- // { dg-error "extra ';'" "extra ;" { target *-*-* } 17 }
+ // { dg-error "extra ';'" "extra ;" { target *-*-* } .-1 }
 inline double max(double a, double b) {return a > b ? a : b;}; // { dg-message "note" } candidate
- // { dg-error "extra ';'" "extra ;" { target *-*-* } 19 }
+ // { dg-error "extra ';'" "extra ;" { target *-*-* } .-1 }
 
 int main() {
    static void foo(int i, int j, double x, double y) ;// { dg-error "" } .*

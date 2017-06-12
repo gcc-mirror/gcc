@@ -86,7 +86,7 @@ void
 lto_input_data_block (struct lto_input_block *ib, void *addr, size_t length)
 {
   size_t i;
-  unsigned char *const buffer = (unsigned char *const) addr;
+  unsigned char *const buffer = (unsigned char *) addr;
 
   for (i = 0; i < length; i++)
     buffer[i] = streamer_read_uchar (ib);
@@ -755,13 +755,13 @@ input_cfg (struct lto_input_block *ib, struct data_in *data_in,
 	  unsigned int edge_flags;
 	  basic_block dest;
 	  int probability;
-	  gcov_type count;
+	  profile_count count;
 	  edge e;
 
 	  dest_index = streamer_read_uhwi (ib);
 	  probability = (int) streamer_read_hwi (ib);
-	  count = apply_scale ((gcov_type) streamer_read_gcov_count (ib),
-                               count_materialization_scale);
+	  count = profile_count::stream_in (ib).apply_scale
+			 (count_materialization_scale, REG_BR_PROB_BASE);
 	  edge_flags = streamer_read_uhwi (ib);
 
 	  dest = BASIC_BLOCK_FOR_FN (fn, dest_index);
@@ -1337,12 +1337,6 @@ lto_read_tree_1 (struct lto_input_block *ib, struct data_in *data_in, tree expr)
       && TREE_CODE (expr) != FUNCTION_DECL
       && TREE_CODE (expr) != TRANSLATION_UNIT_DECL)
     DECL_INITIAL (expr) = stream_read_tree (ib, data_in);
-
-#ifdef LTO_STREAMER_DEBUG
-  /* Remove the mapping to RESULT's original address set by
-     streamer_alloc_tree.  */
-  lto_orig_address_remove (expr);
-#endif
 }
 
 /* Read the physical representation of a tree node with tag TAG from

@@ -9,6 +9,7 @@ int foo () {
   /* C compiler uses the term "undeclared" whereas C++ compiler uses
     "not declared".  Thus, grepping for declared seem to be the easiest.  */
   char c = (char)N; /* { dg-error "declared" } */
+  /* { dg-message "note: each" "defined" { target c } .-1 } */
   short s = (short)N;
   long l = (long)N;
   A[l:s:c];
@@ -22,5 +23,4 @@ int foo1 (int N) {
 }
 
 
-/* { dg-message "note: each" "defined" { target c }  11 } */
 

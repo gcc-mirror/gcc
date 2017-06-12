@@ -543,7 +543,7 @@ find_subloop_latch_edge_by_profile (vec<edge> latches)
 {
   unsigned i;
   edge e, me = NULL;
-  gcov_type mcount = 0, tcount = 0;
+  profile_count mcount = profile_count::zero (), tcount = profile_count::zero ();
 
   FOR_EACH_VEC_ELT (latches, i, e)
     {
@@ -555,8 +555,8 @@ find_subloop_latch_edge_by_profile (vec<edge> latches)
       tcount += e->count;
     }
 
-  if (tcount < HEAVY_EDGE_MIN_SAMPLES
-      || (tcount - mcount) * HEAVY_EDGE_RATIO > tcount)
+  if (!tcount.initialized_p () || tcount < HEAVY_EDGE_MIN_SAMPLES
+      || (tcount - mcount).apply_scale (HEAVY_EDGE_RATIO, 1) > tcount)
     return NULL;
 
   if (dump_file)
@@ -923,7 +923,6 @@ get_loop_body_in_bfs_order (const struct loop *loop)
 {
   basic_block *blocks;
   basic_block bb;
-  bitmap visited;
   unsigned int i = 1;
   unsigned int vc = 0;
 
@@ -931,7 +930,7 @@ get_loop_body_in_bfs_order (const struct loop *loop)
   gcc_assert (loop->latch != EXIT_BLOCK_PTR_FOR_FN (cfun));
 
   blocks = XNEWVEC (basic_block, loop->num_nodes);
-  visited = BITMAP_ALLOC (NULL);
+  auto_bitmap visited;
   blocks[0] = loop->header;
   bitmap_set_bit (visited, loop->header->index);
   while (i < loop->num_nodes)
@@ -952,7 +951,6 @@ get_loop_body_in_bfs_order (const struct loop *loop)
 	}
     }
 
-  BITMAP_FREE (visited);
   return blocks;
 }
 
@@ -1901,7 +1899,7 @@ get_estimated_loop_iterations (struct loop *loop, widest_int *nit)
      profile.  */
   if (!loop->any_estimate)
     {
-      if (loop->header->count)
+      if (loop->header->count.reliable_p ())
 	{
           *nit = gcov_type_to_wide_int
 		   (expected_loop_iterations_unbounded (loop) + 1);

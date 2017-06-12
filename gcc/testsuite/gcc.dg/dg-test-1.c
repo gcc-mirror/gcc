@@ -5,7 +5,7 @@
 void
 foo (void)
 {			/* { dg-error "'a' undeclared" "err1" { target *-*-* } .+1 } */
-  int z = a + b + c + d;/* { dg-error "'b' undeclared" "err2" { target *-*-* } . } */
+  int z = a + b + c + d;/* { dg-error "'b' undeclared" "err2" } */
 }			/* { dg-error "'c' undeclared" "err3" { target *-*-* } .-1 } */
 
 
@@ -13,7 +13,7 @@ foo (void)
 /* { dg-warning "unused parameter 'e'" "warn1" { target *-*-* } .+3 } */
 
 void				/* { dg-warning "unused parameter 'f'" "warn2" { target *-*-* } .+1 } */
-bar (int e, int f, int g, int h)/* { dg-warning "unused parameter 'g'" "warn3" { target *-*-* } . } */
+bar (int e, int f, int g, int h)/* { dg-warning "unused parameter 'g'" "warn3" } */
 {				/* { dg-warning "unused parameter 'h'" "warn4" { target *-*-* } .-1 } */
 }
 

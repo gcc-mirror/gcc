@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -38,7 +38,6 @@ with Set_Targ; use Set_Targ;
 with Targparm; use Targparm;
 with Tbuild;   use Tbuild;
 with Ttypes;   use Ttypes;
-with Scn;
 with Sem_Mech; use Sem_Mech;
 with Sem_Util; use Sem_Util;
 with Sinfo;    use Sinfo;
@@ -582,10 +581,6 @@ package body CStand is
    --  Start of processing for Create_Standard
 
    begin
-      --  Initialize scanner for internal scans of literals
-
-      Scn.Initialize_Scanner (No_Unit, Internal_Source_File);
-
       --  First step is to create defining identifiers for each entity
 
       for S in Standard_Entity_Type loop
@@ -1181,7 +1176,7 @@ package body CStand is
       --  Any_Integer is given reasonable and consistent type and size values)
 
       Any_Type := New_Standard_Entity ("any type");
-      Decl := New_Node (N_Full_Type_Declaration, Stloc);
+      Decl     := New_Node (N_Full_Type_Declaration, Stloc);
       Set_Defining_Identifier (Decl, Any_Type);
       Set_Scope (Any_Type, Standard_Standard);
       Build_Signed_Integer_Type (Any_Type, Standard_Integer_Size);
@@ -1199,6 +1194,8 @@ package body CStand is
       Set_Etype             (Any_Access, Any_Access);
       Init_Size             (Any_Access, System_Address_Size);
       Set_Elem_Alignment    (Any_Access);
+      Set_Directly_Designated_Type
+                            (Any_Access, Any_Type);
 
       Any_Character := New_Standard_Entity ("a character type");
       Set_Ekind             (Any_Character, E_Enumeration_Type);

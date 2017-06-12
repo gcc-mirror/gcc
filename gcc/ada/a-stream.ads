@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -42,7 +42,7 @@ package Ada.Streams is
    type Stream_Element is mod 2 ** Standard'Storage_Unit;
 
    type Stream_Element_Offset is new Long_Long_Integer;
-   --  Stream_Element_Offset needs 64 bits to accomodate large stream files.
+   --  Stream_Element_Offset needs 64 bits to accommodate large stream files.
    --  However, rather than make this explicitly 64-bits we derive from
    --  Long_Long_Integer. In normal usage this will have the same effect.
    --  But in the case of CodePeer with a target configuration file with a

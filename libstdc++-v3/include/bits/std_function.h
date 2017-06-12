@@ -22,7 +22,7 @@
 // see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 // <http://www.gnu.org/licenses/>.
 
-/** @file include/bits/function.h
+/** @file include/bits/std_function.h
  *  This is an internal header file, included by other library headers.
  *  Do not attempt to use it directly. @headername{functional}
  */
@@ -438,7 +438,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  The newly-created %function contains the target of @a __x
        *  (if it has one).
        */
-      function(function&& __x) : _Function_base()
+      function(function&& __x) noexcept : _Function_base()
       {
 	__x.swap(*this);
       }
@@ -495,7 +495,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  object, then this operation will not throw an %exception.
        */
       function&
-      operator=(function&& __x)
+      operator=(function&& __x) noexcept
       {
 	function(std::move(__x)).swap(*this);
 	return *this;
@@ -628,6 +628,43 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       using _Invoker_type = _Res (*)(const _Any_data&, _ArgTypes&&...);
       _Invoker_type _M_invoker;
   };
+
+#if __cpp_deduction_guides >= 201606
+  template<typename>
+    struct __function_guide_helper
+    { };
+
+  template<typename _Res, typename _Tp, bool _Nx, typename... _Args>
+    struct __function_guide_helper<
+      _Res (_Tp::*) (_Args...) noexcept(_Nx)
+    >
+    { using type = _Res(_Args...); };
+
+  template<typename _Res, typename _Tp, bool _Nx, typename... _Args>
+    struct __function_guide_helper<
+      _Res (_Tp::*) (_Args...) & noexcept(_Nx)
+    >
+    { using type = _Res(_Args...); };
+
+  template<typename _Res, typename _Tp, bool _Nx, typename... _Args>
+    struct __function_guide_helper<
+      _Res (_Tp::*) (_Args...) const noexcept(_Nx)
+    >
+    { using type = _Res(_Args...); };
+
+  template<typename _Res, typename _Tp, bool _Nx, typename... _Args>
+    struct __function_guide_helper<
+      _Res (_Tp::*) (_Args...) const & noexcept(_Nx)
+    >
+    { using type = _Res(_Args...); };
+
+  template<typename _Res, typename... _ArgTypes>
+    function(_Res(*)(_ArgTypes...)) -> function<_Res(_ArgTypes...)>;
+
+  template<typename _Functor, typename _Signature = typename
+	   __function_guide_helper<decltype(&_Functor::operator())>::type>
+    function(_Functor) -> function<_Signature>;
+#endif
 
   // Out-of-line member definitions.
   template<typename _Res, typename... _ArgTypes>

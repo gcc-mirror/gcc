@@ -1893,10 +1893,10 @@ arm_init_builtins (void)
 	= build_function_type_list (unsigned_type_node, NULL);
 
       arm_builtin_decls[ARM_BUILTIN_GET_FPSCR]
-	= add_builtin_function ("__builtin_arm_ldfscr", ftype_get_fpscr,
+	= add_builtin_function ("__builtin_arm_get_fpscr", ftype_get_fpscr,
 				ARM_BUILTIN_GET_FPSCR, BUILT_IN_MD, NULL, NULL_TREE);
       arm_builtin_decls[ARM_BUILTIN_SET_FPSCR]
-	= add_builtin_function ("__builtin_arm_stfscr", ftype_set_fpscr,
+	= add_builtin_function ("__builtin_arm_set_fpscr", ftype_set_fpscr,
 				ARM_BUILTIN_SET_FPSCR, BUILT_IN_MD, NULL, NULL_TREE);
     }
 
@@ -3053,15 +3053,15 @@ arm_expand_builtin (tree exp,
     }
 
   for (i = 0, d = bdesc_2arg; i < ARRAY_SIZE (bdesc_2arg); i++, d++)
-    if (d->code == (const enum arm_builtins) fcode)
+    if (d->code == (enum arm_builtins) fcode)
       return arm_expand_binop_builtin (d->icode, exp, target);
 
   for (i = 0, d = bdesc_1arg; i < ARRAY_SIZE (bdesc_1arg); i++, d++)
-    if (d->code == (const enum arm_builtins) fcode)
+    if (d->code == (enum arm_builtins) fcode)
       return arm_expand_unop_builtin (d->icode, exp, target, 0);
 
   for (i = 0, d = bdesc_3arg; i < ARRAY_SIZE (bdesc_3arg); i++, d++)
-    if (d->code == (const enum arm_builtins) fcode)
+    if (d->code == (enum arm_builtins) fcode)
       return arm_expand_ternop_builtin (d->icode, exp, target);
 
   /* @@@ Should really do something sensible here.  */

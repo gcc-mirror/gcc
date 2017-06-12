@@ -24,33 +24,14 @@
 # values during the configure step.  We enforce this during the
 # top-level configury.
 
-MULTILIB_OPTIONS     =
-MULTILIB_DIRNAMES    =
-MULTILIB_EXCEPTIONS  =
-MULTILIB_MATCHES     =
-MULTILIB_REUSE       =
 
-# We have the following hierachy:
-#   ISA: A32 (.) or T16/T32 (thumb).
-#   Architecture: ARMv6S-M (v6-m), ARMv7-M (v7-m), ARMv7E-M (v7e-m),
-#                 ARMv8-M Baseline (v8-m.base) or ARMv8-M Mainline (v8-m.main).
-#   FPU: VFPv3-D16 (fpv3), FPV4-SP-D16 (fpv4-sp), FPV5-SP-D16 (fpv5-sp),
-#        VFPv5-D16 (fpv5), or None (.).
-#   Float-abi: Soft (.), softfp (softfp), or hard (hardfp).
+# Arch and FPU variants to build libraries with
 
-# Options to build libraries with
+MULTI_ARCH_OPTS_RM      = march=armv6s-m/march=armv7-m/march=armv7e-m/march=armv7/march=armv8-m.base/march=armv8-m.main
+MULTI_ARCH_DIRS_RM      = v6-m v7-m v7e-m v7-ar v8-m.base v8-m.main
 
-MULTILIB_OPTIONS       += mthumb
-MULTILIB_DIRNAMES      += thumb
-
-MULTILIB_OPTIONS       += march=armv6s-m/march=armv7-m/march=armv7e-m/march=armv7/march=armv8-m.base/march=armv8-m.main
-MULTILIB_DIRNAMES      += v6-m v7-m v7e-m v7-ar v8-m.base v8-m.main
-
-MULTILIB_OPTIONS       += mfpu=vfpv3-d16/mfpu=fpv4-sp-d16/mfpu=fpv5-sp-d16/mfpu=fpv5-d16
-MULTILIB_DIRNAMES      += fpv3 fpv4-sp fpv5-sp fpv5
-
-MULTILIB_OPTIONS       += mfloat-abi=softfp/mfloat-abi=hard
-MULTILIB_DIRNAMES      += softfp hard
+MULTI_FPU_OPTS_RM       = mfpu=vfpv3-d16/mfpu=fpv4-sp-d16/mfpu=fpv5-sp-d16/mfpu=fpv5-d16
+MULTI_FPU_DIRS_RM       = fpv3 fpv4-sp fpv5-sp fpv5
 
 
 # Option combinations to build library with
@@ -131,7 +112,6 @@ MULTILIB_MATCHES       += march?armv7=mcpu?cortex-a73
 MULTILIB_MATCHES       += march?armv7=mcpu?cortex-a73.cortex-a35
 MULTILIB_MATCHES       += march?armv7=mcpu?cortex-a73.cortex-a53
 MULTILIB_MATCHES       += march?armv7=mcpu?exynos-m1
-MULTILIB_MATCHES       += march?armv7=mcpu?qdf24xx
 MULTILIB_MATCHES       += march?armv7=mcpu?xgene1
 
 # Arch Matches

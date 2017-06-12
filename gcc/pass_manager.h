@@ -47,9 +47,6 @@ class context;
 class pass_manager
 {
 public:
-  void *operator new (size_t sz);
-  void operator delete (void *ptr);
-
   pass_manager (context *ctxt);
   ~pass_manager ();
 

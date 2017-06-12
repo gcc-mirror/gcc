@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -474,16 +474,9 @@ package body Osint is
          if Additional_Source_Dir then
             Search_Path := Getenv (Ada_Include_Path);
 
-            if Search_Path'Length > 0 then
-               Search_Path := To_Canonical_Path_Spec (Search_Path.all);
-            end if;
-
          else
             Search_Path := Getenv (Ada_Objects_Path);
 
-            if Search_Path'Length > 0 then
-               Search_Path := To_Canonical_Path_Spec (Search_Path.all);
-            end if;
          end if;
 
          Get_Next_Dir_In_Path_Init (Search_Path);
@@ -1187,18 +1180,27 @@ package body Osint is
                      and then Name_Buffer (Name_Len - 2 .. Name_Len) = ".dg")
          then
             Found := N;
-            Attr.all  := Unknown_Attributes;
+            Attr.all := Unknown_Attributes;
 
-            if T = Config and then Full_Name then
-               declare
-                  Full_Path : constant String :=
-                                Normalize_Pathname (Get_Name_String (N));
-                  Full_Size : constant Natural := Full_Path'Length;
-               begin
-                  Name_Buffer (1 .. Full_Size) := Full_Path;
-                  Name_Len := Full_Size;
-                  Found := Name_Find;
-               end;
+            if T = Config then
+               if Full_Name then
+                  declare
+                     Full_Path : constant String :=
+                                   Normalize_Pathname (Get_Name_String (N));
+                     Full_Size : constant Natural := Full_Path'Length;
+
+                  begin
+                     Name_Buffer (1 .. Full_Size) := Full_Path;
+                     Name_Len := Full_Size;
+                     Found    := Name_Find;
+                  end;
+               end if;
+
+               --  Check that it is a file, not a directory
+
+               if not Is_Regular_File (Get_Name_String (Found)) then
+                  Found := No_File;
+               end if;
             end if;
 
             return;
@@ -1515,7 +1517,7 @@ package body Osint is
          Default_Suffix_Dir := new String'("adalib");
       end if;
 
-      Norm_Search_Dir := To_Canonical_Path_Spec (Local_Search_Dir.all);
+      Norm_Search_Dir := Local_Search_Dir;
 
       if Is_Absolute_Path (Norm_Search_Dir.all) then
 
@@ -1547,6 +1549,10 @@ package body Osint is
 
          begin
             Get_Current_Dir (Buffer'Address, Path_Len'Address);
+
+            if Path_Len = 0 then
+               raise Program_Error;
+            end if;
 
             if Buffer (Path_Len) /= Directory_Separator then
                Path_Len := Path_Len + 1;
@@ -2306,7 +2312,7 @@ package body Osint is
 
       --  Read the file. Note that the loop is probably not necessary since the
       --  whole file is read at once but the loop is harmless and that way we
-      --  are sure to accomodate systems where this is not the case.
+      --  are sure to accommodate systems where this is not the case.
 
       Curr := 1;
       Actual_Len := Len;
@@ -2649,49 +2655,23 @@ package body Osint is
       --  Do the actual read operation
 
       declare
-         subtype Actual_Source_Buffer is Source_Buffer (Lo .. Hi);
-         --  Physical buffer allocated
-
-         type Actual_Source_Ptr is access Actual_Source_Buffer;
-         --  This is the pointer type for the physical buffer allocated
-
-         Actual_Ptr : constant Actual_Source_Ptr := new Actual_Source_Buffer;
-         --  And this is the actual physical buffer
-
-      begin
+         Var_Ptr : constant Source_Buffer_Ptr_Var :=
+           new Source_Buffer (Lo .. Hi);
          --  Allocate source buffer, allowing extra character at end for EOF
-
+      begin
          --  Some systems have file types that require one read per line,
          --  so read until we get the Len bytes or until there are no more
          --  characters.
 
          Hi := Lo;
          loop
-            Actual_Len := Read (Source_File_FD, Actual_Ptr (Hi)'Address, Len);
+            Actual_Len := Read (Source_File_FD, Var_Ptr (Hi)'Address, Len);
             Hi := Hi + Source_Ptr (Actual_Len);
             exit when Actual_Len = Len or else Actual_Len <= 0;
          end loop;
 
-         Actual_Ptr (Hi) := EOF;
-
-         --  Now we need to work out the proper virtual origin pointer to
-         --  return. This is exactly Actual_Ptr (0)'Address, but we have to
-         --  be careful to suppress checks to compute this address.
-
-         declare
-            pragma Suppress (All_Checks);
-
-            pragma Warnings (Off);
-            --  This use of unchecked conversion is aliasing safe
-
-            function To_Source_Buffer_Ptr is new
-              Unchecked_Conversion (Address, Source_Buffer_Ptr);
-
-            pragma Warnings (On);
-
-         begin
-            Src := To_Source_Buffer_Ptr (Actual_Ptr (0)'Address);
-         end;
+         Var_Ptr (Hi) := EOF;
+         Src := Var_Ptr.all'Access;
       end;
 
       --  Read is complete, get time stamp and close file and we are done
@@ -2701,6 +2681,10 @@ package body Osint is
       --  The status should never be False. But, if it is, what can we do?
       --  So, we don't test it.
 
+      --  ???We don't really need to return Hi anymore; We could get rid of
+      --  it. We could also make this into a function.
+
+      pragma Assert (Hi = Src'Last);
    end Read_Source_File;
 
    -------------------
@@ -2912,47 +2896,6 @@ package body Osint is
    end Strip_Suffix;
 
    ---------------------------
-   -- To_Canonical_Dir_Spec --
-   ---------------------------
-
-   function To_Canonical_Dir_Spec
-     (Host_Dir     : String;
-      Prefix_Style : Boolean) return String_Access
-   is
-      function To_Canonical_Dir_Spec
-        (Host_Dir    : Address;
-         Prefix_Flag : Integer) return Address;
-      pragma Import (C, To_Canonical_Dir_Spec, "__gnat_to_canonical_dir_spec");
-
-      C_Host_Dir         : String (1 .. Host_Dir'Length + 1);
-      Canonical_Dir_Addr : Address;
-      Canonical_Dir_Len  : CRTL.size_t;
-
-   begin
-      C_Host_Dir (1 .. Host_Dir'Length) := Host_Dir;
-      C_Host_Dir (C_Host_Dir'Last)      := ASCII.NUL;
-
-      if Prefix_Style then
-         Canonical_Dir_Addr := To_Canonical_Dir_Spec (C_Host_Dir'Address, 1);
-      else
-         Canonical_Dir_Addr := To_Canonical_Dir_Spec (C_Host_Dir'Address, 0);
-      end if;
-
-      Canonical_Dir_Len := C_String_Length (Canonical_Dir_Addr);
-
-      if Canonical_Dir_Len = 0 then
-         return null;
-      else
-         return To_Path_String_Access (Canonical_Dir_Addr, Canonical_Dir_Len);
-      end if;
-
-   exception
-      when others =>
-         Fail ("invalid directory spec: " & Host_Dir);
-         return null;
-   end To_Canonical_Dir_Spec;
-
-   ---------------------------
    -- To_Canonical_File_List --
    ---------------------------
 
@@ -3009,74 +2952,6 @@ package body Osint is
          return new String_Access_List'(Canonical_File_List);
       end;
    end To_Canonical_File_List;
-
-   ----------------------------
-   -- To_Canonical_File_Spec --
-   ----------------------------
-
-   function To_Canonical_File_Spec
-     (Host_File : String) return String_Access
-   is
-      function To_Canonical_File_Spec (Host_File : Address) return Address;
-      pragma Import
-        (C, To_Canonical_File_Spec, "__gnat_to_canonical_file_spec");
-
-      C_Host_File         : String (1 .. Host_File'Length + 1);
-      Canonical_File_Addr : Address;
-      Canonical_File_Len  : CRTL.size_t;
-
-   begin
-      C_Host_File (1 .. Host_File'Length) := Host_File;
-      C_Host_File (C_Host_File'Last)      := ASCII.NUL;
-
-      Canonical_File_Addr := To_Canonical_File_Spec (C_Host_File'Address);
-      Canonical_File_Len  := C_String_Length (Canonical_File_Addr);
-
-      if Canonical_File_Len = 0 then
-         return null;
-      else
-         return To_Path_String_Access
-                  (Canonical_File_Addr, Canonical_File_Len);
-      end if;
-
-   exception
-      when others =>
-         Fail ("invalid file spec: " & Host_File);
-         return null;
-   end To_Canonical_File_Spec;
-
-   ----------------------------
-   -- To_Canonical_Path_Spec --
-   ----------------------------
-
-   function To_Canonical_Path_Spec
-     (Host_Path : String) return String_Access
-   is
-      function To_Canonical_Path_Spec (Host_Path : Address) return Address;
-      pragma Import
-        (C, To_Canonical_Path_Spec, "__gnat_to_canonical_path_spec");
-
-      C_Host_Path         : String (1 .. Host_Path'Length + 1);
-      Canonical_Path_Addr : Address;
-      Canonical_Path_Len  : CRTL.size_t;
-
-   begin
-      C_Host_Path (1 .. Host_Path'Length) := Host_Path;
-      C_Host_Path (C_Host_Path'Last)      := ASCII.NUL;
-
-      Canonical_Path_Addr := To_Canonical_Path_Spec (C_Host_Path'Address);
-      Canonical_Path_Len  := C_String_Length (Canonical_Path_Addr);
-
-      --  Return a null string (vice a null) for zero length paths, for
-      --  compatibility with getenv().
-
-      return To_Path_String_Access (Canonical_Path_Addr, Canonical_Path_Len);
-
-   exception
-      when others =>
-         Fail ("invalid path spec: " & Host_Path);
-         return null;
-   end To_Canonical_Path_Spec;
 
    ----------------------
    -- To_Host_Dir_Spec --

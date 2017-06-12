@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2014-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 2014-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1091,25 +1091,18 @@ package body Ghost is
 
    procedure Lock is
    begin
-      Ignored_Ghost_Units.Locked := True;
       Ignored_Ghost_Units.Release;
+      Ignored_Ghost_Units.Locked := True;
    end Lock;
 
    -----------------------------------
    -- Mark_And_Set_Ghost_Assignment --
    -----------------------------------
 
-   procedure Mark_And_Set_Ghost_Assignment
-     (N    : Node_Id;
-      Mode : out Ghost_Mode_Type)
-   is
+   procedure Mark_And_Set_Ghost_Assignment (N : Node_Id) is
       Id : Entity_Id;
 
    begin
-      --  Save the previous Ghost mode in effect
-
-      Mode := Ghost_Mode;
-
       --  An assignment statement becomes Ghost when its target denotes a Ghost
       --  object. Install the Ghost mode of the target.
 
@@ -1134,17 +1127,12 @@ package body Ghost is
 
    procedure Mark_And_Set_Ghost_Body
      (N       : Node_Id;
-      Spec_Id : Entity_Id;
-      Mode    : out Ghost_Mode_Type)
+      Spec_Id : Entity_Id)
    is
       Body_Id : constant Entity_Id := Defining_Entity (N);
       Policy  : Name_Id := No_Name;
 
    begin
-      --  Save the previous Ghost mode in effect
-
-      Mode := Ghost_Mode;
-
       --  A body becomes Ghost when it is subject to aspect or pragma Ghost
 
       if Is_Subject_To_Ghost (N) then
@@ -1193,17 +1181,12 @@ package body Ghost is
 
    procedure Mark_And_Set_Ghost_Completion
      (N       : Node_Id;
-      Prev_Id : Entity_Id;
-      Mode    : out Ghost_Mode_Type)
+      Prev_Id : Entity_Id)
    is
       Compl_Id : constant Entity_Id := Defining_Entity (N);
       Policy   : Name_Id := No_Name;
 
    begin
-      --  Save the previous Ghost mode in effect
-
-      Mode := Ghost_Mode;
-
       --  A completion elaborated in a Ghost region is automatically Ghost
       --  (SPARK RM 6.9(2)).
 
@@ -1243,18 +1226,11 @@ package body Ghost is
    -- Mark_And_Set_Ghost_Declaration --
    ------------------------------------
 
-   procedure Mark_And_Set_Ghost_Declaration
-     (N    : Node_Id;
-      Mode : out Ghost_Mode_Type)
-   is
+   procedure Mark_And_Set_Ghost_Declaration (N : Node_Id) is
       Par_Id : Entity_Id;
       Policy : Name_Id := No_Name;
 
    begin
-      --  Save the previous Ghost mode in effect
-
-      Mode := Ghost_Mode;
-
       --  A declaration becomes Ghost when it is subject to aspect or pragma
       --  Ghost.
 
@@ -1309,16 +1285,11 @@ package body Ghost is
 
    procedure Mark_And_Set_Ghost_Instantiation
      (N      : Node_Id;
-      Gen_Id : Entity_Id;
-      Mode   : out Ghost_Mode_Type)
+      Gen_Id : Entity_Id)
    is
       Policy : Name_Id := No_Name;
 
    begin
-      --  Save the previous Ghost mode in effect
-
-      Mode := Ghost_Mode;
-
       --  An instantiation becomes Ghost when it is subject to pragma Ghost
 
       if Is_Subject_To_Ghost (N) then
@@ -1355,17 +1326,10 @@ package body Ghost is
    -- Mark_And_Set_Ghost_Procedure_Call --
    ---------------------------------------
 
-   procedure Mark_And_Set_Ghost_Procedure_Call
-     (N    : Node_Id;
-      Mode : out Ghost_Mode_Type)
-   is
+   procedure Mark_And_Set_Ghost_Procedure_Call (N : Node_Id) is
       Id : Entity_Id;
 
    begin
-      --  Save the previous Ghost mode in effect
-
-      Mode := Ghost_Mode;
-
       --  A procedure call becomes Ghost when the procedure being invoked is
       --  Ghost. Install the Ghost mode of the procedure.
 
@@ -1695,10 +1659,7 @@ package body Ghost is
    -- Set_Ghost_Mode --
    --------------------
 
-   procedure Set_Ghost_Mode
-     (N    : Node_Or_Entity_Id;
-      Mode : out Ghost_Mode_Type)
-   is
+   procedure Set_Ghost_Mode (N : Node_Or_Entity_Id) is
       procedure Set_Ghost_Mode_From_Entity (Id : Entity_Id);
       --  Install the Ghost mode of entity Id
 
@@ -1724,10 +1685,6 @@ package body Ghost is
    --  Start of processing for Set_Ghost_Mode
 
    begin
-      --  Save the previous Ghost mode in effect
-
-      Mode := Ghost_Mode;
-
       --  The Ghost mode of an assignment statement depends on the Ghost mode
       --  of the target.
 

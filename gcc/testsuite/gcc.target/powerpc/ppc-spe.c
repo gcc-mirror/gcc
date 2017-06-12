@@ -22,7 +22,7 @@ float fl;
 uint16_t u16;
 int16_t s16;
 
-/* These are the only documented/supported accesor functions for the
+/* These are the only documented/supported accessor functions for the
    SPE builtins.  */
 void
 test_api ()

@@ -358,45 +358,45 @@ as_internal_fn (combined_fn code)
 extern void tree_contains_struct_check_failed (const_tree,
 					       const enum tree_node_structure_enum,
 					       const char *, int, const char *)
-  ATTRIBUTE_NORETURN;
+  ATTRIBUTE_NORETURN ATTRIBUTE_COLD;
 
 extern void tree_check_failed (const_tree, const char *, int, const char *,
-			       ...) ATTRIBUTE_NORETURN;
+			       ...) ATTRIBUTE_NORETURN ATTRIBUTE_COLD;
 extern void tree_not_check_failed (const_tree, const char *, int, const char *,
-				   ...) ATTRIBUTE_NORETURN;
+				   ...) ATTRIBUTE_NORETURN ATTRIBUTE_COLD;
 extern void tree_class_check_failed (const_tree, const enum tree_code_class,
 				     const char *, int, const char *)
-    ATTRIBUTE_NORETURN;
+    ATTRIBUTE_NORETURN ATTRIBUTE_COLD;
 extern void tree_range_check_failed (const_tree, const char *, int,
 				     const char *, enum tree_code,
 				     enum tree_code)
-    ATTRIBUTE_NORETURN;
+    ATTRIBUTE_NORETURN ATTRIBUTE_COLD;
 extern void tree_not_class_check_failed (const_tree,
 					 const enum tree_code_class,
 					 const char *, int, const char *)
-    ATTRIBUTE_NORETURN;
+    ATTRIBUTE_NORETURN ATTRIBUTE_COLD;
 extern void tree_int_cst_elt_check_failed (int, int, const char *,
 					   int, const char *)
-    ATTRIBUTE_NORETURN;
+    ATTRIBUTE_NORETURN ATTRIBUTE_COLD;
 extern void tree_vec_elt_check_failed (int, int, const char *,
 				       int, const char *)
-    ATTRIBUTE_NORETURN;
+    ATTRIBUTE_NORETURN ATTRIBUTE_COLD;
 extern void phi_node_elt_check_failed (int, int, const char *,
 				       int, const char *)
-    ATTRIBUTE_NORETURN;
+    ATTRIBUTE_NORETURN ATTRIBUTE_COLD;
 extern void tree_operand_check_failed (int, const_tree,
 				       const char *, int, const char *)
-    ATTRIBUTE_NORETURN;
+    ATTRIBUTE_NORETURN ATTRIBUTE_COLD;
 extern void omp_clause_check_failed (const_tree, const char *, int,
 				     const char *, enum omp_clause_code)
-    ATTRIBUTE_NORETURN;
+    ATTRIBUTE_NORETURN ATTRIBUTE_COLD;
 extern void omp_clause_operand_check_failed (int, const_tree, const char *,
 				             int, const char *)
-    ATTRIBUTE_NORETURN;
+    ATTRIBUTE_NORETURN ATTRIBUTE_COLD;
 extern void omp_clause_range_check_failed (const_tree, const char *, int,
 			       const char *, enum omp_clause_code,
 			       enum omp_clause_code)
-    ATTRIBUTE_NORETURN;
+    ATTRIBUTE_NORETURN ATTRIBUTE_COLD;
 
 #else /* not ENABLE_TREE_CHECKING, or not gcc */
 
@@ -846,7 +846,7 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
    caller decide whether a warning is appropriate or not.  */
 #define TYPE_OVERFLOW_UNDEFINED(TYPE)				\
   (!ANY_INTEGRAL_TYPE_CHECK(TYPE)->base.u.bits.unsigned_flag	\
-   && !flag_wrapv && !flag_trapv && flag_strict_overflow)
+   && !flag_wrapv && !flag_trapv)
 
 /* True if overflow for the given integral type should issue a
    trap.  */
@@ -860,7 +860,7 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
    && (flag_sanitize & SANITIZE_SI_OVERFLOW))
 
 /* True if pointer types have undefined overflow.  */
-#define POINTER_TYPE_OVERFLOW_UNDEFINED (flag_strict_overflow)
+#define POINTER_TYPE_OVERFLOW_UNDEFINED (!flag_wrapv)
 
 /* Nonzero in a VAR_DECL or STRING_CST means assembler code has been written.
    Nonzero in a FUNCTION_DECL means that the function has been compiled.
@@ -893,6 +893,12 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
 
 /* Cilk keywords accessors.  */
 #define CILK_SPAWN_FN(NODE) TREE_OPERAND (CILK_SPAWN_STMT_CHECK (NODE), 0)
+
+/* If this is true, we should insert a __cilk_detach call just before
+   this function call.  */
+#define EXPR_CILK_SPAWN(NODE) \
+  (TREE_CHECK2 (NODE, CALL_EXPR, \
+                AGGR_INIT_EXPR)->base.u.bits.unsigned_flag)
 
 /* In a RESULT_DECL, PARM_DECL and VAR_DECL, means that it is
    passed by invisible reference (and the TREE_TYPE is a pointer to the true
@@ -2034,6 +2040,19 @@ extern machine_mode element_mode (const_tree t);
    DECL_NONADDRESSABLE_P for arrays, see the definition of this flag.  */
 #define TYPE_NONALIASED_COMPONENT(NODE) \
   (ARRAY_TYPE_CHECK (NODE)->type_common.transparent_aggr_flag)
+
+/* For an ARRAY_TYPE, a RECORD_TYPE, a UNION_TYPE or a QUAL_UNION_TYPE
+   whether the array is typeless storage or the type contains a member
+   with this flag set.  Such types are exempt from type-based alias
+   analysis.  For ARRAY_TYPEs with AGGREGATE_TYPE_P element types
+   the flag should be inherited from the element type, can change
+   when type is finalized and because of that should not be used in
+   type hashing.  For ARRAY_TYPEs with non-AGGREGATE_TYPE_P element types
+   the flag should not be changed after the array is created and should
+   be used in type hashing.  */
+#define TYPE_TYPELESS_STORAGE(NODE) \
+  (TREE_CHECK4 (NODE, RECORD_TYPE, UNION_TYPE, QUAL_UNION_TYPE, \
+		ARRAY_TYPE)->type_common.typeless_storage)
 
 /* Indicated that objects of this type should be laid out in as
    compact a way as possible.  */
@@ -3599,6 +3618,20 @@ tree_operand_check_code (const_tree __t, enum tree_code __code, int __i,
 
 #endif
 
+/* True iff an identifier matches a C string.  */
+
+inline bool
+id_equal (const_tree id, const char *str)
+{
+  return !strcmp (IDENTIFIER_POINTER (id), str);
+}
+
+inline bool
+id_equal (const char *str, const_tree id)
+{
+  return !strcmp (str, IDENTIFIER_POINTER (id));
+}
+
 #define error_mark_node			global_trees[TI_ERROR_MARK]
 
 #define intQI_type_node			global_trees[TI_INTQI_TYPE]
@@ -4061,7 +4094,7 @@ extern tree build_truth_vector_type (unsigned, unsigned);
 extern tree build_same_sized_truth_vector_type (tree vectype);
 extern tree build_opaque_vector_type (tree innertype, int nunits);
 extern tree build_index_type (tree);
-extern tree build_array_type (tree, tree);
+extern tree build_array_type (tree, tree, bool = false);
 extern tree build_nonshared_array_type (tree, tree);
 extern tree build_array_type_nelts (tree, unsigned HOST_WIDE_INT);
 extern tree build_function_type (tree, tree);
@@ -4090,15 +4123,9 @@ extern int attribute_list_contained (const_tree, const_tree);
 extern int tree_int_cst_equal (const_tree, const_tree);
 
 extern bool tree_fits_shwi_p (const_tree)
-#ifndef ENABLE_TREE_CHECKING
-  ATTRIBUTE_PURE /* tree_fits_shwi_p is pure only when checking is disabled.  */
-#endif
-  ;
+  ATTRIBUTE_PURE;
 extern bool tree_fits_uhwi_p (const_tree)
-#ifndef ENABLE_TREE_CHECKING
-  ATTRIBUTE_PURE /* tree_fits_uhwi_p is pure only when checking is disabled.  */
-#endif
-  ;
+  ATTRIBUTE_PURE;
 extern HOST_WIDE_INT tree_to_shwi (const_tree);
 extern unsigned HOST_WIDE_INT tree_to_uhwi (const_tree);
 #if !defined ENABLE_TREE_CHECKING && (GCC_VERSION >= 4003)
@@ -4258,7 +4285,7 @@ extern tree get_qualified_type (tree, int);
 /* Like get_qualified_type, but creates the type if it does not
    exist.  This function never returns NULL_TREE.  */
 
-extern tree build_qualified_type (tree, int);
+extern tree build_qualified_type (tree, int CXX_MEM_STAT_INFO);
 
 /* Create a variant of type T with alignment ALIGN.  */
 
@@ -4276,14 +4303,15 @@ extern tree build_aligned_type (tree, unsigned int);
 
 /* Make a copy of a type node.  */
 
-extern tree build_distinct_type_copy (tree);
-extern tree build_variant_type_copy (tree);
+extern tree build_distinct_type_copy (tree CXX_MEM_STAT_INFO);
+extern tree build_variant_type_copy (tree CXX_MEM_STAT_INFO);
 
 /* Given a hashcode and a ..._TYPE node (for which the hashcode was made),
    return a canonicalized ..._TYPE node, so that duplicates are not made.
    How the hash code is computed is up to the caller, as long as any two
    callers that could hash identical-looking type nodes agree.  */
 
+extern hashval_t type_hash_canon_hash (tree);
 extern tree type_hash_canon (unsigned int, tree);
 
 extern tree convert (tree, tree);
@@ -4681,9 +4709,18 @@ inlined_function_outer_scope_p (const_tree block)
        function_args_iter_next (&(ITER)))
 
 /* In tree.c */
+extern unsigned crc32_unsigned_n (unsigned, unsigned, unsigned);
 extern unsigned crc32_string (unsigned, const char *);
-extern unsigned crc32_byte (unsigned, char);
-extern unsigned crc32_unsigned (unsigned, unsigned);
+inline unsigned
+crc32_unsigned (unsigned chksum, unsigned value)
+{
+  return crc32_unsigned_n (chksum, value, 4);
+}
+inline unsigned
+crc32_byte (unsigned chksum, char byte)
+{
+  return crc32_unsigned_n (chksum, byte, 1);
+}
 extern void clean_symbol_name (char *);
 extern tree get_file_function_name (const char *);
 extern tree get_callee_fndecl (const_tree);
@@ -4857,12 +4894,10 @@ extern tree array_ref_up_bound (tree);
    EXP, an ARRAY_REF or an ARRAY_RANGE_REF.  */
 extern tree array_ref_low_bound (tree);
 
-/* Returns true if REF is an array reference to an array at the end of
-   a structure.  If this is the case, the array may be allocated larger
-   than its upper bound implies.  When second argument is true considers
-   REF when it's a COMPONENT_REF in addition ARRAY_REF and
-   ARRAY_RANGE_REF.  */
-extern bool array_at_struct_end_p (tree, bool = false);
+/* Returns true if REF is an array reference or a component reference
+   to an array at the end of a structure.  If this is the case, the array
+   may be allocated larger than its upper bound implies.  */
+extern bool array_at_struct_end_p (tree);
 
 /* Return a tree representing the offset, in bytes, of the field referenced
    by EXP.  This does not include any offset in DECL_FIELD_BIT_OFFSET.  */

@@ -240,9 +240,10 @@
     }
    </programlisting>
    <para>Try it yourself!  More examples can be found in 3.1.x code, in
-      <filename>include/ext/*_filebuf.h</filename>, and in this article by James Kanze:
-      <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://kanze.james.neuf.fr/articles/fltrsbf1.html">Filtering
-      Streambufs</link>.
+      <filename>include/ext/*_filebuf.h</filename>, and in the article
+      <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gabisoft.free.fr/articles/fltrsbf1.html">Filtering
+      Streambufs</link>
+      by James Kanze.
    </para>
 
   </section>

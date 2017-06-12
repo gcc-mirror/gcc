@@ -12,7 +12,7 @@ struct A {
   int A::m;           // { dg-error "extra qualification" } 
   struct e;
   struct A::e {int i;}; // { dg-error "extra qualification" "qual" } 
-  // { dg-error "anonymous struct" "anon" { target *-*-* } 14 }
+  // { dg-error "anonymous struct" "anon" { target *-*-* } .-1 }
   struct A::expand {  // { dg-error "qualified name" } 
   int m;
   };

@@ -22,6 +22,13 @@
 #undef create_code
 #undef verify_code
 
+/* test-alignment.c */
+#define create_code create_code_alignment
+#define verify_code verify_code_alignment
+#include "test-alignment.c"
+#undef create_code
+#undef verify_code
+
 /* test-arith-overflow.c */
 #define create_code create_code_arith_overflow
 #define verify_code verify_code_arith_overflow
@@ -246,6 +253,9 @@ const struct testcase testcases[] = {
   {"accessing_union",
    create_code_accessing_union,
    verify_code_accessing_union},
+  {"alignment",
+   create_code_alignment,
+   verify_code_alignment},
   {"arith_overflow",
    create_code_arith_overflow,
    verify_code_arith_overflow},

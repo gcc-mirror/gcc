@@ -26,7 +26,8 @@ along with GCC; see the file COPYING3.  If not see
 
 #define ARC_TLS_EXTRA_START_SPEC "crttls.o%s"
 
-#define EXTRA_SPECS \
+#undef SUBTARGET_EXTRA_SPECS
+#define SUBTARGET_EXTRA_SPECS \
   { "arc_tls_extra_start_spec", ARC_TLS_EXTRA_START_SPEC }, \
 
 #undef STARTFILE_SPEC
@@ -53,3 +54,7 @@ along with GCC; see the file COPYING3.  If not see
 #  define MULTILIB_DEFAULTS { "mcpu=" ARC_MULTILIB_CPU_DEFAULT }
 # endif
 #endif
+
+/* Bare-metal toolchains do not need a thread pointer register.  */
+#undef TARGET_ARC_TP_REGNO_DEFAULT
+#define TARGET_ARC_TP_REGNO_DEFAULT -1

@@ -104,7 +104,7 @@ if args.script:
     print '''#!/bin/sh
 # Profile workload for gcc profile feedback (autofdo) using Linux perf.
 # Auto generated. To regenerate for new CPUs run
-# contrib/gen_autofdo_event.py --shell --all in gcc source
+# contrib/gen_autofdo_event.py --script --all in gcc source
 
 # usages:
 # gcc-auto-profile program             (profile program and children)

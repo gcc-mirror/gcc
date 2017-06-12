@@ -320,15 +320,15 @@ get_section (const char *name, unsigned int flags, tree decl)
 	      && decl != sect->named.decl)
 	    {
 	      if (decl != NULL && DECL_P (decl))
-		error ("%+D causes a section type conflict with %D",
+		error ("%+qD causes a section type conflict with %qD",
 		       decl, sect->named.decl);
 	      else
-		error ("section type conflict with %D", sect->named.decl);
+		error ("section type conflict with %qD", sect->named.decl);
 	      inform (DECL_SOURCE_LOCATION (sect->named.decl),
 		      "%qD was declared here", sect->named.decl);
 	    }
 	  else if (decl != NULL && DECL_P (decl))
-	    error ("%+D causes a section type conflict", decl);
+	    error ("%+qD causes a section type conflict", decl);
 	  else
 	    error ("section type conflict");
 	  /* Make sure we don't error about one section multiple times.  */
@@ -1670,10 +1670,6 @@ decide_function_section (tree decl)
 {
   first_function_block_is_cold = false;
 
-  if (flag_reorder_blocks_and_partition)
-    /* We will decide in assemble_start_function.  */
-    return;
-
  if (DECL_SECTION_NAME (decl))
     {
       struct cgraph_node *node = cgraph_node::get (current_function_decl);
@@ -1711,7 +1707,7 @@ assemble_start_function (tree decl, const char *fnname)
   char tmp_label[100];
   bool hot_label_written = false;
 
-  if (flag_reorder_blocks_and_partition)
+  if (crtl->has_bb_partition)
     {
       ASM_GENERATE_INTERNAL_LABEL (tmp_label, "LHOTB", const_labelno);
       crtl->subsections.hot_section_label = ggc_strdup (tmp_label);
@@ -1746,7 +1742,7 @@ assemble_start_function (tree decl, const char *fnname)
      has both hot and cold sections, because we don't want to re-set
      the alignment when the section switch happens mid-function.  */
 
-  if (flag_reorder_blocks_and_partition)
+  if (crtl->has_bb_partition)
     {
       first_function_block_is_cold = false;
 
@@ -1773,8 +1769,7 @@ assemble_start_function (tree decl, const char *fnname)
   /* Switch to the correct text section for the start of the function.  */
 
   switch_to_section (function_section (decl));
-  if (flag_reorder_blocks_and_partition
-      && !hot_label_written)
+  if (crtl->has_bb_partition && !hot_label_written)
     ASM_OUTPUT_LABEL (asm_out_file, crtl->subsections.hot_section_label);
 
   /* Tell assembler to move to target machine's alignment for functions.  */
@@ -1850,7 +1845,7 @@ assemble_end_function (tree decl, const char *fnname ATTRIBUTE_UNUSED)
 {
 #ifdef ASM_DECLARE_FUNCTION_SIZE
   /* We could have switched section in the middle of the function.  */
-  if (flag_reorder_blocks_and_partition)
+  if (crtl->has_bb_partition)
     switch_to_section (function_section (decl));
   ASM_DECLARE_FUNCTION_SIZE (asm_out_file, fnname, decl);
 #endif
@@ -1861,7 +1856,7 @@ assemble_end_function (tree decl, const char *fnname ATTRIBUTE_UNUSED)
     }
   /* Output labels for end of hot/cold text sections (to be used by
      debug info.)  */
-  if (flag_reorder_blocks_and_partition)
+  if (crtl->has_bb_partition)
     {
       section *save_text_section;
 
@@ -4472,8 +4467,15 @@ initializer_constant_valid_p_1 (tree value, tree endtype, tree *cache)
 	  return initializer_constant_valid_p_1 (src, endtype, cache);
 
 	/* Allow conversions between other integer types only if
-	   explicit value.  */
-	if (INTEGRAL_TYPE_P (dest_type) && INTEGRAL_TYPE_P (src_type))
+	   explicit value.  Don't allow sign-extension to a type larger
+	   than word and pointer, there aren't relocations that would
+	   allow to sign extend it to a wider type.  */
+	if (INTEGRAL_TYPE_P (dest_type)
+	    && INTEGRAL_TYPE_P (src_type)
+	    && (TYPE_UNSIGNED (src_type)
+		|| TYPE_PRECISION (dest_type) <= TYPE_PRECISION (src_type)
+		|| TYPE_PRECISION (dest_type) <= BITS_PER_WORD
+		|| TYPE_PRECISION (dest_type) <= POINTER_SIZE))
 	  {
 	    tree inner = initializer_constant_valid_p_1 (src, endtype, cache);
 	    if (inner == null_pointer_node)
@@ -5376,7 +5378,7 @@ mark_weak (tree decl)
 
   struct symtab_node *n = symtab_node::get (decl);
   if (n && n->refuse_visibility_changes)
-    error ("%+D declared weak after being used", decl);
+    error ("%+qD declared weak after being used", decl);
   DECL_WEAK (decl) = 1;
 
   if (DECL_RTL_SET_P (decl)

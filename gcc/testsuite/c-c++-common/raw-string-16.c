@@ -8,15 +8,15 @@ def()abcdef";
 	// { dg-error "invalid character" "invalid" { target *-*-* } 6 }
 	// { dg-error "stray" "stray" { target *-*-* } 6 }
 const void *s1 = R"abcdefghijklmn??/(a)abcdefghijklmn???";
-	// { dg-error "raw string delimiter longer" "longer" { target *-*-* } 10 }
-	// { dg-error "stray" "stray" { target *-*-* } 10 }
+	// { dg-error "raw string delimiter longer" "longer" { target *-*-* } .-1 }
+	// { dg-error "stray" "stray" { target *-*-* } .-2 }
 
 const void *s2 = R"abcdefghijklmno??/(a)abcdefghijklmno???";
-	// { dg-error "raw string delimiter longer" "longer" { target *-*-* } 14 }
-	// { dg-error "stray" "stray" { target *-*-* } 14 }
+	// { dg-error "raw string delimiter longer" "longer" { target *-*-* } .-1 }
+	// { dg-error "stray" "stray" { target *-*-* } .-2 }
 const void *s3 = R"abcdefghijklmnop??=(a)abcdefghijklmnop??=?"; // { dg-warning "trigraph ..= ignored" }
-	// { dg-error "raw string delimiter longer" "longer" { target *-*-* } 17 }
-	// { dg-error "stray" "stray" { target *-*-* } 17 }
+	// { dg-error "raw string delimiter longer" "longer" { target *-*-* } .-1 }
+	// { dg-error "stray" "stray" { target *-*-* } .-2 }
 const void *s4 = R"abc\
 ()abcdef";
 	// { dg-error "invalid character" "invalid" { target *-*-* } 20 }

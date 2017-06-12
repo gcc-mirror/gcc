@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-require-effective-target alloca } */
 /* { dg-options "-Walloca -O0" } */
 
 extern void f(void *);

@@ -12,7 +12,7 @@ class foo {
 static void iteratorTest(const foo &x)
 {
    foo::const_iterator i = x.begin();		// { dg-error "incomplete type" "incomplete type" } 
-   // { dg-error "const foo" "" { target *-*-* } 14 }
+   // { dg-error "const foo" "" { target *-*-* } .-1 }
    for (; i; ++i)
       *i;
 }

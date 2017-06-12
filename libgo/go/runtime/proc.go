@@ -32,22 +32,13 @@ import (
 //go:linkname exitsyscall runtime.exitsyscall
 //go:linkname gfget runtime.gfget
 //go:linkname helpgc runtime.helpgc
-//go:linkname stopTheWorldWithSema runtime.stopTheWorldWithSema
-//go:linkname startTheWorldWithSema runtime.startTheWorldWithSema
-//go:linkname mstart runtime.mstart
+//go:linkname kickoff runtime.kickoff
 //go:linkname mstart1 runtime.mstart1
 //go:linkname globrunqput runtime.globrunqput
 //go:linkname pidleget runtime.pidleget
 
 // Function called by misc/cgo/test.
 //go:linkname lockedOSThread runtime.lockedOSThread
-
-// Functions temporarily in C that have not yet been ported.
-func gchelper()
-func getfingwait() bool
-func getfingwake() bool
-func wakefing() *g
-func mallocinit()
 
 // C functions for thread and context management.
 func newosproc(*m)
@@ -56,8 +47,8 @@ func resetNewG(*g, *unsafe.Pointer, *uintptr)
 func gogo(*g)
 func setGContext()
 func makeGContext(*g, unsafe.Pointer, uintptr)
-func mstartInitContext(*g, unsafe.Pointer)
 func getTraceback(me, gp *g)
+func gtraceback(*g)
 func _cgo_notify_runtime_init_done()
 func alreadyInCallers() bool
 
@@ -246,6 +237,8 @@ func init() {
 }
 
 func forcegchelper() {
+	setSystemGoroutine()
+
 	forcegc.g = getg()
 	for {
 		lock(&forcegc.lock)
@@ -774,6 +767,122 @@ func casgstatus(gp *g, oldval, newval uint32) {
 	}
 }
 
+// scang blocks until gp's stack has been scanned.
+// It might be scanned by scang or it might be scanned by the goroutine itself.
+// Either way, the stack scan has completed when scang returns.
+func scang(gp *g, gcw *gcWork) {
+	// Invariant; we (the caller, markroot for a specific goroutine) own gp.gcscandone.
+	// Nothing is racing with us now, but gcscandone might be set to true left over
+	// from an earlier round of stack scanning (we scan twice per GC).
+	// We use gcscandone to record whether the scan has been done during this round.
+	// It is important that the scan happens exactly once: if called twice,
+	// the installation of stack barriers will detect the double scan and die.
+
+	gp.gcscandone = false
+
+	// See http://golang.org/cl/21503 for justification of the yield delay.
+	const yieldDelay = 10 * 1000
+	var nextYield int64
+
+	// Endeavor to get gcscandone set to true,
+	// either by doing the stack scan ourselves or by coercing gp to scan itself.
+	// gp.gcscandone can transition from false to true when we're not looking
+	// (if we asked for preemption), so any time we lock the status using
+	// castogscanstatus we have to double-check that the scan is still not done.
+loop:
+	for i := 0; !gp.gcscandone; i++ {
+		switch s := readgstatus(gp); s {
+		default:
+			dumpgstatus(gp)
+			throw("stopg: invalid status")
+
+		case _Gdead:
+			// No stack.
+			gp.gcscandone = true
+			break loop
+
+		case _Gcopystack:
+		// Stack being switched. Go around again.
+
+		case _Grunnable, _Gsyscall, _Gwaiting:
+			// Claim goroutine by setting scan bit.
+			// Racing with execution or readying of gp.
+			// The scan bit keeps them from running
+			// the goroutine until we're done.
+			if castogscanstatus(gp, s, s|_Gscan) {
+				if gp.scanningself {
+					// Don't try to scan the stack
+					// if the goroutine is going to do
+					// it itself.
+					restartg(gp)
+					break
+				}
+				if !gp.gcscandone {
+					scanstack(gp, gcw)
+					gp.gcscandone = true
+				}
+				restartg(gp)
+				break loop
+			}
+
+		case _Gscanwaiting:
+			// newstack is doing a scan for us right now. Wait.
+
+		case _Gscanrunning:
+			// checkPreempt is scanning. Wait.
+
+		case _Grunning:
+			// Goroutine running. Try to preempt execution so it can scan itself.
+			// The preemption handler (in newstack) does the actual scan.
+
+			// Optimization: if there is already a pending preemption request
+			// (from the previous loop iteration), don't bother with the atomics.
+			if gp.preemptscan && gp.preempt {
+				break
+			}
+
+			// Ask for preemption and self scan.
+			if castogscanstatus(gp, _Grunning, _Gscanrunning) {
+				if !gp.gcscandone {
+					gp.preemptscan = true
+					gp.preempt = true
+				}
+				casfrom_Gscanstatus(gp, _Gscanrunning, _Grunning)
+			}
+		}
+
+		if i == 0 {
+			nextYield = nanotime() + yieldDelay
+		}
+		if nanotime() < nextYield {
+			procyield(10)
+		} else {
+			osyield()
+			nextYield = nanotime() + yieldDelay/2
+		}
+	}
+
+	gp.preemptscan = false // cancel scan request if no longer needed
+}
+
+// The GC requests that this routine be moved from a scanmumble state to a mumble state.
+func restartg(gp *g) {
+	s := readgstatus(gp)
+	switch s {
+	default:
+		dumpgstatus(gp)
+		throw("restartg: unexpected status")
+
+	case _Gdead:
+	// ok
+
+	case _Gscanrunnable,
+		_Gscanwaiting,
+		_Gscansyscall:
+		casfrom_Gscanstatus(gp, s, s&^_Gscan)
+	}
+}
+
 // stopTheWorld stops all P's from executing goroutines, interrupting
 // all goroutines at GC safe points and records reason as the reason
 // for the stop. On return, only the current goroutine's P is running.
@@ -972,26 +1081,24 @@ func startTheWorldWithSema() {
 	_g_.m.locks--
 }
 
-// Called to start an M.
-// For gccgo this is called directly by pthread_create.
-//go:nosplit
-func mstart(mpu unsafe.Pointer) unsafe.Pointer {
-	mp := (*m)(mpu)
-	_g_ := mp.g0
-	_g_.m = mp
-	setg(_g_)
+// First function run by a new goroutine.
+// This is passed to makecontext.
+func kickoff() {
+	gp := getg()
 
-	_g_.entry = 0
-	_g_.param = nil
+	if gp.traceback != nil {
+		gtraceback(gp)
+	}
 
-	mstartInitContext(_g_, unsafe.Pointer(&mp))
-
-	// This is never reached, but is required because pthread_create
-	// expects a function that returns a pointer.
-	return nil
+	fv := gp.entry
+	param := gp.param
+	gp.entry = nil
+	gp.param = nil
+	fv(param)
+	goexit1()
 }
 
-// This is called from mstartInitContext.
+// This is called from mstart.
 func mstart1() {
 	_g_ := getg()
 
@@ -1711,7 +1818,7 @@ top:
 	if _p_.runSafePointFn != 0 {
 		runSafePointFn()
 	}
-	if getfingwait() && getfingwake() {
+	if fingwait && fingwake {
 		if gp := wakefing(); gp != nil {
 			ready(gp, 0, true)
 		}
@@ -2023,6 +2130,7 @@ top:
 		// goroutines on the global queue.
 		// Since we preempt by storing the goroutine on the global
 		// queue, this is the only place we need to check preempt.
+		// This does not call checkPreempt because gp is not running.
 		if gp != nil && gp.preempt {
 			gp.preempt = false
 			lock(&sched.lock)
@@ -2121,6 +2229,13 @@ func gosched_m(gp *g) {
 	goschedImpl(gp)
 }
 
+func gopreempt_m(gp *g) {
+	if trace.enabled {
+		traceGoPreempt()
+	}
+	goschedImpl(gp)
+}
+
 // Finishes execution of the current goroutine.
 func goexit1() {
 	if trace.enabled {
@@ -2140,7 +2255,7 @@ func goexit0(gp *g) {
 	gp.m = nil
 	gp.lockedm = nil
 	_g_.m.lockedg = nil
-	gp.entry = 0
+	gp.entry = nil
 	gp.paniconfault = false
 	gp._defer = nil // should be true already but just in case.
 	gp._panic = nil // non-nil for Goexit during panic. points at stack-allocated data.
@@ -2563,12 +2678,17 @@ func newproc(fn uintptr, arg unsafe.Pointer) *g {
 		throw("newproc1: new g is not Gdead")
 	}
 
-	newg.entry = fn
+	// Store the C function pointer into entryfn, take the address
+	// of entryfn, convert it to a Go function value, and store
+	// that in entry.
+	newg.entryfn = fn
+	var entry func(unsafe.Pointer)
+	*(*unsafe.Pointer)(unsafe.Pointer(&entry)) = unsafe.Pointer(&newg.entryfn)
+	newg.entry = entry
+
 	newg.param = arg
 	newg.gopc = getcallerpc(unsafe.Pointer(&fn))
-	if isSystemGoroutine(newg) {
-		atomic.Xadd(&sched.ngsys, +1)
-	}
+	newg.startpc = fn
 	// The stack is dirty from the argument frame, so queue it for
 	// scanning. Do this before setting it to runnable so we still
 	// own the G. If we're recycling a G, it may already be on the
@@ -2605,6 +2725,18 @@ func newproc(fn uintptr, arg unsafe.Pointer) *g {
 	}
 	_g_.m.locks--
 	return newg
+}
+
+// setSystemGoroutine marks this goroutine as a "system goroutine".
+// In the gc toolchain this is done by comparing startpc to a list of
+// saved special PCs. In gccgo that approach does not work as startpc
+// is often a thunk that invokes the real function with arguments,
+// so the thunk address never matches the saved special PCs. Instead,
+// since there are only a limited number of "system goroutines",
+// we force each one to mark itself as special.
+func setSystemGoroutine() {
+	getg().isSystemGoroutine = true
+	atomic.Xadd(&sched.ngsys, +1)
 }
 
 // Put on gfree list.

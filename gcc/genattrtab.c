@@ -4416,6 +4416,9 @@ write_eligible_delay (FILE *outf, const char *kind)
   fprintf (outf, "{\n");
   fprintf (outf, "  rtx_insn *insn ATTRIBUTE_UNUSED;\n");
   fprintf (outf, "\n");
+  fprintf (outf, "  if (num_delay_slots (delay_insn) == 0)\n");
+  fprintf (outf, "    return 0;");
+  fprintf (outf, "\n");
   fprintf (outf, "  gcc_assert (slot < %d);\n", max_slots);
   fprintf (outf, "\n");
   /* Allow dbr_schedule to pass labels, etc.  This can happen if try_split

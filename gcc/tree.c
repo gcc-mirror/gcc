@@ -151,7 +151,7 @@ static const char * const tree_node_kind_names[] = {
 /* Unique id for next decl created.  */
 static GTY(()) int next_decl_uid;
 /* Unique id for next type created.  */
-static GTY(()) int next_type_uid = 1;
+static GTY(()) unsigned next_type_uid = 1;
 /* Unique id for next debug decl created.  Use negative numbers,
    to catch erroneous uses.  */
 static GTY(()) int next_debug_decl_uid;
@@ -248,8 +248,6 @@ static void set_type_quals (tree, int);
 static void print_type_hash_statistics (void);
 static void print_debug_expr_statistics (void);
 static void print_value_expr_statistics (void);
-static void type_hash_list (const_tree, inchash::hash &);
-static void attribute_hash_list (const_tree, inchash::hash &);
 
 tree global_trees[TI_MAX];
 tree integer_types[itk_none];
@@ -2270,7 +2268,7 @@ tree
 make_tree_vec_stat (int len MEM_STAT_DECL)
 {
   tree t;
-  int length = (len - 1) * sizeof (tree) + sizeof (struct tree_vec);
+  size_t length = (len - 1) * sizeof (tree) + sizeof (struct tree_vec);
 
   record_node_allocation_statistics (TREE_VEC, length);
 
@@ -2292,8 +2290,8 @@ grow_tree_vec_stat (tree v, int len MEM_STAT_DECL)
   int oldlen = TREE_VEC_LENGTH (v);
   gcc_assert (len > oldlen);
 
-  int oldlength = (oldlen - 1) * sizeof (tree) + sizeof (struct tree_vec);
-  int length = (len - 1) * sizeof (tree) + sizeof (struct tree_vec);
+  size_t oldlength = (oldlen - 1) * sizeof (tree) + sizeof (struct tree_vec);
+  size_t length = (len - 1) * sizeof (tree) + sizeof (struct tree_vec);
 
   record_node_allocation_statistics (TREE_VEC, length - oldlength);
 
@@ -3339,7 +3337,6 @@ tree_invariant_p (tree t)
 tree
 save_expr (tree expr)
 {
-  tree t = fold (expr);
   tree inner;
 
   /* If the tree evaluates to a constant, then we don't want to hide that
@@ -3347,33 +3344,32 @@ save_expr (tree expr)
      However, a read-only object that has side effects cannot be bypassed.
      Since it is no problem to reevaluate literals, we just return the
      literal node.  */
-  inner = skip_simple_arithmetic (t);
+  inner = skip_simple_arithmetic (expr);
   if (TREE_CODE (inner) == ERROR_MARK)
     return inner;
 
   if (tree_invariant_p_1 (inner))
-    return t;
+    return expr;
 
   /* If INNER contains a PLACEHOLDER_EXPR, we must evaluate it each time, since
      it means that the size or offset of some field of an object depends on
      the value within another field.
 
-     Note that it must not be the case that T contains both a PLACEHOLDER_EXPR
+     Note that it must not be the case that EXPR contains both a PLACEHOLDER_EXPR
      and some variable since it would then need to be both evaluated once and
      evaluated more than once.  Front-ends must assure this case cannot
      happen by surrounding any such subexpressions in their own SAVE_EXPR
      and forcing evaluation at the proper time.  */
   if (contains_placeholder_p (inner))
-    return t;
+    return expr;
 
-  t = build1 (SAVE_EXPR, TREE_TYPE (expr), t);
-  SET_EXPR_LOCATION (t, EXPR_LOCATION (expr));
+  expr = build1_loc (EXPR_LOCATION (expr), SAVE_EXPR, TREE_TYPE (expr), expr);
 
   /* This expression might be placed ahead of a jump to ensure that the
      value was computed on both sides of the jump.  So make sure it isn't
      eliminated as dead.  */
-  TREE_SIDE_EFFECTS (t) = 1;
-  return t;
+  TREE_SIDE_EFFECTS (expr) = 1;
+  return expr;
 }
 
 /* Look inside EXPR into any simple arithmetic operations.  Return the
@@ -3886,15 +3882,29 @@ substitute_in_expr (tree exp, tree f, tree r)
 
 	  new_tree = NULL_TREE;
 
-	  /* If we are trying to replace F with a constant, inline back
+	  /* If we are trying to replace F with a constant or with another
+	     instance of one of the arguments of the call, inline back
 	     functions which do nothing else than computing a value from
 	     the arguments they are passed.  This makes it possible to
 	     fold partially or entirely the replacement expression.  */
-	  if (CONSTANT_CLASS_P (r) && code == CALL_EXPR)
+	  if (code == CALL_EXPR)
 	    {
-	      tree t = maybe_inline_call_in_expr (exp);
-	      if (t)
-		return SUBSTITUTE_IN_EXPR (t, f, r);
+	      bool maybe_inline = false;
+	      if (CONSTANT_CLASS_P (r))
+		maybe_inline = true;
+	      else
+		for (i = 3; i < TREE_OPERAND_LENGTH (exp); i++)
+		  if (operand_equal_p (TREE_OPERAND (exp, i), r, 0))
+		    {
+		      maybe_inline = true;
+		      break;
+		    }
+	      if (maybe_inline)
+		{
+		  tree t = maybe_inline_call_in_expr (exp);
+		  if (t)
+		    return SUBSTITUTE_IN_EXPR (t, f, r);
+		}
 	    }
 
 	  for (i = 1; i < TREE_OPERAND_LENGTH (exp); i++)
@@ -4814,11 +4824,7 @@ build_type_attribute_qual_variant (tree ttype, tree attribute, int quals)
 {
   if (! attribute_list_equal (TYPE_ATTRIBUTES (ttype), attribute))
     {
-      inchash::hash hstate;
       tree ntype;
-      int i;
-      tree t;
-      enum tree_code code = TREE_CODE (ttype);
 
       /* Building a distinct copy of a tagged type is inappropriate; it
 	 causes breakage in code that expects there to be a one-to-one
@@ -4842,37 +4848,8 @@ build_type_attribute_qual_variant (tree ttype, tree attribute, int quals)
 
       TYPE_ATTRIBUTES (ntype) = attribute;
 
-      hstate.add_int (code);
-      if (TREE_TYPE (ntype))
-	hstate.add_object (TYPE_HASH (TREE_TYPE (ntype)));
-      attribute_hash_list (attribute, hstate);
-
-      switch (TREE_CODE (ntype))
-	{
-	case FUNCTION_TYPE:
-	  type_hash_list (TYPE_ARG_TYPES (ntype), hstate);
-	  break;
-	case ARRAY_TYPE:
-	  if (TYPE_DOMAIN (ntype))
-	    hstate.add_object (TYPE_HASH (TYPE_DOMAIN (ntype)));
-	  break;
-	case INTEGER_TYPE:
-	  t = TYPE_MAX_VALUE (ntype);
-	  for (i = 0; i < TREE_INT_CST_NUNITS (t); i++)
-	    hstate.add_object (TREE_INT_CST_ELT (t, i));
-	  break;
-	case REAL_TYPE:
-	case FIXED_POINT_TYPE:
-	  {
-	    unsigned int precision = TYPE_PRECISION (ntype);
-	    hstate.add_object (precision);
-	  }
-	  break;
-	default:
-	  break;
-	}
-
-      ntype = type_hash_canon (hstate.end(), ntype);
+      hashval_t hash = type_hash_canon_hash (ntype);
+      ntype = type_hash_canon (hash, ntype);
 
       /* If the target-dependent attributes make NTYPE different from
 	 its canonical type, we will need to use structural equality
@@ -6073,7 +6050,7 @@ private_is_attribute_p (const char *attr_name, size_t attr_len, const_tree ident
 
   if (ident_len == attr_len)
     {
-      if (strcmp (attr_name, IDENTIFIER_POINTER (ident)) == 0)
+      if (id_equal (ident, attr_name))
 	return true;
     }
   else if (ident_len == attr_len + 4)
@@ -6622,7 +6599,7 @@ get_qualified_type (tree type, int type_quals)
    exist.  This function never returns NULL_TREE.  */
 
 tree
-build_qualified_type (tree type, int type_quals)
+build_qualified_type (tree type, int type_quals MEM_STAT_DECL)
 {
   tree t;
 
@@ -6632,7 +6609,7 @@ build_qualified_type (tree type, int type_quals)
   /* If not, build it.  */
   if (!t)
     {
-      t = build_variant_type_copy (type);
+      t = build_variant_type_copy (type PASS_MEM_STAT);
       set_type_quals (t, type_quals);
 
       if (((type_quals & TYPE_QUAL_ATOMIC) == TYPE_QUAL_ATOMIC))
@@ -6695,9 +6672,9 @@ build_aligned_type (tree type, unsigned int align)
    TYPE_CANONICAL points to itself. */
 
 tree
-build_distinct_type_copy (tree type)
+build_distinct_type_copy (tree type MEM_STAT_DECL)
 {
-  tree t = copy_node (type);
+  tree t = copy_node_stat (type PASS_MEM_STAT);
 
   TYPE_POINTER_TO (t) = 0;
   TYPE_REFERENCE_TO (t) = 0;
@@ -6733,11 +6710,11 @@ build_distinct_type_copy (tree type)
    require structural equality checks). */
 
 tree
-build_variant_type_copy (tree type)
+build_variant_type_copy (tree type MEM_STAT_DECL)
 {
   tree t, m = TYPE_MAIN_VARIANT (type);
 
-  t = build_distinct_type_copy (type);
+  t = build_distinct_type_copy (type PASS_MEM_STAT);
 
   /* Since we're building a variant, assume that it is a non-semantic
      variant. This also propagates TYPE_STRUCTURAL_EQUALITY_P. */
@@ -6980,18 +6957,80 @@ decl_debug_args_insert (tree from)
 /* Hashing of types so that we don't make duplicates.
    The entry point is `type_hash_canon'.  */
 
-/* Compute a hash code for a list of types (chain of TREE_LIST nodes
-   with types in the TREE_VALUE slots), by adding the hash codes
-   of the individual types.  */
+/* Generate the default hash code for TYPE.  This is designed for
+   speed, rather than maximum entropy.  */
 
-static void
-type_hash_list (const_tree list, inchash::hash &hstate)
+hashval_t
+type_hash_canon_hash (tree type)
 {
-  const_tree tail;
+  inchash::hash hstate;
 
-  for (tail = list; tail; tail = TREE_CHAIN (tail))
-    if (TREE_VALUE (tail) != error_mark_node)
-      hstate.add_object (TYPE_HASH (TREE_VALUE (tail)));
+  hstate.add_int (TREE_CODE (type));
+
+  if (TREE_TYPE (type))
+    hstate.add_object (TYPE_HASH (TREE_TYPE (type)));
+
+  for (tree t = TYPE_ATTRIBUTES (type); t; t = TREE_CHAIN (t))
+    /* Just the identifier is adequate to distinguish.  */
+    hstate.add_object (IDENTIFIER_HASH_VALUE (get_attribute_name (t)));
+
+  switch (TREE_CODE (type))
+    {
+    case METHOD_TYPE:
+      hstate.add_object (TYPE_HASH (TYPE_METHOD_BASETYPE (type)));
+      /* FALLTHROUGH. */
+    case FUNCTION_TYPE:
+      for (tree t = TYPE_ARG_TYPES (type); t; t = TREE_CHAIN (t))
+	if (TREE_VALUE (t) != error_mark_node)
+	  hstate.add_object (TYPE_HASH (TREE_VALUE (t)));
+      break;
+
+    case OFFSET_TYPE:
+      hstate.add_object (TYPE_HASH (TYPE_OFFSET_BASETYPE (type)));
+      break;
+
+    case ARRAY_TYPE:
+      {
+	if (TYPE_DOMAIN (type))
+	  hstate.add_object (TYPE_HASH (TYPE_DOMAIN (type)));
+	if (!AGGREGATE_TYPE_P (TREE_TYPE (type)))
+	  {
+	    unsigned typeless = TYPE_TYPELESS_STORAGE (type);
+	    hstate.add_object (typeless);
+	  }
+      }
+      break;
+
+    case INTEGER_TYPE:
+      {
+	tree t = TYPE_MAX_VALUE (type);
+	if (!t)
+	  t = TYPE_MIN_VALUE (type);
+	for (int i = 0; i < TREE_INT_CST_NUNITS (t); i++)
+	  hstate.add_object (TREE_INT_CST_ELT (t, i));
+	break;
+      }
+      
+    case REAL_TYPE:
+    case FIXED_POINT_TYPE:
+      {
+	unsigned prec = TYPE_PRECISION (type);
+	hstate.add_object (prec);
+	break;
+      }
+
+    case VECTOR_TYPE:
+      {
+	unsigned nunits = TYPE_VECTOR_SUBPARTS (type);
+	hstate.add_object (nunits);
+	break;
+      }
+
+    default:
+      break;
+    }
+
+  return hstate.end ();
 }
 
 /* These are the Hashtable callback functions.  */
@@ -7073,7 +7112,16 @@ type_cache_hasher::equal (type_hash *a, type_hash *b)
         break;
       return 0;
     case ARRAY_TYPE:
-      return TYPE_DOMAIN (a->type) == TYPE_DOMAIN (b->type);
+      /* Don't compare TYPE_TYPELESS_STORAGE flag on aggregates,
+	 where the flag should be inherited from the element type
+	 and can change after ARRAY_TYPEs are created; on non-aggregates
+	 compare it and hash it, scalars will never have that flag set
+	 and we need to differentiate between arrays created by different
+	 front-ends or middle-end created arrays.  */
+      return (TYPE_DOMAIN (a->type) == TYPE_DOMAIN (b->type)
+	      && (AGGREGATE_TYPE_P (TREE_TYPE (a->type))
+		  || (TYPE_TYPELESS_STORAGE (a->type)
+		      == TYPE_TYPELESS_STORAGE (b->type))));
 
     case RECORD_TYPE:
     case UNION_TYPE:
@@ -7138,6 +7186,22 @@ type_hash_canon (unsigned int hashcode, tree type)
     {
       tree t1 = ((type_hash *) *loc)->type;
       gcc_assert (TYPE_MAIN_VARIANT (t1) == t1);
+      if (TYPE_UID (type) + 1 == next_type_uid)
+	--next_type_uid;
+      /* Free also min/max values and the cache for integer
+	 types.  This can't be done in free_node, as LTO frees
+	 those on its own.  */
+      if (TREE_CODE (type) == INTEGER_TYPE)
+	{
+	  if (TYPE_MIN_VALUE (type)
+	      && TREE_TYPE (TYPE_MIN_VALUE (type)) == type)
+	    ggc_free (TYPE_MIN_VALUE (type));
+	  if (TYPE_MAX_VALUE (type)
+	      && TREE_TYPE (TYPE_MAX_VALUE (type)) == type)
+	    ggc_free (TYPE_MAX_VALUE (type));
+	  if (TYPE_CACHED_VALUES_P (type))
+	    ggc_free (TYPE_CACHED_VALUES (type));
+	}
       free_node (type);
       return t1;
     }
@@ -7161,20 +7225,6 @@ print_type_hash_statistics (void)
 	   (long) type_hash_table->size (),
 	   (long) type_hash_table->elements (),
 	   type_hash_table->collisions ());
-}
-
-/* Compute a hash code for a list of attributes (chain of TREE_LIST nodes
-   with names in the TREE_PURPOSE slots and args in the TREE_VALUE slots),
-   by adding the hash codes of the individual attributes.  */
-
-static void
-attribute_hash_list (const_tree list, inchash::hash &hstate)
-{
-  const_tree tail;
-
-  for (tail = list; tail; tail = TREE_CHAIN (tail))
-    /* ??? Do we want to add in TREE_VALUE too? */
-    hstate.add_object (IDENTIFIER_HASH_VALUE (get_attribute_name (tail)));
 }
 
 /* Given two lists of attributes, return true if list l2 is
@@ -7865,6 +7915,10 @@ add_expr (const_tree t, inchash::hash &hstate, unsigned int flags)
 	  inchash::add_expr (tsi_stmt (i), hstate, flags);
 	return;
       }
+    case TREE_VEC:
+      for (i = 0; i < TREE_VEC_LENGTH (t); ++i)
+	inchash::add_expr (TREE_VEC_ELT (t, i), hstate, flags);
+      return;
     case FUNCTION_DECL:
       /* When referring to a built-in FUNCTION_DECL, use the __builtin__ form.
 	 Otherwise nodes that compare equal according to operand_equal_p might
@@ -8237,7 +8291,6 @@ static tree
 build_range_type_1 (tree type, tree lowval, tree highval, bool shared)
 {
   tree itype = make_node (INTEGER_TYPE);
-  inchash::hash hstate;
 
   TREE_TYPE (itype) = type;
 
@@ -8265,10 +8318,8 @@ build_range_type_1 (tree type, tree lowval, tree highval, bool shared)
       return itype;
     }
 
-  inchash::add_expr (TYPE_MIN_VALUE (itype), hstate);
-  inchash::add_expr (TYPE_MAX_VALUE (itype), hstate);
-  hstate.merge_hash (TYPE_HASH (type));
-  itype = type_hash_canon (hstate.end (), itype);
+  hashval_t hash = type_hash_canon_hash (itype);
+  itype = type_hash_canon (hash, itype);
 
   return itype;
 }
@@ -8346,10 +8397,12 @@ subrange_type_for_debug_p (const_tree type, tree *lowval, tree *highval)
 
 /* Construct, lay out and return the type of arrays of elements with ELT_TYPE
    and number of elements specified by the range of values of INDEX_TYPE.
+   If TYPELESS_STORAGE is true, TYPE_TYPELESS_STORAGE flag is set on the type.
    If SHARED is true, reuse such a type that has already been constructed.  */
 
 static tree
-build_array_type_1 (tree elt_type, tree index_type, bool shared)
+build_array_type_1 (tree elt_type, tree index_type, bool typeless_storage,
+		    bool shared)
 {
   tree t;
 
@@ -8363,6 +8416,7 @@ build_array_type_1 (tree elt_type, tree index_type, bool shared)
   TREE_TYPE (t) = elt_type;
   TYPE_DOMAIN (t) = index_type;
   TYPE_ADDR_SPACE (t) = TYPE_ADDR_SPACE (elt_type);
+  TYPE_TYPELESS_STORAGE (t) = typeless_storage;
   layout_type (t);
 
   /* If the element type is incomplete at this point we get marked for
@@ -8373,11 +8427,8 @@ build_array_type_1 (tree elt_type, tree index_type, bool shared)
 
   if (shared)
     {
-      inchash::hash hstate;
-      hstate.add_object (TYPE_HASH (elt_type));
-      if (index_type)
-	hstate.add_object (TYPE_HASH (index_type));
-      t = type_hash_canon (hstate.end (), t);
+      hashval_t hash = type_hash_canon_hash (t);
+      t = type_hash_canon (hash, t);
     }
 
   if (TYPE_CANONICAL (t) == t)
@@ -8392,7 +8443,7 @@ build_array_type_1 (tree elt_type, tree index_type, bool shared)
 	  = build_array_type_1 (TYPE_CANONICAL (elt_type),
 				index_type
 				? TYPE_CANONICAL (index_type) : NULL_TREE,
-				shared);
+				typeless_storage, shared);
     }
 
   return t;
@@ -8401,9 +8452,9 @@ build_array_type_1 (tree elt_type, tree index_type, bool shared)
 /* Wrapper around build_array_type_1 with SHARED set to true.  */
 
 tree
-build_array_type (tree elt_type, tree index_type)
+build_array_type (tree elt_type, tree index_type, bool typeless_storage)
 {
-  return build_array_type_1 (elt_type, index_type, true);
+  return build_array_type_1 (elt_type, index_type, typeless_storage, true);
 }
 
 /* Wrapper around build_array_type_1 with SHARED set to false.  */
@@ -8411,7 +8462,7 @@ build_array_type (tree elt_type, tree index_type)
 tree
 build_nonshared_array_type (tree elt_type, tree index_type)
 {
-  return build_array_type_1 (elt_type, index_type, false);
+  return build_array_type_1 (elt_type, index_type, false, false);
 }
 
 /* Return a representation of ELT_TYPE[NELTS], using indices of type
@@ -8534,9 +8585,8 @@ build_function_type (tree value_type, tree arg_types)
   TYPE_ARG_TYPES (t) = arg_types;
 
   /* If we already have such a type, use the old one.  */
-  hstate.add_object (TYPE_HASH (value_type));
-  type_hash_list (arg_types, hstate);
-  t = type_hash_canon (hstate.end (), t);
+  hashval_t hash = type_hash_canon_hash (t);
+  t = type_hash_canon (hash, t);
 
   /* Set up the canonical type. */
   any_structural_p   = TYPE_STRUCTURAL_EQUALITY_P (value_type);
@@ -8673,7 +8723,6 @@ build_method_type_directly (tree basetype,
 {
   tree t;
   tree ptype;
-  inchash::hash hstate;
   bool any_structural_p, any_noncanonical_p;
   tree canon_argtypes;
 
@@ -8690,10 +8739,8 @@ build_method_type_directly (tree basetype,
   TYPE_ARG_TYPES (t) = argtypes;
 
   /* If we already have such a type, use the old one.  */
-  hstate.add_object (TYPE_HASH (basetype));
-  hstate.add_object (TYPE_HASH (rettype));
-  type_hash_list (argtypes, hstate);
-  t = type_hash_canon (hstate.end (), t);
+  hashval_t hash = type_hash_canon_hash (t);
+  t = type_hash_canon (hash, t);
 
   /* Set up the canonical type. */
   any_structural_p
@@ -8741,7 +8788,6 @@ tree
 build_offset_type (tree basetype, tree type)
 {
   tree t;
-  inchash::hash hstate;
 
   /* Make a node of the sort we want.  */
   t = make_node (OFFSET_TYPE);
@@ -8750,9 +8796,8 @@ build_offset_type (tree basetype, tree type)
   TREE_TYPE (t) = type;
 
   /* If we already have such a type, use the old one.  */
-  hstate.add_object (TYPE_HASH (basetype));
-  hstate.add_object (TYPE_HASH (type));
-  t = type_hash_canon (hstate.end (), t);
+  hashval_t hash = type_hash_canon_hash (t);
+  t = type_hash_canon (hash, t);
 
   if (!COMPLETE_TYPE_P (t))
     layout_type (t);
@@ -8783,7 +8828,6 @@ tree
 build_complex_type (tree component_type, bool named)
 {
   tree t;
-  inchash::hash hstate;
 
   gcc_assert (INTEGRAL_TYPE_P (component_type)
 	      || SCALAR_FLOAT_TYPE_P (component_type)
@@ -8795,8 +8839,8 @@ build_complex_type (tree component_type, bool named)
   TREE_TYPE (t) = TYPE_MAIN_VARIANT (component_type);
 
   /* If we already have such a type, use the old one.  */
-  hstate.add_object (TYPE_HASH (component_type));
-  t = type_hash_canon (hstate.end (), t);
+  hashval_t hash = type_hash_canon_hash (t);
+  t = type_hash_canon (hash, t);
 
   if (!COMPLETE_TYPE_P (t))
     layout_type (t);
@@ -9029,13 +9073,21 @@ get_unwidened (tree op, tree for_type)
 	}
     }
 
-  /* If we finally reach a constant see if it fits in for_type and
+  /* If we finally reach a constant see if it fits in sth smaller and
      in that case convert it.  */
-  if (for_type
-      && TREE_CODE (win) == INTEGER_CST
-      && TREE_TYPE (win) != for_type
-      && int_fits_type_p (win, for_type))
-    win = fold_convert (for_type, win);
+  if (TREE_CODE (win) == INTEGER_CST)
+    {
+      tree wtype = TREE_TYPE (win);
+      unsigned prec = wi::min_precision (win, TYPE_SIGN (wtype));
+      if (for_type)
+	prec = MAX (prec, final_prec);
+      if (prec < TYPE_PRECISION (wtype))
+	{
+	  tree t = lang_hooks.types.type_for_size (prec, TYPE_UNSIGNED (wtype));
+	  if (t && TYPE_PRECISION (t) < TYPE_PRECISION (wtype))
+	    win = fold_convert (t, win);
+	}
+    }
 
   return win;
 }
@@ -9593,38 +9645,34 @@ dump_tree_statistics (void)
 
 #define FILE_FUNCTION_FORMAT "_GLOBAL__%s_%s"
 
-/* Generate a crc32 of a byte.  */
+/* Generate a crc32 of the low BYTES bytes of VALUE.  */
 
-static unsigned
-crc32_unsigned_bits (unsigned chksum, unsigned value, unsigned bits)
+unsigned
+crc32_unsigned_n (unsigned chksum, unsigned value, unsigned bytes)
 {
-  unsigned ix;
-
-  for (ix = bits; ix--; value <<= 1)
+  /* This relies on the raw feedback's top 4 bits being zero.  */
+#define FEEDBACK(X) ((X) * 0x04c11db7)
+#define SYNDROME(X) (FEEDBACK ((X) & 1) ^ FEEDBACK ((X) & 2) \
+		     ^ FEEDBACK ((X) & 4) ^ FEEDBACK ((X) & 8))
+  static const unsigned syndromes[16] =
     {
-      unsigned feedback;
-      
-      feedback = (value ^ chksum) & 0x80000000 ? 0x04c11db7 : 0;
-      chksum <<= 1;
-      chksum ^= feedback;
+      SYNDROME(0x0), SYNDROME(0x1), SYNDROME(0x2), SYNDROME(0x3),
+      SYNDROME(0x4), SYNDROME(0x5), SYNDROME(0x6), SYNDROME(0x7),
+      SYNDROME(0x8), SYNDROME(0x9), SYNDROME(0xa), SYNDROME(0xb),
+      SYNDROME(0xc), SYNDROME(0xd), SYNDROME(0xe), SYNDROME(0xf),
+    };
+#undef FEEDBACK
+#undef SYNDROME
+
+  value <<= (32 - bytes * 8);
+  for (unsigned ix = bytes * 2; ix--; value <<= 4)
+    {
+      unsigned feedback = syndromes[((value ^ chksum) >> 28) & 0xf];
+
+      chksum = (chksum << 4) ^ feedback;
     }
+
   return chksum;
-}
-
-/* Generate a crc32 of a 32-bit unsigned.  */
-
-unsigned
-crc32_unsigned (unsigned chksum, unsigned value)
-{
-  return crc32_unsigned_bits (chksum, value, 32);
-}
-
-/* Generate a crc32 of a byte.  */
-
-unsigned
-crc32_byte (unsigned chksum, char byte)
-{
-  return crc32_unsigned_bits (chksum, (unsigned) byte << 24, 8);
 }
 
 /* Generate a crc32 of a string.  */
@@ -9633,9 +9681,7 @@ unsigned
 crc32_string (unsigned chksum, const char *string)
 {
   do
-    {
-      chksum = crc32_byte (chksum, *string);
-    }
+    chksum = crc32_byte (chksum, *string);
   while (*string++);
   return chksum;
 }
@@ -10049,7 +10095,6 @@ static tree
 make_vector_type (tree innertype, int nunits, machine_mode mode)
 {
   tree t;
-  inchash::hash hstate;
   tree mv_innertype = TYPE_MAIN_VARIANT (innertype);
 
   t = make_node (VECTOR_TYPE);
@@ -10067,11 +10112,8 @@ make_vector_type (tree innertype, int nunits, machine_mode mode)
 
   layout_type (t);
 
-  hstate.add_wide_int (VECTOR_TYPE);
-  hstate.add_wide_int (nunits);
-  hstate.add_wide_int (mode);
-  hstate.add_object (TYPE_HASH (TREE_TYPE (t)));
-  t = type_hash_canon (hstate.end (), t);
+  hashval_t hash = type_hash_canon_hash (t);
+  t = type_hash_canon (hash, t);
 
   /* We have built a main variant, based on the main variant of the
      inner type. Use it to build the variant we return.  */
@@ -10583,6 +10625,9 @@ set_call_expr_flags (tree decl, int flags)
   if (flags & ECF_LEAF)
     DECL_ATTRIBUTES (decl) = tree_cons (get_identifier ("leaf"),
 					NULL, DECL_ATTRIBUTES (decl));
+  if (flags & ECF_COLD)
+    DECL_ATTRIBUTES (decl) = tree_cons (get_identifier ("cold"),
+					NULL, DECL_ATTRIBUTES (decl));
   if (flags & ECF_RET1)
     DECL_ATTRIBUTES (decl)
       = tree_cons (get_identifier ("fn spec"),
@@ -10632,11 +10677,11 @@ build_common_builtin_nodes (void)
 			      BUILT_IN_UNREACHABLE,
 			      "__builtin_unreachable",
 			      ECF_NOTHROW | ECF_LEAF | ECF_NORETURN
-			      | ECF_CONST);
+			      | ECF_CONST | ECF_COLD);
       if (!builtin_decl_explicit_p (BUILT_IN_ABORT))
 	local_define_builtin ("__builtin_abort", ftype, BUILT_IN_ABORT,
 			      "abort",
-			      ECF_LEAF | ECF_NORETURN | ECF_CONST);
+			      ECF_LEAF | ECF_NORETURN | ECF_CONST | ECF_COLD);
     }
 
   if (!builtin_decl_explicit_p (BUILT_IN_MEMCPY)
@@ -13096,6 +13141,25 @@ drop_tree_overflow (tree t)
      and drop the flag.  */
   t = copy_node (t);
   TREE_OVERFLOW (t) = 0;
+
+  /* For constants that contain nested constants, drop the flag
+     from those as well.  */
+  if (TREE_CODE (t) == COMPLEX_CST)
+    {
+      if (TREE_OVERFLOW (TREE_REALPART (t)))
+	TREE_REALPART (t) = drop_tree_overflow (TREE_REALPART (t));
+      if (TREE_OVERFLOW (TREE_IMAGPART (t)))
+	TREE_IMAGPART (t) = drop_tree_overflow (TREE_IMAGPART (t));
+    }
+  if (TREE_CODE (t) == VECTOR_CST)
+    {
+      for (unsigned i = 0; i < VECTOR_CST_NELTS (t); ++i)
+	{
+	  tree& elt = VECTOR_CST_ELT (t, i);
+	  if (TREE_OVERFLOW (elt))
+	    elt = drop_tree_overflow (elt);
+	}
+    }
   return t;
 }
 
@@ -13193,18 +13257,26 @@ array_ref_up_bound (tree exp)
   return NULL_TREE;
 }
 
-/* Returns true if REF is an array reference to an array at the end of
-   a structure.  If this is the case, the array may be allocated larger
-   than its upper bound implies.  When ALLOW_COMPREF is true considers
-   REF when it's a COMPONENT_REF in addition ARRAY_REF and
-   ARRAY_RANGE_REF.  */
+/* Returns true if REF is an array reference or a component reference
+   to an array at the end of a structure.
+   If this is the case, the array may be allocated larger
+   than its upper bound implies.  */
 
 bool
-array_at_struct_end_p (tree ref, bool allow_compref)
+array_at_struct_end_p (tree ref)
 {
-  if (TREE_CODE (ref) != ARRAY_REF
-      && TREE_CODE (ref) != ARRAY_RANGE_REF
-      && (!allow_compref || TREE_CODE (ref) != COMPONENT_REF))
+  tree atype;
+
+  if (TREE_CODE (ref) == ARRAY_REF
+      || TREE_CODE (ref) == ARRAY_RANGE_REF)
+    {
+      atype = TREE_TYPE (TREE_OPERAND (ref, 0));
+      ref = TREE_OPERAND (ref, 0);
+    }
+  else if (TREE_CODE (ref) == COMPONENT_REF
+	   && TREE_CODE (TREE_TYPE (TREE_OPERAND (ref, 1))) == ARRAY_TYPE)
+    atype = TREE_TYPE (TREE_OPERAND (ref, 1));
+  else
     return false;
 
   while (handled_component_p (ref))
@@ -13212,18 +13284,41 @@ array_at_struct_end_p (tree ref, bool allow_compref)
       /* If the reference chain contains a component reference to a
          non-union type and there follows another field the reference
 	 is not at the end of a structure.  */
-      if (TREE_CODE (ref) == COMPONENT_REF
-	  && TREE_CODE (TREE_TYPE (TREE_OPERAND (ref, 0))) == RECORD_TYPE)
+      if (TREE_CODE (ref) == COMPONENT_REF)
 	{
-	  tree nextf = DECL_CHAIN (TREE_OPERAND (ref, 1));
-	  while (nextf && TREE_CODE (nextf) != FIELD_DECL)
-	    nextf = DECL_CHAIN (nextf);
-	  if (nextf)
-	    return false;
+	  if (TREE_CODE (TREE_TYPE (TREE_OPERAND (ref, 0))) == RECORD_TYPE)
+	    {
+	      tree nextf = DECL_CHAIN (TREE_OPERAND (ref, 1));
+	      while (nextf && TREE_CODE (nextf) != FIELD_DECL)
+		nextf = DECL_CHAIN (nextf);
+	      if (nextf)
+		return false;
+	    }
 	}
+      /* If we have a multi-dimensional array we do not consider
+         a non-innermost dimension as flex array if the whole
+	 multi-dimensional array is at struct end.
+	 Same for an array of aggregates with a trailing array
+	 member.  */
+      else if (TREE_CODE (ref) == ARRAY_REF)
+	return false;
+      else if (TREE_CODE (ref) == ARRAY_RANGE_REF)
+	;
+      /* If we view an underlying object as sth else then what we
+         gathered up to now is what we have to rely on.  */
+      else if (TREE_CODE (ref) == VIEW_CONVERT_EXPR)
+	break;
+      else
+	gcc_unreachable ();
 
       ref = TREE_OPERAND (ref, 0);
     }
+
+  /* The array now is at struct end.  Treat flexible arrays as
+     always subject to extend, even into just padding constrained by
+     an underlying decl.  */
+  if (! TYPE_SIZE (atype))
+    return true;
 
   tree size = NULL;
 

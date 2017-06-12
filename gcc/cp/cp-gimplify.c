@@ -88,25 +88,6 @@ finish_bc_block (tree *block, enum bc_t bc, tree label)
   DECL_CHAIN (label) = NULL_TREE;
 }
 
-/* This function is a wrapper for cilk_gimplify_call_params_in_spawned_fn.
-   *EXPR_P can be a CALL_EXPR, INIT_EXPR, MODIFY_EXPR, AGGR_INIT_EXPR or
-   TARGET_EXPR.  *PRE_P and *POST_P are gimple sequences from the caller
-   of gimplify_cilk_spawn.  */
-
-static void
-cilk_cp_gimplify_call_params_in_spawned_fn (tree *expr_p, gimple_seq *pre_p,
-					    gimple_seq *post_p)
-{
-  int ii = 0;
-
-  cilk_gimplify_call_params_in_spawned_fn (expr_p, pre_p);
-  if (TREE_CODE (*expr_p) == AGGR_INIT_EXPR)
-    for (ii = 0; ii < aggr_init_expr_nargs (*expr_p); ii++)
-      gimplify_expr (&AGGR_INIT_EXPR_ARG (*expr_p, ii), pre_p, post_p,
-		     is_gimple_reg, fb_rvalue);
-}
-
-
 /* Get the LABEL_EXPR to represent a break or continue statement
    in the current block scope.  BC indicates which.  */
 
@@ -169,7 +150,7 @@ genericize_eh_spec_block (tree *stmt_p)
 {
   tree body = EH_SPEC_STMTS (*stmt_p);
   tree allowed = EH_SPEC_RAISES (*stmt_p);
-  tree failure = build_call_n (call_unexpected_node, 1, build_exc_ptr ());
+  tree failure = build_call_n (call_unexpected_fn, 1, build_exc_ptr ());
 
   *stmt_p = build_gimple_eh_filter_tree (body, allowed, failure);
   TREE_NO_WARNING (*stmt_p) = true;
@@ -496,9 +477,8 @@ cp_gimplify_init_expr (tree *expr_p)
 	    TREE_TYPE (from) = void_type_node;
 	}
 
-      if (cxx_dialect >= cxx14 && TREE_CODE (sub) == CONSTRUCTOR)
-	/* Handle aggregate NSDMI.  */
-	replace_placeholders (sub, to);
+      /* Handle aggregate NSDMI.  */
+      replace_placeholders (sub, to);
 
       if (t == sub)
 	break;
@@ -521,7 +501,7 @@ gimplify_must_not_throw_expr (tree *expr_p, gimple_seq *pre_p)
   gimple *mnt;
 
   gimplify_and_add (body, &try_);
-  mnt = gimple_build_eh_must_not_throw (terminate_node);
+  mnt = gimple_build_eh_must_not_throw (terminate_fn);
   gimple_seq_add_stmt_without_update (&catch_, mnt);
   mnt = gimple_build_try (try_, catch_, GIMPLE_TRY_CATCH);
 
@@ -549,6 +529,7 @@ simple_empty_class_p (tree type, tree op)
   return
     ((TREE_CODE (op) == COMPOUND_EXPR
       && simple_empty_class_p (type, TREE_OPERAND (op, 1)))
+     || TREE_CODE (op) == EMPTY_CLASS_EXPR
      || is_gimple_lvalue (op)
      || INDIRECT_REF_P (op)
      || (TREE_CODE (op) == CONSTRUCTOR
@@ -647,11 +628,7 @@ cp_gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
       if (fn_contains_cilk_spawn_p (cfun))
 	{
 	  if (cilk_cp_detect_spawn_and_unwrap (expr_p))
-	    {
-	      cilk_cp_gimplify_call_params_in_spawned_fn (expr_p,
-							  pre_p, post_p);
-	      return (enum gimplify_status) gimplify_cilk_spawn (expr_p);
-	    }
+	    return (enum gimplify_status) gimplify_cilk_spawn (expr_p);
 	  if (seen_error () && contains_cilk_spawn_stmt (*expr_p))
 	    return GS_ERROR;
 	}
@@ -666,10 +643,7 @@ cp_gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
 	if (fn_contains_cilk_spawn_p (cfun)
 	    && cilk_cp_detect_spawn_and_unwrap (expr_p)
 	    && !seen_error ())
-	  {
-	    cilk_cp_gimplify_call_params_in_spawned_fn (expr_p, pre_p, post_p);
-	    return (enum gimplify_status) gimplify_cilk_spawn (expr_p);
-	  }
+	  return (enum gimplify_status) gimplify_cilk_spawn (expr_p);
 	/* If the back end isn't clever enough to know that the lhs and rhs
 	   types are the same, add an explicit conversion.  */
 	tree op0 = TREE_OPERAND (*expr_p, 0);
@@ -787,20 +761,14 @@ cp_gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
 		 && cilk_cp_detect_spawn_and_unwrap (expr_p));
 
       if (!seen_error ())
-	{
-	  cilk_cp_gimplify_call_params_in_spawned_fn (expr_p, pre_p, post_p);
-	  return (enum gimplify_status) gimplify_cilk_spawn (expr_p);
-	}
+        return (enum gimplify_status) gimplify_cilk_spawn (expr_p);
       return GS_ERROR;
 
     case CALL_EXPR:
       if (fn_contains_cilk_spawn_p (cfun)
 	  && cilk_cp_detect_spawn_and_unwrap (expr_p)
 	  && !seen_error ())
-	{
-	  cilk_cp_gimplify_call_params_in_spawned_fn (expr_p, pre_p, post_p);
-	  return (enum gimplify_status) gimplify_cilk_spawn (expr_p);
-	}
+        return (enum gimplify_status) gimplify_cilk_spawn (expr_p);
       ret = GS_OK;
       if (!CALL_EXPR_FN (*expr_p))
 	/* Internal function call.  */;
@@ -1126,6 +1094,19 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
 	  *stmt_p = h->to;
 	  *walk_subtrees = 0;
 	  return NULL;
+	}
+    }
+
+  if (TREE_CODE (stmt) == INTEGER_CST
+      && TREE_CODE (TREE_TYPE (stmt)) == REFERENCE_TYPE
+      && (flag_sanitize & (SANITIZE_NULL | SANITIZE_ALIGNMENT))
+      && !wtd->no_sanitize_p)
+    {
+      ubsan_maybe_instrument_reference (stmt_p);
+      if (*stmt_p != stmt)
+	{
+	  *walk_subtrees = 0;
+	  return NULL_TREE;
 	}
     }
 
@@ -1476,7 +1457,7 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
       if ((flag_sanitize & (SANITIZE_NULL | SANITIZE_ALIGNMENT))
 	  && TREE_CODE (stmt) == NOP_EXPR
 	  && TREE_CODE (TREE_TYPE (stmt)) == REFERENCE_TYPE)
-	ubsan_maybe_instrument_reference (stmt);
+	ubsan_maybe_instrument_reference (stmt_p);
       else if (TREE_CODE (stmt) == CALL_EXPR)
 	{
 	  tree fn = CALL_EXPR_FN (stmt);
@@ -1931,7 +1912,11 @@ cxx_omp_finish_clause (tree c, gimple_seq *)
     make_shared = true;
 
   if (make_shared)
-    OMP_CLAUSE_CODE (c) = OMP_CLAUSE_SHARED;
+    {
+      OMP_CLAUSE_CODE (c) = OMP_CLAUSE_SHARED;
+      OMP_CLAUSE_SHARED_FIRSTPRIVATE (c) = 0;
+      OMP_CLAUSE_SHARED_READONLY (c) = 0;
+    }
 }
 
 /* Return true if DECL's DECL_VALUE_EXPR (if any) should be
@@ -1948,20 +1933,6 @@ cxx_omp_disregard_value_expr (tree decl, bool shared)
 	 && DECL_ARTIFICIAL (decl)
 	 && DECL_LANG_SPECIFIC (decl)
 	 && DECL_OMP_PRIVATIZED_MEMBER (decl);
-}
-
-/* Perform folding on expression X.  */
-
-tree
-cp_fully_fold (tree x)
-{
-  if (processing_template_decl)
-    return x;
-  /* FIXME cp_fold ought to be a superset of maybe_constant_value so we don't
-     have to call both.  */
-  if (cxx_dialect >= cxx11)
-    x = maybe_constant_value (x);
-  return cp_fold (x);
 }
 
 /* Fold expression X which is used as an rvalue if RVAL is true.  */
@@ -1993,6 +1964,20 @@ static tree
 cp_fold_rvalue (tree x)
 {
   return cp_fold_maybe_rvalue (x, true);
+}
+
+/* Perform folding on expression X.  */
+
+tree
+cp_fully_fold (tree x)
+{
+  if (processing_template_decl)
+    return x;
+  /* FIXME cp_fold ought to be a superset of maybe_constant_value so we don't
+     have to call both.  */
+  if (cxx_dialect >= cxx11)
+    x = maybe_constant_value (x);
+  return cp_fold_rvalue (x);
 }
 
 /* c-common interface to cp_fold.  If IN_INIT, this is in a static initializer
@@ -2055,6 +2040,14 @@ cp_fold (tree x)
   code = TREE_CODE (x);
   switch (code)
     {
+    case CLEANUP_POINT_EXPR:
+      /* Strip CLEANUP_POINT_EXPR if the expression doesn't have side
+	 effects.  */
+      r = cp_fold_rvalue (TREE_OPERAND (x, 0));
+      if (!TREE_SIDE_EFFECTS (r))
+	x = r;
+      break;
+
     case SIZEOF_EXPR:
       x = fold_sizeof_expr (x);
       break;
@@ -2437,6 +2430,15 @@ cp_fold (tree x)
 	}
 
       x = fold (x);
+      break;
+
+    case SAVE_EXPR:
+      /* A SAVE_EXPR might contain e.g. (0 * i) + (0 * j), which, after
+	 folding, evaluates to an invariant.  In that case no need to wrap
+	 this folded tree with a SAVE_EXPR.  */
+      r = cp_fold (TREE_OPERAND (x, 0));
+      if (tree_invariant_p (r))
+	x = r;
       break;
 
     default:

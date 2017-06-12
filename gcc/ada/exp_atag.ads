@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2006-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 2006-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -54,7 +54,7 @@ package Exp_Atag is
    --  computed in constant time by the formula:
    --
    --   Index := TSD (Obj'Tag).Idepth - TSD (Typ'Tag).Idepth;
-   --   Index > 0 and then TSD (Obj'Tag).Tags_Table (Index) = Typ'Tag
+   --   Index >= 0 and then TSD (Obj'Tag).Tags_Table (Index) = Typ'Tag
    --
    --  Related_Nod is the node where the implicit declaration of variable Index
    --  is inserted. Obj_Tag_Node is relocated.

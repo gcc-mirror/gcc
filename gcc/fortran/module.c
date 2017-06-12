@@ -193,10 +193,6 @@ static const char *module_name;
 /* The name of the .smod file that the submodule will write to.  */
 static const char *submodule_name;
 
-/* Suppress the output of a .smod file by module, if no module
-   procedures have been seen.  */
-static bool no_module_procedures;
-
 static gfc_use_list *module_list;
 
 /* If we're reading an intrinsic module, this is its ID.  */
@@ -635,6 +631,7 @@ gfc_match_use (void)
 
 	case INTERFACE_USER_OP:
 	case INTERFACE_GENERIC:
+	case INTERFACE_DTIO:
 	  m = gfc_match (" =>");
 
 	  if (type == INTERFACE_USER_OP && m == MATCH_YES
@@ -680,7 +677,7 @@ gfc_match_use (void)
 	      || strcmp (new_use->local_name, use_list->module_name) == 0)
 	    {
 	      gfc_error ("The name %qs at %C has already been used as "
-			 "an external module name.", use_list->module_name);
+			 "an external module name", use_list->module_name);
 	      goto cleanup;
 	    }
 	  break;
@@ -744,6 +741,13 @@ gfc_match_submodule (void)
 
   if (!gfc_notify_std (GFC_STD_F2008, "SUBMODULE declaration at %C"))
     return MATCH_ERROR;
+
+  if (gfc_current_state () != COMP_NONE)
+    {
+      gfc_error ("SUBMODULE declaration at %C cannot appear within "
+		 "another scoping unit");
+      return MATCH_ERROR;
+    }
 
   gfc_new_block = NULL;
   gcc_assert (module_list == NULL);
@@ -2243,10 +2247,7 @@ mio_symbol_attribute (symbol_attribute *attr)
       if (attr->array_outer_dependency)
 	MIO_NAME (ab_attribute) (AB_ARRAY_OUTER_DEPENDENCY, attr_bits);
       if (attr->module_procedure)
-	{
 	MIO_NAME (ab_attribute) (AB_MODULE_PROCEDURE, attr_bits);
-	  no_module_procedures = false;
-	}
       if (attr->oacc_declare_create)
 	MIO_NAME (ab_attribute) (AB_OACC_DECLARE_CREATE, attr_bits);
       if (attr->oacc_declare_copyin)
@@ -4292,31 +4293,6 @@ mio_symbol (gfc_symbol *sym)
 
 /************************* Top level subroutines *************************/
 
-/* Given a root symtree node and a symbol, try to find a symtree that
-   references the symbol that is not a unique name.  */
-
-static gfc_symtree *
-find_symtree_for_symbol (gfc_symtree *st, gfc_symbol *sym)
-{
-  gfc_symtree *s = NULL;
-
-  if (st == NULL)
-    return s;
-
-  s = find_symtree_for_symbol (st->right, sym);
-  if (s != NULL)
-    return s;
-  s = find_symtree_for_symbol (st->left, sym);
-  if (s != NULL)
-    return s;
-
-  if (st->n.sym == sym && !check_unique_name (st->name))
-    return st;
-
-  return s;
-}
-
-
 /* A recursive function to look for a specific symbol by name and by
    module.  Whilst several symtrees might point to one symbol, its
    is sufficient for the purposes here than one exist.  Note that
@@ -5118,16 +5094,6 @@ read_module (void)
 	{
 	  info->u.rsym.referenced = 1;
 	  continue;
-	}
-
-      /* If possible recycle the symtree that references the symbol.
-	 If a symtree is not found and the module does not import one,
-	 a unique-name symtree is found by read_cleanup.  */
-      st = find_symtree_for_symbol (gfc_current_ns->sym_root, sym);
-      if (st != NULL)
-	{
-	  info->u.rsym.symtree = st;
-	  info->u.rsym.referenced = 1;
 	}
     }
 
@@ -6139,6 +6105,18 @@ dump_module (const char *name, int dump_flag)
 }
 
 
+/* Suppress the output of a .smod file by module, if no module
+   procedures have been seen.  */
+static bool no_module_procedures;
+
+static void
+check_for_module_procedures (gfc_symbol *sym)
+{
+  if (sym && sym->attr.module_procedure)
+    no_module_procedures = false;
+}
+
+
 void
 gfc_dump_module (const char *name, int dump_flag)
 {
@@ -6148,6 +6126,8 @@ gfc_dump_module (const char *name, int dump_flag)
     dump_smod =false;
 
   no_module_procedures = true;
+  gfc_traverse_ns (gfc_current_ns, check_for_module_procedures);
+
   dump_module (name, dump_flag);
 
   if (no_module_procedures || dump_smod)
@@ -6996,7 +6976,7 @@ gfc_use_module (gfc_use_list *module)
   for (p = gfc_state_stack; p; p = p->previous)
     if ((p->state == COMP_MODULE || p->state == COMP_SUBMODULE)
 	 && strcmp (p->sym->name, module_name) == 0)
-      gfc_fatal_error ("Can't USE the same %smodule we're building!",
+      gfc_fatal_error ("Can't USE the same %smodule we're building",
 		       p->state == COMP_SUBMODULE ? "sub" : "");
 
   init_pi_tree ();

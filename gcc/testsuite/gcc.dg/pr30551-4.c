@@ -3,6 +3,6 @@
 /* { dg-options "-pedantic-errors -Wno-main" } */
 
 void main(char a) {} /* { dg-bogus "first argument of .main. should be .int." "int" } */
-/* { dg-bogus ".main. takes only zero or two arguments" "zero or two" { target *-*-* } 5 } */ 
-/* { dg-bogus "return type of .main. is not .int." "return type" { target *-*-* } 5 } */ 
+/* { dg-bogus ".main. takes only zero or two arguments" "zero or two" { target *-*-* } .-1 } */ 
+/* { dg-bogus "return type of .main. is not .int." "return type" { target *-*-* } .-2 } */ 
 

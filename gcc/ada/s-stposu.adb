@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2011-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 2011-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -44,7 +44,7 @@ use  System.Storage_Pools.Subpools.Finalization;
 package body System.Storage_Pools.Subpools is
 
    Finalize_Address_Table_In_Use : Boolean := False;
-   --  This flag should be set only when a successfull allocation on a subpool
+   --  This flag should be set only when a successful allocation on a subpool
    --  has been performed and the associated Finalize_Address has been added to
    --  the hash table in System.Finalization_Masters.
 
@@ -221,7 +221,7 @@ package body System.Storage_Pools.Subpools is
          pragma Assert
            (Fin_Address /= null, "primitive Finalize_Address not available");
 
-         --  The size must acount for the hidden header preceding the object.
+         --  The size must account for the hidden header preceding the object.
          --  Account for possible padding space before the header due to a
          --  larger alignment.
 

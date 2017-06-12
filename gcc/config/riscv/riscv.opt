@@ -84,6 +84,10 @@ mcmodel=
 Target Report RejectNegative Joined Enum(code_model) Var(riscv_cmodel) Init(TARGET_DEFAULT_CMODEL)
 Specify the code model.
 
+mstrict-align
+Target Report Mask(STRICT_ALIGN) Save
+Do not generate unaligned memory accesses.
+
 Enum
 Name(code_model) Type(enum riscv_code_model)
 Known code models (for use with the -mcmodel= option):

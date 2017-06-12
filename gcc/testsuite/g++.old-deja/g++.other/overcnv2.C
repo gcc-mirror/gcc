@@ -17,8 +17,8 @@ int main()
 {
   B b;
   if ((const char *)b != 0)  // { dg-warning "choosing 'B" "B" } surprising overload resolution
-  // { dg-warning "for conversion" "conv" { target *-*-* } 19 }
-  // { dg-message "note" "note" { target *-*-* } 19 }
+  // { dg-warning "for conversion" "conv" { target *-*-* } .-1 }
+  // { dg-message "note" "note" { target *-*-* } .-2 }
     return 1;
   if ((const char *)(const B)b == 0)
     return 2;

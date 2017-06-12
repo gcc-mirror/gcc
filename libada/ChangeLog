@@ -1,10 +1,24 @@
+2017-06-01  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/80921
+	* configure.ac (default_gnatlib_target): Remove bogus condition.
+	(have_getipinfo): Tweak.
+	* configure: Regenerate.
+
+2017-05-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* configure.ac: Add check for sys/capability.h header.
+	(have_capability): New substitution.
+	* configure: Regenerate.
+	* Makefile.in (GNATLIBCFLAGS_FOR_C): Add @have_capability@.
+
 2017-01-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR other/79046
 	* configure.ac: Add GCC_BASE_VER.
 	* Makefile.in (version): Use @get_gcc_base_ver@ instead of cat to get
 	version from BASE-VER file.
-	* configure: Regenerated.
+	* configure: Regenerate.
 
 2017-01-04  Alan Modra  <amodra@gmail.com>
 

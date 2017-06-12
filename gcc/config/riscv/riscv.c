@@ -73,6 +73,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "common/common-target.h"
 #include "langhooks.h"
 #include "dominance.h"
+#include "profile-count.h"
 #include "cfg.h"
 #include "cfgrtl.h"
 #include "cfganal.h"
@@ -255,6 +256,7 @@ struct riscv_tune_info
   unsigned short issue_rate;
   unsigned short branch_cost;
   unsigned short memory_cost;
+  bool slow_unaligned_access;
 };
 
 /* Information about one CPU we know about.  */
@@ -267,6 +269,9 @@ struct riscv_cpu_info {
 };
 
 /* Global variables for machine-dependent things.  */
+
+/* Whether unaligned accesses execute very slowly.  */
+bool riscv_slow_unaligned_access;
 
 /* Which tuning parameters to use.  */
 static const struct riscv_tune_info *tune_info;
@@ -301,7 +306,8 @@ static const struct riscv_tune_info rocket_tune_info = {
   {COSTS_N_INSNS (6), COSTS_N_INSNS (6)},	/* int_div */
   1,						/* issue_rate */
   3,						/* branch_cost */
-  5						/* memory_cost */
+  5,						/* memory_cost */
+  true,						/* slow_unaligned_access */
 };
 
 /* Costs to use when optimizing for size.  */
@@ -313,12 +319,14 @@ static const struct riscv_tune_info optimize_size_tune_info = {
   {COSTS_N_INSNS (1), COSTS_N_INSNS (1)},	/* int_div */
   1,						/* issue_rate */
   1,						/* branch_cost */
-  2						/* memory_cost */
+  2,						/* memory_cost */
+  false,					/* slow_unaligned_access */
 };
 
 /* A table describing all the processors GCC knows about.  */
 static const struct riscv_cpu_info riscv_cpu_info_table[] = {
   { "rocket", &rocket_tune_info },
+  { "size", &optimize_size_tune_info },
 };
 
 /* Return the riscv_cpu_info entry for the given name string.  */
@@ -726,7 +734,8 @@ riscv_valid_lo_sum_p (enum riscv_symbol_type sym_type, enum machine_mode mode)
   /* We may need to split multiword moves, so make sure that each word
      can be accessed without inducing a carry.  */
   if (GET_MODE_SIZE (mode) > UNITS_PER_WORD
-      && GET_MODE_BITSIZE (mode) > GET_MODE_ALIGNMENT (mode))
+      && (!TARGET_STRICT_ALIGN
+	  || GET_MODE_BITSIZE (mode) > GET_MODE_ALIGNMENT (mode)))
     return false;
 
   return true;
@@ -2089,13 +2098,13 @@ riscv_emit_float_compare (enum rtx_code *code, rtx *op0, rtx *op1)
 
     case UNLT:
       std::swap (cmp_op0, cmp_op1);
-      /* Fall through.  */
+      gcc_fallthrough ();
 
     UNORDERED_COMPARISON(UNGT, le)
 
     case UNLE:
       std::swap (cmp_op0, cmp_op1);
-      /* Fall through.  */
+      gcc_fallthrough ();
 
     UNORDERED_COMPARISON(UNGE, lt)
 #undef UNORDERED_COMPARISON
@@ -2794,7 +2803,7 @@ riscv_print_operand (FILE *file, rtx op, int letter)
 
     case 'F':
       if (riscv_memmodel_needs_release_fence ((enum memmodel) INTVAL (op)))
-	fputs ("fence rw,w; ", file);
+	fputs ("fence iorw,ow; ", file);
       break;
 
     default:
@@ -3629,16 +3638,6 @@ riscv_class_max_nregs (reg_class_t rclass, enum machine_mode mode)
   return 0;
 }
 
-/* Implement TARGET_PREFERRED_RELOAD_CLASS.  */
-
-static reg_class_t
-riscv_preferred_reload_class (rtx x ATTRIBUTE_UNUSED, reg_class_t rclass)
-{
-  return reg_class_subset_p (FP_REGS, rclass) ? FP_REGS :
-	 reg_class_subset_p (GR_REGS, rclass) ? GR_REGS :
-	 rclass;
-}
-
 /* Implement TARGET_MEMORY_MOVE_COST.  */
 
 static int
@@ -3782,6 +3781,12 @@ riscv_option_override (void)
   cpu = riscv_parse_cpu (riscv_tune_string ? riscv_tune_string :
 			 RISCV_TUNE_STRING_DEFAULT);
   tune_info = optimize_size ? &optimize_size_tune_info : cpu->tune_info;
+
+  /* Use -mtune's setting for slow_unaligned_access, even when optimizing
+     for size.  For architectures that trap and emulate unaligned accesses,
+     the performance cost is too great, even for -Os.  */
+  riscv_slow_unaligned_access = (cpu->tune_info->slow_unaligned_access
+				 || TARGET_STRICT_ALIGN);
 
   /* If the user hasn't specified a branch cost, use the processor's
      default.  */
@@ -4030,9 +4035,6 @@ riscv_cannot_copy_insn_p (rtx_insn *insn)
 #define TARGET_RTX_COSTS riscv_rtx_costs
 #undef TARGET_ADDRESS_COST
 #define TARGET_ADDRESS_COST riscv_address_cost
-
-#undef  TARGET_PREFERRED_RELOAD_CLASS
-#define TARGET_PREFERRED_RELOAD_CLASS riscv_preferred_reload_class
 
 #undef TARGET_ASM_FILE_START
 #define TARGET_ASM_FILE_START riscv_file_start

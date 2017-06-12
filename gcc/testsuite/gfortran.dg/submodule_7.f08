@@ -145,5 +145,3 @@ program main
   call verify_cleanup (c_1, c_2)
 !...
 end program main
-! { dg-final { cleanup-submodules "color_points@color_points_a" } }
-! { dg-final { cleanup-submodules "color_points@color_points_b" } }

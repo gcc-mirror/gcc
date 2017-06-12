@@ -338,7 +338,8 @@
 	     (const_int 2)
 	     (const_int 1))
 	 (eq_attr "type" "sibcall")
-	   (if_then_else (eq_attr "leaf_function" "true")
+	   (if_then_else (ior (eq_attr "leaf_function" "true")
+	                      (eq_attr "flat" "true"))
 	     (if_then_else (eq_attr "empty_delay_slot" "true")
 	       (const_int 3)
 	       (const_int 2))
@@ -3013,7 +3014,7 @@
    srl\t%1, 0, %0
    lduw\t%1, %0
    movstouw\t%1, %0"
-  [(set_attr "type" "shift,load,*")
+  [(set_attr "type" "shift,load,vismv")
    (set_attr "cpu_feature" "*,*,vis3")
    (set_attr "v3pipe" "*,*,true")])
 
@@ -3328,7 +3329,7 @@
   sra\t%1, 0, %0
   ldsw\t%1, %0
   movstosw\t%1, %0"
-  [(set_attr "type" "shift,sload,*")
+  [(set_attr "type" "shift,sload,vismv")
    (set_attr "us3load_type" "*,3cycle,*")
    (set_attr "cpu_feature" "*,*,vis3")
    (set_attr "v3pipe" "*,*,true")])

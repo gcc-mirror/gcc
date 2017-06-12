@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -327,6 +327,19 @@ package Lib is
    --      N_String_Literal node from a valid pragma Ident that applies to
    --      this unit. If no Ident pragma applies to the unit, then Empty.
 
+   --    Is_Predefined_Renaming
+   --      True if this unit is a predefined renaming, as in "Text_IO renames
+   --      Ada.Text_IO").
+
+   --    Is_Internal_Unit
+   --      Same as In_Predefined_Unit, except units in the GNAT hierarchy are
+   --      included.
+
+   --    Is_Predefined_Unit
+   --      True if this unit is predefined (i.e. part of the Ada, System, or
+   --      Interface hierarchies, or Is_Predefined_Renaming). Note that units
+   --      in the GNAT hierarchy are not considered predefined.
+
    --    Loading
    --      A flag that is used to catch circular WITH dependencies. It is set
    --      True when an entry is initially created in the file table, and set
@@ -428,6 +441,9 @@ package Lib is
    function Generate_Code    (U : Unit_Number_Type) return Boolean;
    function Ident_String     (U : Unit_Number_Type) return Node_Id;
    function Has_RACW         (U : Unit_Number_Type) return Boolean;
+   function Is_Predefined_Renaming (U : Unit_Number_Type) return Boolean;
+   function Is_Internal_Unit       (U : Unit_Number_Type) return Boolean;
+   function Is_Predefined_Unit     (U : Unit_Number_Type) return Boolean;
    function Loading          (U : Unit_Number_Type) return Boolean;
    function Main_CPU         (U : Unit_Number_Type) return Int;
    function Main_Priority    (U : Unit_Number_Type) return Int;
@@ -493,7 +509,7 @@ package Lib is
    --  Return the Nth stored compilation switch, or null if less than N
    --  switches have been stored. Used by ASIS and back ends written in Ada.
 
-   function Generic_May_Lack_ALI (Sfile : File_Name_Type) return Boolean;
+   function Generic_May_Lack_ALI (Unum : Unit_Number_Type) return Boolean;
    --  Generic units must be separately compiled. Since we always use
    --  macro substitution for generics, the resulting object file is a dummy
    --  one with no code, but the ALI file has the normal form, and we need
@@ -597,7 +613,19 @@ package Lib is
    --  of the descendant packages of one of these three packages).
 
    function In_Predefined_Unit (S : Source_Ptr) return Boolean;
+   pragma Inline (In_Predefined_Unit);
    --  Same function as above but argument is a source pointer
+
+   function In_Internal_Unit (N : Node_Or_Entity_Id) return Boolean;
+   function In_Internal_Unit (S : Source_Ptr) return Boolean;
+   pragma Inline (In_Internal_Unit);
+   --  Same as In_Predefined_Unit, except units in the GNAT hierarchy are
+   --  included.
+
+   function In_Predefined_Renaming (N : Node_Or_Entity_Id) return Boolean;
+   function In_Predefined_Renaming (S : Source_Ptr) return Boolean;
+   pragma Inline (In_Predefined_Renaming);
+   --  Returns True if N or S is in a predefined renaming unit
 
    function In_Same_Code_Unit (N1, N2 : Node_Or_Entity_Id) return Boolean;
    pragma Inline (In_Same_Code_Unit);
@@ -771,6 +799,9 @@ private
    pragma Inline (Set_Fatal_Error);
    pragma Inline (Set_Generate_Code);
    pragma Inline (Set_Has_RACW);
+   pragma Inline (Is_Predefined_Renaming);
+   pragma Inline (Is_Internal_Unit);
+   pragma Inline (Is_Predefined_Unit);
    pragma Inline (Set_Loading);
    pragma Inline (Set_Main_CPU);
    pragma Inline (Set_Main_Priority);
@@ -806,7 +837,11 @@ private
       Filler            : Boolean;
       Loading           : Boolean;
       OA_Setting        : Character;
-      SPARK_Mode_Pragma : Node_Id;
+
+      Is_Predefined_Renaming : Boolean;
+      Is_Internal_Unit       : Boolean;
+      Is_Predefined_Unit     : Boolean;
+      Filler2                : Boolean;
    end record;
 
    --  The following representation clause ensures that the above record
@@ -836,7 +871,11 @@ private
       Filler            at 61 range 0 ..  7;
       OA_Setting        at 62 range 0 ..  7;
       Loading           at 63 range 0 ..  7;
-      SPARK_Mode_Pragma at 64 range 0 .. 31;
+
+      Is_Predefined_Renaming at 64 range 0 .. 7;
+      Is_Internal_Unit       at 65 range 0 .. 7;
+      Is_Predefined_Unit     at 66 range 0 .. 7;
+      Filler2                at 67 range 0 .. 7;
    end record;
 
    for Unit_Record'Size use 68 * 8;

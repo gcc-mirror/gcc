@@ -1196,7 +1196,7 @@ substitute_and_fold (ssa_prop_get_value_fn get_value_fn,
       if (dump_file && dump_flags & TDF_DETAILS)
 	{
 	  fprintf (dump_file, "Removing dead stmt ");
-	  print_gimple_stmt (dump_file, stmt, 0, 0);
+	  print_gimple_stmt (dump_file, stmt, 0);
 	  fprintf (dump_file, "\n");
 	}
       prop_stats.num_dce++;
@@ -1224,7 +1224,7 @@ substitute_and_fold (ssa_prop_get_value_fn get_value_fn,
       if (dump_file && dump_flags & TDF_DETAILS)
 	{
 	  fprintf (dump_file, "Fixing up noreturn call ");
-	  print_gimple_stmt (dump_file, stmt, 0, 0);
+	  print_gimple_stmt (dump_file, stmt, 0);
 	  fprintf (dump_file, "\n");
 	}
       fixup_noreturn_call (stmt);

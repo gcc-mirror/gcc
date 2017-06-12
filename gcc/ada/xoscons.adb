@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2008-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 2008-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -26,7 +26,7 @@
 --  The base name of the template file is given by Argument (1). This program
 --  generates the spec for this specified unit (let's call it UNIT_NAME).
 
---  It works in conjunction with a C template file which must be pre-processed
+--  It works in conjunction with a C template file which must be preprocessed
 --  and compiled using the cross compiler. Two input files are used:
 --    - the preprocessed C file: UNIT_NAME-tmplt.i
 --    - the generated assembly file: UNIT_NAME-tmplt.s

@@ -330,7 +330,9 @@ namespace gccjit
     gcc_jit_type *get_inner_type () const;
 
     type get_pointer ();
+    type get_const ();
     type get_volatile ();
+    type get_aligned (size_t alignment_in_bytes);
 
     // Shortcuts for getting values of numeric types:
     rvalue zero ();
@@ -1286,9 +1288,22 @@ type::get_pointer ()
 }
 
 inline type
+type::get_const ()
+{
+  return type (gcc_jit_type_get_const (get_inner_type ()));
+}
+
+inline type
 type::get_volatile ()
 {
   return type (gcc_jit_type_get_volatile (get_inner_type ()));
+}
+
+inline type
+type::get_aligned (size_t alignment_in_bytes)
+{
+  return type (gcc_jit_type_get_aligned (get_inner_type (),
+					 alignment_in_bytes));
 }
 
 inline rvalue

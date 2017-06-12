@@ -1,3 +1,427 @@
+2017-06-10  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/80988
+	* frontend-passes.c (traverse_io_block):  Also
+	check for variables occurring as indices multiple
+	time in a single implied DO loop.
+
+2017-06-05  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/70601
+	* trans-expr.c (gfc_conv_procedure_call): Fix detection of allocatable
+	function results.
+
+2017-06-05  Nicolas Koenig  <koenigni@student.ethz.ch>
+
+	PR fortran/35339
+	* frontend-passes.c (traverse_io_block): New function.
+	(simplify_io_impl_do): New function.
+	(optimize_namespace): Invoke gfc_code_walker with
+	simplify_io_impl_do.
+
+2017-06-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/80918
+	* openmp.c (resolve_omp_clauses): Fix a typo.
+
+2017-05-30  David Malcolm  <dmalcolm@redhat.com>
+
+	* error.c (gfc_format_decoder): Update for new bool and
+	const char ** params.
+
+2017-05-29  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/37131
+	* frontend-passes.c (check_conjg_transpose_variable):
+	Add prototype.
+	(has_dimen_vector_ref):  Likewise
+	(matmul_temp_args):  New function. Add prototype.
+	(optimize_namespace):  Call matmul_temp_args.
+
+2017-05-28  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* frontend-passes.c (matmul_lhs_realloc):  Correct
+	allocation size for case A1B2.
+
+2017-05-25  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* dump-parse-tree.c (show_expr):  Also replace
+	with dumpfile for showing values for forgotten
+	case.
+
+2017-05-24  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* dump-parse-tree.c (show_expr):  Replace stdout
+	with dumpfile for showing values.
+
+2017-05-24  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/66094
+	* frontend-passes.c (matrix_case):  Add A2TB2.
+	(inline_limit_check):  Handle MATMUL(TRANSPOSE(A),B)
+	(inline_matmul_assign):  Likewise.
+
+2017-05-23  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* openmp.c (OACC_KERNELS_CLAUSES): Add "OMP_CLAUSE_NUM_GANGS",
+	"OMP_CLAUSE_NUM_WORKERS", "OMP_CLAUSE_VECTOR_LENGTH".
+
+2017-05-22  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/80766
+	* resolve.c (resolve_fl_derived): Make sure that vtype symbols are
+	properly resolved.
+
+2017-05-19  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/80333
+	* trans-io.c (nml_get_addr_expr): If we are dealing with class
+	type data set tmp tree to get that address.
+	(transfer_namelist_element): Set the array spec to point to the
+	the class data.
+
+2017-05-19  David Malcolm  <dmalcolm@redhat.com>
+
+	PR fortran/79852
+	* bbt.c (insert): Remove trailing exclamation mark from message.
+	* decl.c (gfc_match_final_decl): Likewise.
+	* dump-parse-tree.c (show_expr): Likewise.
+	* module.c (gfc_use_module): Likewise.
+	* primary.c (build_actual_constructor): Likewise.
+	(gfc_convert_to_structure_constructor): Likewise.
+
+2017-05-19  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* gfortran.h (enum gfc_omp_default_sharing): Add
+	"OMP_DEFAULT_PRESENT".
+	* dump-parse-tree.c (show_omp_clauses): Handle it.
+	* openmp.c (gfc_match_omp_clauses): Likewise.
+	* trans-openmp.c (gfc_trans_omp_clauses): Likewise.
+
+2017-05-18  Fritz Reese <fritzoreese@gmail.com>
+
+	PR fortran/79968
+	* decl.c (match_attr_spec, gfc_match_automatic,
+	gfc_match_static, gfc_match_structure_decl): Unify diagnostic
+	errors regarding -fdec options.
+	* io.c (match_dec_etag, match_dec_vtag, match_dec_ftag): Ditto.
+
+2017-05-17  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/80741
+	* trans-io.c (transfer_namelist_element): Change check from
+	NULL_TREE to null_pointer_node.
+
+2017-05-17  Fritz Reese <fritzoreese@gmail.com>
+
+	PR fortran/80668
+	* expr.c (component_initializer): Don't generate initializers for
+	pointer components.
+	* invoke.texi (-finit-derived): Document.
+
+2017-05-16  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/80554
+	* decl.c (build_sym): In a submodule allow overriding of host
+	associated symbols from the ancestor module with a new
+	declaration.
+
+2017-05-15  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/80674
+	* trans-stmt.c (gfc_trans_integer_select): Remove redundant condition.
+
+2017-05-15  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/80752
+	* expr.c (gfc_generate_initializer):  If type conversion fails,
+	check for error and return NULL.
+
+2017-05-14  Nicolas Koenig  <koenigni@student.ethz.ch>
+
+	PR fortran/80442
+	* array.c (gfc_ref_dimen_size): Simplify stride
+	expression
+	* data.c (gfc_advance_section): Simplify start,
+	end and stride expressions
+	(gfc_advance_section): Simplify start and end
+	expressions
+	(gfc_get_section_index): Simplify start expression
+
+2017-05-13  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	* io.c (gfc_resolve_dt): Fix returns to bool type.
+
+2017-05-11  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/78659
+	* io.c (dtio_procs_present): Add new function to check for DTIO
+	procedures relative to I/O statement READ or WRITE.
+	(gfc_resolve_dt): Add namelist checks using the new function.
+	* resolve.c (dtio_procs_present): Remove function and related
+	namelist checks. (resolve_fl_namelist): Add check specific to
+	Fortran 95 restriction on namelist objects.
+
+2017-05-11  Nathan Sidwell  <nathan@acm.org>
+
+	* trans-decl.c: Include dumpfile.h not tree-dump.h,
+
+2017-05-09  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/79311
+	* resolve.c (gfc_resolve_finalizers): Ensure that derived-type
+	components have a their finalizers resolved, also if the superordinate
+	type itself has a finalizer.
+
+2017-05-08  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/79930
+	* frontend-passes.c (matmul_to_var_expr): New function,
+	add prototype.
+	(matmul_to_var_code):  Likewise.
+	(optimize_namespace):  Use them from gfc_code_walker.
+
+2017-05-05  David Malcolm  <dmalcolm@redhat.com>
+
+	* cpp.c (cb_cpp_error): Replace report_diagnostic
+	with diagnostic_report_diagnostic.
+	* error.c (gfc_warning): Likewise.
+	(gfc_warning_now_at): Likewise.
+	(gfc_warning_now): Likewise.
+	(gfc_warning_internal): Likewise.
+	(gfc_error_now): Likewise.
+	(gfc_fatal_error): Likewise.
+	(gfc_error_opt): Likewise.
+	(gfc_internal_error): Likewise.
+
+2017-05-01  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/37131
+	* frontend-passes.c (inline_matmul_assign): Also check bounds
+	for allocatable lhs and matrix-vector-multiplication.
+
+2017-04-23  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/80484
+	* io.c (format_lex): Check for '/' and set token to FMT_SLASH.
+	(check_format): Move FMT_DT checking code to data_desc section.
+	* module.c (gfc_match_use): Include the case of INTERFACE_DTIO.
+
+2017-04-22  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/80121
+	* trans-types.c (gfc_conv_procedure_call): Deallocate the components
+	of allocatable intent(out) arguments.
+
+2017-04-21  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/80392
+	* trans-types.c (gfc_get_derived_type): Prevent an infinite loop when
+	building a derived type that includes a procedure pointer component
+	with a polymorphic result.
+
+2017-04-17  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/80440
+	* module.c (find_symtree_for_symbol): Delete.
+	(read_module): Remove the call to the above.
+
+2017-04-14  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/80361
+	* class.c (generate_finalization_wrapper): Give the finalization wrapper
+	the recursive attribute.
+
+2017-04-10  Nicolas Koenig  <koenigni@student.ethz.ch>
+	    Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/69498
+	* module.c (gfc_match_submodule): Add error
+	if function is called in the wrong state.
+
+2017-04-10  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/80046
+	* expr.c (gfc_check_pointer_assign): Check if procedure pointer
+	components in a pointer assignment need an explicit interface.
+
+2017-03-18  Nicolas Koenig  <koenigni@student.ethz.ch>
+
+	PR fortran/69498
+	* symbol.c (gfc_delete_symtree): If there is a period in the name, ignore
+	everything before it.
+
+2017-03-28  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/78661
+	* trans-io.c (transfer_namelist_element): Perform a polymorphic call
+	to a DTIO procedure if necessary.
+
+2017-03-25  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/80156
+	PR fortran/79382
+	* decl.c (access_attr_decl): Remove the error for an absent
+	generic DTIO interface and ensure that symbol has the flavor
+	FL_PROCEDURE.
+
+2017-03-22  Dominique d'Humieres  <dominiq@lps.ens.fr>
+
+	PR fortran/79838
+	* module.c: Remove trailing period.
+
+2017-03-22  Dominique d'Humieres  <dominiq@lps.ens.fr>
+
+	PR fortran/79602
+	* decl.c: Replace '%s' with %qs.
+	* expr.c: Likewise.
+	* interface.c: Likewise.
+	* match.c: Likewise.
+	* primary.c: Likewise.
+	* resolve.c: Likewise.
+
+	PR fortran/79844
+	PR fortran/80011
+	* io.c: Remove trailing spaces.
+	* match.c: Likewise.
+	* openmp.c: Likewise.
+	* resolve.c: Likewise.
+	* trans-intrinsic.c: Likewise.
+
+	PR fortran/79853
+	* expr.c: Remove a double spaces.
+
+	PR fortran/79859
+	* primary.c: Remove spurious quotes around %qs.
+
+2017-03-22  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/80142
+	* frontend-passes.c (combine_array_constructor): Take
+	location of new expression from constructor expression instead
+	of constructor.
+
+2017-03-20  Nicolas Koenig  <koenigni@student.ethz.ch>
+
+	PR fortran/39239
+	* symbol.c (check_conflict): Report an error if an EQUIVALENCE
+	object is BIND(C)
+
+2017-03-18  Nicolas Koenig  <koenigni@student.ethz.ch>
+
+	PR fortran/69498
+	* decl.c (add_hidden_procptr_result): Fixed Refs count of the
+	created "ppr@" symbol.
+
+2017-03-18  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/79676
+	* module.c (mio_symbol_attribute): Remove reset of the flag
+	'no_module_procedures'.
+	(check_for_module_procedures): New function. Move declaration
+	of 'no_module_procedures' to above it.
+	(gfc_dump_module): Traverse namespace calling new function.
+
+2017-03-18  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/71838
+	* symbol.c (check_conflict): A dummy procedure in a submodule,
+	module procedure is not an error.
+	(gfc_add_flavor): Ditto.
+
+2017-03-17  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/79841
+	* openmp.c (check_symbol_not_pointer): Adjust diagnostics.
+
+2017-03-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/80010
+	* parse.c (gfc_ascii_statement): Use !$ACC for ST_OACC_ATOMIC
+	and ST_OACC_END_ATOMIC, instead of !ACC.
+	* trans-decl.c (finish_oacc_declare): Use !$ACC instead of $!ACC.
+	* openmp.c (gfc_match_oacc_declare, gfc_match_oacc_wait,
+	gfc_resolve_oacc_declare): Likewise.
+
+	PR fortran/79886
+	* error.c (gfc_format_decoder): Rename plus argument to set_locus,
+	remove ATTRIBUTE_UNUSED from all arguments, call default_tree_printer
+	if not a Fortran specific spec.
+	* trans-io.c: Include options.h.
+	(gfc_build_st_parameter): Temporarily disable -Wpadded around layout
+	of artificial IO data structures.
+
+2017-03-15  David Malcolm  <dmalcolm@redhat.com>
+
+	PR fortran/79860
+	* resolve.c (resolve_contained_fntype): Make error messages more
+	amenable to translation.
+
+2017-03-06  Richard Biener  <rguenther@suse.de>
+
+	PR fortran/79894
+	* trans.c (gfc_add_modify_loc): Weaken assert.
+
+2017-03-05  Andre Vehreschild  <vehre@gcc.gnu.org>,
+	    Alessandro Fanfarillo  <fanfarillo.gcc@gmail.com>
+
+	* check.c (positive_check): Add new function checking constant for
+	being greater then zero.
+	(gfc_check_image_status): Add checking of image_status arguments.
+	(gfc_check_failed_or_stopped_images): Same but for failed_- and
+	stopped_images function.
+	* dump-parse-tree.c (show_code_node): Added output of FAIL IMAGE.
+	* gfortran.h (enum gfc_statement): Added FAIL_IMAGE_ST.
+	(enum gfc_isym_id): Added new intrinsic symbols.
+	(enum gfc_exec_op): Added EXEC_FAIL_IMAGE.
+	* gfortran.texi: Added description for the new API functions. Updated
+	coverage of gfortran of TS18508.
+	* intrinsic.c (add_functions): Added symbols to resolve new intrinsic
+	functions.
+	* intrinsic.h: Added prototypes.
+	* iresolve.c (gfc_resolve_failed_images): Resolve the failed_images
+	intrinsic.
+	(gfc_resolve_image_status): Same for image_status.
+	(gfc_resolve_stopped_images): Same for stopped_images.
+	* libgfortran.h: Added prototypes.
+	* match.c (gfc_match_if): Added matching of FAIL IMAGE statement.
+	(gfc_match_fail_image): Match a FAIL IMAGE statement.
+	* match.h: Added prototype.
+	* parse.c (decode_statement): Added matching for FAIL IMAGE.
+	(next_statement): Same.
+	(gfc_ascii_statement): Same.
+	* resolve.c: Same.
+	* simplify.c (gfc_simplify_failed_or_stopped_images): For COARRAY=
+	single a constant result can be returne.d
+	(gfc_simplify_image_status): For COARRAY=single the result is constant.
+	* st.c (gfc_free_statement): Added FAIL_IMAGE handling.
+	* trans-decl.c (gfc_build_builtin_function_decls): Added decls of the
+	new intrinsics.
+	* trans-expr.c (gfc_conv_procedure_call): This is first time all
+	arguments of a function are optional, which is now handled here
+	correctly.
+	* trans-intrinsic.c (conv_intrinsic_image_status): Translate
+	image_status.
+	(gfc_conv_intrinsic_function): Add support for image_status.
+	(gfc_is_intrinsic_libcall): Add support for the remaining new
+	intrinsics.
+	* trans-stmt.c (gfc_trans_fail_image): Trans a fail image.
+	* trans-stmt.h: Add the prototype for the above.
+	* trans.c (trans_code): Dispatch for fail_image.
+	* trans.h: Add the trees for the new intrinsics.
+
+2017-03-03  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/79841
+	* openmp.c (check_symbol_not_pointer): Adjust diagnostic.
+
+2017-02-28  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/79739
+	* resolve.c (resolve_fl_procedure): Deal with the case where
+	'submodule_name' is NULL so that gfc_error does not ICE.
+	Reformat the error message to make it more consistent.
+
 2017-02-28  Jakub Jelinek  <jakub@redhat.com>
 
 	* parse.c (parse_critical_block): Use cond ? G_("...") : G_("...")

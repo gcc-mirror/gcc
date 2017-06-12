@@ -9,8 +9,8 @@ struct PC
 
 void PC1( /* { dg-bogus "variable or field .PC1. declared void" "TODO" { xfail c++ } } */
 #pragma acc routine
-	 /* { dg-error ".#pragma acc routine. must be at file scope" "" { target c } 11 }
-	    { dg-error ".#pragma. is not allowed here" "" { target c++ } 11 } */
+	 /* { dg-error ".#pragma acc routine. must be at file scope" "" { target c } .-1 }
+	    { dg-error ".#pragma. is not allowed here" "" { target c++ } .-2 } */
 ) /* { dg-bogus "expected declaration specifiers or .\\.\\.\\.. before .\\). token" "TODO" { xfail c } } */
 {
 }

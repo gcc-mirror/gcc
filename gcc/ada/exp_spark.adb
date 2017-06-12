@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -26,6 +26,7 @@
 with Atree;    use Atree;
 with Checks;   use Checks;
 with Einfo;    use Einfo;
+with Exp_Ch4;
 with Exp_Ch5;  use Exp_Ch5;
 with Exp_Dbug; use Exp_Dbug;
 with Exp_Util; use Exp_Util;
@@ -33,6 +34,7 @@ with Namet;    use Namet;
 with Nlists;   use Nlists;
 with Nmake;    use Nmake;
 with Rtsfind;  use Rtsfind;
+with Sem;      use Sem;
 with Sem_Eval; use Sem_Eval;
 with Sem_Res;  use Sem_Res;
 with Sem_Util; use Sem_Util;
@@ -48,12 +50,21 @@ package body Exp_SPARK is
    -- Local Subprograms --
    -----------------------
 
-   procedure Expand_SPARK_Attribute_Reference (N : Node_Id);
+   procedure Expand_SPARK_N_Attribute_Reference (N : Node_Id);
    --  Replace occurrences of System'To_Address by calls to
    --  System.Storage_Elements.To_Address
 
+   procedure Expand_SPARK_Freeze_Type (E : Entity_Id);
+   --  Build the DIC procedure of a type when needed, if not already done
+
+   procedure Expand_SPARK_N_Object_Declaration (N : Node_Id);
+   --  Perform object-declaration-specific expansion
+
    procedure Expand_SPARK_N_Object_Renaming_Declaration (N : Node_Id);
    --  Perform name evaluation for a renamed object
+
+   procedure Expand_SPARK_Op_Ne (N : Node_Id);
+   --  Rewrite operator /= based on operator = when defined explicitly
 
    ------------------
    -- Expand_SPARK --
@@ -81,19 +92,16 @@ package body Exp_SPARK is
          =>
             Qualify_Entity_Names (N);
 
+         --  Replace occurrences of System'To_Address by calls to
+         --  System.Storage_Elements.To_Address.
+
+         when N_Attribute_Reference =>
+            Expand_SPARK_N_Attribute_Reference (N);
+
          when N_Expanded_Name
             | N_Identifier
          =>
             Expand_SPARK_Potential_Renaming (N);
-
-         when N_Object_Renaming_Declaration =>
-            Expand_SPARK_N_Object_Renaming_Declaration (N);
-
-         --  Replace occurrences of System'To_Address by calls to
-         --  System.Storage_Elements.To_Address
-
-         when N_Attribute_Reference =>
-            Expand_SPARK_Attribute_Reference (N);
 
          --  Loop iterations over arrays need to be expanded, to avoid getting
          --  two names referring to the same object in memory (the array and
@@ -115,6 +123,20 @@ package body Exp_SPARK is
                end if;
             end;
 
+         when N_Object_Declaration =>
+            Expand_SPARK_N_Object_Declaration (N);
+
+         when N_Object_Renaming_Declaration =>
+            Expand_SPARK_N_Object_Renaming_Declaration (N);
+
+         when N_Op_Ne =>
+            Expand_SPARK_Op_Ne (N);
+
+         when N_Freeze_Entity =>
+            if Is_Type (Entity (N)) then
+               Expand_SPARK_Freeze_Type (Entity (N));
+            end if;
+
          --  In SPARK mode, no other constructs require expansion
 
          when others =>
@@ -122,11 +144,11 @@ package body Exp_SPARK is
       end case;
    end Expand_SPARK;
 
-   --------------------------------------
-   -- Expand_SPARK_Attribute_Reference --
-   --------------------------------------
+   ----------------------------------------
+   -- Expand_SPARK_N_Attribute_Reference --
+   ----------------------------------------
 
-   procedure Expand_SPARK_Attribute_Reference (N : Node_Id) is
+   procedure Expand_SPARK_N_Attribute_Reference (N : Node_Id) is
       Aname   : constant Name_Id      := Attribute_Name (N);
       Attr_Id : constant Attribute_Id := Get_Attribute_Id (Aname);
       Loc     : constant Source_Ptr   := Sloc (N);
@@ -224,7 +246,46 @@ package body Exp_SPARK is
             end if;
          end;
       end if;
-   end Expand_SPARK_Attribute_Reference;
+   end Expand_SPARK_N_Attribute_Reference;
+
+   ------------------------------
+   -- Expand_SPARK_Freeze_Type --
+   ------------------------------
+
+   procedure Expand_SPARK_Freeze_Type (E : Entity_Id) is
+   begin
+      --  When a DIC is inherited by a tagged type, it may need to be
+      --  specialized to the descendant type, hence build a separate DIC
+      --  procedure for it as done during regular expansion for compilation.
+
+      if Has_DIC (E) and then Is_Tagged_Type (E) then
+         Build_DIC_Procedure_Body (E, For_Freeze => True);
+      end if;
+   end Expand_SPARK_Freeze_Type;
+
+   ---------------------------------------
+   -- Expand_SPARK_N_Object_Declaration --
+   ---------------------------------------
+
+   procedure Expand_SPARK_N_Object_Declaration (N : Node_Id) is
+      Def_Id : constant Entity_Id  := Defining_Identifier (N);
+      Loc    : constant Source_Ptr := Sloc (N);
+      Typ    : constant Entity_Id  := Etype (Def_Id);
+
+   begin
+      --  If the object declaration denotes a variable without initialization
+      --  whose type is subject to pragma Default_Initial_Condition, create
+      --  and analyze a dummy call to the DIC procedure of the type in order
+      --  to detect potential elaboration issues.
+
+      if Comes_From_Source (Def_Id)
+        and then Has_DIC (Typ)
+        and then Present (DIC_Procedure (Typ))
+        and then not Has_Init_Expression (N)
+      then
+         Analyze (Build_DIC_Call (Loc, Def_Id, Typ));
+      end if;
+   end Expand_SPARK_N_Object_Declaration;
 
    ------------------------------------------------
    -- Expand_SPARK_N_Object_Renaming_Declaration --
@@ -236,6 +297,26 @@ package body Exp_SPARK is
 
       Evaluate_Name (Name (N));
    end Expand_SPARK_N_Object_Renaming_Declaration;
+
+   ------------------------
+   -- Expand_SPARK_Op_Ne --
+   ------------------------
+
+   procedure Expand_SPARK_Op_Ne (N : Node_Id) is
+      Typ : constant Entity_Id := Etype (Left_Opnd (N));
+
+   begin
+      --  Case of elementary type with standard operator
+
+      if Is_Elementary_Type (Typ)
+        and then Sloc (Entity (N)) = Standard_Location
+      then
+         null;
+
+      else
+         Exp_Ch4.Expand_N_Op_Ne (N);
+      end if;
+   end Expand_SPARK_Op_Ne;
 
    -------------------------------------
    -- Expand_SPARK_Potential_Renaming --

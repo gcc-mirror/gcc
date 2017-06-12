@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -45,7 +45,7 @@
 --  time (in terms of source lines executed):
 
 --    Expanded_Name, Wide_Expanded_Name, Wide_Wide_Expanded_Name, External_Tag,
---    Is_Descendant_At_Same_Level, Parent_Tag, Type_Is_Abstract
+--    Is_Abstract, Is_Descendant_At_Same_Level, Parent_Tag,
 --    Descendant_Tag (when used with a library-level tagged type),
 --    Internal_Tag (when used with a library-level tagged type).
 
@@ -105,8 +105,8 @@ package Ada.Tags is
    function Interface_Ancestor_Tags (T : Tag) return Tag_Array;
    pragma Ada_05 (Interface_Ancestor_Tags);
 
-   function Type_Is_Abstract (T : Tag) return Boolean;
-   pragma Ada_2012 (Type_Is_Abstract);
+   function Is_Abstract (T : Tag) return Boolean;
+   pragma Ada_2012 (Is_Abstract);
 
    Tag_Error : exception;
 
@@ -138,7 +138,7 @@ private
    --                                    +-------------------+
    --                                    |   transportable   |
    --                                    +-------------------+
-   --                                    |  type_is_abstract |
+   --                                    |    is_abstract    |
    --                                    +-------------------+
    --                                    | needs finalization|
    --                                    +-------------------+
@@ -318,7 +318,7 @@ private
       --  for being used in remote calls as actuals for classwide formals or as
       --  return values for classwide functions.
 
-      Type_Is_Abstract : Boolean;
+      Is_Abstract : Boolean;
       --  True if the type is abstract (Ada 2012: AI05-0173)
 
       Needs_Finalization : Boolean;

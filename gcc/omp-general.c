@@ -515,11 +515,10 @@ oacc_replace_fn_attrib (tree fn, tree dims)
 
 /* Scan CLAUSES for launch dimensions and attach them to the oacc
    function attribute.  Push any that are non-constant onto the ARGS
-   list, along with an appropriate GOMP_LAUNCH_DIM tag.  IS_KERNEL is
-   true, if these are for a kernels region offload function.  */
+   list, along with an appropriate GOMP_LAUNCH_DIM tag.  */
 
 void
-oacc_set_fn_attrib (tree fn, tree clauses, bool is_kernel, vec<tree> *args)
+oacc_set_fn_attrib (tree fn, tree clauses, vec<tree> *args)
 {
   /* Must match GOMP_DIM ordering.  */
   static const omp_clause_code ids[]
@@ -545,9 +544,6 @@ oacc_set_fn_attrib (tree fn, tree clauses, bool is_kernel, vec<tree> *args)
 	  non_const |= GOMP_DIM_MASK (ix);
 	}
       attr = tree_cons (NULL_TREE, dim, attr);
-      /* Note kernelness with TREE_PUBLIC.  */
-      if (is_kernel)
-	TREE_PUBLIC (attr) = 1;
     }
 
   oacc_replace_fn_attrib (fn, attr);
@@ -614,16 +610,6 @@ tree
 oacc_get_fn_attrib (tree fn)
 {
   return lookup_attribute (OACC_FN_ATTRIB, DECL_ATTRIBUTES (fn));
-}
-
-/* Return true if this oacc fn attrib is for a kernels offload
-   region.  We use the TREE_PUBLIC flag of each dimension -- only
-   need to check the first one.  */
-
-bool
-oacc_fn_attrib_kernels_p (tree attr)
-{
-  return TREE_PUBLIC (TREE_VALUE (attr));
 }
 
 /* Extract an oacc execution dimension from FN.  FN must be an

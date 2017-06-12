@@ -539,7 +539,6 @@ xml_image_generated = \
 	${xml_image_dir}/pbds_tree_text_lor_find.png
 
 xml_images = ${xml_image_basic} ${xml_image_generated}
-
 xml_noinst = \
 	${xml_dir}/book.txml \
 	${xml_dir}/chapter.txml \

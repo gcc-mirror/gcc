@@ -76,6 +76,11 @@ int main()
     o.emplace({ 'a' }, "");
     VERIFY( o && o->state == 2 );
   }
+  {
+    O o;
+    VERIFY(&o.emplace(0) == &*o);
+    VERIFY(&o.emplace({ 'a' }, "") == &*o);
+  }
 
   static_assert( !std::is_constructible<O, std::initializer_list<int>, int>(), "" );
 

@@ -3,5 +3,5 @@
 /* { dg-options "-pedantic-errors" } */
 /* { dg-skip-if "-Wmain not enabled with -pedantic on SPU" { spu-*-* } } */
 void main(char a) {} /* { dg-error "first argument of .main. should be .int." "int" } */
-/* { dg-error ".main. takes only zero or two arguments" "zero or two" { target *-*-* } 5 } */ 
-/* { dg-error "return type of .main. is not .int." "return type" { target *-*-* } 5 } */ 
+/* { dg-error ".main. takes only zero or two arguments" "zero or two" { target *-*-* } .-1 } */ 
+/* { dg-error "return type of .main. is not .int." "return type" { target *-*-* } .-2 } */ 

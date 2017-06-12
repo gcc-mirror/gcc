@@ -21,7 +21,7 @@ struct D
 {
   int Foo ()
   {
-    return operator int (); // { dg-error "not defined" "" }
+    return operator int (); // { dg-error "not defined" }
   }
 };
 

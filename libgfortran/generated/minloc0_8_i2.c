@@ -148,7 +148,7 @@ minloc0_8_i2 (gfc_array_i8 * const restrict retarray,
 	     frequently used path so probably not worth it.  */
 	  base -= sstride[n] * extent[n];
 	  n++;
-	  if (n == rank)
+	  if (n >= rank)
 	    {
 	      /* Break out of the loop.  */
 	      base = NULL;
@@ -315,7 +315,7 @@ mminloc0_8_i2 (gfc_array_i8 * const restrict retarray,
 	  base -= sstride[n] * extent[n];
 	  mbase -= mstride[n] * extent[n];
 	  n++;
-	  if (n == rank)
+	  if (n >= rank)
 	    {
 	      /* Break out of the loop.  */
 	      base = NULL;

@@ -1383,8 +1383,28 @@ build_sym (const char *name, gfc_charlen *cl, bool cl_deferred,
   symbol_attribute attr;
   gfc_symbol *sym;
   int upper;
+  gfc_symtree *st;
 
-  if (gfc_get_symbol (name, NULL, &sym))
+  /* Symbols in a submodule are host associated from the parent module or
+     submodules. Therefore, they can be overridden by declarations in the
+     submodule scope. Deal with this by attaching the existing symbol to
+     a new symtree and recycling the old symtree with a new symbol...  */
+  st = gfc_find_symtree (gfc_current_ns->sym_root, name);
+  if (st != NULL && gfc_state_stack->state == COMP_SUBMODULE
+      && st->n.sym != NULL
+      && st->n.sym->attr.host_assoc && st->n.sym->attr.used_in_submodule)
+    {
+      gfc_symtree *s = gfc_get_unique_symtree (gfc_current_ns);
+      s->n.sym = st->n.sym;
+      sym = gfc_new_symbol (name, gfc_current_ns);
+
+
+      st->n.sym = sym;
+      sym->refs++;
+      gfc_set_sym_referenced (sym);
+    }
+  /* ...Otherwise generate a new symtree and new symbol.  */
+  else if (gfc_get_symbol (name, NULL, &sym))
     return false;
 
   /* Check if the name has already been defined as a type.  The
@@ -1908,7 +1928,7 @@ build_struct (const char *name, gfc_charlen *cl, gfc_expr **init,
           c = gfc_find_component (s->sym, name, true, true, NULL);
           if (c != NULL)
             {
-              gfc_error_now ("Component '%s' at %C already declared at %L",
+              gfc_error_now ("Component %qs at %C already declared at %L",
                              name, &c->loc);
               return false;
             }
@@ -3138,7 +3158,7 @@ gfc_match_decl_type_spec (gfc_typespec *ts, int implicit_flag)
        * don't need all the extra derived-type stuff for structures.  */
       if (gfc_find_symbol (gfc_dt_upper_string (name), NULL, 1, &sym))
         {
-          gfc_error ("Type name '%s' at %C is ambiguous", name);
+          gfc_error ("Type name %qs at %C is ambiguous", name);
           return MATCH_ERROR;
         }
       if (sym && sym->attr.flavor == FL_STRUCT)
@@ -4210,7 +4230,8 @@ match_attr_spec (void)
       if ((d == DECL_STATIC || d == DECL_AUTOMATIC)
 	  && !flag_dec_static)
 	{
-	  gfc_error ("%s at %L is a DEC extension, enable with -fdec-static",
+	  gfc_error ("%s at %L is a DEC extension, enable with "
+		     "%<-fdec-static%>",
 		     d == DECL_STATIC ? "STATIC" : "AUTOMATIC", &seen_at[d]);
 	  m = MATCH_ERROR;
 	  goto cleanup;
@@ -5430,6 +5451,7 @@ add_hidden_procptr_result (gfc_symbol *sym)
 	  gfc_get_sym_tree ("ppr@", gfc_current_ns->parent, &stree, false);
 	  st2 = gfc_new_symtree (&gfc_current_ns->sym_root, "ppr@");
 	  st2->n.sym = stree->n.sym;
+	  stree->n.sym->refs++;
 	}
       sym->result = stree->n.sym;
 
@@ -7569,22 +7591,14 @@ access_attr_decl (gfc_statement st)
 	case INTERFACE_GENERIC:
 	case INTERFACE_DTIO:
 
-	  if (type == INTERFACE_DTIO
-	      && gfc_current_ns->proc_name
-	      && gfc_current_ns->proc_name->attr.flavor == FL_MODULE)
-	    {
-	      gfc_find_symbol (name, gfc_current_ns, 0, &sym);
-	      if (sym == NULL)
-		{
-		  gfc_error ("The GENERIC DTIO INTERFACE at %C is not "
-			     "present in the MODULE '%s'",
-			     gfc_current_ns->proc_name->name);
-		  return MATCH_ERROR;
-		}
-	    }
-
 	  if (gfc_get_symbol (name, NULL, &sym))
 	    goto done;
+
+	  if (type == INTERFACE_DTIO
+	      && gfc_current_ns->proc_name
+	      && gfc_current_ns->proc_name->attr.flavor == FL_MODULE
+	      && sym->attr.flavor == FL_UNKNOWN)
+	    sym->attr.flavor = FL_PROCEDURE;
 
 	  if (!gfc_add_access (&sym->attr,
 			       (st == ST_PUBLIC)
@@ -7896,8 +7910,10 @@ gfc_match_automatic (void)
 
   if (!flag_dec_static)
     {
-      gfc_error ("AUTOMATIC at %C is a DEC extension, enable with "
-		 "-fdec-static");
+      gfc_error ("%s at %C is a DEC extension, enable with "
+		 "%<-fdec-static%>",
+		 "AUTOMATIC"
+		 );
       return MATCH_ERROR;
     }
 
@@ -7950,7 +7966,9 @@ gfc_match_static (void)
 
   if (!flag_dec_static)
     {
-      gfc_error ("STATIC at %C is a DEC extension, enable with -fdec-static");
+      gfc_error ("%s at %C is a DEC extension, enable with "
+		 "%<-fdec-static%>",
+		 "STATIC");
       return MATCH_ERROR;
     }
 
@@ -8594,7 +8612,7 @@ get_struct_decl (const char *name, sym_flavor fl, locus *decl,
 
   if (sym->components != NULL || sym->attr.zero_comp)
     {
-      gfc_error ("Type definition of '%s' at %C was already defined at %L",
+      gfc_error ("Type definition of %qs at %C was already defined at %L",
                  sym->name, &sym->declared_at);
       return false;
     }
@@ -8709,8 +8727,9 @@ gfc_match_structure_decl (void)
 
   if (!flag_dec_structure)
     {
-      gfc_error ("STRUCTURE at %C is a DEC extension, enable with "
-		 "-fdec-structure");
+      gfc_error ("%s at %C is a DEC extension, enable with "
+		 "%<-fdec-structure%>",
+		 "STRUCTURE");
       return MATCH_ERROR;
     }
 
@@ -8747,7 +8766,7 @@ gfc_match_structure_decl (void)
   /* Make sure the name is not the name of an intrinsic type.  */
   if (gfc_is_intrinsic_typename (name))
     {
-      gfc_error ("Structure name '%s' at %C cannot be the same as an"
+      gfc_error ("Structure name %qs at %C cannot be the same as an"
 		 " intrinsic type", name);
       return MATCH_ERROR;
     }
@@ -9950,7 +9969,7 @@ gfc_match_final_decl (void)
       for (f = block->f2k_derived->finalizers; f; f = f->next)
 	if (f->proc_sym == sym)
 	  {
-	    gfc_error ("%qs at %C is already defined as FINAL procedure!",
+	    gfc_error ("%qs at %C is already defined as FINAL procedure",
 		       name);
 	    return MATCH_ERROR;
 	  }

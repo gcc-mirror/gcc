@@ -2895,7 +2895,7 @@ mn10300_match_ccmode (rtx insn, machine_mode cc_mode)
 
   gcc_checking_assert (XVECLEN (PATTERN (insn), 0) == 2);
 
-  op1 = XVECEXP (PATTERN (insn), 0, 1);
+  op1 = XVECEXP (PATTERN (insn), 0, 0);
   gcc_checking_assert (GET_CODE (SET_SRC (op1)) == COMPARE);
 
   flags = SET_DEST (op1);

@@ -5,7 +5,7 @@ template<typename T1 = unused, typename T2 = unused, typename T3 = unused,
 struct tuple {};
 
 template<typename... Args>
-tuple<Args...> foo() { } // { dg-bogus "cannot expand" "" }
+tuple<Args...> foo() { } // { dg-bogus "cannot expand" }
 
 int main()
 {

@@ -291,9 +291,9 @@ print_graph_cfg (FILE *fp, struct function *fun)
 /* Overload with additional flag argument.  */
 
 void DEBUG_FUNCTION
-print_graph_cfg (FILE *fp, struct function *fun, int flags)
+print_graph_cfg (FILE *fp, struct function *fun, dump_flags_t flags)
 {
-  int saved_dump_flags = dump_flags;
+  dump_flags_t saved_dump_flags = dump_flags;
   dump_flags = flags;
   print_graph_cfg (fp, fun);
   dump_flags = saved_dump_flags;

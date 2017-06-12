@@ -362,6 +362,10 @@ Export::write_imported_init_fns(const std::string& package_name,
        ++p)
     {
       const Import_init* ii = *p;
+
+      if (ii->init_name() == import_init_fn)
+	continue;
+
       this->write_c_string(" ");
       this->write_string(ii->package_name());
       this->write_c_string(" ");

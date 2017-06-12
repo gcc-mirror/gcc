@@ -141,10 +141,9 @@ verify_flow_info (void)
 	  err = 1;
 	}
 
-      if (bb->count < 0)
+      if (!bb->count.verify ())
 	{
-	  error ("verify_flow_info: Wrong count of block %i %i",
-		 bb->index, (int)bb->count);
+	  error ("verify_flow_info: Wrong count of block %i", bb->index);
 	  err = 1;
 	}
       if (bb->frequency < 0)
@@ -167,10 +166,10 @@ verify_flow_info (void)
 		     e->src->index, e->dest->index, e->probability);
 	      err = 1;
 	    }
-	  if (e->count < 0)
+	  if (!e->count.verify ())
 	    {
-	      error ("verify_flow_info: Wrong count of edge %i->%i %i",
-		     e->src->index, e->dest->index, (int)e->count);
+	      error ("verify_flow_info: Wrong count of edge %i->%i",
+		     e->src->index, e->dest->index);
 	      err = 1;
 	    }
 
@@ -269,7 +268,7 @@ verify_flow_info (void)
    representation-specific information.  */
 
 void
-dump_bb (FILE *outf, basic_block bb, int indent, int flags)
+dump_bb (FILE *outf, basic_block bb, int indent, dump_flags_t flags)
 {
   if (flags & TDF_BLOCKS)
     dump_bb_info (outf, bb, indent, flags, true, false);
@@ -309,8 +308,9 @@ dump_bb_for_graph (pretty_printer *pp, basic_block bb)
   if (!cfg_hooks->dump_bb_for_graph)
     internal_error ("%s does not support dump_bb_for_graph",
 		    cfg_hooks->name);
-  if (bb->count)
-    pp_printf (pp, "COUNT:" "%" PRId64, bb->count);
+  /* TODO: Add pretty printer for counter.  */
+  if (bb->count.initialized_p ())
+    pp_printf (pp, "COUNT:" "%" PRId64, bb->count.to_gcov_type ());
   pp_printf (pp, " FREQ:%i |", bb->frequency);
   pp_write_text_to_stream (pp);
   if (!(dump_flags & TDF_SLIM))
@@ -319,7 +319,7 @@ dump_bb_for_graph (pretty_printer *pp, basic_block bb)
 
 /* Dump the complete CFG to FILE.  FLAGS are the TDF_* flags in dumpfile.h.  */
 void
-dump_flow_info (FILE *file, int flags)
+dump_flow_info (FILE *file, dump_flags_t flags)
 {
   basic_block bb;
 
@@ -624,7 +624,7 @@ basic_block
 split_edge (edge e)
 {
   basic_block ret;
-  gcov_type count = e->count;
+  profile_count count = e->count;
   int freq = EDGE_FREQUENCY (e);
   edge f;
   bool irr = (e->flags & EDGE_IRREDUCIBLE_LOOP) != 0;
@@ -868,9 +868,9 @@ make_forwarder_block (basic_block bb, bool (*redirect_edge_p) (edge),
 
   fallthru = split_block_after_labels (bb);
   dummy = fallthru->src;
-  dummy->count = 0;
+  dummy->count = profile_count::zero ();
   dummy->frequency = 0;
-  fallthru->count = 0;
+  fallthru->count = profile_count::zero ();
   bb = fallthru->dest;
 
   /* Redirect back edges we want to keep.  */
@@ -1071,7 +1071,7 @@ duplicate_block (basic_block bb, edge e, basic_block after)
 {
   edge s, n;
   basic_block new_bb;
-  gcov_type new_count = e ? e->count : 0;
+  profile_count new_count = e ? e->count : profile_count::uninitialized ();
   edge_iterator ei;
 
   if (!cfg_hooks->duplicate_block)
@@ -1095,10 +1095,9 @@ duplicate_block (basic_block bb, edge e, basic_block after)
 	 is no need to actually check for duplicated edges.  */
       n = unchecked_make_edge (new_bb, s->dest, s->flags);
       n->probability = s->probability;
-      if (e && bb->count)
+      if (e && bb->count > profile_count::zero ())
 	{
-	  /* Take care for overflows!  */
-	  n->count = s->count * (new_count * 10000 / bb->count) / 10000;
+	  n->count = s->count.apply_scale (new_count, bb->count);
 	  s->count -= n->count;
 	}
       else
@@ -1116,8 +1115,6 @@ duplicate_block (basic_block bb, edge e, basic_block after)
 
       redirect_edge_and_branch_force (e, new_bb);
 
-      if (bb->count < 0)
-	bb->count = 0;
       if (bb->frequency < 0)
 	bb->frequency = 0;
     }
@@ -1448,7 +1445,6 @@ account_profile_record (struct profile_record *record, int after_pass)
   edge_iterator ei;
   edge e;
   int sum;
-  gcov_type lsum;
 
   FOR_ALL_BB_FN (bb, cfun)
    {
@@ -1460,11 +1456,10 @@ account_profile_record (struct profile_record *record, int after_pass)
 	    sum += e->probability;
 	  if (EDGE_COUNT (bb->succs) && abs (sum - REG_BR_PROB_BASE) > 100)
 	    record->num_mismatched_freq_out[after_pass]++;
-	  lsum = 0;
+	  profile_count lsum = profile_count::zero ();
 	  FOR_EACH_EDGE (e, ei, bb->succs)
 	    lsum += e->count;
-	  if (EDGE_COUNT (bb->succs)
-	      && (lsum - bb->count > 100 || lsum - bb->count < -100))
+	  if (EDGE_COUNT (bb->succs) && (lsum.differs_from_p (bb->count)))
 	    record->num_mismatched_count_out[after_pass]++;
 	}
       if (bb != ENTRY_BLOCK_PTR_FOR_FN (cfun)
@@ -1477,10 +1472,10 @@ account_profile_record (struct profile_record *record, int after_pass)
 	      || (MAX (sum, bb->frequency) > 10
 		  && abs ((sum - bb->frequency) * 100 / (MAX (sum, bb->frequency) + 1)) > 10))
 	    record->num_mismatched_freq_in[after_pass]++;
-	  lsum = 0;
+	  profile_count lsum = profile_count::zero ();
 	  FOR_EACH_EDGE (e, ei, bb->preds)
 	    lsum += e->count;
-	  if (lsum - bb->count > 100 || lsum - bb->count < -100)
+	  if (lsum.differs_from_p (bb->count))
 	    record->num_mismatched_count_in[after_pass]++;
 	}
       if (bb == ENTRY_BLOCK_PTR_FOR_FN (cfun)

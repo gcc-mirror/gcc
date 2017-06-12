@@ -23,5 +23,3 @@ contains
   end subroutine
 
 end module
-
-! { dg-final { cleanup-modules "a_mod" } }

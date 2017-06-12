@@ -55,6 +55,8 @@ along with GCC; see the file COPYING3.  If not see
    so that __FILE__ and __LINE__ will be usable to identify them.
 */
 
+#define GUALITY_TEST "guality/guality.h"
+
 /* This is the type we use to pass values to guality_check.  */
 
 typedef intmax_t gualchk_t;
@@ -274,7 +276,7 @@ continue\n\
 
   i = guality_count[INCORRECT];
 
-  fprintf (stderr, "%s: %i PASS, %i FAIL, %i UNRESOLVED\n",
+  fprintf (stderr, "%s: " GUALITY_TEST  ": %i PASS, %i FAIL, %i UNRESOLVED\n",
 	   i ? "FAIL" : "PASS",
 	   guality_count[PASS], guality_count[INCORRECT],
 	   guality_count[INCOMPLETE]);
@@ -361,13 +363,13 @@ continue\n\
     switch (result)
       {
       case PASS:
-	fprintf (stderr, "PASS: %s is %lli\n", name, value);
+	fprintf (stderr, "PASS: " GUALITY_TEST ": %s is %lli\n", name, value);
 	break;
       case INCORRECT:
-	fprintf (stderr, "FAIL: %s is %lli, not %lli\n", name, xvalue, value);
+	fprintf (stderr, "FAIL: " GUALITY_TEST ": %s is %lli, not %lli\n", name, xvalue, value);
 	break;
       case INCOMPLETE:
-	fprintf (stderr, "%s: %s is %s, expected %lli\n",
+	fprintf (stderr, "%s: " GUALITY_TEST ": %s is %s, expected %lli\n",
 		 unknown_ok ? "UNRESOLVED" : "FAIL", name,
 		 unavailable < 0 ? "not computable" : "optimized away", value);
 	result = unknown_ok ? INCOMPLETE : INCORRECT;

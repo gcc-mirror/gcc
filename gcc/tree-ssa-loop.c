@@ -152,10 +152,7 @@ gate_oacc_kernels (function *fn)
   if (!flag_openacc)
     return false;
 
-  tree oacc_function_attr = oacc_get_fn_attrib (fn->decl);
-  if (oacc_function_attr == NULL_TREE)
-    return false;
-  if (!oacc_fn_attrib_kernels_p (oacc_function_attr))
+  if (!lookup_attribute ("oacc kernels", DECL_ATTRIBUTES (fn->decl)))
     return false;
 
   struct loop *loop;

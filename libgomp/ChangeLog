@@ -1,3 +1,144 @@
+2017-06-02  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* testsuite/libgomp.c/pr39591-2.c: Fix test case.
+	* testsuite/libgomp.c/pr39591-3.c: Likewise.
+
+2017-05-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgomp/80822
+	* config/linux/affinity.c (gomp_affinity_init_level_1): New function.
+	(gomp_affinity_init_level): Use it.  Always analyze the core and thread
+	sibling lists, depending on level just pick up what CPUs to put
+	together into a place vs. whether add multiple ordered places.
+
+2017-05-24  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* openacc.h (acc_async_wait, acc_async_wait_all): New prototypes.
+	* libgomp.map (OACC_2.0.1): Add these.
+	* oacc-async.c (acc_async_wait, acc_async_wait_all): New aliases
+	for "acc_wait", and "acc_wait_all", respectively.
+	* openacc.f90 (acc_async_wait, acc_async_wait_all): New interfaces
+	for "acc_wait", and "acc_wait_all", respectively.
+	* openacc_lib.h (acc_async_wait, acc_async_wait_all): Likewise.
+	* libgomp.texi (acc_wait, acc_wait_all): Update.
+	* testsuite/libgomp.oacc-c-c++-common/par-reduction-2.c: Update.
+	* testsuite/libgomp.oacc-fortran/par-reduction-2-1.f: New file.
+	* testsuite/libgomp.oacc-fortran/par-reduction-2-2.f: Likewise.
+
+	* openacc_lib.h (acc_pcopyin, acc_pcreate): Route to
+	acc_present_or_copyin and acc_present_or_create procedures,
+	respectively.
+	* testsuite/libgomp.oacc-fortran/lib-32-1.f: Exercise these, and
+	generally different variants of OpenACC Runtime Library functions.
+	* testsuite/libgomp.oacc-fortran/lib-32-2.f: Likewise.
+
+	* testsuite/libgomp.oacc-fortran/lib-32-1.f: New file.
+	* testsuite/libgomp.oacc-fortran/lib-32-2.f: Likewise.
+
+	* openacc.h (acc_pcopyin, acc_pcreate): Provide prototypes instead
+	of preprocessor definitions.
+	* libgomp.h (strong_alias): Guard by "#ifdef
+	HAVE_ATTRIBUTE_ALIAS".
+	* oacc-mem.c: Provide "acc_pcreate" as alias for
+	"acc_present_or_create", and "acc_pcopyin" as alias for
+	"acc_present_or_copyin".
+	* libgomp.map: New version "OACC_2.0.1".
+	(OACC_2.0.1): Add "acc_pcopyin", and "acc_pcreate".
+	* testsuite/libgomp.oacc-c-c++-common/lib-38.c: Remove, merging
+	its content into...
+	* testsuite/libgomp.oacc-c-c++-common/lib-32.c: ... this file.
+	Extend testing.
+
+	* plugin/plugin-nvptx.c (nvptx_get_num_devices): Debugging output
+	when disabling nvptx offloading.
+
+2017-05-23  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/kernels-loop-2.c: Update.
+	* testsuite/libgomp.oacc-c-c++-common/parallel-dims.c: Likewise.
+	* testsuite/libgomp.oacc-fortran/kernels-loop-2.f95: Likewise.
+
+	* testsuite/libgomp.oacc-c-c++-common/parallel-dims.c: Rewrite.
+	* testsuite/lib/libgomp.exp
+	(check_effective_target_openacc_nvidia_accel_configured): New
+	proc.
+	* testsuite/libgomp.oacc-c++/c++.exp (check_effective_target_c)
+	(check_effective_target_c++): New procs.
+	* testsuite/libgomp.oacc-c/c.exp (check_effective_target_c)
+	(check_effective_target_c++): Likewise.
+
+2017-05-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/80809
+	* testsuite/libgomp.c/pr80809-2.c: New test.
+	* testsuite/libgomp.c/pr80809-3.c: New test.
+
+	PR middle-end/80809
+	* testsuite/libgomp.c/pr80809-1.c: New test.
+
+	PR middle-end/80853
+	* testsuite/libgomp.c/pr80853.c: New test.
+
+2017-05-19  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c++/template-reduction.C: Update.
+	* testsuite/libgomp.oacc-c-c++-common/nested-2.c: Update.
+	* testsuite/libgomp.oacc-fortran/data-4-2.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/default-1.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/non-scalar-data.f90: Likewise.
+
+	* plugin/plugin-hsa.c (DLSYM_FN, init_hsa_runtime_functions):
+	Debug output for failure.
+
+2017-05-12  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* testsuite/lib/libgomp.exp: Load scanlang.exp.
+
+2017-04-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/80531
+	* configure.tgt (*-*-aix*): Add -frandom-seed=$@ to XCFLAGS to avoid
+	bootstrap compare failures.
+
+2017-04-20  Alexander Monakov  <amonakov@ispras.ru>
+
+	* testsuite/libgomp.c/target-36.c: New testcase.
+
+2017-04-13  Jakub Jelinek  <jakub@redhat.com>
+
+	* plugin/plugin-nvptx.c (cuda_lib_inited): Use signed char type
+	instead of char.
+
+2017-04-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgomp/80394
+	* testsuite/libgomp.c/pr80394.c: New test.
+
+2017-04-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgomp/79876
+	* config/posix/thread-stacksize.h: New file.
+	* config/darwin/thread-stacksize.h: New file.
+	* config/nvptx/thread-stacksize.h: New file.
+	* env.c: Include thread-stacksize.h.
+	(initialize_env): Initialize stacksize to GOMP_DEFAULT_STACKSIZE
+	instead of 0.  Call pthread_attr_setstacksize even if
+	GOMP_DEFAULT_STACKSIZE is non-zero.
+
+2017-03-30  Jakub Jelinek  <jakub@redhat.com>
+
+	* env.c (initialize_env): Initialize stacksize to 0.
+
+2017-03-22  Cesar Philippidis  <cesar@codesourcery.com>
+
+	PR c++/80029
+	* testsuite/libgomp.oacc-c-c++-common/declare-vla.c: New test.
+
+2017-03-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/79940
+	* testsuite/libgomp.c/pr79940.c: New test.
+
 2017-02-15  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* testsuite/libgomp.c/pr48591.c: Enable on all __float128

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -35,7 +35,6 @@ with Exp_Ch6;  use Exp_Ch6;
 with Exp_Ch7;  use Exp_Ch7;
 with Exp_Tss;  use Exp_Tss;
 with Exp_Util; use Exp_Util;
-with Fname;    use Fname;
 with Freeze;   use Freeze;
 with Ghost;    use Ghost;
 with Inline;   use Inline;
@@ -1895,9 +1894,7 @@ package body Sem_Res is
       function Comes_From_Predefined_Lib_Unit (Nod : Node_Id) return Boolean is
       begin
          return
-           Sloc (Nod) = Standard_Location
-             or else Is_Predefined_File_Name
-                       (Unit_File_Name (Get_Source_Unit (Sloc (Nod))));
+           Sloc (Nod) = Standard_Location or else In_Predefined_Unit (Nod);
       end Comes_From_Predefined_Lib_Unit;
 
       --------------------
@@ -4211,6 +4208,21 @@ package body Sem_Res is
                end if;
             end if;
 
+            --  In -gnatd.q mode, forget that a given array is constant when
+            --  it is passed as an IN parameter to a foreign-convention
+            --  subprogram. This is in case the subprogram evilly modifies the
+            --  object. Of course, correct code would use IN OUT.
+
+            if Debug_Flag_Dot_Q
+              and then Ekind (F) = E_In_Parameter
+              and then Has_Foreign_Convention (Nam)
+              and then Is_Array_Type (F_Typ)
+              and then Nkind (A) in N_Has_Entity
+              and then Present (Entity (A))
+            then
+               Set_Is_True_Constant (Entity (A), False);
+            end if;
+
             --  Case of OUT or IN OUT parameter
 
             if Ekind (F) /= E_In_Parameter then
@@ -5353,6 +5365,16 @@ package body Sem_Res is
                Resolve (Op2, T2);
             end;
 
+         --  A universal real conditional expression can appear in a fixed-type
+         --  context and must be resolved with that context to facilitate the
+         --  code generation to the backend.
+
+         elsif Nkind_In (N, N_Case_Expression, N_If_Expression)
+           and then Etype (N) = Universal_Real
+           and then Is_Fixed_Point_Type (B_Typ)
+         then
+            Resolve (N, B_Typ);
+
          else
             Resolve (N);
          end if;
@@ -6077,17 +6099,24 @@ package body Sem_Res is
          --  If the called function is not declared in the main unit and it
          --  returns the limited view of type then use the available view (as
          --  is done in Try_Object_Operation) to prevent back-end confusion;
-         --  the call must appear in a context where the nonlimited view is
-         --  available. If the called function is in the extended main unit
-         --  then no action is needed, because the back end handles this case.
+         --  for the function entity itself. The call must appear in a context
+         --  where the nonlimited view is available. If the function entity is
+         --  in the extended main unit then no action is needed, because the
+         --  back end handles this case. In either case the type of the call
+         --  is the nonlimited view.
 
-         if not In_Extended_Main_Code_Unit (Nam)
-           and then From_Limited_With (Etype (Nam))
+         if From_Limited_With (Etype (Nam))
+           and then Present (Available_View (Etype (Nam)))
          then
-            Set_Etype (Nam, Available_View (Etype (Nam)));
-         end if;
+            Set_Etype (N, Available_View (Etype (Nam)));
 
-         Set_Etype (N, Etype (Nam));
+            if not In_Extended_Main_Code_Unit (Nam) then
+               Set_Etype (Nam, Available_View (Etype (Nam)));
+            end if;
+
+         else
+            Set_Etype (N, Etype (Nam));
+         end if;
       end if;
 
       --  In the case where the call is to an overloaded subprogram, Analyze
@@ -6589,10 +6618,11 @@ package body Sem_Res is
             Body_Id := Corresponding_Body (Nam_Decl);
 
             --  Nothing to do if the subprogram is not eligible for inlining in
-            --  GNATprove mode.
+            --  GNATprove mode, or inlining is disabled with switch -gnatdm
 
             if not Is_Inlined_Always (Nam_UA)
               or else not Can_Be_Inlined_In_GNATprove_Mode (Nam_UA, Body_Id)
+              or else Debug_Flag_M
             then
                null;
 
@@ -6682,6 +6712,11 @@ package body Sem_Res is
       Alt := First (Alternatives (N));
       while Present (Alt) loop
          Alt_Expr := Expression (Alt);
+
+         if Error_Posted (Alt_Expr) then
+            return;
+         end if;
+
          Resolve (Alt_Expr, Typ);
          Alt_Typ := Etype (Alt_Expr);
 
@@ -6763,12 +6798,6 @@ package body Sem_Res is
          if In_Wide_Character_Range (UI_To_CC (Char_Literal_Value (N))) then
             return;
          end if;
-
-      --  For Standard.Wide_Wide_Character or a type derived from it, we
-      --  know the literal is in range, since the parser checked.
-
-      elsif Root_Type (B_Typ) = Standard_Wide_Wide_Character then
-         return;
 
       --  If the entity is already set, this has already been resolved in a
       --  generic context, or comes from expansion. Nothing else to do.
@@ -6888,11 +6917,23 @@ package body Sem_Res is
             N, Etype (L));
       end if;
 
-      --  Evaluate the relation (note we do this after the above check since
-      --  this Eval call may change N to True/False.
-
       Analyze_Dimension (N);
-      Eval_Relational_Op (N);
+
+      --  Evaluate the relation (note we do this after the above check since
+      --  this Eval call may change N to True/False. Skip this evaluation
+      --  inside assertions, in order to keep assertions as written by users
+      --  for tools that rely on these, e.g. GNATprove for loop invariants.
+      --  Except evaluation is still performed even inside assertions for
+      --  comparisons between values of universal type, which are useless
+      --  for static analysis tools, and not supported even by GNATprove.
+
+      if In_Assertion_Expr = 0
+        or else (Is_Universal_Numeric_Type (Etype (L))
+                   and then
+                 Is_Universal_Numeric_Type (Etype (R)))
+      then
+         Eval_Relational_Op (N);
+      end if;
    end Resolve_Comparison_Op;
 
    -----------------------------------------
@@ -8205,12 +8246,26 @@ package body Sem_Res is
 
    procedure Resolve_If_Expression (N : Node_Id; Typ : Entity_Id) is
       Condition : constant Node_Id := First (Expressions (N));
-      Then_Expr : constant Node_Id := Next (Condition);
-      Else_Expr : Node_Id          := Next (Then_Expr);
+      Then_Expr : Node_Id;
+      Else_Expr : Node_Id;
       Else_Typ  : Entity_Id;
       Then_Typ  : Entity_Id;
 
    begin
+      --  Defend against malformed expressions
+
+      if No (Condition) then
+         return;
+      end if;
+
+      Then_Expr := Next (Condition);
+
+      if No (Then_Expr) then
+         return;
+      end if;
+
+      Else_Expr := Next (Then_Expr);
+
       Resolve (Condition, Any_Boolean);
       Resolve (Then_Expr, Typ);
       Then_Typ := Etype (Then_Expr);
@@ -8220,9 +8275,7 @@ package body Sem_Res is
       --  a constraint check. The same is done for the else part below, again
       --  comparing subtypes rather than base types.
 
-      if Is_Scalar_Type (Then_Typ)
-        and then Then_Typ /= Typ
-      then
+      if Is_Scalar_Type (Then_Typ) and then Then_Typ /= Typ then
          Rewrite (Then_Expr, Convert_To (Typ, Then_Expr));
          Analyze_And_Resolve (Then_Expr, Typ);
       end if;
@@ -8275,7 +8328,10 @@ package body Sem_Res is
       end if;
 
       Set_Etype (N, Typ);
-      Eval_If_Expression (N);
+
+      if not Error_Posted (N) then
+         Eval_If_Expression (N);
+      end if;
    end Resolve_If_Expression;
 
    -------------------------------
@@ -10696,7 +10752,15 @@ package body Sem_Res is
          --  Mixed-mode operation involving a literal. Context must be a fixed
          --  type which is applied to the literal subsequently.
 
-         if Is_Fixed_Point_Type (Typ) then
+         --  Multiplication and division involving two fixed type operands must
+         --  yield a universal real because the result is computed in arbitrary
+         --  precision.
+
+         if Is_Fixed_Point_Type (Typ)
+           and then Nkind_In (Operand, N_Op_Divide, N_Op_Multiply)
+           and then Etype (Left_Opnd  (Operand)) = Any_Fixed
+           and then Etype (Right_Opnd (Operand)) = Any_Fixed
+         then
             Set_Etype (Operand, Universal_Real);
 
          elsif Is_Numeric_Type (Typ)
@@ -11020,33 +11084,26 @@ package body Sem_Res is
          end;
       end if;
 
-      --  Ada 2012: if target type has predicates, the result requires a
-      --  predicate check. If the context is a call to another predicate
-      --  check we must prevent infinite recursion.
+      --  Ada 2012: once the type conversion is resolved, check whether the
+      --  operand statisfies the static predicate of the target type.
 
       if Has_Predicates (Target_Typ) then
-         if Nkind (Parent (N)) = N_Function_Call
-           and then Present (Name (Parent (N)))
-           and then (Is_Predicate_Function (Entity (Name (Parent (N))))
-                       or else
-                     Is_Predicate_Function_M (Entity (Name (Parent (N)))))
-         then
-            null;
-
-         else
-            Apply_Predicate_Check (N, Target_Typ);
-         end if;
+         Check_Expression_Against_Static_Predicate (N, Target_Typ);
       end if;
 
-      --  If at this stage we have a real to integer conversion, make sure
-      --  that the Do_Range_Check flag is set, because such conversions in
-      --  general need a range check. We only need this if expansion is off
-      --  or we are in GNATProve mode.
+      --  If at this stage we have a real to integer conversion, make sure that
+      --  the Do_Range_Check flag is set, because such conversions in general
+      --  need a range check. We only need this if expansion is off.
+      --  In GNATprove mode, we only do that when converting from fixed-point
+      --  (as floating-point to integer conversions are now handled in
+      --  GNATprove mode).
 
       if Nkind (N) = N_Type_Conversion
-        and then (GNATprove_Mode or not Expander_Active)
+        and then not Expander_Active
         and then Is_Integer_Type (Target_Typ)
-        and then Is_Real_Type (Operand_Typ)
+        and then (Is_Fixed_Point_Type (Operand_Typ)
+                   or else (not GNATprove_Mode
+                             and then Is_Floating_Point_Type (Operand_Typ)))
       then
          Set_Do_Range_Check (Operand);
       end if;
@@ -11510,11 +11567,11 @@ package body Sem_Res is
 
       Set_Etype (N, Slice_Subtype);
 
-      --  For packed slice subtypes, freeze immediately (except in the case of
-      --  being in a "spec expression" where we never freeze when we first see
-      --  the expression).
+      --  For bit-packed slice subtypes, freeze immediately (except in the case
+      --  of being in a "spec expression" where we never freeze when we first
+      --  see the expression).
 
-      if Is_Packed (Slice_Subtype) and not In_Spec_Expression then
+      if Is_Bit_Packed_Array (Slice_Subtype) and not In_Spec_Expression then
          Freeze_Itype (Slice_Subtype, N);
 
       --  For all other cases insert an itype reference in the slice's actions
@@ -11703,12 +11760,7 @@ package body Sem_Res is
    -----------------------------
 
    function Unique_Fixed_Point_Type (N : Node_Id) return Entity_Id is
-      T1   : Entity_Id := Empty;
-      T2   : Entity_Id;
-      Item : Node_Id;
-      Scop : Entity_Id;
-
-      procedure Fixed_Point_Error;
+      procedure Fixed_Point_Error (T1 : Entity_Id; T2 : Entity_Id);
       --  Give error messages for true ambiguity. Messages are posted on node
       --  N, and entities T1, T2 are the possible interpretations.
 
@@ -11716,12 +11768,20 @@ package body Sem_Res is
       -- Fixed_Point_Error --
       -----------------------
 
-      procedure Fixed_Point_Error is
+      procedure Fixed_Point_Error (T1 : Entity_Id; T2 : Entity_Id) is
       begin
          Error_Msg_N ("ambiguous universal_fixed_expression", N);
          Error_Msg_NE ("\\possible interpretation as}", N, T1);
          Error_Msg_NE ("\\possible interpretation as}", N, T2);
       end Fixed_Point_Error;
+
+      --  Local variables
+
+      ErrN : Node_Id;
+      Item : Node_Id;
+      Scop : Entity_Id;
+      T1   : Entity_Id;
+      T2   : Entity_Id;
 
    --  Start of processing for Unique_Fixed_Point_Type
 
@@ -11742,7 +11802,7 @@ package body Sem_Res is
               and then Scope (Base_Type (T2)) = Scop
             then
                if Present (T1) then
-                  Fixed_Point_Error;
+                  Fixed_Point_Error (T1, T2);
                   return Any_Type;
                else
                   T1 := T2;
@@ -11768,7 +11828,7 @@ package body Sem_Res is
                  and then (Is_Potentially_Use_Visible (T2) or else In_Use (T2))
                then
                   if Present (T1) then
-                     Fixed_Point_Error;
+                     Fixed_Point_Error (T1, T2);
                      return Any_Type;
                   else
                      T1 := T2;
@@ -11783,11 +11843,20 @@ package body Sem_Res is
       end loop;
 
       if Nkind (N) = N_Real_Literal then
-         Error_Msg_NE
-           ("??real literal interpreted as }!", N, T1);
+         Error_Msg_NE ("??real literal interpreted as }!", N, T1);
+
       else
+         --  When the context is a type conversion, issue the warning on the
+         --  expression of the conversion because it is the actual operation.
+
+         if Nkind_In (N, N_Type_Conversion, N_Unchecked_Type_Conversion) then
+            ErrN := Expression (N);
+         else
+            ErrN := N;
+         end if;
+
          Error_Msg_NE
-           ("??universal_fixed expression interpreted as }!", N, T1);
+           ("??universal_fixed expression interpreted as }!", ErrN, T1);
       end if;
 
       return T1;
@@ -11821,6 +11890,12 @@ package body Sem_Res is
          E   : Node_Or_Entity_Id);
       --  If Report_Errs, then calls Errout.Error_Msg_NE with its arguments
 
+      function In_Instance_Code return Boolean;
+      --  Return True if expression is within an instance but is not in one of
+      --  the actuals of the instantiation. Type conversions within an instance
+      --  are not rechecked because type visbility may lead to spurious errors,
+      --  but conversions in an actual for a formal object must be checked.
+
       function Valid_Tagged_Conversion
         (Target_Type : Entity_Id;
          Opnd_Type   : Entity_Id) return Boolean;
@@ -11850,7 +11925,7 @@ package body Sem_Res is
             --  Valid_Conversion still ensures the proper compatibility of
             --  target and operand types.
 
-           and then not In_Instance
+           and then not In_Instance_Code
          then
             Conversion_Error_N (Msg, Operand);
          end if;
@@ -11883,6 +11958,45 @@ package body Sem_Res is
             Error_Msg_NE (Msg, N, E);
          end if;
       end Conversion_Error_NE;
+
+      ----------------------
+      -- In_Instance_Code --
+      ----------------------
+
+      function In_Instance_Code return Boolean is
+         Par : Node_Id;
+
+      begin
+         if not In_Instance then
+            return False;
+
+         else
+            Par := Parent (N);
+            while Present (Par) loop
+
+               --  The expression is part of an actual object if it appears in
+               --  the generated object declaration in the instance.
+
+               if Nkind (Par) = N_Object_Declaration
+                 and then Present (Corresponding_Generic_Association (Par))
+               then
+                  return False;
+
+               else
+                  exit when
+                    Nkind (Par) in N_Statement_Other_Than_Procedure_Call
+                      or else Nkind (Par) in N_Subprogram_Call
+                      or else Nkind (Par) in N_Declaration;
+               end if;
+
+               Par := Parent (Par);
+            end loop;
+
+            --  Otherwise the expression appears within the instantiated unit
+
+            return True;
+         end if;
+      end In_Instance_Code;
 
       ----------------------------
       -- Valid_Array_Conversion --
@@ -12222,7 +12336,7 @@ package body Sem_Res is
          --  but in fact the test is required for source code as well, since
          --  this situation can arise in source code.
 
-         elsif In_Instance or else In_Inlined_Body then
+         elsif In_Instance_Code or else In_Inlined_Body then
             return True;
 
          --  Otherwise we need the conversion check

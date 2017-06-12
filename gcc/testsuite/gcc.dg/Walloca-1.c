@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-require-effective-target alloca } */
 /* { dg-options "-Walloca-larger-than=2000 -O2" } */
 
 #define alloca __builtin_alloca
@@ -24,7 +25,7 @@ void foo1 (size_t len, size_t len2, size_t len3)
   useit (s);			// OK, constant argument to alloca
 
   s = alloca (num);		// { dg-warning "large due to conversion" "" { target lp64 } }
-  // { dg-warning "unbounded use of 'alloca'" "" { target { ! lp64 } } 26 }
+  // { dg-warning "unbounded use of 'alloca'" "" { target { ! lp64 } } .-1 }
   useit (s);
 
   s = alloca (30000);		/* { dg-warning "is too large" } */

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -132,6 +132,18 @@ package Uname is
    function Is_Child_Name (N : Unit_Name_Type) return Boolean;
    --  Returns True iff the given name is a child unit name (of either a
    --  body or a spec).
+
+   function Is_Internal_Unit_Name
+     (Name               : String;
+      Renamings_Included : Boolean := True) return Boolean;
+   --  Same as Fname.Is_Internal_File_Name, except it works with the name of
+   --  the unit, rather than the file name.
+
+   function Is_Predefined_Unit_Name
+     (Name               : String;
+      Renamings_Included : Boolean := True) return Boolean;
+   --  Same as Fname.Is_Predefined_File_Name, except it works with the name of
+   --  the unit, rather than the file name.
 
    function Is_Spec_Name (N : Unit_Name_Type) return Boolean;
    --  Returns True iff the given name is the unit name of a specification

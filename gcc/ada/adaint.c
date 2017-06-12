@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *          Copyright (C) 1992-2015, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2017, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -613,7 +613,16 @@ __gnat_get_current_dir (char *dir, int *length)
   WS2SC (dir, wdir, GNAT_MAX_PATH_LEN);
 
 #else
-   getcwd (dir, *length);
+   char* result = getcwd (dir, *length);
+   /* If the current directory does not exist, set length = 0
+      to indicate error. That can't happen on windows, where
+      you can't delete a directory if it is the current
+      directory of some process. */
+   if (!result)
+     {
+       *length = 0;
+       return;
+     }
 #endif
 
    *length = strlen (dir);
@@ -2315,7 +2324,7 @@ __gnat_dup2 (int oldfd ATTRIBUTE_UNUSED, int newfd ATTRIBUTE_UNUSED)
      RTPs.  */
   return -1;
 #elif defined (__PikeOS__)
-  /* Not supported.  */
+  /* Not supported. */
   return -1;
 #elif defined (_WIN32)
   /* Special case when oldfd and newfd are identical and are the standard
@@ -2672,6 +2681,26 @@ __gnat_portable_wait (int *process_status)
 #else
 
   pid = waitpid (-1, &status, 0);
+  status = status & 0xffff;
+#endif
+
+  *process_status = status;
+  return pid;
+}
+
+int
+__gnat_portable_no_block_wait (int *process_status)
+{
+  int status = 0;
+  int pid = 0;
+
+#if defined (__vxworks) || defined (__PikeOS__) || defined (_WIN32)
+  /* Not supported. */
+  status = -1;
+
+#else
+
+  pid = waitpid (-1, &status, WNOHANG);
   status = status & 0xffff;
 #endif
 

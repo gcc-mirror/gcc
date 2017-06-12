@@ -1058,7 +1058,7 @@ combine_btr_defs (btr_def *def, HARD_REG_SET *btrs_live_in_range)
 	     target registers live over the merged range.  */
 	  int btr;
 	  HARD_REG_SET combined_btrs_live;
-	  bitmap combined_live_range = BITMAP_ALLOC (NULL);
+	  auto_bitmap combined_live_range;
 	  btr_user *user;
 
 	  if (other_def->live_range == NULL)
@@ -1116,7 +1116,6 @@ combine_btr_defs (btr_def *def, HARD_REG_SET *btrs_live_in_range)
 	      delete_insn (other_def->insn);
 
 	    }
-	  BITMAP_FREE (combined_live_range);
 	}
     }
 }
@@ -1255,7 +1254,6 @@ can_move_up (const_basic_block bb, const rtx_insn *insn, int n_insns)
 static int
 migrate_btr_def (btr_def *def, int min_cost)
 {
-  bitmap live_range;
   HARD_REG_SET btrs_live_in_range;
   int btr_used_near_def = 0;
   int def_basic_block_freq;
@@ -1289,7 +1287,7 @@ migrate_btr_def (btr_def *def, int min_cost)
     }
 
   btr_def_live_range (def, &btrs_live_in_range);
-  live_range = BITMAP_ALLOC (NULL);
+  auto_bitmap live_range;
   bitmap_copy (live_range, def->live_range);
 
 #ifdef INSN_SCHEDULING
@@ -1373,7 +1371,7 @@ migrate_btr_def (btr_def *def, int min_cost)
       if (dump_file)
 	fprintf (dump_file, "failed to move\n");
     }
-  BITMAP_FREE (live_range);
+
   return !give_up;
 }
 
@@ -1393,10 +1391,10 @@ migrate_btr_defs (enum reg_class btr_class, int allow_callee_save)
       for (i = NUM_FIXED_BLOCKS; i < last_basic_block_for_fn (cfun); i++)
 	{
 	  basic_block bb = BASIC_BLOCK_FOR_FN (cfun, i);
-	  fprintf (dump_file,
-		   "Basic block %d: count = %" PRId64
-		   " loop-depth = %d idom = %d\n",
-		   i, (int64_t) bb->count, bb_loop_depth (bb),
+	  fprintf (dump_file, "Basic block %d: count = ", i);
+	  bb->count.dump (dump_file);
+	  fprintf (dump_file, " loop-depth = %d idom = %d\n",
+		   bb_loop_depth (bb),
 		   get_immediate_dominator (CDI_DOMINATORS, bb)->index);
 	}
     }

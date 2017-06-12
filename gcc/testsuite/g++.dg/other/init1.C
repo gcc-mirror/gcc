@@ -17,7 +17,7 @@ struct B : A
 class T
 {
   typedef int Foo;
-  T () : Foo () {}	// { dg-error "T::Foo' is not" "" }
+  T () : Foo () {}	// { dg-error "T::Foo' is not" }
 };
 
 struct S : B

@@ -100,6 +100,10 @@ oacc_kernels_copy (T a)
   float y = 3;
   double z = 4;
 
+#pragma acc kernels num_gangs (a) num_workers (a) vector_length (a) default (none) copyout (b) copyin (a)
+  for (int i = 0; i < 1; i++)
+    b = a;
+
 #pragma acc kernels copy (w, x, y, z)
   {
     w = accDouble<char>(w);

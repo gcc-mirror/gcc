@@ -120,6 +120,13 @@ static vec<df_ref> use_def_ref;
 static vec<df_ref> reg_defs;
 static vec<df_ref> reg_defs_stack;
 
+/* The maximum number of propagations that are still allowed.  If we do
+   more propagations than originally we had uses, we must have ended up
+   in a propagation loop, as in PR79405.  Until the algorithm fwprop
+   uses can obviously not get into such loops we need a workaround like
+   this.  */
+static int propagations_left;
+
 /* The MD bitmaps are trimmed to include only live registers to cut
    memory usage on testcases like insn-recog.c.  Track live registers
    in the basic block and do not perform forward propagation if the
@@ -1407,6 +1414,8 @@ forward_propagate_into (df_ref use)
   if (forward_propagate_and_simplify (use, def_insn, def_set)
       || forward_propagate_subreg (use, def_insn, def_set))
     {
+      propagations_left--;
+
       if (cfun->can_throw_non_call_exceptions
 	  && find_reg_note (use_insn, REG_EH_REGION, NULL_RTX)
 	  && purge_dead_edges (DF_REF_BB (use)))
@@ -1434,6 +1443,8 @@ fwprop_init (void)
   active_defs = XNEWVEC (df_ref, max_reg_num ());
   if (flag_checking)
     active_defs_check = sparseset_alloc (max_reg_num ());
+
+  propagations_left = DF_USES_TABLE_SIZE ();
 }
 
 static void
@@ -1480,6 +1491,9 @@ fwprop (void)
 
   for (i = 0; i < DF_USES_TABLE_SIZE (); i++)
     {
+      if (!propagations_left)
+	break;
+
       df_ref use = DF_USES_GET (i);
       if (use)
 	if (DF_REF_TYPE (use) == DF_REF_REG_USE
@@ -1540,6 +1554,9 @@ fwprop_addr (void)
      end, and we'll go through them as well.  */
   for (i = 0; i < DF_USES_TABLE_SIZE (); i++)
     {
+      if (!propagations_left)
+	break;
+
       df_ref use = DF_USES_GET (i);
       if (use)
 	if (DF_REF_TYPE (use) != DF_REF_REG_USE

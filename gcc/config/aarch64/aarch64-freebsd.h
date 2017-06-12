@@ -91,4 +91,12 @@
 #undef TARGET_BINDS_LOCAL_P
 #define TARGET_BINDS_LOCAL_P default_binds_local_p_2
 
+/* Use the AAPCS type for wchar_t, override the one from
+   config/freebsd.h.  */
+#undef  WCHAR_TYPE
+#define WCHAR_TYPE  "unsigned int"
+
+#undef MCOUNT_NAME
+#define MCOUNT_NAME ".mcount"
+
 #endif  /* GCC_AARCH64_FREEBSD_H */

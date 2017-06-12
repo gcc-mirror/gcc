@@ -52,8 +52,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // The following definitions of bitmask types are enums, not ints,
   // as permitted (but not required) in the standard, in order to provide
-  // better type safety in iostream calls.  A side effect is that
-  // expressions involving them are no longer compile-time constants.
+  // better type safety in iostream calls.  A side effect is that in C++98
+  // expressions involving them are not compile-time constants.
   enum _Ios_Fmtflags 
     { 
       _S_boolalpha 	= 1L << 0,
@@ -207,12 +207,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   const error_category& iostream_category() noexcept;
 
   inline error_code
-  make_error_code(io_errc e) noexcept
-  { return error_code(static_cast<int>(e), iostream_category()); }
+  make_error_code(io_errc __e) noexcept
+  { return error_code(static_cast<int>(__e), iostream_category()); }
 
   inline error_condition
-  make_error_condition(io_errc e) noexcept
-  { return error_condition(static_cast<int>(e), iostream_category()); }
+  make_error_condition(io_errc __e) noexcept
+  { return error_condition(static_cast<int>(__e), iostream_category()); }
 #endif
 
   // 27.4.2  Class ios_base

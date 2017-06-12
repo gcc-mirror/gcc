@@ -184,7 +184,8 @@ suitable_for_tail_call_opt_p (void)
    containing the value of EXPR at GSI.  */
 
 static tree
-independent_of_stmt_p (tree expr, gimple *at, gimple_stmt_iterator gsi)
+independent_of_stmt_p (tree expr, gimple *at, gimple_stmt_iterator gsi,
+		       bitmap to_move)
 {
   basic_block bb, call_bb, at_bb;
   edge e;
@@ -195,6 +196,9 @@ independent_of_stmt_p (tree expr, gimple *at, gimple_stmt_iterator gsi)
 
   if (TREE_CODE (expr) != SSA_NAME)
     return NULL_TREE;
+
+  if (bitmap_bit_p (to_move, SSA_NAME_VERSION (expr)))
+    return expr;
 
   /* Mark the blocks in the chain leading to the end.  */
   at_bb = gimple_bb (at);
@@ -250,13 +254,16 @@ independent_of_stmt_p (tree expr, gimple *at, gimple_stmt_iterator gsi)
   return expr;
 }
 
+enum par { FAIL, OK, TRY_MOVE };
+
 /* Simulates the effect of an assignment STMT on the return value of the tail
    recursive CALL passed in ASS_VAR.  M and A are the multiplicative and the
    additive factor for the real return value.  */
 
-static bool
-process_assignment (gassign *stmt, gimple_stmt_iterator call, tree *m,
-		    tree *a, tree *ass_var)
+static par
+process_assignment (gassign *stmt,
+		    gimple_stmt_iterator call, tree *m,
+		    tree *a, tree *ass_var, bitmap to_move)
 {
   tree op0, op1 = NULL_TREE, non_ass_var = NULL_TREE;
   tree dest = gimple_assign_lhs (stmt);
@@ -276,7 +283,7 @@ process_assignment (gassign *stmt, gimple_stmt_iterator call, tree *m,
       if (gimple_assign_cast_p (stmt))
 	{
 	  if (TYPE_MODE (TREE_TYPE (dest)) != TYPE_MODE (TREE_TYPE (src_var)))
-	    return false;
+	    return FAIL;
 
 	  /* Even if the type modes are the same, if the precision of the
 	     type is smaller than mode's precision,
@@ -284,11 +291,11 @@ process_assignment (gassign *stmt, gimple_stmt_iterator call, tree *m,
 	  if (INTEGRAL_TYPE_P (TREE_TYPE (dest))
 	      && (GET_MODE_PRECISION (TYPE_MODE (TREE_TYPE (dest)))
 		  > TYPE_PRECISION (TREE_TYPE (dest))))
-	    return false;
+	    return FAIL;
 	}
 
       *ass_var = dest;
-      return true;
+      return OK;
     }
 
   switch (rhs_class)
@@ -303,7 +310,7 @@ process_assignment (gassign *stmt, gimple_stmt_iterator call, tree *m,
       break;
 
     default:
-      return false;
+      return FAIL;
     }
 
   /* Accumulator optimizations will reverse the order of operations.
@@ -311,42 +318,45 @@ process_assignment (gassign *stmt, gimple_stmt_iterator call, tree *m,
      that addition and multiplication are associative.  */
   if (!flag_associative_math)
     if (FLOAT_TYPE_P (TREE_TYPE (DECL_RESULT (current_function_decl))))
-      return false;
+      return FAIL;
 
-  if (rhs_class == GIMPLE_UNARY_RHS)
+  if (rhs_class == GIMPLE_UNARY_RHS
+      && op0 == *ass_var)
     ;
   else if (op0 == *ass_var
-	   && (non_ass_var = independent_of_stmt_p (op1, stmt, call)))
+	   && (non_ass_var = independent_of_stmt_p (op1, stmt, call,
+						    to_move)))
     ;
   else if (op1 == *ass_var
-	   && (non_ass_var = independent_of_stmt_p (op0, stmt, call)))
+	   && (non_ass_var = independent_of_stmt_p (op0, stmt, call,
+						    to_move)))
     ;
   else
-    return false;
+    return TRY_MOVE;
 
   switch (code)
     {
     case PLUS_EXPR:
       *a = non_ass_var;
       *ass_var = dest;
-      return true;
+      return OK;
 
     case POINTER_PLUS_EXPR:
       if (op0 != *ass_var)
-	return false;
+	return FAIL;
       *a = non_ass_var;
       *ass_var = dest;
-      return true;
+      return OK;
 
     case MULT_EXPR:
       *m = non_ass_var;
       *ass_var = dest;
-      return true;
+      return OK;
 
     case NEGATE_EXPR:
       *m = build_minus_one_cst (TREE_TYPE (op0));
       *ass_var = dest;
-      return true;
+      return OK;
 
     case MINUS_EXPR:
       if (*ass_var == op0)
@@ -358,12 +368,10 @@ process_assignment (gassign *stmt, gimple_stmt_iterator call, tree *m,
         }
 
       *ass_var = dest;
-      return true;
-
-      /* TODO -- Handle POINTER_PLUS_EXPR.  */
+      return OK;
 
     default:
-      return false;
+      return FAIL;
     }
 }
 
@@ -523,6 +531,8 @@ find_tail_calls (basic_block bb, struct tailcall **ret)
      since we are running after dce.  */
   m = NULL_TREE;
   a = NULL_TREE;
+  auto_bitmap to_move_defs;
+  auto_vec<gimple *> to_move_stmts;
 
   abb = bb;
   agsi = gsi;
@@ -540,27 +550,38 @@ find_tail_calls (basic_block bb, struct tailcall **ret)
 	}
 
       stmt = gsi_stmt (agsi);
-
-      if (gimple_code (stmt) == GIMPLE_LABEL
-	  || gimple_code (stmt) == GIMPLE_NOP)
-	continue;
-
       if (gimple_code (stmt) == GIMPLE_RETURN)
 	break;
 
-      if (gimple_clobber_p (stmt))
-	continue;
-
-      if (is_gimple_debug (stmt))
+      if (gimple_code (stmt) == GIMPLE_LABEL
+	  || gimple_code (stmt) == GIMPLE_NOP
+	  || gimple_clobber_p (stmt)
+	  || is_gimple_debug (stmt))
 	continue;
 
       if (gimple_code (stmt) != GIMPLE_ASSIGN)
 	return;
 
       /* This is a gimple assign. */
-      if (! process_assignment (as_a <gassign *> (stmt), gsi, &tmp_m,
-				&tmp_a, &ass_var))
+      par ret = process_assignment (as_a <gassign *> (stmt), gsi,
+				    &tmp_m, &tmp_a, &ass_var, to_move_defs);
+      if (ret == FAIL)
 	return;
+      else if (ret == TRY_MOVE)
+	{
+	  if (! tail_recursion)
+	    return;
+	  for (unsigned opno = 1; opno < gimple_num_ops (stmt); ++opno)
+	    {
+	      tree op = gimple_op (stmt, opno);
+	      if (independent_of_stmt_p (op, stmt, gsi, to_move_defs) != op)
+		return;
+	    }
+	  bitmap_set_bit (to_move_defs,
+			  SSA_NAME_VERSION (gimple_assign_lhs (stmt)));
+	  to_move_stmts.safe_push (stmt);
+	  continue;
+	}
 
       if (tmp_a)
 	{
@@ -600,6 +621,17 @@ find_tail_calls (basic_block bb, struct tailcall **ret)
   /* For pointers only allow additions.  */
   if (m && POINTER_TYPE_P (TREE_TYPE (DECL_RESULT (current_function_decl))))
     return;
+
+  /* Move queued defs.  */
+  if (tail_recursion)
+    {
+      unsigned i;
+      FOR_EACH_VEC_ELT (to_move_stmts, i, stmt)
+	{
+	  gimple_stmt_iterator mgsi = gsi_for_stmt (stmt);
+	  gsi_move_before (&mgsi, &gsi);
+	}
+    }
 
   nw = XNEW (struct tailcall);
 
@@ -767,12 +799,10 @@ adjust_return_value (basic_block bb, tree m, tree a)
 /* Subtract COUNT and FREQUENCY from the basic block and it's
    outgoing edge.  */
 static void
-decrease_profile (basic_block bb, gcov_type count, int frequency)
+decrease_profile (basic_block bb, profile_count count, int frequency)
 {
   edge e;
-  bb->count -= count;
-  if (bb->count < 0)
-    bb->count = 0;
+  bb->count = bb->count - count;
   bb->frequency -= frequency;
   if (bb->frequency < 0)
     bb->frequency = 0;
@@ -783,8 +813,6 @@ decrease_profile (basic_block bb, gcov_type count, int frequency)
     }
   e = single_succ_edge (bb);
   e->count -= count;
-  if (e->count < 0)
-    e->count = 0;
 }
 
 /* Returns true if argument PARAM of the tail recursive call needs to be copied

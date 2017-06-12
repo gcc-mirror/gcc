@@ -36,7 +36,7 @@ static const char yes[] = "YES", no[] = "NO", undefined[] = "UNDEFINED";
 /* inquire_via_unit()-- Inquiry via unit number.  The unit might not exist. */
 
 static void
-inquire_via_unit (st_parameter_inquire *iqp, gfc_unit * u)
+inquire_via_unit (st_parameter_inquire *iqp, gfc_unit *u)
 {
   const char *p;
   GFC_INTEGER_4 cf = iqp->common.flags;
@@ -631,7 +631,7 @@ inquire_via_unit (st_parameter_inquire *iqp, gfc_unit * u)
 
 
 /* inquire_via_filename()-- Inquiry via filename.  This subroutine is
- * only used if the filename is *not* connected to a unit number. */
+   only used if the filename is *not* connected to a unit number. */
 
 static void
 inquire_via_filename (st_parameter_inquire *iqp)

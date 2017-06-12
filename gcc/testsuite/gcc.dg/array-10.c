@@ -21,13 +21,13 @@ struct c4 { int (*x)[(__UINTPTR_TYPE__)&a]; }; /* { dg-error "19:at file scope" 
 typeof (int [(__UINTPTR_TYPE__)&a]) c5; /* { dg-error "37:at file scope" } */
 
 int d0[1/0]; /* { dg-error "5:at file scope" } */
-/* { dg-warning "9:division by zero" "" { target *-*-* } 23 } */
+/* { dg-warning "9:division by zero" "" { target *-*-* } .-1 } */
 int (*d1)[1/0]; /* { dg-error "7:at file scope" } */
-/* { dg-warning "12:division by zero" "" { target *-*-* } 25 } */
+/* { dg-warning "12:division by zero" "" { target *-*-* } .-1 } */
 int (*d2())[1/0]; /* { dg-error "7:at file scope" } */
-/* { dg-warning "14:division by zero" "" { target *-*-* } 27 } */
+/* { dg-warning "14:division by zero" "" { target *-*-* } .-1 } */
 struct d3 { int x[1/0]; }; /* { dg-error "17:at file scope" } */
-/* { dg-warning "20:division by zero" "" { target *-*-* } 29 } */
+/* { dg-warning "20:division by zero" "" { target *-*-* } .-1 } */
 struct d4 { int (*x)[1/0]; }; /* { dg-error "19:at file scope" } */
-/* { dg-warning "23:division by zero" "" { target *-*-* } 31 } */
+/* { dg-warning "23:division by zero" "" { target *-*-* } .-1 } */
 typeof (int [1/0]) d5; /* { dg-error "20:at file scope" } */

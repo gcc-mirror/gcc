@@ -6019,7 +6019,7 @@ struct _sched_ib
     /* Size of buffer in records.  */
     int n_insns;
 
-    /* Array to hold data on adjustements made to the size of the buffer.  */
+    /* Array to hold data on adjustments made to the size of the buffer.  */
     int *adjust;
 
     /* Index of the above array.  */
@@ -6081,7 +6081,7 @@ m68k_sched_variable_issue (FILE *sched_dump ATTRIBUTE_UNUSED,
 	  if (sched_ib.records.adjust_index == sched_ib.records.n_insns)
 	    sched_ib.records.adjust_index = 0;
 
-	  /* Undo adjustement we did 7 instructions ago.  */
+	  /* Undo adjustment we did 7 instructions ago.  */
 	  sched_ib.size
 	    += sched_ib.records.adjust[sched_ib.records.adjust_index];
 

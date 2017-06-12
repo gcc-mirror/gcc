@@ -199,11 +199,11 @@ free_sese_info (sese_info_p region)
   region->loop_nest.release ();
 
   for (rename_map_t::iterator it = region->rename_map->begin ();
-       it != region->rename_map->begin (); ++it)
+       it != region->rename_map->end (); ++it)
     (*it).second.release ();
 
   for (bb_map_t::iterator it = region->copied_bb_map->begin ();
-       it != region->copied_bb_map->begin (); ++it)
+       it != region->copied_bb_map->end (); ++it)
     (*it).second.release ();
 
   delete region->rename_map;

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -39,9 +39,9 @@ package Scn is
       Index : Source_File_Index);
    --  Initialize lexical scanner for scanning a new file. The caller has
    --  completed the construction of the Units.Table entry for the specified
-   --  Unit and Index references the corresponding source file. A special
-   --  case is when Unit = No_Unit_Number, and Index corresponds to the
-   --  source index for reading the configuration pragma file.
+   --  Unit and Index references the corresponding source file. A special case
+   --  is when Unit = No_Unit, and Index corresponds to the source index for
+   --  reading the configuration pragma file.
 
    function Determine_Token_Casing return Casing_Type;
    --  Determines the casing style of the current token, which is either a

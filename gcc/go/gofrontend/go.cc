@@ -34,10 +34,8 @@ go_create_gogo(const struct go_create_gogo_args* args)
 
   if (args->relative_import_path != NULL)
     ::gogo->set_relative_import_path(args->relative_import_path);
-  if (args->check_divide_by_zero)
-    ::gogo->set_check_divide_by_zero(args->check_divide_by_zero);
-  if (args->check_divide_overflow)
-    ::gogo->set_check_divide_overflow(args->check_divide_overflow);
+  ::gogo->set_check_divide_by_zero(args->check_divide_by_zero);
+  ::gogo->set_check_divide_overflow(args->check_divide_overflow);
   if (args->compiling_runtime)
     ::gogo->set_compiling_runtime(args->compiling_runtime);
   if (args->c_header != NULL)
@@ -159,6 +157,9 @@ go_parse_input_files(const char** filenames, unsigned int filename_count,
 
   // Write out queued up functions for hash and comparison of types.
   ::gogo->write_specific_type_functions();
+
+  // Add write barriers.
+  ::gogo->add_write_barriers();
 
   // Flatten the parse tree.
   ::gogo->flatten();

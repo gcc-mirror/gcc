@@ -23,6 +23,7 @@
 // see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 // <http://www.gnu.org/licenses/>.
 
+#pragma GCC diagnostic ignored "-Wsized-deallocation"
 #include <bits/c++config.h>
 #include "new"
 

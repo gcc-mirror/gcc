@@ -328,6 +328,8 @@ pack_ts_type_common_value_fields (struct bitpack_d *bp, tree expr)
     }
   else if (TREE_CODE (expr) == ARRAY_TYPE)
     bp_pack_value (bp, TYPE_NONALIASED_COMPONENT (expr), 1);
+  if (AGGREGATE_TYPE_P (expr))
+    bp_pack_value (bp, TYPE_TYPELESS_STORAGE (expr), 1);
   bp_pack_var_len_unsigned (bp, TYPE_PRECISION (expr));
   bp_pack_var_len_unsigned (bp, TYPE_ALIGN (expr));
 }
@@ -949,16 +951,6 @@ streamer_write_tree_header (struct output_block *ob, tree expr)
      variable sized nodes).  */
   tag = lto_tree_code_to_tag (code);
   streamer_write_record_start (ob, tag);
-
-  /* The following will cause bootstrap miscomparisons.  Enable with care.  */
-#ifdef LTO_STREAMER_DEBUG
-  /* This is used mainly for debugging purposes.  When the reader
-     and the writer do not agree on a streamed node, the pointer
-     value for EXPR can be used to track down the differences in
-     the debugger.  */
-  gcc_assert ((HOST_WIDE_INT) (intptr_t) expr == (intptr_t) expr);
-  streamer_write_hwi (ob, (HOST_WIDE_INT) (intptr_t) expr);
-#endif
 
   /* The text in strings and identifiers are completely emitted in
      the header.  */

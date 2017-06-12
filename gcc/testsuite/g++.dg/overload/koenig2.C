@@ -11,5 +11,5 @@ void anyfunc(int x);
 
 void Foo ()
 {
-  anyfunc (&dummy<>); // { dg-error "cannot resolve overload" "" }
+  anyfunc (&dummy<>); // { dg-error "cannot resolve overload" }
 }

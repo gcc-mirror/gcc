@@ -353,21 +353,9 @@ misel=yes
 Target RejectNegative Alias(misel)
 Deprecated option.  Use -misel instead.
 
-mspe
-Target Var(rs6000_spe) Save
-Generate SPE SIMD instructions on E500.
-
 mpaired
 Target Var(rs6000_paired_float) Save
 Generate PPC750CL paired-single instructions.
-
-mspe=no
-Target RejectNegative Alias(mspe) NegativeAlias
-Deprecated option.  Use -mno-spe instead.
-
-mspe=yes
-Target RejectNegative Alias(mspe)
-Deprecated option.  Use -mspe instead.
 
 mdebug=
 Target RejectNegative Joined
@@ -380,14 +368,6 @@ Use the AltiVec ABI extensions.
 mabi=no-altivec
 Target RejectNegative Var(rs6000_altivec_abi, 0)
 Do not use the AltiVec ABI extensions.
-
-mabi=spe
-Target RejectNegative Var(rs6000_spe_abi) Save
-Use the SPE ABI extensions.
-
-mabi=no-spe
-Target RejectNegative Var(rs6000_spe_abi, 0)
-Do not use the SPE ABI extensions.
 
 mabi=elfv1
 Target RejectNegative Var(rs6000_elf_abi, 1) Save
@@ -441,37 +421,13 @@ mlongcall
 Target Report Var(rs6000_default_long_calls) Save
 Avoid all range limits on call instructions.
 
+; This option existed in the past, but now is always on.
 mgen-cell-microcode
-Target Report Var(rs6000_gen_cell_microcode) Init(-1) Save
-Generate Cell microcode.
-
-mwarn-cell-microcode
-Target Var(rs6000_warn_cell_microcode) Init(0) Warning Save
-Warn when a Cell microcoded instruction is emitted.
+Target RejectNegative Undocumented Ignore
 
 mwarn-altivec-long
 Target Var(rs6000_warn_altivec_long) Init(1) Save
 Warn about deprecated 'vector long ...' AltiVec type usage.
-
-mfloat-gprs=
-Target RejectNegative Joined Enum(rs6000_float_gprs) Var(rs6000_float_gprs) Save
--mfloat-gprs=	Select GPR floating point method.
-
-Enum
-Name(rs6000_float_gprs) Type(unsigned char)
-Valid arguments to -mfloat-gprs=:
-
-EnumValue
-Enum(rs6000_float_gprs) String(yes) Value(1)
-
-EnumValue
-Enum(rs6000_float_gprs) String(single) Value(1)
-
-EnumValue
-Enum(rs6000_float_gprs) String(double) Value(2)
-
-EnumValue
-Enum(rs6000_float_gprs) String(no) Value(0)
 
 mlong-double-
 Target RejectNegative Joined UInteger Var(rs6000_long_double_type_size) Save

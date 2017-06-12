@@ -888,7 +888,7 @@ objc_add_static_instance (tree constructor, tree class_decl)
   /* We may be writing something else just now.
      Postpone till end of input. */
   DECL_DEFER_OUTPUT (decl) = 1;
-  pushdecl_top_level (decl);
+  lang_hooks.decls.pushdecl (decl);
   rest_of_decl_compilation (decl, 1, 0);
 
   /* Add the DECL to the head of this CLASS' list.  */
@@ -2165,7 +2165,7 @@ objc_eh_runtime_type (tree type)
 	 we use the c++ typeinfo decl. */
       return build_eh_type_type (type);
 #else
-      error ("non-objective-c type '%T' cannot be caught", type);
+      error ("non-objective-c type %qT cannot be caught", type);
       ident = get_identifier ("ErrorMarkNode");
       goto make_err_class;
 #endif

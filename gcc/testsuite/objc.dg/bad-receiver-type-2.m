@@ -26,16 +26,16 @@ int main(int argc,char **argv)
   [(struct {int a;} *)ip foo];  /* { dg-warning "invalid receiver type" } */
   [func1 foo];                  /* { dg-warning "invalid receiver type" } */
   [struct1.a foo];              /* { dg-warning "invalid receiver type" } */
-                                /* { dg-warning "cast to pointer from integer" "" { target *-*-* } 28 } */ 
+                                /* { dg-warning "cast to pointer from integer" "" { target *-*-* } .-1 } */ 
   [union1.a foo];               /* { dg-warning "invalid receiver type" } */
-                                /* { dg-warning "cast to pointer from integer" "" { target *-*-* } 30 } */ 
+                                /* { dg-warning "cast to pointer from integer" "" { target *-*-* } .-1 } */ 
   [struct1 foo];                /* { dg-warning "invalid receiver type" } */
-                                /* { dg-error "cannot convert" "" { target *-*-* } 32 } */ 
+                                /* { dg-error "cannot convert" "" { target *-*-* } .-1 } */ 
   [union1 foo];                 /* { dg-warning "invalid receiver type" } */
-                                /* { dg-error "cannot convert" "" { target *-*-* } 34 } */ 
+                                /* { dg-error "cannot convert" "" { target *-*-* } .-1 } */ 
   [struct2 foo];                /* { dg-warning "invalid receiver type" } */
-                                /* { dg-error "cannot convert" "" { target *-*-* } 36 } */ 
+                                /* { dg-error "cannot convert" "" { target *-*-* } .-1 } */ 
   [union2 foo];                 /* { dg-warning "invalid receiver type" } */
-                                /* { dg-error "cannot convert" "" { target *-*-* } 38 } */ 
+                                /* { dg-error "cannot convert" "" { target *-*-* } .-1 } */ 
   [f foo];                      /* { dg-warning "invalid receiver type" } */
 }

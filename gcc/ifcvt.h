@@ -40,4 +40,74 @@ struct ce_if_block
   int pass;				/* Pass number.  */
 };
 
+/* Used by noce_process_if_block to communicate with its subroutines.
+
+   The subroutines know that A and B may be evaluated freely.  They
+   know that X is a register.  They should insert new instructions
+   before cond_earliest.  */
+
+struct noce_if_info
+{
+  /* The basic blocks that make up the IF-THEN-{ELSE-,}JOIN block.  */
+  basic_block test_bb, then_bb, else_bb, join_bb;
+
+  /* The jump that ends TEST_BB.  */
+  rtx_insn *jump;
+
+  /* The jump condition.  */
+  rtx cond;
+
+  /* Reversed jump condition.  */
+  rtx rev_cond;
+
+  /* New insns should be inserted before this one.  */
+  rtx_insn *cond_earliest;
+
+  /* Insns in the THEN and ELSE block.  There is always just this
+     one insns in those blocks.  The insns are single_set insns.
+     If there was no ELSE block, INSN_B is the last insn before
+     COND_EARLIEST, or NULL_RTX.  In the former case, the insn
+     operands are still valid, as if INSN_B was moved down below
+     the jump.  */
+  rtx_insn *insn_a, *insn_b;
+
+  /* The SET_SRC of INSN_A and INSN_B.  */
+  rtx a, b;
+
+  /* The SET_DEST of INSN_A.  */
+  rtx x;
+
+  /* The original set destination that the THEN and ELSE basic blocks finally
+     write their result to.  */
+  rtx orig_x;
+  /* True if this if block is not canonical.  In the canonical form of
+     if blocks, the THEN_BB is the block reached via the fallthru edge
+     from TEST_BB.  For the noce transformations, we allow the symmetric
+     form as well.  */
+  bool then_else_reversed;
+
+  /* True if the contents of then_bb and else_bb are a
+     simple single set instruction.  */
+  bool then_simple;
+  bool else_simple;
+
+  /* True if we're optimisizing the control block for speed, false if
+     we're optimizing for size.  */
+  bool speed_p;
+
+  /* An estimate of the original costs.  When optimizing for size, this is the
+     combined cost of COND, JUMP and the costs for THEN_BB and ELSE_BB.
+     When optimizing for speed, we use the costs of COND plus the minimum of
+     the costs for THEN_BB and ELSE_BB, as computed in the next field.  */
+  unsigned int original_cost;
+
+  /* Maximum permissible cost for the unconditional sequence we should
+     generate to replace this branch.  */
+  unsigned int max_seq_cost;
+
+  /* The name of the noce transform that succeeded in if-converting
+     this structure.  Used for debugging.  */
+  const char *transform_name;
+};
+
 #endif /* GCC_IFCVT_H */

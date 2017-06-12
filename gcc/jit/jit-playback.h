@@ -391,6 +391,8 @@ public:
     return new type (build_qualified_type (m_inner, TYPE_QUAL_VOLATILE));
   }
 
+  type *get_aligned (size_t alignment_in_bytes) const;
+
 private:
   tree m_inner;
 };

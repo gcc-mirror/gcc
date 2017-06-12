@@ -237,7 +237,7 @@ expected_loop_iterations_unbounded (const struct loop *loop,
 {
   edge e;
   edge_iterator ei;
-  gcov_type expected;
+  gcov_type expected = -1;
   
   if (read_profile_p)
     *read_profile_p = false;
@@ -245,12 +245,11 @@ expected_loop_iterations_unbounded (const struct loop *loop,
   /* If we have no profile at all, use AVG_LOOP_NITER.  */
   if (profile_status_for_fn (cfun) == PROFILE_ABSENT)
     expected = PARAM_VALUE (PARAM_AVG_LOOP_NITER);
-  else if (loop->latch && (loop->latch->count || loop->header->count))
+  else if (loop->latch && (loop->latch->count.reliable_p ()
+			   || loop->header->count.reliable_p ()))
     {
-      gcov_type count_in, count_latch;
-
-      count_in = 0;
-      count_latch = 0;
+      profile_count count_in = profile_count::zero (),
+		    count_latch = profile_count::zero ();
 
       FOR_EACH_EDGE (e, ei, loop->header->preds)
 	if (e->src == loop->latch)
@@ -258,16 +257,19 @@ expected_loop_iterations_unbounded (const struct loop *loop,
 	else
 	  count_in += e->count;
 
-      if (count_in == 0)
-	expected = count_latch * 2;
+      if (!count_latch.initialized_p ())
+	;
+      else if (!(count_in > profile_count::zero ()))
+	expected = count_latch.to_gcov_type () * 2;
       else
 	{
-	  expected = (count_latch + count_in - 1) / count_in;
+	  expected = (count_latch.to_gcov_type () + count_in.to_gcov_type ()
+		      - 1) / count_in.to_gcov_type ();
 	  if (read_profile_p)
 	    *read_profile_p = true;
 	}
     }
-  else
+  if (expected == -1)
     {
       int freq_in, freq_latch;
 
@@ -472,9 +474,11 @@ single_likely_exit (struct loop *loop)
       /* The constant of 5 is set in a way so noreturn calls are
 	 ruled out by this test.  The static branch prediction algorithm
          will not assign such a low probability to conditionals for usual
-         reasons.  */
-      if (profile_status_for_fn (cfun) != PROFILE_ABSENT
-	  && ex->probability < 5 && !ex->count)
+         reasons.
+	 FIXME: Turn to likely_never_executed  */
+      if ((profile_status_for_fn (cfun) != PROFILE_ABSENT
+	   && ex->probability < 5)
+	  || ex->count == profile_count::zero ())
 	continue;
       if (!found)
 	found = ex;

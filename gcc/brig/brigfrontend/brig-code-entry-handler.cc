@@ -464,13 +464,32 @@ brig_code_entry_handler::build_address_operand
   uint64_t offs = gccbrig_to_uint64_t (addr_operand.offset);
   if (offs > 0 || addr == NULL_TREE)
     {
-      tree const_offset_2 = build_int_cst (size_type_node, offs);
+      /* In large mode, the offset is treated as 32bits unless it's
+	 global, readonly or kernarg address space.
+	 See:
+	 http://www.hsafoundation.com/html_spec111/HSA_Library.htm
+	 #PRM/Topics/02_ProgModel/small_and_large_machine_models.htm
+	 #table_machine_model_data_sizes */
+
+      int is64b_offset = segment == BRIG_SEGMENT_GLOBAL
+	|| segment == BRIG_SEGMENT_READONLY
+	|| segment == BRIG_SEGMENT_KERNARG;
+
+      /* The original offset is signed and should be sign
+	 extended for the pointer arithmetics.  */
+      tree const_offset_2 = is64b_offset
+        ? build_int_cst (size_type_node, offs)
+        : convert (long_integer_type_node,
+                   build_int_cst (integer_type_node, offs));
+
       if (addr == NULL_TREE)
 	addr = const_offset_2;
       else
 	addr = build2 (POINTER_PLUS_EXPR, ptr_type_node,
-		       addr, convert (size_type_node, const_offset_2));
-
+		       /* Addr can be a constant offset in case this is
+			  a private array access.  */
+		       convert (ptr_type_node, addr),
+		       convert (size_type_node, const_offset_2));
     }
 
   gcc_assert (addr != NULL_TREE);
@@ -1264,6 +1283,10 @@ brig_code_entry_handler::build_operands (const BrigInstBase &brig_inst)
 	{
 	  operand_type = uint32_type_node;
 	  half_to_float = false;
+	}
+      else if (brig_inst.opcode == BRIG_OPCODE_ACTIVELANEPERMUTE && i == 4)
+	{
+	  operand_type = uint32_type_node;
 	}
       else if (half_to_float)
 	/* Treat the operands as the storage type at this point.  */

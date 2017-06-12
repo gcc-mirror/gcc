@@ -1,3 +1,5 @@
+/* { dg-additional-options "-DSTACK_SIZE=[dg-effective-target-value stack_size]" { target { stack_size } } } */
+
 #ifdef STACK_SIZE
 # define A_SIZE (STACK_SIZE/sizeof(int))
 #else

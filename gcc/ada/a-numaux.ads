@@ -7,7 +7,7 @@
 --                                 S p e c                                  --
 --                       (C Library Version, non-x86)                       --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -40,9 +40,10 @@
 --  This version here is for use with normal Unix math functions. Alternative
 --  versions are provided for special situations:
 
---    a-numaux-darwin    For OS/X (special handling of sin/cos for accuracy)
+--    a-numaux-darwin    For PowerPC/Darwin (special handling of sin/cos)
 --    a-numaux-libc-x86  For the x86, using 80-bit long double format
---    a-numaux-x86       For the x86, using 64-bit IEEE (inline asm statements)
+--    a-numaux-x86       For the x86, using 80-bit long double format with
+--                       inline asm statements
 --    a-numaux-vxworks   For use on VxWorks (where we have no libm.a library)
 
 package Ada.Numerics.Aux is
@@ -50,7 +51,7 @@ package Ada.Numerics.Aux is
 
    pragma Linker_Options ("-lm");
 
-   type Double is digits 15;
+   type Double is new Long_Float;
    --  Type Double is the type used to call the C routines
 
    --  We import these functions directly from C. Note that we label them

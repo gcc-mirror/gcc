@@ -46,7 +46,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "lto-partition.h"
 #include "context.h"
 #include "pass_manager.h"
-#include "ipa-inline.h"
+#include "ipa-fnsummary.h"
 #include "params.h"
 #include "ipa-utils.h"
 #include "gomp-constants.h"
@@ -1162,6 +1162,8 @@ compare_tree_sccs_1 (tree t1, tree t2, tree **map)
 	}
       else if (code == ARRAY_TYPE)
 	compare_values (TYPE_NONALIASED_COMPONENT);
+      if (AGGREGATE_TYPE_P (t1))
+	compare_values (TYPE_TYPELESS_STORAGE);
       compare_values (TYPE_PACKED);
       compare_values (TYPE_RESTRICT);
       compare_values (TYPE_USER_ALIGN);
@@ -2925,7 +2927,7 @@ read_cgraph_and_symbols (unsigned nfiles, const char **fnames)
   if (symtab->dump_file)
     {
       fprintf (symtab->dump_file, "Before merging:\n");
-      symtab_node::dump_table (symtab->dump_file);
+      symtab->dump (symtab->dump_file);
     }
   if (!flag_ltrans)
     {
@@ -3090,7 +3092,7 @@ do_whole_program_analysis (void)
   symtab->function_flags_ready = true;
 
   if (symtab->dump_file)
-    symtab_node::dump_table (symtab->dump_file);
+    symtab->dump (symtab->dump_file);
   bitmap_obstack_initialize (NULL);
   symtab->state = IPA_SSA;
 
@@ -3103,7 +3105,7 @@ do_whole_program_analysis (void)
   if (symtab->dump_file)
     {
       fprintf (symtab->dump_file, "Optimized ");
-      symtab_node::dump_table (symtab->dump_file);
+      symtab->dump (symtab->dump_file);
     }
 
   symtab_node::checking_verify_symtab_nodes ();
@@ -3127,7 +3129,7 @@ do_whole_program_analysis (void)
 
   /* Inline summaries are needed for balanced partitioning.  Free them now so
      the memory can be used for streamer caches.  */
-  inline_free_summary ();
+  ipa_free_fn_summary ();
 
   /* AUX pointers are used by partitioning code to bookkeep number of
      partitions symbol is in.  This is no longer needed.  */

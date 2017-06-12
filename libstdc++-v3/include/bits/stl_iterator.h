@@ -721,6 +721,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /**
    *  @param __x  A container of arbitrary type.
+   *  @param __i  An iterator into the container.
    *  @return  An instance of insert_iterator working on @p __x.
    *
    *  This wrapper function helps in creating insert_iterator instances.

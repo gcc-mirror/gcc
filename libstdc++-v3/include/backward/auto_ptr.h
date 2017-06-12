@@ -53,6 +53,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       auto_ptr_ref(_Tp1* __p): _M_ptr(__p) { }
     } _GLIBCXX_DEPRECATED;
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 
   /**
    *  @brief  A simple smart pointer providing strict ownership semantics.
@@ -326,6 +328,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     unique_ptr<_Tp, _Dp>::unique_ptr(auto_ptr<_Up>&& __u) noexcept
     : _M_t(__u.release(), deleter_type()) { }
 #endif
+
+#pragma GCC diagnostic pop
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace

@@ -2831,6 +2831,8 @@ eliminate_regs_1 (rtx x, machine_mode mem_mode, rtx insn,
 		  || x_size == new_size)
 	      )
 	    return adjust_address_nv (new_rtx, GET_MODE (x), SUBREG_BYTE (x));
+	  else if (insn && GET_CODE (insn) == DEBUG_INSN)
+	    return gen_rtx_raw_SUBREG (GET_MODE (x), new_rtx, SUBREG_BYTE (x));
 	  else
 	    return gen_rtx_SUBREG (GET_MODE (x), new_rtx, SUBREG_BYTE (x));
 	}
@@ -3819,6 +3821,7 @@ verify_initial_elim_offsets (void)
   if (!num_eliminable)
     return true;
 
+  targetm.compute_frame_layout ();
   for (ep = reg_eliminate; ep < &reg_eliminate[NUM_ELIMINABLE_REGS]; ep++)
     {
       INITIAL_ELIMINATION_OFFSET (ep->from, ep->to, t);
@@ -3836,6 +3839,7 @@ set_initial_elim_offsets (void)
 {
   struct elim_table *ep = reg_eliminate;
 
+  targetm.compute_frame_layout ();
   for (; ep < &reg_eliminate[NUM_ELIMINABLE_REGS]; ep++)
     {
       INITIAL_ELIMINATION_OFFSET (ep->from, ep->to, ep->initial_offset);

@@ -1818,6 +1818,15 @@ is_critical_func (tree decl = current_function_decl)
   return has_attr (ATTR_CRIT, decl);
 }
 
+static bool
+has_section_name (const char * name, tree decl = current_function_decl)
+{
+  if (decl == NULL_TREE)
+    return false;
+  return (DECL_SECTION_NAME (decl)
+    && (strcmp (name, DECL_SECTION_NAME (decl)) == 0));
+}
+
 #undef  TARGET_ALLOCATE_STACK_SLOTS_FOR_ARGS
 #define TARGET_ALLOCATE_STACK_SLOTS_FOR_ARGS	msp430_allocate_stack_slots_for_args
 
@@ -2167,6 +2176,12 @@ gen_prefix (tree decl)
   if (has_attr ("section", decl))
     return NULL;
 
+  /* If the function has been put in the .lowtext section (because it is an
+     interrupt handler, and the large memory model is used), then do not add
+     any prefixes.  */
+  if (has_section_name (".lowtext", decl))
+    return NULL;
+
   /* If the object has __attribute__((lower)) then use the ".lower." prefix.  */
   if (has_attr (ATTR_LOWER, decl))
     return lower_prefix;
@@ -2501,7 +2516,7 @@ msp430_expand_delay_cycles (rtx arg)
     {
       if (c < 0)
 	{
-	  error ("__delay_cycles only takes non-negative cycle counts.");
+	  error ("__delay_cycles only takes non-negative cycle counts");
 	  return NULL_RTX;
 	}
     }
@@ -2521,7 +2536,7 @@ msp430_expand_delay_cycles (rtx arg)
 	  c %= 4;
 	  if ((unsigned long long) i > 0xffffffffULL)
 	    {
-	      error ("__delay_cycles is limited to 32-bit loop counts.");
+	      error ("__delay_cycles is limited to 32-bit loop counts");
 	      return NULL_RTX;
 	    }
 	}

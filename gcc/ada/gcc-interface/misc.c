@@ -266,10 +266,6 @@ gnat_post_options (const char **pfilename ATTRIBUTE_UNUSED)
   if (!global_options_set.x_flag_diagnostics_show_caret)
     global_dc->show_caret = false;
 
-  /* Set strict overflow by default for Ada.  */
-  if (!global_options_set.x_flag_strict_overflow)
-    global_options.x_flag_strict_overflow = true;
-
   /* Warn only if STABS is not the default: we don't want to emit a warning if
      the user did not use a -gstabs option.  */
   if (PREFERRED_DEBUGGING_TYPE != DBX_DEBUG && write_symbols == DBX_DEBUG)

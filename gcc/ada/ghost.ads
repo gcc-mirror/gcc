@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2014-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 2014-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -101,21 +101,17 @@ package Ghost is
    procedure Lock;
    --  Lock internal tables before calling backend
 
-   procedure Mark_And_Set_Ghost_Assignment
-     (N    : Node_Id;
-      Mode : out Ghost_Mode_Type);
+   procedure Mark_And_Set_Ghost_Assignment (N : Node_Id);
    --  Mark assignment statement N as Ghost when:
    --
    --    * The left hand side denotes a Ghost entity
    --
-   --  Install the Ghost mode of the assignment statement. Mode is the Ghost
-   --  mode in effect prior to processing the assignment. This routine starts
+   --  Install the Ghost mode of the assignment statement. This routine starts
    --  a Ghost region and must be used in conjunction with Restore_Ghost_Mode.
 
    procedure Mark_And_Set_Ghost_Body
      (N       : Node_Id;
-      Spec_Id : Entity_Id;
-      Mode    : out Ghost_Mode_Type);
+      Spec_Id : Entity_Id);
    --  Mark package or subprogram body N as Ghost when:
    --
    --    * The body is subject to pragma Ghost
@@ -125,14 +121,12 @@ package Ghost is
    --
    --    * The body appears within a Ghost region
    --
-   --  Install the Ghost mode of the body. Mode is the Ghost mode prior to
-   --  processing the body. This routine starts a Ghost region and must be
-   --  used in conjunction with Restore_Ghost_Mode.
+   --  Install the Ghost mode of the body. This routine starts a Ghost region
+   --  and must be used in conjunction with Restore_Ghost_Mode.
 
    procedure Mark_And_Set_Ghost_Completion
      (N       : Node_Id;
-      Prev_Id : Entity_Id;
-      Mode    : out Ghost_Mode_Type);
+      Prev_Id : Entity_Id);
    --  Mark completion N of a deferred constant or private type [extension]
    --  Ghost when:
    --
@@ -140,13 +134,10 @@ package Ghost is
    --
    --    * The completion appears within a Ghost region
    --
-   --  Install the Ghost mode of the completion. Mode is the Ghost mode prior
-   --  to processing the completion. This routine starts a Ghost region and
-   --  must be used in conjunction with Restore_Ghost_Mode.
+   --  Install the Ghost mode of the completion. This routine starts a Ghost
+   --  region and must be used in conjunction with Restore_Ghost_Mode.
 
-   procedure Mark_And_Set_Ghost_Declaration
-     (N    : Node_Id;
-      Mode : out Ghost_Mode_Type);
+   procedure Mark_And_Set_Ghost_Declaration (N : Node_Id);
    --  Mark declaration N as Ghost when:
    --
    --    * The declaration is subject to pragma Ghost
@@ -156,14 +147,12 @@ package Ghost is
    --
    --    * The declaration appears within a Ghost region
    --
-   --  Install the Ghost mode of the declaration. Mode is the Ghost mode prior
-   --  to processing the declaration. This routine starts a Ghost region and
-   --  must be used in conjunction with Restore_Ghost_Mode.
+   --  Install the Ghost mode of the declaration. This routine starts a Ghost
+   --  region and must be used in conjunction with Restore_Ghost_Mode.
 
    procedure Mark_And_Set_Ghost_Instantiation
      (N      : Node_Id;
-      Gen_Id : Entity_Id;
-      Mode   : out Ghost_Mode_Type);
+      Gen_Id : Entity_Id);
    --  Mark instantiation N as Ghost when:
    --
    --    * The instantiation is subject to pragma Ghost
@@ -172,20 +161,16 @@ package Ghost is
    --
    --    * The instantiation appears within a Ghost region
    --
-   --  Install the Ghost mode of the instantiation. Mode is the Ghost mode
-   --  prior to processing the instantiation. This routine starts a Ghost
+   --  Install the Ghost mode of the instantiation. This routine starts a Ghost
    --  region and must be used in conjunction with Restore_Ghost_Mode.
 
-   procedure Mark_And_Set_Ghost_Procedure_Call
-     (N    : Node_Id;
-      Mode : out Ghost_Mode_Type);
+   procedure Mark_And_Set_Ghost_Procedure_Call (N : Node_Id);
    --  Mark procedure call N as Ghost when:
    --
    --    * The procedure being invoked is a Ghost entity
    --
-   --  Install the Ghost mode of the procedure call. Mode is the Ghost mode
-   --  prior to processing the procedure call. This routine starts a Ghost
-   --  region and must be used in conjunction with Restore_Ghost_Mode.
+   --  Install the Ghost mode of the procedure call. This routine starts a
+   --  Ghost region and must be used in conjunction with Restore_Ghost_Mode.
 
    procedure Mark_Ghost_Clause (N : Node_Id);
    --  Mark use package, use type, or with clause N as Ghost when:
@@ -220,12 +205,9 @@ package Ghost is
    --  region denoted by Mode. This routine must be used in conjunction
    --  with Mark_And_Set_xxx routines as well as Set_Ghost_Mode.
 
-   procedure Set_Ghost_Mode
-     (N    : Node_Or_Entity_Id;
-      Mode : out Ghost_Mode_Type);
-   --  Install the Ghost mode of arbitrary node N. Mode is the Ghost mode prior
-   --  to processing the node. This routine starts a Ghost region and must be
-   --  used in conjunction with Restore_Ghost_Mode.
+   procedure Set_Ghost_Mode (N : Node_Or_Entity_Id);
+   --  Install the Ghost mode of arbitrary node N. This routine starts a Ghost
+   --  region and must be used in conjunction with Restore_Ghost_Mode.
 
    procedure Set_Is_Ghost_Entity (Id : Entity_Id);
    --  Set the relevant Ghost attributes of entity Id depending on the current

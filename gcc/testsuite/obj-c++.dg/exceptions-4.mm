@@ -33,18 +33,18 @@ int test (id object)
   @try { @throw object; }
   @catch
     {          /* { dg-error "expected" } */
-      dummy++; /* { dg-error "@catch parameter is not a known Objective-C class type" "" { target *-*-* } 35 } */
+      dummy++; /* { dg-error "@catch parameter is not a known Objective-C class type" "" { target *-*-* } .-1 } */
     }
   @catch ()  /* { dg-error "expected identifier before" } */
-    {        /* { dg-error "@catch parameter is not a known Objective-C class type" "" { target *-*-* } 38 } */
+    {        /* { dg-error "@catch parameter is not a known Objective-C class type" "" { target *-*-* } .-1 } */
       dummy++;
     }
   @catch (i) /* { dg-error ".i. has not been declared" } */
-    {        /* { dg-error "@catch parameter is not a known Objective-C class type" "" { target *-*-* } 42 } */
+    {        /* { dg-error "@catch parameter is not a known Objective-C class type" "" { target *-*-* } .-1 } */
       dummy++;
     }
   @catch (id <MyProtocol x) /* { dg-error "expected ... before .x." } */
-    {                       /* { dg-error "@catch parameter can not be protocol-qualified" "" { target *-*-* } 46 } */
+    {                       /* { dg-error "@catch parameter can not be protocol-qualified" "" { target *-*-* } .-1 } */
       dummy++;
     }
   @catch MyObject *x       /* { dg-error "expected ... before .MyObject." } */

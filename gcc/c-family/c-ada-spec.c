@@ -72,7 +72,7 @@ macro_length (const cpp_macro *macro, int *supported, int *buffer_len,
 
   if (macro->fun_like)
     {
-      param_len++;
+      (*param_len)++;
       for (i = 0; i < macro->paramc; i++)
 	{
 	  cpp_hashnode *param = macro->params[i];
@@ -1799,7 +1799,7 @@ is_char_array (tree t)
 
   tmp = TREE_TYPE (tmp);
   return num_dim == 1 && TREE_CODE (tmp) == INTEGER_TYPE
-    && !strcmp (IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (tmp))), "char");
+    && id_equal (DECL_NAME (TYPE_NAME (tmp)), "char");
 }
 
 /* Dump in BUFFER an array type T in Ada syntax.  Assume that the "type"

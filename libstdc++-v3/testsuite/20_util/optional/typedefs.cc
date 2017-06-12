@@ -29,5 +29,7 @@ using check2_t = std::in_place_t;
 using check3_t = std::nullopt_t;
 using check4_t = std::bad_optional_access;
 
-static_assert(std::is_base_of<std::logic_error, check4_t>::value,
-	      "bad_optional_access must derive from logic_error");
+static_assert(!std::is_base_of<std::logic_error, check4_t>::value,
+	      "bad_optional_access must derive from exception");
+static_assert(std::is_base_of<std::exception, check4_t>::value,
+	      "bad_optional_access must derive from exception");

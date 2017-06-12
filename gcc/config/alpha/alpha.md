@@ -1671,27 +1671,21 @@
   "cpysn %R2,%R1,%0"
   [(set_attr "type" "fadd")])
 
-(define_insn "*add<mode>3_ieee"
-  [(set (match_operand:FMODE 0 "register_operand" "=&f")
-	(plus:FMODE (match_operand:FMODE 1 "reg_or_0_operand" "%fG")
-		    (match_operand:FMODE 2 "reg_or_0_operand" "fG")))]
-  "TARGET_FP && alpha_fptm >= ALPHA_FPTM_SU"
-  "add<modesuffix>%/ %R1,%R2,%0"
-  [(set_attr "type" "fadd")
-   (set_attr "trap" "yes")
-   (set_attr "round_suffix" "normal")
-   (set_attr "trap_suffix" "u_su_sui")])
-
 (define_insn "add<mode>3"
-  [(set (match_operand:FMODE 0 "register_operand" "=f")
-	(plus:FMODE (match_operand:FMODE 1 "reg_or_0_operand" "%fG")
-		    (match_operand:FMODE 2 "reg_or_0_operand" "fG")))]
+  [(set (match_operand:FMODE 0 "register_operand" "=f,&f")
+	(plus:FMODE (match_operand:FMODE 1 "reg_or_0_operand" "%fG,fG")
+		    (match_operand:FMODE 2 "reg_or_0_operand" "fG,fG")))]
   "TARGET_FP"
   "add<modesuffix>%/ %R1,%R2,%0"
   [(set_attr "type" "fadd")
    (set_attr "trap" "yes")
    (set_attr "round_suffix" "normal")
-   (set_attr "trap_suffix" "u_su_sui")])
+   (set_attr "trap_suffix" "u_su_sui")
+   (set (attr "enabled")
+     (cond [(eq_attr "alternative" "0")
+	      (symbol_ref "alpha_fptm < ALPHA_FPTM_SU")
+	   ]
+	   (symbol_ref "true")))])
 
 (define_insn "*adddf_ext1"
   [(set (match_operand:DF 0 "register_operand" "=f")
@@ -1725,27 +1719,21 @@
   "TARGET_HAS_XFLOATING_LIBS"
   "alpha_emit_xfloating_arith (PLUS, operands); DONE;")
 
-(define_insn "*sub<mode>3_ieee"
-  [(set (match_operand:FMODE 0 "register_operand" "=&f")
-	(minus:FMODE (match_operand:FMODE 1 "reg_or_0_operand" "fG")
-		     (match_operand:FMODE 2 "reg_or_0_operand" "fG")))]
-  "TARGET_FP && alpha_fptm >= ALPHA_FPTM_SU"
-  "sub<modesuffix>%/ %R1,%R2,%0"
-  [(set_attr "type" "fadd")
-   (set_attr "trap" "yes")
-   (set_attr "round_suffix" "normal")
-   (set_attr "trap_suffix" "u_su_sui")])
-
 (define_insn "sub<mode>3"
-  [(set (match_operand:FMODE 0 "register_operand" "=f")
-	(minus:FMODE (match_operand:FMODE 1 "reg_or_0_operand" "fG")
-		     (match_operand:FMODE 2 "reg_or_0_operand" "fG")))]
+  [(set (match_operand:FMODE 0 "register_operand" "=f,&f")
+	(minus:FMODE (match_operand:FMODE 1 "reg_or_0_operand" "fG,fG")
+		     (match_operand:FMODE 2 "reg_or_0_operand" "fG,fG")))]
   "TARGET_FP"
   "sub<modesuffix>%/ %R1,%R2,%0"
   [(set_attr "type" "fadd")
    (set_attr "trap" "yes")
    (set_attr "round_suffix" "normal")
-   (set_attr "trap_suffix" "u_su_sui")])
+   (set_attr "trap_suffix" "u_su_sui")
+   (set (attr "enabled")
+     (cond [(eq_attr "alternative" "0")
+	      (symbol_ref "alpha_fptm < ALPHA_FPTM_SU")
+	   ]
+	   (symbol_ref "true")))])
 
 (define_insn "*subdf_ext1"
   [(set (match_operand:DF 0 "register_operand" "=f")
@@ -1791,27 +1779,21 @@
   "TARGET_HAS_XFLOATING_LIBS"
   "alpha_emit_xfloating_arith (MINUS, operands); DONE;")
 
-(define_insn "*mul<mode>3_ieee"
-  [(set (match_operand:FMODE 0 "register_operand" "=&f")
-	(mult:FMODE (match_operand:FMODE 1 "reg_or_0_operand" "%fG")
-		    (match_operand:FMODE 2 "reg_or_0_operand" "fG")))]
-  "TARGET_FP && alpha_fptm >= ALPHA_FPTM_SU"
-  "mul<modesuffix>%/ %R1,%R2,%0"
-  [(set_attr "type" "fmul")
-   (set_attr "trap" "yes")
-   (set_attr "round_suffix" "normal")
-   (set_attr "trap_suffix" "u_su_sui")])
-
 (define_insn "mul<mode>3"
-  [(set (match_operand:FMODE 0 "register_operand" "=f")
-	(mult:FMODE (match_operand:FMODE 1 "reg_or_0_operand" "%fG")
-		    (match_operand:FMODE 2 "reg_or_0_operand" "fG")))]
+  [(set (match_operand:FMODE 0 "register_operand" "=f,&f")
+	(mult:FMODE (match_operand:FMODE 1 "reg_or_0_operand" "%fG,fG")
+		    (match_operand:FMODE 2 "reg_or_0_operand" "fG,fG")))]
   "TARGET_FP"
   "mul<modesuffix>%/ %R1,%R2,%0"
   [(set_attr "type" "fmul")
    (set_attr "trap" "yes")
    (set_attr "round_suffix" "normal")
-   (set_attr "trap_suffix" "u_su_sui")])
+   (set_attr "trap_suffix" "u_su_sui")
+   (set (attr "enabled")
+     (cond [(eq_attr "alternative" "0")
+	      (symbol_ref "alpha_fptm < ALPHA_FPTM_SU")
+	   ]
+	   (symbol_ref "true")))])
 
 (define_insn "*muldf_ext1"
   [(set (match_operand:DF 0 "register_operand" "=f")
@@ -1845,29 +1827,22 @@
   "TARGET_HAS_XFLOATING_LIBS"
   "alpha_emit_xfloating_arith (MULT, operands); DONE;")
 
-(define_insn "*div<mode>3_ieee"
-  [(set (match_operand:FMODE 0 "register_operand" "=&f")
-	(div:FMODE (match_operand:FMODE 1 "reg_or_0_operand" "fG")
-		   (match_operand:FMODE 2 "reg_or_0_operand" "fG")))]
-  "TARGET_FP && alpha_fptm >= ALPHA_FPTM_SU"
-  "div<modesuffix>%/ %R1,%R2,%0"
-  [(set_attr "type" "fdiv")
-   (set_attr "opsize" "<opmode>")
-   (set_attr "trap" "yes")
-   (set_attr "round_suffix" "normal")
-   (set_attr "trap_suffix" "u_su_sui")])
-
 (define_insn "div<mode>3"
-  [(set (match_operand:FMODE 0 "register_operand" "=f")
-	(div:FMODE (match_operand:FMODE 1 "reg_or_0_operand" "fG")
-		   (match_operand:FMODE 2 "reg_or_0_operand" "fG")))]
+  [(set (match_operand:FMODE 0 "register_operand" "=f,&f")
+	(div:FMODE (match_operand:FMODE 1 "reg_or_0_operand" "fG,fG")
+		   (match_operand:FMODE 2 "reg_or_0_operand" "fG,fG")))]
   "TARGET_FP"
   "div<modesuffix>%/ %R1,%R2,%0"
   [(set_attr "type" "fdiv")
    (set_attr "opsize" "<opmode>")
    (set_attr "trap" "yes")
    (set_attr "round_suffix" "normal")
-   (set_attr "trap_suffix" "u_su_sui")])
+   (set_attr "trap_suffix" "u_su_sui")
+   (set (attr "enabled")
+     (cond [(eq_attr "alternative" "0")
+	      (symbol_ref "alpha_fptm < ALPHA_FPTM_SU")
+	   ]
+	   (symbol_ref "true")))])
 
 (define_insn "*divdf_ext1"
   [(set (match_operand:DF 0 "register_operand" "=f")
@@ -1912,27 +1887,21 @@
   "TARGET_HAS_XFLOATING_LIBS"
   "alpha_emit_xfloating_arith (DIV, operands); DONE;")
 
-(define_insn "*sqrt<mode>2_ieee"
-  [(set (match_operand:FMODE 0 "register_operand" "=&f")
-	(sqrt:FMODE (match_operand:FMODE 1 "reg_or_0_operand" "fG")))]
-  "TARGET_FP && TARGET_FIX && alpha_fptm >= ALPHA_FPTM_SU"
-  "sqrt<modesuffix>%/ %R1,%0"
-  [(set_attr "type" "fsqrt")
-   (set_attr "opsize" "<opmode>")
-   (set_attr "trap" "yes")
-   (set_attr "round_suffix" "normal")
-   (set_attr "trap_suffix" "u_su_sui")])
-
 (define_insn "sqrt<mode>2"
-  [(set (match_operand:FMODE 0 "register_operand" "=f")
-	(sqrt:FMODE (match_operand:FMODE 1 "reg_or_0_operand" "fG")))]
+  [(set (match_operand:FMODE 0 "register_operand" "=f,&f")
+	(sqrt:FMODE (match_operand:FMODE 1 "reg_or_0_operand" "fG,fG")))]
   "TARGET_FP && TARGET_FIX"
   "sqrt<modesuffix>%/ %R1,%0"
   [(set_attr "type" "fsqrt")
    (set_attr "opsize" "<opmode>")
    (set_attr "trap" "yes")
    (set_attr "round_suffix" "normal")
-   (set_attr "trap_suffix" "u_su_sui")])
+   (set_attr "trap_suffix" "u_su_sui")
+   (set (attr "enabled")
+     (cond [(eq_attr "alternative" "0")
+	      (symbol_ref "alpha_fptm < ALPHA_FPTM_SU")
+	   ]
+	   (symbol_ref "true")))])
 
 ;; Define conversion operators between DFmode and SImode, using the cvtql
 ;; instruction.  To allow combine et al to do useful things, we keep the
@@ -1991,27 +1960,21 @@
   [(set_attr "type" "fadd")
    (set_attr "trap" "yes")])
 
-(define_insn "*fix_truncdfdi_ieee"
-  [(set (match_operand:DI 0 "reg_no_subreg_operand" "=&f")
-	(match_operator:DI 2 "fix_operator" 
-	  [(match_operand:DF 1 "reg_or_0_operand" "fG")]))]
-  "TARGET_FP && alpha_fptm >= ALPHA_FPTM_SU"
-  "cvt%-q%/ %R1,%0"
-  [(set_attr "type" "fadd")
-   (set_attr "trap" "yes")
-   (set_attr "round_suffix" "c")
-   (set_attr "trap_suffix" "v_sv_svi")])
-
 (define_insn "*fix_truncdfdi2"
-  [(set (match_operand:DI 0 "reg_no_subreg_operand" "=f")
+  [(set (match_operand:DI 0 "reg_no_subreg_operand" "=f,&f")
 	(match_operator:DI 2 "fix_operator" 
-	  [(match_operand:DF 1 "reg_or_0_operand" "fG")]))]
+	  [(match_operand:DF 1 "reg_or_0_operand" "fG,fG")]))]
   "TARGET_FP"
   "cvt%-q%/ %R1,%0"
   [(set_attr "type" "fadd")
    (set_attr "trap" "yes")
    (set_attr "round_suffix" "c")
-   (set_attr "trap_suffix" "v_sv_svi")])
+   (set_attr "trap_suffix" "v_sv_svi")
+   (set (attr "enabled")
+     (cond [(eq_attr "alternative" "0")
+	      (symbol_ref "alpha_fptm < ALPHA_FPTM_SU")
+	   ]
+	   (symbol_ref "true")))])
 
 (define_expand "fix_truncdfdi2"
   [(set (match_operand:DI 0 "reg_no_subreg_operand")
@@ -2063,27 +2026,21 @@
   [(set_attr "type" "fadd")
    (set_attr "trap" "yes")])
 
-(define_insn "*fix_truncsfdi_ieee"
-  [(set (match_operand:DI 0 "reg_no_subreg_operand" "=&f")
-	(match_operator:DI 2 "fix_operator" 
-	  [(float_extend:DF (match_operand:SF 1 "reg_or_0_operand" "fG"))]))]
-  "TARGET_FP && alpha_fptm >= ALPHA_FPTM_SU"
-  "cvt%-q%/ %R1,%0"
-  [(set_attr "type" "fadd")
-   (set_attr "trap" "yes")
-   (set_attr "round_suffix" "c")
-   (set_attr "trap_suffix" "v_sv_svi")])
-
 (define_insn "*fix_truncsfdi2"
-  [(set (match_operand:DI 0 "reg_no_subreg_operand" "=f")
+  [(set (match_operand:DI 0 "reg_no_subreg_operand" "=f,&f")
 	(match_operator:DI 2 "fix_operator" 
-	  [(float_extend:DF (match_operand:SF 1 "reg_or_0_operand" "fG"))]))]
+	  [(float_extend:DF (match_operand:SF 1 "reg_or_0_operand" "fG,fG"))]))]
   "TARGET_FP"
   "cvt%-q%/ %R1,%0"
   [(set_attr "type" "fadd")
    (set_attr "trap" "yes")
    (set_attr "round_suffix" "c")
-   (set_attr "trap_suffix" "v_sv_svi")])
+   (set_attr "trap_suffix" "v_sv_svi")
+   (set (attr "enabled")
+     (cond [(eq_attr "alternative" "0")
+	      (symbol_ref "alpha_fptm < ALPHA_FPTM_SU")
+	   ]
+	   (symbol_ref "true")))])
 
 (define_expand "fix_truncsfdi2"
   [(set (match_operand:DI 0 "reg_no_subreg_operand")
@@ -2108,25 +2065,20 @@
   "TARGET_HAS_XFLOATING_LIBS"
   "alpha_emit_xfloating_cvt (UNSIGNED_FIX, operands); DONE;")
 
-(define_insn "*floatdisf_ieee"
-  [(set (match_operand:SF 0 "register_operand" "=&f")
-	(float:SF (match_operand:DI 1 "reg_no_subreg_operand" "f")))]
-  "TARGET_FP && alpha_fptm >= ALPHA_FPTM_SU"
-  "cvtq%,%/ %1,%0"
-  [(set_attr "type" "fadd")
-   (set_attr "trap" "yes")
-   (set_attr "round_suffix" "normal")
-   (set_attr "trap_suffix" "sui")])
-
 (define_insn "floatdisf2"
-  [(set (match_operand:SF 0 "register_operand" "=f")
-	(float:SF (match_operand:DI 1 "reg_no_subreg_operand" "f")))]
+  [(set (match_operand:SF 0 "register_operand" "=f,&f")
+	(float:SF (match_operand:DI 1 "reg_no_subreg_operand" "f,f")))]
   "TARGET_FP"
   "cvtq%,%/ %1,%0"
   [(set_attr "type" "fadd")
    (set_attr "trap" "yes")
    (set_attr "round_suffix" "normal")
-   (set_attr "trap_suffix" "sui")])
+   (set_attr "trap_suffix" "sui")
+   (set (attr "enabled")
+     (cond [(eq_attr "alternative" "0")
+	      (symbol_ref "alpha_fptm < ALPHA_FPTM_SU")
+	   ]
+	   (symbol_ref "true")))])
 
 (define_insn_and_split "*floatsisf2_ieee"
   [(set (match_operand:SF 0 "register_operand" "=&f")
@@ -2155,25 +2107,20 @@
   operands[2] = gen_rtx_REG (DImode, REGNO (operands[0]));
 })
 
-(define_insn "*floatdidf_ieee"
-  [(set (match_operand:DF 0 "register_operand" "=&f")
-	(float:DF (match_operand:DI 1 "reg_no_subreg_operand" "f")))]
-  "TARGET_FP && alpha_fptm >= ALPHA_FPTM_SU"
-  "cvtq%-%/ %1,%0"
-  [(set_attr "type" "fadd")
-   (set_attr "trap" "yes")
-   (set_attr "round_suffix" "normal")
-   (set_attr "trap_suffix" "sui")])
-
 (define_insn "floatdidf2"
-  [(set (match_operand:DF 0 "register_operand" "=f")
-	(float:DF (match_operand:DI 1 "reg_no_subreg_operand" "f")))]
+  [(set (match_operand:DF 0 "register_operand" "=f,&f")
+	(float:DF (match_operand:DI 1 "reg_no_subreg_operand" "f,f")))]
   "TARGET_FP"
   "cvtq%-%/ %1,%0"
   [(set_attr "type" "fadd")
    (set_attr "trap" "yes")
    (set_attr "round_suffix" "normal")
-   (set_attr "trap_suffix" "sui")])
+   (set_attr "trap_suffix" "sui")
+   (set (attr "enabled")
+     (cond [(eq_attr "alternative" "0")
+	      (symbol_ref "alpha_fptm < ALPHA_FPTM_SU")
+	   ]
+	   (symbol_ref "true")))])
 
 (define_insn_and_split "*floatsidf2_ieee"
   [(set (match_operand:DF 0 "register_operand" "=&f")
@@ -2277,25 +2224,20 @@
   "TARGET_HAS_XFLOATING_LIBS"
   "alpha_emit_xfloating_cvt (FLOAT_EXTEND, operands); DONE;")
 
-(define_insn "*truncdfsf2_ieee"
-  [(set (match_operand:SF 0 "register_operand" "=&f")
-	(float_truncate:SF (match_operand:DF 1 "reg_or_0_operand" "fG")))]
-  "TARGET_FP && alpha_fptm >= ALPHA_FPTM_SU"
-  "cvt%-%,%/ %R1,%0"
-  [(set_attr "type" "fadd")
-   (set_attr "trap" "yes")
-   (set_attr "round_suffix" "normal")
-   (set_attr "trap_suffix" "u_su_sui")])
-
 (define_insn "truncdfsf2"
-  [(set (match_operand:SF 0 "register_operand" "=f")
-	(float_truncate:SF (match_operand:DF 1 "reg_or_0_operand" "fG")))]
+  [(set (match_operand:SF 0 "register_operand" "=f,&f")
+	(float_truncate:SF (match_operand:DF 1 "reg_or_0_operand" "fG,fG")))]
   "TARGET_FP"
   "cvt%-%,%/ %R1,%0"
   [(set_attr "type" "fadd")
    (set_attr "trap" "yes")
    (set_attr "round_suffix" "normal")
-   (set_attr "trap_suffix" "u_su_sui")])
+   (set_attr "trap_suffix" "u_su_sui")
+   (set (attr "enabled")
+     (cond [(eq_attr "alternative" "0")
+	      (symbol_ref "alpha_fptm < ALPHA_FPTM_SU")
+	   ]
+	   (symbol_ref "true")))])
 
 (define_expand "trunctfdf2"
   [(use (match_operand:DF 0 "register_operand"))
@@ -2672,27 +2614,21 @@
 ;; we need to have variants that expand the arguments from SFmode
 ;; to DFmode.
 
-(define_insn "*cmpdf_ieee"
-  [(set (match_operand:DF 0 "register_operand" "=&f")
-	(match_operator:DF 1 "alpha_fp_comparison_operator"
-			   [(match_operand:DF 2 "reg_or_0_operand" "fG")
-			    (match_operand:DF 3 "reg_or_0_operand" "fG")]))]
-  "TARGET_FP && alpha_fptm >= ALPHA_FPTM_SU"
-  "cmp%-%C1%/ %R2,%R3,%0"
-  [(set_attr "type" "fadd")
-   (set_attr "trap" "yes")
-   (set_attr "trap_suffix" "su")])
-
 (define_insn "*cmpdf_internal"
-  [(set (match_operand:DF 0 "register_operand" "=f")
+  [(set (match_operand:DF 0 "register_operand" "=f,&f")
 	(match_operator:DF 1 "alpha_fp_comparison_operator"
-			   [(match_operand:DF 2 "reg_or_0_operand" "fG")
-			    (match_operand:DF 3 "reg_or_0_operand" "fG")]))]
+			   [(match_operand:DF 2 "reg_or_0_operand" "fG,fG")
+			    (match_operand:DF 3 "reg_or_0_operand" "fG,fG")]))]
   "TARGET_FP"
   "cmp%-%C1%/ %R2,%R3,%0"
   [(set_attr "type" "fadd")
    (set_attr "trap" "yes")
-   (set_attr "trap_suffix" "su")])
+   (set_attr "trap_suffix" "su")
+   (set (attr "enabled")
+     (cond [(eq_attr "alternative" "0")
+	      (symbol_ref "alpha_fptm < ALPHA_FPTM_SU")
+	   ]
+	   (symbol_ref "true")))])
 
 (define_insn "*cmpdf_ext1"
   [(set (match_operand:DF 0 "register_operand" "=f")

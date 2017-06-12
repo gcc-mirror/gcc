@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -36,6 +36,7 @@
 with Debug;    use Debug;
 with Opt;      use Opt;
 with Output;   use Output;
+with System;   use System;
 with Tree_IO;  use Tree_IO;
 with Widechar; use Widechar;
 
@@ -115,11 +116,15 @@ package body Namet is
 
    procedure Append (Buf : in out Bounded_String; C : Character) is
    begin
-      if Buf.Length >= Buf.Chars'Last then
+      Buf.Length := Buf.Length + 1;
+
+      if Buf.Length > Buf.Chars'Last then
+         Write_Str ("Name buffer overflow; Max_Length = ");
+         Write_Int (Int (Buf.Max_Length));
+         Write_Line ("");
          raise Program_Error;
       end if;
 
-      Buf.Length := Buf.Length + 1;
       Buf.Chars (Buf.Length) := C;
    end Append;
 
@@ -133,10 +138,20 @@ package body Namet is
    end Append;
 
    procedure Append (Buf : in out Bounded_String; S : String) is
+      First : constant Natural := Buf.Length + 1;
    begin
-      for J in S'Range loop
-         Append (Buf, S (J));
-      end loop;
+      Buf.Length := Buf.Length + S'Length;
+
+      if Buf.Length > Buf.Chars'Last then
+         Write_Str ("Name buffer overflow; Max_Length = ");
+         Write_Int (Int (Buf.Max_Length));
+         Write_Line ("");
+         raise Program_Error;
+      end if;
+
+      Buf.Chars (First .. Buf.Length) := S;
+      --  A loop calling Append(Character) would be cleaner, but this slice
+      --  assignment is substantially faster.
    end Append;
 
    procedure Append (Buf : in out Bounded_String; Buf2 : Bounded_String) is
@@ -146,12 +161,13 @@ package body Namet is
 
    procedure Append (Buf : in out Bounded_String; Id : Name_Id) is
       pragma Assert (Id in Name_Entries.First .. Name_Entries.Last);
-      S : constant Int := Name_Entries.Table (Id).Name_Chars_Index;
 
+      Index : constant Int   := Name_Entries.Table (Id).Name_Chars_Index;
+      Len   : constant Short := Name_Entries.Table (Id).Name_Len;
+      Chars : Name_Chars.Table_Type renames
+                Name_Chars.Table (Index + 1 .. Index + Int (Len));
    begin
-      for J in 1 .. Natural (Name_Entries.Table (Id).Name_Len) loop
-         Append (Buf, Name_Chars.Table (S + Int (J)));
-      end loop;
+      Append (Buf, String (Chars));
    end Append;
 
    --------------------
@@ -159,8 +175,8 @@ package body Namet is
    --------------------
 
    procedure Append_Decoded (Buf : in out Bounded_String; Id : Name_Id) is
-      C : Character;
-      P : Natural;
+      C    : Character;
+      P    : Natural;
       Temp : Bounded_String;
 
    begin
@@ -806,7 +822,7 @@ package body Namet is
    end Get_Name_String;
 
    function Get_Name_String (Id : Name_Id) return String is
-      Buf : Bounded_String;
+      Buf : Bounded_String (Max_Length => Natural (Length_Of_Name (Id)));
    begin
       Append (Buf, Id);
       return +Buf;
@@ -1017,7 +1033,7 @@ package body Namet is
    end Is_Internal_Name;
 
    function Is_Internal_Name (Id : Name_Id) return Boolean is
-      Buf : Bounded_String;
+      Buf : Bounded_String (Max_Length => Natural (Length_Of_Name (Id)));
    begin
       if Id in Error_Name_Or_No_Name then
          return False;
@@ -1084,20 +1100,11 @@ package body Namet is
    begin
       Name_Chars.Set_Last (Name_Chars.Last + Name_Chars_Reserve);
       Name_Entries.Set_Last (Name_Entries.Last + Name_Entries_Reserve);
-      Name_Chars.Locked := True;
-      Name_Entries.Locked := True;
       Name_Chars.Release;
+      Name_Chars.Locked := True;
       Name_Entries.Release;
+      Name_Entries.Locked := True;
    end Lock;
-
-   ------------------------
-   -- Name_Chars_Address --
-   ------------------------
-
-   function Name_Chars_Address return System.Address is
-   begin
-      return Name_Chars.Table (0)'Address;
-   end Name_Chars_Address;
 
    ----------------
    -- Name_Enter --
@@ -1129,14 +1136,12 @@ package body Namet is
       return Name_Entries.Last;
    end Name_Enter;
 
-   --------------------------
-   -- Name_Entries_Address --
-   --------------------------
-
-   function Name_Entries_Address return System.Address is
+   function Name_Enter (S : String) return Name_Id is
+      Buf : Bounded_String (Max_Length => S'Length);
    begin
-      return Name_Entries.Table (First_Name_Id)'Address;
-   end Name_Entries_Address;
+      Append (Buf, S);
+      return Name_Enter (Buf);
+   end Name_Enter;
 
    ------------------------
    -- Name_Entries_Count --
@@ -1237,7 +1242,7 @@ package body Namet is
    end Name_Find;
 
    function Name_Find (S : String) return Name_Id is
-      Buf : Bounded_String;
+      Buf : Bounded_String (Max_Length => S'Length);
    begin
       Append (Buf, S);
       return Name_Find (Buf);
@@ -1715,11 +1720,11 @@ package body Namet is
 
    procedure Unlock is
    begin
-      Name_Chars.Set_Last (Name_Chars.Last - Name_Chars_Reserve);
-      Name_Entries.Set_Last (Name_Entries.Last - Name_Entries_Reserve);
       Name_Chars.Locked := False;
-      Name_Entries.Locked := False;
+      Name_Chars.Set_Last (Name_Chars.Last - Name_Chars_Reserve);
       Name_Chars.Release;
+      Name_Entries.Locked := False;
+      Name_Entries.Set_Last (Name_Entries.Last - Name_Entries_Reserve);
       Name_Entries.Release;
    end Unlock;
 
@@ -1740,7 +1745,7 @@ package body Namet is
 
       else
          declare
-            Buf : Bounded_String;
+            Buf : Bounded_String (Max_Length => Natural (Length_Of_Name (Id)));
          begin
             Append (Buf, Id);
             Write_Str (Buf.Chars (1 .. Buf.Length));
@@ -1755,7 +1760,7 @@ package body Namet is
    ----------------
 
    procedure Write_Name (Id : Name_Id) is
-      Buf : Bounded_String;
+      Buf : Bounded_String (Max_Length => Natural (Length_Of_Name (Id)));
    begin
       if Id >= First_Name_Id then
          Append (Buf, Id);

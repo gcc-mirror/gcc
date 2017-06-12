@@ -72,7 +72,6 @@ static void __attribute__ ((constructor))
 __guard_setup (void)
 {
   unsigned char *p;
-  int fd;
 
   if (__stack_chk_guard != 0)
     return;
@@ -91,7 +90,7 @@ __guard_setup (void)
       CryptReleaseContext(hprovider, 0);
     }
 #else
-  fd = open ("/dev/urandom", O_RDONLY);
+  int fd = open ("/dev/urandom", O_RDONLY);
   if (fd != -1)
     {
       ssize_t size = read (fd, &__stack_chk_guard,

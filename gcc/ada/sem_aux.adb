@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1041,11 +1041,16 @@ package body Sem_Aux is
 
    function Is_Generic_Formal (E : Entity_Id) return Boolean is
       Kind : Node_Kind;
+
    begin
       if No (E) then
          return False;
       else
-         Kind := Nkind (Parent (E));
+         --  Formal derived types are rewritten as private extensions, so
+         --  examine original node.
+
+         Kind := Nkind (Original_Node (Parent (E)));
+
          return
            Nkind_In (Kind, N_Formal_Object_Declaration,
                            N_Formal_Package_Declaration,
@@ -1295,7 +1300,10 @@ package body Sem_Aux is
    ----------------------
 
    function Nearest_Ancestor (Typ : Entity_Id) return Entity_Id is
-      D : constant Node_Id := Declaration_Node (Typ);
+      D : constant Node_Id := Original_Node (Declaration_Node (Typ));
+      --  We use the original node of the declaration, because derived
+      --  types from record subtypes are rewritten as record declarations,
+      --  and it is the original declaration that carries the ancestor.
 
    begin
       --  If we have a subtype declaration, get the ancestor subtype

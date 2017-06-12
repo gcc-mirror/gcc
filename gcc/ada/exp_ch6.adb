@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -158,10 +158,17 @@ package body Exp_Ch6 is
    --  the values are not changed for the call, we know immediately that
    --  we have an infinite recursion.
 
-   procedure Expand_Actuals (N : in out Node_Id; Subp : Entity_Id);
-   --  For each actual of an in-out or out parameter which is a numeric
-   --  (view) conversion of the form T (A), where A denotes a variable,
-   --  we insert the declaration:
+   procedure Expand_Actuals
+     (N         : Node_Id;
+      Subp      : Entity_Id;
+      Post_Call : out List_Id);
+   --  Return a list of actions to take place after the call in Post_Call. The
+   --  call will later be rewritten as an Expression_With_Actions, with the
+   --  Post_Call actions inserted, and the call inside.
+   --
+   --  For each actual of an in-out or out parameter which is a numeric (view)
+   --  conversion of the form T (A), where A denotes a variable, we insert the
+   --  declaration:
    --
    --    Temp : T[ := T (A)];
    --
@@ -190,11 +197,9 @@ package body Exp_Ch6 is
    --
    --  For OUT and IN OUT parameters, add predicate checks after the call
    --  based on the predicates of the actual type.
-   --
-   --  The parameter N is IN OUT because in some cases, the expansion code
-   --  rewrites the call as an expression actions with the call inside. In
-   --  this case N is reset to point to the inside call so that the caller
-   --  can continue processing of this call.
+
+   procedure Expand_Call_Helper (N : Node_Id; Post_Call : out List_Id);
+   --  Does the main work of Expand_Call. Post_Call is as for Expand_Actuals.
 
    procedure Expand_Ctrl_Function_Call (N : Node_Id);
    --  N is a function call which returns a controlled object. Transform the
@@ -227,6 +232,10 @@ package body Exp_Ch6 is
      (Subtyp : Entity_Id) return Boolean;
    --  Returns True if the given subtype is unconstrained and has one or more
    --  access discriminants.
+
+   procedure Insert_Post_Call_Actions (N : Node_Id; Post_Call : List_Id);
+   --  Insert the Post_Call list previously produced by routine Expand_Actuals
+   --  or Expand_Call_Helper into the tree.
 
    procedure Rewrite_Function_Call_For_C (N : Node_Id);
    --  When generating C code, replace a call to a function that returns an
@@ -400,12 +409,13 @@ package body Exp_Ch6 is
             Desig_Typ := Directly_Designated_Type (Ptr_Typ);
 
             --  Check for a library-level access type whose designated type has
-            --  supressed finalization. Such an access types lack a master.
-            --  Pass a null actual to the callee in order to signal a missing
-            --  master.
+            --  suppressed finalization or the access type is subject to pragma
+            --  No_Heap_Finalization. Such an access type lacks a master. Pass
+            --  a null actual to callee in order to signal a missing master.
 
             if Is_Library_Level_Entity (Ptr_Typ)
-              and then Finalize_Storage_Only (Desig_Typ)
+              and then (Finalize_Storage_Only (Desig_Typ)
+                         or else No_Heap_Finalization (Ptr_Typ))
             then
                Actual := Make_Null (Loc);
 
@@ -1146,12 +1156,15 @@ package body Exp_Ch6 is
    -- Expand_Actuals --
    --------------------
 
-   procedure Expand_Actuals (N : in out Node_Id; Subp : Entity_Id) is
+   procedure Expand_Actuals
+     (N         : Node_Id;
+      Subp      : Entity_Id;
+      Post_Call : out List_Id)
+   is
       Loc       : constant Source_Ptr := Sloc (N);
       Actual    : Node_Id;
       Formal    : Entity_Id;
       N_Node    : Node_Id;
-      Post_Call : List_Id;
       E_Actual  : Entity_Id;
       E_Formal  : Entity_Id;
 
@@ -1167,6 +1180,10 @@ package body Exp_Ch6 is
       --  This is similar to the above, but is used in cases where we know
       --  that all that is needed is to simply create a temporary and copy
       --  the value in and out of the temporary.
+
+      procedure Add_Validation_Call_By_Copy_Code (Act : Node_Id);
+      --  Perform copy-back for actual parameter Act which denotes a validation
+      --  variable.
 
       procedure Check_Fortran_Logical;
       --  A value of type Logical that is passed through a formal parameter
@@ -1606,6 +1623,85 @@ package body Exp_Ch6 is
          end if;
       end Add_Simple_Call_By_Copy_Code;
 
+      --------------------------------------
+      -- Add_Validation_Call_By_Copy_Code --
+      --------------------------------------
+
+      procedure Add_Validation_Call_By_Copy_Code (Act : Node_Id) is
+         Expr    : Node_Id;
+         Obj     : Node_Id;
+         Obj_Typ : Entity_Id;
+         Var     : Node_Id;
+         Var_Id  : Entity_Id;
+
+      begin
+         Var := Act;
+
+         --  Use the expression when the context qualifies a reference in some
+         --  fashion.
+
+         while Nkind_In (Var, N_Qualified_Expression,
+                              N_Type_Conversion,
+                              N_Unchecked_Type_Conversion)
+         loop
+            Var := Expression (Var);
+         end loop;
+
+         --  Copy the value of the validation variable back into the object
+         --  being validated.
+
+         if Is_Entity_Name (Var) then
+            Var_Id  := Entity (Var);
+            Obj     := Validated_Object (Var_Id);
+            Obj_Typ := Etype (Obj);
+
+            Expr := New_Occurrence_Of (Var_Id, Loc);
+
+            --  A type conversion is needed when the validation variable and
+            --  the validated object carry different types. This case occurs
+            --  when the actual is qualified in some fashion.
+
+            --    Common:
+            --      subtype Int is Integer range ...;
+            --      procedure Call (Val : in out Integer);
+
+            --    Original:
+            --      Object : Int;
+            --      Call (Integer (Object));
+
+            --    Expanded:
+            --      Object : Int;
+            --      Var : Integer := Object;  --  conversion to base type
+            --      if not Var'Valid then     --  validity check
+            --      Call (Var);               --  modify Var
+            --      Object := Int (Var);      --  conversion to subtype
+
+            if Etype (Var_Id) /= Obj_Typ then
+               Expr :=
+                 Make_Type_Conversion (Loc,
+                   Subtype_Mark => New_Occurrence_Of (Obj_Typ, Loc),
+                   Expression   => Expr);
+            end if;
+
+            --  Generate:
+            --    Object := Var;
+            --      <or>
+            --    Object := Object_Type (Var);
+
+            Append_To (Post_Call,
+              Make_Assignment_Statement (Loc,
+                Name       => Obj,
+                Expression => Expr));
+
+         --  If the flow reaches this point, then this routine was invoked with
+         --  an actual which does not denote a validation variable.
+
+         else
+            pragma Assert (False);
+            null;
+         end if;
+      end Add_Validation_Call_By_Copy_Code;
+
       ---------------------------
       -- Check_Fortran_Logical --
       ---------------------------
@@ -1819,10 +1915,26 @@ package body Exp_Ch6 is
                end if;
             end if;
 
-            --  If argument is a type conversion for a type that is passed
-            --  by copy, then we must pass the parameter by copy.
+            --  The actual denotes a variable which captures the value of an
+            --  object for validation purposes. Add a copy-back to reflect any
+            --  potential changes in value back into the original object.
 
-            if Nkind (Actual) = N_Type_Conversion
+            --    Var : ... := Object;
+            --    if not Var'Valid then  --  validity check
+            --    Call (Var);            --  modify var
+            --    Object := Var;         --  update Object
+
+            --  This case is given higher priority because the subsequent check
+            --  for type conversion may add an extra copy of the variable and
+            --  prevent proper value propagation back in the original object.
+
+            if Is_Validation_Variable_Reference (Actual) then
+               Add_Validation_Call_By_Copy_Code (Actual);
+
+            --  If argument is a type conversion for a type that is passed by
+            --  copy, then we must pass the parameter by copy.
+
+            elsif Nkind (Actual) = N_Type_Conversion
               and then
                 (Is_Numeric_Type (E_Formal)
                   or else Is_Access_Type (E_Formal)
@@ -2107,134 +2219,22 @@ package body Exp_Ch6 is
          Next_Formal (Formal);
          Next_Actual (Actual);
       end loop;
-
-      --  Find right place to put post call stuff if it is present
-
-      if not Is_Empty_List (Post_Call) then
-
-         --  Cases where the call is not a member of a statement list.
-         --  This includes the case where the call is an actual in another
-         --  function call or indexing, i.e. an expression context as well.
-
-         if not Is_List_Member (N)
-           or else Nkind_In (Parent (N), N_Function_Call, N_Indexed_Component)
-         then
-            --  In Ada 2012 the call may be a function call in an expression
-            --  (since OUT and IN OUT parameters are now allowed for such
-            --  calls). The write-back of (in)-out parameters is handled
-            --  by the back-end, but the constraint checks generated when
-            --  subtypes of formal and actual don't match must be inserted
-            --  in the form of assignments.
-
-            if Ada_Version >= Ada_2012
-              and then Nkind (N) = N_Function_Call
-            then
-               --  We used to just do handle this by climbing up parents to
-               --  a non-statement/declaration and then simply making a call
-               --  to Insert_Actions_After (P, Post_Call), but that doesn't
-               --  work. If we are in the middle of an expression, e.g. the
-               --  condition of an IF, this call would insert after the IF
-               --  statement, which is much too late to be doing the write
-               --  back. For example:
-
-               --     if Clobber (X) then
-               --        Put_Line (X'Img);
-               --     else
-               --        goto Junk
-               --     end if;
-
-               --  Now assume Clobber changes X, if we put the write back
-               --  after the IF, the Put_Line gets the wrong value and the
-               --  goto causes the write back to be skipped completely.
-
-               --  To deal with this, we replace the call by
-
-               --    do
-               --       Tnnn : constant function-result-type := function-call;
-               --       Post_Call actions
-               --    in
-               --       Tnnn;
-               --    end;
-
-               declare
-                  Tnnn  : constant Entity_Id := Make_Temporary (Loc, 'T');
-                  FRTyp : constant Entity_Id := Etype (N);
-                  Name  : constant Node_Id   := Relocate_Node (N);
-
-               begin
-                  Prepend_To (Post_Call,
-                    Make_Object_Declaration (Loc,
-                      Defining_Identifier => Tnnn,
-                      Object_Definition   => New_Occurrence_Of (FRTyp, Loc),
-                      Constant_Present    => True,
-                      Expression          => Name));
-
-                  Rewrite (N,
-                    Make_Expression_With_Actions (Loc,
-                      Actions    => Post_Call,
-                      Expression => New_Occurrence_Of (Tnnn, Loc)));
-
-                  --  We don't want to just blindly call Analyze_And_Resolve
-                  --  because that would cause unwanted recursion on the call.
-                  --  So for a moment set the call as analyzed to prevent that
-                  --  recursion, and get the rest analyzed properly, then reset
-                  --  the analyzed flag, so our caller can continue.
-
-                  Set_Analyzed (Name, True);
-                  Analyze_And_Resolve (N, FRTyp);
-                  Set_Analyzed (Name, False);
-
-                  --  Reset calling argument to point to function call inside
-                  --  the expression with actions so the caller can continue
-                  --  to process the call. In spite of the fact that it is
-                  --  marked Analyzed above, it may be rewritten by Remove_
-                  --  Side_Effects if validity checks are present, so go back
-                  --  to original call.
-
-                  N := Original_Node (Name);
-               end;
-
-            --  If not the special Ada 2012 case of a function call, then
-            --  we must have the triggering statement of a triggering
-            --  alternative or an entry call alternative, and we can add
-            --  the post call stuff to the corresponding statement list.
-
-            else
-               declare
-                  P : Node_Id;
-
-               begin
-                  P := Parent (N);
-                  pragma Assert (Nkind_In (P, N_Triggering_Alternative,
-                                              N_Entry_Call_Alternative));
-
-                  if Is_Non_Empty_List (Statements (P)) then
-                     Insert_List_Before_And_Analyze
-                       (First (Statements (P)), Post_Call);
-                  else
-                     Set_Statements (P, Post_Call);
-                  end if;
-
-                  return;
-               end;
-            end if;
-
-         --  Otherwise, normal case where N is in a statement sequence,
-         --  just put the post-call stuff after the call statement.
-
-         else
-            Insert_Actions_After (N, Post_Call);
-            return;
-         end if;
-      end if;
-
-      --  The call node itself is re-analyzed in Expand_Call
-
    end Expand_Actuals;
 
    -----------------
    -- Expand_Call --
    -----------------
+
+   procedure Expand_Call (N : Node_Id) is
+      Post_Call : List_Id;
+   begin
+      Expand_Call_Helper (N, Post_Call);
+      Insert_Post_Call_Actions (N, Post_Call);
+   end Expand_Call;
+
+   ------------------------
+   -- Expand_Call_Helper --
+   ------------------------
 
    --  This procedure handles expansion of function calls and procedure call
    --  statements (i.e. it serves as the body for Expand_N_Function_Call and
@@ -2252,7 +2252,7 @@ package body Exp_Ch6 is
    --   for the 'Constrained attribute and for accessibility checks are added
    --   at this point.
 
-   procedure Expand_Call (N : Node_Id) is
+   procedure Expand_Call_Helper (N : Node_Id; Post_Call : out List_Id) is
       Loc           : constant Source_Ptr := Sloc (N);
       Call_Node     : Node_Id := N;
       Extra_Actuals : List_Id := No_List;
@@ -2610,9 +2610,11 @@ package body Exp_Ch6 is
 
       CW_Interface_Formals_Present : Boolean := False;
 
-   --  Start of processing for Expand_Call
+   --  Start of processing for Expand_Call_Helper
 
    begin
+      Post_Call := New_List;
+
       --  Expand the function or procedure call if the first actual has a
       --  declared dimension aspect, and the subprogram is declared in one
       --  of the dimension I/O packages.
@@ -2802,7 +2804,8 @@ package body Exp_Ch6 is
                Add_Actual_Parameter (Remove_Head (Extra_Actuals));
             end loop;
 
-            Expand_Actuals (Call_Node, Subp);
+            Expand_Actuals (Call_Node, Subp, Post_Call);
+            pragma Assert (Is_Empty_List (Post_Call));
             return;
          end;
       end if;
@@ -2933,6 +2936,16 @@ package body Exp_Ch6 is
               and then
                 Get_Attribute_Id (Attribute_Name (Prev)) = Attribute_Access
               and then Is_Aliased_View (Prev_Orig)
+            then
+               Prev_Orig := Prev;
+
+            --  If the actual is a formal of an enclosing subprogram it is
+            --  the right entity, even if it is a rewriting. This happens
+            --  when the call is within an inherited condition or predicate.
+
+            elsif Is_Entity_Name (Actual)
+              and then Is_Formal (Entity (Actual))
+              and then In_Open_Scopes (Scope (Entity (Actual)))
             then
                Prev_Orig := Prev;
             end if;
@@ -3651,7 +3664,7 @@ package body Exp_Ch6 is
       --  At this point we have all the actuals, so this is the point at which
       --  the various expansion activities for actuals is carried out.
 
-      Expand_Actuals (Call_Node, Subp);
+      Expand_Actuals (Call_Node, Subp, Post_Call);
 
       --  Verify that the actuals do not share storage. This check must be done
       --  on the caller side rather that inside the subprogram to avoid issues
@@ -3926,11 +3939,12 @@ package body Exp_Ch6 is
          --  replacing them with an unchecked conversion. Not only is this
          --  efficient, but it also avoids order of elaboration problems when
          --  address clauses are inlined (address expression elaborated at the
-         --  at the wrong point).
+         --  wrong point).
 
          --  We perform this optimization regardless of whether we are in the
          --  main unit or in a unit in the context of the main unit, to ensure
-         --  that tree generated is the same in both cases, for CodePeer use.
+         --  that the generated tree is the same in both cases, for CodePeer
+         --  use.
 
          if Is_RTE (Subp, RE_To_Address) then
             Rewrite (Call_Node,
@@ -4186,7 +4200,7 @@ package body Exp_Ch6 is
             Establish_Transient_Scope (Call_Node, Sec_Stack => True);
          end if;
       end if;
-   end Expand_Call;
+   end Expand_Call_Helper;
 
    -------------------------------
    -- Expand_Ctrl_Function_Call --
@@ -4794,7 +4808,7 @@ package body Exp_Ch6 is
                   Init_Assignment :=
                     Make_Assignment_Statement (Loc,
                       Name       => New_Occurrence_Of (Ret_Obj_Id, Loc),
-                      Expression => Relocate_Node (Ret_Obj_Expr));
+                      Expression => New_Copy_Tree (Ret_Obj_Expr));
 
                   Set_Etype (Name (Init_Assignment), Etype (Ret_Obj_Id));
                   Set_Assignment_OK (Name (Init_Assignment));
@@ -5628,6 +5642,13 @@ package body Exp_Ch6 is
       --  Set to encode entity names in package body before gigi is called
 
       Qualify_Entity_Names (N);
+
+      --  If the body belongs to a nonabstract library-level source primitive
+      --  of a tagged type, install an elaboration check which ensures that a
+      --  dispatching call targeting the primitive will not execute the body
+      --  without it being previously elaborated.
+
+      Install_Primitive_Elaboration_Check (N);
    end Expand_N_Subprogram_Body;
 
    -----------------------------------
@@ -5763,7 +5784,7 @@ package body Exp_Ch6 is
       --  Ada 2005 (AI-348): Generate body for a null procedure. In most
       --  cases this is superfluous because calls to it will be automatically
       --  inlined, but we definitely need the body if preconditions for the
-      --  procedure are present.
+      --  procedure are present, or if performing coverage analysis.
 
       elsif Nkind (Specification (N)) = N_Procedure_Specification
         and then Null_Present (Specification (N))
@@ -6635,15 +6656,20 @@ package body Exp_Ch6 is
                    Attribute_Name => Name_Tag);
             end if;
 
-            Insert_Action (Exp,
-              Make_Raise_Program_Error (Loc,
-                Condition =>
-                  Make_Op_Gt (Loc,
-                    Left_Opnd  => Build_Get_Access_Level (Loc, Tag_Node),
-                    Right_Opnd =>
-                      Make_Integer_Literal (Loc,
-                        Scope_Depth (Enclosing_Dynamic_Scope (Scope_Id)))),
-                Reason => PE_Accessibility_Check_Failed));
+            --  CodePeer does not do anything useful with
+            --  Ada.Tags.Type_Specific_Data components.
+
+            if not CodePeer_Mode then
+               Insert_Action (Exp,
+                 Make_Raise_Program_Error (Loc,
+                   Condition =>
+                     Make_Op_Gt (Loc,
+                       Left_Opnd  => Build_Get_Access_Level (Loc, Tag_Node),
+                       Right_Opnd =>
+                         Make_Integer_Literal (Loc,
+                           Scope_Depth (Enclosing_Dynamic_Scope (Scope_Id)))),
+                   Reason    => PE_Accessibility_Check_Failed));
+            end if;
          end;
 
       --  AI05-0073: If function has a controlling access result, check that
@@ -7294,6 +7320,128 @@ package body Exp_Ch6 is
          Analyze_Entry_Or_Subprogram_Contract (Subp);
       end if;
    end Freeze_Subprogram;
+
+   ------------------------------
+   -- Insert_Post_Call_Actions --
+   ------------------------------
+
+   procedure Insert_Post_Call_Actions (N : Node_Id; Post_Call : List_Id) is
+      Context : constant Node_Id := Parent (N);
+
+   begin
+      if Is_Empty_List (Post_Call) then
+         return;
+      end if;
+
+      --  Cases where the call is not a member of a statement list. This
+      --  includes the case where the call is an actual in another function
+      --  call or indexing, i.e. an expression context as well.
+
+      if not Is_List_Member (N)
+        or else Nkind_In (Context, N_Function_Call, N_Indexed_Component)
+      then
+         --  In Ada 2012 the call may be a function call in an expression
+         --  (since OUT and IN OUT parameters are now allowed for such calls).
+         --  The write-back of (in)-out parameters is handled by the back-end,
+         --  but the constraint checks generated when subtypes of formal and
+         --  actual don't match must be inserted in the form of assignments.
+
+         if Nkind (Original_Node (N)) = N_Function_Call then
+            pragma Assert (Ada_Version >= Ada_2012);
+            --  Functions with '[in] out' parameters are only allowed in Ada
+            --  2012.
+
+            --  We used to handle this by climbing up parents to a
+            --  non-statement/declaration and then simply making a call to
+            --  Insert_Actions_After (P, Post_Call), but that doesn't work
+            --  for Ada 2012. If we are in the middle of an expression, e.g.
+            --  the condition of an IF, this call would insert after the IF
+            --  statement, which is much too late to be doing the write back.
+            --  For example:
+
+            --     if Clobber (X) then
+            --        Put_Line (X'Img);
+            --     else
+            --        goto Junk
+            --     end if;
+
+            --  Now assume Clobber changes X, if we put the write back after
+            --  the IF, the Put_Line gets the wrong value and the goto causes
+            --  the write back to be skipped completely.
+
+            --  To deal with this, we replace the call by
+
+            --    do
+            --       Tnnn : constant function-result-type := function-call;
+            --       Post_Call actions
+            --    in
+            --       Tnnn;
+            --    end;
+
+            declare
+               Loc   : constant Source_Ptr := Sloc (N);
+               Tnnn  : constant Entity_Id := Make_Temporary (Loc, 'T');
+               FRTyp : constant Entity_Id := Etype (N);
+               Name  : constant Node_Id   := Relocate_Node (N);
+
+            begin
+               Prepend_To (Post_Call,
+                 Make_Object_Declaration (Loc,
+                   Defining_Identifier => Tnnn,
+                   Object_Definition   => New_Occurrence_Of (FRTyp, Loc),
+                   Constant_Present    => True,
+                   Expression          => Name));
+
+               Rewrite (N,
+                 Make_Expression_With_Actions (Loc,
+                   Actions    => Post_Call,
+                   Expression => New_Occurrence_Of (Tnnn, Loc)));
+
+               --  We don't want to just blindly call Analyze_And_Resolve
+               --  because that would cause unwanted recursion on the call.
+               --  So for a moment set the call as analyzed to prevent that
+               --  recursion, and get the rest analyzed properly, then reset
+               --  the analyzed flag, so our caller can continue.
+
+               Set_Analyzed (Name, True);
+               Analyze_And_Resolve (N, FRTyp);
+               Set_Analyzed (Name, False);
+            end;
+
+         --  If not the special Ada 2012 case of a function call, then we must
+         --  have the triggering statement of a triggering alternative or an
+         --  entry call alternative, and we can add the post call stuff to the
+         --  corresponding statement list.
+
+         else
+            pragma Assert (Nkind_In (Context, N_Entry_Call_Alternative,
+                                              N_Triggering_Alternative));
+
+            if Is_Non_Empty_List (Statements (Context)) then
+               Insert_List_Before_And_Analyze
+                 (First (Statements (Context)), Post_Call);
+            else
+               Set_Statements (Context, Post_Call);
+            end if;
+         end if;
+
+      --  A procedure call is always part of a declarative or statement list,
+      --  however a function call may appear nested within a construct. Most
+      --  cases of function call nesting are handled in the special case above.
+      --  The only exception is when the function call acts as an actual in a
+      --  procedure call. In this case the function call is in a list, but the
+      --  post-call actions must be inserted after the procedure call.
+
+      elsif Nkind (Context) = N_Procedure_Call_Statement then
+         Insert_Actions_After (Context, Post_Call);
+
+      --  Otherwise, normal case where N is in a statement sequence, just put
+      --  the post-call stuff after the call statement.
+
+      else
+         Insert_Actions_After (N, Post_Call);
+      end if;
+   end Insert_Post_Call_Actions;
 
    -----------------------
    -- Is_Null_Procedure --

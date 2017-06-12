@@ -5,15 +5,14 @@
 	b, \
 	c
 
-/* Note the trailing whitespace on the next three lines.  */
+/* Note the trailing whitespace on the first three lines of beta def.  */
+/* { dg-warning "separated by space" "space" { target *-*-* } .+3 } */
+/* { dg-warning "separated by space" "tab" { target *-*-* } .+3 } */
+/* { dg-warning "separated by space" "space and tab" { target *-*-* } .+3 } */
 #define beta(a, b, c) \ 
 	a, \	
 	b, \ 	
 	c
-
-/* { dg-warning "separated by space" "space" { target *-*-* } 9 } */
-/* { dg-warning "separated by space" "tab" { target *-*-* } 10 } */
-/* { dg-warning "separated by space" "space and tab" { target *-*-* } 11 } */
 
 int x[] = {
    alpha(1, 2, 3),

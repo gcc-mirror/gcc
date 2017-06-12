@@ -60,10 +60,7 @@ func makeslice(et *_type, len, cap int) slice {
 		panic(errorString("makeslice: cap out of range"))
 	}
 
-	// gccgo's current garbage collector requires using newarray,
-	// not mallocgc here.  This can change back to mallocgc when
-	// we port the garbage collector.
-	p := newarray(et, cap)
+	p := mallocgc(et.size*uintptr(cap), et, true)
 	return slice{p, len, cap}
 }
 
@@ -144,21 +141,14 @@ func growslice(et *_type, old slice, cap int) slice {
 
 	var p unsafe.Pointer
 	if et.kind&kindNoPointers != 0 {
-		// gccgo's current GC requires newarray, not mallocgc.
-		p = newarray(et, newcap)
+		p = mallocgc(capmem, nil, false)
 		memmove(p, old.array, lenmem)
-		// The call to memclr is not needed for gccgo since
-		// the newarray function will zero the memory.
-		// Calling memclr is also wrong since we allocated
-		// newcap*et.size bytes, which is not the same as capmem.
 		// The append() that calls growslice is going to overwrite from old.len to cap (which will be the new length).
 		// Only clear the part that will not be overwritten.
-		// memclrNoHeapPointers(add(p, newlenmem), capmem-newlenmem)
-		_ = newlenmem
+		memclrNoHeapPointers(add(p, newlenmem), capmem-newlenmem)
 	} else {
 		// Note: can't use rawmem (which avoids zeroing of memory), because then GC can scan uninitialized memory.
-		// gccgo's current GC requires newarray, not mallocgc.
-		p = newarray(et, newcap)
+		p = mallocgc(capmem, et, true)
 		if !writeBarrier.enabled {
 			memmove(p, old.array, lenmem)
 		} else {

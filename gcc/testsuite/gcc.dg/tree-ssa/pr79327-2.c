@@ -1,5 +1,5 @@
 /* PR tree-optimization/79327 - wrong code at -O2 and -fprintf-return-value
-   { dg-compile }
+   { dg-do compile }
    { dg-options "-O2 -fdump-tree-optimized" } */
 
 #define CAT(s, n)   s ## n

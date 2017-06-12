@@ -38,7 +38,7 @@ int test4 (struct foo *ptr)
 int test5 (struct foo *ptr)
 {
   return ptr->this_is_unlike_any_of_the_fields;   /* { dg-bogus "did you mean" } */
-  /* { dg-error "has no member named" "" { target *-*-* } 40 } */
+  /* { dg-error "has no member named" "" { target *-*-* } .-1 } */
 }
 
 union u

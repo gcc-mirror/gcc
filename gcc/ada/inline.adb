@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -410,8 +410,7 @@ package body Inline is
 
       if not Comes_From_Source (N)
         and then In_Extended_Main_Source_Unit (N)
-        and then
-          Is_Predefined_File_Name (Unit_File_Name (Get_Source_Unit (E)))
+        and then Is_Predefined_Unit (Get_Source_Unit (E))
       then
          Set_Needs_Debug_Info (E, False);
       end if;
@@ -668,57 +667,6 @@ package body Inline is
          Table_Name           => "Pending_Inlined");
       --  The workpile used to compute the transitive closure
 
-      function Is_Ancestor_Of_Main
-        (U_Name : Entity_Id;
-         Nam    : Node_Id) return Boolean;
-      --  Determine whether the unit whose body is loaded is an ancestor of
-      --  the main unit, and has a with_clause on it. The body is not
-      --  analyzed yet, so the check is purely lexical: the name of the with
-      --  clause is a selected component, and names of ancestors must match.
-
-      -------------------------
-      -- Is_Ancestor_Of_Main --
-      -------------------------
-
-      function Is_Ancestor_Of_Main
-        (U_Name : Entity_Id;
-         Nam    : Node_Id) return Boolean
-      is
-         Pref : Node_Id;
-
-      begin
-         if Nkind (Nam) /= N_Selected_Component then
-            return False;
-
-         else
-            if Chars (Selector_Name (Nam)) /=
-               Chars (Cunit_Entity (Main_Unit))
-            then
-               return False;
-            end if;
-
-            Pref := Prefix (Nam);
-            if Nkind (Pref) = N_Identifier then
-
-               --  Par is an ancestor of Par.Child.
-
-               return Chars (Pref) = Chars (U_Name);
-
-            elsif Nkind (Pref) = N_Selected_Component
-              and then Chars (Selector_Name (Pref)) = Chars (U_Name)
-            then
-               --  Par.Child is an ancestor of Par.Child.Grand.
-
-               return True;   --  should check that ancestor match
-
-            else
-               --  A is an ancestor of A.B.C if it is an ancestor of A.B
-
-               return Is_Ancestor_Of_Main (U_Name, Pref);
-            end if;
-         end if;
-      end Is_Ancestor_Of_Main;
-
    --  Start of processing for Analyze_Inlined_Bodies
 
    begin
@@ -744,14 +692,19 @@ package body Inline is
                Comp_Unit := Parent (Comp_Unit);
             end loop;
 
-            --  Load the body, unless it is the main unit, or is an instance
-            --  whose body has already been analyzed.
+            --  Load the body if it exists and contains inlineable entities,
+            --  unless it is the main unit, or is an instance whose body has
+            --  already been analyzed.
 
             if Present (Comp_Unit)
               and then Comp_Unit /= Cunit (Main_Unit)
               and then Body_Required (Comp_Unit)
-              and then (Nkind (Unit (Comp_Unit)) /= N_Package_Declaration
-                         or else No (Corresponding_Body (Unit (Comp_Unit))))
+              and then
+                (Nkind (Unit (Comp_Unit)) /= N_Package_Declaration
+                  or else
+                    (No (Corresponding_Body (Unit (Comp_Unit)))
+                      and then Body_Needed_For_Inlining
+                                 (Defining_Entity (Unit (Comp_Unit)))))
             then
                declare
                   Bname : constant Unit_Name_Type :=
@@ -762,7 +715,7 @@ package body Inline is
                begin
                   if not Is_Loaded (Bname) then
                      Style_Check := False;
-                     Load_Needed_Body (Comp_Unit, OK, Do_Analyze => False);
+                     Load_Needed_Body (Comp_Unit, OK);
 
                      if not OK then
 
@@ -776,43 +729,6 @@ package body Inline is
                         Error_Msg_File_1 :=
                           Get_File_Name (Bname, Subunit => False);
                         Error_Msg_N ("\but file{ was not found!??", Comp_Unit);
-
-                     else
-                        --  If the package to be inlined is an ancestor unit of
-                        --  the main unit, and it has a semantic dependence on
-                        --  it, the inlining cannot take place to prevent an
-                        --  elaboration circularity. The desired body is not
-                        --  analyzed yet, to prevent the completion of Taft
-                        --  amendment types that would lead to elaboration
-                        --  circularities in gigi.
-
-                        declare
-                           U_Id      : constant Entity_Id :=
-                                         Defining_Entity (Unit (Comp_Unit));
-                           Body_Unit : constant Node_Id :=
-                                         Library_Unit (Comp_Unit);
-                           Item      : Node_Id;
-
-                        begin
-                           Item := First (Context_Items (Body_Unit));
-                           while Present (Item) loop
-                              if Nkind (Item) = N_With_Clause
-                                and then
-                                  Is_Ancestor_Of_Main (U_Id, Name (Item))
-                              then
-                                 Set_Is_Inlined (U_Id, False);
-                                 exit;
-                              end if;
-
-                              Next (Item);
-                           end loop;
-
-                           --  If no suspicious with_clauses, analyze the body.
-
-                           if Is_Inlined (U_Id) then
-                              Semantics (Body_Unit);
-                           end if;
-                        end;
                      end if;
                   end if;
                end;
@@ -1551,7 +1467,7 @@ package body Inline is
          --  subprograms may contain nested subprograms and become ineligible
          --  for inlining.
 
-         if Is_Predefined_File_Name (Unit_File_Name (Get_Source_Unit (Subp)))
+         if Is_Predefined_Unit (Get_Source_Unit (Subp))
            and then not In_Extended_Main_Source_Unit (Subp)
          then
             null;
@@ -1597,7 +1513,7 @@ package body Inline is
          --  compatibility but it will be removed when we enforce the
          --  strictness of the new rules.
 
-         if Is_Predefined_File_Name (Unit_File_Name (Get_Source_Unit (Subp)))
+         if Is_Predefined_Unit (Get_Source_Unit (Subp))
            and then not In_Extended_Main_Source_Unit (Subp)
          then
             null;
@@ -1612,9 +1528,7 @@ package body Inline is
                declare
                   Gen_P : constant Entity_Id := Generic_Parent (Parent (Subp));
                begin
-                  if Is_Predefined_File_Name
-                       (Unit_File_Name (Get_Source_Unit (Gen_P)))
-                  then
+                  if Is_Predefined_Unit (Get_Source_Unit (Gen_P)) then
                      Set_Is_Inlined (Subp, False);
                      Error_Msg_NE (Msg & "p?", N, Subp);
                      return;
@@ -2278,8 +2192,7 @@ package body Inline is
    is
       Loc       : constant Source_Ptr := Sloc (N);
       Is_Predef : constant Boolean :=
-                    Is_Predefined_File_Name
-                      (Unit_File_Name (Get_Source_Unit (Subp)));
+                    Is_Predefined_Unit (Get_Source_Unit (Subp));
       Orig_Bod  : constant Node_Id :=
                     Body_To_Inline (Unit_Declaration_Node (Subp));
 
@@ -2300,7 +2213,7 @@ package body Inline is
       --  this is the left-hand side of the assignment, else it is a temporary
       --  to which the return value is assigned prior to rewriting the call.
 
-      Targ1 : Node_Id;
+      Targ1 : Node_Id := Empty;
       --  A separate target used when the return type is unconstrained
 
       Temp     : Entity_Id;
@@ -3560,8 +3473,7 @@ package body Inline is
          end if;
 
          return Present (Conv)
-           and then Is_Predefined_File_Name
-                      (Unit_File_Name (Get_Source_Unit (Conv)))
+           and then Is_Predefined_Unit (Get_Source_Unit (Conv))
            and then Is_Intrinsic_Subprogram (Conv);
       end Is_Unchecked_Conversion;
 
@@ -4179,14 +4091,14 @@ package body Inline is
 
    procedure Lock is
    begin
-      Pending_Instantiations.Locked := True;
-      Inlined_Bodies.Locked := True;
-      Successors.Locked := True;
-      Inlined.Locked := True;
       Pending_Instantiations.Release;
+      Pending_Instantiations.Locked := True;
       Inlined_Bodies.Release;
+      Inlined_Bodies.Locked := True;
       Successors.Release;
+      Successors.Locked := True;
       Inlined.Release;
+      Inlined.Locked := True;
    end Lock;
 
    --------------------------------

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -185,6 +185,7 @@ package body Einfo is
    --    Scalar_Range                    Node20
 
    --    Accept_Address                  Elist21
+   --    Corresponding_Record_Component  Node21
    --    Default_Expr_Function           Node21
    --    Discriminant_Constraint         Elist21
    --    Interface_Name                  Node21
@@ -270,10 +271,9 @@ package body Einfo is
    --    Entry_Max_Queue_Lengths_Array   Node35
    --    Import_Pragma                   Node35
 
-   --    Class_Wide_Preconds             List38
+   --    Validated_Object                Node36
 
-   --    Class_Wide_Postconds            List39
-
+   --    Class_Wide_Clone                Node38
    --    SPARK_Pragma                    Node40
 
    --    Original_Protected_Subprogram   Node41
@@ -604,8 +604,7 @@ package body Einfo is
    --    Rewritten_For_C                 Flag287
    --    Predicates_Ignored              Flag288
    --    Has_Timing_Event                Flag289
-
-   --    (unused)                        Flag290  --  ??? flag breaks einfo.h
+   --    Is_Class_Wide_Clone             Flag290
 
    --    Has_Inherited_Invariants        Flag291
    --    Is_Partial_Invariant_Procedure  Flag292
@@ -615,11 +614,10 @@ package body Einfo is
    --    Has_Partial_Visible_Refinement  Flag296
    --    Is_Entry_Wrapper                Flag297
    --    Is_Underlying_Full_View         Flag298
+   --    Body_Needed_For_Inlining        Flag299
+   --    Has_Private_Extension           Flag300
 
-   --    (unused)                        Flag299
-   --    (unused)                        Flag300
-
-   --    (unused)                        Flag301
+   --    Ignore_SPARK_Mode_Pragmas       Flag301
    --    (unused)                        Flag302
    --    (unused)                        Flag303
    --    (unused)                        Flag304
@@ -829,6 +827,12 @@ package body Einfo is
       return Node19 (Id);
    end Body_Entity;
 
+   function Body_Needed_For_Inlining (Id : E) return B is
+   begin
+      pragma Assert (Ekind (Id) = E_Package);
+      return Flag299 (Id);
+   end Body_Needed_For_Inlining;
+
    function Body_Needed_For_SAL (Id : E) return B is
    begin
       pragma Assert
@@ -866,17 +870,11 @@ package body Einfo is
       return Flag31 (Id);
    end Checks_May_Be_Suppressed;
 
-   function Class_Wide_Postconds (Id : E) return S is
+   function Class_Wide_Clone (Id : E) return E is
    begin
       pragma Assert (Is_Subprogram (Id));
-      return List39 (Id);
-   end Class_Wide_Postconds;
-
-   function Class_Wide_Preconds (Id : E) return S is
-   begin
-      pragma Assert (Is_Subprogram (Id));
-      return List38 (Id);
-   end Class_Wide_Preconds;
+      return Node38 (Id);
+   end Class_Wide_Clone;
 
    function Class_Wide_Type (Id : E) return E is
    begin
@@ -952,6 +950,12 @@ package body Einfo is
       pragma Assert (Ekind (Id) = E_Subprogram_Body);
       return Node18 (Id);
    end Corresponding_Protected_Entry;
+
+   function Corresponding_Record_Component (Id : E) return E is
+   begin
+      pragma Assert (Ekind_In (Id, E_Component, E_Discriminant));
+      return Node21 (Id);
+   end Corresponding_Record_Component;
 
    function Corresponding_Record_Type (Id : E) return E is
    begin
@@ -1811,6 +1815,12 @@ package body Einfo is
       return Flag155 (Id);
    end Has_Private_Declaration;
 
+   function Has_Private_Extension (Id : E) return B is
+   begin
+      pragma Assert (Is_Tagged_Type (Id));
+      return Flag300 (Id);
+   end Has_Private_Extension;
+
    function Has_Protected (Id : E) return B is
    begin
       return Flag271 (Base_Type (Id));
@@ -1968,6 +1978,29 @@ package body Einfo is
       return Node4 (Id);
    end Homonym;
 
+   function Ignore_SPARK_Mode_Pragmas (Id : E) return B is
+   begin
+      pragma Assert
+        (Ekind_In (Id, E_Protected_Body,   --  concurrent variants
+                       E_Protected_Type,
+                       E_Task_Body,
+                       E_Task_Type)
+          or else
+         Ekind_In (Id, E_Entry,            --  overloadable variants
+                       E_Entry_Family,
+                       E_Function,
+                       E_Generic_Function,
+                       E_Generic_Procedure,
+                       E_Operator,
+                       E_Procedure,
+                       E_Subprogram_Body)
+           or else
+         Ekind_In (Id, E_Generic_Package,  --  package variants
+                       E_Package,
+                       E_Package_Body));
+      return Flag301 (Id);
+   end Ignore_SPARK_Mode_Pragmas;
+
    function Import_Pragma (Id : E) return E is
    begin
       pragma Assert (Is_Subprogram (Id));
@@ -2104,6 +2137,11 @@ package body Einfo is
    begin
       return Flag73 (Id);
    end Is_Child_Unit;
+
+   function Is_Class_Wide_Clone (Id : E) return B is
+   begin
+      return Flag290 (Id);
+   end Is_Class_Wide_Clone;
 
    function Is_Class_Wide_Equivalent_Type (Id : E) return B is
    begin
@@ -3472,6 +3510,12 @@ package body Einfo is
       return Flag95 (Id);
    end Uses_Sec_Stack;
 
+   function Validated_Object (Id : E) return N is
+   begin
+      pragma Assert (Ekind (Id) = E_Variable);
+      return Node36 (Id);
+   end Validated_Object;
+
    function Warnings_Off (Id : E) return B is
    begin
       return Flag96 (Id);
@@ -3527,6 +3571,11 @@ package body Einfo is
    begin
       return Ekind (Id) in Aggregate_Kind;
    end Is_Aggregate_Type;
+
+   function Is_Anonymous_Access_Type            (Id : E) return B is
+   begin
+      return Ekind (Id) in Anonymous_Access_Kind;
+   end Is_Anonymous_Access_Type;
 
    function Is_Array_Type                       (Id : E) return B is
    begin
@@ -3861,6 +3910,12 @@ package body Einfo is
       Set_Node19 (Id, V);
    end Set_Body_Entity;
 
+   procedure Set_Body_Needed_For_Inlining (Id : E; V : B := True) is
+   begin
+      pragma Assert (Ekind (Id) = E_Package);
+      Set_Flag299 (Id, V);
+   end Set_Body_Needed_For_Inlining;
+
    procedure Set_Body_Needed_For_SAL (Id : E; V : B := True) is
    begin
       pragma Assert
@@ -3905,17 +3960,11 @@ package body Einfo is
       Set_Flag31 (Id, V);
    end Set_Checks_May_Be_Suppressed;
 
-   procedure Set_Class_Wide_Preconds (Id : E; V : S) is
+   procedure Set_Class_Wide_Clone (Id : E; V : E) is
    begin
       pragma Assert (Is_Subprogram (Id));
-      Set_List38 (Id, V);
-   end Set_Class_Wide_Preconds;
-
-   procedure Set_Class_Wide_Postconds (Id : E; V : S) is
-   begin
-      pragma Assert (Is_Subprogram (Id));
-      Set_List39 (Id, V);
-   end Set_Class_Wide_Postconds;
+      Set_Node38 (Id, V);
+   end Set_Class_Wide_Clone;
 
    procedure Set_Class_Wide_Type (Id : E; V : E) is
    begin
@@ -4040,6 +4089,12 @@ package body Einfo is
       pragma Assert (Ekind_In (Id, E_Void, E_Subprogram_Body));
       Set_Node18 (Id, V);
    end Set_Corresponding_Protected_Entry;
+
+   procedure Set_Corresponding_Record_Component (Id : E; V : E) is
+   begin
+      pragma Assert (Ekind_In (Id, E_Component, E_Discriminant));
+      Set_Node21 (Id, V);
+   end Set_Corresponding_Record_Component;
 
    procedure Set_Corresponding_Record_Type (Id : E; V : E) is
    begin
@@ -4867,6 +4922,12 @@ package body Einfo is
       Set_Flag155 (Id, V);
    end Set_Has_Private_Declaration;
 
+   procedure Set_Has_Private_Extension (Id : E; V : B := True) is
+   begin
+      pragma Assert (Is_Tagged_Type (Id));
+      Set_Flag300 (Id, V);
+   end Set_Has_Private_Extension;
+
    procedure Set_Has_Protected (Id : E; V : B := True) is
    begin
       Set_Flag271 (Id, V);
@@ -5037,6 +5098,29 @@ package body Einfo is
       Set_Elist24 (Id, V);
    end Set_Incomplete_Actuals;
 
+   procedure Set_Ignore_SPARK_Mode_Pragmas (Id : E; V : B := True) is
+   begin
+      pragma Assert
+        (Ekind_In (Id, E_Protected_Body,   --  concurrent variants
+                       E_Protected_Type,
+                       E_Task_Body,
+                       E_Task_Type)
+          or else
+         Ekind_In (Id, E_Entry,            --  overloadable variants
+                       E_Entry_Family,
+                       E_Function,
+                       E_Generic_Function,
+                       E_Generic_Procedure,
+                       E_Operator,
+                       E_Procedure,
+                       E_Subprogram_Body)
+           or else
+         Ekind_In (Id, E_Generic_Package,  --  package variants
+                       E_Package,
+                       E_Package_Body));
+      Set_Flag301 (Id, V);
+   end Set_Ignore_SPARK_Mode_Pragmas;
+
    procedure Set_Import_Pragma (Id : E; V : E) is
    begin
       pragma Assert (Is_Subprogram (Id));
@@ -5183,6 +5267,11 @@ package body Einfo is
    begin
       Set_Flag73 (Id, V);
    end Set_Is_Child_Unit;
+
+   procedure Set_Is_Class_Wide_Clone (Id : E; V : B := True) is
+   begin
+      Set_Flag290 (Id, V);
+   end Set_Is_Class_Wide_Clone;
 
    procedure Set_Is_Class_Wide_Equivalent_Type (Id : E; V : B := True) is
    begin
@@ -6602,6 +6691,12 @@ package body Einfo is
       Set_Flag95 (Id, V);
    end Set_Uses_Sec_Stack;
 
+   procedure Set_Validated_Object (Id : E; V : N) is
+   begin
+      pragma Assert (Ekind (Id) = E_Variable);
+      Set_Node36 (Id, V);
+   end Set_Validated_Object;
+
    procedure Set_Warnings_Off (Id : E; V : B := True) is
    begin
       Set_Flag96 (Id, V);
@@ -7035,15 +7130,13 @@ package body Einfo is
       end if;
 
       loop
-         if Nkind (P) /= N_Selected_Component
-           and then Nkind (P) /= N_Expanded_Name
-           and then
-             not (Nkind (P) = N_Defining_Program_Unit_Name
-                   and then Is_Child_Unit (Id))
+         if Nkind_In (P, N_Selected_Component, N_Expanded_Name)
+           or else (Nkind (P) = N_Defining_Program_Unit_Name
+                    and then Is_Child_Unit (Id))
          then
-            return P;
-         else
             P := Parent (P);
+         else
+            return P;
          end if;
       end loop;
    end Declaration_Node;
@@ -9251,6 +9344,7 @@ package body Einfo is
       end if;
 
       W ("Address_Taken",                   Flag104 (Id));
+      W ("Body_Needed_For_Inlining",        Flag299 (Id));
       W ("Body_Needed_For_SAL",             Flag40  (Id));
       W ("C_Pass_By_Copy",                  Flag125 (Id));
       W ("Can_Never_Be_Null",               Flag38  (Id));
@@ -9332,6 +9426,7 @@ package body Einfo is
       W ("Has_Primitive_Operations",        Flag120 (Id));
       W ("Has_Private_Ancestor",            Flag151 (Id));
       W ("Has_Private_Declaration",         Flag155 (Id));
+      W ("Has_Private_Extension",           Flag300 (Id));
       W ("Has_Protected",                   Flag271 (Id));
       W ("Has_Qualified_Name",              Flag161 (Id));
       W ("Has_RACW",                        Flag214 (Id));
@@ -9358,6 +9453,7 @@ package body Einfo is
       W ("Has_Visible_Refinement",          Flag263 (Id));
       W ("Has_Volatile_Components",         Flag87  (Id));
       W ("Has_Xref_Entry",                  Flag182 (Id));
+      W ("Ignore_SPARK_Mode_Pragmas",       Flag301 (Id));
       W ("In_Package_Body",                 Flag48  (Id));
       W ("In_Private_Part",                 Flag45  (Id));
       W ("In_Use",                          Flag8   (Id));
@@ -10319,6 +10415,11 @@ package body Einfo is
          when Entry_Kind =>
             Write_Str ("Accept_Address");
 
+         when E_Component
+            | E_Discriminant
+         =>
+            Write_Str ("Corresponding_Record_Component");
+
          when E_In_Parameter =>
             Write_Str ("Default_Expr_Function");
 
@@ -10864,9 +10965,14 @@ package body Einfo is
    ------------------------
 
    procedure Write_Field36_Name (Id : Entity_Id) is
-      pragma Unreferenced (Id);
    begin
-      Write_Str ("Field36??");
+      case Ekind (Id) is
+         when E_Variable =>
+            Write_Str ("Validated_Object");
+
+         when others =>
+            Write_Str ("Field36??");
+      end case;
    end Write_Field36_Name;
 
    ------------------------
@@ -10889,7 +10995,7 @@ package body Einfo is
          when E_Function
             | E_Procedure
          =>
-            Write_Str ("Class_Wide_Preconditions");
+            Write_Str ("class-wide clone");
 
          when others =>
             Write_Str ("Field38??");
@@ -10903,11 +11009,6 @@ package body Einfo is
    procedure Write_Field39_Name (Id : Entity_Id) is
    begin
       case Ekind (Id) is
-         when E_Function
-            | E_Procedure
-         =>
-            Write_Str ("Class_Wide_Postcondition");
-
          when others =>
             Write_Str ("Field39??");
       end case;

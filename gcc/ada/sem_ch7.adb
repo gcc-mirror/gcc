@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -539,10 +539,14 @@ package body Sem_Ch7 is
 
       --  Local variables
 
+      Saved_GM   : constant Ghost_Mode_Type := Ghost_Mode;
+      Saved_ISMP : constant Boolean         :=
+                     Ignore_SPARK_Mode_Pragmas_In_Instance;
+      --  Save the Ghost and SPARK mode-related data to restore on exit
+
       Body_Id          : Entity_Id;
       HSS              : Node_Id;
       Last_Spec_Entity : Entity_Id;
-      Mode             : Ghost_Mode_Type;
       New_N            : Node_Id;
       Pack_Decl        : Node_Id;
       Spec_Id          : Entity_Id;
@@ -645,7 +649,7 @@ package body Sem_Ch7 is
       --  the mode now to ensure that any nodes generated during analysis and
       --  expansion are properly flagged as ignored Ghost.
 
-      Mark_And_Set_Ghost_Body (N, Spec_Id, Mode);
+      Mark_And_Set_Ghost_Body (N, Spec_Id);
 
       Set_Is_Compilation_Unit (Body_Id, Is_Compilation_Unit (Spec_Id));
       Style.Check_Identifier (Body_Id, Spec_Id);
@@ -738,6 +742,14 @@ package body Sem_Ch7 is
          Set_SPARK_Aux_Pragma           (Body_Id, SPARK_Mode_Pragma);
          Set_SPARK_Pragma_Inherited     (Body_Id);
          Set_SPARK_Aux_Pragma_Inherited (Body_Id);
+
+         --  A package body may be instantiated or inlined at a later pass.
+         --  Restore the state of Ignore_SPARK_Mode_Pragmas_In_Instance when
+         --  it applied to the package spec.
+
+         if Ignore_SPARK_Mode_Pragmas (Spec_Id) then
+            Ignore_SPARK_Mode_Pragmas_In_Instance := True;
+         end if;
       end if;
 
       Set_Categorization_From_Pragmas (N);
@@ -931,7 +943,8 @@ package body Sem_Ch7 is
          end if;
       end if;
 
-      Restore_Ghost_Mode (Mode);
+      Ignore_SPARK_Mode_Pragmas_In_Instance := Saved_ISMP;
+      Restore_Ghost_Mode (Saved_GM);
    end Analyze_Package_Body_Helper;
 
    ---------------------------------
@@ -962,13 +975,20 @@ package body Sem_Ch7 is
       Set_Ekind  (Id, E_Package);
       Set_Etype  (Id, Standard_Void_Type);
 
-      --  Set SPARK_Mode from context only for non-generic package
+      --  Set SPARK_Mode from context
 
-      if Ekind (Id) = E_Package then
-         Set_SPARK_Pragma               (Id, SPARK_Mode_Pragma);
-         Set_SPARK_Aux_Pragma           (Id, SPARK_Mode_Pragma);
-         Set_SPARK_Pragma_Inherited     (Id);
-         Set_SPARK_Aux_Pragma_Inherited (Id);
+      Set_SPARK_Pragma               (Id, SPARK_Mode_Pragma);
+      Set_SPARK_Aux_Pragma           (Id, SPARK_Mode_Pragma);
+      Set_SPARK_Pragma_Inherited     (Id);
+      Set_SPARK_Aux_Pragma_Inherited (Id);
+
+      --  Save the state of flag Ignore_SPARK_Mode_Pragmas_In_Instance in case
+      --  the body of this package is instantiated or inlined later and out of
+      --  context. The body uses this attribute to restore the value of the
+      --  global flag.
+
+      if Ignore_SPARK_Mode_Pragmas_In_Instance then
+         Set_Ignore_SPARK_Mode_Pragmas (Id);
       end if;
 
       --  Analyze aspect specifications immediately, since we need to recognize
@@ -1691,11 +1711,14 @@ package body Sem_Ch7 is
 
       Check_One_Tagged_Type_Or_Extension_At_Most;
 
-      --  If switch set, output information on why body required
+      --  Output relevant information as to why the package requires a body.
+      --  Do not consider generated packages as this exposes internal symbols
+      --  and leads to confusing messages.
 
       if List_Body_Required_Info
         and then In_Extended_Main_Source_Unit (Id)
         and then Unit_Requires_Body (Id)
+        and then Comes_From_Source (Id)
       then
          Unit_Requires_Body_Info (Id);
       end if;
@@ -2568,6 +2591,11 @@ package body Sem_Ch7 is
          Propagate_DIC_Attributes (Full, From_Typ => Full_Base);
          Propagate_DIC_Attributes (Full_Base, From_Typ => Full);
 
+         --  Propagate Default_Initial_Condition-related attributes from the
+         --  full view to the private view.
+
+         Propagate_DIC_Attributes (Priv, From_Typ => Full);
+
          --  Propagate invariant-related attributes from the base type of the
          --  full view to the full view and vice versa. This may seem strange,
          --  but is necessary depending on which type triggered the generation
@@ -3118,4 +3146,5 @@ package body Sem_Ch7 is
          Next_Entity (E);
       end loop;
    end Unit_Requires_Body_Info;
+
 end Sem_Ch7;

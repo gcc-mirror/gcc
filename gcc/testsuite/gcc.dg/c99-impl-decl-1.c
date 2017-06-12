@@ -7,7 +7,7 @@ void
 foo (void)
 {
   bar (); /* { dg-bogus "warning" "warning in place of error" } */
- /* { dg-error "implicit" "C99 implicit declaration error" { target *-*-* } 9 } */
+ /* { dg-error "implicit" "C99 implicit declaration error" { target *-*-* } .-1 } */
 }
 
 /* C90 subclause 7.1.7 says we can implicitly declare strcmp; C99 removes
@@ -17,5 +17,5 @@ int
 bar (const char *a, const char *b)
 {
   return strcmp (a, b); /* { dg-bogus "warning" "warning in place of error" } */
-  /* { dg-error "implicit" "C99 implicit declaration error" { target *-*-* } 19 } */
+  /* { dg-error "implicit" "C99 implicit declaration error" { target *-*-* } .-1 } */
 }

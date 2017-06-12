@@ -32,7 +32,7 @@ module z
 
   contains
 
-    real function f(a)   ! { dg-warning "in generic interface" "" }
+    real function f(a)   ! { dg-warning "in generic interface" }
       real a
       f = a
     end function

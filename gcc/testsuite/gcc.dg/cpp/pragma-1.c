@@ -7,7 +7,7 @@ main ()
 #pragma unknown
   {
     error;
-  /* { dg-error "undeclared" "undeclared-variable message" { target *-*-* } { 9 } } */
-  /* { dg-message "function it appears in" "reminder message" { target *-*-* } { 9 } } */ 
+  /* { dg-error "undeclared" "undeclared-variable message" { target *-*-* } .-1 } */
+  /* { dg-message "function it appears in" "reminder message" { target *-*-* } .-2 } */ 
   }
 }

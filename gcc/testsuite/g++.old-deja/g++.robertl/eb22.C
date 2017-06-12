@@ -24,5 +24,5 @@ bool operator==(const MyInt& a, const MyInt& b) // { dg-message "operator==" } c
 bool f()
 {
   return 3 == MyInt();                          // { dg-error "ambiguous" "err" } 
-  // { dg-message "operator==" "match candidate text" { target *-*-* } 26 }
+  // { dg-message "operator==" "match candidate text" { target *-*-* } .-1 }
 }

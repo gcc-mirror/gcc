@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// +build darwin dragonfly freebsd linux nacl netbsd openbsd solaris windows
+// +build aix darwin dragonfly freebsd linux nacl netbsd openbsd solaris windows
 
 package os
 
@@ -19,6 +19,10 @@ func Readlink(name string) (string, error) {
 	for len := 128; ; len *= 2 {
 		b := make([]byte, len)
 		n, e := fixCount(syscall.Readlink(fixLongPath(name), b))
+		// buffer too small
+		if e == syscall.ERANGE {
+			continue
+		}
 		if e != nil {
 			return "", &PathError{"readlink", name, e}
 		}

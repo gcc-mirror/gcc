@@ -607,6 +607,8 @@ package body Ch6 is
                   Error_Msg_SP ("only procedures can be null");
                else
                   Set_Null_Present (Specification_Node);
+                  Set_Null_Statement (Specification_Node,
+                    New_Node (N_Null_Statement, Prev_Token_Ptr));
                end if;
 
                goto Subprogram_Declaration;

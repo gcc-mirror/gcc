@@ -60,6 +60,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa-live.h"  /* For remove_unused_locals.  */
 #include "tree-cfgcleanup.h"
 #include "insn-addr.h" /* for INSN_ADDRESSES_ALLOC.  */
+#include "diagnostic-core.h" /* for fnotice */
 
 using namespace gcc;
 
@@ -776,7 +777,8 @@ pass_manager::register_one_dump_file (opt_pass *pass)
 
   /* Buffer big enough to format a 32-bit UINT_MAX into.  */
   char num[11];
-  int flags, id;
+  dump_kind dkind;
+  int id;
   int optgroup_flags = OPTGROUP_NONE;
   gcc::dump_manager *dumps = m_ctxt->get_dumps ();
 
@@ -797,18 +799,18 @@ pass_manager::register_one_dump_file (opt_pass *pass)
   if (pass->type == SIMPLE_IPA_PASS || pass->type == IPA_PASS)
     {
       prefix = "ipa-";
-      flags = TDF_IPA;
+      dkind = DK_ipa;
       optgroup_flags |= OPTGROUP_IPA;
     }
   else if (pass->type == GIMPLE_PASS)
     {
       prefix = "tree-";
-      flags = TDF_TREE;
+      dkind = DK_tree;
     }
   else
     {
       prefix = "rtl-";
-      flags = TDF_RTL;
+      dkind = DK_rtl;
     }
 
   flag_name = concat (prefix, name, num, NULL);
@@ -819,7 +821,7 @@ pass_manager::register_one_dump_file (opt_pass *pass)
      any dump messages are emitted properly under -fopt-info(-optall).  */
   if (optgroup_flags == OPTGROUP_NONE)
     optgroup_flags = OPTGROUP_OTHER;
-  id = dumps->dump_register (dot_name, flag_name, glob_name, flags,
+  id = dumps->dump_register (dot_name, flag_name, glob_name, dkind,
 			     optgroup_flags,
 			     true);
   set_pass_for_id (id, pass);
@@ -1528,26 +1530,28 @@ pass_manager::register_pass (struct register_pass_info *pass_info)
 				        -> all_passes
 */
 
-void *
-pass_manager::operator new (size_t sz)
-{
-  /* Ensure that all fields of the pass manager are zero-initialized.  */
-  return xcalloc (1, sz);
-}
-
-void
-pass_manager::operator delete (void *ptr)
-{
-  free (ptr);
-}
-
 pass_manager::pass_manager (context *ctxt)
 : all_passes (NULL), all_small_ipa_passes (NULL), all_lowering_passes (NULL),
   all_regular_ipa_passes (NULL),
   all_late_ipa_passes (NULL), passes_by_id (NULL), passes_by_id_size (0),
-  m_ctxt (ctxt)
+  m_ctxt (ctxt), m_name_to_pass_map (NULL)
 {
   opt_pass **p;
+
+  /* Zero-initialize pass members.  */
+#define INSERT_PASSES_AFTER(PASS)
+#define PUSH_INSERT_PASSES_WITHIN(PASS)
+#define POP_INSERT_PASSES()
+#define NEXT_PASS(PASS, NUM) PASS ## _ ## NUM = NULL
+#define NEXT_PASS_WITH_ARG(PASS, NUM, ARG) NEXT_PASS (PASS, NUM)
+#define TERMINATE_PASS_LIST(PASS)
+#include "pass-instances.def"
+#undef INSERT_PASSES_AFTER
+#undef PUSH_INSERT_PASSES_WITHIN
+#undef POP_INSERT_PASSES
+#undef NEXT_PASS
+#undef NEXT_PASS_WITH_ARG
+#undef TERMINATE_PASS_LIST
 
   /* Initialize the pass_lists array.  */
 #define DEF_PASS_LIST(LIST) pass_lists[PASS_LIST_NO_##LIST] = &LIST;
@@ -1776,6 +1780,24 @@ execute_function_dump (function *fn, void *data)
     }
 }
 
+/* This function is called when an internal compiler error is encountered.
+   Ensure that function dump is made available before compiler is aborted.  */
+
+void
+emergency_dump_function ()
+{
+  if (!current_pass)
+    return;
+  enum opt_pass_type pt = current_pass->type;
+  fnotice (stderr, "during %s pass: %s\n",
+	   pt == GIMPLE_PASS ? "GIMPLE" : pt == RTL_PASS ? "RTL" : "IPA",
+	   current_pass->name);
+  if (!dump_file || !cfun)
+    return;
+  fnotice (stderr, "dump file: %s\n", dump_file_name);
+  execute_function_dump (cfun, current_pass);
+}
+
 static struct profile_record *profile_record;
 
 /* Do profile consistency book-keeping for the pass with static number INDEX.
@@ -1977,8 +1999,12 @@ execute_function_todo (function *fn, void *data)
 	      && !from_ipa_pass)
 	    verify_flow_info ();
 	  if (current_loops
-	      && loops_state_satisfies_p (LOOP_CLOSED_SSA))
-	    verify_loop_closed_ssa (false);
+	      && ! loops_state_satisfies_p (LOOPS_NEED_FIXUP))
+	    {
+	      verify_loop_structure ();
+	      if (loops_state_satisfies_p (LOOP_CLOSED_SSA))
+		verify_loop_closed_ssa (false);
+	    }
 	  if (cfun->curr_properties & PROP_rtl)
 	    verify_rtl_sharing ();
 	}
@@ -2033,7 +2059,7 @@ execute_todo (unsigned int flags)
   if ((flags & TODO_dump_symtab) && dump_file && !current_function_decl)
     {
       gcc_assert (!cfun);
-      symtab_node::dump_table (dump_file);
+      symtab->dump (dump_file);
       /* Flush the file.  If verification fails, we won't be able to
 	 close the file before aborting.  */
       fflush (dump_file);

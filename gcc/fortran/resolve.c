@@ -615,10 +615,11 @@ resolve_contained_fntype (gfc_symbol *sym, gfc_namespace *ns)
 	  gcc_assert (ns->parent && ns->parent->proc_name);
 	  module_proc = (ns->parent->proc_name->attr.flavor == FL_MODULE);
 
-	  gfc_error ("Character-valued %s %qs at %L must not be"
-		     " assumed length",
-		     module_proc ? _("module procedure")
-				 : _("internal function"),
+	  gfc_error (module_proc
+		     ? G_("Character-valued module procedure %qs at %L"
+			  " must not be assumed length")
+		     : G_("Character-valued internal function %qs at %L"
+			  " must not be assumed length"),
 		     sym->name, &sym->declared_at);
 	}
     }
@@ -1341,7 +1342,7 @@ resolve_structure_cons (gfc_expr *expr, int init)
 	    {
 	      t = false;
 	      gfc_error ("Pointer initialization target at %L "
-			 "must not be ALLOCATABLE ", &cons->expr->where);
+			 "must not be ALLOCATABLE", &cons->expr->where);
 	    }
 	  if (!a.save)
 	    {
@@ -2468,7 +2469,7 @@ resolve_global_procedure (gfc_symbol *sym, locus *where,
 	{
 	  gfc_error_opt (OPT_Wargument_mismatch,
 			 "Interface mismatch in global procedure %qs at %L:"
-			 " %s ", sym->name, &sym->declared_at, reason);
+			 " %s", sym->name, &sym->declared_at, reason);
 	  goto done;
 	}
 
@@ -10883,6 +10884,9 @@ start:
 	  resolve_lock_unlock_event (code);
 	  break;
 
+	case EXEC_FAIL_IMAGE:
+	  break;
+
 	case EXEC_ENTRY:
 	  /* Keep track of which entry we are up to.  */
 	  current_entry_id = code->ext.entry->id;
@@ -12341,9 +12345,10 @@ resolve_fl_procedure (gfc_symbol *sym, int mp_flag)
       if (!gfc_check_result_characteristics (sym, iface, errmsg, 200))
 	{
 	  gfc_error ("%s between the MODULE PROCEDURE declaration "
-		     "in module %s and the declaration at %L in "
-		     "SUBMODULE %s", errmsg, module_name,
-		     &sym->declared_at, submodule_name);
+		     "in MODULE %qs and the declaration at %L in "
+		     "(SUB)MODULE %qs",
+		     errmsg, module_name, &sym->declared_at,
+		     submodule_name ? submodule_name : module_name);
 	  return false;
 	}
 
@@ -12380,26 +12385,23 @@ gfc_resolve_finalizers (gfc_symbol* derived, bool *finalizable)
   if (parent)
     gfc_resolve_finalizers (parent, finalizable);
 
-  /* Return early when not finalizable. Additionally, ensure that derived-type
-     components have a their finalizables resolved.  */
-  if (!derived->f2k_derived || !derived->f2k_derived->finalizers)
+  /* Ensure that derived-type components have a their finalizers resolved.  */
+  bool has_final = derived->f2k_derived && derived->f2k_derived->finalizers;
+  for (c = derived->components; c; c = c->next)
+    if (c->ts.type == BT_DERIVED
+	&& !c->attr.pointer && !c->attr.proc_pointer && !c->attr.allocatable)
+      {
+	bool has_final2 = false;
+	if (!gfc_resolve_finalizers (c->ts.u.derived, &has_final2))
+	  return false;  /* Error.  */
+	has_final = has_final || has_final2;
+      }
+  /* Return early if not finalizable.  */
+  if (!has_final)
     {
-      bool has_final = false;
-      for (c = derived->components; c; c = c->next)
-	if (c->ts.type == BT_DERIVED
-	    && !c->attr.pointer && !c->attr.proc_pointer && !c->attr.allocatable)
-	  {
-	    bool has_final2 = false;
-	    if (!gfc_resolve_finalizers (c->ts.u.derived, &has_final))
-	      return false;  /* Error.  */
-	    has_final = has_final || has_final2;
-	  }
-      if (!has_final)
-	{
-	  if (finalizable)
-	    *finalizable = false;
-	  return true;
-	}
+      if (finalizable)
+	*finalizable = false;
+      return true;
     }
 
   /* Walk over the list of finalizer-procedures, check them, and if any one
@@ -13830,6 +13832,8 @@ resolve_fl_derived (gfc_symbol *sym)
 	  gfc_symbol *vtab = gfc_find_derived_vtab (data->ts.u.derived);
 	  gcc_assert (vtab);
 	  vptr->ts.u.derived = vtab->ts.u.derived;
+	  if (!resolve_fl_derived0 (vptr->ts.u.derived))
+	    return false;
 	}
     }
 
@@ -13844,31 +13848,11 @@ resolve_fl_derived (gfc_symbol *sym)
 }
 
 
-/* Check for formatted read and write DTIO procedures.  */
-
-static bool
-dtio_procs_present (gfc_symbol *sym)
-{
-  gfc_symbol *derived;
-
-  if (sym->ts.type == BT_CLASS)
-    derived = CLASS_DATA (sym)->ts.u.derived;
-  else if (sym->ts.type == BT_DERIVED)
-    derived = sym->ts.u.derived;
-  else
-    return false;
-
-  return gfc_find_specific_dtio_proc (derived, true, true) != NULL
-	 && gfc_find_specific_dtio_proc (derived, false, true) != NULL;
-}
-
-
 static bool
 resolve_fl_namelist (gfc_symbol *sym)
 {
   gfc_namelist *nl;
   gfc_symbol *nlsym;
-  bool dtio;
 
   for (nl = sym->namelist; nl; nl = nl->next)
     {
@@ -13902,27 +13886,6 @@ resolve_fl_namelist (gfc_symbol *sym)
 			      sym->name, &sym->declared_at))
 	return false;
 
-      dtio = dtio_procs_present (nl->sym);
-
-      if (nl->sym->ts.type == BT_CLASS && !dtio)
-	{
-	  gfc_error ("NAMELIST object %qs in namelist %qs at %L is "
-		     "polymorphic and requires a defined input/output "
-		     "procedure", nl->sym->name, sym->name, &sym->declared_at);
-	  return false;
-	}
-
-      if (nl->sym->ts.type == BT_DERIVED
-	  && (nl->sym->ts.u.derived->attr.alloc_comp
-	      || nl->sym->ts.u.derived->attr.pointer_comp))
-	{
-	  if (!gfc_notify_std (GFC_STD_F2003, "NAMELIST object %qs in "
-			       "namelist %qs at %L with ALLOCATABLE "
-			       "or POINTER components", nl->sym->name,
-			       sym->name, &sym->declared_at))
-	    return false;
-	  return true;
-	}
     }
 
   /* Reject PRIVATE objects in a PUBLIC namelist.  */
@@ -13940,10 +13903,17 @@ resolve_fl_namelist (gfc_symbol *sym)
 	      return false;
 	    }
 
-	  /* If the derived type has specific DTIO procedures for both read and
-	     write then namelist objects with private components are OK.  */
-	  if (dtio_procs_present (nl->sym))
-	    continue;
+	  if (nl->sym->ts.type == BT_DERIVED
+	     && (nl->sym->ts.u.derived->attr.alloc_comp
+		 || nl->sym->ts.u.derived->attr.pointer_comp))
+	   {
+	     if (!gfc_notify_std (GFC_STD_F2003, "NAMELIST object %qs in "
+				  "namelist %qs at %L with ALLOCATABLE "
+				  "or POINTER components", nl->sym->name,
+				  sym->name, &sym->declared_at))
+	       return false;
+	     return true;
+	   }
 
 	  /* Types with private components that came here by USE-association.  */
 	  if (nl->sym->ts.type == BT_DERIVED
@@ -14724,7 +14694,7 @@ resolve_symbol (gfc_symbol *sym)
 	  for (; formal; formal = formal->next)
 	    if (formal->sym && formal->sym->attr.flavor == FL_NAMELIST)
 	      {
-		gfc_error ("Namelist '%s' can not be an argument to "
+		gfc_error ("Namelist %qs can not be an argument to "
 			   "subroutine or function at %L",
 			   formal->sym->name, &sym->declared_at);
 		return;

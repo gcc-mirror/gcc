@@ -6,7 +6,7 @@
 --                                                                          --
 --                                B o d y                                   --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -488,6 +488,7 @@ begin
    Write_Line ("        e    treat all warnings (but not info) as errors");
    Write_Line ("        .e   turn on every optional info/warning " &
                                                   "(no exceptions)");
+   Write_Line ("        E    treat all run-time warnings as errors");
    Write_Line ("        f+   turn on warnings for unreferenced formal");
    Write_Line ("        F*   turn off warnings for unreferenced formal");
    Write_Line ("        .f   turn on warnings for suspicious Subp'Access");
@@ -507,6 +508,10 @@ begin
                                                   "(annex J) feature");
    Write_Line ("        J*   turn off warnings for obsolescent " &
                                                   "(annex J) feature");
+   Write_Line ("        .j+  turn on warnings for late dispatching " &
+                                                  "primitives");
+   Write_Line ("        .J*  turn off warnings for late dispatching " &
+                                                  "primitives");
    Write_Line ("        k+   turn on warnings on constant variable");
    Write_Line ("        K*   turn off warnings on constant variable");
    Write_Line ("        .k   turn on warnings for standard redefinition");
@@ -668,6 +673,7 @@ begin
    Write_Line ("Distribution stub generation for receiver stubs");
 
    if not Latest_Ada_Only then
+
       --  Line for -gnat83 switch
 
       Write_Switch_Char ("83");

@@ -16,22 +16,22 @@
    matching dg-message), dejagnu will report these as excess errors.  */
 
 #pragma message "
-/* { dg-error "17:missing terminating" "" { target *-*-* } 18 } */
-/* { dg-warning "expected a string" "" { target *-*-* } 18 } */
+/* { dg-error "17:missing terminating" "" { target *-*-* } .-1 } */
+/* { dg-warning "expected a string" "" { target *-*-* } .-2 } */
 #pragma message "Bad 1
-/* { dg-error "17:missing terminating" "" { target *-*-* } 21 } */
-/* { dg-warning "expected a string" "" { target *-*-* } 21 } */
+/* { dg-error "17:missing terminating" "" { target *-*-* } .-1 } */
+/* { dg-warning "expected a string" "" { target *-*-* } .-2 } */
 #pragma message ("Bad 2
-/* { dg-error "18:missing terminating" "" { target *-*-* } 24 } */
-/* { dg-warning "expected a string" "" { target *-*-* } 24 } */
+/* { dg-error "18:missing terminating" "" { target *-*-* } .-1 } */
+/* { dg-warning "expected a string" "" { target *-*-* } .-2 } */
 #pragma message ("Bad 3"
-/* { dg-warning "malformed '#pragma message" "" { target *-*-* } 27 } */
+/* { dg-warning "malformed '#pragma message" "" { target *-*-* } .-1 } */
 
 #pragma message "" junk
-/* { dg-warning "junk at end of '#pragma message'" "" { target *-*-* } 30 } */
+/* { dg-warning "junk at end of '#pragma message'" "" { target *-*-* } .-1 } */
 
 #pragma message ("") junk
-/* { dg-warning "junk at end of '#pragma message'" "" { target *-*-* } 33 } */
+/* { dg-warning "junk at end of '#pragma message'" "" { target *-*-* } .-1 } */
 
 #pragma message ""               /* No output expected for empty messages.  */
 #pragma message ("")

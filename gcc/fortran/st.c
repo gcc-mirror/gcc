@@ -120,6 +120,7 @@ gfc_free_statement (gfc_code *p)
     case EXEC_UNLOCK:
     case EXEC_EVENT_POST:
     case EXEC_EVENT_WAIT:
+    case EXEC_FAIL_IMAGE:
       break;
 
     case EXEC_BLOCK:

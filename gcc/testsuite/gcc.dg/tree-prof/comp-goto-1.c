@@ -1,8 +1,11 @@
 /* { dg-require-effective-target freorder } */
+/* { dg-require-effective-target label_values } */
 /* { dg-options "-O2 -freorder-blocks-and-partition" } */
+/* { dg-additional-options "-DSTACK_SIZE=[dg-effective-target-value stack_size]" { target { stack_size } } } */
+
 #include <stdlib.h>
 
-#if !defined(NO_LABEL_VALUES) && (!defined(STACK_SIZE) || STACK_SIZE >= 4000) && __INT_MAX__ >= 2147483647
+#if (!defined(STACK_SIZE) || STACK_SIZE >= 4000) && __INT_MAX__ >= 2147483647
 typedef unsigned int uint32;
 typedef signed int sint32;
 

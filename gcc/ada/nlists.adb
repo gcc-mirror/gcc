@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -92,17 +92,17 @@ package body Nlists is
       Table_Component_Type => Node_Or_Entity_Id,
       Table_Index_Type     => Node_Or_Entity_Id'Base,
       Table_Low_Bound      => First_Node_Id,
-      Table_Initial        => Alloc.Orig_Nodes_Initial,
-      Table_Increment      => Alloc.Orig_Nodes_Increment,
-      Release_Threshold    => Alloc.Orig_Nodes_Release_Threshold,
+      Table_Initial        => Alloc.Nodes_Initial,
+      Table_Increment      => Alloc.Nodes_Increment,
+      Release_Threshold    => Alloc.Nodes_Release_Threshold,
       Table_Name           => "Next_Node");
 
    package Prev_Node is new Table.Table (
       Table_Component_Type => Node_Or_Entity_Id,
       Table_Index_Type     => Node_Or_Entity_Id'Base,
       Table_Low_Bound      => First_Node_Id,
-      Table_Initial        => Alloc.Orig_Nodes_Initial,
-      Table_Increment      => Alloc.Orig_Nodes_Increment,
+      Table_Initial        => Alloc.Nodes_Initial,
+      Table_Increment      => Alloc.Nodes_Increment,
       Table_Name           => "Prev_Node");
 
    -----------------------
@@ -721,14 +721,12 @@ package body Nlists is
 
    procedure Lock is
    begin
-      Lists.Locked := True;
       Lists.Release;
-
-      Prev_Node.Locked := True;
-      Next_Node.Locked := True;
-
+      Lists.Locked := True;
       Prev_Node.Release;
+      Prev_Node.Locked := True;
       Next_Node.Release;
+      Next_Node.Locked := True;
    end Lock;
 
    ----------------

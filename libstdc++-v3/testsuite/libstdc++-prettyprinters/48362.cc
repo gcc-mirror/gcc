@@ -26,10 +26,10 @@ int
 main()
 {
   std::tuple<> t1;
-// { dg-final { regexp-test t1 {empty std::tuple} } }
+// { dg-final { note-test t1 {empty std::tuple} } }
 
   std::tuple<std::string, int, std::tuple<>> t2{ "Johnny", 5, {} };
-// { dg-final { regexp-test t2 {std::tuple containing = {\[1\] = "Johnny", \[2\] = 5, \[3\] = {<std::(__7::)?tuple<>> = empty std::tuple, <No data fields>}}} } }
+// { dg-final { regexp-test t2 {std::tuple containing = {\[1\] = "Johnny", \[2\] = 5, \[3\] = {<std::(__8::)?tuple<>> = empty std::tuple, <No data fields>}}} } }
 
   std::cout << "\n";
   return 0; // Mark SPOT

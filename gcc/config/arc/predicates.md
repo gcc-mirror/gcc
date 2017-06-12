@@ -148,6 +148,11 @@
       {
 	rtx x = XEXP (op, 1);
 
+	if ((GET_CODE (XEXP (op, 0)) == MULT)
+	    && REG_P (XEXP (XEXP (op, 0), 0))
+	    && CONSTANT_P (x))
+	  return 1;
+
 	if (GET_CODE (x) == CONST)
 	  {
 	    x = XEXP (x, 0);
@@ -181,6 +186,19 @@
       return (GET_CODE (op) == REG)
       && (REGNO (op) >= FIRST_PSEUDO_REGISTER
 		|| COMPACT_GP_REG_P (REGNO (op))) ;
+  }
+)
+
+(define_predicate "compact_hreg_operand"
+  (match_code "reg, subreg")
+  {
+     if ((GET_MODE (op) != mode) && (mode != VOIDmode))
+	 return 0;
+
+      return (GET_CODE (op) == REG)
+      && (REGNO (op) >= FIRST_PSEUDO_REGISTER
+		|| (TARGET_V2 && REGNO (op) <= 31 && REGNO (op) != 30)
+		|| !TARGET_V2);
   }
 )
 
@@ -313,7 +331,7 @@
       /* (subreg (mem ...) ...) can occur here if the inner part was once a
 	 pseudo-reg and is now a stack slot.  */
       if (GET_CODE (SUBREG_REG (op)) == MEM)
-	return move_double_src_operand (SUBREG_REG (op), mode);
+	return address_operand (XEXP (SUBREG_REG (op), 0), mode);
       else
 	return register_operand (op, mode);
     case MEM :
@@ -597,6 +615,11 @@
 	    (match_test "TARGET_ARC700 || TARGET_EA_SET")))
 )
 
+(define_predicate "_1_2_3_operand"
+  (and (match_code "const_int")
+       (match_test "INTVAL (op) == 1 || INTVAL (op) == 2 || INTVAL (op) == 3"))
+)
+
 (define_predicate "_2_4_8_operand"
   (and (match_code "const_int")
        (match_test "INTVAL (op) == 2 || INTVAL (op) == 4 || INTVAL (op) == 8"))
@@ -678,6 +701,11 @@
 (define_predicate "mhi_operand"
   (and (match_code "reg")
        (match_test "REGNO (op) == (TARGET_BIG_ENDIAN ? 58 : 59)")))
+
+(define_predicate "accl_operand"
+  (and (match_code "reg")
+       (match_test "REGNO (op) == (TARGET_BIG_ENDIAN ? 59 : 58)")
+       (match_test "TARGET_V2")))
 
 ; Unfortunately, we can not allow a const_int_operand before reload, because
 ; reload needs a non-void mode to guide it how to reload the inside of a

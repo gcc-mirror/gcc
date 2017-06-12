@@ -166,6 +166,48 @@ expand_GOMP_USE_SIMT (internal_fn, gcall *)
   gcc_unreachable ();
 }
 
+/* This should get expanded in omp_device_lower pass.  */
+
+static void
+expand_GOMP_SIMT_ENTER (internal_fn, gcall *)
+{
+  gcc_unreachable ();
+}
+
+/* Allocate per-lane storage and begin non-uniform execution region.  */
+
+static void
+expand_GOMP_SIMT_ENTER_ALLOC (internal_fn, gcall *stmt)
+{
+  rtx target;
+  tree lhs = gimple_call_lhs (stmt);
+  if (lhs)
+    target = expand_expr (lhs, NULL_RTX, VOIDmode, EXPAND_WRITE);
+  else
+    target = gen_reg_rtx (Pmode);
+  rtx size = expand_normal (gimple_call_arg (stmt, 0));
+  rtx align = expand_normal (gimple_call_arg (stmt, 1));
+  struct expand_operand ops[3];
+  create_output_operand (&ops[0], target, Pmode);
+  create_input_operand (&ops[1], size, Pmode);
+  create_input_operand (&ops[2], align, Pmode);
+  gcc_assert (targetm.have_omp_simt_enter ());
+  expand_insn (targetm.code_for_omp_simt_enter, 3, ops);
+}
+
+/* Deallocate per-lane storage and leave non-uniform execution region.  */
+
+static void
+expand_GOMP_SIMT_EXIT (internal_fn, gcall *stmt)
+{
+  gcc_checking_assert (!gimple_call_lhs (stmt));
+  rtx arg = expand_normal (gimple_call_arg (stmt, 0));
+  struct expand_operand ops[1];
+  create_input_operand (&ops[0], arg, Pmode);
+  gcc_assert (targetm.have_omp_simt_exit ());
+  expand_insn (targetm.code_for_omp_simt_exit, 1, ops);
+}
+
 /* Lane index on SIMT targets: thread index in the warp on NVPTX.  On targets
    without SIMT execution this should be expanded in omp_device_lower pass.  */
 
@@ -1869,12 +1911,20 @@ expand_vector_ubsan_overflow (location_t loc, enum tree_code code, tree lhs,
       if (cnt > 4)
 	{
 	  tree atype = build_array_type_nelts (eltype, cnt);
-	  op0 = fold_build1_loc (loc, VIEW_CONVERT_EXPR, atype, arg0);
-	  op0 = build4_loc (loc, ARRAY_REF, eltype, op0, cntv,
-			    NULL_TREE, NULL_TREE);
-	  op1 = fold_build1_loc (loc, VIEW_CONVERT_EXPR, atype, arg1);
-	  op1 = build4_loc (loc, ARRAY_REF, eltype, op1, cntv,
-			    NULL_TREE, NULL_TREE);
+	  op0 = uniform_vector_p (arg0);
+	  if (op0 == NULL_TREE)
+	    {
+	      op0 = fold_build1_loc (loc, VIEW_CONVERT_EXPR, atype, arg0);
+	      op0 = build4_loc (loc, ARRAY_REF, eltype, op0, cntv,
+				NULL_TREE, NULL_TREE);
+	    }
+	  op1 = uniform_vector_p (arg1);
+	  if (op1 == NULL_TREE)
+	    {
+	      op1 = fold_build1_loc (loc, VIEW_CONVERT_EXPR, atype, arg1);
+	      op1 = build4_loc (loc, ARRAY_REF, eltype, op1, cntv,
+				NULL_TREE, NULL_TREE);
+	    }
 	  if (resv)
 	    {
 	      res = fold_build1_loc (loc, VIEW_CONVERT_EXPR, atype, resv);

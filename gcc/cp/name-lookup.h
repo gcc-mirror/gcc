@@ -89,7 +89,7 @@ struct GTY(()) cxx_saved_binding {
 extern tree identifier_type_value (tree);
 extern void set_identifier_type_value (tree, tree);
 extern void push_binding (tree, tree, cp_binding_level*);
-extern void pop_binding (tree, tree);
+extern void pop_local_binding (tree, tree);
 extern void pop_bindings_and_leave_scope (void);
 extern tree constructor_name (tree);
 extern bool constructor_name_p (tree, tree);
@@ -188,18 +188,11 @@ struct GTY(()) cp_binding_level {
       are wrapped in TREE_LISTs; the TREE_VALUE is the OVERLOAD.  */
   tree names;
 
-  /* A chain of NAMESPACE_DECL nodes.  */
-  tree namespaces;
-
-  /* An array of static functions and variables (for namespaces only) */
-  vec<tree, va_gc> *static_decls;
-
   /* A list of USING_DECL nodes.  */
   tree usings;
 
-  /* A list of used namespaces. PURPOSE is the namespace,
-      VALUE the common ancestor with this binding_level's namespace.  */
-  tree using_directives;
+  /* Using directives.  */
+  vec<tree, va_gc> *using_directives;
 
   /* For the binding level corresponding to a class, the entities
       declared in the class or its base classes.  */
@@ -278,15 +271,6 @@ struct GTY(()) cp_binding_level {
 
 #define class_binding_level scope_chain->class_bindings
 
-/* The tree node representing the global scope.  */
-extern GTY(()) tree global_namespace;
-extern GTY(()) tree global_scope_name;
-
-/* Indicates that there is a type value in some namespace, although
-   that is not necessarily in scope at the moment.  */
-
-extern GTY(()) tree global_type_node;
-
 /* True if SCOPE designates the global scope binding contour.  */
 #define global_scope_p(SCOPE) \
   ((SCOPE) == NAMESPACE_LEVEL (global_namespace))
@@ -294,86 +278,65 @@ extern GTY(()) tree global_type_node;
 extern cp_binding_level *leave_scope (void);
 extern bool kept_level_p (void);
 extern bool global_bindings_p (void);
-extern bool toplevel_bindings_p	(void);
+extern bool toplevel_bindings_p (void);
 extern bool namespace_bindings_p (void);
 extern bool local_bindings_p (void);
 extern bool template_parm_scope_p (void);
 extern scope_kind innermost_scope_kind (void);
 extern cp_binding_level *begin_scope (scope_kind, tree);
 extern void print_binding_stack	(void);
-extern void push_to_top_level (void);
-extern void pop_from_top_level (void);
 extern void pop_everything (void);
 extern void keep_next_level (bool);
-extern bool is_ancestor (tree, tree);
+extern bool is_ancestor (tree ancestor, tree descendant);
+extern bool is_nested_namespace (tree parent, tree descendant,
+				 bool inline_only = false);
 extern tree push_scope (tree);
 extern void pop_scope (tree);
 extern tree push_inner_scope (tree);
 extern void pop_inner_scope (tree, tree);
 extern void push_binding_level (cp_binding_level *);
 
-extern bool push_namespace (tree);
-extern void pop_namespace (void);
-extern void push_nested_namespace (tree);
-extern void pop_nested_namespace (tree);
 extern bool handle_namespace_attrs (tree, tree);
 extern void pushlevel_class (void);
 extern void poplevel_class (void);
-extern tree pushdecl_with_scope (tree, cp_binding_level *, bool);
 extern tree lookup_name_prefer_type (tree, int);
 extern tree lookup_name_real (tree, int, int, bool, int, int);
 extern tree lookup_type_scope (tree, tag_scope);
-extern tree namespace_binding (tree, tree);
-extern void set_namespace_binding (tree, tree, tree);
-extern bool hidden_name_p (tree);
-extern tree remove_hidden_names (tree);
+extern tree get_namespace_binding (tree ns, tree id);
+extern void set_global_binding (tree id, tree val);
 extern tree lookup_qualified_name (tree, tree, int, bool, /*hidden*/bool = false);
 extern tree lookup_name_nonclass (tree);
-extern tree lookup_name_innermost_nonclass_level (tree);
 extern bool is_local_extern (tree);
-extern tree lookup_function_nonclass (tree, vec<tree, va_gc> *, bool);
-extern void push_local_binding (tree, tree, int);
 extern bool pushdecl_class_level (tree);
 extern tree pushdecl_namespace_level (tree, bool);
 extern bool push_class_level_binding (tree, tree);
-extern tree getdecls (void);
+extern tree get_local_decls ();
 extern int function_parm_depth (void);
 extern tree cp_namespace_decls (tree);
 extern void set_decl_namespace (tree, tree, bool);
 extern void push_decl_namespace (tree);
 extern void pop_decl_namespace (void);
 extern void do_namespace_alias (tree, tree);
-extern void do_toplevel_using_decl (tree, tree, tree);
-extern void do_local_using_decl (tree, tree, tree);
 extern tree do_class_using_decl (tree, tree);
-extern void do_using_directive (tree);
-extern cp_expr lookup_arg_dependent (tree, tree, vec<tree, va_gc> *);
-extern bool is_associated_namespace (tree, tree);
-extern void parse_using_directive (tree, tree);
+extern tree lookup_arg_dependent (tree, tree, vec<tree, va_gc> *);
 extern tree innermost_non_namespace_value (tree);
 extern cxx_binding *outer_binding (tree, cxx_binding *, bool);
 extern void cp_emit_debug_info_for_using (tree, tree);
 
-/* Set *DECL to the (non-hidden) declaration for ID at global scope,
-   if present and return true; otherwise return false.  */
-
-inline bool
-get_global_value_if_present (tree id, tree *decl)
-{
-  tree global_value = namespace_binding (id, global_namespace);
-  if (global_value)
-    *decl = global_value;
-  return global_value != NULL;
-}
-
-/* True is the binding of IDENTIFIER at global scope names a type.  */
-
-inline bool
-is_typename_at_global_scope (tree id)
-{
-  tree global_value = namespace_binding (id, global_namespace);
-
-  return global_value && TREE_CODE (global_value) == TYPE_DECL;
-}
+extern void finish_namespace_using_decl (tree, tree, tree);
+extern void finish_local_using_decl (tree, tree, tree);
+extern void finish_namespace_using_directive (tree, tree);
+extern void finish_local_using_directive (tree, tree);
+extern tree pushdecl (tree, bool is_friend = false);
+extern tree pushdecl_outermost_localscope (tree);
+extern tree pushdecl_top_level (tree, bool is_friend = false);
+extern tree pushdecl_top_level_and_finish (tree, tree);
+extern tree pushtag (tree, tree, tag_scope);
+extern int push_namespace (tree, bool make_inline = false);
+extern void pop_namespace (void);
+extern void push_nested_namespace (tree);
+extern void pop_nested_namespace (tree);
+extern void push_to_top_level (void);
+extern void pop_from_top_level (void);
 
 #endif /* GCC_CP_NAME_LOOKUP_H */

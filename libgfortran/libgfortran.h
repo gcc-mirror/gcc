@@ -111,6 +111,11 @@ typedef off_t gfc_offset;
 #define likely(x)       __builtin_expect(!!(x), 1)
 #define unlikely(x)     __builtin_expect(!!(x), 0)
 
+/* This macro can be used to annotate conditions which we know to
+   be true, so that the compiler can optimize based on the condition.  */
+
+#define GFC_ASSERT(EXPR)                                                \
+  ((void)(__builtin_expect (!(EXPR), 0) ? __builtin_unreachable (), 0 : 0))
 
 /* Make sure we have ptrdiff_t. */
 #ifndef HAVE_PTRDIFF_T
@@ -803,9 +808,7 @@ internal_proto(get_unformatted_convert);
 
 /* Secure getenv() which returns NULL if running as SUID/SGID.  */
 #ifndef HAVE_SECURE_GETENV
-#ifdef HAVE___SECURE_GETENV
-#define secure_getenv __secure_getenv
-#elif defined(HAVE_GETUID) && defined(HAVE_GETEUID) \
+#if defined(HAVE_GETUID) && defined(HAVE_GETEUID) \
   && defined(HAVE_GETGID) && defined(HAVE_GETEGID)
 #define FALLBACK_SECURE_GETENV
 extern char *secure_getenv (const char *);

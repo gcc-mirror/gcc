@@ -1161,9 +1161,6 @@ df_insn_rescan_all (void)
   basic_block bb;
   bitmap_iterator bi;
   unsigned int uid;
-  bitmap_head tmp;
-
-  bitmap_initialize (&tmp, &df_bitmap_obstack);
 
   if (df->changeable_flags & DF_NO_INSN_RESCAN)
     {
@@ -1177,15 +1174,15 @@ df_insn_rescan_all (void)
       defer_insn_rescan = true;
     }
 
-  bitmap_copy (&tmp, &df->insns_to_delete);
-  EXECUTE_IF_SET_IN_BITMAP (&tmp, 0, uid, bi)
+  auto_bitmap tmp (&df_bitmap_obstack);
+  bitmap_copy (tmp, &df->insns_to_delete);
+  EXECUTE_IF_SET_IN_BITMAP (tmp, 0, uid, bi)
     {
       struct df_insn_info *insn_info = DF_INSN_UID_SAFE_GET (uid);
       if (insn_info)
 	df_insn_info_delete (uid);
     }
 
-  bitmap_clear (&tmp);
   bitmap_clear (&df->insns_to_delete);
   bitmap_clear (&df->insns_to_rescan);
   bitmap_clear (&df->insns_to_notes_rescan);
@@ -1215,9 +1212,6 @@ df_process_deferred_rescans (void)
   bool defer_insn_rescan = false;
   bitmap_iterator bi;
   unsigned int uid;
-  bitmap_head tmp;
-
-  bitmap_initialize (&tmp, &df_bitmap_obstack);
 
   if (df->changeable_flags & DF_NO_INSN_RESCAN)
     {
@@ -1234,24 +1228,25 @@ df_process_deferred_rescans (void)
   if (dump_file)
     fprintf (dump_file, "starting the processing of deferred insns\n");
 
-  bitmap_copy (&tmp, &df->insns_to_delete);
-  EXECUTE_IF_SET_IN_BITMAP (&tmp, 0, uid, bi)
+  auto_bitmap tmp (&df_bitmap_obstack);
+  bitmap_copy (tmp, &df->insns_to_delete);
+  EXECUTE_IF_SET_IN_BITMAP (tmp, 0, uid, bi)
     {
       struct df_insn_info *insn_info = DF_INSN_UID_SAFE_GET (uid);
       if (insn_info)
 	df_insn_info_delete (uid);
     }
 
-  bitmap_copy (&tmp, &df->insns_to_rescan);
-  EXECUTE_IF_SET_IN_BITMAP (&tmp, 0, uid, bi)
+  bitmap_copy (tmp, &df->insns_to_rescan);
+  EXECUTE_IF_SET_IN_BITMAP (tmp, 0, uid, bi)
     {
       struct df_insn_info *insn_info = DF_INSN_UID_SAFE_GET (uid);
       if (insn_info)
 	df_insn_rescan (insn_info->insn);
     }
 
-  bitmap_copy (&tmp, &df->insns_to_notes_rescan);
-  EXECUTE_IF_SET_IN_BITMAP (&tmp, 0, uid, bi)
+  bitmap_copy (tmp, &df->insns_to_notes_rescan);
+  EXECUTE_IF_SET_IN_BITMAP (tmp, 0, uid, bi)
     {
       struct df_insn_info *insn_info = DF_INSN_UID_SAFE_GET (uid);
       if (insn_info)
@@ -1261,7 +1256,6 @@ df_process_deferred_rescans (void)
   if (dump_file)
     fprintf (dump_file, "ending the processing of deferred insns\n");
 
-  bitmap_clear (&tmp);
   bitmap_clear (&df->insns_to_delete);
   bitmap_clear (&df->insns_to_rescan);
   bitmap_clear (&df->insns_to_notes_rescan);
@@ -3628,14 +3622,13 @@ df_record_entry_block_defs (bitmap entry_block_defs)
 void
 df_update_entry_block_defs (void)
 {
-  bitmap_head refs;
   bool changed = false;
 
-  bitmap_initialize (&refs, &df_bitmap_obstack);
-  df_get_entry_block_def_set (&refs);
+  auto_bitmap refs (&df_bitmap_obstack);
+  df_get_entry_block_def_set (refs);
   if (df->entry_block_defs)
     {
-      if (!bitmap_equal_p (df->entry_block_defs, &refs))
+      if (!bitmap_equal_p (df->entry_block_defs, refs))
 	{
 	  struct df_scan_bb_info *bb_info = df_scan_get_bb_info (ENTRY_BLOCK);
 	  df_ref_chain_delete_du_chain (bb_info->artificial_defs);
@@ -3655,11 +3648,10 @@ df_update_entry_block_defs (void)
 
   if (changed)
     {
-      df_record_entry_block_defs (&refs);
-      bitmap_copy (df->entry_block_defs, &refs);
+      df_record_entry_block_defs (refs);
+      bitmap_copy (df->entry_block_defs, refs);
       df_set_bb_dirty (BASIC_BLOCK_FOR_FN (cfun, ENTRY_BLOCK));
     }
-  bitmap_clear (&refs);
 }
 
 
@@ -3804,14 +3796,13 @@ df_record_exit_block_uses (bitmap exit_block_uses)
 void
 df_update_exit_block_uses (void)
 {
-  bitmap_head refs;
   bool changed = false;
 
-  bitmap_initialize (&refs, &df_bitmap_obstack);
-  df_get_exit_block_use_set (&refs);
+  auto_bitmap refs (&df_bitmap_obstack);
+  df_get_exit_block_use_set (refs);
   if (df->exit_block_uses)
     {
-      if (!bitmap_equal_p (df->exit_block_uses, &refs))
+      if (!bitmap_equal_p (df->exit_block_uses, refs))
 	{
 	  struct df_scan_bb_info *bb_info = df_scan_get_bb_info (EXIT_BLOCK);
 	  df_ref_chain_delete_du_chain (bb_info->artificial_uses);
@@ -3831,11 +3822,10 @@ df_update_exit_block_uses (void)
 
   if (changed)
     {
-      df_record_exit_block_uses (&refs);
-      bitmap_copy (df->exit_block_uses,& refs);
+      df_record_exit_block_uses (refs);
+      bitmap_copy (df->exit_block_uses, refs);
       df_set_bb_dirty (BASIC_BLOCK_FOR_FN (cfun, EXIT_BLOCK));
     }
-  bitmap_clear (&refs);
 }
 
 static bool initialized = false;
@@ -4113,23 +4103,30 @@ df_insn_refs_verify (struct df_collection_rec *collection_rec,
                      rtx_insn *insn,
 		     bool abort_if_fail)
 {
-  bool ret1, ret2, ret3, ret4;
+  bool ret1, ret2, ret3;
   unsigned int uid = INSN_UID (insn);
   struct df_insn_info *insn_info = DF_INSN_INFO_GET (insn);
 
   df_insn_refs_collect (collection_rec, bb, insn_info);
 
   /* Unfortunately we cannot opt out early if one of these is not
-     right because the marks will not get cleared.  */
+     right and abort_if_fail is set because the marks will not get cleared.  */
   ret1 = df_refs_verify (&collection_rec->def_vec, DF_INSN_UID_DEFS (uid),
 			 abort_if_fail);
+  if (!ret1 && !abort_if_fail)
+    return false;
   ret2 = df_refs_verify (&collection_rec->use_vec, DF_INSN_UID_USES (uid),
 			 abort_if_fail);
+  if (!ret2 && !abort_if_fail)
+    return false;
   ret3 = df_refs_verify (&collection_rec->eq_use_vec, DF_INSN_UID_EQ_USES (uid),
 			 abort_if_fail);
-  ret4 = df_mws_verify (&collection_rec->mw_vec, DF_INSN_UID_MWS (uid),
-		       abort_if_fail);
-  return (ret1 && ret2 && ret3 && ret4);
+  if (!ret3 && !abort_if_fail)
+    return false;
+  if (! df_mws_verify (&collection_rec->mw_vec, DF_INSN_UID_MWS (uid),
+		       abort_if_fail))
+    return false;
+  return (ret1 && ret2 && ret3);
 }
 
 
@@ -4171,24 +4168,21 @@ df_bb_verify (basic_block bb)
 static bool
 df_entry_block_bitmap_verify (bool abort_if_fail)
 {
-  bitmap_head entry_block_defs;
   bool is_eq;
 
-  bitmap_initialize (&entry_block_defs, &df_bitmap_obstack);
-  df_get_entry_block_def_set (&entry_block_defs);
+  auto_bitmap entry_block_defs (&df_bitmap_obstack);
+  df_get_entry_block_def_set (entry_block_defs);
 
-  is_eq = bitmap_equal_p (&entry_block_defs, df->entry_block_defs);
+  is_eq = bitmap_equal_p (entry_block_defs, df->entry_block_defs);
 
   if (!is_eq && abort_if_fail)
     {
       fprintf (stderr, "entry_block_defs = ");
-      df_print_regset (stderr, &entry_block_defs);
+      df_print_regset (stderr, entry_block_defs);
       fprintf (stderr, "df->entry_block_defs = ");
       df_print_regset (stderr, df->entry_block_defs);
       gcc_assert (0);
     }
-
-  bitmap_clear (&entry_block_defs);
 
   return is_eq;
 }
@@ -4200,24 +4194,21 @@ df_entry_block_bitmap_verify (bool abort_if_fail)
 static bool
 df_exit_block_bitmap_verify (bool abort_if_fail)
 {
-  bitmap_head exit_block_uses;
   bool is_eq;
 
-  bitmap_initialize (&exit_block_uses, &df_bitmap_obstack);
-  df_get_exit_block_use_set (&exit_block_uses);
+  auto_bitmap exit_block_uses (&df_bitmap_obstack);
+  df_get_exit_block_use_set (exit_block_uses);
 
-  is_eq = bitmap_equal_p (&exit_block_uses, df->exit_block_uses);
+  is_eq = bitmap_equal_p (exit_block_uses, df->exit_block_uses);
 
   if (!is_eq && abort_if_fail)
     {
       fprintf (stderr, "exit_block_uses = ");
-      df_print_regset (stderr, &exit_block_uses);
+      df_print_regset (stderr, exit_block_uses);
       fprintf (stderr, "df->exit_block_uses = ");
       df_print_regset (stderr, df->exit_block_uses);
       gcc_assert (0);
     }
-
-  bitmap_clear (&exit_block_uses);
 
   return is_eq;
 }
@@ -4231,8 +4222,6 @@ df_scan_verify (void)
 {
   unsigned int i;
   basic_block bb;
-  bitmap_head regular_block_artificial_uses;
-  bitmap_head eh_block_artificial_uses;
 
   if (!df)
     return;
@@ -4253,23 +4242,20 @@ df_scan_verify (void)
   /* (2) There are various bitmaps whose value may change over the
      course of the compilation.  This step recomputes them to make
      sure that they have not slipped out of date.  */
-  bitmap_initialize (&regular_block_artificial_uses, &df_bitmap_obstack);
-  bitmap_initialize (&eh_block_artificial_uses, &df_bitmap_obstack);
+  auto_bitmap regular_block_artificial_uses (&df_bitmap_obstack);
+  auto_bitmap eh_block_artificial_uses (&df_bitmap_obstack);
 
-  df_get_regular_block_artificial_uses (&regular_block_artificial_uses);
-  df_get_eh_block_artificial_uses (&eh_block_artificial_uses);
+  df_get_regular_block_artificial_uses (regular_block_artificial_uses);
+  df_get_eh_block_artificial_uses (eh_block_artificial_uses);
 
-  bitmap_ior_into (&eh_block_artificial_uses,
-		   &regular_block_artificial_uses);
+  bitmap_ior_into (eh_block_artificial_uses,
+		   regular_block_artificial_uses);
 
   /* Check artificial_uses bitmaps didn't change. */
-  gcc_assert (bitmap_equal_p (&regular_block_artificial_uses,
+  gcc_assert (bitmap_equal_p (regular_block_artificial_uses,
 			      &df->regular_block_artificial_uses));
-  gcc_assert (bitmap_equal_p (&eh_block_artificial_uses,
+  gcc_assert (bitmap_equal_p (eh_block_artificial_uses,
 			      &df->eh_block_artificial_uses));
-
-  bitmap_clear (&regular_block_artificial_uses);
-  bitmap_clear (&eh_block_artificial_uses);
 
   /* Verify entry block and exit block. These only verify the bitmaps,
      the refs are verified in df_bb_verify.  */

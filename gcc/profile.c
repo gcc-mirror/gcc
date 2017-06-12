@@ -67,6 +67,10 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "profile.h"
 
+/* Map from BBs/edges to gcov counters.  */
+vec<gcov_type> bb_gcov_counts;
+hash_map<edge,gcov_type> *edge_gcov_counts;
+
 struct bb_profile_info {
   unsigned int count_valid : 1;
 
@@ -303,7 +307,7 @@ is_edge_inconsistent (vec<edge, va_gc> *edges)
     {
       if (!EDGE_INFO (e)->ignore)
         {
-          if (e->count < 0
+          if (edge_gcov_count (e) < 0
 	      && (!(e->flags & EDGE_FAKE)
 	          || !block_ends_with_call_p (e->src)))
 	    {
@@ -311,7 +315,7 @@ is_edge_inconsistent (vec<edge, va_gc> *edges)
 		{
 		  fprintf (dump_file,
 		  	   "Edge %i->%i is inconsistent, count%" PRId64,
-			   e->src->index, e->dest->index, e->count);
+			   e->src->index, e->dest->index, edge_gcov_count (e));
 		  dump_bb (dump_file, e->src, 0, TDF_DETAILS);
 		  dump_bb (dump_file, e->dest, 0, TDF_DETAILS);
 		}
@@ -333,8 +337,8 @@ correct_negative_edge_counts (void)
     {
       FOR_EACH_EDGE (e, ei, bb->succs)
         {
-           if (e->count < 0)
-             e->count = 0;
+           if (edge_gcov_count (e) < 0)
+             edge_gcov_count (e) = 0;
         }
     }
 }
@@ -354,32 +358,32 @@ is_inconsistent (void)
       inconsistent |= is_edge_inconsistent (bb->succs);
       if (!dump_file && inconsistent)
 	return true;
-      if (bb->count < 0)
+      if (bb_gcov_count (bb) < 0)
         {
 	  if (dump_file)
 	    {
 	      fprintf (dump_file, "BB %i count is negative "
 		       "%" PRId64,
 		       bb->index,
-		       bb->count);
+		       bb_gcov_count (bb));
 	      dump_bb (dump_file, bb, 0, TDF_DETAILS);
 	    }
 	  inconsistent = true;
 	}
-      if (bb->count != sum_edge_counts (bb->preds))
+      if (bb_gcov_count (bb) != sum_edge_counts (bb->preds))
         {
 	  if (dump_file)
 	    {
 	      fprintf (dump_file, "BB %i count does not match sum of incoming edges "
 		       "%" PRId64" should be %" PRId64,
 		       bb->index,
-		       bb->count,
+		       bb_gcov_count (bb),
 		       sum_edge_counts (bb->preds));
 	      dump_bb (dump_file, bb, 0, TDF_DETAILS);
 	    }
 	  inconsistent = true;
 	}
-      if (bb->count != sum_edge_counts (bb->succs) &&
+      if (bb_gcov_count (bb) != sum_edge_counts (bb->succs) &&
 	  ! (find_edge (bb, EXIT_BLOCK_PTR_FOR_FN (cfun)) != NULL
 	     && block_ends_with_call_p (bb)))
 	{
@@ -388,7 +392,7 @@ is_inconsistent (void)
 	      fprintf (dump_file, "BB %i count does not match sum of outgoing edges "
 		       "%" PRId64" should be %" PRId64,
 		       bb->index,
-		       bb->count,
+		       bb_gcov_count (bb),
 		       sum_edge_counts (bb->succs));
 	      dump_bb (dump_file, bb, 0, TDF_DETAILS);
 	    }
@@ -408,8 +412,8 @@ set_bb_counts (void)
   basic_block bb;
   FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR_FOR_FN (cfun), NULL, next_bb)
     {
-      bb->count = sum_edge_counts (bb->succs);
-      gcc_assert (bb->count >= 0);
+      bb_gcov_count (bb) = sum_edge_counts (bb->succs);
+      gcc_assert (bb_gcov_count (bb) >= 0);
     }
 }
 
@@ -436,8 +440,8 @@ read_profile_edge_counts (gcov_type *exec_counts)
 	    num_edges++;
 	    if (exec_counts)
 	      {
-		e->count = exec_counts[exec_counts_pos++];
-		if (e->count > profile_info->sum_max)
+		edge_gcov_count (e) = exec_counts[exec_counts_pos++];
+		if (edge_gcov_count (e) > profile_info->sum_max)
 		  {
 		    if (flag_profile_correction)
 		      {
@@ -454,7 +458,7 @@ read_profile_edge_counts (gcov_type *exec_counts)
 		  }
 	      }
 	    else
-	      e->count = 0;
+	      edge_gcov_count (e) = 0;
 
 	    EDGE_INFO (e)->count_valid = 1;
 	    BB_INFO (bb)->succ_count--;
@@ -464,7 +468,7 @@ read_profile_edge_counts (gcov_type *exec_counts)
 		fprintf (dump_file, "\nRead edge from %i to %i, count:",
 			 bb->index, e->dest->index);
 		fprintf (dump_file, "%" PRId64,
-			 (int64_t) e->count);
+			 (int64_t) edge_gcov_count (e));
 	      }
 	  }
     }
@@ -491,7 +495,7 @@ compute_frequency_overlap (void)
 
   FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR_FOR_FN (cfun), NULL, next_bb)
     {
-      count_total += bb->count;
+      count_total += bb_gcov_count (bb);
       freq_total += bb->frequency;
     }
 
@@ -499,7 +503,7 @@ compute_frequency_overlap (void)
     return 0;
 
   FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR_FOR_FN (cfun), NULL, next_bb)
-    overlap += MIN (bb->count * OVERLAP_BASE / count_total,
+    overlap += MIN (bb_gcov_count (bb) * OVERLAP_BASE / count_total,
 		    bb->frequency * OVERLAP_BASE / freq_total);
 
   return overlap;
@@ -526,6 +530,9 @@ compute_branch_probabilities (unsigned cfg_checksum, unsigned lineno_checksum)
   /* Very simple sanity checks so we catch bugs in our profiling code.  */
   if (!profile_info)
     return;
+
+  bb_gcov_counts.safe_grow_cleared (last_basic_block_for_fn (cfun));
+  edge_gcov_counts = new hash_map<edge,gcov_type>;
 
   if (profile_info->sum_all < profile_info->sum_max)
     {
@@ -592,8 +599,8 @@ compute_branch_probabilities (unsigned cfg_checksum, unsigned lineno_checksum)
 		  gcov_type total = 0;
 
 		  FOR_EACH_EDGE (e, ei, bb->succs)
-		    total += e->count;
-		  bb->count = total;
+		    total += edge_gcov_count (e);
+		  bb_gcov_count (bb) = total;
 		  bi->count_valid = 1;
 		  changes = 1;
 		}
@@ -604,8 +611,8 @@ compute_branch_probabilities (unsigned cfg_checksum, unsigned lineno_checksum)
 		  gcov_type total = 0;
 
 		  FOR_EACH_EDGE (e, ei, bb->preds)
-		    total += e->count;
-		  bb->count = total;
+		    total += edge_gcov_count (e);
+		  bb_gcov_count (bb) = total;
 		  bi->count_valid = 1;
 		  changes = 1;
 		}
@@ -621,7 +628,7 @@ compute_branch_probabilities (unsigned cfg_checksum, unsigned lineno_checksum)
 		  /* One of the counts will be invalid, but it is zero,
 		     so adding it in also doesn't hurt.  */
 		  FOR_EACH_EDGE (e, ei, bb->succs)
-		    total += e->count;
+		    total += edge_gcov_count (e);
 
 		  /* Search for the invalid edge, and set its count.  */
 		  FOR_EACH_EDGE (e, ei, bb->succs)
@@ -629,11 +636,11 @@ compute_branch_probabilities (unsigned cfg_checksum, unsigned lineno_checksum)
 		      break;
 
 		  /* Calculate count for remaining edge by conservation.  */
-		  total = bb->count - total;
+		  total = bb_gcov_count (bb) - total;
 
 		  gcc_assert (e);
 		  EDGE_INFO (e)->count_valid = 1;
-		  e->count = total;
+		  edge_gcov_count (e) = total;
 		  bi->succ_count--;
 
 		  BB_INFO (e->dest)->pred_count--;
@@ -648,7 +655,7 @@ compute_branch_probabilities (unsigned cfg_checksum, unsigned lineno_checksum)
 		  /* One of the counts will be invalid, but it is zero,
 		     so adding it in also doesn't hurt.  */
 		  FOR_EACH_EDGE (e, ei, bb->preds)
-		    total += e->count;
+		    total += edge_gcov_count (e);
 
 		  /* Search for the invalid edge, and set its count.  */
 		  FOR_EACH_EDGE (e, ei, bb->preds)
@@ -656,11 +663,11 @@ compute_branch_probabilities (unsigned cfg_checksum, unsigned lineno_checksum)
 		      break;
 
 		  /* Calculate count for remaining edge by conservation.  */
-		  total = bb->count - total + e->count;
+		  total = bb_gcov_count (bb) - total + edge_gcov_count (e);
 
 		  gcc_assert (e);
 		  EDGE_INFO (e)->count_valid = 1;
-		  e->count = total;
+		  edge_gcov_count (e) = total;
 		  bi->pred_count--;
 
 		  BB_INFO (e->src)->succ_count--;
@@ -727,11 +734,11 @@ compute_branch_probabilities (unsigned cfg_checksum, unsigned lineno_checksum)
       edge e;
       edge_iterator ei;
 
-      if (bb->count < 0)
+      if (bb_gcov_count (bb) < 0)
 	{
 	  error ("corrupted profile info: number of iterations for basic block %d thought to be %i",
-		 bb->index, (int)bb->count);
-	  bb->count = 0;
+		 bb->index, (int)bb_gcov_count (bb));
+	  bb_gcov_count (bb) = 0;
 	}
       FOR_EACH_EDGE (e, ei, bb->succs)
 	{
@@ -740,26 +747,29 @@ compute_branch_probabilities (unsigned cfg_checksum, unsigned lineno_checksum)
 	     edge from the entry, since extra edge from the exit is
 	     already present.  We get negative frequency from the entry
 	     point.  */
-	  if ((e->count < 0
+	  if ((edge_gcov_count (e) < 0
 	       && e->dest == EXIT_BLOCK_PTR_FOR_FN (cfun))
-	      || (e->count > bb->count
+	      || (edge_gcov_count (e) > bb_gcov_count (bb)
 		  && e->dest != EXIT_BLOCK_PTR_FOR_FN (cfun)))
 	    {
 	      if (block_ends_with_call_p (bb))
-		e->count = e->count < 0 ? 0 : bb->count;
+		edge_gcov_count (e) = edge_gcov_count (e) < 0
+				      ? 0 : bb_gcov_count (bb);
 	    }
-	  if (e->count < 0 || e->count > bb->count)
+	  if (edge_gcov_count (e) < 0
+	      || edge_gcov_count (e) > bb_gcov_count (bb))
 	    {
 	      error ("corrupted profile info: number of executions for edge %d-%d thought to be %i",
 		     e->src->index, e->dest->index,
-		     (int)e->count);
-	      e->count = bb->count / 2;
+		     (int)edge_gcov_count (e));
+	      edge_gcov_count (e) = bb_gcov_count (bb) / 2;
 	    }
 	}
-      if (bb->count)
+      if (bb_gcov_count (bb))
 	{
 	  FOR_EACH_EDGE (e, ei, bb->succs)
-	    e->probability = GCOV_COMPUTE_SCALE (e->count, bb->count);
+	    e->probability = GCOV_COMPUTE_SCALE (edge_gcov_count (e),
+						 bb_gcov_count (bb));
 	  if (bb->index >= NUM_FIXED_BLOCKS
 	      && block_ends_with_condjump_p (bb)
 	      && EDGE_COUNT (bb->succs) >= 2)
@@ -816,6 +826,20 @@ compute_branch_probabilities (unsigned cfg_checksum, unsigned lineno_checksum)
 	    num_branches++;
 	}
     }
+
+  FOR_ALL_BB_FN (bb, cfun)
+    {
+      edge e;
+      edge_iterator ei;
+
+      bb->count = profile_count::from_gcov_type (bb_gcov_count (bb));
+      FOR_EACH_EDGE (e, ei, bb->succs)
+        e->count = profile_count::from_gcov_type (edge_gcov_count (e));
+    }
+  bb_gcov_counts.release ();
+  delete edge_gcov_counts;
+  edge_gcov_counts = NULL;
+
   counts_to_freqs ();
 
   if (dump_file)
@@ -941,29 +965,26 @@ output_location (char const *file_name, int line,
   name_differs = !prev_file_name || filename_cmp (file_name, prev_file_name);
   line_differs = prev_line != line;
 
-  if (name_differs || line_differs)
+  if (!*offset)
     {
-      if (!*offset)
-	{
-	  *offset = gcov_write_tag (GCOV_TAG_LINES);
-	  gcov_write_unsigned (bb->index);
-	  name_differs = line_differs=true;
-	}
+      *offset = gcov_write_tag (GCOV_TAG_LINES);
+      gcov_write_unsigned (bb->index);
+      name_differs = line_differs = true;
+    }
 
-      /* If this is a new source file, then output the
-	 file's name to the .bb file.  */
-      if (name_differs)
-	{
-	  prev_file_name = file_name;
-	  gcov_write_unsigned (0);
-	  gcov_write_string (prev_file_name);
-	}
-      if (line_differs)
-	{
-	  gcov_write_unsigned (line);
-	  prev_line = line;
-	}
-     }
+  /* If this is a new source file, then output the
+     file's name to the .bb file.  */
+  if (name_differs)
+    {
+      prev_file_name = file_name;
+      gcov_write_unsigned (0);
+      gcov_write_filename (prev_file_name);
+    }
+  if (line_differs)
+    {
+      gcov_write_unsigned (line);
+      prev_line = line;
+    }
 }
 
 /* Instrument and/or analyze program behavior based on program the CFG.
@@ -1128,7 +1149,6 @@ branch_prob (void)
   for (i = 0 ; i < num_edges ; i++)
     {
       edge e = INDEX_EDGE (el, i);
-      e->count = 0;
 
       /* Mark edges we've replaced by fake edges above as ignored.  */
       if ((e->flags & (EDGE_ABNORMAL | EDGE_ABNORMAL_CALL))
@@ -1195,8 +1215,7 @@ branch_prob (void)
 
       /* Basic block flags */
       offset = gcov_write_tag (GCOV_TAG_BLOCKS);
-      for (i = 0; i != (unsigned) (n_basic_blocks_for_fn (cfun)); i++)
-	gcov_write_unsigned (0);
+      gcov_write_unsigned (n_basic_blocks_for_fn (cfun));
       gcov_write_length (offset);
 
       /* Arcs */
@@ -1327,7 +1346,7 @@ branch_prob (void)
       /* At this moment we have precise loop iteration count estimates.
 	 Record them to loop structure before the profile gets out of date. */
       FOR_EACH_LOOP (loop, 0)
-	if (loop->header->count)
+	if (loop->header->count > 0)
 	  {
 	    gcov_type nit = expected_loop_iterations_unbounded (loop);
 	    widest_int bound = gcov_type_to_wide_int (nit);

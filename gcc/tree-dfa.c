@@ -898,7 +898,7 @@ dump_enumerated_decls_push (tree *tp, int *walk_subtrees, void *data)
    FILE is the dump file where to output the list and FLAGS is as in
    print_generic_expr.  */
 void
-dump_enumerated_decls (FILE *file, int flags)
+dump_enumerated_decls (FILE *file, dump_flags_t flags)
 {
   basic_block bb;
   struct walk_stmt_info wi;

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -116,6 +116,24 @@ procedure Gnat1drv is
    ----------------------------
 
    procedure Adjust_Global_Switches is
+      procedure SPARK_Library_Warning (Kind : String);
+      --  Issue a warning in GNATprove mode if the run-time library does not
+      --  fully support IEEE-754 floating-point semantics.
+
+      ---------------------------
+      -- SPARK_Library_Warning --
+      ---------------------------
+
+      procedure SPARK_Library_Warning (Kind : String) is
+      begin
+         Write_Line
+           ("warning: run-time library may be configured incorrectly");
+         Write_Line
+           ("warning: (SPARK analysis requires support for " & Kind & ')');
+      end SPARK_Library_Warning;
+
+   --  Start of processing for Adjust_Global_Switches
+
    begin
       --  -gnatd.M enables Relaxed_RM_Semantics
 
@@ -286,6 +304,11 @@ procedure Gnat1drv is
 
          Debug_Generated_Code := False;
 
+         --  Ditto for -gnateG which interacts badly with handling of pragma
+         --  Annotate in gnat2scil.
+
+         Generate_Processed_File := False;
+
          --  Disable Exception_Extra_Info (-gnateE) which generates more
          --  complex trees with no added value, and may confuse CodePeer.
 
@@ -375,6 +398,22 @@ procedure Gnat1drv is
       --  executable.
 
       if GNATprove_Mode then
+
+         --  Turn off CodePeer mode (which can be set via e.g. -gnatC or
+         --  -gnateC), not compatible with GNATprove mode.
+
+         CodePeer_Mode := False;
+         Generate_SCIL := False;
+
+         --  Turn off C tree generation, not compatible with GNATprove mode. We
+         --  do not expect this to happen in normal use, since both modes are
+         --  enabled by special tools, but it is useful to turn off these flags
+         --  this way when we are doing GNATprove tests on existing test suites
+         --  that may have -gnateg set, to avoid the need for special casing.
+
+         Modify_Tree_For_C := False;
+         Generate_C_Code := False;
+         Unnest_Subprogram_Mode := False;
 
          --  Turn off inlining, which would confuse formal verification output
          --  and gain nothing.
@@ -475,6 +514,19 @@ procedure Gnat1drv is
          --  which is more complex to formally verify than the original source.
 
          Tagged_Type_Expansion := False;
+
+         --  Detect that the runtime library support for floating-point numbers
+         --  may not be compatible with SPARK analysis of IEEE-754 floats.
+
+         if Denorm_On_Target = False then
+            SPARK_Library_Warning ("float subnormals");
+
+         elsif Machine_Rounds_On_Target = False then
+            SPARK_Library_Warning ("float rounding");
+
+         elsif Signed_Zeros_On_Target = False then
+            SPARK_Library_Warning ("signed zeros");
+         end if;
       end if;
 
       --  Set Configurable_Run_Time mode if system.ads flag set or if the

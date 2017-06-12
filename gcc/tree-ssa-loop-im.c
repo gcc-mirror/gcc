@@ -198,6 +198,7 @@ static bitmap_obstack lim_bitmap_obstack;
 static obstack mem_ref_obstack;
 
 static bool ref_indep_loop_p (struct loop *, im_mem_ref *, struct loop *);
+static bool ref_always_accessed_p (struct loop *, im_mem_ref *, bool);
 
 /* Minimum cost of an expensive expression.  */
 #define LIM_EXPENSIVE ((unsigned) PARAM_VALUE (PARAM_LIM_EXPENSIVE))
@@ -1010,7 +1011,7 @@ invariantness_dom_walker::before_dom_children (basic_block bb)
 
 	if (dump_file && (dump_flags & TDF_DETAILS))
 	  {
-	    print_gimple_stmt (dump_file, stmt, 2, 0);
+	    print_gimple_stmt (dump_file, stmt, 2);
 	    fprintf (dump_file, "  invariant up to level %d, cost %d.\n\n",
 		     loop_depth (lim_data->max_loop),
 		     lim_data->cost);
@@ -1086,7 +1087,7 @@ invariantness_dom_walker::before_dom_children (basic_block bb)
 
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{
-	  print_gimple_stmt (dump_file, stmt, 2, 0);
+	  print_gimple_stmt (dump_file, stmt, 2);
 	  fprintf (dump_file, "  invariant up to level %d, cost %d.\n\n",
 		   loop_depth (lim_data->max_loop),
 		   lim_data->cost);
@@ -1149,7 +1150,7 @@ move_computations_worker (basic_block bb)
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{
 	  fprintf (dump_file, "Moving PHI node\n");
-	  print_gimple_stmt (dump_file, stmt, 0, 0);
+	  print_gimple_stmt (dump_file, stmt, 0);
 	  fprintf (dump_file, "(cost %u) out of loop %d.\n\n",
 		   cost, level->num);
 	}
@@ -1218,7 +1219,7 @@ move_computations_worker (basic_block bb)
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{
 	  fprintf (dump_file, "Moving statement\n");
-	  print_gimple_stmt (dump_file, stmt, 0, 0);
+	  print_gimple_stmt (dump_file, stmt, 0);
 	  fprintf (dump_file, "(cost %u) out of loop %d.\n\n",
 		   cost, level->num);
 	}
@@ -1786,7 +1787,8 @@ struct prev_flag_edges {
 */
 
 static void
-execute_sm_if_changed (edge ex, tree mem, tree tmp_var, tree flag)
+execute_sm_if_changed (edge ex, tree mem, tree tmp_var, tree flag,
+		       edge preheader, hash_set <basic_block> *flag_bbs)
 {
   basic_block new_bb, then_bb, old_dest;
   bool loop_has_only_one_exit;
@@ -1795,6 +1797,54 @@ execute_sm_if_changed (edge ex, tree mem, tree tmp_var, tree flag)
   gimple *stmt;
   struct prev_flag_edges *prev_edges = (struct prev_flag_edges *) ex->aux;
   bool irr = ex->flags & EDGE_IRREDUCIBLE_LOOP;
+
+  int freq_sum = 0;
+  profile_count count_sum = profile_count::zero ();
+  int nbbs = 0, ncount = 0;
+  int flag_probability = -1;
+
+  /* Flag is set in FLAG_BBS. Determine probability that flag will be true
+     at loop exit.
+
+     This code may look fancy, but it can not update profile very realistically
+     because we do not know the probability that flag will be true at given
+     loop exit.
+
+     We look for two interesting extremes
+       - when exit is dominated by block setting the flag, we know it will
+         always be true.  This is a common case.
+       - when all blocks setting the flag have very low frequency we know
+         it will likely be false.
+     In all other cases we default to 2/3 for flag being true.  */
+
+  for (hash_set<basic_block>::iterator it = flag_bbs->begin ();
+       it != flag_bbs->end (); ++it)
+    {
+       freq_sum += (*it)->frequency;
+       if ((*it)->count.initialized_p ())
+         count_sum += (*it)->count, ncount ++;
+       if (dominated_by_p (CDI_DOMINATORS, ex->src, *it))
+	 flag_probability = REG_BR_PROB_BASE;
+       nbbs++;
+    }
+
+  if (flag_probability != -1)
+    ;
+  else if (ncount == nbbs && count_sum > 0 && preheader->count >= count_sum)
+    {
+      flag_probability = count_sum.probability_in (preheader->count);
+      if (flag_probability > REG_BR_PROB_BASE * 2 / 3)
+	flag_probability = REG_BR_PROB_BASE * 2 / 3;
+    }
+  else if (freq_sum > 0 && EDGE_FREQUENCY (preheader) >= freq_sum)
+    {
+      flag_probability = GCOV_COMPUTE_SCALE (freq_sum,
+					     EDGE_FREQUENCY (preheader));
+      if (flag_probability > REG_BR_PROB_BASE * 2 / 3)
+	flag_probability = REG_BR_PROB_BASE * 2 / 3;
+    }
+  else
+    flag_probability = REG_BR_PROB_BASE * 2 / 3;
 
   /* ?? Insert store after previous store if applicable.  See note
      below.  */
@@ -1826,6 +1876,8 @@ execute_sm_if_changed (edge ex, tree mem, tree tmp_var, tree flag)
   old_dest = ex->dest;
   new_bb = split_edge (ex);
   then_bb = create_empty_bb (new_bb);
+  then_bb->frequency = apply_probability (new_bb->frequency, flag_probability);
+  then_bb->count = new_bb->count.apply_probability (flag_probability);
   if (irr)
     then_bb->flags = BB_IRREDUCIBLE_LOOP;
   add_bb_to_loop (then_bb, new_bb->loop_father);
@@ -1840,12 +1892,22 @@ execute_sm_if_changed (edge ex, tree mem, tree tmp_var, tree flag)
   stmt = gimple_build_assign (unshare_expr (mem), tmp_var);
   gsi_insert_after (&gsi, stmt, GSI_CONTINUE_LINKING);
 
-  make_edge (new_bb, then_bb,
-	     EDGE_TRUE_VALUE | (irr ? EDGE_IRREDUCIBLE_LOOP : 0));
-  make_edge (new_bb, old_dest,
-	     EDGE_FALSE_VALUE | (irr ? EDGE_IRREDUCIBLE_LOOP : 0));
+  edge e1 = single_succ_edge (new_bb);
+  edge e2 = make_edge (new_bb, then_bb,
+	               EDGE_TRUE_VALUE | (irr ? EDGE_IRREDUCIBLE_LOOP : 0));
+  e2->probability = flag_probability;
+  e2->count = then_bb->count;
+
+  e1->flags |= EDGE_FALSE_VALUE | (irr ? EDGE_IRREDUCIBLE_LOOP : 0);
+  e1->flags &= ~EDGE_FALLTHRU;
+
+  e1->probability = REG_BR_PROB_BASE - flag_probability;
+  e1->count = new_bb->count - then_bb->count;
+
   then_old_edge = make_edge (then_bb, old_dest,
 			     EDGE_FALLTHRU | (irr ? EDGE_IRREDUCIBLE_LOOP : 0));
+  then_old_edge->probability = REG_BR_PROB_BASE;
+  then_old_edge->count = then_bb->count;
 
   set_immediate_dominator (CDI_DOMINATORS, then_bb, new_bb);
 
@@ -1889,18 +1951,17 @@ execute_sm_if_changed (edge ex, tree mem, tree tmp_var, tree flag)
 	      update_stmt (phi);
 	    }
       }
-  /* Remove the original fall through edge.  This was the
-     single_succ_edge (new_bb).  */
-  EDGE_SUCC (new_bb, 0)->flags &= ~EDGE_FALLTHRU;
 }
 
 /* When REF is set on the location, set flag indicating the store.  */
 
 struct sm_set_flag_if_changed
 {
-  sm_set_flag_if_changed (tree flag_) : flag (flag_) {}
+  sm_set_flag_if_changed (tree flag_, hash_set <basic_block> *bbs_)
+	 : flag (flag_), bbs (bbs_) {}
   bool operator () (mem_ref_loc *loc);
   tree flag;
+  hash_set <basic_block> *bbs;
 };
 
 bool
@@ -1913,6 +1974,7 @@ sm_set_flag_if_changed::operator () (mem_ref_loc *loc)
       gimple_stmt_iterator gsi = gsi_for_stmt (loc->stmt);
       gimple *stmt = gimple_build_assign (flag, boolean_true_node);
       gsi_insert_after (&gsi, stmt, GSI_CONTINUE_LINKING);
+      bbs->add (gimple_bb (stmt));
     }
   return false;
 }
@@ -1921,12 +1983,13 @@ sm_set_flag_if_changed::operator () (mem_ref_loc *loc)
    set, set an appropriate flag indicating the store.  */
 
 static tree
-execute_sm_if_changed_flag_set (struct loop *loop, im_mem_ref *ref)
+execute_sm_if_changed_flag_set (struct loop *loop, im_mem_ref *ref,
+				hash_set <basic_block> *bbs)
 {
   tree flag;
   char *str = get_lsm_tmp_name (ref->mem.ref, ~0, "_flag");
   flag = create_tmp_reg (boolean_type_node, str);
-  for_all_locs_in_loop (loop, ref, sm_set_flag_if_changed (flag));
+  for_all_locs_in_loop (loop, ref, sm_set_flag_if_changed (flag, bbs));
   return flag;
 }
 
@@ -1946,11 +2009,12 @@ execute_sm (struct loop *loop, vec<edge> exits, im_mem_ref *ref)
   struct lim_aux_data *lim_data;
   bool multi_threaded_model_p = false;
   gimple_stmt_iterator gsi;
+  hash_set<basic_block> flag_bbs;
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
       fprintf (dump_file, "Executing store motion of ");
-      print_generic_expr (dump_file, ref->mem.ref, 0);
+      print_generic_expr (dump_file, ref->mem.ref);
       fprintf (dump_file, " from loop %d\n", loop->num);
     }
 
@@ -1962,11 +2026,12 @@ execute_sm (struct loop *loop, vec<edge> exits, im_mem_ref *ref)
   for_each_index (&ref->mem.ref, force_move_till, &fmt_data);
 
   if (bb_in_transaction (loop_preheader_edge (loop)->src)
-      || !PARAM_VALUE (PARAM_ALLOW_STORE_DATA_RACES))
+      || (! PARAM_VALUE (PARAM_ALLOW_STORE_DATA_RACES)
+	  && ! ref_always_accessed_p (loop, ref, true)))
     multi_threaded_model_p = true;
 
   if (multi_threaded_model_p)
-    store_flag = execute_sm_if_changed_flag_set (loop, ref);
+    store_flag = execute_sm_if_changed_flag_set (loop, ref, &flag_bbs);
 
   rewrite_mem_refs (loop, ref, tmp_var);
 
@@ -2002,7 +2067,8 @@ execute_sm (struct loop *loop, vec<edge> exits, im_mem_ref *ref)
 	gsi_insert_on_edge (ex, store);
       }
     else
-      execute_sm_if_changed (ex, ref->mem.ref, tmp_var, store_flag);
+      execute_sm_if_changed (ex, ref->mem.ref, tmp_var, store_flag,
+			     loop_preheader_edge (loop), &flag_bbs);
 }
 
 /* Hoists memory references MEM_REFS out of LOOP.  EXITS is the list of exit
@@ -2145,9 +2211,21 @@ ref_indep_loop_p_1 (int safelen, struct loop *loop, im_mem_ref *ref,
 	  fprintf (dump_file, "\n");
 	}
 
+      /* We need to recurse to properly handle UNANALYZABLE_MEM_ID.  */
+      struct loop *inner = loop->inner;
+      while (inner)
+	{
+	  if (!ref_indep_loop_p_1 (safelen, inner, ref, stored_p, ref_loop))
+	    {
+	      indep_p = false;
+	      break;
+	    }
+	  inner = inner->next;
+	}
+
       /* Avoid caching here as safelen depends on context and refs
          are shared between different contexts.  */
-      return true;
+      return indep_p;
     }
   else
     {

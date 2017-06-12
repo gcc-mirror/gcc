@@ -485,13 +485,17 @@ package Scans is
    --  about the case of Wide_Wide_Characters???
 
    Inside_Depends : Boolean := False;
-   --  Flag set True for parsing the argument of a Depends pragma or aspect
-   --  (used to allow/require non-standard style rules for =>+ with -gnatyt).
+   --  True while parsing the argument of a Depends pragma or aspect (used to
+   --  allow/require non-standard style rules for =>+ with -gnatyt).
 
    Inside_If_Expression : Nat := 0;
    --  This is a counter that is set non-zero while scanning out an if
    --  expression (incremented on entry, decremented on exit). It is used to
    --  disconnect format checks that normally apply to keywords THEN, ELSE etc.
+
+   Inside_Pragma : Boolean := False;
+   --  True within a pragma. Used to avoid complaining about reserved words
+   --  within pragmas (see Scan_Reserved_Identifier).
 
    --------------------------------------------------------
    -- Procedures for Saving and Restoring the Scan State --

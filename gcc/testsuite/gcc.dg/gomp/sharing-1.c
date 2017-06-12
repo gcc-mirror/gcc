@@ -35,7 +35,7 @@ main (void)
   *p = 7;
   s = 6;
   l = 0;
-#pragma omp parallel for /* { dg-error "enclosing parallel" } */ \
+#pragma omp parallel for /* { dg-error "enclosing 'parallel'" } */ \
   default (none) private (p) shared (s) 
   for (i = 0; i < 64; i++)
     {

@@ -505,6 +505,23 @@
                     (const_string "neon_add<q>")))]
 )
 
+;; As with SFmode, full support for HFmode vector arithmetic is only available
+;; when flag-unsafe-math-optimizations is enabled.
+
+(define_insn "add<mode>3"
+  [(set
+    (match_operand:VH 0 "s_register_operand" "=w")
+    (plus:VH
+     (match_operand:VH 1 "s_register_operand" "w")
+     (match_operand:VH 2 "s_register_operand" "w")))]
+ "TARGET_NEON_FP16INST && flag_unsafe_math_optimizations"
+ "vadd.<V_if_elem>\t%<V_reg>0, %<V_reg>1, %<V_reg>2"
+ [(set (attr "type")
+   (if_then_else (match_test "<Is_float_mode>")
+    (const_string "neon_fp_addsub_s<q>")
+    (const_string "neon_add<q>")))]
+)
+
 (define_insn "add<mode>3_fp16"
   [(set
     (match_operand:VH 0 "s_register_operand" "=w")
@@ -555,6 +572,17 @@
       (if_then_else (match_test "<Is_float_mode>")
                     (const_string "neon_fp_addsub_s<q>")
                     (const_string "neon_sub<q>")))]
+)
+
+(define_insn "sub<mode>3"
+ [(set
+   (match_operand:VH 0 "s_register_operand" "=w")
+   (minus:VH
+    (match_operand:VH 1 "s_register_operand" "w")
+    (match_operand:VH 2 "s_register_operand" "w")))]
+ "TARGET_NEON_FP16INST && flag_unsafe_math_optimizations"
+ "vsub.<V_if_elem>\t%<V_reg>0, %<V_reg>1, %<V_reg>2"
+ [(set_attr "type" "neon_sub<q>")]
 )
 
 (define_insn "sub<mode>3_fp16"
@@ -664,8 +692,17 @@
   [(set_attr "type" "neon_fp_mla_s<q>")]
 )
 
-;; There is limited support for unsafe-math optimizations using the NEON FP16
-;; arithmetic instructions, so only the intrinsic is currently supported.
+(define_insn "fma<VH:mode>4"
+ [(set (match_operand:VH 0 "register_operand" "=w")
+   (fma:VH
+    (match_operand:VH 1 "register_operand" "w")
+    (match_operand:VH 2 "register_operand" "w")
+    (match_operand:VH 3 "register_operand" "0")))]
+ "TARGET_NEON_FP16INST && flag_unsafe_math_optimizations"
+ "vfma.<V_if_elem>\\t%<V_reg>0, %<V_reg>1, %<V_reg>2"
+ [(set_attr "type" "neon_fp_mla_s<q>")]
+)
+
 (define_insn "fma<VH:mode>4_intrinsic"
  [(set (match_operand:VH 0 "register_operand" "=w")
    (fma:VH
@@ -1335,14 +1372,14 @@
   }
 )
 
-(define_insn "vec_sel_widen_ssum_lo<VQI:mode><VW:mode>3"
-  [(set (match_operand:<VW:V_widen> 0 "s_register_operand" "=w")
-	(plus:<VW:V_widen>
-	 (sign_extend:<VW:V_widen>
-	  (vec_select:VW
+(define_insn "vec_sel_widen_ssum_lo<mode><V_half>3"
+  [(set (match_operand:<V_double_width> 0 "s_register_operand" "=w")
+	(plus:<V_double_width>
+	 (sign_extend:<V_double_width>
+	  (vec_select:<V_HALF>
 	   (match_operand:VQI 1 "s_register_operand" "%w")
 	   (match_operand:VQI 2 "vect_par_constant_low" "")))
-	 (match_operand:<VW:V_widen> 3 "s_register_operand" "0")))]
+	 (match_operand:<V_double_width> 3 "s_register_operand" "0")))]
   "TARGET_NEON"
 {
   return BYTES_BIG_ENDIAN ?  "vaddw.<V_s_elem>\t%q0, %q3, %f1" :
@@ -1350,13 +1387,14 @@
 }
   [(set_attr "type" "neon_add_widen")])
 
-(define_insn "vec_sel_widen_ssum_hi<VQI:mode><VW:mode>3"
-  [(set (match_operand:<VW:V_widen> 0 "s_register_operand" "=w")
-	(plus:<VW:V_widen>
-	 (sign_extend:<VW:V_widen>
-	  (vec_select:VW (match_operand:VQI 1 "s_register_operand" "%w")
+(define_insn "vec_sel_widen_ssum_hi<mode><V_half>3"
+  [(set (match_operand:<V_double_width> 0 "s_register_operand" "=w")
+	(plus:<V_double_width>
+	 (sign_extend:<V_double_width>
+	  (vec_select:<V_HALF>
+			 (match_operand:VQI 1 "s_register_operand" "%w")
 			 (match_operand:VQI 2 "vect_par_constant_high" "")))
-	 (match_operand:<VW:V_widen> 3 "s_register_operand" "0")))]
+	 (match_operand:<V_double_width> 3 "s_register_operand" "0")))]
   "TARGET_NEON"
 {
   return BYTES_BIG_ENDIAN ?  "vaddw.<V_s_elem>\t%q0, %q3, %e1" :
@@ -1404,14 +1442,14 @@
   }
 )
 
-(define_insn "vec_sel_widen_usum_lo<VQI:mode><VW:mode>3"
-  [(set (match_operand:<VW:V_widen> 0 "s_register_operand" "=w")
-	(plus:<VW:V_widen>
-	 (zero_extend:<VW:V_widen>
-	  (vec_select:VW
+(define_insn "vec_sel_widen_usum_lo<mode><V_half>3"
+  [(set (match_operand:<V_double_width> 0 "s_register_operand" "=w")
+	(plus:<V_double_width>
+	 (zero_extend:<V_double_width>
+	  (vec_select:<V_HALF>
 	   (match_operand:VQI 1 "s_register_operand" "%w")
 	   (match_operand:VQI 2 "vect_par_constant_low" "")))
-	 (match_operand:<VW:V_widen> 3 "s_register_operand" "0")))]
+	 (match_operand:<V_double_width> 3 "s_register_operand" "0")))]
   "TARGET_NEON"
 {
   return BYTES_BIG_ENDIAN ?  "vaddw.<V_u_elem>\t%q0, %q3, %f1" :
@@ -1419,13 +1457,14 @@
 }
   [(set_attr "type" "neon_add_widen")])
 
-(define_insn "vec_sel_widen_usum_hi<VQI:mode><VW:mode>3"
-  [(set (match_operand:<VW:V_widen> 0 "s_register_operand" "=w")
-	(plus:<VW:V_widen>
-	 (zero_extend:<VW:V_widen>
-	  (vec_select:VW (match_operand:VQI 1 "s_register_operand" "%w")
+(define_insn "vec_sel_widen_usum_hi<mode><V_half>3"
+  [(set (match_operand:<V_double_width> 0 "s_register_operand" "=w")
+	(plus:<V_double_width>
+	 (zero_extend:<V_double_width>
+	  (vec_select:<V_HALF>
+			 (match_operand:VQI 1 "s_register_operand" "%w")
 			 (match_operand:VQI 2 "vect_par_constant_high" "")))
-	 (match_operand:<VW:V_widen> 3 "s_register_operand" "0")))]
+	 (match_operand:<V_double_width> 3 "s_register_operand" "0")))]
   "TARGET_NEON"
 {
  return BYTES_BIG_ENDIAN ?  "vaddw.<V_u_elem>\t%q0, %q3, %e1" :
@@ -2171,6 +2210,17 @@
       (if_then_else (match_test "<Is_float_mode>")
                     (const_string "neon_fp_mul_s<q>")
                     (const_string "neon_mul_<V_elem_ch><q>")))]
+)
+
+(define_insn "mul<mode>3"
+ [(set
+   (match_operand:VH 0 "s_register_operand" "=w")
+   (mult:VH
+    (match_operand:VH 1 "s_register_operand" "w")
+    (match_operand:VH 2 "s_register_operand" "w")))]
+  "TARGET_NEON_FP16INST && flag_unsafe_math_optimizations"
+  "vmul.f16\t%<V_reg>0, %<V_reg>1, %<V_reg>2"
+ [(set_attr "type" "neon_mul_<VH_elem_ch><q>")]
 )
 
 (define_insn "neon_vmulf<mode>"

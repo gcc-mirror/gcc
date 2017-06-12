@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2011-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 2011-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -62,7 +62,7 @@ package System.Finalization_Masters is
    --  Finalization master type structure. A unique master is associated with
    --  each access-to-controlled or access-to-class-wide type. Masters also act
    --  as components of subpools. By default, a master contains objects of the
-   --  same designated type but it may also accomodate heterogeneous objects.
+   --  same designated type but it may also accommodate heterogeneous objects.
 
    type Finalization_Master is
      new Ada.Finalization.Limited_Controlled with private;
@@ -156,7 +156,7 @@ private
    --  Finalization master type structure. A unique master is associated with
    --  each access-to-controlled or access-to-class-wide type. Masters also act
    --  as components of subpools. By default, a master contains objects of the
-   --  same designated type but it may also accomodate heterogeneous objects.
+   --  same designated type but it may also accommodate heterogeneous objects.
 
    type Finalization_Master is
      new Ada.Finalization.Limited_Controlled with

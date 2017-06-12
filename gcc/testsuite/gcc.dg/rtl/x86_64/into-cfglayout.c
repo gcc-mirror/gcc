@@ -1,4 +1,4 @@
-/* { dg-do run { target x86_64-*-* } } */
+/* { dg-do run { target { { i?86-*-* x86_64-*-* } && lp64 } } } */
 /* { dg-options "-fdump-rtl-into_cfglayout" } */
 
 /* Lightly-modified dump of test.c.226r.vregs for x86_64.  */

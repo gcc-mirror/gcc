@@ -94,12 +94,16 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	    typename _Alloc = std::allocator<_Key> >
     class multiset
     {
+#ifdef _GLIBCXX_CONCEPT_CHECKS
       // concept requirements
-      typedef typename _Alloc::value_type                   _Alloc_value_type;
+      typedef typename _Alloc::value_type		_Alloc_value_type;
+# if __cplusplus < 201103L
       __glibcxx_class_requires(_Key, _SGIAssignableConcept)
+# endif
       __glibcxx_class_requires4(_Compare, bool, _Key, _Key,
 				_BinaryFunctionConcept)
-      __glibcxx_class_requires2(_Key, _Alloc_value_type, _SameTypeConcept)	
+      __glibcxx_class_requires2(_Key, _Alloc_value_type, _SameTypeConcept)
+#endif
 
     public:
       // typedefs:
@@ -122,19 +126,19 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       typedef __gnu_cxx::__alloc_traits<_Key_alloc_type> _Alloc_traits;
 
     public:
-      typedef typename _Alloc_traits::pointer		    pointer;
-      typedef typename _Alloc_traits::const_pointer	    const_pointer;
-      typedef typename _Alloc_traits::reference		    reference;
-      typedef typename _Alloc_traits::const_reference	    const_reference;
+      typedef typename _Alloc_traits::pointer		 pointer;
+      typedef typename _Alloc_traits::const_pointer	 const_pointer;
+      typedef typename _Alloc_traits::reference		 reference;
+      typedef typename _Alloc_traits::const_reference	 const_reference;
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // DR 103. set::iterator is required to be modifiable,
       // but this allows modification of keys.
-      typedef typename _Rep_type::const_iterator            iterator;
-      typedef typename _Rep_type::const_iterator            const_iterator;
-      typedef typename _Rep_type::const_reverse_iterator    reverse_iterator;
+      typedef typename _Rep_type::const_iterator	 iterator;
+      typedef typename _Rep_type::const_iterator	 const_iterator;
+      typedef typename _Rep_type::const_reverse_iterator reverse_iterator;
       typedef typename _Rep_type::const_reverse_iterator const_reverse_iterator;
-      typedef typename _Rep_type::size_type                 size_type;
-      typedef typename _Rep_type::difference_type           difference_type;
+      typedef typename _Rep_type::size_type		 size_type;
+      typedef typename _Rep_type::difference_type	 difference_type;
 
 #if __cplusplus > 201402L
       using node_type = typename _Rep_type::node_type;
@@ -170,9 +174,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  and NlogN otherwise (where N is distance(__first,__last)).
        */
       template<typename _InputIterator>
-        multiset(_InputIterator __first, _InputIterator __last)
+	multiset(_InputIterator __first, _InputIterator __last)
 	: _M_t()
-        { _M_t._M_insert_equal(__first, __last); }
+	{ _M_t._M_insert_equal(__first, __last); }
 
       /**
        *  @brief  Builds a %multiset from a range.
@@ -186,11 +190,11 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  and NlogN otherwise (where N is distance(__first,__last)).
        */
       template<typename _InputIterator>
-        multiset(_InputIterator __first, _InputIterator __last,
+	multiset(_InputIterator __first, _InputIterator __last,
 		 const _Compare& __comp,
 		 const allocator_type& __a = allocator_type())
 	: _M_t(__comp, _Key_alloc_type(__a))
-        { _M_t._M_insert_equal(__first, __last); }
+	{ _M_t._M_insert_equal(__first, __last); }
 
       /**
        *  @brief  %Multiset copy constructor.
@@ -250,10 +254,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       /// Allocator-extended range constructor.
       template<typename _InputIterator>
-        multiset(_InputIterator __first, _InputIterator __last,
+	multiset(_InputIterator __first, _InputIterator __last,
 		 const allocator_type& __a)
 	: _M_t(_Compare(), _Key_alloc_type(__a))
-        { _M_t._M_insert_equal(__first, __last); }
+	{ _M_t._M_insert_equal(__first, __last); }
 
       /**
        *  The dtor only erases the elements, and note that if the elements
@@ -533,9 +537,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  Complexity similar to that of the range constructor.
        */
       template<typename _InputIterator>
-        void
-        insert(_InputIterator __first, _InputIterator __last)
-        { _M_t._M_insert_equal(__first, __last); }
+	void
+	insert(_InputIterator __first, _InputIterator __last)
+	{ _M_t._M_insert_equal(__first, __last); }
 
 #if __cplusplus >= 201103L
       /**
@@ -611,7 +615,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  @brief Erases an element from a %multiset.
        *  @param  __position  An iterator pointing to the element to be erased.
        *  @return An iterator pointing to the element immediately following
-       *          @a position prior to the element being erased. If no such 
+       *          @a position prior to the element being erased. If no such
        *          element exists, end() is returned.
        *
        *  This function erases an element, pointed to by the given iterator,
@@ -866,13 +870,13 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       //@}
 
       template<typename _K1, typename _C1, typename _A1>
-        friend bool
-        operator==(const multiset<_K1, _C1, _A1>&,
+	friend bool
+	operator==(const multiset<_K1, _C1, _A1>&,
 		   const multiset<_K1, _C1, _A1>&);
 
       template<typename _K1, typename _C1, typename _A1>
-        friend bool
-        operator< (const multiset<_K1, _C1, _A1>&,
+	friend bool
+	operator< (const multiset<_K1, _C1, _A1>&,
 		   const multiset<_K1, _C1, _A1>&);
     };
 

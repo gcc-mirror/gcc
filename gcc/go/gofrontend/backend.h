@@ -372,9 +372,11 @@ class Backend
   virtual Bexpression*
   array_index_expression(Bexpression* array, Bexpression* index, Location) = 0;
 
-  // Create an expression for a call to FN with ARGS.
+  // Create an expression for a call to FN with ARGS, taking place within
+  // caller CALLER.
   virtual Bexpression*
-  call_expression(Bexpression* fn, const std::vector<Bexpression*>& args,
+  call_expression(Bfunction *caller, Bexpression* fn,
+                  const std::vector<Bexpression*>& args,
 		  Bexpression* static_chain, Location) = 0;
 
   // Return an expression that allocates SIZE bytes on the stack.

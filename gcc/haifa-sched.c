@@ -930,6 +930,9 @@ static bitmap saved_reg_live;
 /* Registers mentioned in the current region.  */
 static bitmap region_ref_regs;
 
+/* Temporary bitmap used for SCHED_PRESSURE_MODEL.  */
+static bitmap tmp_bitmap;
+
 /* Effective number of available registers of a given class (see comment
    in sched_pressure_start_bb).  */
 static int sched_class_regs_num[N_REG_CLASSES];
@@ -2135,10 +2138,11 @@ model_recompute (rtx_insn *insn)
      registers that will be born in the range [model_curr_point, POINT).  */
   num_uses = 0;
   num_pending_births = 0;
+  bitmap_clear (tmp_bitmap);
   for (use = INSN_REG_USE_LIST (insn); use != NULL; use = use->next_insn_use)
     {
       new_last = model_last_use_except (use);
-      if (new_last < point)
+      if (new_last < point && bitmap_set_bit (tmp_bitmap, use->regno))
 	{
 	  gcc_assert (num_uses < ARRAY_SIZE (uses));
 	  uses[num_uses].last_use = new_last;
@@ -4839,14 +4843,12 @@ estimate_insn_tick (bitmap processed, rtx_insn *insn, int budget)
 static int
 estimate_shadow_tick (struct delay_pair *p)
 {
-  bitmap_head processed;
+  auto_bitmap processed;
   int t;
   bool cutoff;
-  bitmap_initialize (&processed, 0);
 
-  cutoff = !estimate_insn_tick (&processed, p->i2,
+  cutoff = !estimate_insn_tick (processed, p->i2,
 				max_insn_queue_index + pair_delay (p));
-  bitmap_clear (&processed);
   if (cutoff)
     return max_insn_queue_index;
   t = INSN_TICK_ESTIMATE (p->i2) - (clock_var + pair_delay (p) + 1);
@@ -7241,6 +7243,8 @@ alloc_global_sched_pressure_data (void)
 	  saved_reg_live = BITMAP_ALLOC (NULL);
 	  region_ref_regs = BITMAP_ALLOC (NULL);
 	}
+      if (sched_pressure == SCHED_PRESSURE_MODEL)
+	tmp_bitmap = BITMAP_ALLOC (NULL);
 
       /* Calculate number of CALL_SAVED_REGS and FIXED_REGS in register classes
 	 that we calculate register pressure for.  */
@@ -7274,6 +7278,8 @@ free_global_sched_pressure_data (void)
 	  BITMAP_FREE (region_ref_regs);
 	  BITMAP_FREE (saved_reg_live);
 	}
+      if (sched_pressure == SCHED_PRESSURE_MODEL)
+	BITMAP_FREE (tmp_bitmap);
       BITMAP_FREE (curr_reg_live);
       free (sched_regno_pressure_class);
     }
@@ -7507,14 +7513,12 @@ static void
 fix_inter_tick (rtx_insn *head, rtx_insn *tail)
 {
   /* Set of instructions with corrected INSN_TICK.  */
-  bitmap_head processed;
+  auto_bitmap processed;
   /* ??? It is doubtful if we should assume that cycle advance happens on
      basic block boundaries.  Basically insns that are unconditionally ready
      on the start of the block are more preferable then those which have
      a one cycle dependency over insn from the previous block.  */
   int next_clock = clock_var + 1;
-
-  bitmap_initialize (&processed, 0);
 
   /* Iterates over scheduled instructions and fix their INSN_TICKs and
      INSN_TICKs of dependent instructions, so that INSN_TICKs are consistent
@@ -7531,7 +7535,7 @@ fix_inter_tick (rtx_insn *head, rtx_insn *tail)
 	  gcc_assert (tick >= MIN_TICK);
 
 	  /* Fix INSN_TICK of instruction from just scheduled block.  */
-	  if (bitmap_set_bit (&processed, INSN_LUID (head)))
+	  if (bitmap_set_bit (processed, INSN_LUID (head)))
 	    {
 	      tick -= next_clock;
 
@@ -7555,7 +7559,7 @@ fix_inter_tick (rtx_insn *head, rtx_insn *tail)
 		  /* If NEXT has its INSN_TICK calculated, fix it.
 		     If not - it will be properly calculated from
 		     scratch later in fix_tick_ready.  */
-		  && bitmap_set_bit (&processed, INSN_LUID (next)))
+		  && bitmap_set_bit (processed, INSN_LUID (next)))
 		{
 		  tick -= next_clock;
 
@@ -7572,7 +7576,6 @@ fix_inter_tick (rtx_insn *head, rtx_insn *tail)
 	    }
 	}
     }
-  bitmap_clear (&processed);
 }
 
 /* Check if NEXT is ready to be added to the ready or queue list.
@@ -8310,8 +8313,7 @@ sched_create_recovery_edges (basic_block first_bb, basic_block rec,
     /* Partition type is the same, if it is "unpartitioned".  */
     {
       /* Rewritten from cfgrtl.c.  */
-      if (flag_reorder_blocks_and_partition
-	  && targetm_common.have_named_sections)
+      if (crtl->has_bb_partition && targetm_common.have_named_sections)
 	{
 	  /* We don't need the same note for the check because
 	     any_condjump_p (check) == true.  */
@@ -8609,9 +8611,7 @@ fix_recovery_deps (basic_block rec)
 {
   rtx_insn *note, *insn, *jump;
   auto_vec<rtx_insn *, 10> ready_list;
-  bitmap_head in_ready;
-
-  bitmap_initialize (&in_ready, 0);
+  auto_bitmap in_ready;
 
   /* NOTE - a basic block note.  */
   note = NEXT_INSN (BB_HEAD (rec));
@@ -8634,7 +8634,7 @@ fix_recovery_deps (basic_block rec)
 	    {
 	      sd_delete_dep (sd_it);
 
-	      if (bitmap_set_bit (&in_ready, INSN_LUID (consumer)))
+	      if (bitmap_set_bit (in_ready, INSN_LUID (consumer)))
 		ready_list.safe_push (consumer);
 	    }
 	  else
@@ -8648,8 +8648,6 @@ fix_recovery_deps (basic_block rec)
       insn = PREV_INSN (insn);
     }
   while (insn != note);
-
-  bitmap_clear (&in_ready);
 
   /* Try to add instructions to the ready or queue list.  */
   unsigned int i;

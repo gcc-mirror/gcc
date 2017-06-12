@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -320,10 +320,10 @@ package body Elists is
 
    procedure Lock is
    begin
-      Elists.Locked := True;
-      Elmts.Locked := True;
       Elists.Release;
+      Elists.Locked := True;
       Elmts.Release;
+      Elmts.Locked := True;
    end Lock;
 
    --------------------
@@ -449,6 +449,17 @@ package body Elists is
 
       Elists.Table (To).First  := Elmts.Last;
    end Prepend_Elmt;
+
+   -------------------------
+   -- Prepend_Unique_Elmt --
+   -------------------------
+
+   procedure Prepend_Unique_Elmt (N : Node_Or_Entity_Id; To : Elist_Id) is
+   begin
+      if not Contains (To, N) then
+         Prepend_Elmt (N, To);
+      end if;
+   end Prepend_Unique_Elmt;
 
    -------------
    -- Present --

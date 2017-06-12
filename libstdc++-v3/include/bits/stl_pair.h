@@ -76,7 +76,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   struct piecewise_construct_t { explicit piecewise_construct_t() = default; };
 
   /// piecewise_construct
-  constexpr piecewise_construct_t piecewise_construct = piecewise_construct_t();
+  _GLIBCXX17_INLINE constexpr piecewise_construct_t piecewise_construct =
+    piecewise_construct_t();
 
   // Forward declarations.
   template<typename...>
@@ -176,6 +177,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       {
 	return false;
       }
+  };
+
+  // PR libstdc++/79141, a utility type for preventing
+  // initialization of an argument of a disabled assignment
+  // operator from a pair of empty braces.
+  struct __nonesuch_no_braces : std::__nonesuch {
+    explicit __nonesuch_no_braces(const __nonesuch&) = delete;
   };
 
 #endif
@@ -359,7 +367,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       operator=(typename conditional<
 		__and_<is_copy_assignable<_T1>,
 		       is_copy_assignable<_T2>>::value,
-		const pair&, const __nonesuch&>::type __p)
+		const pair&, const __nonesuch_no_braces&>::type __p)
       {
 	first = __p.first;
 	second = __p.second;
@@ -370,13 +378,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       operator=(typename conditional<
 		__not_<__and_<is_copy_assignable<_T1>,
 		              is_copy_assignable<_T2>>>::value,
-		const pair&, const __nonesuch&>::type __p) = delete;
+		const pair&, const __nonesuch_no_braces&>::type __p) = delete;
 
       pair&
       operator=(typename conditional<
 		__and_<is_move_assignable<_T1>,
 		       is_move_assignable<_T2>>::value,
-		pair&&, __nonesuch&&>::type __p)
+		pair&&, __nonesuch_no_braces&&>::type __p)
       noexcept(__and_<is_nothrow_move_assignable<_T1>,
 	              is_nothrow_move_assignable<_T2>>::value)
       {
@@ -424,6 +432,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
              _Index_tuple<_Indexes1...>, _Index_tuple<_Indexes2...>);
 #endif
     };
+
+#if __cpp_deduction_guides >= 201606
+  template<typename _T1, typename _T2> pair(_T1, _T2) -> pair<_T1, _T2>;
+#endif
 
   /// Two pairs of the same type are equal iff their members are equal.
   template<typename _T1, typename _T2>

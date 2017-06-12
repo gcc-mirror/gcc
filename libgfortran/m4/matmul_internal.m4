@@ -138,9 +138,9 @@ sinclude(`matmul_asm_'rtype_code`.m4')dnl
       bxstride = GFC_DESCRIPTOR_STRIDE(b,0);
 
       /* bystride should never be used for 1-dimensional b.
-	 in case it is we want it to cause a segfault, rather than
-	 an incorrect result. */
-      bystride = 0xDEADBEEF;
+         The value is only used for calculation of the
+         memory by the buffer.  */
+      bystride = 256;
       ycount = 1;
     }
   else
@@ -202,11 +202,11 @@ sinclude(`matmul_asm_'rtype_code`.m4')dnl
 		 i1, i2, i3, i4, i5, i6;
 
       /* Local variables */
-      'rtype_name` t1[65536], /* was [256][256] */
-		 f11, f12, f21, f22, f31, f32, f41, f42,
+      'rtype_name` f11, f12, f21, f22, f31, f32, f41, f42,
 		 f13, f14, f23, f24, f33, f34, f43, f44;
       index_type i, j, l, ii, jj, ll;
       index_type isec, jsec, lsec, uisec, ujsec, ulsec;
+      'rtype_name` *t1;
 
       a = abase;
       b = bbase;
@@ -223,14 +223,22 @@ sinclude(`matmul_asm_'rtype_code`.m4')dnl
       b_offset = 1 + b_dim1;
       b -= b_offset;
 
-      /* Early exit if possible */
-      if (m == 0 || n == 0 || k == 0)
-	return;
-
       /* Empty c first.  */
       for (j=1; j<=n; j++)
 	for (i=1; i<=m; i++)
 	  c[i + j * c_dim1] = ('rtype_name`)0;
+
+      /* Early exit if possible */
+      if (m == 0 || n == 0 || k == 0)
+	return;
+
+      /* Adjust size of t1 to what is needed.  */
+      index_type t1_dim;
+      t1_dim = (a_dim1-1) * 256 + b_dim1;
+      if (t1_dim > 65536)
+	t1_dim = 65536;
+
+      t1 = malloc (t1_dim * sizeof('rtype_name`));
 
       /* Start turning the crank. */
       i1 = n;
@@ -441,6 +449,7 @@ sinclude(`matmul_asm_'rtype_code`.m4')dnl
 		}
 	    }
 	}
+      free(t1);
       return;
     }
   else if (rxstride == 1 && aystride == 1 && bxstride == 1)

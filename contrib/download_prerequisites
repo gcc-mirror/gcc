@@ -20,7 +20,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see http://www.gnu.org/licenses/.
 
-
 program='download_prerequisites'
 version='(unversioned)'
 
@@ -45,7 +44,23 @@ echo_archives() {
 graphite=1
 verify=1
 force=0
-chksum='sha512'
+OS=$(uname)
+
+case $OS in
+  "Darwin")
+    chksum='shasum -a 512 --check'
+  ;;
+  *)
+    chksum='sha512sum --check'
+  ;;
+esac
+
+if type wget > /dev/null ; then
+  fetch='wget'
+else
+  fetch='curl -LO -u anonymous:'
+fi
+chksum_extension='sha512'
 directory='.'
 
 helptext="usage: ${program} [OPTION...]
@@ -95,6 +110,24 @@ do
 done
 unset arg
 
+# Emulate Linux's 'md5 --check' on macOS
+md5_check() {
+  # Store the standard input: a line from contrib/prerequisites.md5:
+  md5_checksum_line=$(cat -)
+  # Grab the text before the first space
+  md5_checksum_expected="${md5_checksum_line%% *}"
+  # Grab the text after the first space
+  file_to_check="${md5_checksum_line##* }"
+  # Calculate the md5 checksum for the downloaded file
+  md5_checksum_output=$(md5 -r "${file_to_check}")
+  # Grab the text before the first space
+  md5_checksum_detected="${md5_checksum_output%% *}"
+  [ "${md5_checksum_expected}" == "${md5_checksum_detected}" ] \
+    || die "Cannot verify integrity of possibly corrupted file ${file_to_check}"
+  echo "${file_to_check}: OK"
+}
+
+
 argnext=
 for arg in "$@"
 do
@@ -126,11 +159,27 @@ do
                 verify=0
                 ;;
             --sha512)
-                chksum='sha512'
+                case $OS in
+                  "Darwin")
+                    chksum='shasum -a 512 --check'
+                  ;;
+                  *)
+                    chksum='sha512sum --check'
+                  ;;
+                esac
+                chksum_extension='sha512'
                 verify=1
                 ;;
             --md5)
-                chksum='md5'
+                case $OS in
+                  "Darwin")
+                    chksum='md5_check'
+                  ;;
+                  *)
+                    chksum='md5 --check'
+                  ;;
+                esac
+                chksum_extension='md5'
                 verify=1
                 ;;
             -*)
@@ -170,19 +219,19 @@ for ar in $(echo_archives)
 do
     if [ ${force} -gt 0 ]; then rm -f "${directory}/${ar}"; fi
     [ -e "${directory}/${ar}" ]                                               \
-        || wget --no-verbose -O "${directory}/${ar}" "${base_url}${ar}"       \
+        || ${fetch} --no-verbose -O "${directory}/${ar}" "${base_url}${ar}"       \
         || die "Cannot download ${ar} from ${base_url}"
 done
 unset ar
 
 if [ ${verify} -gt 0 ]
 then
-    chksumfile="contrib/prerequisites.${chksum}"
+    chksumfile="contrib/prerequisites.${chksum_extension}"
     [ -r "${chksumfile}" ] || die "No checksums available"
     for ar in $(echo_archives)
     do
         grep "${ar}" "${chksumfile}"                                          \
-            | ( cd "${directory}" && "${chksum}sum" --check )                 \
+            | ( cd "${directory}" && ${chksum} )                              \
             || die "Cannot verify integrity of possibly corrupted file ${ar}"
     done
     unset chksumfile

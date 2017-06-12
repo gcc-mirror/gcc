@@ -2,7 +2,7 @@
 // { dg-do compile }
 
 struct S // { dg-message "implicitly deleted" "" { target c++11 } }
-	 // { dg-error "uninitialized" "" { target c++11 } 4 }
+	 // { dg-error "uninitialized" "" { target c++11 } .-1 }
 {
   int const i; // { dg-message "should be initialized" }
 };
@@ -15,7 +15,7 @@ public:
 };
 
 struct S2 // { dg-message "implicitly deleted" "" { target c++11 } }
-	  // { dg-error "uninitialized" "" { target c++11 } 17 }
+	  // { dg-error "uninitialized" "" { target c++11 } .-1 }
 {
   int& ref;   // { dg-message "should be initialized" }
 };
@@ -36,7 +36,7 @@ class C3
 };
 
 struct S4 // { dg-message "implicitly deleted" "" { target c++11 } }
-	  // { dg-error "uninitialized" "" { target c++11 } 38 }
+	  // { dg-error "uninitialized" "" { target c++11 } .-1 }
 {
   int const i; // { dg-message "should be initialized" }
 };

@@ -496,7 +496,6 @@ static const struct default_options default_options_table[] =
     { OPT_LEVELS_2_PLUS, OPT_fschedule_insns2, NULL, 1 },
 #endif
     { OPT_LEVELS_2_PLUS, OPT_fstrict_aliasing, NULL, 1 },
-    { OPT_LEVELS_2_PLUS, OPT_fstrict_overflow, NULL, 1 },
     { OPT_LEVELS_2_PLUS_SPEED_ONLY, OPT_freorder_blocks_algorithm_, NULL,
       REORDER_BLOCKS_ALGORITHM_STC },
     { OPT_LEVELS_2_PLUS, OPT_freorder_functions, NULL, 1 },
@@ -864,19 +863,6 @@ finish_options (struct gcc_options *opts, struct gcc_options *opts_set,
       opts->x_flag_reorder_blocks = 1;
     }
 
-  /* Disable -freorder-blocks-and-partition when -fprofile-use is not in
-     effect. Function splitting was not actually being performed in that case,
-     as probably_never_executed_bb_p does not distinguish any basic blocks as
-     being cold vs hot when there is no profile data. Leaving it enabled,
-     however, causes the assembly code generator to create (empty) cold
-     sections and labels, leading to unnecessary size overhead.  */
-  if (opts->x_flag_reorder_blocks_and_partition
-      && !opts_set->x_flag_profile_use)
-    opts->x_flag_reorder_blocks_and_partition = 0;
-
-  if (opts->x_flag_reorder_blocks_and_partition
-      && !opts_set->x_flag_reorder_functions)
-    opts->x_flag_reorder_functions = 1;
 
   /* Pipelining of outer loops is only possible when general pipelining
      capabilities are requested.  */
@@ -927,6 +913,20 @@ finish_options (struct gcc_options *opts, struct gcc_options *opts_set,
 	  opts->x_flag_split_stack = 0;
 	}
     }
+
+  /* If stack splitting is turned on, and the user did not explicitly
+     request function partitioning, turn off partitioning, as it
+     confuses the linker when trying to handle partitioned split-stack
+     code that calls a non-split-stack functions.  But if partitioning
+     was turned on explicitly just hope for the best.  */
+  if (opts->x_flag_split_stack
+      && opts->x_flag_reorder_blocks_and_partition
+      && !opts_set->x_flag_reorder_blocks_and_partition)
+    opts->x_flag_reorder_blocks_and_partition = 0;
+
+  if (opts->x_flag_reorder_blocks_and_partition
+      && !opts_set->x_flag_reorder_functions)
+    opts->x_flag_reorder_functions = 1;
 
   /* Tune vectorization related parametees according to cost model.  */
   if (opts->x_flag_vect_cost_model == VECT_COST_MODEL_CHEAP)
@@ -984,10 +984,7 @@ finish_options (struct gcc_options *opts, struct gcc_options *opts_set,
 
   /* Aggressive compiler optimizations may cause false negatives.  */
   if (opts->x_flag_sanitize & ~(SANITIZE_LEAK | SANITIZE_UNREACHABLE))
-    {
-      opts->x_flag_aggressive_loop_optimizations = 0;
-      opts->x_flag_strict_overflow = 0;
-    }
+    opts->x_flag_aggressive_loop_optimizations = 0;
 
   /* Enable -fsanitize-address-use-after-scope if address sanitizer is
      enabled.  */
@@ -1246,7 +1243,7 @@ print_filtered_help (unsigned int include_flags,
 		    }
 		  else
 		    sprintf (new_help + strlen (new_help),
-			     "%#x", * (int *) flag_var);
+			     "%d", * (int *) flag_var);
 		}
 	      else
 		strcat (new_help, option_enabled (i, opts)
@@ -1640,7 +1637,7 @@ parse_sanitizer_options (const char *p, location_t loc, int scode,
 	  if (hint)
 	    error_at (loc,
 		      "unrecognized argument to -f%ssanitize%s= option: %q.*s;"
-		      " did you mean %qs",
+		      " did you mean %qs?",
 		      value ? "" : "no-",
 		      code == OPT_fsanitize_ ? "" : "-recover",
 		      (int) len, p, hint);

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -648,9 +648,7 @@ package body Sem_Ch10 is
             Circularity : Boolean := True;
 
          begin
-            if Is_Predefined_File_Name
-                 (Unit_File_Name (Get_Source_Unit (Unit (N))))
-            then
+            if In_Predefined_Unit (N) then
                Circularity := False;
 
             else
@@ -919,13 +917,9 @@ package body Sem_Ch10 is
 
       --  Register predefined units in Rtsfind
 
-      declare
-         Unum : constant Unit_Number_Type := Get_Source_Unit (Sloc (N));
-      begin
-         if Is_Predefined_File_Name (Unit_File_Name (Unum)) then
-            Set_RTU_Loaded (Unit_Node);
-         end if;
-      end;
+      if In_Predefined_Unit (N) then
+         Set_RTU_Loaded (Unit_Node);
+      end if;
 
       --  Treat compilation unit pragmas that appear after the library unit
 
@@ -1134,19 +1128,18 @@ package body Sem_Ch10 is
             Style_Check := Save_Style_Check;
          end;
 
-         --  In GNATprove mode, force the loading of a Interrupt_Priority when
+         --  In GNATprove mode, force the loading of an Interrupt_Priority when
          --  processing compilation units with potentially "main" subprograms.
          --  This is required for the ceiling priority protocol checks, which
-         --  are trigerred by these subprograms.
+         --  are triggered by these subprograms.
 
          if GNATprove_Mode
-           and then Nkind_In (Unit_Node, N_Subprogram_Body,
+           and then Nkind_In (Unit_Node, N_Function_Instantiation,
                                          N_Procedure_Instantiation,
-                                         N_Function_Instantiation)
+                                         N_Subprogram_Body)
          then
             declare
-               Spec   : Node_Id;
-               Unused : Entity_Id;
+               Spec : Node_Id;
 
             begin
                case Nkind (Unit_Node) is
@@ -1163,15 +1156,15 @@ package body Sem_Ch10 is
 
                pragma Assert (Nkind (Spec) in N_Subprogram_Specification);
 
-               --  Only subprogram with no parameters can act as "main", and if
-               --  it is a function, it needs to return an integer.
+               --  Main subprogram must have no parameters, and if it is a
+               --  function, it must return an integer.
 
                if No (Parameter_Specifications (Spec))
                  and then (Nkind (Spec) = N_Procedure_Specification
                              or else
                            Is_Integer_Type (Etype (Result_Definition (Spec))))
                then
-                  Unused := RTE (RE_Interrupt_Priority);
+                  SPARK_Implicit_Load (RE_Interrupt_Priority);
                end if;
             end;
          end if;
@@ -1205,32 +1198,38 @@ package body Sem_Ch10 is
             --  where the elaboration routine might otherwise be called more
             --  than once.
 
-            --  Case of units which do not require elaboration checks
+            --  They are also needed to ensure explicit visibility from the
+            --  binder generated code of all the units involved in a partition
+            --  when control-flow preservation is requested.
 
-            if
-              --  Pure units do not need checks
+            --  Case of units which do not require an elaboration entity
 
-              Is_Pure (Spec_Id)
+            if not Opt.Suppress_Control_Flow_Optimizations
+              and then
+              ( --  Pure units do not need checks
 
-              --  Preelaborated units do not need checks
+                Is_Pure (Spec_Id)
 
-              or else Is_Preelaborated (Spec_Id)
+                --  Preelaborated units do not need checks
 
-              --  No checks needed if pragma Elaborate_Body present
+                or else Is_Preelaborated (Spec_Id)
 
-              or else Has_Pragma_Elaborate_Body (Spec_Id)
+                --  No checks needed if pragma Elaborate_Body present
 
-              --  No checks needed if unit does not require a body
+                or else Has_Pragma_Elaborate_Body (Spec_Id)
 
-              or else not Unit_Requires_Body (Spec_Id)
+                --  No checks needed if unit does not require a body
 
-              --  No checks needed for predefined files
+                or else not Unit_Requires_Body (Spec_Id)
 
-              or else Is_Predefined_File_Name (Unit_File_Name (Unum))
+                --  No checks needed for predefined files
 
-              --  No checks required if no separate spec
+                or else Is_Predefined_Unit (Unum)
 
-              or else Acts_As_Spec (N)
+                --  No checks required if no separate spec
+
+                or else Acts_As_Spec (N)
+              )
             then
                --  This is a case where we only need the entity for
                --  checking to prevent multiple elaboration checks.
@@ -2053,6 +2052,10 @@ package body Sem_Ch10 is
    --  context before analyzing the proper body itself. On exit, we remove only
    --  the explicit context of the subunit.
 
+   --  WARNING: This routine manages SPARK regions. Return statements must be
+   --  replaced by gotos which jump to the end of the routine and restore the
+   --  SPARK mode.
+
    procedure Analyze_Subunit (N : Node_Id) is
       Lib_Unit : constant Node_Id   := Library_Unit (N);
       Par_Unit : constant Entity_Id := Current_Scope;
@@ -2285,6 +2288,12 @@ package body Sem_Ch10 is
          Pop_Scope;
       end Remove_Scope;
 
+      Saved_SM  : SPARK_Mode_Type := SPARK_Mode;
+      Saved_SMP : Node_Id         := SPARK_Mode_Pragma;
+      --  Save the SPARK mode-related data to restore on exit. Removing
+      --  enclosing scopes and contexts to provide a clean environment for the
+      --  context of the subunit will eliminate any previously set SPARK_Mode.
+
    --  Start of processing for Analyze_Subunit
 
    begin
@@ -2342,6 +2351,15 @@ package body Sem_Ch10 is
 
          Analyze_Subunit_Context;
 
+         --  Take into account the effect of any SPARK_Mode configuration
+         --  pragma, which takes precedence over a different value of
+         --  SPARK_Mode inherited from the context of the stub.
+
+         if SPARK_Mode /= None then
+            Saved_SM  := SPARK_Mode;
+            Saved_SMP := SPARK_Mode_Pragma;
+         end if;
+
          Re_Install_Parents (Lib_Unit, Par_Unit);
          Set_Is_Immediately_Visible (Par_Unit);
 
@@ -2381,6 +2399,13 @@ package body Sem_Ch10 is
       end if;
 
       Generate_Parent_References (Unit (N), Par_Unit);
+
+      --  Reinstall the SPARK_Mode which was in effect prior to any scope and
+      --  context manipulations, taking into account a possible SPARK_Mode
+      --  configuration pragma if present.
+
+      Install_SPARK_Mode (Saved_SM, Saved_SMP);
+
       Analyze (Proper_Body (Unit (N)));
       Remove_Context (N);
 
@@ -2503,18 +2528,10 @@ package body Sem_Ch10 is
       --  himself, but that's a marginal case, and fixing it is hard ???
 
       if Restriction_Check_Required (No_Obsolescent_Features) then
-         declare
-            F : constant File_Name_Type :=
-                  Unit_File_Name (Get_Source_Unit (U));
-         begin
-            if Is_Predefined_File_Name (F, Renamings_Included => True)
-                 and then not
-               Is_Predefined_File_Name (F, Renamings_Included => False)
-            then
-               Check_Restriction (No_Obsolescent_Features, N);
-               Restriction_Violation := True;
-            end if;
-         end;
+         if In_Predefined_Renaming (U) then
+            Check_Restriction (No_Obsolescent_Features, N);
+            Restriction_Violation := True;
+         end if;
       end if;
 
       --  Check No_Implementation_Units violation
@@ -2545,7 +2562,7 @@ package body Sem_Ch10 is
          --  clauses into regular with clauses.
 
          if Sloc (U) /= No_Location then
-            if Is_Predefined_File_Name (Unit_File_Name (Get_Source_Unit (U)))
+            if In_Predefined_Unit (U)
 
               --  In ASIS mode the rtsfind mechanism plays no role, and
               --  we need to maintain the original tree structure, so
@@ -2577,7 +2594,7 @@ package body Sem_Ch10 is
 
       Semantics (Library_Unit (N));
 
-      Intunit := Is_Internal_File_Name (Unit_File_Name (Current_Sem_Unit));
+      Intunit := Is_Internal_Unit (Current_Sem_Unit);
 
       if Sloc (U) /= No_Location then
 
@@ -3516,7 +3533,7 @@ package body Sem_Ch10 is
                   --  Exclude license check if withed unit is an internal unit.
                   --  This situation arises e.g. with the GPL version of GNAT.
 
-                  if Is_Internal_File_Name (Unit_File_Name (Withu)) then
+                  if Is_Internal_Unit (Withu) then
                      null;
 
                      --  Otherwise check various cases
@@ -5255,7 +5272,7 @@ package body Sem_Ch10 is
       --  skipped for dummy units (for missing packages).
 
       if Sloc (Uname) /= No_Location
-        and then (not Is_Internal_File_Name (Unit_File_Name (Current_Sem_Unit))
+        and then (not Is_Internal_Unit (Current_Sem_Unit)
                    or else Current_Sem_Unit = Main_Unit)
       then
          Check_Restricted_Unit
@@ -6128,7 +6145,7 @@ package body Sem_Ch10 is
       Last_Public_Shadow := Last_Shadow;
 
       --  Ada 2005 (AI-262): Build the limited view of the private declarations
-      --  to accomodate limited private with clauses.
+      --  to accommodate limited private with clauses.
 
       Process_Declarations_And_States
         (Pack  => Pack,

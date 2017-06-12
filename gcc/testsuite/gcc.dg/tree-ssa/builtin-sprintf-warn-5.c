@@ -1,8 +1,7 @@
 /* PR bootstrap/77676 - powerpc64 and powerpc64le stage2 bootstrap fail
    Test case from comment 6 on the bug.  */
-/* { dg-compile } */
+/* { dg-do compile } */
 /* { dg-options "-Wall -Werror" } */
-/* { dg-additional-options "-m32" { target { i?86-*-* x86_64-*-* } } } */
 
 struct A
 {

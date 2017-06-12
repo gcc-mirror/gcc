@@ -2546,7 +2546,7 @@ force @var{x} into a memory location.  For example, rs6000 can load
 immediate values into general-purpose registers, but does not have an
 instruction for loading an immediate value into a floating-point
 register, so @code{PREFERRED_RELOAD_CLASS} returns @code{NO_REGS} when
-@var{x} is a floating-point constant.  If the constant can't be loaded
+@var{x} is a floating-point constant.  If the constant cannot be loaded
 into any kind of register, code generation will be better if
 @code{TARGET_LEGITIMATE_CONSTANT_P} makes the constant illegitimate instead
 of using @code{TARGET_PREFERRED_RELOAD_CLASS}.
@@ -2577,7 +2577,7 @@ to use when it is necessary to be able to hold a value of mode
 ordinarily be used.
 
 Unlike @code{PREFERRED_RELOAD_CLASS}, this macro should be used when
-there are certain modes that simply can't go in certain reload classes.
+there are certain modes that simply cannot go in certain reload classes.
 
 The value is a register class; perhaps @var{class}, or perhaps another,
 smaller class.
@@ -3569,8 +3569,6 @@ Define this macro if the target's representation for dwarf registers
 is different than the internal representation for unwind column.
 Given a dwarf register, this macro should return the internal unwind
 column number to use instead.
-
-See the PowerPC's SPE target for an example.
 @end defmac
 
 @defmac DWARF_FRAME_REGNUM (@var{regno})
@@ -3683,6 +3681,15 @@ of registers.  The value would be computed from information
 such as the result of @code{get_frame_size ()} and the tables of
 registers @code{df_regs_ever_live_p} and @code{call_used_regs}.
 @end defmac
+
+@deftypefn {Target Hook} void TARGET_COMPUTE_FRAME_LAYOUT (void)
+This target hook is called once each time the frame layout needs to be
+recalculated.  The calculations can be cached by the target and can then
+be used by @code{INITIAL_ELIMINATION_OFFSET} instead of re-computing the
+layout on every invocation of that hook.  This is particularly useful
+for targets that have an expensive frame layout function.  Implementing
+this callback is optional.
+@end deftypefn
 
 @node Stack Arguments
 @subsection Passing Function Arguments on the Stack
@@ -6642,6 +6649,12 @@ were true.
 The default implementation of this hook uses the
 @code{max-rtl-if-conversion-[un]predictable} parameters if they are set,
 and uses a multiple of @code{BRANCH_COST} otherwise.
+@end deftypefn
+
+@deftypefn {Target Hook} bool TARGET_NOCE_CONVERSION_PROFITABLE_P (rtx_insn *@var{seq}, struct noce_if_info *@var{if_info})
+This hook returns true if the instruction sequence @code{seq} is a good
+candidate as a replacement for the if-convertible sequence described in
+@code{if_info}.
 @end deftypefn
 
 @deftypefn {Target Hook} bool TARGET_NO_SPECULATION_IN_DELAY_SLOTS_P (void)
@@ -9996,7 +10009,7 @@ floating point operations, but to perform a single precision operation,
 the FPSCR PR bit has to be cleared, while for a double precision
 operation, this bit has to be set.  Changing the PR bit requires a general
 purpose register as a scratch register, hence these FPSCR sets have to
-be inserted before reload, i.e.@: you can't put this into instruction emitting
+be inserted before reload, i.e.@: you cannot put this into instruction emitting
 or @code{TARGET_MACHINE_DEPENDENT_REORG}.
 
 You can have multiple entities that are mode-switched, and select at run time

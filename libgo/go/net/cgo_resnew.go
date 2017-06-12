@@ -3,7 +3,7 @@
 // license that can be found in the LICENSE file.
 
 // +build cgo,!netgo
-// +build darwin linux,!android netbsd solaris
+// +build aix darwin linux,!android netbsd solaris
 
 package net
 

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -42,7 +42,7 @@ with Widechar; use Widechar;
 
 with GNAT.Byte_Order_Mark; use GNAT.Byte_Order_Mark;
 
-with System;         use System;
+with System.Storage_Elements;
 with System.Memory;
 with System.WCh_Con; use System.WCh_Con;
 
@@ -51,11 +51,7 @@ with Unchecked_Deallocation;
 
 package body Sinput is
 
-   use ASCII;
-   --  Make control characters visible
-
-   First_Time_Around : Boolean := True;
-   --  This needs a comment ???
+   use ASCII, System;
 
    --  Routines to support conversion between types Lines_Table_Ptr,
    --  Logical_Lines_Table_Ptr and System.Address.
@@ -77,6 +73,24 @@ package body Sinput is
      new Unchecked_Conversion (Address, Logical_Lines_Table_Ptr);
 
    pragma Warnings (On);
+
+   -----------------------------
+   -- Source_File_Index_Table --
+   -----------------------------
+
+   --  The Get_Source_File_Index function is called very frequently. Earlier
+   --  versions cached a single entry, but then reverted to a serial search,
+   --  and this proved to be a significant source of inefficiency. We then
+   --  switched to using a table with a start point followed by a serial
+   --  search. Now we make sure source buffers are on a reasonable boundary
+   --  (see Types.Source_Align), and we can just use a direct look up in the
+   --  following table.
+
+   --  Note that this array is pretty large, but in most operating systems
+   --  it will not be allocated in physical memory unless it is actually used.
+
+   Source_File_Index_Table :
+     array (Int range 0 .. 1 + (Int'Last / Source_Align)) of Source_File_Index;
 
    ---------------------------
    -- Add_Line_Tables_Entry --
@@ -272,11 +286,13 @@ package body Sinput is
          Tst (J) := C;
       end loop;
 
-      Read_BOM (Tst, Len, BOM, False);
+      Read_BOM (Tst, Len, BOM, XML_Support => False);
 
       case BOM is
          when UTF8_All =>
             Scan_Ptr := Scan_Ptr + Source_Ptr (Len);
+            First_Non_Blank_Location := Scan_Ptr;
+            Current_Line_Start := Scan_Ptr;
             Wide_Character_Encoding_Method := WCEM_UTF8;
             Upper_Half_Encoding := True;
 
@@ -325,6 +341,26 @@ package body Sinput is
    begin
       return SIE.Inlined_Body;
    end Comes_From_Inlined_Body;
+
+   ------------------------
+   -- Free_Source_Buffer --
+   ------------------------
+
+   procedure Free_Source_Buffer (Src : in out Source_Buffer_Ptr) is
+      --  Unchecked_Deallocation doesn't work for access-to-constant; we need
+      --  to first Unchecked_Convert to access-to-variable.
+
+      function To_Source_Buffer_Ptr_Var is new
+        Unchecked_Conversion (Source_Buffer_Ptr, Source_Buffer_Ptr_Var);
+
+      Temp : Source_Buffer_Ptr_Var := To_Source_Buffer_Ptr_Var (Src);
+
+      procedure Free_Ptr is new
+        Unchecked_Deallocation (Source_Buffer, Source_Buffer_Ptr_Var);
+   begin
+      Free_Ptr (Temp);
+      Src := null;
+   end Free_Source_Buffer;
 
    -----------------------
    -- Get_Column_Number --
@@ -470,8 +506,59 @@ package body Sinput is
    ---------------------------
 
    function Get_Source_File_Index (S : Source_Ptr) return Source_File_Index is
+      Result : Source_File_Index;
+
+      procedure Assertions;
+      --  Assert various properties of the result
+
+      procedure Assertions is
+
+         --  ???The old version using zero-origin array indexing without array
+         --  bounds checks returned 1 (i.e. system.ads) for these special
+         --  locations, presumably by accident. We are mimicing that here.
+
+         Special : constant Boolean :=
+                     S = No_Location
+                       or else S = Standard_Location
+                       or else S = Standard_ASCII_Location
+                       or else S = System_Location;
+
+         pragma Assert ((S > No_Location) xor Special);
+         pragma Assert (Result in Source_File.First .. Source_File.Last);
+
+         SFR : Source_File_Record renames Source_File.Table (Result);
+
+      begin
+         --  SFR.Source_Text = null if and only if this is the SFR for a debug
+         --  output file (*.dg), and that file is under construction. S can be
+         --  slightly past Source_Last in that case because we haven't updated
+         --  Source_Last.
+
+         if Null_Source_Buffer_Ptr (SFR.Source_Text) then
+            pragma Assert (S >= SFR.Source_First); null;
+         else
+            pragma Assert (SFR.Source_Text'First = SFR.Source_First);
+            pragma Assert (SFR.Source_Text'Last = SFR.Source_Last);
+
+            if not Special then
+               pragma Assert (S in SFR.Source_First .. SFR.Source_Last);
+               null;
+            end if;
+         end if;
+      end Assertions;
+
+   --  Start of processing for Get_Source_File_Index
+
    begin
-      return Source_File_Index_Table (Int (S) / Source_Align);
+      if S > No_Location then
+         Result := Source_File_Index_Table (Int (S) / Source_Align);
+      else
+         Result := 1;
+      end if;
+
+      pragma Debug (Assertions);
+
+      return Result;
    end Get_Source_File_Index;
 
    ----------------
@@ -480,11 +567,8 @@ package body Sinput is
 
    procedure Initialize is
    begin
-      Source_gnat_adc    := No_Source_File;
-      First_Time_Around  := True;
-
+      Source_gnat_adc := No_Source_File;
       Source_File.Init;
-
       Instances.Init;
       Instances.Append (No_Location);
       pragma Assert (Instances.Last = No_Instance_Id);
@@ -594,8 +678,8 @@ package body Sinput is
 
    procedure Lock is
    begin
-      Source_File.Locked := True;
       Source_File.Release;
+      Source_File.Locked := True;
    end Lock;
 
    ----------------------
@@ -789,6 +873,33 @@ package body Sinput is
       end;
    end Skip_Line_Terminators;
 
+   --------------
+   -- Set_Dope --
+   --------------
+
+   procedure Set_Dope
+     (Src : System.Address; New_Dope : Dope_Ptr)
+   is
+      --  A fat pointer is a pair consisting of data pointer and dope pointer,
+      --  in that order. So we want to overwrite the second word.
+      Dope : System.Address;
+      pragma Import (Ada, Dope);
+      use System.Storage_Elements;
+      for Dope'Address use Src + System.Address'Size / 8;
+   begin
+      Dope := New_Dope.all'Address;
+   end Set_Dope;
+
+   procedure Free_Dope (Src : System.Address) is
+      Dope : Dope_Ptr;
+      pragma Import (Ada, Dope);
+      use System.Storage_Elements;
+      for Dope'Address use Src + System.Address'Size / 8;
+      procedure Free is new Unchecked_Deallocation (Dope_Rec, Dope_Ptr);
+   begin
+      Free (Dope);
+   end Free_Dope;
+
    ----------------
    -- Sloc_Range --
    ----------------
@@ -869,55 +980,29 @@ package body Sinput is
    begin
       --  First we must free any old source buffer pointers
 
-      if not First_Time_Around then
-         for J in Source_File.First .. Source_File.Last loop
-            declare
-               S : Source_File_Record renames Source_File.Table (J);
+      for J in Source_File.First .. Source_File.Last loop
+         declare
+            S : Source_File_Record renames Source_File.Table (J);
+         begin
+            if S.Instance = No_Instance_Id then
+               Free_Source_Buffer (S.Source_Text);
 
-               procedure Free_Ptr is new Unchecked_Deallocation
-                 (Big_Source_Buffer, Source_Buffer_Ptr);
-
-               pragma Warnings (Off);
-               --  This unchecked conversion is aliasing safe, since it is not
-               --  used to create improperly aliased pointer values.
-
-               function To_Source_Buffer_Ptr is new
-                 Unchecked_Conversion (Address, Source_Buffer_Ptr);
-
-               pragma Warnings (On);
-
-               Tmp1 : Source_Buffer_Ptr;
-
-            begin
-               if S.Instance /= No_Instance_Id then
-                  null;
-
-               else
-                  --  Free the buffer, we use Free here, because we used malloc
-                  --  or realloc directly to allocate the tables. That is
-                  --  because we were playing the big array trick.
-
-                  --  We have to recreate a proper pointer to the actual array
-                  --  from the zero origin pointer stored in the source table.
-
-                  Tmp1 :=
-                    To_Source_Buffer_Ptr
-                      (S.Source_Text (S.Source_First)'Address);
-                  Free_Ptr (Tmp1);
-
-                  if S.Lines_Table /= null then
-                     Memory.Free (To_Address (S.Lines_Table));
-                     S.Lines_Table := null;
-                  end if;
-
-                  if S.Logical_Lines_Table /= null then
-                     Memory.Free (To_Address (S.Logical_Lines_Table));
-                     S.Logical_Lines_Table := null;
-                  end if;
+               if S.Lines_Table /= null then
+                  Memory.Free (To_Address (S.Lines_Table));
+                  S.Lines_Table := null;
                end if;
-            end;
-         end loop;
-      end if;
+
+               if S.Logical_Lines_Table /= null then
+                  Memory.Free (To_Address (S.Logical_Lines_Table));
+                  S.Logical_Lines_Table := null;
+               end if;
+
+            else
+               Free_Dope (S.Source_Text'Address);
+               S.Source_Text := null;
+            end if;
+         end;
+      end loop;
 
       --  Read in source file table and instance table
 
@@ -931,56 +1016,10 @@ package body Sinput is
       for J in Source_File.First .. Source_File.Last loop
          declare
             S : Source_File_Record renames Source_File.Table (J);
-
          begin
-            --  For the instantiation case, we do not read in any data. Instead
-            --  we share the data for the generic template entry. Since the
-            --  template always occurs first, we can safely refer to its data.
-
-            if S.Instance /= No_Instance_Id then
-               declare
-                  ST : Source_File_Record renames
-                         Source_File.Table (S.Template);
-
-               begin
-                  --  The lines tables are copied from the template entry
-
-                  S.Lines_Table :=
-                    Source_File.Table (S.Template).Lines_Table;
-                  S.Logical_Lines_Table :=
-                    Source_File.Table (S.Template).Logical_Lines_Table;
-
-                  --  In the case of the source table pointer, we share the
-                  --  same data as the generic template, but the virtual origin
-                  --  is adjusted. For example, if the first subscript of the
-                  --  template is 100, and that of the instantiation is 200,
-                  --  then the instantiation pointer is obtained by subtracting
-                  --  100 from the template pointer.
-
-                  declare
-                     pragma Suppress (All_Checks);
-
-                     pragma Warnings (Off);
-                     --  This unchecked conversion is aliasing safe since it
-                     --  not used to create improperly aliased pointer values.
-
-                     function To_Source_Buffer_Ptr is new
-                       Unchecked_Conversion (Address, Source_Buffer_Ptr);
-
-                     pragma Warnings (On);
-
-                  begin
-                     S.Source_Text :=
-                       To_Source_Buffer_Ptr
-                          (ST.Source_Text
-                            (ST.Source_First - S.Source_First)'Address);
-                  end;
-               end;
-
             --  Normal case (non-instantiation)
 
-            else
-               First_Time_Around := False;
+            if S.Instance = No_Instance_Id then
                S.Lines_Table := null;
                S.Logical_Lines_Table := null;
                Alloc_Line_Tables (S, Int (S.Last_Source_Line));
@@ -995,33 +1034,42 @@ package body Sinput is
                   end loop;
                end if;
 
-               --  Allocate source buffer and read in the data and then set the
-               --  virtual origin to point to the logical zero'th element. This
-               --  address must be computed with subscript checks turned off.
+               --  Allocate source buffer and read in the data
 
                declare
-                  subtype B is Text_Buffer (S.Source_First .. S.Source_Last);
-                  type Text_Buffer_Ptr is access B;
-                  T : Text_Buffer_Ptr;
-
-                  pragma Suppress (All_Checks);
-
-                  pragma Warnings (Off);
-                  --  This unchecked conversion is aliasing safe, since it is
-                  --  never used to create improperly aliased pointer values.
-
-                  function To_Source_Buffer_Ptr is new
-                    Unchecked_Conversion (Address, Source_Buffer_Ptr);
-
-                  pragma Warnings (On);
-
+                  T : constant Source_Buffer_Ptr_Var :=
+                    new Source_Buffer (S.Source_First .. S.Source_Last);
                begin
-                  T := new B;
-
                   Tree_Read_Data (T (S.Source_First)'Address,
                      Int (S.Source_Last) - Int (S.Source_First) + 1);
+                  S.Source_Text := T.all'Access;
+               end;
 
-                  S.Source_Text := To_Source_Buffer_Ptr (T (0)'Address);
+            --  For the instantiation case, we do not read in any data. Instead
+            --  we share the data for the generic template entry. Since the
+            --  template always occurs first, we can safely refer to its data.
+
+            else
+               declare
+                  ST : Source_File_Record renames
+                         Source_File.Table (S.Template);
+
+               begin
+                  --  The lines tables are copied from the template entry
+
+                  S.Lines_Table := ST.Lines_Table;
+                  S.Logical_Lines_Table := ST.Logical_Lines_Table;
+
+                  --  The Source_Text of the instance is the same data as that
+                  --  of the template, but with different bounds.
+
+                  declare
+                     Dope : constant Dope_Ptr :=
+                       new Dope_Rec'(S.Source_First, S.Source_Last);
+                  begin
+                     S.Source_Text := ST.Source_Text;
+                     Set_Dope (S.Source_Text'Address, Dope);
+                  end;
                end;
             end if;
          end;
@@ -1051,13 +1099,9 @@ package body Sinput is
             --  For instantiations, there is nothing to do, since the data is
             --  shared with the generic template. When the tree is read, the
             --  pointers must be set, but no extra data needs to be written.
+            --  For the normal case, write out the data of the tables.
 
-            if S.Instance /= No_Instance_Id then
-               null;
-
-            --  For the normal case, write out the data of the tables
-
-            else
+            if S.Instance = No_Instance_Id then
                --  Lines table
 
                for J in 1 .. S.Last_Source_Line loop
@@ -1252,29 +1296,17 @@ package body Sinput is
 
    function Source_First (S : SFI) return Source_Ptr is
    begin
-      if S = Internal_Source_File then
-         return Internal_Source'First;
-      else
-         return Source_File.Table (S).Source_First;
-      end if;
+      return Source_File.Table (S).Source_First;
    end Source_First;
 
    function Source_Last (S : SFI) return Source_Ptr is
    begin
-      if S = Internal_Source_File then
-         return Internal_Source'Last;
-      else
-         return Source_File.Table (S).Source_Last;
-      end if;
+      return Source_File.Table (S).Source_Last;
    end Source_Last;
 
    function Source_Text (S : SFI) return Source_Buffer_Ptr is
    begin
-      if S = Internal_Source_File then
-         return Internal_Source_Ptr;
-      else
-         return Source_File.Table (S).Source_Text;
-      end if;
+      return Source_File.Table (S).Source_Text;
    end Source_Text;
 
    function Template (S : SFI) return SFI is

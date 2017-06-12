@@ -189,6 +189,15 @@ void emplace()
     try { v.emplace<1>(AlwaysThrow{}); } catch (nullptr_t) { }
     VERIFY(v.valueless_by_exception());
   }
+  VERIFY(&v.emplace<0>(1) == &std::get<0>(v));
+  VERIFY(&v.emplace<int>(1) == &std::get<int>(v));
+  VERIFY(&v.emplace<1>("a") == &std::get<1>(v));
+  VERIFY(&v.emplace<string>("a") == &std::get<string>(v));
+  {
+    variant<vector<int>> v;
+    VERIFY(&v.emplace<0>({1,2,3}) == &std::get<0>(v));
+    VERIFY(&v.emplace<vector<int>>({1,2,3}) == &std::get<vector<int>>(v));
+  }
 }
 
 void test_get()

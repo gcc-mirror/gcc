@@ -63,7 +63,7 @@ host_modules= { module= mpfr; lib_path=src/.libs; bootstrap=true;
 		extra_make_flags='AM_CFLAGS="-DNO_ASM"';
 		no_install= true; };
 host_modules= { module= mpc; lib_path=src/.libs; bootstrap=true;
-		extra_configure_flags='--disable-shared @extra_mpc_gmp_configure_flags@ @extra_mpc_mpfr_configure_flags@';
+		extra_configure_flags='--disable-shared @extra_mpc_gmp_configure_flags@ @extra_mpc_mpfr_configure_flags@ --disable-maintainer-mode';
 		no_install= true; };
 host_modules= { module= isl; lib_path=.libs; bootstrap=true;
 		extra_configure_flags='--disable-shared @extra_isl_gmp_configure_flags@';

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1999-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1999-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -28,7 +28,6 @@ with Debug;    use Debug;
 with Einfo;    use Einfo;
 with Errout;   use Errout;
 with Exp_Code; use Exp_Code;
-with Fname;    use Fname;
 with Lib;      use Lib;
 with Lib.Xref; use Lib.Xref;
 with Namet;    use Namet;
@@ -140,6 +139,12 @@ package body Sem_Warn is
    --  this is simply the setting of the flag Has_Pragma_Unreferenced. If E is
    --  a body formal, the setting of the flag in the corresponding spec is
    --  also checked (and True returned if either flag is True).
+
+   function Is_Attribute_And_Known_Value_Comparison
+     (Op : Node_Id) return Boolean;
+   --  Determine whether operator Op denotes a comparison where the left
+   --  operand is an attribute reference and the value of the right operand is
+   --  known at compile time.
 
    function Never_Set_In_Source_Check_Spec (E : Entity_Id) return Boolean;
    --  Tests Never_Set_In_Source status for entity E. If E is not a formal,
@@ -1606,10 +1611,7 @@ package body Sem_Warn is
                --  (these would be junk warnings for an applications program,
                --  since they refer to problems in internal units).
 
-               if GNAT_Mode
-                 or else not Is_Internal_File_Name
-                               (Unit_File_Name (Get_Source_Unit (E1)))
-               then
+               if GNAT_Mode or else not In_Internal_Unit (E1) then
                   --  We do not immediately flag the error. This is because we
                   --  have not expanded generic bodies yet, and they may have
                   --  the missing reference. So instead we park the entity on a
@@ -2377,7 +2379,7 @@ package body Sem_Warn is
          --  clearly undesirable.
 
          elsif Configurable_Run_Time_Mode
-           and then Is_Predefined_File_Name (Unit_File_Name (Unit))
+           and then Is_Predefined_Unit (Unit)
          then
             return;
          end if;
@@ -2408,9 +2410,7 @@ package body Sem_Warn is
                   --  (these would be junk warnings for an application program,
                   --  since they refer to problems in internal units).
 
-                  if GNAT_Mode
-                    or else not Is_Internal_File_Name (Unit_File_Name (Unit))
-                  then
+                  if GNAT_Mode or else not Is_Internal_Unit (Unit) then
                      --  Here we definitely have a non-referenced unit. If it
                      --  is the special call for a spec unit, then just set the
                      --  flag to be read later.
@@ -2840,6 +2840,23 @@ package body Sem_Warn is
       In_Out_Warnings.Init;
    end Initialize;
 
+   ---------------------------------------------
+   -- Is_Attribute_And_Known_Value_Comparison --
+   ---------------------------------------------
+
+   function Is_Attribute_And_Known_Value_Comparison
+     (Op : Node_Id) return Boolean
+   is
+      Orig_Op : constant Node_Id := Original_Node (Op);
+
+   begin
+      return
+        Nkind (Orig_Op) in N_Op_Compare
+          and then Nkind (Original_Node (Left_Opnd (Orig_Op))) =
+                     N_Attribute_Reference
+          and then Compile_Time_Known_Value (Right_Opnd (Orig_Op));
+   end Is_Attribute_And_Known_Value_Comparison;
+
    ------------------------------------
    -- Never_Set_In_Source_Check_Spec --
    ------------------------------------
@@ -3239,13 +3256,73 @@ package body Sem_Warn is
       end if;
    end Referenced_As_Out_Parameter_Check_Spec;
 
+   --------------------------------------
+   -- Warn_On_Constant_Valid_Condition --
+   --------------------------------------
+
+   procedure Warn_On_Constant_Valid_Condition (Op : Node_Id) is
+      Left  : constant Node_Id := Left_Opnd  (Op);
+      Right : constant Node_Id := Right_Opnd (Op);
+
+      True_Result  : Boolean;
+      False_Result : Boolean;
+
+   begin
+      --  Determine the potential outcome of the comparison assuming that the
+      --  scalar operands are valid.
+
+      if Constant_Condition_Warnings
+        and then Comes_From_Source (Original_Node (Op))
+        and then Is_Scalar_Type (Etype (Left))
+        and then Is_Scalar_Type (Etype (Right))
+
+        --  Do not consider instances because the check was already performed
+        --  in the generic.
+
+        and then not In_Instance
+
+        --  Do not consider comparisons between two static expressions such as
+        --  constants or literals because those values cannot be invalidated.
+
+        and then not (Is_Static_Expression (Left)
+                       and then Is_Static_Expression (Right))
+
+        --  Do not consider comparison between an attribute reference and a
+        --  compile-time known value since this is most likely a conditional
+        --  compilation.
+
+        and then not Is_Attribute_And_Known_Value_Comparison (Op)
+
+        --  Do not consider internal files to allow for various assertions and
+        --  safeguards within our runtime.
+
+        and then not In_Internal_Unit (Op)
+      then
+         Test_Comparison
+           (Op           => Op,
+            Assume_Valid => True,
+            True_Result  => True_Result,
+            False_Result => False_Result);
+
+         --  Warn on a possible evaluation to False / True in the presence of
+         --  invalid values.
+
+         if True_Result then
+            Error_Msg_N
+              ("condition can only be False if invalid values present??", Op);
+
+         elsif False_Result then
+            Error_Msg_N
+              ("condition can only be True if invalid values present??", Op);
+         end if;
+      end if;
+   end Warn_On_Constant_Valid_Condition;
+
    -----------------------------
    -- Warn_On_Known_Condition --
    -----------------------------
 
    procedure Warn_On_Known_Condition (C : Node_Id) is
-      P           : Node_Id;
-      Orig        : constant Node_Id := Original_Node (C);
       Test_Result : Boolean;
 
       function Is_Known_Branch return Boolean;
@@ -3327,6 +3404,11 @@ package body Sem_Warn is
          end if;
       end Track;
 
+      --  Local variables
+
+      Orig : constant Node_Id := Original_Node (C);
+      P    : Node_Id;
+
    --  Start of processing for Warn_On_Known_Condition
 
    begin
@@ -3365,11 +3447,7 @@ package body Sem_Warn is
          --  Don't warn if comparison of result of attribute against a constant
          --  value, since this is likely legitimate conditional compilation.
 
-         if Nkind (Orig) in N_Op_Compare
-           and then Compile_Time_Known_Value (Right_Opnd (Orig))
-           and then Nkind (Original_Node (Left_Opnd (Orig))) =
-                                                     N_Attribute_Reference
-         then
+         if Is_Attribute_And_Known_Value_Comparison (C) then
             return;
          end if;
 
@@ -3487,13 +3565,12 @@ package body Sem_Warn is
    ---------------------------------
 
    procedure Warn_On_Overlapping_Actuals (Subp : Entity_Id; N : Node_Id) is
-      Act1, Act2   : Node_Id;
-      Form1, Form2 : Entity_Id;
-
       function Is_Covered_Formal (Formal : Node_Id) return Boolean;
       --  Return True if Formal is covered by the rule
 
-      function Refer_Same_Object (Act1, Act2 : Node_Id) return Boolean;
+      function Refer_Same_Object
+        (Act1 : Node_Id;
+         Act2 : Node_Id) return Boolean;
       --  Two names are known to refer to the same object if the two names
       --  are known to denote the same object; or one of the names is a
       --  selected_component, indexed_component, or slice and its prefix is
@@ -3501,16 +3578,6 @@ package body Sem_Warn is
       --  two names statically denotes a renaming declaration whose renamed
       --  object_name is known to refer to the same object as the other name
       --  (RM 6.4.1(6.11/3))
-
-      -----------------------
-      -- Refer_Same_Object --
-      -----------------------
-
-      function Refer_Same_Object (Act1, Act2 : Node_Id) return Boolean is
-      begin
-         return Denotes_Same_Object (Act1, Act2)
-           or else Denotes_Same_Prefix (Act1, Act2);
-      end Refer_Same_Object;
 
       -----------------------
       -- Is_Covered_Formal --
@@ -3525,7 +3592,31 @@ package body Sem_Warn is
                         or else Is_Array_Type (Etype (Formal)));
       end Is_Covered_Formal;
 
+      -----------------------
+      -- Refer_Same_Object --
+      -----------------------
+
+      function Refer_Same_Object
+        (Act1 : Node_Id;
+         Act2 : Node_Id) return Boolean
+      is
+      begin
+         return
+           Denotes_Same_Object (Act1, Act2)
+             or else Denotes_Same_Prefix (Act1, Act2);
+      end Refer_Same_Object;
+
+      --  Local variables
+
+      Act1  : Node_Id;
+      Act2  : Node_Id;
+      Form1 : Entity_Id;
+      Form2 : Entity_Id;
+
+   --  Start of processing for Warn_On_Overlapping_Actuals
+
    begin
+
       if Ada_Version < Ada_2012 and then not Warn_On_Overlap then
          return;
       end if;
@@ -3590,6 +3681,14 @@ package body Sem_Warn is
                   elsif Ada_Version >= Ada_2012
                     and then not Is_Elementary_Type (Etype (Form1))
                     and then not Warn_On_Overlap
+                  then
+                     null;
+
+                  --  If the types of the formals are different there can
+                  --  be no aliasing (even though there might be overlap
+                  --  through address clauses, which must be intentional).
+
+                  elsif Base_Type (Etype (Form1)) /= Base_Type (Etype (Form2))
                   then
                      null;
 

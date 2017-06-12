@@ -197,7 +197,10 @@ Callers (int skip, struct __go_open_array pc)
   int ret;
   int i;
 
-  locbuf = (Location *) runtime_mal (pc.__count * sizeof (Location));
+  /* Note that calling mallocgc here assumes that we are not going to
+     store any allocated Go pointers in the slice.  */
+  locbuf = (Location *) runtime_mallocgc (pc.__count * sizeof (Location),
+					  nil, false);
 
   /* In the Go 1 release runtime.Callers has an off-by-one error,
      which we can not correct because it would break backward

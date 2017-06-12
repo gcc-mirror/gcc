@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -814,17 +814,17 @@ package Opt is
    --  default value appropriate to the system (in Osint.Initialize), and then
    --  reset if a command line switch is used to change the setting.
 
-   Ignore_Pragma_SPARK_Mode : Boolean := False;
-   --  GNAT
-   --  Set True to ignore the semantics and effects of pragma SPARK_Mode when
-   --  the pragma appears inside an instance whose enclosing context is subject
-   --  to SPARK_Mode "off".
-
    Ignore_Rep_Clauses : Boolean := False;
    --  GNAT
    --  Set True to ignore all representation clauses. Useful when compiling
    --  code from foreign compilers for checking or ASIS purposes. Can be
    --  set True by use of -gnatI.
+
+   Ignore_SPARK_Mode_Pragmas_In_Instance : Boolean := False;
+   --  GNAT
+   --  Set True to ignore the semantics and effects of pragma SPARK_Mode when
+   --  the pragma appears inside an instance whose enclosing context is subject
+   --  to SPARK_Mode "off". This property applies to nested instances.
 
    Ignore_Style_Checks_Pragmas : Boolean := False;
    --  GNAT
@@ -1021,9 +1021,12 @@ package Opt is
 
    Locking_Policy : Character := ' ';
    --  GNAT, GNATBIND
-   --  Set to ' ' for the default case (no locking policy specified). Reset to
-   --  first character (uppercase) of locking policy name if a valid pragma
-   --  Locking_Policy is encountered.
+
+   --  Set to ' ' for the default case (no locking policy specified). Otherwise
+   --  set based on the pragma Locking_Policy:
+   --     Ceiling_Locking: 'C'
+   --     Concurrent_Readers_Locking: 'R'
+   --     Inheritance_Locking: 'I'
 
    Locking_Policy_Sloc : Source_Ptr := No_Location;
    --  GNAT, GNATBIND
@@ -1115,6 +1118,11 @@ package Opt is
    --  in the spec of the extended main unit. Used to determine if we need to
    --  do special tests for violation of this aspect.
 
+   No_Heap_Finalization_Pragma : Node_Id := Empty;
+   --  GNAT
+   --  Set to point to a No_Heap_Finalization pragma defined in a configuration
+   --  file.
+
    No_Main_Subprogram : Boolean := False;
    --  GNATMAKE, GNATBIND
    --  Set to True if compilation/binding of a program without main
@@ -1182,10 +1190,12 @@ package Opt is
    --  type with the semantics that each value does more than the previous one.
 
    Optimize_Alignment : Character := 'O';
+   --  GNAT
    --  Setting of Optimize_Alignment, set to T/S/O for time/space/off. Can
    --  be modified by use of pragma Optimize_Alignment.
 
    Optimize_Alignment_Local : Boolean := False;
+   --  GNAT
    --  Set True if Optimize_Alignment mode is set by a local configuration
    --  pragma that overrides the gnat.adc (or other configuration file) default
    --  so that the unit is not dependent on the default setting. Also always
@@ -1201,10 +1211,12 @@ package Opt is
 
    Optimization_Level : Int;
    pragma Import (C, Optimization_Level, "optimize");
+   --  GNAT
    --  Constant reflecting the optimization level (0,1,2,3 for -O0,-O1,-O2,-O3)
 
    Optimize_Size : Int;
    pragma Import (C, Optimize_Size, "optimize_size");
+   --  GNAT
    --  Constant reflecting setting of -Os (optimize for size). Set to nonzero
    --  in -Os mode and set to zero otherwise.
 
@@ -1848,16 +1860,19 @@ package Opt is
    --  or where no warning has been suppressed by the use of the pragma.
    --  Modified by use of -gnatw.w/.W.
 
-   type Warning_Mode_Type is (Suppress, Normal, Treat_As_Error);
+   type Warning_Mode_Type is
+     (Suppress, Normal, Treat_As_Error, Treat_Run_Time_Warnings_As_Errors);
    Warning_Mode : Warning_Mode_Type := Normal;
    --  GNAT, GNATBIND
    --  Controls treatment of warning messages. If set to Suppress, warning
    --  messages are not generated at all. In Normal mode, they are generated
    --  but do not count as errors. In Treat_As_Error mode, warning messages are
-   --  generated and are treated as errors. Note that Warning_Mode = Suppress
-   --  causes pragma Warnings to be ignored (except for legality checks),
-   --  unless we are in GNATprove_Mode, which requires pragma Warnings to
-   --  be stored for the formal verification backend.
+   --  generated and treated as errors. In Treat_Run_Time_Warnings_As_Errors,
+   --  warning messages regarding errors raised at run time are treated as
+   --  errors. Note that Warning_Mode = Suppress causes pragma Warnings to be
+   --  ignored (except for legality checks), unless we are in GNATprove_Mode,
+   --  which requires pragma Warnings to be stored for the formal verification
+   --  backend.
 
    Warnings_As_Errors_Count : Natural;
    --  GNAT

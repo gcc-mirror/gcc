@@ -145,6 +145,7 @@ ubsan_encode_value (tree t, bool in_expand_p)
 	     code by making vars unnecessarily addressable.  */
 	  tree var = create_tmp_var (type);
 	  tree tem = build2 (MODIFY_EXPR, void_type_node, var, t);
+	  mark_addressable (var);
 	  if (in_expand_p)
 	    {
 	      rtx mem
@@ -672,7 +673,7 @@ ubsan_expand_bounds_ifn (gimple_stmt_iterator *gsi)
   /* Pick up the arguments of the UBSAN_BOUNDS call.  */
   tree type = TREE_TYPE (TREE_TYPE (gimple_call_arg (stmt, 0)));
   tree index = gimple_call_arg (stmt, 1);
-  tree orig_index_type = TREE_TYPE (index);
+  tree orig_index = index;
   tree bound = gimple_call_arg (stmt, 2);
 
   gimple_stmt_iterator gsi_orig = *gsi;
@@ -699,7 +700,7 @@ ubsan_expand_bounds_ifn (gimple_stmt_iterator *gsi)
       tree data
 	= ubsan_create_data ("__ubsan_out_of_bounds_data", 1, &loc,
 			     ubsan_type_descriptor (type, UBSAN_PRINT_ARRAY),
-			     ubsan_type_descriptor (orig_index_type),
+			     ubsan_type_descriptor (TREE_TYPE (orig_index)),
 			     NULL_TREE, NULL_TREE);
       data = build_fold_addr_expr_loc (loc, data);
       enum built_in_function bcode
@@ -707,9 +708,9 @@ ubsan_expand_bounds_ifn (gimple_stmt_iterator *gsi)
 	  ? BUILT_IN_UBSAN_HANDLE_OUT_OF_BOUNDS
 	  : BUILT_IN_UBSAN_HANDLE_OUT_OF_BOUNDS_ABORT;
       tree fn = builtin_decl_explicit (bcode);
-      tree val = force_gimple_operand_gsi (gsi, ubsan_encode_value (index),
-					   true, NULL_TREE, true,
-					   GSI_SAME_STMT);
+      tree val
+	= force_gimple_operand_gsi (gsi, ubsan_encode_value (orig_index), true,
+				    NULL_TREE, true, GSI_SAME_STMT);
       g = gimple_build_call (fn, 2, data, val);
     }
   gimple_set_location (g, loc);
@@ -1207,9 +1208,11 @@ instrument_null (gimple_stmt_iterator gsi, bool is_lhs)
 {
   gimple *stmt = gsi_stmt (gsi);
   tree t = is_lhs ? gimple_get_lhs (stmt) : gimple_assign_rhs1 (stmt);
+  /* Handle also e.g. &s->i.  */
+  if (TREE_CODE (t) == ADDR_EXPR)
+    t = TREE_OPERAND (t, 0);
   tree base = get_base_address (t);
-  const enum tree_code code = TREE_CODE (base);
-  if (code == MEM_REF
+  if (TREE_CODE (base) == MEM_REF
       && TREE_CODE (TREE_OPERAND (base, 0)) == SSA_NAME)
     instrument_mem_ref (t, base, &gsi, is_lhs);
 }
@@ -1771,7 +1774,7 @@ instrument_object_size (gimple_stmt_iterator *gsi, bool is_lhs)
 	{
 	  tree repr = DECL_BIT_FIELD_REPRESENTATIVE (TREE_OPERAND (t, 1));
 	  t = build3 (COMPONENT_REF, TREE_TYPE (repr), TREE_OPERAND (t, 0),
-		      repr, NULL_TREE);
+		      repr, TREE_OPERAND (t, 2));
 	}
       break;
     case ARRAY_REF:
@@ -1805,7 +1808,11 @@ instrument_object_size (gimple_stmt_iterator *gsi, bool is_lhs)
   bool decl_p = DECL_P (inner);
   tree base;
   if (decl_p)
-    base = inner;
+    {
+      if (DECL_REGISTER (inner))
+	return;
+      base = inner;
+    }
   else if (TREE_CODE (inner) == MEM_REF)
     base = TREE_OPERAND (inner, 0);
   else
@@ -1993,8 +2000,22 @@ pass_ubsan::execute (function *fun)
 	    {
 	      if (gimple_store_p (stmt))
 		instrument_null (gsi, true);
-	      if (gimple_assign_load_p (stmt))
+	      if (gimple_assign_single_p (stmt))
 		instrument_null (gsi, false);
+	      if (is_gimple_call (stmt))
+		{
+		  unsigned args_num = gimple_call_num_args (stmt);
+		  for (unsigned i = 0; i < args_num; ++i)
+		    {
+		      tree arg = gimple_call_arg (stmt, i);
+		      if (is_gimple_reg (arg) || is_gimple_min_invariant (arg))
+			continue;
+		      tree base = get_base_address (arg);
+		      if (TREE_CODE (base) == MEM_REF
+			  && TREE_CODE (TREE_OPERAND (base, 0)) == SSA_NAME)
+			instrument_mem_ref (arg, base, &gsi, false);
+		    }
+		}
 	    }
 
 	  if (flag_sanitize & (SANITIZE_BOOL | SANITIZE_ENUM)

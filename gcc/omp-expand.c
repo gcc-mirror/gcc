@@ -4366,9 +4366,9 @@ expand_cilk_for (struct omp_region *region, struct omp_for_data *fd)
   tree t, low_val = NULL_TREE, high_val = NULL_TREE;
   for (t = DECL_ARGUMENTS (child_fndecl); t; t = TREE_CHAIN (t))
     {
-      if (!strcmp (IDENTIFIER_POINTER (DECL_NAME (t)), "__high"))
+      if (id_equal (DECL_NAME (t), "__high"))
 	high_val = t;
-      else if (!strcmp (IDENTIFIER_POINTER (DECL_NAME (t)), "__low"))
+      else if (id_equal (DECL_NAME (t), "__low"))
 	low_val = t;
     }
   gcc_assert (low_val && high_val);
@@ -7083,7 +7083,16 @@ expand_omp_target (struct omp_region *region)
   exit_bb = region->exit;
 
   if (gimple_omp_target_kind (entry_stmt) == GF_OMP_TARGET_KIND_OACC_KERNELS)
-    mark_loops_in_oacc_kernels_region (region->entry, region->exit);
+    {
+      mark_loops_in_oacc_kernels_region (region->entry, region->exit);
+
+      /* Further down, both OpenACC kernels and OpenACC parallel constructs
+	 will be mappted to BUILT_IN_GOACC_PARALLEL, and to distinguish the
+	 two, there is an "oacc kernels" attribute set for OpenACC kernels.  */
+      DECL_ATTRIBUTES (child_fn)
+	= tree_cons (get_identifier ("oacc kernels"),
+		     NULL_TREE, DECL_ATTRIBUTES (child_fn));
+    }
 
   if (offloaded)
     {
@@ -7266,7 +7275,6 @@ expand_omp_target (struct omp_region *region)
   enum built_in_function start_ix;
   location_t clause_loc;
   unsigned int flags_i = 0;
-  bool oacc_kernels_p = false;
 
   switch (gimple_omp_target_kind (entry_stmt))
     {
@@ -7287,8 +7295,6 @@ expand_omp_target (struct omp_region *region)
       flags_i |= GOMP_TARGET_FLAG_EXIT_DATA;
       break;
     case GF_OMP_TARGET_KIND_OACC_KERNELS:
-      oacc_kernels_p = true;
-      /* FALLTHROUGH */
     case GF_OMP_TARGET_KIND_OACC_PARALLEL:
       start_ix = BUILT_IN_GOACC_PARALLEL;
       break;
@@ -7450,10 +7456,8 @@ expand_omp_target (struct omp_region *region)
 	args.quick_push (get_target_arguments (&gsi, entry_stmt));
       break;
     case BUILT_IN_GOACC_PARALLEL:
-      {
-	oacc_set_fn_attrib (child_fn, clauses, oacc_kernels_p, &args);
-	tagging = true;
-      }
+      oacc_set_fn_attrib (child_fn, clauses, &args);
+      tagging = true;
       /* FALLTHRU */
     case BUILT_IN_GOACC_ENTER_EXIT_DATA:
     case BUILT_IN_GOACC_UPDATE:
@@ -7986,7 +7990,7 @@ build_omp_regions_1 (basic_block bb, struct omp_region *parent,
 	}
       else if (code == GIMPLE_OMP_ATOMIC_STORE)
 	{
-	  /* GIMPLE_OMP_ATOMIC_STORE is analoguous to
+	  /* GIMPLE_OMP_ATOMIC_STORE is analogous to
 	     GIMPLE_OMP_RETURN, but matches with
 	     GIMPLE_OMP_ATOMIC_LOAD.  */
 	  gcc_assert (parent);

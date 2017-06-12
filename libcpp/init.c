@@ -499,7 +499,7 @@ cpp_init_builtins (cpp_reader *pfile, int hosted)
     {
       if (CPP_OPTION (pfile, lang) == CLK_CXX1Z
 	  || CPP_OPTION (pfile, lang) == CLK_GNUCXX1Z)
-	_cpp_define_builtin (pfile, "__cplusplus 201500L");
+	_cpp_define_builtin (pfile, "__cplusplus 201703L");
       else if (CPP_OPTION (pfile, lang) == CLK_CXX14
 	  || CPP_OPTION (pfile, lang) == CLK_GNUCXX14)
 	_cpp_define_builtin (pfile, "__cplusplus 201402L");

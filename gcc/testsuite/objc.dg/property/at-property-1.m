@@ -8,7 +8,7 @@
 }
 @property;                      /* { dg-error "expected" } */
 @property int;                  /* { dg-error "expected identifier" } */
-                                /* { dg-warning "declaration does not declare anything" "" { target *-*-* } 10 } */
+                                /* { dg-warning "declaration does not declare anything" "" { target *-*-* } .-1 } */
 @property int a;
 @property int b, c;
 @property () int d;             /* { dg-error "expected identifier" } */

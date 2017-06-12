@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -39,7 +39,6 @@ with Exp_Dbug;  use Exp_Dbug;
 with Exp_Disp;  use Exp_Disp;
 with Exp_Tss;   use Exp_Tss;
 with Exp_Util;  use Exp_Util;
-with Fname;     use Fname;
 with Freeze;    use Freeze;
 with Ghost;     use Ghost;
 with Inline;    use Inline;
@@ -382,14 +381,15 @@ package body Sem_Ch6 is
          --  An entity can only be frozen if it is complete, so if the type
          --  is still unfrozen it must still be incomplete in some way, e.g.
          --  a private type without a full view, or a type derived from such
-         --  in an enclosing scope. Except in a generic context, such use of
+         --  in an enclosing scope. Except in a generic context (where the
+         --  type may be a generic formal or derived from such), such use of
          --  an incomplete type is an error. On the other hand, if this is a
          --  limited view of a type, the type is declared in another unit and
          --  frozen there. We must be in a context seeing the nonlimited view
          --  of the type, which will be installed when the body is compiled.
 
          if not Is_Frozen (Ret_Type)
-           and then not Is_Generic_Type (Ret_Type)
+           and then not Is_Generic_Type (Root_Type (Ret_Type))
            and then not Inside_A_Generic
          then
             if From_Limited_With (Ret_Type)
@@ -403,10 +403,6 @@ package body Sem_Ch6 is
             end if;
          end if;
 
-         if Is_Access_Type (Etype (Prev)) then
-            Freeze_Before (N, Designated_Type (Etype (Prev)));
-         end if;
-
          --  For navigation purposes, indicate that the function is a body
 
          Generate_Reference (Prev, Defining_Entity (N), 'b', Force => True);
@@ -418,7 +414,7 @@ package body Sem_Ch6 is
          Orig_N := Original_Node (N);
          Remove_Aspects (Orig_N);
 
-         --  Propagate any pragmas that apply to the expression function to the
+         --  Propagate any pragmas that apply to expression function to the
          --  proper body when the expression function acts as a completion.
          --  Aspects are automatically transfered because of node rewriting.
 
@@ -734,21 +730,6 @@ package body Sem_Ch6 is
          Subtype_Ind : constant Node_Id :=
                          Object_Definition (Original_Node (Obj_Decl));
 
-         R_Type_Is_Anon_Access : constant Boolean :=
-             Ekind_In (R_Type,
-                       E_Anonymous_Access_Subprogram_Type,
-                       E_Anonymous_Access_Protected_Subprogram_Type,
-                       E_Anonymous_Access_Type);
-         --  True if return type of the function is an anonymous access type
-         --  Can't we make Is_Anonymous_Access_Type in einfo ???
-
-         R_Stm_Type_Is_Anon_Access : constant Boolean :=
-             Ekind_In (R_Stm_Type,
-                       E_Anonymous_Access_Subprogram_Type,
-                       E_Anonymous_Access_Protected_Subprogram_Type,
-                       E_Anonymous_Access_Type);
-         --  True if type of the return object is an anonymous access type
-
          procedure Error_No_Match (N : Node_Id);
          --  Output error messages for case where types do not statically
          --  match. N is the location for the messages.
@@ -783,10 +764,9 @@ package body Sem_Ch6 is
          --  "access T", and that the subtypes statically match:
          --   if this is an access to subprogram the signatures must match.
 
-         if R_Type_Is_Anon_Access then
-            if R_Stm_Type_Is_Anon_Access then
-               if
-                 Ekind (Designated_Type (R_Stm_Type)) /= E_Subprogram_Type
+         if Is_Anonymous_Access_Type (R_Type) then
+            if Is_Anonymous_Access_Type (R_Stm_Type) then
+               if Ekind (Designated_Type (R_Stm_Type)) /= E_Subprogram_Type
                then
                   if Base_Type (Designated_Type (R_Stm_Type)) /=
                      Base_Type (Designated_Type (R_Type))
@@ -796,11 +776,11 @@ package body Sem_Ch6 is
                   end if;
 
                else
-                  --  For two anonymous access to subprogram types, the
-                  --  types themselves must be type conformant.
+                  --  For two anonymous access to subprogram types, the types
+                  --  themselves must be type conformant.
 
                   if not Conforming_Types
-                    (R_Stm_Type, R_Type, Fully_Conformant)
+                           (R_Stm_Type, R_Type, Fully_Conformant)
                   then
                      Error_No_Match (Subtype_Ind);
                   end if;
@@ -813,10 +793,11 @@ package body Sem_Ch6 is
          --  If the return object is of an anonymous access type, then report
          --  an error if the function's result type is not also anonymous.
 
-         elsif R_Stm_Type_Is_Anon_Access then
-            pragma Assert (not R_Type_Is_Anon_Access);
-            Error_Msg_N ("anonymous access not allowed for function with "
-                         & "named access result", Subtype_Ind);
+         elsif Is_Anonymous_Access_Type (R_Stm_Type) then
+            pragma Assert (not Is_Anonymous_Access_Type (R_Type));
+            Error_Msg_N
+              ("anonymous access not allowed for function with named access "
+               & "result", Subtype_Ind);
 
          --  Subtype indication case: check that the return object's type is
          --  covered by the result type, and that the subtypes statically match
@@ -838,18 +819,16 @@ package body Sem_Ch6 is
 
             if Is_Access_Type (R_Type)
               and then
-               (Can_Never_Be_Null (R_Type)
-                 or else Null_Exclusion_Present (Parent (Scope_Id))) /=
-                                              Can_Never_Be_Null (R_Stm_Type)
+                (Can_Never_Be_Null (R_Type)
+                  or else Null_Exclusion_Present (Parent (Scope_Id))) /=
+                            Can_Never_Be_Null (R_Stm_Type)
             then
                Error_No_Match (Subtype_Ind);
             end if;
 
             --  AI05-103: for elementary types, subtypes must statically match
 
-            if Is_Constrained (R_Type)
-              or else Is_Access_Type (R_Type)
-            then
+            if Is_Constrained (R_Type) or else Is_Access_Type (R_Type) then
                if not Subtypes_Statically_Match (R_Stm_Type, R_Type) then
                   Error_No_Match (Subtype_Ind);
                end if;
@@ -1370,6 +1349,7 @@ package body Sem_Ch6 is
       Designator : Entity_Id;
       Form       : Node_Id;
       Null_Body  : Node_Id := Empty;
+      Null_Stmt  : Node_Id := Null_Statement (Spec);
       Prev       : Entity_Id;
 
    begin
@@ -1379,13 +1359,22 @@ package body Sem_Ch6 is
       --  the first case the body is analyzed at the freeze point, in the other
       --  it replaces the null procedure declaration.
 
+      --  For a null procedure that comes from source, a NULL statement is
+      --  provided by the parser, which carries the source location of the
+      --  NULL keyword, and has Comes_From_Source set. For a null procedure
+      --  from expansion, create one now.
+
+      if No (Null_Stmt) then
+         Null_Stmt := Make_Null_Statement (Loc);
+      end if;
+
       Null_Body :=
         Make_Subprogram_Body (Loc,
-          Specification => New_Copy_Tree (Spec),
-          Declarations  => New_List,
+          Specification              => New_Copy_Tree (Spec),
+          Declarations               => New_List,
           Handled_Statement_Sequence =>
             Make_Handled_Sequence_Of_Statements (Loc,
-              Statements => New_List (Make_Null_Statement (Loc))));
+              Statements => New_List (Null_Stmt)));
 
       --  Create new entities for body and formals
 
@@ -1420,24 +1409,24 @@ package body Sem_Ch6 is
          return;
 
       else
-         --  Resolve the types of the formals now, because the freeze point
-         --  may appear in a different context, e.g. an instantiation.
+         --  Resolve the types of the formals now, because the freeze point may
+         --  appear in a different context, e.g. an instantiation.
 
          Form := First (Parameter_Specifications (Specification (Null_Body)));
          while Present (Form) loop
             if Nkind (Parameter_Type (Form)) /= N_Access_Definition then
                Find_Type (Parameter_Type (Form));
 
-            elsif
-              No (Access_To_Subprogram_Definition (Parameter_Type (Form)))
+            elsif No (Access_To_Subprogram_Definition
+                       (Parameter_Type (Form)))
             then
                Find_Type (Subtype_Mark (Parameter_Type (Form)));
 
-            else
-               --  The case of a null procedure with a formal that is an
-               --  access_to_subprogram type, and that is used as an actual
-               --  in an instantiation is left to the enthusiastic reader.
+            --  The case of a null procedure with a formal that is an
+            --  access-to-subprogram type, and that is used as an actual
+            --  in an instantiation is left to the enthusiastic reader.
 
+            else
                null;
             end if;
 
@@ -1445,8 +1434,8 @@ package body Sem_Ch6 is
          end loop;
       end if;
 
-      --  If there are previous overloadable entities with the same name,
-      --  check whether any of them is completed by the null procedure.
+      --  If there are previous overloadable entities with the same name, check
+      --  whether any of them is completed by the null procedure.
 
       if Present (Prev) and then Is_Overloadable (Prev) then
          Designator := Analyze_Subprogram_Specification (Spec);
@@ -1564,9 +1553,12 @@ package body Sem_Ch6 is
       Actuals : constant List_Id    := Parameter_Associations (N);
       Loc     : constant Source_Ptr := Sloc (N);
       P       : constant Node_Id    := Name (N);
-      Actual  : Node_Id;
-      Mode    : Ghost_Mode_Type;
-      New_N   : Node_Id;
+
+      Saved_GM : constant Ghost_Mode_Type := Ghost_Mode;
+      --  Save the Ghost mode to restore on exit
+
+      Actual : Node_Id;
+      New_N  : Node_Id;
 
    --  Start of processing for Analyze_Procedure_Call
 
@@ -1609,7 +1601,7 @@ package body Sem_Ch6 is
       --  Set the mode now to ensure that any nodes generated during analysis
       --  and expansion are properly marked as Ghost.
 
-      Mark_And_Set_Ghost_Procedure_Call (N, Mode);
+      Mark_And_Set_Ghost_Procedure_Call (N);
 
       --  Otherwise analyze the parameters
 
@@ -1804,7 +1796,7 @@ package body Sem_Ch6 is
       end if;
 
    <<Leave>>
-      Restore_Ghost_Mode (Mode);
+      Restore_Ghost_Mode (Saved_GM);
    end Analyze_Procedure_Call;
 
    ------------------------------
@@ -3096,8 +3088,41 @@ package body Sem_Ch6 is
                elsif Ekind_In (Entity (Node), E_Component,
                                               E_Discriminant)
                then
-                  Freeze_Before (N, Scope (Entity (Node)));
+                  declare
+                     Rec : constant Entity_Id := Scope (Entity (Node));
+                  begin
+
+                     --  Check that the enclosing record type can be frozen.
+                     --  This provides a better error message than generating
+                     --  primitives whose compilation fails much later. Refine
+                     --  the error message if possible.
+
+                     Check_Fully_Declared (Rec, Node);
+
+                     if Error_Posted (Node) then
+                        if Has_Private_Component (Rec) then
+                           Error_Msg_NE
+                             ("\type& has private component", Node, Rec);
+                        end if;
+
+                     else
+                        Freeze_Before (N, Rec);
+                     end if;
+                  end;
                end if;
+
+            --  Freezing an access type does not freeze the designated type,
+            --  but freezing conversions between access to interfaces requires
+            --  that the interface types themselves be frozen, so that dispatch
+            --  table entities are properly created.
+
+            --  Unclear whether a more general rule is needed ???
+
+            elsif Nkind (Node) = N_Type_Conversion
+              and then Is_Access_Type (Etype (Node))
+              and then Is_Interface (Designated_Type (Etype (Node)))
+            then
+               Freeze_Before (N, Designated_Type (Etype (Node)));
             end if;
 
             return OK;
@@ -3295,8 +3320,7 @@ package body Sem_Ch6 is
 
          elsif Style_Check
            and then Can_Override_Operator (Spec_Id)
-           and then not Is_Predefined_File_Name
-                          (Unit_File_Name (Get_Source_Unit (Spec_Id)))
+           and then not In_Predefined_Unit (Spec_Id)
          then
             pragma Assert (Unit_Declaration_Node (Body_Id) = N);
             Style.Missing_Overriding (N, Body_Id);
@@ -3305,8 +3329,10 @@ package body Sem_Ch6 is
 
       --  Local variables
 
-      Mode     : Ghost_Mode_Type;
-      Mode_Set : Boolean := False;
+      Saved_GM   : constant Ghost_Mode_Type := Ghost_Mode;
+      Saved_ISMP : constant Boolean         :=
+                     Ignore_SPARK_Mode_Pragmas_In_Instance;
+      --  Save the Ghost and SPARK mode-related data to restore on exit
 
    --  Start of processing for Analyze_Subprogram_Body_Helper
 
@@ -3358,8 +3384,7 @@ package body Sem_Ch6 is
             --  the mode now to ensure that any nodes generated during analysis
             --  and expansion are properly marked as Ghost.
 
-            Mark_And_Set_Ghost_Body (N, Spec_Id, Mode);
-            Mode_Set := True;
+            Mark_And_Set_Ghost_Body (N, Spec_Id);
 
             Set_Is_Compilation_Unit (Body_Id, Is_Compilation_Unit (Spec_Id));
             Set_Is_Child_Unit       (Body_Id, Is_Child_Unit       (Spec_Id));
@@ -3378,7 +3403,7 @@ package body Sem_Ch6 is
 
          else
             Enter_Name (Body_Id);
-            return;
+            goto Leave;
          end if;
 
       --  Non-generic case, find the subprogram declaration, if one was seen,
@@ -3388,7 +3413,7 @@ package body Sem_Ch6 is
       --  analysis.
 
       elsif Prev_Id = Body_Id and then Has_Completion (Body_Id) then
-         return;
+         goto Leave;
 
       else
          Body_Id := Analyze_Subprogram_Specification (Body_Spec);
@@ -3404,8 +3429,7 @@ package body Sem_Ch6 is
                --  Ghost. Set the mode now to ensure that any nodes generated
                --  during analysis and expansion are properly marked as Ghost.
 
-               Mark_And_Set_Ghost_Body (N, Spec_Id, Mode);
-               Mode_Set := True;
+               Mark_And_Set_Ghost_Body (N, Spec_Id);
 
             else
                Spec_Id := Find_Corresponding_Spec (N);
@@ -3415,8 +3439,7 @@ package body Sem_Ch6 is
                --  Ghost. Set the mode now to ensure that any nodes generated
                --  during analysis and expansion are properly marked as Ghost.
 
-               Mark_And_Set_Ghost_Body (N, Spec_Id, Mode);
-               Mode_Set := True;
+               Mark_And_Set_Ghost_Body (N, Spec_Id);
 
                --  In GNATprove mode, if the body has no previous spec, create
                --  one so that the inlining machinery can operate properly.
@@ -3517,8 +3540,7 @@ package body Sem_Ch6 is
             --  the mode now to ensure that any nodes generated during analysis
             --  and expansion are properly marked as Ghost.
 
-            Mark_And_Set_Ghost_Body (N, Spec_Id, Mode);
-            Mode_Set := True;
+            Mark_And_Set_Ghost_Body (N, Spec_Id);
          end if;
       end if;
 
@@ -3611,6 +3633,25 @@ package body Sem_Ch6 is
                Freeze_Expr_Types (Spec_Id);
             end if;
          end if;
+      end if;
+
+      --  If the subprogram has a class-wide clone, build its body as a copy
+      --  of the original body, and rewrite body of original subprogram as a
+      --  wrapper that calls the clone.
+
+      if Present (Spec_Id)
+        and then Present (Class_Wide_Clone (Spec_Id))
+        and then (Comes_From_Source (N) or else Was_Expression_Function (N))
+      then
+         Build_Class_Wide_Clone_Body (Spec_Id, N);
+
+         --  This is the new body for the existing primitive operation
+
+         Rewrite (N, Build_Class_Wide_Clone_Call
+           (Sloc (N), New_List, Spec_Id, Parent (Spec_Id)));
+         Set_Has_Completion (Spec_Id, False);
+         Analyze (N);
+         return;
       end if;
 
       --  Place subprogram on scope stack, and make formals visible. If there
@@ -3875,6 +3916,29 @@ package body Sem_Ch6 is
          Set_SPARK_Pragma_Inherited (Body_Id);
       end if;
 
+      --  A subprogram body may be instantiated or inlined at a later pass.
+      --  Restore the state of Ignore_SPARK_Mode_Pragmas_In_Instance when it
+      --  applied to the initial declaration of the body.
+
+      if Present (Spec_Id) then
+         if Ignore_SPARK_Mode_Pragmas (Spec_Id) then
+            Ignore_SPARK_Mode_Pragmas_In_Instance := True;
+         end if;
+
+      else
+         --  Save the state of flag Ignore_SPARK_Mode_Pragmas_In_Instance in
+         --  case the body is instantiated or inlined later and out of context.
+         --  The body uses this attribute to restore the value of the global
+         --  flag.
+
+         if Ignore_SPARK_Mode_Pragmas_In_Instance then
+            Set_Ignore_SPARK_Mode_Pragmas (Body_Id);
+
+         elsif Ignore_SPARK_Mode_Pragmas (Body_Id) then
+            Ignore_SPARK_Mode_Pragmas_In_Instance := True;
+         end if;
+      end if;
+
       --  If this is the proper body of a stub, we must verify that the stub
       --  conforms to the body, and to the previous spec if one was present.
       --  We know already that the body conforms to that spec. This test is
@@ -4016,6 +4080,7 @@ package body Sem_Ch6 is
       --  inlining. This inlining should occur after analysis of the body, so
       --  that it is known whether the value of SPARK_Mode, which can be
       --  defined by a pragma inside the body, is applicable to the body.
+      --  Inlining can be disabled with switch -gnatdm
 
       elsif GNATprove_Mode
         and then Full_Analysis
@@ -4026,6 +4091,7 @@ package body Sem_Ch6 is
         and then Body_Has_SPARK_Mode_On
         and then Can_Be_Inlined_In_GNATprove_Mode (Spec_Id, Body_Id)
         and then not Body_Has_Contract
+        and then not Debug_Flag_M
       then
          Build_Body_To_Inline (N, Spec_Id);
       end if;
@@ -4063,6 +4129,7 @@ package body Sem_Ch6 is
                                 Protected_Body_Subprogram (Spec_Id);
             Prot_Ext_Formal : Entity_Id := Extra_Formals (Spec_Id);
             Impl_Ext_Formal : Entity_Id := Extra_Formals (Impl_Subp);
+
          begin
             while Present (Prot_Ext_Formal) loop
                pragma Assert (Present (Impl_Ext_Formal));
@@ -4413,9 +4480,8 @@ package body Sem_Ch6 is
       end if;
 
    <<Leave>>
-      if Mode_Set then
-         Restore_Ghost_Mode (Mode);
-      end if;
+      Ignore_SPARK_Mode_Pragmas_In_Instance := Saved_ISMP;
+      Restore_Ghost_Mode (Saved_GM);
    end Analyze_Subprogram_Body_Helper;
 
    ------------------------------------
@@ -4475,6 +4541,15 @@ package body Sem_Ch6 is
       else
          Set_SPARK_Pragma (Designator, SPARK_Mode_Pragma);
          Set_SPARK_Pragma_Inherited (Designator);
+      end if;
+
+      --  Save the state of flag Ignore_SPARK_Mode_Pragmas_In_Instance in case
+      --  the body of this subprogram is instantiated or inlined later and out
+      --  of context. The body uses this attribute to restore the value of the
+      --  global flag.
+
+      if Ignore_SPARK_Mode_Pragmas_In_Instance then
+         Set_Ignore_SPARK_Mode_Pragmas (Designator);
       end if;
 
       if Debug_Flag_C then
@@ -5271,6 +5346,11 @@ package body Sem_Ch6 is
                else
                   Conformance_Error
                     ("\type of & does not match!", New_Formal);
+
+                  if not Dimensions_Match (Old_Formal_Base, New_Formal_Base)
+                  then
+                     Error_Msg_N ("\dimensions mismatch!", New_Formal);
+                  end if;
                end if;
             end if;
 
@@ -5916,9 +5996,11 @@ package body Sem_Ch6 is
                   & "(RM-2005 6.5(5.5/2))?y?", Expr);
             end if;
 
-         --  Ada 95 mode, compatibility warnings disabled
+         --  Ada 95 mode, and compatibility warnings disabled
 
          else
+            pragma Assert (Ada_Version <= Ada_95);
+            pragma Assert (not (Warn_On_Ada_2005_Compatibility or GNAT_Mode));
             return; --  skip continuation messages below
          end if;
 
@@ -6087,10 +6169,10 @@ package body Sem_Ch6 is
            and then Chars (Overridden_Subp) = Name_Adjust
            and then Is_Limited_Type (Etype (First_Formal (Subp)))
            and then Present (Alias (Overridden_Subp))
-           and then
-             Is_Predefined_File_Name
-               (Unit_File_Name (Get_Source_Unit (Alias (Overridden_Subp))))
+           and then In_Predefined_Unit (Alias (Overridden_Subp))
          then
+            Get_Name_String
+              (Unit_File_Name (Get_Source_Unit (Alias (Overridden_Subp))));
             Error_Msg_NE ("subprogram & is not overriding", Spec, Subp);
 
          elsif Is_Subprogram (Subp) then
@@ -6172,9 +6254,7 @@ package body Sem_Ch6 is
          elsif not Error_Posted (Subp)
            and then Style_Check
            and then Can_Override_Operator (Subp)
-           and then
-             not Is_Predefined_File_Name
-                   (Unit_File_Name (Get_Source_Unit (Subp)))
+           and then not In_Predefined_Unit (Subp)
          then
             --  If style checks are enabled, indicate that the indicator is
             --  missing. However, at the point of declaration, the type of
@@ -7379,30 +7459,39 @@ package body Sem_Ch6 is
          return True;
 
       elsif Base_Types_Match (Type_1, Type_2) then
-         return Ctype <= Mode_Conformant
-           or else Subtypes_Statically_Match (Type_1, Type_2);
+         if Ctype <= Mode_Conformant then
+            return True;
+
+         else
+            return
+              Subtypes_Statically_Match (Type_1, Type_2)
+                and then Dimensions_Match (Type_1, Type_2);
+         end if;
 
       elsif Is_Incomplete_Or_Private_Type (Type_1)
         and then Present (Full_View (Type_1))
         and then Base_Types_Match (Full_View (Type_1), Type_2)
       then
-         return Ctype <= Mode_Conformant
-           or else Subtypes_Statically_Match (Full_View (Type_1), Type_2);
+         return
+           Ctype <= Mode_Conformant
+             or else Subtypes_Statically_Match (Full_View (Type_1), Type_2);
 
       elsif Ekind (Type_2) = E_Incomplete_Type
         and then Present (Full_View (Type_2))
         and then Base_Types_Match (Type_1, Full_View (Type_2))
       then
-         return Ctype <= Mode_Conformant
-           or else Subtypes_Statically_Match (Type_1, Full_View (Type_2));
+         return
+           Ctype <= Mode_Conformant
+             or else Subtypes_Statically_Match (Type_1, Full_View (Type_2));
 
       elsif Is_Private_Type (Type_2)
         and then In_Instance
         and then Present (Full_View (Type_2))
         and then Base_Types_Match (Type_1, Full_View (Type_2))
       then
-         return Ctype <= Mode_Conformant
-           or else Subtypes_Statically_Match (Type_1, Full_View (Type_2));
+         return
+           Ctype <= Mode_Conformant
+             or else Subtypes_Statically_Match (Type_1, Full_View (Type_2));
 
       --  Another confusion between views in a nested instance with an
       --  actual private type whose full view is not in scope.
@@ -7496,9 +7585,9 @@ package body Sem_Ch6 is
 
             elsif Are_Anonymous_Access_To_Subprogram_Types then
                if Ada_Version < Ada_2005 then
-                  return Ctype = Type_Conformant
-                    or else
-                      Subtypes_Statically_Match (Desig_1, Desig_2);
+                  return
+                    Ctype = Type_Conformant
+                      or else Subtypes_Statically_Match (Desig_1, Desig_2);
 
                --  We must check the conformance of the signatures themselves
 
@@ -8676,20 +8765,33 @@ package body Sem_Ch6 is
          if Present (Entity (E1)) then
             return Entity (E1) = Entity (E2)
 
-              --  One may be a discriminant that has been replaced by
-              --  the corresponding discriminal.
+              --  One may be a discriminant that has been replaced by the
+              --  corresponding discriminal.
 
-              or else (Chars (Entity (E1)) = Chars (Entity (E2))
-                        and then Ekind (Entity (E1)) = E_Discriminant
-                        and then Ekind (Entity (E2)) = E_In_Parameter)
+              or else
+                (Chars (Entity (E1)) = Chars (Entity (E2))
+                  and then Ekind (Entity (E1)) = E_Discriminant
+                  and then Ekind (Entity (E2)) = E_In_Parameter)
+
+             --  The discriminant of a protected type is transformed into
+             --  a local constant and then into a parameter of a protected
+             --  operation.
+
+             or else
+               (Ekind (Entity (E1)) = E_Constant
+                 and then Ekind (Entity (E2)) = E_In_Parameter
+                 and then Present (Discriminal_Link (Entity (E1)))
+                 and then Discriminal_Link (Entity (E1)) =
+                          Discriminal_Link (Entity (E2)))
 
              --  AI12-050: The loop variables of quantified expressions
              --  match if they have the same identifier, even though they
              --  are different entities.
 
-              or else (Chars (Entity (E1)) = Chars (Entity (E2))
-                       and then Ekind (Entity (E1)) = E_Loop_Parameter
-                       and then Ekind (Entity (E2)) = E_Loop_Parameter);
+              or else
+                (Chars (Entity (E1)) = Chars (Entity (E2))
+                  and then Ekind (Entity (E1)) = E_Loop_Parameter
+                  and then Ekind (Entity (E2)) = E_Loop_Parameter);
 
          elsif Nkind (E1) = N_Expanded_Name
            and then Nkind (E2) = N_Expanded_Name
@@ -8901,7 +9003,10 @@ package body Sem_Ch6 is
                    and then FCE (Explicit_Actual_Parameter (E1),
                                  Explicit_Actual_Parameter (E2));
 
-            when N_Qualified_Expression =>
+            when N_Qualified_Expression
+               | N_Type_Conversion
+               | N_Unchecked_Type_Conversion
+            =>
                return
                  FCE (Subtype_Mark (E1), Subtype_Mark (E2))
                    and then
@@ -9004,23 +9109,11 @@ package body Sem_Ch6 is
                   end if;
                end;
 
-            when N_Type_Conversion =>
-               return
-                 FCE (Subtype_Mark (E1), Subtype_Mark (E2))
-                   and then
-                 FCE (Expression (E1), Expression (E2));
-
             when N_Unary_Op =>
                return
                  Entity (E1) = Entity (E2)
                    and then
                  FCE (Right_Opnd (E1), Right_Opnd (E2));
-
-            when N_Unchecked_Type_Conversion =>
-               return
-                 FCE (Subtype_Mark (E1), Subtype_Mark (E2))
-                   and then
-                 FCE (Expression (E1), Expression (E2));
 
             --  All other node types cannot appear in this context. Strictly
             --  we should raise a fatal internal error. Instead we just ignore

@@ -452,6 +452,31 @@ computed_goto_p (gimple *t)
 	  && TREE_CODE (gimple_goto_dest (t)) != LABEL_DECL);
 }
 
+/* Returns true if the sequence of statements STMTS only contains
+   a call to __builtin_unreachable ().  */
+
+bool
+gimple_seq_unreachable_p (gimple_seq stmts)
+{
+  if (stmts == NULL)
+    return false;
+
+  gimple_stmt_iterator gsi = gsi_last (stmts);
+
+  if (!gimple_call_builtin_p (gsi_stmt (gsi), BUILT_IN_UNREACHABLE))
+    return false;
+
+  for (gsi_prev (&gsi); !gsi_end_p (gsi); gsi_prev (&gsi))
+    {
+      gimple *stmt = gsi_stmt (gsi);
+      if (gimple_code (stmt) != GIMPLE_LABEL
+	  && !is_gimple_debug (stmt)
+	  && !gimple_clobber_p (stmt))
+      return false;
+    }
+  return true;
+}
+
 /* Returns true for edge E where e->src ends with a GIMPLE_COND and
    the other edge points to a bb with just __builtin_unreachable ().
    I.e. return true for C->M edge in:
@@ -476,22 +501,7 @@ assert_unreachable_fallthru_edge_p (edge e)
       if (other_bb == e->dest)
 	other_bb = EDGE_SUCC (pred_bb, 1)->dest;
       if (EDGE_COUNT (other_bb->succs) == 0)
-	{
-	  gimple_stmt_iterator gsi = gsi_after_labels (other_bb);
-	  gimple *stmt;
-
-	  if (gsi_end_p (gsi))
-	    return false;
-	  stmt = gsi_stmt (gsi);
-	  while (is_gimple_debug (stmt) || gimple_clobber_p (stmt))
-	    {
-	      gsi_next (&gsi);
-	      if (gsi_end_p (gsi))
-		return false;
-	      stmt = gsi_stmt (gsi);
-	    }
-	  return gimple_call_builtin_p (stmt, BUILT_IN_UNREACHABLE);
-	}
+	return gimple_seq_unreachable_p (bb_seq (other_bb));
     }
   return false;
 }
@@ -1038,10 +1048,27 @@ gimple_find_sub_bbs (gimple_seq seq, gimple_stmt_iterator *gsi)
   while (bb != afterbb)
     {
       struct omp_region *cur_region = NULL;
+      profile_count cnt = profile_count::zero ();
+      int freq = 0;
+
       int cur_omp_region_idx = 0;
       int mer = make_edges_bb (bb, &cur_region, &cur_omp_region_idx);
       gcc_assert (!mer && !cur_region);
       add_bb_to_loop (bb, afterbb->loop_father);
+
+      edge e;
+      edge_iterator ei;
+      FOR_EACH_EDGE (e, ei, bb->preds)
+	{
+	  cnt += e->count;
+	  freq += EDGE_FREQUENCY (e);
+	}
+      bb->count = cnt;
+      bb->frequency = freq;
+      tree_guess_outgoing_edge_probabilities (bb);
+      FOR_EACH_EDGE (e, ei, bb->succs)
+	e->count = bb->count.apply_probability (e->probability);
+
       bb = bb->next_bb;
     }
   return true;
@@ -1651,7 +1678,7 @@ void
 group_case_labels_stmt (gswitch *stmt)
 {
   int old_size = gimple_switch_num_labels (stmt);
-  int i, j, new_size = old_size;
+  int i, j, base_index, new_size = old_size;
   basic_block default_bb = NULL;
 
   default_bb = label_to_block (CASE_LABEL (gimple_switch_default_label (stmt)));
@@ -1668,8 +1695,7 @@ group_case_labels_stmt (gswitch *stmt)
       gcc_assert (base_case);
       base_bb = label_to_block (CASE_LABEL (base_case));
 
-      /* Discard cases that have the same destination as the
-	 default case.  */
+      /* Discard cases that have the same destination as the default case.  */
       if (base_bb == default_bb)
 	{
 	  gimple_switch_set_label (stmt, i, NULL_TREE);
@@ -1681,7 +1707,7 @@ group_case_labels_stmt (gswitch *stmt)
       base_high = CASE_HIGH (base_case)
 	  ? CASE_HIGH (base_case)
 	  : CASE_LOW (base_case);
-      i++;
+      base_index = i++;
 
       /* Try to merge case labels.  Break out when we reach the end
 	 of the label vector or when we cannot merge the next case
@@ -1706,6 +1732,17 @@ group_case_labels_stmt (gswitch *stmt)
 	    }
 	  else
 	    break;
+	}
+
+      /* Discard cases that have an unreachable destination block.  */
+      if (EDGE_COUNT (base_bb->succs) == 0
+	  && gimple_seq_unreachable_p (bb_seq (base_bb)))
+	{
+	  edge base_edge = find_edge (gimple_bb (stmt), base_bb);
+	  if (base_edge != NULL)
+	    remove_edge_and_dominated_blocks (base_edge);
+	  gimple_switch_set_label (stmt, base_index, NULL_TREE);
+	  new_size--;
 	}
     }
 
@@ -2360,7 +2397,7 @@ gimple_debug_bb_n (int n)
    (see TDF_* in dumpfile.h).  */
 
 void
-gimple_debug_cfg (int flags)
+gimple_debug_cfg (dump_flags_t flags)
 {
   gimple_dump_cfg (stderr, flags);
 }
@@ -2372,7 +2409,7 @@ gimple_debug_cfg (int flags)
    tree.h).  */
 
 void
-gimple_dump_cfg (FILE *file, int flags)
+gimple_dump_cfg (FILE *file, dump_flags_t flags)
 {
   if (flags & TDF_DETAILS)
     {
@@ -2381,7 +2418,7 @@ gimple_dump_cfg (FILE *file, int flags)
 	       n_basic_blocks_for_fn (cfun), n_edges_for_fn (cfun),
 	       last_basic_block_for_fn (cfun));
 
-      brief_dump_cfg (file, flags | TDF_COMMENT);
+      brief_dump_cfg (file, flags);
       fprintf (file, "\n");
     }
 
@@ -5324,7 +5361,7 @@ gimple_verify_flow_info (void)
 	  if (prev_stmt && DECL_NONLOCAL (label))
 	    {
 	      error ("nonlocal label ");
-	      print_generic_expr (stderr, label, 0);
+	      print_generic_expr (stderr, label);
 	      fprintf (stderr, " is not first in a sequence of labels in bb %d",
 		       bb->index);
 	      err = 1;
@@ -5333,7 +5370,7 @@ gimple_verify_flow_info (void)
 	  if (prev_stmt && EH_LANDING_PAD_NR (label) != 0)
 	    {
 	      error ("EH landing pad label ");
-	      print_generic_expr (stderr, label, 0);
+	      print_generic_expr (stderr, label);
 	      fprintf (stderr, " is not first in a sequence of labels in bb %d",
 		       bb->index);
 	      err = 1;
@@ -5342,7 +5379,7 @@ gimple_verify_flow_info (void)
 	  if (label_to_block (label) != bb)
 	    {
 	      error ("label ");
-	      print_generic_expr (stderr, label, 0);
+	      print_generic_expr (stderr, label);
 	      fprintf (stderr, " to block does not match in bb %d",
 		       bb->index);
 	      err = 1;
@@ -5351,7 +5388,7 @@ gimple_verify_flow_info (void)
 	  if (decl_function_context (label) != current_function_decl)
 	    {
 	      error ("label ");
-	      print_generic_expr (stderr, label, 0);
+	      print_generic_expr (stderr, label);
 	      fprintf (stderr, " has incorrect context in bb %d",
 		       bb->index);
 	      err = 1;
@@ -5376,7 +5413,7 @@ gimple_verify_flow_info (void)
 	  if (glabel *label_stmt = dyn_cast <glabel *> (stmt))
 	    {
 	      error ("label ");
-	      print_generic_expr (stderr, gimple_label_label (label_stmt), 0);
+	      print_generic_expr (stderr, gimple_label_label (label_stmt));
 	      fprintf (stderr, " in the middle of basic block %d", bb->index);
 	      err = 1;
 	    }
@@ -5518,9 +5555,9 @@ gimple_verify_flow_info (void)
 		    && !tree_int_cst_lt (CASE_LOW (prev), CASE_LOW (c)))
 		  {
 		    error ("case labels not sorted: ");
-		    print_generic_expr (stderr, prev, 0);
+		    print_generic_expr (stderr, prev);
 		    fprintf (stderr," is greater than ");
-		    print_generic_expr (stderr, c, 0);
+		    print_generic_expr (stderr, c);
 		    fprintf (stderr," but comes before it.\n");
 		    err = 1;
 		  }
@@ -6180,7 +6217,8 @@ gimple_duplicate_sese_region (edge entry, edge exit,
   vec<basic_block> doms;
   edge redirected;
   int total_freq = 0, entry_freq = 0;
-  gcov_type total_count = 0, entry_count = 0;
+  profile_count total_count = profile_count::uninitialized ();
+  profile_count entry_count = profile_count::uninitialized ();
 
   if (!can_copy_bbs_p (region, n_region))
     return false;
@@ -6237,7 +6275,7 @@ gimple_duplicate_sese_region (edge entry, edge exit,
       doms = get_dominated_by_region (CDI_DOMINATORS, region, n_region);
     }
 
-  if (entry->dest->count)
+  if (entry->dest->count.initialized_p ())
     {
       total_count = entry->dest->count;
       entry_count = entry->count;
@@ -6246,7 +6284,7 @@ gimple_duplicate_sese_region (edge entry, edge exit,
       if (entry_count > total_count)
 	entry_count = total_count;
     }
-  else
+  if (!(total_count > 0) || !(entry_count > 0))
     {
       total_freq = entry->dest->frequency;
       entry_freq = EDGE_FREQUENCY (entry);
@@ -6260,13 +6298,13 @@ gimple_duplicate_sese_region (edge entry, edge exit,
 
   copy_bbs (region, n_region, region_copy, &exit, 1, &exit_copy, loop,
 	    split_edge_bb_loc (entry), update_dominance);
-  if (total_count)
+  if (total_count > 0 && entry_count > 0)
     {
-      scale_bbs_frequencies_gcov_type (region, n_region,
-				       total_count - entry_count,
-				       total_count);
-      scale_bbs_frequencies_gcov_type (region_copy, n_region, entry_count,
-				       total_count);
+      scale_bbs_frequencies_profile_count (region, n_region,
+				           total_count - entry_count,
+				           total_count);
+      scale_bbs_frequencies_profile_count (region_copy, n_region, entry_count,
+				           total_count);
     }
   else
     {
@@ -6363,7 +6401,8 @@ gimple_duplicate_sese_tail (edge entry ATTRIBUTE_UNUSED, edge exit ATTRIBUTE_UNU
   basic_block switch_bb, entry_bb, nentry_bb;
   vec<basic_block> doms;
   int total_freq = 0, exit_freq = 0;
-  gcov_type total_count = 0, exit_count = 0;
+  profile_count total_count = profile_count::uninitialized (),
+		exit_count = profile_count::uninitialized ();
   edge exits[2], nexits[2], e;
   gimple_stmt_iterator gsi;
   gimple *cond_stmt;
@@ -6406,7 +6445,7 @@ gimple_duplicate_sese_tail (edge entry ATTRIBUTE_UNUSED, edge exit ATTRIBUTE_UNU
      inside.  */
   doms = get_dominated_by_region (CDI_DOMINATORS, region, n_region);
 
-  if (exit->src->count)
+  if (exit->src->count > 0)
     {
       total_count = exit->src->count;
       exit_count = exit->count;
@@ -6429,13 +6468,13 @@ gimple_duplicate_sese_tail (edge entry ATTRIBUTE_UNUSED, edge exit ATTRIBUTE_UNU
 
   copy_bbs (region, n_region, region_copy, exits, 2, nexits, orig_loop,
 	    split_edge_bb_loc (exit), true);
-  if (total_count)
+  if (total_count.initialized_p ())
     {
-      scale_bbs_frequencies_gcov_type (region, n_region,
-				       total_count - exit_count,
-				       total_count);
-      scale_bbs_frequencies_gcov_type (region_copy, n_region, exit_count,
-				       total_count);
+      scale_bbs_frequencies_profile_count (region, n_region,
+				           total_count - exit_count,
+				           total_count);
+      scale_bbs_frequencies_profile_count (region_copy, n_region, exit_count,
+				           total_count);
     }
   else
     {
@@ -7502,7 +7541,7 @@ move_sese_region_to_fn (struct function *dest_cfun, basic_block entry_bb,
    SPC.  */
 
 static void
-dump_default_def (FILE *file, tree def, int spc, int flags)
+dump_default_def (FILE *file, tree def, int spc, dump_flags_t flags)
 {
   for (int i = 0; i < spc; ++i)
     fprintf (file, " ");
@@ -7520,7 +7559,7 @@ dump_default_def (FILE *file, tree def, int spc, int flags)
    */
 
 void
-dump_function_to_file (tree fndecl, FILE *file, int flags)
+dump_function_to_file (tree fndecl, FILE *file, dump_flags_t flags)
 {
   tree arg, var, old_current_fndecl = current_function_decl;
   struct function *dsf;
@@ -7571,16 +7610,11 @@ dump_function_to_file (tree fndecl, FILE *file, int flags)
       print_generic_expr (file, TREE_TYPE (arg), dump_flags);
       fprintf (file, " ");
       print_generic_expr (file, arg, dump_flags);
-      if (flags & TDF_VERBOSE)
-	print_node (file, "", arg, 4);
       if (DECL_CHAIN (arg))
 	fprintf (file, ", ");
       arg = DECL_CHAIN (arg);
     }
   fprintf (file, ")\n");
-
-  if (flags & TDF_VERBOSE)
-    print_node (file, "", fndecl, 2);
 
   dsf = DECL_STRUCT_FUNCTION (fndecl);
   if (dsf && (flags & TDF_EH))
@@ -7634,8 +7668,6 @@ dump_function_to_file (tree fndecl, FILE *file, int flags)
 	FOR_EACH_LOCAL_DECL (fun, ix, var)
 	  {
 	    print_generic_decl (file, var, flags);
-	    if (flags & TDF_VERBOSE)
-	      print_node (file, "", var, 4);
 	    fprintf (file, "\n");
 
 	    any_var = true;
@@ -7671,7 +7703,7 @@ dump_function_to_file (tree fndecl, FILE *file, int flags)
 	fprintf (file, "\n");
 
       FOR_EACH_BB_FN (bb, fun)
-	dump_bb (file, bb, 2, flags | TDF_COMMENT);
+	dump_bb (file, bb, 2, flags);
 
       fprintf (file, "}\n");
     }
@@ -7743,7 +7775,7 @@ dump_function_to_file (tree fndecl, FILE *file, int flags)
 /* Dump FUNCTION_DECL FN to stderr using FLAGS (see TDF_* in tree.h)  */
 
 DEBUG_FUNCTION void
-debug_function (tree fn, int flags)
+debug_function (tree fn, dump_flags_t flags)
 {
   dump_function_to_file (fn, stderr, flags);
 }
@@ -7835,7 +7867,7 @@ print_loop (FILE *file, struct loop *loop, int indent, int verbosity)
   else
     fprintf (file, ", multiple latches");
   fprintf (file, ", niter = ");
-  print_generic_expr (file, loop->nb_iterations, 0);
+  print_generic_expr (file, loop->nb_iterations);
 
   if (loop->any_upper_bound)
     {
@@ -8178,7 +8210,6 @@ remove_edge_and_dominated_blocks (edge e)
 {
   vec<basic_block> bbs_to_remove = vNULL;
   vec<basic_block> bbs_to_fix_dom = vNULL;
-  bitmap df, df_idom;
   edge f;
   edge_iterator ei;
   bool none_removed = false;
@@ -8227,9 +8258,7 @@ remove_edge_and_dominated_blocks (edge e)
 	}
     }
 
-  df = BITMAP_ALLOC (NULL);
-  df_idom = BITMAP_ALLOC (NULL);
-
+  auto_bitmap df, df_idom;
   if (none_removed)
     bitmap_set_bit (df_idom,
 		    get_immediate_dominator (CDI_DOMINATORS, e->dest)->index);
@@ -8296,8 +8325,6 @@ remove_edge_and_dominated_blocks (edge e)
 
   iterate_fix_dominators (CDI_DOMINATORS, bbs_to_fix_dom, true);
 
-  BITMAP_FREE (df);
-  BITMAP_FREE (df_idom);
   bbs_to_remove.release ();
   bbs_to_fix_dom.release ();
 }
@@ -8514,10 +8541,10 @@ gimple_account_profile_record (basic_block bb, int after_pass,
     {
       record->size[after_pass]
 	+= estimate_num_insns (gsi_stmt (i), &eni_size_weights);
-      if (profile_status_for_fn (cfun) == PROFILE_READ)
+      if (bb->count.initialized_p ())
 	record->time[after_pass]
 	  += estimate_num_insns (gsi_stmt (i),
-				 &eni_time_weights) * bb->count;
+				 &eni_time_weights) * bb->count.to_gcov_type ();
       else if (profile_status_for_fn (cfun) == PROFILE_GUESSED)
 	record->time[after_pass]
 	  += estimate_num_insns (gsi_stmt (i),
@@ -9045,24 +9072,29 @@ execute_fixup_cfg (void)
   basic_block bb;
   gimple_stmt_iterator gsi;
   int todo = 0;
-  gcov_type count_scale;
   edge e;
   edge_iterator ei;
   cgraph_node *node = cgraph_node::get (current_function_decl);
+  profile_count num = node->count;
+  profile_count den = ENTRY_BLOCK_PTR_FOR_FN (cfun)->count;
+  bool scale = num.initialized_p ()
+	       && (den > 0 || num == profile_count::zero ())
+	       && !(num == den);
 
-  count_scale
-    = GCOV_COMPUTE_SCALE (node->count, ENTRY_BLOCK_PTR_FOR_FN (cfun)->count);
+  if (scale)
+    {
+      ENTRY_BLOCK_PTR_FOR_FN (cfun)->count = node->count;
+      EXIT_BLOCK_PTR_FOR_FN (cfun)->count
+        = EXIT_BLOCK_PTR_FOR_FN (cfun)->count.apply_scale (num, den);
 
-  ENTRY_BLOCK_PTR_FOR_FN (cfun)->count = node->count;
-  EXIT_BLOCK_PTR_FOR_FN (cfun)->count
-    = apply_scale (EXIT_BLOCK_PTR_FOR_FN (cfun)->count, count_scale);
-
-  FOR_EACH_EDGE (e, ei, ENTRY_BLOCK_PTR_FOR_FN (cfun)->succs)
-    e->count = apply_scale (e->count, count_scale);
+      FOR_EACH_EDGE (e, ei, ENTRY_BLOCK_PTR_FOR_FN (cfun)->succs)
+	e->count = e->count.apply_scale (num, den);
+    }
 
   FOR_EACH_BB_FN (bb, cfun)
     {
-      bb->count = apply_scale (bb->count, count_scale);
+      if (scale)
+        bb->count = bb->count.apply_scale (num, den);
       for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi);)
 	{
 	  gimple *stmt = gsi_stmt (gsi);
@@ -9131,8 +9163,9 @@ execute_fixup_cfg (void)
 	  gsi_next (&gsi);
 	}
 
-      FOR_EACH_EDGE (e, ei, bb->succs)
-        e->count = apply_scale (e->count, count_scale);
+      if (scale)
+	FOR_EACH_EDGE (e, ei, bb->succs)
+	  e->count = e->count.apply_scale (num, den);
 
       /* If we have a basic block with no successors that does not
 	 end with a control statement or a noreturn call end it with
@@ -9164,7 +9197,7 @@ execute_fixup_cfg (void)
 	    }
 	}
     }
-  if (count_scale != REG_BR_PROB_BASE)
+  if (scale)
     compute_function_frequency ();
 
   if (current_loops

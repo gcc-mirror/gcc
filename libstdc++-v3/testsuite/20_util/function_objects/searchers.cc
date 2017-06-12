@@ -31,9 +31,9 @@
 # error "Feature-test macro for searchers has wrong value"
 #endif
 
-using std::make_default_searcher;
-using std::make_boyer_moore_searcher;
-using std::make_boyer_moore_horspool_searcher;
+using std::default_searcher;
+using std::boyer_moore_searcher;
+using std::boyer_moore_horspool_searcher;
 
 void
 test01()
@@ -49,20 +49,33 @@ test01()
 
   for (auto n : needles)
   {
-    auto ne = n + std::strlen(n);
-    auto d = make_default_searcher(n, ne);
-    auto bm = make_boyer_moore_searcher(n, ne);
-    auto bmh = make_boyer_moore_horspool_searcher(n, ne);
+    auto nlen = std::strlen(n);
+    auto ne = n + nlen;
+    default_searcher d(n, ne);
+    boyer_moore_searcher bm(n, ne);
+    boyer_moore_horspool_searcher bmh(n, ne);
     for (auto h : haystacks)
     {
       auto he = h + std::strlen(h);
       auto res = std::search(h, he, n, ne);
       auto d_res = d(h, he);
       VERIFY( d_res.first == res );
+      if (res == he)
+	VERIFY( d_res.second == d_res.first );
+      else
+	VERIFY( d_res.second == (d_res.first + nlen) );
       auto bm_res = bm(h, he);
       VERIFY( bm_res.first == res );
+      if (res == he)
+	VERIFY( bm_res.second == bm_res.first );
+      else
+	VERIFY( bm_res.second == (bm_res.first + nlen) );
       auto bmh_res = bmh(h, he);
       VERIFY( bmh_res.first == res );
+      if (res == he)
+	VERIFY( bmh_res.second == bmh_res.first );
+      else
+	VERIFY( bmh_res.second == (bmh_res.first + nlen) );
     }
   }
 }
@@ -82,20 +95,33 @@ test02()
 
   for (auto n : needles)
   {
-    auto ne = n + std::wcslen(n);
-    auto d = make_default_searcher(n, ne);
-    auto bm = make_boyer_moore_searcher(n, ne);
-    auto bmh = make_boyer_moore_horspool_searcher(n, ne);
+    auto nlen = std::wcslen(n);
+    auto ne = n + nlen;
+    default_searcher d(n, ne);
+    boyer_moore_searcher bm(n, ne);
+    boyer_moore_horspool_searcher bmh(n, ne);
     for (auto h : haystacks)
     {
       auto he = h + std::wcslen(h);
       auto res = std::search(h, he, n, ne);
       auto d_res = d(h, he);
       VERIFY( d_res.first == res );
+      if (res == he)
+	VERIFY( d_res.second == d_res.first );
+      else
+	VERIFY( d_res.second == (d_res.first + nlen) );
       auto bm_res = bm(h, he);
       VERIFY( bm_res.first == res );
+      if (res == he)
+	VERIFY( bm_res.second == bm_res.first );
+      else
+	VERIFY( bm_res.second == (bm_res.first + nlen) );
       auto bmh_res = bmh(h, he);
       VERIFY( bmh_res.first == res );
+      if (res == he)
+	VERIFY( bmh_res.second == bmh_res.first );
+      else
+	VERIFY( bmh_res.second == (bmh_res.first + nlen) );
     }
   }
 #endif
@@ -119,20 +145,33 @@ test03()
 
   const char* needle = " foo 123 ";
   const char* haystack = "*****foo*123******";
-  const char* ne = needle + std::strlen(needle);
+  auto nlen = std::strlen(needle);
+  const char* ne = needle + nlen;
   const char* he = haystack + std::strlen(haystack);
 
-  auto d = make_default_searcher(needle, ne, eq);
-  auto bm = make_boyer_moore_searcher(needle, ne, eq, eq);
-  auto bmh = make_boyer_moore_horspool_searcher(needle, ne, eq, eq);
+  default_searcher d(needle, ne, eq);
+  boyer_moore_searcher bm(needle, ne, eq, eq);
+  boyer_moore_horspool_searcher bmh(needle, ne, eq, eq);
 
   auto res = std::search(haystack, he, needle, ne, eq);
   auto d_res = d(haystack, he);
   VERIFY( d_res.first == res );
+  if (res == he)
+    VERIFY( d_res.second == d_res.first );
+  else
+    VERIFY( d_res.second == (d_res.first + nlen) );
   auto bm_res = bm(haystack, he);
   VERIFY( bm_res.first == res );
+  if (res == he)
+    VERIFY( bm_res.second == bm_res.first );
+  else
+    VERIFY( bm_res.second == (bm_res.first + nlen) );
   auto bmh_res = bmh(haystack, he);
   VERIFY( bmh_res.first == res );
+  if (res == he)
+    VERIFY( bmh_res.second == bmh_res.first );
+  else
+    VERIFY( bmh_res.second == (bmh_res.first + nlen) );
 }
 
 int

@@ -33,12 +33,15 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-core.h"
 #include "fold-const.h"
 #include "internal-fn.h"
+#include "langhooks.h"
 #include "gimplify.h"
 #include "gimple-iterator.h"
 #include "gimplify-me.h"
 #include "gimple-walk.h"
 #include "tree-cfg.h"
 #include "tree-into-ssa.h"
+#include "tree-nested.h"
+#include "stor-layout.h"
 #include "common/common-target.h"
 #include "omp-general.h"
 #include "omp-offload.h"
@@ -616,7 +619,6 @@ oacc_validate_dims (tree fn, tree attrs, int *dims, int level, unsigned used)
   tree purpose[GOMP_DIM_MAX];
   unsigned ix;
   tree pos = TREE_VALUE (attrs);
-  bool is_kernel = oacc_fn_attrib_kernels_p (attrs);
 
   /* Make sure the attribute creator attached the dimension
      information.  */
@@ -663,13 +665,8 @@ oacc_validate_dims (tree fn, tree attrs, int *dims, int level, unsigned used)
       /* Replace the attribute with new values.  */
       pos = NULL_TREE;
       for (ix = GOMP_DIM_MAX; ix--;)
-	{
-	  pos = tree_cons (purpose[ix],
-			   build_int_cst (integer_type_node, dims[ix]),
-			   pos);
-	  if (is_kernel)
-	    TREE_PUBLIC (pos) = 1;
-	}
+	pos = tree_cons (purpose[ix],
+			 build_int_cst (integer_type_node, dims[ix]), pos);
       oacc_replace_fn_attrib (fn, pos);
     }
 }
@@ -791,7 +788,7 @@ dump_oacc_loop_part (FILE *file, gcall *from, int depth,
 	  if (k == kind && stmt != from)
 	    break;
 	}
-      print_gimple_stmt (file, stmt, depth * 2 + 2, 0);
+      print_gimple_stmt (file, stmt, depth * 2 + 2);
 
       gsi_next (&gsi);
       while (gsi_end_p (gsi))
@@ -811,7 +808,7 @@ dump_oacc_loop (FILE *file, oacc_loop *loop, int depth)
 	   LOCATION_FILE (loop->loc), LOCATION_LINE (loop->loc));
 
   if (loop->marker)
-    print_gimple_stmt (file, loop->marker, depth * 2, 0);
+    print_gimple_stmt (file, loop->marker, depth * 2);
 
   if (loop->routine)
     fprintf (file, "%*sRoutine %s:%u:%s\n",
@@ -1150,14 +1147,20 @@ oacc_loop_fixed_partitions (oacc_loop *loop, unsigned outer_mask)
 	  if (outer)
 	    {
 	      error_at (loop->loc,
-			"%s uses same OpenACC parallelism as containing loop",
-			loop->routine ? "routine call" : "inner loop");
+			loop->routine
+			? G_("routine call uses same OpenACC parallelism"
+			     " as containing loop")
+			: G_("inner loop uses same OpenACC parallelism"
+			     " as containing loop"));
 	      inform (outer->loc, "containing loop here");
 	    }
 	  else
 	    error_at (loop->loc,
-		      "%s uses OpenACC parallelism disallowed by containing "
-		      "routine", loop->routine ? "routine call" : "loop");
+		      loop->routine
+		      ? G_("routine call uses OpenACC parallelism disallowed"
+			   " by containing routine")
+		      : G_("loop uses OpenACC parallelism disallowed"
+			   " by containing routine"));
 
 	  if (loop->routine)
 	    inform (DECL_SOURCE_LOCATION (loop->routine),
@@ -1322,8 +1325,11 @@ oacc_loop_auto_partitions (oacc_loop *loop, unsigned outer_mask,
       loop->mask |= this_mask;
       if (!loop->mask && noisy)
 	warning_at (loop->loc, 0,
-		    "insufficient partitioning available"
-		    " to parallelize%s loop", tiling ? " tile" : "");
+		    tiling
+		    ? G_("insufficient partitioning available"
+			 " to parallelize tile loop")
+		    : G_("insufficient partitioning available"
+			 " to parallelize loop"));
     }
 
   if (assign && dump_file)
@@ -1438,20 +1444,51 @@ execute_oacc_device_lower ()
       flag_openacc_dims = (char *)&flag_openacc_dims;
     }
 
+  bool is_oacc_kernels
+    = (lookup_attribute ("oacc kernels",
+			 DECL_ATTRIBUTES (current_function_decl)) != NULL);
+  bool is_oacc_kernels_parallelized
+    = (lookup_attribute ("oacc kernels parallelized",
+			 DECL_ATTRIBUTES (current_function_decl)) != NULL);
+
+  /* Unparallelized OpenACC kernels constructs must get launched as 1 x 1 x 1
+     kernels, so remove the parallelism dimensions function attributes
+     potentially set earlier on.  */
+  if (is_oacc_kernels && !is_oacc_kernels_parallelized)
+    {
+      oacc_set_fn_attrib (current_function_decl, NULL, NULL);
+      attrs = oacc_get_fn_attrib (current_function_decl);
+    }
+
   /* Discover, partition and process the loops.  */
   oacc_loop *loops = oacc_loop_discovery ();
   int fn_level = oacc_fn_attrib_level (attrs);
 
   if (dump_file)
-    fprintf (dump_file, oacc_fn_attrib_kernels_p (attrs)
-	     ? "Function is kernels offload\n"
-	     : fn_level < 0 ? "Function is parallel offload\n"
-	     : "Function is routine level %d\n", fn_level);
+    {
+      if (fn_level >= 0)
+	fprintf (dump_file, "Function is OpenACC routine level %d\n",
+		 fn_level);
+      else if (is_oacc_kernels)
+	fprintf (dump_file, "Function is %s OpenACC kernels offload\n",
+		 (is_oacc_kernels_parallelized
+		  ? "parallelized" : "unparallelized"));
+      else
+	fprintf (dump_file, "Function is OpenACC parallel offload\n");
+    }
 
   unsigned outer_mask = fn_level >= 0 ? GOMP_DIM_MASK (fn_level) - 1 : 0;
   unsigned used_mask = oacc_loop_partition (loops, outer_mask);
-  int dims[GOMP_DIM_MAX];
+  /* OpenACC kernels constructs are special: they currently don't use the
+     generic oacc_loop infrastructure and attribute/dimension processing.  */
+  if (is_oacc_kernels && is_oacc_kernels_parallelized)
+    {
+      /* Parallelized OpenACC kernels constructs use gang parallelism.  See
+	 also tree-parloops.c:create_parallel_loop.  */
+      used_mask |= GOMP_DIM_MASK (GOMP_DIM_GANG);
+    }
 
+  int dims[GOMP_DIM_MAX];
   oacc_validate_dims (current_function_decl, attrs, dims, fn_level, used_mask);
 
   if (dump_file)
@@ -1660,6 +1697,92 @@ make_pass_oacc_device_lower (gcc::context *ctxt)
   return new pass_oacc_device_lower (ctxt);
 }
 
+
+/* Rewrite GOMP_SIMT_ENTER_ALLOC call given by GSI and remove the preceding
+   GOMP_SIMT_ENTER call identifying the privatized variables, which are
+   turned to structure fields and receive a DECL_VALUE_EXPR accordingly.
+   Set *REGIMPLIFY to true, except if no privatized variables were seen.  */
+
+static void
+ompdevlow_adjust_simt_enter (gimple_stmt_iterator *gsi, bool *regimplify)
+{
+  gimple *alloc_stmt = gsi_stmt (*gsi);
+  tree simtrec = gimple_call_lhs (alloc_stmt);
+  tree simduid = gimple_call_arg (alloc_stmt, 0);
+  gimple *enter_stmt = SSA_NAME_DEF_STMT (simduid);
+  gcc_assert (gimple_call_internal_p (enter_stmt, IFN_GOMP_SIMT_ENTER));
+  tree rectype = lang_hooks.types.make_type (RECORD_TYPE);
+  TYPE_ARTIFICIAL (rectype) = TYPE_NAMELESS (rectype) = 1;
+  TREE_ADDRESSABLE (rectype) = 1;
+  TREE_TYPE (simtrec) = build_pointer_type (rectype);
+  for (unsigned i = 1; i < gimple_call_num_args (enter_stmt); i++)
+    {
+      tree *argp = gimple_call_arg_ptr (enter_stmt, i);
+      if (*argp == null_pointer_node)
+	continue;
+      gcc_assert (TREE_CODE (*argp) == ADDR_EXPR
+		  && VAR_P (TREE_OPERAND (*argp, 0)));
+      tree var = TREE_OPERAND (*argp, 0);
+
+      tree field = build_decl (DECL_SOURCE_LOCATION (var), FIELD_DECL,
+			       DECL_NAME (var), TREE_TYPE (var));
+      SET_DECL_ALIGN (field, DECL_ALIGN (var));
+      DECL_USER_ALIGN (field) = DECL_USER_ALIGN (var);
+      TREE_THIS_VOLATILE (field) = TREE_THIS_VOLATILE (var);
+
+      insert_field_into_struct (rectype, field);
+
+      tree t = build_simple_mem_ref (simtrec);
+      t = build3 (COMPONENT_REF, TREE_TYPE (var), t, field, NULL);
+      TREE_THIS_VOLATILE (t) = TREE_THIS_VOLATILE (var);
+      SET_DECL_VALUE_EXPR (var, t);
+      DECL_HAS_VALUE_EXPR_P (var) = 1;
+      *regimplify = true;
+    }
+  layout_type (rectype);
+  tree size = TYPE_SIZE_UNIT (rectype);
+  tree align = build_int_cst (TREE_TYPE (size), TYPE_ALIGN_UNIT (rectype));
+
+  alloc_stmt
+    = gimple_build_call_internal (IFN_GOMP_SIMT_ENTER_ALLOC, 2, size, align);
+  gimple_call_set_lhs (alloc_stmt, simtrec);
+  gsi_replace (gsi, alloc_stmt, false);
+  gimple_stmt_iterator enter_gsi = gsi_for_stmt (enter_stmt);
+  enter_stmt = gimple_build_assign (simduid, gimple_call_arg (enter_stmt, 0));
+  gsi_replace (&enter_gsi, enter_stmt, false);
+
+  use_operand_p use;
+  gimple *exit_stmt;
+  if (single_imm_use (simtrec, &use, &exit_stmt))
+    {
+      gcc_assert (gimple_call_internal_p (exit_stmt, IFN_GOMP_SIMT_EXIT));
+      gimple_stmt_iterator exit_gsi = gsi_for_stmt (exit_stmt);
+      tree clobber = build_constructor (rectype, NULL);
+      TREE_THIS_VOLATILE (clobber) = 1;
+      exit_stmt = gimple_build_assign (build_simple_mem_ref (simtrec), clobber);
+      gsi_insert_before (&exit_gsi, exit_stmt, GSI_SAME_STMT);
+    }
+  else
+    gcc_checking_assert (has_zero_uses (simtrec));
+}
+
+/* Callback for walk_gimple_stmt used to scan for SIMT-privatized variables.  */
+
+static tree
+find_simtpriv_var_op (tree *tp, int *walk_subtrees, void *)
+{
+  tree t = *tp;
+
+  if (VAR_P (t)
+      && DECL_HAS_VALUE_EXPR_P (t)
+      && lookup_attribute ("omp simt private", DECL_ATTRIBUTES (t)))
+    {
+      *walk_subtrees = 0;
+      return t;
+    }
+  return NULL_TREE;
+}
+
 /* Cleanup uses of SIMT placeholder internal functions: on non-SIMT targets,
    VF is 1 and LANE is 0; on SIMT targets, VF is folded to a constant, and
    LANE is kept to be expanded to RTL later on.  Also cleanup all other SIMT
@@ -1670,6 +1793,7 @@ static unsigned int
 execute_omp_device_lower ()
 {
   int vf = targetm.simt.vf ? targetm.simt.vf () : 1;
+  bool regimplify = false;
   basic_block bb;
   gimple_stmt_iterator gsi;
   FOR_EACH_BB_FN (bb, cfun)
@@ -1684,6 +1808,20 @@ execute_omp_device_lower ()
 	  {
 	  case IFN_GOMP_USE_SIMT:
 	    rhs = vf == 1 ? integer_zero_node : integer_one_node;
+	    break;
+	  case IFN_GOMP_SIMT_ENTER:
+	    rhs = vf == 1 ? gimple_call_arg (stmt, 0) : NULL_TREE;
+	    goto simtreg_enter_exit;
+	  case IFN_GOMP_SIMT_ENTER_ALLOC:
+	    if (vf != 1)
+	      ompdevlow_adjust_simt_enter (&gsi, &regimplify);
+	    rhs = vf == 1 ? null_pointer_node : NULL_TREE;
+	    goto simtreg_enter_exit;
+	  case IFN_GOMP_SIMT_EXIT:
+	  simtreg_enter_exit:
+	    if (vf != 1)
+	      continue;
+	    unlink_stmt_vdef (stmt);
 	    break;
 	  case IFN_GOMP_SIMT_LANE:
 	  case IFN_GOMP_SIMT_LAST_LANE:
@@ -1717,6 +1855,16 @@ execute_omp_device_lower ()
 	stmt = lhs ? gimple_build_assign (lhs, rhs) : gimple_build_nop ();
 	gsi_replace (&gsi, stmt, false);
       }
+  if (regimplify)
+    FOR_EACH_BB_REVERSE_FN (bb, cfun)
+      for (gsi = gsi_last_bb (bb); !gsi_end_p (gsi); gsi_prev (&gsi))
+	if (walk_gimple_stmt (&gsi, NULL, find_simtpriv_var_op, NULL))
+	  {
+	    if (gimple_clobber_p (gsi_stmt (gsi)))
+	      gsi_remove (&gsi, true);
+	    else
+	      gimple_regimplify_operands (gsi_stmt (gsi), &gsi);
+	  }
   if (vf != 1)
     cfun->has_force_vectorize_loops = false;
   return 0;

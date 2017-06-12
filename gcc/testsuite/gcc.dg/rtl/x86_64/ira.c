@@ -1,4 +1,4 @@
-/* { dg-do run { target x86_64-*-* } } */
+/* { dg-do run { target { { i?86-*-* x86_64-*-* } && lp64 } } } */
 /* { dg-options "-fdump-rtl-ira" } */
 
 /* Lightly-modified dump of test.c.265r.asmcons for x86_64.  */

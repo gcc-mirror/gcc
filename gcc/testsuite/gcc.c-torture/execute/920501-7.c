@@ -1,10 +1,13 @@
+/* { dg-require-effective-target label_values } */
+/* { dg-require-effective-target trampolines } */
+/* { dg-additional-options "-DSTACK_SIZE=[dg-effective-target-value stack_size]" { target { stack_size } } } */
+
 #ifdef STACK_SIZE
 #define DEPTH ((STACK_SIZE) / 512 + 1)
 #else
 #define DEPTH 1000
 #endif
 
-#if ! defined (NO_LABEL_VALUES) && !defined (NO_TRAMPOLINES)
 x(a)
 {
   __label__ xlab;
@@ -18,13 +21,11 @@ x(a)
  xlab:;
   return a;
 }
-#endif
 
 main ()
 {
-#if ! defined (NO_LABEL_VALUES) && !defined (NO_TRAMPOLINES)
   if (x (DEPTH) != DEPTH)
     abort ();
-#endif
+
   exit (0);
 }

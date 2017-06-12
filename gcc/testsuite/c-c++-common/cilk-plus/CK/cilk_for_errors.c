@@ -8,7 +8,7 @@ int main (void)
   int q = 0, ii = 0, jj = 0;
 
   _Cilk_for (int ii; ii < 10; ii++) /* { dg-error "is not initialized" "" { target c } } */
-    /* { dg-error "expected" "" { target c++ } 10 } */
+    /* { dg-error "expected" "" { target c++ } .-1 } */
     q = 5;
 
   _Cilk_for (; ii < 10; ii++) /* { dg-error "expected iteration declaration" } */
@@ -18,7 +18,7 @@ int main (void)
     q = 2;
 
   _Cilk_for (int ii = 0; ii < 10, jj < 10; ii++)  /* { dg-error "expected ';' before ',' token" "" { target c } } */
-    /* { dg-error "invalid controlling predicate" "" { target c++ }  20 } */
+    /* { dg-error "invalid controlling predicate" "" { target c++ }  .-1 } */
     q = 5;
 
   _Cilk_for (int ii = 0; ii < 10; ) /* { dg-error "missing increment" } */
@@ -46,7 +46,7 @@ int main (void)
     q = 5;
 
   _Cilk_for (int ii; ii < 10; ii++) /* { dg-error "is not initialized" "" { target c } } */
-    /* { dg-error "expected" "" { target c++ } 48 } */
+    /* { dg-error "expected" "" { target c++ } .-1 } */
     q = 5;
 
   return 0;

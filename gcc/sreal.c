@@ -53,6 +53,11 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "sreal.h"
 #include "selftest.h"
+#include "backend.h"
+#include "tree.h"
+#include "gimple.h"
+#include "cgraph.h"
+#include "data-streamer.h"
 
 /* Print the content of struct sreal.  */
 
@@ -234,6 +239,26 @@ sreal::operator/ (const sreal &other) const
   r.m_exp = m_exp - other.m_exp - SREAL_PART_BITS;
   r.normalize ();
   return r;
+}
+
+/* Stream sreal value to OB.  */
+
+void
+sreal::stream_out (struct output_block *ob)
+{
+  streamer_write_hwi (ob, m_sig);
+  streamer_write_hwi (ob, m_exp);
+}
+
+/* Read sreal value from IB.  */
+
+sreal
+sreal::stream_in (struct lto_input_block *ib)
+{
+  sreal val;
+  val.m_sig = streamer_read_hwi (ib);
+  val.m_exp = streamer_read_hwi (ib);
+  return val;
 }
 
 #if CHECKING_P

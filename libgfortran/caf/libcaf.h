@@ -41,14 +41,20 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define likely(x)       __builtin_expect(!!(x), 1)
 #define unlikely(x)     __builtin_expect(!!(x), 0)
 #endif
+#endif
 
 /* Definitions of the Fortran 2008 standard; need to kept in sync with
-   ISO_FORTRAN_ENV, cf. libgfortran.h.  */
-#define STAT_UNLOCKED		0
-#define STAT_LOCKED		1
-#define STAT_LOCKED_OTHER_IMAGE	2
-#define STAT_STOPPED_IMAGE 	6000
-#endif
+   ISO_FORTRAN_ENV, cf. gcc/fortran/libgfortran.h.  */
+typedef enum
+{
+  CAF_STAT_UNLOCKED = 0,
+  CAF_STAT_LOCKED,
+  CAF_STAT_LOCKED_OTHER_IMAGE,
+  CAF_STAT_STOPPED_IMAGE = 6000,
+  CAF_STAT_FAILED_IMAGE  = 6001
+}
+caf_stat_codes_t;
+
 
 /* Describes what type of array we are registerring.  Keep in sync with
    gcc/fortran/trans.h.  */
@@ -74,6 +80,7 @@ typedef enum caf_deregister_t {
 caf_deregister_t;
 
 typedef void* caf_token_t;
+typedef void * caf_team_t;
 typedef gfc_array_void gfc_descriptor_t;
 
 /* Linked list of static coarrays registered.  */
@@ -198,6 +205,7 @@ void _gfortran_caf_stop_str (const char *, int32_t)
 void _gfortran_caf_error_stop_str (const char *, int32_t)
      __attribute__ ((noreturn));
 void _gfortran_caf_error_stop (int32_t) __attribute__ ((noreturn));
+void _gfortran_caf_fail_image (void) __attribute__ ((noreturn));
 
 void _gfortran_caf_co_broadcast (gfc_descriptor_t *, int, int *, char *, int);
 void _gfortran_caf_co_sum (gfc_descriptor_t *, int, int *, char *, int);
@@ -242,6 +250,13 @@ void _gfortran_caf_unlock (caf_token_t, size_t, int, int *, char *, int);
 void _gfortran_caf_event_post (caf_token_t, size_t, int, int *, char *, int);
 void _gfortran_caf_event_wait (caf_token_t, size_t, int, int *, char *, int);
 void _gfortran_caf_event_query (caf_token_t, size_t, int, int *, int *);
+
+void _gfortran_caf_failed_images (gfc_descriptor_t *,
+				  caf_team_t * __attribute__ ((unused)), int *);
+int _gfortran_caf_image_status (int, caf_team_t * __attribute__ ((unused)));
+void _gfortran_caf_stopped_images (gfc_descriptor_t *,
+				   caf_team_t * __attribute__ ((unused)),
+				   int *);
 
 int _gfortran_caf_is_present (caf_token_t, int, caf_reference_t *);
 

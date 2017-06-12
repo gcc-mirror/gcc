@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1997-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1997-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -132,7 +132,7 @@ package Sem_Elab is
    --  N_Function_Call or N_Procedure_Call_Statement node or an access
    --  attribute reference whose prefix is a subprogram.
    --
-   --  If SPARK_Mode is On, then N can also be a variablr reference, since
+   --  If SPARK_Mode is On, then N can also be a variable reference, since
    --  SPARK requires the use of Elaborate_All for references to variables
    --  in other packages.
 
@@ -174,7 +174,7 @@ package Sem_Elab is
    --  not be generated (see detailed description in body).
 
    procedure Check_Task_Activation (N : Node_Id);
-   --  Tt the point at which tasks are activated in a package body, check
+   --  At the point at which tasks are activated in a package body, check
    --  that the bodies of the tasks are elaborated.
 
 end Sem_Elab;

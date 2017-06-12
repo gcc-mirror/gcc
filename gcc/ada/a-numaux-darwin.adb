@@ -7,7 +7,7 @@
 --                                 B o d y                                  --
 --                          (Apple OS X Version)                            --
 --                                                                          --
---          Copyright (C) 1998-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1998-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -36,11 +36,17 @@ package body Ada.Numerics.Aux is
    -- Local subprograms --
    -----------------------
 
-   procedure Reduce (X : in out Double; Q : out Natural);
-   --  Implements reduction of X by Pi/2. Q is the quadrant of the final
-   --  result in the range 0 .. 3. The absolute value of X is at most Pi/4.
+   function Is_Nan (X : Double) return Boolean;
+   --  Return True iff X is a IEEE NaN value
 
-   --  The following three functions implement Chebishev approximations
+   procedure Reduce (X : in out Double; Q : out Natural);
+   --  Implement reduction of X by Pi/2. Q is the quadrant of the final
+   --  result in the range 0..3. The absolute value of X is at most Pi/4.
+   --  It is needed to avoid a loss of accuracy for sin near Pi and cos
+   --  near Pi/2 due to the use of an insufficiently precise value of Pi
+   --  in the range reduction.
+
+   --  The following two functions implement Chebishev approximations
    --  of the trigonometric functions in their reduced domain.
    --  These approximations have been computed using Maple.
 
@@ -50,6 +56,10 @@ package body Ada.Numerics.Aux is
    pragma Inline (Reduce);
    pragma Inline (Sine_Approx);
    pragma Inline (Cosine_Approx);
+
+   -------------------
+   -- Cosine_Approx --
+   -------------------
 
    function Cosine_Approx (X : Double) return Double is
       XX : constant Double := X * X;
@@ -63,6 +73,10 @@ package body Ada.Numerics.Aux is
               - 16#3.655E64869ECCE#E-14 + 1.0;
    end Cosine_Approx;
 
+   -----------------
+   -- Sine_Approx --
+   -----------------
+
    function Sine_Approx (X : Double) return Double is
       XX : constant Double := X * X;
    begin
@@ -73,6 +87,17 @@ package body Ada.Numerics.Aux is
               + 16#2.222222221B190#E-02) * XX
               - 16#2.AAAAAAAAAAA44#E-01) * (XX * X) + X;
    end Sine_Approx;
+
+   ------------
+   -- Is_Nan --
+   ------------
+
+   function Is_Nan (X : Double) return Boolean is
+   begin
+      --  The IEEE NaN values are the only ones that do not equal themselves
+
+      return X /= X;
+   end Is_Nan;
 
    ------------
    -- Reduce --
@@ -92,6 +117,7 @@ package body Ada.Numerics.Aux is
                                                                  - P4, HM);
       P6 : constant Double := Double'Model (Half_Pi - P1 - P2 - P3 - P4 - P5);
       K  : Double;
+      R  : Integer;
 
    begin
       --  For X < 2.0**HM, all products below are computed exactly.
@@ -101,7 +127,7 @@ package body Ada.Numerics.Aux is
       --  rounded result of X - K * (Pi / 2.0).
 
       K := X * Two_Over_Pi;
-      while abs K >= 2.0 ** HM loop
+      while abs K >= 2.0**HM loop
          K := K * M - (K * M - K);
          X :=
            (((((X - K * P1) - K * P2) - K * P3) - K * P4) - K * P5) - K * P6;
@@ -110,14 +136,16 @@ package body Ada.Numerics.Aux is
 
       --  If K is not a number (because X was not finite) raise exception
 
-      if K /= K then
+      if Is_Nan (K) then
          raise Constraint_Error;
       end if;
 
-      K := Double'Rounding (K);
-      Q := Integer (K) mod 4;
-      X := (((((X - K * P1) - K * P2) - K * P3)
-                  - K * P4) - K * P5) - K * P6;
+      --  Go through an integer temporary so as to use machine instructions
+
+      R := Integer (Double'Rounding (K));
+      Q := R mod 4;
+      K := Double (R);
+      X := (((((X - K * P1) - K * P2) - K * P3) - K * P4) - K * P5) - K * P6;
    end Reduce;
 
    ---------

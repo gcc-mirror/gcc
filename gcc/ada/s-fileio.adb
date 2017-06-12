@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -33,7 +33,6 @@ with Ada.Finalization;           use Ada.Finalization;
 with Ada.IO_Exceptions;          use Ada.IO_Exceptions;
 with Ada.Unchecked_Deallocation;
 
-with Interfaces.C;
 with Interfaces.C_Streams;       use Interfaces.C_Streams;
 
 with System.Case_Util;           use System.Case_Util;
@@ -48,7 +47,6 @@ package body System.File_IO is
    package SSL renames System.Soft_Links;
 
    use type CRTL.size_t;
-   use type Interfaces.C.int;
 
    ----------------------
    -- Global Variables --
@@ -64,19 +62,23 @@ package body System.File_IO is
    type Temp_File_Record_Ptr is access all Temp_File_Record;
 
    type Temp_File_Record is record
+      File : AFCB_Ptr;
+      Next : aliased Temp_File_Record_Ptr;
       Name : String (1 .. max_path_len + 1);
-      Next : Temp_File_Record_Ptr;
    end record;
    --  One of these is allocated for each temporary file created
 
-   Temp_Files : Temp_File_Record_Ptr;
+   Temp_Files : aliased Temp_File_Record_Ptr;
    --  Points to list of names of temporary files. Note that this global
    --  variable must be properly protected to provide thread safety.
+
+   procedure Free is new Ada.Unchecked_Deallocation
+     (Temp_File_Record, Temp_File_Record_Ptr);
 
    type File_IO_Clean_Up_Type is new Limited_Controlled with null record;
    --  The closing of all open files and deletion of temporary files is an
    --  action that takes place at the end of execution of the main program.
-   --  This action is implemented using a library level object which gets
+   --  This action is implemented using a library level object that gets
    --  finalized at the end of program execution. Note that the type is
    --  limited, in order to stop the compiler optimizing away the declaration
    --  which would be allowed in the non-limited case.
@@ -221,7 +223,8 @@ package body System.File_IO is
       File : AFCB_Ptr renames File_Ptr.all;
 
    begin
-      --  Take a task lock, to protect the global data value Open_Files
+      --  Take a task lock, to protect the global variables Open_Files and
+      --  Temp_Files, and the chains they point to.
 
       SSL.Lock_Task.all;
 
@@ -279,6 +282,33 @@ package body System.File_IO is
          File.Next.Prev := File.Prev;
       end if;
 
+      --  If it's a temp file, remove the corresponding record from Temp_Files,
+      --  and delete the file. There are unlikely to be large numbers of temp
+      --  files open, so a linear search is sufficiently efficient. Note that
+      --  we don't need to check for end of list, because the file must be
+      --  somewhere on the list. Note that as for Finalize, we ignore any
+      --  errors while attempting the unlink operation.
+
+      if File.Is_Temporary_File then
+         declare
+            Temp : access Temp_File_Record_Ptr := Temp_Files'Access;
+            --  Note the double indirection here
+
+            Discard  : int;
+            New_Temp : Temp_File_Record_Ptr;
+
+         begin
+            while Temp.all.all.File /= File loop
+               Temp := Temp.all.all.Next'Access;
+            end loop;
+
+            Discard  := unlink (Temp.all.all.Name'Address);
+            New_Temp := Temp.all.all.Next;
+            Free (Temp.all);
+            Temp.all := New_Temp;
+         end;
+      end if;
+
       --  Deallocate some parts of the file structure that were kept in heap
       --  storage with the exception of system files (standard input, output
       --  and error) since they had some information allocated in the stack.
@@ -319,16 +349,20 @@ package body System.File_IO is
 
       declare
          Filename : aliased constant String := File.Name.all;
+         Is_Temporary_File : constant Boolean := File.Is_Temporary_File;
 
       begin
          Close (File_Ptr);
 
          --  Now unlink the external file. Note that we use the full name in
          --  this unlink, because the working directory may have changed since
-         --  we did the open, and we want to unlink the right file.
+         --  we did the open, and we want to unlink the right file. However, if
+         --  it's a temporary file, then closing it already unlinked it.
 
-         if unlink (Filename'Address) = -1 then
-            raise Use_Error with OS_Lib.Errno_Message;
+         if not Is_Temporary_File then
+            if unlink (Filename'Address) = -1 then
+               raise Use_Error with OS_Lib.Errno_Message;
+            end if;
          end if;
       end;
    end Delete;
@@ -386,7 +420,7 @@ package body System.File_IO is
       SSL.Lock_Task.all;
 
       --  First close all open files (the slightly complex form of this loop is
-      --  required because Close as a side effect nulls out its argument).
+      --  required because Close nulls out its argument).
 
       Fptr1 := Open_Files;
       while Fptr1 /= null loop
@@ -708,6 +742,8 @@ package body System.File_IO is
    begin
       if File = null then
          raise Status_Error with "Name: file not open";
+      elsif File.Is_Temporary_File then
+         raise Use_Error with "Name: temporary file has no name";
       else
          return File.Name.all (1 .. File.Name'Length - 1);
       end if;
@@ -766,8 +802,9 @@ package body System.File_IO is
 
       Text_Encoding : Content_Encoding;
 
-      Tempfile : constant Boolean := (Name'Length = 0);
-      --  Indicates temporary file case
+      Tempfile : constant Boolean := Name = "";
+      --  Indicates temporary file case, which is indicated by an empty file
+      --  name.
 
       Namelen : constant Integer := max_path_len;
       --  Length required for file name, not including final ASCII.NUL.
@@ -936,21 +973,7 @@ package body System.File_IO is
                raise Use_Error with "invalid temp file name";
             end if;
 
-            --  Chain to temp file list, ensuring thread safety with a lock
-
-            begin
-               SSL.Lock_Task.all;
-               Temp_Files :=
-                 new Temp_File_Record'(Name => Namestr, Next => Temp_Files);
-               SSL.Unlock_Task.all;
-
-            exception
-               when others =>
-                  SSL.Unlock_Task.all;
-                  raise;
-            end;
-
-         --  Normal case of non-null name given
+         --  Normal case of non-empty name given (i.e. not a temp file)
 
          else
             if Name'Length > Namelen then
@@ -1024,6 +1047,7 @@ package body System.File_IO is
                         Stream := P.Stream;
 
                         Record_AFCB;
+                        pragma Assert (not Tempfile);
 
                         exit;
 
@@ -1124,6 +1148,23 @@ package body System.File_IO is
       --  heap and fill in its fields.
 
       Record_AFCB;
+
+      if Tempfile then
+         --  Chain to temp file list, ensuring thread safety with a lock
+
+         begin
+            SSL.Lock_Task.all;
+            Temp_Files :=
+              new Temp_File_Record'
+                (File => File_Ptr, Name => Namestr, Next => Temp_Files);
+            SSL.Unlock_Task.all;
+
+         exception
+            when others =>
+               SSL.Unlock_Task.all;
+               raise;
+         end;
+      end if;
    end Open;
 
    ------------------------

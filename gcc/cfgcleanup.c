@@ -558,7 +558,7 @@ try_forward_edges (int mode, basic_block b)
       else
 	{
 	  /* Save the values now, as the edge may get removed.  */
-	  gcov_type edge_count = e->count;
+	  profile_count edge_count = e->count;
 	  int edge_probability = e->probability;
 	  int edge_frequency;
 	  int n = 0;
@@ -603,8 +603,6 @@ try_forward_edges (int mode, basic_block b)
 	      else
 		{
 		  first->count -= edge_count;
-		  if (first->count < 0)
-		    first->count = 0;
 		  first->frequency -= edge_frequency;
 		  if (first->frequency < 0)
 		    first->frequency = 0;
@@ -619,8 +617,6 @@ try_forward_edges (int mode, basic_block b)
 		}
 
 	      t->count -= edge_count;
-	      if (t->count < 0)
-		t->count = 0;
 	      first = t->dest;
 	    }
 	  while (first != target);
@@ -1111,6 +1107,48 @@ merge_dir (enum replace_direction a, enum replace_direction b)
   return dir_none;
 }
 
+/* Array of flags indexed by reg note kind, true if the given
+   reg note is CFA related.  */
+static const bool reg_note_cfa_p[] = {
+#undef REG_CFA_NOTE
+#define DEF_REG_NOTE(NAME) false,
+#define REG_CFA_NOTE(NAME) true,
+#include "reg-notes.def"
+#undef REG_CFA_NOTE
+#undef DEF_REG_NOTE
+  false
+};
+
+/* Return true if I1 and I2 have identical CFA notes (the same order
+   and equivalent content).  */
+
+static bool
+insns_have_identical_cfa_notes (rtx_insn *i1, rtx_insn *i2)
+{
+  rtx n1, n2;
+  for (n1 = REG_NOTES (i1), n2 = REG_NOTES (i2); ;
+       n1 = XEXP (n1, 1), n2 = XEXP (n2, 1))
+    {
+      /* Skip over reg notes not related to CFI information.  */
+      while (n1 && !reg_note_cfa_p[REG_NOTE_KIND (n1)])
+	n1 = XEXP (n1, 1);
+      while (n2 && !reg_note_cfa_p[REG_NOTE_KIND (n2)])
+	n2 = XEXP (n2, 1);
+      if (n1 == NULL_RTX && n2 == NULL_RTX)
+	return true;
+      if (n1 == NULL_RTX || n2 == NULL_RTX)
+	return false;
+      if (XEXP (n1, 0) == XEXP (n2, 0))
+	;
+      else if (XEXP (n1, 0) == NULL_RTX || XEXP (n2, 0) == NULL_RTX)
+	return false;
+      else if (!(reload_completed
+		 ? rtx_renumbered_equal_p (XEXP (n1, 0), XEXP (n2, 0))
+		 : rtx_equal_p (XEXP (n1, 0), XEXP (n2, 0))))
+	return false;
+    }
+}
+
 /* Examine I1 and I2 and return:
    - dir_forward if I1 can be replaced by I2, or
    - dir_backward if I2 can be replaced by I1, or
@@ -1147,6 +1185,11 @@ old_insns_match_p (int mode ATTRIBUTE_UNUSED, rtx_insn *i1, rtx_insn *i2)
 	return dir_none;
     }
   else if (p1 || p2)
+    return dir_none;
+
+  /* Do not allow cross-jumping between frame related insns and other
+     insns.  */
+  if (RTX_FRAME_RELATED_P (i1) != RTX_FRAME_RELATED_P (i2))
     return dir_none;
 
   p1 = PATTERN (i1);
@@ -1206,6 +1249,11 @@ old_insns_match_p (int mode ATTRIBUTE_UNUSED, rtx_insn *i1, rtx_insn *i2)
 	    }
 	}
     }
+
+  /* If both i1 and i2 are frame related, verify all the CFA notes
+     in the same order and with the same content.  */
+  if (RTX_FRAME_RELATED_P (i1) && !insns_have_identical_cfa_notes (i1, i2))
+    return dir_none;
 
 #ifdef STACK_REGS
   /* If cross_jump_death_matters is not 0, the insn's mode
@@ -1965,6 +2013,11 @@ try_crossjump_to_edge (int mode, edge e1, edge e2,
   if (newpos2 != NULL_RTX)
     src2 = BLOCK_FOR_INSN (newpos2);
 
+  /* Check that SRC1 and SRC2 have preds again.  They may have changed
+     above due to the call to flow_find_cross_jump.  */
+  if (EDGE_COUNT (src1->preds) == 0 || EDGE_COUNT (src2->preds) == 0)
+    return false;
+
   if (dir == dir_backward)
     {
 #define SWAP(T, X, Y) do { T tmp = (X); (X) = (Y); (Y) = tmp; } while (0)
@@ -2089,14 +2142,10 @@ try_crossjump_to_edge (int mode, edge e1, edge e2,
       if (FORWARDER_BLOCK_P (s2->dest))
 	{
 	  single_succ_edge (s2->dest)->count -= s2->count;
-	  if (single_succ_edge (s2->dest)->count < 0)
-	    single_succ_edge (s2->dest)->count = 0;
 	  s2->dest->count -= s2->count;
 	  s2->dest->frequency -= EDGE_FREQUENCY (s);
 	  if (s2->dest->frequency < 0)
 	    s2->dest->frequency = 0;
-	  if (s2->dest->count < 0)
-	    s2->dest->count = 0;
 	}
 
       if (!redirect_edges_to->frequency && !src1->frequency)
@@ -2609,7 +2658,7 @@ trivially_empty_bb_p (basic_block bb)
 
 /* Return true if BB contains just a return and possibly a USE of the
    return value.  Fill in *RET and *USE with the return and use insns
-   if any found, otherwise NULL.  */
+   if any found, otherwise NULL.  All CLOBBERs are ignored.  */
 
 static bool
 bb_is_just_return (basic_block bb, rtx_insn **ret, rtx_insn **use)
@@ -2623,13 +2672,15 @@ bb_is_just_return (basic_block bb, rtx_insn **ret, rtx_insn **use)
   FOR_BB_INSNS (bb, insn)
     if (NONDEBUG_INSN_P (insn))
       {
-	if (!*ret && ANY_RETURN_P (PATTERN (insn)))
+	rtx pat = PATTERN (insn);
+
+	if (!*ret && ANY_RETURN_P (pat))
 	  *ret = insn;
-	else if (!*ret && !*use && GET_CODE (PATTERN (insn)) == USE
-	    && REG_P (XEXP (PATTERN (insn), 0))
-	    && REG_FUNCTION_VALUE_P (XEXP (PATTERN (insn), 0)))
+	else if (!*ret && !*use && GET_CODE (pat) == USE
+	    && REG_P (XEXP (pat, 0))
+	    && REG_FUNCTION_VALUE_P (XEXP (pat, 0)))
 	  *use = insn;
-	else
+	else if (GET_CODE (pat) != CLOBBER)
 	  return false;
       }
 

@@ -157,8 +157,6 @@ struct loop_size
 static bool
 constant_after_peeling (tree op, gimple *stmt, struct loop *loop)
 {
-  affine_iv iv;
-
   if (is_gimple_min_invariant (op))
     return true;
 
@@ -188,12 +186,12 @@ constant_after_peeling (tree op, gimple *stmt, struct loop *loop)
       return false;
     }
 
-  /* Induction variables are constants.  */
-  if (!simple_iv (loop, loop_containing_stmt (stmt), op, &iv, false))
+  /* Induction variables are constants when defined in loop.  */
+  if (loop_containing_stmt (stmt) != loop)
     return false;
-  if (!is_gimple_min_invariant (iv.base))
-    return false;
-  if (!is_gimple_min_invariant (iv.step))
+  tree ev = analyze_scalar_evolution (loop, op);
+  if (chrec_contains_undetermined (ev)
+      || chrec_contains_symbols (ev))
     return false;
   return true;
 }
@@ -250,7 +248,7 @@ tree_estimate_loop_size (struct loop *loop, edge exit, edge edge_to_cancel,
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    {
 	      fprintf (dump_file, "  size: %3i ", num);
-	      print_gimple_stmt (dump_file, gsi_stmt (gsi), 0, 0);
+	      print_gimple_stmt (dump_file, gsi_stmt (gsi), 0);
 	    }
 
 	  /* Look for reasons why we might optimize this stmt away. */
@@ -514,7 +512,7 @@ remove_exits_and_undefined_stmts (struct loop *loop, unsigned int npeeled)
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    {
 	      fprintf (dump_file, "Forced statement unreachable: ");
-	      print_gimple_stmt (dump_file, elt->stmt, 0, 0);
+	      print_gimple_stmt (dump_file, elt->stmt, 0);
 	    }
 	}
       /* If we know the exit will be taken after peeling, update.  */
@@ -527,7 +525,7 @@ remove_exits_and_undefined_stmts (struct loop *loop, unsigned int npeeled)
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    {
 	      fprintf (dump_file, "Forced exit to be taken: ");
-	      print_gimple_stmt (dump_file, elt->stmt, 0, 0);
+	      print_gimple_stmt (dump_file, elt->stmt, 0);
 	    }
 	  if (!loop_exit_edge_p (loop, exit_edge))
 	    exit_edge = EDGE_SUCC (bb, 1);
@@ -584,7 +582,7 @@ remove_redundant_iv_tests (struct loop *loop)
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    {
 	      fprintf (dump_file, "Removed pointless exit: ");
-	      print_gimple_stmt (dump_file, elt->stmt, 0, 0);
+	      print_gimple_stmt (dump_file, elt->stmt, 0);
 	    }
 	  gcond *cond_stmt = as_a <gcond *> (elt->stmt);
 	  if (exit_edge->flags & EDGE_TRUE_VALUE)
@@ -643,12 +641,12 @@ unloop_loops (bitmap loop_closed_ssa_invalidated,
       stmt = gimple_build_call (builtin_decl_implicit (BUILT_IN_UNREACHABLE), 0);
       latch_edge = make_edge (latch, create_basic_block (NULL, NULL, latch), flags);
       latch_edge->probability = 0;
-      latch_edge->count = 0;
+      latch_edge->count = profile_count::zero ();
       latch_edge->flags |= flags;
       latch_edge->goto_locus = locus;
 
       add_bb_to_loop (latch_edge->dest, current_loops->tree_root);
-      latch_edge->dest->count = 0;
+      latch_edge->dest->count = profile_count::zero ();
       latch_edge->dest->frequency = 0;
       set_immediate_dominator (CDI_DOMINATORS, latch_edge->dest, latch_edge->src);
 
@@ -688,7 +686,7 @@ try_unroll_loop_completely (struct loop *loop,
   struct loop_size size;
   bool n_unroll_found = false;
   edge edge_to_cancel = NULL;
-  int report_flags = MSG_OPTIMIZED_LOCATIONS | TDF_RTL | TDF_DETAILS;
+  dump_flags_t report_flags = MSG_OPTIMIZED_LOCATIONS | TDF_DETAILS;
 
   /* See if we proved number of iterations to be low constant.
 
@@ -918,10 +916,10 @@ try_unroll_loop_completely (struct loop *loop,
           dump_printf_loc (MSG_OPTIMIZED_LOCATIONS | TDF_DETAILS, locus,
                            "loop with %d iterations completely unrolled",
 			   (int) (n_unroll + 1));
-          if (profile_info)
+          if (loop->header->count.initialized_p ())
             dump_printf (MSG_OPTIMIZED_LOCATIONS | TDF_DETAILS,
                          " (header execution count %d)",
-                         (int)loop->header->count);
+                         (int)loop->header->count.to_gcov_type ());
           dump_printf (MSG_OPTIMIZED_LOCATIONS | TDF_DETAILS, "\n");
         }
     }
@@ -1090,7 +1088,7 @@ try_peel_loop (struct loop *loop,
 	  loop->nb_iterations_likely_upper_bound = 0;
 	}
     }
-  gcov_type entry_count = 0;
+  profile_count entry_count = profile_count::zero ();
   int entry_freq = 0;
 
   edge e;
@@ -1098,13 +1096,14 @@ try_peel_loop (struct loop *loop,
   FOR_EACH_EDGE (e, ei, loop->header->preds)
     if (e->src != loop->latch)
       {
-	entry_count += e->src->count;
+	if (e->src->count.initialized_p ())
+	  entry_count = e->src->count + e->src->count;
 	entry_freq += e->src->frequency;
 	gcc_assert (!flow_bb_inside_loop_p (loop, e->src));
       }
   int scale = 1;
-  if (loop->header->count)
-    scale = RDIV (entry_count * REG_BR_PROB_BASE, loop->header->count);
+  if (loop->header->count > 0)
+    scale = entry_count.probability_in (loop->header->count);
   else if (loop->header->frequency)
     scale = RDIV (entry_freq * REG_BR_PROB_BASE, loop->header->frequency);
   scale_loop_profile (loop, scale, 0);
@@ -1259,7 +1258,7 @@ propagate_constants_for_unrolling (basic_block bb)
 
       if (! SSA_NAME_OCCURS_IN_ABNORMAL_PHI (result)
 	  && gimple_phi_num_args (phi) == 1
-	  && TREE_CODE (arg) == INTEGER_CST)
+	  && CONSTANT_CLASS_P (arg))
 	{
 	  replace_uses_by (result, arg);
 	  gsi_remove (&gsi, true);
@@ -1276,7 +1275,7 @@ propagate_constants_for_unrolling (basic_block bb)
       tree lhs;
 
       if (is_gimple_assign (stmt)
-	  && gimple_assign_rhs_code (stmt) == INTEGER_CST
+	  && TREE_CODE_CLASS (gimple_assign_rhs_code (stmt)) == tcc_constant
 	  && (lhs = gimple_assign_lhs (stmt), TREE_CODE (lhs) == SSA_NAME)
 	  && !SSA_NAME_OCCURS_IN_ABNORMAL_PHI (lhs))
 	{

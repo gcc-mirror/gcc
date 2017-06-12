@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-require-effective-target alloca } */
 /* { dg-additional-options "-g" } */
 
 int a, b, c, d, *e, f, g;

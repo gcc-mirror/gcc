@@ -2398,14 +2398,6 @@ func (gcToolchain) gc(b *builder, p *Package, archive, obj string, asmhdr bool, 
 		}
 	}
 
-	for _, path := range p.Imports {
-		if i := strings.LastIndex(path, "/vendor/"); i >= 0 {
-			gcargs = append(gcargs, "-importmap", path[i+len("/vendor/"):]+"="+path)
-		} else if strings.HasPrefix(path, "vendor/") {
-			gcargs = append(gcargs, "-importmap", path[len("vendor/"):]+"="+path)
-		}
-	}
-
 	args := []interface{}{buildToolExec, tool("compile"), "-o", ofile, "-trimpath", b.work, buildGcflags, gcargs, "-D", p.localPrefix, importArgs}
 	if ofile == archive {
 		args = append(args, "-pack")
@@ -2706,6 +2698,55 @@ func (tools gccgoToolchain) gc(b *builder, p *Package, archive, obj string, asmh
 	if p.localPrefix != "" {
 		gcargs = append(gcargs, "-fgo-relative-import-path="+p.localPrefix)
 	}
+	savedirs := []string{}
+	for _, incdir := range importArgs {
+		if incdir != "-I" {
+			savedirs = append(savedirs, incdir)
+		}
+	}
+
+	for _, path := range p.Imports {
+		// If this is a new vendor path, add it to the list of importArgs
+		if i := strings.LastIndex(path, "/vendor"); i >= 0 {
+			for _, dir := range savedirs {
+				// Check if the vendor path is already included in dir
+				if strings.HasSuffix(dir, path[:i+len("/vendor")]) {
+					continue
+				}
+				// Make sure this vendor path is not already in the list for importArgs
+				vendorPath := dir + "/" + path[:i+len("/vendor")]
+				for _, imp := range importArgs {
+					if imp == "-I" {
+						continue
+					}
+					// This vendorPath is already in the list
+					if imp == vendorPath {
+						goto nextSuffixPath
+					}
+				}
+				// New vendorPath not yet in the importArgs list, so add it
+				importArgs = append(importArgs, "-I", vendorPath)
+			nextSuffixPath:
+			}
+		} else if strings.HasPrefix(path, "vendor/") {
+			for _, dir := range savedirs {
+				// Make sure this vendor path is not already in the list for importArgs
+				vendorPath := dir + "/" + path[len("/vendor"):]
+				for _, imp := range importArgs {
+					if imp == "-I" {
+						continue
+					}
+					if imp == vendorPath {
+						goto nextPrefixPath
+					}
+				}
+				// This vendor path is needed and not already in the list, so add it
+				importArgs = append(importArgs, "-I", vendorPath)
+			nextPrefixPath:
+			}
+		}
+	}
+
 	args := stringList(tools.compiler(), importArgs, "-c", gcargs, "-o", ofile, buildGccgoflags)
 	for _, f := range gofiles {
 		args = append(args, mkAbs(p.Dir, f))
@@ -3092,6 +3133,26 @@ func (b *builder) ccompile(p *Package, outfile string, flags []string, file stri
 	desc := p.ImportPath
 	output, err := b.runOut(p.Dir, desc, nil, compiler, flags, "-o", outfile, "-c", file)
 	if len(output) > 0 {
+		// On FreeBSD 11, when we pass -g to clang 3.8 it
+		// invokes its internal assembler with -dwarf-version=2.
+		// When it sees .section .note.GNU-stack, it warns
+		// "DWARF2 only supports one section per compilation unit".
+		// This warning makes no sense, since the section is empty,
+		// but it confuses people.
+		// We work around the problem by detecting the warning
+		// and dropping -g and trying again.
+		if bytes.Contains(output, []byte("DWARF2 only supports one section per compilation unit")) {
+			newFlags := make([]string, 0, len(flags))
+			for _, f := range flags {
+				if !strings.HasPrefix(f, "-g") {
+					newFlags = append(newFlags, f)
+				}
+			}
+			if len(newFlags) < len(flags) {
+				return b.ccompile(p, outfile, newFlags, file, compiler)
+			}
+		}
+
 		b.showOutput(p.Dir, desc, b.processOutput(output))
 		if err != nil {
 			err = errPrintedOutput

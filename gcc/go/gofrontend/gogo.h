@@ -362,6 +362,10 @@ class Gogo
   register_package(const std::string& pkgpath,
 		   const std::string& pkgpath_symbol, Location);
 
+  // Look up a package by pkgpath, and return its pkgpath_symbol.
+  std::string
+  pkgpath_symbol_for_package(const std::string&);
+
   // Start compiling a function.  ADD_METHOD_TO_TYPE is true if a
   // method function should be added to the type of its receiver.
   Named_object*
@@ -585,7 +589,10 @@ class Gogo
   // variable initializers that would otherwise not be seen.
   void
   add_gc_root(Expression* expr)
-  { this->gc_roots_.push_back(expr); }
+  {
+    this->set_need_init_fn();
+    this->gc_roots_.push_back(expr);
+  }
 
   // Traverse the tree.  See the Traverse class.
   void
@@ -693,6 +700,23 @@ class Gogo
   void
   order_evaluations();
 
+  // Add write barriers as needed.
+  void
+  add_write_barriers();
+
+  // Return whether an assignment that sets LHS to RHS needs a write
+  // barrier.
+  bool
+  assign_needs_write_barrier(Expression* lhs);
+
+  // Return an assignment that sets LHS to RHS using a write barrier.
+  // This returns an if statement that checks whether write barriers
+  // are enabled.  If not, it does LHS = RHS, otherwise it calls the
+  // appropriate write barrier function.
+  Statement*
+  assign_with_write_barrier(Function*, Block*, Statement_inserter*,
+			    Expression* lhs, Expression* rhs, Location);
+
   // Flatten parse tree.
   void
   flatten();
@@ -736,6 +760,10 @@ class Gogo
   bool
   named_types_are_converted() const
   { return this->named_types_are_converted_; }
+
+  // Give an error if the initialization of VAR depends on itself.
+  void
+  check_self_dep(Named_object*);
 
   // Write out the global values.
   void
@@ -804,6 +832,12 @@ class Gogo
   register_gc_vars(const std::vector<Named_object*>&,
                    std::vector<Bstatement*>&,
                    Bfunction* init_bfunction);
+
+  Named_object*
+  write_barrier_variable();
+
+  Statement*
+  check_write_barrier(Block*, Statement*, Statement*);
 
   // Type used to map import names to packages.
   typedef std::map<std::string, Package*> Imports;
@@ -1095,6 +1129,11 @@ class Function
   void
   set_asm_name(const std::string& asm_name)
   { this->asm_name_ = asm_name; }
+
+  // Return the pragmas for this function.
+  unsigned int
+  pragmas() const
+  { return this->pragmas_; }
 
   // Set the pragmas for this function.
   void
@@ -1648,7 +1687,7 @@ class Variable
   set_is_used()
   { this->is_used_ = true; }
 
-  // Clear the initial value; used for error handling.
+  // Clear the initial value; used for error handling and write barriers.
   void
   clear_init()
   { this->init_ = NULL; }
@@ -2078,6 +2117,11 @@ class Type_declaration
   Named_object*
   add_method_declaration(const std::string& name, Package*,
 			 Function_type* type, Location location);
+
+  // Add an already created object as a method.
+  void
+  add_existing_method(Named_object* no)
+  { this->methods_.push_back(no); }
 
   // Return whether any methods were defined.
   bool

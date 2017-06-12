@@ -357,12 +357,15 @@ package Sem_Prag is
    function Find_Related_Package_Or_Body
      (Prag      : Node_Id;
       Do_Checks : Boolean := False) return Node_Id;
-   --  Subsidiary to the analysis of pragmas Abstract_State, Initial_Condition,
-   --  Initializes and Refined_State. Find the declaration of the related
-   --  package [body] subject to pragma Prag. The return value is either
-   --  N_Package_Declaration, N_Package_Body or Empty if the placement of
-   --  the pragma is illegal. If flag Do_Checks is set, the routine reports
-   --  duplicate pragmas.
+   --  Subsidiary to the analysis of pragmas
+   --    Abstract_State
+   --    Initial_Condition
+   --    Initializes
+   --    Refined_State
+   --  Find the declaration of the related package [body] subject to pragma
+   --  Prag. The return value is either N_Package_Declaration, N_Package_Body,
+   --  or Empty if the placement of the pragma is illegal. If flag Do_Checks is
+   --  set, the routine reports duplicate pragmas.
 
    function Find_Related_Declaration_Or_Body
      (Prag      : Node_Id;
@@ -372,6 +375,7 @@ package Sem_Prag is
    --    Depends
    --    Extensions_Visible
    --    Global
+   --    Max_Queue_Length
    --    Post
    --    Post_Class
    --    Postcondition
@@ -382,6 +386,7 @@ package Sem_Prag is
    --    Refined_Global
    --    Refined_Post
    --    Test_Case
+   --    Volatile_Function
    --  as well as attributes 'Old and 'Result. Find the declaration of the
    --  related entry, subprogram or task type [body] subject to pragma Prag.
    --  If flag Do_Checks is set, the routine reports duplicate pragmas and

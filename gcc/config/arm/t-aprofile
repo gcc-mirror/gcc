@@ -24,30 +24,13 @@
 # have their default values during the configure step.  We enforce
 # this during the top-level configury.
 
-MULTILIB_OPTIONS     =
-MULTILIB_DIRNAMES    =
-MULTILIB_EXCEPTIONS  =
-MULTILIB_MATCHES     =
-MULTILIB_REUSE	     =
+# Arch and FPU variants to build libraries with
 
-# We have the following hierachy:
-#   ISA: A32 (.) or T32 (thumb)
-#   Architecture: ARMv7-A (v7-a), ARMv7VE (v7ve), or ARMv8-A (v8-a).
-#   FPU: VFPv3-D16 (fpv3), NEONv1 (simdv1), VFPv4-D16 (fpv4),
-#        NEON-VFPV4 (simdvfpv4), NEON for ARMv8 (simdv8), or None (.).
-#   Float-abi: Soft (.), softfp (softfp), or hard (hardfp).
+MULTI_ARCH_OPTS_A       = march=armv7-a/march=armv7ve/march=armv8-a
+MULTI_ARCH_DIRS_A       = v7-a v7ve v8-a
 
-MULTILIB_OPTIONS       += mthumb
-MULTILIB_DIRNAMES      += thumb
-
-MULTILIB_OPTIONS       += march=armv7-a/march=armv7ve/march=armv8-a
-MULTILIB_DIRNAMES      += v7-a v7ve v8-a
-
-MULTILIB_OPTIONS       += mfpu=vfpv3-d16/mfpu=neon/mfpu=vfpv4-d16/mfpu=neon-vfpv4/mfpu=neon-fp-armv8
-MULTILIB_DIRNAMES      += fpv3 simdv1 fpv4 simdvfpv4 simdv8
-
-MULTILIB_OPTIONS       += mfloat-abi=softfp/mfloat-abi=hard
-MULTILIB_DIRNAMES      += softfp hard
+MULTI_FPU_OPTS_A        = mfpu=vfpv3-d16/mfpu=neon/mfpu=vfpv4-d16/mfpu=neon-vfpv4/mfpu=neon-fp-armv8
+MULTI_FPU_DIRS_A        = fpv3 simdv1 fpv4 simdvfpv4 simdv8
 
 
 # Option combinations to build library with
@@ -71,7 +54,11 @@ MULTILIB_REQUIRED      += *march=armv8-a
 MULTILIB_REQUIRED      += *march=armv8-a/mfpu=neon-fp-armv8/mfloat-abi=*
 
 
+# Matches
+
 # CPU Matches
+MULTILIB_MATCHES       += march?armv7-a=mcpu?marvell-pj4
+MULTILIB_MATCHES       += march?armv7-a=mcpu?generic-armv7-a
 MULTILIB_MATCHES       += march?armv7-a=mcpu?cortex-a8
 MULTILIB_MATCHES       += march?armv7-a=mcpu?cortex-a9
 MULTILIB_MATCHES       += march?armv7-a=mcpu?cortex-a5
@@ -92,8 +79,6 @@ MULTILIB_MATCHES       += march?armv8-a=mcpu?cortex-a73
 MULTILIB_MATCHES       += march?armv8-a=mcpu?cortex-a73.cortex-a35
 MULTILIB_MATCHES       += march?armv8-a=mcpu?cortex-a73.cortex-a53
 MULTILIB_MATCHES       += march?armv8-a=mcpu?exynos-m1
-MULTILIB_MATCHES       += march?armv8-a=mcpu?falkor
-MULTILIB_MATCHES       += march?armv8-a=mcpu?qdf24xx
 MULTILIB_MATCHES       += march?armv8-a=mcpu?xgene1
 
 # Arch Matches

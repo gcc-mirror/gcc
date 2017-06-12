@@ -168,13 +168,17 @@ func goroutineheader(gp *g) {
 // isSystemGoroutine reports whether the goroutine g must be omitted in
 // stack dumps and deadlock detector.
 func isSystemGoroutine(gp *g) bool {
-	// FIXME.
-	return false
+	return gp.isSystemGoroutine
 }
 
 func tracebackothers(me *g) {
 	var tb tracebackg
 	tb.gp = me
+
+	// The getTraceback function will modify me's stack context.
+	// Preserve it in case we have been called via systemstack.
+	context := me.context
+	stackcontext := me.stackcontext
 
 	level, _, _ := gotraceback()
 
@@ -225,4 +229,7 @@ func tracebackothers(me *g) {
 		}
 	}
 	unlock(&allglock)
+
+	me.context = context
+	me.stackcontext = stackcontext
 }

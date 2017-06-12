@@ -1119,6 +1119,29 @@ requirements of the license of GCC.
       arguments and store them directly as the target object.
     </para></listitem></varlistentry>
 
+    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2802">2802</link>:
+       <emphasis>Add noexcept to several <code>shared_ptr</code> related
+         functions
+       </emphasis>
+    </term>
+    <listitem><para>Add noexcept.
+    </para></listitem></varlistentry>
+
+    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2873">2873</link>:
+       <emphasis><code>shared_ptr</code> constructor requirements for a deleter
+       </emphasis>
+    </term>
+    <listitem><para>Use rvalues for deleters.
+    </para></listitem></varlistentry>
+
+    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2942">2942</link>:
+       <emphasis>LWG 2873's resolution missed
+         <code>weak_ptr::owner_before</code>
+       </emphasis>
+    </term>
+    <listitem><para>Add noexcept.
+    </para></listitem></varlistentry>
+
   </variablelist>
 
  </section>

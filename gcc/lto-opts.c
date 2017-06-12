@@ -133,10 +133,6 @@ lto_write_options (void)
   if (!global_options_set.x_flag_trapv
       && !global_options.x_flag_trapv)
     append_to_collect_gcc_options (&temporary_obstack, &first_p, "-fno-trapv");
-  if (!global_options_set.x_flag_strict_overflow
-      && !global_options.x_flag_strict_overflow)
-    append_to_collect_gcc_options (&temporary_obstack, &first_p,
-			       "-fno-strict-overflow");
 
   if (!global_options_set.x_flag_openmp
       && !global_options.x_flag_openmp)

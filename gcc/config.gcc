@@ -442,9 +442,22 @@ nios2-*-*)
 nvptx-*-*)
 	cpu_type=nvptx
 	;;
+powerpc*-*-*spe*)
+	cpu_type=powerpcspe
+	extra_headers="ppc-asm.h altivec.h spe.h ppu_intrinsics.h paired.h spu2vmx.h vec_types.h si2vmx.h htmintrin.h htmxlintrin.h"
+	case x$with_cpu in
+	    xpowerpc64|xdefault64|x6[23]0|x970|xG5|xpower[3456789]|xpower6x|xrs64a|xcell|xa2|xe500mc64|xe5500|xe6500)
+		cpu_is_64bit=yes
+		;;
+	esac
+	extra_options="${extra_options} g.opt fused-madd.opt powerpcspe/powerpcspe-tables.opt"
+	;;
 powerpc*-*-*)
 	cpu_type=rs6000
-	extra_headers="ppc-asm.h altivec.h spe.h ppu_intrinsics.h paired.h spu2vmx.h vec_types.h si2vmx.h htmintrin.h htmxlintrin.h"
+	extra_headers="ppc-asm.h altivec.h htmintrin.h htmxlintrin.h"
+	extra_headers="${extra_headers} bmi2intrin.h bmiintrin.h x86intrin.h"
+	extra_headers="${extra_headers} ppu_intrinsics.h spu2vmx.h vec_types.h si2vmx.h"
+	extra_headers="${extra_headers} paired.h"
 	case x$with_cpu in
 	    xpowerpc64|xdefault64|x6[23]0|x970|xG5|xpower[3456789]|xpower6x|xrs64a|xcell|xa2|xe500mc64|xe5500|xe6500)
 		cpu_is_64bit=yes
@@ -2369,9 +2382,9 @@ powerpc-*-netbsd*)
 	extra_options="${extra_options} rs6000/sysv4.opt"
 	;;
 powerpc-*-eabispe*)
-	tm_file="${tm_file} dbxelf.h elfos.h freebsd-spec.h newlib-stdint.h rs6000/sysv4.h rs6000/eabi.h rs6000/e500.h rs6000/eabispe.h"
-	extra_options="${extra_options} rs6000/sysv4.opt"
-	tmake_file="rs6000/t-spe rs6000/t-ppccomm"
+	tm_file="${tm_file} dbxelf.h elfos.h freebsd-spec.h newlib-stdint.h ${cpu_type}/sysv4.h ${cpu_type}/eabi.h ${cpu_type}/e500.h ${cpu_type}/eabispe.h"
+	extra_options="${extra_options} ${cpu_type}/sysv4.opt"
+	tmake_file="${cpu_type}/t-spe ${cpu_type}/t-ppccomm"
 	use_gcc_stdint=wrap
 	;;
 powerpc-*-eabisimaltivec*)
@@ -2409,10 +2422,26 @@ powerpc-*-eabi*)
 	tmake_file="rs6000/t-fprules rs6000/t-ppcgas rs6000/t-ppccomm"
 	use_gcc_stdint=wrap
 	;;
+powerpc-*-rtems*spe*)
+	tm_file="${tm_file} dbxelf.h elfos.h freebsd-spec.h newlib-stdint.h powerpcspe/sysv4.h powerpcspe/eabi.h powerpcspe/e500.h powerpcspe/rtems.h rtems.h"
+	extra_options="${extra_options} powerpcspe/sysv4.opt"
+	tmake_file="${tmake_file} powerpcspe/t-fprules powerpcspe/t-rtems powerpcspe/t-ppccomm"
+	;;
 powerpc-*-rtems*)
 	tm_file="${tm_file} dbxelf.h elfos.h freebsd-spec.h newlib-stdint.h rs6000/sysv4.h rs6000/eabi.h rs6000/e500.h rs6000/rtems.h rtems.h"
 	extra_options="${extra_options} rs6000/sysv4.opt"
 	tmake_file="${tmake_file} rs6000/t-fprules rs6000/t-rtems rs6000/t-ppccomm"
+	;;
+powerpc*-*-linux*spe*)
+	tm_file="${tm_file} dbxelf.h elfos.h gnu-user.h freebsd-spec.h powerpcspe/sysv4.h"
+	extra_options="${extra_options} powerpcspe/sysv4.opt"
+	tmake_file="${tmake_file} powerpcspe/t-fprules powerpcspe/t-ppccomm"
+	extra_objs="$extra_objs powerpcspe-linux.o"
+	maybe_biarch=
+	tm_file="${tm_file} powerpcspe/linux.h glibc-stdint.h"
+	tmake_file="${tmake_file} powerpcspe/t-ppcos powerpcspe/t-linux"
+	tm_file="${tm_file} powerpcspe/linuxspe.h powerpcspe/e500.h"
+	default_gnu_indirect_function=yes
 	;;
 powerpc*-*-linux*)
 	tm_file="${tm_file} dbxelf.h elfos.h gnu-user.h freebsd-spec.h rs6000/sysv4.h"
@@ -2481,7 +2510,7 @@ powerpc*-*-linux*)
 	    powerpc*-*-linux*altivec*)
 		tm_file="${tm_file} rs6000/linuxaltivec.h" ;;
 	    powerpc*-*-linux*spe*)
-		tm_file="${tm_file} rs6000/linuxspe.h rs6000/e500.h" ;;
+		tm_file="${tm_file} ${cpu_type}/linuxspe.h ${cpu_type}/e500.h" ;;
 	    powerpc*-*-linux*paired*)
 		tm_file="${tm_file} rs6000/750cl.h" ;;
 	esac
@@ -2500,6 +2529,13 @@ powerpc*-*-linux*)
 		default_gnu_indirect_function=yes
 		    ;;
 	esac
+	;;
+powerpc-wrs-vxworksspe)
+	tm_file="${tm_file} elfos.h freebsd-spec.h powerpcspe/sysv4.h"
+	tmake_file="${tmake_file} powerpcspe/t-fprules powerpcspe/t-ppccomm powerpcspe/t-vxworks"
+	extra_options="${extra_options} powerpcspe/sysv4.opt"
+	extra_headers=ppc-asm.h
+	tm_file="${tm_file} vx-common.h vxworks.h powerpcspe/vxworks.h powerpcspe/e500.h"
 	;;
 powerpc-wrs-vxworks|powerpc-wrs-vxworksae|powerpc-wrs-vxworksmils)
 	tm_file="${tm_file} elfos.h freebsd-spec.h rs6000/sysv4.h"
@@ -3057,7 +3093,7 @@ i[34567]86-*-* | x86_64-*-*)
 	tmake_file="${tmake_file} i386/t-gmm_malloc i386/t-i386"
 	;;
 powerpc*-*-* | rs6000-*-*)
-	tm_file="${tm_file} rs6000/option-defaults.h"
+	tm_file="${tm_file} ${cpu_type}/option-defaults.h"
 esac
 
 # Build mkoffload tool
@@ -3791,34 +3827,19 @@ case "${target}" in
 		# Add extra multilibs
 		if test "x$with_multilib_list" != x; then
 			arm_multilibs=`echo $with_multilib_list | sed -e 's/,/ /g'`
-			case ${arm_multilibs} in
-			aprofile)
-				# Note that arm/t-aprofile is a
-				# stand-alone make file fragment to be
-				# used only with itself.  We do not
-				# specifically use the
-				# TM_MULTILIB_OPTION framework because
-				# this shorthand is more
-				# pragmatic.
-				tmake_profile_file="arm/t-aprofile"
-				;;
-			rmprofile)
-				# Note that arm/t-rmprofile is a
-				# stand-alone make file fragment to be
-				# used only with itself.  We do not
-				# specifically use the
-				# TM_MULTILIB_OPTION framework because
-				# this shorthand is more
-				# pragmatic.
-				tmake_profile_file="arm/t-rmprofile"
-				;;
-			default)
-				;;
-			*)
-				echo "Error: --with-multilib-list=${with_multilib_list} not supported." 1>&2
-				exit 1
-				;;
-			esac
+			if test "x${arm_multilibs}" != xdefault ; then
+				for arm_multilib in ${arm_multilibs}; do
+					case ${arm_multilib} in
+					aprofile|rmprofile)
+						tmake_profile_file="arm/t-multilib"
+						;;
+					*)
+						echo "Error: --with-multilib-list=${with_multilib_list} not supported." 1>&2
+						exit 1
+						;;
+					esac
+				done
+			fi
 
 			if test "x${tmake_profile_file}" != x ; then
 				# arm/t-aprofile and arm/t-rmprofile are only
@@ -3835,6 +3856,7 @@ case "${target}" in
 				fi
 
 				tmake_file="${tmake_file} ${tmake_profile_file}"
+				TM_MULTILIB_CONFIG="$with_multilib_list"
 			fi
 		fi
 		;;
@@ -4331,7 +4353,7 @@ case "${target}" in
 		for which in arch tune; do
 			eval "val=\$with_$which"
 			case ${val} in
-			"" | native | g5 | g6 | z900 | z990 | z9-109 | z9-ec | z10 | z196 | zEC12 | z13 | arch3 | arch5 | arch6 | arch7 | arch8 | arch9 | arch10 | arch11)
+			"" | native | g5 | g6 | z900 | z990 | z9-109 | z9-ec | z10 | z196 | zEC12 | z13 | arch3 | arch5 | arch6 | arch7 | arch8 | arch9 | arch10 | arch11 | arch12)
 				# OK
 				;;
 			*)
@@ -4565,10 +4587,10 @@ case ${target} in
 		then
 			target_cpu_default2="\\\"$with_cpu\\\""
 		fi
-		out_file=rs6000/rs6000.c
-		c_target_objs="${c_target_objs} rs6000-c.o"
-		cxx_target_objs="${cxx_target_objs} rs6000-c.o"
-		tmake_file="rs6000/t-rs6000 ${tmake_file}"
+		out_file="${cpu_type}/${cpu_type}.c"
+		c_target_objs="${c_target_objs} ${cpu_type}-c.o"
+		cxx_target_objs="${cxx_target_objs} ${cpu_type}-c.o"
+		tmake_file="${cpu_type}/t-${cpu_type} ${tmake_file}"
 		;;
 
 	sh[123456ble]*-*-* | sh-*-*)

@@ -157,9 +157,9 @@ define(FINISH_ARRAY_FUNCTION,
 	  base -= sstride[n] * extent[n];
 	  dest -= dstride[n] * extent[n];
 	  n++;
-	  if (n == rank)
+	  if (n >= rank)
 	    {
-	      /* Break out of the look.  */
+	      /* Break out of the loop.  */
 	      continue_loop = 0;
 	      break;
 	    }
@@ -333,9 +333,9 @@ define(FINISH_MASKED_ARRAY_FUNCTION,
 	  mbase -= mstride[n] * extent[n];
 	  dest -= dstride[n] * extent[n];
 	  n++;
-	  if (n == rank)
+	  if (n >= rank)
 	    {
-	      /* Break out of the look.  */
+	      /* Break out of the loop.  */
 	      base = NULL;
 	      break;
 	    }
@@ -473,7 +473,7 @@ void
 	     frequently used path so probably not worth it.  */
 	  dest -= dstride[n] * extent[n];
 	  n++;
-	  if (n == rank)
+	  if (n >= rank)
 	    return;
 	  else
 	    {

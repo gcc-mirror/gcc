@@ -2225,7 +2225,7 @@ Represents the result of subtracting @var{y} from @var{x} for purposes
 of comparison.  The result is computed without overflow, as if with
 infinite precision.
 
-Of course, machines can't really subtract with infinite precision.
+Of course, machines cannot really subtract with infinite precision.
 However, they can pretend to do so when only the sign of the result will
 be used, which is the case when the result is stored in the condition
 code.  And that is the @emph{only} way this kind of expression may

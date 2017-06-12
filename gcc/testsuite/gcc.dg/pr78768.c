@@ -2,6 +2,7 @@
    by -flto
   { dg-do link }
   { dg-require-effective-target lto }
+  { dg-require-linker-plugin "" }
   { dg-options "-O2 -Walloca-larger-than=10 -Wformat -Wformat-overflow -flto" } */
 
 int main (void)

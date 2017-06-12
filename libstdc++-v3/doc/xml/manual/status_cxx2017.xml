@@ -460,18 +460,6 @@ Feature-testing recommendations for C++</link>.
     </row>
 
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
-      <entry> Ordered by default </entry>
-      <entry>
-	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0181r1.html">
-	P0181R1
-	</link>
-      </entry>
-      <entry align="center"> No </entry>
-      <entry><code> __cpp_lib_default_order >= 201606</code></entry>
-    </row>
-
-    <row>
       <entry> Polishing <code>&lt;chrono&gt;</code> </entry>
       <entry>
 	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2015/p0092r1.html">
@@ -480,6 +468,29 @@ Feature-testing recommendations for C++</link>.
       </entry>
       <entry align="center"> 7 </entry>
       <entry><code> __cpp_lib_chrono >= 201510 </code></entry>
+    </row>
+
+    <row>
+      <entry> Adding more constexpr to <code>&lt;chrono&gt;</code> </entry>
+      <entry>
+	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0505r0.html">
+	P0505R0
+	</link>
+      </entry>
+      <entry align="center"> 7 </entry>
+      <entry><code> ??? </code></entry>
+    </row>
+
+    <row>
+      <?dbhtml bgcolor="#B0B0B0" ?>
+      <entry> Constexpr for <code>std::char_traits</code> </entry>
+      <entry>
+	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0426r1.html">
+	P0426R1
+	</link>
+      </entry>
+      <entry align="center"> 7 (partial) </entry>
+      <entry><code> ??? </code></entry>
     </row>
 
     <row>
@@ -547,7 +558,7 @@ Feature-testing recommendations for C++</link>.
 	</link>
       </entry>
       <entry align="center"> 7 </entry>
-      <entry/>
+      <entry><code> ??? </code></entry>
     </row>
 
     <row>
@@ -719,16 +730,39 @@ Feature-testing recommendations for C++</link>.
     </row>
 
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry> Variadic <code>lock_guard</code> </entry>
       <entry>
-	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2015/p0156r0.html">
-	P0156R0
+	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2017/p0156r2.html">
+	P0156R2
+	</link>
+      </entry>
+      <entry align="center"> 7 </entry>
+      <entry><code> __cpp_lib_scoped_lock >= 201703 </code></entry>
+    </row>
+
+    <row>
+      <entry> byte type definition </entry>
+      <entry>
+	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2017/p0298r3.pdf">
+	P0298R3
+	</link>
+      </entry>
+      <entry align="center"> 7 </entry>
+      <entry><code> ??? </code></entry>
+    </row>
+
+    <row>
+      <?dbhtml bgcolor="#C8B0B0" ?>
+      <entry> Elementary string conversions </entry>
+      <entry>
+	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0067r5.html">
+	P0067R5
 	</link>
       </entry>
       <entry align="center"> No </entry>
-      <entry><code> __cpp_lib_lock_guard_variadic >= 201510 </code></entry>
+      <entry><code> ??? </code></entry>
     </row>
+
 
   </tbody>
 </tgroup>
@@ -844,14 +878,13 @@ Feature-testing recommendations for C++</link>.
     </row>
 
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>
 	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2015/n4519.pdf">
 	  N4519
 	</link>
       </entry>
       <entry> Source-Code Information Capture </entry>
-      <entry>N</entry>
+      <entry>Y</entry>
       <entry>Library Fundamentals 2 TS</entry>
     </row>
 

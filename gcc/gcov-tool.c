@@ -46,6 +46,7 @@ extern int gcov_profile_normalize (struct gcov_info*, gcov_type);
 extern int gcov_profile_scale (struct gcov_info*, float, int, int);
 extern struct gcov_info* gcov_read_profile_dir (const char*, int);
 extern void gcov_do_dump (struct gcov_info *, int);
+extern const char *gcov_get_filename (struct gcov_info *list);
 extern void gcov_set_verbose (void);
 
 /* Set to verbose output mode.  */
@@ -114,6 +115,14 @@ gcov_output_files (const char *out, struct gcov_info *profile)
   if (ret)
     fatal_error (input_location, "Cannot change directory to %s", out);
 
+  /* Verify that output file does not exist (either was removed by
+     unlink_profile_data or removed by user).  */
+  const char *filename = gcov_get_filename (profile);
+
+  if (access (filename, F_OK) != -1)
+    fatal_error (input_location, "output file %s already exists in folder %s",
+		 filename, out);
+
   gcov_do_dump (profile, 0);
 
   ret = chdir (pwd);
@@ -164,8 +173,8 @@ print_merge_usage_message (int error_p)
   FILE *file = error_p ? stderr : stdout;
 
   fnotice (file, "  merge [options] <dir1> <dir2>         Merge coverage file contents\n");
-  fnotice (file, "    -v, --verbose                       Verbose mode\n");
   fnotice (file, "    -o, --output <dir>                  Output directory\n");
+  fnotice (file, "    -v, --verbose                       Verbose mode\n");
   fnotice (file, "    -w, --weight <w1,w2>                Set weights (float point values)\n");
 }
 
@@ -258,10 +267,10 @@ print_rewrite_usage_message (int error_p)
   FILE *file = error_p ? stderr : stdout;
 
   fnotice (file, "  rewrite [options] <dir>               Rewrite coverage file contents\n");
-  fnotice (file, "    -v, --verbose                       Verbose mode\n");
+  fnotice (file, "    -n, --normalize <int64_t>           Normalize the profile\n");
   fnotice (file, "    -o, --output <dir>                  Output directory\n");
   fnotice (file, "    -s, --scale <float or simple-frac>  Scale the profile counters\n");
-  fnotice (file, "    -n, --normalize <int64_t>           Normalize the profile\n");
+  fnotice (file, "    -v, --verbose                       Verbose mode\n");
 }
 
 static const struct option rewrite_options[] =
@@ -408,12 +417,12 @@ print_overlap_usage_message (int error_p)
   FILE *file = error_p ? stderr : stdout;
 
   fnotice (file, "  overlap [options] <dir1> <dir2>       Compute the overlap of two profiles\n");
-  fnotice (file, "    -v, --verbose                       Verbose mode\n");
-  fnotice (file, "    -h, --hotonly                       Only print info for hot objects/functions\n");
   fnotice (file, "    -f, --function                      Print function level info\n");
   fnotice (file, "    -F, --fullname                      Print full filename\n");
+  fnotice (file, "    -h, --hotonly                       Only print info for hot objects/functions\n");
   fnotice (file, "    -o, --object                        Print object level info\n");
   fnotice (file, "    -t <float>, --hot_threshold <float> Set the threshold for hotness\n");
+  fnotice (file, "    -v, --verbose                       Verbose mode\n");
 
 }
 

@@ -203,6 +203,10 @@
 			   (KF "FLOAT128_VECTOR_P (KFmode)")
 			   (TF "FLOAT128_VECTOR_P (TFmode)")])
 
+;; Map the Vector convert single precision to double precision for integer
+;; versus floating point
+(define_mode_attr VS_sxwsp [(V4SI "sxw") (V4SF "sp")])
+
 ;; Specific iterator for parity which does not have a byte/half-word form, but
 ;; does have a quad word form
 (define_mode_iterator VParity [V4SI
@@ -2738,6 +2742,339 @@
   "TARGET_ALTIVEC"
   "stvewx %1,%y0"
   [(set_attr "type" "vecstore")])
+
+;; Generate doublee
+;; signed int/float to double convert words 0 and 2
+(define_expand "doublee<mode>2"
+  [(set (match_operand:V2DF 0 "register_operand" "=v")
+	(match_operand:VSX_W 1 "register_operand" "v"))]
+  "TARGET_VSX"
+{
+  machine_mode op_mode = GET_MODE (operands[1]);
+
+  if (VECTOR_ELT_ORDER_BIG)
+    {
+      /* Big endian word numbering for words in operand is 0 1 2 3.
+	 Input words 0 and 2 are where they need to be.  */
+      emit_insn (gen_vsx_xvcv<VS_sxwsp>dp (operands[0], operands[1]));
+    }
+  else
+    {
+      /* Little endian word numbering for operand is 3 2 1 0.
+	 take (operand[1] operand[1]) and shift left one word
+	 3 2 1 0    3 2 1 0  =>  2 1 0 3
+	 Input words 2 and 0 are now where they need to be for the
+	 conversion.  */
+      rtx rtx_tmp;
+      rtx rtx_val = GEN_INT (1);
+
+      rtx_tmp = gen_reg_rtx (op_mode);
+      emit_insn (gen_vsx_xxsldwi_<mode> (rtx_tmp, operands[1],
+					 operands[1], rtx_val));
+      emit_insn (gen_vsx_xvcv<VS_sxwsp>dp (operands[0], rtx_tmp));
+    }
+  DONE;
+}
+  [(set_attr "type" "veccomplex")])
+
+;; Generate unsdoublee
+;; unsigned int to double convert words 0 and 2
+(define_expand "unsdoubleev4si2"
+  [(set (match_operand:V2DF 0 "register_operand" "=v")
+	(match_operand:V4SI 1 "register_operand" "v"))]
+  "TARGET_VSX"
+{
+  if (VECTOR_ELT_ORDER_BIG)
+    {
+      /* Big endian word numbering for words in operand is 0 1 2 3.
+	 Input words 0 and 2 are where they need to be.  */
+      emit_insn (gen_vsx_xvcvuxwdp (operands[0], operands[1]));
+    }
+  else
+    {
+      /* Little endian word numbering for operand is 3 2 1 0.
+	 take (operand[1] operand[1]) and shift left one word
+	 3 2 1 0    3 2 1 0  =>   2 1 0 3
+	 Input words 2 and 0 are now where they need to be for the
+	 conversion.  */
+      rtx rtx_tmp;
+      rtx rtx_val = GEN_INT (1);
+
+      rtx_tmp = gen_reg_rtx (V4SImode);
+      emit_insn (gen_vsx_xxsldwi_v4si (rtx_tmp, operands[1],
+				       operands[1], rtx_val));
+      emit_insn (gen_vsx_xvcvuxwdp (operands[0], rtx_tmp));
+    }
+  DONE;
+}
+  [(set_attr "type" "veccomplex")])
+
+;; Generate doubleov
+;; signed int/float to double convert words 1 and 3
+(define_expand "doubleo<mode>2"
+  [(set (match_operand:V2DF 0 "register_operand" "=v")
+	(match_operand:VSX_W 1 "register_operand" "v"))]
+  "TARGET_VSX"
+{
+  machine_mode op_mode = GET_MODE (operands[1]);
+
+  if (VECTOR_ELT_ORDER_BIG)
+    {
+      /* Big endian word numbering for words in operand is 0 1 2 3.
+	 take (operand[1] operand[1]) and shift left one word
+	 0 1 2 3    0 1 2 3  =>  1 2 3 0
+	 Input words 1 and 3 are now where they need to be for the
+	 conversion.  */
+      rtx rtx_tmp;
+      rtx rtx_val = GEN_INT (1);
+
+      rtx_tmp = gen_reg_rtx (op_mode);
+      emit_insn (gen_vsx_xxsldwi_<mode> (rtx_tmp, operands[1],
+					 operands[1], rtx_val));
+      emit_insn (gen_vsx_xvcv<VS_sxwsp>dp (operands[0], rtx_tmp));
+    }
+  else
+    {
+      /* Little endian word numbering for operand is 3 2 1 0.
+	 Input words 3 and 1 are where they need to be.  */
+      emit_insn (gen_vsx_xvcv<VS_sxwsp>dp (operands[0], operands[1]));
+    }
+  DONE;
+}
+  [(set_attr "type" "veccomplex")])
+
+;; Generate unsdoubleov
+;; unsigned int to double convert words 1 and 3
+(define_expand "unsdoubleov4si2"
+  [(set (match_operand:V2DF 0 "register_operand" "=v")
+	(match_operand:V4SI 1 "register_operand" "v"))]
+  "TARGET_VSX"
+{
+  if (VECTOR_ELT_ORDER_BIG)
+    {
+      /* Big endian word numbering for words in operand is 0 1 2 3.
+	 take (operand[1] operand[1]) and shift left one word
+	 0 1 2 3    0 1 2 3  =>  1 2 3 0
+	 Input words 1 and 3 are now where they need to be for the
+	 conversion.  */
+      rtx rtx_tmp;
+      rtx rtx_val = GEN_INT (1);
+
+      rtx_tmp = gen_reg_rtx (V4SImode);
+      emit_insn (gen_vsx_xxsldwi_v4si (rtx_tmp, operands[1],
+				       operands[1], rtx_val));
+      emit_insn (gen_vsx_xvcvuxwdp (operands[0], rtx_tmp));
+    }
+  else
+    {
+      /* Want to convert the words 1 and 3.
+	 Little endian word numbering for operand is 3 2 1 0.
+	 Input words 3 and 1 are where they need to be.  */
+      emit_insn (gen_vsx_xvcvuxwdp (operands[0], operands[1]));
+    }
+  DONE;
+}
+  [(set_attr "type" "veccomplex")])
+
+;; Generate doublehv
+;; signed int/float to double convert words 0 and 1
+(define_expand "doubleh<mode>2"
+  [(set (match_operand:V2DF 0 "register_operand" "=v")
+	(match_operand:VSX_W 1 "register_operand" "v"))]
+  "TARGET_VSX"
+{
+  rtx rtx_tmp;
+  rtx rtx_val;
+
+  machine_mode op_mode = GET_MODE (operands[1]);
+  rtx_tmp = gen_reg_rtx (op_mode);
+
+  if (VECTOR_ELT_ORDER_BIG)
+    {
+      /* Big endian word numbering for words in operand is 0 1 2 3.
+	 Shift operand left one word, rtx_tmp word order is now 1 2 3 0.
+	 take (rts_tmp operand[1]) and shift left three words
+	 1 2 3 0  0 1 2 3 => 0 0 1 2
+	 Input words 0 and 1 are now where they need to be for the
+	 conversion.  */
+      rtx_val = GEN_INT (1);
+      emit_insn (gen_vsx_xxsldwi_<mode> (rtx_tmp, operands[1],
+					 operands[1], rtx_val));
+
+      rtx_val = GEN_INT (3);
+      emit_insn (gen_vsx_xxsldwi_<mode> (rtx_tmp, rtx_tmp,
+					 operands[1], rtx_val));
+      emit_insn (gen_vsx_xvcv<VS_sxwsp>dp (operands[0], rtx_tmp));
+    }
+  else
+    {
+      /* Little endian word numbering for operand is 3 2 1 0.
+	 Shift operand left three words, rtx_tmp word order is now 0 3 2 1.
+	 take (operand[1] rts_tmp) and shift left two words
+	 3 2 1 0  0 3 2 1   =>  1 0 0 3
+	 Input words 0 and 1 are now where they need to be for the
+	 conversion.  */
+      rtx_val = GEN_INT (3);
+      emit_insn (gen_vsx_xxsldwi_<mode> (rtx_tmp, operands[1],
+					 operands[1], rtx_val));
+
+      rtx_val = GEN_INT (2);
+      emit_insn (gen_vsx_xxsldwi_<mode> (rtx_tmp, operands[1],
+					 rtx_tmp, rtx_val));
+      emit_insn (gen_vsx_xvcv<VS_sxwsp>dp (operands[0], rtx_tmp));
+    }
+  DONE;
+}
+  [(set_attr "type" "veccomplex")])
+
+;; Generate unsdoublehv
+;; unsigned int to double convert words 0 and 1
+(define_expand "unsdoublehv4si2"
+  [(set (match_operand:V2DF 0 "register_operand" "=v")
+	(match_operand:V4SI 1 "register_operand" "v"))]
+  "TARGET_VSX"
+{
+  rtx rtx_tmp = gen_reg_rtx (V4SImode);
+  rtx rtx_val = GEN_INT (12);
+
+  if (VECTOR_ELT_ORDER_BIG)
+    {
+      /* Big endian word numbering for words in operand is 0 1 2 3.
+	 Shift operand left one word, rtx_tmp word order is now 1 2 3 0.
+	 take (rts_tmp operand[1]) and shift left three words
+	 1 2 3 0  0 1 2 3 => 0 0 1 2
+	 Input words 0 and 1 are now where they need to be for the
+	 conversion.  */
+      rtx_val = GEN_INT (1);
+      emit_insn (gen_vsx_xxsldwi_v4si (rtx_tmp, operands[1],
+				       operands[1], rtx_val));
+
+      rtx_val = GEN_INT (3);
+      emit_insn (gen_vsx_xxsldwi_v4si (rtx_tmp, rtx_tmp,
+				       operands[1], rtx_val));
+      emit_insn (gen_vsx_xvcvuxwdp (operands[0], rtx_tmp));
+    }
+  else
+    {
+      /* Little endian word numbering for operand is 3 2 1 0.
+	 Shift operand left three words, rtx_tmp word order is now 0 3 2 1.
+	 take (operand[1] rts_tmp) and shift left two words
+	 3 2 1 0   0 3 2 1  =>   1 0 0 3
+	 Input words 1 and 0 are now where they need to be for the
+	 conversion.  */
+      rtx_val = GEN_INT (3);
+
+      rtx_tmp = gen_reg_rtx (V4SImode);
+      emit_insn (gen_vsx_xxsldwi_v4si (rtx_tmp, operands[1],
+				       operands[1], rtx_val));
+
+      rtx_val = GEN_INT (2);
+      emit_insn (gen_vsx_xxsldwi_v4si (rtx_tmp, operands[1],
+				       rtx_tmp, rtx_val));
+      emit_insn (gen_vsx_xvcvuxwdp (operands[0], rtx_tmp));
+    }
+  DONE;
+}
+  [(set_attr "type" "veccomplex")])
+
+;; Generate doublelv
+;; signed int/float to double convert words 2 and 3
+(define_expand "doublel<mode>2"
+  [(set (match_operand:V2DF 0 "register_operand" "=v")
+	(match_operand:VSX_W 1 "register_operand" "v"))]
+  "TARGET_VSX"
+{
+  rtx rtx_tmp;
+  rtx rtx_val = GEN_INT (3);
+
+  machine_mode op_mode = GET_MODE (operands[1]);
+  rtx_tmp = gen_reg_rtx (op_mode);
+
+  if (VECTOR_ELT_ORDER_BIG)
+    {
+      /* Big endian word numbering for operand is 0 1 2 3.
+	 Shift operand left three words, rtx_tmp word order is now 3 0 1 2.
+	 take (operand[1] rtx_tmp) and shift left two words
+	 0 1 2 3   3 0 1 2  =>  2 3 3 0
+	 now use convert instruction to convert word 2 and 3 in the
+	 input vector.  */
+      rtx_val = GEN_INT (3);
+      emit_insn (gen_vsx_xxsldwi_<mode> (rtx_tmp, operands[1],
+					 operands[1], rtx_val));
+
+      rtx_val = GEN_INT (2);
+      emit_insn (gen_vsx_xxsldwi_<mode> (rtx_tmp, operands[1],
+					 rtx_tmp, rtx_val));
+      emit_insn (gen_vsx_xvcv<VS_sxwsp>dp (operands[0], rtx_tmp));
+    }
+  else
+    {
+      /* Little endian word numbering for operand is 3 2 1 0.
+	 Shift operand left one word, rtx_tmp word order is now  2 1 0 3.
+	 take (rtx_tmp operand[1]) and shift left three words
+	 2 1 0 3  3 2 1 0  =>  3 3 2 1
+	 now use convert instruction to convert word 3 and 2 in the
+	 input vector.  */
+      rtx_val = GEN_INT (1);
+      emit_insn (gen_vsx_xxsldwi_<mode> (rtx_tmp, operands[1],
+					 operands[1], rtx_val));
+
+      rtx_val = GEN_INT (3);
+      emit_insn (gen_vsx_xxsldwi_<mode> (rtx_tmp, rtx_tmp,
+					 operands[1], rtx_val));
+      emit_insn (gen_vsx_xvcv<VS_sxwsp>dp (operands[0], rtx_tmp));
+    }
+  DONE;
+}
+  [(set_attr "type" "veccomplex")])
+
+;; Generate unsdoublelv
+;; unsigned int to double convert convert 2 and 3
+(define_expand "unsdoublelv4si2"
+  [(set (match_operand:V2DF 0 "register_operand" "=v")
+	(match_operand:V4SI 1 "register_operand" "v"))]
+  "TARGET_VSX"
+{
+  rtx rtx_tmp = gen_reg_rtx (V4SImode);
+  rtx rtx_val = GEN_INT (12);
+
+  if (VECTOR_ELT_ORDER_BIG)
+    {
+      /* Big endian word numbering for operand is 0 1 2 3.
+	 Shift operand left three words, rtx_tmp word order is now 3 0 1 2.
+	 take (operand[1] rtx_tmp) and shift left two words
+	 0 1 2 3   3 0 1 2  =>  2 3 3 0
+	 now use convert instruction to convert word 2 and 3 in the
+	 input vector.  */
+      rtx_val = GEN_INT (3);
+      emit_insn (gen_vsx_xxsldwi_v4si (rtx_tmp, operands[1],
+				       operands[1], rtx_val));
+
+      rtx_val = GEN_INT (2);
+      emit_insn (gen_vsx_xxsldwi_v4si (rtx_tmp, operands[1],
+				       rtx_tmp, rtx_val));
+      emit_insn (gen_vsx_xvcvuxwdp (operands[0], rtx_tmp));
+    }
+  else
+    {
+      /* Little endian word numbering for operand is 3 2 1 0.
+	 Shift operand left one word, rtx_tmp word order is now 2 1 0 3.
+	 take (rtx_tmp operand[1]) and shift left three words
+	 2 1 0 3  3 2 1 0  =>   3 3 2 1
+	 now use convert instruction to convert word 3 and 2 in the
+	 input vector.  */
+      rtx_val = GEN_INT (1);
+      emit_insn (gen_vsx_xxsldwi_v4si (rtx_tmp,
+      operands[1], operands[1], rtx_val));
+
+      rtx_val = GEN_INT (3);
+      emit_insn (gen_vsx_xxsldwi_v4si (rtx_tmp, rtx_tmp,
+				       operands[1], rtx_val));
+      emit_insn (gen_vsx_xvcvuxwdp (operands[0], rtx_tmp));
+    }
+  DONE;
+}
+  [(set_attr "type" "veccomplex")])
 
 ;; Generate
 ;;    xxlxor/vxor SCRATCH0,SCRATCH0,SCRATCH0

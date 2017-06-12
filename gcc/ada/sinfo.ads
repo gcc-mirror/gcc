@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -589,10 +589,10 @@ package Sinfo is
    --    8. Instantiations - Save as 1) or when the instantiation is partially
    --       analyzed and the generic template is Ghost.
 
-   --  Routines Mark_And_Set_Ghost_xxx install a new Ghost region and routine
-   --  Restore_Ghost_Mode ends a Ghost region. A region may be reinstalled
-   --  similar to scopes for decoupled expansion such as the generation of
-   --  dispatch tables or the creation of a predicate function.
+   --  Routines Mark_And_Set_Ghost_xxx and Set_Ghost_Mode install a new Ghost
+   --  region and routine Restore_Ghost_Mode ends a Ghost region. A region may
+   --  be reinstalled similarly to scopes for decoupled expansion such as the
+   --  generation of dispatch tables or the creation of a predicate function.
 
    --  If the mode of a Ghost region is Ignore, any newly created nodes as well
    --  as source entities are marked as ignored Ghost. In additon, the marking
@@ -685,6 +685,43 @@ package Sinfo is
    --       frontend. In particular, if the selected component is a packed
    --       array depending on a discriminant of a unconstrained formal object
    --       parameter of a generic.
+
+   ----------------
+   -- SPARK Mode --
+   ----------------
+
+   --  The SPARK RM 1.6.5 defines a mode of operation called "SPARK mode" which
+   --  starts a scope where the SPARK language semantics are either On, Off, or
+   --  Auto, where Auto leaves the choice to the tools. A SPARK mode may be
+   --  specified by means of an aspect or a pragma.
+
+   --  The following entities may be subject to a SPARK mode. Entities marked
+   --  with * may possess two differente SPARK modes.
+
+   --     E_Entry
+   --     E_Entry_Family
+   --     E_Function
+   --     E_Generic_Function
+   --     E_Generic_Package *
+   --     E_Generic_Procedure
+   --     E_Operator
+   --     E_Package *
+   --     E_Package_Body *
+   --     E_Procedure
+   --     E_Protected_Body
+   --     E_Protected_Subtype
+   --     E_Protected_Type *
+   --     E_Subprogram_Body
+   --     E_Task_Body
+   --     E_Task_Subtype
+   --     E_Task_Type *
+   --     E_Variable
+
+   --  In order to manage SPARK scopes, the compiler relies on global variables
+   --  SPARK_Mode and SPARK_Mode_Pragma and a mechanism called "SPARK regions."
+   --  Routines Install_SPARK_Mode and Set_SPARK_Mode create a new SPARK region
+   --  and routine Restore_SPARK_Mode ends a SPARK region. A region may be
+   --  reinstalled similarly to scopes.
 
    -----------------------
    -- Check Flag Fields --
@@ -982,7 +1019,7 @@ package Sinfo is
    --  Compile_Time_Known_Aggregate (Flag18-Sem)
    --    Present in N_Aggregate nodes. Set for aggregates which can be fully
    --    evaluated at compile time without raising constraint error. Such
-   --    aggregates can be passed as is the back end without any expansion.
+   --    aggregates can be passed as is to the back end without any expansion.
    --    See Exp_Aggr for specific conditions under which this flag gets set.
 
    --  Componentwise_Assignment (Flag14-Sem)
@@ -5155,6 +5192,7 @@ package Sinfo is
       --  N_Procedure_Specification
       --  Sloc points to PROCEDURE
       --  Defining_Unit_Name (Node1)
+      --  Null_Statement (Node2-Sem) NULL statement for body, if Null_Present
       --  Parameter_Specifications (List3) (set to No_List if no formal part)
       --  Generic_Parent (Node5-Sem)
       --  Null_Present (Flag13) set for null procedure case (Ada 2005 feature)
@@ -5363,23 +5401,6 @@ package Sinfo is
       --  Was_Expression_Function (Flag18-Sem)
       --  Was_Originally_Stub (Flag13-Sem)
 
-      -------------------------
-      -- Expression Function --
-      -------------------------
-
-      --  This is an Ada 2012 extension, we put it here for now, to be labeled
-      --  and put in its proper section when we know exactly where that is.
-
-      --  EXPRESSION_FUNCTION ::=
-      --    FUNCTION SPECIFICATION IS (EXPRESSION)
-      --      [ASPECT_SPECIFICATIONS];
-
-      --  N_Expression_Function
-      --  Sloc points to FUNCTION
-      --  Specification (Node1)
-      --  Expression (Node3)
-      --  Corresponding_Spec (Node5-Sem)
-
       -----------------------------------
       -- 6.4  Procedure Call Statement --
       -----------------------------------
@@ -5531,6 +5552,20 @@ package Sinfo is
       --  and the Defining_Identifier of the Object_Declaration in
       --  Return_Object_Declarations represents the object being
       --  returned. N_Simple_Return_Statement has only the former.
+
+      ------------------------------
+      -- 6.8  Expression Function --
+      ------------------------------
+
+      --  EXPRESSION_FUNCTION ::=
+      --    FUNCTION SPECIFICATION IS (EXPRESSION)
+      --      [ASPECT_SPECIFICATIONS];
+
+      --  N_Expression_Function
+      --  Sloc points to FUNCTION
+      --  Specification (Node1)
+      --  Expression (Node3)
+      --  Corresponding_Spec (Node5-Sem)
 
       ------------------------------
       -- 7.1  Package Declaration --
@@ -9357,6 +9392,7 @@ package Sinfo is
 
    function Generalized_Indexing
      (N : Node_Id) return Node_Id;    -- Node4
+
    function Generic_Associations
      (N : Node_Id) return List_Id;    -- List3
 
@@ -9699,9 +9735,6 @@ package Sinfo is
    function Non_Aliased_Prefix
      (N : Node_Id) return Boolean;    -- Flag18
 
-   function Null_Present
-     (N : Node_Id) return Boolean;    -- Flag13
-
    function Null_Excluding_Subtype
      (N : Node_Id) return Boolean;    -- Flag16
 
@@ -9711,8 +9744,14 @@ package Sinfo is
    function Null_Exclusion_In_Return_Present
      (N : Node_Id) return Boolean;    -- Flag14
 
+   function Null_Present
+     (N : Node_Id) return Boolean;    -- Flag13
+
    function Null_Record_Present
      (N : Node_Id) return Boolean;    -- Flag17
+
+   function Null_Statement
+     (N : Node_Id) return Node_Id;    -- Node2
 
    function Object_Definition
      (N : Node_Id) return Node_Id;    -- Node4
@@ -10755,9 +10794,6 @@ package Sinfo is
    procedure Set_Non_Aliased_Prefix
      (N : Node_Id; Val : Boolean := True);    -- Flag18
 
-   procedure Set_Null_Present
-     (N : Node_Id; Val : Boolean := True);    -- Flag13
-
    procedure Set_Null_Excluding_Subtype
      (N : Node_Id; Val : Boolean := True);    -- Flag16
 
@@ -10767,8 +10803,14 @@ package Sinfo is
    procedure Set_Null_Exclusion_In_Return_Present
      (N : Node_Id; Val : Boolean := True);    -- Flag14
 
+   procedure Set_Null_Present
+     (N : Node_Id; Val : Boolean := True);    -- Flag13
+
    procedure Set_Null_Record_Present
      (N : Node_Id; Val : Boolean := True);    -- Flag17
+
+   procedure Set_Null_Statement
+     (N : Node_Id; Val : Node_Id);            -- Node2
 
    procedure Set_Object_Definition
      (N : Node_Id; Val : Node_Id);            -- Node4
@@ -11900,7 +11942,7 @@ package Sinfo is
 
      N_Procedure_Specification =>
        (1 => True,    --  Defining_Unit_Name (Node1)
-        2 => False,   --  unused
+        2 => False,   --  Null_Statement (Node2-Sem)
         3 => True,    --  Parameter_Specifications (List3)
         4 => False,   --  unused
         5 => False),  --  Generic_Parent (Node5-Sem)
@@ -13088,11 +13130,12 @@ package Sinfo is
    pragma Inline (No_Side_Effect_Removal);
    pragma Inline (No_Truncation);
    pragma Inline (Non_Aliased_Prefix);
-   pragma Inline (Null_Present);
    pragma Inline (Null_Excluding_Subtype);
    pragma Inline (Null_Exclusion_Present);
    pragma Inline (Null_Exclusion_In_Return_Present);
+   pragma Inline (Null_Present);
    pragma Inline (Null_Record_Present);
+   pragma Inline (Null_Statement);
    pragma Inline (Object_Definition);
    pragma Inline (Of_Present);
    pragma Inline (Original_Discriminant);
@@ -13441,6 +13484,7 @@ package Sinfo is
    pragma Inline (Set_Null_Exclusion_In_Return_Present);
    pragma Inline (Set_Null_Present);
    pragma Inline (Set_Null_Record_Present);
+   pragma Inline (Set_Null_Statement);
    pragma Inline (Set_Object_Definition);
    pragma Inline (Set_Of_Present);
    pragma Inline (Set_Original_Discriminant);

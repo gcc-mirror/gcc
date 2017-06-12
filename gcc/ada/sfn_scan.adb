@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2000-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 2000-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -102,7 +102,7 @@ package body SFN_Scan is
    --  immediately following is non-alphabetic, non-numeric. If so,
    --  P is stepped past the token, and True is returned. If not,
    --  P is unchanged (except for possibly skipping past whitespace),
-   --  and False is returned. S may contain only lower-case letters
+   --  and False is returned. T may contain only lower-case letters
    --  ('a' .. 'z').
 
    procedure Error (Err : String);

@@ -865,6 +865,8 @@ expand_vector_condition (gimple_stmt_iterator *gsi)
   tree comp_inner_type = cond_type;
   tree width = TYPE_SIZE (inner_type);
   tree index = bitsize_int (0);
+  tree comp_width = width;
+  tree comp_index = index;
   int nunits = TYPE_VECTOR_SUBPARTS (type);
   int i;
   location_t loc = gimple_location (gsi_stmt (*gsi));
@@ -876,10 +878,42 @@ expand_vector_condition (gimple_stmt_iterator *gsi)
       a1 = TREE_OPERAND (a, 0);
       a2 = TREE_OPERAND (a, 1);
       comp_inner_type = TREE_TYPE (TREE_TYPE (a1));
+      comp_width = TYPE_SIZE (comp_inner_type);
     }
 
   if (expand_vec_cond_expr_p (type, TREE_TYPE (a1), TREE_CODE (a)))
     return;
+
+  /* Handle vector boolean types with bitmasks.  If there is a comparison
+     and we can expand the comparison into the vector boolean bitmask,
+     or otherwise if it is compatible with type, we can transform
+      vbfld_1 = x_2 < y_3 ? vbfld_4 : vbfld_5;
+     into
+      tmp_6 = x_2 < y_3;
+      tmp_7 = tmp_6 & vbfld_4;
+      tmp_8 = ~tmp_6;
+      tmp_9 = tmp_8 & vbfld_5;
+      vbfld_1 = tmp_7 | tmp_9;
+     Similarly for vbfld_10 instead of x_2 < y_3.  */
+  if (VECTOR_BOOLEAN_TYPE_P (type)
+      && SCALAR_INT_MODE_P (TYPE_MODE (type))
+      && (GET_MODE_BITSIZE (TYPE_MODE (type))
+	  < (TYPE_VECTOR_SUBPARTS (type)
+	     * GET_MODE_BITSIZE (TYPE_MODE (TREE_TYPE (type)))))
+      && (a_is_comparison
+	  ? useless_type_conversion_p (type, TREE_TYPE (a))
+	  : expand_vec_cmp_expr_p (TREE_TYPE (a1), type, TREE_CODE (a))))
+    {
+      if (a_is_comparison)
+	a = gimplify_build2 (gsi, TREE_CODE (a), type, a1, a2);
+      a1 = gimplify_build2 (gsi, BIT_AND_EXPR, type, a, b);
+      a2 = gimplify_build1 (gsi, BIT_NOT_EXPR, type, a);
+      a2 = gimplify_build2 (gsi, BIT_AND_EXPR, type, a2, c);
+      a = gimplify_build2 (gsi, BIT_IOR_EXPR, type, a1, a2);
+      gimple_assign_set_rhs_from_tree (gsi, a);
+      update_stmt (gsi_stmt (*gsi));
+      return;
+    }
 
   /* TODO: try and find a smaller vector type.  */
 
@@ -887,16 +921,17 @@ expand_vector_condition (gimple_stmt_iterator *gsi)
 	      "vector condition will be expanded piecewise");
 
   vec_alloc (v, nunits);
-  for (i = 0; i < nunits;
-       i++, index = int_const_binop (PLUS_EXPR, index, width))
+  for (i = 0; i < nunits; i++)
     {
       tree aa, result;
       tree bb = tree_vec_extract (gsi, inner_type, b, width, index);
       tree cc = tree_vec_extract (gsi, inner_type, c, width, index);
       if (a_is_comparison)
 	{
-	  tree aa1 = tree_vec_extract (gsi, comp_inner_type, a1, width, index);
-	  tree aa2 = tree_vec_extract (gsi, comp_inner_type, a2, width, index);
+	  tree aa1 = tree_vec_extract (gsi, comp_inner_type, a1,
+				       comp_width, comp_index);
+	  tree aa2 = tree_vec_extract (gsi, comp_inner_type, a2,
+				       comp_width, comp_index);
 	  aa = fold_build2 (TREE_CODE (a), cond_type, aa1, aa2);
 	}
       else
@@ -904,6 +939,11 @@ expand_vector_condition (gimple_stmt_iterator *gsi)
       result = gimplify_build3 (gsi, COND_EXPR, inner_type, aa, bb, cc);
       constructor_elt ce = {NULL_TREE, result};
       v->quick_push (ce);
+      index = int_const_binop (PLUS_EXPR, index, width);
+      if (width == comp_width)
+	comp_index = index;
+      else
+	comp_index = int_const_binop (PLUS_EXPR, comp_index, comp_width);
     }
 
   constr = build_constructor (type, v);

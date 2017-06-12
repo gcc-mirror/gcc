@@ -1,3 +1,23 @@
+2017-05-18  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* brigfrontend/brig-to-generic.h (class brig_to_generic): Use
+	"dump_flags_t" for "m_dump_flags" member.
+
+2017-05-13  Pekka Jääskeläinen  <pekka.jaaskelainen@parmance.com>
+
+	* brigfrontend/brig-code-entry-handler.cc
+	(brig_code_entry_handler::build_address_operand): Fix
+	an assertion when doing an 'lda' of a private array
+	offset.
+
+2017-05-03  Pekka Jääskeläinen  <pekka.jaaskelainen@parmance.com>
+
+	* brigfrontend/brig-code-entry-handler.cc
+	(brig_code_entry_handler::build_address_operand): Fix a bug
+	with reg+offset addressing on 32b segments. In large mode,
+	the offset is treated as 32bits unless it's global, readonly or
+	kernarg address space.
+
 2016-02-01  Pekka Jääskeläinen  <pekka.jaaskelainen@parmance.com>
 
 	* brigfrontend/brig-code-entry-handler.cc: fix address

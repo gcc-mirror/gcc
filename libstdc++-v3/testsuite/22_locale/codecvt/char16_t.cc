@@ -34,7 +34,7 @@ test01()
   const codecvt_c16* const cvt = &use_facet<codecvt_c16>(loc_c);
 
   VERIFY(!cvt->always_noconv());
-  VERIFY(cvt->max_length() == 3);
+  VERIFY(cvt->max_length() == 4);
   VERIFY(cvt->encoding() == 0);
 
   const char u8dat[] = u8"H\U000000E4ll\U000000F6 \U0001F63F \U000056FD "

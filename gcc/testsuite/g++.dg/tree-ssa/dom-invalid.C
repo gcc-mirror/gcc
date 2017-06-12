@@ -49,4 +49,4 @@ main ()
 {
  E e;
  e.bar ();
-} // { dg-message  "note: file" "" }
+} // { dg-message  "note: file" }

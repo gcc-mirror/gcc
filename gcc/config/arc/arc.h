@@ -61,7 +61,8 @@ along with GCC; see the file COPYING3.  If not see
 %{mmac-d16:-D__Xxmac_d16} %{mmac-24:-D__Xxmac_24} \
 %{mdsp-packa:-D__Xdsp_packa} %{mcrc:-D__Xcrc} %{mdvbf:-D__Xdvbf} \
 %{mtelephony:-D__Xtelephony} %{mxy:-D__Xxy} %{mmul64: -D__Xmult32} \
-%{mlock:-D__Xlock} %{mswape:-D__Xswape} %{mrtsc:-D__Xrtsc}"
+%{mlock:-D__Xlock} %{mswape:-D__Xswape} %{mrtsc:-D__Xrtsc} \
+%(subtarget_cpp_spec)"
 
 #undef CC1_SPEC
 #define CC1_SPEC "\
@@ -72,6 +73,27 @@ extern const char *arc_cpu_to_as (int argc, const char **argv);
 
 #define EXTRA_SPEC_FUNCTIONS			\
   { "cpu_to_as", arc_cpu_to_as },
+
+/* This macro defines names of additional specifications to put in the specs
+   that can be used in various specifications like CC1_SPEC.  Its definition
+   is an initializer with a subgrouping for each command option.
+
+   Each subgrouping contains a string constant, that defines the
+   specification name, and a string constant that used by the GCC driver
+   program.
+
+   Do not define this macro if it does not need to do anything.  */
+#define EXTRA_SPECS				      \
+  { "subtarget_cpp_spec",	SUBTARGET_CPP_SPEC }, \
+  SUBTARGET_EXTRA_SPECS
+
+#ifndef SUBTARGET_EXTRA_SPECS
+#define SUBTARGET_EXTRA_SPECS
+#endif
+
+#ifndef SUBTARGET_CPP_SPEC
+#define SUBTARGET_CPP_SPEC ""
+#endif
 
 #undef ASM_SPEC
 #define ASM_SPEC  "%{mbig-endian|EB:-EB} %{EL} "			\
@@ -618,7 +640,9 @@ extern enum reg_class arc_regno_reg_class[];
 #define REGNO_OK_FOR_BASE_P(REGNO)					\
   ((REGNO) < 29 || ((REGNO) == ARG_POINTER_REGNUM) || ((REGNO) == 63)	\
    || ((unsigned) reg_renumber[REGNO] < 29)				\
-   || ((unsigned) (REGNO) == (unsigned) arc_tp_regno))
+   || ((unsigned) (REGNO) == (unsigned) arc_tp_regno)			\
+   || (fixed_regs[REGNO] == 0 && IN_RANGE (REGNO, 32, 59))		\
+   || ((REGNO) == 30 && fixed_regs[REGNO] == 0))
 
 #define REGNO_OK_FOR_INDEX_P(REGNO) REGNO_OK_FOR_BASE_P(REGNO)
 
@@ -900,18 +924,15 @@ extern int arc_initial_elimination_offset(int from, int to);
 
 /* Nonzero if X is a hard reg that can be used as an index
    or if it is a pseudo reg.  */
-#define REG_OK_FOR_INDEX_P_NONSTRICT(X) \
-((unsigned) REGNO (X) >= FIRST_PSEUDO_REGISTER || \
- (unsigned) REGNO (X) < 29 || \
- (unsigned) REGNO (X) == 63 || \
- (unsigned) REGNO (X) == ARG_POINTER_REGNUM)
+#define REG_OK_FOR_INDEX_P_NONSTRICT(X)			\
+  ((unsigned) REGNO (X) >= FIRST_PSEUDO_REGISTER	\
+   || REGNO_OK_FOR_BASE_P (REGNO (X)))
+
 /* Nonzero if X is a hard reg that can be used as a base reg
    or if it is a pseudo reg.  */
-#define REG_OK_FOR_BASE_P_NONSTRICT(X) \
-((unsigned) REGNO (X) >= FIRST_PSEUDO_REGISTER || \
- (unsigned) REGNO (X) < 29 || \
- (unsigned) REGNO (X) == 63 || \
- (unsigned) REGNO (X) == ARG_POINTER_REGNUM)
+#define REG_OK_FOR_BASE_P_NONSTRICT(X)			\
+  ((unsigned) REGNO (X) >= FIRST_PSEUDO_REGISTER	\
+   || REGNO_OK_FOR_BASE_P (REGNO (X)))
 
 /* Nonzero if X is a hard reg that can be used as an index.  */
 #define REG_OK_FOR_INDEX_P_STRICT(X) REGNO_OK_FOR_INDEX_P (REGNO (X))
@@ -1344,7 +1365,7 @@ do { \
 
 /* To translate the return value of arc_function_type into a register number
    to jump through for function return.  */
-extern int arc_return_address_regs[4];
+extern int arc_return_address_regs[5];
 
 /* Debugging information.  */
 
@@ -1481,10 +1502,15 @@ enum arc_function_type {
   ARC_FUNCTION_UNKNOWN, ARC_FUNCTION_NORMAL,
   /* These are interrupt handlers.  The name corresponds to the register
      name that contains the return address.  */
-  ARC_FUNCTION_ILINK1, ARC_FUNCTION_ILINK2
+  ARC_FUNCTION_ILINK1, ARC_FUNCTION_ILINK2,
+  /* Fast interrupt is only available on ARCv2 processors.  */
+  ARC_FUNCTION_FIRQ
 };
-#define ARC_INTERRUPT_P(TYPE) \
-((TYPE) == ARC_FUNCTION_ILINK1 || (TYPE) == ARC_FUNCTION_ILINK2)
+#define ARC_INTERRUPT_P(TYPE)						\
+  (((TYPE) == ARC_FUNCTION_ILINK1) || ((TYPE) == ARC_FUNCTION_ILINK2)	\
+   || ((TYPE) == ARC_FUNCTION_FIRQ))
+
+#define ARC_FAST_INTERRUPT_P(TYPE) ((TYPE) == ARC_FUNCTION_FIRQ)
 
 /* Compute the type of a function from its DECL.  Needed for EPILOGUE_USES.  */
 struct function;
@@ -1493,10 +1519,11 @@ extern enum arc_function_type arc_compute_function_type (struct function *);
 /* Called by crtstuff.c to make calls to function FUNCTION that are defined in
    SECTION_OP, and then to switch back to text section.  */
 #undef CRT_CALL_STATIC_FUNCTION
-#define CRT_CALL_STATIC_FUNCTION(SECTION_OP, FUNC) \
-    asm (SECTION_OP "\n\t"				\
-	"bl @" USER_LABEL_PREFIX #FUNC "\n"		\
-	TEXT_SECTION_ASM_OP);
+#define CRT_CALL_STATIC_FUNCTION(SECTION_OP, FUNC)		\
+  asm (SECTION_OP "\n\t"					\
+       "add r12,pcl,@" USER_LABEL_PREFIX #FUNC "@pcl\n\t"	\
+       "jl  [r12]\n"						\
+       TEXT_SECTION_ASM_OP);
 
 /* This macro expands to the name of the scratch register r12, used for
    temporary calculations according to the ABI.  */
@@ -1558,11 +1585,6 @@ extern enum arc_function_type arc_compute_function_type (struct function *);
 #define IS_ASM_LOGICAL_LINE_SEPARATOR(C,STR) ((C) == '`')
 
 #define INIT_EXPANDERS arc_init_expanders ()
-
-#define CFA_FRAME_BASE_OFFSET(FUNDECL) (-arc_decl_pretend_args ((FUNDECL)))
-
-#define ARG_POINTER_CFA_OFFSET(FNDECL) \
-  (FIRST_PARM_OFFSET (FNDECL) + arc_decl_pretend_args ((FNDECL)))
 
 enum
 {

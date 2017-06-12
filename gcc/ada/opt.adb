@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -219,11 +219,11 @@ package body Opt is
          External_Name_Exp_Casing    := As_Is;
          External_Name_Imp_Casing    := Lowercase;
          Optimize_Alignment          := 'O';
+         Optimize_Alignment_Local    := True;
          Persistent_BSS_Mode         := False;
          Prefix_Exception_Messages   := True;
          Uneval_Old                  := 'E';
          Use_VADS_Size               := False;
-         Optimize_Alignment_Local    := True;
 
          --  Note: we do not need to worry about Warnings_As_Errors_Count since
          --  we do not expect to get any warnings from compiling such a unit.
@@ -293,7 +293,6 @@ package body Opt is
       Default_Pool                   := Default_Pool_Config;
       Exception_Locations_Suppressed := Exception_Locations_Suppressed_Config;
       Fast_Math                      := Fast_Math_Config;
-      Optimize_Alignment             := Optimize_Alignment_Config;
       Polling_Required               := Polling_Required_Config;
    end Set_Opt_Config_Switches;
 

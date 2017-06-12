@@ -663,7 +663,7 @@ coverage_begin_function (unsigned lineno_checksum, unsigned cfg_checksum)
   gcov_write_unsigned (cfg_checksum);
   gcov_write_string (IDENTIFIER_POINTER
 		     (DECL_ASSEMBLER_NAME (current_function_decl)));
-  gcov_write_string (xloc.file);
+  gcov_write_filename (xloc.file);
   gcov_write_unsigned (xloc.line);
   gcov_write_length (offset);
 
@@ -728,6 +728,18 @@ coverage_end_function (unsigned lineno_checksum, unsigned cfg_checksum)
 	}
       prg_ctr_mask |= fn_ctr_mask;
       fn_ctr_mask = 0;
+    }
+}
+
+/* Remove coverage file if opened.  */
+
+void
+coverage_remove_note_file (void)
+{
+  if (bbg_file_name)
+    {
+      gcov_close ();
+      unlink (bbg_file_name);
     }
 }
 

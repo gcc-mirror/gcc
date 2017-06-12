@@ -202,10 +202,15 @@ build_headof (tree exp)
 static tree
 throw_bad_cast (void)
 {
-  tree fn = get_identifier ("__cxa_bad_cast");
-  if (!get_global_value_if_present (fn, &fn))
-    fn = push_throw_library_fn (fn, build_function_type_list (ptr_type_node,
-							      NULL_TREE));
+  static tree fn;
+  if (!fn)
+    {
+      tree name = get_identifier ("__cxa_bad_cast");
+      fn = IDENTIFIER_GLOBAL_VALUE (name);
+      if (!fn)
+	fn = push_throw_library_fn
+	  (name, build_function_type_list (ptr_type_node, NULL_TREE));
+    }
 
   return build_cxx_call (fn, 0, NULL, tf_warning_or_error);
 }
@@ -216,14 +221,17 @@ throw_bad_cast (void)
 static tree
 throw_bad_typeid (void)
 {
-  tree fn = get_identifier ("__cxa_bad_typeid");
-  if (!get_global_value_if_present (fn, &fn))
+  static tree fn;
+  if (!fn)
     {
-      tree t;
-
-      t = build_reference_type (const_type_info_type_node);
-      t = build_function_type_list (t, NULL_TREE);
-      fn = push_throw_library_fn (fn, t);
+      tree name = get_identifier ("__cxa_bad_typeid");
+      fn = IDENTIFIER_GLOBAL_VALUE (name);
+      if (!fn)
+	{
+	  tree t = build_reference_type (const_type_info_type_node);
+	  t = build_function_type_list (t, NULL_TREE);
+	  fn = push_throw_library_fn (name, t);
+	}
     }
 
   return build_cxx_call (fn, 0, NULL, tf_warning_or_error);

@@ -42,7 +42,7 @@ namespace N2 {
 }
 
 namespace N3 {
-  struct X { // { dg-message "note" "" }
+  struct X { // { dg-message "note" }
     virtual void xfunc(void) = 0;  // { dg-message "note" }
   };
   void g(X parm13);          // { dg-error "abstract" }

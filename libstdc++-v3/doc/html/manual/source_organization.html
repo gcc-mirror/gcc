@@ -42,7 +42,14 @@ It has subdirectories:
       Headers that define extensions to the standard library.  No
       standard header refers to any of them, in theory (there are some
       exceptions).
-      </dd></dl></div></dd><dt><span class="term"><code class="filename">scripts</code></span></dt><dd>
+    </dd><dt><span class="term">
+      <code class="filename">include/debug</code>,
+      <code class="filename">include/parallel</code>, and
+      <code class="filename">include/profile</code>
+    </span></dt><dd>
+      Headers that implement the Debug Mode, Parallel Mode, and Profile Mode
+      extensions.
+    </dd></dl></div></dd><dt><span class="term"><code class="filename">scripts</code></span></dt><dd>
     Scripts that are used during the configure, build, make, or test
     process.
     </dd><dt><span class="term"><code class="filename">src</code></span></dt><dd>
@@ -63,7 +70,9 @@ It has subdirectories:
     library.  Support for "make check" and "make check-install" is
     complete, and runs through all the subdirectories here when this
     command is issued from the build directory.  Please note that
-    "make check" requires DejaGNU 1.4 or later to be installed.
+    "make check" requires DejaGnu 1.4 or later to be installed,
+    or for extra <a class="link" href="test.html#test.run.permutations" title="Permutations">permutations</a>
+    DejaGnu 1.5.3 or later.
     </dd></dl></div><p>
 Other subdirectories contain variant versions of certain files
 that are meant to be copied or linked by the configure script.

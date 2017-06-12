@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1996-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1996-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -75,6 +75,12 @@ package Exp_Dbug is
    --  local variables of procedures, so it is not necessary to have full
    --  qualification for such entities. In particular this means that direct
    --  local variables of a procedure are not qualified.
+
+   --  For Ghost entities, the encoding adds a prefix "___ghost_" to aid the
+   --  detection of leaks of Ignored Ghost entities in the "living" space.
+   --  Ignored Ghost entities and any code associated with them should be
+   --  removed by the compiler in a post-processing pass. As a result,
+   --  object files should not contain any occurrences of this prefix.
 
    --  As an example of the local name convention, consider a procedure V.W
    --  with a local variable X, and a nested block Y containing an entity Z.

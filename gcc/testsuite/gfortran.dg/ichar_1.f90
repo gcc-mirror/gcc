@@ -45,23 +45,23 @@ program ichar_1
    g2(1,1) = 'a'
    if (ichar(g2(1,1)) /= 97) call abort
 
-   i = ichar(c)      ! { dg-error "must be of length one" "" }
-   i = ichar(c(:))   ! { dg-error "must be of length one" "" }
-   i = ichar(s2)     ! { dg-error "must be of length one" "" }
-   i = ichar(c(1:2)) ! { dg-error "must be of length one" "" }
-   i = ichar(c(1:))  ! { dg-error "must be of length one" "" }
-   i = ichar('abc')  ! { dg-error "must be of length one" "" }
+   i = ichar(c)      ! { dg-error "must be of length one" }
+   i = ichar(c(:))   ! { dg-error "must be of length one" }
+   i = ichar(s2)     ! { dg-error "must be of length one" }
+   i = ichar(c(1:2)) ! { dg-error "must be of length one" }
+   i = ichar(c(1:))  ! { dg-error "must be of length one" }
+   i = ichar('abc')  ! { dg-error "must be of length one" }
 
    ! ichar and iachar use the same checking routines. DO a couple of tests to
    ! make sure it's not totally broken.
 
    if (ichar(c(3:3)) /= 97) call abort
-   i = ichar(c)      ! { dg-error "must be of length one" "" }
+   i = ichar(c)      ! { dg-error "must be of length one" }
    
    i = ichar(dt%addr(1:1))
-   i = ichar(dt%addr) ! { dg-error "must be of length one" "" }
-   i = ichar(dt%addr(1:2)) ! { dg-error "must be of length one" "" }
-   i = ichar(dt%addr(1:)) ! { dg-error "must be of length one" "" }
+   i = ichar(dt%addr) ! { dg-error "must be of length one" }
+   i = ichar(dt%addr(1:2)) ! { dg-error "must be of length one" }
+   i = ichar(dt%addr(1:)) ! { dg-error "must be of length one" }
    
    i = ichar(dt1%addr(1:1))
    i = ichar(dt1%addr)

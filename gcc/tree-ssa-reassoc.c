@@ -193,7 +193,7 @@ static struct
 struct operand_entry
 {
   unsigned int rank;
-  int id;
+  unsigned int id;
   tree op;
   unsigned int count;
   gimple *stmt_to_insert;
@@ -204,7 +204,7 @@ static object_allocator<operand_entry> operand_entry_pool
 
 /* This is used to assign a unique ID to each struct operand_entry
    so that qsort results are identical on different hosts.  */
-static int next_operand_entry_id;
+static unsigned int next_operand_entry_id;
 
 /* Starting rank number for a given basic block, so that we can rank
    operations using unmovable instructions in that BB based on the bb
@@ -454,7 +454,7 @@ get_rank (tree e)
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{
 	  fprintf (dump_file, "Rank for ");
-	  print_generic_expr (dump_file, e, 0);
+	  print_generic_expr (dump_file, e);
 	  fprintf (dump_file, " is %ld\n", (rank + 1));
 	}
 
@@ -505,12 +505,12 @@ sort_by_operand_rank (const void *pa, const void *pb)
       else
 	/* To make sorting result stable, we use unique IDs to determine
 	   order.  */
-        return oeb->id - oea->id;
+	return oeb->id > oea->id ? 1 : -1;
     }
 
   /* Lastly, make sure the versions that are the same go next to each
      other.  */
-  if ((oeb->rank - oea->rank == 0)
+  if (oeb->rank == oea->rank
       && TREE_CODE (oea->op) == SSA_NAME
       && TREE_CODE (oeb->op) == SSA_NAME)
     {
@@ -543,15 +543,15 @@ sort_by_operand_rank (const void *pa, const void *pb)
 	}
 
       if (SSA_NAME_VERSION (oeb->op) != SSA_NAME_VERSION (oea->op))
-	return SSA_NAME_VERSION (oeb->op) - SSA_NAME_VERSION (oea->op);
+	return SSA_NAME_VERSION (oeb->op) > SSA_NAME_VERSION (oea->op) ? 1 : -1;
       else
-	return oeb->id - oea->id;
+	return oeb->id > oea->id ? 1 : -1;
     }
 
   if (oeb->rank != oea->rank)
-    return oeb->rank - oea->rank;
+    return oeb->rank > oea->rank ? 1 : -1;
   else
-    return oeb->id - oea->id;
+    return oeb->id > oea->id ? 1 : -1;
 }
 
 /* Add an operand entry to *OPS for the tree operand OP.  */
@@ -723,11 +723,11 @@ eliminate_duplicate_pair (enum tree_code opcode,
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    {
 	      fprintf (dump_file, "Equivalence: ");
-	      print_generic_expr (dump_file, curr->op, 0);
+	      print_generic_expr (dump_file, curr->op);
 	      fprintf (dump_file, " [&|minmax] ");
-	      print_generic_expr (dump_file, last->op, 0);
+	      print_generic_expr (dump_file, last->op);
 	      fprintf (dump_file, " -> ");
-	      print_generic_stmt (dump_file, last->op, 0);
+	      print_generic_stmt (dump_file, last->op);
 	    }
 
 	  ops->ordered_remove (i);
@@ -739,9 +739,9 @@ eliminate_duplicate_pair (enum tree_code opcode,
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    {
 	      fprintf (dump_file, "Equivalence: ");
-	      print_generic_expr (dump_file, curr->op, 0);
+	      print_generic_expr (dump_file, curr->op);
 	      fprintf (dump_file, " ^ ");
-	      print_generic_expr (dump_file, last->op, 0);
+	      print_generic_expr (dump_file, last->op);
 	      fprintf (dump_file, " -> nothing\n");
 	    }
 
@@ -810,9 +810,9 @@ eliminate_plus_minus_pair (enum tree_code opcode,
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    {
 	      fprintf (dump_file, "Equivalence: ");
-	      print_generic_expr (dump_file, negateop, 0);
+	      print_generic_expr (dump_file, negateop);
 	      fprintf (dump_file, " + -");
-	      print_generic_expr (dump_file, oe->op, 0);
+	      print_generic_expr (dump_file, oe->op);
 	      fprintf (dump_file, " -> 0\n");
 	    }
 
@@ -831,9 +831,9 @@ eliminate_plus_minus_pair (enum tree_code opcode,
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    {
 	      fprintf (dump_file, "Equivalence: ");
-	      print_generic_expr (dump_file, notop, 0);
+	      print_generic_expr (dump_file, notop);
 	      fprintf (dump_file, " + ~");
-	      print_generic_expr (dump_file, oe->op, 0);
+	      print_generic_expr (dump_file, oe->op);
 	      fprintf (dump_file, " -> -1\n");
 	    }
 
@@ -893,12 +893,12 @@ eliminate_not_pairs (enum tree_code opcode,
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    {
 	      fprintf (dump_file, "Equivalence: ");
-	      print_generic_expr (dump_file, notop, 0);
+	      print_generic_expr (dump_file, notop);
 	      if (opcode == BIT_AND_EXPR)
 		fprintf (dump_file, " & ~");
 	      else if (opcode == BIT_IOR_EXPR)
 		fprintf (dump_file, " | ~");
-	      print_generic_expr (dump_file, oe->op, 0);
+	      print_generic_expr (dump_file, oe->op);
 	      if (opcode == BIT_AND_EXPR)
 		fprintf (dump_file, " -> 0\n");
 	      else if (opcode == BIT_IOR_EXPR)
@@ -1055,8 +1055,8 @@ static void linearize_expr_tree (vec<operand_entry *> *, gimple *,
 
 /* Structure for tracking and counting operands.  */
 struct oecount {
-  int cnt;
-  int id;
+  unsigned int cnt;
+  unsigned int id;
   enum tree_code oecode;
   tree op;
 };
@@ -1090,8 +1090,7 @@ oecount_hasher::equal (int p1, int p2)
 {
   const oecount *c1 = &cvec[p1 - 42];
   const oecount *c2 = &cvec[p2 - 42];
-  return (c1->oecode == c2->oecode
-	  && c1->op == c2->op);
+  return c1->oecode == c2->oecode && c1->op == c2->op;
 }
 
 /* Comparison function for qsort sorting oecount elements by count.  */
@@ -1102,10 +1101,10 @@ oecount_cmp (const void *p1, const void *p2)
   const oecount *c1 = (const oecount *)p1;
   const oecount *c2 = (const oecount *)p2;
   if (c1->cnt != c2->cnt)
-    return c1->cnt - c2->cnt;
+    return c1->cnt > c2->cnt ? 1 : -1;
   else
     /* If counts are identical, use unique IDs to stabilize qsort.  */
-    return c1->id - c2->id;
+    return c1->id > c2->id ? 1 : -1;
 }
 
 /* Return TRUE iff STMT represents a builtin call that raises OP
@@ -1559,7 +1558,7 @@ undistribute_ops_list (enum tree_code opcode,
   sbitmap_iterator sbi0;
   vec<operand_entry *> *subops;
   bool changed = false;
-  int next_oecount_id = 0;
+  unsigned int next_oecount_id = 0;
 
   if (length <= 1
       || opcode != PLUS_EXPR)
@@ -1656,7 +1655,7 @@ undistribute_ops_list (enum tree_code opcode,
 	  fprintf (dump_file, "  %u %s: ", c->cnt,
 		   c->oecode == MULT_EXPR
 		   ? "*" : c->oecode == RDIV_EXPR ? "/" : "?");
-	  print_generic_expr (dump_file, c->op, 0);
+	  print_generic_expr (dump_file, c->op);
 	  fprintf (dump_file, "\n");
 	}
     }
@@ -1712,7 +1711,7 @@ undistribute_ops_list (enum tree_code opcode,
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    {
 	      fprintf (dump_file, "Building (");
-	      print_generic_expr (dump_file, oe1->op, 0);
+	      print_generic_expr (dump_file, oe1->op);
 	    }
 	  zero_one_operation (&oe1->op, c->oecode, c->op);
 	  EXECUTE_IF_SET_IN_BITMAP (candidates2, first+1, i, sbi0)
@@ -1722,7 +1721,7 @@ undistribute_ops_list (enum tree_code opcode,
 	      if (dump_file && (dump_flags & TDF_DETAILS))
 		{
 		  fprintf (dump_file, " + ");
-		  print_generic_expr (dump_file, oe2->op, 0);
+		  print_generic_expr (dump_file, oe2->op);
 		}
 	      zero_one_operation (&oe2->op, c->oecode, c->op);
 	      sum = build_and_add_sum (TREE_TYPE (oe1->op),
@@ -1738,7 +1737,7 @@ undistribute_ops_list (enum tree_code opcode,
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    {
 	      fprintf (dump_file, ") %s ", c->oecode == MULT_EXPR ? "*" : "/");
-	      print_generic_expr (dump_file, c->op, 0);
+	      print_generic_expr (dump_file, c->op);
 	      fprintf (dump_file, "\n");
 	    }
 
@@ -1845,11 +1844,11 @@ eliminate_redundant_comparison (enum tree_code opcode,
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{
 	  fprintf (dump_file, "Equivalence: ");
-	  print_generic_expr (dump_file, curr->op, 0);
+	  print_generic_expr (dump_file, curr->op);
 	  fprintf (dump_file, " %s ", op_symbol_code (opcode));
-	  print_generic_expr (dump_file, oe->op, 0);
+	  print_generic_expr (dump_file, oe->op);
 	  fprintf (dump_file, " -> ");
-	  print_generic_expr (dump_file, t, 0);
+	  print_generic_expr (dump_file, t);
 	  fprintf (dump_file, "\n");
 	}
 
@@ -2348,11 +2347,11 @@ update_range_test (struct range_entry *range, struct range_entry *otherrange,
     {
       struct range_entry *r;
       fprintf (dump_file, "Optimizing range tests ");
-      print_generic_expr (dump_file, range->exp, 0);
+      print_generic_expr (dump_file, range->exp);
       fprintf (dump_file, " %c[", range->in_p ? '+' : '-');
-      print_generic_expr (dump_file, range->low, 0);
+      print_generic_expr (dump_file, range->low);
       fprintf (dump_file, ", ");
-      print_generic_expr (dump_file, range->high, 0);
+      print_generic_expr (dump_file, range->high);
       fprintf (dump_file, "]");
       for (i = 0; i < count; i++)
 	{
@@ -2361,13 +2360,13 @@ update_range_test (struct range_entry *range, struct range_entry *otherrange,
 	  else
 	    r = otherrangep[i];
 	  fprintf (dump_file, " and %c[", r->in_p ? '+' : '-');
-	  print_generic_expr (dump_file, r->low, 0);
+	  print_generic_expr (dump_file, r->low);
 	  fprintf (dump_file, ", ");
-	  print_generic_expr (dump_file, r->high, 0);
+	  print_generic_expr (dump_file, r->high);
 	  fprintf (dump_file, "]");
 	}
       fprintf (dump_file, "\n into ");
-      print_generic_expr (dump_file, tem, 0);
+      print_generic_expr (dump_file, tem);
       fprintf (dump_file, "\n");
     }
 
@@ -2979,23 +2978,23 @@ optimize_range_tests_var_bound (enum tree_code opcode, int first, int length,
 	{
 	  struct range_entry *r = &ranges[*idx];
 	  fprintf (dump_file, "Optimizing range test ");
-	  print_generic_expr (dump_file, r->exp, 0);
+	  print_generic_expr (dump_file, r->exp);
 	  fprintf (dump_file, " +[");
-	  print_generic_expr (dump_file, r->low, 0);
+	  print_generic_expr (dump_file, r->low);
 	  fprintf (dump_file, ", ");
-	  print_generic_expr (dump_file, r->high, 0);
+	  print_generic_expr (dump_file, r->high);
 	  fprintf (dump_file, "] and comparison ");
-	  print_generic_expr (dump_file, rhs1, 0);
+	  print_generic_expr (dump_file, rhs1);
 	  fprintf (dump_file, " %s ", op_symbol_code (ccode));
-	  print_generic_expr (dump_file, rhs2, 0);
+	  print_generic_expr (dump_file, rhs2);
 	  fprintf (dump_file, "\n into (");
-	  print_generic_expr (dump_file, utype, 0);
+	  print_generic_expr (dump_file, utype);
 	  fprintf (dump_file, ") ");
-	  print_generic_expr (dump_file, rhs1, 0);
+	  print_generic_expr (dump_file, rhs1);
 	  fprintf (dump_file, " %s (", op_symbol_code (ccode));
-	  print_generic_expr (dump_file, utype, 0);
+	  print_generic_expr (dump_file, utype);
 	  fprintf (dump_file, ") ");
-	  print_generic_expr (dump_file, rhs2, 0);
+	  print_generic_expr (dump_file, rhs2);
 	  fprintf (dump_file, "\n");
 	}
 
@@ -3285,11 +3284,11 @@ optimize_vec_cond_expr (tree_code opcode, vec<operand_entry *> *ops)
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    {
 	      fprintf (dump_file, "Transforming ");
-	      print_generic_expr (dump_file, cond0, 0);
+	      print_generic_expr (dump_file, cond0);
 	      fprintf (dump_file, " %c ", opcode == BIT_AND_EXPR ? '&' : '|');
-	      print_generic_expr (dump_file, cond1, 0);
+	      print_generic_expr (dump_file, cond1);
 	      fprintf (dump_file, " into ");
-	      print_generic_expr (dump_file, comb, 0);
+	      print_generic_expr (dump_file, comb);
 	      fputc ('\n', dump_file);
 	    }
 
@@ -4220,7 +4219,7 @@ rewrite_expr_tree (gimple *stmt, unsigned int opindex,
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    {
 	      fprintf (dump_file, "Transforming ");
-	      print_gimple_stmt (dump_file, stmt, 0, 0);
+	      print_gimple_stmt (dump_file, stmt, 0);
 	    }
 
 	  /* If the stmt that defines operand has to be inserted, insert it
@@ -4263,7 +4262,7 @@ rewrite_expr_tree (gimple *stmt, unsigned int opindex,
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    {
 	      fprintf (dump_file, " into ");
-	      print_gimple_stmt (dump_file, stmt, 0, 0);
+	      print_gimple_stmt (dump_file, stmt, 0);
 	    }
 	}
       return lhs;
@@ -4291,7 +4290,7 @@ rewrite_expr_tree (gimple *stmt, unsigned int opindex,
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{
 	  fprintf (dump_file, "Transforming ");
-	  print_gimple_stmt (dump_file, stmt, 0, 0);
+	  print_gimple_stmt (dump_file, stmt, 0);
 	}
 
       /* If changed is false, this is either opindex == 0
@@ -4329,7 +4328,7 @@ rewrite_expr_tree (gimple *stmt, unsigned int opindex,
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{
 	  fprintf (dump_file, " into ");
-	  print_gimple_stmt (dump_file, stmt, 0, 0);
+	  print_gimple_stmt (dump_file, stmt, 0);
 	}
     }
   return lhs;
@@ -4489,7 +4488,7 @@ rewrite_expr_tree_parallel (gassign *stmt, int width,
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{
 	  fprintf (dump_file, "Transforming ");
-	  print_gimple_stmt (dump_file, stmts[i], 0, 0);
+	  print_gimple_stmt (dump_file, stmts[i], 0);
 	}
 
       /* If the stmt that defines operand has to be inserted, insert it
@@ -4515,7 +4514,7 @@ rewrite_expr_tree_parallel (gassign *stmt, int width,
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{
 	  fprintf (dump_file, " into ");
-	  print_gimple_stmt (dump_file, stmts[i], 0, 0);
+	  print_gimple_stmt (dump_file, stmts[i], 0);
 	}
     }
 
@@ -4558,7 +4557,7 @@ linearize_expr (gimple *stmt)
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
       fprintf (dump_file, "Linearized: ");
-      print_gimple_stmt (dump_file, stmt, 0, 0);
+      print_gimple_stmt (dump_file, stmt, 0);
     }
 
   reassociate_stats.linearized++;
@@ -4699,7 +4698,7 @@ break_up_subtract (gimple *stmt, gimple_stmt_iterator *gsip)
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
       fprintf (dump_file, "Breaking up subtract ");
-      print_gimple_stmt (dump_file, stmt, 0, 0);
+      print_gimple_stmt (dump_file, stmt, 0);
     }
 
   rhs2 = negate_value (rhs2, gsip);
@@ -4870,7 +4869,7 @@ linearize_expr_tree (vec<operand_entry *> *ops, gimple *stmt,
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{
 	  fprintf (dump_file, "swapping operands of ");
-	  print_gimple_stmt (dump_file, stmt, 0, 0);
+	  print_gimple_stmt (dump_file, stmt, 0);
 	}
 
       swap_ssa_operands (stmt,
@@ -4881,7 +4880,7 @@ linearize_expr_tree (vec<operand_entry *> *ops, gimple *stmt,
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{
 	  fprintf (dump_file, " is now ");
-	  print_gimple_stmt (dump_file, stmt, 0, 0);
+	  print_gimple_stmt (dump_file, stmt, 0);
 	}
 
       /* We want to make it so the lhs is always the reassociative op,
@@ -5225,7 +5224,7 @@ attempt_builtin_powi (gimple *stmt, vec<operand_entry *> *ops)
 		  for (elt = j; elt < vec_len; elt++)
 		    {
 		      rf = &repeat_factor_vec[elt];
-		      print_generic_expr (dump_file, rf->factor, 0);
+		      print_generic_expr (dump_file, rf->factor);
 		      if (elt < vec_len - 1)
 			fputs (" * ", dump_file);
 		    }
@@ -5252,7 +5251,7 @@ attempt_builtin_powi (gimple *stmt, vec<operand_entry *> *ops)
 		  for (elt = j; elt < vec_len; elt++)
 		    {
 		      rf = &repeat_factor_vec[elt];
-		      print_generic_expr (dump_file, rf->factor, 0);
+		      print_generic_expr (dump_file, rf->factor);
 		      if (elt < vec_len - 1)
 			fputs (" * ", dump_file);
 		    }
@@ -5286,7 +5285,7 @@ attempt_builtin_powi (gimple *stmt, vec<operand_entry *> *ops)
 	      for (elt = j; elt < vec_len; elt++)
 		{
 		  rf = &repeat_factor_vec[elt];
-		  print_generic_expr (dump_file, rf->factor, 0);
+		  print_generic_expr (dump_file, rf->factor);
 		  if (elt < vec_len - 1)
 		    fputs (" * ", dump_file);
 		}
@@ -5480,16 +5479,16 @@ attempt_builtin_copysign (vec<operand_entry *> *ops)
 		      if (dump_file && (dump_flags & TDF_DETAILS))
 			{
 			  fprintf (dump_file, "Optimizing copysign: ");
-			  print_generic_expr (dump_file, cst, 0);
+			  print_generic_expr (dump_file, cst);
 			  fprintf (dump_file, " * COPYSIGN (");
-			  print_generic_expr (dump_file, arg0, 0);
+			  print_generic_expr (dump_file, arg0);
 			  fprintf (dump_file, ", ");
-			  print_generic_expr (dump_file, arg1, 0);
+			  print_generic_expr (dump_file, arg1);
 			  fprintf (dump_file, ") into %sCOPYSIGN (",
 				   cst1_neg ? "-" : "");
-			  print_generic_expr (dump_file, mul, 0);
+			  print_generic_expr (dump_file, mul);
 			  fprintf (dump_file, ", ");
-			  print_generic_expr (dump_file, arg1, 0);
+			  print_generic_expr (dump_file, arg1);
 			  fprintf (dump_file, "\n");
 			}
 		      return;
@@ -5513,7 +5512,7 @@ transform_stmt_to_copy (gimple_stmt_iterator *gsi, gimple *stmt, tree new_rhs)
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
       fprintf (dump_file, "Transforming ");
-      print_gimple_stmt (dump_file, stmt, 0, 0);
+      print_gimple_stmt (dump_file, stmt, 0);
     }
 
   rhs1 = gimple_assign_rhs1 (stmt);
@@ -5524,7 +5523,7 @@ transform_stmt_to_copy (gimple_stmt_iterator *gsi, gimple *stmt, tree new_rhs)
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
       fprintf (dump_file, " into ");
-      print_gimple_stmt (dump_file, stmt, 0, 0);
+      print_gimple_stmt (dump_file, stmt, 0);
     }
 }
 
@@ -5537,7 +5536,7 @@ transform_stmt_to_multiply (gimple_stmt_iterator *gsi, gimple *stmt,
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
       fprintf (dump_file, "Transforming ");
-      print_gimple_stmt (dump_file, stmt, 0, 0);
+      print_gimple_stmt (dump_file, stmt, 0);
     }
 
   gimple_assign_set_rhs_with_ops (gsi, MULT_EXPR, rhs1, rhs2);
@@ -5547,7 +5546,7 @@ transform_stmt_to_multiply (gimple_stmt_iterator *gsi, gimple *stmt,
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
       fprintf (dump_file, " into ");
-      print_gimple_stmt (dump_file, stmt, 0, 0);
+      print_gimple_stmt (dump_file, stmt, 0);
     }
 }
 
@@ -5828,7 +5827,7 @@ branch_fixup (void)
 
       edge etrue = make_edge (cond_bb, merge_bb, EDGE_TRUE_VALUE);
       etrue->probability = REG_BR_PROB_BASE / 2;
-      etrue->count = cond_bb->count / 2;
+      etrue->count = cond_bb->count.apply_scale (1, 2);
       edge efalse = find_edge (cond_bb, then_bb);
       efalse->flags = EDGE_FALSE_VALUE;
       efalse->probability -= etrue->probability;
@@ -5869,7 +5868,7 @@ dump_ops_vector (FILE *file, vec<operand_entry *> ops)
   FOR_EACH_VEC_ELT (ops, i, oe)
     {
       fprintf (file, "Op %d -> rank: %d, tree: ", i, oe->rank);
-      print_generic_expr (file, oe->op, 0);
+      print_generic_expr (file, oe->op);
       fprintf (file, "\n");
     }
 }

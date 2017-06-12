@@ -144,6 +144,10 @@ case ${host} in
   rs6000-*-* \
   | powerpc*-*-* )
     case ${target} in
+      powerpc*-*-*spe*)
+        host_extra_gcc_objs="driver-powerpcspe.o"
+        host_xmake_file="${host_xmake_file} powerpcspe/x-powerpcspe"
+        ;;
       rs6000-*-* \
       | powerpc*-*-* )
         host_extra_gcc_objs="driver-rs6000.o"
@@ -239,6 +243,7 @@ case ${host} in
     host_xmake_file="${host_xmake_file} i386/x-mingw32"
     host_exeext=.exe
     out_host_hook_obj=host-mingw32.o
+    host_extra_gcc_objs="${host_extra_gcc_objs} driver-mingw32.o"
     host_lto_plugin_soname=liblto_plugin-0.dll
     ;;
   x86_64-*-mingw*)
@@ -247,6 +252,7 @@ case ${host} in
     host_xmake_file="${host_xmake_file} i386/x-mingw32"
     host_exeext=.exe
     out_host_hook_obj=host-mingw32.o
+    host_extra_gcc_objs="${host_extra_gcc_objs} driver-mingw32.o"
     host_lto_plugin_soname=liblto_plugin-0.dll
     ;;
   i[34567]86-*-darwin* | x86_64-*-darwin*)

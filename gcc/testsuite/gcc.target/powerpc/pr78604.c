@@ -2,7 +2,7 @@
 /* { dg-skip-if "" { powerpc*-*-darwin* } { "*" } { "" } } */
 /* { dg-require-effective-target powerpc_p8vector_ok } */
 /* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power8" } } */
-/* { dg-options "-mcpu=power8 -O2 -ftree-vectorize" } */
+/* { dg-options "-mcpu=power8 -O2 -ftree-vectorize -fdump-tree-vect-details" } */
 
 #ifndef SIZE
 #define SIZE 1024
@@ -110,3 +110,4 @@ uns_gte (UNS_TYPE val1, UNS_TYPE val2)
 /* { dg-final { scan-assembler-times {\mvcmpgtsd\M} 4 } } */
 /* { dg-final { scan-assembler-times {\mvcmpgtud\M} 4 } } */
 /* { dg-final { scan-assembler-not   {\mvcmpequd\M} } } */
+/* { dg-final { scan-tree-dump-times "vect_model_simple_cost" 8 "vect" } } */

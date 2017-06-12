@@ -4,7 +4,8 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target powerpc_p8vector_ok } */
 /* { dg-require-effective-target int128 } */
-/* { dg-options "-maltivec -mvsx -mpower8-vector" } */
+/* { dg-require-effective-target lp64 } */
+/* { dg-options "-mpower8-vector" } */
 /* { dg-additional-options "-maix64" { target powerpc-ibm-aix* } } */
 
 #include "altivec.h"

@@ -137,8 +137,9 @@ am__aclocal_m4_deps = $(top_srcdir)/../config/depstand.m4 \
 	$(top_srcdir)/../ltversion.m4 $(top_srcdir)/../lt~obsolete.m4 \
 	$(top_srcdir)/acinclude.m4 $(top_srcdir)/../config/acx.m4 \
 	$(top_srcdir)/../config/no-executables.m4 \
-	$(top_srcdir)/../config/math.m4 $(top_srcdir)/../libtool.m4 \
-	$(top_srcdir)/configure.ac
+	$(top_srcdir)/../config/math.m4 \
+	$(top_srcdir)/../config/ax_check_define.m4 \
+	$(top_srcdir)/../libtool.m4 $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 am__CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
@@ -288,15 +289,20 @@ am__objects_32 = unpack_i1.lo unpack_i2.lo unpack_i4.lo unpack_i8.lo \
 	unpack_i16.lo unpack_r4.lo unpack_r8.lo unpack_r10.lo \
 	unpack_r16.lo unpack_c4.lo unpack_c8.lo unpack_c10.lo \
 	unpack_c16.lo
-am__objects_33 = spread_i1.lo spread_i2.lo spread_i4.lo spread_i8.lo \
+am__objects_33 = matmulavx128_i1.lo matmulavx128_i2.lo \
+	matmulavx128_i4.lo matmulavx128_i8.lo matmulavx128_i16.lo \
+	matmulavx128_r4.lo matmulavx128_r8.lo matmulavx128_r10.lo \
+	matmulavx128_r16.lo matmulavx128_c4.lo matmulavx128_c8.lo \
+	matmulavx128_c10.lo matmulavx128_c16.lo
+am__objects_34 = spread_i1.lo spread_i2.lo spread_i4.lo spread_i8.lo \
 	spread_i16.lo spread_r4.lo spread_r8.lo spread_r10.lo \
 	spread_r16.lo spread_c4.lo spread_c8.lo spread_c10.lo \
 	spread_c16.lo
-am__objects_34 = cshift0_i1.lo cshift0_i2.lo cshift0_i4.lo \
+am__objects_35 = cshift0_i1.lo cshift0_i2.lo cshift0_i4.lo \
 	cshift0_i8.lo cshift0_i16.lo cshift0_r4.lo cshift0_r8.lo \
 	cshift0_r10.lo cshift0_r16.lo cshift0_c4.lo cshift0_c8.lo \
 	cshift0_c10.lo cshift0_c16.lo
-am__objects_35 = $(am__objects_4) $(am__objects_5) $(am__objects_6) \
+am__objects_36 = $(am__objects_4) $(am__objects_5) $(am__objects_6) \
 	$(am__objects_7) $(am__objects_8) $(am__objects_9) \
 	$(am__objects_10) $(am__objects_11) $(am__objects_12) \
 	$(am__objects_13) $(am__objects_14) $(am__objects_15) \
@@ -306,14 +312,14 @@ am__objects_35 = $(am__objects_4) $(am__objects_5) $(am__objects_6) \
 	$(am__objects_25) $(am__objects_26) $(am__objects_27) \
 	$(am__objects_28) $(am__objects_29) $(am__objects_30) \
 	$(am__objects_31) $(am__objects_32) $(am__objects_33) \
-	$(am__objects_34)
-@LIBGFOR_MINIMAL_FALSE@am__objects_36 = close.lo file_pos.lo format.lo \
+	$(am__objects_34) $(am__objects_35)
+@LIBGFOR_MINIMAL_FALSE@am__objects_37 = close.lo file_pos.lo format.lo \
 @LIBGFOR_MINIMAL_FALSE@	inquire.lo intrinsics.lo list_read.lo \
 @LIBGFOR_MINIMAL_FALSE@	lock.lo open.lo read.lo transfer.lo \
 @LIBGFOR_MINIMAL_FALSE@	transfer128.lo unit.lo unix.lo write.lo \
 @LIBGFOR_MINIMAL_FALSE@	fbuf.lo
-am__objects_37 = size_from_kind.lo $(am__objects_36)
-@LIBGFOR_MINIMAL_FALSE@am__objects_38 = access.lo c99_functions.lo \
+am__objects_38 = size_from_kind.lo $(am__objects_37)
+@LIBGFOR_MINIMAL_FALSE@am__objects_39 = access.lo c99_functions.lo \
 @LIBGFOR_MINIMAL_FALSE@	chdir.lo chmod.lo clock.lo cpu_time.lo \
 @LIBGFOR_MINIMAL_FALSE@	ctime.lo date_and_time.lo dtime.lo \
 @LIBGFOR_MINIMAL_FALSE@	env.lo etime.lo execute_command_line.lo \
@@ -323,19 +329,19 @@ am__objects_37 = size_from_kind.lo $(am__objects_36)
 @LIBGFOR_MINIMAL_FALSE@	rename.lo stat.lo symlnk.lo \
 @LIBGFOR_MINIMAL_FALSE@	system_clock.lo time.lo umask.lo \
 @LIBGFOR_MINIMAL_FALSE@	unlink.lo
-@IEEE_SUPPORT_TRUE@am__objects_39 = ieee_helper.lo
-am__objects_40 = associated.lo abort.lo args.lo cshift0.lo eoshift0.lo \
+@IEEE_SUPPORT_TRUE@am__objects_40 = ieee_helper.lo
+am__objects_41 = associated.lo abort.lo args.lo cshift0.lo eoshift0.lo \
 	eoshift2.lo erfc_scaled.lo extends_type_of.lo fnum.lo \
 	ierrno.lo ishftc.lo mvbits.lo move_alloc.lo pack_generic.lo \
 	selected_char_kind.lo size.lo spread_generic.lo \
 	string_intrinsics.lo rand.lo random.lo reshape_generic.lo \
 	reshape_packed.lo selected_int_kind.lo selected_real_kind.lo \
 	unpack_generic.lo in_pack_generic.lo in_unpack_generic.lo \
-	$(am__objects_38) $(am__objects_39)
-@IEEE_SUPPORT_TRUE@am__objects_41 = ieee_arithmetic.lo \
+	$(am__objects_39) $(am__objects_40)
+@IEEE_SUPPORT_TRUE@am__objects_42 = ieee_arithmetic.lo \
 @IEEE_SUPPORT_TRUE@	ieee_exceptions.lo ieee_features.lo
-am__objects_42 =
-am__objects_43 = _abs_c4.lo _abs_c8.lo _abs_c10.lo _abs_c16.lo \
+am__objects_43 =
+am__objects_44 = _abs_c4.lo _abs_c8.lo _abs_c10.lo _abs_c16.lo \
 	_abs_i4.lo _abs_i8.lo _abs_i16.lo _abs_r4.lo _abs_r8.lo \
 	_abs_r10.lo _abs_r16.lo _aimag_c4.lo _aimag_c8.lo \
 	_aimag_c10.lo _aimag_c16.lo _exp_r4.lo _exp_r8.lo _exp_r10.lo \
@@ -359,19 +365,19 @@ am__objects_43 = _abs_c4.lo _abs_c8.lo _abs_c10.lo _abs_c16.lo \
 	_conjg_c4.lo _conjg_c8.lo _conjg_c10.lo _conjg_c16.lo \
 	_aint_r4.lo _aint_r8.lo _aint_r10.lo _aint_r16.lo _anint_r4.lo \
 	_anint_r8.lo _anint_r10.lo _anint_r16.lo
-am__objects_44 = _sign_i4.lo _sign_i8.lo _sign_i16.lo _sign_r4.lo \
+am__objects_45 = _sign_i4.lo _sign_i8.lo _sign_i16.lo _sign_r4.lo \
 	_sign_r8.lo _sign_r10.lo _sign_r16.lo _dim_i4.lo _dim_i8.lo \
 	_dim_i16.lo _dim_r4.lo _dim_r8.lo _dim_r10.lo _dim_r16.lo \
 	_atan2_r4.lo _atan2_r8.lo _atan2_r10.lo _atan2_r16.lo \
 	_mod_i4.lo _mod_i8.lo _mod_i16.lo _mod_r4.lo _mod_r8.lo \
 	_mod_r10.lo _mod_r16.lo
-am__objects_45 = misc_specifics.lo
-am__objects_46 = $(am__objects_43) $(am__objects_44) $(am__objects_45) \
+am__objects_46 = misc_specifics.lo
+am__objects_47 = $(am__objects_44) $(am__objects_45) $(am__objects_46) \
 	dprod_r8.lo f2c_specifics.lo
-am__objects_47 = $(am__objects_3) $(am__objects_35) $(am__objects_37) \
-	$(am__objects_40) $(am__objects_41) $(am__objects_42) \
-	$(am__objects_46)
-@onestep_FALSE@am_libgfortran_la_OBJECTS = $(am__objects_47)
+am__objects_48 = $(am__objects_3) $(am__objects_36) $(am__objects_38) \
+	$(am__objects_41) $(am__objects_42) $(am__objects_43) \
+	$(am__objects_47)
+@onestep_FALSE@am_libgfortran_la_OBJECTS = $(am__objects_48)
 @onestep_TRUE@am_libgfortran_la_OBJECTS = libgfortran_c.lo
 libgfortran_la_OBJECTS = $(am_libgfortran_la_OBJECTS)
 DEFAULT_INCLUDES = -I.@am__isrc@
@@ -878,6 +884,21 @@ $(srcdir)/generated/matmul_c8.c \
 $(srcdir)/generated/matmul_c10.c \
 $(srcdir)/generated/matmul_c16.c
 
+i_matmulavx128_c = \
+$(srcdir)/generated/matmulavx128_i1.c \
+$(srcdir)/generated/matmulavx128_i2.c \
+$(srcdir)/generated/matmulavx128_i4.c \
+$(srcdir)/generated/matmulavx128_i8.c \
+$(srcdir)/generated/matmulavx128_i16.c \
+$(srcdir)/generated/matmulavx128_r4.c \
+$(srcdir)/generated/matmulavx128_r8.c \
+$(srcdir)/generated/matmulavx128_r10.c \
+$(srcdir)/generated/matmulavx128_r16.c \
+$(srcdir)/generated/matmulavx128_c4.c \
+$(srcdir)/generated/matmulavx128_c8.c \
+$(srcdir)/generated/matmulavx128_c10.c \
+$(srcdir)/generated/matmulavx128_c16.c
+
 i_matmull_c = \
 $(srcdir)/generated/matmul_l4.c \
 $(srcdir)/generated/matmul_l8.c \
@@ -1058,7 +1079,7 @@ gfor_built_src = $(i_all_c) $(i_any_c) $(i_count_c) $(i_maxloc0_c) \
     $(i_iparity_c) $(i_norm2_c) $(i_parity_c) \
     $(i_matmul_c) $(i_matmull_c) $(i_shape_c) $(i_eoshift1_c) \
     $(i_eoshift3_c) $(i_cshift1_c) $(i_reshape_c) $(in_pack_c) $(in_unpack_c) \
-    $(i_pow_c) $(i_pack_c) $(i_unpack_c) \
+    $(i_pow_c) $(i_pack_c) $(i_unpack_c) $(i_matmulavx128_c) \
     $(i_spread_c) selected_int_kind.inc selected_real_kind.inc kinds.h \
     $(i_cshift0_c) kinds.inc c99_protos.inc fpu-target.h fpu-target.inc
 
@@ -1517,6 +1538,19 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/matmul_r16.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/matmul_r4.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/matmul_r8.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/matmulavx128_c10.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/matmulavx128_c16.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/matmulavx128_c4.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/matmulavx128_c8.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/matmulavx128_i1.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/matmulavx128_i16.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/matmulavx128_i2.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/matmulavx128_i4.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/matmulavx128_i8.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/matmulavx128_r10.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/matmulavx128_r16.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/matmulavx128_r4.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/matmulavx128_r8.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/maxloc0_16_i1.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/maxloc0_16_i16.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/maxloc0_16_i2.Plo@am__quote@
@@ -4583,6 +4617,97 @@ unpack_c16.lo: $(srcdir)/generated/unpack_c16.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o unpack_c16.lo `test -f '$(srcdir)/generated/unpack_c16.c' || echo '$(srcdir)/'`$(srcdir)/generated/unpack_c16.c
 
+matmulavx128_i1.lo: $(srcdir)/generated/matmulavx128_i1.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT matmulavx128_i1.lo -MD -MP -MF $(DEPDIR)/matmulavx128_i1.Tpo -c -o matmulavx128_i1.lo `test -f '$(srcdir)/generated/matmulavx128_i1.c' || echo '$(srcdir)/'`$(srcdir)/generated/matmulavx128_i1.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/matmulavx128_i1.Tpo $(DEPDIR)/matmulavx128_i1.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/matmulavx128_i1.c' object='matmulavx128_i1.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o matmulavx128_i1.lo `test -f '$(srcdir)/generated/matmulavx128_i1.c' || echo '$(srcdir)/'`$(srcdir)/generated/matmulavx128_i1.c
+
+matmulavx128_i2.lo: $(srcdir)/generated/matmulavx128_i2.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT matmulavx128_i2.lo -MD -MP -MF $(DEPDIR)/matmulavx128_i2.Tpo -c -o matmulavx128_i2.lo `test -f '$(srcdir)/generated/matmulavx128_i2.c' || echo '$(srcdir)/'`$(srcdir)/generated/matmulavx128_i2.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/matmulavx128_i2.Tpo $(DEPDIR)/matmulavx128_i2.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/matmulavx128_i2.c' object='matmulavx128_i2.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o matmulavx128_i2.lo `test -f '$(srcdir)/generated/matmulavx128_i2.c' || echo '$(srcdir)/'`$(srcdir)/generated/matmulavx128_i2.c
+
+matmulavx128_i4.lo: $(srcdir)/generated/matmulavx128_i4.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT matmulavx128_i4.lo -MD -MP -MF $(DEPDIR)/matmulavx128_i4.Tpo -c -o matmulavx128_i4.lo `test -f '$(srcdir)/generated/matmulavx128_i4.c' || echo '$(srcdir)/'`$(srcdir)/generated/matmulavx128_i4.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/matmulavx128_i4.Tpo $(DEPDIR)/matmulavx128_i4.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/matmulavx128_i4.c' object='matmulavx128_i4.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o matmulavx128_i4.lo `test -f '$(srcdir)/generated/matmulavx128_i4.c' || echo '$(srcdir)/'`$(srcdir)/generated/matmulavx128_i4.c
+
+matmulavx128_i8.lo: $(srcdir)/generated/matmulavx128_i8.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT matmulavx128_i8.lo -MD -MP -MF $(DEPDIR)/matmulavx128_i8.Tpo -c -o matmulavx128_i8.lo `test -f '$(srcdir)/generated/matmulavx128_i8.c' || echo '$(srcdir)/'`$(srcdir)/generated/matmulavx128_i8.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/matmulavx128_i8.Tpo $(DEPDIR)/matmulavx128_i8.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/matmulavx128_i8.c' object='matmulavx128_i8.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o matmulavx128_i8.lo `test -f '$(srcdir)/generated/matmulavx128_i8.c' || echo '$(srcdir)/'`$(srcdir)/generated/matmulavx128_i8.c
+
+matmulavx128_i16.lo: $(srcdir)/generated/matmulavx128_i16.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT matmulavx128_i16.lo -MD -MP -MF $(DEPDIR)/matmulavx128_i16.Tpo -c -o matmulavx128_i16.lo `test -f '$(srcdir)/generated/matmulavx128_i16.c' || echo '$(srcdir)/'`$(srcdir)/generated/matmulavx128_i16.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/matmulavx128_i16.Tpo $(DEPDIR)/matmulavx128_i16.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/matmulavx128_i16.c' object='matmulavx128_i16.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o matmulavx128_i16.lo `test -f '$(srcdir)/generated/matmulavx128_i16.c' || echo '$(srcdir)/'`$(srcdir)/generated/matmulavx128_i16.c
+
+matmulavx128_r4.lo: $(srcdir)/generated/matmulavx128_r4.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT matmulavx128_r4.lo -MD -MP -MF $(DEPDIR)/matmulavx128_r4.Tpo -c -o matmulavx128_r4.lo `test -f '$(srcdir)/generated/matmulavx128_r4.c' || echo '$(srcdir)/'`$(srcdir)/generated/matmulavx128_r4.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/matmulavx128_r4.Tpo $(DEPDIR)/matmulavx128_r4.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/matmulavx128_r4.c' object='matmulavx128_r4.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o matmulavx128_r4.lo `test -f '$(srcdir)/generated/matmulavx128_r4.c' || echo '$(srcdir)/'`$(srcdir)/generated/matmulavx128_r4.c
+
+matmulavx128_r8.lo: $(srcdir)/generated/matmulavx128_r8.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT matmulavx128_r8.lo -MD -MP -MF $(DEPDIR)/matmulavx128_r8.Tpo -c -o matmulavx128_r8.lo `test -f '$(srcdir)/generated/matmulavx128_r8.c' || echo '$(srcdir)/'`$(srcdir)/generated/matmulavx128_r8.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/matmulavx128_r8.Tpo $(DEPDIR)/matmulavx128_r8.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/matmulavx128_r8.c' object='matmulavx128_r8.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o matmulavx128_r8.lo `test -f '$(srcdir)/generated/matmulavx128_r8.c' || echo '$(srcdir)/'`$(srcdir)/generated/matmulavx128_r8.c
+
+matmulavx128_r10.lo: $(srcdir)/generated/matmulavx128_r10.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT matmulavx128_r10.lo -MD -MP -MF $(DEPDIR)/matmulavx128_r10.Tpo -c -o matmulavx128_r10.lo `test -f '$(srcdir)/generated/matmulavx128_r10.c' || echo '$(srcdir)/'`$(srcdir)/generated/matmulavx128_r10.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/matmulavx128_r10.Tpo $(DEPDIR)/matmulavx128_r10.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/matmulavx128_r10.c' object='matmulavx128_r10.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o matmulavx128_r10.lo `test -f '$(srcdir)/generated/matmulavx128_r10.c' || echo '$(srcdir)/'`$(srcdir)/generated/matmulavx128_r10.c
+
+matmulavx128_r16.lo: $(srcdir)/generated/matmulavx128_r16.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT matmulavx128_r16.lo -MD -MP -MF $(DEPDIR)/matmulavx128_r16.Tpo -c -o matmulavx128_r16.lo `test -f '$(srcdir)/generated/matmulavx128_r16.c' || echo '$(srcdir)/'`$(srcdir)/generated/matmulavx128_r16.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/matmulavx128_r16.Tpo $(DEPDIR)/matmulavx128_r16.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/matmulavx128_r16.c' object='matmulavx128_r16.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o matmulavx128_r16.lo `test -f '$(srcdir)/generated/matmulavx128_r16.c' || echo '$(srcdir)/'`$(srcdir)/generated/matmulavx128_r16.c
+
+matmulavx128_c4.lo: $(srcdir)/generated/matmulavx128_c4.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT matmulavx128_c4.lo -MD -MP -MF $(DEPDIR)/matmulavx128_c4.Tpo -c -o matmulavx128_c4.lo `test -f '$(srcdir)/generated/matmulavx128_c4.c' || echo '$(srcdir)/'`$(srcdir)/generated/matmulavx128_c4.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/matmulavx128_c4.Tpo $(DEPDIR)/matmulavx128_c4.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/matmulavx128_c4.c' object='matmulavx128_c4.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o matmulavx128_c4.lo `test -f '$(srcdir)/generated/matmulavx128_c4.c' || echo '$(srcdir)/'`$(srcdir)/generated/matmulavx128_c4.c
+
+matmulavx128_c8.lo: $(srcdir)/generated/matmulavx128_c8.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT matmulavx128_c8.lo -MD -MP -MF $(DEPDIR)/matmulavx128_c8.Tpo -c -o matmulavx128_c8.lo `test -f '$(srcdir)/generated/matmulavx128_c8.c' || echo '$(srcdir)/'`$(srcdir)/generated/matmulavx128_c8.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/matmulavx128_c8.Tpo $(DEPDIR)/matmulavx128_c8.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/matmulavx128_c8.c' object='matmulavx128_c8.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o matmulavx128_c8.lo `test -f '$(srcdir)/generated/matmulavx128_c8.c' || echo '$(srcdir)/'`$(srcdir)/generated/matmulavx128_c8.c
+
+matmulavx128_c10.lo: $(srcdir)/generated/matmulavx128_c10.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT matmulavx128_c10.lo -MD -MP -MF $(DEPDIR)/matmulavx128_c10.Tpo -c -o matmulavx128_c10.lo `test -f '$(srcdir)/generated/matmulavx128_c10.c' || echo '$(srcdir)/'`$(srcdir)/generated/matmulavx128_c10.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/matmulavx128_c10.Tpo $(DEPDIR)/matmulavx128_c10.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/matmulavx128_c10.c' object='matmulavx128_c10.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o matmulavx128_c10.lo `test -f '$(srcdir)/generated/matmulavx128_c10.c' || echo '$(srcdir)/'`$(srcdir)/generated/matmulavx128_c10.c
+
+matmulavx128_c16.lo: $(srcdir)/generated/matmulavx128_c16.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT matmulavx128_c16.lo -MD -MP -MF $(DEPDIR)/matmulavx128_c16.Tpo -c -o matmulavx128_c16.lo `test -f '$(srcdir)/generated/matmulavx128_c16.c' || echo '$(srcdir)/'`$(srcdir)/generated/matmulavx128_c16.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/matmulavx128_c16.Tpo $(DEPDIR)/matmulavx128_c16.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/matmulavx128_c16.c' object='matmulavx128_c16.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o matmulavx128_c16.lo `test -f '$(srcdir)/generated/matmulavx128_c16.c' || echo '$(srcdir)/'`$(srcdir)/generated/matmulavx128_c16.c
+
 spread_i1.lo: $(srcdir)/generated/spread_i1.c
 @am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT spread_i1.lo -MD -MP -MF $(DEPDIR)/spread_i1.Tpo -c -o spread_i1.lo `test -f '$(srcdir)/generated/spread_i1.c' || echo '$(srcdir)/'`$(srcdir)/generated/spread_i1.c
 @am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/spread_i1.Tpo $(DEPDIR)/spread_i1.Plo
@@ -5566,7 +5691,10 @@ uninstall-am: uninstall-cafexeclibLTLIBRARIES \
 @LIBGFOR_USE_SYMVER_SUN_TRUE@@LIBGFOR_USE_SYMVER_TRUE@	 > $@ || (rm -f $@ ; exit 1)
 
 # Turn on vectorization and loop unrolling for matmul.
-$(patsubst %.c,%.lo,$(notdir $(i_matmul_c))): AM_CFLAGS += -ffast-math -ftree-vectorize -funroll-loops --param max-unroll-times=4 
+$(patsubst %.c,%.lo,$(notdir $(i_matmul_c))): AM_CFLAGS += -ffast-math -ftree-vectorize -funroll-loops --param max-unroll-times=4
+
+# Turn on AVX128 for AMD-specific matmul, but only if the compiler understands -mprefer-avx128
+@HAVE_AVX128_TRUE@$(patsubst %.c,%.lo,$(notdir $(i_matmulavx128_c))): AM_CFLAGS += -ffast-math -ftree-vectorize -funroll-loops --param max-unroll-times=4 -mprefer-avx128
 # Logical matmul doesn't vectorize.
 $(patsubst %.c,%.lo,$(notdir $(i_matmull_c))): AM_CFLAGS += -funroll-loops
 
@@ -5665,6 +5793,9 @@ fpu-target.inc: fpu-target.h $(srcdir)/libgfortran.h
 
 @MAINTAINER_MODE_TRUE@$(i_matmul_c): m4/matmul.m4 m4/matmul_internal.m4 $(I_M4_DEPS)
 @MAINTAINER_MODE_TRUE@	$(M4) -Dfile=$@ -I$(srcdir)/m4 matmul.m4 > $@
+
+@MAINTAINER_MODE_TRUE@$(i_matmulavx128_c): m4/matmulavx128.m4 m4/matmul_internal.m4 $(I_M4_DEPS)
+@MAINTAINER_MODE_TRUE@	$(M4) -Dfile=$@ -I$(srcdir)/m4 matmulavx128.m4 > $@
 
 @MAINTAINER_MODE_TRUE@$(i_matmull_c): m4/matmull.m4 $(I_M4_DEPS)
 @MAINTAINER_MODE_TRUE@	$(M4) -Dfile=$@ -I$(srcdir)/m4 matmull.m4 > $@

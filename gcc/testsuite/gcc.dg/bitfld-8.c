@@ -4,4 +4,4 @@
 /* { dg-options "" } */
 
 struct { int i : 1999; } x; /* { dg-bogus "warning" "warning in place of error" } */
-/* { dg-error "width" "bit-field too wide" { target *-*-* } 6 } */
+/* { dg-error "width" "bit-field too wide" { target *-*-* } .-1 } */

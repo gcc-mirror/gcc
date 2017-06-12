@@ -1438,7 +1438,7 @@
   [(set_attr "type" "flow")])
 
 ; Floating point instructions require manipulating the control register.
-; Manipulating the control register needs aritmetic.
+; Manipulating the control register needs arithmetic.
 ; Arithmetic clobbers flags.
 ; The flags are in the status register, which also contains the alternate
 ; flag and the interrupt enable/disable bits.

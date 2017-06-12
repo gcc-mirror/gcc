@@ -514,7 +514,7 @@ handle_pragma_redefine_extname (cpp_reader * ARG_UNUSED (dummy))
 	      const char *name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
 	      name = targetm.strip_name_encoding (name);
 
-	      if (strcmp (name, IDENTIFIER_POINTER (newname)))
+	      if (!id_equal (newname, name))
 		warning (OPT_Wpragmas, "#pragma redefine_extname ignored due to "
 			 "conflict with previous rename");
 	    }
@@ -587,14 +587,14 @@ maybe_apply_renaming_pragma (tree decl, tree asmname)
 	if (DECL_NAME (decl) == p->oldname)
 	  {
 	    /* Only warn if there is a conflict.  */
-	    if (strcmp (IDENTIFIER_POINTER (p->newname), oldname))
+	    if (!id_equal (p->newname, oldname))
 	      warning (OPT_Wpragmas, "#pragma redefine_extname ignored due to "
 		       "conflict with previous rename");
 
 	    pending_redefine_extname->unordered_remove (ix);
 	    break;
 	  }
-      return 0;
+      return NULL_TREE;
     }
 
   /* Find out if we have a pending #pragma redefine_extname.  */
@@ -643,7 +643,7 @@ maybe_apply_renaming_pragma (tree decl, tree asmname)
     }
 
   /* Nada.  */
-  return 0;
+  return NULL_TREE;
 }
 
 

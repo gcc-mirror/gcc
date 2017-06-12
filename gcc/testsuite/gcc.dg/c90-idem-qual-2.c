@@ -4,4 +4,4 @@
 /* { dg-options "-std=iso9899:1990 -pedantic-errors" } */
 
 const const int foo; /* { dg-bogus "warning" "warning in place of error" } */
-/* { dg-error "duplicate" "duplicate type qualifier error" { target *-*-* } 6 } */
+/* { dg-error "duplicate" "duplicate type qualifier error" { target *-*-* } .-1 } */

@@ -5,5 +5,5 @@
 
 @ implementation NGActiveSocket
 + (void) socketPair:(int[m]) _pair {} /* { dg-error "" } */
-       /* { dg-warning "" "" { target *-*-* } 7 } */
+       /* { dg-warning "" "" { target *-*-* } .-1 } */
 @end

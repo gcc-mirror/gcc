@@ -77,8 +77,8 @@
 )
 
 (define_insn "aarch64_dup_lane_<vswap_width_name><mode>"
-  [(set (match_operand:VALL_F16 0 "register_operand" "=w")
-	(vec_duplicate:VALL_F16
+  [(set (match_operand:VALL_F16_NO_V2Q 0 "register_operand" "=w")
+	(vec_duplicate:VALL_F16_NO_V2Q
 	  (vec_select:<VEL>
 	    (match_operand:<VSWAP_WIDTH> 1 "register_operand" "w")
 	    (parallel [(match_operand:SI 2 "immediate_operand" "i")])
@@ -107,7 +107,7 @@
      case 1: return "str\\t%d1, %0";
      case 2: return "orr\t%0.<Vbtype>, %1.<Vbtype>, %1.<Vbtype>";
      case 3: return "umov\t%0, %1.d[0]";
-     case 4: return "ins\t%0.d[0], %1";
+     case 4: return "fmov\t%d0, %1";
      case 5: return "mov\t%0, %1";
      case 6:
 	return aarch64_output_simd_mov_immediate (operands[1],
@@ -116,8 +116,8 @@
      }
 }
   [(set_attr "type" "neon_load1_1reg<q>, neon_store1_1reg<q>,\
-                     neon_logic<q>, neon_to_gp<q>, neon_from_gp<q>,\
-                     mov_reg, neon_move<q>")]
+		     neon_logic<q>, neon_to_gp<q>, f_mcr,\
+		     mov_reg, neon_move<q>")]
 )
 
 (define_insn "*aarch64_simd_mov<mode>"
@@ -151,6 +151,19 @@
                      neon_logic<q>, multiple, multiple, multiple,\
                      neon_move<q>")
    (set_attr "length" "4,4,4,8,8,8,4")]
+)
+
+;; When storing lane zero we can use the normal STR and its more permissive
+;; addressing modes.
+
+(define_insn "aarch64_store_lane0<mode>"
+  [(set (match_operand:<VEL> 0 "memory_operand" "=m")
+	(vec_select:<VEL> (match_operand:VALL_F16 1 "register_operand" "w")
+			(parallel [(match_operand 2 "const_int_operand" "n")])))]
+  "TARGET_SIMD
+   && ENDIAN_LANE_N (<MODE>mode, INTVAL (operands[2])) == 0"
+  "str\\t%<Vetype>1, %0"
+  [(set_attr "type" "neon_store1_1reg<q>")]
 )
 
 (define_insn "load_pair<mode>"
@@ -561,18 +574,18 @@
 	gcc_unreachable ();
      }
   }
-  [(set_attr "type" "neon_from_gp<q>, neon_ins<q>, neon_load1_1reg<q>")]
+  [(set_attr "type" "neon_from_gp<q>, neon_ins<q>, neon_load1_one_lane<q>")]
 )
 
 (define_insn "*aarch64_simd_vec_copy_lane<mode>"
-  [(set (match_operand:VALL 0 "register_operand" "=w")
-	(vec_merge:VALL
-	    (vec_duplicate:VALL
+  [(set (match_operand:VALL_F16 0 "register_operand" "=w")
+	(vec_merge:VALL_F16
+	    (vec_duplicate:VALL_F16
 	      (vec_select:<VEL>
-		(match_operand:VALL 3 "register_operand" "w")
+		(match_operand:VALL_F16 3 "register_operand" "w")
 		(parallel
 		  [(match_operand:SI 4 "immediate_operand" "i")])))
-	    (match_operand:VALL 1 "register_operand" "0")
+	    (match_operand:VALL_F16 1 "register_operand" "0")
 	    (match_operand:SI 2 "immediate_operand" "i")))]
   "TARGET_SIMD"
   {
@@ -586,14 +599,14 @@
 )
 
 (define_insn "*aarch64_simd_vec_copy_lane_<vswap_width_name><mode>"
-  [(set (match_operand:VALL 0 "register_operand" "=w")
-	(vec_merge:VALL
-	    (vec_duplicate:VALL
+  [(set (match_operand:VALL_F16_NO_V2Q 0 "register_operand" "=w")
+	(vec_merge:VALL_F16_NO_V2Q
+	    (vec_duplicate:VALL_F16_NO_V2Q
 	      (vec_select:<VEL>
 		(match_operand:<VSWAP_WIDTH> 3 "register_operand" "w")
 		(parallel
 		  [(match_operand:SI 4 "immediate_operand" "i")])))
-	    (match_operand:VALL 1 "register_operand" "0")
+	    (match_operand:VALL_F16_NO_V2Q 1 "register_operand" "0")
 	    (match_operand:SI 2 "immediate_operand" "i")))]
   "TARGET_SIMD"
   {
@@ -1647,7 +1660,7 @@
   [(set (match_operand:VMUL 0 "register_operand" "=w")
     (fma:VMUL
       (vec_duplicate:VMUL
-	  (match_operand:<VEL> 1 "register_operand" "w"))
+	  (match_operand:<VEL> 1 "register_operand" "<h_con>"))
       (match_operand:VMUL 2 "register_operand" "w")
       (match_operand:VMUL 3 "register_operand" "0")))]
   "TARGET_SIMD"
@@ -1726,7 +1739,7 @@
       (neg:VMUL
         (match_operand:VMUL 2 "register_operand" "w"))
       (vec_duplicate:VMUL
-	(match_operand:<VEL> 1 "register_operand" "w"))
+	(match_operand:<VEL> 1 "register_operand" "<h_con>"))
       (match_operand:VMUL 3 "register_operand" "0")))]
   "TARGET_SIMD"
   "fmls\t%0.<Vtype>, %2.<Vtype>, %1.<Vetype>[0]"
@@ -3178,7 +3191,7 @@
 	(unspec:VHSDF
 	 [(match_operand:VHSDF 1 "register_operand" "w")
 	  (vec_duplicate:VHSDF
-	    (match_operand:<VEL> 2 "register_operand" "w"))]
+	    (match_operand:<VEL> 2 "register_operand" "<h_con>"))]
 	 UNSPEC_FMULX))]
   "TARGET_SIMD"
   "fmulx\t%0.<Vtype>, %1.<Vtype>, %2.<Vetype>[0]";
@@ -3194,7 +3207,7 @@
 	(unspec:<VEL>
 	 [(match_operand:<VEL> 1 "register_operand" "w")
 	  (vec_select:<VEL>
-	   (match_operand:VDQF_DF 2 "register_operand" "w")
+	   (match_operand:VDQF 2 "register_operand" "w")
 	    (parallel [(match_operand:SI 3 "immediate_operand" "i")]))]
 	 UNSPEC_FMULX))]
   "TARGET_SIMD"

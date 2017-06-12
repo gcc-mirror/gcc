@@ -89,7 +89,7 @@ TESTS = $(check_PROGRAMS)
 
 if NATIVE
 
-btest_SOURCES = btest.c
+btest_SOURCES = btest.c testlib.c
 btest_CFLAGS = $(AM_CFLAGS) -g -O
 btest_LDADD = libbacktrace.la
 
@@ -99,6 +99,27 @@ stest_SOURCES = stest.c
 stest_LDADD = libbacktrace.la
 
 check_PROGRAMS += stest
+
+edtest_SOURCES = edtest.c edtest2_build.c testlib.c
+edtest_LDADD = libbacktrace.la
+
+check_PROGRAMS += edtest
+
+edtest2_build.c: gen_edtest2_build; @true
+gen_edtest2_build: $(srcdir)/edtest2.c
+	cat $(srcdir)/edtest2.c > tmp-edtest2_build.c
+	$(SHELL) $(srcdir)/../move-if-change tmp-edtest2_build.c edtest2_build.c
+	echo timestamp > $@
+
+if HAVE_PTHREAD
+
+check_PROGRAMS += ttest
+
+ttest_SOURCES = ttest.c testlib.c
+ttest_CFLAGS = -pthread
+ttest_LDADD = libbacktrace.la
+
+endif HAVE_PTHREAD
 
 endif NATIVE
 

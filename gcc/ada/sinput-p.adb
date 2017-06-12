@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -23,13 +23,11 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Ada.Unchecked_Conversion;
-with Ada.Unchecked_Deallocation;
+with Unchecked_Conversion;
+with Unchecked_Deallocation;
 
 with Prj.Err;
 with Sinput.C;
-
-with System;
 
 package body Sinput.P is
 
@@ -39,10 +37,10 @@ package body Sinput.P is
    --  The flag is reset to False at the first call to Load_Project_File.
    --  Calling Reset_First sets it back to True.
 
-   procedure Free is new Ada.Unchecked_Deallocation
+   procedure Free is new Unchecked_Deallocation
      (Lines_Table_Type, Lines_Table_Ptr);
 
-   procedure Free is new Ada.Unchecked_Deallocation
+   procedure Free is new Unchecked_Deallocation
      (Logical_Lines_Table_Type, Logical_Lines_Table_Ptr);
 
    -----------------------------
@@ -50,39 +48,18 @@ package body Sinput.P is
    -----------------------------
 
    procedure Clear_Source_File_Table is
-      use System;
-
    begin
       for X in 1 .. Source_File.Last loop
          declare
             S  : Source_File_Record renames Source_File.Table (X);
-            Lo : constant Source_Ptr := S.Source_First;
-            Hi : constant Source_Ptr := S.Source_Last;
-            subtype Actual_Source_Buffer is Source_Buffer (Lo .. Hi);
-            --  Physical buffer allocated
-
-            type Actual_Source_Ptr is access Actual_Source_Buffer;
-            --  This is the pointer type for the physical buffer allocated
-
-            procedure Free is new Ada.Unchecked_Deallocation
-              (Actual_Source_Buffer, Actual_Source_Ptr);
-
-            pragma Suppress (All_Checks);
-
-            pragma Warnings (Off);
-            --  The following unchecked conversion is aliased safe, since it
-            --  is not used to create improperly aliased pointer values.
-
-            function To_Actual_Source_Ptr is new
-              Ada.Unchecked_Conversion (Address, Actual_Source_Ptr);
-
-            pragma Warnings (On);
-
-            Actual_Ptr : Actual_Source_Ptr :=
-                           To_Actual_Source_Ptr (S.Source_Text (Lo)'Address);
-
          begin
-            Free (Actual_Ptr);
+            if S.Instance = No_Instance_Id then
+               Free_Source_Buffer (S.Source_Text);
+            else
+               Free_Dope (S.Source_Text'Address);
+               S.Source_Text := null;
+            end if;
+
             Free (S.Lines_Table);
             Free (S.Logical_Lines_Table);
          end;

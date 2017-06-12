@@ -531,9 +531,9 @@ set_scalar_evolution (basic_block instantiated_below, tree scalar, tree chrec)
 	  fprintf (dump_file, "  instantiated_below = %d \n",
 		   instantiated_below->index);
 	  fprintf (dump_file, "  (scalar = ");
-	  print_generic_expr (dump_file, scalar, 0);
+	  print_generic_expr (dump_file, scalar);
 	  fprintf (dump_file, ")\n  (scalar_evolution = ");
-	  print_generic_expr (dump_file, chrec, 0);
+	  print_generic_expr (dump_file, chrec);
 	  fprintf (dump_file, "))\n");
 	}
       if (dump_flags & TDF_STATS)
@@ -557,7 +557,7 @@ get_scalar_evolution (basic_block instantiated_below, tree scalar)
 	{
 	  fprintf (dump_file, "(get_scalar_evolution \n");
 	  fprintf (dump_file, "  (scalar = ");
-	  print_generic_expr (dump_file, scalar, 0);
+	  print_generic_expr (dump_file, scalar);
 	  fprintf (dump_file, ")\n");
 	}
       if (dump_flags & TDF_STATS)
@@ -584,7 +584,7 @@ get_scalar_evolution (basic_block instantiated_below, tree scalar)
   if (dump_file && (dump_flags & TDF_SCEV))
     {
       fprintf (dump_file, "  (scalar_evolution = ");
-      print_generic_expr (dump_file, res, 0);
+      print_generic_expr (dump_file, res);
       fprintf (dump_file, "))\n");
     }
 
@@ -819,9 +819,9 @@ add_to_evolution (unsigned loop_nb, tree chrec_before, enum tree_code code,
       fprintf (dump_file, "(add_to_evolution \n");
       fprintf (dump_file, "  (loop_nb = %d)\n", loop_nb);
       fprintf (dump_file, "  (chrec_before = ");
-      print_generic_expr (dump_file, chrec_before, 0);
+      print_generic_expr (dump_file, chrec_before);
       fprintf (dump_file, ")\n  (to_add = ");
-      print_generic_expr (dump_file, to_add, 0);
+      print_generic_expr (dump_file, to_add);
       fprintf (dump_file, ")\n");
     }
 
@@ -835,7 +835,7 @@ add_to_evolution (unsigned loop_nb, tree chrec_before, enum tree_code code,
   if (dump_file && (dump_flags & TDF_SCEV))
     {
       fprintf (dump_file, "  (res = ");
-      print_generic_expr (dump_file, res, 0);
+      print_generic_expr (dump_file, res);
       fprintf (dump_file, "))\n");
     }
 
@@ -872,7 +872,7 @@ get_loop_exit_condition (const struct loop *loop)
 
   if (dump_file && (dump_flags & TDF_SCEV))
     {
-      print_gimple_stmt (dump_file, res, 0, 0);
+      print_gimple_stmt (dump_file, res, 0);
       fprintf (dump_file, ")\n");
     }
 
@@ -1448,7 +1448,7 @@ analyze_evolution_in_loop (gphi *loop_phi_node,
     {
       fprintf (dump_file, "(analyze_evolution_in_loop \n");
       fprintf (dump_file, "  (loop_phi_node = ");
-      print_gimple_stmt (dump_file, loop_phi_node, 0, 0);
+      print_gimple_stmt (dump_file, loop_phi_node, 0);
       fprintf (dump_file, ")\n");
     }
 
@@ -1518,7 +1518,7 @@ analyze_evolution_in_loop (gphi *loop_phi_node,
   if (dump_file && (dump_flags & TDF_SCEV))
     {
       fprintf (dump_file, "  (evolution_function = ");
-      print_generic_expr (dump_file, evolution_function, 0);
+      print_generic_expr (dump_file, evolution_function);
       fprintf (dump_file, "))\n");
     }
 
@@ -1571,7 +1571,7 @@ analyze_initial_condition (gphi *loop_phi_node)
     {
       fprintf (dump_file, "(analyze_initial_condition \n");
       fprintf (dump_file, "  (loop_phi_node = \n");
-      print_gimple_stmt (dump_file, loop_phi_node, 0, 0);
+      print_gimple_stmt (dump_file, loop_phi_node, 0);
       fprintf (dump_file, ")\n");
     }
 
@@ -1612,7 +1612,7 @@ analyze_initial_condition (gphi *loop_phi_node)
   if (dump_file && (dump_flags & TDF_SCEV))
     {
       fprintf (dump_file, "  (init_cond = ");
-      print_generic_expr (dump_file, init_cond, 0);
+      print_generic_expr (dump_file, init_cond);
       fprintf (dump_file, "))\n");
     }
 
@@ -2049,7 +2049,9 @@ analyze_scalar_evolution_1 (struct loop *loop, tree var, tree res)
   basic_block bb;
   struct loop *def_loop;
 
-  if (loop == NULL || TREE_CODE (type) == VECTOR_TYPE)
+  if (loop == NULL
+      || TREE_CODE (type) == VECTOR_TYPE
+      || TREE_CODE (type) == COMPLEX_TYPE)
     return chrec_dont_know;
 
   if (TREE_CODE (var) != SSA_NAME)
@@ -2137,7 +2139,7 @@ analyze_scalar_evolution (struct loop *loop, tree var)
       fprintf (dump_file, "(analyze_scalar_evolution \n");
       fprintf (dump_file, "  (loop_nb = %d)\n", loop->num);
       fprintf (dump_file, "  (scalar = ");
-      print_generic_expr (dump_file, var, 0);
+      print_generic_expr (dump_file, var);
       fprintf (dump_file, ")\n");
     }
 
@@ -2970,7 +2972,7 @@ instantiate_scev (basic_block instantiate_below, struct loop *evolution_loop,
       fprintf (dump_file, "  (instantiate_below = %d)\n", instantiate_below->index);
       fprintf (dump_file, "  (evolution_loop = %d)\n", evolution_loop->num);
       fprintf (dump_file, "  (chrec = ");
-      print_generic_expr (dump_file, chrec, 0);
+      print_generic_expr (dump_file, chrec);
       fprintf (dump_file, ")\n");
     }
 
@@ -2993,7 +2995,7 @@ instantiate_scev (basic_block instantiate_below, struct loop *evolution_loop,
   if (dump_file && (dump_flags & TDF_SCEV))
     {
       fprintf (dump_file, "  (res = ");
-      print_generic_expr (dump_file, res, 0);
+      print_generic_expr (dump_file, res);
       fprintf (dump_file, "))\n");
     }
 
@@ -3098,7 +3100,7 @@ number_of_latch_executions (struct loop *loop)
   if (dump_file && (dump_flags & TDF_SCEV))
     {
       fprintf (dump_file, "  (set_nb_iterations_in_loop = ");
-      print_generic_expr (dump_file, res, 0);
+      print_generic_expr (dump_file, res);
       fprintf (dump_file, "))\n");
     }
 
@@ -3165,7 +3167,7 @@ gather_chrec_stats (tree chrec, struct chrec_stats *stats)
   if (dump_file && (dump_flags & TDF_STATS))
     {
       fprintf (dump_file, "(classify_chrec ");
-      print_generic_expr (dump_file, chrec, 0);
+      print_generic_expr (dump_file, chrec);
       fprintf (dump_file, "\n");
     }
 
@@ -3747,7 +3749,7 @@ final_value_replacement_loop (struct loop *loop)
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    {
 	      fprintf (dump_file, "not replacing:\n  ");
-	      print_gimple_stmt (dump_file, phi, 0, 0);
+	      print_gimple_stmt (dump_file, phi, 0);
 	      fprintf (dump_file, "\n");
 	    }
 	  gsi_next (&psi);
@@ -3759,7 +3761,7 @@ final_value_replacement_loop (struct loop *loop)
       if (dump_file)
 	{
 	  fprintf (dump_file, "\nfinal value replacement:\n  ");
-	  print_gimple_stmt (dump_file, phi, 0, 0);
+	  print_gimple_stmt (dump_file, phi, 0);
 	  fprintf (dump_file, "  with\n  ");
 	}
       def = unshare_expr (def);
@@ -3799,7 +3801,7 @@ final_value_replacement_loop (struct loop *loop)
       gsi_insert_before (&gsi, ass, GSI_SAME_STMT);
       if (dump_file)
 	{
-	  print_gimple_stmt (dump_file, ass, 0, 0);
+	  print_gimple_stmt (dump_file, ass, 0);
 	  fprintf (dump_file, "\n");
 	}
     }
@@ -3856,9 +3858,9 @@ scev_const_prop (void)
 	      if (dump_file && (dump_flags & TDF_DETAILS))
 		{
 		  fprintf (dump_file, "Replacing uses of: ");
-		  print_generic_expr (dump_file, name, 0);
+		  print_generic_expr (dump_file, name);
 		  fprintf (dump_file, " with: ");
-		  print_generic_expr (dump_file, ev, 0);
+		  print_generic_expr (dump_file, ev);
 		  fprintf (dump_file, "\n");
 		}
 	      replace_uses_by (name, ev);

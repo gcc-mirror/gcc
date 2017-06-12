@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -196,19 +196,26 @@ package Types is
    --  which are one greater than the previous upper bound, rounded up to
    --  a multiple of Source_Align.
 
-   subtype Big_Source_Buffer is Text_Buffer (0 .. Text_Ptr'Last);
-   --  This is a virtual type used as the designated type of the access type
-   --  Source_Buffer_Ptr, see Osint.Read_Source_File for details.
+   type Source_Buffer_Ptr_Var is access all Source_Buffer;
+   type Source_Buffer_Ptr is access constant Source_Buffer;
+   --  Pointer to source buffer. Source_Buffer_Ptr_Var is used for allocation
+   --  and deallocation; Source_Buffer_Ptr is used for all other uses of source
+   --  buffers.
 
-   type Source_Buffer_Ptr is access all Big_Source_Buffer;
-   --  Pointer to source buffer. We use virtual origin addressing for source
-   --  buffers, with thin pointers. The pointer points to a virtual instance
-   --  of type Big_Source_Buffer, where the actual type is in fact of type
-   --  Source_Buffer. The address is adjusted so that the virtual origin
-   --  addressing works correctly. See Osint.Read_Source_Buffer for further
-   --  details. Again, as for Big_String_Ptr, we should never allocate using
-   --  this type, but we don't give a storage size clause of zero, since we
-   --  may end up doing deallocations of instances allocated manually.
+   function Null_Source_Buffer_Ptr (X : Source_Buffer_Ptr) return Boolean;
+   --  True if X = null
+
+   function Source_Buffer_Ptr_Equal (X, Y : Source_Buffer_Ptr) return Boolean
+     renames "=";
+   --  Squirrel away the predefined "=", for use in Null_Source_Buffer_Ptr.
+   --  Do not call this elsewhere.
+
+   function "=" (X, Y : Source_Buffer_Ptr) return Boolean is abstract;
+   --  Make "=" abstract. Note that this makes "/=" abstract as well. This is a
+   --  vestige of the zero-origin array indexing we used to use, where "=" is
+   --  always wrong (including the one in Null_Source_Buffer_Ptr). We keep this
+   --  just because we never need to compare Source_Buffer_Ptrs other than to
+   --  null.
 
    subtype Source_Ptr is Text_Ptr;
    --  Type used to represent a source location, which is a subscript of a
@@ -255,6 +262,11 @@ package Types is
    --    Strings (type String_Id)
    --    Universal integers (type Uint)
    --    Universal reals (type Ureal)
+
+   --  These types are represented as integer indices into various tables.
+   --  However, they should be treated as private, except in a few documented
+   --  cases. In particular it is never appropriate to perform arithmetic
+   --  operations using these types.
 
    --  In most contexts, the strongly typed interface determines which of these
    --  types is present. However, there are some situations (involving untyped
@@ -486,11 +498,6 @@ package Types is
    --  String_Id values are used to identify entries in the strings table. They
    --  are subscripts into the Strings table defined in package Stringt.
 
-   --  Note that with only a few exceptions, which are clearly documented, the
-   --  type String_Id should be regarded as a private type. In particular it is
-   --  never appropriate to perform arithmetic operations using this type.
-   --  Doesn't this also apply to all other *_Id types???
-
    type String_Id is range Strings_Low_Bound .. Strings_High_Bound;
    --  Type used to identify entries in the strings table
 
@@ -565,13 +572,8 @@ package Types is
    No_Unit : constant Unit_Number_Type := -1;
    --  Special value used to signal no unit
 
-   type Source_File_Index is new Int range -1 .. Int'Last;
+   type Source_File_Index is new Int range 0 .. Int'Last;
    --  Type used to index the source file table (see package Sinput)
-
-   Internal_Source_File : constant Source_File_Index :=
-                            Source_File_Index'First;
-   --  Value used to indicate the buffer for the source-code-like strings
-   --  internally created withing the compiler (see package Sinput)
 
    No_Source_File : constant Source_File_Index := 0;
    --  Value used to indicate no source file present

@@ -598,6 +598,22 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     : is_copy_constructible<_Tp>
     { };
 
+#if __cplusplus >= 201103L
+  // Trait to detect Allocator-like types.
+  template<typename _Alloc, typename = void>
+    struct __is_allocator : false_type { };
+
+  template<typename _Alloc>
+    struct __is_allocator<_Alloc,
+      __void_t<typename _Alloc::value_type,
+	       decltype(std::declval<_Alloc&>().allocate(size_t{}))>>
+    : true_type { };
+
+  template<typename _Alloc>
+    using _RequireAllocator
+      = typename enable_if<__is_allocator<_Alloc>::value, _Alloc>::type;
+#endif
+
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 

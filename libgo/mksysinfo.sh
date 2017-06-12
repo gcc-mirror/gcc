@@ -42,6 +42,12 @@ grep -v '^// ' gen-sysinfo.go | \
       -e 's/\([^a-zA-Z0-9_]\)_timestruc_t\([^a-zA-Z0-9_]\)/\1Timestruc\2/g' \
     >> ${OUT}
 
+# On AIX, the _arpcom struct, is filtered by the above grep sequence, as it as
+# a field of type _in6_addr, but other types depend on _arpcom, so we need to
+# put it back.
+grep '^type _arpcom ' gen-sysinfo.go | \
+  sed -e 's/_in6_addr/[16]byte/' >> ${OUT}
+
 # The errno constants.  These get type Errno.
   egrep '#define E[A-Z0-9_]+ ' errno.i | \
   sed -e 's/^#define \(E[A-Z0-9_]*\) .*$/const \1 = Errno(_\1)/' >> ${OUT}
@@ -59,6 +65,15 @@ fi
 # The os package requires F_DUPFD_CLOEXEC to be defined.
 if ! grep '^const F_DUPFD_CLOEXEC' ${OUT} >/dev/null 2>&1; then
   echo "const F_DUPFD_CLOEXEC = 0" >> ${OUT}
+fi
+
+# AIX 7.1 is a 64 bits value for _FCLOEXEC (referenced by O_CLOEXEC)
+# which leads to a constant overflow when using O_CLOEXEC in some
+# go code. Issue wan not present in 6.1 (no O_CLOEXEC) and is no
+# more present in 7.2 (_FCLOEXEC is a 32 bit value).
+if test "${GOOS}" = "aix" && `oslevel | grep -q "^7.1"`; then
+    sed -e 's/const __FCLOEXEC = .*/const __FCLOEXEC = 0/' ${OUT} > ${OUT}-2
+    mv ${OUT}-2 ${OUT}
 fi
 
 # These flags can be lost on i386 GNU/Linux when using
@@ -656,6 +671,11 @@ grep '^const _EAI_' gen-sysinfo.go | \
 grep '^const _NI_' gen-sysinfo.go | \
   sed -e 's/^\(const \)_\(NI_[^= ]*\)\(.*\)$/\1\2 = _\2/' >> ${OUT}
 
+# If nothing else defined EAI_OVERFLOW, make sure it has a value.
+if ! grep "const EAI_OVERFLOW " ${OUT} >/dev/null 2>&1; then
+  echo "const EAI_OVERFLOW = 0" >> ${OUT}
+fi
+
 # The passwd struct.
 grep '^type _passwd ' gen-sysinfo.go | \
     sed -e 's/_passwd/Passwd/' \
@@ -868,6 +888,11 @@ if ! grep '^const _TIOCSCTTY ' gen-sysinfo.go >/dev/null 2>&1; then
   if grep '^const _TIOCNXCL ' gen-sysinfo.go >/dev/null 2>&1; then
     echo "const TIOCSCTTY = TIOCNXCL" >> ${OUT}
   fi
+fi
+
+# If nothing else defined TIOCSCTTY, make sure it has a value.
+if ! grep "const TIOCSCTTY " ${OUT} >/dev/null 2>&1; then
+  echo "const TIOCSCTTY = 0" >> ${OUT}
 fi
 
 # The nlmsghdr struct.

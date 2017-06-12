@@ -115,7 +115,7 @@ A @code{define_insn} is an RTL expression containing four or five operands:
 
 @enumerate
 @item
-An optional name.  The presence of a name indicate that this instruction
+An optional name.  The presence of a name indicates that this instruction
 pattern can perform a certain standard job for the RTL-generation
 pass of the compiler.  This pass knows certain names and will use
 the instruction patterns with those names, if the names are defined
@@ -166,9 +166,21 @@ individual insn, and only after the insn has matched the pattern's
 recognition template.  The insn's operands may be found in the vector
 @code{operands}.
 
-For an insn where the condition has once matched, it
-cannot later be used to control register allocation by excluding
-certain register or value combinations.
+An instruction condition cannot become more restrictive as compilation
+progresses.  If the condition accepts a particular RTL instruction at
+one stage of compilation, it must continue to accept that instruction
+until the final pass.  For example, @samp{!reload_completed} and
+@samp{can_create_pseudo_p ()} are both invalid instruction conditions,
+because they are true during the earlier RTL passes and false during
+the later ones.  For the same reason, if a condition accepts an
+instruction before register allocation, it cannot later try to control
+register allocation by excluding certain register or value combinations.
+
+Although a condition cannot become more restrictive as compilation
+progresses, the condition for a nameless pattern @emph{can} become
+more permissive.  For example, a nameless instruction can require
+@samp{reload_completed} to be true, in which case it only matches
+after register allocation.
 
 @item
 The @dfn{output template} or @dfn{output statement}: This is either
@@ -560,6 +572,11 @@ multiple assembler instructions, and there is a matching @code{define_split}
 already defined, then you can simply use @code{#} as the output template
 instead of writing an output template that emits the multiple assembler
 instructions.
+
+Note that @code{#} only has an effect while generating assembly code;
+it does not affect whether a split occurs earlier.  An associated
+@code{define_split} must exist and it must be suitable for use after
+register allocation.
 
 If the macro @code{ASSEMBLER_DIALECT} is defined, you can use construct
 of the form @samp{@{option0|option1|option2@}} in the templates.  These
@@ -3122,6 +3139,9 @@ FP or VSX register to perform ISA 2.07 float ops or NO_REGS.
 @item wz
 Floating point register if the LFIWZX instruction is enabled or NO_REGS.
 
+@item wA
+Address base register if 64-bit instructions are enabled or NO_REGS.
+
 @item wB
 Signed 5-bit constant integer that can be loaded into an altivec register.
 
@@ -3728,7 +3748,7 @@ Any kind of immediate operand, unless it matches the S0 constraint.
 Memory location with B base register, but not using a long offset.
 
 @item W
-A memory operand with an address that can't be used in an unaligned access.
+A memory operand with an address that cannot be used in an unaligned access.
 
 @end ifset
 @item Z
@@ -4000,6 +4020,8 @@ unsigned long long rdtsc (void)
 @}
 @end smallexample
 
+@item U
+The call-clobbered integer registers.
 
 @item f
 Any 80387 floating-point (stack) register.
@@ -4010,24 +4032,95 @@ Top of 80387 floating-point stack (@code{%st(0)}).
 @item u
 Second from top of 80387 floating-point stack (@code{%st(1)}).
 
+@ifset INTERNALS
+@item Yk
+Any mask register that can be used as a predicate, i.e. @code{k1-k7}.
+
+@item k
+Any mask register.
+@end ifset
+
 @item y
 Any MMX register.
 
 @item x
 Any SSE register.
 
+@item v
+Any EVEX encodable SSE register (@code{%xmm0-%xmm31}).
+
+@ifset INTERNALS
+@item w
+Any bound register.
+@end ifset
+
 @item Yz
 First SSE register (@code{%xmm0}).
 
 @ifset INTERNALS
-@item Y2
-Any SSE register, when SSE2 is enabled.
-
 @item Yi
 Any SSE register, when SSE2 and inter-unit moves are enabled.
 
+@item Yj
+Any SSE register, when SSE2 and inter-unit moves from vector registers are enabled.
+
 @item Ym
 Any MMX register, when inter-unit moves are enabled.
+
+@item Yn
+Any MMX register, when inter-unit moves from vector registers are enabled.
+
+@item Yp
+Any integer register when @code{TARGET_PARTIAL_REG_STALL} is disabled.
+
+@item Ya
+Any integer register when zero extensions with @code{AND} are disabled.
+
+@item Yb
+Any register that can be used as the GOT base when calling@*
+@code{___tls_get_addr}: that is, any general register except @code{a}
+and @code{sp} registers, for @option{-fno-plt} if linker supports it.
+Otherwise, @code{b} register.
+
+@item Yf
+Any x87 register when 80387 floating-point arithmetic is enabled.
+
+@item Yr
+Lower SSE register when avoiding REX prefix and all SSE registers otherwise.
+
+@item Yv
+For AVX512VL, any EVEX-encodable SSE register (@code{%xmm0-%xmm31}),
+otherwise any SSE register.
+
+@item Yh
+Any EVEX-encodable SSE register, that has number factor of four.
+
+@item Bf
+Flags register operand.
+
+@item Bg
+GOT memory operand.
+
+@item Bm
+Vector memory operand.
+
+@item Bc
+Constant memory operand.
+
+@item Bn
+Memory operand without REX prefix.
+
+@item Bs
+Sibcall memory operand.
+
+@item Bw
+Call memory operand.
+
+@item Bz
+Constant call address operand.
+
+@item BC
+SSE constant -1 operand.
 @end ifset
 
 @item I
@@ -4065,10 +4158,36 @@ SSE constant zero operand.
 to fit that range (for immediate operands in sign-extending x86-64
 instructions).
 
+@item We
+32-bit signed integer constant, or a symbolic reference known
+to fit that range (for sign-extending conversion operations that
+require non-@code{VOIDmode} immediate operands).
+
+@item Wz
+32-bit unsigned integer constant, or a symbolic reference known
+to fit that range (for zero-extending conversion operations that
+require non-@code{VOIDmode} immediate operands).
+
+@item Wd
+128-bit integer constant where both the high and low 64-bit word
+satisfy the @code{e} constraint.
+
 @item Z
 32-bit unsigned integer constant, or a symbolic reference known
 to fit that range (for immediate operands in zero-extending x86-64
 instructions).
+
+@item Tv
+VSIB address operand.
+
+@item Ts
+Address operand without segment register.
+
+@item Ti
+MPX address operand without index.
+
+@item Tb
+MPX address operand without base.
 
 @end table
 
@@ -7253,6 +7372,25 @@ the operations as far as possible.  For instance,
 @item
 For the @code{compare} operator, a constant is always the second operand
 if the first argument is a condition code register or @code{(cc0)}.
+
+@item
+For instructions that inherently set a condition code register, the
+@code{compare} operator is always written as the first RTL expression of
+the @code{parallel} instruction pattern.  For example,
+
+@smallexample
+(define_insn ""
+  [(set (reg:CCZ FLAGS_REG)
+	(compare:CCZ
+	  (plus:SI
+	    (match_operand:SI 1 "register_operand" "%r")
+	    (match_operand:SI 2 "register_operand" "r"))
+	  (const_int 0)))
+   (set (match_operand:SI 0 "register_operand" "=r")
+	(plus:SI (match_dup 1) (match_dup 2)))]
+  ""
+  "addl %0, %1, %2")
+@end smallexample
 
 @item
 An operand of @code{neg}, @code{not}, @code{mult}, @code{plus}, or

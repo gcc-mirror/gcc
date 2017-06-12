@@ -268,6 +268,18 @@ test_show_locus (function *fun)
       warning_at_rich_loc (&richloc, 0, "example of insertion hints");
     }
 
+  if (0 == strcmp (fnname, "test_fixit_insert_newline"))
+    {
+      const int line = fnstart_line + 6;
+      location_t line_start = get_loc (line, 0);
+      location_t case_start = get_loc (line, 4);
+      location_t case_finish = get_loc (line, 11);
+      location_t case_loc = make_location (case_start, case_start, case_finish);
+      rich_location richloc (line_table, case_loc);
+      richloc.add_fixit_insert_before (line_start, "      break;\n");
+      warning_at_rich_loc (&richloc, 0, "example of newline insertion hint");
+    }
+
   if (0 == strcmp (fnname, "test_fixit_remove"))
     {
       const int line = fnstart_line + 2;
@@ -293,6 +305,30 @@ test_show_locus (function *fun)
       richloc.add_fixit_replace (src_range, "gtk_widget_show_all");
       warning_at_rich_loc (&richloc, 0, "example of a replacement hint");
     }
+
+  if (0 == strcmp (fnname, "test_mutually_exclusive_suggestions"))
+    {
+      const int line = fnstart_line + 2;
+      location_t start = get_loc (line, 2);
+      location_t finish = get_loc (line, 9);
+      source_range src_range;
+      src_range.m_start = start;
+      src_range.m_finish = finish;
+
+      {
+	rich_location richloc (line_table, make_location (start, start, finish));
+	richloc.add_fixit_replace (src_range, "replacement_1");
+	richloc.fixits_cannot_be_auto_applied ();
+	warning_at_rich_loc (&richloc, 0, "warning 1");
+      }
+
+      {
+	rich_location richloc (line_table, make_location (start, start, finish));
+	richloc.add_fixit_replace (src_range, "replacement_2");
+	richloc.fixits_cannot_be_auto_applied ();
+	warning_at_rich_loc (&richloc, 0, "warning 2");
+      }
+    }  
 
   /* Example of two carets where both carets appear to have an off-by-one
      error appearing one column early.

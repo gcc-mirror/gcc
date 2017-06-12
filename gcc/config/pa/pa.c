@@ -3299,6 +3299,24 @@ pa_output_64bit_ior (rtx *operands)
 static bool
 pa_assemble_integer (rtx x, unsigned int size, int aligned_p)
 {
+  bool result;
+  tree decl = NULL;
+
+  /* When we have a SYMBOL_REF with a SYMBOL_REF_DECL, we need to call
+     call assemble_external and set the SYMBOL_REF_DECL to NULL before
+     calling output_addr_const.  Otherwise, it may call assemble_external
+     in the midst of outputing the assembler code for the SYMBOL_REF.
+     We restore the SYMBOL_REF_DECL after the output is done.  */
+  if (GET_CODE (x) == SYMBOL_REF)
+    {
+      decl = SYMBOL_REF_DECL (x);
+      if (decl)
+	{
+	  assemble_external (decl);
+	  SET_SYMBOL_REF_DECL (x, NULL);
+	}
+    }
+
   if (size == UNITS_PER_WORD
       && aligned_p
       && function_label_operand (x, VOIDmode))
@@ -3311,9 +3329,15 @@ pa_assemble_integer (rtx x, unsigned int size, int aligned_p)
 
       output_addr_const (asm_out_file, x);
       fputc ('\n', asm_out_file);
-      return true;
+      result = true;
     }
-  return default_assemble_integer (x, size, aligned_p);
+  else
+    result = default_assemble_integer (x, size, aligned_p);
+
+  if (decl)
+    SET_SYMBOL_REF_DECL (x, decl);
+
+  return result;
 }
 
 /* Output an ascii string.  */
@@ -9962,19 +9986,23 @@ pa_cannot_change_mode_class (machine_mode from, machine_mode to,
   if (from == to)
     return false;
 
+  if (GET_MODE_SIZE (from) == GET_MODE_SIZE (to))
+    return false;
+
+  /* Reject changes to/from modes with zero size.  */
+  if (!GET_MODE_SIZE (from) || !GET_MODE_SIZE (to))
+    return true;
+
   /* Reject changes to/from complex and vector modes.  */
   if (COMPLEX_MODE_P (from) || VECTOR_MODE_P (from)
       || COMPLEX_MODE_P (to) || VECTOR_MODE_P (to))
     return true;
       
-  if (GET_MODE_SIZE (from) == GET_MODE_SIZE (to))
-    return false;
-
-  /* There is no way to load QImode or HImode values directly from
-     memory.  SImode loads to the FP registers are not zero extended.
-     On the 64-bit target, this conflicts with the definition of
-     LOAD_EXTEND_OP.  Thus, we can't allow changing between modes
-     with different sizes in the floating-point registers.  */
+  /* There is no way to load QImode or HImode values directly from memory
+     to a FP register.  SImode loads to the FP registers are not zero
+     extended.  On the 64-bit target, this conflicts with the definition
+     of LOAD_EXTEND_OP.  Thus, we can't allow changing between modes with
+     different sizes in the floating-point registers.  */
   if (MAYBE_FP_REG_CLASS_P (rclass))
     return true;
 

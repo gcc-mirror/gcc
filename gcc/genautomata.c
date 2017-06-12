@@ -248,7 +248,7 @@ static int ndfa_flag;
 
 /* When making an NDFA, produce additional transitions that collapse
    NDFA state into a deterministic one suitable for querying CPU units.
-   Provide avance-state transitions only for deterministic states.  */
+   Provide advance-state transitions only for deterministic states.  */
 static int collapse_flag;
 
 /* Do not make minimization of DFA (`-no-minimization').  */

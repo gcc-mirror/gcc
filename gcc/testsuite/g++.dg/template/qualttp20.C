@@ -16,7 +16,7 @@ struct AS
 
 template <typename T> struct B1 : T
 {
-  typedef typename T::L __restrict__ r;// { dg-error "'__restrict__' qualifiers cannot" "" }
+  typedef typename T::L __restrict__ r;// { dg-error "'__restrict__' qualifiers cannot" }
   typedef typename T::myT __restrict__ p;
 
   // The following are DR 295 dependent
@@ -32,5 +32,5 @@ template <typename T> struct B2 : T
   myconst b;
 };
 
-B1<AS> b1;	// { dg-message "required" "" }
+B1<AS> b1;	// { dg-message "required" }
 B2<AS> b2;

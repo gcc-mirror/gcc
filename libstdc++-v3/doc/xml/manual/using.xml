@@ -829,20 +829,37 @@ g++ -Winvalid-pch -I. -include stdc++.h -H -g -O2 hello.cc -o test.exe
       general public.
    </para>
 
-   <para>Below is the macro which users may check for library version
+   <para>Below are the macros which users may check for library version
       information. </para>
 
     <variablelist>
     <varlistentry>
+      <term><code>_GLIBCXX_RELEASE</code></term>
+      <listitem>
+	<para>The major release number for libstdc++.  This macro is defined
+        to the GCC major version that the libstdc++ headers belong to,
+        as an integer constant.
+        When compiling with GCC it has the same value as GCC's pre-defined
+        macro <symbol>__GNUC__</symbol>.
+        This macro can be used when libstdc++ is used with a non-GNU
+        compiler where <symbol>__GNUC__</symbol> is not defined, or has a
+        different value that doesn't correspond to the libstdc++ version.
+        This macro first appeared in the GCC 7.1 release and is not defined
+        for GCC 6.x or older releases.
+      </para>
+      </listitem>
+    </varlistentry>
+    <varlistentry>
       <term><code>__GLIBCXX__</code></term>
       <listitem>
-	<para>The current version of
-    libstdc++ in compressed ISO date format, as an unsigned
-    long. For details on the value of this particular macro for a
-    particular release, please consult the <link linkend="appendix.porting.abi">
-    ABI Policy and Guidelines</link> appendix.
-    </para>
-    </listitem>
+	<para>The revision date of the libstdc++ source code,
+        in compressed ISO date format, as an unsigned
+        long. For notes about using this macro and details on the value of
+        this macro for a particular release, please consult the
+        <link linkend="abi.versioning.__GLIBCXX__">ABI History</link>
+        appendix.
+        </para>
+      </listitem>
     </varlistentry>
     </variablelist>
 
@@ -1625,7 +1642,7 @@ gcc version 4.1.2 20070925 (Red Hat 4.1.2-33)
 
       <para>For further details of the C++11 memory model see Hans-J. Boehm's
       <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://www.hboehm.info/c++mm/">Threads
-      and memory model for C++</link> pages, particularly the <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.hpl.hp.com/personal/Hans_Boehm/c++mm/threadsintro.html">introduction</link> 
+      and memory model for C++</link> pages, particularly the <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.hboehm.info/c++mm/threadsintro.html">introduction</link> 
       and <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://www.hboehm.info/c++mm/user-faq.html">FAQ</link>.
       </para>
 
@@ -1669,10 +1686,11 @@ gcc version 4.1.2 20070925 (Red Hat 4.1.2-33)
       and efficiency.  You, the programmer, are always required to take care
       with multiple threads.
    </para>
-   <para>(As an example, the POSIX standard requires that C stdio FILE*
-       operations are atomic.  POSIX-conforming C libraries (e.g, on Solaris
-       and GNU/Linux) have an internal mutex to serialize operations on
-       FILE*s.  However, you still need to not do stupid things like calling
+   <para>(As an example, the POSIX standard requires that C stdio
+       <code>FILE*</code> operations are atomic.  POSIX-conforming C libraries
+       (e.g, on Solaris and GNU/Linux) have an internal mutex to serialize
+       operations on <code>FILE*</code>s.
+       However, you still need to not do stupid things like calling
        <code>fclose(fs)</code> in one thread followed by an access of
        <code>fs</code> in another.)
    </para>

@@ -903,6 +903,7 @@ int Mark_lvalue_varexprs::expression(Expression** ppexpr)
   if (aie != NULL)
     {
       Mark_lvalue_varexprs mlve;
+      aie->set_is_lvalue();
       aie->array()->traverse_subexpressions(&mlve);
       return TRAVERSE_EXIT;
     }
@@ -910,6 +911,21 @@ int Mark_lvalue_varexprs::expression(Expression** ppexpr)
   Unary_expression* ue = e->unary_expression();
   if (ue && ue->op() == OPERATOR_MULT)
     return TRAVERSE_CONTINUE;
+
+  Type_conversion_expression* ce = e->conversion_expression();
+  if (ce)
+    return TRAVERSE_CONTINUE;
+
+  Temporary_reference_expression* tre =
+      e->temporary_reference_expression();
+  if (tre)
+    {
+      tre = new Temporary_reference_expression(tre->statement(),
+                                               tre->location());
+      *ppexpr = tre;
+      tre->set_is_lvalue();
+      return TRAVERSE_EXIT;
+    }
 
   return TRAVERSE_EXIT;
 }

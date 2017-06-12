@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -33,23 +33,14 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This version of Ada.Exceptions is used only for building the compiler
---  and certain basic tools. The "real" version of Ada.Exceptions is in
---  a-except-2005.ads/adb, and is used for all other builds where full Ada
---  functionality is required. In particular, it is used for building run
---  times on all targets.
-
---  This version is limited to Ada 95 features. It omits Ada 2005 features
---  such as the additional definitions of Exception_Name returning
---  Wide_[Wide_]String. It differs from the version specified in the Ada 95 RM
---  only in that it is declared Preelaborate (see declaration below for why
---  this is done).
+--  This version of Ada.Exceptions fully supports Ada 95 and later language
+--  versions.  It is used in all situations except for the build of the
+--  compiler and other basic tools. For these latter builds, we use an
+--  Ada 95-only version.
 
 --  The reason for this splitting off of a separate version is to support
 --  older bootstrap compilers that do not support Ada 2005 features, and
 --  Ada.Exceptions is part of the compiler sources.
-
-pragma Compiler_Unit_Warning;
 
 pragma Polling (Off);
 --  We must turn polling off for this unit, because otherwise we get
@@ -62,25 +53,39 @@ with System.Traceback_Entries;
 
 package Ada.Exceptions is
    pragma Preelaborate;
-   --  We make this preelaborable. If we did not do this, then run time units
-   --  used by the compiler (e.g. s-soflin.ads) would run into trouble.
-   --  Conformance with Ada 95 is not an issue, since this version is used
-   --  only by the compiler.
+   --  In accordance with Ada 2005 AI-362.
 
    type Exception_Id is private;
+   pragma Preelaborable_Initialization (Exception_Id);
 
    Null_Id : constant Exception_Id;
 
    type Exception_Occurrence is limited private;
+   pragma Preelaborable_Initialization (Exception_Occurrence);
 
    type Exception_Occurrence_Access is access all Exception_Occurrence;
 
    Null_Occurrence : constant Exception_Occurrence;
 
-   function Exception_Name (X : Exception_Occurrence) return String;
-   --  Same as Exception_Name (Exception_Identity (X))
-
    function Exception_Name (Id : Exception_Id) return String;
+
+   function Exception_Name (X : Exception_Occurrence) return String;
+
+   function Wide_Exception_Name
+     (Id : Exception_Id) return Wide_String;
+   pragma Ada_05 (Wide_Exception_Name);
+
+   function Wide_Exception_Name
+     (X : Exception_Occurrence) return Wide_String;
+   pragma Ada_05 (Wide_Exception_Name);
+
+   function Wide_Wide_Exception_Name
+     (Id : Exception_Id) return Wide_Wide_String;
+   pragma Ada_05 (Wide_Wide_Exception_Name);
+
+   function Wide_Wide_Exception_Name
+     (X : Exception_Occurrence) return Wide_Wide_String;
+   pragma Ada_05 (Wide_Wide_Exception_Name);
 
    procedure Raise_Exception (E : Exception_Id; Message : String := "");
    pragma No_Return (Raise_Exception);
@@ -105,7 +110,9 @@ package Ada.Exceptions is
    --    0xyyyyyyyy 0xyyyyyyyy ...
    --
    --  The lines are separated by a ASCII.LF character
-   --  The nnnn is the partition Id given as decimal digits.
+   --
+   --  The nnnn is the partition Id given as decimal digits
+   --
    --  The 0x... line represents traceback program counter locations,
    --  in order with the first one being the exception location.
 
@@ -120,6 +127,22 @@ package Ada.Exceptions is
    function Save_Occurrence
      (Source : Exception_Occurrence)
       return   Exception_Occurrence_Access;
+
+   --  Ada 2005 (AI-438): The language revision introduces the following
+   --  subprograms and attribute definitions. We do not provide them
+   --  explicitly. instead, the corresponding stream attributes are made
+   --  available through a pragma Stream_Convert in the private part.
+
+   --  procedure Read_Exception_Occurrence
+   --    (Stream : not null access Ada.Streams.Root_Stream_Type'Class;
+   --     Item   : out Exception_Occurrence);
+
+   --  procedure Write_Exception_Occurrence
+   --    (Stream : not null access Ada.Streams.Root_Stream_Type'Class;
+   --     Item   : Exception_Occurrence);
+
+   --  for Exception_Occurrence'Read use Read_Exception_Occurrence;
+   --  for Exception_Occurrence'Write use Write_Exception_Occurrence;
 
 private
    package SSL renames System.Standard_Library;
@@ -216,8 +239,8 @@ private
    pragma No_Return (Reraise_Occurrence_No_Defer);
    --  Exactly like Reraise_Occurrence, except that abort is not deferred
    --  before the call and the parameter X is known not to be the null
-   --  occurrence. This is used in generated code when it is known that
-   --  abort is already deferred.
+   --  occurrence. This is used in generated code when it is known that abort
+   --  is already deferred.
 
    function Triggered_By_Abort return Boolean;
    --  Determine whether the current exception (if it exists) is an instance of
@@ -264,6 +287,10 @@ private
       Id : Exception_Id;
       --  Exception_Identity for this exception occurrence
 
+      Machine_Occurrence : System.Address;
+      --  The underlying machine occurrence. For GCC, this corresponds to the
+      --  _Unwind_Exception structure address.
+
       Msg_Length : Natural := 0;
       --  Length of message (zero = no message)
 
@@ -295,18 +322,28 @@ private
    --  this, and it would not work right, because of the Msg and Tracebacks
    --  fields which have unused entries not copied by Save_Occurrence.
 
+   function Get_Exception_Machine_Occurrence
+     (X : Exception_Occurrence) return System.Address;
+   pragma Export (Ada, Get_Exception_Machine_Occurrence,
+                  "__gnat_get_exception_machine_occurrence");
+   --  Get the machine occurrence corresponding to an exception occurrence.
+   --  It is Null_Address if there is no machine occurrence (in runtimes that
+   --  doesn't use GCC mechanism) or if it has been lost (Save_Occurrence
+   --  doesn't save the machine occurrence).
+
    function EO_To_String (X : Exception_Occurrence) return String;
    function String_To_EO (S : String) return Exception_Occurrence;
    pragma Stream_Convert (Exception_Occurrence, String_To_EO, EO_To_String);
    --  Functions for implementing Exception_Occurrence stream attributes
 
    Null_Occurrence : constant Exception_Occurrence := (
-     Id               => null,
-     Msg_Length       => 0,
-     Msg              => (others => ' '),
-     Exception_Raised => False,
-     Pid              => 0,
-     Num_Tracebacks   => 0,
-     Tracebacks       => (others => TBE.Null_TB_Entry));
+     Id                 => null,
+     Machine_Occurrence => System.Null_Address,
+     Msg_Length         => 0,
+     Msg                => (others => ' '),
+     Exception_Raised   => False,
+     Pid                => 0,
+     Num_Tracebacks     => 0,
+     Tracebacks         => (others => TBE.Null_TB_Entry));
 
 end Ada.Exceptions;

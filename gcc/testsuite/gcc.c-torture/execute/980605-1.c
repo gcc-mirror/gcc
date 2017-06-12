@@ -1,3 +1,5 @@
+/* { dg-additional-options "-DSTACK_SIZE=[dg-effective-target-value stack_size]" { target { stack_size } } } */
+
 #include <stdio.h>
 
 #ifndef STACK_SIZE

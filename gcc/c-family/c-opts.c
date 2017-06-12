@@ -101,9 +101,7 @@ static size_t include_cursor;
 
 /* Dump files/flags to use during parsing.  */
 static FILE *original_dump_file = NULL;
-static int original_dump_flags;
-static FILE *class_dump_file = NULL;
-static int class_dump_flags;
+static dump_flags_t original_dump_flags;
 
 /* Whether any standard preincluded header has been preincluded.  */
 static bool done_preinclude;
@@ -909,15 +907,15 @@ c_common_post_options (const char **pfilename)
     }
   else if (flag_abi_compat_version == -1)
     {
-      /* Generate compatibility aliases for ABI v10 (6.1) by default. */
+      /* Generate compatibility aliases for ABI v11 (7.1) by default. */
       flag_abi_compat_version
-	= (flag_abi_version == 0 ? 10 : 0);
+	= (flag_abi_version == 0 ? 11 : 0);
     }
 
   /* Change flag_abi_version to be the actual current ABI level for the
      benefit of c_cpp_builtins.  */
   if (flag_abi_version == 0)
-    flag_abi_version = 11;
+    flag_abi_version = 12;
 
   /* By default, enable the new inheriting constructor semantics along with ABI
      11.  New and old should coexist fine, but it is a change in what
@@ -971,6 +969,10 @@ c_common_post_options (const char **pfilename)
 #endif
     }
 
+  if (num_in_fnames > 1)
+    error ("too many filenames given.  Type %s --help for usage",
+	   progname);
+
   if (flag_preprocess_only)
     {
       /* Open the output now.  We must do so even if flag_no_output is
@@ -986,10 +988,6 @@ c_common_post_options (const char **pfilename)
 	  fatal_error (input_location, "opening output file %s: %m", out_fname);
 	  return false;
 	}
-
-      if (num_in_fnames > 1)
-	error ("too many filenames given.  Type %s --help for usage",
-	       progname);
 
       init_pp_output (out_stream);
     }
@@ -1098,10 +1096,9 @@ c_common_parse_file (void)
   for (;;)
     {
       c_finish_options ();
-      /* Open the dump files to use for the original and class dump output
+      /* Open the dump file to use for the original dump output
          here, to be used during parsing for the current file.  */
       original_dump_file = dump_begin (TDI_original, &original_dump_flags);
-      class_dump_file = dump_begin (TDI_class, &class_dump_flags);
       pch_init ();
       push_file_scope ();
       c_parse_file ();
@@ -1120,11 +1117,6 @@ c_common_parse_file (void)
           dump_end (TDI_original, original_dump_file);
           original_dump_file = NULL;
         }
-      if (class_dump_file)
-        {
-          dump_end (TDI_class, class_dump_file);
-          class_dump_file = NULL;
-        }
       /* If an input file is missing, abandon further compilation.
 	 cpplib has issued a diagnostic.  */
       if (!this_input_filename)
@@ -1135,20 +1127,14 @@ c_common_parse_file (void)
 }
 
 /* Returns the appropriate dump file for PHASE to dump with FLAGS.  */
+
 FILE *
-get_dump_info (int phase, int *flags)
+get_dump_info (int phase, dump_flags_t *flags)
 {
-  gcc_assert (phase == TDI_original || phase == TDI_class);
-  if (phase == TDI_original)
-    {
-      *flags = original_dump_flags;
-      return original_dump_file;
-    }
-  else
-    {
-      *flags = class_dump_flags;
-      return class_dump_file;
-    }
+  gcc_assert (phase == TDI_original);
+
+  *flags = original_dump_flags;
+  return original_dump_file;
 }
 
 /* Common finish hook for the C, ObjC and C++ front ends.  */

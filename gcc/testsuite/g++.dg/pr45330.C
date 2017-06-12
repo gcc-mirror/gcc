@@ -1,17 +1,26 @@
-// { dg-do compile }
-// Search std, __cxxabiv1, and global namespaces, plus one more.
-// { dg-options "--param cxx-max-namespaces-for-diagnostic-help=4" }
+// { dg-do compile { target c++11 } }
+// Search std, __cxxabiv1, and global namespaces, plus two more,
+// breadth first
 
-#define NSPACE(NAME) namespace NAME { int foo; }
+// { dg-options "--param cxx-max-namespaces-for-diagnostic-help=5" }
+
+// ::, std and __cxxabiv1
 
 namespace A
 {
   int foo;			// { dg-message "A::foo" "suggested alternative" }
+  namespace A0
+  {
+    int foo; // not me
+  }
 }
 
 namespace B
 {
-  int foo;
+  inline namespace I
+  {
+    int foo;			// { dg-message "B::I::foo" "suggested alternative" }
+  }
 }
 
 namespace C
@@ -32,6 +41,6 @@ namespace E
 int bar()
 {
   return foo;			// { dg-error "was not declared" }
-  // { dg-message "maximum limit of 4 namespaces" "maximum limit" { target *-*-* } 34 }
-  // { dg-message "suggested alternative" "suggested alternative" { target *-*-* } 34 }
+  // { dg-message "maximum limit of 5 namespaces" "maximum limit" { target *-*-* } .-1 }
+  // { dg-message "suggested alternative" "suggested alternative" { target *-*-* } .-2 }
 }

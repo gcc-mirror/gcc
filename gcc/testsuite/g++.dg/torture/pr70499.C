@@ -1,5 +1,5 @@
 // { dg-do compile }
-// { dg-additional-options "-w -Wno-psabi" }
+// { dg-additional-options "-w -fpermissive -Wno-psabi" }
 // { dg-additional-options "-mavx" { target x86_64-*-* i?86-*-* } }
 
 typedef double __m256d __attribute__ ((__vector_size__ (32), __may_alias__));

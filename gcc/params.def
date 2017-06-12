@@ -126,7 +126,7 @@ DEFPARAM (PARAM_COMDAT_SHARING_PROBABILITY,
 DEFPARAM (PARAM_PARTIAL_INLINING_ENTRY_PROBABILITY,
 	  "partial-inlining-entry-probability",
 	  "Maximum probability of the entry BB of split region (in percent relative to entry BB of the function) to make partial inlining happen.",
-	  70, 0, 0)
+	  70, 0, 100)
 
 /* Limit the number of expansions created by the variable expansion
    optimization to avoid register pressure.  */
@@ -565,7 +565,7 @@ DEFPARAM(PARAM_VECT_MAX_VERSION_FOR_ALIAS_CHECKS,
 
 DEFPARAM(PARAM_VECT_MAX_PEELING_FOR_ALIGNMENT,
          "vect-max-peeling-for-alignment",
-         "Max number of loop peels to enhancement alignment of data references in a loop.",
+         "Maximum number of loop peels to enhance alignment of data references in a loop.",
          -1, -1, 64)
 
 DEFPARAM(PARAM_MAX_CSELIB_MEMORY_LOCATIONS,
@@ -1102,13 +1102,13 @@ DEFPARAM (PARAM_MAX_TAIL_MERGE_COMPARISONS,
 DEFPARAM (PARAM_STORE_MERGING_ALLOW_UNALIGNED,
 	  "store-merging-allow-unaligned",
 	  "Allow the store merging pass to introduce unaligned stores "
-	  "if it is legal to do so",
+	  "if it is legal to do so.",
 	  1, 0, 1)
 
 DEFPARAM (PARAM_MAX_STORES_TO_MERGE,
 	  "max-stores-to-merge",
 	  "Maximum number of constant stores to merge in the "
-	  "store merging pass",
+	  "store merging pass.",
 	  64, 2, 0)
 
 DEFPARAM (PARAM_MAX_TAIL_MERGE_ITERATIONS,

@@ -355,7 +355,7 @@ connect_loops (struct loop *loop1, struct loop *loop2)
 
   new_e->count = skip_bb->count;
   new_e->probability = PROB_LIKELY;
-  new_e->count = apply_probability (skip_e->count, PROB_LIKELY);
+  new_e->count = skip_e->count.apply_probability (PROB_LIKELY);
   skip_e->count -= new_e->count;
   skip_e->probability = inverse_probability (PROB_LIKELY);
 
@@ -436,7 +436,6 @@ compute_new_first_bound (gimple_seq *stmts, struct tree_niter_desc *niter,
   if (POINTER_TYPE_P (TREE_TYPE (guard_init)))
     {
       enddiff = gimple_convert (stmts, sizetype, enddiff);
-      enddiff = gimple_build (stmts, NEGATE_EXPR, sizetype, enddiff);
       newbound = gimple_build (stmts, POINTER_PLUS_EXPR,
 			       TREE_TYPE (guard_init),
 			       guard_init, enddiff);

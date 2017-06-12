@@ -1,0 +1,3 @@
+host-ppc-darwin.o : $(srcdir)/config/powerpcspe/host-darwin.c
+	$(COMPILE) $<
+	$(POSTCOMPILE)

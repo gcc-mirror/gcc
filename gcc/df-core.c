@@ -497,9 +497,8 @@ df_set_blocks (bitmap blocks)
 	  /* This block is called to change the focus from one subset
 	     to another.  */
 	  int p;
-	  bitmap_head diff;
-	  bitmap_initialize (&diff, &df_bitmap_obstack);
-	  bitmap_and_compl (&diff, df->blocks_to_analyze, blocks);
+	  auto_bitmap diff (&df_bitmap_obstack);
+	  bitmap_and_compl (diff, df->blocks_to_analyze, blocks);
 	  for (p = 0; p < df->num_problems_defined; p++)
 	    {
 	      struct dataflow *dflow = df->problems_in_order[p];
@@ -510,7 +509,7 @@ df_set_blocks (bitmap blocks)
 		  bitmap_iterator bi;
 		  unsigned int bb_index;
 
-		  EXECUTE_IF_SET_IN_BITMAP (&diff, 0, bb_index, bi)
+		  EXECUTE_IF_SET_IN_BITMAP (diff, 0, bb_index, bi)
 		    {
 		      basic_block bb = BASIC_BLOCK_FOR_FN (cfun, bb_index);
 		      if (bb)
@@ -522,8 +521,6 @@ df_set_blocks (bitmap blocks)
 		    }
 		}
 	    }
-
-	   bitmap_clear (&diff);
 	}
       else
 	{
@@ -705,10 +702,9 @@ rest_of_handle_df_initialize (void)
     df_live_add_problem ();
 
   df->postorder = XNEWVEC (int, last_basic_block_for_fn (cfun));
-  df->postorder_inverted = XNEWVEC (int, last_basic_block_for_fn (cfun));
   df->n_blocks = post_order_compute (df->postorder, true, true);
-  df->n_blocks_inverted = inverted_post_order_compute (df->postorder_inverted);
-  gcc_assert (df->n_blocks == df->n_blocks_inverted);
+  inverted_post_order_compute (&df->postorder_inverted);
+  gcc_assert ((unsigned) df->n_blocks == df->postorder_inverted.length ());
 
   df->hard_regs_live_count = XCNEWVEC (unsigned int, FIRST_PSEUDO_REGISTER);
 
@@ -819,7 +815,7 @@ rest_of_handle_df_finish (void)
     }
 
   free (df->postorder);
-  free (df->postorder_inverted);
+  df->postorder_inverted.release ();
   free (df->hard_regs_live_count);
   free (df);
   df = NULL;
@@ -1201,7 +1197,7 @@ df_analyze_1 (void)
   int i;
 
   /* These should be the same.  */
-  gcc_assert (df->n_blocks == df->n_blocks_inverted);
+  gcc_assert ((unsigned) df->n_blocks == df->postorder_inverted.length ());
 
   /* We need to do this before the df_verify_all because this is
      not kept incrementally up to date.  */
@@ -1225,8 +1221,8 @@ df_analyze_1 (void)
           if (dflow->problem->dir == DF_FORWARD)
             df_analyze_problem (dflow,
                                 df->blocks_to_analyze,
-                                df->postorder_inverted,
-                                df->n_blocks_inverted);
+				df->postorder_inverted.address (),
+				df->postorder_inverted.length ());
           else
             df_analyze_problem (dflow,
                                 df->blocks_to_analyze,
@@ -1252,23 +1248,21 @@ void
 df_analyze (void)
 {
   bitmap current_all_blocks = BITMAP_ALLOC (&df_bitmap_obstack);
-  int i;
 
   free (df->postorder);
-  free (df->postorder_inverted);
   df->postorder = XNEWVEC (int, last_basic_block_for_fn (cfun));
-  df->postorder_inverted = XNEWVEC (int, last_basic_block_for_fn (cfun));
   df->n_blocks = post_order_compute (df->postorder, true, true);
-  df->n_blocks_inverted = inverted_post_order_compute (df->postorder_inverted);
+  df->postorder_inverted.truncate (0);
+  inverted_post_order_compute (&df->postorder_inverted);
 
-  for (i = 0; i < df->n_blocks; i++)
+  for (int i = 0; i < df->n_blocks; i++)
     bitmap_set_bit (current_all_blocks, df->postorder[i]);
 
   if (flag_checking)
     {
       /* Verify that POSTORDER_INVERTED only contains blocks reachable from
 	 the ENTRY block.  */
-      for (i = 0; i < df->n_blocks_inverted; i++)
+      for (unsigned int i = 0; i < df->postorder_inverted.length (); i++)
 	gcc_assert (bitmap_bit_p (current_all_blocks,
 				  df->postorder_inverted[i]));
     }
@@ -1280,9 +1274,10 @@ df_analyze (void)
       bitmap_and_into (df->blocks_to_analyze, current_all_blocks);
       df->n_blocks = df_prune_to_subcfg (df->postorder,
 					 df->n_blocks, df->blocks_to_analyze);
-      df->n_blocks_inverted = df_prune_to_subcfg (df->postorder_inverted,
-						  df->n_blocks_inverted,
+      unsigned int newlen = df_prune_to_subcfg (df->postorder_inverted.address (),
+						df->postorder_inverted.length (),
 						  df->blocks_to_analyze);
+      df->postorder_inverted.truncate (newlen);
       BITMAP_FREE (current_all_blocks);
     }
   else
@@ -1303,14 +1298,13 @@ loop_post_order_compute (int *post_order, struct loop *loop)
   edge_iterator *stack;
   int sp;
   int post_order_num = 0;
-  bitmap visited;
 
   /* Allocate stack for back-tracking up CFG.  */
   stack = XNEWVEC (edge_iterator, loop->num_nodes + 1);
   sp = 0;
 
   /* Allocate bitmap to track nodes that have been visited.  */
-  visited = BITMAP_ALLOC (NULL);
+  auto_bitmap visited;
 
   /* Push the first edge on to the stack.  */
   stack[sp++] = ei_start (loop_preheader_edge (loop)->src->succs);
@@ -1352,7 +1346,6 @@ loop_post_order_compute (int *post_order, struct loop *loop)
     }
 
   free (stack);
-  BITMAP_FREE (visited);
 
   return post_order_num;
 }
@@ -1360,21 +1353,21 @@ loop_post_order_compute (int *post_order, struct loop *loop)
 /* Compute the reverse top sort order of the inverted sub-CFG specified
    by LOOP.  Returns the number of blocks which is always loop->num_nodes.  */
 
-static int
-loop_inverted_post_order_compute (int *post_order, struct loop *loop)
+static void
+loop_inverted_post_order_compute (vec<int> *post_order, struct loop *loop)
 {
   basic_block bb;
   edge_iterator *stack;
   int sp;
-  int post_order_num = 0;
-  bitmap visited;
+
+  post_order->reserve_exact (loop->num_nodes);
 
   /* Allocate stack for back-tracking up CFG.  */
   stack = XNEWVEC (edge_iterator, loop->num_nodes + 1);
   sp = 0;
 
   /* Allocate bitmap to track nodes that have been visited.  */
-  visited = BITMAP_ALLOC (NULL);
+  auto_bitmap visited;
 
   /* Put all latches into the initial work list.  In theory we'd want
      to start from loop exits but then we'd have the special case of
@@ -1404,13 +1397,13 @@ loop_inverted_post_order_compute (int *post_order, struct loop *loop)
 	       time, check its predecessors.  */
 	    stack[sp++] = ei_start (pred->preds);
 	  else
-	    post_order[post_order_num++] = pred->index;
+	    post_order->quick_push (pred->index);
 	}
       else
 	{
 	  if (flow_bb_inside_loop_p (loop, bb)
 	      && ei_one_before_end_p (ei))
-	    post_order[post_order_num++] = bb->index;
+	    post_order->quick_push (bb->index);
 
 	  if (!ei_one_before_end_p (ei))
 	    ei_next (&stack[sp - 1]);
@@ -1420,8 +1413,6 @@ loop_inverted_post_order_compute (int *post_order, struct loop *loop)
     }
 
   free (stack);
-  BITMAP_FREE (visited);
-  return post_order_num;
 }
 
 
@@ -1431,15 +1422,13 @@ void
 df_analyze_loop (struct loop *loop)
 {
   free (df->postorder);
-  free (df->postorder_inverted);
 
   df->postorder = XNEWVEC (int, loop->num_nodes);
-  df->postorder_inverted = XNEWVEC (int, loop->num_nodes);
+  df->postorder_inverted.truncate (0);
   df->n_blocks = loop_post_order_compute (df->postorder, loop);
-  df->n_blocks_inverted
-    = loop_inverted_post_order_compute (df->postorder_inverted, loop);
+    loop_inverted_post_order_compute (&df->postorder_inverted, loop);
   gcc_assert ((unsigned) df->n_blocks == loop->num_nodes);
-  gcc_assert ((unsigned) df->n_blocks_inverted == loop->num_nodes);
+  gcc_assert (df->postorder_inverted.length () == loop->num_nodes);
 
   bitmap blocks = BITMAP_ALLOC (&df_bitmap_obstack);
   for (int i = 0; i < df->n_blocks; ++i)
@@ -1460,8 +1449,8 @@ df_get_n_blocks (enum df_flow_dir dir)
 
   if (dir == DF_FORWARD)
     {
-      gcc_assert (df->postorder_inverted);
-      return df->n_blocks_inverted;
+      gcc_assert (df->postorder_inverted.length ());
+      return df->postorder_inverted.length ();
     }
 
   gcc_assert (df->postorder);
@@ -1480,8 +1469,8 @@ df_get_postorder (enum df_flow_dir dir)
 
   if (dir == DF_FORWARD)
     {
-      gcc_assert (df->postorder_inverted);
-      return df->postorder_inverted;
+      gcc_assert (df->postorder_inverted.length ());
+      return df->postorder_inverted.address ();
     }
   gcc_assert (df->postorder);
   return df->postorder;
@@ -1656,9 +1645,8 @@ df_compact_blocks (void)
   int i, p;
   basic_block bb;
   void *problem_temps;
-  bitmap_head tmp;
 
-  bitmap_initialize (&tmp, &df_bitmap_obstack);
+  auto_bitmap tmp (&df_bitmap_obstack);
   for (p = 0; p < df->num_problems_defined; p++)
     {
       struct dataflow *dflow = df->problems_in_order[p];
@@ -1667,17 +1655,17 @@ df_compact_blocks (void)
 	 dflow problem.  */
       if (dflow->out_of_date_transfer_functions)
 	{
-	  bitmap_copy (&tmp, dflow->out_of_date_transfer_functions);
+	  bitmap_copy (tmp, dflow->out_of_date_transfer_functions);
 	  bitmap_clear (dflow->out_of_date_transfer_functions);
-	  if (bitmap_bit_p (&tmp, ENTRY_BLOCK))
+	  if (bitmap_bit_p (tmp, ENTRY_BLOCK))
 	    bitmap_set_bit (dflow->out_of_date_transfer_functions, ENTRY_BLOCK);
-	  if (bitmap_bit_p (&tmp, EXIT_BLOCK))
+	  if (bitmap_bit_p (tmp, EXIT_BLOCK))
 	    bitmap_set_bit (dflow->out_of_date_transfer_functions, EXIT_BLOCK);
 
 	  i = NUM_FIXED_BLOCKS;
 	  FOR_EACH_BB_FN (bb, cfun)
 	    {
-	      if (bitmap_bit_p (&tmp, bb->index))
+	      if (bitmap_bit_p (tmp, bb->index))
 		bitmap_set_bit (dflow->out_of_date_transfer_functions, i);
 	      i++;
 	    }
@@ -1715,22 +1703,20 @@ df_compact_blocks (void)
 
   if (df->blocks_to_analyze)
     {
-      if (bitmap_bit_p (&tmp, ENTRY_BLOCK))
+      if (bitmap_bit_p (tmp, ENTRY_BLOCK))
 	bitmap_set_bit (df->blocks_to_analyze, ENTRY_BLOCK);
-      if (bitmap_bit_p (&tmp, EXIT_BLOCK))
+      if (bitmap_bit_p (tmp, EXIT_BLOCK))
 	bitmap_set_bit (df->blocks_to_analyze, EXIT_BLOCK);
-      bitmap_copy (&tmp, df->blocks_to_analyze);
+      bitmap_copy (tmp, df->blocks_to_analyze);
       bitmap_clear (df->blocks_to_analyze);
       i = NUM_FIXED_BLOCKS;
       FOR_EACH_BB_FN (bb, cfun)
 	{
-	  if (bitmap_bit_p (&tmp, bb->index))
+	  if (bitmap_bit_p (tmp, bb->index))
 	    bitmap_set_bit (df->blocks_to_analyze, i);
 	  i++;
 	}
     }
-
-  bitmap_clear (&tmp);
 
   i = NUM_FIXED_BLOCKS;
   FOR_EACH_BB_FN (bb, cfun)

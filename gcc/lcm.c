@@ -270,9 +270,9 @@ compute_laterin (struct edge_list *edge_list, sbitmap *earliest,
 
   /* Add all the blocks to the worklist.  This prevents an early exit from
      the loop given our optimistic initialization of LATER above.  */
-  int *postorder = XNEWVEC (int, n_basic_blocks_for_fn (cfun));
-  int postorder_num = inverted_post_order_compute (postorder);
-  for (int i = 0; i < postorder_num; ++i)
+  auto_vec<int, 20> postorder;
+  inverted_post_order_compute (&postorder);
+  for (unsigned int i = 0; i < postorder.length (); ++i)
     {
       bb = BASIC_BLOCK_FOR_FN (cfun, postorder[i]);
       if (bb == EXIT_BLOCK_PTR_FOR_FN (cfun)
@@ -281,7 +281,6 @@ compute_laterin (struct edge_list *edge_list, sbitmap *earliest,
       *qin++ = bb;
       bb->aux = bb;
     }
-  free (postorder);
 
   /* Note that we do not use the last allocated element for our queue,
      as EXIT_BLOCK is never inserted into it. */
@@ -512,9 +511,9 @@ compute_available (sbitmap *avloc, sbitmap *kill, sbitmap *avout,
   /* Put every block on the worklist; this is necessary because of the
      optimistic initialization of AVOUT above.  Use inverted postorder
      to make the dataflow problem require less iterations.  */
-  int *postorder = XNEWVEC (int, n_basic_blocks_for_fn (cfun));
-  int postorder_num = inverted_post_order_compute (postorder);
-  for (int i = 0; i < postorder_num; ++i)
+  auto_vec<int, 20> postorder;
+  inverted_post_order_compute (&postorder);
+  for (unsigned int i = 0; i < postorder.length (); ++i)
     {
       bb = BASIC_BLOCK_FOR_FN (cfun, postorder[i]);
       if (bb == EXIT_BLOCK_PTR_FOR_FN (cfun)
@@ -523,7 +522,6 @@ compute_available (sbitmap *avloc, sbitmap *kill, sbitmap *avout,
       *qin++ = bb;
       bb->aux = bb;
     }
-  free (postorder);
 
   qin = worklist;
   qend = &worklist[n_basic_blocks_for_fn (cfun) - NUM_FIXED_BLOCKS];

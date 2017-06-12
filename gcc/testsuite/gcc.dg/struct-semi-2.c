@@ -5,7 +5,7 @@
 /* { dg-options "-pedantic" } */
 
 struct s0 { ; }; /* { dg-warning "extra semicolon in struct or union specified" } */
-/* { dg-warning "struct has no members" "empty" { target *-*-* } 7 } */
+/* { dg-warning "struct has no members" "empty" { target *-*-* } .-1 } */
 struct s1 {
   int a;
   ; /* { dg-warning "extra semicolon in struct or union specified" } */

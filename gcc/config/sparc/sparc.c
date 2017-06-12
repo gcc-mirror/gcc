@@ -1528,15 +1528,18 @@ sparc_option_override (void)
     target_flags |= MASK_LRA;
 
   /* Supply a default value for align_functions.  */
-  if (align_functions == 0
-      && (sparc_cpu == PROCESSOR_ULTRASPARC
+  if (align_functions == 0)
+    {
+      if (sparc_cpu == PROCESSOR_ULTRASPARC
 	  || sparc_cpu == PROCESSOR_ULTRASPARC3
 	  || sparc_cpu == PROCESSOR_NIAGARA
 	  || sparc_cpu == PROCESSOR_NIAGARA2
 	  || sparc_cpu == PROCESSOR_NIAGARA3
-	  || sparc_cpu == PROCESSOR_NIAGARA4
-	  || sparc_cpu == PROCESSOR_NIAGARA7))
-    align_functions = 32;
+	  || sparc_cpu == PROCESSOR_NIAGARA4)
+	align_functions = 32;
+      else if (sparc_cpu == PROCESSOR_NIAGARA7)
+	align_functions = 64;
+    }
 
   /* Validate PCC_STRUCT_RETURN.  */
   if (flag_pcc_struct_return == DEFAULT_PCC_STRUCT_RETURN)
@@ -1911,9 +1914,8 @@ sparc_expand_move (machine_mode mode, rtx *operands)
 	  /* We are able to build any SF constant in integer registers
 	     with at most 2 instructions.  */
 	  && (mode == SFmode
-	      /* And any DF constant in integer registers.  */
-	      || (mode == DFmode
-		  && ! can_create_pseudo_p ())))
+	      /* And any DF constant in integer registers if needed.  */
+	      || (mode == DFmode && !can_create_pseudo_p ())))
 	return false;
 
       operands[1] = force_const_mem (mode, operands[1]);
@@ -5789,6 +5791,9 @@ void
 sparc_expand_epilogue (bool for_eh)
 {
   HOST_WIDE_INT size = sparc_frame_size;
+
+  if (cfun->calls_alloca)
+    emit_insn (gen_frame_blockage ());
 
   if (sparc_n_global_fp_regs > 0)
     emit_save_or_restore_global_fp_regs (sparc_frame_base_reg,
@@ -12180,8 +12185,9 @@ sparc_frame_pointer_required (void)
   if (TARGET_FLAT)
     return false;
 
-  /* Otherwise, the frame pointer is required if the function isn't leaf.  */
-  return !(crtl->is_leaf && only_leaf_regs_used ());
+  /* Otherwise, the frame pointer is required if the function isn't leaf, but
+     we cannot use sparc_leaf_function_p since it hasn't been computed yet.  */
+  return !(optimize > 0 && crtl->is_leaf && only_leaf_regs_used ());
 }
 
 /* The way this is structured, we can't eliminate SFP in favor of SP

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -374,7 +374,7 @@ package body Sem_Type is
                      and then not Is_Hidden (Vis_Type))
            or else Nkind (N) = N_Expanded_Name
            or else (Nkind (N) in N_Op and then E = Entity (N))
-           or else In_Instance
+           or else (In_Instance or else In_Inlined_Body)
            or else Ekind (Vis_Type) = E_Anonymous_Access_Type
          then
             null;
@@ -802,8 +802,8 @@ package body Sem_Type is
    --  Start of processing for Covers
 
    begin
-      --  If either operand missing, then this is an error, but ignore it (and
-      --  pretend we have a cover) if errors already detected, since this may
+      --  If either operand is missing, then this is an error, but ignore it
+      --  and pretend we have a cover if errors already detected since this may
       --  simply mean we have malformed trees or a semantic error upstream.
 
       if No (T1) or else No (T2) then
@@ -1932,6 +1932,18 @@ package body Sem_Type is
          else
             return No_Interp;
          end if;
+
+      --  Two access attribute types may have been created for an expression
+      --  with an implicit dereference, which is automatically overloaded.
+      --  If both access attribute types designate the same object type,
+      --  disambiguation if any will take place elsewhere, so keep any one of
+      --  the interpretations.
+
+      elsif Ekind (It1.Typ) = E_Access_Attribute_Type
+        and then Ekind (It2.Typ) = E_Access_Attribute_Type
+        and then Designated_Type (It1.Typ) = Designated_Type (It2.Typ)
+      then
+         return It1;
 
       --  If two user defined-subprograms are visible, it is a true ambiguity,
       --  unless one of them is an entry and the context is a conditional or

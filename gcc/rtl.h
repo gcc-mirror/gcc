@@ -1148,30 +1148,30 @@ is_a_helper <rtx_note *>::test (rtx_insn *insn)
 
 extern void rtl_check_failed_bounds (const_rtx, int, const char *, int,
 				     const char *)
-    ATTRIBUTE_NORETURN;
+    ATTRIBUTE_NORETURN ATTRIBUTE_COLD;
 extern void rtl_check_failed_type1 (const_rtx, int, int, const char *, int,
 				    const char *)
-    ATTRIBUTE_NORETURN;
+    ATTRIBUTE_NORETURN ATTRIBUTE_COLD;
 extern void rtl_check_failed_type2 (const_rtx, int, int, int, const char *,
 				    int, const char *)
-    ATTRIBUTE_NORETURN;
+    ATTRIBUTE_NORETURN ATTRIBUTE_COLD;
 extern void rtl_check_failed_code1 (const_rtx, enum rtx_code, const char *,
 				    int, const char *)
-    ATTRIBUTE_NORETURN;
+    ATTRIBUTE_NORETURN ATTRIBUTE_COLD;
 extern void rtl_check_failed_code2 (const_rtx, enum rtx_code, enum rtx_code,
 				    const char *, int, const char *)
-    ATTRIBUTE_NORETURN;
+    ATTRIBUTE_NORETURN ATTRIBUTE_COLD;
 extern void rtl_check_failed_code_mode (const_rtx, enum rtx_code, machine_mode,
 					bool, const char *, int, const char *)
-    ATTRIBUTE_NORETURN;
+    ATTRIBUTE_NORETURN ATTRIBUTE_COLD;
 extern void rtl_check_failed_block_symbol (const char *, int, const char *)
-    ATTRIBUTE_NORETURN;
+    ATTRIBUTE_NORETURN ATTRIBUTE_COLD;
 extern void cwi_check_failed_bounds (const_rtx, int, const char *, int,
 				     const char *)
-    ATTRIBUTE_NORETURN;
+    ATTRIBUTE_NORETURN ATTRIBUTE_COLD;
 extern void rtvec_check_failed_bounds (const_rtvec, int, const char *, int,
 				       const char *)
-    ATTRIBUTE_NORETURN;
+    ATTRIBUTE_NORETURN ATTRIBUTE_COLD;
 
 #else   /* not ENABLE_RTL_CHECKING */
 
@@ -1269,7 +1269,7 @@ extern void rtvec_check_failed_bounds (const_rtvec, int, const char *, int,
 
 extern void rtl_check_failed_flag (const char *, const_rtx, const char *,
 				   int, const char *)
-    ATTRIBUTE_NORETURN
+    ATTRIBUTE_NORETURN ATTRIBUTE_COLD
     ;
 
 #else	/* not ENABLE_RTL_FLAG_CHECKING */
@@ -2021,6 +2021,9 @@ struct address_info {
   /* The address space.  */
   addr_space_t as;
 
+  /* True if this is an RTX_AUTOINC address.  */
+  bool autoinc_p;
+
   /* A pointer to the top-level address.  */
   rtx *outer;
 
@@ -2076,9 +2079,6 @@ struct address_info {
 
   /* If BASE is nonnull, this is the code of the rtx that contains it.  */
   enum rtx_code base_outer_code;
-
-  /* True if this is an RTX_AUTOINC address.  */
-  bool autoinc_p;
 };
 
 /* This is used to bundle an rtx and a mode together so that the pair
@@ -3793,9 +3793,9 @@ extern location_t curr_insn_location (void);
 
 /* rtl-error.c */
 extern void _fatal_insn_not_found (const_rtx, const char *, int, const char *)
-     ATTRIBUTE_NORETURN;
+     ATTRIBUTE_NORETURN ATTRIBUTE_COLD;
 extern void _fatal_insn (const char *, const_rtx, const char *, int, const char *)
-     ATTRIBUTE_NORETURN;
+     ATTRIBUTE_NORETURN ATTRIBUTE_COLD;
 
 #define fatal_insn(msgid, insn) \
 	_fatal_insn (msgid, insn, __FILE__, __LINE__, __FUNCTION__)

@@ -18,7 +18,7 @@ public:
 void A::main() {
   void (B::*mPtrB)(B*);
   (*(void (*)(A*))PMF2PF(mPtrB))(&b);	// { dg-error "argument passing" } 
-  // { dg-warning "convert" "warn" { target *-*-* } 20 }
+  // { dg-warning "convert" "warn" { target *-*-* } .-1 }
 }
 
 int main() {

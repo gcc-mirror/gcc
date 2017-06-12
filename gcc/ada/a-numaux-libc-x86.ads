@@ -7,7 +7,7 @@
 --                                 S p e c                                  --
 --                       (C Library Version for x86)                        --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -37,7 +37,7 @@ package Ada.Numerics.Aux is
 
    pragma Linker_Options ("-lm");
 
-   type Double is digits 18;
+   type Double is new Long_Long_Float;
 
    --  We import these functions directly from C. Note that we label them
    --  all as pure functions, because indeed all of them are in fact pure.

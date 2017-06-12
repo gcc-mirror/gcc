@@ -497,9 +497,7 @@ set_lattice_value (tree var, ccp_prop_value_t *new_val)
      use the meet operator to retain a conservative value.
      Missed optimizations like PR65851 makes this necessary.
      It also ensures we converge to a stable lattice solution.  */
-  if (new_val->lattice_val == CONSTANT
-      && old_val->lattice_val == CONSTANT
-      && TREE_CODE (new_val->value) != SSA_NAME)
+  if (old_val->lattice_val != UNINITIALIZED)
     ccp_lattice_meet (new_val, old_val);
 
   gcc_checking_assert (valid_lattice_transition (*old_val, *new_val));
@@ -741,9 +739,11 @@ likely_value (gimple *stmt)
 	case PLUS_EXPR:
 	case MINUS_EXPR:
 	case POINTER_PLUS_EXPR:
+	case BIT_XOR_EXPR:
 	  /* Not MIN_EXPR, MAX_EXPR.  One VARYING operand may be selected.
 	     Not bitwise operators, one VARYING operand may specify the
-	     result completely.  Not logical operators for the same reason.
+	     result completely.
+	     Not logical operators for the same reason, apart from XOR.
 	     Not COMPLEX_EXPR as one VARYING operand makes the result partly
 	     not UNDEFINED.  Not *DIV_EXPR, comparisons and shifts because
 	     the undefined operand may be promoted.  */
@@ -1747,18 +1747,24 @@ evaluate_stmt (gimple *stmt)
       fold_defer_overflow_warnings ();
       simplified = ccp_fold (stmt);
       if (simplified
-	  && TREE_CODE (simplified) == SSA_NAME
+	  && TREE_CODE (simplified) == SSA_NAME)
+	{
 	  /* We may not use values of something that may be simulated again,
 	     see valueize_op_1.  */
-	  && (SSA_NAME_IS_DEFAULT_DEF (simplified)
-	      || ! prop_simulate_again_p (SSA_NAME_DEF_STMT (simplified))))
-	{
-	  ccp_prop_value_t *val = get_value (simplified);
-	  if (val && val->lattice_val != VARYING)
+	  if (SSA_NAME_IS_DEFAULT_DEF (simplified)
+	      || ! prop_simulate_again_p (SSA_NAME_DEF_STMT (simplified)))
 	    {
-	      fold_undefer_overflow_warnings (true, stmt, 0);
-	      return *val;
+	      ccp_prop_value_t *val = get_value (simplified);
+	      if (val && val->lattice_val != VARYING)
+		{
+		  fold_undefer_overflow_warnings (true, stmt, 0);
+		  return *val;
+		}
 	    }
+	  else
+	    /* We may also not place a non-valueized copy in the lattice
+	       as that might become stale if we never re-visit this stmt.  */
+	    simplified = NULL_TREE;
 	}
       is_constant = simplified && is_gimple_min_invariant (simplified);
       fold_undefer_overflow_warnings (is_constant, stmt, 0);
@@ -2176,9 +2182,9 @@ ccp_fold_stmt (gimple_stmt_iterator *gsi)
 	if (dump_file)
 	  {
 	    fprintf (dump_file, "Folding predicate ");
-	    print_gimple_expr (dump_file, stmt, 0, 0);
+	    print_gimple_expr (dump_file, stmt, 0);
 	    fprintf (dump_file, " to ");
-	    print_generic_expr (dump_file, val.value, 0);
+	    print_generic_expr (dump_file, val.value);
 	    fprintf (dump_file, "\n");
 	  }
 
@@ -2707,7 +2713,8 @@ optimize_unreachable (gimple_stmt_iterator i)
 	}
       else
 	{
-	  /* Todo: handle other cases, f.i. switch statement.  */
+	  /* Todo: handle other cases.  Note that unreachable switch case
+	     statements have already been removed.  */
 	  continue;
 	}
 
@@ -2890,9 +2897,19 @@ optimize_atomic_bit_test_and (gimple_stmt_iterator *gsip,
   gimple_set_location (g, gimple_location (call));
   gimple_set_vuse (g, gimple_vuse (call));
   gimple_set_vdef (g, gimple_vdef (call));
+  bool throws = stmt_can_throw_internal (call);
+  gimple_call_set_nothrow (as_a <gcall *> (g),
+			   gimple_call_nothrow_p (as_a <gcall *> (call)));
   SSA_NAME_DEF_STMT (gimple_vdef (call)) = g;
   gimple_stmt_iterator gsi = *gsip;
   gsi_insert_after (&gsi, g, GSI_NEW_STMT);
+  edge e = NULL;
+  if (throws)
+    {
+      maybe_clean_or_replace_eh_stmt (call, g);
+      if (after || (use_bool && has_debug_uses))
+	e = find_fallthru_edge (gsi_bb (gsi)->succs);
+    }
   if (after)
     {
       /* The internal function returns the value of the specified bit
@@ -2905,23 +2922,42 @@ optimize_atomic_bit_test_and (gimple_stmt_iterator *gsip,
 			       use_bool ? build_int_cst (TREE_TYPE (lhs), 1)
 					: mask);
       new_lhs = gimple_assign_lhs (g);
-      gsi_insert_after (&gsi, g, GSI_NEW_STMT);
+      if (throws)
+	{
+	  gsi_insert_on_edge_immediate (e, g);
+	  gsi = gsi_for_stmt (g);
+	}
+      else
+	gsi_insert_after (&gsi, g, GSI_NEW_STMT);
     }
   if (use_bool && has_debug_uses)
     {
-      tree temp = make_node (DEBUG_EXPR_DECL);
-      DECL_ARTIFICIAL (temp) = 1;
-      TREE_TYPE (temp) = TREE_TYPE (lhs);
-      SET_DECL_MODE (temp, TYPE_MODE (TREE_TYPE (lhs)));
-      tree t = build2 (LSHIFT_EXPR, TREE_TYPE (lhs), new_lhs, bit);
-      g = gimple_build_debug_bind (temp, t, g);
-      gsi_insert_after (&gsi, g, GSI_NEW_STMT);
+      tree temp = NULL_TREE;
+      if (!throws || after || single_pred_p (e->dest))
+	{
+	  temp = make_node (DEBUG_EXPR_DECL);
+	  DECL_ARTIFICIAL (temp) = 1;
+	  TREE_TYPE (temp) = TREE_TYPE (lhs);
+	  SET_DECL_MODE (temp, TYPE_MODE (TREE_TYPE (lhs)));
+	  tree t = build2 (LSHIFT_EXPR, TREE_TYPE (lhs), new_lhs, bit);
+	  g = gimple_build_debug_bind (temp, t, g);
+	  if (throws && !after)
+	    {
+	      gsi = gsi_after_labels (e->dest);
+	      gsi_insert_before (&gsi, g, GSI_SAME_STMT);
+	    }
+	  else
+	    gsi_insert_after (&gsi, g, GSI_NEW_STMT);
+	}
       FOR_EACH_IMM_USE_STMT (g, iter, use_lhs)
 	if (is_gimple_debug (g))
 	  {
 	    use_operand_p use_p;
-	    FOR_EACH_IMM_USE_ON_STMT (use_p, iter)
-	      SET_USE (use_p, temp);
+	    if (temp == NULL_TREE)
+	      gimple_debug_bind_reset_value (g);
+	    else
+	      FOR_EACH_IMM_USE_ON_STMT (use_p, iter)
+		SET_USE (use_p, temp);
 	    update_stmt (g);
 	  }
     }

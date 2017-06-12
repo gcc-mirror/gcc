@@ -18,7 +18,6 @@
 #include "runtime.h"
 #include "arch.h"
 #include "defs.h"
-#include "malloc.h"
 #include "go-type.h"
 
 #ifdef USING_SPLIT_STACK
@@ -55,7 +54,8 @@ extern void __splitstack_block_signals_context (void *context[10], int *,
 
 uintptr runtime_stacks_sys;
 
-static void gtraceback(G*);
+void gtraceback(G*)
+  __asm__(GOSYM_PREFIX "runtime.gtraceback");
 
 #ifdef __rtems__
 #define __thread
@@ -149,6 +149,21 @@ fixcontext(ucontext_t *c)
 		asm ("st %%g7, %0" : "=m"(c->uc_mcontext.gregs[REG_G7]));
 }
 
+# elif defined(_AIX)
+
+static inline void
+initcontext(void)
+{
+}
+
+static inline void
+fixcontext(ucontext_t* c)
+{
+	// Thread pointer is in r13, per 64-bit ABI.
+	if (sizeof (c->uc_mcontext.jmp_context.gpr[13]) == 8)
+		asm ("std 13, %0" : "=m"(c->uc_mcontext.jmp_context.gpr[13]));
+}
+
 # else
 
 #  error unknown case for SETCONTEXT_CLOBBERS_TLS
@@ -164,7 +179,7 @@ fixcontext(ucontext_t *c)
 // So we make the field larger in runtime2.go and pick an appropriate
 // offset within the field here.
 static ucontext_t*
-ucontext_arg(void** go_ucontext)
+ucontext_arg(uintptr* go_ucontext)
 {
 	uintptr_t p = (uintptr_t)go_ucontext;
 	size_t align = __alignof__(ucontext_t);
@@ -256,31 +271,13 @@ runtime_newosproc(M *mp)
 	}
 }
 
-// First function run by a new goroutine.  This replaces gogocall.
-static void
-kickoff(void)
-{
-	void (*fn)(void*);
-	void *param;
-
-	if(g->traceback != nil)
-		gtraceback(g);
-
-	fn = (void (*)(void*))(g->entry);
-	param = g->param;
-	g->entry = 0;
-	g->param = nil;
-	fn(param);
-	runtime_goexit1();
-}
-
 // Switch context to a different goroutine.  This is like longjmp.
 void runtime_gogo(G*) __attribute__ ((noinline));
 void
 runtime_gogo(G* newg)
 {
 #ifdef USING_SPLIT_STACK
-	__splitstack_setcontext(&newg->stackcontext[0]);
+	__splitstack_setcontext((void*)(&newg->stackcontext[0]));
 #endif
 	g = newg;
 	newg->fromgogo = true;
@@ -293,9 +290,9 @@ runtime_gogo(G* newg)
 // setjmp.  Because getcontext always returns 0, unlike setjmp, we use
 // g->fromgogo as a code.  It will be true if we got here via
 // setcontext.  g == nil the first time this is called in a new m.
-void runtime_mcall(void (*)(G*)) __attribute__ ((noinline));
+void runtime_mcall(FuncVal *) __attribute__ ((noinline));
 void
-runtime_mcall(void (*pfn)(G*))
+runtime_mcall(FuncVal *fv)
 {
 	M *mp;
 	G *gp;
@@ -315,7 +312,7 @@ runtime_mcall(void (*pfn)(G*))
 	if(gp != nil) {
 
 #ifdef USING_SPLIT_STACK
-		__splitstack_getcontext(&g->stackcontext[0]);
+		__splitstack_getcontext((void*)(&g->stackcontext[0]));
 #else
 		// We have to point to an address on the stack that is
 		// below the saved registers.
@@ -339,9 +336,9 @@ runtime_mcall(void (*pfn)(G*))
 	}
 	if (gp == nil || !gp->fromgogo) {
 #ifdef USING_SPLIT_STACK
-		__splitstack_setcontext(&mp->g0->stackcontext[0]);
+		__splitstack_setcontext((void*)(&mp->g0->stackcontext[0]));
 #endif
-		mp->g0->entry = (uintptr)pfn;
+		mp->g0->entry = fv;
 		mp->g0->param = gp;
 
 		// It's OK to set g directly here because this case
@@ -353,16 +350,6 @@ runtime_mcall(void (*pfn)(G*))
 		setcontext(ucontext_arg(&mp->g0->context[0]));
 		runtime_throw("runtime: mcall function returned");
 	}
-}
-
-// mcall called from Go code.
-void gomcall(FuncVal *)
-  __asm__ (GOSYM_PREFIX "runtime.mcall");
-
-void
-gomcall(FuncVal *fv)
-{
-	runtime_mcall((void*)fv->fn);
 }
 
 // Goroutine scheduler
@@ -387,6 +374,8 @@ int32	runtime_ncpu;
 
 bool	runtime_isarchive;
 
+extern void kickoff(void)
+  __asm__(GOSYM_PREFIX "runtime.kickoff");
 extern void mstart1(void)
   __asm__(GOSYM_PREFIX "runtime.mstart1");
 extern void stopm(void)
@@ -417,6 +406,8 @@ extern void globrunqput(G*)
   __asm__(GOSYM_PREFIX "runtime.globrunqput");
 extern P* pidleget(void)
   __asm__(GOSYM_PREFIX "runtime.pidleget");
+extern struct mstats* getMemstats(void)
+  __asm__(GOSYM_PREFIX "runtime.getMemstats");
 
 bool runtime_isstarted;
 
@@ -440,7 +431,7 @@ void getTraceback(G*, G*) __asm__(GOSYM_PREFIX "runtime.getTraceback");
 void getTraceback(G* me, G* gp)
 {
 #ifdef USING_SPLIT_STACK
-	__splitstack_getcontext(&me->stackcontext[0]);
+	__splitstack_getcontext((void*)(&me->stackcontext[0]));
 #endif
 	getcontext(ucontext_arg(&me->context[0]));
 
@@ -450,45 +441,55 @@ void getTraceback(G* me, G* gp)
 }
 
 // Do a stack trace of gp, and then restore the context to
-// gp->dotraceback.
+// gp->traceback->gp.
 
-static void
+void
 gtraceback(G* gp)
 {
 	Traceback* traceback;
+	M* holdm;
 
 	traceback = gp->traceback;
 	gp->traceback = nil;
-	if(gp->m != nil && gp->m != g->m)
+	holdm = gp->m;
+	if(holdm != nil && holdm != g->m)
 		runtime_throw("gtraceback: m is not nil");
 	gp->m = traceback->gp->m;
 	traceback->c = runtime_callers(1, traceback->locbuf,
 		sizeof traceback->locbuf / sizeof traceback->locbuf[0], false);
-	gp->m = nil;
+	gp->m = holdm;
 	runtime_gogo(traceback->gp);
 }
 
-// Called to set up the context information for a new M.
-
-void mstartInitContext(G*, void*)
-	__asm__(GOSYM_PREFIX "runtime.mstartInitContext");
-
-void
-mstartInitContext(G *gp, void *stack __attribute__ ((unused)))
+// Called by pthread_create to start an M.
+void*
+runtime_mstart(void *arg)
 {
+	M* mp;
+	G* gp;
+
+	mp = (M*)(arg);
+	gp = mp->g0;
+	gp->m = mp;
+
+	g = gp;
+
+	gp->entry = nil;
+	gp->param = nil;
+
 	initcontext();
 
 	// Record top of stack for use by mcall.
 	// Once we call schedule we're never coming back,
 	// so other calls can reuse this stack space.
 #ifdef USING_SPLIT_STACK
-	__splitstack_getcontext(&gp->stackcontext[0]);
+	__splitstack_getcontext((void*)(&gp->stackcontext[0]));
 #else
-	gp->gcinitialsp = stack;
+	gp->gcinitialsp = &arg;
 	// Setting gcstacksize to 0 is a marker meaning that gcinitialsp
 	// is the top of the stack, not the bottom.
 	gp->gcstacksize = 0;
-	gp->gcnextsp = stack;
+	gp->gcnextsp = &arg;
 #endif
 
 	// Save the currently active context.  This will return
@@ -502,13 +503,14 @@ mstartInitContext(G *gp, void *stack __attribute__ ((unused)))
 		gtraceback(gp);
 	}
 
-	if(gp->entry != 0) {
+	if(gp->entry != nil) {
 		// Got here from mcall.
-		void (*pfn)(G*) = (void (*)(G*))gp->entry;
+		FuncVal *fv = gp->entry;
+		void (*pfn)(G*) = (void (*)(G*))fv->fn;
 		G* gp1 = (G*)gp->param;
-		gp->entry = 0;
+		gp->entry = nil;
 		gp->param = nil;
-		pfn(gp1);
+		__builtin_call_with_static_chain(pfn(gp1), fv);
 		*(int*)0x21 = 0x21;
 	}
 
@@ -522,6 +524,10 @@ mstartInitContext(G *gp, void *stack __attribute__ ((unused)))
 #endif
 
 	mstart1();
+
+	// mstart1 does not return, but we need a return statement
+	// here to avoid a compiler warning.
+	return nil;
 }
 
 typedef struct CgoThreadStart CgoThreadStart;
@@ -544,10 +550,10 @@ setGContext()
 
 	initcontext();
 	gp = g;
-	gp->entry = 0;
+	gp->entry = nil;
 	gp->param = nil;
 #ifdef USING_SPLIT_STACK
-	__splitstack_getcontext(&gp->stackcontext[0]);
+	__splitstack_getcontext((void*)(&gp->stackcontext[0]));
 	val = 0;
 	__splitstack_block_signals(&val, nil);
 #else
@@ -558,13 +564,14 @@ setGContext()
 #endif
 	getcontext(ucontext_arg(&gp->context[0]));
 
-	if(gp->entry != 0) {
+	if(gp->entry != nil) {
 		// Got here from mcall.
-		void (*pfn)(G*) = (void (*)(G*))gp->entry;
+		FuncVal *fv = gp->entry;
+		void (*pfn)(G*) = (void (*)(G*))fv->fn;
 		G* gp1 = (G*)gp->param;
-		gp->entry = 0;
+		gp->entry = nil;
 		gp->param = nil;
-		pfn(gp1);
+		__builtin_call_with_static_chain(pfn(gp1), fv);
 		*(int*)0x22 = 0x22;
 	}
 }
@@ -708,10 +715,10 @@ runtime_malg(bool allocatestack, bool signalstack, byte** ret_stack, uintptr* re
 
 #if USING_SPLIT_STACK
 		*ret_stack = __splitstack_makecontext(stacksize,
-						      &newg->stackcontext[0],
+						      (void*)(&newg->stackcontext[0]),
 						      &ss_stacksize);
 		*ret_stacksize = (uintptr)ss_stacksize;
-		__splitstack_block_signals_context(&newg->stackcontext[0],
+		__splitstack_block_signals_context((void*)(&newg->stackcontext[0]),
 						   &dont_block_signals, nil);
 #else
                 // In 64-bit mode, the maximum Go allocation space is
@@ -721,12 +728,12 @@ runtime_malg(bool allocatestack, bool signalstack, byte** ret_stack, uintptr* re
                 // 32-bit mode, the Go allocation space is all of
                 // memory anyhow.
 		if(sizeof(void*) == 8) {
-			void *p = runtime_SysAlloc(stacksize, &mstats()->other_sys);
+			void *p = runtime_sysAlloc(stacksize, &getMemstats()->stacks_sys);
 			if(p == nil)
 				runtime_throw("runtime: cannot allocate memory for goroutine stack");
 			*ret_stack = (byte*)p;
 		} else {
-			*ret_stack = runtime_mallocgc(stacksize, 0, FlagNoProfiling|FlagNoGC);
+			*ret_stack = runtime_mallocgc(stacksize, nil, false);
 			runtime_xadd(&runtime_stacks_sys, stacksize);
 		}
 		*ret_stacksize = (uintptr)stacksize;
@@ -749,9 +756,9 @@ resetNewG(G *newg, void **sp, uintptr *spsize)
   int dont_block_signals = 0;
   size_t ss_spsize;
 
-  *sp = __splitstack_resetcontext(&newg->stackcontext[0], &ss_spsize);
+  *sp = __splitstack_resetcontext((void*)(&newg->stackcontext[0]), &ss_spsize);
   *spsize = ss_spsize;
-  __splitstack_block_signals_context(&newg->stackcontext[0],
+  __splitstack_block_signals_context((void*)(&newg->stackcontext[0]),
 				     &dont_block_signals, nil);
 #else
   *sp = newg->gcinitialsp;

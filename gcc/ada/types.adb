@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -209,6 +209,15 @@ package body Types is
       TS (13) := Character'Val (Z + Seconds / 10);
       TS (14) := Character'Val (Z + Seconds mod 10);
    end Make_Time_Stamp;
+
+   ----------------------------
+   -- Null_Source_Buffer_Ptr --
+   ----------------------------
+
+   function Null_Source_Buffer_Ptr (X : Source_Buffer_Ptr) return Boolean is
+   begin
+      return Source_Buffer_Ptr_Equal (X, null);
+   end Null_Source_Buffer_Ptr;
 
    ----------------------
    -- Split_Time_Stamp --

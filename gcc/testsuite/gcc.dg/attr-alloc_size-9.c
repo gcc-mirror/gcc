@@ -3,6 +3,7 @@
    with attribute malloc.  This means that the pointer they return
    can be assumed not to alias any other valid pointer.  */
 /* { dg-do compile } */
+/* { dg-require-effective-target alloca } */
 /* { dg-options "-O2 -fdump-tree-optimized" } */
 
 void sink (void*);
@@ -20,7 +21,7 @@ extern int x;
 
 void test (void *p, unsigned n)
 {
-  TEST (__builtin_aligned_alloc (n, 8));
+  TEST (__builtin_aligned_alloc (8, n));
   TEST (__builtin_alloca (n));
   TEST (__builtin_calloc (4, n));
   TEST (__builtin_malloc (n));

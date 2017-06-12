@@ -4,7 +4,7 @@
    A negative test complementing builtin-sprintf-5.c to verify that calls
    to the function that do not return a constant are not optimized away.
    Test also verifies that unknown directives prevent the optimization.
-   { dg-compile }
+   { dg-do compile }
    { dg-options "-O2 -Wformat -fdump-tree-optimized" }
    { dg-require-effective-target int32plus } */
 

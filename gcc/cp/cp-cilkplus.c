@@ -223,11 +223,7 @@ cilk_install_body_with_frame_cleanup (tree fndecl, tree orig_body, void *wd)
   location_t loc = EXPR_LOCATION (orig_body);
   tree list = alloc_stmt_list ();
   DECL_SAVED_TREE (fndecl) = list;
-  tree fptr = build1 (ADDR_EXPR, build_pointer_type (TREE_TYPE (frame)), frame);
-  tree body = cilk_install_body_pedigree_operations (fptr);
-  gcc_assert (TREE_CODE (body) == STATEMENT_LIST);
-  tree detach_expr = build_call_expr (cilk_detach_fndecl, 1, fptr);
-  append_to_statement_list (detach_expr, &body);
+  tree body = alloc_stmt_list ();
   cilk_outline (fndecl, &orig_body, (struct wrapper_data *) wd);
   append_to_statement_list (orig_body, &body);
   if (flag_exceptions)

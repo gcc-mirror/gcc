@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1996-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1996-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -317,6 +317,9 @@ package body Exp_Dbug is
       --    - when the renaming involves a packed array,
       --    - when the renaming involves a packed record.
 
+      Last_Is_Indexed_Comp : Boolean := False;
+      --  Whether the last subscript value was an indexed component access (XS)
+
       procedure Enable_If_Packed_Array (N : Node_Id);
       --  Enable encoding generation if N is a packed array
 
@@ -328,6 +331,9 @@ package body Exp_Dbug is
       --  output in one of these two forms. The result is prepended to the
       --  name stored in Name_Buffer.
 
+      function Scope_Contains (Sc : Node_Id; Ent : Entity_Id) return Boolean;
+      --  Return whether Ent belong to the Sc scope
+
       ----------------------------
       -- Enable_If_Packed_Array --
       ----------------------------
@@ -337,8 +343,10 @@ package body Exp_Dbug is
 
       begin
          Enable :=
-           Enable or else (Ekind (T) in Array_Kind
-                            and then Present (Packed_Array_Impl_Type (T)));
+           Enable
+             or else
+               (Ekind (T) in Array_Kind
+                 and then Present (Packed_Array_Impl_Type (T)));
       end Enable_If_Packed_Array;
 
       ----------------------
@@ -351,8 +359,9 @@ package body Exp_Dbug is
             Prepend_Uint_To_Buffer (Expr_Value (N));
 
          elsif Nkind (N) = N_Identifier
-           and then Scope (Entity (N)) = Scope (Ent)
-           and then Ekind (Entity (N)) = E_Constant
+           and then Scope_Contains (Scope (Entity (N)), Ent)
+           and then (Ekind (Entity (N)) = E_Constant
+                      or else Ekind (Entity (N)) = E_In_Parameter)
          then
             Prepend_String_To_Buffer (Get_Name_String (Chars (Entity (N))));
 
@@ -364,12 +373,29 @@ package body Exp_Dbug is
          return True;
       end Output_Subscript;
 
+      --------------------
+      -- Scope_Contains --
+      --------------------
+
+      function Scope_Contains (Sc : Node_Id; Ent : Entity_Id) return Boolean is
+         Cur : Node_Id := Scope (Ent);
+
+      begin
+         while Present (Cur) loop
+            if Cur = Sc then
+               return True;
+            end if;
+
+            Cur := Scope (Cur);
+         end loop;
+
+         return False;
+      end Scope_Contains;
+
    --  Start of processing for Debug_Renaming_Declaration
 
    begin
-      if not Comes_From_Source (N)
-        and then not Needs_Debug_Info (Ent)
-      then
+      if not Comes_From_Source (N) and then not Needs_Debug_Info (Ent) then
          return Empty;
       end if;
 
@@ -378,16 +404,25 @@ package body Exp_Dbug is
       Name_Len := 0;
       Ren := Nam;
       loop
+         --  The expression that designates the renamed object is sometimes
+         --  expanded into bit-wise operations. We want to work instead on
+         --  array/record components accesses, so try to analyze the unexpanded
+         --  forms.
+
+         Ren := Original_Node (Ren);
+
          case Nkind (Ren) is
-            when N_Identifier =>
-               exit;
+            when N_Expanded_Name
+               | N_Identifier
+            =>
+               if not Present (Renamed_Object (Entity (Ren))) then
+                  exit;
+               end if;
 
-            when N_Expanded_Name =>
+               --  This is a renaming of a renaming: traverse until the final
+               --  renaming to see if anything is packed along the way.
 
-               --  The entity field for an N_Expanded_Name is on the expanded
-               --  name node itself, so we are done here too.
-
-               exit;
+               Ren := Renamed_Object (Entity (Ren));
 
             when N_Selected_Component =>
                declare
@@ -408,6 +443,7 @@ package body Exp_Dbug is
                  (Get_Name_String (Chars (Selector_Name (Ren))));
                Prepend_String_To_Buffer ("XR");
                Ren := Prefix (Ren);
+               Last_Is_Indexed_Comp := False;
 
             when N_Indexed_Component =>
                declare
@@ -424,23 +460,38 @@ package body Exp_Dbug is
                      end if;
 
                      Prev (X);
+                     Last_Is_Indexed_Comp := True;
                   end loop;
                end;
 
                Ren := Prefix (Ren);
 
             when N_Slice =>
-               Enable_If_Packed_Array (Prefix (Ren));
-               Typ := Etype (First_Index (Etype (Nam)));
 
-               if not Output_Subscript (Type_High_Bound (Typ), "XS") then
-                  Set_Materialize_Entity (Ent);
-                  return Empty;
-               end if;
+               --  Assuming X is an array:
+               --      X (Y1 .. Y2) (Y3)
 
-               if not Output_Subscript (Type_Low_Bound  (Typ), "XL") then
-                  Set_Materialize_Entity (Ent);
-                  return Empty;
+               --  is equivalent to:
+               --      X (Y3)
+
+               --  GDB cannot handle packed array slices, so avoid describing
+               --  the slice if we can avoid it.
+
+               if not Last_Is_Indexed_Comp then
+                  Enable_If_Packed_Array (Prefix (Ren));
+                  Typ := Etype (First_Index (Etype (Ren)));
+
+                  if not Output_Subscript (Type_High_Bound (Typ), "XS") then
+                     Set_Materialize_Entity (Ent);
+                     return Empty;
+                  end if;
+
+                  if not Output_Subscript (Type_Low_Bound  (Typ), "XL") then
+                     Set_Materialize_Entity (Ent);
+                     return Empty;
+                  end if;
+
+                  Last_Is_Indexed_Comp := False;
                end if;
 
                Ren := Prefix (Ren);
@@ -448,6 +499,7 @@ package body Exp_Dbug is
             when N_Explicit_Dereference =>
                Prepend_String_To_Buffer ("XA");
                Ren := Prefix (Ren);
+               Last_Is_Indexed_Comp := False;
 
             --  For now, anything else simply results in no translation
 
@@ -800,7 +852,7 @@ package body Exp_Dbug is
         and then No (Address_Clause (E))
         and then not Has_Suffix
       then
-         Add_String_To_Name_Buffer (Strval (Interface_Name (E)));
+         Append (Global_Name_Buffer, Strval (Interface_Name (E)));
 
       --  All other cases besides the interface name case
 
@@ -838,6 +890,27 @@ package body Exp_Dbug is
       if Has_Suffix then
          Add_Str_To_Name_Buffer ("___");
          Add_Str_To_Name_Buffer (Suffix);
+      end if;
+
+      --  Add a special prefix to distinguish Ghost entities. In Ignored Ghost
+      --  mode, these entities should not leak in the "living" space and they
+      --  should be removed by the compiler in a post-processing pass. Thus,
+      --  the prefix allows anyone to check that the final executable indeed
+      --  does not contain such entities, in such a case. Do not insert this
+      --  prefix for compilation units, whose name is used as a basis for the
+      --  name of the generated elaboration procedure and (when appropriate)
+      --  the executable produced. Only insert this prefix once, for Ghost
+      --  entities declared inside other Ghost entities. Three leading
+      --  underscores are used so that "___ghost_" is a unique substring of
+      --  names produced for Ghost entities, while "__ghost_" can appear in
+      --  names of entities inside a child/local package called "Ghost".
+
+      if Is_Ghost_Entity (E)
+        and then not Is_Compilation_Unit (E)
+        and then (Name_Len < 9
+                   or else Name_Buffer (1 .. 9) /= "___ghost_")
+      then
+         Insert_Str_In_Name_Buffer ("___ghost_", 1);
       end if;
 
       Name_Buffer (Name_Len + 1) := ASCII.NUL;

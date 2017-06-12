@@ -167,21 +167,6 @@ struct GTY ((chain_next ("%h.next"))) loop {
      nb_iterations.  */
   widest_int nb_iterations_estimate;
 
-  bool any_upper_bound;
-  bool any_estimate;
-  bool any_likely_upper_bound;
-
-  /* True if the loop can be parallel.  */
-  bool can_be_parallel;
-
-  /* True if -Waggressive-loop-optimizations warned about this loop
-     already.  */
-  bool warned_aggressive_loop_optimizations;
-
-  /* An integer estimation of the number of iterations.  Estimate_state
-     describes what is the state of the estimation.  */
-  enum loop_estimation estimate_state;
-
   /* If > 0, an integer, where the user asserted that for any
      I in [ 0, nb_iterations ) and for any J in
      [ I, min ( I + safelen, nb_iterations ) ), the Ith and Jth iterations
@@ -211,14 +196,29 @@ struct GTY ((chain_next ("%h.next"))) loop {
      that might result in hard to track down bugs in niter/scev consumers.  */
   unsigned constraints;
 
+  /* An integer estimation of the number of iterations.  Estimate_state
+     describes what is the state of the estimation.  */
+  ENUM_BITFIELD(loop_estimation) estimate_state : 8;
+
+  unsigned any_upper_bound : 1;
+  unsigned any_estimate : 1;
+  unsigned any_likely_upper_bound : 1;
+
+  /* True if the loop can be parallel.  */
+  unsigned can_be_parallel : 1;
+
+  /* True if -Waggressive-loop-optimizations warned about this loop
+     already.  */
+  unsigned warned_aggressive_loop_optimizations : 1;
+
   /* True if this loop should never be vectorized.  */
-  bool dont_vectorize;
+  unsigned dont_vectorize : 1;
 
   /* True if we should try harder to vectorize this loop.  */
-  bool force_vectorize;
+  unsigned force_vectorize : 1;
 
   /* True if the loop is part of an oacc kernels region.  */
-  bool in_oacc_kernels_region;
+  unsigned in_oacc_kernels_region : 1;
 
   /* For SIMD loops, this is a unique identifier of the loop, referenced
      by IFN_GOMP_SIMD_VF, IFN_GOMP_SIMD_LANE and IFN_GOMP_SIMD_LAST_LANE

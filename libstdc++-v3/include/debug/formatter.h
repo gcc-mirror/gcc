@@ -373,6 +373,7 @@ namespace __gnu_debug
 	  _M_variant._M_instance._M_type = _GLIBCXX_TYPEID(_Type);
 	}
 
+#if !_GLIBCXX_INLINE_VERSION
       void
       _M_print_field(const _Error_formatter* __formatter,
 		     const char* __name) const _GLIBCXX_DEPRECATED;
@@ -380,6 +381,7 @@ namespace __gnu_debug
       void
       _M_print_description(const _Error_formatter* __formatter)
 	const _GLIBCXX_DEPRECATED;
+#endif
     };
 
     template<typename _Iterator>
@@ -451,6 +453,7 @@ namespace __gnu_debug
     _GLIBCXX_NORETURN void
     _M_error() const;
 
+#if !_GLIBCXX_INLINE_VERSION
     template<typename _Tp>
       void
       _M_format_word(char*, int, const char*, _Tp)
@@ -461,14 +464,17 @@ namespace __gnu_debug
 
     void
     _M_print_string(const char* __string) const _GLIBCXX_DEPRECATED;
+#endif
 
   private:
     _Error_formatter(const char* __file, unsigned int __line)
     : _M_file(__file), _M_line(__line), _M_num_parameters(0), _M_text(0)
     { }
 
+#if !_GLIBCXX_INLINE_VERSION
     void
     _M_get_max_length() const throw () _GLIBCXX_DEPRECATED;
+#endif
 
     enum { __max_parameters = 9 };
 

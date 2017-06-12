@@ -348,7 +348,8 @@ class Gcc_backend : public Backend
   array_index_expression(Bexpression* array, Bexpression* index, Location);
 
   Bexpression*
-  call_expression(Bexpression* fn, const std::vector<Bexpression*>& args,
+  call_expression(Bfunction* caller, Bexpression* fn,
+                  const std::vector<Bexpression*>& args,
                   Bexpression* static_chain, Location);
 
   Bexpression*
@@ -752,6 +753,13 @@ Gcc_backend::Gcc_backend()
   this->define_builtin(BUILT_IN_TRAP, "__builtin_trap", NULL,
 		       build_function_type(void_type_node, void_list_node),
 		       false, true);
+
+  // The runtime uses __builtin_prefetch.
+  this->define_builtin(BUILT_IN_PREFETCH, "__builtin_prefetch", NULL,
+		       build_varargs_function_type_list(void_type_node,
+							const_ptr_type_node,
+							NULL_TREE),
+		       false, false);
 }
 
 // Get an unnamed integer type.
@@ -1885,9 +1893,11 @@ Gcc_backend::array_index_expression(Bexpression* array, Bexpression* index,
 
 // Create an expression for a call to FN_EXPR with FN_ARGS.
 Bexpression*
-Gcc_backend::call_expression(Bexpression* fn_expr,
+Gcc_backend::call_expression(Bfunction*, // containing fcn for call
+                             Bexpression* fn_expr,
                              const std::vector<Bexpression*>& fn_args,
-                             Bexpression* chain_expr, Location location)
+                             Bexpression* chain_expr,
+                             Location location)
 {
   tree fn = fn_expr->get_tree();
   if (fn == error_mark_node || TREE_TYPE(fn) == error_mark_node)
@@ -2085,7 +2095,8 @@ Gcc_backend::return_statement(Bfunction* bfunction,
   // If the result size is zero bytes, we have set the function type
   // to have a result type of void, so don't return anything.
   // See the function_type method.
-  if (int_size_in_bytes(TREE_TYPE(result)) == 0)
+  tree res_type = TREE_TYPE(result);
+  if (res_type == void_type_node || int_size_in_bytes(res_type) == 0)
     {
       tree stmt_list = NULL_TREE;
       for (std::vector<Bexpression*>::const_iterator p = vals.begin();
@@ -2814,9 +2825,9 @@ Gcc_backend::implicit_variable_reference(const std::string& name,
 
   tree decl = build_decl(BUILTINS_LOCATION, VAR_DECL,
                          get_identifier_from_string(name), type_tree);
-  DECL_EXTERNAL(decl) = 0;
+  DECL_EXTERNAL(decl) = 1;
   TREE_PUBLIC(decl) = 1;
-  TREE_STATIC(decl) = 1;
+  TREE_STATIC(decl) = 0;
   DECL_ARTIFICIAL(decl) = 1;
   if (! asm_name.empty())
     SET_DECL_ASSEMBLER_NAME(decl, get_identifier_from_string(asm_name));
