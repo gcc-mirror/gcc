@@ -1,3 +1,10 @@
+2017-06-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/81053
+	* tree-vect-loop.c (vect_is_simple_reduction): Handle PHI
+	with backedge value not defined in loop.  Simplify def stmt
+	compute.
+
 2017-06-11  Tom de Vries  <tom@codesourcery.com>
 
 	PR target/79939
