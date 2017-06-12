@@ -1,3 +1,7 @@
+2017-06-12  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config.gcc: Remove rs6000/e500.h from tm_file for all targets.
+
 2017-06-03  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* configure.ac (*-*-linux-android*): Set target_makefile_frag.
