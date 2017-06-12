@@ -1,3 +1,9 @@
+2017-06-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/81003
+	* tree-ssa-reassoc.c (force_into_ssa_name): New function.
+	(update_range_test): Use it instead of force_gimple_operand_gsi.
+
 2017-06-12  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/81053

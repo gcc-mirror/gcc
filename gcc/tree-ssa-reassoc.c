@@ -2282,6 +2282,26 @@ range_entry_cmp (const void *a, const void *b)
     }
 }
 
+/* Helper function for update_range_test.  Force EXPR into an SSA_NAME,
+   insert needed statements BEFORE or after GSI.  */
+
+static tree
+force_into_ssa_name (gimple_stmt_iterator *gsi, tree expr, bool before)
+{
+  enum gsi_iterator_update m = before ? GSI_SAME_STMT : GSI_CONTINUE_LINKING;
+  tree ret = force_gimple_operand_gsi (gsi, expr, true, NULL_TREE, before, m);
+  if (TREE_CODE (ret) != SSA_NAME)
+    {
+      gimple *g = gimple_build_assign (make_ssa_name (TREE_TYPE (ret)), ret);
+      if (before)
+	gsi_insert_before (gsi, g, GSI_SAME_STMT);
+      else
+	gsi_insert_after (gsi, g, GSI_CONTINUE_LINKING);
+      ret = gimple_assign_lhs (g);
+    }
+  return ret;
+}
+
 /* Helper routine of optimize_range_test.
    [EXP, IN_P, LOW, HIGH, STRICT_OVERFLOW_P] is a merged range for
    RANGE and OTHERRANGE through OTHERRANGE + COUNT - 1 ranges,
@@ -2393,15 +2413,13 @@ update_range_test (struct range_entry *range, struct range_entry *otherrange,
   else if (op != range->exp)
     {
       gsi_insert_seq_before (&gsi, seq, GSI_SAME_STMT);
-      tem = force_gimple_operand_gsi (&gsi, tem, true, NULL_TREE, true,
-				      GSI_SAME_STMT);
+      tem = force_into_ssa_name (&gsi, tem, true);
       gsi_prev (&gsi);
     }
   else if (gimple_code (stmt) != GIMPLE_PHI)
     {
       gsi_insert_seq_after (&gsi, seq, GSI_CONTINUE_LINKING);
-      tem = force_gimple_operand_gsi (&gsi, tem, true, NULL_TREE, false,
-				      GSI_CONTINUE_LINKING);
+      tem = force_into_ssa_name (&gsi, tem, false);
     }
   else
     {
@@ -2419,8 +2437,7 @@ update_range_test (struct range_entry *range, struct range_entry *otherrange,
 	    }
 	}
       gsi_insert_seq_before (&gsi, seq, GSI_SAME_STMT);
-      tem = force_gimple_operand_gsi (&gsi, tem, true, NULL_TREE, true,
-				      GSI_SAME_STMT);
+      tem = force_into_ssa_name (&gsi, tem, true);
       if (gsi_end_p (gsi))
 	gsi = gsi_last_bb (gimple_bb (stmt));
       else
