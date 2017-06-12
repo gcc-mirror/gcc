@@ -1,4 +1,7 @@
-gcc/testsuite/
+2017-06-12  Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc.target/arm/sdiv_costs_1.c: Require arm_v8_vfp_ok.
+
 2017-06-12  Tamar Christina  <tamar.christina@arm.com>
 
 	* gcc.target/arm/sdiv_costs_1.c: Disable on softfloat.
