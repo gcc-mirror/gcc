@@ -1,3 +1,9 @@
+2017-06-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/81070
+	* s-interr-hwint.adb: Reinstate.
+	* gcc-interface/Makefile.in (RTEMS): Use it again.
+
 2017-06-12  Sebastian Huber  <sebastian.huber@embedded-brains.de>
 
 	Backport from mainline
