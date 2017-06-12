@@ -1,5 +1,10 @@
 2017-06-12  Eric Botcazou  <ebotcazou@adacore.com>
 
+	PR bootstrap/80897
+	* exp_ch3.adb (Make_Predefined_Primitive_Specs): Use Positive index.
+
+2017-06-12  Eric Botcazou  <ebotcazou@adacore.com>
+
 	PR ada/81070
 	* s-interr-hwint.adb: Reinstate.
 	* gcc-interface/Makefile.in (RTEMS): Use it again.
