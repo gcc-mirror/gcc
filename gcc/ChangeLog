@@ -1,3 +1,9 @@
+2017-06-12  Doug Rupp  <rupp@adacore.com>
+
+	* config.gcc (*-*-vxworks*): Set use_gcc_stdint to "provide".
+	Append vxworks-stdint.h to the tm_file list.
+	* config/vxworks-stdint.h: New file.
+
 2017-06-12  Martin Liska  <mliska@suse.cz>
 
 	PR tree-optimization/81041

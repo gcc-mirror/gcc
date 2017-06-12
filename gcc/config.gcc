@@ -917,6 +917,8 @@ case ${target} in
   xm_defines=POSIX
   extra_options="${extra_options} vxworks.opt"
   extra_objs="$extra_objs vxworks.o"
+  use_gcc_stdint=provide
+  tm_file="${tm_file} vxworks-stdint.h"
   case ${enable_threads} in
     no) ;;
     "" | yes | vxworks) thread_file='vxworks' ;;
