@@ -1,3 +1,8 @@
+2017-06-12  Ian Lance Taylor  <iant@golang.org>
+
+	* gcc.dg/tree-prof/split-1.c: Require split_stack, don't require
+	freorder.  Update comment to explain test.
+
 2017-06-12  Tamar Christina  <tamar.christina@arm.com>
 
 	* gcc.target/aarch64/inline-lrint_1.c: Broaden regexp.
