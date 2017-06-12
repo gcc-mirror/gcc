@@ -44,6 +44,10 @@ Target Report Undocumented Mask(ALL_DEBUG)
 mlog=
 Target RejectNegative Joined Undocumented Var(avr_log_details)
 
+mshort-calls
+Target Report RejectNegative Mask(SHORT_CALLS)
+Use RJMP / RCALL even though CALL / JMP are available.
+
 mint8
 Target Report Mask(INT8)
 Use an 8-bit 'int' type.

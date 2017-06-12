@@ -24819,6 +24819,61 @@ $as_echo "#define HAVE_AS_AVR_MRMW_OPTION 1" >>confdefs.h
 
 fi
 
+
+    # Check how default linker description file implements .rodata for
+    # avrxmega3 (PR21472).  avr-gcc assumes .rodata is *not* loaded to
+    # RAM so avr-gcc skips __do_copy_data for .rodata objects.
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking binutils for avrxmega3 .rodata support" >&5
+$as_echo_n "checking binutils for avrxmega3 .rodata support... " >&6; }
+    cat > conftest.s <<EOF
+        .section .rodata,"a",@progbits
+        .global xxvaryy
+    ;; avr-nm should print "... R xxvaryy", not "... D xxvaryy".
+    xxvaryy:
+        .word 1
+EOF
+    rm -f conftest.nm
+    { ac_try='$gcc_cv_as -mmcu=avrxmega3 conftest.s -o conftest.o'
+  { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; }
+    { ac_try='$gcc_cv_ld -mavrxmega3 conftest.o -o conftest.elf'
+  { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; }
+    { ac_try='$gcc_cv_nm conftest.elf > conftest.nm'
+  { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; }
+    if test -f conftest.nm
+    then
+	if grep ' R xxvaryy' conftest.nm > /dev/null; then
+	    { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+	    rm -f conftest.s conftest.o conftest.elf conftest.nm
+	else
+	    { $as_echo "$as_me:${as_lineno-$LINENO}: result: no: avrxmega3 .rodata located in RAM" >&5
+$as_echo "no: avrxmega3 .rodata located in RAM" >&6; }
+	    echo "$as_me: nm output was" >&5
+	    cat conftest.nm >&5
+	    rm -f conftest.s conftest.o conftest.elf conftest.nm
+	    avr_ld_ver="`$gcc_cv_ld -v | sed -e 's:^.* ::'`"
+	    as_fn_error "support for avrxmega3 needs Binutils 2.29 or higher (have $avr_ld_ver)" "$LINENO" 5
+	fi
+    else
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: test failed" >&5
+$as_echo "test failed" >&6; }
+	echo "$as_me: failed program was" >&5
+	cat conftest.s >&5
+	rm -f conftest.s conftest.o conftest.elf
+	as_fn_error "see \`config.log' for details" "$LINENO" 5
+    fi
     ;;
 
   cris-*-*)

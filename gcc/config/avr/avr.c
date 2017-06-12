@@ -2502,7 +2502,7 @@ avr_print_operand_address (FILE *file, machine_mode /*mode*/, rtx addr)
   if (AVR_TINY
       && avr_address_tiny_pm_p (addr))
     {
-      addr = plus_constant (Pmode, addr, AVR_TINY_PM_OFFSET);
+      addr = plus_constant (Pmode, addr, avr_arch->flash_pm_offset);
     }
 
   switch (GET_CODE (addr))
@@ -9398,7 +9398,7 @@ avr_assemble_integer (rtx x, unsigned int size, int aligned_p)
   if (AVR_TINY
       && avr_address_tiny_pm_p (x))
     {
-      x = plus_constant (Pmode, x, AVR_TINY_PM_OFFSET);
+      x = plus_constant (Pmode, x, avr_arch->flash_pm_offset);
     }
 
   return default_assemble_integer (x, size, aligned_p);
@@ -9998,9 +9998,11 @@ static void
 avr_asm_init_sections (void)
 {
   /* Override section callbacks to keep track of `avr_need_clear_bss_p'
-     resp. `avr_need_copy_data_p'.  */
+     resp. `avr_need_copy_data_p'.  If flash is not mapped to RAM then
+     we have also to track .rodata because it is located in RAM then.  */
 
-  readonly_data_section->unnamed.callback = avr_output_data_section_asm_op;
+  if (0 == avr_arch->flash_pm_offset)
+    readonly_data_section->unnamed.callback = avr_output_data_section_asm_op;
   data_section->unnamed.callback = avr_output_data_section_asm_op;
   bss_section->unnamed.callback = avr_output_bss_section_asm_op;
 }
@@ -10032,8 +10034,12 @@ avr_asm_named_section (const char *name, unsigned int flags, tree decl)
 
   if (!avr_need_copy_data_p)
     avr_need_copy_data_p = (STR_PREFIX_P (name, ".data")
-                            || STR_PREFIX_P (name, ".rodata")
                             || STR_PREFIX_P (name, ".gnu.linkonce.d"));
+
+  if (!avr_need_copy_data_p
+      && 0 == avr_arch->flash_pm_offset)
+    avr_need_copy_data_p = (STR_PREFIX_P (name, ".rodata")
+                            || STR_PREFIX_P (name, ".gnu.linkonce.r"));
 
   if (!avr_need_clear_bss_p)
     avr_need_clear_bss_p = STR_PREFIX_P (name, ".bss");
@@ -10201,7 +10207,7 @@ avr_encode_section_info (tree decl, rtx rtl, int new_decl_p)
 
       if (progmem_p)
         {
-          // Tag symbols for later addition of 0x4000 (AVR_TINY_PM_OFFSET).
+          // Tag symbols for addition of 0x4000 (avr_arch->flash_pm_offset).
           SYMBOL_REF_FLAGS (sym) |= AVR_SYMBOL_FLAG_TINY_PM;
         }
 

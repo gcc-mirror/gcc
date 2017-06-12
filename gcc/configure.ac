@@ -3816,6 +3816,42 @@ AS_HELP_STRING([--disable-fix-cortex-a53-843419],
       [-mrmw], [.text],,
       [AC_DEFINE(HAVE_AS_AVR_MRMW_OPTION, 1,
 		[Define if your avr assembler supports -mrmw option.])])
+
+    # Check how default linker description file implements .rodata for
+    # avrxmega3 (PR21472).  avr-gcc assumes .rodata is *not* loaded to
+    # RAM so avr-gcc skips __do_copy_data for .rodata objects.
+    AC_MSG_CHECKING(binutils for avrxmega3 .rodata support)
+    cat > conftest.s <<EOF
+        .section .rodata,"a",@progbits
+        .global xxvaryy
+    ;; avr-nm should print "... R xxvaryy", not "... D xxvaryy".
+    xxvaryy:
+        .word 1
+EOF
+    rm -f conftest.nm
+    AC_TRY_COMMAND([$gcc_cv_as -mmcu=avrxmega3 conftest.s -o conftest.o])
+    AC_TRY_COMMAND([$gcc_cv_ld -mavrxmega3 conftest.o -o conftest.elf])
+    AC_TRY_COMMAND([$gcc_cv_nm conftest.elf > conftest.nm])
+    if test -f conftest.nm
+    then
+	if grep ' R xxvaryy' conftest.nm > /dev/null; then
+	    AC_MSG_RESULT(yes)
+	    rm -f conftest.s conftest.o conftest.elf conftest.nm
+	else
+	    AC_MSG_RESULT(no: avrxmega3 .rodata located in RAM)
+	    echo "$as_me: nm output was" >&AS_MESSAGE_LOG_FD
+	    cat conftest.nm >&AS_MESSAGE_LOG_FD
+	    rm -f conftest.s conftest.o conftest.elf conftest.nm
+	    avr_ld_ver="`$gcc_cv_ld -v | sed -e 's:^.* ::'`"
+	    AC_MSG_ERROR([[support for avrxmega3 needs Binutils 2.29 or higher (have $avr_ld_ver)]])
+	fi
+    else
+	AC_MSG_RESULT(test failed)
+	echo "$as_me: failed program was" >&AS_MESSAGE_LOG_FD
+	cat conftest.s >&AS_MESSAGE_LOG_FD
+	rm -f conftest.s conftest.o conftest.elf
+	AC_MSG_ERROR([[see `config.log' for details]])
+    fi
     ;;
 
   cris-*-*)
