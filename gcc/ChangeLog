@@ -1,3 +1,7 @@
+2017-06-11  Jan Hubicka  <hubicka@ucw.cz>
+
+	* cgraph.c (cgraph_node::dump): Complain about profile insanities.
+
 2017-06-12  Doug Rupp  <rupp@adacore.com>
 
 	* config.gcc (*-*-vxworks*): Set use_gcc_stdint to "provide".
