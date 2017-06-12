@@ -1,3 +1,20 @@
+2017-06-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* omp.h.in (omp_target_is_present, omp_target_disassociate_ptr):
+	Change first argument from void * to const void *.
+	(omp_target_memcpy, omp_target_memcpy_rect): Change second argument
+	from void * to const void *.
+	(omp_target_associate_ptr): Change first and second arguments from
+	void * to const void *.
+	* target.c (omp_target_is_present, omp_target_disassociate_ptr):
+	Change ptr argument from void * to const void *.
+	(omp_target_memcpy): Change src argument from void * to const void *.
+	(omp_target_memcpy_rect): Likewise.
+	(omp_target_memcpy_rect_worker): Likewise.  Use const char * casts
+	instead of char * where needed.
+	(omp_target_associate_ptr): Change host_ptr and device_ptr arguments
+	from void * to const void *.
+
 2017-05-24  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* plugin/plugin-nvptx.c (nvptx_get_num_devices): Debugging output
