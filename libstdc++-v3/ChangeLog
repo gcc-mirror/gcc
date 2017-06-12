@@ -1,3 +1,12 @@
+2017-06-12  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/bits/stl_tree.h (_Rb_tree_impl()): Restore _Node_allocator
+	default init.
+	* testsuite/util/testsuite_allocator.h
+	(__gnu_test::default_init_allocator<>) New.
+	* testsuite/23_containers/set/allocator/default_init.cc: New.
+	* testsuite/23_containers/map/allocator/default_init.cc: New.
+
 2017-06-12  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/55917
