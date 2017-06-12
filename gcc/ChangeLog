@@ -1,4 +1,62 @@
-2017-06-11  Jan Hubicka  <hubicka@ucw.cz>
+2017-06-12  Georg-Johann Lay  <avr@gjlay.de>
+
+	Support multilibs and devices that see flash in RAM address range.
+
+	PR target/81072
+	* config/avr/avr-arch.h (avr_arch_id) <ARCH_AVRXMEGA3>: New enum.
+	(avr_mcu_t) <flash_pm_offset>: New field.
+	(avr_device_specific_features) <AVR_ISA_RCALL>: New enum.
+	* config/avr/avr.h (AVR_SHORT_CALLS): New define.
+	(AVR_HAVE_JMP_CALL): Don't set if AVR_SHORT_CALLS.
+	(AVR_TINY_PM_OFFSET): Remove macro.
+	* config/avr/avr.opt (-mshort-calls): New option.
+	* config/avr/gen-avr-mmcu-specs.c (print_mcu)
+	[*self_spec]: Add / remove -mshort-calls depending on AVR_ISA_RCALL.
+	* config/avr/avr-c.c (avr_cpu_cpp_builtins)
+	<__AVR_SHORT_CALLS__>: Built-in define if AVR_SHORT_CALLS.
+	<__AVR_HAVE_JMP_CALL__>: Use AVR_HAVE_JMP_CALL as condition
+	instead of avr_arch->have_jmp_call.
+	<__AVR_PM_BASE_ADDRESS__>: Built-in define if avr_arch->flash_pm_offset.
+	[AVR_TINY] <__AVR_TINY_PM_BASE_ADDRESS__>: Use
+	avr_arch->flash_pm_offset to define.
+	* config/avr/avr-devices.c (avr_arch_types): Add initializers for
+	new field flash_pm_offset.  Add entry for avrxmega3.
+	(avr_texinfo): Add entry for avrxmega3.
+	* config/avr/avr-mcus.def: Add entries for: avrxmega3,
+	attiny212, attiny214,
+	attiny412, attiny414, attiny416, attiny417,
+	attiny814, attiny816, attiny817,
+	attiny1614, attiny1616, attiny1617,
+	attiny3214, attiny3216, attiny3217.
+	* config/avr/avr.c (avr_assemble_integer)[AVR_TINY]: Use
+	avr_arch->flash_pm_offset instead of AVR_TINY_PM_OFFSET.
+	(avr_print_operand_address) [AVR_TINY]: Same.
+	(avr_asm_init_sections) <readonly_data_section>: Only patch
+	callback if avr_arch->flash_pm_offset = 0.
+	(avr_asm_named_section) <avr_need_copy_data_p>: Skip setting it
+	for rodata if avr_arch->flash_pm_offset != 0.
+	(avr_encode_section_info) [AVR_TINY]: Adjust comment.
+	* config/avr/genmultilib.awk (dir_rcall, opt_rcall): New vars.
+	(opts) [AVR_ISA_RCALL]: Append opt_rcall.
+	(m_options): Append opt_rcall.
+	(m_dirnames): Append dir_rcall.
+	* config/avr/t-multilib: Regenerate.
+
+	* configure.ac [target=avr]: Check whether avrxmega3 default
+	linker description file works as needed.
+	* configure: Regenerate.
+	* doc/avr-mmcu.texi: Regenerate.
+	* doc/invoke.texi (AVR Options) <-mshort-calls>: Document it.
+	<__AVR_ARCH__>: Document avrxmega3 and 103.
+	<__AVR_HAVE_JMP_CALL__>: Adjust documentation.
+	<__AVR_SHORT_CALLS__>: Document it.
+	<__AVR_PM_BASE_ADDRESS__>: Document it.
+	* doc/extend.texi (AVR Options) <-mshort-calls>: Document it.
+	(AVR Variable Attributes) <progmem>: Document this is
+	not needed for avrxmega3.
+	(AVR Named Address Spaces) <__flash>: Dito.
+
+2017-06-12  Jan Hubicka  <hubicka@ucw.cz>
 
 	* cgraph.c (cgraph_node::dump): Complain about profile insanities.
 
