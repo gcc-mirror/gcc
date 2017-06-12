@@ -1,3 +1,8 @@
+2017-06-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/81003
+	* gcc.c-torture/compile/pr81003.c: New test.
+
 2017-06-12  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/81053
