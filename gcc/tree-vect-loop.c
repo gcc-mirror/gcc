@@ -2790,15 +2790,17 @@ vect_is_simple_reduction (loop_vec_info loop_info, gimple *phi,
     }
 
   def_stmt = SSA_NAME_DEF_STMT (loop_arg);
-  if (gimple_nop_p (def_stmt))
+  if (is_gimple_assign (def_stmt))
     {
-      if (dump_enabled_p ())
-	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			 "reduction: no def_stmt\n");
-      return NULL;
+      name = gimple_assign_lhs (def_stmt);
+      phi_def = false;
     }
-
-  if (!is_gimple_assign (def_stmt) && gimple_code (def_stmt) != GIMPLE_PHI)
+  else if (gimple_code (def_stmt) == GIMPLE_PHI)
+    {
+      name = PHI_RESULT (def_stmt);
+      phi_def = true;
+    }
+  else
     {
       if (dump_enabled_p ())
 	{
@@ -2809,37 +2811,27 @@ vect_is_simple_reduction (loop_vec_info loop_info, gimple *phi,
       return NULL;
     }
 
-  if (is_gimple_assign (def_stmt))
-    {
-      name = gimple_assign_lhs (def_stmt);
-      phi_def = false;
-    }
-  else
-    {
-      name = PHI_RESULT (def_stmt);
-      phi_def = true;
-    }
-
   nloop_uses = 0;
   auto_vec<gphi *, 3> lcphis;
-  FOR_EACH_IMM_USE_FAST (use_p, imm_iter, name)
-    {
-      gimple *use_stmt = USE_STMT (use_p);
-      if (is_gimple_debug (use_stmt))
-	continue;
-      if (flow_bb_inside_loop_p (loop, gimple_bb (use_stmt)))
-	nloop_uses++;
-      else
-	/* We can have more than one loop-closed PHI.  */
-	lcphis.safe_push (as_a <gphi *> (use_stmt));
-      if (nloop_uses > 1)
-	{
-	  if (dump_enabled_p ())
-	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			     "reduction used in loop.\n");
-	  return NULL;
-	}
-    }
+  if (flow_bb_inside_loop_p (loop, gimple_bb (def_stmt)))
+    FOR_EACH_IMM_USE_FAST (use_p, imm_iter, name)
+      {
+	gimple *use_stmt = USE_STMT (use_p);
+	if (is_gimple_debug (use_stmt))
+	  continue;
+	if (flow_bb_inside_loop_p (loop, gimple_bb (use_stmt)))
+	  nloop_uses++;
+	else
+	  /* We can have more than one loop-closed PHI.  */
+	  lcphis.safe_push (as_a <gphi *> (use_stmt));
+	if (nloop_uses > 1)
+	  {
+	    if (dump_enabled_p ())
+	      dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			       "reduction used in loop.\n");
+	    return NULL;
+	  }
+      }
 
   /* If DEF_STMT is a phi node itself, we expect it to have a single argument
      defined in the inner loop.  */
