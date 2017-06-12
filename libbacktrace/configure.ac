@@ -355,6 +355,23 @@ if test "$have_getexecname" = "yes"; then
   AC_DEFINE(HAVE_GETEXECNAME, 1, [Define if getexecname is available.])
 fi
 
+dnl Test whether the compiler supports the -pthread option.
+AC_CACHE_CHECK([whether -pthread is supported],
+[libgo_cv_lib_pthread],
+[CFLAGS_hold=$CFLAGS
+CFLAGS="$CFLAGS -pthread"
+AC_COMPILE_IFELSE([[int i;]],
+[libgo_cv_lib_pthread=yes],
+[libgo_cv_lib_pthread=no])
+CFLAGS=$CFLAGS_hold])
+PTHREAD_CFLAGS=
+if test "$libgo_cv_lib_pthread" = yes; then
+  PTHREAD_CFLAGS=-pthread
+fi
+AC_SUBST(PTHREAD_CFLAGS)
+
+AM_CONDITIONAL(HAVE_PTHREAD, test "$libgo_cv_lib_pthread" = yes)
+
 AC_CACHE_CHECK([whether tests can run],
   [libbacktrace_cv_sys_native],
   [AC_RUN_IFELSE([AC_LANG_PROGRAM([], [return 0;])],

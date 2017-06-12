@@ -1,5 +1,6 @@
-/* edtest.c -- Test for libbacktrace storage allocation stress handling
+/* ttest.c -- Test for libbacktrace library
    Copyright (C) 2017 Free Software Foundation, Inc.
+   Written by Ian Lance Taylor, Google.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are
@@ -29,34 +30,43 @@ STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
 IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.  */
 
-#include "config.h"
+/* Test using the libbacktrace library from multiple threads.  */
 
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/types.h>
+
+#include <pthread.h>
+
+#include "filenames.h"
 
 #include "backtrace.h"
 #include "backtrace-supported.h"
-#include "internal.h"
 
 #include "testlib.h"
 
-static int test1 (void) __attribute__ ((noinline, unused));
-static int test1 (void) __attribute__ ((noinline, unused));
-extern int f2 (int);
-extern int f3 (int, int);
+static int f2 (int) __attribute__ ((noinline));
+static int f3 (int, int) __attribute__ ((noinline));
 
-static int
-test1 (void)
+/* Test that a simple backtrace works.  This is called via
+   pthread_create.  It returns the number of failures, as void *.  */
+
+static void *
+test1_thread (void *arg ATTRIBUTE_UNUSED)
 {
   /* Returning a value here and elsewhere avoids a tailcall which
      would mess up the backtrace.  */
-  return f2 (__LINE__) + 1;
+  return (void *) (uintptr_t) (f2 (__LINE__) - 2);
 }
 
-int
+static int
+f2 (int f1line)
+{
+  return f3 (f1line, __LINE__) + 2;
+}
+
+static int
 f3 (int f1line, int f2line)
 {
   struct info all[20];
@@ -81,41 +91,71 @@ f3 (int f1line, int f2line)
   if (data.index < 3)
     {
       fprintf (stderr,
-               "test1: not enough frames; got %zu, expected at least 3\n",
-               data.index);
+	       "test1: not enough frames; got %zu, expected at least 3\n",
+	       data.index);
       data.failed = 1;
     }
 
-  check ("test1", 0, all, f3line, "f3", "edtest.c", &data.failed);
-  check ("test1", 1, all, f2line, "f2", "edtest2_build.c", &data.failed);
-  check ("test1", 2, all, f1line, "test1", "edtest.c", &data.failed);
+  check ("test1", 0, all, f3line, "f3", "ttest.c", &data.failed);
+  check ("test1", 1, all, f2line, "f2", "ttest.c", &data.failed);
+  check ("test1", 2, all, f1line, "test1_thread", "ttest.c", &data.failed);
 
-  printf ("%s: backtrace_full alloc stress\n", data.failed ? "FAIL" : "PASS");
+  return data.failed;
+}
 
-  if (data.failed)
-    ++failures;
+/* Run the test with 10 threads simultaneously.  */
 
-  return failures;
+#define THREAD_COUNT 10
+
+static void test1 (void) __attribute__ ((unused));
+
+static void
+test1 (void)
+{
+  pthread_t atid[THREAD_COUNT];
+  int i;
+  int errnum;
+  int this_fail;
+  void *ret;
+
+  for (i = 0; i < THREAD_COUNT; i++)
+    {
+      errnum = pthread_create (&atid[i], NULL, test1_thread, NULL);
+      if (errnum != 0)
+	{
+	  fprintf (stderr, "pthread_create %d: %s\n", i, strerror (errnum));
+	  exit (EXIT_FAILURE);
+	}
+    }
+
+  this_fail = 0;
+  for (i = 0; i < THREAD_COUNT; i++)
+    {
+      errnum = pthread_join (atid[i], &ret);
+      if (errnum != 0)
+	{
+	  fprintf (stderr, "pthread_join %d: %s\n", i, strerror (errnum));
+	  exit (EXIT_FAILURE);
+	}
+      this_fail += (int) (uintptr_t) ret;
+    }
+
+  printf ("%s: threaded backtrace_full noinline\n", this_fail > 0 ? "FAIL" : "PASS");
+
+  failures += this_fail;
 }
 
 int
-main (int argc ATTRIBUTE_UNUSED, char **argv ATTRIBUTE_UNUSED)
+main (int argc ATTRIBUTE_UNUSED, char **argv)
 {
   state = backtrace_create_state (argv[0], BACKTRACE_SUPPORTS_THREADS,
-                                  error_callback_create, NULL);
+				  error_callback_create, NULL);
 
-  // Grab the storage allocation lock prior to doing anything interesting.
-  // The intent here is to insure that the backtrace_alloc code is forced
-  // to always call mmap() for new memory as opposed to reusing previously
-  // allocated memory from the free list. Doing things this way helps
-  // simulate what you might see in a multithreaded program in which there
-  // are racing calls to the allocator.
-  struct backtrace_state *state_internal =
-      (struct backtrace_state *) state;
-  state_internal->lock_alloc = 1;
+#if BACKTRACE_SUPPORTED
+#if BACKTRACE_SUPPORTS_THREADS
+  test1 ();
+#endif
+#endif
 
-  // Kick off the test
-  test1();
-
-  exit (failures > 0 ? EXIT_FAILURE : EXIT_SUCCESS);
+  exit (failures ? EXIT_FAILURE : EXIT_SUCCESS);
 }
