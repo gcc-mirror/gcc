@@ -1,5 +1,9 @@
 2017-06-13  Yury Gribov  <tetra2005@gmail.com>
 
+	* match.pd: New pattern.
+
+2017-06-13  Yury Gribov  <tetra2005@gmail.com>
+
 	* tree-vrp.c (is_masked_range_test): New function.
 	(register_edge_assert_for): Determine ranges for
 	some bit tests.
