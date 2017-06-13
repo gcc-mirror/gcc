@@ -2450,8 +2450,6 @@ rs6000_debug_reg_global (void)
     SDmode,
     DDmode,
     TDmode,
-    V8QImode,
-    V4HImode,
     V2SImode,
     V16QImode,
     V8HImode,
@@ -8490,9 +8488,7 @@ reg_offset_addressing_ok_p (machine_mode mode)
 	return mode_supports_vsx_dform_quad (mode);
       break;
 
-    case V4HImode:
     case V2SImode:
-    case V1DImode:
     case V2SFmode:
        /* Paired vector modes.  Only reg+reg addressing is valid.  */
       if (TARGET_PAIRED_FLOAT)
@@ -8730,9 +8726,7 @@ rs6000_legitimate_offset_address_p (machine_mode mode, rtx x,
   extra = 0;
   switch (mode)
     {
-    case V4HImode:
     case V2SImode:
-    case V1DImode:
     case V2SFmode:
       /* SPE vector modes.  */
       return SPE_CONST_OFFSET_OK (offset);
@@ -10981,10 +10975,8 @@ rs6000_emit_move (rtx dest, rtx source, machine_mode mode)
     case V8HImode:
     case V4SFmode:
     case V4SImode:
-    case V4HImode:
     case V2SFmode:
     case V2SImode:
-    case V1DImode:
     case V2DFmode:
     case V2DImode:
     case V1TImode:
@@ -16843,7 +16835,6 @@ rs6000_init_builtins (void)
 				       : "__vector long long",
 				       intDI_type_node, 2);
   V2DF_type_node = rs6000_vector_type ("__vector double", double_type_node, 2);
-  V4HI_type_node = build_vector_type (intHI_type_node, 4);
   V4SI_type_node = rs6000_vector_type ("__vector signed int",
 				       intSI_type_node, 4);
   V4SF_type_node = rs6000_vector_type ("__vector float", float_type_node, 4);
@@ -16991,7 +16982,6 @@ rs6000_init_builtins (void)
   builtin_mode_to_type[V2DImode][0] = V2DI_type_node;
   builtin_mode_to_type[V2DImode][1] = unsigned_V2DI_type_node;
   builtin_mode_to_type[V2DFmode][0] = V2DF_type_node;
-  builtin_mode_to_type[V4HImode][0] = V4HI_type_node;
   builtin_mode_to_type[V4SImode][0] = V4SI_type_node;
   builtin_mode_to_type[V4SImode][1] = unsigned_V4SI_type_node;
   builtin_mode_to_type[V4SFmode][0] = V4SF_type_node;
