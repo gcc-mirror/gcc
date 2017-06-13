@@ -5628,6 +5628,82 @@ register_edge_assert_for_1 (tree op, enum tree_code code,
     }
 }
 
+/* Check if comparison
+     NAME COND_OP INTEGER_CST
+   has a form of
+     (X & 11...100..0) COND_OP XX...X00...0
+   Such comparison can yield assertions like
+     X >= XX...X00...0
+     X <= XX...X11...1
+   in case of COND_OP being NE_EXPR or
+     X < XX...X00...0
+     X > XX...X11...1
+   in case of EQ_EXPR.  */
+
+static bool
+is_masked_range_test (tree name, tree valt, enum tree_code cond_code,
+		      tree *new_name, tree *low, enum tree_code *low_code,
+		      tree *high, enum tree_code *high_code)
+{
+  gimple *def_stmt = SSA_NAME_DEF_STMT (name);
+
+  if (!is_gimple_assign (def_stmt)
+      || gimple_assign_rhs_code (def_stmt) != BIT_AND_EXPR)
+    return false;
+
+  tree maskt = gimple_assign_rhs2 (def_stmt);
+  if (TREE_CODE (maskt) != INTEGER_CST)
+    return false;
+
+  wide_int mask = maskt;
+  wide_int inv_mask = ~mask;
+  wide_int val = valt;  // Assume VALT is INTEGER_CST
+
+  if ((inv_mask & (inv_mask + 1)) != 0
+      || (val & mask) != val)
+    return false;
+
+  tree t = gimple_assign_rhs1 (def_stmt);
+  tree type = TREE_TYPE (t);
+
+  bool is_range = cond_code == EQ_EXPR;
+
+  wide_int min = wi::min_value (type),
+    max = wi::max_value (type);
+
+  if (is_range)
+    {
+      *low_code = val == min ? ERROR_MARK : GE_EXPR;
+      *high_code = val == max ? ERROR_MARK : LE_EXPR;
+    }
+  else
+    {
+      /* We can still generate assertion if one of alternatives
+	 is known to always be false.  */
+      if (val == min)
+	{
+	  *low_code = (enum tree_code) 0;
+	  *high_code = GT_EXPR;
+	}
+      else if ((val | inv_mask) == max)
+	{
+	  *low_code = LT_EXPR;
+	  *high_code = (enum tree_code) 0;
+	}
+      else
+	return false;
+    }
+
+  *new_name = t;
+  *low = wide_int_to_tree (type, val);
+  *high = wide_int_to_tree (type, val | inv_mask);
+
+  if (wi::neg_p (val, TYPE_SIGN (type)))
+    std::swap (*low, *high);
+
+  return true;
+}
+
 /* Try to register an edge assertion for SSA name NAME on edge E for
    the condition COND contributing to the conditional jump pointed to by
    SI.  */
@@ -5698,6 +5774,24 @@ register_edge_assert_for (tree name, edge e,
 	  tree op1 = gimple_assign_rhs2 (def_stmt);
 	  register_edge_assert_for_1 (op0, EQ_EXPR, e, asserts);
 	  register_edge_assert_for_1 (op1, EQ_EXPR, e, asserts);
+	}
+    }
+
+  /* Sometimes we can infer ranges from (NAME & MASK) == VALUE.  */
+  if ((comp_code == EQ_EXPR || comp_code == NE_EXPR)
+      && TREE_CODE (val) == INTEGER_CST)
+    {
+      enum tree_code low_code, high_code;
+      tree low, high;
+      if (is_masked_range_test (name, val, comp_code, &name, &low,
+				&low_code, &high, &high_code))
+	{
+	  if (low_code != ERROR_MARK)
+	    register_edge_assert_for_2 (name, e, low_code, name,
+					low, /*invert*/false, asserts);
+	  if (high_code != ERROR_MARK)
+	    register_edge_assert_for_2 (name, e, high_code, name,
+					high, /*invert*/false, asserts);
 	}
     }
 }
