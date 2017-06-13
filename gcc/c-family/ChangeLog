@@ -1,3 +1,9 @@
+2017-06-13  Marek Polacek  <polacek@redhat.com>
+
+	PR objc/80949
+	* c-warn.c (do_warn_duplicated_branches): Return if any of the
+	branches is null.
+
 2017-06-13  Martin Liska  <mliska@suse.cz>
 
 	PR sanitize/78204
