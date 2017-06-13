@@ -1,5 +1,11 @@
 2017-06-13  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	* config/rs6000/rs6000.c (SPE_CONST_OFFSET_OK): Delete.
+	(rs6000_legitimate_offset_address_p): Return false for anything in
+	V2SImode or V2SFmode.
+
+2017-06-13  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	* config/rs6000/rs6000-modes.def: Remove all 8-byte vector modes
 	except V2SF and V2SI.  Rearrange the vector modes, and add comments.
 	* config/rs6000/rs6000.c (rs6000_debug_reg_global): Remove V8QImode

@@ -8697,9 +8697,6 @@ legitimate_small_data_p (machine_mode mode, rtx x)
 	  && small_data_operand (x, mode));
 }
 
-/* SPE offset addressing is limited to 5-bits worth of double words.  */
-#define SPE_CONST_OFFSET_OK(x) (((x) & ~0xf8) == 0)
-
 bool
 rs6000_legitimate_offset_address_p (machine_mode mode, rtx x,
 				    bool strict, bool worst_case)
@@ -8728,8 +8725,8 @@ rs6000_legitimate_offset_address_p (machine_mode mode, rtx x,
     {
     case V2SImode:
     case V2SFmode:
-      /* SPE vector modes.  */
-      return SPE_CONST_OFFSET_OK (offset);
+      /* Paired single modes: offset addressing isn't valid.  */
+      return false;
 
     case DFmode:
     case DDmode:
