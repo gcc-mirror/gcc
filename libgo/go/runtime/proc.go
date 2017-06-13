@@ -2251,6 +2251,7 @@ func goexit0(gp *g) {
 	casgstatus(gp, _Grunning, _Gdead)
 	if isSystemGoroutine(gp) {
 		atomic.Xadd(&sched.ngsys, -1)
+		gp.isSystemGoroutine = false
 	}
 	gp.m = nil
 	gp.lockedm = nil
