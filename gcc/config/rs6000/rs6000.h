@@ -1330,13 +1330,6 @@ enum data_align { align_abi, align_opt, align_both };
 
 #define LOGICAL_OP_NON_SHORT_CIRCUIT 0
 
-/* A fixed register used at epilogue generation to address SPE registers
-   with negative offsets.  The 64-bit load/store instructions on the SPE
-   only take positive offsets (and small ones at that), so we need to
-   reserve a register for consing up negative offsets.  */
-
-#define FIXED_SCRATCH 0
-
 /* Specify the registers used for certain standard purposes.
    The values of these macros are register numbers.  */
 
