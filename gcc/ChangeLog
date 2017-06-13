@@ -1,5 +1,10 @@
 2017-06-13  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	* config/rs6000/rs6000-opts.h (enum rs6000_vector): Delete VECTOR_SPE.
+	* config/rs6000/rs6000.c (rs6000_debug_vector_unit): Delete VECTOR_SPE.
+
+2017-06-13  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	* config/rs6000/rs6000.h (FIXED_SCRATCH): Delete.
 
 2017-06-13  Segher Boessenkool  <segher@kernel.crashing.org>

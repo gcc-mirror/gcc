@@ -2236,7 +2236,6 @@ rs6000_debug_vector_unit (enum rs6000_vector v)
     case VECTOR_VSX:	   ret = "vsx";       break;
     case VECTOR_P8_VECTOR: ret = "p8_vector"; break;
     case VECTOR_PAIRED:	   ret = "paired";    break;
-    case VECTOR_SPE:	   ret = "spe";       break;
     case VECTOR_OTHER:	   ret = "other";     break;
     default:		   ret = "unknown";   break;
     }
