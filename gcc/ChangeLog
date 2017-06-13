@@ -1,5 +1,14 @@
 2017-06-13  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	* config/rs6000/rs6000.c: Update all comments that mentioned SPE.
+	(rs6000_expand_builtin): Remove RS6000_BTC_EVSEL.
+	* config/rs6000/rs6000.h (RS6000_BTC_EVSEL): Delete.
+	* config/rs6000/vxworks.h (VXCPU_FOR_8548): Delete.  Adjust former use.
+	* config/rs6000/vxworksae.h (VXCPU_FOR_8548): Delete.
+	* config/rs6000/vxworksmils.h (VXCPU_FOR_8548): Delete.
+
+2017-06-13  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	* config/rs6000/rs6000-opts.h (enum rs6000_vector): Delete VECTOR_SPE.
 	* config/rs6000/rs6000.c (rs6000_debug_vector_unit): Delete VECTOR_SPE.
 
