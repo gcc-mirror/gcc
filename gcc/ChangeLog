@@ -1,5 +1,9 @@
 2017-06-13  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	* config/rs6000/t-spe: Delete file.
+
+2017-06-13  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	* config/rs6000/rs6000.c (SPE_CONST_OFFSET_OK): Delete.
 	(rs6000_legitimate_offset_address_p): Return false for anything in
 	V2SImode or V2SFmode.
