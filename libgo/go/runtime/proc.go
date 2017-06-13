@@ -1459,7 +1459,7 @@ func dropm() {
 
 	// gccgo sets the stack to Gdead here, because the splitstack
 	// context is not initialized.
-	mp.curg.atomicstatus = _Gdead
+	atomic.Store(&mp.curg.atomicstatus, _Gdead)
 	mp.curg.gcstack = nil
 	mp.curg.gcnextsp = nil
 
@@ -2251,6 +2251,7 @@ func goexit0(gp *g) {
 	casgstatus(gp, _Grunning, _Gdead)
 	if isSystemGoroutine(gp) {
 		atomic.Xadd(&sched.ngsys, -1)
+		gp.isSystemGoroutine = false
 	}
 	gp.m = nil
 	gp.lockedm = nil

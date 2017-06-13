@@ -470,7 +470,7 @@ dump_access_tree_1 (FILE *f, struct access *access, int level)
       int i;
 
       for (i = 0; i < level; i++)
-	fputs ("* ", dump_file);
+	fputs ("* ", f);
 
       dump_access (f, access, true);
 
@@ -627,7 +627,7 @@ relink_to_new_repr (struct access *new_racc, struct access *old_racc)
 static void
 add_access_to_work_queue (struct access *access)
 {
-  if (!access->grp_queued)
+  if (access->first_link && !access->grp_queued)
     {
       gcc_assert (!access->next_queued);
       access->next_queued = work_queue_head;
@@ -2112,8 +2112,7 @@ sort_and_splice_var_accesses (tree var)
       access->grp_total_scalarization = total_scalarization;
       access->grp_partial_lhs = grp_partial_lhs;
       access->grp_unscalarizable_region = unscalarizable_region;
-      if (access->first_link)
-	add_access_to_work_queue (access);
+      add_access_to_work_queue (access);
 
       *prev_acc_ptr = access;
       prev_acc_ptr = &access->next_grp;
@@ -2559,9 +2558,28 @@ create_artificial_child_access (struct access *parent, struct access *model,
 }
 
 
-/* Propagate all subaccesses of RACC across an assignment link to LACC. Return
-   true if any new subaccess was created.  Additionally, if RACC is a scalar
-   access but LACC is not, change the type of the latter, if possible.  */
+/* Beginning with ACCESS, traverse its whole access subtree and mark all
+   sub-trees as written to.  If any of them has not been marked so previously
+   and has assignment links leading from it, re-enqueue it.  */
+
+static void
+subtree_mark_written_and_enqueue (struct access *access)
+{
+  if (access->grp_write)
+    return;
+  access->grp_write = true;
+  add_access_to_work_queue (access);
+
+  struct access *child;
+  for (child = access->first_child; child; child = child->next_sibling)
+    subtree_mark_written_and_enqueue (child);
+}
+
+/* Propagate subaccesses and grp_write flags of RACC across an assignment link
+   to LACC.  Enqueue sub-accesses as necessary so that the write flag is
+   propagated transitively.  Return true if anything changed.  Additionally, if
+   RACC is a scalar access but LACC is not, change the type of the latter, if
+   possible.  */
 
 static bool
 propagate_subaccesses_across_link (struct access *lacc, struct access *racc)
@@ -2577,7 +2595,7 @@ propagate_subaccesses_across_link (struct access *lacc, struct access *racc)
       gcc_checking_assert (!comes_initialized_p (racc->base));
       if (racc->grp_write)
 	{
-	  lacc->grp_write = true;
+	  subtree_mark_written_and_enqueue (lacc);
 	  ret = true;
 	}
     }
@@ -2586,13 +2604,21 @@ propagate_subaccesses_across_link (struct access *lacc, struct access *racc)
       || lacc->grp_unscalarizable_region
       || racc->grp_unscalarizable_region)
     {
-      ret |= !lacc->grp_write;
-      lacc->grp_write = true;
+      if (!lacc->grp_write)
+	{
+	  ret = true;
+	  subtree_mark_written_and_enqueue (lacc);
+	}
       return ret;
     }
 
   if (is_gimple_reg_type (racc->type))
     {
+      if (!lacc->grp_write)
+	{
+	  ret = true;
+	  subtree_mark_written_and_enqueue (lacc);
+	}
       if (!lacc->first_child && !racc->first_child)
 	{
 	  tree t = lacc->base;
@@ -2617,21 +2643,15 @@ propagate_subaccesses_across_link (struct access *lacc, struct access *racc)
       struct access *new_acc = NULL;
       HOST_WIDE_INT norm_offset = rchild->offset + norm_delta;
 
-      if (rchild->grp_unscalarizable_region)
-	{
-	  lacc->grp_write = true;
-	  continue;
-	}
-
       if (child_would_conflict_in_lacc (lacc, norm_offset, rchild->size,
 					&new_acc))
 	{
 	  if (new_acc)
 	    {
-	      if (!new_acc->grp_write
-		  && (lacc->grp_write || rchild->grp_write))
+	      if (!new_acc->grp_write && rchild->grp_write)
 		{
-		  new_acc ->grp_write = true;
+		  gcc_assert (!lacc->grp_write);
+		  subtree_mark_written_and_enqueue (new_acc);
 		  ret = true;
 		}
 
@@ -2641,7 +2661,23 @@ propagate_subaccesses_across_link (struct access *lacc, struct access *racc)
 		ret |= propagate_subaccesses_across_link (new_acc, rchild);
 	    }
 	  else
-	    lacc->grp_write = true;
+	    {
+	      if (rchild->grp_write && !lacc->grp_write)
+		{
+		  ret = true;
+		  subtree_mark_written_and_enqueue (lacc);
+		}
+	    }
+	  continue;
+	}
+
+      if (rchild->grp_unscalarizable_region)
+	{
+	  if (rchild->grp_write && !lacc->grp_write)
+	    {
+	      ret = true;
+	      subtree_mark_written_and_enqueue (lacc);
+	    }
 	  continue;
 	}
 
@@ -2649,36 +2685,16 @@ propagate_subaccesses_across_link (struct access *lacc, struct access *racc)
       new_acc = create_artificial_child_access (lacc, rchild, norm_offset,
 						lacc->grp_write
 						|| rchild->grp_write);
-      if (new_acc)
-	{
-	  ret = true;
-	  if (racc->first_child)
-	    propagate_subaccesses_across_link (new_acc, rchild);
-	}
+      gcc_checking_assert (new_acc);
+      if (racc->first_child)
+	propagate_subaccesses_across_link (new_acc, rchild);
+
+      add_access_to_work_queue (lacc);
+      ret = true;
     }
 
   return ret;
 }
-
-/* Beginning with ACCESS, traverse its whole access subtree and mark all
-   sub-trees as written to.  If any of them has not been marked so previously
-   and has assignment links leading from it, re-enqueue it.  */
-
-static void
-subtree_mark_written_and_enqueue (struct access *access)
-{
-  if (access->grp_write)
-    return;
-  access->grp_write = true;
-  if (access->first_link)
-    add_access_to_work_queue (access);
-
-  struct access *child;
-  for (child = access->first_child; child; child = child->next_sibling)
-    subtree_mark_written_and_enqueue (child);
-}
-
-
 
 /* Propagate all subaccesses across assignment links.  */
 
@@ -2715,11 +2731,7 @@ propagate_all_subaccesses (void)
 	  if (reque_parents)
 	    do
 	      {
-		if (lacc->first_link)
-		  {
-		    add_access_to_work_queue (lacc);
-		    break;
-		  }
+		add_access_to_work_queue (lacc);
 		lacc = lacc->parent;
 	      }
 	    while (lacc);

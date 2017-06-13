@@ -429,6 +429,10 @@ gimple_gen_ic_func_profiler (void)
   basic_block cond_bb = split_edge (single_succ_edge (entry));
   basic_block update_bb = split_edge (single_succ_edge (cond_bb));
 
+  /* We need to do an extra split in order to not create an input
+     for a possible PHI node.  */
+  split_edge (single_succ_edge (update_bb));
+
   edge true_edge = single_succ_edge (cond_bb);
   true_edge->flags = EDGE_TRUE_VALUE;
 
@@ -486,6 +490,10 @@ gimple_gen_time_profiler (unsigned tag, unsigned base)
   basic_block entry = ENTRY_BLOCK_PTR_FOR_FN (cfun);
   basic_block cond_bb = split_edge (single_succ_edge (entry));
   basic_block update_bb = split_edge (single_succ_edge (cond_bb));
+
+  /* We need to do an extra split in order to not create an input
+     for a possible PHI node.  */
+  split_edge (single_succ_edge (update_bb));
 
   edge true_edge = single_succ_edge (cond_bb);
   true_edge->flags = EDGE_TRUE_VALUE;

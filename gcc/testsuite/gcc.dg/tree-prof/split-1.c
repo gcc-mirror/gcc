@@ -1,6 +1,6 @@
-/* Test case that we don't get a link-time error when using
-   -fsplit-stack with -freorder-blocks-and-partition.  */
-/* { dg-require-effective-target freorder } */
+/* Test that we don't get a link-time error when using -fsplit-stack
+   due to implicit enabling of -freorder-blocks-and-partition.  */
+/* { dg-require-effective-target split_stack } */
 /* { dg-options "-O2 -fsplit-stack" } */
 
 extern unsigned int sleep (unsigned int);

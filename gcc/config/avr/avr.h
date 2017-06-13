@@ -60,7 +60,9 @@ enum
 
 #define TARGET_CPU_CPP_BUILTINS()	avr_cpu_cpp_builtins (pfile)
 
-#define AVR_HAVE_JMP_CALL (avr_arch->have_jmp_call)
+#define AVR_SHORT_CALLS (TARGET_SHORT_CALLS                             \
+                         && avr_arch == &avr_arch_types[ARCH_AVRXMEGA3])
+#define AVR_HAVE_JMP_CALL (avr_arch->have_jmp_call && ! AVR_SHORT_CALLS)
 #define AVR_HAVE_MUL (avr_arch->have_mul)
 #define AVR_HAVE_MOVW (avr_arch->have_movw_lpmx)
 #define AVR_HAVE_LPM (!AVR_TINY)
@@ -73,8 +75,6 @@ enum
 #define AVR_HAVE_RAMPZ (avr_arch->have_elpm             \
                         || avr_arch->have_rampd)
 #define AVR_HAVE_EIJMP_EICALL (avr_arch->have_eijmp_eicall)
-
-#define AVR_TINY_PM_OFFSET (0x4000)
 
 /* Handling of 8-bit SP versus 16-bit SP is as follows:
 

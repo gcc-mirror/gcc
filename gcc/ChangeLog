@@ -1,3 +1,167 @@
+2017-06-13  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/80803
+	PR tree-optimization/81063
+	* tree-sra.c (subtree_mark_written_and_enqueue): Move up in the file.
+	(propagate_subaccesses_across_link): Enqueue subtree whenever
+	necessary instead of relying on the caller.
+
+2017-06-13  Martin Jambor  <mjambor@suse.cz>
+
+	* tree-sra.c (add_access_to_work_queue): Only enqueue accesses
+	that have a first_link.
+	(sort_and_splice_var_accesses): Do not check first_link before
+	enquing.
+	(subtree_mark_written_and_enqueue): Likewise.
+	(propagate_all_subaccesses): Likewise and do not stop at first
+	parent with a first_link.
+
+2017-06-13  Martin Jambor  <mjambor@suse.cz>
+
+	* tree-sra.c (dump_access_tree_1): Fix accidental dumping to stderr
+	instead of f.
+
+2017-06-13  Yury Gribov  <tetra2005@gmail.com>
+
+	* match.pd: New pattern.
+
+2017-06-13  Yury Gribov  <tetra2005@gmail.com>
+
+	* tree-vrp.c (is_masked_range_test): New function.
+	(register_edge_assert_for): Determine ranges for
+	some bit tests.
+
+2017-06-13  Yury Gribov  <tetra2005@gmail.com>
+
+	PR tree-optimization/67328
+	* fold-const.c (maskable_range_p): New function.
+	(build_range_check): Generate bittests if possible.
+
+2017-06-13  Martin Liska  <mliska@suse.cz>
+
+	* gimple-pretty-print.c (dump_probability): Add new argument.
+	(dump_edge_probability): Dump both probability and count.
+	(dump_gimple_label): Likewise.
+	(dump_gimple_bb_header): Likewise.
+
+2017-06-13  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/81072
+	* config/avr/avr-devices.c: Fix indentation.
+	* config/avr/gen-avr-mmcu-specs.c: Dito.
+
+2017-06-13  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-loop.c (vect_model_reduction_cost): Do not fail,
+	instead get vector type from stmt_info.
+	(vectorizable_reduction): Adjust.  Remove dead code.
+
+2017-06-13  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/81065
+	* fold-const.c (extract_muldiv_1): Remove bogus distribution
+	case of C * (x * C2 + C3).
+	(fold_addr_of_array_ref_difference): Properly fold index difference.
+
+2017-06-12  David S. Miller  <davem@davemloft.net>
+
+	PR target/80968
+	* config/sparc/sparc.md (return expander): Emit frame blockage if
+	function uses alloca.
+
+2017-06-12  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* combine.c (make_field_assignment): Check len rather than the mode
+	precision when calling force_to_mode.
+
+2017-06-12  Georg-Johann Lay  <avr@gjlay.de>
+
+	Support multilibs and devices that see flash in RAM address range.
+
+	PR target/81072
+	* config/avr/avr-arch.h (avr_arch_id) <ARCH_AVRXMEGA3>: New enum.
+	(avr_mcu_t) <flash_pm_offset>: New field.
+	(avr_device_specific_features) <AVR_ISA_RCALL>: New enum.
+	* config/avr/avr.h (AVR_SHORT_CALLS): New define.
+	(AVR_HAVE_JMP_CALL): Don't set if AVR_SHORT_CALLS.
+	(AVR_TINY_PM_OFFSET): Remove macro.
+	* config/avr/avr.opt (-mshort-calls): New option.
+	* config/avr/gen-avr-mmcu-specs.c (print_mcu)
+	[*self_spec]: Add / remove -mshort-calls depending on AVR_ISA_RCALL.
+	* config/avr/avr-c.c (avr_cpu_cpp_builtins)
+	<__AVR_SHORT_CALLS__>: Built-in define if AVR_SHORT_CALLS.
+	<__AVR_HAVE_JMP_CALL__>: Use AVR_HAVE_JMP_CALL as condition
+	instead of avr_arch->have_jmp_call.
+	<__AVR_PM_BASE_ADDRESS__>: Built-in define if avr_arch->flash_pm_offset.
+	[AVR_TINY] <__AVR_TINY_PM_BASE_ADDRESS__>: Use
+	avr_arch->flash_pm_offset to define.
+	* config/avr/avr-devices.c (avr_arch_types): Add initializers for
+	new field flash_pm_offset.  Add entry for avrxmega3.
+	(avr_texinfo): Add entry for avrxmega3.
+	* config/avr/avr-mcus.def: Add entries for: avrxmega3,
+	attiny212, attiny214,
+	attiny412, attiny414, attiny416, attiny417,
+	attiny814, attiny816, attiny817,
+	attiny1614, attiny1616, attiny1617,
+	attiny3214, attiny3216, attiny3217.
+	* config/avr/avr.c (avr_assemble_integer)[AVR_TINY]: Use
+	avr_arch->flash_pm_offset instead of AVR_TINY_PM_OFFSET.
+	(avr_print_operand_address) [AVR_TINY]: Same.
+	(avr_asm_init_sections) <readonly_data_section>: Only patch
+	callback if avr_arch->flash_pm_offset = 0.
+	(avr_asm_named_section) <avr_need_copy_data_p>: Skip setting it
+	for rodata if avr_arch->flash_pm_offset != 0.
+	(avr_encode_section_info) [AVR_TINY]: Adjust comment.
+	* config/avr/genmultilib.awk (dir_rcall, opt_rcall): New vars.
+	(opts) [AVR_ISA_RCALL]: Append opt_rcall.
+	(m_options): Append opt_rcall.
+	(m_dirnames): Append dir_rcall.
+	* config/avr/t-multilib: Regenerate.
+
+	* configure.ac [target=avr]: Check whether avrxmega3 default
+	linker description file works as needed.
+	* configure: Regenerate.
+	* doc/avr-mmcu.texi: Regenerate.
+	* doc/invoke.texi (AVR Options) <-mshort-calls>: Document it.
+	<__AVR_ARCH__>: Document avrxmega3 and 103.
+	<__AVR_HAVE_JMP_CALL__>: Adjust documentation.
+	<__AVR_SHORT_CALLS__>: Document it.
+	<__AVR_PM_BASE_ADDRESS__>: Document it.
+	* doc/extend.texi (AVR Options) <-mshort-calls>: Document it.
+	(AVR Variable Attributes) <progmem>: Document this is
+	not needed for avrxmega3.
+	(AVR Named Address Spaces) <__flash>: Dito.
+
+2017-06-12  Jan Hubicka  <hubicka@ucw.cz>
+
+	* cgraph.c (cgraph_node::dump): Complain about profile insanities.
+
+2017-06-12  Doug Rupp  <rupp@adacore.com>
+
+	* config.gcc (*-*-vxworks*): Set use_gcc_stdint to "provide".
+	Append vxworks-stdint.h to the tm_file list.
+	* config/vxworks-stdint.h: New file.
+
+2017-06-12  Martin Liska  <mliska@suse.cz>
+
+	PR tree-optimization/81041
+	* tree-profile.c (gimple_gen_ic_func_profiler):
+	Create an extra BB in profile-generate
+	(gimple_gen_time_profiler): Likewise.
+
+2017-06-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/81003
+	* tree-ssa-reassoc.c (force_into_ssa_name): New function.
+	(update_range_test): Use it instead of force_gimple_operand_gsi.
+
+2017-06-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/81053
+	* tree-vect-loop.c (vect_is_simple_reduction): Handle PHI
+	with backedge value not defined in loop.  Simplify def stmt
+	compute.
+
 2017-06-11  Tom de Vries  <tom@codesourcery.com>
 
 	PR target/79939

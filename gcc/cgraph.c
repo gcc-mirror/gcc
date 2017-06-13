@@ -2094,7 +2094,7 @@ cgraph_node::dump (FILE *f)
   fprintf (f, "  Function flags:");
   if (count.initialized_p ())
     {
-      fprintf (f, " profile_count ");
+      fprintf (f, " count: ");
       count.dump (f);
     }
   if (origin)
@@ -2172,10 +2172,13 @@ cgraph_node::dump (FILE *f)
   
   fprintf (f, "  Called by: ");
 
+  profile_count sum = profile_count::zero ();
   for (edge = callers; edge; edge = edge->next_caller)
     {
       fprintf (f, "%s ", edge->caller->dump_name ());
       edge->dump_edge_flags (f);
+      if (edge->count.initialized_p ())
+	sum += edge->count;
     }
 
   fprintf (f, "\n  Calls: ");
@@ -2185,6 +2188,36 @@ cgraph_node::dump (FILE *f)
       edge->dump_edge_flags (f);
     }
   fprintf (f, "\n");
+
+  if (count.initialized_p ())
+    {
+      bool ok = true;
+      bool min = false;
+      ipa_ref *ref;
+
+      FOR_EACH_ALIAS (this, ref)
+	if (dyn_cast <cgraph_node *> (ref->referring)->count.initialized_p ())
+	  sum += dyn_cast <cgraph_node *> (ref->referring)->count;
+  
+      if (global.inlined_to
+	  || (symtab->state < EXPANSION
+	      && ultimate_alias_target () == this && only_called_directly_p ()))
+	ok = !count.differs_from_p (sum);
+      else if (count > profile_count::from_gcov_type (100)
+	       && count < sum.apply_scale (99, 100))
+	ok = false, min = true;
+      if (!ok)
+	{
+	  fprintf (f, "   Invalid sum of caller counts ");
+	  sum.dump (f);
+	  if (min)
+	    fprintf (f, ", should be at most ");
+	  else
+	    fprintf (f, ", should be ");
+	  count.dump (f);
+	  fprintf (f, "\n");
+	}
+    }
 
   for (edge = indirect_calls; edge; edge = edge->next_callee)
     {

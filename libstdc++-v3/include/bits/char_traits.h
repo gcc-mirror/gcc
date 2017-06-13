@@ -40,6 +40,10 @@
 #include <bits/postypes.h>      // For streampos
 #include <cwchar>               // For WEOF, wmemmove, wmemset, etc.
 
+#ifndef _GLIBCXX_ALWAYS_INLINE
+#define _GLIBCXX_ALWAYS_INLINE inline __attribute__((__always_inline__))
+#endif
+
 namespace __gnu_cxx _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
@@ -139,7 +143,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { return !eq_int_type(__c, eof()) ? __c : to_int_type(char_type()); }
     };
 
-// #define __cpp_lib_constexpr_char_traits 201611
+#define __cpp_lib_constexpr_char_traits 201611
 
   template<typename _CharT>
     _GLIBCXX14_CONSTEXPR int
@@ -212,6 +216,42 @@ namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
+#if __cplusplus > 201402
+  /**
+   *  @brief Determine whether the characters of a NULL-terminated
+   *  string are known at compile time.
+   *  @param  __s  The string.
+   *
+   *  Assumes that _CharT is a built-in character type.
+   */
+  template<typename _CharT>
+    static _GLIBCXX_ALWAYS_INLINE constexpr bool
+    __constant_string_p(const _CharT* __s)
+    {
+      while (__builtin_constant_p(*__s) && *__s)
+	__s++;
+      return __builtin_constant_p(*__s);
+    }
+
+  /**
+   *  @brief Determine whether the characters of a character array are
+   *  known at compile time.
+   *  @param  __a  The character array.
+   *  @param  __n  Number of characters.
+   *
+   *  Assumes that _CharT is a built-in character type.
+   */
+  template<typename _CharT>
+    static _GLIBCXX_ALWAYS_INLINE constexpr bool
+    __constant_char_array_p(const _CharT* __a, size_t __n)
+    {
+      size_t __i = 0;
+      while (__builtin_constant_p(__a[__i]) && __i < __n)
+	__i++;
+      return __i == __n;
+    }
+#endif
+
   // 21.1
   /**
    *  @brief  Basis for explicit traits specializations.
@@ -256,21 +296,39 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		< static_cast<unsigned char>(__c2));
       }
 
-      static /* _GLIBCXX17_CONSTEXPR */ int
+      static _GLIBCXX17_CONSTEXPR int
       compare(const char_type* __s1, const char_type* __s2, size_t __n)
       {
+#if __cplusplus > 201402
+	if (__builtin_constant_p(__n)
+	    && __constant_char_array_p(__s1, __n)
+	    && __constant_char_array_p(__s2, __n))
+	  return __gnu_cxx::char_traits<char_type>::compare(__s1, __s2, __n);
+#endif
 	if (__n == 0)
 	  return 0;
 	return __builtin_memcmp(__s1, __s2, __n);
       }
 
-      static /* _GLIBCXX17_CONSTEXPR */ size_t
+      static _GLIBCXX17_CONSTEXPR size_t
       length(const char_type* __s)
-      { return __builtin_strlen(__s); }
+      {
+#if __cplusplus > 201402
+	if (__constant_string_p(__s))
+	  return __gnu_cxx::char_traits<char_type>::length(__s);
+#endif
+	return __builtin_strlen(__s);
+      }
 
-      static /* _GLIBCXX17_CONSTEXPR */ const char_type*
+      static _GLIBCXX17_CONSTEXPR const char_type*
       find(const char_type* __s, size_t __n, const char_type& __a)
       {
+#if __cplusplus > 201402
+	if (__builtin_constant_p(__n)
+	    && __builtin_constant_p(__a)
+	    && __constant_char_array_p(__s, __n))
+	  return __gnu_cxx::char_traits<char_type>::find(__s, __n, __a);
+#endif
 	if (__n == 0)
 	  return 0;
 	return static_cast<const char_type*>(__builtin_memchr(__s, __a, __n));
@@ -347,24 +405,45 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       lt(const char_type& __c1, const char_type& __c2) _GLIBCXX_NOEXCEPT
       { return __c1 < __c2; }
 
-      static /* _GLIBCXX17_CONSTEXPR */ int
+      static _GLIBCXX17_CONSTEXPR int
       compare(const char_type* __s1, const char_type* __s2, size_t __n)
       {
+#if __cplusplus > 201402
+	if (__builtin_constant_p(__n)
+	    && __constant_char_array_p(__s1, __n)
+	    && __constant_char_array_p(__s2, __n))
+	  return __gnu_cxx::char_traits<char_type>::compare(__s1, __s2, __n);
+#endif
 	if (__n == 0)
 	  return 0;
-	return wmemcmp(__s1, __s2, __n);
+	else
+	  return wmemcmp(__s1, __s2, __n);
       }
 
-      static /* _GLIBCXX17_CONSTEXPR */ size_t
+      static _GLIBCXX17_CONSTEXPR size_t
       length(const char_type* __s)
-      { return wcslen(__s); }
+      {
+#if __cplusplus > 201402
+	if (__constant_string_p(__s))
+	  return __gnu_cxx::char_traits<char_type>::length(__s);
+	else
+#endif
+	  return wcslen(__s);
+      }
 
-      static /* _GLIBCXX17_CONSTEXPR */ const char_type*
+      static _GLIBCXX17_CONSTEXPR const char_type*
       find(const char_type* __s, size_t __n, const char_type& __a)
       {
+#if __cplusplus > 201402
+	if (__builtin_constant_p(__n)
+	    && __builtin_constant_p(__a)
+	    && __constant_char_array_p(__s, __n))
+	  return __gnu_cxx::char_traits<char_type>::find(__s, __n, __a);
+#endif
 	if (__n == 0)
 	  return 0;
-	return wmemchr(__s, __a, __n);
+	else
+	  return wmemchr(__s, __a, __n);
       }
 
       static char_type*

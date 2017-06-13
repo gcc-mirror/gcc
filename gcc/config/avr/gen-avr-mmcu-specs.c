@@ -113,6 +113,7 @@ static void
 print_mcu (const avr_mcu_t *mcu)
 {
   const char *sp8_spec;
+  const char *rcall_spec;
   const avr_mcu_t *arch_mcu;
   const avr_arch_t *arch;
   enum avr_arch_id arch_id = mcu->arch_id;
@@ -134,6 +135,7 @@ print_mcu (const avr_mcu_t *mcu)
   bool errata_skip = 0 != (mcu->dev_attribute & AVR_ERRATA_SKIP);
   bool rmw = 0 != (mcu->dev_attribute & AVR_ISA_RMW);
   bool sp8 = 0 != (mcu->dev_attribute & AVR_SHORT_SP);
+  bool rcall = (mcu->dev_attribute & AVR_ISA_RCALL);
   bool is_arch = NULL == mcu->macro;
   bool is_device = ! is_arch;
 
@@ -150,13 +152,25 @@ print_mcu (const avr_mcu_t *mcu)
       sp8_spec = sp8 ? "-msp8" :"%<msp8";
     }
 
+  if (is_arch
+      && ARCH_AVRXMEGA3 == arch_id)
+    {
+      // Leave "avrxmega3" alone.  This architectures is the only one
+      // that mixes devices with and without JMP / CALL.
+      rcall_spec = "";
+    }
+  else
+    {
+      rcall_spec = rcall ? "-mshort-calls" : "%<mshort-calls";
+    }
+
   fprintf (f, "#\n"
            "# Auto-generated specs for AVR ");
   if (is_arch)
     fprintf (f, "core architecture %s\n", arch->name);
   else
-    fprintf (f, "device %s (core %s, %d-bit SP)\n",
-             mcu->name, arch->name, sp8 ? 8 : 16);
+    fprintf (f, "device %s (core %s, %d-bit SP%s)\n", mcu->name,
+             arch->name, sp8 ? 8 : 16, rcall ? ", short-calls" : "");
   fprintf (f, "%s\n", header);
 
   if (is_device)
@@ -255,6 +269,7 @@ print_mcu (const avr_mcu_t *mcu)
     {
       fprintf (f, "*self_spec:\n");
       fprintf (f, "\t%%{!mmcu=avr*: %%<mmcu=* -mmcu=%s} ", arch->name);
+      fprintf (f, "%s ", rcall_spec);
       fprintf (f, "%s\n\n", sp8_spec);
 
 #if defined (WITH_AVRLIBC)

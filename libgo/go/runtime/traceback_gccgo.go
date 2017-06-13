@@ -94,7 +94,7 @@ func showframe(name string, gp *g) bool {
 	// We want to print those in the traceback.
 	// But unless GOTRACEBACK > 1 (checked below), still skip
 	// internal C functions and cgo-generated functions.
-	if !contains(name, ".") && !hasprefix(name, "__go_") && !hasprefix(name, "_cgo_") {
+	if name != "" && !contains(name, ".") && !hasprefix(name, "__go_") && !hasprefix(name, "_cgo_") {
 		return true
 	}
 

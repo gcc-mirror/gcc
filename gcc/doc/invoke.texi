@@ -662,7 +662,7 @@ Objective-C and Objective-C++ Dialects}.
 -mbranch-cost=@var{cost} @gol
 -mcall-prologues  -mint8  -mn_flash=@var{size}  -mno-interrupts @gol
 -mrelax  -mrmw  -mstrict-X  -mtiny-stack  -mfract-convert-truncate @gol
--nodevicelib @gol
+-mshort-calls  -nodevicelib @gol
 -Waddr-space-convert  -Wmisspelled-isr}
 
 @emph{Blackfin Options}
@@ -15637,6 +15637,15 @@ section on @code{EIND} and linker stubs below.
 Assume that the device supports the Read-Modify-Write
 instructions @code{XCH}, @code{LAC}, @code{LAS} and @code{LAT}.
 
+@item -mshort-calls
+@opindex mshort-calls
+
+Assume that @code{RJMP} and @code{RCALL} can target the whole
+program memory.
+
+This option is used internally for multilib selection.  It is
+not an optimization option, and you don't need to set it by hand.
+
 @item -msp8
 @opindex msp8
 Treat the stack pointer register as an 8-bit register,
@@ -15897,10 +15906,12 @@ for @var{mcu}=@code{avr2}, @code{avr25}, @code{avr3}, @code{avr31},
 
 respectively and
 
-@code{100}, @code{102}, @code{104},
+@code{100},
+@code{102}, @code{103}, @code{104},
 @code{105}, @code{106}, @code{107}
 
-for @var{mcu}=@code{avrtiny}, @code{avrxmega2}, @code{avrxmega4},
+for @var{mcu}=@code{avrtiny},
+@code{avrxmega2}, @code{avrxmega3}, @code{avrxmega4},
 @code{avrxmega5}, @code{avrxmega6}, @code{avrxmega7}, respectively.
 If @var{mcu} specifies a device, this built-in macro is set
 accordingly. For example, with @option{-mmcu=atmega8} the macro is
@@ -15952,7 +15963,7 @@ The device has a hardware multiplier.
 
 @item __AVR_HAVE_JMP_CALL__
 The device has the @code{JMP} and @code{CALL} instructions.
-This is the case for devices with at least 16@tie{}KiB of program
+This is the case for devices with more than 8@tie{}KiB of program
 memory.
 
 @item __AVR_HAVE_EIJMP_EICALL__
@@ -16008,6 +16019,21 @@ address as if addressed by an instruction to access RAM like @code{LD}
 or @code{STS}. This offset depends on the device architecture and has
 to be subtracted from the RAM address in order to get the
 respective I/O@tie{}address.
+
+@item __AVR_SHORT_CALLS__
+The @option{-mshort-calls} command line option is set.
+
+@item __AVR_PM_BASE_ADDRESS__=@var{addr}
+Some devices support reading from flash memory by means of @code{LD*}
+instructions.  The flash memory is seen in the data address space
+at an offset of @code{__AVR_PM_BASE_ADDRESS__}.  If this macro
+is not defined, this feature is not available.  If defined,
+the address space is linear and there is no need to put
+@code{.rodata} into RAM.  This is handled by the default linker
+description file, and is currently available for
+@code{avrtiny} and @code{avrxmega3}.  Even more convenient,
+there is no need to use address spaces like @code{__flash} or
+features like attribute @code{progmem} and @code{pgm_read_*}.
 
 @item __WITH_AVRLIBC__
 The compiler is configured to be used together with AVR-Libc.

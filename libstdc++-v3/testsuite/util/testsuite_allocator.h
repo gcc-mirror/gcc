@@ -508,6 +508,38 @@ namespace __gnu_test
     bool operator!=(const SimpleAllocator<T>&, const SimpleAllocator<U>&)
     { return false; }
 
+  template<typename T>
+    struct default_init_allocator
+    {
+      using value_type = T;
+
+      default_init_allocator() = default;
+
+      template<typename U>
+        default_init_allocator(const default_init_allocator<U>& a)
+	  : state(a.state)
+        { }
+
+      T*
+      allocate(std::size_t n)
+      { return std::allocator<T>().allocate(n); }
+
+      void
+      deallocate(T* p, std::size_t n)
+      { std::allocator<T>().deallocate(p, n); }
+
+      int state;
+    };
+
+  template<typename T, typename U>
+    bool operator==(const default_init_allocator<T>& t,
+		    const default_init_allocator<U>& u)
+    { return t.state == u.state; }
+
+  template<typename T, typename U>
+    bool operator!=(const default_init_allocator<T>& t,
+		    const default_init_allocator<U>& u)
+    { return !(t == u); }
 #endif
 
   template<typename Tp>
