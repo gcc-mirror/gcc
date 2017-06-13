@@ -3,8 +3,8 @@
 	PR tree-optimization/80803
 	PR tree-optimization/81063
 	* tree-sra.c (subtree_mark_written_and_enqueue): Move up in the file.
-	(propagate_subaccesses_across_link): Enqueue subtree whneve necessary
-	instead of relying on the caller.
+	(propagate_subaccesses_across_link): Enqueue subtree whenever
+	necessary instead of relying on the caller.
 
 2017-06-13  Martin Jambor  <mjambor@suse.cz>
 
