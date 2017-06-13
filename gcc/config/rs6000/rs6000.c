@@ -2014,10 +2014,6 @@ rs6000_cpu_name_lookup (const char *name)
    This is ordinarily the length in words of a value of mode MODE
    but can be less for certain modes in special long registers.
 
-   For the SPE, GPRs are 64 bits but only 32 bits are visible in
-   scalar instructions.  The upper 32 bits are only available to the
-   SIMD instructions.
-
    POWER and PowerPC GPRs hold 32 bits worth;
    PowerPC64 GPRs and FPRs point register holds 64 bits worth.  */
 
@@ -2901,9 +2897,7 @@ rs6000_setup_reg_addr_masks (void)
 		addr_mask |= RELOAD_REG_INDEXED;
 
 	      /* Figure out if we can do PRE_INC, PRE_DEC, or PRE_MODIFY
-		 addressing.  Restrict addressing on SPE for 64-bit types
-		 because of the SUBREG hackery used to address 64-bit floats in
-		 '32-bit' GPRs.  If we allow scalars into Altivec registers,
+		 addressing.  If we allow scalars into Altivec registers,
 		 don't allow PRE_INC, PRE_DEC, or PRE_MODIFY.  */
 
 	      if (TARGET_UPDATE
@@ -3171,7 +3165,7 @@ rs6000_init_hard_regno_mode_ok (bool global_init_p)
       rs6000_vector_align[TImode] = align64;
     }
 
-  /* TODO add SPE and paired floating point vector support.  */
+  /* TODO add paired floating point vector support.  */
 
   /* Register class constraints for the constraints that depend on compile
      switches. When the VSX code was added, different constraints were added
@@ -3827,8 +3821,7 @@ darwin_rs6000_override_options (void)
 
 /* Return the builtin mask of the various options used that could affect which
    builtins were used.  In the past we used target_flags, but we've run out of
-   bits, and some options like SPE and PAIRED are no longer in
-   target_flags.  */
+   bits, and some options like PAIRED are no longer in target_flags.  */
 
 HOST_WIDE_INT
 rs6000_builtin_mask_calculate (void)
@@ -5479,8 +5472,7 @@ rs6000_option_override_internal (bool global_init_p)
 
   /* Set the builtin mask of the various options used that could affect which
      builtins were used.  In the past we used target_flags, but we've run out
-     of bits, and some options like SPE and PAIRED are no longer in
-     target_flags.  */
+     of bits, and some options like PAIRED are no longer in target_flags.  */
   rs6000_builtin_mask = rs6000_builtin_mask_calculate ();
   if (TARGET_DEBUG_BUILTIN || TARGET_DEBUG_TARGET)
     rs6000_print_builtin_options (stderr, 0, "builtin mask",
@@ -11767,7 +11759,6 @@ function_arg_padding (machine_mode mode, const_tree type)
    However, we're stuck with this because changing the ABI might break
    existing library interfaces.
 
-   Doubleword align SPE vectors.
    Quadword align Altivec/VSX vectors.
    Quadword align large synthetic vector types.   */
 
@@ -12188,18 +12179,17 @@ rs6000_function_arg_advance_1 (CUMULATIVE_ARGS *cum, machine_mode mode,
 	  int n_words = rs6000_arg_size (mode, type);
 	  int gregno = cum->sysv_gregno;
 
-	  /* Long long and SPE vectors are put in (r3,r4), (r5,r6),
-	     (r7,r8) or (r9,r10).  As does any other 2 word item such
-	     as complex int due to a historical mistake.  */
+	  /* Long long is put in (r3,r4), (r5,r6), (r7,r8) or (r9,r10).
+	     As does any other 2 word item such as complex int due to a
+	     historical mistake.  */
 	  if (n_words == 2)
 	    gregno += (1 - gregno) & 1;
 
 	  /* Multi-reg args are not split between registers and stack.  */
 	  if (gregno + n_words - 1 > GP_ARG_MAX_REG)
 	    {
-	      /* Long long and SPE vectors are aligned on the stack.
-		 So are other 2 word items such as complex int due to
-		 a historical mistake.  */
+	      /* Long long is aligned on the stack.  So are other 2 word
+		 items such as complex int due to a historical mistake.  */
 	      if (n_words == 2)
 		cum->words += cum->words & 1;
 	      cum->words += n_words;
@@ -12736,9 +12726,9 @@ rs6000_function_arg (cumulative_args_t cum_v, machine_mode mode,
 	  int n_words = rs6000_arg_size (mode, type);
 	  int gregno = cum->sysv_gregno;
 
-	  /* Long long and SPE vectors are put in (r3,r4), (r5,r6),
-	     (r7,r8) or (r9,r10).  As does any other 2 word item such
-	     as complex int due to a historical mistake.  */
+	  /* Long long is put in (r3,r4), (r5,r6), (r7,r8) or (r9,r10).
+	     As does any other 2 word item such as complex int due to a
+	     historical mistake.  */
 	  if (n_words == 2)
 	    gregno += (1 - gregno) & 1;
 
@@ -13675,9 +13665,8 @@ rs6000_gimplify_va_arg (tree valist, tree type, gimple_seq *pre_p,
       lab_false = create_artificial_label (input_location);
       lab_over = create_artificial_label (input_location);
 
-      /* Long long and SPE vectors are aligned in the registers.
-	 As are any other 2 gpr item such as complex int due to a
-	 historical mistake.  */
+      /* Long long is aligned in the registers.  As are any other 2 gpr
+	 item such as complex int due to a historical mistake.  */
       u = reg;
       if (n_reg == 2 && reg == gpr)
 	{
@@ -16623,7 +16612,6 @@ rs6000_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
 	case RS6000_BTC_TERNARY:   name3 = "ternary";	break;
 	case RS6000_BTC_PREDICATE: name3 = "predicate";	break;
 	case RS6000_BTC_ABS:	   name3 = "abs";	break;
-	case RS6000_BTC_EVSEL:	   name3 = "evsel";	break;
 	case RS6000_BTC_DST:	   name3 = "dst";	break;
 	}
 
@@ -17011,11 +16999,11 @@ rs6000_init_builtins (void)
   pixel_V8HI_type_node = rs6000_vector_type ("__vector __pixel",
 					     pixel_type_node, 8);
 
-  /* Paired and SPE builtins are only available if you build a compiler with
-     the appropriate options, so only create those builtins with the
-     appropriate compiler option.  Create Altivec and VSX builtins on machines
-     with at least the general purpose extensions (970 and newer) to allow the
-     use of the target attribute.  */
+  /* Paired builtins are only available if you build a compiler with the
+     appropriate options, so only create those builtins with the appropriate
+     compiler option.  Create Altivec and VSX builtins on machines with at
+     least the general purpose extensions (970 and newer) to allow the use of
+     the target attribute.  */
   if (TARGET_PAIRED_FLOAT)
     paired_init_builtins ();
   if (TARGET_EXTRA_BUILTINS)
@@ -18147,11 +18135,11 @@ rs6000_common_init_builtins (void)
       builtin_mode_to_type[V2SFmode][0] = opaque_V2SF_type_node;
     }
 
-  /* Paired and SPE builtins are only available if you build a compiler with
-     the appropriate options, so only create those builtins with the
-     appropriate compiler option.  Create Altivec and VSX builtins on machines
-     with at least the general purpose extensions (970 and newer) to allow the
-     use of the target attribute..  */
+  /* Paired builtins are only available if you build a compiler with the
+     appropriate options, so only create those builtins with the appropriate
+     compiler option.  Create Altivec and VSX builtins on machines with at
+     least the general purpose extensions (970 and newer) to allow the use of
+     the target attribute..  */
 
   if (TARGET_EXTRA_BUILTINS)
     builtin_mask |= RS6000_BTM_COMMON;
@@ -18395,7 +18383,7 @@ rs6000_common_init_builtins (void)
 	  mode0 = insn_data[icode].operand[0].mode;
 	  if (mode0 == V2SImode)
 	    {
-	      /* code for SPE */
+	      /* code for paired single */
 	      if (! (type = v2si_ftype))
 		{
 		  v2si_ftype
@@ -23109,7 +23097,7 @@ print_operand (FILE *file, rtx x, int code)
 	}
       return;
 
-      /* Print AltiVec or SPE memory operand.  */
+      /* Print AltiVec memory operand.  */
     case 'y':
       {
 	rtx tmp;
@@ -26154,10 +26142,6 @@ rs6000_savres_strategy (rs6000_stack_t *info,
 		| AltiVec alignment padding (Y)		| 8+P+A+V+L+X+W
 		+---------------------------------------+
 		| Save area for VRSAVE register (Z)	| 8+P+A+V+L+X+W+Y
-		+---------------------------------------+
-		| SPE: area for 64-bit GP registers	|
-		+---------------------------------------+
-		| SPE alignment padding			|
 		+---------------------------------------+
 		| saved CR (C)				| 8+P+A+V+L+X+W+Y+Z
 		+---------------------------------------+
@@ -29956,7 +29940,6 @@ rs6000_emit_epilogue (int sibcall)
 	  if (regno == INVALID_REGNUM)
 	    break;
 
-	  /* Note: possible use of r0 here to address SPE regs.  */
 	  mem = gen_frame_mem_offset (reg_mode, frame_reg_rtx,
 				      info->ehrd_offset + frame_off
 				      + reg_size * (int) i);
@@ -36986,7 +36969,7 @@ altivec_expand_vec_perm_const (rtx operands[4])
   return false;
 }
 
-/* Expand a Paired Single, VSX Permute Doubleword, or SPE constant permutation.
+/* Expand a Paired Single or VSX Permute Doubleword constant permutation.
    Return true if we match an efficient implementation.  */
 
 static bool
@@ -37213,10 +37196,8 @@ rs6000_parallel_return (machine_mode mode,
 
 /* Target hook for TARGET_FUNCTION_VALUE.
 
-   On the SPE, both FPs and vectors are returned in r3.
-
-   On RS/6000 an integer value is in r3 and a floating-point value is in
-   fp1, unless -msoft-float.  */
+   An integer value is in r3 and a floating-point value is in fp1,
+   unless -msoft-float.  */
 
 static rtx
 rs6000_function_value (const_tree valtype,
@@ -37428,7 +37409,7 @@ rs6000_initial_elimination_offset (int from, int to)
   return offset;
 }
 
-/* Fill in sizes for SPE register high parts in table used by unwinder.  */
+/* Fill in sizes of registers used by unwinder.  */
 
 static void
 rs6000_init_dwarf_reg_sizes_extra (tree address)
