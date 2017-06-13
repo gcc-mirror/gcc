@@ -1,5 +1,9 @@
 2017-06-13  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	* config/rs6000/rs6000.h (FIXED_SCRATCH): Delete.
+
+2017-06-13  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	* config/rs6000/t-rtems: Don't handle SPE.
 
 2017-06-13  Segher Boessenkool  <segher@kernel.crashing.org>
