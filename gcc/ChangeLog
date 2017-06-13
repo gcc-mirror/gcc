@@ -1,5 +1,13 @@
 2017-06-13  Martin Jambor  <mjambor@suse.cz>
 
+	PR tree-optimization/80803
+	PR tree-optimization/81063
+	* tree-sra.c (subtree_mark_written_and_enqueue): Move up in the file.
+	(propagate_subaccesses_across_link): Enqueue subtree whneve necessary
+	instead of relying on the caller.
+
+2017-06-13  Martin Jambor  <mjambor@suse.cz>
+
 	* tree-sra.c (add_access_to_work_queue): Only enqueue accesses
 	that have a first_link.
 	(sort_and_splice_var_accesses): Do not check first_link before
