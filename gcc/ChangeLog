@@ -1,5 +1,11 @@
 2017-06-13  Yury Gribov  <tetra2005@gmail.com>
 
+	* tree-vrp.c (is_masked_range_test): New function.
+	(register_edge_assert_for): Determine ranges for
+	some bit tests.
+
+2017-06-13  Yury Gribov  <tetra2005@gmail.com>
+
 	PR tree-optimization/67328
 	* fold-const.c (maskable_range_p): New function.
 	(build_range_check): Generate bittests if possible.
