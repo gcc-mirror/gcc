@@ -4745,6 +4745,40 @@ make_range (tree exp, int *pin_p, tree *plow, tree *phigh,
   *pin_p = in_p, *plow = low, *phigh = high;
   return exp;
 }
+
+/* Returns TRUE if [LOW, HIGH] range check can be optimized to
+   a bitwise check i.e. when
+     LOW  == 0xXX...X00...0
+     HIGH == 0xXX...X11...1
+   Return corresponding mask in MASK and stem in VALUE.  */
+
+static bool
+maskable_range_p (const_tree low, const_tree high, tree type, tree *mask,
+		  tree *value)
+{
+  if (TREE_CODE (low) != INTEGER_CST
+      || TREE_CODE (high) != INTEGER_CST)
+    return false;
+
+  unsigned prec = TYPE_PRECISION (type);
+  wide_int lo = wi::to_wide (low, prec);
+  wide_int hi = wi::to_wide (high, prec);
+
+  wide_int end_mask = lo ^ hi;
+  if ((end_mask & (end_mask + 1)) != 0
+      || (lo & end_mask) != 0)
+    return false;
+
+  wide_int stem_mask = ~end_mask;
+  wide_int stem = lo & stem_mask;
+  if (stem != (hi & stem_mask))
+    return false;
+
+  *mask = wide_int_to_tree (type, stem_mask);
+  *value = wide_int_to_tree (type, stem);
+
+  return true;
+}
 
 /* Given a range, LOW, HIGH, and IN_P, an expression, EXP, and a result
    type, TYPE, return an expression to test if EXP is in (or out of, depending
@@ -4754,7 +4788,7 @@ tree
 build_range_check (location_t loc, tree type, tree exp, int in_p,
 		   tree low, tree high)
 {
-  tree etype = TREE_TYPE (exp), value;
+  tree etype = TREE_TYPE (exp), mask, value;
 
   /* Disable this optimization for function pointer expressions
      on targets that require function pointer canonicalization.  */
@@ -4786,6 +4820,13 @@ build_range_check (location_t loc, tree type, tree exp, int in_p,
   if (operand_equal_p (low, high, 0))
     return fold_build2_loc (loc, EQ_EXPR, type, exp,
 			fold_convert_loc (loc, etype, low));
+
+  if (TREE_CODE (exp) == BIT_AND_EXPR
+      && maskable_range_p (low, high, etype, &mask, &value))
+    return fold_build2_loc (loc, EQ_EXPR, type,
+			    fold_build2_loc (loc, BIT_AND_EXPR, etype,
+					      exp, mask),
+			    value);
 
   if (integer_zerop (low))
     {
