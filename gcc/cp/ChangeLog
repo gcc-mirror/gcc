@@ -1,3 +1,19 @@
+2017-06-13  Martin Liska  <mliska@suse.cz>
+
+	PR sanitize/78204
+	* class.c (build_base_path): Use sanitize_flags_p.
+	* cp-gimplify.c (cp_genericize_r): Likewise.
+	(cp_genericize_tree): Likewise.
+	(cp_genericize): Likewise.
+	* cp-ubsan.c (cp_ubsan_instrument_vptr_p): Likewise.
+	* decl.c (compute_array_index_type): Likewise.
+	(start_preparsed_function): Likewise.
+	* decl2.c (one_static_initialization_or_destruction): Likewise.
+	* init.c (finish_length_check): Likewise.
+	* lambda.c (maybe_add_lambda_conv_op): Likewise.
+	* typeck.c (cp_build_binary_op): Likewise.
+	(build_static_cast_1): Likewise.
+
 2017-06-11  Jason Merrill  <jason@redhat.com>
 
 	* error.c (dump_expr): Use is_this_parameter.

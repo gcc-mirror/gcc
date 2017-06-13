@@ -1,3 +1,20 @@
+2017-06-13  Martin Liska  <mliska@suse.cz>
+
+	PR sanitize/78204
+	* c-attribs.c (add_no_sanitize_value): New function.
+	(handle_no_sanitize_attribute): Likewise.
+	(handle_no_sanitize_address_attribute): Use the function.
+	(handle_no_sanitize_thread_attribute): New function.
+	(handle_no_address_safety_analysis_attribute): Use
+	add_no_sanitize_value.
+	(handle_no_sanitize_undefined_attribute): Likewise.
+	* c-common.h: Declare new functions.
+	* c-ubsan.c (ubsan_instrument_division): Use sanitize_flags_p.
+	(ubsan_instrument_shift): Likewise.
+	(ubsan_instrument_bounds): Likewise.
+	(ubsan_maybe_instrument_array_ref): Likewise.
+	(ubsan_maybe_instrument_reference_or_call): Likewise.
+
 2017-06-11  Jason Merrill  <jason@redhat.com>
 
 	* c-ada-spec.c, c-pragma.c: Use id_equal.

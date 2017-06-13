@@ -948,9 +948,7 @@ pass_sanopt::execute (function *fun)
 	      switch (DECL_FUNCTION_CODE (callee))
 		{
 		case BUILT_IN_UNREACHABLE:
-		  if (flag_sanitize & SANITIZE_UNREACHABLE
-		      && !lookup_attribute ("no_sanitize_undefined",
-					    DECL_ATTRIBUTES (fun->decl)))
+		  if (sanitize_flags_p (SANITIZE_UNREACHABLE))
 		    no_next = ubsan_instrument_unreachable (&gsi);
 		  break;
 		default:

@@ -33,6 +33,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "c-family/c-ubsan.h"
 #include "cilk.h"
 #include "cp-cilkplus.h"
+#include "asan.h"
 
 /* Forward declarations.  */
 
@@ -1262,8 +1263,7 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
 				     : OMP_CLAUSE_DEFAULT_PRIVATE);
 	      }
 	}
-      if (flag_sanitize
-	  & (SANITIZE_NULL | SANITIZE_ALIGNMENT | SANITIZE_VPTR))
+      if (sanitize_flags_p (SANITIZE_NULL | SANITIZE_ALIGNMENT | SANITIZE_VPTR))
 	{
 	  /* The point here is to not sanitize static initializers.  */
 	  bool no_sanitize_p = wtd->no_sanitize_p;
@@ -1450,11 +1450,11 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
       *stmt_p = cplus_expand_constant (stmt);
       *walk_subtrees = 0;
     }
-  else if ((flag_sanitize
-	    & (SANITIZE_NULL | SANITIZE_ALIGNMENT | SANITIZE_VPTR))
+  else if (sanitize_flags_p ((SANITIZE_NULL
+			      | SANITIZE_ALIGNMENT | SANITIZE_VPTR))
 	   && !wtd->no_sanitize_p)
     {
-      if ((flag_sanitize & (SANITIZE_NULL | SANITIZE_ALIGNMENT))
+      if (sanitize_flags_p (SANITIZE_NULL | SANITIZE_ALIGNMENT)
 	  && TREE_CODE (stmt) == NOP_EXPR
 	  && TREE_CODE (TREE_TYPE (stmt)) == REFERENCE_TYPE)
 	ubsan_maybe_instrument_reference (stmt_p);
@@ -1470,9 +1470,9 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
 		= TREE_CODE (fn) == ADDR_EXPR
 		  && TREE_CODE (TREE_OPERAND (fn, 0)) == FUNCTION_DECL
 		  && DECL_CONSTRUCTOR_P (TREE_OPERAND (fn, 0));
-	      if (flag_sanitize & (SANITIZE_NULL | SANITIZE_ALIGNMENT))
+	      if (sanitize_flags_p (SANITIZE_NULL | SANITIZE_ALIGNMENT))
 		ubsan_maybe_instrument_member_call (stmt, is_ctor);
-	      if ((flag_sanitize & SANITIZE_VPTR) && !is_ctor)
+	      if (sanitize_flags_p (SANITIZE_VPTR) && !is_ctor)
 		cp_ubsan_maybe_instrument_member_call (stmt);
 	    }
 	}
@@ -1499,7 +1499,7 @@ cp_genericize_tree (tree* t_p, bool handle_invisiref_parm_p)
   cp_walk_tree (t_p, cp_genericize_r, &wtd, NULL);
   delete wtd.p_set;
   wtd.bind_expr_stack.release ();
-  if (flag_sanitize & SANITIZE_VPTR)
+  if (sanitize_flags_p (SANITIZE_VPTR))
     cp_ubsan_instrument_member_accesses (t_p);
 }
 
@@ -1622,8 +1622,7 @@ cp_genericize (tree fndecl)
      walk_tree's hash functionality.  */
   cp_genericize_tree (&DECL_SAVED_TREE (fndecl), true);
 
-  if (flag_sanitize & SANITIZE_RETURN
-      && do_ubsan_in_current_function ())
+  if (sanitize_flags_p (SANITIZE_RETURN))
     cp_ubsan_maybe_instrument_return (fndecl);
 
   /* Do everything else.  */

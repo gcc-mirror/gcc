@@ -9398,7 +9398,8 @@ sanitize_spec_function (int argc, const char **argv)
   if (strcmp (argv[0], "thread") == 0)
     return (flag_sanitize & SANITIZE_THREAD) ? "" : NULL;
   if (strcmp (argv[0], "undefined") == 0)
-    return ((flag_sanitize & (SANITIZE_UNDEFINED | SANITIZE_NONDEFAULT))
+    return ((flag_sanitize
+	     & (SANITIZE_UNDEFINED | SANITIZE_UNDEFINED_NONDEFAULT))
 	    && !flag_sanitize_undefined_trap_on_error) ? "" : NULL;
   if (strcmp (argv[0], "leak") == 0)
     return ((flag_sanitize
