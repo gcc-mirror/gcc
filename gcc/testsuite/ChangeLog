@@ -1,3 +1,10 @@
+2017-06-13  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/80803
+	PR tree-optimization/81063
+	gcc.dg/tree-ssa/pr80803.c: New test.
+	gcc.dg/tree-ssa/pr81063.c: Likewise.
+
 2017-06-12  Yury Gribov  <tetra2005@gmail.com>
 
 	* c-c++-common/fold-masked-cmp-3.c: New test.
