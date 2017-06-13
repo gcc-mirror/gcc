@@ -1,5 +1,11 @@
 2017-06-13  Richard Biener  <rguenther@suse.de>
 
+	* tree-vect-loop.c (vect_model_reduction_cost): Do not fail,
+	instead get vector type from stmt_info.
+	(vectorizable_reduction): Adjust.  Remove dead code.
+
+2017-06-13  Richard Biener  <rguenther@suse.de>
+
 	PR middle-end/81065
 	* fold-const.c (extract_muldiv_1): Remove bogus distribution
 	case of C * (x * C2 + C3).
