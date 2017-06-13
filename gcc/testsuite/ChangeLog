@@ -1,3 +1,8 @@
+2017-06-13  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/81065
+	* c-c++-common/ubsan/pr81065.c: New testcase.
+
 2017-06-12  Ian Lance Taylor  <iant@golang.org>
 
 	* gcc.dg/tree-prof/split-1.c: Require split_stack, don't require

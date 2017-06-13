@@ -1,3 +1,10 @@
+2017-06-13  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/81065
+	* fold-const.c (extract_muldiv_1): Remove bogus distribution
+	case of C * (x * C2 + C3).
+	(fold_addr_of_array_ref_difference): Properly fold index difference.
+
 2017-06-12  David S. Miller  <davem@davemloft.net>
 
 	PR target/80968
