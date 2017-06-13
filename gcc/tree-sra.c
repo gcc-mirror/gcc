@@ -627,7 +627,7 @@ relink_to_new_repr (struct access *new_racc, struct access *old_racc)
 static void
 add_access_to_work_queue (struct access *access)
 {
-  if (!access->grp_queued)
+  if (access->first_link && !access->grp_queued)
     {
       gcc_assert (!access->next_queued);
       access->next_queued = work_queue_head;
@@ -2112,8 +2112,7 @@ sort_and_splice_var_accesses (tree var)
       access->grp_total_scalarization = total_scalarization;
       access->grp_partial_lhs = grp_partial_lhs;
       access->grp_unscalarizable_region = unscalarizable_region;
-      if (access->first_link)
-	add_access_to_work_queue (access);
+      add_access_to_work_queue (access);
 
       *prev_acc_ptr = access;
       prev_acc_ptr = &access->next_grp;
@@ -2670,8 +2669,7 @@ subtree_mark_written_and_enqueue (struct access *access)
   if (access->grp_write)
     return;
   access->grp_write = true;
-  if (access->first_link)
-    add_access_to_work_queue (access);
+  add_access_to_work_queue (access);
 
   struct access *child;
   for (child = access->first_child; child; child = child->next_sibling)
@@ -2715,11 +2713,7 @@ propagate_all_subaccesses (void)
 	  if (reque_parents)
 	    do
 	      {
-		if (lacc->first_link)
-		  {
-		    add_access_to_work_queue (lacc);
-		    break;
-		  }
+		add_access_to_work_queue (lacc);
 		lacc = lacc->parent;
 	      }
 	    while (lacc);

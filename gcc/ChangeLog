@@ -1,5 +1,15 @@
 2017-06-13  Martin Jambor  <mjambor@suse.cz>
 
+	* tree-sra.c (add_access_to_work_queue): Only enqueue accesses
+	that have a first_link.
+	(sort_and_splice_var_accesses): Do not check first_link before
+	enquing.
+	(subtree_mark_written_and_enqueue): Likewise.
+	(propagate_all_subaccesses): Likewise and do not stop at first
+	parent with a first_link.
+
+2017-06-13  Martin Jambor  <mjambor@suse.cz>
+
 	* tree-sra.c (dump_access_tree_1): Fix accidental dumping to stderr
 	instead of f.
 
