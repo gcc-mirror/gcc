@@ -1,3 +1,10 @@
+2017-06-13  Martin Liska  <mliska@suse.cz>
+
+	* gimple-pretty-print.c (dump_probability): Add new argument.
+	(dump_edge_probability): Dump both probability and count.
+	(dump_gimple_label): Likewise.
+	(dump_gimple_bb_header): Likewise.
+
 2017-06-13  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/81072

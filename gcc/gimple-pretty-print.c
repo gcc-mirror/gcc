@@ -80,17 +80,22 @@ debug_gimple_stmt (gimple *gs)
    by xstrdup_for_dump.  */
 
 static const char *
-dump_probability (int value)
+dump_probability (int frequency, profile_count &count)
 {
   float minimum = 0.01f;
 
-  gcc_assert (0 <= value && value <= REG_BR_PROB_BASE);
-  float fvalue = value * 100.0f / REG_BR_PROB_BASE;
-  if (fvalue < minimum && value > 0)
+  gcc_assert (0 <= frequency && frequency <= REG_BR_PROB_BASE);
+  float fvalue = frequency * 100.0f / REG_BR_PROB_BASE;
+  if (fvalue < minimum && frequency > 0)
     return "[0.01%]";
 
   char *buf;
-  asprintf (&buf, "[%.2f%%]", fvalue);
+  if (count.initialized_p ())
+    asprintf (&buf, "[%.2f%%] [count: %" PRId64 "]", fvalue,
+	      count.to_gcov_type ());
+  else
+    asprintf (&buf, "[%.2f%%] [count: INV]", fvalue);
+
   const char *ret = xstrdup_for_dump (buf);
   free (buf);
 
@@ -102,7 +107,7 @@ dump_probability (int value)
 static void
 dump_edge_probability (pretty_printer *buffer, edge e)
 {
-  pp_scalar (buffer, " %s", dump_probability (e->probability));
+  pp_scalar (buffer, " %s", dump_probability (e->probability, e->count));
 }
 
 /* Print GIMPLE statement G to FILE using SPC indentation spaces and
@@ -1085,7 +1090,7 @@ dump_gimple_label (pretty_printer *buffer, glabel *gs, int spc,
       dump_generic_node (buffer, label, spc, flags, false);
       basic_block bb = gimple_bb (gs);
       if (bb && !(flags & TDF_GIMPLE))
-	pp_scalar (buffer, " %s", dump_probability (bb->frequency));
+	pp_scalar (buffer, " %s", dump_probability (bb->frequency, bb->count));
       pp_colon (buffer);
     }
   if (flags & TDF_GIMPLE)
@@ -2665,7 +2670,8 @@ dump_gimple_bb_header (FILE *outf, basic_block bb, int indent,
 	    fprintf (outf, "%*sbb_%d:\n", indent, "", bb->index);
 	  else
 	    fprintf (outf, "%*s<bb %d> %s:\n",
-		     indent, "", bb->index, dump_probability (bb->frequency));
+		     indent, "", bb->index, dump_probability (bb->frequency,
+							      bb->count));
 	}
     }
 }
