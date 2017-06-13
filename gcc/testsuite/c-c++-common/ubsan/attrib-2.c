@@ -68,4 +68,14 @@ float_cast (void)
   c = d;
 }
 
+__attribute__((no_sanitize(("undefined"))))
+static void
+float_cast2 (void)
+{
+  volatile double d = 300;
+  volatile signed char c;
+  c = d;
+}
+
+
 /* { dg-final { scan-assembler-not "__ubsan_handle" } } */

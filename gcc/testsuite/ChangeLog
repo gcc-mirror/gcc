@@ -1,3 +1,10 @@
+2017-06-13  Martin Liska  <mliska@suse.cz>
+
+	PR sanitize/78204
+	* c-c++-common/ubsan/attrib-2.c (float_cast2): Enhance the
+	test by adding no_sanitize attribute.
+	* gcc.dg/asan/use-after-scope-4.c: Likewise.
+
 2017-06-13  Renlin Li  <renlin.li@arm.com>
 
 	* gcc.target/arm/cold-lc.c: Update coding style, call dump_stack

@@ -1656,6 +1656,37 @@ parse_sanitizer_options (const char *p, location_t loc, int scode,
   return flags;
 }
 
+/* Parse string values of no_sanitize attribute passed in VALUE.
+   Values are separated with comma.  Wrong argument is stored to
+   WRONG_ARGUMENT variable.  */
+
+unsigned int
+parse_no_sanitize_attribute (char *value, char **wrong_argument)
+{
+  unsigned int flags = 0;
+  unsigned int i;
+  char *q = strtok (value, ",");
+
+  while (q != NULL)
+    {
+      for (i = 0; sanitizer_opts[i].name != NULL; ++i)
+	if (strcmp (sanitizer_opts[i].name, q) == 0)
+	  {
+	    flags |= sanitizer_opts[i].flag;
+	    if (sanitizer_opts[i].flag == SANITIZE_UNDEFINED)
+	      flags |= SANITIZE_UNDEFINED_NONDEFAULT;
+	    break;
+	  }
+
+      if (sanitizer_opts[i].name == NULL)
+	*wrong_argument = q;
+
+      q = strtok (NULL, ",");
+    }
+
+  return flags;
+}
+
 /* Handle target- and language-independent options.  Return zero to
    generate an "unknown option" message.  Only options that need
    extra handling need to be listed here; if you simply want
@@ -1892,11 +1923,11 @@ common_handle_option (struct gcc_options *opts,
     case OPT_fsanitize_recover:
       if (value)
 	opts->x_flag_sanitize_recover
-	  |= (SANITIZE_UNDEFINED | SANITIZE_NONDEFAULT)
+	  |= (SANITIZE_UNDEFINED | SANITIZE_UNDEFINED_NONDEFAULT)
 	     & ~(SANITIZE_UNREACHABLE | SANITIZE_RETURN);
       else
 	opts->x_flag_sanitize_recover
-	  &= ~(SANITIZE_UNDEFINED | SANITIZE_NONDEFAULT);
+	  &= ~(SANITIZE_UNDEFINED | SANITIZE_UNDEFINED_NONDEFAULT);
       break;
 
     case OPT_O:

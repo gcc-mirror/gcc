@@ -1,3 +1,36 @@
+2017-06-13  Martin Liska  <mliska@suse.cz>
+
+	PR sanitize/78204
+	* asan.c (asan_sanitize_stack_p): Use sanitize_flags_p.
+	(gate_asan): Likewise.
+	* asan.h (asan_no_sanitize_address_p): Remove the function.
+	(sanitize_flags_p): New function.
+	* builtins.def: Fix coding style.
+	* common.opt: Use renamed enum value.
+	* convert.c (convert_to_integer_1): Use sanitize_flags_p.
+	* doc/extend.texi: Document no_sanitize attribute.
+	* flag-types.h (enum sanitize_code): Rename SANITIZE_NONDEFAULT
+	to SANITIZE_UNDEFINED_NONDEFAULT.
+	* gcc.c (sanitize_spec_function): Use the renamed enum value.
+	* gimple-fold.c (optimize_atomic_compare_exchange_p):
+	Use sanitize_flags_p.
+	* gimplify.c (gimplify_function_tree): Likewise.
+	* ipa-inline.c (sanitize_attrs_match_for_inline_p): Likewise.
+	* opts.c (parse_no_sanitize_attribute): New function.
+	(common_handle_option): Use renamed enum value.
+	* opts.h (parse_no_sanitize_attribute): Declare.
+	* tree.c (sanitize_flags_p): New function.
+	* tree.h: Declared here.
+	* tsan.c: Use sanitize_flags_p.
+	* ubsan.c (ubsan_expand_null_ifn): Likewise.
+	(instrument_mem_ref): Likewise.
+	(instrument_bool_enum_load): Likewise.
+	(do_ubsan_in_current_function): Remove the function.
+	(pass_ubsan::execute): Use sanitize_flags_p.
+	* ubsan.h: Remove do_ubsan_in_current_function
+	* tree-cfg.c (print_no_sanitize_attr_value): New function.
+	(dump_function_to_file): Use it here.
+
 2017-06-13  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/80803

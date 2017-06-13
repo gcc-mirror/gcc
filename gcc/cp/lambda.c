@@ -1150,9 +1150,7 @@ maybe_add_lambda_conv_op (tree type)
     {
       /* Don't UBsan this function; we're deliberately calling op() with a null
 	 object argument.  */
-      tree attrs = build_tree_list (get_identifier ("no_sanitize_undefined"),
-				    NULL_TREE);
-      cplus_decl_attributes (&fn, attrs, 0);
+      add_no_sanitize_value (fn, SANITIZE_UNDEFINED);
     }
 
   add_method (type, fn, false);

@@ -12647,7 +12647,7 @@ gimplify_function_tree (tree fndecl)
       && !needs_to_live_in_memory (ret))
     DECL_GIMPLE_REG_P (ret) = 1;
 
-  if (asan_sanitize_use_after_scope () && !asan_no_sanitize_address_p ())
+  if (asan_sanitize_use_after_scope () && sanitize_flags_p (SANITIZE_ADDRESS))
     asan_poisoned_variables = new hash_set<tree> ();
   bind = gimplify_body (fndecl, true);
   if (asan_poisoned_variables)
@@ -12714,8 +12714,7 @@ gimplify_function_tree (tree fndecl)
       bind = new_bind;
     }
 
-  if ((flag_sanitize & SANITIZE_THREAD) != 0
-      && !lookup_attribute ("no_sanitize_thread", DECL_ATTRIBUTES (fndecl)))
+  if (sanitize_flags_p (SANITIZE_THREAD))
     {
       gcall *call = gimple_build_call_internal (IFN_TSAN_FUNC_EXIT, 0);
       gimple *tf = gimple_build_try (seq, call, GIMPLE_TRY_FINALLY);

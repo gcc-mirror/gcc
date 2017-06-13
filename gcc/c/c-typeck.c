@@ -50,6 +50,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gomp-constants.h"
 #include "spellcheck-tree.h"
 #include "gcc-rich-location.h"
+#include "asan.h"
 
 /* Possible cases of implicit bad conversions.  Used to select
    diagnostic messages in convert_for_assignment.  */
@@ -6378,7 +6379,7 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
       if (codel == BOOLEAN_TYPE || codel == COMPLEX_TYPE
 	  || (coder == REAL_TYPE
 	      && (codel == INTEGER_TYPE || codel == ENUMERAL_TYPE)
-	      && (flag_sanitize & SANITIZE_FLOAT_CAST)))
+	      && sanitize_flags_p (SANITIZE_FLOAT_CAST)))
 	in_late_binary_op = true;
       ret = convert_and_check (expr_loc != UNKNOWN_LOCATION
 			       ? expr_loc : location, type, orig_rhs);
@@ -9955,7 +9956,7 @@ c_finish_return (location_t loc, tree retval, tree origtype)
 	  || (TREE_CODE (TREE_TYPE (t)) == REAL_TYPE
 	      && (TREE_CODE (TREE_TYPE (res)) == INTEGER_TYPE
 		  || TREE_CODE (TREE_TYPE (res)) == ENUMERAL_TYPE)
-	      && (flag_sanitize & SANITIZE_FLOAT_CAST)))
+	      && sanitize_flags_p (SANITIZE_FLOAT_CAST)))
         in_late_binary_op = true;
       inner = t = convert (TREE_TYPE (res), t);
       in_late_binary_op = save;
@@ -11835,9 +11836,8 @@ build_binary_op (location_t location, enum tree_code code,
 	return error_mark_node;
     }
 
-  if ((flag_sanitize & (SANITIZE_SHIFT | SANITIZE_DIVIDE
-			| SANITIZE_FLOAT_DIVIDE))
-      && do_ubsan_in_current_function ()
+  if (sanitize_flags_p ((SANITIZE_SHIFT
+			 | SANITIZE_DIVIDE | SANITIZE_FLOAT_DIVIDE))
       && (doing_div_or_mod || doing_shift)
       && !require_constant_value)
     {
@@ -11846,10 +11846,10 @@ build_binary_op (location_t location, enum tree_code code,
       op1 = save_expr (op1);
       op0 = c_fully_fold (op0, false, NULL);
       op1 = c_fully_fold (op1, false, NULL);
-      if (doing_div_or_mod && (flag_sanitize & (SANITIZE_DIVIDE
-						| SANITIZE_FLOAT_DIVIDE)))
+      if (doing_div_or_mod && (sanitize_flags_p ((SANITIZE_DIVIDE
+						  | SANITIZE_FLOAT_DIVIDE))))
 	instrument_expr = ubsan_instrument_division (location, op0, op1);
-      else if (doing_shift && (flag_sanitize & SANITIZE_SHIFT))
+      else if (doing_shift && sanitize_flags_p (SANITIZE_SHIFT))
 	instrument_expr = ubsan_instrument_shift (location, code, op0, op1);
     }
 

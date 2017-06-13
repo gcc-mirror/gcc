@@ -757,7 +757,7 @@ ubsan_expand_null_ifn (gimple_stmt_iterator *gsip)
 	  gsi_insert_before (&gsi, g, GSI_SAME_STMT);
 	}
     }
-  check_null = (flag_sanitize & SANITIZE_NULL) != 0;
+  check_null = sanitize_flags_p (SANITIZE_NULL);
 
   if (check_align == NULL_TREE && !check_null)
     {
@@ -1181,13 +1181,13 @@ instrument_mem_ref (tree mem, tree base, gimple_stmt_iterator *iter,
 {
   enum ubsan_null_ckind ikind = is_lhs ? UBSAN_STORE_OF : UBSAN_LOAD_OF;
   unsigned int align = 0;
-  if (flag_sanitize & SANITIZE_ALIGNMENT)
+  if (sanitize_flags_p (SANITIZE_ALIGNMENT))
     {
       align = min_align_of_type (TREE_TYPE (base));
       if (align <= 1)
 	align = 0;
     }
-  if (align == 0 && (flag_sanitize & SANITIZE_NULL) == 0)
+  if (align == 0 && !sanitize_flags_p (SANITIZE_NULL))
     return;
   tree t = TREE_OPERAND (base, 0);
   if (!POINTER_TYPE_P (TREE_TYPE (t)))
@@ -1355,13 +1355,14 @@ instrument_bool_enum_load (gimple_stmt_iterator *gsi)
   tree type = TREE_TYPE (rhs);
   tree minv = NULL_TREE, maxv = NULL_TREE;
 
-  if (TREE_CODE (type) == BOOLEAN_TYPE && (flag_sanitize & SANITIZE_BOOL))
+  if (TREE_CODE (type) == BOOLEAN_TYPE
+      && sanitize_flags_p (SANITIZE_BOOL))
     {
       minv = boolean_false_node;
       maxv = boolean_true_node;
     }
   else if (TREE_CODE (type) == ENUMERAL_TYPE
-	   && (flag_sanitize & SANITIZE_ENUM)
+	   && sanitize_flags_p (SANITIZE_ENUM)
 	   && TREE_TYPE (type) != NULL_TREE
 	   && TREE_CODE (TREE_TYPE (type)) == INTEGER_TYPE
 	   && (TYPE_PRECISION (TREE_TYPE (type))
@@ -1924,16 +1925,6 @@ instrument_object_size (gimple_stmt_iterator *gsi, bool is_lhs)
   gsi_insert_before (gsi, g, GSI_SAME_STMT);
 }
 
-/* True if we want to play UBSan games in the current function.  */
-
-bool
-do_ubsan_in_current_function ()
-{
-  return (current_function_decl != NULL_TREE
-	  && !lookup_attribute ("no_sanitize_undefined",
-				DECL_ATTRIBUTES (current_function_decl)));
-}
-
 namespace {
 
 const pass_data pass_data_ubsan =
@@ -1959,13 +1950,12 @@ public:
   /* opt_pass methods: */
   virtual bool gate (function *)
     {
-      return flag_sanitize & (SANITIZE_NULL | SANITIZE_SI_OVERFLOW
-			      | SANITIZE_BOOL | SANITIZE_ENUM
-			      | SANITIZE_ALIGNMENT
-			      | SANITIZE_NONNULL_ATTRIBUTE
-			      | SANITIZE_RETURNS_NONNULL_ATTRIBUTE
-			      | SANITIZE_OBJECT_SIZE)
-	&& do_ubsan_in_current_function ();
+      return sanitize_flags_p ((SANITIZE_NULL | SANITIZE_SI_OVERFLOW
+				| SANITIZE_BOOL | SANITIZE_ENUM
+				| SANITIZE_ALIGNMENT
+				| SANITIZE_NONNULL_ATTRIBUTE
+				| SANITIZE_RETURNS_NONNULL_ATTRIBUTE
+				| SANITIZE_OBJECT_SIZE));
     }
 
   virtual unsigned int execute (function *);
@@ -1992,11 +1982,11 @@ pass_ubsan::execute (function *fun)
 	      continue;
 	    }
 
-	  if ((flag_sanitize & SANITIZE_SI_OVERFLOW)
+	  if ((sanitize_flags_p (SANITIZE_SI_OVERFLOW, fun->decl))
 	      && is_gimple_assign (stmt))
 	    instrument_si_overflow (gsi);
 
-	  if (flag_sanitize & (SANITIZE_NULL | SANITIZE_ALIGNMENT))
+	  if (sanitize_flags_p (SANITIZE_NULL | SANITIZE_ALIGNMENT, fun->decl))
 	    {
 	      if (gimple_store_p (stmt))
 		instrument_null (gsi, true);
@@ -2018,14 +2008,14 @@ pass_ubsan::execute (function *fun)
 		}
 	    }
 
-	  if (flag_sanitize & (SANITIZE_BOOL | SANITIZE_ENUM)
+	  if (sanitize_flags_p (SANITIZE_BOOL | SANITIZE_ENUM, fun->decl)
 	      && gimple_assign_load_p (stmt))
 	    {
 	      instrument_bool_enum_load (&gsi);
 	      bb = gimple_bb (stmt);
 	    }
 
-	  if ((flag_sanitize & SANITIZE_NONNULL_ATTRIBUTE)
+	  if (sanitize_flags_p (SANITIZE_NONNULL_ATTRIBUTE, fun->decl)
 	      && is_gimple_call (stmt)
 	      && !gimple_call_internal_p (stmt))
 	    {
@@ -2033,14 +2023,14 @@ pass_ubsan::execute (function *fun)
 	      bb = gimple_bb (stmt);
 	    }
 
-	  if ((flag_sanitize & SANITIZE_RETURNS_NONNULL_ATTRIBUTE)
+	  if (sanitize_flags_p (SANITIZE_RETURNS_NONNULL_ATTRIBUTE, fun->decl)
 	      && gimple_code (stmt) == GIMPLE_RETURN)
 	    {
 	      instrument_nonnull_return (&gsi);
 	      bb = gimple_bb (stmt);
 	    }
 
-	  if (flag_sanitize & SANITIZE_OBJECT_SIZE)
+	  if (sanitize_flags_p (SANITIZE_OBJECT_SIZE, fun->decl))
 	    {
 	      if (gimple_store_p (stmt))
 		instrument_object_size (&gsi, true);
