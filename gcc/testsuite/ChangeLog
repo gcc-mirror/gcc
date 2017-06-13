@@ -1,3 +1,8 @@
+2017-06-13  Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc.target/arm/sdiv_costs_1.c:
+	Require arm_arch_v8a_ok and add march option.
+
 2017-06-13  Martin Liska  <mliska@suse.cz>
 
 	* gcc.dg/tree-ssa/builtin-sprintf-2.c: Adjust scanned pattern.
