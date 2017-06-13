@@ -1,3 +1,9 @@
+2017-06-13  Yury Gribov  <tetra2005@gmail.com>
+
+	PR tree-optimization/67328
+	* fold-const.c (maskable_range_p): New function.
+	(build_range_check): Generate bittests if possible.
+
 2017-06-13  Martin Liska  <mliska@suse.cz>
 
 	* gimple-pretty-print.c (dump_probability): Add new argument.

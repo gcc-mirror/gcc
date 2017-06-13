@@ -1,3 +1,11 @@
+2017-06-13  Yury Gribov  <tetra2005@gmail.com>
+
+	PR tree-optimization/67328
+	* c-c++-common/fold-masked-cmp-1.c: New test.
+	* c-c++-common/fold-masked-cmp-2.c: Likewise.
+	* gcc.dg/pr46309.c: Fix pattern.
+	* gcc.dg/pr46309-2.c: Likewise.
+
 2017-06-13  Tamar Christina  <tamar.christina@arm.com>
 
 	* gcc.target/arm/sdiv_costs_1.c:
