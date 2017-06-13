@@ -470,7 +470,7 @@ dump_access_tree_1 (FILE *f, struct access *access, int level)
       int i;
 
       for (i = 0; i < level; i++)
-	fputs ("* ", dump_file);
+	fputs ("* ", f);
 
       dump_access (f, access, true);
 
