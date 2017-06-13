@@ -1,3 +1,9 @@
+2017-06-13  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/81072
+	* config/avr/avr-devices.c: Fix indentation.
+	* config/avr/gen-avr-mmcu-specs.c: Dito.
+
 2017-06-13  Richard Biener  <rguenther@suse.de>
 
 	* tree-vect-loop.c (vect_model_reduction_cost): Do not fail,

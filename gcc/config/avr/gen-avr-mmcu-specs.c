@@ -170,7 +170,7 @@ print_mcu (const avr_mcu_t *mcu)
     fprintf (f, "core architecture %s\n", arch->name);
   else
     fprintf (f, "device %s (core %s, %d-bit SP%s)\n", mcu->name,
-			 arch->name, sp8 ? 8 : 16, rcall ? ", short-calls" : "");
+             arch->name, sp8 ? 8 : 16, rcall ? ", short-calls" : "");
   fprintf (f, "%s\n", header);
 
   if (is_device)
