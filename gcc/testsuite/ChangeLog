@@ -1,3 +1,7 @@
+2017-06-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.target/sparc/overflow-4.c: Add -mno-vis3.
+
 2017-06-14  Andrew Pinski  <apinski@cavium.com>
 	    Naveen H.S  <Naveen.Hurugalawadi@cavium.com>
 

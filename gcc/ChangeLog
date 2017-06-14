@@ -1,5 +1,12 @@
 2017-06-14  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* config/sparc/sparc.h (MASK_ISA): Add MASK_LEON and MASK_LEON3.
+	(MASK_FEATURES): New macro.
+	* config/sparc/sparc.c (sparc_option_override): Remove the special
+	handling of -mfpu and generalize it to all MASK_FEATURES switches.
+
+2017-06-14  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* simplify-rtx.c (simplify_binary_operation_1) <UDIV>: Do not simplify
 	a division of 0 if non-call exceptions are enabled.
 
