@@ -1,3 +1,9 @@
+2017-06-14  Maciej W. Rozycki  <macro@imgtec.com>
+
+	* config/mips/mips.md (MIPS16_T_REGNUM): Remove constant.
+	(casesi): Emit bounds checking as RTL.
+	(casesi_internal_mips16_<mode>): Remove bounds checking.
+
 2017-06-14  Max Filippov  <jcmvbkbc@gmail.com>
 
 	* config/xtensa/xtensa.c (xtensa_option_override): Append
