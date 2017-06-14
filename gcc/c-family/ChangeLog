@@ -1,3 +1,7 @@
+2017-06-14  Boris Kolpackov  <boris@codesynthesis.com>
+
+	* c-opts.c (c_common_finish): Handle '-' special value to -MF.
+
 2017-06-13  Marek Polacek  <polacek@redhat.com>
 
 	PR objc/80949
