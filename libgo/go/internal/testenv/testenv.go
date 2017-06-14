@@ -22,6 +22,13 @@ import (
 	"testing"
 )
 
+// testingGotools reports whether we are testing the gotools directory
+// that is part of GCC. We just use an environment variable set by the
+// gotools check target.
+func testingGotools() bool {
+	return os.Getenv("GO_TESTING_GOTOOLS") != ""
+}
+
 // Builder reports the name of the builder running this test
 // (for example, "linux-amd64" or "windows-386-gce").
 // If the test is not running on the build infrastructure,
@@ -42,14 +49,16 @@ func HasGoBuild() bool {
 		}
 	}
 	// gccgo tests can not run "go build".
-	return false
+	return testingGotools()
 }
 
 // MustHaveGoBuild checks that the current system can build programs with ``go build''
 // and then run them with os.StartProcess or exec.Command.
 // If not, MustHaveGoBuild calls t.Skip with an explanation.
 func MustHaveGoBuild(t *testing.T) {
-	t.Skip("skipping test: 'go build' not available for gccgo tests")
+	if !testingGotools() {
+		t.Skip("skipping test: 'go build' not available for gccgo tests")
+	}
 	if !HasGoBuild() {
 		t.Skipf("skipping test: 'go build' not available on %s/%s", runtime.GOOS, runtime.GOARCH)
 	}
@@ -64,7 +73,9 @@ func HasGoRun() bool {
 // MustHaveGoRun checks that the current system can run programs with ``go run.''
 // If not, MustHaveGoRun calls t.Skip with an explanation.
 func MustHaveGoRun(t *testing.T) {
-	t.Skip("skipping test: 'go run' not available for gccgo tests")
+	if !testingGotools() {
+		t.Skip("skipping test: 'go run' not available for gccgo tests")
+	}
 	if !HasGoRun() {
 		t.Skipf("skipping test: 'go run' not available on %s/%s", runtime.GOOS, runtime.GOARCH)
 	}
