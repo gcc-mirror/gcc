@@ -1580,7 +1580,7 @@ tsubst_check_constraint (tree t, tree args,
 
   /* Substitute through by building an template-id expression
      and then substituting into that. */
-  tree expr = build_nt(TEMPLATE_ID_EXPR, tmpl, targs);
+  tree expr = build_nt (TEMPLATE_ID_EXPR, tmpl, targs);
   ++processing_template_decl;
   tree result = tsubst_expr (expr, args, complain, in_decl, false);
   --processing_template_decl;

@@ -1,3 +1,12 @@
+2017-06-14  Nathan Sidwell  <nathan@acm.org>
+
+	Classes complete - Vcall indices and friends added.
+	gcc/cp/
+	* module.c (cpms_{out,in}::tree_pair_vec): New.
+	(cpms_{out,in}::define_class): Stream vcall indices and friend list.
+	gcc/testsuite/
+	* g++.dg/module/class-6_[abc].C: New.
+
 2017-06-12  Nathan Sidwell  <nathan@acm.org>
 
 	Merge trunk r249076.

@@ -45,8 +45,7 @@ along with GCC; see the file COPYING3.  If not see
 int module_dump_id;
  
 /* State of a particular module. */
-struct GTY(()) module_state
-{
+struct GTY(()) module_state {
   /* We always import & export ourselves.  */
   bitmap imports;	/* Transitive modules we're importing.  */
   bitmap exports;	/* Subset of that, that we're exporting.  */
@@ -835,8 +834,7 @@ public:
     rt_tree_base = 0x100,	/* Tree codes.  */
     rt_ref_base = 0x1000	/* Back-reference indices.  */
   };
-  struct gtp
-  {
+  struct gtp {
     const tree *ptr;
     unsigned num;
   };
@@ -1132,8 +1130,7 @@ cpm_stream::version ()
 class cpms_out : public cpm_stream {
   cpm_writer w;
 
-  struct non_null : pointer_hash <void>
-  {
+  struct non_null : pointer_hash <void> {
     static bool is_deleted (value_type) {return false;}
     static void remove (value_type) {}
   };
@@ -1185,6 +1182,7 @@ private:
   void lang_decl_vals (tree);
   void chained_decls (tree);
   void tree_vec (vec<tree, va_gc> *);
+  void tree_pair_vec (vec<tree_pair_s, va_gc> *);
   void define_function (tree);
   void define_class (tree);
   void ident_imported_decl (tree ctx, unsigned mod, tree decl);
@@ -1294,6 +1292,7 @@ private:
   bool lang_decl_vals (tree);
   tree chained_decls ();
   vec<tree, va_gc> *tree_vec ();
+  vec<tree_pair_s, va_gc> *tree_pair_vec ();
   tree define_function (tree);
   tree define_class (tree);
   tree ident_imported_decl (tree ctx, unsigned mod, tree name);
@@ -1971,7 +1970,41 @@ cpms_in::tree_vec ()
     }
   return v;
 }
-  
+
+/* A vector of tree pairs.  */
+
+void
+cpms_out::tree_pair_vec (vec<tree_pair_s, va_gc> *v)
+{
+  unsigned len = vec_safe_length (v);
+  w.u (len);
+  if (len)
+    for (unsigned ix = 0; ix != len; ix++)
+      {
+	tree_pair_s const &s = (*v)[ix];
+	tree_node (s.purpose);
+	tree_node (s.value);
+      }
+}
+
+vec<tree_pair_s, va_gc> *
+cpms_in::tree_pair_vec ()
+{
+  vec<tree_pair_s, va_gc> *v = NULL;
+  if (unsigned len = r.u ())
+    {
+      vec_alloc (v, len);
+      for (unsigned ix = 0; ix != len; ix++)
+	{
+	  tree_pair_s s;
+	  s.purpose = tree_node ();
+	  s.value = tree_node ();
+	  v->quick_push (s);
+      }
+    }
+  return v;
+}
+
 /* Stream a class definition.  */
 
 void
@@ -1988,11 +2021,19 @@ cpms_out::define_class (tree type)
 	tree_node (base);
       else
 	tag_definition (base);
-      tree_vec (CLASSTYPE_METHOD_VEC (type));
       tree_node (CLASSTYPE_PRIMARY_BINFO (type));
       tree_vec (CLASSTYPE_VBASECLASSES (type));
+
+      tree_vec (CLASSTYPE_METHOD_VEC (type));
+      tree_node (CLASSTYPE_FRIEND_CLASSES (type));
+      tree_node (CLASSTYPE_LAMBDA_EXPR (type));
+
       if (TYPE_CONTAINS_VPTR_P (type))
-	tree_node (CLASSTYPE_KEY_METHOD (type));
+	{
+	  tree_vec (CLASSTYPE_PURE_VIRTUALS (type));
+	  tree_pair_vec (CLASSTYPE_VCALL_INDICES (type));
+	  tree_node (CLASSTYPE_KEY_METHOD (type));
+	}
 
       tree vtables = CLASSTYPE_VTABLES (type);
       chained_decls (vtables);
@@ -2001,15 +2042,10 @@ cpms_out::define_class (tree type)
 	tree_node (DECL_INITIAL (vtables));
     }
 
-#if 0
-  gcc_assert (!lang->vcall_indices);
+  // template stuff
   // lang->nested_udts
-  gcc_assert (!lang->pure_virtuals);
-  WT (lang->friend_classes);
   // lang->decl_list
   // lang->template_info
-  // lang->lambda_expr
-#endif
 
   /* Now define all the members.  */
   for (tree method = TYPE_METHODS (type); method; method = TREE_CHAIN (method))
@@ -2037,29 +2073,39 @@ cpms_in::define_class (tree type)
   vec<tree, va_gc> *method_vec = NULL;
   tree primary = NULL_TREE;
   vec<tree, va_gc> *vbases = NULL;
+  vec<tree, va_gc> *pure_virts = NULL;
+  vec<tree_pair_s, va_gc> *vcall_indices = NULL;
   tree key_method = NULL_TREE;
   tree vtables = NULL_TREE;
+  tree lambda = NULL_TREE;
+  tree friends = NULL_TREE;
+
   if (TYPE_LANG_SPECIFIC (type))
     {
       base = tree_node ();
-      method_vec = tree_vec ();
       primary = tree_node ();
       vbases = tree_vec ();
-      /* TYPE_VBASECLASSES is not set yet.  */
+
+      method_vec = tree_vec ();
+      friends = tree_node ();
+      lambda = tree_node ();
+
+      /* TYPE_VBASECLASSES is not set yet, so TYPE_CONTAINS_VPTR will
+	 malfunction.  */
       if (TYPE_POLYMORPHIC_P (type) || vbases)
-	key_method = tree_node ();
+	{
+	  pure_virts = tree_vec ();
+	  vcall_indices = tree_pair_vec ();
+	  key_method = tree_node ();
+	}
       vtables = chained_decls ();
     }
 
-#if 0
-  gcc_assert (!lang->vcall_indices);
+  // Templatey stuff
   // lang->nested_udts
-  gcc_assert (!lang->pure_virtuals);
-  RT (lang->friend_classes);
   // lang->decl_list
   // lang->template_info
-  // lang->lambda_expr
-#endif
+
   // FIXME: Sanity check stuff
 
   if (r.error ())
@@ -2073,9 +2119,15 @@ cpms_in::define_class (tree type)
   if (TYPE_LANG_SPECIFIC (type))
     {
       CLASSTYPE_AS_BASE (type) = base;
-      CLASSTYPE_METHOD_VEC (type) = method_vec;
       CLASSTYPE_PRIMARY_BINFO (type) = primary;
       CLASSTYPE_VBASECLASSES (type) = vbases;
+
+      CLASSTYPE_FRIEND_CLASSES (type) = friends;
+      CLASSTYPE_LAMBDA_EXPR (type) = lambda;
+
+      CLASSTYPE_METHOD_VEC (type) = method_vec;
+      CLASSTYPE_PURE_VIRTUALS (type) = pure_virts;
+      CLASSTYPE_VCALL_INDICES (type) = vcall_indices;
 
       CLASSTYPE_KEY_METHOD (type) = key_method;
       if (!key_method && TYPE_CONTAINS_VPTR_P (type))
