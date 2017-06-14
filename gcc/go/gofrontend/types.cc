@@ -2570,15 +2570,15 @@ Type::make_gc_symbol_var(Gogo* gogo)
 bool
 Type::needs_gcprog(Gogo* gogo, int64_t* ptrsize, int64_t* ptrdata)
 {
+  Type* voidptr = Type::make_pointer_type(Type::make_void_type());
+  if (!voidptr->backend_type_size(gogo, ptrsize))
+    go_unreachable();
+
   if (!this->backend_type_ptrdata(gogo, ptrdata))
     {
       go_assert(saw_errors());
       return false;
     }
-
-  Type* voidptr = Type::make_pointer_type(Type::make_void_type());
-  if (!voidptr->backend_type_size(gogo, ptrsize))
-    go_unreachable();
 
   return *ptrdata / *ptrsize > max_ptrmask_bytes;
 }
@@ -2795,7 +2795,13 @@ Bvariable*
 Type::gc_ptrmask_var(Gogo* gogo, int64_t ptrsize, int64_t ptrdata)
 {
   Ptrmask ptrmask(ptrdata / ptrsize);
-  ptrmask.set_from(gogo, this, ptrsize, 0);
+  if (ptrdata >= ptrsize)
+    ptrmask.set_from(gogo, this, ptrsize, 0);
+  else
+    {
+      // This can happen in error cases.  Just build an empty gcbits.
+      go_assert(saw_errors());
+    }
   std::string sym_name = "runtime.gcbits." + ptrmask.symname();
   Bvariable* bvnull = NULL;
   std::pair<GC_gcbits_vars::iterator, bool> ins =
