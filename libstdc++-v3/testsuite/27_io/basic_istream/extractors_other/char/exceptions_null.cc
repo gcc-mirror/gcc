@@ -15,9 +15,6 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// The library throws the new definition of std::ios::failure
-// { dg-options "-D_GLIBCXX_USE_CXX11_ABI=1" }
-
 #include <istream>
 #include <ostream>
 #include <streambuf>
@@ -38,12 +35,19 @@ void test4()
   istringstream stream;
   stream.exceptions(ios_base::failbit);
 
+  // The library throws the new definition of std::ios::failure
+#if _GLIBCXX_USE_CXX11_ABI
+    typedef std::ios_base::failure exception_type;
+#else
+    typedef std::exception exception_type;
+#endif
+
   try
     {
       stream >> static_cast<streambuf*>(0);
       VERIFY(false);
     }
-  catch (ios_base::failure&)
+  catch (exception_type&)
     {
     }
 
