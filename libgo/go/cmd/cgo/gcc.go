@@ -86,10 +86,28 @@ func (f *File) DiscardCgoDirectives() {
 // addToFlag appends args to flag. All flags are later written out onto the
 // _cgo_flags file for the build system to use.
 func (p *Package) addToFlag(flag string, args []string) {
-	p.CgoFlags[flag] = append(p.CgoFlags[flag], args...)
 	if flag == "CFLAGS" {
-		// We'll also need these when preprocessing for dwarf information.
+		// We'll need these when preprocessing for dwarf information.
 		p.GccOptions = append(p.GccOptions, args...)
+	}
+
+	skip := false
+	for i, arg := range args {
+		// The go tool will pass us a -I option pointing to objdir;
+		// we don't need to record that for later, as the objdir
+		// will disappear anyhow.
+		if skip {
+			// Discard argument in "-I objdir" case.
+			skip = false
+		} else if strings.HasPrefix(arg, "-I") && strings.HasPrefix(arg[2:], *objDir) {
+			// This is -Iobjdir. Don't save this argument.
+		} else if arg == "-I" && i+1 < len(args) && strings.HasPrefix(args[i+1], *objDir) {
+			// This is -I objdir. Don't save this argument
+			// or the next one.
+			skip = true
+		} else {
+			p.CgoFlags[flag] = append(p.CgoFlags[flag], arg)
+		}
 	}
 }
 
