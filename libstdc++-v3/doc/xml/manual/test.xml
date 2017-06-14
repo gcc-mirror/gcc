@@ -569,7 +569,7 @@ cat 27_io/objects/char/3_xin.in | a.out</programlisting>
       For example, to run the tests with
       <option>-O1 -D_GLIBCXX_ASSERTIONS</option>
       you could use:
-<programlisting>    make RUNTESTFLAGS=--target_board=unix/-O1/-D_GLIBCXX_ASSERTIONS</programlisting>
+<programlisting>    make check RUNTESTFLAGS=--target_board=unix/-O1/-D_GLIBCXX_ASSERTIONS</programlisting>
     </para>
 
     <para>
@@ -577,7 +577,7 @@ cat 27_io/objects/char/3_xin.in | a.out</programlisting>
       tests multiple times in different variations. For example, to run the
       entire testsuite three times using <option>-O3</option> but with
       different <option>-std</option> options:
-<programlisting>    make 'RUNTESTFLAGS=--target_board=unix/-O3\"{-std=gnu++98,-std=gnu++11,-std=gnu++14}\"'</programlisting>
+<programlisting>    make check 'RUNTESTFLAGS=--target_board=unix/-O3\"{-std=gnu++98,-std=gnu++11,-std=gnu++14}\"'</programlisting>
       N.B. that set of variations could also be written as
       <literal>unix/-O3\"{-std=gnu++98,-std=gnu++11,}\"</literal> so that
       the third variation would use the default for <option>-std</option>
