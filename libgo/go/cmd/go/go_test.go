@@ -100,7 +100,7 @@ func TestMain(m *testing.M) {
 
 		switch runtime.GOOS {
 		case "linux", "darwin", "freebsd", "windows":
-			canRace = canCgo && runtime.GOARCH == "amd64"
+			canRace = canCgo && runtime.GOARCH == "amd64" && runtime.Compiler != "gccgo"
 		}
 	}
 
@@ -141,6 +141,13 @@ type testgoData struct {
 	ran            bool
 	inParallel     bool
 	stdout, stderr bytes.Buffer
+}
+
+// skipIfGccgo skips the test if using gccgo.
+func skipIfGccgo(t *testing.T, msg string) {
+	if runtime.Compiler == "gccgo" {
+		t.Skipf("skipping test not supported on gccgo: %s", msg)
+	}
 }
 
 // testgo sets up for a test that runs testgo.
@@ -632,6 +639,7 @@ func TestFileLineInErrorMessages(t *testing.T) {
 }
 
 func TestProgramNameInCrashMessages(t *testing.T) {
+	skipIfGccgo(t, "gccgo does not use cmd/link")
 	tg := testgo(t)
 	defer tg.cleanup()
 	tg.parallel()
@@ -757,6 +765,7 @@ func TestNewReleaseRebuildsStalePackagesInGOPATH(t *testing.T) {
 }
 
 func TestGoListStandard(t *testing.T) {
+	skipIfGccgo(t, "gccgo does not GOROOT")
 	tg := testgo(t)
 	defer tg.cleanup()
 	// TODO: tg.parallel()
@@ -854,6 +863,7 @@ func TestGoInstallRebuildsStalePackagesInOtherGOPATH(t *testing.T) {
 }
 
 func TestGoInstallDetectsRemovedFiles(t *testing.T) {
+	skipIfGccgo(t, "gccgo does not yet support package build IDs")
 	tg := testgo(t)
 	defer tg.cleanup()
 	tg.parallel()
@@ -923,6 +933,7 @@ func TestGoInstallErrorOnCrossCompileToBin(t *testing.T) {
 }
 
 func TestGoInstallDetectsRemovedFilesInPackageMain(t *testing.T) {
+	skipIfGccgo(t, "gccgo does not yet support package build IDs")
 	tg := testgo(t)
 	defer tg.cleanup()
 	tg.parallel()
@@ -1060,6 +1071,7 @@ func TestBadImportsGoInstallShouldFail(t *testing.T) {
 }
 
 func TestInternalPackagesInGOROOTAreRespected(t *testing.T) {
+	skipIfGccgo(t, "gccgo does not have GOROOT")
 	tg := testgo(t)
 	defer tg.cleanup()
 	tg.runFail("build", "-v", "./testdata/testinternal")
@@ -1397,6 +1409,7 @@ var isGoRelease = strings.HasPrefix(runtime.Version(), "go1")
 
 // Issue 12690
 func TestPackageNotStaleWithTrailingSlash(t *testing.T) {
+	skipIfGccgo(t, "gccgo does not have GOROOT")
 	tg := testgo(t)
 	defer tg.cleanup()
 
@@ -1587,6 +1600,7 @@ func TestGoListStdDoesNotIncludeCommands(t *testing.T) {
 }
 
 func TestGoListCmdOnlyShowsCommands(t *testing.T) {
+	skipIfGccgo(t, "gccgo has no GOROOT")
 	tg := testgo(t)
 	defer tg.cleanup()
 	tg.parallel()
@@ -1791,6 +1805,7 @@ func TestGoGetIntoGOROOT(t *testing.T) {
 }
 
 func TestLdflagsArgumentsWithSpacesIssue3941(t *testing.T) {
+	skipIfGccgo(t, "gccgo does not support -ldflags -X")
 	tg := testgo(t)
 	defer tg.cleanup()
 	tg.parallel()
@@ -1804,6 +1819,7 @@ func TestLdflagsArgumentsWithSpacesIssue3941(t *testing.T) {
 }
 
 func TestGoTestCpuprofileLeavesBinaryBehind(t *testing.T) {
+	skipIfGccgo(t, "gccgo has no standard packages")
 	tg := testgo(t)
 	defer tg.cleanup()
 	// TODO: tg.parallel()
@@ -1814,6 +1830,7 @@ func TestGoTestCpuprofileLeavesBinaryBehind(t *testing.T) {
 }
 
 func TestGoTestCpuprofileDashOControlsBinaryLocation(t *testing.T) {
+	skipIfGccgo(t, "gccgo has no standard packages")
 	tg := testgo(t)
 	defer tg.cleanup()
 	// TODO: tg.parallel()
@@ -1824,6 +1841,7 @@ func TestGoTestCpuprofileDashOControlsBinaryLocation(t *testing.T) {
 }
 
 func TestGoTestMutexprofileLeavesBinaryBehind(t *testing.T) {
+	skipIfGccgo(t, "gccgo has no standard packages")
 	tg := testgo(t)
 	defer tg.cleanup()
 	// TODO: tg.parallel()
@@ -1834,6 +1852,7 @@ func TestGoTestMutexprofileLeavesBinaryBehind(t *testing.T) {
 }
 
 func TestGoTestMutexprofileDashOControlsBinaryLocation(t *testing.T) {
+	skipIfGccgo(t, "gccgo has no standard packages")
 	tg := testgo(t)
 	defer tg.cleanup()
 	// TODO: tg.parallel()
@@ -1844,6 +1863,7 @@ func TestGoTestMutexprofileDashOControlsBinaryLocation(t *testing.T) {
 }
 
 func TestGoTestDashCDashOControlsBinaryLocation(t *testing.T) {
+	skipIfGccgo(t, "gccgo has no standard packages")
 	tg := testgo(t)
 	defer tg.cleanup()
 	tg.parallel()
@@ -1853,6 +1873,7 @@ func TestGoTestDashCDashOControlsBinaryLocation(t *testing.T) {
 }
 
 func TestGoTestDashOWritesBinary(t *testing.T) {
+	skipIfGccgo(t, "gccgo has no standard packages")
 	tg := testgo(t)
 	defer tg.cleanup()
 	tg.parallel()
@@ -1862,6 +1883,7 @@ func TestGoTestDashOWritesBinary(t *testing.T) {
 }
 
 func TestGoTestDashIDashOWritesBinary(t *testing.T) {
+	skipIfGccgo(t, "gccgo has no standard packages")
 	tg := testgo(t)
 	defer tg.cleanup()
 	tg.parallel()
@@ -2057,6 +2079,7 @@ func TestIssue11307(t *testing.T) {
 }
 
 func TestShadowingLogic(t *testing.T) {
+	skipIfGccgo(t, "gccgo has no standard packages")
 	tg := testgo(t)
 	defer tg.cleanup()
 	pwd := tg.pwd()
@@ -2267,6 +2290,7 @@ func main() {
 }
 
 func TestCoverageWithCgo(t *testing.T) {
+	skipIfGccgo(t, "gccgo has no cover tool")
 	if !canCgo {
 		t.Skip("skipping because cgo not enabled")
 	}
@@ -3009,6 +3033,7 @@ func TestGoRunDirs(t *testing.T) {
 }
 
 func TestGoInstallPkgdir(t *testing.T) {
+	skipIfGccgo(t, "gccgo has no standard packages")
 	tg := testgo(t)
 	tg.parallel()
 	defer tg.cleanup()
@@ -3022,6 +3047,8 @@ func TestGoInstallPkgdir(t *testing.T) {
 }
 
 func TestGoTestRaceInstallCgo(t *testing.T) {
+	skipIfGccgo(t, "gccgo has no race detector")
+
 	switch sys := runtime.GOOS + "/" + runtime.GOARCH; sys {
 	case "darwin/amd64", "freebsd/amd64", "linux/amd64", "windows/amd64":
 		// ok
@@ -3244,6 +3271,7 @@ func TestIssue12096(t *testing.T) {
 }
 
 func TestGoBuildOutput(t *testing.T) {
+	skipIfGccgo(t, "gccgo has no standard packages")
 	tg := testgo(t)
 	defer tg.cleanup()
 
@@ -3323,6 +3351,7 @@ func TestGoBuildARM(t *testing.T) {
 }
 
 func TestIssue13655(t *testing.T) {
+	skipIfGccgo(t, "gccgo has no standard packages")
 	tg := testgo(t)
 	defer tg.cleanup()
 	for _, pkg := range []string{"runtime", "runtime/internal/atomic"} {
@@ -3709,6 +3738,7 @@ func TestBenchTimeout(t *testing.T) {
 
 func TestLinkXImportPathEscape(t *testing.T) {
 	// golang.org/issue/16710
+	skipIfGccgo(t, "gccgo does not support -ldflags -X")
 	tg := testgo(t)
 	defer tg.cleanup()
 	tg.parallel()
@@ -3738,6 +3768,7 @@ func TestLdBindNow(t *testing.T) {
 // Issue 18225.
 // This is really a cmd/asm issue but this is a convenient place to test it.
 func TestConcurrentAsm(t *testing.T) {
+	skipIfGccgo(t, "gccgo does not use cmd/asm")
 	tg := testgo(t)
 	defer tg.cleanup()
 	tg.parallel()
