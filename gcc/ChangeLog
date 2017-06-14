@@ -1,3 +1,17 @@
+2017-06-14  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* config/arm/cortex-a53.md (cortex_a53_fpalu) Adjust latency.
+	(cortex_a53_fconst): Likewise.
+	(cortex_a53_fpmul): Likewise.
+	(cortex_a53_f_load_64): Likewise.
+	(cortex_a53_f_load_many): Likewise.
+	(cortex_a53_advsimd_alu): Likewise.
+	(cortex_a53_advsimd_alu_q): Likewise.
+	(cortex_a53_advsimd_mul): Likewise.
+	(cortex_a53_advsimd_mul_q): Likewise.
+	(fpmac bypass): Add new bypass for fpmac-fpmac case.
+	Add missing fmul, r2f_cvt and fconst cases.
+
 2017-06-14  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/81088
