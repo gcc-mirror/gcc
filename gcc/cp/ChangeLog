@@ -1,3 +1,9 @@
+2017-06-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* cp-gimplify.c (cp_genericize_r): Turn most of the function
+	into a switch (TREE_CODE (stmt)) statement from long else if
+	sequence.
+
 2017-06-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/80973
