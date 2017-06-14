@@ -880,6 +880,13 @@ split_tree (location_t loc, tree in, tree type, enum tree_code code,
 	}
     }
 
+  if (*litp
+      && TREE_OVERFLOW_P (*litp))
+    *litp = drop_tree_overflow (*litp);
+  if (*minus_litp
+      && TREE_OVERFLOW_P (*minus_litp))
+    *minus_litp = drop_tree_overflow (*minus_litp);
+
   return var;
 }
 
@@ -9703,11 +9710,6 @@ fold_binary_loc (location_t loc,
 		       + (lit0 != 0) + (lit1 != 0)
 		       + (minus_lit0 != 0) + (minus_lit1 != 0))))
 	    {
-	      bool any_overflows = false;
-	      if (lit0) any_overflows |= TREE_OVERFLOW (lit0);
-	      if (lit1) any_overflows |= TREE_OVERFLOW (lit1);
-	      if (minus_lit0) any_overflows |= TREE_OVERFLOW (minus_lit0);
-	      if (minus_lit1) any_overflows |= TREE_OVERFLOW (minus_lit1);
 	      var0 = associate_trees (loc, var0, var1, code, atype);
 	      con0 = associate_trees (loc, con0, con1, code, atype);
 	      lit0 = associate_trees (loc, lit0, lit1, code, atype);
@@ -9738,9 +9740,8 @@ fold_binary_loc (location_t loc,
 		}
 
 	      /* Don't introduce overflows through reassociation.  */
-	      if (!any_overflows
-		  && ((lit0 && TREE_OVERFLOW_P (lit0))
-		      || (minus_lit0 && TREE_OVERFLOW_P (minus_lit0))))
+	      if ((lit0 && TREE_OVERFLOW_P (lit0))
+		  || (minus_lit0 && TREE_OVERFLOW_P (minus_lit0)))
 		return NULL_TREE;
 
 	      if (minus_lit0)
