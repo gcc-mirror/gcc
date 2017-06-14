@@ -1,3 +1,7 @@
+2017-06-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/sparc/driver-sparc.c (cpu_names): Add SPARC-T5 entry.
+
 2017-06-14  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/81083
