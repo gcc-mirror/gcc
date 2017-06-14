@@ -1341,7 +1341,6 @@ sparc_option_override (void)
   };
   const struct cpu_table *cpu;
   unsigned int i;
-  int fpu;
 
   if (sparc_debug_string != NULL)
     {
@@ -1433,8 +1432,6 @@ sparc_option_override (void)
         call_used_regs [i] = 1;
       }
 
-  fpu = target_flags & MASK_FPU; /* save current -mfpu status */
-
   /* Set the default CPU.  */
   if (!global_options_set.x_sparc_cpu_and_features)
     {
@@ -1473,22 +1470,18 @@ sparc_option_override (void)
 #ifndef HAVE_AS_LEON
 		   & ~(MASK_LEON | MASK_LEON3)
 #endif
+		   & ~(target_flags_explicit & MASK_FEATURES)
 		   );
 
-  /* If -mfpu or -mno-fpu was explicitly used, don't override with
-     the processor default.  */
-  if (target_flags_explicit & MASK_FPU)
-    target_flags = (target_flags & ~MASK_FPU) | fpu;
-
-  /* -mvis2 implies -mvis */
+  /* -mvis2 implies -mvis.  */
   if (TARGET_VIS2)
     target_flags |= MASK_VIS;
 
-  /* -mvis3 implies -mvis2 and -mvis */
+  /* -mvis3 implies -mvis2 and -mvis.  */
   if (TARGET_VIS3)
     target_flags |= MASK_VIS2 | MASK_VIS;
 
-  /* -mvis4 implies -mvis3, -mvis2 and -mvis */
+  /* -mvis4 implies -mvis3, -mvis2 and -mvis.  */
   if (TARGET_VIS4)
     target_flags |= MASK_VIS3 | MASK_VIS2 | MASK_VIS;
 
@@ -1499,15 +1492,14 @@ sparc_option_override (void)
 		      | MASK_FMAF);
 
   /* -mvis assumes UltraSPARC+, so we are sure v9 instructions
-     are available.
-     -m64 also implies v9.  */
+     are available; -m64 also implies v9.  */
   if (TARGET_VIS || TARGET_ARCH64)
     {
       target_flags |= MASK_V9;
       target_flags &= ~(MASK_V8 | MASK_SPARCLET | MASK_SPARCLITE);
     }
 
-  /* -mvis also implies -mv8plus on 32-bit */
+  /* -mvis also implies -mv8plus on 32-bit.  */
   if (TARGET_VIS && ! TARGET_ARCH64)
     target_flags |= MASK_V8PLUS;
 

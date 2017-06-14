@@ -423,10 +423,15 @@ extern enum cmodel sparc_cmodel;
 #define WCHAR_TYPE_SIZE 16
 
 /* Mask of all CPU selection flags.  */
-#define MASK_ISA					\
-  (MASK_SPARCLITE + MASK_SPARCLET			\
+#define MASK_ISA						\
+  (MASK_SPARCLITE + MASK_SPARCLET + MASK_LEON + MASK_LEON3	\
    + MASK_V8 + MASK_V9 + MASK_DEPRECATED_V8_INSNS)
 
+/* Mask of all CPU feature flags.  */
+#define MASK_FEATURES						\
+  (MASK_FPU + MASK_HARD_QUAD + MASK_VIS + MASK_VIS2 + MASK_VIS3	\
+   + MASK_VIS4 + MASK_CBCOND + MASK_FMAF + MASK_POPC + MASK_SUBXC)
+ 
 /* TARGET_HARD_MUL: Use 32-bit hardware multiply instructions but not %y.  */
 #define TARGET_HARD_MUL				\
   (TARGET_SPARCLITE || TARGET_SPARCLET		\
