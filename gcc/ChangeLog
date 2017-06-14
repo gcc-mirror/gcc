@@ -1,3 +1,12 @@
+2017-06-14  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/81088
+	* fold-const.c (split_tree): Drop TREE_OVERFLOW flag from
+	literal constants.
+	(fold_binary_loc): When associating do not treat pre-existing
+	TREE_OVERFLOW on literal constants as a reason to allow
+	TREE_OVERFLOW on associated literal constants.
+
 2017-06-14  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/sparc/sparc.h (MASK_ISA): Add MASK_LEON and MASK_LEON3.
