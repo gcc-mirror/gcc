@@ -1,3 +1,8 @@
+2017-06-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/tree-ssa/vrp101.c: Fix scan-tree-dump regex.
+	* gcc.dg/tree-ssa/builtin-sprintf-2.c: Likewise.  Adjust comment.
+
 2017-06-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/80973
