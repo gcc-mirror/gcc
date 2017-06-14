@@ -1,3 +1,17 @@
+2017-06-14  Max Filippov  <jcmvbkbc@gmail.com>
+
+	* config/xtensa/xtensa.c (xtensa_option_override): Append
+	MASK_CONST16 to target_flags in the absence of TARGET_L32R.
+	(hwloop_optimize, hwloop_fail, hwloop_pattern_reg,
+	 xtensa_doloop_hooks): Define unconditionally.
+	(xtensa_reorg_loops): Only call reorg_loops in the presence of
+	TARGET_LOOPS.
+	* config/xtensa/xtensa.h (TARGET_L32R): New definition.
+	(TARGET_DEFAULT): Remove XCHAL_HAVE_L32R condition and account
+	for it in xtensa_option_override.
+	(HARD_FRAME_POINTER_IS_FRAME_POINTER,
+	 HARD_FRAME_POINTER_IS_ARG_POINTER): New definitions.
+
 2017-06-14  Boris Kolpackov  <boris@codesynthesis.com>
 
 	* doc/cppopts.texi: Document '-' special value to -MF.
