@@ -1,3 +1,13 @@
+2017-06-14  Andrew Pinski  <apinski@cavium.com>
+	    Naveen H.S  <Naveen.Hurugalawadi@cavium.com>
+
+	PR target/71663
+	* gcc.target/aarch64/vect-init-1.c: Newtestcase.
+	* gcc.target/aarch64/vect-init-2.c: Likewise.
+	* gcc.target/aarch64/vect-init-3.c: Likewise.
+	* gcc.target/aarch64/vect-init-4.c: Likewise.
+	* gcc.target/aarch64/vect-init-5.c: Likewise.
+
 2017-06-14  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/58541

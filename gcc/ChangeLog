@@ -1,3 +1,10 @@
+2017-06-14  Andrew Pinski  <apinski@cavium.com>
+	    Naveen H.S  <Naveen.Hurugalawadi@cavium.com>
+
+	PR target/71663
+	* config/aarch64/aarch64.c (aarch64_expand_vector_init):
+	Improve vector initialization code gen for only variable case. 
+
 2017-06-14  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/sparc/driver-sparc.c (cpu_names): Add SPARC-T5 entry.
