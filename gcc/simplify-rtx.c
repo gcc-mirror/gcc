@@ -3194,7 +3194,8 @@ simplify_binary_operation_1 (enum rtx_code code, machine_mode mode,
 
     case UDIV:
       /* 0/x is 0 (or x&0 if x has side-effects).  */
-      if (trueop0 == CONST0_RTX (mode))
+      if (trueop0 == CONST0_RTX (mode)
+	  && !cfun->can_throw_non_call_exceptions)
 	{
 	  if (side_effects_p (op1))
 	    return simplify_gen_binary (AND, mode, op1, trueop0);

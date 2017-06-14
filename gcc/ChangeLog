@@ -1,3 +1,8 @@
+2017-06-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* simplify-rtx.c (simplify_binary_operation_1) <UDIV>: Do not simplify
+	a division of 0 if non-call exceptions are enabled.
+
 2017-06-14  Andrew Pinski  <apinski@cavium.com>
 	    Naveen H.S  <Naveen.Hurugalawadi@cavium.com>
 
