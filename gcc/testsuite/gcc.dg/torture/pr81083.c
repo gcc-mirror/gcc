@@ -1,5 +1,7 @@
 /* { dg-do compile } */
 
+void setjmp();
+void func();
 void a(int arg)
 {
   extern struct { int x; } obj;
