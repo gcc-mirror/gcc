@@ -1,3 +1,7 @@
+2017-06-14  Boris Kolpackov  <boris@codesynthesis.com>
+
+	* doc/cppopts.texi: Document '-' special value to -MF.
+
 2017-06-14  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	* config/arm/cortex-a53.md (cortex_a53_fpalu) Adjust latency.

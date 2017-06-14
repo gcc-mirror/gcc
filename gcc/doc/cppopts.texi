@@ -125,6 +125,8 @@ preprocessed output.
 When used with the driver options @option{-MD} or @option{-MMD},
 @option{-MF} overrides the default dependency output file.
 
+If @var{file} is @file{-}, then the dependencies are written to @file{stdout}.
+
 @item -MG
 @opindex MG
 In conjunction with an option such as @option{-M} requesting
