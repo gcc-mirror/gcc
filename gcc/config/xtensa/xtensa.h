@@ -66,10 +66,9 @@ along with GCC; see the file COPYING3.  If not see
 #define TARGET_LOOPS	        XCHAL_HAVE_LOOPS
 #define TARGET_WINDOWED_ABI	(XSHAL_ABI == XTHAL_ABI_WINDOWED)
 #define TARGET_DEBUG		XCHAL_HAVE_DEBUG
+#define TARGET_L32R		XCHAL_HAVE_L32R
 
-#define TARGET_DEFAULT \
-  ((XCHAL_HAVE_L32R	? 0 : MASK_CONST16) |				\
-   MASK_SERIALIZE_VOLATILE)
+#define TARGET_DEFAULT (MASK_SERIALIZE_VOLATILE)
 
 #ifndef HAVE_AS_TLS
 #define HAVE_AS_TLS 0
@@ -361,6 +360,12 @@ extern char xtensa_hard_regno_mode_ok[][FIRST_PSEUDO_REGISTER];
 
 /* Base register for access to arguments of the function.  */
 #define ARG_POINTER_REGNUM (GP_REG_FIRST + 17)
+
+/* Hard frame pointer is neither frame nor arg pointer.
+   The definitions are here because actual hard frame pointer register
+   definition is not a preprocessor constant.  */
+#define HARD_FRAME_POINTER_IS_FRAME_POINTER 0
+#define HARD_FRAME_POINTER_IS_ARG_POINTER 0
 
 /* For now we don't try to use the full set of boolean registers.  Without
    software pipelining of FP operations, there's not much to gain and it's
