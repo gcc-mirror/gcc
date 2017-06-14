@@ -1,3 +1,9 @@
+2017-06-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/81083
+	* tree-ssa-sccvn.c (vn_reference_lookup_3): Do not use abnormals
+	as values.
+
 2017-06-13  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* config/rs6000/rs6000.c: Update all comments that mentioned SPE.
