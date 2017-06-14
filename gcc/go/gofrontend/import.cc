@@ -82,6 +82,25 @@ Import::open_package(const std::string& filename, Location location,
 	  // A special case.
 	  fn = relative_import_path;
 	}
+      else if (fn[0] == '.' && fn[1] == '.'
+	       && (fn[2] == '\0' || IS_DIR_SEPARATOR(fn[2])))
+	{
+	  // We are going to join relative_import_path and fn, and it
+	  // will look like DIR/../PATH.  But DIR does not necessarily
+	  // exist in this case, and if it doesn't the use of .. will
+	  // fail although it shouldn't.  The gc compiler uses
+	  // path.Join here, which cleans up the .., so we need to do
+	  // the same.
+	  size_t index;
+	  for (index = relative_import_path.length() - 1;
+	       index > 0 && !IS_DIR_SEPARATOR(relative_import_path[index]);
+	       index--)
+	    ;
+	  if (index > 0)
+	    fn = relative_import_path.substr(0, index) + fn.substr(2);
+	  else
+	    fn = relative_import_path + '/' + fn;
+	}
       else
 	fn = relative_import_path + '/' + fn;
       is_local = false;
