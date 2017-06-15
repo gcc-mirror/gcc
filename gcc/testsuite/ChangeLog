@@ -1,3 +1,10 @@
+2017-06-15  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* gcc.target/arm/its.c: Check that no IT blocks has more than 2
+	instructions in it rather than the number of IT blocks being 2.
+	Transfer scan directive arm_thumb2 restriction to the whole
+	testcase and restrict further to Thumb-only targets.
+
 2017-06-15  Tamar Christina  <tamar.christina@arm.com>
 
 	* gcc.target/arm/sdiv_costs_1.c:
