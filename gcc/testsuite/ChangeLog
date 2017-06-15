@@ -1,3 +1,8 @@
+2017-06-15  Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc.target/arm/sdiv_costs_1.c:
+	Use dg-add-options.
+
 2017-06-14  Maciej W. Rozycki  <macro@imgtec.com>
 
 	* gcc.target/mips/data-sym-jump.c: Adjust for whitespace changes.
