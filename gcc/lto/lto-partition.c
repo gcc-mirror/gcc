@@ -132,7 +132,7 @@ add_symbol_to_partition_1 (ltrans_partition part, symtab_node *node)
 
   /* Be sure that we never try to duplicate partitioned symbol
      or add external symbol.  */
-  gcc_assert (c != SYMBOL_EXTERNAL
+  gcc_assert ((c != SYMBOL_EXTERNAL || node->alias)
 	      && (c == SYMBOL_DUPLICATE || !symbol_partitioned_p (node)));
 
   part->symbols++;

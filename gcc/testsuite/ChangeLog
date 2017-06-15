@@ -1,3 +1,9 @@
+2017-06-15  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	PR lto/69866
+	* gcc.dg/lto/pr69866_0.c: New test.
+	* gcc.dg/lto/pr69866_1.c: Likewise.
+
 2017-06-15  Jozef Lawrynowicz	<jozef.l@somniumtech.com>
 
 	PR target/78818
