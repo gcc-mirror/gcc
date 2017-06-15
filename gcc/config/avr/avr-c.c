@@ -313,11 +313,16 @@ avr_cpu_cpp_builtins (struct cpp_reader *pfile)
       cpp_define (pfile, "__AVR_ENHANCED__");
       cpp_define (pfile, "__AVR_HAVE_MUL__");
     }
+
+  if (AVR_HAVE_JMP_CALL)
+    cpp_define (pfile, "__AVR_HAVE_JMP_CALL__");
+
   if (avr_arch->have_jmp_call)
-    {
-      cpp_define (pfile, "__AVR_MEGA__");
-      cpp_define (pfile, "__AVR_HAVE_JMP_CALL__");
-    }
+    cpp_define (pfile, "__AVR_MEGA__");
+
+  if (AVR_SHORT_CALLS)
+    cpp_define (pfile, "__AVR_SHORT_CALLS__");
+
   if (AVR_XMEGA)
     cpp_define (pfile, "__AVR_XMEGA__");
 
@@ -335,8 +340,12 @@ avr_cpu_cpp_builtins (struct cpp_reader *pfile)
          (ATtiny4/5/9/10/20 and 40) mapped program memory starts at 0x4000. */
 
       cpp_define_formatted (pfile, "__AVR_TINY_PM_BASE_ADDRESS__=0x%x",
-                            AVR_TINY_PM_OFFSET);
+                            avr_arch->flash_pm_offset);
     }
+
+  if (avr_arch->flash_pm_offset)
+    cpp_define_formatted (pfile, "__AVR_PM_BASE_ADDRESS__=0x%x",
+                          avr_arch->flash_pm_offset);
 
   if (AVR_HAVE_EIJMP_EICALL)
     {

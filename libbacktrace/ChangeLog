@@ -1,3 +1,19 @@
+2017-06-11  Ian Lance Taylor  <iant@golang.org>
+
+	* elf.c (backtrace_initialize): Always set *fileline_fn.
+	* ttest.c: New file.
+	* btest.c: Move support functions into testlib.c.  Change calls to
+	check to pass file name.
+	* testlib.c: New file, copied from (part of) btest.c.
+	* testlib.h: New file, declarations for testlib.c.
+	* edtest.c: Use testlib.h and testlib.c.
+	* configure.ac: Test for -pthread, set HAVE_PTHREAD conditional.
+	* Makefile.am (btest_SOURCES): Add testlib.c.
+	(edtest_SOURCES): Likewise.
+	(CHECK_PROGRAMS): Add ttest if HAVE_PTHREAD.
+	(ttest_SOURCES, ttest_CFLAGS, ttest_LDADD): Define.
+	* configure, Makefile.in: Rebuild.
+
 2017-05-19  Than McIntosh  <thanm@google.com>
 
 	* dwarf.c (free_line_header): Don't free dirs if dirs_count == 0.

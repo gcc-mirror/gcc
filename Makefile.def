@@ -601,7 +601,8 @@ languages = { language=objc;	gcc-check-target=check-objc;
 				lib-check-target=check-target-libobjc; };
 languages = { language=obj-c++;	gcc-check-target=check-obj-c++; };
 languages = { language=go;	gcc-check-target=check-go;
-				lib-check-target=check-target-libgo; };
+				lib-check-target=check-target-libgo;
+				lib-check-target=check-gotools; };
 languages = { language=brig;	gcc-check-target=check-brig;
 				lib-check-target=check-target-libhsail-rt; };
 

@@ -3410,11 +3410,13 @@ Type_conversion_expression::do_get_backend(Translate_context* context)
 
   Gogo* gogo = context->gogo();
   Btype* btype = type->get_backend(gogo);
-  Bexpression* bexpr = this->expr_->get_backend(context);
   Location loc = this->location();
 
   if (Type::are_identical(type, expr_type, false, NULL))
-    return gogo->backend()->convert_expression(btype, bexpr, loc);
+    {
+      Bexpression* bexpr = this->expr_->get_backend(context);
+      return gogo->backend()->convert_expression(btype, bexpr, loc);
+    }
   else if (type->interface_type() != NULL
 	   || expr_type->interface_type() != NULL)
     {
@@ -3483,6 +3485,7 @@ Type_conversion_expression::do_get_backend(Translate_context* context)
   else if (type->is_numeric_type())
     {
       go_assert(Type::are_convertible(type, expr_type, NULL));
+      Bexpression* bexpr = this->expr_->get_backend(context);
       return gogo->backend()->convert_expression(btype, bexpr, loc);
     }
   else if ((type->is_unsafe_pointer_type()
@@ -3493,7 +3496,10 @@ Type_conversion_expression::do_get_backend(Translate_context* context)
            || (this->may_convert_function_types_
                && type->function_type() != NULL
                && expr_type->function_type() != NULL))
-    return gogo->backend()->convert_expression(btype, bexpr, loc);
+    {
+      Bexpression* bexpr = this->expr_->get_backend(context);
+      return gogo->backend()->convert_expression(btype, bexpr, loc);
+    }
   else
     {
       Expression* conversion =

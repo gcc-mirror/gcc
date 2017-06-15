@@ -1,3 +1,11 @@
+2017-06-09  David Malcolm  <dmalcolm@redhat.com>
+
+	* include/line-map.h
+	(rich_location::fixits_cannot_be_auto_applied): New method.
+	(rich_location::fixits_can_be_auto_applied_p): New accessor.
+	(rich_location::m_fixits_cannot_be_auto_applied): New field.
+	* line-map.c (rich_location::rich_location): Initialize new field.
+
 2017-06-05  David Malcolm  <dmalcolm@redhat.com>
 
 	* include/cpplib.h (struct cpp_callbacks): Add "comment"

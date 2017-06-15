@@ -51854,7 +51854,7 @@ check-gcc-go:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
 	(cd gcc && $(MAKE) $(GCC_FLAGS_TO_PASS) check-go);
-check-go: check-gcc-go check-target-libgo
+check-go: check-gcc-go check-target-libgo check-gotools
 
 .PHONY: check-gcc-brig check-brig
 check-gcc-brig:

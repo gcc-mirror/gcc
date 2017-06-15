@@ -9216,7 +9216,7 @@ package body Exp_Ch3 is
 
       declare
          Stream_Op_TSS_Names :
-           constant array (Integer range <>) of TSS_Name_Type :=
+           constant array (Positive range <>) of TSS_Name_Type :=
              (TSS_Stream_Read,
               TSS_Stream_Write,
               TSS_Stream_Input,

@@ -77,20 +77,7 @@ namespace std _GLIBCXX_VISIBILITY(default)
     execute_native_thread_routine(void* __p)
     {
       thread::_State_ptr __t{ static_cast<thread::_State*>(__p) };
-
-      __try
-	{
-	  __t->_M_run();
-	}
-      __catch(const __cxxabiv1::__forced_unwind&)
-	{
-	  __throw_exception_again;
-	}
-      __catch(...)
-	{
-	  std::terminate();
-	}
-
+      __t->_M_run();
       return nullptr;
     }
 
@@ -104,20 +91,7 @@ namespace std _GLIBCXX_VISIBILITY(default)
       // the thread state to a local object, breaking the reference cycle
       // created in thread::_M_start_thread.
       __local.swap(__t->_M_this_ptr);
-
-      __try
-	{
-	  __t->_M_run();
-	}
-      __catch(const __cxxabiv1::__forced_unwind&)
-	{
-	  __throw_exception_again;
-	}
-      __catch(...)
-	{
-	  std::terminate();
-	}
-
+      __t->_M_run();
       return nullptr;
     }
 #endif

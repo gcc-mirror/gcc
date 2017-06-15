@@ -1890,6 +1890,26 @@ type_promotes_to (tree type)
    closely.  Although they are used only in pt.c at the moment, they
    should presumably be used everywhere in the future.  */
 
+/* True iff EXPR can be converted to TYPE via a qualification conversion.
+   Callers should check for identical types before calling this function.  */
+
+bool
+can_convert_qual (tree type, tree expr)
+{
+  tree expr_type = TREE_TYPE (expr);
+  gcc_assert (!same_type_p (type, expr_type));
+
+  if (TYPE_PTR_P (type) && TYPE_PTR_P (expr_type))
+    return comp_ptr_ttypes (TREE_TYPE (type), TREE_TYPE (expr_type));
+  else if (TYPE_PTRMEM_P (type) && TYPE_PTRMEM_P (expr_type))
+    return (same_type_p (TYPE_PTRMEM_CLASS_TYPE (type),
+			 TYPE_PTRMEM_CLASS_TYPE (expr_type))
+	    && comp_ptr_ttypes (TYPE_PTRMEM_POINTED_TO_TYPE (type),
+				TYPE_PTRMEM_POINTED_TO_TYPE (expr_type)));
+  else
+    return false;
+}
+
 /* Attempt to perform qualification conversions on EXPR to convert it
    to TYPE.  Return the resulting expression, or error_mark_node if
    the conversion was impossible.  */
@@ -1903,14 +1923,7 @@ perform_qualification_conversions (tree type, tree expr)
 
   if (same_type_p (type, expr_type))
     return expr;
-  else if (TYPE_PTR_P (type) && TYPE_PTR_P (expr_type)
-	   && comp_ptr_ttypes (TREE_TYPE (type), TREE_TYPE (expr_type)))
-    return build_nop (type, expr);
-  else if (TYPE_PTRMEM_P (type) && TYPE_PTRMEM_P (expr_type)
-	   && same_type_p (TYPE_PTRMEM_CLASS_TYPE (type),
-			   TYPE_PTRMEM_CLASS_TYPE (expr_type))
-	   && comp_ptr_ttypes (TYPE_PTRMEM_POINTED_TO_TYPE (type),
-			       TYPE_PTRMEM_POINTED_TO_TYPE (expr_type)))
+  else if (can_convert_qual (type, expr))
     return build_nop (type, expr);
   else
     return error_mark_node;
@@ -2007,8 +2020,8 @@ fnptr_conv_p (tree to, tree from)
 	  || can_convert_tx_safety (t, f));
 }
 
-/* Return FN with any NOP_EXPRs that represent function pointer
-   conversions stripped.  */
+/* Return FN with any NOP_EXPRs stripped that represent function pointer
+   conversions or conversions to the same type.  */
 
 tree
 strip_fnptr_conv (tree fn)
@@ -2016,7 +2029,10 @@ strip_fnptr_conv (tree fn)
   while (TREE_CODE (fn) == NOP_EXPR)
     {
       tree op = TREE_OPERAND (fn, 0);
-      if (fnptr_conv_p (TREE_TYPE (fn), TREE_TYPE (op)))
+      tree ft = TREE_TYPE (fn);
+      tree ot = TREE_TYPE (op);
+      if (same_type_p (ft, ot)
+	  || fnptr_conv_p (ft, ot))
 	fn = op;
       else
 	break;

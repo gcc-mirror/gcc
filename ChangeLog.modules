@@ -1,5 +1,10 @@
 2017-06-15  Nathan Sidwell  <nathan@acm.org>
 
+	Merge trunk r249217.
+	libcc1/
+	* libcp1plugin.c (supplement_binding): Don't call
+	maybe_remove_implicit_alias.
+
 	First bug report!
 	gcc/cp/
 	* cp-tree.h (CPTI_MANGLE): New.

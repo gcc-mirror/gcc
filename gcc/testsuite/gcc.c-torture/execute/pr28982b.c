@@ -1,3 +1,5 @@
+/* { dg-additional-options "-DSTACK_SIZE=[dg-effective-target-value stack_size]" { target { stack_size } } } */
+
 /* Like pr28982a.c, but with the spill slots outside the range of
    a single sp-based load on ARM.  This test tests for cases where
    the addresses in the base and index reloads require further reloads.  */

@@ -2913,7 +2913,7 @@ begin_class_definition (tree t)
       if (ns && TREE_CODE (ns) == NAMESPACE_DECL
 	  && DECL_CONTEXT (ns) == std_node
 	  && DECL_NAME (ns)
-	  && !strcmp (IDENTIFIER_POINTER (DECL_NAME (ns)), "decimal"))
+	  && id_equal (DECL_NAME (ns), "decimal"))
 	{
 	  const char *n = TYPE_NAME_STRING (t);
 	  if ((strcmp (n, "decimal32") == 0)

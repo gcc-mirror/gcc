@@ -3,6 +3,7 @@
 // itself call malloc(), and will fail if there is no more
 // memory available.
 // { dg-do run { xfail { { xstormy16-*-* *-*-darwin[3-7]* } || vxworks_rtp } } }
+// { dg-additional-options "-DSTACK_SIZE=[dg-effective-target-value stack_size]" { target { stack_size } } }
 // Copyright (C) 2000, 2002, 2003, 2010, 2012, 2014 Free Software Foundation, Inc.
 // Contributed by Nathan Sidwell 6 June 2000 <nathan@codesourcery.com>
 

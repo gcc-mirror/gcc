@@ -4399,7 +4399,8 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 	if (TREE_CODE (op) == PTRMEM_CST && tcode == NOP_EXPR)
 	  {
 	    if (same_type_ignoring_top_level_qualifiers_p (type,
-							   TREE_TYPE (op)))
+							   TREE_TYPE (op))
+		|| can_convert_qual (type, op))
 	      return cp_fold_convert (type, op);
 	    else
 	      {
@@ -5296,7 +5297,7 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict,
       {
         tree x = TREE_OPERAND (t, 0);
         STRIP_NOPS (x);
-        if (is_this_parameter (x))
+        if (is_this_parameter (x) && !is_capture_proxy (x))
 	  {
 	    if (DECL_CONTEXT (x)
 		&& !DECL_DECLARED_CONSTEXPR_P (DECL_CONTEXT (x)))

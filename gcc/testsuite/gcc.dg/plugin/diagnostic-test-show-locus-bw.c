@@ -269,3 +269,23 @@ void test_fixit_insert_newline (void)
    { dg-end-multiline-output "" } */
 #endif
 }
+
+/* Unit test for mutually-exclusive suggestions.  */
+
+void test_mutually_exclusive_suggestions (void)
+{
+#if 0
+  original; /* { dg-warning "warning 1" } */
+/* { dg-warning "warning 2" "" { target *-*-* } .-1 } */
+/* { dg-begin-multiline-output "" }
+   original;
+   ^~~~~~~~
+   replacement_1
+   { dg-end-multiline-output "" } */
+/* { dg-begin-multiline-output "" }
+   original;
+   ^~~~~~~~
+   replacement_2
+   { dg-end-multiline-output "" } */
+#endif
+}

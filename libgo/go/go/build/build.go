@@ -1549,7 +1549,7 @@ func init() {
 
 func getToolDir() string {
 	if runtime.Compiler == "gccgo" {
-		return runtime.GCCGOTOOLDIR
+		return envOr("GCCGOTOOLDIR", runtime.GCCGOTOOLDIR)
 	} else {
 		return filepath.Join(runtime.GOROOT(), "pkg/tool/"+runtime.GOOS+"_"+runtime.GOARCH)
 	}

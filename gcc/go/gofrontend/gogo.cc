@@ -1504,10 +1504,10 @@ Gogo::write_globals()
       Bfunction* initfn = func->get_or_make_decl(this, *p);
       Bexpression* func_code =
           this->backend()->function_code_expression(initfn, func_loc);
-      Bexpression* call = this->backend()->call_expression(initfn, func_code,
+      Bexpression* call = this->backend()->call_expression(init_bfn, func_code,
                                                            empty_args,
 							   NULL, func_loc);
-      Bstatement* ist = this->backend()->expression_statement(initfn, call);
+      Bstatement* ist = this->backend()->expression_statement(init_bfn, call);
       init_stmts.push_back(ist);
     }
 

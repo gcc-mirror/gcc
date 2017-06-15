@@ -1164,7 +1164,16 @@ traverse_io_block (gfc_code *code, bool *has_reached, gfc_code *prev)
 	  /*  Check for (a(k), i=1,4) or ((a(j, i), i=1,4), j=1,4).  */
 	  if (!stack_top || !stack_top->iter
 	      || stack_top->iter->var->symtree != start->symtree)
-	    iters[i] = NULL;
+	    {
+	      /* Check for (a(i,i), i=1,3).  */
+	      int j;
+	      
+	      for (j=0; j<i; j++)
+		if (iters[j] && iters[j]->var->symtree == start->symtree)
+		  return false;
+
+	      iters[i] = NULL;
+	    }
 	  else
 	    {
 	      iters[i] = stack_top->iter;

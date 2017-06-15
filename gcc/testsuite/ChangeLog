@@ -1,3 +1,224 @@
+2017-06-15  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* gcc.target/arm/its.c: Check that no IT blocks has more than 2
+	instructions in it rather than the number of IT blocks being 2.
+	Transfer scan directive arm_thumb2 restriction to the whole
+	testcase and restrict further to Thumb-only targets.
+
+2017-06-15  Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc.target/arm/sdiv_costs_1.c:
+	Use dg-add-options.
+
+2017-06-14  Maciej W. Rozycki  <macro@imgtec.com>
+
+	* gcc.target/mips/data-sym-jump.c: Adjust for whitespace changes.
+	* gcc.target/mips/pr51513-1.c: New test.
+	* gcc.target/mips/pr51513-2.c: New test.
+
+2017-06-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/81083
+	* gcc.dg/torture/pr81083.c: Add prototypes.
+
+2017-06-14  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/81088
+	* c-c++-common/ubsan/pr81088.c: New testcase.
+
+2017-06-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.target/sparc/overflow-4.c: Add -mno-vis3.
+
+2017-06-14  Andrew Pinski  <apinski@cavium.com>
+	    Naveen H.S  <Naveen.Hurugalawadi@cavium.com>
+
+	PR target/71663
+	* gcc.target/aarch64/vect-init-1.c: Newtestcase.
+	* gcc.target/aarch64/vect-init-2.c: Likewise.
+	* gcc.target/aarch64/vect-init-3.c: Likewise.
+	* gcc.target/aarch64/vect-init-4.c: Likewise.
+	* gcc.target/aarch64/vect-init-5.c: Likewise.
+
+2017-06-14  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58541
+	* g++.dg/cpp0x/constexpr-58541.C: New.
+
+2017-06-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/81083
+	* gcc.dg/torture/pr81083.c: New testcase.
+
+2017-06-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/tree-ssa/vrp101.c: Fix scan-tree-dump regex.
+	* gcc.dg/tree-ssa/builtin-sprintf-2.c: Likewise.  Adjust comment.
+
+2017-06-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/80973
+	* g++.dg/ubsan/pr80973.C: New test.
+
+	PR c++/80984
+	* g++.dg/opt/nrv18.C: New test.
+
+2017-06-13  Martin Liska  <mliska@suse.cz>
+
+	PR sanitize/78204
+	* c-c++-common/ubsan/attrib-2.c (float_cast2): Enhance the
+	test by adding no_sanitize attribute.
+	* gcc.dg/asan/use-after-scope-4.c: Likewise.
+
+2017-06-13  Renlin Li  <renlin.li@arm.com>
+
+	* gcc.target/arm/cold-lc.c: Update coding style, call dump_stack
+	conditionally.
+
+2017-06-13  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/80803
+	PR tree-optimization/81063
+	gcc.dg/tree-ssa/pr80803.c: New test.
+	gcc.dg/tree-ssa/pr81063.c: Likewise.
+
+2017-06-12  Yury Gribov  <tetra2005@gmail.com>
+
+	* c-c++-common/fold-masked-cmp-3.c: New test.
+
+2017-06-13  Yury Gribov  <tetra2005@gmail.com>
+
+	PR tree-optimization/67328
+	* c-c++-common/fold-masked-cmp-1.c: New test.
+	* c-c++-common/fold-masked-cmp-2.c: Likewise.
+	* gcc.dg/pr46309.c: Fix pattern.
+	* gcc.dg/pr46309-2.c: Likewise.
+
+2017-06-13  Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc.target/arm/sdiv_costs_1.c:
+	Require arm_arch_v8a_ok and add march option.
+
+2017-06-13  Martin Liska  <mliska@suse.cz>
+
+	* gcc.dg/tree-ssa/builtin-sprintf-2.c: Adjust scanned pattern.
+	* gcc.dg/tree-ssa/dump-2.c: Likewise.
+	* gcc.dg/tree-ssa/vrp101.c: Likewise.
+
+2017-06-13  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/81065
+	* c-c++-common/ubsan/pr81065.c: New testcase.
+
+2017-06-12  Ian Lance Taylor  <iant@golang.org>
+
+	* gcc.dg/tree-prof/split-1.c: Require split_stack, don't require
+	freorder.  Update comment to explain test.
+
+2017-06-12  Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc.target/aarch64/inline-lrint_1.c: Broaden regexp.
+	* gcc.target/aarch64/inline-lrint_2.c: Likewise.
+	* gcc.target/aarch64/no-inline-lrint_1.c: Likewise.
+	* gcc.target/aarch64/no-inline-lrint_2.c: Likewise.
+
+2017-06-12  Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc.target/arm/sdiv_costs_1.c: Require arm_v8_vfp_ok.
+
+2017-06-12  Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc.target/arm/sdiv_costs_1.c: Disable on softfloat.
+
+2017-06-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/81003
+	* gcc.c-torture/compile/pr81003.c: New test.
+
+2017-06-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/81053
+	* gcc.dg/torture/pr81053.c: New testcase.
+
+2017-06-10  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/80988
+	* gfortran.dg/implied_do_io_3.f90:  New test.
+
+2017-06-10  Tom de Vries  <tom@codesourcery.com>
+
+	* lib/target-supports.exp (check_effective_target_signal): New proc.
+	* lib/gcc.exp (gcc_target_compile): Remove appending of
+	-DSIGNAL_SUPPRESS to additional_flags.
+	* gcc.c-torture/execute/ieee/ieee.exp: Add -DSIGNAL_SUPPRESS to
+	additional_flags if effective target signal is not supported by the
+	target.
+	* gcc.c-torture/execute/20101011-1.c: Same.
+	* gcc.dg/c99-stdint-1.c: Same.
+	* gcc.dg/c99-stdint-2.c: Same.
+	* gcc.dg/c99-stdint-5.c: Same.
+	* gcc.dg/c99-stdint-6.c: Same.
+	* gcc.dg/stdint-width-1.c: Same.
+
+2017-06-10  Tom de Vries  <tom@codesourcery.com>
+
+	* lib/target-supports.exp (check_effective_target_stack_size)
+	(dg-effective-target-value): New proc.
+	* lib/gcc.exp (gcc_target_compile): Remove adding of DSTACK_SIZE to
+	additional_flags.
+	* lib/objc.exp (objc_target_compile): Same.
+	* lib/profopt.exp (profopt-get-options): Allow dg-additional-options.
+	* g++.old-deja/g++.eh/badalloc1.C: Add -DSTACK_SIZE=<value> using
+	dg-additional-options.
+	* gcc.c-torture/compile/20080806-1.c: Same.
+	* gcc.c-torture/compile/920723-1.c: Same.
+	* gcc.c-torture/compile/930621-1.c: Same.
+	* gcc.c-torture/compile/991214-2.c: Same.
+	* gcc.c-torture/compile/bcopy.c: Same.
+	* gcc.c-torture/compile/memtst.c: Same.
+	* gcc.c-torture/compile/msp.c: Same.
+	* gcc.c-torture/compile/stuct.c: Same.
+	* gcc.c-torture/execute/20011008-3.c: Same.
+	* gcc.c-torture/execute/20030209-1.c: Same.
+	* gcc.c-torture/execute/20031012-1.c: Same.
+	* gcc.c-torture/execute/20040805-1.c: Same.
+	* gcc.c-torture/execute/920410-1.c: Same.
+	* gcc.c-torture/execute/920501-7.c: Same.
+	* gcc.c-torture/execute/921113-1.c: Same.
+	* gcc.c-torture/execute/921202-1.c: Same.
+	* gcc.c-torture/execute/921208-2.c: Same.
+	* gcc.c-torture/execute/930106-1.c: Same.
+	* gcc.c-torture/execute/930406-1.c: Same.
+	* gcc.c-torture/execute/950221-1.c: Same.
+	* gcc.c-torture/execute/960521-1.c: Same.
+	* gcc.c-torture/execute/980605-1.c: Same.
+	* gcc.c-torture/execute/comp-goto-1.c: Same.
+	* gcc.c-torture/execute/comp-goto-2.c: Same.
+	* gcc.c-torture/execute/memcpy-1.c: Same.
+	* gcc.c-torture/execute/multi-ix.c: Same.
+	* gcc.c-torture/execute/nestfunc-4.c: Same.
+	* gcc.c-torture/execute/pr20621-1.c: Same.
+	* gcc.c-torture/execute/pr23135.c: Same.
+	* gcc.c-torture/execute/pr28982b.c: Same.
+	* gcc.dg/loop-3.c: Same.
+	* gcc.dg/struct-ret-3.c: Same.
+	* gcc.dg/torture/stackalign/comp-goto-1.c: Same.
+	* gcc.dg/torture/stackalign/non-local-goto-4.c: Same.
+	* gcc.dg/tree-prof/comp-goto-1.c: Same.
+	* gcc.dg/tree-prof/pr44777.c: Same.
+
+2017-06-09  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/plugin/diagnostic-test-show-locus-bw.c
+	(test_mutually_exclusive_suggestions): New test function.
+	* gcc.dg/plugin/diagnostic-test-show-locus-generate-patch.c
+	(test_mutually_exclusive_suggestions): New test function.
+	* gcc.dg/plugin/diagnostic-test-show-locus-parseable-fixits.c
+	(test_mutually_exclusive_suggestions): New test function.
+	* gcc.dg/plugin/diagnostic_plugin_test_show_locus.c
+	(test_show_locus): Add special-case for
+	"test_mutually_exclusive_suggestions".
+
 2017-06-09  Ian Lance Taylor  <iant@golang.org>
 
 	* gcc.dg/tree-prof/split-1.c: New test.

@@ -15,9 +15,6 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// The library throws the new definition of std::ios::failure
-// { dg-options "-D_GLIBCXX_USE_CXX11_ABI=1" }
-
 #include <sstream>
 #include <testsuite_hooks.h>
 
@@ -29,20 +26,27 @@ void test_failbit()
 
   istringstream stream("jaylib - champion sound");
   stream.exceptions(ios_base::failbit);
-  
+
+  // The library throws the new definition of std::ios::failure
+#if _GLIBCXX_USE_CXX11_ABI
+    typedef std::ios_base::failure exception_type;
+#else
+    typedef std::exception exception_type;
+#endif
+
   try
     {
       T i;
       stream >> i;
       VERIFY( false );
     }
-  catch (const ios_base::failure&)
-    { 
+  catch (const exception_type&)
+    {
       // stream should set failbit and throw ios_base::failure.
       VERIFY( stream.fail() );
       VERIFY( !stream.bad() );
       VERIFY( !stream.eof() );
-    }  
+    }
   catch(...)
     { VERIFY( false ); }
 }

@@ -2354,8 +2354,8 @@ do_warn_duplicated_branches (tree expr)
   tree thenb = COND_EXPR_THEN (expr);
   tree elseb = COND_EXPR_ELSE (expr);
 
-  /* Don't bother if there's no else branch.  */
-  if (elseb == NULL_TREE)
+  /* Don't bother if any of the branches is missing.  */
+  if (thenb == NULL_TREE || elseb == NULL_TREE)
     return;
 
   /* And don't warn for empty statements.  */

@@ -6050,7 +6050,7 @@ private_is_attribute_p (const char *attr_name, size_t attr_len, const_tree ident
 
   if (ident_len == attr_len)
     {
-      if (strcmp (attr_name, IDENTIFIER_POINTER (ident)) == 0)
+      if (id_equal (ident, attr_name))
 	return true;
     }
   else if (ident_len == attr_len + 4)

@@ -4366,9 +4366,9 @@ expand_cilk_for (struct omp_region *region, struct omp_for_data *fd)
   tree t, low_val = NULL_TREE, high_val = NULL_TREE;
   for (t = DECL_ARGUMENTS (child_fndecl); t; t = TREE_CHAIN (t))
     {
-      if (!strcmp (IDENTIFIER_POINTER (DECL_NAME (t)), "__high"))
+      if (id_equal (DECL_NAME (t), "__high"))
 	high_val = t;
-      else if (!strcmp (IDENTIFIER_POINTER (DECL_NAME (t)), "__low"))
+      else if (id_equal (DECL_NAME (t), "__low"))
 	low_val = t;
     }
   gcc_assert (low_val && high_val);

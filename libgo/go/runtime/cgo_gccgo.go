@@ -54,7 +54,7 @@ func CgocallDone() {
 
 	// If we are invoked because the C function called _cgo_panic,
 	// then _cgo_panic will already have exited syscall mode.
-	if gp.atomicstatus == _Gsyscall {
+	if readgstatus(gp)&^_Gscan == _Gsyscall {
 		exitsyscall(0)
 	}
 

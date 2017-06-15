@@ -604,6 +604,9 @@ LTLIBOBJS
 LIBOBJS
 NATIVE_FALSE
 NATIVE_TRUE
+HAVE_PTHREAD_FALSE
+HAVE_PTHREAD_TRUE
+PTHREAD_CFLAGS
 BACKTRACE_USES_MALLOC
 ALLOC_FILE
 VIEW_FILE
@@ -11131,7 +11134,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11134 "configure"
+#line 11137 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11237,7 +11240,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11240 "configure"
+#line 11243 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -12458,6 +12461,42 @@ $as_echo "#define HAVE_GETEXECNAME 1" >>confdefs.h
 
 fi
 
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether -pthread is supported" >&5
+$as_echo_n "checking whether -pthread is supported... " >&6; }
+if test "${libgo_cv_lib_pthread+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  CFLAGS_hold=$CFLAGS
+CFLAGS="$CFLAGS -pthread"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+int i;
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  libgo_cv_lib_pthread=yes
+else
+  libgo_cv_lib_pthread=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+CFLAGS=$CFLAGS_hold
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $libgo_cv_lib_pthread" >&5
+$as_echo "$libgo_cv_lib_pthread" >&6; }
+PTHREAD_CFLAGS=
+if test "$libgo_cv_lib_pthread" = yes; then
+  PTHREAD_CFLAGS=-pthread
+fi
+
+
+ if test "$libgo_cv_lib_pthread" = yes; then
+  HAVE_PTHREAD_TRUE=
+  HAVE_PTHREAD_FALSE='#'
+else
+  HAVE_PTHREAD_TRUE='#'
+  HAVE_PTHREAD_FALSE=
+fi
+
+
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether tests can run" >&5
 $as_echo_n "checking whether tests can run... " >&6; }
 if test "${libbacktrace_cv_sys_native+set}" = set; then :
@@ -12618,6 +12657,10 @@ fi
 
 if test -z "${MAINTAINER_MODE_TRUE}" && test -z "${MAINTAINER_MODE_FALSE}"; then
   as_fn_error "conditional \"MAINTAINER_MODE\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${HAVE_PTHREAD_TRUE}" && test -z "${HAVE_PTHREAD_FALSE}"; then
+  as_fn_error "conditional \"HAVE_PTHREAD\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${NATIVE_TRUE}" && test -z "${NATIVE_FALSE}"; then

@@ -74,20 +74,20 @@ template<typename CT>
   }
 
 #ifndef __cpp_lib_constexpr_char_traits
-// #error Feature-test macro for constexpr char_traits is missing
+# error Feature-test macro for constexpr char_traits is missing
 #elif __cpp_lib_constexpr_char_traits != 201611
-// #error Feature-test macro for constexpr char_traits has the wrong value
+# error Feature-test macro for constexpr char_traits has the wrong value
 #endif
 
 static_assert( test_assign<std::char_traits<char>>() );
-// static_assert( test_compare<std::char_traits<char>>() );
-// static_assert( test_length<std::char_traits<char>>() );
-// static_assert( test_find<std::char_traits<char>>() );
+static_assert( test_compare<std::char_traits<char>>() );
+static_assert( test_length<std::char_traits<char>>() );
+static_assert( test_find<std::char_traits<char>>() );
 #ifdef _GLIBCXX_USE_WCHAR_T
 static_assert( test_assign<std::char_traits<wchar_t>>() );
-// static_assert( test_compare<std::char_traits<wchar_t>>() );
-// static_assert( test_length<std::char_traits<wchar_t>>() );
-// static_assert( test_find<std::char_traits<wchar_t>>() );
+static_assert( test_compare<std::char_traits<wchar_t>>() );
+static_assert( test_length<std::char_traits<wchar_t>>() );
+static_assert( test_find<std::char_traits<wchar_t>>() );
 #endif
 static_assert( test_assign<std::char_traits<char16_t>>() );
 static_assert( test_compare<std::char_traits<char16_t>>() );

@@ -536,7 +536,7 @@ static tree
 find_param_by_name (tree fndecl, const char *name)
 {
   for (tree arg = DECL_ARGUMENTS (fndecl); arg; arg = TREE_CHAIN (arg))
-    if (strcmp (name, IDENTIFIER_POINTER (DECL_NAME (arg))) == 0)
+    if (id_equal (DECL_NAME (arg), name))
       return arg;
   return NULL_TREE;
 }
@@ -1324,7 +1324,7 @@ function_reader::parse_mem_expr (const char *desc)
   int i;
   tree t;
   FOR_EACH_VEC_ELT (m_fake_scope, i, t)
-    if (strcmp (desc, IDENTIFIER_POINTER (DECL_NAME (t))) == 0)
+    if (id_equal (DECL_NAME (t), desc))
       return t;
 
   /* Not found?  Create it.

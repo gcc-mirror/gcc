@@ -1,3 +1,8 @@
+2017-06-12  Doug Rupp  <rupp@adacore.com>
+
+	* inclhack.def (AAB_vxworks_stdint): Remove hack.
+	* fixincl.x: Regenerate.
+
 2017-02-25  John David Anglin  <danglin@gcc.gnu.org>
 
 	PR target/68739

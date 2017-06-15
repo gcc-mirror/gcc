@@ -3085,7 +3085,7 @@ struct GTY(()) lang_decl {
    template function.  */
 #define DECL_PRETTY_FUNCTION_P(NODE) \
   (DECL_NAME (NODE) \
-   && !strcmp (IDENTIFIER_POINTER (DECL_NAME (NODE)), "__PRETTY_FUNCTION__"))
+   && id_equal (DECL_NAME (NODE), "__PRETTY_FUNCTION__"))
 
 /* Nonzero if the variable was declared to be thread-local.
    We need a special C++ version of this test because the middle-end
@@ -5978,7 +5978,7 @@ extern bool reference_related_p			(tree, tree);
 extern int remaining_arguments			(tree);
 extern tree perform_implicit_conversion		(tree, tree, tsubst_flags_t);
 extern tree perform_implicit_conversion_flags	(tree, tree, tsubst_flags_t, int);
-extern tree build_integral_nontype_arg_conv	(tree, tree, tsubst_flags_t);
+extern tree build_converted_constant_expr	(tree, tree, tsubst_flags_t);
 extern tree perform_direct_initialization_if_possible (tree, tree, bool,
                                                        tsubst_flags_t);
 extern tree in_charge_arg_for_name		(tree);
@@ -6094,6 +6094,7 @@ extern tree convert_force			(tree, tree, int,
 						 tsubst_flags_t);
 extern tree build_expr_type_conversion		(int, tree, bool);
 extern tree type_promotes_to			(tree);
+extern bool can_convert_qual			(tree, tree);
 extern tree perform_qualification_conversions	(tree, tree);
 extern bool tx_safe_fn_type_p			(tree);
 extern tree tx_unsafe_fn_variant		(tree);

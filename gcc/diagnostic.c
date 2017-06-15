@@ -986,7 +986,8 @@ diagnostic_report_diagnostic (diagnostic_context *context,
   diagnostic->x_data = NULL;
 
   if (context->edit_context_ptr)
-    context->edit_context_ptr->add_fixits (diagnostic->richloc);
+    if (diagnostic->richloc->fixits_can_be_auto_applied_p ())
+      context->edit_context_ptr->add_fixits (diagnostic->richloc);
 
   context->lock--;
 

@@ -1,3 +1,10 @@
+2017-06-10  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/80988
+	* frontend-passes.c (traverse_io_block):  Also
+	check for variables occurring as indices multiple
+	time in a single implied DO loop.
+
 2017-06-05  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/70601

@@ -698,8 +698,8 @@ extern int rs6000_vector_align[];
 /* For power systems, we want to enable Altivec and VSX builtins even if the
    user did not use -maltivec or -mvsx to allow the builtins to be used inside
    of #pragma GCC target or the target attribute to change the code level for a
-   given system.  The SPE and Paired builtins are only enabled if you configure
-   the compiler for those builtins, and those machines don't support altivec or
+   given system.  The Paired builtins are only enabled if you configure the
+   compiler for those builtins, and those machines don't support altivec or
    VSX.  */
 
 #define TARGET_EXTRA_BUILTINS	(!TARGET_PAIRED_FLOAT			 \
@@ -1329,13 +1329,6 @@ enum data_align { align_abi, align_opt, align_both };
    performance for removing short circuiting from the logical ops.  */
 
 #define LOGICAL_OP_NON_SHORT_CIRCUIT 0
-
-/* A fixed register used at epilogue generation to address SPE registers
-   with negative offsets.  The 64-bit load/store instructions on the SPE
-   only take positive offsets (and small ones at that), so we need to
-   reserve a register for consing up negative offsets.  */
-
-#define FIXED_SCRATCH 0
 
 /* Specify the registers used for certain standard purposes.
    The values of these macros are register numbers.  */
@@ -2560,7 +2553,6 @@ extern int frame_pointer_needed;
 #define RS6000_BTC_TERNARY	0x00000003	/* normal ternary function.  */
 #define RS6000_BTC_PREDICATE	0x00000004	/* predicate function.  */
 #define RS6000_BTC_ABS		0x00000005	/* Altivec/VSX ABS function.  */
-#define RS6000_BTC_EVSEL	0x00000006	/* SPE EVSEL function.  */
 #define RS6000_BTC_DST		0x00000007	/* Altivec DST function.  */
 #define RS6000_BTC_TYPE_MASK	0x0000000f	/* Mask to isolate types */
 

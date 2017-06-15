@@ -2741,6 +2741,34 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
        || VECTOR_INTEGER_TYPE_P (TREE_TYPE (@0)))
    { constant_boolean_node (false, type); })))
 
+/* A & (2**N - 1) <= 2**K - 1 -> A & (2**N - 2**K) == 0
+   A & (2**N - 1) >  2**K - 1 -> A & (2**N - 2**K) != 0
+
+   Note that comparisons
+     A & (2**N - 1) <  2**K   -> A & (2**N - 2**K) == 0
+     A & (2**N - 1) >= 2**K   -> A & (2**N - 2**K) != 0
+   will be canonicalized to above so there's no need to
+   consider them here.
+ */
+
+(for cmp (le gt)
+     eqcmp (eq ne)
+ (simplify
+  (cmp (bit_and@0 @1 INTEGER_CST@2) INTEGER_CST@3)
+  (if (INTEGRAL_TYPE_P (TREE_TYPE (@0)))
+   (with
+    {
+     tree ty = TREE_TYPE (@0);
+     unsigned prec = TYPE_PRECISION (ty);
+     wide_int mask = wi::to_wide (@2, prec);
+     wide_int rhs = wi::to_wide (@3, prec);
+     signop sgn = TYPE_SIGN (ty);
+    }
+    (if ((mask & (mask + 1)) == 0 && wi::gt_p (rhs, 0, sgn)
+	 && (rhs & (rhs + 1)) == 0 && wi::ge_p (mask, rhs, sgn))
+      (eqcmp (bit_and @1 { wide_int_to_tree (ty, mask - rhs); })
+	     { build_zero_cst (ty); }))))))
+
 /* -A CMP -B -> B CMP A.  */
 (for cmp (tcc_comparison)
      scmp (swapped_tcc_comparison)

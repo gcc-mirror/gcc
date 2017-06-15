@@ -2430,8 +2430,7 @@ chkp_get_bound_for_parm (tree parm)
 	 to use zero bounds for input arguments of main
 	 function.  */
       else if (flag_chkp_zero_input_bounds_for_main
-	       && strcmp (IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (orig_decl)),
-			  "main") == 0)
+	       && id_equal (DECL_ASSEMBLER_NAME (orig_decl), "main"))
 	bounds = chkp_get_zero_bounds ();
       else if (BOUNDED_P (parm))
 	{

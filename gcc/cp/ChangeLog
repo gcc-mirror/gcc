@@ -1,3 +1,80 @@
+2017-06-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* cp-gimplify.c (cp_genericize_r): Turn most of the function
+	into a switch (TREE_CODE (stmt)) statement from long else if
+	sequence.
+
+2017-06-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/80973
+	* cp-gimplify.c (cp_genericize_r): Don't instrument MEM_REF second
+	argument even if it has REFERENCE_TYPE.
+
+	PR c++/80984
+	* cp-gimplify.c (cp_genericize): Only look for VAR_DECLs in
+	BLOCK_VARS (outer) chain.
+	(cxx_omp_const_qual_no_mutable): Likewise.
+
+2017-06-13  Martin Liska  <mliska@suse.cz>
+
+	PR sanitize/78204
+	* class.c (build_base_path): Use sanitize_flags_p.
+	* cp-gimplify.c (cp_genericize_r): Likewise.
+	(cp_genericize_tree): Likewise.
+	(cp_genericize): Likewise.
+	* cp-ubsan.c (cp_ubsan_instrument_vptr_p): Likewise.
+	* decl.c (compute_array_index_type): Likewise.
+	(start_preparsed_function): Likewise.
+	* decl2.c (one_static_initialization_or_destruction): Likewise.
+	* init.c (finish_length_check): Likewise.
+	* lambda.c (maybe_add_lambda_conv_op): Likewise.
+	* typeck.c (cp_build_binary_op): Likewise.
+	(build_static_cast_1): Likewise.
+
+2017-06-11  Jason Merrill  <jason@redhat.com>
+
+	* error.c (dump_expr): Use is_this_parameter.
+
+	* cp-tree.h, decl2.c, mangle.c, parser.c, pt.c, semantics.c: Use
+	id_equal.
+
+2017-06-09  Jason Merrill  <jason@redhat.com>
+
+	Missing bits from N4268, constant evaluation for all non-type args.
+	* call.c (build_converted_constant_expr): Rename from
+	build_integral_nontype_arg_conv, handle all types.
+	* pt.c (convert_nontype_argument): In C++17 call it for all types.
+	Move NOP stripping inside pointer case, don't strip ADDR_EXPR.
+	* cvt.c (strip_fnptr_conv): Also strip conversions to the same type.
+
+	Overhaul pointer-to-member conversion and template argument handling.
+	* call.c (standard_conversion): Avoid creating ck_pmem when the
+	class type is the same.
+	* cvt.c (can_convert_qual): Split from
+	perform_qualification_conversions.
+	* constexpr.c (cxx_eval_constant_expression): Check it.
+	* typeck.c (convert_ptrmem): Only cplus_expand_constant if
+	adjustment is necessary.
+	* pt.c (check_valid_ptrmem_cst_expr): Compare class types.
+	(convert_nontype_argument): Avoid redundant error.
+
+	* call.c (convert_like_real): Remove "inner" parameter.
+	Don't replace a constant with its value.
+	* cp-gimplify.c (cp_fully_fold): Use cp_fold_rvalue.
+
+	* pt.c (convert_nontype_argument): Check NULLPTR_TYPE_P rather than
+	nullptr_node.
+
+	* parser.c (cp_parser_constant_expression): Check
+	potential_rvalue_constant_expression after decay_conversion.
+	* pt.c (convert_nontype_argument): Don't require linkage in C++17.
+
+	PR c++/80384 - ICE with dependent noexcept-specifier
+	* pt.c (dependent_type_p_r) [FUNCTION_TYPE]: Check for dependent
+	noexcept-specifier.
+
+	* constexpr.c (potential_constant_expression_1): Allow 'this' capture.
+
 2017-06-09  Jan Hubicka  <hubicka@ucw.cz>
 
 	* class.c (build_vtbl_initializer): Mark dvirt_fn as cold.

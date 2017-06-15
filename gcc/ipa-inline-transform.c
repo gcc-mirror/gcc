@@ -44,6 +44,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "ipa-fnsummary.h"
 #include "ipa-inline.h"
 #include "tree-inline.h"
+#include "function.h"
+#include "cfg.h"
+#include "basic-block.h"
 
 int ncalls_inlined;
 int nfunctions_inlined;
@@ -276,7 +279,7 @@ mark_all_inlined_calls_cdtor (cgraph_node *node)
     {
       cs->in_polymorphic_cdtor = true;
       if (!cs->inline_failed)
-    mark_all_inlined_calls_cdtor (cs->callee);
+	mark_all_inlined_calls_cdtor (cs->callee);
     }
   for (cgraph_edge *cs = node->indirect_calls; cs; cs = cs->next_callee)
     cs->in_polymorphic_cdtor = true;
@@ -661,7 +664,37 @@ inline_transform (struct cgraph_node *node)
 
   timevar_push (TV_INTEGRATION);
   if (node->callees && (opt_for_fn (node->decl, optimize) || has_inline))
-    todo = optimize_inline_calls (current_function_decl);
+    {
+      profile_count num = node->count;
+      profile_count den = ENTRY_BLOCK_PTR_FOR_FN (cfun)->count;
+      bool scale = num.initialized_p ()
+		   && (den > 0 || num == profile_count::zero ())
+		   && !(num == den);
+      if (scale)
+	{
+	  if (dump_file)
+	    {
+	      fprintf (dump_file, "Applying count scale ");
+	      num.dump (dump_file);
+	      fprintf (dump_file, "/");
+	      den.dump (dump_file);
+	      fprintf (dump_file, "\n");
+	    }
+
+	  basic_block bb;
+	  FOR_ALL_BB_FN (bb, cfun)
+	    {
+	      bb->count = bb->count.apply_scale (num, den);
+	
+	      edge e;
+	      edge_iterator ei;
+	      FOR_EACH_EDGE (e, ei, bb->succs)
+		e->count = e->count.apply_scale (num, den);
+	    }
+	  ENTRY_BLOCK_PTR_FOR_FN (cfun)->count = node->count;
+	}
+      todo = optimize_inline_calls (current_function_decl);
+   }
   timevar_pop (TV_INTEGRATION);
 
   cfun->always_inline_functions_inlined = true;

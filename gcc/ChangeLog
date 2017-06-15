@@ -1,3 +1,406 @@
+2017-06-15  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.md (add<mode>3): Use reg_or_subregno instead
+	of REGNO.
+
+2017-06-14  Maciej W. Rozycki  <macro@imgtec.com>
+
+	* config/mips/mips.md (MIPS16_T_REGNUM): Remove constant.
+	(casesi): Emit bounds checking as RTL.
+	(casesi_internal_mips16_<mode>): Remove bounds checking.
+
+2017-06-14  Max Filippov  <jcmvbkbc@gmail.com>
+
+	* config/xtensa/xtensa.c (xtensa_option_override): Append
+	MASK_CONST16 to target_flags in the absence of TARGET_L32R.
+	(hwloop_optimize, hwloop_fail, hwloop_pattern_reg,
+	 xtensa_doloop_hooks): Define unconditionally.
+	(xtensa_reorg_loops): Only call reorg_loops in the presence of
+	TARGET_LOOPS.
+	* config/xtensa/xtensa.h (TARGET_L32R): New definition.
+	(TARGET_DEFAULT): Remove XCHAL_HAVE_L32R condition and account
+	for it in xtensa_option_override.
+	(HARD_FRAME_POINTER_IS_FRAME_POINTER,
+	 HARD_FRAME_POINTER_IS_ARG_POINTER): New definitions.
+
+2017-06-14  Boris Kolpackov  <boris@codesynthesis.com>
+
+	* doc/cppopts.texi: Document '-' special value to -MF.
+
+2017-06-14  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* config/arm/cortex-a53.md (cortex_a53_fpalu) Adjust latency.
+	(cortex_a53_fconst): Likewise.
+	(cortex_a53_fpmul): Likewise.
+	(cortex_a53_f_load_64): Likewise.
+	(cortex_a53_f_load_many): Likewise.
+	(cortex_a53_advsimd_alu): Likewise.
+	(cortex_a53_advsimd_alu_q): Likewise.
+	(cortex_a53_advsimd_mul): Likewise.
+	(cortex_a53_advsimd_mul_q): Likewise.
+	(fpmac bypass): Add new bypass for fpmac-fpmac case.
+	Add missing fmul, r2f_cvt and fconst cases.
+
+2017-06-14  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/81088
+	* fold-const.c (split_tree): Drop TREE_OVERFLOW flag from
+	literal constants.
+	(fold_binary_loc): When associating do not treat pre-existing
+	TREE_OVERFLOW on literal constants as a reason to allow
+	TREE_OVERFLOW on associated literal constants.
+
+2017-06-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/sparc/sparc.h (MASK_ISA): Add MASK_LEON and MASK_LEON3.
+	(MASK_FEATURES): New macro.
+	* config/sparc/sparc.c (sparc_option_override): Remove the special
+	handling of -mfpu and generalize it to all MASK_FEATURES switches.
+
+2017-06-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* simplify-rtx.c (simplify_binary_operation_1) <UDIV>: Do not simplify
+	a division of 0 if non-call exceptions are enabled.
+
+2017-06-14  Andrew Pinski  <apinski@cavium.com>
+	    Naveen H.S  <Naveen.Hurugalawadi@cavium.com>
+
+	PR target/71663
+	* config/aarch64/aarch64.c (aarch64_expand_vector_init):
+	Improve vector initialization code gen for only variable case. 
+
+2017-06-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/sparc/driver-sparc.c (cpu_names): Add SPARC-T5 entry.
+
+2017-06-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/81083
+	* tree-ssa-sccvn.c (vn_reference_lookup_3): Do not use abnormals
+	as values.
+
+2017-06-13  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.c: Update all comments that mentioned SPE.
+	(rs6000_expand_builtin): Remove RS6000_BTC_EVSEL.
+	* config/rs6000/rs6000.h (RS6000_BTC_EVSEL): Delete.
+	* config/rs6000/vxworks.h (VXCPU_FOR_8548): Delete.  Adjust former use.
+	* config/rs6000/vxworksae.h (VXCPU_FOR_8548): Delete.
+	* config/rs6000/vxworksmils.h (VXCPU_FOR_8548): Delete.
+
+2017-06-13  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000-opts.h (enum rs6000_vector): Delete VECTOR_SPE.
+	* config/rs6000/rs6000.c (rs6000_debug_vector_unit): Delete VECTOR_SPE.
+
+2017-06-13  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.h (FIXED_SCRATCH): Delete.
+
+2017-06-13  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/t-rtems: Don't handle SPE.
+
+2017-06-13  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/t-linux: Don't handle SPE.
+
+2017-06-13  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/eabispe.h: Delete file.
+
+2017-06-13  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/t-spe: Delete file.
+
+2017-06-13  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.c (SPE_CONST_OFFSET_OK): Delete.
+	(rs6000_legitimate_offset_address_p): Return false for anything in
+	V2SImode or V2SFmode.
+
+2017-06-13  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000-modes.def: Remove all 8-byte vector modes
+	except V2SF and V2SI.  Rearrange the vector modes, and add comments.
+	* config/rs6000/rs6000.c (rs6000_debug_reg_global): Remove V8QImode
+	and V4HImode.
+	(reg_offset_addressing_ok_p): Remove V4HImode and V1DImode.
+	(rs6000_legitimate_offset_address_p): Ditto.
+	(rs6000_emit_move): Ditto.
+	(rs6000_init_builtins): Remove V4HI_type_node.
+
+2017-06-13  Martin Liska  <mliska@suse.cz>
+
+	PR sanitize/78204
+	* asan.c (asan_sanitize_stack_p): Use sanitize_flags_p.
+	(gate_asan): Likewise.
+	* asan.h (asan_no_sanitize_address_p): Remove the function.
+	(sanitize_flags_p): New function.
+	* builtins.def: Fix coding style.
+	* common.opt: Use renamed enum value.
+	* convert.c (convert_to_integer_1): Use sanitize_flags_p.
+	* doc/extend.texi: Document no_sanitize attribute.
+	* flag-types.h (enum sanitize_code): Rename SANITIZE_NONDEFAULT
+	to SANITIZE_UNDEFINED_NONDEFAULT.
+	* gcc.c (sanitize_spec_function): Use the renamed enum value.
+	* gimple-fold.c (optimize_atomic_compare_exchange_p):
+	Use sanitize_flags_p.
+	* gimplify.c (gimplify_function_tree): Likewise.
+	* ipa-inline.c (sanitize_attrs_match_for_inline_p): Likewise.
+	* opts.c (parse_no_sanitize_attribute): New function.
+	(common_handle_option): Use renamed enum value.
+	* opts.h (parse_no_sanitize_attribute): Declare.
+	* tree.c (sanitize_flags_p): New function.
+	* tree.h: Declared here.
+	* tsan.c: Use sanitize_flags_p.
+	* ubsan.c (ubsan_expand_null_ifn): Likewise.
+	(instrument_mem_ref): Likewise.
+	(instrument_bool_enum_load): Likewise.
+	(do_ubsan_in_current_function): Remove the function.
+	(pass_ubsan::execute): Use sanitize_flags_p.
+	* ubsan.h: Remove do_ubsan_in_current_function
+	* tree-cfg.c (print_no_sanitize_attr_value): New function.
+	(dump_function_to_file): Use it here.
+
+2017-06-13  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/80803
+	PR tree-optimization/81063
+	* tree-sra.c (subtree_mark_written_and_enqueue): Move up in the file.
+	(propagate_subaccesses_across_link): Enqueue subtree whenever
+	necessary instead of relying on the caller.
+
+2017-06-13  Martin Jambor  <mjambor@suse.cz>
+
+	* tree-sra.c (add_access_to_work_queue): Only enqueue accesses
+	that have a first_link.
+	(sort_and_splice_var_accesses): Do not check first_link before
+	enquing.
+	(subtree_mark_written_and_enqueue): Likewise.
+	(propagate_all_subaccesses): Likewise and do not stop at first
+	parent with a first_link.
+
+2017-06-13  Martin Jambor  <mjambor@suse.cz>
+
+	* tree-sra.c (dump_access_tree_1): Fix accidental dumping to stderr
+	instead of f.
+
+2017-06-13  Yury Gribov  <tetra2005@gmail.com>
+
+	* match.pd: New pattern.
+
+2017-06-13  Yury Gribov  <tetra2005@gmail.com>
+
+	* tree-vrp.c (is_masked_range_test): New function.
+	(register_edge_assert_for): Determine ranges for
+	some bit tests.
+
+2017-06-13  Yury Gribov  <tetra2005@gmail.com>
+
+	PR tree-optimization/67328
+	* fold-const.c (maskable_range_p): New function.
+	(build_range_check): Generate bittests if possible.
+
+2017-06-13  Martin Liska  <mliska@suse.cz>
+
+	* gimple-pretty-print.c (dump_probability): Add new argument.
+	(dump_edge_probability): Dump both probability and count.
+	(dump_gimple_label): Likewise.
+	(dump_gimple_bb_header): Likewise.
+
+2017-06-13  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/81072
+	* config/avr/avr-devices.c: Fix indentation.
+	* config/avr/gen-avr-mmcu-specs.c: Dito.
+
+2017-06-13  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-loop.c (vect_model_reduction_cost): Do not fail,
+	instead get vector type from stmt_info.
+	(vectorizable_reduction): Adjust.  Remove dead code.
+
+2017-06-13  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/81065
+	* fold-const.c (extract_muldiv_1): Remove bogus distribution
+	case of C * (x * C2 + C3).
+	(fold_addr_of_array_ref_difference): Properly fold index difference.
+
+2017-06-12  David S. Miller  <davem@davemloft.net>
+
+	PR target/80968
+	* config/sparc/sparc.md (return expander): Emit frame blockage if
+	function uses alloca.
+
+2017-06-12  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* combine.c (make_field_assignment): Check len rather than the mode
+	precision when calling force_to_mode.
+
+2017-06-12  Georg-Johann Lay  <avr@gjlay.de>
+
+	Support multilibs and devices that see flash in RAM address range.
+
+	PR target/81072
+	* config/avr/avr-arch.h (avr_arch_id) <ARCH_AVRXMEGA3>: New enum.
+	(avr_mcu_t) <flash_pm_offset>: New field.
+	(avr_device_specific_features) <AVR_ISA_RCALL>: New enum.
+	* config/avr/avr.h (AVR_SHORT_CALLS): New define.
+	(AVR_HAVE_JMP_CALL): Don't set if AVR_SHORT_CALLS.
+	(AVR_TINY_PM_OFFSET): Remove macro.
+	* config/avr/avr.opt (-mshort-calls): New option.
+	* config/avr/gen-avr-mmcu-specs.c (print_mcu)
+	[*self_spec]: Add / remove -mshort-calls depending on AVR_ISA_RCALL.
+	* config/avr/avr-c.c (avr_cpu_cpp_builtins)
+	<__AVR_SHORT_CALLS__>: Built-in define if AVR_SHORT_CALLS.
+	<__AVR_HAVE_JMP_CALL__>: Use AVR_HAVE_JMP_CALL as condition
+	instead of avr_arch->have_jmp_call.
+	<__AVR_PM_BASE_ADDRESS__>: Built-in define if avr_arch->flash_pm_offset.
+	[AVR_TINY] <__AVR_TINY_PM_BASE_ADDRESS__>: Use
+	avr_arch->flash_pm_offset to define.
+	* config/avr/avr-devices.c (avr_arch_types): Add initializers for
+	new field flash_pm_offset.  Add entry for avrxmega3.
+	(avr_texinfo): Add entry for avrxmega3.
+	* config/avr/avr-mcus.def: Add entries for: avrxmega3,
+	attiny212, attiny214,
+	attiny412, attiny414, attiny416, attiny417,
+	attiny814, attiny816, attiny817,
+	attiny1614, attiny1616, attiny1617,
+	attiny3214, attiny3216, attiny3217.
+	* config/avr/avr.c (avr_assemble_integer)[AVR_TINY]: Use
+	avr_arch->flash_pm_offset instead of AVR_TINY_PM_OFFSET.
+	(avr_print_operand_address) [AVR_TINY]: Same.
+	(avr_asm_init_sections) <readonly_data_section>: Only patch
+	callback if avr_arch->flash_pm_offset = 0.
+	(avr_asm_named_section) <avr_need_copy_data_p>: Skip setting it
+	for rodata if avr_arch->flash_pm_offset != 0.
+	(avr_encode_section_info) [AVR_TINY]: Adjust comment.
+	* config/avr/genmultilib.awk (dir_rcall, opt_rcall): New vars.
+	(opts) [AVR_ISA_RCALL]: Append opt_rcall.
+	(m_options): Append opt_rcall.
+	(m_dirnames): Append dir_rcall.
+	* config/avr/t-multilib: Regenerate.
+
+	* configure.ac [target=avr]: Check whether avrxmega3 default
+	linker description file works as needed.
+	* configure: Regenerate.
+	* doc/avr-mmcu.texi: Regenerate.
+	* doc/invoke.texi (AVR Options) <-mshort-calls>: Document it.
+	<__AVR_ARCH__>: Document avrxmega3 and 103.
+	<__AVR_HAVE_JMP_CALL__>: Adjust documentation.
+	<__AVR_SHORT_CALLS__>: Document it.
+	<__AVR_PM_BASE_ADDRESS__>: Document it.
+	* doc/extend.texi (AVR Options) <-mshort-calls>: Document it.
+	(AVR Variable Attributes) <progmem>: Document this is
+	not needed for avrxmega3.
+	(AVR Named Address Spaces) <__flash>: Dito.
+
+2017-06-12  Jan Hubicka  <hubicka@ucw.cz>
+
+	* cgraph.c (cgraph_node::dump): Complain about profile insanities.
+
+2017-06-12  Doug Rupp  <rupp@adacore.com>
+
+	* config.gcc (*-*-vxworks*): Set use_gcc_stdint to "provide".
+	Append vxworks-stdint.h to the tm_file list.
+	* config/vxworks-stdint.h: New file.
+
+2017-06-12  Martin Liska  <mliska@suse.cz>
+
+	PR tree-optimization/81041
+	* tree-profile.c (gimple_gen_ic_func_profiler):
+	Create an extra BB in profile-generate
+	(gimple_gen_time_profiler): Likewise.
+
+2017-06-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/81003
+	* tree-ssa-reassoc.c (force_into_ssa_name): New function.
+	(update_range_test): Use it instead of force_gimple_operand_gsi.
+
+2017-06-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/81053
+	* tree-vect-loop.c (vect_is_simple_reduction): Handle PHI
+	with backedge value not defined in loop.  Simplify def stmt
+	compute.
+
+2017-06-11  Tom de Vries  <tom@codesourcery.com>
+
+	PR target/79939
+	* config/nvptx/nvptx.c (nvptx_cannot_force_const_mem): New function.
+	Return true.
+	(TARGET_CANNOT_FORCE_CONST_MEM): Redefine to
+	nvptx_cannot_force_const_mem.
+
+2017-06-10  Jan Hubicka  <hubicka@ucw.cz>
+
+	* opts.c (finish_options): Move test for flag_split_stack after
+	it has been initialized.
+
+2017-06-11  Jason Merrill  <jason@redhat.com>
+
+	* tree.h (id_equal): New.
+	* dwarf2out.c, hsa-gen.c, ipa-devirt.c, omp-expand.c,
+	omp-simd-clone.c, read-rtl-function.c, tree-chkp.c, tree.c: Use it
+	instead of strcmp of IDENTIFIER_POINTER.
+
+2017-06-10  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-inline-transform.c: Include function.h, cfg.h and basic-block.h
+	(mark_all_inlined_calls_cdtor): Fix formating.
+	(inline_transform): Rescale profile before inlining.
+
+2017-06-10  Jan Hubicka  <hubicka@ucw.cz>
+
+	* cgraph.h (cgraph_edge::clone): Update prototype.
+	* cgraphclones.c (cgraph_edge::clone): Update profile scaling.
+	(cgraph_node::create_clone): Update.
+	(cgraph_node::create_version_clone): Update.
+	* tree-inline.c (copy_bb): Update.
+	(expand_call_inline): Update.
+
+2017-06-10  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.c (emit_vrsave_prologue): New function,
+	factored out from ...
+	(rs6000_emit_prologue): ... here.
+
+2017-06-10  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.c (emit_split_stack_prologue): New function,
+	factored out from ...
+	(rs6000_emit_prologue): ... here.
+
+2017-06-10  Jan Hubicka  <hubicka@ucw.cz>
+
+	* predict.c (drop_profile): Also drop individual bb/edge and cgraph
+	edge counts.
+	(handle_missing_profiles): Fix computation of tp_first_run.
+	(counts_to_freqs): Do not touch freqs when count is 0.
+
+2017-06-10  Jan Hubicka  <hubicka@ucw.cz>
+
+	* cgraphbuild.c (cgraph_edge::rebuild_references): Do not touch
+	profile.
+
+2017-06-10  Tom de Vries  <tom@codesourcery.com>
+
+	* doc/sourcebuild.texi (Effective-Target Keywords, Environment
+	attributes): Document signal effective target.
+
+2017-06-10  Tom de Vries  <tom@codesourcery.com>
+
+	* doc/sourcebuild.texi (Effective-Target Keywords, Other attributes):
+	Document effective target stack_size.
+
+2017-06-09  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic.c (diagnostic_report_diagnostic): Only add fixits
+	to the edit_context if they can be auto-applied.
+
 2017-06-9  Ian Lance Taylor  <iant@golang.org>
 
 	* opts.c (finish_options): If -fsplit-stack, disable implicit

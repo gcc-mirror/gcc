@@ -1799,7 +1799,7 @@ is_char_array (tree t)
 
   tmp = TREE_TYPE (tmp);
   return num_dim == 1 && TREE_CODE (tmp) == INTEGER_TYPE
-    && !strcmp (IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (tmp))), "char");
+    && id_equal (DECL_NAME (TYPE_NAME (tmp)), "char");
 }
 
 /* Dump in BUFFER an array type T in Ada syntax.  Assume that the "type"

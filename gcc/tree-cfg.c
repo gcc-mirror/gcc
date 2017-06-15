@@ -60,6 +60,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimplify.h"
 #include "attribs.h"
 #include "selftest.h"
+#include "opts.h"
 
 /* This file contains functions for building the Control Flow Graph (CFG)
    for a function tree.  */
@@ -7555,6 +7556,25 @@ dump_default_def (FILE *file, tree def, int spc, dump_flags_t flags)
   fprintf (file, ";\n");
 }
 
+/* Print no_sanitize attribute to FILE for a given attribute VALUE.  */
+
+static void
+print_no_sanitize_attr_value (FILE *file, tree value)
+{
+  unsigned int flags = tree_to_uhwi (value);
+  bool first = true;
+  for (int i = 0; sanitizer_opts[i].name != NULL; ++i)
+    {
+      if ((sanitizer_opts[i].flag & flags) == sanitizer_opts[i].flag)
+	{
+	  if (!first)
+	    fprintf (file, " | ");
+	  fprintf (file, "%s", sanitizer_opts[i].name);
+	  first = false;
+	}
+    }
+}
+
 /* Dump FUNCTION_DECL FN to file FILE using FLAGS (see TDF_* in dumpfile.h)
    */
 
@@ -7582,11 +7602,16 @@ dump_function_to_file (tree fndecl, FILE *file, dump_flags_t flags)
 	  if (!first)
 	    fprintf (file, ", ");
 
-	  print_generic_expr (file, get_attribute_name (chain), dump_flags);
+	  tree name = get_attribute_name (chain);
+	  print_generic_expr (file, name, dump_flags);
 	  if (TREE_VALUE (chain) != NULL_TREE)
 	    {
 	      fprintf (file, " (");
-	      print_generic_expr (file, TREE_VALUE (chain), dump_flags);
+
+	      if (strstr (IDENTIFIER_POINTER (name), "no_sanitize"))
+		print_no_sanitize_attr_value (file, TREE_VALUE (chain));
+	      else
+		print_generic_expr (file, TREE_VALUE (chain), dump_flags);
 	      fprintf (file, ")");
 	    }
 	}

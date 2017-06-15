@@ -2014,10 +2014,6 @@ rs6000_cpu_name_lookup (const char *name)
    This is ordinarily the length in words of a value of mode MODE
    but can be less for certain modes in special long registers.
 
-   For the SPE, GPRs are 64 bits but only 32 bits are visible in
-   scalar instructions.  The upper 32 bits are only available to the
-   SIMD instructions.
-
    POWER and PowerPC GPRs hold 32 bits worth;
    PowerPC64 GPRs and FPRs point register holds 64 bits worth.  */
 
@@ -2236,7 +2232,6 @@ rs6000_debug_vector_unit (enum rs6000_vector v)
     case VECTOR_VSX:	   ret = "vsx";       break;
     case VECTOR_P8_VECTOR: ret = "p8_vector"; break;
     case VECTOR_PAIRED:	   ret = "paired";    break;
-    case VECTOR_SPE:	   ret = "spe";       break;
     case VECTOR_OTHER:	   ret = "other";     break;
     default:		   ret = "unknown";   break;
     }
@@ -2450,8 +2445,6 @@ rs6000_debug_reg_global (void)
     SDmode,
     DDmode,
     TDmode,
-    V8QImode,
-    V4HImode,
     V2SImode,
     V16QImode,
     V8HImode,
@@ -2904,9 +2897,7 @@ rs6000_setup_reg_addr_masks (void)
 		addr_mask |= RELOAD_REG_INDEXED;
 
 	      /* Figure out if we can do PRE_INC, PRE_DEC, or PRE_MODIFY
-		 addressing.  Restrict addressing on SPE for 64-bit types
-		 because of the SUBREG hackery used to address 64-bit floats in
-		 '32-bit' GPRs.  If we allow scalars into Altivec registers,
+		 addressing.  If we allow scalars into Altivec registers,
 		 don't allow PRE_INC, PRE_DEC, or PRE_MODIFY.  */
 
 	      if (TARGET_UPDATE
@@ -3174,7 +3165,7 @@ rs6000_init_hard_regno_mode_ok (bool global_init_p)
       rs6000_vector_align[TImode] = align64;
     }
 
-  /* TODO add SPE and paired floating point vector support.  */
+  /* TODO add paired floating point vector support.  */
 
   /* Register class constraints for the constraints that depend on compile
      switches. When the VSX code was added, different constraints were added
@@ -3830,8 +3821,7 @@ darwin_rs6000_override_options (void)
 
 /* Return the builtin mask of the various options used that could affect which
    builtins were used.  In the past we used target_flags, but we've run out of
-   bits, and some options like SPE and PAIRED are no longer in
-   target_flags.  */
+   bits, and some options like PAIRED are no longer in target_flags.  */
 
 HOST_WIDE_INT
 rs6000_builtin_mask_calculate (void)
@@ -5482,8 +5472,7 @@ rs6000_option_override_internal (bool global_init_p)
 
   /* Set the builtin mask of the various options used that could affect which
      builtins were used.  In the past we used target_flags, but we've run out
-     of bits, and some options like SPE and PAIRED are no longer in
-     target_flags.  */
+     of bits, and some options like PAIRED are no longer in target_flags.  */
   rs6000_builtin_mask = rs6000_builtin_mask_calculate ();
   if (TARGET_DEBUG_BUILTIN || TARGET_DEBUG_TARGET)
     rs6000_print_builtin_options (stderr, 0, "builtin mask",
@@ -8490,9 +8479,7 @@ reg_offset_addressing_ok_p (machine_mode mode)
 	return mode_supports_vsx_dform_quad (mode);
       break;
 
-    case V4HImode:
     case V2SImode:
-    case V1DImode:
     case V2SFmode:
        /* Paired vector modes.  Only reg+reg addressing is valid.  */
       if (TARGET_PAIRED_FLOAT)
@@ -8701,9 +8688,6 @@ legitimate_small_data_p (machine_mode mode, rtx x)
 	  && small_data_operand (x, mode));
 }
 
-/* SPE offset addressing is limited to 5-bits worth of double words.  */
-#define SPE_CONST_OFFSET_OK(x) (((x) & ~0xf8) == 0)
-
 bool
 rs6000_legitimate_offset_address_p (machine_mode mode, rtx x,
 				    bool strict, bool worst_case)
@@ -8730,12 +8714,10 @@ rs6000_legitimate_offset_address_p (machine_mode mode, rtx x,
   extra = 0;
   switch (mode)
     {
-    case V4HImode:
     case V2SImode:
-    case V1DImode:
     case V2SFmode:
-      /* SPE vector modes.  */
-      return SPE_CONST_OFFSET_OK (offset);
+      /* Paired single modes: offset addressing isn't valid.  */
+      return false;
 
     case DFmode:
     case DDmode:
@@ -10981,10 +10963,8 @@ rs6000_emit_move (rtx dest, rtx source, machine_mode mode)
     case V8HImode:
     case V4SFmode:
     case V4SImode:
-    case V4HImode:
     case V2SFmode:
     case V2SImode:
-    case V1DImode:
     case V2DFmode:
     case V2DImode:
     case V1TImode:
@@ -11779,7 +11759,6 @@ function_arg_padding (machine_mode mode, const_tree type)
    However, we're stuck with this because changing the ABI might break
    existing library interfaces.
 
-   Doubleword align SPE vectors.
    Quadword align Altivec/VSX vectors.
    Quadword align large synthetic vector types.   */
 
@@ -12200,18 +12179,17 @@ rs6000_function_arg_advance_1 (CUMULATIVE_ARGS *cum, machine_mode mode,
 	  int n_words = rs6000_arg_size (mode, type);
 	  int gregno = cum->sysv_gregno;
 
-	  /* Long long and SPE vectors are put in (r3,r4), (r5,r6),
-	     (r7,r8) or (r9,r10).  As does any other 2 word item such
-	     as complex int due to a historical mistake.  */
+	  /* Long long is put in (r3,r4), (r5,r6), (r7,r8) or (r9,r10).
+	     As does any other 2 word item such as complex int due to a
+	     historical mistake.  */
 	  if (n_words == 2)
 	    gregno += (1 - gregno) & 1;
 
 	  /* Multi-reg args are not split between registers and stack.  */
 	  if (gregno + n_words - 1 > GP_ARG_MAX_REG)
 	    {
-	      /* Long long and SPE vectors are aligned on the stack.
-		 So are other 2 word items such as complex int due to
-		 a historical mistake.  */
+	      /* Long long is aligned on the stack.  So are other 2 word
+		 items such as complex int due to a historical mistake.  */
 	      if (n_words == 2)
 		cum->words += cum->words & 1;
 	      cum->words += n_words;
@@ -12748,9 +12726,9 @@ rs6000_function_arg (cumulative_args_t cum_v, machine_mode mode,
 	  int n_words = rs6000_arg_size (mode, type);
 	  int gregno = cum->sysv_gregno;
 
-	  /* Long long and SPE vectors are put in (r3,r4), (r5,r6),
-	     (r7,r8) or (r9,r10).  As does any other 2 word item such
-	     as complex int due to a historical mistake.  */
+	  /* Long long is put in (r3,r4), (r5,r6), (r7,r8) or (r9,r10).
+	     As does any other 2 word item such as complex int due to a
+	     historical mistake.  */
 	  if (n_words == 2)
 	    gregno += (1 - gregno) & 1;
 
@@ -13687,9 +13665,8 @@ rs6000_gimplify_va_arg (tree valist, tree type, gimple_seq *pre_p,
       lab_false = create_artificial_label (input_location);
       lab_over = create_artificial_label (input_location);
 
-      /* Long long and SPE vectors are aligned in the registers.
-	 As are any other 2 gpr item such as complex int due to a
-	 historical mistake.  */
+      /* Long long is aligned in the registers.  As are any other 2 gpr
+	 item such as complex int due to a historical mistake.  */
       u = reg;
       if (n_reg == 2 && reg == gpr)
 	{
@@ -16635,7 +16612,6 @@ rs6000_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
 	case RS6000_BTC_TERNARY:   name3 = "ternary";	break;
 	case RS6000_BTC_PREDICATE: name3 = "predicate";	break;
 	case RS6000_BTC_ABS:	   name3 = "abs";	break;
-	case RS6000_BTC_EVSEL:	   name3 = "evsel";	break;
 	case RS6000_BTC_DST:	   name3 = "dst";	break;
 	}
 
@@ -16843,7 +16819,6 @@ rs6000_init_builtins (void)
 				       : "__vector long long",
 				       intDI_type_node, 2);
   V2DF_type_node = rs6000_vector_type ("__vector double", double_type_node, 2);
-  V4HI_type_node = build_vector_type (intHI_type_node, 4);
   V4SI_type_node = rs6000_vector_type ("__vector signed int",
 				       intSI_type_node, 4);
   V4SF_type_node = rs6000_vector_type ("__vector float", float_type_node, 4);
@@ -16991,7 +16966,6 @@ rs6000_init_builtins (void)
   builtin_mode_to_type[V2DImode][0] = V2DI_type_node;
   builtin_mode_to_type[V2DImode][1] = unsigned_V2DI_type_node;
   builtin_mode_to_type[V2DFmode][0] = V2DF_type_node;
-  builtin_mode_to_type[V4HImode][0] = V4HI_type_node;
   builtin_mode_to_type[V4SImode][0] = V4SI_type_node;
   builtin_mode_to_type[V4SImode][1] = unsigned_V4SI_type_node;
   builtin_mode_to_type[V4SFmode][0] = V4SF_type_node;
@@ -17025,11 +16999,11 @@ rs6000_init_builtins (void)
   pixel_V8HI_type_node = rs6000_vector_type ("__vector __pixel",
 					     pixel_type_node, 8);
 
-  /* Paired and SPE builtins are only available if you build a compiler with
-     the appropriate options, so only create those builtins with the
-     appropriate compiler option.  Create Altivec and VSX builtins on machines
-     with at least the general purpose extensions (970 and newer) to allow the
-     use of the target attribute.  */
+  /* Paired builtins are only available if you build a compiler with the
+     appropriate options, so only create those builtins with the appropriate
+     compiler option.  Create Altivec and VSX builtins on machines with at
+     least the general purpose extensions (970 and newer) to allow the use of
+     the target attribute.  */
   if (TARGET_PAIRED_FLOAT)
     paired_init_builtins ();
   if (TARGET_EXTRA_BUILTINS)
@@ -18161,11 +18135,11 @@ rs6000_common_init_builtins (void)
       builtin_mode_to_type[V2SFmode][0] = opaque_V2SF_type_node;
     }
 
-  /* Paired and SPE builtins are only available if you build a compiler with
-     the appropriate options, so only create those builtins with the
-     appropriate compiler option.  Create Altivec and VSX builtins on machines
-     with at least the general purpose extensions (970 and newer) to allow the
-     use of the target attribute..  */
+  /* Paired builtins are only available if you build a compiler with the
+     appropriate options, so only create those builtins with the appropriate
+     compiler option.  Create Altivec and VSX builtins on machines with at
+     least the general purpose extensions (970 and newer) to allow the use of
+     the target attribute..  */
 
   if (TARGET_EXTRA_BUILTINS)
     builtin_mask |= RS6000_BTM_COMMON;
@@ -18409,7 +18383,7 @@ rs6000_common_init_builtins (void)
 	  mode0 = insn_data[icode].operand[0].mode;
 	  if (mode0 == V2SImode)
 	    {
-	      /* code for SPE */
+	      /* code for paired single */
 	      if (! (type = v2si_ftype))
 		{
 		  v2si_ftype
@@ -23123,7 +23097,7 @@ print_operand (FILE *file, rtx x, int code)
 	}
       return;
 
-      /* Print AltiVec or SPE memory operand.  */
+      /* Print AltiVec memory operand.  */
     case 'y':
       {
 	rtx tmp;
@@ -26169,10 +26143,6 @@ rs6000_savres_strategy (rs6000_stack_t *info,
 		+---------------------------------------+
 		| Save area for VRSAVE register (Z)	| 8+P+A+V+L+X+W+Y
 		+---------------------------------------+
-		| SPE: area for 64-bit GP registers	|
-		+---------------------------------------+
-		| SPE alignment padding			|
-		+---------------------------------------+
 		| saved CR (C)				| 8+P+A+V+L+X+W+Y+Z
 		+---------------------------------------+
 		| Save area for GP registers (G)	| 8+P+A+V+L+X+W+Y+Z+C
@@ -28106,6 +28076,79 @@ rs6000_set_handled_components (sbitmap components)
     cfun->machine->lr_is_wrapped_separately = true;
 }
 
+/* VRSAVE is a bit vector representing which AltiVec registers
+   are used.  The OS uses this to determine which vector
+   registers to save on a context switch.  We need to save
+   VRSAVE on the stack frame, add whatever AltiVec registers we
+   used in this function, and do the corresponding magic in the
+   epilogue.  */
+static void
+emit_vrsave_prologue (rs6000_stack_t *info, int save_regno,
+		      HOST_WIDE_INT frame_off, rtx frame_reg_rtx)
+{
+  /* Get VRSAVE into a GPR.  */
+  rtx reg = gen_rtx_REG (SImode, save_regno);
+  rtx vrsave = gen_rtx_REG (SImode, VRSAVE_REGNO);
+  if (TARGET_MACHO)
+    emit_insn (gen_get_vrsave_internal (reg));
+  else
+    emit_insn (gen_rtx_SET (reg, vrsave));
+
+  /* Save VRSAVE.  */
+  int offset = info->vrsave_save_offset + frame_off;
+  emit_insn (gen_frame_store (reg, frame_reg_rtx, offset));
+
+  /* Include the registers in the mask.  */
+  emit_insn (gen_iorsi3 (reg, reg, GEN_INT (info->vrsave_mask)));
+
+  emit_insn (generate_set_vrsave (reg, info, 0));
+}
+
+/* Set up the arg pointer (r12) for -fsplit-stack code.  If __morestack was
+   called, it left the arg pointer to the old stack in r29.  Otherwise, the
+   arg pointer is the top of the current frame.  */
+static void
+emit_split_stack_prologue (rs6000_stack_t *info, rtx_insn *sp_adjust,
+			   HOST_WIDE_INT frame_off, rtx frame_reg_rtx)
+{
+  cfun->machine->split_stack_argp_used = true;
+
+  if (sp_adjust)
+    {
+      rtx r12 = gen_rtx_REG (Pmode, 12);
+      rtx sp_reg_rtx = gen_rtx_REG (Pmode, STACK_POINTER_REGNUM);
+      rtx set_r12 = gen_rtx_SET (r12, sp_reg_rtx);
+      emit_insn_before (set_r12, sp_adjust);
+    }
+  else if (frame_off != 0 || REGNO (frame_reg_rtx) != 12)
+    {
+      rtx r12 = gen_rtx_REG (Pmode, 12);
+      if (frame_off == 0)
+	emit_move_insn (r12, frame_reg_rtx);
+      else
+	emit_insn (gen_add3_insn (r12, frame_reg_rtx, GEN_INT (frame_off)));
+    }
+
+  if (info->push_p)
+    {
+      rtx r12 = gen_rtx_REG (Pmode, 12);
+      rtx r29 = gen_rtx_REG (Pmode, 29);
+      rtx cr7 = gen_rtx_REG (CCUNSmode, CR7_REGNO);
+      rtx not_more = gen_label_rtx ();
+      rtx jump;
+
+      jump = gen_rtx_IF_THEN_ELSE (VOIDmode,
+				   gen_rtx_GEU (VOIDmode, cr7, const0_rtx),
+				   gen_rtx_LABEL_REF (VOIDmode, not_more),
+				   pc_rtx);
+      jump = emit_jump_insn (gen_rtx_SET (pc_rtx, jump));
+      JUMP_LABEL (jump) = not_more;
+      LABEL_NUSES (not_more) += 1;
+      emit_move_insn (r12, r29);
+      emit_label (not_more);
+    }
+}
+
 /* Emit function prologue as insns.  */
 
 void
@@ -28888,17 +28931,12 @@ rs6000_emit_prologue (void)
      used in this function, and do the corresponding magic in the
      epilogue.  */
 
-  if (!WORLD_SAVE_P (info)
-      && info->vrsave_size != 0)
+  if (!WORLD_SAVE_P (info) && info->vrsave_size != 0)
     {
-      rtx reg, vrsave;
-      int offset;
-      int save_regno;
-
-      /* Get VRSAVE onto a GPR.  Note that ABI_V4 and ABI_DARWIN might
+      /* Get VRSAVE into a GPR.  Note that ABI_V4 and ABI_DARWIN might
 	 be using r12 as frame_reg_rtx and r11 as the static chain
 	 pointer for nested functions.  */
-      save_regno = 12;
+      int save_regno = 12;
       if ((DEFAULT_ABI == ABI_AIX || DEFAULT_ABI == ABI_ELFv2)
 	  && !using_static_chain_p)
 	save_regno = 11;
@@ -28908,23 +28946,9 @@ rs6000_emit_prologue (void)
 	  if (using_static_chain_p)
 	    save_regno = 0;
 	}
-
       NOT_INUSE (save_regno);
-      reg = gen_rtx_REG (SImode, save_regno);
-      vrsave = gen_rtx_REG (SImode, VRSAVE_REGNO);
-      if (TARGET_MACHO)
-	emit_insn (gen_get_vrsave_internal (reg));
-      else
-	emit_insn (gen_rtx_SET (reg, vrsave));
 
-      /* Save VRSAVE.  */
-      offset = info->vrsave_save_offset + frame_off;
-      insn = emit_insn (gen_frame_store (reg, frame_reg_rtx, offset));
-
-      /* Include the registers in the mask.  */
-      emit_insn (gen_iorsi3 (reg, reg, GEN_INT ((int) info->vrsave_mask)));
-
-      insn = emit_insn (generate_set_vrsave (reg, info, 0));
+      emit_vrsave_prologue (info, save_regno, frame_off, frame_reg_rtx);
     }
 
   /* If we are using RS6000_PIC_OFFSET_TABLE_REGNUM, we need to set it up.  */
@@ -29006,46 +29030,9 @@ rs6000_emit_prologue (void)
       emit_insn (gen_frame_store (reg, sp_reg_rtx, RS6000_TOC_SAVE_SLOT));
     }
 
+  /* Set up the arg pointer (r12) for -fsplit-stack code.  */
   if (using_split_stack && split_stack_arg_pointer_used_p ())
-    {
-      /* Set up the arg pointer (r12) for -fsplit-stack code.  If
-	 __morestack was called, it left the arg pointer to the old
-	 stack in r29.  Otherwise, the arg pointer is the top of the
-	 current frame.  */
-      cfun->machine->split_stack_argp_used = true;
-      if (sp_adjust)
-	{
-	  rtx r12 = gen_rtx_REG (Pmode, 12);
-	  rtx set_r12 = gen_rtx_SET (r12, sp_reg_rtx);
-	  emit_insn_before (set_r12, sp_adjust);
-	}
-      else if (frame_off != 0 || REGNO (frame_reg_rtx) != 12)
-	{
-	  rtx r12 = gen_rtx_REG (Pmode, 12);
-	  if (frame_off == 0)
-	    emit_move_insn (r12, frame_reg_rtx);
-	  else
-	    emit_insn (gen_add3_insn (r12, frame_reg_rtx, GEN_INT (frame_off)));
-	}
-      if (info->push_p)
-	{
-	  rtx r12 = gen_rtx_REG (Pmode, 12);
-	  rtx r29 = gen_rtx_REG (Pmode, 29);
-	  rtx cr7 = gen_rtx_REG (CCUNSmode, CR7_REGNO);
-	  rtx not_more = gen_label_rtx ();
-	  rtx jump;
-
-	  jump = gen_rtx_IF_THEN_ELSE (VOIDmode,
-				       gen_rtx_GEU (VOIDmode, cr7, const0_rtx),
-				       gen_rtx_LABEL_REF (VOIDmode, not_more),
-				       pc_rtx);
-	  jump = emit_jump_insn (gen_rtx_SET (pc_rtx, jump));
-	  JUMP_LABEL (jump) = not_more;
-	  LABEL_NUSES (not_more) += 1;
-	  emit_move_insn (r12, r29);
-	  emit_label (not_more);
-	}
-    }
+    emit_split_stack_prologue (info, sp_adjust, frame_off, frame_reg_rtx);
 }
 
 /* Output .extern statements for the save/restore routines we use.  */
@@ -29953,7 +29940,6 @@ rs6000_emit_epilogue (int sibcall)
 	  if (regno == INVALID_REGNUM)
 	    break;
 
-	  /* Note: possible use of r0 here to address SPE regs.  */
 	  mem = gen_frame_mem_offset (reg_mode, frame_reg_rtx,
 				      info->ehrd_offset + frame_off
 				      + reg_size * (int) i);
@@ -36983,7 +36969,7 @@ altivec_expand_vec_perm_const (rtx operands[4])
   return false;
 }
 
-/* Expand a Paired Single, VSX Permute Doubleword, or SPE constant permutation.
+/* Expand a Paired Single or VSX Permute Doubleword constant permutation.
    Return true if we match an efficient implementation.  */
 
 static bool
@@ -37210,10 +37196,8 @@ rs6000_parallel_return (machine_mode mode,
 
 /* Target hook for TARGET_FUNCTION_VALUE.
 
-   On the SPE, both FPs and vectors are returned in r3.
-
-   On RS/6000 an integer value is in r3 and a floating-point value is in
-   fp1, unless -msoft-float.  */
+   An integer value is in r3 and a floating-point value is in fp1,
+   unless -msoft-float.  */
 
 static rtx
 rs6000_function_value (const_tree valtype,
@@ -37425,7 +37409,7 @@ rs6000_initial_elimination_offset (int from, int to)
   return offset;
 }
 
-/* Fill in sizes for SPE register high parts in table used by unwinder.  */
+/* Fill in sizes of registers used by unwinder.  */
 
 static void
 rs6000_init_dwarf_reg_sizes_extra (tree address)

@@ -2790,15 +2790,17 @@ vect_is_simple_reduction (loop_vec_info loop_info, gimple *phi,
     }
 
   def_stmt = SSA_NAME_DEF_STMT (loop_arg);
-  if (gimple_nop_p (def_stmt))
+  if (is_gimple_assign (def_stmt))
     {
-      if (dump_enabled_p ())
-	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			 "reduction: no def_stmt\n");
-      return NULL;
+      name = gimple_assign_lhs (def_stmt);
+      phi_def = false;
     }
-
-  if (!is_gimple_assign (def_stmt) && gimple_code (def_stmt) != GIMPLE_PHI)
+  else if (gimple_code (def_stmt) == GIMPLE_PHI)
+    {
+      name = PHI_RESULT (def_stmt);
+      phi_def = true;
+    }
+  else
     {
       if (dump_enabled_p ())
 	{
@@ -2809,37 +2811,27 @@ vect_is_simple_reduction (loop_vec_info loop_info, gimple *phi,
       return NULL;
     }
 
-  if (is_gimple_assign (def_stmt))
-    {
-      name = gimple_assign_lhs (def_stmt);
-      phi_def = false;
-    }
-  else
-    {
-      name = PHI_RESULT (def_stmt);
-      phi_def = true;
-    }
-
   nloop_uses = 0;
   auto_vec<gphi *, 3> lcphis;
-  FOR_EACH_IMM_USE_FAST (use_p, imm_iter, name)
-    {
-      gimple *use_stmt = USE_STMT (use_p);
-      if (is_gimple_debug (use_stmt))
-	continue;
-      if (flow_bb_inside_loop_p (loop, gimple_bb (use_stmt)))
-	nloop_uses++;
-      else
-	/* We can have more than one loop-closed PHI.  */
-	lcphis.safe_push (as_a <gphi *> (use_stmt));
-      if (nloop_uses > 1)
-	{
-	  if (dump_enabled_p ())
-	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			     "reduction used in loop.\n");
-	  return NULL;
-	}
-    }
+  if (flow_bb_inside_loop_p (loop, gimple_bb (def_stmt)))
+    FOR_EACH_IMM_USE_FAST (use_p, imm_iter, name)
+      {
+	gimple *use_stmt = USE_STMT (use_p);
+	if (is_gimple_debug (use_stmt))
+	  continue;
+	if (flow_bb_inside_loop_p (loop, gimple_bb (use_stmt)))
+	  nloop_uses++;
+	else
+	  /* We can have more than one loop-closed PHI.  */
+	  lcphis.safe_push (as_a <gphi *> (use_stmt));
+	if (nloop_uses > 1)
+	  {
+	    if (dump_enabled_p ())
+	      dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			       "reduction used in loop.\n");
+	    return NULL;
+	  }
+      }
 
   /* If DEF_STMT is a phi node itself, we expect it to have a single argument
      defined in the inner loop.  */
@@ -3698,16 +3690,15 @@ get_reduction_op (gimple *stmt, int reduc_index)
    generated within the strip-mine loop, the initial definition before
    the loop, and the epilogue code that must be generated.  */
 
-static bool
+static void
 vect_model_reduction_cost (stmt_vec_info stmt_info, enum tree_code reduc_code,
-			   int ncopies, int reduc_index)
+			   int ncopies)
 {
   int prologue_cost = 0, epilogue_cost = 0;
   enum tree_code code;
   optab optab;
   tree vectype;
-  gimple *stmt, *orig_stmt;
-  tree reduction_op;
+  gimple *orig_stmt;
   machine_mode mode;
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
   struct loop *loop = NULL;
@@ -3728,24 +3719,8 @@ vect_model_reduction_cost (stmt_vec_info stmt_info, enum tree_code reduc_code,
   /* Cost of reduction op inside loop.  */
   unsigned inside_cost = add_stmt_cost (target_cost_data, ncopies, vector_stmt,
 					stmt_info, 0, vect_body);
-  stmt = STMT_VINFO_STMT (stmt_info);
 
-  reduction_op = get_reduction_op (stmt, reduc_index);
-
-  vectype = get_vectype_for_scalar_type (TREE_TYPE (reduction_op));
-  if (!vectype)
-    {
-      if (dump_enabled_p ())
-        {
-	  dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			   "unsupported data-type ");
-          dump_generic_expr (MSG_MISSED_OPTIMIZATION, TDF_SLIM,
-			     TREE_TYPE (reduction_op));
-          dump_printf (MSG_MISSED_OPTIMIZATION, "\n");
-        }
-      return false;
-   }
-
+  vectype = STMT_VINFO_VECTYPE (stmt_info);
   mode = TYPE_MODE (vectype);
   orig_stmt = STMT_VINFO_RELATED_STMT (stmt_info);
 
@@ -3837,8 +3812,6 @@ vect_model_reduction_cost (stmt_vec_info stmt_info, enum tree_code reduc_code,
                  "vect_model_reduction_cost: inside_cost = %d, "
                  "prologue_cost = %d, epilogue_cost = %d .\n", inside_cost,
                  prologue_cost, epilogue_cost);
-
-  return true;
 }
 
 
@@ -5296,20 +5269,6 @@ vectorizable_reduction (gimple *stmt, gimple_stmt_iterator *gsi,
   /* Flatten RHS.  */
   switch (get_gimple_rhs_class (gimple_assign_rhs_code (stmt)))
     {
-    case GIMPLE_SINGLE_RHS:
-      op_type = TREE_OPERAND_LENGTH (gimple_assign_rhs1 (stmt));
-      if (op_type == ternary_op)
-	{
-	  tree rhs = gimple_assign_rhs1 (stmt);
-	  ops[0] = TREE_OPERAND (rhs, 0);
-	  ops[1] = TREE_OPERAND (rhs, 1);
-	  ops[2] = TREE_OPERAND (rhs, 2);
-	  code = TREE_CODE (rhs);
-	}
-      else
-	return false;
-      break;
-
     case GIMPLE_BINARY_RHS:
       code = gimple_assign_rhs_code (stmt);
       op_type = TREE_CODE_LENGTH (code);
@@ -5789,10 +5748,8 @@ vectorizable_reduction (gimple *stmt, gimple_stmt_iterator *gsi,
 
   if (!vec_stmt) /* transformation not required.  */
     {
-      if (first_p
-	  && !vect_model_reduction_cost (stmt_info, epilog_reduc_code, ncopies,
-					 reduc_index))
-        return false;
+      if (first_p)
+	vect_model_reduction_cost (stmt_info, epilog_reduc_code, ncopies);
       STMT_VINFO_TYPE (stmt_info) = reduc_vec_info_type;
       return true;
     }
