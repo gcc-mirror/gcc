@@ -267,7 +267,7 @@ struct GTY(()) rtl_data {
 
   /* Nonzero if function being compiled doesn't contain any calls
      (ignoring the prologue and epilogue).  This is set prior to
-     local register allocation and is valid for the remaining
+     register allocation in IRA and is valid for the remaining
      compiler passes.  */
   bool is_leaf;
 
