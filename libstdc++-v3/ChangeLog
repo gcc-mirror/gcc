@@ -1,3 +1,22 @@
+2017-06-15  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* testsuite: Add dg-require-effective-target pthread to -pthread
+	tests.
+	Remove explicit target lists from dg-do and dg-options.
+
+	* testsuite/30_threads/async/forced_unwind.cc: Remove explit
+	target list from dg-options.
+	* testsuite/30_threads/packaged_task/forced_unwind.cc: Likewise.
+
+	* 30_threads/shared_mutex/cons/1.cc: Likewise.
+	Pass -pthread for all targets.
+	* 30_threads/shared_mutex/try_lock/1.cc: Likewise.
+	* 30_threads/shared_mutex/try_lock/2.cc: Likewise.
+	* 30_threads/shared_mutex/unlock/1.cc: Likewise.
+
+	* testsuite/30_threads/this_thread/57060.cc: Require c++11 via
+	dg-require-effective-target.
+
 2017-06-14  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/xml/manual/test.xml: Correct instructions on running tests.

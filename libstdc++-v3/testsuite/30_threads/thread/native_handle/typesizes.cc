@@ -1,6 +1,7 @@
-// { dg-do run { target *-*-linux* *-*-gnu* *-*-solaris* powerpc-ibm-aix* } }
-// { dg-options "-pthread" { target *-*-linux* *-*-gnu* *-*-solaris* powerpc-ibm-aix* } }
+// { dg-do run }
+// { dg-options "-pthread"  }
 // { dg-require-effective-target c++11 }
+// { dg-require-effective-target pthread }
 // { dg-require-gthreads "" }
 
 // Copyright (C) 2009-2017 Free Software Foundation, Inc.
