@@ -1,3 +1,12 @@
+2017-06-15  Jozef Lawrynowicz	<jozef.l@somniumtech.com>
+
+	PR target/78818
+	* config/msp430/msp430.c (msp430_data_attr): Check that it's possible
+	for a variable to have a section before checking if the section has a
+	name.
+	Set section to.persistent if persistent	attribute is set.
+	Warn if .persistent attribute is used on an automatic variable.
+
 2017-06-15  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR rtl-optimization/80474

@@ -1,3 +1,12 @@
+2017-06-15  Jozef Lawrynowicz	<jozef.l@somniumtech.com>
+
+	PR target/78818
+	* gcc.target/msp430/pr78818-real.c: New template for tests.
+	* gcc.target/msp430/pr78818-auto.c: New test.
+	* gcc.target/msp430/pr78818-data-region.c: New test.
+	* gcc.target/msp430/pr78818-data-sec.c: New test.
+	* gcc.target/msp430/pr78818-auto-warn.c: New test.
+
 2017-06-15  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	* gcc.target/arm/its.c: Check that no IT blocks has more than 2
