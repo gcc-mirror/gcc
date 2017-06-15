@@ -4296,7 +4296,7 @@ generate_mangling_alias (tree decl, tree id2)
 {
   /* If there's a declaration already using this mangled name,
      don't create a compatibility alias that conflicts.  */
-  if (IDENTIFIER_GLOBAL_VALUE (id2))
+  if (get_namespace_binding (mangle_namespace, id2))
     return;
 
   struct cgraph_node *n = NULL;
@@ -4306,7 +4306,7 @@ generate_mangling_alias (tree decl, tree id2)
     return;
 
   tree alias = make_alias_for (decl, id2);
-  SET_IDENTIFIER_GLOBAL_VALUE (id2, alias);
+  set_namespace_binding (mangle_namespace, id2, alias);
   DECL_IGNORED_P (alias) = 1;
   TREE_PUBLIC (alias) = TREE_PUBLIC (decl);
   DECL_VISIBILITY (alias) = DECL_VISIBILITY (decl);

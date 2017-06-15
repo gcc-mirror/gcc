@@ -119,6 +119,7 @@ enum cp_tree_index
     CPTI_VTBL_PTR_TYPE,
     CPTI_STD,
     CPTI_ABI,
+    CPTI_MANGLE,
     CPTI_GLOBAL,
     CPTI_GLOBAL_TYPE,
     CPTI_CONST_TYPE_INFO_TYPE,
@@ -196,6 +197,7 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
 #define vtbl_ptr_type_node		cp_global_trees[CPTI_VTBL_PTR_TYPE]
 #define std_node			cp_global_trees[CPTI_STD]
 #define abi_node			cp_global_trees[CPTI_ABI]
+#define mangle_namespace		cp_global_trees[CPTI_MANGLE]
 #define global_namespace		cp_global_trees[CPTI_GLOBAL]
 #define global_type_node		cp_global_trees[CPTI_GLOBAL_TYPE]
 #define const_type_info_type_node	cp_global_trees[CPTI_CONST_TYPE_INFO_TYPE]
@@ -7228,7 +7230,6 @@ extern tree add_exception_specifier		(tree, tree, int);
 extern tree merge_exception_specifiers		(tree, tree);
 
 /* in mangle.c */
-extern bool maybe_remove_implicit_alias		(tree);
 extern void init_mangle				(void);
 extern void mangle_decl				(tree);
 extern const char *mangle_type_string		(tree);

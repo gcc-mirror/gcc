@@ -4067,6 +4067,11 @@ cxx_init_decl_processing (void)
   std_node = current_namespace;
   pop_namespace ();
 
+  /* Create the mangling alias namespace, an unspellable name.  */
+  push_namespace (get_identifier ("g++ mangle"));
+  mangle_namespace = current_namespace;
+  pop_namespace ();
+
   flag_noexcept_type = (cxx_dialect >= cxx1z);
 
   c_common_nodes_and_builtins ();

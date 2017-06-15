@@ -303,6 +303,8 @@ extern tree lookup_name_prefer_type (tree, int);
 extern tree lookup_name_real (tree, int, int, bool, int, int);
 extern tree lookup_type_scope (tree, tag_scope);
 extern tree get_namespace_binding (tree ns, tree id);
+extern void set_namespace_binding (tree ns, tree id, tree val,
+				   bool force = false);
 extern void set_global_binding (tree id, tree val);
 extern tree lookup_qualified_name (tree, tree, int, bool, /*hidden*/bool = false);
 extern tree lookup_name_nonclass (tree);

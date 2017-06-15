@@ -1,3 +1,24 @@
+2017-06-15  Nathan Sidwell  <nathan@acm.org>
+
+	First bug report!
+	gcc/cp/
+	* cp-tree.h (CPTI_MANGLE): New.
+	(mangle_namespace): New.
+	(maybe_remove_implicit_alias): Delete.
+	* decl.c (cxx_init_decl_processing): Create mangle namespace.
+	* decl2.c (generate_mangling_alias): Use mangle_namespace.
+	* mangle.c (maybe_remove_implicit_alias): Delete.
+	(mangle_decl): Use mangle_namespace. Remove alias here.
+	* module.c (cpms_out::bindings): Ignore mangle_namespace.
+	* name-lookup.h (set_namespace_binding): Declare.
+	* name-lookup.c (supplement_binding_1): Don't deal with implicit
+	aliases here.
+	(set_namespace_binding): New.  Broken out of ...
+	(set_global_binding): ... this.  Call it.
+	(suggest_alternatives_for): Ignore mangle namespace.
+	gcc/testuite/
+	* g++.dg/module/bug-1_[ab].C: New.
+
 2017-06-14  Nathan Sidwell  <nathan@acm.org>
 
 	Classes complete - Vcall indices and friends added.

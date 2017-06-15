@@ -1882,12 +1882,6 @@ supplement_binding_1 (cxx_binding *binding, tree decl)
       region to refer only to the namespace to which it already
       refers.  */
     ok = false;
-  else if (maybe_remove_implicit_alias (bval))
-    {
-      /* There was a mangling compatibility alias using this mangled name,
-	 but now we have a real decl that wants to use it instead.  */
-      binding->value = decl;
-    }
   else
     {
       if (!error_operand_p (bval))
@@ -4778,15 +4772,24 @@ get_namespace_binding (tree ns, tree name)
   return ret;
 }
 
-/* Set value binding of NAME in the global namespace to VAL.  Does not
-   add it to the list of things in the namespace.  */
+/* As for set_namespace_binding, but the global namespace.  */
 
 void
 set_global_binding (tree name, tree val)
 {
+  set_namespace_binding (global_namespace, name, val);
+}
+
+/* Set value binding of NAME in namespace NS to VAL.  Does not
+   add it to the list of things in the namespace.  If FORCE is true,
+   zap out any existing binding.  */
+
+void
+set_namespace_binding (tree ns, tree name, tree val, bool force)
+{
   bool subtime = timevar_cond_start (TV_NAME_LOOKUP);
 
-  tree *slot = find_namespace_slot (global_namespace, name, true);
+  tree *slot = find_namespace_slot (ns, name, true);
   tree old = MAYBE_STAT_DECL (*slot);
 
   if (!old)
@@ -4799,6 +4802,13 @@ set_global_binding (tree name, tree val)
   else if (!STAT_HACK_P (*slot)
 	   && TREE_CODE (old) == TYPE_DECL && DECL_ARTIFICIAL (old))
     *slot = stat_hack (val, old);
+  else if (force)
+    {
+      if (STAT_HACK_P (*slot))
+	STAT_DECL (*slot) = val;
+      else
+	*slot = val;
+    }
   else
     /* The user's placed something in the implementor's
        namespace.  */
@@ -5271,7 +5281,8 @@ suggest_alternatives_for (location_t location, tree name,
 	       decl; decl = TREE_CHAIN (decl))
 	    if (TREE_CODE (decl) == NAMESPACE_DECL
 		&& !DECL_NAMESPACE_ALIAS (decl)
-		&& !DECL_NAMESPACE_INLINE_P (decl))
+		&& !DECL_NAMESPACE_INLINE_P (decl)
+		&& decl != mangle_namespace)
 	      children.safe_push (decl);
 
 	  while (!limited && !children.is_empty ())

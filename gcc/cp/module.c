@@ -1605,7 +1605,7 @@ cpms_out::globals (unsigned ary_num, const gtp *ary_p)
   w.u (ary_num);
   w.u (num);
 
-  dump () && dump ("Writing globals %u[%u]", ary_num, num);
+  dump () && dump ("+Writing globals %u[%u]", ary_num, num);
 
   unsigned outer = 0, inner = 0;
   for (unsigned ix = 0; ix != num; ix++)
@@ -1641,7 +1641,7 @@ cpms_in::globals (unsigned ary_num, const gtp *ary_p)
   if (r.u () != ary_num || r.u () != num)
     return false;
 
-  dump () && dump ("Reading globals %u[%u]", ary_num, num);
+  dump () && dump ("+Reading globals %u[%u]", ary_num, num);
 
   unsigned outer = 0, inner = 0;
   for (unsigned ix = 0; ix != num; ix++)
@@ -4182,6 +4182,11 @@ cpms_in::tree_node ()
 void
 cpms_out::bindings (tree ns)
 {
+  if (ns == mangle_namespace)
+    {
+      dump () && dump ("Skipping namespace %N", ns);
+      return;
+    }
   dump () && dump ("Walking namespace %N", ns);
 
   hash_map<lang_identifier *, tree>::iterator end
