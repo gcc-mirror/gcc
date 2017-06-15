@@ -1,3 +1,8 @@
+2017-06-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR rtl-optimization/80474
+	* reorg.c (update_block): Do not ignore instructions in a delay slot.
+
 2017-06-15  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* config/rs6000/rs6000.md (add<mode>3): Use reg_or_subregno instead
