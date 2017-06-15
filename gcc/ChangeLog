@@ -1,3 +1,8 @@
+2017-06-15  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	* emit-rtl.h (is_leaf): Update comment about local
+	register allocator.
+
 2017-06-15  Jozef Lawrynowicz	<jozef.l@somniumtech.com>
 
 	PR target/78818
