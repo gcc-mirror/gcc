@@ -1,3 +1,10 @@
+2017-06-15  Nicolas Boulenguez  <nicolas.boulenguez@free.fr>
+
+	PR ada/81105
+	* gcc-interface/Makefile.in (x86 kfreebsd): Adjust system.ads setting.
+	(i[3456]86-pc-gnu): Likewise.
+	(x86_64 kfreebsd): Likewise.
+
 2017-06-12  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/81070

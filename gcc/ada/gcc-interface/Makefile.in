@@ -1424,7 +1424,7 @@ ifeq ($(strip $(filter-out %86 kfreebsd%,$(target_cpu) $(target_os))),)
   s-tpopsp.adb<s-tpopsp-posix-foreign.adb \
   $(ATOMICS_TARGET_PAIRS) \
   $(X86_TARGET_PAIRS) \
-  system.ads<system-freebsd-x86.ads
+  system.ads<system-freebsd.ads
 
   TOOLS_TARGET_PAIRS =  \
     mlib-tgt-specific.adb<mlib-tgt-specific-linux.adb \
@@ -1454,7 +1454,7 @@ ifeq ($(strip $(filter-out %86 pc gnu,$(target_cpu) $(target_vendor) $(target_os
   s-tpopsp.adb<s-tpopsp-posix-foreign.adb \
   $(ATOMICS_TARGET_PAIRS) \
   $(X86_TARGET_PAIRS) \
-  system.ads<system-freebsd-x86.ads
+  system.ads<system-freebsd.ads
 
   TOOLS_TARGET_PAIRS =  \
     mlib-tgt-specific.adb<mlib-tgt-specific-linux.adb \
@@ -1482,7 +1482,7 @@ ifeq ($(strip $(filter-out x86_64 kfreebsd%,$(target_cpu) $(target_os))),)
   s-taprop.adb<s-taprop-posix.adb \
   s-taspri.ads<s-taspri-posix.ads \
   s-tpopsp.adb<s-tpopsp-posix-foreign.adb \
-  system.ads<system-freebsd-x86.ads
+  system.ads<system-freebsd.ads
 
   TOOLS_TARGET_PAIRS =  \
     mlib-tgt-specific.adb<mlib-tgt-specific-linux.adb \
