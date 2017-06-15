@@ -1,3 +1,8 @@
+2017-06-15  François Dumont  <fdumont@gcc.gnu.org>
+
+	* src/c++98/tree.cc  [!_GLIBCXX_INLINE_VERSION]
+	(_Rb_tree_rotate_left, _Rb_tree_rotate_right): Delete.
+
 2017-06-15  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* testsuite: Add dg-require-effective-target pthread to -pthread
