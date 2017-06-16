@@ -20,6 +20,26 @@
    License along with GCC; see the file COPYING3.  If not see
    <http://www.gnu.org/licenses/>.  */
 
+static const struct cpu_option cpu_opttab_cortexa8[] = {
+  {
+    "nofp", true,
+    { ISA_NEON,ISA_VFPv3, isa_nobit }
+  },
+  { NULL, false, {isa_nobit}}
+};
+
+static const struct cpu_option cpu_opttab_cortexa9[] = {
+  {
+    "nofp", true,
+    { ISA_NEON,ISA_VFPv3, isa_nobit }
+  },
+  {
+    "nosimd", true,
+    { ISA_NEON, isa_nobit }
+  },
+  { NULL, false, {isa_nobit}}
+};
+
 static const struct processors all_cores[] =
 {
   {
@@ -31,6 +51,7 @@ static const struct processors all_cores[] =
       ISA_ARMv2,isa_bit_mode26,
       isa_nobit
     },
+    NULL,
     &arm_slowmul_tune
   },
   {
@@ -42,6 +63,7 @@ static const struct processors all_cores[] =
       ISA_ARMv2,isa_bit_mode26,
       isa_nobit
     },
+    NULL,
     &arm_slowmul_tune
   },
   {
@@ -53,6 +75,7 @@ static const struct processors all_cores[] =
       ISA_ARMv2,isa_bit_mode26,
       isa_nobit
     },
+    NULL,
     &arm_slowmul_tune
   },
   {
@@ -64,6 +87,7 @@ static const struct processors all_cores[] =
       ISA_ARMv3,isa_bit_mode26,
       isa_nobit
     },
+    NULL,
     &arm_slowmul_tune
   },
   {
@@ -75,6 +99,7 @@ static const struct processors all_cores[] =
       ISA_ARMv3,isa_bit_mode26,
       isa_nobit
     },
+    NULL,
     &arm_slowmul_tune
   },
   {
@@ -86,6 +111,7 @@ static const struct processors all_cores[] =
       ISA_ARMv3,isa_bit_mode26,
       isa_nobit
     },
+    NULL,
     &arm_slowmul_tune
   },
   {
@@ -97,6 +123,7 @@ static const struct processors all_cores[] =
       ISA_ARMv3,isa_bit_mode26,
       isa_nobit
     },
+    NULL,
     &arm_slowmul_tune
   },
   {
@@ -108,6 +135,7 @@ static const struct processors all_cores[] =
       ISA_ARMv3,isa_bit_mode26,
       isa_nobit
     },
+    NULL,
     &arm_slowmul_tune
   },
   {
@@ -119,6 +147,7 @@ static const struct processors all_cores[] =
       ISA_ARMv3,isa_bit_mode26,
       isa_nobit
     },
+    NULL,
     &arm_slowmul_tune
   },
   {
@@ -130,6 +159,7 @@ static const struct processors all_cores[] =
       ISA_ARMv3,isa_bit_mode26,
       isa_nobit
     },
+    NULL,
     &arm_slowmul_tune
   },
   {
@@ -141,6 +171,7 @@ static const struct processors all_cores[] =
       ISA_ARMv3,isa_bit_mode26,
       isa_nobit
     },
+    NULL,
     &arm_slowmul_tune
   },
   {
@@ -152,6 +183,7 @@ static const struct processors all_cores[] =
       ISA_ARMv3,isa_bit_mode26,
       isa_nobit
     },
+    NULL,
     &arm_slowmul_tune
   },
   {
@@ -163,6 +195,7 @@ static const struct processors all_cores[] =
       ISA_ARMv3,isa_bit_mode26,
       isa_nobit
     },
+    NULL,
     &arm_slowmul_tune
   },
   {
@@ -174,6 +207,7 @@ static const struct processors all_cores[] =
       ISA_ARMv3,isa_bit_mode26,
       isa_nobit
     },
+    NULL,
     &arm_slowmul_tune
   },
   {
@@ -185,6 +219,7 @@ static const struct processors all_cores[] =
       ISA_ARMv3,isa_bit_mode26,
       isa_nobit
     },
+    NULL,
     &arm_slowmul_tune
   },
   {
@@ -196,6 +231,7 @@ static const struct processors all_cores[] =
       ISA_ARMv3,isa_bit_mode26,
       isa_nobit
     },
+    NULL,
     &arm_slowmul_tune
   },
   {
@@ -207,6 +243,7 @@ static const struct processors all_cores[] =
       ISA_ARMv3,isa_bit_mode26,
       isa_nobit
     },
+    NULL,
     &arm_slowmul_tune
   },
   {
@@ -218,6 +255,7 @@ static const struct processors all_cores[] =
       ISA_ARMv3,isa_bit_mode26,
       isa_nobit
     },
+    NULL,
     &arm_slowmul_tune
   },
   {
@@ -229,6 +267,7 @@ static const struct processors all_cores[] =
       ISA_ARMv3,isa_bit_mode26,
       isa_nobit
     },
+    NULL,
     &arm_slowmul_tune
   },
   {
@@ -240,6 +279,7 @@ static const struct processors all_cores[] =
       ISA_ARMv3,isa_bit_mode26,
       isa_nobit
     },
+    NULL,
     &arm_slowmul_tune
   },
   {
@@ -251,6 +291,7 @@ static const struct processors all_cores[] =
       ISA_ARMv3m,isa_bit_mode26,
       isa_nobit
     },
+    NULL,
     &arm_fastmul_tune
   },
   {
@@ -262,6 +303,7 @@ static const struct processors all_cores[] =
       ISA_ARMv3m,isa_bit_mode26,
       isa_nobit
     },
+    NULL,
     &arm_fastmul_tune
   },
   {
@@ -273,6 +315,7 @@ static const struct processors all_cores[] =
       ISA_ARMv3m,isa_bit_mode26,
       isa_nobit
     },
+    NULL,
     &arm_fastmul_tune
   },
   {
@@ -284,6 +327,7 @@ static const struct processors all_cores[] =
       ISA_ARMv4,isa_bit_mode26,
       isa_nobit
     },
+    NULL,
     &arm_fastmul_tune
   },
   {
@@ -295,6 +339,7 @@ static const struct processors all_cores[] =
       ISA_ARMv4,isa_bit_mode26,
       isa_nobit
     },
+    NULL,
     &arm_fastmul_tune
   },
   {
@@ -306,6 +351,7 @@ static const struct processors all_cores[] =
       ISA_ARMv4,isa_bit_mode26,
       isa_nobit
     },
+    NULL,
     &arm_strongarm_tune
   },
   {
@@ -317,6 +363,7 @@ static const struct processors all_cores[] =
       ISA_ARMv4,isa_bit_mode26,
       isa_nobit
     },
+    NULL,
     &arm_strongarm_tune
   },
   {
@@ -328,6 +375,7 @@ static const struct processors all_cores[] =
       ISA_ARMv4,isa_bit_mode26,
       isa_nobit
     },
+    NULL,
     &arm_strongarm_tune
   },
   {
@@ -339,6 +387,7 @@ static const struct processors all_cores[] =
       ISA_ARMv4,isa_bit_mode26,
       isa_nobit
     },
+    NULL,
     &arm_strongarm_tune
   },
   {
@@ -350,6 +399,7 @@ static const struct processors all_cores[] =
       ISA_ARMv4,isa_bit_mode26,
       isa_nobit
     },
+    NULL,
     &arm_fastmul_tune
   },
   {
@@ -361,6 +411,7 @@ static const struct processors all_cores[] =
       ISA_ARMv4,isa_bit_mode26,
       isa_nobit
     },
+    NULL,
     &arm_fastmul_tune
   },
   {
@@ -372,6 +423,7 @@ static const struct processors all_cores[] =
       ISA_ARMv4t,
       isa_nobit
     },
+    NULL,
     &arm_fastmul_tune
   },
   {
@@ -383,6 +435,7 @@ static const struct processors all_cores[] =
       ISA_ARMv4t,
       isa_nobit
     },
+    NULL,
     &arm_fastmul_tune
   },
   {
@@ -394,6 +447,7 @@ static const struct processors all_cores[] =
       ISA_ARMv4t,
       isa_nobit
     },
+    NULL,
     &arm_fastmul_tune
   },
   {
@@ -405,6 +459,7 @@ static const struct processors all_cores[] =
       ISA_ARMv4t,
       isa_nobit
     },
+    NULL,
     &arm_fastmul_tune
   },
   {
@@ -416,6 +471,7 @@ static const struct processors all_cores[] =
       ISA_ARMv4t,
       isa_nobit
     },
+    NULL,
     &arm_fastmul_tune
   },
   {
@@ -427,6 +483,7 @@ static const struct processors all_cores[] =
       ISA_ARMv4t,
       isa_nobit
     },
+    NULL,
     &arm_fastmul_tune
   },
   {
@@ -438,6 +495,7 @@ static const struct processors all_cores[] =
       ISA_ARMv4t,
       isa_nobit
     },
+    NULL,
     &arm_fastmul_tune
   },
   {
@@ -449,6 +507,7 @@ static const struct processors all_cores[] =
       ISA_ARMv4t,
       isa_nobit
     },
+    NULL,
     &arm_fastmul_tune
   },
   {
@@ -460,6 +519,7 @@ static const struct processors all_cores[] =
       ISA_ARMv4t,
       isa_nobit
     },
+    NULL,
     &arm_fastmul_tune
   },
   {
@@ -471,6 +531,7 @@ static const struct processors all_cores[] =
       ISA_ARMv4t,
       isa_nobit
     },
+    NULL,
     &arm_fastmul_tune
   },
   {
@@ -482,6 +543,7 @@ static const struct processors all_cores[] =
       ISA_ARMv4t,
       isa_nobit
     },
+    NULL,
     &arm_fastmul_tune
   },
   {
@@ -493,6 +555,7 @@ static const struct processors all_cores[] =
       ISA_ARMv4t,
       isa_nobit
     },
+    NULL,
     &arm_fastmul_tune
   },
   {
@@ -504,6 +567,7 @@ static const struct processors all_cores[] =
       ISA_ARMv5t,
       isa_nobit
     },
+    NULL,
     &arm_fastmul_tune
   },
   {
@@ -515,6 +579,7 @@ static const struct processors all_cores[] =
       ISA_ARMv5t,
       isa_nobit
     },
+    NULL,
     &arm_fastmul_tune
   },
   {
@@ -526,6 +591,7 @@ static const struct processors all_cores[] =
       ISA_ARMv5te,
       isa_nobit
     },
+    NULL,
     &arm_9e_tune
   },
   {
@@ -537,6 +603,7 @@ static const struct processors all_cores[] =
       ISA_ARMv5te,
       isa_nobit
     },
+    NULL,
     &arm_9e_tune
   },
   {
@@ -548,6 +615,7 @@ static const struct processors all_cores[] =
       ISA_ARMv5te,
       isa_nobit
     },
+    NULL,
     &arm_9e_tune
   },
   {
@@ -559,6 +627,7 @@ static const struct processors all_cores[] =
       ISA_ARMv5te,
       isa_nobit
     },
+    NULL,
     &arm_9e_tune
   },
   {
@@ -570,6 +639,7 @@ static const struct processors all_cores[] =
       ISA_ARMv5te,
       isa_nobit
     },
+    NULL,
     &arm_fastmul_tune
   },
   {
@@ -581,6 +651,7 @@ static const struct processors all_cores[] =
       ISA_ARMv5te,
       isa_nobit
     },
+    NULL,
     &arm_fastmul_tune
   },
   {
@@ -592,6 +663,7 @@ static const struct processors all_cores[] =
       ISA_ARMv5te,
       isa_nobit
     },
+    NULL,
     &arm_fastmul_tune
   },
   {
@@ -604,6 +676,7 @@ static const struct processors all_cores[] =
       isa_bit_xscale,
       isa_nobit
     },
+    NULL,
     &arm_xscale_tune
   },
   {
@@ -615,6 +688,7 @@ static const struct processors all_cores[] =
       ISA_ARMv5te,isa_bit_xscale,isa_bit_iwmmxt,
       isa_nobit
     },
+    NULL,
     &arm_xscale_tune
   },
   {
@@ -626,6 +700,7 @@ static const struct processors all_cores[] =
       ISA_ARMv5te,isa_bit_xscale,isa_bit_iwmmxt,isa_bit_iwmmxt2,
       isa_nobit
     },
+    NULL,
     &arm_xscale_tune
   },
   {
@@ -637,6 +712,7 @@ static const struct processors all_cores[] =
       ISA_ARMv5te,
       isa_nobit
     },
+    NULL,
     &arm_9e_tune
   },
   {
@@ -648,6 +724,7 @@ static const struct processors all_cores[] =
       ISA_ARMv5te,
       isa_nobit
     },
+    NULL,
     &arm_9e_tune
   },
   {
@@ -659,6 +736,7 @@ static const struct processors all_cores[] =
       ISA_ARMv5te,
       isa_nobit
     },
+    NULL,
     &arm_9e_tune
   },
   {
@@ -670,6 +748,7 @@ static const struct processors all_cores[] =
       ISA_ARMv5te,
       isa_nobit
     },
+    NULL,
     &arm_fa726te_tune
   },
   {
@@ -681,6 +760,7 @@ static const struct processors all_cores[] =
       ISA_ARMv5tej,
       isa_nobit
     },
+    NULL,
     &arm_9e_tune
   },
   {
@@ -692,6 +772,7 @@ static const struct processors all_cores[] =
       ISA_ARMv5tej,
       isa_nobit
     },
+    NULL,
     &arm_9e_tune
   },
   {
@@ -703,6 +784,7 @@ static const struct processors all_cores[] =
       ISA_ARMv6j,
       isa_nobit
     },
+    NULL,
     &arm_9e_tune
   },
   {
@@ -715,6 +797,7 @@ static const struct processors all_cores[] =
       ISA_VFPv2,ISA_FP_DBL,
       isa_nobit
     },
+    NULL,
     &arm_9e_tune
   },
   {
@@ -726,6 +809,7 @@ static const struct processors all_cores[] =
       ISA_ARMv6kz,
       isa_nobit
     },
+    NULL,
     &arm_9e_tune
   },
   {
@@ -738,6 +822,7 @@ static const struct processors all_cores[] =
       ISA_VFPv2,ISA_FP_DBL,
       isa_nobit
     },
+    NULL,
     &arm_9e_tune
   },
   {
@@ -749,6 +834,7 @@ static const struct processors all_cores[] =
       ISA_ARMv6k,
       isa_nobit
     },
+    NULL,
     &arm_9e_tune
   },
   {
@@ -761,6 +847,7 @@ static const struct processors all_cores[] =
       ISA_VFPv2,ISA_FP_DBL,
       isa_nobit
     },
+    NULL,
     &arm_9e_tune
   },
   {
@@ -772,6 +859,7 @@ static const struct processors all_cores[] =
       ISA_ARMv6t2,
       isa_nobit
     },
+    NULL,
     &arm_v6t2_tune
   },
   {
@@ -784,6 +872,7 @@ static const struct processors all_cores[] =
       ISA_VFPv2,ISA_FP_DBL,
       isa_nobit
     },
+    NULL,
     &arm_v6t2_tune
   },
   {
@@ -795,6 +884,7 @@ static const struct processors all_cores[] =
       ISA_ARMv6m,
       isa_nobit
     },
+    NULL,
     &arm_v6m_tune
   },
   {
@@ -806,6 +896,7 @@ static const struct processors all_cores[] =
       ISA_ARMv6m,
       isa_nobit
     },
+    NULL,
     &arm_v6m_tune
   },
   {
@@ -817,6 +908,7 @@ static const struct processors all_cores[] =
       ISA_ARMv6m,
       isa_nobit
     },
+    NULL,
     &arm_v6m_tune
   },
   {
@@ -828,6 +920,7 @@ static const struct processors all_cores[] =
       ISA_ARMv6m,
       isa_nobit
     },
+    NULL,
     &arm_v6m_tune
   },
   {
@@ -839,6 +932,7 @@ static const struct processors all_cores[] =
       ISA_ARMv6m,
       isa_nobit
     },
+    NULL,
     &arm_v6m_tune
   },
   {
@@ -850,6 +944,7 @@ static const struct processors all_cores[] =
       ISA_ARMv6m,
       isa_nobit
     },
+    NULL,
     &arm_v6m_tune
   },
   {
@@ -861,6 +956,7 @@ static const struct processors all_cores[] =
       ISA_ARMv7a,
       isa_nobit
     },
+    NULL,
     &arm_cortex_tune
   },
   {
@@ -872,6 +968,7 @@ static const struct processors all_cores[] =
       ISA_ARMv7a,
       isa_nobit
     },
+    NULL,
     &arm_cortex_a5_tune
   },
   {
@@ -883,6 +980,7 @@ static const struct processors all_cores[] =
       ISA_ARMv7ve,
       isa_nobit
     },
+    NULL,
     &arm_cortex_a7_tune
   },
   {
@@ -892,8 +990,10 @@ static const struct processors all_cores[] =
     "7A", BASE_ARCH_7A,
     {
       ISA_ARMv7a,
+      ISA_VFPv3,ISA_NEON,
       isa_nobit
     },
+    cpu_opttab_cortexa8,
     &arm_cortex_a8_tune
   },
   {
@@ -903,8 +1003,10 @@ static const struct processors all_cores[] =
     "7A", BASE_ARCH_7A,
     {
       ISA_ARMv7a,
+      ISA_VFPv3,ISA_NEON,
       isa_nobit
     },
+    cpu_opttab_cortexa9,
     &arm_cortex_a9_tune
   },
   {
@@ -916,6 +1018,7 @@ static const struct processors all_cores[] =
       ISA_ARMv7ve,
       isa_nobit
     },
+    NULL,
     &arm_cortex_a12_tune
   },
   {
@@ -927,6 +1030,7 @@ static const struct processors all_cores[] =
       ISA_ARMv7ve,
       isa_nobit
     },
+    NULL,
     &arm_cortex_a15_tune
   },
   {
@@ -938,6 +1042,7 @@ static const struct processors all_cores[] =
       ISA_ARMv7ve,
       isa_nobit
     },
+    NULL,
     &arm_cortex_a12_tune
   },
   {
@@ -949,6 +1054,7 @@ static const struct processors all_cores[] =
       ISA_ARMv7r,
       isa_nobit
     },
+    NULL,
     &arm_cortex_tune
   },
   {
@@ -960,6 +1066,7 @@ static const struct processors all_cores[] =
       ISA_ARMv7r,
       isa_nobit
     },
+    NULL,
     &arm_cortex_tune
   },
   {
@@ -972,6 +1079,7 @@ static const struct processors all_cores[] =
       isa_bit_adiv,
       isa_nobit
     },
+    NULL,
     &arm_cortex_tune
   },
   {
@@ -984,6 +1092,7 @@ static const struct processors all_cores[] =
       isa_bit_adiv,
       isa_nobit
     },
+    NULL,
     &arm_cortex_tune
   },
   {
@@ -996,6 +1105,7 @@ static const struct processors all_cores[] =
       isa_bit_adiv,
       isa_nobit
     },
+    NULL,
     &arm_cortex_tune
   },
   {
@@ -1008,6 +1118,7 @@ static const struct processors all_cores[] =
       isa_quirk_no_volatile_ce,
       isa_nobit
     },
+    NULL,
     &arm_cortex_m7_tune
   },
   {
@@ -1019,6 +1130,7 @@ static const struct processors all_cores[] =
       ISA_ARMv7em,
       isa_nobit
     },
+    NULL,
     &arm_v7m_tune
   },
   {
@@ -1031,6 +1143,7 @@ static const struct processors all_cores[] =
       isa_quirk_cm3_ldrd,
       isa_nobit
     },
+    NULL,
     &arm_v7m_tune
   },
   {
@@ -1042,6 +1155,7 @@ static const struct processors all_cores[] =
       ISA_ARMv7a,
       isa_nobit
     },
+    NULL,
     &arm_marvell_pj4_tune
   },
   {
@@ -1053,6 +1167,7 @@ static const struct processors all_cores[] =
       ISA_ARMv7ve,
       isa_nobit
     },
+    NULL,
     &arm_cortex_a15_tune
   },
   {
@@ -1064,6 +1179,7 @@ static const struct processors all_cores[] =
       ISA_ARMv7ve,
       isa_nobit
     },
+    NULL,
     &arm_cortex_a12_tune
   },
   {
@@ -1072,9 +1188,11 @@ static const struct processors all_cores[] =
     (TF_LDSCHED),
     "8A", BASE_ARCH_8A,
     {
-      ISA_ARMv8a,isa_bit_crc32,
+      ISA_ARMv8a,
+      isa_bit_crc32,
       isa_nobit
     },
+    NULL,
     &arm_cortex_a35_tune
   },
   {
@@ -1083,9 +1201,11 @@ static const struct processors all_cores[] =
     (TF_LDSCHED),
     "8A", BASE_ARCH_8A,
     {
-      ISA_ARMv8a,isa_bit_crc32,
+      ISA_ARMv8a,
+      isa_bit_crc32,
       isa_nobit
     },
+    NULL,
     &arm_cortex_a35_tune
   },
   {
@@ -1094,9 +1214,11 @@ static const struct processors all_cores[] =
     (TF_LDSCHED),
     "8A", BASE_ARCH_8A,
     {
-      ISA_ARMv8a,isa_bit_crc32,
+      ISA_ARMv8a,
+      isa_bit_crc32,
       isa_nobit
     },
+    NULL,
     &arm_cortex_a53_tune
   },
   {
@@ -1105,9 +1227,11 @@ static const struct processors all_cores[] =
     (TF_LDSCHED),
     "8A", BASE_ARCH_8A,
     {
-      ISA_ARMv8a,isa_bit_crc32,
+      ISA_ARMv8a,
+      isa_bit_crc32,
       isa_nobit
     },
+    NULL,
     &arm_cortex_a57_tune
   },
   {
@@ -1116,9 +1240,11 @@ static const struct processors all_cores[] =
     (TF_LDSCHED),
     "8A", BASE_ARCH_8A,
     {
-      ISA_ARMv8a,isa_bit_crc32,
+      ISA_ARMv8a,
+      isa_bit_crc32,
       isa_nobit
     },
+    NULL,
     &arm_cortex_a57_tune
   },
   {
@@ -1127,9 +1253,11 @@ static const struct processors all_cores[] =
     (TF_LDSCHED),
     "8A", BASE_ARCH_8A,
     {
-      ISA_ARMv8a,isa_bit_crc32,
+      ISA_ARMv8a,
+      isa_bit_crc32,
       isa_nobit
     },
+    NULL,
     &arm_cortex_a73_tune
   },
   {
@@ -1138,9 +1266,11 @@ static const struct processors all_cores[] =
     (TF_LDSCHED),
     "8A", BASE_ARCH_8A,
     {
-      ISA_ARMv8a,isa_bit_crc32,
+      ISA_ARMv8a,
+      isa_bit_crc32,
       isa_nobit
     },
+    NULL,
     &arm_exynosm1_tune
   },
   {
@@ -1152,6 +1282,7 @@ static const struct processors all_cores[] =
       ISA_ARMv8a,
       isa_nobit
     },
+    NULL,
     &arm_xgene1_tune
   },
   {
@@ -1160,9 +1291,11 @@ static const struct processors all_cores[] =
     (TF_LDSCHED),
     "8A", BASE_ARCH_8A,
     {
-      ISA_ARMv8a,isa_bit_crc32,
+      ISA_ARMv8a,
+      isa_bit_crc32,
       isa_nobit
     },
+    NULL,
     &arm_cortex_a57_tune
   },
   {
@@ -1171,9 +1304,11 @@ static const struct processors all_cores[] =
     (TF_LDSCHED),
     "8A", BASE_ARCH_8A,
     {
-      ISA_ARMv8a,isa_bit_crc32,
+      ISA_ARMv8a,
+      isa_bit_crc32,
       isa_nobit
     },
+    NULL,
     &arm_cortex_a57_tune
   },
   {
@@ -1182,9 +1317,11 @@ static const struct processors all_cores[] =
     (TF_LDSCHED),
     "8A", BASE_ARCH_8A,
     {
-      ISA_ARMv8a,isa_bit_crc32,
+      ISA_ARMv8a,
+      isa_bit_crc32,
       isa_nobit
     },
+    NULL,
     &arm_cortex_a73_tune
   },
   {
@@ -1193,9 +1330,11 @@ static const struct processors all_cores[] =
     (TF_LDSCHED),
     "8A", BASE_ARCH_8A,
     {
-      ISA_ARMv8a,isa_bit_crc32,
+      ISA_ARMv8a,
+      isa_bit_crc32,
       isa_nobit
     },
+    NULL,
     &arm_cortex_a73_tune
   },
   {
@@ -1207,6 +1346,7 @@ static const struct processors all_cores[] =
       ISA_ARMv8m_base,
       isa_nobit
     },
+    NULL,
     &arm_v6m_tune
   },
   {
@@ -1215,12 +1355,78 @@ static const struct processors all_cores[] =
     (TF_LDSCHED),
     "8M_MAIN", BASE_ARCH_8M_MAIN,
     {
-      ISA_ARMv8m_main,isa_bit_ARMv7em,
+      ISA_ARMv8m_main,
+      isa_bit_ARMv7em,
       isa_nobit
     },
+    NULL,
     &arm_v7m_tune
   },
-  {NULL, TARGET_CPU_arm_none, 0, NULL, BASE_ARCH_0, {isa_nobit}, NULL}
+  {NULL, TARGET_CPU_arm_none, 0, NULL, BASE_ARCH_0, {isa_nobit}, NULL, NULL}
+};
+
+static const struct cpu_option arch_opttab_armv8_a[] = {
+  {
+    "crc", false,
+    { isa_bit_crc32, isa_nobit }
+  },
+  {
+    "simd", false,
+    { ISA_FP_ARMv8,ISA_NEON, isa_nobit }
+  },
+  {
+    "crypto", false,
+    { ISA_FP_ARMv8,ISA_NEON,ISA_CRYPTO, isa_nobit }
+  },
+  {
+    "nofp", true,
+    { ISA_FP_ARMv8,ISA_NEON,ISA_CRYPTO, isa_nobit }
+  },
+  { NULL, false, {isa_nobit}}
+};
+
+static const struct cpu_option arch_opttab_armv8_1_a[] = {
+  {
+    "simd", false,
+    { ISA_FP_ARMv8,ISA_NEON, isa_nobit }
+  },
+  {
+    "crypto", false,
+    { ISA_FP_ARMv8,ISA_NEON,ISA_CRYPTO, isa_nobit }
+  },
+  {
+    "nofp", true,
+    { ISA_FP_ARMv8,ISA_NEON,ISA_CRYPTO, isa_nobit }
+  },
+  { NULL, false, {isa_nobit}}
+};
+
+static const struct cpu_option arch_opttab_armv8_2_a[] = {
+  {
+    "fp16", false,
+    { isa_bit_fp16,ISA_FP_ARMv8,ISA_NEON, isa_nobit }
+  },
+  {
+    "simd", false,
+    { ISA_FP_ARMv8,ISA_NEON, isa_nobit }
+  },
+  {
+    "crypto", false,
+    { ISA_FP_ARMv8,ISA_NEON,ISA_CRYPTO, isa_nobit }
+  },
+  {
+    "nofp", true,
+    { isa_bit_fp16,ISA_FP_ARMv8,ISA_NEON,ISA_CRYPTO, isa_nobit }
+  },
+  { NULL, false, {isa_nobit}}
+};
+
+static const struct cpu_option arch_opttab_armv8_m_main[] = {
+  {
+    "dsp", false,
+    { isa_bit_ARMv7em, isa_nobit }
+  },
+  { NULL, false, {isa_nobit}}
 };
 
 static const struct processors all_architectures[] =
@@ -1233,6 +1439,7 @@ static const struct processors all_architectures[] =
       ISA_ARMv2,isa_bit_mode26,
       isa_nobit
     },
+    NULL,
     NULL
   },
   {
@@ -1243,6 +1450,7 @@ static const struct processors all_architectures[] =
       ISA_ARMv2,isa_bit_mode26,
       isa_nobit
     },
+    NULL,
     NULL
   },
   {
@@ -1253,6 +1461,7 @@ static const struct processors all_architectures[] =
       ISA_ARMv3,isa_bit_mode26,
       isa_nobit
     },
+    NULL,
     NULL
   },
   {
@@ -1263,6 +1472,7 @@ static const struct processors all_architectures[] =
       ISA_ARMv3m,isa_bit_mode26,
       isa_nobit
     },
+    NULL,
     NULL
   },
   {
@@ -1273,6 +1483,7 @@ static const struct processors all_architectures[] =
       ISA_ARMv4,isa_bit_mode26,
       isa_nobit
     },
+    NULL,
     NULL
   },
   {
@@ -1283,6 +1494,7 @@ static const struct processors all_architectures[] =
       ISA_ARMv4t,
       isa_nobit
     },
+    NULL,
     NULL
   },
   {
@@ -1293,6 +1505,7 @@ static const struct processors all_architectures[] =
       ISA_ARMv5,
       isa_nobit
     },
+    NULL,
     NULL
   },
   {
@@ -1303,6 +1516,7 @@ static const struct processors all_architectures[] =
       ISA_ARMv5t,
       isa_nobit
     },
+    NULL,
     NULL
   },
   {
@@ -1313,6 +1527,7 @@ static const struct processors all_architectures[] =
       ISA_ARMv5e,
       isa_nobit
     },
+    NULL,
     NULL
   },
   {
@@ -1323,6 +1538,7 @@ static const struct processors all_architectures[] =
       ISA_ARMv5te,
       isa_nobit
     },
+    NULL,
     NULL
   },
   {
@@ -1333,6 +1549,7 @@ static const struct processors all_architectures[] =
       ISA_ARMv5tej,
       isa_nobit
     },
+    NULL,
     NULL
   },
   {
@@ -1343,6 +1560,7 @@ static const struct processors all_architectures[] =
       ISA_ARMv6,
       isa_nobit
     },
+    NULL,
     NULL
   },
   {
@@ -1353,6 +1571,7 @@ static const struct processors all_architectures[] =
       ISA_ARMv6j,
       isa_nobit
     },
+    NULL,
     NULL
   },
   {
@@ -1363,6 +1582,7 @@ static const struct processors all_architectures[] =
       ISA_ARMv6k,
       isa_nobit
     },
+    NULL,
     NULL
   },
   {
@@ -1373,6 +1593,7 @@ static const struct processors all_architectures[] =
       ISA_ARMv6z,
       isa_nobit
     },
+    NULL,
     NULL
   },
   {
@@ -1383,6 +1604,7 @@ static const struct processors all_architectures[] =
       ISA_ARMv6kz,
       isa_nobit
     },
+    NULL,
     NULL
   },
   {
@@ -1393,6 +1615,7 @@ static const struct processors all_architectures[] =
       ISA_ARMv6kz,
       isa_nobit
     },
+    NULL,
     NULL
   },
   {
@@ -1403,6 +1626,7 @@ static const struct processors all_architectures[] =
       ISA_ARMv6t2,
       isa_nobit
     },
+    NULL,
     NULL
   },
   {
@@ -1413,6 +1637,7 @@ static const struct processors all_architectures[] =
       ISA_ARMv6m,
       isa_nobit
     },
+    NULL,
     NULL
   },
   {
@@ -1423,6 +1648,7 @@ static const struct processors all_architectures[] =
       ISA_ARMv6m,
       isa_nobit
     },
+    NULL,
     NULL
   },
   {
@@ -1433,6 +1659,7 @@ static const struct processors all_architectures[] =
       ISA_ARMv7,
       isa_nobit
     },
+    NULL,
     NULL
   },
   {
@@ -1443,6 +1670,7 @@ static const struct processors all_architectures[] =
       ISA_ARMv7a,
       isa_nobit
     },
+    NULL,
     NULL
   },
   {
@@ -1453,6 +1681,7 @@ static const struct processors all_architectures[] =
       ISA_ARMv7ve,
       isa_nobit
     },
+    NULL,
     NULL
   },
   {
@@ -1463,6 +1692,7 @@ static const struct processors all_architectures[] =
       ISA_ARMv7r,
       isa_nobit
     },
+    NULL,
     NULL
   },
   {
@@ -1473,6 +1703,7 @@ static const struct processors all_architectures[] =
       ISA_ARMv7m,
       isa_nobit
     },
+    NULL,
     NULL
   },
   {
@@ -1483,6 +1714,7 @@ static const struct processors all_architectures[] =
       ISA_ARMv7em,
       isa_nobit
     },
+    NULL,
     NULL
   },
   {
@@ -1493,16 +1725,7 @@ static const struct processors all_architectures[] =
       ISA_ARMv8a,
       isa_nobit
     },
-    NULL
-  },
-  {
-    "armv8-a+crc", TARGET_CPU_cortexa53,
-    (TF_CO_PROC),
-    "8A", BASE_ARCH_8A,
-    {
-      ISA_ARMv8a,isa_bit_crc32,
-      isa_nobit
-    },
+    arch_opttab_armv8_a,
     NULL
   },
   {
@@ -1513,6 +1736,7 @@ static const struct processors all_architectures[] =
       ISA_ARMv8_1a,
       isa_nobit
     },
+    arch_opttab_armv8_1_a,
     NULL
   },
   {
@@ -1523,16 +1747,7 @@ static const struct processors all_architectures[] =
       ISA_ARMv8_2a,
       isa_nobit
     },
-    NULL
-  },
-  {
-    "armv8.2-a+fp16", TARGET_CPU_cortexa53,
-    (TF_CO_PROC),
-    "8A", BASE_ARCH_8A,
-    {
-      ISA_ARMv8_2a,isa_bit_fp16,
-      isa_nobit
-    },
+    arch_opttab_armv8_2_a,
     NULL
   },
   {
@@ -1543,6 +1758,7 @@ static const struct processors all_architectures[] =
       ISA_ARMv8m_base,
       isa_nobit
     },
+    NULL,
     NULL
   },
   {
@@ -1553,16 +1769,7 @@ static const struct processors all_architectures[] =
       ISA_ARMv8m_main,
       isa_nobit
     },
-    NULL
-  },
-  {
-    "armv8-m.main+dsp", TARGET_CPU_cortexm33,
-    (TF_CO_PROC),
-    "8M_MAIN", BASE_ARCH_8M_MAIN,
-    {
-      ISA_ARMv8m_main,isa_bit_ARMv7em,
-      isa_nobit
-    },
+    arch_opttab_armv8_m_main,
     NULL
   },
   {
@@ -1573,6 +1780,7 @@ static const struct processors all_architectures[] =
       ISA_ARMv5te,isa_bit_xscale,isa_bit_iwmmxt,
       isa_nobit
     },
+    NULL,
     NULL
   },
   {
@@ -1583,9 +1791,10 @@ static const struct processors all_architectures[] =
       ISA_ARMv5te,isa_bit_xscale,isa_bit_iwmmxt,isa_bit_iwmmxt2,
       isa_nobit
     },
+    NULL,
     NULL
   },
-  {NULL, TARGET_CPU_arm_none, 0, NULL, BASE_ARCH_0, {isa_nobit}, NULL}
+  {NULL, TARGET_CPU_arm_none, 0, NULL, BASE_ARCH_0, {isa_nobit}, NULL, NULL}
 };
 
 const struct arm_fpu_desc all_fpus[] =

@@ -237,20 +237,20 @@ begin arch armv8-a
  tune flags CO_PROC
  base 8A
  isa ARMv8a
+ option crc add bit_crc32
+ option simd add FP_ARMv8 NEON
+ option crypto add FP_ARMv8 NEON CRYPTO
+ option nofp remove FP_ARMv8 NEON CRYPTO
 end arch armv8-a
-
-begin arch armv8-a+crc
- tune for cortex-a53
- tune flags CO_PROC
- base 8A
- isa ARMv8a bit_crc32
-end arch armv8-a+crc
 
 begin arch armv8.1-a
  tune for cortex-a53
  tune flags CO_PROC
  base 8A
  isa ARMv8_1a
+ option simd add FP_ARMv8 NEON
+ option crypto add FP_ARMv8 NEON CRYPTO
+ option nofp remove FP_ARMv8 NEON CRYPTO
 end arch armv8.1-a
 
 begin arch armv8.2-a
@@ -258,14 +258,11 @@ begin arch armv8.2-a
  tune flags CO_PROC
  base 8A
  isa ARMv8_2a
+ option fp16 add bit_fp16 FP_ARMv8 NEON
+ option simd add FP_ARMv8 NEON
+ option crypto add FP_ARMv8 NEON CRYPTO
+ option nofp remove bit_fp16 FP_ARMv8 NEON CRYPTO
 end arch armv8.2-a
-
-begin arch armv8.2-a+fp16
- tune for cortex-a53
- tune flags CO_PROC
- base 8A
- isa ARMv8_2a bit_fp16
-end arch armv8.2-a+fp16
 
 begin arch armv8-m.base
  tune for cortex-m23
@@ -278,14 +275,8 @@ begin arch armv8-m.main
  tune flags CO_PROC
  base 8M_MAIN
  isa ARMv8m_main
+ option dsp add bit_ARMv7em
 end arch armv8-m.main
-
-begin arch armv8-m.main+dsp
- tune for cortex-m33
- tune flags CO_PROC
- base 8M_MAIN
- isa ARMv8m_main bit_ARMv7em
-end arch armv8-m.main+dsp
 
 begin arch iwmmxt
  tune for iwmmxt
@@ -310,6 +301,7 @@ end arch iwmmxt2
 #   architecture <name>
 #   [fpu <name>]
 #   [isa <additional-isa-flags-list>]
+#   [option <name> add|remove <isa-list>]*
 #   [costs <name>]
 # end cpu <name>
 #
@@ -847,6 +839,8 @@ begin cpu cortex-a8
  cname cortexa8
  tune flags LDSCHED
  architecture armv7-a
+ fpu neon-vfpv3
+ option nofp remove NEON VFPv3
  costs cortex_a8
 end cpu cortex-a8
 
@@ -854,6 +848,9 @@ begin cpu cortex-a9
  cname cortexa9
  tune flags LDSCHED
  architecture armv7-a
+ fpu neon-vfpv3
+ option nofp remove NEON VFPv3
+ option nosimd remove NEON
  costs cortex_a9
 end cpu cortex-a9
 

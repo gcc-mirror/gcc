@@ -577,6 +577,7 @@ static const struct arm_arch_core_flag arm_arch_core_flags[] =
     "cortex-a8",
     {
       ISA_ARMv7a,
+      ISA_VFPv3,ISA_NEON,
       isa_nobit
     },
   },
@@ -584,6 +585,7 @@ static const struct arm_arch_core_flag arm_arch_core_flags[] =
     "cortex-a9",
     {
       ISA_ARMv7a,
+      ISA_VFPv3,ISA_NEON,
       isa_nobit
     },
   },
@@ -693,49 +695,49 @@ static const struct arm_arch_core_flag arm_arch_core_flags[] =
   {
     "cortex-a32",
     {
-      ISA_ARMv8a,isa_bit_crc32,
+      ISA_ARMv8a,
       isa_nobit
     },
   },
   {
     "cortex-a35",
     {
-      ISA_ARMv8a,isa_bit_crc32,
+      ISA_ARMv8a,
       isa_nobit
     },
   },
   {
     "cortex-a53",
     {
-      ISA_ARMv8a,isa_bit_crc32,
+      ISA_ARMv8a,
       isa_nobit
     },
   },
   {
     "cortex-a57",
     {
-      ISA_ARMv8a,isa_bit_crc32,
+      ISA_ARMv8a,
       isa_nobit
     },
   },
   {
     "cortex-a72",
     {
-      ISA_ARMv8a,isa_bit_crc32,
+      ISA_ARMv8a,
       isa_nobit
     },
   },
   {
     "cortex-a73",
     {
-      ISA_ARMv8a,isa_bit_crc32,
+      ISA_ARMv8a,
       isa_nobit
     },
   },
   {
     "exynos-m1",
     {
-      ISA_ARMv8a,isa_bit_crc32,
+      ISA_ARMv8a,
       isa_nobit
     },
   },
@@ -749,28 +751,28 @@ static const struct arm_arch_core_flag arm_arch_core_flags[] =
   {
     "cortex-a57.cortex-a53",
     {
-      ISA_ARMv8a,isa_bit_crc32,
+      ISA_ARMv8a,
       isa_nobit
     },
   },
   {
     "cortex-a72.cortex-a53",
     {
-      ISA_ARMv8a,isa_bit_crc32,
+      ISA_ARMv8a,
       isa_nobit
     },
   },
   {
     "cortex-a73.cortex-a35",
     {
-      ISA_ARMv8a,isa_bit_crc32,
+      ISA_ARMv8a,
       isa_nobit
     },
   },
   {
     "cortex-a73.cortex-a53",
     {
-      ISA_ARMv8a,isa_bit_crc32,
+      ISA_ARMv8a,
       isa_nobit
     },
   },
@@ -784,7 +786,7 @@ static const struct arm_arch_core_flag arm_arch_core_flags[] =
   {
     "cortex-m33",
     {
-      ISA_ARMv8m_main,isa_bit_ARMv7em,
+      ISA_ARMv8m_main,
       isa_nobit
     },
   },
@@ -978,13 +980,6 @@ static const struct arm_arch_core_flag arm_arch_core_flags[] =
     },
   },
   {
-    "armv8-a+crc",
-    {
-      ISA_ARMv8a,isa_bit_crc32,
-      isa_nobit
-    },
-  },
-  {
     "armv8.1-a",
     {
       ISA_ARMv8_1a,
@@ -999,13 +994,6 @@ static const struct arm_arch_core_flag arm_arch_core_flags[] =
     },
   },
   {
-    "armv8.2-a+fp16",
-    {
-      ISA_ARMv8_2a,isa_bit_fp16,
-      isa_nobit
-    },
-  },
-  {
     "armv8-m.base",
     {
       ISA_ARMv8m_base,
@@ -1016,13 +1004,6 @@ static const struct arm_arch_core_flag arm_arch_core_flags[] =
     "armv8-m.main",
     {
       ISA_ARMv8m_main,
-      isa_nobit
-    },
-  },
-  {
-    "armv8-m.main+dsp",
-    {
-      ISA_ARMv8m_main,isa_bit_ARMv7em,
       isa_nobit
     },
   },
