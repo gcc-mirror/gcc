@@ -1,5 +1,10 @@
 2017-06-16  Richard Earnshaw  <rearnsha@arm.com>
 
+	* config/arm/t-fuchsia: New file.
+	* config.gcc (arm*-*-fuchsia*): Use it.
+
+2017-06-16  Richard Earnshaw  <rearnsha@arm.com>
+
 	* config/arm/t-symbian: Rewrite for new option infrastructure.
 
 2017-06-16  Richard Earnshaw  <rearnsha@arm.com>

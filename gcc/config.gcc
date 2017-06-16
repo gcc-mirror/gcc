@@ -1160,7 +1160,7 @@ arm*-*-eabi* | arm*-*-symbianelf* | arm*-*-rtems* | arm*-*-fuchsia*)
 	  ;;
 	arm*-*-fuchsia*)
 	  tm_file="${tm_file} fuchsia.h arm/fuchsia-elf.h glibc-stdint.h"
-	  tmake_file="${tmake_file} arm/t-bpabi"
+	  tmake_file="${tmake_file} arm/t-bpabi arm/t-fuchsia"
 	  target_cpu_cname="generic-armv7-a"
 	  ;;
 	arm*-*-rtems*)
