@@ -1,5 +1,12 @@
 2017-06-16  Richard Earnshaw  <rearnsha@arm.com>
 
+	* config/arm/t-linux-eabi (MULTILIB_EXCEPTIONS): Set to empty.
+        (MULTILIB_RESUE): Likewise.
+        (MULTILIB_MATCHES): Likewise.
+        (MULTLIB_REQUIRED): Likewise.
+
+2017-06-16  Richard Earnshaw  <rearnsha@arm.com>
+
 	* config/arm/t-rtems: Rewrite for new option framework.
 
 2017-06-16  Richard Earnshaw  <rearnsha@arm.com>
