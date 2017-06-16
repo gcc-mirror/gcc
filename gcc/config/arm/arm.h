@@ -2250,9 +2250,15 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 # define MCPU_MTUNE_NATIVE_SPECS ""
 #endif
 
+const char *arm_canon_arch_option (int argc, const char **argv);
+
+#define CANON_ARCH_SPEC_FUNCTION		\
+  { "canon_arch", arm_canon_arch_option },
+
 # define EXTRA_SPEC_FUNCTIONS			\
   MCPU_MTUNE_NATIVE_FUNCTIONS			\
   ASM_CPU_SPEC_FUNCTIONS			\
+  CANON_ARCH_SPEC_FUNCTION			\
   TARGET_MODE_SPEC_FUNCTIONS
 
 /* Automatically add -mthumb for Thumb-only targets if mode isn't specified
@@ -2264,7 +2270,19 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 #define TARGET_MODE_SPECS						\
   " %{!marm:%{!mthumb:%:target_mode_check(%{march=*:arch %*;mcpu=*:cpu %*;:})}}"
 
-#define DRIVER_SELF_SPECS MCPU_MTUNE_NATIVE_SPECS TARGET_MODE_SPECS
+/* Generate a canonical string to represent the architecture selected.  */
+#define ARCH_CANONICAL_SPECS				\
+  " -march=%:canon_arch(%{mcpu=*: cpu %*} "		\
+  "                     %{march=*: arch %*} "		\
+  "                     %{mfpu=*: fpu %*} "		\
+  "                     %{mfloat-abi=*: abi %*}"	\
+  "                     %<march=*) "
+
+#define DRIVER_SELF_SPECS			\
+  MCPU_MTUNE_NATIVE_SPECS			\
+  TARGET_MODE_SPECS				\
+  ARCH_CANONICAL_SPECS
+
 #define TARGET_SUPPORTS_WIDE_INT 1
 
 /* For switching between functions with different target attributes.  */

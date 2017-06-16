@@ -17,6 +17,7 @@
    along with GCC; see the file COPYING3.  If not see
    <http://www.gnu.org/licenses/>.  */
 
+#define INCLUDE_LIST
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -305,6 +306,41 @@ arm_parse_arch_option_name (const arch_option *list, const char *optname,
   return NULL;
 }
 
+/* List the permitted architecture option names.  If TARGET is a near
+   miss for an entry, print out the suggested alternative.  */
+static void
+arm_print_hint_for_fpu_option (const char *target)
+{
+  auto_vec<const char*> candidates;
+  for (int i = 0; i < TARGET_FPU_auto; i++)
+    candidates.safe_push (all_fpus[i].name);
+  char *s;
+  const char *hint = candidates_list_and_hint (target, s, candidates);
+  if (hint)
+    inform (input_location, "valid arguments are: %s; did you mean %qs?",
+	    s, hint);
+  else
+    inform (input_location, "valid arguments are: %s", s);
+
+  XDELETEVEC (s);
+}
+
+static const arm_fpu_desc *
+arm_parse_fpu_option (const char *opt)
+{
+  int i;
+
+  for (i = 0; i < TARGET_FPU_auto; i++)
+    {
+      if (strcmp (all_fpus[i].name, opt) == 0)
+	return all_fpus + i;
+    }
+
+  error_at (input_location, "unrecognized -mfpu target: %s", opt);
+  arm_print_hint_for_fpu_option (opt);
+  return NULL;
+}
+
 /* Convert a static initializer array of feature bits to sbitmap
    representation.  */
 void
@@ -403,6 +439,324 @@ arm_parse_option_features (sbitmap isa, const cpu_arch_option *target,
 
       opts = end;
     }
+}
+
+class candidate_extension
+{
+public:
+  const cpu_arch_extension *extension;
+  sbitmap isa_bits;
+  bool required;
+
+  candidate_extension (const cpu_arch_extension *ext, sbitmap bits)
+    : extension (ext), isa_bits (bits), required (true)
+    {}
+  ~candidate_extension ()
+    {
+      sbitmap_free (isa_bits);
+    }
+};
+
+/* Generate a canonical representation of the -march option from the
+   current -march string (if given) and other options on the command
+   line that might affect the architecture.  This aids multilib selection
+   by ensuring that:
+   a) the option is always present
+   b) only the minimal set of options are used
+   c) when there are multiple extensions, they are in a consistent order.
+
+   The options array consists of couplets of information where the
+   first item in each couplet is the string describing which option
+   name was selected (arch, cpu, fpu) and the second is the value
+   passed for that option.  */
+const char *
+arm_canon_arch_option (int argc, const char **argv)
+{
+  const char *arch = NULL;
+  const char *cpu = NULL;
+  const char *fpu = NULL;
+  const char *abi = NULL;
+  static char *canonical_arch = NULL;
+
+  /* Just in case we're called more than once.  */
+  if (canonical_arch)
+    {
+      free (canonical_arch);
+      canonical_arch = NULL;
+    }
+
+  if (argc & 1)
+    fatal_error (input_location,
+		 "%%:canon_for_mlib takes 1 or more pairs of parameters");
+
+  while (argc)
+    {
+      if (strcmp (argv[0], "arch") == 0)
+	arch = argv[1];
+      else if (strcmp (argv[0], "cpu") == 0)
+	cpu = argv[1];
+      else if (strcmp (argv[0], "fpu") == 0)
+	fpu = argv[1];
+      else if (strcmp (argv[0], "abi") == 0)
+	abi = argv[1];
+      else
+	fatal_error (input_location,
+		     "unrecognized operand to %%:canon_for_mlib");
+
+      argc -= 2;
+      argv += 2;
+    }
+
+  auto_sbitmap target_isa (isa_num_bits);
+  auto_sbitmap base_isa (isa_num_bits);
+  auto_sbitmap fpu_isa (isa_num_bits);
+
+  bitmap_clear (fpu_isa);
+
+  const arch_option *selected_arch = NULL;
+
+  /* At least one of these must be defined by either the specs or the
+     user.  */
+  gcc_assert (cpu || arch);
+
+  if (!fpu)
+    fpu = FPUTYPE_DEFAULT;
+
+  if (!abi)
+    {
+      if (TARGET_DEFAULT_FLOAT_ABI == ARM_FLOAT_ABI_SOFT)
+	abi = "soft";
+      else if (TARGET_DEFAULT_FLOAT_ABI == ARM_FLOAT_ABI_SOFTFP)
+	abi = "softfp";
+      else if (TARGET_DEFAULT_FLOAT_ABI == ARM_FLOAT_ABI_HARD)
+	abi = "hard";
+    }
+
+  /* First build up a bitmap describing the target architecture.  */
+  if (arch)
+    {
+      selected_arch = arm_parse_arch_option_name (all_architectures,
+						  "-march", arch);
+
+      if (selected_arch == NULL)
+	return "";
+
+      arm_initialize_isa (target_isa, selected_arch->common.isa_bits);
+      arm_parse_option_features (target_isa, &selected_arch->common,
+				 strchr (arch, '+'));
+      if (fpu && strcmp (fpu, "auto") != 0)
+	{
+	  /* We assume that architectures do not have any FPU bits
+	     enabled by default.  If they did, we would need to strip
+	     these out first.  */
+	  const arm_fpu_desc *target_fpu = arm_parse_fpu_option (fpu);
+	  if (target_fpu == NULL)
+	    return "";
+
+	  arm_initialize_isa (fpu_isa, target_fpu->isa_bits);
+	  bitmap_ior (target_isa, target_isa, fpu_isa);
+	}
+    }
+  else if (cpu)
+    {
+      const cpu_option *selected_cpu
+	= arm_parse_cpu_option_name (all_cores, "-mcpu", cpu);
+
+      if (selected_cpu == NULL)
+	return "";
+
+      arm_initialize_isa (target_isa, selected_cpu->common.isa_bits);
+      arm_parse_option_features (target_isa, &selected_cpu->common,
+				 strchr (cpu, '+'));
+      if (fpu && strcmp (fpu, "auto") != 0)
+	{
+	  /* The easiest and safest way to remove the default fpu
+	     capabilities is to look for a '+no..' option that removes
+	     the base FPU bit (isa_bit_VFPv2).  If that doesn't exist
+	     then the best we can do is strip out all the bits that
+	     might be part of the most capable FPU we know about,
+	     which is "crypto-neon-fp-armv8".  */
+	  bool default_fpu_found = false;
+	  if (selected_cpu->common.extensions)
+	    {
+	      const cpu_arch_extension *ext;
+	      for (ext = selected_cpu->common.extensions; ext->name != NULL;
+		   ++ext)
+		{
+		  if (ext->remove
+		      && check_isa_bits_for (ext->isa_bits, isa_bit_VFPv2))
+		    {
+		      arm_initialize_isa (fpu_isa, ext->isa_bits);
+		      bitmap_and_compl (target_isa, target_isa, fpu_isa);
+		      default_fpu_found = true;
+		    }
+		}
+
+	    }
+
+	  if (!default_fpu_found)
+	    {
+	      arm_initialize_isa
+		(fpu_isa,
+		 all_fpus[TARGET_FPU_crypto_neon_fp_armv8].isa_bits);
+	      bitmap_and_compl (target_isa, target_isa, fpu_isa);
+	    }
+
+	  const arm_fpu_desc *target_fpu = arm_parse_fpu_option (fpu);
+	  if (target_fpu == NULL)
+	    return "";
+
+	  arm_initialize_isa (fpu_isa, target_fpu->isa_bits);
+	  bitmap_ior (target_isa, target_isa, fpu_isa);
+	}
+
+      selected_arch = all_architectures + selected_cpu->arch;
+    }
+
+  /* If we have a soft-float ABI, disable the FPU.  */
+  if (abi && strcmp (abi, "soft") == 0)
+    {
+      /* Clearing the VFPv2 bit is sufficient to stop any extention that
+	 builds on the FPU from matching.  */
+      bitmap_clear_bit (target_isa, isa_bit_VFPv2);
+    }
+
+  /* If we don't have a selected architecture by now, something's
+     badly wrong.  */
+  gcc_assert (selected_arch);
+
+  arm_initialize_isa (base_isa, selected_arch->common.isa_bits);
+
+  /* Architecture has no extension options, so just return the canonical
+     architecture name.  */
+  if (selected_arch->common.extensions == NULL)
+    return selected_arch->common.name;
+
+  /* We're only interested in extension bits.  */
+  bitmap_and_compl (target_isa, target_isa, base_isa);
+
+  /* There are no extensions needed.  Just return the canonical architecture
+     name.  */
+  if (bitmap_empty_p (target_isa))
+    return selected_arch->common.name;
+
+  /* What is left is the architecture that the compiler will target.  We
+     now need to map that back into a suitable option+features list.
+
+     The list is built in two passes.  First we scan every additive
+     option feature supported by the architecture.  If the option
+     provides a subset of the features we need we add it to the list
+     of candidates.  We then scan backwards over the list of
+     candidates and if we find a feature that adds nothing to one that
+     was later in the list we mark it as redundant.  The result is a
+     minimal list of required features for the target
+     architecture.  */
+
+  std::list<candidate_extension *> extensions;
+
+  auto_sbitmap target_isa_unsatisfied (isa_num_bits);
+  bitmap_copy (target_isa_unsatisfied, target_isa);
+
+  sbitmap isa_bits = NULL;
+  for (const cpu_arch_extension *cand = selected_arch->common.extensions;
+       cand->name != NULL;
+       cand++)
+    {
+      if (cand->remove || cand->alias)
+	continue;
+
+      if (isa_bits == NULL)
+	isa_bits = sbitmap_alloc (isa_num_bits);
+
+      arm_initialize_isa (isa_bits, cand->isa_bits);
+      if (bitmap_subset_p (isa_bits, target_isa))
+	{
+	  extensions.push_back (new candidate_extension (cand, isa_bits));
+	  bitmap_and_compl (target_isa_unsatisfied, target_isa_unsatisfied,
+			    isa_bits);
+	  isa_bits = NULL;
+	}
+    }
+
+  /* There's one extra case to consider, which is that the user has
+     specified an FPU that is less capable than this architecture
+     supports.  In that case the code above will fail to find a
+     suitable feature.  We handle this by scanning the list of options
+     again, matching the first option that provides an FPU that is
+     more capable than the selected FPU.
+
+     Note that the other case (user specified a more capable FPU than
+     this architecture supports) should end up selecting the most
+     capable FPU variant that we do support.  This is sufficient for
+     multilib selection.  */
+
+  if (bitmap_bit_p (target_isa_unsatisfied, isa_bit_VFPv2)
+      && bitmap_bit_p (fpu_isa, isa_bit_VFPv2))
+    {
+      std::list<candidate_extension *>::iterator ipoint = extensions.begin ();
+
+      for (const cpu_arch_extension *cand = selected_arch->common.extensions;
+	   cand->name != NULL;
+	   cand++)
+	{
+	  if (cand->remove || cand->alias)
+	    continue;
+
+	  if (isa_bits == NULL)
+	    isa_bits = sbitmap_alloc (isa_num_bits);
+
+	  /* We need to keep the features in canonical order, so move the
+	     insertion point if this feature is a candidate.  */
+	  if (ipoint != extensions.end ()
+	      && (*ipoint)->extension == cand)
+	    ++ipoint;
+
+	  arm_initialize_isa (isa_bits, cand->isa_bits);
+	  if (bitmap_subset_p (fpu_isa, isa_bits))
+	    {
+	      extensions.insert (ipoint,
+				 new candidate_extension (cand, isa_bits));
+	      isa_bits = NULL;
+	      break;
+	    }
+	}
+    }
+
+  if (isa_bits)
+    sbitmap_free (isa_bits);
+
+  bitmap_clear (target_isa);
+  size_t len = 1;
+  for (std::list<candidate_extension *>::reverse_iterator riter
+	 = extensions.rbegin ();
+       riter != extensions.rend (); ++riter)
+    {
+      if (bitmap_subset_p ((*riter)->isa_bits, target_isa))
+	(*riter)->required = false;
+      else
+	{
+	  bitmap_ior (target_isa, target_isa, (*riter)->isa_bits);
+	  len += strlen ((*riter)->extension->name) + 1;
+	}
+    }
+
+  canonical_arch
+    = (char *) xmalloc (len + strlen (selected_arch->common.name));
+
+  strcpy (canonical_arch, selected_arch->common.name);
+
+  for (std::list<candidate_extension *>::iterator iter = extensions.begin ();
+       iter != extensions.end (); ++iter)
+    {
+      if ((*iter)->required)
+	{
+	  strcat (canonical_arch, "+");
+	  strcat (canonical_arch, (*iter)->extension->name);
+	}
+      delete (*iter);
+    }
+
+  return canonical_arch;
 }
 
 #undef ARM_CPU_NAME_LENGTH
