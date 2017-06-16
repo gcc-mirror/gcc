@@ -1,5 +1,31 @@
 2017-06-16  Richard Earnshaw  <rearnsha@arm.com>
 
+	* config/arm/arm-protos.h (arm_build_target): Remove arch_core.
+	(cpu_arch_extension): New structure.
+	(cpu_arch_option, arch_option, cpu_option): New structures.
+	* config/arm/parsecpu.awk (gen_headers): Build an enumeration of
+	architecture types.
+	(gen_data): Generate new format data tables.
+	* config/arm/arm.c (cpu_tune): New structure.
+	(cpu_option, processors): Delete.
+	(arm_print_hint_for_core_or_arch): Delete.  Replace with ...
+	(arm_print_hint_for_cpu_option): ... this and ...
+	(arm_print_hint_for_arch_option): ... this.
+	(arm_parse_arch_cpu_name): Delete.  Replace with ...
+	(arm_parse_cpu_option_name): ... this and ...
+	(arm_parse_arch_option_name): ... this.
+	(arm_unrecognized_feature): Change type of target parameter to
+	cpu_arch_option.
+	(arm_parse_arch_cpu_features): Delete.	Replace with ...
+	(arm_parse_option_features): ... this.
+	(arm_configure_build_target): Rework to use new configuration data
+	tables.
+	(arm_print_tune_info): Rework for new configuration data tables.
+	* config/arm/arm-cpu-data.h: Regenerated.
+	* config/arm/arm-cpu.h: Regenerated.
+
+2017-06-16  Richard Earnshaw  <rearnsha@arm.com>
+
 	* Makefile.in (OBJS): Move sbitmap.o from here ...
 	(OBJS-libcommon): ... to here.
 
