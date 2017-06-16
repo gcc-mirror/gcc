@@ -1,5 +1,7 @@
 2017-06-16  Nathan Sidwell  <nathan@acm.org>
 
+	* pt.c (tsubst_baselink): Fix & clarify formatting.
+
 	* cp-tree.h (build_this_parm, cp_build_parm_decl,
 	build_artificial_parm): Add FN parm.
 	* decl.c (start_cleanup_fn): Adjust.
