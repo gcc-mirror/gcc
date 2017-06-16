@@ -1,5 +1,21 @@
 2017-06-16  Richard Earnshaw  <rearnsha@arm.com>
 
+	* arm-cpus.in (armv5e): Add options fp, vfpv2 and nofp.
+	(armv5te, armv5tej): Likewise.
+	(armv6, armv6j, armv6k, armv6z, armv6kz, armv6zk, armv6t2): Likewise.
+	(armv7): Add options fp and vfpv3-d16.
+	(armv7-a): Add options fp, simd, vfpv3, vfpv3-d16, vfpv3-d16-fp16,
+	vfpv3-fp16, vfpv4, vfpv4-d16, neon, neon-vfpv3, neon-fp16, neon-vfpv4,
+	nofp and nosimd.
+	(armv7ve): Likewise.
+	(armv7-r): Add options fp, fp.sp, idiv, nofp and noidiv.
+	(armv7e-m): Add options fp, fpv5, fp.dp and nofp.
+	(armv8-a): Add nocrypto option.
+	(armv8.1-a, armv8.2-a): Likewise.
+	(armv8-m.main): add options fp, fp.dp and nofp.
+
+2017-06-16  Richard Earnshaw  <rearnsha@arm.com>
+
 	* config/arm/arm-cpus.in (armv8-a): Add options crc, simd crypto and
 	nofp.
 	(armv8-a+crc): Delete.
