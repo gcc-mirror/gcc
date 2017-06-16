@@ -50,7 +50,7 @@ void test12_aux(bool integer_type)
   VERIFY(is.fail());
 }
 
-bool test12()
+void test12()
 {
   test12_aux<short>(true);
   test12_aux<int>(true);
