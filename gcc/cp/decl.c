@@ -7823,10 +7823,7 @@ start_cleanup_fn (void)
   /* Build the parameter.  */
   if (use_cxa_atexit)
     {
-      tree parmdecl;
-
-      parmdecl = cp_build_parm_decl (NULL_TREE, ptr_type_node);
-      DECL_CONTEXT (parmdecl) = fndecl;
+      tree parmdecl = cp_build_parm_decl (fndecl, NULL_TREE, ptr_type_node);
       TREE_USED (parmdecl) = 1;
       DECL_READ_P (parmdecl) = 1;
       DECL_ARGUMENTS (fndecl) = parmdecl;
@@ -8367,12 +8364,12 @@ check_class_member_definition_namespace (tree decl)
 	       decl, DECL_CONTEXT (decl));
 }
 
-/* Build a PARM_DECL for the "this" parameter.  TYPE is the
+/* Build a PARM_DECL for the "this" parameter of FN.  TYPE is the
    METHOD_TYPE for a non-static member function; QUALS are the
    cv-qualifiers that apply to the function.  */
 
 tree
-build_this_parm (tree type, cp_cv_quals quals)
+build_this_parm (tree fn, tree type, cp_cv_quals quals)
 {
   tree this_type;
   tree qual_type;
@@ -8391,7 +8388,7 @@ build_this_parm (tree type, cp_cv_quals quals)
      assigned to.  */
   this_quals = (quals & TYPE_QUAL_RESTRICT) | TYPE_QUAL_CONST;
   qual_type = cp_build_qualified_type (this_type, this_quals);
-  parm = build_artificial_parm (this_identifier, qual_type);
+  parm = build_artificial_parm (fn, this_identifier, qual_type);
   cp_apply_type_quals_to_decl (this_quals, parm);
   return parm;
 }
@@ -8525,8 +8522,7 @@ grokfndecl (tree ctype,
 
   if (TREE_CODE (type) == METHOD_TYPE)
     {
-      tree parm;
-      parm = build_this_parm (type, quals);
+      tree parm = build_this_parm (decl, type, quals);
       DECL_CHAIN (parm) = parms;
       parms = parm;
 
@@ -11625,7 +11621,8 @@ grokdeclarator (const cp_declarator *declarator,
 	   args && args != void_list_node;
 	   args = TREE_CHAIN (args))
 	{
-	  tree decl = cp_build_parm_decl (NULL_TREE, TREE_VALUE (args));
+	  tree decl = cp_build_parm_decl (NULL_TREE, NULL_TREE,
+					  TREE_VALUE (args));
 
 	  DECL_CHAIN (decl) = decls;
 	  decls = decl;
@@ -11794,7 +11791,7 @@ grokdeclarator (const cp_declarator *declarator,
 
     if (decl_context == PARM)
       {
-	decl = cp_build_parm_decl (unqualified_id, type);
+	decl = cp_build_parm_decl (NULL_TREE, unqualified_id, type);
 	DECL_ARRAY_PARAMETER_P (decl) = array_parameter_p;
 
 	bad_specifiers (decl, BSP_PARM, virtualp,
