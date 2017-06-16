@@ -2328,25 +2328,25 @@ resort_type_method_vec (void* obj,
 			gt_pointer_operator new_value,
 			void* cookie)
 {
-  vec<tree, va_gc> *method_vec = (vec<tree, va_gc> *) obj;
-  int len = vec_safe_length (method_vec);
-  size_t slot;
-  tree fn;
-
-  /* The type conversion ops have to live at the front of the vec, so we
-     can't sort them.  */
-  for (slot = CLASSTYPE_FIRST_CONVERSION_SLOT;
-       vec_safe_iterate (method_vec, slot, &fn);
-       ++slot)
-    if (!DECL_CONV_FN_P (OVL_FIRST (fn)))
-      break;
-
-  if (len - slot > 1)
+  if (vec<tree, va_gc> *method_vec = (vec<tree, va_gc> *) obj)
     {
-      resort_data.new_value = new_value;
-      resort_data.cookie = cookie;
-      qsort (method_vec->address () + slot, len - slot, sizeof (tree),
-	     resort_method_name_cmp);
+      int len = method_vec->length ();
+      int slot;
+
+      /* The type conversion ops have to live at the front of the vec, so we
+	 can't sort them.  */
+      for (slot = CLASSTYPE_FIRST_CONVERSION_SLOT;
+	   slot < len; slot++)
+	if (!DECL_CONV_FN_P (OVL_FIRST ((*method_vec)[slot])))
+	  break;
+
+      if (len > slot + 1)
+	{
+	  resort_data.new_value = new_value;
+	  resort_data.cookie = cookie;
+	  qsort (method_vec->address () + slot, len - slot, sizeof (tree),
+		 resort_method_name_cmp);
+	}
     }
 }
 
