@@ -33,10 +33,6 @@
 #undef ARM_UNWIND_INFO
 #define ARM_UNWIND_INFO 1
 
-/* Section 4.1 of the AAPCS requires the use of VFP format.  */
-#undef  FPUTYPE_DEFAULT
-#define FPUTYPE_DEFAULT "vfp"
-
 /* TARGET_BIG_ENDIAN_DEFAULT is set in
    config.gcc for big endian configurations.  */
 #if TARGET_BIG_ENDIAN_DEFAULT

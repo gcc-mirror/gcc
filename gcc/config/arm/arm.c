@@ -3298,17 +3298,10 @@ arm_option_override (void)
 
   if (!global_options_set.x_arm_fpu_index)
     {
-      const char *target_fpu_name;
       bool ok;
       int fpu_index;
 
-#ifdef FPUTYPE_DEFAULT
-      target_fpu_name = FPUTYPE_DEFAULT;
-#else
-      target_fpu_name = "vfp";
-#endif
-
-      ok = opt_enum_arg_to_value (OPT_mfpu_, target_fpu_name, &fpu_index,
+      ok = opt_enum_arg_to_value (OPT_mfpu_, FPUTYPE_AUTO, &fpu_index,
 				  CL_TARGET);
       gcc_assert (ok);
       arm_fpu_index = (enum fpu_type) fpu_index;

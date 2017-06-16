@@ -1,5 +1,17 @@
 2017-06-16  Richard Earnshaw  <rearnsha@arm.com>
 
+	* config/arm/arm.h (FPUTYPE_AUTO): Define.
+	* config/arm/arm.c (arm_option_override): Use FPUTYPE_AUTO if the
+	fpu is not specified by the user/command-line.
+	* config/arm/bpabi.h (FPUTYPE_DEFAULT): Delete.
+	* config/arm/netbsd-elf.h (FPUTYPE_DEFAULT): Delete.
+	* config/arm/linux-elf.h (FPUTYPE_DEFAULT): Delete.
+	* config/arm/vxworks.h (FPUTYPE_DEFAULT): Delete.
+	* common/config/arm/arm-common.c (arm_canon_arch_option): Use
+	FPUTYPE_AUTO insted of FPUTYPE_DEFAULT.
+
+2017-06-16  Richard Earnshaw  <rearnsha@arm.com>
+
 	* config/arm/elf.h (MULTILIB_DEFAULTS): Delete.
 	* config/arm/t-arm-elf: Rewritten.
 
