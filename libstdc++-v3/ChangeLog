@@ -1,3 +1,10 @@
+2017-06-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libstdc++/81092
+	* config/abi/post/i486-linux-gnu/baseline_symbols.txt: Update.
+	* config/abi/post/powerpc-linux-gnu/baseline_symbols.txt: Update.
+	* config/abi/post/powerpc64-linux-gnu/32/baseline_symbols.txt: Update.
+
 2017-06-16  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/locale_conv.h (wbuffer_convert::sync): Fix condition.
