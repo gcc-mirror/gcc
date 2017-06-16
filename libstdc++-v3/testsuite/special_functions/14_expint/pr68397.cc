@@ -23,7 +23,7 @@
 #include <cmath>
 #include <testsuite_hooks.h>
 
-int
+void
 test01()
 {
   // Answers from Wolfram Alpha.
