@@ -215,7 +215,9 @@ arm_target_thumb_only (int argc, const char **argv)
 	return "-mthumb";
     }
 
-  return NULL;
+  /* Compiler hasn't been configured with a default, and the CPU
+     doesn't require Thumb, so default to ARM.  */
+  return "-marm";
 }
 
 /* List the permitted CPU option names.  If TARGET is a near miss for an

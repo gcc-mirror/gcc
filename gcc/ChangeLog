@@ -1,5 +1,17 @@
 2017-06-16  Richard Earnshaw  <rearnsha@arm.com>
 
+	* config.gcc: (arm*-*-*): When building a-profile libraries, force
+	the driver to pass through the default setting of -mfloat-abi.
+	* common/config/arm/arm-common.c (arm_target_thumb_only): Return -marm
+	rather than NULL.
+	* config/arm/t-multilib (MULTILIB_REUSE): Initialize to empty.
+	(all_feat_combs): New rule.
+	(MULTILIB_OPTIONS): Use explicit ARM and Thumb directories.  Rework
+	default libraries.
+	* config/arm/t-aprofile: Rewrite.
+
+2017-06-16  Richard Earnshaw  <rearnsha@arm.com>
+
 	* config/arm/arm.h (FPUTYPE_AUTO): Define.
 	* config/arm/arm.c (arm_option_override): Use FPUTYPE_AUTO if the
 	fpu is not specified by the user/command-line.
