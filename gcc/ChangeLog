@@ -1,5 +1,13 @@
 2017-06-16  Richard Earnshaw  <rearnsha@arm.com>
 
+	* doc/invoke.texi (ARM Options, -mcpu): Document supported
+	extension options.
+	(ARM Options, -mtune): Document that this accepts the same
+	extension options as -mcpu.
+	(ARM Options, -mfpu): Document addition of -mfpu=auto.
+
+2017-06-16  Richard Earnshaw  <rearnsha@arm.com>
+
 	* doc/invoke.texi (ARM Options, -march=): Document new syntax and
 	permitted extensions.
 
