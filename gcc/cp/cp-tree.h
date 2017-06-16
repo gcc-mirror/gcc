@@ -169,8 +169,6 @@ enum cp_tree_index
     CPTI_DSO_HANDLE,
     CPTI_DCAST,
 
-    CPTI_KEYED_CLASSES,
-
     CPTI_NULLPTR,
     CPTI_NULLPTR_TYPE,
 
@@ -289,11 +287,6 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
 /* The type of the vtt parameter passed to subobject constructors and
    destructors.  */
 #define vtt_parm_type			cp_global_trees[CPTI_VTT_PARM_TYPE]
-
-/* A TREE_LIST of the dynamic classes whose vtables may have to be
-   emitted in this translation unit.  */
-
-#define keyed_classes			cp_global_trees[CPTI_KEYED_CLASSES]
 
 /* A node which matches any template argument.  */
 #define any_targ_node			cp_global_trees[CPTI_ANY_TARG]
@@ -5106,6 +5099,10 @@ extern GTY(()) vec<tree, va_gc> *local_classes;
 
 /* An array of static vars & fns.  */
 extern GTY(()) vec<tree, va_gc> *static_decls;
+
+/* An array of vtable-needing types that have no key function, or have
+   an emitted key function.  */
+extern GTY(()) vec<tree, va_gc> *keyed_classes;
 
 
 /* Here's where we control how name mangling takes place.  */
