@@ -3143,7 +3143,9 @@ arm_configure_build_target (struct arm_build_target *target,
       bitmap_clear (sought_isa);
       auto_sbitmap default_isa (isa_num_bits);
 
-      arm_selected_cpu = &all_cores[TARGET_CPU_DEFAULT];
+      arm_selected_cpu = arm_parse_cpu_option_name (all_cores, "default CPU",
+						    TARGET_CPU_DEFAULT);
+      cpu_opts = strchr (TARGET_CPU_DEFAULT, '+');
       gcc_assert (arm_selected_cpu->common.name);
 
       /* RWE: All of the selection logic below (to the end of this
@@ -3154,6 +3156,8 @@ arm_configure_build_target (struct arm_build_target *target,
 	 support for the pre-thumb era cores is removed.  */
       sel = arm_selected_cpu;
       arm_initialize_isa (default_isa, sel->common.isa_bits);
+      arm_parse_option_features (default_isa, &arm_selected_cpu->common,
+				 cpu_opts);
 
       /* Now check to see if the user has specified any command line
 	 switches that require certain abilities from the cpu.  */
@@ -3241,6 +3245,8 @@ arm_configure_build_target (struct arm_build_target *target,
 	 structure.  */
       target->core_name = arm_selected_cpu->common.name;
       arm_initialize_isa (target->isa, arm_selected_cpu->common.isa_bits);
+      arm_parse_option_features (target->isa, &arm_selected_cpu->common,
+				 cpu_opts);
       arm_selected_arch = all_architectures + arm_selected_cpu->arch;
     }
 

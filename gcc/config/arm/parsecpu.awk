@@ -393,9 +393,19 @@ function gen_opt () {
 }
 
 function check_cpu (name) {
-    if (name in cpu_cnames) {
-	print cpu_cnames[name]
-    } else print "error"
+    exts = split (name, extensions, "+")
+
+    if (! extensions[1] in cpu_cnames) {
+	return "error"
+    }
+
+    for (n = 2; n <= exts; n++) {
+	if (!((extensions[1], extensions[n]) in cpu_opt_remove)	\
+	    && !((extensions[1], extensions[n]) in cpu_optaliases)) {
+	    return "error"
+	}
+    }
+    return name
 }
 
 function check_fpu (name) {
@@ -405,9 +415,19 @@ function check_fpu (name) {
 }
 
 function check_arch (name) {
-    if (name in arch_isa) {
-	print name
-    } else print "error"
+    exts = split (name, extensions, "+")
+
+    if (! extensions[1] in arch_isa) {
+	return "error"
+    }
+
+    for (n = 2; n <= exts; n++) {
+	if (!((extensions[1], extensions[n]) in arch_opt_remove)	\
+	    && !((extensions[1], extensions[n]) in arch_optaliases)) {
+	    return "error"
+	}
+    }
+    return name
 }
 
 BEGIN {
@@ -614,10 +634,10 @@ END {
 	gen_opt()
     } else if (cmd ~ /^chk(cpu|tune) /) {
 	split (cmd, target)
-	check_cpu(target[2])
+	print check_cpu(target[2])
     } else if (cmd ~ /^chkarch /) {
 	split (cmd, target)
-	check_arch(target[2])
+	print check_arch(target[2])
     } else if (cmd ~ /^chkfpu /) {
 	split (cmd, target)
 	check_fpu(target[2])

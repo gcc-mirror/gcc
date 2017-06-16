@@ -1161,7 +1161,7 @@ arm*-*-eabi* | arm*-*-symbianelf* | arm*-*-rtems* | arm*-*-fuchsia*)
 	arm*-*-fuchsia*)
 	  tm_file="${tm_file} fuchsia.h arm/fuchsia-elf.h glibc-stdint.h"
 	  tmake_file="${tmake_file} arm/t-bpabi"
-	  target_cpu_cname="genericv7a"
+	  target_cpu_cname="generic-armv7-a"
 	  ;;
 	arm*-*-rtems*)
 	  tm_file="${tm_file} rtems.h arm/rtems.h newlib-stdint.h"
@@ -4496,9 +4496,9 @@ case ${target} in
 	arm*-*-*)
 		if test x$target_cpu_cname = x
 		then
-			target_cpu_default2=TARGET_CPU_arm6
+			target_cpu_default2="\\\"arm6\\\""
 		else
-			target_cpu_default2=TARGET_CPU_$target_cpu_cname
+			target_cpu_default2="\\\"$target_cpu_cname\\\""
 		fi
 		;;
 
