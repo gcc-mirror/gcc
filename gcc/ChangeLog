@@ -1,3 +1,9 @@
+2017-06-16  Jan Hubicka  <hubicka@ucw.cz>
+
+	* profile.c (compare_freqs): New function.
+	(branch_prob): Sort edge list.
+	(find_spanning_tree): Assume that the list is priority sorted.
+
 2017-06-16  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/81090

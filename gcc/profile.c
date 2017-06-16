@@ -987,6 +987,27 @@ output_location (char const *file_name, int line,
     }
 }
 
+/* Helper for qsort so edges get sorted from highest frequency to smallest.
+   This controls the weight for minimal spanning tree algorithm  */
+static int
+compare_freqs (const void *p1, const void *p2)
+{
+  const_edge e1 = *(const const_edge *)p1;
+  const_edge e2 = *(const const_edge *)p2;
+
+  /* Critical edges needs to be split which introduce extra control flow.
+     Make them more heavy.  */
+  int m1 = EDGE_CRITICAL_P (e1) ? 2 : 1;
+  int m2 = EDGE_CRITICAL_P (e2) ? 2 : 1;
+
+  if (EDGE_FREQUENCY (e1) * m1 + m1 != EDGE_FREQUENCY (e2) * m2 + m2)
+    return EDGE_FREQUENCY (e2) * m2 + m2 - EDGE_FREQUENCY (e1) * m1 - m1;
+  /* Stabilize sort.  */
+  if (e1->src->index != e2->src->index)
+    return e2->src->index - e1->src->index;
+  return e2->dest->index - e1->dest->index;
+}
+
 /* Instrument and/or analyze program behavior based on program the CFG.
 
    This function creates a representation of the control flow graph (of
@@ -1140,6 +1161,7 @@ branch_prob (void)
 
   el = create_edge_list ();
   num_edges = NUM_EDGES (el);
+  qsort (el->index_to_edge, num_edges, sizeof (edge), compare_freqs);
   alloc_aux_for_edges (sizeof (struct edge_profile_info));
 
   /* The basic blocks are expected to be numbered sequentially.  */
@@ -1431,22 +1453,8 @@ find_spanning_tree (struct edge_list *el)
 	}
     }
 
-  /* Now insert all critical edges to the tree unless they form a cycle.  */
-  for (i = 0; i < num_edges; i++)
-    {
-      edge e = INDEX_EDGE (el, i);
-      if (EDGE_CRITICAL_P (e) && !EDGE_INFO (e)->ignore
-	  && find_group (e->src) != find_group (e->dest))
-	{
-	  if (dump_file)
-	    fprintf (dump_file, "Critical edge %d to %d put to tree\n",
-		     e->src->index, e->dest->index);
-	  EDGE_INFO (e)->on_tree = 1;
-	  union_groups (e->src, e->dest);
-	}
-    }
-
-  /* And now the rest.  */
+  /* And now the rest.  Edge list is sorted according to frequencies and
+     thus we will produce minimal spanning tree.  */
   for (i = 0; i < num_edges; i++)
     {
       edge e = INDEX_EDGE (el, i);
