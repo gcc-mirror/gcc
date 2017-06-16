@@ -160,6 +160,9 @@ tree integer_two_node;
 /* vector of static decls.  */
 vec<tree, va_gc> *static_decls;
 
+/* vector of keyed classes.  */
+vec<tree, va_gc> *keyed_classes;
+
 /* Used only for jumps to as-yet undefined labels, since jumps to
    defined labels can have their validity checked immediately.  */
 
@@ -4063,6 +4066,9 @@ cxx_init_decl_processing (void)
 
   /* Guess at the initial static decls size.  */
   vec_alloc (static_decls, 500);
+
+  /* ... and keyed classes.  */
+  vec_alloc (keyed_classes, 100);
 
   record_builtin_type (RID_BOOL, "bool", boolean_type_node);
   truthvalue_type_node = boolean_type_node;
@@ -15438,7 +15444,7 @@ record_key_method_defined (tree fndecl)
     {
       tree fnclass = DECL_CONTEXT (fndecl);
       if (fndecl == CLASSTYPE_KEY_METHOD (fnclass))
-	keyed_classes = tree_cons (NULL_TREE, fnclass, keyed_classes);
+	vec_safe_push (keyed_classes, fnclass);
     }
 }
 
