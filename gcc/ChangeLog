@@ -1,3 +1,12 @@
+2017-06-16  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/80933
+	PR tree-optimization/80934
+	* builtins.c (fold_builtin_3): Do not handle bcmp here.
+	* gimple-fold.c (gimple_fold_builtin_bcmp): New function.
+	(gimple_fold_builtin_bcopy, gimple_fold_builtin_bzero): Likewise.
+	(gimple_fold_builtin): Call them.
+
 2017-06-16  Jan Hubicka  <hubicka@ucw.cz>
 
 	* gimple-ssa-isolate-paths.c (isolate_path): Set edge leading to path
