@@ -1,5 +1,10 @@
 2017-06-16  Jan Hubicka  <hubicka@ucw.cz>
 
+	* predict.c (force_edge_cold): Handle declaring edges impossible
+	more aggresively.
+
+2017-06-16  Jan Hubicka  <hubicka@ucw.cz>
+
 	* tree-ssa-loop-ivcanon.c (remove_exits_and_undefined_stmts): Update
 	profile.
 	(try_unroll_loop_completely): Fix reporting.
