@@ -1,3 +1,7 @@
+2017-06-16  Richard Earnshaw  <rearnsha@arm.com>
+
+	* gcc.target/arm/multilibs.exp: New file.
+
 2017-06-16  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/80933

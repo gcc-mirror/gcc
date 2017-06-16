@@ -3856,7 +3856,9 @@ case "${target}" in
 				    echo "Error: You cannot use any of --with-arch/cpu/fpu/float/mode with --with-multilib-list=${with_multilib_list}" 1>&2
 				    exit 1
 				fi
-
+				# But pass the default value for float-abi
+				# through to the multilib selector
+				with_float="soft"
 				tmake_file="${tmake_file} ${tmake_profile_file}"
 				TM_MULTILIB_CONFIG="$with_multilib_list"
 			fi
