@@ -1,5 +1,43 @@
 2017-06-16  Richard Earnshaw  <rearnsha@arm.com>
 
+	* config/arm/arm-isa.h (ISA_ALL_FPU_INTERNAL): Renamed from ISA_ALL_FPU.
+	(ISA_ALL_CRYPTO): New macro.
+	(ISA_ALL_SIMD): New macro
+	(ISA_ALL_FP): New macro.
+	* config/arm/arm.c (fpu_bitlist): Update initializer.
+	* config/arm/arm-cpus.in: Use new ISA_ALL macros to disable crypto,
+	simd or fp.
+	(arm9e): Add fpu.  Add option for nofp
+	(arm946e-s, arm966e-s, arm968e-s, arm10e, arm1020e, arm1022e): Likewise.
+	(arm926ej-s, arm1026ej-s): Likewise.
+	(generic-armv7-a): Add fpu.  Add options for simd, vfpv3, vfpv3-d16,
+	vfpv3-fp16, vfpv3-d16-fp16, vfpv4, vfpv4-d16, neon, neon-vfp3,
+	neon-fp16, neon-vfpv4, nofp and nosimd.
+	(cortex-a5, cortex-a7): Add fpu.  Add options for nosimd and nofp.
+	(cortex-a8): Add fpu.  Add option for nofp.
+	(cortex-a9): Add fpu.  Add options for nosimd and nofp.
+	(cortex-a12, cortex-a15, cortex-a17): Add fpu.	Add option for nofp.
+	(cortex-r4f): Add fpu.
+	(cortex-r5): Add fpu.  Add options for nofp.dp and nofp.
+	(cortex-r7): Use idiv option from architecture.	 Add fpu.  Add option
+	for nofp.
+	(cortex-r8): Likewise.
+	(cortex-m4): Add fpu.  Add option for nofp.
+	(cortex-a15.cortex-a7): Add fpu.  Add option for nofp.
+	(cortex-a17.cortex-a7): Likewise.
+	(cortex-a32): Add fpu.	Add options for crypto and nofp.
+	(cortex-a35, cortex-a53): Likewise.
+	(cortex-a57): Add fpu.	Add option for crypto.
+	(cortex-a72, cortex-a73): Likewise.
+	(exynos-m1): Likewise.
+	(cortex-a57.cortex-a53, cortex-a72.cortex-a53): Likewise.
+	(cortex-a73.cortex-a35, cortex-a73.cortex-a53): Likewise.
+	(cortex-m33): Add fpu.	Add option for nofp.
+	* config/arm/arm-cpu-cdata.h: Regenerated
+	* config/arm/arm-cpu-data.h: Regenerated.
+
+2017-06-16  Richard Earnshaw  <rearnsha@arm.com>
+
 	* arm-cpus.in (armv5e): Add options fp, vfpv2 and nofp.
 	(armv5te, armv5tej): Likewise.
 	(armv6, armv6j, armv6k, armv6z, armv6kz, armv6zk, armv6t2): Likewise.
