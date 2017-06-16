@@ -1,3 +1,7 @@
+2017-06-16  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/cmse_nonsecure_call.S: Explicitly set the FPU.
+
 2017-06-09  Martin Liska  <mliska@suse.cz>
 
 	* libgcov-profiler.c (__gcov_indirect_call_profiler_v2):
