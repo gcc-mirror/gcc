@@ -1,5 +1,12 @@
 2017-06-16  Richard Earnshaw  <rearnsha@arm.com>
 
+	* genmultilib (multilib_reuse): Allow an explicit period to be escaped
+	with a backslash.  Remove the backslash after substituting unescaped
+	periods.
+	* doc/fragments.texi (MULTILIB_REUSE): Document it.
+
+2017-06-16  Richard Earnshaw  <rearnsha@arm.com>
+
 	* config.gcc: (arm*-*-*): When building a-profile libraries, force
 	the driver to pass through the default setting of -mfloat-abi.
 	* common/config/arm/arm-common.c (arm_target_thumb_only): Return -marm
