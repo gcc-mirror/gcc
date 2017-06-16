@@ -113,6 +113,9 @@ begin arch armv5e
  tune flags CO_PROC
  base 5E
  isa ARMv5e
+ option fp add VFPv2 FP_DBL
+ option vfpv2 add VFPv2 FP_DBL
+ option nofp remove VFPv2 FP_DBL
 end arch armv5e
 
 begin arch armv5te
@@ -120,6 +123,9 @@ begin arch armv5te
  tune flags CO_PROC
  base 5TE
  isa ARMv5te
+ option fp add VFPv2 FP_DBL
+ option vfpv2 add VFPv2 FP_DBL
+ option nofp remove VFPv2 FP_DBL
 end arch armv5te
 
 begin arch armv5tej
@@ -127,6 +133,9 @@ begin arch armv5tej
  tune flags CO_PROC
  base 5TEJ
  isa ARMv5tej
+ option fp add VFPv2 FP_DBL
+ option vfpv2 add VFPv2 FP_DBL
+ option nofp remove VFPv2 FP_DBL
 end arch armv5tej
 
 begin arch armv6
@@ -134,6 +143,9 @@ begin arch armv6
  tune flags CO_PROC
  base 6
  isa ARMv6
+ option fp add VFPv2 FP_DBL
+ option vfpv2 add VFPv2 FP_DBL
+ option nofp remove VFPv2 FP_DBL
 end arch armv6
 
 begin arch armv6j
@@ -141,6 +153,9 @@ begin arch armv6j
  tune flags CO_PROC
  base 6J
  isa ARMv6j
+ option fp add VFPv2 FP_DBL
+ option vfpv2 add VFPv2 FP_DBL
+ option nofp remove VFPv2 FP_DBL
 end arch armv6j
 
 begin arch armv6k
@@ -148,6 +163,9 @@ begin arch armv6k
  tune flags CO_PROC
  base 6K
  isa ARMv6k
+ option fp add VFPv2 FP_DBL
+ option vfpv2 add VFPv2 FP_DBL
+ option nofp remove VFPv2 FP_DBL
 end arch armv6k
 
 begin arch armv6z
@@ -155,6 +173,9 @@ begin arch armv6z
  tune flags CO_PROC
  base 6Z
  isa ARMv6z
+ option fp add VFPv2 FP_DBL
+ option vfpv2 add VFPv2 FP_DBL
+ option nofp remove VFPv2 FP_DBL
 end arch armv6z
 
 begin arch armv6kz
@@ -162,6 +183,9 @@ begin arch armv6kz
  tune flags CO_PROC
  base 6KZ
  isa ARMv6kz
+ option fp add VFPv2 FP_DBL
+ option vfpv2 add VFPv2 FP_DBL
+ option nofp remove VFPv2 FP_DBL
 end arch armv6kz
 
 begin arch armv6zk
@@ -169,6 +193,9 @@ begin arch armv6zk
  tune flags CO_PROC
  base 6KZ
  isa ARMv6kz
+ option fp add VFPv2 FP_DBL
+ option vfpv2 add VFPv2 FP_DBL
+ option nofp remove VFPv2 FP_DBL
 end arch armv6zk
 
 begin arch armv6t2
@@ -176,6 +203,9 @@ begin arch armv6t2
  tune flags CO_PROC
  base 6T2
  isa ARMv6t2
+ option fp add VFPv2 FP_DBL
+ option vfpv2 add VFPv2 FP_DBL
+ option nofp remove VFPv2 FP_DBL
 end arch armv6t2
 
 begin arch armv6-m
@@ -195,6 +225,9 @@ begin arch armv7
  tune flags CO_PROC
  base 7
  isa ARMv7
+# fp => VFPv3-d16 (only useful for the A+R profile subset).
+ option fp add VFPv3 FP_DBL
+ option vfpv3-d16 add VFPv3 FP_DBL
 end arch armv7
 
 begin arch armv7-a
@@ -202,6 +235,21 @@ begin arch armv7-a
  tune flags CO_PROC
  base 7A
  isa ARMv7a
+# fp => VFPv3-d16, simd => neon-vfpv3
+ option fp add VFPv3 FP_DBL
+ option simd add VFPv3 NEON
+ option vfpv3 add VFPv3 FP_D32
+ option vfpv3-d16 add VFPv3 FP_DBL
+ option vfpv3-d16-fp16 add VFPv3 FP_DBL bit_fp16conv
+ option vfpv3-fp16 add VFPv3 FP_DBL FP_D32 bit_fp16conv
+ option vfpv4 add VFPv4 FP_D32
+ option vfpv4-d16 add VFPv4 FP_DBL
+ option neon add VFPv3 NEON
+ option neon-vfpv3 add VFPv3 NEON
+ option neon-fp16 add VFPv3 NEON bit_fp16conv
+ option neon-vfpv4 add VFPv4 NEON
+ option nofp remove VFPv4 NEON
+ option nosimd remove NEON
 end arch armv7-a
 
 begin arch armv7ve
@@ -209,6 +257,21 @@ begin arch armv7ve
  tune flags CO_PROC
  base 7A
  isa ARMv7ve
+# fp => VFPv4-d16, simd => neon-vfpv4
+ option fp add VFPv4 FP_DBL
+ option simd add VFPv4 NEON
+ option vfpv3 add VFPv3 FP_D32
+ option vfpv3-d16 add VFPv3 FP_DBL
+ option vfpv3-d16-fp16 add VFPv3 FP_DBL bit_fp16conv
+ option vfpv3-fp16 add VFPv3 FP_DBL FP_D32 bit_fp16conv
+ option vfpv4 add VFPv4 FP_D32
+ option vfpv4-d16 add VFPv4 FP_DBL
+ option neon add VFPv3 NEON
+ option neon-vfpv3 add VFPv3 NEON
+ option neon-fp16 add VFPv3 NEON bit_fp16conv
+ option neon-vfpv4 add VFPv4 NEON
+ option nofp remove VFPv4 NEON
+ option nosimd remove NEON
 end arch armv7ve
 
 begin arch armv7-r
@@ -216,6 +279,12 @@ begin arch armv7-r
  tune flags CO_PROC
  base 7R
  isa ARMv7r
+# ARMv7-r uses VFPv3-d16
+ option fp add VFPv3 FP_DBL
+ option fp.sp add VFPv3
+ option idiv add bit_adiv
+ option nofp remove VFPv3 FP_DBL
+ option noidiv remove bit_adiv
 end arch armv7-r
 
 begin arch armv7-m
@@ -223,6 +292,8 @@ begin arch armv7-m
  tune flags CO_PROC
  base 7M
  isa ARMv7m
+# In theory FP is permitted in v7-m, but in practice no implementations exist.
+# leave it out for now.
 end arch armv7-m
 
 begin arch armv7e-m
@@ -230,6 +301,11 @@ begin arch armv7e-m
  tune flags CO_PROC
  base 7EM
  isa ARMv7em
+# fp => VFPv4-sp-d16; fpv5 => FPv5-sp-d16; fp.dp => FPv5-d16
+ option fp add VFPv4
+ option fpv5 add FPv5
+ option fp.dp add FPv5 FP_DBL
+ option nofp remove FPv5 FP_DBL
 end arch armv7e-m
 
 begin arch armv8-a
@@ -241,6 +317,7 @@ begin arch armv8-a
  option simd add FP_ARMv8 NEON
  option crypto add FP_ARMv8 NEON CRYPTO
  option nofp remove FP_ARMv8 NEON CRYPTO
+ option nocrypto remove CRYPTO
 end arch armv8-a
 
 begin arch armv8.1-a
@@ -251,6 +328,7 @@ begin arch armv8.1-a
  option simd add FP_ARMv8 NEON
  option crypto add FP_ARMv8 NEON CRYPTO
  option nofp remove FP_ARMv8 NEON CRYPTO
+ option nocrypto remove CRYPTO
 end arch armv8.1-a
 
 begin arch armv8.2-a
@@ -262,6 +340,7 @@ begin arch armv8.2-a
  option simd add FP_ARMv8 NEON
  option crypto add FP_ARMv8 NEON CRYPTO
  option nofp remove bit_fp16 FP_ARMv8 NEON CRYPTO
+ option nocrypto remove CRYPTO
 end arch armv8.2-a
 
 begin arch armv8-m.base
@@ -276,6 +355,10 @@ begin arch armv8-m.main
  base 8M_MAIN
  isa ARMv8m_main
  option dsp add bit_ARMv7em
+# fp => FPv5-sp-d16; fp.dp => FPv5-d16
+ option fp add FPv5
+ option fp.dp add FPv5 FP_DBL
+ option nofp remove FPv5
 end arch armv8-m.main
 
 begin arch iwmmxt
