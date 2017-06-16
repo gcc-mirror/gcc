@@ -91,7 +91,7 @@ EnumValue
 Enum(arm_arch) String(native) Value(-1) DriverOnly
 
 marm
-Target Report RejectNegative InverseMask(THUMB)
+Target Report RejectNegative Negative(mthumb) InverseMask(THUMB)
 Generate code in 32 bit ARM state.
 
 mbig-endian
@@ -195,7 +195,7 @@ Target RejectNegative Joined UInteger Var(arm_structure_size_boundary) Init(DEFA
 Specify the minimum bit alignment of structures.
 
 mthumb
-Target Report RejectNegative Mask(THUMB) Save
+Target Report RejectNegative Negative(marm) Mask(THUMB) Save
 Generate code for Thumb state.
 
 mthumb-interwork
