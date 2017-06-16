@@ -3750,7 +3750,7 @@ changequote([,])dnl
 fi
 
 # For libtool versioning info, format is CURRENT:REVISION:AGE
-libtool_VERSION=6:23:0
+libtool_VERSION=6:24:0
 
 # Everything parsed; figure out what files and settings to use.
 case $enable_symvers in

@@ -1953,6 +1953,7 @@ GLIBCXX_3.4.23 {
     # basic_string<C, T, A>::basic_string(const basic_string&, size_type, const A&)
     _ZNSt7__cxx1112basic_stringI[cw]St11char_traitsI[cw]ESaI[cw]EEC[12]ERKS4_[jmy]RKS3_;
     _ZNSsC[12]ERKSs[jmy]RKSaIcE;
+    # This should have been _[jmy]RKS1_ not _mRKS1_ (PR libstdc++/81092):
     _ZNSbIwSt11char_traitsIwESaIwEEC[12]ERKS2_mRKS1_;
 
 #ifndef HAVE_EXCEPTION_PTR_SINCE_GCC46
@@ -1966,6 +1967,13 @@ GLIBCXX_3.4.23 {
 #endif
 
 } GLIBCXX_3.4.22;
+
+GLIBCXX_3.4.24 {
+
+    # These should have been in GLIBCXX_3.4.23 (PR libstdc++/81092):
+    _ZNSbIwSt11char_traitsIwESaIwEEC[12]ERKS2_[jy]RKS1_;
+
+} GLIBCXX_3.4.23;
 
 # Symbols in the support library (libsupc++) have their own tag.
 CXXABI_1.3 {
