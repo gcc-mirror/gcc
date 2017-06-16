@@ -15489,8 +15489,6 @@ Permissible names are: @samp{arm2}, @samp{arm250},
 @samp{cortex-m0.small-multiply},
 @samp{cortex-m0plus.small-multiply},
 @samp{exynos-m1},
-@samp{falkor},
-@samp{qdf24xx},
 @samp{marvell-pj4},
 @samp{xscale}, @samp{iwmmxt}, @samp{iwmmxt2}, @samp{ep9312},
 @samp{fa526}, @samp{fa626},
@@ -15510,12 +15508,15 @@ processors, balancing between optimizations that benefit some CPUs in the
 range, and avoiding performance pitfalls of other CPUs.  The effects of
 this option may change in future GCC versions as CPU models come and go.
 
+@option{-mtune} permits the same extension options as @option{-mcpu}, but
+the extension options do not affect the tuning of the generated code.
+
 @option{-mtune=native} causes the compiler to auto-detect the CPU
 of the build computer.  At present, this feature is only supported on
 GNU/Linux, and not all architectures are recognized.  If the auto-detect is
 unsuccessful the option has no effect.
 
-@item -mcpu=@var{name}
+@item -mcpu=@var{name@r{[}+extension@dots{}@r{]}}
 @opindex mcpu
 This specifies the name of the target ARM processor.  GCC uses this name
 to derive the name of the target ARM architecture (as if specified
@@ -15524,8 +15525,61 @@ performance (as if specified by @option{-mtune}).  Where this option
 is used in conjunction with @option{-march} or @option{-mtune},
 those options take precedence over the appropriate part of this option.
 
+Many of the supported CPUs implement optional architectural
+extensions.  Where this is so the architectural extensions are
+normally enabled by default.  If implementations that lack the
+extension exist, then the extension syntax can be used to disable
+those extensions that have been omitted.  For floating-point and
+Advanced SIMD (Neon) instructions, the settings of the options
+@option{-mfloat-abi} and @option{-mfpu} must also be considered:
+floating-point and Advanced SIMD instructions will only be used if
+@option{-mfloat-abi} is not set to @samp{soft}; and any setting of
+@option{-mfpu} other than @samp{auto} will override the available
+floating-point and SIMD extension instructions.
+
+For example, @samp{cortex-a9} can be found in three major
+configurations: integer only, with just a floating-point unit or with
+floating-point and Advanced SIMD.  The default is to enable all the
+instructions, but the extensions @samp{+nosimd} and @samp{+nofp} can
+be used to disable just the SIMD or both the SIMD and floating-point
+instructions respectively.
+
 Permissible names for this option are the same as those for
 @option{-mtune}.
+
+The following extension options are common to the listed CPUs:
+
+@table @samp
+@item  +nofp
+Disables the floating-point instructions on @samp{arm9e},
+@samp{arm946e-s}, @samp{arm966e-s}, @samp{arm968e-s}, @samp{arm10e},
+@samp{arm1020e}, @samp{arm1022e}, @samp{arm926ej-s},
+@samp{arm1026ej-s}, @samp{cortex-r5}, @samp{cortex-r7}, @samp{cortex-r8},
+@samp{cortex-m4}, @samp{cortex-m7} and @samp{cortex-m33}.
+Disables the floating-point and SIMD instructions on
+@samp{generic-armv7-a}, @samp{cortex-a5}, @samp{cortex-a7},
+@samp{cortex-a8}, @samp{cortex-a9}, @samp{cortex-a12},
+@samp{cortex-a15}, @samp{cortex-a17}, @samp{cortex-a15.cortex-a7},
+@samp{cortex-a17.cortex-a7}, @samp{cortex-a32}, @samp{cortex-a35}
+and @samp{cortex-a53}.
+
+@item +nofp.dp
+Disables the double-precision component of the floating-point instructions
+on @samp{cortex-r5} and @samp{cortex-m7}.
+
+@item +nosimd
+Disables the SIMD (but not floating-point) instructions on
+@samp{generic-armv7-a}, @samp{cortex-a5}, @samp{cortex-a7}
+and @samp{cortex-a9}.
+@end table
+
+Additionally the @samp{generic-armv7-a} pseudo target defaults to
+VFPv3 with 16 double-precision registers.  It supports the following
+extension options: @samp{vfpv3-d16}, @samp{vfpv3},
+@samp{vfpv3-d16-fp16}, @samp{vfpv3-fp16}, @samp{vfpv4-d16},
+@samp{vfpv4}, @samp{neon}, @samp{neon-vfpv3}, @samp{neon-fp16},
+@samp{neon-vfpv4}.  The meanings are the same as for the extensions to
+@option{-march=armv7-a}.
 
 @option{-mcpu=generic-@var{arch}} is also permissible, and is
 equivalent to @option{-march=@var{arch} -mtune=generic-@var{arch}}.
@@ -15539,7 +15593,8 @@ is unsuccessful the option has no effect.
 @item -mfpu=@var{name}
 @opindex mfpu
 This specifies what floating-point hardware (or hardware emulation) is
-available on the target.  Permissible names are: @samp{vfpv2}, @samp{vfpv3},
+available on the target.  Permissible names are: @samp{auto}, @samp{vfpv2},
+@samp{vfpv3},
 @samp{vfpv3-fp16}, @samp{vfpv3-d16}, @samp{vfpv3-d16-fp16}, @samp{vfpv3xd},
 @samp{vfpv3xd-fp16}, @samp{neon-vfpv3}, @samp{neon-fp16}, @samp{vfpv4},
 @samp{vfpv4-d16}, @samp{fpv4-sp-d16}, @samp{neon-vfpv4},
@@ -15548,11 +15603,12 @@ available on the target.  Permissible names are: @samp{vfpv2}, @samp{vfpv3},
 Note that @samp{neon} is an alias for @samp{neon-vfpv3} and @samp{vfp}
 is an alias for @samp{vfpv2}.
 
-If @option{-msoft-float} is specified this specifies the format of
-floating-point values.
+The setting @samp{auto} is the default and is special.  It causes the
+compiler to select the floating-point and Advanced SIMD instructions
+based on the settings of @option{-mcpu} and @option{-march}.
 
 If the selected floating-point hardware includes the NEON extension
-(e.g. @option{-mfpu}=@samp{neon}), note that floating-point
+(e.g. @option{-mfpu=neon}), note that floating-point
 operations are not generated by GCC's auto-vectorization pass unless
 @option{-funsafe-math-optimizations} is also specified.  This is
 because NEON hardware does not fully implement the IEEE 754 standard for
