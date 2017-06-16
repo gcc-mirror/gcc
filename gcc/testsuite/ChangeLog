@@ -1,3 +1,7 @@
+2017-06-16  Jan Hubicka  <hubicka@ucw.cz>
+
+	* gcc.dg/tree-ssa/ssa-lim-11.c: Disable branch prediction.
+
 2017-06-16  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/81090
