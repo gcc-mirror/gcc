@@ -1,5 +1,37 @@
 2017-06-16  Richard Earnshaw  <rearnsha@arm.com>
 
+	* config/arm/arm-cpus.in (armv8-a): Add options crc, simd crypto and
+	nofp.
+	(armv8-a+crc): Delete.
+	(armv8.1-a): Add options simd, crypto and nofp.
+	(armv8.2-a): Add options fp16, simd, crypto and nofp.
+	(armv8.2-a+fp16): Delete.
+	(armv8-m.main): Add option dsp.
+	(armv8-m.main+dsp): Delete.
+	(cortex-a8): Add fpu.  Add nofp option.
+	(cortex-a9): Add fpu.  Add nofp and nosimd options.
+	* config/arm/parsecpu.awk (gen_data): Generate option tables and
+	link to main cpu and architecture data structures.
+	(gen_comm_data): Only put isa attributes from the main architecture
+	in common tables.
+	(option): New statement for architecture and CPU entries.
+	* arm.c (struct cpu_option): New structure.
+	(struct processors): Add entry for options.
+	(arm_unrecognized_feature): New function.
+	(arm_parse_arch_cpu_name): Ignore any characters after the first
+	'+' character.
+	(arm_parse_arch_cpu_feature): New function.
+	(arm_configure_build_target): Separate out any CPU and architecture
+	features and parse separately.	Don't error out if -mfpu=auto is
+	used with only an architecture string.
+	(arm_print_asm_arch_directives): New function.
+	(arm_file_start): Call it.
+	* config/arm/arm-cpu-cdata.h: Regenerated.
+	* config/arm/arm-cpu-data.h: Likewise.
+	* config/arm/arm-tables.opt: Likewise.
+
+2017-06-16  Richard Earnshaw  <rearnsha@arm.com>
+
 	* config/arm/elf.h (ASM_SPEC): Only pass -mfpu through to the
 	assembler when it is not -mfpu=auto.
 
