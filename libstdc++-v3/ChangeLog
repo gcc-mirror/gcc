@@ -1,5 +1,19 @@
 2017-06-16  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/81092
+	* acinclude.m4: Bump libtool_VERSION.
+	* config/abi/post/i386-linux-gnu/baseline_symbols.txt: Update.
+	* config/abi/post/x86_64-linux-gnu/32/baseline_symbols.txt: Update.
+	* config/abi/pre/gnu.ver: Add wstring constructor symbols to
+	GLIBCXX_3.4.24 version and move random_device::_M_get_entropy() symbol
+	to new GLIBCXX_3.4.25 version.
+	* doc/xml/manual/abi.xml: Document new versions.
+	* doc/html/*: Regenerate.
+	* testsuite/21_strings/basic_string/cons/char/8.cc: Use base object
+	constructors to ensure required symbols are exported.
+	* testsuite/21_strings/basic_string/cons/wchar_t/8.cc: Likewise.
+	* testsuite/util/testsuite_abi.cc: Add new version.
+
 	* include/bits/locale_conv.h (wbuffer_convert::_M_put): Add missing
 	return statement.
 	* testsuite/21_strings/basic_string_view/operations/copy/char/1.cc:
