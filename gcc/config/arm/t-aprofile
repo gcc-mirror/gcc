@@ -24,19 +24,6 @@
 # have their default values during the configure step.  We enforce
 # this during the top-level configury.
 
-# Variables used later in this file.
-
-v7_a_nosimd_variants	:= +fp +vfpv3 +vfpv3-d16-fp16 +vfpv3-fp16 +vfpv4-d16 +vfpv4
-v7_a_simd_variants	:= +simd +neon-fp16 +neon-vfpv4
-v7ve_nosimd_variants	:= +vfpv3-d16 +vfpv3 +vfpv3-d16-fp16 +vfpv3-fp16 +fp +vfpv4
-v7ve_vfpv3_simd_variants := +neon +neon-fp16
-v7ve_vfpv4_simd_variants := +simd
-v8_a_nosimd_variants	:= +crc
-v8_a_simd_variants	:= $(call all_feat_combs, simd crypto)
-v8_1_a_simd_variants	:= $(call all_feat_combs, simd crypto)
-v8_2_a_simd_variants	:= $(call all_feat_combs, simd fp16 crypto)
-
-
 # Arch and FPU variants to build libraries with
 
 MULTI_ARCH_OPTS_A       = march=armv7-a/march=armv7-a+fp/march=armv7-a+simd/march=armv7ve+simd/march=armv8-a/march=armv8-a+simd
