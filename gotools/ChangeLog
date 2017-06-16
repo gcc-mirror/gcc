@@ -1,3 +1,8 @@
+2017-06-16  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* Makefile.am (check-go-tool): Don't use >& for I/O redirection.
+	* Makefile.in: Regenerate.
+
 2017-06-14  Ian Lance Taylor  <iant@golang.org>
 
 	* Makefile.am (libgosrcdir): Define.

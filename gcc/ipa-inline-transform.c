@@ -54,10 +54,12 @@ int nfunctions_inlined;
 /* Scale frequency of NODE edges by FREQ_SCALE.  */
 
 static void
-update_noncloned_frequencies (struct cgraph_node *node,
-			      int freq_scale)
+update_noncloned_frequencies (struct cgraph_node *node, 
+			      int freq_scale, profile_count num,
+			      profile_count den)
 {
   struct cgraph_edge *e;
+  bool scale = (num == profile_count::zero () || den > 0);
 
   /* We do not want to ignore high loop nest after freq drops to 0.  */
   if (!freq_scale)
@@ -68,14 +70,20 @@ update_noncloned_frequencies (struct cgraph_node *node,
       if (e->frequency > CGRAPH_FREQ_MAX)
         e->frequency = CGRAPH_FREQ_MAX;
       if (!e->inline_failed)
-        update_noncloned_frequencies (e->callee, freq_scale);
+        update_noncloned_frequencies (e->callee, freq_scale, num, den);
+      if (scale)
+	e->count = e->count.apply_scale (num, den);
     }
   for (e = node->indirect_calls; e; e = e->next_callee)
     {
       e->frequency = e->frequency * (gcov_type) freq_scale / CGRAPH_FREQ_BASE;
       if (e->frequency > CGRAPH_FREQ_MAX)
         e->frequency = CGRAPH_FREQ_MAX;
+      if (scale)
+	e->count = e->count.apply_scale (num, den);
     }
+  if (scale)
+    node->count = node->count.apply_scale (num, den);
 }
 
 /* We removed or are going to remove the last call to NODE.
@@ -212,7 +220,8 @@ clone_inlined_nodes (struct cgraph_edge *e, bool duplicate,
 	    }
 	  duplicate = false;
 	  e->callee->externally_visible = false;
-          update_noncloned_frequencies (e->callee, e->frequency);
+          update_noncloned_frequencies (e->callee, e->frequency,
+					e->count, e->callee->count);
 
 	  dump_callgraph_transformation (e->callee, inlining_into,
 					 "inlining to");

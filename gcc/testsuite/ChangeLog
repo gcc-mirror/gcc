@@ -1,3 +1,43 @@
+2017-06-16  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/81090
+	* gcc.dg/graphite/pr81090.c: New testcase.
+
+2017-06-16  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/80983
+	* gfortran.dg/proc_ptr_comp_51.f90: Repair test case.
+
+2017-06-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/81094
+	* c-c++-common/ubsan/object-size-11.c: New test.
+
+2017-06-15  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/80560
+	* g++.dg/Wclass-memaccess.C: New test.
+
+2017-06-15  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/80983
+	* gfortran.dg/proc_ptr_comp_51.f90: New test.
+
+2017-06-15  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	PR lto/69866
+	* gcc.dg/lto/pr69866_0.c: New test.
+	* gcc.dg/lto/pr69866_1.c: Likewise.
+
+2017-06-15  Jozef Lawrynowicz	<jozef.l@somniumtech.com>
+
+	PR target/78818
+	* gcc.target/msp430/pr78818-real.c: New template for tests.
+	* gcc.target/msp430/pr78818-auto.c: New test.
+	* gcc.target/msp430/pr78818-data-region.c: New test.
+	* gcc.target/msp430/pr78818-data-sec.c: New test.
+	* gcc.target/msp430/pr78818-auto-warn.c: New test.
+
 2017-06-15  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	* gcc.target/arm/its.c: Check that no IT blocks has more than 2

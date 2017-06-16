@@ -1,6 +1,6 @@
-// { dg-do run { target *-*-freebsd* *-*-dragonfly* *-*-netbsd* *-*-linux* *-*-gnu* *-*-solaris* *-*-cygwin *-*-rtems* *-*-darwin* powerpc-ibm-aix* } }
-// { dg-options " -std=gnu++17 -pthread" { target *-*-freebsd* *-*-dragonfly* *-*-netbsd* *-*-linux* *-*-gnu* *-*-solaris* powerpc-ibm-aix* } }
-// { dg-options " -std=gnu++17 " { target *-*-cygwin *-*-rtems* *-*-darwin* } }
+// { dg-do run }
+// { dg-options "-std=gnu++17 -pthread" }
+// { dg-require-effective-target pthread }
 // { dg-require-cstdint "" }
 // { dg-require-gthreads "" }
 

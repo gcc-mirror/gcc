@@ -62,7 +62,8 @@ extern unsigned num_macro_tokens_counter;
 
 line_maps::~line_maps ()
 {
-  htab_delete (location_adhoc_data_map.htab);
+  if (location_adhoc_data_map.htab)
+    htab_delete (location_adhoc_data_map.htab);
 }
 
 /* Hash function for location_adhoc_data hashtable.  */
@@ -347,7 +348,7 @@ void
 linemap_init (struct line_maps *set,
 	      source_location builtin_location)
 {
-  memset (set, 0, sizeof (struct line_maps));
+  *set = line_maps ();
   set->highest_location = RESERVED_LOCATION_COUNT - 1;
   set->highest_line = RESERVED_LOCATION_COUNT - 1;
   set->location_adhoc_data_map.htab =

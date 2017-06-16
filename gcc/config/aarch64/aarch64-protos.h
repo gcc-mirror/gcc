@@ -203,6 +203,16 @@ struct cpu_approx_modes
   const unsigned int recip_sqrt;	/* Reciprocal square root.  */
 };
 
+/* Cache prefetch settings for prefetch-loop-arrays.  */
+struct cpu_prefetch_tune
+{
+  const int num_slots;
+  const int l1_cache_size;
+  const int l1_cache_line_size;
+  const int l2_cache_size;
+  const int default_opt_level;
+};
+
 struct tune_params
 {
   const struct cpu_cost_table *insn_extra_cost;
@@ -224,9 +234,6 @@ struct tune_params
   int min_div_recip_mul_df;
   /* Value for aarch64_case_values_threshold; or 0 for the default.  */
   unsigned int max_case_values;
-  /* Value for PARAM_L1_CACHE_LINE_SIZE; or 0 to use the default.  */
-  unsigned int cache_line_size;
-
 /* An enum specifying how to take into account CPU autoprefetch capabilities
    during instruction scheduling:
    - AUTOPREFETCHER_OFF: Do not take autoprefetch capabilities into account.
@@ -244,6 +251,10 @@ struct tune_params
   } autoprefetcher_model;
 
   unsigned int extra_tuning_flags;
+
+  /* Place prefetch struct pointer at the end to enable type checking
+     errors when tune_params misses elements (e.g., from erroneous merges).  */
+  const struct cpu_prefetch_tune *prefetch;
 };
 
 #define AARCH64_FUSION_PAIR(x, name) \

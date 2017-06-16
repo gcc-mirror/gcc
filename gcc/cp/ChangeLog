@@ -1,3 +1,66 @@
+2017-06-16  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-tree.h (build_this_parm, cp_build_parm_decl,
+	build_artificial_parm): Add FN parm.
+	* decl.c (start_cleanup_fn): Adjust.
+	(build_this_parm): Add FN parm, pass it through.
+	(grokfndecl): Adjust parm building.
+	* decl2.c (cp_build_parm_decl): Add FN parm, set context.
+	(build_artificial_parm): Add FN parm, pass through.
+	(maybe_retrofit_in_chrg): Adjust parm building.
+	(start_static_storage_duration_function): Likwise.
+	* lambda.c (maybe_aadd_lambda_conv_op): Likewise.
+	* method.c (implicitly_declare_fn): Likewise.
+	* parser.c (inject_this_parameter): Likewise.
+
+	Symbol tables are insert only.
+	* cp-tree.h (default_hash_traits <lang_identifier *>): Don't
+	derive from pointer_hash.  Make undeletable.
+
+	* class.c (resort_type_method_vec): Avoid potential unsigned
+	overflow.
+
+	Don't defer noexcept_deferred_spec.
+	* cp-tree.h (unevaluated_noexcept_spec): Don't declare.
+	* decl.c (cxx_init_decl_processing): Initialize
+	noexcept_deferred_spec.
+	* except.c (unevaluated_noexcept_spec): Delete.
+	* class.c (deduce_noexcept_on_destructor): Use
+	noexcept_deferred_spec directly.
+	* method.c (implicitly_declare_fn): Likewise.
+
+	Make keyed_classes a vector.
+	* cp-tree.h (CPTI_KEYED_CLASSES, keyed_classes): Delete.
+	(keyed_classes): Declare as vector.
+	* decl.c (keyed_classes): Define.
+	(cxx_init_decl_processing): Allocate it.
+	(record_key_method_defined): Use vec_safe_push.
+	* class.c (finish_struct_1): Likewise.
+	* pt.c (instantiate_class_template_1): Likewise.
+	* decl2.c (c_parse_final_cleanups): Reverse iterate keyed_classes.
+
+	Make rtti lazier
+	* rtti.c (enum tinfo_kind): Add TK_DERIVED_TYPES,
+	TK_VMI_CLASS_TYPES, TK_MAX.  Delete TK_FIXED.
+	(tinfo_names): New.
+	(typeid_ok_p): Add quotes to error messages.  Use get_tinfo_desc.
+	(get_tinfo_decl): Use get_tinfo_desc.
+	(get_pseudo_ti_init): Likewise. Adjust VMI construction.
+	(create_pseudo_type_info): Delete.
+	(get_pseudo_ti_index): Just determine the index.
+	(get_tinfo_desc): New.  Create all types lazily.
+	(create_tinfo_types): Just allocate the descriptor array.
+	(emit_support_tinfos): Use non-inserting type lookup.  Set builtin
+	location.
+
+2017-06-15  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/80560
+	* call.c (first_non_public_field, maybe_warn_class_memaccess): New
+	functions.
+	(has_trivial_copy_assign_p, has_trivial_copy_p): Ditto.
+	(build_cxx_call): Call maybe_warn_class_memaccess.
+
 2017-06-14  Jakub Jelinek  <jakub@redhat.com>
 
 	* cp-gimplify.c (cp_genericize_r): Turn most of the function

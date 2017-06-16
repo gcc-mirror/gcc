@@ -1402,6 +1402,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       template<typename _Del, typename _Tp1, _Lock_policy _Lp1>
 	friend _Del* get_deleter(const __shared_ptr<_Tp1, _Lp1>&) noexcept;
 
+      template<typename _Del, typename _Tp1>
+	friend _Del* get_deleter(const shared_ptr<_Tp1>&) noexcept;
+
       element_type*	   _M_ptr;         // Contained pointer.
       __shared_count<_Lp>  _M_refcount;    // Reference counter.
     };

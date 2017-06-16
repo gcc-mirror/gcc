@@ -459,54 +459,6 @@ make_pass_scev_cprop (gcc::context *ctxt)
   return new pass_scev_cprop (ctxt);
 }
 
-/* Record bounds on numbers of iterations of loops.  */
-
-namespace {
-
-const pass_data pass_data_record_bounds =
-{
-  GIMPLE_PASS, /* type */
-  "*record_bounds", /* name */
-  OPTGROUP_NONE, /* optinfo_flags */
-  TV_TREE_LOOP_BOUNDS, /* tv_id */
-  ( PROP_cfg | PROP_ssa ), /* properties_required */
-  0, /* properties_provided */
-  0, /* properties_destroyed */
-  0, /* todo_flags_start */
-  0, /* todo_flags_finish */
-};
-
-class pass_record_bounds : public gimple_opt_pass
-{
-public:
-  pass_record_bounds (gcc::context *ctxt)
-    : gimple_opt_pass (pass_data_record_bounds, ctxt)
-  {}
-
-  /* opt_pass methods: */
-  virtual unsigned int execute (function *);
-
-}; // class pass_record_bounds
-
-unsigned int
-pass_record_bounds::execute (function *fun)
-{
-  if (number_of_loops (fun) <= 1)
-    return 0;
-
-  estimate_numbers_of_iterations ();
-  scev_reset ();
-  return 0;
-}
-
-} // anon namespace
-
-gimple_opt_pass *
-make_pass_record_bounds (gcc::context *ctxt)
-{
-  return new pass_record_bounds (ctxt);
-}
-
 /* Induction variable optimizations.  */
 
 namespace {

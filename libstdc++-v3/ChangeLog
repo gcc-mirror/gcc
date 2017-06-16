@@ -1,3 +1,102 @@
+2017-06-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/shared_ptr.h (get_deleter): Add overload matching
+	standard signature.
+	* include/bits/shared_ptr_base.h (__shared_ptr): Declare new
+	get_deleter overload as a friend.
+	* testsuite/20_util/shared_ptr/misc/get_deleter.cc: New.
+
+2017-06-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libstdc++/81092
+	* config/abi/post/i486-linux-gnu/baseline_symbols.txt: Update.
+	* config/abi/post/powerpc-linux-gnu/baseline_symbols.txt: Update.
+	* config/abi/post/powerpc64-linux-gnu/32/baseline_symbols.txt: Update.
+
+2017-06-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/locale_conv.h (wbuffer_convert::sync): Fix condition.
+	* testsuite/22_locale/conversions/buffer/2.cc: New.
+
+	PR libstdc++/81092
+	* acinclude.m4: Bump libtool_VERSION.
+	* config/abi/post/i386-linux-gnu/baseline_symbols.txt: Update.
+	* config/abi/post/x86_64-linux-gnu/32/baseline_symbols.txt: Update.
+	* config/abi/pre/gnu.ver: Add wstring constructor symbols to
+	GLIBCXX_3.4.24 version and move random_device::_M_get_entropy() symbol
+	to new GLIBCXX_3.4.25 version.
+	* doc/xml/manual/abi.xml: Document new versions.
+	* doc/html/*: Regenerate.
+	* testsuite/21_strings/basic_string/cons/char/8.cc: Use base object
+	constructors to ensure required symbols are exported.
+	* testsuite/21_strings/basic_string/cons/wchar_t/8.cc: Likewise.
+	* testsuite/util/testsuite_abi.cc: Add new version.
+
+	* include/bits/locale_conv.h (wbuffer_convert::_M_put): Add missing
+	return statement.
+	* testsuite/21_strings/basic_string_view/operations/copy/char/1.cc:
+	Return void.
+	* testsuite/21_strings/basic_string_view/operations/copy/wchar_t/1.cc:
+	Likewise.
+	* testsuite/23_containers/map/modifiers/insert_or_assign/1.cc: Add
+	missing return statements.
+	* testsuite/23_containers/unordered_map/modifiers/insert_or_assign.cc:
+	Likewise.
+	* testsuite/27_io/basic_istream/extractors_arithmetic/char/12.cc:
+	Return void.
+	* testsuite/special_functions/14_expint/pr68397.cc: Likewise.
+
+2017-06-16  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/bits/stl_bvector.h
+	(__fill_bvector(_Bit_type*, unsigned int, unsigned int, bool)):
+	Change signature.
+	(std::fill(_Bit_iterator, _Bit_iterator, bool)): Adapt.
+	(_Bvector_impl_data): New.
+	(_Bvector_impl): Inherits from latter.
+	(_Bvector_impl(_Bit_alloc_type&&)): Delete.
+	(_Bvector_impl(_Bvector_impl&&)): New, default.
+	(_Bvector_base()): Default.
+	(_Bvector_base(_Bvector_base&&)): Default.
+	(_Bvector_base::_M_move_data(_Bvector_base&&)): New.
+	(vector(vector&&, const allocator_type&)): Use latter.
+	(vector<bool>::operator=(vector&&)): Likewise.
+	(vector<bool>::vector()): Default.
+	(vector<bool>::vector(vector&&)): Default.
+	(vector<bool>::assign(_InputIterator, _InputIterator)): Use
+	_M_assign_aux.
+	(vector<bool>::assign(initializer_list<bool>)): Likewise.
+	(vector<bool>::_M_initialize_value(bool)): New.
+	(vector<bool>(size_type, const bool&, const allocator_type&)): Use
+	latter.
+	(vector<bool>::_M_initialize_dispatch(_Integer, _Integer, __true_type)):
+	Likewise.
+	(vector<bool>::_M_fill_assign(size_t, bool)): Likewise.
+
+2017-06-15  François Dumont  <fdumont@gcc.gnu.org>
+
+	* src/c++98/tree.cc  [!_GLIBCXX_INLINE_VERSION]
+	(_Rb_tree_rotate_left, _Rb_tree_rotate_right): Delete.
+
+2017-06-15  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* testsuite: Add dg-require-effective-target pthread to -pthread
+	tests.
+	Remove explicit target lists from dg-do and dg-options.
+
+	* testsuite/30_threads/async/forced_unwind.cc: Remove explit
+	target list from dg-options.
+	* testsuite/30_threads/packaged_task/forced_unwind.cc: Likewise.
+
+	* 30_threads/shared_mutex/cons/1.cc: Likewise.
+	Pass -pthread for all targets.
+	* 30_threads/shared_mutex/try_lock/1.cc: Likewise.
+	* 30_threads/shared_mutex/try_lock/2.cc: Likewise.
+	* 30_threads/shared_mutex/unlock/1.cc: Likewise.
+
+	* testsuite/30_threads/this_thread/57060.cc: Require c++11 via
+	dg-require-effective-target.
+
 2017-06-14  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/xml/manual/test.xml: Correct instructions on running tests.

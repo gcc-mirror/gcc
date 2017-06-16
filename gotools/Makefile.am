@@ -180,7 +180,7 @@ check-go-tool: go$(EXEEXT) check-head check-gccgo
 	$(CHECK_ENV) \
 	GOPATH=`cd check-go-dir && $(PWD_COMMAND)`; \
 	export GOPATH; \
-	(cd check-go-dir/src/cmd/go && $(abs_builddir)/go$(EXEEXT) test -test.short -test.v) >& cmd_go-testlog || true
+	(cd check-go-dir/src/cmd/go && $(abs_builddir)/go$(EXEEXT) test -test.short -test.v) > cmd_go-testlog 2>&1 || true
 	grep '^--- ' cmd_go-testlog | sed -e 's/^--- \(.*\) ([^)]*)$$/\1/'
 
 # The check targets runs the tests and assembles the output files.

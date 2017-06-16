@@ -3636,6 +3636,7 @@ scev_finalize (void)
     return;
   scalar_evolution_info->empty ();
   scalar_evolution_info = NULL;
+  free_numbers_of_iterations_estimates (cfun);
 }
 
 /* Returns true if the expression EXPR is considered to be too expensive

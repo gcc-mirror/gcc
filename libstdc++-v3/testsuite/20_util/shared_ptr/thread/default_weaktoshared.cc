@@ -17,9 +17,10 @@
 
 // 20.6.6.2 Template class shared_ptr [util.smartptr.shared]
 
-// { dg-do run { target *-*-freebsd* *-*-dragonfly* *-*-netbsd* *-*-linux* *-*-gnu* *-*-solaris* *-*-cygwin *-*-rtems* *-*-darwin* } }
-// { dg-options "-pthread" { target *-*-freebsd* *-*-dragonfly* *-*-netbsd* *-*-linux* *-*-gnu* *-*-solaris* } }
+// { dg-do run }
+// { dg-options "-pthread"  }
 // { dg-require-effective-target c++11 }
+// { dg-require-effective-target pthread }
 
 #include <memory>
 #include <random>

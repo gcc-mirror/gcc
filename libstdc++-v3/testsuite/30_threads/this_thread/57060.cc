@@ -15,7 +15,8 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-do run { target { c++11 && *-*-gnu* } } }
+// { dg-do run { target { *-*-gnu* } } }
+// { dg-require-effective-target c++11 }
 // { dg-require-gthreads "" }
 
 // N.B. this test intentionally does *not* use -pthread

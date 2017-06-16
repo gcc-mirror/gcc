@@ -1,3 +1,111 @@
+2017-06-16  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/81090
+	* passes.def (pass_record_bounds): Remove.
+	* tree-pass.h (make_pass_record_bounds): Likewise.
+	* tree-ssa-loop.c (pass_data_record_bounds, pass_record_bounds,
+	make_pass_record_bounds): Likewise.
+	* tree-ssa-loop-ivcanon.c (canonicalize_induction_variables): Do
+	not free niter estimates at the beginning but at the end.
+	* tree-scalar-evolution.c (scev_finalize): Free niter estimates.
+
+2017-06-16  Richard Biener  <rguenther@suse.de>
+
+	* tree-switch-conversion.c (emit_case_bit_tests): Adjust
+	initializer to workaround ICE in host GCC 4.8.
+
+2017-06-16  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-inline-transform.c (update_noncloned_frequencies): Update also
+	counts.
+	(clone_inlined_nodes): Update.
+
+2017-06-16  Maxim Kuvyrkov  <maxim.kuvyrkov@linaro.org>
+
+        * config/aarch64/aarch64.c (qdf24xx_prefetch_tune): Update
+        prefetch settings, and enable prefetching by default at -O3.
+
+2017-06-16  Maxim Kuvyrkov  <maxim.kuvyrkov@linaro.org>
+
+        * config/aarch64/aarch64.c (aarch64_override_options_internal):
+        Set flag_prefetch_loop_arrays according to tuning data.
+
+2017-06-16  Maxim Kuvyrkov  <maxim.kuvyrkov@linaro.org>
+
+        * config/aarch64/aarch64-protos.h (struct cpu_prefetch_tune):
+        New tune structure.
+        (struct tune_params): Use cpu_prefetch_tune instead of cache_line_size.
+        [Unrelated to main purpose of the patch] Place the pointer field last
+        to enable type checking errors when tune structure are wrongly merged.
+        * config/aarch64/aarch64.c (generic_prefetch_tune,)
+        (exynosm1_prefetch_tune, qdf24xx_prefetch_tune,)
+        (thunderx2t99_prefetch_tune): New tune constants.
+        (tune_params *_tunings): Update all tunings (no functional change).
+        (aarch64_override_options_internal): Set PARAM_SIMULTANEOUS_PREFETCHES,
+        PARAM_L1_CACHE_SIZE, PARAM_L1_CACHE_LINE_SIZE, and PARAM_L2_CACHE_SIZE
+        from tunings structures.
+
+2017-06-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/81094
+	* ubsan.c (instrument_null): Add T argument, use it instead
+	of computing it based on IS_LHS.
+	(instrument_object_size): Likewise.
+	(pass_ubsan::execute): Adjust instrument_null and
+	instrument_object_size callers to pass gimple_get_lhs or
+	gimple_assign_rhs1 result to it.  Use instrument_null instead of
+	calling get_base_address and instrument_mem_ref.  Handle
+	aggregate call arguments for object-size sanitization.
+
+2017-06-16  Yury Gribov  <tetra2005@gmail.com>
+
+	PR tree-optimization/81089
+	* tree-vrp.c (is_masked_range_test): Validate operands of
+	subexpression.
+
+2017-06-15  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/80560
+	* dumpfile.c (dump_register): Avoid calling memset to initialize
+	a class with a default ctor.
+	* gcc.c (struct compiler): Remove const qualification.
+	* genattrtab.c (gen_insn_reserv): Replace memset with initialization.
+	* hash-table.h: Ditto.
+	* ipa-cp.c (allocate_and_init_ipcp_value): Replace memset with
+	  assignment.
+	* ipa-prop.c (ipa_free_edge_args_substructures): Ditto.
+	* omp-low.c (lower_omp_ordered_clauses): Replace memset with
+	default ctor.
+	* params.h (struct param_info): Make struct members non-const.
+	* tree-switch-conversion.c (emit_case_bit_tests): Replace memset
+	with default initialization.
+	* vec.h (vec_copy_construct, vec_default_construct): New helper
+	functions.
+	(vec<T>::copy, vec<T>::splice, vec<T>::reserve): Replace memcpy
+	with vec_copy_construct.
+	(vect<T>::quick_grow_cleared): Replace memset with default ctor.
+	(vect<T>::vec_safe_grow_cleared, vec_safe_grow_cleared): Same.
+	* doc/invoke.texi (-Wclass-memaccess): Document.
+
+2017-06-15  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	* emit-rtl.h (is_leaf): Update comment about local
+	register allocator.
+
+2017-06-15  Jozef Lawrynowicz	<jozef.l@somniumtech.com>
+
+	PR target/78818
+	* config/msp430/msp430.c (msp430_data_attr): Check that it's possible
+	for a variable to have a section before checking if the section has a
+	name.
+	Set section to.persistent if persistent	attribute is set.
+	Warn if .persistent attribute is used on an automatic variable.
+
+2017-06-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR rtl-optimization/80474
+	* reorg.c (update_block): Do not ignore instructions in a delay slot.
+
 2017-06-15  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* config/rs6000/rs6000.md (add<mode>3): Use reg_or_subregno instead

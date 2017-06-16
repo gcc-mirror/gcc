@@ -88,6 +88,9 @@ enum tinfo_kind
   TK_MAX
 };
 
+/* Names of the tinfo types.  Must be same order as TK enumeration
+   above.  */
+
 static const char *const tinfo_names[TK_MAX] =
 {
   "__type_info",
@@ -1158,7 +1161,7 @@ get_pseudo_ti_init (tree type, unsigned tk_index)
 	tree offset_type = LONGPTR_T;
 	vec<constructor_elt, va_gc> *init_vec = NULL;
 
-	gcc_assert (tk_index - TK_VMI_CLASS_TYPES + 1== nbases);
+	gcc_assert (tk_index - TK_VMI_CLASS_TYPES + 1 == nbases);
 
 	vec_safe_grow (init_vec, nbases);
 	/* Generate the base information initializer.  */

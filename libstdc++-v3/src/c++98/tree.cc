@@ -150,15 +150,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     __x->_M_parent = __y;
   }
 
+#if !_GLIBCXX_INLINE_VERSION
   /* Static keyword was missing on _Rb_tree_rotate_left.
      Export the symbol for backward compatibility until
      next ABI change.  */
   void
   _Rb_tree_rotate_left(_Rb_tree_node_base* const __x,
 		       _Rb_tree_node_base*& __root)
-  {
-    local_Rb_tree_rotate_left (__x, __root);
-  }
+  { local_Rb_tree_rotate_left (__x, __root); }
+#endif
 
   static void
   local_Rb_tree_rotate_right(_Rb_tree_node_base* const __x,
@@ -181,15 +181,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     __x->_M_parent = __y;
   }
 
+#if !_GLIBCXX_INLINE_VERSION
   /* Static keyword was missing on _Rb_tree_rotate_right
      Export the symbol for backward compatibility until
      next ABI change.  */
   void
   _Rb_tree_rotate_right(_Rb_tree_node_base* const __x,
 			_Rb_tree_node_base*& __root)
-  {
-    local_Rb_tree_rotate_right (__x, __root);
-  }
+  { local_Rb_tree_rotate_right (__x, __root); }
+#endif
 
   void
   _Rb_tree_insert_and_rebalance(const bool          __insert_left,

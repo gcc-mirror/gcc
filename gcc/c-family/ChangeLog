@@ -1,3 +1,8 @@
+2017-06-15  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/80560
+	* c.opt (-Wclass-memaccess): New option.
+
 2017-06-14  Boris Kolpackov  <boris@codesynthesis.com>
 
 	* c-opts.c (c_common_finish): Handle '-' special value to -MF.
