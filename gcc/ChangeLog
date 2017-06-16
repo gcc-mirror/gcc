@@ -1,5 +1,26 @@
 2017-06-16  Richard Earnshaw  <rearnsha@arm.com>
 
+	* common/config/arm/arm-common.c (arm_initialize_isa): Moved here from
+	config/arm/arm.c.
+	(arm_print_hint_for_cpu_option): Likewise.
+	(arm_print_hint_for_arch_option): Likewise.
+	(arm_parse_cpu_option_name): Likewise.
+	(arm_parse_arch_option_name): Likewise.
+	* config/arm/arm.c (arm_identify_fpu_from_isa): Use the computed number
+	of entries in the all_fpus list.
+	* config/arm/arm-protos.h (all_architectures, all_cores): Declare.
+	(arm_parse_cpu_option_name): Declare.
+	(arm_parse_arch_option_name): Declare.
+	(arm_parse_option_features): Declare.
+	(arm_intialize_isa): Declare.
+	* config/arm/parsecpu.awk (gen_data): Move CPU and architecture
+	data tables to ...
+	(gen_comm_data): ... here.  Make definitions non-static.
+	* config/arm/arm-cpu-data.h: Regenerated.
+	* config/arm/arm-cpu-cdata.h: Regenerated.
+
+2017-06-16  Richard Earnshaw  <rearnsha@arm.com>
+
 	* config/arm/arm-protos.h (arm_build_target): Remove arch_core.
 	(cpu_arch_extension): New structure.
 	(cpu_arch_option, arch_option, cpu_option): New structures.
