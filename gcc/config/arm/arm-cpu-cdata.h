@@ -1814,6 +1814,10 @@ static const struct cpu_arch_extension arch_opttab_armv7[] = {
     { ISA_VFPv3,ISA_FP_DBL, isa_nobit }
   },
   {
+    "nofp", true, false,
+    { ISA_ALL_FP, isa_nobit }
+  },
+  {
     "vfpv3-d16", false, true, 
     { ISA_VFPv3,ISA_FP_DBL, isa_nobit }
   },
@@ -1961,6 +1965,14 @@ static const struct cpu_arch_extension arch_opttab_armv7_r[] = {
     "noidiv", true, false,
     { isa_bit_adiv, isa_nobit }
   },
+  {
+    "vfpv3xd", false, true, 
+    { ISA_VFPv3, isa_nobit }
+  },
+  {
+    "vfpv3-d16", false, true, 
+    { ISA_VFPv3,ISA_FP_DBL, isa_nobit }
+  },
   { NULL, false, false, {isa_nobit}}
 };
 
@@ -2025,6 +2037,14 @@ static const struct cpu_arch_extension arch_opttab_armv8_1_a[] = {
     "nofp", true, false,
     { ISA_ALL_FP, isa_nobit }
   },
+  {
+    "vfpv4-sp-d16", false, true, 
+    { ISA_VFPv4, isa_nobit }
+  },
+  {
+    "fpv5-d16", false, true, 
+    { ISA_FPv5,ISA_FP_DBL, isa_nobit }
+  },
   { NULL, false, false, {isa_nobit}}
 };
 
@@ -2068,6 +2088,10 @@ static const struct cpu_arch_extension arch_opttab_armv8_m_main[] = {
   {
     "nofp", true, false,
     { ISA_ALL_FP, isa_nobit }
+  },
+  {
+    "nodsp", true, false,
+    { isa_bit_ARMv7em, isa_nobit }
   },
   { NULL, false, false, {isa_nobit}}
 };
