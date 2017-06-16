@@ -375,7 +375,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
     protected:
       int
       sync()
-      { return _M_buf && _M_conv_put() && _M_buf->pubsync() ? 0 : -1; }
+      { return _M_buf && _M_conv_put() && !_M_buf->pubsync() ? 0 : -1; }
 
       typename _Wide_streambuf::int_type
       overflow(typename _Wide_streambuf::int_type __out)

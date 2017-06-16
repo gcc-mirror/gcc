@@ -1,5 +1,8 @@
 2017-06-16  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/locale_conv.h (wbuffer_convert::sync): Fix condition.
+	* testsuite/22_locale/conversions/buffer/2.cc: New.
+
 	* doc/xml/manual/appendix_contributing.xml: Link to the list of bad
 	names, and link to the test docs and note higher DejaGnu version
 	requirement.
