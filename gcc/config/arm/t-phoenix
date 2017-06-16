@@ -16,14 +16,16 @@
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
 
-MULTILIB_OPTIONS     = marm/mthumb
-MULTILIB_DIRNAMES    = arm thumb
-MULTILIB_EXCEPTIONS  =
-MULTILIB_MATCHES     =
+MULTILIB_OPTIONS	= marm/mthumb
+MULTILIB_DIRNAMES	= arm thumb
+MULTILIB_EXCEPTIONS	=
+MULTILIB_MATCHES	=
+MULTILIB_REUSE		=
+MULTILIB_REQUIRED	=
 
-MULTILIB_OPTIONS     += mfloat-abi=hard
-MULTILIB_DIRNAMES    += fpu
-MULTILIB_MATCHES     += mfloat-abi?hard=mhard-float
+MULTILIB_OPTIONS	+= mfloat-abi=hard
+MULTILIB_DIRNAMES	+= fpu
+MULTILIB_MATCHES	+= mfloat-abi?hard=mhard-float
 
-MULTILIB_OPTIONS     += mno-thumb-interwork/mthumb-interwork
-MULTILIB_DIRNAMES    += normal interwork
+MULTILIB_OPTIONS	+= mno-thumb-interwork/mthumb-interwork
+MULTILIB_DIRNAMES	+= normal interwork
