@@ -15158,48 +15158,291 @@ the default for all standard configurations.
 Generate code for a processor running in big-endian mode; the default is
 to compile code for a little-endian processor.
 
-@item -march=@var{name}
+@item -march=@var{name@r{[}+extension@dots{}@r{]}}
 @opindex march
 This specifies the name of the target ARM architecture.  GCC uses this
 name to determine what kind of instructions it can emit when generating
 assembly code.  This option can be used in conjunction with or instead
-of the @option{-mcpu=} option.  Permissible names are: @samp{armv2},
-@samp{armv2a}, @samp{armv3}, @samp{armv3m}, @samp{armv4}, @samp{armv4t},
-@samp{armv5}, @samp{armv5e}, @samp{armv5t}, @samp{armv5te},
-@samp{armv6}, @samp{armv6-m}, @samp{armv6j}, @samp{armv6k},
-@samp{armv6kz}, @samp{armv6s-m},
-@samp{armv6t2}, @samp{armv6z}, @samp{armv6zk},
-@samp{armv7}, @samp{armv7-a}, @samp{armv7-m}, @samp{armv7-r}, @samp{armv7e-m},
-@samp{armv7ve}, @samp{armv8-a}, @samp{armv8-a+crc}, @samp{armv8.1-a},
-@samp{armv8.1-a+crc}, @samp{armv8-m.base}, @samp{armv8-m.main},
-@samp{armv8-m.main+dsp}, @samp{iwmmxt}, @samp{iwmmxt2}.
+of the @option{-mcpu=} option.
 
-Architecture revisions older than @samp{armv4t} are deprecated.
+Permissible names are:
+@samp{armv4t},
+@samp{armv5t}, @samp{armv5te},
+@samp{armv6}, @samp{armv6j}, @samp{armv6k}, @samp{armv6kz}, @samp{armv6t2},
+@samp{armv6z}, @samp{armv6zk},
+@samp{armv7}, @samp{armv7-a}, @samp{armv7ve}, 
+@samp{armv8-a}, @samp{armv8.1-a}, @samp{armv8.2-a},
+@samp{armv7-r},
+@samp{armv6-m}, @samp{armv6s-m},
+@samp{armv7-m}, @samp{armv7e-m},
+@samp{armv8-m.base}, @samp{armv8-m.main},
+@samp{iwmmxt} and @samp{iwmmxt2}.
 
-@option{-march=armv6s-m} is the @samp{armv6-m} architecture with support for
-the (now mandatory) SVC instruction.
+Additionally, the following architectures, which lack support for the
+Thumb exection state, are recognized but support is deprecated:
+@samp{armv2}, @samp{armv2a}, @samp{armv3}, @samp{armv3m},
+@samp{armv4}, @samp{armv5} and @samp{armv5e}.
 
-@option{-march=armv6zk} is an alias for @samp{armv6kz}, existing for backwards
-compatibility.
+Many of the architectures support extensions.  These can be added by
+appending @samp{+@var{extension}} to the architecture name.  Extension
+options are processed in order and capabilities accumulate.  An extension
+will also enable any necessary base extensions
+upon which it depends.  For example, the @samp{+crypto} extension
+will always enable the @samp{+simd} extension.  The exception to the
+additive construction is for extensions that are prefixed with
+@samp{+no@dots{}}: these extensions disable the specified option and
+any other extensions that may depend on the presence of that
+extension.
 
-@option{-march=armv7ve} is the @samp{armv7-a} architecture with virtualization
-extensions.
+For example, @samp{-march=armv7-a+simd+nofp+vfpv4} is equivalent to
+writing @samp{-march=armv7-a+vfpv4} since the @samp{+simd} option is
+entirely disabled by the @samp{+nofp} option that follows it.
 
-@option{-march=armv8-a+crc} enables code generation for the ARMv8-A
-architecture together with the optional CRC32 extensions.
+Most extension names are generically named, but have an effect that is
+dependent upon the architecture to which it is applied.  For example,
+the @samp{+simd} option can be applied to both @samp{armv7-a} and
+@samp{armv8-a} architectures, but will enable the original ARMv7
+Advanced SIMD (Neon) extensions for @samp{armv7-a} and the ARMv8-a
+variant for @samp{armv8-a}.
 
-@option{-march=armv8.1-a} enables compiler support for the ARMv8.1-A
-architecture.  This also enables the features provided by
-@option{-march=armv8-a+crc}.
+The table below lists the supported extensions for each architecture.
+Architectures not mentioned do not support any extensions.
 
-@option{-march=armv8.2-a} enables compiler support for the ARMv8.2-A
-architecture.  This also enables the features provided by
-@option{-march=armv8.1-a}.
+@table @samp
+@item  armv5e
+@itemx armv5te
+@itemx armv6
+@itemx armv6j
+@itemx armv6k
+@itemx armv6kz
+@itemx armv6t2
+@itemx armv6z
+@itemx armv6zk
+@table @samp
+@item +fp
+The VFPv2 floating-point instructions.  The extension @samp{+vfpv2} can be
+used as an alias for this extension.
 
-@option{-march=armv8.2-a+fp16} enables compiler support for the
-ARMv8.2-A architecture with the optional FP16 instructions extension.
-This also enables the features provided by @option{-march=armv8.1-a}
-and implies @option{-mfp16-format=ieee}.
+@item +nofp
+Disable the floating-point instructions.
+@end table
+
+@item armv7
+The common subset of the ARMv7-A, ARMv7-R and ARMv7-M architectures.
+@table @samp
+@item +fp
+The VFPv3 floating-point instructions, with 16 double-precision
+registers.  The extension @samp{+vfpv3-d16} can be used as an alias
+for this extension.  Note that floating-point is not supported by the
+base ARMv7-M architecture, but is compatible with both the ARMv7-A and
+ARMv7-R architectures.
+
+@item +nofp
+Disable the floating-point instructions.
+@end table
+
+@item armv7-a
+@table @samp
+@item +fp
+The VFPv3 floating-point instructions, with 16 double-precision
+registers.  The extension @samp{+vfpv3-d16} can be used as an alias
+for this extension.
+
+@item +simd
+The Advanced SIMD (Neon) v1 and the VFPv3 floating-point instructions.
+The extensions @samp{+neon} and @samp{+neon-vfpv3} can be used as aliases
+for this extension.
+
+@item +vfpv3
+The VFPv3 floating-point instructions, with 32 double-precision
+registers.
+
+@item +vfpv3-d16-fp16
+The VFPv3 floating-point instructions, with 16 double-precision
+registers and the half-precision floating-point conversion operations.
+
+@item +vfpv3-fp16
+The VFPv3 floating-point instructions, with 32 double-precision
+registers and the half-precision floating-point conversion operations.
+
+@item +vfpv4-d16
+The VFPv4 floating-point instructions, with 16 double-precision
+registers.
+
+@item +vfpv4
+The VFPv4 floating-point instructions, with 32 double-precision
+registers.
+
+@item +neon-fp16
+The Advanced SIMD (Neon) v1 and the VFPv3 floating-point instructions, with
+the half-precision floating-point conversion operations.
+
+@item +neon-vfpv4
+The Advanced SIMD (Neon) v2 and the VFPv4 floating-point instructions.
+
+@item +nosimd
+Disable the Advanced SIMD instructions (does not disable floating point).
+
+@item +nofp
+Disable the floating-point and Advanced SIMD instructions.
+@end table
+
+@item armv7ve
+The extended version of the ARMv7-A architecture with support for
+virtualization.
+@table @samp
+@item +fp
+The VFPv4 floating-point instructions, with 16 double-precision registers.
+The extension @samp{+vfpv4-d16} can be used as an alias for this extension.
+
+@item +simd
+The Advanced SIMD (Neon) v2 and the VFPv4 floating-point instructions.  The
+extension @samp{+neon-vfpv4} can be used as an alias for this extension.
+
+@item +vfpv3-d16
+The VFPv3 floating-point instructions, with 16 double-precision
+registers.
+
+@item +vfpv3
+The VFPv3 floating-point instructions, with 32 double-precision
+registers.
+
+@item +vfpv3-d16-fp16
+The VFPv3 floating-point instructions, with 16 double-precision
+registers and the half-precision floating-point conversion operations.
+
+@item +vfpv3-fp16
+The VFPv3 floating-point instructions, with 32 double-precision
+registers and the half-precision floating-point conversion operations.
+
+@item +vfpv4-d16
+The VFPv4 floating-point instructions, with 16 double-precision
+registers.
+
+@item +vfpv4
+The VFPv4 floating-point instructions, with 32 double-precision
+registers.
+
+@item +neon
+The Advanced SIMD (Neon) v1 and the VFPv3 floating-point instructions.
+The extension @samp{+neon-vfpv3} can be used as an alias for this extension.
+
+@item +neon-fp16
+The Advanced SIMD (Neon) v1 and the VFPv3 floating-point instructions, with
+the half-precision floating-point conversion operations.
+
+@item +nosimd
+Disable the Advanced SIMD instructions (does not disable floating point).
+
+@item +nofp
+Disable the floating-point and Advanced SIMD instructions.
+@end table
+
+@item armv8-a
+@table @samp
+@item +crc
+The Cyclic Redundancy Check (CRC) instructions.
+@item +simd
+The ARMv8 Advanced SIMD and floating-point instructions.
+@item +crypto
+The cryptographic instructions.
+@item +nocrypto
+Disable the cryptographic isntructions.
+@item +nofp
+Disable the floating-point, Advanced SIMD and cryptographic instructions.
+@end table
+
+@item armv8.1-a
+@table @samp
+@item +simd
+The ARMv8.1 Advanced SIMD and floating-point instructions.
+
+@item +crypto
+The cryptographic instructions.  This also enables the Advanced SIMD and
+floating-point instructions.
+
+@item +nocrypto
+Disable the cryptographic isntructions.
+
+@item +nofp
+Disable the floating-point, Advanced SIMD and cryptographic instructions.
+@end table
+
+@item armv8.2-a
+@table @samp
+@item +fp16
+The half-precision floating-point data processing instructions.
+This also enables the Advanced SIMD and floating-point instructions.
+
+@item +simd
+The ARMv8.1 Advanced SIMD and floating-point instructions.
+
+@item +crypto
+The cryptographic instructions.  This also enables the Advanced SIMD and
+floating-point instructions.
+
+@item +nocrypto
+Disable the cryptographic extension.
+
+@item +nofp
+Disable the floating-point, Advanced SIMD and cryptographic instructions.
+@end table
+
+@item armv7-r
+@table @samp
+@item +fp.sp
+The single-precision VFPv3 floating-point instructions.  The extension
+@samp{+vfpv3xd} can be used as an alias for this extension.
+
+@item +fp
+The VFPv3 floating-point instructions with 16 double-precision registers.
+The extension +vfpv3-d16 can be used as an alias for this extension.
+
+@item +nofp
+Disable the floating-point extension.
+
+@item +idiv
+The ARM-state integer division instructions.
+
+@item +noidiv
+Disable the ARM-state integer division extension.
+@end table
+
+@item armv7e-m
+@table @samp
+@item +fp
+The single-precision VFPv4 floating-point instructions.
+
+@item +fpv5
+The single-precision FPv5 floating-point instructions.
+
+@item +fp.dp
+The single- and double-precision FPv5 floating-point instructions.
+
+@item +nofp
+Disable the floating-point extensions.
+@end table
+
+@item  armv8-m.main
+@table @samp
+@item +dsp
+The DSP instructions.
+
+@item +nodsp
+Disable the DSP extension.
+
+@item +fp
+The single-precision floating-point instructions.
+
+@item +fp.dp
+The single- and double-precision floating-point instructions.
+
+@item +nofp
+Disable the floating-point extension.
+
+@end table
+
+@end table
 
 @option{-march=native} causes the compiler to auto-detect the architecture
 of the build computer.  At present, this feature is only supported on
