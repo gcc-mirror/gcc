@@ -1,5 +1,10 @@
 2017-06-16  Richard Earnshaw  <rearnsha@arm.com>
 
+	* config/arm/arm.opt (marm): Mark as the negative of of -mthumb.
+	(mthumb): Mark as the negative of -marm.
+
+2017-06-16  Richard Earnshaw  <rearnsha@arm.com>
+
 	* doc/invoke.texi (ARM Options, -mcpu): Document supported
 	extension options.
 	(ARM Options, -mtune): Document that this accepts the same
