@@ -2262,7 +2262,7 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
    - an array of -mcpu values if any is given;
    - an empty array.  */
 #define TARGET_MODE_SPECS						\
-  " %{!marm:%{!mthumb:%:target_mode_check(%{march=*:%*;mcpu=*:%*;:})}}"
+  " %{!marm:%{!mthumb:%:target_mode_check(%{march=*:arch %*;mcpu=*:cpu %*;:})}}"
 
 #define DRIVER_SELF_SPECS MCPU_MTUNE_NATIVE_SPECS TARGET_MODE_SPECS
 #define TARGET_SUPPORTS_WIDE_INT 1

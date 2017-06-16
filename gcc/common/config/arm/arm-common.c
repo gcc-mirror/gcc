@@ -143,12 +143,6 @@ arm_rewrite_march (int argc, const char **argv)
   return arm_rewrite_selected_arch (argv[argc - 1]);
 }
 
-struct arm_arch_core_flag
-{
-  const char *const name;
-  const enum isa_feature isa_bits[isa_num_bits];
-};
-
 #include "config/arm/arm-cpu-cdata.h"
 
 /* Scan over a raw feature array BITS checking for BIT being present.
@@ -167,26 +161,60 @@ check_isa_bits_for (const enum isa_feature* bits, enum isa_feature bit)
 
 /* Called by the driver to check whether the target denoted by current
    command line options is a Thumb-only target.  ARGV is an array of
-   -march and -mcpu values (ie. it contains the rhs after the equal
-   sign) and we use the last one of them to make a decision.  The
-   number of elements in ARGV is given in ARGC.  */
+   tupples (normally only one) where the first element of the tupple
+   is 'cpu' or 'arch' and the second is the option passed to the
+   compiler for that.  An architecture tupple is always taken in
+   preference to a cpu tupple and the last of each type always
+   overrides any earlier setting.  */
+
 const char *
 arm_target_thumb_only (int argc, const char **argv)
 {
-  unsigned int opt;
+  const char *arch = NULL;
+  const char *cpu = NULL;
 
-  if (argc)
+  if (argc % 2 != 0)
+    fatal_error (input_location,
+		 "%%:target_mode_check takes an even number of parameters");
+
+  while (argc)
     {
-      for (opt = 0; opt < (ARRAY_SIZE (arm_arch_core_flags)); opt++)
-	if ((strcmp (argv[argc - 1], arm_arch_core_flags[opt].name) == 0)
-	    && !check_isa_bits_for (arm_arch_core_flags[opt].isa_bits,
-				    isa_bit_notm))
-	  return "-mthumb";
-
-      return NULL;
+      if (strcmp (argv[0], "arch") == 0)
+	arch = argv[1];
+      else if (strcmp (argv[0], "cpu") == 0)
+	cpu = argv[1];
+      else
+	fatal_error (input_location,
+		     "unrecognized option passed to %%:target_mode_check");
+      argc -= 2;
+      argv += 2;
     }
-  else
-    return NULL;
+
+  /* No architecture, or CPU, has option extensions that change
+     whether or not we have a Thumb-only device, so there is no need
+     to scan any option extensions specified.  */
+
+  /* If the architecture is specified, that overrides any CPU setting.  */
+  if (arch)
+    {
+      const arch_option *arch_opt
+	= arm_parse_arch_option_name (all_architectures, "-march", arch);
+
+      if (arch_opt && !check_isa_bits_for (arch_opt->common.isa_bits,
+					   isa_bit_notm))
+	return "-mthumb";
+    }
+  else if (cpu)
+    {
+      const cpu_option *cpu_opt
+	= arm_parse_cpu_option_name (all_cores, "-mcpu", cpu);
+
+      if (cpu_opt && !check_isa_bits_for (cpu_opt->common.isa_bits,
+					  isa_bit_notm))
+	return "-mthumb";
+    }
+
+  return NULL;
 }
 
 /* List the permitted CPU option names.  If TARGET is a near miss for an
