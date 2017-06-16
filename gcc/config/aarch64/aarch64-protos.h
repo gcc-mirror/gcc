@@ -210,6 +210,7 @@ struct cpu_prefetch_tune
   const int l1_cache_size;
   const int l1_cache_line_size;
   const int l2_cache_size;
+  const int default_opt_level;
 };
 
 struct tune_params

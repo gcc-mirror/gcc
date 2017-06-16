@@ -532,7 +532,8 @@ static const cpu_prefetch_tune generic_prefetch_tune =
   0,			/* num_slots  */
   -1,			/* l1_cache_size  */
   -1,			/* l1_cache_line_size  */
-  -1			/* l2_cache_size  */
+  -1,			/* l2_cache_size  */
+  -1			/* default_opt_level  */
 };
 
 static const cpu_prefetch_tune exynosm1_prefetch_tune =
@@ -540,7 +541,8 @@ static const cpu_prefetch_tune exynosm1_prefetch_tune =
   0,			/* num_slots  */
   -1,			/* l1_cache_size  */
   64,			/* l1_cache_line_size  */
-  -1			/* l2_cache_size  */
+  -1,			/* l2_cache_size  */
+  -1			/* default_opt_level  */
 };
 
 static const cpu_prefetch_tune qdf24xx_prefetch_tune =
@@ -548,7 +550,8 @@ static const cpu_prefetch_tune qdf24xx_prefetch_tune =
   0,			/* num_slots  */
   -1,			/* l1_cache_size  */
   64,			/* l1_cache_line_size  */
-  -1			/* l2_cache_size  */
+  -1,			/* l2_cache_size  */
+  -1			/* default_opt_level  */
 };
 
 static const cpu_prefetch_tune thunderx2t99_prefetch_tune =
@@ -556,7 +559,8 @@ static const cpu_prefetch_tune thunderx2t99_prefetch_tune =
   0,			/* num_slots  */
   -1,			/* l1_cache_size  */
   64,			/* l1_cache_line_size  */
-  -1			/* l2_cache_size  */
+  -1,			/* l2_cache_size  */
+  -1			/* default_opt_level  */
 };
 
 static const struct tune_params generic_tunings =
@@ -8805,6 +8809,15 @@ aarch64_override_options_internal (struct gcc_options *opts)
 			   aarch64_tune_params.prefetch->l2_cache_size,
 			   opts->x_param_values,
 			   global_options_set.x_param_values);
+
+  /* Enable sw prefetching at specified optimization level for
+     CPUS that have prefetch.  Lower optimization level threshold by 1
+     when profiling is enabled.  */
+  if (opts->x_flag_prefetch_loop_arrays < 0
+      && !opts->x_optimize_size
+      && aarch64_tune_params.prefetch->default_opt_level >= 0
+      && opts->x_optimize >= aarch64_tune_params.prefetch->default_opt_level)
+    opts->x_flag_prefetch_loop_arrays = 1;
 
   aarch64_override_options_after_change_1 (opts);
 }
