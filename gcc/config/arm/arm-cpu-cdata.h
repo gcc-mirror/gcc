@@ -341,6 +341,7 @@ static const struct arm_arch_core_flag arm_arch_core_flags[] =
     "arm9e",
     {
       ISA_ARMv5te,
+      ISA_VFPv2,ISA_FP_DBL,
       isa_nobit
     },
   },
@@ -348,6 +349,7 @@ static const struct arm_arch_core_flag arm_arch_core_flags[] =
     "arm946e-s",
     {
       ISA_ARMv5te,
+      ISA_VFPv2,ISA_FP_DBL,
       isa_nobit
     },
   },
@@ -355,6 +357,7 @@ static const struct arm_arch_core_flag arm_arch_core_flags[] =
     "arm966e-s",
     {
       ISA_ARMv5te,
+      ISA_VFPv2,ISA_FP_DBL,
       isa_nobit
     },
   },
@@ -362,6 +365,7 @@ static const struct arm_arch_core_flag arm_arch_core_flags[] =
     "arm968e-s",
     {
       ISA_ARMv5te,
+      ISA_VFPv2,ISA_FP_DBL,
       isa_nobit
     },
   },
@@ -369,6 +373,7 @@ static const struct arm_arch_core_flag arm_arch_core_flags[] =
     "arm10e",
     {
       ISA_ARMv5te,
+      ISA_VFPv2,ISA_FP_DBL,
       isa_nobit
     },
   },
@@ -376,6 +381,7 @@ static const struct arm_arch_core_flag arm_arch_core_flags[] =
     "arm1020e",
     {
       ISA_ARMv5te,
+      ISA_VFPv2,ISA_FP_DBL,
       isa_nobit
     },
   },
@@ -383,6 +389,7 @@ static const struct arm_arch_core_flag arm_arch_core_flags[] =
     "arm1022e",
     {
       ISA_ARMv5te,
+      ISA_VFPv2,ISA_FP_DBL,
       isa_nobit
     },
   },
@@ -440,6 +447,7 @@ static const struct arm_arch_core_flag arm_arch_core_flags[] =
     "arm926ej-s",
     {
       ISA_ARMv5tej,
+      ISA_VFPv2,ISA_FP_DBL,
       isa_nobit
     },
   },
@@ -447,6 +455,7 @@ static const struct arm_arch_core_flag arm_arch_core_flags[] =
     "arm1026ej-s",
     {
       ISA_ARMv5tej,
+      ISA_VFPv2,ISA_FP_DBL,
       isa_nobit
     },
   },
@@ -556,6 +565,7 @@ static const struct arm_arch_core_flag arm_arch_core_flags[] =
     "generic-armv7-a",
     {
       ISA_ARMv7a,
+      ISA_VFPv3,ISA_FP_DBL,
       isa_nobit
     },
   },
@@ -563,6 +573,7 @@ static const struct arm_arch_core_flag arm_arch_core_flags[] =
     "cortex-a5",
     {
       ISA_ARMv7a,
+      ISA_VFPv3,ISA_NEON,isa_bit_fp16conv,
       isa_nobit
     },
   },
@@ -570,6 +581,7 @@ static const struct arm_arch_core_flag arm_arch_core_flags[] =
     "cortex-a7",
     {
       ISA_ARMv7ve,
+      ISA_VFPv4,ISA_NEON,
       isa_nobit
     },
   },
@@ -585,7 +597,7 @@ static const struct arm_arch_core_flag arm_arch_core_flags[] =
     "cortex-a9",
     {
       ISA_ARMv7a,
-      ISA_VFPv3,ISA_NEON,
+      ISA_VFPv3,ISA_NEON,isa_bit_fp16conv,
       isa_nobit
     },
   },
@@ -593,6 +605,7 @@ static const struct arm_arch_core_flag arm_arch_core_flags[] =
     "cortex-a12",
     {
       ISA_ARMv7ve,
+      ISA_VFPv4,ISA_NEON,
       isa_nobit
     },
   },
@@ -600,6 +613,7 @@ static const struct arm_arch_core_flag arm_arch_core_flags[] =
     "cortex-a15",
     {
       ISA_ARMv7ve,
+      ISA_VFPv4,ISA_NEON,
       isa_nobit
     },
   },
@@ -607,6 +621,7 @@ static const struct arm_arch_core_flag arm_arch_core_flags[] =
     "cortex-a17",
     {
       ISA_ARMv7ve,
+      ISA_VFPv4,ISA_NEON,
       isa_nobit
     },
   },
@@ -621,6 +636,7 @@ static const struct arm_arch_core_flag arm_arch_core_flags[] =
     "cortex-r4f",
     {
       ISA_ARMv7r,
+      ISA_VFPv3,ISA_FP_DBL,
       isa_nobit
     },
   },
@@ -628,7 +644,7 @@ static const struct arm_arch_core_flag arm_arch_core_flags[] =
     "cortex-r5",
     {
       ISA_ARMv7r,
-      isa_bit_adiv,
+      ISA_VFPv3,ISA_FP_DBL,
       isa_nobit
     },
   },
@@ -636,7 +652,7 @@ static const struct arm_arch_core_flag arm_arch_core_flags[] =
     "cortex-r7",
     {
       ISA_ARMv7r,
-      isa_bit_adiv,
+      ISA_VFPv3,ISA_FP_DBL,
       isa_nobit
     },
   },
@@ -644,7 +660,7 @@ static const struct arm_arch_core_flag arm_arch_core_flags[] =
     "cortex-r8",
     {
       ISA_ARMv7r,
-      isa_bit_adiv,
+      ISA_VFPv3,ISA_FP_DBL,
       isa_nobit
     },
   },
@@ -652,6 +668,7 @@ static const struct arm_arch_core_flag arm_arch_core_flags[] =
     "cortex-m7",
     {
       ISA_ARMv7em,
+      ISA_FPv5,ISA_FP_DBL,
       isa_quirk_no_volatile_ce,
       isa_nobit
     },
@@ -660,6 +677,7 @@ static const struct arm_arch_core_flag arm_arch_core_flags[] =
     "cortex-m4",
     {
       ISA_ARMv7em,
+      ISA_VFPv4,
       isa_nobit
     },
   },
@@ -682,6 +700,7 @@ static const struct arm_arch_core_flag arm_arch_core_flags[] =
     "cortex-a15.cortex-a7",
     {
       ISA_ARMv7ve,
+      ISA_VFPv4,ISA_NEON,
       isa_nobit
     },
   },
@@ -689,6 +708,7 @@ static const struct arm_arch_core_flag arm_arch_core_flags[] =
     "cortex-a17.cortex-a7",
     {
       ISA_ARMv7ve,
+      ISA_VFPv4,ISA_NEON,
       isa_nobit
     },
   },
@@ -696,6 +716,7 @@ static const struct arm_arch_core_flag arm_arch_core_flags[] =
     "cortex-a32",
     {
       ISA_ARMv8a,
+      ISA_FP_ARMv8,ISA_NEON,
       isa_nobit
     },
   },
@@ -703,6 +724,7 @@ static const struct arm_arch_core_flag arm_arch_core_flags[] =
     "cortex-a35",
     {
       ISA_ARMv8a,
+      ISA_FP_ARMv8,ISA_NEON,
       isa_nobit
     },
   },
@@ -710,6 +732,7 @@ static const struct arm_arch_core_flag arm_arch_core_flags[] =
     "cortex-a53",
     {
       ISA_ARMv8a,
+      ISA_FP_ARMv8,ISA_NEON,
       isa_nobit
     },
   },
@@ -717,6 +740,7 @@ static const struct arm_arch_core_flag arm_arch_core_flags[] =
     "cortex-a57",
     {
       ISA_ARMv8a,
+      ISA_FP_ARMv8,ISA_NEON,
       isa_nobit
     },
   },
@@ -724,6 +748,7 @@ static const struct arm_arch_core_flag arm_arch_core_flags[] =
     "cortex-a72",
     {
       ISA_ARMv8a,
+      ISA_FP_ARMv8,ISA_NEON,
       isa_nobit
     },
   },
@@ -731,6 +756,7 @@ static const struct arm_arch_core_flag arm_arch_core_flags[] =
     "cortex-a73",
     {
       ISA_ARMv8a,
+      ISA_FP_ARMv8,ISA_NEON,
       isa_nobit
     },
   },
@@ -738,6 +764,7 @@ static const struct arm_arch_core_flag arm_arch_core_flags[] =
     "exynos-m1",
     {
       ISA_ARMv8a,
+      ISA_FP_ARMv8,ISA_NEON,
       isa_nobit
     },
   },
@@ -745,6 +772,7 @@ static const struct arm_arch_core_flag arm_arch_core_flags[] =
     "xgene1",
     {
       ISA_ARMv8a,
+      ISA_FP_ARMv8,ISA_NEON,
       isa_nobit
     },
   },
@@ -752,6 +780,7 @@ static const struct arm_arch_core_flag arm_arch_core_flags[] =
     "cortex-a57.cortex-a53",
     {
       ISA_ARMv8a,
+      ISA_FP_ARMv8,ISA_NEON,
       isa_nobit
     },
   },
@@ -759,6 +788,7 @@ static const struct arm_arch_core_flag arm_arch_core_flags[] =
     "cortex-a72.cortex-a53",
     {
       ISA_ARMv8a,
+      ISA_FP_ARMv8,ISA_NEON,
       isa_nobit
     },
   },
@@ -766,6 +796,7 @@ static const struct arm_arch_core_flag arm_arch_core_flags[] =
     "cortex-a73.cortex-a35",
     {
       ISA_ARMv8a,
+      ISA_FP_ARMv8,ISA_NEON,
       isa_nobit
     },
   },
@@ -773,6 +804,7 @@ static const struct arm_arch_core_flag arm_arch_core_flags[] =
     "cortex-a73.cortex-a53",
     {
       ISA_ARMv8a,
+      ISA_FP_ARMv8,ISA_NEON,
       isa_nobit
     },
   },
@@ -787,6 +819,7 @@ static const struct arm_arch_core_flag arm_arch_core_flags[] =
     "cortex-m33",
     {
       ISA_ARMv8m_main,
+      ISA_FPv5,
       isa_nobit
     },
   },

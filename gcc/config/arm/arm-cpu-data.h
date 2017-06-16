@@ -20,10 +20,162 @@
    License along with GCC; see the file COPYING3.  If not see
    <http://www.gnu.org/licenses/>.  */
 
+static const struct cpu_option cpu_opttab_arm9e[] = {
+  {
+    "nofp", true,
+    { ISA_ALL_FP, isa_nobit }
+  },
+  { NULL, false, {isa_nobit}}
+};
+
+static const struct cpu_option cpu_opttab_arm946es[] = {
+  {
+    "nofp", true,
+    { ISA_ALL_FP, isa_nobit }
+  },
+  { NULL, false, {isa_nobit}}
+};
+
+static const struct cpu_option cpu_opttab_arm966es[] = {
+  {
+    "nofp", true,
+    { ISA_ALL_FP, isa_nobit }
+  },
+  { NULL, false, {isa_nobit}}
+};
+
+static const struct cpu_option cpu_opttab_arm968es[] = {
+  {
+    "nofp", true,
+    { ISA_ALL_FP, isa_nobit }
+  },
+  { NULL, false, {isa_nobit}}
+};
+
+static const struct cpu_option cpu_opttab_arm10e[] = {
+  {
+    "nofp", true,
+    { ISA_ALL_FP, isa_nobit }
+  },
+  { NULL, false, {isa_nobit}}
+};
+
+static const struct cpu_option cpu_opttab_arm1020e[] = {
+  {
+    "nofp", true,
+    { ISA_ALL_FP, isa_nobit }
+  },
+  { NULL, false, {isa_nobit}}
+};
+
+static const struct cpu_option cpu_opttab_arm1022e[] = {
+  {
+    "nofp", true,
+    { ISA_ALL_FP, isa_nobit }
+  },
+  { NULL, false, {isa_nobit}}
+};
+
+static const struct cpu_option cpu_opttab_arm926ejs[] = {
+  {
+    "nofp", true,
+    { ISA_ALL_FP, isa_nobit }
+  },
+  { NULL, false, {isa_nobit}}
+};
+
+static const struct cpu_option cpu_opttab_arm1026ejs[] = {
+  {
+    "nofp", true,
+    { ISA_ALL_FP, isa_nobit }
+  },
+  { NULL, false, {isa_nobit}}
+};
+
+static const struct cpu_option cpu_opttab_genericv7a[] = {
+  {
+    "simd", false,
+    { ISA_VFPv3,ISA_NEON, isa_nobit }
+  },
+  {
+    "vfpv3", false,
+    { ISA_VFPv3,ISA_FP_D32, isa_nobit }
+  },
+  {
+    "vfpv3-d16", false,
+    { ISA_VFPv3,ISA_FP_DBL, isa_nobit }
+  },
+  {
+    "vfpv3-fp16", false,
+    { ISA_VFPv3,ISA_FP_D32,isa_bit_fp16conv, isa_nobit }
+  },
+  {
+    "vfpv3-d16-fp16", false,
+    { ISA_VFPv3,ISA_FP_DBL,isa_bit_fp16conv, isa_nobit }
+  },
+  {
+    "vfpv4", false,
+    { ISA_VFPv4,ISA_FP_D32, isa_nobit }
+  },
+  {
+    "vfpv4-d16", false,
+    { ISA_VFPv4,ISA_FP_DBL, isa_nobit }
+  },
+  {
+    "neon", false,
+    { ISA_VFPv3,ISA_NEON, isa_nobit }
+  },
+  {
+    "neon-vfpv3", false,
+    { ISA_VFPv3,ISA_NEON, isa_nobit }
+  },
+  {
+    "neon-fp16", false,
+    { ISA_VFPv3,ISA_NEON,isa_bit_fp16conv, isa_nobit }
+  },
+  {
+    "neon-vfpv4", false,
+    { ISA_VFPv4,ISA_NEON, isa_nobit }
+  },
+  {
+    "nofp", true,
+    { ISA_ALL_FP, isa_nobit }
+  },
+  {
+    "nosimd", true,
+    { ISA_ALL_SIMD, isa_nobit }
+  },
+  { NULL, false, {isa_nobit}}
+};
+
+static const struct cpu_option cpu_opttab_cortexa5[] = {
+  {
+    "nosimd", true,
+    { ISA_ALL_SIMD, isa_nobit }
+  },
+  {
+    "nofp", true,
+    { ISA_ALL_FP, isa_nobit }
+  },
+  { NULL, false, {isa_nobit}}
+};
+
+static const struct cpu_option cpu_opttab_cortexa7[] = {
+  {
+    "nosimd", true,
+    { ISA_ALL_SIMD, isa_nobit }
+  },
+  {
+    "nofp", true,
+    { ISA_ALL_FP, isa_nobit }
+  },
+  { NULL, false, {isa_nobit}}
+};
+
 static const struct cpu_option cpu_opttab_cortexa8[] = {
   {
     "nofp", true,
-    { ISA_NEON,ISA_VFPv3, isa_nobit }
+    { ISA_ALL_FP, isa_nobit }
   },
   { NULL, false, {isa_nobit}}
 };
@@ -31,11 +183,215 @@ static const struct cpu_option cpu_opttab_cortexa8[] = {
 static const struct cpu_option cpu_opttab_cortexa9[] = {
   {
     "nofp", true,
-    { ISA_NEON,ISA_VFPv3, isa_nobit }
+    { ISA_ALL_FP, isa_nobit }
   },
   {
     "nosimd", true,
-    { ISA_NEON, isa_nobit }
+    { ISA_ALL_SIMD, isa_nobit }
+  },
+  { NULL, false, {isa_nobit}}
+};
+
+static const struct cpu_option cpu_opttab_cortexa12[] = {
+  {
+    "nofp", true,
+    { ISA_ALL_FP, isa_nobit }
+  },
+  { NULL, false, {isa_nobit}}
+};
+
+static const struct cpu_option cpu_opttab_cortexa15[] = {
+  {
+    "nofp", true,
+    { ISA_ALL_FP, isa_nobit }
+  },
+  { NULL, false, {isa_nobit}}
+};
+
+static const struct cpu_option cpu_opttab_cortexa17[] = {
+  {
+    "nofp", true,
+    { ISA_ALL_FP, isa_nobit }
+  },
+  { NULL, false, {isa_nobit}}
+};
+
+static const struct cpu_option cpu_opttab_cortexr5[] = {
+  {
+    "nofp.dp", true,
+    { ISA_FP_DBL, isa_nobit }
+  },
+  {
+    "nofp", true,
+    { ISA_ALL_FP, isa_nobit }
+  },
+  { NULL, false, {isa_nobit}}
+};
+
+static const struct cpu_option cpu_opttab_cortexr7[] = {
+  {
+    "nofp", true,
+    { ISA_ALL_FP, isa_nobit }
+  },
+  { NULL, false, {isa_nobit}}
+};
+
+static const struct cpu_option cpu_opttab_cortexr8[] = {
+  {
+    "nofp", true,
+    { ISA_ALL_FP, isa_nobit }
+  },
+  { NULL, false, {isa_nobit}}
+};
+
+static const struct cpu_option cpu_opttab_cortexm7[] = {
+  {
+    "nofp.dp", true,
+    { ISA_FP_DBL, isa_nobit }
+  },
+  {
+    "nofp", true,
+    { ISA_ALL_FP, isa_nobit }
+  },
+  { NULL, false, {isa_nobit}}
+};
+
+static const struct cpu_option cpu_opttab_cortexm4[] = {
+  {
+    "nofp", true,
+    { ISA_ALL_FP, isa_nobit }
+  },
+  { NULL, false, {isa_nobit}}
+};
+
+static const struct cpu_option cpu_opttab_cortexa15cortexa7[] = {
+  {
+    "nofp", true,
+    { ISA_ALL_FP, isa_nobit }
+  },
+  { NULL, false, {isa_nobit}}
+};
+
+static const struct cpu_option cpu_opttab_cortexa17cortexa7[] = {
+  {
+    "nofp", true,
+    { ISA_ALL_FP, isa_nobit }
+  },
+  { NULL, false, {isa_nobit}}
+};
+
+static const struct cpu_option cpu_opttab_cortexa32[] = {
+  {
+    "crypto", false,
+    { ISA_FP_ARMv8,ISA_CRYPTO, isa_nobit }
+  },
+  {
+    "nofp", true,
+    { ISA_ALL_FP, isa_nobit }
+  },
+  { NULL, false, {isa_nobit}}
+};
+
+static const struct cpu_option cpu_opttab_cortexa35[] = {
+  {
+    "crypto", false,
+    { ISA_FP_ARMv8,ISA_CRYPTO, isa_nobit }
+  },
+  {
+    "nofp", true,
+    { ISA_ALL_FP, isa_nobit }
+  },
+  { NULL, false, {isa_nobit}}
+};
+
+static const struct cpu_option cpu_opttab_cortexa53[] = {
+  {
+    "crypto", false,
+    { ISA_FP_ARMv8,ISA_CRYPTO, isa_nobit }
+  },
+  {
+    "nofp", true,
+    { ISA_ALL_FP, isa_nobit }
+  },
+  { NULL, false, {isa_nobit}}
+};
+
+static const struct cpu_option cpu_opttab_cortexa57[] = {
+  {
+    "crypto", false,
+    { ISA_FP_ARMv8,ISA_CRYPTO, isa_nobit }
+  },
+  { NULL, false, {isa_nobit}}
+};
+
+static const struct cpu_option cpu_opttab_cortexa72[] = {
+  {
+    "crypto", false,
+    { ISA_FP_ARMv8,ISA_CRYPTO, isa_nobit }
+  },
+  { NULL, false, {isa_nobit}}
+};
+
+static const struct cpu_option cpu_opttab_cortexa73[] = {
+  {
+    "crypto", false,
+    { ISA_FP_ARMv8,ISA_CRYPTO, isa_nobit }
+  },
+  { NULL, false, {isa_nobit}}
+};
+
+static const struct cpu_option cpu_opttab_exynosm1[] = {
+  {
+    "crypto", false,
+    { ISA_FP_ARMv8,ISA_CRYPTO, isa_nobit }
+  },
+  { NULL, false, {isa_nobit}}
+};
+
+static const struct cpu_option cpu_opttab_xgene1[] = {
+  {
+    "crypto", false,
+    { ISA_FP_ARMv8,ISA_CRYPTO, isa_nobit }
+  },
+  { NULL, false, {isa_nobit}}
+};
+
+static const struct cpu_option cpu_opttab_cortexa57cortexa53[] = {
+  {
+    "crypto", false,
+    { ISA_FP_ARMv8,ISA_CRYPTO, isa_nobit }
+  },
+  { NULL, false, {isa_nobit}}
+};
+
+static const struct cpu_option cpu_opttab_cortexa72cortexa53[] = {
+  {
+    "crypto", false,
+    { ISA_FP_ARMv8,ISA_CRYPTO, isa_nobit }
+  },
+  { NULL, false, {isa_nobit}}
+};
+
+static const struct cpu_option cpu_opttab_cortexa73cortexa35[] = {
+  {
+    "crypto", false,
+    { ISA_FP_ARMv8,ISA_CRYPTO, isa_nobit }
+  },
+  { NULL, false, {isa_nobit}}
+};
+
+static const struct cpu_option cpu_opttab_cortexa73cortexa53[] = {
+  {
+    "crypto", false,
+    { ISA_FP_ARMv8,ISA_CRYPTO, isa_nobit }
+  },
+  { NULL, false, {isa_nobit}}
+};
+
+static const struct cpu_option cpu_opttab_cortexm33[] = {
+  {
+    "nofp", true,
+    { ISA_ALL_FP, isa_nobit }
   },
   { NULL, false, {isa_nobit}}
 };
@@ -589,9 +945,10 @@ static const struct processors all_cores[] =
     "5TE", BASE_ARCH_5TE,
     {
       ISA_ARMv5te,
+      ISA_VFPv2,ISA_FP_DBL,
       isa_nobit
     },
-    NULL,
+    cpu_opttab_arm9e,
     &arm_9e_tune
   },
   {
@@ -601,9 +958,10 @@ static const struct processors all_cores[] =
     "5TE", BASE_ARCH_5TE,
     {
       ISA_ARMv5te,
+      ISA_VFPv2,ISA_FP_DBL,
       isa_nobit
     },
-    NULL,
+    cpu_opttab_arm946es,
     &arm_9e_tune
   },
   {
@@ -613,9 +971,10 @@ static const struct processors all_cores[] =
     "5TE", BASE_ARCH_5TE,
     {
       ISA_ARMv5te,
+      ISA_VFPv2,ISA_FP_DBL,
       isa_nobit
     },
-    NULL,
+    cpu_opttab_arm966es,
     &arm_9e_tune
   },
   {
@@ -625,9 +984,10 @@ static const struct processors all_cores[] =
     "5TE", BASE_ARCH_5TE,
     {
       ISA_ARMv5te,
+      ISA_VFPv2,ISA_FP_DBL,
       isa_nobit
     },
-    NULL,
+    cpu_opttab_arm968es,
     &arm_9e_tune
   },
   {
@@ -637,9 +997,10 @@ static const struct processors all_cores[] =
     "5TE", BASE_ARCH_5TE,
     {
       ISA_ARMv5te,
+      ISA_VFPv2,ISA_FP_DBL,
       isa_nobit
     },
-    NULL,
+    cpu_opttab_arm10e,
     &arm_fastmul_tune
   },
   {
@@ -649,9 +1010,10 @@ static const struct processors all_cores[] =
     "5TE", BASE_ARCH_5TE,
     {
       ISA_ARMv5te,
+      ISA_VFPv2,ISA_FP_DBL,
       isa_nobit
     },
-    NULL,
+    cpu_opttab_arm1020e,
     &arm_fastmul_tune
   },
   {
@@ -661,9 +1023,10 @@ static const struct processors all_cores[] =
     "5TE", BASE_ARCH_5TE,
     {
       ISA_ARMv5te,
+      ISA_VFPv2,ISA_FP_DBL,
       isa_nobit
     },
-    NULL,
+    cpu_opttab_arm1022e,
     &arm_fastmul_tune
   },
   {
@@ -758,9 +1121,10 @@ static const struct processors all_cores[] =
     "5TEJ", BASE_ARCH_5TEJ,
     {
       ISA_ARMv5tej,
+      ISA_VFPv2,ISA_FP_DBL,
       isa_nobit
     },
-    NULL,
+    cpu_opttab_arm926ejs,
     &arm_9e_tune
   },
   {
@@ -770,9 +1134,10 @@ static const struct processors all_cores[] =
     "5TEJ", BASE_ARCH_5TEJ,
     {
       ISA_ARMv5tej,
+      ISA_VFPv2,ISA_FP_DBL,
       isa_nobit
     },
-    NULL,
+    cpu_opttab_arm1026ejs,
     &arm_9e_tune
   },
   {
@@ -954,9 +1319,10 @@ static const struct processors all_cores[] =
     "7A", BASE_ARCH_7A,
     {
       ISA_ARMv7a,
+      ISA_VFPv3,ISA_FP_DBL,
       isa_nobit
     },
-    NULL,
+    cpu_opttab_genericv7a,
     &arm_cortex_tune
   },
   {
@@ -966,9 +1332,10 @@ static const struct processors all_cores[] =
     "7A", BASE_ARCH_7A,
     {
       ISA_ARMv7a,
+      ISA_VFPv3,ISA_NEON,isa_bit_fp16conv,
       isa_nobit
     },
-    NULL,
+    cpu_opttab_cortexa5,
     &arm_cortex_a5_tune
   },
   {
@@ -978,9 +1345,10 @@ static const struct processors all_cores[] =
     "7A", BASE_ARCH_7A,
     {
       ISA_ARMv7ve,
+      ISA_VFPv4,ISA_NEON,
       isa_nobit
     },
-    NULL,
+    cpu_opttab_cortexa7,
     &arm_cortex_a7_tune
   },
   {
@@ -1003,7 +1371,7 @@ static const struct processors all_cores[] =
     "7A", BASE_ARCH_7A,
     {
       ISA_ARMv7a,
-      ISA_VFPv3,ISA_NEON,
+      ISA_VFPv3,ISA_NEON,isa_bit_fp16conv,
       isa_nobit
     },
     cpu_opttab_cortexa9,
@@ -1016,9 +1384,10 @@ static const struct processors all_cores[] =
     "7A", BASE_ARCH_7A,
     {
       ISA_ARMv7ve,
+      ISA_VFPv4,ISA_NEON,
       isa_nobit
     },
-    NULL,
+    cpu_opttab_cortexa12,
     &arm_cortex_a12_tune
   },
   {
@@ -1028,9 +1397,10 @@ static const struct processors all_cores[] =
     "7A", BASE_ARCH_7A,
     {
       ISA_ARMv7ve,
+      ISA_VFPv4,ISA_NEON,
       isa_nobit
     },
-    NULL,
+    cpu_opttab_cortexa15,
     &arm_cortex_a15_tune
   },
   {
@@ -1040,9 +1410,10 @@ static const struct processors all_cores[] =
     "7A", BASE_ARCH_7A,
     {
       ISA_ARMv7ve,
+      ISA_VFPv4,ISA_NEON,
       isa_nobit
     },
-    NULL,
+    cpu_opttab_cortexa17,
     &arm_cortex_a12_tune
   },
   {
@@ -1064,6 +1435,7 @@ static const struct processors all_cores[] =
     "7R", BASE_ARCH_7R,
     {
       ISA_ARMv7r,
+      ISA_VFPv3,ISA_FP_DBL,
       isa_nobit
     },
     NULL,
@@ -1077,9 +1449,10 @@ static const struct processors all_cores[] =
     {
       ISA_ARMv7r,
       isa_bit_adiv,
+      ISA_VFPv3,ISA_FP_DBL,
       isa_nobit
     },
-    NULL,
+    cpu_opttab_cortexr5,
     &arm_cortex_tune
   },
   {
@@ -1090,9 +1463,10 @@ static const struct processors all_cores[] =
     {
       ISA_ARMv7r,
       isa_bit_adiv,
+      ISA_VFPv3,ISA_FP_DBL,
       isa_nobit
     },
-    NULL,
+    cpu_opttab_cortexr7,
     &arm_cortex_tune
   },
   {
@@ -1103,9 +1477,10 @@ static const struct processors all_cores[] =
     {
       ISA_ARMv7r,
       isa_bit_adiv,
+      ISA_VFPv3,ISA_FP_DBL,
       isa_nobit
     },
-    NULL,
+    cpu_opttab_cortexr8,
     &arm_cortex_tune
   },
   {
@@ -1115,10 +1490,11 @@ static const struct processors all_cores[] =
     "7EM", BASE_ARCH_7EM,
     {
       ISA_ARMv7em,
+      ISA_FPv5,ISA_FP_DBL,
       isa_quirk_no_volatile_ce,
       isa_nobit
     },
-    NULL,
+    cpu_opttab_cortexm7,
     &arm_cortex_m7_tune
   },
   {
@@ -1128,9 +1504,10 @@ static const struct processors all_cores[] =
     "7EM", BASE_ARCH_7EM,
     {
       ISA_ARMv7em,
+      ISA_VFPv4,
       isa_nobit
     },
-    NULL,
+    cpu_opttab_cortexm4,
     &arm_v7m_tune
   },
   {
@@ -1165,9 +1542,10 @@ static const struct processors all_cores[] =
     "7A", BASE_ARCH_7A,
     {
       ISA_ARMv7ve,
+      ISA_VFPv4,ISA_NEON,
       isa_nobit
     },
-    NULL,
+    cpu_opttab_cortexa15cortexa7,
     &arm_cortex_a15_tune
   },
   {
@@ -1177,9 +1555,10 @@ static const struct processors all_cores[] =
     "7A", BASE_ARCH_7A,
     {
       ISA_ARMv7ve,
+      ISA_VFPv4,ISA_NEON,
       isa_nobit
     },
-    NULL,
+    cpu_opttab_cortexa17cortexa7,
     &arm_cortex_a12_tune
   },
   {
@@ -1190,9 +1569,10 @@ static const struct processors all_cores[] =
     {
       ISA_ARMv8a,
       isa_bit_crc32,
+      ISA_FP_ARMv8,ISA_NEON,
       isa_nobit
     },
-    NULL,
+    cpu_opttab_cortexa32,
     &arm_cortex_a35_tune
   },
   {
@@ -1203,9 +1583,10 @@ static const struct processors all_cores[] =
     {
       ISA_ARMv8a,
       isa_bit_crc32,
+      ISA_FP_ARMv8,ISA_NEON,
       isa_nobit
     },
-    NULL,
+    cpu_opttab_cortexa35,
     &arm_cortex_a35_tune
   },
   {
@@ -1216,9 +1597,10 @@ static const struct processors all_cores[] =
     {
       ISA_ARMv8a,
       isa_bit_crc32,
+      ISA_FP_ARMv8,ISA_NEON,
       isa_nobit
     },
-    NULL,
+    cpu_opttab_cortexa53,
     &arm_cortex_a53_tune
   },
   {
@@ -1229,9 +1611,10 @@ static const struct processors all_cores[] =
     {
       ISA_ARMv8a,
       isa_bit_crc32,
+      ISA_FP_ARMv8,ISA_NEON,
       isa_nobit
     },
-    NULL,
+    cpu_opttab_cortexa57,
     &arm_cortex_a57_tune
   },
   {
@@ -1242,9 +1625,10 @@ static const struct processors all_cores[] =
     {
       ISA_ARMv8a,
       isa_bit_crc32,
+      ISA_FP_ARMv8,ISA_NEON,
       isa_nobit
     },
-    NULL,
+    cpu_opttab_cortexa72,
     &arm_cortex_a57_tune
   },
   {
@@ -1255,9 +1639,10 @@ static const struct processors all_cores[] =
     {
       ISA_ARMv8a,
       isa_bit_crc32,
+      ISA_FP_ARMv8,ISA_NEON,
       isa_nobit
     },
-    NULL,
+    cpu_opttab_cortexa73,
     &arm_cortex_a73_tune
   },
   {
@@ -1268,9 +1653,10 @@ static const struct processors all_cores[] =
     {
       ISA_ARMv8a,
       isa_bit_crc32,
+      ISA_FP_ARMv8,ISA_NEON,
       isa_nobit
     },
-    NULL,
+    cpu_opttab_exynosm1,
     &arm_exynosm1_tune
   },
   {
@@ -1280,9 +1666,10 @@ static const struct processors all_cores[] =
     "8A", BASE_ARCH_8A,
     {
       ISA_ARMv8a,
+      ISA_FP_ARMv8,ISA_NEON,
       isa_nobit
     },
-    NULL,
+    cpu_opttab_xgene1,
     &arm_xgene1_tune
   },
   {
@@ -1293,9 +1680,10 @@ static const struct processors all_cores[] =
     {
       ISA_ARMv8a,
       isa_bit_crc32,
+      ISA_FP_ARMv8,ISA_NEON,
       isa_nobit
     },
-    NULL,
+    cpu_opttab_cortexa57cortexa53,
     &arm_cortex_a57_tune
   },
   {
@@ -1306,9 +1694,10 @@ static const struct processors all_cores[] =
     {
       ISA_ARMv8a,
       isa_bit_crc32,
+      ISA_FP_ARMv8,ISA_NEON,
       isa_nobit
     },
-    NULL,
+    cpu_opttab_cortexa72cortexa53,
     &arm_cortex_a57_tune
   },
   {
@@ -1319,9 +1708,10 @@ static const struct processors all_cores[] =
     {
       ISA_ARMv8a,
       isa_bit_crc32,
+      ISA_FP_ARMv8,ISA_NEON,
       isa_nobit
     },
-    NULL,
+    cpu_opttab_cortexa73cortexa35,
     &arm_cortex_a73_tune
   },
   {
@@ -1332,9 +1722,10 @@ static const struct processors all_cores[] =
     {
       ISA_ARMv8a,
       isa_bit_crc32,
+      ISA_FP_ARMv8,ISA_NEON,
       isa_nobit
     },
-    NULL,
+    cpu_opttab_cortexa73cortexa53,
     &arm_cortex_a73_tune
   },
   {
@@ -1357,9 +1748,10 @@ static const struct processors all_cores[] =
     {
       ISA_ARMv8m_main,
       isa_bit_ARMv7em,
+      ISA_FPv5,
       isa_nobit
     },
-    NULL,
+    cpu_opttab_cortexm33,
     &arm_v7m_tune
   },
   {NULL, TARGET_CPU_arm_none, 0, NULL, BASE_ARCH_0, {isa_nobit}, NULL, NULL}
@@ -1376,7 +1768,7 @@ static const struct cpu_option arch_opttab_armv5e[] = {
   },
   {
     "nofp", true,
-    { ISA_VFPv2,ISA_FP_DBL, isa_nobit }
+    { ISA_ALL_FP, isa_nobit }
   },
   { NULL, false, {isa_nobit}}
 };
@@ -1392,7 +1784,7 @@ static const struct cpu_option arch_opttab_armv5te[] = {
   },
   {
     "nofp", true,
-    { ISA_VFPv2,ISA_FP_DBL, isa_nobit }
+    { ISA_ALL_FP, isa_nobit }
   },
   { NULL, false, {isa_nobit}}
 };
@@ -1408,7 +1800,7 @@ static const struct cpu_option arch_opttab_armv5tej[] = {
   },
   {
     "nofp", true,
-    { ISA_VFPv2,ISA_FP_DBL, isa_nobit }
+    { ISA_ALL_FP, isa_nobit }
   },
   { NULL, false, {isa_nobit}}
 };
@@ -1424,7 +1816,7 @@ static const struct cpu_option arch_opttab_armv6[] = {
   },
   {
     "nofp", true,
-    { ISA_VFPv2,ISA_FP_DBL, isa_nobit }
+    { ISA_ALL_FP, isa_nobit }
   },
   { NULL, false, {isa_nobit}}
 };
@@ -1440,7 +1832,7 @@ static const struct cpu_option arch_opttab_armv6j[] = {
   },
   {
     "nofp", true,
-    { ISA_VFPv2,ISA_FP_DBL, isa_nobit }
+    { ISA_ALL_FP, isa_nobit }
   },
   { NULL, false, {isa_nobit}}
 };
@@ -1456,7 +1848,7 @@ static const struct cpu_option arch_opttab_armv6k[] = {
   },
   {
     "nofp", true,
-    { ISA_VFPv2,ISA_FP_DBL, isa_nobit }
+    { ISA_ALL_FP, isa_nobit }
   },
   { NULL, false, {isa_nobit}}
 };
@@ -1472,7 +1864,7 @@ static const struct cpu_option arch_opttab_armv6z[] = {
   },
   {
     "nofp", true,
-    { ISA_VFPv2,ISA_FP_DBL, isa_nobit }
+    { ISA_ALL_FP, isa_nobit }
   },
   { NULL, false, {isa_nobit}}
 };
@@ -1488,7 +1880,7 @@ static const struct cpu_option arch_opttab_armv6kz[] = {
   },
   {
     "nofp", true,
-    { ISA_VFPv2,ISA_FP_DBL, isa_nobit }
+    { ISA_ALL_FP, isa_nobit }
   },
   { NULL, false, {isa_nobit}}
 };
@@ -1504,7 +1896,7 @@ static const struct cpu_option arch_opttab_armv6zk[] = {
   },
   {
     "nofp", true,
-    { ISA_VFPv2,ISA_FP_DBL, isa_nobit }
+    { ISA_ALL_FP, isa_nobit }
   },
   { NULL, false, {isa_nobit}}
 };
@@ -1520,7 +1912,7 @@ static const struct cpu_option arch_opttab_armv6t2[] = {
   },
   {
     "nofp", true,
-    { ISA_VFPv2,ISA_FP_DBL, isa_nobit }
+    { ISA_ALL_FP, isa_nobit }
   },
   { NULL, false, {isa_nobit}}
 };
@@ -1543,16 +1935,12 @@ static const struct cpu_option arch_opttab_armv7_a[] = {
     { ISA_VFPv3,ISA_FP_DBL, isa_nobit }
   },
   {
-    "simd", false,
-    { ISA_VFPv3,ISA_NEON, isa_nobit }
+    "vfpv3-d16", false,
+    { ISA_VFPv3,ISA_FP_DBL, isa_nobit }
   },
   {
     "vfpv3", false,
     { ISA_VFPv3,ISA_FP_D32, isa_nobit }
-  },
-  {
-    "vfpv3-d16", false,
-    { ISA_VFPv3,ISA_FP_DBL, isa_nobit }
   },
   {
     "vfpv3-d16-fp16", false,
@@ -1563,12 +1951,16 @@ static const struct cpu_option arch_opttab_armv7_a[] = {
     { ISA_VFPv3,ISA_FP_DBL,ISA_FP_D32,isa_bit_fp16conv, isa_nobit }
   },
   {
+    "vfpv4-d16", false,
+    { ISA_VFPv4,ISA_FP_DBL, isa_nobit }
+  },
+  {
     "vfpv4", false,
     { ISA_VFPv4,ISA_FP_D32, isa_nobit }
   },
   {
-    "vfpv4-d16", false,
-    { ISA_VFPv4,ISA_FP_DBL, isa_nobit }
+    "simd", false,
+    { ISA_VFPv3,ISA_NEON, isa_nobit }
   },
   {
     "neon", false,
@@ -1588,31 +1980,23 @@ static const struct cpu_option arch_opttab_armv7_a[] = {
   },
   {
     "nofp", true,
-    { ISA_VFPv4,ISA_NEON, isa_nobit }
+    { ISA_ALL_FP, isa_nobit }
   },
   {
     "nosimd", true,
-    { ISA_NEON, isa_nobit }
+    { ISA_ALL_SIMD, isa_nobit }
   },
   { NULL, false, {isa_nobit}}
 };
 
 static const struct cpu_option arch_opttab_armv7ve[] = {
   {
-    "fp", false,
-    { ISA_VFPv4,ISA_FP_DBL, isa_nobit }
-  },
-  {
-    "simd", false,
-    { ISA_VFPv4,ISA_NEON, isa_nobit }
+    "vfpv3-d16", false,
+    { ISA_VFPv3,ISA_FP_DBL, isa_nobit }
   },
   {
     "vfpv3", false,
     { ISA_VFPv3,ISA_FP_D32, isa_nobit }
-  },
-  {
-    "vfpv3-d16", false,
-    { ISA_VFPv3,ISA_FP_DBL, isa_nobit }
   },
   {
     "vfpv3-d16-fp16", false,
@@ -1623,12 +2007,16 @@ static const struct cpu_option arch_opttab_armv7ve[] = {
     { ISA_VFPv3,ISA_FP_DBL,ISA_FP_D32,isa_bit_fp16conv, isa_nobit }
   },
   {
-    "vfpv4", false,
-    { ISA_VFPv4,ISA_FP_D32, isa_nobit }
-  },
-  {
     "vfpv4-d16", false,
     { ISA_VFPv4,ISA_FP_DBL, isa_nobit }
+  },
+  {
+    "fp", false,
+    { ISA_VFPv4,ISA_FP_DBL, isa_nobit }
+  },
+  {
+    "vfpv4", false,
+    { ISA_VFPv4,ISA_FP_D32, isa_nobit }
   },
   {
     "neon", false,
@@ -1643,28 +2031,32 @@ static const struct cpu_option arch_opttab_armv7ve[] = {
     { ISA_VFPv3,ISA_NEON,isa_bit_fp16conv, isa_nobit }
   },
   {
+    "simd", false,
+    { ISA_VFPv4,ISA_NEON, isa_nobit }
+  },
+  {
     "neon-vfpv4", false,
     { ISA_VFPv4,ISA_NEON, isa_nobit }
   },
   {
     "nofp", true,
-    { ISA_VFPv4,ISA_NEON, isa_nobit }
+    { ISA_ALL_FP, isa_nobit }
   },
   {
     "nosimd", true,
-    { ISA_NEON, isa_nobit }
+    { ISA_ALL_SIMD, isa_nobit }
   },
   { NULL, false, {isa_nobit}}
 };
 
 static const struct cpu_option arch_opttab_armv7_r[] = {
   {
-    "fp", false,
-    { ISA_VFPv3,ISA_FP_DBL, isa_nobit }
-  },
-  {
     "fp.sp", false,
     { ISA_VFPv3, isa_nobit }
+  },
+  {
+    "fp", false,
+    { ISA_VFPv3,ISA_FP_DBL, isa_nobit }
   },
   {
     "idiv", false,
@@ -1672,7 +2064,7 @@ static const struct cpu_option arch_opttab_armv7_r[] = {
   },
   {
     "nofp", true,
-    { ISA_VFPv3,ISA_FP_DBL, isa_nobit }
+    { ISA_ALL_FP, isa_nobit }
   },
   {
     "noidiv", true,
@@ -1696,7 +2088,7 @@ static const struct cpu_option arch_opttab_armv7e_m[] = {
   },
   {
     "nofp", true,
-    { ISA_FPv5,ISA_FP_DBL, isa_nobit }
+    { ISA_ALL_FP, isa_nobit }
   },
   { NULL, false, {isa_nobit}}
 };
@@ -1712,15 +2104,15 @@ static const struct cpu_option arch_opttab_armv8_a[] = {
   },
   {
     "crypto", false,
-    { ISA_FP_ARMv8,ISA_NEON,ISA_CRYPTO, isa_nobit }
+    { ISA_FP_ARMv8,ISA_CRYPTO, isa_nobit }
   },
   {
     "nofp", true,
-    { ISA_FP_ARMv8,ISA_NEON,ISA_CRYPTO, isa_nobit }
+    { ISA_ALL_FP, isa_nobit }
   },
   {
     "nocrypto", true,
-    { ISA_CRYPTO, isa_nobit }
+    { ISA_ALL_CRYPTO, isa_nobit }
   },
   { NULL, false, {isa_nobit}}
 };
@@ -1732,39 +2124,39 @@ static const struct cpu_option arch_opttab_armv8_1_a[] = {
   },
   {
     "crypto", false,
-    { ISA_FP_ARMv8,ISA_NEON,ISA_CRYPTO, isa_nobit }
+    { ISA_FP_ARMv8,ISA_CRYPTO, isa_nobit }
   },
   {
     "nofp", true,
-    { ISA_FP_ARMv8,ISA_NEON,ISA_CRYPTO, isa_nobit }
+    { ISA_ALL_FP, isa_nobit }
   },
   {
     "nocrypto", true,
-    { ISA_CRYPTO, isa_nobit }
+    { ISA_ALL_CRYPTO, isa_nobit }
   },
   { NULL, false, {isa_nobit}}
 };
 
 static const struct cpu_option arch_opttab_armv8_2_a[] = {
   {
-    "fp16", false,
-    { isa_bit_fp16,ISA_FP_ARMv8,ISA_NEON, isa_nobit }
-  },
-  {
     "simd", false,
     { ISA_FP_ARMv8,ISA_NEON, isa_nobit }
   },
   {
+    "fp16", false,
+    { isa_bit_fp16,ISA_FP_ARMv8,ISA_NEON, isa_nobit }
+  },
+  {
     "crypto", false,
-    { ISA_FP_ARMv8,ISA_NEON,ISA_CRYPTO, isa_nobit }
+    { ISA_FP_ARMv8,ISA_CRYPTO, isa_nobit }
   },
   {
     "nofp", true,
-    { isa_bit_fp16,ISA_FP_ARMv8,ISA_NEON,ISA_CRYPTO, isa_nobit }
+    { ISA_ALL_FP, isa_nobit }
   },
   {
     "nocrypto", true,
-    { ISA_CRYPTO, isa_nobit }
+    { ISA_ALL_CRYPTO, isa_nobit }
   },
   { NULL, false, {isa_nobit}}
 };
@@ -1784,7 +2176,7 @@ static const struct cpu_option arch_opttab_armv8_m_main[] = {
   },
   {
     "nofp", true,
-    { ISA_FPv5, isa_nobit }
+    { ISA_ALL_FP, isa_nobit }
   },
   { NULL, false, {isa_nobit}}
 };
@@ -1964,7 +2356,7 @@ static const struct processors all_architectures[] =
       ISA_ARMv6kz,
       isa_nobit
     },
-    arch_opttab_armv6zk,
+    arch_opttab_armv6kz,
     NULL
   },
   {
@@ -1975,7 +2367,7 @@ static const struct processors all_architectures[] =
       ISA_ARMv6kz,
       isa_nobit
     },
-    arch_opttab_armv6kz,
+    arch_opttab_armv6zk,
     NULL
   },
   {

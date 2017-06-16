@@ -3418,7 +3418,8 @@ arm_configure_build_target (struct arm_build_target *target,
 static void
 arm_option_override (void)
 {
-  static const enum isa_feature fpu_bitlist[] = { ISA_ALL_FPU, isa_nobit };
+  static const enum isa_feature fpu_bitlist[]
+    = { ISA_ALL_FPU_INTERNAL, isa_nobit };
   static const enum isa_feature quirk_bitlist[] = { ISA_ALL_QUIRKS, isa_nobit};
   cl_target_option opts;
 
