@@ -1,5 +1,32 @@
 2017-06-16  Richard Earnshaw  <rearnsha@arm.com>
 
+	* config/arm/arm-protos.h (cpu_arch_extension): Add field to record
+	when an option is an alias of another.
+	* config/arm/parsecpu.awk (optalias): New parser token.
+	(gen_comm_data): Mark non-alias options as such.  Emit entries
+	for extension aliases.
+	* config/arm/arm-cpus.in (armv5e): Make vfpv2 an alias.
+	(armv5te, armv5tej, armv6, armv6j, armv6k, armv6z): Likewise.
+	(armv6kz, armv6zk, armv6t2): Likewise.
+	(armv7): Make vfpv3-d16 an alias.
+	(armv7-a): Make vfpv3-d16, neon and neon-vfpv3 aliases.	 Sort in
+	canonical order.
+	(armv7ve): Make vfpv4-d16, neon-vfpv3 and neon-vfpv4 aliases.
+	Sort in canonical order.
+	(armv8-a): Sort in canonical order.
+	(armv8.1-a, armv8.2-a):	 Likewise.
+	(generic-armv7-a): Make neon and neon-vfpv3 aliases.  Sort in
+	canonical order.
+	(cortex-a9): Sort in canonical order.
+	* config/arm/arm.c (selftests.h): Include it.
+	(arm_test_cpu_arch_data): New function.
+	(arm_run_self_tests): New function.
+	(TARGET_RUN_TARGET_SELFTESTS): Redefine.
+	(targetm): Move declaration to the end of the file.
+	* arm-cpu-cdata.h: Regenerated.
+
+2017-06-16  Richard Earnshaw  <rearnsha@arm.com>
+
 	* config/arm/arm.h (TARGET_MODE_SPECS): Add additional parameter to
 	call to target_mode_check describing the type of option passed.
 	* common/config/arm/arm-common.c (arm_arch_core_flag): Delete.

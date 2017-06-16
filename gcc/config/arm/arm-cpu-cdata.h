@@ -22,378 +22,378 @@
 
 static const cpu_arch_extension cpu_opttab_arm9e[] = {
   {
-    "nofp", true,
+    "nofp", true, false,
     { ISA_ALL_FP, isa_nobit }
   },
-  { NULL, false, {isa_nobit}}
+  { NULL, false, false, {isa_nobit}}
 };
 
 static const cpu_arch_extension cpu_opttab_arm946es[] = {
   {
-    "nofp", true,
+    "nofp", true, false,
     { ISA_ALL_FP, isa_nobit }
   },
-  { NULL, false, {isa_nobit}}
+  { NULL, false, false, {isa_nobit}}
 };
 
 static const cpu_arch_extension cpu_opttab_arm966es[] = {
   {
-    "nofp", true,
+    "nofp", true, false,
     { ISA_ALL_FP, isa_nobit }
   },
-  { NULL, false, {isa_nobit}}
+  { NULL, false, false, {isa_nobit}}
 };
 
 static const cpu_arch_extension cpu_opttab_arm968es[] = {
   {
-    "nofp", true,
+    "nofp", true, false,
     { ISA_ALL_FP, isa_nobit }
   },
-  { NULL, false, {isa_nobit}}
+  { NULL, false, false, {isa_nobit}}
 };
 
 static const cpu_arch_extension cpu_opttab_arm10e[] = {
   {
-    "nofp", true,
+    "nofp", true, false,
     { ISA_ALL_FP, isa_nobit }
   },
-  { NULL, false, {isa_nobit}}
+  { NULL, false, false, {isa_nobit}}
 };
 
 static const cpu_arch_extension cpu_opttab_arm1020e[] = {
   {
-    "nofp", true,
+    "nofp", true, false,
     { ISA_ALL_FP, isa_nobit }
   },
-  { NULL, false, {isa_nobit}}
+  { NULL, false, false, {isa_nobit}}
 };
 
 static const cpu_arch_extension cpu_opttab_arm1022e[] = {
   {
-    "nofp", true,
+    "nofp", true, false,
     { ISA_ALL_FP, isa_nobit }
   },
-  { NULL, false, {isa_nobit}}
+  { NULL, false, false, {isa_nobit}}
 };
 
 static const cpu_arch_extension cpu_opttab_arm926ejs[] = {
   {
-    "nofp", true,
+    "nofp", true, false,
     { ISA_ALL_FP, isa_nobit }
   },
-  { NULL, false, {isa_nobit}}
+  { NULL, false, false, {isa_nobit}}
 };
 
 static const cpu_arch_extension cpu_opttab_arm1026ejs[] = {
   {
-    "nofp", true,
+    "nofp", true, false,
     { ISA_ALL_FP, isa_nobit }
   },
-  { NULL, false, {isa_nobit}}
+  { NULL, false, false, {isa_nobit}}
 };
 
 static const cpu_arch_extension cpu_opttab_genericv7a[] = {
   {
-    "simd", false,
-    { ISA_VFPv3,ISA_NEON, isa_nobit }
-  },
-  {
-    "vfpv3", false,
-    { ISA_VFPv3,ISA_FP_D32, isa_nobit }
-  },
-  {
-    "vfpv3-d16", false,
+    "vfpv3-d16", false, false,
     { ISA_VFPv3,ISA_FP_DBL, isa_nobit }
   },
   {
-    "vfpv3-fp16", false,
-    { ISA_VFPv3,ISA_FP_D32,isa_bit_fp16conv, isa_nobit }
+    "vfpv3", false, false,
+    { ISA_VFPv3,ISA_FP_D32, isa_nobit }
   },
   {
-    "vfpv3-d16-fp16", false,
+    "vfpv3-d16-fp16", false, false,
     { ISA_VFPv3,ISA_FP_DBL,isa_bit_fp16conv, isa_nobit }
   },
   {
-    "vfpv4", false,
-    { ISA_VFPv4,ISA_FP_D32, isa_nobit }
+    "vfpv3-fp16", false, false,
+    { ISA_VFPv3,ISA_FP_D32,isa_bit_fp16conv, isa_nobit }
   },
   {
-    "vfpv4-d16", false,
+    "vfpv4-d16", false, false,
     { ISA_VFPv4,ISA_FP_DBL, isa_nobit }
   },
   {
-    "neon", false,
+    "vfpv4", false, false,
+    { ISA_VFPv4,ISA_FP_D32, isa_nobit }
+  },
+  {
+    "simd", false, false,
     { ISA_VFPv3,ISA_NEON, isa_nobit }
   },
   {
-    "neon-vfpv3", false,
-    { ISA_VFPv3,ISA_NEON, isa_nobit }
-  },
-  {
-    "neon-fp16", false,
+    "neon-fp16", false, false,
     { ISA_VFPv3,ISA_NEON,isa_bit_fp16conv, isa_nobit }
   },
   {
-    "neon-vfpv4", false,
+    "neon-vfpv4", false, false,
     { ISA_VFPv4,ISA_NEON, isa_nobit }
   },
   {
-    "nofp", true,
+    "nosimd", true, false,
+    { ISA_ALL_SIMD, isa_nobit }
+  },
+  {
+    "nofp", true, false,
     { ISA_ALL_FP, isa_nobit }
   },
   {
-    "nosimd", true,
-    { ISA_ALL_SIMD, isa_nobit }
+    "neon", false, true, 
+    { ISA_VFPv3,ISA_NEON, isa_nobit }
   },
-  { NULL, false, {isa_nobit}}
+  {
+    "neon-vfpv3", false, true, 
+    { ISA_VFPv3,ISA_NEON, isa_nobit }
+  },
+  { NULL, false, false, {isa_nobit}}
 };
 
 static const cpu_arch_extension cpu_opttab_cortexa5[] = {
   {
-    "nosimd", true,
+    "nosimd", true, false,
     { ISA_ALL_SIMD, isa_nobit }
   },
   {
-    "nofp", true,
+    "nofp", true, false,
     { ISA_ALL_FP, isa_nobit }
   },
-  { NULL, false, {isa_nobit}}
+  { NULL, false, false, {isa_nobit}}
 };
 
 static const cpu_arch_extension cpu_opttab_cortexa7[] = {
   {
-    "nosimd", true,
+    "nosimd", true, false,
     { ISA_ALL_SIMD, isa_nobit }
   },
   {
-    "nofp", true,
+    "nofp", true, false,
     { ISA_ALL_FP, isa_nobit }
   },
-  { NULL, false, {isa_nobit}}
+  { NULL, false, false, {isa_nobit}}
 };
 
 static const cpu_arch_extension cpu_opttab_cortexa8[] = {
   {
-    "nofp", true,
+    "nofp", true, false,
     { ISA_ALL_FP, isa_nobit }
   },
-  { NULL, false, {isa_nobit}}
+  { NULL, false, false, {isa_nobit}}
 };
 
 static const cpu_arch_extension cpu_opttab_cortexa9[] = {
   {
-    "nofp", true,
-    { ISA_ALL_FP, isa_nobit }
-  },
-  {
-    "nosimd", true,
+    "nosimd", true, false,
     { ISA_ALL_SIMD, isa_nobit }
   },
-  { NULL, false, {isa_nobit}}
+  {
+    "nofp", true, false,
+    { ISA_ALL_FP, isa_nobit }
+  },
+  { NULL, false, false, {isa_nobit}}
 };
 
 static const cpu_arch_extension cpu_opttab_cortexa12[] = {
   {
-    "nofp", true,
+    "nofp", true, false,
     { ISA_ALL_FP, isa_nobit }
   },
-  { NULL, false, {isa_nobit}}
+  { NULL, false, false, {isa_nobit}}
 };
 
 static const cpu_arch_extension cpu_opttab_cortexa15[] = {
   {
-    "nofp", true,
+    "nofp", true, false,
     { ISA_ALL_FP, isa_nobit }
   },
-  { NULL, false, {isa_nobit}}
+  { NULL, false, false, {isa_nobit}}
 };
 
 static const cpu_arch_extension cpu_opttab_cortexa17[] = {
   {
-    "nofp", true,
+    "nofp", true, false,
     { ISA_ALL_FP, isa_nobit }
   },
-  { NULL, false, {isa_nobit}}
+  { NULL, false, false, {isa_nobit}}
 };
 
 static const cpu_arch_extension cpu_opttab_cortexr5[] = {
   {
-    "nofp.dp", true,
+    "nofp.dp", true, false,
     { ISA_FP_DBL, isa_nobit }
   },
   {
-    "nofp", true,
+    "nofp", true, false,
     { ISA_ALL_FP, isa_nobit }
   },
-  { NULL, false, {isa_nobit}}
+  { NULL, false, false, {isa_nobit}}
 };
 
 static const cpu_arch_extension cpu_opttab_cortexr7[] = {
   {
-    "nofp", true,
+    "nofp", true, false,
     { ISA_ALL_FP, isa_nobit }
   },
-  { NULL, false, {isa_nobit}}
+  { NULL, false, false, {isa_nobit}}
 };
 
 static const cpu_arch_extension cpu_opttab_cortexr8[] = {
   {
-    "nofp", true,
+    "nofp", true, false,
     { ISA_ALL_FP, isa_nobit }
   },
-  { NULL, false, {isa_nobit}}
+  { NULL, false, false, {isa_nobit}}
 };
 
 static const cpu_arch_extension cpu_opttab_cortexm7[] = {
   {
-    "nofp.dp", true,
+    "nofp.dp", true, false,
     { ISA_FP_DBL, isa_nobit }
   },
   {
-    "nofp", true,
+    "nofp", true, false,
     { ISA_ALL_FP, isa_nobit }
   },
-  { NULL, false, {isa_nobit}}
+  { NULL, false, false, {isa_nobit}}
 };
 
 static const cpu_arch_extension cpu_opttab_cortexm4[] = {
   {
-    "nofp", true,
+    "nofp", true, false,
     { ISA_ALL_FP, isa_nobit }
   },
-  { NULL, false, {isa_nobit}}
+  { NULL, false, false, {isa_nobit}}
 };
 
 static const cpu_arch_extension cpu_opttab_cortexa15cortexa7[] = {
   {
-    "nofp", true,
+    "nofp", true, false,
     { ISA_ALL_FP, isa_nobit }
   },
-  { NULL, false, {isa_nobit}}
+  { NULL, false, false, {isa_nobit}}
 };
 
 static const cpu_arch_extension cpu_opttab_cortexa17cortexa7[] = {
   {
-    "nofp", true,
+    "nofp", true, false,
     { ISA_ALL_FP, isa_nobit }
   },
-  { NULL, false, {isa_nobit}}
+  { NULL, false, false, {isa_nobit}}
 };
 
 static const cpu_arch_extension cpu_opttab_cortexa32[] = {
   {
-    "crypto", false,
+    "crypto", false, false,
     { ISA_FP_ARMv8,ISA_CRYPTO, isa_nobit }
   },
   {
-    "nofp", true,
+    "nofp", true, false,
     { ISA_ALL_FP, isa_nobit }
   },
-  { NULL, false, {isa_nobit}}
+  { NULL, false, false, {isa_nobit}}
 };
 
 static const cpu_arch_extension cpu_opttab_cortexa35[] = {
   {
-    "crypto", false,
+    "crypto", false, false,
     { ISA_FP_ARMv8,ISA_CRYPTO, isa_nobit }
   },
   {
-    "nofp", true,
+    "nofp", true, false,
     { ISA_ALL_FP, isa_nobit }
   },
-  { NULL, false, {isa_nobit}}
+  { NULL, false, false, {isa_nobit}}
 };
 
 static const cpu_arch_extension cpu_opttab_cortexa53[] = {
   {
-    "crypto", false,
+    "crypto", false, false,
     { ISA_FP_ARMv8,ISA_CRYPTO, isa_nobit }
   },
   {
-    "nofp", true,
+    "nofp", true, false,
     { ISA_ALL_FP, isa_nobit }
   },
-  { NULL, false, {isa_nobit}}
+  { NULL, false, false, {isa_nobit}}
 };
 
 static const cpu_arch_extension cpu_opttab_cortexa57[] = {
   {
-    "crypto", false,
+    "crypto", false, false,
     { ISA_FP_ARMv8,ISA_CRYPTO, isa_nobit }
   },
-  { NULL, false, {isa_nobit}}
+  { NULL, false, false, {isa_nobit}}
 };
 
 static const cpu_arch_extension cpu_opttab_cortexa72[] = {
   {
-    "crypto", false,
+    "crypto", false, false,
     { ISA_FP_ARMv8,ISA_CRYPTO, isa_nobit }
   },
-  { NULL, false, {isa_nobit}}
+  { NULL, false, false, {isa_nobit}}
 };
 
 static const cpu_arch_extension cpu_opttab_cortexa73[] = {
   {
-    "crypto", false,
+    "crypto", false, false,
     { ISA_FP_ARMv8,ISA_CRYPTO, isa_nobit }
   },
-  { NULL, false, {isa_nobit}}
+  { NULL, false, false, {isa_nobit}}
 };
 
 static const cpu_arch_extension cpu_opttab_exynosm1[] = {
   {
-    "crypto", false,
+    "crypto", false, false,
     { ISA_FP_ARMv8,ISA_CRYPTO, isa_nobit }
   },
-  { NULL, false, {isa_nobit}}
+  { NULL, false, false, {isa_nobit}}
 };
 
 static const cpu_arch_extension cpu_opttab_xgene1[] = {
   {
-    "crypto", false,
+    "crypto", false, false,
     { ISA_FP_ARMv8,ISA_CRYPTO, isa_nobit }
   },
-  { NULL, false, {isa_nobit}}
+  { NULL, false, false, {isa_nobit}}
 };
 
 static const cpu_arch_extension cpu_opttab_cortexa57cortexa53[] = {
   {
-    "crypto", false,
+    "crypto", false, false,
     { ISA_FP_ARMv8,ISA_CRYPTO, isa_nobit }
   },
-  { NULL, false, {isa_nobit}}
+  { NULL, false, false, {isa_nobit}}
 };
 
 static const cpu_arch_extension cpu_opttab_cortexa72cortexa53[] = {
   {
-    "crypto", false,
+    "crypto", false, false,
     { ISA_FP_ARMv8,ISA_CRYPTO, isa_nobit }
   },
-  { NULL, false, {isa_nobit}}
+  { NULL, false, false, {isa_nobit}}
 };
 
 static const cpu_arch_extension cpu_opttab_cortexa73cortexa35[] = {
   {
-    "crypto", false,
+    "crypto", false, false,
     { ISA_FP_ARMv8,ISA_CRYPTO, isa_nobit }
   },
-  { NULL, false, {isa_nobit}}
+  { NULL, false, false, {isa_nobit}}
 };
 
 static const cpu_arch_extension cpu_opttab_cortexa73cortexa53[] = {
   {
-    "crypto", false,
+    "crypto", false, false,
     { ISA_FP_ARMv8,ISA_CRYPTO, isa_nobit }
   },
-  { NULL, false, {isa_nobit}}
+  { NULL, false, false, {isa_nobit}}
 };
 
 static const cpu_arch_extension cpu_opttab_cortexm33[] = {
   {
-    "nofp", true,
+    "nofp", true, false,
     { ISA_ALL_FP, isa_nobit }
   },
-  { NULL, false, {isa_nobit}}
+  { NULL, false, false, {isa_nobit}}
 };
 
 const cpu_option all_cores[] =
@@ -1650,426 +1650,426 @@ const cpu_option all_cores[] =
 };
 static const struct cpu_arch_extension arch_opttab_armv5e[] = {
   {
-    "fp", false,
+    "fp", false, false,
     { ISA_VFPv2,ISA_FP_DBL, isa_nobit }
   },
   {
-    "vfpv2", false,
-    { ISA_VFPv2,ISA_FP_DBL, isa_nobit }
-  },
-  {
-    "nofp", true,
+    "nofp", true, false,
     { ISA_ALL_FP, isa_nobit }
   },
-  { NULL, false, {isa_nobit}}
+  {
+    "vfpv2", false, true, 
+    { ISA_VFPv2,ISA_FP_DBL, isa_nobit }
+  },
+  { NULL, false, false, {isa_nobit}}
 };
 
 static const struct cpu_arch_extension arch_opttab_armv5te[] = {
   {
-    "fp", false,
+    "fp", false, false,
     { ISA_VFPv2,ISA_FP_DBL, isa_nobit }
   },
   {
-    "vfpv2", false,
-    { ISA_VFPv2,ISA_FP_DBL, isa_nobit }
-  },
-  {
-    "nofp", true,
+    "nofp", true, false,
     { ISA_ALL_FP, isa_nobit }
   },
-  { NULL, false, {isa_nobit}}
+  {
+    "vfpv2", false, true, 
+    { ISA_VFPv2,ISA_FP_DBL, isa_nobit }
+  },
+  { NULL, false, false, {isa_nobit}}
 };
 
 static const struct cpu_arch_extension arch_opttab_armv5tej[] = {
   {
-    "fp", false,
+    "fp", false, false,
     { ISA_VFPv2,ISA_FP_DBL, isa_nobit }
   },
   {
-    "vfpv2", false,
-    { ISA_VFPv2,ISA_FP_DBL, isa_nobit }
-  },
-  {
-    "nofp", true,
+    "nofp", true, false,
     { ISA_ALL_FP, isa_nobit }
   },
-  { NULL, false, {isa_nobit}}
+  {
+    "vfpv2", false, true, 
+    { ISA_VFPv2,ISA_FP_DBL, isa_nobit }
+  },
+  { NULL, false, false, {isa_nobit}}
 };
 
 static const struct cpu_arch_extension arch_opttab_armv6[] = {
   {
-    "fp", false,
+    "fp", false, false,
     { ISA_VFPv2,ISA_FP_DBL, isa_nobit }
   },
   {
-    "vfpv2", false,
-    { ISA_VFPv2,ISA_FP_DBL, isa_nobit }
-  },
-  {
-    "nofp", true,
+    "nofp", true, false,
     { ISA_ALL_FP, isa_nobit }
   },
-  { NULL, false, {isa_nobit}}
+  {
+    "vfpv2", false, true, 
+    { ISA_VFPv2,ISA_FP_DBL, isa_nobit }
+  },
+  { NULL, false, false, {isa_nobit}}
 };
 
 static const struct cpu_arch_extension arch_opttab_armv6j[] = {
   {
-    "fp", false,
+    "fp", false, false,
     { ISA_VFPv2,ISA_FP_DBL, isa_nobit }
   },
   {
-    "vfpv2", false,
-    { ISA_VFPv2,ISA_FP_DBL, isa_nobit }
-  },
-  {
-    "nofp", true,
+    "nofp", true, false,
     { ISA_ALL_FP, isa_nobit }
   },
-  { NULL, false, {isa_nobit}}
+  {
+    "vfpv2", false, true, 
+    { ISA_VFPv2,ISA_FP_DBL, isa_nobit }
+  },
+  { NULL, false, false, {isa_nobit}}
 };
 
 static const struct cpu_arch_extension arch_opttab_armv6k[] = {
   {
-    "fp", false,
+    "fp", false, false,
     { ISA_VFPv2,ISA_FP_DBL, isa_nobit }
   },
   {
-    "vfpv2", false,
-    { ISA_VFPv2,ISA_FP_DBL, isa_nobit }
-  },
-  {
-    "nofp", true,
+    "nofp", true, false,
     { ISA_ALL_FP, isa_nobit }
   },
-  { NULL, false, {isa_nobit}}
+  {
+    "vfpv2", false, true, 
+    { ISA_VFPv2,ISA_FP_DBL, isa_nobit }
+  },
+  { NULL, false, false, {isa_nobit}}
 };
 
 static const struct cpu_arch_extension arch_opttab_armv6z[] = {
   {
-    "fp", false,
+    "fp", false, false,
     { ISA_VFPv2,ISA_FP_DBL, isa_nobit }
   },
   {
-    "vfpv2", false,
-    { ISA_VFPv2,ISA_FP_DBL, isa_nobit }
-  },
-  {
-    "nofp", true,
+    "nofp", true, false,
     { ISA_ALL_FP, isa_nobit }
   },
-  { NULL, false, {isa_nobit}}
+  {
+    "vfpv2", false, true, 
+    { ISA_VFPv2,ISA_FP_DBL, isa_nobit }
+  },
+  { NULL, false, false, {isa_nobit}}
 };
 
 static const struct cpu_arch_extension arch_opttab_armv6kz[] = {
   {
-    "fp", false,
+    "fp", false, false,
     { ISA_VFPv2,ISA_FP_DBL, isa_nobit }
   },
   {
-    "vfpv2", false,
-    { ISA_VFPv2,ISA_FP_DBL, isa_nobit }
-  },
-  {
-    "nofp", true,
+    "nofp", true, false,
     { ISA_ALL_FP, isa_nobit }
   },
-  { NULL, false, {isa_nobit}}
+  {
+    "vfpv2", false, true, 
+    { ISA_VFPv2,ISA_FP_DBL, isa_nobit }
+  },
+  { NULL, false, false, {isa_nobit}}
 };
 
 static const struct cpu_arch_extension arch_opttab_armv6zk[] = {
   {
-    "fp", false,
+    "fp", false, false,
     { ISA_VFPv2,ISA_FP_DBL, isa_nobit }
   },
   {
-    "vfpv2", false,
-    { ISA_VFPv2,ISA_FP_DBL, isa_nobit }
-  },
-  {
-    "nofp", true,
+    "nofp", true, false,
     { ISA_ALL_FP, isa_nobit }
   },
-  { NULL, false, {isa_nobit}}
+  {
+    "vfpv2", false, true, 
+    { ISA_VFPv2,ISA_FP_DBL, isa_nobit }
+  },
+  { NULL, false, false, {isa_nobit}}
 };
 
 static const struct cpu_arch_extension arch_opttab_armv6t2[] = {
   {
-    "fp", false,
+    "fp", false, false,
     { ISA_VFPv2,ISA_FP_DBL, isa_nobit }
   },
   {
-    "vfpv2", false,
-    { ISA_VFPv2,ISA_FP_DBL, isa_nobit }
-  },
-  {
-    "nofp", true,
+    "nofp", true, false,
     { ISA_ALL_FP, isa_nobit }
   },
-  { NULL, false, {isa_nobit}}
+  {
+    "vfpv2", false, true, 
+    { ISA_VFPv2,ISA_FP_DBL, isa_nobit }
+  },
+  { NULL, false, false, {isa_nobit}}
 };
 
 static const struct cpu_arch_extension arch_opttab_armv7[] = {
   {
-    "fp", false,
+    "fp", false, false,
     { ISA_VFPv3,ISA_FP_DBL, isa_nobit }
   },
   {
-    "vfpv3-d16", false,
+    "vfpv3-d16", false, true, 
     { ISA_VFPv3,ISA_FP_DBL, isa_nobit }
   },
-  { NULL, false, {isa_nobit}}
+  { NULL, false, false, {isa_nobit}}
 };
 
 static const struct cpu_arch_extension arch_opttab_armv7_a[] = {
   {
-    "fp", false,
+    "fp", false, false,
     { ISA_VFPv3,ISA_FP_DBL, isa_nobit }
   },
   {
-    "vfpv3-d16", false,
-    { ISA_VFPv3,ISA_FP_DBL, isa_nobit }
-  },
-  {
-    "vfpv3", false,
+    "vfpv3", false, false,
     { ISA_VFPv3,ISA_FP_D32, isa_nobit }
   },
   {
-    "vfpv3-d16-fp16", false,
+    "vfpv3-d16-fp16", false, false,
     { ISA_VFPv3,ISA_FP_DBL,isa_bit_fp16conv, isa_nobit }
   },
   {
-    "vfpv3-fp16", false,
+    "vfpv3-fp16", false, false,
     { ISA_VFPv3,ISA_FP_DBL,ISA_FP_D32,isa_bit_fp16conv, isa_nobit }
   },
   {
-    "vfpv4-d16", false,
+    "vfpv4-d16", false, false,
     { ISA_VFPv4,ISA_FP_DBL, isa_nobit }
   },
   {
-    "vfpv4", false,
+    "vfpv4", false, false,
     { ISA_VFPv4,ISA_FP_D32, isa_nobit }
   },
   {
-    "simd", false,
+    "simd", false, false,
     { ISA_VFPv3,ISA_NEON, isa_nobit }
   },
   {
-    "neon", false,
-    { ISA_VFPv3,ISA_NEON, isa_nobit }
-  },
-  {
-    "neon-vfpv3", false,
-    { ISA_VFPv3,ISA_NEON, isa_nobit }
-  },
-  {
-    "neon-fp16", false,
+    "neon-fp16", false, false,
     { ISA_VFPv3,ISA_NEON,isa_bit_fp16conv, isa_nobit }
   },
   {
-    "neon-vfpv4", false,
+    "neon-vfpv4", false, false,
     { ISA_VFPv4,ISA_NEON, isa_nobit }
   },
   {
-    "nofp", true,
+    "nosimd", true, false,
+    { ISA_ALL_SIMD, isa_nobit }
+  },
+  {
+    "nofp", true, false,
     { ISA_ALL_FP, isa_nobit }
   },
   {
-    "nosimd", true,
-    { ISA_ALL_SIMD, isa_nobit }
+    "vfpv3-d16", false, true, 
+    { ISA_VFPv3,ISA_FP_DBL, isa_nobit }
   },
-  { NULL, false, {isa_nobit}}
+  {
+    "neon", false, true, 
+    { ISA_VFPv3,ISA_NEON, isa_nobit }
+  },
+  {
+    "neon-vfpv3", false, true, 
+    { ISA_VFPv3,ISA_NEON, isa_nobit }
+  },
+  { NULL, false, false, {isa_nobit}}
 };
 
 static const struct cpu_arch_extension arch_opttab_armv7ve[] = {
   {
-    "vfpv3-d16", false,
+    "vfpv3-d16", false, false,
     { ISA_VFPv3,ISA_FP_DBL, isa_nobit }
   },
   {
-    "vfpv3", false,
+    "vfpv3", false, false,
     { ISA_VFPv3,ISA_FP_D32, isa_nobit }
   },
   {
-    "vfpv3-d16-fp16", false,
+    "vfpv3-d16-fp16", false, false,
     { ISA_VFPv3,ISA_FP_DBL,isa_bit_fp16conv, isa_nobit }
   },
   {
-    "vfpv3-fp16", false,
+    "vfpv3-fp16", false, false,
     { ISA_VFPv3,ISA_FP_DBL,ISA_FP_D32,isa_bit_fp16conv, isa_nobit }
   },
   {
-    "vfpv4-d16", false,
+    "fp", false, false,
     { ISA_VFPv4,ISA_FP_DBL, isa_nobit }
   },
   {
-    "fp", false,
-    { ISA_VFPv4,ISA_FP_DBL, isa_nobit }
-  },
-  {
-    "vfpv4", false,
+    "vfpv4", false, false,
     { ISA_VFPv4,ISA_FP_D32, isa_nobit }
   },
   {
-    "neon", false,
+    "neon", false, false,
     { ISA_VFPv3,ISA_NEON, isa_nobit }
   },
   {
-    "neon-vfpv3", false,
-    { ISA_VFPv3,ISA_NEON, isa_nobit }
-  },
-  {
-    "neon-fp16", false,
+    "neon-fp16", false, false,
     { ISA_VFPv3,ISA_NEON,isa_bit_fp16conv, isa_nobit }
   },
   {
-    "simd", false,
+    "simd", false, false,
     { ISA_VFPv4,ISA_NEON, isa_nobit }
   },
   {
-    "neon-vfpv4", false,
-    { ISA_VFPv4,ISA_NEON, isa_nobit }
+    "nosimd", true, false,
+    { ISA_ALL_SIMD, isa_nobit }
   },
   {
-    "nofp", true,
+    "nofp", true, false,
     { ISA_ALL_FP, isa_nobit }
   },
   {
-    "nosimd", true,
-    { ISA_ALL_SIMD, isa_nobit }
+    "vfpv4-d16", false, true, 
+    { ISA_VFPv4,ISA_FP_DBL, isa_nobit }
   },
-  { NULL, false, {isa_nobit}}
+  {
+    "neon-vfpv3", false, true, 
+    { ISA_VFPv3,ISA_NEON, isa_nobit }
+  },
+  {
+    "neon-vfpv4", false, true, 
+    { ISA_VFPv4,ISA_NEON, isa_nobit }
+  },
+  { NULL, false, false, {isa_nobit}}
 };
 
 static const struct cpu_arch_extension arch_opttab_armv7_r[] = {
   {
-    "fp.sp", false,
+    "fp.sp", false, false,
     { ISA_VFPv3, isa_nobit }
   },
   {
-    "fp", false,
+    "fp", false, false,
     { ISA_VFPv3,ISA_FP_DBL, isa_nobit }
   },
   {
-    "idiv", false,
+    "idiv", false, false,
     { isa_bit_adiv, isa_nobit }
   },
   {
-    "nofp", true,
+    "nofp", true, false,
     { ISA_ALL_FP, isa_nobit }
   },
   {
-    "noidiv", true,
+    "noidiv", true, false,
     { isa_bit_adiv, isa_nobit }
   },
-  { NULL, false, {isa_nobit}}
+  { NULL, false, false, {isa_nobit}}
 };
 
 static const struct cpu_arch_extension arch_opttab_armv7e_m[] = {
   {
-    "fp", false,
+    "fp", false, false,
     { ISA_VFPv4, isa_nobit }
   },
   {
-    "fpv5", false,
+    "fpv5", false, false,
     { ISA_FPv5, isa_nobit }
   },
   {
-    "fp.dp", false,
+    "fp.dp", false, false,
     { ISA_FPv5,ISA_FP_DBL, isa_nobit }
   },
   {
-    "nofp", true,
+    "nofp", true, false,
     { ISA_ALL_FP, isa_nobit }
   },
-  { NULL, false, {isa_nobit}}
+  { NULL, false, false, {isa_nobit}}
 };
 
 static const struct cpu_arch_extension arch_opttab_armv8_a[] = {
   {
-    "crc", false,
+    "crc", false, false,
     { isa_bit_crc32, isa_nobit }
   },
   {
-    "simd", false,
+    "simd", false, false,
     { ISA_FP_ARMv8,ISA_NEON, isa_nobit }
   },
   {
-    "crypto", false,
+    "crypto", false, false,
     { ISA_FP_ARMv8,ISA_CRYPTO, isa_nobit }
   },
   {
-    "nofp", true,
-    { ISA_ALL_FP, isa_nobit }
-  },
-  {
-    "nocrypto", true,
+    "nocrypto", true, false,
     { ISA_ALL_CRYPTO, isa_nobit }
   },
-  { NULL, false, {isa_nobit}}
+  {
+    "nofp", true, false,
+    { ISA_ALL_FP, isa_nobit }
+  },
+  { NULL, false, false, {isa_nobit}}
 };
 
 static const struct cpu_arch_extension arch_opttab_armv8_1_a[] = {
   {
-    "simd", false,
+    "simd", false, false,
     { ISA_FP_ARMv8,ISA_NEON, isa_nobit }
   },
   {
-    "crypto", false,
+    "crypto", false, false,
     { ISA_FP_ARMv8,ISA_CRYPTO, isa_nobit }
   },
   {
-    "nofp", true,
-    { ISA_ALL_FP, isa_nobit }
-  },
-  {
-    "nocrypto", true,
+    "nocrypto", true, false,
     { ISA_ALL_CRYPTO, isa_nobit }
   },
-  { NULL, false, {isa_nobit}}
+  {
+    "nofp", true, false,
+    { ISA_ALL_FP, isa_nobit }
+  },
+  { NULL, false, false, {isa_nobit}}
 };
 
 static const struct cpu_arch_extension arch_opttab_armv8_2_a[] = {
   {
-    "simd", false,
+    "simd", false, false,
     { ISA_FP_ARMv8,ISA_NEON, isa_nobit }
   },
   {
-    "fp16", false,
+    "fp16", false, false,
     { isa_bit_fp16,ISA_FP_ARMv8,ISA_NEON, isa_nobit }
   },
   {
-    "crypto", false,
+    "crypto", false, false,
     { ISA_FP_ARMv8,ISA_CRYPTO, isa_nobit }
   },
   {
-    "nofp", true,
-    { ISA_ALL_FP, isa_nobit }
-  },
-  {
-    "nocrypto", true,
+    "nocrypto", true, false,
     { ISA_ALL_CRYPTO, isa_nobit }
   },
-  { NULL, false, {isa_nobit}}
+  {
+    "nofp", true, false,
+    { ISA_ALL_FP, isa_nobit }
+  },
+  { NULL, false, false, {isa_nobit}}
 };
 
 static const struct cpu_arch_extension arch_opttab_armv8_m_main[] = {
   {
-    "dsp", false,
+    "dsp", false, false,
     { isa_bit_ARMv7em, isa_nobit }
   },
   {
-    "fp", false,
+    "fp", false, false,
     { ISA_FPv5, isa_nobit }
   },
   {
-    "fp.dp", false,
+    "fp.dp", false, false,
     { ISA_FPv5,ISA_FP_DBL, isa_nobit }
   },
   {
-    "nofp", true,
+    "nofp", true, false,
     { ISA_ALL_FP, isa_nobit }
   },
-  { NULL, false, {isa_nobit}}
+  { NULL, false, false, {isa_nobit}}
 };
 
 const arch_option all_architectures[] =
