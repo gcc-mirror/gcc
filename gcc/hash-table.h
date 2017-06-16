@@ -803,7 +803,10 @@ hash_table<Descriptor, Allocator>::empty_slow ()
       m_size_prime_index = nindex;
     }
   else
-    memset (entries, 0, size * sizeof (value_type));
+    {
+      for ( ; size; ++entries, --size)
+	*entries = value_type ();
+    }
   m_n_deleted = 0;
   m_n_elements = 0;
 }

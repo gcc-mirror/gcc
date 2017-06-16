@@ -1,3 +1,27 @@
+2017-06-15  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/80560
+	* dumpfile.c (dump_register): Avoid calling memset to initialize
+	a class with a default ctor.
+	* gcc.c (struct compiler): Remove const qualification.
+	* genattrtab.c (gen_insn_reserv): Replace memset with initialization.
+	* hash-table.h: Ditto.
+	* ipa-cp.c (allocate_and_init_ipcp_value): Replace memset with
+	  assignment.
+	* ipa-prop.c (ipa_free_edge_args_substructures): Ditto.
+	* omp-low.c (lower_omp_ordered_clauses): Replace memset with
+	default ctor.
+	* params.h (struct param_info): Make struct members non-const.
+	* tree-switch-conversion.c (emit_case_bit_tests): Replace memset
+	with default initialization.
+	* vec.h (vec_copy_construct, vec_default_construct): New helper
+	functions.
+	(vec<T>::copy, vec<T>::splice, vec<T>::reserve): Replace memcpy
+	with vec_copy_construct.
+	(vect<T>::quick_grow_cleared): Replace memset with default ctor.
+	(vect<T>::vec_safe_grow_cleared, vec_safe_grow_cleared): Same.
+	* doc/invoke.texi (-Wclass-memaccess): Document.
+
 2017-06-15  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
 	* emit-rtl.h (is_leaf): Update comment about local

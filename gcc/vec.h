@@ -407,6 +407,26 @@ struct GTY((user)) vec
 {
 };
 
+/* Default-construct N elements in DST.  */
+
+template <typename T>
+inline void
+vec_default_construct (T *dst, unsigned n)
+{
+  for ( ; n; ++dst, --n)
+    ::new (static_cast<void*>(dst)) T ();
+}
+
+/* Copy-construct N elements in DST from *SRC.  */
+
+template <typename T>
+inline void
+vec_copy_construct (T *dst, const T *src, unsigned n)
+{
+  for ( ; n; ++dst, ++src, --n)
+    ::new (static_cast<void*>(dst)) T (*src);
+}
+
 /* Type to provide NULL values for vec<T, A, L>.  This is used to
    provide nil initializers for vec instances.  Since vec must be
    a POD, we cannot have proper ctor/dtor for it.  To initialize
@@ -612,7 +632,7 @@ vec_safe_grow_cleared (vec<T, A, vl_embed> *&v, unsigned len CXX_MEM_STAT_INFO)
 {
   unsigned oldlen = vec_safe_length (v);
   vec_safe_grow (v, len PASS_MEM_STAT);
-  memset (&(v->address ()[oldlen]), 0, sizeof (T) * (len - oldlen));
+  vec_default_construct (v->address () + oldlen, len - oldlen);
 }
 
 
@@ -818,7 +838,7 @@ vec<T, A, vl_embed>::copy (ALONE_MEM_STAT_DECL) const
     {
       vec_alloc (new_vec, len PASS_MEM_STAT);
       new_vec->embedded_init (len, len);
-      memcpy (new_vec->address (), m_vecdata, sizeof (T) * len);
+      vec_copy_construct (new_vec->address (), m_vecdata, len);
     }
   return new_vec;
 }
@@ -835,7 +855,7 @@ vec<T, A, vl_embed>::splice (const vec<T, A, vl_embed> &src)
   if (len)
     {
       gcc_checking_assert (space (len));
-      memcpy (address () + length (), src.address (), len * sizeof (T));
+      vec_copy_construct (end (), src.address (), len);
       m_vecpfx.m_num += len;
     }
 }
@@ -1089,12 +1109,11 @@ inline void
 vec<T, A, vl_embed>::quick_grow_cleared (unsigned len)
 {
   unsigned oldlen = length ();
-  size_t sz = sizeof (T) * (len - oldlen);
+  size_t growby = len - oldlen;
   quick_grow (len);
-  if (sz != 0)
-    memset (&(address ()[oldlen]), 0, sz);
+  if (growby != 0)
+    vec_default_construct (address () + oldlen, growby);
 }
-
 
 /* Garbage collection support for vec<T, A, vl_embed>.  */
 
@@ -1454,7 +1473,7 @@ vec<T, va_heap, vl_ptr>::reserve (unsigned nelems, bool exact MEM_STAT_DECL)
   va_heap::reserve (m_vec, nelems, exact PASS_MEM_STAT);
   if (handle_auto_vec)
     {
-      memcpy (m_vec->address (), oldvec->address (), sizeof (T) * oldsize);
+      vec_copy_construct (m_vec->address (), oldvec->address (), oldsize);
       m_vec->m_vecpfx.m_num = oldsize;
     }
 
@@ -1616,10 +1635,10 @@ inline void
 vec<T, va_heap, vl_ptr>::safe_grow_cleared (unsigned len MEM_STAT_DECL)
 {
   unsigned oldlen = length ();
-  size_t sz = sizeof (T) * (len - oldlen);
+  size_t growby = len - oldlen;
   safe_grow (len PASS_MEM_STAT);
-  if (sz != 0)
-    memset (&(address ()[oldlen]), 0, sz);
+  if (growby != 0)
+    vec_default_construct (address () + oldlen, growby);
 }
 
 

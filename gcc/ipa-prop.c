@@ -3711,7 +3711,7 @@ void
 ipa_free_edge_args_substructures (struct ipa_edge_args *args)
 {
   vec_free (args->jump_functions);
-  memset (args, 0, sizeof (*args));
+  *args = ipa_edge_args ();
 }
 
 /* Free all ipa_edge structures.  */

@@ -268,7 +268,7 @@ static void
 emit_case_bit_tests (gswitch *swtch, tree index_expr,
 		     tree minval, tree range, tree maxval)
 {
-  struct case_bit_test test[MAX_CASE_BIT_TESTS];
+  struct case_bit_test test[MAX_CASE_BIT_TESTS] = { };
   unsigned int i, j, k;
   unsigned int count;
 
@@ -292,8 +292,6 @@ emit_case_bit_tests (gswitch *swtch, tree index_expr,
   tree word_mode_one = fold_convert (word_type_node, integer_one_node);
   int prec = TYPE_PRECISION (word_type_node);
   wide_int wone = wi::one (prec);
-
-  memset (&test, 0, sizeof (test));
 
   /* Get the edge for the default case.  */
   tmp = gimple_switch_default_label (swtch);

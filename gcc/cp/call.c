@@ -8184,6 +8184,393 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
   return call;
 }
 
+/* Return the DECL of the first non-public data member of class TYPE
+   or null if none can be found.  */
+
+static tree
+first_non_public_field (tree type)
+{
+  if (!CLASS_TYPE_P (type))
+    return NULL_TREE;
+
+  for (tree field = TYPE_FIELDS (type); field; field = DECL_CHAIN (field))
+    {
+      if (TREE_CODE (field) != FIELD_DECL)
+	continue;
+      if (TREE_STATIC (field))
+	continue;
+      if (TREE_PRIVATE (field) || TREE_PROTECTED (field))
+	return field;
+    }
+
+  int i = 0;
+
+  for (tree base_binfo, binfo = TYPE_BINFO (type);
+       BINFO_BASE_ITERATE (binfo, i, base_binfo); i++)
+    {
+      tree base = TREE_TYPE (base_binfo);
+
+      if (tree field = first_non_public_field (base))
+	return field;
+    }
+
+  return NULL_TREE;
+}
+
+/* Return true if all copy and move assignment operator overloads for
+   class TYPE are trivial and at least one of them is not deleted and,
+   when ACCESS is set, accessible.  Return false otherwise.  Set
+   HASASSIGN to true when the TYPE has a (not necessarily trivial)
+   copy or move assignment.  */
+
+static bool
+has_trivial_copy_assign_p (tree type, bool access, bool *hasassign)
+{
+  tree fns = cp_assignment_operator_id (NOP_EXPR);
+  fns = lookup_fnfields_slot (type, fns);
+
+  bool all_trivial = true;
+
+  /* Iterate over overloads of the assignment operator, checking
+     accessible copy assignments for triviality.  */
+
+  for (ovl_iterator oi (fns); oi; ++oi)
+    {
+      tree f = *oi;
+
+      /* Skip operators that aren't copy assignments.  */
+      if (!copy_fn_p (f))
+	continue;
+
+      bool accessible = (!access || !(TREE_PRIVATE (f) || TREE_PROTECTED (f))
+			 || accessible_p (TYPE_BINFO (type), f, true));
+
+      /* Skip template assignment operators and deleted functions.  */
+      if (TREE_CODE (f) != FUNCTION_DECL || DECL_DELETED_FN (f))
+	continue;
+
+      if (accessible)
+	*hasassign = true;
+
+      if (!accessible || !trivial_fn_p (f))
+	all_trivial = false;
+
+      /* Break early when both properties have been determined.  */
+      if (*hasassign && !all_trivial)
+	break;
+    }
+
+  /* Return true if they're all trivial and one of the expressions
+     TYPE() = TYPE() or TYPE() = (TYPE&)() is valid.  */
+  tree ref = cp_build_reference_type (type, false);
+  return (all_trivial
+	  && (is_trivially_xible (MODIFY_EXPR, type, type)
+	      || is_trivially_xible (MODIFY_EXPR, type, ref)));
+}
+
+/* Return true if all copy and move ctor overloads for class TYPE are
+   trivial and at least one of them is not deleted and, when ACCESS is
+   set, accessible.  Return false otherwise.  Set each element of HASCTOR[]
+   to true when the TYPE has a (not necessarily trivial) default and copy
+   (or move) ctor, respectively.  */
+
+static bool
+has_trivial_copy_p (tree type, bool access, bool hasctor[2])
+{
+  tree fns = lookup_fnfields_slot (type, complete_ctor_identifier);
+
+  bool all_trivial = true;
+
+  for (ovl_iterator oi (fns); oi; ++oi)
+    {
+      tree f = *oi;
+
+      /* Skip template constructors.  */
+      if (TREE_CODE (f) != FUNCTION_DECL)
+	continue;
+
+      bool cpy_or_move_ctor_p = copy_fn_p (f);
+
+      /* Skip ctors other than default, copy, and move.  */
+      if (!cpy_or_move_ctor_p && !default_ctor_p (f))
+	continue;
+
+      if (DECL_DELETED_FN (f))
+	continue;
+
+      bool accessible = (!access || !(TREE_PRIVATE (f) || TREE_PROTECTED (f))
+			 || accessible_p (TYPE_BINFO (type), f, true));
+
+      if (accessible)
+	hasctor[cpy_or_move_ctor_p] = true;
+
+      if (cpy_or_move_ctor_p && (!accessible || !trivial_fn_p (f)))
+	all_trivial = false;
+
+      /* Break early when both properties have been determined.  */
+      if (hasctor[0] && hasctor[1] && !all_trivial)
+	break;
+    }
+
+  return all_trivial;
+}
+
+/* Issue a warning on a call to the built-in function FNDECL if it is
+   a raw memory write whose destination is not an object of (something
+   like) trivial or standard layout type with a non-deleted assignment
+   and copy ctor.  Detects const correctness violations, corrupting
+   references, virtual table pointers, and bypassing non-trivial
+   assignments.  */
+
+static void
+maybe_warn_class_memaccess (location_t loc, tree fndecl, tree *args)
+{
+  /* Except for bcopy where it's second, the destination pointer is
+     the first argument for all functions handled here.  Compute
+     the index of the destination and source arguments.  */
+  unsigned dstidx = DECL_FUNCTION_CODE (fndecl) == BUILT_IN_BCOPY;
+  unsigned srcidx = !dstidx;
+
+  tree dest = args[dstidx];
+  if (!dest || !TREE_TYPE (dest) || !POINTER_TYPE_P (TREE_TYPE (dest)))
+    return;
+
+  STRIP_NOPS (dest);
+
+  tree srctype = NULL_TREE;
+
+  /* Determine the type of the pointed-to object and whether it's
+     a complete class type.  */
+  tree desttype = TREE_TYPE (TREE_TYPE (dest));
+
+  if (!desttype || !COMPLETE_TYPE_P (desttype) || !CLASS_TYPE_P (desttype))
+    return;
+
+  /* Check to see if the raw memory call is made by a ctor or dtor
+     with this as the destination argument for the destination type.
+     If so, be more permissive.  */
+  if (current_function_decl
+      && (DECL_CONSTRUCTOR_P (current_function_decl)
+	  || DECL_DESTRUCTOR_P (current_function_decl))
+      && is_this_parameter (dest))
+    {
+      tree ctx = DECL_CONTEXT (current_function_decl);
+      bool special = same_type_ignoring_top_level_qualifiers_p (ctx, desttype);
+
+      tree binfo = TYPE_BINFO (ctx);
+
+      /* A ctor and dtor for a class with no bases and no virtual functions
+	 can do whatever they want.  Bail early with no further checking.  */
+      if (special && !BINFO_VTABLE (binfo) && !BINFO_N_BASE_BINFOS (binfo))
+	return;
+    }
+
+  /* True if the class is trivial.  */
+  bool trivial = trivial_type_p (desttype);
+
+  /* Set to true if DESTYPE has an accessible copy assignment.  */
+  bool hasassign = false;
+  /* True if all of the class' overloaded copy assignment operators
+     are all trivial (and not deleted) and at least one of them is
+     accessible.  */
+  bool trivassign = has_trivial_copy_assign_p (desttype, true, &hasassign);
+
+  /* Set to true if DESTTYPE has an accessible default and copy ctor,
+     respectively.  */
+  bool hasctors[2] = { false, false };
+
+  /* True if all of the class' overloaded copy constructors are all
+     trivial (and not deleted) and at least one of them is accessible.  */
+  bool trivcopy = has_trivial_copy_p (desttype, true, hasctors);
+
+  /* Set FLD to the first private/protected member of the class.  */
+  tree fld = trivial ? first_non_public_field (desttype) : NULL_TREE;
+
+  /* The warning format string.  */
+  const char *warnfmt = NULL;
+  /* A suggested alternative to offer instead of the raw memory call.
+     Empty string when none can be come up with.  */
+  const char *suggest = "";
+  bool warned = false;
+
+  switch (DECL_FUNCTION_CODE (fndecl))
+    {
+    case BUILT_IN_MEMSET:
+      if (!integer_zerop (args[1]))
+	{
+	  /* Diagnose setting non-copy-assignable or non-trivial types,
+	     or types with a private member, to (potentially) non-zero
+	     bytes.  Since the value of the bytes being written is unknown,
+	     suggest using assignment instead (if one exists).  Also warn
+	     for writes into objects for which zero-initialization doesn't
+	     mean all bits clear (pointer-to-member data, where null is all
+	     bits set).  Since the value being written is (most likely)
+	     non-zero, simply suggest assignment (but not copy assignment).  */
+	  suggest = "; use assignment instead";
+	  if (!trivassign)
+	    warnfmt = G_("%qD writing to an object of type %#qT with "
+			 "no trivial copy-assignment");
+	  else if (!trivial)
+	    warnfmt = G_("%qD writing to an object of non-trivial type %#qT%s");
+	  else if (fld)
+	    {
+	      const char *access = TREE_PRIVATE (fld) ? "private" : "protected";
+	      warned = warning_at (loc, OPT_Wclass_memaccess,
+				   "%qD writing to an object of type %#qT with "
+				   "%qs member %qD",
+				   fndecl, desttype, access, fld);
+	    }
+	  else if (!zero_init_p (desttype))
+	    warnfmt = G_("%qD writing to an object of type %#qT containing "
+			 "a pointer to data member%s");
+
+	  break;
+	}
+      /* Fall through.  */
+
+    case BUILT_IN_BZERO:
+      /* Similarly to the above, diagnose clearing non-trivial or non-
+	 standard layout objects, or objects of types with no assignmenmt.
+	 Since the value being written is known to be zero, suggest either
+	 copy assignment, copy ctor, or default ctor as an alternative,
+	 depending on what's available.  */
+
+      if (hasassign && hasctors[0])
+	suggest = G_("; use assignment or value-initialization instead");
+      else if (hasassign)
+	suggest = G_("; use assignment instead");
+      else if (hasctors[0])
+	suggest = G_("; use value-initialization instead");
+
+      if (!trivassign)
+	warnfmt = G_("%qD clearing an object of type %#qT with "
+		     "no trivial copy-assignment%s");
+      else if (!trivial)
+	warnfmt =  G_("%qD clearing an object of non-trivial type %#qT%s");
+      else if (!zero_init_p (desttype))
+	warnfmt = G_("%qD clearing an object of type %#qT containing "
+		     "a pointer-to-member%s");
+      break;
+
+    case BUILT_IN_BCOPY:
+    case BUILT_IN_MEMCPY:
+    case BUILT_IN_MEMMOVE:
+    case BUILT_IN_MEMPCPY:
+      /* Determine the type of the source object.  */
+      srctype = STRIP_NOPS (args[srcidx]);
+      srctype = TREE_TYPE (TREE_TYPE (srctype));
+
+      /* Since it's impossible to determine wheter the byte copy is
+	 being used in place of assignment to an existing object or
+	 as a substitute for initialization, assume it's the former.
+	 Determine the best alternative to use instead depending on
+	 what's not deleted.  */
+      if (hasassign && hasctors[1])
+	suggest = G_("; use copy-assignment or copy-initialization instead");
+      else if (hasassign)
+	suggest = G_("; use copy-assignment instead");
+      else if (hasctors[1])
+	suggest = G_("; use copy-initialization instead");
+
+      if (!trivassign)
+	warnfmt = G_("%qD writing to an object of type %#qT with no trivial "
+		     "copy-assignment%s");
+      else if (!trivially_copyable_p (desttype))
+	warnfmt = G_("%qD writing to an object of non-trivially copyable "
+		     "type %#qT%s");
+      else if (!trivcopy)
+	warnfmt = G_("%qD writing to an object with a deleted copy constructor");
+
+      else if (!trivial
+	       && !VOID_TYPE_P (srctype)
+	       && !char_type_p (TYPE_MAIN_VARIANT (srctype))
+	       && !same_type_ignoring_top_level_qualifiers_p (desttype,
+							      srctype))
+	{
+	  /* Warn when copying into a non-trivial object from an object
+	     of a different type other than void or char.  */
+	  warned = warning_at (loc, OPT_Wclass_memaccess,
+			       "%qD copying an object of non-trivial type "
+			       "%#qT from an array of %#qT",
+			       fndecl, desttype, srctype);
+	}
+      else if (fld
+	       && !VOID_TYPE_P (srctype)
+	       && !char_type_p (TYPE_MAIN_VARIANT (srctype))
+	       && !same_type_ignoring_top_level_qualifiers_p (desttype,
+							      srctype))
+	{
+	  const char *access = TREE_PRIVATE (fld) ? "private" : "protected";
+	  warned = warning_at (loc, OPT_Wclass_memaccess,
+			       "%qD copying an object of type %#qT with "
+			       "%qs member %qD from an array of %#qT; use "
+			       "assignment or copy-initialization instead",
+			       fndecl, desttype, access, fld, srctype);
+	}
+      else if (!trivial && TREE_CODE (args[2]) == INTEGER_CST)
+	{
+	  /* Finally, warn on partial copies.  */
+	  unsigned HOST_WIDE_INT typesize
+	    = tree_to_uhwi (TYPE_SIZE_UNIT (desttype));
+	  if (unsigned HOST_WIDE_INT partial
+	      = tree_to_uhwi (args[2]) % typesize)
+	    warned = warning_at (loc, OPT_Wclass_memaccess,
+				 (typesize - partial > 1
+				  ? G_("%qD writing to an object of "
+				       "a non-trivial type %#qT leaves %wu "
+				       "bytes unchanged")
+				  : G_("%qD writing to an object of "
+				       "a non-trivial type %#qT leaves %wu "
+				       "byte unchanged")),
+				 fndecl, desttype, typesize - partial);
+	}
+      break;
+
+    case BUILT_IN_REALLOC:
+
+      if (!trivially_copyable_p (desttype))
+	warnfmt = G_("%qD moving an object of non-trivially copyable type "
+		     "%#qT; use %<new%> and %<delete%> instead");
+      else if (!trivcopy)
+	warnfmt = G_("%qD moving an object of type %#qT with deleted copy "
+		     "constructor; use %<new%> and %<delete%> instead");
+      else if (!get_dtor (desttype, tf_none))
+	warnfmt = G_("%qD moving an object of type %#qT with deleted "
+		     "destructor");
+      else if (!trivial
+	       && TREE_CODE (args[1]) == INTEGER_CST
+	       && tree_int_cst_lt (args[1], TYPE_SIZE_UNIT (desttype)))
+	{
+	  /* Finally, warn on reallocation into insufficient space.  */
+	  warned = warning_at (loc, OPT_Wclass_memaccess,
+			       "%qD moving an object of non-trivial type "
+			       "%#qT and size %E into a region of size %E",
+			       fndecl, desttype, TYPE_SIZE_UNIT (desttype),
+			       args[1]);
+	}
+      break;
+
+    default:
+      return;
+    }
+
+  if (!warned && !warnfmt)
+    return;
+
+  if (warnfmt)
+    {
+      if (suggest)
+	warned = warning_at (loc, OPT_Wclass_memaccess,
+			     warnfmt, fndecl, desttype, suggest);
+      else
+	warned = warning_at (loc, OPT_Wclass_memaccess,
+			     warnfmt, fndecl, desttype);
+    }
+
+  if (warned)
+    inform (location_of (desttype), "%#qT declared here", desttype);
+}
+
 /* Build and return a call to FN, using NARGS arguments in ARGARRAY.
    This function performs no overload resolution, conversion, or other
    high-level operations.  */
@@ -8216,6 +8603,10 @@ build_cxx_call (tree fn, int nargs, tree *argarray,
       if (!check_builtin_function_arguments (EXPR_LOCATION (fn), vNULL, fndecl,
 					     nargs, argarray))
 	return error_mark_node;
+
+      /* Warn if the built-in writes to an object of a non-trivial type.  */
+      if (nargs)
+	maybe_warn_class_memaccess (loc, fndecl, argarray);
     }
 
     /* If it is a built-in array notation function, then the return type of
