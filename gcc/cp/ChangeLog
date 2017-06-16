@@ -1,3 +1,11 @@
+2017-06-15  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/80560
+	* call.c (first_non_public_field, maybe_warn_class_memaccess): New
+	functions.
+	(has_trivial_copy_assign_p, has_trivial_copy_p): Ditto.
+	(build_cxx_call): Call maybe_warn_class_memaccess.
+
 2017-06-14  Jakub Jelinek  <jakub@redhat.com>
 
 	* cp-gimplify.c (cp_genericize_r): Turn most of the function

@@ -42,7 +42,7 @@ struct param_info
 {
   /* The name used with the `--param <name>=<value>' switch to set this
      value.  */
-  const char *const option;
+  const char *option;
 
   /* The default value.  */
   int default_value;
@@ -54,7 +54,7 @@ struct param_info
   int max_value;
 
   /* A short description of the option.  */
-  const char *const help;
+  const char *help;
 
   /* The optional names corresponding to the values.  */
   const char **value_names;

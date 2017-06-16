@@ -215,7 +215,8 @@ in the following sections.
 -Wabi=@var{n}  -Wabi-tag  -Wconversion-null  -Wctor-dtor-privacy @gol
 -Wdelete-non-virtual-dtor  -Wliteral-suffix  -Wmultiple-inheritance @gol
 -Wnamespaces  -Wnarrowing @gol
--Wnoexcept  -Wnoexcept-type  -Wnon-virtual-dtor  -Wreorder  -Wregister @gol
+-Wnoexcept  -Wnoexcept-type  -Wclass-memaccess @gol
+-Wnon-virtual-dtor  -Wreorder  -Wregister @gol
 -Weffc++  -Wstrict-null-sentinel  -Wtemplates @gol
 -Wno-non-template-friend  -Wold-style-cast @gol
 -Woverloaded-virtual  -Wno-pmf-conversions @gol
@@ -2920,6 +2921,23 @@ void g() noexcept;
 void h() @{ f(g); @} // in C++14 calls f<void(*)()>, in C++1z calls f<void(*)()noexcept>
 @end smallexample
 
+@item -Wclass-memaccess @r{(C++ and Objective-C++ only)}
+@opindex Wclass-memaccess
+Warn when the destination of a call to a raw memory function such as
+@code{memset} or @code{memcpy} is an object of class type writing into which
+might bypass the class non-trivial or deleted constructor or copy assignment,
+violate const-correctness or encapsulation, or corrupt the virtual table.
+Modifying the representation of such objects may violate invariants maintained
+by member functions of the class.  For example, the call to @code{memset}
+below is undefined becase it modifies a non-trivial class object and is,
+therefore, diagnosed.  The safe way to either initialize or clear the storage
+of objects of such types is by using the appropriate constructor or assignment
+operator, if one is available.
+@smallexample
+std::string str = "abc";
+memset (&str, 0, 3);
+@end smallexample
+The @option{-Wclass-memaccess} option is enabled by @option{-Wall}.
 
 @item -Wnon-virtual-dtor @r{(C++ and Objective-C++ only)}
 @opindex Wnon-virtual-dtor
