@@ -1,3 +1,19 @@
+2017-06-16  Nathan Sidwell  <nathan@acm.org>
+
+	Make rtti lazier
+	* rtti.c (enum tinfo_kind): Add TK_DERIVED_TYPES,
+	TK_VMI_CLASS_TYPES, TK_MAX.  Delete TK_FIXED.
+	(tinfo_names): New.
+	(typeid_ok_p): Add quotes to error messages.  Use get_tinfo_desc.
+	(get_tinfo_decl): Use get_tinfo_desc.
+	(get_pseudo_ti_init): Likewise. Adjust VMI construction.
+	(create_pseudo_type_info): Delete.
+	(get_pseudo_ti_index): Just determine the index.
+	(get_tinfo_desc): New.  Create all types lazily.
+	(create_tinfo_types): Just allocate the descriptor array.
+	(emit_support_tinfos): Use non-inserting type lookup.  Set builtin
+	location.
+
 2017-06-15  Martin Sebor  <msebor@redhat.com>
 
 	PR c++/80560
