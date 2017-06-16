@@ -1,5 +1,15 @@
 2017-06-16  Richard Earnshaw  <rearnsha@arm.com>
 
+	* gcc.target/arm/neon-thumb2-move.c (dg-options): Don't override
+	the architecture options added by dg-add-options arm_neon.
+	* gcc.target/arm/thumb2-slow-flash-data-2.c (dg-opitions): Add +fp
+	to the architecture.
+	* gcc.target/arm/thumb3-slow-flash-data-3.c (dg-opitions): Likewise.
+	* gcc.target/arm/thumb4-slow-flash-data-3.c (dg-opitions): Likewise.
+	* gcc.target/arm/thumb5-slow-flash-data-3.c (dg-opitions): Likewise.
+
+2017-06-16  Richard Earnshaw  <rearnsha@arm.com>
+
 	* gcc.target/arm/multilib.exp (rmprofile): New tests when rm-profile
 	multilibs have been built.
 
