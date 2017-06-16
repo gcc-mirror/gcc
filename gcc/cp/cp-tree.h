@@ -550,7 +550,7 @@ identifier_p (tree t)
 
 template <>
 struct default_hash_traits <lang_identifier *>
-  : pointer_hash <tree_node>, ggc_remove <tree>
+  : pointer_hash <tree_node>
 {
   /* Use a regular tree as the type, to make using the hash table
      simpler.  We'll get dynamic type checking with the hash function
@@ -558,10 +558,14 @@ struct default_hash_traits <lang_identifier *>
   GTY((skip)) typedef tree value_type;
   GTY((skip)) typedef tree compare_type;
 
-  static hashval_t hash (const value_type &id)
+  static hashval_t hash (const value_type id)
   {
     return IDENTIFIER_HASH_VALUE (id);
   }
+
+  /* Nothing is deletable.  Everything is insertable.  */
+  static bool is_deleted (value_type) { return false; }
+  static void remove (value_type) { gcc_unreachable (); }
 };
 
 /* In an IDENTIFIER_NODE, nonzero if this identifier is actually a

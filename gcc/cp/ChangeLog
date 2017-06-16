@@ -1,5 +1,9 @@
 2017-06-16  Nathan Sidwell  <nathan@acm.org>
 
+	Symbol tables are insert only.
+	* cp-tree.h (default_hash_traits <lang_identifier *>): Don't
+	derive from pointer_hash.  Make undeletable.
+
 	* class.c (resort_type_method_vec): Avoid potential unsigned
 	overflow.
 
