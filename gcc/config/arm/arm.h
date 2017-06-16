@@ -119,9 +119,14 @@ extern tree arm_fp16_type_node;
 #define TARGET_32BIT_P(flags)  (TARGET_ARM_P (flags) || TARGET_THUMB2_P (flags))
 
 /* Run-time Target Specification.  */
-#define TARGET_SOFT_FLOAT		(arm_float_abi == ARM_FLOAT_ABI_SOFT)
 /* Use hardware floating point instructions. */
-#define TARGET_HARD_FLOAT		(arm_float_abi != ARM_FLOAT_ABI_SOFT)
+#define TARGET_HARD_FLOAT	(arm_float_abi != ARM_FLOAT_ABI_SOFT	\
+				 && bitmap_bit_p (arm_active_target.isa, \
+						  isa_bit_VFPv2))
+#define TARGET_SOFT_FLOAT	(!TARGET_HARD_FLOAT)
+/* User has permitted use of FP instructions, if they exist for this
+   target.  */
+#define TARGET_MAYBE_HARD_FLOAT (arm_float_abi != ARM_FLOAT_ABI_SOFT)
 /* Use hardware floating point calling convention.  */
 #define TARGET_HARD_FLOAT_ABI		(arm_float_abi == ARM_FLOAT_ABI_HARD)
 #define TARGET_IWMMXT			(arm_arch_iwmmxt)

@@ -3449,8 +3449,7 @@ arm_option_override (void)
     {
       if (arm_abi == ARM_ABI_IWMMXT)
 	arm_pcs_default = ARM_PCS_AAPCS_IWMMXT;
-      else if (arm_float_abi == ARM_FLOAT_ABI_HARD
-	       && TARGET_HARD_FLOAT)
+      else if (TARGET_HARD_FLOAT_ABI)
 	{
 	  arm_pcs_default = ARM_PCS_AAPCS_VFP;
 	  if (!bitmap_bit_p (arm_active_target.isa, isa_bit_VFPv2))

@@ -1,5 +1,15 @@
 2017-06-16  Richard Earnshaw  <rearnsha@arm.com>
 
+	* config/arm/arm.h (TARGET_HARD_FLOAT): Also check that we
+	have some floating-point instructions.
+	(TARGET_SOFT_FLOAT): Define as inverse of TARGET_HARD_FLOAT.
+	(TARGET_MAYBE_HARD_FLOAT): New macro.
+	* config/arm/arm-builtins.c (arm_init_builtins): Use
+	TARGET_MAYBE_HARD_FLOAT.
+	* config/arm/arm.c (arm_option_override): Use TARGET_HARD_FLOAT_ABI.
+
+2017-06-16  Richard Earnshaw  <rearnsha@arm.com>
+
 	* common/config/arm/arm-common.c: Define INCLUDE_LIST.
 	(configargs.h): Include it.
 	(arm_print_hint_for_fpu_option): New function.
