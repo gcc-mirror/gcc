@@ -1,3 +1,18 @@
+2017-06-16  Maxim Kuvyrkov  <maxim.kuvyrkov@linaro.org>
+
+        * config/aarch64/aarch64-protos.h (struct cpu_prefetch_tune):
+        New tune structure.
+        (struct tune_params): Use cpu_prefetch_tune instead of cache_line_size.
+        [Unrelated to main purpose of the patch] Place the pointer field last
+        to enable type checking errors when tune structure are wrongly merged.
+        * config/aarch64/aarch64.c (generic_prefetch_tune,)
+        (exynosm1_prefetch_tune, qdf24xx_prefetch_tune,)
+        (thunderx2t99_prefetch_tune): New tune constants.
+        (tune_params *_tunings): Update all tunings (no functional change).
+        (aarch64_override_options_internal): Set PARAM_SIMULTANEOUS_PREFETCHES,
+        PARAM_L1_CACHE_SIZE, PARAM_L1_CACHE_LINE_SIZE, and PARAM_L2_CACHE_SIZE
+        from tunings structures.
+
 2017-06-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR sanitizer/81094
