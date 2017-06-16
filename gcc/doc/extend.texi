@@ -16002,6 +16002,20 @@ vector float vec_expte (vector float);
 
 vector float vec_floor (vector float);
 
+vector float vec_float (vector signed int);
+vector float vec_float (vector unsigned int);
+
+vector float vec_float2 (vector signed long long, vector signed long long);
+vector float vec_float2 (vector unsigned long long, vector signed long long);
+
+vector float vec_floate (vector double);
+vector float vec_floate (vector signed long long);
+vector float vec_floate (vector unsigned long long);
+
+vector float vec_floato (vector double);
+vector float vec_floato (vector signed long long);
+vector float vec_floato (vector unsigned long long);
+
 vector float vec_ld (int, const vector float *);
 vector float vec_ld (int, const float *);
 vector bool int vec_ld (int, const vector bool int *);

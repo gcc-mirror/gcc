@@ -72,6 +72,7 @@ extern void altivec_expand_stvex_be (rtx, rtx, machine_mode, unsigned);
 extern void rs6000_expand_extract_even (rtx, rtx, rtx);
 extern void rs6000_expand_interleave (rtx, rtx, rtx, bool);
 extern void rs6000_scale_v2df (rtx, rtx, int);
+extern void rs6000_generate_float2_code (bool, rtx, rtx, rtx);
 extern int expand_block_clear (rtx[]);
 extern int expand_block_move (rtx[]);
 extern bool expand_block_compare (rtx[]);
