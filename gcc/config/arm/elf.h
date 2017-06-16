@@ -64,7 +64,7 @@
 %{mapcs-*:-mapcs-%*} \
 %(subtarget_asm_float_spec) \
 %{mthumb-interwork:-mthumb-interwork} \
-%{mfloat-abi=*} %{mfpu=*} \
+%{mfloat-abi=*} %{!mfpu=auto: %{mfpu=*}} \
 %(subtarget_extra_asm_spec)"
 #endif
 

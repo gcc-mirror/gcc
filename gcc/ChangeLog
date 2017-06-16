@@ -1,5 +1,10 @@
 2017-06-16  Richard Earnshaw  <rearnsha@arm.com>
 
+	* config/arm/elf.h (ASM_SPEC): Only pass -mfpu through to the
+	assembler when it is not -mfpu=auto.
+
+2017-06-16  Richard Earnshaw  <rearnsha@arm.com>
+
 	* config/arm/arm.h (BIG_LITTLE_SPEC): Delete macro.
 	(ASM_REWRITE_SPEC_FUNCTIONS): New macro.
 	(BIG_LITTLE_CPU_SPEC_FUNCTIONS): Delete macro.
