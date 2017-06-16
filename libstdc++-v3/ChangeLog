@@ -1,3 +1,12 @@
+2017-06-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/locale_conv.h (wbuffer_convert::_M_put): Add missing
+	return statement.
+	* testsuite/23_containers/map/modifiers/insert_or_assign/1.cc: Add
+	missing return statements.
+	* testsuite/23_containers/unordered_map/modifiers/insert_or_assign.cc:
+	Likewise.
+
 2017-06-07  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/81002

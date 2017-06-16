@@ -482,6 +482,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
       {
 	if (_M_buf->sputn(__p, __n) < __n)
 	  return false;
+	return true;
       }
 
       // convert the put area and write to the byte stream buffer
