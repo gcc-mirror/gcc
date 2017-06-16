@@ -1,3 +1,15 @@
+2017-06-16  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/80933
+	PR tree-optimization/80934
+	* gcc.dg/fold-bcopy.c: New test.
+	* gcc.dg/tree-ssa/ssa-dse-30.c: Likewise..
+	* gcc.dg/tree-ssa/alias-36.c: Likewise.
+	* gcc/testsuite/gcc.dg/pr79214.c: Adjust.
+	* gcc.dg/tree-prof/val-prof-7.c: Likewise.
+	* gcc.dg/Wsizeof-pointer-memaccess1.c: Likewise.
+	* gcc.dg/builtins-nonnull.c: Likewise.
+
 2017-06-16  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	PR target/71778
