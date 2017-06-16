@@ -1204,10 +1204,8 @@ instrument_mem_ref (tree mem, tree base, gimple_stmt_iterator *iter,
 /* Perform the pointer instrumentation.  */
 
 static void
-instrument_null (gimple_stmt_iterator gsi, bool is_lhs)
+instrument_null (gimple_stmt_iterator gsi, tree t, bool is_lhs)
 {
-  gimple *stmt = gsi_stmt (gsi);
-  tree t = is_lhs ? gimple_get_lhs (stmt) : gimple_assign_rhs1 (stmt);
   /* Handle also e.g. &s->i.  */
   if (TREE_CODE (t) == ADDR_EXPR)
     t = TREE_OPERAND (t, 0);
@@ -1754,11 +1752,10 @@ instrument_nonnull_return (gimple_stmt_iterator *gsi)
    points to an out-of-bounds location.  */
 
 static void
-instrument_object_size (gimple_stmt_iterator *gsi, bool is_lhs)
+instrument_object_size (gimple_stmt_iterator *gsi, tree t, bool is_lhs)
 {
   gimple *stmt = gsi_stmt (*gsi);
   location_t loc = gimple_location (stmt);
-  tree t = is_lhs ? gimple_get_lhs (stmt) : gimple_assign_rhs1 (stmt);
   tree type;
   tree index = NULL_TREE;
   HOST_WIDE_INT size_in_bytes;
@@ -1989,9 +1986,9 @@ pass_ubsan::execute (function *fun)
 	  if (sanitize_flags_p (SANITIZE_NULL | SANITIZE_ALIGNMENT, fun->decl))
 	    {
 	      if (gimple_store_p (stmt))
-		instrument_null (gsi, true);
+		instrument_null (gsi, gimple_get_lhs (stmt), true);
 	      if (gimple_assign_single_p (stmt))
-		instrument_null (gsi, false);
+		instrument_null (gsi, gimple_assign_rhs1 (stmt), false);
 	      if (is_gimple_call (stmt))
 		{
 		  unsigned args_num = gimple_call_num_args (stmt);
@@ -2000,10 +1997,7 @@ pass_ubsan::execute (function *fun)
 		      tree arg = gimple_call_arg (stmt, i);
 		      if (is_gimple_reg (arg) || is_gimple_min_invariant (arg))
 			continue;
-		      tree base = get_base_address (arg);
-		      if (TREE_CODE (base) == MEM_REF
-			  && TREE_CODE (TREE_OPERAND (base, 0)) == SSA_NAME)
-			instrument_mem_ref (arg, base, &gsi, false);
+		      instrument_null (gsi, arg, false);
 		    }
 		}
 	    }
@@ -2033,9 +2027,21 @@ pass_ubsan::execute (function *fun)
 	  if (sanitize_flags_p (SANITIZE_OBJECT_SIZE, fun->decl))
 	    {
 	      if (gimple_store_p (stmt))
-		instrument_object_size (&gsi, true);
+		instrument_object_size (&gsi, gimple_get_lhs (stmt), true);
 	      if (gimple_assign_load_p (stmt))
-		instrument_object_size (&gsi, false);
+		instrument_object_size (&gsi, gimple_assign_rhs1 (stmt),
+					false);
+	      if (is_gimple_call (stmt))
+		{
+		  unsigned args_num = gimple_call_num_args (stmt);
+		  for (unsigned i = 0; i < args_num; ++i)
+		    {
+		      tree arg = gimple_call_arg (stmt, i);
+		      if (is_gimple_reg (arg) || is_gimple_min_invariant (arg))
+			continue;
+		      instrument_object_size (&gsi, arg, false);
+		    }
+		}
 	    }
 
 	  gsi_next (&gsi);

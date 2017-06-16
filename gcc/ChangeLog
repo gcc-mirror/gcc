@@ -1,3 +1,15 @@
+2017-06-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/81094
+	* ubsan.c (instrument_null): Add T argument, use it instead
+	of computing it based on IS_LHS.
+	(instrument_object_size): Likewise.
+	(pass_ubsan::execute): Adjust instrument_null and
+	instrument_object_size callers to pass gimple_get_lhs or
+	gimple_assign_rhs1 result to it.  Use instrument_null instead of
+	calling get_base_address and instrument_mem_ref.  Handle
+	aggregate call arguments for object-size sanitization.
+
 2017-06-16  Yury Gribov  <tetra2005@gmail.com>
 
 	PR tree-optimization/81089
