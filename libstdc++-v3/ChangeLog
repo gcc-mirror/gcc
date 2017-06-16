@@ -1,5 +1,13 @@
 2017-06-16  Jonathan Wakely  <jwakely@redhat.com>
 
+	* doc/xml/manual/appendix_contributing.xml: Link to the list of bad
+	names, and link to the test docs and note higher DejaGnu version
+	requirement.
+	* doc/xml/manual/allocator.xml: Fix ViewCVS URLs.
+	* doc/xml/manual/mt_allocator.xml: Likewise.
+	* doc/xml/manual/test.xml: Correct instructions on running tests.
+	* doc/html/*: Regenerate.
+
 	PR libstdc++/81092
 	* acinclude.m4: Bump libtool_VERSION.
 	* config/abi/post/i386-linux-gnu/baseline_symbols.txt: Update.
