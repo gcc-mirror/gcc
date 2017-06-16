@@ -1613,7 +1613,7 @@ emit_tinfo_decl (tree decl)
       TREE_PUBLIC (decl) = 0;
       DECL_EXTERNAL (decl) = 0;
       DECL_INTERFACE_KNOWN (decl) = 1;
-    }u
+    }
 
   import_export_decl (decl);
   if (DECL_NOT_REALLY_EXTERN (decl) && decl_needed_p (decl))
