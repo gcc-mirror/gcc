@@ -1,5 +1,8 @@
 2017-06-16  Nathan Sidwell  <nathan@acm.org>
 
+	* class.c (resort_type_method_vec): Avoid potential unsigned
+	overflow.
+
 	Don't defer noexcept_deferred_spec.
 	* cp-tree.h (unevaluated_noexcept_spec): Don't declare.
 	* decl.c (cxx_init_decl_processing): Initialize
