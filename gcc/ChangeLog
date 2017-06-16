@@ -1,3 +1,9 @@
+2017-06-16  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-inline-transform.c (update_noncloned_frequencies): Update also
+	counts.
+	(clone_inlined_nodes): Update.
+
 2017-06-16  Maxim Kuvyrkov  <maxim.kuvyrkov@linaro.org>
 
         * config/aarch64/aarch64.c (qdf24xx_prefetch_tune): Update
