@@ -114,7 +114,7 @@ begin arch armv5e
  base 5E
  isa ARMv5e
  option fp add VFPv2 FP_DBL
- option vfpv2 add VFPv2 FP_DBL
+ optalias vfpv2 fp
  option nofp remove ALL_FP
 end arch armv5e
 
@@ -124,7 +124,7 @@ begin arch armv5te
  base 5TE
  isa ARMv5te
  option fp add VFPv2 FP_DBL
- option vfpv2 add VFPv2 FP_DBL
+ optalias vfpv2 fp
  option nofp remove ALL_FP
 end arch armv5te
 
@@ -134,7 +134,7 @@ begin arch armv5tej
  base 5TEJ
  isa ARMv5tej
  option fp add VFPv2 FP_DBL
- option vfpv2 add VFPv2 FP_DBL
+ optalias vfpv2 fp
  option nofp remove ALL_FP
 end arch armv5tej
 
@@ -144,7 +144,7 @@ begin arch armv6
  base 6
  isa ARMv6
  option fp add VFPv2 FP_DBL
- option vfpv2 add VFPv2 FP_DBL
+ optalias vfpv2 fp
  option nofp remove ALL_FP
 end arch armv6
 
@@ -154,7 +154,7 @@ begin arch armv6j
  base 6J
  isa ARMv6j
  option fp add VFPv2 FP_DBL
- option vfpv2 add VFPv2 FP_DBL
+ optalias vfpv2 fp
  option nofp remove ALL_FP
 end arch armv6j
 
@@ -164,7 +164,7 @@ begin arch armv6k
  base 6K
  isa ARMv6k
  option fp add VFPv2 FP_DBL
- option vfpv2 add VFPv2 FP_DBL
+ optalias vfpv2 fp
  option nofp remove ALL_FP
 end arch armv6k
 
@@ -174,7 +174,7 @@ begin arch armv6z
  base 6Z
  isa ARMv6z
  option fp add VFPv2 FP_DBL
- option vfpv2 add VFPv2 FP_DBL
+ optalias vfpv2 fp
  option nofp remove ALL_FP
 end arch armv6z
 
@@ -184,7 +184,7 @@ begin arch armv6kz
  base 6KZ
  isa ARMv6kz
  option fp add VFPv2 FP_DBL
- option vfpv2 add VFPv2 FP_DBL
+ optalias vfpv2 fp
  option nofp remove ALL_FP
 end arch armv6kz
 
@@ -194,7 +194,7 @@ begin arch armv6zk
  base 6KZ
  isa ARMv6kz
  option fp add VFPv2 FP_DBL
- option vfpv2 add VFPv2 FP_DBL
+ optalias vfpv2 fp
  option nofp remove ALL_FP
 end arch armv6zk
 
@@ -204,7 +204,7 @@ begin arch armv6t2
  base 6T2
  isa ARMv6t2
  option fp add VFPv2 FP_DBL
- option vfpv2 add VFPv2 FP_DBL
+ optalias vfpv2 fp
  option nofp remove ALL_FP
 end arch armv6t2
 
@@ -227,7 +227,7 @@ begin arch armv7
  isa ARMv7
 # fp => VFPv3-d16 (only useful for the A+R profile subset).
  option fp add VFPv3 FP_DBL
- option vfpv3-d16 add VFPv3 FP_DBL
+ optalias vfpv3-d16 fp
 end arch armv7
 
 begin arch armv7-a
@@ -236,20 +236,20 @@ begin arch armv7-a
  base 7A
  isa ARMv7a
 # fp => VFPv3-d16, simd => neon-vfpv3
- option fp             add VFPv3 FP_DBL
- option vfpv3-d16      add VFPv3 FP_DBL
- option vfpv3 	       add VFPv3 FP_D32
+ option fp	       add VFPv3 FP_DBL
+ optalias vfpv3-d16    fp
+ option vfpv3	       add VFPv3 FP_D32
  option vfpv3-d16-fp16 add VFPv3 FP_DBL bit_fp16conv
  option vfpv3-fp16     add VFPv3 FP_DBL FP_D32 bit_fp16conv
  option vfpv4-d16      add VFPv4 FP_DBL
- option vfpv4 	       add VFPv4 FP_D32
- option simd 	       add VFPv3 NEON
- option neon 	       add VFPv3 NEON
- option neon-vfpv3     add VFPv3 NEON
+ option vfpv4	       add VFPv4 FP_D32
+ option simd	       add VFPv3 NEON
+ optalias neon	       simd
+ optalias neon-vfpv3   simd
  option neon-fp16      add VFPv3 NEON bit_fp16conv
  option neon-vfpv4     add VFPv4 NEON
- option nofp 	    remove ALL_FP
- option nosimd 	    remove ALL_SIMD
+ option nosimd	    remove ALL_SIMD
+ option nofp	    remove ALL_FP
 end arch armv7-a
 
 begin arch armv7ve
@@ -262,16 +262,16 @@ begin arch armv7ve
  option vfpv3 	       add VFPv3 FP_D32
  option vfpv3-d16-fp16 add VFPv3 FP_DBL bit_fp16conv
  option vfpv3-fp16     add VFPv3 FP_DBL FP_D32 bit_fp16conv
- option vfpv4-d16      add VFPv4 FP_DBL
  option fp 	       add VFPv4 FP_DBL
+ optalias vfpv4-d16    fp
  option vfpv4 	       add VFPv4 FP_D32
  option neon 	       add VFPv3 NEON
- option neon-vfpv3     add VFPv3 NEON
+ optalias neon-vfpv3   neon
  option neon-fp16      add VFPv3 NEON bit_fp16conv
  option simd 	       add VFPv4 NEON
- option neon-vfpv4     add VFPv4 NEON
- option nofp 	    remove ALL_FP
- option nosimd 	    remove ALL_SIMD
+ optalias neon-vfpv4   simd
+ option nosimd	    remove ALL_SIMD
+ option nofp	    remove ALL_FP
 end arch armv7ve
 
 begin arch armv7-r
@@ -316,8 +316,8 @@ begin arch armv8-a
  option crc add bit_crc32
  option simd add FP_ARMv8 NEON
  option crypto add FP_ARMv8 CRYPTO
- option nofp remove ALL_FP
  option nocrypto remove ALL_CRYPTO
+ option nofp remove ALL_FP
 end arch armv8-a
 
 begin arch armv8.1-a
@@ -327,8 +327,8 @@ begin arch armv8.1-a
  isa ARMv8_1a
  option simd add FP_ARMv8 NEON
  option crypto add FP_ARMv8 CRYPTO
- option nofp remove ALL_FP
  option nocrypto remove ALL_CRYPTO
+ option nofp remove ALL_FP
 end arch armv8.1-a
 
 begin arch armv8.2-a
@@ -339,8 +339,8 @@ begin arch armv8.2-a
  option simd add FP_ARMv8 NEON
  option fp16 add bit_fp16 FP_ARMv8 NEON
  option crypto add FP_ARMv8 CRYPTO
- option nofp remove ALL_FP
  option nocrypto remove ALL_CRYPTO
+ option nofp remove ALL_FP
 end arch armv8.2-a
 
 begin arch armv8-m.base
@@ -385,6 +385,7 @@ end arch iwmmxt2
 #   [fpu <name>]
 #   [isa <additional-isa-flags-list>]
 #   [option <name> add|remove <isa-list>]*
+#   [optalias <name> <optname>]*
 #   [costs <name>]
 # end cpu <name>
 #
@@ -392,7 +393,9 @@ end arch iwmmxt2
 # non-valid punctuation characters to '_'.
 # If specified, tune for specifies a CPU target to use for tuning this core.
 # isa flags are appended to those defined by the architecture.
-
+# Each add option must have a distinct feature set and each remove
+# option must similarly have a distinct feature set.  Option aliases can be
+# added with the optalias statement
 
 # V2/V2A Architecture Processors
 begin cpu arm2
@@ -921,19 +924,19 @@ begin cpu generic-armv7-a
  tune flags LDSCHED
  architecture armv7-a
  fpu vfpv3-d16
- option simd add VFPv3 NEON
- option vfpv3 add VFPv3 FP_D32
  option vfpv3-d16 add VFPv3 FP_DBL
- option vfpv3-fp16 add VFPv3 FP_D32 bit_fp16conv
+ option vfpv3 add VFPv3 FP_D32
  option vfpv3-d16-fp16 add VFPv3 FP_DBL bit_fp16conv
- option vfpv4 add VFPv4 FP_D32
+ option vfpv3-fp16 add VFPv3 FP_D32 bit_fp16conv
  option vfpv4-d16 add VFPv4 FP_DBL
- option neon add VFPv3 NEON
- option neon-vfpv3 add VFPv3 NEON
+ option vfpv4 add VFPv4 FP_D32
+ option simd add VFPv3 NEON
+ optalias neon simd
+ optalias neon-vfpv3 simd
  option neon-fp16 add VFPv3 NEON bit_fp16conv
  option neon-vfpv4 add VFPv4 NEON
- option nofp remove ALL_FP
  option nosimd remove ALL_SIMD
+ option nofp remove ALL_FP
  costs cortex
 end cpu generic-armv7-a
 
@@ -971,8 +974,8 @@ begin cpu cortex-a9
  tune flags LDSCHED
  architecture armv7-a
  fpu neon-fp16
- option nofp remove ALL_FP
  option nosimd remove ALL_SIMD
+ option nofp remove ALL_FP
  costs cortex_a9
 end cpu cortex-a9
 

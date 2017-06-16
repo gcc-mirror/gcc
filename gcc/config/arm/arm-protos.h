@@ -478,8 +478,14 @@ extern struct arm_build_target arm_active_target;
 
 struct cpu_arch_extension
 {
+  /* Feature name.  */
   const char *const name;
+  /* True if the option is negative (removes extensions).  */
   bool remove;
+  /* True if the option is an alias for another option with identical effect;
+     the option will be ignored for canonicalization.  */
+  bool alias;
+  /* The modifier bits.  */
   const enum isa_feature isa_bits[isa_num_bits];
 };
 

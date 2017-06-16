@@ -171,11 +171,28 @@ function gen_comm_data () {
 	    for (opt = 1; opt <= nopts; opt++) {
 		print "  {"
 		print "    \"" opts[opt] "\", " \
-		    cpu_opt_remove[cpus[n],opts[opt]] ","
+		    cpu_opt_remove[cpus[n],opts[opt]] ", false,"
 		print "    { " cpu_opt_isa[cpus[n],opts[opt]] ", isa_nobit }"
 		print "  },"
 	    }
-	    print "  { NULL, false, {isa_nobit}}"
+	    if (cpus[n] in cpu_optaliases) {
+		naliases = split (cpu_optaliases[cpus[n]], aliases)
+		for (alias = 1; alias <= naliases; alias++) {
+		    if (! ((cpus[n], \
+			    cpu_opt_alias[cpus[n],aliases[alias]]) in \
+			   cpu_opt_isa)) {
+			fatal("Alias " aliases[alias] " target not defined " \
+			      "for CPU " cpus[n])
+		    }
+		    equiv=cpu_opt_alias[cpus[n],aliases[alias]]
+		    print "  {"
+		    print "    \"" aliases[alias] "\", " \
+			cpu_opt_remove[cpus[n],equiv] ", true, "
+		    print "    { " cpu_opt_isa[cpus[n],equiv] ", isa_nobit }"
+		    print "  },"
+		}
+	    }
+	    print "  { NULL, false, false, {isa_nobit}}"
 	    print "};\n"
 	}
     }
@@ -231,12 +248,31 @@ function gen_comm_data () {
 	    for (opt = 1; opt <= nopts; opt++) {
 		print "  {"
 		print "    \"" opts[opt] "\", " \
-		    arch_opt_remove[archs[n],opts[opt]] ","
+		    arch_opt_remove[archs[n],opts[opt]] ", false,"
 		print "    { " arch_opt_isa[archs[n],opts[opt]] ", isa_nobit }"
 		print "  },"
 	    }
-	    print "  { NULL, false, {isa_nobit}}"
+	    if (archs[n] in arch_optaliases) {
+		naliases = split (arch_optaliases[archs[n]], aliases)
+		for (alias = 1; alias <= naliases; alias++) {
+		    if (! ((archs[n], \
+			    arch_opt_alias[archs[n],aliases[alias]]) in \
+			   arch_opt_isa)) {
+			fatal("Alias " aliases[alias] " target not defined " \
+			      "for architecture " archs[n])
+		    }
+		    equiv=arch_opt_alias[archs[n],aliases[alias]]
+		    print "  {"
+		    print "    \"" aliases[alias] "\", " \
+			arch_opt_remove[archs[n],equiv] ", true, "
+		    print "    { " arch_opt_isa[archs[n],equiv] ", isa_nobit }"
+		    print "  },"
+		}
+	    }
+	    print "  { NULL, false, false, {isa_nobit}}"
 	    print "};\n"
+	} else if (archs[n] in arch_optaliases) {
+	    fatal("Architecture " archs[n] " has option aliases but no options")
 	}
     }
 
@@ -526,6 +562,19 @@ BEGIN {
 	arch_opt_remove[arch_name,name] = remove
 	arch_opt_isa[arch_name,name] = flags
     } else fatal("\"option\" outside of cpu or arch block")
+    parse_ok = 1
+}
+
+/^[ 	]*optalias / {
+    name=$2
+    alias=$3
+    if (cpu_name != "") {
+	cpu_optaliases[cpu_name] = cpu_optaliases[cpu_name] " " name
+	cpu_opt_alias[cpu_name,name] = alias
+    } else if (arch_name != "") {
+	arch_optaliases[arch_name] = arch_optaliases[arch_name] " " name
+	arch_opt_alias[arch_name,name] = alias
+    } else fatal("\"optalias\" outside of cpu or arch block")
     parse_ok = 1
 }
 
