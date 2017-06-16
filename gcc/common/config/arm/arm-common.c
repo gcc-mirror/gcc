@@ -27,6 +27,8 @@
 #include "common/common-target-def.h"
 #include "opts.h"
 #include "flags.h"
+#include "sbitmap.h"
+#include "diagnostic.h"
 
 /* Set default optimization options.  */
 static const struct default_options arm_option_optimization_table[] =
@@ -185,6 +187,194 @@ arm_target_thumb_only (int argc, const char **argv)
     }
   else
     return NULL;
+}
+
+/* List the permitted CPU option names.  If TARGET is a near miss for an
+   entry, print out the suggested alternative.  */
+static void
+arm_print_hint_for_cpu_option (const char *target,
+			       const cpu_option *list)
+{
+  auto_vec<const char*> candidates;
+  for (; list->common.name != NULL; list++)
+    candidates.safe_push (list->common.name);
+  char *s;
+  const char *hint = candidates_list_and_hint (target, s, candidates);
+  if (hint)
+    inform (input_location, "valid arguments are: %s; did you mean %qs?",
+	    s, hint);
+  else
+    inform (input_location, "valid arguments are: %s", s);
+
+  XDELETEVEC (s);
+}
+
+/* Parse the base component of a CPU selection in LIST.  Return a
+   pointer to the entry in the architecture table.  OPTNAME is the
+   name of the option we are parsing and can be used if a diagnostic
+   is needed.  */
+const cpu_option *
+arm_parse_cpu_option_name (const cpu_option *list, const char *optname,
+			   const char *target)
+{
+  const cpu_option *entry;
+  const char *end  = strchr (target, '+');
+  size_t len = end ? end - target : strlen (target);
+
+  for (entry = list; entry->common.name != NULL; entry++)
+    {
+      if (strncmp (entry->common.name, target, len) == 0
+	  && entry->common.name[len] == '\0')
+	return entry;
+    }
+
+  error_at (input_location, "unrecognized %s target: %s", optname, target);
+  arm_print_hint_for_cpu_option (target, list);
+  return NULL;
+}
+
+/* List the permitted architecture option names.  If TARGET is a near
+   miss for an entry, print out the suggested alternative.  */
+static void
+arm_print_hint_for_arch_option (const char *target,
+			       const arch_option *list)
+{
+  auto_vec<const char*> candidates;
+  for (; list->common.name != NULL; list++)
+    candidates.safe_push (list->common.name);
+  char *s;
+  const char *hint = candidates_list_and_hint (target, s, candidates);
+  if (hint)
+    inform (input_location, "valid arguments are: %s; did you mean %qs?",
+	    s, hint);
+  else
+    inform (input_location, "valid arguments are: %s", s);
+
+  XDELETEVEC (s);
+}
+
+/* Parse the base component of a CPU or architecture selection in
+   LIST.  Return a pointer to the entry in the architecture table.
+   OPTNAME is the name of the option we are parsing and can be used if
+   a diagnostic is needed.  */
+const arch_option *
+arm_parse_arch_option_name (const arch_option *list, const char *optname,
+			    const char *target)
+{
+  const arch_option *entry;
+  const char *end  = strchr (target, '+');
+  size_t len = end ? end - target : strlen (target);
+
+  for (entry = list; entry->common.name != NULL; entry++)
+    {
+      if (strncmp (entry->common.name, target, len) == 0
+	  && entry->common.name[len] == '\0')
+	return entry;
+    }
+
+  error_at (input_location, "unrecognized %s target: %s", optname, target);
+  arm_print_hint_for_arch_option (target, list);
+  return NULL;
+}
+
+/* Convert a static initializer array of feature bits to sbitmap
+   representation.  */
+void
+arm_initialize_isa (sbitmap isa, const enum isa_feature *isa_bits)
+{
+  bitmap_clear (isa);
+  while (*isa_bits != isa_nobit)
+    bitmap_set_bit (isa, *(isa_bits++));
+}
+
+/* OPT isn't a recognized feature.  Print a suitable error message and
+   suggest a possible value.  Always print the list of permitted
+   values.  */
+static void
+arm_unrecognized_feature (const char *opt, size_t len,
+			  const cpu_arch_option *target)
+{
+  char *this_opt = XALLOCAVEC (char, len+1);
+  auto_vec<const char*> candidates;
+
+  strncpy (this_opt, opt, len);
+  this_opt[len] = 0;
+
+  error_at (input_location, "%qs does not support feature %qs", target->name,
+	    this_opt);
+  for (const cpu_arch_extension *list = target->extensions;
+       list->name != NULL;
+       list++)
+    candidates.safe_push (list->name);
+
+  char *s;
+  const char *hint = candidates_list_and_hint (this_opt, s, candidates);
+
+  if (hint)
+    inform (input_location, "valid feature names are: %s; did you mean %qs?",
+	    s, hint);
+  else
+    inform (input_location, "valid feature names are: %s", s);
+
+  XDELETEVEC (s);
+}
+
+/* Parse any feature extensions to add to (or remove from) the
+   permitted ISA selection.  */
+void
+arm_parse_option_features (sbitmap isa, const cpu_arch_option *target,
+			   const char *opts_in)
+{
+  const char *opts = opts_in;
+
+  if (!opts)
+    return;
+
+  if (!target->extensions)
+    {
+      error_at (input_location, "%s does not take any feature options",
+		target->name);
+      return;
+    }
+
+  while (opts)
+    {
+      gcc_assert (*opts == '+');
+      const struct cpu_arch_extension *entry;
+      const char *end = strchr (++opts, '+');
+      size_t len = end ? end - opts : strlen (opts);
+      bool matched = false;
+
+      for (entry = target->extensions;
+	   !matched && entry->name != NULL;
+	   entry++)
+	{
+	  if (strncmp (entry->name, opts, len) == 0
+	      && entry->name[len] == '\0')
+	    {
+	      if (isa)
+		{
+		  const enum isa_feature *f = entry->isa_bits;
+		  if (entry->remove)
+		    {
+		      while (*f != isa_nobit)
+			bitmap_clear_bit (isa, *(f++));
+		    }
+		  else
+		    {
+		      while (*f != isa_nobit)
+			bitmap_set_bit (isa, *(f++));
+		    }
+		}
+	      matched = true;
+	    }
+	}
+
+      if (!matched)
+	arm_unrecognized_feature (opts, len, target);
+
+      opts = end;
+    }
 }
 
 #undef ARM_CPU_NAME_LENGTH

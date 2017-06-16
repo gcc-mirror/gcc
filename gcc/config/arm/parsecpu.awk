@@ -128,6 +128,39 @@ function gen_headers () {
 function gen_data () {
     boilerplate("C")
 
+    print "static const cpu_tune all_tunes[] ="
+    print "{"
+
+    ncpus = split (cpu_list, cpus)
+
+    for (n = 1; n <= ncpus; n++) {
+	print "  { /* " cpus[n] ".  */"
+	# scheduler
+	if (cpus[n] in cpu_tune_for) {
+	    if (! (cpu_tune_for[cpus[n]] in cpu_cnames)) {
+		fatal("unknown \"tune for\" target " cpu_tune_for[cpus[n]] \
+		      " for CPU " cpus[n])
+	    }
+	    print "    TARGET_CPU_" cpu_cnames[cpu_tune_for[cpus[n]]] ","
+	} else {
+	    print "    TARGET_CPU_" cpu_cnames[cpus[n]] ","
+	}
+	# tune_flags
+	if (cpus[n] in cpu_tune_flags) {
+	    print "    (" cpu_tune_flags[cpus[n]] "),"
+	} else print "    0,"
+	# tune
+	print "    &arm_" cpu_cost[cpus[n]] "_tune"
+	print "  },"
+    }
+    print "  {TARGET_CPU_arm_none, 0, NULL}"
+    print "};"
+    
+}
+
+function gen_comm_data () {
+    boilerplate("C")
+
     ncpus = split (cpu_list, cpus)
 
     for (n = 1; n <= ncpus; n++) {
@@ -147,7 +180,7 @@ function gen_data () {
 	}
     }
 
-    print "static const cpu_option all_cores[] ="
+    print "const cpu_option all_cores[] ="
     print "{"
 
     for (n = 1; n <= ncpus; n++) {
@@ -188,32 +221,6 @@ function gen_data () {
     print "  {{NULL, NULL, {isa_nobit}}, TARGET_ARCH_arm_none}"
     print "};"
 
-    print "static const cpu_tune all_tunes[] ="
-    print "{"
-
-    for (n = 1; n <= ncpus; n++) {
-	print "  { /* " cpus[n] ".  */"
-	# scheduler
-	if (cpus[n] in cpu_tune_for) {
-	    if (! (cpu_tune_for[cpus[n]] in cpu_cnames)) {
-		fatal("unknown \"tune for\" target " cpu_tune_for[cpus[n]] \
-		      " for CPU " cpus[n])
-	    }
-	    print "    TARGET_CPU_" cpu_cnames[cpu_tune_for[cpus[n]]] ","
-	} else {
-	    print "    TARGET_CPU_" cpu_cnames[cpus[n]] ","
-	}
-	# tune_flags
-	if (cpus[n] in cpu_tune_flags) {
-	    print "    (" cpu_tune_flags[cpus[n]] "),"
-	} else print "    0,"
-	# tune
-	print "    &arm_" cpu_cost[cpus[n]] "_tune"
-	print "  },"
-    }
-    print "  {TARGET_CPU_arm_none, 0, NULL}"
-    print "};"
-    
     narchs = split (arch_list, archs)
 
     for (n = 1; n <= narchs; n++) {
@@ -233,7 +240,7 @@ function gen_data () {
 	}
     }
 
-    print "static const struct arch_option all_architectures[] ="
+    print "const arch_option all_architectures[] ="
     print "{"
 
     for (n = 1; n <= narchs; n++) {
@@ -265,7 +272,7 @@ function gen_data () {
     print "   NULL, BASE_ARCH_0, TARGET_CPU_arm_none}"
     print "};\n"
 
-    print "const struct arm_fpu_desc all_fpus[] ="
+    print "const arm_fpu_desc all_fpus[] ="
     print "{"
 
     nfpus = split (fpu_list, fpus)
@@ -281,10 +288,6 @@ function gen_data () {
     }
 
     print "};"
-}
-
-function gen_comm_data () {
-    boilerplate("C")
 
     print "static const struct arm_arch_core_flag arm_arch_core_flags[] ="
     print "{"
