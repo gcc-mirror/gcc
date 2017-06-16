@@ -2023,7 +2023,7 @@ implicitly_declare_fn (special_function_kind kind, tree type,
     }
   else if (cxx_dialect >= cxx11)
     {
-      raises = unevaluated_noexcept_spec ();
+      raises = noexcept_deferred_spec;
       synthesized_method_walk (type, kind, const_p, NULL, &trivial_p,
 			       &deleted_p, &constexpr_p, false,
 			       inherited_ctor, inherited_parms);

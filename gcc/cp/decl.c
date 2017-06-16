@@ -4078,6 +4078,8 @@ cxx_init_decl_processing (void)
   empty_except_spec = build_tree_list (NULL_TREE, NULL_TREE);
   noexcept_true_spec = build_tree_list (boolean_true_node, NULL_TREE);
   noexcept_false_spec = build_tree_list (boolean_false_node, NULL_TREE);
+  noexcept_deferred_spec = build_tree_list (make_node (DEFERRED_NOEXCEPT),
+					    NULL_TREE);
 
 #if 0
   record_builtin_type (RID_MAX, NULL, string_type_node);
