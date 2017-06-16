@@ -1,5 +1,9 @@
 2017-06-16  Richard Earnshaw  <rearnsha@arm.com>
 
+	* config/arm/t-symbian: Rewrite for new option infrastructure.
+
+2017-06-16  Richard Earnshaw  <rearnsha@arm.com>
+
 	* config/arm/t-phoenix (MULTILIB_REUSE): Clear variable.
 	(MULTILIB_REQUIRED): Likewise.
 
