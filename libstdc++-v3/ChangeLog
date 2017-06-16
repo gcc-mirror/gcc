@@ -1,3 +1,11 @@
+2017-06-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/shared_ptr.h (get_deleter): Add overload matching
+	standard signature.
+	* include/bits/shared_ptr_base.h (__shared_ptr): Declare new
+	get_deleter overload as a friend.
+	* testsuite/20_util/shared_ptr/misc/get_deleter.cc: New.
+
 2017-06-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR libstdc++/81092
