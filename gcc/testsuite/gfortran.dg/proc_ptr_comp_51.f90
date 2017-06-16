@@ -1,4 +1,5 @@
 ! { dg-do compile }
+! { dg-options "-fdump-tree-original" }
 !
 ! PR 80983: [F03] memory leak when calling procedure-pointer component with allocatable result
 !
