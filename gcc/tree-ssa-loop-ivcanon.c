@@ -529,6 +529,8 @@ remove_exits_and_undefined_stmts (struct loop *loop, unsigned int npeeled)
 	    }
 	  if (!loop_exit_edge_p (loop, exit_edge))
 	    exit_edge = EDGE_SUCC (bb, 1);
+	  exit_edge->probability = REG_BR_PROB_BASE;
+	  exit_edge->count = exit_edge->src->count;
 	  gcc_checking_assert (loop_exit_edge_p (loop, exit_edge));
 	  gcond *cond_stmt = as_a <gcond *> (elt->stmt);
 	  if (exit_edge->flags & EDGE_TRUE_VALUE)
@@ -853,8 +855,9 @@ try_unroll_loop_completely (struct loop *loop,
 		     loop->num);
 	  return false;
 	}
-      dump_printf_loc (report_flags, locus,
-                       "loop turned into non-loop; it never loops.\n");
+      if (!n_unroll)
+        dump_printf_loc (report_flags, locus,
+                         "loop turned into non-loop; it never loops.\n");
 
       initialize_original_copy_tables ();
       auto_sbitmap wont_exit (n_unroll + 1);
