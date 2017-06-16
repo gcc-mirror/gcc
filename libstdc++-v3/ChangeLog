@@ -1,3 +1,19 @@
+2017-06-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/locale_conv.h (wbuffer_convert::_M_put): Add missing
+	return statement.
+	* testsuite/21_strings/basic_string_view/operations/copy/char/1.cc:
+	Return void.
+	* testsuite/21_strings/basic_string_view/operations/copy/wchar_t/1.cc:
+	Likewise.
+	* testsuite/23_containers/map/modifiers/insert_or_assign/1.cc: Add
+	missing return statements.
+	* testsuite/23_containers/unordered_map/modifiers/insert_or_assign.cc:
+	Likewise.
+	* testsuite/27_io/basic_istream/extractors_arithmetic/char/12.cc:
+	Return void.
+	* testsuite/special_functions/14_expint/pr68397.cc: Likewise.
+
 2017-06-16  François Dumont  <fdumont@gcc.gnu.org>
 
 	* include/bits/stl_bvector.h
