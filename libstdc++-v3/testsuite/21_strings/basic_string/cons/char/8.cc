@@ -15,16 +15,31 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
+// { dg-options "-O0" }
 // { dg-do run { target c++11 } }
 
 #include <string>
 #include <testsuite_hooks.h>
 
+struct TestBaseObjCtor : std::string
+{
+  template<typename... Args>
+    TestBaseObjCtor(Args&&... args)
+    : std::string(std::forward<Args>(args)...)
+    { }
+};
+
 template<typename... Args>
 std::size_t
 construct(Args&&... args)
 {
-  return std::string( std::forward<Args>(args)... ).length();
+  // Use static_cast<Args> to produce either an lvalue or prvalue,
+  // so args... not left in moved-from state and can be reused below:
+  TestBaseObjCtor as_base_obj( static_cast<Args>(args)... );
+
+  std::string as_complete_obj( std::forward<Args>(args)... );
+
+  return as_complete_obj.length();
 }
 
 void
