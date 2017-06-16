@@ -1,5 +1,16 @@
 2017-06-16  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/81090
+	* passes.def (pass_record_bounds): Remove.
+	* tree-pass.h (make_pass_record_bounds): Likewise.
+	* tree-ssa-loop.c (pass_data_record_bounds, pass_record_bounds,
+	make_pass_record_bounds): Likewise.
+	* tree-ssa-loop-ivcanon.c (canonicalize_induction_variables): Do
+	not free niter estimates at the beginning but at the end.
+	* tree-scalar-evolution.c (scev_finalize): Free niter estimates.
+
+2017-06-16  Richard Biener  <rguenther@suse.de>
+
 	* tree-switch-conversion.c (emit_case_bit_tests): Adjust
 	initializer to workaround ICE in host GCC 4.8.
 
