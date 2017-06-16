@@ -107,10 +107,6 @@
 #define TARGET_DEFAULT (MASK_APCS_FRAME)
 #endif
 
-#ifndef MULTILIB_DEFAULTS
-#define MULTILIB_DEFAULTS \
-  { "marm", "mlittle-endian", "mfloat-abi=soft", "mno-thumb-interwork", "fno-leading-underscore" }
-#endif
 
 #define TARGET_ASM_FILE_START_FILE_DIRECTIVE true
 

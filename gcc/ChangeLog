@@ -1,5 +1,10 @@
 2017-06-16  Richard Earnshaw  <rearnsha@arm.com>
 
+	* config/arm/elf.h (MULTILIB_DEFAULTS): Delete.
+	* config/arm/t-arm-elf: Rewritten.
+
+2017-06-16  Richard Earnshaw  <rearnsha@arm.com>
+
 	* config/arm/arm.h (TARGET_HARD_FLOAT): Also check that we
 	have some floating-point instructions.
 	(TARGET_SOFT_FLOAT): Define as inverse of TARGET_HARD_FLOAT.
