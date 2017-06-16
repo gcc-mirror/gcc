@@ -1,5 +1,21 @@
 2017-06-16  Richard Earnshaw  <rearnsha@arm.com>
 
+	* config/arm/arm.h (BIG_LITTLE_SPEC): Delete macro.
+	(ASM_REWRITE_SPEC_FUNCTIONS): New macro.
+	(BIG_LITTLE_CPU_SPEC_FUNCTIONS): Delete macro.
+	(ASM_CPU_SPEC): Rewrite.
+	(MCPU_MTUNE_NATIVE_FUNCTIONS): New macro.
+	(EXTRA_SPEC_FUNCTIONS): Move outside of ifdef.	Use
+	MCPU_MTUNE_NATIVE_FUNCTIONS and ASM_REWRITE_SPEC_FUNCTIONS.  Remove
+	reference to BIG_LITTLE_CPU_SPEC_FUNCTIONS.
+	* common/config/arm/arm-common.c (arm_rewrite_selected_cpu): Ensure
+	copied string is NUL-terminated.  Also strip any characters prefixed
+	by '+'.
+	(arm_rewrite_selected_arch): New function.
+	(arm_rewrite_march): New function.
+
+2017-06-16  Richard Earnshaw  <rearnsha@arm.com>
+
 	* config/arm/arm.opt (x_arm_arch_string): New TargetSave option.
 	(x_arm_cpu_string, x_arm_tune_string): Likewise.
 	(march, mcpu, mtune): Convert to string-based options.

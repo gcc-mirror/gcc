@@ -66,7 +66,7 @@ arm_except_unwind_info (struct gcc_options *opts)
 
 #define ARM_CPU_NAME_LENGTH 20
 
-/* Truncate NAME at the first '.' character seen, or return
+/* Truncate NAME at the first '.' or '+' character seen, or return
    NAME unmodified.  */
 
 const char *
@@ -76,9 +76,17 @@ arm_rewrite_selected_cpu (const char *name)
   char *arg_pos;
 
   strncpy (output_buf, name, ARM_CPU_NAME_LENGTH);
+  output_buf[ARM_CPU_NAME_LENGTH] = 0;
+
   arg_pos = strchr (output_buf, '.');
 
   /* If we found a '.' truncate the entry at that point.  */
+  if (arg_pos)
+    *arg_pos = '\0';
+
+  arg_pos = strchr (output_buf, '+');
+
+  /* If we found a '+' truncate the entry at that point.  */
   if (arg_pos)
     *arg_pos = '\0';
 
@@ -96,6 +104,41 @@ arm_rewrite_mcpu (int argc, const char **argv)
 {
   gcc_assert (argc);
   return arm_rewrite_selected_cpu (argv[argc - 1]);
+}
+
+/* Truncate NAME at the first '+' character seen, or return
+   NAME unmodified.  Similar to arm_rewrite_selected_cpu, but we must
+   preserve '.' as that is part of some architecture names.  */
+
+const char *
+arm_rewrite_selected_arch (const char *name)
+{
+  static char output_buf[ARM_CPU_NAME_LENGTH + 1] = {0};
+  char *arg_pos;
+
+  strncpy (output_buf, name, ARM_CPU_NAME_LENGTH);
+  output_buf[ARM_CPU_NAME_LENGTH] = 0;
+
+  arg_pos = strchr (output_buf, '+');
+
+  /* If we found a '+' truncate the entry at that point.  */
+  if (arg_pos)
+    *arg_pos = '\0';
+
+  return output_buf;
+}
+
+/* Called by the driver to rewrite a name passed to the -march
+   argument in preparation to be passed to the assembler.  The
+   names passed from the command line will be in ARGV, we want
+   to use the right-most argument, which should be in
+   ARGV[ARGC - 1].  ARGC should always be greater than 0.  */
+
+const char *
+arm_rewrite_march (int argc, const char **argv)
+{
+  gcc_assert (argc);
+  return arm_rewrite_selected_arch (argv[argc - 1]);
 }
 
 struct arm_arch_core_flag
