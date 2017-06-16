@@ -1,5 +1,12 @@
 2017-06-16  Richard Earnshaw  <rearnsha@arm.com>
 
+	* config/arm/arm-cpus.in (armv7): Add extension +nofp.
+	(armv7-r): Add aliases vfpv3xd and vfpv3-d16.
+	(armv8-m.main): Add option +nodsp.
+	* config/arm/arm-cpu-cdata.h: Regenerated.
+
+2017-06-16  Richard Earnshaw  <rearnsha@arm.com>
+
 	* config/arm/t-fuchsia: New file.
 	* config.gcc (arm*-*-fuchsia*): Use it.
 

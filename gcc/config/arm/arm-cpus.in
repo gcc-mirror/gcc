@@ -228,6 +228,7 @@ begin arch armv7
 # fp => VFPv3-d16 (only useful for the A+R profile subset).
  option fp add VFPv3 FP_DBL
  optalias vfpv3-d16 fp
+ option nofp remove ALL_FP
 end arch armv7
 
 begin arch armv7-a
@@ -281,7 +282,9 @@ begin arch armv7-r
  isa ARMv7r
 # ARMv7-r uses VFPv3-d16
  option fp.sp add VFPv3
+ optalias vfpv3xd fp.sp
  option fp add VFPv3 FP_DBL
+ optalias vfpv3-d16 fp
  option idiv add bit_adiv
  option nofp remove ALL_FP
  option noidiv remove bit_adiv
@@ -303,8 +306,10 @@ begin arch armv7e-m
  isa ARMv7em
 # fp => VFPv4-sp-d16; fpv5 => FPv5-sp-d16; fp.dp => FPv5-d16
  option fp add VFPv4
+ optalias vfpv4-sp-d16 fp
  option fpv5 add FPv5
  option fp.dp add FPv5 FP_DBL
+ optalias fpv5-d16 fp.dp
  option nofp remove ALL_FP
 end arch armv7e-m
 
@@ -359,6 +364,7 @@ begin arch armv8-m.main
  option fp add FPv5
  option fp.dp add FPv5 FP_DBL
  option nofp remove ALL_FP
+ option nodsp remove bit_ARMv7em
 end arch armv8-m.main
 
 begin arch iwmmxt
