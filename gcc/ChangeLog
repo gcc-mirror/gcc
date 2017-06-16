@@ -1,5 +1,10 @@
 2017-06-16  Maxim Kuvyrkov  <maxim.kuvyrkov@linaro.org>
 
+        * config/aarch64/aarch64.c (aarch64_override_options_internal):
+        Set flag_prefetch_loop_arrays according to tuning data.
+
+2017-06-16  Maxim Kuvyrkov  <maxim.kuvyrkov@linaro.org>
+
         * config/aarch64/aarch64-protos.h (struct cpu_prefetch_tune):
         New tune structure.
         (struct tune_params): Use cpu_prefetch_tune instead of cache_line_size.
