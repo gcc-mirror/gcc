@@ -233,6 +233,7 @@ static tree arm_build_builtin_va_list (void);
 static void arm_expand_builtin_va_start (tree, rtx);
 static tree arm_gimplify_va_arg_expr (tree, tree, gimple_seq *, gimple_seq *);
 static void arm_option_override (void);
+static void arm_option_save (struct cl_target_option *, struct gcc_options *);
 static void arm_option_restore (struct gcc_options *,
 				struct cl_target_option *);
 static void arm_override_options_after_change (void);
@@ -412,6 +413,9 @@ static const struct attribute_spec arm_attribute_table[] =
 
 #undef TARGET_OVERRIDE_OPTIONS_AFTER_CHANGE
 #define TARGET_OVERRIDE_OPTIONS_AFTER_CHANGE arm_override_options_after_change
+
+#undef TARGET_OPTION_SAVE
+#define TARGET_OPTION_SAVE arm_option_save
 
 #undef TARGET_OPTION_RESTORE
 #define TARGET_OPTION_RESTORE arm_option_restore
@@ -2902,9 +2906,22 @@ arm_override_options_after_change (void)
   arm_override_options_after_change_1 (&global_options);
 }
 
+/* Implement TARGET_OPTION_SAVE.  */
 static void
-arm_option_restore (struct gcc_options *, struct cl_target_option *ptr)
+arm_option_save (struct cl_target_option *ptr, struct gcc_options *opts)
 {
+  ptr->x_arm_arch_string = opts->x_arm_arch_string;
+  ptr->x_arm_cpu_string = opts->x_arm_cpu_string;
+  ptr->x_arm_tune_string = opts->x_arm_tune_string;
+}
+
+/* Implement TARGET_OPTION_RESTORE.  */
+static void
+arm_option_restore (struct gcc_options *opts, struct cl_target_option *ptr)
+{
+  opts->x_arm_arch_string = ptr->x_arm_arch_string;
+  opts->x_arm_cpu_string = ptr->x_arm_cpu_string;
+  opts->x_arm_tune_string = ptr->x_arm_tune_string;
   arm_configure_build_target (&arm_active_target, ptr, &global_options_set,
 			      false);
 }
@@ -3022,6 +3039,46 @@ arm_initialize_isa (sbitmap isa, const enum isa_feature *isa_bits)
     bitmap_set_bit (isa, *(isa_bits++));
 }
 
+/* List the permitted CPU or architecture names.  If TARGET is a near
+   miss for an entry, print out the suggested alternative.  */
+static void
+arm_print_hint_for_core_or_arch (const char *target,
+				 const struct processors *list)
+{
+  auto_vec<const char*> candidates;
+  for (; list->name != NULL; list++)
+    candidates.safe_push (list->name);
+  char *s;
+  const char *hint = candidates_list_and_hint (target, s, candidates);
+  if (hint)
+    inform (input_location, "valid arguments are: %s; did you mean %qs?",
+	    s, hint);
+  else
+    inform (input_location, "valid arguments are: %s", s);
+
+  XDELETEVEC (s);
+}
+
+/* Parse the base component of a CPU or architecture selection in
+   LIST.  Return a pointer to the entry in the architecture table.
+   OPTNAME is the name of the option we are parsing and can be used if
+   a diagnostic is needed.  */
+static const struct processors *
+arm_parse_arch_cpu_name (const struct processors *list, const char *optname,
+			 const char *target)
+{
+  const struct processors *entry;
+  for (entry = list; entry->name != NULL; entry++)
+    {
+      if (streq (entry->name, target))
+	return entry;
+    }
+
+  error_at (input_location, "unrecognized %s target: %s", optname, target);
+  arm_print_hint_for_core_or_arch (target, list);
+  return NULL;
+}
+
 static sbitmap isa_all_fpubits;
 static sbitmap isa_quirkbits;
 
@@ -3043,17 +3100,20 @@ arm_configure_build_target (struct arm_build_target *target,
   target->core_name = NULL;
   target->arch_name = NULL;
 
-  if (opts_set->x_arm_arch_option)
-    arm_selected_arch = &all_architectures[opts->x_arm_arch_option];
-
-  if (opts_set->x_arm_cpu_option)
+  if (opts_set->x_arm_arch_string)
+    arm_selected_arch = arm_parse_arch_cpu_name (all_architectures,
+						 "-march",
+						 opts->x_arm_arch_string);
+  if (opts_set->x_arm_cpu_string)
     {
-      arm_selected_cpu = &all_cores[(int) opts->x_arm_cpu_option];
-      arm_selected_tune = &all_cores[(int) opts->x_arm_cpu_option];
+      arm_selected_cpu = arm_parse_arch_cpu_name (all_cores, "-mcpu",
+						  opts->x_arm_cpu_string);
+      arm_selected_tune = arm_selected_cpu;
     }
 
-  if (opts_set->x_arm_tune_option)
-    arm_selected_tune = &all_cores[(int) opts->x_arm_tune_option];
+  if (opts_set->x_arm_tune_string)
+    arm_selected_tune = arm_parse_arch_cpu_name (all_cores, "-mtune",
+						 opts->x_arm_tune_string);
 
   if (arm_selected_arch)
     {
@@ -30368,10 +30428,22 @@ arm_option_print (FILE *file, int indent, struct cl_target_option *ptr)
   fpu_name = (ptr->x_arm_fpu_index == TARGET_FPU_auto
 	      ? "auto" : all_fpus[ptr->x_arm_fpu_index].name);
 
-  fprintf (file, "%*sselected arch %s\n", indent, "",
+  fprintf (file, "%*sselected isa %s\n", indent, "",
 	   TARGET_THUMB2_P (flags) ? "thumb2" :
 	   TARGET_THUMB_P (flags) ? "thumb1" :
 	   "arm");
+
+  if (ptr->x_arm_arch_string)
+    fprintf (file, "%*sselected architecture %s\n", indent, "",
+	     ptr->x_arm_arch_string);
+
+  if (ptr->x_arm_cpu_string)
+    fprintf (file, "%*sselected CPU %s\n", indent, "",
+	     ptr->x_arm_cpu_string);
+
+  if (ptr->x_arm_tune_string)
+    fprintf (file, "%*sselected tune %s\n", indent, "",
+	     ptr->x_arm_tune_string);
 
   fprintf (file, "%*sselected fpu %s\n", indent, "", fpu_name);
 }

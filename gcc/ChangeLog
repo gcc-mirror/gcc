@@ -1,3 +1,17 @@
+2017-06-16  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/arm.opt (x_arm_arch_string): New TargetSave option.
+	(x_arm_cpu_string, x_arm_tune_string): Likewise.
+	(march, mcpu, mtune): Convert to string-based options.
+	* config/arm/arm.c (arm_print_hint_for_core_or_arch): New function.
+	(arm_parse_arch_cpu_name): New function.
+	(arm_configure_build_target): Use arm_parse_arch_cpu_name to
+	identify selected architecture or CPU.
+	(arm_option_save): New function.
+	(TARGET_OPTION_SAVE): Redefine.
+	(arm_option_restore): Restore string options.
+	(arm_option_print): Print string options.
+
 2017-06-16  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/80933
