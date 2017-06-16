@@ -192,14 +192,16 @@ change_return_type (tree new_ret, tree fntype)
   return newtype;
 }
 
-/* Build a PARM_DECL with NAME and TYPE, and set DECL_ARG_TYPE
+/* Build a PARM_DECL of FN with NAME and TYPE, and set DECL_ARG_TYPE
    appropriately.  */
 
 tree
-cp_build_parm_decl (tree name, tree type)
+cp_build_parm_decl (tree fn, tree name, tree type)
 {
   tree parm = build_decl (input_location,
 			  PARM_DECL, name, type);
+  DECL_CONTEXT (parm) = fn;
+
   /* DECL_ARG_TYPE is only used by the back end and the back end never
      sees templates.  */
   if (!processing_template_decl)
@@ -208,13 +210,13 @@ cp_build_parm_decl (tree name, tree type)
   return parm;
 }
 
-/* Returns a PARM_DECL for a parameter of the indicated TYPE, with the
+/* Returns a PARM_DECL of FN for a parameter of the indicated TYPE, with the
    indicated NAME.  */
 
 tree
-build_artificial_parm (tree name, tree type)
+build_artificial_parm (tree fn, tree name, tree type)
 {
-  tree parm = cp_build_parm_decl (name, type);
+  tree parm = cp_build_parm_decl (fn, name, type);
   DECL_ARTIFICIAL (parm) = 1;
   /* All our artificial parms are implicitly `const'; they cannot be
      assigned to.  */
@@ -265,7 +267,7 @@ maybe_retrofit_in_chrg (tree fn)
      pass us a pointer to our VTT.  */
   if (CLASSTYPE_VBASECLASSES (DECL_CONTEXT (fn)))
     {
-      parm = build_artificial_parm (vtt_parm_identifier, vtt_parm_type);
+      parm = build_artificial_parm (fn, vtt_parm_identifier, vtt_parm_type);
 
       /* First add it to DECL_ARGUMENTS between 'this' and the real args...  */
       DECL_CHAIN (parm) = parms;
@@ -278,7 +280,7 @@ maybe_retrofit_in_chrg (tree fn)
     }
 
   /* Then add the in-charge parm (before the VTT parm).  */
-  parm = build_artificial_parm (in_charge_identifier, integer_type_node);
+  parm = build_artificial_parm (fn, in_charge_identifier, integer_type_node);
   DECL_CHAIN (parm) = parms;
   parms = parm;
   arg_types = hash_tree_chain (integer_type_node, arg_types);
@@ -3502,12 +3504,10 @@ start_static_storage_duration_function (unsigned count)
 
   /* Create the argument list.  */
   initialize_p_decl = cp_build_parm_decl
-    (get_identifier (INITIALIZE_P_IDENTIFIER), integer_type_node);
-  DECL_CONTEXT (initialize_p_decl) = ssdf_decl;
+    (ssdf_decl, get_identifier (INITIALIZE_P_IDENTIFIER), integer_type_node);
   TREE_USED (initialize_p_decl) = 1;
   priority_decl = cp_build_parm_decl
-    (get_identifier (PRIORITY_IDENTIFIER), integer_type_node);
-  DECL_CONTEXT (priority_decl) = ssdf_decl;
+    (ssdf_decl, get_identifier (PRIORITY_IDENTIFIER), integer_type_node);
   TREE_USED (priority_decl) = 1;
 
   DECL_CHAIN (initialize_p_decl) = priority_decl;

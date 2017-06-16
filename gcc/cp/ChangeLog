@@ -1,5 +1,18 @@
 2017-06-16  Nathan Sidwell  <nathan@acm.org>
 
+	* cp-tree.h (build_this_parm, cp_build_parm_decl,
+	build_artificial_parm): Add FN parm.
+	* decl.c (start_cleanup_fn): Adjust.
+	(build_this_parm): Add FN parm, pass it through.
+	(grokfndecl): Adjust parm building.
+	* decl2.c (cp_build_parm_decl): Add FN parm, set context.
+	(build_artificial_parm): Add FN parm, pass through.
+	(maybe_retrofit_in_chrg): Adjust parm building.
+	(start_static_storage_duration_function): Likwise.
+	* lambda.c (maybe_aadd_lambda_conv_op): Likewise.
+	* method.c (implicitly_declare_fn): Likewise.
+	* parser.c (inject_this_parameter): Likewise.
+
 	Symbol tables are insert only.
 	* cp-tree.h (default_hash_traits <lang_identifier *>): Don't
 	derive from pointer_hash.  Make undeletable.

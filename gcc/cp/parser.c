@@ -20451,7 +20451,7 @@ inject_this_parameter (tree ctype, cp_cv_quals quals)
 	return;
     }
 
-  this_parm = build_this_parm (ctype, quals);
+  this_parm = build_this_parm (NULL_TREE, ctype, quals);
   /* Clear this first to avoid shortcut in cp_build_indirect_ref.  */
   current_class_ptr = NULL_TREE;
   current_class_ref
