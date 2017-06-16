@@ -307,7 +307,7 @@ containers, this works, as an instance of the allocator is constructed
 as part of a container's constructor. However, this assumption is
 implementation-specific, and subject to change. For an example of a
 pool that frees memory, see the following
-    <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gcc.gnu.org/viewcvs/trunk/libstdc++-v3/testsuite/ext/mt_allocator/deallocate_local-6.cc?view=markup">
+    <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gcc.gnu.org/viewcvs/gcc/trunk/libstdc++-v3/testsuite/ext/mt_allocator/deallocate_local-6.cc?view=markup">
     example.</link>
 </para>
 

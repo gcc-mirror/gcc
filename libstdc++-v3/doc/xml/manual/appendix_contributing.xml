@@ -344,7 +344,9 @@ It has subdirectories:
     library.  Support for "make check" and "make check-install" is
     complete, and runs through all the subdirectories here when this
     command is issued from the build directory.  Please note that
-    "make check" requires DejaGNU 1.4 or later to be installed.
+    "make check" requires DejaGnu 1.4 or later to be installed,
+    or for extra <link linkend="test.run.permutations">permutations</link>
+    DejaGnu 1.5.3 or later.
     </listitem>
   </varlistentry>
 </variablelist>
@@ -884,7 +886,7 @@ indicate a place that may require attention for multi-thread safety.
       Examples: <code>_S_max_elements  _S_default_value</code>
 
       Don't use names in the same scope that differ only in the prefix,
-      e.g. _S_top and _M_top. See BADNAMES for a list of forbidden names.
+      e.g. _S_top and _M_top. See <link linkend="coding_style.bad_identifiers">BADNAMES</link> for a list of forbidden names.
       (The most tempting of these seem to be and "_T" and "__sz".)
 
       Names must never have "__" internally; it would confuse name

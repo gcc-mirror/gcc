@@ -1,5 +1,12 @@
 2017-06-16  Jonathan Wakely  <jwakely@redhat.com>
 
+	* doc/xml/manual/appendix_contributing.xml: Link to the list of bad
+	names, and link to the test docs and note higher DejaGnu version
+	requirement.
+	* doc/xml/manual/allocator.xml: Fix ViewCVS URLs.
+	* doc/xml/manual/mt_allocator.xml: Likewise.
+	* doc/html/*: Regenerate.
+
 	* include/bits/locale_conv.h (wbuffer_convert::_M_put): Add missing
 	return statement.
 	* testsuite/23_containers/map/modifiers/insert_or_assign/1.cc: Add
