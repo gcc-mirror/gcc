@@ -1,5 +1,24 @@
 2017-06-16  Nathan Sidwell  <nathan@acm.org>
 
+	Don't defer noexcept_deferred_spec.
+	* cp-tree.h (unevaluated_noexcept_spec): Don't declare.
+	* decl.c (cxx_init_decl_processing): Initialize
+	noexcept_deferred_spec.
+	* except.c (unevaluated_noexcept_spec): Delete.
+	* class.c (deduce_noexcept_on_destructor): Use
+	noexcept_deferred_spec directly.
+	* method.c (implicitly_declare_fn): Likewise.
+
+	Make keyed_classes a vector.
+	* cp-tree.h (CPTI_KEYED_CLASSES, keyed_classes): Delete.
+	(keyed_classes): Declare as vector.
+	* decl.c (keyed_classes): Define.
+	(cxx_init_decl_processing): Allocate it.
+	(record_key_method_defined): Use vec_safe_push.
+	* class.c (finish_struct_1): Likewise.
+	* pt.c (instantiate_class_template_1): Likewise.
+	* decl2.c (c_parse_final_cleanups): Reverse iterate keyed_classes.
+
 	Make rtti lazier
 	* rtti.c (enum tinfo_kind): Add TK_DERIVED_TYPES,
 	TK_VMI_CLASS_TYPES, TK_MAX.  Delete TK_FIXED.
