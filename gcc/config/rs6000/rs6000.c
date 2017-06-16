@@ -36786,7 +36786,7 @@ altivec_expand_vec_perm_const (rtx operands[4])
       (BYTES_BIG_ENDIAN ? CODE_FOR_altivec_vmrglw_direct
        : CODE_FOR_altivec_vmrghw_direct),
       {  8,  9, 10, 11, 24, 25, 26, 27, 12, 13, 14, 15, 28, 29, 30, 31 } },
-    { OPTION_MASK_P8_VECTOR, CODE_FOR_p8_vmrgew,
+    { OPTION_MASK_P8_VECTOR, CODE_FOR_p8_vmrgew_v4si,
       {  0,  1,  2,  3, 16, 17, 18, 19,  8,  9, 10, 11, 24, 25, 26, 27 } },
     { OPTION_MASK_P8_VECTOR, CODE_FOR_p8_vmrgow,
       {  4,  5,  6,  7, 20, 21, 22, 23, 12, 13, 14, 15, 28, 29, 30, 31 } }
@@ -42373,6 +42373,49 @@ rs6000_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
 				       fenv_update_mtfsf);
 
   *update = build2 (COMPOUND_EXPR, void_type_node, update_mffs, update_mtfsf);
+}
+
+void
+rs6000_generate_float2_code (bool signed_convert, rtx dst, rtx src1, rtx src2)
+{
+  rtx rtx_tmp0, rtx_tmp1, rtx_tmp2, rtx_tmp3;
+
+  rtx_tmp0 = gen_reg_rtx (V2DImode);
+  rtx_tmp1 = gen_reg_rtx (V2DImode);
+
+  /* The destination of the vmrgew instruction layout is:
+     rtx_tmp2[0] rtx_tmp3[0] rtx_tmp2[1] rtx_tmp3[0].
+     Setup rtx_tmp0 and rtx_tmp1 to ensure the order of the elements after the
+     vmrgew instruction will be correct.  */
+  if (VECTOR_ELT_ORDER_BIG)
+    {
+      emit_insn (gen_vsx_xxpermdi_v2di_be (rtx_tmp0, src1, src2, GEN_INT (0)));
+      emit_insn (gen_vsx_xxpermdi_v2di_be (rtx_tmp1, src1, src2, GEN_INT (3)));
+    }
+  else
+    {
+      emit_insn (gen_vsx_xxpermdi_v2di (rtx_tmp0, src1, src2, GEN_INT (3)));
+      emit_insn (gen_vsx_xxpermdi_v2di (rtx_tmp1, src1, src2, GEN_INT (0)));
+    }
+
+  rtx_tmp2 = gen_reg_rtx (V4SFmode);
+  rtx_tmp3 = gen_reg_rtx (V4SFmode);
+
+  if (signed_convert)
+    {
+      emit_insn (gen_vsx_xvcvsxdsp (rtx_tmp2, rtx_tmp0));
+      emit_insn (gen_vsx_xvcvsxdsp (rtx_tmp3, rtx_tmp1));
+    }
+  else
+    {
+       emit_insn (gen_vsx_xvcvuxdsp (rtx_tmp2, rtx_tmp0));
+       emit_insn (gen_vsx_xvcvuxdsp (rtx_tmp3, rtx_tmp1));
+    }
+
+  if (VECTOR_ELT_ORDER_BIG)
+    emit_insn (gen_p8_vmrgew_v4sf (dst, rtx_tmp2, rtx_tmp3));
+  else
+    emit_insn (gen_p8_vmrgew_v4sf (dst, rtx_tmp3, rtx_tmp2));
 }
 
 /* Implement the TARGET_OPTAB_SUPPORTED_P hook.  */

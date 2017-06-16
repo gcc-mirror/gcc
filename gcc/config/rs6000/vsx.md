@@ -331,6 +331,14 @@
    UNSPEC_VSX_CVUXDSP
    UNSPEC_VSX_CVSPSXDS
    UNSPEC_VSX_CVSPUXDS
+   UNSPEC_VSX_CVSXWSP
+   UNSPEC_VSX_CVUXWSP
+   UNSPEC_VSX_FLOAT2
+   UNSPEC_VSX_UNS_FLOAT2
+   UNSPEC_VSX_FLOATE
+   UNSPEC_VSX_UNS_FLOATE
+   UNSPEC_VSX_FLOATO
+   UNSPEC_VSX_UNS_FLOATO
    UNSPEC_VSX_TDIV
    UNSPEC_VSX_TSQRT
    UNSPEC_VSX_SET
@@ -1975,6 +1983,156 @@
   "VECTOR_UNIT_VSX_P (V2DFmode)"
   "xvcvspuxds %x0,%x1"
   [(set_attr "type" "vecdouble")])
+
+(define_insn "vsx_xvcvsxwsp"
+  [(set (match_operand:V4SF 0 "vsx_register_operand" "=wa")
+	(unspec:V4SF [(match_operand:V4SI 1 "vsx_register_operand" "wa")]
+		     UNSPEC_VSX_CVSXWSP))]
+  "VECTOR_UNIT_VSX_P (V4SFmode)"
+  "xvcvsxwsp %x0,%x1"
+  [(set_attr "type" "vecfloat")])
+
+(define_insn "vsx_xvcvuxwsp"
+  [(set (match_operand:V4SF 0 "vsx_register_operand" "=wa")
+	(unspec:V4SF[(match_operand:V4SI 1 "vsx_register_operand" "wa")]
+		    UNSPEC_VSX_CVUXWSP))]
+  "VECTOR_UNIT_VSX_P (V4SFmode)"
+  "xvcvuxwsp %x0,%x1"
+  [(set_attr "type" "vecfloat")])
+
+;; Generate float2
+;; convert two long long signed ints to float
+(define_expand "float2_v2di"
+  [(use (match_operand:V4SF 0 "register_operand" "=wa"))
+   (use (match_operand:V2DI 1 "register_operand" "wa"))
+   (use (match_operand:V2DI 2 "register_operand" "wa"))]
+ "VECTOR_UNIT_VSX_P (V4SFmode)"
+{
+  rtx rtx_src1, rtx_src2, rtx_dst;
+
+  rtx_dst = operands[0];
+  rtx_src1 = operands[1];
+  rtx_src2 = operands[2];
+
+  rs6000_generate_float2_code (true, rtx_dst, rtx_src1, rtx_src2);
+  DONE;
+})
+
+;; Generate uns_float2
+;; convert two long long unsigned ints to float
+(define_expand "uns_float2_v2di"
+  [(use (match_operand:V4SF 0 "register_operand" "=wa"))
+   (use (match_operand:V2DI 1 "register_operand" "wa"))
+   (use (match_operand:V2DI 2 "register_operand" "wa"))]
+ "VECTOR_UNIT_VSX_P (V4SFmode)"
+{
+  rtx rtx_src1, rtx_src2, rtx_dst;
+
+  rtx_dst = operands[0];
+  rtx_src1 = operands[1];
+  rtx_src2 = operands[2];
+
+  rs6000_generate_float2_code (true, rtx_dst, rtx_src1, rtx_src2);
+  DONE;
+})
+
+;; Generate floate
+;; convert  double or long long signed to float
+;; (Only even words are valid, BE numbering)
+(define_expand "floate<mode>"
+  [(use (match_operand:V4SF 0 "register_operand" "=wa"))
+   (use (match_operand:VSX_D 1 "register_operand" "wa"))]
+  "VECTOR_UNIT_VSX_P (V4SFmode)"
+{
+  if (VECTOR_ELT_ORDER_BIG)
+    {
+      /* Shift left one word to put even word correct location */
+      rtx rtx_tmp;
+      rtx rtx_val = GEN_INT (4);
+
+      rtx_tmp = gen_reg_rtx (V4SFmode);
+      emit_insn (gen_vsx_xvcv<VF_sxddp>sp (rtx_tmp, operands[1]));
+      emit_insn (gen_altivec_vsldoi_v4sf (operands[0],
+		 rtx_tmp, rtx_tmp, rtx_val));
+    }
+  else
+    emit_insn (gen_vsx_xvcv<VFC_inst>sp (operands[0], operands[1]));
+
+  DONE;
+})
+
+;; Generate uns_floate
+;; convert long long unsigned to float
+;; (Only even words are valid, BE numbering)
+(define_expand "unsfloatev2di"
+  [(use (match_operand:V4SF 0 "register_operand" "=wa"))
+   (use (match_operand:V2DI 1 "register_operand" "wa"))]
+  "VECTOR_UNIT_VSX_P (V4SFmode)"
+{
+  if (VECTOR_ELT_ORDER_BIG)
+    {
+      /* Shift left one word to put even word correct location */
+      rtx rtx_tmp;
+      rtx rtx_val = GEN_INT (4);
+
+      rtx_tmp = gen_reg_rtx (V4SFmode);
+      emit_insn (gen_vsx_xvcvuxdsp (rtx_tmp, operands[1]));
+      emit_insn (gen_altivec_vsldoi_v4sf (operands[0],
+		 rtx_tmp, rtx_tmp, rtx_val));
+    }
+  else
+    emit_insn (gen_vsx_xvcvuxdsp (operands[0], operands[1]));
+
+  DONE;
+})
+
+;; Generate floato
+;; convert double or long long signed to float
+;; Only odd words are valid, BE numbering)
+(define_expand "floato<mode>"
+  [(use (match_operand:V4SF 0 "register_operand" "=wa"))
+   (use (match_operand:VSX_D 1 "register_operand" "wa"))]
+  "VECTOR_UNIT_VSX_P (V4SFmode)"
+{
+  if (VECTOR_ELT_ORDER_BIG)
+    emit_insn (gen_vsx_xvcv<VFC_inst>sp (operands[0], operands[1]));
+  else
+    {
+      /* Shift left one word to put odd word correct location */
+      rtx rtx_tmp;
+      rtx rtx_val = GEN_INT (4);
+
+      rtx_tmp = gen_reg_rtx (V4SFmode);
+      emit_insn (gen_vsx_xvcv<VFC_inst>sp (rtx_tmp, operands[1]));
+      emit_insn (gen_altivec_vsldoi_v4sf (operands[0],
+		 rtx_tmp, rtx_tmp, rtx_val));
+    }
+  DONE;
+})
+
+;; Generate uns_floato
+;; convert long long unsigned to float
+;; (Only odd words are valid, BE numbering)
+(define_expand "unsfloatov2di"
+ [(use (match_operand:V4SF 0 "register_operand" "=wa"))
+  (use (match_operand:V2DI 1 "register_operand" "wa"))]
+ "VECTOR_UNIT_VSX_P (V4SFmode)"
+{
+  if (VECTOR_ELT_ORDER_BIG)
+    emit_insn (gen_vsx_xvcvuxdsp (operands[0], operands[1]));
+  else
+    {
+      /* Shift left one word to put odd word correct location */
+      rtx rtx_tmp;
+      rtx rtx_val = GEN_INT (4);
+
+      rtx_tmp = gen_reg_rtx (V4SFmode);
+      emit_insn (gen_vsx_xvcvuxdsp (rtx_tmp, operands[1]));
+      emit_insn (gen_altivec_vsldoi_v4sf (operands[0],
+		 rtx_tmp, rtx_tmp, rtx_val));
+    }
+  DONE;
+})
 
 ;; Only optimize (float (fix x)) -> frz if we are in fast-math mode, since
 ;; since the xvrdpiz instruction does not truncate the value if the floating

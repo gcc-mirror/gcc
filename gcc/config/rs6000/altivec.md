@@ -207,6 +207,9 @@
 ;; versus floating point
 (define_mode_attr VS_sxwsp [(V4SI "sxw") (V4SF "sp")])
 
+;; Mode attribute for vector floate and floato conversions
+(define_mode_attr VF_sxddp [(V2DI "sxd") (V2DF "dp")])
+
 ;; Specific iterator for parity which does not have a byte/half-word form, but
 ;; does have a quad word form
 (define_mode_iterator VParity [V4SI
@@ -1316,13 +1319,13 @@
 }
   [(set_attr "type" "vecperm")])
 
-;; Power8 vector merge even/odd
-(define_insn "p8_vmrgew"
-  [(set (match_operand:V4SI 0 "register_operand" "=v")
-	(vec_select:V4SI
-	  (vec_concat:V8SI
-	    (match_operand:V4SI 1 "register_operand" "v")
-	    (match_operand:V4SI 2 "register_operand" "v"))
+;; Power8 vector merge two V4SF/V4SI even words to V4SF
+(define_insn "p8_vmrgew_<mode>"
+  [(set (match_operand:VSX_W 0 "register_operand" "=v")
+	(vec_select:VSX_W
+	  (vec_concat:<VS_double>
+	    (match_operand:VSX_W 1 "register_operand" "v")
+	    (match_operand:VSX_W 2 "register_operand" "v"))
 	  (parallel [(const_int 0) (const_int 4)
 		     (const_int 2) (const_int 6)])))]
   "TARGET_P8_VECTOR"

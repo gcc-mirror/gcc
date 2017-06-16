@@ -5,7 +5,36 @@
 
 #include <altivec.h> // vector
 
+#define ALL  1
+#define EVEN 2
+#define ODD  3
+
 void abort (void);
+
+void test_result_sp(int check, vector float vec_result, vector float vec_expected)
+{
+	int i;
+	for(i = 0; i<4; i++) {
+
+	switch (check) {
+	case ALL:
+		break;
+	case EVEN:
+		if (i%2 == 0)
+			break;
+		else
+			continue;
+	case ODD:
+		if (i%2 != 0)
+			break;
+		else
+			continue;
+	}
+
+	if (vec_result[i] != vec_expected[i])
+		abort();
+	}
+}
 
 void test_result_dp(vector double vec_result, vector double vec_expected)
 {
@@ -21,11 +50,17 @@ int main()
 	int i;
 	vector unsigned int vec_unint;
 	vector signed int vec_int;
+	vector long long int vec_ll_int0, vec_ll_int1;
+	vector long long unsigned int vec_ll_uns_int0, vec_ll_uns_int1;
 	vector float  vec_flt, vec_flt_result, vec_flt_expected;
 	vector double vec_dble0, vec_dble1, vec_dble_result, vec_dble_expected;
 
 	vec_int = (vector signed int){ -1, 3, -5, 1234567 };
+	vec_ll_int0 = (vector long long int){ -12, -12345678901234 };
+	vec_ll_int1 = (vector long long int){ 12, 9876543210 };
 	vec_unint = (vector unsigned int){ 9, 11, 15, 2468013579 };
+	vec_ll_uns_int0 = (vector unsigned long long int){ 102, 9753108642 };
+	vec_ll_uns_int1 = (vector unsigned long long int){ 23, 29 };
 	vec_flt = (vector float){ -21., 3.5, -53., 78. };
 	vec_dble0 = (vector double){ 34.0, 97.0 };
 	vec_dble1 = (vector double){ 214.0, -5.5 };
@@ -34,7 +69,7 @@ int main()
 	vec_dble_expected = (vector double){-1.000000, -5.000000};
 	vec_dble_result = vec_doublee (vec_int);
 	test_result_dp(vec_dble_result, vec_dble_expected);
-	
+
 	vec_dble_expected = (vector double){9.000000, 15.000000};
 	vec_dble_result = vec_doublee (vec_unint);
 	test_result_dp(vec_dble_result, vec_dble_expected);
@@ -48,7 +83,7 @@ int main()
 	vec_dble_expected = (vector double){3.000000, 1234567.000000};
 	vec_dble_result = vec_doubleo (vec_int);
 	test_result_dp(vec_dble_result, vec_dble_expected);
-   
+
 	vec_dble_expected = (vector double){11.000000, 2468013579.000000};
 	vec_dble_result = vec_doubleo (vec_unint);
 	test_result_dp(vec_dble_result, vec_dble_expected);
@@ -62,7 +97,7 @@ int main()
 	vec_dble_expected = (vector double){-5.000000, 1234567.000000};
 	vec_dble_result = vec_doublel (vec_int);
 	test_result_dp(vec_dble_result, vec_dble_expected);
-   
+
 	vec_dble_expected = (vector double){15.000000, 2468013579.000000};
 	vec_dble_result = vec_doublel (vec_unint);
 	test_result_dp(vec_dble_result, vec_dble_expected);
@@ -71,14 +106,61 @@ int main()
 	vec_dble_result = vec_doublel (vec_flt);
 	test_result_dp(vec_dble_result, vec_dble_expected);
 
-   
+
 	/* conversion of words 2 and 3 */
 	vec_dble_expected = (vector double){-1.000000, 3.000000};
 	vec_dble_result = vec_doubleh (vec_int);
 	test_result_dp(vec_dble_result, vec_dble_expected);
-   
+
 	vec_dble_expected = (vector double){9.000000, 11.000000};
 	vec_dble_result = vec_doubleh (vec_unint);
 	test_result_dp(vec_dble_result, vec_dble_expected);
 
+	vec_dble_expected = (vector double){-21.000000, 3.500000};
+	vec_dble_result = vec_doubleh (vec_flt);
+	test_result_dp(vec_dble_result, vec_dble_expected);
+
+	/* conversion of integer vector to single precision float vector */
+	vec_flt_expected = (vector float){-1.00, 3.00, -5.00, 1234567.00};
+	vec_flt_result = vec_float (vec_int);
+	test_result_sp(ALL, vec_flt_result, vec_flt_expected);
+
+	vec_flt_expected = (vector float){9.00, 11.00, 15.00, 2468013579.0};
+	vec_flt_result = vec_float (vec_unint);
+	test_result_sp(ALL, vec_flt_result, vec_flt_expected);
+
+	/* conversion of two double precision vectors to single precision vector */
+	vec_flt_expected = (vector float){-12.00, -12345678901234.00, 12.00, 9876543210.00};
+	vec_flt_result = vec_float2 (vec_ll_int0, vec_ll_int1);
+	test_result_sp(ALL, vec_flt_result, vec_flt_expected);
+
+	vec_flt_expected = (vector float){102.00, 9753108642.00, 23.00, 29.00};
+	vec_flt_result = vec_float2 (vec_ll_uns_int0, vec_ll_uns_int1);
+	test_result_sp(ALL, vec_flt_result, vec_flt_expected);
+
+	/* conversion of even words in double precision vector to single precision vector */
+	vec_flt_expected = (vector float){-12.00, 00.00, -12345678901234.00, 0.00};
+	vec_flt_result = vec_floate (vec_ll_int0);
+	test_result_sp(EVEN, vec_flt_result, vec_flt_expected);
+
+	vec_flt_expected = (vector float){102.00, 0.00, 9753108642.00, 0.00};
+	vec_flt_result = vec_floate (vec_ll_uns_int0);
+	test_result_sp(EVEN, vec_flt_result, vec_flt_expected);
+
+	vec_flt_expected = (vector float){34.00, 0.00, 97.00, 0.00};
+	vec_flt_result = vec_floate (vec_dble0);
+	test_result_sp(EVEN, vec_flt_result, vec_flt_expected);
+
+	/* conversion of odd words in double precision vector to single precision vector */
+	vec_flt_expected = (vector float){0.00, -12.00, 00.00, -12345678901234.00};
+	vec_flt_result = vec_floato (vec_ll_int0);
+	test_result_sp(ODD, vec_flt_result, vec_flt_expected);
+
+	vec_flt_expected = (vector float){0.00, 102.00, 0.00, 9753108642.00};
+	vec_flt_result = vec_floato (vec_ll_uns_int0);
+	test_result_sp(ODD, vec_flt_result, vec_flt_expected);
+
+	vec_flt_expected = (vector float){0.00, 34.00, 0.00, 97.00};
+	vec_flt_result = vec_floato (vec_dble0);
+	test_result_sp(ODD, vec_flt_result, vec_flt_expected);
 }
