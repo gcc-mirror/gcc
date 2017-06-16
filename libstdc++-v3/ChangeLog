@@ -1,3 +1,8 @@
+2017-06-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/locale_conv.h (wbuffer_convert::_M_put): Add missing
+	return statement.
+
 2017-06-07  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/81002
