@@ -1,3 +1,30 @@
+2017-06-16  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/bits/stl_bvector.h
+	(__fill_bvector(_Bit_type*, unsigned int, unsigned int, bool)):
+	Change signature.
+	(std::fill(_Bit_iterator, _Bit_iterator, bool)): Adapt.
+	(_Bvector_impl_data): New.
+	(_Bvector_impl): Inherits from latter.
+	(_Bvector_impl(_Bit_alloc_type&&)): Delete.
+	(_Bvector_impl(_Bvector_impl&&)): New, default.
+	(_Bvector_base()): Default.
+	(_Bvector_base(_Bvector_base&&)): Default.
+	(_Bvector_base::_M_move_data(_Bvector_base&&)): New.
+	(vector(vector&&, const allocator_type&)): Use latter.
+	(vector<bool>::operator=(vector&&)): Likewise.
+	(vector<bool>::vector()): Default.
+	(vector<bool>::vector(vector&&)): Default.
+	(vector<bool>::assign(_InputIterator, _InputIterator)): Use
+	_M_assign_aux.
+	(vector<bool>::assign(initializer_list<bool>)): Likewise.
+	(vector<bool>::_M_initialize_value(bool)): New.
+	(vector<bool>(size_type, const bool&, const allocator_type&)): Use
+	latter.
+	(vector<bool>::_M_initialize_dispatch(_Integer, _Integer, __true_type)):
+	Likewise.
+	(vector<bool>::_M_fill_assign(size_t, bool)): Likewise.
+
 2017-06-15  François Dumont  <fdumont@gcc.gnu.org>
 
 	* src/c++98/tree.cc  [!_GLIBCXX_INLINE_VERSION]
