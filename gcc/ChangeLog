@@ -1,5 +1,10 @@
 2017-06-16  Richard Earnshaw  <rearnsha@arm.com>
 
+	* Makefile.in (OBJS): Move sbitmap.o from here ...
+	(OBJS-libcommon): ... to here.
+
+2017-06-16  Richard Earnshaw  <rearnsha@arm.com>
+
 	* config/arm/arm-isa.h (ISA_ALL_FPU_INTERNAL): Renamed from ISA_ALL_FPU.
 	(ISA_ALL_CRYPTO): New macro.
 	(ISA_ALL_SIMD): New macro
