@@ -1,22 +1,37 @@
 # Custom RTEMS multilibs for ARM
 
-MULTILIB_OPTIONS  = mbig-endian mthumb march=armv6-m/march=armv7-a/march=armv7-r/march=armv7-m/mcpu=cortex-m7 mfpu=neon/mfpu=vfp/mfpu=vfpv3-d16/mfpu=fpv4-sp-d16/mfpu=fpv5-d16 mfloat-abi=hard
-MULTILIB_DIRNAMES = eb thumb armv6-m armv7-a armv7-r armv7-m cortex-m7 neon vfp vfpv3-d16 fpv4-sp-d16 fpv5-d16 hard
+# Reset all MULTILIB variables
+
+MULTILIB_OPTIONS	=
+MULTILIB_DIRNAMES	=
+MULTILIB_EXCEPTIONS	=
+MULTILIB_REUSE		=
+MULTILIB_MATCHES	=
+MULTILIB_REQUIRED	=
 
 # Enumeration of multilibs
 
-MULTILIB_EXCEPTIONS =
+MULTILIB_OPTIONS	+= mbig-endian
+MULTILIB_DIRNAMES	+= eb
 
-MULTILIB_REQUIRED =
-MULTILIB_REQUIRED += mbig-endian/mthumb/march=armv7-r/mfpu=vfpv3-d16/mfloat-abi=hard
-MULTILIB_REQUIRED += mbig-endian/mthumb/march=armv7-r
-MULTILIB_REQUIRED += mfpu=vfp/mfloat-abi=hard
-MULTILIB_REQUIRED += mthumb/march=armv6-m
-MULTILIB_REQUIRED += mthumb/march=armv7-a/mfpu=neon/mfloat-abi=hard
-MULTILIB_REQUIRED += mthumb/march=armv7-a
-MULTILIB_REQUIRED += mthumb/march=armv7-r/mfpu=vfpv3-d16/mfloat-abi=hard
-MULTILIB_REQUIRED += mthumb/march=armv7-r
-MULTILIB_REQUIRED += mthumb/march=armv7-m/mfpu=fpv4-sp-d16/mfloat-abi=hard
-MULTILIB_REQUIRED += mthumb/mcpu=cortex-m7/mfpu=fpv5-d16/mfloat-abi=hard
-MULTILIB_REQUIRED += mthumb/march=armv7-m
-MULTILIB_REQUIRED += mthumb
+MULTILIB_OPTIONS	+= mthumb
+MULTILIB_DIRNAMES	+= thumb
+
+MULTILIB_OPTIONS	+= march=armv5te+fp/march=armv6-m/march=armv7-a/march=armv7-a+simd/march=armv7-r/march=armv7-r+fp/march=armv7-m/march=armv7e-m+fp/march=armv7e-m+fp.dp
+MULTILIB_DIRNAMES	+= armv5te+fp       armv6-m       armv7-a       armv7-a+simd       armv7-r       armv7-r+fp       armv7-m       armv7e-m+fp        armv7e-m+fp.dp
+
+MULTILIB_OPTIONS	+= mfloat-abi=hard
+MULTILIB_DIRNAMES	+= hard
+
+MULTILIB_REQUIRED	+= mbig-endian/mthumb/march=armv7-r+fp/mfloat-abi=hard
+MULTILIB_REQUIRED	+= mbig-endian/mthumb/march=armv7-r
+MULTILIB_REQUIRED	+= march=armv5te+fp/mfloat-abi=hard
+MULTILIB_REQUIRED	+= mthumb/march=armv6-m
+MULTILIB_REQUIRED	+= mthumb/march=armv7-a+simd/mfloat-abi=hard
+MULTILIB_REQUIRED	+= mthumb/march=armv7-a
+MULTILIB_REQUIRED	+= mthumb/march=armv7-r+fp/mfloat-abi=hard
+MULTILIB_REQUIRED	+= mthumb/march=armv7-r
+MULTILIB_REQUIRED	+= mthumb/march=armv7e-m+fp/mfloat-abi=hard
+MULTILIB_REQUIRED	+= mthumb/march=armv7e-m+fp.dp/mfloat-abi=hard
+MULTILIB_REQUIRED	+= mthumb/march=armv7-m
+MULTILIB_REQUIRED	+= mthumb

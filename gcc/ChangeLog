@@ -1,5 +1,9 @@
 2017-06-16  Richard Earnshaw  <rearnsha@arm.com>
 
+	* config/arm/t-rtems: Rewrite for new option framework.
+
+2017-06-16  Richard Earnshaw  <rearnsha@arm.com>
+
 	* config/arm/t-aprofile (v7_a_nosimd_variants, v7_a_simd_variants)
 	(v7ve_nosimd_variatns, v7ve_vfpv3_simd_variants)
 	(v7ve_vfpv4_simd_variants, v8_a_nosimd_variants, v8_a_simd_variants)
