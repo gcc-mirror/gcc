@@ -1,3 +1,8 @@
+2017-06-16  Richard Biener  <rguenther@suse.de>
+
+	* tree-switch-conversion.c (emit_case_bit_tests): Adjust
+	initializer to workaround ICE in host GCC 4.8.
+
 2017-06-16  Jan Hubicka  <hubicka@ucw.cz>
 
 	* ipa-inline-transform.c (update_noncloned_frequencies): Update also

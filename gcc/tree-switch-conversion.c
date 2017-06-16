@@ -268,7 +268,7 @@ static void
 emit_case_bit_tests (gswitch *swtch, tree index_expr,
 		     tree minval, tree range, tree maxval)
 {
-  struct case_bit_test test[MAX_CASE_BIT_TESTS] = { };
+  struct case_bit_test test[MAX_CASE_BIT_TESTS] = { {} };
   unsigned int i, j, k;
   unsigned int count;
 
