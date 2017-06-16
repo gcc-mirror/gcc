@@ -1,5 +1,18 @@
 2017-06-16  Richard Earnshaw  <rearnsha@arm.com>
 
+	* common/config/arm/arm-common.c: Define INCLUDE_LIST.
+	(configargs.h): Include it.
+	(arm_print_hint_for_fpu_option): New function.
+	(arm_parse_fpu_option): New function.
+	(candidate_extension): New class.
+	(arm_canon_for_multilib): New function.
+	* config/arm/arm.h (CANON_ARCH_SPEC_FUNCTION): New macro.
+	(EXTRA_SPEC_FUNCTIONS): Add CANON_ARCH_SPEC_FUNCTION.
+	(ARCH_CANONICAL_SPECS): New macro.
+	(DRIVER_SELF_SPECS): Add ARCH_CANONICAL_SPECS.
+
+2017-06-16  Richard Earnshaw  <rearnsha@arm.com>
+
 	* config.gcc (arm*-*-*): Ensure both target_cpu_cname and with_cpu
 	are set after handling multilib fragments.  Set target_cpu_default2
 	from with_cpu.
