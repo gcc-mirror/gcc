@@ -1,5 +1,10 @@
 2017-06-16  Richard Earnshaw  <rearnsha@arm.com>
 
+	* doc/invoke.texi (ARM Options, -march=): Document new syntax and
+	permitted extensions.
+
+2017-06-16  Richard Earnshaw  <rearnsha@arm.com>
+
 	* config/arm/arm-cpus.in (armv7): Add extension +nofp.
 	(armv7-r): Add aliases vfpv3xd and vfpv3-d16.
 	(armv8-m.main): Add option +nodsp.
