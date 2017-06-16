@@ -3861,6 +3861,8 @@ case "${target}" in
 				TM_MULTILIB_CONFIG="$with_multilib_list"
 			fi
 		fi
+		target_cpu_cname=${target_cpu_cname:-arm6}
+		with_cpu=${with_cpu:-$target_cpu_cname}
 		;;
 
 	fr*-*-*linux*)
@@ -4494,11 +4496,12 @@ case ${target} in
 		;;
 
 	arm*-*-*)
-		if test x$target_cpu_cname = x
+		if test x$with_cpu = x
 		then
-			target_cpu_default2="\\\"arm6\\\""
+			echo "Don't know the target cpu" 1>&2
+			exit 1
 		else
-			target_cpu_default2="\\\"$target_cpu_cname\\\""
+			target_cpu_default2="\\\"$with_cpu\\\""
 		fi
 		;;
 

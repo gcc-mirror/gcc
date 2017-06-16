@@ -1,5 +1,11 @@
 2017-06-16  Richard Earnshaw  <rearnsha@arm.com>
 
+	* config.gcc (arm*-*-*): Ensure both target_cpu_cname and with_cpu
+	are set after handling multilib fragments.  Set target_cpu_default2
+	from with_cpu.
+
+2017-06-16  Richard Earnshaw  <rearnsha@arm.com>
+
 	* config.gcc (arm*-*-fucshia*): Set target_cpu_cname to the real
 	cpu name.
 	(arm*-*-*): Set target_cpu_default2 to a quoted string.
