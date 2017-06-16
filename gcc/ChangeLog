@@ -1,5 +1,11 @@
 2017-06-16  Jan Hubicka  <hubicka@ucw.cz>
 
+	* tree-ssa-loop-ivcanon.c (remove_exits_and_undefined_stmts): Update
+	profile.
+	(try_unroll_loop_completely): Fix reporting.
+
+2017-06-16  Jan Hubicka  <hubicka@ucw.cz>
+
 	* tree-ssa-tail-merge.c (replace_block_by): Fix profile updating.
 
 2017-06-16  James Greenhalgh  <james.greenhalgh@arm.com>
