@@ -582,8 +582,8 @@ distclean-generic:
 maintainer-clean-generic:
 	@echo "This command is intended for maintainers to use"
 	@echo "it deletes files that may require special tools to rebuild."
-@NATIVE_FALSE@install-exec-local:
 @NATIVE_FALSE@uninstall-local:
+@NATIVE_FALSE@install-exec-local:
 clean: clean-am
 
 clean-am: clean-binPROGRAMS clean-generic clean-noinstPROGRAMS \
@@ -737,7 +737,7 @@ s-zdefaultcc: Makefile
 @NATIVE_TRUE@	$(CHECK_ENV) \
 @NATIVE_TRUE@	GOPATH=`cd check-go-dir && $(PWD_COMMAND)`; \
 @NATIVE_TRUE@	export GOPATH; \
-@NATIVE_TRUE@	(cd check-go-dir/src/cmd/go && $(abs_builddir)/go$(EXEEXT) test -test.short -test.v) >& cmd_go-testlog || true
+@NATIVE_TRUE@	(cd check-go-dir/src/cmd/go && $(abs_builddir)/go$(EXEEXT) test -test.short -test.v) > cmd_go-testlog 2>&1 || true
 @NATIVE_TRUE@	grep '^--- ' cmd_go-testlog | sed -e 's/^--- \(.*\) ([^)]*)$$/\1/'
 
 # The check targets runs the tests and assembles the output files.
