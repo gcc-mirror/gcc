@@ -1212,7 +1212,6 @@ canonicalize_induction_variables (void)
   bool irred_invalidated = false;
   bitmap loop_closed_ssa_invalidated = BITMAP_ALLOC (NULL);
 
-  free_numbers_of_iterations_estimates (cfun);
   estimate_numbers_of_iterations ();
 
   FOR_EACH_LOOP (loop, LI_FROM_INNERMOST)
@@ -1230,6 +1229,7 @@ canonicalize_induction_variables (void)
 
   /* Clean up the information about numbers of iterations, since brute force
      evaluation could reveal new information.  */
+  free_numbers_of_iterations_estimates (cfun);
   scev_reset ();
 
   if (!bitmap_empty_p (loop_closed_ssa_invalidated))
