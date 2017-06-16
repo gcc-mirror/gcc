@@ -547,11 +547,11 @@ static const cpu_prefetch_tune exynosm1_prefetch_tune =
 
 static const cpu_prefetch_tune qdf24xx_prefetch_tune =
 {
-  0,			/* num_slots  */
-  -1,			/* l1_cache_size  */
+  4,			/* num_slots  */
+  32,			/* l1_cache_size  */
   64,			/* l1_cache_line_size  */
-  -1,			/* l2_cache_size  */
-  -1			/* default_opt_level  */
+  1024,			/* l2_cache_size  */
+  3			/* default_opt_level  */
 };
 
 static const cpu_prefetch_tune thunderx2t99_prefetch_tune =
