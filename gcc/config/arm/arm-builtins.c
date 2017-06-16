@@ -1876,7 +1876,7 @@ arm_init_builtins (void)
      arm_init_neon_builtins which uses it.  */
   arm_init_fp16_builtins ();
 
-  if (TARGET_HARD_FLOAT)
+  if (TARGET_MAYBE_HARD_FLOAT)
     {
       arm_init_neon_builtins ();
       arm_init_vfp_builtins ();
@@ -1885,7 +1885,7 @@ arm_init_builtins (void)
 
   arm_init_acle_builtins ();
 
-  if (TARGET_HARD_FLOAT)
+  if (TARGET_MAYBE_HARD_FLOAT)
     {
       tree ftype_set_fpscr
 	= build_function_type_list (void_type_node, unsigned_type_node, NULL);
