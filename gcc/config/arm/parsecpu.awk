@@ -102,6 +102,17 @@ function gen_headers () {
     print "  TARGET_CPU_arm_none"
     print "};\n"
 
+    print "enum arch_type"
+    print "{"
+
+    narchs = split (arch_list, archs)
+
+    for (n = 1; n <= narchs; n++) {
+	print "  TARGET_ARCH_"arch_cnames[archs[n]]","
+    }
+    print "  TARGET_ARCH_arm_none"
+    print "};\n"
+
     print "enum fpu_type"
     print "{"
 
@@ -121,7 +132,7 @@ function gen_data () {
 
     for (n = 1; n <= ncpus; n++) {
 	if (cpus[n] in cpu_opts) {
-	    print "static const struct cpu_option cpu_opttab_" \
+	    print "static const cpu_arch_extension cpu_opttab_" \
 		cpu_cnames[cpus[n]] "[] = {"
 	    nopts = split (cpu_opts[cpus[n]], opts)
 	    for (opt = 1; opt <= nopts; opt++) {
@@ -136,12 +147,53 @@ function gen_data () {
 	}
     }
 
-    print "static const struct processors all_cores[] ="
+    print "static const cpu_option all_cores[] ="
     print "{"
 
     for (n = 1; n <= ncpus; n++) {
 	print "  {"
-	print "    \"" cpus[n] "\","
+	print "    {"
+	# common.name
+	print "      \"" cpus[n] "\","
+	# common.extensions
+	if (cpus[n] in cpu_opts) {
+	    print "      cpu_opttab_" cpu_cnames[cpus[n]] ","
+	} else print "      NULL,"
+	# common.isa_bits
+	nfeats = split (cpu_arch[cpus[n]], feats, "+")
+	if (! (feats[1] in arch_isa)) {
+	    fatal("unknown arch " feats[1] " for cpu " cpus[n])
+	}
+	print "      {"
+	print "        " arch_isa[feats[1]] ","
+	for (m = 2; m <= nfeats; m++) {
+	    if (! ((feats[1], feats[m]) in arch_opt_isa)) {
+		fatal("unknown feature " feats[m] " for architecture " feats[1])
+	    }
+	    if (arch_opt_remove[feats[1],feats[m]] == "true") {
+		fatal("cannot remove features from architecture specs")
+	    }
+	    print "        " arch_opt_isa[feats[1],feats[m]] ","
+	}
+	if (cpus[n] in cpu_fpu) print "        " fpu_isa[cpu_fpu[cpus[n]]] ","
+	if (cpus[n] in cpu_isa) print "        " cpu_isa[cpus[n]] ","
+	print "        isa_nobit"
+	print "      }"
+	print "    },"
+	# arch
+	print "    TARGET_ARCH_" arch_cnames[feats[1]]
+	print "  },"
+    }
+
+    print "  {{NULL, NULL, {isa_nobit}}, TARGET_ARCH_arm_none}"
+    print "};"
+
+    print "static const cpu_tune all_tunes[] ="
+    print "{"
+
+    for (n = 1; n <= ncpus; n++) {
+	print "  { /* " cpus[n] ".  */"
+	# scheduler
 	if (cpus[n] in cpu_tune_for) {
 	    if (! (cpu_tune_for[cpus[n]] in cpu_cnames)) {
 		fatal("unknown \"tune for\" target " cpu_tune_for[cpus[n]] \
@@ -151,46 +203,22 @@ function gen_data () {
 	} else {
 	    print "    TARGET_CPU_" cpu_cnames[cpus[n]] ","
 	}
+	# tune_flags
 	if (cpus[n] in cpu_tune_flags) {
 	    print "    (" cpu_tune_flags[cpus[n]] "),"
 	} else print "    0,"
-	nfeats = split (cpu_arch[cpus[n]], feats, "+")
-	if (! (feats[1] in arch_isa)) {
-	    fatal("unknown arch " feats[1] " for cpu " cpus[n])
-	}
-	print "    \"" arch_base[feats[1]] "\", BASE_ARCH_" \
-	    arch_base[feats[1]] ","
-	print "    {"
-	print "      " arch_isa[feats[1]] ","
-	for (m = 2; m <= nfeats; m++) {
-	    if (! ((feats[1], feats[m]) in arch_opt_isa)) {
-		fatal("unknown feature " feats[m] " for architecture " feats[1])
-	    }
-	    if (arch_opt_remove[feats[1],feats[m]] == "true") {
-		fatal("cannot remove features from architecture specs")
-	    }
-	    print "      " arch_opt_isa[feats[1],feats[m]] ","
-	}
-	if (cpus[n] in cpu_fpu) print "      " fpu_isa[cpu_fpu[cpus[n]]] ","
-	if (cpus[n] in cpu_isa) print "      " cpu_isa[cpus[n]] ","
-	print "      isa_nobit"
-	print "    },"
-	if (cpus[n] in cpu_opts) {
-	    print "    cpu_opttab_" cpu_cnames[cpus[n]] ","
-	} else print "    NULL,"
+	# tune
 	print "    &arm_" cpu_cost[cpus[n]] "_tune"
 	print "  },"
     }
-
-    print "  {NULL, TARGET_CPU_arm_none, 0, NULL, BASE_ARCH_0," \
-	" {isa_nobit}, NULL, NULL}"
-    print "};\n"
-
+    print "  {TARGET_CPU_arm_none, 0, NULL}"
+    print "};"
+    
     narchs = split (arch_list, archs)
 
     for (n = 1; n <= narchs; n++) {
 	if (archs[n] in arch_opts) {
-	    print "static const struct cpu_option arch_opttab_" \
+	    print "static const struct cpu_arch_extension arch_opttab_" \
 		arch_cnames[archs[n]] "[] = {"
 	    nopts = split (arch_opts[archs[n]], opts)
 	    for (opt = 1; opt <= nopts; opt++) {
@@ -205,7 +233,7 @@ function gen_data () {
 	}
     }
 
-    print "static const struct processors all_architectures[] ="
+    print "static const struct arch_option all_architectures[] ="
     print "{"
 
     for (n = 1; n <= narchs; n++) {
@@ -214,26 +242,27 @@ function gen_data () {
 	    fatal("unknown \"tune for\" target " arch_tune_for[archs[n]] \
 		  " for architecture " archs[n])
 	}
-	print "    \"" archs[n] \
-	    "\", TARGET_CPU_" cpu_cnames[arch_tune_for[archs[n]]] ","
-	if (archs[n] in arch_tune_flags) {
-	    print "    (" arch_tune_flags[archs[n]] "),"
-	} else print "    0,"
-	print "    \"" arch_base[archs[n]] "\", BASE_ARCH_" \
-	    arch_base[archs[n]] ","
+	# common.name
+	print "    \"" archs[n] "\","
+	# common.extensions
+	if (archs[n] in arch_opts) {
+	    print "    arch_opttab_" arch_cnames[archs[n]] ","
+	} else print "    NULL,"
+	# common.isa_bits
 	print "    {"
 	print "      " arch_isa[archs[n]] ","
 	print "      isa_nobit"
 	print "    },"
-	if (archs[n] in arch_opts) {
-	    print "    arch_opttab_" arch_cnames[archs[n]] ","
-	} else print "    NULL,"
-	print "    NULL"
+	# arch, base_arch
+	print "    \"" arch_base[archs[n]] "\", BASE_ARCH_" \
+	    arch_base[archs[n]] ","
+	# tune_id
+	print "    TARGET_CPU_" cpu_cnames[arch_tune_for[archs[n]]] ","
 	print "  },"
     }
 
-    print "  {NULL, TARGET_CPU_arm_none, 0, NULL, BASE_ARCH_0," \
-	" {isa_nobit}, NULL, NULL}"
+    print "  {{NULL, NULL, {isa_nobit}},"
+    print "   NULL, BASE_ARCH_0, TARGET_CPU_arm_none}"
     print "};\n"
 
     print "const struct arm_fpu_desc all_fpus[] ="
