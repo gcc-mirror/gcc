@@ -83,9 +83,6 @@
     }						\
   while (0)
 
-#undef  FPUTYPE_DEFAULT
-#define FPUTYPE_DEFAULT "vfp"
-
 /* Call the function profiler with a given profile label.  */
 #undef  ARM_FUNCTION_PROFILER
 #define ARM_FUNCTION_PROFILER(STREAM, LABELNO)  			\

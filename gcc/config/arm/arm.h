@@ -2220,6 +2220,9 @@ extern int making_const_table;
   (TARGET_NEON ? (TARGET_ARM_FP & (0xff ^ 0x08)) \
 	       : 0)
 
+/* Name of the automatic fpu-selection option.  */
+#define FPUTYPE_AUTO "auto"
+
 /* The maximum number of parallel loads or stores we support in an ldm/stm
    instruction.  */
 #define MAX_LDM_STM_OPS 4

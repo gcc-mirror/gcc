@@ -520,7 +520,7 @@ arm_canon_arch_option (int argc, const char **argv)
   gcc_assert (cpu || arch);
 
   if (!fpu)
-    fpu = FPUTYPE_DEFAULT;
+    fpu = FPUTYPE_AUTO;
 
   if (!abi)
     {
