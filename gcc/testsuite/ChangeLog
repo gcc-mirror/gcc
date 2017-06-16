@@ -1,5 +1,12 @@
 2017-06-16  Richard Earnshaw  <rearnsha@arm.com>
 
+	* gcc.dg/pr59418.c: On ARM, change architecture to armv7-a+fp.
+	* gcc.target/arm/pr51915.c: Likewise.
+	* gcc.target/arm/pr52006.c: Likewise.
+	* gcc.target/arm/pr53187.c: Likewise.
+
+2017-06-16  Richard Earnshaw  <rearnsha@arm.com>
+
 	* gcc.target/arm/multilibs.exp: New file.
 
 2017-06-16  Martin Sebor  <msebor@redhat.com>
