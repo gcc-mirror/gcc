@@ -24,6 +24,14 @@
    <http://www.gnu.org/licenses/>.  */
 
 .syntax unified
+#ifdef __ARM_PCS_VFP
+# if __ARM_FP & 0x8
+	.fpu fpv5-d16
+# else
+	.fpu fpv4-sp-d16
+# endif
+#endif
+
 .thumb
 .global __gnu_cmse_nonsecure_call
 __gnu_cmse_nonsecure_call:
