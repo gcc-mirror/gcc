@@ -288,44 +288,6 @@ function gen_comm_data () {
     }
 
     print "};"
-
-    print "static const struct arm_arch_core_flag arm_arch_core_flags[] ="
-    print "{"
-
-    ncpus = split (cpu_list, cpus)
-
-    for (n = 1; n <= ncpus; n++) {
-	print "  {"
-	print "    \"" cpus[n] "\","
-	# Just truncate the architecture name at the beginning of the
-	# extensions.  We don't need any of those here (at present).
-	arch_name = cpu_arch[cpus[n]];
-	sub("+.*", "", arch_name)
-	if (! (arch_name in arch_isa)) {
-	    fatal("unknown arch " arch_name " for cpu " cpus[n])
-	}
-	print "    {"
-	print "      " arch_isa[arch_name] ","
-	if (cpus[n] in cpu_fpu)	print "      " fpu_isa[cpu_fpu[cpus[n]]] ","
-	if (cpus[n] in cpu_isa)	print "      " cpu_isa[cpus[n]] ","
-	print "      isa_nobit"
-	print "    },"
-	print "  },"
-    }
-
-    narchs = split (arch_list, archs)
-
-    for (n = 1; n <= narchs; n++) {
-	print "  {"
-	print "    \"" archs[n] "\","
-	print "    {"
-	print "      " arch_isa[archs[n]] ","
-	print "      isa_nobit"
-	print "    },"
-	print "  },"
-    }
-
-    print "};\n"
 }
 
 function gen_md () {

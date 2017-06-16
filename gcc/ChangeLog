@@ -1,5 +1,17 @@
 2017-06-16  Richard Earnshaw  <rearnsha@arm.com>
 
+	* config/arm/arm.h (TARGET_MODE_SPECS): Add additional parameter to
+	call to target_mode_check describing the type of option passed.
+	* common/config/arm/arm-common.c (arm_arch_core_flag): Delete.
+	(arm_target_thumb_only): Use arm_parse_arch_option_name or
+	arm_parse_cpu_option_name to match parameters against list of
+	available targets.
+	* config/arm/parsecpu.awk (gen_comm_data): Don't generate
+	arm_arch_core_flags data structure.
+	* config/arm/arm-cpu_cdata.h: Regenerated.
+
+2017-06-16  Richard Earnshaw  <rearnsha@arm.com>
+
 	* common/config/arm/arm-common.c (arm_initialize_isa): Moved here from
 	config/arm/arm.c.
 	(arm_print_hint_for_cpu_option): Likewise.
