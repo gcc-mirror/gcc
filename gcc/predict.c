@@ -3968,6 +3968,7 @@ force_edge_cold (edge e, bool impossible)
   profile_count old_count = e->count;
   int old_probability = e->probability;
   int prob_scale = REG_BR_PROB_BASE;
+  bool uninitialized_exit = false;
 
   /* If edge is already improbably or cold, just return.  */
   if (e->probability <= (impossible ? PROB_VERY_UNLIKELY : 0)
@@ -3978,6 +3979,8 @@ force_edge_cold (edge e, bool impossible)
       {
 	if (e2->count.initialized_p ())
 	  count_sum += e2->count;
+	else
+	  uninitialized_exit = true;
 	prob_sum += e2->probability;
       }
 
@@ -3989,7 +3992,7 @@ force_edge_cold (edge e, bool impossible)
 	 = MIN (e->probability, impossible ? 0 : PROB_VERY_UNLIKELY);
       if (impossible)
 	e->count = profile_count::zero ();
-      if (old_probability)
+      else if (old_probability)
 	e->count = e->count.apply_scale (e->probability, old_probability);
       else
         e->count = e->count.apply_scale (1, REG_BR_PROB_BASE);
@@ -4016,6 +4019,34 @@ force_edge_cold (edge e, bool impossible)
   else
     {
       e->probability = REG_BR_PROB_BASE;
+      if (e->src->count == profile_count::zero ())
+	return;
+      if (count_sum == profile_count::zero () && !uninitialized_exit
+	  && impossible)
+	{
+	  bool found = false;
+	  for (gimple_stmt_iterator gsi = gsi_start_bb (e->src);
+	       !gsi_end_p (gsi); gsi_next (&gsi))
+	    {
+	      if (stmt_can_terminate_bb_p (gsi_stmt (gsi)))
+		{
+		  found = true;
+	          break;
+		}
+	    }
+	  if (!found)
+	    {
+	      if (dump_file && (dump_flags & TDF_DETAILS))
+		fprintf (dump_file,
+			 "Making bb %i impossible and dropping count to 0.\n",
+			 e->src->index);
+	      e->count = profile_count::zero ();
+	      e->src->count = profile_count::zero ();
+	      FOR_EACH_EDGE (e2, ei, e->src->preds)
+		force_edge_cold (e2, impossible);
+	      return;
+	    }
+	}
 
       /* If we did not adjusting, the source basic block has no likely edeges
  	 leaving other direction. In that case force that bb cold, too.
