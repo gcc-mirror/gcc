@@ -1,3 +1,8 @@
+2017-06-16  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/80983
+	* gfortran.dg/proc_ptr_comp_51.f90: Repair test case.
+
 2017-06-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR sanitizer/81094
