@@ -1,5 +1,11 @@
 2017-06-16  Jason Merrill  <jason@redhat.com>
 
+	PR c++/81045 - Wrong type-dependence with auto return type.
+	* pt.c (type_dependent_expression_p): An undeduced auto outside the
+	template isn't dependent.
+	* call.c (build_over_call): Instantiate undeduced auto even in a
+	template.
+
 	PR c++/81102 - Wrong error with partial specialization.
 	* pt.c (unify) [TEMPLATE_PARM_INDEX]: Strip reference when comparing
 	types.  Do type deduction later.
