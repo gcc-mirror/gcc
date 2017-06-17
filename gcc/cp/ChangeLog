@@ -1,5 +1,9 @@
 2017-06-16  Jason Merrill  <jason@redhat.com>
 
+	PR c++/80174 - ICE with partial specialization of member template.
+	PR c++/71747
+	* pt.c (get_partial_spec_bindings): Only coerce innermost args.
+
 	PR c++/80831 - ICE with -fsyntax-only.
 	* decl2.c (c_parse_final_cleanups): Use cgraph_node::get_create.
 
