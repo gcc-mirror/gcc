@@ -1,5 +1,9 @@
 2017-06-16  Jason Merrill  <jason@redhat.com>
 
+	PR c++/80465 - ICE with generic lambda with noexcept-specifier.
+	* lambda.c (maybe_add_lambda_conv_op): Keep processing_template_decl
+	set longer for a generic lambda.
+
 	PR c++/80614 - Wrong mangling for C++17 noexcept type
 	* mangle.c (write_type): Put the eh spec back on the function type.
 
