@@ -1,3 +1,8 @@
+2017-06-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/80893
+	* testsuite/23_containers/vector/bool/80893.cc: Add { target c++11 }.
+
 2017-06-16  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/shared_ptr.h (get_deleter): Add overload matching
