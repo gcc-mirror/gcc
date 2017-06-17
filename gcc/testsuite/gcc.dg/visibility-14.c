@@ -1,6 +1,6 @@
 /* Test that called external functions are marked. */
 /* { dg-do compile } */
-/* { dg-skip-if "" { *-*-darwin* } { "*" } { "" } } */
+/* { dg-skip-if "" { *-*-darwin* } } */
 /* { dg-require-visibility "" } */
 /* { dg-final { scan-hidden "foo" { xfail *-*-aix* } } } */
 

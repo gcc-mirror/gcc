@@ -1,5 +1,5 @@
 /* { dg-do run } */
-/* { dg-skip-if "No dollar in identfiers" { "avr-*-*" } { "*" } { "" } } */
+/* { dg-skip-if "No dollar in identfiers" { "avr-*-*" } } */
 /* { dg-options "-std=c99 -fdollars-in-identifiers -g" } */
 void abort (void);
 

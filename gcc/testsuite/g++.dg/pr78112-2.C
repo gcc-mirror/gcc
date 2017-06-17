@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-skip-if "No dwarf debug support" { hppa*-*-hpux* } "*" "" } */
+/* { dg-skip-if "No dwarf debug support" { hppa*-*-hpux* } } */
 /* { dg-options "-g -dA -gdwarf-4 -std=gnu++11" } */
 /* { dg-options "-g -dA -std=gnu++11 -gdwarf-4" } */
 /* { dg-final { scan-assembler-times DW_AT_object_pointer 18 } } */
