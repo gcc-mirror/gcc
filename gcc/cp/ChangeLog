@@ -17,7 +17,7 @@
 	* pt.c (unify) [TEMPLATE_PARM_INDEX]: Strip reference when comparing
 	types.  Do type deduction later.
 
-	PR c++/80174 - ICE with partial specialization of member template.
+	PR c++/81074 - ICE with partial specialization of member template.
 	PR c++/71747
 	* pt.c (get_partial_spec_bindings): Only coerce innermost args.
 
