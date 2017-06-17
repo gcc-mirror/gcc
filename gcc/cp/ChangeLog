@@ -1,5 +1,8 @@
 2017-06-16  Jason Merrill  <jason@redhat.com>
 
+	PR c++/80614 - Wrong mangling for C++17 noexcept type
+	* mangle.c (write_type): Put the eh spec back on the function type.
+
 	PR c++/80384 - ICE with dependent noexcept-specifier
 	* pt.c (dependent_type_p_r) [FUNCTION_TYPE]: Check for dependent
 	noexcept-specifier.
