@@ -207,9 +207,6 @@
 ;; versus floating point
 (define_mode_attr VS_sxwsp [(V4SI "sxw") (V4SF "sp")])
 
-;; Mode attribute for vector floate and floato conversions
-(define_mode_attr VF_sxddp [(V2DI "sxd") (V2DF "dp")])
-
 ;; Specific iterator for parity which does not have a byte/half-word form, but
 ;; does have a quad word form
 (define_mode_iterator VParity [V4SI
