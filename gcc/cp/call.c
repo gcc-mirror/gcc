@@ -7584,6 +7584,9 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
       const tree *argarray;
       unsigned int nargs;
 
+      if (undeduced_auto_decl (fn))
+	mark_used (fn, complain);
+
       return_type = TREE_TYPE (TREE_TYPE (fn));
       nargs = vec_safe_length (args);
       if (first_arg == NULL_TREE)

@@ -24011,17 +24011,35 @@ type_dependent_expression_p (tree expression)
    return true;
 
   /* A function or variable template-id is type-dependent if it has any
-     dependent template arguments.  Note that we only consider the innermost
-     template arguments here, since those are the ones that come from the
-     template-id; the template arguments for the enclosing class do not make it
-     type-dependent, they only make a member function value-dependent.  */
+     dependent template arguments.  */
   if (VAR_OR_FUNCTION_DECL_P (expression)
       && DECL_LANG_SPECIFIC (expression)
-      && DECL_TEMPLATE_INFO (expression)
-      && PRIMARY_TEMPLATE_P (DECL_TI_TEMPLATE (expression))
-      && (any_dependent_template_arguments_p
-	  (INNERMOST_TEMPLATE_ARGS (DECL_TI_ARGS (expression)))))
-    return true;
+      && DECL_TEMPLATE_INFO (expression))
+    {
+      /* Consider the innermost template arguments, since those are the ones
+	 that come from the template-id; the template arguments for the
+	 enclosing class do not make it type-dependent unless they are used in
+	 the type of the decl.  */
+      if (PRIMARY_TEMPLATE_P (DECL_TI_TEMPLATE (expression))
+	  && (any_dependent_template_arguments_p
+	      (INNERMOST_TEMPLATE_ARGS (DECL_TI_ARGS (expression)))))
+	return true;
+
+      /* Otherwise, if the decl isn't from a dependent scope, it can't be
+	 type-dependent.  Checking this is important for functions with auto
+	 return type, which looks like a dependent type.  */
+      if (TREE_CODE (expression) == FUNCTION_DECL
+	  && (!DECL_CLASS_SCOPE_P (expression)
+	      || !dependent_type_p (DECL_CONTEXT (expression)))
+	  && (!DECL_FRIEND_CONTEXT (expression)
+	      || !dependent_type_p (DECL_FRIEND_CONTEXT (expression)))
+	  && !DECL_LOCAL_FUNCTION_P (expression))
+	{
+	  gcc_assert (!dependent_type_p (TREE_TYPE (expression))
+		      || undeduced_auto_decl (expression));
+	  return false;
+	}
+    }
 
   /* Always dependent, on the number of arguments if nothing else.  */
   if (TREE_CODE (expression) == EXPR_PACK_EXPANSION)
