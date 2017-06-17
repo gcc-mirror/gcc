@@ -21,6 +21,9 @@
 ;; Iterator for comparison types
 (define_code_iterator CMP_TEST [eq lt gt unordered])
 
+;; Mode attribute for vector floate and floato conversions
+(define_mode_attr VF_sxddp [(V2DI "sxd") (V2DF "dp")])
+
 ;; Iterator for both scalar and vector floating point types supported by VSX
 (define_mode_iterator VSX_B [DF V4SF V2DF])
 
@@ -2056,7 +2059,7 @@
 		 rtx_tmp, rtx_tmp, rtx_val));
     }
   else
-    emit_insn (gen_vsx_xvcv<VFC_inst>sp (operands[0], operands[1]));
+    emit_insn (gen_vsx_xvcv<VF_sxddp>sp (operands[0], operands[1]));
 
   DONE;
 })
@@ -2095,7 +2098,7 @@
   "VECTOR_UNIT_VSX_P (V4SFmode)"
 {
   if (VECTOR_ELT_ORDER_BIG)
-    emit_insn (gen_vsx_xvcv<VFC_inst>sp (operands[0], operands[1]));
+    emit_insn (gen_vsx_xvcv<VF_sxddp>sp (operands[0], operands[1]));
   else
     {
       /* Shift left one word to put odd word correct location */
@@ -2103,7 +2106,7 @@
       rtx rtx_val = GEN_INT (4);
 
       rtx_tmp = gen_reg_rtx (V4SFmode);
-      emit_insn (gen_vsx_xvcv<VFC_inst>sp (rtx_tmp, operands[1]));
+      emit_insn (gen_vsx_xvcv<VF_sxddp>sp (rtx_tmp, operands[1]));
       emit_insn (gen_altivec_vsldoi_v4sf (operands[0],
 		 rtx_tmp, rtx_tmp, rtx_val));
     }
