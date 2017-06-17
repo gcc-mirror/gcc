@@ -1,3 +1,9 @@
+2017-06-16  Carl Love  <cel@us.ibm.com>
+
+	* gcc.target/powerpc/builtins-3-runnable.c (test_result_sp,
+	main): Add runnable tests and test checker for vec_float,
+	vec_float2, vec_floate and vec_floato builtins.
+
 2017-06-16  Richard Earnshaw  <rearnsha@arm.com>
 
 	* gcc.target/arm/neon-thumb2-move.c (dg-options): Don't override
