@@ -8499,9 +8499,10 @@ convert_for_assignment (tree type, tree rhs,
 	      if (rhstype == unknown_type_node)
 		{
 		  tree r = instantiate_type (type, rhs, tf_warning_or_error);
-		  /* -fpermissive might allow this.  */
+		  /* -fpermissive might allow this; recurse.  */
 		  if (!seen_error ())
-		    return r;
+		    return convert_for_assignment (type, r, errtype, fndecl,
+						   parmnum, complain, flags);
 		}
 	      else if (fndecl)
 		error ("cannot convert %qT to %qT for argument %qP to %qD",
