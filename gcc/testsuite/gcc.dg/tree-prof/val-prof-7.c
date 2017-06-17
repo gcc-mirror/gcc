@@ -1,5 +1,5 @@
 /* { dg-options "-O2 -fdump-ipa-profile -mtune=core2" } */
-/* { dg-skip-if "" { ! { i?86-*-* x86_64-*-* } } { "*" } { "" } } */
+/* { dg-skip-if "" { ! { i?86-*-* x86_64-*-* } } } */
 
 char *buffer1;
 char *buffer2;

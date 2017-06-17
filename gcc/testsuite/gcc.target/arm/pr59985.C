@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-skip-if "incompatible options" { arm_thumb1 } { "*" } { "" } } */
+/* { dg-skip-if "incompatible options" { arm_thumb1 } } */
 /* { dg-options "-g -fcompare-debug -O2 -march=armv7-a -mtune=cortex-a9 -mfpu=vfpv3-d16 -mfloat-abi=hard" } */
 /* { dg-skip-if "need hardfp abi" { *-*-* } { "-mfloat-abi=soft" } { "" } } */
 

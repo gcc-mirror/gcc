@@ -1,3 +1,7 @@
+2017-06-17  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	Remove dg-skip-if, dg-xfail-if, dg-xfail-run-if default args.
+
 2017-06-16  Carl Love  <cel@us.ibm.com>
 
 	* gcc.target/powerpc/builtins-3-runnable.c (test_result_sp,

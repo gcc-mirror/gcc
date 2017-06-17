@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-skip-if "" { arm_thumb1 } { "*" } { "" } } */
+/* { dg-skip-if "" { arm_thumb1 } } */
 /* { dg-options "-O2" } */
 
 

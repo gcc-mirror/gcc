@@ -1,4 +1,4 @@
-/* { dg-skip-if "" { pdp11-*-* } { "*" } { "" } } */
+/* { dg-skip-if "" { pdp11-*-* } } */
 /* PR target/35318 */
 
 void

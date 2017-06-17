@@ -4,7 +4,7 @@
 
 /* NVPTX's implementation of weak is broken when a strong symbol is in
    a later object file than the weak definition.   */
-/* { dg-skip-if "" { "nvptx-*-*" } "*" { "" } } */
+/* { dg-skip-if "" { "nvptx-*-*" } } */
 
 #include <stdlib.h>
 

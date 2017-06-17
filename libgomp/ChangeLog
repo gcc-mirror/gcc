@@ -1,3 +1,10 @@
+2017-06-17  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* testsuite/libgomp.fortran/strassen.f90: Remove dg-skip-if
+	default args.
+	* testsuite/libgomp.oacc-c-c++-common/vprop.c: Remove
+	dg-xfail-run-if default args.
+
 2017-06-02  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	* testsuite/libgomp.c/pr39591-2.c: Fix test case.

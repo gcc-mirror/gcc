@@ -1,8 +1,8 @@
 /* Test __func__ with extended identifiers and character set
    conversions.  */
 /* { dg-do run } */
-/* { dg-xfail-if "" { "powerpc-ibm-aix*" } { "*" } { "" } } */
-/* { dg-skip-if "" { ! ucn } { "*" } { "" } } */
+/* { dg-xfail-if "" { "powerpc-ibm-aix*" } } */
+/* { dg-skip-if "" { ! ucn } } */
 /* { dg-options "-std=c99 -fexec-charset=ISO-8859-1 -g" } */
 /* { dg-require-iconv "ISO-8859-1" } */
 

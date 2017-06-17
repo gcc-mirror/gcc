@@ -1,5 +1,5 @@
 /* { dg-do run { target { *-*-* && yes } } } */
-/* { dg-xfail-if "comment" { empty-*-* && yes } { "*" } { "" } } */
+/* { dg-xfail-if "comment" { empty-*-* && yes } } */
 
 int
 main ()

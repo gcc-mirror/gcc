@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-skip-if "" { powerpc*-*-darwin* } { "*" } { "" } } */
+/* { dg-skip-if "" { powerpc*-*-darwin* } } */
 /* Check for VSX here, even though we don't use VSX to eliminate SPE, PAIRED
    and other ppc floating point varients.  However, we need to also eliminate
    Darwin, since it doesn't like -mcpu=power6.  */
