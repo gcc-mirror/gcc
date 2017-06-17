@@ -1,5 +1,9 @@
 2017-06-16  Jason Merrill  <jason@redhat.com>
 
+	PR c++/81102 - Wrong error with partial specialization.
+	* pt.c (unify) [TEMPLATE_PARM_INDEX]: Strip reference when comparing
+	types.  Do type deduction later.
+
 	PR c++/80174 - ICE with partial specialization of member template.
 	PR c++/71747
 	* pt.c (get_partial_spec_bindings): Only coerce innermost args.
