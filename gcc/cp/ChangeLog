@@ -1,5 +1,8 @@
 2017-06-16  Jason Merrill  <jason@redhat.com>
 
+	PR c++/80831 - ICE with -fsyntax-only.
+	* decl2.c (c_parse_final_cleanups): Use cgraph_node::get_create.
+
 	PR c++/80639 - ICE with invalid PMF initialization.
 	PR c++/80043 - ICE with -fpermissive
 	* typeck.c (convert_for_assignment): Recurse when instantiate_type
