@@ -1,3 +1,22 @@
+2017-06-16  Carl Love  <cel@us.ibm.com>
+
+	* config/rs6000/rs6000-c.c (altivec_overloaded_builtins): Add
+	definitions for vec_float, vec_float2, vec_floato,
+	vec_floate built-ins.
+	* config/rs6000/vsx.md (define_c_enum "unspec"): Add RTL code
+	for instructions vsx_xvcvsxws vsx_xvcvuxwsp, float2, floato and
+	floate.
+	* config/rs6000/rs6000-builtin.def (FLOAT2_V2DI, FLOATE_V2DF,
+	FLOATE_2DI, FLOATO_V2DF, FLOATEE_V2DI, XVCVSXWSP_V4SF,
+	UNS_FLOATO_V2DI, UNS_FLOATE_V2DI): Add definitions.
+	* config/altivec.md (define_insn "p8_vmrgew_<mode>",
+	define_mode_attr VF_sxddp): Add V4SF type to p8_vmrgew.
+	* config/rs6000/altivec.h (vec_float, vec_float2, vec_floate,
+	vec_floato): Add builtin defines.
+	* doc/extend.texi (vec_float, vec_float2, vec_floate, vec_floato):
+	Update the built-in documentation file for the new built-in
+	functions.
+
 2017-06-16  Richard Earnshaw  <rearnsha@arm.com>
 
 	* config/arm/arm.opt (marm): Mark as the negative of of -mthumb.
