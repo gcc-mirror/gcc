@@ -2100,6 +2100,11 @@ write_type (tree type)
 	  || TREE_CODE (t) == METHOD_TYPE)
 	{
 	  t = build_ref_qualified_type (t, type_memfn_rqual (type));
+	  if (flag_noexcept_type)
+	    {
+	      tree r = TYPE_RAISES_EXCEPTIONS (type);
+	      t = build_exception_variant (t, r);
+	    }
 	  if (abi_version_at_least (8)
 	      || type == TYPE_MAIN_VARIANT (type))
 	    /* Avoid adding the unqualified function type as a substitution.  */

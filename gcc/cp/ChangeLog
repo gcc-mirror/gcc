@@ -1,5 +1,8 @@
 2017-06-16  Jason Merrill  <jason@redhat.com>
 
+	PR c++/80614 - Wrong mangling for C++17 noexcept type
+	* mangle.c (write_type): Put the eh spec back on the function type.
+
 	PR c++/81102 - Wrong error with partial specialization.
 	* pt.c (unify) [TEMPLATE_PARM_INDEX]: Strip reference when comparing
 	types.  Do type deduction later.
