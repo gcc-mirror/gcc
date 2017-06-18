@@ -1,5 +1,8 @@
 2017-06-17  Jason Merrill  <jason@redhat.com>
 
+	PR c++/60063 - -Wunused-local-typedefs and templates.
+	* decl2.c (is_late_template_attribute): Return false for "used".
+
 	PR c++/70844 - -Wuseless-cast and inheriting constructor.
 	* method.c (forward_parm): Suppress warn_useless_cast.
 
