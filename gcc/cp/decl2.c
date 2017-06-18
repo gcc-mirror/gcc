@@ -1091,9 +1091,10 @@ is_late_template_attribute (tree attr, tree decl)
   if (is_attribute_p ("weak", name))
     return true;
 
-  /* Attribute unused is applied directly, as it appertains to
+  /* Attributes used and unused are applied directly, as they appertain to
      decls. */
-  if (is_attribute_p ("unused", name))
+  if (is_attribute_p ("unused", name)
+      || is_attribute_p ("used", name))
     return false;
 
   /* Attribute tls_model wants to modify the symtab.  */
