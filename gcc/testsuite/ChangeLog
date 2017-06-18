@@ -1,3 +1,7 @@
+2017-06-18  Jan Hubicka  <hubicka@ucw.cz>
+
+	* gcc.dg/lto/pr69866_0.c: This test needs alias.
+
 2017-06-18  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/52473
