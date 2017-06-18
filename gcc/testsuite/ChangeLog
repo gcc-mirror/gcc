@@ -1,3 +1,8 @@
+2017-06-18  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/52473
+	* gfortran.dg/cshift_1.f90:  New test.
+
 2017-06-17  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	Remove dg-skip-if, dg-xfail-if, dg-xfail-run-if default args.
