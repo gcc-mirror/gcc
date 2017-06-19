@@ -2177,7 +2177,7 @@ remove_bb (basic_block bb)
 	 with it.  */
       if (loop->latch == bb
 	  || loop->header == bb)
-	free_numbers_of_iterations_estimates_loop (loop);
+	free_numbers_of_iterations_estimates (loop);
     }
 
   /* Remove all the instructions in the block.  */

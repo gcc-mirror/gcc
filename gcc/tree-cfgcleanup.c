@@ -959,7 +959,7 @@ remove_forwarder_block_with_phi (basic_block bb)
 	    {
 	      dest->loop_father->any_upper_bound = false;
 	      dest->loop_father->any_likely_upper_bound = false;
-	      free_numbers_of_iterations_estimates_loop (dest->loop_father);
+	      free_numbers_of_iterations_estimates (dest->loop_father);
 	    }
 	}
 
