@@ -1,5 +1,9 @@
 2017-06-19  Jason Merrill  <jason@redhat.com>
 
+	PR c++/80829 - ICE with constexpr copy of base subobject.
+	* constexpr.c (clear_no_implicit_zero): New.
+	(cxx_eval_call_expression): Call it.
+
         PR c++/81073 - constexpr and static var in statement-expression.
 	* constexpr.c (cxx_eval_constant_expression) [DECL_EXPR]: Check
 	potential_constant_expression.
