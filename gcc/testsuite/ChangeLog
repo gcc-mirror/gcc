@@ -1,3 +1,8 @@
+2017-06-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR ipa/81112
+	* g++.dg/torture/pr81112.C: Add -Wno-psabi to dg-additional-options.
+
 2017-06-19  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/81119

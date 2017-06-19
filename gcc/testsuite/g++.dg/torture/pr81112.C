@@ -1,4 +1,5 @@
 // { dg-do compile }
+// { dg-additional-options "-Wno-psabi" }
 
 class AssertionResult {
     bool success_;
