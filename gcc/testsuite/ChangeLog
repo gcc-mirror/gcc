@@ -1,3 +1,8 @@
+2017-06-19  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/81119
+	* g++.dg/warn/pr81119.C: New.
+
 2017-06-19  Martin Liska  <mliska@suse.cz>
 
 	PR sanitizer/80879
