@@ -3087,7 +3087,7 @@ get_constraint_for_ptr_offset (tree ptr, tree offset,
 	{
 	  /* Make sure the bit-offset also fits.  */
 	  HOST_WIDE_INT rhsunitoffset = soffset.to_shwi ();
-	  rhsoffset = rhsunitoffset * BITS_PER_UNIT;
+	  rhsoffset = rhsunitoffset * (unsigned HOST_WIDE_INT) BITS_PER_UNIT;
 	  if (rhsunitoffset != rhsoffset / BITS_PER_UNIT)
 	    rhsoffset = UNKNOWN_OFFSET;
 	}

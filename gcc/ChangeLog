@@ -1,5 +1,8 @@
 2017-06-19  Jakub Jelinek  <jakub@redhat.com>
 
+	* tree-ssa-structalias.c (get_constraint_for_ptr_offset): Multiply
+	in UWHI to avoid undefined overflow.
+
 	PR sanitizer/81125
 	* ubsan.h (enum ubsan_encode_value_phase): New.
 	(ubsan_encode_value): Change second argument to
