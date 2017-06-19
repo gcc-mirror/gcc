@@ -2121,7 +2121,12 @@ constant_arg:
 		{
 		  error ("%Kargument %d must be a constant immediate",
 			 exp, argc + 1);
-		  return const0_rtx;
+		  /* We have failed to expand the pattern, and are safely
+		     in to invalid code.  But the mid-end will still try to
+		     build an assignment for this node while it expands,
+		     before stopping for the error, just pass it back
+		     TARGET to ensure a valid assignment.  */
+		  return target;
 		}
 	      break;
 

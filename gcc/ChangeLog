@@ -1,3 +1,13 @@
+2017-06-19  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	Backport from mainline
+	2017-06-16  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	PR target/71778
+	* config/arm/arm-builtins.c (arm_expand_builtin_args): Return TARGET
+	if given a non-constant argument for an intrinsic which requires a
+	constant.
+
 2017-06-15  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR rtl-optimization/80474
