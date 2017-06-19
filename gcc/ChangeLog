@@ -1,5 +1,11 @@
 2017-06-19  Martin Liska  <mliska@suse.cz>
 
+	PR sanitizer/80879
+	* gimplify.c (gimplify_switch_expr):
+	Initialize live_switch_vars for SWITCH_BODY == STATEMENT_LIST.
+
+2017-06-19  Martin Liska  <mliska@suse.cz>
+
 	* doc/install.texi: Document that PGO runs in 4 stages.
 
 2017-06-19  Martin Liska  <mliska@suse.cz>
