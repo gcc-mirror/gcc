@@ -28,11 +28,11 @@ enum profile_count_quality {
      not reflect the reality.  */
   count_guessed = 0,
   /* Profile was determined by autofdo.  */
-  count_afdo = 2,
+  count_afdo = 1,
   /* Profile was originally based on feedback but it was adjusted 
      by code duplicating optimization.  It may not precisely reflect the
      particular code path.  */
-  count_adjusted = 1,
+  count_adjusted = 2,
   /* Profile was read from profile feedback or determined by accurate static
      method.  */
   count_read = 3
