@@ -1784,6 +1784,14 @@ update_binding (cp_binding_level *level, cxx_binding *binding, tree *slot,
       else
 	goto conflict;
 
+      if (to_type != old_type
+	  && warn_shadow
+	  && MAYBE_CLASS_TYPE_P (TREE_TYPE (to_type))
+	  && !(DECL_IN_SYSTEM_HEADER (decl)
+	       && DECL_IN_SYSTEM_HEADER (to_type)))
+	warning (OPT_Wshadow, "%q#D hides constructor for %q#D",
+		 decl, to_type);
+
       to_val = ovl_insert (decl, old);
     }
   else if (!old)
@@ -1847,21 +1855,6 @@ update_binding (cp_binding_level *level, cxx_binding *binding, tree *slot,
 	    to_add = build_tree_list (NULL_TREE, to_add);
 
 	  add_decl_to_level (level, to_add);
-	}
-
-      if (to_type != old_type)
-	{
-	  gcc_checking_assert (!old_type
-			       && TREE_CODE (to_type) == TYPE_DECL
-			       && DECL_ARTIFICIAL (to_type));
-
-	  tree type = TREE_TYPE (to_type);
-	  if (to_type != decl
-	      && MAYBE_CLASS_TYPE_P (type) && warn_shadow
-	      && (!DECL_IN_SYSTEM_HEADER (decl)
-		  || !DECL_IN_SYSTEM_HEADER (to_type)))
-	    warning (OPT_Wshadow, "%q#D hides constructor for %q#T",
-		     decl, type);
 	}
 
       if (slot)

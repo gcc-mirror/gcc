@@ -1,3 +1,9 @@
+2017-06-19  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/81119
+	* name-lookup.c (update_binding): Only warn about constructors
+	hidden by functions.
+
 2017-06-17  Jason Merrill  <jason@redhat.com>
 
 	PR c++/60063 - -Wunused-local-typedefs and templates.
