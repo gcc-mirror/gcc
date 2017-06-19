@@ -1,5 +1,8 @@
 2017-06-19  Jakub Jelinek  <jakub@redhat.com>
 
+	PR sanitizer/81125
+	* g++.dg/ubsan/pr81125.C: New test.
+
 	PR sanitizer/81111
 	* g++.dg/ubsan/pr81111.C: New test.
 
