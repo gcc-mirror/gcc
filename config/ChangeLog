@@ -1,3 +1,8 @@
+2017-06-19  Martin Liska  <mliska@suse.cz>
+
+	* bootstrap-lto-noplugin.mk: Enable -flto in all PGO stages.
+	* bootstrap-lto.mk: Likewise.
+
 2017-06-03  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* mt-android: New file.
