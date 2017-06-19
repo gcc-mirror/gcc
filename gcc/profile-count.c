@@ -37,7 +37,15 @@ profile_count::dump (FILE *f) const
   if (!initialized_p ())
     fprintf (f, "uninitialized");
   else
-    fprintf (f, "%" PRId64, m_val);
+    {
+      fprintf (f, "%" PRId64, m_val);
+      if (m_quality == count_adjusted)
+	fprintf (f, "(adjusted)");
+      else if (m_quality == count_afdo)
+	fprintf (f, "(auto FDO)");
+      else if (m_quality == count_guessed)
+	fprintf (f, "(guessed)");
+    }
 }
 
 void
@@ -51,7 +59,7 @@ profile_count::differs_from_p (profile_count other) const
 {
   if (!initialized_p () || !other.initialized_p ())
     return false;
-  if (m_val - other.m_val < 100 && other.m_val - m_val < 100)
+  if (m_val - other.m_val < 100 || other.m_val - m_val < 100)
     return false;
   if (!other.m_val)
     return true;
@@ -64,6 +72,7 @@ profile_count::stream_in (struct lto_input_block *ib)
 {
   profile_count ret;
   ret.m_val = streamer_read_gcov_count (ib);
+  ret.m_quality = (profile_count_quality) streamer_read_uhwi (ib);
   return ret;
 }
 
@@ -71,10 +80,12 @@ void
 profile_count::stream_out (struct output_block *ob)
 {
   streamer_write_gcov_count (ob, m_val);
+  streamer_write_uhwi (ob, m_quality);
 }
 
 void
 profile_count::stream_out (struct lto_output_stream *ob)
 {
   streamer_write_gcov_count_stream (ob, m_val);
+  streamer_write_uhwi_stream (ob, m_quality);
 }
