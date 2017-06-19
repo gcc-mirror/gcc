@@ -4145,10 +4145,19 @@ decl_maybe_constant_var_p (tree decl)
     /* A proxy isn't constant.  */
     return false;
   if (TREE_CODE (type) == REFERENCE_TYPE)
-    /* References can be constant.  */
+    /* References can be constant.  */;
+  else if (CP_TYPE_CONST_NON_VOLATILE_P (type)
+	   && INTEGRAL_OR_ENUMERATION_TYPE_P (type))
+    /* And const integers.  */;
+  else
+    return false;
+
+  if (DECL_INITIAL (decl)
+      && !DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (decl))
+    /* We know the initializer, and it isn't constant.  */
+    return false;
+  else
     return true;
-  return (CP_TYPE_CONST_NON_VOLATILE_P (type)
-	  && INTEGRAL_OR_ENUMERATION_TYPE_P (type));
 }
 
 /* Complain that DECL uses a type with no linkage.  In C++98 mode this is
