@@ -53,8 +53,8 @@ namespace N {
 
 namespace NMS
 {
-  void NMS::fn();     // { dg-error "explicit qual" }
-  int NMS::i;         // { dg-error "explicit qual" }
+  void NMS::fn();     // { dg-error "should have been" }
+  int NMS::i;         // { dg-error "should have been" }
   struct NMS::D {     // { dg-error "does not name a class" }
     int i;
   };

@@ -1,3 +1,12 @@
+2017-06-19  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/81124
+	PR c++/79766
+	* g++.dg/lookup/pr79766.C: New.
+	* g++.dg/lookup/pr81124.C: New.
+	* g++.dg/template/explicit6.C: Adjust.
+	* g++.old-deja/g++.other/decl5.C: Adjust.
+
 2017-06-19  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	* g++.old-deja/g++.eh/badalloc1.C: Remove code path for
