@@ -1,3 +1,8 @@
+2017-06-19  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/66093
+	* g++.dg/cpp1y/constexpr-66093.C: New.
+
 2017-06-19  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* g++.dg/other/unused1.C: Remove *-*-solaris2.[56]* from
