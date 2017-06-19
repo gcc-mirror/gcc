@@ -1,5 +1,19 @@
 2017-06-19  Jakub Jelinek  <jakub@redhat.com>
 
+	PR sanitizer/81125
+	* ubsan.h (enum ubsan_encode_value_phase): New.
+	(ubsan_encode_value): Change second argument to
+	enum ubsan_encode_value_phase with default value of
+	UBSAN_ENCODE_VALUE_GENERIC.
+	* ubsan.c (ubsan_encode_value): Change second argument to
+	enum ubsan_encode_value_phase PHASE from bool IN_EXPAND_P,
+	adjust uses, for UBSAN_ENCODE_VALUE_GENERIC use just
+	create_tmp_var_raw instead of create_tmp_var and use a
+	TARGET_EXPR.
+	(ubsan_expand_bounds_ifn, ubsan_build_overflow_builtin,
+	instrument_bool_enum_load, ubsan_instrument_float_cast): Adjust
+	ubsan_encode_value callers.
+
 	PR sanitizer/81111
 	* ubsan.c (ubsan_encode_value): If current_function_decl is NULL,
 	use create_tmp_var_raw instead of create_tmp_var, mark it addressable
