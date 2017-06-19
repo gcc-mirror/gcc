@@ -839,7 +839,12 @@ cleanup_tree_cfg_noloop (void)
   timevar_pop (TV_TREE_CLEANUP_CFG);
 
   if (changed && current_loops)
-    loops_state_set (LOOPS_NEED_FIXUP);
+    {
+      /* Removing edges and/or blocks may make recorded bounds refer
+         to stale GIMPLE stmts now, so clear them.  */
+      free_numbers_of_iterations_estimates (cfun);
+      loops_state_set (LOOPS_NEED_FIXUP);
+    }
 
   return changed;
 }
