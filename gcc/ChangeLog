@@ -1,5 +1,9 @@
 2017-06-19  Martin Liska  <mliska@suse.cz>
 
+	* doc/install.texi: Document that PGO runs in 4 stages.
+
+2017-06-19  Martin Liska  <mliska@suse.cz>
+
 	PR ipa/80732
 	* attribs.c (make_dispatcher_decl): Do not append '.ifunc'
 	to dispatcher function name.
