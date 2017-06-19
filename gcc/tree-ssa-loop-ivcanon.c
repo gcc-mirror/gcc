@@ -1215,7 +1215,7 @@ canonicalize_induction_variables (void)
   bool irred_invalidated = false;
   bitmap loop_closed_ssa_invalidated = BITMAP_ALLOC (NULL);
 
-  estimate_numbers_of_iterations ();
+  estimate_numbers_of_iterations (cfun);
 
   FOR_EACH_LOOP (loop, LI_FROM_INNERMOST)
     {
@@ -1361,6 +1361,8 @@ tree_unroll_loops_completely (bool may_increase_size, bool unroll_outer)
   int iteration = 0;
   bool irred_invalidated = false;
 
+  estimate_numbers_of_iterations (cfun);
+
   do
     {
       changed = false;
@@ -1370,7 +1372,7 @@ tree_unroll_loops_completely (bool may_increase_size, bool unroll_outer)
 	loop_closed_ssa_invalidated = BITMAP_ALLOC (NULL);
 
       free_numbers_of_iterations_estimates (cfun);
-      estimate_numbers_of_iterations ();
+      estimate_numbers_of_iterations (cfun);
 
       changed = tree_unroll_loops_completely_1 (may_increase_size,
 						unroll_outer, father_bbs,
@@ -1588,7 +1590,6 @@ pass_complete_unrolli::execute (function *fun)
     {
       scev_initialize ();
       ret = tree_unroll_loops_completely (optimize >= 3, false);
-      free_numbers_of_iterations_estimates (fun);
       scev_finalize ();
     }
   loop_optimizer_finalize ();

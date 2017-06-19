@@ -2436,8 +2436,7 @@ gen_parallel_loop (struct loop *loop,
 
   /* Free loop bound estimations that could contain references to
      removed statements.  */
-  FOR_EACH_LOOP (loop, 0)
-    free_numbers_of_iterations_estimates_loop (loop);
+  free_numbers_of_iterations_estimates (cfun);
 }
 
 /* Returns true when LOOP contains vector phi nodes.  */

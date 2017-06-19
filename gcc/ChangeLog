@@ -1,5 +1,30 @@
 2017-06-19  Richard Biener  <rguenther@suse.de>
 
+	* tree-ssa-loop-niter.h (estimate_numbers_of_iterations): Take
+	struct function as arg.
+	(estimate_numbers_of_iterations): Export overload with loop arg.
+	(free_numbers_of_iterations_estimates_loop): Use an overload of
+	free_numbers_of_iterations_estimates instead.
+	* tree-cfg.c (remove_bb): Adjust.
+	* tree-cfgcleanup.c (remove_forwarder_block_with_phi): Likewise.
+	* tree-parloops.c (gen_parallel_loop): Likewise.
+	* tree-ssa-loop-ivcanon.c (canonicalize_induction_variables):
+	Likewise.
+	(tree_unroll_loops_completely): Likewise.
+	* tree-ssa-loop-niter.c (estimate_numbers_of_iterations_loop):
+	Use an overload instead and export.
+	(estimated_loop_iterations): Adjust.
+	(max_loop_iterations): Likewise.
+	(likely_max_loop_iterations): Likewise.
+	(estimate_numbers_of_iterations): Take struct function as arg
+	and adjust.
+	(loop_exits_before_overflow): Adjust.
+	(free_numbers_of_iterations_estimates_loop): Use an overload.
+	* tree-vect-loop.c (vect_analyze_loop_form): Adjust.
+	* tree-vectorizer.c (vect_free_loop_info_assumptions): Likewise.
+
+2017-06-19  Richard Biener  <rguenther@suse.de>
+
 	PR ipa/81112
 	* ipa-prop.c (find_constructor_constant_at_offset): Handle
 	RANGE_EXPR conservatively.

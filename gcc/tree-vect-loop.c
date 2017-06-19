@@ -1570,7 +1570,7 @@ vect_analyze_loop_form (struct loop *loop)
 	 some assumptions.  In order to do this, we need to clear
 	 existing information computed by scev and niter analyzer.  */
       scev_reset_htab ();
-      free_numbers_of_iterations_estimates_loop (loop);
+      free_numbers_of_iterations_estimates (loop);
       /* Also set flag for this loop so that following scev and niter
 	 analysis are done under the assumptions.  */
       loop_constraint_set (loop, LOOP_C_FINITE);
