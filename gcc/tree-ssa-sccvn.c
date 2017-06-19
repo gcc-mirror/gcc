@@ -1639,6 +1639,7 @@ vn_reference_lookup_or_insert_for_pieces (tree vuse,
 }
 
 static vn_nary_op_t vn_nary_op_insert_stmt (gimple *stmt, tree result);
+static unsigned mprts_hook_cnt;
 
 /* Hook for maybe_push_res_to_seq, lookup the expression in the VN tables.  */
 
@@ -1648,8 +1649,22 @@ vn_lookup_simplify_result (code_helper rcode, tree type, tree *ops)
   if (!rcode.is_tree_code ())
     return NULL_TREE;
   vn_nary_op_t vnresult = NULL;
-  return vn_nary_op_lookup_pieces (TREE_CODE_LENGTH ((tree_code) rcode),
-				   (tree_code) rcode, type, ops, &vnresult);
+  tree res = vn_nary_op_lookup_pieces (TREE_CODE_LENGTH ((tree_code) rcode),
+				       (tree_code) rcode, type, ops, &vnresult);
+  /* We can end up endlessly recursing simplifications if the lookup above
+     presents us with a def-use chain that mirrors the original simplification.
+     See PR80887 for an example.  Limit successful lookup artificially
+     to 10 times if we are called as mprts_hook.  */
+  if (res
+      && mprts_hook
+      && --mprts_hook_cnt == 0)
+    {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file, "Resetting mprts_hook after too many "
+		 "invocations.\n");
+      mprts_hook = NULL;
+    }
+  return res;
 }
 
 /* Return a value-number for RCODE OPS... either by looking up an existing
@@ -1666,6 +1681,7 @@ vn_nary_build_or_lookup_1 (code_helper rcode, tree type, tree *ops,
      So first simplify and lookup this expression to see if it
      is already available.  */
   mprts_hook = vn_lookup_simplify_result;
+  mprts_hook_cnt = 9;
   bool res = false;
   switch (TREE_CODE_LENGTH ((tree_code) rcode))
     {
@@ -3896,6 +3912,7 @@ try_to_simplify (gassign *stmt)
 
   /* First try constant folding based on our current lattice.  */
   mprts_hook = vn_lookup_simplify_result;
+  mprts_hook_cnt = 9;
   tem = gimple_fold_stmt_to_constant_1 (stmt, vn_valueize, vn_valueize);
   mprts_hook = NULL;
   if (tem

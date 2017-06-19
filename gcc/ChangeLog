@@ -1,3 +1,13 @@
+2017-06-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/80887
+	* tree-ssa-sccvn.c (mprts_hook_cnt): New global.
+	(vn_lookup_simplify_result): Allow only mprts_hook_cnt succesful
+	simplified lookups, then reset mprts_hook.
+	(vn_nary_build_or_lookup_1): Set mprts_hook_cnt to 9 before
+	simplifying.
+	(try_to_simplify): Likewise.
+
 2017-06-19  Martin Liska  <mliska@suse.cz>
 
 	PR sanitizer/80879

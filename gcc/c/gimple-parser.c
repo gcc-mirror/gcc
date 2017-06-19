@@ -850,7 +850,7 @@ c_parser_gimple_postfix_expression (c_parser *parser)
 	    }
 	  else if (strcmp (IDENTIFIER_POINTER (id), "_Literal") == 0)
 	    {
-	      /* _Literal '(' type-name ')' number  */
+	      /* _Literal '(' type-name ')' [ '-' ] constant */
 	      c_parser_consume_token (parser);
 	      tree type = NULL_TREE;
 	      if (c_parser_require (parser, CPP_OPEN_PAREN, "expected %<(%>"))
@@ -862,14 +862,26 @@ c_parser_gimple_postfix_expression (c_parser *parser)
 		  c_parser_skip_until_found (parser, CPP_CLOSE_PAREN,
 					     "expected %<)%>");
 		}
+	      bool neg_p;
+	      if ((neg_p = c_parser_next_token_is (parser, CPP_MINUS)))
+		c_parser_consume_token (parser);
 	      tree val = c_parser_gimple_postfix_expression (parser).value;
 	      if (! type
 		  || ! val
 		  || val == error_mark_node
-		  || TREE_CODE (val) != INTEGER_CST)
+		  || ! CONSTANT_CLASS_P (val))
 		{
 		  c_parser_error (parser, "invalid _Literal");
 		  return expr;
+		}
+	      if (neg_p)
+		{
+		  val = const_unop (NEGATE_EXPR, TREE_TYPE (val), val);
+		  if (! val)
+		    {
+		      c_parser_error (parser, "invalid _Literal");
+		      return expr;
+		    }
 		}
 	      expr.value = fold_convert (type, val);
 	      return expr;
