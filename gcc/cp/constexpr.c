@@ -1394,6 +1394,21 @@ cxx_eval_internal_function (const constexpr_ctx *ctx, tree t,
   return t;
 }
 
+/* Clean CONSTRUCTOR_NO_IMPLICIT_ZERO from CTOR and its sub-aggregates.  */
+
+static void
+clear_no_implicit_zero (tree ctor)
+{
+  if (CONSTRUCTOR_NO_IMPLICIT_ZERO (ctor))
+    {
+      CONSTRUCTOR_NO_IMPLICIT_ZERO (ctor) = false;
+      tree elt; unsigned HOST_WIDE_INT idx;
+      FOR_EACH_CONSTRUCTOR_VALUE (CONSTRUCTOR_ELTS (ctor), idx, elt)
+	if (TREE_CODE (elt) == CONSTRUCTOR)
+	  clear_no_implicit_zero (elt);
+    }
+}
+
 /* Subroutine of cxx_eval_constant_expression.
    Evaluate the call expression tree T in the context of OLD_CALL expression
    evaluation.  */
@@ -1697,7 +1712,7 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
 
   /* The result of a constexpr function must be completely initialized.  */
   if (TREE_CODE (result) == CONSTRUCTOR)
-    CONSTRUCTOR_NO_IMPLICIT_ZERO (result) = false;
+    clear_no_implicit_zero (result);
 
   pop_cx_call_context ();
   return unshare_constructor (result);
