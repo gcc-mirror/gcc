@@ -1,3 +1,8 @@
+2017-06-19  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* g++.old-deja/g++.eh/badalloc1.C: Remove code path for
+	-DSTACK_SIZE.
+
 2017-06-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR sanitizer/81125
