@@ -1,3 +1,9 @@
+2017-06-19  Jason Merrill  <jason@redhat.com>
+
+	PR c++/80829 - ICE with constexpr copy of base subobject.
+	* constexpr.c (clear_no_implicit_zero): New.
+	(cxx_eval_call_expression): Call it.
+
 2017-06-19  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/81124
