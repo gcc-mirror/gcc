@@ -1,5 +1,9 @@
 2017-06-19  Jason Merrill  <jason@redhat.com>
 
+	PR c++/80562 - ICE with constexpr if.
+	* semantics.c (finish_if_stmt_cond): Call
+	instantiate_non_dependent_expr.
+
 	PR c++/80829 - ICE with constexpr copy of base subobject.
 	* constexpr.c (clear_no_implicit_zero): New.
 	(cxx_eval_call_expression): Call it.
