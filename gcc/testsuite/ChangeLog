@@ -1,3 +1,8 @@
+2017-06-19  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/81112
+	* g++.dg/torture/pr81112.C: New testcase.
+
 2017-06-18  Jan Hubicka  <hubicka@ucw.cz>
 
 	* gcc.dg/lto/pr69866_0.c: This test needs alias.

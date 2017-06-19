@@ -1,3 +1,9 @@
+2017-06-19  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/81112
+	* ipa-prop.c (find_constructor_constant_at_offset): Handle
+	RANGE_EXPR conservatively.
+
 2017-06-16  Carl Love  <cel@us.ibm.com>
 
 	* config/rs6000/rs6000-c.c (altivec_overloaded_builtins): Add
