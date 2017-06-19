@@ -4021,6 +4021,13 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
       break;
 
     case DECL_EXPR:
+      if (!potential_constant_expression (t))
+	{
+	  if (!ctx->quiet)
+	    require_potential_constant_expression (t);
+	  *non_constant_p = true;
+	  break;
+	}
       {
 	r = DECL_EXPR_DECL (t);
 	if (AGGREGATE_TYPE_P (TREE_TYPE (r))
