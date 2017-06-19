@@ -4266,8 +4266,6 @@ set_global_binding (tree name, tree val)
 void
 set_decl_namespace (tree decl, tree scope, bool friendp)
 {
-  tree old;
-
   /* Get rid of namespace aliases.  */
   scope = ORIGINAL_NAMESPACE (scope);
 
@@ -4277,41 +4275,49 @@ set_decl_namespace (tree decl, tree scope, bool friendp)
 	   decl, scope);
   DECL_CONTEXT (decl) = FROB_CONTEXT (scope);
 
-  /* Writing "int N::i" to declare a variable within "N" is invalid.  */
-  if (scope == current_namespace)
-    {
-      if (at_namespace_scope_p ())
-	error ("explicit qualification in declaration of %qD",
-	       decl);
-      return;
-    }
+  /* See whether this has been declared in the namespace or inline
+     children.  */
+  tree old = NULL_TREE;
+  {
+    name_lookup lookup (DECL_NAME (decl), LOOKUP_HIDDEN);
+    if (!lookup.search_qualified (scope, /*usings=*/false))
+      /* No old declaration at all.  */
+      goto not_found;
+    old = lookup.value;
+  }
 
-  /* See whether this has been declared in the namespace.  */
-  old = lookup_qualified_name (scope, DECL_NAME (decl), /*type*/false,
-			       /*complain*/true, /*hidden*/true);
-  if (old == error_mark_node)
-    /* No old declaration at all.  */
-    goto complain;
   /* If it's a TREE_LIST, the result of the lookup was ambiguous.  */
   if (TREE_CODE (old) == TREE_LIST)
     {
+    ambiguous:
+      DECL_CONTEXT (decl) = FROB_CONTEXT (scope);
       error ("reference to %qD is ambiguous", decl);
       print_candidates (old);
       return;
     }
-  if (!OVL_P (decl))
+
+  if (!DECL_DECLARES_FUNCTION_P (decl))
     {
-      /* We might have found OLD in an inline namespace inside SCOPE.  */
-      if (TREE_CODE (decl) == TREE_CODE (old))
-	DECL_CONTEXT (decl) = DECL_CONTEXT (old);
       /* Don't compare non-function decls with decls_match here, since
 	 it can't check for the correct constness at this
-	 point. pushdecl will find those errors later.  */
+	 point.  pushdecl will find those errors later.  */
+
+      /* We might have found it in an inline namespace child of SCOPE.  */
+      if (TREE_CODE (decl) == TREE_CODE (old))
+	DECL_CONTEXT (decl) = DECL_CONTEXT (old);
+
+    found:
+      /* Writing "N::i" to declare something directly in "N" is invalid.  */
+      if (CP_DECL_CONTEXT (decl) == current_namespace
+	  && at_namespace_scope_p ())
+	error ("explicit qualification in declaration of %qD", decl);
       return;
     }
+
   /* Since decl is a function, old should contain a function decl.  */
   if (!OVL_P (old))
-    goto complain;
+    goto not_found;
+
   /* We handle these in check_explicit_instantiation_namespace.  */
   if (processing_explicit_instantiation)
     return;
@@ -4325,53 +4331,48 @@ set_decl_namespace (tree decl, tree scope, bool friendp)
      friends in any namespace.  */
   if (friendp && DECL_USE_TEMPLATE (decl))
     return;
-  if (OVL_P (old))
-    {
-      tree found = NULL_TREE;
 
-      for (ovl_iterator iter (old); iter; ++iter)
+  tree found;
+  found = NULL_TREE;
+
+  for (lkp_iterator iter (old); iter; ++iter)
+    {
+      if (iter.using_p ())
+	continue;
+
+      tree ofn = *iter;
+
+      /* Adjust DECL_CONTEXT first so decls_match will return true
+	 if DECL will match a declaration in an inline namespace.  */
+      DECL_CONTEXT (decl) = DECL_CONTEXT (ofn);
+      if (decls_match (decl, ofn))
 	{
-	  tree ofn = *iter;
-	  /* Adjust DECL_CONTEXT first so decls_match will return true
-	     if DECL will match a declaration in an inline namespace.  */
-	  DECL_CONTEXT (decl) = DECL_CONTEXT (ofn);
-	  if (decls_match (decl, ofn))
+	  if (found)
 	    {
-	      if (found && !decls_match (found, ofn))
-		{
-		  DECL_CONTEXT (decl) = FROB_CONTEXT (scope);
-		  error ("reference to %qD is ambiguous", decl);
-		  print_candidates (old);
-		  return;
-		}
-	      found = ofn;
+	      /* We found more than one matching declaration.  */
+	      DECL_CONTEXT (decl) = FROB_CONTEXT (scope);
+	      goto ambiguous;
 	    }
-	}
-      if (found)
-	{
-	  if (!is_nested_namespace (scope, CP_DECL_CONTEXT (found), true))
-	    goto complain;
-	  if (DECL_HIDDEN_FRIEND_P (found))
-	    {
-	      pedwarn (DECL_SOURCE_LOCATION (decl), 0,
-		       "%qD has not been declared within %qD", decl, scope);
-	      inform (DECL_SOURCE_LOCATION (found),
-		      "only here as a %<friend%>");
-	    }
-	  DECL_CONTEXT (decl) = DECL_CONTEXT (found);
-	  return;
+	  found = ofn;
 	}
     }
-  else
+
+  if (found)
     {
-      DECL_CONTEXT (decl) = DECL_CONTEXT (old);
-      if (decls_match (decl, old))
-	return;
+      if (DECL_HIDDEN_FRIEND_P (found))
+	{
+	  pedwarn (DECL_SOURCE_LOCATION (decl), 0,
+		   "%qD has not been declared within %qD", decl, scope);
+	  inform (DECL_SOURCE_LOCATION (found),
+		  "only here as a %<friend%>");
+	}
+      DECL_CONTEXT (decl) = DECL_CONTEXT (found);
+      goto found;
     }
 
+ not_found:
   /* It didn't work, go back to the explicit scope.  */
   DECL_CONTEXT (decl) = FROB_CONTEXT (scope);
- complain:
   error ("%qD should have been declared inside %qD", decl, scope);
 }
 

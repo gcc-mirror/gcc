@@ -1,3 +1,11 @@
+2017-06-19  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/81124
+	PR c++/79766
+	* name-lookup.c (set_decl_namespace): Don't follow using
+	directives and ignore using decls.  Only check overly-explicit
+	scope after discovering decl.
+
 2017-06-19  Jason Merrill  <jason@redhat.com>
 
 	PR c++/81073 - constexpr and static var in statement-expression.
