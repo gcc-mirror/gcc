@@ -1,3 +1,10 @@
+2017-06-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/81111
+	* ubsan.c (ubsan_encode_value): If current_function_decl is NULL,
+	use create_tmp_var_raw instead of create_tmp_var, mark it addressable
+	just by setting TREE_ADDRESSABLE on the result and use a TARGET_EXPR.
+
 2017-06-19  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/81118

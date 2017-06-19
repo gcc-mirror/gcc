@@ -143,9 +143,17 @@ ubsan_encode_value (tree t, bool in_expand_p)
 	{
 	  /* The reason for this is that we don't want to pessimize
 	     code by making vars unnecessarily addressable.  */
-	  tree var = create_tmp_var (type);
-	  tree tem = build2 (MODIFY_EXPR, void_type_node, var, t);
-	  mark_addressable (var);
+	  tree var;
+	  if (current_function_decl)
+	    {
+	      var = create_tmp_var (type);
+	      mark_addressable (var);
+	    }
+	  else
+	    {
+	      var = create_tmp_var_raw (type);
+	      TREE_ADDRESSABLE (var) = 1;
+	    }
 	  if (in_expand_p)
 	    {
 	      rtx mem
@@ -156,8 +164,17 @@ ubsan_encode_value (tree t, bool in_expand_p)
 	      expand_assignment (var, t, false);
 	      return build_fold_addr_expr (var);
 	    }
-	  t = build_fold_addr_expr (var);
-	  return build2 (COMPOUND_EXPR, TREE_TYPE (t), tem, t);
+	  if (current_function_decl)
+	    {
+	      tree tem = build2 (MODIFY_EXPR, void_type_node, var, t);
+	      t = build_fold_addr_expr (var);
+	      return build2 (COMPOUND_EXPR, TREE_TYPE (t), tem, t);
+	    }
+	  else
+	    {
+	      var = build4 (TARGET_EXPR, type, var, t, NULL_TREE, NULL_TREE);
+	      return build_fold_addr_expr (var);
+	    }
 	}
       else
 	return build_fold_addr_expr (t);
