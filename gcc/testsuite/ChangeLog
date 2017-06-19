@@ -1,3 +1,8 @@
+2017-06-19  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* g++.dg/other/unused1.C: Remove *-*-solaris2.[56]* from
+	dg-skip-if list.
+
 2017-06-19  Richard Biener  <rguenther@suse.de>
 
 	PR ipa/81112
