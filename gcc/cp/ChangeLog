@@ -1,5 +1,9 @@
 2017-06-19  Nathan Sidwell  <nathan@acm.org>
 
+	* pt.c (coerce_template_parms): Fix indentation.
+	(tsubst_decl): Remove repeated SET_DECL_RTL.  Move VAR_P handling
+	in to single block.
+
 	PR c++/81119
 	* name-lookup.c (update_binding): Only warn about constructors
 	hidden by functions.
