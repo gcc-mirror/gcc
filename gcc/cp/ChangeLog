@@ -1,3 +1,13 @@
+2017-06-19  Jason Merrill  <jason@redhat.com>
+
+	PR c++/81073 - constexpr and static var in statement-expression.
+	* typeck2.c (store_init_value): Always call
+	require_potential_constant_expression.
+	* pt.c (convert_nontype_argument): Likewise.
+	* constexpr.c (potential_constant_expression_1): Adjust message.
+	Use decl_maybe_constant_var_p instead of decl_constant_var_p.
+	* decl2.c (decl_maybe_constant_var_p): Consider initializer.
+
 2017-06-19  Nathan Sidwell  <nathan@acm.org>
 
 	* pt.c (coerce_template_parms): Fix indentation.

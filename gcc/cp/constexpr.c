@@ -5212,10 +5212,11 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict,
       if (want_rval
 	  && !var_in_maybe_constexpr_fn (t)
 	  && !type_dependent_expression_p (t)
-	  && !decl_constant_var_p (t)
+	  && !decl_maybe_constant_var_p (t)
 	  && (strict
 	      || !CP_TYPE_CONST_NON_VOLATILE_P (TREE_TYPE (t))
-	      || !DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (t))
+	      || (DECL_INITIAL (t)
+		  && !DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (t)))
 	  && COMPLETE_TYPE_P (TREE_TYPE (t))
 	  && !is_really_empty_class (TREE_TYPE (t)))
         {
@@ -5540,21 +5541,21 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict,
 	    {
 	      if (flags & tf_error)
 		error_at (DECL_SOURCE_LOCATION (tmp), "%qD declared "
-			  "%<static%> in %<constexpr%> function", tmp);
+			  "%<static%> in %<constexpr%> context", tmp);
 	      return false;
 	    }
 	  else if (CP_DECL_THREAD_LOCAL_P (tmp))
 	    {
 	      if (flags & tf_error)
 		error_at (DECL_SOURCE_LOCATION (tmp), "%qD declared "
-			  "%<thread_local%> in %<constexpr%> function", tmp);
+			  "%<thread_local%> in %<constexpr%> context", tmp);
 	      return false;
 	    }
 	  else if (!DECL_NONTRIVIALLY_INITIALIZED_P (tmp))
 	    {
 	      if (flags & tf_error)
 		error_at (DECL_SOURCE_LOCATION (tmp), "uninitialized "
-			  "variable %qD in %<constexpr%> function", tmp);
+			  "variable %qD in %<constexpr%> context", tmp);
 	      return false;
 	    }
 	}
