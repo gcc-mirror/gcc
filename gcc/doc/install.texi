@@ -2619,8 +2619,9 @@ bootstrap the compiler with profile feedback, use @code{make profiledbootstrap}.
 When @samp{make profiledbootstrap} is run, it will first build a @code{stage1}
 compiler.  This compiler is used to build a @code{stageprofile} compiler
 instrumented to collect execution counts of instruction and branch
-probabilities.  Then runtime libraries are compiled with profile collected.
-Finally a @code{stagefeedback} compiler is built using the information collected.
+probabilities.  Training run is done by building @code{stagetrain}
+compiler.  Finally a @code{stagefeedback} compiler is built
+using the information collected.
 
 Unlike standard bootstrap, several additional restrictions apply.  The
 compiler used to build @code{stage1} needs to support a 64-bit integral type.
