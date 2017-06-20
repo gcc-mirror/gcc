@@ -1,3 +1,34 @@
+2017-06-20  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* c-c++-common/fold-masked-cmp-1.c: Allow for i?86-*-* target.
+	* c-c++-common/fold-masked-cmp-2.c: Likewise.
+	* c-c++-common/fold-masked-cmp-3.c: Likewise.
+	* g++.dg/cpp0x/alignas4.C: Allow for i?86-*-* target, don't
+	restrict to x86_64-*-*-gnu.
+	Skip scan-assembler on *-*-darwin*.
+	* g++.dg/vect/pr70944.cc: Allow for i?86-*-* target.
+	* gcc.dg/loop-invariant.c: Likewise.
+	* gcc.dg/lto/pr70955_0.c: Likewise.
+	* gcc.dg/tree-ssa/pr69196-1.c: Likewise.
+	* gcc.dg/tree-ssa/pr79803.c: Likewise.
+	* gfortran.dg/pr68078.f90: Allow for i?86-*-linux*.
+
+	* g++.dg/debug/dwarf2/const2b.C: Allow for x86_64-*-* target.
+	* gcc.dg/attr-ms_struct-1.c: Allow for all i?86-*-*, x86_64-*-*
+	targets.
+	* gcc.dg/attr-ms_struct-2.c: Likewise.
+	* gcc.dg/attr-ms_struct-packed1.c: Likewise.
+	* gcc.dg/bf-ms-layout.c: Likewise.
+	* gcc.dg/bf-ms-layout-2.c: Likewise.
+	* gcc.dg/pic-macro-define.c: Remove target restrictions.
+	Require fpic support.
+	* gcc.target/i386/bitfield1.c: Allow for all i?86-*-*, x86_64-*-*
+	targets.
+	* gcc.target/i386/bitfield2.c: Likewise.
+	* gcc.target/i386/darwin-fpmath.c: Allow for x86_64-*-darwin*
+	targets.
+	* gfortran.dg/fmt_pf.f90: Remove i?86-*-solaris2.9* from xfail.
+
 2017-06-20  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/67074
