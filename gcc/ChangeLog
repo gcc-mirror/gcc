@@ -1,5 +1,10 @@
 2017-06-20  Jakub Jelinek  <jakub@redhat.com>
 
+	PR sanitizer/81125
+	* ubsan.h (ubsan_encode_value): Workaround buggy clang++ parser
+	by removing enum keyword.
+	(ubsan_type_descriptor): Likewise.  Formatting fix.
+
 	PR target/81121
 	* config/i386/i386.md (TARGET_USE_VECTOR_CONVERTS float si->{sf,df}
 	splitter): Require TARGET_SSE2 in the condition.
