@@ -1,3 +1,17 @@
+2017-06-20  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/79799
+	* config/rs6000/rs6000.c (rs6000_expand_vector_init): Add support
+	for doing vector set of SFmode on ISA 3.0.
+	* config/rs6000/vsx.md (vsx_set_v4sf_p9): Likewise.
+	(vsx_set_v4sf_p9_zero): Special case setting 0.0f to a V4SF
+	element.
+	(vsx_insert_extract_v4sf_p9): Add an optimization for inserting a
+	SFmode value into a V4SF variable that was extracted from another
+	V4SF variable without converting the element to double precision
+	and back to single precision vector format.
+	(vsx_insert_extract_v4sf_p9_2): Likewise.
+
 2017-06-19  Jakub Jelinek  <jakub@redhat.com>
 
 	* tree-ssa-structalias.c (get_constraint_for_ptr_offset): Multiply
