@@ -1,3 +1,9 @@
+2017-06-20  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/pr80732.c: Include fma4-check.h.
+	(main): Renamed to ...
+	(fma4_test): ... this.
+
 2017-06-20  Julia Koval  <julia.koval@intel.com>
 
 	* gcc.target/i386/pr73350-2.c: New test.

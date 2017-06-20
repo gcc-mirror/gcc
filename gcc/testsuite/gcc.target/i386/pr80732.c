@@ -6,6 +6,8 @@
 /* { dg-require-effective-target fpic } */
 /* { dg-require-effective-target pie } */
 
+#include "fma4-check.h"
+
 #include <dlfcn.h>
 
 __attribute__((target_clones("default","fma"),noinline,optimize("fast-math")))
@@ -51,7 +53,8 @@ double k2(double a, double b, double c, void **p)
 
 double (*initializer) (double, double, double) = { &f1 };
 
-int main()
+static void
+fma4_test (void)
 {
     char buffer[256];
     const char *expectation = "4.93038e-32, 4.93038e-32, 4.93038e-32";
@@ -87,6 +90,4 @@ int main()
     __builtin_sprintf(buffer, "%g, %g, %g", initializer (a, b, c), v2_2, v2_3);
     if (__builtin_strcmp (buffer, expectation) != 0)
       __builtin_abort ();
-
-    return 0;
 }
