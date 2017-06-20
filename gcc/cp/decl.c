@@ -3982,7 +3982,6 @@ initialize_predefined_identifiers (void)
     { "__base_dtor ", &base_dtor_identifier, 1 },
     { "__deleting_dtor ", &deleting_dtor_identifier, 1 },
     { IN_CHARGE_NAME, &in_charge_identifier, 0 },
-    { "nelts", &nelts_identifier, 0 },
     { THIS_NAME, &this_identifier, 0 },
     { VTABLE_DELTA_NAME, &delta_identifier, 0 },
     { VTABLE_PFN_NAME, &pfn_identifier, 0 },

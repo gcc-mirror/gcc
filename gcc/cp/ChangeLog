@@ -1,5 +1,9 @@
 2017-06-20  Nathan Sidwell  <nathan@acm.org>
 
+	* cp-tree.h (CPTI_NELTS_IDENTIFIER): Delete.
+	(nelts_identifier): Delete.
+	* decl.c (initialize_predefined_identifiers): Remove nelts.
+
 	PR c++/67074 - namespace aliases
 	* decl.c (duplicate_decls): Don't error here on mismatched
 	namespace alias.
