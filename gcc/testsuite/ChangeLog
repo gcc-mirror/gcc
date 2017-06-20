@@ -1,3 +1,9 @@
+2017-06-20  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/67074
+	* g++.dg/lookup/pr67074.C: New.
+	* g++.dg/parse/namespace-alias-1.C: Adjust.
+
 2017-06-20  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/81097
