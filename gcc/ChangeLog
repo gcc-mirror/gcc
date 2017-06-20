@@ -1,3 +1,9 @@
+2017-06-20  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/aarch64/aarch64-cores.def: Rearrange to sort by
+	architecture, then by implementer ID.
+	* config/aarch64/aarch64-tune.md: Regenerate.
+
 2017-06-20  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/81097
