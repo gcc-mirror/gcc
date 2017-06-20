@@ -1751,17 +1751,9 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 	  && (DECL_NAMESPACE_ALIAS (newdecl)
 	      == DECL_NAMESPACE_ALIAS (olddecl)))
 	return olddecl;
-      /* [namespace.alias]
 
-	 A namespace-name or namespace-alias shall not be declared as
-	 the name of any other entity in the same declarative region.
-	 A namespace-name defined at global scope shall not be
-	 declared as the name of any other entity in any global scope
-	 of the program.  */
-      error ("conflicting declaration of namespace %q+D", newdecl);
-      inform (DECL_SOURCE_LOCATION (olddecl),
-	      "previous declaration of namespace %qD here", olddecl);
-      return error_mark_node;
+      /* Leave it to update_binding to merge or report error.  */
+      return NULL_TREE;
     }
   else
     {

@@ -1,3 +1,13 @@
+2017-06-20  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/67074 - namespace aliases
+	* decl.c (duplicate_decls): Don't error here on mismatched
+	namespace alias.
+	* name-lookup.c (name_lookup::add_value): Matching namespaces are
+	not ambiguous.
+	(diagnose_name_conflict): Namespaces are never redeclarations.
+	(update_binding): An alias can match a real namespace.
+
 2017-06-19  Jason Merrill  <jason@redhat.com>
 
 	PR c++/80562 - ICE with constexpr if.
