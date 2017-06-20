@@ -7451,6 +7451,8 @@ rs6000_expand_vector_set (rtx target, rtx val, int elt)
 	    insn = gen_vsx_set_v8hi_p9 (target, target, val, elt_rtx);
 	  else if (mode == V16QImode)
 	    insn = gen_vsx_set_v16qi_p9 (target, target, val, elt_rtx);
+	  else if (mode == V4SFmode)
+	    insn = gen_vsx_set_v4sf_p9 (target, target, val, elt_rtx);
 	}
 
       if (insn)
