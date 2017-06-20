@@ -36597,8 +36597,8 @@ ix86_expand_sse_comi_round (const struct builtin_description *d,
     }
   else
     {
-      gcc_assert (GET_CODE (XVECEXP (pat, 0, 0)) == SET);
-      set_dst = SET_DEST (XVECEXP (pat, 0, 0));
+      gcc_assert (GET_CODE (pat) == SET);
+      set_dst = SET_DEST (pat);
     }
 
   emit_insn (pat);
