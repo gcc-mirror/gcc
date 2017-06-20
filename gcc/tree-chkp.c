@@ -690,9 +690,8 @@ chkp_erase_completed_bounds (void)
 static tree
 chkp_get_hard_register_var_fake_base_address ()
 {
-  tree base = fold_convert (ptr_type_node, integer_zero_node);
-  unsigned HOST_WIDE_INT offset = 1 << (TYPE_PRECISION (ptr_type_node) - 1);
-  return fold_build_pointer_plus_hwi (base, offset);
+  int prec = TYPE_PRECISION (ptr_type_node);
+  return wide_int_to_tree (ptr_type_node, wi::min_value (prec, SIGNED));
 }
 
 /* If we check bounds for a hard register variable, we cannot

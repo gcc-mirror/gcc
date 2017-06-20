@@ -1,4 +1,7 @@
-2017-06-20  Jakub Jelinek  <jakub@redhat.com>
+2017-07-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree-chkp.c (chkp_get_hard_register_var_fake_base_address):
+	Rewritten to avoid overflow for > 32-bit pointers.
 
 	PR sanitizer/81125
 	* ubsan.h (ubsan_encode_value): Workaround buggy clang++ parser
