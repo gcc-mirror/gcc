@@ -1,3 +1,8 @@
+2017-06-20  Julia Koval  <julia.koval@intel.com>
+
+	* config/i386/i386.c: Fix rounding expand for new pattern.
+	* config/i386/subst.md: Fix pattern (parallel -> unspec).
+
 2017-06-20  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* config/aarch64/aarch64-option-extensions.def (rcpc): New.

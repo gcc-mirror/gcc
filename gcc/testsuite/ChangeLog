@@ -1,3 +1,7 @@
+2017-06-20  Julia Koval  <julia.koval@intel.com>
+
+	* gcc.target/i386/pr73350-2.c: New test.
+
 2017-06-20  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* c-c++-common/fold-masked-cmp-1.c: Allow for i?86-*-* target.
