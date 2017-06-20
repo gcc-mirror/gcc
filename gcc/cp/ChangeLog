@@ -1,3 +1,9 @@
+2017-06-20  Jason Merrill  <jason@redhat.com>
+
+	PR c++/80972 - C++17 ICE with attribute packed.
+	* call.c (build_over_call): Allow a TARGET_EXPR from reference
+	binding.
+
 2017-06-20  Nathan Sidwell  <nathan@acm.org>
 
 	* cp-tree.h (CPTI_NELTS_IDENTIFIER): Delete.
