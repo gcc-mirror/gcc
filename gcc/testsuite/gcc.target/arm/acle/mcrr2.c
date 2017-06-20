@@ -5,6 +5,9 @@
 /* { dg-require-effective-target arm_coproc4_ok } */
 
 #include "arm_acle.h"
+#if (__ARM_FEATURE_COPROC & 0x8) == 0
+  #error "__ARM_FEATURE_COPROC does not have correct feature bits set"
+#endif
 
 void test_mcrr2 (uint64_t a)
 {

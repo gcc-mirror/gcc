@@ -200,6 +200,22 @@ arm_cpu_builtins (struct cpp_reader* pfile)
   def_or_undef_macro (pfile, "__ARM_FEATURE_IDIV", TARGET_IDIV);
 
   def_or_undef_macro (pfile, "__ARM_ASM_SYNTAX_UNIFIED__", inline_asm_unified);
+
+  if (TARGET_32BIT && arm_arch4 && !(arm_arch8 && arm_arch_notm))
+    {
+      int coproc_level = 0x1;
+
+      if (arm_arch5)
+	coproc_level |= 0x2;
+      if (arm_arch5e)
+	coproc_level |= 0x4;
+      if (arm_arch6)
+	coproc_level |= 0x8;
+
+      builtin_define_with_int_value ("__ARM_FEATURE_COPROC", coproc_level);
+    }
+  else
+      cpp_undef (pfile, "__ARM_FEATURE_COPROC");
 }
 
 void

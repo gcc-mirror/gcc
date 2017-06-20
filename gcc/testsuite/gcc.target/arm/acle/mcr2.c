@@ -5,6 +5,9 @@
 /* { dg-require-effective-target arm_coproc2_ok } */
 
 #include "arm_acle.h"
+#if (__ARM_FEATURE_COPROC & 0x2) == 0
+  #error "__ARM_FEATURE_COPROC does not have correct feature bits set"
+#endif
 
 void test_mcr2 (uint32_t a)
 {

@@ -1,4 +1,9 @@
-2017-07-20  Jakub Jelinek  <jakub@redhat.com>
+2017-06-20  Prakhar Bahuguna  <prakhar.bahuguna@arm.com>
+
+	* config/arm/arm-c.c (arm_cpu_builtins): New block to define
+	__ARM_FEATURE_COPROC according to support.
+
+2017-06-20  Jakub Jelinek  <jakub@redhat.com>
 
 	* tree-chkp.c (chkp_get_hard_register_var_fake_base_address):
 	Rewritten to avoid overflow for > 32-bit pointers.
