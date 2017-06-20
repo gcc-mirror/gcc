@@ -1,3 +1,10 @@
+2017-06-20  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/81144
+	* jit.dg/test-operator-overloading.cc (make_test_quadratic): Replace
+	memset call with zero-initialization.
+	* jit.dg/test-quadratic.cc (make_test_quadratic): Likewise.
+
 2017-06-20  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.target/i386/pr80732.c: Include fma4-check.h.
