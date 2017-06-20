@@ -1,3 +1,8 @@
+2017-06-20  Andreas Tobler  <andreast@gcc.gnu.org>
+
+	* config.gcc (armv6*-*-freebsd*): Change the target_cpu_cname to
+	arm1176jzf-s.
+
 2017-06-20  Jakub Jelinek  <jakub@redhat.com>
 
 	* ira-costs.c (find_costs_and_classes): Initialize cost_classes later
