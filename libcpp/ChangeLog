@@ -1,3 +1,10 @@
+2017-06-20  David Malcolm  <dmalcolm@redhat.com>
+
+	* include/line-map.h (class rich_location): Document that attempts
+	to delete or replace a range *affecting* multiple lines will fail.
+	* line-map.c (rich_location::maybe_add_fixit): Implement this
+	restriction.
+
 2017-06-09  David Malcolm  <dmalcolm@redhat.com>
 
 	* include/line-map.h

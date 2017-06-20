@@ -2793,6 +2793,53 @@ test_fixit_replace_containing_newline (const line_table_case &case_)
 		pp_formatted_text (dc.printer));
 }
 
+/* Fix-it hint, attempting to delete a newline.
+   This will fail, as we currently only support fix-it hints that
+   affect one line at a time.  */
+
+static void
+test_fixit_deletion_affecting_newline (const line_table_case &case_)
+{
+  /* Create a tempfile and write some text to it.
+    ..........................0000000001111.
+    ..........................1234567890123.  */
+  const char *old_content = ("foo = bar (\n"
+			     "      );\n");
+
+  temp_source_file tmp (SELFTEST_LOCATION, ".c", old_content);
+  line_table_test ltt (case_);
+  const line_map_ordinary *ord_map = linemap_check_ordinary
+    (linemap_add (line_table, LC_ENTER, false, tmp.get_filename (), 0));
+  linemap_line_start (line_table, 1, 100);
+
+  /* Attempt to delete the " (\n...)".  */
+  location_t start
+    = linemap_position_for_line_and_column (line_table, ord_map, 1, 10);
+  location_t caret
+    = linemap_position_for_line_and_column (line_table, ord_map, 1, 11);
+  location_t finish
+    = linemap_position_for_line_and_column (line_table, ord_map, 2, 7);
+  location_t loc = make_location (caret, start, finish);
+  rich_location richloc (line_table, loc);
+  richloc. add_fixit_remove ();
+
+  /* Fix-it hints that affect more than one line are not yet supported, so
+     the fix-it should not be displayed.  */
+  ASSERT_TRUE (richloc.seen_impossible_fixit_p ());
+
+  if (finish > LINE_MAP_MAX_LOCATION_WITH_COLS)
+    return;
+
+  test_diagnostic_context dc;
+  diagnostic_show_locus (&dc, &richloc, DK_ERROR);
+  ASSERT_STREQ ("\n"
+		" foo = bar (\n"
+		"          ~^\n"
+		"       );\n"
+		"       ~    \n",
+		pp_formatted_text (dc.printer));
+}
+
 /* Run all of the selftests within this file.  */
 
 void
@@ -2813,6 +2860,7 @@ diagnostic_show_locus_c_tests ()
   for_each_line_table_case (test_fixit_insert_containing_newline);
   for_each_line_table_case (test_fixit_insert_containing_newline_2);
   for_each_line_table_case (test_fixit_replace_containing_newline);
+  for_each_line_table_case (test_fixit_deletion_affecting_newline);
 }
 
 } // namespace selftest
