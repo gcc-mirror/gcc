@@ -1,3 +1,7 @@
+2017-06-20  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/abi/post/alpha-linux-gnu/baseline_symbols.txt: Update.
+
 2017-06-20  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* testsuite/20_util/variant/index_type.cc: Allow for all ilp32 and
