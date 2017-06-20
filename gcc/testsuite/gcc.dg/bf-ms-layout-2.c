@@ -5,7 +5,7 @@
    posted to GCC-patches
    http://gcc.gnu.org/ml/gcc-patches/2000-08/msg00577.html */
 
-/* { dg-do run { target *-*-mingw* *-*-cygwin* i?86-*-darwin* } } */
+/* { dg-do run { target i?86-*-* x86_64-*-* } } */
 /* { dg-options "-D_TEST_MS_LAYOUT" } */
 /* This test uses the attribute instead of the command line option.  */
 

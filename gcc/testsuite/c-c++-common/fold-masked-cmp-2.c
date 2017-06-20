@@ -1,6 +1,6 @@
 /* Based on PR 67328 */
 
-/* { dg-do compile { target x86_64-*-* } } */
+/* { dg-do compile { target i?86-*-* x86_64-*-* } } */
 /* { dg-options "-O2" } */
 
 enum output_type

@@ -1,5 +1,5 @@
 // { dg-options "-std=gnu++17" }
-// { dg-do compile { target x86_64-*-* powerpc*-*-* } }
+// { dg-do compile { target { ilp32 || lp64 } } }
 
 // Copyright (C) 2017 Free Software Foundation, Inc.
 //
