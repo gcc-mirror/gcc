@@ -1,3 +1,8 @@
+2017-06-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* ira-costs.c (find_costs_and_classes): Initialize cost_classes later
+	to make sure not to dereference a NULL cost_classes_ptr pointer.
+
 2017-06-20  Carl Love  <cel@us.ibm.com>
 
 	* config/rs6000/rs6000-c.c (altivec_overloaded_builtins): Add
