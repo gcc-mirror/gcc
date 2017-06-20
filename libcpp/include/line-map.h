@@ -1556,6 +1556,8 @@ class fixit_hint;
    inserting at the start of a line, and finishing with a newline
    (with no interior newline characters).  Other attempts to add
    fix-it hints containing newline characters will fail.
+   Similarly, attempts to delete or replace a range *affecting* multiple
+   lines will fail.
 
    The rich_location API handles these failures gracefully, so that
    diagnostics can attempt to add fix-it hints without each needing

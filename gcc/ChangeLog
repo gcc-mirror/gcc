@@ -1,3 +1,9 @@
+2017-06-20  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic-show-locus.c
+	(selftest::test_fixit_deletion_affecting_newline): New function.
+	(selftest::diagnostic_show_locus_c_tests): Call it.
+
 2017-06-20  Andreas Schwab  <schwab@suse.de>
 
 	PR target/80970
