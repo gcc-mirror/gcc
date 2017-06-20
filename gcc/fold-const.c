@@ -853,9 +853,9 @@ split_tree (location_t loc, tree in, tree type, enum tree_code code,
 	   && code == PLUS_EXPR)
     {
       /* -X - 1 is folded to ~X, undo that here.  Do _not_ do this
-         when IN is constant.  */
-      *minus_litp = build_one_cst (TREE_TYPE (in));
-      var = negate_expr (TREE_OPERAND (in, 0));
+         when IN is constant.  Convert to TYPE before negating.  */
+      *minus_litp = build_one_cst (type);
+      var = negate_expr (fold_convert_loc (loc, type, TREE_OPERAND (in, 0)));
     }
   else
     var = in;

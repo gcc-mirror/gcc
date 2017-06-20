@@ -1,3 +1,8 @@
+2017-06-20  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/81097
+	* fold-const.c (split_tree): Fold to type before negating.
+
 2017-06-20  David Malcolm  <dmalcolm@redhat.com>
 
 	* diagnostic-show-locus.c
