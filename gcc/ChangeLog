@@ -1,3 +1,9 @@
+2017-06-20  Andreas Schwab  <schwab@suse.de>
+
+	PR target/80970
+	* config/m68k/m68k.md (bsetdreg, bchgdreg, bclrdreg): Use "=d"
+	instead of "+d".
+
 2017-06-20  Prakhar Bahuguna  <prakhar.bahuguna@arm.com>
 
 	* config/arm/arm-c.c (arm_cpu_builtins): New block to define
