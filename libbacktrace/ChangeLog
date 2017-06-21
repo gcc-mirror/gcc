@@ -1,3 +1,9 @@
+2017-06-21  Richard Biener  <rguenther@suse.de>
+
+	* configure.ac: Add AC_SYS_LARGEFILE.
+	* config.h.in: Regenerate.
+	* configure: Likewise.
+
 2017-06-11  Ian Lance Taylor  <iant@golang.org>
 
 	* elf.c (backtrace_initialize): Always set *fileline_fn.
