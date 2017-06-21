@@ -1,3 +1,8 @@
+2017-06-21  Tom de Vries  <tom@codesourcery.com>
+
+	* gcc.dg/tree-prof/comp-goto-1.c: Fix 'return type defaults to int'
+	warning.
+
 2017-06-21  Martin Liska  <mliska@suse.cz>
 
 	* gcc.dg/tree-ssa/attr-hotcold-2.c: Update scanned patterns.
