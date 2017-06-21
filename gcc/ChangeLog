@@ -1,5 +1,10 @@
 2017-06-21  Wilco Dijkstra  <wdijkstr@arm.com>
 
+	* config/aarch64/aarch64-simd.md (aarch64_simd_dup):
+	Swap alternatives, make integer dup more expensive.
+
+2017-06-21  Wilco Dijkstra  <wdijkstr@arm.com>
+
 	* config/aarch64/aarch64.c (aarch64_legitimate_constant_p):
 	Return true for non-tls symbols.
 
