@@ -299,9 +299,9 @@ GOARCH_HUGEPAGESIZE="1 << 21"
 	[AC_MSG_ERROR([unknown MIPS ABI])
 [mips_abi="n32"]])])])])
     case "$mips_abi" in
-    "o32") GOARCH=mipso32 ;;
-    "n32") GOARCH=mipsn32 ;;
-    "n64") GOARCH=mipsn64 ;;
+    "o32") GOARCH=mips ;;
+    "n32") GOARCH=mips64p32 ;;
+    "n64") GOARCH=mips64 ;;
     "o64") GOARCH=mipso64 ;;
     esac
     case "$mips_abi" in
@@ -315,7 +315,8 @@ GOARCH_HUGEPAGESIZE="1 << 21"
         ;;
     esac
     case "${host}" in
-    mips*el)
+    mips*el-*-*)
+        GOARCH="${GOARCH}le"
         ;;
     *)
 	GOARCH_BIGENDIAN=1

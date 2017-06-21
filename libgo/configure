@@ -13769,9 +13769,9 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
     case "$mips_abi" in
-    "o32") GOARCH=mipso32 ;;
-    "n32") GOARCH=mipsn32 ;;
-    "n64") GOARCH=mipsn64 ;;
+    "o32") GOARCH=mips ;;
+    "n32") GOARCH=mips64p32 ;;
+    "n64") GOARCH=mips64 ;;
     "o64") GOARCH=mipso64 ;;
     esac
     case "$mips_abi" in
@@ -13785,7 +13785,8 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
         ;;
     esac
     case "${host}" in
-    mips*el)
+    mips*el-*-*)
+	GOARCH="${GOARCH}le"
         ;;
     *)
 	GOARCH_BIGENDIAN=1
