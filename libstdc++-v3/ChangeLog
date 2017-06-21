@@ -1,3 +1,27 @@
+2017-06-21  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	PR libstdc++/80675
+	PR libstdc++/80940
+	* include/std/istream:
+	(__is_convertible_to_basic_istream_test(basic_istream<_Ch, _Up>*)): New.
+	(__do_is_convertible_to_basic_istream_impl): Likewise.
+	(__is_convertible_to_basic_istream_impl): Likewise.
+	(__is_convertible_to_basic_istream): Use the new base.
+	(__rvalue_istream_type): New.
+	(operator>>(_Istream&&, _Tp&&)): Use the new helper alias
+	for the SFINAE check, convert to the helper alias type before
+	doing the actual extraction.
+	* include/std/ostream:
+	(__is_convertible_to_basic_ostream_test(basic_ostream<_Ch, _Up>*)): New.
+	(__do_is_convertible_to_basic_ostream_impl): Likewise.
+	(__is_convertible_to_basic_ostream_impl): Likewise.
+	(__is_convertible_to_basic_ostream): Use the new base.
+	(__rvalue_ostream_type): New.
+	(operator<<(_Ostream&&, const _Tp&)): Use the new helper alias
+	for the SFINAE check, convert to the helper alias type before
+	doing the actual insertion.
+	* testsuite/27_io/rvalue_streams-2.cc: Add new tests.
+
 2017-06-21  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
 	* config/abi/post/aarch64-linux-gnu/baseline_symbols.txt: Update.
