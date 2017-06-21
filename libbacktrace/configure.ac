@@ -82,6 +82,8 @@ esac
 LT_INIT
 AM_PROG_LIBTOOL
 
+AC_SYS_LARGEFILE
+
 backtrace_supported=yes
 
 if test -n "${with_target_subdir}"; then
