@@ -2739,7 +2739,6 @@ tree_estimate_probability_bb (basic_block bb, bool local_only)
 {
   edge e;
   edge_iterator ei;
-  gimple *last;
 
   FOR_EACH_EDGE (e, ei, bb->succs)
     {
@@ -2764,46 +2763,6 @@ tree_estimate_probability_bb (basic_block bb, bool local_only)
 	      else if (lookup_attribute ("hot", DECL_ATTRIBUTES (decl)))
 		predict_edge_def (e, PRED_HOT_LABEL, TAKEN);
 	    }
-	}
-
-      /* Predict early returns to be probable, as we've already taken
-	 care for error returns and other cases are often used for
-	 fast paths through function.
-
-	 Since we've already removed the return statements, we are
-	 looking for CFG like:
-
-	 if (conditional)
-	 {
-	 ..
-	 goto return_block
-	 }
-	 some other blocks
-	 return_block:
-	 return_stmt.  */
-      if (e->dest != bb->next_bb
-	  && e->dest != EXIT_BLOCK_PTR_FOR_FN (cfun)
-	  && single_succ_p (e->dest)
-	  && single_succ_edge (e->dest)->dest == EXIT_BLOCK_PTR_FOR_FN (cfun)
-	  && (last = last_stmt (e->dest)) != NULL
-	  && gimple_code (last) == GIMPLE_RETURN)
-	{
-	  edge e1;
-	  edge_iterator ei1;
-
-	  if (single_succ_p (bb))
-	    {
-	      FOR_EACH_EDGE (e1, ei1, bb->preds)
-		if (!predicted_by_p (e1->src, PRED_NULL_RETURN)
-		    && !predicted_by_p (e1->src, PRED_CONST_RETURN)
-		    && !predicted_by_p (e1->src, PRED_NEGATIVE_RETURN))
-		  predict_edge_def (e1, PRED_TREE_EARLY_RETURN, NOT_TAKEN);
-	    }
-	  else
-	    if (!predicted_by_p (e->src, PRED_NULL_RETURN)
-		&& !predicted_by_p (e->src, PRED_CONST_RETURN)
-		&& !predicted_by_p (e->src, PRED_NEGATIVE_RETURN))
-	      predict_edge_def (e, PRED_TREE_EARLY_RETURN, NOT_TAKEN);
 	}
 
       /* Look for block we are guarding (ie we dominate it,

@@ -1,3 +1,19 @@
+2017-06-21  Martin Liska  <mliska@suse.cz>
+
+	PR tree-optimization/79489
+	* gimplify.c (maybe_add_early_return_predict_stmt): New
+	function.
+	(gimplify_return_expr): Call the function.
+	* predict.c (tree_estimate_probability_bb): Remove handling
+	of early return.
+	* predict.def: Update comment about early return predictor.
+	* gimple-predict.h (is_gimple_predict): New function.
+	* predict.def: Change default value of early return to 66.
+	* tree-tailcall.c (find_tail_calls): Skip GIMPLE_PREDICT
+	statements.
+	* passes.def: Put pass_strip_predict_hints to the beginning of
+	IPA passes.
+
 2017-06-21  Pierre-Marie de Rodat  <derodat@adacore.com>
 
 	* dwarf2out.c (gen_decl_die): Remove the guard to skip file-scope
