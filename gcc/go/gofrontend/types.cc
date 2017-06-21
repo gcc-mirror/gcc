@@ -7635,11 +7635,18 @@ Array_type::get_value_pointer(Gogo*, Expression* array, bool is_lvalue) const
     {
       Temporary_reference_expression* tref =
           array->temporary_reference_expression();
+      Var_expression* ve = array->var_expression();
       if (tref != NULL)
         {
           tref = tref->copy()->temporary_reference_expression();
           tref->set_is_lvalue();
           array = tref;
+        }
+      else if (ve != NULL)
+        {
+          ve = new Var_expression(ve->named_object(), ve->location());
+          ve->set_in_lvalue_pos();
+          array = ve;
         }
     }
 
