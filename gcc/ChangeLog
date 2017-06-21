@@ -1,3 +1,11 @@
+2017-06-21  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/atomics.md (aarch64_compare_and_swap<mode>_lse,
+	SHORT): Relax operand 3 to aarch64_reg_or_zero and constraint to Z.
+	(aarch64_compare_and_swap<mode>_lse, GPI): Likewise.
+	(aarch64_atomic_cas<mode>, SHORT): Likewise for operand 2.
+	(aarch64_atomic_cas<mode>, GPI): Likewise.
+
 2017-06-21  Martin Liska  <mliska@suse.cz>
 
 	* gimplify.c (gimplify_label_expr): Insert GIMPLE_PREDICT
