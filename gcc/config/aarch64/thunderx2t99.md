@@ -461,3 +461,10 @@
   (and (eq_attr "tune" "thunderx2t99")
        (eq_attr "type" "crc"))
   "thunderx2t99_i1")
+
+;; PMULL extension.
+
+(define_insn_reservation "thunderx2t99_pmull" 5
+  (and (eq_attr "tune" "thunderx2t99")
+       (eq_attr "type" "crypto_pmull"))
+  "thunderx2t99_f1")
