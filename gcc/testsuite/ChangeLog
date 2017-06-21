@@ -1,3 +1,7 @@
+2017-06-21  David Malcolm  <dmalcolm@redhat.com>
+
+	* g++.dg/other/old-style-cast-fixits.C: New test case.
+
 2017-06-21  Jakub Jelinek  <jakub@redhat.com>
 
 	* g++.dg/cpp0x/constexpr-cast.C: Adjust dg-error for ILP32.
