@@ -1,5 +1,12 @@
 2017-06-21  Martin Liska  <mliska@suse.cz>
 
+	* gimplify.c (gimplify_label_expr): Insert GIMPLE_PREDICT
+	statements on cold and hot labels.
+	* predict.c (tree_estimate_probability_bb): Remove the
+	prediction from this place.
+
+2017-06-21  Martin Liska  <mliska@suse.cz>
+
 	PR tree-optimization/79489
 	* gimplify.c (maybe_add_early_return_predict_stmt): New
 	function.

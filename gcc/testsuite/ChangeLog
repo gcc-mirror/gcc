@@ -1,3 +1,7 @@
+2017-06-21  Martin Liska  <mliska@suse.cz>
+
+	* gcc.dg/tree-ssa/attr-hotcold-2.c: Update scanned patterns.
+
 2017-06-21  Pierre-Marie de Rodat  <derodat@adacore.com>
 
 	* gnat.dg/debug11_pkg.adb, gnat.dg/debug11_pkg.ads,

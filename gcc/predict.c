@@ -2742,29 +2742,6 @@ tree_estimate_probability_bb (basic_block bb, bool local_only)
 
   FOR_EACH_EDGE (e, ei, bb->succs)
     {
-      /* Predict edges to user labels with attributes.  */
-      if (e->dest != EXIT_BLOCK_PTR_FOR_FN (cfun))
-	{
-	  gimple_stmt_iterator gi;
-	  for (gi = gsi_start_bb (e->dest); !gsi_end_p (gi); gsi_next (&gi))
-	    {
-	      glabel *label_stmt = dyn_cast <glabel *> (gsi_stmt (gi));
-	      tree decl;
-
-	      if (!label_stmt)
-		break;
-	      decl = gimple_label_label (label_stmt);
-	      if (DECL_ARTIFICIAL (decl))
-		continue;
-
-	      /* Finally, we have a user-defined label.  */
-	      if (lookup_attribute ("cold", DECL_ATTRIBUTES (decl)))
-		predict_edge_def (e, PRED_COLD_LABEL, NOT_TAKEN);
-	      else if (lookup_attribute ("hot", DECL_ATTRIBUTES (decl)))
-		predict_edge_def (e, PRED_HOT_LABEL, TAKEN);
-	    }
-	}
-
       /* Look for block we are guarding (ie we dominate it,
 	 but it doesn't postdominate us).  */
       if (e->dest != EXIT_BLOCK_PTR_FOR_FN (cfun) && e->dest != bb
