@@ -602,6 +602,8 @@ func (f *File) applyRelocations(dst []byte, rels []byte) error {
 		return f.applyRelocationss390x(dst, rels)
 	case f.Class == ELFCLASS64 && f.Machine == EM_SPARCV9:
 		return f.applyRelocationsSPARC64(dst, rels)
+	case f.Class == ELFCLASS64 && f.Machine == EM_ALPHA:
+		return f.applyRelocationsALPHA(dst, rels)
 	default:
 		return errors.New("applyRelocations: not implemented")
 	}
@@ -1039,6 +1041,55 @@ func (f *File) applyRelocationsSPARC64(dst []byte, rels []byte) error {
 			}
 			f.ByteOrder.PutUint64(dst[rela.Off:rela.Off+8], uint64(rela.Addend))
 		case R_SPARC_32, R_SPARC_UA32:
+			if rela.Off+4 >= uint64(len(dst)) || rela.Addend < 0 {
+				continue
+			}
+			f.ByteOrder.PutUint32(dst[rela.Off:rela.Off+4], uint32(rela.Addend))
+		}
+	}
+
+	return nil
+}
+
+func (f *File) applyRelocationsALPHA(dst []byte, rels []byte) error {
+	// 24 is the size of Rela64.
+	if len(rels)%24 != 0 {
+		return errors.New("length of relocation section is not a multiple of 24")
+	}
+
+	symbols, _, err := f.getSymbols(SHT_SYMTAB)
+	if err != nil {
+		return err
+	}
+
+	b := bytes.NewReader(rels)
+	var rela Rela64
+
+	for b.Len() > 0 {
+		binary.Read(b, f.ByteOrder, &rela)
+		symNo := rela.Info >> 32
+		t := R_ALPHA(rela.Info & 0xffff)
+
+		if symNo == 0 || symNo > uint64(len(symbols)) {
+			continue
+		}
+		sym := &symbols[symNo-1]
+		if SymType(sym.Info&0xf) != STT_SECTION {
+			// We don't handle non-section relocations for now.
+			continue
+		}
+
+		// There are relocations, so this must be a normal
+		// object file, and we only look at section symbols,
+		// so we assume that the symbol value is 0.
+
+		switch t {
+		case R_ALPHA_REFQUAD:
+			if rela.Off+8 >= uint64(len(dst)) || rela.Addend < 0 {
+				continue
+			}
+			f.ByteOrder.PutUint64(dst[rela.Off:rela.Off+8], uint64(rela.Addend))
+		case R_ALPHA_REFLONG:
 			if rela.Off+4 >= uint64(len(dst)) || rela.Addend < 0 {
 				continue
 			}
