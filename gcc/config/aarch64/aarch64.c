@@ -10129,6 +10129,11 @@ aarch64_legitimate_constant_p (machine_mode mode, rtx x)
       && aarch64_valid_symref (XEXP (x, 0), GET_MODE (XEXP (x, 0))))
     return true;
 
+  /* Treat symbols as constants.  Avoid TLS symbols as they are complex,
+     so spilling them is better than rematerialization.  */
+  if (SYMBOL_REF_P (x) && !SYMBOL_REF_TLS_MODEL (x))
+    return true;
+
   return aarch64_constant_address_p (x);
 }
 
