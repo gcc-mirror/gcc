@@ -8636,6 +8636,85 @@ cp_parser_tokens_start_cast_expression (cp_parser *parser)
     }
 }
 
+/* Try to find a legal C++-style cast to DST_TYPE for ORIG_EXPR, trying them
+   in the order: const_cast, static_cast, reinterpret_cast.
+
+   Don't suggest dynamic_cast.
+
+   Return the first legal cast kind found, or NULL otherwise.  */
+
+static const char *
+get_cast_suggestion (tree dst_type, tree orig_expr)
+{
+  tree trial;
+
+  /* Reuse the parser logic by attempting to build the various kinds of
+     cast, with "complain" disabled.
+     Identify the first such cast that is valid.  */
+
+  /* Don't attempt to run such logic within template processing.  */
+  if (processing_template_decl)
+    return NULL;
+
+  /* First try const_cast.  */
+  trial = build_const_cast (dst_type, orig_expr, tf_none);
+  if (trial != error_mark_node)
+    return "const_cast";
+
+  /* If that fails, try static_cast.  */
+  trial = build_static_cast (dst_type, orig_expr, tf_none);
+  if (trial != error_mark_node)
+    return "static_cast";
+
+  /* Finally, try reinterpret_cast.  */
+  trial = build_reinterpret_cast (dst_type, orig_expr, tf_none);
+  if (trial != error_mark_node)
+    return "reinterpret_cast";
+
+  /* No such cast possible.  */
+  return NULL;
+}
+
+/* If -Wold-style-cast is enabled, add fix-its to RICHLOC,
+   suggesting how to convert a C-style cast of the form:
+
+     (DST_TYPE)ORIG_EXPR
+
+   to a C++-style cast.
+
+   The primary range of RICHLOC is asssumed to be that of the original
+   expression.  OPEN_PAREN_LOC and CLOSE_PAREN_LOC give the locations
+   of the parens in the C-style cast.  */
+
+static void
+maybe_add_cast_fixit (rich_location *rich_loc, location_t open_paren_loc,
+		      location_t close_paren_loc, tree orig_expr,
+		      tree dst_type)
+{
+  /* This function is non-trivial, so bail out now if the warning isn't
+     going to be emitted.  */
+  if (!warn_old_style_cast)
+    return;
+
+  /* Try to find a legal C++ cast, trying them in order:
+     const_cast, static_cast, reinterpret_cast.  */
+  const char *cast_suggestion = get_cast_suggestion (dst_type, orig_expr);
+  if (!cast_suggestion)
+    return;
+
+  /* Replace the open paren with "CAST_SUGGESTION<".  */
+  pretty_printer pp;
+  pp_printf (&pp, "%s<", cast_suggestion);
+  rich_loc->add_fixit_replace (open_paren_loc, pp_formatted_text (&pp));
+
+  /* Replace the close paren with "> (".  */
+  rich_loc->add_fixit_replace (close_paren_loc, "> (");
+
+  /* Add a closing paren after the expr (the primary range of RICH_LOC).  */
+  rich_loc->add_fixit_insert_after (")");
+}
+
+
 /* Parse a cast-expression.
 
    cast-expression:
@@ -8671,6 +8750,7 @@ cp_parser_cast_expression (cp_parser *parser, bool address_p, bool cast_p,
       /* Consume the `('.  */
       cp_token *open_paren = cp_lexer_consume_token (parser->lexer);
       location_t open_paren_loc = open_paren->location;
+      location_t close_paren_loc = UNKNOWN_LOCATION;
 
       /* A very tricky bit is that `(struct S) { 3 }' is a
 	 compound-literal (which we permit in C++ as an extension).
@@ -8733,7 +8813,10 @@ cp_parser_cast_expression (cp_parser *parser, bool address_p, bool cast_p,
 	  /* Look for the type-id.  */
 	  type = cp_parser_type_id (parser);
 	  /* Look for the closing `)'.  */
-	  cp_parser_require (parser, CPP_CLOSE_PAREN, RT_CLOSE_PAREN);
+	  cp_token *close_paren
+	    = cp_parser_require (parser, CPP_CLOSE_PAREN, RT_CLOSE_PAREN);
+	  if (close_paren)
+	    close_paren_loc = close_paren->location;
 	  parser->in_type_id_in_expr_p = saved_in_type_id_in_expr_p;
 	}
 
@@ -8763,8 +8846,13 @@ cp_parser_cast_expression (cp_parser *parser, bool address_p, bool cast_p,
 		  && !in_system_header_at (input_location)
 		  && !VOID_TYPE_P (type)
 		  && current_lang_name != lang_name_c)
-		warning (OPT_Wold_style_cast,
-			 "use of old-style cast to %qT", type);
+		{
+		  gcc_rich_location rich_loc (input_location);
+		  maybe_add_cast_fixit (&rich_loc, open_paren_loc, close_paren_loc,
+					expr, type);
+		  warning_at_rich_loc (&rich_loc, OPT_Wold_style_cast,
+				       "use of old-style cast to %qT", type);
+		}
 
 	      /* Only type conversions to integral or enumeration types
 		 can be used in constant-expressions.  */

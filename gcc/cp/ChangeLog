@@ -1,3 +1,11 @@
+2017-06-21  David Malcolm  <dmalcolm@redhat.com>
+
+	* parser.c (get_cast_suggestion): New function.
+	(maybe_add_cast_fixit): New function.
+	(cp_parser_cast_expression): Capture the location of the closing
+	parenthesis.  Call maybe_add_cast_fixit when emitting warnings
+	about old-style casts.
+
 2017-06-20  Jason Merrill  <jason@redhat.com>
 
 	PR c++/80972 - C++17 ICE with attribute packed.
