@@ -809,7 +809,8 @@ static const struct tune_params thunderx_tunings =
   2,	/* min_div_recip_mul_df.  */
   0,	/* max_case_values.  */
   tune_params::AUTOPREFETCHER_OFF,	/* autoprefetcher_model.  */
-  (AARCH64_EXTRA_TUNE_SLOW_UNALIGNED_LDPW),	/* tune_flags.  */
+  (AARCH64_EXTRA_TUNE_SLOW_UNALIGNED_LDPW
+   | AARCH64_EXTRA_TUNE_CHEAP_SHIFT_EXTEND),	/* tune_flags.  */
   &thunderx_prefetch_tune
 };
 
@@ -6120,9 +6121,10 @@ aarch64_strip_shift (rtx x)
 /* Helper function for rtx cost calculation.  Strip an extend
    expression from X.  Returns the inner operand if successful, or the
    original expression on failure.  We deal with a number of possible
-   canonicalization variations here.  */
+   canonicalization variations here. If STRIP_SHIFT is true, then
+   we can strip off a shift also.  */
 static rtx
-aarch64_strip_extend (rtx x)
+aarch64_strip_extend (rtx x, bool strip_shift)
 {
   rtx op = x;
 
@@ -6146,7 +6148,8 @@ aarch64_strip_extend (rtx x)
 
   /* Now handle extended register, as this may also have an optional
      left shift by 1..4.  */
-  if (GET_CODE (op) == ASHIFT
+  if (strip_shift
+      && GET_CODE (op) == ASHIFT
       && CONST_INT_P (XEXP (op, 1))
       && ((unsigned HOST_WIDE_INT) INTVAL (XEXP (op, 1))) <= 4)
     op = XEXP (op, 0);
@@ -6168,6 +6171,39 @@ static bool
 aarch64_shift_p (enum rtx_code code)
 {
   return code == ASHIFT || code == ASHIFTRT || code == LSHIFTRT;
+}
+
+
+/* Return true iff X is a cheap shift without a sign extend. */
+
+static bool
+aarch64_cheap_mult_shift_p (rtx x)
+{
+  rtx op0, op1;
+
+  op0 = XEXP (x, 0);
+  op1 = XEXP (x, 1);
+
+  if (!(aarch64_tune_params.extra_tuning_flags
+                      & AARCH64_EXTRA_TUNE_CHEAP_SHIFT_EXTEND))
+    return false;
+
+  if (GET_CODE (op0) == SIGN_EXTEND)
+    return false;
+
+  if (GET_CODE (x) == ASHIFT && CONST_INT_P (op1)
+      && UINTVAL (op1) <= 4)
+    return true;
+
+  if (GET_CODE (x) != MULT || !CONST_INT_P (op1))
+    return false;
+
+  HOST_WIDE_INT l2 = exact_log2 (INTVAL (op1));
+
+  if (l2 > 0 && l2 <= 4)
+    return true;
+
+  return false;
 }
 
 /* Helper function for rtx cost calculation.  Calculate the cost of
@@ -6207,7 +6243,11 @@ aarch64_rtx_mult_cost (rtx x, enum rtx_code code, int outer, bool speed)
 	    {
 	      if (compound_p)
 	        {
-	          if (REG_P (op1))
+		  /* If the shift is considered cheap,
+		     then don't add any cost. */
+		  if (aarch64_cheap_mult_shift_p (x))
+		    ;
+	          else if (REG_P (op1))
 		    /* ARITH + shift-by-register.  */
 		    cost += extra_cost->alu.arith_shift_reg;
 		  else if (is_extend)
@@ -6225,7 +6265,7 @@ aarch64_rtx_mult_cost (rtx x, enum rtx_code code, int outer, bool speed)
 	    }
 	  /* Strip extends as we will have costed them in the case above.  */
 	  if (is_extend)
-	    op0 = aarch64_strip_extend (op0);
+	    op0 = aarch64_strip_extend (op0, true);
 
 	  cost += rtx_cost (op0, VOIDmode, code, 0, speed);
 
@@ -7069,13 +7109,13 @@ cost_minus:
 	    if (speed)
 	      *cost += extra_cost->alu.extend_arith;
 
-	    op1 = aarch64_strip_extend (op1);
+	    op1 = aarch64_strip_extend (op1, true);
 	    *cost += rtx_cost (op1, VOIDmode,
 			       (enum rtx_code) GET_CODE (op1), 0, speed);
 	    return true;
 	  }
 
-	rtx new_op1 = aarch64_strip_extend (op1);
+	rtx new_op1 = aarch64_strip_extend (op1, false);
 
 	/* Cost this as an FMA-alike operation.  */
 	if ((GET_CODE (new_op1) == MULT
@@ -7148,7 +7188,7 @@ cost_plus:
 	    if (speed)
 	      *cost += extra_cost->alu.extend_arith;
 
-	    op0 = aarch64_strip_extend (op0);
+	    op0 = aarch64_strip_extend (op0, true);
 	    *cost += rtx_cost (op0, VOIDmode,
 			       (enum rtx_code) GET_CODE (op0), 0, speed);
 	    return true;
@@ -7156,7 +7196,7 @@ cost_plus:
 
 	/* Strip any extend, leave shifts behind as we will
 	   cost them through mult_cost.  */
-	new_op0 = aarch64_strip_extend (op0);
+	new_op0 = aarch64_strip_extend (op0, false);
 
 	if (GET_CODE (new_op0) == MULT
 	    || aarch64_shift_p (GET_CODE (new_op0)))
