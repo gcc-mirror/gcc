@@ -1,3 +1,7 @@
+2017-06-21  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/cpp0x/constexpr-cast.C: Adjust dg-error for ILP32.
+
 2017-06-21  Tom de Vries  <tom@codesourcery.com>
 
 	* lib/profopt.exp (profopt-get-options): Support dg-add-options.
