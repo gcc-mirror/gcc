@@ -1,3 +1,9 @@
+2017-06-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/81151
+	* config/i386/sse.md (round<mode>2): Renumber match_dup and
+	operands indexes to avoid gap between operands and match_dups.
+
 2017-06-21  Andrew Pinski  <apinski@cavium.com>
 
 	* config/aarch64/aarch64-cost-tables.h (thunderx_extra_costs):
