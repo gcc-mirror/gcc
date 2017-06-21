@@ -1,3 +1,8 @@
+2017-06-21  Pierre-Marie de Rodat  <derodat@adacore.com>
+
+	* gnat.dg/debug11_pkg.adb, gnat.dg/debug11_pkg.ads,
+	gnat.dg/debug11_pkg2.ads: New testcase.
+
 2017-06-21  Marc Glisse  <marc.glisse@inria.fr>
 
 	* gcc.target/i386/getround.c: New file.

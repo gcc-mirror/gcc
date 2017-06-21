@@ -1,3 +1,16 @@
+2017-06-21  Pierre-Marie de Rodat  <derodat@adacore.com>
+
+	* dwarf2out.c (gen_decl_die): Remove the guard to skip file-scope
+	FUNCTION_DECL declarations.
+	(dwarf2out_early_global_decl): Remove the guard to skip FUNCTION_DECL
+	declarations.
+	(dwaf2out_decl): Likewise.
+	* godump.c (go_early_global_decl): Skip call to the real debug hook
+	for FUNCTION_DECL declarations.
+	* passes.c (rest_of_decl_compilation): Skip call to the
+	early_global_decl debug hook for FUNCTION_DECL declarations, unless
+	-fdump-go-spec is passed.
+
 2017-06-21  Marc Glisse  <marc.glisse@inria.fr>
 
 	* config/i386/i386.c (struct builtin_isa): New field pure_p.

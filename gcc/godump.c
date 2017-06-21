@@ -504,7 +504,8 @@ static void
 go_early_global_decl (tree decl)
 {
   go_decl (decl);
-  real_debug_hooks->early_global_decl (decl);
+  if (TREE_CODE (decl) != FUNCTION_DECL || DECL_STRUCT_FUNCTION (decl) != NULL)
+    real_debug_hooks->early_global_decl (decl);
 }
 
 /* A global variable decl.  */
