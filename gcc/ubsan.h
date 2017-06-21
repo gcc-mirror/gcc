@@ -42,6 +42,13 @@ enum ubsan_print_style {
   UBSAN_PRINT_ARRAY
 };
 
+/* This controls ubsan_encode_value behavior.  */
+enum ubsan_encode_value_phase {
+  UBSAN_ENCODE_VALUE_GENERIC,
+  UBSAN_ENCODE_VALUE_GIMPLE,
+  UBSAN_ENCODE_VALUE_RTL
+};
+
 extern bool do_ubsan_in_current_function (void);
 extern bool ubsan_expand_bounds_ifn (gimple_stmt_iterator *);
 extern bool ubsan_expand_null_ifn (gimple_stmt_iterator *);
@@ -49,8 +56,10 @@ extern bool ubsan_expand_objsize_ifn (gimple_stmt_iterator *);
 extern bool ubsan_expand_vptr_ifn (gimple_stmt_iterator *);
 extern bool ubsan_instrument_unreachable (gimple_stmt_iterator *);
 extern tree ubsan_create_data (const char *, int, const location_t *, ...);
-extern tree ubsan_type_descriptor (tree, enum ubsan_print_style = UBSAN_PRINT_NORMAL);
-extern tree ubsan_encode_value (tree, bool = false);
+extern tree ubsan_type_descriptor (tree, ubsan_print_style
+					 = UBSAN_PRINT_NORMAL);
+extern tree ubsan_encode_value (tree, ubsan_encode_value_phase
+				      = UBSAN_ENCODE_VALUE_GENERIC);
 extern bool is_ubsan_builtin_p (tree);
 extern tree ubsan_build_overflow_builtin (tree_code, location_t, tree, tree,
 					  tree, tree *);
