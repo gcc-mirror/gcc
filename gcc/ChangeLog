@@ -1,5 +1,13 @@
 2017-06-21  Wilco Dijkstra  <wdijkstr@arm.com>
 
+	* config/aarch64/aarch64.md (movti_aarch64):
+	Emit mov rather than orr.
+	(movtf_aarch64): Likewise.
+	* config/aarch64/aarch64-simd.md (aarch64_simd_mov):
+	Emit mov rather than orr.
+
+2017-06-21  Wilco Dijkstra  <wdijkstr@arm.com>
+
 	* config/aarch64/aarch64-simd.md (aarch64_simd_dup):
 	Swap alternatives, make integer dup more expensive.
 
