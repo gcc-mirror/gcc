@@ -1,3 +1,7 @@
+2017-06-21  Andrew Jenner  <andrew@codesourcery.com>
+
+	* MAINTAINERS: Add myself as maintainer for PowerPC SPE port.
+
 2017-06-19  Martin Liska  <mliska@suse.cz>
 
 	* Makefile.def: Define 4 stages PGO bootstrap.
