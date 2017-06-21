@@ -25289,14 +25289,6 @@ gen_decl_die (tree decl, tree origin, struct vlr_context *ctx,
       break;
 
     case FUNCTION_DECL:
-      /* Don't output any DIEs to represent mere function declarations,
-	 unless they are class members or explicit block externs.  */
-      if (DECL_INITIAL (decl_or_origin) == NULL_TREE
-          && DECL_FILE_SCOPE_P (decl_or_origin)
-	  && (current_function_decl == NULL_TREE
-	      || DECL_ARTIFICIAL (decl_or_origin)))
-	break;
-
 #if 0
       /* FIXME */
       /* This doesn't work because the C frontend sets DECL_ABSTRACT_ORIGIN
@@ -25501,11 +25493,6 @@ dwarf2out_early_global_decl (tree decl)
       tree save_fndecl = current_function_decl;
       if (TREE_CODE (decl) == FUNCTION_DECL)
 	{
-	  /* No cfun means the symbol has no body, so there's nothing
-	     to emit.  */
-	  if (!DECL_STRUCT_FUNCTION (decl))
-	    goto early_decl_exit;
-
 	  /* For nested functions, make sure we have DIEs for the parents first
 	     so that all nested DIEs are generated at the proper scope in the
 	     first shot.  */
@@ -25522,7 +25509,6 @@ dwarf2out_early_global_decl (tree decl)
       if (TREE_CODE (decl) == FUNCTION_DECL)
 	current_function_decl = save_fndecl;
     }
- early_decl_exit:
   symtab->global_info_ready = save;
 }
 
@@ -25761,42 +25747,6 @@ dwarf2out_decl (tree decl)
       return;
 
     case FUNCTION_DECL:
-      /* What we would really like to do here is to filter out all mere
-	 file-scope declarations of file-scope functions which are never
-	 referenced later within this translation unit (and keep all of ones
-	 that *are* referenced later on) but we aren't clairvoyant, so we have
-	 no idea which functions will be referenced in the future (i.e. later
-	 on within the current translation unit). So here we just ignore all
-	 file-scope function declarations which are not also definitions.  If
-	 and when the debugger needs to know something about these functions,
-	 it will have to hunt around and find the DWARF information associated
-	 with the definition of the function.
-
-	 We can't just check DECL_EXTERNAL to find out which FUNCTION_DECL
-	 nodes represent definitions and which ones represent mere
-	 declarations.  We have to check DECL_INITIAL instead. That's because
-	 the C front-end supports some weird semantics for "extern inline"
-	 function definitions.  These can get inlined within the current
-	 translation unit (and thus, we need to generate Dwarf info for their
-	 abstract instances so that the Dwarf info for the concrete inlined
-	 instances can have something to refer to) but the compiler never
-	 generates any out-of-lines instances of such things (despite the fact
-	 that they *are* definitions).
-
-	 The important point is that the C front-end marks these "extern
-	 inline" functions as DECL_EXTERNAL, but we need to generate DWARF for
-	 them anyway. Note that the C++ front-end also plays some similar games
-	 for inline function definitions appearing within include files which
-	 also contain `#pragma interface' pragmas.
-
-	 If we are called from dwarf2out_abstract_function output a DIE
-	 anyway.  We can end up here this way with early inlining and LTO
-	 where the inlined function is output in a different LTRANS unit
-	 or not at all.  */
-      if (DECL_INITIAL (decl) == NULL_TREE
-	  && ! DECL_ABSTRACT_P (decl))
-	return;
-
       /* If we're a nested function, initially use a parent of NULL; if we're
 	 a plain function, this will be fixed up in decls_for_scope.  If
 	 we're a method, it will be ignored, since we already have a DIE.  */
