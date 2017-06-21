@@ -1,3 +1,8 @@
+2017-06-21  Marc Glisse  <marc.glisse@inria.fr>
+
+	* match.pd (nop_convert): New predicate.
+	((A +- CST1) +- CST2): Allow some NOP conversions.
+
 2017-06-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/81130

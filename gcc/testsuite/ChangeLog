@@ -1,3 +1,8 @@
+2017-06-21  Marc Glisse  <marc.glisse@inria.fr>
+
+	* gcc.dg/tree-ssa/addadd.c: Un-XFAIL.
+	* gcc.dg/tree-ssa/addadd-2.c: New file.
+
 2017-06-21  Tom de Vries  <tom@codesourcery.com>
 
 	* lib/target-supports.exp (add_options_for_stack_size): New proc.
