@@ -80,11 +80,21 @@ AARCH64_CORE("vulcan",  vulcan, thunderx2t99, 8_1A,  AARCH64_FL_FOR_ARCH8_1 | AA
 /* Cavium ('C') cores. */
 AARCH64_CORE("thunderx2t99",  thunderx2t99,  thunderx2t99, 8_1A,  AARCH64_FL_FOR_ARCH8_1 | AARCH64_FL_CRYPTO, thunderx2t99, 0x43, 0x0af, -1)
 
+/* ARMv8.2-A Architecture Processors.  */
+
+/* ARM ('A') cores. */
+AARCH64_CORE("cortex-a55",  cortexa55, cortexa53, 8_2A,  AARCH64_FL_FOR_ARCH8_2 | AARCH64_FL_RCPC, cortexa53, 0x41, 0xd05, -1)
+AARCH64_CORE("cortex-a75",  cortexa75, cortexa57, 8_2A,  AARCH64_FL_FOR_ARCH8_2 | AARCH64_FL_RCPC, cortexa73, 0x41, 0xd0a, -1)
+
 /* ARMv8-A big.LITTLE implementations.  */
 
 AARCH64_CORE("cortex-a57.cortex-a53",  cortexa57cortexa53, cortexa53, 8A,  AARCH64_FL_FOR_ARCH8 | AARCH64_FL_CRC, cortexa57, 0x41, AARCH64_BIG_LITTLE (0xd07, 0xd03), -1)
 AARCH64_CORE("cortex-a72.cortex-a53",  cortexa72cortexa53, cortexa53, 8A,  AARCH64_FL_FOR_ARCH8 | AARCH64_FL_CRC, cortexa72, 0x41, AARCH64_BIG_LITTLE (0xd08, 0xd03), -1)
 AARCH64_CORE("cortex-a73.cortex-a35",  cortexa73cortexa35, cortexa53, 8A,  AARCH64_FL_FOR_ARCH8 | AARCH64_FL_CRC, cortexa73, 0x41, AARCH64_BIG_LITTLE (0xd09, 0xd04), -1)
 AARCH64_CORE("cortex-a73.cortex-a53",  cortexa73cortexa53, cortexa53, 8A,  AARCH64_FL_FOR_ARCH8 | AARCH64_FL_CRC, cortexa73, 0x41, AARCH64_BIG_LITTLE (0xd09, 0xd03), -1)
+
+/* ARM DynamIQ big.LITTLE configurations.  */
+
+AARCH64_CORE("cortex-a75.cortex-a55",  cortexa75cortexa55, cortexa53, 8_2A,  AARCH64_FL_FOR_ARCH8_2 | AARCH64_FL_RCPC, cortexa73, 0x41, AARCH64_BIG_LITTLE (0xd0a, 0xd05), -1)
 
 #undef AARCH64_CORE
