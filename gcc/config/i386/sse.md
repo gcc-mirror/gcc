@@ -15617,13 +15617,13 @@
    (set_attr "mode" "<MODE>")])
 
 (define_expand "round<mode>2"
-  [(set (match_dup 4)
+  [(set (match_dup 3)
 	(plus:VF
 	  (match_operand:VF 1 "register_operand")
-	  (match_dup 3)))
+	  (match_dup 2)))
    (set (match_operand:VF 0 "register_operand")
 	(unspec:VF
-	  [(match_dup 4) (match_dup 5)]
+	  [(match_dup 3) (match_dup 4)]
 	  UNSPEC_ROUND))]
   "TARGET_ROUND && !flag_trapping_math"
 {
@@ -15643,11 +15643,11 @@
   vec_half = ix86_build_const_vector (<MODE>mode, true, half);
   vec_half = force_reg (<MODE>mode, vec_half);
 
-  operands[3] = gen_reg_rtx (<MODE>mode);
-  emit_insn (gen_copysign<mode>3 (operands[3], vec_half, operands[1]));
+  operands[2] = gen_reg_rtx (<MODE>mode);
+  emit_insn (gen_copysign<mode>3 (operands[2], vec_half, operands[1]));
 
-  operands[4] = gen_reg_rtx (<MODE>mode);
-  operands[5] = GEN_INT (ROUND_TRUNC);
+  operands[3] = gen_reg_rtx (<MODE>mode);
+  operands[4] = GEN_INT (ROUND_TRUNC);
 })
 
 (define_expand "round<mode>2_sfix"
