@@ -99,7 +99,8 @@ location_adhoc_data_eq (const void *l1, const void *l2)
 static int
 location_adhoc_data_update (void **slot, void *data)
 {
-  *((char **) slot) += *((int64_t *) data);
+  *((char **) slot)
+    = (char *) ((uintptr_t) *((char **) slot) + *((ptrdiff_t *) data));
   return 1;
 }
 
@@ -221,7 +222,7 @@ get_combined_adhoc_loc (struct line_maps *set,
 	  set->location_adhoc_data_map.allocated)
 	{
 	  char *orig_data = (char *) set->location_adhoc_data_map.data;
-	  int64_t offset;
+	  ptrdiff_t offset;
 	  /* Cast away extern "C" from the type of xrealloc.  */
 	  line_map_realloc reallocator = (set->reallocator
 					  ? set->reallocator
