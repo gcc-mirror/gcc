@@ -1,5 +1,13 @@
 2017-06-21  Marc Glisse  <marc.glisse@inria.fr>
 
+	* config/i386/i386.c (struct builtin_isa): New field pure_p.
+	Reorder for compactness.
+	(def_builtin, def_builtin2, ix86_add_new_builtins): Handle pure_p.
+	(def_builtin_pure, def_builtin_pure2): New functions.
+	(ix86_init_mmx_sse_builtins) [__builtin_ia32_stmxcsr]: Mark as pure.
+
+2017-06-21  Marc Glisse  <marc.glisse@inria.fr>
+
 	* match.pd (nop_convert): New predicate.
 	((A +- CST1) +- CST2): Allow some NOP conversions.
 
