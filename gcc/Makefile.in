@@ -1441,7 +1441,6 @@ OBJS = \
 	rtlanal.o \
 	rtlhooks.o \
 	run-rtl-passes.o \
-	sbitmap.o \
 	sched-deps.o \
 	sched-ebb.o \
 	sched-rgn.o \
@@ -1587,6 +1586,7 @@ OBJS = \
 OBJS-libcommon = diagnostic.o diagnostic-color.o diagnostic-show-locus.o \
 	edit-context.o \
 	pretty-print.o intl.o \
+	sbitmap.o \
 	vec.o input.o version.o hash-table.o ggc-none.o memory-block.o \
 	selftest.o
 

@@ -1428,6 +1428,20 @@ gimplify_bind_expr (tree *expr_p, gimple_seq *pre_p)
   return GS_ALL_DONE;
 }
 
+/* Maybe add early return predict statement to PRE_P sequence.  */
+
+static void
+maybe_add_early_return_predict_stmt (gimple_seq *pre_p)
+{
+  /* If we are not in a conditional context, add PREDICT statement.  */
+  if (gimple_conditional_context ())
+    {
+      gimple *predict = gimple_build_predict (PRED_TREE_EARLY_RETURN,
+					      NOT_TAKEN);
+      gimplify_seq_add_stmt (pre_p, predict);
+    }
+}
+
 /* Gimplify a RETURN_EXPR.  If the expression to be returned is not a
    GIMPLE value, it is assigned to a new temporary and the statement is
    re-written to return the temporary.
@@ -1458,6 +1472,7 @@ gimplify_return_expr (tree stmt, gimple_seq *pre_p)
       || TREE_CODE (ret_expr) == RESULT_DECL
       || ret_expr == error_mark_node)
     {
+      maybe_add_early_return_predict_stmt (pre_p);
       greturn *ret = gimple_build_return (ret_expr);
       gimple_set_no_warning (ret, TREE_NO_WARNING (stmt));
       gimplify_seq_add_stmt (pre_p, ret);
@@ -1525,6 +1540,7 @@ gimplify_return_expr (tree stmt, gimple_seq *pre_p)
 
   gimplify_and_add (TREE_OPERAND (stmt, 0), pre_p);
 
+  maybe_add_early_return_predict_stmt (pre_p);
   ret = gimple_build_return (result);
   gimple_set_no_warning (ret, TREE_NO_WARNING (stmt));
   gimplify_seq_add_stmt (pre_p, ret);
@@ -2279,7 +2295,8 @@ gimplify_switch_expr (tree *expr_p, gimple_seq *pre_p)
 
       /* Do not create live_switch_vars if SWITCH_BODY is not a BIND_EXPR.  */
       saved_live_switch_vars = gimplify_ctxp->live_switch_vars;
-      if (TREE_CODE (SWITCH_BODY (switch_expr)) == BIND_EXPR)
+      tree_code body_type = TREE_CODE (SWITCH_BODY (switch_expr));
+      if (body_type == BIND_EXPR || body_type == STATEMENT_LIST)
 	gimplify_ctxp->live_switch_vars = new hash_set<tree> (4);
       else
 	gimplify_ctxp->live_switch_vars = NULL;
@@ -2340,9 +2357,17 @@ gimplify_label_expr (tree *expr_p, gimple_seq *pre_p)
   gcc_assert (decl_function_context (LABEL_EXPR_LABEL (*expr_p))
 	      == current_function_decl);
 
-  glabel *label_stmt = gimple_build_label (LABEL_EXPR_LABEL (*expr_p));
+  tree label = LABEL_EXPR_LABEL (*expr_p);
+  glabel *label_stmt = gimple_build_label (label);
   gimple_set_location (label_stmt, EXPR_LOCATION (*expr_p));
   gimplify_seq_add_stmt (pre_p, label_stmt);
+
+  if (lookup_attribute ("cold", DECL_ATTRIBUTES (label)))
+    gimple_seq_add_stmt (pre_p, gimple_build_predict (PRED_COLD_LABEL,
+						      NOT_TAKEN));
+  else if (lookup_attribute ("hot", DECL_ATTRIBUTES (label)))
+    gimple_seq_add_stmt (pre_p, gimple_build_predict (PRED_HOT_LABEL,
+						      TAKEN));
 
   return GS_ALL_DONE;
 }
@@ -6633,9 +6658,11 @@ omp_add_variable (struct gimplify_omp_ctx *ctx, tree decl, unsigned int flags)
     return;
 
   /* Never elide decls whose type has TREE_ADDRESSABLE set.  This means
-     there are constructors involved somewhere.  */
-  if (TREE_ADDRESSABLE (TREE_TYPE (decl))
-      || TYPE_NEEDS_CONSTRUCTING (TREE_TYPE (decl)))
+     there are constructors involved somewhere.  Exception is a shared clause,
+     there is nothing privatized in that case.  */
+  if ((flags & GOVD_SHARED) == 0
+      && (TREE_ADDRESSABLE (TREE_TYPE (decl))
+	  || TYPE_NEEDS_CONSTRUCTING (TREE_TYPE (decl))))
     flags |= GOVD_SEEN;
 
   n = splay_tree_lookup (ctx->variables, (splay_tree_key)decl);

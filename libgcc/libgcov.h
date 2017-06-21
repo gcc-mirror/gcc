@@ -38,6 +38,7 @@
 /* This path will be used by libgcov runtime.  */
 
 #include "tconfig.h"
+#include "auto-target.h"
 #include "tsystem.h"
 #include "coretypes.h"
 #include "tm.h"

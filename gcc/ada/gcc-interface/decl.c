@@ -1392,7 +1392,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	      = create_var_decl (create_concat_name (gnat_entity, "ALIGN"),
 				 NULL_TREE, gnu_new_type, NULL_TREE,
 				 false, false, false, false, false,
-				 true, debug_info_p, NULL, gnat_entity);
+				 true, debug_info_p && definition, NULL,
+				 gnat_entity);
 
 	    /* Initialize the aligned field if we have an initializer.  */
 	    if (gnu_expr)
@@ -1441,7 +1442,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 				      NULL_TREE, gnu_type, gnu_expr,
 				      const_flag, Is_Public (gnat_entity),
 				      imported_p || !definition, static_flag,
-				      volatile_flag, true, debug_info_p,
+				      volatile_flag, true,
+				      debug_info_p && definition,
 				      NULL, gnat_entity);
 		gnu_expr = build_unary_op (ADDR_EXPR, NULL_TREE, gnu_unc_var);
 		TREE_CONSTANT (gnu_expr) = 1;
@@ -1492,8 +1494,9 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	  = create_var_decl (gnu_entity_name, gnu_ext_name, gnu_type,
 			     gnu_expr, const_flag, Is_Public (gnat_entity),
 			     imported_p || !definition, static_flag,
-			     volatile_flag, artificial_p, debug_info_p,
-			     attr_list, gnat_entity, !renamed_obj);
+			     volatile_flag, artificial_p,
+			     debug_info_p && definition, attr_list,
+			     gnat_entity, !renamed_obj);
 	DECL_BY_REF_P (gnu_decl) = used_by_ref;
 	DECL_POINTS_TO_READONLY_P (gnu_decl) = used_by_ref && inner_const_flag;
 	DECL_CAN_NEVER_BE_NULL_P (gnu_decl) = Can_Never_Be_Null (gnat_entity);
@@ -1545,8 +1548,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	      = create_var_decl (gnu_entity_name, gnu_ext_name, gnu_type,
 				 gnu_expr, true, Is_Public (gnat_entity),
 				 !definition, static_flag, volatile_flag,
-				 artificial_p, debug_info_p, attr_list,
-				 gnat_entity, false);
+				 artificial_p, debug_info_p && definition,
+				 attr_list, gnat_entity, false);
 
 	    SET_DECL_CONST_CORRESPONDING_VAR (gnu_decl, gnu_corr_var);
 	  }
@@ -4083,7 +4086,9 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 					 gnu_type, gnu_param_list,
 					 inline_status, public_flag,
 					 extern_flag, artificial_p,
-					 debug_info_p, attr_list, gnat_entity);
+					 debug_info_p,
+					 definition && imported_p, attr_list,
+					 gnat_entity);
 
 		DECL_STUBBED_P (gnu_decl)
 		  = (Convention (gnat_entity) == Convention_Stubbed);

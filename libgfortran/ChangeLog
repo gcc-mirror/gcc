@@ -1,3 +1,22 @@
+2017-06-18  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/52473
+	* m4/cshift0.m4:  For arrays that are contiguous up to
+	shift, implement blocked algorighm for cshift.
+	* generated/cshift0_c10.c:  Regenerated.
+	* generated/cshift0_c16.c:  Regenerated.
+	* generated/cshift0_c4.c:  Regenerated.
+	* generated/cshift0_c8.c:  Regenerated.
+	* generated/cshift0_i1.c:  Regenerated.
+	* generated/cshift0_i16.c:  Regenerated.
+	* generated/cshift0_i2.c:  Regenerated.
+	* generated/cshift0_i4.c:  Regenerated.
+	* generated/cshift0_i8.c:  Regenerated.
+	* generated/cshift0_r10.c:  Regenerated.
+	* generated/cshift0_r16.c:  Regenerated.
+	* generated/cshift0_r4.c:  Regenerated.
+	* generated/cshift0_r8.c:  Regenerated.
+
 2017-06-06  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/80975

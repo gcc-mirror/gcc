@@ -1,5 +1,5 @@
 ! { dg-options "-O2" }
-! { dg-skip-if "AArch64 tiny code model does not support programs larger than 1MiB" {aarch64_tiny} {"*"} {""} }
+! { dg-skip-if "AArch64 tiny code model does not support programs larger than 1MiB" {aarch64_tiny} }
 
 program strassen_matmul
   use omp_lib

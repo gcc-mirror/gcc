@@ -1,5 +1,5 @@
 /* { dg-do assemble } */
-/* { dg-skip-if "" { "*-*-darwin*" "*-*-mingw*" } { "*" } { "" } } */
+/* { dg-skip-if "" { "*-*-darwin*" "*-*-mingw*" } } */
 /* { dg-options "-std=c99 -x assembler-with-cpp" } */
 
 #ifndef __ASSEMBLER__

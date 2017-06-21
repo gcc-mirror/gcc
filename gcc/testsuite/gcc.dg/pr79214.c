@@ -22,7 +22,7 @@ size_t range (void)
 
 void test_bzero (void)
 {
-  bzero (d, range ());   /* { dg-warning ".__builtin_bzero. writing 4 or more bytes into a region of size 3 overflows the destination" } */
+  bzero (d, range ());   /* { dg-warning ".__builtin_(bzero|memset). writing 4 or more bytes into a region of size 3 overflows the destination" } */
 }
 
 void test_memcpy (void)

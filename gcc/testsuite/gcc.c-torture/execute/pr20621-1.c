@@ -1,4 +1,4 @@
-/* { dg-additional-options "-DSTACK_SIZE=[dg-effective-target-value stack_size]" { target { stack_size } } } */
+/* { dg-add-options stack_size } */
 
 /* When generating o32 MIPS PIC, main's $gp save slot was out of range
    of a single load instruction.  */

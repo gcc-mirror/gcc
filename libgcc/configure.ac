@@ -191,6 +191,8 @@ GCC_NO_EXECUTABLES
 AC_PROG_CC
 AC_PROG_CPP_WERROR
 
+AC_SYS_LARGEFILE
+
 AC_CHECK_SIZEOF([double])
 AC_CHECK_SIZEOF([long double])
 AS_VAR_ARITH([double_type_size], [$ac_cv_sizeof_double \* 8])

@@ -720,6 +720,8 @@ extern tree create_label_decl (tree name, Node_Id gnat_node);
 
    DEBUG_INFO_P is true if we need to write debug information for it.
 
+   DEFINITION is true if the subprogram is to be considered as a definition.
+
    ATTR_LIST is the list of attributes to be attached to the subprogram.
 
    GNAT_NODE is used for the position of the decl.  */
@@ -728,7 +730,8 @@ extern tree create_subprog_decl (tree name, tree asm_name, tree type,
 				 enum inline_status_t inline_status,
 				 bool public_flag, bool extern_flag,
 				 bool artificial_p, bool debug_info_p,
-				 struct attrib *attr_list, Node_Id gnat_node);
+				 bool definition, struct attrib *attr_list,
+				 Node_Id gnat_node);
 
 /* Given a subprogram declaration DECL, its assembler name and its type,
    finish constructing the subprogram declaration from ASM_NAME and TYPE.  */

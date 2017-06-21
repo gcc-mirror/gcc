@@ -1,4 +1,5 @@
 /* { dg-lto-do link } */
+/* { dg-require-alias "" } */
 
 int _umh(int i)
 {

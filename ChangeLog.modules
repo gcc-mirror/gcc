@@ -1,5 +1,7 @@
 2017-06-21  Nathan Sidwell  <nathan@acm.org>
 
+	Merge trunk r249464.
+
 	gcc/c-family/
 	* c-ada-spec.c (decl_sloc): Ignore builtin fields.
 	gcc/cp/

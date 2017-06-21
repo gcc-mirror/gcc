@@ -733,7 +733,10 @@ finish_if_stmt_cond (tree cond, tree if_stmt)
   if (IF_STMT_CONSTEXPR_P (if_stmt)
       && require_potential_rvalue_constant_expression (cond)
       && !value_dependent_expression_p (cond))
-    cond = cxx_constant_value (cond, NULL_TREE);
+    {
+      cond = instantiate_non_dependent_expr (cond);
+      cond = cxx_constant_value (cond, NULL_TREE);
+    }
   finish_cond (&IF_COND (if_stmt), cond);
   add_stmt (if_stmt);
   THEN_CLAUSE (if_stmt) = push_stmt_list ();

@@ -1,3 +1,751 @@
+2017-06-21  Andrew Pinski  <apinski@cavium.com>
+
+	* config/aarch64/aarch64-cost-tables.h (thunderx_extra_costs):
+	Increment Arith_shift and Arith_shift_reg by 1.
+	* config/aarch64/aarch64-tuning-flags.def (cheap_shift_extend):
+	New tuning flag.
+	* config/aarch64/aarch64.c (thunderx_tunings): Enable
+	AARCH64_EXTRA_TUNE_CHEAP_SHIFT_EXTEND.
+	(aarch64_strip_extend): Add new argument and test for it.
+	(aarch64_cheap_mult_shift_p): New function.
+	(aarch64_rtx_mult_cost): Call aarch64_cheap_mult_shift_p and don't
+	add a cost if it is true.
+	Update calls to aarch64_strip_extend.
+	(aarch64_rtx_costs): Update calls to aarch64_strip_extend.
+
+2017-06-21  Andrew Pinski  <apinski@cavium.com>
+
+	* config/aarch64/aarch64-cores.def (thunderxt88p1): Use thunderxt88
+	tunings.
+	(thunderxt88): Likewise.
+	* config/aarch64/aarch64.c (thunderxt88_prefetch_tune): New variable.
+	(thunderx_prefetch_tune): New variable.
+	(thunderx2t99_prefetch_tune): Update for the correct values.
+	(thunderxt88_tunings): New variable.
+	(thunderx_tunings): Use thunderx_prefetch_tune instead of
+	generic_prefetch_tune.
+	(thunderx2t99_tunings): Use AUTOPREFETCHER_WEAK.
+
+2017-06-21  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/atomics.md (aarch64_compare_and_swap<mode>_lse,
+	SHORT): Relax operand 3 to aarch64_reg_or_zero and constraint to Z.
+	(aarch64_compare_and_swap<mode>_lse, GPI): Likewise.
+	(aarch64_atomic_cas<mode>, SHORT): Likewise for operand 2.
+	(aarch64_atomic_cas<mode>, GPI): Likewise.
+
+2017-06-21  Martin Liska  <mliska@suse.cz>
+
+	* gimplify.c (gimplify_label_expr): Insert GIMPLE_PREDICT
+	statements on cold and hot labels.
+	* predict.c (tree_estimate_probability_bb): Remove the
+	prediction from this place.
+
+2017-06-21  Martin Liska  <mliska@suse.cz>
+
+	PR tree-optimization/79489
+	* gimplify.c (maybe_add_early_return_predict_stmt): New
+	function.
+	(gimplify_return_expr): Call the function.
+	* predict.c (tree_estimate_probability_bb): Remove handling
+	of early return.
+	* predict.def: Update comment about early return predictor.
+	* gimple-predict.h (is_gimple_predict): New function.
+	* predict.def: Change default value of early return to 66.
+	* tree-tailcall.c (find_tail_calls): Skip GIMPLE_PREDICT
+	statements.
+	* passes.def: Put pass_strip_predict_hints to the beginning of
+	IPA passes.
+
+2017-06-21  Pierre-Marie de Rodat  <derodat@adacore.com>
+
+	* dwarf2out.c (gen_decl_die): Remove the guard to skip file-scope
+	FUNCTION_DECL declarations.
+	(dwarf2out_early_global_decl): Remove the guard to skip FUNCTION_DECL
+	declarations.
+	(dwaf2out_decl): Likewise.
+	* godump.c (go_early_global_decl): Skip call to the real debug hook
+	for FUNCTION_DECL declarations.
+	* passes.c (rest_of_decl_compilation): Skip call to the
+	early_global_decl debug hook for FUNCTION_DECL declarations, unless
+	-fdump-go-spec is passed.
+
+2017-06-21  Marc Glisse  <marc.glisse@inria.fr>
+
+	* config/i386/i386.c (struct builtin_isa): New field pure_p.
+	Reorder for compactness.
+	(def_builtin, def_builtin2, ix86_add_new_builtins): Handle pure_p.
+	(def_builtin_pure, def_builtin_pure2): New functions.
+	(ix86_init_mmx_sse_builtins) [__builtin_ia32_stmxcsr]: Mark as pure.
+
+2017-06-21  Marc Glisse  <marc.glisse@inria.fr>
+
+	* match.pd (nop_convert): New predicate.
+	((A +- CST1) +- CST2): Allow some NOP conversions.
+
+2017-06-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/81130
+	* gimplify.c (omp_add_variable): Don't force GOVD_SEEN for types
+	with ctors/dtors if GOVD_SHARED is set.
+
+2017-06-21  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* config/aarch64/aarch64.md (movti_aarch64):
+	Emit mov rather than orr.
+	(movtf_aarch64): Likewise.
+	* config/aarch64/aarch64-simd.md (aarch64_simd_mov):
+	Emit mov rather than orr.
+
+2017-06-21  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* config/aarch64/aarch64-simd.md (aarch64_simd_dup):
+	Swap alternatives, make integer dup more expensive.
+
+2017-06-21  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_legitimate_constant_p):
+	Return true for non-tls symbols.
+
+2017-06-21  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/aarch64/aarch64-cores.def (cortex-a55): New.
+	(cortex-a75): Likewise.
+	(cortex-a75.cortex-a55): Likewise.
+	* config/aarch64/aarch64-tune.md: Regenerate.
+	* doc/invoke.texi (-mtune): Document new values for -mtune.
+
+2017-06-21  Tom de Vries  <tom@codesourcery.com>
+
+	* doc/sourcebuild.texi (Add Options, Features for dg-add-options): Add
+	stack_size feature.
+	(Effective-Target Keywords, Other attributes): Suggest using
+	dg-add-options stack_size feature to get stack limit in stack_size
+	effective target documentation.
+
+2017-06-21  Julian Brown  <julian@codesourcery.com>
+	    Naveen H.S  <Naveen.Hurugalawadi@cavium.com>
+
+	* config/aarch64/aarch64-simd.md (aarch64_crypto_pmulldi)
+	(aarch64_crypto_pmullv2di): Change type attribute to crypto_pmull.
+	* config/aarch64/thunderx2t99.md (thunderx2t99_pmull): New
+	reservation.
+	* config/arm/cortex-a53.md (cortex_a53_advsimd_type): Add crypto_pmull to
+	attribute type list for neon_multiply.
+	* config/arm/cortex-a57.md (cortex_a57_neon_type): Add crypto_pmull to
+	attribute type list for neon_multiply.
+	* config/arm/crypto.md (crypto_vmullp64): Change type to crypto_pmull.
+	* config/arm/exynos-m1.md (exynos_m1_neon_type): Add crypto_pmull to
+	attribute type list for neon_multiply.
+	* config/arm/types.md (crypto_pmull): Add.
+	* config/arm/xgene1.md (xgene1_neon_pmull): Add crypto_pmull to
+	attribute type list.	
+
+2017-06-20  Andreas Tobler  <andreast@gcc.gnu.org>
+
+	* config.gcc (armv6*-*-freebsd*): Change the target_cpu_cname to
+	arm1176jzf-s.
+
+2017-06-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* ira-costs.c (find_costs_and_classes): Initialize cost_classes later
+	to make sure not to dereference a NULL cost_classes_ptr pointer.
+
+2017-06-20  Carl Love  <cel@us.ibm.com>
+
+	* config/rs6000/rs6000-c.c (altivec_overloaded_builtins): Add
+	ALTIVEC_BUILTIN_VMULESW, ALTIVEC_BUILTIN_VMULEUW,
+	ALTIVEC_BUILTIN_VMULOSW, ALTIVEC_BUILTIN_VMULOUW entries.
+	* config/rs6000/rs6000.c (rs6000_gimple_fold_builtin,
+	builtin_function_type): Add ALTIVEC_BUILTIN_* case statements.
+	* config/rs6000/altivec.md (MVULEUW, VMULESW, VMULOUW,
+	VMULOSW): New enum "unspec" values.
+	(vec_widen_umult_even_v4si, vec_widen_smult_even_v4si,
+	vec_widen_umult_odd_v4si, vec_widen_smult_odd_v4si,
+	altivec_vmuleuw, altivec_vmulesw, altivec_vmulouw,
+	altivec_vmulosw): New patterns.
+	* config/rs6000/rs6000-builtin.def (VMLEUW, VMULESW, VMULOUW,
+	VMULOSW): Add definitions.
+
+2017-06-20  Julia Koval  <julia.koval@intel.com>
+
+	* config/i386/i386.c: Fix rounding expand for new pattern.
+	* config/i386/subst.md: Fix pattern (parallel -> unspec).
+
+2017-06-20  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/aarch64/aarch64-option-extensions.def (rcpc): New.
+	* config/aarch64/aarch64.h (AARCH64_FL_RCPC): New.
+
+2017-06-20  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/aarch64/aarch64-option-extensions.def (fp16): Fix expected
+	feature string.
+
+2017-06-20  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/aarch64/aarch64-cores.def: Rearrange to sort by
+	architecture, then by implementer ID.
+	* config/aarch64/aarch64-tune.md: Regenerate.
+
+2017-06-20  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/81097
+	* fold-const.c (split_tree): Fold to type before negating.
+
+2017-06-20  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic-show-locus.c
+	(selftest::test_fixit_deletion_affecting_newline): New function.
+	(selftest::diagnostic_show_locus_c_tests): Call it.
+
+2017-06-20  Andreas Schwab  <schwab@suse.de>
+
+	PR target/80970
+	* config/m68k/m68k.md (bsetdreg, bchgdreg, bclrdreg): Use "=d"
+	instead of "+d".
+
+2017-06-20  Prakhar Bahuguna  <prakhar.bahuguna@arm.com>
+
+	* config/arm/arm-c.c (arm_cpu_builtins): New block to define
+	__ARM_FEATURE_COPROC according to support.
+
+2017-06-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree-chkp.c (chkp_get_hard_register_var_fake_base_address):
+	Rewritten to avoid overflow for > 32-bit pointers.
+
+	PR sanitizer/81125
+	* ubsan.h (ubsan_encode_value): Workaround buggy clang++ parser
+	by removing enum keyword.
+	(ubsan_type_descriptor): Likewise.  Formatting fix.
+
+	PR target/81121
+	* config/i386/i386.md (TARGET_USE_VECTOR_CONVERTS float si->{sf,df}
+	splitter): Require TARGET_SSE2 in the condition.
+
+2017-06-20  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/79799
+	* config/rs6000/rs6000.c (rs6000_expand_vector_init): Add support
+	for doing vector set of SFmode on ISA 3.0.
+	* config/rs6000/vsx.md (vsx_set_v4sf_p9): Likewise.
+	(vsx_set_v4sf_p9_zero): Special case setting 0.0f to a V4SF
+	element.
+	(vsx_insert_extract_v4sf_p9): Add an optimization for inserting a
+	SFmode value into a V4SF variable that was extracted from another
+	V4SF variable without converting the element to double precision
+	and back to single precision vector format.
+	(vsx_insert_extract_v4sf_p9_2): Likewise.
+
+2017-06-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree-ssa-structalias.c (get_constraint_for_ptr_offset): Multiply
+	in UWHI to avoid undefined overflow.
+
+	PR sanitizer/81125
+	* ubsan.h (enum ubsan_encode_value_phase): New.
+	(ubsan_encode_value): Change second argument to
+	enum ubsan_encode_value_phase with default value of
+	UBSAN_ENCODE_VALUE_GENERIC.
+	* ubsan.c (ubsan_encode_value): Change second argument to
+	enum ubsan_encode_value_phase PHASE from bool IN_EXPAND_P,
+	adjust uses, for UBSAN_ENCODE_VALUE_GENERIC use just
+	create_tmp_var_raw instead of create_tmp_var and use a
+	TARGET_EXPR.
+	(ubsan_expand_bounds_ifn, ubsan_build_overflow_builtin,
+	instrument_bool_enum_load, ubsan_instrument_float_cast): Adjust
+	ubsan_encode_value callers.
+
+	PR sanitizer/81111
+	* ubsan.c (ubsan_encode_value): If current_function_decl is NULL,
+	use create_tmp_var_raw instead of create_tmp_var, mark it addressable
+	just by setting TREE_ADDRESSABLE on the result and use a TARGET_EXPR.
+
+2017-06-19  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/81118
+	* tree-cfgcleanup.c (cleanup_tree_cfg_noloop): Clear niter
+	estimates if we changed anything.
+
+2017-06-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/80887
+	* tree-ssa-sccvn.c (mprts_hook_cnt): New global.
+	(vn_lookup_simplify_result): Allow only mprts_hook_cnt succesful
+	simplified lookups, then reset mprts_hook.
+	(vn_nary_build_or_lookup_1): Set mprts_hook_cnt to 9 before
+	simplifying.
+	(try_to_simplify): Likewise.
+
+2017-06-19  Martin Liska  <mliska@suse.cz>
+
+	PR sanitizer/80879
+	* gimplify.c (gimplify_switch_expr):
+	Initialize live_switch_vars for SWITCH_BODY == STATEMENT_LIST.
+
+2017-06-19  Martin Liska  <mliska@suse.cz>
+
+	* doc/install.texi: Document that PGO runs in 4 stages.
+
+2017-06-19  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/80732
+	* attribs.c (make_dispatcher_decl): Do not append '.ifunc'
+	to dispatcher function name.
+	* multiple_target.c (replace_function_decl): New function.
+	(create_dispatcher_calls): Redirect both edges and references.
+
+2017-06-19  Jan Hubicka <hubicka@ucw.cz>
+
+	* profile-count.c (profile_count::dump): Dump quality.
+	(profile_count::differs_from_p): Update for unsigned val.
+	* profile-count.h (profile_count_quality): New enum.
+	(profile_count): Turn m_val to 62bit unsigned, add quality tracking.
+
+2017-06-19  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-loop-niter.h (estimate_numbers_of_iterations): Take
+	struct function as arg.
+	(estimate_numbers_of_iterations): Export overload with loop arg.
+	(free_numbers_of_iterations_estimates_loop): Use an overload of
+	free_numbers_of_iterations_estimates instead.
+	* tree-cfg.c (remove_bb): Adjust.
+	* tree-cfgcleanup.c (remove_forwarder_block_with_phi): Likewise.
+	* tree-parloops.c (gen_parallel_loop): Likewise.
+	* tree-ssa-loop-ivcanon.c (canonicalize_induction_variables):
+	Likewise.
+	(tree_unroll_loops_completely): Likewise.
+	* tree-ssa-loop-niter.c (estimate_numbers_of_iterations_loop):
+	Use an overload instead and export.
+	(estimated_loop_iterations): Adjust.
+	(max_loop_iterations): Likewise.
+	(likely_max_loop_iterations): Likewise.
+	(estimate_numbers_of_iterations): Take struct function as arg
+	and adjust.
+	(loop_exits_before_overflow): Adjust.
+	(free_numbers_of_iterations_estimates_loop): Use an overload.
+	* tree-vect-loop.c (vect_analyze_loop_form): Adjust.
+	* tree-vectorizer.c (vect_free_loop_info_assumptions): Likewise.
+
+2017-06-19  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/81112
+	* ipa-prop.c (find_constructor_constant_at_offset): Handle
+	RANGE_EXPR conservatively.
+
+2017-06-16  Carl Love  <cel@us.ibm.com>
+
+	* config/rs6000/rs6000-c.c (altivec_overloaded_builtins): Add
+	definitions for vec_float, vec_float2, vec_floato,
+	vec_floate built-ins.
+	* config/rs6000/vsx.md (define_c_enum "unspec"): Add RTL code
+	for instructions vsx_xvcvsxws vsx_xvcvuxwsp, float2, floato and
+	floate.
+	* config/rs6000/rs6000-builtin.def (FLOAT2_V2DI, FLOATE_V2DF,
+	FLOATE_2DI, FLOATO_V2DF, FLOATEE_V2DI, XVCVSXWSP_V4SF,
+	UNS_FLOATO_V2DI, UNS_FLOATE_V2DI): Add definitions.
+	* config/altivec.md (define_insn "p8_vmrgew_<mode>",
+	define_mode_attr VF_sxddp): Add V4SF type to p8_vmrgew.
+	* config/rs6000/altivec.h (vec_float, vec_float2, vec_floate,
+	vec_floato): Add builtin defines.
+	* doc/extend.texi (vec_float, vec_float2, vec_floate, vec_floato):
+	Update the built-in documentation file for the new built-in
+	functions.
+
+2017-06-16  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/arm.opt (marm): Mark as the negative of of -mthumb.
+	(mthumb): Mark as the negative of -marm.
+
+2017-06-16  Richard Earnshaw  <rearnsha@arm.com>
+
+	* doc/invoke.texi (ARM Options, -mcpu): Document supported
+	extension options.
+	(ARM Options, -mtune): Document that this accepts the same
+	extension options as -mcpu.
+	(ARM Options, -mfpu): Document addition of -mfpu=auto.
+
+2017-06-16  Richard Earnshaw  <rearnsha@arm.com>
+
+	* doc/invoke.texi (ARM Options, -march=): Document new syntax and
+	permitted extensions.
+
+2017-06-16  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/arm-cpus.in (armv7): Add extension +nofp.
+	(armv7-r): Add aliases vfpv3xd and vfpv3-d16.
+	(armv8-m.main): Add option +nodsp.
+	* config/arm/arm-cpu-cdata.h: Regenerated.
+
+2017-06-16  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/t-fuchsia: New file.
+	* config.gcc (arm*-*-fuchsia*): Use it.
+
+2017-06-16  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/t-symbian: Rewrite for new option infrastructure.
+
+2017-06-16  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/t-phoenix (MULTILIB_REUSE): Clear variable.
+	(MULTILIB_REQUIRED): Likewise.
+
+2017-06-16  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/t-linux-eabi (MULTILIB_EXCEPTIONS): Set to empty.
+        (MULTILIB_RESUE): Likewise.
+        (MULTILIB_MATCHES): Likewise.
+        (MULTLIB_REQUIRED): Likewise.
+
+2017-06-16  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/t-rtems: Rewrite for new option framework.
+
+2017-06-16  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/t-aprofile (v7_a_nosimd_variants, v7_a_simd_variants)
+	(v7ve_nosimd_variatns, v7ve_vfpv3_simd_variants)
+	(v7ve_vfpv4_simd_variants, v8_a_nosimd_variants, v8_a_simd_variants)
+	(v8_1_a_simd_variants, v8_2_a_simd_variants): Move to ...
+	* config/arm/t-multilib: ... here.
+	(MULTILIB_OPTIONS): Add armv7 and armv7+fp architectures.
+	(MULTILIB_MATCHES): Use armv7 libraries for armv7-r.  Also use for
+	armv7-a and armv8*-a when A-profile libraries have not been built.
+	* config/arm/t-rmprofile: Rewrite.
+
+2017-06-16  Richard Earnshaw  <rearnsha@arm.com>
+
+	* genmultilib (multilib_reuse): Allow an explicit period to be escaped
+	with a backslash.  Remove the backslash after substituting unescaped
+	periods.
+	* doc/fragments.texi (MULTILIB_REUSE): Document it.
+
+2017-06-16  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config.gcc: (arm*-*-*): When building a-profile libraries, force
+	the driver to pass through the default setting of -mfloat-abi.
+	* common/config/arm/arm-common.c (arm_target_thumb_only): Return -marm
+	rather than NULL.
+	* config/arm/t-multilib (MULTILIB_REUSE): Initialize to empty.
+	(all_feat_combs): New rule.
+	(MULTILIB_OPTIONS): Use explicit ARM and Thumb directories.  Rework
+	default libraries.
+	* config/arm/t-aprofile: Rewrite.
+
+2017-06-16  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/arm.h (FPUTYPE_AUTO): Define.
+	* config/arm/arm.c (arm_option_override): Use FPUTYPE_AUTO if the
+	fpu is not specified by the user/command-line.
+	* config/arm/bpabi.h (FPUTYPE_DEFAULT): Delete.
+	* config/arm/netbsd-elf.h (FPUTYPE_DEFAULT): Delete.
+	* config/arm/linux-elf.h (FPUTYPE_DEFAULT): Delete.
+	* config/arm/vxworks.h (FPUTYPE_DEFAULT): Delete.
+	* common/config/arm/arm-common.c (arm_canon_arch_option): Use
+	FPUTYPE_AUTO insted of FPUTYPE_DEFAULT.
+
+2017-06-16  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/elf.h (MULTILIB_DEFAULTS): Delete.
+	* config/arm/t-arm-elf: Rewritten.
+
+2017-06-16  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/arm.h (TARGET_HARD_FLOAT): Also check that we
+	have some floating-point instructions.
+	(TARGET_SOFT_FLOAT): Define as inverse of TARGET_HARD_FLOAT.
+	(TARGET_MAYBE_HARD_FLOAT): New macro.
+	* config/arm/arm-builtins.c (arm_init_builtins): Use
+	TARGET_MAYBE_HARD_FLOAT.
+	* config/arm/arm.c (arm_option_override): Use TARGET_HARD_FLOAT_ABI.
+
+2017-06-16  Richard Earnshaw  <rearnsha@arm.com>
+
+	* common/config/arm/arm-common.c: Define INCLUDE_LIST.
+	(configargs.h): Include it.
+	(arm_print_hint_for_fpu_option): New function.
+	(arm_parse_fpu_option): New function.
+	(candidate_extension): New class.
+	(arm_canon_for_multilib): New function.
+	* config/arm/arm.h (CANON_ARCH_SPEC_FUNCTION): New macro.
+	(EXTRA_SPEC_FUNCTIONS): Add CANON_ARCH_SPEC_FUNCTION.
+	(ARCH_CANONICAL_SPECS): New macro.
+	(DRIVER_SELF_SPECS): Add ARCH_CANONICAL_SPECS.
+
+2017-06-16  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config.gcc (arm*-*-*): Ensure both target_cpu_cname and with_cpu
+	are set after handling multilib fragments.  Set target_cpu_default2
+	from with_cpu.
+
+2017-06-16  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config.gcc (arm*-*-fucshia*): Set target_cpu_cname to the real
+	cpu name.
+	(arm*-*-*): Set target_cpu_default2 to a quoted string.
+	* config/arm/parsecpu.awk (check_cpu): Validate any extension
+	options.
+	(check_arch): Likewise.
+	* config/arm/arm.c (arm_configure_build_target): Handle
+	TARGET_CPU_DEFAULT being a string constant.  Scan any feature
+	options in the default.
+
+2017-06-16  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/arm-protos.h (cpu_arch_extension): Add field to record
+	when an option is an alias of another.
+	* config/arm/parsecpu.awk (optalias): New parser token.
+	(gen_comm_data): Mark non-alias options as such.  Emit entries
+	for extension aliases.
+	* config/arm/arm-cpus.in (armv5e): Make vfpv2 an alias.
+	(armv5te, armv5tej, armv6, armv6j, armv6k, armv6z): Likewise.
+	(armv6kz, armv6zk, armv6t2): Likewise.
+	(armv7): Make vfpv3-d16 an alias.
+	(armv7-a): Make vfpv3-d16, neon and neon-vfpv3 aliases.	 Sort in
+	canonical order.
+	(armv7ve): Make vfpv4-d16, neon-vfpv3 and neon-vfpv4 aliases.
+	Sort in canonical order.
+	(armv8-a): Sort in canonical order.
+	(armv8.1-a, armv8.2-a):	 Likewise.
+	(generic-armv7-a): Make neon and neon-vfpv3 aliases.  Sort in
+	canonical order.
+	(cortex-a9): Sort in canonical order.
+	* config/arm/arm.c (selftests.h): Include it.
+	(arm_test_cpu_arch_data): New function.
+	(arm_run_self_tests): New function.
+	(TARGET_RUN_TARGET_SELFTESTS): Redefine.
+	(targetm): Move declaration to the end of the file.
+	* arm-cpu-cdata.h: Regenerated.
+
+2017-06-16  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/arm.h (TARGET_MODE_SPECS): Add additional parameter to
+	call to target_mode_check describing the type of option passed.
+	* common/config/arm/arm-common.c (arm_arch_core_flag): Delete.
+	(arm_target_thumb_only): Use arm_parse_arch_option_name or
+	arm_parse_cpu_option_name to match parameters against list of
+	available targets.
+	* config/arm/parsecpu.awk (gen_comm_data): Don't generate
+	arm_arch_core_flags data structure.
+	* config/arm/arm-cpu_cdata.h: Regenerated.
+
+2017-06-16  Richard Earnshaw  <rearnsha@arm.com>
+
+	* common/config/arm/arm-common.c (arm_initialize_isa): Moved here from
+	config/arm/arm.c.
+	(arm_print_hint_for_cpu_option): Likewise.
+	(arm_print_hint_for_arch_option): Likewise.
+	(arm_parse_cpu_option_name): Likewise.
+	(arm_parse_arch_option_name): Likewise.
+	* config/arm/arm.c (arm_identify_fpu_from_isa): Use the computed number
+	of entries in the all_fpus list.
+	* config/arm/arm-protos.h (all_architectures, all_cores): Declare.
+	(arm_parse_cpu_option_name): Declare.
+	(arm_parse_arch_option_name): Declare.
+	(arm_parse_option_features): Declare.
+	(arm_intialize_isa): Declare.
+	* config/arm/parsecpu.awk (gen_data): Move CPU and architecture
+	data tables to ...
+	(gen_comm_data): ... here.  Make definitions non-static.
+	* config/arm/arm-cpu-data.h: Regenerated.
+	* config/arm/arm-cpu-cdata.h: Regenerated.
+
+2017-06-16  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/arm-protos.h (arm_build_target): Remove arch_core.
+	(cpu_arch_extension): New structure.
+	(cpu_arch_option, arch_option, cpu_option): New structures.
+	* config/arm/parsecpu.awk (gen_headers): Build an enumeration of
+	architecture types.
+	(gen_data): Generate new format data tables.
+	* config/arm/arm.c (cpu_tune): New structure.
+	(cpu_option, processors): Delete.
+	(arm_print_hint_for_core_or_arch): Delete.  Replace with ...
+	(arm_print_hint_for_cpu_option): ... this and ...
+	(arm_print_hint_for_arch_option): ... this.
+	(arm_parse_arch_cpu_name): Delete.  Replace with ...
+	(arm_parse_cpu_option_name): ... this and ...
+	(arm_parse_arch_option_name): ... this.
+	(arm_unrecognized_feature): Change type of target parameter to
+	cpu_arch_option.
+	(arm_parse_arch_cpu_features): Delete.	Replace with ...
+	(arm_parse_option_features): ... this.
+	(arm_configure_build_target): Rework to use new configuration data
+	tables.
+	(arm_print_tune_info): Rework for new configuration data tables.
+	* config/arm/arm-cpu-data.h: Regenerated.
+	* config/arm/arm-cpu.h: Regenerated.
+
+2017-06-16  Richard Earnshaw  <rearnsha@arm.com>
+
+	* Makefile.in (OBJS): Move sbitmap.o from here ...
+	(OBJS-libcommon): ... to here.
+
+2017-06-16  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/arm-isa.h (ISA_ALL_FPU_INTERNAL): Renamed from ISA_ALL_FPU.
+	(ISA_ALL_CRYPTO): New macro.
+	(ISA_ALL_SIMD): New macro
+	(ISA_ALL_FP): New macro.
+	* config/arm/arm.c (fpu_bitlist): Update initializer.
+	* config/arm/arm-cpus.in: Use new ISA_ALL macros to disable crypto,
+	simd or fp.
+	(arm9e): Add fpu.  Add option for nofp
+	(arm946e-s, arm966e-s, arm968e-s, arm10e, arm1020e, arm1022e): Likewise.
+	(arm926ej-s, arm1026ej-s): Likewise.
+	(generic-armv7-a): Add fpu.  Add options for simd, vfpv3, vfpv3-d16,
+	vfpv3-fp16, vfpv3-d16-fp16, vfpv4, vfpv4-d16, neon, neon-vfp3,
+	neon-fp16, neon-vfpv4, nofp and nosimd.
+	(cortex-a5, cortex-a7): Add fpu.  Add options for nosimd and nofp.
+	(cortex-a8): Add fpu.  Add option for nofp.
+	(cortex-a9): Add fpu.  Add options for nosimd and nofp.
+	(cortex-a12, cortex-a15, cortex-a17): Add fpu.	Add option for nofp.
+	(cortex-r4f): Add fpu.
+	(cortex-r5): Add fpu.  Add options for nofp.dp and nofp.
+	(cortex-r7): Use idiv option from architecture.	 Add fpu.  Add option
+	for nofp.
+	(cortex-r8): Likewise.
+	(cortex-m4): Add fpu.  Add option for nofp.
+	(cortex-a15.cortex-a7): Add fpu.  Add option for nofp.
+	(cortex-a17.cortex-a7): Likewise.
+	(cortex-a32): Add fpu.	Add options for crypto and nofp.
+	(cortex-a35, cortex-a53): Likewise.
+	(cortex-a57): Add fpu.	Add option for crypto.
+	(cortex-a72, cortex-a73): Likewise.
+	(exynos-m1): Likewise.
+	(cortex-a57.cortex-a53, cortex-a72.cortex-a53): Likewise.
+	(cortex-a73.cortex-a35, cortex-a73.cortex-a53): Likewise.
+	(cortex-m33): Add fpu.	Add option for nofp.
+	* config/arm/arm-cpu-cdata.h: Regenerated
+	* config/arm/arm-cpu-data.h: Regenerated.
+
+2017-06-16  Richard Earnshaw  <rearnsha@arm.com>
+
+	* arm-cpus.in (armv5e): Add options fp, vfpv2 and nofp.
+	(armv5te, armv5tej): Likewise.
+	(armv6, armv6j, armv6k, armv6z, armv6kz, armv6zk, armv6t2): Likewise.
+	(armv7): Add options fp and vfpv3-d16.
+	(armv7-a): Add options fp, simd, vfpv3, vfpv3-d16, vfpv3-d16-fp16,
+	vfpv3-fp16, vfpv4, vfpv4-d16, neon, neon-vfpv3, neon-fp16, neon-vfpv4,
+	nofp and nosimd.
+	(armv7ve): Likewise.
+	(armv7-r): Add options fp, fp.sp, idiv, nofp and noidiv.
+	(armv7e-m): Add options fp, fpv5, fp.dp and nofp.
+	(armv8-a): Add nocrypto option.
+	(armv8.1-a, armv8.2-a): Likewise.
+	(armv8-m.main): add options fp, fp.dp and nofp.
+
+2017-06-16  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/arm-cpus.in (armv8-a): Add options crc, simd crypto and
+	nofp.
+	(armv8-a+crc): Delete.
+	(armv8.1-a): Add options simd, crypto and nofp.
+	(armv8.2-a): Add options fp16, simd, crypto and nofp.
+	(armv8.2-a+fp16): Delete.
+	(armv8-m.main): Add option dsp.
+	(armv8-m.main+dsp): Delete.
+	(cortex-a8): Add fpu.  Add nofp option.
+	(cortex-a9): Add fpu.  Add nofp and nosimd options.
+	* config/arm/parsecpu.awk (gen_data): Generate option tables and
+	link to main cpu and architecture data structures.
+	(gen_comm_data): Only put isa attributes from the main architecture
+	in common tables.
+	(option): New statement for architecture and CPU entries.
+	* arm.c (struct cpu_option): New structure.
+	(struct processors): Add entry for options.
+	(arm_unrecognized_feature): New function.
+	(arm_parse_arch_cpu_name): Ignore any characters after the first
+	'+' character.
+	(arm_parse_arch_cpu_feature): New function.
+	(arm_configure_build_target): Separate out any CPU and architecture
+	features and parse separately.	Don't error out if -mfpu=auto is
+	used with only an architecture string.
+	(arm_print_asm_arch_directives): New function.
+	(arm_file_start): Call it.
+	* config/arm/arm-cpu-cdata.h: Regenerated.
+	* config/arm/arm-cpu-data.h: Likewise.
+	* config/arm/arm-tables.opt: Likewise.
+
+2017-06-16  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/elf.h (ASM_SPEC): Only pass -mfpu through to the
+	assembler when it is not -mfpu=auto.
+
+2017-06-16  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/arm.h (BIG_LITTLE_SPEC): Delete macro.
+	(ASM_REWRITE_SPEC_FUNCTIONS): New macro.
+	(BIG_LITTLE_CPU_SPEC_FUNCTIONS): Delete macro.
+	(ASM_CPU_SPEC): Rewrite.
+	(MCPU_MTUNE_NATIVE_FUNCTIONS): New macro.
+	(EXTRA_SPEC_FUNCTIONS): Move outside of ifdef.	Use
+	MCPU_MTUNE_NATIVE_FUNCTIONS and ASM_REWRITE_SPEC_FUNCTIONS.  Remove
+	reference to BIG_LITTLE_CPU_SPEC_FUNCTIONS.
+	* common/config/arm/arm-common.c (arm_rewrite_selected_cpu): Ensure
+	copied string is NUL-terminated.  Also strip any characters prefixed
+	by '+'.
+	(arm_rewrite_selected_arch): New function.
+	(arm_rewrite_march): New function.
+
+2017-06-16  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/arm.opt (x_arm_arch_string): New TargetSave option.
+	(x_arm_cpu_string, x_arm_tune_string): Likewise.
+	(march, mcpu, mtune): Convert to string-based options.
+	* config/arm/arm.c (arm_print_hint_for_core_or_arch): New function.
+	(arm_parse_arch_cpu_name): New function.
+	(arm_configure_build_target): Use arm_parse_arch_cpu_name to
+	identify selected architecture or CPU.
+	(arm_option_save): New function.
+	(TARGET_OPTION_SAVE): Redefine.
+	(arm_option_restore): Restore string options.
+	(arm_option_print): Print string options.
+
+2017-06-16  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/80933
+	PR tree-optimization/80934
+	* builtins.c (fold_builtin_3): Do not handle bcmp here.
+	* gimple-fold.c (gimple_fold_builtin_bcmp): New function.
+	(gimple_fold_builtin_bcopy, gimple_fold_builtin_bzero): Likewise.
+	(gimple_fold_builtin): Call them.
+
+2017-06-16  Jan Hubicka  <hubicka@ucw.cz>
+
+	* gimple-ssa-isolate-paths.c (isolate_path): Set edge leading to path
+	as unlikely; update profile.
+
+2017-06-16  Jan Hubicka  <hubicka@ucw.cz>
+
+	* predict.c (force_edge_cold): Handle declaring edges impossible
+	more aggresively.
+
+2017-06-16  Jan Hubicka  <hubicka@ucw.cz>
+
+	* tree-ssa-loop-ivcanon.c (remove_exits_and_undefined_stmts): Update
+	profile.
+	(try_unroll_loop_completely): Fix reporting.
+
+2017-06-16  Jan Hubicka  <hubicka@ucw.cz>
+
+	* tree-ssa-tail-merge.c (replace_block_by): Fix profile updating.
+
+2017-06-16  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	PR target/71778
+	* config/arm/arm-builtins.c (arm_expand_builtin_args): Return TARGET
+	if given a non-constant argument for an intrinsic which requires a
+	constant.
+
+2017-06-16  Jan Hubicka  <hubicka@ucw.cz>
+
+	* profile.c (compare_freqs): New function.
+	(branch_prob): Sort edge list.
+	(find_spanning_tree): Assume that the list is priority sorted.
+
 2017-06-16  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/81090

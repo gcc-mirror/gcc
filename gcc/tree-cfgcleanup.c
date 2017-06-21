@@ -839,7 +839,12 @@ cleanup_tree_cfg_noloop (void)
   timevar_pop (TV_TREE_CLEANUP_CFG);
 
   if (changed && current_loops)
-    loops_state_set (LOOPS_NEED_FIXUP);
+    {
+      /* Removing edges and/or blocks may make recorded bounds refer
+         to stale GIMPLE stmts now, so clear them.  */
+      free_numbers_of_iterations_estimates (cfun);
+      loops_state_set (LOOPS_NEED_FIXUP);
+    }
 
   return changed;
 }
@@ -959,7 +964,7 @@ remove_forwarder_block_with_phi (basic_block bb)
 	    {
 	      dest->loop_father->any_upper_bound = false;
 	      dest->loop_father->any_likely_upper_bound = false;
-	      free_numbers_of_iterations_estimates_loop (dest->loop_father);
+	      free_numbers_of_iterations_estimates (dest->loop_father);
 	    }
 	}
 

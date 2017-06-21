@@ -3,7 +3,7 @@
 namespace N
 {
   namespace M = N;  // { dg-message "previous declaration" }
-  namespace M {}    // { dg-error "declaration of namespace" }
+  namespace M {}    // { dg-error "conflicts with a previous declaration" }
 }
 
 namespace A

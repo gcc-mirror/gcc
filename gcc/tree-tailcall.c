@@ -421,6 +421,7 @@ find_tail_calls (basic_block bb, struct tailcall **ret)
       if (gimple_code (stmt) == GIMPLE_LABEL
 	  || gimple_code (stmt) == GIMPLE_RETURN
 	  || gimple_code (stmt) == GIMPLE_NOP
+	  || gimple_code (stmt) == GIMPLE_PREDICT
 	  || gimple_clobber_p (stmt)
 	  || is_gimple_debug (stmt))
 	continue;
@@ -555,6 +556,7 @@ find_tail_calls (basic_block bb, struct tailcall **ret)
 
       if (gimple_code (stmt) == GIMPLE_LABEL
 	  || gimple_code (stmt) == GIMPLE_NOP
+	  || gimple_code (stmt) == GIMPLE_PREDICT
 	  || gimple_clobber_p (stmt)
 	  || is_gimple_debug (stmt))
 	continue;

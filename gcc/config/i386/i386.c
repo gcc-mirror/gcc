@@ -31935,11 +31935,12 @@ static GTY(()) tree ix86_builtins[(int) IX86_BUILTIN_MAX];
    but are waiting to be built until a function is declared to use that
    ISA.  */
 struct builtin_isa {
-  const char *name;		/* function name */
-  enum ix86_builtin_func_type tcode; /* type to use in the declaration */
   HOST_WIDE_INT isa;		/* isa_flags this builtin is defined for */
   HOST_WIDE_INT isa2;		/* additional isa_flags this builtin is defined for */
-  bool const_p;			/* true if the declaration is constant */
+  const char *name;		/* function name */
+  enum ix86_builtin_func_type tcode; /* type to use in the declaration */
+  unsigned char const_p:1;	/* true if the declaration is constant */
+  unsigned char pure_p:1;	/* true if the declaration has pure attribute */
   bool leaf_p;			/* true if the declaration has leaf attribute */
   bool nothrow_p;		/* true if the declaration has nothrow attribute */
   bool set_and_not_built_p;
@@ -32010,6 +32011,7 @@ def_builtin (HOST_WIDE_INT mask, const char *name,
 	  ix86_builtins_isa[(int) code].leaf_p = false;
 	  ix86_builtins_isa[(int) code].nothrow_p = false;
 	  ix86_builtins_isa[(int) code].const_p = false;
+	  ix86_builtins_isa[(int) code].pure_p = false;
 	  ix86_builtins_isa[(int) code].set_and_not_built_p = true;
 	}
     }
@@ -32028,6 +32030,21 @@ def_builtin_const (HOST_WIDE_INT mask, const char *name,
     TREE_READONLY (decl) = 1;
   else
     ix86_builtins_isa[(int) code].const_p = true;
+
+  return decl;
+}
+
+/* Like def_builtin, but also marks the function decl "pure".  */
+
+static inline tree
+def_builtin_pure (HOST_WIDE_INT mask, const char *name,
+		  enum ix86_builtin_func_type tcode, enum ix86_builtins code)
+{
+  tree decl = def_builtin (mask, name, tcode, code);
+  if (decl)
+    DECL_PURE_P (decl) = 1;
+  else
+    ix86_builtins_isa[(int) code].pure_p = true;
 
   return decl;
 }
@@ -32066,6 +32083,7 @@ def_builtin2 (HOST_WIDE_INT mask, const char *name,
       ix86_builtins_isa[(int) code].leaf_p = false;
       ix86_builtins_isa[(int) code].nothrow_p = false;
       ix86_builtins_isa[(int) code].const_p = false;
+      ix86_builtins_isa[(int) code].pure_p = false;
       ix86_builtins_isa[(int) code].set_and_not_built_p = true;
     }
 
@@ -32083,6 +32101,21 @@ def_builtin_const2 (HOST_WIDE_INT mask, const char *name,
     TREE_READONLY (decl) = 1;
   else
     ix86_builtins_isa[(int) code].const_p = true;
+
+  return decl;
+}
+
+/* Like def_builtin, but also marks the function decl "pure".  */
+
+static inline tree
+def_builtin_pure2 (HOST_WIDE_INT mask, const char *name,
+		   enum ix86_builtin_func_type tcode, enum ix86_builtins code)
+{
+  tree decl = def_builtin2 (mask, name, tcode, code);
+  if (decl)
+    DECL_PURE_P (decl) = 1;
+  else
+    ix86_builtins_isa[(int) code].pure_p = true;
 
   return decl;
 }
@@ -32125,6 +32158,8 @@ ix86_add_new_builtins (HOST_WIDE_INT isa, HOST_WIDE_INT isa2)
 	  ix86_builtins[i] = decl;
 	  if (ix86_builtins_isa[i].const_p)
 	    TREE_READONLY (decl) = 1;
+	  if (ix86_builtins_isa[i].pure_p)
+	    DECL_PURE_P (decl) = 1;
 	  if (ix86_builtins_isa[i].leaf_p)
 	    DECL_ATTRIBUTES (decl) = build_tree_list (get_identifier ("leaf"),
 						      NULL_TREE);
@@ -32478,8 +32513,8 @@ ix86_init_mmx_sse_builtins (void)
   /* SSE */
   def_builtin (OPTION_MASK_ISA_SSE, "__builtin_ia32_ldmxcsr",
 	       VOID_FTYPE_UNSIGNED, IX86_BUILTIN_LDMXCSR);
-  def_builtin (OPTION_MASK_ISA_SSE, "__builtin_ia32_stmxcsr",
-	       UNSIGNED_FTYPE_VOID, IX86_BUILTIN_STMXCSR);
+  def_builtin_pure (OPTION_MASK_ISA_SSE, "__builtin_ia32_stmxcsr",
+		    UNSIGNED_FTYPE_VOID, IX86_BUILTIN_STMXCSR);
 
   /* SSE or 3DNow!A */
   def_builtin (OPTION_MASK_ISA_SSE | OPTION_MASK_ISA_3DNOW_A,
@@ -36597,8 +36632,8 @@ ix86_expand_sse_comi_round (const struct builtin_description *d,
     }
   else
     {
-      gcc_assert (GET_CODE (XVECEXP (pat, 0, 0)) == SET);
-      set_dst = SET_DEST (XVECEXP (pat, 0, 0));
+      gcc_assert (GET_CODE (pat) == SET);
+      set_dst = SET_DEST (pat);
     }
 
   emit_insn (pat);

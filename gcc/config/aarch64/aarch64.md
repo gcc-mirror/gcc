@@ -1017,7 +1017,7 @@
    #
    #
    #
-   orr\\t%0.16b, %1.16b, %1.16b
+   mov\\t%0.16b, %1.16b
    ldp\\t%0, %H0, %1
    stp\\t%1, %H1, %0
    stp\\txzr, xzr, %0
@@ -1131,7 +1131,7 @@
   "TARGET_FLOAT && (register_operand (operands[0], TFmode)
     || aarch64_reg_or_fp_zero (operands[1], TFmode))"
   "@
-   orr\\t%0.16b, %1.16b, %1.16b
+   mov\\t%0.16b, %1.16b
    #
    #
    #

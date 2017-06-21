@@ -1,7 +1,7 @@
 /* { dg-do run { target { { powerpc*-*-* && lp64 } && powerpc_altivec_ok } } } */
 /* { dg-do compile { target { { powerpc*-*-* && ilp32 } && powerpc_altivec_ok } } } */
 /* { dg-additional-options "-mpowerpc64 -maltivec" } */
-/* { dg-skip-if "" { powerpc-ibm-aix* } { "*" } { "" } } */
+/* { dg-skip-if "" { powerpc-ibm-aix* } } */
 
 #include <stdarg.h>
 #include "tree-vect.h"

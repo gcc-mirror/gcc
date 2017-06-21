@@ -15,6 +15,8 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
+// { dg-do run { target c++11 } }
+
 // libstdc++/80893
 
 #include <vector>

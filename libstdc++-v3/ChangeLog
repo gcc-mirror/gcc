@@ -1,3 +1,54 @@
+2017-06-21  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	* config/abi/post/aarch64-linux-gnu/baseline_symbols.txt: Update.
+
+2017-06-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/81092
+	* configure: Regenerate.
+
+2017-06-20  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/abi/post/alpha-linux-gnu/baseline_symbols.txt: Update.
+
+2017-06-20  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* testsuite/20_util/variant/index_type.cc: Allow for all ilp32 and
+	lp64 targets.
+
+2017-06-19  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config/abi/post/i386-solaris2.10/baseline_symbols.txt: Regenerate.
+	* config/abi/post/i386-solaris2.10/amd64/baseline_symbols.txt: Likewise.
+	* config/abi/post/i386-solaris2.11/baseline_symbols.txt: Likewise.
+	* config/abi/post/i386-solaris2.11/amd64/baseline_symbols.txt: Likewise.
+	* config/abi/post/sparc-solaris2.10/baseline_symbols.txt: Likewise.
+	* config/abi/post/sparc-solaris2.10/sparcv9/baseline_symbols.txt:
+	Likewise.
+	* config/abi/post/sparc-solaris2.11/baseline_symbols.txt: Likewise.
+	* config/abi/post/sparc-solaris2.11/sparcv9/baseline_symbols.txt:
+	Likewise.
+
+2017-06-18  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR libstdc++/81092
+	* config/abi/post/x86_64-linux-gnu/x32/baseline_symbols.txt: Updated.
+
+2017-06-18  Andreas Schwab  <schwab@linux-m68k.org>
+
+	PR libstdc++/81092
+	* config/abi/post/m68k-linux-gnu/baseline_symbols.txt: Update.
+
+2017-06-17  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* testsuite: Remove dg-skip-if, dg-xfail-if, dg-xfail-run-if
+	default args.
+
+2017-06-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/80893
+	* testsuite/23_containers/vector/bool/80893.cc: Add { target c++11 }.
+
 2017-06-16  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/shared_ptr.h (get_deleter): Add overload matching

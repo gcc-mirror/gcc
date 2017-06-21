@@ -2739,73 +2739,9 @@ tree_estimate_probability_bb (basic_block bb, bool local_only)
 {
   edge e;
   edge_iterator ei;
-  gimple *last;
 
   FOR_EACH_EDGE (e, ei, bb->succs)
     {
-      /* Predict edges to user labels with attributes.  */
-      if (e->dest != EXIT_BLOCK_PTR_FOR_FN (cfun))
-	{
-	  gimple_stmt_iterator gi;
-	  for (gi = gsi_start_bb (e->dest); !gsi_end_p (gi); gsi_next (&gi))
-	    {
-	      glabel *label_stmt = dyn_cast <glabel *> (gsi_stmt (gi));
-	      tree decl;
-
-	      if (!label_stmt)
-		break;
-	      decl = gimple_label_label (label_stmt);
-	      if (DECL_ARTIFICIAL (decl))
-		continue;
-
-	      /* Finally, we have a user-defined label.  */
-	      if (lookup_attribute ("cold", DECL_ATTRIBUTES (decl)))
-		predict_edge_def (e, PRED_COLD_LABEL, NOT_TAKEN);
-	      else if (lookup_attribute ("hot", DECL_ATTRIBUTES (decl)))
-		predict_edge_def (e, PRED_HOT_LABEL, TAKEN);
-	    }
-	}
-
-      /* Predict early returns to be probable, as we've already taken
-	 care for error returns and other cases are often used for
-	 fast paths through function.
-
-	 Since we've already removed the return statements, we are
-	 looking for CFG like:
-
-	 if (conditional)
-	 {
-	 ..
-	 goto return_block
-	 }
-	 some other blocks
-	 return_block:
-	 return_stmt.  */
-      if (e->dest != bb->next_bb
-	  && e->dest != EXIT_BLOCK_PTR_FOR_FN (cfun)
-	  && single_succ_p (e->dest)
-	  && single_succ_edge (e->dest)->dest == EXIT_BLOCK_PTR_FOR_FN (cfun)
-	  && (last = last_stmt (e->dest)) != NULL
-	  && gimple_code (last) == GIMPLE_RETURN)
-	{
-	  edge e1;
-	  edge_iterator ei1;
-
-	  if (single_succ_p (bb))
-	    {
-	      FOR_EACH_EDGE (e1, ei1, bb->preds)
-		if (!predicted_by_p (e1->src, PRED_NULL_RETURN)
-		    && !predicted_by_p (e1->src, PRED_CONST_RETURN)
-		    && !predicted_by_p (e1->src, PRED_NEGATIVE_RETURN))
-		  predict_edge_def (e1, PRED_TREE_EARLY_RETURN, NOT_TAKEN);
-	    }
-	  else
-	    if (!predicted_by_p (e->src, PRED_NULL_RETURN)
-		&& !predicted_by_p (e->src, PRED_CONST_RETURN)
-		&& !predicted_by_p (e->src, PRED_NEGATIVE_RETURN))
-	      predict_edge_def (e, PRED_TREE_EARLY_RETURN, NOT_TAKEN);
-	}
-
       /* Look for block we are guarding (ie we dominate it,
 	 but it doesn't postdominate us).  */
       if (e->dest != EXIT_BLOCK_PTR_FOR_FN (cfun) && e->dest != bb
@@ -3968,6 +3904,7 @@ force_edge_cold (edge e, bool impossible)
   profile_count old_count = e->count;
   int old_probability = e->probability;
   int prob_scale = REG_BR_PROB_BASE;
+  bool uninitialized_exit = false;
 
   /* If edge is already improbably or cold, just return.  */
   if (e->probability <= (impossible ? PROB_VERY_UNLIKELY : 0)
@@ -3978,6 +3915,8 @@ force_edge_cold (edge e, bool impossible)
       {
 	if (e2->count.initialized_p ())
 	  count_sum += e2->count;
+	else
+	  uninitialized_exit = true;
 	prob_sum += e2->probability;
       }
 
@@ -3989,7 +3928,7 @@ force_edge_cold (edge e, bool impossible)
 	 = MIN (e->probability, impossible ? 0 : PROB_VERY_UNLIKELY);
       if (impossible)
 	e->count = profile_count::zero ();
-      if (old_probability)
+      else if (old_probability)
 	e->count = e->count.apply_scale (e->probability, old_probability);
       else
         e->count = e->count.apply_scale (1, REG_BR_PROB_BASE);
@@ -4016,6 +3955,34 @@ force_edge_cold (edge e, bool impossible)
   else
     {
       e->probability = REG_BR_PROB_BASE;
+      if (e->src->count == profile_count::zero ())
+	return;
+      if (count_sum == profile_count::zero () && !uninitialized_exit
+	  && impossible)
+	{
+	  bool found = false;
+	  for (gimple_stmt_iterator gsi = gsi_start_bb (e->src);
+	       !gsi_end_p (gsi); gsi_next (&gsi))
+	    {
+	      if (stmt_can_terminate_bb_p (gsi_stmt (gsi)))
+		{
+		  found = true;
+	          break;
+		}
+	    }
+	  if (!found)
+	    {
+	      if (dump_file && (dump_flags & TDF_DETAILS))
+		fprintf (dump_file,
+			 "Making bb %i impossible and dropping count to 0.\n",
+			 e->src->index);
+	      e->count = profile_count::zero ();
+	      e->src->count = profile_count::zero ();
+	      FOR_EACH_EDGE (e2, ei, e->src->preds)
+		force_edge_cold (e2, impossible);
+	      return;
+	    }
+	}
 
       /* If we did not adjusting, the source basic block has no likely edeges
  	 leaving other direction. In that case force that bb cold, too.

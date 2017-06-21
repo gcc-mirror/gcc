@@ -133,6 +133,10 @@
 #define vec_doublel __builtin_vec_doublel
 #define vec_doubleh __builtin_vec_doubleh
 #define vec_expte __builtin_vec_expte
+#define vec_float __builtin_vec_float
+#define vec_float2 __builtin_vec_float2
+#define vec_floate __builtin_vec_floate
+#define vec_floato __builtin_vec_floato
 #define vec_floor __builtin_vec_floor
 #define vec_loge __builtin_vec_loge
 #define vec_madd __builtin_vec_madd

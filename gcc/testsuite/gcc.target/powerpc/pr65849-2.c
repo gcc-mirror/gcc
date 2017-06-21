@@ -1,6 +1,6 @@
 /* { dg-do compile { target { powerpc*-*-* } } } */
 /* { dg-require-effective-target powerpc_p8vector_ok } */
-/* { dg-skip-if "" { powerpc*-*-darwin* } { "*" } { "" } } */
+/* { dg-skip-if "" { powerpc*-*-darwin* } } */
 /* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power8" } } */
 /* { dg-options "-mcpu=power8 -O2 -mno-upper-regs-sf" } */
 

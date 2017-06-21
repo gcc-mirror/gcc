@@ -1,4 +1,4 @@
-/* { dg-additional-options "-DSTACK_SIZE=[dg-effective-target-value stack_size]" { target { stack_size } } } */
+/* { dg-add-options stack_size } */
 
 /* Origin: hp@bitrange.com
    Test that return values come out right from a 1000-level call chain to

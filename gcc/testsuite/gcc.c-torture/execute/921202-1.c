@@ -1,5 +1,5 @@
 /* { dg-require-effective-target untyped_assembly } */
-/* { dg-additional-options "-DSTACK_SIZE=[dg-effective-target-value stack_size]" { target { stack_size } } } */
+/* { dg-add-options stack_size } */
 
 #ifndef STACK_SIZE
 #define	VLEN	2055

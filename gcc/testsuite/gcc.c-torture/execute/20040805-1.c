@@ -1,4 +1,4 @@
-/* { dg-additional-options "-DSTACK_SIZE=[dg-effective-target-value stack_size]" { target { stack_size } } } */
+/* { dg-add-options stack_size } */
 
 #if __INT_MAX__ < 32768 || (defined(STACK_SIZE) && STACK_SIZE < 0x12000)
 int main () { exit (0); }

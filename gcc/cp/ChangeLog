@@ -1,4 +1,111 @@
+2017-06-21  David Malcolm  <dmalcolm@redhat.com>
+
+	* parser.c (get_cast_suggestion): New function.
+	(maybe_add_cast_fixit): New function.
+	(cp_parser_cast_expression): Capture the location of the closing
+	parenthesis.  Call maybe_add_cast_fixit when emitting warnings
+	about old-style casts.
+
+2017-06-20  Jason Merrill  <jason@redhat.com>
+
+	PR c++/80972 - C++17 ICE with attribute packed.
+	* call.c (build_over_call): Allow a TARGET_EXPR from reference
+	binding.
+
+2017-06-20  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-tree.h (CPTI_NELTS_IDENTIFIER): Delete.
+	(nelts_identifier): Delete.
+	* decl.c (initialize_predefined_identifiers): Remove nelts.
+
+	PR c++/67074 - namespace aliases
+	* decl.c (duplicate_decls): Don't error here on mismatched
+	namespace alias.
+	* name-lookup.c (name_lookup::add_value): Matching namespaces are
+	not ambiguous.
+	(diagnose_name_conflict): Namespaces are never redeclarations.
+	(update_binding): An alias can match a real namespace.
+
+2017-06-19  Jason Merrill  <jason@redhat.com>
+
+	PR c++/80562 - ICE with constexpr if.
+	* semantics.c (finish_if_stmt_cond): Call
+	instantiate_non_dependent_expr.
+
+	PR c++/80829 - ICE with constexpr copy of base subobject.
+	* constexpr.c (clear_no_implicit_zero): New.
+	(cxx_eval_call_expression): Call it.
+
+2017-06-19  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/81124
+	PR c++/79766
+	* name-lookup.c (set_decl_namespace): Don't follow using
+	directives and ignore using decls.  Only check overly-explicit
+	scope after discovering decl.
+
+2017-06-19  Jason Merrill  <jason@redhat.com>
+
+	PR c++/81073 - constexpr and static var in statement-expression.
+	* typeck2.c (store_init_value): Always call
+	require_potential_constant_expression.
+	* pt.c (convert_nontype_argument): Likewise.
+	* constexpr.c (potential_constant_expression_1): Adjust message.
+	Use decl_maybe_constant_var_p instead of decl_constant_var_p.
+	* decl2.c (decl_maybe_constant_var_p): Consider initializer.
+
+2017-06-19  Nathan Sidwell  <nathan@acm.org>
+
+	* pt.c (coerce_template_parms): Fix indentation.
+	(tsubst_decl): Remove repeated SET_DECL_RTL.  Move VAR_P handling
+	in to single block.
+
+	PR c++/81119
+	* name-lookup.c (update_binding): Only warn about constructors
+	hidden by functions.
+
+2017-06-17  Jason Merrill  <jason@redhat.com>
+
+	PR c++/60063 - -Wunused-local-typedefs and templates.
+	* decl2.c (is_late_template_attribute): Return false for "used".
+
+	PR c++/70844 - -Wuseless-cast and inheriting constructor.
+	* method.c (forward_parm): Suppress warn_useless_cast.
+
+2017-06-16  Jason Merrill  <jason@redhat.com>
+
+	PR c++/81045 - Wrong type-dependence with auto return type.
+	* pt.c (type_dependent_expression_p): An undeduced auto outside the
+	template isn't dependent.
+	* call.c (build_over_call): Instantiate undeduced auto even in a
+	template.
+
+	PR c++/80465 - ICE with generic lambda with noexcept-specifier.
+	* lambda.c (maybe_add_lambda_conv_op): Keep processing_template_decl
+	set longer for a generic lambda.
+
+	PR c++/80614 - Wrong mangling for C++17 noexcept type
+	* mangle.c (write_type): Put the eh spec back on the function type.
+
+	PR c++/81102 - Wrong error with partial specialization.
+	* pt.c (unify) [TEMPLATE_PARM_INDEX]: Strip reference when comparing
+	types.  Do type deduction later.
+
+	PR c++/81074 - ICE with partial specialization of member template.
+	PR c++/71747
+	* pt.c (get_partial_spec_bindings): Only coerce innermost args.
+
+	PR c++/80831 - ICE with -fsyntax-only.
+	* decl2.c (c_parse_final_cleanups): Use cgraph_node::get_create.
+
+	PR c++/80639 - ICE with invalid PMF initialization.
+	PR c++/80043 - ICE with -fpermissive
+	* typeck.c (convert_for_assignment): Recurse when instantiate_type
+	returns without an error.
+
 2017-06-16  Nathan Sidwell  <nathan@acm.org>
+
+	* pt.c (tsubst_baselink): Fix & clarify formatting.
 
 	* cp-tree.h (build_this_parm, cp_build_parm_decl,
 	build_artificial_parm): Add FN parm.

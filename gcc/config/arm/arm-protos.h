@@ -462,8 +462,6 @@ struct arm_build_target
   const char *arch_name;
   /* Preprocessor substring (never NULL).  */
   const char *arch_pp_name;
-  /* CPU identifier for the core we're compiling for (architecturally).  */
-  enum processor_type arch_core;
   /* The base architecture value.  */
   enum base_architecture base_arch;
   /* Bitmap encapsulating the isa_bits for the target environment.  */
@@ -478,5 +476,59 @@ struct arm_build_target
 
 extern struct arm_build_target arm_active_target;
 
+struct cpu_arch_extension
+{
+  /* Feature name.  */
+  const char *const name;
+  /* True if the option is negative (removes extensions).  */
+  bool remove;
+  /* True if the option is an alias for another option with identical effect;
+     the option will be ignored for canonicalization.  */
+  bool alias;
+  /* The modifier bits.  */
+  const enum isa_feature isa_bits[isa_num_bits];
+};
+
+struct cpu_arch_option
+{
+  /* Name for this option.  */
+  const char *name;
+  /* List of feature extensions permitted.  */
+  const struct cpu_arch_extension *extensions;
+  /* Standard feature bits.  */
+  enum isa_feature isa_bits[isa_num_bits];
+};
+
+struct arch_option
+{
+  /* Common option fields.  */
+  cpu_arch_option common;
+  /* Short string for this architecture.  */
+  const char *arch;
+  /* Base architecture, from which this specific architecture is derived.  */
+  enum base_architecture base_arch;
+  /* Default tune target (in the absence of any more specific data).  */
+  enum processor_type tune_id;
+};
+
+struct cpu_option
+{
+  /* Common option fields.  */
+  cpu_arch_option common;
+  /* Architecture upon which this CPU is based.  */
+  enum arch_type arch;
+};
+
+extern const arch_option all_architectures[];
+extern const cpu_option all_cores[];
+
+const cpu_option *arm_parse_cpu_option_name (const cpu_option *, const char *,
+					     const char *);
+const arch_option *arm_parse_arch_option_name (const arch_option *,
+					       const char *, const char *);
+void arm_parse_option_features (sbitmap, const cpu_arch_option *,
+				const char *);
+
+void arm_initialize_isa (sbitmap, const enum isa_feature *);
 
 #endif /* ! GCC_ARM_PROTOS_H */

@@ -1,3 +1,23 @@
+2017-06-21  Pierre-Marie de Rodat  <derodat@adacore.com>
+
+	* gcc-interface/ada-tree.h (DECL_FUNCTION_IS_DEF): Update copyright
+	notice.  New macro.
+	* gcc-interface/trans.c (Subprogram_Body_to_gnu): Tag the subprogram
+	as a definition.
+	(Compilation_Unit_to_gnu): Tag the elaboration procedure as a
+	definition.
+	* gcc-interface/decl.c (gnat_to_gnu_entity): Tag declarations of
+	imported subprograms for the current compilation unit as
+	definitions.  Disable debug info for references to variables.
+	* gcc-interface/gigi.h (create_subprog_decl): Update declaration.
+	* gcc-interface/utils.c (gnat_pushdecl): Add external DECLs that are
+	not built-in functions to their binding scope.
+	(create_subprog_decl): Add a DEFINITION parameter.  If it is true, tag
+	the function as a definition.  Update all callers.
+	(gnat_write_global_declarations): Emit debug info for imported
+	functions.  Filter out external variables for which debug info
+	is disabled.
+
 2017-06-15  Nicolas Boulenguez  <nicolas.boulenguez@free.fr>
 
 	PR ada/81105

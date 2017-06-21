@@ -7584,6 +7584,9 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
       const tree *argarray;
       unsigned int nargs;
 
+      if (undeduced_auto_decl (fn))
+	mark_used (fn, complain);
+
       return_type = TREE_TYPE (TREE_TYPE (fn));
       nargs = vec_safe_length (args);
       if (first_arg == NULL_TREE)
@@ -8022,6 +8025,8 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
 	 subobject.  */
       if (CHECKING_P && cxx_dialect >= cxx1z)
 	gcc_assert (TREE_CODE (arg) != TARGET_EXPR
+		    /* It's from binding the ref parm to a packed field. */
+		    || convs[0]->need_temporary_p
 		    || seen_error ()
 		    /* See unsafe_copy_elision_p.  */
 		    || DECL_BASE_CONSTRUCTOR_P (fn));

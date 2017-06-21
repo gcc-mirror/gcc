@@ -1876,7 +1876,7 @@ arm_init_builtins (void)
      arm_init_neon_builtins which uses it.  */
   arm_init_fp16_builtins ();
 
-  if (TARGET_HARD_FLOAT)
+  if (TARGET_MAYBE_HARD_FLOAT)
     {
       arm_init_neon_builtins ();
       arm_init_vfp_builtins ();
@@ -1885,7 +1885,7 @@ arm_init_builtins (void)
 
   arm_init_acle_builtins ();
 
-  if (TARGET_HARD_FLOAT)
+  if (TARGET_MAYBE_HARD_FLOAT)
     {
       tree ftype_set_fpscr
 	= build_function_type_list (void_type_node, unsigned_type_node, NULL);
@@ -2245,7 +2245,12 @@ constant_arg:
 		{
 		  error ("%Kargument %d must be a constant immediate",
 			 exp, argc + 1);
-		  return const0_rtx;
+		  /* We have failed to expand the pattern, and are safely
+		     in to invalid code.  But the mid-end will still try to
+		     build an assignment for this node while it expands,
+		     before stopping for the error, just pass it back
+		     TARGET to ensure a valid assignment.  */
+		  return target;
 		}
 	      break;
 

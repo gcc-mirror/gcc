@@ -10,5 +10,5 @@ struct T
 
 int main()
 {
-    constexpr T t = (T{} = T{});
+    constexpr T t = (T{} = T{}); // { dg-error "" "" { target c++11_only } }
 }

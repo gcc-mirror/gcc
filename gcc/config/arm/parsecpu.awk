@@ -102,6 +102,17 @@ function gen_headers () {
     print "  TARGET_CPU_arm_none"
     print "};\n"
 
+    print "enum arch_type"
+    print "{"
+
+    narchs = split (arch_list, archs)
+
+    for (n = 1; n <= narchs; n++) {
+	print "  TARGET_ARCH_"arch_cnames[archs[n]]","
+    }
+    print "  TARGET_ARCH_arm_none"
+    print "};\n"
+
     print "enum fpu_type"
     print "{"
 
@@ -117,14 +128,14 @@ function gen_headers () {
 function gen_data () {
     boilerplate("C")
 
-    print "static const struct processors all_cores[] ="
+    print "static const cpu_tune all_tunes[] ="
     print "{"
 
     ncpus = split (cpu_list, cpus)
 
     for (n = 1; n <= ncpus; n++) {
-	print "  {"
-	print "    \"" cpus[n] "\","
+	print "  { /* " cpus[n] ".  */"
+	# scheduler
 	if (cpus[n] in cpu_tune_for) {
 	    if (! (cpu_tune_for[cpus[n]] in cpu_cnames)) {
 		fatal("unknown \"tune for\" target " cpu_tune_for[cpus[n]] \
@@ -134,32 +145,139 @@ function gen_data () {
 	} else {
 	    print "    TARGET_CPU_" cpu_cnames[cpus[n]] ","
 	}
+	# tune_flags
 	if (cpus[n] in cpu_tune_flags) {
 	    print "    (" cpu_tune_flags[cpus[n]] "),"
 	} else print "    0,"
-	if (! (cpu_arch[cpus[n]] in arch_isa)) {
-	    fatal("unknown arch " cpu_arch[cpus[n]] " for cpu " cpus[n])
-	}
-	print "    \"" arch_base[cpu_arch[cpus[n]]] "\", BASE_ARCH_" \
-	    arch_base[cpu_arch[cpus[n]]] ","
-	print "    {"
-	print "      " arch_isa[cpu_arch[cpus[n]]] ","
-	if (cpus[n] in cpu_fpu) print "      " fpu_isa[cpu_fpu[cpus[n]]] ","
-	if (cpus[n] in cpu_isa) print "      " cpu_isa[cpus[n]] ","
-	print "      isa_nobit"
-	print "    },"
+	# tune
 	print "    &arm_" cpu_cost[cpus[n]] "_tune"
 	print "  },"
     }
+    print "  {TARGET_CPU_arm_none, 0, NULL}"
+    print "};"
+    
+}
 
-    print "  {NULL, TARGET_CPU_arm_none, 0, NULL, BASE_ARCH_0," \
-	" {isa_nobit}, NULL}"
-    print "};\n"
+function gen_comm_data () {
+    boilerplate("C")
 
-    print "static const struct processors all_architectures[] ="
+    ncpus = split (cpu_list, cpus)
+
+    for (n = 1; n <= ncpus; n++) {
+	if (cpus[n] in cpu_opts) {
+	    print "static const cpu_arch_extension cpu_opttab_" \
+		cpu_cnames[cpus[n]] "[] = {"
+	    nopts = split (cpu_opts[cpus[n]], opts)
+	    for (opt = 1; opt <= nopts; opt++) {
+		print "  {"
+		print "    \"" opts[opt] "\", " \
+		    cpu_opt_remove[cpus[n],opts[opt]] ", false,"
+		print "    { " cpu_opt_isa[cpus[n],opts[opt]] ", isa_nobit }"
+		print "  },"
+	    }
+	    if (cpus[n] in cpu_optaliases) {
+		naliases = split (cpu_optaliases[cpus[n]], aliases)
+		for (alias = 1; alias <= naliases; alias++) {
+		    if (! ((cpus[n], \
+			    cpu_opt_alias[cpus[n],aliases[alias]]) in \
+			   cpu_opt_isa)) {
+			fatal("Alias " aliases[alias] " target not defined " \
+			      "for CPU " cpus[n])
+		    }
+		    equiv=cpu_opt_alias[cpus[n],aliases[alias]]
+		    print "  {"
+		    print "    \"" aliases[alias] "\", " \
+			cpu_opt_remove[cpus[n],equiv] ", true, "
+		    print "    { " cpu_opt_isa[cpus[n],equiv] ", isa_nobit }"
+		    print "  },"
+		}
+	    }
+	    print "  { NULL, false, false, {isa_nobit}}"
+	    print "};\n"
+	}
+    }
+
+    print "const cpu_option all_cores[] ="
     print "{"
 
+    for (n = 1; n <= ncpus; n++) {
+	print "  {"
+	print "    {"
+	# common.name
+	print "      \"" cpus[n] "\","
+	# common.extensions
+	if (cpus[n] in cpu_opts) {
+	    print "      cpu_opttab_" cpu_cnames[cpus[n]] ","
+	} else print "      NULL,"
+	# common.isa_bits
+	nfeats = split (cpu_arch[cpus[n]], feats, "+")
+	if (! (feats[1] in arch_isa)) {
+	    fatal("unknown arch " feats[1] " for cpu " cpus[n])
+	}
+	print "      {"
+	print "        " arch_isa[feats[1]] ","
+	for (m = 2; m <= nfeats; m++) {
+	    if (! ((feats[1], feats[m]) in arch_opt_isa)) {
+		fatal("unknown feature " feats[m] " for architecture " feats[1])
+	    }
+	    if (arch_opt_remove[feats[1],feats[m]] == "true") {
+		fatal("cannot remove features from architecture specs")
+	    }
+	    print "        " arch_opt_isa[feats[1],feats[m]] ","
+	}
+	if (cpus[n] in cpu_fpu) print "        " fpu_isa[cpu_fpu[cpus[n]]] ","
+	if (cpus[n] in cpu_isa) print "        " cpu_isa[cpus[n]] ","
+	print "        isa_nobit"
+	print "      }"
+	print "    },"
+	# arch
+	print "    TARGET_ARCH_" arch_cnames[feats[1]]
+	print "  },"
+    }
+
+    print "  {{NULL, NULL, {isa_nobit}}, TARGET_ARCH_arm_none}"
+    print "};"
+
     narchs = split (arch_list, archs)
+
+    for (n = 1; n <= narchs; n++) {
+	if (archs[n] in arch_opts) {
+	    print "static const struct cpu_arch_extension arch_opttab_" \
+		arch_cnames[archs[n]] "[] = {"
+	    nopts = split (arch_opts[archs[n]], opts)
+	    for (opt = 1; opt <= nopts; opt++) {
+		print "  {"
+		print "    \"" opts[opt] "\", " \
+		    arch_opt_remove[archs[n],opts[opt]] ", false,"
+		print "    { " arch_opt_isa[archs[n],opts[opt]] ", isa_nobit }"
+		print "  },"
+	    }
+	    if (archs[n] in arch_optaliases) {
+		naliases = split (arch_optaliases[archs[n]], aliases)
+		for (alias = 1; alias <= naliases; alias++) {
+		    if (! ((archs[n], \
+			    arch_opt_alias[archs[n],aliases[alias]]) in \
+			   arch_opt_isa)) {
+			fatal("Alias " aliases[alias] " target not defined " \
+			      "for architecture " archs[n])
+		    }
+		    equiv=arch_opt_alias[archs[n],aliases[alias]]
+		    print "  {"
+		    print "    \"" aliases[alias] "\", " \
+			arch_opt_remove[archs[n],equiv] ", true, "
+		    print "    { " arch_opt_isa[archs[n],equiv] ", isa_nobit }"
+		    print "  },"
+		}
+	    }
+	    print "  { NULL, false, false, {isa_nobit}}"
+	    print "};\n"
+	} else if (archs[n] in arch_optaliases) {
+	    fatal("Architecture " archs[n] " has option aliases but no options")
+	}
+    }
+
+    print "const arch_option all_architectures[] ="
+    print "{"
 
     for (n = 1; n <= narchs; n++) {
 	print "  {"
@@ -167,26 +285,30 @@ function gen_data () {
 	    fatal("unknown \"tune for\" target " arch_tune_for[archs[n]] \
 		  " for architecture " archs[n])
 	}
-	print "    \"" archs[n] \
-	    "\", TARGET_CPU_" cpu_cnames[arch_tune_for[archs[n]]] ","
-	if (archs[n] in arch_tune_flags) {
-	    print "    (" arch_tune_flags[archs[n]] "),"
-	} else print "    0,"
-	print "    \"" arch_base[archs[n]] "\", BASE_ARCH_" \
-	    arch_base[archs[n]] ","
+	# common.name
+	print "    \"" archs[n] "\","
+	# common.extensions
+	if (archs[n] in arch_opts) {
+	    print "    arch_opttab_" arch_cnames[archs[n]] ","
+	} else print "    NULL,"
+	# common.isa_bits
 	print "    {"
 	print "      " arch_isa[archs[n]] ","
 	print "      isa_nobit"
 	print "    },"
-	print "    NULL"
+	# arch, base_arch
+	print "    \"" arch_base[archs[n]] "\", BASE_ARCH_" \
+	    arch_base[archs[n]] ","
+	# tune_id
+	print "    TARGET_CPU_" cpu_cnames[arch_tune_for[archs[n]]] ","
 	print "  },"
     }
 
-    print "  {NULL, TARGET_CPU_arm_none, 0, NULL, BASE_ARCH_0," \
-	" {isa_nobit}, NULL}"
+    print "  {{NULL, NULL, {isa_nobit}},"
+    print "   NULL, BASE_ARCH_0, TARGET_CPU_arm_none}"
     print "};\n"
 
-    print "const struct arm_fpu_desc all_fpus[] ="
+    print "const arm_fpu_desc all_fpus[] ="
     print "{"
 
     nfpus = split (fpu_list, fpus)
@@ -202,44 +324,6 @@ function gen_data () {
     }
 
     print "};"
-}
-
-function gen_comm_data () {
-    boilerplate("C")
-
-    print "static const struct arm_arch_core_flag arm_arch_core_flags[] ="
-    print "{"
-
-    ncpus = split (cpu_list, cpus)
-
-    for (n = 1; n <= ncpus; n++) {
-	print "  {"
-	print "    \"" cpus[n] "\","
-	if (! (cpu_arch[cpus[n]] in arch_isa)) {
-	    fatal("unknown arch " cpu_arch[cpus[n]] " for cpu " cpus[n])
-	}
-	print "    {"
-	print "      " arch_isa[cpu_arch[cpus[n]]] ","
-	if (cpus[n] in cpu_fpu)	print "      " fpu_isa[cpu_fpu[cpus[n]]] ","
-	if (cpus[n] in cpu_isa)	print "      " cpu_isa[cpus[n]] ","
-	print "      isa_nobit"
-	print "    },"
-	print "  },"
-    }
-
-    narchs = split (arch_list, archs)
-
-    for (n = 1; n <= narchs; n++) {
-	print "  {"
-	print "    \"" archs[n] "\","
-	print "    {"
-	print "      " arch_isa[archs[n]] ","
-	print "      isa_nobit"
-	print "    },"
-	print "  },"
-    }
-
-    print "};\n"
 }
 
 function gen_md () {
@@ -309,9 +393,19 @@ function gen_opt () {
 }
 
 function check_cpu (name) {
-    if (name in cpu_cnames) {
-	print cpu_cnames[name]
-    } else print "error"
+    exts = split (name, extensions, "+")
+
+    if (! extensions[1] in cpu_cnames) {
+	return "error"
+    }
+
+    for (n = 2; n <= exts; n++) {
+	if (!((extensions[1], extensions[n]) in cpu_opt_remove)	\
+	    && !((extensions[1], extensions[n]) in cpu_optaliases)) {
+	    return "error"
+	}
+    }
+    return name
 }
 
 function check_fpu (name) {
@@ -321,9 +415,19 @@ function check_fpu (name) {
 }
 
 function check_arch (name) {
-    if (name in arch_isa) {
-	print name
-    } else print "error"
+    exts = split (name, extensions, "+")
+
+    if (! extensions[1] in arch_isa) {
+	return "error"
+    }
+
+    for (n = 2; n <= exts; n++) {
+	if (!((extensions[1], extensions[n]) in arch_opt_remove)	\
+	    && !((extensions[1], extensions[n]) in arch_optaliases)) {
+	    return "error"
+	}
+    }
+    return name
 }
 
 BEGIN {
@@ -382,6 +486,8 @@ BEGIN {
 	fatal("arch definition lacks an \"isa\" statement")
     }
     arch_list = arch_list " " arch_name
+    arch_cnames[arch_name] = arch_name
+    gsub(/[-+.]/, "_", arch_cnames[arch_name])
     arch_name = ""
     parse_ok = 1
 }
@@ -453,6 +559,45 @@ BEGIN {
     parse_ok = 1
 }
 
+/^[ 	]*option / {
+    name=$2
+    if ($3 == "add") {
+	remove = "false"
+    } else if ($3 == "remove") {
+	remove = "true"
+    } else fatal("syntax: option <name> add|remove isa-list")
+    flags=""
+    flag_count = NF
+    for (n = 4; n <= flag_count; n++) {
+	if (n == 4) {
+	    flags = isa_pfx($n)
+	} else flags = flags "," isa_pfx($n)
+    }
+    if (cpu_name != "") {
+	cpu_opts[cpu_name] = cpu_opts[cpu_name] " " name
+	cpu_opt_remove[cpu_name,name] = remove
+	cpu_opt_isa[cpu_name,name] = flags
+    } else if (arch_name != "") {
+	arch_opts[arch_name] = arch_opts[arch_name] " " name
+	arch_opt_remove[arch_name,name] = remove
+	arch_opt_isa[arch_name,name] = flags
+    } else fatal("\"option\" outside of cpu or arch block")
+    parse_ok = 1
+}
+
+/^[ 	]*optalias / {
+    name=$2
+    alias=$3
+    if (cpu_name != "") {
+	cpu_optaliases[cpu_name] = cpu_optaliases[cpu_name] " " name
+	cpu_opt_alias[cpu_name,name] = alias
+    } else if (arch_name != "") {
+	arch_optaliases[arch_name] = arch_optaliases[arch_name] " " name
+	arch_opt_alias[arch_name,name] = alias
+    } else fatal("\"optalias\" outside of cpu or arch block")
+    parse_ok = 1
+}
+
 /^[ 	]*costs / {
     if (cpu_name == "") fatal("\"costs\" outside of cpu block")
     cpu_cost[cpu_name] = $2
@@ -489,10 +634,10 @@ END {
 	gen_opt()
     } else if (cmd ~ /^chk(cpu|tune) /) {
 	split (cmd, target)
-	check_cpu(target[2])
+	print check_cpu(target[2])
     } else if (cmd ~ /^chkarch /) {
 	split (cmd, target)
-	check_arch(target[2])
+	print check_arch(target[2])
     } else if (cmd ~ /^chkfpu /) {
 	split (cmd, target)
 	check_fpu(target[2])

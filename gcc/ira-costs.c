@@ -1744,7 +1744,7 @@ find_costs_and_classes (FILE *dump_file)
 	  int best_cost, allocno_cost;
 	  enum reg_class best, alt_class;
 	  cost_classes_t cost_classes_ptr = regno_cost_classes[i];
-	  enum reg_class *cost_classes = cost_classes_ptr->classes;
+	  enum reg_class *cost_classes;
 	  int *i_costs = temp_costs->cost;
 	  int i_mem_cost;
 	  int equiv_savings = regno_equiv_gains[i];
@@ -1755,6 +1755,7 @@ find_costs_and_classes (FILE *dump_file)
 		continue;
 	      memcpy (temp_costs, COSTS (costs, i), struct_costs_size);
 	      i_mem_cost = temp_costs->mem_cost;
+	      cost_classes = cost_classes_ptr->classes;
 	    }
 	  else
 	    {
@@ -1762,6 +1763,7 @@ find_costs_and_classes (FILE *dump_file)
 		continue;
 	      memset (temp_costs, 0, struct_costs_size);
 	      i_mem_cost = 0;
+	      cost_classes = cost_classes_ptr->classes;
 	      /* Find cost of all allocnos with the same regno.  */
 	      for (a = ira_regno_allocno_map[i];
 		   a != NULL;
