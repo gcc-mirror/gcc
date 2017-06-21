@@ -105,7 +105,7 @@
      {
      case 0: return "ldr\\t%d0, %1";
      case 1: return "str\\t%d1, %0";
-     case 2: return "orr\t%0.<Vbtype>, %1.<Vbtype>, %1.<Vbtype>";
+     case 2: return "mov\t%0.<Vbtype>, %1.<Vbtype>";
      case 3: return "umov\t%0, %1.d[0]";
      case 4: return "fmov\t%d0, %1";
      case 5: return "mov\t%0, %1";
@@ -136,7 +136,7 @@
     case 1:
 	return "str\\t%q1, %0";
     case 2:
-	return "orr\t%0.<Vbtype>, %1.<Vbtype>, %1.<Vbtype>";
+	return "mov\t%0.<Vbtype>, %1.<Vbtype>";
     case 3:
     case 4:
     case 5:
