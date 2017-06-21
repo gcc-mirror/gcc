@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// +build mipsn32 mips64p32 mips64p32le
+// +build mips64p32 mips64p32le
 
 package unix
 
