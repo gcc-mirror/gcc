@@ -1,5 +1,5 @@
 /* { dg-require-effective-target untyped_assembly } */
-/* { dg-additional-options "-DSTACK_SIZE=[dg-effective-target-value stack_size]" { target { stack_size } } } */
+/* { dg-add-options stack_size } */
 
 #define STACK_REQUIREMENT (100000 * 4 + 1024)
 #if defined (STACK_SIZE) && STACK_SIZE < STACK_REQUIREMENT

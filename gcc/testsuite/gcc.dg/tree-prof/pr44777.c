@@ -2,7 +2,7 @@
 /* { dg-require-effective-target label_values } */
 /* { dg-require-effective-target trampolines } */
 /* { dg-options "-O0" } */
-/* { dg-additional-options "-DSTACK_SIZE=[dg-effective-target-value stack_size]" { target { stack_size } } } */
+/* { dg-add-options stack_size } */
 
 /* A variant of gcc.c-torture/execute/comp-goto-2.c.  */
 
