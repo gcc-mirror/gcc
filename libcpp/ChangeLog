@@ -1,3 +1,11 @@
+2017-06-21  Jakub Jelinek  <jakub@redhat.com>
+
+	* line-map.c (location_adhoc_data_update): Perform addition in
+	uintptr_t type rather than char * type.  Read *data using
+	ptrdiff_t type instead of int64_t.
+	(get_combined_adhoc_loc): Change offset type to ptrdiff_t from
+	int64_t.
+
 2017-06-20  David Malcolm  <dmalcolm@redhat.com>
 
 	* include/line-map.h (class rich_location): Document that attempts
