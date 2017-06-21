@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// +build arm mips mipsle mips64 mips64le armbe m68k mipso32 mipsn32 sparc alpha ia64 mipso64 mipsn64 mips64p32 mips64p32le sparc64
+// +build arm mips mipsle mips64 mips64le armbe m68k sparc alpha ia64 mips64p32 mips64p32le sparc64
 
 package runtime
 

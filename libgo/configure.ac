@@ -208,7 +208,7 @@ AC_SUBST(USE_DEJAGNU)
 # supported by the gofrontend and all architectures supported by the
 # gc toolchain.
 # N.B. Keep in sync with gcc/testsuite/go.test/go-test.exp (go-set-goarch).
-ALLGOARCH="386 alpha amd64 amd64p32 arm armbe arm64 arm64be ia64 m68k mipso32 mipsn32 mipso64 mipsn64 mips mipsle mips64 mips64le mips64p32 mips64p32le ppc ppc64 ppc64le s390 s390x sparc sparc64"
+ALLGOARCH="386 alpha amd64 amd64p32 arm armbe arm64 arm64be ia64 m68k mips mipsle mips64 mips64le mips64p32 mips64p32le ppc ppc64 ppc64le s390 s390x sparc sparc64"
 
 # All known GOARCH_FAMILY values.
 ALLGOARCHFAMILY="I386 ALPHA AMD64 ARM ARM64 IA64 M68K MIPS MIPS64 PPC PPC64 S390 S390X SPARC SPARC64"
@@ -291,25 +291,19 @@ GOARCH_HUGEPAGESIZE="1 << 21"
 #error not n64
 #endif],
 [mips_abi="n64"],
-	[AC_COMPILE_IFELSE([
-#if _MIPS_SIM != _ABIO64
-#error not o64
-#endif],
-[mips_abi="o64"],
 	[AC_MSG_ERROR([unknown MIPS ABI])
-[mips_abi="n32"]])])])])
+[mips_abi="n32"]])])])
     case "$mips_abi" in
     "o32") GOARCH=mips ;;
     "n32") GOARCH=mips64p32 ;;
     "n64") GOARCH=mips64 ;;
-    "o64") GOARCH=mipso64 ;;
     esac
     case "$mips_abi" in
     "o32" | "n32")
         GOARCH_FAMILY=MIPS
 	GOARCH_MINFRAMESIZE=4
         ;;
-    "n64" | "o64")
+    "n64")
         GOARCH_FAMILY=MIPS64
 	GOARCH_MINFRAMESIZE=8
         ;;
