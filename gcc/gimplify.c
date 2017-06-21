@@ -1428,6 +1428,20 @@ gimplify_bind_expr (tree *expr_p, gimple_seq *pre_p)
   return GS_ALL_DONE;
 }
 
+/* Maybe add early return predict statement to PRE_P sequence.  */
+
+static void
+maybe_add_early_return_predict_stmt (gimple_seq *pre_p)
+{
+  /* If we are not in a conditional context, add PREDICT statement.  */
+  if (gimple_conditional_context ())
+    {
+      gimple *predict = gimple_build_predict (PRED_TREE_EARLY_RETURN,
+					      NOT_TAKEN);
+      gimplify_seq_add_stmt (pre_p, predict);
+    }
+}
+
 /* Gimplify a RETURN_EXPR.  If the expression to be returned is not a
    GIMPLE value, it is assigned to a new temporary and the statement is
    re-written to return the temporary.
@@ -1458,6 +1472,7 @@ gimplify_return_expr (tree stmt, gimple_seq *pre_p)
       || TREE_CODE (ret_expr) == RESULT_DECL
       || ret_expr == error_mark_node)
     {
+      maybe_add_early_return_predict_stmt (pre_p);
       greturn *ret = gimple_build_return (ret_expr);
       gimple_set_no_warning (ret, TREE_NO_WARNING (stmt));
       gimplify_seq_add_stmt (pre_p, ret);
@@ -1525,6 +1540,7 @@ gimplify_return_expr (tree stmt, gimple_seq *pre_p)
 
   gimplify_and_add (TREE_OPERAND (stmt, 0), pre_p);
 
+  maybe_add_early_return_predict_stmt (pre_p);
   ret = gimple_build_return (result);
   gimple_set_no_warning (ret, TREE_NO_WARNING (stmt));
   gimplify_seq_add_stmt (pre_p, ret);

@@ -128,18 +128,9 @@ DEF_PREDICTOR (PRED_POLYMORPHIC_CALL, "polymorphic call", HITRATE (59), 0)
    indefinitely.  */
 DEF_PREDICTOR (PRED_RECURSIVE_CALL, "recursive call", HITRATE (75), 0)
 
-/* Branch causing function to terminate is probably not taken. 
-   FIXME: early return currently predicts code:
-   int foo (int a)
-   {
-      if (a)
-	bar();
-      else
-	bar2();
-   }
-   even though there is no return statement involved.  We probably want to track
-   this from FE or retire the predictor.  */
-DEF_PREDICTOR (PRED_TREE_EARLY_RETURN, "early return (on trees)", HITRATE (54), 0)
+/* Branch causing function to terminate is probably not taken.  */
+DEF_PREDICTOR (PRED_TREE_EARLY_RETURN, "early return (on trees)", HITRATE (66),
+	       0)
 
 /* Branch containing goto is probably not taken.
    FIXME: Currently not used.  */

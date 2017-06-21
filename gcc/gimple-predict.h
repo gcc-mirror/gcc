@@ -80,4 +80,12 @@ gimple_build_predict (enum br_predictor predictor, enum prediction outcome)
   return p;
 }
 
+/* Return true if GS is a GIMPLE_PREDICT statement.  */
+
+static inline bool
+is_gimple_predict (const gimple *gs)
+{
+  return gimple_code (gs) == GIMPLE_PREDICT;
+}
+
 #endif  /* GCC_GIMPLE_PREDICT_H */
