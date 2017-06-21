@@ -1,3 +1,11 @@
+2017-06-21  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2017-06-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/80984
+	* g++.dg/opt/nrv18.C: New test.
+
 2017-06-19  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	Backport from mainline
