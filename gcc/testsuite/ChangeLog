@@ -1,5 +1,9 @@
 2017-06-21  Marc Glisse  <marc.glisse@inria.fr>
 
+	* gcc.target/i386/getround.c: New file.
+
+2017-06-21  Marc Glisse  <marc.glisse@inria.fr>
+
 	* gcc.dg/tree-ssa/addadd.c: Un-XFAIL.
 	* gcc.dg/tree-ssa/addadd-2.c: New file.
 
