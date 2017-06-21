@@ -157,6 +157,30 @@ module_import_bitmap (unsigned ix)
   return state ? state->imports : NULL;
 }
 
+/* Return the context that controls what module DECL is in.  That is
+   the outermost-non-namespace context.  */
+
+tree
+module_context (tree decl)
+{
+  for (;;)
+    {
+      tree outer = CP_DECL_CONTEXT (decl);
+      if (TYPE_P (outer))
+	{
+	  // FIXME CLASSTYPE_AS_BASE doesn't have a name.
+	  if (tree name = TYPE_NAME (outer))
+	    outer = name;
+	  else
+	    outer = TYPE_NAME (CP_TYPE_CONTEXT (outer));
+	}
+      if (TREE_CODE (outer) == NAMESPACE_DECL)
+	break;
+      decl = outer;
+    }
+  return decl;
+}
+
 /* We've just directly imported INDEX.  Update our import/export
    bitmaps.  TOP is true, if we're the main module.  IS_EXPORT is true
    if we're reexporting the module.  */
@@ -943,9 +967,11 @@ dump_nested_name (tree t, FILE *d)
 
   if (t && DECL_P (t))
     {
-      if (tree ctx = CP_DECL_CONTEXT (t))
-	if (ctx == global_namespace
-	    ? ctx != t : dump_nested_name (ctx, d))
+      if (t == global_namespace)
+	;
+      else if (tree ctx = DECL_CONTEXT (t))
+	if (TREE_CODE (ctx) == TRANSLATION_UNIT_DECL
+	    || dump_nested_name (ctx, d))
 	  fputs ("::", d);
       t = DECL_NAME (t);
     }
@@ -1173,13 +1199,14 @@ private:
   void start (tree_code, tree);
   void loc (location_t);
   bool mark_present (tree);
-  void globals (unsigned, const gtp *);
+  void globals (const tree *, unsigned);
   void core_bools (tree);
   void core_vals (tree);
   void lang_type_bools (tree);
   void lang_type_vals (tree);
   void lang_decl_bools (tree);
   void lang_decl_vals (tree);
+  void tree_node_raw (tree_code, tree);
   void chained_decls (tree);
   void tree_vec (vec<tree, va_gc> *);
   void tree_pair_vec (vec<tree_pair_s, va_gc> *);
@@ -1280,16 +1307,17 @@ private:
 private:
   bool alloc_remap_vec (unsigned limit);
   tree start (tree_code);
-  tree finish (tree);
+  tree finish (tree, int);
   location_t loc ();
   bool mark_present (tree);
-  bool globals (unsigned, const gtp *);
+  bool globals (const tree *, unsigned);
   bool core_bools (tree);
   bool core_vals (tree);
   bool lang_type_bools (tree);
   bool lang_type_vals (tree);
   bool lang_decl_bools (tree);
   bool lang_decl_vals (tree);
+  bool tree_node_raw (tree_code, tree, tree, tree, int);
   tree chained_decls ();
   vec<tree, va_gc> *tree_vec ();
   vec<tree_pair_s, va_gc> *tree_pair_vec ();
@@ -1546,19 +1574,21 @@ void
 cpms_out::tag_trees ()
 {
   tag (rt_trees);
+  globals (&DECL_CONTEXT (global_namespace), 1);
   for (unsigned ix = 0; global_tree_arys[ix].ptr; ix++)
-    globals (ix, &global_tree_arys[ix]);
-  w.u (0);
+    globals (global_tree_arys[ix].ptr, global_tree_arys[ix].num);
   w.checkpoint ();
 }
 
 bool
 cpms_in::tag_trees ()
 {
+  if (!globals (&DECL_CONTEXT (global_namespace), 1))
+    return false;
   for (unsigned ix = 0; global_tree_arys[ix].ptr; ix++)
-    if (!globals (ix, &global_tree_arys[ix]))
+    if (!globals (global_tree_arys[ix].ptr, global_tree_arys[ix].num))
       return false;
-  return !r.u () && r.checkpoint ();
+  return r.checkpoint ();
 }
 
 bool
@@ -1597,15 +1627,11 @@ cpms_in::mark_present (tree t)
    b[]:insert_p  */
 
 void
-cpms_out::globals (unsigned ary_num, const gtp *ary_p)
+cpms_out::globals (const tree *ary, unsigned num)
 {
-  const tree *ary = ary_p->ptr;
-  unsigned num = ary_p->num;
-
-  w.u (ary_num);
   w.u (num);
 
-  dump () && dump ("+Writing globals %u[%u]", ary_num, num);
+  dump () && dump ("+Writing %u globals", num);
 
   unsigned outer = 0, inner = 0;
   for (unsigned ix = 0; ix != num; ix++)
@@ -1633,15 +1659,12 @@ cpms_out::globals (unsigned ary_num, const gtp *ary_p)
 }
 
 bool
-cpms_in::globals (unsigned ary_num, const gtp *ary_p)
+cpms_in::globals (const tree *ary, unsigned num)
 {
-  const tree *ary = ary_p->ptr;
-  unsigned num = ary_p->num;
-
-  if (r.u () != ary_num || r.u () != num)
+  if (r.u () != num)
     return false;
 
-  dump () && dump ("+Reading globals %u[%u]", ary_num, num);
+  dump () && dump ("+Reading %u globals", num);
 
   unsigned outer = 0, inner = 0;
   for (unsigned ix = 0; ix != num; ix++)
@@ -1792,6 +1815,7 @@ cpms_out::tag_binding (tree ns, bool main_p, tree name, tree binding)
   tree type = NULL_TREE;
   tree value = ovl_skip_hidden (decapsulate_binding (binding, &type));
 
+  // FIXME
   if (type && DECL_IS_BUILTIN (type))
     type = NULL_TREE;
 
@@ -1804,15 +1828,24 @@ cpms_out::tag_binding (tree ns, bool main_p, tree name, tree binding)
 	}
 
       /* Don't write builtins (mostly).  */
+      // FIXME: write the builtin
       while (TREE_CODE (value) == OVERLOAD
 	     && DECL_IS_BUILTIN (OVL_FUNCTION (value)))
 	value = OVL_CHAIN (value);
 
-      if (TREE_CODE (value) != OVERLOAD
-	  && (DECL_IS_BUILTIN (value) || CP_DECL_CONTEXT (value) != ns))
-	value = NULL_TREE;
-      else if (TREE_CODE (value) == VAR_DECL && DECL_TINFO_P (value))
-	value = NULL_TREE;
+      if (TREE_CODE (value) != OVERLOAD)
+	{
+	  if (DECL_IS_BUILTIN (value))
+	    value = NULL_TREE; // FIXME
+	  else if (TREE_CODE (value) == CONST_DECL)
+	    {
+	      gcc_assert (TREE_CODE (CP_DECL_CONTEXT (value))
+			  == ENUMERAL_TYPE);
+	      value = NULL_TREE;
+	    }
+	  else if (TREE_CODE (value) == VAR_DECL && DECL_TINFO_P (value))
+	    value = NULL_TREE;
+	}
     }
 
   if (!value && !type)
@@ -1832,11 +1865,9 @@ cpms_out::tag_binding (tree ns, bool main_p, tree name, tree binding)
   tree_node (value);
   w.checkpoint ();
 
-  if (type)
+  if (type && !DECL_IS_BUILTIN (type))
     maybe_tag_definition (type);
   for (ovl_iterator iter (value); iter; ++iter)
-    /* We could still meet a builtin, if the user did something funky
-       with a using declaration.  */
     if (!DECL_IS_BUILTIN (*iter))
       maybe_tag_definition (*iter);
 
@@ -2017,7 +2048,7 @@ cpms_out::define_class (tree type)
   if (TYPE_LANG_SPECIFIC (type))
     {
       tree base = CLASSTYPE_AS_BASE (type);
-      if (base == type)
+      if (!base || base == type)
 	tree_node (base);
       else
 	tag_definition (base);
@@ -2413,7 +2444,7 @@ cpms_in::start (tree_code code)
    possibly-remapped tree.  */
 
 tree
-cpms_in::finish (tree t)
+cpms_in::finish (tree t, int node_module)
 {
   if (TYPE_P (t))
     {
@@ -2459,14 +2490,14 @@ cpms_in::finish (tree t)
       return remap;
     }
 
-  if (DECL_P (t) && MAYBE_DECL_MODULE_INDEX (t) == GLOBAL_MODULE_INDEX)
+  if (DECL_P (t) && node_module == GLOBAL_MODULE_INDEX)
     {
       tree ctx = CP_DECL_CONTEXT (t);
 
       if (TREE_CODE (ctx) == NAMESPACE_DECL)
 	{
 	  /* A global-module decl.  See if there's already a duplicate.  */
-	  tree old = merge_global_decl (CP_DECL_CONTEXT (t), t);
+	  tree old = merge_global_decl (ctx, t);
 
 	  if (!old)
 	    error ("failed to merge %#qD", t);
@@ -3123,7 +3154,7 @@ cpms_out::core_vals (tree t)
       WT (t->type_common.size_unit);
       WT (t->type_common.attributes);
       WT (t->type_common.name);
-      WT (CP_TYPE_CONTEXT (t)); /* Frobbed type_common.context  */
+      WT (t->type_common.context);
 
       WT (t->type_common.common.chain); /* TYPE_STUB_DECL.  */
     }
@@ -3382,7 +3413,7 @@ cpms_in::core_vals (tree t)
       RT (t->type_common.size_unit);
       RT (t->type_common.attributes);
       RT (t->type_common.name);
-      RT (t->type_common.context); /* Frobbed  */
+      RT (t->type_common.context);
 
       RT (t->type_common.common.chain); /* TYPE_STUB_DECL.  */
     }
@@ -3709,37 +3740,119 @@ cpms_in::ident_imported_decl (tree ctx, unsigned mod, tree name)
   return res;
 }
 
+/* The raw tree node.  We've already dealt with the code, and in the
+   case of decls, determining name, context & module.  Stream the
+   bools and vals without post-processing.  Caller is responsible for
+   checkpointing.  */
+
+void
+cpms_out::tree_node_raw (tree_code code, tree t)
+{
+  tree_code_class klass = TREE_CODE_CLASS (code);
+  bool specific = false;
+
+  if (klass == tcc_type || klass == tcc_declaration)
+    {
+      if (klass == tcc_declaration)
+	specific = DECL_LANG_SPECIFIC (t) != NULL;
+      else if (TYPE_MAIN_VARIANT (t) == t)
+	specific = TYPE_LANG_SPECIFIC (t) != NULL;
+      else
+	gcc_assert (TYPE_LANG_SPECIFIC (t)
+		    == TYPE_LANG_SPECIFIC (TYPE_MAIN_VARIANT (t)));
+      w.b (specific);
+      if (specific && code == VAR_DECL)
+	w.b (DECL_DECOMPOSITION_P (t));
+    }
+
+  core_bools (t);
+  if (specific)
+    {
+      if (klass == tcc_type)
+	lang_type_bools (t);
+      else
+	lang_decl_bools (t);
+    }
+  w.bflush ();
+  w.checkpoint ();
+
+  core_vals (t);
+  if (specific)
+    {
+      if (klass == tcc_type)
+	lang_type_vals (t);
+      else
+	lang_decl_vals (t);
+    }
+}
+
+bool
+cpms_in::tree_node_raw (tree_code code, tree t, tree name, tree ctx,
+			int node_module)
+{
+  tree_code_class klass = TREE_CODE_CLASS (code);
+  bool specific = false;
+  bool lied = false;
+
+  if (klass == tcc_type || klass == tcc_declaration)
+    {
+      specific = r.b ();
+      if (specific
+	  &&  (klass == tcc_type
+	       ? !maybe_add_lang_type_raw (t)
+	       : !maybe_add_lang_decl_raw (t, code == VAR_DECL && r.b ())))
+	  lied = true;
+    }
+
+  if (!core_bools (t))
+    lied = true;
+  else if (specific)
+    {
+      if (klass == tcc_type
+	  ? !lang_type_bools (t)
+	  : !lang_decl_bools (t))
+	lied = true;
+    }
+  r.bflush ();
+  if (lied || !r.checkpoint ())
+    return false;
+
+  if (klass == tcc_declaration)
+    {
+      DECL_CONTEXT (t) = ctx;
+      DECL_NAME (t) = name;
+    }
+
+  if (!core_vals (t))
+    return false;
+
+  if (specific)
+    {
+      if (klass == tcc_type)
+	{
+	  gcc_assert (TYPE_MAIN_VARIANT (t) == t);
+	  if (!lang_type_vals (t))
+	    return false;
+	}
+      else
+	{
+	  if (node_module >= 0)
+	    DECL_MODULE_INDEX (t) = node_module;
+	  if (!lang_decl_vals (t))
+	    return false;
+	}
+    }
+  else if (klass == tcc_type)
+    TYPE_LANG_SPECIFIC (t) = TYPE_LANG_SPECIFIC (TYPE_MAIN_VARIANT (t));
+
+  return true;
+}
+
 /* Write either the decl (as a declaration) itself (and create a
    mapping for it), or write the existing mapping or write null.  This
    is essentially the lisp self-referential structure pretty-printer,
    except that we implicitly number every node, so need neither two
    passes, nor explicit labelling.
-
-   We emit in the following order:
-     <tag>
-     IF DECL_P
-       <context>
-       <name>
-       <module-no>
-       IF imported
-         <tag>
-	 goto done
-     <length_info>
-     IF IDENTIFIER_P
-       goto done
-
-     <core bools>
-     <lang-specific-p>
-     <bflush & checkpoint>
-     if lang-specific-p
-       <lang-specific bools>
-       <bflush & checkpoint>
-     <core vals & trees>
-     if lang-specific-p
-       <lang-specific vals & trees>
-
-   done:
-     <checkpoint>
 */
 
 void
@@ -3781,7 +3894,7 @@ cpms_out::tree_node (tree t)
 	  unnest ();
 	  return;
 	}
-      else if (!tree_map.get (TYPE_NAME (t)))
+      else if (!tree_map.get (name))
 	{
 	  /* T is a named type whose name we have not met yet.  Write the
 	     type name as an interstitial, and then start over.  */
@@ -3825,27 +3938,17 @@ cpms_out::tree_node (tree t)
   else if (klass == tcc_declaration)
     {
       /* Write out ctx, name & maybe import reference info.  */
-      tree ctx = CP_DECL_CONTEXT (t);
-      tree_node (ctx);
+      tree_node (DECL_CONTEXT (t));
       tree_node (DECL_NAME (t));
-      unsigned mod = GLOBAL_MODULE_INDEX;
 
-      tree outer = ctx, probe = t;
-      while (TYPE_P (outer))
+      tree module_ctx = module_context (t);
+      unsigned node_module = MAYBE_DECL_MODULE_INDEX (module_ctx);
+      w.u ((node_module << 1) | (module_ctx == t));
+      if (node_module >= IMPORTED_MODULE_BASE)
 	{
-	  probe = TYPE_NAME (outer);
-	  outer = CP_TYPE_CONTEXT (outer);
-	}
-      if (TREE_CODE (outer) == NAMESPACE_DECL)
-	{
-	  mod = MAYBE_DECL_MODULE_INDEX (probe);
-	  w.u (mod);
-	}
-
-      if (mod >= IMPORTED_MODULE_BASE)
-	{
-	  ident_imported_decl (ctx, mod, t);
-	  dump () && dump ("Writing imported %N@%I", t, module_name (mod));
+	  ident_imported_decl (CP_DECL_CONTEXT (t), node_module, t);
+	  dump () && dump ("Writing imported %N@%I", t,
+			   module_name (node_module));
 	  body = -1;
 	}
     }
@@ -3859,49 +3962,7 @@ cpms_out::tree_node (tree t)
 		   ? " (exported)": "");
 
   if (body > 0)
-    {
-      bool specific = false;
-
-      if (klass == tcc_type || klass == tcc_declaration)
-	{
-	  if (klass == tcc_declaration)
-	    specific = DECL_LANG_SPECIFIC (t) != NULL;
-	  else if (TYPE_MAIN_VARIANT (t) == t)
-	    specific = TYPE_LANG_SPECIFIC (t) != NULL;
-	  else
-	    gcc_assert (TYPE_LANG_SPECIFIC (t)
-			== TYPE_LANG_SPECIFIC (TYPE_MAIN_VARIANT (t)));
-	  w.b (specific);
-	  if (specific && code == VAR_DECL)
-	    w.b (DECL_DECOMPOSITION_P (t));
-
-	  if (specific)
-	    dump () && dump ("%u %C:%N%M has lang_specific",
-			     tag, TREE_CODE (t), t, t);
-	}
-
-      core_bools (t);
-      if (specific)
-	{
-	  if (klass == tcc_type)
-	    lang_type_bools (t);
-	  else
-	    {
-	      lang_decl_bools (t);
-	    }
-	}
-      w.bflush ();
-      w.checkpoint ();
-
-      core_vals (t);
-      if (specific)
-	{
-	  if (klass == tcc_type)
-	    lang_type_vals (t);
-	  else
-	    lang_decl_vals (t);
-	}
-    }
+    tree_node_raw (code, t);
   else if (body < 0 && TREE_TYPE (t))
     {
       tree type = TREE_TYPE (t);
@@ -4025,7 +4086,8 @@ cpms_in::tree_node ()
   int body = 1;
   tree name = NULL_TREE;
   tree ctx = NULL_TREE;
-  unsigned mod = GLOBAL_MODULE_INDEX;
+  int node_module = -1;
+  int set_module = -1;
 
   if (code == IDENTIFIER_NODE)
     body = 0;
@@ -4033,43 +4095,52 @@ cpms_in::tree_node ()
     {
       ctx = tree_node ();
       name = tree_node ();
+      if (!r.error ())
+	{
+	  unsigned incoming = r.u ();
+	  bool self_node = incoming & 1;
+	  incoming >>= 1;
+
+	  if (incoming < remap_num)
+	    node_module = remap_vec[incoming];
+	  if (self_node)
+	    set_module = node_module;
+	  if (incoming >= IMPORTED_MODULE_BASE
+	      && (node_module < 0
+		  || node_module == GLOBAL_MODULE_INDEX
+		  || node_module == THIS_MODULE_INDEX
+		  || node_module == int (mod_ix)))
+	    r.bad ();
+	}
+
       if (r.error ())
 	{
 	  unnest ();
 	  return NULL_TREE;
 	}
 
-      bool is_imported = false;
-      tree outer = ctx;
-      while (TYPE_P (outer))
-	outer = CP_TYPE_CONTEXT (outer);
-      if (TREE_CODE (outer) == NAMESPACE_DECL)
+      gcc_assert (node_module != THIS_MODULE_INDEX
+		  || mod_ix == THIS_MODULE_INDEX);
+      
+      if (node_module != GLOBAL_MODULE_INDEX && node_module != int (mod_ix))
 	{
-	  mod = r.u ();
+	  tree cp_ctx = (TREE_CODE (ctx) == TRANSLATION_UNIT_DECL
+			 ? global_namespace : ctx);
 
-	  is_imported = mod >= IMPORTED_MODULE_BASE;
-	  if (mod < remap_num)
-	    mod = remap_vec[mod];
-	  else
-	    r.bad ();
-	}
-
-      if (is_imported)
-	{
-	  t = ident_imported_decl (ctx, mod, name);
+	  t = ident_imported_decl (cp_ctx, node_module, name);
 	  if (!t || TREE_CODE (t) != code)
 	    {
-	      if (ctx != global_namespace)
+	      if (cp_ctx != global_namespace)
 		error ("failed to find %<%E::%E@%E%>",
-		       ctx, name, module_name (mod));
+		       cp_ctx, name, module_name (node_module));
 	      else
 		error ("failed to find %<%E@%E%>",
-		       name, module_name (mod));
+		       name, module_name (node_module));
 	      r.bad ();
 	      t = NULL_TREE;
 	    }
 	  dump () && dump ("Importing %P@%I",
-			   ctx, name, module_name (mod));
+			   cp_ctx, name, module_name (node_module));
 	  body = -1;
 	}
     }
@@ -4080,66 +4151,12 @@ cpms_in::tree_node ()
   /* Insert into map.  */
   tag = insert (t);
   dump () && dump ("%s:%u %C:%N", body < 0 ? "Imported" : "Reading", tag,
-		   code, name);
+		   code, code == IDENTIFIER_NODE ? t : name);
 
   if (body > 0)
     {
-      bool specific = false;
-      bool lied = false;
-
-      if (klass == tcc_type || klass == tcc_declaration)
-	{
-	  specific = r.b ();
-	  if (specific)
-	    {
-	      dump () && dump ("%u %C:%N has lang_specific", tag, code, name);
-
-	      if (klass == tcc_type
-		  ? !maybe_add_lang_type_raw (t)
-		  : !maybe_add_lang_decl_raw (t, code == VAR_DECL && r.b ()))
-		lied = true;
-	    }
-	}
-
-      if (!core_bools (t))
-	lied = true;
-      else if (specific)
-	{
-	  if (klass == tcc_type
-	      ? !lang_type_bools (t)
-	      : !lang_decl_bools (t))
-	    lied = true;
-	}
-      r.bflush ();
-      if (lied || !r.checkpoint ())
+      if (!tree_node_raw (code, t, name, ctx, set_module))
 	goto barf;
-
-      if (klass == tcc_declaration)
-	{
-	  DECL_CONTEXT (t) = ctx;
-	  DECL_NAME (t) = name;
-	}
-
-      if (!core_vals (t))
-	goto barf;
-
-      if (specific)
-	{
-	  if (klass == tcc_type)
-	    {
-	      gcc_assert (TYPE_MAIN_VARIANT (t) == t);
-	      if (!lang_type_vals (t))
-		goto barf;
-	    }
-	  else
-	    {
-	      DECL_MODULE_INDEX (t) = mod;
-	      if (!lang_decl_vals (t))
-		goto barf;
-	    }
-	}
-      else if (klass == tcc_type)
-	TYPE_LANG_SPECIFIC (t) = TYPE_LANG_SPECIFIC (TYPE_MAIN_VARIANT (t));
     }
   else if (body < 0 && TREE_TYPE (t) && !r.u ())
     {
@@ -4160,7 +4177,7 @@ cpms_in::tree_node ()
 
   if (body > 0)
     {
-      tree found = finish (t);
+      tree found = finish (t, node_module);
 
       if (found != t)
 	{
@@ -4168,7 +4185,7 @@ cpms_in::tree_node ()
 	  t = found;
 	  tree_map.put (tag, t);
 	  dump () && dump ("Index %u remapping %C:%N%M", tag,
-			   TREE_CODE (t), t, t);
+			   t ? TREE_CODE (t) : ERROR_MARK, t, t);
 	}
     }
 
@@ -4250,18 +4267,30 @@ cpms_in::finish_type (tree type)
 	 it?  That would avoid a fruitless search along the variant
 	 chain.  */
       for (tree probe = main; probe; probe = TYPE_NEXT_VARIANT (probe))
-	if (check_base_type (type, probe)
-	    && TYPE_QUALS (type) == TYPE_QUALS (probe)
-	    && comp_except_specs (TYPE_RAISES_EXCEPTIONS (type),
-				  TYPE_RAISES_EXCEPTIONS (probe), ce_exact)
-	    && type_memfn_rqual (type) == type_memfn_rqual (probe))
-	  {
-	    dump () && dump ("Type %p already found as %p variant of %p",
-			     (void *)type, (void *)probe, (void *)main);
-	    free_node (type);
-	    type = probe;
-	    goto found_variant;
-	  }
+	{
+	  if (!check_base_type (type, probe))
+	    continue;
+
+	  if (TYPE_QUALS (type) != TYPE_QUALS (probe))
+	    continue;
+
+	  if (FUNC_OR_METHOD_TYPE_P (type))
+	    {
+	      if (!comp_except_specs (TYPE_RAISES_EXCEPTIONS (type),
+				      TYPE_RAISES_EXCEPTIONS (probe),
+				      ce_exact))
+		continue;
+
+	      if (type_memfn_rqual (type) != type_memfn_rqual (probe))
+		continue;
+	    }
+	  
+	  dump () && dump ("Type %p already found as %p variant of %p",
+			   (void *)type, (void *)probe, (void *)main);
+	  free_node (type);
+	  type = probe;
+	  goto found_variant;
+	}
 
       /* Splice it into the variant list.  */
       dump () && dump ("Type %p added as variant of %p",

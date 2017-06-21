@@ -1,3 +1,26 @@
+2017-06-21  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/c-family/
+	* c-ada-spec.c (decl_sloc): Ignore builtin fields.
+	gcc/cp/
+	* class.c (layout_class_type): Anon aggregates can never be bases.
+	(finish_struct_1, dump_class_hierarchy_1): CLASSTYPE_AS_BASE can
+	be null.
+	* cp-tree.h (enum cp_tree_index): Add CPTI_AS_BASE_IDENTIFIER.
+	(as_base_identifier): New.
+	(module_context): Declare.
+	* decl.c (initialize_predefined_identifiers): Initialize as_base.
+	* error.c (dump_module_suffix): Use module_context.
+	* mangle.c (maybe_write_module): Likewise.
+	* module.c (module_context): New.
+	(dump_nested_name): Distingush NULL context.
+	(cpms_{in,out}::globals): Take array directly.
+	(cpms_{in,out}::tree_node_raw): New, broken out of ...
+	(cpms_{in,out}::tree_node): ... here.  Call it.  Use
+	module_context.
+	(cpms_in::finish): Add module number.  Adjust.
+	(cpms_{in,out}::tag_trees): Write translation unit decl.
+
 2017-06-16  Nathan Sidwell  <nathan@acm.org>
 
 	Merge trunk r249268.

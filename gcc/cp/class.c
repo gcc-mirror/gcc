@@ -6313,8 +6313,7 @@ include_empty_classes (record_layout_info rli)
      because we are willing to overlay multiple bases at the same
      offset.  However, now we need to make sure that RLI is big enough
      to reflect the entire class.  */
-  eoc = end_of_class (rli->t,
-		      CLASSTYPE_AS_BASE (rli->t) != NULL_TREE);
+  eoc = end_of_class (rli->t, CLASSTYPE_AS_BASE (rli->t) != NULL_TREE);
   rli_size = rli_size_unit_so_far (rli);
   if (TREE_CODE (rli_size) == INTEGER_CST
       && tree_int_cst_lt (rli_size, eoc))
@@ -6352,8 +6351,6 @@ layout_class_type (tree t, tree *virtuals_p)
   bool last_field_was_bitfield = false;
   /* The location at which the next field should be inserted.  */
   tree *next_field;
-  /* T, as a base class.  */
-  tree base_t;
 
   /* Keep track of the first non-static data member.  */
   non_static_data_members = TYPE_FIELDS (t);
@@ -6578,15 +6575,31 @@ layout_class_type (tree t, tree *virtuals_p)
      that the type is laid out they are no longer important.  */
   remove_zero_width_bit_fields (t);
 
-  /* Create the version of T used for virtual bases.  We do not use
-     make_class_type for this version; this is an artificial type.  For
-     a POD type, we just reuse T.  */
-  if (CLASSTYPE_NON_LAYOUT_POD_P (t) || CLASSTYPE_EMPTY_P (t))
+  if (ANON_AGGR_TYPE_P (t))
+    ;
+  else if (CLASSTYPE_NON_LAYOUT_POD_P (t) || CLASSTYPE_EMPTY_P (t))
     {
-      base_t = make_node (TREE_CODE (t));
+      /* Create the version of T used for virtual bases.  We do not use
+	 make_class_type for this version; this is an artificial type.  For
+	 a POD type, we just reuse T.  */
+      tree base_t = make_node (TREE_CODE (t));
 
-      /* Set the size and alignment for the new type.  */
-      tree eoc;
+#if 0
+      // FIXME: Needed for modules, but currently kills an lto
+      // testcase with debug info confusion
+      /* Make an artificial typedef for the base.  */
+      tree base_name = build_lang_decl (TYPE_DECL, as_base_identifier, base_t);
+      DECL_ARTIFICIAL (base_name) = true;
+      DECL_SOURCE_LOCATION (base_name) = BUILTINS_LOCATION;
+      DECL_CONTEXT (base_name) = t;
+      set_underlying_type (base_name);
+      TYPE_DECL_SUPPRESS_DEBUG(base_name) = true;
+
+      /* Chain it into the field list.  */
+      TREE_CHAIN (base_name) = TYPE_FIELDS (t);
+      TYPE_FIELDS (t) = base_name;
+#endif
+      TYPE_CONTEXT (base_t) = t;
 
       /* If the ABI version is not at least two, and the last
 	 field was a bit-field, RLI may not be on a byte
@@ -6595,7 +6608,9 @@ layout_class_type (tree t, tree *virtuals_p)
 	 indicates the total number of bits used.  Therefore,
 	 rli_size_so_far, rather than rli_size_unit_so_far, is
 	 used to compute TYPE_SIZE_UNIT.  */
-      eoc = end_of_class (t, /*include_virtuals_p=*/0);
+      tree eoc = end_of_class (t, /*include_virtuals_p=*/0);
+
+      /* Set the size and alignment for the new type.  */
       TYPE_SIZE_UNIT (base_t)
 	= size_binop (MAX_EXPR,
 		      fold_convert (sizetype,
@@ -6625,7 +6640,6 @@ layout_class_type (tree t, tree *virtuals_p)
 
       /* Record the base version of the type.  */
       CLASSTYPE_AS_BASE (t) = base_t;
-      TYPE_CONTEXT (base_t) = t;
     }
   else
     CLASSTYPE_AS_BASE (t) = t;
@@ -7194,7 +7208,7 @@ finish_struct_1 (tree t)
 
   /* Layout the class itself.  */
   layout_class_type (t, &virtuals);
-  if (CLASSTYPE_AS_BASE (t) != t)
+  if (CLASSTYPE_AS_BASE (t) && CLASSTYPE_AS_BASE (t) != t)
     /* We use the base type for trivial assignments, and hence it
        needs a mode.  */
     compute_record_mode (CLASSTYPE_AS_BASE (t));
@@ -8887,11 +8901,11 @@ dump_class_hierarchy_1 (FILE *stream, dump_flags_t flags, tree t)
   fprintf (stream, "   size=%lu align=%lu\n",
 	   (unsigned long)(tree_to_shwi (TYPE_SIZE (t)) / BITS_PER_UNIT),
 	   (unsigned long)(TYPE_ALIGN (t) / BITS_PER_UNIT));
-  fprintf (stream, "   base size=%lu base align=%lu\n",
-	   (unsigned long)(tree_to_shwi (TYPE_SIZE (CLASSTYPE_AS_BASE (t)))
-			   / BITS_PER_UNIT),
-	   (unsigned long)(TYPE_ALIGN (CLASSTYPE_AS_BASE (t))
-			   / BITS_PER_UNIT));
+  if (tree as_base = CLASSTYPE_AS_BASE (t))
+    fprintf (stream, "   base size=%lu base align=%lu\n",
+	     (unsigned long)(tree_to_shwi (TYPE_SIZE (as_base))
+			     / BITS_PER_UNIT),
+	     (unsigned long)(TYPE_ALIGN (as_base) / BITS_PER_UNIT));
   dump_class_hierarchy_r (stream, flags, TYPE_BINFO (t), TYPE_BINFO (t), 0);
   fprintf (stream, "\n");
 }

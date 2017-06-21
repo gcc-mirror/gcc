@@ -865,24 +865,20 @@ write_encoding (const tree decl)
 static void
 maybe_write_module (tree decl)
 {
-  tree probe = decl;
-  do
-    {
-      decl = probe;
-      probe = CP_DECL_CONTEXT (decl);
-      if (TYPE_P (probe))
-	probe = TYPE_NAME (probe);
-    }
-  while (TREE_CODE (probe) != NAMESPACE_DECL);
+  tree ctx = module_context (decl);
 
-  if (DECL_MODULE_EXPORT_P (decl)
-      || MAYBE_DECL_MODULE_INDEX (decl) == GLOBAL_MODULE_INDEX)
+  if (DECL_MODULE_EXPORT_P (ctx))
+    return;
+
+  unsigned mod_ix = MAYBE_DECL_MODULE_INDEX (ctx);
+
+  if (mod_ix == GLOBAL_MODULE_INDEX)
     return;
 
   write_char ('W');
 
   /* Mangle the module.  */
-  vec<tree, va_gc> *parts = module_name_parts (DECL_MODULE_INDEX (decl));
+  vec<tree, va_gc> *parts = module_name_parts (mod_ix);
 
   // FIXME: back-references?
   for (unsigned ix = 0; ix < parts->length (); ix++)

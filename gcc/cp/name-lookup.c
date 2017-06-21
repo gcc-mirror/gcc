@@ -2812,7 +2812,7 @@ merge_global_decl (tree ctx, tree decl)
 {
   bool is_ns = (TREE_CODE (decl) == NAMESPACE_DECL
 		&& !DECL_NAMESPACE_ALIAS (decl));
-  gcc_assert (DECL_CONTEXT (decl) == ctx);
+  gcc_assert (CP_DECL_CONTEXT (decl) == ctx);
   /* We know we'll eventually insert the decl, so we can create the
      slot now.  */
   tree *slot = find_namespace_slot (ctx, DECL_NAME (decl), true);
@@ -2896,7 +2896,6 @@ push_module_binding (tree ns, unsigned mod, tree name, tree value, tree type)
       tree decl = *iter;
       bool found = false;
 
-      gcc_assert (!TREE_CHAIN (decl));
       if (*mslot)
 	{
 	  tree old = MAYBE_STAT_DECL (*mslot);
@@ -2910,6 +2909,7 @@ push_module_binding (tree ns, unsigned mod, tree name, tree value, tree type)
 
 	  if (!found)
 	    {
+	      gcc_assert (!TREE_CHAIN (decl));
 	      old = update_binding (NAMESPACE_LEVEL (ns), NULL, mslot,
 				    old, decl, DECL_FRIEND_P (decl));
 	      if (old != decl)
@@ -2919,6 +2919,7 @@ push_module_binding (tree ns, unsigned mod, tree name, tree value, tree type)
 	}
       else if (!iter.using_p () && !is_ns)
 	{
+	  gcc_assert (!TREE_CHAIN (decl));
 	  export_tail = iter.export_tail (export_tail);
 	  add_decl_to_level (NAMESPACE_LEVEL (ns), decl);
 	}

@@ -1003,9 +1003,10 @@ dump_global_iord (cxx_pretty_printer *pp, tree t)
 static void
 dump_module_suffix (cxx_pretty_printer *pp, tree decl)
 {
-  unsigned mod = MAYBE_DECL_MODULE_INDEX (decl);
+  tree ctx = module_context (decl);
+  unsigned mod = MAYBE_DECL_MODULE_INDEX (ctx);
 
-  if (!DECL_MODULE_EXPORT_P (decl) && mod != GLOBAL_MODULE_INDEX)
+  if (!DECL_MODULE_EXPORT_P (ctx) && mod != GLOBAL_MODULE_INDEX)
     {
       pp_character (pp, '@');
       pp->padding = pp_none;
