@@ -2431,18 +2431,23 @@
 ;; V2DF/V2DI splat
 (define_insn_and_split "vsx_splat_<mode>"
   [(set (match_operand:VSX_D 0 "vsx_register_operand"
-					"=<VSa>,    <VSa>,we,<VS_64dm>")
+			"=<VSa>,    <VSa>,?we,??<VS_64dm>")
+
 	(vec_duplicate:VSX_D
 	 (match_operand:<VS_scalar> 1 "splat_input_operand"
-					"<VS_64reg>,Z,    b, wA")))]
+			"<VS_64reg>,Z,    b,  wA")))]
   "VECTOR_MEM_VSX_P (<MODE>mode)"
   "@
    xxpermdi %x0,%x1,%x1,0
    lxvdsx %x0,%y1
    mtvsrdd %x0,%1,%1
    #"
-  "&& reload_completed && TARGET_POWERPC64 && !TARGET_P9_VECTOR
-   && int_reg_operand (operands[1], <VS_scalar>mode)"
+  "&& reload_completed
+   && !vsx_register_operand (operands[1], <VS_scalar>mode)
+   && !(MEM_P (operands[1])
+        && indexed_or_indirect_address (XEXP (operands[1], 0), Pmode))
+   && !(TARGET_POWERPC64 && TARGET_P9_VECTOR
+	&& base_reg_operand (operands[1], <VS_scalar>mode))"
   [(set (match_dup 2)
 	(match_dup 1))
    (set (match_dup 0)

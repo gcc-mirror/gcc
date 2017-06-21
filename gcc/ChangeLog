@@ -1,3 +1,58 @@
+2017-06-21  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	Back port from mainline
+	2017-05-19  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/80718
+	* config/rs6000/vsx.md (vsx_splat_<mode>, VSX_D iterator): Prefer
+	VSX registers over GPRs, particularly on ISA 2.07 which does not
+	have the MTVSRDD instruction.
+
+	Back port from mainline
+	2017-05-18  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/80510
+	* config/rs6000/predicates.md (simple_offsettable_mem_operand):
+	New predicate.
+
+	* config/rs6000/rs6000.md (ALTIVEC_DFORM): New iterator.
+	(define_peephole2 for Altivec d-form load): Add peepholes to catch
+	cases where the register allocator uses a move and an offsettable
+	memory operation to/from a FPR register on ISA 2.06/2.07.
+	(define_peephole2 for Altivec d-form store): Likewise.
+
+	Back port from mainline
+	2017-05-09  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/68163
+	* config/rs6000/rs6000.md (f32_lr): Delete mode attributes that
+	are now unused after splitting mov{sf,sd}_hardfloat.
+	(f32_lr2): Likewise.
+	(f32_lm): Likewise.
+	(f32_lm2): Likewise.
+	(f32_li): Likewise.
+	(f32_li2): Likewise.
+	(f32_lv): Likewise.
+	(f32_sr): Likewise.
+	(f32_sr2): Likewise.
+	(f32_sm): Likewise.
+	(f32_sm2): Likewise.
+	(f32_si): Likewise.
+	(f32_si2): Likewise.
+	(f32_sv): Likewise.
+	(f32_dm): Likewise.
+	(f32_vsx): Likewise.
+	(f32_av): Likewise.
+	(mov<mode>_hardfloat): Split into separate movsf and movsd pieces.
+	For movsf, order stores so the VSX stores occur before the GPR
+	store which encourages the register allocator to use a traditional
+	FPR instead of a GPR.  For movsd, order the stores so that the GPR
+	store comes before the VSX stores to allow the power6 to work.
+	This is due to the power6 not having a 32-bit integer store
+	instruction from a FPR.
+	(movsf_hardfloat): Likewise.
+	(movsd_hardfloat): Likewise.
+
 2017-06-21  Jeff Law  <law@redhat.com>
 
 	* config/darwin-driver.c (darwin_driver_init): Const-correctness
