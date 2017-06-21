@@ -90,7 +90,7 @@ echo "Newer log file: $NFILE"
 sed $E -e '/^[[:space:]]+===/,$d' $NFILE
 
 # Create a temporary file from the old file's interesting section.
-sed $E -e '/^Running target /,/^[[:space:]]+===.*Summary ===/!d' \
+sed $E -e "/$header/,/^[[:space:]]+===.*Summary ===/!d" \
   -e '/^[A-Z]+:/!d' \
   -e '/^(WARNING|ERROR):/d' \
   -e 's/\r$//' \
@@ -100,7 +100,7 @@ sed $E -e '/^Running target /,/^[[:space:]]+===.*Summary ===/!d' \
   >/tmp/o$$-$OBASE
 
 # Create a temporary file from the new file's interesting section.
-sed $E -e '/^Running target /,/^[[:space:]]+===.*Summary ===/!d' \
+sed $E -e "/$header/,/^[[:space:]]+===.*Summary ===/!d" \
   -e '/^[A-Z]+:/!d' \
   -e '/^(WARNING|ERROR):/d' \
   -e 's/\r$//' \
