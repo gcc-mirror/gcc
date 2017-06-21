@@ -1,3 +1,8 @@
+2017-06-21  Jeff Law  <law@redhat.com>
+
+	* config/darwin-driver.c (darwin_driver_init): Const-correctness
+	fixes for first_period and second_period variables.
+
 2017-06-19  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	Backport from mainline

@@ -299,10 +299,10 @@ darwin_driver_init (unsigned int *decoded_options_count,
   if (vers_string != NULL)
     {
       char *asm_major = NULL;
-      char *first_period = strchr(vers_string, '.');
+      const char *first_period = strchr(vers_string, '.');
       if (first_period != NULL)
 	{
-	  char *second_period = strchr(first_period+1, '.');
+	  const char *second_period = strchr(first_period+1, '.');
 	  if (second_period  != NULL)
 	    asm_major = xstrndup (vers_string, second_period-vers_string);
 	  else
