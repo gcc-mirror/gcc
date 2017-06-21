@@ -1,5 +1,9 @@
 2017-06-21  Tom de Vries  <tom@codesourcery.com>
 
+	* lib/profopt.exp (profopt-get-options): Support dg-add-options.
+
+2017-06-21  Tom de Vries  <tom@codesourcery.com>
+
 	* gcc.dg/tree-prof/comp-goto-1.c: Fix 'return type defaults to int'
 	warning.
 
