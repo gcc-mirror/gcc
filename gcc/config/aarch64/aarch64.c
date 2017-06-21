@@ -554,12 +554,30 @@ static const cpu_prefetch_tune qdf24xx_prefetch_tune =
   3			/* default_opt_level  */
 };
 
+static const cpu_prefetch_tune thunderxt88_prefetch_tune =
+{
+  8,			/* num_slots  */
+  32,			/* l1_cache_size  */
+  128,			/* l1_cache_line_size  */
+  16*1024,		/* l2_cache_size  */
+  3			/* default_opt_level  */
+};
+
+static const cpu_prefetch_tune thunderx_prefetch_tune =
+{
+  8,			/* num_slots  */
+  32,			/* l1_cache_size  */
+  128,			/* l1_cache_line_size  */
+  -1,			/* l2_cache_size  */
+  -1			/* default_opt_level  */
+};
+
 static const cpu_prefetch_tune thunderx2t99_prefetch_tune =
 {
-  0,			/* num_slots  */
-  -1,			/* l1_cache_size  */
+  8,			/* num_slots  */
+  32,			/* l1_cache_size  */
   64,			/* l1_cache_line_size  */
-  -1,			/* l2_cache_size  */
+  256,			/* l2_cache_size  */
   -1			/* default_opt_level  */
 };
 
@@ -745,6 +763,31 @@ static const struct tune_params exynosm1_tunings =
   &exynosm1_prefetch_tune
 };
 
+static const struct tune_params thunderxt88_tunings =
+{
+  &thunderx_extra_costs,
+  &generic_addrcost_table,
+  &thunderx_regmove_cost,
+  &thunderx_vector_cost,
+  &generic_branch_cost,
+  &generic_approx_modes,
+  6, /* memmov_cost  */
+  2, /* issue_rate  */
+  AARCH64_FUSE_CMP_BRANCH, /* fusible_ops  */
+  8,	/* function_align.  */
+  8,	/* jump_align.  */
+  8,	/* loop_align.  */
+  2,	/* int_reassoc_width.  */
+  4,	/* fp_reassoc_width.  */
+  1,	/* vec_reassoc_width.  */
+  2,	/* min_div_recip_mul_sf.  */
+  2,	/* min_div_recip_mul_df.  */
+  0,	/* max_case_values.  */
+  tune_params::AUTOPREFETCHER_OFF,	/* autoprefetcher_model.  */
+  (AARCH64_EXTRA_TUNE_SLOW_UNALIGNED_LDPW),	/* tune_flags.  */
+  &thunderxt88_prefetch_tune
+};
+
 static const struct tune_params thunderx_tunings =
 {
   &thunderx_extra_costs,
@@ -767,7 +810,7 @@ static const struct tune_params thunderx_tunings =
   0,	/* max_case_values.  */
   tune_params::AUTOPREFETCHER_OFF,	/* autoprefetcher_model.  */
   (AARCH64_EXTRA_TUNE_SLOW_UNALIGNED_LDPW),	/* tune_flags.  */
-  &generic_prefetch_tune
+  &thunderx_prefetch_tune
 };
 
 static const struct tune_params xgene1_tunings =
@@ -841,7 +884,7 @@ static const struct tune_params thunderx2t99_tunings =
   2,	/* min_div_recip_mul_sf.  */
   2,	/* min_div_recip_mul_df.  */
   0,	/* max_case_values.  */
-  tune_params::AUTOPREFETCHER_OFF,	/* autoprefetcher_model.  */
+  tune_params::AUTOPREFETCHER_WEAK,	/* autoprefetcher_model.  */
   (AARCH64_EXTRA_TUNE_NONE),	/* tune_flags.  */
   &thunderx2t99_prefetch_tune
 };

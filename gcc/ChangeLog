@@ -1,3 +1,16 @@
+2017-06-21  Andrew Pinski  <apinski@cavium.com>
+
+	* config/aarch64/aarch64-cores.def (thunderxt88p1): Use thunderxt88
+	tunings.
+	(thunderxt88): Likewise.
+	* config/aarch64/aarch64.c (thunderxt88_prefetch_tune): New variable.
+	(thunderx_prefetch_tune): New variable.
+	(thunderx2t99_prefetch_tune): Update for the correct values.
+	(thunderxt88_tunings): New variable.
+	(thunderx_tunings): Use thunderx_prefetch_tune instead of
+	generic_prefetch_tune.
+	(thunderx2t99_tunings): Use AUTOPREFETCHER_WEAK.
+
 2017-06-21  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/aarch64/atomics.md (aarch64_compare_and_swap<mode>_lse,
