@@ -539,6 +539,7 @@
 ; crypto_sha1_slow
 ; crypto_sha256_fast
 ; crypto_sha256_slow
+; crypto_pmull
 ;
 ; The classification below is for coprocessor instructions
 ;
@@ -1078,6 +1079,7 @@
   crypto_sha1_slow,\
   crypto_sha256_fast,\
   crypto_sha256_slow,\
+  crypto_pmull,\
   coproc"
    (const_string "untyped"))
 

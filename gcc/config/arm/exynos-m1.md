@@ -78,7 +78,7 @@
 			   neon_sat_mul_s_scalar, neon_sat_mul_s_scalar_q,\
 			   neon_sat_mul_b_long, neon_sat_mul_h_long,\
 			   neon_sat_mul_s_long, neon_sat_mul_h_scalar_long,\
-			   neon_sat_mul_s_scalar_long")
+			   neon_sat_mul_s_scalar_long, crypto_pmull")
 	    (const_string "neon_multiply")
 
 	  (eq_attr "type" "neon_mla_b, neon_mla_h, neon_mla_s,\

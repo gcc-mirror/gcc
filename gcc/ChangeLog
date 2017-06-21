@@ -1,3 +1,17 @@
+2017-06-21  Julian Brown  <julian@codesourcery.com>
+	    Naveen H.S  <Naveen.Hurugalawadi@cavium.com>
+
+	* config/aarch64/aarch64-simd.md (aarch64_crypto_pmulldi)
+	(aarch64_crypto_pmullv2di): Change type attribute to crypto_pmull.
+	* config/aarch64/thunderx2t99.md (thunderx2t99_pmull): New
+	reservation.
+	* config/arm/cortex-a57.md (cortex_a57_neon_type): Add crypto_pmull to
+	attribute type list for neon_multiply.
+	* config/arm/crypto.md (crypto_vmullp64): Change type to crypto_pmull.
+	* config/arm/types.md (crypto_pmull): Add.
+	* config/arm/xgene1.md (xgene1_neon_pmull): Add crypto_pmull to
+	attribute type list.	
+
 2017-06-20  Andreas Tobler  <andreast@gcc.gnu.org>
 
 	* config.gcc (armv6*-*-freebsd*): Change the target_cpu_cname to

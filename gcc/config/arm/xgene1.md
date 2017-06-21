@@ -527,5 +527,6 @@
 (define_insn_reservation "xgene1_neon_pmull" 5
   (and (eq_attr "tune" "xgene1")
        (eq_attr "type" "neon_mul_d_long,\
-                       "))
+			crypto_pmull,\
+		       "))
   "xgene1_decode2op")

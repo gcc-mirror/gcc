@@ -389,7 +389,7 @@
 		     neon_sat_mul_b_long, neon_sat_mul_h_long,\
 		     neon_sat_mul_s_long, neon_sat_mul_h_scalar_q,\
 		     neon_sat_mul_s_scalar_q, neon_sat_mul_h_scalar_long,\
-		     neon_sat_mul_s_scalar_long, neon_mla_b_q,\
+		     neon_sat_mul_s_scalar_long, crypto_pmull, neon_mla_b_q,\
 		     neon_mla_h_q, neon_mla_s_q, neon_mla_b_long,\
 		     neon_mla_h_long, neon_mla_s_long,\
 		     neon_mla_h_scalar_q, neon_mla_s_scalar_q,\

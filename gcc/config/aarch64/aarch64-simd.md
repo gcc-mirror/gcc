@@ -5831,7 +5831,7 @@
 		    UNSPEC_PMULL))]
  "TARGET_SIMD && TARGET_CRYPTO"
  "pmull\\t%0.1q, %1.1d, %2.1d"
-  [(set_attr "type" "neon_mul_d_long")]
+  [(set_attr "type" "crypto_pmull")]
 )
 
 (define_insn "aarch64_crypto_pmullv2di"
@@ -5841,5 +5841,5 @@
 		  UNSPEC_PMULL2))]
   "TARGET_SIMD && TARGET_CRYPTO"
   "pmull2\\t%0.1q, %1.2d, %2.2d"
-  [(set_attr "type" "neon_mul_d_long")]
+  [(set_attr "type" "crypto_pmull")]
 )
