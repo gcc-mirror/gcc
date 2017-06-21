@@ -2,7 +2,7 @@
 /* Origin: Peeter Joot <peeterj@ca.ibm.com> */
 
 /* { dg-do run { target *-*-linux* *-*-gnu* } } */
-/* { dg-additional-options "-DSTACK_SIZE=[dg-effective-target-value stack_size]" { target { stack_size } } } */
+/* { dg-add-options stack_size } */
  
 #include <sys/mman.h>
 #include <string.h>

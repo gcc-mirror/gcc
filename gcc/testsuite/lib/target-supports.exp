@@ -7249,6 +7249,17 @@ proc add_options_for_double_vectors { flags } {
     return $flags
 }
 
+# Add to FLAGS the flags needed to define the STACK_SIZE macro.
+
+proc add_options_for_stack_size { flags } {
+    if [is-effective-target stack_size] {
+	set stack_size [dg-effective-target-value stack_size]
+	return "$flags -DSTACK_SIZE=$stack_size"
+    }
+
+    return $flags
+}
+
 # Return 1 if the target provides a full C99 runtime.
 
 proc check_effective_target_c99_runtime { } {

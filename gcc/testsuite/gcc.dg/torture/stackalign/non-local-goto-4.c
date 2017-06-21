@@ -2,7 +2,7 @@
 /* { dg-require-effective-target nonlocal_goto } */
 /* { dg-require-effective-target label_values } */
 /* { dg-require-effective-target trampolines } */
-/* { dg-additional-options "-DSTACK_SIZE=[dg-effective-target-value stack_size]" { target { stack_size } } } */
+/* { dg-add-options stack_size } */
 
 extern void abort (void);
 extern void exit (int);

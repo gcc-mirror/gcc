@@ -1,3 +1,11 @@
+2017-06-21  Tom de Vries  <tom@codesourcery.com>
+
+	* doc/sourcebuild.texi (Add Options, Features for dg-add-options): Add
+	stack_size feature.
+	(Effective-Target Keywords, Other attributes): Suggest using
+	dg-add-options stack_size feature to get stack limit in stack_size
+	effective target documentation.
+
 2017-06-21  Julian Brown  <julian@codesourcery.com>
 	    Naveen H.S  <Naveen.Hurugalawadi@cavium.com>
 
