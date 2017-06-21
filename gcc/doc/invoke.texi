@@ -14077,17 +14077,19 @@ processors implementing the target architecture.
 @opindex mtune
 Specify the name of the target processor for which GCC should tune the
 performance of the code.  Permissible values for this option are:
-@samp{generic}, @samp{cortex-a35}, @samp{cortex-a53}, @samp{cortex-a57},
-@samp{cortex-a72}, @samp{cortex-a73}, @samp{exynos-m1},
-@samp{xgene1}, @samp{vulcan}, @samp{thunderx},
+@samp{generic}, @samp{cortex-a35}, @samp{cortex-a53}, @samp{cortex-a55},
+@samp{cortex-a57}, @samp{cortex-a72}, @samp{cortex-a73}, @samp{cortex-a75},
+@samp{exynos-m1}, @samp{xgene1}, @samp{vulcan}, @samp{thunderx},
 @samp{thunderxt88}, @samp{thunderxt88p1}, @samp{thunderxt81},
 @samp{thunderxt83}, @samp{thunderx2t99}, @samp{cortex-a57.cortex-a53},
 @samp{cortex-a72.cortex-a53}, @samp{cortex-a73.cortex-a35},
-@samp{cortex-a73.cortex-a53}, @samp{native}.
+@samp{cortex-a73.cortex-a53}, @samp{cortex-a75.cortex-a55},
+@samp{native}.
 
 The values @samp{cortex-a57.cortex-a53}, @samp{cortex-a72.cortex-a53},
-@samp{cortex-a73.cortex-a35}, @samp{cortex-a73.cortex-a53}
-specify that GCC should tune for a big.LITTLE system.
+@samp{cortex-a73.cortex-a35}, @samp{cortex-a73.cortex-a53},
+@samp{cortex-a75.cortex-a55} specify that GCC should tune for a
+big.LITTLE system.
 
 Additionally on native AArch64 GNU/Linux systems the value
 @samp{native} tunes performance to the host system.  This option has no effect
