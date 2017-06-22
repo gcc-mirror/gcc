@@ -1,3 +1,7 @@
+2017-06-22  Jeff Law  <law@redhat.com>
+
+	* gcc.c-torture/compile/stack-check-1.c: New test.
+
 2016-06-22  Richard Biener  <rguenther@suse.de>
 
 	* gcc.dg/vect/pr65947-1.c: Remove xfail.
