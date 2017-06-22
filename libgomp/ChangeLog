@@ -1,6 +1,14 @@
 2017-06-22  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2017-05-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgomp/80822
+	* config/linux/affinity.c (gomp_affinity_init_level_1): New function.
+	(gomp_affinity_init_level): Use it.  Always analyze the core and thread
+	sibling lists, depending on level just pick up what CPUs to put
+	together into a place vs. whether add multiple ordered places.
+
 	2017-05-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/80809
