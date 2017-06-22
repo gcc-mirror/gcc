@@ -323,7 +323,9 @@ command line option.  The @var{execution_count} is @samp{-} for lines
 containing no code.  Unexecuted lines are marked @samp{#####} or
 @samp{====}, depending on whether they are reachable by
 non-exceptional paths or only exceptional paths such as C++ exception
-handlers, respectively.
+handlers, respectively. Given @samp{-a} option, unexecuted blocks are
+marked @samp{$$$$$} or @samp{%%%%%}, depending whether a basic block
+is reachable via non-exceptional or exceptional paths.
 
 Some lines of information at the start have @var{line_number} of zero.
 These preamble lines are of the form
@@ -668,5 +670,5 @@ it.  This can be overcome by, for example, setting the environment as
 setting will name the data file @file{/target/run/build/foo.gcda}.
 
 You must move the data files to the expected directory tree in order to
-use them for profile directed optimizations (@option{--use-profile}), or to
+use them for profile directed optimizations (@option{-fprofile-use}), or to
 use the @command{gcov} tool.
