@@ -3,6 +3,13 @@
 	Backport from mainline
 	2017-04-28  Martin Liska  <mliska@suse.cz>
 
+	* doc/gcov.texi: Enhance documentation of gcov.
+
+2017-06-22  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
+	2017-04-28  Martin Liska  <mliska@suse.cz>
+
 	* doc/gcov.texi: Sort options in alphabetic order.
 	* doc/gcov-dump.texi: Likewise.
 	* doc/gcov-tool.texi: Likewise.
