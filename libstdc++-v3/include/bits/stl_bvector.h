@@ -364,7 +364,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       return *this;
     }
 
-    const_iterator 
+    const_iterator
     operator+(difference_type __i) const
     {
       const_iterator __tmp = *this;
@@ -406,7 +406,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
   {
     if (__first._M_p != __last._M_p)
       {
-	_Bit_type *__first_p = __first._M_p;
+	_Bit_type* __first_p = __first._M_p;
 	if (__first._M_offset != 0)
 	  __fill_bvector(__first_p++, __first._M_offset, _S_word_bit, __x);
 
@@ -509,7 +509,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 #else
       _Bvector_base() { }
 #endif
-      
+
       _Bvector_base(const allocator_type& __a)
       : _M_impl(__a) { }
 
@@ -632,11 +632,11 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       : vector(__n, false, __a)
       { }
 
-      vector(size_type __n, const bool& __value, 
+      vector(size_type __n, const bool& __value,
 	     const allocator_type& __a = allocator_type())
 #else
       explicit
-      vector(size_type __n, const bool& __value = bool(), 
+      vector(size_type __n, const bool& __value = bool(),
 	     const allocator_type& __a = allocator_type())
 #endif
       : _Base(__a)
@@ -955,7 +955,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       {
 	std::swap(this->_M_impl._M_start, __x._M_impl._M_start);
 	std::swap(this->_M_impl._M_finish, __x._M_impl._M_finish);
-	std::swap(this->_M_impl._M_end_of_storage, 
+	std::swap(this->_M_impl._M_end_of_storage,
 		  __x._M_impl._M_end_of_storage);
 	_Bit_alloc_traits::_S_on_swap(_M_get_Bit_allocator(),
 				      __x._M_get_Bit_allocator());
@@ -1129,9 +1129,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       void
       _M_initialize_value(bool __x)
       {
-	__builtin_memset(this->_M_impl._M_start._M_p, __x ? ~0 : 0,
-		(this->_M_impl._M_end_addr() - this->_M_impl._M_start._M_p)
-		* sizeof(_Bit_type));
+	if (_Bit_type* __p = this->_M_impl._M_start._M_p)
+	  __builtin_memset(__p, __x ? ~0 : 0,
+			   (this->_M_impl._M_end_addr() - __p)
+			   * sizeof(_Bit_type));
       }
 
       void
@@ -1155,10 +1156,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	}
 
       template<typename _InputIterator>
-	void 
+	void
 	_M_initialize_dispatch(_InputIterator __first, _InputIterator __last,
 			       __false_type)
-	{ _M_initialize_range(__first, __last, 
+	{ _M_initialize_range(__first, __last,
 			      std::__iterator_category(__first)); }
 
       template<typename _InputIterator>
@@ -1223,7 +1224,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	  else
 	    insert(end(), __first, __last);
 	}
-    
+
       template<typename _ForwardIterator>
 	void
 	_M_assign_aux(_ForwardIterator __first, _ForwardIterator __last,
@@ -1264,7 +1265,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       template<typename _InputIterator>
 	void
-	_M_insert_range(iterator __pos, _InputIterator __first, 
+	_M_insert_range(iterator __pos, _InputIterator __first,
 			_InputIterator __last, std::input_iterator_tag)
 	{
 	  for (; __first != __last; ++__first)
@@ -1276,7 +1277,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       template<typename _ForwardIterator>
 	void
-	_M_insert_range(iterator __position, _ForwardIterator __first, 
+	_M_insert_range(iterator __position, _ForwardIterator __first,
 			_ForwardIterator __last, std::forward_iterator_tag);
 
       void

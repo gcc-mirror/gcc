@@ -1,3 +1,9 @@
+2017-06-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/81173
+	* include/bits/stl_bvector.h (vector<bool>::_M_initialize_value):
+	Do not pass null pointer to memset.
+
 2017-06-21  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	PR libstdc++/80675
