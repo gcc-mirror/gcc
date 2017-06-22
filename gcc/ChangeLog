@@ -3,6 +3,14 @@
 	Backport from mainline
 	2017-04-28  Martin Liska  <mliska@suse.cz>
 
+	PR gcov-profile/53915
+	* gcov.c (format_gcov): Print 'NAN %' when top > bottom.
+
+2017-06-22  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
+	2017-04-28  Martin Liska  <mliska@suse.cz>
+
 	PR driver/56469
 	* coverage.c (coverage_remove_note_file): New function.
 	* coverage.h: Declare the function.
