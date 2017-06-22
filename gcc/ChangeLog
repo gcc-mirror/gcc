@@ -1,6 +1,14 @@
 2017-06-22  Martin Liska  <mliska@suse.cz>
 
 	Backport from mainline
+	2017-05-26  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/80663
+	* params.def: Bound partial-inlining-entry-probability param.
+
+2017-06-22  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
 	2017-05-16  Martin Liska  <mliska@suse.cz>
 
 	PR ipa/79849.
