@@ -1,6 +1,11 @@
 2017-06-22  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2017-06-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/80984
+	* g++.dg/opt/nrv18.C: New test.
+
 	2017-06-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/80918

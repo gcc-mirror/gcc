@@ -1566,7 +1566,8 @@ cp_genericize (tree fndecl)
 
 	  if (outer)
 	    for (var = BLOCK_VARS (outer); var; var = DECL_CHAIN (var))
-	      if (DECL_NAME (t) == DECL_NAME (var)
+	      if (VAR_P (var)
+		  && DECL_NAME (t) == DECL_NAME (var)
 		  && DECL_HAS_VALUE_EXPR_P (var)
 		  && DECL_VALUE_EXPR (var) == t)
 		{
@@ -1813,7 +1814,8 @@ cxx_omp_const_qual_no_mutable (tree decl)
 
 	  if (outer)
 	    for (var = BLOCK_VARS (outer); var; var = DECL_CHAIN (var))
-	      if (DECL_NAME (decl) == DECL_NAME (var)
+	      if (VAR_P (var)
+		  && DECL_NAME (decl) == DECL_NAME (var)
 		  && (TYPE_MAIN_VARIANT (type)
 		      == TYPE_MAIN_VARIANT (TREE_TYPE (var))))
 		{

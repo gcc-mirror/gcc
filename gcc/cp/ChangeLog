@@ -1,3 +1,13 @@
+2017-06-22  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2017-06-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/80984
+	* cp-gimplify.c (cp_genericize): Only look for VAR_DECLs in
+	BLOCK_VARS (outer) chain.
+	(cxx_omp_const_qual_no_mutable): Likewise.
+
 2017-06-17  Jason Merrill  <jason@redhat.com>
 
 	PR c++/70844 - -Wuseless-cast and inheriting constructor.
