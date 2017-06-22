@@ -194,7 +194,7 @@ func deferreturn(frame *bool) {
 			// The gc compiler does this using assembler
 			// code in jmpdefer.
 			var fn func(unsafe.Pointer)
-			*(**uintptr)(unsafe.Pointer(&fn)) = &pfn
+			*(*uintptr)(unsafe.Pointer(&fn)) = uintptr(unsafe.Pointer(&pfn))
 			fn(d.arg)
 		}
 
@@ -259,7 +259,7 @@ func checkdefer(frame *bool) {
 			gp._defer = d.link
 
 			var fn func(unsafe.Pointer)
-			*(**uintptr)(unsafe.Pointer(&fn)) = &pfn
+			*(*uintptr)(unsafe.Pointer(&fn)) = uintptr(unsafe.Pointer(&pfn))
 			fn(d.arg)
 
 			freedefer(d)
@@ -345,7 +345,7 @@ func Goexit() {
 
 		if pfn != 0 {
 			var fn func(unsafe.Pointer)
-			*(**uintptr)(unsafe.Pointer(&fn)) = &pfn
+			*(*uintptr)(unsafe.Pointer(&fn)) = uintptr(unsafe.Pointer(&pfn))
 			fn(d.arg)
 		}
 
@@ -446,7 +446,7 @@ func gopanic(e interface{}) {
 
 		if pfn != 0 {
 			var fn func(unsafe.Pointer)
-			*(**uintptr)(unsafe.Pointer(&fn)) = &pfn
+			*(*uintptr)(unsafe.Pointer(&fn)) = uintptr(unsafe.Pointer(&pfn))
 			fn(d.arg)
 
 			if p.recovered {
