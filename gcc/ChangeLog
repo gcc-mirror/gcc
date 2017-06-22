@@ -3,6 +3,20 @@
 	Backport from mainline
 	2017-04-28  Martin Liska  <mliska@suse.cz>
 
+	* doc/gcov.texi: Sort options in alphabetic order.
+	* doc/gcov-dump.texi: Likewise.
+	* doc/gcov-tool.texi: Likewise.
+	* gcov.c (print_usage): Likewise.
+	* gcov-dump.c (print_usage): Likewise.
+	* gcov-tool.c (print_merge_usage_message): Likewise.
+	(print_rewrite_usage_message): Likewise.
+	(print_overlap_usage_message): Likewise.
+
+2017-06-22  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
+	2017-04-28  Martin Liska  <mliska@suse.cz>
+
 	PR gcov-profile/53915
 	* gcov.c (format_gcov): Print 'NAN %' when top > bottom.
 

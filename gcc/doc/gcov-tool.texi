@@ -113,23 +113,23 @@ gcov-tool @r{[}@var{global-options}@r{]} SUB_COMMAND @r{[}@var{sub_command-optio
 gcov-tool [@option{-v}|@option{--version}] [@option{-h}|@option{--help}]
 
 gcov-tool merge [merge-options] @var{directory1} @var{directory2}
+     [@option{-o}|@option{--output} @var{directory}]
      [@option{-v}|@option{--verbose}]
-     [@option{-o}|@option{ --output} @var{directory}]
      [@option{-w}|@option{--weight} @var{w1,w2}]
 
 gcov-tool rewrite [rewrite-options] @var{directory}
-     [@option{-v}|@option{--verbose}]
+     [@option{-n}|@option{--normalize} @var{long_long_value}]
      [@option{-o}|@option{--output} @var{directory}]
      [@option{-s}|@option{--scale} @var{float_or_simple-frac_value}]
-     [@option{-n}|@option{--normalize} @var{long_long_value}]
+     [@option{-v}|@option{--verbose}]
 
 gcov-tool overlap [overlap-options] @var{directory1} @var{directory2}
-     [@option{-v}|@option{--verbose}]
-     [@option{-h}|@option{--hotonly}]
      [@option{-f}|@option{--function}]
      [@option{-F}|@option{--fullname}]
+     [@option{-h}|@option{--hotonly}]
      [@option{-o}|@option{--object}]
      [@option{-t}|@option{--hot_threshold}] @var{float}
+     [@option{-v}|@option{--verbose}]
 
 @c man end
 @c man begin SEEALSO
@@ -152,16 +152,16 @@ and exit without doing any further processing.
 
 @item merge
 Merge two profile directories.
-
 @table @gcctabopt
-@item -v
-@itemx --verbose
-Set the verbose mode.
 
 @item -o @var{directory}
 @itemx --output @var{directory}
 Set the output profile directory. Default output directory name is
 @var{merged_profile}.
+
+@item -v
+@itemx --verbose
+Set the verbose mode.
 
 @item -w @var{w1},@var{w2}
 @itemx --weight @var{w1},@var{w2}
@@ -171,11 +171,12 @@ respectively. The default weights are 1 for both.
 
 @item rewrite
 Read the specified profile directory and rewrite to a new directory.
-
 @table @gcctabopt
-@item -v
-@itemx --verbose
-Set the verbose mode.
+
+@item -n @var{long_long_value}
+@itemx --normalize <long_long_value>
+Normalize the profile. The specified value is the max counter value
+in the new profile.
 
 @item -o @var{directory}
 @itemx --output @var{directory}
@@ -186,10 +187,9 @@ Set the output profile directory. Default output name is @var{rewrite_profile}.
 Scale the profile counters. The specified value can be in floating point value,
 or simple fraction value form, such 1, 2, 2/3, and 5/3.
 
-@item -n @var{long_long_value}
-@itemx --normalize <long_long_value>
-Normalize the profile. The specified value is the max counter value
-in the new profile.
+@item -v
+@itemx --verbose
+Set the verbose mode.
 @end table
 
 @item overlap
@@ -201,14 +201,6 @@ matched counters and p1_sum_all and p2_sum_all are the sum of counter
 values in profile 1 and profile 2, respectively.
 
 @table @gcctabopt
-@item -v
-@itemx --verbose
-Set the verbose mode.
-
-@item -h
-@itemx --hotonly
-Only print info for hot objects/functions.
-
 @item -f
 @itemx --function
 Print function level overlap score.
@@ -217,6 +209,10 @@ Print function level overlap score.
 @itemx --fullname
 Print full gcda filename.
 
+@item -h
+@itemx --hotonly
+Only print info for hot objects/functions.
+
 @item -o
 @itemx --object
 Print object level overlap score.
@@ -224,6 +220,10 @@ Print object level overlap score.
 @item -t @var{float}
 @itemx --hot_threshold <float>
 Set the threshold for hot counter value.
+
+@item -v
+@itemx --verbose
+Set the verbose mode.
 @end table
 
 @end table
