@@ -402,10 +402,10 @@ type g struct {
 	isforeign bool           // whether current exception is not from Go
 
 	// Fields that hold stack and context information if status is Gsyscall
-	gcstack       unsafe.Pointer
+	gcstack       uintptr
 	gcstacksize   uintptr
-	gcnextsegment unsafe.Pointer
-	gcnextsp      unsafe.Pointer
+	gcnextsegment uintptr
+	gcnextsp      uintptr
 	gcinitialsp   unsafe.Pointer
 	gcregs        g_ucontext_t
 

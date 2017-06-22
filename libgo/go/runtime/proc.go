@@ -1460,8 +1460,8 @@ func dropm() {
 	// gccgo sets the stack to Gdead here, because the splitstack
 	// context is not initialized.
 	atomic.Store(&mp.curg.atomicstatus, _Gdead)
-	mp.curg.gcstack = nil
-	mp.curg.gcnextsp = nil
+	mp.curg.gcstack = 0
+	mp.curg.gcnextsp = 0
 
 	mnext := lockextra(true)
 	mp.schedlink.set(mnext)
@@ -2591,8 +2591,8 @@ func exitsyscallclear(gp *g) {
 	// clear syscallsp.
 	gp.syscallsp = 0
 
-	gp.gcstack = nil
-	gp.gcnextsp = nil
+	gp.gcstack = 0
+	gp.gcnextsp = 0
 	memclrNoHeapPointers(unsafe.Pointer(&gp.gcregs), unsafe.Sizeof(gp.gcregs))
 }
 

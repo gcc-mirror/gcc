@@ -316,7 +316,7 @@ runtime_mcall(FuncVal *fv)
 #else
 		// We have to point to an address on the stack that is
 		// below the saved registers.
-		gp->gcnextsp = &afterregs;
+		gp->gcnextsp = (uintptr)(&afterregs);
 #endif
 		gp->fromgogo = false;
 		getcontext(ucontext_arg(&gp->context[0]));
@@ -489,7 +489,7 @@ runtime_mstart(void *arg)
 	// Setting gcstacksize to 0 is a marker meaning that gcinitialsp
 	// is the top of the stack, not the bottom.
 	gp->gcstacksize = 0;
-	gp->gcnextsp = &arg;
+	gp->gcnextsp = (uintptr)(&arg);
 #endif
 
 	// Save the currently active context.  This will return
@@ -558,9 +558,9 @@ setGContext()
 	__splitstack_block_signals(&val, nil);
 #else
 	gp->gcinitialsp = &val;
-	gp->gcstack = nil;
+	gp->gcstack = 0;
 	gp->gcstacksize = 0;
-	gp->gcnextsp = &val;
+	gp->gcnextsp = (uintptr)(&val);
 #endif
 	getcontext(ucontext_arg(&gp->context[0]));
 
@@ -628,16 +628,17 @@ doentersyscall(uintptr pc, uintptr sp)
 #ifdef USING_SPLIT_STACK
 	{
 	  size_t gcstacksize;
-	  g->gcstack = __splitstack_find(nil, nil, &gcstacksize,
-					 &g->gcnextsegment, &g->gcnextsp,
-					 &g->gcinitialsp);
+	  g->gcstack = (uintptr)(__splitstack_find(nil, nil, &gcstacksize,
+						   (void**)(&g->gcnextsegment),
+						   (void**)(&g->gcnextsp),
+						   &g->gcinitialsp));
 	  g->gcstacksize = (uintptr)gcstacksize;
 	}
 #else
 	{
 		void *v;
 
-		g->gcnextsp = (byte *) &v;
+		g->gcnextsp = (uintptr)(&v);
 	}
 #endif
 
@@ -667,9 +668,10 @@ doentersyscallblock(uintptr pc, uintptr sp)
 #ifdef USING_SPLIT_STACK
 	{
 	  size_t gcstacksize;
-	  g->gcstack = __splitstack_find(nil, nil, &gcstacksize,
-					 &g->gcnextsegment, &g->gcnextsp,
-					 &g->gcinitialsp);
+	  g->gcstack = (uintptr)(__splitstack_find(nil, nil, &gcstacksize,
+						   (void**)(&g->gcnextsegment),
+						   (void**)(&g->gcnextsp),
+						   &g->gcinitialsp));
 	  g->gcstacksize = (uintptr)gcstacksize;
 	}
 #else
@@ -765,7 +767,7 @@ resetNewG(G *newg, void **sp, uintptr *spsize)
   *spsize = newg->gcstacksize;
   if(*spsize == 0)
     runtime_throw("bad spsize in resetNewG");
-  newg->gcnextsp = *sp;
+  newg->gcnextsp = (uintptr)(*sp);
 #endif
 }
 
