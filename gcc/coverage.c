@@ -767,6 +767,18 @@ coverage_end_function (unsigned lineno_checksum, unsigned cfg_checksum)
     }
 }
 
+/* Remove coverage file if opened.  */
+
+void
+coverage_remove_note_file (void)
+{
+  if (bbg_file_name)
+    {
+      gcov_close ();
+      unlink (bbg_file_name);
+    }
+}
+
 /* Build a coverage variable of TYPE for function FN_DECL.  If COUNTER
    >= 0 it is a counter array, otherwise it is the function structure.  */
 

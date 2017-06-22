@@ -24,6 +24,7 @@ along with GCC; see the file COPYING3.  If not see
 
 extern void coverage_init (const char *);
 extern void coverage_finish (void);
+extern void coverage_remove_note_file (void);
 
 /* Start outputting coverage information for the current
    function.  */
