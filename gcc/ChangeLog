@@ -1,6 +1,15 @@
 2017-06-22  Martin Liska  <mliska@suse.cz>
 
 	Backport from mainline
+	2017-06-19  Martin Liska  <mliska@suse.cz>
+
+	PR sanitizer/80879
+	* gimplify.c (gimplify_switch_expr):
+	Initialize live_switch_vars for SWITCH_BODY == STATEMENT_LIST.
+
+2017-06-22  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
 	2017-05-31  Martin Liska  <mliska@suse.cz>
 
 	PR target/79155
