@@ -331,6 +331,11 @@ along with GCC; see the file COPYING3.  If not see
 #endif
 
 #ifndef USE_GLD
+/* Prefer native form with Solaris ld.  */
+#define SYSROOT_SPEC "-z sysroot=%R"
+#endif
+
+#ifndef USE_GLD
 /* With Sun ld, use mapfile to enforce direct binding to libgcc_s unwinder.  */
 #define LINK_LIBGCC_MAPFILE_SPEC \
   "%{shared|shared-libgcc:-M %slibgcc-unwind.map}"
