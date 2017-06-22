@@ -4,6 +4,12 @@
 	2017-05-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/80809
+	* omp-low.c (finish_taskreg_remap): New function.
+	(finish_taskreg_scan): If unit size of ctx->record_type
+	is non-constant, unshare the size expression and replace
+	decls in it with possible outer var refs.
+
+	PR middle-end/80809
 	* gimplify.c (omp_add_variable): For GOVD_DEBUG_PRIVATE use
 	GOVD_SHARED rather than GOVD_PRIVATE with it.
 	(gimplify_adjust_omp_clauses_1, gimplify_adjust_omp_clauses): Expect

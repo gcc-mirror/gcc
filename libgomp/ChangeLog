@@ -4,6 +4,10 @@
 	2017-05-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/80809
+	* testsuite/libgomp.c/pr80809-2.c: New test.
+	* testsuite/libgomp.c/pr80809-3.c: New test.
+
+	PR middle-end/80809
 	* testsuite/libgomp.c/pr80809-1.c: New test.
 
 	PR middle-end/80853

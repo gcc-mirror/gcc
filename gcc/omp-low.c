@@ -2767,6 +2767,29 @@ scan_omp_task (gimple_stmt_iterator *gsi, omp_context *outer_ctx)
     }
 }
 
+/* Helper function for finish_taskreg_scan, called through walk_tree.
+   If maybe_lookup_decl_in_outer_context returns non-NULL for some
+   tree, replace it in the expression.  */
+
+static tree
+finish_taskreg_remap (tree *tp, int *walk_subtrees, void *data)
+{
+  if (VAR_P (*tp))
+    {
+      omp_context *ctx = (omp_context *) data;
+      tree t = maybe_lookup_decl_in_outer_ctx (*tp, ctx);
+      if (t != *tp)
+	{
+	  if (DECL_HAS_VALUE_EXPR_P (t))
+	    t = unshare_expr (DECL_VALUE_EXPR (t));
+	  *tp = t;
+	}
+      *walk_subtrees = 0;
+    }
+  else if (IS_TYPE_OR_DECL_P (*tp))
+    *walk_subtrees = 0;
+  return NULL_TREE;
+}
 
 /* If any decls have been made addressable during scan_omp,
    adjust their fields if needed, and layout record types
@@ -2887,6 +2910,11 @@ finish_taskreg_scan (omp_context *ctx)
 	layout_type (ctx->srecord_type);
       tree t = fold_convert_loc (loc, long_integer_type_node,
 				 TYPE_SIZE_UNIT (ctx->record_type));
+      if (TREE_CODE (t) != INTEGER_CST)
+	{
+	  t = unshare_expr (t);
+	  walk_tree (&t, finish_taskreg_remap, ctx, NULL);
+	}
       gimple_omp_task_set_arg_size (ctx->stmt, t);
       t = build_int_cst (long_integer_type_node,
 			 TYPE_ALIGN_UNIT (ctx->record_type));
