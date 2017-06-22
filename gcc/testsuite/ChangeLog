@@ -1,6 +1,12 @@
 2017-06-21  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	Back port from mainline
+	PR target/80510
+	* gcc.target/powerpc/pr80510-1.c: Restrict test to 64-bit until
+	32-bit support is added.  Change ITYPE size to 64-bit integer.
+	* gcc.target/powerpc/pr80510-2.c: Likewise.
+
+	Back port from mainline
 	2017-05-19  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	PR target/80718

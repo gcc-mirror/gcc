@@ -1,4 +1,4 @@
-/* { dg-do compile { target { powerpc*-*-* } } } */
+/* { dg-do compile { target { powerpc*-*-* && lp64 } } } */
 /* { dg-skip-if "" { powerpc*-*-darwin* } { "*" } { "" } } */
 /* { dg-require-effective-target powerpc_p8vector_ok } */
 /* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power8" } } */
@@ -6,7 +6,9 @@
 
 /* Make sure that STXSSPX is generated for float scalars in Altivec registers
    on power7 instead of moving the value to a FPR register and doing a X-FORM
-   store.  */
+   store.
+
+   32-bit currently does not have support for STXSSPX in the mov{sf,sd} patterns.  */
 
 #ifndef TYPE
 #define TYPE float
@@ -21,7 +23,7 @@
 #endif
 
 #ifndef ITYPE
-#define ITYPE long
+#define ITYPE __INT64_TYPE__
 #endif
 
 #ifdef DO_CALL
@@ -206,7 +208,7 @@ void test (ITYPE *bits, ITYPE n, TYPE one, TYPE_IN *p, TYPE_OUT *q)
   q[49] = x_49;
 }
 
-/* { dg-final { scan-assembler     {\xsaddsp\M}  } } */
-/* { dg-final { scan-assembler     {\stxsspx\M}  } } */
+/* { dg-final { scan-assembler     {\mxsaddsp\M} } } */
+/* { dg-final { scan-assembler     {\mstxsspx\M} } } */
 /* { dg-final { scan-assembler-not {\mmfvsrd\M}  } } */
 /* { dg-final { scan-assembler-not {\mmfvsrwz\M} } } */
