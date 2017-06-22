@@ -1261,9 +1261,9 @@ write_template_prefix (const tree node)
 static void
 write_unqualified_id (tree identifier)
 {
-  if (IDENTIFIER_TYPENAME_P (identifier))
+  if (IDENTIFIER_CONV_OP_P (identifier))
     write_conversion_operator_name (TREE_TYPE (identifier));
-  else if (IDENTIFIER_OPNAME_P (identifier))
+  else if (IDENTIFIER_ANY_OP_P (identifier))
     {
       int i;
       const char *mangled_name = NULL;
@@ -2825,14 +2825,16 @@ write_template_args (tree args)
 static void
 write_member_name (tree member)
 {
-  if (abi_version_at_least (11) && IDENTIFIER_OPNAME_P (member))
-    {
-      write_string ("on");
-      if (abi_warn_or_compat_version_crosses (11))
-	G.need_abi_warning = 1;
-    }
   if (identifier_p (member))
-    write_unqualified_id (member);
+    {
+      if (abi_version_at_least (11) && IDENTIFIER_ANY_OP_P (member))
+	{
+	  write_string ("on");
+	  if (abi_warn_or_compat_version_crosses (11))
+	    G.need_abi_warning = 1;
+	}
+      write_unqualified_id (member);
+    }
   else if (DECL_P (member))
     write_unqualified_name (member);
   else if (TREE_CODE (member) == TEMPLATE_ID_EXPR)
@@ -3050,7 +3052,7 @@ write_expression (tree expr)
       /* An operator name appearing as a dependent name needs to be
 	 specially marked to disambiguate between a use of the operator
 	 name and a use of the operator in an expression.  */
-      if (IDENTIFIER_OPNAME_P (expr))
+      if (IDENTIFIER_ANY_OP_P (expr))
 	write_string ("on");
       write_unqualified_id (expr);
     }
@@ -3058,7 +3060,7 @@ write_expression (tree expr)
     {
       tree fn = TREE_OPERAND (expr, 0);
       fn = OVL_NAME (fn);
-      if (IDENTIFIER_OPNAME_P (fn))
+      if (IDENTIFIER_ANY_OP_P (fn))
 	write_string ("on");
       write_unqualified_id (fn);
       write_template_args (TREE_OPERAND (expr, 1));
@@ -4241,9 +4243,8 @@ mangle_conv_op_name_for_type (const tree type)
 	 when performing conversions.  */
       TREE_TYPE (identifier) = type;
 
-      /* Set bits on the identifier so we know later it's a conversion.  */
-      IDENTIFIER_OPNAME_P (identifier) = 1;
-      IDENTIFIER_TYPENAME_P (identifier) = 1;
+      /* Set the identifier kind so we know later it's a conversion.  */
+      set_identifier_kind (identifier, cik_conv_op);
     }
 
   return identifier;

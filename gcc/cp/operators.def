@@ -67,20 +67,20 @@ along with GCC; see the file COPYING3.  If not see
    an ASSIGNMENT_P argument; it is always zero.  */
 
 #define DEF_SIMPLE_OPERATOR(NAME, CODE, MANGLING, ARITY) \
-  DEF_OPERATOR(NAME, CODE, MANGLING, ARITY, 0)
+  DEF_OPERATOR(NAME, CODE, MANGLING, ARITY, cik_simple_op)
 
 /* Use DEF_ASSN_OPERATOR to define an assignment operator.  Its
    arguments are as for DEF_OPERATOR, but there is no need to provide
    an ASSIGNMENT_P argument; it is always one.  */
 
 #define DEF_ASSN_OPERATOR(NAME, CODE, MANGLING, ARITY) \
-  DEF_OPERATOR(NAME, CODE, MANGLING, ARITY, 1)
+  DEF_OPERATOR(NAME, CODE, MANGLING, ARITY, cik_assign_op)
 
 /* Memory allocation operators.  */
-DEF_SIMPLE_OPERATOR ("new", NEW_EXPR, "nw", -1)
-DEF_SIMPLE_OPERATOR ("new []", VEC_NEW_EXPR, "na", -1)
-DEF_SIMPLE_OPERATOR ("delete", DELETE_EXPR, "dl", -1)
-DEF_SIMPLE_OPERATOR ("delete []", VEC_DELETE_EXPR, "da", -1)
+DEF_OPERATOR ("new", NEW_EXPR, "nw", -1, cik_newdel_op)
+DEF_OPERATOR ("new []", VEC_NEW_EXPR, "na", -1, cik_newdel_op)
+DEF_OPERATOR ("delete", DELETE_EXPR, "dl", -1, cik_newdel_op)
+DEF_OPERATOR ("delete []", VEC_DELETE_EXPR, "da", -1, cik_newdel_op)
 
 /* Unary operators.  */
 DEF_SIMPLE_OPERATOR ("+", UNARY_PLUS_EXPR, "ps", 1)
@@ -97,8 +97,7 @@ DEF_SIMPLE_OPERATOR ("alignof", ALIGNOF_EXPR, "az", 1)
 DEF_SIMPLE_OPERATOR ("__imag__", IMAGPART_EXPR, "v18__imag__", 1)
 DEF_SIMPLE_OPERATOR ("__real__", REALPART_EXPR, "v18__real__", 1)
 
-/* The cast operator.  */
-DEF_SIMPLE_OPERATOR ("", TYPE_EXPR, "cv", 1)
+/* The cast operators.  */
 DEF_SIMPLE_OPERATOR ("", CAST_EXPR, "cv", 1)
 DEF_SIMPLE_OPERATOR ("dynamic_cast", DYNAMIC_CAST_EXPR, "dc", 1)
 DEF_SIMPLE_OPERATOR ("reinterpret_cast", REINTERPRET_CAST_EXPR, "rc", 1)

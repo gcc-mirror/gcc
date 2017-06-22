@@ -1187,7 +1187,7 @@ lookup_field_r (tree binfo, void *data)
 
  done:
   /* Don't look for constructors or destructors in base classes.  */
-  if (IDENTIFIER_CTOR_OR_DTOR_P (lfi->name))
+  if (IDENTIFIER_CDTOR_P (lfi->name))
     return dfs_skip_bases;
   return NULL_TREE;
 }
@@ -1352,7 +1352,7 @@ lookup_member (tree xbasetype, tree name, int protect, bool want_type,
 
   if (rval && is_overloaded_fn (rval))
     rval = build_baselink (rval_binfo, basetype_path, rval,
-			   (IDENTIFIER_TYPENAME_P (name)
+			   (IDENTIFIER_CONV_OP_P (name)
 			   ? TREE_TYPE (name): NULL_TREE));
   return rval;
 }
@@ -1595,7 +1595,7 @@ lookup_fnfields_idx_nolazy (tree type, tree name)
       fn = CLASSTYPE_DESTRUCTORS (type);
       return fn ? CLASSTYPE_DESTRUCTOR_SLOT : -1;
     }
-  if (IDENTIFIER_TYPENAME_P (name))
+  if (IDENTIFIER_CONV_OP_P (name))
     return lookup_conversion_operator (type, TREE_TYPE (name));
 
   /* Skip the conversion operators.  */

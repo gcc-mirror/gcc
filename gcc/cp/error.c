@@ -1051,7 +1051,7 @@ dump_decl_name (cxx_pretty_printer *pp, tree t, int flags)
 {
   /* These special cases are duplicated here so that other functions
      can feed identifiers to error and get them demangled properly.  */
-  if (IDENTIFIER_TYPENAME_P (t))
+  if (IDENTIFIER_CONV_OP_P (t))
     {
       pp_cxx_ws_string (pp, "operator");
       /* Not exactly IDENTIFIER_TYPE_VALUE.  */

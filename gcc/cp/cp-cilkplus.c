@@ -36,7 +36,7 @@ is_conversion_operator_function_decl_p (tree t)
   if (TREE_CODE (t) != FUNCTION_DECL)
     return false;
 
-  return DECL_NAME (t) && IDENTIFIER_TYPENAME_P (DECL_NAME (t));
+  return DECL_CONV_FN_P (t);
 }
 
 /* Recursively traverse EXP to search for a CILK_SPAWN_STMT subtree.
