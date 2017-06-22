@@ -1926,6 +1926,9 @@ finalize (bool no_backend)
   if (stack_usage_file)
     fclose (stack_usage_file);
 
+  if (seen_error ())
+    coverage_remove_note_file ();
+
   if (!no_backend)
     {
       statistics_fini ();
