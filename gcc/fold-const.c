@@ -842,8 +842,12 @@ split_tree (location_t loc, tree in, tree type, enum tree_code code,
       /* Now do any needed negations.  */
       if (neg_litp_p)
 	*minus_litp = *litp, *litp = 0;
-      if (neg_conp_p)
-	*conp = negate_expr (*conp);
+      if (neg_conp_p && *conp)
+	{
+	  /* Convert to TYPE before negating.  */
+	  *conp = fold_convert_loc (loc, type, *conp);
+	  *conp = negate_expr (*conp);
+	}
       if (neg_var_p && var)
 	{
 	  /* Convert to TYPE before negating.  */
@@ -870,7 +874,12 @@ split_tree (location_t loc, tree in, tree type, enum tree_code code,
 	*minus_litp = *litp, *litp = 0;
       else if (*minus_litp)
 	*litp = *minus_litp, *minus_litp = 0;
-      *conp = negate_expr (*conp);
+      if (*conp)
+	{
+	  /* Convert to TYPE before negating.  */
+	  *conp = fold_convert_loc (loc, type, *conp);
+	  *conp = negate_expr (*conp);
+	}
       if (var)
 	{
 	  /* Convert to TYPE before negating.  */

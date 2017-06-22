@@ -2769,14 +2769,11 @@ vn_phi_compute_hash (vn_phi_t vp1)
    the other.  */
 
 static bool
-cond_stmts_equal_p (gcond *cond1, gcond *cond2, bool *inverted_p)
+cond_stmts_equal_p (gcond *cond1, tree lhs1, tree rhs1,
+		    gcond *cond2, tree lhs2, tree rhs2, bool *inverted_p)
 {
   enum tree_code code1 = gimple_cond_code (cond1);
   enum tree_code code2 = gimple_cond_code (cond2);
-  tree lhs1 = gimple_cond_lhs (cond1);
-  tree lhs2 = gimple_cond_lhs (cond2);
-  tree rhs1 = gimple_cond_rhs (cond1);
-  tree rhs2 = gimple_cond_rhs (cond2);
 
   *inverted_p = false;
   if (code1 == code2)
@@ -2794,10 +2791,6 @@ cond_stmts_equal_p (gcond *cond1, gcond *cond2, bool *inverted_p)
   else
     return false;
 
-  lhs1 = vn_valueize (lhs1);
-  rhs1 = vn_valueize (rhs1);
-  lhs2 = vn_valueize (lhs2);
-  rhs2 = vn_valueize (rhs2);
   return ((expressions_equal_p (lhs1, lhs2)
 	   && expressions_equal_p (rhs1, rhs2))
 	  || (commutative_tree_code (code1)
@@ -2855,7 +2848,10 @@ vn_phi_eq (const_vn_phi_t const vp1, const_vn_phi_t const vp2)
 	      return false;
 	    bool inverted_p;
 	    if (! cond_stmts_equal_p (as_a <gcond *> (last1),
-				      as_a <gcond *> (last2), &inverted_p))
+				      vp1->cclhs, vp1->ccrhs,
+				      as_a <gcond *> (last2),
+				      vp2->cclhs, vp2->ccrhs,
+				      &inverted_p))
 	      return false;
 
 	    /* Get at true/false controlled edges into the PHI.  */
@@ -2934,6 +2930,16 @@ vn_phi_lookup (gimple *phi)
   vp1.type = TREE_TYPE (gimple_phi_result (phi));
   vp1.phiargs = shared_lookup_phiargs;
   vp1.block = gimple_bb (phi);
+  /* Extract values of the controlling condition.  */
+  vp1.cclhs = NULL_TREE;
+  vp1.ccrhs = NULL_TREE;
+  basic_block idom1 = get_immediate_dominator (CDI_DOMINATORS, vp1.block);
+  if (EDGE_COUNT (idom1->succs) == 2)
+    if (gcond *last1 = dyn_cast <gcond *> (last_stmt (idom1)))
+      {
+	vp1.cclhs = vn_valueize (gimple_cond_lhs (last1));
+	vp1.ccrhs = vn_valueize (gimple_cond_rhs (last1));
+      }
   vp1.hashcode = vn_phi_compute_hash (&vp1);
   slot = current_info->phis->find_slot_with_hash (&vp1, vp1.hashcode,
 						  NO_INSERT);
@@ -2970,6 +2976,16 @@ vn_phi_insert (gimple *phi, tree result)
   vp1->type = TREE_TYPE (gimple_phi_result (phi));
   vp1->phiargs = args;
   vp1->block = gimple_bb (phi);
+  /* Extract values of the controlling condition.  */
+  vp1->cclhs = NULL_TREE;
+  vp1->ccrhs = NULL_TREE;
+  basic_block idom1 = get_immediate_dominator (CDI_DOMINATORS, vp1->block);
+  if (EDGE_COUNT (idom1->succs) == 2)
+    if (gcond *last1 = dyn_cast <gcond *> (last_stmt (idom1)))
+      {
+	vp1->cclhs = vn_valueize (gimple_cond_lhs (last1));
+	vp1->ccrhs = vn_valueize (gimple_cond_rhs (last1));
+      }
   vp1->result = result;
   vp1->hashcode = vn_phi_compute_hash (vp1);
 

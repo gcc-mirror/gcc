@@ -1,6 +1,36 @@
 2017-06-22  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline
+	2017-04-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/80453
+	* tree-ssa-sccvn.h (struct vn_phi_s): Add cclhs and ccrhs members.
+	* tree-ssa-sccvn.c (cond_stmts_equal_p): Use recorded lhs and rhs
+	from the conditions.
+	(vn_phi_eq): Pass them down.
+	(vn_phi_lookup): Record them.
+	(vn_phi_insert): Likewise.
+
+	2017-04-07  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/80341
+	* tree.c (get_unwidened): Also handle ! for_type case for
+	INTEGER_CSTs.
+	* convert.c (do_narrow): Split out from ...
+	(convert_to_integer_1): ... here.  Do not pass final truncation
+	type to get_unwidened for TRUNC_DIV_EXPR.
+
+	2017-04-04  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/80281
+	* match.pd (A + (-B) -> A - B): Make sure to preserve unsigned
+	arithmetic done for the negate or the plus.  Simplify.
+	(A - (-B) -> A + B): Likewise.
+	* fold-const.c (split_tree): Make sure to not negate pointers.
+
+2017-06-22  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
 	2017-01-30  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/79256

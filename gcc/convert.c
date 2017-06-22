@@ -411,6 +411,83 @@ convert_to_real_maybe_fold (tree type, tree expr, bool dofold)
   return convert_to_real_1 (type, expr, dofold || CONSTANT_CLASS_P (expr));
 }
 
+/* Try to narrow EX_FORM ARG0 ARG1 in narrowed arg types producing a
+   result in TYPE.  */
+
+static tree
+do_narrow (location_t loc,
+	   enum tree_code ex_form, tree type, tree arg0, tree arg1,
+	   tree expr, unsigned inprec, unsigned outprec, bool dofold)
+{
+  /* Do the arithmetic in type TYPEX,
+     then convert result to TYPE.  */
+  tree typex = type;
+
+  /* Can't do arithmetic in enumeral types
+     so use an integer type that will hold the values.  */
+  if (TREE_CODE (typex) == ENUMERAL_TYPE)
+    typex = lang_hooks.types.type_for_size (TYPE_PRECISION (typex),
+					    TYPE_UNSIGNED (typex));
+
+  /* But now perhaps TYPEX is as wide as INPREC.
+     In that case, do nothing special here.
+     (Otherwise would recurse infinitely in convert.  */
+  if (TYPE_PRECISION (typex) != inprec)
+    {
+      /* Don't do unsigned arithmetic where signed was wanted,
+	 or vice versa.
+	 Exception: if both of the original operands were
+	 unsigned then we can safely do the work as unsigned.
+	 Exception: shift operations take their type solely
+	 from the first argument.
+	 Exception: the LSHIFT_EXPR case above requires that
+	 we perform this operation unsigned lest we produce
+	 signed-overflow undefinedness.
+	 And we may need to do it as unsigned
+	 if we truncate to the original size.  */
+      if (TYPE_UNSIGNED (TREE_TYPE (expr))
+	  || (TYPE_UNSIGNED (TREE_TYPE (arg0))
+	      && (TYPE_UNSIGNED (TREE_TYPE (arg1))
+		  || ex_form == LSHIFT_EXPR
+		  || ex_form == RSHIFT_EXPR
+		  || ex_form == LROTATE_EXPR
+		  || ex_form == RROTATE_EXPR))
+	  || ex_form == LSHIFT_EXPR
+	  /* If we have !flag_wrapv, and either ARG0 or
+	     ARG1 is of a signed type, we have to do
+	     PLUS_EXPR, MINUS_EXPR or MULT_EXPR in an unsigned
+	     type in case the operation in outprec precision
+	     could overflow.  Otherwise, we would introduce
+	     signed-overflow undefinedness.  */
+	  || ((!TYPE_OVERFLOW_WRAPS (TREE_TYPE (arg0))
+	       || !TYPE_OVERFLOW_WRAPS (TREE_TYPE (arg1)))
+	      && ((TYPE_PRECISION (TREE_TYPE (arg0)) * 2u
+		   > outprec)
+		  || (TYPE_PRECISION (TREE_TYPE (arg1)) * 2u
+		      > outprec))
+	      && (ex_form == PLUS_EXPR
+		  || ex_form == MINUS_EXPR
+		  || ex_form == MULT_EXPR)))
+	{
+	  if (!TYPE_UNSIGNED (typex))
+	    typex = unsigned_type_for (typex);
+	}
+      else
+	{
+	  if (TYPE_UNSIGNED (typex))
+	    typex = signed_type_for (typex);
+	}
+      /* We should do away with all this once we have a proper
+	 type promotion/demotion pass, see PR45397.  */
+      expr = maybe_fold_build2_loc (dofold, loc, ex_form, typex,
+				    convert (typex, arg0),
+				    convert (typex, arg1));
+      return convert (type, expr);
+    }
+  
+  return NULL_TREE;
+}
+
 /* Convert EXPR to some integer (or enum) type TYPE.
 
    EXPR must be pointer, integer, discrete (enum, char, or bool), float,
@@ -717,8 +794,8 @@ convert_to_integer_1 (tree type, tree expr, bool dofold)
 
 	  case TRUNC_DIV_EXPR:
 	    {
-	      tree arg0 = get_unwidened (TREE_OPERAND (expr, 0), type);
-	      tree arg1 = get_unwidened (TREE_OPERAND (expr, 1), type);
+	      tree arg0 = get_unwidened (TREE_OPERAND (expr, 0), NULL_TREE);
+	      tree arg1 = get_unwidened (TREE_OPERAND (expr, 1), NULL_TREE);
 
 	      /* Don't distribute unless the output precision is at least as
 		 big as the actual inputs and it has the same signedness.  */
@@ -736,7 +813,12 @@ convert_to_integer_1 (tree type, tree expr, bool dofold)
 		  && (TYPE_UNSIGNED (TREE_TYPE (arg0))
 		      || (TREE_CODE (arg1) == INTEGER_CST
 			  && !integer_all_onesp (arg1))))
-		goto trunc1;
+		{
+		  tree tem = do_narrow (loc, ex_form, type, arg0, arg1,
+					expr, inprec, outprec, dofold);
+		  if (tem)
+		    return tem;
+		}
 	      break;
 	    }
 
@@ -784,72 +866,10 @@ convert_to_integer_1 (tree type, tree expr, bool dofold)
 		  || inprec > TYPE_PRECISION (TREE_TYPE (arg0))
 		  || inprec > TYPE_PRECISION (TREE_TYPE (arg1)))
 		{
-		  /* Do the arithmetic in type TYPEX,
-		     then convert result to TYPE.  */
-		  tree typex = type;
-
-		  /* Can't do arithmetic in enumeral types
-		     so use an integer type that will hold the values.  */
-		  if (TREE_CODE (typex) == ENUMERAL_TYPE)
-		    typex
-		      = lang_hooks.types.type_for_size (TYPE_PRECISION (typex),
-							TYPE_UNSIGNED (typex));
-
-		  /* But now perhaps TYPEX is as wide as INPREC.
-		     In that case, do nothing special here.
-		     (Otherwise would recurse infinitely in convert.  */
-		  if (TYPE_PRECISION (typex) != inprec)
-		    {
-		      /* Don't do unsigned arithmetic where signed was wanted,
-			 or vice versa.
-			 Exception: if both of the original operands were
-			 unsigned then we can safely do the work as unsigned.
-			 Exception: shift operations take their type solely
-			 from the first argument.
-			 Exception: the LSHIFT_EXPR case above requires that
-			 we perform this operation unsigned lest we produce
-			 signed-overflow undefinedness.
-			 And we may need to do it as unsigned
-			 if we truncate to the original size.  */
-		      if (TYPE_UNSIGNED (TREE_TYPE (expr))
-			  || (TYPE_UNSIGNED (TREE_TYPE (arg0))
-			      && (TYPE_UNSIGNED (TREE_TYPE (arg1))
-				  || ex_form == LSHIFT_EXPR
-				  || ex_form == RSHIFT_EXPR
-				  || ex_form == LROTATE_EXPR
-				  || ex_form == RROTATE_EXPR))
-			  || ex_form == LSHIFT_EXPR
-			  /* If we have !flag_wrapv, and either ARG0 or
-			     ARG1 is of a signed type, we have to do
-			     PLUS_EXPR, MINUS_EXPR or MULT_EXPR in an unsigned
-			     type in case the operation in outprec precision
-			     could overflow.  Otherwise, we would introduce
-			     signed-overflow undefinedness.  */
-			  || ((!TYPE_OVERFLOW_WRAPS (TREE_TYPE (arg0))
-			       || !TYPE_OVERFLOW_WRAPS (TREE_TYPE (arg1)))
-			      && ((TYPE_PRECISION (TREE_TYPE (arg0)) * 2u
-				   > outprec)
-				  || (TYPE_PRECISION (TREE_TYPE (arg1)) * 2u
-				      > outprec))
-			      && (ex_form == PLUS_EXPR
-				  || ex_form == MINUS_EXPR
-				  || ex_form == MULT_EXPR)))
-			{
-			  if (!TYPE_UNSIGNED (typex))
-			    typex = unsigned_type_for (typex);
-			}
-		      else
-			{
-			  if (TYPE_UNSIGNED (typex))
-			    typex = signed_type_for (typex);
-			}
-		      /* We should do away with all this once we have a proper
-			 type promotion/demotion pass, see PR45397.  */
-		      expr = maybe_fold_build2_loc (dofold, loc, ex_form, typex,
-						    convert (typex, arg0),
-						    convert (typex, arg1));
-		      return convert (type, expr);
-		    }
+		  tree tem = do_narrow (loc, ex_form, type, arg0, arg1,
+					expr, inprec, outprec, dofold);
+		  if (tem)
+		    return tem;
 		}
 	    }
 	    break;
