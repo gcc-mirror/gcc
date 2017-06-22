@@ -233,6 +233,7 @@ func os_beforeExit() {
 
 // start forcegc helper goroutine
 func init() {
+	expectSystemGoroutine()
 	go forcegchelper()
 }
 
@@ -2728,6 +2729,28 @@ func newproc(fn uintptr, arg unsafe.Pointer) *g {
 	return newg
 }
 
+// expectedSystemGoroutines counts the number of goroutines expected
+// to mark themselves as system goroutines. After they mark themselves
+// by calling setSystemGoroutine, this is decremented. NumGoroutines
+// uses this to wait for all system goroutines to mark themselves
+// before it counts them.
+var expectedSystemGoroutines uint32
+
+// expectSystemGoroutine is called when starting a goroutine that will
+// call setSystemGoroutine. It increments expectedSystemGoroutines.
+func expectSystemGoroutine() {
+	atomic.Xadd(&expectedSystemGoroutines, +1)
+}
+
+// waitForSystemGoroutines waits for all currently expected system
+// goroutines to register themselves.
+func waitForSystemGoroutines() {
+	for atomic.Load(&expectedSystemGoroutines) > 0 {
+		Gosched()
+		osyield()
+	}
+}
+
 // setSystemGoroutine marks this goroutine as a "system goroutine".
 // In the gc toolchain this is done by comparing startpc to a list of
 // saved special PCs. In gccgo that approach does not work as startpc
@@ -2738,6 +2761,7 @@ func newproc(fn uintptr, arg unsafe.Pointer) *g {
 func setSystemGoroutine() {
 	getg().isSystemGoroutine = true
 	atomic.Xadd(&sched.ngsys, +1)
+	atomic.Xadd(&expectedSystemGoroutines, -1)
 }
 
 // Put on gfree list.
