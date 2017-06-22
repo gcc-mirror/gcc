@@ -1768,6 +1768,13 @@ format_gcov (gcov_type top, gcov_type bottom, int dp)
 {
   static char buffer[20];
 
+  /* Handle invalid values that would result in a misleading value.  */
+  if (bottom != 0 && top > bottom && dp >= 0)
+    {
+      sprintf (buffer, "NAN %%");
+      return buffer;
+    }
+
   if (dp >= 0)
     {
       float ratio = bottom ? (float)top / bottom : 0;
