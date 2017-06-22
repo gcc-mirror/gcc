@@ -1037,20 +1037,17 @@ default_vector_alignment (const_tree type)
   return align;
 }
 
+/* By default assume vectors of element TYPE require a multiple of the natural
+   alignment of TYPE.  TYPE is naturally aligned if IS_PACKED is false.  */
 bool
 default_builtin_vector_alignment_reachable (const_tree type, bool is_packed)
 {
   if (is_packed)
     return false;
 
-  /* Assuming that types whose size is > pointer-size are not guaranteed to be
-     naturally aligned.  */
-  if (tree_int_cst_compare (TYPE_SIZE (type), bitsize_int (POINTER_SIZE)) > 0)
-    return false;
-
-  /* Assuming that types whose size is <= pointer-size
-     are naturally aligned.  */
-  return true;
+  /* If TYPE can be differently aligned in field context we have to punt
+     as TYPE may have wrong TYPE_ALIGN here (PR79278).  */
+  return min_align_of_type (CONST_CAST_TREE (type)) == TYPE_ALIGN_UNIT (type);
 }
 
 /* By default, assume that a target supports any factor of misalignment

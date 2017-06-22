@@ -1,3 +1,31 @@
+2017-06-22  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2017-01-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/79256
+	* targhooks.c (default_builtin_vector_alignment_reachable): Honor
+	BIGGEST_FIELD_ALIGNMENT and ADJUST_FIELD_ALIGN to fix up bogus
+	alignment on TYPE.
+	* tree.c (build_aligned_type): Set TYPE_USER_ALIGN.
+
+	2017-01-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/69264
+	* target.def (vector_alignment_reachable): Improve documentation.
+	* doc/tm.texi: Regenerate.
+	* targhooks.c (default_builtin_vector_alignment_reachable): Simplify
+	and add a comment.
+	* tree-vect-data-refs.c (vect_supportable_dr_alignment): Revert
+	earlier changes with respect to TYPE_USER_ALIGN.
+	(vector_alignment_reachable_p): Likewise.  Improve dumping.
+
+	2017-02-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/69823
+	* graphite-scop-detection.c (scop_detection::harmful_loop_in_region):
+	Properly enumerate all BBs in the region.  Use auto_vec.
+
 2017-06-21  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	Back port from mainline

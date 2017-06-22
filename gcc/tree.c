@@ -6681,6 +6681,7 @@ build_aligned_type (tree type, unsigned int align)
 
   t = build_variant_type_copy (type);
   TYPE_ALIGN (t) = align;
+  TYPE_USER_ALIGN (t) = 1;
 
   return t;
 }

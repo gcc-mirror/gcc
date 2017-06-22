@@ -1081,32 +1081,18 @@ scop_detection::harmful_loop_in_region (sese_l scop) const
 	       print_sese (dump_file, scop));
   gcc_assert (dominated_by_p (CDI_DOMINATORS, exit_bb, entry_bb));
 
-  int depth = bb_dom_dfs_in (CDI_DOMINATORS, exit_bb)
-    - bb_dom_dfs_in (CDI_DOMINATORS, entry_bb);
-
-  gcc_assert (depth > 0);
-
-  vec<basic_block> dom
-      = get_dominated_to_depth (CDI_DOMINATORS, entry_bb, depth);
-  int i;
-  basic_block bb;
+  auto_vec<basic_block> worklist;
   bitmap loops = BITMAP_ALLOC (NULL);
-  FOR_EACH_VEC_ELT (dom, i, bb)
+
+  worklist.safe_push (entry_bb);
+  while (! worklist.is_empty ())
     {
+      basic_block bb = worklist.pop ();
       DEBUG_PRINT (dp << "Visiting bb_" << bb->index << "\n");
-
-      /* We don't want to analyze any bb outside sese.  */
-      if (!dominated_by_p (CDI_POST_DOMINATORS, bb, exit_bb))
-	continue;
-
-      /* Basic blocks dominated by the scop->exit are not in the scop.  */
-      if (bb != exit_bb && dominated_by_p (CDI_DOMINATORS, bb, exit_bb))
-	continue;
 
       /* The basic block should not be part of an irreducible loop.  */
       if (bb->flags & BB_IRREDUCIBLE_LOOP)
 	{
-	  dom.release ();
 	  BITMAP_FREE (loops);
 	  return true;
 	}
@@ -1120,7 +1106,10 @@ scop_detection::harmful_loop_in_region (sese_l scop) const
 	  FOR_EACH_EDGE (e, ei, bb->succs)
 	    if (!dominated_by_p (CDI_POST_DOMINATORS, bb, e->dest)
 		&& !dominated_by_p (CDI_DOMINATORS, e->dest, bb))
-	      return true;
+	      {
+		BITMAP_FREE (loops);
+		return true;
+	      }
 	}
 
       /* Collect all loops in the current region.  */
@@ -1134,12 +1123,16 @@ scop_detection::harmful_loop_in_region (sese_l scop) const
 	     in loop_is_valid_in_scop.  */
 	  if (harmful_stmt_in_bb (scop, bb))
 	    {
-	      dom.release ();
 	      BITMAP_FREE (loops);
 	      return true;
 	    }
 	}
 
+      if (bb != exit_bb)
+	for (basic_block dom = first_dom_son (CDI_DOMINATORS, bb);
+	     dom;
+	     dom = next_dom_son (CDI_DOMINATORS, dom))
+	  worklist.safe_push (dom);
     }
 
   /* Go through all loops and check that they are still valid in the combined
@@ -1153,14 +1146,12 @@ scop_detection::harmful_loop_in_region (sese_l scop) const
 
       if (!loop_is_valid_in_scop (loop, scop))
 	{
-	  dom.release ();
 	  BITMAP_FREE (loops);
 	  return true;
 	}
     }
-
-  dom.release ();
   BITMAP_FREE (loops);
+
   return false;
 }
 

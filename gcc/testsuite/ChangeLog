@@ -1,3 +1,16 @@
+2017-06-22  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2017-01-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/69264
+	* g++.dg/torture/pr69264.C: New testcase.
+
+	2017-02-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/69823
+	* gcc.dg/graphite/pr69823.c: New testcase.
+
 2017-06-21  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	Back port from mainline
