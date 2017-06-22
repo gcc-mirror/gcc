@@ -1,3 +1,11 @@
+2016-06-22  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-loop.c (vect_model_reduction_cost): Handle
+	COND_REDUCTION and INTEGER_INDUC_COND_REDUCTION without
+	REDUC_MAX_EXPR support.
+	(vectorizable_reduction): Likewise.
+	(vect_create_epilog_for_reduction): Likewise.
+
 2017-06-22  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* match.pd (A / (1 << B) -> A >> B): New.
