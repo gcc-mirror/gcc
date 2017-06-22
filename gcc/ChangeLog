@@ -1,3 +1,9 @@
+2017-06-22  Matt Turner  <mattst88@gmail.com>
+
+	* config/i386/driver-i386.c (host_detect_local_cpu): Add Kaby
+	Lake models to skylake case.  Assume skylake for unknown
+	models with clflushopt.
+
 2017-06-22  Jeff Law  <law@redhat.com>
 
 	* config/aarch64/aarch64.c (aarch64_emit_probe_stack_range): Handle
