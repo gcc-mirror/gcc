@@ -353,7 +353,7 @@ get_function_decl_from_block (tree block)
 {
   tree decl;
 
-  if (LOCATION_LOCUS (BLOCK_SOURCE_LOCATION (block) == UNKNOWN_LOCATION))
+  if (LOCATION_LOCUS (BLOCK_SOURCE_LOCATION (block)) == UNKNOWN_LOCATION)
     return NULL_TREE;
 
   for (decl = BLOCK_ABSTRACT_ORIGIN (block);
