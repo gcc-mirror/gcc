@@ -1,6 +1,14 @@
 2017-06-22  Martin Liska  <mliska@suse.cz>
 
 	Backport from mainline
+	2017-01-17  Nathan Sidwell  <nathan@acm.org>
+
+	* ipa-visibility.c (localize_node): New function, broken out of ...
+	(function_and_variable_visibility): ... here. Call it.
+
+2017-06-22  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
 	2017-01-06  Nathan Sidwell  <nathan@acm.org>
 
 	* ipa-visibility.c (function_and_variable_visibility): Reformat

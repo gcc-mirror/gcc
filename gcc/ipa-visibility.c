@@ -530,6 +530,53 @@ optimize_weakref (symtab_node *node)
   gcc_assert (node->alias);
 }
 
+/* NODE is an externally visible definition, which we've discovered is
+   not needed externally.  Make it local to this compilation.  */
+
+static void
+localize_node (bool whole_program, symtab_node *node)
+{
+  gcc_assert (whole_program || in_lto_p || !TREE_PUBLIC (node->decl));
+
+  if (node->same_comdat_group && TREE_PUBLIC (node->decl))
+    {
+      for (symtab_node *next = node->same_comdat_group;
+	   next != node; next = next->same_comdat_group)
+	{
+	  next->set_comdat_group (NULL);
+	  if (!next->alias)
+	    next->set_section (NULL);
+	  if (!next->transparent_alias)
+	    next->make_decl_local ();
+	  next->unique_name
+	    |= ((next->resolution == LDPR_PREVAILING_DEF_IRONLY
+		 || next->resolution == LDPR_PREVAILING_DEF_IRONLY_EXP)
+		&& TREE_PUBLIC (next->decl)
+		&& !flag_incremental_link);
+	}
+
+      /* Now everything's localized, the grouping has no meaning, and
+	 will cause crashes if we keep it around.  */
+      node->dissolve_same_comdat_group_list ();
+    }
+
+  node->unique_name
+    |= ((node->resolution == LDPR_PREVAILING_DEF_IRONLY
+	 || node->resolution == LDPR_PREVAILING_DEF_IRONLY_EXP)
+	&& TREE_PUBLIC (node->decl)
+	&& !flag_incremental_link);
+
+  if (TREE_PUBLIC (node->decl))
+    node->set_comdat_group (NULL);
+  if (DECL_COMDAT (node->decl) && !node->alias)
+    node->set_section (NULL);
+  if (!node->transparent_alias)
+    {
+      node->resolution = LDPR_PREVAILING_DEF_IRONLY;
+      node->make_decl_local ();
+    }
+}
+
 /* Decide on visibility of all symbols.  */
 
 static unsigned int
@@ -607,48 +654,7 @@ function_and_variable_visibility (bool whole_program)
       if (!node->externally_visible
 	  && node->definition && !node->weakref
 	  && !DECL_EXTERNAL (node->decl))
-	{
-	  gcc_assert (whole_program || in_lto_p
-		      || !TREE_PUBLIC (node->decl));
-	  node->unique_name
-	    |= ((node->resolution == LDPR_PREVAILING_DEF_IRONLY
-		 || node->resolution == LDPR_PREVAILING_DEF_IRONLY_EXP)
-		&& TREE_PUBLIC (node->decl)
-		&& !flag_incremental_link);
-	  node->resolution = LDPR_PREVAILING_DEF_IRONLY;
-	  if (node->same_comdat_group && TREE_PUBLIC (node->decl))
-	    {
-	      symtab_node *next = node;
-
-	      /* Set all members of comdat group local.  */
-	      for (next = node->same_comdat_group;
-		   next != node;
-		   next = next->same_comdat_group)
-		{
-		  next->set_comdat_group (NULL);
-		  if (!next->alias)
-		    next->set_section (NULL);
-		  if (!next->transparent_alias)
-		    next->make_decl_local ();
-		  next->unique_name
-		    |= ((next->resolution == LDPR_PREVAILING_DEF_IRONLY
-			 || next->resolution == LDPR_PREVAILING_DEF_IRONLY_EXP)
-			&& TREE_PUBLIC (next->decl)
-			&& !flag_incremental_link);
-		}
-	      /* cgraph_externally_visible_p has already checked all
-	         other nodes in the group and they will all be made
-	         local.  We need to dissolve the group at once so that
-	         the predicate does not segfault though. */
-	      node->dissolve_same_comdat_group_list ();
-	    }
-	  if (TREE_PUBLIC (node->decl))
-	    node->set_comdat_group (NULL);
-	  if (DECL_COMDAT (node->decl) && !node->alias)
-	    node->set_section (NULL);
-	  if (!node->transparent_alias)
-	    node->make_decl_local ();
-	}
+	localize_node (whole_program, node);
 
       if (node->thunk.thunk_p
 	  && !node->thunk.add_pointer_bounds_args
@@ -758,49 +764,11 @@ function_and_variable_visibility (bool whole_program)
       if (lookup_attribute ("no_reorder",
 			    DECL_ATTRIBUTES (vnode->decl)))
 	vnode->no_reorder = 1;
+
       if (!vnode->externally_visible
 	  && !vnode->transparent_alias)
-	{
-	  gcc_assert (in_lto_p || whole_program || !TREE_PUBLIC (vnode->decl));
-	  vnode->unique_name |= ((vnode->resolution == LDPR_PREVAILING_DEF_IRONLY
-			          || vnode->resolution
-				      == LDPR_PREVAILING_DEF_IRONLY_EXP)
-			         && TREE_PUBLIC (vnode->decl)
-				 && !flag_incremental_link);
-	  if (vnode->same_comdat_group && TREE_PUBLIC (vnode->decl))
-	    {
-	      symtab_node *next = vnode;
+	localize_node (whole_program, vnode);
 
-	      /* Set all members of comdat group local.  */
-	      if (vnode->same_comdat_group)
-		for (next = vnode->same_comdat_group;
-		     next != vnode;
-		     next = next->same_comdat_group)
-		{
-		  next->set_comdat_group (NULL);
-		  if (!next->alias)
-		    next->set_section (NULL);
-		  if (!next->transparent_alias)
-		    {
-		      next->make_decl_local ();
-		      next->unique_name |= ((next->resolution == LDPR_PREVAILING_DEF_IRONLY
-					     || next->resolution == LDPR_PREVAILING_DEF_IRONLY_EXP)
-					    && TREE_PUBLIC (next->decl)
-					    && !flag_incremental_link);
-		    }
-		}
-	      vnode->dissolve_same_comdat_group_list ();
-	    }
-	  if (TREE_PUBLIC (vnode->decl))
-	    vnode->set_comdat_group (NULL);
-	  if (DECL_COMDAT (vnode->decl) && !vnode->alias)
-	    vnode->set_section (NULL);
-	  if (!vnode->transparent_alias)
-	    {
-	      vnode->make_decl_local ();
-	      vnode->resolution = LDPR_PREVAILING_DEF_IRONLY;
-	    }
-	}
       update_visibility_by_resolution_info (vnode);
 
       /* Update virtual tables to point to local aliases where possible.  */
