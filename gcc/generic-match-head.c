@@ -33,6 +33,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "builtins.h"
 #include "case-cfn-macros.h"
 #include "gimplify.h"
+#include "optabs-tree.h"
 
 
 /* Routine to determine if the types T1 and T2 are effectively
