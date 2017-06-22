@@ -1,3 +1,8 @@
+2017-06-22  Martin Liska  <mliska@suse.cz>
+
+	* gcc.dg/tree-ssa/ipa-split-5.c: Make function bigger in order
+	to not inline it.
+
 2017-06-22  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* gcc.dg/tree-ssa/forwprop-37.c: New.
