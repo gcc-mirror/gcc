@@ -90,7 +90,7 @@ static bool
 non_local_p (struct cgraph_node *node, void *data ATTRIBUTE_UNUSED)
 {
   return !(node->only_called_directly_or_aliased_p ()
-	   /* i386 would need update to output thunk with locak calling
+	   /* i386 would need update to output thunk with local calling
 	      ocnvetions.  */
 	   && !node->thunk.thunk_p
 	   && node->definition
@@ -153,7 +153,7 @@ comdat_can_be_unshared_p_1 (symtab_node *node)
 /* COMDAT functions must be shared only if they have address taken,
    otherwise we can produce our own private implementation with
    -fwhole-program.  
-   Return true when turning COMDAT functoin static can not lead to wrong
+   Return true when turning COMDAT function static can not lead to wrong
    code when the resulting object links with a library defining same COMDAT.
 
    Virtual functions do have their addresses taken from the vtables,
@@ -538,6 +538,35 @@ localize_node (bool whole_program, symtab_node *node)
 {
   gcc_assert (whole_program || in_lto_p || !TREE_PUBLIC (node->decl));
 
+  /* It is possible that one comdat group contains both hidden and non-hidden
+     symbols.  In this case we can privatize all hidden symbol but we need
+     to keep non-hidden exported.  */
+  if (node->same_comdat_group
+      && node->resolution == LDPR_PREVAILING_DEF_IRONLY)
+    {
+      symtab_node *next;
+      for (next = node->same_comdat_group;
+	   next != node; next = next->same_comdat_group)
+	if (next->resolution == LDPR_PREVAILING_DEF_IRONLY_EXP
+	    || next->resolution == LDPR_PREVAILING_DEF)
+	  break;
+      if (node != next)
+	{
+	  if (!node->transparent_alias)
+	    {
+	      node->resolution = LDPR_PREVAILING_DEF_IRONLY;
+	      node->make_decl_local ();
+	      if (!flag_incremental_link)
+	        node->unique_name |= true;
+	      return;
+	    }
+	}
+    }
+  /* For similar reason do not privatize whole comdat when seeing comdat
+     local.  Wait for non-comdat symbol to be privatized first.  */
+  if (node->comdat_local_p ())
+    return;
+
   if (node->same_comdat_group && TREE_PUBLIC (node->decl))
     {
       for (symtab_node *next = node->same_comdat_group;
@@ -766,7 +795,8 @@ function_and_variable_visibility (bool whole_program)
 	vnode->no_reorder = 1;
 
       if (!vnode->externally_visible
-	  && !vnode->transparent_alias)
+	  && !vnode->transparent_alias
+	  && !DECL_EXTERNAL (vnode->decl))
 	localize_node (whole_program, vnode);
 
       update_visibility_by_resolution_info (vnode);

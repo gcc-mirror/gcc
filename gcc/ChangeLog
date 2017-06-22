@@ -1,6 +1,18 @@
 2017-06-22  Martin Liska  <mliska@suse.cz>
 
 	Backport from mainline
+	2017-04-12  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR lto/69953
+	* ipa-visibility.c (non_local_p): Fix typos.
+	(localize_node): When localizing symbol in same comdat group,
+	dissolve the group only when we know external symbols are going
+	to be privatized.
+	(function_and_variable_visibility): Do not localize DECL_EXTERNAL.
+
+2017-06-22  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
 	2017-01-17  Nathan Sidwell  <nathan@acm.org>
 
 	* ipa-visibility.c (localize_node): New function, broken out of ...
