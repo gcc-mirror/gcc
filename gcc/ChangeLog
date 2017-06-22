@@ -1,3 +1,18 @@
+2017-06-22  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure.ac (gcc_cv_ld_static_dynamic): Also check stderr for
+	$gcc_cv_ld --help output.
+	(gcc_cv_ld_demangle): Likewise.
+	(gcc_cv_ld_eh_frame_hdr): Likewise.
+	(gcc_cv_ld_pie): Likewise.
+	(gcc_cv_ld_as_needed): Likewise.  Prefer native forms unless $gnu_ld.
+	(gcc_cv_ld_buildid): Likewise.
+	(gcc_cv_ld_sysroot): Likewise.
+	(ld_bndplt_support): Likewise.
+	(ld_pushpopstate_support): Likewise.
+	* configure: Regenerate.
+	* config/sol2.h [!USE_GLD] (SYSROOT_SPEC): Define.
+
 2017-06-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/81151
