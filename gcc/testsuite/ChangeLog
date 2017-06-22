@@ -1,3 +1,14 @@
+2017-06-22  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
+	2017-05-26  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/80663
+	* g++.dg/ipa/pr80212.C: Remove the test as it does not longer
+	split at the problematic spot.
+	* gcc.dg/ipa/pr48195.c: Change 101 to 100 as 101 is no longer
+	a valid value of the param.
+
 2017-06-22  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline

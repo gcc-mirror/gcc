@@ -126,7 +126,7 @@ DEFPARAM (PARAM_COMDAT_SHARING_PROBABILITY,
 DEFPARAM (PARAM_PARTIAL_INLINING_ENTRY_PROBABILITY,
 	  "partial-inlining-entry-probability",
 	  "Maximum probability of the entry BB of split region (in percent relative to entry BB of the function) to make partial inlining happen.",
-	  70, 0, 0)
+	  70, 0, 100)
 
 /* Limit the number of expansions created by the variable expansion
    optimization to avoid register pressure.  */
