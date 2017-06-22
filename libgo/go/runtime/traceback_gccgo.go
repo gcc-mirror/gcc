@@ -77,7 +77,11 @@ func traceback(skip int32) {
 func printtrace(locbuf []location, gp *g) {
 	for i := range locbuf {
 		if showframe(locbuf[i].function, gp) {
-			print(locbuf[i].function, "\n\t", locbuf[i].filename, ":", locbuf[i].lineno, "\n")
+			name := locbuf[i].function
+			if name == "runtime.gopanic" {
+				name = "panic"
+			}
+			print(name, "\n\t", locbuf[i].filename, ":", locbuf[i].lineno, "\n")
 		}
 	}
 }
