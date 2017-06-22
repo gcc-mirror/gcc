@@ -4531,7 +4531,7 @@ handle_omp_array_sections_1 (tree c, tree t, vec<tree> &types,
 	}
       if (!VAR_P (t) && TREE_CODE (t) != PARM_DECL)
 	{
-	  if (processing_template_decl)
+	  if (processing_template_decl && TREE_CODE (t) != OVERLOAD)
 	    return NULL_TREE;
 	  if (DECL_P (t))
 	    error_at (OMP_CLAUSE_LOCATION (c),
@@ -6013,7 +6013,7 @@ finish_omp_clauses (tree clauses, bool allow_fields, bool declare_simd)
 	  if (!VAR_P (t) && TREE_CODE (t) != PARM_DECL
 	      && (!field_ok || TREE_CODE (t) != FIELD_DECL))
 	    {
-	      if (processing_template_decl)
+	      if (processing_template_decl && TREE_CODE (t) != OVERLOAD)
 		break;
 	      if (DECL_P (t))
 		error ("%qD is not a variable in clause %qs", t,
@@ -6069,7 +6069,7 @@ finish_omp_clauses (tree clauses, bool allow_fields, bool declare_simd)
 	  if (!VAR_P (t) && TREE_CODE (t) != PARM_DECL
 	      && (!allow_fields || TREE_CODE (t) != FIELD_DECL))
 	    {
-	      if (processing_template_decl)
+	      if (processing_template_decl && TREE_CODE (t) != OVERLOAD)
 		break;
 	      if (DECL_P (t))
 		error ("%qD is not a variable in clause %<firstprivate%>", t);
@@ -6108,7 +6108,7 @@ finish_omp_clauses (tree clauses, bool allow_fields, bool declare_simd)
 	  if (!VAR_P (t) && TREE_CODE (t) != PARM_DECL
 	      && (!allow_fields || TREE_CODE (t) != FIELD_DECL))
 	    {
-	      if (processing_template_decl)
+	      if (processing_template_decl && TREE_CODE (t) != OVERLOAD)
 		break;
 	      if (DECL_P (t))
 		error ("%qD is not a variable in clause %<lastprivate%>", t);
@@ -6458,7 +6458,7 @@ finish_omp_clauses (tree clauses, bool allow_fields, bool declare_simd)
 	    }
 	  if (!VAR_P (t) && TREE_CODE (t) != PARM_DECL)
 	    {
-	      if (processing_template_decl)
+	      if (processing_template_decl && TREE_CODE (t) != OVERLOAD)
 		break;
 	      if (DECL_P (t))
 		error ("%qD is not a variable in %<aligned%> clause", t);
@@ -6540,7 +6540,7 @@ finish_omp_clauses (tree clauses, bool allow_fields, bool declare_simd)
 	    remove = true;
 	  else if (!VAR_P (t) && TREE_CODE (t) != PARM_DECL)
 	    {
-	      if (processing_template_decl)
+	      if (processing_template_decl && TREE_CODE (t) != OVERLOAD)
 		break;
 	      if (DECL_P (t))
 		error ("%qD is not a variable in %<depend%> clause", t);
@@ -6668,7 +6668,7 @@ finish_omp_clauses (tree clauses, bool allow_fields, bool declare_simd)
 	    }
 	  if (!VAR_P (t) && TREE_CODE (t) != PARM_DECL)
 	    {
-	      if (processing_template_decl)
+	      if (processing_template_decl && TREE_CODE (t) != OVERLOAD)
 		break;
 	      if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_MAP
 		  && (OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_POINTER
