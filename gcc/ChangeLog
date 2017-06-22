@@ -1,6 +1,16 @@
 2017-06-22  Martin Liska  <mliska@suse.cz>
 
 	Backport from mainline
+	2017-01-06  Nathan Sidwell  <nathan@acm.org>
+
+	* ipa-visibility.c (function_and_variable_visibility): Reformat
+	comments and long lines.  Remove extrneous if.
+	* symtab.c (symtab_node::make_decl_local): Fix code format.
+	(symtab_node::set_section_for_node): Fix comment typo.
+
+2017-06-22  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
 	2016-10-20  Martin Liska  <mliska@suse.cz>
 
 	PR lto/78049

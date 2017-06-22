@@ -1261,7 +1261,8 @@ symtab_node::make_decl_local (void)
       TREE_ADDRESSABLE (decl) = 1;
       TREE_STATIC (decl) = 1;
     }
-  else gcc_assert (TREE_CODE (decl) == FUNCTION_DECL);
+  else
+    gcc_assert (TREE_CODE (decl) == FUNCTION_DECL);
 
   DECL_COMDAT (decl) = 0;
   DECL_WEAK (decl) = 0;
@@ -1440,7 +1441,7 @@ symtab_node::fixup_same_cpp_alias_visibility (symtab_node *target)
 }
 
 /* Set section, do not recurse into aliases.
-   When one wants to change section of symbol and its aliases,
+   When one wants to change section of a symbol and its aliases,
    use set_section.  */
 
 void

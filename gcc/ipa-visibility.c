@@ -554,9 +554,9 @@ function_and_variable_visibility (bool whole_program)
 	  DECL_STATIC_DESTRUCTOR (node->decl) = 0;
 	}
 
-      /* Frontends and alias code marks nodes as needed before parsing is finished.
-	 We may end up marking as node external nodes where this flag is meaningless
-	 strip it.  */
+      /* Frontends and alias code marks nodes as needed before parsing
+	 is finished.  We may end up marking as node external nodes
+	 where this flag is meaningless strip it.  */
       if (DECL_EXTERNAL (node->decl) || !node->definition)
 	{
 	  node->force_output = 0;
@@ -610,35 +610,36 @@ function_and_variable_visibility (bool whole_program)
 	{
 	  gcc_assert (whole_program || in_lto_p
 		      || !TREE_PUBLIC (node->decl));
-	  node->unique_name |= ((node->resolution == LDPR_PREVAILING_DEF_IRONLY
-				 || node->resolution == LDPR_PREVAILING_DEF_IRONLY_EXP)
-				&& TREE_PUBLIC (node->decl)
-				&& !flag_incremental_link);
+	  node->unique_name
+	    |= ((node->resolution == LDPR_PREVAILING_DEF_IRONLY
+		 || node->resolution == LDPR_PREVAILING_DEF_IRONLY_EXP)
+		&& TREE_PUBLIC (node->decl)
+		&& !flag_incremental_link);
 	  node->resolution = LDPR_PREVAILING_DEF_IRONLY;
 	  if (node->same_comdat_group && TREE_PUBLIC (node->decl))
 	    {
 	      symtab_node *next = node;
 
 	      /* Set all members of comdat group local.  */
-	      if (node->same_comdat_group)
-		for (next = node->same_comdat_group;
-		     next != node;
-		     next = next->same_comdat_group)
+	      for (next = node->same_comdat_group;
+		   next != node;
+		   next = next->same_comdat_group)
 		{
 		  next->set_comdat_group (NULL);
 		  if (!next->alias)
 		    next->set_section (NULL);
 		  if (!next->transparent_alias)
 		    next->make_decl_local ();
-		  next->unique_name |= ((next->resolution == LDPR_PREVAILING_DEF_IRONLY
-					 || next->resolution == LDPR_PREVAILING_DEF_IRONLY_EXP)
-				        && TREE_PUBLIC (next->decl)
-					&& !flag_incremental_link);
+		  next->unique_name
+		    |= ((next->resolution == LDPR_PREVAILING_DEF_IRONLY
+			 || next->resolution == LDPR_PREVAILING_DEF_IRONLY_EXP)
+			&& TREE_PUBLIC (next->decl)
+			&& !flag_incremental_link);
 		}
-	      /* cgraph_externally_visible_p has already checked all other nodes
-	         in the group and they will all be made local.  We need to
-	         dissolve the group at once so that the predicate does not
-	         segfault though. */
+	      /* cgraph_externally_visible_p has already checked all
+	         other nodes in the group and they will all be made
+	         local.  We need to dissolve the group at once so that
+	         the predicate does not segfault though. */
 	      node->dissolve_same_comdat_group_list ();
 	    }
 	  if (TREE_PUBLIC (node->decl))

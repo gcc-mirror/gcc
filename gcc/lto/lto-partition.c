@@ -664,8 +664,9 @@ lto_balanced_map (int n_lto_partitions)
 
 		vnode = dyn_cast <varpool_node *> (ref->referring);
 		gcc_assert (vnode->definition);
-		/* It is better to couple variables with their users, because it allows them
-		   to be removed.  Coupling with objects they refer to only helps to reduce
+		/* It is better to couple variables with their users,
+		   because it allows them to be removed.  Coupling
+		   with objects they refer to only helps to reduce
 		   number of symbols promoted to hidden.  */
 		if (!symbol_partitioned_p (vnode) && flag_toplevel_reorder
 		    && !vnode->no_reorder
@@ -1003,10 +1004,11 @@ promote_symbol (symtab_node *node)
 	    "Promoting as hidden: %s\n", node->name ());
 }
 
-/* Return true if NODE needs named section even if it won't land in the partition
-   symbol table.
-   FIXME: we should really not use named sections for inline clones and master
-   clones.  */
+/* Return true if NODE needs named section even if it won't land in
+   the partition symbol table.
+
+   FIXME: we should really not use named sections for inline clones
+   and master clones.  */
 
 static bool
 may_need_named_section_p (lto_symtab_encoder_t encoder, symtab_node *node)
@@ -1084,7 +1086,8 @@ rename_statics (lto_symtab_encoder_t encoder, symtab_node *node)
 	    || lto_symtab_encoder_lookup (encoder, s) != LCC_NOT_FOUND))
       {
         if (privatize_symbol_name (s))
-	  /* Re-start from beginning since we do not know how many symbols changed a name.  */
+	  /* Re-start from beginning since we do not know how many
+	     symbols changed a name.  */
 	  s = symtab_node::get_for_asmname (name);
         else s = s->next_sharing_asm_name;
       }
@@ -1125,8 +1128,8 @@ lto_promote_cross_file_statics (void)
         {
           symtab_node *node = lsei_node (lsei);
 
-	  /* If symbol is static, rename it if its assembler name clash with
-	     anything else in this unit.  */
+	  /* If symbol is static, rename it if its assembler name
+	     clashes with anything else in this unit.  */
 	  rename_statics (encoder, node);
 
 	  /* No need to promote if symbol already is externally visible ... */
@@ -1134,7 +1137,7 @@ lto_promote_cross_file_statics (void)
  	      /* ... or if it is part of current partition ... */
 	      || lto_symtab_encoder_in_partition_p (encoder, node)
 	      /* ... or if we do not partition it. This mean that it will
-		 appear in every partition refernecing it.  */
+		 appear in every partition referencing it.  */
 	      || node->get_partitioning_class () != SYMBOL_PARTITION)
 	    {
 	      validize_symbol_for_target (node);
