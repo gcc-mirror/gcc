@@ -3,6 +3,12 @@
 	Backported from mainline
 	2017-05-22  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/80809
+	* gimplify.c (omp_add_variable): For GOVD_DEBUG_PRIVATE use
+	GOVD_SHARED rather than GOVD_PRIVATE with it.
+	(gimplify_adjust_omp_clauses_1, gimplify_adjust_omp_clauses): Expect
+	GOVD_SHARED rather than GOVD_PRIVATE with GOVD_DEBUG_PRIVATE.
+
 	PR middle-end/80853
 	* omp-low.c (lower_reduction_clauses): Pass OMP_CLAUSE_PRIVATE
 	as last argument to build_outer_var_ref for pointer bases of array

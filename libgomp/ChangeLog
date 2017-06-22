@@ -3,6 +3,9 @@
 	Backported from mainline
 	2017-05-22  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/80809
+	* testsuite/libgomp.c/pr80809-1.c: New test.
+
 	PR middle-end/80853
 	* testsuite/libgomp.c/pr80853.c: New test.
 
