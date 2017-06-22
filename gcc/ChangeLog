@@ -1,6 +1,14 @@
 2017-06-22  Martin Liska  <mliska@suse.cz>
 
 	Backport from mainline
+	2017-05-31  Martin Liska  <mliska@suse.cz>
+
+	PR target/79155
+	* config/i386/cpuid.h: Fix typo in a comment in cpuid.h.
+
+2017-06-22  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
 	2017-05-30  Martin Liska  <mliska@suse.cz>
 
 	PR other/80909
