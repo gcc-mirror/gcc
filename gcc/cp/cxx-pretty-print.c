@@ -159,7 +159,7 @@ pp_cxx_unqualified_id (cxx_pretty_printer *pp, tree t)
     case IDENTIFIER_NODE:
       if (t == NULL)
 	pp->translate_string ("<unnamed>");
-      else if (IDENTIFIER_TYPENAME_P (t))
+      else if (IDENTIFIER_CONV_OP_P (t))
 	pp_cxx_conversion_function_id (pp, t);
       else
 	{

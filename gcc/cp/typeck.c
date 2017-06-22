@@ -5652,7 +5652,7 @@ cp_build_addr_expr_1 (tree arg, bool strict_lvalue, tsubst_flags_t complain)
   arg = mark_lvalue_use (arg);
   argtype = lvalue_type (arg);
 
-  gcc_assert (!identifier_p (arg) || !IDENTIFIER_OPNAME_P (arg));
+  gcc_assert (!(identifier_p (arg) && IDENTIFIER_ANY_OP_P (arg)));
 
   if (TREE_CODE (arg) == COMPONENT_REF && type_unknown_p (arg)
       && !really_overloaded_fn (arg))

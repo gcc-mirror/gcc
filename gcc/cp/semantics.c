@@ -3496,7 +3496,7 @@ finish_id_expression (tree id_expression,
 	      && (!TYPE_P (scope)
 		  || (!dependent_type_p (scope)
 		      && !(identifier_p (id_expression)
-			   && IDENTIFIER_TYPENAME_P (id_expression)
+			   && IDENTIFIER_CONV_OP_P (id_expression)
 			   && dependent_type_p (TREE_TYPE (id_expression))))))
 	    {
 	      /* If the qualifying type is non-dependent (and the name

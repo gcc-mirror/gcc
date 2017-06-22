@@ -5333,11 +5333,11 @@ push_template_decl_real (tree decl, bool is_friend)
 	      error ("destructor %qD declared as member template", decl);
 	      return error_mark_node;
 	    }
-	  if (NEW_DELETE_OPNAME_P (DECL_NAME (decl))
+	  if (IDENTIFIER_NEWDEL_OP_P (DECL_NAME (decl))
 	      && (!prototype_p (TREE_TYPE (decl))
 		  || TYPE_ARG_TYPES (TREE_TYPE (decl)) == void_list_node
 		  || !TREE_CHAIN (TYPE_ARG_TYPES (TREE_TYPE (decl)))
-		  || (TREE_CHAIN (TYPE_ARG_TYPES ((TREE_TYPE (decl))))
+		  || (TREE_CHAIN (TYPE_ARG_TYPES (TREE_TYPE (decl)))
 		      == void_list_node)))
 	    {
 	      /* [basic.stc.dynamic.allocation]
@@ -12416,7 +12416,7 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 	/* If we aren't complaining now, return on error before we register
 	   the specialization so that we'll complain eventually.  */
 	if ((complain & tf_error) == 0
-	    && IDENTIFIER_OPNAME_P (DECL_NAME (r))
+	    && IDENTIFIER_ANY_OP_P (DECL_NAME (r))
 	    && !grok_op_properties (r, /*complain=*/false))
 	  RETURN (error_mark_node);
 
@@ -12487,7 +12487,7 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 	      clone_function_decl (r, /*update_methods=*/false);
 	  }
 	else if ((complain & tf_error) != 0
-		 && IDENTIFIER_OPNAME_P (DECL_NAME (r))
+		 && IDENTIFIER_ANY_OP_P (DECL_NAME (r))
 		 && !grok_op_properties (r, /*complain=*/true))
 	  RETURN (error_mark_node);
 
@@ -14247,7 +14247,7 @@ tsubst_baselink (tree baselink, tree object_type,
     }
 
   tree name = OVL_NAME (fns);
-  if (IDENTIFIER_TYPENAME_P (name))
+  if (IDENTIFIER_CONV_OP_P (name))
     name = mangle_conv_op_name_for_type (optype);
 
   baselink = lookup_fnfields (qualifying_scope, name, /*protect=*/1);
@@ -15035,7 +15035,7 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
       t = DECL_NAME (t);
       /* Fall through.  */
     case IDENTIFIER_NODE:
-      if (IDENTIFIER_TYPENAME_P (t))
+      if (IDENTIFIER_CONV_OP_P (t))
 	{
 	  tree new_type = tsubst (TREE_TYPE (t), args, complain, in_decl);
 	  return mangle_conv_op_name_for_type (new_type);
@@ -16668,7 +16668,7 @@ tsubst_copy_and_build (tree t,
 	bool non_integral_constant_expression_p;
 	const char *error_msg;
 
-	if (IDENTIFIER_TYPENAME_P (t))
+	if (IDENTIFIER_CONV_OP_P (t))
 	  {
 	    tree new_type = tsubst (TREE_TYPE (t), args, complain, in_decl);
 	    t = mangle_conv_op_name_for_type (new_type);

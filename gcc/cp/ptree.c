@@ -178,7 +178,8 @@ cxx_print_identifier (FILE *file, tree node, int indent)
     fprintf (file, " ");
   else
     indent_to (file, indent + 4);
-  fprintf (file, "local bindings <%p>", (void *) IDENTIFIER_BINDING (node));
+  fprintf (file, "%s local bindings <%p>", get_identifier_kind_name (node),
+	   (void *) IDENTIFIER_BINDING (node));
   print_node (file, "label", IDENTIFIER_LABEL_VALUE (node), indent + 4);
   print_node (file, "template", IDENTIFIER_TEMPLATE (node), indent + 4);
 }
