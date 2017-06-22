@@ -3,6 +3,9 @@
 	Backported from mainline
 	2017-06-21  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/81154
+	* g++.dg/gomp/pr81154.C: New test.
+
 	PR c++/81130
 	* testsuite/libgomp.c++/pr81130.C: New test.
 
