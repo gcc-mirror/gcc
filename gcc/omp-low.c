@@ -5808,15 +5808,25 @@ lower_reduction_clauses (tree clauses, gimple_seq *stmt_seqp, omp_context *ctx)
       if (OMP_CLAUSE_CODE (c) != OMP_CLAUSE_REDUCTION)
 	continue;
 
+      enum omp_clause_code ccode = OMP_CLAUSE_REDUCTION;
       orig_var = var = OMP_CLAUSE_DECL (c);
       if (TREE_CODE (var) == MEM_REF)
 	{
 	  var = TREE_OPERAND (var, 0);
 	  if (TREE_CODE (var) == POINTER_PLUS_EXPR)
 	    var = TREE_OPERAND (var, 0);
-	  if (TREE_CODE (var) == INDIRECT_REF
-	      || TREE_CODE (var) == ADDR_EXPR)
+	  if (TREE_CODE (var) == ADDR_EXPR)
 	    var = TREE_OPERAND (var, 0);
+	  else
+	    {
+	      /* If this is a pointer or referenced based array
+		 section, the var could be private in the outer
+		 context e.g. on orphaned loop construct.  Pretend this
+		 is private variable's outer reference.  */
+	      ccode = OMP_CLAUSE_PRIVATE;
+	      if (TREE_CODE (var) == INDIRECT_REF)
+		var = TREE_OPERAND (var, 0);
+	    }
 	  orig_var = var;
 	  if (is_variable_sized (var))
 	    {
@@ -5830,7 +5840,7 @@ lower_reduction_clauses (tree clauses, gimple_seq *stmt_seqp, omp_context *ctx)
       new_var = lookup_decl (var, ctx);
       if (var == OMP_CLAUSE_DECL (c) && is_reference (var))
 	new_var = build_simple_mem_ref_loc (clause_loc, new_var);
-      ref = build_outer_var_ref (var, ctx);
+      ref = build_outer_var_ref (var, ctx, ccode);
       code = OMP_CLAUSE_REDUCTION_CODE (c);
 
       /* reduction(-:var) sums up the partial results, so it acts
