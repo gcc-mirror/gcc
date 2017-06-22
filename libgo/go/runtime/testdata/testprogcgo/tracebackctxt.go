@@ -4,6 +4,8 @@
 
 // The __attribute__((weak)) used below doesn't seem to work on Windows.
 
+// +build !gccgo
+
 package main
 
 // Test the context argument to SetCgoTraceback.
