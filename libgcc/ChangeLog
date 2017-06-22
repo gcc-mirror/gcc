@@ -1,3 +1,8 @@
+2017-06-22  Matt Turner  <mattst88@gmail.com>
+
+	* config/i386/cpuinfo.c (get_intel_cpu): Add Kaby Lake models to
+	skylake case.
+
 2017-06-21  Richard Biener  <rguenther@suse.de>
 
 	PR gcov-profile/81080

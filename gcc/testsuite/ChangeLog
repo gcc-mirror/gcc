@@ -1,3 +1,8 @@
+2017-06-22  Matt Turner  <mattst88@gmail.com>
+
+	* gcc.target/i386/builtin_target.c: Add Kaby Lake models to
+	skylake check.
+
 2017-06-22 Carl Love  <cel@us.ibm.com>
 
 	* gcc.target/powerpc/builtins-3.c (vmulosh, vmulouh, vmulesh,

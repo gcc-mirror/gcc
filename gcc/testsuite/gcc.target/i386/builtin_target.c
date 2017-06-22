@@ -88,6 +88,9 @@ check_intel_cpu_model (unsigned int family, unsigned int model,
 	    case 0x4e:
 	    case 0x5e:
 	      /* Skylake.  */
+	    case 0x8e:
+	    case 0x9e:
+	      /* Kaby Lake.  */
 	      assert (__builtin_cpu_is ("corei7"));
 	      assert (__builtin_cpu_is ("skylake"));
 	      break;
