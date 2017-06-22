@@ -1426,6 +1426,16 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
       *stmt_p = cplus_expand_constant (stmt);
       *walk_subtrees = 0;
     }
+  else if (TREE_CODE (stmt) == MEM_REF)
+    {
+      /* For MEM_REF, make sure not to sanitize the second operand even
+         if it has reference type.  It is just an offset with a type
+	 holding other information.  There is no other processing we
+	 need to do for INTEGER_CSTs, so just ignore the second argument
+	 unconditionally.  */
+      cp_walk_tree (&TREE_OPERAND (stmt, 0), cp_genericize_r, data, NULL);
+      *walk_subtrees = 0;
+    }
   else if ((flag_sanitize
 	    & (SANITIZE_NULL | SANITIZE_ALIGNMENT | SANITIZE_VPTR))
 	   && !wtd->no_sanitize_p)

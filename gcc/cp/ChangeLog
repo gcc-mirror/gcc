@@ -3,6 +3,10 @@
 	Backported from mainline
 	2017-06-13  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/80973
+	* cp-gimplify.c (cp_genericize_r): Don't instrument MEM_REF second
+	argument even if it has REFERENCE_TYPE.
+
 	PR c++/80984
 	* cp-gimplify.c (cp_genericize): Only look for VAR_DECLs in
 	BLOCK_VARS (outer) chain.
