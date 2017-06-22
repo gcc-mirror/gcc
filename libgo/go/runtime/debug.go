@@ -54,6 +54,7 @@ func NumCgoCall() int64 {
 
 // NumGoroutine returns the number of goroutines that currently exist.
 func NumGoroutine() int {
+	waitForSystemGoroutines()
 	return int(gcount())
 }
 

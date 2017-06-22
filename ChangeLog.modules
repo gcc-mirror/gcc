@@ -1,5 +1,7 @@
 2017-06-22  Nathan Sidwell  <nathan@acm.org>
 
+	Merge trunk r249572.
+
 	Reorder IDENTIFIER flags
 	gcc/cp/
 	* cp-tree.h (enum cp_identifier_kind): New.

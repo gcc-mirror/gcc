@@ -1,3 +1,59 @@
+2017-06-22 Carl Love  <cel@us.ibm.com>
+
+	* gcc.target/powerpc/builtins-3.c (vmulosh, vmulouh, vmulesh,
+	vmuleuh): Fix scan-assembler-times should check for word not half word
+	instructions.
+
+2017-06-22  Jeff Law  <law@redhat.com>
+
+	* gcc.c-torture/compile/stack-check-1.c: New test.
+
+2016-06-22  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/vect/pr65947-1.c: Remove xfail.
+	* gcc.dg/vect/pr65947-2.c: Likewise.
+	* gcc.dg/vect/pr65947-3.c: Likewise.
+	* gcc.dg/vect/pr65947-4.c: Likewise.
+	* gcc.dg/vect/pr65947-5.c: Likewise.
+	* gcc.dg/vect/pr65947-6.c: Likewise.
+	* gcc.dg/vect/pr65947-8.c: Likewise.
+	* gcc.dg/vect/pr65947-9.c: Likewise.
+	* gcc.dg/vect/pr65947-10.c: Likewise.
+	* gcc.dg/vect/pr65947-12.c: Likewise.
+	* gcc.dg/vect/pr65947-13.c: Likewise.
+	* gcc.dg/vect/pr65947-14.c: Likewise.
+	* gcc.dg/vect/vect-cond-2.c: Likewise.
+	* gcc.dg/vect/vect-pr69848.c: Likewise.
+
+2017-06-22  Martin Liska  <mliska@suse.cz>
+
+	* gcc.dg/tree-ssa/ipa-split-5.c: Make function bigger in order
+	to not inline it.
+
+2017-06-22  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* gcc.dg/tree-ssa/forwprop-37.c: New.
+
+2017-06-22  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/vect/pr65947-14.c: Fix missing brace.
+
+2017-06-22  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/vect/pr65947-14.c: New testcase.
+
+2017-06-21  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/80510
+	* gcc.target/powerpc/pr80510-1.c: Restrict test to 64-bit until
+	32-bit support is added.  Change ITYPE size to 64-bit integer.
+	* gcc.target/powerpc/pr80510-2.c: Likewise.
+
+2017-06-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/81154
+	* g++.dg/gomp/pr81154.C: New test.
+
 2017-06-21  David Malcolm  <dmalcolm@redhat.com>
 
 	* g++.dg/other/old-style-cast-fixits.C: New test case.

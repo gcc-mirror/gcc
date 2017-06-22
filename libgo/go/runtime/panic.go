@@ -90,13 +90,13 @@ func throwinit() {
 // pfn is a C function pointer.
 // arg is a value to pass to pfn.
 func deferproc(frame *bool, pfn uintptr, arg unsafe.Pointer) {
-	n := newdefer()
-	n.frame = frame
-	n._panic = getg()._panic
-	n.pfn = pfn
-	n.arg = arg
-	n.retaddr = 0
-	n.makefunccanrecover = false
+	d := newdefer()
+	d.frame = frame
+	d.panicStack = getg()._panic
+	d.pfn = pfn
+	d.arg = arg
+	d.retaddr = 0
+	d.makefunccanrecover = false
 }
 
 // Allocate a Defer, usually using per-P pool.
@@ -194,7 +194,7 @@ func deferreturn(frame *bool) {
 			// The gc compiler does this using assembler
 			// code in jmpdefer.
 			var fn func(unsafe.Pointer)
-			*(**uintptr)(unsafe.Pointer(&fn)) = &pfn
+			*(*uintptr)(unsafe.Pointer(&fn)) = uintptr(unsafe.Pointer(&pfn))
 			fn(d.arg)
 		}
 
@@ -259,7 +259,7 @@ func checkdefer(frame *bool) {
 			gp._defer = d.link
 
 			var fn func(unsafe.Pointer)
-			*(**uintptr)(unsafe.Pointer(&fn)) = &pfn
+			*(*uintptr)(unsafe.Pointer(&fn)) = uintptr(unsafe.Pointer(&pfn))
 			fn(d.arg)
 
 			freedefer(d)
@@ -345,7 +345,7 @@ func Goexit() {
 
 		if pfn != 0 {
 			var fn func(unsafe.Pointer)
-			*(**uintptr)(unsafe.Pointer(&fn)) = &pfn
+			*(*uintptr)(unsafe.Pointer(&fn)) = uintptr(unsafe.Pointer(&pfn))
 			fn(d.arg)
 		}
 
@@ -446,7 +446,7 @@ func gopanic(e interface{}) {
 
 		if pfn != 0 {
 			var fn func(unsafe.Pointer)
-			*(**uintptr)(unsafe.Pointer(&fn)) = &pfn
+			*(*uintptr)(unsafe.Pointer(&fn)) = uintptr(unsafe.Pointer(&pfn))
 			fn(d.arg)
 
 			if p.recovered {
@@ -502,7 +502,7 @@ func currentDefer() *_defer {
 	// the panic stack. We do not want to recover it if that panic
 	// was on the top of the panic stack when this function was
 	// deferred.
-	if d._panic == gp._panic {
+	if d.panicStack == gp._panic {
 		return nil
 	}
 
@@ -731,7 +731,7 @@ func gorecover() interface{} {
 // function like recover.
 func deferredrecover() interface{} {
 	gp := getg()
-	if gp._defer == nil || gp._defer._panic != gp._panic {
+	if gp._defer == nil || gp._defer.panicStack != gp._panic {
 		return nil
 	}
 	return gorecover()

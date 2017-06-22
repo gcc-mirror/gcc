@@ -209,6 +209,7 @@ func readgogc() int32 {
 // It kicks off the background sweeper goroutine and enables GC.
 func gcenable() {
 	c := make(chan int, 1)
+	expectSystemGoroutine()
 	go bgsweep(c)
 	<-c
 	memstats.enablegc = true // now that runtime is initialized, GC is okay
@@ -1399,6 +1400,7 @@ func gcBgMarkStartWorkers() {
 			break
 		}
 		if p.gcBgMarkWorker == 0 {
+			expectSystemGoroutine()
 			go gcBgMarkWorker(p)
 			notetsleepg(&work.bgMarkReady, -1)
 			noteclear(&work.bgMarkReady)

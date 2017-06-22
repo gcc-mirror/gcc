@@ -106,6 +106,7 @@ var (
 func createfing() {
 	// start the finalizer goroutine exactly once
 	if fingCreate == 0 && atomic.Cas(&fingCreate, 0, 1) {
+		expectSystemGoroutine()
 		go runfinq()
 	}
 }

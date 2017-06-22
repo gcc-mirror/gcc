@@ -39,6 +39,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "internal-fn.h"
 #include "case-cfn-macros.h"
 #include "gimplify.h"
+#include "optabs-tree.h"
 
 
 /* Forward declarations of the private auto-generated matchers.

@@ -2766,11 +2766,19 @@ aarch64_emit_probe_stack_range (HOST_WIDE_INT first, HOST_WIDE_INT size)
 		     plus_constant (Pmode, stack_pointer_rtx, -first));
 
       /* LAST_ADDR = SP + FIRST + ROUNDED_SIZE.  */
-      emit_set_insn (reg2,
-		     plus_constant (Pmode, stack_pointer_rtx,
-				    -(first + rounded_size)));
-
-
+      HOST_WIDE_INT adjustment = - (first + rounded_size);
+      if (! aarch64_uimm12_shift (adjustment))
+	{
+	  aarch64_internal_mov_immediate (reg2, GEN_INT (adjustment),
+					  true, Pmode);
+	  emit_set_insn (reg2, gen_rtx_PLUS (Pmode, stack_pointer_rtx, reg2));
+	}
+      else
+	{
+	  emit_set_insn (reg2,
+			 plus_constant (Pmode, stack_pointer_rtx, adjustment));
+	}
+	  	
       /* Step 3: the loop
 
 	 do
