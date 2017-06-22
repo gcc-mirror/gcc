@@ -37,6 +37,9 @@ import (
 //go:linkname globrunqput runtime.globrunqput
 //go:linkname pidleget runtime.pidleget
 
+// Exported for test (see runtime/testdata/testprogcgo/dropm_stub.go).
+//go:linkname getm runtime.getm
+
 // Function called by misc/cgo/test.
 //go:linkname lockedOSThread runtime.lockedOSThread
 
