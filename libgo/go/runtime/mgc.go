@@ -1923,10 +1923,9 @@ func gchelperstart() {
 	if _g_.m.helpgc < 0 || _g_.m.helpgc >= _MaxGcproc {
 		throw("gchelperstart: bad m->helpgc")
 	}
-	// For gccgo we run gchelper on the normal g stack.
-	// if _g_ != _g_.m.g0 {
-	// 	throw("gchelper not running on g0 stack")
-	// }
+	if _g_ != _g_.m.g0 {
+		throw("gchelper not running on g0 stack")
+	}
 }
 
 // itoaDiv formats val/(10**dec) into buf.
