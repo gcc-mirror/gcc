@@ -4161,7 +4161,7 @@ do_class_using_decl (tree scope, tree name)
 
   scope_dependent_p = dependent_scope_p (scope);
   name_dependent_p = (scope_dependent_p
-		      || (IDENTIFIER_TYPENAME_P (name)
+		      || (IDENTIFIER_CONV_OP_P (name)
 			  && dependent_type_p (TREE_TYPE (name))));
 
   bases_dependent_p = any_dependent_bases_p ();
@@ -5066,7 +5066,7 @@ lookup_name_fuzzy (tree name, enum lookup_name_fuzzy_kind kind)
 
       /* Only consider reserved words that survived the
 	 filtering in init_reswords (e.g. for -std).  */
-      if (!C_IS_RESERVED_WORD (resword_identifier))
+      if (!IDENTIFIER_KEYWORD_P (resword_identifier))
 	continue;
 
       bm.consider (IDENTIFIER_POINTER (resword_identifier));
@@ -5228,7 +5228,7 @@ lookup_name_real_1 (tree name, int prefer_type, int nonclass, bool block_p,
   /* Conversion operators are handled specially because ordinary
      unqualified name lookup will not find template conversion
      operators.  */
-  if (IDENTIFIER_TYPENAME_P (name))
+  if (IDENTIFIER_CONV_OP_P (name))
     {
       cp_binding_level *level;
 

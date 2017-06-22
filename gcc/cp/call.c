@@ -8884,21 +8884,19 @@ name_as_c_string (tree name, tree type, bool *free_p)
   /* Assume that we will not allocate memory.  */
   *free_p = false;
   /* Constructors and destructors are special.  */
-  if (IDENTIFIER_CTOR_OR_DTOR_P (name))
+  if (IDENTIFIER_CDTOR_P (name))
     {
       pretty_name
 	= CONST_CAST (char *, identifier_to_locale (IDENTIFIER_POINTER (constructor_name (type))));
       /* For a destructor, add the '~'.  */
-      if (name == complete_dtor_identifier
-	  || name == base_dtor_identifier
-	  || name == deleting_dtor_identifier)
+      if (IDENTIFIER_DTOR_P (name))
 	{
 	  pretty_name = concat ("~", pretty_name, NULL);
 	  /* Remember that we need to free the memory allocated.  */
 	  *free_p = true;
 	}
     }
-  else if (IDENTIFIER_TYPENAME_P (name))
+  else if (IDENTIFIER_CONV_OP_P (name))
     {
       pretty_name = concat ("operator ",
 			    type_as_string_translate (TREE_TYPE (name),
@@ -9015,7 +9013,7 @@ build_new_method_call_1 (tree instance, tree fns, vec<tree, va_gc> **args,
      pointer if this is a call to a base-class constructor or
      destructor.  */
   skip_first_for_error = false;
-  if (IDENTIFIER_CTOR_OR_DTOR_P (name))
+  if (IDENTIFIER_CDTOR_P (name))
     {
       /* Callers should explicitly indicate whether they want to construct
 	 the complete object or just the part without virtual bases.  */
@@ -9143,7 +9141,7 @@ build_new_method_call_1 (tree instance, tree fns, vec<tree, va_gc> **args,
 	    {
 	      tree arglist = build_tree_list_vec (user_args);
 	      tree errname = name;
-	      if (IDENTIFIER_CTOR_OR_DTOR_P (errname))
+	      if (IDENTIFIER_CDTOR_P (errname))
 		{
 		  tree fn = DECL_ORIGIN (OVL_FIRST (fns));
 		  errname = DECL_NAME (fn);

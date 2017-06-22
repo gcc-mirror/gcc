@@ -806,7 +806,7 @@ cp_lexer_get_preprocessor_token (cp_lexer *lexer, cp_token *token)
   /* Check to see if this token is a keyword.  */
   if (token->type == CPP_NAME)
     {
-      if (C_IS_RESERVED_WORD (token->u.value))
+      if (IDENTIFIER_KEYWORD_P (token->u.value))
 	{
 	  /* Mark this token as a keyword.  */
 	  token->type = CPP_KEYWORD;
@@ -20089,7 +20089,8 @@ cp_parser_direct_declarator (cp_parser* parser,
 		  {
 		    if (TREE_CODE (unqualified_name) == BIT_NOT_EXPR)
 		      sfk = sfk_destructor;
-		    else if (IDENTIFIER_TYPENAME_P (unqualified_name))
+		    else if (identifier_p (unqualified_name)
+			     && IDENTIFIER_CONV_OP_P (unqualified_name))
 		      sfk = sfk_conversion;
 		    else if (/* There's no way to declare a constructor
 				for an unnamed type, even if the type
