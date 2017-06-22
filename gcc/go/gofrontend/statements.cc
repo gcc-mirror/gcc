@@ -2201,6 +2201,15 @@ Thunk_statement::simplify_statement(Gogo* gogo, Named_object* function,
 
   Location location = this->location();
 
+  bool is_constant_function = this->is_constant_function();
+  Temporary_statement* fn_temp = NULL;
+  if (!is_constant_function)
+    {
+      fn_temp = Statement::make_temporary(NULL, fn, location);
+      block->insert_statement_before(block->statements()->size() - 1, fn_temp);
+      fn = Expression::make_temporary_reference(fn_temp, location);
+    }
+
   std::string thunk_name = Gogo::thunk_name();
 
   // Build the thunk.
@@ -2212,7 +2221,7 @@ Thunk_statement::simplify_statement(Gogo* gogo, Named_object* function,
   // argument to the thunk.
 
   Expression_list* vals = new Expression_list();
-  if (!this->is_constant_function())
+  if (!is_constant_function)
     vals->push_back(fn);
 
   if (interface_method != NULL)
@@ -2238,6 +2247,23 @@ Thunk_statement::simplify_statement(Gogo* gogo, Named_object* function,
   // Allocate the initialized struct on the heap.
   constructor = Expression::make_heap_expression(constructor, location);
 
+  // Throw an error if the function is nil.  This is so that for `go
+  // nil` we get a backtrace from the go statement, rather than a
+  // useless backtrace from the brand new goroutine.
+  Expression* param = constructor;
+  if (!is_constant_function)
+    {
+      fn = Expression::make_temporary_reference(fn_temp, location);
+      Expression* nil = Expression::make_nil(location);
+      Expression* isnil = Expression::make_binary(OPERATOR_EQEQ, fn, nil,
+						  location);
+      Expression* crash = gogo->runtime_error(RUNTIME_ERROR_GO_NIL, location);
+      crash = Expression::make_conditional(isnil, crash,
+					   Expression::make_nil(location),
+					   location);
+      param = Expression::make_compound(crash, constructor, location);
+    }
+
   // Look up the thunk.
   Named_object* named_thunk = gogo->lookup(thunk_name, NULL);
   go_assert(named_thunk != NULL && named_thunk->is_function());
@@ -2246,7 +2272,7 @@ Thunk_statement::simplify_statement(Gogo* gogo, Named_object* function,
   Expression* func = Expression::make_func_reference(named_thunk, NULL,
 						     location);
   Expression_list* params = new Expression_list();
-  params->push_back(constructor);
+  params->push_back(param);
   Call_expression* call = Expression::make_call(func, params, false, location);
 
   // Build the simple go or defer statement.

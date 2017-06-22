@@ -3379,6 +3379,9 @@ static const int RUNTIME_ERROR_MAKE_CHAN_OUT_OF_BOUNDS = 9;
 // Division by zero.
 static const int RUNTIME_ERROR_DIVISION_BY_ZERO = 10;
 
+// Go statement with nil function.
+static const int RUNTIME_ERROR_GO_NIL = 11;
+
 // This is used by some of the langhooks.
 extern Gogo* go_get_gogo();
 
