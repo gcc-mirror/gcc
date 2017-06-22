@@ -32,6 +32,7 @@ func minit() {
 
 // Called from dropm to undo the effect of an minit.
 //go:nosplit
+//go:nowritebarrierrec
 func unminit() {
 	unminitSignals()
 }

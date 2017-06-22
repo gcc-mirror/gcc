@@ -599,6 +599,7 @@ func minitSignalMask() {
 // unminitSignals is called from dropm, via unminit, to undo the
 // effect of calling minit on a non-Go thread.
 //go:nosplit
+//go:nowritebarrierrec
 func unminitSignals() {
 	if getg().m.newSigstack {
 		signalstack(nil, 0)
