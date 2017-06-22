@@ -1,6 +1,15 @@
 2017-06-22  Martin Liska  <mliska@suse.cz>
 
 	Backport from mainline
+	2017-05-30  Martin Liska  <mliska@suse.cz>
+
+	PR other/80909
+	* auto-profile.c (get_function_decl_from_block): Fix
+	parenthesis.
+
+2017-06-22  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
 	2017-05-26  Martin Liska  <mliska@suse.cz>
 
 	PR ipa/80663
