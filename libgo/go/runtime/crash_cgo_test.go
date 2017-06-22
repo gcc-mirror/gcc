@@ -251,6 +251,9 @@ func TestCgoCrashTraceback(t *testing.T) {
 	if runtime.GOOS != "linux" || runtime.GOARCH != "amd64" {
 		t.Skipf("not yet supported on %s/%s", runtime.GOOS, runtime.GOARCH)
 	}
+	if runtime.Compiler == "gccgo" {
+		t.Skip("gccgo does not have SetCgoTraceback")
+	}
 	got := runTestProg(t, "testprogcgo", "CrashTraceback")
 	for i := 1; i <= 3; i++ {
 		if !strings.Contains(got, fmt.Sprintf("cgo symbolizer:%d", i)) {
@@ -261,6 +264,9 @@ func TestCgoCrashTraceback(t *testing.T) {
 
 func TestCgoTracebackContext(t *testing.T) {
 	t.Parallel()
+	if runtime.Compiler == "gccgo" {
+		t.Skip("gccgo does not have SetCgoTraceback")
+	}
 	got := runTestProg(t, "testprogcgo", "TracebackContext")
 	want := "OK\n"
 	if got != want {
@@ -272,6 +278,9 @@ func testCgoPprof(t *testing.T, buildArg, runArg string) {
 	t.Parallel()
 	if runtime.GOOS != "linux" || runtime.GOARCH != "amd64" {
 		t.Skipf("not yet supported on %s/%s", runtime.GOOS, runtime.GOARCH)
+	}
+	if runtime.Compiler == "gccgo" {
+		t.Skip("gccgo does not have SetCgoTraceback")
 	}
 	testenv.MustHaveGoRun(t)
 
@@ -331,6 +340,9 @@ func TestCgoPprofThreadNoTraceback(t *testing.T) {
 func TestRaceProf(t *testing.T) {
 	if runtime.GOOS != "linux" || runtime.GOARCH != "amd64" {
 		t.Skipf("not yet supported on %s/%s", runtime.GOOS, runtime.GOARCH)
+	}
+	if runtime.Compiler == "gccgo" {
+		t.Skip("gccgo does not have SetCgoTraceback")
 	}
 
 	testenv.MustHaveGoRun(t)
