@@ -7,6 +7,9 @@
 package main
 
 /*
+#cgo CFLAGS: -pthread
+#cgo LDFLAGS: -pthread
+
 #include <pthread.h>
 
 void go_callback();
