@@ -105,7 +105,7 @@ func TestCrashDumpsAllThreads(t *testing.T) {
 	// Before https://golang.org/cl/2811 running threads would say
 	// "goroutine running on other thread; stack unavailable".
 	out = outbuf.Bytes()
-	n := bytes.Count(out, []byte("main.loop("))
+	n := bytes.Count(out, []byte("main.loop"))
 	if n != 4 {
 		t.Errorf("found %d instances of main.loop; expected 4", n)
 		t.Logf("%s", out)

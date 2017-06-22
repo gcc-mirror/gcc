@@ -225,6 +225,9 @@ func TestGoexitDeadlock(t *testing.T) {
 }
 
 func TestStackOverflow(t *testing.T) {
+	if runtime.Compiler == "gccgo" {
+		t.Skip("gccgo does not do stack overflow checking")
+	}
 	output := runTestProg(t, "testprog", "StackOverflow")
 	want := "runtime: goroutine stack exceeds 1474560-byte limit\nfatal error: stack overflow"
 	if !strings.HasPrefix(output, want) {
@@ -302,7 +305,7 @@ func TestNoHelperGoroutines(t *testing.T) {
 
 func TestBreakpoint(t *testing.T) {
 	output := runTestProg(t, "testprog", "Breakpoint")
-	want := "runtime.Breakpoint()"
+	want := "runtime.Breakpoint"
 	if !strings.Contains(output, want) {
 		t.Fatalf("output:\n%s\n\nwant output containing: %s", output, want)
 	}
@@ -419,8 +422,16 @@ func TestPanicTraceback(t *testing.T) {
 
 	// Check functions in the traceback.
 	fns := []string{"main.pt1.func1", "panic", "main.pt2.func1", "panic", "main.pt2", "main.pt1"}
+	if runtime.Compiler == "gccgo" {
+		fns = []string{"main.$nested", "panic", "main.$nested", "panic", "main.pt2", "main.pt1"}
+	}
 	for _, fn := range fns {
-		re := regexp.MustCompile(`(?m)^` + regexp.QuoteMeta(fn) + `\(.*\n`)
+		var re *regexp.Regexp
+		if runtime.Compiler != "gccgo" {
+			re = regexp.MustCompile(`(?m)^` + regexp.QuoteMeta(fn) + `\(.*\n`)
+		} else {
+			re = regexp.MustCompile(`(?m)^` + regexp.QuoteMeta(fn) + `.*\n`)
+		}
 		idx := re.FindStringIndex(output)
 		if idx == nil {
 			t.Fatalf("expected %q function in traceback:\n%s", fn, output)
@@ -454,6 +465,9 @@ func TestPanicLoop(t *testing.T) {
 
 func TestMemPprof(t *testing.T) {
 	testenv.MustHaveGoRun(t)
+	if runtime.Compiler == "gccgo" {
+		t.Skip("gccgo may not have the pprof tool")
+	}
 
 	exe, err := buildTestProg(t, "testprog")
 	if err != nil {
