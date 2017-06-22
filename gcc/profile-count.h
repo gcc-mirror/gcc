@@ -255,7 +255,7 @@ public:
   profile_count apply_probability (int prob) const
     {
       gcc_checking_assert (prob >= 0 && prob <= REG_BR_PROB_BASE);
-      if (*this == profile_count::zero ())
+      if (m_val == 0)
 	return *this;
       if (!initialized_p ())
 	return profile_count::uninitialized ();
@@ -267,24 +267,25 @@ public:
   /* Return *THIS * NUM / DEN.  */
   profile_count apply_scale (int64_t num, int64_t den) const
     {
-      if (*this == profile_count::zero ())
+      if (m_val == 0)
 	return *this;
       if (!initialized_p ())
 	return profile_count::uninitialized ();
       profile_count ret;
+      gcc_checking_assert (num >= 0 && den > 0);
       /* FIXME: shrink wrapping violates this sanity check.  */
-      gcc_checking_assert ((num >= 0
-			    && (num <= REG_BR_PROB_BASE
-			        || den <= REG_BR_PROB_BASE)
-			    && den > 0) || 1);
+      gcc_checking_assert ((num <= REG_BR_PROB_BASE
+			    || den <= REG_BR_PROB_BASE) || 1);
       ret.m_val = RDIV (m_val * num, den);
       ret.m_quality = MIN (m_quality, count_adjusted);
       return ret;
     }
   profile_count apply_scale (profile_count num, profile_count den) const
     {
-      if (*this == profile_count::zero () || num == profile_count::zero ())
-	return profile_count::zero ();
+      if (m_val == 0)
+	return *this;
+      if (num.m_val == 0)
+	return num;
       if (!initialized_p () || !num.initialized_p () || !den.initialized_p ())
 	return profile_count::uninitialized ();
       gcc_checking_assert (den > 0);
@@ -306,7 +307,7 @@ public:
      OVERALL.  */
   int probability_in (profile_count overall)
     {
-      if (*this == profile_count::zero ())
+      if (!m_val)
 	return 0;
       if (!initialized_p () || !overall.initialized_p ())
 	return REG_BR_PROB_BASE / 2;
