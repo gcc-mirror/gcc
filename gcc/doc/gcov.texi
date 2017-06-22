@@ -324,7 +324,7 @@ containing no code.  Unexecuted lines are marked @samp{#####} or
 @samp{====}, depending on whether they are reachable by
 non-exceptional paths or only exceptional paths such as C++ exception
 handlers, respectively. Given @samp{-a} option, unexecuted blocks are
-marked @samp{$$$$$} or @samp{%%%%%}, depending whether a basic block
+marked @samp{$$$$$} or @samp{%%%%%}, depending on whether a basic block
 is reachable via non-exceptional or exceptional paths.
 
 Some lines of information at the start have @var{line_number} of zero.
