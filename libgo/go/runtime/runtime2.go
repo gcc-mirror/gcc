@@ -698,7 +698,7 @@ type _defer struct {
 	// deferred.  This function can not recover this value from
 	// the panic stack.  This can happen if a deferred function
 	// has a defer statement itself.
-	_panic *_panic
+	panicStack *_panic
 
 	// The function to call.
 	pfn uintptr
