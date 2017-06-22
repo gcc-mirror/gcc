@@ -1226,7 +1226,7 @@ warn_types_mismatch (tree t1, tree t2, location_t loc1, location_t loc2)
   if (types_odr_comparable (t1, t2, true)
       && types_same_for_odr (t1, t2, true))
     inform (loc_t1,
-	    "type %qT itself violate the C++ One Definition Rule", t1);
+	    "type %qT itself violates the C++ One Definition Rule", t1);
   /* Prevent pointless warnings like "struct aa" should match "struct aa".  */
   else if (TYPE_NAME (t1) == TYPE_NAME (t2)
 	   && TREE_CODE (t1) == TREE_CODE (t2) && !loc_t2_useful)
@@ -1573,7 +1573,7 @@ odr_types_equivalent_p (tree t1, tree t2, bool warn, bool *warned,
 		    if (DECL_ARTIFICIAL (f1))
 		      break;
 		    warn_odr (t1, t2, f1, f2, warn, warned,
-			      G_("fields has different layout "
+			      G_("fields have different layout "
 				 "in another translation unit"));
 		    return false;
 		  }

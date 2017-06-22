@@ -1,6 +1,16 @@
 2017-06-22  Martin Liska  <mliska@suse.cz>
 
 	Backport from mainline
+	2017-05-16  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/79849.
+	PR ipa/79850.
+	* ipa-devirt.c (warn_types_mismatch): Fix typo.
+	(odr_types_equivalent_p): Likewise.
+
+2017-06-22  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
 	2017-05-15  Martin Liska  <mliska@suse.cz>
 
 	PR driver/31468
