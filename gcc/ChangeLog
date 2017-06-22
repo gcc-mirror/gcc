@@ -1,3 +1,13 @@
+2017-06-22  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
+	2017-04-28  Martin Liska  <mliska@suse.cz>
+
+	PR driver/56469
+	* coverage.c (coverage_remove_note_file): New function.
+	* coverage.h: Declare the function.
+	* toplev.c (finalize): Clean if an error has been seen.
+
 2017-06-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/81151
