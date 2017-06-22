@@ -1,6 +1,15 @@
 2017-06-22  Martin Liska  <mliska@suse.cz>
 
 	Backport from mainline
+	2017-05-02  Martin Liska  <mliska@suse.cz>
+
+	PR other/80589
+	* common.opt: Fix typo.
+	* doc/invoke.texi: Likewise.
+
+2017-06-22  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
 	2017-04-28  Martin Liska  <mliska@suse.cz>
 
 	* doc/gcov.texi: Enhance documentation of gcov.
