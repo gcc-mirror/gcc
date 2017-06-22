@@ -172,7 +172,7 @@
 
 
 /* Return highest supported input value for cpuid instruction.  ext can
-   be either 0x0 or 0x8000000 to return highest supported value for
+   be either 0x0 or 0x80000000 to return highest supported value for
    basic or extended cpuid information.  Function returns 0 if cpuid
    is not supported or whatever cpuid returns in eax register.  If sig
    pointer is non-null, then first four bytes of the signature
