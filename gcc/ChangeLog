@@ -1,3 +1,8 @@
+2017-06-22  Jeff Law  <law@redhat.com>
+
+	* config/aarch64/aarch64.c (aarch64_emit_probe_stack_range): Handle
+	frame sizes that do not satisfy aarch64_uimm12_shift.
+
 2017-06-22  Jan Hubicka <hubicka@ucw.cz>
 
 	* profile-count.h (apply_probability,
