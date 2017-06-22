@@ -1459,7 +1459,7 @@ odr_types_equivalent_p (tree t1, tree t2, bool warn, bool *warned,
 		    if (DECL_ARTIFICIAL (f1))
 		      break;
 		    warn_odr (t1, t2, f1, f2, warn, warned,
-			      G_("fields has different layout "
+			      G_("fields have different layout "
 				 "in another translation unit"));
 		    return false;
 		  }
