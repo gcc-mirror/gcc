@@ -1447,6 +1447,9 @@ func oneNewExtraM() {
 // in which dropm happens on each cgo call, is still correct too.
 // We may have to keep the current version on systems with cgo
 // but without pthreads, like Windows.
+//
+// CgocallBackDone calls this after releasing p, so no write barriers.
+//go:nowritebarrierrec
 func dropm() {
 	// Clear m and g, and return m to the extra list.
 	// After the call to setg we can only call nosplit functions
@@ -1492,6 +1495,7 @@ var extraMWaiters uint32
 // return a nil list head if that's what it finds. If nilokay is false,
 // lockextra will keep waiting until the list head is no longer nil.
 //go:nosplit
+//go:nowritebarrierrec
 func lockextra(nilokay bool) *m {
 	const locked = 1
 
@@ -1524,6 +1528,7 @@ func lockextra(nilokay bool) *m {
 }
 
 //go:nosplit
+//go:nowritebarrierrec
 func unlockextra(mp *m) {
 	atomic.Storeuintptr(&extram, uintptr(unsafe.Pointer(mp)))
 }
