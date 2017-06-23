@@ -5523,4 +5523,13 @@ desired_pro_or_demotion_p (const_tree to_type, const_tree from_type)
   return to_type_precision <= TYPE_PRECISION (from_type);
 }
 
+/* Pointer type used to declare builtins before we have seen its real
+   declaration.  */
+struct builtin_structptr_type
+{
+  tree& node;
+  tree& base;
+  const char *str;
+};
+extern const builtin_structptr_type builtin_structptr_types[2];
 #endif  /* GCC_TREE_H  */

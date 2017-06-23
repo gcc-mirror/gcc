@@ -1,3 +1,7 @@
+2017-06-23  Marc Glisse  <marc.glisse@inria.fr>
+
+	* lto-lang.c (lto_init): Use builtin_structptr_types.
+
 2017-06-15  Jan Hubicka  <hubicka@ucw.cz>
 	    Thomas Preud'homme  <thomas.preudhomme@arm.com>
 

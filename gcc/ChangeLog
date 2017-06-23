@@ -1,3 +1,10 @@
+2017-06-23  Marc Glisse  <marc.glisse@inria.fr>
+
+	* tree.h (builtin_structptr_type): New type.
+	(builtin_structptr_types): Declare new array.
+	* tree.c (builtin_structptr_types): New array.
+	(free_lang_data, build_common_tree_nodes): Use it.
+
 2017-06-23  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR c++/81187

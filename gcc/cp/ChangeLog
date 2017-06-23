@@ -1,3 +1,7 @@
+2017-06-23  Marc Glisse  <marc.glisse@inria.fr>
+
+	* decl.c (duplicate_decls): Use builtin_structptr_types.
+
 2017-06-22  Nathan Sidwell  <nathan@acm.org>
 
 	Reorder IDENTIFIER flags
