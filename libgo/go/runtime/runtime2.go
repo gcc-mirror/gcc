@@ -700,6 +700,10 @@ type _defer struct {
 	// has a defer statement itself.
 	panicStack *_panic
 
+	// The panic that caused the defer to run. This is used to
+	// discard panics that have already been handled.
+	_panic *_panic
+
 	// The function to call.
 	pfn uintptr
 
@@ -733,6 +737,10 @@ type _panic struct {
 	// Whether this panic was pushed on the stack because of an
 	// exception thrown in some other language.
 	isforeign bool
+
+	// Whether this panic was already seen by a deferred function
+	// which called panic again.
+	aborted bool
 }
 
 const (
