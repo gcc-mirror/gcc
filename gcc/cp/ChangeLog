@@ -1,3 +1,12 @@
+2017-06-23  Jason Merrill  <jason@redhat.com>
+
+	PR c++/79056 - C++17 ICE with invalid template syntax.
+	* parser.c (cp_parser_simple_type_specifier): Don't assume that type
+	is a TYPE_DECL.
+	(cp_parser_check_for_invalid_template_id): Handle TYPE_DECL.
+	* pt.c (template_placeholder_p): New.
+	* cp-tree.h: Declare it.
+
 2017-06-23  Marc Glisse  <marc.glisse@inria.fr>
 
 	* decl.c (duplicate_decls): Use builtin_structptr_types.
