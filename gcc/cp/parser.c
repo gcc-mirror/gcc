@@ -2983,7 +2983,9 @@ cp_parser_check_for_invalid_template_id (cp_parser* parser,
 
   if (cp_lexer_next_token_is (parser->lexer, CPP_LESS))
     {
-      if (TYPE_P (type))
+      if (TREE_CODE (type) == TYPE_DECL)
+	type = TREE_TYPE (type);
+      if (TYPE_P (type) && !template_placeholder_p (type))
 	error_at (location, "%qT is not a template", type);
       else if (identifier_p (type))
 	{
@@ -17060,7 +17062,7 @@ cp_parser_simple_type_specifier (cp_parser* parser,
       /* There is no valid C++ program where a non-template type is
 	 followed by a "<".  That usually indicates that the user
 	 thought that the type was a template.  */
-      cp_parser_check_for_invalid_template_id (parser, TREE_TYPE (type),
+      cp_parser_check_for_invalid_template_id (parser, type,
 					       none_type,
 					       token->location);
     }
