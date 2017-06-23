@@ -156,6 +156,13 @@ Write_barriers::variable(Named_object* no)
   if (!var->has_pre_init() && init->is_static_initializer())
     return TRAVERSE_CONTINUE;
 
+  // Nothing to do for a type that can not be in the heap, or a
+  // pointer to a type that can not be in the heap.
+  if (!var->type()->in_heap())
+    return TRAVERSE_CONTINUE;
+  if (var->type()->points_to() != NULL && !var->type()->points_to()->in_heap())
+    return TRAVERSE_CONTINUE;
+
   // Otherwise change the initializer into a pre_init assignment
   // statement with a write barrier.
 
@@ -213,6 +220,14 @@ Write_barriers::statement(Block* block, size_t* pindex, Statement* s)
 
 	// Nothing to do if the variable does not contain any pointers.
 	if (!var->type()->has_pointer())
+	  break;
+
+	// Nothing to do for a type that can not be in the heap, or a
+	// pointer to a type that can not be in the heap.
+	if (!var->type()->in_heap())
+	  break;
+	if (var->type()->points_to() != NULL
+	    && !var->type()->points_to()->in_heap())
 	  break;
 
 	// Otherwise initialize the variable with a write barrier.
@@ -344,6 +359,13 @@ Gogo::assign_needs_write_barrier(Expression* lhs)
 	    return false;
 	}
     }
+
+  // Nothing to do for a type that can not be in the heap, or a
+  // pointer to a type that can not be in the heap.
+  if (!lhs->type()->in_heap())
+    return false;
+  if (lhs->type()->points_to() != NULL && !lhs->type()->points_to()->in_heap())
+    return false;
 
   // Write barrier needed in other cases.
   return true;

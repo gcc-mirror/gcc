@@ -746,6 +746,20 @@ Type::are_convertible(const Type* lhs, const Type* rhs, std::string* reason)
   if (Type::are_assignable(lhs, rhs, reason))
     return true;
 
+  // A pointer to a regular type may not be converted to a pointer to
+  // a type that may not live in the heap, except when converting to
+  // unsafe.Pointer.
+  if (lhs->points_to() != NULL
+      && rhs->points_to() != NULL
+      && !rhs->points_to()->in_heap()
+      && lhs->points_to()->in_heap()
+      && !lhs->is_unsafe_pointer_type())
+    {
+      if (reason != NULL)
+	reason->assign(_("conversion from notinheap type to normal type"));
+      return false;
+    }
+
   // The types are convertible if they have identical underlying
   // types, ignoring struct field tags.
   if ((lhs->named_type() != NULL || rhs->named_type() != NULL)
@@ -5955,6 +5969,24 @@ Struct_type::do_needs_key_update()
   return false;
 }
 
+// Return whether this struct type is permitted to be in the heap.
+
+bool
+Struct_type::do_in_heap()
+{
+  const Struct_field_list* fields = this->fields_;
+  if (fields == NULL)
+    return true;
+  for (Struct_field_list::const_iterator pf = fields->begin();
+       pf != fields->end();
+       ++pf)
+    {
+      if (!pf->type()->in_heap())
+	return false;
+    }
+  return true;
+}
+
 // Build identity and hash functions for this struct.
 
 // Hash code.
@@ -8026,6 +8058,10 @@ Map_type::do_verify()
   // The runtime support uses "map[void]void".
   if (!this->key_type_->is_comparable() && !this->key_type_->is_void_type())
     go_error_at(this->location_, "invalid map key type");
+  if (!this->key_type_->in_heap())
+    go_error_at(this->location_, "go:notinheap map key not allowed");
+  if (!this->val_type_->in_heap())
+    go_error_at(this->location_, "go:notinheap map value not allowed");
   return true;
 }
 
@@ -8539,6 +8575,19 @@ Type::make_map_type(Type* key_type, Type* val_type, Location location)
 }
 
 // Class Channel_type.
+
+// Verify.
+
+bool
+Channel_type::do_verify()
+{
+  // We have no location for this error, but this is not something the
+  // ordinary user will see.
+  if (!this->element_type_->in_heap())
+    go_error_at(Linemap::unknown_location(),
+		"chan of go:notinheap type not allowed");
+  return true;
+}
 
 // Hash code.
 
