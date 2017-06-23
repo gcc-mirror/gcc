@@ -1097,7 +1097,25 @@ func kickoff() {
 	fv := gp.entry
 	param := gp.param
 	gp.entry = nil
+
+	// When running on the g0 stack we can wind up here without a p,
+	// for example from mcall(exitsyscall0) in exitsyscall.
+	// Setting gp.param = nil will call a write barrier, and if
+	// there is no p that write barrier will crash. When called from
+	// mcall the gp.param value will be a *g, which we don't need to
+	// shade since we know it will be kept alive elsewhere. In that
+	// case clear the field using uintptr so that the write barrier
+	// does nothing.
+	if gp.m.p == 0 {
+		if gp == gp.m.g0 && gp.param == unsafe.Pointer(gp.m.curg) {
+			*(*uintptr)(unsafe.Pointer(&gp.param)) = 0
+		} else {
+			throw("no p in kickoff")
+		}
+	}
+
 	gp.param = nil
+
 	fv(param)
 	goexit1()
 }
