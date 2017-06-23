@@ -1,3 +1,7 @@
+2017-06-22  Jeff Law  <law@redhat.com>
+
+	* gcc.c-torture/compile/stack-check-1.c: Require "untyped_assembly".
+
 2017-06-23  Will Schmidt  <will_schmidt@vnet.ibm.com>
 
 	* gcc.target/powerpc/fold-vec-shift-char.c: New.
