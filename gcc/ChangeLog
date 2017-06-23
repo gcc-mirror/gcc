@@ -1,3 +1,11 @@
+2017-06-23  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	* config/rs6000/rs6000.c: Add include of ssa-propagate.h for
+	update_call_from_tree().  (rs6000_gimple_fold_builtin): Add
+	handling for early expansion of vector shifts (sl,sr,sra,rl).
+	(builtin_function_type): Add vector shift right instructions
+	to the unsigned argument list.
+
 2017-06-23  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	rtl-optimizatoin/79286

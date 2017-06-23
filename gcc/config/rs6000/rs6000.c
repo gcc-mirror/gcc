@@ -77,6 +77,7 @@
 #endif
 #include "case-cfn-macros.h"
 #include "ppc-auxv.h"
+#include "tree-ssa-propagate.h"
 
 /* This file should be included last.  */
 #include "target-def.h"
@@ -16571,6 +16572,76 @@ rs6000_gimple_fold_builtin (gimple_stmt_iterator *gsi)
 	gsi_replace (gsi, g, true);
 	return true;
       }
+    /* Flavors of vec_rotate_left.  */
+    case ALTIVEC_BUILTIN_VRLB:
+    case ALTIVEC_BUILTIN_VRLH:
+    case ALTIVEC_BUILTIN_VRLW:
+    case P8V_BUILTIN_VRLD:
+      {
+	arg0 = gimple_call_arg (stmt, 0);
+	arg1 = gimple_call_arg (stmt, 1);
+	lhs = gimple_call_lhs (stmt);
+	gimple *g = gimple_build_assign (lhs, LROTATE_EXPR, arg0, arg1);
+	gimple_set_location (g, gimple_location (stmt));
+	gsi_replace (gsi, g, true);
+	return true;
+      }
+  /* Flavors of vector shift right algebraic.
+     vec_sra{b,h,w} -> vsra{b,h,w}.  */
+    case ALTIVEC_BUILTIN_VSRAB:
+    case ALTIVEC_BUILTIN_VSRAH:
+    case ALTIVEC_BUILTIN_VSRAW:
+    case P8V_BUILTIN_VSRAD:
+      {
+	arg0 = gimple_call_arg (stmt, 0);
+	arg1 = gimple_call_arg (stmt, 1);
+	lhs = gimple_call_lhs (stmt);
+	gimple *g = gimple_build_assign (lhs, RSHIFT_EXPR, arg0, arg1);
+	gimple_set_location (g, gimple_location (stmt));
+	gsi_replace (gsi, g, true);
+	return true;
+      }
+   /* Flavors of vector shift left.
+      builtin_altivec_vsl{b,h,w} -> vsl{b,h,w}.  */
+    case ALTIVEC_BUILTIN_VSLB:
+    case ALTIVEC_BUILTIN_VSLH:
+    case ALTIVEC_BUILTIN_VSLW:
+    case P8V_BUILTIN_VSLD:
+      {
+	arg0 = gimple_call_arg (stmt, 0);
+	if (INTEGRAL_TYPE_P (TREE_TYPE (TREE_TYPE (arg0)))
+	    && !TYPE_OVERFLOW_WRAPS (TREE_TYPE (TREE_TYPE (arg0))))
+	      return false;
+	arg1 = gimple_call_arg (stmt, 1);
+	lhs = gimple_call_lhs (stmt);
+	gimple *g = gimple_build_assign (lhs, LSHIFT_EXPR, arg0, arg1);
+	gimple_set_location (g, gimple_location (stmt));
+	gsi_replace (gsi, g, true);
+	return true;
+      }
+    /* Flavors of vector shift right.  */
+    case ALTIVEC_BUILTIN_VSRB:
+    case ALTIVEC_BUILTIN_VSRH:
+    case ALTIVEC_BUILTIN_VSRW:
+    case P8V_BUILTIN_VSRD:
+      {
+	arg0 = gimple_call_arg (stmt, 0);
+	arg1 = gimple_call_arg (stmt, 1);
+	lhs = gimple_call_lhs (stmt);
+	gimple_seq stmts = NULL;
+	/* Convert arg0 to unsigned.  */
+	tree arg0_unsigned
+	   = gimple_build (&stmts, VIEW_CONVERT_EXPR,
+			   unsigned_type_for (TREE_TYPE (arg0)), arg0);
+	tree res
+	   = gimple_build (&stmts, RSHIFT_EXPR,
+			   TREE_TYPE (arg0_unsigned), arg0_unsigned, arg1);
+	/* Convert result back to the lhs type.  */
+	res = gimple_build (&stmts, VIEW_CONVERT_EXPR, TREE_TYPE (lhs), res);
+	gsi_insert_seq_before (gsi, stmts, GSI_SAME_STMT);
+	update_call_from_tree (gsi, res);
+	return true;
+      }
     default:
       break;
     }
@@ -18069,6 +18140,14 @@ builtin_function_type (machine_mode mode_ret, machine_mode mode_arg0,
     case MISC_BUILTIN_PACK_TD:
     case MISC_BUILTIN_PACK_V1TI:
       h.uns_p[1] = 1;
+      h.uns_p[2] = 1;
+      break;
+
+	/* unsigned second arguments (vector shift right).  */
+    case ALTIVEC_BUILTIN_VSRB:
+    case ALTIVEC_BUILTIN_VSRH:
+    case ALTIVEC_BUILTIN_VSRW:
+    case P8V_BUILTIN_VSRD:
       h.uns_p[2] = 1;
       break;
 
