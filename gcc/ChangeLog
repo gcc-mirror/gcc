@@ -1,3 +1,8 @@
+2017-06-23  Jim Wilson  <jim.wilson@linaro.org>
+
+	* doc/invoke.texi (AArch64 Options, -mtune): Re-add falkor and
+	qdf24xx.
+
 2017-06-23  Aaron Sawdey  <acsawdey@linux.vnet.ibm.com>
 
 	* config/rs6000/rs6000-string.c: (expand_block_clear,
