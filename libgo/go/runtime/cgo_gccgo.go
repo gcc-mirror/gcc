@@ -95,9 +95,34 @@ func CgocallBack() {
 // CgocallBackDone prepares to return to C/C++ code that has called
 // into Go code.
 func CgocallBackDone() {
+	// If we are the top level Go function called from C/C++, then
+	// we need to release the m. But don't release it if we are
+	// panicing; since this is the top level, we are going to
+	// crash the program, and we need the g and m to print the
+	// panic values.
+	//
+	// Dropping the m is going to clear g. This function is being
+	// called as a deferred function, so we will return to
+	// deferreturn which will want to clear the _defer field.
+	// As soon as we call dropm another thread may call needm and
+	// start using g, so we must not tamper with the _defer field
+	// after dropm. So clear _defer now.
+	gp := getg()
+	mp := gp.m
+	drop := false
+	if mp.dropextram && mp.ncgo == 0 && gp._panic == nil {
+		d := gp._defer
+		if d == nil || d.link != nil {
+			throw("unexpected g._defer in CgocallBackDone")
+		}
+		gp._defer = nil
+		freedefer(d)
+		drop = true
+	}
+
 	entersyscall(0)
-	mp := getg().m
-	if mp.dropextram && mp.ncgo == 0 {
+
+	if drop {
 		mp.dropextram = false
 		dropm()
 	}

@@ -143,14 +143,6 @@ func newdefer() *_defer {
 //
 //go:nosplit
 func freedefer(d *_defer) {
-	// When C code calls a Go function on a non-Go thread, the
-	// deferred call to cgocallBackDone will set g to nil.
-	// Don't crash trying to put d on the free list; just let it
-	// be garbage collected.
-	if getg() == nil {
-		return
-	}
-
 	pp := getg().m.p.ptr()
 	if len(pp.deferpool) == cap(pp.deferpool) {
 		// Transfer half of local cache to the central cache.
@@ -199,6 +191,15 @@ func deferreturn(frame *bool) {
 			var fn func(unsafe.Pointer)
 			*(*uintptr)(unsafe.Pointer(&fn)) = uintptr(unsafe.Pointer(&pfn))
 			fn(d.arg)
+		}
+
+		// If we are returning from a Go function called by a
+		// C function running in a C thread, g may now be nil,
+		// in which case CgocallBackDone will have cleared _defer.
+		// In that case some other goroutine may already be using gp.
+		if getg() == nil {
+			*frame = true
+			return
 		}
 
 		gp._defer = d.link
