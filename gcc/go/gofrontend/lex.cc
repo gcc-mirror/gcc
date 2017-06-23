@@ -1897,6 +1897,11 @@ Lex::skip_cpp_comment()
       // Applies to the next function.  Do not inline the function.
       this->pragmas_ |= GOPRAGMA_NOINLINE;
     }
+  else if (verb == "go:notinheap")
+    {
+      // Applies to the next type.  The type does not live in the heap.
+      this->pragmas_ |= GOPRAGMA_NOTINHEAP;
+    }
   else if (verb == "go:systemstack")
     {
       // Applies to the next function.  It must run on the system stack.
