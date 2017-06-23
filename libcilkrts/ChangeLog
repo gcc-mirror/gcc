@@ -1,3 +1,9 @@
+2017-06-23  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* runtime/config/sparc/os-unix-sysdep.c (__cilkrts_getticks): Adjust
+	preprocessor test for SPARC/Linux.
+	* runtime/jmpbuf.h (CILK_[UN]ADJUST_SP): Likewise.
+
 2017-01-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR other/79046
