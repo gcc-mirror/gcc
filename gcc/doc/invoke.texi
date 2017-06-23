@@ -2908,7 +2908,7 @@ to a function that does not have a non-throwing exception
 specification (i.e. @code{throw()} or @code{noexcept}) but is known by
 the compiler to never throw an exception.
 
-@item -Wnoexcept @r{(C++ and Objective-C++ only)}
+@item -Wnoexcept-type @r{(C++ and Objective-C++ only)}
 @opindex Wnoexcept-type
 @opindex Wno-noexcept-type
 Warn if the C++1z feature making @code{noexcept} part of a function

@@ -1,3 +1,9 @@
+2017-06-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR c++/81187
+	* doc/invoke.texi (-Wnoexcept-type): Fix name of option, from
+	-Wnoexcept.
+
 2017-06-22  Matt Turner  <mattst88@gmail.com>
 
 	* config/i386/driver-i386.c (host_detect_local_cpu): Add Kaby
