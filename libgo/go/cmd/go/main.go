@@ -155,8 +155,13 @@ func main() {
 	}
 
 	if fi, err := os.Stat(goroot); err != nil || !fi.IsDir() {
-		fmt.Fprintf(os.Stderr, "go: cannot find GOROOT directory: %v\n", goroot)
-		os.Exit(2)
+		// For gccgo this is fine, carry on.
+		// Note that this check is imperfect as we have not yet
+		// parsed the -compiler flag.
+		if runtime.Compiler != "gccgo" {
+			fmt.Fprintf(os.Stderr, "go: cannot find GOROOT directory: %v\n", goroot)
+			os.Exit(2)
+		}
 	}
 
 	// Set environment (GOOS, GOARCH, etc) explicitly.
