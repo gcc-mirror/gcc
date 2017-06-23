@@ -1,3 +1,19 @@
+2017-06-23  Aaron Sawdey  <acsawdey@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000-string.c: (expand_block_clear,
+	do_load_for_compare, select_block_compare_mode,
+	compute_current_alignment, expand_block_compare,
+	expand_strncmp_align_check, expand_strn_compare,
+	expand_block_move, rs6000_output_load_multiple)
+	Move functions related to string/block move/compare
+	to a separate file.
+	* config/rs6000/rs6000.c: Move above functions to rs6000-string.c.
+	* config/rs6000/rs6000-protos.h (rs6000_emit_dot_insn): Add prototype
+	for this function which is now used in two files.
+	* config/rs6000/t-rs6000: Add rule to compile rs6000-string.o.
+	* config.gcc: Add rs6000-string.o to extra_objs for
+	targets powerpc*-*-* and rs6000*-*-*.
+
 2017-06-23  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	PR target/80510
