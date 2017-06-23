@@ -1,3 +1,10 @@
+2017-06-23  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR ipa/81185
+	* multiple_target.c (create_dispatcher_calls): Only create the
+	dispatcher call if the function is the default clone of a
+	versioned function.
+
 2017-06-23  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR middle-end/80902
