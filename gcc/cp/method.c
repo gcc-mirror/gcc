@@ -2060,10 +2060,7 @@ implicitly_declare_fn (special_function_kind kind, tree type,
   else if (kind == sfk_destructor)
     DECL_DESTRUCTOR_P (fn) = 1;
   else
-    {
-      DECL_ASSIGNMENT_OPERATOR_P (fn) = 1;
-      SET_OVERLOADED_OPERATOR_CODE (fn, NOP_EXPR);
-    }
+    SET_OVERLOADED_OPERATOR_CODE (fn, NOP_EXPR);
 
   SET_DECL_ALIGN (fn, MINIMUM_METHOD_BOUNDARY);
 

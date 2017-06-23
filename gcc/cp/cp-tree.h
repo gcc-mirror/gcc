@@ -1848,6 +1848,7 @@ struct GTY(()) language_function {
   (operator_name_info[(int) (CODE)].identifier)
 #define cp_assignment_operator_id(CODE) \
   (assignment_operator_name_info[(int) (CODE)].identifier)
+
 /* In parser.c.  */
 extern tree cp_literal_operator_id (const char *);
 
@@ -2769,14 +2770,12 @@ struct GTY(()) lang_decl {
 /* Nonzero if NODE (a FUNCTION_DECL) is a constructor for a complete
    object.  */
 #define DECL_COMPLETE_CONSTRUCTOR_P(NODE)		\
-  (DECL_CONSTRUCTOR_P (NODE)				\
-   && DECL_NAME (NODE) == complete_ctor_identifier)
+  (DECL_NAME (NODE) == complete_ctor_identifier)
 
 /* Nonzero if NODE (a FUNCTION_DECL) is a constructor for a base
    object.  */
 #define DECL_BASE_CONSTRUCTOR_P(NODE)		\
-  (DECL_CONSTRUCTOR_P (NODE)			\
-   && DECL_NAME (NODE) == base_ctor_identifier)
+  (DECL_NAME (NODE) == base_ctor_identifier)
 
 /* Nonzero if NODE (a FUNCTION_DECL) is a constructor, but not either the
    specialized in-charge constructor or the specialized not-in-charge
@@ -2808,20 +2807,17 @@ struct GTY(()) lang_decl {
 /* Nonzero if NODE (a FUNCTION_DECL) is a destructor for a complete
    object.  */
 #define DECL_COMPLETE_DESTRUCTOR_P(NODE)		\
-  (DECL_DESTRUCTOR_P (NODE)				\
-   && DECL_NAME (NODE) == complete_dtor_identifier)
+  (DECL_NAME (NODE) == complete_dtor_identifier)
 
 /* Nonzero if NODE (a FUNCTION_DECL) is a destructor for a base
    object.  */
 #define DECL_BASE_DESTRUCTOR_P(NODE)		\
-  (DECL_DESTRUCTOR_P (NODE)			\
-   && DECL_NAME (NODE) == base_dtor_identifier)
+  (DECL_NAME (NODE) == base_dtor_identifier)
 
 /* Nonzero if NODE (a FUNCTION_DECL) is a destructor for a complete
    object that deletes the object after it has been destroyed.  */
 #define DECL_DELETING_DESTRUCTOR_P(NODE)		\
-  (DECL_DESTRUCTOR_P (NODE)				\
-   && DECL_NAME (NODE) == deleting_dtor_identifier)
+  (DECL_NAME (NODE) == deleting_dtor_identifier)
 
 /* Nonzero if NODE (a FUNCTION_DECL) is a cloned constructor or
    destructor.  */
@@ -2911,9 +2907,7 @@ struct GTY(()) lang_decl {
   (LANG_DECL_FN_CHECK (NODE)->operator_code = (CODE))
 
 /* If NODE is an overloaded operator, then this returns the TREE_CODE
-   associated with the overloaded operator.
-   DECL_ASSIGNMENT_OPERATOR_P must also be checked to determine
-   whether or not NODE is an assignment operator.  If NODE is not an
+   associated with the overloaded operator.  If NODE is not an
    overloaded operator, ERROR_MARK is returned.  Since the numerical
    value of ERROR_MARK is zero, this macro can be used as a predicate
    to test whether or not NODE is an overloaded operator.  */
@@ -2922,9 +2916,8 @@ struct GTY(()) lang_decl {
    ? LANG_DECL_FN_CHECK (NODE)->operator_code : ERROR_MARK)
 
 /* Nonzero if NODE is an assignment operator (including += and such).  */
-// FIXME ANY_ASSIGN_OP_P
 #define DECL_ASSIGNMENT_OPERATOR_P(NODE) \
-  (LANG_DECL_FN_CHECK (NODE)->assignment_operator_p)
+  IDENTIFIER_ASSIGN_OP_P (DECL_NAME (NODE))
 
 /* For FUNCTION_DECLs: nonzero means that this function is a
    constructor or a destructor with an extra in-charge parameter to

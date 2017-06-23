@@ -1653,9 +1653,7 @@ lookup_fnfields_1 (tree type, tree name)
 
   if (COMPLETE_TYPE_P (type))
     {
-      if ((name == ctor_identifier
-	   || name == base_ctor_identifier
-	   || name == complete_ctor_identifier))
+      if (IDENTIFIER_CTOR_P (name))
 	{
 	  if (CLASSTYPE_LAZY_DEFAULT_CTOR (type))
 	    lazily_declare_fn (sfk_constructor, type);
@@ -1671,12 +1669,11 @@ lookup_fnfields_1 (tree type, tree name)
 	  if (CLASSTYPE_LAZY_MOVE_ASSIGN (type))
 	    lazily_declare_fn (sfk_move_assignment, type);
 	}
-      else if ((name == dtor_identifier
-		|| name == base_dtor_identifier
-		|| name == complete_dtor_identifier
-		|| name == deleting_dtor_identifier)
-	       && CLASSTYPE_LAZY_DESTRUCTOR (type))
-	lazily_declare_fn (sfk_destructor, type);
+      else if (IDENTIFIER_DTOR_P (name))
+	{
+	  if (CLASSTYPE_LAZY_DESTRUCTOR (type))
+	    lazily_declare_fn (sfk_destructor, type);
+	}
     }
 
   return lookup_fnfields_idx_nolazy (type, name);
