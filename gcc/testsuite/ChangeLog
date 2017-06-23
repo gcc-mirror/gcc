@@ -1,3 +1,8 @@
+2017-06-23  James Cowgill  <James.Cowgill@imgtec.com>
+
+	* go.test/go-test.exp (go-set-goarch): Update MIPS architecture
+        names.
+
 2017-06-22  Matt Turner  <mattst88@gmail.com>
 
 	* gcc.target/i386/builtin_target.c: Add Kaby Lake models to
