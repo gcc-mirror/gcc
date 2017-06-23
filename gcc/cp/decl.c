@@ -1470,53 +1470,41 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 		   t2 = TYPE_ARG_TYPES (TREE_TYPE (olddecl));
 		   t1 || t2;
 		   t1 = TREE_CHAIN (t1), t2 = TREE_CHAIN (t2))
-		if (!t1 || !t2)
-		  break;
-	        /* Deal with fileptr_type_node.  FILE type is not known
-		   at the time we create the builtins.  */
-		else if (TREE_VALUE (t2) == fileptr_type_node)
-		  {
-		    tree t = TREE_VALUE (t1);
-
-		    if (TYPE_PTR_P (t)
-			&& TYPE_IDENTIFIER (TREE_TYPE (t))
-			   == get_identifier ("FILE")
-			&& compparms (TREE_CHAIN (t1), TREE_CHAIN (t2)))
+		{
+		  if (!t1 || !t2)
+		    break;
+		  /* FILE, tm types are not known at the time
+		     we create the builtins.  */
+		  for (unsigned i = 0;
+		       i < sizeof (builtin_structptr_types)
+			   / sizeof (builtin_structptr_type);
+		       ++i)
+		    if (TREE_VALUE (t2) == builtin_structptr_types[i].node)
 		      {
-			tree oldargs = TYPE_ARG_TYPES (TREE_TYPE (olddecl));
+			tree t = TREE_VALUE (t1);
 
-			TYPE_ARG_TYPES (TREE_TYPE (olddecl))
-			  = TYPE_ARG_TYPES (TREE_TYPE (newdecl));
-			types_match = decls_match (newdecl, olddecl);
-			if (types_match)
-			  return duplicate_decls (newdecl, olddecl,
-						  newdecl_is_friend);
-			TYPE_ARG_TYPES (TREE_TYPE (olddecl)) = oldargs;
+			if (TYPE_PTR_P (t)
+			    && TYPE_IDENTIFIER (TREE_TYPE (t))
+			    == get_identifier (builtin_structptr_types[i].str)
+			    && compparms (TREE_CHAIN (t1), TREE_CHAIN (t2)))
+			  {
+			    tree oldargs = TYPE_ARG_TYPES (TREE_TYPE (olddecl));
+
+			    TYPE_ARG_TYPES (TREE_TYPE (olddecl))
+			      = TYPE_ARG_TYPES (TREE_TYPE (newdecl));
+			    types_match = decls_match (newdecl, olddecl);
+			    if (types_match)
+			      return duplicate_decls (newdecl, olddecl,
+						      newdecl_is_friend);
+			    TYPE_ARG_TYPES (TREE_TYPE (olddecl)) = oldargs;
+			  }
+			goto next_arg;
 		      }
-		  }
-		/* Likewise for const struct tm*.  */
-		else if (TREE_VALUE (t2) == const_tm_ptr_type_node)
-		  {
-		    tree t = TREE_VALUE (t1);
 
-		    if (TYPE_PTR_P (t)
-			&& TYPE_IDENTIFIER (TREE_TYPE (t))
-			   == get_identifier ("tm")
-			&& compparms (TREE_CHAIN (t1), TREE_CHAIN (t2)))
-		      {
-			tree oldargs = TYPE_ARG_TYPES (TREE_TYPE (olddecl));
-
-			TYPE_ARG_TYPES (TREE_TYPE (olddecl))
-			  = TYPE_ARG_TYPES (TREE_TYPE (newdecl));
-			types_match = decls_match (newdecl, olddecl);
-			if (types_match)
-			  return duplicate_decls (newdecl, olddecl,
-						  newdecl_is_friend);
-			TYPE_ARG_TYPES (TREE_TYPE (olddecl)) = oldargs;
-		      }
-		  }
-		else if (! same_type_p (TREE_VALUE (t1), TREE_VALUE (t2)))
-		  break;
+		  if (! same_type_p (TREE_VALUE (t1), TREE_VALUE (t2)))
+		    break;
+next_arg:;
+		}
 
 	      warning_at (DECL_SOURCE_LOCATION (newdecl),
 			  OPT_Wbuiltin_declaration_mismatch,

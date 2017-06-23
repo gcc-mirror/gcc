@@ -1220,13 +1220,17 @@ lto_init (void)
   /* In the C++ front-end, fileptr_type_node is defined as a variant
      copy of ptr_type_node, rather than ptr_node itself.  The
      distinction should only be relevant to the front-end, so we
-     always use the C definition here in lto1.  */
-  gcc_assert (fileptr_type_node == ptr_type_node);
-  gcc_assert (TYPE_MAIN_VARIANT (fileptr_type_node) == ptr_type_node);
-  /* Likewise for const struct tm*.  */
-  gcc_assert (const_tm_ptr_type_node == const_ptr_type_node);
-  gcc_assert (TYPE_MAIN_VARIANT (const_tm_ptr_type_node)
-	      == const_ptr_type_node);
+     always use the C definition here in lto1.
+     Likewise for const struct tm*.  */
+  for (unsigned i = 0;
+       i < sizeof (builtin_structptr_types) / sizeof (builtin_structptr_type);
+       ++i)
+    {
+      gcc_assert (builtin_structptr_types[i].node
+		  == builtin_structptr_types[i].base);
+      gcc_assert (TYPE_MAIN_VARIANT (builtin_structptr_types[i].node)
+		  == builtin_structptr_types[i].base);
+    }
 
   lto_build_c_type_nodes ();
   gcc_assert (va_list_type_node);
