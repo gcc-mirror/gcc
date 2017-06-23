@@ -485,7 +485,7 @@ rtx_addr_can_trap_p_1 (const_rtx x, HOST_WIDE_INT offset, HOST_WIDE_INT size,
     case SYMBOL_REF:
       if (SYMBOL_REF_WEAK (x))
 	return 1;
-      if (!CONSTANT_POOL_ADDRESS_P (x))
+      if (!CONSTANT_POOL_ADDRESS_P (x) && !SYMBOL_REF_FUNCTION_P (x))
 	{
 	  tree decl;
 	  HOST_WIDE_INT decl_size;
@@ -644,8 +644,11 @@ rtx_addr_can_trap_p_1 (const_rtx x, HOST_WIDE_INT offset, HOST_WIDE_INT size,
 
     case PLUS:
       /* An address is assumed not to trap if:
-         - it is the pic register plus a constant.  */
-      if (XEXP (x, 0) == pic_offset_table_rtx && CONSTANT_P (XEXP (x, 1)))
+	 - it is the pic register plus a const unspec without offset.  */
+      if (XEXP (x, 0) == pic_offset_table_rtx
+	  && GET_CODE (XEXP (x, 1)) == CONST
+	  && GET_CODE (XEXP (XEXP (x, 1), 0)) == UNSPEC
+	  && offset == 0)
 	return 0;
 
       /* - or it is an address that can't trap plus a constant integer.  */
