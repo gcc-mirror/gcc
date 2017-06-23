@@ -110,8 +110,8 @@
 /**
  * @brief Some architecture-dependent stack adjustment.
  */
-#if defined(__sparcv9)
-    // Subtract sparc v9 stack bias so the actual stack starts at the
+#if defined(__sparcv9) || (defined(__sparc__) && defined(__arch64__))
+    // Subtract SPARC V9 stack bias so the actual stack starts at the
     // allocated area.
 #   define CILK_ADJUST_SP(SP) ((SP) - 2047)
 #   define CILK_UNADJUST_SP(SP) ((SP) + 2047)
