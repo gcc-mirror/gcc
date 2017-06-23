@@ -1,3 +1,10 @@
+2017-06-23  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	Backport from mainline
+	2017-05-04  Prakhar Bahuguna  <prakhar.bahuguna@arm.com>
+
+	* gcc.target/arm/fpscr.c: New file.
+
 2017-06-22  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline
