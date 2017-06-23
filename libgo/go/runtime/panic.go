@@ -91,6 +91,9 @@ func throwinit() {
 // arg is a value to pass to pfn.
 func deferproc(frame *bool, pfn uintptr, arg unsafe.Pointer) {
 	d := newdefer()
+	if d._panic != nil {
+		throw("deferproc: d.panic != nil after newdefer")
+	}
 	d.frame = frame
 	d.panicStack = getg()._panic
 	d.pfn = pfn
@@ -338,17 +341,28 @@ func Goexit() {
 		if d == nil {
 			break
 		}
-		gp._defer = d.link
 
 		pfn := d.pfn
+		if pfn == 0 {
+			if d._panic != nil {
+				d._panic.aborted = true
+				d._panic = nil
+			}
+			gp._defer = d.link
+			freedefer(d)
+			continue
+		}
 		d.pfn = 0
 
-		if pfn != 0 {
-			var fn func(unsafe.Pointer)
-			*(*uintptr)(unsafe.Pointer(&fn)) = uintptr(unsafe.Pointer(&pfn))
-			fn(d.arg)
-		}
+		var fn func(unsafe.Pointer)
+		*(*uintptr)(unsafe.Pointer(&fn)) = uintptr(unsafe.Pointer(&pfn))
+		fn(d.arg)
 
+		if gp._defer != d {
+			throw("bad defer entry in Goexit")
+		}
+		d._panic = nil
+		gp._defer = d.link
 		freedefer(d)
 		// Note: we ignore recovers here because Goexit isn't a panic
 	}
@@ -442,39 +456,71 @@ func gopanic(e interface{}) {
 		}
 
 		pfn := d.pfn
+
+		// If defer was started by earlier panic or Goexit (and, since we're back here, that triggered a new panic),
+		// take defer off list. The earlier panic or Goexit will not continue running.
+		if pfn == 0 {
+			if d._panic != nil {
+				d._panic.aborted = true
+			}
+			d._panic = nil
+			gp._defer = d.link
+			freedefer(d)
+			continue
+		}
 		d.pfn = 0
 
-		if pfn != 0 {
-			var fn func(unsafe.Pointer)
-			*(*uintptr)(unsafe.Pointer(&fn)) = uintptr(unsafe.Pointer(&pfn))
-			fn(d.arg)
+		// Record the panic that is running the defer.
+		// If there is a new panic during the deferred call, that panic
+		// will find d in the list and will mark d._panic (this panic) aborted.
+		d._panic = p
 
-			if p.recovered {
-				// Some deferred function called recover.
-				// Stop running this panic.
-				gp._panic = p.link
+		var fn func(unsafe.Pointer)
+		*(*uintptr)(unsafe.Pointer(&fn)) = uintptr(unsafe.Pointer(&pfn))
+		fn(d.arg)
 
-				// Unwind the stack by throwing an exception.
-				// The compiler has arranged to create
-				// exception handlers in each function
-				// that uses a defer statement.  These
-				// exception handlers will check whether
-				// the entry on the top of the defer stack
-				// is from the current function.  If it is,
-				// we have unwound the stack far enough.
-				unwindStack()
+		if gp._defer != d {
+			throw("bad defer entry in panic")
+		}
+		d._panic = nil
 
-				throw("unwindStack returned")
+		if p.recovered {
+			// Some deferred function called recover.
+			// Stop running this panic.
+			gp._panic = p.link
+
+			// Aborted panics are marked but remain on the g.panic list.
+			// Remove them from the list.
+			for gp._panic != nil && gp._panic.aborted {
+				gp._panic = gp._panic.link
+			}
+			if gp._panic == nil { // must be done with signal
+				gp.sig = 0
 			}
 
-			// Because we executed that defer function by a panic,
-			// and it did not call recover, we know that we are
-			// not returning from the calling function--we are
-			// panicking through it.
-			*d.frame = false
+			// Unwind the stack by throwing an exception.
+			// The compiler has arranged to create
+			// exception handlers in each function
+			// that uses a defer statement.  These
+			// exception handlers will check whether
+			// the entry on the top of the defer stack
+			// is from the current function.  If it is,
+			// we have unwound the stack far enough.
+			unwindStack()
+
+			throw("unwindStack returned")
 		}
 
+		// Because we executed that defer function by a panic,
+		// and it did not call recover, we know that we are
+		// not returning from the calling function--we are
+		// panicking through it.
+		*d.frame = false
+
+		// Deferred function did not panic. Remove d.
+		// In the p.recovered case, d will be removed by checkdefer.
 		gp._defer = d.link
+
 		freedefer(d)
 	}
 
