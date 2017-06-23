@@ -64,7 +64,8 @@ create_dispatcher_calls (struct cgraph_node *node)
 {
   ipa_ref *ref;
 
-  if (!DECL_FUNCTION_VERSIONED (node->decl))
+  if (!DECL_FUNCTION_VERSIONED (node->decl)
+      || !is_function_default_version (node->decl))
     return;
 
   auto_vec<cgraph_edge *> edges_to_redirect;
