@@ -1,3 +1,9 @@
+2017-06-23  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR middle-end/80902
+	* builtins.c (expand_builtin_atomic_fetch_op): If emitting code after
+	a call, force the call to not be a tail call.
+
 2017-06-23  Jeff Law  <law@redhat.com>
 
 	* doc/contrib.texi: Add entry for Steven Pemberton's work on
