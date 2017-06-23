@@ -47,7 +47,7 @@
  *  for your assistance in helping us improve Cilk Plus.
  *************************************************************************
  *
- * This file contains system-specific code for sparc-based systems
+ * This file contains system-specific code for SPARC-based systems
  */
 
 #include "os.h"
@@ -60,7 +60,7 @@
 COMMON_SYSDEP unsigned long long __cilkrts_getticks(void)
 {
     unsigned long long tick;
-#ifdef __sparcv9
+#if defined(__sparcv9) || defined(__arch64__)
     __asm__ volatile("rd %%tick, %0" : "=r"(tick));
 #else
     __asm__ volatile("rd %%tick, %L0\n"
