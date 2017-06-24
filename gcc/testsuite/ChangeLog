@@ -1,3 +1,8 @@
+2017-06-24  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+        PR fortran/52473
+	* gfortran.dg/cshift_2.f90:  New test.
+
 2017-06-23  Jim Wilson  <jim.wilson@linaro.org>
 
 	PR middle-end/79794
