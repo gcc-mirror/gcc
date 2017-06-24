@@ -5142,10 +5142,12 @@ cp_build_binary_op (location_t location,
 	     original result_type.  */
 	  tree cop0 = op0;
 	  tree cop1 = op1;
-	  if (orig_type != NULL && result_type != orig_type)
+	  if (orig_type != NULL_TREE)
 	    {
-	      cop0 = cp_convert (orig_type, op0, complain);
-	      cop1 = cp_convert (orig_type, op1, complain);
+	      if (TREE_TYPE (cop0) != orig_type)
+		cop0 = cp_convert (orig_type, op0, complain);
+	      if (TREE_TYPE (cop1) != orig_type)
+		cop1 = cp_convert (orig_type, op1, complain);
 	    }
 	  instrument_expr = ubsan_instrument_division (location, cop0, cop1);
 	}
