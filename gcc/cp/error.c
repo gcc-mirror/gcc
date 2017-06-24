@@ -2766,6 +2766,10 @@ dump_expr (cxx_pretty_printer *pp, tree t, int flags)
       pp_string (pp, M_("*this"));
       break;
 
+    case TREE_LIST:
+      dump_expr_list (pp, t, flags);
+      break;
+
       /*  This list is incomplete, but should suffice for now.
 	  It is very important that `sorry' does not call
 	  `report_error_function'.  That could cause an infinite loop.  */

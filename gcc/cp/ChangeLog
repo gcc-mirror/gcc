@@ -1,3 +1,13 @@
+2017-06-24  Marek Polacek  <polacek@redhat.com>
+
+	Backported from mainline
+	2017-04-18  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/80241 - ICE with alignas pack expansion.
+	* error.c (dump_expr): Handle TREE_LIST.
+	* parser.c (cp_parser_std_attribute_list): Return error_mark if
+	make_pack_expansion returns an error.
+
 2017-06-22  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
