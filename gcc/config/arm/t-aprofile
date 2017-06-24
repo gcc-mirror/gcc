@@ -92,8 +92,6 @@ MULTILIB_MATCHES       += march?armv8-a=mcpu?cortex-a73
 MULTILIB_MATCHES       += march?armv8-a=mcpu?cortex-a73.cortex-a35
 MULTILIB_MATCHES       += march?armv8-a=mcpu?cortex-a73.cortex-a53
 MULTILIB_MATCHES       += march?armv8-a=mcpu?exynos-m1
-MULTILIB_MATCHES       += march?armv8-a=mcpu?falkor
-MULTILIB_MATCHES       += march?armv8-a=mcpu?qdf24xx
 MULTILIB_MATCHES       += march?armv8-a=mcpu?xgene1
 
 # Arch Matches

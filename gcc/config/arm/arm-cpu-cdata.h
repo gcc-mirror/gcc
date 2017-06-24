@@ -740,20 +740,6 @@ static const struct arm_arch_core_flag arm_arch_core_flags[] =
     },
   },
   {
-    "falkor",
-    {
-      ISA_ARMv8a,isa_bit_crc32,
-      isa_nobit
-    },
-  },
-  {
-    "qdf24xx",
-    {
-      ISA_ARMv8a,isa_bit_crc32,
-      isa_nobit
-    },
-  },
-  {
     "xgene1",
     {
       ISA_ARMv8a,
