@@ -1457,6 +1457,10 @@ strip_typedefs (tree t, bool *remove_attributes)
 		   DECLTYPE_TYPE_ID_EXPR_OR_MEMBER_ACCESS_P (t),
 		   tf_none));
       break;
+    case UNDERLYING_TYPE:
+      type = strip_typedefs (UNDERLYING_TYPE_TYPE (t), remove_attributes);
+      result = finish_underlying_type (type);
+      break;
     default:
       break;
     }

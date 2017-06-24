@@ -6,6 +6,9 @@
 	PR c++/80241 - ICE with alignas pack expansion.
 	* g++.dg/cpp0x/alignas11.C: New test.
 
+	PR c++/80244 - ICE with attribute in template alias.
+	* g++.dg/cpp0x/alias-decl-59.C: New test.
+
 2017-06-23  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	Backport from mainline

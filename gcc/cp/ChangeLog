@@ -8,6 +8,11 @@
 	* parser.c (cp_parser_std_attribute_list): Return error_mark if
 	make_pack_expansion returns an error.
 
+	2017-04-18  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/80244 - ICE with attribute in template alias.
+	* tree.c (strip_typedefs): Handle UNDERLYING_TYPE.
+
 2017-06-22  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
