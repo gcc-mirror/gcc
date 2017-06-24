@@ -2001,13 +2001,14 @@ wprecision_real_real (mpfr_t r, int from_kind, int to_kind)
 static bool
 wprecision_int_real (mpz_t n, mpfr_t r)
 {
+  bool ret;
   mpz_t i;
   mpz_init (i);
   mpfr_get_z (i, r, GFC_RND_MODE);
   mpz_sub (i, i, n);
-  return mpz_cmp_si (i, 0) != 0;
+  ret = mpz_cmp_si (i, 0) != 0;
   mpz_clear (i);
-
+  return ret;
 }
 
 /* Convert integers to integers.  */
