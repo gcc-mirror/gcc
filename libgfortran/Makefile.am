@@ -524,12 +524,52 @@ $(srcdir)/generated/cshift0_c4.c \
 $(srcdir)/generated/cshift0_c8.c \
 $(srcdir)/generated/cshift0_c10.c \
 $(srcdir)/generated/cshift0_c16.c
- 
 
 i_cshift1_c= \
 $(srcdir)/generated/cshift1_4.c \
 $(srcdir)/generated/cshift1_8.c \
 $(srcdir)/generated/cshift1_16.c
+
+i_cshift1a_c = \
+$(srcdir)/generated/cshift1_4_i1.c \
+$(srcdir)/generated/cshift1_4_i2.c \
+$(srcdir)/generated/cshift1_4_i4.c \
+$(srcdir)/generated/cshift1_4_i8.c \
+$(srcdir)/generated/cshift1_4_i16.c \
+$(srcdir)/generated/cshift1_4_r4.c \
+$(srcdir)/generated/cshift1_4_r8.c \
+$(srcdir)/generated/cshift1_4_r10.c \
+$(srcdir)/generated/cshift1_4_r16.c \
+$(srcdir)/generated/cshift1_4_c4.c \
+$(srcdir)/generated/cshift1_4_c8.c \
+$(srcdir)/generated/cshift1_4_c10.c \
+$(srcdir)/generated/cshift1_4_c16.c \
+$(srcdir)/generated/cshift1_8_i1.c \
+$(srcdir)/generated/cshift1_8_i2.c \
+$(srcdir)/generated/cshift1_8_i4.c \
+$(srcdir)/generated/cshift1_8_i8.c \
+$(srcdir)/generated/cshift1_8_i16.c \
+$(srcdir)/generated/cshift1_8_r4.c \
+$(srcdir)/generated/cshift1_8_r8.c \
+$(srcdir)/generated/cshift1_8_r10.c \
+$(srcdir)/generated/cshift1_8_r16.c \
+$(srcdir)/generated/cshift1_8_c4.c \
+$(srcdir)/generated/cshift1_8_c8.c \
+$(srcdir)/generated/cshift1_8_c10.c \
+$(srcdir)/generated/cshift1_8_c16.c \
+$(srcdir)/generated/cshift1_16_i1.c \
+$(srcdir)/generated/cshift1_16_i2.c \
+$(srcdir)/generated/cshift1_16_i4.c \
+$(srcdir)/generated/cshift1_16_i8.c \
+$(srcdir)/generated/cshift1_16_i16.c \
+$(srcdir)/generated/cshift1_16_r4.c \
+$(srcdir)/generated/cshift1_16_r8.c \
+$(srcdir)/generated/cshift1_16_r10.c \
+$(srcdir)/generated/cshift1_16_r16.c \
+$(srcdir)/generated/cshift1_16_c4.c \
+$(srcdir)/generated/cshift1_16_c8.c \
+$(srcdir)/generated/cshift1_16_c10.c \
+$(srcdir)/generated/cshift1_16_c16.c
 
 in_pack_c = \
 $(srcdir)/generated/in_pack_i1.c \
@@ -658,7 +698,8 @@ gfor_built_src= $(i_all_c) $(i_any_c) $(i_count_c) $(i_maxloc0_c) \
     $(i_eoshift3_c) $(i_cshift1_c) $(i_reshape_c) $(in_pack_c) $(in_unpack_c) \
     $(i_pow_c) $(i_pack_c) $(i_unpack_c) $(i_matmulavx128_c) \
     $(i_spread_c) selected_int_kind.inc selected_real_kind.inc kinds.h \
-    $(i_cshift0_c) kinds.inc c99_protos.inc fpu-target.h fpu-target.inc
+    $(i_cshift0_c) kinds.inc c99_protos.inc fpu-target.h fpu-target.inc \
+    $(i_cshift1a_c)
 
 # Machine generated specifics
 gfor_built_specific_src= \
@@ -985,6 +1026,9 @@ $(i_cshift0_c): m4/cshift0.m4 $(I_M4_DEPS)
 
 $(i_cshift1_c): m4/cshift1.m4 $(I_M4_DEPS)
 	$(M4) -Dfile=$@ -I$(srcdir)/m4 cshift1.m4 > $@
+
+$(i_cshift1a_c): m4/cshift1a.m4 $(I_M$_DEPS)
+	$(M4) -Dfile=$@ -I$(srcdir)/m4 cshift1a.m4 > $@
 
 $(in_pack_c): m4/in_pack.m4 $(I_M4_DEPS)
 	$(M4) -Dfile=$@ -I$(srcdir)/m4 in_pack.m4 > $@

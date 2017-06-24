@@ -302,7 +302,20 @@ am__objects_35 = cshift0_i1.lo cshift0_i2.lo cshift0_i4.lo \
 	cshift0_i8.lo cshift0_i16.lo cshift0_r4.lo cshift0_r8.lo \
 	cshift0_r10.lo cshift0_r16.lo cshift0_c4.lo cshift0_c8.lo \
 	cshift0_c10.lo cshift0_c16.lo
-am__objects_36 = $(am__objects_4) $(am__objects_5) $(am__objects_6) \
+am__objects_36 = cshift1_4_i1.lo cshift1_4_i2.lo cshift1_4_i4.lo \
+	cshift1_4_i8.lo cshift1_4_i16.lo cshift1_4_r4.lo \
+	cshift1_4_r8.lo cshift1_4_r10.lo cshift1_4_r16.lo \
+	cshift1_4_c4.lo cshift1_4_c8.lo cshift1_4_c10.lo \
+	cshift1_4_c16.lo cshift1_8_i1.lo cshift1_8_i2.lo \
+	cshift1_8_i4.lo cshift1_8_i8.lo cshift1_8_i16.lo \
+	cshift1_8_r4.lo cshift1_8_r8.lo cshift1_8_r10.lo \
+	cshift1_8_r16.lo cshift1_8_c4.lo cshift1_8_c8.lo \
+	cshift1_8_c10.lo cshift1_8_c16.lo cshift1_16_i1.lo \
+	cshift1_16_i2.lo cshift1_16_i4.lo cshift1_16_i8.lo \
+	cshift1_16_i16.lo cshift1_16_r4.lo cshift1_16_r8.lo \
+	cshift1_16_r10.lo cshift1_16_r16.lo cshift1_16_c4.lo \
+	cshift1_16_c8.lo cshift1_16_c10.lo cshift1_16_c16.lo
+am__objects_37 = $(am__objects_4) $(am__objects_5) $(am__objects_6) \
 	$(am__objects_7) $(am__objects_8) $(am__objects_9) \
 	$(am__objects_10) $(am__objects_11) $(am__objects_12) \
 	$(am__objects_13) $(am__objects_14) $(am__objects_15) \
@@ -312,14 +325,14 @@ am__objects_36 = $(am__objects_4) $(am__objects_5) $(am__objects_6) \
 	$(am__objects_25) $(am__objects_26) $(am__objects_27) \
 	$(am__objects_28) $(am__objects_29) $(am__objects_30) \
 	$(am__objects_31) $(am__objects_32) $(am__objects_33) \
-	$(am__objects_34) $(am__objects_35)
-@LIBGFOR_MINIMAL_FALSE@am__objects_37 = close.lo file_pos.lo format.lo \
+	$(am__objects_34) $(am__objects_35) $(am__objects_36)
+@LIBGFOR_MINIMAL_FALSE@am__objects_38 = close.lo file_pos.lo format.lo \
 @LIBGFOR_MINIMAL_FALSE@	inquire.lo intrinsics.lo list_read.lo \
 @LIBGFOR_MINIMAL_FALSE@	lock.lo open.lo read.lo transfer.lo \
 @LIBGFOR_MINIMAL_FALSE@	transfer128.lo unit.lo unix.lo write.lo \
 @LIBGFOR_MINIMAL_FALSE@	fbuf.lo
-am__objects_38 = size_from_kind.lo $(am__objects_37)
-@LIBGFOR_MINIMAL_FALSE@am__objects_39 = access.lo c99_functions.lo \
+am__objects_39 = size_from_kind.lo $(am__objects_38)
+@LIBGFOR_MINIMAL_FALSE@am__objects_40 = access.lo c99_functions.lo \
 @LIBGFOR_MINIMAL_FALSE@	chdir.lo chmod.lo clock.lo cpu_time.lo \
 @LIBGFOR_MINIMAL_FALSE@	ctime.lo date_and_time.lo dtime.lo \
 @LIBGFOR_MINIMAL_FALSE@	env.lo etime.lo execute_command_line.lo \
@@ -329,19 +342,19 @@ am__objects_38 = size_from_kind.lo $(am__objects_37)
 @LIBGFOR_MINIMAL_FALSE@	rename.lo stat.lo symlnk.lo \
 @LIBGFOR_MINIMAL_FALSE@	system_clock.lo time.lo umask.lo \
 @LIBGFOR_MINIMAL_FALSE@	unlink.lo
-@IEEE_SUPPORT_TRUE@am__objects_40 = ieee_helper.lo
-am__objects_41 = associated.lo abort.lo args.lo cshift0.lo eoshift0.lo \
+@IEEE_SUPPORT_TRUE@am__objects_41 = ieee_helper.lo
+am__objects_42 = associated.lo abort.lo args.lo cshift0.lo eoshift0.lo \
 	eoshift2.lo erfc_scaled.lo extends_type_of.lo fnum.lo \
 	ierrno.lo ishftc.lo mvbits.lo move_alloc.lo pack_generic.lo \
 	selected_char_kind.lo size.lo spread_generic.lo \
 	string_intrinsics.lo rand.lo random.lo reshape_generic.lo \
 	reshape_packed.lo selected_int_kind.lo selected_real_kind.lo \
 	unpack_generic.lo in_pack_generic.lo in_unpack_generic.lo \
-	$(am__objects_39) $(am__objects_40)
-@IEEE_SUPPORT_TRUE@am__objects_42 = ieee_arithmetic.lo \
+	$(am__objects_40) $(am__objects_41)
+@IEEE_SUPPORT_TRUE@am__objects_43 = ieee_arithmetic.lo \
 @IEEE_SUPPORT_TRUE@	ieee_exceptions.lo ieee_features.lo
-am__objects_43 =
-am__objects_44 = _abs_c4.lo _abs_c8.lo _abs_c10.lo _abs_c16.lo \
+am__objects_44 =
+am__objects_45 = _abs_c4.lo _abs_c8.lo _abs_c10.lo _abs_c16.lo \
 	_abs_i4.lo _abs_i8.lo _abs_i16.lo _abs_r4.lo _abs_r8.lo \
 	_abs_r10.lo _abs_r16.lo _aimag_c4.lo _aimag_c8.lo \
 	_aimag_c10.lo _aimag_c16.lo _exp_r4.lo _exp_r8.lo _exp_r10.lo \
@@ -365,19 +378,19 @@ am__objects_44 = _abs_c4.lo _abs_c8.lo _abs_c10.lo _abs_c16.lo \
 	_conjg_c4.lo _conjg_c8.lo _conjg_c10.lo _conjg_c16.lo \
 	_aint_r4.lo _aint_r8.lo _aint_r10.lo _aint_r16.lo _anint_r4.lo \
 	_anint_r8.lo _anint_r10.lo _anint_r16.lo
-am__objects_45 = _sign_i4.lo _sign_i8.lo _sign_i16.lo _sign_r4.lo \
+am__objects_46 = _sign_i4.lo _sign_i8.lo _sign_i16.lo _sign_r4.lo \
 	_sign_r8.lo _sign_r10.lo _sign_r16.lo _dim_i4.lo _dim_i8.lo \
 	_dim_i16.lo _dim_r4.lo _dim_r8.lo _dim_r10.lo _dim_r16.lo \
 	_atan2_r4.lo _atan2_r8.lo _atan2_r10.lo _atan2_r16.lo \
 	_mod_i4.lo _mod_i8.lo _mod_i16.lo _mod_r4.lo _mod_r8.lo \
 	_mod_r10.lo _mod_r16.lo
-am__objects_46 = misc_specifics.lo
-am__objects_47 = $(am__objects_44) $(am__objects_45) $(am__objects_46) \
+am__objects_47 = misc_specifics.lo
+am__objects_48 = $(am__objects_45) $(am__objects_46) $(am__objects_47) \
 	dprod_r8.lo f2c_specifics.lo
-am__objects_48 = $(am__objects_3) $(am__objects_36) $(am__objects_38) \
-	$(am__objects_41) $(am__objects_42) $(am__objects_43) \
-	$(am__objects_47)
-@onestep_FALSE@am_libgfortran_la_OBJECTS = $(am__objects_48)
+am__objects_49 = $(am__objects_3) $(am__objects_37) $(am__objects_39) \
+	$(am__objects_42) $(am__objects_43) $(am__objects_44) \
+	$(am__objects_48)
+@onestep_FALSE@am_libgfortran_la_OBJECTS = $(am__objects_49)
 @onestep_TRUE@am_libgfortran_la_OBJECTS = libgfortran_c.lo
 libgfortran_la_OBJECTS = $(am_libgfortran_la_OBJECTS)
 DEFAULT_INCLUDES = -I.@am__isrc@
@@ -954,6 +967,47 @@ $(srcdir)/generated/cshift1_4.c \
 $(srcdir)/generated/cshift1_8.c \
 $(srcdir)/generated/cshift1_16.c
 
+i_cshift1a_c = \
+$(srcdir)/generated/cshift1_4_i1.c \
+$(srcdir)/generated/cshift1_4_i2.c \
+$(srcdir)/generated/cshift1_4_i4.c \
+$(srcdir)/generated/cshift1_4_i8.c \
+$(srcdir)/generated/cshift1_4_i16.c \
+$(srcdir)/generated/cshift1_4_r4.c \
+$(srcdir)/generated/cshift1_4_r8.c \
+$(srcdir)/generated/cshift1_4_r10.c \
+$(srcdir)/generated/cshift1_4_r16.c \
+$(srcdir)/generated/cshift1_4_c4.c \
+$(srcdir)/generated/cshift1_4_c8.c \
+$(srcdir)/generated/cshift1_4_c10.c \
+$(srcdir)/generated/cshift1_4_c16.c \
+$(srcdir)/generated/cshift1_8_i1.c \
+$(srcdir)/generated/cshift1_8_i2.c \
+$(srcdir)/generated/cshift1_8_i4.c \
+$(srcdir)/generated/cshift1_8_i8.c \
+$(srcdir)/generated/cshift1_8_i16.c \
+$(srcdir)/generated/cshift1_8_r4.c \
+$(srcdir)/generated/cshift1_8_r8.c \
+$(srcdir)/generated/cshift1_8_r10.c \
+$(srcdir)/generated/cshift1_8_r16.c \
+$(srcdir)/generated/cshift1_8_c4.c \
+$(srcdir)/generated/cshift1_8_c8.c \
+$(srcdir)/generated/cshift1_8_c10.c \
+$(srcdir)/generated/cshift1_8_c16.c \
+$(srcdir)/generated/cshift1_16_i1.c \
+$(srcdir)/generated/cshift1_16_i2.c \
+$(srcdir)/generated/cshift1_16_i4.c \
+$(srcdir)/generated/cshift1_16_i8.c \
+$(srcdir)/generated/cshift1_16_i16.c \
+$(srcdir)/generated/cshift1_16_r4.c \
+$(srcdir)/generated/cshift1_16_r8.c \
+$(srcdir)/generated/cshift1_16_r10.c \
+$(srcdir)/generated/cshift1_16_r16.c \
+$(srcdir)/generated/cshift1_16_c4.c \
+$(srcdir)/generated/cshift1_16_c8.c \
+$(srcdir)/generated/cshift1_16_c10.c \
+$(srcdir)/generated/cshift1_16_c16.c
+
 in_pack_c = \
 $(srcdir)/generated/in_pack_i1.c \
 $(srcdir)/generated/in_pack_i2.c \
@@ -1081,7 +1135,8 @@ gfor_built_src = $(i_all_c) $(i_any_c) $(i_count_c) $(i_maxloc0_c) \
     $(i_eoshift3_c) $(i_cshift1_c) $(i_reshape_c) $(in_pack_c) $(in_unpack_c) \
     $(i_pow_c) $(i_pack_c) $(i_unpack_c) $(i_matmulavx128_c) \
     $(i_spread_c) selected_int_kind.inc selected_real_kind.inc kinds.h \
-    $(i_cshift0_c) kinds.inc c99_protos.inc fpu-target.h fpu-target.inc
+    $(i_cshift0_c) kinds.inc c99_protos.inc fpu-target.h fpu-target.inc \
+    $(i_cshift1a_c)
 
 
 # Machine generated specifics
@@ -1437,8 +1492,47 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cshift0_r4.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cshift0_r8.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cshift1_16.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cshift1_16_c10.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cshift1_16_c16.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cshift1_16_c4.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cshift1_16_c8.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cshift1_16_i1.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cshift1_16_i16.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cshift1_16_i2.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cshift1_16_i4.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cshift1_16_i8.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cshift1_16_r10.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cshift1_16_r16.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cshift1_16_r4.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cshift1_16_r8.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cshift1_4.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cshift1_4_c10.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cshift1_4_c16.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cshift1_4_c4.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cshift1_4_c8.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cshift1_4_i1.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cshift1_4_i16.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cshift1_4_i2.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cshift1_4_i4.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cshift1_4_i8.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cshift1_4_r10.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cshift1_4_r16.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cshift1_4_r4.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cshift1_4_r8.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cshift1_8.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cshift1_8_c10.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cshift1_8_c16.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cshift1_8_c4.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cshift1_8_c8.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cshift1_8_i1.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cshift1_8_i16.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cshift1_8_i2.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cshift1_8_i4.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cshift1_8_i8.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cshift1_8_r10.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cshift1_8_r16.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cshift1_8_r4.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cshift1_8_r8.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ctime.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/date_and_time.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/dtime.Plo@am__quote@
@@ -4890,6 +4984,279 @@ cshift0_c16.lo: $(srcdir)/generated/cshift0_c16.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o cshift0_c16.lo `test -f '$(srcdir)/generated/cshift0_c16.c' || echo '$(srcdir)/'`$(srcdir)/generated/cshift0_c16.c
 
+cshift1_4_i1.lo: $(srcdir)/generated/cshift1_4_i1.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT cshift1_4_i1.lo -MD -MP -MF $(DEPDIR)/cshift1_4_i1.Tpo -c -o cshift1_4_i1.lo `test -f '$(srcdir)/generated/cshift1_4_i1.c' || echo '$(srcdir)/'`$(srcdir)/generated/cshift1_4_i1.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/cshift1_4_i1.Tpo $(DEPDIR)/cshift1_4_i1.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/cshift1_4_i1.c' object='cshift1_4_i1.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o cshift1_4_i1.lo `test -f '$(srcdir)/generated/cshift1_4_i1.c' || echo '$(srcdir)/'`$(srcdir)/generated/cshift1_4_i1.c
+
+cshift1_4_i2.lo: $(srcdir)/generated/cshift1_4_i2.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT cshift1_4_i2.lo -MD -MP -MF $(DEPDIR)/cshift1_4_i2.Tpo -c -o cshift1_4_i2.lo `test -f '$(srcdir)/generated/cshift1_4_i2.c' || echo '$(srcdir)/'`$(srcdir)/generated/cshift1_4_i2.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/cshift1_4_i2.Tpo $(DEPDIR)/cshift1_4_i2.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/cshift1_4_i2.c' object='cshift1_4_i2.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o cshift1_4_i2.lo `test -f '$(srcdir)/generated/cshift1_4_i2.c' || echo '$(srcdir)/'`$(srcdir)/generated/cshift1_4_i2.c
+
+cshift1_4_i4.lo: $(srcdir)/generated/cshift1_4_i4.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT cshift1_4_i4.lo -MD -MP -MF $(DEPDIR)/cshift1_4_i4.Tpo -c -o cshift1_4_i4.lo `test -f '$(srcdir)/generated/cshift1_4_i4.c' || echo '$(srcdir)/'`$(srcdir)/generated/cshift1_4_i4.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/cshift1_4_i4.Tpo $(DEPDIR)/cshift1_4_i4.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/cshift1_4_i4.c' object='cshift1_4_i4.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o cshift1_4_i4.lo `test -f '$(srcdir)/generated/cshift1_4_i4.c' || echo '$(srcdir)/'`$(srcdir)/generated/cshift1_4_i4.c
+
+cshift1_4_i8.lo: $(srcdir)/generated/cshift1_4_i8.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT cshift1_4_i8.lo -MD -MP -MF $(DEPDIR)/cshift1_4_i8.Tpo -c -o cshift1_4_i8.lo `test -f '$(srcdir)/generated/cshift1_4_i8.c' || echo '$(srcdir)/'`$(srcdir)/generated/cshift1_4_i8.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/cshift1_4_i8.Tpo $(DEPDIR)/cshift1_4_i8.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/cshift1_4_i8.c' object='cshift1_4_i8.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o cshift1_4_i8.lo `test -f '$(srcdir)/generated/cshift1_4_i8.c' || echo '$(srcdir)/'`$(srcdir)/generated/cshift1_4_i8.c
+
+cshift1_4_i16.lo: $(srcdir)/generated/cshift1_4_i16.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT cshift1_4_i16.lo -MD -MP -MF $(DEPDIR)/cshift1_4_i16.Tpo -c -o cshift1_4_i16.lo `test -f '$(srcdir)/generated/cshift1_4_i16.c' || echo '$(srcdir)/'`$(srcdir)/generated/cshift1_4_i16.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/cshift1_4_i16.Tpo $(DEPDIR)/cshift1_4_i16.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/cshift1_4_i16.c' object='cshift1_4_i16.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o cshift1_4_i16.lo `test -f '$(srcdir)/generated/cshift1_4_i16.c' || echo '$(srcdir)/'`$(srcdir)/generated/cshift1_4_i16.c
+
+cshift1_4_r4.lo: $(srcdir)/generated/cshift1_4_r4.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT cshift1_4_r4.lo -MD -MP -MF $(DEPDIR)/cshift1_4_r4.Tpo -c -o cshift1_4_r4.lo `test -f '$(srcdir)/generated/cshift1_4_r4.c' || echo '$(srcdir)/'`$(srcdir)/generated/cshift1_4_r4.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/cshift1_4_r4.Tpo $(DEPDIR)/cshift1_4_r4.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/cshift1_4_r4.c' object='cshift1_4_r4.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o cshift1_4_r4.lo `test -f '$(srcdir)/generated/cshift1_4_r4.c' || echo '$(srcdir)/'`$(srcdir)/generated/cshift1_4_r4.c
+
+cshift1_4_r8.lo: $(srcdir)/generated/cshift1_4_r8.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT cshift1_4_r8.lo -MD -MP -MF $(DEPDIR)/cshift1_4_r8.Tpo -c -o cshift1_4_r8.lo `test -f '$(srcdir)/generated/cshift1_4_r8.c' || echo '$(srcdir)/'`$(srcdir)/generated/cshift1_4_r8.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/cshift1_4_r8.Tpo $(DEPDIR)/cshift1_4_r8.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/cshift1_4_r8.c' object='cshift1_4_r8.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o cshift1_4_r8.lo `test -f '$(srcdir)/generated/cshift1_4_r8.c' || echo '$(srcdir)/'`$(srcdir)/generated/cshift1_4_r8.c
+
+cshift1_4_r10.lo: $(srcdir)/generated/cshift1_4_r10.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT cshift1_4_r10.lo -MD -MP -MF $(DEPDIR)/cshift1_4_r10.Tpo -c -o cshift1_4_r10.lo `test -f '$(srcdir)/generated/cshift1_4_r10.c' || echo '$(srcdir)/'`$(srcdir)/generated/cshift1_4_r10.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/cshift1_4_r10.Tpo $(DEPDIR)/cshift1_4_r10.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/cshift1_4_r10.c' object='cshift1_4_r10.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o cshift1_4_r10.lo `test -f '$(srcdir)/generated/cshift1_4_r10.c' || echo '$(srcdir)/'`$(srcdir)/generated/cshift1_4_r10.c
+
+cshift1_4_r16.lo: $(srcdir)/generated/cshift1_4_r16.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT cshift1_4_r16.lo -MD -MP -MF $(DEPDIR)/cshift1_4_r16.Tpo -c -o cshift1_4_r16.lo `test -f '$(srcdir)/generated/cshift1_4_r16.c' || echo '$(srcdir)/'`$(srcdir)/generated/cshift1_4_r16.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/cshift1_4_r16.Tpo $(DEPDIR)/cshift1_4_r16.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/cshift1_4_r16.c' object='cshift1_4_r16.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o cshift1_4_r16.lo `test -f '$(srcdir)/generated/cshift1_4_r16.c' || echo '$(srcdir)/'`$(srcdir)/generated/cshift1_4_r16.c
+
+cshift1_4_c4.lo: $(srcdir)/generated/cshift1_4_c4.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT cshift1_4_c4.lo -MD -MP -MF $(DEPDIR)/cshift1_4_c4.Tpo -c -o cshift1_4_c4.lo `test -f '$(srcdir)/generated/cshift1_4_c4.c' || echo '$(srcdir)/'`$(srcdir)/generated/cshift1_4_c4.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/cshift1_4_c4.Tpo $(DEPDIR)/cshift1_4_c4.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/cshift1_4_c4.c' object='cshift1_4_c4.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o cshift1_4_c4.lo `test -f '$(srcdir)/generated/cshift1_4_c4.c' || echo '$(srcdir)/'`$(srcdir)/generated/cshift1_4_c4.c
+
+cshift1_4_c8.lo: $(srcdir)/generated/cshift1_4_c8.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT cshift1_4_c8.lo -MD -MP -MF $(DEPDIR)/cshift1_4_c8.Tpo -c -o cshift1_4_c8.lo `test -f '$(srcdir)/generated/cshift1_4_c8.c' || echo '$(srcdir)/'`$(srcdir)/generated/cshift1_4_c8.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/cshift1_4_c8.Tpo $(DEPDIR)/cshift1_4_c8.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/cshift1_4_c8.c' object='cshift1_4_c8.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o cshift1_4_c8.lo `test -f '$(srcdir)/generated/cshift1_4_c8.c' || echo '$(srcdir)/'`$(srcdir)/generated/cshift1_4_c8.c
+
+cshift1_4_c10.lo: $(srcdir)/generated/cshift1_4_c10.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT cshift1_4_c10.lo -MD -MP -MF $(DEPDIR)/cshift1_4_c10.Tpo -c -o cshift1_4_c10.lo `test -f '$(srcdir)/generated/cshift1_4_c10.c' || echo '$(srcdir)/'`$(srcdir)/generated/cshift1_4_c10.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/cshift1_4_c10.Tpo $(DEPDIR)/cshift1_4_c10.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/cshift1_4_c10.c' object='cshift1_4_c10.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o cshift1_4_c10.lo `test -f '$(srcdir)/generated/cshift1_4_c10.c' || echo '$(srcdir)/'`$(srcdir)/generated/cshift1_4_c10.c
+
+cshift1_4_c16.lo: $(srcdir)/generated/cshift1_4_c16.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT cshift1_4_c16.lo -MD -MP -MF $(DEPDIR)/cshift1_4_c16.Tpo -c -o cshift1_4_c16.lo `test -f '$(srcdir)/generated/cshift1_4_c16.c' || echo '$(srcdir)/'`$(srcdir)/generated/cshift1_4_c16.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/cshift1_4_c16.Tpo $(DEPDIR)/cshift1_4_c16.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/cshift1_4_c16.c' object='cshift1_4_c16.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o cshift1_4_c16.lo `test -f '$(srcdir)/generated/cshift1_4_c16.c' || echo '$(srcdir)/'`$(srcdir)/generated/cshift1_4_c16.c
+
+cshift1_8_i1.lo: $(srcdir)/generated/cshift1_8_i1.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT cshift1_8_i1.lo -MD -MP -MF $(DEPDIR)/cshift1_8_i1.Tpo -c -o cshift1_8_i1.lo `test -f '$(srcdir)/generated/cshift1_8_i1.c' || echo '$(srcdir)/'`$(srcdir)/generated/cshift1_8_i1.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/cshift1_8_i1.Tpo $(DEPDIR)/cshift1_8_i1.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/cshift1_8_i1.c' object='cshift1_8_i1.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o cshift1_8_i1.lo `test -f '$(srcdir)/generated/cshift1_8_i1.c' || echo '$(srcdir)/'`$(srcdir)/generated/cshift1_8_i1.c
+
+cshift1_8_i2.lo: $(srcdir)/generated/cshift1_8_i2.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT cshift1_8_i2.lo -MD -MP -MF $(DEPDIR)/cshift1_8_i2.Tpo -c -o cshift1_8_i2.lo `test -f '$(srcdir)/generated/cshift1_8_i2.c' || echo '$(srcdir)/'`$(srcdir)/generated/cshift1_8_i2.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/cshift1_8_i2.Tpo $(DEPDIR)/cshift1_8_i2.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/cshift1_8_i2.c' object='cshift1_8_i2.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o cshift1_8_i2.lo `test -f '$(srcdir)/generated/cshift1_8_i2.c' || echo '$(srcdir)/'`$(srcdir)/generated/cshift1_8_i2.c
+
+cshift1_8_i4.lo: $(srcdir)/generated/cshift1_8_i4.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT cshift1_8_i4.lo -MD -MP -MF $(DEPDIR)/cshift1_8_i4.Tpo -c -o cshift1_8_i4.lo `test -f '$(srcdir)/generated/cshift1_8_i4.c' || echo '$(srcdir)/'`$(srcdir)/generated/cshift1_8_i4.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/cshift1_8_i4.Tpo $(DEPDIR)/cshift1_8_i4.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/cshift1_8_i4.c' object='cshift1_8_i4.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o cshift1_8_i4.lo `test -f '$(srcdir)/generated/cshift1_8_i4.c' || echo '$(srcdir)/'`$(srcdir)/generated/cshift1_8_i4.c
+
+cshift1_8_i8.lo: $(srcdir)/generated/cshift1_8_i8.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT cshift1_8_i8.lo -MD -MP -MF $(DEPDIR)/cshift1_8_i8.Tpo -c -o cshift1_8_i8.lo `test -f '$(srcdir)/generated/cshift1_8_i8.c' || echo '$(srcdir)/'`$(srcdir)/generated/cshift1_8_i8.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/cshift1_8_i8.Tpo $(DEPDIR)/cshift1_8_i8.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/cshift1_8_i8.c' object='cshift1_8_i8.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o cshift1_8_i8.lo `test -f '$(srcdir)/generated/cshift1_8_i8.c' || echo '$(srcdir)/'`$(srcdir)/generated/cshift1_8_i8.c
+
+cshift1_8_i16.lo: $(srcdir)/generated/cshift1_8_i16.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT cshift1_8_i16.lo -MD -MP -MF $(DEPDIR)/cshift1_8_i16.Tpo -c -o cshift1_8_i16.lo `test -f '$(srcdir)/generated/cshift1_8_i16.c' || echo '$(srcdir)/'`$(srcdir)/generated/cshift1_8_i16.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/cshift1_8_i16.Tpo $(DEPDIR)/cshift1_8_i16.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/cshift1_8_i16.c' object='cshift1_8_i16.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o cshift1_8_i16.lo `test -f '$(srcdir)/generated/cshift1_8_i16.c' || echo '$(srcdir)/'`$(srcdir)/generated/cshift1_8_i16.c
+
+cshift1_8_r4.lo: $(srcdir)/generated/cshift1_8_r4.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT cshift1_8_r4.lo -MD -MP -MF $(DEPDIR)/cshift1_8_r4.Tpo -c -o cshift1_8_r4.lo `test -f '$(srcdir)/generated/cshift1_8_r4.c' || echo '$(srcdir)/'`$(srcdir)/generated/cshift1_8_r4.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/cshift1_8_r4.Tpo $(DEPDIR)/cshift1_8_r4.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/cshift1_8_r4.c' object='cshift1_8_r4.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o cshift1_8_r4.lo `test -f '$(srcdir)/generated/cshift1_8_r4.c' || echo '$(srcdir)/'`$(srcdir)/generated/cshift1_8_r4.c
+
+cshift1_8_r8.lo: $(srcdir)/generated/cshift1_8_r8.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT cshift1_8_r8.lo -MD -MP -MF $(DEPDIR)/cshift1_8_r8.Tpo -c -o cshift1_8_r8.lo `test -f '$(srcdir)/generated/cshift1_8_r8.c' || echo '$(srcdir)/'`$(srcdir)/generated/cshift1_8_r8.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/cshift1_8_r8.Tpo $(DEPDIR)/cshift1_8_r8.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/cshift1_8_r8.c' object='cshift1_8_r8.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o cshift1_8_r8.lo `test -f '$(srcdir)/generated/cshift1_8_r8.c' || echo '$(srcdir)/'`$(srcdir)/generated/cshift1_8_r8.c
+
+cshift1_8_r10.lo: $(srcdir)/generated/cshift1_8_r10.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT cshift1_8_r10.lo -MD -MP -MF $(DEPDIR)/cshift1_8_r10.Tpo -c -o cshift1_8_r10.lo `test -f '$(srcdir)/generated/cshift1_8_r10.c' || echo '$(srcdir)/'`$(srcdir)/generated/cshift1_8_r10.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/cshift1_8_r10.Tpo $(DEPDIR)/cshift1_8_r10.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/cshift1_8_r10.c' object='cshift1_8_r10.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o cshift1_8_r10.lo `test -f '$(srcdir)/generated/cshift1_8_r10.c' || echo '$(srcdir)/'`$(srcdir)/generated/cshift1_8_r10.c
+
+cshift1_8_r16.lo: $(srcdir)/generated/cshift1_8_r16.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT cshift1_8_r16.lo -MD -MP -MF $(DEPDIR)/cshift1_8_r16.Tpo -c -o cshift1_8_r16.lo `test -f '$(srcdir)/generated/cshift1_8_r16.c' || echo '$(srcdir)/'`$(srcdir)/generated/cshift1_8_r16.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/cshift1_8_r16.Tpo $(DEPDIR)/cshift1_8_r16.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/cshift1_8_r16.c' object='cshift1_8_r16.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o cshift1_8_r16.lo `test -f '$(srcdir)/generated/cshift1_8_r16.c' || echo '$(srcdir)/'`$(srcdir)/generated/cshift1_8_r16.c
+
+cshift1_8_c4.lo: $(srcdir)/generated/cshift1_8_c4.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT cshift1_8_c4.lo -MD -MP -MF $(DEPDIR)/cshift1_8_c4.Tpo -c -o cshift1_8_c4.lo `test -f '$(srcdir)/generated/cshift1_8_c4.c' || echo '$(srcdir)/'`$(srcdir)/generated/cshift1_8_c4.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/cshift1_8_c4.Tpo $(DEPDIR)/cshift1_8_c4.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/cshift1_8_c4.c' object='cshift1_8_c4.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o cshift1_8_c4.lo `test -f '$(srcdir)/generated/cshift1_8_c4.c' || echo '$(srcdir)/'`$(srcdir)/generated/cshift1_8_c4.c
+
+cshift1_8_c8.lo: $(srcdir)/generated/cshift1_8_c8.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT cshift1_8_c8.lo -MD -MP -MF $(DEPDIR)/cshift1_8_c8.Tpo -c -o cshift1_8_c8.lo `test -f '$(srcdir)/generated/cshift1_8_c8.c' || echo '$(srcdir)/'`$(srcdir)/generated/cshift1_8_c8.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/cshift1_8_c8.Tpo $(DEPDIR)/cshift1_8_c8.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/cshift1_8_c8.c' object='cshift1_8_c8.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o cshift1_8_c8.lo `test -f '$(srcdir)/generated/cshift1_8_c8.c' || echo '$(srcdir)/'`$(srcdir)/generated/cshift1_8_c8.c
+
+cshift1_8_c10.lo: $(srcdir)/generated/cshift1_8_c10.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT cshift1_8_c10.lo -MD -MP -MF $(DEPDIR)/cshift1_8_c10.Tpo -c -o cshift1_8_c10.lo `test -f '$(srcdir)/generated/cshift1_8_c10.c' || echo '$(srcdir)/'`$(srcdir)/generated/cshift1_8_c10.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/cshift1_8_c10.Tpo $(DEPDIR)/cshift1_8_c10.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/cshift1_8_c10.c' object='cshift1_8_c10.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o cshift1_8_c10.lo `test -f '$(srcdir)/generated/cshift1_8_c10.c' || echo '$(srcdir)/'`$(srcdir)/generated/cshift1_8_c10.c
+
+cshift1_8_c16.lo: $(srcdir)/generated/cshift1_8_c16.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT cshift1_8_c16.lo -MD -MP -MF $(DEPDIR)/cshift1_8_c16.Tpo -c -o cshift1_8_c16.lo `test -f '$(srcdir)/generated/cshift1_8_c16.c' || echo '$(srcdir)/'`$(srcdir)/generated/cshift1_8_c16.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/cshift1_8_c16.Tpo $(DEPDIR)/cshift1_8_c16.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/cshift1_8_c16.c' object='cshift1_8_c16.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o cshift1_8_c16.lo `test -f '$(srcdir)/generated/cshift1_8_c16.c' || echo '$(srcdir)/'`$(srcdir)/generated/cshift1_8_c16.c
+
+cshift1_16_i1.lo: $(srcdir)/generated/cshift1_16_i1.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT cshift1_16_i1.lo -MD -MP -MF $(DEPDIR)/cshift1_16_i1.Tpo -c -o cshift1_16_i1.lo `test -f '$(srcdir)/generated/cshift1_16_i1.c' || echo '$(srcdir)/'`$(srcdir)/generated/cshift1_16_i1.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/cshift1_16_i1.Tpo $(DEPDIR)/cshift1_16_i1.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/cshift1_16_i1.c' object='cshift1_16_i1.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o cshift1_16_i1.lo `test -f '$(srcdir)/generated/cshift1_16_i1.c' || echo '$(srcdir)/'`$(srcdir)/generated/cshift1_16_i1.c
+
+cshift1_16_i2.lo: $(srcdir)/generated/cshift1_16_i2.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT cshift1_16_i2.lo -MD -MP -MF $(DEPDIR)/cshift1_16_i2.Tpo -c -o cshift1_16_i2.lo `test -f '$(srcdir)/generated/cshift1_16_i2.c' || echo '$(srcdir)/'`$(srcdir)/generated/cshift1_16_i2.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/cshift1_16_i2.Tpo $(DEPDIR)/cshift1_16_i2.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/cshift1_16_i2.c' object='cshift1_16_i2.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o cshift1_16_i2.lo `test -f '$(srcdir)/generated/cshift1_16_i2.c' || echo '$(srcdir)/'`$(srcdir)/generated/cshift1_16_i2.c
+
+cshift1_16_i4.lo: $(srcdir)/generated/cshift1_16_i4.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT cshift1_16_i4.lo -MD -MP -MF $(DEPDIR)/cshift1_16_i4.Tpo -c -o cshift1_16_i4.lo `test -f '$(srcdir)/generated/cshift1_16_i4.c' || echo '$(srcdir)/'`$(srcdir)/generated/cshift1_16_i4.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/cshift1_16_i4.Tpo $(DEPDIR)/cshift1_16_i4.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/cshift1_16_i4.c' object='cshift1_16_i4.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o cshift1_16_i4.lo `test -f '$(srcdir)/generated/cshift1_16_i4.c' || echo '$(srcdir)/'`$(srcdir)/generated/cshift1_16_i4.c
+
+cshift1_16_i8.lo: $(srcdir)/generated/cshift1_16_i8.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT cshift1_16_i8.lo -MD -MP -MF $(DEPDIR)/cshift1_16_i8.Tpo -c -o cshift1_16_i8.lo `test -f '$(srcdir)/generated/cshift1_16_i8.c' || echo '$(srcdir)/'`$(srcdir)/generated/cshift1_16_i8.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/cshift1_16_i8.Tpo $(DEPDIR)/cshift1_16_i8.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/cshift1_16_i8.c' object='cshift1_16_i8.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o cshift1_16_i8.lo `test -f '$(srcdir)/generated/cshift1_16_i8.c' || echo '$(srcdir)/'`$(srcdir)/generated/cshift1_16_i8.c
+
+cshift1_16_i16.lo: $(srcdir)/generated/cshift1_16_i16.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT cshift1_16_i16.lo -MD -MP -MF $(DEPDIR)/cshift1_16_i16.Tpo -c -o cshift1_16_i16.lo `test -f '$(srcdir)/generated/cshift1_16_i16.c' || echo '$(srcdir)/'`$(srcdir)/generated/cshift1_16_i16.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/cshift1_16_i16.Tpo $(DEPDIR)/cshift1_16_i16.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/cshift1_16_i16.c' object='cshift1_16_i16.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o cshift1_16_i16.lo `test -f '$(srcdir)/generated/cshift1_16_i16.c' || echo '$(srcdir)/'`$(srcdir)/generated/cshift1_16_i16.c
+
+cshift1_16_r4.lo: $(srcdir)/generated/cshift1_16_r4.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT cshift1_16_r4.lo -MD -MP -MF $(DEPDIR)/cshift1_16_r4.Tpo -c -o cshift1_16_r4.lo `test -f '$(srcdir)/generated/cshift1_16_r4.c' || echo '$(srcdir)/'`$(srcdir)/generated/cshift1_16_r4.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/cshift1_16_r4.Tpo $(DEPDIR)/cshift1_16_r4.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/cshift1_16_r4.c' object='cshift1_16_r4.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o cshift1_16_r4.lo `test -f '$(srcdir)/generated/cshift1_16_r4.c' || echo '$(srcdir)/'`$(srcdir)/generated/cshift1_16_r4.c
+
+cshift1_16_r8.lo: $(srcdir)/generated/cshift1_16_r8.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT cshift1_16_r8.lo -MD -MP -MF $(DEPDIR)/cshift1_16_r8.Tpo -c -o cshift1_16_r8.lo `test -f '$(srcdir)/generated/cshift1_16_r8.c' || echo '$(srcdir)/'`$(srcdir)/generated/cshift1_16_r8.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/cshift1_16_r8.Tpo $(DEPDIR)/cshift1_16_r8.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/cshift1_16_r8.c' object='cshift1_16_r8.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o cshift1_16_r8.lo `test -f '$(srcdir)/generated/cshift1_16_r8.c' || echo '$(srcdir)/'`$(srcdir)/generated/cshift1_16_r8.c
+
+cshift1_16_r10.lo: $(srcdir)/generated/cshift1_16_r10.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT cshift1_16_r10.lo -MD -MP -MF $(DEPDIR)/cshift1_16_r10.Tpo -c -o cshift1_16_r10.lo `test -f '$(srcdir)/generated/cshift1_16_r10.c' || echo '$(srcdir)/'`$(srcdir)/generated/cshift1_16_r10.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/cshift1_16_r10.Tpo $(DEPDIR)/cshift1_16_r10.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/cshift1_16_r10.c' object='cshift1_16_r10.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o cshift1_16_r10.lo `test -f '$(srcdir)/generated/cshift1_16_r10.c' || echo '$(srcdir)/'`$(srcdir)/generated/cshift1_16_r10.c
+
+cshift1_16_r16.lo: $(srcdir)/generated/cshift1_16_r16.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT cshift1_16_r16.lo -MD -MP -MF $(DEPDIR)/cshift1_16_r16.Tpo -c -o cshift1_16_r16.lo `test -f '$(srcdir)/generated/cshift1_16_r16.c' || echo '$(srcdir)/'`$(srcdir)/generated/cshift1_16_r16.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/cshift1_16_r16.Tpo $(DEPDIR)/cshift1_16_r16.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/cshift1_16_r16.c' object='cshift1_16_r16.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o cshift1_16_r16.lo `test -f '$(srcdir)/generated/cshift1_16_r16.c' || echo '$(srcdir)/'`$(srcdir)/generated/cshift1_16_r16.c
+
+cshift1_16_c4.lo: $(srcdir)/generated/cshift1_16_c4.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT cshift1_16_c4.lo -MD -MP -MF $(DEPDIR)/cshift1_16_c4.Tpo -c -o cshift1_16_c4.lo `test -f '$(srcdir)/generated/cshift1_16_c4.c' || echo '$(srcdir)/'`$(srcdir)/generated/cshift1_16_c4.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/cshift1_16_c4.Tpo $(DEPDIR)/cshift1_16_c4.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/cshift1_16_c4.c' object='cshift1_16_c4.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o cshift1_16_c4.lo `test -f '$(srcdir)/generated/cshift1_16_c4.c' || echo '$(srcdir)/'`$(srcdir)/generated/cshift1_16_c4.c
+
+cshift1_16_c8.lo: $(srcdir)/generated/cshift1_16_c8.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT cshift1_16_c8.lo -MD -MP -MF $(DEPDIR)/cshift1_16_c8.Tpo -c -o cshift1_16_c8.lo `test -f '$(srcdir)/generated/cshift1_16_c8.c' || echo '$(srcdir)/'`$(srcdir)/generated/cshift1_16_c8.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/cshift1_16_c8.Tpo $(DEPDIR)/cshift1_16_c8.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/cshift1_16_c8.c' object='cshift1_16_c8.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o cshift1_16_c8.lo `test -f '$(srcdir)/generated/cshift1_16_c8.c' || echo '$(srcdir)/'`$(srcdir)/generated/cshift1_16_c8.c
+
+cshift1_16_c10.lo: $(srcdir)/generated/cshift1_16_c10.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT cshift1_16_c10.lo -MD -MP -MF $(DEPDIR)/cshift1_16_c10.Tpo -c -o cshift1_16_c10.lo `test -f '$(srcdir)/generated/cshift1_16_c10.c' || echo '$(srcdir)/'`$(srcdir)/generated/cshift1_16_c10.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/cshift1_16_c10.Tpo $(DEPDIR)/cshift1_16_c10.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/cshift1_16_c10.c' object='cshift1_16_c10.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o cshift1_16_c10.lo `test -f '$(srcdir)/generated/cshift1_16_c10.c' || echo '$(srcdir)/'`$(srcdir)/generated/cshift1_16_c10.c
+
+cshift1_16_c16.lo: $(srcdir)/generated/cshift1_16_c16.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT cshift1_16_c16.lo -MD -MP -MF $(DEPDIR)/cshift1_16_c16.Tpo -c -o cshift1_16_c16.lo `test -f '$(srcdir)/generated/cshift1_16_c16.c' || echo '$(srcdir)/'`$(srcdir)/generated/cshift1_16_c16.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/cshift1_16_c16.Tpo $(DEPDIR)/cshift1_16_c16.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/cshift1_16_c16.c' object='cshift1_16_c16.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o cshift1_16_c16.lo `test -f '$(srcdir)/generated/cshift1_16_c16.c' || echo '$(srcdir)/'`$(srcdir)/generated/cshift1_16_c16.c
+
 size_from_kind.lo: io/size_from_kind.c
 @am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT size_from_kind.lo -MD -MP -MF $(DEPDIR)/size_from_kind.Tpo -c -o size_from_kind.lo `test -f 'io/size_from_kind.c' || echo '$(srcdir)/'`io/size_from_kind.c
 @am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/size_from_kind.Tpo $(DEPDIR)/size_from_kind.Plo
@@ -5823,6 +6190,9 @@ fpu-target.inc: fpu-target.h $(srcdir)/libgfortran.h
 
 @MAINTAINER_MODE_TRUE@$(i_cshift1_c): m4/cshift1.m4 $(I_M4_DEPS)
 @MAINTAINER_MODE_TRUE@	$(M4) -Dfile=$@ -I$(srcdir)/m4 cshift1.m4 > $@
+
+@MAINTAINER_MODE_TRUE@$(i_cshift1a_c): m4/cshift1a.m4 $(I_M$_DEPS)
+@MAINTAINER_MODE_TRUE@	$(M4) -Dfile=$@ -I$(srcdir)/m4 cshift1a.m4 > $@
 
 @MAINTAINER_MODE_TRUE@$(in_pack_c): m4/in_pack.m4 $(I_M4_DEPS)
 @MAINTAINER_MODE_TRUE@	$(M4) -Dfile=$@ -I$(srcdir)/m4 in_pack.m4 > $@
