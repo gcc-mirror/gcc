@@ -1,5 +1,22 @@
+2017-06-24  Jim Wilson  <jim.wilson@linaro.org>
+
+	* config/aarch64/aarch64-cost-tables.h (qdf24xx_extra_costs): Move to
+	here.
+	* config/arm/aarch-cost-tables.h (qdf24xx_extra_costs): From here.
+	* config/arm/arm-cpu-cdata.h: Regenerate.
+	* config/arm/arm-cpu-data.h, config/arm/arm-cpu.h: Likewise.
+	* config/arm/arm-tables.opt, config/arm/arm-tune.md: Likewise.
+	* config/arm/arm-cpus.in: Delete falkor and qdf24xx entries.
+	* config/arm/arm.c (arm_qdf24xx_tune): Delete.
+	* config/arm/bpabi.h (BE8_LINK_SPEC): Delete falkor and qdf24xx
+	support.
+	* config/arm/t-aprofile (MULTILIB_MATCHES): Delete falkor and qdf24xx
+	support.
+	* config/arm/t-rmprofile: Likewise.
+	* doc/invoke.texi (ARM Options): Drop falkor and qdf24xx support.
+
 2017-06-24  Marek Polacek  <polacek@redhat.com>
-	
+
 	Backport from mainline
 	2017-05-04  Marek Polacek  <polacek@redhat.com>
 
