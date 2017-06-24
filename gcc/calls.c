@@ -1270,7 +1270,7 @@ get_size_range (tree exp, tree range[2])
 
   wide_int min, max;
   enum value_range_type range_type
-    = (TREE_CODE (exp) == SSA_NAME
+    = ((TREE_CODE (exp) == SSA_NAME && INTEGRAL_TYPE_P (TREE_TYPE (exp)))
        ? get_range_info (exp, &min, &max) : VR_VARYING);
 
   if (range_type == VR_VARYING)

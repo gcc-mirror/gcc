@@ -1,3 +1,11 @@
+2017-06-24  Marek Polacek  <polacek@redhat.com>
+	
+	Backport from mainline
+	2017-05-04  Marek Polacek  <polacek@redhat.com>
+
+	PR tree-optimization/80612
+	* calls.c (get_size_range): Check for INTEGRAL_TYPE_P.
+
 2017-06-23  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	Backport from mainline
