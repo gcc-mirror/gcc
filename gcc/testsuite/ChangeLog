@@ -9,6 +9,11 @@
 	PR c++/80244 - ICE with attribute in template alias.
 	* g++.dg/cpp0x/alias-decl-59.C: New test.
 
+	2017-04-10  Marek Polacek  <polacek@redhat.com>
+
+	PR sanitizer/80348
+	* g++.dg/ubsan/div-by-zero-3.C: New test.
+
 	2017-04-07  Marek Polacek  <polacek@redhat.com>
 
 	PR sanitizer/80348

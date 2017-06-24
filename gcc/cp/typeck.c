@@ -4042,7 +4042,7 @@ cp_build_binary_op (location_t location,
 
   /* Data type in which the computation is to be performed.
      In the simplest cases this is the common type of the arguments.  */
-  tree result_type = NULL;
+  tree result_type = NULL_TREE;
 
   /* Nonzero means operands have already been type-converted
      in whatever way is necessary.
@@ -4058,7 +4058,6 @@ cp_build_binary_op (location_t location,
   tree final_type = 0;
 
   tree result, result_ovl;
-  tree orig_type = NULL;
 
   /* Nonzero if this is an operation like MIN or MAX which can
      safely be computed in short if both args are promoted shorts.
@@ -4090,7 +4089,7 @@ cp_build_binary_op (location_t location,
   bool doing_shift = false;
 
   /* Tree holding instrumentation expression.  */
-  tree instrument_expr = NULL;
+  tree instrument_expr = NULL_TREE;
 
   if (code == TRUTH_AND_EXPR || code == TRUTH_ANDIF_EXPR
       || code == TRUTH_OR_EXPR || code == TRUTH_ORIF_EXPR
@@ -4966,6 +4965,10 @@ cp_build_binary_op (location_t location,
       return tmp;
     }
 
+  /* Remember the original type; RESULT_TYPE might be changed later on
+     by shorten_binary_op.  */
+  tree orig_type = result_type;
+
   if (arithmetic_types_p)
     {
       bool first_complex = (code0 == COMPLEX_TYPE);
@@ -5062,7 +5065,6 @@ cp_build_binary_op (location_t location,
 
       if (shorten && none_complex)
 	{
-	  orig_type = result_type;
 	  final_type = result_type;
 	  result_type = shorten_binary_op (result_type, op0, op1,
 					   shorten == -1);
@@ -5142,13 +5144,10 @@ cp_build_binary_op (location_t location,
 	     original result_type.  */
 	  tree cop0 = op0;
 	  tree cop1 = op1;
-	  if (orig_type != NULL_TREE)
-	    {
-	      if (TREE_TYPE (cop0) != orig_type)
-		cop0 = cp_convert (orig_type, op0, complain);
-	      if (TREE_TYPE (cop1) != orig_type)
-		cop1 = cp_convert (orig_type, op1, complain);
-	    }
+	  if (TREE_TYPE (cop0) != orig_type)
+	    cop0 = cp_convert (orig_type, op0, complain);
+	  if (TREE_TYPE (cop1) != orig_type)
+	    cop1 = cp_convert (orig_type, op1, complain);
 	  instrument_expr = ubsan_instrument_division (location, cop0, cop1);
 	}
       else if (doing_shift && (flag_sanitize & SANITIZE_SHIFT))
