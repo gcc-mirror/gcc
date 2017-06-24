@@ -1,3 +1,8 @@
+2017-06-24  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/62315
+	* g++.dg/parse/typedef2.C: Specify a dg-error string.
+
 2017-06-24  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
         PR fortran/52473

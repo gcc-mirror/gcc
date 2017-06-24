@@ -1,3 +1,9 @@
+2017-06-24  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/62315
+	* parser.c (cp_parser_diagnose_invalid_type_name): Don't print
+	'typename' in error messages about missing 'typename'.
+
 2017-06-23  Jason Merrill  <jason@redhat.com>
 
 	PR c++/79056 - C++17 ICE with invalid template syntax.
