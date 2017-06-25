@@ -376,3 +376,18 @@ init_tree_optimization_optabs (tree optnode)
       ggc_free (tmp_optabs);
     }
 }
+
+/* Return TRUE if the target has support for vector right shift of an
+   operand of type TYPE.  If OT_TYPE is OPTAB_DEFAULT, check for existence
+   of a shift by either a scalar or a vector.  Otherwise, check only
+   for a shift that matches OT_TYPE.  */
+
+bool
+target_supports_op_p (tree type, enum tree_code code,
+		      enum optab_subtype ot_subtype)
+{
+  optab ot = optab_for_tree_code (code, type, ot_subtype);
+  return (ot != unknown_optab
+	  && optab_handler (ot, TYPE_MODE (type)) != CODE_FOR_nothing);
+}
+

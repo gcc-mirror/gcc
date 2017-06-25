@@ -1,6 +1,7 @@
 // { dg-do run { target *-*-linux* *-*-gnu* } }
-// { dg-options "-pthread" { target *-*-linux* *-*-gnu* *-*-solaris* } }
+// { dg-options "-pthread" }
 // { dg-require-effective-target c++11 }
+// { dg-require-effective-target pthread }
 
 // Copyright (C) 2014-2017 Free Software Foundation, Inc.
 //

@@ -6320,7 +6320,11 @@ lower_omp_ordered_clauses (gimple_stmt_iterator *gsi_p, gomp_ordered *ord_stmt,
     return;
 
   wide_int *folded_deps = XALLOCAVEC (wide_int, 2 * len - 1);
-  memset (folded_deps, 0, sizeof (*folded_deps) * (2 * len - 1));
+
+  /* wide_int is not a POD so it must be default-constructed.  */
+  for (unsigned i = 0; i != 2 * len - 1; ++i)
+    new (static_cast<void*>(folded_deps + i)) wide_int ();
+
   tree folded_dep = NULL_TREE;
   /* TRUE if the first dimension's offset is negative.  */
   bool neg_offset_p = false;

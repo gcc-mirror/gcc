@@ -1,6 +1,6 @@
 ! { dg-do run }
 ! { dg-add-options ieee }
-! { dg-skip-if "NaN not supported" { spu-*-* } { "*" } { "" } }
+! { dg-skip-if "NaN not supported" { spu-*-* } }
 !
 ! List-directed part of PR fortran/43298
 ! and follow up to PR fortran/34319.

@@ -398,7 +398,7 @@ gigi (Node_Id gnat_root,
     = create_subprog_decl (get_identifier ("__gnat_malloc"), NULL_TREE,
 			   ftype,
 			   NULL_TREE, is_disabled, true, true, true, false,
-			   NULL, Empty);
+			   false, NULL, Empty);
   DECL_IS_MALLOC (malloc_decl) = 1;
 
   ftype = build_function_type_list (void_type_node, ptr_type_node, NULL_TREE);
@@ -406,7 +406,7 @@ gigi (Node_Id gnat_root,
     = create_subprog_decl (get_identifier ("__gnat_free"), NULL_TREE,
 			   ftype,
 			   NULL_TREE, is_disabled, true, true, true, false,
-			   NULL, Empty);
+			   false, NULL, Empty);
 
   ftype = build_function_type_list (ptr_type_node, ptr_type_node, sizetype,
 				    NULL_TREE);
@@ -414,7 +414,7 @@ gigi (Node_Id gnat_root,
     = create_subprog_decl (get_identifier ("__gnat_realloc"), NULL_TREE,
 			   ftype,
 			   NULL_TREE, is_disabled, true, true, true, false,
-			   NULL, Empty);
+			   false, NULL, Empty);
 
   /* This is used for 64-bit multiplication with overflow checking.  */
   int64_type = gnat_type_for_size (64, 0);
@@ -423,7 +423,7 @@ gigi (Node_Id gnat_root,
 			   build_function_type_list (int64_type, int64_type,
 						     int64_type, NULL_TREE),
 			   NULL_TREE, is_disabled, true, true, true, false,
-			   NULL, Empty);
+			   false, NULL, Empty);
 
   /* Name of the _Parent field in tagged record types.  */
   parent_name_id = get_identifier (Get_Name_String (Name_uParent));
@@ -446,21 +446,21 @@ gigi (Node_Id gnat_root,
     = create_subprog_decl
       (get_identifier ("system__soft_links__get_jmpbuf_address_soft"),
        NULL_TREE, build_function_type_list (jmpbuf_ptr_type, NULL_TREE),
-       NULL_TREE, is_disabled, true, true, true, false, NULL, Empty);
+       NULL_TREE, is_disabled, true, true, true, false, false, NULL, Empty);
 
   set_jmpbuf_decl
     = create_subprog_decl
       (get_identifier ("system__soft_links__set_jmpbuf_address_soft"),
        NULL_TREE, build_function_type_list (void_type_node, jmpbuf_ptr_type,
 					    NULL_TREE),
-       NULL_TREE, is_disabled, true, true, true, false, NULL, Empty);
+       NULL_TREE, is_disabled, true, true, true, false, false, NULL, Empty);
 
   get_excptr_decl
     = create_subprog_decl
       (get_identifier ("system__soft_links__get_gnat_exception"), NULL_TREE,
        build_function_type_list (build_pointer_type (except_type_node),
 				 NULL_TREE),
-       NULL_TREE, is_disabled, true, true, true, false, NULL, Empty);
+       NULL_TREE, is_disabled, true, true, true, false, false, NULL, Empty);
 
   not_handled_by_others_decl = get_identifier ("not_handled_by_others");
   for (t = TYPE_FIELDS (except_type_node); t; t = DECL_CHAIN (t))
@@ -478,7 +478,7 @@ gigi (Node_Id gnat_root,
       (get_identifier ("__builtin_setjmp"), NULL_TREE,
        build_function_type_list (integer_type_node, jmpbuf_ptr_type,
 				 NULL_TREE),
-       NULL_TREE, is_disabled, true, true, true, false, NULL, Empty);
+       NULL_TREE, is_disabled, true, true, true, false, false, NULL, Empty);
   DECL_BUILT_IN_CLASS (setjmp_decl) = BUILT_IN_NORMAL;
   DECL_FUNCTION_CODE (setjmp_decl) = BUILT_IN_SETJMP;
 
@@ -488,7 +488,7 @@ gigi (Node_Id gnat_root,
     = create_subprog_decl
       (get_identifier ("__builtin_update_setjmp_buf"), NULL_TREE,
        build_function_type_list (void_type_node, jmpbuf_ptr_type, NULL_TREE),
-       NULL_TREE, is_disabled, true, true, true, false, NULL, Empty);
+       NULL_TREE, is_disabled, true, true, true, false, false, NULL, Empty);
   DECL_BUILT_IN_CLASS (update_setjmp_buf_decl) = BUILT_IN_NORMAL;
   DECL_FUNCTION_CODE (update_setjmp_buf_decl) = BUILT_IN_UPDATE_SETJMP_BUF;
 
@@ -500,14 +500,14 @@ gigi (Node_Id gnat_root,
   raise_nodefer_decl
     = create_subprog_decl
       (get_identifier ("__gnat_raise_nodefer_with_msg"), NULL_TREE, ftype,
-       NULL_TREE, is_disabled, true, true, true, false, NULL, Empty);
+       NULL_TREE, is_disabled, true, true, true, false, false, NULL, Empty);
 
   set_exception_parameter_decl
     = create_subprog_decl
       (get_identifier ("__gnat_set_exception_parameter"), NULL_TREE,
        build_function_type_list (void_type_node, ptr_type_node, ptr_type_node,
 				 NULL_TREE),
-       NULL_TREE, is_disabled, true, true, true, false, NULL, Empty);
+       NULL_TREE, is_disabled, true, true, true, false, false, NULL, Empty);
 
   /* Hooks to call when entering/leaving an exception handler.  */
   ftype = build_function_type_list (void_type_node, ptr_type_node, NULL_TREE);
@@ -515,26 +515,30 @@ gigi (Node_Id gnat_root,
   begin_handler_decl
     = create_subprog_decl (get_identifier ("__gnat_begin_handler"), NULL_TREE,
 			   ftype, NULL_TREE,
-			   is_disabled, true, true, true, false, NULL, Empty);
+			   is_disabled, true, true, true, false, false, NULL,
+			   Empty);
   /* __gnat_begin_handler is a dummy procedure.  */
   TREE_NOTHROW (begin_handler_decl) = 1;
 
   end_handler_decl
     = create_subprog_decl (get_identifier ("__gnat_end_handler"), NULL_TREE,
 			   ftype, NULL_TREE,
-			   is_disabled, true, true, true, false, NULL, Empty);
+			   is_disabled, true, true, true, false, false, NULL,
+			   Empty);
 
   unhandled_except_decl
     = create_subprog_decl (get_identifier ("__gnat_unhandled_except_handler"),
 			   NULL_TREE, ftype, NULL_TREE,
-			   is_disabled, true, true, true, false, NULL, Empty);
+			   is_disabled, true, true, true, false, false, NULL,
+			   Empty);
 
   /* Indicate that it never returns.  */
   ftype = build_qualified_type (ftype, TYPE_QUAL_VOLATILE);
   reraise_zcx_decl
     = create_subprog_decl (get_identifier ("__gnat_reraise_zcx"), NULL_TREE,
 			   ftype, NULL_TREE,
-			   is_disabled, true, true, true, false, NULL, Empty);
+			   is_disabled, true, true, true, false, false, NULL,
+			   Empty);
 
   /* Dummy objects to materialize "others" and "all others" in the exception
      tables.  These are exported by a-exexpr-gcc.adb, so see this unit for
@@ -573,7 +577,8 @@ gigi (Node_Id gnat_root,
       tree decl
 	= create_subprog_decl
 	  (get_identifier ("__gnat_last_chance_handler"), NULL_TREE, ftype,
-	   NULL_TREE, is_disabled, true, true, true, false, NULL, Empty);
+	   NULL_TREE, is_disabled, true, true, true, false, false, NULL,
+	   Empty);
       for (i = 0; i < (int) ARRAY_SIZE (gnat_raise_decls); i++)
 	gnat_raise_decls[i] = decl;
     }
@@ -739,7 +744,7 @@ build_raise_check (int check, enum exception_info_kind kind)
   result
     = create_subprog_decl (get_identifier (Name_Buffer), NULL_TREE, ftype,
 			   NULL_TREE, is_disabled, true, true, true, false,
-			   NULL, Empty);
+			   false, NULL, Empty);
 
   return result;
 }
@@ -3745,6 +3750,7 @@ Subprogram_Body_to_gnu (Node_Id gnat_node)
     = gnat_to_gnu_entity (gnat_subprog_id, NULL_TREE,
 			  Acts_As_Spec (gnat_node)
 			  && !present_gnu_tree (gnat_subprog_id));
+  DECL_FUNCTION_IS_DEF (gnu_subprog_decl) = true;
   gnu_result_decl = DECL_RESULT (gnu_subprog_decl);
   gnu_subprog_type = TREE_TYPE (gnu_subprog_decl);
   gnu_cico_list = TYPE_CI_CO_LIST (gnu_subprog_type);
@@ -5417,12 +5423,15 @@ Compilation_Unit_to_gnu (Node_Id gnat_node)
   const Entity_Id gnat_unit_entity = Defining_Entity (gnat_unit);
   Entity_Id gnat_entity;
   Node_Id gnat_pragma;
-  /* Make the decl for the elaboration procedure.  */
+  /* Make the decl for the elaboration procedure.  Emit debug info for it, so
+     that users can break into their elaboration code in debuggers.  Kludge:
+     don't consider it as a definition so that we have a line map for its body,
+     but no subprogram description in debug info. */
   tree gnu_elab_proc_decl
     = create_subprog_decl
       (create_concat_name (gnat_unit_entity, body_p ? "elabb" : "elabs"),
        NULL_TREE, void_ftype, NULL_TREE,
-       is_disabled, true, false, true, true, NULL, gnat_unit);
+       is_disabled, true, false, true, true, false, NULL, gnat_unit);
   struct elab_info *info;
 
   vec_safe_push (gnu_elab_proc_stack, gnu_elab_proc_decl);
@@ -5874,7 +5883,7 @@ gnat_to_gnu (Node_Id gnat_node)
   tree gnu_result_type = void_type_node;
   tree gnu_expr, gnu_lhs, gnu_rhs;
   Node_Id gnat_temp;
-  bool sync;
+  bool sync = false;
 
   /* Save node number for error message and set location information.  */
   error_gnat_node = gnat_node;
@@ -6453,7 +6462,7 @@ gnat_to_gnu (Node_Id gnat_node)
 		gnu_prefix = gnat_to_gnu (gnat_prefix);
 		gnu_prefix = maybe_implicit_deref (gnu_prefix);
 	      }
-		
+
 	    gnu_result
 	      = build_component_ref (gnu_prefix, gnu_field,
 				     (Nkind (Parent (gnat_node))
@@ -6484,7 +6493,8 @@ gnat_to_gnu (Node_Id gnat_node)
 				 (Entity (Prefix (gnat_node)),
 				  attr == Attr_Elab_Body ? "elabb" : "elabs"),
 				 NULL_TREE, void_ftype, NULL_TREE, is_disabled,
-				 true, true, true, true, NULL, gnat_node);
+				 true, true, true, true, false, NULL,
+				 gnat_node);
 
 	gnu_result = Attribute_to_gnu (gnat_node, &gnu_result_type, attr);
       }

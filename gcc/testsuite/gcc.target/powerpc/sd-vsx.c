@@ -1,5 +1,5 @@
 /* { dg-do compile { target { powerpc*-*-* } } } */
-/* { dg-skip-if "" { powerpc*-*-darwin* powerpc-ibm-aix* } { "*" } { "" } } */
+/* { dg-skip-if "" { powerpc*-*-darwin* powerpc-ibm-aix* } } */
 /* { dg-require-effective-target powerpc_vsx_ok } */
 /* { dg-require-effective-target dfp } */
 /* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power7" } } */

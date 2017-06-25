@@ -62,7 +62,8 @@ extern unsigned num_macro_tokens_counter;
 
 line_maps::~line_maps ()
 {
-  htab_delete (location_adhoc_data_map.htab);
+  if (location_adhoc_data_map.htab)
+    htab_delete (location_adhoc_data_map.htab);
 }
 
 /* Hash function for location_adhoc_data hashtable.  */
@@ -98,7 +99,8 @@ location_adhoc_data_eq (const void *l1, const void *l2)
 static int
 location_adhoc_data_update (void **slot, void *data)
 {
-  *((char **) slot) += *((int64_t *) data);
+  *((char **) slot)
+    = (char *) ((uintptr_t) *((char **) slot) + *((ptrdiff_t *) data));
   return 1;
 }
 
@@ -220,7 +222,7 @@ get_combined_adhoc_loc (struct line_maps *set,
 	  set->location_adhoc_data_map.allocated)
 	{
 	  char *orig_data = (char *) set->location_adhoc_data_map.data;
-	  int64_t offset;
+	  ptrdiff_t offset;
 	  /* Cast away extern "C" from the type of xrealloc.  */
 	  line_map_realloc reallocator = (set->reallocator
 					  ? set->reallocator
@@ -347,7 +349,7 @@ void
 linemap_init (struct line_maps *set,
 	      source_location builtin_location)
 {
-  memset (set, 0, sizeof (struct line_maps));
+  *set = line_maps ();
   set->highest_location = RESERVED_LOCATION_COUNT - 1;
   set->highest_line = RESERVED_LOCATION_COUNT - 1;
   set->location_adhoc_data_map.htab =
@@ -2326,6 +2328,25 @@ rich_location::maybe_add_fixit (source_location start,
   if (reject_impossible_fixit (next_loc))
     return;
 
+  /* Only allow fix-it hints that affect a single line in one file.
+     Compare the end-points.  */
+  expanded_location exploc_start
+    = linemap_client_expand_location_to_spelling_point (start);
+  expanded_location exploc_next_loc
+    = linemap_client_expand_location_to_spelling_point (next_loc);
+  /* They must be within the same file...  */
+  if (exploc_start.file != exploc_next_loc.file)
+    {
+      stop_supporting_fixits ();
+      return;
+    }
+  /* ...and on the same line.  */
+  if (exploc_start.line != exploc_next_loc.line)
+    {
+      stop_supporting_fixits ();
+      return;
+    }
+
   const char *newline = strchr (new_content, '\n');
   if (newline)
     {
@@ -2341,8 +2362,6 @@ rich_location::maybe_add_fixit (source_location start,
 	}
 
       /* The insertion must be at the start of a line.  */
-      expanded_location exploc_start
-	= linemap_client_expand_location_to_spelling_point (start);
       if (exploc_start.column != 1)
 	{
 	  stop_supporting_fixits ();

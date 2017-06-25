@@ -486,6 +486,7 @@ forward_parm (tree parm)
     type = PACK_EXPANSION_PATTERN (type);
   if (TREE_CODE (type) != REFERENCE_TYPE)
     type = cp_build_reference_type (type, /*rval=*/true);
+  warning_sentinel w (warn_useless_cast);
   exp = build_static_cast (type, exp, tf_warning_or_error);
   if (DECL_PACK_P (parm))
     exp = make_pack_expansion (exp);
@@ -2023,7 +2024,7 @@ implicitly_declare_fn (special_function_kind kind, tree type,
     }
   else if (cxx_dialect >= cxx11)
     {
-      raises = unevaluated_noexcept_spec ();
+      raises = noexcept_deferred_spec;
       synthesized_method_walk (type, kind, const_p, NULL, &trivial_p,
 			       &deleted_p, &constexpr_p, false,
 			       inherited_ctor, inherited_parms);
@@ -2072,7 +2073,7 @@ implicitly_declare_fn (special_function_kind kind, tree type,
       /* Note that this parameter is *not* marked DECL_ARTIFICIAL; we
 	 want its type to be included in the mangled function
 	 name.  */
-      tree decl = cp_build_parm_decl (NULL_TREE, rhs_parm_type);
+      tree decl = cp_build_parm_decl (fn, NULL_TREE, rhs_parm_type);
       TREE_READONLY (decl) = 1;
       retrofit_lang_decl (decl);
       DECL_PARM_INDEX (decl) = DECL_PARM_LEVEL (decl) = 1;
@@ -2085,11 +2086,10 @@ implicitly_declare_fn (special_function_kind kind, tree type,
       for (tree parm = inherited_parms; parm && parm != void_list_node;
 	   parm = TREE_CHAIN (parm))
 	{
-	  *p = cp_build_parm_decl (NULL_TREE, TREE_VALUE (parm));
+	  *p = cp_build_parm_decl (fn, NULL_TREE, TREE_VALUE (parm));
 	  retrofit_lang_decl (*p);
 	  DECL_PARM_LEVEL (*p) = 1;
 	  DECL_PARM_INDEX (*p) = index++;
-	  DECL_CONTEXT (*p) = fn;
 	  p = &DECL_CHAIN (*p);
 	}
       SET_DECL_INHERITED_CTOR (fn, inherited_ctor);
@@ -2103,7 +2103,7 @@ implicitly_declare_fn (special_function_kind kind, tree type,
       constexpr_p = DECL_DECLARED_CONSTEXPR_P (inherited_ctor);
     }
   /* Add the "this" parameter.  */
-  this_parm = build_this_parm (fn_type, TYPE_UNQUALIFIED);
+  this_parm = build_this_parm (fn, fn_type, TYPE_UNQUALIFIED);
   DECL_CHAIN (this_parm) = DECL_ARGUMENTS (fn);
   DECL_ARGUMENTS (fn) = this_parm;
 

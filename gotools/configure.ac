@@ -46,7 +46,7 @@ AC_PROG_INSTALL
 AC_PROG_CC
 AC_PROG_GO
 
-AM_CONDITIONAL(NATIVE, test "$cross_compiling" = no)
+AM_CONDITIONAL(NATIVE, test "$host_alias" = "$target_alias")
 
 dnl Test for -lsocket and -lnsl.  Copied from libjava/configure.ac.
 AC_CACHE_CHECK([for socket libraries], gotools_cv_lib_sockets,

@@ -466,8 +466,8 @@ echo "static const char *const multilib_reuse_raw[] = {"
 for rrule in ${multilib_reuse}; do
   # The left part of the rule are the options we used to build multilib.
   # The right part of the rule are the options that can reuse this multilib.
-  combo=`echo ${rrule} | sed -e 's/=.*$//' -e 's/\./=/g'`
-  copts=`echo ${rrule} | sed -e 's/^.*=//' -e 's/\./=/g'`
+  combo=`echo ${rrule} | sed -e 's/=.*$//' -e 's/\([^\\]\)\./\1=/g' -e 's/\\\././g'`
+  copts=`echo ${rrule} | sed -e 's/^.*=//' -e 's/\([^\\]\)\./\1=/g' -e 's/\\\././g'`
   # The variable ${combinations} are the option combinations we will build
   # multilib from.  If the combination in the left part of reuse rule isn't
   # in this variable, it means no multilib will be built for current reuse

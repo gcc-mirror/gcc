@@ -888,12 +888,8 @@ make_dispatcher_decl (const tree decl)
   tree func_decl;
   char *func_name;
   tree fn_type, func_type;
-  bool is_uniq = false;
 
-  if (TREE_PUBLIC (decl) == 0)
-    is_uniq = true;
-
-  func_name = make_unique_name (decl, "ifunc", is_uniq);
+  func_name = xstrdup (IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl)));
 
   fn_type = TREE_TYPE (decl);
   func_type = build_function_type (TREE_TYPE (fn_type),

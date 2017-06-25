@@ -1,4 +1,4 @@
-/* { dg-additional-options "-DSTACK_SIZE=[dg-effective-target-value stack_size]" { target { stack_size } } } */
+/* { dg-add-options stack_size } */
 
 #if defined(STACK_SIZE) && (STACK_SIZE < 65536)
 # define BYTEMEM_SIZE 10000L

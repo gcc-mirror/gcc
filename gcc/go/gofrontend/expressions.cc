@@ -7499,6 +7499,10 @@ Builtin_call_expression::lower_make(Statement_inserter* inserter)
     }
   Type* type = first_arg->type();
 
+  if (!type->in_heap())
+    go_error_at(first_arg->location(),
+		"can't make slice of go:notinheap type");
+
   bool is_slice = false;
   bool is_map = false;
   bool is_chan = false;
@@ -8742,6 +8746,9 @@ Builtin_call_expression::do_check_types(Gogo*)
 	  }
 
 	Type* element_type = slice_type->array_type()->element_type();
+	if (!element_type->in_heap())
+	  go_error_at(args->front()->location(),
+		      "can't append to slice of go:notinheap type");
 	if (this->is_varargs())
 	  {
 	    if (!args->back()->type()->is_slice_type()
@@ -12434,6 +12441,13 @@ Type*
 Allocation_expression::do_type()
 {
   return Type::make_pointer_type(this->type_);
+}
+
+void
+Allocation_expression::do_check_types(Gogo*)
+{
+  if (!this->type_->in_heap())
+    go_error_at(this->location(), "can't heap allocate go:notinheap type");
 }
 
 // Make a copy of an allocation expression.

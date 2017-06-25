@@ -1259,9 +1259,9 @@ struct compiler
   const char *cpp_spec;         /* If non-NULL, substitute this spec
 				   for `%C', rather than the usual
 				   cpp_spec.  */
-  const int combinable;          /* If nonzero, compiler can deal with
+  int combinable;               /* If nonzero, compiler can deal with
 				    multiple source files at once (IMA).  */
-  const int needs_preprocessing; /* If nonzero, source files need to
+  int needs_preprocessing;       /* If nonzero, source files need to
 				    be run through a preprocessor.  */
 };
 
@@ -9398,7 +9398,8 @@ sanitize_spec_function (int argc, const char **argv)
   if (strcmp (argv[0], "thread") == 0)
     return (flag_sanitize & SANITIZE_THREAD) ? "" : NULL;
   if (strcmp (argv[0], "undefined") == 0)
-    return ((flag_sanitize & (SANITIZE_UNDEFINED | SANITIZE_NONDEFAULT))
+    return ((flag_sanitize
+	     & (SANITIZE_UNDEFINED | SANITIZE_UNDEFINED_NONDEFAULT))
 	    && !flag_sanitize_undefined_trap_on_error) ? "" : NULL;
   if (strcmp (argv[0], "leak") == 0)
     return ((flag_sanitize

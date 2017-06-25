@@ -37,6 +37,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "c-family/c-ubsan.h"
 #include "params.h"
 #include "gcc-rich-location.h"
+#include "asan.h"
 
 static tree cp_build_addr_expr_strict (tree, tsubst_flags_t);
 static tree cp_build_function_call (tree, tree, tsubst_flags_t);
@@ -5253,10 +5254,9 @@ cp_build_binary_op (location_t location,
   if (build_type == NULL_TREE)
     build_type = result_type;
 
-  if ((flag_sanitize & (SANITIZE_SHIFT | SANITIZE_DIVIDE
-			| SANITIZE_FLOAT_DIVIDE))
+  if (sanitize_flags_p ((SANITIZE_SHIFT
+			 | SANITIZE_DIVIDE | SANITIZE_FLOAT_DIVIDE))
       && !processing_template_decl
-      && do_ubsan_in_current_function ()
       && (doing_div_or_mod || doing_shift))
     {
       /* OP0 and/or OP1 might have side-effects.  */
@@ -5264,8 +5264,8 @@ cp_build_binary_op (location_t location,
       op1 = cp_save_expr (op1);
       op0 = fold_non_dependent_expr (op0);
       op1 = fold_non_dependent_expr (op1);
-      if (doing_div_or_mod && (flag_sanitize & (SANITIZE_DIVIDE
-						| SANITIZE_FLOAT_DIVIDE)))
+      if (doing_div_or_mod
+	  && sanitize_flags_p (SANITIZE_DIVIDE | SANITIZE_FLOAT_DIVIDE))
 	{
 	  /* For diagnostics we want to use the promoted types without
 	     shorten_binary_op.  So convert the arguments to the
@@ -5278,7 +5278,7 @@ cp_build_binary_op (location_t location,
 	    cop1 = cp_convert (orig_type, op1, complain);
 	  instrument_expr = ubsan_instrument_division (location, cop0, cop1);
 	}
-      else if (doing_shift && (flag_sanitize & SANITIZE_SHIFT))
+      else if (doing_shift && sanitize_flags_p (SANITIZE_SHIFT))
 	instrument_expr = ubsan_instrument_shift (location, code, op0, op1);
     }
 
@@ -5652,7 +5652,7 @@ cp_build_addr_expr_1 (tree arg, bool strict_lvalue, tsubst_flags_t complain)
   arg = mark_lvalue_use (arg);
   argtype = lvalue_type (arg);
 
-  gcc_assert (!identifier_p (arg) || !IDENTIFIER_OPNAME_P (arg));
+  gcc_assert (!(identifier_p (arg) && IDENTIFIER_ANY_OP_P (arg)));
 
   if (TREE_CODE (arg) == COMPONENT_REF && type_unknown_p (arg)
       && !really_overloaded_fn (arg))
@@ -6823,7 +6823,7 @@ build_static_cast_1 (tree type, tree expr, bool c_cast_p,
 			  NULL, complain);
       expr = build_address (expr);
 
-      if (flag_sanitize & SANITIZE_VPTR)
+      if (sanitize_flags_p (SANITIZE_VPTR))
 	{
 	  tree ubsan_check
 	    = cp_ubsan_maybe_instrument_downcast (input_location, type,
@@ -6967,7 +6967,7 @@ build_static_cast_1 (tree type, tree expr, bool c_cast_p,
       expr = build_base_path (MINUS_EXPR, expr, base, /*nonnull=*/false,
 			      complain);
 
-      if (flag_sanitize & SANITIZE_VPTR)
+      if (sanitize_flags_p (SANITIZE_VPTR))
 	{
 	  tree ubsan_check
 	    = cp_ubsan_maybe_instrument_downcast (input_location, type,
@@ -8590,9 +8590,10 @@ convert_for_assignment (tree type, tree rhs,
 	      if (rhstype == unknown_type_node)
 		{
 		  tree r = instantiate_type (type, rhs, tf_warning_or_error);
-		  /* -fpermissive might allow this.  */
+		  /* -fpermissive might allow this; recurse.  */
 		  if (!seen_error ())
-		    return r;
+		    return convert_for_assignment (type, r, errtype, fndecl,
+						   parmnum, complain, flags);
 		}
 	      else if (fndecl)
 		error ("cannot convert %qH to %qI for argument %qP to %qD",

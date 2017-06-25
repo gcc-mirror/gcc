@@ -6079,6 +6079,12 @@ expand_builtin_atomic_fetch_op (machine_mode mode, tree exp, rtx target,
   gcc_assert (TREE_OPERAND (addr, 0) == fndecl);
   TREE_OPERAND (addr, 0) = builtin_decl_explicit (ext_call);
 
+  /* If we will emit code after the call, the call can not be a tail call.
+     If it is emitted as a tail call, a barrier is emitted after it, and
+     then all trailing code is removed.  */
+  if (!ignore)
+    CALL_EXPR_TAILCALL (exp) = 0;
+
   /* Expand the call here so we can emit trailing code.  */
   ret = expand_call (exp, target, ignore);
 
@@ -9034,7 +9040,6 @@ fold_builtin_3 (location_t loc, tree fndecl,
 	return do_mpfr_remquo (arg0, arg1, arg2);
     break;
 
-    case BUILT_IN_BCMP:
     case BUILT_IN_MEMCMP:
       return fold_builtin_memcmp (loc, arg0, arg1, arg2);;
 

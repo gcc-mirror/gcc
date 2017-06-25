@@ -454,6 +454,7 @@ powerpc*-*-*spe*)
 	;;
 powerpc*-*-*)
 	cpu_type=rs6000
+	extra_objs="rs6000-string.o"
 	extra_headers="ppc-asm.h altivec.h htmintrin.h htmxlintrin.h"
 	extra_headers="${extra_headers} bmi2intrin.h bmiintrin.h x86intrin.h"
 	extra_headers="${extra_headers} ppu_intrinsics.h spu2vmx.h vec_types.h si2vmx.h"
@@ -471,6 +472,7 @@ riscv*)
 	;;
 rs6000*-*-*)
 	extra_options="${extra_options} g.opt fused-madd.opt rs6000/rs6000-tables.opt"
+	extra_objs="rs6000-string.o"
 	;;
 sparc*-*-*)
 	cpu_type=sparc
@@ -1089,7 +1091,7 @@ arm*-*-freebsd*)                # ARM FreeBSD EABI
 	tm_file="${tm_file} arm/bpabi.h arm/freebsd.h arm/aout.h arm/arm.h"
 	case $target in
 	armv6*-*-freebsd*)
-	    target_cpu_cname="arm1176jzfs"
+	    target_cpu_cname="arm1176jzf-s"
 	    tm_defines="${tm_defines} TARGET_FREEBSD_ARMv6=1"
             if test $fbsd_major -ge 11; then
                tm_defines="${tm_defines} TARGET_FREEBSD_ARM_HARD_FLOAT=1"
@@ -1160,8 +1162,8 @@ arm*-*-eabi* | arm*-*-symbianelf* | arm*-*-rtems* | arm*-*-fuchsia*)
 	  ;;
 	arm*-*-fuchsia*)
 	  tm_file="${tm_file} fuchsia.h arm/fuchsia-elf.h glibc-stdint.h"
-	  tmake_file="${tmake_file} arm/t-bpabi"
-	  target_cpu_cname="genericv7a"
+	  tmake_file="${tmake_file} arm/t-bpabi arm/t-fuchsia"
+	  target_cpu_cname="generic-armv7-a"
 	  ;;
 	arm*-*-rtems*)
 	  tm_file="${tm_file} rtems.h arm/rtems.h newlib-stdint.h"
@@ -3856,11 +3858,15 @@ case "${target}" in
 				    echo "Error: You cannot use any of --with-arch/cpu/fpu/float/mode with --with-multilib-list=${with_multilib_list}" 1>&2
 				    exit 1
 				fi
-
+				# But pass the default value for float-abi
+				# through to the multilib selector
+				with_float="soft"
 				tmake_file="${tmake_file} ${tmake_profile_file}"
 				TM_MULTILIB_CONFIG="$with_multilib_list"
 			fi
 		fi
+		target_cpu_cname=${target_cpu_cname:-arm6}
+		with_cpu=${with_cpu:-$target_cpu_cname}
 		;;
 
 	fr*-*-*linux*)
@@ -4494,11 +4500,12 @@ case ${target} in
 		;;
 
 	arm*-*-*)
-		if test x$target_cpu_cname = x
+		if test x$with_cpu = x
 		then
-			target_cpu_default2=TARGET_CPU_arm6
+			echo "Don't know the target cpu" 1>&2
+			exit 1
 		else
-			target_cpu_default2=TARGET_CPU_$target_cpu_cname
+			target_cpu_default2="\\\"$with_cpu\\\""
 		fi
 		;;
 

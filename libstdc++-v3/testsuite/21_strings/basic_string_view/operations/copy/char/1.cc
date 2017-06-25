@@ -22,7 +22,7 @@
 #include <string_view>
 #include <testsuite_hooks.h>
 
-bool
+void
 test01()
 {
   typedef std::string_view::size_type csize_type;

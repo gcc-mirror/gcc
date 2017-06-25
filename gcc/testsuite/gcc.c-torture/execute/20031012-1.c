@@ -1,4 +1,4 @@
-/* { dg-additional-options "-DSTACK_SIZE=[dg-effective-target-value stack_size]" { target { stack_size } } } */
+/* { dg-add-options stack_size } */
 
 /* PR optimization/8750
    Used to fail under Cygwin with 

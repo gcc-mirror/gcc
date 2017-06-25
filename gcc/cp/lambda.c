@@ -987,6 +987,8 @@ maybe_add_lambda_conv_op (tree type)
 			    null_pointer_node);
   if (generic_lambda_p)
     {
+      ++processing_template_decl;
+
       /* Prepare the dependent member call for the static member function
 	 '_FUN' and, potentially, prepare another call to be used in a decltype
 	 return expression for a deduced return call op to allow for simple
@@ -1036,9 +1038,7 @@ maybe_add_lambda_conv_op (tree type)
 
 	if (generic_lambda_p)
 	  {
-	    ++processing_template_decl;
 	    tree a = forward_parm (tgt);
-	    --processing_template_decl;
 
 	    CALL_EXPR_ARG (call, ix) = a;
 	    if (decltype_call)
@@ -1062,11 +1062,9 @@ maybe_add_lambda_conv_op (tree type)
     {
       if (decltype_call)
 	{
-	  ++processing_template_decl;
 	  fn_result = finish_decltype_type
 	    (decltype_call, /*id_expression_or_member_access_p=*/false,
 	     tf_warning_or_error);
-	  --processing_template_decl;
 	}
     }
   else
@@ -1083,6 +1081,9 @@ maybe_add_lambda_conv_op (tree type)
   if (flag_noexcept_type
       && TYPE_NOTHROW_P (TREE_TYPE (callop)))
     stattype = build_exception_variant (stattype, noexcept_true_spec);
+
+  if (generic_lambda_p)
+    --processing_template_decl;
 
   /* First build up the conversion op.  */
 
@@ -1102,7 +1103,8 @@ maybe_add_lambda_conv_op (tree type)
   DECL_ARTIFICIAL (fn) = 1;
   DECL_NOT_REALLY_EXTERN (fn) = 1;
   DECL_DECLARED_INLINE_P (fn) = 1;
-  DECL_ARGUMENTS (fn) = build_this_parm (fntype, TYPE_QUAL_CONST);
+  DECL_ARGUMENTS (fn) = build_this_parm (fn, fntype, TYPE_QUAL_CONST);
+
   if (nested_def)
     DECL_INTERFACE_KNOWN (fn) = 1;
 
@@ -1150,9 +1152,7 @@ maybe_add_lambda_conv_op (tree type)
     {
       /* Don't UBsan this function; we're deliberately calling op() with a null
 	 object argument.  */
-      tree attrs = build_tree_list (get_identifier ("no_sanitize_undefined"),
-				    NULL_TREE);
-      cplus_decl_attributes (&fn, attrs, 0);
+      add_no_sanitize_value (fn, SANITIZE_UNDEFINED);
     }
 
   add_method (type, fn, false);

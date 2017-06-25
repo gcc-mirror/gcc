@@ -2911,6 +2911,18 @@ This has a similar effect
 as the @option{-fno-toplevel-reorder} option, but only applies to the
 marked symbols.
 
+@item no_sanitize ("@var{sanitize_option}")
+@cindex @code{no_sanitize} function attribute
+The @code{no_sanitize} attribute on functions is used
+to inform the compiler that it should not do sanitization of all options
+mentioned in @var{sanitize_option}.  A list of values acceptable by
+@option{-fsanitize} option can be provided.
+
+@smallexample
+void __attribute__ ((no_sanitize ("alignment", "object-size")))
+f () @{ /* @r{Do something.} */; @}
+@end smallexample
+
 @item no_sanitize_address
 @itemx no_address_safety_analysis
 @cindex @code{no_sanitize_address} function attribute
@@ -15989,6 +16001,20 @@ void vec_dstt (const float *, int, const int);
 vector float vec_expte (vector float);
 
 vector float vec_floor (vector float);
+
+vector float vec_float (vector signed int);
+vector float vec_float (vector unsigned int);
+
+vector float vec_float2 (vector signed long long, vector signed long long);
+vector float vec_float2 (vector unsigned long long, vector signed long long);
+
+vector float vec_floate (vector double);
+vector float vec_floate (vector signed long long);
+vector float vec_floate (vector unsigned long long);
+
+vector float vec_floato (vector double);
+vector float vec_floato (vector signed long long);
+vector float vec_floato (vector unsigned long long);
 
 vector float vec_ld (int, const vector float *);
 vector float vec_ld (int, const float *);

@@ -1,3 +1,35 @@
+2017-06-23  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc-interface/trans.c (gnat_to_gnu): Initialize sync to false to
+	avoid UB.
+
+2017-06-21  Pierre-Marie de Rodat  <derodat@adacore.com>
+
+	* gcc-interface/ada-tree.h (DECL_FUNCTION_IS_DEF): Update copyright
+	notice.  New macro.
+	* gcc-interface/trans.c (Subprogram_Body_to_gnu): Tag the subprogram
+	as a definition.
+	(Compilation_Unit_to_gnu): Tag the elaboration procedure as a
+	definition.
+	* gcc-interface/decl.c (gnat_to_gnu_entity): Tag declarations of
+	imported subprograms for the current compilation unit as
+	definitions.  Disable debug info for references to variables.
+	* gcc-interface/gigi.h (create_subprog_decl): Update declaration.
+	* gcc-interface/utils.c (gnat_pushdecl): Add external DECLs that are
+	not built-in functions to their binding scope.
+	(create_subprog_decl): Add a DEFINITION parameter.  If it is true, tag
+	the function as a definition.  Update all callers.
+	(gnat_write_global_declarations): Emit debug info for imported
+	functions.  Filter out external variables for which debug info
+	is disabled.
+
+2017-06-15  Nicolas Boulenguez  <nicolas.boulenguez@free.fr>
+
+	PR ada/81105
+	* gcc-interface/Makefile.in (x86 kfreebsd): Adjust system.ads setting.
+	(i[3456]86-pc-gnu): Likewise.
+	(x86_64 kfreebsd): Likewise.
+
 2017-06-12  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR bootstrap/80897

@@ -65,6 +65,7 @@
 #include "optabs-libfuncs.h"
 #include "gimplify.h"
 #include "gimple.h"
+#include "selftest.h"
 
 /* This file should be included last.  */
 #include "target-def.h"
@@ -233,6 +234,7 @@ static tree arm_build_builtin_va_list (void);
 static void arm_expand_builtin_va_start (tree, rtx);
 static tree arm_gimplify_va_arg_expr (tree, tree, gimple_seq *, gimple_seq *);
 static void arm_option_override (void);
+static void arm_option_save (struct cl_target_option *, struct gcc_options *);
 static void arm_option_restore (struct gcc_options *,
 				struct cl_target_option *);
 static void arm_override_options_after_change (void);
@@ -412,6 +414,9 @@ static const struct attribute_spec arm_attribute_table[] =
 
 #undef TARGET_OVERRIDE_OPTIONS_AFTER_CHANGE
 #define TARGET_OVERRIDE_OPTIONS_AFTER_CHANGE arm_override_options_after_change
+
+#undef TARGET_OPTION_SAVE
+#define TARGET_OPTION_SAVE arm_option_save
 
 #undef TARGET_OPTION_RESTORE
 #define TARGET_OPTION_RESTORE arm_option_restore
@@ -770,7 +775,6 @@ static const struct attribute_spec arm_attribute_table[] =
 #undef TARGET_CUSTOM_FUNCTION_DESCRIPTORS
 #define TARGET_CUSTOM_FUNCTION_DESCRIPTORS 2
 
-struct gcc_target targetm = TARGET_INITIALIZER;
 
 /* Obstack for minipool constant handling.  */
 static struct obstack minipool_obstack;
@@ -971,17 +975,12 @@ int arm_regs_in_sequence[] =
 
 /* Initialization code.  */
 
-struct processors
+struct cpu_tune
 {
-  const char *const name;
-  enum processor_type core;
+  enum processor_type scheduler;
   unsigned int tune_flags;
-  const char *arch;
-  enum base_architecture base_arch;
-  enum isa_feature isa_bits[isa_num_bits];
-  const struct tune_params *const tune;
+  const struct tune_params *tune;
 };
-
 
 #define ARM_PREFETCH_NOT_BENEFICIAL { 0, -1, -1 }
 #define ARM_PREFETCH_BENEFICIAL(num_slots,l1_size,l1_line_size) \
@@ -2902,9 +2901,22 @@ arm_override_options_after_change (void)
   arm_override_options_after_change_1 (&global_options);
 }
 
+/* Implement TARGET_OPTION_SAVE.  */
 static void
-arm_option_restore (struct gcc_options *, struct cl_target_option *ptr)
+arm_option_save (struct cl_target_option *ptr, struct gcc_options *opts)
 {
+  ptr->x_arm_arch_string = opts->x_arm_arch_string;
+  ptr->x_arm_cpu_string = opts->x_arm_cpu_string;
+  ptr->x_arm_tune_string = opts->x_arm_tune_string;
+}
+
+/* Implement TARGET_OPTION_RESTORE.  */
+static void
+arm_option_restore (struct gcc_options *opts, struct cl_target_option *ptr)
+{
+  opts->x_arm_arch_string = ptr->x_arm_arch_string;
+  opts->x_arm_cpu_string = ptr->x_arm_cpu_string;
+  opts->x_arm_tune_string = ptr->x_arm_tune_string;
   arm_configure_build_target (&arm_active_target, ptr, &global_options_set,
 			      false);
 }
@@ -3012,16 +3024,6 @@ arm_option_override_internal (struct gcc_options *opts,
 #endif
 }
 
-/* Convert a static initializer array of feature bits to sbitmap
-   representation.  */
-static void
-arm_initialize_isa (sbitmap isa, const enum isa_feature *isa_bits)
-{
-  bitmap_clear (isa);
-  while (*isa_bits != isa_nobit)
-    bitmap_set_bit (isa, *(isa_bits++));
-}
-
 static sbitmap isa_all_fpubits;
 static sbitmap isa_quirkbits;
 
@@ -3034,86 +3036,117 @@ arm_configure_build_target (struct arm_build_target *target,
 			    struct gcc_options *opts_set,
 			    bool warn_compatible)
 {
-  const struct processors *arm_selected_tune = NULL;
-  const struct processors *arm_selected_arch = NULL;
-  const struct processors *arm_selected_cpu = NULL;
-  const struct arm_fpu_desc *arm_selected_fpu = NULL;
+  const cpu_option *arm_selected_tune = NULL;
+  const arch_option *arm_selected_arch = NULL;
+  const cpu_option *arm_selected_cpu = NULL;
+  const arm_fpu_desc *arm_selected_fpu = NULL;
+  const char *tune_opts = NULL;
+  const char *arch_opts = NULL;
+  const char *cpu_opts = NULL;
 
   bitmap_clear (target->isa);
   target->core_name = NULL;
   target->arch_name = NULL;
 
-  if (opts_set->x_arm_arch_option)
-    arm_selected_arch = &all_architectures[opts->x_arm_arch_option];
-
-  if (opts_set->x_arm_cpu_option)
+  if (opts_set->x_arm_arch_string)
     {
-      arm_selected_cpu = &all_cores[(int) opts->x_arm_cpu_option];
-      arm_selected_tune = &all_cores[(int) opts->x_arm_cpu_option];
+      arm_selected_arch = arm_parse_arch_option_name (all_architectures,
+						      "-march",
+						      opts->x_arm_arch_string);
+      arch_opts = strchr (opts->x_arm_arch_string, '+');
     }
 
-  if (opts_set->x_arm_tune_option)
-    arm_selected_tune = &all_cores[(int) opts->x_arm_tune_option];
+  if (opts_set->x_arm_cpu_string)
+    {
+      arm_selected_cpu = arm_parse_cpu_option_name (all_cores, "-mcpu",
+						    opts->x_arm_cpu_string);
+      cpu_opts = strchr (opts->x_arm_cpu_string, '+');
+      arm_selected_tune = arm_selected_cpu;
+      /* If taking the tuning from -mcpu, we don't need to rescan the
+	 options for tuning.  */
+    }
+
+  if (opts_set->x_arm_tune_string)
+    {
+      arm_selected_tune = arm_parse_cpu_option_name (all_cores, "-mtune",
+						     opts->x_arm_tune_string);
+      tune_opts = strchr (opts->x_arm_tune_string, '+');
+    }
 
   if (arm_selected_arch)
     {
-      arm_initialize_isa (target->isa, arm_selected_arch->isa_bits);
+      arm_initialize_isa (target->isa, arm_selected_arch->common.isa_bits);
+      arm_parse_option_features (target->isa, &arm_selected_arch->common,
+				 arch_opts);
 
       if (arm_selected_cpu)
 	{
 	  auto_sbitmap cpu_isa (isa_num_bits);
+	  auto_sbitmap isa_delta (isa_num_bits);
 
-	  arm_initialize_isa (cpu_isa, arm_selected_cpu->isa_bits);
-	  bitmap_xor (cpu_isa, cpu_isa, target->isa);
+	  arm_initialize_isa (cpu_isa, arm_selected_cpu->common.isa_bits);
+	  arm_parse_option_features (cpu_isa, &arm_selected_cpu->common,
+				     cpu_opts);
+	  bitmap_xor (isa_delta, cpu_isa, target->isa);
 	  /* Ignore any bits that are quirk bits.  */
-	  bitmap_and_compl (cpu_isa, cpu_isa, isa_quirkbits);
+	  bitmap_and_compl (isa_delta, isa_delta, isa_quirkbits);
 	  /* Ignore (for now) any bits that might be set by -mfpu.  */
-	  bitmap_and_compl (cpu_isa, cpu_isa, isa_all_fpubits);
+	  bitmap_and_compl (isa_delta, isa_delta, isa_all_fpubits);
 
-	  if (!bitmap_empty_p (cpu_isa))
+	  if (!bitmap_empty_p (isa_delta))
 	    {
 	      if (warn_compatible)
 		warning (0, "switch -mcpu=%s conflicts with -march=%s switch",
-			 arm_selected_cpu->name, arm_selected_arch->name);
+			 arm_selected_cpu->common.name,
+			 arm_selected_arch->common.name);
 	      /* -march wins for code generation.
 		 -mcpu wins for default tuning.  */
 	      if (!arm_selected_tune)
 		arm_selected_tune = arm_selected_cpu;
 
-	      arm_selected_cpu = arm_selected_arch;
-	      target->arch_name = arm_selected_arch->name;
+	      arm_selected_cpu = all_cores + arm_selected_arch->tune_id;
+	      target->arch_name = arm_selected_arch->common.name;
 	    }
 	  else
 	    {
 	      /* Architecture and CPU are essentially the same.
 		 Prefer the CPU setting.  */
-	      arm_selected_arch = NULL;
-	      target->core_name = arm_selected_cpu->name;
+	      arm_selected_arch = all_architectures + arm_selected_cpu->arch;
+	      target->core_name = arm_selected_cpu->common.name;
+	      /* Copy the CPU's capabilities, so that we inherit the
+		 appropriate extensions and quirks.  */
+	      bitmap_copy (target->isa, cpu_isa);
 	    }
 	}
       else
 	{
 	  /* Pick a CPU based on the architecture.  */
-	  arm_selected_cpu = arm_selected_arch;
-	  target->arch_name = arm_selected_arch->name;
+	  arm_selected_cpu = all_cores + arm_selected_arch->tune_id;
+	  target->arch_name = arm_selected_arch->common.name;
 	  /* Note: target->core_name is left unset in this path.  */
 	}
     }
   else if (arm_selected_cpu)
     {
-      target->core_name = arm_selected_cpu->name;
-      arm_initialize_isa (target->isa, arm_selected_cpu->isa_bits);
+      target->core_name = arm_selected_cpu->common.name;
+      arm_initialize_isa (target->isa, arm_selected_cpu->common.isa_bits);
+      arm_parse_option_features (target->isa, &arm_selected_cpu->common,
+				 cpu_opts);
+      arm_selected_arch = all_architectures + arm_selected_cpu->arch;
     }
-  /* If the user did not specify a processor, choose one for them.  */
+  /* If the user did not specify a processor or architecture, choose
+     one for them.  */
   else
     {
-      const struct processors * sel;
+      const cpu_option *sel;
       auto_sbitmap sought_isa (isa_num_bits);
       bitmap_clear (sought_isa);
       auto_sbitmap default_isa (isa_num_bits);
 
-      arm_selected_cpu = &all_cores[TARGET_CPU_DEFAULT];
-      gcc_assert (arm_selected_cpu->name);
+      arm_selected_cpu = arm_parse_cpu_option_name (all_cores, "default CPU",
+						    TARGET_CPU_DEFAULT);
+      cpu_opts = strchr (TARGET_CPU_DEFAULT, '+');
+      gcc_assert (arm_selected_cpu->common.name);
 
       /* RWE: All of the selection logic below (to the end of this
 	 'if' clause) looks somewhat suspect.  It appears to be mostly
@@ -3122,7 +3155,9 @@ arm_configure_build_target (struct arm_build_target *target,
 	 user might be expecting).  I think it should be removed once
 	 support for the pre-thumb era cores is removed.  */
       sel = arm_selected_cpu;
-      arm_initialize_isa (default_isa, sel->isa_bits);
+      arm_initialize_isa (default_isa, sel->common.isa_bits);
+      arm_parse_option_features (default_isa, &arm_selected_cpu->common,
+				 cpu_opts);
 
       /* Now check to see if the user has specified any command line
 	 switches that require certain abilities from the cpu.  */
@@ -3155,18 +3190,18 @@ arm_configure_build_target (struct arm_build_target *target,
 	  /* Try to locate a CPU type that supports all of the abilities
 	     of the default CPU, plus the extra abilities requested by
 	     the user.  */
-	  for (sel = all_cores; sel->name != NULL; sel++)
+	  for (sel = all_cores; sel->common.name != NULL; sel++)
 	    {
-	      arm_initialize_isa (candidate_isa, sel->isa_bits);
+	      arm_initialize_isa (candidate_isa, sel->common.isa_bits);
 	      /* An exact match?  */
 	      if (bitmap_equal_p (default_isa, candidate_isa))
 		break;
 	    }
 
-	  if (sel->name == NULL)
+	  if (sel->common.name == NULL)
 	    {
 	      unsigned current_bit_count = isa_num_bits;
-	      const struct processors * best_fit = NULL;
+	      const cpu_option *best_fit = NULL;
 
 	      /* Ideally we would like to issue an error message here
 		 saying that it was not possible to find a CPU compatible
@@ -3180,9 +3215,9 @@ arm_configure_build_target (struct arm_build_target *target,
 		 command line options we scan the array again looking
 		 for a best match.  The best match must have at least
 		 the capabilities of the perfect match.  */
-	      for (sel = all_cores; sel->name != NULL; sel++)
+	      for (sel = all_cores; sel->common.name != NULL; sel++)
 		{
-		  arm_initialize_isa (candidate_isa, sel->isa_bits);
+		  arm_initialize_isa (candidate_isa, sel->common.isa_bits);
 
 		  if (bitmap_subset_p (default_isa, candidate_isa))
 		    {
@@ -3208,11 +3243,15 @@ arm_configure_build_target (struct arm_build_target *target,
 
       /* Now we know the CPU, we can finally initialize the target
 	 structure.  */
-      target->core_name = arm_selected_cpu->name;
-      arm_initialize_isa (target->isa, arm_selected_cpu->isa_bits);
+      target->core_name = arm_selected_cpu->common.name;
+      arm_initialize_isa (target->isa, arm_selected_cpu->common.isa_bits);
+      arm_parse_option_features (target->isa, &arm_selected_cpu->common,
+				 cpu_opts);
+      arm_selected_arch = all_architectures + arm_selected_cpu->arch;
     }
 
   gcc_assert (arm_selected_cpu);
+  gcc_assert (arm_selected_arch);
 
   if (opts->x_arm_fpu_index != TARGET_FPU_auto)
     {
@@ -3223,30 +3262,29 @@ arm_configure_build_target (struct arm_build_target *target,
       bitmap_and_compl (target->isa, target->isa, isa_all_fpubits);
       bitmap_ior (target->isa, target->isa, fpu_bits);
     }
-  else if (target->core_name == NULL)
-    /* To support this we need to be able to parse FPU feature options
-       from the architecture string.  */
-    sorry ("-mfpu=auto not currently supported without an explicit CPU.");
 
-  /* The selected cpu may be an architecture, so lookup tuning by core ID.  */
   if (!arm_selected_tune)
-    arm_selected_tune = &all_cores[arm_selected_cpu->core];
+    arm_selected_tune = arm_selected_cpu;
+  else /* Validate the features passed to -mtune.  */
+    arm_parse_option_features (NULL, &arm_selected_tune->common, tune_opts);
+
+  const cpu_tune *tune_data = &all_tunes[arm_selected_tune - all_cores];
 
   /* Finish initializing the target structure.  */
-  target->arch_pp_name = arm_selected_cpu->arch;
-  target->base_arch = arm_selected_cpu->base_arch;
-  target->arch_core = arm_selected_cpu->core;
+  target->arch_pp_name = arm_selected_arch->arch;
+  target->base_arch = arm_selected_arch->base_arch;
 
-  target->tune_flags = arm_selected_tune->tune_flags;
-  target->tune = arm_selected_tune->tune;
-  target->tune_core = arm_selected_tune->core;
+  target->tune_flags = tune_data->tune_flags;
+  target->tune = tune_data->tune;
+  target->tune_core = tune_data->scheduler;
 }
 
 /* Fix up any incompatible options that the user has specified.  */
 static void
 arm_option_override (void)
 {
-  static const enum isa_feature fpu_bitlist[] = { ISA_ALL_FPU, isa_nobit };
+  static const enum isa_feature fpu_bitlist[]
+    = { ISA_ALL_FPU_INTERNAL, isa_nobit };
   static const enum isa_feature quirk_bitlist[] = { ISA_ALL_QUIRKS, isa_nobit};
   cl_target_option opts;
 
@@ -3260,17 +3298,10 @@ arm_option_override (void)
 
   if (!global_options_set.x_arm_fpu_index)
     {
-      const char *target_fpu_name;
       bool ok;
       int fpu_index;
 
-#ifdef FPUTYPE_DEFAULT
-      target_fpu_name = FPUTYPE_DEFAULT;
-#else
-      target_fpu_name = "vfp";
-#endif
-
-      ok = opt_enum_arg_to_value (OPT_mfpu_, target_fpu_name, &fpu_index,
+      ok = opt_enum_arg_to_value (OPT_mfpu_, FPUTYPE_AUTO, &fpu_index,
 				  CL_TARGET);
       gcc_assert (ok);
       arm_fpu_index = (enum fpu_type) fpu_index;
@@ -3411,8 +3442,7 @@ arm_option_override (void)
     {
       if (arm_abi == ARM_ABI_IWMMXT)
 	arm_pcs_default = ARM_PCS_AAPCS_IWMMXT;
-      else if (arm_float_abi == ARM_FLOAT_ABI_HARD
-	       && TARGET_HARD_FLOAT)
+      else if (TARGET_HARD_FLOAT_ABI)
 	{
 	  arm_pcs_default = ARM_PCS_AAPCS_VFP;
 	  if (!bitmap_bit_p (arm_active_target.isa, isa_bit_VFPv2))
@@ -26105,6 +26135,41 @@ arm_print_tune_info (void)
 	       (int) current_tune->sched_autopref);
 }
 
+/* Print .arch and .arch_extension directives corresponding to the
+   current architecture configuration.  */
+static void
+arm_print_asm_arch_directives ()
+{
+  const arch_option *arch
+    = arm_parse_arch_option_name (all_architectures, "-march",
+				  arm_active_target.arch_name);
+  auto_sbitmap opt_bits (isa_num_bits);
+
+  gcc_assert (arch);
+
+  asm_fprintf (asm_out_file, "\t.arch %s\n", arm_active_target.arch_name);
+  if (!arch->common.extensions)
+    return;
+
+  for (const struct cpu_arch_extension *opt = arch->common.extensions;
+       opt->name != NULL;
+       opt++)
+    {
+      if (!opt->remove)
+	{
+	  arm_initialize_isa (opt_bits, opt->isa_bits);
+
+	  /* If every feature bit of this option is set in the target
+	     ISA specification, print out the option name.  However,
+	     don't print anything if all the bits are part of the
+	     FPU specification.  */
+	  if (bitmap_subset_p (opt_bits, arm_active_target.isa)
+	      && !bitmap_subset_p (opt_bits, isa_all_fpubits))
+	    asm_fprintf (asm_out_file, "\t.arch_extension %s\n", opt->name);
+	}
+    }
+}
+
 static void
 arm_file_start (void)
 {
@@ -26119,7 +26184,7 @@ arm_file_start (void)
 	 assembler would not need to know about all new CPU names as
 	 they are added.  */
       if (!arm_active_target.core_name)
-        {
+	{
 	  /* armv7ve doesn't support any extensions.  */
 	  if (strcmp (arm_active_target.arch_name, "armv7ve") == 0)
 	    {
@@ -26132,24 +26197,8 @@ arm_file_start (void)
 	      asm_fprintf (asm_out_file, "\t.arch_extension mp\n");
 	    }
 	  else
-	    {
-	      const char* pos = strchr (arm_active_target.arch_name, '+');
-	      if (pos)
-		{
-		  char buf[32];
-		  gcc_assert (strlen (arm_active_target.arch_name)
-			      <= sizeof (buf) / sizeof (*pos));
-		  strncpy (buf, arm_active_target.arch_name,
-			   (pos - arm_active_target.arch_name) * sizeof (*pos));
-		  buf[pos - arm_active_target.arch_name] = '\0';
-		  asm_fprintf (asm_out_file, "\t.arch %s\n", buf);
-		  asm_fprintf (asm_out_file, "\t.arch_extension %s\n", pos + 1);
-		}
-	      else
-		asm_fprintf (asm_out_file, "\t.arch %s\n",
-			     arm_active_target.arch_name);
-	    }
-        }
+	    arm_print_asm_arch_directives ();
+	}
       else if (strncmp (arm_active_target.core_name, "generic", 7) == 0)
 	asm_fprintf (asm_out_file, "\t.arch %s\n",
 		     arm_active_target.core_name + 8);
@@ -26173,7 +26222,7 @@ arm_file_start (void)
 	}
 
       /* Some of these attributes only apply when the corresponding features
-         are used.  However we don't have any easy way of figuring this out.
+	 are used.  However we don't have any easy way of figuring this out.
 	 Conservatively record the setting that would have been used.  */
 
       if (flag_rounding_math)
@@ -30368,10 +30417,22 @@ arm_option_print (FILE *file, int indent, struct cl_target_option *ptr)
   fpu_name = (ptr->x_arm_fpu_index == TARGET_FPU_auto
 	      ? "auto" : all_fpus[ptr->x_arm_fpu_index].name);
 
-  fprintf (file, "%*sselected arch %s\n", indent, "",
+  fprintf (file, "%*sselected isa %s\n", indent, "",
 	   TARGET_THUMB2_P (flags) ? "thumb2" :
 	   TARGET_THUMB_P (flags) ? "thumb1" :
 	   "arm");
+
+  if (ptr->x_arm_arch_string)
+    fprintf (file, "%*sselected architecture %s\n", indent, "",
+	     ptr->x_arm_arch_string);
+
+  if (ptr->x_arm_cpu_string)
+    fprintf (file, "%*sselected CPU %s\n", indent, "",
+	     ptr->x_arm_cpu_string);
+
+  if (ptr->x_arm_tune_string)
+    fprintf (file, "%*sselected tune %s\n", indent, "",
+	     ptr->x_arm_tune_string);
 
   fprintf (file, "%*sselected fpu %s\n", indent, "", fpu_name);
 }
@@ -30635,7 +30696,7 @@ arm_identify_fpu_from_isa (sbitmap isa)
   if (bitmap_empty_p (fpubits))
     return "softvfp";
 
-  for (unsigned int i = 0; i < ARRAY_SIZE (all_fpus); i++)
+  for (unsigned int i = 0; i < TARGET_FPU_auto; i++)
     {
       arm_initialize_isa (cand_fpubits, all_fpus[i].isa_bits);
       if (bitmap_equal_p (fpubits, cand_fpubits))
@@ -31145,4 +31206,84 @@ arm_coproc_ldc_stc_legitimate_address (rtx op)
     }
   return false;
 }
+
+#if CHECKING_P
+namespace selftest {
+
+/* Scan the static data tables generated by parsecpu.awk looking for
+   potential issues with the data.  We primarily check for
+   inconsistencies in the option extensions at present (extensions
+   that duplicate others but aren't marked as aliases).  Furthermore,
+   for correct canonicalization later options must never be a subset
+   of an earlier option.  */
+static void
+arm_test_cpu_arch_data (void)
+{
+  const arch_option *arch;
+  const cpu_option *cpu;
+  auto_sbitmap isa1 (isa_num_bits);
+  auto_sbitmap isa2 (isa_num_bits);
+
+  for (arch = all_architectures; arch->common.name != NULL; ++arch)
+    {
+      const cpu_arch_extension *ext1, *ext2;
+
+      if (arch->common.extensions == NULL)
+	continue;
+
+      for (ext1 = arch->common.extensions; ext1->name != NULL; ++ext1)
+	{
+	  if (ext1->alias)
+	    continue;
+
+	  arm_initialize_isa (isa1, ext1->isa_bits);
+	  for (ext2 = ext1 + 1; ext2->name != NULL; ++ext2)
+	    {
+	      if (ext2->alias || ext1->remove != ext2->remove)
+		continue;
+
+	      arm_initialize_isa (isa2, ext2->isa_bits);
+	      ASSERT_TRUE (!bitmap_subset_p (isa2, isa1));
+	    }
+	}
+    }
+
+  for (cpu = all_cores; cpu->common.name != NULL; ++cpu)
+    {
+      const cpu_arch_extension *ext1, *ext2;
+
+      if (cpu->common.extensions == NULL)
+	continue;
+
+      for (ext1 = cpu->common.extensions; ext1->name != NULL; ++ext1)
+	{
+	  if (ext1->alias)
+	    continue;
+
+	  arm_initialize_isa (isa1, ext1->isa_bits);
+	  for (ext2 = ext1 + 1; ext2->name != NULL; ++ext2)
+	    {
+	      if (ext2->alias || ext1->remove != ext2->remove)
+		continue;
+
+	      arm_initialize_isa (isa2, ext2->isa_bits);
+	      ASSERT_TRUE (!bitmap_subset_p (isa2, isa1));
+	    }
+	}
+    }
+}
+
+static void
+arm_run_selftests (void)
+{
+  arm_test_cpu_arch_data ();
+}
+} /* Namespace selftest.  */
+
+#undef TARGET_RUN_TARGET_SELFTESTS
+#define TARGET_RUN_TARGET_SELFTESTS selftest::arm_run_selftests
+#endif /* CHECKING_P */
+
+struct gcc_target targetm = TARGET_INITIALIZER;
+
 #include "gt-arm.h"

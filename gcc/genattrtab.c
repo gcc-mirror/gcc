@@ -4703,8 +4703,8 @@ gen_insn_reserv (md_rtx_info *info)
   struct insn_reserv *decl = oballoc (struct insn_reserv);
   rtx def = info->def;
 
-  struct attr_desc attr;
-  memset (&attr, 0, sizeof (attr));
+  struct attr_desc attr = { };
+
   attr.name = DEF_ATTR_STRING (XSTR (def, 0));
   attr.loc = info->loc;
 

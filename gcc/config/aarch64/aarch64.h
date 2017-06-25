@@ -140,6 +140,7 @@ extern unsigned aarch64_architecture_version;
 #define AARCH64_FL_F16	      (1 << 9)  /* Has ARMv8.2-A FP16 extensions.  */
 /* ARMv8.3-A architecture extensions.  */
 #define AARCH64_FL_V8_3	      (1 << 10)  /* Has ARMv8.3-A features.  */
+#define AARCH64_FL_RCPC	      (1 << 11)  /* Has support for RCpc model.  */
 
 /* Has FP and SIMD.  */
 #define AARCH64_FL_FPSIMD     (AARCH64_FL_FP | AARCH64_FL_SIMD)

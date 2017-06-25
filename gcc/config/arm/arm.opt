@@ -21,6 +21,15 @@
 HeaderInclude
 config/arm/arm-opts.h
 
+TargetSave
+const char *x_arm_arch_string
+
+TargetSave
+const char *x_arm_cpu_string
+
+TargetSave
+const char *x_arm_tune_string
+
 Enum
 Name(tls_type) Type(enum arm_tls_type)
 TLS dialect to use:
@@ -73,7 +82,7 @@ mapcs-stack-check
 Target Report Mask(APCS_STACK) Undocumented
 
 march=
-Target RejectNegative ToLower Joined Enum(arm_arch) Var(arm_arch_option) Save
+Target RejectNegative ToLower Joined Var(arm_arch_string)
 Specify the name of the target architecture.
 
 ; Other arm_arch values are loaded from arm-tables.opt
@@ -82,7 +91,7 @@ EnumValue
 Enum(arm_arch) String(native) Value(-1) DriverOnly
 
 marm
-Target Report RejectNegative InverseMask(THUMB)
+Target Report RejectNegative Negative(mthumb) InverseMask(THUMB)
 Generate code in 32 bit ARM state.
 
 mbig-endian
@@ -98,7 +107,7 @@ Target Report Mask(CALLER_INTERWORKING)
 Thumb: Assume function pointers may go to non-Thumb aware code.
 
 mcpu=
-Target RejectNegative ToLower Joined Enum(processor_type) Var(arm_cpu_option) Init(TARGET_CPU_arm_none) Save
+Target RejectNegative ToLower Joined Var(arm_cpu_string)
 Specify the name of the target CPU.
 
 mfloat-abi=
@@ -186,7 +195,7 @@ Target RejectNegative Joined UInteger Var(arm_structure_size_boundary) Init(DEFA
 Specify the minimum bit alignment of structures.
 
 mthumb
-Target Report RejectNegative Mask(THUMB) Save
+Target Report RejectNegative Negative(marm) Mask(THUMB) Save
 Generate code for Thumb state.
 
 mthumb-interwork
@@ -223,7 +232,7 @@ Target Report Mask(TPCS_LEAF_FRAME)
 Thumb: Generate (leaf) stack frames even if not needed.
 
 mtune=
-Target RejectNegative ToLower Joined Enum(processor_type) Var(arm_tune_option) Init(TARGET_CPU_arm_none) Save
+Target RejectNegative ToLower Joined Var(arm_tune_string)
 Tune code for the given processor.
 
 mprint-tune-info

@@ -1150,6 +1150,8 @@ c_common_finish (void)
 	 output stream.  */
       if (!deps_file)
 	deps_stream = out_stream;
+      else if (deps_file[0] == '-' && deps_file[1] == '\0')
+	deps_stream = stdout;
       else
 	{
 	  deps_stream = fopen (deps_file, deps_append ? "a": "w");
@@ -1163,7 +1165,7 @@ c_common_finish (void)
      with cpp_destroy ().  */
   cpp_finish (parse_in, deps_stream);
 
-  if (deps_stream && deps_stream != out_stream
+  if (deps_stream && deps_stream != out_stream && deps_stream != stdout
       && (ferror (deps_stream) || fclose (deps_stream)))
     fatal_error (input_location, "closing dependency file %s: %m", deps_file);
 

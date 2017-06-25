@@ -60,12 +60,12 @@ static void doscanstack1(G *gp, void *gcw) {
 		// as schedlock and may have needed to start a new stack segment.
 		// Use the stack segment and stack pointer at the time of
 		// the system call instead, since that won't change underfoot.
-		if(gp->gcstack != nil) {
-			sp = gp->gcstack;
+		if(gp->gcstack != 0) {
+			sp = (void*)(gp->gcstack);
 			spsize = gp->gcstacksize;
-			next_segment = gp->gcnextsegment;
-			next_sp = gp->gcnextsp;
-			initial_sp = gp->gcinitialsp;
+			next_segment = (void*)(gp->gcnextsegment);
+			next_sp = (void*)(gp->gcnextsp);
+			initial_sp = (void*)(gp->gcinitialsp);
 		} else {
 			sp = __splitstack_find_context((void**)(&gp->stackcontext[0]),
 						       &spsize, &next_segment,
@@ -89,11 +89,11 @@ static void doscanstack1(G *gp, void *gcw) {
 	} else {
 		// Scanning another goroutine's stack.
 		// The goroutine is usually asleep (the world is stopped).
-		bottom = (byte*)gp->gcnextsp;
+		bottom = (void*)gp->gcnextsp;
 		if(bottom == nil)
 			return;
 	}
-	top = (byte*)gp->gcinitialsp + gp->gcstacksize;
+	top = (byte*)(void*)(gp->gcinitialsp) + gp->gcstacksize;
 	if(top > bottom)
 		scanstackblock(bottom, (uintptr)(top - bottom), gcw);
 	else

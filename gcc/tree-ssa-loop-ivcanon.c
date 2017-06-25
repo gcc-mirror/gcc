@@ -529,6 +529,8 @@ remove_exits_and_undefined_stmts (struct loop *loop, unsigned int npeeled)
 	    }
 	  if (!loop_exit_edge_p (loop, exit_edge))
 	    exit_edge = EDGE_SUCC (bb, 1);
+	  exit_edge->probability = REG_BR_PROB_BASE;
+	  exit_edge->count = exit_edge->src->count;
 	  gcc_checking_assert (loop_exit_edge_p (loop, exit_edge));
 	  gcond *cond_stmt = as_a <gcond *> (elt->stmt);
 	  if (exit_edge->flags & EDGE_TRUE_VALUE)
@@ -853,8 +855,9 @@ try_unroll_loop_completely (struct loop *loop,
 		     loop->num);
 	  return false;
 	}
-      dump_printf_loc (report_flags, locus,
-                       "loop turned into non-loop; it never loops.\n");
+      if (!n_unroll)
+        dump_printf_loc (report_flags, locus,
+                         "loop turned into non-loop; it never loops.\n");
 
       initialize_original_copy_tables ();
       auto_sbitmap wont_exit (n_unroll + 1);
@@ -1212,8 +1215,7 @@ canonicalize_induction_variables (void)
   bool irred_invalidated = false;
   bitmap loop_closed_ssa_invalidated = BITMAP_ALLOC (NULL);
 
-  free_numbers_of_iterations_estimates (cfun);
-  estimate_numbers_of_iterations ();
+  estimate_numbers_of_iterations (cfun);
 
   FOR_EACH_LOOP (loop, LI_FROM_INNERMOST)
     {
@@ -1230,6 +1232,7 @@ canonicalize_induction_variables (void)
 
   /* Clean up the information about numbers of iterations, since brute force
      evaluation could reveal new information.  */
+  free_numbers_of_iterations_estimates (cfun);
   scev_reset ();
 
   if (!bitmap_empty_p (loop_closed_ssa_invalidated))
@@ -1358,6 +1361,8 @@ tree_unroll_loops_completely (bool may_increase_size, bool unroll_outer)
   int iteration = 0;
   bool irred_invalidated = false;
 
+  estimate_numbers_of_iterations (cfun);
+
   do
     {
       changed = false;
@@ -1367,7 +1372,7 @@ tree_unroll_loops_completely (bool may_increase_size, bool unroll_outer)
 	loop_closed_ssa_invalidated = BITMAP_ALLOC (NULL);
 
       free_numbers_of_iterations_estimates (cfun);
-      estimate_numbers_of_iterations ();
+      estimate_numbers_of_iterations (cfun);
 
       changed = tree_unroll_loops_completely_1 (may_increase_size,
 						unroll_outer, father_bbs,
@@ -1585,7 +1590,6 @@ pass_complete_unrolli::execute (function *fun)
     {
       scev_initialize ();
       ret = tree_unroll_loops_completely (optimize >= 3, false);
-      free_numbers_of_iterations_estimates (fun);
       scev_finalize ();
     }
   loop_optimizer_finalize ();

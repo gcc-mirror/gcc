@@ -1,3 +1,208 @@
+2017-06-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/81173
+	* include/bits/stl_bvector.h (vector<bool>::_M_initialize_value):
+	Do not pass null pointer to memset.
+
+2017-06-21  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	PR libstdc++/80675
+	PR libstdc++/80940
+	* include/std/istream:
+	(__is_convertible_to_basic_istream_test(basic_istream<_Ch, _Up>*)): New.
+	(__do_is_convertible_to_basic_istream_impl): Likewise.
+	(__is_convertible_to_basic_istream_impl): Likewise.
+	(__is_convertible_to_basic_istream): Use the new base.
+	(__rvalue_istream_type): New.
+	(operator>>(_Istream&&, _Tp&&)): Use the new helper alias
+	for the SFINAE check, convert to the helper alias type before
+	doing the actual extraction.
+	* include/std/ostream:
+	(__is_convertible_to_basic_ostream_test(basic_ostream<_Ch, _Up>*)): New.
+	(__do_is_convertible_to_basic_ostream_impl): Likewise.
+	(__is_convertible_to_basic_ostream_impl): Likewise.
+	(__is_convertible_to_basic_ostream): Use the new base.
+	(__rvalue_ostream_type): New.
+	(operator<<(_Ostream&&, const _Tp&)): Use the new helper alias
+	for the SFINAE check, convert to the helper alias type before
+	doing the actual insertion.
+	* testsuite/27_io/rvalue_streams-2.cc: Add new tests.
+
+2017-06-21  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	* config/abi/post/aarch64-linux-gnu/baseline_symbols.txt: Update.
+
+2017-06-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/81092
+	* configure: Regenerate.
+
+2017-06-20  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/abi/post/alpha-linux-gnu/baseline_symbols.txt: Update.
+
+2017-06-20  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* testsuite/20_util/variant/index_type.cc: Allow for all ilp32 and
+	lp64 targets.
+
+2017-06-19  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config/abi/post/i386-solaris2.10/baseline_symbols.txt: Regenerate.
+	* config/abi/post/i386-solaris2.10/amd64/baseline_symbols.txt: Likewise.
+	* config/abi/post/i386-solaris2.11/baseline_symbols.txt: Likewise.
+	* config/abi/post/i386-solaris2.11/amd64/baseline_symbols.txt: Likewise.
+	* config/abi/post/sparc-solaris2.10/baseline_symbols.txt: Likewise.
+	* config/abi/post/sparc-solaris2.10/sparcv9/baseline_symbols.txt:
+	Likewise.
+	* config/abi/post/sparc-solaris2.11/baseline_symbols.txt: Likewise.
+	* config/abi/post/sparc-solaris2.11/sparcv9/baseline_symbols.txt:
+	Likewise.
+
+2017-06-18  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR libstdc++/81092
+	* config/abi/post/x86_64-linux-gnu/x32/baseline_symbols.txt: Updated.
+
+2017-06-18  Andreas Schwab  <schwab@linux-m68k.org>
+
+	PR libstdc++/81092
+	* config/abi/post/m68k-linux-gnu/baseline_symbols.txt: Update.
+
+2017-06-17  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* testsuite: Remove dg-skip-if, dg-xfail-if, dg-xfail-run-if
+	default args.
+
+2017-06-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/80893
+	* testsuite/23_containers/vector/bool/80893.cc: Add { target c++11 }.
+
+2017-06-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/shared_ptr.h (get_deleter): Add overload matching
+	standard signature.
+	* include/bits/shared_ptr_base.h (__shared_ptr): Declare new
+	get_deleter overload as a friend.
+	* testsuite/20_util/shared_ptr/misc/get_deleter.cc: New.
+
+2017-06-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libstdc++/81092
+	* config/abi/post/i486-linux-gnu/baseline_symbols.txt: Update.
+	* config/abi/post/powerpc-linux-gnu/baseline_symbols.txt: Update.
+	* config/abi/post/powerpc64-linux-gnu/32/baseline_symbols.txt: Update.
+
+2017-06-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/locale_conv.h (wbuffer_convert::sync): Fix condition.
+	* testsuite/22_locale/conversions/buffer/2.cc: New.
+
+	PR libstdc++/81092
+	* acinclude.m4: Bump libtool_VERSION.
+	* config/abi/post/i386-linux-gnu/baseline_symbols.txt: Update.
+	* config/abi/post/x86_64-linux-gnu/32/baseline_symbols.txt: Update.
+	* config/abi/pre/gnu.ver: Add wstring constructor symbols to
+	GLIBCXX_3.4.24 version and move random_device::_M_get_entropy() symbol
+	to new GLIBCXX_3.4.25 version.
+	* doc/xml/manual/abi.xml: Document new versions.
+	* doc/html/*: Regenerate.
+	* testsuite/21_strings/basic_string/cons/char/8.cc: Use base object
+	constructors to ensure required symbols are exported.
+	* testsuite/21_strings/basic_string/cons/wchar_t/8.cc: Likewise.
+	* testsuite/util/testsuite_abi.cc: Add new version.
+
+	* include/bits/locale_conv.h (wbuffer_convert::_M_put): Add missing
+	return statement.
+	* testsuite/21_strings/basic_string_view/operations/copy/char/1.cc:
+	Return void.
+	* testsuite/21_strings/basic_string_view/operations/copy/wchar_t/1.cc:
+	Likewise.
+	* testsuite/23_containers/map/modifiers/insert_or_assign/1.cc: Add
+	missing return statements.
+	* testsuite/23_containers/unordered_map/modifiers/insert_or_assign.cc:
+	Likewise.
+	* testsuite/27_io/basic_istream/extractors_arithmetic/char/12.cc:
+	Return void.
+	* testsuite/special_functions/14_expint/pr68397.cc: Likewise.
+
+2017-06-16  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/bits/stl_bvector.h
+	(__fill_bvector(_Bit_type*, unsigned int, unsigned int, bool)):
+	Change signature.
+	(std::fill(_Bit_iterator, _Bit_iterator, bool)): Adapt.
+	(_Bvector_impl_data): New.
+	(_Bvector_impl): Inherits from latter.
+	(_Bvector_impl(_Bit_alloc_type&&)): Delete.
+	(_Bvector_impl(_Bvector_impl&&)): New, default.
+	(_Bvector_base()): Default.
+	(_Bvector_base(_Bvector_base&&)): Default.
+	(_Bvector_base::_M_move_data(_Bvector_base&&)): New.
+	(vector(vector&&, const allocator_type&)): Use latter.
+	(vector<bool>::operator=(vector&&)): Likewise.
+	(vector<bool>::vector()): Default.
+	(vector<bool>::vector(vector&&)): Default.
+	(vector<bool>::assign(_InputIterator, _InputIterator)): Use
+	_M_assign_aux.
+	(vector<bool>::assign(initializer_list<bool>)): Likewise.
+	(vector<bool>::_M_initialize_value(bool)): New.
+	(vector<bool>(size_type, const bool&, const allocator_type&)): Use
+	latter.
+	(vector<bool>::_M_initialize_dispatch(_Integer, _Integer, __true_type)):
+	Likewise.
+	(vector<bool>::_M_fill_assign(size_t, bool)): Likewise.
+
+2017-06-15  François Dumont  <fdumont@gcc.gnu.org>
+
+	* src/c++98/tree.cc  [!_GLIBCXX_INLINE_VERSION]
+	(_Rb_tree_rotate_left, _Rb_tree_rotate_right): Delete.
+
+2017-06-15  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* testsuite: Add dg-require-effective-target pthread to -pthread
+	tests.
+	Remove explicit target lists from dg-do and dg-options.
+
+	* testsuite/30_threads/async/forced_unwind.cc: Remove explit
+	target list from dg-options.
+	* testsuite/30_threads/packaged_task/forced_unwind.cc: Likewise.
+
+	* 30_threads/shared_mutex/cons/1.cc: Likewise.
+	Pass -pthread for all targets.
+	* 30_threads/shared_mutex/try_lock/1.cc: Likewise.
+	* 30_threads/shared_mutex/try_lock/2.cc: Likewise.
+	* 30_threads/shared_mutex/unlock/1.cc: Likewise.
+
+	* testsuite/30_threads/this_thread/57060.cc: Require c++11 via
+	dg-require-effective-target.
+
+2017-06-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/test.xml: Correct instructions on running tests.
+	* testsuite/21_strings/basic_string/cons/char/deduction.cc: Adjust to
+	pass when -D_GLIBCXX_USE_CXX11_ABI=0 added to RUNTESTFLAGS.
+	* testsuite/21_strings/basic_string/cons/wchar_t/deduction.cc:
+	Likewise.
+	* testsuite/27_io/basic_ios/copyfmt/char/1.cc: Likewise.
+	* testsuite/27_io/basic_ios/exceptions/char/1.cc: Likewise.
+	* testsuite/27_io/basic_istream/extractors_arithmetic/char/
+	exceptions_failbit.cc: Likewise.
+	* testsuite/27_io/basic_istream/extractors_arithmetic/wchar_t/
+	exceptions_failbit.cc: Likewise.
+	* testsuite/27_io/basic_istream/extractors_other/char/
+	exceptions_null.cc: Likewise.
+	* testsuite/27_io/basic_istream/extractors_other/wchar_t/
+	exceptions_null.cc: Likewise.
+	* testsuite/27_io/basic_istream/sentry/char/12297.cc: Likewise.
+	* testsuite/27_io/basic_istream/sentry/wchar_t/12297.cc: Likewise.
+	* testsuite/27_io/basic_ostream/inserters_other/char/
+	exceptions_null.cc: Likewise.
+	* testsuite/27_io/basic_ostream/inserters_other/wchar_t/
+	exceptions_null.cc: Likewise.
+	* testsuite/27_io/ios_base/storage/2.cc: Likewise.
+
 2017-06-12  Pedro Alves  <palves@redhat.com>
 
 	* doc/xml/manual/status_cxx2017.xml: Update C++17 constexpr

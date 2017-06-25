@@ -6,7 +6,7 @@
 //   xxhash: https://code.google.com/p/xxhash/
 // cityhash: https://code.google.com/p/cityhash/
 
-// +build 386 arm armbe m68k mipso32 mipsn32 mips mipsle ppc s390 sparc
+// +build 386 arm armbe m68k mips mipsle ppc s390 sparc
 
 package runtime
 

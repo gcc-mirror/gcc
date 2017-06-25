@@ -450,7 +450,13 @@ name_lookup::add_value (tree new_val)
   else if ((TREE_CODE (value) == TYPE_DECL
 	    && TREE_CODE (new_val) == TYPE_DECL
 	    && same_type_p (TREE_TYPE (value), TREE_TYPE (new_val))))
-    ;
+    /* Typedefs to the same type. */;
+  else if (TREE_CODE (value) == NAMESPACE_DECL
+	   && TREE_CODE (new_val) == NAMESPACE_DECL
+	   && ORIGINAL_NAMESPACE (value) == ORIGINAL_NAMESPACE (new_val))
+    /* Namespace (possibly aliased) to the same namespace.  Locate
+       the namespace*/
+    value = ORIGINAL_NAMESPACE (value);
   else
     {
       if (deduping)
@@ -1630,10 +1636,10 @@ static void
 diagnose_name_conflict (tree decl, tree bval)
 {
   if (TREE_CODE (decl) == TREE_CODE (bval)
-      && (TREE_CODE (decl) != TYPE_DECL
-	  || (DECL_ARTIFICIAL (decl) && DECL_ARTIFICIAL (bval))
-	  || (!DECL_ARTIFICIAL (decl) && !DECL_ARTIFICIAL (bval)))
+      && TREE_CODE (decl) != NAMESPACE_DECL
       && !DECL_DECLARES_FUNCTION_P (decl)
+      && (TREE_CODE (decl) != TYPE_DECL
+	  || DECL_ARTIFICIAL (decl) == DECL_ARTIFICIAL (bval))
       && CP_DECL_CONTEXT (decl) == CP_DECL_CONTEXT (bval))
     error ("redeclaration of %q#D", decl);
   else
@@ -1784,6 +1790,14 @@ update_binding (cp_binding_level *level, cxx_binding *binding, tree *slot,
       else
 	goto conflict;
 
+      if (to_type != old_type
+	  && warn_shadow
+	  && MAYBE_CLASS_TYPE_P (TREE_TYPE (to_type))
+	  && !(DECL_IN_SYSTEM_HEADER (decl)
+	       && DECL_IN_SYSTEM_HEADER (to_type)))
+	warning (OPT_Wshadow, "%q#D hides constructor for %q#D",
+		 decl, to_type);
+
       to_val = ovl_insert (decl, old);
     }
   else if (!old)
@@ -1801,15 +1815,14 @@ update_binding (cp_binding_level *level, cxx_binding *binding, tree *slot,
     }
   else if (TREE_CODE (old) == NAMESPACE_DECL)
     {
-      if (DECL_NAMESPACE_ALIAS (old) && DECL_NAMESPACE_ALIAS (decl)
-	  && ORIGINAL_NAMESPACE (old) == ORIGINAL_NAMESPACE (decl))
-	/* In a declarative region, a namespace-alias-definition can be
-	   used to redefine a namespace-alias declared in that declarative
-	   region to refer only to the namespace to which it already
-	   refers.  [namespace.alias] */
-	return old;
-      else
+      /* Two maybe-aliased namespaces.  If they're to the same target
+	 namespace, that's ok.  */
+      if (ORIGINAL_NAMESPACE (old) != ORIGINAL_NAMESPACE (decl))
 	goto conflict;
+
+      /* The new one must be an alias at this point.  */
+      gcc_assert (DECL_NAMESPACE_ALIAS (decl));
+      return old;
     }
   else if (TREE_CODE (old) == VAR_DECL)
     {
@@ -1847,21 +1860,6 @@ update_binding (cp_binding_level *level, cxx_binding *binding, tree *slot,
 	    to_add = build_tree_list (NULL_TREE, to_add);
 
 	  add_decl_to_level (level, to_add);
-	}
-
-      if (to_type != old_type)
-	{
-	  gcc_checking_assert (!old_type
-			       && TREE_CODE (to_type) == TYPE_DECL
-			       && DECL_ARTIFICIAL (to_type));
-
-	  tree type = TREE_TYPE (to_type);
-	  if (to_type != decl
-	      && MAYBE_CLASS_TYPE_P (type) && warn_shadow
-	      && (!DECL_IN_SYSTEM_HEADER (decl)
-		  || !DECL_IN_SYSTEM_HEADER (to_type)))
-	    warning (OPT_Wshadow, "%q#D hides constructor for %q#T",
-		     decl, type);
 	}
 
       if (slot)
@@ -4163,7 +4161,7 @@ do_class_using_decl (tree scope, tree name)
 
   scope_dependent_p = dependent_scope_p (scope);
   name_dependent_p = (scope_dependent_p
-		      || (IDENTIFIER_TYPENAME_P (name)
+		      || (IDENTIFIER_CONV_OP_P (name)
 			  && dependent_type_p (TREE_TYPE (name))));
 
   bases_dependent_p = any_dependent_bases_p ();
@@ -4273,8 +4271,6 @@ set_global_binding (tree name, tree val)
 void
 set_decl_namespace (tree decl, tree scope, bool friendp)
 {
-  tree old;
-
   /* Get rid of namespace aliases.  */
   scope = ORIGINAL_NAMESPACE (scope);
 
@@ -4284,41 +4280,49 @@ set_decl_namespace (tree decl, tree scope, bool friendp)
 	   decl, scope);
   DECL_CONTEXT (decl) = FROB_CONTEXT (scope);
 
-  /* Writing "int N::i" to declare a variable within "N" is invalid.  */
-  if (scope == current_namespace)
-    {
-      if (at_namespace_scope_p ())
-	error ("explicit qualification in declaration of %qD",
-	       decl);
-      return;
-    }
+  /* See whether this has been declared in the namespace or inline
+     children.  */
+  tree old = NULL_TREE;
+  {
+    name_lookup lookup (DECL_NAME (decl), LOOKUP_HIDDEN);
+    if (!lookup.search_qualified (scope, /*usings=*/false))
+      /* No old declaration at all.  */
+      goto not_found;
+    old = lookup.value;
+  }
 
-  /* See whether this has been declared in the namespace.  */
-  old = lookup_qualified_name (scope, DECL_NAME (decl), /*type*/false,
-			       /*complain*/true, /*hidden*/true);
-  if (old == error_mark_node)
-    /* No old declaration at all.  */
-    goto complain;
   /* If it's a TREE_LIST, the result of the lookup was ambiguous.  */
   if (TREE_CODE (old) == TREE_LIST)
     {
+    ambiguous:
+      DECL_CONTEXT (decl) = FROB_CONTEXT (scope);
       error ("reference to %qD is ambiguous", decl);
       print_candidates (old);
       return;
     }
-  if (!OVL_P (decl))
+
+  if (!DECL_DECLARES_FUNCTION_P (decl))
     {
-      /* We might have found OLD in an inline namespace inside SCOPE.  */
-      if (TREE_CODE (decl) == TREE_CODE (old))
-	DECL_CONTEXT (decl) = DECL_CONTEXT (old);
       /* Don't compare non-function decls with decls_match here, since
 	 it can't check for the correct constness at this
-	 point. pushdecl will find those errors later.  */
+	 point.  pushdecl will find those errors later.  */
+
+      /* We might have found it in an inline namespace child of SCOPE.  */
+      if (TREE_CODE (decl) == TREE_CODE (old))
+	DECL_CONTEXT (decl) = DECL_CONTEXT (old);
+
+    found:
+      /* Writing "N::i" to declare something directly in "N" is invalid.  */
+      if (CP_DECL_CONTEXT (decl) == current_namespace
+	  && at_namespace_scope_p ())
+	error ("explicit qualification in declaration of %qD", decl);
       return;
     }
+
   /* Since decl is a function, old should contain a function decl.  */
   if (!OVL_P (old))
-    goto complain;
+    goto not_found;
+
   /* We handle these in check_explicit_instantiation_namespace.  */
   if (processing_explicit_instantiation)
     return;
@@ -4332,53 +4336,48 @@ set_decl_namespace (tree decl, tree scope, bool friendp)
      friends in any namespace.  */
   if (friendp && DECL_USE_TEMPLATE (decl))
     return;
-  if (OVL_P (old))
-    {
-      tree found = NULL_TREE;
 
-      for (ovl_iterator iter (old); iter; ++iter)
+  tree found;
+  found = NULL_TREE;
+
+  for (lkp_iterator iter (old); iter; ++iter)
+    {
+      if (iter.using_p ())
+	continue;
+
+      tree ofn = *iter;
+
+      /* Adjust DECL_CONTEXT first so decls_match will return true
+	 if DECL will match a declaration in an inline namespace.  */
+      DECL_CONTEXT (decl) = DECL_CONTEXT (ofn);
+      if (decls_match (decl, ofn))
 	{
-	  tree ofn = *iter;
-	  /* Adjust DECL_CONTEXT first so decls_match will return true
-	     if DECL will match a declaration in an inline namespace.  */
-	  DECL_CONTEXT (decl) = DECL_CONTEXT (ofn);
-	  if (decls_match (decl, ofn))
+	  if (found)
 	    {
-	      if (found && !decls_match (found, ofn))
-		{
-		  DECL_CONTEXT (decl) = FROB_CONTEXT (scope);
-		  error ("reference to %qD is ambiguous", decl);
-		  print_candidates (old);
-		  return;
-		}
-	      found = ofn;
+	      /* We found more than one matching declaration.  */
+	      DECL_CONTEXT (decl) = FROB_CONTEXT (scope);
+	      goto ambiguous;
 	    }
-	}
-      if (found)
-	{
-	  if (!is_nested_namespace (scope, CP_DECL_CONTEXT (found), true))
-	    goto complain;
-	  if (DECL_HIDDEN_FRIEND_P (found))
-	    {
-	      pedwarn (DECL_SOURCE_LOCATION (decl), 0,
-		       "%qD has not been declared within %qD", decl, scope);
-	      inform (DECL_SOURCE_LOCATION (found),
-		      "only here as a %<friend%>");
-	    }
-	  DECL_CONTEXT (decl) = DECL_CONTEXT (found);
-	  return;
+	  found = ofn;
 	}
     }
-  else
+
+  if (found)
     {
-      DECL_CONTEXT (decl) = DECL_CONTEXT (old);
-      if (decls_match (decl, old))
-	return;
+      if (DECL_HIDDEN_FRIEND_P (found))
+	{
+	  pedwarn (DECL_SOURCE_LOCATION (decl), 0,
+		   "%qD has not been declared within %qD", decl, scope);
+	  inform (DECL_SOURCE_LOCATION (found),
+		  "only here as a %<friend%>");
+	}
+      DECL_CONTEXT (decl) = DECL_CONTEXT (found);
+      goto found;
     }
 
+ not_found:
   /* It didn't work, go back to the explicit scope.  */
   DECL_CONTEXT (decl) = FROB_CONTEXT (scope);
- complain:
   error ("%qD should have been declared inside %qD", decl, scope);
 }
 
@@ -5067,7 +5066,7 @@ lookup_name_fuzzy (tree name, enum lookup_name_fuzzy_kind kind)
 
       /* Only consider reserved words that survived the
 	 filtering in init_reswords (e.g. for -std).  */
-      if (!C_IS_RESERVED_WORD (resword_identifier))
+      if (!IDENTIFIER_KEYWORD_P (resword_identifier))
 	continue;
 
       bm.consider (IDENTIFIER_POINTER (resword_identifier));
@@ -5229,7 +5228,7 @@ lookup_name_real_1 (tree name, int prefer_type, int nonclass, bool block_p,
   /* Conversion operators are handled specially because ordinary
      unqualified name lookup will not find template conversion
      operators.  */
-  if (IDENTIFIER_TYPENAME_P (name))
+  if (IDENTIFIER_CONV_OP_P (name))
     {
       cp_binding_level *level;
 

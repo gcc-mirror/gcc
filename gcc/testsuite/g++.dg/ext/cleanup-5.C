@@ -1,7 +1,7 @@
 /* HP-UX libunwind.so doesn't provide _UA_END_OF_STACK */
 /* { dg-do run } */
 /* { dg-options "-fexceptions" } */
-/* { dg-skip-if "" { "ia64-*-hpux11.*" }  { "*" } { "" } } */
+/* { dg-skip-if "" { "ia64-*-hpux11.*" } } */
 /* Verify that cleanups work with exception handling.  */
 
 #include <unwind.h>

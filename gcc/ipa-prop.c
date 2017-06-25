@@ -3013,7 +3013,10 @@ find_constructor_constant_at_offset (tree constructor, HOST_WIDE_INT req_offset)
 
          if (index)
            {
-             off = wi::to_offset (index);
+	     if (TREE_CODE (index) == RANGE_EXPR)
+	       off = wi::to_offset (TREE_OPERAND (index, 0));
+	     else
+	       off = wi::to_offset (index);
              if (TYPE_DOMAIN (type) && TYPE_MIN_VALUE (TYPE_DOMAIN (type)))
                {
                  tree low_bound = TYPE_MIN_VALUE (TYPE_DOMAIN (type));
@@ -3022,6 +3025,8 @@ find_constructor_constant_at_offset (tree constructor, HOST_WIDE_INT req_offset)
                                  TYPE_PRECISION (TREE_TYPE (index)));
                }
              off *= wi::to_offset (unit_size);
+	     /* ???  Handle more than just the first index of a
+	        RANGE_EXPR.  */
            }
          else
            off = wi::to_offset (unit_size) * ix;
@@ -3711,7 +3716,7 @@ void
 ipa_free_edge_args_substructures (struct ipa_edge_args *args)
 {
   vec_free (args->jump_functions);
-  memset (args, 0, sizeof (*args));
+  *args = ipa_edge_args ();
 }
 
 /* Free all ipa_edge structures.  */

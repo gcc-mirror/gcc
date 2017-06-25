@@ -192,14 +192,16 @@ change_return_type (tree new_ret, tree fntype)
   return newtype;
 }
 
-/* Build a PARM_DECL with NAME and TYPE, and set DECL_ARG_TYPE
+/* Build a PARM_DECL of FN with NAME and TYPE, and set DECL_ARG_TYPE
    appropriately.  */
 
 tree
-cp_build_parm_decl (tree name, tree type)
+cp_build_parm_decl (tree fn, tree name, tree type)
 {
   tree parm = build_decl (input_location,
 			  PARM_DECL, name, type);
+  DECL_CONTEXT (parm) = fn;
+
   /* DECL_ARG_TYPE is only used by the back end and the back end never
      sees templates.  */
   if (!processing_template_decl)
@@ -208,13 +210,13 @@ cp_build_parm_decl (tree name, tree type)
   return parm;
 }
 
-/* Returns a PARM_DECL for a parameter of the indicated TYPE, with the
+/* Returns a PARM_DECL of FN for a parameter of the indicated TYPE, with the
    indicated NAME.  */
 
 tree
-build_artificial_parm (tree name, tree type)
+build_artificial_parm (tree fn, tree name, tree type)
 {
-  tree parm = cp_build_parm_decl (name, type);
+  tree parm = cp_build_parm_decl (fn, name, type);
   DECL_ARTIFICIAL (parm) = 1;
   /* All our artificial parms are implicitly `const'; they cannot be
      assigned to.  */
@@ -265,7 +267,7 @@ maybe_retrofit_in_chrg (tree fn)
      pass us a pointer to our VTT.  */
   if (CLASSTYPE_VBASECLASSES (DECL_CONTEXT (fn)))
     {
-      parm = build_artificial_parm (vtt_parm_identifier, vtt_parm_type);
+      parm = build_artificial_parm (fn, vtt_parm_identifier, vtt_parm_type);
 
       /* First add it to DECL_ARGUMENTS between 'this' and the real args...  */
       DECL_CHAIN (parm) = parms;
@@ -278,7 +280,7 @@ maybe_retrofit_in_chrg (tree fn)
     }
 
   /* Then add the in-charge parm (before the VTT parm).  */
-  parm = build_artificial_parm (in_charge_identifier, integer_type_node);
+  parm = build_artificial_parm (fn, in_charge_identifier, integer_type_node);
   DECL_CHAIN (parm) = parms;
   parms = parm;
   arg_types = hash_tree_chain (integer_type_node, arg_types);
@@ -1089,9 +1091,10 @@ is_late_template_attribute (tree attr, tree decl)
   if (is_attribute_p ("weak", name))
     return true;
 
-  /* Attribute unused is applied directly, as it appertains to
+  /* Attributes used and unused are applied directly, as they appertain to
      decls. */
-  if (is_attribute_p ("unused", name))
+  if (is_attribute_p ("unused", name)
+      || is_attribute_p ("used", name))
     return false;
 
   /* Attribute tls_model wants to modify the symtab.  */
@@ -3502,12 +3505,10 @@ start_static_storage_duration_function (unsigned count)
 
   /* Create the argument list.  */
   initialize_p_decl = cp_build_parm_decl
-    (get_identifier (INITIALIZE_P_IDENTIFIER), integer_type_node);
-  DECL_CONTEXT (initialize_p_decl) = ssdf_decl;
+    (ssdf_decl, get_identifier (INITIALIZE_P_IDENTIFIER), integer_type_node);
   TREE_USED (initialize_p_decl) = 1;
   priority_decl = cp_build_parm_decl
-    (get_identifier (PRIORITY_IDENTIFIER), integer_type_node);
-  DECL_CONTEXT (priority_decl) = ssdf_decl;
+    (ssdf_decl, get_identifier (PRIORITY_IDENTIFIER), integer_type_node);
   TREE_USED (priority_decl) = 1;
 
   DECL_CHAIN (initialize_p_decl) = priority_decl;
@@ -3737,7 +3738,7 @@ one_static_initialization_or_destruction (tree decl, tree init, bool initp)
       if (init)
 	{
 	  finish_expr_stmt (init);
-	  if (flag_sanitize & SANITIZE_ADDRESS)
+	  if (sanitize_flags_p (SANITIZE_ADDRESS, decl))
 	    {
 	      varpool_node *vnode = varpool_node::get (decl);
 	      if (vnode)
@@ -4144,10 +4145,19 @@ decl_maybe_constant_var_p (tree decl)
     /* A proxy isn't constant.  */
     return false;
   if (TREE_CODE (type) == REFERENCE_TYPE)
-    /* References can be constant.  */
+    /* References can be constant.  */;
+  else if (CP_TYPE_CONST_NON_VOLATILE_P (type)
+	   && INTEGRAL_OR_ENUMERATION_TYPE_P (type))
+    /* And const integers.  */;
+  else
+    return false;
+
+  if (DECL_INITIAL (decl)
+      && !DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (decl))
+    /* We know the initializer, and it isn't constant.  */
+    return false;
+  else
     return true;
-  return (CP_TYPE_CONST_NON_VOLATILE_P (type)
-	  && INTEGRAL_OR_ENUMERATION_TYPE_P (type));
 }
 
 /* Complain that DECL uses a type with no linkage.  In C++98 mode this is
@@ -4511,37 +4521,18 @@ c_parse_final_cleanups (void)
       instantiate_pending_templates (retries);
       ggc_collect ();
 
-      /* Write out virtual tables as required.  Note that writing out
-	 the virtual table for a template class may cause the
+      /* Write out virtual tables as required.  Writing out the
+	 virtual table for a template class may cause the
 	 instantiation of members of that class.  If we write out
 	 vtables then we remove the class from our list so we don't
 	 have to look at it again.  */
-
-      while (keyed_classes != NULL_TREE
-	     && maybe_emit_vtables (TREE_VALUE (keyed_classes)))
-	{
-	  reconsider = true;
-	  keyed_classes = TREE_CHAIN (keyed_classes);
-	}
-
-      t = keyed_classes;
-      if (t != NULL_TREE)
-	{
-	  tree next = TREE_CHAIN (t);
-
-	  while (next)
-	    {
-	      if (maybe_emit_vtables (TREE_VALUE (next)))
-		{
-		  reconsider = true;
-		  TREE_CHAIN (t) = TREE_CHAIN (next);
-		}
-	      else
-		t = next;
-
-	      next = TREE_CHAIN (t);
-	    }
-	}
+      for (i = keyed_classes->length ();
+	   keyed_classes->iterate (--i, &t);)
+	if (maybe_emit_vtables (t))
+	  {
+	    reconsider = true;
+	    keyed_classes->unordered_remove (i);
+	  }
 
       /* Write out needed type info variables.  We have to be careful
 	 looping through unemitted decls, because emit_tinfo_decl may
@@ -4646,6 +4637,8 @@ c_parse_final_cleanups (void)
 	  if (!DECL_SAVED_TREE (decl))
 	    continue;
 
+	  cgraph_node *node = cgraph_node::get_create (decl);
+
 	  /* We lie to the back end, pretending that some functions
 	     are not defined when they really are.  This keeps these
 	     functions from being put out unnecessarily.  But, we must
@@ -4666,9 +4659,6 @@ c_parse_final_cleanups (void)
 	      && DECL_INITIAL (decl)
 	      && decl_needed_p (decl))
 	    {
-	      struct cgraph_node *node, *next;
-
-	      node = cgraph_node::get (decl);
 	      if (node->cpp_implicit_alias)
 		node = node->get_alias_target ();
 
@@ -4678,7 +4668,8 @@ c_parse_final_cleanups (void)
 		 group, we need to mark all symbols in the same comdat group
 		 that way.  */
 	      if (node->same_comdat_group)
-		for (next = dyn_cast<cgraph_node *> (node->same_comdat_group);
+		for (cgraph_node *next
+		       = dyn_cast<cgraph_node *> (node->same_comdat_group);
 		     next != node;
 		     next = dyn_cast<cgraph_node *> (next->same_comdat_group))
 		  next->call_for_symbol_thunks_and_aliases (clear_decl_external,
@@ -4692,7 +4683,7 @@ c_parse_final_cleanups (void)
 	  if (!DECL_EXTERNAL (decl)
 	      && decl_needed_p (decl)
 	      && !TREE_ASM_WRITTEN (decl)
-	      && !cgraph_node::get (decl)->definition)
+	      && !node->definition)
 	    {
 	      /* We will output the function; no longer consider it in this
 		 loop.  */

@@ -144,13 +144,6 @@ asan_sanitize_use_after_scope (void)
   return (flag_sanitize_address_use_after_scope && asan_sanitize_stack_p ());
 }
 
-static inline bool
-asan_no_sanitize_address_p (void)
-{
-  return lookup_attribute ("no_sanitize_address",
-			   DECL_ATTRIBUTES (current_function_decl));
-}
-
 /* Return true if DECL should be guarded on the stack.  */
 
 static inline bool
@@ -159,6 +152,26 @@ asan_protect_stack_decl (tree decl)
   return DECL_P (decl)
     && (!DECL_ARTIFICIAL (decl)
 	|| (asan_sanitize_use_after_scope () && TREE_ADDRESSABLE (decl)));
+}
+
+/* Return true when flag_sanitize & FLAG is non-zero.  If FN is non-null,
+   remove all flags mentioned in "no_sanitize" of DECL_ATTRIBUTES.  */
+
+static inline bool
+sanitize_flags_p (unsigned int flag, const_tree fn = current_function_decl)
+{
+  unsigned int result_flags = flag_sanitize & flag;
+  if (result_flags == 0)
+    return false;
+
+  if (fn != NULL_TREE)
+    {
+      tree value = lookup_attribute ("no_sanitize", DECL_ATTRIBUTES (fn));
+      if (value)
+	result_flags &= ~tree_to_uhwi (TREE_VALUE (value));
+    }
+
+  return result_flags;
 }
 
 #endif /* TREE_ASAN */

@@ -36,6 +36,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "dumpfile.h"
 #include "gimplify.h"
 #include "intl.h"
+#include "asan.h"
 
 /* Id for dumping the class hierarchy.  */
 int class_dump_id;
@@ -462,7 +463,8 @@ build_base_path (enum tree_code code,
       else
 	{
 	  tree t = expr;
-	  if ((flag_sanitize & SANITIZE_VPTR) && fixed_type_p == 0)
+	  if (sanitize_flags_p (SANITIZE_VPTR)
+	      && fixed_type_p == 0)
 	    {
 	      t = cp_ubsan_maybe_instrument_cast_to_vbase (input_location,
 							   probe, expr);
@@ -2326,25 +2328,25 @@ resort_type_method_vec (void* obj,
 			gt_pointer_operator new_value,
 			void* cookie)
 {
-  vec<tree, va_gc> *method_vec = (vec<tree, va_gc> *) obj;
-  int len = vec_safe_length (method_vec);
-  size_t slot;
-  tree fn;
-
-  /* The type conversion ops have to live at the front of the vec, so we
-     can't sort them.  */
-  for (slot = CLASSTYPE_FIRST_CONVERSION_SLOT;
-       vec_safe_iterate (method_vec, slot, &fn);
-       ++slot)
-    if (!DECL_CONV_FN_P (OVL_FIRST (fn)))
-      break;
-
-  if (len - slot > 1)
+  if (vec<tree, va_gc> *method_vec = (vec<tree, va_gc> *) obj)
     {
-      resort_data.new_value = new_value;
-      resort_data.cookie = cookie;
-      qsort (method_vec->address () + slot, len - slot, sizeof (tree),
-	     resort_method_name_cmp);
+      int len = method_vec->length ();
+      int slot;
+
+      /* The type conversion ops have to live at the front of the vec, so we
+	 can't sort them.  */
+      for (slot = CLASSTYPE_FIRST_CONVERSION_SLOT;
+	   slot < len; slot++)
+	if (!DECL_CONV_FN_P (OVL_FIRST ((*method_vec)[slot])))
+	  break;
+
+      if (len > slot + 1)
+	{
+	  resort_data.new_value = new_value;
+	  resort_data.cookie = cookie;
+	  qsort (method_vec->address () + slot, len - slot, sizeof (tree),
+		 resort_method_name_cmp);
+	}
     }
 }
 
@@ -5023,10 +5025,8 @@ void
 deduce_noexcept_on_destructor (tree dtor)
 {
   if (!TYPE_RAISES_EXCEPTIONS (TREE_TYPE (dtor)))
-    {
-      tree eh_spec = unevaluated_noexcept_spec ();
-      TREE_TYPE (dtor) = build_exception_variant (TREE_TYPE (dtor), eh_spec);
-    }
+    TREE_TYPE (dtor) = build_exception_variant (TREE_TYPE (dtor),
+						noexcept_deferred_spec);
 }
 
 /* For each destructor in T, deduce noexcept:
@@ -7187,8 +7187,8 @@ finish_struct_1 (tree t)
 	 in every translation unit where the class definition appears.  If
 	 we're devirtualizing, we can look into the vtable even if we
 	 aren't emitting it.  */
-      if (CLASSTYPE_KEY_METHOD (t) == NULL_TREE)
-	keyed_classes = tree_cons (NULL_TREE, t, keyed_classes);
+      if (!CLASSTYPE_KEY_METHOD (t))
+	vec_safe_push (keyed_classes, t);
     }
 
   /* Layout the class itself.  */

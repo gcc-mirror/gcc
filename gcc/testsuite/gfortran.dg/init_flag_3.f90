@@ -1,7 +1,7 @@
 ! { dg-do run }
 ! { dg-options "-finit-integer=-1 -finit-logical=false -finit-real=nan" }
 ! { dg-add-options ieee }
-! { dg-skip-if "NaN not supported" { spu-*-* } { "*" } { "" } }
+! { dg-skip-if "NaN not supported" { spu-*-* } }
 
 program init_flag_3
   call real_test

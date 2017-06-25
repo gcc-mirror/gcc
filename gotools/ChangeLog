@@ -1,3 +1,23 @@
+2017-06-16  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* Makefile.am (check-go-tool): Don't use >& for I/O redirection.
+	* Makefile.in: Regenerate.
+
+2017-06-14  Ian Lance Taylor  <iant@golang.org>
+
+	* Makefile.am (libgosrcdir): Define.
+	(check-head, check-gccgo, check-go-tool): New targets.
+	(CHECK_ENV): Define.
+	(check): New target.
+	(mostlyclean-local): New target.
+	* Makefile.in: Rebuild.
+
+2017-06-13  Ian Lance Taylor  <iant@golang.org>
+
+	PR go/80964
+	* configure.ac: Set NATIVE if host_alias = target_alias.
+	* configure: Rebuild.
+
 2017-05-18  Ian Lance Taylor  <iant@golang.org>
 
 	PR go/80814

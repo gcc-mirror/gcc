@@ -46,11 +46,13 @@ test01()
   const std::basic_string s4 = s2;
   check_type<const std::wstring>(s4);
 
+#if _GLIBCXX_USE_CXX11_ABI
   std::basic_string s5(s0, a);
   check_type<std::wstring>(s5);
 
   std::basic_string s6(std::move(s0), a);
   check_type<std::wstring>(s6);
+#endif
 
   std::basic_string s7(s0, 0, 0);
   check_type<std::wstring>(s7);

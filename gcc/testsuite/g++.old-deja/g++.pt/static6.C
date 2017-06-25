@@ -1,5 +1,5 @@
 // { dg-do link }
-// { dg-xfail-if "" { *-*-aout *-*-coff *-*-hms } { "*" } { "" } }
+// { dg-xfail-if "" { *-*-aout *-*-coff *-*-hms } }
 
 // Simplified from testcase by Erez Louidor Lior <s3824888@techst02.technion.ac.il>
 

@@ -1,3 +1,288 @@
+2017-06-24  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/62315
+	* parser.c (cp_parser_diagnose_invalid_type_name): Don't print
+	'typename' in error messages about missing 'typename'.
+
+2017-06-23  Jason Merrill  <jason@redhat.com>
+
+	PR c++/79056 - C++17 ICE with invalid template syntax.
+	* parser.c (cp_parser_simple_type_specifier): Don't assume that type
+	is a TYPE_DECL.
+	(cp_parser_check_for_invalid_template_id): Handle TYPE_DECL.
+	* pt.c (template_placeholder_p): New.
+	* cp-tree.h: Declare it.
+
+2017-06-23  Marc Glisse  <marc.glisse@inria.fr>
+
+	* decl.c (duplicate_decls): Use builtin_structptr_types.
+
+2017-06-22  Nathan Sidwell  <nathan@acm.org>
+
+	Reorder IDENTIFIER flags
+	gcc/cp/
+	* cp-tree.h (enum cp_identifier_kind): New.
+	(IDENTIFIER_KIND_BIT_0, IDENTIFIER_KIND_BIT_1,
+	IDENTIFIER_KIND_BIT_2): New.
+	(IDENTIFIER_MARKED): Move to TREE_LANG_FLAG_4.
+	(IDENTIFIER_VIRTUAL_P, IDENTIFIER_REPO_CHOSEN): Add IDENTIFIER_CHECK.
+	(C_IS_RESERVED_WORD): Replace with ...
+	(IDENTIFIER_KEYWORD_P): ... this.
+	(IDENTIFIER_CTOR_OR_DTOR_P): Replace with ...
+	(IDENTIFIER_CDTOR_P): ... this.
+	(IDENTIFIER_CTOR_P, IDENTIFIER_DTOR_P): New.
+	(IDENTIFIER_OPNAME_P): Replace with ...
+	(IDENTIFIER_ANY_OP_P): ... this.
+	(IDENTIFIER_ASSIGN_OP_P): New.
+	(IDENTIFIER_TYPENAME_P): Replace with ...
+	(IDENTIFIER_CONV_OP_P): ... this.
+	(NEW_DELETE_OPNAME_P): Replace with ...
+	(IDENTIFIER_NEWDEL_OP_P): ... this.
+	(DECL_CONV_FN_P, DECL_OVERLOADED_OPERATOR_P): Adjust.
+	(get_identifier_kind_name, set_identifier_kind): Declare.
+	* lex.c (get_identifier_kind_name, set_identifier_kind): New.
+	(init_operators): Adjust to avoid keywords, use
+	set_identifier_kind. Copy TYPE_EXPR slot.
+	(init_reswords): Call set_identifier_kind.
+	(unqualified_name_lookup_error): Adjust.
+	* operators.def (TYPE_EXPR): Remove.
+	* decl.c (struct predefined_identifier): Move into ...
+	(initialize_predefined_identifiers): ... here.  Call
+	set_identifier_kind.
+	(grokfndecl, check_var_type, grokdeclarator): Adjust.
+	(grok_op_properties): Use IDENTIFIER_ANY_ASSIGN_OP to halve search
+	space.  Adjust.
+	* call.c (name_as_c_string): Adjust.
+	(build_new_method_call_1): Likewise.
+	* cp-cilkplus.c (is_conversion_operator_function_decl_p): Likewise.
+	* cxx-pretty-print.c (pp_cxx_unqualified_id): Adjust.
+	* dump.c (cp_dump_tree): Adjust.
+	* error.c (dump_decl_name): Adjust.
+	* mangle.c (write_unqualified_id, write_member_name,
+	write_expression): Adjust.
+	(mangle_conv_op_name_for_type): Use set_identifier_kind.
+	* name-lookup.c (do_class_using_decl): Adjust.
+	(lookup_name_fuzzy, lookup_name_real_1): Likewise.
+	* parser.c (cp_lexer_get_preprocessor_token,
+	cp_parser_direct_declarator): Likewise.
+	* pt.c (push_template_decl_real, tsubst_decl, tsubst_baselink,
+	tsubst_copy, tsubst_copy_and_build): Adjust.
+	* ptree.c (cxx_print_identifier): Print identifier kind.
+	* search.c (lookup_field_r, lookup_member,
+	lookup_fnfields_idx_nolazy): Adjust.
+	* semantics.c (finish_id_expression): Adjust..
+	* typeck.c (cp_build_addr_expr_1): Adjust.
+
+2017-06-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/81154
+	* semantics.c (handle_omp_array_sections_1, finish_omp_clauses):
+	Complain about t not being a variable if t is OVERLOAD even
+	when processing_template_decl.
+
+2017-06-21  David Malcolm  <dmalcolm@redhat.com>
+
+	* parser.c (get_cast_suggestion): New function.
+	(maybe_add_cast_fixit): New function.
+	(cp_parser_cast_expression): Capture the location of the closing
+	parenthesis.  Call maybe_add_cast_fixit when emitting warnings
+	about old-style casts.
+
+2017-06-20  Jason Merrill  <jason@redhat.com>
+
+	PR c++/80972 - C++17 ICE with attribute packed.
+	* call.c (build_over_call): Allow a TARGET_EXPR from reference
+	binding.
+
+2017-06-20  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-tree.h (CPTI_NELTS_IDENTIFIER): Delete.
+	(nelts_identifier): Delete.
+	* decl.c (initialize_predefined_identifiers): Remove nelts.
+
+	PR c++/67074 - namespace aliases
+	* decl.c (duplicate_decls): Don't error here on mismatched
+	namespace alias.
+	* name-lookup.c (name_lookup::add_value): Matching namespaces are
+	not ambiguous.
+	(diagnose_name_conflict): Namespaces are never redeclarations.
+	(update_binding): An alias can match a real namespace.
+
+2017-06-19  Jason Merrill  <jason@redhat.com>
+
+	PR c++/80562 - ICE with constexpr if.
+	* semantics.c (finish_if_stmt_cond): Call
+	instantiate_non_dependent_expr.
+
+	PR c++/80829 - ICE with constexpr copy of base subobject.
+	* constexpr.c (clear_no_implicit_zero): New.
+	(cxx_eval_call_expression): Call it.
+
+2017-06-19  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/81124
+	PR c++/79766
+	* name-lookup.c (set_decl_namespace): Don't follow using
+	directives and ignore using decls.  Only check overly-explicit
+	scope after discovering decl.
+
+2017-06-19  Jason Merrill  <jason@redhat.com>
+
+	PR c++/81073 - constexpr and static var in statement-expression.
+	* typeck2.c (store_init_value): Always call
+	require_potential_constant_expression.
+	* pt.c (convert_nontype_argument): Likewise.
+	* constexpr.c (potential_constant_expression_1): Adjust message.
+	Use decl_maybe_constant_var_p instead of decl_constant_var_p.
+	* decl2.c (decl_maybe_constant_var_p): Consider initializer.
+
+2017-06-19  Nathan Sidwell  <nathan@acm.org>
+
+	* pt.c (coerce_template_parms): Fix indentation.
+	(tsubst_decl): Remove repeated SET_DECL_RTL.  Move VAR_P handling
+	in to single block.
+
+	PR c++/81119
+	* name-lookup.c (update_binding): Only warn about constructors
+	hidden by functions.
+
+2017-06-17  Jason Merrill  <jason@redhat.com>
+
+	PR c++/60063 - -Wunused-local-typedefs and templates.
+	* decl2.c (is_late_template_attribute): Return false for "used".
+
+	PR c++/70844 - -Wuseless-cast and inheriting constructor.
+	* method.c (forward_parm): Suppress warn_useless_cast.
+
+2017-06-16  Jason Merrill  <jason@redhat.com>
+
+	PR c++/81045 - Wrong type-dependence with auto return type.
+	* pt.c (type_dependent_expression_p): An undeduced auto outside the
+	template isn't dependent.
+	* call.c (build_over_call): Instantiate undeduced auto even in a
+	template.
+
+	PR c++/80465 - ICE with generic lambda with noexcept-specifier.
+	* lambda.c (maybe_add_lambda_conv_op): Keep processing_template_decl
+	set longer for a generic lambda.
+
+	PR c++/80614 - Wrong mangling for C++17 noexcept type
+	* mangle.c (write_type): Put the eh spec back on the function type.
+
+	PR c++/81102 - Wrong error with partial specialization.
+	* pt.c (unify) [TEMPLATE_PARM_INDEX]: Strip reference when comparing
+	types.  Do type deduction later.
+
+	PR c++/81074 - ICE with partial specialization of member template.
+	PR c++/71747
+	* pt.c (get_partial_spec_bindings): Only coerce innermost args.
+
+	PR c++/80831 - ICE with -fsyntax-only.
+	* decl2.c (c_parse_final_cleanups): Use cgraph_node::get_create.
+
+	PR c++/80639 - ICE with invalid PMF initialization.
+	PR c++/80043 - ICE with -fpermissive
+	* typeck.c (convert_for_assignment): Recurse when instantiate_type
+	returns without an error.
+
+2017-06-16  Nathan Sidwell  <nathan@acm.org>
+
+	* pt.c (tsubst_baselink): Fix & clarify formatting.
+
+	* cp-tree.h (build_this_parm, cp_build_parm_decl,
+	build_artificial_parm): Add FN parm.
+	* decl.c (start_cleanup_fn): Adjust.
+	(build_this_parm): Add FN parm, pass it through.
+	(grokfndecl): Adjust parm building.
+	* decl2.c (cp_build_parm_decl): Add FN parm, set context.
+	(build_artificial_parm): Add FN parm, pass through.
+	(maybe_retrofit_in_chrg): Adjust parm building.
+	(start_static_storage_duration_function): Likwise.
+	* lambda.c (maybe_aadd_lambda_conv_op): Likewise.
+	* method.c (implicitly_declare_fn): Likewise.
+	* parser.c (inject_this_parameter): Likewise.
+
+	Symbol tables are insert only.
+	* cp-tree.h (default_hash_traits <lang_identifier *>): Don't
+	derive from pointer_hash.  Make undeletable.
+
+	* class.c (resort_type_method_vec): Avoid potential unsigned
+	overflow.
+
+	Don't defer noexcept_deferred_spec.
+	* cp-tree.h (unevaluated_noexcept_spec): Don't declare.
+	* decl.c (cxx_init_decl_processing): Initialize
+	noexcept_deferred_spec.
+	* except.c (unevaluated_noexcept_spec): Delete.
+	* class.c (deduce_noexcept_on_destructor): Use
+	noexcept_deferred_spec directly.
+	* method.c (implicitly_declare_fn): Likewise.
+
+	Make keyed_classes a vector.
+	* cp-tree.h (CPTI_KEYED_CLASSES, keyed_classes): Delete.
+	(keyed_classes): Declare as vector.
+	* decl.c (keyed_classes): Define.
+	(cxx_init_decl_processing): Allocate it.
+	(record_key_method_defined): Use vec_safe_push.
+	* class.c (finish_struct_1): Likewise.
+	* pt.c (instantiate_class_template_1): Likewise.
+	* decl2.c (c_parse_final_cleanups): Reverse iterate keyed_classes.
+
+	Make rtti lazier
+	* rtti.c (enum tinfo_kind): Add TK_DERIVED_TYPES,
+	TK_VMI_CLASS_TYPES, TK_MAX.  Delete TK_FIXED.
+	(tinfo_names): New.
+	(typeid_ok_p): Add quotes to error messages.  Use get_tinfo_desc.
+	(get_tinfo_decl): Use get_tinfo_desc.
+	(get_pseudo_ti_init): Likewise. Adjust VMI construction.
+	(create_pseudo_type_info): Delete.
+	(get_pseudo_ti_index): Just determine the index.
+	(get_tinfo_desc): New.  Create all types lazily.
+	(create_tinfo_types): Just allocate the descriptor array.
+	(emit_support_tinfos): Use non-inserting type lookup.  Set builtin
+	location.
+
+2017-06-15  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/80560
+	* call.c (first_non_public_field, maybe_warn_class_memaccess): New
+	functions.
+	(has_trivial_copy_assign_p, has_trivial_copy_p): Ditto.
+	(build_cxx_call): Call maybe_warn_class_memaccess.
+
+2017-06-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* cp-gimplify.c (cp_genericize_r): Turn most of the function
+	into a switch (TREE_CODE (stmt)) statement from long else if
+	sequence.
+
+2017-06-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/80973
+	* cp-gimplify.c (cp_genericize_r): Don't instrument MEM_REF second
+	argument even if it has REFERENCE_TYPE.
+
+	PR c++/80984
+	* cp-gimplify.c (cp_genericize): Only look for VAR_DECLs in
+	BLOCK_VARS (outer) chain.
+	(cxx_omp_const_qual_no_mutable): Likewise.
+
+2017-06-13  Martin Liska  <mliska@suse.cz>
+
+	PR sanitize/78204
+	* class.c (build_base_path): Use sanitize_flags_p.
+	* cp-gimplify.c (cp_genericize_r): Likewise.
+	(cp_genericize_tree): Likewise.
+	(cp_genericize): Likewise.
+	* cp-ubsan.c (cp_ubsan_instrument_vptr_p): Likewise.
+	* decl.c (compute_array_index_type): Likewise.
+	(start_preparsed_function): Likewise.
+	* decl2.c (one_static_initialization_or_destruction): Likewise.
+	* init.c (finish_length_check): Likewise.
+	* lambda.c (maybe_add_lambda_conv_op): Likewise.
+	* typeck.c (cp_build_binary_op): Likewise.
+	(build_static_cast_1): Likewise.
+
 2017-06-11  Jason Merrill  <jason@redhat.com>
 
 	* error.c (dump_expr): Use is_this_parameter.

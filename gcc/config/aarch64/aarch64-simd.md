@@ -44,12 +44,12 @@
 (define_insn "aarch64_simd_dup<mode>"
   [(set (match_operand:VDQ_I 0 "register_operand" "=w, w")
 	(vec_duplicate:VDQ_I
-	  (match_operand:<VEL> 1 "register_operand" "r, w")))]
+	  (match_operand:<VEL> 1 "register_operand" "w,?r")))]
   "TARGET_SIMD"
   "@
-   dup\\t%0.<Vtype>, %<vw>1
-   dup\\t%0.<Vtype>, %1.<Vetype>[0]"
-  [(set_attr "type" "neon_from_gp<q>, neon_dup<q>")]
+   dup\\t%0.<Vtype>, %1.<Vetype>[0]
+   dup\\t%0.<Vtype>, %<vw>1"
+  [(set_attr "type" "neon_dup<q>, neon_from_gp<q>")]
 )
 
 (define_insn "aarch64_simd_dup<mode>"
@@ -105,7 +105,7 @@
      {
      case 0: return "ldr\\t%d0, %1";
      case 1: return "str\\t%d1, %0";
-     case 2: return "orr\t%0.<Vbtype>, %1.<Vbtype>, %1.<Vbtype>";
+     case 2: return "mov\t%0.<Vbtype>, %1.<Vbtype>";
      case 3: return "umov\t%0, %1.d[0]";
      case 4: return "fmov\t%d0, %1";
      case 5: return "mov\t%0, %1";
@@ -136,7 +136,7 @@
     case 1:
 	return "str\\t%q1, %0";
     case 2:
-	return "orr\t%0.<Vbtype>, %1.<Vbtype>, %1.<Vbtype>";
+	return "mov\t%0.<Vbtype>, %1.<Vbtype>";
     case 3:
     case 4:
     case 5:
@@ -5831,7 +5831,7 @@
 		    UNSPEC_PMULL))]
  "TARGET_SIMD && TARGET_CRYPTO"
  "pmull\\t%0.1q, %1.1d, %2.1d"
-  [(set_attr "type" "neon_mul_d_long")]
+  [(set_attr "type" "crypto_pmull")]
 )
 
 (define_insn "aarch64_crypto_pmullv2di"
@@ -5841,5 +5841,5 @@
 		  UNSPEC_PMULL2))]
   "TARGET_SIMD && TARGET_CRYPTO"
   "pmull2\\t%0.1q, %1.2d, %2.2d"
-  [(set_attr "type" "neon_mul_d_long")]
+  [(set_attr "type" "crypto_pmull")]
 )

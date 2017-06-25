@@ -1,3 +1,15 @@
+2017-06-24  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/81160
+	* arith.c (wprecision_int_real): Set return value before
+	mpz_clear and then return after it.
+
+2017-06-15  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/80983
+	* trans-expr.c (gfc_conv_procedure_call): Deallocate the result of
+	scalar allocatable procedure-pointer components.
+
 2017-06-10  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/80988

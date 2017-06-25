@@ -119,9 +119,14 @@ extern tree arm_fp16_type_node;
 #define TARGET_32BIT_P(flags)  (TARGET_ARM_P (flags) || TARGET_THUMB2_P (flags))
 
 /* Run-time Target Specification.  */
-#define TARGET_SOFT_FLOAT		(arm_float_abi == ARM_FLOAT_ABI_SOFT)
 /* Use hardware floating point instructions. */
-#define TARGET_HARD_FLOAT		(arm_float_abi != ARM_FLOAT_ABI_SOFT)
+#define TARGET_HARD_FLOAT	(arm_float_abi != ARM_FLOAT_ABI_SOFT	\
+				 && bitmap_bit_p (arm_active_target.isa, \
+						  isa_bit_VFPv2))
+#define TARGET_SOFT_FLOAT	(!TARGET_HARD_FLOAT)
+/* User has permitted use of FP instructions, if they exist for this
+   target.  */
+#define TARGET_MAYBE_HARD_FLOAT (arm_float_abi != ARM_FLOAT_ABI_SOFT)
 /* Use hardware floating point calling convention.  */
 #define TARGET_HARD_FLOAT_ABI		(arm_float_abi == ARM_FLOAT_ABI_HARD)
 #define TARGET_IWMMXT			(arm_arch_iwmmxt)
@@ -2215,45 +2220,54 @@ extern int making_const_table;
   (TARGET_NEON ? (TARGET_ARM_FP & (0xff ^ 0x08)) \
 	       : 0)
 
+/* Name of the automatic fpu-selection option.  */
+#define FPUTYPE_AUTO "auto"
+
 /* The maximum number of parallel loads or stores we support in an ldm/stm
    instruction.  */
 #define MAX_LDM_STM_OPS 4
 
-#define BIG_LITTLE_SPEC \
-   " %{mcpu=*:-mcpu=%:rewrite_mcpu(%{mcpu=*:%*})}"
-
 extern const char *arm_rewrite_mcpu (int argc, const char **argv);
-#define BIG_LITTLE_CPU_SPEC_FUNCTIONS \
-  { "rewrite_mcpu", arm_rewrite_mcpu },
+extern const char *arm_rewrite_march (int argc, const char **argv);
+#define ASM_CPU_SPEC_FUNCTIONS			\
+  { "rewrite_mcpu", arm_rewrite_mcpu },	\
+  { "rewrite_march", arm_rewrite_march },
 
-#define ASM_CPU_SPEC \
-   " %{mcpu=generic-*:-march=%*;"				\
-   "   :%{march=*:-march=%*}}"					\
-   BIG_LITTLE_SPEC
+#define ASM_CPU_SPEC							\
+  " %{mcpu=generic-*:-march=%:rewrite_march(%{mcpu=generic-*:%*});"	\
+  "   march=*:-march=%:rewrite_march(%{march=*:%*});"		\
+  "   mcpu=*:-mcpu=%:rewrite_mcpu(%{mcpu=*:%*})"			\
+  " }"
 
 extern const char *arm_target_thumb_only (int argc, const char **argv);
-#define TARGET_MODE_SPEC_FUNCTIONS					\
+#define TARGET_MODE_SPEC_FUNCTIONS			\
   { "target_mode_check", arm_target_thumb_only },
 
 /* -mcpu=native handling only makes sense with compiler running on
    an ARM chip.  */
 #if defined(__arm__)
 extern const char *host_detect_local_cpu (int argc, const char **argv);
-# define EXTRA_SPEC_FUNCTIONS						\
-  { "local_cpu_detect", host_detect_local_cpu },			\
-  BIG_LITTLE_CPU_SPEC_FUNCTIONS						\
-  TARGET_MODE_SPEC_FUNCTIONS
-
-# define MCPU_MTUNE_NATIVE_SPECS					\
-   " %{march=native:%<march=native %:local_cpu_detect(arch)}"		\
-   " %{mcpu=native:%<mcpu=native %:local_cpu_detect(cpu)}"		\
+# define MCPU_MTUNE_NATIVE_FUNCTIONS			\
+  { "local_cpu_detect", host_detect_local_cpu },
+# define MCPU_MTUNE_NATIVE_SPECS				\
+   " %{march=native:%<march=native %:local_cpu_detect(arch)}"	\
+   " %{mcpu=native:%<mcpu=native %:local_cpu_detect(cpu)}"	\
    " %{mtune=native:%<mtune=native %:local_cpu_detect(tune)}"
 #else
+# define MCPU_MTUNE_NATIVE_FUNCTIONS
 # define MCPU_MTUNE_NATIVE_SPECS ""
-# define EXTRA_SPEC_FUNCTIONS						\
-	BIG_LITTLE_CPU_SPEC_FUNCTIONS					\
-	TARGET_MODE_SPEC_FUNCTIONS
 #endif
+
+const char *arm_canon_arch_option (int argc, const char **argv);
+
+#define CANON_ARCH_SPEC_FUNCTION		\
+  { "canon_arch", arm_canon_arch_option },
+
+# define EXTRA_SPEC_FUNCTIONS			\
+  MCPU_MTUNE_NATIVE_FUNCTIONS			\
+  ASM_CPU_SPEC_FUNCTIONS			\
+  CANON_ARCH_SPEC_FUNCTION			\
+  TARGET_MODE_SPEC_FUNCTIONS
 
 /* Automatically add -mthumb for Thumb-only targets if mode isn't specified
    via the configuration option --with-mode or via the command line. The
@@ -2262,9 +2276,21 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
    - an array of -mcpu values if any is given;
    - an empty array.  */
 #define TARGET_MODE_SPECS						\
-  " %{!marm:%{!mthumb:%:target_mode_check(%{march=*:%*;mcpu=*:%*;:})}}"
+  " %{!marm:%{!mthumb:%:target_mode_check(%{march=*:arch %*;mcpu=*:cpu %*;:})}}"
 
-#define DRIVER_SELF_SPECS MCPU_MTUNE_NATIVE_SPECS TARGET_MODE_SPECS
+/* Generate a canonical string to represent the architecture selected.  */
+#define ARCH_CANONICAL_SPECS				\
+  " -march=%:canon_arch(%{mcpu=*: cpu %*} "		\
+  "                     %{march=*: arch %*} "		\
+  "                     %{mfpu=*: fpu %*} "		\
+  "                     %{mfloat-abi=*: abi %*}"	\
+  "                     %<march=*) "
+
+#define DRIVER_SELF_SPECS			\
+  MCPU_MTUNE_NATIVE_SPECS			\
+  TARGET_MODE_SPECS				\
+  ARCH_CANONICAL_SPECS
+
 #define TARGET_SUPPORTS_WIDE_INT 1
 
 /* For switching between functions with different target attributes.  */

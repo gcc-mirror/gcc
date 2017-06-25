@@ -1471,8 +1471,7 @@ allocate_and_init_ipcp_value (tree source)
 {
   ipcp_value<tree> *val;
 
-  val = ipcp_cst_values_pool.allocate ();
-  memset (val, 0, sizeof (*val));
+  val = new (ipcp_cst_values_pool.allocate ()) ipcp_value<tree>();
   val->value = source;
   return val;
 }
@@ -1486,8 +1485,8 @@ allocate_and_init_ipcp_value (ipa_polymorphic_call_context source)
   ipcp_value<ipa_polymorphic_call_context> *val;
 
   // TODO
-  val = ipcp_poly_ctx_values_pool.allocate ();
-  memset (val, 0, sizeof (*val));
+  val = new (ipcp_poly_ctx_values_pool.allocate ())
+    ipcp_value<ipa_polymorphic_call_context>();
   val->value = source;
   return val;
 }

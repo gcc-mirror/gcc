@@ -1,7 +1,7 @@
 ! { dg-do run }
 ! { dg-options "-finit-real=NAN" }
 ! { dg-add-options ieee }
-! { dg-skip-if "NaN not supported" { spu-*-* } { "*" } { "" } }
+! { dg-skip-if "NaN not supported" { spu-*-* } }
 !
 ! PR fortran/50619
 !

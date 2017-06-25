@@ -2097,11 +2097,10 @@ Target supports section anchors.
 Target defaults to short enums.
 
 @item stack_size
-Target has limited stack size.  The stack size limit can be obtained using
-@code{[dg-effective-target-value stack_size]}.  For example:
-@smallexample
-/* @{ dg-additional-options "-DSTACK_SIZE=[dg-effective-target-value stack_size]" @{ target @{ stack_size @} @} @} */
-@end smallexample
+@anchor{stack_size_et}
+Target has limited stack size.  The stack size limit can be obtained using the
+STACK_SIZE macro defined by @ref{stack_size_ao,,@code{dg-add-options} feature
+@code{stack_size}}.
 
 @item static
 Target supports @option{-static}.
@@ -2281,6 +2280,12 @@ compliance mode.
 @item mips16_attribute
 @code{mips16} function attributes.
 Only MIPS targets support this feature, and only then in certain modes.
+
+@item stack_size
+@anchor{stack_size_ao}
+Add the flags needed to define macro STACK_SIZE and set it to the stack size
+limit associated with the @ref{stack_size_et,,@code{stack_size} effective
+target}.
 
 @item tls
 Add the target-specific flags needed to use thread-local storage.

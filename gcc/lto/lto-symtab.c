@@ -952,6 +952,42 @@ lto_symtab_merge_symbols (void)
 	      if (tgt)
 		node->resolve_alias (tgt, true);
 	    }
+	  /* If the symbol was preempted outside IR, see if we want to get rid
+	     of the definition.  */
+	  if (node->analyzed
+	      && !DECL_EXTERNAL (node->decl)
+	      && (node->resolution == LDPR_PREEMPTED_REG
+		  || node->resolution == LDPR_RESOLVED_IR
+		  || node->resolution == LDPR_RESOLVED_EXEC
+		  || node->resolution == LDPR_RESOLVED_DYN))
+	    {
+	      DECL_EXTERNAL (node->decl) = 1;
+	      /* If alias to local symbol was preempted by external definition,
+		 we know it is not pointing to the local symbol.  Remove it.  */
+	      if (node->alias
+		  && !node->weakref
+		  && !node->transparent_alias
+		  && node->get_alias_target ()->binds_to_current_def_p ())
+		{
+		  node->alias = false;
+		  node->remove_all_references ();
+		  node->definition = false;
+		  node->analyzed = false;
+		  node->cpp_implicit_alias = false;
+		}
+	      else if (!node->alias
+		       && node->definition
+		       && node->get_availability () <= AVAIL_INTERPOSABLE)
+		{
+		  if ((cnode = dyn_cast <cgraph_node *> (node)) != NULL)
+		    cnode->reset ();
+		  else
+		    {
+		      node->analyzed = node->definition = false;
+		      node->remove_all_references ();
+		    }
+		}
+	    }
 
 	  if (!(cnode = dyn_cast <cgraph_node *> (node))
 	      || !cnode->clone_of

@@ -136,7 +136,6 @@ enum cp_tree_index
     CPTI_DELTA_IDENTIFIER,
     CPTI_IN_CHARGE_IDENTIFIER,
     CPTI_VTT_PARM_IDENTIFIER,
-    CPTI_NELTS_IDENTIFIER,
     CPTI_THIS_IDENTIFIER,
     CPTI_PFN_IDENTIFIER,
     CPTI_VPTR_IDENTIFIER,
@@ -168,8 +167,6 @@ enum cp_tree_index
     CPTI_ATEXIT,
     CPTI_DSO_HANDLE,
     CPTI_DCAST,
-
-    CPTI_KEYED_CLASSES,
 
     CPTI_NULLPTR,
     CPTI_NULLPTR_TYPE,
@@ -236,7 +233,6 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
 /* The name of the parameter that contains a pointer to the VTT to use
    for this subobject constructor or destructor.  */
 #define vtt_parm_identifier		cp_global_trees[CPTI_VTT_PARM_IDENTIFIER]
-#define nelts_identifier		cp_global_trees[CPTI_NELTS_IDENTIFIER]
 #define this_identifier			cp_global_trees[CPTI_THIS_IDENTIFIER]
 #define pfn_identifier			cp_global_trees[CPTI_PFN_IDENTIFIER]
 #define vptr_identifier			cp_global_trees[CPTI_VPTR_IDENTIFIER]
@@ -290,11 +286,6 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
    destructors.  */
 #define vtt_parm_type			cp_global_trees[CPTI_VTT_PARM_TYPE]
 
-/* A TREE_LIST of the dynamic classes whose vtables may have to be
-   emitted in this translation unit.  */
-
-#define keyed_classes			cp_global_trees[CPTI_KEYED_CLASSES]
-
 /* A node which matches any template argument.  */
 #define any_targ_node			cp_global_trees[CPTI_ANY_TARG]
 
@@ -307,7 +298,7 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
 #include "name-lookup.h"
 
 /* Usage of TREE_LANG_FLAG_?:
-   0: IDENTIFIER_MARKED (IDENTIFIER_NODEs)
+   0: IDENTIFIER_KIND_BIT_0 (in IDENTIFIER_NODE)
       NEW_EXPR_USE_GLOBAL (in NEW_EXPR).
       COND_EXPR_IS_VEC_DELETE (in COND_EXPR).
       DELETE_EXPR_USE_GLOBAL (in DELETE_EXPR).
@@ -348,7 +339,7 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
       IF_STMT_CONSTEXPR_P (IF_STMT)
       TEMPLATE_TYPE_PARM_FOR_CLASS (TEMPLATE_TYPE_PARM)
       DECL_NAMESPACE_INLINE_P (in NAMESPACE_DECL)
-   1: IDENTIFIER_VIRTUAL_P (in IDENTIFIER_NODE)
+   1: IDENTIFIER_KIND_BIT_1 (in IDENTIFIER_NODE)
       TI_PENDING_TEMPLATE_FLAG.
       TEMPLATE_PARMS_FOR_INLINE.
       DELETE_EXPR_USE_VEC (in DELETE_EXPR).
@@ -366,7 +357,7 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
       TINFO_USED_TEMPLATE_ID (in TEMPLATE_INFO)
       PACK_EXPANSION_SIZEOF_P (in *_PACK_EXPANSION)
       OVL_USING_P (in OVERLOAD)
-   2: IDENTIFIER_OPNAME_P (in IDENTIFIER_NODE)
+   2: IDENTIFIER_KIND_BIT_2 (in IDENTIFIER_NODE)
       ICS_THIS_FLAG (in _CONV)
       DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (in VAR_DECL)
       STATEMENT_LIST_TRY_BLOCK (in STATEMENT_LIST)
@@ -381,21 +372,20 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
    3: (TREE_REFERENCE_EXPR) (in NON_LVALUE_EXPR) (commented-out).
       ICS_BAD_FLAG (in _CONV)
       FN_TRY_BLOCK_P (in TRY_BLOCK)
-      IDENTIFIER_CTOR_OR_DTOR_P (in IDENTIFIER_NODE)
       BIND_EXPR_BODY_BLOCK (in BIND_EXPR)
       DECL_NON_TRIVIALLY_INITIALIZED_P (in VAR_DECL)
       CALL_EXPR_ORDERED_ARGS (in CALL_EXPR, AGGR_INIT_EXPR)
       DECLTYPE_FOR_REF_CAPTURE (in DECLTYPE_TYPE)
       CONSTUCTOR_C99_COMPOUND_LITERAL (in CONSTRUCTOR)
       OVL_NESTED_P (in OVERLOAD)
-   4: TREE_HAS_CONSTRUCTOR (in INDIRECT_REF, SAVE_EXPR, CONSTRUCTOR,
+   4: IDENTIFIER_MARKED (IDENTIFIER_NODEs)
+      TREE_HAS_CONSTRUCTOR (in INDIRECT_REF, SAVE_EXPR, CONSTRUCTOR,
 	  CALL_EXPR, or FIELD_DECL).
-      IDENTIFIER_TYPENAME_P (in IDENTIFIER_NODE)
       DECL_TINFO_P (in VAR_DECL)
       FUNCTION_REF_QUALIFIED (in FUNCTION_TYPE, METHOD_TYPE)
       OVL_LOOKUP_P (in OVERLOAD)
       LOOKUP_FOUND_P (in RECORD_TYPE, UNION_TYPE, NAMESPACE_DECL)
-   5: C_IS_RESERVED_WORD (in IDENTIFIER_NODE)
+   5: IDENTIFIER_VIRTUAL_P (in IDENTIFIER_NODE)
       DECL_VTABLE_OR_VTT_P (in VAR_DECL)
       FUNCTION_RVALUE_QUALIFIED (in FUNCTION_TYPE, METHOD_TYPE)
       CALL_EXPR_REVERSE_ARGS (in CALL_EXPR, AGGR_INIT_EXPR)
@@ -557,7 +547,7 @@ identifier_p (tree t)
 
 template <>
 struct default_hash_traits <lang_identifier *>
-  : pointer_hash <tree_node>, ggc_remove <tree>
+  : pointer_hash <tree_node>
 {
   /* Use a regular tree as the type, to make using the hash table
      simpler.  We'll get dynamic type checking with the hash function
@@ -565,16 +555,15 @@ struct default_hash_traits <lang_identifier *>
   GTY((skip)) typedef tree value_type;
   GTY((skip)) typedef tree compare_type;
 
-  static hashval_t hash (const value_type &id)
+  static hashval_t hash (const value_type id)
   {
     return IDENTIFIER_HASH_VALUE (id);
   }
+
+  /* Nothing is deletable.  Everything is insertable.  */
+  static bool is_deleted (value_type) { return false; }
+  static void remove (value_type) { gcc_unreachable (); }
 };
-
-/* In an IDENTIFIER_NODE, nonzero if this identifier is actually a
-   keyword.  C_RID_CODE (node) is then the RID_* value of the keyword.  */
-
-#define C_IS_RESERVED_WORD(ID) TREE_LANG_FLAG_5 (ID)
 
 #define LANG_IDENTIFIER_CAST(NODE) \
 	((struct lang_identifier*)IDENTIFIER_NODE_CHECK (NODE))
@@ -992,29 +981,89 @@ enum GTY(()) abstract_class_use {
 #define SET_IDENTIFIER_LABEL_VALUE(NODE, VALUE)   \
   IDENTIFIER_LABEL_VALUE (NODE) = (VALUE)
 
+/* Kinds of identifiers.  Values are carefully chosen.  */
+enum cp_identifier_kind {
+  cik_normal = 0,	/* Not a special identifier.  */
+  cik_keyword = 1,	/* A keyword.  */
+  cik_ctor = 2,		/* Constructor (in-chg, complete or base).  */
+  cik_dtor = 3,		/* Destructor (in-chg, deleting, complete or
+			   base).  */
+  cik_simple_op = 4,	/* Non-assignment operator name.  */
+  cik_newdel_op = 5,	/* New or delete operator name.  */
+  cik_assign_op = 6,	/* An assignment operator name.  */
+  cik_conv_op = 7,	/* Conversion operator name.  */
+  cik_max
+};
+
+/* Kind bits.  */
+#define IDENTIFIER_KIND_BIT_0(NODE) \
+  TREE_LANG_FLAG_0 (IDENTIFIER_NODE_CHECK (NODE))
+#define IDENTIFIER_KIND_BIT_1(NODE) \
+  TREE_LANG_FLAG_1 (IDENTIFIER_NODE_CHECK (NODE))
+#define IDENTIFIER_KIND_BIT_2(NODE) \
+  TREE_LANG_FLAG_2 (IDENTIFIER_NODE_CHECK (NODE))
+
+/* Used by various search routines.  */
+#define IDENTIFIER_MARKED(NODE) \
+  TREE_LANG_FLAG_4 (IDENTIFIER_NODE_CHECK (NODE))
+
 /* Nonzero if this identifier is used as a virtual function name somewhere
    (optimizes searches).  */
-#define IDENTIFIER_VIRTUAL_P(NODE) TREE_LANG_FLAG_1 (NODE)
-
-/* Nonzero if this identifier is the prefix for a mangled C++ operator
-   name.  */
-#define IDENTIFIER_OPNAME_P(NODE) TREE_LANG_FLAG_2 (NODE)
-
-/* Nonzero if this identifier is the name of a type-conversion
-   operator.  */
-#define IDENTIFIER_TYPENAME_P(NODE) \
-  TREE_LANG_FLAG_4 (NODE)
-
-/* Nonzero if this identifier is the name of a constructor or
-   destructor.  */
-#define IDENTIFIER_CTOR_OR_DTOR_P(NODE) \
-  TREE_LANG_FLAG_3 (NODE)
+#define IDENTIFIER_VIRTUAL_P(NODE) \
+  TREE_LANG_FLAG_5 (IDENTIFIER_NODE_CHECK (NODE))
 
 /* True iff NAME is the DECL_ASSEMBLER_NAME for an entity with vague
    linkage which the prelinker has assigned to this translation
    unit.  */
 #define IDENTIFIER_REPO_CHOSEN(NAME) \
-  (TREE_LANG_FLAG_6 (NAME))
+  (TREE_LANG_FLAG_6 (IDENTIFIER_NODE_CHECK (NAME)))
+
+/* True if this identifier is a reserved word.  C_RID_CODE (node) is
+   then the RID_* value of the keyword.  Value 1.  */
+#define IDENTIFIER_KEYWORD_P(NODE)		\
+  ((!IDENTIFIER_KIND_BIT_2 (NODE))		\
+   & (!IDENTIFIER_KIND_BIT_1 (NODE))		\
+   & IDENTIFIER_KIND_BIT_0 (NODE))
+
+/* True if this identifier is the name of a constructor or
+   destructor.  Value 2 or 3.  */
+#define IDENTIFIER_CDTOR_P(NODE)		\
+  ((!IDENTIFIER_KIND_BIT_2 (NODE))		\
+   & IDENTIFIER_KIND_BIT_1 (NODE))
+
+/* True if this identifier is the name of a constructor.  Value 2.  */
+#define IDENTIFIER_CTOR_P(NODE)			\
+  (IDENTIFIER_CDTOR_P(NODE)			\
+    & (!IDENTIFIER_KIND_BIT_0 (NODE)))
+
+/* True if this identifier is the name of a destructor.  Value 3.  */
+#define IDENTIFIER_DTOR_P(NODE)			\
+  (IDENTIFIER_CDTOR_P(NODE)			\
+    & IDENTIFIER_KIND_BIT_0 (NODE))
+
+/* True if this identifier is for any operator name (including
+   conversions).  Value 4, 5, 6 or 7.  */
+#define IDENTIFIER_ANY_OP_P(NODE)		\
+  (IDENTIFIER_KIND_BIT_2 (NODE))
+
+/* True if this identifier is for new or delete operator.  Value 5.  */
+#define IDENTIFIER_NEWDEL_OP_P(NODE)		\
+  (IDENTIFIER_KIND_BIT_2 (NODE)			\
+   & (!IDENTIFIER_KIND_BIT_1 (NODE))		\
+   & IDENTIFIER_KIND_BIT_0 (NODE))
+
+/* True if this identifier is for any assignment. Values 6.  */
+#define IDENTIFIER_ASSIGN_OP_P(NODE)		\
+  (IDENTIFIER_KIND_BIT_2 (NODE)			\
+   & IDENTIFIER_KIND_BIT_1 (NODE)		\
+   & (!IDENTIFIER_KIND_BIT_0 (NODE)))
+
+/* True if this identifier is the name of a type-conversion
+   operator.  Value 7.  */
+#define IDENTIFIER_CONV_OP_P(NODE)		\
+  (IDENTIFIER_KIND_BIT_2 (NODE)			\
+   & IDENTIFIER_KIND_BIT_1 (NODE)		\
+   & IDENTIFIER_KIND_BIT_0 (NODE))
 
 /* In a RECORD_TYPE or UNION_TYPE, nonzero if any component is read-only.  */
 #define C_TYPE_FIELDS_READONLY(TYPE) \
@@ -1723,14 +1772,6 @@ struct GTY(()) language_function {
 #define current_function_auto_return_pattern \
   (cp_function_chain->x_auto_return_pattern)
 
-/* True if NAME is the IDENTIFIER_NODE for an overloaded "operator
-   new" or "operator delete".  */
-#define NEW_DELETE_OPNAME_P(NAME)		\
-  ((NAME) == cp_operator_id (NEW_EXPR)		\
-   || (NAME) == cp_operator_id (VEC_NEW_EXPR)	\
-   || (NAME) == cp_operator_id (DELETE_EXPR)	\
-   || (NAME) == cp_operator_id (VEC_DELETE_EXPR))
-
 #define cp_operator_id(CODE) \
   (operator_name_info[(int) (CODE)].identifier)
 #define cp_assignment_operator_id(CODE) \
@@ -2318,9 +2359,6 @@ struct GTY(()) lang_type {
 
 /* Nonzero if this BINFO is a primary base class.  */
 #define BINFO_PRIMARY_P(NODE) BINFO_FLAG_5(NODE)
-
-/* Used by various search routines.  */
-#define IDENTIFIER_MARKED(NODE) TREE_LANG_FLAG_0 (NODE)
 
 /* A vec<tree_pair_s> of the vcall indices associated with the class
    NODE.  The PURPOSE of each element is a FUNCTION_DECL for a virtual
@@ -2771,7 +2809,7 @@ struct GTY(()) lang_decl {
 
 /* Nonzero if NODE is a user-defined conversion operator.  */
 #define DECL_CONV_FN_P(NODE) \
-  (DECL_NAME (NODE) && IDENTIFIER_TYPENAME_P (DECL_NAME (NODE)))
+  (DECL_NAME (NODE) && IDENTIFIER_CONV_OP_P (DECL_NAME (NODE)))
 
 /* If FN is a conversion operator, the type to which it converts.
    Otherwise, NULL_TREE.  */
@@ -2805,7 +2843,7 @@ struct GTY(()) lang_decl {
    value of ERROR_MARK is zero, this macro can be used as a predicate
    to test whether or not NODE is an overloaded operator.  */
 #define DECL_OVERLOADED_OPERATOR_P(NODE)		\
-  (IDENTIFIER_OPNAME_P (DECL_NAME (NODE))		\
+  (IDENTIFIER_ANY_OP_P (DECL_NAME (NODE))		\
    ? LANG_DECL_FN_CHECK (NODE)->operator_code : ERROR_MARK)
 
 /* Nonzero if NODE is an assignment operator (including += and such).  */
@@ -5107,6 +5145,10 @@ extern GTY(()) vec<tree, va_gc> *local_classes;
 /* An array of static vars & fns.  */
 extern GTY(()) vec<tree, va_gc> *static_decls;
 
+/* An array of vtable-needing types that have no key function, or have
+   an emitted key function.  */
+extern GTY(()) vec<tree, va_gc> *keyed_classes;
+
 
 /* Here's where we control how name mangling takes place.  */
 
@@ -6077,7 +6119,7 @@ extern int cp_complete_array_type_or_error	(tree *, tree, bool, tsubst_flags_t);
 extern tree build_ptrmemfunc_type		(tree);
 extern tree build_ptrmem_type			(tree, tree);
 /* the grokdeclarator prototype is in decl.h */
-extern tree build_this_parm			(tree, cp_cv_quals);
+extern tree build_this_parm			(tree, tree, cp_cv_quals);
 extern tree grokparms				(tree, tree *);
 extern int copy_fn_p				(const_tree);
 extern bool move_fn_p                           (const_tree);
@@ -6178,7 +6220,7 @@ extern void check_default_args			(tree);
 extern bool mark_used				(tree);
 extern bool mark_used			        (tree, tsubst_flags_t);
 extern void finish_static_data_member_decl	(tree, tree, bool, tree, int);
-extern tree cp_build_parm_decl			(tree, tree);
+extern tree cp_build_parm_decl			(tree, tree, tree);
 extern tree get_guard				(tree);
 extern tree get_guard_cond			(tree, bool);
 extern tree set_guard				(tree);
@@ -6187,7 +6229,7 @@ extern void mark_needed				(tree);
 extern bool decl_needed_p			(tree);
 extern void note_vague_linkage_fn		(tree);
 extern void note_variable_template_instantiation (tree);
-extern tree build_artificial_parm		(tree, tree);
+extern tree build_artificial_parm		(tree, tree, tree);
 extern bool possibly_inlined_p			(tree);
 extern int parm_index                           (tree);
 extern tree vtv_start_verification_constructor_init_function (void);
@@ -6306,6 +6348,8 @@ extern tree copy_decl				(tree CXX_MEM_STAT_INFO);
 extern tree copy_type				(tree CXX_MEM_STAT_INFO);
 extern tree cxx_make_type			(enum tree_code);
 extern tree make_class_type			(enum tree_code);
+extern const char *get_identifier_kind_name	(tree);
+extern void set_identifier_kind			(tree, cp_identifier_kind);
 extern bool cxx_init				(void);
 extern void cxx_finish				(void);
 extern bool in_main_input_context		(void);
@@ -6320,7 +6364,6 @@ extern tree forward_parm			(tree);
 extern bool is_trivially_xible			(enum tree_code, tree, tree);
 extern bool is_xible				(enum tree_code, tree, tree);
 extern tree get_defaulted_eh_spec		(tree);
-extern tree unevaluated_noexcept_spec		(void);
 extern void after_nsdmi_defaulted_late_checks   (tree);
 extern bool maybe_explain_implicit_delete	(tree);
 extern void explain_implicit_non_constexpr	(tree);
@@ -6370,6 +6413,7 @@ extern void check_template_variable		(tree);
 extern tree make_auto				(void);
 extern tree make_decltype_auto			(void);
 extern tree make_template_placeholder		(tree);
+extern bool template_placeholder_p		(tree);
 extern tree do_auto_deduction                   (tree, tree, tree);
 extern tree do_auto_deduction                   (tree, tree, tree,
                                                  tsubst_flags_t,

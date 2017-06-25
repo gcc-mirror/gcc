@@ -1,7 +1,7 @@
 /* { dg-require-effective-target freorder } */
 /* { dg-require-effective-target label_values } */
 /* { dg-options "-O2 -freorder-blocks-and-partition" } */
-/* { dg-additional-options "-DSTACK_SIZE=[dg-effective-target-value stack_size]" { target { stack_size } } } */
+/* { dg-add-options stack_size } */
 
 #include <stdlib.h>
 
@@ -165,5 +165,5 @@ main ()
   exit (0);
 }
 #else
-main(){ exit (0); }
+int main(){ exit (0); }
 #endif

@@ -40,6 +40,7 @@
 #include "expr.h"
 #include "langhooks.h"
 #include "builtins.h"
+#include "intl.h"
 
 /* This file should be included last.  */
 #include "target-def.h"
@@ -1993,10 +1994,24 @@ msp430_data_attr (tree * node,
   gcc_assert (args == NULL);
 
   if (TREE_CODE (* node) != VAR_DECL)
-    message = "%qE attribute only applies to variables";
+    message = G_("%qE attribute only applies to variables");
 
-  if (DECL_SECTION_NAME (* node))
-    message = "%qE attribute cannot be applied to variables with specific sections";
+  /* Check that it's possible for the variable to have a section.  */
+  if ((TREE_STATIC (* node) || DECL_EXTERNAL (* node) || in_lto_p)
+      && DECL_SECTION_NAME (* node))
+    message = G_("%qE attribute cannot be applied to variables with specific sections");
+
+  if (!message && TREE_NAME_EQ (name, ATTR_PERSIST) && !TREE_STATIC (* node)
+      && !TREE_PUBLIC (* node) && !DECL_EXTERNAL (* node))
+    message = G_("%qE attribute has no effect on automatic variables");
+
+  /* It's not clear if there is anything that can be set here to prevent the
+     front end placing the variable before the back end can handle it, in a
+     similar way to how DECL_COMMON is used below.
+     So just place the variable in the .persistent section now.  */
+  if ((TREE_STATIC (* node) || DECL_EXTERNAL (* node) || in_lto_p)
+      && TREE_NAME_EQ (name, ATTR_PERSIST))
+    set_decl_section_name (* node, ".persistent");
 
   /* If this var is thought to be common, then change this.  Common variables
      are assigned to sections before the backend has a chance to process them.  */

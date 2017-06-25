@@ -1,3 +1,83 @@
+2017-06-24  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+        PR fortran/52473
+	* Makefile.am:  Add i_cshift1a_c.  Add rules to generate files
+	from cshift1a.m4.
+	* Makefile.in: Regenerated.
+	* m4/cshift1a.m4: New file.
+	* m4/cshift.m4 (cshift1): Split up inner loop by removing
+	condition. Use memcpy where possible.  Call helper functions
+	based on dtype.
+	* libgfortran.h: Add prototypes for cshift1_16_c10,
+	cshift1_16_c16, cshift1_16_c4, cshift1_16_c8, cshift1_16_i1,
+	cshift1_16_i16, cshift1_16_i2, cshift1_16_i4, cshift1_16_i8,
+	cshift1_16_r10, cshift1_16_r16, cshift1_16_r4, cshift1_16_r8,
+	cshift1_4_c10, cshift1_4_c16, cshift1_4_c4, cshift1_4_c8,
+	cshift1_4_i1, cshift1_4_i16, cshift1_4_i2, cshift1_4_i4,
+	cshift1_4_i8, cshift1_4_r10, cshift1_4_r16, cshift1_4_r4,
+	cshift1_4_r8, cshift1_8_c10, cshift1_8_c16, cshift1_8_c4,
+	cshift1_8_c8, cshift1_8_i1, cshift1_8_i16, cshift1_8_i2,
+	cshift1_8_i4, cshift1_8_i8, cshift1_8_r10, cshift1_8_r16,
+	cshift1_8_r4 and cshift1_8_r8.
+	* generated/cshift1_16_c10.c: New file, generated from cshift1a.m4.
+	* generated/cshift1_16_c16.c: New file, generated from cshift1a.m4.
+	* generated/cshift1_16_c4.c: New file, generated from cshift1a.m4.
+	* generated/cshift1_16_c8.c: New file, generated from cshift1a.m4.
+	* generated/cshift1_16_i1.c: New file, generated from cshift1a.m4.
+	* generated/cshift1_16_i16.c: New file, generated from cshift1a.m4.
+	* generated/cshift1_16_i2.c: New file, generated from cshift1a.m4.
+	* generated/cshift1_16_i4.c: New file, generated from cshift1a.m4.
+	* generated/cshift1_16_i8.c: New file, generated from cshift1a.m4.
+	* generated/cshift1_16_r10.c: New file, generated from cshift1a.m4.
+	* generated/cshift1_16_r16.c: New file, generated from cshift1a.m4.
+	* generated/cshift1_16_r4.c: New file, generated from cshift1a.m4.
+	* generated/cshift1_16_r8.c: New file, generated from cshift1a.m4.
+	* generated/cshift1_4_c10.c: New file, generated from cshift1a.m4.
+	* generated/cshift1_4_c16.c: New file, generated from cshift1a.m4.
+	* generated/cshift1_4_c4.c: New file, generated from cshift1a.m4.
+	* generated/cshift1_4_c8.c: New file, generated from cshift1a.m4.
+	* generated/cshift1_4_i1.c: New file, generated from cshift1a.m4.
+	* generated/cshift1_4_i16.c: New file, generated from cshift1a.m4.
+	* generated/cshift1_4_i2.c: New file, generated from cshift1a.m4.
+	* generated/cshift1_4_i4.c: New file, generated from cshift1a.m4.
+	* generated/cshift1_4_i8.c: New file, generated from cshift1a.m4.
+	* generated/cshift1_4_r10.c: New file, generated from cshift1a.m4.
+	* generated/cshift1_4_r16.c: New file, generated from cshift1a.m4.
+	* generated/cshift1_4_r4.c: New file, generated from cshift1a.m4.
+	* generated/cshift1_4_r8.c: New file, generated from cshift1a.m4.
+	* generated/cshift1_8_c10.c: New file, generated from cshift1a.m4.
+	* generated/cshift1_8_c16.c: New file, generated from cshift1a.m4.
+	* generated/cshift1_8_c4.c: New file, generated from cshift1a.m4.
+	* generated/cshift1_8_c8.c: New file, generated from cshift1a.m4.
+	* generated/cshift1_8_i1.c: New file, generated from cshift1a.m4.
+	* generated/cshift1_8_i16.c: New file, generated from cshift1a.m4.
+	* generated/cshift1_8_i2.c: New file, generated from cshift1a.m4.
+	* generated/cshift1_8_i4.c: New file, generated from cshift1a.m4.
+	* generated/cshift1_8_i8.c: New file, generated from cshift1a.m4.
+	* generated/cshift1_8_r10.c: New file, generated from cshift1a.m4.
+	* generated/cshift1_8_r16.c: New file, generated from cshift1a.m4.
+	* generated/cshift1_8_r4.c: New file, generated from cshift1a.m4.
+	* generated/cshift1_8_r8.c: New file, generated from cshift1a.m4.
+
+2017-06-18  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/52473
+	* m4/cshift0.m4:  For arrays that are contiguous up to
+	shift, implement blocked algorighm for cshift.
+	* generated/cshift0_c10.c:  Regenerated.
+	* generated/cshift0_c16.c:  Regenerated.
+	* generated/cshift0_c4.c:  Regenerated.
+	* generated/cshift0_c8.c:  Regenerated.
+	* generated/cshift0_i1.c:  Regenerated.
+	* generated/cshift0_i16.c:  Regenerated.
+	* generated/cshift0_i2.c:  Regenerated.
+	* generated/cshift0_i4.c:  Regenerated.
+	* generated/cshift0_i8.c:  Regenerated.
+	* generated/cshift0_r10.c:  Regenerated.
+	* generated/cshift0_r16.c:  Regenerated.
+	* generated/cshift0_r4.c:  Regenerated.
+	* generated/cshift0_r8.c:  Regenerated.
+
 2017-06-06  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/80975

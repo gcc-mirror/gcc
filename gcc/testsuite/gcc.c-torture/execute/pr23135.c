@@ -1,4 +1,4 @@
-/* { dg-additional-options "-DSTACK_SIZE=[dg-effective-target-value stack_size]" { target { stack_size } } } */
+/* { dg-add-options stack_size } */
 
 /* Based on execute/simd-1.c, modified by joern.rennecke@st.com to
    trigger a reload bug.  Verified for gcc mainline from 20050722 13:00 UTC

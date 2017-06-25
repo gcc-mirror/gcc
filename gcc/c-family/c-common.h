@@ -1552,6 +1552,7 @@ extern enum flt_eval_method
 excess_precision_mode_join (enum flt_eval_method, enum flt_eval_method);
 
 extern int c_flt_eval_method (bool ts18661_p);
+extern void add_no_sanitize_value (tree node, unsigned int flags);
 
 #if CHECKING_P
 namespace selftest {

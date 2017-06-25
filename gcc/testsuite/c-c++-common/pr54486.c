@@ -1,7 +1,7 @@
 /* PR middle-end/54486 */
 /* { dg-do compile } */
 /* { dg-options "-Wformat" } */
-/* { dg-skip-if "no POSIX printf" { *-*-mingw* } { "*" } { "" } } */
+/* { dg-skip-if "no POSIX printf" { *-*-mingw* } } */
 
 #ifdef __cplusplus
 extern "C" {

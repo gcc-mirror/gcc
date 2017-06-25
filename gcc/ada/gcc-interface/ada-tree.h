@@ -6,7 +6,7 @@
  *                                                                          *
  *                              C Header File                               *
  *                                                                          *
- *          Copyright (C) 1992-2016, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2017, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -462,6 +462,11 @@ do {						   \
 /* Nonzero in a FIELD_DECL if it is invariant once set, for example if it is
    a discriminant of a discriminated type without default expression.  */
 #define DECL_INVARIANT_P(NODE) DECL_LANG_FLAG_4 (FIELD_DECL_CHECK (NODE))
+
+/* Nonzero in a FUNCTION_DECL if this is a definition, i.e. if it was created
+   by a call to gnat_to_gnu_entity with definition set to True.  */
+#define DECL_FUNCTION_IS_DEF(NODE) \
+  DECL_LANG_FLAG_4 (FUNCTION_DECL_CHECK (NODE))
 
 /* Nonzero in a VAR_DECL if it is a temporary created to hold the return
    value of a function call or 'reference to a function call.  */

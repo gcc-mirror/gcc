@@ -41,6 +41,6 @@ main (void)
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-times "LOOP VECTORIZED" 1 "vect" { xfail { ! vect_max_reduc } } } } */
-/* { dg-final { scan-tree-dump "loop size is greater than data size" "vect" { xfail { ! vect_max_reduc } } } } */
+/* { dg-final { scan-tree-dump-times "LOOP VECTORIZED" 1 "vect" } } */
+/* { dg-final { scan-tree-dump "loop size is greater than data size" "vect" } } */
 /* { dg-final { scan-tree-dump-not "condition expression based on integer induction." "vect" } } */

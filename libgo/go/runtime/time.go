@@ -113,6 +113,7 @@ func addtimerLocked(t *timer) {
 	}
 	if !timers.created {
 		timers.created = true
+		expectSystemGoroutine()
 		go timerproc()
 	}
 }

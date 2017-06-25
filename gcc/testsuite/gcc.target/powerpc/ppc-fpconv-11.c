@@ -1,5 +1,5 @@
 /* { dg-do compile { target { powerpc*-*-* } } } */
-/* { dg-skip-if "" { powerpc*-*-darwin* } { "*" } { "" } } */
+/* { dg-skip-if "" { powerpc*-*-darwin* } } */
 /* { dg-require-effective-target powerpc_fprs } */
 /* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power5+" } } */
 /* { dg-options "-O2 -mcpu=power5+ -ffast-math" } */

@@ -30,6 +30,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "calls.h"
 #include "gimple-iterator.h"
 #include "gimple-low.h"
+#include "predict.h"
+#include "gimple-predict.h"
 
 /* The differences between High GIMPLE and Low GIMPLE are the
    following:

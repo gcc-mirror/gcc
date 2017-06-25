@@ -207,10 +207,10 @@ test_vul_sldw_vul_vul (vector unsigned long long x,
      test_vsll_slo_vsll_vuc    1 vslo
      test_vull_slo_vsll_vsc    1 vslo
      test_vull_slo_vsll_vuc    1 vslo
-     test_vsll_mulo_vsi_vsi    1 vmulosh
-     test_vull_mulo_vui_vui    1 vmulouh
-     test_vsll_mule_vsi_vsi    1 vmulesh
-     test_vull_mule_vui_vui    1 vmuleuh
+     test_vsll_mulo_vsi_vsi    1 vmulosw
+     test_vull_mulo_vui_vui    1 vmulouw
+     test_vsll_mule_vsi_vsi    1 vmulesw
+     test_vull_mule_vui_vui    1 vmuleuw
      test_vsc_mulo_vsc_vsc     1 xxsldwi
      test_vuc_mulo_vuc_vuc     1 xxsldwi
      test_vssi_mulo_vssi_vssi  1 xxsldwi
@@ -236,8 +236,8 @@ test_vul_sldw_vul_vul (vector unsigned long long x,
 /* { dg-final { scan-assembler-times "xvnegsp"  1 } } */
 /* { dg-final { scan-assembler-times "xvnegdp"  1 } } */
 /* { dg-final { scan-assembler-times "vslo"     4 } } */
-/* { dg-final { scan-assembler-times "vmulosh"  1 } } */
-/* { dg-final { scan-assembler-times "vmulouh"  1 } } */
-/* { dg-final { scan-assembler-times "vmulesh"  1 } } */
-/* { dg-final { scan-assembler-times "vmuleuh"  1 } } */
+/* { dg-final { scan-assembler-times "vmulosw"  1 } } */
+/* { dg-final { scan-assembler-times "vmulouw"  1 } } */
+/* { dg-final { scan-assembler-times "vmulesw"  1 } } */
+/* { dg-final { scan-assembler-times "vmuleuw"  1 } } */
 /* { dg-final { scan-assembler-times "xxsldwi"  8 } } */

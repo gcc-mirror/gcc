@@ -1,5 +1,5 @@
 /* { dg-do run { xfail rx-*-* } } */
-/* { dg-skip-if "skipped until patch for generic zero=width bit-field handling is accepted" { rx-*-* } { "*" } { "" } } */
+/* { dg-skip-if "skipped until patch for generic zero=width bit-field handling is accepted" { rx-*-* } } */
 /* { dg-options "-msim" } */
 /* Note: The -msim above is actually there to override the default
    options which do not allow the GCC extension of zero-width bitfields.  */

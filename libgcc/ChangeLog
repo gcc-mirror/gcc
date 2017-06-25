@@ -1,3 +1,21 @@
+2017-06-22  Matt Turner  <mattst88@gmail.com>
+
+	* config/i386/cpuinfo.c (get_intel_cpu): Add Kaby Lake models to
+	skylake case.
+
+2017-06-21  Richard Biener  <rguenther@suse.de>
+
+	PR gcov-profile/81080
+	* configure.ac: Add AC_SYS_LARGEFILE.
+	* libgcov.h: Include auto-target.h before tsystem.h to pick
+	up _FILE_OFFSET_BITS which might differ for multilibs.
+	* config.in: Regenerate.
+	* configure: Likewise.
+
+2017-06-16  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/cmse_nonsecure_call.S: Explicitly set the FPU.
+
 2017-06-09  Martin Liska  <mliska@suse.cz>
 
 	* libgcov-profiler.c (__gcov_indirect_call_profiler_v2):

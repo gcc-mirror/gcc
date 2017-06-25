@@ -1897,6 +1897,11 @@ Lex::skip_cpp_comment()
       // Applies to the next function.  Do not inline the function.
       this->pragmas_ |= GOPRAGMA_NOINLINE;
     }
+  else if (verb == "go:notinheap")
+    {
+      // Applies to the next type.  The type does not live in the heap.
+      this->pragmas_ |= GOPRAGMA_NOTINHEAP;
+    }
   else if (verb == "go:systemstack")
     {
       // Applies to the next function.  It must run on the system stack.
@@ -1909,7 +1914,6 @@ Lex::skip_cpp_comment()
       // Applies to the next function.  If the function needs to use
       // any write barriers, it should emit an error instead.
       // FIXME: Should only work when compiling the runtime package.
-      // FIXME: Not implemented.
       this->pragmas_ |= GOPRAGMA_NOWRITEBARRIER;
     }
   else if (verb == "go:nowritebarrierrec")
@@ -1918,7 +1922,7 @@ Lex::skip_cpp_comment()
       // function that it calls, needs to use any write barriers, it
       // should emit an error instead.
       // FIXME: Should only work when compiling the runtime package.
-      // FIXME: Not implemented.
+      // FIXME: currently treated the same as go:nowritebarrier
       this->pragmas_ |= GOPRAGMA_NOWRITEBARRIERREC;
     }
   else if (verb == "go:cgo_unsafe_args")

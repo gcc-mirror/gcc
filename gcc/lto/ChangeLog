@@ -1,3 +1,14 @@
+2017-06-23  Marc Glisse  <marc.glisse@inria.fr>
+
+	* lto-lang.c (lto_init): Use builtin_structptr_types.
+
+2017-06-15  Jan Hubicka  <hubicka@ucw.cz>
+	    Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	PR lto/69866
+	* lto-symtab.c (lto_symtab_merge_symbols): Drop useless definitions
+	that resolved externally.
+
 2017-05-23  Jan Hubicka  <hubicka@ucw.cz>
 
 	* lto.c (do_whole_program_analysis): Replace inline_free_summary

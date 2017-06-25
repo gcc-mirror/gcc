@@ -5983,8 +5983,10 @@ free_lang_data (void)
   free_lang_data_in_cgraph ();
 
   /* Create gimple variants for common types.  */
-  fileptr_type_node = ptr_type_node;
-  const_tm_ptr_type_node = const_ptr_type_node;
+  for (unsigned i = 0;
+       i < sizeof (builtin_structptr_types) / sizeof (builtin_structptr_type);
+       ++i)
+    builtin_structptr_types[i].node = builtin_structptr_types[i].base;
 
   /* Reset some langhooks.  Do not reset types_compatible_p, it may
      still be used indirectly via the get_alias_set langhook.  */
@@ -10449,8 +10451,10 @@ build_common_tree_nodes (bool signed_char)
   ptr_type_node = build_pointer_type (void_type_node);
   const_ptr_type_node
     = build_pointer_type (build_type_variant (void_type_node, 1, 0));
-  fileptr_type_node = ptr_type_node;
-  const_tm_ptr_type_node = const_ptr_type_node;
+  for (unsigned i = 0;
+       i < sizeof (builtin_structptr_types) / sizeof (builtin_structptr_type);
+       ++i)
+    builtin_structptr_types[i].node = builtin_structptr_types[i].base;
 
   pointer_sized_int_node = build_nonstandard_integer_type (POINTER_SIZE, 1);
 
@@ -14543,6 +14547,16 @@ get_nonnull_args (const_tree fntype)
 
   return argmap;
 }
+
+/* List of pointer types used to declare builtins before we have seen their
+   real declaration.
+
+   Keep the size up to date in tree.h !  */
+const builtin_structptr_type builtin_structptr_types[2] = 
+{
+  { fileptr_type_node, ptr_type_node, "FILE" },
+  { const_tm_ptr_type_node, const_ptr_type_node, "tm" }
+};
 
 #if CHECKING_P
 

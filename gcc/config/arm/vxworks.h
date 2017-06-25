@@ -92,8 +92,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 /* There is no default multilib.  */
 #undef MULTILIB_DEFAULTS
 
-#define FPUTYPE_DEFAULT "vfp"
-
 #undef FUNCTION_PROFILER
 #define FUNCTION_PROFILER VXWORKS_FUNCTION_PROFILER
 

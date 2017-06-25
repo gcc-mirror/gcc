@@ -94,7 +94,7 @@
    (set (match_dup 1)
     (unspec_volatile:SHORT
       [(match_operand:SI 2 "aarch64_plus_operand" "rI")	;; expected
-       (match_operand:SHORT 3 "register_operand" "r")	;; desired
+       (match_operand:SHORT 3 "aarch64_reg_or_zero" "rZ")	;; desired
        (match_operand:SI 4 "const_int_operand")		;; is_weak
        (match_operand:SI 5 "const_int_operand")		;; mod_s
        (match_operand:SI 6 "const_int_operand")]	;; mod_f
@@ -119,7 +119,7 @@
    (set (match_dup 1)
     (unspec_volatile:GPI
       [(match_operand:GPI 2 "aarch64_plus_operand" "rI")	;; expect
-       (match_operand:GPI 3 "register_operand" "r")		;; desired
+       (match_operand:GPI 3 "aarch64_reg_or_zero" "rZ")		;; desired
        (match_operand:SI 4 "const_int_operand")			;; is_weak
        (match_operand:SI 5 "const_int_operand")			;; mod_s
        (match_operand:SI 6 "const_int_operand")]		;; mod_f
@@ -616,7 +616,7 @@
   (set (match_dup 1)
    (unspec_volatile:SHORT
     [(match_dup 0)
-     (match_operand:SHORT 2 "register_operand" "r")	;; value.
+     (match_operand:SHORT 2 "aarch64_reg_or_zero" "rZ")	;; value.
      (match_operand:SI 3 "const_int_operand" "")]	;; model.
     UNSPECV_ATOMIC_CAS))]
  "TARGET_LSE && reload_completed"
@@ -640,7 +640,7 @@
   (set (match_dup 1)
    (unspec_volatile:GPI
     [(match_dup 0)
-     (match_operand:GPI 2 "register_operand" "r")	;; value.
+     (match_operand:GPI 2 "aarch64_reg_or_zero" "rZ")	;; value.
      (match_operand:SI 3 "const_int_operand" "")]	;; model.
     UNSPECV_ATOMIC_CAS))]
   "TARGET_LSE && reload_completed"

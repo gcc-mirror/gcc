@@ -127,11 +127,25 @@ enum isa_feature
 #define ISA_ARMv8m_base ISA_ARMv6m, isa_bit_ARMv8, isa_bit_cmse, isa_bit_tdiv
 #define ISA_ARMv8m_main ISA_ARMv7m, isa_bit_ARMv8, isa_bit_cmse
 
+/* List of all cryptographic extensions to stripout if crypto is
+   disabled.  Currently, that's trivial, but we define it anyway for
+   consistency with the SIMD and FP disable lists.  */
+#define ISA_ALL_CRYPTO	isa_bit_crypto
+
+/* List of all SIMD bits to strip out if SIMD is disabled.  This does
+   strip off 32 D-registers, but does not remove support for
+   double-precision FP.  */
+#define ISA_ALL_SIMD	isa_bit_fp_d32, isa_bit_neon, ISA_ALL_CRYPTO
+
 /* List of all FPU bits to strip out if -mfpu is used to override the
    default.  isa_bit_fp16 is deliberately missing from this list.  */
-#define ISA_ALL_FPU	isa_bit_VFPv2, isa_bit_VFPv3, isa_bit_VFPv4, \
-    isa_bit_FPv5, isa_bit_FP_ARMv8, isa_bit_neon, isa_bit_fp16conv, \
-    isa_bit_fp_dbl, isa_bit_fp_d32, isa_bit_crypto
+#define ISA_ALL_FPU_INTERNAL						\
+  isa_bit_VFPv2, isa_bit_VFPv3, isa_bit_VFPv4, isa_bit_FPv5,		\
+  isa_bit_FP_ARMv8, isa_bit_fp16conv, isa_bit_fp_dbl, ISA_ALL_SIMD
+
+/* Similarly, but including fp16 and other extensions that aren't part of
+   -mfpu support.  */
+#define ISA_ALL_FP	isa_bit_fp16, ISA_ALL_FPU_INTERNAL
 
 /* Useful combinations.  */
 #define ISA_VFPv2	isa_bit_VFPv2

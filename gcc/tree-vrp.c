@@ -5651,8 +5651,9 @@ is_masked_range_test (tree name, tree valt, enum tree_code cond_code,
       || gimple_assign_rhs_code (def_stmt) != BIT_AND_EXPR)
     return false;
 
+  tree t = gimple_assign_rhs1 (def_stmt);
   tree maskt = gimple_assign_rhs2 (def_stmt);
-  if (TREE_CODE (maskt) != INTEGER_CST)
+  if (TREE_CODE (t) != SSA_NAME || TREE_CODE (maskt) != INTEGER_CST)
     return false;
 
   wide_int mask = maskt;
@@ -5663,11 +5664,9 @@ is_masked_range_test (tree name, tree valt, enum tree_code cond_code,
       || (val & mask) != val)
     return false;
 
-  tree t = gimple_assign_rhs1 (def_stmt);
-  tree type = TREE_TYPE (t);
-
   bool is_range = cond_code == EQ_EXPR;
 
+  tree type = TREE_TYPE (t);
   wide_int min = wi::min_value (type),
     max = wi::max_value (type);
 

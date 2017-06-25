@@ -373,7 +373,6 @@ extern gimple_opt_pass *make_pass_predcom (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_iv_canon (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_scev_cprop (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_empty_loop (gcc::context *ctxt);
-extern gimple_opt_pass *make_pass_record_bounds (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_graphite (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_graphite_transforms (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_if_conversion (gcc::context *ctxt);

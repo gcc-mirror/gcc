@@ -209,6 +209,7 @@ func readgogc() int32 {
 // It kicks off the background sweeper goroutine and enables GC.
 func gcenable() {
 	c := make(chan int, 1)
+	expectSystemGoroutine()
 	go bgsweep(c)
 	<-c
 	memstats.enablegc = true // now that runtime is initialized, GC is okay
@@ -1399,6 +1400,7 @@ func gcBgMarkStartWorkers() {
 			break
 		}
 		if p.gcBgMarkWorker == 0 {
+			expectSystemGoroutine()
 			go gcBgMarkWorker(p)
 			notetsleepg(&work.bgMarkReady, -1)
 			noteclear(&work.bgMarkReady)
@@ -1921,10 +1923,9 @@ func gchelperstart() {
 	if _g_.m.helpgc < 0 || _g_.m.helpgc >= _MaxGcproc {
 		throw("gchelperstart: bad m->helpgc")
 	}
-	// For gccgo we run gchelper on the normal g stack.
-	// if _g_ != _g_.m.g0 {
-	// 	throw("gchelper not running on g0 stack")
-	// }
+	if _g_ != _g_.m.g0 {
+		throw("gchelper not running on g0 stack")
+	}
 }
 
 // itoaDiv formats val/(10**dec) into buf.

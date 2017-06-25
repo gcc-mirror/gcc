@@ -402,10 +402,10 @@ type g struct {
 	isforeign bool           // whether current exception is not from Go
 
 	// Fields that hold stack and context information if status is Gsyscall
-	gcstack       unsafe.Pointer
+	gcstack       uintptr
 	gcstacksize   uintptr
-	gcnextsegment unsafe.Pointer
-	gcnextsp      unsafe.Pointer
+	gcnextsegment uintptr
+	gcnextsp      uintptr
 	gcinitialsp   unsafe.Pointer
 	gcregs        g_ucontext_t
 
@@ -698,6 +698,10 @@ type _defer struct {
 	// deferred.  This function can not recover this value from
 	// the panic stack.  This can happen if a deferred function
 	// has a defer statement itself.
+	panicStack *_panic
+
+	// The panic that caused the defer to run. This is used to
+	// discard panics that have already been handled.
 	_panic *_panic
 
 	// The function to call.
@@ -733,6 +737,10 @@ type _panic struct {
 	// Whether this panic was pushed on the stack because of an
 	// exception thrown in some other language.
 	isforeign bool
+
+	// Whether this panic was already seen by a deferred function
+	// which called panic again.
+	aborted bool
 }
 
 const (

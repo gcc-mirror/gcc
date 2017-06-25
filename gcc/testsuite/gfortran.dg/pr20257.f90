@@ -1,5 +1,5 @@
 ! { dg-do run }
-! { dg-skip-if "Too big for local store" { spu-*-* } { "*" } { "" } }
+! { dg-skip-if "Too big for local store" { spu-*-* } }
   integer,parameter :: n = 10000
   real(8) array(10000)
 

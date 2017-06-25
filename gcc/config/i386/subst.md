@@ -177,10 +177,11 @@
   [(set (match_operand:SUBST_A 0)
         (match_operand:SUBST_A 1))]
   "TARGET_AVX512F"
-  [(parallel[
-     (set (match_dup 0)
-          (match_dup 1))
-     (unspec [(match_operand:SI 2 "const48_operand")] UNSPEC_EMBEDDED_ROUNDING)])])
+  [(set (match_dup 0)
+	(unspec:SUBST_A [(match_dup 1)
+	  (match_operand:SI 2 "const48_operand")]
+	  UNSPEC_EMBEDDED_ROUNDING))
+])
 
 (define_subst_attr "round_expand_name" "round_expand" "" "_round")
 (define_subst_attr "round_expand_nimm_predicate" "round_expand" "nonimmediate_operand" "register_operand")

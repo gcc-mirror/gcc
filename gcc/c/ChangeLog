@@ -1,3 +1,17 @@
+2017-06-19  Richard Biener  <rguenther@suse.de>
+
+	* gimple-parser.c (c_parser_gimple_postfix_expression): Handle
+	negated _Literals to parse _Literal (int) -1.
+
+2017-06-13  Martin Liska  <mliska@suse.cz>
+
+	PR sanitize/78204
+	* c-convert.c (convert): Use sanitize_flags_p.
+	* c-decl.c (grokdeclarator): Likewise.
+	* c-typeck.c (convert_for_assignment): Likewise.
+	(c_finish_return): Likewise.
+	(build_binary_op): Likewise.
+
 2017-06-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/81006

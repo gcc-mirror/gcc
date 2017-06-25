@@ -380,10 +380,10 @@ vect_free_loop_info_assumptions (struct loop *loop)
 {
   scev_reset_htab ();
   /* We need to explicitly reset upper bound information since they are
-     used even after free_numbers_of_iterations_estimates_loop.  */
+     used even after free_numbers_of_iterations_estimates.  */
   loop->any_upper_bound = false;
   loop->any_likely_upper_bound = false;
-  free_numbers_of_iterations_estimates_loop (loop);
+  free_numbers_of_iterations_estimates (loop);
   loop_constraint_clear (loop, LOOP_C_FINITE);
 }
 

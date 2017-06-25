@@ -806,7 +806,7 @@ cp_lexer_get_preprocessor_token (cp_lexer *lexer, cp_token *token)
   /* Check to see if this token is a keyword.  */
   if (token->type == CPP_NAME)
     {
-      if (C_IS_RESERVED_WORD (token->u.value))
+      if (IDENTIFIER_KEYWORD_P (token->u.value))
 	{
 	  /* Mark this token as a keyword.  */
 	  token->type = CPP_KEYWORD;
@@ -2983,7 +2983,9 @@ cp_parser_check_for_invalid_template_id (cp_parser* parser,
 
   if (cp_lexer_next_token_is (parser->lexer, CPP_LESS))
     {
-      if (TYPE_P (type))
+      if (TREE_CODE (type) == TYPE_DECL)
+	type = TREE_TYPE (type);
+      if (TYPE_P (type) && !template_placeholder_p (type))
 	error_at (location, "%qT is not a template", type);
       else if (identifier_p (type))
 	{
@@ -3270,9 +3272,21 @@ cp_parser_diagnose_invalid_type_name (cp_parser *parser, tree id,
 	}
       else if (TYPE_P (parser->scope)
 	       && dependent_scope_p (parser->scope))
-	error_at (location, "need %<typename%> before %<%T::%E%> because "
-		  "%qT is a dependent scope",
-		  parser->scope, id, parser->scope);
+	{
+	  if (TREE_CODE (parser->scope) == TYPENAME_TYPE)
+	    error_at (location,
+		      "need %<typename%> before %<%T::%D::%E%> because "
+		      "%<%T::%D%> is a dependent scope",
+		      TYPE_CONTEXT (parser->scope),
+		      TYPENAME_TYPE_FULLNAME (parser->scope),
+		      id,
+		      TYPE_CONTEXT (parser->scope),
+		      TYPENAME_TYPE_FULLNAME (parser->scope));
+	  else
+	    error_at (location, "need %<typename%> before %<%T::%E%> because "
+		      "%qT is a dependent scope",
+		      parser->scope, id, parser->scope);
+	}
       else if (TYPE_P (parser->scope))
 	{
 	  if (!COMPLETE_TYPE_P (parser->scope))
@@ -8636,6 +8650,85 @@ cp_parser_tokens_start_cast_expression (cp_parser *parser)
     }
 }
 
+/* Try to find a legal C++-style cast to DST_TYPE for ORIG_EXPR, trying them
+   in the order: const_cast, static_cast, reinterpret_cast.
+
+   Don't suggest dynamic_cast.
+
+   Return the first legal cast kind found, or NULL otherwise.  */
+
+static const char *
+get_cast_suggestion (tree dst_type, tree orig_expr)
+{
+  tree trial;
+
+  /* Reuse the parser logic by attempting to build the various kinds of
+     cast, with "complain" disabled.
+     Identify the first such cast that is valid.  */
+
+  /* Don't attempt to run such logic within template processing.  */
+  if (processing_template_decl)
+    return NULL;
+
+  /* First try const_cast.  */
+  trial = build_const_cast (dst_type, orig_expr, tf_none);
+  if (trial != error_mark_node)
+    return "const_cast";
+
+  /* If that fails, try static_cast.  */
+  trial = build_static_cast (dst_type, orig_expr, tf_none);
+  if (trial != error_mark_node)
+    return "static_cast";
+
+  /* Finally, try reinterpret_cast.  */
+  trial = build_reinterpret_cast (dst_type, orig_expr, tf_none);
+  if (trial != error_mark_node)
+    return "reinterpret_cast";
+
+  /* No such cast possible.  */
+  return NULL;
+}
+
+/* If -Wold-style-cast is enabled, add fix-its to RICHLOC,
+   suggesting how to convert a C-style cast of the form:
+
+     (DST_TYPE)ORIG_EXPR
+
+   to a C++-style cast.
+
+   The primary range of RICHLOC is asssumed to be that of the original
+   expression.  OPEN_PAREN_LOC and CLOSE_PAREN_LOC give the locations
+   of the parens in the C-style cast.  */
+
+static void
+maybe_add_cast_fixit (rich_location *rich_loc, location_t open_paren_loc,
+		      location_t close_paren_loc, tree orig_expr,
+		      tree dst_type)
+{
+  /* This function is non-trivial, so bail out now if the warning isn't
+     going to be emitted.  */
+  if (!warn_old_style_cast)
+    return;
+
+  /* Try to find a legal C++ cast, trying them in order:
+     const_cast, static_cast, reinterpret_cast.  */
+  const char *cast_suggestion = get_cast_suggestion (dst_type, orig_expr);
+  if (!cast_suggestion)
+    return;
+
+  /* Replace the open paren with "CAST_SUGGESTION<".  */
+  pretty_printer pp;
+  pp_printf (&pp, "%s<", cast_suggestion);
+  rich_loc->add_fixit_replace (open_paren_loc, pp_formatted_text (&pp));
+
+  /* Replace the close paren with "> (".  */
+  rich_loc->add_fixit_replace (close_paren_loc, "> (");
+
+  /* Add a closing paren after the expr (the primary range of RICH_LOC).  */
+  rich_loc->add_fixit_insert_after (")");
+}
+
+
 /* Parse a cast-expression.
 
    cast-expression:
@@ -8671,6 +8764,7 @@ cp_parser_cast_expression (cp_parser *parser, bool address_p, bool cast_p,
       /* Consume the `('.  */
       cp_token *open_paren = cp_lexer_consume_token (parser->lexer);
       location_t open_paren_loc = open_paren->location;
+      location_t close_paren_loc = UNKNOWN_LOCATION;
 
       /* A very tricky bit is that `(struct S) { 3 }' is a
 	 compound-literal (which we permit in C++ as an extension).
@@ -8733,7 +8827,10 @@ cp_parser_cast_expression (cp_parser *parser, bool address_p, bool cast_p,
 	  /* Look for the type-id.  */
 	  type = cp_parser_type_id (parser);
 	  /* Look for the closing `)'.  */
-	  cp_parser_require (parser, CPP_CLOSE_PAREN, RT_CLOSE_PAREN);
+	  cp_token *close_paren
+	    = cp_parser_require (parser, CPP_CLOSE_PAREN, RT_CLOSE_PAREN);
+	  if (close_paren)
+	    close_paren_loc = close_paren->location;
 	  parser->in_type_id_in_expr_p = saved_in_type_id_in_expr_p;
 	}
 
@@ -8763,8 +8860,13 @@ cp_parser_cast_expression (cp_parser *parser, bool address_p, bool cast_p,
 		  && !in_system_header_at (input_location)
 		  && !VOID_TYPE_P (type)
 		  && current_lang_name != lang_name_c)
-		warning (OPT_Wold_style_cast,
-			 "use of old-style cast to %qT", type);
+		{
+		  gcc_rich_location rich_loc (input_location);
+		  maybe_add_cast_fixit (&rich_loc, open_paren_loc, close_paren_loc,
+					expr, type);
+		  warning_at_rich_loc (&rich_loc, OPT_Wold_style_cast,
+				       "use of old-style cast to %qT", type);
+		}
 
 	      /* Only type conversions to integral or enumeration types
 		 can be used in constant-expressions.  */
@@ -16972,7 +17074,7 @@ cp_parser_simple_type_specifier (cp_parser* parser,
       /* There is no valid C++ program where a non-template type is
 	 followed by a "<".  That usually indicates that the user
 	 thought that the type was a template.  */
-      cp_parser_check_for_invalid_template_id (parser, TREE_TYPE (type),
+      cp_parser_check_for_invalid_template_id (parser, type,
 					       none_type,
 					       token->location);
     }
@@ -20001,7 +20103,8 @@ cp_parser_direct_declarator (cp_parser* parser,
 		  {
 		    if (TREE_CODE (unqualified_name) == BIT_NOT_EXPR)
 		      sfk = sfk_destructor;
-		    else if (IDENTIFIER_TYPENAME_P (unqualified_name))
+		    else if (identifier_p (unqualified_name)
+			     && IDENTIFIER_CONV_OP_P (unqualified_name))
 		      sfk = sfk_conversion;
 		    else if (/* There's no way to declare a constructor
 				for an unnamed type, even if the type
@@ -20451,7 +20554,7 @@ inject_this_parameter (tree ctype, cp_cv_quals quals)
 	return;
     }
 
-  this_parm = build_this_parm (ctype, quals);
+  this_parm = build_this_parm (NULL_TREE, ctype, quals);
   /* Clear this first to avoid shortcut in cp_build_indirect_ref.  */
   current_class_ptr = NULL_TREE;
   current_class_ref
