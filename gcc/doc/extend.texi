@@ -16558,6 +16558,19 @@ vector bool char vec_perm (vector bool char,
 
 vector float vec_re (vector float);
 
+vector bool char vec_reve (vector bool char);
+vector signed char vec_reve (vector signed char);
+vector unsigned char vec_reve (vector unsigned char);
+vector bool int vec_reve (vector bool int);
+vector signed int vec_reve (vector signed int);
+vector unsigned int vec_reve (vector unsigned int);
+vector bool long long vec_reve (vector bool long long);
+vector signed long long vec_reve (vector signed long long);
+vector unsigned long long vec_reve (vector unsigned long long);
+vector bool short vec_reve (vector bool short);
+vector signed short vec_reve (vector signed short);
+vector unsigned short vec_reve (vector unsigned short);
+
 vector signed char vec_rl (vector signed char,
                            vector unsigned char);
 vector unsigned char vec_rl (vector unsigned char,

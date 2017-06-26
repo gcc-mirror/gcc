@@ -1,3 +1,29 @@
+gcc/ChangeLog:
+
+2017-06-26  Carl Love  <cel@us.ibm.com>
+
+	* config/rs6000/rs6000-c.c: Add support for built-in functions
+	vector bool char vec_reve (vector bool char);
+	vector signed char vec_reve (vector signed char);
+	vector unsigned char vec_reve (vector unsigned char);
+	vector bool int vec_reve (vector bool int);
+	vector signed int vec_reve (vector signed int);
+	vector unsigned int vec_reve (vector unsigned int);
+	vector bool long long vec_reve (vector bool long long);
+	vector signed long long vec_reve (vector signed long long);
+	vector unsigned long long vec_reve (vector unsigned long long);
+	vector bool short vec_reve (vector bool short);
+	vector signed short vec_reve (vector signed short);
+	vector double vec_reve (vector double);
+	vector float vec_reve (vector float);
+	* config/rs6000/rs6000-builtin.def (VREVE_V2DI, VREVE_V4SI,
+	VREVE_V8HI, VREVE_V16QI, VREVE_V2DF, VREVE_V4SF, VREVE): New builtin.
+	* config/rs6000/altivec.md (UNSPEC_VREVEV): New UNSPEC.
+	(altivec_vreve): New pattern.
+	* config/rs6000/altivec.h (vec_reve): New define.
+	* doc/extend.texi (vec_rev): Update the built-in documentation file
+	for the new built-in functions.
+
 2016-06-26  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	PR tree-optimization/71815
