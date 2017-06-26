@@ -1,3 +1,7 @@
+2017-06-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-c++-common/ubsan/sanitize-recover-7.c (dg-options): Add -w.
+
 2017-06-26  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	* lib/target-supports.exp
