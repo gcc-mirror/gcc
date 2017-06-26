@@ -8340,7 +8340,10 @@ maybe_warn_class_memaccess (location_t loc, tree fndecl, tree *args)
   if (!dest || !TREE_TYPE (dest) || !POINTER_TYPE_P (TREE_TYPE (dest)))
     return;
 
-  STRIP_NOPS (dest);
+  /* Remove the outermost (usually implicit) conversion to the void*
+     argument type.  */
+  if (TREE_CODE (dest) == NOP_EXPR)
+    dest = TREE_OPERAND (dest, 0);
 
   tree srctype = NULL_TREE;
 
@@ -8357,7 +8360,7 @@ maybe_warn_class_memaccess (location_t loc, tree fndecl, tree *args)
   if (current_function_decl
       && (DECL_CONSTRUCTOR_P (current_function_decl)
 	  || DECL_DESTRUCTOR_P (current_function_decl))
-      && is_this_parameter (dest))
+      && is_this_parameter (tree_strip_nop_conversions (dest)))
     {
       tree ctx = DECL_CONTEXT (current_function_decl);
       bool special = same_type_ignoring_top_level_qualifiers_p (ctx, desttype);
