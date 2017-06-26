@@ -573,6 +573,11 @@ find_tail_calls (basic_block bb, struct tailcall **ret)
 	{
 	  if (! tail_recursion)
 	    return;
+	  /* Do not deal with checking dominance, the real fix is to
+	     do path isolation for the transform phase anyway, removing
+	     the need to compute the accumulators with new stmts.  */
+	  if (abb != bb)
+	    return;
 	  for (unsigned opno = 1; opno < gimple_num_ops (stmt); ++opno)
 	    {
 	      tree op = gimple_op (stmt, opno);

@@ -3220,6 +3220,9 @@ class Allocation_expression : public Expression
   do_determine_type(const Type_context*)
   { }
 
+  void
+  do_check_types(Gogo*);
+
   Expression*
   do_copy();
 

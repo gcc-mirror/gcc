@@ -1,3 +1,165 @@
+gcc/ChangeLog:
+
+2017-06-26  Jerome Lambourg  <lambourg@adacore.com>
+
+	* config/vxworks.h (VXWORKS_OS_CPP_BUILTINS): builtin_define
+	_VX_TOOL_FAMILY and _VX_TOOL to gnu.
+
+2017-06-26  Carl Love  <cel@us.ibm.com>
+
+	* config/rs6000/rs6000-c.c: Add support for built-in functions
+	vector bool char vec_reve (vector bool char);
+	vector signed char vec_reve (vector signed char);
+	vector unsigned char vec_reve (vector unsigned char);
+	vector bool int vec_reve (vector bool int);
+	vector signed int vec_reve (vector signed int);
+	vector unsigned int vec_reve (vector unsigned int);
+	vector bool long long vec_reve (vector bool long long);
+	vector signed long long vec_reve (vector signed long long);
+	vector unsigned long long vec_reve (vector unsigned long long);
+	vector bool short vec_reve (vector bool short);
+	vector signed short vec_reve (vector signed short);
+	vector double vec_reve (vector double);
+	vector float vec_reve (vector float);
+	* config/rs6000/rs6000-builtin.def (VREVE_V2DI, VREVE_V4SI,
+	VREVE_V8HI, VREVE_V16QI, VREVE_V2DF, VREVE_V4SF, VREVE): New builtin.
+	* config/rs6000/altivec.md (UNSPEC_VREVEV): New UNSPEC.
+	(altivec_vreve): New pattern.
+	* config/rs6000/altivec.h (vec_reve): New define.
+	* doc/extend.texi (vec_rev): Update the built-in documentation file
+	for the new built-in functions.
+
+2016-06-26  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	PR tree-optimization/71815
+	* gimple-ssa-strength-reduction.c (uses_consumed_by_stmt): New
+	function.
+	(find_basis_for_candidate): Call uses_consumed_by_stmt rather than
+	has_single_use.
+	(slsr_process_phi): Likewise.
+	(replace_uncond_cands_and_profitable_phis): Don't replace a
+	multiply candidate with a stride of 1 (copy or cast).
+	(phi_incr_cost): Call uses_consumed_by_stmt rather than
+	has_single_use.
+	(lowest_cost_path): Likewise.
+	(total_savings): Likewise.
+
+2017-06-26  Richard Biener  <rguenther@suse.de>
+
+	PR target/81175
+	* config/i386/i386.c (ix86_init_mmx_sse_builtins):
+	Use def_builtin_pure for all gather builtins.
+
+2017-06-26  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/81203
+	* tree-tailcall.c (find_tail_calls): Do not move stmts into
+	non-dominating BBs.
+
+2017-06-26  Marek Polacek  <polacek@redhat.com>
+
+	PR c/80116
+	* doc/invoke.texi: Document -Wmultistatement-macros.
+
+2017-06-26  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* doc/sourcebuild.texi (ARM-specific attributes): Document new
+	arm_neon_ok_no_float_abi effective target.
+
+2017-06-26  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/80928
+	* cfghooks.c (duplicate_block): Do not copy BB_DUPLICATED flag.
+	(copy_bbs): Set BB_DUPLICATED flag early.
+	(execute_on_growing_pred): Do not execute for BB_DUPLICATED
+	marked blocks.
+	(execute_on_shrinking_pred): Likewise.
+	* tree-ssa.c (ssa_redirect_edge): Do not look for PHI args in
+	BB_DUPLICATED blocks.
+	* tree-ssa-phionlycoprop.c (eliminate_degenerate_phis_1): Properly
+	iterate over all PHIs considering removal of *gsi.
+
+2017-06-23  Jim Wilson  <jim.wilson@linaro.org>
+
+	* doc/invoke.texi (AArch64 Options, -mtune): Re-add falkor and
+	qdf24xx.
+
+2017-06-23  Aaron Sawdey  <acsawdey@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000-string.c: (expand_block_clear,
+	do_load_for_compare, select_block_compare_mode,
+	compute_current_alignment, expand_block_compare,
+	expand_strncmp_align_check, expand_strn_compare,
+	expand_block_move, rs6000_output_load_multiple)
+	Move functions related to string/block move/compare
+	to a separate file.
+	* config/rs6000/rs6000.c: Move above functions to rs6000-string.c.
+	* config/rs6000/rs6000-protos.h (rs6000_emit_dot_insn): Add prototype
+	for this function which is now used in two files.
+	* config/rs6000/t-rs6000: Add rule to compile rs6000-string.o.
+	* config.gcc: Add rs6000-string.o to extra_objs for
+	targets powerpc*-*-* and rs6000*-*-*.
+
+2017-06-23  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/80510
+	* config/rs6000/rs6000.md (ALTIVEC_DFORM): Do not allow DImode in
+	32-bit, since indexed is not valid for DImode.
+	(mov<mode>_hardfloat32): Reorder ISA 2.07 load/stores before ISA
+	3.0 d-form load/stores to be the same as mov<mode>_hardfloat64.
+	(define_peephole2 for Altivec d-form load): Add 32-bit support.
+	(define_peephole2 for Altivec d-form store): Likewise.
+
+	PR ipa/81185
+	* multiple_target.c (create_dispatcher_calls): Only create the
+	dispatcher call if the function is the default clone of a
+	versioned function.
+
+2017-06-23  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR middle-end/80902
+	* builtins.c (expand_builtin_atomic_fetch_op): If emitting code after
+	a call, force the call to not be a tail call.
+
+2017-06-23  Jeff Law  <law@redhat.com>
+
+	* doc/contrib.texi: Add entry for Steven Pemberton's work on
+	enquire.
+
+2017-06-23  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	* config/rs6000/rs6000.c: Add include of ssa-propagate.h for
+	update_call_from_tree().  (rs6000_gimple_fold_builtin): Add
+	handling for early expansion of vector shifts (sl,sr,sra,rl).
+	(builtin_function_type): Add vector shift right instructions
+	to the unsigned argument list.
+
+2017-06-23  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	rtl-optimizatoin/79286
+	* ira.c (update_equiv_regs): Revert to using may_trap_or_fault_p again.
+	* rtlanal.c (rtx_addr_can_trap_p_1): SYMBOL_REF_FUNCTION_P can never
+	trap.  PIC register plus a const unspec without offset can never trap.
+
+2017-06-23  Marc Glisse  <marc.glisse@inria.fr>
+
+	* tree.h (builtin_structptr_type): New type.
+	(builtin_structptr_types): Declare new array.
+	* tree.c (builtin_structptr_types): New array.
+	(free_lang_data, build_common_tree_nodes): Use it.
+
+2017-06-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR c++/81187
+	* doc/invoke.texi (-Wnoexcept-type): Fix name of option, from
+	-Wnoexcept.
+
+2017-06-22  Matt Turner  <mattst88@gmail.com>
+
+	* config/i386/driver-i386.c (host_detect_local_cpu): Add Kaby
+	Lake models to skylake case.  Assume skylake for unknown
+	models with clflushopt.
+
 2017-06-22  Jeff Law  <law@redhat.com>
 
 	* config/aarch64/aarch64.c (aarch64_emit_probe_stack_range): Handle

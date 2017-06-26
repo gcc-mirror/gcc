@@ -678,7 +678,7 @@ doentersyscallblock(uintptr pc, uintptr sp)
 	{
 		void *v;
 
-		g->gcnextsp = (byte *) &v;
+		g->gcnextsp = (uintptr)(&v);
 	}
 #endif
 

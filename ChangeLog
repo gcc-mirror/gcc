@@ -1,3 +1,7 @@
+2017-06-26  Maxim Ostapenko  <m.ostapenko@samsung.com>
+
+        * MAINTAINERS: Add myself to Write After Approval
+
 2017-06-21  Andrew Jenner  <andrew@codesourcery.com>
 
 	* MAINTAINERS: Add myself as maintainer for PowerPC SPE port.

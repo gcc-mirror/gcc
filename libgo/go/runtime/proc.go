@@ -37,6 +37,9 @@ import (
 //go:linkname globrunqput runtime.globrunqput
 //go:linkname pidleget runtime.pidleget
 
+// Exported for test (see runtime/testdata/testprogcgo/dropm_stub.go).
+//go:linkname getm runtime.getm
+
 // Function called by misc/cgo/test.
 //go:linkname lockedOSThread runtime.lockedOSThread
 
@@ -1094,7 +1097,25 @@ func kickoff() {
 	fv := gp.entry
 	param := gp.param
 	gp.entry = nil
+
+	// When running on the g0 stack we can wind up here without a p,
+	// for example from mcall(exitsyscall0) in exitsyscall.
+	// Setting gp.param = nil will call a write barrier, and if
+	// there is no p that write barrier will crash. When called from
+	// mcall the gp.param value will be a *g, which we don't need to
+	// shade since we know it will be kept alive elsewhere. In that
+	// case clear the field using uintptr so that the write barrier
+	// does nothing.
+	if gp.m.p == 0 {
+		if gp == gp.m.g0 && gp.param == unsafe.Pointer(gp.m.curg) {
+			*(*uintptr)(unsafe.Pointer(&gp.param)) = 0
+		} else {
+			throw("no p in kickoff")
+		}
+	}
+
 	gp.param = nil
+
 	fv(param)
 	goexit1()
 }
@@ -1444,6 +1465,9 @@ func oneNewExtraM() {
 // in which dropm happens on each cgo call, is still correct too.
 // We may have to keep the current version on systems with cgo
 // but without pthreads, like Windows.
+//
+// CgocallBackDone calls this after releasing p, so no write barriers.
+//go:nowritebarrierrec
 func dropm() {
 	// Clear m and g, and return m to the extra list.
 	// After the call to setg we can only call nosplit functions
@@ -1489,6 +1513,7 @@ var extraMWaiters uint32
 // return a nil list head if that's what it finds. If nilokay is false,
 // lockextra will keep waiting until the list head is no longer nil.
 //go:nosplit
+//go:nowritebarrierrec
 func lockextra(nilokay bool) *m {
 	const locked = 1
 
@@ -1521,6 +1546,7 @@ func lockextra(nilokay bool) *m {
 }
 
 //go:nosplit
+//go:nowritebarrierrec
 func unlockextra(mp *m) {
 	atomic.Storeuintptr(&extram, uintptr(unsafe.Pointer(mp)))
 }

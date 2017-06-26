@@ -1,5 +1,7 @@
 2017-06-26  Nathan Sidwell  <nathan@acm.org>
 
+	Merge trunk r249657.
+
 	gcc/cp/
 	* cp-tree.h (lang_decl_fn): Remove assignment_operator_p field.
 	* module.c (cpms_{out,in}::lang_decl_bools: Likewise.

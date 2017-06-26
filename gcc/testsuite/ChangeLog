@@ -1,3 +1,108 @@
+2017-06-26  Carl Love  <cel@us.ibm.com>
+
+	* gcc.target/powerpc/builtins-3-vec_reve-runnable.c:
+	Add new runnable test file for the vec_rev built-ins.
+
+2016-06-26  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	PR/tree-optimization 71815
+	* gcc.dg/tree-ssa/slsr-35.c: Remove -fno-code-hoisting workaround.
+	* gcc.dg/tree-ssa/slsr-36.c: Likewise.
+
+2017-06-26  Renlin Li  <renlin.li@arm.com>
+	    Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	* gcc.c-torture/execute/builtins/memops-asm-lib.c (my_memmove): New.
+	* gcc.c-torture/execute/builtins/memops-asm.c (memmove): Declare
+	memmove.
+
+2017-06-26  Richard Biener  <rguenther@suse.de>
+
+	PR target/81175
+	* gfortran.dg/pr81175.f: New testcase.
+
+2017-06-26  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/81203
+	* gcc.dg/torture/pr81203.c: New testcase.
+
+2017-06-26  Marek Polacek  <polacek@redhat.com>
+
+	PR c/80116
+	* c-c++-common/Wmultistatement-macros-1.c: New test.
+	* c-c++-common/Wmultistatement-macros-2.c: New test.
+	* c-c++-common/Wmultistatement-macros-3.c: New test.
+	* c-c++-common/Wmultistatement-macros-4.c: New test.
+	* c-c++-common/Wmultistatement-macros-5.c: New test.
+	* c-c++-common/Wmultistatement-macros-6.c: New test.
+	* c-c++-common/Wmultistatement-macros-7.c: New test.
+	* c-c++-common/Wmultistatement-macros-8.c: New test.
+	* c-c++-common/Wmultistatement-macros-9.c: New test.
+	* c-c++-common/Wmultistatement-macros-10.c: New test.
+	* c-c++-common/Wmultistatement-macros-11.c: New test.
+
+2017-06-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-c++-common/ubsan/sanitize-recover-7.c (dg-options): Add -w.
+
+2017-06-26  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* lib/target-supports.exp
+	(check_effective_target_arm_neon_ok_nocache): Add flags with
+	-mfloat-abi=hard. Include arm_neon.h.
+	(check_effective_target_arm_neon_ok_no_float_abi_nocache): New.
+	(check_effective_target_arm_neon_ok_no_float_abi): New.
+	* gcc.target/arm/lto/pr65837_0.c: Require
+	arm_neon_ok_no_float_abi. Add -mfpu=neon to dg-lto-options.
+	* gcc.target/arm/lto/pr65837-attr_0.c: Require
+	arm_neon_ok_no_float_abi. Remove dg-suppress-ld-options.
+
+2017-06-24  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/62315
+	* g++.dg/parse/typedef2.C: Specify a dg-error string.
+
+2017-06-24  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+        PR fortran/52473
+	* gfortran.dg/cshift_2.f90:  New test.
+
+2017-06-23  Jim Wilson  <jim.wilson@linaro.org>
+
+	PR middle-end/79794
+	* gcc.target/aarch64/pr79794.c: New.
+
+2017-06-23  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/80510
+	* gcc.target/powerpc/pr80510-1.c: Allow test to run on 32-bit.
+	* gcc.target/powerpc/pr80510-2.c: Likewise.
+
+2017-06-22  Jeff Law  <law@redhat.com>
+
+	* gcc.c-torture/compile/stack-check-1.c: Require "untyped_assembly".
+
+2017-06-23  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	* gcc.target/powerpc/fold-vec-shift-char.c: New.
+	* gcc.target/powerpc/fold-vec-shift-int.c: New.
+	* gcc.target/powerpc/fold-vec-shift-longlong.c: New.
+	* gcc.target/powerpc/fold-vec-shift-short.c: New.
+	* gcc.target/powerpc/fold-vec-shift-left.c: New.
+	* gcc.target/powerpc/fold-vec-shift-left-fwrapv.c: New.
+	* gcc.target/powerpc/fold-vec-shift-left-longlong-fwrapv.c: New.
+	* gcc.target/powerpc/fold-vec-shift-left-longlong.c: New.
+
+2017-06-23  James Cowgill  <James.Cowgill@imgtec.com>
+
+	* go.test/go-test.exp (go-set-goarch): Update MIPS architecture
+        names.
+
+2017-06-22  Matt Turner  <mattst88@gmail.com>
+
+	* gcc.target/i386/builtin_target.c: Add Kaby Lake models to
+	skylake check.
+
 2017-06-22 Carl Love  <cel@us.ibm.com>
 
 	* gcc.target/powerpc/builtins-3.c (vmulosh, vmulouh, vmulesh,

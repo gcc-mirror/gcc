@@ -3551,7 +3551,8 @@ update_equiv_regs (void)
 	  if (DF_REG_DEF_COUNT (regno) == 1
 	      && note
 	      && !rtx_varies_p (XEXP (note, 0), 0)
-	      && def_dominates_uses (regno))
+	      && (!may_trap_or_fault_p (XEXP (note, 0))
+		  || def_dominates_uses (regno)))
 	    {
 	      rtx note_value = XEXP (note, 0);
 	      remove_note (insn, note);

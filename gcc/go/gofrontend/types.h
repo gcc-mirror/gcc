@@ -636,6 +636,11 @@ class Type
   needs_key_update()
   { return this->do_needs_key_update(); }
 
+  // Whether the type is permitted in the heap.
+  bool
+  in_heap()
+  { return this->do_in_heap(); }
+
   // Return a hash code for this type for the method hash table.
   // Types which are equivalent according to are_identical will have
   // the same hash code.
@@ -1051,6 +1056,10 @@ class Type
   do_needs_key_update()
   { return false; }
 
+  virtual bool
+  do_in_heap()
+  { return true; }
+
   virtual unsigned int
   do_hash_for_method(Gogo*) const;
 
@@ -1343,6 +1352,8 @@ class Type
   // The GC symbol for this type.  This starts out as NULL and
   // is filled in as needed.
   Bvariable* gc_symbol_var_;
+  // Whether this type can appear in the heap.
+  bool in_heap_;
 };
 
 // Type hash table operations.
@@ -2417,6 +2428,9 @@ class Struct_type : public Type
   bool
   do_needs_key_update();
 
+  bool
+  do_in_heap();
+
   unsigned int
   do_hash_for_method(Gogo*) const;
 
@@ -2589,6 +2603,10 @@ class Array_type : public Type
   bool
   do_needs_key_update()
   { return this->element_type_->needs_key_update(); }
+
+  bool
+  do_in_heap()
+  { return this->length_ == NULL || this->element_type_->in_heap(); }
 
   unsigned int
   do_hash_for_method(Gogo*) const;
@@ -2809,6 +2827,9 @@ class Channel_type : public Type
   int
   do_traverse(Traverse* traverse)
   { return Type::traverse(this->element_type_, traverse); }
+
+  bool
+  do_verify();
 
   bool
   do_has_pointer() const
@@ -3047,7 +3068,7 @@ class Named_type : public Type
       type_(type), local_methods_(NULL), all_methods_(NULL),
       interface_method_tables_(NULL), pointer_interface_method_tables_(NULL),
       location_(location), named_btype_(NULL), dependencies_(),
-      is_alias_(false), is_visible_(true), is_error_(false),
+      is_alias_(false), is_visible_(true), is_error_(false), in_heap_(true),
       is_placeholder_(false), is_converted_(false), is_circular_(false),
       is_verified_(false), seen_(false), seen_in_compare_is_identity_(false),
       seen_in_get_backend_(false), seen_alias_(false)
@@ -3078,6 +3099,11 @@ class Named_type : public Type
   void
   set_is_alias()
   { this->is_alias_ = true; }
+
+  // Mark this type as not permitted in the heap.
+  void
+  set_not_in_heap()
+  { this->in_heap_ = false; }
 
   // Return the function in which this type is defined.  This will
   // return NULL for a type defined in global scope.
@@ -3277,6 +3303,10 @@ class Named_type : public Type
   bool
   do_needs_key_update();
 
+  bool
+  do_in_heap()
+  { return this->in_heap_ && this->type_->in_heap(); }
+
   unsigned int
   do_hash_for_method(Gogo*) const;
 
@@ -3344,6 +3374,9 @@ class Named_type : public Type
   bool is_visible_;
   // Whether this type is erroneous.
   bool is_error_;
+  // Whether this type is permitted in the heap.  This is true by
+  // default, false if there is a magic //go:notinheap comment.
+  bool in_heap_;
   // Whether the current value of named_btype_ is a placeholder for
   // which the final size of the type is not known.
   bool is_placeholder_;
@@ -3435,6 +3468,10 @@ class Forward_declaration_type : public Type
   bool
   do_needs_key_update()
   { return this->real_type()->needs_key_update(); }
+
+  bool
+  do_in_heap()
+  { return this->real_type()->in_heap(); }
 
   unsigned int
   do_hash_for_method(Gogo* gogo) const

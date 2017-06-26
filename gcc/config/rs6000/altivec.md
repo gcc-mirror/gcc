@@ -50,6 +50,7 @@
    UNSPEC_VPACK_UNS_UNS_SAT
    UNSPEC_VPACK_UNS_UNS_MOD
    UNSPEC_VPACK_UNS_UNS_MOD_DIRECT
+   UNSPEC_VREVEV
    UNSPEC_VSLV4SI
    UNSPEC_VSLO
    UNSPEC_VSR
@@ -3819,6 +3820,31 @@
     
   DONE;
 }")
+
+;; Vector reverse elements
+(define_expand "altivec_vreve<mode>2"
+  [(set (match_operand:VEC_A 0 "register_operand" "=v")
+	(unspec:VEC_A [(match_operand:VEC_A 1 "register_operand" "v")]
+		      UNSPEC_VREVEV))]
+  "TARGET_ALTIVEC"
+{
+  int i, j, size, num_elements;
+  rtvec v = rtvec_alloc (16);
+  rtx mask = gen_reg_rtx (V16QImode);
+
+  size = GET_MODE_UNIT_SIZE (<MODE>mode);
+  num_elements = GET_MODE_NUNITS (<MODE>mode);
+
+  for (j = 0; j < num_elements; j++)
+    for (i = 0; i < size; i++)
+      RTVEC_ELT (v, i + j * size)
+	= GEN_INT (i + (num_elements - 1 - j) * size);
+
+  emit_insn (gen_vec_initv16qi (mask, gen_rtx_PARALLEL (V16QImode, v)));
+  emit_insn (gen_altivec_vperm_<mode> (operands[0], operands[1],
+	     operands[1], mask));
+  DONE;
+})
 
 ;; Vector SIMD PEM v2.06c defines LVLX, LVLXL, LVRX, LVRXL,
 ;; STVLX, STVLXL, STVVRX, STVRXL are available only on Cell.
