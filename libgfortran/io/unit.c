@@ -583,14 +583,17 @@ get_unit (st_parameter_dt *dtp, int do_create)
 	}
       else
 	{
+	  __gthread_mutex_lock (&unit_lock);
 	  if (newunit_tos)
 	    {
 	      dtp->common.unit = newunit_stack[newunit_tos].unit_number;
 	      unit = newunit_stack[newunit_tos--].unit;
+	      __gthread_mutex_unlock (&unit_lock);
 	      unit->fbuf->act = unit->fbuf->pos = 0;
 	    }
 	  else
 	    {
+	      __gthread_mutex_unlock (&unit_lock);
 	      dtp->common.unit = newunit_alloc ();
 	      unit = xcalloc (1, sizeof (gfc_unit));
 	      fbuf_init (unit, 128);
@@ -603,12 +606,15 @@ get_unit (st_parameter_dt *dtp, int do_create)
   /* If an internal unit number is passed from the parent to the child
      it should have been stashed on the newunit_stack ready to be used.
      Check for it now and return the internal unit if found.  */
+  __gthread_mutex_lock (&unit_lock);
   if (newunit_tos && (dtp->common.unit <= NEWUNIT_START)
       && (dtp->common.unit == newunit_stack[newunit_tos].unit_number))
     {
       unit = newunit_stack[newunit_tos--].unit;
+      __gthread_mutex_unlock (&unit_lock);
       return unit;
     }
+  __gthread_mutex_unlock (&unit_lock);
 
   /* Has to be an external unit.  */
   dtp->u.p.unit_is_internal = 0;
