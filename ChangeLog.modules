@@ -1,5 +1,18 @@
 2017-06-26  Nathan Sidwell  <nathan@acm.org>
 
+	Start moving class name lookup around
+	gcc/cp/
+	* class.c (count_fields, add_fields_to_record_type,
+	add_enum_fields_to_record_type, sorted_fields_type_new,
+	create_classtype_sorted_fields,
+	insert_late_enum_def_into_classtype_sorted_fields): Move to ...
+	* name-lookup.c: ... here.
+	(lookup_class_member): New.  Broken out of ...
+	* search.c (lookup_field_1): ... here.  Call it.
+	* name-lookup.h (lookup_class_member,
+	create_classtype_sorted_fields,
+	insert_late_enum_def_into_classtype_sorted_fields): Declare.
+
 	Merge trunk r249657.
 
 	gcc/cp/
