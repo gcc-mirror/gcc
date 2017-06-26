@@ -8677,20 +8677,22 @@ build_cxx_call (tree fn, int nargs, tree *argarray,
 tree
 in_charge_arg_for_name (tree name)
 {
- if (name == base_ctor_identifier
-      || name == base_dtor_identifier)
-    return integer_zero_node;
-  else if (name == complete_ctor_identifier)
-    return integer_one_node;
-  else if (name == complete_dtor_identifier)
-    return integer_two_node;
-  else if (name == deleting_dtor_identifier)
-    return integer_three_node;
+  if (IDENTIFIER_CTOR_P (name))
+    {
+      if (name == complete_ctor_identifier)
+	return integer_one_node;
+      gcc_checking_assert (name == base_ctor_identifier);
+    }
+  else
+    {
+      if (name == complete_dtor_identifier)
+	return integer_two_node;
+      else if (name == deleting_dtor_identifier)
+	return integer_three_node;
+      gcc_checking_assert (name == base_dtor_identifier);
+    }
 
-  /* This function should only be called with one of the names listed
-     above.  */
-  gcc_unreachable ();
-  return NULL_TREE;
+  return integer_zero_node;
 }
 
 /* We've built up a constructor call RET.  Complain if it delegates to the
@@ -8729,11 +8731,7 @@ build_special_member_call (tree instance, tree name, vec<tree, va_gc> **args,
   vec<tree, va_gc> *allocated = NULL;
   tree ret;
 
-  gcc_assert (name == complete_ctor_identifier
-	      || name == base_ctor_identifier
-	      || name == complete_dtor_identifier
-	      || name == base_dtor_identifier
-	      || name == deleting_dtor_identifier
+  gcc_assert (IDENTIFIER_CDTOR_P (name)
 	      || name == cp_assignment_operator_id (NOP_EXPR));
   if (TYPE_P (binfo))
     {
@@ -8753,9 +8751,7 @@ build_special_member_call (tree instance, tree name, vec<tree, va_gc> **args,
     instance = build_dummy_object (class_type);
   else
     {
-      if (name == complete_dtor_identifier
-	  || name == base_dtor_identifier
-	  || name == deleting_dtor_identifier)
+      if (IDENTIFIER_DTOR_P (name))
 	gcc_assert (args == NULL || vec_safe_is_empty (*args));
 
       /* Convert to the base class, if necessary.  */

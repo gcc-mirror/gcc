@@ -1,3 +1,21 @@
+2017-06-26  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-tree.h (lang_decl_fn): Remove assignment_operator_p field.
+	(DECL_COMPLETE_CONSTRUCTOR_P): Directly compare
+	identifier.
+	(DECL_BASE_CONSTRUCTOR_P, DECL_COMPLETE_DESTRUCTOR_P,
+	DECL_BASE_DESTRUCTOR_P, DECL_DELETING_DESTRUCTOR_P): Likewise.
+	(DECL_ASSIGNMENT_OPERATOR_P): Use IDENTIFIER_ASSIGN_OP_P.
+	* decl.c (grok_op_properties): Adjust identifier checking.
+	* init.c (expand_default_init): Adjust identifier descision.
+	* method.c (implicitly_declare_fn): Don't use
+	DECL_ASSIGNMENT_OPERATOR_P.
+	* search.c (lookup_fnfields_1): Use IDENTIFIER_CTOR_P,
+	IDENTIFIER_DTOR_P.
+	* call.c (in_charge_arg_for_name): Reimplement.
+	(build_special_member_call): Use IDENTIFIER_CDTOR_P,
+	IDENTIFIER_DTOR_P.
+
 2017-06-26  Marek Polacek  <polacek@redhat.com>
 
 	PR c/80116

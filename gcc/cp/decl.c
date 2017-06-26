@@ -12925,14 +12925,15 @@ grok_op_properties (tree decl, bool complain)
     {
       /* It'd be nice to hang something else of the identifier to
 	 find CODE more directly.  */
+      bool assign_op = IDENTIFIER_ASSIGN_OP_P (name);
       const operator_name_info_t *oni
-	= (IDENTIFIER_ASSIGN_OP_P (name)
-	   ? assignment_operator_name_info : operator_name_info);
-      DECL_ASSIGNMENT_OPERATOR_P (decl) = IDENTIFIER_ASSIGN_OP_P (name);
+	= (assign_op ? assignment_operator_name_info : operator_name_info);
+
       if (false)
 	;
 #define DEF_OPERATOR(NAME, CODE, MANGLING, ARITY, KIND)		\
-      else if (oni[int (CODE)].identifier == name)		\
+      else if (assign_op == (KIND == cik_assign_op)		\
+	       && oni[int (CODE)].identifier == name)		\
 	operator_code = (CODE);
 #include "operators.def"
 #undef DEF_OPERATOR
