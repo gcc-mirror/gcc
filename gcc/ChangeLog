@@ -1,5 +1,11 @@
 2017-06-26  Richard Biener  <rguenther@suse.de>
 
+	PR target/81175
+	* config/i386/i386.c (ix86_init_mmx_sse_builtins):
+	Use def_builtin_pure for all gather builtins.
+
+2017-06-26  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/81203
 	* tree-tailcall.c (find_tail_calls): Do not move stmts into
 	non-dominating BBs.
