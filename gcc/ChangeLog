@@ -1,3 +1,8 @@
+2017-06-26  Marek Polacek  <polacek@redhat.com>
+
+	PR c/80116
+	* doc/invoke.texi: Document -Wmultistatement-macros.
+
 2017-06-26  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	* doc/sourcebuild.texi (ARM-specific attributes): Document new

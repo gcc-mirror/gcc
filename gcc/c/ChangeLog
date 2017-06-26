@@ -1,3 +1,17 @@
+2017-06-26  Marek Polacek  <polacek@redhat.com>
+
+	PR c/80116
+	* c-parser.c (c_parser_if_body): Set the location of the
+	body of the conditional after parsing all the labels.  Call
+	warn_for_multistatement_macros.
+	(c_parser_else_body): Likewise.
+	(c_parser_switch_statement): Likewise.
+	(c_parser_while_statement): Likewise.
+	(c_parser_for_statement): Likewise.
+	(c_parser_statement): Add a default argument.  Save the location
+	after labels have been parsed.
+	(c_parser_c99_block_statement): Likewise.
+
 2017-06-19  Richard Biener  <rguenther@suse.de>
 
 	* gimple-parser.c (c_parser_gimple_postfix_expression): Handle
