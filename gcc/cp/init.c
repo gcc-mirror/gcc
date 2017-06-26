@@ -1718,7 +1718,6 @@ expand_default_init (tree binfo, tree true_exp, tree exp, tree init, int flags,
                      tsubst_flags_t complain)
 {
   tree type = TREE_TYPE (exp);
-  tree ctor_name;
 
   /* It fails because there may not be a constructor which takes
      its own type as the first (or only parameter), but which does
@@ -1846,10 +1845,9 @@ expand_default_init (tree binfo, tree true_exp, tree exp, tree init, int flags,
     }
    else
     {
-      if (true_exp == exp)
-	ctor_name = complete_ctor_identifier;
-      else
-	ctor_name = base_ctor_identifier;
+      tree ctor_name = (true_exp == exp
+			? complete_ctor_identifier : base_ctor_identifier);
+
       rval = build_special_member_call (exp, ctor_name, &parms, binfo, flags,
 					complain);
     }

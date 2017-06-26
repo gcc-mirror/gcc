@@ -1,3 +1,8 @@
+2017-06-26  Nathan Sidwell  <nathan@acm.org>
+
+	* libcp1plugin.cc (plugin_build_decl): Don't set
+	DECL_ASSIGNMENT_OPERATOR_P.
+
 2017-06-16  Nathan Sidwell  <nathan@acm.org>
 
 	* libcp1plugin.cc (plugin_build_decl): Adjust parm building.

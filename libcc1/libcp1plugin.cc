@@ -1428,8 +1428,6 @@ plugin_build_decl (cc1_plugin::connection *self,
 	  if ((sym_flags & GCC_CP_FLAG_SPECIAL_FUNCTION)
 	      && opcode != ERROR_MARK)
 	    SET_OVERLOADED_OPERATOR_CODE (decl, opcode);
-	  if (assop)
-	    DECL_ASSIGNMENT_OPERATOR_P (decl) = true;
 	}
     }
   else if (RECORD_OR_UNION_CODE_P (code))
