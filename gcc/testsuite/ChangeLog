@@ -1,5 +1,10 @@
 2017-06-26  Richard Biener  <rguenther@suse.de>
 
+	PR target/81175
+	* gfortran.dg/pr81175.f: New testcase.
+
+2017-06-26  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/81203
 	* gcc.dg/torture/pr81203.c: New testcase.
 
