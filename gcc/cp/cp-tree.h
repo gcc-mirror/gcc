@@ -2570,25 +2570,26 @@ struct GTY(()) lang_decl_fn {
   struct lang_decl_min min;
 
   /* In an overloaded operator, this is the value of
-     DECL_OVERLOADED_OPERATOR_P.  */
+     DECL_OVERLOADED_OPERATOR_P.
+     FIXME: We should really do better in compressing this.  */
   ENUM_BITFIELD (tree_code) operator_code : 16;
 
   unsigned global_ctor_p : 1;
   unsigned global_dtor_p : 1;
-  unsigned assignment_operator_p : 1;
   unsigned static_function : 1;
   unsigned pure_virtual : 1;
   unsigned defaulted_p : 1;
   unsigned has_in_charge_parm_p : 1;
   unsigned has_vtt_parm_p : 1;
-  
   unsigned pending_inline_p : 1;
+
   unsigned nonconverting : 1;
   unsigned thunk_p : 1;
   unsigned this_thunk_p : 1;
   unsigned hidden_friend_p : 1;
   unsigned omp_declare_reduction_p : 1;
-  /* 2 spare bits.  */
+  /* 3 spare bits.  */
+
   /* 32-bits padding on 64-bit host.  */
 
   /* For a non-thunk function decl, this is a tree list of

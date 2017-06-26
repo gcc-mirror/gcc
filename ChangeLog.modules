@@ -1,5 +1,12 @@
 2017-06-26  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* cp-tree.h (lang_decl_fn): Remove assignment_operator_p field.
+	* module.c (cpms_{out,in}::lang_decl_bools: Likewise.
+	libcc1/
+	* libcp1plugin.cc (plugin_build_decl): Don't set
+	DECL_ASSIGNMENT_OPERATOR_P.
+
 	gcc/
 	* Makefile.in (MODULE_STAMP): Set here
 	(REVISION, REVISION_c): Override.

@@ -2841,7 +2841,6 @@ cpms_out::lang_decl_bools (tree t)
     case lds_fn:  /* lang_decl_fn.  */
       WB (lang->u.fn.global_ctor_p);
       WB (lang->u.fn.global_dtor_p);
-      WB (lang->u.fn.assignment_operator_p);
       WB (lang->u.fn.static_function);
       WB (lang->u.fn.pure_virtual);
       WB (lang->u.fn.defaulted_p);
@@ -2897,7 +2896,6 @@ cpms_in::lang_decl_bools (tree t)
     case lds_fn:  /* lang_decl_fn.  */
       RB (lang->u.fn.global_ctor_p);
       RB (lang->u.fn.global_dtor_p);
-      RB (lang->u.fn.assignment_operator_p);
       RB (lang->u.fn.static_function);
       RB (lang->u.fn.pure_virtual);
       RB (lang->u.fn.defaulted_p);
