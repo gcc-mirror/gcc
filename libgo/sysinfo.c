@@ -103,7 +103,12 @@
 #include <linux/netlink.h>
 #endif
 #if defined(HAVE_LINUX_PTRACE_H)
+/* Avoid https://sourceware.org/bugzilla/show_bug.cgi?id=762 .  */
+#define ia64_fpreg pt_ia64_fpreg
+#define pt_all_user_regs pt_ia64_all_user_regs
 #include <linux/ptrace.h>
+#undef ia64_fpreg
+#undef pt_all_user_regs
 #endif
 #if defined(HAVE_LINUX_RTNETLINK_H)
 #include <linux/rtnetlink.h>
