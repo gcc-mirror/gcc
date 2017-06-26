@@ -142,6 +142,7 @@
 #define vec_madd __builtin_vec_madd
 #define vec_madds __builtin_vec_madds
 #define vec_mtvscr __builtin_vec_mtvscr
+#define vec_reve __builtin_vec_vreve
 #define vec_vmaxfp __builtin_vec_vmaxfp
 #define vec_vmaxsw __builtin_vec_vmaxsw
 #define vec_vmaxsh __builtin_vec_vmaxsh
