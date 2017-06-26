@@ -1,5 +1,6 @@
 2016-06-26  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
+	PR/tree-optimization 71815
 	* gcc.dg/tree-ssa/slsr-35.c: Remove -fno-code-hoisting workaround.
 	* gcc.dg/tree-ssa/slsr-36.c: Likewise.
 

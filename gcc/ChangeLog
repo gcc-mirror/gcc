@@ -1,5 +1,6 @@
 2016-06-26  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
+	PR tree-optimization/71815
 	* gimple-ssa-strength-reduction.c (uses_consumed_by_stmt): New
 	function.
 	(find_basis_for_candidate): Call uses_consumed_by_stmt rather than
