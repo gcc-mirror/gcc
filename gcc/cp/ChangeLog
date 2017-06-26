@@ -1,3 +1,8 @@
+2017-06-26  Jason Merrill  <jason@redhat.com>
+
+	PR c++/81215 - deduction failure with variadic TTP.
+	* pt.c (unify_bound_ttp_args): Restore old logic for C++14 and down.
+
 2017-06-26  Martin Sebor  <msebor@redhat.com>
 
 	PR c++/81169
