@@ -53,10 +53,12 @@ c++: cc1plus$(exeext)
 
 CFLAGS-cp/g++spec.o += $(DRIVER_DEFINES)
 
-# Use the modification date of the cp directory as a version stamp
+ifndef MODULE_STAMP
+$(error MODULE_STAMP expected to be defined)
+endif
 CFLAGS-cp/module.o += -DHOST_MACHINE=\"$(host)\" \
 	-DTARGET_MACHINE=\"$(target)\" \
-	-DMODULE_STAMP=$(shell date -r $(srcdir)/cp '+%y%m%d%H%M')
+	-DMODULE_STAMP=$(subst -,,$(MODULE_STAMP))
 
 # Create the compiler driver for g++.
 GXX_OBJS = $(GCC_OBJS) cp/g++spec.o

@@ -1,3 +1,11 @@
+2017-06-26  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/
+	* Makefile.in (MODULE_STAMP): Set here
+	(REVISION, REVISION_c): Override.
+	gcc/cp/
+	* Make-lang.in (MODULE_STAMP): Not here.
+
 2017-06-23  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
