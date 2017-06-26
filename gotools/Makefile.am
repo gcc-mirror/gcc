@@ -100,8 +100,8 @@ zdefaultcc.go: s-zdefaultcc; @true
 s-zdefaultcc: Makefile
 	echo 'package main' > zdefaultcc.go.tmp
 	echo 'const defaultGCCGO = "$(bindir)/$(GCCGO_INSTALL_NAME)"' >> zdefaultcc.go.tmp
-	echo 'const defaultCC = "$(bindir)/$(GCC_INSTALL_NAME)"' >> zdefaultcc.go.tmp
-	echo 'const defaultCXX = "$(bindir)/$(GXX_INSTALL_NAME)"' >> zdefaultcc.go.tmp
+	echo 'const defaultCC = "$(GCC_INSTALL_NAME)"' >> zdefaultcc.go.tmp
+	echo 'const defaultCXX = "$(GXX_INSTALL_NAME)"' >> zdefaultcc.go.tmp
 	echo 'const defaultPkgConfig = "pkg-config"' >> zdefaultcc.go.tmp
 	$(SHELL) $(srcdir)/../move-if-change zdefaultcc.go.tmp zdefaultcc.go
 	$(STAMP) $@ 
