@@ -1,6 +1,19 @@
 gcc/ChangeLog:
 
 2017-06-26  Jerome Lambourg  <lambourg@adacore.com>
+            Olivier Hainque  <hainque@adacore.com>
+
+	* config.gcc (*-*-vxworks*): Add TARGET_VXWORKS7=1 to tm_defines
+	for all vxworks7 targets.
+	* config/vxworks.h (TARGET_VXWORKS7): If not defined, define to 0.
+	(VXWORKS_ADDITIONAL_CPP_SPEC): Alternative definition for VXWORKS7.
+	(VXWORKS_LIBS_RTP, VXWORKS_LIBS_RTP_DIR): New macros, allowing
+	variations for VX6/VX7 and 32/64bits later on in ...
+	(VXWORKS_LIB_SPEC): Leverage new macros.
+	(VXWORKS_OS_CPP_BUILTINS): Define _VSB_CONFIG_FILE for VXWORKS7,
+	as well as _ALLOW_KEYWORD_MACROS when "inline" is not a keyword.
+
+2017-06-26  Jerome Lambourg  <lambourg@adacore.com>
 
 	* config/vxworks.h (VXWORKS_OS_CPP_BUILTINS): builtin_define
 	_VX_TOOL_FAMILY and _VX_TOOL to gnu.

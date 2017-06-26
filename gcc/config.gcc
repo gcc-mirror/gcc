@@ -926,6 +926,11 @@ case ${target} in
     "" | yes | vxworks) thread_file='vxworks' ;;
     *) echo 'Unknown thread configuration for VxWorks'; exit 1 ;;
   esac
+  case $target in
+    *-*-vxworks7*)
+      tm_defines="$tm_defines TARGET_VXWORKS7=1"
+      ;;
+  esac
   ;;
 *-*-elf|arc*-*-elf*)
   # Assume that newlib is being used and so __cxa_atexit is provided.
