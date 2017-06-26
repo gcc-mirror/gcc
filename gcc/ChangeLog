@@ -1,5 +1,10 @@
 gcc/ChangeLog:
 
+2017-06-26  Jerome Lambourg  <lambourg@adacore.com>
+
+	* config/vxworks.h (VXWORKS_OS_CPP_BUILTINS): builtin_define
+	_VX_TOOL_FAMILY and _VX_TOOL to gnu.
+
 2017-06-26  Carl Love  <cel@us.ibm.com>
 
 	* config/rs6000/rs6000-c.c: Add support for built-in functions

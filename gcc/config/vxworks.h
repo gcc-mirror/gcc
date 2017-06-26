@@ -131,6 +131,8 @@ extern void vxworks_asm_out_destructor (rtx symbol, int priority);
 	builtin_define ("__RTP__");					\
       else								\
 	builtin_define ("_WRS_KERNEL");					\
+      builtin_define ("_VX_TOOL_FAMILY=gnu");				\
+      builtin_define ("_VX_TOOL=gnu");					\
     }									\
   while (0)
 
