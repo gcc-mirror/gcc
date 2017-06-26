@@ -142,21 +142,24 @@ ssa_redirect_edge (edge e, basic_block dest)
 
   redirect_edge_var_map_clear (e);
 
-  /* Remove the appropriate PHI arguments in E's destination block.  */
-  for (gsi = gsi_start_phis (e->dest); !gsi_end_p (gsi); gsi_next (&gsi))
-    {
-      tree def;
-      source_location locus ;
+  /* Remove the appropriate PHI arguments in E's destination block.
+     If we are redirecting a copied edge the destination has not
+     got PHI argument space reserved nor an interesting argument.  */
+  if (! (e->dest->flags & BB_DUPLICATED))
+    for (gsi = gsi_start_phis (e->dest); !gsi_end_p (gsi); gsi_next (&gsi))
+      {
+	tree def;
+	source_location locus ;
 
-      phi = gsi.phi ();
-      def = gimple_phi_arg_def (phi, e->dest_idx);
-      locus = gimple_phi_arg_location (phi, e->dest_idx);
+	phi = gsi.phi ();
+	def = gimple_phi_arg_def (phi, e->dest_idx);
+	locus = gimple_phi_arg_location (phi, e->dest_idx);
 
-      if (def == NULL_TREE)
-	continue;
+	if (def == NULL_TREE)
+	  continue;
 
-      redirect_edge_var_map_add (e, gimple_phi_result (phi), def, locus);
-    }
+	redirect_edge_var_map_add (e, gimple_phi_result (phi), def, locus);
+      }
 
   e = redirect_edge_succ_nodup (e, dest);
 
