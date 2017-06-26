@@ -37,6 +37,24 @@ my_bcopy (const void *s, void *d, size_t n)
     }
 }
 
+__attribute__ ((used))
+void
+my_memmove (void *d, const void *s, size_t n)
+{
+  char *dst = (char *) d;
+  const char *src = (const char *) s;
+  if (src >= dst)
+    while (n--)
+      *dst++ = *src++;
+  else
+    {
+      dst += n;
+      src += n;
+      while (n--)
+	*--dst = *--src;
+    }
+}
+
 /* LTO code is at the present to able to track that asm alias my_bcopy on builtin
    actually refers to this function.  See PR47181. */
 __attribute__ ((used))
