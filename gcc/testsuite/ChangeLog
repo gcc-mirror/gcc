@@ -1,3 +1,8 @@
+2016-06-26  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* gcc.dg/tree-ssa/slsr-35.c: Remove -fno-code-hoisting workaround.
+	* gcc.dg/tree-ssa/slsr-36.c: Likewise.
+
 2017-06-26  Renlin Li  <renlin.li@arm.com>
 	    Szabolcs Nagy  <szabolcs.nagy@arm.com>
 

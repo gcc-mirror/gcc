@@ -3,7 +3,7 @@
    phi has an argument which is a parameter.  */
 
 /* { dg-do compile } */
-/* { dg-options "-O3 -fno-code-hoisting -fdump-tree-optimized" } */
+/* { dg-options "-O3 -fdump-tree-optimized" } */
 
 int
 f (int c, int i)
