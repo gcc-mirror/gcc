@@ -1,3 +1,14 @@
+2017-06-26  Marek Polacek  <polacek@redhat.com>
+
+	PR c/80116
+	* c-common.h (warn_for_multistatement_macros): Declare.
+	* c-warn.c: Include "c-family/c-indentation.h".
+	(warn_for_multistatement_macros): New function.
+	* c.opt (Wmultistatement-macros): New option.
+	* c-indentation.c (guard_tinfo_to_string): No longer static.
+	Change the parameter type to "enum rid".  Handle RID_SWITCH.
+	* c-indentation.h (guard_tinfo_to_string): Declare.
+
 2017-06-23  Marc Glisse  <marc.glisse@inria.fr>
 
 	* c-common.c (c_common_nodes_and_builtins): Use builtin_structptr_types.

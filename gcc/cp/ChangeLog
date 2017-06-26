@@ -1,3 +1,13 @@
+2017-06-26  Marek Polacek  <polacek@redhat.com>
+
+	PR c/80116
+	* parser.c (cp_parser_statement): Add a default argument.  Save the
+	location of the expression-statement after labels have been parsed.
+	(cp_parser_implicitly_scoped_statement): Set the location of the
+	body of the conditional after parsing all the labels.  Call
+	warn_for_multistatement_macros.
+	(cp_parser_already_scoped_statement): Likewise.
+
 2017-06-24  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/62315

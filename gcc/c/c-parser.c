@@ -1218,9 +1218,11 @@ static void c_parser_initval (c_parser *, struct c_expr *,
 static tree c_parser_compound_statement (c_parser *);
 static void c_parser_compound_statement_nostart (c_parser *);
 static void c_parser_label (c_parser *);
-static void c_parser_statement (c_parser *, bool *);
+static void c_parser_statement (c_parser *, bool *, location_t * = NULL);
 static void c_parser_statement_after_labels (c_parser *, bool *,
 					     vec<tree> * = NULL);
+static tree c_parser_c99_block_statement (c_parser *, bool *,
+					  location_t * = NULL);
 static void c_parser_if_statement (c_parser *, bool *, vec<tree> *);
 static void c_parser_switch_statement (c_parser *, bool *);
 static void c_parser_while_statement (c_parser *, bool, bool *);
@@ -5204,9 +5206,11 @@ c_parser_label (c_parser *parser)
    implement -Wparentheses.  */
 
 static void
-c_parser_statement (c_parser *parser, bool *if_p)
+c_parser_statement (c_parser *parser, bool *if_p, location_t *loc_after_labels)
 {
   c_parser_all_labels (parser);
+  if (loc_after_labels)
+    *loc_after_labels = c_parser_peek_token (parser)->location;
   c_parser_statement_after_labels (parser, if_p, NULL);
 }
 
@@ -5466,11 +5470,12 @@ c_parser_paren_condition (c_parser *parser)
    implement -Wparentheses.  */
 
 static tree
-c_parser_c99_block_statement (c_parser *parser, bool *if_p)
+c_parser_c99_block_statement (c_parser *parser, bool *if_p,
+			      location_t *loc_after_labels)
 {
   tree block = c_begin_compound_stmt (flag_isoc99);
   location_t loc = c_parser_peek_token (parser)->location;
-  c_parser_statement (parser, if_p);
+  c_parser_statement (parser, if_p, loc_after_labels);
   return c_end_compound_stmt (loc, block, flag_isoc99);
 }
 
@@ -5492,6 +5497,7 @@ c_parser_if_body (c_parser *parser, bool *if_p,
 {
   tree block = c_begin_compound_stmt (flag_isoc99);
   location_t body_loc = c_parser_peek_token (parser)->location;
+  location_t body_loc_after_labels = UNKNOWN_LOCATION;
   token_indent_info body_tinfo
     = get_token_indent_info (c_parser_peek_token (parser));
 
@@ -5508,11 +5514,18 @@ c_parser_if_body (c_parser *parser, bool *if_p,
   else if (c_parser_next_token_is (parser, CPP_OPEN_BRACE))
     add_stmt (c_parser_compound_statement (parser));
   else
-    c_parser_statement_after_labels (parser, if_p);
+    {
+      body_loc_after_labels = c_parser_peek_token (parser)->location;
+      c_parser_statement_after_labels (parser, if_p);
+    }
 
   token_indent_info next_tinfo
     = get_token_indent_info (c_parser_peek_token (parser));
   warn_for_misleading_indentation (if_tinfo, body_tinfo, next_tinfo);
+  if (body_loc_after_labels != UNKNOWN_LOCATION
+      && next_tinfo.type != CPP_SEMICOLON)
+    warn_for_multistatement_macros (body_loc_after_labels, next_tinfo.location,
+				    if_tinfo.location, RID_IF);
 
   return c_end_compound_stmt (body_loc, block, flag_isoc99);
 }
@@ -5530,6 +5543,7 @@ c_parser_else_body (c_parser *parser, const token_indent_info &else_tinfo,
   tree block = c_begin_compound_stmt (flag_isoc99);
   token_indent_info body_tinfo
     = get_token_indent_info (c_parser_peek_token (parser));
+  location_t body_loc_after_labels = UNKNOWN_LOCATION;
 
   c_parser_all_labels (parser);
   if (c_parser_next_token_is (parser, CPP_SEMICOLON))
@@ -5542,11 +5556,18 @@ c_parser_else_body (c_parser *parser, const token_indent_info &else_tinfo,
       c_parser_consume_token (parser);
     }
   else
-    c_parser_statement_after_labels (parser, NULL, chain);
+    {
+      body_loc_after_labels = c_parser_peek_token (parser)->location;
+      c_parser_statement_after_labels (parser, NULL, chain);
+    }
 
   token_indent_info next_tinfo
     = get_token_indent_info (c_parser_peek_token (parser));
   warn_for_misleading_indentation (else_tinfo, body_tinfo, next_tinfo);
+  if (body_loc_after_labels != UNKNOWN_LOCATION
+      && next_tinfo.type != CPP_SEMICOLON)
+    warn_for_multistatement_macros (body_loc_after_labels, next_tinfo.location,
+				    else_tinfo.location, RID_ELSE);
 
   return c_end_compound_stmt (body_loc, block, flag_isoc99);
 }
@@ -5732,7 +5753,13 @@ c_parser_switch_statement (c_parser *parser, bool *if_p)
   c_start_case (switch_loc, switch_cond_loc, expr, explicit_cast_p);
   save_break = c_break_label;
   c_break_label = NULL_TREE;
-  body = c_parser_c99_block_statement (parser, if_p);
+  location_t loc_after_labels;
+  bool open_brace_p = c_parser_peek_token (parser)->type == CPP_OPEN_BRACE;
+  body = c_parser_c99_block_statement (parser, if_p, &loc_after_labels);
+  location_t next_loc = c_parser_peek_token (parser)->location;
+  if (!open_brace_p && c_parser_peek_token (parser)->type != CPP_SEMICOLON)
+    warn_for_multistatement_macros (loc_after_labels, next_loc, switch_loc,
+				    RID_SWITCH);
   c_finish_case (body, ce.original_type);
   if (c_break_label)
     {
@@ -5783,7 +5810,8 @@ c_parser_while_statement (c_parser *parser, bool ivdep, bool *if_p)
   token_indent_info body_tinfo
     = get_token_indent_info (c_parser_peek_token (parser));
 
-  body = c_parser_c99_block_statement (parser, if_p);
+  location_t loc_after_labels;
+  body = c_parser_c99_block_statement (parser, if_p, &loc_after_labels);
   c_finish_loop (loc, cond, NULL, body, c_break_label, c_cont_label, true);
   add_stmt (c_end_compound_stmt (loc, block, flag_isoc99));
   c_parser_maybe_reclassify_token (parser);
@@ -5791,6 +5819,10 @@ c_parser_while_statement (c_parser *parser, bool ivdep, bool *if_p)
   token_indent_info next_tinfo
     = get_token_indent_info (c_parser_peek_token (parser));
   warn_for_misleading_indentation (while_tinfo, body_tinfo, next_tinfo);
+
+  if (next_tinfo.type != CPP_SEMICOLON)
+    warn_for_multistatement_macros (loc_after_labels, next_tinfo.location,
+				    while_tinfo.location, RID_WHILE);
 
   c_break_label = save_break;
   c_cont_label = save_cont;
@@ -6076,7 +6108,8 @@ c_parser_for_statement (c_parser *parser, bool ivdep, bool *if_p)
   token_indent_info body_tinfo
     = get_token_indent_info (c_parser_peek_token (parser));
 
-  body = c_parser_c99_block_statement (parser, if_p);
+  location_t loc_after_labels;
+  body = c_parser_c99_block_statement (parser, if_p, &loc_after_labels);
 
   if (is_foreach_statement)
     objc_finish_foreach_loop (loc, object_expression, collection_expression, body, c_break_label, c_cont_label);
@@ -6088,6 +6121,10 @@ c_parser_for_statement (c_parser *parser, bool ivdep, bool *if_p)
   token_indent_info next_tinfo
     = get_token_indent_info (c_parser_peek_token (parser));
   warn_for_misleading_indentation (for_tinfo, body_tinfo, next_tinfo);
+
+  if (next_tinfo.type != CPP_SEMICOLON)
+    warn_for_multistatement_macros (loc_after_labels, next_tinfo.location,
+				    for_tinfo.location, RID_FOR);
 
   c_break_label = save_break;
   c_cont_label = save_cont;

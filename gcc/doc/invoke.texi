@@ -294,7 +294,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wmain  -Wmaybe-uninitialized  -Wmemset-elt-size  -Wmemset-transposed-args @gol
 -Wmisleading-indentation  -Wmissing-braces @gol
 -Wmissing-field-initializers  -Wmissing-include-dirs @gol
--Wno-multichar  -Wnonnull  -Wnonnull-compare @gol
+-Wno-multichar  -Wmultistatement-macros  -Wnonnull  -Wnonnull-compare @gol
 -Wnormalized=@r{[}none@r{|}id@r{|}nfc@r{|}nfkc@r{]} @gol
 -Wnull-dereference  -Wodr  -Wno-overflow  -Wopenmp-simd  @gol
 -Woverride-init-side-effects  -Woverlength-strings @gol
@@ -3842,6 +3842,7 @@ Options} and @ref{Objective-C and Objective-C++ Dialect Options}.
 -Wmemset-transposed-args @gol
 -Wmisleading-indentation @r{(only for C/C++)} @gol
 -Wmissing-braces @r{(only for C/ObjC)} @gol
+-Wmultistatement-macros  @gol
 -Wnarrowing @r{(only for C++)}  @gol
 -Wnonnull  @gol
 -Wnonnull-compare  @gol
@@ -4513,6 +4514,32 @@ This warning is enabled by @option{-Wall}.
 @opindex Wmissing-include-dirs
 @opindex Wno-missing-include-dirs
 Warn if a user-supplied include directory does not exist.
+
+@item -Wmultistatement-macros
+@opindex Wmultistatement-macros
+@opindex Wno-multistatement-macros
+Warn about unsafe multiple statement macros that appear to be guarded
+by a clause such as @code{if}, @code{else}, @code{for}, @code{switch}, or
+@code{while}, in which only the first statement is actually guarded after
+the macro is expanded.
+
+For example:
+
+@smallexample
+#define DOIT x++; y++
+if (c)
+  DOIT;
+@end smallexample
+
+will increment @code{y} unconditionally, not just when @code{c} holds.
+The can usually be fixed by wrapping the macro in a do-while loop:
+@smallexample
+#define DOIT do @{ x++; y++; @} while (0)
+if (c)
+  DOIT;
+@end smallexample
+
+This warning is enabled by @option{-Wall} in C and C++.
 
 @item -Wparentheses
 @opindex Wparentheses

@@ -31,6 +31,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "asan.h"
 #include "gcc-rich-location.h"
 #include "gimplify.h"
+#include "c-family/c-indentation.h"
 
 /* Print a warning if a constant expression had overflow in folding.
    Invoke this function on every expression that the language
@@ -2400,4 +2401,92 @@ do_warn_duplicated_branches_r (tree *tp, int *, void *)
   if (TREE_CODE (*tp) == COND_EXPR)
     do_warn_duplicated_branches (*tp);
   return NULL_TREE;
+}
+
+/* Implementation of -Wmultistatement-macros.  This warning warns about
+   cases when a macro expands to multiple statements not wrapped in
+   do {} while (0) or ({ }) and is used as a body of if/else/for/while
+   conditionals.  For example,
+
+   #define DOIT x++; y++
+
+   if (c)
+     DOIT;
+
+   will increment y unconditionally.
+
+   BODY_LOC is the location of the first token in the body after labels
+   have been parsed, NEXT_LOC is the location of the next token after the
+   body of the conditional has been parsed, and GUARD_LOC is the location
+   of the conditional.  */
+
+void
+warn_for_multistatement_macros (location_t body_loc, location_t next_loc,
+				location_t guard_loc, enum rid keyword)
+{
+  if (!warn_multistatement_macros)
+    return;
+
+  /* Ain't got time to waste.  We only care about macros here.  */
+  if (!from_macro_expansion_at (body_loc)
+      || !from_macro_expansion_at (next_loc))
+    return;
+
+  /* Let's skip macros defined in system headers.  */
+  if (in_system_header_at (body_loc)
+      || in_system_header_at (next_loc))
+    return;
+
+  /* Find the actual tokens in the macro definition.  BODY_LOC and
+     NEXT_LOC have to come from the same spelling location, but they
+     will resolve to different locations in the context of the macro
+     definition.  */
+  location_t body_loc_exp
+    = linemap_resolve_location (line_table, body_loc,
+				LRK_MACRO_DEFINITION_LOCATION, NULL);
+  location_t next_loc_exp
+    = linemap_resolve_location (line_table, next_loc,
+				LRK_MACRO_DEFINITION_LOCATION, NULL);
+  location_t guard_loc_exp
+    = linemap_resolve_location (line_table, guard_loc,
+				LRK_MACRO_DEFINITION_LOCATION, NULL);
+
+  /* These are some funky cases we don't want to warn about.  */
+  if (body_loc_exp == guard_loc_exp
+      || next_loc_exp == guard_loc_exp
+      || body_loc_exp == next_loc_exp)
+    return;
+
+  /* Find the macro map for the macro expansion BODY_LOC.  */
+  const line_map *map = linemap_lookup (line_table, body_loc);
+  const line_map_macro *macro_map = linemap_check_macro (map);
+
+  /* Now see if the following token is coming from the same macro
+     expansion.  If it is, it's a problem, because it should've been
+     parsed at this point.  We only look at odd-numbered indexes
+     within the MACRO_MAP_LOCATIONS array, i.e. the spelling locations
+     of the tokens.  */
+  bool found_guard = false;
+  bool found_next = false;
+  for (unsigned int i = 1;
+       i < 2 * MACRO_MAP_NUM_MACRO_TOKENS (macro_map);
+       i += 2)
+    {
+      if (MACRO_MAP_LOCATIONS (macro_map)[i] == next_loc_exp)
+	found_next = true;
+      if (MACRO_MAP_LOCATIONS (macro_map)[i] == guard_loc_exp)
+	found_guard = true;
+    }
+
+  /* The conditional itself must not come from the same expansion, because
+     we don't want to warn about
+     #define IF if (x) x++; y++
+     and similar.  */
+  if (!found_next || found_guard)
+    return;
+
+  if (warning_at (body_loc, OPT_Wmultistatement_macros,
+		  "macro expands to multiple statements"))
+    inform (guard_loc, "some parts of macro expansion are not guarded by "
+	    "this %qs clause", guard_tinfo_to_string (keyword));
 }

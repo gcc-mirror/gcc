@@ -2102,7 +2102,7 @@ static void cp_parser_lambda_body
 /* Statements [gram.stmt.stmt]  */
 
 static void cp_parser_statement
-  (cp_parser *, tree, bool, bool *, vec<tree> * = NULL);
+  (cp_parser *, tree, bool, bool *, vec<tree> * = NULL, location_t * = NULL);
 static void cp_parser_label_for_labeled_statement
 (cp_parser *, tree);
 static tree cp_parser_expression_statement
@@ -10637,7 +10637,8 @@ cp_parser_lambda_body (cp_parser* parser, tree lambda_expr)
 
 static void
 cp_parser_statement (cp_parser* parser, tree in_statement_expr,
-		     bool in_compound, bool *if_p, vec<tree> *chain)
+		     bool in_compound, bool *if_p, vec<tree> *chain,
+		     location_t *loc_after_labels)
 {
   tree statement, std_attrs = NULL_TREE;
   cp_token *token;
@@ -10830,6 +10831,10 @@ cp_parser_statement (cp_parser* parser, tree in_statement_expr,
 	  if (cp_parser_parse_definitely (parser))
 	    return;
 	}
+      /* All preceding labels have been parsed at this point.  */
+      if (loc_after_labels != NULL)
+	*loc_after_labels = statement_location;
+
       /* Look for an expression-statement instead.  */
       statement = cp_parser_expression_statement (parser, in_statement_expr);
 
@@ -12370,6 +12375,7 @@ cp_parser_implicitly_scoped_statement (cp_parser* parser, bool *if_p,
 {
   tree statement;
   location_t body_loc = cp_lexer_peek_token (parser->lexer)->location;
+  location_t body_loc_after_labels = UNKNOWN_LOCATION;
   token_indent_info body_tinfo
     = get_token_indent_info (cp_lexer_peek_token (parser->lexer));
 
@@ -12399,7 +12405,8 @@ cp_parser_implicitly_scoped_statement (cp_parser* parser, bool *if_p,
       /* Create a compound-statement.  */
       statement = begin_compound_stmt (0);
       /* Parse the dependent-statement.  */
-      cp_parser_statement (parser, NULL_TREE, false, if_p, chain);
+      cp_parser_statement (parser, NULL_TREE, false, if_p, chain,
+			   &body_loc_after_labels);
       /* Finish the dummy compound-statement.  */
       finish_compound_stmt (statement);
     }
@@ -12407,6 +12414,11 @@ cp_parser_implicitly_scoped_statement (cp_parser* parser, bool *if_p,
   token_indent_info next_tinfo
     = get_token_indent_info (cp_lexer_peek_token (parser->lexer));
   warn_for_misleading_indentation (guard_tinfo, body_tinfo, next_tinfo);
+
+  if (body_loc_after_labels != UNKNOWN_LOCATION
+      && next_tinfo.type != CPP_SEMICOLON)
+    warn_for_multistatement_macros (body_loc_after_labels, next_tinfo.location,
+				    guard_tinfo.location, guard_tinfo.keyword);
 
   /* Return the statement.  */
   return statement;
@@ -12426,11 +12438,18 @@ cp_parser_already_scoped_statement (cp_parser* parser, bool *if_p,
     {
       token_indent_info body_tinfo
 	= get_token_indent_info (cp_lexer_peek_token (parser->lexer));
+      location_t loc_after_labels;
 
-      cp_parser_statement (parser, NULL_TREE, false, if_p);
+      cp_parser_statement (parser, NULL_TREE, false, if_p, NULL,
+			   &loc_after_labels);
       token_indent_info next_tinfo
 	= get_token_indent_info (cp_lexer_peek_token (parser->lexer));
       warn_for_misleading_indentation (guard_tinfo, body_tinfo, next_tinfo);
+
+      if (next_tinfo.type != CPP_SEMICOLON)
+	warn_for_multistatement_macros (loc_after_labels, next_tinfo.location,
+					guard_tinfo.location,
+					guard_tinfo.keyword);
     }
   else
     {
