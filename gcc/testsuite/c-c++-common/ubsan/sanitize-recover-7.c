@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-fsanitize=address -fsanitize=thread" } */
+/* { dg-options "-fsanitize=address -fsanitize=thread -w" } */
 
 int i;
 
