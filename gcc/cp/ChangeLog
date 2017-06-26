@@ -1,3 +1,8 @@
+2017-06-26  Jason Merrill  <jason@redhat.com>
+
+	PR c++/81215
+	* pt.c (unify_bound_ttp_args): Restore old logic for C++14 and down.
+
 2017-06-23  Jason Merrill  <jason@redhat.com>
 
 	PR c++/79056 - C++17 ICE with invalid template syntax.
