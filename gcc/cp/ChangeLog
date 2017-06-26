@@ -1,3 +1,9 @@
+2017-06-26  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/81169
+	* call.c (maybe_warn_class_memaccess): Preserve explicit conversions
+	to detect casting away cv-qualifiers.
+
 2017-06-26  Nathan Sidwell  <nathan@acm.org>
 
 	* cp-tree.h (lang_decl_fn): Remove assignment_operator_p field.
