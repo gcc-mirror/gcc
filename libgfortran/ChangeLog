@@ -1,3 +1,9 @@
+2017-06-26  Jim Wilson  <jim.wilson@r3-a15.aus-colo>
+
+	PR libfortran/81195
+	* io/unit.c (get_unit): Call __gthread_mutex_lock before newunit_stack
+	and newunit_tos references.  Call __gthread_mutex_unlock afterward.
+
 2017-06-24  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
         PR fortran/52473
