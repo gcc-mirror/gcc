@@ -1,3 +1,10 @@
+2017-06-26  Renlin Li  <renlin.li@arm.com>
+	    Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	* gcc.c-torture/execute/builtins/memops-asm-lib.c (my_memmove): New.
+	* gcc.c-torture/execute/builtins/memops-asm.c (memmove): Declare
+	memmove.
+
 2017-06-26  Richard Biener  <rguenther@suse.de>
 
 	PR target/81175
