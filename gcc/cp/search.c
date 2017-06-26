@@ -382,7 +382,7 @@ lookup_field_1 (tree type, tree name, bool want_type)
        The TYPE_FIELDS of TYPENAME_TYPE is its TYPENAME_TYPE_FULLNAME.  */
     return NULL_TREE;
 
-  if (CLASSTYPE_SORTED_FIELDS (type))
+  if (CLASSTYPE_BINDINGS (type))
     return lookup_class_member (type, name, want_type);
 
   field = TYPE_FIELDS (type);

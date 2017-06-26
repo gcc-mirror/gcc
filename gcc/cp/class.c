@@ -139,7 +139,6 @@ static tree build_simple_base_path (tree expr, tree binfo);
 static tree build_vtbl_ref_1 (tree, tree);
 static void build_vtbl_initializer (tree, tree, tree, tree, int *,
 				    vec<constructor_elt, va_gc> **);
-static int add_fields_to_record_type (tree, struct sorted_fields_type*, int);
 static bool check_bitfield_decl (tree);
 static bool check_field_decl (tree, tree, int *, int *);
 static void check_field_decls (tree, tree *, int *, int *);
@@ -7217,7 +7216,7 @@ finish_struct_1 (tree t)
 	&& same_type_p (TYPE_MAIN_VARIANT (TREE_TYPE (x)), t))
       SET_DECL_MODE (x, TYPE_MODE (t));
 
-  create_classtype_sorted_fields (TYPE_FIELDS (t), t);
+  set_class_bindings (t, TYPE_FIELDS (t));
 
   /* Complain if one of the field types requires lower visibility.  */
   constrain_class_visibility (t);

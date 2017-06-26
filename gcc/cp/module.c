@@ -2171,7 +2171,7 @@ cpms_in::define_class (tree type)
 
       /* Resort things that need to be sorted.  */
       resort_type_method_vec (method_vec, NULL, nop, NULL);
-      create_classtype_sorted_fields (fields, type);
+      set_class_bindings (type, fields);
     }
 
   /* Propagate to all variants.  */

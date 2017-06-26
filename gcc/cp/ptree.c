@@ -151,9 +151,6 @@ cxx_print_type (FILE *file, tree node, int indent)
     fputs (" delete[]", file);
   if (TYPE_HAS_COPY_ASSIGN (node))
     fputs (" this=(X&)", file);
-  if (CLASSTYPE_SORTED_FIELDS (node))
-    fprintf (file, " sorted-fields %p",
-	     (void *) CLASSTYPE_SORTED_FIELDS (node));
 
   if (TREE_CODE (node) == RECORD_TYPE)
     {

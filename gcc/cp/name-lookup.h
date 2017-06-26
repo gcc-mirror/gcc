@@ -343,8 +343,8 @@ extern void pop_from_top_level (void);
 
 // FIXME: class symbol handling.  In transition
 extern tree lookup_class_member (tree, tree, bool);
-extern void create_classtype_sorted_fields (tree, tree);
-extern void insert_late_enum_def_into_classtype_sorted_fields (tree, tree);
+extern void set_class_bindings (tree, tree);
+extern void insert_late_enum_def_bindings (tree, tree);
 
 /* Lower level interface for modules. */
 extern tree decapsulate_binding (tree value, tree *type_p);
