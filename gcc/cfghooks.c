@@ -1087,7 +1087,7 @@ duplicate_block (basic_block bb, edge e, basic_block after)
   if (after)
     move_block_after (new_bb, after);
 
-  new_bb->flags = bb->flags;
+  new_bb->flags = (bb->flags & ~BB_DUPLICATED);
   FOR_EACH_EDGE (s, ei, bb->succs)
     {
       /* Since we are creating edges from a new block to successors
@@ -1207,7 +1207,8 @@ flow_call_edges_add (sbitmap blocks)
 void
 execute_on_growing_pred (edge e)
 {
-  if (cfg_hooks->execute_on_growing_pred)
+  if (! (e->dest->flags & BB_DUPLICATED)
+      && cfg_hooks->execute_on_growing_pred)
     cfg_hooks->execute_on_growing_pred (e);
 }
 
@@ -1217,7 +1218,8 @@ execute_on_growing_pred (edge e)
 void
 execute_on_shrinking_pred (edge e)
 {
-  if (cfg_hooks->execute_on_shrinking_pred)
+  if (! (e->dest->flags & BB_DUPLICATED)
+      && cfg_hooks->execute_on_shrinking_pred)
     cfg_hooks->execute_on_shrinking_pred (e);
 }
 
@@ -1353,6 +1355,12 @@ copy_bbs (basic_block *bbs, unsigned n, basic_block *new_bbs,
   basic_block bb, new_bb, dom_bb;
   edge e;
 
+  /* Mark the blocks to be copied.  This is used by edge creation hooks
+     to decide whether to reallocate PHI nodes capacity to avoid reallocating
+     PHIs in the set of source BBs.  */
+  for (i = 0; i < n; i++)
+    bbs[i]->flags |= BB_DUPLICATED;
+
   /* Duplicate bbs, update dominators, assign bbs to loops.  */
   for (i = 0; i < n; i++)
     {
@@ -1360,7 +1368,6 @@ copy_bbs (basic_block *bbs, unsigned n, basic_block *new_bbs,
       bb = bbs[i];
       new_bb = new_bbs[i] = duplicate_block (bb, NULL, after);
       after = new_bb;
-      bb->flags |= BB_DUPLICATED;
       if (bb->loop_father)
 	{
 	  /* Possibly set loop header.  */

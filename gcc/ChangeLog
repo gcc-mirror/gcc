@@ -1,3 +1,16 @@
+2017-06-26  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/80928
+	* cfghooks.c (duplicate_block): Do not copy BB_DUPLICATED flag.
+	(copy_bbs): Set BB_DUPLICATED flag early.
+	(execute_on_growing_pred): Do not execute for BB_DUPLICATED
+	marked blocks.
+	(execute_on_shrinking_pred): Likewise.
+	* tree-ssa.c (ssa_redirect_edge): Do not look for PHI args in
+	BB_DUPLICATED blocks.
+	* tree-ssa-phionlycoprop.c (eliminate_degenerate_phis_1): Properly
+	iterate over all PHIs considering removal of *gsi.
+
 2017-06-23  Jim Wilson  <jim.wilson@linaro.org>
 
 	* doc/invoke.texi (AArch64 Options, -mtune): Re-add falkor and
