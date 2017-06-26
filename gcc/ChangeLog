@@ -1,3 +1,17 @@
+2016-06-26  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* gimple-ssa-strength-reduction.c (uses_consumed_by_stmt): New
+	function.
+	(find_basis_for_candidate): Call uses_consumed_by_stmt rather than
+	has_single_use.
+	(slsr_process_phi): Likewise.
+	(replace_uncond_cands_and_profitable_phis): Don't replace a
+	multiply candidate with a stride of 1 (copy or cast).
+	(phi_incr_cost): Call uses_consumed_by_stmt rather than
+	has_single_use.
+	(lowest_cost_path): Likewise.
+	(total_savings): Likewise.
+
 2017-06-26  Richard Biener  <rguenther@suse.de>
 
 	PR target/81175
