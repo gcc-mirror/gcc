@@ -1,5 +1,8 @@
 2017-06-27  Jakub Jelinek  <jakub@redhat.com>
 
+	PR sanitizer/81209
+	* g++.dg/ubsan/pr81209.C: New test.
+
 	PR middle-end/81207
 	* gcc.c-torture/compile/pr81207.c: New test.
 

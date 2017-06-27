@@ -1,5 +1,8 @@
 2017-06-27  Jakub Jelinek  <jakub@redhat.com>
 
+	PR sanitizer/81209
+	* ubsan.c (ubsan_encode_value): Initialize DECL_CONTEXT on var.
+
 	PR middle-end/81207
 	* gimple-fold.c (replace_call_with_call_and_fold): Handle
 	gimple_vuse copying separately from gimple_vdef copying.
