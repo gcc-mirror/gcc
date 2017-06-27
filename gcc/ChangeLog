@@ -1,4 +1,10 @@
 2017-06-27  Jerome Lambourg  <lambourg@adacore.com>
+
+	* config/i386/vxworks.h (ASM_SPEC): Remove definition. No target
+	specific need, just fallback on defaults.
+	(ASM_OUTPUT_ALIGNED_BSS): Add #undef before #define.
+
+2017-06-27  Jerome Lambourg  <lambourg@adacore.com>
             Olivier Hainque  <hainque@adacore.com>
 
 	* config/i386/vxworks.h (DBX_REGISTER_NUMBER): Pick distinct
