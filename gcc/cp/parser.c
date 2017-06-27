@@ -12438,7 +12438,7 @@ cp_parser_already_scoped_statement (cp_parser* parser, bool *if_p,
     {
       token_indent_info body_tinfo
 	= get_token_indent_info (cp_lexer_peek_token (parser->lexer));
-      location_t loc_after_labels;
+      location_t loc_after_labels = UNKNOWN_LOCATION;
 
       cp_parser_statement (parser, NULL_TREE, false, if_p, NULL,
 			   &loc_after_labels);
@@ -12446,7 +12446,8 @@ cp_parser_already_scoped_statement (cp_parser* parser, bool *if_p,
 	= get_token_indent_info (cp_lexer_peek_token (parser->lexer));
       warn_for_misleading_indentation (guard_tinfo, body_tinfo, next_tinfo);
 
-      if (next_tinfo.type != CPP_SEMICOLON)
+      if (loc_after_labels != UNKNOWN_LOCATION
+	  && next_tinfo.type != CPP_SEMICOLON)
 	warn_for_multistatement_macros (loc_after_labels, next_tinfo.location,
 					guard_tinfo.location,
 					guard_tinfo.keyword);
