@@ -1,3 +1,9 @@
+2017-06-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/81207
+	* gimple-fold.c (replace_call_with_call_and_fold): Handle
+	gimple_vuse copying separately from gimple_vdef copying.
+
 2017-06-24  Jim Wilson  <jim.wilson@linaro.org>
 
 	* config/aarch64/aarch64-cost-tables.h (qdf24xx_extra_costs): Move to
