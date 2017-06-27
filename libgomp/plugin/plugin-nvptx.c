@@ -867,6 +867,14 @@ nvptx_get_num_devices (void)
   return n;
 }
 
+static void
+notify_var (const char *var_name, const char *env_var)
+{
+  if (env_var == NULL)
+    GOMP_PLUGIN_debug (0, "%s: <Not defined>\n", var_name);
+  else
+    GOMP_PLUGIN_debug (0, "%s: '%s'\n", var_name, env_var);
+}
 
 static bool
 link_ptx (CUmodule *module, const struct targ_ptx_obj *ptx_objs,
@@ -1089,10 +1097,12 @@ nvptx_exec (void (*fn), size_t mapnum, void **hostaddrs, void **devaddrs,
       pthread_mutex_lock (&ptx_dev_lock);
       if (!default_dims[0])
 	{
+	  const char *var_name = "GOMP_OPENACC_DIM";
 	  /* We only read the environment variable once.  You can't
 	     change it in the middle of execution.  The syntax  is
 	     the same as for the -fopenacc-dim compilation option.  */
-	  const char *env_var = getenv ("GOMP_OPENACC_DIM");
+	  const char *env_var = getenv (var_name);
+	  notify_var (var_name, env_var);
 	  if (env_var)
 	    {
 	      const char *pos = env_var;
