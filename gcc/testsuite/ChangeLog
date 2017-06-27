@@ -1,3 +1,7 @@
+2017-06-27  Marc Glisse  <marc.glisse@inria.fr>
+
+	* gcc.dg/tree-ssa/assoc-1.c: New file.
+
 2017-06-27  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/62046
