@@ -1,3 +1,10 @@
+2017-06-27  Andrew Pinski  <apinski@cavium.com>
+
+	* match.pd (X >/>=/</<= 0 ? 1.0 : -1.0): New patterns.
+	(X * copysign (1.0, X)): New pattern.
+	(X * copysign (1.0, -X)): New pattern.
+	(copysign (-1.0, CST)): New pattern.
+
 2017-06-27  Joseph Myers  <joseph@codesourcery.com>
 
 	* genmultilib (combination_space): Remove variable.

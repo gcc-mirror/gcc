@@ -1,3 +1,9 @@
+2017-06-27  Andrew Pinski  <apinski@cavium.com>
+
+	* gcc.dg/tree-ssa/copy-sign-1.c: New testcase.
+	* gcc.dg/tree-ssa/copy-sign-2.c: New testcase.
+	* gcc.dg/tree-ssa/mult-abs-2.c: New testcase.
+
 2017-06-27  Marek Polacek  <polacek@redhat.com>
 
 	PR sanitizer/81223
