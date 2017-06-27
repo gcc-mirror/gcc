@@ -1,3 +1,15 @@
+2017-06-27  Jerome Lambourg  <lambourg@adacore.com>
+            Olivier Hainque  <hainque@adacore.com>
+
+	* config/vxworks.h (VXWORKS_LIB_SPEC): Incorporate ...
+	(TLS_SYM): New local macro, forcing reference to __tls__ on
+	link command lines for VxWorks 7 RTPs, triggering initialization
+	of tlsLib.
+	(VXWORKS_HAVE_TLS): New macro. State whether the target VxWorks
+	OS features TLS support, true for RTPs on VxWorks 7.
+	* config/vxworks.c (vxworks_override_options): Setup emutls
+	accordingly.
+
 2017-06-27  Jakub Jelinek  <jakub@redhat.com>
 
 	* predict.c (test_prediction_value_range): Use -1U instead of -1
