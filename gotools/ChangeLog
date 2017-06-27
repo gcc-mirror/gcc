@@ -1,3 +1,9 @@
+2017-06-26  Ian Lance Taylor  <iant@golang.org>
+
+	* Makefile.am (s-zdefaultcc): Don't record $(bindir) for defaultCC
+	or defaultCXX.
+	* Makefile.in: Rebuild.
+
 2017-06-16  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* Makefile.am (check-go-tool): Don't use >& for I/O redirection.

@@ -1,3 +1,47 @@
+2017-06-27  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-tree.h (CLASSTYPE_DESTRUCTORS): Rename to ...
+	(CLASSTYPE_DESTRUCTOR): ... this.
+	* class.c (accessible_nvdtor_p,
+	maybe_warn_about_overly_private_class,
+	add_implicitly_declared_members,
+	clone_constructors_and_destructors, type_has_virtual_destructor):
+	Adjust for CLASSTYPE_DESTRUCTOR.
+	(deduce_noexcept_on_destructors): Absorb into ...
+	(check_bases_and_members): ... here.
+	* except.c (dtor_nothrow): Adjust for CLASSTYPE_DESTRUCTOR.
+	* init.c (build_delete): Likewise.
+	* parser.c (cp_parser_lookup_name): Likewise.
+	* pt.c (check_explicit_specialization): Likewise.
+	* rtti.c (emit_support_tinfos): Likewise.
+	* search.c (lookup_fnfields_idx_nolazy): Likewise.
+
+	Kill IDENTIFIER_TEMPLATE.
+	* cp-tree.h (lang_identifier): Remove class_template_info field.
+	(IDENTIFIER_TEMPLATE): Delete.
+	* name-lookup.c (constructor_name_full): Subsume into ...
+	(constructor_name): ... here.  Don't check IDENTIFIER_TEMPLATE.
+	(constructor_name_p): Likewise.
+	* mangle.c (write_source_name): Likewise.
+	* ptree.c (cxx_print_identifier): Likewise.
+
+2017-06-27  Marek Polacek  <polacek@redhat.com>
+
+	PR bootstrap/81216
+	* parser.c (cp_parser_already_scoped_statement): Initialize
+	LOC_AFTER_LABELS.
+
+2017-06-26  Jason Merrill  <jason@redhat.com>
+
+	PR c++/81215 - deduction failure with variadic TTP.
+	* pt.c (unify_bound_ttp_args): Restore old logic for C++14 and down.
+
+2017-06-26  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/81169
+	* call.c (maybe_warn_class_memaccess): Preserve explicit conversions
+	to detect casting away cv-qualifiers.
+
 2017-06-26  Nathan Sidwell  <nathan@acm.org>
 
 	* cp-tree.h (lang_decl_fn): Remove assignment_operator_p field.

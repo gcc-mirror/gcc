@@ -153,6 +153,7 @@ ubsan_encode_value (tree t, enum ubsan_encode_value_phase phase)
 	    {
 	      var = create_tmp_var_raw (type);
 	      TREE_ADDRESSABLE (var) = 1;
+	      DECL_CONTEXT (var) = current_function_decl;
 	    }
 	  if (phase == UBSAN_ENCODE_VALUE_RTL)
 	    {
@@ -1227,7 +1228,8 @@ instrument_null (gimple_stmt_iterator gsi, tree t, bool is_lhs)
   if (TREE_CODE (t) == ADDR_EXPR)
     t = TREE_OPERAND (t, 0);
   tree base = get_base_address (t);
-  if (TREE_CODE (base) == MEM_REF
+  if (base != NULL_TREE
+      && TREE_CODE (base) == MEM_REF
       && TREE_CODE (TREE_OPERAND (base, 0)) == SSA_NAME)
     instrument_mem_ref (t, base, &gsi, is_lhs);
 }

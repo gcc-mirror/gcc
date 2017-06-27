@@ -80,8 +80,10 @@ vxworks_emutls_var_fields (tree type, tree *name)
   DECL_CHAIN (field) = next_field;
   next_field = field;
 
+  /* The offset field is declared as an unsigned int with pointer mode.  */
   field = build_decl (BUILTINS_LOCATION, FIELD_DECL,
-		      get_identifier ("offset"), unsigned_type_node);
+		      get_identifier ("offset"), long_unsigned_type_node);
+
   DECL_CONTEXT (field) = type;
   DECL_CHAIN (field) = next_field;
 
@@ -123,20 +125,24 @@ vxworks_emutls_var_init (tree var, tree decl, tree tmpl_addr)
 void
 vxworks_override_options (void)
 {
-  /* We don't support __thread via target hooks.  */
-  targetm.have_tls = false;
+  /* Setup the tls emulation bits if the OS misses proper
+     tls support.  */
+  targetm.have_tls = VXWORKS_HAVE_TLS;
 
-  targetm.emutls.get_address = "__builtin___tls_lookup";
-  targetm.emutls.register_common = NULL;
-  targetm.emutls.var_section = ".tls_vars";
-  targetm.emutls.tmpl_section = ".tls_data";
-  targetm.emutls.var_prefix = "__tls__";
-  targetm.emutls.tmpl_prefix = "";
-  targetm.emutls.var_fields = vxworks_emutls_var_fields;
-  targetm.emutls.var_init = vxworks_emutls_var_init;
-  targetm.emutls.var_align_fixed = true;
-  targetm.emutls.debug_form_tls_address = true;
-  
+  if (!VXWORKS_HAVE_TLS)
+    {
+      targetm.emutls.get_address = "__builtin___tls_lookup";
+      targetm.emutls.register_common = NULL;
+      targetm.emutls.var_section = ".tls_vars";
+      targetm.emutls.tmpl_section = ".tls_data";
+      targetm.emutls.var_prefix = "__tls__";
+      targetm.emutls.tmpl_prefix = "";
+      targetm.emutls.var_fields = vxworks_emutls_var_fields;
+      targetm.emutls.var_init = vxworks_emutls_var_init;
+      targetm.emutls.var_align_fixed = true;
+      targetm.emutls.debug_form_tls_address = true;
+    }
+
   /* We can use .ctors/.dtors sections only in RTP mode.  */
   targetm.have_ctors_dtors = TARGET_VXWORKS_RTP;
 

@@ -595,9 +595,6 @@ extern tree build_array_notation_expr (location_t, tree, tree, enum tree_code,
 extern tree build_array_notation_ref (location_t, tree, tree, tree, tree, tree);
 extern tree build_indirect_ref (location_t, tree, ref_operator);
 
-extern int field_decl_cmp (const void *, const void *);
-extern void resort_sorted_fields (void *, void *, gt_pointer_operator,
-				  void *);
 extern bool has_c_linkage (const_tree decl);
 extern bool c_decl_implicit (const_tree);
 

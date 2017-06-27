@@ -12441,7 +12441,7 @@ cp_parser_already_scoped_statement (cp_parser* parser, bool *if_p,
     {
       token_indent_info body_tinfo
 	= get_token_indent_info (cp_lexer_peek_token (parser->lexer));
-      location_t loc_after_labels;
+      location_t loc_after_labels = UNKNOWN_LOCATION;
 
       cp_parser_statement (parser, NULL_TREE, false, if_p, NULL,
 			   &loc_after_labels);
@@ -12449,7 +12449,8 @@ cp_parser_already_scoped_statement (cp_parser* parser, bool *if_p,
 	= get_token_indent_info (cp_lexer_peek_token (parser->lexer));
       warn_for_misleading_indentation (guard_tinfo, body_tinfo, next_tinfo);
 
-      if (next_tinfo.type != CPP_SEMICOLON)
+      if (loc_after_labels != UNKNOWN_LOCATION
+	  && next_tinfo.type != CPP_SEMICOLON)
 	warn_for_multistatement_macros (loc_after_labels, next_tinfo.location,
 					guard_tinfo.location,
 					guard_tinfo.keyword);
@@ -25879,12 +25880,14 @@ cp_parser_lookup_name (cp_parser *parser, tree name,
       /* If that's not a class type, there is no destructor.  */
       if (!type || !CLASS_TYPE_P (type))
 	return error_mark_node;
+
       if (CLASSTYPE_LAZY_DESTRUCTOR (type))
 	lazily_declare_fn (sfk_destructor, type);
-      if (!CLASSTYPE_DESTRUCTORS (type))
-	  return error_mark_node;
-      /* If it was a class type, return the destructor.  */
-      return CLASSTYPE_DESTRUCTORS (type);
+
+      if (tree dtor = CLASSTYPE_DESTRUCTOR (type))
+	return dtor;
+
+      return error_mark_node;
     }
 
   /* By this point, the NAME should be an ordinary identifier.  If

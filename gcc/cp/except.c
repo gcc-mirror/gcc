@@ -218,7 +218,7 @@ dtor_nothrow (tree type)
   if (CLASSTYPE_LAZY_DESTRUCTOR (type))
     lazily_declare_fn (sfk_destructor, type);
 
-  return TREE_NOTHROW (CLASSTYPE_DESTRUCTORS (type));
+  return TREE_NOTHROW (CLASSTYPE_DESTRUCTOR (type));
 }
 
 /* Build up a call to __cxa_end_catch, to destroy the exception object

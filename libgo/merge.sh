@@ -182,10 +182,32 @@ done
   done
 done
 
+(cd ${NEWDIR}/misc/cgo && find . -type f -print) | while read f; do
+  oldfile=${OLDDIR}/misc/cgo/$f
+  newfile=${NEWDIR}/misc/cgo/$f
+  libgofile=misc/cgo/$f
+  merge $f ${oldfile} ${newfile} ${libgofile}
+done
+
 (cd ${OLDDIR}/src && find . -name '*.go' -print) | while read f; do
   oldfile=${OLDDIR}/src/$f
   newfile=${NEWDIR}/src/$f
   libgofile=go/$f
+  if test -f ${newfile}; then
+    continue
+  fi
+  if ! test -f ${libgofile}; then
+    continue
+  fi
+  echo "merge.sh: ${libgofile}: REMOVED"
+  rm -f ${libgofile}
+  git rm ${libgofile}
+done
+
+(cd ${OLDDIR}/misc/cgo && find . -type f -print) | while read f; do
+  oldfile=${OLDDIR}/misc/cgo/$f
+  newfile=${NEWDIR}/misc/cgo/$f
+  libgofile=misc/cgo/$f
   if test -f ${newfile}; then
     continue
   fi

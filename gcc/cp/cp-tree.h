@@ -535,7 +535,6 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
 struct GTY(()) lang_identifier {
   struct c_common_identifier c_common;
   cxx_binding *bindings;
-  tree class_template_info;
   tree label_value;
 };
 
@@ -993,9 +992,6 @@ enum GTY(()) abstract_class_use {
 };
 
 /* Macros for access to language-specific slots in an identifier.  */
-
-#define IDENTIFIER_TEMPLATE(NODE)	\
-  (LANG_IDENTIFIER_CAST (NODE)->class_template_info)
 
 /* The IDENTIFIER_BINDING is the innermost cxx_binding for the
     identifier.  Its PREVIOUS is the next outermost binding.  Each
@@ -2221,11 +2217,11 @@ struct GTY(()) lang_type {
 #define CLASSTYPE_CONSTRUCTORS(NODE) \
   ((*CLASSTYPE_METHOD_VEC (NODE))[CLASSTYPE_CONSTRUCTOR_SLOT])
 
-/* A FUNCTION_DECL for the destructor for NODE.  These are the
+/* A FUNCTION_DECL for the destructor for NODE.  This is the
    destructors that take an in-charge parameter.  If
    CLASSTYPE_LAZY_DESTRUCTOR is true, then this entry will be NULL
    until the destructor is created with lazily_declare_fn.  */
-#define CLASSTYPE_DESTRUCTORS(NODE) \
+#define CLASSTYPE_DESTRUCTOR(NODE) \
   (CLASSTYPE_METHOD_VEC (NODE)						      \
    ? (*CLASSTYPE_METHOD_VEC (NODE))[CLASSTYPE_DESTRUCTOR_SLOT]		      \
    : NULL_TREE)
@@ -2255,11 +2251,9 @@ struct GTY(()) lang_type {
 
 /* The type corresponding to NODE when NODE is used as a base class,
    i.e., NODE without virtual base classes or tail padding.  */
-
 #define CLASSTYPE_AS_BASE(NODE) (LANG_TYPE_CLASS_CHECK (NODE)->as_base)
 
 /* True iff NODE is the CLASSTYPE_AS_BASE version of some type.  */
-
 #define IS_FAKE_BASE_TYPE(NODE)					\
   (TREE_CODE (NODE) == RECORD_TYPE				\
    && TYPE_CONTEXT (NODE) && CLASS_TYPE_P (TYPE_CONTEXT (NODE))	\

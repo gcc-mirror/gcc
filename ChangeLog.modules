@@ -1,3 +1,14 @@
+2017-06-27  Nathan Sidwell  <nathan@acm.org>
+
+	Merge trunk r249702.
+	gcc/c-family/
+	* c-common.h (field_decl_cmp, resort_sorted_fields): Delete.
+	* c-common.c (field_decl_cmp, resort_data,
+	resort_field_decl_cmp): Move to c-decl.c.
+	gcc/c/
+	* c-decl.c (field_decl_cmp, resort_data,
+	resort_field_decl_cmp): Moved from c-common.c
+
 2017-06-26  Nathan Sidwell  <nathan@acm.org>
 
 	Replace lang_type::sorted_fields with lang_type::bindings.

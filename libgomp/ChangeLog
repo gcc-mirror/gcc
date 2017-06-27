@@ -1,3 +1,20 @@
+2017-06-27  Tom de Vries  <tom@codesourcery.com>
+
+	* plugin/plugin-nvptx.c (notify_var): New function.
+	(nvptx_exec): Use notify_var for GOMP_OPENACC_DIM.
+
+2017-06-27  Tom de Vries  <tom@codesourcery.com>
+
+	* env.c (parse_unsigned_long_1): Factor out of ...
+	(parse_unsigned_long): ... here.
+	(parse_int_1): Factor out of ...
+	(parse_int): ... here.
+	(parse_int_secure): New function.
+	(initialize_env): Use parse_int_secure for GOMP_DEBUG.
+	* secure_getenv.h: Factor out of ...
+	* plugin/plugin-hsa.c: ... here.
+	* testsuite/libgomp.oacc-c-c++-common/gomp-debug-env.c: New test.
+
 2017-06-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/81130

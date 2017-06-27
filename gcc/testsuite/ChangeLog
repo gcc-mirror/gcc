@@ -1,3 +1,35 @@
+2017-06-27  Marek Polacek  <polacek@redhat.com>
+
+	PR sanitizer/81223
+	* gcc.dg/ubsan/pr81223.c: New test.
+
+2017-06-27  Marc Glisse  <marc.glisse@inria.fr>
+
+	* gcc.dg/tree-ssa/assoc-1.c: New file.
+
+2017-06-27  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/62046
+	* g++.dg/parse/catch2.C: New.
+
+2017-06-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/81209
+	* g++.dg/ubsan/pr81209.C: New test.
+
+	PR middle-end/81207
+	* gcc.c-torture/compile/pr81207.c: New test.
+
+2017-06-27  Marek Polacek  <polacek@redhat.com>
+
+	PR bootstrap/81216
+	* g++.dg/warn/Wmultistatement-macros-1.C: New test.
+
+2017-06-26  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/81169
+	* g++.dg/Wclass-memaccess-2.C: New test.
+
 2017-06-26  Carl Love  <cel@us.ibm.com>
 
 	* gcc.target/powerpc/builtins-3-vec_reve-runnable.c:
