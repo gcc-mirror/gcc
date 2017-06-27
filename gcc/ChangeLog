@@ -1,3 +1,8 @@
+2017-06-27  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	* value-prof.c (free_hist): Remove call to memset and the enclosing if
+	condition.
+
 gcc/ChangeLog:
 
 2017-06-26  Jerome Lambourg  <lambourg@adacore.com>
