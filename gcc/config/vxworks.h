@@ -81,16 +81,22 @@ along with GCC; see the file COPYING3.  If not see
    and its structure is fixed and does not depend on the arch.  We can thus
    tell gcc where to look for when linking with RTP libraries.  */
 
+/* On Vx7 RTP, we need to drag the __tls__ symbol to trigger initialization of
+   tlsLib, responsible for TLS support by the OS.  */
+
 #if TARGET_VXWORKS7
 #define VXWORKS_LIBS_DIR_RTP "-L%:getenv(VSB_DIR /usr/lib/common)"
+#define TLS_SYM "-u __tls__"
 #else
 #define VXWORKS_LIBS_DIR_RTP ""
+#define TLS_SYM ""
 #endif
 
 #undef VXWORKS_LIB_SPEC
 #define	VXWORKS_LIB_SPEC						\
 "%{mrtp:%{shared:-u " USER_LABEL_PREFIX "__init -u " USER_LABEL_PREFIX "__fini} \
 	%{!shared:%{non-static:-u " USER_LABEL_PREFIX "_STI__6__rtld -ldl} \
+		  " TLS_SYM " \
 		  --start-group " VXWORKS_LIBS_RTP " --end-group} \
         " VXWORKS_LIBS_DIR_RTP "}"
 
@@ -126,6 +132,9 @@ along with GCC; see the file COPYING3.  If not see
 #define VXWORKS_ENDFILE_SPEC ""
 
 /* Do VxWorks-specific parts of TARGET_OPTION_OVERRIDE.  */
+
+#define VXWORKS_HAVE_TLS (TARGET_VXWORKS7 && TARGET_VXWORKS_RTP)
+
 #undef VXWORKS_OVERRIDE_OPTIONS
 #define VXWORKS_OVERRIDE_OPTIONS vxworks_override_options ()
 extern void vxworks_override_options (void);
