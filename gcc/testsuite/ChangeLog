@@ -1,5 +1,14 @@
 2017-06-27  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	Revert:
+	Backport from trunk:
+
+	2017-06-09  Segher Boessenkool  <segher@kernel.crashing.org>
+	PR target/80966
+	* gcc.target/powerpc/stack-limit.c: New testcase.
+
+2017-06-27  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	Backports from trunk:
 
 	2017-05-17  Segher Boessenkool  <segher@kernel.crashing.org>

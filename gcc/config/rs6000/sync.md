@@ -160,7 +160,8 @@
       rtx op1 = operands[1];
       rtx pti_reg = gen_reg_rtx (PTImode);
 
-      if (!quad_address_p (XEXP (op1, 0), TImode, false))
+      // Can't have indexed address for 'lq'
+      if (indexed_address (XEXP (op1, 0), TImode))
 	{
 	  rtx old_addr = XEXP (op1, 0);
 	  rtx new_addr = force_reg (Pmode, old_addr);
@@ -237,7 +238,8 @@
       rtx op1 = operands[1];
       rtx pti_reg = gen_reg_rtx (PTImode);
 
-      if (!quad_address_p (XEXP (op0, 0), TImode, false))
+      // Can't have indexed address for 'stq'
+      if (indexed_address (XEXP (op0, 0), TImode))
 	{
 	  rtx old_addr = XEXP (op0, 0);
 	  rtx new_addr = force_reg (Pmode, old_addr);
