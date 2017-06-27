@@ -564,8 +564,6 @@ free_hist (void **slot, void *data ATTRIBUTE_UNUSED)
 {
   histogram_value hist = *(histogram_value *) slot;
   free (hist->hvalue.counters);
-  if (flag_checking)
-    memset (hist, 0xab, sizeof (*hist));
   free (hist);
   return 1;
 }
