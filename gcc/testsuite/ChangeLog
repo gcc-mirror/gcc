@@ -1,3 +1,8 @@
+2017-06-27  Marek Polacek  <polacek@redhat.com>
+
+	PR sanitizer/81223
+	* gcc.dg/ubsan/pr81223.c: New test.
+
 2017-06-27  Marc Glisse  <marc.glisse@inria.fr>
 
 	* gcc.dg/tree-ssa/assoc-1.c: New file.
