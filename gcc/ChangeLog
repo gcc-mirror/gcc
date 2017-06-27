@@ -1,3 +1,24 @@
+2017-06-27  Marc Glisse  <marc.glisse@inria.fr>
+
+	* builtin-types.def (BT_FENV_T_PTR, BT_CONST_FENV_T_PTR,
+	BT_FEXCEPT_T_PTR, BT_CONST_FEXCEPT_T_PTR): New primitive types.
+	(BT_FN_INT_FENV_T_PTR, BT_FN_INT_CONST_FENV_T_PTR,
+	BT_FN_INT_FEXCEPT_T_PTR_INT, BT_FN_INT_CONST_FEXCEPT_T_PTR_INT):
+	New function types.
+	* builtins.def (BUILT_IN_FECLEAREXCEPT, BUILT_IN_FEGETENV,
+	BUILT_IN_FEGETEXCEPTFLAG, BUILT_IN_FEGETROUND,
+	BUILT_IN_FEHOLDEXCEPT, BUILT_IN_FERAISEEXCEPT,
+	BUILT_IN_FESETENV, BUILT_IN_FESETEXCEPTFLAG,
+	BUILT_IN_FESETROUND, BUILT_IN_FETESTEXCEPT,
+	BUILT_IN_FEUPDATEENV): New builtins.
+	* tree-core.h (TI_FENV_T_PTR_TYPE, TI_CONST_FENV_T_PTR_TYPE,
+	TI_FEXCEPT_T_PTR_TYPE, TI_CONST_FEXCEPT_T_PTR_TYPE): New entries.
+	* tree.h (fenv_t_ptr_type_node, const_fenv_t_ptr_type_node,
+	fexcept_t_ptr_type_node, const_fexcept_t_ptr_type_node): New
+	macros.
+	(builtin_structptr_types): Adjust size.
+	* tree.c (builtin_structptr_types): Add four entries.
+
 2017-06-27  Jerome Lambourg  <lambourg@adacore.com>
             Olivier Hainque  <hainque@adacore.com>
 
