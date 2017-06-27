@@ -527,7 +527,6 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
 struct GTY(()) lang_identifier {
   struct c_common_identifier c_common;
   cxx_binding *bindings;
-  tree class_template_info;
   tree label_value;
 };
 
@@ -953,9 +952,6 @@ enum GTY(()) abstract_class_use {
 };
 
 /* Macros for access to language-specific slots in an identifier.  */
-
-#define IDENTIFIER_TEMPLATE(NODE)	\
-  (LANG_IDENTIFIER_CAST (NODE)->class_template_info)
 
 /* The IDENTIFIER_BINDING is the innermost cxx_binding for the
     identifier.  Its PREVIOUS is the next outermost binding.  Each

@@ -1460,11 +1460,6 @@ write_source_name (tree identifier)
 {
   MANGLE_TRACE_TREE ("source-name", identifier);
 
-  /* Never write the whole template-id name including the template
-     arguments; we only want the template name.  */
-  if (IDENTIFIER_TEMPLATE (identifier))
-    identifier = IDENTIFIER_TEMPLATE (identifier);
-
   write_unsigned_number (IDENTIFIER_LENGTH (identifier));
   write_identifier (IDENTIFIER_POINTER (identifier));
 }

@@ -1,3 +1,14 @@
+2017-06-27  Nathan Sidwell  <nathan@acm.org>
+
+	Kill IDENTIFIER_TEMPLATE.
+	* cp-tree.h (lang_identifier): Remove class_template_info field.
+	(IDENTIFIER_TEMPLATE): Delete.
+	* name-lookup.c (constructor_name_full): Subsume into ...
+	(constructor_name): ... here.  Don't check IDENTIFIER_TEMPLATE.
+	(constructor_name_p): Likewise.
+	* mangle.c (write_source_name): Likewise.
+	* ptree.c (cxx_print_identifier): Likewise.
+
 2017-06-27  Marek Polacek  <polacek@redhat.com>
 
 	PR bootstrap/81216
