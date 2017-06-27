@@ -1711,7 +1711,7 @@ inherit_targ_abi_tags (tree t)
 static bool
 accessible_nvdtor_p (tree t)
 {
-  tree dtor = CLASSTYPE_DESTRUCTORS (t);
+  tree dtor = CLASSTYPE_DESTRUCTOR (t);
 
   /* An implicitly declared destructor is always public.  And,
      if it were virtual, we would have created it by now.  */
@@ -2220,7 +2220,7 @@ maybe_warn_about_overly_private_class (tree t)
   /* Even if some of the member functions are non-private, the class
      won't be useful for much if all the constructors or destructors
      are private: such an object can never be created or destroyed.  */
-  fn = CLASSTYPE_DESTRUCTORS (t);
+  fn = CLASSTYPE_DESTRUCTOR (t);
   if (fn && TREE_PRIVATE (fn))
     {
       warning (OPT_Wctor_dtor_privacy,
@@ -3366,17 +3366,16 @@ add_implicitly_declared_members (tree t, tree* access_decls,
 				 int cant_have_const_cctor,
 				 int cant_have_const_assignment)
 {
-  bool move_ok = false;
+  /* Destructor.  */
+  if (!CLASSTYPE_DESTRUCTOR (t))
+    /* In general, we create destructors lazily.  */
+    CLASSTYPE_LAZY_DESTRUCTOR (t) = 1;
 
-  if (cxx_dialect >= cxx11 && !CLASSTYPE_DESTRUCTORS (t)
+  bool move_ok = false;
+  if (cxx_dialect >= cxx11 && CLASSTYPE_LAZY_DESTRUCTOR (t)
       && !TYPE_HAS_COPY_CTOR (t) && !TYPE_HAS_COPY_ASSIGN (t)
       && !type_has_move_constructor (t) && !type_has_move_assign (t))
     move_ok = true;
-
-  /* Destructor.  */
-  if (!CLASSTYPE_DESTRUCTORS (t))
-    /* In general, we create destructors lazily.  */
-    CLASSTYPE_LAZY_DESTRUCTOR (t) = 1;
 
   /* [class.ctor]
 
@@ -5015,8 +5014,9 @@ clone_constructors_and_destructors (tree t)
      we no longer need to know that.  */
   for (ovl_iterator iter (CLASSTYPE_CONSTRUCTORS (t)); iter; ++iter)
     clone_function_decl (*iter, /*update_methods=*/true);
-  for (ovl_iterator iter (CLASSTYPE_DESTRUCTORS (t)); iter; ++iter)
-    clone_function_decl (*iter, /*update_methods=*/true);
+
+  if (tree dtor = CLASSTYPE_DESTRUCTOR (t))
+    clone_function_decl (dtor, /*update_methods=*/true);
 }
 
 /* Deduce noexcept for a destructor DTOR.  */
@@ -5027,24 +5027,6 @@ deduce_noexcept_on_destructor (tree dtor)
   if (!TYPE_RAISES_EXCEPTIONS (TREE_TYPE (dtor)))
     TREE_TYPE (dtor) = build_exception_variant (TREE_TYPE (dtor),
 						noexcept_deferred_spec);
-}
-
-/* For each destructor in T, deduce noexcept:
-
-   12.4/3: A declaration of a destructor that does not have an
-   exception-specification is implicitly considered to have the
-   same exception-specification as an implicit declaration (15.4).  */
-
-static void
-deduce_noexcept_on_destructors (tree t)
-{
-  /* If for some reason we don't have a CLASSTYPE_METHOD_VEC, we bail
-     out now.  */
-  if (!CLASSTYPE_METHOD_VEC (t))
-    return;
-
-  for (ovl_iterator iter (CLASSTYPE_DESTRUCTORS (t)); iter; ++iter)
-    deduce_noexcept_on_destructor (*iter);
 }
 
 /* Subroutine of set_one_vmethod_tm_attributes.  Search base classes
@@ -5460,7 +5442,7 @@ type_has_virtual_destructor (tree type)
     return false;
 
   gcc_assert (COMPLETE_TYPE_P (type));
-  dtor = CLASSTYPE_DESTRUCTORS (type);
+  dtor = CLASSTYPE_DESTRUCTOR (type);
   return (dtor && DECL_VIRTUAL_P (dtor));
 }
 
@@ -5851,10 +5833,11 @@ check_bases_and_members (tree t)
      of potential interest.  */
   check_bases (t, &cant_have_const_ctor, &no_const_asn_ref);
 
-  /* Deduce noexcept on destructors.  This needs to happen after we've set
+  /* Deduce noexcept on destructor.  This needs to happen after we've set
      triviality flags appropriately for our bases.  */
   if (cxx_dialect >= cxx11)
-    deduce_noexcept_on_destructors (t);
+    if (tree dtor = CLASSTYPE_DESTRUCTOR (t))
+      deduce_noexcept_on_destructor (dtor);
 
   /* Check all the method declarations.  */
   check_methods (t);

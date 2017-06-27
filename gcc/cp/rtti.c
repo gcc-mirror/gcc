@@ -1556,7 +1556,7 @@ emit_support_tinfos (void)
   bltn_type = TREE_TYPE (bltn_type);
   if (!COMPLETE_TYPE_P (bltn_type))
     return;
-  tree dtor = CLASSTYPE_DESTRUCTORS (bltn_type);
+  tree dtor = CLASSTYPE_DESTRUCTOR (bltn_type);
   if (!dtor || DECL_EXTERNAL (dtor))
     return;
 
