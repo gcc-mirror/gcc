@@ -1228,7 +1228,8 @@ instrument_null (gimple_stmt_iterator gsi, tree t, bool is_lhs)
   if (TREE_CODE (t) == ADDR_EXPR)
     t = TREE_OPERAND (t, 0);
   tree base = get_base_address (t);
-  if (TREE_CODE (base) == MEM_REF
+  if (base != NULL_TREE
+      && TREE_CODE (base) == MEM_REF
       && TREE_CODE (TREE_OPERAND (base, 0)) == SSA_NAME)
     instrument_mem_ref (t, base, &gsi, is_lhs);
 }

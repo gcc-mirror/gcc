@@ -1,3 +1,8 @@
+2017-06-27  Marek Polacek  <polacek@redhat.com>
+
+	PR sanitizer/81223
+	* ubsan.c (instrument_null): Check get_base_address's result for null.
+
 2017-06-27  Marc Glisse  <marc.glisse@inria.fr>
 
 	* match.pd ((A+-B)+(C-A), (A+B)-(A-C)): New transformations.
