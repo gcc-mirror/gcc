@@ -1,9 +1,13 @@
+2017-06-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/81207
+	* gimple-fold.c (replace_call_with_call_and_fold): Handle
+	gimple_vuse copying separately from gimple_vdef copying.
+
 2017-06-27  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
 
 	* value-prof.c (free_hist): Remove call to memset and the enclosing if
 	condition.
-
-gcc/ChangeLog:
 
 2017-06-26  Jerome Lambourg  <lambourg@adacore.com>
             Olivier Hainque  <hainque@adacore.com>
