@@ -1,3 +1,13 @@
+2017-06-27  Jerome Lambourg  <lambourg@adacore.com>
+
+	* config/vxworks.h (VXWORKS_LIBS_RTP): Alternative definition for
+  	64bit configurations.
+  	(PTR_DIFF_TYPE): Alternative definition for TARGET_LP64.
+  	(SIZE_TYPE): Likewise.
+  	* config/vxworks.c (vxworks_emutls_var_fields): Use
+  	long_unsigned_type_node instead of unsigned_type_node as the offset
+	field type, which is "pointer" mode in emutls.c.
+
 2017-06-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR sanitizer/81209

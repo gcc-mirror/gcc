@@ -80,8 +80,10 @@ vxworks_emutls_var_fields (tree type, tree *name)
   DECL_CHAIN (field) = next_field;
   next_field = field;
 
+  /* The offset field is declared as an unsigned int with pointer mode.  */
   field = build_decl (BUILTINS_LOCATION, FIELD_DECL,
-		      get_identifier ("offset"), unsigned_type_node);
+		      get_identifier ("offset"), long_unsigned_type_node);
+
   DECL_CONTEXT (field) = type;
   DECL_CHAIN (field) = next_field;
 
