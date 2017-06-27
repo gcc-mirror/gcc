@@ -1,5 +1,9 @@
 2017-06-27  Marc Glisse  <marc.glisse@inria.fr>
 
+	* match.pd ((A+-B)+(C-A), (A+B)-(A-C)): New transformations.
+
+2017-06-27  Marc Glisse  <marc.glisse@inria.fr>
+
 	* builtin-types.def (BT_FENV_T_PTR, BT_CONST_FENV_T_PTR,
 	BT_FEXCEPT_T_PTR, BT_CONST_FEXCEPT_T_PTR): New primitive types.
 	(BT_FN_INT_FENV_T_PTR, BT_FN_INT_CONST_FENV_T_PTR,

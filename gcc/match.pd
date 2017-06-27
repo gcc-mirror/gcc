@@ -1321,6 +1321,18 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (simplify
    (minus @0 (minus @0 @1))
    @1)
+  /* (A +- B) + (C - A)   -> C +- B */
+  /* (A +  B) - (A - C)   -> B + C */
+  /* More cases are handled with comparisons.  */
+  (simplify
+   (plus:c (plus:c @0 @1) (minus @2 @0))
+   (plus @2 @1))
+  (simplify
+   (plus:c (minus @0 @1) (minus @2 @0))
+   (minus @2 @1))
+  (simplify
+   (minus (plus:c @0 @1) (minus @0 @2))
+   (plus @1 @2))
 
   /* (A +- CST1) +- CST2 -> A + CST3
      Use view_convert because it is safe for vectors and equivalent for
