@@ -606,9 +606,10 @@ replace_call_with_call_and_fold (gimple_stmt_iterator *gsi, gimple *repl)
       && TREE_CODE (gimple_vdef (stmt)) == SSA_NAME)
     {
       gimple_set_vdef (repl, gimple_vdef (stmt));
-      gimple_set_vuse (repl, gimple_vuse (stmt));
       SSA_NAME_DEF_STMT (gimple_vdef (repl)) = repl;
     }
+  if (gimple_vuse (stmt))
+    gimple_set_vuse (repl, gimple_vuse (stmt));
   gsi_replace (gsi, repl, false);
   fold_stmt (gsi);
 }
