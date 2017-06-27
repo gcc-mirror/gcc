@@ -155,6 +155,58 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
            || !COMPLEX_FLOAT_TYPE_P (type)))
    (negate @0)))
 
+(for cmp (gt ge lt le)
+     outp (convert convert negate negate)
+     outn (negate negate convert convert)
+ /* Transform (X > 0.0 ? 1.0 : -1.0) into copysign(1, X). */
+ /* Transform (X >= 0.0 ? 1.0 : -1.0) into copysign(1, X). */
+ /* Transform (X < 0.0 ? 1.0 : -1.0) into copysign(1,-X). */
+ /* Transform (X <= 0.0 ? 1.0 : -1.0) into copysign(1,-X). */
+ (simplify
+  (cond (cmp @0 real_zerop) real_onep@1 real_minus_onep)
+  (if (!HONOR_NANS (type) && !HONOR_SIGNED_ZEROS (type)
+       && types_match (type, TREE_TYPE (@0)))
+   (switch
+    (if (types_match (type, float_type_node))
+     (BUILT_IN_COPYSIGNF @1 (outp @0)))
+    (if (types_match (type, double_type_node))
+     (BUILT_IN_COPYSIGN @1 (outp @0)))
+    (if (types_match (type, long_double_type_node))
+     (BUILT_IN_COPYSIGNL @1 (outp @0))))))
+ /* Transform (X > 0.0 ? -1.0 : 1.0) into copysign(1,-X). */
+ /* Transform (X >= 0.0 ? -1.0 : 1.0) into copysign(1,-X). */
+ /* Transform (X < 0.0 ? -1.0 : 1.0) into copysign(1,X). */
+ /* Transform (X <= 0.0 ? -1.0 : 1.0) into copysign(1,X). */
+ (simplify
+  (cond (cmp @0 real_zerop) real_minus_onep real_onep@1)
+  (if (!HONOR_NANS (type) && !HONOR_SIGNED_ZEROS (type)
+       && types_match (type, TREE_TYPE (@0)))
+   (switch
+    (if (types_match (type, float_type_node))
+     (BUILT_IN_COPYSIGNF @1 (outn @0)))
+    (if (types_match (type, double_type_node))
+     (BUILT_IN_COPYSIGN @1 (outn @0)))
+    (if (types_match (type, long_double_type_node))
+     (BUILT_IN_COPYSIGNL @1 (outn @0)))))))
+
+/* Transform X * copysign (1.0, X) into abs(X). */
+(simplify
+ (mult:c @0 (COPYSIGN real_onep @0))
+ (if (!HONOR_NANS (type) && !HONOR_SIGNED_ZEROS (type))
+  (abs @0)))
+
+/* Transform X * copysign (1.0, -X) into -abs(X). */
+(simplify
+ (mult:c @0 (COPYSIGN real_onep (negate @0)))
+ (if (!HONOR_NANS (type) && !HONOR_SIGNED_ZEROS (type))
+  (negate (abs @0))))
+
+/* Transform copysign (CST, X) into copysign (ABS(CST), X). */
+(simplify
+ (COPYSIGN REAL_CST@0 @1)
+ (if (REAL_VALUE_NEGATIVE (TREE_REAL_CST (@0)))
+  (COPYSIGN (negate @0) @1)))
+
 /* X * 1, X / 1 -> X.  */
 (for op (mult trunc_div ceil_div floor_div round_div exact_div)
   (simplify
