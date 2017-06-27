@@ -1,3 +1,7 @@
+2017-05-27  Maya Rashish  <coypu@sdf.org>
+
+	* longlong.h: Remove ns32k support.
+
 2017-05-24  Nathan Sidwell  <nathan@acm.org>
 
 	* libiberty.h (ASTRDUP): Adjust cast to avoid warning.
