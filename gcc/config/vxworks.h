@@ -70,7 +70,11 @@ along with GCC; see the file COPYING3.  If not see
 /* The references to __init and __fini will be satisfied by
    libc_internal.a.  */
 
+#if TARGET_64BIT_DEFAULT
+#define VXWORKS_LIBS_RTP "-lsyscall -lc -lgcc -lc_internal -lnet -ldsi"
+#else
 #define VXWORKS_LIBS_RTP "-lc -lgcc -lc_internal -lnet -ldsi"
+#endif
 
 /* On Vx6 and previous, the libraries to pick up depends on the architecture,
    so cannot be defined for all archs at once.  On Vx7, a VSB is always needed
@@ -147,10 +151,10 @@ extern void vxworks_asm_out_destructor (rtx symbol, int priority);
 #define VXWORKS_GOTT_INDEX "__GOTT_INDEX__"
 
 #undef PTRDIFF_TYPE
-#define PTRDIFF_TYPE "int"
+#define PTRDIFF_TYPE (TARGET_LP64 ? "long int" : "int")
 
 #undef SIZE_TYPE
-#define SIZE_TYPE "unsigned int"
+#define SIZE_TYPE (TARGET_LP64 ? "long unsigned int" : "unsigned int")
 
 #undef TARGET_LIBC_HAS_FUNCTION
 #define TARGET_LIBC_HAS_FUNCTION no_c99_libc_has_function
