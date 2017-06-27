@@ -25679,12 +25679,14 @@ cp_parser_lookup_name (cp_parser *parser, tree name,
       /* If that's not a class type, there is no destructor.  */
       if (!type || !CLASS_TYPE_P (type))
 	return error_mark_node;
+
       if (CLASSTYPE_LAZY_DESTRUCTOR (type))
 	lazily_declare_fn (sfk_destructor, type);
-      if (!CLASSTYPE_DESTRUCTORS (type))
-	  return error_mark_node;
-      /* If it was a class type, return the destructor.  */
-      return CLASSTYPE_DESTRUCTORS (type);
+
+      if (tree dtor = CLASSTYPE_DESTRUCTOR (type))
+	return dtor;
+
+      return error_mark_node;
     }
 
   /* By this point, the NAME should be an ordinary identifier.  If

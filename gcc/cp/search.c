@@ -1592,7 +1592,7 @@ lookup_fnfields_idx_nolazy (tree type, tree name)
   /* and destructors are second.  */
   if (name == dtor_identifier)
     {
-      fn = CLASSTYPE_DESTRUCTORS (type);
+      fn = CLASSTYPE_DESTRUCTOR (type);
       return fn ? CLASSTYPE_DESTRUCTOR_SLOT : -1;
     }
   if (IDENTIFIER_CONV_OP_P (name))

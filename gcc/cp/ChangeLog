@@ -1,5 +1,21 @@
 2017-06-27  Nathan Sidwell  <nathan@acm.org>
 
+	* cp-tree.h (CLASSTYPE_DESTRUCTORS): Rename to ...
+	(CLASSTYPE_DESTRUCTOR): ... this.
+	* class.c (accessible_nvdtor_p,
+	maybe_warn_about_overly_private_class,
+	add_implicitly_declared_members,
+	clone_constructors_and_destructors, type_has_virtual_destructor):
+	Adjust for CLASSTYPE_DESTRUCTOR.
+	(deduce_noexcept_on_destructors): Absorb into ...
+	(check_bases_and_members): ... here.
+	* except.c (dtor_nothrow): Adjust for CLASSTYPE_DESTRUCTOR.
+	* init.c (build_delete): Likewise.
+	* parser.c (cp_parser_lookup_name): Likewise.
+	* pt.c (check_explicit_specialization): Likewise.
+	* rtti.c (emit_support_tinfos): Likewise.
+	* search.c (lookup_fnfields_idx_nolazy): Likewise.
+
 	Kill IDENTIFIER_TEMPLATE.
 	* cp-tree.h (lang_identifier): Remove class_template_info field.
 	(IDENTIFIER_TEMPLATE): Delete.
