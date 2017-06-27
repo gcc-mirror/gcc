@@ -1,6 +1,10 @@
 2017-06-27  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/81221
+	* testsuite/25_algorithms/sample/81221.cc: Disable except for
+	check-parallel.
+
+	PR libstdc++/81221
 	* include/bits/stl_algo.h (sample): Qualify with _GLIBCXX_STD_A not
 	std.
 	* testsuite/25_algorithms/sample/81221.cc: New.
