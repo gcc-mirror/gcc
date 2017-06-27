@@ -1,3 +1,8 @@
+2017-06-27  Marek Polacek  <polacek@redhat.com>
+
+	PR bootstrap/81216
+	* g++.dg/warn/Wmultistatement-macros-1.C: New test.
+
 2017-06-26  Martin Sebor  <msebor@redhat.com>
 
 	PR c++/81169

@@ -1,3 +1,9 @@
+2017-06-27  Marek Polacek  <polacek@redhat.com>
+
+	PR bootstrap/81216
+	* parser.c (cp_parser_already_scoped_statement): Initialize
+	LOC_AFTER_LABELS.
+
 2017-06-26  Jason Merrill  <jason@redhat.com>
 
 	PR c++/81215 - deduction failure with variadic TTP.
