@@ -4991,25 +4991,40 @@ split_live_ranges_for_shrink_wrap (void)
       if (!dest || dest == pic_offset_table_rtx)
 	continue;
 
-      rtx newreg = NULL_RTX;
+      bool need_newreg = false;
       df_ref use, next;
       for (use = DF_REG_USE_CHAIN (REGNO (dest)); use; use = next)
 	{
 	  rtx_insn *uin = DF_REF_INSN (use);
 	  next = DF_REF_NEXT_REG (use);
 
+	  if (DEBUG_INSN_P (uin))
+	    continue;
+
 	  basic_block ubb = BLOCK_FOR_INSN (uin);
 	  if (ubb == call_dom
 	      || dominated_by_p (CDI_DOMINATORS, ubb, call_dom))
 	    {
-	      if (!newreg)
-		newreg = ira_create_new_reg (dest);
-	      validate_change (uin, DF_REF_REAL_LOC (use), newreg, true);
+	      need_newreg = true;
+	      break;
 	    }
 	}
 
-      if (newreg)
+      if (need_newreg)
 	{
+	  rtx newreg = ira_create_new_reg (dest);
+
+	  for (use = DF_REG_USE_CHAIN (REGNO (dest)); use; use = next)
+	    {
+	      rtx_insn *uin = DF_REF_INSN (use);
+	      next = DF_REF_NEXT_REG (use);
+
+	      basic_block ubb = BLOCK_FOR_INSN (uin);
+	      if (ubb == call_dom
+		  || dominated_by_p (CDI_DOMINATORS, ubb, call_dom))
+		validate_change (uin, DF_REF_REAL_LOC (use), newreg, true);
+	    }
+
 	  rtx_insn *new_move = gen_move_insn (newreg, dest);
 	  emit_insn_after (new_move, bb_note (call_dom));
 	  if (dump_file)

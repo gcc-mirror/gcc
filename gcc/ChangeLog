@@ -1,3 +1,57 @@
+2017-06-27  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	Backports from trunk:
+
+	2016-08-15  Segher Boessenkool  <segher@kernel.crashing.org>
+	PR rtl-optimization/73650
+	* lra-constraints.c (simple_move_p): If the insn is multiple_sets
+	it is not a simple move.
+
+	2017-01-20  Segher Boessenkool  <segher@kernel.crashing.org>
+	PR target/61729
+	PR target/77850
+	* config/rs6000/rs6000.c (rs6000_gimplify_va_arg): Adjust address to
+	read from, for big endian.
+
+	2017-04-04  Segher Boessenkool  <segher@kernel.crashing.org>
+	PR rtl-optimization/60818
+	* simplify-rtx.c (simplify_binary_operation_1): Do not replace
+	a compare of comparisons with the thing compared if this results
+	in a different machine mode.
+
+	2017-04-12  Segher Boessenkool  <segher@kernel.crashing.org>
+	PR target/80382
+	* config/rs6000/sync.md (atomic_load<mode>, atomic_store<mode): Test
+	for quad_address_p for TImode, instead of just not indexed_address.
+
+	2017-04-19  Segher Boessenkool  <segher@kernel.crashing.org>
+	PR rtl-optimization/80429
+	* ira.c (split_live_ranges_for_shrink_wrap): Don't split regs that
+	are only used in debug insns.
+
+	2017-05-17  Segher Boessenkool  <segher@kernel.crashing.org>
+	PR middle-end/80692
+	* real.c (do_compare): Give decimal_do_compare preference over
+	comparing just the signs.
+
+	2017-05-31  Segher Boessenkool  <segher@kernel.crashing.org>
+	PR target/80618
+	* config/rs6000/vector.md (*vector_uneq<mode>): Write the nor in the
+	splitter result in the canonical way.
+
+	2017-06-09  Segher Boessenkool  <segher@kernel.crashing.org>
+	PR target/80966
+	* config/rs6000/rs6000.c (rs6000_emit_allocate_stack): Assert that
+	gen_add3_insn did not fail.
+	* config/rs6000/rs6000.md (add<mode>3): If asked to add a constant to
+	r0, construct that number in a temporary reg and add that reg to r0.
+	If asked to put the result in r0 as well, fail.
+
+	2017-06-23  Segher Boessenkool  <segher@kernel.crashing.org>
+	PR middle-end/80902
+	* builtins.c (expand_builtin_atomic_fetch_op): If emitting code after
+	a call, force the call to not be a tail call.
+
 2017-06-23  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	Backport from mainline
