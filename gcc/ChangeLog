@@ -1,3 +1,9 @@
+2017-06-27  Joseph Myers  <joseph@codesourcery.com>
+
+	* genmultilib (combination_space): Remove variable.
+	Validate reuse rules against regular expression for any sequence
+	of multilib options in any order.
+
 2017-06-27  Michael Collison  <michael.collison@arm.com>
 
 	* config/aarch64/aarch64-simd.md (aarch64_combine<mode>): Directly
