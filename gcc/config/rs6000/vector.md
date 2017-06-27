@@ -480,13 +480,12 @@
 	(gt:VEC_F (match_dup 2)
 		  (match_dup 1)))
    (set (match_dup 0)
-	(not:VEC_F (ior:VEC_F (match_dup 3)
-			      (match_dup 4))))]
-  "
+	(and:VEC_F (not:VEC_F (match_dup 3))
+		   (not:VEC_F (match_dup 4))))]
 {
   operands[3] = gen_reg_rtx (<MODE>mode);
   operands[4] = gen_reg_rtx (<MODE>mode);
-}")
+})
 
 (define_insn_and_split "*vector_ltgt<mode>"
   [(set (match_operand:VEC_F 0 "vfloat_operand" "")

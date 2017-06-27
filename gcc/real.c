@@ -950,11 +950,11 @@ do_compare (const REAL_VALUE_TYPE *a, const REAL_VALUE_TYPE *b,
       gcc_unreachable ();
     }
 
-  if (a->sign != b->sign)
-    return -a->sign - -b->sign;
-
   if (a->decimal || b->decimal)
     return decimal_do_compare (a, b, nan_result);
+
+  if (a->sign != b->sign)
+    return -a->sign - -b->sign;
 
   if (REAL_EXP (a) > REAL_EXP (b))
     ret = 1;
