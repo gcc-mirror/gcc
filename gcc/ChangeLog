@@ -1,4 +1,14 @@
 2017-06-27  Jerome Lambourg  <lambourg@adacore.com>
+            Olivier Hainque  <hainque@adacore.com>
+
+	* config/i386/vxworks.h (DBX_REGISTER_NUMBER): Pick distinct
+	map for 64bits.
+	(TARGET_OS_CPP_BUILTINS): builtin_define CPU to X86_64 for 64bit
+	targets. Pick a default if no particular attempt applied.
+	(STACK_CHECK_PROTECT): Double for 64bit targets, which have
+	larger contexts.
+
+2017-06-27  Jerome Lambourg  <lambourg@adacore.com>
 
 	* config.gcc (i*86-wrs-vxworks7): Handle new acceptable triplet.
 	(x86_64-wrs-vxworks7): Likewise.
