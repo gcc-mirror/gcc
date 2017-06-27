@@ -1680,8 +1680,15 @@ i[34567]86-*-solaris2* | x86_64-*-solaris2.1[0-9]*)
 		esac
 	fi
 	;;
-i[4567]86-wrs-vxworks|i[4567]86-wrs-vxworksae)
-	tm_file="${tm_file} i386/unix.h i386/att.h elfos.h vx-common.h"
+i[4567]86-wrs-vxworks|i[4567]86-wrs-vxworksae|i[4567]86-wrs-vxworks7|x86_64-wrs-vxworks7)
+	tm_file="${tm_file} i386/unix.h i386/att.h elfos.h"
+	case ${target} in
+	  x86_64-*)
+	    need_64bit_isa=yes
+	    tm_file="${tm_file} i386/x86-64.h"
+	    ;;
+	esac
+	tm_file="${tm_file} vx-common.h"
 	case ${target} in
 	  *-vxworksae*)
 	    tm_file="${tm_file} vxworksae.h i386/vxworks.h i386/vxworksae.h"

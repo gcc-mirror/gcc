@@ -1,3 +1,8 @@
+2017-06-27  Jerome Lambourg  <lambourg@adacore.com>
+
+	* config.gcc (i*86-wrs-vxworks7): Handle new acceptable triplet.
+	(x86_64-wrs-vxworks7): Likewise.
+
 2017-06-27  Marek Polacek  <polacek@redhat.com>
 
 	PR sanitizer/81223
