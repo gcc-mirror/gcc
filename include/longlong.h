@@ -858,42 +858,6 @@ extern UDItype __umulsidi3 (USItype, USItype);
 #endif
 #endif /* __mips__ */
 
-#if defined (__ns32000__) && W_TYPE_SIZE == 32
-#define umul_ppmm(w1, w0, u, v) \
-  ({union {UDItype __ll;						\
-	   struct {USItype __l, __h;} __i;				\
-	  } __xx;							\
-  __asm__ ("meid %2,%0"							\
-	   : "=g" (__xx.__ll)						\
-	   : "%0" ((USItype) (u)),					\
-	     "g" ((USItype) (v)));					\
-  (w1) = __xx.__i.__h; (w0) = __xx.__i.__l;})
-#define __umulsidi3(u, v) \
-  ({UDItype __w;							\
-    __asm__ ("meid %2,%0"						\
-	     : "=g" (__w)						\
-	     : "%0" ((USItype) (u)),					\
-	       "g" ((USItype) (v)));					\
-    __w; })
-#define udiv_qrnnd(q, r, n1, n0, d) \
-  ({union {UDItype __ll;						\
-	   struct {USItype __l, __h;} __i;				\
-	  } __xx;							\
-  __xx.__i.__h = (n1); __xx.__i.__l = (n0);				\
-  __asm__ ("deid %2,%0"							\
-	   : "=g" (__xx.__ll)						\
-	   : "0" (__xx.__ll),						\
-	     "g" ((USItype) (d)));					\
-  (r) = __xx.__i.__l; (q) = __xx.__i.__h; })
-#define count_trailing_zeros(count,x) \
-  do {									\
-    __asm__ ("ffsd     %2,%0"						\
-	    : "=r" ((USItype) (count))					\
-	    : "0" ((USItype) 0),					\
-	      "r" ((USItype) (x)));					\
-  } while (0)
-#endif /* __ns32000__ */
-
 /* FIXME: We should test _IBMR2 here when we add assembly support for the
    system vendor compilers.
    FIXME: What's needed for gcc PowerPC VxWorks?  __vxworks__ is not good
