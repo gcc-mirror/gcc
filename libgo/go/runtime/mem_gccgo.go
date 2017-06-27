@@ -270,6 +270,11 @@ func sysMap(v unsafe.Pointer, n uintptr, reserved bool, sysStat *uint64) {
 		return
 	}
 
+	if GOOS == "aix" {
+		// AIX does not allow mapping a range that is already mapped.
+		// So always unmap first even if it is already unmapped.
+		munmap(v, n)
+	}
 	p := mmap(v, n, _PROT_READ|_PROT_WRITE, _MAP_ANON|_MAP_FIXED|_MAP_PRIVATE, mmapFD, 0)
 	if uintptr(p) == _MAP_FAILED && errno() == _ENOMEM {
 		throw("runtime: out of memory")

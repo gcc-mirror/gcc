@@ -139,6 +139,10 @@ uintptr getEnd(void)
 uintptr
 getEnd()
 {
+#ifdef _AIX
+  // mmap adresses range start at 0x30000000 on AIX for 32 bits processes
+  uintptr end = 0x30000000U;
+#else
   uintptr end = 0;
   uintptr *pend;
 
@@ -146,6 +150,8 @@ getEnd()
   if (pend != nil) {
     end = *pend;
   }
+#endif
+
   return end;
 }
 
