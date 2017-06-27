@@ -17,7 +17,6 @@
 
 // { dg-options "-std=gnu++17" }
 // { dg-do compile { target c++1z } }
+// { dg-require-parallel-mode "" }
 
-#undef _GLIBCXX_PARALLEL
-#define _GLIBCXX_PARALLEL 1
 #include <algorithm>
