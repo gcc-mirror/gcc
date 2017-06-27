@@ -1,3 +1,13 @@
+2017-06-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* predict.c (test_prediction_value_range): Use -1U instead of -1
+	to avoid narrowing conversion warning.
+	* dumpfile.c (dump_options): Wrap all value into dump_flags_t cast
+	to avoid narrowing conversion warning.
+	* opt-functions.awk (var_ref): Return (unsigned short) -1 instead of
+	-1.
+	* optc-gen.awk (END): Expect (unsigned short) -1 instead of -1.
+
 2017-06-27  Jerome Lambourg  <lambourg@adacore.com>
 
 	* config/vxworks.h (VXWORKS_LIBS_RTP): Alternative definition for

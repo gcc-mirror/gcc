@@ -336,7 +336,7 @@ for (i = 0; i < n_opts; i++) {
 		alias_posarg = nth_arg(1, alias_arg)
 		alias_negarg = nth_arg(2, alias_arg)
 
-		if (var_ref(opts[i], flags[i]) != "-1")
+		if (var_ref(opts[i], flags[i]) != "(unsigned short) -1")
 			print "#error Alias setting variable"
 
 		if (alias_posarg != "" && alias_negarg == "") {
