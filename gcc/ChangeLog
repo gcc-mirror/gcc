@@ -1,3 +1,11 @@
+2017-06-27  Michael Collison  <michael.collison@arm.com>
+
+	* config/aarch64/aarch64-simd.md (aarch64_combine<mode>): Directly
+	call aarch64_split_simd_combine.
+	* (aarch64_combine_internal<mode>): Delete pattern.
+	* config/aarch64/aarch64.c (aarch64_split_simd_combine):
+	Allow register and subreg operands.
+
 2017-06-27  Jerome Lambourg  <lambourg@adacore.com>
 
 	* config/i386/vxworks.h (ASM_SPEC): Remove definition. No target

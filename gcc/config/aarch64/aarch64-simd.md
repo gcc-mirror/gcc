@@ -2809,38 +2809,10 @@
    (match_operand:VDC 2 "register_operand")]
   "TARGET_SIMD"
 {
-  rtx op1, op2;
-  if (BYTES_BIG_ENDIAN)
-    {
-      op1 = operands[2];
-      op2 = operands[1];
-    }
-  else
-    {
-      op1 = operands[1];
-      op2 = operands[2];
-    }
-  emit_insn (gen_aarch64_combine_internal<mode> (operands[0], op1, op2));
-  DONE;
-}
-)
+  aarch64_split_simd_combine (operands[0], operands[1], operands[2]);
 
-(define_insn_and_split "aarch64_combine_internal<mode>"
-  [(set (match_operand:<VDBL> 0 "register_operand" "=&w")
-        (vec_concat:<VDBL> (match_operand:VDC 1 "register_operand" "w")
-			   (match_operand:VDC 2 "register_operand" "w")))]
-  "TARGET_SIMD"
-  "#"
-  "&& reload_completed"
-  [(const_int 0)]
-{
-  if (BYTES_BIG_ENDIAN)
-    aarch64_split_simd_combine (operands[0], operands[2], operands[1]);
-  else
-    aarch64_split_simd_combine (operands[0], operands[1], operands[2]);
   DONE;
 }
-[(set_attr "type" "multiple")]
 )
 
 (define_expand "aarch64_simd_combine<mode>"
