@@ -275,7 +275,7 @@ function var_ref(name, flags)
 		return "offsetof (struct gcc_options, x_target_flags)"
 	if (opt_args("InverseMask", flags) != "")
 		return "offsetof (struct gcc_options, x_target_flags)"
-	return "-1"
+	return "(unsigned short) -1"
 }
 
 # Given the option called NAME return a sanitized version of its name.
