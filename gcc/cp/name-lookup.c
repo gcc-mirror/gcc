@@ -3183,27 +3183,12 @@ set_identifier_type_value (tree id, tree decl)
 }
 
 /* Return the name for the constructor (or destructor) for the
-   specified class TYPE.  When given a template, this routine doesn't
-   lose the specialization.  */
-
-static inline tree
-constructor_name_full (tree type)
-{
-  return TYPE_IDENTIFIER (TYPE_MAIN_VARIANT (type));
-}
-
-/* Return the name for the constructor (or destructor) for the
-   specified class.  When given a template, return the plain
-   unspecialized name.  */
+   specified class.  */
 
 tree
 constructor_name (tree type)
 {
-  tree name;
-  name = constructor_name_full (type);
-  if (IDENTIFIER_TEMPLATE (name))
-    name = IDENTIFIER_TEMPLATE (name);
-  return name;
+  return TYPE_IDENTIFIER (TYPE_MAIN_VARIANT (type));
 }
 
 /* Returns TRUE if NAME is the name for the constructor for TYPE,
@@ -3212,8 +3197,6 @@ constructor_name (tree type)
 bool
 constructor_name_p (tree name, tree type)
 {
-  tree ctor_name;
-
   gcc_assert (MAYBE_CLASS_TYPE_P (type));
 
   if (!name)
@@ -3227,12 +3210,10 @@ constructor_name_p (tree name, tree type)
       || TREE_CODE (type) == TYPEOF_TYPE)
     return false;
 
-  ctor_name = constructor_name_full (type);
+  tree ctor_name = constructor_name (type);
   if (name == ctor_name)
     return true;
-  if (IDENTIFIER_TEMPLATE (ctor_name)
-      && name == IDENTIFIER_TEMPLATE (ctor_name))
-    return true;
+
   return false;
 }
 
