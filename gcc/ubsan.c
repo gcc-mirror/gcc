@@ -153,6 +153,7 @@ ubsan_encode_value (tree t, enum ubsan_encode_value_phase phase)
 	    {
 	      var = create_tmp_var_raw (type);
 	      TREE_ADDRESSABLE (var) = 1;
+	      DECL_CONTEXT (var) = current_function_decl;
 	    }
 	  if (phase == UBSAN_ENCODE_VALUE_RTL)
 	    {
