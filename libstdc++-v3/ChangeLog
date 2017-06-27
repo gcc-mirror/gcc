@@ -1,3 +1,11 @@
+2017-06-27  Tim Shen  <timshen@google.com>
+
+	PR libstdc++/80187
+	* include/std/variant (variant::variant, variant::~variant,
+	variant::operator=): Implement triviality forwarding for four
+	special member functions.
+	* testsuite/20_util/variant/compile.cc: Tests.
+
 2017-06-27  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/81221
