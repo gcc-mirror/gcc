@@ -14552,10 +14552,14 @@ get_nonnull_args (const_tree fntype)
    real declaration.
 
    Keep the size up to date in tree.h !  */
-const builtin_structptr_type builtin_structptr_types[2] = 
+const builtin_structptr_type builtin_structptr_types[6] = 
 {
   { fileptr_type_node, ptr_type_node, "FILE" },
-  { const_tm_ptr_type_node, const_ptr_type_node, "tm" }
+  { const_tm_ptr_type_node, const_ptr_type_node, "tm" },
+  { fenv_t_ptr_type_node, ptr_type_node, "fenv_t" },
+  { const_fenv_t_ptr_type_node, const_ptr_type_node, "fenv_t" },
+  { fexcept_t_ptr_type_node, ptr_type_node, "fexcept_t" },
+  { const_fexcept_t_ptr_type_node, const_ptr_type_node, "fexcept_t" }
 };
 
 #if CHECKING_P
