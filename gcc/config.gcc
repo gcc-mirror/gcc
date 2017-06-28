@@ -3112,6 +3112,16 @@ powerpc*-*-* | rs6000-*-*)
 	tm_file="${tm_file} ${cpu_type}/option-defaults.h"
 esac
 
+# non-glibc systems
+case ${target} in
+*-linux-musl*)
+	tmake_file="${tmake_file} t-musl"
+	;;
+*-linux-uclibc*)
+	tmake_file="${tmake_file} t-uclibc"
+	;;
+esac
+
 # Build mkoffload tool
 case ${target} in
 *-intelmic-* | *-intelmicemul-*)
