@@ -97,7 +97,8 @@ non_local_p (struct cgraph_node *node, void *data ATTRIBUTE_UNUSED)
 	   && !DECL_EXTERNAL (node->decl)
 	   && !node->externally_visible
 	   && !node->used_from_other_partition
-	   && !node->in_other_partition);
+	   && !node->in_other_partition
+	   && node->get_availability () >= AVAIL_AVAILABLE);
 }
 
 /* Return true when function can be marked local.  */

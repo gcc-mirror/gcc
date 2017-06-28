@@ -1,5 +1,10 @@
 2017-06-28  Martin Liska  <mliska@suse.cz>
 
+	PR ipa/81128
+	* gcc.target/i386/pr81128.c: New test.
+
+2017-06-28  Martin Liska  <mliska@suse.cz>
+
 	PR driver/79659
 	* g++.dg/opt/pr79659.C: New test.
 
