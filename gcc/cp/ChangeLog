@@ -1,3 +1,9 @@
+2017-06-28  Jason Merrill  <jason@redhat.com>
+
+	PR c++/81204 - parse error with dependent template-name
+	* parser.c (cp_parser_lookup_name): Disqualify function templates
+	after lookup.
+
 2017-06-27  Nathan Sidwell  <nathan@acm.org>
 
 	* pt.c (tsubst_decl <FUNCTION_DECL>): Move var decls to
