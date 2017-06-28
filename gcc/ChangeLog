@@ -1,3 +1,9 @@
+2017-06-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/81175
+	* config/i386/i386.c (ix86_init_mmx_sse_builtins): Use def_builtin
+	rather than def_builtin_pure for __builtin_ia32_gatherpf*.
+
 2017-06-28  Richard Biener  <rguenther@suse.de>
 
 	* tree-vectorizer.h (vect_get_vec_defs): Remove.
