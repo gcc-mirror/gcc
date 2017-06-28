@@ -914,7 +914,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 (match negate_expr_p
  INTEGER_CST
  (if ((INTEGRAL_TYPE_P (type)
-       && TYPE_OVERFLOW_WRAPS (type))
+       && TYPE_UNSIGNED (type))
       || (!TYPE_OVERFLOW_SANITIZED (type)
 	  && may_negate_without_overflow_p (t)))))
 (match negate_expr_p
