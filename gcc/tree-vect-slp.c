@@ -2976,8 +2976,7 @@ vect_mask_constant_operand_p (gimple *stmt, int opnum)
 static void
 vect_get_constant_vectors (tree op, slp_tree slp_node,
                            vec<tree> *vec_oprnds,
-			   unsigned int op_num, unsigned int number_of_vectors,
-                           int reduc_index)
+			   unsigned int op_num, unsigned int number_of_vectors)
 {
   vec<gimple *> stmts = SLP_TREE_SCALAR_STMTS (slp_node);
   gimple *stmt = stmts[0];
@@ -2996,8 +2995,6 @@ vect_get_constant_vectors (tree op, slp_tree slp_node,
   bool constant_p, is_store;
   tree neutral_op = NULL;
   enum tree_code code = gimple_expr_code (stmt);
-  gimple *def_stmt;
-  struct loop *loop;
   gimple_seq ctor_seq = NULL;
 
   /* Check if vector type is a boolean vector.  */
@@ -3008,64 +3005,6 @@ vect_get_constant_vectors (tree op, slp_tree slp_node,
   else
     vector_type = get_vectype_for_scalar_type (TREE_TYPE (op));
   nunits = TYPE_VECTOR_SUBPARTS (vector_type);
-
-  if (STMT_VINFO_DEF_TYPE (stmt_vinfo) == vect_reduction_def
-      && reduc_index != -1)
-    {
-      op_num = reduc_index;
-      op = gimple_op (stmt, op_num + 1);
-      /* For additional copies (see the explanation of NUMBER_OF_COPIES below)
-         we need either neutral operands or the original operands.  See
-         get_initial_def_for_reduction() for details.  */
-      switch (code)
-        {
-          case WIDEN_SUM_EXPR:
-          case DOT_PROD_EXPR:
-	  case SAD_EXPR:
-          case PLUS_EXPR:
-          case MINUS_EXPR:
-          case BIT_IOR_EXPR:
-          case BIT_XOR_EXPR:
-             if (SCALAR_FLOAT_TYPE_P (TREE_TYPE (op)))
-               neutral_op = build_real (TREE_TYPE (op), dconst0);
-             else
-               neutral_op = build_int_cst (TREE_TYPE (op), 0);
-
-             break;
-
-          case MULT_EXPR:
-             if (SCALAR_FLOAT_TYPE_P (TREE_TYPE (op)))
-               neutral_op = build_real (TREE_TYPE (op), dconst1);
-             else
-               neutral_op = build_int_cst (TREE_TYPE (op), 1);
-
-             break;
-
-          case BIT_AND_EXPR:
-            neutral_op = build_int_cst (TREE_TYPE (op), -1);
-            break;
-
-	  /* For MIN/MAX we don't have an easy neutral operand but
-	     the initial values can be used fine here.  Only for
-	     a reduction chain we have to force a neutral element.  */
-	  case MAX_EXPR:
-	  case MIN_EXPR:
-	    if (!GROUP_FIRST_ELEMENT (stmt_vinfo))
-	      neutral_op = NULL;
-	    else
-	      {
-		def_stmt = SSA_NAME_DEF_STMT (op);
-		loop = (gimple_bb (stmt))->loop_father;
-		neutral_op = PHI_ARG_DEF_FROM_EDGE (def_stmt,
-						    loop_preheader_edge (loop));
-	      }
-	    break;
-
-          default:
-	    gcc_assert (!GROUP_FIRST_ELEMENT (stmt_vinfo));
-            neutral_op = NULL;
-        }
-    }
 
   if (STMT_VINFO_DATA_REF (stmt_vinfo))
     {
@@ -3153,25 +3092,6 @@ vect_get_constant_vectors (tree op, slp_tree slp_node,
 		    break;
 		}
 	    }
-
-          if (reduc_index != -1)
-            {
-              loop = (gimple_bb (stmt))->loop_father;
-              def_stmt = SSA_NAME_DEF_STMT (op);
-
-              gcc_assert (loop);
-
-              /* Get the def before the loop.  In reduction chain we have only
-                 one initial value.  */
-              if ((j != (number_of_copies - 1)
-                   || (GROUP_FIRST_ELEMENT (vinfo_for_stmt (stmt))
-                       && i != 0))
-                  && neutral_op)
-                op = neutral_op;
-              else
-                op = PHI_ARG_DEF_FROM_EDGE (def_stmt,
-                                            loop_preheader_edge (loop));
-            }
 
           /* Create 'vect_ = {op0,op1,...,opn}'.  */
           number_of_places_left_in_vector--;
@@ -3340,7 +3260,7 @@ vect_get_slp_vect_defs (slp_tree slp_node, vec<tree> *vec_oprnds)
 
 void
 vect_get_slp_defs (vec<tree> ops, slp_tree slp_node,
-		   vec<vec<tree> > *vec_oprnds, int reduc_index)
+		   vec<vec<tree> > *vec_oprnds)
 {
   gimple *first_stmt;
   int number_of_vects = 0, i;
@@ -3421,19 +3341,15 @@ vect_get_slp_defs (vec<tree> ops, slp_tree slp_node,
 
       /* For reduction defs we call vect_get_constant_vectors (), since we are
          looking for initial loop invariant values.  */
-      if (vectorized_defs && reduc_index == -1)
+      if (vectorized_defs)
         /* The defs are already vectorized.  */
 	vect_get_slp_vect_defs (child, &vec_defs);
       else
 	/* Build vectors from scalar defs.  */
 	vect_get_constant_vectors (oprnd, slp_node, &vec_defs, i,
-				   number_of_vects, reduc_index);
+				   number_of_vects);
 
       vec_oprnds->quick_push (vec_defs);
-
-      /* For reductions, we only need initial values.  */
-      if (reduc_index != -1)
-        return;
 
       first_iteration = false;
     }
