@@ -1,5 +1,8 @@
 2017-06-28  Jason Merrill  <jason@redhat.com>
 
+	PR c++/69300 - ICE with self-referential noexcept
+	* pt.c (maybe_instantiate_noexcept): Check for recursion.
+
 	PR c++/61022 - error with variadic template template parm
 	* pt.c (convert_template_argument): Keep the TYPE_PACK_EXPANSION.
 
