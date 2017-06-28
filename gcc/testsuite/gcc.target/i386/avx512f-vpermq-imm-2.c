@@ -40,18 +40,14 @@ TEST (void)
       res3.a[i] = DEFAULT_VALUE;
     }
 
-#if AVX512F_LEN == 512
   res1.x = INTRINSIC (_permutex_epi64) (src1.x, IMM_MASK);
-#endif
   res2.x = INTRINSIC (_maskz_permutex_epi64) (mask, src1.x, IMM_MASK);
   res3.x = INTRINSIC (_mask_permutex_epi64) (res3.x, mask, src1.x, IMM_MASK);
 
   CALC (src1.a, IMM_MASK, res_ref);
 
-#if AVX512F_LEN == 512
   if (UNION_CHECK (AVX512F_LEN, i_q) (res1, res_ref))
     abort ();
-#endif
 
   MASK_ZERO (i_q) (res_ref, mask, SIZE);
   if (UNION_CHECK (AVX512F_LEN, i_q) (res2, res_ref))

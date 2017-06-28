@@ -1,3 +1,8 @@
+2017-06-28  Sebastian Peryt  <sebastian.peryt@intel.com>
+
+	* config/i386/avx512vlintrin.h (_mm256_permutexvar_epi64)
+	(_mm256_permutexvar_epi32, _mm256_permutex_epi64): New intrinsics.
+
 2017-06-28  Szabolcs Nagy  <szabolcs.nagy@arm.com>
 
 	* config.gcc (*-linux-musl*): Add t-musl tmake_file.
