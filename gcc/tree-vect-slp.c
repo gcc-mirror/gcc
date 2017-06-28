@@ -3016,11 +3016,6 @@ vect_get_constant_vectors (tree op, slp_tree slp_node,
 
   gcc_assert (op);
 
-  if (CONSTANT_CLASS_P (op))
-    constant_p = true;
-  else
-    constant_p = false;
-
   /* NUMBER_OF_COPIES is the number of times we need to use the same values in
      created vectors. It is greater than 1 if unrolling is performed.
 
@@ -3040,6 +3035,7 @@ vect_get_constant_vectors (tree op, slp_tree slp_node,
   number_of_copies = nunits * number_of_vectors / group_size;
 
   number_of_places_left_in_vector = nunits;
+  constant_p = true;
   elts = XALLOCAVEC (tree, nunits);
   bool place_after_defs = false;
   for (j = 0; j < number_of_copies; j++)
@@ -3156,8 +3152,6 @@ vect_get_constant_vectors (tree op, slp_tree slp_node,
 
           if (number_of_places_left_in_vector == 0)
             {
-              number_of_places_left_in_vector = nunits;
-
 	      if (constant_p)
 		vec_cst = build_vector (vector_type, elts);
 	      else
@@ -3188,6 +3182,8 @@ vect_get_constant_vectors (tree op, slp_tree slp_node,
 		}
 	      voprnds.quick_push (init);
 	      place_after_defs = false;
+              number_of_places_left_in_vector = nunits;
+	      constant_p = true;
             }
         }
     }
