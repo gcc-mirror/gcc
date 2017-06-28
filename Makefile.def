@@ -623,8 +623,7 @@ bootstrap_stage = {
 bootstrap_stage = {
 	id=profile ; prev=1 ; };
 bootstrap_stage = {
-	id=train; prev=profile ;
-	bootstrap_target=profiledbootstrap ; };
+	id=train; prev=profile ; } ;
 bootstrap_stage = {
 	id=feedback ; prev=train;
 	bootstrap_target=profiledbootstrap ; };

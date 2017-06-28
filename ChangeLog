@@ -1,3 +1,10 @@
+2017-06-28  Martin Liska  <mliska@suse.cz>
+
+	PR bootstrap/81217
+	* Makefile.def: Remove superfluous bootstrap_target from
+	bootstrap_stage.
+	* Makefile.in: Re-generate the file.
+
 2017-06-26  Maxim Ostapenko  <m.ostapenko@samsung.com>
 
         * MAINTAINERS: Add myself to Write After Approval
