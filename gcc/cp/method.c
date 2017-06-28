@@ -2053,11 +2053,14 @@ implicitly_declare_fn (special_function_kind kind, tree type,
   fn = build_lang_decl (FUNCTION_DECL, name, fn_type);
   if (kind != sfk_inheriting_constructor)
     DECL_SOURCE_LOCATION (fn) = DECL_SOURCE_LOCATION (TYPE_NAME (type));
-  if (kind == sfk_constructor || kind == sfk_copy_constructor
-      || kind == sfk_move_constructor || kind == sfk_inheriting_constructor)
-    DECL_CONSTRUCTOR_P (fn) = 1;
-  else if (kind == sfk_destructor)
-    DECL_DESTRUCTOR_P (fn) = 1;
+
+  if (IDENTIFIER_CDTOR_P (name))
+    {
+      if (IDENTIFIER_CTOR_P (name))
+	DECL_CONSTRUCTOR_P (fn) = true;
+      else
+	DECL_DESTRUCTOR_P (fn) = true;
+    }
   else
     SET_OVERLOADED_OPERATOR_CODE (fn, NOP_EXPR);
 

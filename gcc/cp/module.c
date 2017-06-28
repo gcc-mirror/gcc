@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-/* REVISION_STAMP is a #define passed in from the Make file.  When
+/* MODULE_STAMP is a #define passed in from the Make file.  When
    present, it is used for version stamping the binary files, and
    indicates experimentalness of the module system.
 

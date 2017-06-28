@@ -1598,7 +1598,7 @@ lookup_fnfields_idx_nolazy (tree type, tree name)
 /* TYPE is a class type. Return the index of the fields within
    the method vector with name NAME, or -1 if no such field exists.  */
 
-int
+static int
 lookup_fnfields_1 (tree type, tree name)
 {
   if (!CLASS_TYPE_P (type))

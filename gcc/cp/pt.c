@@ -2876,14 +2876,11 @@ check_explicit_specialization (tree declarator,
 	  /* Find the list of functions in ctype that have the same
 	     name as the declared function.  */
 	  tree name = TREE_OPERAND (declarator, 0);
-	  tree fns = NULL_TREE;
-	  int idx;
 
 	  if (constructor_name_p (name, ctype))
 	    {
-	      int is_constructor = DECL_CONSTRUCTOR_P (decl);
-
-	      if (is_constructor ? !TYPE_HAS_USER_CONSTRUCTOR (ctype)
+	      if (DECL_CONSTRUCTOR_P (decl)
+		  ? !TYPE_HAS_USER_CONSTRUCTOR (ctype)
 		  : !CLASSTYPE_DESTRUCTOR (ctype))
 		{
 		  /* From [temp.expl.spec]:
@@ -2898,41 +2895,31 @@ check_explicit_specialization (tree declarator,
 		  return error_mark_node;
 		}
 
-	      name = is_constructor ? ctor_identifier : dtor_identifier;
+	      name = DECL_NAME (decl);
 	    }
 
+	  tree fns = NULL_TREE;
 	  if (!DECL_CONV_FN_P (decl))
+	    fns = lookup_fnfields_slot_nolazy (ctype, name);
+	  else if (vec<tree, va_gc> *methods = CLASSTYPE_METHOD_VEC (ctype))
 	    {
-	      idx = lookup_fnfields_1 (ctype, name);
-	      if (idx >= 0)
-		fns = (*CLASSTYPE_METHOD_VEC (ctype))[idx];
-	    }
-	  else
-	    {
-	      vec<tree, va_gc> *methods;
-	      tree ovl;
-
 	      /* For a type-conversion operator, we cannot do a
 		 name-based lookup.  We might be looking for `operator
 		 int' which will be a specialization of `operator T'.
 		 So, we find *all* the conversion operators, and then
 		 select from them.  */
-	      fns = NULL_TREE;
+	      tree ovl;
+	      for (int idx = CLASSTYPE_FIRST_CONVERSION_SLOT;
+		   methods->iterate (idx, &ovl); ++idx)
+		{
+		  if (!DECL_CONV_FN_P (OVL_FIRST (ovl)))
+		    /* There are no more conversion functions.  */
+		    break;
 
-	      methods = CLASSTYPE_METHOD_VEC (ctype);
-	      if (methods)
-		for (idx = CLASSTYPE_FIRST_CONVERSION_SLOT;
-		     methods->iterate (idx, &ovl);
-		     ++idx)
-		  {
-		    if (!DECL_CONV_FN_P (OVL_FIRST (ovl)))
-		      /* There are no more conversion functions.  */
-		      break;
-
-		    /* Glue all these conversion functions together
-		       with those we already have.  */
-		    fns = lookup_add (ovl, fns);
-		  }
+		  /* Glue all these conversion functions together
+		     with those we already have.  */
+		  fns = lookup_add (ovl, fns);
+		}
 	    }
 
 	  if (fns == NULL_TREE)

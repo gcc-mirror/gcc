@@ -1,5 +1,25 @@
 2017-06-28  Nathan Sidwell  <nathan@acm.org>
 
+	cdtor name cleanup. expunge lookup_fnfields_1 use.
+	gcc/
+	* builtins.c (fold_builtin_FUNCTION) Use
+	lang_hooks.decl_printable_name.
+	gcc/cp/
+	* call.c (build_new_method_call_1) Update cdtor handling.
+	* class.c (get_basefndecls): Use lookup_fnfields_slot.
+	* cp-tree.h (lookup_fnfields_1): Don't declare.
+	* decl.c (register_dtor_fn): Use lookup_fnfields_slot.
+	(grokfndecl): Set cdtor name.
+	* method.c (implicitly_declare_fn): Adjust cdtor flag setting.
+	* pt.c (check_explicit_specialization): Adjust cdtor checking, use
+	lookup_fnfields_slot_nolazy.
+	* search.c (lookup_fnfields_1): Make static.
+	* semantics.c (classtype_has_nothrow_assign_or_copy_p): Use
+	lookup_fnfields_slot.
+	gcc/testsite/
+	* g++.dg/cpp1y/builtin_FUNCTION.C: New.
+	* g++.dg/plugin/decl-plugin-test.C: Adjust.
+
 	Merge trunk r249746.
 
 	gcc/cp/
