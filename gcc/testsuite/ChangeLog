@@ -1,3 +1,15 @@
+2017-06-28  Sebastian Peryt  <sebastian.peryt@intel.com>
+
+	* gcc.target/i386/avx512vl-vpermd-1.c (_mm256_permutexvar_epi32):
+	Test new intrinsic.
+	* gcc.target/i386/avx512vl-vpermq-imm-1.c (_mm256_permutex_epi64):
+	Ditto.
+	* gcc.target/i386/avx512vl-vpermq-var-1.c (_mm256_permutexvar_epi64):
+	Ditto.
+	* gcc.target/i386/avx512f-vpermd-2.c: Do not check for AVX512F_LEN.
+	* gcc.target/i386/avx512f-vpermq-imm-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpermq-var-2.c: Ditto.
+
 2017-06-28  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	* lib/target-supports.exp (check_effective_target_vect_int): Replace
