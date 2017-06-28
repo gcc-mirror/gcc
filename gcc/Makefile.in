@@ -860,9 +860,8 @@ ifeq (,$(wildcard $(REVISION)))
 REVISION_c  :=
 REVISION    :=
 else
-MODULE_STAMP := $(shell date -r $(REVISION) '+%y%m%d-%H%M')
-REVISION_c  := c++-modules-20$(MODULE_STAMP)
-# REVISION_c  := $(shell cat $(REVISION))
+REVISION_DATESTAMP := $(shell date -r $(REVISION) '+%Y%m%d-%H%M')
+REVISION_c  := c++-modules-$(REVISION_DATESTAMP)
 endif
 
 version     := $(shell @get_gcc_base_ver@ $(BASEVER))

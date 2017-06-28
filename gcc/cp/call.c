@@ -231,9 +231,8 @@ check_dtor_name (tree basetype, tree name)
   else if (identifier_p (name))
     {
       if ((MAYBE_CLASS_TYPE_P (basetype)
-	   && name == constructor_name (basetype))
-	  || (TREE_CODE (basetype) == ENUMERAL_TYPE
-	      && name == TYPE_IDENTIFIER (basetype)))
+	   || TREE_CODE (basetype) == ENUMERAL_TYPE)
+	  && name == constructor_name (basetype))
 	return true;
       else
 	name = get_type_value (name);
@@ -8878,7 +8877,7 @@ build_special_member_call (tree instance, tree name, vec<tree, va_gc> **args,
 static char *
 name_as_c_string (tree name, tree type, bool *free_p)
 {
-  char *pretty_name;
+  const char *pretty_name;
 
   /* Assume that we will not allocate memory.  */
   *free_p = false;
@@ -8886,7 +8885,7 @@ name_as_c_string (tree name, tree type, bool *free_p)
   if (IDENTIFIER_CDTOR_P (name))
     {
       pretty_name
-	= CONST_CAST (char *, identifier_to_locale (IDENTIFIER_POINTER (constructor_name (type))));
+	= identifier_to_locale (IDENTIFIER_POINTER (constructor_name (type)));
       /* For a destructor, add the '~'.  */
       if (IDENTIFIER_DTOR_P (name))
 	{
@@ -8905,9 +8904,9 @@ name_as_c_string (tree name, tree type, bool *free_p)
       *free_p = true;
     }
   else
-    pretty_name = CONST_CAST (char *, identifier_to_locale (IDENTIFIER_POINTER (name)));
+    pretty_name = identifier_to_locale (IDENTIFIER_POINTER (name));
 
-  return pretty_name;
+  return CONST_CAST (char *, pretty_name);
 }
 
 /* Build a call to "INSTANCE.FN (ARGS)".  If FN_P is non-NULL, it will
@@ -8995,6 +8994,7 @@ build_new_method_call_1 (tree instance, tree fns, vec<tree, va_gc> **args,
       if (! (complain & tf_error))
 	return error_mark_node;
 
+      name = constructor_name (basetype);
       if (permerror (input_location,
 		     "cannot call constructor %<%T::%D%> directly",
 		     basetype, name))
@@ -9140,11 +9140,8 @@ build_new_method_call_1 (tree instance, tree fns, vec<tree, va_gc> **args,
 	    {
 	      tree arglist = build_tree_list_vec (user_args);
 	      tree errname = name;
-	      if (IDENTIFIER_CDTOR_P (errname))
-		{
-		  tree fn = DECL_ORIGIN (OVL_FIRST (fns));
-		  errname = DECL_NAME (fn);
-		}
+	      if (IDENTIFIER_CTOR_P (errname))
+		errname = constructor_name (basetype);
 	      if (explicit_targs)
 		errname = lookup_template_function (errname, explicit_targs);
 	      if (skip_first_for_error)

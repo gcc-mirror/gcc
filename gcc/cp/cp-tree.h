@@ -1886,7 +1886,7 @@ enum languages { lang_c, lang_cplusplus };
 /* Set CLASS_TYPE_P for T to VAL.  T must be a class, struct, or
    union type.  */
 #define SET_CLASS_TYPE_P(T, VAL) \
-  (TYPE_LANG_FLAG_5 (T) = (VAL))
+  (TYPE_LANG_FLAG_5 (RECORD_OR_UNION_CHECK (T)) = (VAL))
 
 /* Nonzero if T is a class type.  Zero for template type parameters,
    typename types, and so forth.  */
@@ -1895,7 +1895,7 @@ enum languages { lang_c, lang_cplusplus };
 
 /* Nonzero if T is a class type but not an union.  */
 #define NON_UNION_CLASS_TYPE_P(T) \
-  (CLASS_TYPE_P (T) && TREE_CODE (T) != UNION_TYPE)
+  (TREE_CODE (T) == RECORD_TYPE && TYPE_LANG_FLAG_5 (T))
 
 /* Keep these checks in ascending code order.  */
 #define RECORD_OR_UNION_CODE_P(T)	\
@@ -2630,7 +2630,9 @@ struct GTY(()) lang_decl_ns {
   vec<tree, va_gc> *usings;
   vec<tree, va_gc> *inlinees;
 
-  /* Map from IDENTIFIER nodes to DECLS.  */
+  /* Map from IDENTIFIER nodes to DECLS.  It'd be nice to have this
+     inline, but as the hash_map has a dtor, we can't then put this
+     struct into a union (until moving to c++11).  */
   hash_map<lang_identifier *, tree> *bindings;
 };
 

@@ -3723,7 +3723,9 @@ set_identifier_type_value (tree id, tree decl)
 tree
 constructor_name (tree type)
 {
-  return TYPE_IDENTIFIER (TYPE_MAIN_VARIANT (type));
+  tree decl = TYPE_NAME (TYPE_MAIN_VARIANT (type));
+
+  return decl ? DECL_NAME (decl) : NULL_TREE;
 }
 
 /* Returns TRUE if NAME is the name for the constructor for TYPE,
@@ -3734,19 +3736,12 @@ constructor_name_p (tree name, tree type)
 {
   gcc_assert (MAYBE_CLASS_TYPE_P (type));
 
-  if (!name)
-    return false;
-
-  if (!identifier_p (name))
-    return false;
-
   /* These don't have names.  */
   if (TREE_CODE (type) == DECLTYPE_TYPE
       || TREE_CODE (type) == TYPEOF_TYPE)
     return false;
 
-  tree ctor_name = constructor_name (type);
-  if (name == ctor_name)
+  if (name && name == constructor_name (type))
     return true;
 
   return false;
@@ -4583,7 +4578,7 @@ push_class_level_binding_1 (tree name, tree x)
        /* A data member of an anonymous union.  */
        || (TREE_CODE (x) == FIELD_DECL
 	   && DECL_CONTEXT (x) != current_class_type))
-      && DECL_NAME (x) == constructor_name (current_class_type))
+      && DECL_NAME (x) == DECL_NAME (TYPE_NAME (current_class_type)))
     {
       tree scope = context_for_name_lookup (x);
       if (TYPE_P (scope) && same_type_p (scope, current_class_type))

@@ -309,7 +309,6 @@ static bool check_case_bounds (location_t, tree, tree, tree *, tree *,
 
 static void check_nonnull_arg (void *, tree, unsigned HOST_WIDE_INT);
 static bool nonnull_check_p (tree, unsigned HOST_WIDE_INT);
-static int resort_field_decl_cmp (const void *, const void *);
 
 /* Reserved words.  The third field is a mask: keywords are disabled
    if they match the mask.

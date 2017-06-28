@@ -12277,22 +12277,13 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 
     case FUNCTION_DECL:
       {
-	tree ctx;
-	tree argvec = NULL_TREE;
-	tree *friends;
-	tree gen_tmpl;
-	tree type;
-	int member;
-	int args_depth;
-	int parms_depth;
+	tree gen_tmpl, argvec;
 
 	/* Nobody should be tsubst'ing into non-template functions.  */
 	gcc_assert (DECL_TEMPLATE_INFO (t) != NULL_TREE);
 
 	if (TREE_CODE (DECL_TI_TEMPLATE (t)) == TEMPLATE_DECL)
 	  {
-	    tree spec;
-
 	    /* If T is not dependent, just return it.  */
 	    if (!uses_template_parms (DECL_TI_ARGS (t)))
 	      RETURN (t);
@@ -12310,9 +12301,7 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 
 	    /* Check to see if we already have this specialization.  */
 	    hash = hash_tmpl_and_args (gen_tmpl, argvec);
-	    spec = retrieve_specialization (gen_tmpl, argvec, hash);
-
-	    if (spec)
+	    if (tree spec = retrieve_specialization (gen_tmpl, argvec, hash))
 	      {
 		r = spec;
 		break;
@@ -12350,11 +12339,11 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 
 	       which we can spot because the pattern will be a
 	       specialization in this case.  */
-	    args_depth = TMPL_ARGS_DEPTH (args);
-	    parms_depth =
+	    int args_depth = TMPL_ARGS_DEPTH (args);
+	    int parms_depth =
 	      TMPL_PARMS_DEPTH (DECL_TEMPLATE_PARMS (DECL_TI_TEMPLATE (t)));
-	    if (args_depth > parms_depth
-		&& !DECL_TEMPLATE_SPECIALIZATION (t))
+
+	    if (args_depth > parms_depth && !DECL_TEMPLATE_SPECIALIZATION (t))
 	      args = get_innermost_template_args (args, parms_depth);
 	  }
 	else
@@ -12371,23 +12360,18 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 	       new decl (R) with appropriate types so that we can call
 	       determine_specialization.  */
 	    gen_tmpl = NULL_TREE;
+	    argvec = NULL_TREE;
 	  }
 
-	if (DECL_CLASS_SCOPE_P (t))
-	  {
-	    if (DECL_NAME (t) == constructor_name (DECL_CONTEXT (t)))
-	      member = 2;
-	    else
-	      member = 1;
-	    ctx = tsubst_aggr_type (DECL_CONTEXT (t), args,
-				    complain, t, /*entering_scope=*/1);
-	  }
-	else
-	  {
-	    member = 0;
-	    ctx = DECL_CONTEXT (t);
-	  }
-	type = tsubst (TREE_TYPE (t), args, complain|tf_fndecl_type, in_decl);
+	tree ctx = DECL_CONTEXT (t);
+	bool member = ctx && TYPE_P (ctx);
+
+	if (member)
+	  ctx = tsubst_aggr_type (ctx, args,
+				  complain, t, /*entering_scope=*/1);
+
+	tree type = tsubst (TREE_TYPE (t), args,
+			    complain | tf_fndecl_type, in_decl);
 	if (type == error_mark_node)
 	  RETURN (error_mark_node);
 
@@ -12507,14 +12491,13 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 	  DECL_TEMPLATE_INFO (r) = NULL_TREE;
 
 	/* Copy the list of befriending classes.  */
-	for (friends = &DECL_BEFRIENDING_CLASSES (r);
+	for (tree *friends = &DECL_BEFRIENDING_CLASSES (r);
 	     *friends;
 	     friends = &TREE_CHAIN (*friends))
 	  {
 	    *friends = copy_node (*friends);
-	    TREE_VALUE (*friends) = tsubst (TREE_VALUE (*friends),
-					    args, complain,
-					    in_decl);
+	    TREE_VALUE (*friends)
+	      = tsubst (TREE_VALUE (*friends), args, complain, in_decl);
 	  }
 
 	if (DECL_CONSTRUCTOR_P (r) || DECL_DESTRUCTOR_P (r))

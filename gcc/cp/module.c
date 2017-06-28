@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-/* MODULE_STAMP is a #define passed in from the Make file.  When
+/* REVISION_STAMP is a #define passed in from the Make file.  When
    present, it is used for version stamping the binary files, and
    indicates experimentalness of the module system.
 
@@ -1145,9 +1145,12 @@ cpm_stream::version ()
   int version = 20170210;
 
 #if defined (MODULE_STAMP)
-  /* MODULE_STAMP is a decimal encoding YYMMDDhhmm in local timezone.
-     Using __TIME__ doesnt work very well with boostrapping!  */
-  version = -MODULE_STAMP;
+  /* MODULE_STAMP is a decimal encoding YYYYMMDDhhmm or YYYYMMDDin
+     local timezone.  Using __TIME__ doesnt work very well with
+     boostrapping!  */
+  version = -(MODULE_STAMP > 2000LL * 10000 * 10000
+	      ? int (MODULE_STAMP - 2000LL * 10000 * 10000)
+	      : int (MODULE_STAMP - 2000LL * 10000) * 10000);
 #endif
   return version;
 }
@@ -1697,6 +1700,8 @@ cpms_in::globals (const tree *ary, unsigned num)
    u:crc
    wu:stamp
    str:module_name  */
+
+// FIXME: Should we stream the pathname to the import?
 
 void
 cpms_out::tag_import (unsigned ix, const module_state *state)

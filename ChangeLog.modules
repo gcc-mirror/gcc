@@ -1,3 +1,28 @@
+2017-06-28  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* cp-tree.h (SET_CLASS_TYPE_P): Use RECORD_OR_UNION_CHECK.
+	(NON_UNION_CLASS_TYPE_P): Just check for RECORD_TYPE.
+	* call.c (check_dtor_name): Adjust constructor_name check.
+	(name_as_c_string): Move const cast.
+	(build_new_method_call_1): Use constructor_name from basetype.
+	* class.c (get_vfield_name): Measure constructor_name length.
+	(build_self_reference): Don't use constructor_name here.
+	* cxx-pretty-print.c (is_destructor): Delete.
+	(pp_cxx_unqualified_id): Remove bogus dtor code.
+	* decl.c (grokdeclarator): Minor cleanup.
+	* method.c (implicitly_declare_fn): Use ctor_identifier and
+	dtor_identifier.
+	* name-lookup.c (constructor_name): Reimplement.
+	(constructor_name_p): Likewise.
+	(push_class_level_binding_1): Don't use constructor_name here.
+	* parser.c (cp_parser_direct_declarator): Reformat to avoid
+	nesting ifs.
+	* pt.c (tsubst_decl <FUNCTION_DECL>): Move var decls to
+	initialization point.  Don't unnecessarily check for ctor name.
+	gcc/c-family/
+	* c-common.c (resort_field_decl_cmp): Don't declare.
+
 2017-06-27  Nathan Sidwell  <nathan@acm.org>
 
 	Merge trunk r249702.
