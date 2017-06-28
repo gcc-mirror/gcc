@@ -1,3 +1,8 @@
+2017-06-28  Marc Glisse  <marc.glisse@inria.fr>
+
+	* gcc.dg/tree-ssa/addadd.c: Remove test duplicated in addadd-2.c.
+	* gcc.dg/tree-ssa/mulcmp-1.c: New file.
+
 2017-06-28  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.target/i386/cmov7.c (sgn): Renamed to ...
