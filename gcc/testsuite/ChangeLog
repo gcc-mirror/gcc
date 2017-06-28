@@ -1,3 +1,16 @@
+2017-06-28  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2017-06-09  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/81007
+	* g++.dg/pr81007.C: New testcase.
+
+	2017-06-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/81083
+	* gcc.dg/torture/pr81083.c: New testcase.
+
 2017-06-28  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.dg/tree-prof/val-profiler-threads-1.c (main): Fix 2nd argument

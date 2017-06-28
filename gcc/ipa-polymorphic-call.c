@@ -267,7 +267,8 @@ ipa_polymorphic_call_context::restrict_to_inner_class (tree otr_type,
 	{
 	  for (fld = TYPE_FIELDS (type); fld; fld = DECL_CHAIN (fld))
 	    {
-	      if (TREE_CODE (fld) != FIELD_DECL)
+	      if (TREE_CODE (fld) != FIELD_DECL
+		  || TREE_TYPE (fld) == error_mark_node)
 		continue;
 
 	      pos = int_bit_position (fld);

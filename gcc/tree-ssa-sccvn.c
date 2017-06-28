@@ -2035,7 +2035,9 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_,
 	  ops[1] = bitsize_int (ref->size);
 	  ops[2] = bitsize_int (offset - offset2);
 	  tree val = vn_nary_build_or_lookup (rcode, vr->type, ops);
-	  if (val)
+	  if (val
+	      && (TREE_CODE (val) != SSA_NAME
+		  || ! SSA_NAME_OCCURS_IN_ABNORMAL_PHI (val)))
 	    {
 	      vn_reference_t res = vn_reference_lookup_or_insert_for_pieces
 		  (vuse, vr->set, vr->type, vr->operands, val);

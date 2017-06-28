@@ -1,3 +1,21 @@
+2017-06-28  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2017-06-09  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/81007
+	* ipa-polymorphic-call.c
+	(ipa_polymorphic_call_context::restrict_to_inner_class):
+	Skip FIELD_DECLs with error_mark_node type.
+	* passes.def (all_lowering_passes): Run pass_build_cgraph_edges
+	last again.
+
+	2017-06-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/81083
+	* tree-ssa-sccvn.c (vn_reference_lookup_3): Do not use abnormals
+	as values.
+
 2017-06-27  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	Backports from trunk:
