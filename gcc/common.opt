@@ -546,7 +546,7 @@ Common Var(warn_array_bounds) Warning
 Warn if an array is accessed out of bounds.
 
 Warray-bounds=
-Common Joined RejectNegative UInteger Var(warn_array_bounds) Warning
+Common Joined RejectNegative UInteger Var(warn_array_bounds) Warning IntegerRange(0, 2)
 Warn if an array is accessed out of bounds.
 
 Wattributes
@@ -601,7 +601,7 @@ Wimplicit-fallthrough
 Common Alias(Wimplicit-fallthrough=,3,0) Warning
 
 Wimplicit-fallthrough=
-Common Var(warn_implicit_fallthrough) RejectNegative Joined UInteger Warning
+Common Var(warn_implicit_fallthrough) RejectNegative Joined UInteger Warning IntegerRange(0, 5)
 Warn when a switch case falls through.
 
 Winline
@@ -1778,7 +1778,7 @@ Specify the algorithm to partition symbols and vars at linktime.
 
 ; The initial value of -1 comes from Z_DEFAULT_COMPRESSION in zlib.h.
 flto-compression-level=
-Common Joined RejectNegative UInteger Var(flag_lto_compression_level) Init(-1)
+Common Joined RejectNegative UInteger Var(flag_lto_compression_level) Init(-1) IntegerRange(0, 9)
 -flto-compression-level=<number>	Use zlib compression level <number> for IL.
 
 flto-odr-type-merging
@@ -2061,7 +2061,7 @@ Tell DSE that the storage for a C++ object is dead when the constructor
 starts and when the destructor finishes.
 
 flifetime-dse=
-Common Joined RejectNegative UInteger Var(flag_lifetime_dse) Optimization
+Common Joined RejectNegative UInteger Var(flag_lifetime_dse) Optimization IntegerRange(0, 2)
 
 flive-range-shrinkage
 Common Report Var(flag_live_range_shrinkage) Init(0) Optimization

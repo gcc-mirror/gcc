@@ -399,8 +399,8 @@ for (i = 0; i < n_opts; i++) {
 		printf("    %s,\n" \
 		       "    0, %s,\n",
 		       cl_flags, cl_bit_fields)
-	printf("    %s, %s }%s\n", var_ref(opts[i], flags[i]),
-	       var_set(flags[i]), comma)
+	printf("    %s, %s, %s }%s\n", var_ref(opts[i], flags[i]),
+	       var_set(flags[i]), integer_range_info(opt_args("IntegerRange", flags[i])), comma)
 }
 
 print "};"

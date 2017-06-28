@@ -1,3 +1,8 @@
+2017-06-28  Martin Liska  <mliska@suse.cz>
+
+	PR driver/79659
+	* g++.dg/opt/pr79659.C: New test.
+
 2017-06-28  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	* gcc.dg/tree-ssa/copy-sign-1.c: Add c99_runtime effective target

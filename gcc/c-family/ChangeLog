@@ -1,3 +1,8 @@
+2017-06-28  Martin Liska  <mliska@suse.cz>
+
+	PR driver/79659
+	* c.opt: Add IntegerRange to various options.
+
 2017-06-26  Marek Polacek  <polacek@redhat.com>
 
 	PR c/80116

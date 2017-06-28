@@ -541,7 +541,7 @@ C ObjC C++ ObjC++ Var(warn_format_nonliteral) Warning LangEnabledBy(C ObjC C++ O
 Warn about format strings that are not literals.
 
 Wformat-overflow
-C ObjC C++ LTO ObjC++ Warning Alias(Wformat-overflow=, 1, 0)
+C ObjC C++ LTO ObjC++ Warning Alias(Wformat-overflow=, 1, 0) IntegerRange(0, 2)
 Warn about function calls with format strings that write past the end
 of the destination region.  Same as -Wformat-overflow=1.
 
@@ -567,16 +567,16 @@ C ObjC C++ ObjC++ Var(warn_format_zero_length) Warning LangEnabledBy(C ObjC C++ 
 Warn about zero-length formats.
 
 Wformat=
-C ObjC C++ ObjC++ Joined RejectNegative UInteger Var(warn_format) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall, 1, 0)
+C ObjC C++ ObjC++ Joined RejectNegative UInteger Var(warn_format) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall, 1, 0) IntegerRange(0, 2)
 Warn about printf/scanf/strftime/strfmon format string anomalies.
 
 Wformat-overflow=
-C ObjC C++ LTO ObjC++ Joined RejectNegative UInteger Var(warn_format_overflow) Warning LangEnabledBy(C ObjC C++ ObjC++,Wformat=, warn_format >= 1, 0)
+C ObjC C++ LTO ObjC++ Joined RejectNegative UInteger Var(warn_format_overflow) Warning LangEnabledBy(C ObjC C++ ObjC++,Wformat=, warn_format >= 1, 0) IntegerRange(0, 2)
 Warn about function calls with format strings that write past the end
 of the destination region.
 
 Wformat-truncation=
-C ObjC C++ ObjC++ Joined RejectNegative UInteger Var(warn_format_trunc) Warning LangEnabledBy(C ObjC C++ ObjC++,Wformat=, warn_format >= 1, 0)
+C ObjC C++ ObjC++ Joined RejectNegative UInteger Var(warn_format_trunc) Warning LangEnabledBy(C ObjC C++ ObjC++,Wformat=, warn_format >= 1, 0) IntegerRange(0, 2)
 Warn about calls to snprintf and similar functions that truncate output.
 
 Wignored-qualifiers
@@ -732,7 +732,7 @@ Warn about buffer overflow in string manipulation functions like memcpy
 and strcpy.
 
 Wstringop-overflow=
-C ObjC C++ ObjC++ Joined RejectNegative UInteger Var(warn_stringop_overflow) Init(2) Warning LangEnabledBy(C ObjC C++ ObjC++, Wall)
+C ObjC C++ ObjC++ Joined RejectNegative UInteger Var(warn_stringop_overflow) Init(2) Warning LangEnabledBy(C ObjC C++ ObjC++, Wall) IntegerRange(0, 4)
 Under the control of Object Size type, warn about buffer overflow in string
 manipulation functions like memcpy and strcpy.
 
@@ -936,7 +936,7 @@ C++ Warning Alias(Wplacement-new=, 1, 0)
 Warn for placement new expressions with undefined behavior.
 
 Wplacement-new=
-C++ Joined RejectNegative UInteger Var(warn_placement_new) Init(-1) Warning
+C++ Joined RejectNegative UInteger Var(warn_placement_new) Init(-1) Warning IntegerRange(0, 2)
 Warn for placement new expressions with undefined behavior.
 
 Wredundant-decls
@@ -976,7 +976,7 @@ C ObjC C++ ObjC++ Warning Alias(Wshift-overflow=, 1, 0)
 Warn if left shift of a signed value overflows.
 
 Wshift-overflow=
-C ObjC C++ ObjC++ Joined RejectNegative UInteger Var(warn_shift_overflow) Init(-1) Warning
+C ObjC C++ ObjC++ Joined RejectNegative UInteger Var(warn_shift_overflow) Init(-1) Warning IntegerRange(0, 2)
 Warn if left shift of a signed value overflows.
 
 Wshift-count-negative
@@ -1016,11 +1016,11 @@ C ObjC Var(warn_strict_prototypes) Warning
 Warn about unprototyped function declarations.
 
 Wstrict-aliasing=
-C ObjC C++ ObjC++ LangEnabledBy(C ObjC C++ ObjC++,Wall, 3, 0)
+C ObjC C++ ObjC++ LangEnabledBy(C ObjC C++ ObjC++,Wall, 3, 0) IntegerRange(0, 3)
 ;
 
 Wstrict-overflow=
-C ObjC C++ ObjC++ LangEnabledBy(C ObjC C++ ObjC++,Wall, 1, 0)
+C ObjC C++ ObjC++ LangEnabledBy(C ObjC C++ ObjC++,Wall, 1, 0) IntegerRange(0, 5)
 ;
 
 Wstrict-selector-match
@@ -1108,7 +1108,7 @@ C ObjC C++ ObjC++ Warning Alias(Wunused-const-variable=, 2, 0)
 Warn when a const variable is unused.
 
 Wunused-const-variable=
-C ObjC C++ ObjC++ Joined RejectNegative UInteger Var(warn_unused_const_variable) Warning LangEnabledBy(C ObjC,Wunused-variable, 1, 0)
+C ObjC C++ ObjC++ Joined RejectNegative UInteger Var(warn_unused_const_variable) Warning LangEnabledBy(C ObjC,Wunused-variable, 1, 0) IntegerRange(0, 2)
 Warn when a const variable is unused.
 
 Wvariadic-macros

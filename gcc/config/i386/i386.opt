@@ -267,8 +267,8 @@ EnumValue
 Enum(asm_dialect) String(att) Value(ASM_ATT)
 
 mbranch-cost=
-Target RejectNegative Joined UInteger Var(ix86_branch_cost)
-Branches are this expensive (1-5, arbitrary units).
+Target RejectNegative Joined UInteger Var(ix86_branch_cost) IntegerRange(1, 5)
+Branches are this expensive (arbitrary units).
 
 mlarge-data-threshold=
 Target RejectNegative Joined UInteger Var(ix86_section_threshold) Init(DEFAULT_LARGE_SECTION_THRESHOLD)
