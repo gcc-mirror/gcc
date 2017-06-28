@@ -1,3 +1,8 @@
+2017-06-27  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/80164
+	* gfortran.dg/array_temporaries_4.f90: New test.
+
 2017-06-27  Andrew Pinski  <apinski@cavium.com>
 
 	* gcc.dg/tree-ssa/copy-sign-1.c: New testcase.
