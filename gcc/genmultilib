@@ -462,7 +462,7 @@ echo "};"
 # Generate a regular expression to validate option combinations.
 options_re=
 for set in ${options}; do
-  for opt in `echo ${set} | sed -e 's_[/|]_ _g'`; do
+  for opt in `echo ${set} | sed -e 's_[/|]_ _g' -e 's/+/./g' `; do
     options_re="${options_re}${options_re:+|}${opt}"
   done
 done
