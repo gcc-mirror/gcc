@@ -148,6 +148,7 @@ create_dispatcher_calls (struct cgraph_node *node)
 	}
     }
 
+  TREE_PUBLIC (node->decl) = 0;
   symtab->change_decl_assembler_name (node->decl,
 				      clone_function_name (node->decl,
 							   "default"));

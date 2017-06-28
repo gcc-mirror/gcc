@@ -1930,6 +1930,37 @@ proc check_effective_target_powerpc64_no_dm { } {
 	} {-O2}]
 }
 
+# Return 1 if the target supports the __builtin_cpu_supports built-in,
+# including having a new enough library to support the test.  Cache the result.
+# Require at least a power7 to run on.
+
+proc check_ppc_cpu_supports_hw_available { } {
+    return [check_cached_effective_target ppc_cpu_supports_hw_available {
+	# Some simulators are known to not support VSX/power8 instructions.
+	# For now, disable on Darwin
+	if { [istarget powerpc-*-eabi]
+	     || [istarget powerpc*-*-eabispe]
+	     || [istarget *-*-darwin*]} {
+	    expr 0
+	} else {
+	    set options "-mvsx"
+	    check_runtime_nocache ppc_cpu_supports_hw_available {
+		int main()
+		{
+		#ifdef __MACH__
+		  asm volatile ("xxlor vs0,vs0,vs0");
+		#else
+		  asm volatile ("xxlor 0,0,0");
+	        #endif
+		  if (!__builtin_cpu_supports ("vsx"))
+		    return 1;
+		  return 0;
+		}
+	    } $options
+	}
+    }]
+}
+
 # Return 1 if the target supports executing power8 vector instructions, 0
 # otherwise.  Cache the result.
 
@@ -6955,6 +6986,7 @@ proc is-effective-target { arg } {
 	  "ppc_float128_sw" { set selected [check_ppc_float128_sw_available] }
 	  "ppc_float128_hw" { set selected [check_ppc_float128_hw_available] }
 	  "ppc_recip_hw"   { set selected [check_ppc_recip_hw_available] }
+	  "ppc_cpu_supports_hw" { set selected [check_ppc_cpu_supports_hw_available] }
 	  "dfp_hw"         { set selected [check_dfp_hw_available] }
 	  "htm_hw"         { set selected [check_htm_hw_available] }
 	  "named_sections" { set selected [check_named_sections_available] }
