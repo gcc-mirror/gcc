@@ -13614,10 +13614,7 @@ gen_ldm_seq (rtx *operands, int nops, bool sort_regs)
       emit_insn (gen_addsi3 (newbase, base_reg_rtx, GEN_INT (offset)));
       offset = 0;
       if (!TARGET_THUMB1)
-	{
-	  base_reg = regs[0];
-	  base_reg_rtx = newbase;
-	}
+	base_reg_rtx = newbase;
     }
 
   for (i = 0; i < nops; i++)
@@ -14141,7 +14138,6 @@ arm_gen_movmemqi (rtx *operands)
 {
   HOST_WIDE_INT in_words_to_go, out_words_to_go, last_bytes;
   HOST_WIDE_INT srcoffset, dstoffset;
-  int i;
   rtx src, dst, srcbase, dstbase;
   rtx part_bytes_reg = NULL;
   rtx mem;
@@ -14171,7 +14167,7 @@ arm_gen_movmemqi (rtx *operands)
   if (out_words_to_go != in_words_to_go && ((in_words_to_go - 1) & 3) != 0)
     part_bytes_reg = gen_rtx_REG (SImode, (in_words_to_go - 1) & 3);
 
-  for (i = 0; in_words_to_go >= 2; i+=4)
+  while (in_words_to_go >= 2)
     {
       if (in_words_to_go > 4)
 	emit_insn (arm_gen_load_multiple (arm_regs_in_sequence, 4, src,
@@ -21725,8 +21721,8 @@ arm_expand_prologue (void)
 	 will prevent the scheduler from moving stores to the frame
 	 before the stack adjustment.  */
       if (frame_pointer_needed)
-	insn = emit_insn (gen_stack_tie (stack_pointer_rtx,
-					 hard_frame_pointer_rtx));
+	emit_insn (gen_stack_tie (stack_pointer_rtx,
+				  hard_frame_pointer_rtx));
     }
 
 
@@ -23811,7 +23807,6 @@ thumb_pop (FILE *f, unsigned long mask)
 {
   int regno;
   int lo_mask = mask & 0xFF;
-  int pushed_words = 0;
 
   gcc_assert (mask);
 
@@ -23834,8 +23829,6 @@ thumb_pop (FILE *f, unsigned long mask)
 
 	  if ((lo_mask & ~1) != 0)
 	    fprintf (f, ", ");
-
-	  pushed_words++;
 	}
     }
 
@@ -24105,9 +24098,6 @@ thumb_exit (FILE *f, int reg_containing_return_addr)
       move_to     = number_of_first_bit_set (regs_to_pop);
 
       asm_fprintf (f, "\tmov\t%r, %r\n", move_to, popped_into);
-
-      regs_to_pop &= ~(1 << move_to);
-
       --pops_needed;
     }
 
