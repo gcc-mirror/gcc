@@ -1,3 +1,10 @@
+2017-06-28  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	* config.gcc (*-linux-musl*): Add t-musl tmake_file.
+	(*-linux-uclibc*): Add t-uclibc tmake_file.
+	* config/t-musl: New.
+	* config/t-uclibc: New.
+
 2017-06-28  Richard Earnshaw  <rearnsha@arm.com>
 
 	* config/arm/parsecpu.awk (profile): Parse new keyword in an arch
