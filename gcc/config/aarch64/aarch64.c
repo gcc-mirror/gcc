@@ -2002,6 +2002,8 @@ aarch64_expand_mov_immediate (rtx dest, rtx imm)
 	      gcc_assert (can_create_pseudo_p ());
 	      base = gen_reg_rtx (ptr_mode);
 	      aarch64_expand_mov_immediate (base, XEXP (mem, 0));
+	      if (ptr_mode != Pmode)
+		base = convert_memory_address (Pmode, base);
 	      mem = gen_rtx_MEM (ptr_mode, base);
 	    }
 
@@ -5265,6 +5267,8 @@ aarch64_print_operand (FILE *f, rtx x, int code)
 
 	case MEM:
 	  output_address (GET_MODE (x), XEXP (x, 0));
+	  /* Check all memory references are Pmode - even with ILP32.  */
+	  gcc_assert (GET_MODE (XEXP (x, 0)) == Pmode);
 	  break;
 
 	case CONST:
