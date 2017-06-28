@@ -56151,29 +56151,6 @@ do-clean: clean-stagetrain
 
 
 
-.PHONY: profiledbootstrap profiledbootstrap-lean
-profiledbootstrap:
-	echo stagetrain > stage_final
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(MAKE) $(RECURSE_FLAGS_TO_PASS) stagetrain-bubble
-	@: $(MAKE); $(unstage)
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	TFLAGS="$(STAGEtrain_TFLAGS)"; \
-	$(MAKE) $(TARGET_FLAGS_TO_PASS) all-host all-target
-
-profiledbootstrap-lean:
-	echo stagetrain > stage_final
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(MAKE) $(RECURSE_FLAGS_TO_PASS) LEAN=: stagetrain-bubble
-	@: $(MAKE); $(unstage)
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	TFLAGS="$(STAGEtrain_TFLAGS)"; \
-	$(MAKE) $(TARGET_FLAGS_TO_PASS) all-host all-target
-
 
 # Rules to wipe a stage and all the following ones, also used for cleanstrap
 distclean-stageprofile:: distclean-stagetrain 
