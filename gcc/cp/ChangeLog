@@ -1,5 +1,9 @@
 2017-06-28  Jason Merrill  <jason@redhat.com>
 
+	PR c++/72764 - ICE with invalid template typename.
+	* decl.c (build_typename_type): No longer static.
+	* tree.c (strip_typedefs): Use it instead of make_typename_type.
+
 	PR c++/69300 - ICE with self-referential noexcept
 	* pt.c (maybe_instantiate_noexcept): Check for recursion.
 
