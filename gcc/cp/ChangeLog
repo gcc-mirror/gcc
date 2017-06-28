@@ -1,5 +1,8 @@
 2017-06-28  Jason Merrill  <jason@redhat.com>
 
+	PR c++/61022 - error with variadic template template parm
+	* pt.c (convert_template_argument): Keep the TYPE_PACK_EXPANSION.
+
 	PR c++/72801 - ICE with variadic partial specialization
 	* pt.c (unify_pack_expansion): Use PACK_EXPANSION_EXTRA_ARGS.
 
