@@ -1,5 +1,11 @@
 2017-06-28  Wilco Dijkstra  <wdijkstr@arm.com>
 
+	* config/aarch64/aarch64 (aarch64_expand_mov_immediate):
+	Convert memory address to Pmode.
+	(aarch64_print_operand): Assert MEM operands are always Pmode.
+
+2017-06-28  Wilco Dijkstra  <wdijkstr@arm.com>
+
 	PR target/79665
 	* config/arm/aarch-common.c (arm_no_early_alu_shift_dep):
 	Remove redundant if.
