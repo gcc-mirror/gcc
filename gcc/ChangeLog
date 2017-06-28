@@ -1,3 +1,12 @@
+2017-06-28  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-loop.c (vectorizable_reduction): Move special
+	cond reduction IV var creation ...
+	(vect_create_epilog_for_reduction): ... here.  Remove induction_index
+	parameter.  Use STMT_VINFO_VECTYPE.
+	* tree-vect-slp.c (vect_get_constant_vectors): Properly reset
+	constant_p.
+
 2017-06-28  Martin Liska  <mliska@suse.cz>
 
 	PR ipa/81128
