@@ -1,5 +1,8 @@
 2017-06-28  Jason Merrill  <jason@redhat.com>
 
+	PR c++/55639 - partial specialization with ::template
+	* parser.c (cp_parser_class_head): Handle ::template.
+
 	PR c++/45976 - error with ::template in declarator.
 	* pt.c (resolve_typename_type): Fix TEMPLATE_ID_EXPR handling.
 
