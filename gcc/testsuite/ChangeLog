@@ -1,3 +1,9 @@
+2017-06-28  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.dg/tree-ssa/copy-sign-1.c: Add c99_runtime effective target
+	and options.
+	* gcc.dg/tree-ssa/mult-abs-2.c: Likewise.
+
 2017-06-28  Marc Glisse  <marc.glisse@inria.fr>
 
 	* gcc.dg/tree-ssa/addadd.c: Remove test duplicated in addadd-2.c.
