@@ -2561,7 +2561,7 @@ optimize_range_tests_diff (enum tree_code opcode, tree type,
   tem2 = fold_convert (type, tem2);
   lowi = fold_convert (type, lowi);
   mask = fold_build1 (BIT_NOT_EXPR, type, tem1);
-  tem1 = fold_binary (MINUS_EXPR, type,
+  tem1 = fold_build2 (MINUS_EXPR, type,
 		      fold_convert (type, rangei->exp), lowi);
   tem1 = fold_build2 (BIT_AND_EXPR, type, tem1, mask);
   lowj = build_int_cst (type, 0);

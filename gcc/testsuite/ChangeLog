@@ -1,3 +1,8 @@
+2017-06-28  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/81227
+	* gcc.dg/pr81227.c: New testcase.
+
 2017-06-28  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	PR target/81193
