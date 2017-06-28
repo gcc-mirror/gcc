@@ -1,3 +1,8 @@
+2017-06-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.dg/tree-prof/val-profiler-threads-1.c (main): Fix 2nd argument
+	passed to pthread_join.
+
 2017-06-27  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	Backport from trunk:
