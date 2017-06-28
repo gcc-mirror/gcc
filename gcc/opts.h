@@ -110,6 +110,10 @@ struct cl_option
   enum cl_var_type var_type;
   /* Value or bit-mask with which to set a field.  */
   HOST_WIDE_INT var_value;
+  /* Range info minimum, or -1.  */
+  int range_min;
+  /* Range info maximum, or -1.  */
+  int range_max;
 };
 
 /* Records that the state of an option consists of SIZE bytes starting
@@ -200,8 +204,9 @@ extern const unsigned int cl_enums_count;
 #define CL_ERR_MISSING_ARG	(1 << 1) /* Argument required but missing.  */
 #define CL_ERR_WRONG_LANG	(1 << 2) /* Option for wrong language.  */
 #define CL_ERR_UINT_ARG		(1 << 3) /* Bad unsigned integer argument.  */
-#define CL_ERR_ENUM_ARG		(1 << 4) /* Bad enumerated argument.  */
-#define CL_ERR_NEGATIVE		(1 << 5) /* Negative form of option
+#define CL_ERR_INT_RANGE_ARG	(1 << 4) /* Bad unsigned integer argument.  */
+#define CL_ERR_ENUM_ARG		(1 << 5) /* Bad enumerated argument.  */
+#define CL_ERR_NEGATIVE		(1 << 6) /* Negative form of option
 					    not permitted (together
 					    with OPT_SPECIAL_unknown).  */
 

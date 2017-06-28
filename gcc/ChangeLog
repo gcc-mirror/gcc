@@ -1,3 +1,17 @@
+2017-06-28  Martin Liska  <mliska@suse.cz>
+
+	PR driver/79659
+	* common.opt: Add IntegerRange to various options.
+	* opt-functions.awk (integer_range_info): New function.
+	* optc-gen.awk: Add integer_range_info to cl_options struct.
+	* opts-common.c (decode_cmdline_option): Handle
+	CL_ERR_INT_RANGE_ARG.
+	(cmdline_handle_error): Likewise.
+	* opts.c (print_filtered_help): Show valid interval in
+	when --help is provided.
+	* opts.h (struct cl_option): Add range_min and range_max fields.
+	* config/i386/i386.opt: Add IntegerRange for -mbranch-cost.
+
 2017-06-28  Marc Glisse  <marc.glisse@inria.fr>
 
 	* match.pd ((X & ~Y) | (~X & Y)): Generalize to + and ^.

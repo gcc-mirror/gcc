@@ -314,6 +314,17 @@ function search_var_name(name, opt_numbers, opts, flags, n_opts)
     return ""
 }
 
+function integer_range_info(range_option)
+{
+    if (range_option != "") {
+	start = nth_arg(0, range_option);
+	end = nth_arg(1, range_option);
+	return start ", " end
+    }
+    else
+        return "-1, -1"
+}
+
 # Handle LangEnabledBy(ENABLED_BY_LANGS, ENABLEDBY_NAME, ENABLEDBY_POSARG,
 # ENABLEDBY_NEGARG). This function does not return anything.
 function lang_enabled_by(enabledby_langs, enabledby_name, enabledby_posarg, enabledby_negarg)
