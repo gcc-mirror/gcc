@@ -1,3 +1,9 @@
+2017-06-28  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	* config/aarch64/aarch64.h (AARCH64_EXPAND_ALIGNMENT): New.
+	(DATA_ALIGNMENT): Update to use AARCH64_EXPAND_ALIGNMENT.
+	(LOCAL_ALIGNMENT): Update to use AARCH64_EXPAND_ALIGNMENT.
+
 2017-06-28  Sebastian Peryt  <sebastian.peryt@intel.com>
 
 	* config/i386/avx512vlintrin.h (_mm256_permutexvar_epi64)
