@@ -15522,17 +15522,17 @@ cp_parser_template_id (cp_parser *parser,
 
   /* If the next token corresponds to a template-id, there is no need
      to reparse it.  */
-  next_token = cp_lexer_peek_token (parser->lexer);
-  if (next_token->type == CPP_TEMPLATE_ID)
+  cp_token *token = cp_lexer_peek_token (parser->lexer);
+  if (token->type == CPP_TEMPLATE_ID)
     {
       cp_lexer_consume_token (parser->lexer);
-      return saved_checks_value (next_token->u.tree_check_value);
+      return saved_checks_value (token->u.tree_check_value);
     }
 
   /* Avoid performing name lookup if there is no possibility of
      finding a template-id.  */
-  if ((next_token->type != CPP_NAME && next_token->keyword != RID_OPERATOR)
-      || (next_token->type == CPP_NAME
+  if ((token->type != CPP_NAME && token->keyword != RID_OPERATOR)
+      || (token->type == CPP_NAME
 	  && !cp_parser_nth_token_starts_template_argument_list_p
 	       (parser, 2)))
     {
@@ -15623,9 +15623,19 @@ cp_parser_template_id (cp_parser *parser,
       arguments = cp_parser_enclosed_template_argument_list (parser);
     }
 
+  /* Set the location to be of the form:
+     template-name < template-argument-list [opt] >
+     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     with caret == start at the start of the template-name,
+     ranging until the closing '>'.  */
+  location_t finish_loc
+    = get_finish (cp_lexer_previous_token (parser->lexer)->location);
+  location_t combined_loc
+    = make_location (token->location, token->location, finish_loc);
+
   /* Build a representation of the specialization.  */
   if (identifier_p (templ))
-    template_id = build_min_nt_loc (next_token->location,
+    template_id = build_min_nt_loc (combined_loc,
 				    TEMPLATE_ID_EXPR,
 				    templ, arguments);
   else if (DECL_TYPE_TEMPLATE_P (templ)
@@ -15652,7 +15662,7 @@ cp_parser_template_id (cp_parser *parser,
     {
       template_id = lookup_template_variable (templ, arguments);
       if (TREE_CODE (template_id) == TEMPLATE_ID_EXPR)
-	SET_EXPR_LOCATION (template_id, next_token->location);
+	SET_EXPR_LOCATION (template_id, combined_loc);
     }
   else
     {
@@ -15664,7 +15674,7 @@ cp_parser_template_id (cp_parser *parser,
 
       template_id = lookup_template_function (templ, arguments);
       if (TREE_CODE (template_id) == TEMPLATE_ID_EXPR)
-	SET_EXPR_LOCATION (template_id, next_token->location);
+	SET_EXPR_LOCATION (template_id, combined_loc);
     }
 
   /* If parsing tentatively, replace the sequence of tokens that makes
@@ -15680,20 +15690,8 @@ cp_parser_template_id (cp_parser *parser,
 	   && cp_parser_parsing_tentatively (parser)
 	   && parser->in_declarator_p))
     {
-      cp_token *token = cp_lexer_token_at (parser->lexer, start_of_id);
-
       /* Reset the contents of the START_OF_ID token.  */
       token->type = CPP_TEMPLATE_ID;
-
-      /* Update the location to be of the form:
-	   template-name < template-argument-list [opt] >
-	   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-	 with caret == start at the start of the template-name,
-	 ranging until the closing '>'.  */
-      location_t finish_loc
-	= get_finish (cp_lexer_previous_token (parser->lexer)->location);
-      location_t combined_loc
-	= make_location (token->location, token->location, finish_loc);
       token->location = combined_loc;
 
       /* We must mark the lookup as kept, so we don't throw it away on
