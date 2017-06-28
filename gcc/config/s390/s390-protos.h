@@ -79,6 +79,7 @@ extern bool s390_bytemask_vector_p (rtx, unsigned *);
 extern bool s390_split_ok_p (rtx, rtx, machine_mode, int);
 extern bool s390_overlap_p (rtx, rtx, HOST_WIDE_INT);
 extern bool s390_offset_p (rtx, rtx, rtx);
+extern bool s390_rel_address_ok_p (rtx);
 extern int tls_symbolic_operand (rtx);
 
 extern bool s390_match_ccmode (rtx_insn *, machine_mode);
