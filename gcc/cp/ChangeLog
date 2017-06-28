@@ -1,5 +1,8 @@
 2017-06-28  Jason Merrill  <jason@redhat.com>
 
+	PR c++/45976 - error with ::template in declarator.
+	* pt.c (resolve_typename_type): Fix TEMPLATE_ID_EXPR handling.
+
 	PR c++/54769 - wrong lookup of dependent template-name.
 	* parser.c (cp_parser_template_name): Handle dependent object type.
 	(cp_parser_nested_name_specifier_opt): Make template_keyword_p a

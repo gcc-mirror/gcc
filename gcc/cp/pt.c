@@ -24624,26 +24624,38 @@ resolve_typename_type (tree type, bool only_current_p)
   
   /* For a TYPENAME_TYPE like "typename X::template Y<T>", we want to
      find a TEMPLATE_DECL.  Otherwise, we want to find a TYPE_DECL.  */
+  tree fullname = TYPENAME_TYPE_FULLNAME (type);
   if (!decl)
     /*nop*/;
-  else if (identifier_p (TYPENAME_TYPE_FULLNAME (type))
+  else if (identifier_p (fullname)
 	   && TREE_CODE (decl) == TYPE_DECL)
     {
       result = TREE_TYPE (decl);
       if (result == error_mark_node)
 	result = NULL_TREE;
     }
-  else if (TREE_CODE (TYPENAME_TYPE_FULLNAME (type)) == TEMPLATE_ID_EXPR
+  else if (TREE_CODE (fullname) == TEMPLATE_ID_EXPR
 	   && DECL_CLASS_TEMPLATE_P (decl))
     {
-      tree tmpl;
-      tree args;
       /* Obtain the template and the arguments.  */
-      tmpl = TREE_OPERAND (TYPENAME_TYPE_FULLNAME (type), 0);
-      args = TREE_OPERAND (TYPENAME_TYPE_FULLNAME (type), 1);
+      tree tmpl = TREE_OPERAND (fullname, 0);
+      if (TREE_CODE (tmpl) == IDENTIFIER_NODE)
+	{
+	  /* We get here with a plain identifier because a previous tentative
+	     parse of the nested-name-specifier as part of a ptr-operator saw
+	     ::template X<A>.  The use of ::template is necessary in a
+	     ptr-operator, but wrong in a declarator-id.
+
+	     [temp.names]: In a qualified-id of a declarator-id, the keyword
+	     template shall not appear at the top level.  */
+	  pedwarn (EXPR_LOC_OR_LOC (fullname, input_location), OPT_Wpedantic,
+		   "keyword %<template%> not allowed in declarator-id");
+	  tmpl = decl;
+	}
+      tree args = TREE_OPERAND (fullname, 1);
       /* Instantiate the template.  */
       result = lookup_template_class (tmpl, args, NULL_TREE, NULL_TREE,
-				      /*entering_scope=*/0,
+				      /*entering_scope=*/true,
 				      tf_error | tf_user);
       if (result == error_mark_node)
 	result = NULL_TREE;
