@@ -1,3 +1,13 @@
+2017-06-28  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	PR target/79665
+	* config/arm/aarch-common.c (arm_no_early_alu_shift_dep):
+	Remove redundant if.
+	(aarch_forward_to_shift_is_not_shifted_reg): Remove.
+	* config/arm/aarch-common-protos.h
+	(aarch_forward_to_shift_is_not_shifted_re): Remove.
+	* config/arm/cortex-a53.md: Use arm_no_early_alu_shift_dep in bypass.
+
 2017-06-28  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	PR ipa/81238

@@ -211,7 +211,7 @@
 
 (define_bypass 1 "cortex_a53_alu*"
 		 "cortex_a53_alu_shift*"
-		 "aarch_forward_to_shift_is_not_shifted_reg")
+		 "arm_no_early_alu_shift_dep")
 
 (define_bypass 2 "cortex_a53_alu*"
 		 "cortex_a53_alu_*,cortex_a53_shift*")
