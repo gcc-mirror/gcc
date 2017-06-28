@@ -1,5 +1,12 @@
 2017-06-28  Jason Merrill  <jason@redhat.com>
 
+	PR c++/54769 - wrong lookup of dependent template-name.
+	* parser.c (cp_parser_template_name): Handle dependent object type.
+	(cp_parser_nested_name_specifier_opt): Make template_keyword_p a
+	parameter.
+	(cp_parser_id_expression): Pass it.
+	(cp_parser_diagnose_invalid_type_name): Handle TEMPLATE_ID_EXPR.
+
 	* parser.c (cp_parser_template_id): Use the range location on the
 	TEMPLATE_ID_EXPR.
 
