@@ -1,3 +1,19 @@
+2017-06-28  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/parsecpu.awk (profile): Parse new keyword in an arch
+	context.
+	(gen_comm_data): Emit architectural setting of arch_prof.
+	* config/arm/arm-cpus.in (armv6-m, armv6s-m, armv7-a, armv7ve): Set the
+	profile.
+	(armv7-r, armv7-m, armv7e-m, armv8-a, armv8.1-a, armv8.2-a): Likewise.
+	(armv8-m.base, armv8-m.main): Likewise.
+	* arm-protos.h (arm_build_target): Add profile field.
+	(arch_option): Likewise.
+	* config/arm/arm.c (arm_configure_build_target): Copy the profile to
+	the active target.
+	* config/arm/arm.h (TARGET_ARM_ARCH_PROFILE): Use
+	arm_active_target.profile.
+
 2017-06-28  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/81227
