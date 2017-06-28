@@ -1094,8 +1094,6 @@ extern void vect_get_load_cost (struct data_reference *, int, bool,
 extern void vect_get_store_cost (struct data_reference *, int,
 				 unsigned int *, stmt_vector_for_cost *);
 extern bool vect_supportable_shift (enum tree_code, tree);
-extern void vect_get_vec_defs (tree, tree, gimple *, vec<tree> *,
-			       vec<tree> *, slp_tree, int);
 extern tree vect_gen_perm_mask_any (tree, const unsigned char *);
 extern tree vect_gen_perm_mask_checked (tree, const unsigned char *);
 extern void optimize_mask_stores (struct loop*);
@@ -1179,8 +1177,7 @@ extern bool vect_schedule_slp (vec_info *);
 extern bool vect_analyze_slp (vec_info *, unsigned);
 extern bool vect_make_slp_decision (loop_vec_info);
 extern void vect_detect_hybrid_slp (loop_vec_info);
-extern void vect_get_slp_defs (vec<tree> , slp_tree,
-			       vec<vec<tree> > *, int);
+extern void vect_get_slp_defs (vec<tree> , slp_tree, vec<vec<tree> > *);
 extern bool vect_slp_bb (basic_block);
 extern gimple *vect_find_last_scalar_stmt_in_slp (slp_tree);
 extern bool is_simple_and_all_uses_invariant (gimple *, loop_vec_info);

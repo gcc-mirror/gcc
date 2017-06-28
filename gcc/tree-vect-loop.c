@@ -4045,6 +4045,203 @@ get_initial_def_for_reduction (gimple *stmt, tree init_val,
   return init_def;
 }
 
+/* Get at the initial defs for OP in the reduction SLP_NODE.
+   NUMBER_OF_VECTORS is the number of vector defs to create.
+   REDUC_INDEX is the index of the reduction operand in the statements.  */
+
+static void
+get_initial_defs_for_reduction (slp_tree slp_node,
+				vec<tree> *vec_oprnds,
+				unsigned int number_of_vectors,
+				int reduc_index, enum tree_code code)
+{
+  vec<gimple *> stmts = SLP_TREE_SCALAR_STMTS (slp_node);
+  gimple *stmt = stmts[0];
+  stmt_vec_info stmt_vinfo = vinfo_for_stmt (stmt);
+  unsigned nunits;
+  tree vec_cst;
+  tree *elts;
+  unsigned j, number_of_places_left_in_vector;
+  tree vector_type, scalar_type;
+  tree vop;
+  int group_size = stmts.length ();
+  unsigned int vec_num, i;
+  unsigned number_of_copies = 1;
+  vec<tree> voprnds;
+  voprnds.create (number_of_vectors);
+  bool constant_p;
+  tree neutral_op = NULL;
+  gimple *def_stmt;
+  struct loop *loop;
+  gimple_seq ctor_seq = NULL;
+
+  vector_type = STMT_VINFO_VECTYPE (stmt_vinfo);
+  scalar_type = TREE_TYPE (vector_type);
+  nunits = TYPE_VECTOR_SUBPARTS (vector_type);
+
+  gcc_assert (STMT_VINFO_DEF_TYPE (stmt_vinfo) == vect_reduction_def
+	      && reduc_index != -1);
+
+  /* op is the reduction operand of the first stmt already.  */
+  /* For additional copies (see the explanation of NUMBER_OF_COPIES below)
+     we need either neutral operands or the original operands.  See
+     get_initial_def_for_reduction() for details.  */
+  switch (code)
+    {
+    case WIDEN_SUM_EXPR:
+    case DOT_PROD_EXPR:
+    case SAD_EXPR:
+    case PLUS_EXPR:
+    case MINUS_EXPR:
+    case BIT_IOR_EXPR:
+    case BIT_XOR_EXPR:
+      neutral_op = build_zero_cst (scalar_type);
+      break;
+
+    case MULT_EXPR:
+      neutral_op = build_one_cst (scalar_type);
+      break;
+
+    case BIT_AND_EXPR:
+      neutral_op = build_all_ones_cst (scalar_type);
+      break;
+
+    /* For MIN/MAX we don't have an easy neutral operand but
+       the initial values can be used fine here.  Only for
+       a reduction chain we have to force a neutral element.  */
+    case MAX_EXPR:
+    case MIN_EXPR:
+      if (!GROUP_FIRST_ELEMENT (stmt_vinfo))
+	neutral_op = NULL;
+      else
+	{
+	  tree op = get_reduction_op (stmts[0], reduc_index);
+	  def_stmt = SSA_NAME_DEF_STMT (op);
+	  loop = (gimple_bb (stmt))->loop_father;
+	  neutral_op = PHI_ARG_DEF_FROM_EDGE (def_stmt,
+					      loop_preheader_edge (loop));
+	}
+      break;
+
+    default:
+      gcc_assert (!GROUP_FIRST_ELEMENT (stmt_vinfo));
+      neutral_op = NULL;
+    }
+
+  /* NUMBER_OF_COPIES is the number of times we need to use the same values in
+     created vectors. It is greater than 1 if unrolling is performed.
+
+     For example, we have two scalar operands, s1 and s2 (e.g., group of
+     strided accesses of size two), while NUNITS is four (i.e., four scalars
+     of this type can be packed in a vector).  The output vector will contain
+     two copies of each scalar operand: {s1, s2, s1, s2}.  (NUMBER_OF_COPIES
+     will be 2).
+
+     If GROUP_SIZE > NUNITS, the scalars will be split into several vectors
+     containing the operands.
+
+     For example, NUNITS is four as before, and the group size is 8
+     (s1, s2, ..., s8).  We will create two vectors {s1, s2, s3, s4} and
+     {s5, s6, s7, s8}.  */
+
+  number_of_copies = nunits * number_of_vectors / group_size;
+
+  number_of_places_left_in_vector = nunits;
+  constant_p = true;
+  elts = XALLOCAVEC (tree, nunits);
+  for (j = 0; j < number_of_copies; j++)
+    {
+      for (i = group_size - 1; stmts.iterate (i, &stmt); i--)
+        {
+	  tree op = get_reduction_op (stmt, reduc_index);
+	  loop = (gimple_bb (stmt))->loop_father;
+	  def_stmt = SSA_NAME_DEF_STMT (op);
+
+	  gcc_assert (loop);
+
+	  /* Get the def before the loop.  In reduction chain we have only
+	     one initial value.  */
+	  if ((j != (number_of_copies - 1)
+	       || (GROUP_FIRST_ELEMENT (vinfo_for_stmt (stmt))
+		   && i != 0))
+	      && neutral_op)
+	    op = neutral_op;
+	  else
+	    op = PHI_ARG_DEF_FROM_EDGE (def_stmt,
+					loop_preheader_edge (loop));
+
+          /* Create 'vect_ = {op0,op1,...,opn}'.  */
+          number_of_places_left_in_vector--;
+	  elts[number_of_places_left_in_vector] = op;
+	  if (!CONSTANT_CLASS_P (op))
+	    constant_p = false;
+
+          if (number_of_places_left_in_vector == 0)
+            {
+	      if (constant_p)
+		vec_cst = build_vector (vector_type, elts);
+	      else
+		{
+		  vec<constructor_elt, va_gc> *v;
+		  unsigned k;
+		  vec_alloc (v, nunits);
+		  for (k = 0; k < nunits; ++k)
+		    CONSTRUCTOR_APPEND_ELT (v, NULL_TREE, elts[k]);
+		  vec_cst = build_constructor (vector_type, v);
+		}
+	      tree init;
+	      gimple_stmt_iterator gsi;
+	      init = vect_init_vector (stmt, vec_cst, vector_type, NULL);
+	      if (ctor_seq != NULL)
+		{
+		  gsi = gsi_for_stmt (SSA_NAME_DEF_STMT (init));
+		  gsi_insert_seq_before_without_update (&gsi, ctor_seq,
+							GSI_SAME_STMT);
+		  ctor_seq = NULL;
+		}
+	      voprnds.quick_push (init);
+
+              number_of_places_left_in_vector = nunits;
+	      constant_p = true;
+            }
+        }
+    }
+
+  /* Since the vectors are created in the reverse order, we should invert
+     them.  */
+  vec_num = voprnds.length ();
+  for (j = vec_num; j != 0; j--)
+    {
+      vop = voprnds[j - 1];
+      vec_oprnds->quick_push (vop);
+    }
+
+  voprnds.release ();
+
+  /* In case that VF is greater than the unrolling factor needed for the SLP
+     group of stmts, NUMBER_OF_VECTORS to be created is greater than
+     NUMBER_OF_SCALARS/NUNITS or NUNITS/NUMBER_OF_SCALARS, and hence we have
+     to replicate the vectors.  */
+  while (number_of_vectors > vec_oprnds->length ())
+    {
+      tree neutral_vec = NULL;
+
+      if (neutral_op)
+        {
+          if (!neutral_vec)
+	    neutral_vec = build_vector_from_val (vector_type, neutral_op);
+
+          vec_oprnds->quick_push (neutral_vec);
+        }
+      else
+        {
+          for (i = 0; vec_oprnds->iterate (i, &vop) && i < vec_num; i++)
+            vec_oprnds->quick_push (vop);
+        }
+    }
+}
+
+
 /* Function vect_create_epilog_for_reduction
 
    Create code at the loop-epilog to finalize the result of a reduction
@@ -4066,8 +4263,6 @@ get_initial_def_for_reduction (gimple *stmt, tree init_val,
    DOUBLE_REDUC is TRUE if double reduction phi nodes should be handled.
    SLP_NODE is an SLP node containing a group of reduction statements. The 
      first one in this group is STMT.
-   INDUCTION_INDEX is the index of the loop for condition reductions.
-     Otherwise it is undefined.
 
    This function:
    1. Creates the reduction def-use cycles: sets the arguments for 
@@ -4113,7 +4308,7 @@ vect_create_epilog_for_reduction (vec<tree> vect_defs, gimple *stmt,
 				  int ncopies, enum tree_code reduc_code,
 				  vec<gimple *> reduction_phis,
                                   int reduc_index, bool double_reduc, 
-				  slp_tree slp_node, tree induction_index)
+				  slp_tree slp_node)
 {
   stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
   stmt_vec_info prev_phi_info;
@@ -4134,7 +4329,7 @@ vect_create_epilog_for_reduction (vec<tree> vect_defs, gimple *stmt,
   tree bitsize;
   tree adjustment_def = NULL;
   tree vec_initial_def = NULL;
-  tree reduction_op, expr, def, initial_def = NULL;
+  tree expr, def, initial_def = NULL;
   tree orig_name, scalar_result;
   imm_use_iterator imm_iter, phi_imm_iter;
   use_operand_p use_p, phi_use_p;
@@ -4151,6 +4346,7 @@ vect_create_epilog_for_reduction (vec<tree> vect_defs, gimple *stmt,
   bool slp_reduc = false;
   tree new_phi_result;
   gimple *inner_phi = NULL;
+  tree induction_index = NULL_TREE;
 
   if (slp_node)
     group_size = SLP_TREE_SCALAR_STMTS (slp_node).length (); 
@@ -4163,9 +4359,7 @@ vect_create_epilog_for_reduction (vec<tree> vect_defs, gimple *stmt,
       gcc_assert (!slp_node);
     }
 
-  reduction_op = get_reduction_op (stmt, reduc_index);
-
-  vectype = get_vectype_for_scalar_type (TREE_TYPE (reduction_op));
+  vectype = STMT_VINFO_VECTYPE (stmt_info);
   gcc_assert (vectype);
   mode = TYPE_MODE (vectype);
 
@@ -4189,12 +4383,17 @@ vect_create_epilog_for_reduction (vec<tree> vect_defs, gimple *stmt,
   /* Get the loop-entry arguments.  */
   enum vect_def_type initial_def_dt = vect_unknown_def_type;
   if (slp_node)
-    vect_get_vec_defs (reduction_op, NULL_TREE, stmt, &vec_initial_defs,
-                       NULL, slp_node, reduc_index);
+    {
+      unsigned vec_num = SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node);
+      vec_initial_defs.reserve (vec_num);
+      get_initial_defs_for_reduction (slp_node, &vec_initial_defs,
+				      vec_num, reduc_index, code);
+    }
   else
     {
       /* Get at the scalar def before the loop, that defines the initial value
 	 of the reduction variable.  */
+      tree reduction_op = get_reduction_op (stmt, reduc_index);
       gimple *def_stmt = SSA_NAME_DEF_STMT (reduction_op);
       initial_def = PHI_ARG_DEF_FROM_EDGE (def_stmt,
 					   loop_preheader_edge (loop));
@@ -4262,6 +4461,95 @@ vect_create_epilog_for_reduction (vec<tree> vect_defs, gimple *stmt,
               dump_gimple_stmt (MSG_NOTE, TDF_SLIM, SSA_NAME_DEF_STMT (def), 0);
             }
         }
+    }
+
+  /* For cond reductions we want to create a new vector (INDEX_COND_EXPR)
+     which is updated with the current index of the loop for every match of
+     the original loop's cond_expr (VEC_STMT).  This results in a vector
+     containing the last time the condition passed for that vector lane.
+     The first match will be a 1 to allow 0 to be used for non-matching
+     indexes.  If there are no matches at all then the vector will be all
+     zeroes.  */
+  if (STMT_VINFO_VEC_REDUCTION_TYPE (stmt_info) == COND_REDUCTION)
+    {
+      tree indx_before_incr, indx_after_incr;
+      int nunits_out = TYPE_VECTOR_SUBPARTS (vectype);
+      int k;
+
+      gimple *vec_stmt = STMT_VINFO_VEC_STMT (stmt_info);
+      gcc_assert (gimple_assign_rhs_code (vec_stmt) == VEC_COND_EXPR);
+
+      int scalar_precision
+	= GET_MODE_PRECISION (TYPE_MODE (TREE_TYPE (vectype)));
+      tree cr_index_scalar_type = make_unsigned_type (scalar_precision);
+      tree cr_index_vector_type = build_vector_type
+	(cr_index_scalar_type, TYPE_VECTOR_SUBPARTS (vectype));
+
+      /* First we create a simple vector induction variable which starts
+	 with the values {1,2,3,...} (SERIES_VECT) and increments by the
+	 vector size (STEP).  */
+
+      /* Create a {1,2,3,...} vector.  */
+      tree *vtemp = XALLOCAVEC (tree, nunits_out);
+      for (k = 0; k < nunits_out; ++k)
+	vtemp[k] = build_int_cst (cr_index_scalar_type, k + 1);
+      tree series_vect = build_vector (cr_index_vector_type, vtemp);
+
+      /* Create a vector of the step value.  */
+      tree step = build_int_cst (cr_index_scalar_type, nunits_out);
+      tree vec_step = build_vector_from_val (cr_index_vector_type, step);
+
+      /* Create an induction variable.  */
+      gimple_stmt_iterator incr_gsi;
+      bool insert_after;
+      standard_iv_increment_position (loop, &incr_gsi, &insert_after);
+      create_iv (series_vect, vec_step, NULL_TREE, loop, &incr_gsi,
+		 insert_after, &indx_before_incr, &indx_after_incr);
+
+      /* Next create a new phi node vector (NEW_PHI_TREE) which starts
+	 filled with zeros (VEC_ZERO).  */
+
+      /* Create a vector of 0s.  */
+      tree zero = build_zero_cst (cr_index_scalar_type);
+      tree vec_zero = build_vector_from_val (cr_index_vector_type, zero);
+
+      /* Create a vector phi node.  */
+      tree new_phi_tree = make_ssa_name (cr_index_vector_type);
+      new_phi = create_phi_node (new_phi_tree, loop->header);
+      set_vinfo_for_stmt (new_phi,
+			  new_stmt_vec_info (new_phi, loop_vinfo));
+      add_phi_arg (as_a <gphi *> (new_phi), vec_zero,
+		   loop_preheader_edge (loop), UNKNOWN_LOCATION);
+
+      /* Now take the condition from the loops original cond_expr
+	 (VEC_STMT) and produce a new cond_expr (INDEX_COND_EXPR) which for
+	 every match uses values from the induction variable
+	 (INDEX_BEFORE_INCR) otherwise uses values from the phi node
+	 (NEW_PHI_TREE).
+	 Finally, we update the phi (NEW_PHI_TREE) to take the value of
+	 the new cond_expr (INDEX_COND_EXPR).  */
+
+      /* Duplicate the condition from vec_stmt.  */
+      tree ccompare = unshare_expr (gimple_assign_rhs1 (vec_stmt));
+
+      /* Create a conditional, where the condition is taken from vec_stmt
+	 (CCOMPARE), then is the induction index (INDEX_BEFORE_INCR) and
+	 else is the phi (NEW_PHI_TREE).  */
+      tree index_cond_expr = build3 (VEC_COND_EXPR, cr_index_vector_type,
+				     ccompare, indx_before_incr,
+				     new_phi_tree);
+      induction_index = make_ssa_name (cr_index_vector_type);
+      gimple *index_condition = gimple_build_assign (induction_index,
+						     index_cond_expr);
+      gsi_insert_before (&incr_gsi, index_condition, GSI_SAME_STMT);
+      stmt_vec_info index_vec_info = new_stmt_vec_info (index_condition,
+							loop_vinfo);
+      STMT_VINFO_VECTYPE (index_vec_info) = cr_index_vector_type;
+      set_vinfo_for_stmt (index_condition, index_vec_info);
+
+      /* Update the phi with the vec cond.  */
+      add_phi_arg (as_a <gphi *> (new_phi), induction_index,
+		   loop_latch_edge (loop), UNKNOWN_LOCATION);
     }
 
   /* 2. Create epilog code.
@@ -5939,7 +6227,7 @@ vectorizable_reduction (gimple *stmt, gimple_stmt_iterator *gsi,
 	      if (op_type == ternary_op)
 		slp_ops.quick_push (reduc_index == 2 ? NULL : ops[2]);
 
-	      vect_get_slp_defs (slp_ops, slp_node, &vec_defs, -1);
+	      vect_get_slp_defs (slp_ops, slp_node, &vec_defs);
 
 	      vec_oprnds0.safe_splice (vec_defs[reduc_index == 0 ? 1 : 0]);
 	      vec_defs[reduc_index == 0 ? 1 : 0].release ();
@@ -6047,100 +6335,14 @@ vectorizable_reduction (gimple *stmt, gimple_stmt_iterator *gsi,
       prev_phi_info = vinfo_for_stmt (new_phi);
     }
 
-  tree indx_before_incr, indx_after_incr, cond_name = NULL;
-
   /* Finalize the reduction-phi (set its arguments) and create the
      epilog reduction code.  */
   if ((!single_defuse_cycle || code == COND_EXPR) && !slp_node)
-    {
-      new_temp = gimple_assign_lhs (*vec_stmt);
-      vect_defs[0] = new_temp;
-
-      /* For cond reductions we want to create a new vector (INDEX_COND_EXPR)
-	 which is updated with the current index of the loop for every match of
-	 the original loop's cond_expr (VEC_STMT).  This results in a vector
-	 containing the last time the condition passed for that vector lane.
-	 The first match will be a 1 to allow 0 to be used for non-matching
-	 indexes.  If there are no matches at all then the vector will be all
-	 zeroes.  */
-      if (STMT_VINFO_VEC_REDUCTION_TYPE (stmt_info) == COND_REDUCTION)
-	{
-	  int nunits_out = TYPE_VECTOR_SUBPARTS (vectype_out);
-	  int k;
-
-	  gcc_assert (gimple_assign_rhs_code (*vec_stmt) == VEC_COND_EXPR);
-
-	  /* First we create a simple vector induction variable which starts
-	     with the values {1,2,3,...} (SERIES_VECT) and increments by the
-	     vector size (STEP).  */
-
-	  /* Create a {1,2,3,...} vector.  */
-	  tree *vtemp = XALLOCAVEC (tree, nunits_out);
-	  for (k = 0; k < nunits_out; ++k)
-	    vtemp[k] = build_int_cst (cr_index_scalar_type, k + 1);
-	  tree series_vect = build_vector (cr_index_vector_type, vtemp);
-
-	  /* Create a vector of the step value.  */
-	  tree step = build_int_cst (cr_index_scalar_type, nunits_out);
-	  tree vec_step = build_vector_from_val (cr_index_vector_type, step);
-
-	  /* Create an induction variable.  */
-	  gimple_stmt_iterator incr_gsi;
-	  bool insert_after;
-	  standard_iv_increment_position (loop, &incr_gsi, &insert_after);
-	  create_iv (series_vect, vec_step, NULL_TREE, loop, &incr_gsi,
-		     insert_after, &indx_before_incr, &indx_after_incr);
-
-	  /* Next create a new phi node vector (NEW_PHI_TREE) which starts
-	     filled with zeros (VEC_ZERO).  */
-
-	  /* Create a vector of 0s.  */
-	  tree zero = build_zero_cst (cr_index_scalar_type);
-	  tree vec_zero = build_vector_from_val (cr_index_vector_type, zero);
-
-	  /* Create a vector phi node.  */
-	  tree new_phi_tree = make_ssa_name (cr_index_vector_type);
-	  new_phi = create_phi_node (new_phi_tree, loop->header);
-	  set_vinfo_for_stmt (new_phi,
-			      new_stmt_vec_info (new_phi, loop_vinfo));
-	  add_phi_arg (new_phi, vec_zero, loop_preheader_edge (loop),
-		       UNKNOWN_LOCATION);
-
-	  /* Now take the condition from the loops original cond_expr
-	     (VEC_STMT) and produce a new cond_expr (INDEX_COND_EXPR) which for
-	     every match uses values from the induction variable
-	     (INDEX_BEFORE_INCR) otherwise uses values from the phi node
-	     (NEW_PHI_TREE).
-	     Finally, we update the phi (NEW_PHI_TREE) to take the value of
-	     the new cond_expr (INDEX_COND_EXPR).  */
-
-	  /* Duplicate the condition from vec_stmt.  */
-	  tree ccompare = unshare_expr (gimple_assign_rhs1 (*vec_stmt));
-
-	  /* Create a conditional, where the condition is taken from vec_stmt
-	     (CCOMPARE), then is the induction index (INDEX_BEFORE_INCR) and
-	     else is the phi (NEW_PHI_TREE).  */
-	  tree index_cond_expr = build3 (VEC_COND_EXPR, cr_index_vector_type,
-					 ccompare, indx_before_incr,
-					 new_phi_tree);
-	  cond_name = make_ssa_name (cr_index_vector_type);
-	  gimple *index_condition = gimple_build_assign (cond_name,
-							 index_cond_expr);
-	  gsi_insert_before (&incr_gsi, index_condition, GSI_SAME_STMT);
-	  stmt_vec_info index_vec_info = new_stmt_vec_info (index_condition,
-							    loop_vinfo);
-	  STMT_VINFO_VECTYPE (index_vec_info) = cr_index_vector_type;
-	  set_vinfo_for_stmt (index_condition, index_vec_info);
-
-	  /* Update the phi with the vec cond.  */
-	  add_phi_arg (new_phi, cond_name, loop_latch_edge (loop),
-		       UNKNOWN_LOCATION);
-	}
-    }
+    vect_defs[0] = gimple_assign_lhs (*vec_stmt);
 
   vect_create_epilog_for_reduction (vect_defs, stmt, epilog_copies,
                                     epilog_reduc_code, phis, reduc_index,
-				    double_reduc, slp_node, cond_name);
+				    double_reduc, slp_node);
 
   return true;
 }

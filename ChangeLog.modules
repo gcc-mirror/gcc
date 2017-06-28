@@ -1,5 +1,7 @@
 2017-06-28  Nathan Sidwell  <nathan@acm.org>
 
+	Merge trunk r249746.
+
 	gcc/cp/
 	* cp-tree.h (SET_CLASS_TYPE_P): Use RECORD_OR_UNION_CHECK.
 	(NON_UNION_CLASS_TYPE_P): Just check for RECORD_TYPE.

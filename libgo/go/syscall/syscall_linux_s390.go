@@ -8,9 +8,9 @@ package syscall
 
 import "unsafe"
 
-func (r *PtraceRegs) PC() uint64 { return uint64(r.Psw.Addr) }
+func (r *PtraceRegs) PC() uint64 { return uint64(r.Psw.addr) }
 
-func (r *PtraceRegs) SetPC(pc uint64) { r.Psw.Addr = uint32(pc) }
+func (r *PtraceRegs) SetPC(pc uint64) { r.Psw.addr = uint32(pc) }
 
 func PtraceGetRegs(pid int, regsout *PtraceRegs) (err error) {
 	return ptrace(PTRACE_GETREGS, pid, 0, uintptr(unsafe.Pointer(regsout)))

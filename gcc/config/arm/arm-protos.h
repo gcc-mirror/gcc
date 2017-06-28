@@ -464,6 +464,8 @@ struct arm_build_target
   const char *arch_pp_name;
   /* The base architecture value.  */
   enum base_architecture base_arch;
+  /* The profile letter for the architecture, upper case by convention.  */
+  char profile;
   /* Bitmap encapsulating the isa_bits for the target environment.  */
   sbitmap isa;
   /* Flags used for tuning.  Long term, these move into tune_params.  */
@@ -507,6 +509,8 @@ struct arch_option
   const char *arch;
   /* Base architecture, from which this specific architecture is derived.  */
   enum base_architecture base_arch;
+  /* The profile letter for the architecture, upper case by convention.  */
+  const char profile;
   /* Default tune target (in the absence of any more specific data).  */
   enum processor_type tune_id;
 };

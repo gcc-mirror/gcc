@@ -155,6 +155,58 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
            || !COMPLEX_FLOAT_TYPE_P (type)))
    (negate @0)))
 
+(for cmp (gt ge lt le)
+     outp (convert convert negate negate)
+     outn (negate negate convert convert)
+ /* Transform (X > 0.0 ? 1.0 : -1.0) into copysign(1, X). */
+ /* Transform (X >= 0.0 ? 1.0 : -1.0) into copysign(1, X). */
+ /* Transform (X < 0.0 ? 1.0 : -1.0) into copysign(1,-X). */
+ /* Transform (X <= 0.0 ? 1.0 : -1.0) into copysign(1,-X). */
+ (simplify
+  (cond (cmp @0 real_zerop) real_onep@1 real_minus_onep)
+  (if (!HONOR_NANS (type) && !HONOR_SIGNED_ZEROS (type)
+       && types_match (type, TREE_TYPE (@0)))
+   (switch
+    (if (types_match (type, float_type_node))
+     (BUILT_IN_COPYSIGNF @1 (outp @0)))
+    (if (types_match (type, double_type_node))
+     (BUILT_IN_COPYSIGN @1 (outp @0)))
+    (if (types_match (type, long_double_type_node))
+     (BUILT_IN_COPYSIGNL @1 (outp @0))))))
+ /* Transform (X > 0.0 ? -1.0 : 1.0) into copysign(1,-X). */
+ /* Transform (X >= 0.0 ? -1.0 : 1.0) into copysign(1,-X). */
+ /* Transform (X < 0.0 ? -1.0 : 1.0) into copysign(1,X). */
+ /* Transform (X <= 0.0 ? -1.0 : 1.0) into copysign(1,X). */
+ (simplify
+  (cond (cmp @0 real_zerop) real_minus_onep real_onep@1)
+  (if (!HONOR_NANS (type) && !HONOR_SIGNED_ZEROS (type)
+       && types_match (type, TREE_TYPE (@0)))
+   (switch
+    (if (types_match (type, float_type_node))
+     (BUILT_IN_COPYSIGNF @1 (outn @0)))
+    (if (types_match (type, double_type_node))
+     (BUILT_IN_COPYSIGN @1 (outn @0)))
+    (if (types_match (type, long_double_type_node))
+     (BUILT_IN_COPYSIGNL @1 (outn @0)))))))
+
+/* Transform X * copysign (1.0, X) into abs(X). */
+(simplify
+ (mult:c @0 (COPYSIGN real_onep @0))
+ (if (!HONOR_NANS (type) && !HONOR_SIGNED_ZEROS (type))
+  (abs @0)))
+
+/* Transform X * copysign (1.0, -X) into -abs(X). */
+(simplify
+ (mult:c @0 (COPYSIGN real_onep (negate @0)))
+ (if (!HONOR_NANS (type) && !HONOR_SIGNED_ZEROS (type))
+  (negate (abs @0))))
+
+/* Transform copysign (CST, X) into copysign (ABS(CST), X). */
+(simplify
+ (COPYSIGN REAL_CST@0 @1)
+ (if (REAL_VALUE_NEGATIVE (TREE_REAL_CST (@0)))
+  (COPYSIGN (negate @0) @1)))
+
 /* X * 1, X / 1 -> X.  */
 (for op (mult trunc_div ceil_div floor_div round_div exact_div)
   (simplify
@@ -590,14 +642,15 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  (minus (bit_and:cs @0 @1) (bit_and:cs @0 (bit_not @1)))
   (minus @1 (bit_xor @0 @1)))
 
-/* Simplify (X & ~Y) | (~X & Y) -> X ^ Y.  */
-(simplify
- (bit_ior (bit_and:c @0 (bit_not @1)) (bit_and:c (bit_not @0) @1))
-  (bit_xor @0 @1))
-(simplify
- (bit_ior:c (bit_and @0 INTEGER_CST@2) (bit_and (bit_not @0) INTEGER_CST@1))
- (if (wi::bit_not (@2) == @1)
-  (bit_xor @0 @1)))
+/* Simplify (X & ~Y) |^+ (~X & Y) -> X ^ Y.  */
+(for op (bit_ior bit_xor plus)
+ (simplify
+  (op (bit_and:c @0 (bit_not @1)) (bit_and:c (bit_not @0) @1))
+   (bit_xor @0 @1))
+ (simplify
+  (op:c (bit_and @0 INTEGER_CST@2) (bit_and (bit_not @0) INTEGER_CST@1))
+  (if (wi::bit_not (@2) == @1)
+   (bit_xor @0 @1))))
 
 /* PR53979: Transform ((a ^ b) | a) -> (a | b) */
 (simplify
@@ -861,7 +914,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 (match negate_expr_p
  INTEGER_CST
  (if ((INTEGRAL_TYPE_P (type)
-       && TYPE_OVERFLOW_WRAPS (type))
+       && TYPE_UNSIGNED (type))
       || (!TYPE_OVERFLOW_SANITIZED (type)
 	  && may_negate_without_overflow_p (t)))))
 (match negate_expr_p
@@ -1043,6 +1096,16 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (if (INTEGRAL_TYPE_P (TREE_TYPE (@1))
        && TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (@0))
        && tree_expr_nonzero_p (@1))
+   (cmp @0 @2))))
+
+/* For integral types with wrapping overflow and C odd fold
+   x * C EQ/NE y * C into x EQ/NE y.  */
+(for cmp (eq ne)
+ (simplify
+  (cmp (mult @0 INTEGER_CST@1) (mult @2 @1))
+  (if (INTEGRAL_TYPE_P (TREE_TYPE (@1))
+       && TYPE_OVERFLOW_WRAPS (TREE_TYPE (@0))
+       && (TREE_INT_CST_LOW (@1) & 1) != 0)
    (cmp @0 @2))))
 
 /* For integral types with undefined overflow and C != 0 fold

@@ -1253,6 +1253,15 @@ print_filtered_help (unsigned int include_flags,
 	  help = new_help;
 	}
 
+      if (option->range_max != -1)
+	{
+	  char b[128];
+	  snprintf (b, sizeof (b), "<%d,%d>", option->range_min,
+		    option->range_max);
+	  opt = concat (opt, b, NULL);
+	  len += strlen (b);
+	}
+
       wrap_help (help, opt, len, columns);
       displayed = true;
 

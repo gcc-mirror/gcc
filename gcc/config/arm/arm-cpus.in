@@ -46,6 +46,7 @@
 #   tune for <cpu>
 #   [tune flags <list>]
 #   base <name>
+#   [profile <A|R|M>]
 #   isa <isa-flags-list>
 # end arch <name>
 #
@@ -211,12 +212,14 @@ end arch armv6t2
 begin arch armv6-m
  tune for cortex-m1
  base 6M
+ profile M
  isa ARMv6m
 end arch armv6-m
 
 begin arch armv6s-m
  tune for cortex-m1
  base 6M
+ profile M
  isa ARMv6m
 end arch armv6s-m
 
@@ -235,6 +238,7 @@ begin arch armv7-a
  tune for cortex-a8
  tune flags CO_PROC
  base 7A
+ profile A
  isa ARMv7a
 # fp => VFPv3-d16, simd => neon-vfpv3
  option fp	       add VFPv3 FP_DBL
@@ -257,6 +261,7 @@ begin arch armv7ve
  tune for cortex-a8
  tune flags CO_PROC
  base 7A
+ profile A
  isa ARMv7ve
 # fp => VFPv4-d16, simd => neon-vfpv4
  option vfpv3-d16      add VFPv3 FP_DBL
@@ -279,6 +284,7 @@ begin arch armv7-r
  tune for cortex-r4
  tune flags CO_PROC
  base 7R
+ profile R
  isa ARMv7r
 # ARMv7-r uses VFPv3-d16
  option fp.sp add VFPv3
@@ -294,6 +300,7 @@ begin arch armv7-m
  tune for cortex-m3
  tune flags CO_PROC
  base 7M
+ profile M
  isa ARMv7m
 # In theory FP is permitted in v7-m, but in practice no implementations exist.
 # leave it out for now.
@@ -303,6 +310,7 @@ begin arch armv7e-m
  tune for cortex-m4
  tune flags CO_PROC
  base 7EM
+ profile M
  isa ARMv7em
 # fp => VFPv4-sp-d16; fpv5 => FPv5-sp-d16; fp.dp => FPv5-d16
  option fp add VFPv4
@@ -317,6 +325,7 @@ begin arch armv8-a
  tune for cortex-a53
  tune flags CO_PROC
  base 8A
+ profile A
  isa ARMv8a
  option crc add bit_crc32
  option simd add FP_ARMv8 NEON
@@ -329,6 +338,7 @@ begin arch armv8.1-a
  tune for cortex-a53
  tune flags CO_PROC
  base 8A
+ profile A
  isa ARMv8_1a
  option simd add FP_ARMv8 NEON
  option crypto add FP_ARMv8 CRYPTO
@@ -340,6 +350,7 @@ begin arch armv8.2-a
  tune for cortex-a53
  tune flags CO_PROC
  base 8A
+ profile A
  isa ARMv8_2a
  option simd add FP_ARMv8 NEON
  option fp16 add bit_fp16 FP_ARMv8 NEON
@@ -351,6 +362,7 @@ end arch armv8.2-a
 begin arch armv8-m.base
  tune for cortex-m23
  base 8M_BASE
+ profile M
  isa ARMv8m_base
 end arch armv8-m.base
 
@@ -358,6 +370,7 @@ begin arch armv8-m.main
  tune for cortex-m7
  tune flags CO_PROC
  base 8M_MAIN
+ profile M
  isa ARMv8m_main
  option dsp add bit_ARMv7em
 # fp => FPv5-sp-d16; fp.dp => FPv5-d16

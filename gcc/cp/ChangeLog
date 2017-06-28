@@ -1,5 +1,8 @@
 2017-06-27  Nathan Sidwell  <nathan@acm.org>
 
+	* pt.c (tsubst_decl <FUNCTION_DECL>): Move var decls to
+	initialization point.  Don't unnecessarily check for ctor name.
+
 	* cp-tree.h (CLASSTYPE_DESTRUCTORS): Rename to ...
 	(CLASSTYPE_DESTRUCTOR): ... this.
 	* class.c (accessible_nvdtor_p,

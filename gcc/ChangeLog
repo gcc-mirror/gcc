@@ -1,3 +1,170 @@
+2017-06-28  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	* config.gcc (*-linux-musl*): Add t-musl tmake_file.
+	(*-linux-uclibc*): Add t-uclibc tmake_file.
+	* config/t-musl: New.
+	* config/t-uclibc: New.
+
+2017-06-28  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/parsecpu.awk (profile): Parse new keyword in an arch
+	context.
+	(gen_comm_data): Emit architectural setting of arch_prof.
+	* config/arm/arm-cpus.in (armv6-m, armv6s-m, armv7-a, armv7ve): Set the
+	profile.
+	(armv7-r, armv7-m, armv7e-m, armv8-a, armv8.1-a, armv8.2-a): Likewise.
+	(armv8-m.base, armv8-m.main): Likewise.
+	* arm-protos.h (arm_build_target): Add profile field.
+	(arch_option): Likewise.
+	* config/arm/arm.c (arm_configure_build_target): Copy the profile to
+	the active target.
+	* config/arm/arm.h (TARGET_ARM_ARCH_PROFILE): Use
+	arm_active_target.profile.
+
+2017-06-28  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/81227
+	* fold-const.c (negate_expr_p): Use TYPE_UNSIGNED, not
+	TYPE_OVERFLOW_WRAPS.
+	* match.pd (negate_expr_p): Likewise.
+	* tree-ssa-reassoc.c (optimize_range_tests_diff): Use
+	fold_build2, not fold_binary.
+
+2017-06-28  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* config/aarch64/aarch64 (aarch64_expand_mov_immediate):
+	Convert memory address to Pmode.
+	(aarch64_print_operand): Assert MEM operands are always Pmode.
+
+2017-06-28  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	PR target/79665
+	* config/arm/aarch-common.c (arm_no_early_alu_shift_dep):
+	Remove redundant if.
+	(aarch_forward_to_shift_is_not_shifted_reg): Remove.
+	* config/arm/aarch-common-protos.h
+	(aarch_forward_to_shift_is_not_shifted_re): Remove.
+	* config/arm/cortex-a53.md: Use arm_no_early_alu_shift_dep in bypass.
+
+2017-06-28  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR ipa/81238
+	* multiple_target.c (create_dispatcher_calls): Set the default
+	clone to be static, not public.
+
+2017-06-28  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-loop.c (vectorizable_reduction): Move special
+	cond reduction IV var creation ...
+	(vect_create_epilog_for_reduction): ... here.  Remove induction_index
+	parameter.  Use STMT_VINFO_VECTYPE.
+	* tree-vect-slp.c (vect_get_constant_vectors): Properly reset
+	constant_p.
+
+2017-06-28  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/81128
+	* ipa-visibility.c (non_local_p): Handle visibility.
+
+2017-06-28  Martin Liska  <mliska@suse.cz>
+
+	PR driver/79659
+	* common.opt: Add IntegerRange to various options.
+	* opt-functions.awk (integer_range_info): New function.
+	* optc-gen.awk: Add integer_range_info to cl_options struct.
+	* opts-common.c (decode_cmdline_option): Handle
+	CL_ERR_INT_RANGE_ARG.
+	(cmdline_handle_error): Likewise.
+	* opts.c (print_filtered_help): Show valid interval in
+	when --help is provided.
+	* opts.h (struct cl_option): Add range_min and range_max fields.
+	* config/i386/i386.opt: Add IntegerRange for -mbranch-cost.
+
+2017-06-28  Marc Glisse  <marc.glisse@inria.fr>
+
+	* match.pd ((X & ~Y) | (~X & Y)): Generalize to + and ^.
+	(x * C EQ/NE y * C): New transformation.
+
+2017-06-28  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* genmultilib (combination_space): Accept '+' in option names.
+
+2017-06-28  Martin Liska  <mliska@suse.cz>
+
+	PR sanitizer/81224
+	* asan.c (instrument_derefs): Bail out inner references
+	that are hard register variables.
+
+2017-06-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/81175
+	* config/i386/i386.c (ix86_init_mmx_sse_builtins): Use def_builtin
+	rather than def_builtin_pure for __builtin_ia32_gatherpf*.
+
+2017-06-28  Richard Biener  <rguenther@suse.de>
+
+	* tree-vectorizer.h (vect_get_vec_defs): Remove.
+	(vect_get_slp_defs): Adjust.
+	* tree-vect-loop.c (get_initial_defs_for_reduction): Split
+	out from ...
+	* tree-vect-slp.c (vect_get_constant_vectors): ... here and
+	simplify.
+	* tree-vect-loop.c (vect_create_epilog_for_reduction): Use
+	get_initial_defs_for_reduction instead of vect_get_vec_defs.
+	(vectorizable_reduction): Adjust.
+	* tree-vect-slp.c (vect_get_constant_vectors): Remove reduction
+	handling.
+	(vect_get_slp_defs): Likewise.
+	* tree-vect-stmts.c (vect_get_vec_defs): Make static and adjust.
+	(vectorizable_bswap): Adjust.
+	(vectorizable_call): Likewise.
+	(vectorizable_conversion): Likewise.
+	(vectorizable_assignment): Likewise.
+	(vectorizable_shift): Likewise.
+	(vectorizable_operation): Likewise.
+	(vectorizable_store): Likewise.
+	(vectorizable_condition): Likewise.
+	(vectorizable_comparison): Likewise.
+
+2017-06-28  Michael Collison  <michael.collison@arm.com>
+
+	PR target/68535
+	* config/arm/arm.c (gen_ldm_seq): Remove last unnecessary
+	set of base_reg
+	(arm_gen_movmemqi): Removed unused variable 'i'.
+	Convert 'for' loop into 'while' loop.
+	(arm_expand_prologue): Remove last unnecessary set of insn.
+	(thumb_pop): Remove unused variable 'pushed_words'.
+	(thumb_exit): Remove last unnecessary set of regs_to_pop.
+
+2017-06-28  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
+	* config/s390/predicates.md: Use s390_rel_address_ok_p.
+	* config/s390/s390-protos.h: Add prototype of
+	s390_rel_address_ok_p.
+	* config/s390/s390.c (s390_got_symbol): New function.
+	(s390_rel_address_ok_p): New function.
+	(legitimize_pic_address): Use s390_rel_address_ok_p.
+	(s390_load_got): Use s390_got_symbol.
+	(s390_option_override): Issue error if
+	-mno-pic-data-is-text-relative is used without -fpic/-fPIC.
+	* config/s390/s390.h (TARGET_DEFAULT_PIC_DATA_IS_TEXT_RELATIVE):
+	New macro.
+	* config/s390/s390.opt: New option mpic-data-is-text-relative.
+
+2017-06-27  Andrew Pinski  <apinski@cavium.com>
+
+	* match.pd (X >/>=/</<= 0 ? 1.0 : -1.0): New patterns.
+	(X * copysign (1.0, X)): New pattern.
+	(X * copysign (1.0, -X)): New pattern.
+	(copysign (-1.0, CST)): New pattern.
+
+2017-06-27  Joseph Myers  <joseph@codesourcery.com>
+
+	* genmultilib (combination_space): Remove variable.
+	Validate reuse rules against regular expression for any sequence
+	of multilib options in any order.
+
 2017-06-27  Michael Collison  <michael.collison@arm.com>
 
 	* config/aarch64/aarch64-simd.md (aarch64_combine<mode>): Directly

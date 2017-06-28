@@ -1,3 +1,97 @@
+2017-06-28  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* lib/target-supports.exp (check_effective_target_vect_int): Replace
+	current ARM check by ARM NEON's availability check.
+	(check_effective_target_vect_intfloat_cvt): Likewise.
+	(check_effective_target_vect_uintfloat_cvt): Likewise.
+	(check_effective_target_vect_floatint_cvt): Likewise.
+	(check_effective_target_vect_floatuint_cvt): Likewise.
+	(check_effective_target_vect_shift): Likewise.
+	(check_effective_target_whole_vector_shift): Likewise.
+	(check_effective_target_vect_bswap): Likewise.
+	(check_effective_target_vect_shift_char): Likewise.
+	(check_effective_target_vect_long): Likewise.
+	(check_effective_target_vect_float): Likewise.
+	(check_effective_target_vect_perm): Likewise.
+	(check_effective_target_vect_perm_byte): Likewise.
+	(check_effective_target_vect_perm_short): Likewise.
+	(check_effective_target_vect_widen_sum_hi_to_si_pattern): Likewise.
+	(check_effective_target_vect_widen_sum_qi_to_hi): Likewise.
+	(check_effective_target_vect_widen_mult_qi_to_hi): Likewise.
+	(check_effective_target_vect_widen_mult_hi_to_si): Likewise.
+	(check_effective_target_vect_widen_mult_qi_to_hi_pattern): Likewise.
+	(check_effective_target_vect_widen_mult_hi_to_si_pattern): Likewise.
+	(check_effective_target_vect_widen_shift): Likewise.
+	(check_effective_target_vect_extract_even_odd): Likewise.
+	(check_effective_target_vect_interleave): Likewise.
+	(check_effective_target_vect_multiple_sizes): Likewise.
+	(check_effective_target_vect64): Likewise.
+	(check_effective_target_vect_max_reduc): Likewise.
+
+2017-06-28  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/81227
+	* gcc.dg/pr81227.c: New testcase.
+
+2017-06-28  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/81193
+	* lib/target-supports.exp
+	(check_ppc_cpu_supports_hw_available): New test to make sure
+	__builtin_cpu_supports works on power7 and newer.
+
+2017-06-28  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/81128
+	* gcc.target/i386/pr81128.c: New test.
+
+2017-06-28  Martin Liska  <mliska@suse.cz>
+
+	PR driver/79659
+	* g++.dg/opt/pr79659.C: New test.
+
+2017-06-28  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.dg/tree-ssa/copy-sign-1.c: Add c99_runtime effective target
+	and options.
+	* gcc.dg/tree-ssa/mult-abs-2.c: Likewise.
+
+2017-06-28  Marc Glisse  <marc.glisse@inria.fr>
+
+	* gcc.dg/tree-ssa/addadd.c: Remove test duplicated in addadd-2.c.
+	* gcc.dg/tree-ssa/mulcmp-1.c: New file.
+
+2017-06-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.target/i386/cmov7.c (sgn): Renamed to ...
+	(foo): ... this.  Change constants such that it isn't matched
+	as __builtin_copysign, yet tests the combiner the same.
+
+2017-06-28  Martin Liska  <mliska@suse.cz>
+
+	PR sanitizer/81224
+	* gcc.dg/asan/pr81224.c: New test.
+
+2017-06-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.dg/tree-prof/val-profiler-threads-1.c (main): Fix 2nd argument
+	passed to pthread_join.
+
+2017-06-28  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
+	* gcc.target/s390/nodatarel-1.c: New test.
+
+2017-06-27  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/80164
+	* gfortran.dg/array_temporaries_4.f90: New test.
+
+2017-06-27  Andrew Pinski  <apinski@cavium.com>
+
+	* gcc.dg/tree-ssa/copy-sign-1.c: New testcase.
+	* gcc.dg/tree-ssa/copy-sign-2.c: New testcase.
+	* gcc.dg/tree-ssa/mult-abs-2.c: New testcase.
+
 2017-06-27  Marek Polacek  <polacek@redhat.com>
 
 	PR sanitizer/81223
