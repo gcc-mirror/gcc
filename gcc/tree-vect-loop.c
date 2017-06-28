@@ -4045,6 +4045,203 @@ get_initial_def_for_reduction (gimple *stmt, tree init_val,
   return init_def;
 }
 
+/* Get at the initial defs for OP in the reduction SLP_NODE.
+   NUMBER_OF_VECTORS is the number of vector defs to create.
+   REDUC_INDEX is the index of the reduction operand in the statements.  */
+
+static void
+get_initial_defs_for_reduction (slp_tree slp_node,
+				vec<tree> *vec_oprnds,
+				unsigned int number_of_vectors,
+				int reduc_index, enum tree_code code)
+{
+  vec<gimple *> stmts = SLP_TREE_SCALAR_STMTS (slp_node);
+  gimple *stmt = stmts[0];
+  stmt_vec_info stmt_vinfo = vinfo_for_stmt (stmt);
+  unsigned nunits;
+  tree vec_cst;
+  tree *elts;
+  unsigned j, number_of_places_left_in_vector;
+  tree vector_type, scalar_type;
+  tree vop;
+  int group_size = stmts.length ();
+  unsigned int vec_num, i;
+  unsigned number_of_copies = 1;
+  vec<tree> voprnds;
+  voprnds.create (number_of_vectors);
+  bool constant_p;
+  tree neutral_op = NULL;
+  gimple *def_stmt;
+  struct loop *loop;
+  gimple_seq ctor_seq = NULL;
+
+  vector_type = STMT_VINFO_VECTYPE (stmt_vinfo);
+  scalar_type = TREE_TYPE (vector_type);
+  nunits = TYPE_VECTOR_SUBPARTS (vector_type);
+
+  gcc_assert (STMT_VINFO_DEF_TYPE (stmt_vinfo) == vect_reduction_def
+	      && reduc_index != -1);
+
+  /* op is the reduction operand of the first stmt already.  */
+  /* For additional copies (see the explanation of NUMBER_OF_COPIES below)
+     we need either neutral operands or the original operands.  See
+     get_initial_def_for_reduction() for details.  */
+  switch (code)
+    {
+    case WIDEN_SUM_EXPR:
+    case DOT_PROD_EXPR:
+    case SAD_EXPR:
+    case PLUS_EXPR:
+    case MINUS_EXPR:
+    case BIT_IOR_EXPR:
+    case BIT_XOR_EXPR:
+      neutral_op = build_zero_cst (scalar_type);
+      break;
+
+    case MULT_EXPR:
+      neutral_op = build_one_cst (scalar_type);
+      break;
+
+    case BIT_AND_EXPR:
+      neutral_op = build_all_ones_cst (scalar_type);
+      break;
+
+    /* For MIN/MAX we don't have an easy neutral operand but
+       the initial values can be used fine here.  Only for
+       a reduction chain we have to force a neutral element.  */
+    case MAX_EXPR:
+    case MIN_EXPR:
+      if (!GROUP_FIRST_ELEMENT (stmt_vinfo))
+	neutral_op = NULL;
+      else
+	{
+	  tree op = get_reduction_op (stmts[0], reduc_index);
+	  def_stmt = SSA_NAME_DEF_STMT (op);
+	  loop = (gimple_bb (stmt))->loop_father;
+	  neutral_op = PHI_ARG_DEF_FROM_EDGE (def_stmt,
+					      loop_preheader_edge (loop));
+	}
+      break;
+
+    default:
+      gcc_assert (!GROUP_FIRST_ELEMENT (stmt_vinfo));
+      neutral_op = NULL;
+    }
+
+  /* NUMBER_OF_COPIES is the number of times we need to use the same values in
+     created vectors. It is greater than 1 if unrolling is performed.
+
+     For example, we have two scalar operands, s1 and s2 (e.g., group of
+     strided accesses of size two), while NUNITS is four (i.e., four scalars
+     of this type can be packed in a vector).  The output vector will contain
+     two copies of each scalar operand: {s1, s2, s1, s2}.  (NUMBER_OF_COPIES
+     will be 2).
+
+     If GROUP_SIZE > NUNITS, the scalars will be split into several vectors
+     containing the operands.
+
+     For example, NUNITS is four as before, and the group size is 8
+     (s1, s2, ..., s8).  We will create two vectors {s1, s2, s3, s4} and
+     {s5, s6, s7, s8}.  */
+
+  number_of_copies = nunits * number_of_vectors / group_size;
+
+  number_of_places_left_in_vector = nunits;
+  constant_p = true;
+  elts = XALLOCAVEC (tree, nunits);
+  for (j = 0; j < number_of_copies; j++)
+    {
+      for (i = group_size - 1; stmts.iterate (i, &stmt); i--)
+        {
+	  tree op = get_reduction_op (stmt, reduc_index);
+	  loop = (gimple_bb (stmt))->loop_father;
+	  def_stmt = SSA_NAME_DEF_STMT (op);
+
+	  gcc_assert (loop);
+
+	  /* Get the def before the loop.  In reduction chain we have only
+	     one initial value.  */
+	  if ((j != (number_of_copies - 1)
+	       || (GROUP_FIRST_ELEMENT (vinfo_for_stmt (stmt))
+		   && i != 0))
+	      && neutral_op)
+	    op = neutral_op;
+	  else
+	    op = PHI_ARG_DEF_FROM_EDGE (def_stmt,
+					loop_preheader_edge (loop));
+
+          /* Create 'vect_ = {op0,op1,...,opn}'.  */
+          number_of_places_left_in_vector--;
+	  elts[number_of_places_left_in_vector] = op;
+	  if (!CONSTANT_CLASS_P (op))
+	    constant_p = false;
+
+          if (number_of_places_left_in_vector == 0)
+            {
+	      if (constant_p)
+		vec_cst = build_vector (vector_type, elts);
+	      else
+		{
+		  vec<constructor_elt, va_gc> *v;
+		  unsigned k;
+		  vec_alloc (v, nunits);
+		  for (k = 0; k < nunits; ++k)
+		    CONSTRUCTOR_APPEND_ELT (v, NULL_TREE, elts[k]);
+		  vec_cst = build_constructor (vector_type, v);
+		}
+	      tree init;
+	      gimple_stmt_iterator gsi;
+	      init = vect_init_vector (stmt, vec_cst, vector_type, NULL);
+	      if (ctor_seq != NULL)
+		{
+		  gsi = gsi_for_stmt (SSA_NAME_DEF_STMT (init));
+		  gsi_insert_seq_before_without_update (&gsi, ctor_seq,
+							GSI_SAME_STMT);
+		  ctor_seq = NULL;
+		}
+	      voprnds.quick_push (init);
+
+              number_of_places_left_in_vector = nunits;
+	      constant_p = true;
+            }
+        }
+    }
+
+  /* Since the vectors are created in the reverse order, we should invert
+     them.  */
+  vec_num = voprnds.length ();
+  for (j = vec_num; j != 0; j--)
+    {
+      vop = voprnds[j - 1];
+      vec_oprnds->quick_push (vop);
+    }
+
+  voprnds.release ();
+
+  /* In case that VF is greater than the unrolling factor needed for the SLP
+     group of stmts, NUMBER_OF_VECTORS to be created is greater than
+     NUMBER_OF_SCALARS/NUNITS or NUNITS/NUMBER_OF_SCALARS, and hence we have
+     to replicate the vectors.  */
+  while (number_of_vectors > vec_oprnds->length ())
+    {
+      tree neutral_vec = NULL;
+
+      if (neutral_op)
+        {
+          if (!neutral_vec)
+	    neutral_vec = build_vector_from_val (vector_type, neutral_op);
+
+          vec_oprnds->quick_push (neutral_vec);
+        }
+      else
+        {
+          for (i = 0; vec_oprnds->iterate (i, &vop) && i < vec_num; i++)
+            vec_oprnds->quick_push (vop);
+        }
+    }
+}
+
+
 /* Function vect_create_epilog_for_reduction
 
    Create code at the loop-epilog to finalize the result of a reduction
@@ -4189,8 +4386,12 @@ vect_create_epilog_for_reduction (vec<tree> vect_defs, gimple *stmt,
   /* Get the loop-entry arguments.  */
   enum vect_def_type initial_def_dt = vect_unknown_def_type;
   if (slp_node)
-    vect_get_vec_defs (reduction_op, NULL_TREE, stmt, &vec_initial_defs,
-                       NULL, slp_node, reduc_index);
+    {
+      unsigned vec_num = SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node);
+      vec_initial_defs.reserve (vec_num);
+      get_initial_defs_for_reduction (slp_node, &vec_initial_defs,
+				      vec_num, reduc_index, code);
+    }
   else
     {
       /* Get at the scalar def before the loop, that defines the initial value
@@ -5939,7 +6140,7 @@ vectorizable_reduction (gimple *stmt, gimple_stmt_iterator *gsi,
 	      if (op_type == ternary_op)
 		slp_ops.quick_push (reduc_index == 2 ? NULL : ops[2]);
 
-	      vect_get_slp_defs (slp_ops, slp_node, &vec_defs, -1);
+	      vect_get_slp_defs (slp_ops, slp_node, &vec_defs);
 
 	      vec_oprnds0.safe_splice (vec_defs[reduc_index == 0 ? 1 : 0]);
 	      vec_defs[reduc_index == 0 ? 1 : 0].release ();

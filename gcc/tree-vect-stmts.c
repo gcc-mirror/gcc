@@ -1558,11 +1558,11 @@ vect_get_vec_defs_for_stmt_copy (enum vect_def_type *dt,
    REDUC_INDEX is the index of reduction operand in case of reduction,
    and -1 otherwise.  */
 
-void
+static void
 vect_get_vec_defs (tree op0, tree op1, gimple *stmt,
 		   vec<tree> *vec_oprnds0,
 		   vec<tree> *vec_oprnds1,
-		   slp_tree slp_node, int reduc_index)
+		   slp_tree slp_node)
 {
   if (slp_node)
     {
@@ -1574,7 +1574,7 @@ vect_get_vec_defs (tree op0, tree op1, gimple *stmt,
       if (op1)
         ops.quick_push (op1);
 
-      vect_get_slp_defs (ops, slp_node, &vec_defs, reduc_index);
+      vect_get_slp_defs (ops, slp_node, &vec_defs);
 
       *vec_oprnds0 = vec_defs[0];
       if (op1)
@@ -2525,7 +2525,7 @@ vectorizable_bswap (gimple *stmt, gimple_stmt_iterator *gsi,
     {
       /* Handle uses.  */
       if (j == 0)
-        vect_get_vec_defs (op, NULL, stmt, &vec_oprnds, NULL, slp_node, -1);
+        vect_get_vec_defs (op, NULL, stmt, &vec_oprnds, NULL, slp_node);
       else
         vect_get_vec_defs_for_stmt_copy (dt, &vec_oprnds, NULL);
 
@@ -2860,7 +2860,7 @@ vectorizable_call (gimple *gs, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 
 	      for (i = 0; i < nargs; i++)
 		vargs.quick_push (gimple_call_arg (stmt, i));
-	      vect_get_slp_defs (vargs, slp_node, &vec_defs, -1);
+	      vect_get_slp_defs (vargs, slp_node, &vec_defs);
 	      vec_oprnds0 = vec_defs[0];
 
 	      /* Arguments are ready.  Create the new vector stmt.  */
@@ -2990,7 +2990,7 @@ vectorizable_call (gimple *gs, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 
 	      for (i = 0; i < nargs; i++)
 		vargs.quick_push (gimple_call_arg (stmt, i));
-	      vect_get_slp_defs (vargs, slp_node, &vec_defs, -1);
+	      vect_get_slp_defs (vargs, slp_node, &vec_defs);
 	      vec_oprnds0 = vec_defs[0];
 
 	      /* Arguments are ready.  Create the new vector stmt.  */
@@ -4401,8 +4401,7 @@ vectorizable_conversion (gimple *stmt, gimple_stmt_iterator *gsi,
       for (j = 0; j < ncopies; j++)
 	{
 	  if (j == 0)
-	    vect_get_vec_defs (op0, NULL, stmt, &vec_oprnds0, NULL, slp_node,
-			       -1);
+	    vect_get_vec_defs (op0, NULL, stmt, &vec_oprnds0, NULL, slp_node);
 	  else
 	    vect_get_vec_defs_for_stmt_copy (dt, &vec_oprnds0, NULL);
 
@@ -4462,11 +4461,11 @@ vectorizable_conversion (gimple *stmt, gimple_stmt_iterator *gsi,
 			vec_oprnds1.quick_push (vec_oprnd1);
 
 		      vect_get_vec_defs (op0, NULL_TREE, stmt, &vec_oprnds0, NULL,
-					 slp_node, -1);
+					 slp_node);
 		    }
 		  else
 		    vect_get_vec_defs (op0, op1, stmt, &vec_oprnds0,
-				       &vec_oprnds1, slp_node, -1);
+				       &vec_oprnds1, slp_node);
 		}
 	      else
 		{
@@ -4565,7 +4564,7 @@ vectorizable_conversion (gimple *stmt, gimple_stmt_iterator *gsi,
 	  /* Handle uses.  */
 	  if (slp_node)
 	    vect_get_vec_defs (op0, NULL_TREE, stmt, &vec_oprnds0, NULL,
-			       slp_node, -1);
+			       slp_node);
 	  else
 	    {
 	      vec_oprnds0.truncate (0);
@@ -4748,7 +4747,7 @@ vectorizable_assignment (gimple *stmt, gimple_stmt_iterator *gsi,
     {
       /* Handle uses.  */
       if (j == 0)
-        vect_get_vec_defs (op, NULL, stmt, &vec_oprnds, NULL, slp_node, -1);
+        vect_get_vec_defs (op, NULL, stmt, &vec_oprnds, NULL, slp_node);
       else
         vect_get_vec_defs_for_stmt_copy (dt, &vec_oprnds, NULL);
 
@@ -5155,10 +5154,10 @@ vectorizable_shift (gimple *stmt, gimple_stmt_iterator *gsi,
              operand 1 should be of a vector type (the usual case).  */
           if (vec_oprnd1)
             vect_get_vec_defs (op0, NULL_TREE, stmt, &vec_oprnds0, NULL,
-                               slp_node, -1);
+                               slp_node);
           else
             vect_get_vec_defs (op0, op1, stmt, &vec_oprnds0, &vec_oprnds1,
-                               slp_node, -1);
+                               slp_node);
         }
       else
         vect_get_vec_defs_for_stmt_copy (dt, &vec_oprnds0, &vec_oprnds1);
@@ -5505,13 +5504,13 @@ vectorizable_operation (gimple *stmt, gimple_stmt_iterator *gsi,
 	{
 	  if (op_type == binary_op || op_type == ternary_op)
 	    vect_get_vec_defs (op0, op1, stmt, &vec_oprnds0, &vec_oprnds1,
-			       slp_node, -1);
+			       slp_node);
 	  else
 	    vect_get_vec_defs (op0, NULL_TREE, stmt, &vec_oprnds0, NULL,
-			       slp_node, -1);
+			       slp_node);
 	  if (op_type == ternary_op)
 	    vect_get_vec_defs (op2, NULL_TREE, stmt, &vec_oprnds2, NULL,
-			       slp_node, -1);
+			       slp_node);
 	}
       else
 	{
@@ -6076,7 +6075,7 @@ vectorizable_store (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 		  if (slp)
 		    {
 		      vect_get_vec_defs (op, NULL_TREE, stmt, &vec_oprnds, NULL,
-					 slp_node, -1);
+					 slp_node);
 		      vec_oprnd = vec_oprnds[0];
 		    }
 		  else
@@ -6223,7 +6222,7 @@ vectorizable_store (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
             {
 	      /* Get vectorized arguments for SLP_NODE.  */
               vect_get_vec_defs (op, NULL_TREE, stmt, &vec_oprnds,
-                                 NULL, slp_node, -1);
+                                 NULL, slp_node);
 
               vec_oprnd = vec_oprnds[0];
             }
@@ -7976,7 +7975,7 @@ vectorizable_condition (gimple *stmt, gimple_stmt_iterator *gsi,
 		}
               ops.safe_push (then_clause);
               ops.safe_push (else_clause);
-              vect_get_slp_defs (ops, slp_node, &vec_defs, -1);
+              vect_get_slp_defs (ops, slp_node, &vec_defs);
 	      vec_oprnds3 = vec_defs.pop ();
 	      vec_oprnds2 = vec_defs.pop ();
 	      if (!masked)
@@ -8314,7 +8313,7 @@ vectorizable_comparison (gimple *stmt, gimple_stmt_iterator *gsi,
 
 	      ops.safe_push (rhs1);
 	      ops.safe_push (rhs2);
-	      vect_get_slp_defs (ops, slp_node, &vec_defs, -1);
+	      vect_get_slp_defs (ops, slp_node, &vec_defs);
 	      vec_oprnds1 = vec_defs.pop ();
 	      vec_oprnds0 = vec_defs.pop ();
 	    }

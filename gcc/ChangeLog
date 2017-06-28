@@ -1,3 +1,28 @@
+2017-06-28  Richard Biener  <rguenther@suse.de>
+
+	* tree-vectorizer.h (vect_get_vec_defs): Remove.
+	(vect_get_slp_defs): Adjust.
+	* tree-vect-loop.c (get_initial_defs_for_reduction): Split
+	out from ...
+	* tree-vect-slp.c (vect_get_constant_vectors): ... here and
+	simplify.
+	* tree-vect-loop.c (vect_create_epilog_for_reduction): Use
+	get_initial_defs_for_reduction instead of vect_get_vec_defs.
+	(vectorizable_reduction): Adjust.
+	* tree-vect-slp.c (vect_get_constant_vectors): Remove reduction
+	handling.
+	(vect_get_slp_defs): Likewise.
+	* tree-vect-stmts.c (vect_get_vec_defs): Make static and adjust.
+	(vectorizable_bswap): Adjust.
+	(vectorizable_call): Likewise.
+	(vectorizable_conversion): Likewise.
+	(vectorizable_assignment): Likewise.
+	(vectorizable_shift): Likewise.
+	(vectorizable_operation): Likewise.
+	(vectorizable_store): Likewise.
+	(vectorizable_condition): Likewise.
+	(vectorizable_comparison): Likewise.
+
 2017-06-28  Michael Collison  <michael.collison@arm.com>
 
 	PR target/68535
