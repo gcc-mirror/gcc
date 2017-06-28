@@ -1,3 +1,18 @@
+2017-06-28  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
+	* config/s390/predicates.md: Use s390_rel_address_ok_p.
+	* config/s390/s390-protos.h: Add prototype of
+	s390_rel_address_ok_p.
+	* config/s390/s390.c (s390_got_symbol): New function.
+	(s390_rel_address_ok_p): New function.
+	(legitimize_pic_address): Use s390_rel_address_ok_p.
+	(s390_load_got): Use s390_got_symbol.
+	(s390_option_override): Issue error if
+	-mno-pic-data-is-text-relative is used without -fpic/-fPIC.
+	* config/s390/s390.h (TARGET_DEFAULT_PIC_DATA_IS_TEXT_RELATIVE):
+	New macro.
+	* config/s390/s390.opt: New option mpic-data-is-text-relative.
+
 2017-06-27  Andrew Pinski  <apinski@cavium.com>
 
 	* match.pd (X >/>=/</<= 0 ? 1.0 : -1.0): New patterns.
