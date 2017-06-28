@@ -22602,6 +22602,9 @@ cp_parser_class_head (cp_parser* parser,
 					   /*is_declaration=*/false);
   /* If there was a nested-name-specifier, then there *must* be an
      identifier.  */
+
+  cp_token *bad_template_keyword = NULL;
+
   if (nested_name_specifier)
     {
       type_start_token = cp_lexer_peek_token (parser->lexer);
@@ -22623,6 +22626,8 @@ cp_parser_class_head (cp_parser* parser,
 	 class-name is a template-id; if we looked for the
 	 template-name first we would stop after the template-name.  */
       cp_parser_parse_tentatively (parser);
+      if (cp_lexer_next_token_is_keyword (parser->lexer, RID_TEMPLATE))
+	bad_template_keyword = cp_lexer_consume_token (parser->lexer);
       type = cp_parser_class_name (parser,
 				   /*typename_keyword_p=*/false,
 				   /*template_keyword_p=*/false,
@@ -22741,6 +22746,12 @@ cp_parser_class_head (cp_parser* parser,
   else if (nested_name_specifier)
     {
       tree scope;
+
+      if (bad_template_keyword)
+	/* [temp.names]: in a qualified-id formed by a class-head-name, the
+	   keyword template shall not appear at the top level.  */
+	pedwarn (bad_template_keyword->location, OPT_Wpedantic,
+		 "keyword %<template%> not allowed in class-head-name");
 
       /* Reject typedef-names in class heads.  */
       if (!DECL_IMPLICIT_TYPEDEF_P (type))
