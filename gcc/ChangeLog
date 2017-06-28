@@ -1,3 +1,8 @@
+2017-06-28  Marc Glisse  <marc.glisse@inria.fr>
+
+	* match.pd ((X & ~Y) | (~X & Y)): Generalize to + and ^.
+	(x * C EQ/NE y * C): New transformation.
+
 2017-06-28  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	* genmultilib (combination_space): Accept '+' in option names.
