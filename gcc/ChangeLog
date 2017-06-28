@@ -1,3 +1,7 @@
+2017-06-28  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* genmultilib (combination_space): Accept '+' in option names.
+
 2017-06-28  Martin Liska  <mliska@suse.cz>
 
 	PR sanitizer/81224
