@@ -3273,6 +3273,7 @@ arm_configure_build_target (struct arm_build_target *target,
   /* Finish initializing the target structure.  */
   target->arch_pp_name = arm_selected_arch->arch;
   target->base_arch = arm_selected_arch->base_arch;
+  target->profile = arm_selected_arch->profile;
 
   target->tune_flags = tune_data->tune_flags;
   target->tune = tune_data->tune;

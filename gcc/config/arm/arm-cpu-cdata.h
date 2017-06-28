@@ -2106,6 +2106,7 @@ const arch_option all_architectures[] =
       isa_nobit
     },
     "2", BASE_ARCH_2,
+    0,
     TARGET_CPU_arm2,
   },
   {
@@ -2116,6 +2117,7 @@ const arch_option all_architectures[] =
       isa_nobit
     },
     "2", BASE_ARCH_2,
+    0,
     TARGET_CPU_arm2,
   },
   {
@@ -2126,6 +2128,7 @@ const arch_option all_architectures[] =
       isa_nobit
     },
     "3", BASE_ARCH_3,
+    0,
     TARGET_CPU_arm6,
   },
   {
@@ -2136,6 +2139,7 @@ const arch_option all_architectures[] =
       isa_nobit
     },
     "3M", BASE_ARCH_3M,
+    0,
     TARGET_CPU_arm7m,
   },
   {
@@ -2146,6 +2150,7 @@ const arch_option all_architectures[] =
       isa_nobit
     },
     "4", BASE_ARCH_4,
+    0,
     TARGET_CPU_arm7tdmi,
   },
   {
@@ -2156,6 +2161,7 @@ const arch_option all_architectures[] =
       isa_nobit
     },
     "4T", BASE_ARCH_4T,
+    0,
     TARGET_CPU_arm7tdmi,
   },
   {
@@ -2166,6 +2172,7 @@ const arch_option all_architectures[] =
       isa_nobit
     },
     "5", BASE_ARCH_5,
+    0,
     TARGET_CPU_arm10tdmi,
   },
   {
@@ -2176,6 +2183,7 @@ const arch_option all_architectures[] =
       isa_nobit
     },
     "5T", BASE_ARCH_5T,
+    0,
     TARGET_CPU_arm10tdmi,
   },
   {
@@ -2186,6 +2194,7 @@ const arch_option all_architectures[] =
       isa_nobit
     },
     "5E", BASE_ARCH_5E,
+    0,
     TARGET_CPU_arm1026ejs,
   },
   {
@@ -2196,6 +2205,7 @@ const arch_option all_architectures[] =
       isa_nobit
     },
     "5TE", BASE_ARCH_5TE,
+    0,
     TARGET_CPU_arm1026ejs,
   },
   {
@@ -2206,6 +2216,7 @@ const arch_option all_architectures[] =
       isa_nobit
     },
     "5TEJ", BASE_ARCH_5TEJ,
+    0,
     TARGET_CPU_arm1026ejs,
   },
   {
@@ -2216,6 +2227,7 @@ const arch_option all_architectures[] =
       isa_nobit
     },
     "6", BASE_ARCH_6,
+    0,
     TARGET_CPU_arm1136js,
   },
   {
@@ -2226,6 +2238,7 @@ const arch_option all_architectures[] =
       isa_nobit
     },
     "6J", BASE_ARCH_6J,
+    0,
     TARGET_CPU_arm1136js,
   },
   {
@@ -2236,6 +2249,7 @@ const arch_option all_architectures[] =
       isa_nobit
     },
     "6K", BASE_ARCH_6K,
+    0,
     TARGET_CPU_mpcore,
   },
   {
@@ -2246,6 +2260,7 @@ const arch_option all_architectures[] =
       isa_nobit
     },
     "6Z", BASE_ARCH_6Z,
+    0,
     TARGET_CPU_arm1176jzs,
   },
   {
@@ -2256,6 +2271,7 @@ const arch_option all_architectures[] =
       isa_nobit
     },
     "6KZ", BASE_ARCH_6KZ,
+    0,
     TARGET_CPU_arm1176jzs,
   },
   {
@@ -2266,6 +2282,7 @@ const arch_option all_architectures[] =
       isa_nobit
     },
     "6KZ", BASE_ARCH_6KZ,
+    0,
     TARGET_CPU_arm1176jzs,
   },
   {
@@ -2276,6 +2293,7 @@ const arch_option all_architectures[] =
       isa_nobit
     },
     "6T2", BASE_ARCH_6T2,
+    0,
     TARGET_CPU_arm1156t2s,
   },
   {
@@ -2286,6 +2304,7 @@ const arch_option all_architectures[] =
       isa_nobit
     },
     "6M", BASE_ARCH_6M,
+    'M',
     TARGET_CPU_cortexm1,
   },
   {
@@ -2296,6 +2315,7 @@ const arch_option all_architectures[] =
       isa_nobit
     },
     "6M", BASE_ARCH_6M,
+    'M',
     TARGET_CPU_cortexm1,
   },
   {
@@ -2306,6 +2326,7 @@ const arch_option all_architectures[] =
       isa_nobit
     },
     "7", BASE_ARCH_7,
+    0,
     TARGET_CPU_cortexa8,
   },
   {
@@ -2316,6 +2337,7 @@ const arch_option all_architectures[] =
       isa_nobit
     },
     "7A", BASE_ARCH_7A,
+    'A',
     TARGET_CPU_cortexa8,
   },
   {
@@ -2326,6 +2348,7 @@ const arch_option all_architectures[] =
       isa_nobit
     },
     "7A", BASE_ARCH_7A,
+    'A',
     TARGET_CPU_cortexa8,
   },
   {
@@ -2336,6 +2359,7 @@ const arch_option all_architectures[] =
       isa_nobit
     },
     "7R", BASE_ARCH_7R,
+    'R',
     TARGET_CPU_cortexr4,
   },
   {
@@ -2346,6 +2370,7 @@ const arch_option all_architectures[] =
       isa_nobit
     },
     "7M", BASE_ARCH_7M,
+    'M',
     TARGET_CPU_cortexm3,
   },
   {
@@ -2356,6 +2381,7 @@ const arch_option all_architectures[] =
       isa_nobit
     },
     "7EM", BASE_ARCH_7EM,
+    'M',
     TARGET_CPU_cortexm4,
   },
   {
@@ -2366,6 +2392,7 @@ const arch_option all_architectures[] =
       isa_nobit
     },
     "8A", BASE_ARCH_8A,
+    'A',
     TARGET_CPU_cortexa53,
   },
   {
@@ -2376,6 +2403,7 @@ const arch_option all_architectures[] =
       isa_nobit
     },
     "8A", BASE_ARCH_8A,
+    'A',
     TARGET_CPU_cortexa53,
   },
   {
@@ -2386,6 +2414,7 @@ const arch_option all_architectures[] =
       isa_nobit
     },
     "8A", BASE_ARCH_8A,
+    'A',
     TARGET_CPU_cortexa53,
   },
   {
@@ -2396,6 +2425,7 @@ const arch_option all_architectures[] =
       isa_nobit
     },
     "8M_BASE", BASE_ARCH_8M_BASE,
+    'M',
     TARGET_CPU_cortexm23,
   },
   {
@@ -2406,6 +2436,7 @@ const arch_option all_architectures[] =
       isa_nobit
     },
     "8M_MAIN", BASE_ARCH_8M_MAIN,
+    'M',
     TARGET_CPU_cortexm7,
   },
   {
@@ -2416,6 +2447,7 @@ const arch_option all_architectures[] =
       isa_nobit
     },
     "5TE", BASE_ARCH_5TE,
+    0,
     TARGET_CPU_iwmmxt,
   },
   {
@@ -2426,6 +2458,7 @@ const arch_option all_architectures[] =
       isa_nobit
     },
     "5TE", BASE_ARCH_5TE,
+    0,
     TARGET_CPU_iwmmxt2,
   },
   {{NULL, NULL, {isa_nobit}},

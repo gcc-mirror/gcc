@@ -2189,13 +2189,7 @@ extern int making_const_table;
 /* Expands to an upper-case char of the target's architectural
    profile.  */
 #define TARGET_ARM_ARCH_PROFILE				\
-  (!arm_arch_notm					\
-    ? 'M'						\
-    : (arm_arch7					\
-      ? (strlen (arm_arch_name) >=3			\
-	? (arm_arch_name[strlen (arm_arch_name) - 3])	\
-      	: 0)						\
-      : 0))
+  (arm_active_target.profile)
 
 /* Bit-field indicating what size LDREX/STREX loads/stores are available.
    Bit 0 for bytes, up to bit 3 for double-words.  */
