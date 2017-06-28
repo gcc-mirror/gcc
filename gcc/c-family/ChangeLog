@@ -1,5 +1,11 @@
 2017-06-28  Martin Liska  <mliska@suse.cz>
 
+	PR ipa/81128
+	* c-attribs.c (handle_alias_ifunc_attribute): Append ifunc alias
+	to a function declaration.
+
+2017-06-28  Martin Liska  <mliska@suse.cz>
+
 	PR driver/79659
 	* c.opt: Add IntegerRange to various options.
 

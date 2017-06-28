@@ -1,5 +1,10 @@
 2017-06-28  Martin Liska  <mliska@suse.cz>
 
+	PR ipa/81128
+	* ipa-visibility.c (non_local_p): Handle visibility.
+
+2017-06-28  Martin Liska  <mliska@suse.cz>
+
 	PR driver/79659
 	* common.opt: Add IntegerRange to various options.
 	* opt-functions.awk (integer_range_info): New function.
