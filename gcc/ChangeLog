@@ -1,3 +1,14 @@
+2017-06-28  Michael Collison  <michael.collison@arm.com>
+
+	PR target/68535
+	* config/arm/arm.c (gen_ldm_seq): Remove last unnecessary
+	set of base_reg
+	(arm_gen_movmemqi): Removed unused variable 'i'.
+	Convert 'for' loop into 'while' loop.
+	(arm_expand_prologue): Remove last unnecessary set of insn.
+	(thumb_pop): Remove unused variable 'pushed_words'.
+	(thumb_exit): Remove last unnecessary set of regs_to_pop.
+
 2017-06-28  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
 	* config/s390/predicates.md: Use s390_rel_address_ok_p.
