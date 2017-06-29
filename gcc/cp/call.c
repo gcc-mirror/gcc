@@ -231,9 +231,8 @@ check_dtor_name (tree basetype, tree name)
   else if (identifier_p (name))
     {
       if ((MAYBE_CLASS_TYPE_P (basetype)
-	   && name == constructor_name (basetype))
-	  || (TREE_CODE (basetype) == ENUMERAL_TYPE
-	      && name == TYPE_IDENTIFIER (basetype)))
+	   || TREE_CODE (basetype) == ENUMERAL_TYPE)
+	  && name == constructor_name (basetype))
 	return true;
       else
 	name = get_type_value (name);
@@ -9139,17 +9138,18 @@ build_new_method_call_1 (tree instance, tree fns, vec<tree, va_gc> **args,
 	    {
 	      tree arglist = build_tree_list_vec (user_args);
 	      tree errname = name;
+	      bool twiddle = false;
 	      if (IDENTIFIER_CDTOR_P (errname))
 		{
-		  tree fn = DECL_ORIGIN (OVL_FIRST (fns));
-		  errname = DECL_NAME (fn);
+		  twiddle = IDENTIFIER_DTOR_P (errname);
+		  errname = constructor_name (basetype);
 		}
 	      if (explicit_targs)
 		errname = lookup_template_function (errname, explicit_targs);
 	      if (skip_first_for_error)
 		arglist = TREE_CHAIN (arglist);
-	      error ("no matching function for call to %<%T::%E(%A)%#V%>",
-		     basetype, errname, arglist,
+	      error ("no matching function for call to %<%T::%s%E(%A)%#V%>",
+		     basetype, &"~"[!twiddle], errname, arglist,
 		     TREE_TYPE (instance));
 	    }
 	  print_z_candidates (location_of (name), candidates);

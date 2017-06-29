@@ -8550,9 +8550,8 @@ print_class_statistics (void)
 void
 build_self_reference (void)
 {
-  tree name = constructor_name (current_class_type);
+  tree name = DECL_NAME (TYPE_NAME (current_class_type));
   tree value = build_lang_decl (TYPE_DECL, name, current_class_type);
-  tree saved_cas;
 
   DECL_NONLOCAL (value) = 1;
   DECL_CONTEXT (value) = current_class_type;
@@ -8563,7 +8562,7 @@ build_self_reference (void)
   if (processing_template_decl)
     value = push_template_decl (value);
 
-  saved_cas = current_access_specifier;
+  tree saved_cas = current_access_specifier;
   current_access_specifier = access_public_node;
   finish_member_declaration (value);
   current_access_specifier = saved_cas;
