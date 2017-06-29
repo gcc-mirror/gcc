@@ -1,3 +1,9 @@
+2017-06-29  Bin Cheng  <bin.cheng@arm.com>
+
+	PR tree-optimization/81196
+	* tree-ssa-loop-niter.c (number_of_iterations_cond): Handle loop
+	exit condition comparing two IVs.
+
 2017-06-29  Richard Earnshaw  <rearnsha@arm.com>
 
 	* config/arm/parsecpu.awk (gen_comm_data): Add initializer for
