@@ -741,21 +741,21 @@ copy_type (tree type MEM_STAT_DECL)
 static bool
 maybe_add_lang_type_raw (tree t)
 {
-  bool add = (RECORD_OR_UNION_CODE_P (TREE_CODE (t))
-	      || TREE_CODE (t) == BOUND_TEMPLATE_TEMPLATE_PARM);
-  if (add)
-    {
-      TYPE_LANG_SPECIFIC (t)
-	= (struct lang_type *) (ggc_internal_cleared_alloc
-				(sizeof (struct lang_type)));
+  if (!(RECORD_OR_UNION_CODE_P (TREE_CODE (t))
+	|| TREE_CODE (t) == BOUND_TEMPLATE_TEMPLATE_PARM))
+    return false;
+  
+  TYPE_LANG_SPECIFIC (t)
+    = (struct lang_type *) (ggc_internal_cleared_alloc
+			    (sizeof (struct lang_type)));
 
-      if (GATHER_STATISTICS)
-	{
-	  tree_node_counts[(int)lang_type] += 1;
-	  tree_node_sizes[(int)lang_type] += sizeof (struct lang_type);
-	}
+  if (GATHER_STATISTICS)
+    {
+      tree_node_counts[(int)lang_type] += 1;
+      tree_node_sizes[(int)lang_type] += sizeof (struct lang_type);
     }
-  return add;
+
+  return true;
 }
 
 tree

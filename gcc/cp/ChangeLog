@@ -1,5 +1,8 @@
 2017-06-29  Nathan Sidwell  <nathan@acm.org>
 
+	* lex.c (maybe_add_lang_type_raw): Exit early, rather than use a
+	flag.
+
 	* call.c (check_dtor_name): Use constructor_name for enums too.
 	(build_new_method_call_1): Use constructor_name for cdtors and
 	show ~ for dtor.
