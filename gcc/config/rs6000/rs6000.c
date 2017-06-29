@@ -8628,14 +8628,20 @@ constant_pool_expr_p (rtx op)
 	  && ASM_OUTPUT_SPECIAL_POOL_ENTRY_P (get_pool_constant (base), Pmode));
 }
 
-static const_rtx tocrel_base, tocrel_offset;
+/* These are only used to pass through from print_operand/print_operand_address
+   to rs6000_output_addr_const_extra over the intervening function
+   output_addr_const which is not target code.  */
+static const_rtx tocrel_base_oac, tocrel_offset_oac;
 
 /* Return true if OP is a toc pointer relative address (the output
    of create_TOC_reference).  If STRICT, do not match non-split
-   -mcmodel=large/medium toc pointer relative addresses.  */
+   -mcmodel=large/medium toc pointer relative addresses.  If the pointers 
+   are non-NULL, place base and offset pieces in TOCREL_BASE_RET and 
+   TOCREL_OFFSET_RET respectively.  */
 
 bool
-toc_relative_expr_p (const_rtx op, bool strict)
+toc_relative_expr_p (const_rtx op, bool strict, const_rtx *tocrel_base_ret,
+		     const_rtx *tocrel_offset_ret)
 {
   if (!TARGET_TOC)
     return false;
@@ -8655,13 +8661,19 @@ toc_relative_expr_p (const_rtx op, bool strict)
 	op = XEXP (op, 1);
     }
 
-  tocrel_base = op;
-  tocrel_offset = const0_rtx;
+  const_rtx tocrel_base = op;
+  const_rtx tocrel_offset = const0_rtx;
+
   if (GET_CODE (op) == PLUS && add_cint_operand (XEXP (op, 1), GET_MODE (op)))
     {
       tocrel_base = XEXP (op, 0);
       tocrel_offset = XEXP (op, 1);
     }
+
+  if (tocrel_base_ret)
+    *tocrel_base_ret = tocrel_base;
+  if (tocrel_offset_ret)
+    *tocrel_offset_ret = tocrel_offset;
 
   return (GET_CODE (tocrel_base) == UNSPEC
 	  && XINT (tocrel_base, 1) == UNSPEC_TOCREL);
@@ -8674,7 +8686,8 @@ bool
 legitimate_constant_pool_address_p (const_rtx x, machine_mode mode,
 				    bool strict)
 {
-  return (toc_relative_expr_p (x, strict)
+  const_rtx tocrel_base, tocrel_offset;
+  return (toc_relative_expr_p (x, strict, &tocrel_base, &tocrel_offset)
 	  && (TARGET_CMODEL != CMODEL_MEDIUM
 	      || constant_pool_expr_p (XVECEXP (tocrel_base, 0, 0))
 	      || mode == QImode
@@ -11069,7 +11082,7 @@ rs6000_emit_move (rtx dest, rtx source, machine_mode mode)
 			   > (TARGET_CMODEL != CMODEL_SMALL ? 3 : 2)))
 		   || (GET_CODE (operands[0]) == REG
 		       && FP_REGNO_P (REGNO (operands[0]))))
-	       && !toc_relative_expr_p (operands[1], false)
+	       && !toc_relative_expr_p (operands[1], false, NULL, NULL)
 	       && (TARGET_CMODEL == CMODEL_SMALL
 		   || can_create_pseudo_p ()
 		   || (REG_P (operands[0])
@@ -21812,14 +21825,14 @@ print_operand (FILE *file, rtx x, int code)
 	}
       else
 	{
-	  if (toc_relative_expr_p (x, false))
+	  if (toc_relative_expr_p (x, false, &tocrel_base_oac, &tocrel_offset_oac))
 	    /* This hack along with a corresponding hack in
 	       rs6000_output_addr_const_extra arranges to output addends
 	       where the assembler expects to find them.  eg.
 	       (plus (unspec [(symbol_ref ("x")) (reg 2)] tocrel) 4)
 	       without this hack would be output as "x@toc+4".  We
 	       want "x+4@toc".  */
-	    output_addr_const (file, CONST_CAST_RTX (tocrel_base));
+	    output_addr_const (file, CONST_CAST_RTX (tocrel_base_oac));
 	  else
 	    output_addr_const (file, x);
 	}
@@ -21886,7 +21899,7 @@ print_operand_address (FILE *file, rtx x)
       fprintf (file, "@l(%s)", reg_names[ REGNO (XEXP (x, 0)) ]);
     }
 #endif
-  else if (toc_relative_expr_p (x, false))
+  else if (toc_relative_expr_p (x, false, &tocrel_base_oac, &tocrel_offset_oac))
     {
       /* This hack along with a corresponding hack in
 	 rs6000_output_addr_const_extra arranges to output addends
@@ -21895,17 +21908,17 @@ print_operand_address (FILE *file, rtx x)
 	 .       (plus (unspec [(symbol_ref ("x")) (reg 2)] tocrel) 8))
 	 without this hack would be output as "x@toc+8@l(9)".  We
 	 want "x+8@toc@l(9)".  */
-      output_addr_const (file, CONST_CAST_RTX (tocrel_base));
+      output_addr_const (file, CONST_CAST_RTX (tocrel_base_oac));
       if (GET_CODE (x) == LO_SUM)
 	fprintf (file, "@l(%s)", reg_names[REGNO (XEXP (x, 0))]);
       else
-	fprintf (file, "(%s)", reg_names[REGNO (XVECEXP (tocrel_base, 0, 1))]);
+	fprintf (file, "(%s)", reg_names[REGNO (XVECEXP (tocrel_base_oac, 0, 1))]);
     }
   else
     gcc_unreachable ();
 }
 
-/* Implement TARGET_OUTPUT_ADDR_CONST_EXTRA.  */
+/* Implement TARGET_ASM_OUTPUT_ADDR_CONST_EXTRA.  */
 
 static bool
 rs6000_output_addr_const_extra (FILE *file, rtx x)
@@ -21918,11 +21931,11 @@ rs6000_output_addr_const_extra (FILE *file, rtx x)
 			     && REG_P (XVECEXP (x, 0, 1))
 			     && REGNO (XVECEXP (x, 0, 1)) == TOC_REGISTER);
 	output_addr_const (file, XVECEXP (x, 0, 0));
-	if (x == tocrel_base && tocrel_offset != const0_rtx)
+	if (x == tocrel_base_oac && tocrel_offset_oac != const0_rtx)
 	  {
-	    if (INTVAL (tocrel_offset) >= 0)
+	    if (INTVAL (tocrel_offset_oac) >= 0)
 	      fprintf (file, "+");
-	    output_addr_const (file, CONST_CAST_RTX (tocrel_offset));
+	    output_addr_const (file, CONST_CAST_RTX (tocrel_offset_oac));
 	  }
 	if (!TARGET_AIX || (TARGET_ELF && TARGET_MINIMAL_TOC))
 	  {
@@ -39312,6 +39325,8 @@ const_load_sequence_p (swap_web_entry *insn_entry, rtx insn)
   if (!insn_entry[uid].is_swap || insn_entry[uid].is_load)
     return false;
 
+  const_rtx tocrel_base;
+
   /* Find the unique use in the swap and locate its def.  If the def
      isn't unique, punt.  */
   struct df_insn_info *insn_info = DF_INSN_INFO_GET (insn);
@@ -39357,7 +39372,7 @@ const_load_sequence_p (swap_web_entry *insn_entry, rtx insn)
 	  rtx tocrel_expr = SET_SRC (tocrel_body);
 	  if (GET_CODE (tocrel_expr) == MEM)
 	    tocrel_expr = XEXP (tocrel_expr, 0);
-	  if (!toc_relative_expr_p (tocrel_expr, false))
+	  if (!toc_relative_expr_p (tocrel_expr, false, &tocrel_base, NULL))
 	    return false;
 	  split_const (XVECEXP (tocrel_base, 0, 0), &base, &offset);
 	  if (GET_CODE (base) != SYMBOL_REF || !CONSTANT_POOL_ADDRESS_P (base))
@@ -40118,11 +40133,12 @@ adjust_vperm (rtx_insn *insn)
      to set tocrel_base; otherwise it would be unnecessary as we've
      already established it will return true.  */
   rtx base, offset;
+  const_rtx tocrel_base;
   rtx tocrel_expr = SET_SRC (PATTERN (tocrel_insn));
   /* There is an extra level of indirection for small/large code models.  */
   if (GET_CODE (tocrel_expr) == MEM)
     tocrel_expr = XEXP (tocrel_expr, 0);
-  if (!toc_relative_expr_p (tocrel_expr, false))
+  if (!toc_relative_expr_p (tocrel_expr, false, &tocrel_base, NULL))
     gcc_unreachable ();
   split_const (XVECEXP (tocrel_base, 0, 0), &base, &offset);
   rtx const_vector = get_pool_constant (base);
