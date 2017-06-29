@@ -8742,7 +8742,7 @@ fold_builtin_FUNCTION ()
   const char *name = "";
 
   if (current_function_decl)
-    name= lang_hooks.decl_printable_name (current_function_decl, 0);
+    name = lang_hooks.decl_printable_name (current_function_decl, 0);
 
   return build_string_literal (strlen (name) + 1, name);
 }

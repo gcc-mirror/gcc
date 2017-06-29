@@ -342,16 +342,20 @@ func buildModeInit() {
 			}
 			return p
 		}
-		switch platform {
-		case "darwin/arm", "darwin/arm64":
-			codegenArg = "-shared"
-		default:
-			switch goos {
-			case "dragonfly", "freebsd", "linux", "netbsd", "openbsd", "solaris":
-				// Use -shared so that the result is
-				// suitable for inclusion in a PIE or
-				// shared library.
+		if gccgo {
+			codegenArg = "-fPIC"
+		} else {
+			switch platform {
+			case "darwin/arm", "darwin/arm64":
 				codegenArg = "-shared"
+			default:
+				switch goos {
+				case "dragonfly", "freebsd", "linux", "netbsd", "openbsd", "solaris":
+					// Use -shared so that the result is
+					// suitable for inclusion in a PIE or
+					// shared library.
+					codegenArg = "-shared"
+				}
 			}
 		}
 		exeSuffix = ".a"
@@ -374,10 +378,14 @@ func buildModeInit() {
 	case "default":
 		switch platform {
 		case "android/arm", "android/arm64", "android/amd64", "android/386":
-			codegenArg = "-shared"
+			if !gccgo {
+				codegenArg = "-shared"
+			}
 			ldBuildmode = "pie"
 		case "darwin/arm", "darwin/arm64":
-			codegenArg = "-shared"
+			if !gccgo {
+				codegenArg = "-shared"
+			}
 			fallthrough
 		default:
 			ldBuildmode = "exe"
@@ -387,7 +395,7 @@ func buildModeInit() {
 		ldBuildmode = "exe"
 	case "pie":
 		if gccgo {
-			fatalf("-buildmode=pie not supported by gccgo")
+			codegenArg = "-fPIE"
 		} else {
 			switch platform {
 			case "linux/386", "linux/amd64", "linux/arm", "linux/arm64", "linux/ppc64le", "linux/s390x",
@@ -1053,7 +1061,7 @@ func (b *builder) action1(mode buildMode, depMode buildMode, p *Package, looksha
 		// Install header for cgo in c-archive and c-shared modes.
 		if p.usesCgo() && (buildBuildmode == "c-archive" || buildBuildmode == "c-shared") {
 			hdrTarget := a.target[:len(a.target)-len(filepath.Ext(a.target))] + ".h"
-			if buildContext.Compiler == "gccgo" {
+			if buildContext.Compiler == "gccgo" && *buildO == "" {
 				// For the header file, remove the "lib"
 				// added by go/build, so we generate pkg.h
 				// rather than libpkg.h.
@@ -3025,6 +3033,8 @@ func (tools gccgoToolchain) link(b *builder, root *action, out string, allaction
 		ldflags = append(ldflags, "-shared", "-nostdlib", "-Wl,--whole-archive", "-lgolibbegin", "-Wl,--no-whole-archive", "-lgo", "-lgcc_s", "-lgcc", "-lc", "-lgcc")
 	case "shared":
 		ldflags = append(ldflags, "-zdefs", "-shared", "-nostdlib", "-lgo", "-lgcc_s", "-lgcc", "-lc")
+	case "pie":
+		ldflags = append(ldflags, "-pie")
 
 	default:
 		fatalf("-buildmode=%s not supported for gccgo", buildmode)
@@ -3100,7 +3110,7 @@ func (tools gccgoToolchain) cc(b *builder, p *Package, objdir, ofile, cfile stri
 // maybePIC adds -fPIC to the list of arguments if needed.
 func (tools gccgoToolchain) maybePIC(args []string) []string {
 	switch buildBuildmode {
-	case "c-shared", "shared", "plugin":
+	case "c-archive", "c-shared", "shared", "plugin":
 		args = append(args, "-fPIC")
 	}
 	return args

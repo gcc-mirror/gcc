@@ -2075,7 +2075,6 @@ implicitly_declare_fn (special_function_kind kind, tree type,
       tree decl = cp_build_parm_decl (fn, NULL_TREE, rhs_parm_type);
       TREE_READONLY (decl) = 1;
       retrofit_lang_decl (decl);
-      DECL_CONTEXT (decl) = fn;
       DECL_PARM_INDEX (decl) = DECL_PARM_LEVEL (decl) = 1;
       DECL_ARGUMENTS (fn) = decl;
     }
@@ -2104,7 +2103,6 @@ implicitly_declare_fn (special_function_kind kind, tree type,
     }
   /* Add the "this" parameter.  */
   this_parm = build_this_parm (fn, fn_type, TYPE_UNQUALIFIED);
-  DECL_CONTEXT (this_parm) = fn;
   DECL_CHAIN (this_parm) = DECL_ARGUMENTS (fn);
   DECL_ARGUMENTS (fn) = this_parm;
 

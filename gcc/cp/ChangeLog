@@ -1,3 +1,49 @@
+2017-06-29  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-tree.h (THIS_NAME, IN_CHARGE_NAME, VTBL_PTR_TYPE,
+	VTABLE_DELTA_NAME, VTABLE_PFN_NAME): Delete.
+	* decl.c (initialize_predefined_identifiers): Name cdtor special
+	names consistently.  Use literals for above deleted defines.
+	(cxx_init_decl_processing): Use literal for vtbl_ptr_type name,
+
+	* lex.c (maybe_add_lang_type_raw): Exit early, rather than use a
+	flag.
+
+	* call.c (check_dtor_name): Use constructor_name for enums too.
+	(build_new_method_call_1): Use constructor_name for cdtors and
+	show ~ for dtor.
+	* class.c (build_self_reference): Use TYPE_NAME to get name of
+	self reference.
+	* name-lookup (constructor_name): Use DECL_NAME directly.
+	(constructor_name_p): Reimplement.
+	(push_class_level_binding_1): Use TYPE_NAME directly.
+
+	* class.c (finish_struct): Use OVL_P.
+	(get_vfield_name): Measure constructor_name length.
+	* cp-tree.h (SET_CLASS_TYPE_P): Add RECORD_OR_UNION_CHECK.
+	(NON_UNION_CLASS_TYPE_P): Check RECORD_TYPE up front.
+	* cxx-pretty-print.c (is_destructor_name): Delete.
+	(pp_cxx_unqualified_id): Remove bogus destructor name checking.
+	* decl.c (grokfndecl): Move cheap checks first when looking for
+	implicit extern cness.
+
+	* parser.c (cp_parser_direct_declarator): Reorder if to avoid
+	indentation. Remove unnecessary assignment of constructor name.
+
+	Whitespace cleanups.
+	* call.c (name_as_c_string): Move CONST_CAST to return.
+	(build_new_method_call_1): Remove unneeded bracing.
+	* class.c (include_empty_classes): Unbreak line.
+	* constraint.cc (tsubst_check_constraint): Add space.
+	* cp-tree.h (lang_decl_ns): Add comment.
+	(PTRMEM_CST_MEMBER): Break line.
+	* decl.c (grokfndecl): Add blank lines. Unbreak some others.
+	(grokdeclarator): Remove lines, move declaration to first use.
+	* decl2.c (decl_needed_p): Fix indentation.
+	(c_parse_final_cleanups): Remove blank line.
+	* method.c (implicitly_declare_fn): Move declaration to first use.
+	* search.c (current_scope): Add blank lines.
+
 2017-06-28  Jason Merrill  <jason@redhat.com>
 
 	PR c++/72764 - ICE with invalid template typename.

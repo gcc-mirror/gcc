@@ -1,5 +1,7 @@
 2017-06-29  Nathan Sidwell  <nathan@acm.org>
 
+	Merge trunk r249794.
+
 	gcc/cp/
 	* cp-tree.h (class_method_index_for_fn): Delete.
 	* decl2.c (check_classfn): Use lookup_fnfields_slot, reimplement

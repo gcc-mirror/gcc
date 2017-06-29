@@ -1142,7 +1142,10 @@ expand_case (gswitch *stmt)
   /* cleanup_tree_cfg removes all SWITCH_EXPR with their index
      expressions being INTEGER_CST.  */
   gcc_assert (TREE_CODE (index_expr) != INTEGER_CST);
-  
+
+  /* Optimization of switch statements with only one label has already
+     occurred, so we should never see them at this point.  */
+  gcc_assert (ncases > 1);
 
   do_pending_stack_adjust ();
 

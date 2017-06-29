@@ -1,3 +1,26 @@
+2017-06-29  Carl Love  <cel@us.ibm.com>
+
+	* gcc.target/powerpc/builtins-3-vec_reve-runnable.c (dg-options,
+	dg-skip-if): Add -mvsx -mcpu=power7.
+
+2017-06-29  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/vect/slp-reduc-8.c: New testcase.
+
+2017-06-29  Nathan Sidwell  <nathan@acm.org>
+
+	* g++.dg/cpp1y/builtin_FUNCTION.C: New.
+
+2017-06-29  Peter Bergner  <bergner@vnet.ibm.com>
+
+	PR middle-end/81194
+	* g++.dg/pr81194.C: New test.
+
+2017-06-29  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR ipa/80565
+	* gcc.dg/torture/pr80565.c: New file.
+
 2017-06-29  Bin Cheng  <bin.cheng@arm.com>
 
 	PR tree-optimization/81196

@@ -13131,7 +13131,7 @@ Dump the raw internal tree data.  This option is applicable to C++ only.
 
 @end table
 
-
+@item -fdump-passes
 @opindex fdump-passes
 Print on @file{stderr} the list of optimization passes that are turned
 on and off by the current command-line options.

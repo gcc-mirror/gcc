@@ -1,3 +1,36 @@
+2017-06-29  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-loop.c (vect_analyze_scalar_cycles_1): Do not add
+	reduction chains to LOOP_VINFO_REDUCTIONS.
+	* tree-vect-slp.c (vect_analyze_slp): Continue looking for
+	SLP reductions after processing reduction chains.
+
+2017-06-29  Nathan Sidwell  <nathan@acm.org>
+
+	* builtins.c (fold_builtin_FUNCTION): Use
+	lang_hooks.decl_printable_name.
+
+2017-06-29  Peter Bergner  <bergner@vnet.ibm.com>
+
+	PR middle-end/81194
+	* cfgexpand.c (expand_gimple_stmt_1): Handle switch statements
+	with only one label.
+	* stmt.c (expand_case): Assert NCASES is greater than one.
+
+2017-06-29  Richard Biener  <rguenther@suse.de>
+
+	* tree-cfg.c (group_case_labels_stmt): Return whether we changed
+	anything.
+	(group_case_labels): Likewise.
+	(find_taken_edge): Push sanity checking on val to workers...
+	(find_taken_edge_cond_expr): ... here
+	(find_taken_edge_switch_expr): ... and here, handle cases
+	with just a default label.
+	* tree-cfg.h (group_case_labels_stmt): Adjust prototype.
+	(group_case_labels): Likewise.
+	* tree-cfgcleanup.c (execute_cleanup_cfg_post_optimizing): When
+	group_case_labels does anything cleanup the CFG again.
+
 2017-06-29  Bin Cheng  <bin.cheng@arm.com>
 
 	PR tree-optimization/81196
