@@ -1,3 +1,7 @@
+2017-06-29  Nathan Sidwell  <nathan@acm.org>
+
+	* g++.dg/cpp1y/builtin_FUNCTION.C: New.
+
 2017-06-29  Peter Bergner  <bergner@vnet.ibm.com>
 
 	PR middle-end/81194

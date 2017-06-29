@@ -1,3 +1,8 @@
+2017-06-29  Nathan Sidwell  <nathan@acm.org>
+
+	* builtins.c (fold_builtin_FUNCTION): Use
+	lang_hooks.decl_printable_name.
+
 2017-06-29  Peter Bergner  <bergner@vnet.ibm.com>
 
 	PR middle-end/81194
