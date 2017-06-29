@@ -10639,11 +10639,11 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 	    /* If the field isn't aligned enough to fetch as a memref,
 	       fetch it as a bit field.  */
 	    || (mode1 != BLKmode
-		&& (((TYPE_ALIGN (TREE_TYPE (tem)) < GET_MODE_ALIGNMENT (mode)
-		      || (bitpos % GET_MODE_ALIGNMENT (mode) != 0)
-		      || (MEM_P (op0)
-			  && (MEM_ALIGN (op0) < GET_MODE_ALIGNMENT (mode1)
-			      || (bitpos % GET_MODE_ALIGNMENT (mode1) != 0))))
+		&& (((MEM_P (op0)
+		      ? MEM_ALIGN (op0) < GET_MODE_ALIGNMENT (mode1)
+		        || (bitpos % GET_MODE_ALIGNMENT (mode1) != 0)
+		      : TYPE_ALIGN (TREE_TYPE (tem)) < GET_MODE_ALIGNMENT (mode)
+		        || (bitpos % GET_MODE_ALIGNMENT (mode) != 0))
 		     && modifier != EXPAND_MEMORY
 		     && ((modifier == EXPAND_CONST_ADDRESS
 			  || modifier == EXPAND_INITIALIZER)
