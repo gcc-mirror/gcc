@@ -1,3 +1,13 @@
+2017-06-29  Yury Gribov  <tetra2005@gmail.com>
+
+	PR bootstrap/80565
+        * ipa-cp.c (allocate_and_init_ipcp_value): Add initialization
+	code.
+        * ipa-inline.h
+	(edge_growth_cache_entry::edge_growth_cache_entry): New
+	function.
+        (reset_edge_growth_cache): Update to use constructor.
+
 2017-06-28  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
 	* config/aarch64/aarch64.h (AARCH64_EXPAND_ALIGNMENT): New.
