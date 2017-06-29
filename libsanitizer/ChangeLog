@@ -1,3 +1,19 @@
+2017-06-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	Backport from mainline
+	2017-01-10  James Clarke  <jrtc27@jrtc27.com>
+
+	PR sanitizer/78992
+	* sanitizer_common/sanitizer_platform_limits_posix.h
+	(struct __sanitizer_sigaction): Cherry-pick upstream r291561.
+
+	2016-11-30  Maxim Ostapenko  <m.ostapenko@samsung.com>
+
+	PR sanitizer/78532
+	* sanitizer_common/sanitizer_platform_limits_posix.h
+	(__sanitizer_sigaction): Adjust for sparc targets and various Glibc
+	versions.
+
 2017-05-30  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
