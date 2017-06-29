@@ -1,3 +1,16 @@
+2017-06-29  Aaron Sawdey  <acsawdey@linux.vnet.ibm.com>
+
+        * config/rs6000/rs6000.c (toc_relative_expr_p): Make tocrel_base
+        and tocrel_offset be pointer args rather than implicitly using
+        static versions.
+        (legitimate_constant_pool_address_p, rs6000_emit_move,
+        const_load_sequence_p, adjust_vperm): Add local tocrel_base and
+        tocrel_offset and use in toc_relative_expr_p call.
+        (print_operand, print_operand_address): Use static tocrel_base_oac
+        and tocrel_offset_oac.
+        (rs6000_output_addr_const_extra): Use static tocrel_base_oac and
+        tocrel_offset_oac.
+
 2017-06-29  Maya Rashish  <coypu@sdf.org>
 
 	* config/vax/builtins.md (ffssi2_internal): Correct constraint.
