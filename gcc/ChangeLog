@@ -1,3 +1,35 @@
+2017-06-29  Carl Love  <cel@us.ibm.com>
+
+	* config/rs6000/rs6000-c.c: Add support for built-in functions
+	vector signed int vec_signed (vector float);
+	vector signed long long vec_signed (vector double);
+	vector signed int vec_signed2 (vector double, vector double);
+	vector signed int vec_signede (vector double);
+	vector signed int vec_signedo (vector double);
+	* config/rs6000/rs6000.c (rs6000_generate_vsigned2_code): Add
+	instruction generator.
+	* config/rs6000/vsx.md (UNSPEC_VSX_XVCVSPSXWS, UNSPEC_VSX_XVCVSPSXDS,
+	UNSPEC_VSX_VSIGNED2): Add UNSPECS.
+	(vsx_xvcvspsxws, vsx_xvcvdpuxds_scale, vsx_xvcvspuxws, vsigned2_v2df):
+	Add define_insn.
+	(vsignedo_v2df, vsignede_v2df, vunsigned2_v2df, vunsignedo_v2df,
+	vunsignede_v2df): Add define_expands.
+	* config/rs6000/rs6000-builtin.def (VEC_SIGNED, VEC_UNSIGNED,
+	VEC_SIGNED2, VEC_UNSIGNED2, VEC_SIGNEDE, VEC_UNSIGNEDE, VEC_SIGNEDO,
+	VEC_UNSIGNEDO): Add definitions.
+	* config/vsx.md (UNSPEC_VSX_XVCVSPSXWS, UNSPEC_VSX_XVCVSPSXDS,
+	UNSPEC_VSX_VSIGNED2): Add UNSPECs.
+	(vsx_xvcvspsxws, vsx_xvcvspuxws): Add define_insn.
+	(vsigned2_v2df, vsigendo_v2df, vsignede_v2df,
+	vunsigned2_v2df, vunsignedo_v2df, vunsignede_v2df): Add define_expands.
+	* config/rs6000/altivec.h (vec_signed, vec_signed2,
+	vec_signede and vec_signedo, vec_unsigned, vec_unsigned2,
+	vec_unsignede, vec_unsignedo): Add builtin defines.
+	* config/rs6000-protos.h (rs6000_generate_vsigned2_code): Add extern
+	declaration.
+	* doc/extend.texi: Update the built-in documentation file for the
+	new built-in functions.
+
 2017-06-29  Richard Biener  <rguenther@suse.de>
 
 	* tree-vect-loop.c (vect_analyze_scalar_cycles_1): Do not add

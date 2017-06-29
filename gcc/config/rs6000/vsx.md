@@ -358,6 +358,8 @@
    UNSPEC_VSX_XVCVDPSXDS
    UNSPEC_VSX_XVCVDPUXDS
    UNSPEC_VSX_SIGN_EXTEND
+   UNSPEC_VSX_XVCVSPSXWS
+   UNSPEC_VSX_XVCVSPSXDS
    UNSPEC_VSX_VSLO
    UNSPEC_VSX_EXTRACT
    UNSPEC_VSX_SXEXPDP
@@ -370,6 +372,7 @@
    UNSPEC_VSX_VIEXP
    UNSPEC_VSX_VTSTDC
    UNSPEC_VSX_VEC_INIT
+   UNSPEC_VSX_VSIGNED2
    UNSPEC_LXVL
    UNSPEC_STXVL
    UNSPEC_VCLZLSBB
@@ -1864,6 +1867,8 @@
   DONE;
 })
 
+;; convert vector of 64-bit floating point numbers to vector of
+;; 64-bit signed integer
 (define_insn "vsx_xvcvdpsxds"
   [(set (match_operand:V2DI 0 "vsx_register_operand" "=wa")
         (unspec:V2DI [(match_operand:V2DF 1 "vsx_register_operand" "wa")]
@@ -1872,6 +1877,18 @@
   "xvcvdpsxds %x0,%x1"
   [(set_attr "type" "vecdouble")])
 
+;; convert vector of 32-bit floating point numbers to vector of
+;; 32-bit signed integer
+(define_insn "vsx_xvcvspsxws"
+  [(set (match_operand:V4SI 0 "vsx_register_operand" "=wa")
+	(unspec:V4SI [(match_operand:V4SF 1 "vsx_register_operand" "wa")]
+		     UNSPEC_VSX_XVCVSPSXWS))]
+  "VECTOR_UNIT_VSX_P (V4SFmode)"
+  "xvcvspsxws %x0,%x1"
+  [(set_attr "type" "vecfloat")])
+
+;; convert vector of 64-bit floating point numbers to vector of
+;; 64-bit unsigned integer
 (define_expand "vsx_xvcvdpuxds_scale"
   [(match_operand:V2DI 0 "vsx_register_operand" "")
    (match_operand:V2DF 1 "vsx_register_operand" "")
@@ -1892,6 +1909,16 @@
   emit_insn (gen_vsx_xvcvdpuxds (op0, tmp));
   DONE;
 })
+
+;; convert vector of 32-bit floating point numbers to vector of
+;; 32-bit unsigned integer
+(define_insn "vsx_xvcvspuxws"
+  [(set (match_operand:V4SI 0 "vsx_register_operand" "=wa")
+	(unspec:V4SI [(match_operand:V4SF 1 "vsx_register_operand" "wa")]
+		     UNSPEC_VSX_XVCVSPSXWS))]
+  "VECTOR_UNIT_VSX_P (V4SFmode)"
+  "xvcvspuxws %x0,%x1"
+  [(set_attr "type" "vecfloat")])
 
 (define_insn "vsx_xvcvdpuxds"
   [(set (match_operand:V2DI 0 "vsx_register_operand" "=wa")
@@ -2136,6 +2163,173 @@
     }
   DONE;
 })
+
+;; Generate vsigned2
+;; convert two double float vectors to a vector of single precision ints
+(define_expand "vsigned2_v2df"
+  [(match_operand:V4SI 0 "register_operand" "=wa")
+   (unspec:V4SI [(match_operand:V2DF 1 "register_operand" "wa")
+		 (match_operand:V2DF 2 "register_operand" "wa")]
+  UNSPEC_VSX_VSIGNED2)]
+  "TARGET_VSX"
+{
+  rtx rtx_src1, rtx_src2, rtx_dst;
+  bool signed_convert=true;
+
+  rtx_dst = operands[0];
+  rtx_src1 = operands[1];
+  rtx_src2 = operands[2];
+
+  rs6000_generate_vsigned2_code (signed_convert, rtx_dst, rtx_src1, rtx_src2);
+  DONE;
+})
+
+;; Generate vsignedo_v2df
+;; signed double float to int convert odd word
+(define_expand "vsignedo_v2df"
+  [(set (match_operand:V4SI 0 "register_operand" "=wa")
+	(match_operand:V2DF 1 "register_operand" "wa"))]
+  "TARGET_VSX"
+{
+  if (VECTOR_ELT_ORDER_BIG)
+    {
+      rtx rtx_tmp;
+      rtx rtx_val = GEN_INT (12);
+      rtx_tmp = gen_reg_rtx (V4SImode);
+
+      emit_insn (gen_vsx_xvcvdpsxws (rtx_tmp, operands[1]));
+
+      /* Big endian word numbering for words in operand is 0 1 2 3.
+	 take (operand[1] operand[1]) and shift left one word
+	 0 1 2 3    0 1 2 3  =>  1 2 3 0
+	 Words 1 and 3 are now are now where they need to be for result.  */
+
+      emit_insn (gen_altivec_vsldoi_v4si (operands[0], rtx_tmp,
+		 rtx_tmp, rtx_val));
+    }
+  else
+    /* Little endian word numbering for operand is 3 2 1 0.
+       Result words 3 and 1 are where they need to be.  */
+    emit_insn (gen_vsx_xvcvdpsxws (operands[0], operands[1]));
+
+  DONE;
+}
+  [(set_attr "type" "veccomplex")])
+
+;; Generate vsignede_v2df
+;; signed double float to int even word
+(define_expand "vsignede_v2df"
+  [(set (match_operand:V4SI 0 "register_operand" "=v")
+	(match_operand:V2DF 1 "register_operand" "v"))]
+  "TARGET_VSX"
+{
+  if (VECTOR_ELT_ORDER_BIG)
+    /* Big endian word numbering for words in operand is 0 1
+       Result words 0 is where they need to be.  */
+    emit_insn (gen_vsx_xvcvdpsxws (operands[0], operands[1]));
+
+  else
+    {
+      rtx rtx_tmp;
+      rtx rtx_val = GEN_INT (12);
+      rtx_tmp = gen_reg_rtx (V4SImode);
+
+      emit_insn (gen_vsx_xvcvdpsxws (rtx_tmp, operands[1]));
+
+      /* Little endian word numbering for operand is 3 2 1 0.
+	 take (operand[1] operand[1]) and shift left three words
+	 0 1 2 3   0 1 2 3  =>  3 0 1 2
+	 Words 0 and 2 are now where they need to be for the result.  */
+      emit_insn (gen_altivec_vsldoi_v4si (operands[0], rtx_tmp,
+		 rtx_tmp, rtx_val));
+    }
+  DONE;
+}
+  [(set_attr "type" "veccomplex")])
+
+;; Generate unsigned2
+;; convert two double float vectors to a vector of single precision
+;; unsigned ints
+(define_expand "vunsigned2_v2df"
+[(match_operand:V4SI 0 "register_operand" "=v")
+ (unspec:V4SI [(match_operand:V2DF 1 "register_operand" "v")
+	       (match_operand:V2DF 2 "register_operand" "v")]
+	      UNSPEC_VSX_VSIGNED2)]
+ "TARGET_VSX"
+{
+  rtx rtx_src1, rtx_src2, rtx_dst;
+  bool signed_convert=false;
+
+  rtx_dst = operands[0];
+  rtx_src1 = operands[1];
+  rtx_src2 = operands[2];
+
+  rs6000_generate_vsigned2_code (signed_convert, rtx_dst, rtx_src1, rtx_src2);
+  DONE;
+})
+
+;; Generate vunsignedo_v2df
+;; unsigned double float to int convert odd word
+(define_expand "vunsignedo_v2df"
+  [(set (match_operand:V4SI 0 "register_operand" "=v")
+	(match_operand:V2DF 1 "register_operand" "v"))]
+  "TARGET_VSX"
+{
+  if (VECTOR_ELT_ORDER_BIG)
+    {
+      rtx rtx_tmp;
+      rtx rtx_val = GEN_INT (12);
+      rtx_tmp = gen_reg_rtx (V4SImode);
+
+      emit_insn (gen_vsx_xvcvdpuxws (rtx_tmp, operands[1]));
+
+      /* Big endian word numbering for words in operand is 0 1 2 3.
+	 take (operand[1] operand[1]) and shift left one word
+	 0 1 2 3    0 1 2 3  =>  1 2 3 0
+	 Words 1 and 3 are now are now where they need to be for result.  */
+
+      emit_insn (gen_altivec_vsldoi_v4si (operands[0], rtx_tmp,
+		 rtx_tmp, rtx_val));
+    }
+  else
+    /* Little endian word numbering for operand is 3 2 1 0.
+       Result words 3 and 1 are where they need to be.  */
+    emit_insn (gen_vsx_xvcvdpuxws (operands[0], operands[1]));
+
+  DONE;
+}
+  [(set_attr "type" "veccomplex")])
+
+;; Generate vunsignede_v2df
+;; unsigned double float to int even word
+(define_expand "vunsignede_v2df"
+  [(set (match_operand:V4SI 0 "register_operand" "=v")
+	(match_operand:V2DF 1 "register_operand" "v"))]
+  "TARGET_VSX"
+{
+  if (VECTOR_ELT_ORDER_BIG)
+    /* Big endian word numbering for words in operand is 0 1
+       Result words 0 is where they need to be.  */
+    emit_insn (gen_vsx_xvcvdpuxws (operands[0], operands[1]));
+
+  else
+    {
+      rtx rtx_tmp;
+      rtx rtx_val = GEN_INT (12);
+      rtx_tmp = gen_reg_rtx (V4SImode);
+
+      emit_insn (gen_vsx_xvcvdpuxws (rtx_tmp, operands[1]));
+
+      /* Little endian word numbering for operand is 3 2 1 0.
+	 take (operand[1] operand[1]) and shift left three words
+	 0 1 2 3   0 1 2 3  =>  3 0 1 2
+	 Words 0 and 2 are now where they need to be for the result.  */
+      emit_insn (gen_altivec_vsldoi_v4si (operands[0], rtx_tmp,
+		 rtx_tmp, rtx_val));
+    }
+  DONE;
+}
+  [(set_attr "type" "veccomplex")])
 
 ;; Only optimize (float (fix x)) -> frz if we are in fast-math mode, since
 ;; since the xvrdpiz instruction does not truncate the value if the floating
