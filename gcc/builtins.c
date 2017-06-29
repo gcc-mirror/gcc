@@ -8739,13 +8739,12 @@ fold_builtin_FILE (location_t loc)
 static inline tree
 fold_builtin_FUNCTION ()
 {
-  if (current_function_decl)
-    {
-      const char *name = IDENTIFIER_POINTER (DECL_NAME (current_function_decl));
-      return build_string_literal (strlen (name) + 1, name);
-    }
+  const char *name = "";
 
-  return build_string_literal (1, "");
+  if (current_function_decl)
+    name = lang_hooks.decl_printable_name (current_function_decl, 0);
+
+  return build_string_literal (strlen (name) + 1, name);
 }
 
 /* Fold a call to __builtin_LINE to an integer constant.  */
