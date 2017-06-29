@@ -1,3 +1,11 @@
+2017-06-29  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2017-06-19  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/81112
+	* g++.dg/torture/pr81112.C: New testcase.
+
 2017-06-28  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline
