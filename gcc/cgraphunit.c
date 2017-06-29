@@ -1506,18 +1506,18 @@ init_lowered_empty_function (tree decl, bool in_ssa, profile_count count)
 
   /* Create BB for body of the function and connect it properly.  */
   ENTRY_BLOCK_PTR_FOR_FN (cfun)->count = count;
-  ENTRY_BLOCK_PTR_FOR_FN (cfun)->frequency = REG_BR_PROB_BASE;
+  ENTRY_BLOCK_PTR_FOR_FN (cfun)->frequency = BB_FREQ_MAX;
   EXIT_BLOCK_PTR_FOR_FN (cfun)->count = count;
-  EXIT_BLOCK_PTR_FOR_FN (cfun)->frequency = REG_BR_PROB_BASE;
+  EXIT_BLOCK_PTR_FOR_FN (cfun)->frequency = BB_FREQ_MAX;
   bb = create_basic_block (NULL, ENTRY_BLOCK_PTR_FOR_FN (cfun));
   bb->count = count;
   bb->frequency = BB_FREQ_MAX;
   e = make_edge (ENTRY_BLOCK_PTR_FOR_FN (cfun), bb, EDGE_FALLTHRU);
   e->count = count;
-  e->probability = REG_BR_PROB_BASE;
+  e->probability = profile_probability::always ();
   e = make_edge (bb, EXIT_BLOCK_PTR_FOR_FN (cfun), 0);
   e->count = count;
-  e->probability = REG_BR_PROB_BASE;
+  e->probability = profile_probability::always ();
   add_bb_to_loop (bb, ENTRY_BLOCK_PTR_FOR_FN (cfun)->loop_father);
 
   return bb;
@@ -1891,19 +1891,18 @@ cgraph_node::expand_thunk (bool output_asm_thunks, bool force_gimple_thunk)
 					    NULL_TREE, NULL_TREE);
 		  gsi_insert_after (&bsi, stmt, GSI_NEW_STMT);
 		  e = make_edge (bb, then_bb, EDGE_TRUE_VALUE);
-		  e->probability = REG_BR_PROB_BASE - REG_BR_PROB_BASE / 16;
+		  e->probability = profile_probability::guessed_always ()
+					.apply_scale (1, 16);
 		  e->count = count - count.apply_scale (1, 16);
 		  e = make_edge (bb, else_bb, EDGE_FALSE_VALUE);
-		  e->probability = REG_BR_PROB_BASE / 16;
+		  e->probability = profile_probability::guessed_always ()
+					.apply_scale (1, 16);
 		  e->count = count.apply_scale (1, 16);
-		  e = make_edge (return_bb, EXIT_BLOCK_PTR_FOR_FN (cfun), 0);
-		  e->probability = REG_BR_PROB_BASE;
-		  e->count = count;
-		  e = make_edge (then_bb, return_bb, EDGE_FALLTHRU);
-		  e->probability = REG_BR_PROB_BASE;
-		  e->count = count - count.apply_scale (1, 16);
+		  make_single_succ_edge (return_bb,
+					 EXIT_BLOCK_PTR_FOR_FN (cfun), 0);
+		  make_single_succ_edge (then_bb, return_bb, EDGE_FALLTHRU);
 		  e = make_edge (else_bb, return_bb, EDGE_FALLTHRU);
-		  e->probability = REG_BR_PROB_BASE;
+		  e->probability = profile_probability::always ();
 		  e->count = count.apply_scale (1, 16);
 		  bsi = gsi_last_bb (then_bb);
 		}

@@ -39,19 +39,13 @@ along with GCC; see the file COPYING3.  If not see
 
 static bool prefer_and_bit_test (machine_mode, int);
 static void do_jump_by_parts_greater (tree, tree, int,
-				      rtx_code_label *, rtx_code_label *, int);
+				      rtx_code_label *, rtx_code_label *,
+				      profile_probability);
 static void do_jump_by_parts_equality (tree, tree, rtx_code_label *,
-				       rtx_code_label *, int);
+				       rtx_code_label *, profile_probability);
 static void do_compare_and_jump	(tree, tree, enum rtx_code, enum rtx_code,
-				 rtx_code_label *, rtx_code_label *, int);
-
-/* Invert probability if there is any.  -1 stands for unknown.  */
-
-static inline int
-inv (int prob)
-{
-  return prob == -1 ? -1 : REG_BR_PROB_BASE - prob;
-}
+				 rtx_code_label *, rtx_code_label *,
+				 profile_probability);
 
 /* At the start of a function, record that we have no previously-pushed
    arguments waiting to be popped.  */
@@ -128,29 +122,29 @@ restore_pending_stack_adjust (saved_pending_stack_adjust *save)
 /* Generate code to evaluate EXP and jump to LABEL if the value is zero.  */
 
 void
-jumpifnot (tree exp, rtx_code_label *label, int prob)
+jumpifnot (tree exp, rtx_code_label *label, profile_probability prob)
 {
-  do_jump (exp, label, NULL, inv (prob));
+  do_jump (exp, label, NULL, prob.invert ());
 }
 
 void
 jumpifnot_1 (enum tree_code code, tree op0, tree op1, rtx_code_label *label,
-	     int prob)
+	     profile_probability prob)
 {
-  do_jump_1 (code, op0, op1, label, NULL, inv (prob));
+  do_jump_1 (code, op0, op1, label, NULL, prob.invert ());
 }
 
 /* Generate code to evaluate EXP and jump to LABEL if the value is nonzero.  */
 
 void
-jumpif (tree exp, rtx_code_label *label, int prob)
+jumpif (tree exp, rtx_code_label *label, profile_probability prob)
 {
   do_jump (exp, NULL, label, prob);
 }
 
 void
 jumpif_1 (enum tree_code code, tree op0, tree op1,
-	  rtx_code_label *label, int prob)
+	  rtx_code_label *label, profile_probability prob)
 {
   do_jump_1 (code, op0, op1, NULL, label, prob);
 }
@@ -200,12 +194,12 @@ prefer_and_bit_test (machine_mode mode, int bitnum)
 
 /* Subroutine of do_jump, dealing with exploded comparisons of the type
    OP0 CODE OP1 .  IF_FALSE_LABEL and IF_TRUE_LABEL like in do_jump.
-   PROB is probability of jump to if_true_label, or -1 if unknown.  */
+   PROB is probability of jump to if_true_label.  */
 
 void
 do_jump_1 (enum tree_code code, tree op0, tree op1,
 	   rtx_code_label *if_false_label, rtx_code_label *if_true_label,
-	   int prob)
+	   profile_probability prob)
 {
   machine_mode mode;
   rtx_code_label *drop_through_label = 0;
@@ -222,7 +216,8 @@ do_jump_1 (enum tree_code code, tree op0, tree op1,
 		    != MODE_COMPLEX_INT);
 
         if (integer_zerop (op1))
-	  do_jump (op0, if_true_label, if_false_label, inv (prob));
+	  do_jump (op0, if_true_label, if_false_label,
+		   prob.invert ());
         else if (GET_MODE_CLASS (TYPE_MODE (inner_type)) == MODE_INT
                  && !can_compare_p (EQ, TYPE_MODE (inner_type), ccp_jump))
 	  do_jump_by_parts_equality (op0, op1, if_false_label, if_true_label,
@@ -247,7 +242,7 @@ do_jump_1 (enum tree_code code, tree op0, tree op1,
         else if (GET_MODE_CLASS (TYPE_MODE (inner_type)) == MODE_INT
            && !can_compare_p (NE, TYPE_MODE (inner_type), ccp_jump))
 	  do_jump_by_parts_equality (op0, op1, if_true_label, if_false_label,
-				     inv (prob));
+				     prob.invert ());
         else
 	  do_compare_and_jump (op0, op1, NE, NE, if_false_label, if_true_label,
 			       prob);
@@ -270,7 +265,7 @@ do_jump_1 (enum tree_code code, tree op0, tree op1,
       if (GET_MODE_CLASS (mode) == MODE_INT
           && ! can_compare_p (LE, mode, ccp_jump))
 	do_jump_by_parts_greater (op0, op1, 0, if_true_label, if_false_label,
-				  inv (prob));
+				  prob.invert ());
       else
 	do_compare_and_jump (op0, op1, LE, LEU, if_false_label, if_true_label,
 			     prob);
@@ -292,7 +287,7 @@ do_jump_1 (enum tree_code code, tree op0, tree op1,
       if (GET_MODE_CLASS (mode) == MODE_INT
           && ! can_compare_p (GE, mode, ccp_jump))
 	do_jump_by_parts_greater (op0, op1, 1, if_true_label, if_false_label,
-				  inv (prob));
+				  prob.invert ());
       else
 	do_compare_and_jump (op0, op1, GE, GEU, if_false_label, if_true_label,
 			     prob);
@@ -346,17 +341,17 @@ do_jump_1 (enum tree_code code, tree op0, tree op1,
            half of the total probability of being false, so its jump has a false
            probability of half the total, relative to the probability we
            reached it (i.e. the first condition was true).  */
-        int op0_prob = -1;
-        int op1_prob = -1;
-        if (prob != -1)
+        profile_probability op0_prob = profile_probability::uninitialized ();
+        profile_probability op1_prob = profile_probability::uninitialized ();
+        if (prob.initialized_p ())
           {
-            int false_prob = inv (prob);
-            int op0_false_prob = false_prob / 2;
-            int op1_false_prob = GCOV_COMPUTE_SCALE ((false_prob / 2),
-                                                     inv (op0_false_prob));
+            profile_probability false_prob = prob.invert ();
+            profile_probability op0_false_prob = false_prob.apply_scale (1, 2);
+	    profile_probability op1_false_prob = false_prob.apply_scale (1, 2)
+				/ op0_false_prob.invert ();
             /* Get the probability that each jump below is true.  */
-            op0_prob = inv (op0_false_prob);
-            op1_prob = inv (op1_false_prob);
+            op0_prob = op0_false_prob.invert ();
+            op1_prob = op1_false_prob.invert ();
           }
 	if (if_false_label == NULL)
           {
@@ -379,12 +374,12 @@ do_jump_1 (enum tree_code code, tree op0, tree op1,
            The second condition has the other half of the total probability,
            so its jump has a probability of half the total, relative to
            the probability we reached it (i.e. the first condition was false).  */
-        int op0_prob = -1;
-        int op1_prob = -1;
-        if (prob != -1)
+        profile_probability op0_prob = profile_probability::uninitialized ();
+        profile_probability op1_prob = profile_probability::uninitialized ();
+        if (prob.initialized_p ())
           {
-            op0_prob = prob / 2;
-            op1_prob = GCOV_COMPUTE_SCALE ((prob / 2), inv (op0_prob));
+            op0_prob = prob.apply_scale (1, 2);
+            op1_prob = prob.apply_scale (1, 2) / op0_prob.invert ();
 	  }
 	if (if_true_label == NULL)
 	  {
@@ -420,11 +415,11 @@ do_jump_1 (enum tree_code code, tree op0, tree op1,
    actually perform a jump.  An example where there is no jump
    is when EXP is `(foo (), 0)' and IF_FALSE_LABEL is null.
 
-   PROB is probability of jump to if_true_label, or -1 if unknown.  */
+   PROB is probability of jump to if_true_label.  */
 
 void
 do_jump (tree exp, rtx_code_label *if_false_label,
-	 rtx_code_label *if_true_label, int prob)
+	 rtx_code_label *if_true_label, profile_probability prob)
 {
   enum tree_code code = TREE_CODE (exp);
   rtx temp;
@@ -481,7 +476,7 @@ do_jump (tree exp, rtx_code_label *if_false_label,
 
     case TRUTH_NOT_EXPR:
       do_jump (TREE_OPERAND (exp, 0), if_true_label, if_false_label,
-	       inv (prob));
+	       prob.invert ());
       break;
 
     case COND_EXPR:
@@ -497,7 +492,8 @@ do_jump (tree exp, rtx_code_label *if_false_label,
 	  }
 
         do_pending_stack_adjust ();
-	do_jump (TREE_OPERAND (exp, 0), label1, NULL, -1);
+	do_jump (TREE_OPERAND (exp, 0), label1, NULL,
+		 profile_probability::uninitialized ());
 	do_jump (TREE_OPERAND (exp, 1), if_false_label, if_true_label, prob);
         emit_label (label1);
 	do_jump (TREE_OPERAND (exp, 2), if_false_label, if_true_label, prob);
@@ -542,7 +538,7 @@ do_jump (tree exp, rtx_code_label *if_false_label,
 	{
 	  tree exp0 = TREE_OPERAND (exp, 0);
 	  rtx_code_label *set_label, *clr_label;
-	  int setclr_prob = prob;
+	  profile_probability setclr_prob = prob;
 
 	  /* Strip narrowing integral type conversions.  */
 	  while (CONVERT_EXPR_P (exp0)
@@ -558,7 +554,7 @@ do_jump (tree exp, rtx_code_label *if_false_label,
 	      exp0 = TREE_OPERAND (exp0, 0);
 	      clr_label = if_true_label;
 	      set_label = if_false_label;
-	      setclr_prob = inv (prob);
+	      setclr_prob = prob.invert ();
 	    }
 	  else
 	    {
@@ -673,7 +669,7 @@ static void
 do_jump_by_parts_greater_rtx (machine_mode mode, int unsignedp, rtx op0,
 			      rtx op1, rtx_code_label *if_false_label,
 			      rtx_code_label *if_true_label,
-			      int prob)
+			      profile_probability prob)
 {
   int nwords = (GET_MODE_SIZE (mode) / UNITS_PER_WORD);
   rtx_code_label *drop_through_label = 0;
@@ -703,7 +699,7 @@ do_jump_by_parts_greater_rtx (machine_mode mode, int unsignedp, rtx op0,
       if_false_label = drop_through_label;
       drop_through_if_true = false;
       drop_through_if_false = true;
-      prob = inv (prob);
+      prob = prob.invert ();
     }
 
   /* Compare a word at a time, high order first.  */
@@ -733,7 +729,8 @@ do_jump_by_parts_greater_rtx (machine_mode mode, int unsignedp, rtx op0,
 
       /* Consider lower words only if these are equal.  */
       do_compare_rtx_and_jump (op0_word, op1_word, NE, unsignedp, word_mode,
-			       NULL_RTX, NULL, if_false_label, inv (prob));
+			       NULL_RTX, NULL, if_false_label,
+			       prob.invert ());
     }
 
   if (!drop_through_if_false)
@@ -750,7 +747,8 @@ do_jump_by_parts_greater_rtx (machine_mode mode, int unsignedp, rtx op0,
 static void
 do_jump_by_parts_greater (tree treeop0, tree treeop1, int swap,
 			  rtx_code_label *if_false_label,
-			  rtx_code_label *if_true_label, int prob)
+			  rtx_code_label *if_true_label,
+			  profile_probability prob)
 {
   rtx op0 = expand_normal (swap ? treeop1 : treeop0);
   rtx op1 = expand_normal (swap ? treeop0 : treeop1);
@@ -769,7 +767,8 @@ do_jump_by_parts_greater (tree treeop0, tree treeop1, int swap,
 static void
 do_jump_by_parts_zero_rtx (machine_mode mode, rtx op0,
 			   rtx_code_label *if_false_label,
-			   rtx_code_label *if_true_label, int prob)
+			   rtx_code_label *if_true_label,
+			   profile_probability prob)
 {
   int nwords = GET_MODE_SIZE (mode) / UNITS_PER_WORD;
   rtx part;
@@ -819,7 +818,8 @@ do_jump_by_parts_zero_rtx (machine_mode mode, rtx op0,
 static void
 do_jump_by_parts_equality_rtx (machine_mode mode, rtx op0, rtx op1,
 			       rtx_code_label *if_false_label,
-			       rtx_code_label *if_true_label, int prob)
+			       rtx_code_label *if_true_label,
+			       profile_probability prob)
 {
   int nwords = (GET_MODE_SIZE (mode) / UNITS_PER_WORD);
   rtx_code_label *drop_through_label = NULL;
@@ -859,7 +859,8 @@ do_jump_by_parts_equality_rtx (machine_mode mode, rtx op0, rtx op1,
 static void
 do_jump_by_parts_equality (tree treeop0, tree treeop1,
 			   rtx_code_label *if_false_label,
-			   rtx_code_label *if_true_label, int prob)
+			   rtx_code_label *if_true_label,
+			   profile_probability prob)
 {
   rtx op0 = expand_normal (treeop0);
   rtx op1 = expand_normal (treeop1);
@@ -956,7 +957,8 @@ void
 do_compare_rtx_and_jump (rtx op0, rtx op1, enum rtx_code code, int unsignedp,
 			 machine_mode mode, rtx size,
 			 rtx_code_label *if_false_label,
-			 rtx_code_label *if_true_label, int prob)
+			 rtx_code_label *if_true_label,
+			 profile_probability prob)
 {
   rtx tem;
   rtx_code_label *dummy_label = NULL;
@@ -983,7 +985,7 @@ do_compare_rtx_and_jump (rtx op0, rtx op1, enum rtx_code code, int unsignedp,
 	{
 	  std::swap (if_true_label, if_false_label);
 	  code = rcode;
-	  prob = inv (prob);
+	  prob = prob.invert ();
 	}
     }
 
@@ -1035,7 +1037,7 @@ do_compare_rtx_and_jump (rtx op0, rtx op1, enum rtx_code code, int unsignedp,
 	case LEU:
 	  do_jump_by_parts_greater_rtx (mode, 1, op0, op1,
 					if_true_label, if_false_label,
-					inv (prob));
+					prob.invert ());
 	  break;
 
 	case GTU:
@@ -1046,7 +1048,7 @@ do_compare_rtx_and_jump (rtx op0, rtx op1, enum rtx_code code, int unsignedp,
 	case GEU:
 	  do_jump_by_parts_greater_rtx (mode, 1, op1, op0,
 					if_true_label, if_false_label,
-					inv (prob));
+					prob.invert ());
 	  break;
 
 	case LT:
@@ -1057,7 +1059,7 @@ do_compare_rtx_and_jump (rtx op0, rtx op1, enum rtx_code code, int unsignedp,
 	case LE:
 	  do_jump_by_parts_greater_rtx (mode, 0, op0, op1,
 					if_true_label, if_false_label,
-					inv (prob));
+					prob.invert ());
 	  break;
 
 	case GT:
@@ -1068,7 +1070,7 @@ do_compare_rtx_and_jump (rtx op0, rtx op1, enum rtx_code code, int unsignedp,
 	case GE:
 	  do_jump_by_parts_greater_rtx (mode, 0, op1, op0,
 					if_true_label, if_false_label,
-					inv (prob));
+					prob.invert ());
 	  break;
 
 	case EQ:
@@ -1078,7 +1080,8 @@ do_compare_rtx_and_jump (rtx op0, rtx op1, enum rtx_code code, int unsignedp,
 
 	case NE:
 	  do_jump_by_parts_equality_rtx (mode, op0, op1, if_true_label,
-					 if_false_label, inv (prob));
+					 if_false_label,
+					 prob.invert ());
 	  break;
 
 	default:
@@ -1115,11 +1118,13 @@ do_compare_rtx_and_jump (rtx op0, rtx op1, enum rtx_code code, int unsignedp,
 
 	  else
 	    {
-	      int first_prob = prob;
+	      profile_probability first_prob = prob;
 	      if (first_code == UNORDERED)
-		first_prob = REG_BR_PROB_BASE / 100;
+		first_prob = profile_probability::guessed_always ().apply_scale
+				 (1, 100);
 	      else if (first_code == ORDERED)
-		first_prob = REG_BR_PROB_BASE - REG_BR_PROB_BASE / 100;
+		first_prob = profile_probability::guessed_always ().apply_scale
+				 (99, 100);
 	      if (and_them)
 		{
 		  rtx_code_label *dest_label;
@@ -1165,7 +1170,7 @@ static void
 do_compare_and_jump (tree treeop0, tree treeop1, enum rtx_code signed_code,
 		     enum rtx_code unsigned_code,
 		     rtx_code_label *if_false_label,
-		     rtx_code_label *if_true_label, int prob)
+		     rtx_code_label *if_true_label, profile_probability prob)
 {
   rtx op0, op1;
   tree type;

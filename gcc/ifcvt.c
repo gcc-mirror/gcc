@@ -78,7 +78,7 @@ static int cond_exec_changed_p;
 
 /* Forward references.  */
 static int count_bb_insns (const_basic_block);
-static bool cheap_bb_rtx_cost_p (const_basic_block, int, int);
+static bool cheap_bb_rtx_cost_p (const_basic_block, profile_probability, int);
 static rtx_insn *first_active_insn (basic_block);
 static rtx_insn *last_active_insn (basic_block, int);
 static rtx_insn *find_active_insn_before (basic_block, rtx_insn *);
@@ -132,11 +132,14 @@ count_bb_insns (const_basic_block bb)
    plus a small fudge factor.  */
 
 static bool
-cheap_bb_rtx_cost_p (const_basic_block bb, int scale, int max_cost)
+cheap_bb_rtx_cost_p (const_basic_block bb,
+		     profile_probability prob, int max_cost)
 {
   int count = 0;
   rtx_insn *insn = BB_HEAD (bb);
   bool speed = optimize_bb_for_speed_p (bb);
+  int scale = prob.initialized_p () ? prob.to_reg_br_prob_base ()
+	      : REG_BR_PROB_BASE;
 
   /* Set scale to REG_BR_PROB_BASE to void the identical scaling
      applied to insn_rtx_cost when optimizing for size.  Only do
@@ -4807,7 +4810,8 @@ find_if_case_1 (basic_block test_bb, edge then_edge, edge else_edge)
   basic_block then_bb = then_edge->dest;
   basic_block else_bb = else_edge->dest;
   basic_block new_bb;
-  int then_bb_index, then_prob;
+  int then_bb_index;
+  profile_probability then_prob;
   rtx else_target = NULL_RTX;
 
   /* If we are partitioning hot/cold basic blocks, we don't want to
@@ -4853,10 +4857,7 @@ find_if_case_1 (basic_block test_bb, edge then_edge, edge else_edge)
 	     "\nIF-CASE-1 found, start %d, then %d\n",
 	     test_bb->index, then_bb->index);
 
-  if (then_edge->probability)
-    then_prob = REG_BR_PROB_BASE - then_edge->probability;
-  else
-    then_prob = REG_BR_PROB_BASE / 2;
+  then_prob = then_edge->probability.invert ();
 
   /* We're speculating from the THEN path, we want to make sure the cost
      of speculation is within reason.  */
@@ -4927,7 +4928,7 @@ find_if_case_2 (basic_block test_bb, edge then_edge, edge else_edge)
   basic_block then_bb = then_edge->dest;
   basic_block else_bb = else_edge->dest;
   edge else_succ;
-  int then_prob, else_prob;
+  profile_probability then_prob, else_prob;
 
   /* We do not want to speculate (empty) loop latches.  */
   if (current_loops
@@ -4973,16 +4974,8 @@ find_if_case_2 (basic_block test_bb, edge then_edge, edge else_edge)
   if (then_bb->index < NUM_FIXED_BLOCKS)
     return FALSE;
 
-  if (else_edge->probability)
-    {
-      else_prob = else_edge->probability;
-      then_prob = REG_BR_PROB_BASE - else_prob;
-    }
-  else
-    {
-      else_prob = REG_BR_PROB_BASE / 2;
-      then_prob = REG_BR_PROB_BASE / 2;
-    }
+  else_prob = else_edge->probability;
+  then_prob = else_prob.invert ();
 
   /* ELSE is predicted or SUCC(ELSE) postdominates THEN.  */
   if (else_prob > then_prob)

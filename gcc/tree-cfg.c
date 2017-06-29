@@ -2843,9 +2843,7 @@ gimple_split_edge (edge edge_in)
   new_bb = create_empty_bb (after_bb);
   new_bb->frequency = EDGE_FREQUENCY (edge_in);
   new_bb->count = edge_in->count;
-  new_edge = make_edge (new_bb, dest, EDGE_FALLTHRU);
-  new_edge->probability = REG_BR_PROB_BASE;
-  new_edge->count = edge_in->count;
+  new_edge = make_single_succ_edge (new_bb, dest, EDGE_FALLTHRU);
 
   e = redirect_edge_and_branch (edge_in, new_bb);
   gcc_assert (e == edge_in);
@@ -7250,7 +7248,7 @@ move_sese_region_to_fn (struct function *dest_cfun, basic_block entry_bb,
   basic_block after, bb, *entry_pred, *exit_succ, abb;
   struct function *saved_cfun = cfun;
   int *entry_flag, *exit_flag;
-  unsigned *entry_prob, *exit_prob;
+  profile_probability *entry_prob, *exit_prob;
   unsigned i, num_entry_edges, num_exit_edges, num_nodes;
   edge e;
   edge_iterator ei;
@@ -7288,7 +7286,7 @@ move_sese_region_to_fn (struct function *dest_cfun, basic_block entry_bb,
   num_entry_edges = EDGE_COUNT (entry_bb->preds);
   entry_pred = XNEWVEC (basic_block, num_entry_edges);
   entry_flag = XNEWVEC (int, num_entry_edges);
-  entry_prob = XNEWVEC (unsigned, num_entry_edges);
+  entry_prob = XNEWVEC (profile_probability, num_entry_edges);
   i = 0;
   for (ei = ei_start (entry_bb->preds); (e = ei_safe_edge (ei)) != NULL;)
     {
@@ -7303,7 +7301,7 @@ move_sese_region_to_fn (struct function *dest_cfun, basic_block entry_bb,
       num_exit_edges = EDGE_COUNT (exit_bb->succs);
       exit_succ = XNEWVEC (basic_block, num_exit_edges);
       exit_flag = XNEWVEC (int, num_exit_edges);
-      exit_prob = XNEWVEC (unsigned, num_exit_edges);
+      exit_prob = XNEWVEC (profile_probability, num_exit_edges);
       i = 0;
       for (ei = ei_start (exit_bb->succs); (e = ei_safe_edge (ei)) != NULL;)
 	{

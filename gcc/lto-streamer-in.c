@@ -754,12 +754,12 @@ input_cfg (struct lto_input_block *ib, struct data_in *data_in,
 	  unsigned int dest_index;
 	  unsigned int edge_flags;
 	  basic_block dest;
-	  int probability;
+	  profile_probability probability;
 	  profile_count count;
 	  edge e;
 
 	  dest_index = streamer_read_uhwi (ib);
-	  probability = (int) streamer_read_hwi (ib);
+	  probability = profile_probability::stream_in (ib);
 	  count = profile_count::stream_in (ib).apply_scale
 			 (count_materialization_scale, REG_BR_PROB_BASE);
 	  edge_flags = streamer_read_uhwi (ib);

@@ -31,6 +31,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "data-streamer.h"
 #include "cgraph.h"
 
+/* Dump THIS to F.  */
+
 void
 profile_count::dump (FILE *f) const
 {
@@ -39,42 +41,52 @@ profile_count::dump (FILE *f) const
   else
     {
       fprintf (f, "%" PRId64, m_val);
-      if (m_quality == count_adjusted)
-	fprintf (f, "(adjusted)");
-      else if (m_quality == count_afdo)
-	fprintf (f, "(auto FDO)");
-      else if (m_quality == count_guessed)
-	fprintf (f, "(guessed)");
+      if (m_quality == profile_adjusted)
+	fprintf (f, " (adjusted)");
+      else if (m_quality == profile_afdo)
+	fprintf (f, " (auto FDO)");
+      else if (m_quality == profile_guessed)
+	fprintf (f, " (guessed)");
     }
 }
+
+/* Dump THIS to stderr.  */
 
 void
 profile_count::debug () const
 {
   dump (stderr);
+  fprintf (stderr, "\n");
 }
+
+/* Return true if THIS differs from OTHER; tolerate small diferences.  */
 
 bool
 profile_count::differs_from_p (profile_count other) const
 {
   if (!initialized_p () || !other.initialized_p ())
     return false;
-  if (m_val - other.m_val < 100 || other.m_val - m_val < 100)
+  if ((uint64_t)m_val - (uint64_t)other.m_val < 100
+      || (uint64_t)other.m_val - (uint64_t)m_val < 100)
     return false;
   if (!other.m_val)
     return true;
-  int64_t ratio = m_val * 100 / other.m_val;
+  int64_t ratio = (int64_t)m_val * 100 / other.m_val;
   return ratio < 99 || ratio > 101;
 }
+
+/* Stream THIS from IB.  */
 
 profile_count
 profile_count::stream_in (struct lto_input_block *ib)
 {
   profile_count ret;
   ret.m_val = streamer_read_gcov_count (ib);
-  ret.m_quality = (profile_count_quality) streamer_read_uhwi (ib);
+  ret.m_quality = (profile_quality) streamer_read_uhwi (ib);
   return ret;
 }
+
+/* Stream THIS to OB.  */
 
 void
 profile_count::stream_out (struct output_block *ob)
@@ -83,9 +95,102 @@ profile_count::stream_out (struct output_block *ob)
   streamer_write_uhwi (ob, m_quality);
 }
 
+/* Stream THIS to OB.  */
+
 void
 profile_count::stream_out (struct lto_output_stream *ob)
 {
   streamer_write_gcov_count_stream (ob, m_val);
+  streamer_write_uhwi_stream (ob, m_quality);
+}
+
+/* Dump THIS to F.  */
+
+void
+profile_probability::dump (FILE *f) const
+{
+  if (!initialized_p ())
+    fprintf (f, "uninitialized");
+  else
+    {
+      /* Make difference between 0.00 as a roundoff error and actual 0.
+	 Similarly for 1.  */
+      if (m_val == 0)
+        fprintf (f, "never");
+      else if (m_val == max_probability)
+        fprintf (f, "always");
+      else
+        fprintf (f, "%3.1f%%", (double)m_val * 100 / max_probability);
+      if (m_quality == profile_adjusted)
+	fprintf (f, " (adjusted)");
+      else if (m_quality == profile_afdo)
+	fprintf (f, " (auto FDO)");
+      else if (m_quality == profile_guessed)
+	fprintf (f, " (guessed)");
+    }
+}
+
+/* Dump THIS to stderr.  */
+
+void
+profile_probability::debug () const
+{
+  dump (stderr);
+  fprintf (stderr, "\n");
+}
+
+/* Return true if THIS differs from OTHER; tolerate small diferences.  */
+
+bool
+profile_probability::differs_from_p (profile_probability other) const
+{
+  if (!initialized_p () || !other.initialized_p ())
+    return false;
+  if ((uint64_t)m_val - (uint64_t)other.m_val < 10
+      || (uint64_t)other.m_val - (uint64_t)m_val < 10)
+    return false;
+  if (!other.m_val)
+    return true;
+  int64_t ratio = m_val * 100 / other.m_val;
+  return ratio < 99 || ratio > 101;
+}
+
+/* Return true if THIS differs significantly from OTHER.  */
+
+bool
+profile_probability::differs_lot_from_p (profile_probability other) const
+{
+  if (!initialized_p () || !other.initialized_p ())
+    return false;
+  uint32_t d = m_val > other.m_val ? m_val - other.m_val : other.m_val - m_val;
+  return d > max_probability / 2;
+}
+
+/* Stream THIS from IB.  */
+
+profile_probability
+profile_probability::stream_in (struct lto_input_block *ib)
+{
+  profile_probability ret;
+  ret.m_val = streamer_read_uhwi (ib);
+  ret.m_quality = (profile_quality) streamer_read_uhwi (ib);
+  return ret;
+}
+
+/* Stream THIS to OB.  */
+
+void
+profile_probability::stream_out (struct output_block *ob)
+{
+  streamer_write_uhwi (ob, m_val);
+  streamer_write_uhwi (ob, m_quality);
+}
+
+/* Stream THIS to OB.  */
+
+void
+profile_probability::stream_out (struct lto_output_stream *ob)
+{
+  streamer_write_uhwi_stream (ob, m_val);
   streamer_write_uhwi_stream (ob, m_quality);
 }

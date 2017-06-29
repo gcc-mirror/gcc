@@ -2389,7 +2389,6 @@ static basic_block
 expand_gimple_cond (basic_block bb, gcond *stmt)
 {
   basic_block new_bb, dest;
-  edge new_edge;
   edge true_edge;
   edge false_edge;
   rtx_insn *last2, *last;
@@ -2508,9 +2507,7 @@ expand_gimple_cond (basic_block bb, gcond *stmt)
   if (loop->latch == bb
       && loop->header == dest)
     loop->latch = new_bb;
-  new_edge = make_edge (new_bb, dest, 0);
-  new_edge->probability = REG_BR_PROB_BASE;
-  new_edge->count = new_bb->count;
+  make_single_succ_edge (new_bb, dest, 0);
   if (BARRIER_P (BB_END (new_bb)))
     BB_END (new_bb) = PREV_INSN (BB_END (new_bb));
   update_bb_for_insn (new_bb);
@@ -3788,7 +3785,7 @@ expand_gimple_tailcall (basic_block bb, gcall *stmt, bool *can_fallthru)
   rtx_insn *last2, *last;
   edge e;
   edge_iterator ei;
-  int probability;
+  profile_probability probability;
 
   last2 = last = expand_gimple_stmt (stmt);
 
@@ -3813,7 +3810,7 @@ expand_gimple_tailcall (basic_block bb, gcall *stmt, bool *can_fallthru)
      all edges here, or redirecting the existing fallthru edge to
      the exit block.  */
 
-  probability = 0;
+  probability = profile_probability::never ();
   profile_count count = profile_count::zero ();
 
   for (ei = ei_start (bb->succs); (e = ei_safe_edge (ei)); )
@@ -5839,12 +5836,11 @@ construct_init_block (void)
     {
       first_block = e->dest;
       redirect_edge_succ (e, init_block);
-      e = make_edge (init_block, first_block, flags);
+      e = make_single_succ_edge (init_block, first_block, flags);
     }
   else
-    e = make_edge (init_block, EXIT_BLOCK_PTR_FOR_FN (cfun), EDGE_FALLTHRU);
-  e->probability = REG_BR_PROB_BASE;
-  e->count = ENTRY_BLOCK_PTR_FOR_FN (cfun)->count;
+    e = make_single_succ_edge (init_block, EXIT_BLOCK_PTR_FOR_FN (cfun),
+			       EDGE_FALLTHRU);
 
   update_bb_for_insn (init_block);
   return init_block;
@@ -5924,9 +5920,8 @@ construct_exit_block (void)
 	ix++;
     }
 
-  e = make_edge (exit_block, EXIT_BLOCK_PTR_FOR_FN (cfun), EDGE_FALLTHRU);
-  e->probability = REG_BR_PROB_BASE;
-  e->count = EXIT_BLOCK_PTR_FOR_FN (cfun)->count;
+  e = make_single_succ_edge (exit_block, EXIT_BLOCK_PTR_FOR_FN (cfun),
+			     EDGE_FALLTHRU);
   FOR_EACH_EDGE (e2, ei, EXIT_BLOCK_PTR_FOR_FN (cfun)->preds)
     if (e2 != e)
       {

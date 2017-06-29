@@ -90,8 +90,8 @@ void gimple_move_stmt_histograms (struct function *, gimple *, gimple *);
 void verify_histograms (void);
 void free_histograms (function *);
 void stringop_block_profile (gimple *, unsigned int *, HOST_WIDE_INT *);
-gcall *gimple_ic (gcall *, struct cgraph_node *, int, profile_count,
-		  profile_count);
+gcall *gimple_ic (gcall *, struct cgraph_node *, profile_probability,
+		  profile_count, profile_count);
 bool check_ic_target (gcall *, struct cgraph_node *);
 
 

@@ -7123,21 +7123,25 @@ scale_profile_for_vect_loop (struct loop *loop, unsigned vf)
       if (!(freq_e > profile_count::from_gcov_type (1)))
        freq_e = profile_count::from_gcov_type (1);
       /* This should not overflow.  */
-      scale = freq_e.apply_scale (new_est_niter + 1, 1).probability_in (freq_h);
+      scale = freq_e.apply_scale (new_est_niter + 1, 1).probability_in (freq_h)
+			.to_reg_br_prob_base ();
       scale_loop_frequencies (loop, scale, REG_BR_PROB_BASE);
     }
 
   basic_block exit_bb = single_pred (loop->latch);
   edge exit_e = single_exit (loop);
   exit_e->count = loop_preheader_edge (loop)->count;
-  exit_e->probability = REG_BR_PROB_BASE / (new_est_niter + 1);
+  exit_e->probability = profile_probability::always ()
+				 .apply_scale (1, new_est_niter + 1);
 
   edge exit_l = single_pred_edge (loop->latch);
-  int prob = exit_l->probability;
-  exit_l->probability = REG_BR_PROB_BASE - exit_e->probability;
+  int prob = exit_l->probability.initialized_p ()
+	     ? exit_l->probability.to_reg_br_prob_base () : 0;
+  exit_l->probability = exit_e->probability.invert ();
   exit_l->count = exit_bb->count - exit_e->count;
   if (prob > 0)
-    scale_bbs_frequencies_int (&loop->latch, 1, exit_l->probability, prob);
+    scale_bbs_frequencies_int (&loop->latch, 1,
+			       exit_l->probability.to_reg_br_prob_base (), prob);
 }
 
 /* Function vect_transform_loop.
@@ -7660,7 +7664,7 @@ optimize_mask_stores (struct loop *loop)
       e->flags = EDGE_TRUE_VALUE;
       efalse = make_edge (bb, store_bb, EDGE_FALSE_VALUE);
       /* Put STORE_BB to likely part.  */
-      efalse->probability = PROB_UNLIKELY;
+      efalse->probability = profile_probability::unlikely ();
       store_bb->frequency = PROB_ALWAYS - EDGE_FREQUENCY (efalse);
       make_edge (store_bb, join_bb, EDGE_FALLTHRU);
       if (dom_info_available_p (CDI_DOMINATORS))

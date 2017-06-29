@@ -20,8 +20,9 @@ along with GCC; see the file COPYING3.  If not see
 
 /*  This file contains basic routines manipulating call graph
 
-    The call-graph is a data structure designed for intra-procedural optimization.
-    It represents a multi-graph where nodes are functions and edges are call sites. */
+    The call-graph is a data structure designed for inter-procedural
+    optimization.  It represents a multi-graph where nodes are functions
+    (symbols within symbol table) and edges are call sites. */
 
 #include "config.h"
 #include "system.h"
@@ -1316,13 +1317,16 @@ cgraph_edge::redirect_call_stmt_to_callee (void)
 	  push_cfun (DECL_STRUCT_FUNCTION (e->caller->decl));
 	  new_stmt = gimple_ic (e->call_stmt,
 				dyn_cast<cgraph_node *> (ref->referred),
+				/* FIXME: cleanup. */
+				profile_probability::from_reg_br_prob_base (
 				e->count > profile_count::zero ()
 				|| e2->count > profile_count::zero ()
-				? e->count.probability_in (e->count + e2->count)
+				? e->count.probability_in
+				   (e->count + e2->count).to_reg_br_prob_base ()
 				: e->frequency || e2->frequency
 				? RDIV (e->frequency * REG_BR_PROB_BASE,
 					e->frequency + e2->frequency)
-				: REG_BR_PROB_BASE / 2,
+				: REG_BR_PROB_BASE / 2),
 				e->count, e->count + e2->count);
 	  e->speculative = false;
 	  e->caller->set_call_stmt_including_clones (e->call_stmt, new_stmt,

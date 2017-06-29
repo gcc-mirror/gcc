@@ -6482,7 +6482,8 @@ lra_inheritance (void)
 	  e = find_fallthru_edge (bb->succs);
 	  if (! e)
 	    break;
-	  if (e->probability < EBB_PROBABILITY_CUTOFF)
+	  if (e->probability.initialized_p ()
+	      && e->probability.to_reg_br_prob_base () < EBB_PROBABILITY_CUTOFF)
 	    break;
 	  bb = bb->next_bb;
 	}

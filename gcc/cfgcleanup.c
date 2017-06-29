@@ -559,7 +559,7 @@ try_forward_edges (int mode, basic_block b)
 	{
 	  /* Save the values now, as the edge may get removed.  */
 	  profile_count edge_count = e->count;
-	  int edge_probability = e->probability;
+	  profile_probability edge_probability = e->probability;
 	  int edge_frequency;
 	  int n = 0;
 
@@ -585,7 +585,7 @@ try_forward_edges (int mode, basic_block b)
 	  /* We successfully forwarded the edge.  Now update profile
 	     data: for each edge we traversed in the chain, remove
 	     the original edge's execution count.  */
-	  edge_frequency = apply_probability (b->frequency, edge_probability);
+	  edge_frequency = edge_probability.apply (b->frequency);
 
 	  do
 	    {
@@ -1710,24 +1710,28 @@ outgoing_edges_match (int mode, basic_block bb1, basic_block bb2)
 	  && optimize_bb_for_speed_p (bb1)
 	  && optimize_bb_for_speed_p (bb2))
 	{
-	  int prob2;
+	  profile_probability prob2;
 
 	  if (b1->dest == b2->dest)
 	    prob2 = b2->probability;
 	  else
 	    /* Do not use f2 probability as f2 may be forwarded.  */
-	    prob2 = REG_BR_PROB_BASE - b2->probability;
+	    prob2 = b2->probability.invert ();
 
 	  /* Fail if the difference in probabilities is greater than 50%.
 	     This rules out two well-predicted branches with opposite
 	     outcomes.  */
-	  if (abs (b1->probability - prob2) > REG_BR_PROB_BASE / 2)
+	  if (b1->probability.differs_lot_from_p (prob2))
 	    {
 	      if (dump_file)
-		fprintf (dump_file,
-			 "Outcomes of branch in bb %i and %i differ too much (%i %i)\n",
-			 bb1->index, bb2->index, b1->probability, prob2);
-
+		{
+		  fprintf (dump_file,
+			   "Outcomes of branch in bb %i and %i differ too"
+			   " much (", bb1->index, bb2->index);
+		  b1->probability.dump (dump_file);
+		  prob2.dump (dump_file);
+		  fprintf (dump_file, ")\n");
+		}
 	      return false;
 	    }
 	}
@@ -2149,12 +2153,9 @@ try_crossjump_to_edge (int mode, edge e1, edge e2,
 	}
 
       if (!redirect_edges_to->frequency && !src1->frequency)
-	s->probability = (s->probability + s2->probability) / 2;
-      else
-	s->probability
-	  = ((s->probability * redirect_edges_to->frequency +
-	      s2->probability * src1->frequency)
-	     / (redirect_edges_to->frequency + src1->frequency));
+	s->probability = s->probability.combine_with_freq
+			   (redirect_edges_to->frequency,
+			    s2->probability, src1->frequency);
     }
 
   /* Adjust count and frequency for the block.  An earlier jump

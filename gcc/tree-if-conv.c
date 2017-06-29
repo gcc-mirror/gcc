@@ -2564,7 +2564,8 @@ version_loop_for_if_conversion (struct loop *loop)
   /* At this point we invalidate porfile confistency until IFN_LOOP_VECTORIZED
      is re-merged in the vectorizer.  */
   new_loop = loop_version (loop, cond, &cond_bb,
-			   REG_BR_PROB_BASE, REG_BR_PROB_BASE,
+			   profile_probability::always (),
+			   profile_probability::always (),
 			   REG_BR_PROB_BASE, REG_BR_PROB_BASE, true);
   free_original_copy_tables ();
 

@@ -247,7 +247,9 @@ extern rtx prepare_operand (enum insn_code, rtx, int, machine_mode,
 /* Emit a pair of rtl insns to compare two rtx's and to jump
    to a label if the comparison is true.  */
 extern void emit_cmp_and_jump_insns (rtx, rtx, enum rtx_code, rtx,
-				     machine_mode, int, rtx, int prob=-1);
+				     machine_mode, int, rtx,
+				     profile_probability prob
+					= profile_probability::uninitialized ());
 
 /* Generate code to indirectly jump to a location given in the rtx LOC.  */
 extern void emit_indirect_jump (rtx);

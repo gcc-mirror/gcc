@@ -1,3 +1,210 @@
+2017-06-29  Jan Hubicka  <hubicka@ucw.cz>
+
+	* asan.c (asan_emit_stack_protection): Update.
+	(create_cond_insert_point): Update.
+	* auto-profile.c (afdo_propagate_circuit): Update.
+	* basic-block.h (struct edge_def): Turn probability to
+	profile_probability.
+	(EDGE_FREQUENCY): Update.
+	* bb-reorder.c (find_traces_1_round): Update.
+	(better_edge_p): Update.
+	(sanitize_hot_paths): Update.
+	* cfg.c (unchecked_make_edge): Initialize probability to uninitialized.
+	(make_single_succ_edge): Update.
+	(check_bb_profile): Update.
+	(dump_edge_info): Update.
+	(update_bb_profile_for_threading): Update.
+	* cfganal.c (connect_infinite_loops_to_exit): Initialize new edge
+	probabilitycount to 0.
+	* cfgbuild.c (compute_outgoing_frequencies): Update.
+	* cfgcleanup.c (try_forward_edges): Update.
+	(outgoing_edges_match): Update.
+	(try_crossjump_to_edge): Update.
+	* cfgexpand.c (expand_gimple_cond): Update make_single_succ_edge.
+	(expand_gimple_tailcall): Update.
+	(construct_init_block): Use make_single_succ_edge.
+	(construct_exit_block): Use make_single_succ_edge.
+	* cfghooks.c (verify_flow_info): Update.
+	(redirect_edge_succ_nodup): Update.
+	(split_edge): Update.
+	(account_profile_record): Update.
+	* cfgloopanal.c (single_likely_exit): Update.
+	* cfgloopmanip.c (scale_loop_profile): Update.
+	(set_zero_probability): Remove.
+	(duplicate_loop_to_header_edge): Update.
+	* cfgloopmanip.h (loop_version): Update prototype.
+	* cfgrtl.c (try_redirect_by_replacing_jump): Update.
+	(force_nonfallthru_and_redirect): Update.
+	(update_br_prob_note): Update.
+	(rtl_verify_edges): Update.
+	(purge_dead_edges): Update.
+	(rtl_lv_add_condition_to_bb): Update.
+	* cgraph.c: (cgraph_edge::redirect_call_stmt_to_calle): Update.
+	* cgraphunit.c (init_lowered_empty_function): Update.
+	(cgraph_node::expand_thunk): Update.
+	* cilk-common.c: Include profile-count.h
+	* dojump.c (inv): Remove.
+	(jumpifnot): Update.
+	(jumpifnot_1): Update.
+	(do_jump_1): Update.
+	(do_jump): Update.
+	(do_jump_by_parts_greater_rtx): Update.
+	(do_compare_rtx_and_jump): Update.
+	* dojump.h (jumpifnot, jumpifnot_1, jumpif_1, jumpif, do_jump,
+	do_jump_1. do_compare_rtx_and_jump): Update prototype.
+	* dwarf2cfi.c: Include profile-count.h
+	* except.c (dw2_build_landing_pads): Use make_single_succ_edge.
+	(sjlj_emit_dispatch_table): Likewise.
+	* explow.c: Include profile-count.h
+	* expmed.c (emit_store_flag_force): Update.
+	(do_cmp_and_jump): Update.
+	* expr.c (compare_by_pieces_d::generate): Update.
+	(compare_by_pieces_d::finish_mode): Update.
+	(emit_block_move_via_loop): Update.
+	(store_expr_with_bounds): Update.
+	(store_constructor): Update.
+	(expand_expr_real_2): Update.
+	(expand_expr_real_1): Update.
+	* expr.h (try_casesi, try_tablejump): Update prototypes.
+	* gimple-pretty-print.c (dump_probability): Update.
+	(dump_profile): New.
+	(dump_gimple_label): Update.
+	(dump_gimple_bb_header): Update.
+	* graph.c (draw_cfg_node_succ_edges): Update.
+	* hsa-gen.c (convert_switch_statements): Update.
+	* ifcvt.c (cheap_bb_rtx_cost_p): Update.
+	(find_if_case_1): Update.
+	(find_if_case_2): Update.
+	* internal-fn.c (expand_arith_overflow_result_store): Update.
+	(expand_addsub_overflow): Update.
+	(expand_neg_overflow): Update.
+	(expand_mul_overflow): Update.
+	(expand_vector_ubsan_overflow): Update.
+	* ipa-cp.c (good_cloning_opportunity_p): Update.
+	* ipa-split.c (split_function): Use make_single_succ_edge.
+	* ipa-utils.c (ipa_merge_profiles): Update.
+	* loop-doloop.c (add_test): Update.
+	(doloop_modify): Update.
+	* loop-unroll.c (compare_and_jump_seq): Update.
+	(unroll_loop_runtime_iterations): Update.
+	* lra-constraints.c (lra_inheritance): Update.
+	* lto-streamer-in.c (input_cfg): Update.
+	* lto-streamer-out.c (output_cfg): Update.
+	* mcf.c (adjust_cfg_counts): Update.
+	* modulo-sched.c (sms_schedule): Update.
+	* omp-expand.c (expand_omp_for_init_counts): Update.
+	(extract_omp_for_update_vars): Update.
+	(expand_omp_ordered_sink): Update.
+	(expand_omp_for_ordered_loops): Update.
+	(expand_omp_for_generic): Update.
+	(expand_omp_for_static_nochunk): Update.
+	(expand_omp_for_static_chunk): Update.
+	(expand_cilk_for): Update.
+	(expand_omp_simd): Update.
+	(expand_omp_taskloop_for_outer): Update.
+	(expand_omp_taskloop_for_inner): Update.
+	* omp-simd-clone.c (simd_clone_adjust): Update.
+	* optabs.c (expand_doubleword_shift): Update.
+	(expand_abs): Update.
+	(emit_cmp_and_jump_insn_1): Update.
+	(expand_compare_and_swap_loop): Update.
+	* optabs.h (emit_cmp_and_jump_insns): Update prototype.
+	* predict.c (predictable_edge_p): Update.
+	(edge_probability_reliable_p): Update.
+	(set_even_probabilities): Update.
+	(combine_predictions_for_insn): Update.
+	(combine_predictions_for_bb): Update.
+	(propagate_freq): Update.
+	(estimate_bb_frequencies): Update.
+	(force_edge_cold): Update.
+	* profile-count.c (profile_count::dump): Add missing space into dump.
+	(profile_count::debug): Add newline.
+	(profile_count::differs_from_p): Explicitly convert to unsigned.
+	(profile_count::stream_in): Update.
+	(profile_probability::dump): New member function.
+	(profile_probability::debug): New member function.
+	(profile_probability::differs_from_p): New member function.
+	(profile_probability::differs_lot_from_p): New member function.
+	(profile_probability::stream_in): New member function.
+	(profile_probability::stream_out): New member function.
+	* profile-count.h (profile_count_quality): Rename to ...
+	(profile_quality): ... this one.
+	(profile_probability): New.
+	(profile_count): Update.
+	* profile.c (compute_branch_probabilities): Update.
+	* recog.c (peep2_attempt): Update.
+	* sched-ebb.c (schedule_ebbs): Update.
+	* sched-rgn.c (find_single_block_region): Update.
+	(compute_dom_prob_ps): Update.
+	(schedule_region): Update.
+	* sel-sched-ir.c (compute_succs_info): Update.
+	* stmt.c (struct case_node): Update.
+	(do_jump_if_equal): Update.
+	(get_outgoing_edge_probs): Update.
+	(conditional_probability): Update.
+	(emit_case_dispatch_table): Update.
+	(expand_case): Update.
+	(expand_sjlj_dispatch_table): Update.
+	(emit_case_nodes): Update.
+	* targhooks.c: Update.
+	* tracer.c (better_p): Update.
+	(find_best_successor): Update.
+	* trans-mem.c (expand_transaction): Update.
+	* tree-call-cdce.c: Update.
+	* tree-cfg.c (gimple_split_edge): Upate.
+	(move_sese_region_to_fn): Upate.
+	* tree-cfgcleanup.c (cleanup_control_expr_graph): Upate.
+	* tree-eh.c (lower_resx): Upate.
+	(cleanup_empty_eh_move_lp): Upate.
+	* tree-if-conv.c (version_loop_for_if_conversion): Update.
+	* tree-inline.c (copy_edges_for_bb): Update.
+	(copy_cfg_body): Update.
+	* tree-parloops.c (gen_parallel_loop): Update.
+	* tree-profile.c (gimple_gen_ic_func_profiler): Update.
+	(gimple_gen_time_profiler): Update.
+	* tree-ssa-dce.c (remove_dead_stmt): Update.
+	* tree-ssa-ifcombine.c (update_profile_after_ifcombine): Update.
+	* tree-ssa-loop-im.c (execute_sm_if_changed): Update.
+	* tree-ssa-loop-ivcanon.c (remove_exits_and_undefined_stmts): Update.
+	(unloop_loops): Update.
+	(try_peel_loop): Update.
+	* tree-ssa-loop-manip.c (tree_transform_and_unroll_loop): Update.
+	* tree-ssa-loop-split.c (connect_loops): Update.
+	(split_loop): Update.
+	* tree-ssa-loop-unswitch.c (tree_unswitch_loop): Update.
+	(hoist_guard): Update.
+	* tree-ssa-phionlycprop.c (propagate_rhs_into_lhs): Update.
+	* tree-ssa-phiopt.c (replace_phi_edge_with_variable): Update.
+	(value_replacement): Update.
+	* tree-ssa-reassoc.c (branch_fixup): Update.
+	* tree-ssa-tail-merge.c (replace_block_by): Update.
+	* tree-ssa-threadupdate.c (remove_ctrl_stmt_and_useless_edges): Update.
+	(create_edge_and_update_destination_phis): Update.
+	(compute_path_counts): Update.
+	(recompute_probabilities): Update.
+	(update_joiner_offpath_counts): Update.
+	(freqs_to_counts_path): Update.
+	(duplicate_thread_path): Update.
+	* tree-switch-conversion.c (hoist_edge_and_branch_if_true): Update.
+	(struct switch_conv_info): Update.
+	(gen_inbound_check): Update.
+	* tree-vect-loop-manip.c (slpeel_add_loop_guard): Update.
+	(vect_do_peeling): Update.
+	(vect_loop_versioning): Update.
+	* tree-vect-loop.c (scale_profile_for_vect_loop): Update.
+	(optimize_mask_stores): Update.
+	* ubsan.c (ubsan_expand_null_ifn): Update.
+	* value-prof.c (gimple_divmod_fixed_value): Update.
+	(gimple_divmod_fixed_value_transform): Update.
+	(gimple_mod_pow2): Update.
+	(gimple_mod_pow2_value_transform): Update.
+	(gimple_mod_subtract): Update.
+	(gimple_mod_subtract_transform): Update.
+	(gimple_ic): Update.
+	(gimple_stringop_fixed_value): Update.
+	(gimple_stringops_transform): Update.
+	* value-prof.h: Update.
+
 2017-06-29  Carl Love  <cel@us.ibm.com>
 
 	* config/rs6000/rs6000-c.c: Add support for built-in functions

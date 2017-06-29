@@ -2291,10 +2291,44 @@ copy_edges_for_bb (basic_block bb, profile_count num, profile_count den,
 	    }
 	}
 
+      bool update_probs = false;
+
       if (gimple_code (copy_stmt) == GIMPLE_EH_DISPATCH)
-	make_eh_dispatch_edges (as_a <geh_dispatch *> (copy_stmt));
+	{
+	  make_eh_dispatch_edges (as_a <geh_dispatch *> (copy_stmt));
+	  update_probs = true;
+	}
       else if (can_throw)
-	make_eh_edges (copy_stmt);
+	{
+	  make_eh_edges (copy_stmt);
+	  update_probs = true;
+	}
+
+      /* EH edges may not match old edges.  Copy as much as possible.  */
+      if (update_probs)
+	{
+          edge e;
+          edge_iterator ei;
+	  basic_block copy_stmt_bb = gimple_bb (copy_stmt);
+
+          FOR_EACH_EDGE (old_edge, ei, bb->succs)
+            if ((old_edge->flags & EDGE_EH)
+		&& (e = find_edge (copy_stmt_bb,
+				   (basic_block) old_edge->dest->aux))
+		&& (e->flags & EDGE_EH))
+	      {
+		e->probability = old_edge->probability;
+		e->count = old_edge->count;
+	      }
+	    
+          FOR_EACH_EDGE (e, ei, copy_stmt_bb->succs)
+	    if ((e->flags & EDGE_EH) && !e->probability.initialized_p ())
+	      {
+	        e->probability = profile_probability::never ();
+	        e->count = profile_count::zero ();
+	      }
+        }
+
 
       /* If the call we inline cannot make abnormal goto do not add
          additional abnormal edges but only retain those already present
@@ -2317,7 +2351,8 @@ copy_edges_for_bb (basic_block bb, profile_count num, profile_count den,
 		   && gimple_call_arg (copy_stmt, 0) == boolean_true_node)
 	    nonlocal_goto = false;
 	  else
-	    make_edge (copy_stmt_bb, abnormal_goto_dest, EDGE_ABNORMAL);
+	    make_single_succ_edge (copy_stmt_bb, abnormal_goto_dest,
+				   EDGE_ABNORMAL);
 	}
 
       if ((can_throw || nonlocal_goto)
@@ -2789,7 +2824,7 @@ copy_cfg_body (copy_body_data * id, profile_count count, int frequency_scale,
   if (new_entry)
     {
       edge e = make_edge (entry_block_map, (basic_block)new_entry->aux, EDGE_FALLTHRU);
-      e->probability = REG_BR_PROB_BASE;
+      e->probability = profile_probability::always ();
       e->count = incoming_count;
     }
 

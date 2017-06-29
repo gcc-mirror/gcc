@@ -38,6 +38,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "stor-layout.h"
 #include "langhooks.h"
 #include "explow.h"
+#include "profile-count.h"
 #include "expr.h"
 #include "tree-iterator.h"
 #include "gimplify.h"

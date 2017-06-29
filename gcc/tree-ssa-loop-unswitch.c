@@ -480,7 +480,7 @@ static struct loop *
 tree_unswitch_loop (struct loop *loop,
 		    basic_block unswitch_on, tree cond)
 {
-  unsigned prob_true;
+  profile_probability prob_true;
   edge edge_true, edge_false;
 
   /* Some sanity checking.  */
@@ -490,9 +490,13 @@ tree_unswitch_loop (struct loop *loop,
 
   extract_true_false_edges_from_block (unswitch_on, &edge_true, &edge_false);
   prob_true = edge_true->probability;
+  int p = prob_true.initialized_p () ? prob_true.to_reg_br_prob_base ()
+				     : REG_BR_PROB_BASE / 2;
   return loop_version (loop, unshare_expr (cond),
-		       NULL, prob_true, REG_BR_PROB_BASE - prob_true, prob_true,
-		       REG_BR_PROB_BASE - prob_true, false);
+		       NULL, prob_true,
+		       prob_true.invert (),
+		       p, REG_BR_PROB_BASE - p,
+		       false);
 }
 
 /* Unswitch outer loops by hoisting invariant guard on
@@ -818,10 +822,13 @@ hoist_guard (struct loop *loop, edge guard)
   /* Create new loop pre-header.  */
   e = split_block (pre_header, last_stmt (pre_header));
   if (dump_file && (dump_flags & TDF_DETAILS))
-    fprintf (dump_file, "  Moving guard %i->%i (prob %i) to bb %i, "
-	     "new preheader is %i\n",
-	     guard->src->index, guard->dest->index, guard->probability,
-	     e->src->index, e->dest->index);
+    {
+      fprintf (dump_file, "  Moving guard %i->%i (prob ",
+	       guard->src->index, guard->dest->index);
+      guard->probability.dump (dump_file);
+      fprintf (dump_file, ") to bb %i, new preheader is %i\n",
+	       e->src->index, e->dest->index);
+    }
 
   gcc_assert (loop_preheader_edge (loop)->src == e->dest);
 
@@ -854,23 +861,26 @@ hoist_guard (struct loop *loop, edge guard)
     }
   new_edge->count = skip_count;
   if (dump_file && (dump_flags & TDF_DETAILS))
-    fprintf (dump_file, "  Estimated probability of skipping loop is %i\n",
-	     new_edge->probability);
+    {
+      fprintf (dump_file, "  Estimated probability of skipping loop is ");
+      new_edge->probability.dump (dump_file);
+      fprintf (dump_file, "\n");
+    }
 
   /* Update profile after the transform:
 
      First decrease count of path from newly hoisted loop guard
      to loop header...  */
   e->count -= skip_count;
-  e->probability = REG_BR_PROB_BASE - new_edge->probability;
+  e->probability = new_edge->probability.invert ();
   e->dest->count = e->count;
   e->dest->frequency = EDGE_FREQUENCY (e);
 
   /* ... now update profile to represent that original guard will be optimized
      away ...  */
-  guard->probability = 0;
+  guard->probability = profile_probability::never ();
   guard->count = profile_count::zero ();
-  not_guard->probability = REG_BR_PROB_BASE;
+  not_guard->probability = profile_probability::always ();
   /* This count is wrong (frequency of not_guard does not change),
      but will be scaled later.  */
   not_guard->count = guard->src->count;
@@ -888,7 +898,10 @@ hoist_guard (struct loop *loop, edge guard)
 	{
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    fprintf (dump_file, " %i", bb->index);
-          scale_bbs_frequencies_int (&bb, 1, e->probability, REG_BR_PROB_BASE);
+	  if (e->probability.initialized_p ())
+            scale_bbs_frequencies_int (&bb, 1,
+				       e->probability.to_reg_br_prob_base (),
+				       REG_BR_PROB_BASE);
   	}
     }
 

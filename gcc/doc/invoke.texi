@@ -8699,7 +8699,7 @@ into separate sections of the assembly and @file{.o} files, to improve
 paging and cache locality performance.
 
 This optimization is automatically turned off in the presence of
-exception handling, for linkonce sections, for functions with a user-defined
+exception handling or unwind tables (on targets using setjump/longjump or target specific scheme), for linkonce sections, for functions with a user-defined
 section attribute and on any architecture that does not support named
 sections.  When @option{-fsplit-stack} is used this option is not
 enabled by default (to avoid linker errors), but may be enabled

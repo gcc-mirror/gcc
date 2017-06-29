@@ -542,8 +542,9 @@ scale_loop_profile (struct loop *loop, int scale, gcov_type iteration_bound)
 
 	  /* Probability of exit must be 1/iterations.  */
 	  freq_delta = EDGE_FREQUENCY (e);
-	  e->probability = REG_BR_PROB_BASE / iteration_bound;
-	  other_e->probability = inverse_probability (e->probability);
+	  e->probability = profile_probability::from_reg_br_prob_base
+				(REG_BR_PROB_BASE / iteration_bound);
+	  other_e->probability = e->probability.invert ();
 	  freq_delta -= EDGE_FREQUENCY (e);
 
 	  /* Adjust counts accordingly.  */
@@ -1101,43 +1102,6 @@ can_duplicate_loop_p (const struct loop *loop)
   return ret;
 }
 
-/* Sets probability and count of edge E to zero.  The probability and count
-   is redistributed evenly to the remaining edges coming from E->src.  */
-
-static void
-set_zero_probability (edge e)
-{
-  basic_block bb = e->src;
-  edge_iterator ei;
-  edge ae, last = NULL;
-  unsigned n = EDGE_COUNT (bb->succs);
-  profile_count cnt = e->count, cnt1;
-  unsigned prob = e->probability, prob1;
-
-  gcc_assert (n > 1);
-  cnt1 = cnt.apply_scale (1, (n - 1));
-  prob1 = prob / (n - 1);
-
-  FOR_EACH_EDGE (ae, ei, bb->succs)
-    {
-      if (ae == e)
-	continue;
-
-      ae->probability += prob1;
-      ae->count += cnt1;
-      last = ae;
-    }
-
-  /* Move the rest to one of the edges.  */
-  last->probability += prob % (n - 1);
-  /* TODO: Remove once we have fractional counts.  */
-  if (cnt.initialized_p ())
-    last->count += profile_count::from_gcov_type (cnt.to_gcov_type () % (n - 1));
-
-  e->probability = 0;
-  e->count = profile_count::zero ();
-}
-
 /* Duplicates body of LOOP to given edge E NDUPL times.  Takes care of updating
    loop structure and dominators.  E's destination must be LOOP header for
    this to work, i.e. it must be entry or latch edge of this loop; these are
@@ -1224,14 +1188,18 @@ duplicate_loop_to_header_edge (struct loop *loop, edge e,
       prob_pass_wont_exit =
 	      RDIV (REG_BR_PROB_BASE * (freq_le + freq_out_orig), freq_in);
 
-      if (orig
-	  && REG_BR_PROB_BASE - orig->probability != 0)
+      if (orig && orig->probability.initialized_p ()
+	  && !(orig->probability == profile_probability::always ()))
 	{
 	  /* The blocks that are dominated by a removed exit edge ORIG have
 	     frequencies scaled by this.  */
-	  scale_after_exit
-              = GCOV_COMPUTE_SCALE (REG_BR_PROB_BASE,
-                                    REG_BR_PROB_BASE - orig->probability);
+	  if (orig->probability.initialized_p ())
+	    scale_after_exit
+                = GCOV_COMPUTE_SCALE (REG_BR_PROB_BASE,
+                                      REG_BR_PROB_BASE
+				      - orig->probability.to_reg_br_prob_base ());
+	  else
+	    scale_after_exit = REG_BR_PROB_BASE;
 	  bbs_to_scale = BITMAP_ALLOC (NULL);
 	  for (i = 0; i < n; i++)
 	    {
@@ -1387,7 +1355,7 @@ duplicate_loop_to_header_edge (struct loop *loop, edge e,
 	{
 	  if (to_remove)
 	    to_remove->safe_push (new_spec_edges[SE_ORIG]);
-	  set_zero_probability (new_spec_edges[SE_ORIG]);
+	  force_edge_cold (new_spec_edges[SE_ORIG], true);
 
 	  /* Scale the frequencies of the blocks dominated by the exit.  */
 	  if (bbs_to_scale)
@@ -1423,7 +1391,7 @@ duplicate_loop_to_header_edge (struct loop *loop, edge e,
     {
       if (to_remove)
 	to_remove->safe_push (orig);
-      set_zero_probability (orig);
+      force_edge_cold (orig, true);
 
       /* Scale the frequencies of the blocks dominated by the exit.  */
       if (bbs_to_scale)
@@ -1657,8 +1625,9 @@ force_single_succ_latches (void)
 
 static basic_block
 lv_adjust_loop_entry_edge (basic_block first_head, basic_block second_head,
-			   edge e, void *cond_expr, unsigned then_prob,
-			   unsigned else_prob)
+			   edge e, void *cond_expr,
+			   profile_probability then_prob,
+			   profile_probability else_prob)
 {
   basic_block new_head = NULL;
   edge e1;
@@ -1713,7 +1682,7 @@ lv_adjust_loop_entry_edge (basic_block first_head, basic_block second_head,
 struct loop *
 loop_version (struct loop *loop,
 	      void *cond_expr, basic_block *condition_bb,
-	      unsigned then_prob, unsigned else_prob,
+	      profile_probability then_prob, profile_probability else_prob,
 	      unsigned then_scale, unsigned else_scale,
 	      bool place_after)
 {
