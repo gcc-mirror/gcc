@@ -25,6 +25,10 @@
 # define GET_LINK_MAP_BY_DLOPEN_HANDLE(handle) ((link_map*)(handle))
 #endif  // !SANITIZER_FREEBSD
 
+#ifndef __GLIBC_PREREQ
+#define __GLIBC_PREREQ(x, y) 0
+#endif
+
 namespace __sanitizer {
   extern unsigned struct_utsname_sz;
   extern unsigned struct_stat_sz;
@@ -607,7 +611,17 @@ namespace __sanitizer {
     __sanitizer_sigset_t sa_mask;
 #ifndef __mips__
 #if defined(__sparc__)
+#if __GLIBC_PREREQ (2, 20)
+    // On sparc glibc 2.19 and earlier sa_flags was unsigned long.
+#if defined(__arch64__)
+    // To maintain ABI compatibility on sparc64 when switching to an int,
+    // __glibc_reserved0 was added.
+    int __glibc_reserved0;
+#endif
+    int sa_flags;
+#else
     unsigned long sa_flags;
+#endif
 #else
     int sa_flags;
 #endif
