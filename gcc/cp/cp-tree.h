@@ -6598,6 +6598,7 @@ extern tree dfs_walk_all (tree, tree (*) (tree, void *),
 extern tree dfs_walk_once (tree, tree (*) (tree, void *),
 			   tree (*) (tree, void *), void *);
 extern tree binfo_via_virtual			(tree, tree);
+extern bool binfo_direct_p			(tree);
 extern tree build_baselink			(tree, tree, tree, tree);
 extern tree adjust_result_of_qualified_name_lookup
 						(tree, tree, tree);

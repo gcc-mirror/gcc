@@ -1,3 +1,9 @@
+2017-06-29  Jason Merrill  <jason@redhat.com>
+
+	PR c++/81164 - ICE with invalid inherited constructor.
+	* search.c (binfo_direct_p): New.
+	* name-lookup.c (do_class_using_decl): Use it.
+
 2017-06-29  Nathan Sidwell  <nathan@acm.org>
 
 	* cp-tree.h (THIS_NAME, IN_CHARGE_NAME, VTBL_PTR_TYPE,
