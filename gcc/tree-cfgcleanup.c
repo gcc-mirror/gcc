@@ -1205,7 +1205,8 @@ execute_cleanup_cfg_post_optimizing (void)
     }
   maybe_remove_unreachable_handlers ();
   cleanup_dead_labels ();
-  group_case_labels ();
+  if (group_case_labels ())
+    todo |= TODO_cleanup_cfg;
   if ((flag_compare_debug_opt || flag_compare_debug)
       && flag_dump_final_insns)
     {

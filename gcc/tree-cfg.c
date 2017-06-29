@@ -1675,7 +1675,7 @@ cleanup_dead_labels (void)
    the ones jumping to the same label.
    Eg. three separate entries 1: 2: 3: become one entry 1..3:  */
 
-void
+bool
 group_case_labels_stmt (gswitch *stmt)
 {
   int old_size = gimple_switch_num_labels (stmt);
@@ -1759,23 +1759,27 @@ group_case_labels_stmt (gswitch *stmt)
 
   gcc_assert (new_size <= old_size);
   gimple_switch_set_num_labels (stmt, new_size);
+  return new_size < old_size;
 }
 
 /* Look for blocks ending in a multiway branch (a GIMPLE_SWITCH),
    and scan the sorted vector of cases.  Combine the ones jumping to the
    same label.  */
 
-void
+bool
 group_case_labels (void)
 {
   basic_block bb;
+  bool changed = false;
 
   FOR_EACH_BB_FN (bb, cfun)
     {
       gimple *stmt = last_stmt (bb);
       if (stmt && gimple_code (stmt) == GIMPLE_SWITCH)
-	group_case_labels_stmt (as_a <gswitch *> (stmt));
+	changed |= group_case_labels_stmt (as_a <gswitch *> (stmt));
     }
+
+  return changed;
 }
 
 /* Checks whether we can merge block B into block A.  */
@@ -2243,14 +2247,7 @@ find_taken_edge (basic_block bb, tree val)
 
   stmt = last_stmt (bb);
 
-  gcc_assert (stmt);
   gcc_assert (is_ctrl_stmt (stmt));
-
-  if (val == NULL)
-    return NULL;
-
-  if (!is_gimple_min_invariant (val))
-    return NULL;
 
   if (gimple_code (stmt) == GIMPLE_COND)
     return find_taken_edge_cond_expr (bb, val);
@@ -2266,7 +2263,8 @@ find_taken_edge (basic_block bb, tree val)
          It may be the case that we only need to allow the LABEL_REF to
          appear inside an ADDR_EXPR, but we also allow the LABEL_REF to
          appear inside a LABEL_EXPR just to be safe.  */
-      if ((TREE_CODE (val) == ADDR_EXPR || TREE_CODE (val) == LABEL_EXPR)
+      if (val
+	  && (TREE_CODE (val) == ADDR_EXPR || TREE_CODE (val) == LABEL_EXPR)
 	  && TREE_CODE (TREE_OPERAND (val, 0)) == LABEL_DECL)
 	return find_taken_edge_computed_goto (bb, TREE_OPERAND (val, 0));
       return NULL;
@@ -2304,9 +2302,12 @@ find_taken_edge_cond_expr (basic_block bb, tree val)
 {
   edge true_edge, false_edge;
 
+  if (val == NULL
+      || TREE_CODE (val) != INTEGER_CST)
+    return NULL;
+
   extract_true_false_edges_from_block (bb, &true_edge, &false_edge);
 
-  gcc_assert (TREE_CODE (val) == INTEGER_CST);
   return (integer_zerop (val) ? false_edge : true_edge);
 }
 
@@ -2322,7 +2323,12 @@ find_taken_edge_switch_expr (gswitch *switch_stmt, basic_block bb,
   edge e;
   tree taken_case;
 
-  taken_case = find_case_label_for_value (switch_stmt, val);
+  if (gimple_switch_num_labels (switch_stmt) == 1)
+    taken_case = gimple_switch_default_label (switch_stmt);
+  else if (! val || TREE_CODE (val) != INTEGER_CST)
+    return NULL;
+  else
+    taken_case = find_case_label_for_value (switch_stmt, val);
   dest_bb = label_to_block (CASE_LABEL (taken_case));
 
   e = find_edge (bb, dest_bb);
