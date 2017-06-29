@@ -1180,7 +1180,8 @@ sjlj_emit_function_enter (rtx_code_label *dispatch_label)
 
       emit_cmp_and_jump_insns (x, const0_rtx, NE, 0,
 			       TYPE_MODE (integer_type_node), 0,
-			       dispatch_label, REG_BR_PROB_BASE / 100);
+			       dispatch_label,
+			       profile_probability::unlikely ());
 #else
       expand_builtin_setjmp_setup (addr, dispatch_label);
 #endif
