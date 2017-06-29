@@ -3453,8 +3453,7 @@ do_class_using_decl (tree scope, tree name)
 	      return NULL_TREE;
 	    }
 	}
-      else if (name == ctor_identifier
-	       && BINFO_INHERITANCE_CHAIN (BINFO_INHERITANCE_CHAIN (binfo)))
+      else if (name == ctor_identifier && !binfo_direct_p (binfo))
 	{
 	  error ("cannot inherit constructors from indirect base %qT", scope);
 	  return NULL_TREE;
