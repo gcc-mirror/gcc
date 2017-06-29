@@ -3566,7 +3566,13 @@ expand_gimple_stmt_1 (gimple *stmt)
     case GIMPLE_PREDICT:
       break;
     case GIMPLE_SWITCH:
-      expand_case (as_a <gswitch *> (stmt));
+      {
+	gswitch *swtch = as_a <gswitch *> (stmt);
+	if (gimple_switch_num_labels (swtch) == 1)
+	  expand_goto (CASE_LABEL (gimple_switch_default_label (swtch)));
+	else
+	  expand_case (swtch);
+      }
       break;
     case GIMPLE_ASM:
       expand_asm_stmt (as_a <gasm *> (stmt));
