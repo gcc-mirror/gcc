@@ -1,3 +1,8 @@
+2017-06-29  Cesar Philippidis  <cesar@codesourcery.com>
+
+	PR fortran/77765
+	* gfortran.dg/goacc/pr77765.f90: New test.
+
 2017-06-29  Steve Ellcey  <sellcey@cavium.com>
 
 	* gcc.target/aarch64/ccmp_2.c: New test.
