@@ -1,5 +1,7 @@
 2017-06-29  Nathan Sidwell  <nathan@acm.org>
 
+	Merge trunk r249779.
+
 	gcc/cp/
 	* class.c (finish_struct): Use OVL_P.
 	* cp-tree.h (THIS_NAME, IN_CHARGE_NAME, VTBL_PTR_TYPE,

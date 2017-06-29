@@ -98,14 +98,24 @@
     && (ALIGN) < BITS_PER_WORD)			\
    ? BITS_PER_WORD : ALIGN)
 
-#define DATA_ALIGNMENT(EXP, ALIGN)		\
-  ((((ALIGN) < BITS_PER_WORD)			\
-    && (TREE_CODE (EXP) == ARRAY_TYPE		\
-	|| TREE_CODE (EXP) == UNION_TYPE	\
-	|| TREE_CODE (EXP) == RECORD_TYPE))	\
-   ? BITS_PER_WORD : (ALIGN))
+/* Align definitions of arrays, unions and structures so that
+   initializations and copies can be made more efficient.  This is not
+   ABI-changing, so it only affects places where we can see the
+   definition.  Increasing the alignment tends to introduce padding,
+   so don't do this when optimizing for size/conserving stack space.  */
+#define AARCH64_EXPAND_ALIGNMENT(COND, EXP, ALIGN)			\
+  (((COND) && ((ALIGN) < BITS_PER_WORD)					\
+    && (TREE_CODE (EXP) == ARRAY_TYPE					\
+	|| TREE_CODE (EXP) == UNION_TYPE				\
+	|| TREE_CODE (EXP) == RECORD_TYPE)) ? BITS_PER_WORD : (ALIGN))
 
-#define LOCAL_ALIGNMENT(EXP, ALIGN) DATA_ALIGNMENT(EXP, ALIGN)
+/* Align global data.  */
+#define DATA_ALIGNMENT(EXP, ALIGN)			\
+  AARCH64_EXPAND_ALIGNMENT (!optimize_size, EXP, ALIGN)
+
+/* Similarly, make sure that objects on the stack are sensibly aligned.  */
+#define LOCAL_ALIGNMENT(EXP, ALIGN)				\
+  AARCH64_EXPAND_ALIGNMENT (!flag_conserve_stack, EXP, ALIGN)
 
 #define STRUCTURE_SIZE_BOUNDARY		8
 

@@ -2039,7 +2039,7 @@ static cp_expr cp_parser_id_expression
 static cp_expr cp_parser_unqualified_id
   (cp_parser *, bool, bool, bool, bool);
 static tree cp_parser_nested_name_specifier_opt
-  (cp_parser *, bool, bool, bool, bool);
+  (cp_parser *, bool, bool, bool, bool, bool = false);
 static tree cp_parser_nested_name_specifier
   (cp_parser *, bool, bool, bool, bool);
 static tree cp_parser_qualifying_entity
@@ -3256,6 +3256,10 @@ cp_parser_diagnose_invalid_type_name (cp_parser *parser, tree id,
 	    error_at (location_of (id),
 		      "%qE in namespace %qE does not name a template type",
 		      id, parser->scope);
+	  else if (TREE_CODE (id) == TEMPLATE_ID_EXPR)
+	    error_at (location_of (id),
+		      "%qE in namespace %qE does not name a template type",
+		      TREE_OPERAND (id, 0), parser->scope);
 	  else
 	    error_at (location_of (id),
 		      "%qE in namespace %qE does not name a type",
@@ -3299,6 +3303,10 @@ cp_parser_diagnose_invalid_type_name (cp_parser *parser, tree id,
 	    error_at (location_of (id),
 		      "%qE in %q#T does not name a template type",
 		      id, parser->scope);
+	  else if (TREE_CODE (id) == TEMPLATE_ID_EXPR)
+	    error_at (location_of (id),
+		      "%qE in %q#T does not name a template type",
+		      TREE_OPERAND (id, 0), parser->scope);
 	  else
 	    error_at (location_of (id),
 		      "%qE in %q#T does not name a type",
@@ -5423,16 +5431,21 @@ cp_parser_id_expression (cp_parser *parser,
 
   /* Look for the optional `::' operator.  */
   global_scope_p
-    = (cp_parser_global_scope_opt (parser, /*current_scope_valid_p=*/false)
-       != NULL_TREE);
+    = (!template_keyword_p
+       && (cp_parser_global_scope_opt (parser,
+				       /*current_scope_valid_p=*/false)
+	   != NULL_TREE));
+
   /* Look for the optional nested-name-specifier.  */
   nested_name_specifier_p
     = (cp_parser_nested_name_specifier_opt (parser,
 					    /*typename_keyword_p=*/false,
 					    check_dependency_p,
 					    /*type_p=*/false,
-					    declarator_p)
+					    declarator_p,
+					    template_keyword_p)
        != NULL_TREE);
+
   /* If there is a nested-name-specifier, then we are looking at
      the first qualified-id production.  */
   if (nested_name_specifier_p)
@@ -5877,7 +5890,8 @@ cp_parser_nested_name_specifier_opt (cp_parser *parser,
 				     bool typename_keyword_p,
 				     bool check_dependency_p,
 				     bool type_p,
-				     bool is_declaration)
+				     bool is_declaration,
+				     bool template_keyword_p /* = false */)
 {
   bool success = false;
   cp_token_position start = 0;
@@ -5895,7 +5909,6 @@ cp_parser_nested_name_specifier_opt (cp_parser *parser,
       tree new_scope;
       tree old_scope;
       tree saved_qualifying_scope;
-      bool template_keyword_p;
 
       /* Spot cases that cannot be the beginning of a
 	 nested-name-specifier.  */
@@ -5970,8 +5983,6 @@ cp_parser_nested_name_specifier_opt (cp_parser *parser,
 	 first time through the loop.  */
       if (success)
 	template_keyword_p = cp_parser_optional_template_keyword (parser);
-      else
-	template_keyword_p = false;
 
       /* Save the old scope since the name lookup we are about to do
 	 might destroy it.  */
@@ -15723,17 +15734,17 @@ cp_parser_template_id (cp_parser *parser,
 
   /* If the next token corresponds to a template-id, there is no need
      to reparse it.  */
-  next_token = cp_lexer_peek_token (parser->lexer);
-  if (next_token->type == CPP_TEMPLATE_ID)
+  cp_token *token = cp_lexer_peek_token (parser->lexer);
+  if (token->type == CPP_TEMPLATE_ID)
     {
       cp_lexer_consume_token (parser->lexer);
-      return saved_checks_value (next_token->u.tree_check_value);
+      return saved_checks_value (token->u.tree_check_value);
     }
 
   /* Avoid performing name lookup if there is no possibility of
      finding a template-id.  */
-  if ((next_token->type != CPP_NAME && next_token->keyword != RID_OPERATOR)
-      || (next_token->type == CPP_NAME
+  if ((token->type != CPP_NAME && token->keyword != RID_OPERATOR)
+      || (token->type == CPP_NAME
 	  && !cp_parser_nth_token_starts_template_argument_list_p
 	       (parser, 2)))
     {
@@ -15824,9 +15835,19 @@ cp_parser_template_id (cp_parser *parser,
       arguments = cp_parser_enclosed_template_argument_list (parser);
     }
 
+  /* Set the location to be of the form:
+     template-name < template-argument-list [opt] >
+     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     with caret == start at the start of the template-name,
+     ranging until the closing '>'.  */
+  location_t finish_loc
+    = get_finish (cp_lexer_previous_token (parser->lexer)->location);
+  location_t combined_loc
+    = make_location (token->location, token->location, finish_loc);
+
   /* Build a representation of the specialization.  */
   if (identifier_p (templ))
-    template_id = build_min_nt_loc (next_token->location,
+    template_id = build_min_nt_loc (combined_loc,
 				    TEMPLATE_ID_EXPR,
 				    templ, arguments);
   else if (DECL_TYPE_TEMPLATE_P (templ)
@@ -15853,7 +15874,7 @@ cp_parser_template_id (cp_parser *parser,
     {
       template_id = lookup_template_variable (templ, arguments);
       if (TREE_CODE (template_id) == TEMPLATE_ID_EXPR)
-	SET_EXPR_LOCATION (template_id, next_token->location);
+	SET_EXPR_LOCATION (template_id, combined_loc);
     }
   else
     {
@@ -15865,7 +15886,7 @@ cp_parser_template_id (cp_parser *parser,
 
       template_id = lookup_template_function (templ, arguments);
       if (TREE_CODE (template_id) == TEMPLATE_ID_EXPR)
-	SET_EXPR_LOCATION (template_id, next_token->location);
+	SET_EXPR_LOCATION (template_id, combined_loc);
     }
 
   /* If parsing tentatively, replace the sequence of tokens that makes
@@ -15881,20 +15902,8 @@ cp_parser_template_id (cp_parser *parser,
 	   && cp_parser_parsing_tentatively (parser)
 	   && parser->in_declarator_p))
     {
-      cp_token *token = cp_lexer_token_at (parser->lexer, start_of_id);
-
       /* Reset the contents of the START_OF_ID token.  */
       token->type = CPP_TEMPLATE_ID;
-
-      /* Update the location to be of the form:
-	   template-name < template-argument-list [opt] >
-	   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-	 with caret == start at the start of the template-name,
-	 ranging until the closing '>'.  */
-      location_t finish_loc
-	= get_finish (cp_lexer_previous_token (parser->lexer)->location);
-      location_t combined_loc
-	= make_location (token->location, token->location, finish_loc);
       token->location = combined_loc;
 
       /* We must mark the lookup as kept, so we don't throw it away on
@@ -16064,15 +16073,19 @@ cp_parser_template_name (cp_parser* parser,
 	 no point in doing name-lookup, so we just return IDENTIFIER.
 	 But, if the qualifying scope is non-dependent then we can
 	 (and must) do name-lookup normally.  */
-      if (template_keyword_p
-	  && (!parser->scope
-	      || (TYPE_P (parser->scope)
-		  && dependent_type_p (parser->scope))))
+      if (template_keyword_p)
 	{
-	  /* We're optimizing away the call to cp_parser_lookup_name, but we
-	     still need to do this.  */
-	  parser->context->object_type = NULL_TREE;
-	  return identifier;
+	  tree scope = (parser->scope ? parser->scope
+			: parser->context->object_type);
+	  if (scope && TYPE_P (scope)
+	      && (!CLASS_TYPE_P (scope)
+		  || (check_dependency_p && dependent_type_p (scope))))
+	    {
+	      /* We're optimizing away the call to cp_parser_lookup_name, but
+		 we still need to do this.  */
+	      parser->context->object_type = NULL_TREE;
+	      return identifier;
+	    }
 	}
     }
 
@@ -16084,6 +16097,11 @@ cp_parser_template_name (cp_parser* parser,
 				check_dependency_p,
 				/*ambiguous_decls=*/NULL,
 				token->location);
+
+  /* If the lookup failed and we got the 'template' keyword, believe it.  */
+  if (decl == error_mark_node && template_keyword_p
+      && processing_template_decl)
+    return identifier;
 
   decl = strip_using_decl (decl);
 
@@ -22778,6 +22796,9 @@ cp_parser_class_head (cp_parser* parser,
 					   /*is_declaration=*/false);
   /* If there was a nested-name-specifier, then there *must* be an
      identifier.  */
+
+  cp_token *bad_template_keyword = NULL;
+
   if (nested_name_specifier)
     {
       type_start_token = cp_lexer_peek_token (parser->lexer);
@@ -22799,6 +22820,8 @@ cp_parser_class_head (cp_parser* parser,
 	 class-name is a template-id; if we looked for the
 	 template-name first we would stop after the template-name.  */
       cp_parser_parse_tentatively (parser);
+      if (cp_lexer_next_token_is_keyword (parser->lexer, RID_TEMPLATE))
+	bad_template_keyword = cp_lexer_consume_token (parser->lexer);
       type = cp_parser_class_name (parser,
 				   /*typename_keyword_p=*/false,
 				   /*template_keyword_p=*/false,
@@ -22917,6 +22940,12 @@ cp_parser_class_head (cp_parser* parser,
   else if (nested_name_specifier)
     {
       tree scope;
+
+      if (bad_template_keyword)
+	/* [temp.names]: in a qualified-id formed by a class-head-name, the
+	   keyword template shall not appear at the top level.  */
+	pedwarn (bad_template_keyword->location, OPT_Wpedantic,
+		 "keyword %<template%> not allowed in class-head-name");
 
       /* Reject typedef-names in class heads.  */
       if (!DECL_IMPLICIT_TYPEDEF_P (type))
@@ -26002,11 +26031,22 @@ cp_parser_lookup_name (cp_parser *parser, tree name,
 	decl = NULL_TREE;
 
       if (!decl)
-	/* Look it up in the enclosing context.  DR 141: When looking for a
-	   template-name after -> or ., only consider class templates.  */
-	decl = lookup_name_real (name, prefer_type_arg (tag_type, is_template),
-				 /*nonclass=*/0,
-				 /*block_p=*/true, is_namespace, 0);
+	{
+	  /* Look it up in the enclosing context.  */
+	  decl = lookup_name_real (name, prefer_type_arg (tag_type),
+				   /*nonclass=*/0,
+				   /*block_p=*/true, is_namespace, 0);
+	  /* DR 141 says when looking for a template-name after -> or ., only
+	     consider class templates.  */
+	  if (decl && is_template && !DECL_TYPE_TEMPLATE_P (decl))
+	    {
+	      tree d = decl;
+	      if (is_overloaded_fn (d))
+		d = get_first_fn (d);
+	      if (DECL_P (d) && !DECL_CLASS_SCOPE_P (d))
+		decl = NULL_TREE;
+	    }
+	}
       if (object_type == unknown_type_node)
 	/* The object is type-dependent, so we can't look anything up; we used
 	   this to get the DR 141 behavior.  */

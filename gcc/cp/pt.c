@@ -7682,7 +7682,7 @@ convert_template_argument (tree parm,
 	  if (TREE_CODE (TREE_TYPE (arg)) == UNBOUND_CLASS_TEMPLATE)
 	    /* The number of argument required is not known yet.
 	       Just accept it for now.  */
-	    val = TREE_TYPE (arg);
+	    val = orig_arg;
 	  else
 	    {
 	      tree parmparm = DECL_INNERMOST_TEMPLATE_PARMS (parm);
@@ -20031,6 +20031,9 @@ unify_pack_expansion (tree tparms, tree targs, tree packed_parms,
   tree pack, packs = NULL_TREE;
   int i, start = TREE_VEC_LENGTH (packed_parms) - 1;
 
+  /* Add in any args remembered from an earlier partial instantiation.  */
+  targs = add_to_template_args (PACK_EXPANSION_EXTRA_ARGS (parm), targs);
+
   packed_args = expand_template_argument_pack (packed_args);
 
   int len = TREE_VEC_LENGTH (packed_args);
@@ -22541,8 +22544,20 @@ maybe_instantiate_noexcept (tree fn)
 
   if (TREE_CODE (noex) == DEFERRED_NOEXCEPT)
     {
+      static hash_set<tree>* fns = new hash_set<tree>;
+      bool added = false;
       if (DEFERRED_NOEXCEPT_PATTERN (noex) == NULL_TREE)
 	spec = get_defaulted_eh_spec (fn);
+      else if (!(added = !fns->add (fn)))
+	{
+	  /* If hash_set::add returns true, the element was already there.  */
+	  location_t loc = EXPR_LOC_OR_LOC (DEFERRED_NOEXCEPT_PATTERN (noex),
+					    DECL_SOURCE_LOCATION (fn));
+	  error_at (loc,
+		    "exception specification of %qD depends on itself",
+		    fn);
+	  spec = noexcept_false_spec;
+	}
       else if (push_tinst_level (fn))
 	{
 	  push_access_scope (fn);
@@ -22562,6 +22577,9 @@ maybe_instantiate_noexcept (tree fn)
 	}
       else
 	spec = noexcept_false_spec;
+
+      if (added)
+	fns->remove (fn);
 
       TREE_TYPE (fn) = build_exception_variant (fntype, spec);
     }
@@ -24611,26 +24629,38 @@ resolve_typename_type (tree type, bool only_current_p)
   
   /* For a TYPENAME_TYPE like "typename X::template Y<T>", we want to
      find a TEMPLATE_DECL.  Otherwise, we want to find a TYPE_DECL.  */
+  tree fullname = TYPENAME_TYPE_FULLNAME (type);
   if (!decl)
     /*nop*/;
-  else if (identifier_p (TYPENAME_TYPE_FULLNAME (type))
+  else if (identifier_p (fullname)
 	   && TREE_CODE (decl) == TYPE_DECL)
     {
       result = TREE_TYPE (decl);
       if (result == error_mark_node)
 	result = NULL_TREE;
     }
-  else if (TREE_CODE (TYPENAME_TYPE_FULLNAME (type)) == TEMPLATE_ID_EXPR
+  else if (TREE_CODE (fullname) == TEMPLATE_ID_EXPR
 	   && DECL_CLASS_TEMPLATE_P (decl))
     {
-      tree tmpl;
-      tree args;
       /* Obtain the template and the arguments.  */
-      tmpl = TREE_OPERAND (TYPENAME_TYPE_FULLNAME (type), 0);
-      args = TREE_OPERAND (TYPENAME_TYPE_FULLNAME (type), 1);
+      tree tmpl = TREE_OPERAND (fullname, 0);
+      if (TREE_CODE (tmpl) == IDENTIFIER_NODE)
+	{
+	  /* We get here with a plain identifier because a previous tentative
+	     parse of the nested-name-specifier as part of a ptr-operator saw
+	     ::template X<A>.  The use of ::template is necessary in a
+	     ptr-operator, but wrong in a declarator-id.
+
+	     [temp.names]: In a qualified-id of a declarator-id, the keyword
+	     template shall not appear at the top level.  */
+	  pedwarn (EXPR_LOC_OR_LOC (fullname, input_location), OPT_Wpedantic,
+		   "keyword %<template%> not allowed in declarator-id");
+	  tmpl = decl;
+	}
+      tree args = TREE_OPERAND (fullname, 1);
       /* Instantiate the template.  */
       result = lookup_template_class (tmpl, args, NULL_TREE, NULL_TREE,
-				      /*entering_scope=*/0,
+				      /*entering_scope=*/true,
 				      tf_error | tf_user);
       if (result == error_mark_node)
 	result = NULL_TREE;

@@ -28,6 +28,14 @@ struct edge_growth_cache_entry
   sreal time, nonspec_time;
   int size;
   ipa_hints hints;
+
+  edge_growth_cache_entry()
+    : size (0), hints (0) {}
+
+  edge_growth_cache_entry(int64_t time, int64_t nonspec_time,
+			  int size, ipa_hints hints)
+    : time (time), nonspec_time (nonspec_time), size (size),
+      hints (hints) {}
 };
 
 extern vec<edge_growth_cache_entry> edge_growth_cache;
@@ -116,7 +124,7 @@ reset_edge_growth_cache (struct cgraph_edge *edge)
 {
   if ((int)edge_growth_cache.length () > edge->uid)
     {
-      struct edge_growth_cache_entry zero = {0, 0, 0, 0};
+      struct edge_growth_cache_entry zero (0, 0, 0, 0);
       edge_growth_cache[edge->uid] = zero;
     }
 }

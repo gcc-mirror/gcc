@@ -7541,17 +7541,26 @@ cost_plus:
         }
       else
         {
-	  if (speed)
+	  if (VECTOR_MODE_P (mode))
 	    {
-	      if (VECTOR_MODE_P (mode))
+	      if (speed)
+		/* Vector shift (register).  */
+		*cost += extra_cost->vect.alu;
+	    }
+	  else
+	    {
+	      if (speed)
+		/* LSLV.  */
+		*cost += extra_cost->alu.shift_reg;
+
+	      if (GET_CODE (op1) == AND && REG_P (XEXP (op1, 0))
+		  && CONST_INT_P (XEXP (op1, 1))
+		  && INTVAL (XEXP (op1, 1)) == GET_MODE_BITSIZE (mode) - 1)
 		{
-		  /* Vector shift (register).  */
-		  *cost += extra_cost->vect.alu;
-		}
-	      else
-		{
-		  /* LSLV.  */
-		  *cost += extra_cost->alu.shift_reg;
+		  *cost += rtx_cost (op0, mode, (rtx_code) code, 0, speed);
+		  /* We already demanded XEXP (op1, 0) to be REG_P, so
+		     don't recurse into it.  */
+		  return true;
 		}
 	    }
 	  return false;  /* All arguments need to be in registers.  */
@@ -7580,14 +7589,27 @@ cost_plus:
 	}
       else
 	{
-
-	  /* ASR (register) and friends.  */
-	  if (speed)
+	  if (VECTOR_MODE_P (mode))
 	    {
-	      if (VECTOR_MODE_P (mode))
+	      if (speed)
+		/* Vector shift (register).  */
 		*cost += extra_cost->vect.alu;
-	      else
+	    }
+	  else
+	    {
+	      if (speed)
+		/* ASR (register) and friends.  */
 		*cost += extra_cost->alu.shift_reg;
+
+	      if (GET_CODE (op1) == AND && REG_P (XEXP (op1, 0))
+		  && CONST_INT_P (XEXP (op1, 1))
+		  && INTVAL (XEXP (op1, 1)) == GET_MODE_BITSIZE (mode) - 1)
+		{
+		  *cost += rtx_cost (op0, mode, (rtx_code) code, 0, speed);
+		  /* We already demanded XEXP (op1, 0) to be REG_P, so
+		     don't recurse into it.  */
+		  return true;
+		}
 	    }
 	  return false;  /* All arguments need to be in registers.  */
 	}

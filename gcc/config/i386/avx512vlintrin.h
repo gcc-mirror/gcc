@@ -9099,6 +9099,17 @@ _mm_maskz_mul_epi32 (__mmask8 __M, __m128i __X, __m128i __Y)
 
 extern __inline __m256i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_permutexvar_epi64 (__m256i __X, __m256i __Y)
+{
+  return (__m256i) __builtin_ia32_permvardi256_mask ((__v4di) __Y,
+						     (__v4di) __X,
+						     (__v4di)
+						     _mm256_setzero_si256 (),
+						     (__mmask8) -1);
+}
+
+extern __inline __m256i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm256_mask_permutexvar_epi64 (__m256i __W, __mmask8 __M, __m256i __X,
 			       __m256i __Y)
 {
@@ -9159,6 +9170,17 @@ _mm_maskz_mul_epu32 (__mmask8 __M, __m128i __X, __m128i __Y)
 						   (__v2di)
 						   _mm_setzero_si128 (),
 						   __M);
+}
+
+extern __inline __m256i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_permutexvar_epi32 (__m256i __X, __m256i __Y)
+{
+  return (__m256i) __builtin_ia32_permvarsi256_mask ((__v8si) __Y,
+						     (__v8si) __X,
+						     (__v8si)
+						     _mm256_setzero_si256 (),
+						     (__mmask8) -1);
 }
 
 extern __inline __m256i
@@ -9749,6 +9771,17 @@ _mm_cmple_epi64_mask (__m128i __X, __m128i __Y)
 }
 
 #ifdef __OPTIMIZE__
+extern __inline __m256i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_permutex_epi64 (__m256i __X, const int __I)
+{
+  return (__m256i) __builtin_ia32_permdi256_mask ((__v4di) __X,
+					      __I,
+					      (__v4di)
+					      _mm256_setzero_si256(),
+					      (__mmask8) -1);
+}
+
 extern __inline __m256i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm256_mask_permutex_epi64 (__m256i __W, __mmask8 __M,
@@ -12366,6 +12399,13 @@ _mm256_permutex_pd (__m256d __X, const int __M)
 					    (__v4df)(__m256d)			\
 					    _mm256_undefined_pd (),		\
 					    (__mmask8)-1))
+
+#define _mm256_permutex_epi64(X, I)               \
+  ((__m256i) __builtin_ia32_permdi256_mask ((__v4di)(__m256i)(X), \
+					    (int)(I),		\
+					    (__v4di)(__m256i)	\
+					    (_mm256_setzero_si256 ()),\
+					    (__mmask8) -1))
 
 #define _mm256_maskz_permutex_epi64(M, X, I)                    \
   ((__m256i) __builtin_ia32_permdi256_mask ((__v4di)(__m256i)(X),    \

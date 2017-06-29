@@ -35,6 +35,10 @@
   (and (match_code "const_int")
        (match_test "op == CONST0_RTX (mode)")))
 
+(define_special_predicate "subreg_lowpart_operator"
+  (and (match_code "subreg")
+       (match_test "subreg_lowpart_p (op)")))
+
 (define_predicate "aarch64_ccmp_immediate"
   (and (match_code "const_int")
        (match_test "IN_RANGE (INTVAL (op), -31, 31)")))

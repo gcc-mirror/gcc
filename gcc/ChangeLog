@@ -1,3 +1,55 @@
+2017-06-29  Bin Cheng  <bin.cheng@arm.com>
+
+	PR tree-optimization/81196
+	* tree-ssa-loop-niter.c (number_of_iterations_cond): Handle loop
+	exit condition comparing two IVs.
+
+2017-06-29  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/parsecpu.awk (gen_comm_data): Add initializer for
+	profile to the dummy entry at the end of the list of architectures.
+	* config/arm/arm-cpu-cdata.h: Regenerated.
+
+2017-06-29  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+	    Michael Collison <michael.collison@arm.com>
+
+	PR target/70119
+	* config/aarch64/aarch64.md (*aarch64_<optab>_reg_<mode>3_mask1):
+	New pattern.
+	(*aarch64_reg_<mode>3_neg_mask2): New pattern.
+	(*aarch64_reg_<mode>3_minus_mask): New pattern.
+	(*aarch64_<optab>_reg_di3_mask2): New pattern.
+	* config/aarch64/aarch64.c (aarch64_rtx_costs): Account for cost
+	of shift when the shift amount is masked with constant equal to
+	the size of the mode.
+	* config/aarch64/predicates.md (subreg_lowpart_operator): New
+	predicate.
+
+2017-06-29  Martin Liska  <mliska@suse.cz>
+
+	* config/i386/i386.opt: Change range from [1,5] to [0,5].
+
+2017-06-29  Yury Gribov  <tetra2005@gmail.com>
+
+	PR bootstrap/80565
+        * ipa-cp.c (allocate_and_init_ipcp_value): Add initialization
+	code.
+        * ipa-inline.h
+	(edge_growth_cache_entry::edge_growth_cache_entry): New
+	function.
+        (reset_edge_growth_cache): Update to use constructor.
+
+2017-06-28  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	* config/aarch64/aarch64.h (AARCH64_EXPAND_ALIGNMENT): New.
+	(DATA_ALIGNMENT): Update to use AARCH64_EXPAND_ALIGNMENT.
+	(LOCAL_ALIGNMENT): Update to use AARCH64_EXPAND_ALIGNMENT.
+
+2017-06-28  Sebastian Peryt  <sebastian.peryt@intel.com>
+
+	* config/i386/avx512vlintrin.h (_mm256_permutexvar_epi64)
+	(_mm256_permutexvar_epi32, _mm256_permutex_epi64): New intrinsics.
+
 2017-06-28  Szabolcs Nagy  <szabolcs.nagy@arm.com>
 
 	* config.gcc (*-linux-musl*): Add t-musl tmake_file.

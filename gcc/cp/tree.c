@@ -1503,13 +1503,13 @@ strip_typedefs (tree t, bool *remove_attributes)
       break;
     case TYPENAME_TYPE:
       {
+	bool changed = false;
 	tree fullname = TYPENAME_TYPE_FULLNAME (t);
 	if (TREE_CODE (fullname) == TEMPLATE_ID_EXPR
 	    && TREE_OPERAND (fullname, 1))
 	  {
 	    tree args = TREE_OPERAND (fullname, 1);
 	    tree new_args = copy_node (args);
-	    bool changed = false;
 	    for (int i = 0; i < TREE_VEC_LENGTH (args); ++i)
 	      {
 		tree arg = TREE_VEC_ELT (args, i);
@@ -1533,12 +1533,15 @@ strip_typedefs (tree t, bool *remove_attributes)
 	    else
 	      ggc_free (new_args);
 	  }
-	result = make_typename_type (strip_typedefs (TYPE_CONTEXT (t),
-						     remove_attributes),
-				     fullname, typename_type, tf_none);
-	/* Handle 'typedef typename A::N N;'  */
-	if (typedef_variant_p (result))
-	  result = TYPE_MAIN_VARIANT (DECL_ORIGINAL_TYPE (TYPE_NAME (result)));
+	tree ctx = strip_typedefs (TYPE_CONTEXT (t), remove_attributes);
+	if (!changed && ctx == TYPE_CONTEXT (t) && !typedef_variant_p (t))
+	  return t;
+	tree name = fullname;
+	if (TREE_CODE (fullname) == TEMPLATE_ID_EXPR)
+	  name = TREE_OPERAND (fullname, 0);
+	/* Use build_typename_type rather than make_typename_type because we
+	   don't want to resolve it here, just strip typedefs.  */
+	result = build_typename_type (ctx, name, fullname, typename_type);
       }
       break;
     case DECLTYPE_TYPE:
