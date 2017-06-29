@@ -2664,7 +2664,6 @@ dump_expr (cxx_pretty_printer *pp, tree t, int flags)
       break;
 
     case TRY_CATCH_EXPR:
-    case WITH_CLEANUP_EXPR:
     case CLEANUP_POINT_EXPR:
       dump_expr (pp, TREE_OPERAND (t, 0), flags);
       break;
