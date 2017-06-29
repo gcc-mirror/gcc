@@ -1,3 +1,16 @@
+2017-06-29  Steve Ellcey  <sellcey@cavium.com>
+
+	* ccmp.c (ccmp_tree_comparison_p): New function.
+	(ccmp_candidate_p): Update to use above function.
+	(get_compare_parts): New function.
+	(expand_ccmp_next): Update to use new functions.
+	(expand_ccmp_expr_1): Take tree arg instead of gimple, update to use
+	new functions.
+	(expand_ccmp_expr): Pass tree instead of gimple to expand_ccmp_expr_1,
+	take mode as argument.
+	* ccmp.h (expand_ccmp_expr): Add mode as argument.
+	* expr.c (expand_expr_real_1): Pass mode as argument.
+
 2017-06-29  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* combine.c (combine_instructions): Print insns to dump_file, together
