@@ -2102,15 +2102,13 @@ vect_analyze_slp (vec_info *vinfo, unsigned max_tree_size)
 {
   unsigned int i;
   gimple *first_element;
-  bool ok = false;
 
   if (dump_enabled_p ())
     dump_printf_loc (MSG_NOTE, vect_location, "=== vect_analyze_slp ===\n");
 
   /* Find SLP sequences starting from groups of grouped stores.  */
   FOR_EACH_VEC_ELT (vinfo->grouped_stores, i, first_element)
-    if (vect_analyze_slp_instance (vinfo, first_element, max_tree_size))
-      ok = true;
+    vect_analyze_slp_instance (vinfo, first_element, max_tree_size);
 
   if (loop_vec_info loop_vinfo = dyn_cast <loop_vec_info> (vinfo))
     {
@@ -2118,22 +2116,15 @@ vect_analyze_slp (vec_info *vinfo, unsigned max_tree_size)
 	{
 	  /* Find SLP sequences starting from reduction chains.  */
 	  FOR_EACH_VEC_ELT (loop_vinfo->reduction_chains, i, first_element)
-	      if (vect_analyze_slp_instance (vinfo, first_element,
+	    if (! vect_analyze_slp_instance (vinfo, first_element,
 					     max_tree_size))
-		ok = true;
-	      else
-		return false;
-
-	  /* Don't try to vectorize SLP reductions if reduction chain was
-	     detected.  */
-	  return ok;
+	      return false;
 	}
 
       /* Find SLP sequences starting from groups of reductions.  */
-      if (loop_vinfo->reductions.length () > 1
-	  && vect_analyze_slp_instance (vinfo, loop_vinfo->reductions[0],
-					max_tree_size))
-	ok = true;
+      if (loop_vinfo->reductions.length () > 1)
+	vect_analyze_slp_instance (vinfo, loop_vinfo->reductions[0],
+				   max_tree_size);
     }
 
   return true;

@@ -1,3 +1,10 @@
+2017-06-29  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-loop.c (vect_analyze_scalar_cycles_1): Do not add
+	reduction chains to LOOP_VINFO_REDUCTIONS.
+	* tree-vect-slp.c (vect_analyze_slp): Continue looking for
+	SLP reductions after processing reduction chains.
+
 2017-06-29  Nathan Sidwell  <nathan@acm.org>
 
 	* builtins.c (fold_builtin_FUNCTION): Use
