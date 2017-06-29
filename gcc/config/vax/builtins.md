@@ -41,7 +41,7 @@
 
 (define_insn "ffssi2_internal"
   [(set (match_operand:SI 0 "nonimmediate_operand" "=rQ")
-	(ffs:SI (match_operand:SI 1 "general_operand" "nrmT")))
+	(ffs:SI (match_operand:SI 1 "general_operand" "nrQt")))
    (set (cc0) (match_dup 0))]
   ""
   "ffs $0,$32,%1,%0")
