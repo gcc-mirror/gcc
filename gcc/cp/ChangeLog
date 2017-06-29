@@ -1,5 +1,11 @@
 2017-06-29  Nathan Sidwell  <nathan@acm.org>
 
+	* cp-tree.h (THIS_NAME, IN_CHARGE_NAME, VTBL_PTR_TYPE,
+	VTABLE_DELTA_NAME, VTABLE_PFN_NAME): Delete.
+	* decl.c (initialize_predefined_identifiers): Name cdtor special
+	names consistently.  Use literals for above deleted defines.
+	(cxx_init_decl_processing): Use literal for vtbl_ptr_type name,
+
 	* lex.c (maybe_add_lang_type_raw): Exit early, rather than use a
 	flag.
 

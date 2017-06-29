@@ -5195,14 +5195,6 @@ extern GTY(()) vec<tree, va_gc> *keyed_classes;
 #endif	/* NO_DOLLAR_IN_LABEL */
 #endif	/* NO_DOT_IN_LABEL */
 
-#define THIS_NAME "this"
-
-#define IN_CHARGE_NAME "__in_chrg"
-
-#define VTBL_PTR_TYPE		"__vtbl_ptr_type"
-#define VTABLE_DELTA_NAME	"__delta"
-#define VTABLE_PFN_NAME		"__pfn"
-
 #define LAMBDANAME_PREFIX "__lambda"
 #define LAMBDANAME_FORMAT LAMBDANAME_PREFIX "%d"
 

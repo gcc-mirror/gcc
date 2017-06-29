@@ -3955,16 +3955,16 @@ initialize_predefined_identifiers (void)
     /* Some of these names have a trailing space so that it is
        impossible for them to conflict with names written by users.  */
     {"__ct ", &ctor_identifier, cik_ctor},
-    {"__base_ctor ", &base_ctor_identifier, cik_ctor},
-    {"__comp_ctor ", &complete_ctor_identifier, cik_ctor},
+    {"__ct_base ", &base_ctor_identifier, cik_ctor},
+    {"__ct_comp ", &complete_ctor_identifier, cik_ctor},
     {"__dt ", &dtor_identifier, cik_dtor},
-    {"__comp_dtor ", &complete_dtor_identifier, cik_dtor},
-    {"__base_dtor ", &base_dtor_identifier, cik_dtor},
-    {"__deleting_dtor ", &deleting_dtor_identifier, cik_dtor},
-    {IN_CHARGE_NAME, &in_charge_identifier, cik_normal},
-    {THIS_NAME, &this_identifier, cik_normal},
-    {VTABLE_DELTA_NAME, &delta_identifier, cik_normal},
-    {VTABLE_PFN_NAME, &pfn_identifier, cik_normal},
+    {"__dt_base ", &base_dtor_identifier, cik_dtor},
+    {"__dt_comp ", &complete_dtor_identifier, cik_dtor},
+    {"__dt_del ", &deleting_dtor_identifier, cik_dtor},
+    {"__in_chrg", &in_charge_identifier, cik_normal},
+    {"this", &this_identifier, cik_normal},
+    {"__delta", &delta_identifier, cik_normal},
+    {"__pfn", &pfn_identifier, cik_normal},
     {"_vptr", &vptr_identifier, cik_normal},
     {"__vtt_parm", &vtt_parm_identifier, cik_normal},
     {"::", &global_identifier, cik_normal},
@@ -4094,7 +4094,7 @@ cxx_init_decl_processing (void)
 
     vtable_entry_type = build_pointer_type (vfunc_type);
   }
-  record_builtin_type (RID_MAX, VTBL_PTR_TYPE, vtable_entry_type);
+  record_builtin_type (RID_MAX, "__vtbl_ptr_type", vtable_entry_type);
 
   vtbl_type_node
     = build_cplus_array_type (vtable_entry_type, NULL_TREE);
