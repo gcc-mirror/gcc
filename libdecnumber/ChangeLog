@@ -1,3 +1,11 @@
+2017-05-29  Sylvestre Ledru  <sylvestre@debian.org>
+
+	* bid/bid2dpd_dpd2bid.c (_bid_to_dpd32): Fix whitespace.
+	(_dpd_to_bid32): Simplify identical code on multiple branches.
+	Fix whitespace.
+	(_bid_to_dpd64, _dpd_to_bid64): Likewise.
+	(_bid_to_dpd128, _dpd_to_bid128): Likewise.
+
 2017-04-03  Jonathan Wakely  <jwakely@redhat.com>
 
 	* decCommon.c (decFloatFromPackedChecked): Fix typo in comment.
