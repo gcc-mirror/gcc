@@ -1,3 +1,18 @@
+2017-06-29  Ian Lance Taylor  <iant@golang.org>
+
+	* Makefile.am (MOSTLYCLEANFILES): Remove testing files and logs.
+	(mostlyclean-local): Remove check-runtime-dir, cgo-test-dir,
+	carchive-test-dir.
+	(ECHO_ENV): Define.
+	(check-go-tool): Depend on cgo.  Write command to testlog.
+	(check-runtime): New target.
+	(check-cgo-test): New target.
+	(check-carchive-test): New target.
+	(check): Depend on check-runtime, check-cgo-test,
+	check-carchive-test.  Add @ to prettify output.
+	(.PHONY): Add check-runtime, check-cgo-test, check-carchive-test.
+	* Makefile.in: Rebuild.
+
 2017-06-26  Ian Lance Taylor  <iant@golang.org>
 
 	* Makefile.am (s-zdefaultcc): Don't record $(bindir) for defaultCC
