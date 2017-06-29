@@ -1,3 +1,8 @@
+2017-06-29  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR ipa/80565
+	* gcc.dg/torture/pr80565.c: New file.
+
 2017-06-29  Bin Cheng  <bin.cheng@arm.com>
 
 	PR tree-optimization/81196
