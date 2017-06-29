@@ -1,4 +1,8 @@
-2016-06-29  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+2017-06-29  Michael Collison  <michael.collison@arm.com>
+
+	Fix date on previous ChangeLog entry.
+
+2017-06-29  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 	    Michael Collison <michael.collison@arm.com>
 
 	PR target/70119
