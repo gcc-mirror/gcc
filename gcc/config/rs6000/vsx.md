@@ -3012,6 +3012,134 @@
 }
   [(set_attr "type" "vecperm")])
 
+(define_insn_and_split "vsx_set_v4sf_p9"
+  [(set (match_operand:V4SF 0 "gpc_reg_operand" "=wa")
+	(unspec:V4SF
+	 [(match_operand:V4SF 1 "gpc_reg_operand" "0")
+	  (match_operand:SF 2 "gpc_reg_operand" "ww")
+	  (match_operand:QI 3 "const_0_to_3_operand" "n")]
+	 UNSPEC_VSX_SET))
+   (clobber (match_scratch:SI 4 "=&wJwK"))]
+  "VECTOR_MEM_VSX_P (V4SFmode) && TARGET_P9_VECTOR && TARGET_VSX_SMALL_INTEGER
+   && TARGET_UPPER_REGS_DI && TARGET_POWERPC64"
+  "#"
+  "&& reload_completed"
+  [(set (match_dup 5)
+	(unspec:V4SF [(match_dup 2)]
+		     UNSPEC_VSX_CVDPSPN))
+   (parallel [(set (match_dup 4)
+		   (vec_select:SI (match_dup 6)
+				  (parallel [(match_dup 7)])))
+	      (clobber (scratch:SI))])
+   (set (match_dup 8)
+	(unspec:V4SI [(match_dup 8)
+		      (match_dup 4)
+		      (match_dup 3)]
+		     UNSPEC_VSX_SET))]
+{
+  unsigned int tmp_regno = reg_or_subregno (operands[4]);
+
+  operands[5] = gen_rtx_REG (V4SFmode, tmp_regno);
+  operands[6] = gen_rtx_REG (V4SImode, tmp_regno);
+  operands[7] = GEN_INT (VECTOR_ELT_ORDER_BIG ? 1 : 2);
+  operands[8] = gen_rtx_REG (V4SImode, reg_or_subregno (operands[0]));
+}
+  [(set_attr "type" "vecperm")
+   (set_attr "length" "12")])
+
+;; Special case setting 0.0f to a V4SF element
+(define_insn_and_split "*vsx_set_v4sf_p9_zero"
+  [(set (match_operand:V4SF 0 "gpc_reg_operand" "=wa")
+	(unspec:V4SF
+	 [(match_operand:V4SF 1 "gpc_reg_operand" "0")
+	  (match_operand:SF 2 "zero_fp_constant" "j")
+	  (match_operand:QI 3 "const_0_to_3_operand" "n")]
+	 UNSPEC_VSX_SET))
+   (clobber (match_scratch:SI 4 "=&wJwK"))]
+  "VECTOR_MEM_VSX_P (V4SFmode) && TARGET_P9_VECTOR && TARGET_VSX_SMALL_INTEGER
+   && TARGET_UPPER_REGS_DI && TARGET_POWERPC64"
+  "#"
+  "&& reload_completed"
+  [(set (match_dup 4)
+	(const_int 0))
+   (set (match_dup 5)
+	(unspec:V4SI [(match_dup 5)
+		      (match_dup 4)
+		      (match_dup 3)]
+		     UNSPEC_VSX_SET))]
+{
+  operands[5] = gen_rtx_REG (V4SImode, reg_or_subregno (operands[0]));
+}
+  [(set_attr "type" "vecperm")
+   (set_attr "length" "8")])
+
+;; Optimize x = vec_insert (vec_extract (v2, n), v1, m) if n is the element
+;; that is in the default scalar position (1 for big endian, 2 for little
+;; endian).  We just need to do an xxinsertw since the element is in the
+;; correct location.
+
+(define_insn "*vsx_insert_extract_v4sf_p9"
+  [(set (match_operand:V4SF 0 "gpc_reg_operand" "=wa")
+	(unspec:V4SF
+	 [(match_operand:V4SF 1 "gpc_reg_operand" "0")
+	  (vec_select:SF (match_operand:V4SF 2 "gpc_reg_operand" "wa")
+			 (parallel
+			  [(match_operand:QI 3 "const_0_to_3_operand" "n")]))
+	  (match_operand:QI 4 "const_0_to_3_operand" "n")]
+	 UNSPEC_VSX_SET))]
+  "VECTOR_MEM_VSX_P (V4SFmode) && TARGET_P9_VECTOR && TARGET_VSX_SMALL_INTEGER
+   && TARGET_UPPER_REGS_DI && TARGET_POWERPC64
+   && (INTVAL (operands[3]) == (VECTOR_ELT_ORDER_BIG ? 1 : 2))"
+{
+  int ele = INTVAL (operands[4]);
+
+  if (!VECTOR_ELT_ORDER_BIG)
+    ele = GET_MODE_NUNITS (V4SFmode) - 1 - ele;
+
+  operands[4] = GEN_INT (GET_MODE_SIZE (SFmode) * ele);
+  return "xxinsertw %x0,%x2,%4";
+}
+  [(set_attr "type" "vecperm")])
+
+;; Optimize x = vec_insert (vec_extract (v2, n), v1, m) if n is not the element
+;; that is in the default scalar position (1 for big endian, 2 for little
+;; endian).  Convert the insert/extract to int and avoid doing the conversion.
+
+(define_insn_and_split "*vsx_insert_extract_v4sf_p9_2"
+  [(set (match_operand:V4SF 0 "gpc_reg_operand" "=wa")
+	(unspec:V4SF
+	 [(match_operand:V4SF 1 "gpc_reg_operand" "0")
+	  (vec_select:SF (match_operand:V4SF 2 "gpc_reg_operand" "wa")
+			 (parallel
+			  [(match_operand:QI 3 "const_0_to_3_operand" "n")]))
+	  (match_operand:QI 4 "const_0_to_3_operand" "n")]
+	 UNSPEC_VSX_SET))
+   (clobber (match_scratch:SI 5 "=&wJwK"))]
+  "VECTOR_MEM_VSX_P (V4SFmode) && VECTOR_MEM_VSX_P (V4SImode)
+   && TARGET_P9_VECTOR && TARGET_VSX_SMALL_INTEGER
+   && TARGET_UPPER_REGS_DI && TARGET_POWERPC64
+   && (INTVAL (operands[3]) != (VECTOR_ELT_ORDER_BIG ? 1 : 2))"
+  "#"
+  "&& 1"
+  [(parallel [(set (match_dup 5)
+		   (vec_select:SI (match_dup 6)
+				  (parallel [(match_dup 3)])))
+	      (clobber (scratch:SI))])
+   (set (match_dup 7)
+	(unspec:V4SI [(match_dup 8)
+		      (match_dup 5)
+		      (match_dup 4)]
+		     UNSPEC_VSX_SET))]
+{
+  if (GET_CODE (operands[5]) == SCRATCH)
+    operands[5] = gen_reg_rtx (SImode);
+
+  operands[6] = gen_lowpart (V4SImode, operands[2]);
+  operands[7] = gen_lowpart (V4SImode, operands[0]);
+  operands[8] = gen_lowpart (V4SImode, operands[1]);
+}
+  [(set_attr "type" "vecperm")])
+
 ;; Expanders for builtins
 (define_expand "vsx_mergel_<mode>"
   [(use (match_operand:VSX_D 0 "vsx_register_operand" ""))
