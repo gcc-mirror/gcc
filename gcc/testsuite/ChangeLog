@@ -1,3 +1,7 @@
+2017-06-29  Steve Ellcey  <sellcey@cavium.com>
+
+	* gcc.target/aarch64/ccmp_2.c: New test.
+
 2017-06-29  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/81247
