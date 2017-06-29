@@ -20106,26 +20106,8 @@ cp_parser_direct_declarator (cp_parser* parser,
 		if (TREE_CODE (unqualified_name) == TYPE_DECL)
 		  {
 		    tree name_type = TREE_TYPE (unqualified_name);
-		    if (class_type && same_type_p (name_type, class_type))
-		      {
-			if (qualifying_scope
-			    && CLASSTYPE_USE_TEMPLATE (name_type))
-			  {
-			    error_at (declarator_id_start_token->location,
-				      "invalid use of constructor as a template");
-			    inform (declarator_id_start_token->location,
-				    "use %<%T::%D%> instead of %<%T::%D%> to "
-				    "name the constructor in a qualified name",
-				    class_type,
-				    DECL_NAME (TYPE_TI_TEMPLATE (class_type)),
-				    class_type, name_type);
-			    declarator = cp_error_declarator;
-			    break;
-			  }
-			else
-			  unqualified_name = constructor_name (class_type);
-		      }
-		    else
+
+		    if (!class_type || !same_type_p (name_type, class_type))
 		      {
 			/* We do not attempt to print the declarator
 			   here because we do not have enough
@@ -20135,6 +20117,21 @@ cp_parser_direct_declarator (cp_parser* parser,
 			declarator = cp_error_declarator;
 			break;
 		      }
+		    else if (qualifying_scope
+			     && CLASSTYPE_USE_TEMPLATE (name_type))
+		      {
+			error_at (declarator_id_start_token->location,
+				  "invalid use of constructor as a template");
+			inform (declarator_id_start_token->location,
+				"use %<%T::%D%> instead of %<%T::%D%> to "
+				"name the constructor in a qualified name",
+				class_type,
+				DECL_NAME (TYPE_TI_TEMPLATE (class_type)),
+				class_type, name_type);
+			declarator = cp_error_declarator;
+			break;
+		      }
+		    unqualified_name = constructor_name (class_type);
 		  }
 
 		if (class_type)
@@ -20164,14 +20161,10 @@ cp_parser_direct_declarator (cp_parser* parser,
 				struct S {
 				  friend void N::S();
 				};  */
-			     && !(friend_p
-				  && class_type != qualifying_scope)
+			     && (!friend_p || class_type == qualifying_scope)
 			     && constructor_name_p (unqualified_name,
 						    class_type))
-		      {
-			unqualified_name = constructor_name (class_type);
-			sfk = sfk_constructor;
-		      }
+		      sfk = sfk_constructor;
 		    else if (is_overloaded_fn (unqualified_name)
 			     && DECL_CONSTRUCTOR_P (get_first_fn
 						    (unqualified_name)))
