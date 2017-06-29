@@ -1,3 +1,9 @@
+2017-06-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* expr.c (expand_expr) <normal_inner_ref>: When testing for unaligned
+	objects, take into account only the alignment of 'op0' and 'mode1' if
+	'op0' is a MEM.
+
 2017-06-29  Steve Ellcey  <sellcey@cavium.com>
 
 	* ccmp.c (ccmp_tree_comparison_p): New function.
