@@ -507,10 +507,13 @@ current_scope (void)
 	      && same_type_p (DECL_FRIEND_CONTEXT (current_function_decl),
 			      current_class_type))))
     return current_function_decl;
+
   if (current_class_type)
     return current_class_type;
+
   if (current_function_decl)
     return current_function_decl;
+
   return current_namespace;
 }
 

@@ -8502,9 +8502,11 @@ grokfndecl (tree ctype,
       /* Allocate space to hold the vptr bit if needed.  */
       SET_DECL_ALIGN (decl, MINIMUM_METHOD_BOUNDARY);
     }
+
   DECL_ARGUMENTS (decl) = parms;
   for (t = parms; t; t = DECL_CHAIN (t))
     DECL_CONTEXT (t) = decl;
+
   /* Propagate volatile out from type to decl.  */
   if (TYPE_VOLATILE (type))
     TREE_THIS_VOLATILE (decl) = 1;
@@ -8524,13 +8526,11 @@ grokfndecl (tree ctype,
       break;
     }
 
-  if (friendp
-      && TREE_CODE (orig_declarator) == TEMPLATE_ID_EXPR)
+  if (friendp && TREE_CODE (orig_declarator) == TEMPLATE_ID_EXPR)
     {
       if (funcdef_flag)
-	error
-	  ("defining explicit specialization %qD in friend declaration",
-	   orig_declarator);
+	error ("defining explicit specialization %qD in friend declaration",
+	       orig_declarator);
       else
 	{
 	  tree fns = TREE_OPERAND (orig_declarator, 0);
@@ -9131,7 +9131,6 @@ build_ptrmemfunc_type (tree type)
   /* If a canonical type already exists for this type, use it.  We use
      this method instead of type_hash_canon, because it only does a
      simple equality check on the list of field members.  */
-
 
   t = TYPE_PTRMEMFUNC_TYPE (type);
   if (t)
@@ -10068,8 +10067,6 @@ grokdeclarator (const cp_declarator *declarator,
 	      {
 	      case BIT_NOT_EXPR:
 		{
-		  tree type;
-
 		  if (innermost_code != cdk_function)
 		    {
 		      error ("declaration of %qD as non-function", decl);
@@ -10082,7 +10079,7 @@ grokdeclarator (const cp_declarator *declarator,
 		      return error_mark_node;
 		    }
 
-		  type = TREE_OPERAND (decl, 0);
+		  tree type = TREE_OPERAND (decl, 0);
 		  if (TYPE_P (type))
 		    type = constructor_name (type);
 		  name = identifier_to_locale (IDENTIFIER_POINTER (type));

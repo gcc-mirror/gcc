@@ -1,3 +1,19 @@
+2017-06-29  Nathan Sidwell  <nathan@acm.org>
+
+	Whitespace cleanups.
+	* call.c (name_as_c_string): Move CONST_CAST to return.
+	(build_new_method_call_1): Remove unneeded bracing.
+	* class.c (include_empty_classes): Unbreak line.
+	* constraint.cc (tsubst_check_constraint): Add space.
+	* cp-tree.h (lang_decl_ns): Add comment.
+	(PTRMEM_CST_MEMBER): Break line.
+	* decl.c (grokfndecl): Add blank lines. Unbreak some others.
+	(grokdeclarator): Remove lines, move declaration to first use.
+	* decl2.c (decl_needed_p): Fix indentation.
+	(c_parse_final_cleanups): Remove blank line.
+	* method.c (implicitly_declare_fn): Move declaration to first use.
+	* search.c (current_scope): Add blank lines.
+
 2017-06-28  Jason Merrill  <jason@redhat.com>
 
 	PR c++/72764 - ICE with invalid template typename.
