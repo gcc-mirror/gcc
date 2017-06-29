@@ -1,3 +1,11 @@
+2017-06-29  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/81247
+	* parser.c (cp_parser_namespace_definition): Immediately close the
+	namespace if there's no open-brace.
+	* name-lookup.c (do_pushdecl): Reset OLD when pushing into new
+	namespace.
+
 2017-06-29  Jason Merrill  <jason@redhat.com>
 
 	PR c++/81164 - ICE with invalid inherited constructor.

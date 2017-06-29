@@ -18397,13 +18397,14 @@ cp_parser_namespace_definition (cp_parser* parser)
   warning  (OPT_Wnamespaces, "namespace %qD entered", current_namespace);
 
   /* Look for the `{' to validate starting the namespace.  */
-  cp_parser_require (parser, CPP_OPEN_BRACE, RT_OPEN_BRACE);
+  if (cp_parser_require (parser, CPP_OPEN_BRACE, RT_OPEN_BRACE))
+    {
+      /* Parse the body of the namespace.  */
+      cp_parser_namespace_body (parser);
 
-  /* Parse the body of the namespace.  */
-  cp_parser_namespace_body (parser);
-
-  /* Look for the final `}'.  */
-  cp_parser_require (parser, CPP_CLOSE_BRACE, RT_CLOSE_BRACE);
+      /* Look for the final `}'.  */
+      cp_parser_require (parser, CPP_CLOSE_BRACE, RT_CLOSE_BRACE);
+    }
 
   if (has_visibility)
     pop_visibility (1);
