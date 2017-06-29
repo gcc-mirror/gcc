@@ -1,5 +1,13 @@
 2017-06-29  Carl Love  <cel@us.ibm.com>
 
+	* gcc.target/powerpc/builtins-3-runnable.c (test_int_result,
+	test_unsigned_int_result, test_ll_int_result,
+	test_ll_unsigned_int_result): Add result checking functions, add
+	debug support.
+	(main): Add builtin function tests.
+
+2017-06-29  Carl Love  <cel@us.ibm.com>
+
 	* gcc.target/powerpc/builtins-3-vec_reve-runnable.c (dg-options,
 	dg-skip-if): Add -mvsx -mcpu=power7.
 

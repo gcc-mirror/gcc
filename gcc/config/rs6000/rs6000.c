@@ -41074,6 +41074,35 @@ rs6000_generate_float2_code (bool signed_convert, rtx dst, rtx src1, rtx src2)
     emit_insn (gen_p8_vmrgew_v4sf (dst, rtx_tmp3, rtx_tmp2));
 }
 
+void
+rs6000_generate_vsigned2_code (bool signed_convert, rtx dst, rtx src1,
+			       rtx src2)
+{
+  rtx rtx_tmp0, rtx_tmp1, rtx_tmp2, rtx_tmp3;
+
+  rtx_tmp0 = gen_reg_rtx (V2DFmode);
+  rtx_tmp1 = gen_reg_rtx (V2DFmode);
+
+  emit_insn (gen_vsx_xxpermdi_v2df (rtx_tmp0, src1, src2, GEN_INT (0)));
+  emit_insn (gen_vsx_xxpermdi_v2df (rtx_tmp1, src1, src2, GEN_INT (3)));
+
+  rtx_tmp2 = gen_reg_rtx (V4SImode);
+  rtx_tmp3 = gen_reg_rtx (V4SImode);
+
+  if (signed_convert)
+    {
+      emit_insn (gen_vsx_xvcvdpsxws (rtx_tmp2, rtx_tmp0));
+      emit_insn (gen_vsx_xvcvdpsxws (rtx_tmp3, rtx_tmp1));
+    }
+  else
+    {
+      emit_insn (gen_vsx_xvcvdpuxws (rtx_tmp2, rtx_tmp0));
+      emit_insn (gen_vsx_xvcvdpuxws (rtx_tmp3, rtx_tmp1));
+    }
+
+  emit_insn (gen_p8_vmrgew_v4si (dst, rtx_tmp2, rtx_tmp3));
+}
+
 /* Implement the TARGET_OPTAB_SUPPORTED_P hook.  */
 
 static bool

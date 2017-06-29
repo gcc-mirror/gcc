@@ -16658,6 +16658,13 @@ vector bool char vec_sel (vector bool char,
                           vector bool char,
                           vector unsigned char);
 
+vector signed long long vec_signed (vector double);
+vector signed int vec_signed (vector float);
+
+vector signed int vec_signede (vector double);
+vector signed int vec_signedo (vector double);
+vector signed int vec_signed2 (vector double, vector double);
+
 vector signed char vec_sl (vector signed char,
                            vector unsigned char);
 vector unsigned char vec_sl (vector unsigned char,
@@ -17185,6 +17192,13 @@ vector signed int vec_sum2s (vector signed int, vector signed int);
 vector signed int vec_sums (vector signed int, vector signed int);
 
 vector float vec_trunc (vector float);
+
+vector signed long long vec_unsigned (vector double);
+vector signed int vec_unsigned (vector float);
+
+vector signed int vec_unsignede (vector double);
+vector signed int vec_unsignedo (vector double);
+vector signed int vec_unsigned2 (vector double, vector double);
 
 vector signed short vec_unpackh (vector signed char);
 vector bool short vec_unpackh (vector bool char);
