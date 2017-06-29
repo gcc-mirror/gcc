@@ -3272,11 +3272,6 @@ cp_tree_equal (tree t1, tree t2)
 	return false;
       return cp_tree_equal (TREE_OPERAND (t1, 1), TREE_OPERAND (t1, 1));
 
-    case COMPONENT_REF:
-      if (TREE_OPERAND (t1, 1) != TREE_OPERAND (t2, 1))
-	return false;
-      return cp_tree_equal (TREE_OPERAND (t1, 0), TREE_OPERAND (t2, 0));
-
     case PARM_DECL:
       /* For comparing uses of parameters in late-specified return types
 	 with an out-of-class definition of the function, but can also come

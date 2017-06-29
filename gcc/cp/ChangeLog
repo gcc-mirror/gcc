@@ -1,5 +1,8 @@
 2017-06-29  Jason Merrill  <jason@redhat.com>
 
+	PR c++/81188 - matching decltype of member function call.
+	* tree.c (cp_tree_equal): Remove COMPONENT_REF special case.
+
 	PR c++/81164 - ICE with invalid inherited constructor.
 	* search.c (binfo_direct_p): New.
 	* name-lookup.c (do_class_using_decl): Use it.
