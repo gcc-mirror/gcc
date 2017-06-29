@@ -25216,17 +25216,16 @@ build_deduction_guide (tree ctor, tree outer_args, tsubst_flags_t complain)
     }
   else
     {
+      ++processing_template_decl;
+
+      tree fn_tmpl
+	= (TREE_CODE (ctor) == TEMPLATE_DECL ? ctor
+	   : DECL_TI_TEMPLATE (ctor));
       if (outer_args)
-	ctor = tsubst (ctor, outer_args, complain, ctor);
+	fn_tmpl = tsubst (fn_tmpl, outer_args, complain, ctor);
+      ctor = DECL_TEMPLATE_RESULT (fn_tmpl);
+
       type = DECL_CONTEXT (ctor);
-      tree fn_tmpl;
-      if (TREE_CODE (ctor) == TEMPLATE_DECL)
-	{
-	  fn_tmpl = ctor;
-	  ctor = DECL_TEMPLATE_RESULT (fn_tmpl);
-	}
-      else
-	fn_tmpl = DECL_TI_TEMPLATE (ctor);
 
       tparms = DECL_TEMPLATE_PARMS (fn_tmpl);
       /* If type is a member class template, DECL_TI_ARGS (ctor) will have
@@ -25248,7 +25247,6 @@ build_deduction_guide (tree ctor, tree outer_args, tsubst_flags_t complain)
 	  /* For a member template constructor, we need to flatten the two
 	     template parameter lists into one, and then adjust the function
 	     signature accordingly.  This gets...complicated.  */
-	  ++processing_template_decl;
 	  tree save_parms = current_template_parms;
 
 	  /* For a member template we should have two levels of parms/args, one
@@ -25309,8 +25307,8 @@ build_deduction_guide (tree ctor, tree outer_args, tsubst_flags_t complain)
 	    ci = tsubst_constraint_info (ci, tsubst_args, complain, ctor);
 
 	  current_template_parms = save_parms;
-	  --processing_template_decl;
 	}
+      --processing_template_decl;
     }
 
   if (!memtmpl)
