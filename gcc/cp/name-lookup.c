@@ -3895,6 +3895,30 @@ lookup_class_member (tree klass, tree name, bool want_type)
   return val;
 }
 
+/* Collect all the conversion operators of KLASS.  */
+
+tree
+lookup_all_conversions (tree klass)
+{
+  tree lkp = NULL_TREE;
+
+  if (vec<tree, va_gc> *methods = CLASSTYPE_METHOD_VEC (klass))
+    {
+      tree ovl;
+      for (int idx = CLASSTYPE_FIRST_CONVERSION_SLOT;
+	   methods->iterate (idx, &ovl); ++idx)
+	{
+	  if (!DECL_CONV_FN_P (OVL_FIRST (ovl)))
+	    /* There are no more conversion functions.  */
+	    break;
+
+	  lkp = lookup_add (ovl, lkp);
+	}
+    }
+
+  return lkp;
+}
+
 /* Add DECL into MAP under NAME.  Collisions fail silently.  Doesn't
    do sophistacated collision checking.  Deals with STAT_HACK.  */
 

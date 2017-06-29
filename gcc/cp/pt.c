@@ -1196,15 +1196,10 @@ retrieve_specialization (tree tmpl, tree args, hashval_t hash)
 	= retrieve_specialization (class_template, args, 0);
       if (!class_specialization)
 	return NULL_TREE;
-      /* Now, find the appropriate entry in the CLASSTYPE_METHOD_VEC
-	 for the specialization.  */
-      int idx = class_method_index_for_fn (class_specialization, tmpl);
-      if (idx == -1)
-	return NULL_TREE;
-      /* Iterate through the methods with the indicated name, looking
-	 for the one that has an instance of TMPL.  */
-      vec<tree, va_gc> *methods = CLASSTYPE_METHOD_VEC (class_specialization);
-      for (ovl_iterator iter ((*methods)[idx]); iter; ++iter)
+
+      /* Find the instance of TMPL.  */
+      tree fns = lookup_fnfields_slot (class_specialization, DECL_NAME (tmpl));
+      for (ovl_iterator iter (fns); iter; ++iter)
 	{
 	  tree fn = *iter;
 	  if (DECL_TEMPLATE_INFO (fn) && DECL_TI_TEMPLATE (fn) == tmpl
@@ -2899,28 +2894,15 @@ check_explicit_specialization (tree declarator,
 	    }
 
 	  tree fns = NULL_TREE;
-	  if (!DECL_CONV_FN_P (decl))
+	  if (DECL_CONV_FN_P (decl))
+	    /* For a type-conversion operator, we cannot do a
+	       name-based lookup.  We might be looking for `operator
+	       int' which will be a specialization of `operator T'.
+	       Grab all the conversion operators, and then select from
+	       them.  */
+	    fns = lookup_all_conversions (ctype);
+	  else
 	    fns = lookup_fnfields_slot_nolazy (ctype, name);
-	  else if (vec<tree, va_gc> *methods = CLASSTYPE_METHOD_VEC (ctype))
-	    {
-	      /* For a type-conversion operator, we cannot do a
-		 name-based lookup.  We might be looking for `operator
-		 int' which will be a specialization of `operator T'.
-		 So, we find *all* the conversion operators, and then
-		 select from them.  */
-	      tree ovl;
-	      for (int idx = CLASSTYPE_FIRST_CONVERSION_SLOT;
-		   methods->iterate (idx, &ovl); ++idx)
-		{
-		  if (!DECL_CONV_FN_P (OVL_FIRST (ovl)))
-		    /* There are no more conversion functions.  */
-		    break;
-
-		  /* Glue all these conversion functions together
-		     with those we already have.  */
-		  fns = lookup_add (ovl, fns);
-		}
-	    }
 
 	  if (fns == NULL_TREE)
 	    {

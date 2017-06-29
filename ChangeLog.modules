@@ -1,5 +1,32 @@
 2017-06-29  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* cp-tree.h (class_method_index_for_fn): Delete.
+	* decl2.c (check_classfn): Use lookup_fnfields_slot, reimplement
+	diagnostics.
+	* name-lookup.h (lookup_all_conversions): Declare.
+	* name-lookup.c (lookup_all_conversions): New.
+	* pt.c (retrieve_specialization): Use lookup_fnfields_slot,
+	lookup_all_conversions.
+	* search.c (class_method_index_for_fn): Delete.
+	gcc/testsuite/
+	* g++.dg/concepts/memfun-err.C: Adjust.
+	* g++.dg/cpp0x/decltype9.C: Adjust.
+	* g++.dg/lookup/decl1.C: Adjust.
+	* g++.dg/other/pr28432.C: Adjust.
+	* g++.dg/parse/crash12.C: Adjust.
+	* g++.dg/parse/enum3.C: Adjust.
+	* g++.dg/parse/operator6.C: Adjust.
+	* g++.dg/template/crash69.C: Adjust.
+	* g++.dg/template/error27.C: Adjust.
+	* g++.dg/template/error28.C: Adjust.
+	* g++.dg/template/memfriend6.C: Adjust.
+	* g++.old-deja/g++.mike/err1.C: Adjust.
+	* g++.old-deja/g++.mike/p811.C: Adjust.
+	* g++.old-deja/g++.other/crash25.C: Adjust.
+	* g++.old-deja/g++.other/dtor4.C: Adjust.
+	* g++.old-deja/g++.pt/t37.C: Adjust.
+
 	Merge trunk r249779.
 
 	gcc/cp/

@@ -1,8 +1,8 @@
 // { dg-do assemble  }
 
-struct gorf {
+struct gorf { // { dg-message "defined here" }
   int stuff;
-  void snarf();			// { dg-error "" } 
+  void snarf();			// { dg-message "" } 
 };
 
-template <class T> void gorf::snarf() { return; }  // { dg-error "" } 
+template <class T> void gorf::snarf() { return; }  // { dg-error "no declaration" } 
