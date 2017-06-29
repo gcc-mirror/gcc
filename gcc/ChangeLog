@@ -1,3 +1,9 @@
+2017-06-29  Jan Hubicka  <hubicka@ucw.cz>
+
+	* arm/arm-builtins.c: Include profile-count.h
+	* except.c (sjlj_emit_function_enter): Use
+	profile_probability::unlikely.
+
 2017-06-29  Aaron Sawdey  <acsawdey@linux.vnet.ibm.com>
 
         * config/rs6000/rs6000.c (toc_relative_expr_p): Make tocrel_base

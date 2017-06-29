@@ -27,6 +27,7 @@
 #include "gimple-expr.h"
 #include "memmodel.h"
 #include "tm_p.h"
+#include "profile-count.h"
 #include "optabs.h"
 #include "emit-rtl.h"
 #include "recog.h"
