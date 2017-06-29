@@ -1,3 +1,18 @@
+2017-06-29  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+	    Michael Collison <michael.collison@arm.com>
+
+	PR target/70119
+	* config/aarch64/aarch64.md (*aarch64_<optab>_reg_<mode>3_mask1):
+	New pattern.
+	(*aarch64_reg_<mode>3_neg_mask2): New pattern.
+	(*aarch64_reg_<mode>3_minus_mask): New pattern.
+	(*aarch64_<optab>_reg_di3_mask2): New pattern.
+	* config/aarch64/aarch64.c (aarch64_rtx_costs): Account for cost
+	of shift when the shift amount is masked with constant equal to
+	the size of the mode.
+	* config/aarch64/predicates.md (subreg_lowpart_operator): New
+	predicate.
+
 2017-06-29  Martin Liska  <mliska@suse.cz>
 
 	* config/i386/i386.opt: Change range from [1,5] to [0,5].
