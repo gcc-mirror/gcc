@@ -1,5 +1,14 @@
 2017-06-29  Nathan Sidwell  <nathan@acm.org>
 
+	* class.c (finish_struct): Use OVL_P.
+	(get_vfield_name): Measure constructor_name length.
+	* cp-tree.h (SET_CLASS_TYPE_P): Add RECORD_OR_UNION_CHECK.
+	(NON_UNION_CLASS_TYPE_P): Check RECORD_TYPE up front.
+	* cxx-pretty-print.c (is_destructor_name): Delete.
+	(pp_cxx_unqualified_id): Remove bogus destructor name checking.
+	* decl.c (grokfndecl): Move cheap checks first when looking for
+	implicit extern cness.
+
 	* parser.c (cp_parser_direct_declarator): Reorder if to avoid
 	indentation. Remove unnecessary assignment of constructor name.
 
