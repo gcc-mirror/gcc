@@ -1,3 +1,17 @@
+2017-06-29  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.dg/cpp0x/inh-ctor3.C: Adjust for dg-message vs dg-error.
+	* g++.dg/diagnostic/variadic1.C: Likewise.
+	* g++.dg/gomp/udr-3.C: Likewise.
+	* g++.dg/overload/error1.C: Likewise.
+	* g++.dg/overload/error2.C: Likewise.
+	* g++.dg/template/duplicate1.C: Likewise.
+	* g++.old-deja/g++.benjamin/warn02.C: Likewise.
+	* g++.old-deja/g++.brendan/arm2.C: Likewise.
+	* g++.old-deja/g++.other/redecl2.C: Likewise.
+	* g++.old-deja/g++.other/redecl4.C: Likewise.
+	* g++.old-deja/g++.pt/memtemp78.C: Likewise.
+
 2017-06-29  Cesar Philippidis  <cesar@codesourcery.com>
 
 	PR fortran/77765
