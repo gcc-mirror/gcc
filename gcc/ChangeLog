@@ -1,3 +1,10 @@
+2017-06-29  Peter Bergner  <bergner@vnet.ibm.com>
+
+	PR middle-end/81194
+	* cfgexpand.c (expand_gimple_stmt_1): Handle switch statements
+	with only one label.
+	* stmt.c (expand_case): Assert NCASES is greater than one.
+
 2017-06-29  Richard Biener  <rguenther@suse.de>
 
 	* tree-cfg.c (group_case_labels_stmt): Return whether we changed

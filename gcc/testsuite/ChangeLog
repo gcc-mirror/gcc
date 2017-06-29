@@ -1,3 +1,8 @@
+2017-06-29  Peter Bergner  <bergner@vnet.ibm.com>
+
+	PR middle-end/81194
+	* g++.dg/pr81194.C: New test.
+
 2017-06-29  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR ipa/80565
