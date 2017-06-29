@@ -1992,12 +1992,14 @@ decl_needed_p (tree decl)
   /* If this entity was used, let the back end see it; it will decide
      whether or not to emit it into the object file.  */
   if (TREE_USED (decl))
-      return true;
+    return true;
+
   /* Virtual functions might be needed for devirtualization.  */
   if (flag_devirtualize
       && TREE_CODE (decl) == FUNCTION_DECL
       && DECL_VIRTUAL_P (decl))
     return true;
+
   /* Otherwise, DECL does not need to be emitted -- yet.  A subsequent
      reference to DECL might cause it to be emitted later.  */
   return false;
@@ -4803,7 +4805,6 @@ c_parse_final_cleanups (void)
   perform_deferred_noexcept_checks ();
 
   finish_repo ();
-
   fini_constexpr ();
 
   /* The entire file is now complete.  If requested, dump everything

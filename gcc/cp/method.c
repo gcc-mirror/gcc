@@ -1982,7 +1982,6 @@ implicitly_declare_fn (special_function_kind kind, tree type,
     case sfk_move_assignment:
     case sfk_inheriting_constructor:
     {
-      bool move_p;
       if (kind == sfk_copy_assignment
 	  || kind == sfk_move_assignment)
 	{
@@ -2000,8 +1999,8 @@ implicitly_declare_fn (special_function_kind kind, tree type,
 	    rhs_parm_type = cp_build_qualified_type (type, TYPE_QUAL_CONST);
 	  else
 	    rhs_parm_type = type;
-	  move_p = (kind == sfk_move_assignment
-		    || kind == sfk_move_constructor);
+	  bool move_p = (kind == sfk_move_assignment
+			 || kind == sfk_move_constructor);
 	  rhs_parm_type = cp_build_reference_type (rhs_parm_type, move_p);
 
 	  parameter_types = tree_cons (NULL_TREE, rhs_parm_type, parameter_types);

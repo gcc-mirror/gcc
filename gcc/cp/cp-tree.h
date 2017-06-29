@@ -2556,7 +2556,9 @@ struct GTY(()) lang_decl_ns {
   vec<tree, va_gc> *usings;
   vec<tree, va_gc> *inlinees;
 
-  /* Map from IDENTIFIER nodes to DECLS.  */
+  /* Map from IDENTIFIER nodes to DECLS.  It'd be nice to have this
+     inline, but as the hash_map has a dtor, we can't then put this
+     struct into a union (until moving to c++11).  */
   hash_map<lang_identifier *, tree> *bindings;
 };
 
@@ -4312,7 +4314,8 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
 
 /* For a pointer-to-member constant `X::Y' this is the _DECL for
    `Y'.  */
-#define PTRMEM_CST_MEMBER(NODE) (((ptrmem_cst_t)PTRMEM_CST_CHECK (NODE))->member)
+#define PTRMEM_CST_MEMBER(NODE) \
+  (((ptrmem_cst_t)PTRMEM_CST_CHECK (NODE))->member)
 
 /* The expression in question for a TYPEOF_TYPE.  */
 #define TYPEOF_TYPE_EXPR(NODE) (TYPE_VALUES_RAW (TYPEOF_TYPE_CHECK (NODE)))
