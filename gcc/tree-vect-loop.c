@@ -890,8 +890,10 @@ vect_analyze_scalar_cycles_1 (loop_vec_info loop_vinfo, struct loop *loop)
                   STMT_VINFO_DEF_TYPE (vinfo_for_stmt (reduc_stmt)) =
                                                            vect_reduction_def;
                   /* Store the reduction cycles for possible vectorization in
-                     loop-aware SLP.  */
-                  LOOP_VINFO_REDUCTIONS (loop_vinfo).safe_push (reduc_stmt);
+                     loop-aware SLP if it was not detected as reduction
+		     chain.  */
+		  if (! GROUP_FIRST_ELEMENT (vinfo_for_stmt (reduc_stmt)))
+		    LOOP_VINFO_REDUCTIONS (loop_vinfo).safe_push (reduc_stmt);
                 }
             }
         }
