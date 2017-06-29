@@ -7443,7 +7443,7 @@ finish_struct (tree t, tree attributes)
 	if (TREE_CODE (x) == USING_DECL)
 	  {
 	    tree fn = strip_using_decl (x);
-	    if (is_overloaded_fn (fn))
+  	    if (OVL_P (fn))
 	      for (lkp_iterator iter (fn); iter; ++iter)
 		add_method (t, *iter, true);
 	  }
@@ -8504,7 +8504,6 @@ static tree
 get_vfield_name (tree type)
 {
   tree binfo, base_binfo;
-  char *buf;
 
   for (binfo = TYPE_BINFO (type);
        BINFO_N_BASE_BINFOS (binfo);
@@ -8518,10 +8517,10 @@ get_vfield_name (tree type)
     }
 
   type = BINFO_TYPE (binfo);
-  buf = (char *) alloca (sizeof (VFIELD_NAME_FORMAT)
-			 + TYPE_NAME_LENGTH (type) + 2);
-  sprintf (buf, VFIELD_NAME_FORMAT,
-	   IDENTIFIER_POINTER (constructor_name (type)));
+  tree ctor_name = constructor_name (type);
+  char *buf = (char *) alloca (sizeof (VFIELD_NAME_FORMAT)
+			       + IDENTIFIER_LENGTH (ctor_name) + 2);
+  sprintf (buf, VFIELD_NAME_FORMAT, IDENTIFIER_POINTER (ctor_name));
   return get_identifier (buf);
 }
 

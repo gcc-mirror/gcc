@@ -8580,16 +8580,18 @@ grokfndecl (tree ctype,
     DECL_CONTEXT (decl) = FROB_CONTEXT (current_decl_namespace ());
 
   /* `main' and builtins have implicit 'C' linkage.  */
-  if ((MAIN_NAME_P (declarator)
-       || (IDENTIFIER_LENGTH (declarator) > 10
-	   && IDENTIFIER_POINTER (declarator)[0] == '_'
-	   && IDENTIFIER_POINTER (declarator)[1] == '_'
-	   && strncmp (IDENTIFIER_POINTER (declarator)+2, "builtin_", 8) == 0)
-       || (targetcm.cxx_implicit_extern_c
-	   && targetcm.cxx_implicit_extern_c(IDENTIFIER_POINTER (declarator))))
+  if (ctype == NULL_TREE
+      && DECL_FILE_SCOPE_P (decl)
       && current_lang_name == lang_name_cplusplus
-      && ctype == NULL_TREE
-      && DECL_FILE_SCOPE_P (decl))
+      && (MAIN_NAME_P (declarator)
+	  || (IDENTIFIER_LENGTH (declarator) > 10
+	      && IDENTIFIER_POINTER (declarator)[0] == '_'
+	      && IDENTIFIER_POINTER (declarator)[1] == '_'
+	      && strncmp (IDENTIFIER_POINTER (declarator)+2,
+			  "builtin_", 8) == 0)
+	  || (targetcm.cxx_implicit_extern_c
+	      && (targetcm.cxx_implicit_extern_c
+		  (IDENTIFIER_POINTER (declarator))))))
     SET_DECL_LANGUAGE (decl, lang_c);
 
   /* Should probably propagate const out from type to decl I bet (mrs).  */
