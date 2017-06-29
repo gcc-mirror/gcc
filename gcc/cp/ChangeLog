@@ -1,5 +1,8 @@
 2017-06-29  Jason Merrill  <jason@redhat.com>
 
+	PR c++/81180 - ICE with C++17 deduction of member class template.
+	* pt.c (build_deduction_guide): Correct member template handling.
+
 	PR c++/81188 - matching decltype of member function call.
 	* tree.c (cp_tree_equal): Remove COMPONENT_REF special case.
 
