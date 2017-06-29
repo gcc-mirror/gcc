@@ -1291,7 +1291,7 @@ extern void c_finish_omp_flush (location_t);
 extern void c_finish_omp_taskwait (location_t);
 extern void c_finish_omp_taskyield (location_t);
 extern tree c_finish_omp_for (location_t, enum tree_code, tree, tree, tree,
-			      tree, tree, tree, tree);
+			      tree, tree, tree, tree, bool);
 extern bool c_omp_check_loop_iv (tree, tree, walk_tree_lh);
 extern bool c_omp_check_loop_iv_exprs (location_t, tree, tree, tree, tree,
 				       walk_tree_lh);

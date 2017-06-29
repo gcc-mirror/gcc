@@ -1,3 +1,9 @@
+2017-06-29  Jakub Jelinek  <jakub@redhat.com>
+
+	* omp-general.c (omp_extract_for_data): Allow NE_EXPR
+	even in OpenMP loops, transform them into LT_EXPR or
+	GT_EXPR loops depending on incr sign.  Formatting fixes.
+
 2017-06-12  Jakub Jelinek  <jakub@redhat.com>
 
 	* tree.def (OMP_TASKGROUP): Add another operand, move next to other

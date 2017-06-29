@@ -13,25 +13,25 @@ foo (void)
   unsigned int u;
 
 #pragma omp for
-  for (i = INT_MIN + 6; i != INT_MIN; i--)	/* { dg-error "invalid controlling predicate" } */
+  for (i = INT_MIN + 6; i != INT_MIN; i--)
     ;
 #pragma omp for
   for (i = INT_MIN + 6; i == INT_MIN; i--)	/* { dg-error "invalid controlling predicate" } */
     ;
 #pragma omp for
-  for (i = INT_MAX - 6; i != INT_MAX; i++)	/* { dg-error "invalid controlling predicate" } */
+  for (i = INT_MAX - 6; i != INT_MAX; i++)
     ;
 #pragma omp for
   for (i = INT_MAX - 6; i == INT_MAX; i++)	/* { dg-error "invalid controlling predicate" } */
     ;
 #pragma omp for
-  for (u = 6; u != 0; u--)			/* { dg-error "invalid controlling predicate" } */
+  for (u = 6; u != 0; u--)
     ;
 #pragma omp for
   for (u = 6; u == 0; u--)			/* { dg-error "invalid controlling predicate" } */
     ;
 #pragma omp for
-  for (u = UINT_MAX - 6; u != UINT_MAX; u++)	/* { dg-error "invalid controlling predicate" } */
+  for (u = UINT_MAX - 6; u != UINT_MAX; u++)
     ;
 #pragma omp for
   for (u = UINT_MAX - 6; u == UINT_MAX; u++)	/* { dg-error "invalid controlling predicate" } */

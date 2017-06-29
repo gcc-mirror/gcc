@@ -381,17 +381,17 @@ check_omp_for_incr_expr (location_t loc, tree exp, tree decl)
       t = check_omp_for_incr_expr (loc, TREE_OPERAND (exp, 0), decl);
       if (t != error_mark_node)
         return fold_build2_loc (loc, MINUS_EXPR,
-			    TREE_TYPE (exp), t, TREE_OPERAND (exp, 1));
+				TREE_TYPE (exp), t, TREE_OPERAND (exp, 1));
       break;
     case PLUS_EXPR:
       t = check_omp_for_incr_expr (loc, TREE_OPERAND (exp, 0), decl);
       if (t != error_mark_node)
         return fold_build2_loc (loc, PLUS_EXPR,
-			    TREE_TYPE (exp), t, TREE_OPERAND (exp, 1));
+				TREE_TYPE (exp), t, TREE_OPERAND (exp, 1));
       t = check_omp_for_incr_expr (loc, TREE_OPERAND (exp, 1), decl);
       if (t != error_mark_node)
         return fold_build2_loc (loc, PLUS_EXPR,
-			    TREE_TYPE (exp), TREE_OPERAND (exp, 0), t);
+				TREE_TYPE (exp), TREE_OPERAND (exp, 0), t);
       break;
     case COMPOUND_EXPR:
       {
@@ -457,7 +457,7 @@ c_omp_for_incr_canonicalize_ptr (location_t loc, tree decl, tree incr)
 tree
 c_finish_omp_for (location_t locus, enum tree_code code, tree declv,
 		  tree orig_declv, tree initv, tree condv, tree incrv,
-		  tree body, tree pre_body)
+		  tree body, tree pre_body, bool final_p)
 {
   location_t elocus;
   bool fail = false;
@@ -592,7 +592,8 @@ c_finish_omp_for (location_t locus, enum tree_code code, tree declv,
 		{
 		  if (!INTEGRAL_TYPE_P (TREE_TYPE (decl)))
 		    {
-		      if (code != CILK_SIMD && code != CILK_FOR)
+		      if (code != CILK_SIMD && code != CILK_FOR
+			  && (code == OACC_LOOP || TREE_CODE (cond) == EQ_EXPR))
 			cond_ok = false;
 		    }
 		  else if (operand_equal_p (TREE_OPERAND (cond, 1),
@@ -605,7 +606,9 @@ c_finish_omp_for (location_t locus, enum tree_code code, tree declv,
 					    0))
 		    TREE_SET_CODE (cond, TREE_CODE (cond) == NE_EXPR
 					 ? LT_EXPR : GE_EXPR);
-		  else if (code != CILK_SIMD && code != CILK_FOR)
+		  else if (code != CILK_SIMD && code != CILK_FOR
+			   && (code == OACC_LOOP
+			       || TREE_CODE (cond) == EQ_EXPR))
 		    cond_ok = false;
 		}
 	    }
@@ -641,6 +644,23 @@ c_finish_omp_for (location_t locus, enum tree_code code, tree declv,
 		break;
 
 	      incr_ok = true;
+	      if (!fail
+		  && TREE_CODE (cond) == NE_EXPR
+		  && TREE_CODE (TREE_TYPE (decl)) == POINTER_TYPE
+		  && code != CILK_SIMD
+		  && code != CILK_FOR
+		  && TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (decl)))
+		  && (TREE_CODE (TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (decl))))
+		      != INTEGER_CST))
+		{
+		  /* For pointer to VLA, transform != into < or >
+		     depending on whether incr is increment or decrement.  */
+		  if (TREE_CODE (incr) == PREINCREMENT_EXPR
+		      || TREE_CODE (incr) == POSTINCREMENT_EXPR)
+		    TREE_SET_CODE (cond, LT_EXPR);
+		  else
+		    TREE_SET_CODE (cond, GT_EXPR);
+		}
 	      incr = c_omp_for_incr_canonicalize_ptr (elocus, decl, incr);
 	      break;
 
@@ -674,6 +694,60 @@ c_finish_omp_for (location_t locus, enum tree_code code, tree declv,
 		      incr_ok = true;
 		      t = build2 (PLUS_EXPR, TREE_TYPE (decl), decl, t);
 		      incr = build2 (MODIFY_EXPR, void_type_node, decl, t);
+		    }
+		}
+	      if (!fail
+		  && incr_ok
+		  && TREE_CODE (cond) == NE_EXPR
+		  && code != CILK_SIMD
+		  && code != CILK_FOR)
+		{
+		  tree i = TREE_OPERAND (incr, 1);
+		  i = TREE_OPERAND (i, TREE_OPERAND (i, 0) == decl);
+		  i = c_fully_fold (i, false, NULL);
+		  if (!final_p
+		      && TREE_CODE (i) != INTEGER_CST)
+		    ;
+		  else if (TREE_CODE (TREE_TYPE (decl)) == POINTER_TYPE)
+		    {
+		      tree unit
+			= TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (decl)));
+		      if (unit)
+			{
+			  enum tree_code ccode = GT_EXPR;
+			  unit = c_fully_fold (unit, false, NULL);
+			  i = fold_convert (TREE_TYPE (unit), i);
+			  if (operand_equal_p (unit, i, 0))
+			    ccode = LT_EXPR;
+			  if (ccode == GT_EXPR)
+			    {
+			      i = fold_unary (NEGATE_EXPR, TREE_TYPE (i), i);
+			      if (i == NULL_TREE
+				  || !operand_equal_p (unit, i, 0))
+				{
+				  error_at (elocus,
+					    "increment is not constant 1 or "
+					    "-1 for != condition");
+				  fail = true;
+				}
+			    }
+			  if (TREE_CODE (unit) != INTEGER_CST)
+			    /* For pointer to VLA, transform != into < or >
+			       depending on whether the pointer is
+			       incremented or decremented in each
+			       iteration.  */
+			    TREE_SET_CODE (cond, ccode);
+			}
+		    }
+		  else
+		    {
+		      if (!integer_onep (i) && !integer_minus_onep (i))
+			{
+			  error_at (elocus,
+				    "increment is not constant 1 or -1 for"
+				    " != condition");
+			  fail = true;
+			}
 		    }
 		}
 	      break;

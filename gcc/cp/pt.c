@@ -24468,6 +24468,20 @@ dependent_omp_for_p (tree declv, tree initv, tree condv, tree incrv)
 	      if (type_dependent_expression_p (TREE_OPERAND (t, 0))
 		  || type_dependent_expression_p (TREE_OPERAND (t, 1)))
 		return true;
+
+	      /* If this loop has a class iterator with != comparison
+		 with increment other than i++/++i/i--/--i, make sure the
+		 increment is constant.  */
+	      if (CLASS_TYPE_P (TREE_TYPE (decl))
+		  && TREE_CODE (cond) == NE_EXPR)
+		{
+		  if (TREE_OPERAND (t, 0) == decl)
+		    t = TREE_OPERAND (t, 1);
+		  else
+		    t = TREE_OPERAND (t, 0);
+		  if (TREE_CODE (t) != INTEGER_CST)
+		    return true;
+		}
 	    }
 	}
     }

@@ -15136,7 +15136,7 @@ c_parser_omp_for_loop (location_t loc, c_parser *parser, enum tree_code code,
 	    case LE_EXPR:
 	      break;
 	    case NE_EXPR:
-	      if (code == CILK_SIMD || code == CILK_FOR)
+	      if (code != OACC_LOOP)
 		break;
 	      /* FALLTHRU.  */
 	    default:
@@ -15273,7 +15273,7 @@ c_parser_omp_for_loop (location_t loc, c_parser *parser, enum tree_code code,
   if (!fail)
     {
       stmt = c_finish_omp_for (loc, code, declv, NULL, initv, condv,
-			       incrv, body, pre_body);
+			       incrv, body, pre_body, true);
 
       /* Check for iterators appearing in lb, b or incr expressions.  */
       if (stmt && !c_omp_check_loop_iv (stmt, declv, NULL))

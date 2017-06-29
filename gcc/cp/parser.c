@@ -34196,9 +34196,8 @@ cp_parser_omp_for_cond (cp_parser *parser, tree decl, enum tree_code code)
     case LE_EXPR:
       break;
     case NE_EXPR:
-      if (code == CILK_SIMD || code == CILK_FOR)
+      if (code != OACC_LOOP)
 	break;
-      /* Fall through: OpenMP disallows NE_EXPR.  */
       gcc_fallthrough ();
     default:
       return error_mark_node;

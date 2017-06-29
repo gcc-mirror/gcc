@@ -1,3 +1,14 @@
+2017-06-29  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/gomp/for-1.c: New test.
+	* c-c++-common/gomp/for-2.c: New test.
+	* c-c++-common/gomp/for-3.c: New test.
+	* c-c++-common/gomp/for-4.c: New test.
+	* c-c++-common/gomp/for-5.c: New test.
+	* gcc.dg/gomp/pr39495-2.c (foo): Don't expect errors on !=.
+	* g++.dg/gomp/pr39495-2.C (foo): Likewise.
+	* g++.dg/gomp/loop-4.C: New test.
+
 2017-05-09  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-c++-common/gomp/depend-5.c: New test.

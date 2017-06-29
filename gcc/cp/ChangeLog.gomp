@@ -1,3 +1,13 @@
+2017-06-29  Jakub Jelinek  <jakub@redhat.com>
+
+	* parser.c (cp_parser_omp_for_cond): Allow NE_EXPR even in OpenMP
+	loops.
+	* pt.c (dependent_omp_for_p): Return true if class type iterator
+	does not have INTEGER_CST increment.
+	* semantics.c (handle_omp_for_class_iterator): Call cp_fully_fold
+	on incr.
+	(finish_omp_for): Adjust c_finish_omp_for caller.
+
 2017-06-12  Jakub Jelinek  <jakub@redhat.com>
 
 	* parser.c (cp_parser_omp_clause_name): Handle

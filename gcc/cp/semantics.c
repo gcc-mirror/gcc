@@ -7891,6 +7891,7 @@ handle_omp_for_class_iterator (int i, location_t locus, enum tree_code code,
     }
 
   incr = cp_convert (TREE_TYPE (diff), incr, tf_warning_or_error);
+  incr = cp_fully_fold (incr);
   bool taskloop_iv_seen = false;
   for (c = clauses; c ; c = OMP_CLAUSE_CHAIN (c))
     if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_LASTPRIVATE
@@ -8277,7 +8278,8 @@ finish_omp_for (location_t locus, enum tree_code code, tree declv,
     block = push_stmt_list ();
 
   omp_for = c_finish_omp_for (locus, code, declv, orig_declv, initv, condv,
-			      incrv, body, pre_body);
+			      incrv, body, pre_body,
+			      !processing_template_decl);
 
   /* Check for iterators appearing in lb, b or incr expressions.  */
   if (omp_for && !c_omp_check_loop_iv (omp_for, orig_declv, cp_walk_subtrees))

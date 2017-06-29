@@ -1,3 +1,12 @@
+2017-06-29  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-common.h (c_finish_omp_for): Add FINAL_P argument.
+	* c-omp.c (check_omp_for_incr_expr): Formatting fixes.
+	(c_finish_omp_for): Add FINAL_P argument.  Allow NE_EXPR
+	even in OpenMP loops, diagnose if NE_EXPR and incr expression
+	is not constant expression 1 or -1.  Transform NE_EXPR loops
+	with iterators pointers to VLA into LT_EXPR or GT_EXPR loops.
+
 2017-06-12  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-common.h (c_finish_omp_taskgroup): Add CLAUSES argument.
