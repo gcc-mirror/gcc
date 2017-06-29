@@ -1145,9 +1145,9 @@ asan_emit_stack_protection (rtx base, rtx pbase, unsigned int alignb,
       emit_move_insn (orig_base, base);
       ret = expand_normal (asan_detect_stack_use_after_return);
       lab = gen_label_rtx ();
-      int very_likely = REG_BR_PROB_BASE - (REG_BR_PROB_BASE / 2000 - 1);
       emit_cmp_and_jump_insns (ret, const0_rtx, EQ, NULL_RTX,
-			       VOIDmode, 0, lab, very_likely);
+			       VOIDmode, 0, lab,
+			       profile_probability::very_likely ());
       snprintf (buf, sizeof buf, "__asan_stack_malloc_%d",
 		use_after_return_class);
       ret = init_one_libfunc (buf);
@@ -1158,9 +1158,9 @@ asan_emit_stack_protection (rtx base, rtx pbase, unsigned int alignb,
       /* __asan_stack_malloc_[n] returns a pointer to fake stack if succeeded
 	 and NULL otherwise.  Check RET value is NULL here and jump over the
 	 BASE reassignment in this case.  Otherwise, reassign BASE to RET.  */
-      int very_unlikely = REG_BR_PROB_BASE / 2000 - 1;
       emit_cmp_and_jump_insns (ret, const0_rtx, EQ, NULL_RTX,
-			       VOIDmode, 0, lab, very_unlikely);
+			       VOIDmode, 0, lab,
+			       profile_probability:: very_unlikely ());
       ret = convert_memory_address (Pmode, ret);
       emit_move_insn (base, ret);
       emit_label (lab);
@@ -1255,9 +1255,9 @@ asan_emit_stack_protection (rtx base, rtx pbase, unsigned int alignb,
     {
       rtx_code_label *lab2 = gen_label_rtx ();
       char c = (char) ASAN_STACK_MAGIC_USE_AFTER_RET;
-      int very_likely = REG_BR_PROB_BASE - (REG_BR_PROB_BASE / 2000 - 1);
       emit_cmp_and_jump_insns (orig_base, base, EQ, NULL_RTX,
-			       VOIDmode, 0, lab2, very_likely);
+			       VOIDmode, 0, lab2,
+			       profile_probability::very_likely ());
       shadow_mem = gen_rtx_MEM (BLKmode, shadow_base);
       set_mem_alias_set (shadow_mem, asan_shadow_set);
       mem = gen_rtx_MEM (ptr_mode, base);
@@ -1588,7 +1588,8 @@ create_cond_insert_point (gimple_stmt_iterator *iter,
     = then_more_likely_p
     ? PROB_VERY_UNLIKELY
     : PROB_ALWAYS - PROB_VERY_UNLIKELY;
-  e->probability = PROB_ALWAYS - fallthrough_probability;
+  e->probability = profile_probability::from_reg_br_prob_base
+		(PROB_ALWAYS - fallthrough_probability);
   if (create_then_fallthru_edge)
     make_single_succ_edge (then_bb, fallthru_bb, EDGE_FALLTHRU);
 
@@ -1596,7 +1597,8 @@ create_cond_insert_point (gimple_stmt_iterator *iter,
   e = find_edge (cond_bb, fallthru_bb);
   e->flags = EDGE_FALSE_VALUE;
   e->count = cond_bb->count;
-  e->probability = fallthrough_probability;
+  e->probability
+	 = profile_probability::from_reg_br_prob_base (fallthrough_probability);
 
   /* Update dominance info for the newly created then_bb; note that
      fallthru_bb's dominance info has already been updated by

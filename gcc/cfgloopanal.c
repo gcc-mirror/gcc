@@ -477,7 +477,7 @@ single_likely_exit (struct loop *loop)
          reasons.
 	 FIXME: Turn to likely_never_executed  */
       if ((profile_status_for_fn (cfun) != PROFILE_ABSENT
-	   && ex->probability < 5)
+	   && ex->probability < profile_probability::from_reg_br_prob_base (5))
 	  || ex->count == profile_count::zero ())
 	continue;
       if (!found)

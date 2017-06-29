@@ -1713,12 +1713,13 @@ sms_schedule (void)
 	      rtx comp_rtx = gen_rtx_GT (VOIDmode, count_reg,
 					 gen_int_mode (stage_count,
 						       GET_MODE (count_reg)));
-	      unsigned prob = (PROB_SMS_ENOUGH_ITERATIONS
-			       * REG_BR_PROB_BASE) / 100;
+	      profile_probability prob = profile_probability::guessed_always ()
+				.apply_scale (PROB_SMS_ENOUGH_ITERATIONS, 100);
 
 	      loop_version (loop, comp_rtx, &condition_bb,
-	  		    prob, REG_BR_PROB_BASE - prob,
-			    prob, REG_BR_PROB_BASE - prob,
+	  		    prob, prob.invert (),
+			    prob.to_reg_br_prob_base (),
+			    prob.invert ().to_reg_br_prob_base (),
 			    true);
 	     }
 

@@ -648,7 +648,8 @@ schedule_ebbs (void)
 	  e = find_fallthru_edge (bb->succs);
 	  if (! e)
 	    break;
-	  if (e->probability <= probability_cutoff)
+	  if (e->probability.initialized_p ()
+	      && e->probability.to_reg_br_prob_base () <= probability_cutoff)
 	    break;
 	  if (e->dest->flags & BB_DISABLE_SCHEDULE)
  	    break;

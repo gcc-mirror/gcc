@@ -356,7 +356,8 @@ add_test (rtx cond, edge *e, basic_block dest)
   op0 = force_operand (op0, NULL_RTX);
   op1 = force_operand (op1, NULL_RTX);
   label = block_label (dest);
-  do_compare_rtx_and_jump (op0, op1, code, 0, mode, NULL_RTX, NULL, label, -1);
+  do_compare_rtx_and_jump (op0, op1, code, 0, mode, NULL_RTX, NULL, label,
+			   profile_probability::uninitialized ());
 
   jump = get_last_insn ();
   if (!jump || !JUMP_P (jump))
@@ -575,10 +576,11 @@ doloop_modify (struct loop *loop, struct niter_desc *desc,
     add_reg_note (jump_insn, REG_NONNEG, NULL_RTX);
 
   /* Update the REG_BR_PROB note.  */
-  if (true_prob_val)
+  if (true_prob_val && desc->in_edge->probability.initialized_p ())
     {
       /* Seems safer to use the branch probability.  */
-      add_int_reg_note (jump_insn, REG_BR_PROB, desc->in_edge->probability);
+      add_int_reg_note (jump_insn, REG_BR_PROB,
+			desc->in_edge->probability.to_reg_br_prob_base ());
     }
 }
 

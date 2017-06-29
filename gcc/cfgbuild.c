@@ -545,10 +545,13 @@ compute_outgoing_frequencies (basic_block b)
 	{
 	  probability = XINT (note, 0);
 	  e = BRANCH_EDGE (b);
-	  e->probability = probability;
+	  e->probability
+		 = profile_probability::from_reg_br_prob_base (probability);
 	  e->count = b->count.apply_probability (probability);
 	  f = FALLTHRU_EDGE (b);
-	  f->probability = REG_BR_PROB_BASE - probability;
+	  f->probability
+		 = profile_probability::from_reg_br_prob_base (REG_BR_PROB_BASE
+							       - probability);
 	  f->count = b->count - e->count;
 	  return;
 	}
@@ -560,7 +563,7 @@ compute_outgoing_frequencies (basic_block b)
   else if (single_succ_p (b))
     {
       e = single_succ_edge (b);
-      e->probability = REG_BR_PROB_BASE;
+      e->probability = profile_probability::always ();
       e->count = b->count;
       return;
     }
@@ -656,7 +659,8 @@ find_many_sub_basic_blocks (sbitmap blocks)
 		  }
 		else
 		  uninitialized_src = true;
-		bb->frequency += EDGE_FREQUENCY (e);
+		if (e->probability.initialized_p ())
+		  bb->frequency += EDGE_FREQUENCY (e);
 	      }
 	    /* When some edges are missing with read profile, this is
 	       most likely because RTL expansion introduced loop.

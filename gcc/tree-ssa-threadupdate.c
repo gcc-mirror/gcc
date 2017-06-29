@@ -302,7 +302,7 @@ remove_ctrl_stmt_and_useless_edges (basic_block bb, basic_block dest_bb)
 	}
       else
 	{
-	  e->probability = REG_BR_PROB_BASE;
+	  e->probability = profile_probability::always ();
 	  e->count = bb->count;
 	  ei_next (&ei);
 	}
@@ -546,11 +546,9 @@ static void
 create_edge_and_update_destination_phis (struct redirection_data *rd,
 					 basic_block bb, int idx)
 {
-  edge e = make_edge (bb, rd->path->last ()->e->dest, EDGE_FALLTHRU);
+  edge e = make_single_succ_edge (bb, rd->path->last ()->e->dest, EDGE_FALLTHRU);
 
   rescan_loop_exit (e, true, false);
-  e->probability = REG_BR_PROB_BASE;
-  e->count = bb->count;
 
   /* We used to copy the thread path here.  That was added in 2007
      and dutifully updated through the representation changes in 2013.
@@ -765,7 +763,8 @@ compute_path_counts (struct redirection_data *rd,
   /* Handle incoming profile insanities.  */
   if (total_count < path_in_count)
     path_in_count = total_count;
-  int onpath_scale = path_in_count.probability_in (total_count);
+  int onpath_scale
+	 = path_in_count.probability_in (total_count).to_reg_br_prob_base ();
 
   /* Walk the entire path to do some more computation in order to estimate
      how much of the path_in_count will flow out of the duplicated threading
@@ -919,7 +918,7 @@ recompute_probabilities (basic_block bb)
 	   get a flow verification error.
 	   Not much we can do to make counts/freqs sane without
 	   redoing the profile estimation.  */
-	esucc->probability = REG_BR_PROB_BASE;
+	esucc->probability = profile_probability::guessed_always ();
     }
 }
 
@@ -978,7 +977,8 @@ update_joiner_offpath_counts (edge epath, basic_block dup_bb,
 	 among the duplicated off-path edges based on their original
 	 ratio to the full off-path count (total_orig_off_path_count).
 	 */
-      int scale = enonpath->count.probability_in (total_orig_off_path_count);
+      int scale = enonpath->count.probability_in (total_orig_off_path_count)
+			.to_reg_br_prob_base ();
       /* Give the duplicated offpath edge a portion of the duplicated
 	 total.  */
       enonpathdup->count = total_dup_off_path_count.apply_probability (scale);
@@ -1048,9 +1048,13 @@ freqs_to_counts_path (struct redirection_data *rd)
       /* Scale up the frequency by REG_BR_PROB_BASE, to avoid rounding
 	 errors applying the probability when the frequencies are very
 	 small.  */
-      ein->count = profile_count::from_gcov_type
-		(apply_probability (ein->src->frequency * REG_BR_PROB_BASE,
-				      ein->probability));
+      if (ein->probability.initialized_p ())
+        ein->count = profile_count::from_gcov_type
+		  (apply_probability (ein->src->frequency * REG_BR_PROB_BASE,
+				        ein->probability.to_reg_br_prob_base ()));
+      else
+	/* FIXME: this is hack; we should track uninitialized values.  */
+	ein->count = profile_count::zero ();
     }
 
   for (unsigned int i = 1; i < path->length (); i++)
@@ -2358,7 +2362,7 @@ duplicate_thread_path (edge entry, edge exit,
   if (e)
     {
       rescan_loop_exit (e, true, false);
-      e->probability = REG_BR_PROB_BASE;
+      e->probability = profile_probability::always ();
       e->count = region_copy[n_region - 1]->count;
     }
 

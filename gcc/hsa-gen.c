@@ -6139,7 +6139,7 @@ convert_switch_statements (void)
 	auto_vec <edge> new_edges;
 	auto_vec <phi_definition *> phi_todo_list;
 	auto_vec <profile_count> edge_counts;
-	auto_vec <int> edge_probabilities;
+	auto_vec <profile_probability> edge_probabilities;
 
 	/* Investigate all labels that and PHI nodes in these edges which
 	   should be fixed after we add new collection of edges.  */
@@ -6231,12 +6231,12 @@ convert_switch_statements (void)
 	    basic_block label_bb
 	      = label_to_block_fn (func, CASE_LABEL (label));
 	    edge new_edge = make_edge (cur_bb, label_bb, EDGE_TRUE_VALUE);
-	    int prob_sum = sum_slice <int> (edge_probabilities, i, labels, 0) +
-	       edge_probabilities[0];
+	    profile_probability prob_sum = sum_slice <profile_probability>
+		 (edge_probabilities, i, labels, profile_probability::never ())
+		  + edge_probabilities[0];
 
-	    if (prob_sum)
-	      new_edge->probability
-		= RDIV (REG_BR_PROB_BASE * edge_probabilities[i], prob_sum);
+	    if (prob_sum.initialized_p ())
+	      new_edge->probability = edge_probabilities[i] / prob_sum;
 
 	    new_edge->count = edge_counts[i];
 	    new_edges.safe_push (new_edge);
@@ -6253,8 +6253,7 @@ convert_switch_statements (void)
 		  }
 
 		edge next_edge = make_edge (cur_bb, next_bb, EDGE_FALSE_VALUE);
-		next_edge->probability
-		  = inverse_probability (new_edge->probability);
+		next_edge->probability = new_edge->probability.invert ();
 		next_edge->count = edge_counts[0]
 		  + sum_slice <profile_count> (edge_counts, i, labels,
 					       profile_count::zero ());
@@ -6265,7 +6264,7 @@ convert_switch_statements (void)
 		    of the switch.  */
 	      {
 		edge e = make_edge (cur_bb, default_label_bb, EDGE_FALSE_VALUE);
-		e->probability = inverse_probability (new_edge->probability);
+		e->probability = new_edge->probability.invert ();
 		e->count = edge_counts[0];
 		new_edges.safe_insert (0, e);
 	      }

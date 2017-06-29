@@ -103,7 +103,7 @@ hoist_edge_and_branch_if_true (gimple_stmt_iterator *gsip,
 
   e_false->flags &= ~EDGE_FALLTHRU;
   e_false->flags |= EDGE_FALSE_VALUE;
-  e_false->probability = REG_BR_PROB_BASE - e_true->probability;
+  e_false->probability = e_true->probability.invert ();
   e_false->count = split_bb->count - e_true->count;
   new_bb->count = e_false->count;
 
@@ -556,7 +556,7 @@ struct switch_conv_info
   basic_block final_bb;
 
   /* The probability of the default edge in the replaced switch.  */
-  int default_prob;
+  profile_probability default_prob;
 
   /* The count of the default edge in the replaced switch.  */
   profile_count default_count;
@@ -1422,7 +1422,7 @@ gen_inbound_check (gswitch *swtch, struct switch_conv_info *info)
   /* flags and profiles of the edge for in-range values */
   if (!info->default_case_nonstandard)
     e01 = make_edge (bb0, bb1, EDGE_TRUE_VALUE);
-  e01->probability = REG_BR_PROB_BASE - info->default_prob;
+  e01->probability = info->default_prob.invert ();
   e01->count = info->other_count;
 
   /* flags and profiles of the edge taking care of out-of-range values */
@@ -1434,7 +1434,7 @@ gen_inbound_check (gswitch *swtch, struct switch_conv_info *info)
   bbf = info->final_bb;
 
   e1f = make_edge (bb1, bbf, EDGE_FALLTHRU);
-  e1f->probability = REG_BR_PROB_BASE;
+  e1f->probability = profile_probability::always ();
   e1f->count = info->other_count;
 
   if (info->default_case_nonstandard)
@@ -1442,7 +1442,7 @@ gen_inbound_check (gswitch *swtch, struct switch_conv_info *info)
   else
     {
       e2f = make_edge (bb2, bbf, EDGE_FALLTHRU);
-      e2f->probability = REG_BR_PROB_BASE;
+      e2f->probability = profile_probability::always ();
       e2f->count = info->default_count;
     }
 

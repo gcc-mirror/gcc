@@ -35,6 +35,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "common/common-target.h"
 
 #include "except.h"		/* expand_builtin_dwarf_sp_column */
+#include "profile-count.h"	/* For expr.h */
 #include "expr.h"		/* init_return_column_size */
 #include "output.h"		/* asm_out_file */
 #include "debug.h"		/* dwarf2out_do_frame, dwarf2out_do_cfi_asm */

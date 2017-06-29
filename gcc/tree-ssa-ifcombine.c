@@ -363,18 +363,14 @@ update_profile_after_ifcombine (basic_block inner_cond_bb,
   inner_taken->count += outer2->count;
   outer2->count = profile_count::zero ();
 
-  inner_taken->probability = outer2->probability
-			     + RDIV (outer_to_inner->probability
-				     * inner_taken->probability,
-				     REG_BR_PROB_BASE);
-  if (inner_taken->probability > REG_BR_PROB_BASE)
-    inner_taken->probability = REG_BR_PROB_BASE;
-  inner_not_taken->probability = REG_BR_PROB_BASE
+  inner_taken->probability = outer2->probability + outer_to_inner->probability
+			     * inner_taken->probability;
+  inner_not_taken->probability = profile_probability::always ()
 				 - inner_taken->probability;
 
-  outer_to_inner->probability = REG_BR_PROB_BASE;
+  outer_to_inner->probability = profile_probability::always ();
   inner_cond_bb->frequency = outer_cond_bb->frequency;
-  outer2->probability = 0;
+  outer2->probability = profile_probability::never ();
 }
 
 /* If-convert on a and pattern with a common else block.  The inner

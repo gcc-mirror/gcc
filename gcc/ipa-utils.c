@@ -598,7 +598,8 @@ ipa_merge_profiles (struct cgraph_node *dst,
 			}
 		    }
 		  int  prob = direct->count.probability_in (direct->count
-							    + indirect->count);
+							    + indirect->count).
+			      to_reg_br_prob_base ();
 		  direct->frequency = RDIV (freq * prob, REG_BR_PROB_BASE);
 		  indirect->frequency = RDIV (freq * (REG_BR_PROB_BASE - prob),
 					      REG_BR_PROB_BASE);
@@ -616,7 +617,8 @@ ipa_merge_profiles (struct cgraph_node *dst,
 	      e2->speculative_call_info (direct, indirect, ref);
 	      e->count = count;
 	      e->frequency = freq;
-	      int prob = direct->count.probability_in (e->count);
+	      int prob = direct->count.probability_in (e->count)
+			 .to_reg_br_prob_base ();
 	      e->make_speculative (direct->callee, direct->count,
 				   RDIV (freq * prob, REG_BR_PROB_BASE));
 	    }

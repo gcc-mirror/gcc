@@ -80,7 +80,7 @@ debug_gimple_stmt (gimple *gs)
    by xstrdup_for_dump.  */
 
 static const char *
-dump_probability (int frequency, profile_count &count)
+dump_profile (int frequency, profile_count &count)
 {
   float minimum = 0.01f;
 
@@ -95,6 +95,38 @@ dump_probability (int frequency, profile_count &count)
 	      count.to_gcov_type ());
   else
     asprintf (&buf, "[%.2f%%] [count: INV]", fvalue);
+
+  const char *ret = xstrdup_for_dump (buf);
+  free (buf);
+
+  return ret;
+}
+
+/* Return formatted string of a VALUE probability
+   (biased by REG_BR_PROB_BASE).  Returned string is allocated
+   by xstrdup_for_dump.  */
+
+static const char *
+dump_probability (profile_probability probability, profile_count &count)
+{
+  float minimum = 0.01f;
+  float fvalue = -1;
+
+  if (probability.initialized_p ())
+    {
+      fvalue = probability.to_reg_br_prob_base () * 100.0f / REG_BR_PROB_BASE;
+      if (fvalue < minimum && probability.to_reg_br_prob_base ())
+	fvalue = minimum;
+    }
+
+  char *buf;
+  if (count.initialized_p ())
+    asprintf (&buf, "[%.2f%%] [count: %" PRId64 "]", fvalue,
+	      count.to_gcov_type ());
+  else if (probability.initialized_p ())
+    asprintf (&buf, "[%.2f%%] [count: INV]", fvalue);
+  else
+    asprintf (&buf, "[INV] [count: INV]");
 
   const char *ret = xstrdup_for_dump (buf);
   free (buf);
@@ -1090,7 +1122,7 @@ dump_gimple_label (pretty_printer *buffer, glabel *gs, int spc,
       dump_generic_node (buffer, label, spc, flags, false);
       basic_block bb = gimple_bb (gs);
       if (bb && !(flags & TDF_GIMPLE))
-	pp_scalar (buffer, " %s", dump_probability (bb->frequency, bb->count));
+	pp_scalar (buffer, " %s", dump_profile (bb->frequency, bb->count));
       pp_colon (buffer);
     }
   if (flags & TDF_GIMPLE)
@@ -2670,8 +2702,8 @@ dump_gimple_bb_header (FILE *outf, basic_block bb, int indent,
 	    fprintf (outf, "%*sbb_%d:\n", indent, "", bb->index);
 	  else
 	    fprintf (outf, "%*s<bb %d> %s:\n",
-		     indent, "", bb->index, dump_probability (bb->frequency,
-							      bb->count));
+		     indent, "", bb->index, dump_profile (bb->frequency,
+							  bb->count));
 	}
     }
 }

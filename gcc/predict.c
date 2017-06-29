@@ -58,6 +58,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "ipa-utils.h"
 #include "gimple-pretty-print.h"
 #include "selftest.h"
+#include "cfgrtl.h"
 
 /* Enum with reasons why a predictor is ignored.  */
 
@@ -404,11 +405,11 @@ optimize_loop_nest_for_size_p (struct loop *loop)
 bool
 predictable_edge_p (edge e)
 {
-  if (profile_status_for_fn (cfun) == PROFILE_ABSENT)
+  if (!e->probability.initialized_p ())
     return false;
-  if ((e->probability
+  if ((e->probability.to_reg_br_prob_base ()
        <= PARAM_VALUE (PARAM_PREDICTABLE_BRANCH_OUTCOME) * REG_BR_PROB_BASE / 100)
-      || (REG_BR_PROB_BASE - e->probability
+      || (REG_BR_PROB_BASE - e->probability.to_reg_br_prob_base ()
           <= PARAM_VALUE (PARAM_PREDICTABLE_BRANCH_OUTCOME) * REG_BR_PROB_BASE / 100))
     return true;
   return false;
@@ -539,7 +540,7 @@ probability_reliable_p (int prob)
 bool
 edge_probability_reliable_p (const_edge e)
 {
-  return probability_reliable_p (e->probability);
+  return e->probability.reliable_p ();
 }
 
 /* Same predicate as edge_probability_reliable_p, working on notes.  */
@@ -859,12 +860,13 @@ set_even_probabilities (basic_block bb,
     if (!unlikely_executed_edge_p (e))
       {
 	if (unlikely_edges != NULL && unlikely_edges->contains (e))
-	  e->probability = PROB_VERY_UNLIKELY;
+	  e->probability = profile_probability::very_unlikely ();
 	else
-	  e->probability = (REG_BR_PROB_BASE + c / 2) / c;
+	  e->probability = profile_probability::guessed_always ()
+				.apply_scale (1, c);
       }
     else
-      e->probability = 0;
+      e->probability = profile_probability::never ();
 }
 
 /* Combine all REG_BR_PRED notes into single probability and attach REG_BR_PROB
@@ -971,20 +973,23 @@ combine_predictions_for_insn (rtx_insn *insn, basic_block bb)
 	 conditional jump.  */
       if (!single_succ_p (bb))
 	{
-	  BRANCH_EDGE (bb)->probability = combined_probability;
+	  BRANCH_EDGE (bb)->probability
+	    = profile_probability::from_reg_br_prob_base (combined_probability);
 	  FALLTHRU_EDGE (bb)->probability
-	    = REG_BR_PROB_BASE - combined_probability;
+	    = BRANCH_EDGE (bb)->probability.invert ();
 	}
     }
   else if (!single_succ_p (bb))
     {
       int prob = XINT (prob_note, 0);
 
-      BRANCH_EDGE (bb)->probability = prob;
-      FALLTHRU_EDGE (bb)->probability = REG_BR_PROB_BASE - prob;
+      BRANCH_EDGE (bb)->probability
+	 = profile_probability::from_reg_br_prob_base (prob);
+      FALLTHRU_EDGE (bb)->probability
+	 = BRANCH_EDGE (bb)->probability.invert ();
     }
   else
-    single_succ_edge (bb)->probability = REG_BR_PROB_BASE;
+    single_succ_edge (bb)->probability = profile_probability::always ();
 }
 
 /* Edge prediction hash traits.  */
@@ -1129,6 +1134,8 @@ combine_predictions_for_bb (basic_block bb, bool dry_run)
 	if (!first)
 	  first = e;
       }
+    else if (!e->probability.initialized_p ())
+      e->probability = profile_probability::never ();
 
   /* When there is no successor or only one choice, prediction is easy.
 
@@ -1173,8 +1180,8 @@ combine_predictions_for_bb (basic_block bb, bool dry_run)
 		       nedges, bb->index);
 	      FOR_EACH_EDGE (e, ei, bb->succs)
 		if (!unlikely_executed_edge_p (e))
-		  dump_prediction (dump_file, PRED_COMBINED, e->probability,
-		   bb, REASON_NONE, e);
+		  dump_prediction (dump_file, PRED_COMBINED,
+		   e->probability.to_reg_br_prob_base (), bb, REASON_NONE, e);
 	    }
 	}
       return;
@@ -1284,8 +1291,9 @@ combine_predictions_for_bb (basic_block bb, bool dry_run)
 
   if (!bb->count.initialized_p () && !dry_run)
     {
-      first->probability = combined_probability;
-      second->probability = REG_BR_PROB_BASE - combined_probability;
+      first->probability
+	 = profile_probability::from_reg_br_prob_base (combined_probability);
+      second->probability = first->probability.invert ();
     }
 }
 
@@ -3042,7 +3050,7 @@ propagate_freq (basic_block head, bitmap tovisit)
 				  * BLOCK_INFO (e->src)->frequency /
 				  REG_BR_PROB_BASE);  */
 
-		sreal tmp = e->probability;
+		sreal tmp = e->probability.to_reg_br_prob_base ();
 		tmp *= BLOCK_INFO (e->src)->frequency;
 		tmp *= real_inv_br_prob_base;
 		frequency += tmp;
@@ -3074,7 +3082,7 @@ propagate_freq (basic_block head, bitmap tovisit)
 	     = ((e->probability * BLOCK_INFO (bb)->frequency)
 	     / REG_BR_PROB_BASE); */
 
-	  sreal tmp = e->probability;
+	  sreal tmp = e->probability.to_reg_br_prob_base ();
 	  tmp *= BLOCK_INFO (bb)->frequency;
 	  EDGE_INFO (e)->back_edge_prob = tmp * real_inv_br_prob_base;
 	}
@@ -3534,7 +3542,7 @@ estimate_bb_frequencies (bool force)
       mark_dfs_back_edges ();
 
       single_succ_edge (ENTRY_BLOCK_PTR_FOR_FN (cfun))->probability =
-	 REG_BR_PROB_BASE;
+	 profile_probability::always ();
 
       /* Set up block info for each basic block.  */
       alloc_aux_for_blocks (sizeof (block_info));
@@ -3546,7 +3554,8 @@ estimate_bb_frequencies (bool force)
 
 	  FOR_EACH_EDGE (e, ei, bb->succs)
 	    {
-	      EDGE_INFO (e)->back_edge_prob = e->probability;
+	      EDGE_INFO (e)->back_edge_prob
+		 = e->probability.to_reg_br_prob_base ();
 	      EDGE_INFO (e)->back_edge_prob *= real_inv_br_prob_base;
 	    }
 	}
@@ -3898,16 +3907,18 @@ void
 force_edge_cold (edge e, bool impossible)
 {
   profile_count count_sum = profile_count::zero ();
-  int prob_sum = 0;
+  profile_probability prob_sum = profile_probability::never ();
   edge_iterator ei;
   edge e2;
   profile_count old_count = e->count;
-  int old_probability = e->probability;
-  int prob_scale = REG_BR_PROB_BASE;
+  profile_probability old_probability = e->probability;
   bool uninitialized_exit = false;
 
+  profile_probability goal = (impossible ? profile_probability::never ()
+			      : profile_probability::very_unlikely ());
+
   /* If edge is already improbably or cold, just return.  */
-  if (e->probability <= (impossible ? PROB_VERY_UNLIKELY : 0)
+  if (e->probability <= goal
       && (!impossible || e->count == profile_count::zero ()))
     return;
   FOR_EACH_EDGE (e2, ei, e->src->succs)
@@ -3917,24 +3928,26 @@ force_edge_cold (edge e, bool impossible)
 	  count_sum += e2->count;
 	else
 	  uninitialized_exit = true;
-	prob_sum += e2->probability;
+	if (e2->probability.initialized_p ())
+	  prob_sum += e2->probability;
       }
 
   /* If there are other edges out of e->src, redistribute probabilitity
      there.  */
-  if (prob_sum)
+  if (prob_sum > profile_probability::never ())
     {
-      e->probability
-	 = MIN (e->probability, impossible ? 0 : PROB_VERY_UNLIKELY);
+      if (!(e->probability < goal))
+	e->probability = goal;
       if (impossible)
 	e->count = profile_count::zero ();
-      else if (old_probability)
-	e->count = e->count.apply_scale (e->probability, old_probability);
+      else if (old_probability > profile_probability::never ())
+	e->count = e->count.apply_probability (e->probability
+					       / old_probability);
       else
         e->count = e->count.apply_scale (1, REG_BR_PROB_BASE);
 
-      prob_scale = RDIV ((REG_BR_PROB_BASE - e->probability) * REG_BR_PROB_BASE,
-			 prob_sum);
+      profile_probability prob_comp = prob_sum / e->probability.invert ();
+
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file, "Making edge %i->%i %s by redistributing "
 		 "probability to other edges.\n",
@@ -3946,30 +3959,39 @@ force_edge_cold (edge e, bool impossible)
 	  {
 	    if (count_sum > 0)
 	      e2->count.apply_scale (count_sum2, count_sum);
-	    e2->probability = RDIV (e2->probability * prob_scale,
-				    REG_BR_PROB_BASE);
+	    e2->probability /= prob_comp;
 	  }
+      if (current_ir_type () != IR_GIMPLE)
+	update_br_prob_note (e->src);
     }
   /* If all edges out of e->src are unlikely, the basic block itself
      is unlikely.  */
   else
     {
-      e->probability = REG_BR_PROB_BASE;
+      e->probability = profile_probability::always ();
+      if (current_ir_type () != IR_GIMPLE)
+	update_br_prob_note (e->src);
       if (e->src->count == profile_count::zero ())
 	return;
       if (count_sum == profile_count::zero () && !uninitialized_exit
 	  && impossible)
 	{
 	  bool found = false;
-	  for (gimple_stmt_iterator gsi = gsi_start_bb (e->src);
-	       !gsi_end_p (gsi); gsi_next (&gsi))
-	    {
-	      if (stmt_can_terminate_bb_p (gsi_stmt (gsi)))
-		{
-		  found = true;
-	          break;
-		}
-	    }
+	  if (e->src == ENTRY_BLOCK_PTR_FOR_FN (cfun))
+	    ;
+	  else if (current_ir_type () == IR_GIMPLE)
+	    for (gimple_stmt_iterator gsi = gsi_start_bb (e->src);
+	         !gsi_end_p (gsi); gsi_next (&gsi))
+	      {
+	        if (stmt_can_terminate_bb_p (gsi_stmt (gsi)))
+		  {
+		    found = true;
+	            break;
+		  }
+	      }
+	  /* FIXME: Implement RTL path.  */
+	  else 
+	    found = true;
 	  if (!found)
 	    {
 	      if (dump_file && (dump_flags & TDF_DETAILS))
@@ -3989,7 +4011,8 @@ force_edge_cold (edge e, bool impossible)
 	 This in general is difficult task to do, but handle special case when
 	 BB has only one predecestor.  This is common case when we are updating
 	 after loop transforms.  */
-      if (!prob_sum && count_sum == profile_count::zero ()
+      if (!(prob_sum > profile_probability::never ())
+	  && count_sum == profile_count::zero ()
 	  && single_pred_p (e->src) && e->src->frequency > (impossible ? 0 : 1))
 	{
 	  int old_frequency = e->src->frequency;

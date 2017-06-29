@@ -155,8 +155,6 @@ cleanup_control_expr_graph (basic_block bb, gimple_stmt_iterator gsi,
 	}
       if (!warned)
 	fold_undefer_and_ignore_overflow_warnings ();
-      if (taken_edge->probability > REG_BR_PROB_BASE)
-	taken_edge->probability = REG_BR_PROB_BASE;
     }
   else
     taken_edge = single_succ_edge (bb);

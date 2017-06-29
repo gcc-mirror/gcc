@@ -313,8 +313,6 @@ propagate_rhs_into_lhs (gimple *stmt, tree lhs, tree rhs,
 		  te->flags &= ~(EDGE_TRUE_VALUE | EDGE_FALSE_VALUE);
 		  te->flags &= ~EDGE_ABNORMAL;
 		  te->flags |= EDGE_FALLTHRU;
-		  if (te->probability > REG_BR_PROB_BASE)
-		    te->probability = REG_BR_PROB_BASE;
 	        }
 	    }
 	}

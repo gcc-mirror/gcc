@@ -2115,10 +2115,12 @@ create_parallel_loop (struct loop *loop, tree loop_fn, tree data,
   gcc_assert (exit == single_dom_exit (loop));
 
   guard = make_edge (for_bb, ex_bb, 0);
+  /* FIXME: What is the probability?  */
+  guard->probability = profile_probability::guessed_never ();
   /* Split the latch edge, so LOOPS_HAVE_SIMPLE_LATCHES is still valid.  */
   loop->latch = split_edge (single_succ_edge (loop->latch));
   single_pred_edge (loop->latch)->flags = 0;
-  end = make_edge (single_pred (loop->latch), ex_bb, EDGE_FALLTHRU);
+  end = make_single_succ_edge (single_pred (loop->latch), ex_bb, EDGE_FALLTHRU);
   rescan_loop_exit (end, true, false);
 
   for (gphi_iterator gpi = gsi_start_phis (ex_bb);
@@ -2358,7 +2360,9 @@ gen_parallel_loop (struct loop *loop,
       /* We assume that the loop usually iterates a lot.  */
       prob = 4 * REG_BR_PROB_BASE / 5;
       loop_version (loop, many_iterations_cond, NULL,
-		    prob, REG_BR_PROB_BASE - prob,
+		    profile_probability::from_reg_br_prob_base (prob),
+		    profile_probability::from_reg_br_prob_base
+				 (REG_BR_PROB_BASE - prob),
 		    prob, REG_BR_PROB_BASE - prob, true);
       update_ssa (TODO_update_ssa);
       free_original_copy_tables ();
@@ -3132,6 +3136,8 @@ oacc_entry_exit_single_gang (bitmap in_loop_bbs, vec<basic_block> region_bbs,
 	    gsi_insert_after (&gsi2, cond, GSI_NEW_STMT);
 
 	    edge e3 = make_edge (bb, bb3, EDGE_FALSE_VALUE);
+	    /* FIXME: What is the probability?  */
+	    e3->probability = profile_probability::guessed_never ();
 	    e->flags = EDGE_TRUE_VALUE;
 
 	    tree vdef = gimple_vdef (stmt);

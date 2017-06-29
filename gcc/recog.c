@@ -3460,8 +3460,7 @@ peep2_attempt (basic_block bb, rtx_insn *insn, int match_len, rtx_insn *attempt)
 				flags);
 
 	      nehe->probability = eh_edge->probability;
-	      nfte->probability
-		= REG_BR_PROB_BASE - nehe->probability;
+	      nfte->probability = nehe->probability.invert ();
 
 	      peep2_do_cleanup_cfg |= purge_dead_edges (nfte->dest);
 	      bb = nfte->src;

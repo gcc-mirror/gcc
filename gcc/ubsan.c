@@ -799,7 +799,7 @@ ubsan_expand_null_ifn (gimple_stmt_iterator *gsip)
   /* Make an edge coming from the 'cond block' into the 'then block';
      this edge is unlikely taken, so set up the probability accordingly.  */
   e = make_edge (cond_bb, then_bb, EDGE_TRUE_VALUE);
-  e->probability = PROB_VERY_UNLIKELY;
+  e->probability = profile_probability::very_unlikely ();
 
   /* Connect 'then block' with the 'else block'.  This is needed
      as the ubsan routines we call in the 'then block' are not noreturn.
@@ -810,7 +810,7 @@ ubsan_expand_null_ifn (gimple_stmt_iterator *gsip)
   e = find_edge (cond_bb, fallthru_bb);
   e->flags = EDGE_FALSE_VALUE;
   e->count = cond_bb->count;
-  e->probability = REG_BR_PROB_BASE - PROB_VERY_UNLIKELY;
+  e->probability = profile_probability::very_likely ();
 
   /* Update dominance info for the newly created then_bb; note that
      fallthru_bb's dominance info has already been updated by
@@ -873,13 +873,13 @@ ubsan_expand_null_ifn (gimple_stmt_iterator *gsip)
 	     this edge is unlikely taken, so set up the probability
 	     accordingly.  */
 	  e = make_edge (cond1_bb, then_bb, EDGE_TRUE_VALUE);
-	  e->probability = PROB_VERY_UNLIKELY;
+	  e->probability = profile_probability::very_unlikely ();
 
 	  /* Set up the fallthrough basic block.  */
 	  e = find_edge (cond1_bb, cond2_bb);
 	  e->flags = EDGE_FALSE_VALUE;
 	  e->count = cond1_bb->count;
-	  e->probability = REG_BR_PROB_BASE - PROB_VERY_UNLIKELY;
+	  e->probability = profile_probability::very_likely ();
 
 	  /* Update dominance info.  */
 	  if (dom_info_available_p (CDI_DOMINATORS))
