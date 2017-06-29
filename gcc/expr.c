@@ -9776,7 +9776,7 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 	      if (targetm.gen_ccmp_first)
 		{
 		  gcc_checking_assert (targetm.gen_ccmp_next != NULL);
-		  r = expand_ccmp_expr (g);
+		  r = expand_ccmp_expr (g, mode);
 		  if (r)
 		    break;
 		}
