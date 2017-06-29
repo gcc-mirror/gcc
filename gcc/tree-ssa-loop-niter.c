@@ -1668,18 +1668,34 @@ number_of_iterations_cond (struct loop *loop,
 	exit_must_be_taken = true;
     }
 
-  /* We can handle the case when neither of the sides of the comparison is
-     invariant, provided that the test is NE_EXPR.  This rarely occurs in
-     practice, but it is simple enough to manage.  */
+  /* We can handle cases which neither of the sides of the comparison is
+     invariant:
+
+       {iv0.base, iv0.step} cmp_code {iv1.base, iv1.step}
+     as if:
+       {iv0.base, iv0.step - iv1.step} cmp_code {iv1.base, 0}
+
+     provided that either below condition is satisfied:
+
+       a) the test is NE_EXPR;
+       b) iv0.step - iv1.step is positive integer.
+
+     This rarely occurs in practice, but it is simple enough to manage.  */
   if (!integer_zerop (iv0->step) && !integer_zerop (iv1->step))
     {
       tree step_type = POINTER_TYPE_P (type) ? sizetype : type;
-      if (code != NE_EXPR)
+      tree step = fold_binary_to_constant (MINUS_EXPR, step_type,
+					   iv0->step, iv1->step);
+
+      /* No need to check sign of the new step since below code takes care
+	 of this well.  */
+      if (code != NE_EXPR && TREE_CODE (step) != INTEGER_CST)
 	return false;
 
-      iv0->step = fold_binary_to_constant (MINUS_EXPR, step_type,
-					   iv0->step, iv1->step);
-      iv0->no_overflow = false;
+      iv0->step = step;
+      if (!POINTER_TYPE_P (type))
+	iv0->no_overflow = false;
+
       iv1->step = build_int_cst (step_type, 0);
       iv1->no_overflow = true;
     }

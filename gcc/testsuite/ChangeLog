@@ -1,3 +1,8 @@
+2017-06-29  Bin Cheng  <bin.cheng@arm.com>
+
+	PR tree-optimization/81196
+	* gcc.dg/vect/pr81196.c: New.
+
 2017-06-29  Michael Collison  <michael.collison@arm.com>
 
 	Fix date on previous ChangeLog entry.
