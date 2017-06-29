@@ -1,3 +1,14 @@
+2017-06-29  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* class.c (finish_struct): Use OVL_P.
+	* cp-tree.h (THIS_NAME, IN_CHARGE_NAME, VTBL_PTR_TYPE,
+	VTABLE_DELTA_NAME, VTABLE_PFN_NAME): Delete.
+	* decl.c (initialize_predefined_identifiers): Encode them here
+	directly.  Rename cdtors consistently.
+	(cxx_init_decl_processing): Name vtbl_ptr_type directly.
+	* search.c (class_method_index_for_fn): No need to frob cdtor names.
+
 2017-06-28  Nathan Sidwell  <nathan@acm.org>
 
 	cdtor name cleanup. expunge lookup_fnfields_1 use.

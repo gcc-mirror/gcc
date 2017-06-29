@@ -7341,7 +7341,7 @@ finish_struct (tree t, tree attributes)
 	if (TREE_CODE (x) == USING_DECL)
 	  {
 	    tree fn = strip_using_decl (x);
-	    if (is_overloaded_fn (fn))
+  	    if (OVL_P (fn))
 	      for (lkp_iterator iter (fn); iter; ++iter)
 		add_method (t, *iter, true);
 	  }
