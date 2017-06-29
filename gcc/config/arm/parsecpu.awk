@@ -311,7 +311,7 @@ function gen_comm_data () {
     }
 
     print "  {{NULL, NULL, {isa_nobit}},"
-    print "   NULL, BASE_ARCH_0, TARGET_CPU_arm_none}"
+    print "   NULL, BASE_ARCH_0, 0, TARGET_CPU_arm_none}"
     print "};\n"
 
     print "const arm_fpu_desc all_fpus[] ="

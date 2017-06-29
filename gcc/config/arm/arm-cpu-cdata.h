@@ -1993,6 +1993,14 @@ static const struct cpu_arch_extension arch_opttab_armv7e_m[] = {
     "nofp", true, false,
     { ISA_ALL_FP, isa_nobit }
   },
+  {
+    "vfpv4-sp-d16", false, true, 
+    { ISA_VFPv4, isa_nobit }
+  },
+  {
+    "fpv5-d16", false, true, 
+    { ISA_FPv5,ISA_FP_DBL, isa_nobit }
+  },
   { NULL, false, false, {isa_nobit}}
 };
 
@@ -2036,14 +2044,6 @@ static const struct cpu_arch_extension arch_opttab_armv8_1_a[] = {
   {
     "nofp", true, false,
     { ISA_ALL_FP, isa_nobit }
-  },
-  {
-    "vfpv4-sp-d16", false, true, 
-    { ISA_VFPv4, isa_nobit }
-  },
-  {
-    "fpv5-d16", false, true, 
-    { ISA_FPv5,ISA_FP_DBL, isa_nobit }
   },
   { NULL, false, false, {isa_nobit}}
 };
@@ -2462,7 +2462,7 @@ const arch_option all_architectures[] =
     TARGET_CPU_iwmmxt2,
   },
   {{NULL, NULL, {isa_nobit}},
-   NULL, BASE_ARCH_0, TARGET_CPU_arm_none}
+   NULL, BASE_ARCH_0, 0, TARGET_CPU_arm_none}
 };
 
 const arm_fpu_desc all_fpus[] =
