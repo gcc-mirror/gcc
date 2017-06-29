@@ -1,5 +1,8 @@
 2017-06-29  Nathan Sidwell  <nathan@acm.org>
 
+	* parser.c (cp_parser_direct_declarator): Reorder if to avoid
+	indentation. Remove unnecessary assignment of constructor name.
+
 	Whitespace cleanups.
 	* call.c (name_as_c_string): Move CONST_CAST to return.
 	(build_new_method_call_1): Remove unneeded bracing.
