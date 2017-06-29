@@ -1,3 +1,9 @@
+2016-06-29  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+	    Michael Collison <michael.collison@arm.com>
+
+	PR target/70119
+	* gcc.target/aarch64/var_shift_mask_1.c: New test.
+
 2017-06-28  Sebastian Peryt  <sebastian.peryt@intel.com>
 
 	* gcc.target/i386/avx512vl-vpermd-1.c (_mm256_permutexvar_epi32):

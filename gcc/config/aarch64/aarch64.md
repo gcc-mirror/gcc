@@ -3942,6 +3942,97 @@
   }
 )
 
+;; When the LSL, LSR, ASR, ROR instructions operate on all register arguments
+;; they truncate the shift/rotate amount by the size of the registers they
+;; operate on: 32 for W-regs, 64 for X-regs.  This allows us to optimise away
+;; such redundant masking instructions.  GCC can do that automatically when
+;; SHIFT_COUNT_TRUNCATED is true, but we can't enable it for TARGET_SIMD
+;; because some of the SISD shift alternatives don't perform this truncations.
+;; So this pattern exists to catch such cases.
+
+(define_insn "*aarch64_<optab>_reg_<mode>3_mask1"
+  [(set (match_operand:GPI 0 "register_operand" "=r")
+	(SHIFT:GPI
+	  (match_operand:GPI 1 "register_operand" "r")
+	  (match_operator 4 "subreg_lowpart_operator"
+	   [(and:GPI (match_operand:GPI 2 "register_operand" "r")
+		     (match_operand 3 "const_int_operand" "n"))])))]
+  "(~INTVAL (operands[3]) & (GET_MODE_BITSIZE (<MODE>mode) - 1)) == 0"
+  "<shift>\t%<w>0, %<w>1, %<w>2"
+  [(set_attr "type" "shift_reg")]
+)
+
+(define_insn_and_split "*aarch64_reg_<mode>3_neg_mask2"
+  [(set (match_operand:GPI 0 "register_operand" "=&r")
+	(SHIFT:GPI
+	  (match_operand:GPI 1 "register_operand" "r")
+	  (match_operator 4 "subreg_lowpart_operator"
+	  [(neg:SI (and:SI (match_operand:SI 2 "register_operand" "r")
+			   (match_operand 3 "const_int_operand" "n")))])))]
+  "((~INTVAL (operands[3]) & (GET_MODE_BITSIZE (<MODE>mode) - 1)) == 0)"
+  "#"
+  "&& true"
+  [(const_int 0)]
+  {
+    rtx tmp = (can_create_pseudo_p () ? gen_reg_rtx (SImode)
+	       : operands[0]);
+    emit_insn (gen_negsi2 (tmp, operands[2]));
+
+    rtx and_op = gen_rtx_AND (SImode, tmp, operands[3]);
+    rtx subreg_tmp = gen_rtx_SUBREG (GET_MODE (operands[4]), and_op,
+				     SUBREG_BYTE (operands[4]));
+    emit_insn (gen_<optab><mode>3 (operands[0], operands[1], subreg_tmp));
+    DONE;
+  }
+)
+
+(define_insn_and_split "*aarch64_reg_<mode>3_minus_mask"
+  [(set (match_operand:GPI 0 "register_operand" "=&r")
+	(ashift:GPI
+	  (match_operand:GPI 1 "register_operand" "r")
+	  (minus:QI (match_operand 2 "const_int_operand" "n")
+		    (match_operator 5 "subreg_lowpart_operator"
+		    [(and:SI (match_operand:SI 3 "register_operand" "r")
+			     (match_operand 4 "const_int_operand" "n"))]))))]
+  "((~INTVAL (operands[4]) & (GET_MODE_BITSIZE (<MODE>mode) - 1)) == 0)
+   && INTVAL (operands[2]) == GET_MODE_BITSIZE (<MODE>mode)"
+  "#"
+  "&& true"
+  [(const_int 0)]
+  {
+    rtx tmp = (can_create_pseudo_p () ? gen_reg_rtx (SImode)
+	       : operands[0]);
+
+    emit_insn (gen_negsi2 (tmp, operands[3]));
+
+    rtx and_op = gen_rtx_AND (SImode, tmp, operands[4]);
+    rtx subreg_tmp = gen_rtx_SUBREG (GET_MODE (operands[5]), and_op,
+				     SUBREG_BYTE (operands[5]));
+
+    emit_insn (gen_ashl<mode>3 (operands[0], operands[1], subreg_tmp));
+    DONE;
+  }
+)
+
+(define_insn "*aarch64_<optab>_reg_di3_mask2"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(SHIFT:DI
+	  (match_operand:DI 1 "register_operand" "r")
+	  (match_operator 4 "subreg_lowpart_operator"
+	   [(and:SI (match_operand:SI 2 "register_operand" "r")
+		     (match_operand 3 "aarch64_shift_imm_di" "Usd"))])))]
+  "((~INTVAL (operands[3]) & (GET_MODE_BITSIZE (DImode)-1)) == 0)"
+{
+  rtx xop[3];
+  xop[0] = operands[0];
+  xop[1] = operands[1];
+  xop[2] = gen_lowpart (GET_MODE (operands[4]), operands[2]);
+  output_asm_insn ("<shift>\t%x0, %x1, %x2", xop);
+  return "";
+}
+  [(set_attr "type" "shift_reg")]
+)
+
 ;; Logical left shift using SISD or Integer instruction
 (define_insn "*aarch64_ashl_sisd_or_int_<mode>3"
   [(set (match_operand:GPI 0 "register_operand" "=r,r,w,w")
