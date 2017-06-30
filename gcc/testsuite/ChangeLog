@@ -1,3 +1,8 @@
+2017-06-30  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gcc.dg/Walloca-14.c: Adapt test to recognize new complaint of
+	unbounded use.
+
 2017-06-30  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c++/80014

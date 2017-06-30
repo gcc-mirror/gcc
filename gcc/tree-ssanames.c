@@ -320,11 +320,14 @@ make_ssa_name_fn (struct function *fn, tree var, gimple *stmt,
   return t;
 }
 
-/* Store range information RANGE_TYPE, MIN, and MAX to tree ssa_name NAME.  */
+/* Helper function for set_range_info.
+
+   Store range information RANGE_TYPE, MIN, and MAX to tree ssa_name
+   NAME.  */
 
 void
-set_range_info (tree name, enum value_range_type range_type,
-		const wide_int_ref &min, const wide_int_ref &max)
+set_range_info_raw (tree name, enum value_range_type range_type,
+		    const wide_int_ref &min, const wide_int_ref &max)
 {
   gcc_assert (!POINTER_TYPE_P (TREE_TYPE (name)));
   gcc_assert (range_type == VR_RANGE || range_type == VR_ANTI_RANGE);
@@ -358,6 +361,34 @@ set_range_info (tree name, enum value_range_type range_type,
 	xorv = wi::mask (precision - wi::clz (xorv), false, precision);
       ri->set_nonzero_bits (ri->get_nonzero_bits () & (ri->get_min () | xorv));
     }
+}
+
+/* Store range information RANGE_TYPE, MIN, and MAX to tree ssa_name
+   NAME while making sure we don't store useless range info.  */
+
+void
+set_range_info (tree name, enum value_range_type range_type,
+		const wide_int_ref &min, const wide_int_ref &max)
+{
+  gcc_assert (!POINTER_TYPE_P (TREE_TYPE (name)));
+
+  /* A range of the entire domain is really no range at all.  */
+  tree type = TREE_TYPE (name);
+  if (min == wi::min_value (TYPE_PRECISION (type), TYPE_SIGN (type))
+      && max == wi::max_value (TYPE_PRECISION (type), TYPE_SIGN (type)))
+    {
+      range_info_def *ri = SSA_NAME_RANGE_INFO (name);
+      if (ri == NULL)
+	return;
+      if (ri->get_nonzero_bits () == -1)
+	{
+	  ggc_free (ri);
+	  SSA_NAME_RANGE_INFO (name) = NULL;
+	  return;
+	}
+    }
+
+  set_range_info_raw (name, range_type, min, max);
 }
 
 
@@ -419,9 +450,13 @@ set_nonzero_bits (tree name, const wide_int_ref &mask)
 {
   gcc_assert (!POINTER_TYPE_P (TREE_TYPE (name)));
   if (SSA_NAME_RANGE_INFO (name) == NULL)
-    set_range_info (name, VR_RANGE,
-		    TYPE_MIN_VALUE (TREE_TYPE (name)),
-		    TYPE_MAX_VALUE (TREE_TYPE (name)));
+    {
+      if (mask == -1)
+	return;
+      set_range_info_raw (name, VR_RANGE,
+			  TYPE_MIN_VALUE (TREE_TYPE (name)),
+			  TYPE_MAX_VALUE (TREE_TYPE (name)));
+    }
   range_info_def *ri = SSA_NAME_RANGE_INFO (name);
   ri->set_nonzero_bits (mask);
 }
