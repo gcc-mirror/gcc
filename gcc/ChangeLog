@@ -1,3 +1,9 @@
+2017-06-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/81249
+	* tree-vect-loop.c (vect_create_epilog_for_reduction): Convert
+	condition reduction result to original scalar type.
+
 2017-06-30  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
 	* profile-count.h (enum profile_quality): Fix typos and whitespace
