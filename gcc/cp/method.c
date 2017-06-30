@@ -1968,12 +1968,12 @@ implicitly_declare_fn (special_function_kind kind, tree type,
     {
     case sfk_destructor:
       /* Destructor.  */
-      name = constructor_name (type);
+      name = dtor_identifier;
       break;
 
     case sfk_constructor:
       /* Default constructor.  */
-      name = constructor_name (type);
+      name = ctor_identifier;
       break;
 
     case sfk_copy_constructor:
@@ -1989,7 +1989,7 @@ implicitly_declare_fn (special_function_kind kind, tree type,
 	  name = cp_assignment_operator_id (NOP_EXPR);
 	}
       else
-	name = constructor_name (type);
+	name = ctor_identifier;
 
       if (kind == sfk_inheriting_constructor)
 	parameter_types = inherited_parms;
@@ -2053,13 +2053,14 @@ implicitly_declare_fn (special_function_kind kind, tree type,
   fn = build_lang_decl (FUNCTION_DECL, name, fn_type);
   if (kind != sfk_inheriting_constructor)
     DECL_SOURCE_LOCATION (fn) = DECL_SOURCE_LOCATION (TYPE_NAME (type));
-  if (kind == sfk_constructor || kind == sfk_copy_constructor
-      || kind == sfk_move_constructor || kind == sfk_inheriting_constructor)
-    DECL_CONSTRUCTOR_P (fn) = 1;
-  else if (kind == sfk_destructor)
-    DECL_DESTRUCTOR_P (fn) = 1;
-  else
+
+  if (!IDENTIFIER_CDTOR_P (name))
+    /* Assignment operator.  */
     SET_OVERLOADED_OPERATOR_CODE (fn, NOP_EXPR);
+  else if (IDENTIFIER_CTOR_P (name))
+    DECL_CONSTRUCTOR_P (fn) = true;
+  else
+    DECL_DESTRUCTOR_P (fn) = true;
 
   SET_DECL_ALIGN (fn, MINIMUM_METHOD_BOUNDARY);
 

@@ -1,5 +1,7 @@
 2017-06-30  Nathan Sidwell  <nathan@acm.org>
 
+	* g++.dg/plugin/decl-plugin-test.C: Expect special ctor name.
+
 	PR c++/81229
 	* g++.dg/lookup/pr81229.C: New.
 

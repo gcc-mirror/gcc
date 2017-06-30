@@ -1,5 +1,14 @@
 2017-06-30  Nathan Sidwell  <nathan@acm.org>
 
+	* call.c (build_new_method_call_1): Use constructo_name to get
+	ctor name.  Move argument processing earlier to merge cdtor
+	handling blocks.
+	* decl.c (grokfndecl): Cdtors have special names.
+	* method.c (implicitly_declare_fn): Likewise. Simplify flag setting.
+	* pt.c (check_explicit_specialization): Cdtor name is already
+	special.
+	* search.c (class_method_index_for_fn): Likewise.
+
 	PR c++/81229
 	* name-lookup.c (do_pushdecl): Reset IDENTIFIER_TYPE when finding
 	a matching TYPE_DECL.
