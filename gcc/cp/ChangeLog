@@ -1,3 +1,12 @@
+2017-06-30  Jason Merrill  <jason@redhat.com>
+
+	PR c++/54769 - wrong lookup of dependent template-name.
+	PR c++/81257 - ICE with invalid ::template.
+	* parser.c (cp_parser_template_name): Handle dependent object type.
+	(cp_parser_nested_name_specifier_opt): Make template_keyword_p a
+	parameter.
+	(cp_parser_id_expression): Pass it.
+
 2017-06-29  Jason Merrill  <jason@redhat.com>
 
 	PR c++/81180 - ICE with C++17 deduction of member class template.
