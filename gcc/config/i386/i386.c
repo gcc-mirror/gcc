@@ -30345,6 +30345,15 @@ ix86_macro_fusion_pair_p (rtx_insn *condgen, rtx_insn *condjmp)
   if (!any_condjump_p (condjmp))
     return false;
 
+  unsigned int condreg1, condreg2;
+  rtx cc_reg_1;
+  ix86_fixed_condition_code_regs (&condreg1, &condreg2);
+  cc_reg_1 = gen_rtx_REG (CCmode, condreg1);
+  if (!reg_referenced_p (cc_reg_1, PATTERN (condjmp))
+      || !condgen
+      || !modified_in_p (cc_reg_1, condgen))
+    return false;
+
   if (get_attr_type (condgen) != TYPE_TEST
       && get_attr_type (condgen) != TYPE_ICMP
       && get_attr_type (condgen) != TYPE_INCDEC

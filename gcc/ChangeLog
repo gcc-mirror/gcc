@@ -1,3 +1,12 @@
+2017-06-29  Naveen H.S  <Naveen.Hurugalawadi@cavium.com>
+
+	* config/aarch64/aarch64.c (aarch_macro_fusion_pair_p): Push the
+	check for CC usage into AARCH64_FUSE_CMP_BRANCH.
+	* config/i386/i386.c (ix86_macro_fusion_pair_p): Push the check for
+	CC usage from generic code to here.
+	* sched-deps.c (sched_macro_fuse_insns): Move the condition for
+	CC usage into the target macros. 
+
 2017-06-29  Maya Rashish  <coypu@sdf.org>
 
 	* config/netbsd.h (NETBSD_LIB_SPEC): Add -lc when creating shared
