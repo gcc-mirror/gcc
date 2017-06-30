@@ -24,9 +24,6 @@ along with GCC; see the file COPYING3.  If not see
 /* Symbols are marked with `ggc' for `gcc gc' so as not to interfere with
    an external gc library that might be linked in.  */
 
-/* Constants for general use.  */
-extern const char empty_string[];	/* empty string */
-
 /* Internal functions and data structures used by the GTY
    machinery, including the generated gt*.[hc] files.  */
 
