@@ -1,3 +1,7 @@
+2017-06-30  Richard Biener  <rguenther@suse.de>
+
+	* graph.c (draw_cfg_node_succ_edges): Fix broken dot syntax.
+
 2017-06-30  Martin Liska  <mliska@suse.cz>
 
 	PR sanitizer/81021

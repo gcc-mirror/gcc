@@ -136,13 +136,13 @@ draw_cfg_node_succ_edges (pretty_printer *pp, int funcdef_no, basic_block bb)
 
       pp_printf (pp,
 		 "\tfn_%d_basic_block_%d:s -> fn_%d_basic_block_%d:n "
-		 "[style=%s,color=%s,weight=%d,constraint=%s];\n",
+		 "[style=%s,color=%s,weight=%d,constraint=%s",
 		 funcdef_no, e->src->index,
 		 funcdef_no, e->dest->index,
 		 style, color, weight,
 		 (e->flags & (EDGE_FAKE | EDGE_DFS_BACK)) ? "false" : "true");
       if (e->probability.initialized_p ())
-        pp_printf (pp, ", label=\"[%i%%]\"",
+        pp_printf (pp, ",label=\"[%i%%]\"",
 		   e->probability.to_reg_br_prob_base ()
 		   * 100 / REG_BR_PROB_BASE);
       pp_printf (pp, "];\n");
