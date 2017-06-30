@@ -531,6 +531,74 @@ unqualified_fn_lookup_error (cp_expr name_expr)
   return unqualified_name_lookup_error (name, loc);
 }
 
+struct conv_type_hasher : ggc_ptr_hash<tree_node>
+{
+  static hashval_t hash (tree);
+  static bool equal (tree, tree);
+};
+
+/* This hash table maps TYPEs to the IDENTIFIER for a conversion
+   operator to TYPE.  The nodes are IDENTIFIERs whose TREE_TYPE is the
+   TYPE.  */
+
+static GTY (()) hash_table<conv_type_hasher> *conv_type_names;
+
+/* Hash a node (VAL1) in the table.  */
+
+hashval_t
+conv_type_hasher::hash (tree val)
+{
+  return (hashval_t) TYPE_UID (TREE_TYPE (val));
+}
+
+/* Compare VAL1 (a node in the table) with VAL2 (a TYPE).  */
+
+bool
+conv_type_hasher::equal (tree val1, tree val2)
+{
+  return TREE_TYPE (val1) == val2;
+}
+
+/* Return an identifier for a conversion operator to TYPE.  We can
+   get from the returned identifier to the type.  */
+
+tree
+make_conv_op_name (tree type)
+{
+  tree *slot;
+  tree identifier;
+
+  if (type == error_mark_node)
+    return error_mark_node;
+
+  if (conv_type_names == NULL)
+    conv_type_names = hash_table<conv_type_hasher>::create_ggc (31);
+
+  slot = conv_type_names->find_slot_with_hash (type,
+					       (hashval_t) TYPE_UID (type),
+					       INSERT);
+  identifier = *slot;
+  if (!identifier)
+    {
+      char buffer[64];
+
+       /* Create a unique name corresponding to TYPE.  */
+      sprintf (buffer, "operator %lu",
+	       (unsigned long) conv_type_names->elements ());
+      identifier = get_identifier (buffer);
+      *slot = identifier;
+
+      /* Hang TYPE off the identifier so it can be found easily later
+	 when performing conversions.  */
+      TREE_TYPE (identifier) = type;
+
+      /* Set the identifier kind so we know later it's a conversion.  */
+      set_identifier_kind (identifier, cik_conv_op);
+    }
+
+  return identifier;
+}
+
 /* Wrapper around build_lang_decl_loc(). Should gradually move to
    build_lang_decl_loc() and then rename build_lang_decl_loc() back to
    build_lang_decl().  */
@@ -799,3 +867,5 @@ in_main_input_context (void)
   else
     return filename_cmp (main_input_filename, LOCATION_FILE (input_location)) == 0;
 }
+
+#include "gt-cp-lex.h"

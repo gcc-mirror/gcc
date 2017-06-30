@@ -45,7 +45,7 @@ gtfiles="\
 \$(srcdir)/cp/except.c \
 \$(srcdir)/cp/friend.c \
 \$(srcdir)/cp/init.c \
-\$(srcdir)/cp/lambda.c \
+\$(srcdir)/cp/lambda.c \$(srcdir)/cp/lex.c \
 \$(srcdir)/cp/mangle.c \$(srcdir)/cp/method.c \
 \$(srcdir)/cp/name-lookup.c \
 \$(srcdir)/cp/parser.c \$(srcdir)/cp/pt.c \

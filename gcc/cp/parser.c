@@ -14081,7 +14081,7 @@ cp_parser_conversion_function_id (cp_parser* parser)
   /* If the TYPE is invalid, indicate failure.  */
   if (type == error_mark_node)
     return error_mark_node;
-  return mangle_conv_op_name_for_type (type);
+  return make_conv_op_name (type);
 }
 
 /* Parse a conversion-type-id:

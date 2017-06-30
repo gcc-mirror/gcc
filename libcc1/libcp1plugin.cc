@@ -1321,7 +1321,7 @@ plugin_build_decl (cc1_plugin::connection *self,
 	      opcode = ARRAY_REF;
 	      break;
 	    case CHARS2 ('c', 'v'): // operator <T> (conversion operator)
-	      identifier = mangle_conv_op_name_for_type (TREE_TYPE (sym_type));
+	      identifier = make_conv_op_name (TREE_TYPE (sym_type));
 	      break;
 	      // C++11-only:
 	    case CHARS2 ('l', 'i'): // operator "" <id>
@@ -2622,7 +2622,7 @@ plugin_build_dependent_expr (cc1_plugin::connection *self,
 	  break;
 	case CHARS2 ('c', 'v'): // operator <T> (conversion operator)
 	  convop = true;
-	  identifier = mangle_conv_op_name_for_type (conv_type);
+	  identifier = make_conv_op_name (conv_type);
 	  break;
 	  // C++11-only:
 	case CHARS2 ('l', 'i'): // operator "" <id>
