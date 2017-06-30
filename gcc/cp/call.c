@@ -8994,6 +8994,7 @@ build_new_method_call_1 (tree instance, tree fns, vec<tree, va_gc> **args,
       if (! (complain & tf_error))
 	return error_mark_node;
 
+      name = constructor_name (basetype);
       if (permerror (input_location,
 		     "cannot call constructor %<%T::%D%> directly",
 		     basetype, name))
@@ -9002,26 +9003,6 @@ build_new_method_call_1 (tree instance, tree fns, vec<tree, va_gc> **args,
       call = build_functional_cast (basetype, build_tree_list_vec (user_args),
 				    complain);
       return call;
-    }
-
-  /* Figure out whether to skip the first argument for the error
-     message we will display to users if an error occurs.  We don't
-     want to display any compiler-generated arguments.  The "this"
-     pointer hasn't been added yet.  However, we must remove the VTT
-     pointer if this is a call to a base-class constructor or
-     destructor.  */
-  skip_first_for_error = false;
-  if (IDENTIFIER_CDTOR_P (name))
-    {
-      /* Callers should explicitly indicate whether they want to construct
-	 the complete object or just the part without virtual bases.  */
-      gcc_assert (name != ctor_identifier);
-      /* Similarly for destructors.  */
-      gcc_assert (name != dtor_identifier);
-      /* Remove the VTT pointer, if present.  */
-      if ((name == base_ctor_identifier || name == base_dtor_identifier)
-	  && CLASSTYPE_VBASECLASSES (basetype))
-	skip_first_for_error = true;
     }
 
   /* Process the argument list.  */
@@ -9036,12 +9017,28 @@ build_new_method_call_1 (tree instance, tree fns, vec<tree, va_gc> **args,
      static member function.  */
   instance = mark_type_use (instance);
 
-  /* It's OK to call destructors and constructors on cv-qualified objects.
-     Therefore, convert the INSTANCE to the unqualified type, if
-     necessary.  */
-  if (DECL_DESTRUCTOR_P (fn)
-      || DECL_CONSTRUCTOR_P (fn))
+
+  /* Figure out whether to skip the first argument for the error
+     message we will display to users if an error occurs.  We don't
+     want to display any compiler-generated arguments.  The "this"
+     pointer hasn't been added yet.  However, we must remove the VTT
+     pointer if this is a call to a base-class constructor or
+     destructor.  */
+  skip_first_for_error = false;
+  if (IDENTIFIER_CDTOR_P (name))
     {
+      /* Callers should explicitly indicate whether they want to ctor
+	 the complete object or just the part without virtual bases.  */
+      gcc_assert (name != ctor_identifier);
+
+      /* Remove the VTT pointer, if present.  */
+      if ((name == base_ctor_identifier || name == base_dtor_identifier)
+	  && CLASSTYPE_VBASECLASSES (basetype))
+	skip_first_for_error = true;
+
+      /* It's OK to call destructors and constructors on cv-qualified
+	 objects.  Therefore, convert the INSTANCE to the unqualified
+	 type, if necessary.  */
       if (!same_type_p (basetype, TREE_TYPE (instance)))
 	{
 	  instance = build_this (instance);
@@ -9049,8 +9046,8 @@ build_new_method_call_1 (tree instance, tree fns, vec<tree, va_gc> **args,
 	  instance = build_fold_indirect_ref (instance);
 	}
     }
-  if (DECL_DESTRUCTOR_P (fn))
-    name = complete_dtor_identifier;
+  else
+    gcc_assert (!DECL_DESTRUCTOR_P (fn) && !DECL_CONSTRUCTOR_P (fn));
 
   /* For the overload resolution we need to find the actual `this`
      that would be captured if the call turns out to be to a

@@ -1713,10 +1713,7 @@ class_method_index_for_fn (tree class_type, tree function)
 {
   gcc_assert (DECL_DECLARES_FUNCTION_P (function));
 
-  return lookup_fnfields_1 (class_type,
-			    DECL_CONSTRUCTOR_P (function) ? ctor_identifier :
-			    DECL_DESTRUCTOR_P (function) ? dtor_identifier :
-			    DECL_NAME (function));
+  return lookup_fnfields_1 (class_type, DECL_NAME (function));
 }
 
 
