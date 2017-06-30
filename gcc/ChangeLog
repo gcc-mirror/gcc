@@ -1,5 +1,10 @@
 2017-06-30  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
+	* profile-count.h (enum profile_quality): Fix typos and whitespace
+	issues.
+
+2017-06-30  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
 	* config/s390/s390.c (s390_expand_setmem): Adjust to the new data
 	type for branch probabilities.
 
