@@ -1,3 +1,9 @@
+2017-06-30  Jakub Jelinek  <jakub@redhat.com>
+
+	* gimplify.c (gimplify_omp_for): Move OMP_CLAUSE_REDUCTION
+	and OMP_CLAUSE_IN_REDUCTION from taskloop to the task construct
+	sandwiched in between two taskloops.
+
 2017-06-29  Jakub Jelinek  <jakub@redhat.com>
 
 	* omp-general.c (omp_extract_for_data): Allow NE_EXPR

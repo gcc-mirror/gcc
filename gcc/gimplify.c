@@ -10273,6 +10273,8 @@ gimplify_omp_for (tree *expr_p, gimple_seq *pre_p)
 	  case OMP_CLAUSE_FINAL:
 	  case OMP_CLAUSE_MERGEABLE:
 	  case OMP_CLAUSE_PRIORITY:
+	  case OMP_CLAUSE_REDUCTION:
+	  case OMP_CLAUSE_IN_REDUCTION:
 	    *gtask_clauses_ptr = c;
 	    gtask_clauses_ptr = &OMP_CLAUSE_CHAIN (c);
 	    break;
