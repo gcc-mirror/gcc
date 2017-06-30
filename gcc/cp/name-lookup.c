@@ -2354,9 +2354,13 @@ do_pushdecl (tree decl, bool is_friend)
 	  ; /* Ignore using decls here.  */
 	else if (tree match = duplicate_decls (decl, *iter, is_friend))
 	  {
-	    if (iter.hidden_p ()
-		&& match != error_mark_node
-		&& !DECL_HIDDEN_P (match))
+	    if (match == error_mark_node)
+	      ;
+	    else if (TREE_CODE (match) == TYPE_DECL)
+	      /* The IDENTIFIER will have the type referring to the
+		 now-smashed TYPE_DECL, because ...?  Reset it.  */
+	      SET_IDENTIFIER_TYPE_VALUE (name, TREE_TYPE (match));
+	    else if (iter.hidden_p () && !DECL_HIDDEN_P (match))
 	      {
 		/* Unhiding a previously hidden decl.  */
 		tree head = iter.reveal_node (old);
