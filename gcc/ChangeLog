@@ -1,3 +1,13 @@
+2017-06-30  Nathan Sidwell  <nathan@acm.org>
+
+	* ggc.h (empty_string): Delete.
+	* cfgexpand.c (expand_asm_stmt): Use plain "".
+	* optabs.c (expand_asm_memory_barrier): Likewise.
+	* stringpool.c (empty_string): Delete.
+	(digit_vector, digit_string): Delete.
+	(ggc_alloc_string): Use plain "", don't optimize single digit
+	strings.  Use ggc_alloc_atomic.
+
 2017-06-30  Richard Earnshaw  <rearnsha@arm.com>
 
 	* rtlanal.c (insn_rtx_cost): If a parallel contains exactly one
@@ -26,15 +36,15 @@
 2017-06-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/81225
-	* config/i386/sse.md (vec_extract_lo_<mode><mask_name>): For
-	V8FI, V16FI and VI8F_256 iterators, use <store_mask_predicate> instead
-	of nonimmediate_operand and <store_mask_constraint> instead of m for
-	the input operand.  For V8FI iterator, always split if input is a MEM.
-	For V16FI and V8SF_256 iterators, don't test if both operands are MEM
-	if <mask_applied>.  For VI4F_256 iterator, use <store_mask_predicate>
-	instead of register_operand and <store_mask_constraint> instead of v for
-	the input operand.  Make sure both operands aren't MEMs for if not
-	<mask_applied>.
+	* config/i386/sse.md (vec_extract_lo_<mode><mask_name>): For V8FI,
+	V16FI and VI8F_256 iterators, use <store_mask_predicate> instead
+	of nonimmediate_operand and <store_mask_constraint> instead of m
+	for the input operand.  For V8FI iterator, always split if input
+	is a MEM.  For V16FI and V8SF_256 iterators, don't test if both
+	operands are MEM if <mask_applied>.  For VI4F_256 iterator, use
+	<store_mask_predicate> instead of register_operand and
+	<store_mask_constraint> instead of v for the input operand.  Make
+	sure both operands aren't MEMs for if not <mask_applied>.
 
 2017-06-30  Sylvestre Ledru  <sylvestre@debian.org>
 

@@ -6278,7 +6278,7 @@ expand_asm_memory_barrier (void)
 {
   rtx asm_op, clob;
 
-  asm_op = gen_rtx_ASM_OPERANDS (VOIDmode, empty_string, empty_string, 0,
+  asm_op = gen_rtx_ASM_OPERANDS (VOIDmode, "", "", 0,
 				 rtvec_alloc (0), rtvec_alloc (0),
 				 rtvec_alloc (0), UNKNOWN_LOCATION);
   MEM_VOLATILE_P (asm_op) = 1;
