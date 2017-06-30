@@ -1,3 +1,8 @@
+2017-06-30  Andrew Pinski  <apinski@cavium.com>
+
+	* tree-if-conv.c (predicate_scalar_phi): Update new_stmt if
+	fold_stmt returned true.
+
 2017-06-30  Nathan Sidwell  <nathan@acm.org>
 
 	* ggc.h (empty_string): Delete.
