@@ -1,3 +1,9 @@
+2017-06-30  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/80014
+	* parser.c (cp_parser_postfix_expression): Construct a location
+	for typeid expressions.
+
 2017-06-30  Nathan Sidwell  <nathan@acm.org>
 
 	* cp-tree.h (lookup_fnfields_1, class_method_index_for_fn): Don't

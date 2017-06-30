@@ -1,3 +1,10 @@
+2017-06-30  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/80014
+	* g++.dg/plugin/diagnostic-test-expressions-1.C (std::type_info):
+	Add declaration.
+	(test_typeid): New test function.
+
 2017-06-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/81225
