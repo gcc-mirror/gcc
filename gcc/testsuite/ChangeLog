@@ -1,3 +1,8 @@
+2017-06-30  Martin Liska  <mliska@suse.cz>
+
+	PR sanitizer/81021
+	* g++.dg/asan/pr81021.C: New test.
+
 2017-06-30  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/81249
