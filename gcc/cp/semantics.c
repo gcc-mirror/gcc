@@ -9081,11 +9081,9 @@ classtype_has_nothrow_assign_or_copy_p (tree type, bool assign_p)
 
   if (assign_p)
     {
-      int ix;
-      ix = lookup_fnfields_1 (type, cp_assignment_operator_id (NOP_EXPR));
-      if (ix < 0)
+      fns = lookup_fnfields_slot (type, cp_assignment_operator_id (NOP_EXPR));
+      if (!fns)
 	return false;
-      fns = (*CLASSTYPE_METHOD_VEC (type))[ix];
     } 
   else if (TYPE_HAS_COPY_CTOR (type))
     {

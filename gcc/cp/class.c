@@ -2966,29 +2966,25 @@ modify_all_vtables (tree t, tree virtuals)
 static void
 get_basefndecls (tree name, tree t, vec<tree> *base_fndecls)
 {
-  int n_baseclasses = BINFO_N_BASE_BINFOS (TYPE_BINFO (t));
-  int i;
+  bool found_decls = false;
 
   /* Find virtual functions in T with the indicated NAME.  */
-  i = lookup_fnfields_1 (t, name);
-  bool found_decls = false;
-  if (i != -1)
-    for (ovl_iterator iter ((*CLASSTYPE_METHOD_VEC (t))[i]); iter; ++iter)
-      {
-	tree method = *iter;
+  for (ovl_iterator iter (lookup_fnfields_slot (t, name)); iter; ++iter)
+    {
+      tree method = *iter;
 
-	if (TREE_CODE (method) == FUNCTION_DECL
-	    && DECL_VINDEX (method))
-	  {
-	    base_fndecls->safe_push (method);
-	    found_decls = true;
-	  }
-      }
+      if (TREE_CODE (method) == FUNCTION_DECL && DECL_VINDEX (method))
+	{
+	  base_fndecls->safe_push (method);
+	  found_decls = true;
+	}
+    }
 
   if (found_decls)
     return;
 
-  for (i = 0; i < n_baseclasses; i++)
+  int n_baseclasses = BINFO_N_BASE_BINFOS (TYPE_BINFO (t));
+  for (int i = 0; i < n_baseclasses; i++)
     {
       tree basetype = BINFO_TYPE (BINFO_BASE_BINFO (TYPE_BINFO (t), i));
       get_basefndecls (name, basetype, base_fndecls);

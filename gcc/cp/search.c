@@ -1648,7 +1648,7 @@ lookup_fnfields_idx_nolazy (tree type, tree name)
 /* TYPE is a class type. Return the index of the fields within
    the method vector with name NAME, or -1 if no such field exists.  */
 
-int
+static int
 lookup_fnfields_1 (tree type, tree name)
 {
   if (!CLASS_TYPE_P (type))
@@ -1705,17 +1705,29 @@ lookup_fnfields_slot_nolazy (tree type, tree name)
   return (*CLASSTYPE_METHOD_VEC (type))[ix];
 }
 
-/* Like lookup_fnfields_1, except that the name is extracted from
-   FUNCTION, which is a FUNCTION_DECL or a TEMPLATE_DECL.  */
+/* Collect all the conversion operators of KLASS.  */
 
-int
-class_method_index_for_fn (tree class_type, tree function)
+tree
+lookup_all_conversions (tree klass)
 {
-  gcc_assert (DECL_DECLARES_FUNCTION_P (function));
+  tree lkp = NULL_TREE;
 
-  return lookup_fnfields_1 (class_type, DECL_NAME (function));
+  if (vec<tree, va_gc> *methods = CLASSTYPE_METHOD_VEC (klass))
+    {
+      tree ovl;
+      for (int idx = CLASSTYPE_FIRST_CONVERSION_SLOT;
+	   methods->iterate (idx, &ovl); ++idx)
+	{
+	  if (!DECL_CONV_FN_P (OVL_FIRST (ovl)))
+	    /* There are no more conversion functions.  */
+	    break;
+
+	  lkp = lookup_add (ovl, lkp);
+	}
+    }
+
+  return lkp;
 }
-
 
 /* DECL is the result of a qualified name lookup.  QUALIFYING_SCOPE is
    the class or namespace used to qualify the name.  CONTEXT_CLASS is

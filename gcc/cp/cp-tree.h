@@ -6567,10 +6567,9 @@ extern int accessible_p				(tree, tree, bool);
 extern int accessible_in_template_p		(tree, tree);
 extern tree lookup_field_1			(tree, tree, bool);
 extern tree lookup_field			(tree, tree, int, bool);
-extern int lookup_fnfields_1			(tree, tree);
 extern tree lookup_fnfields_slot		(tree, tree);
 extern tree lookup_fnfields_slot_nolazy		(tree, tree);
-extern int class_method_index_for_fn		(tree, tree);
+extern tree lookup_all_conversions		(tree);
 extern tree lookup_fnfields			(tree, tree, int);
 extern tree lookup_member			(tree, tree, int, bool,
 						 tsubst_flags_t,
