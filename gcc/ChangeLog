@@ -1,3 +1,11 @@
+2017-06-29  Julian Brown  <julian@codesourcery.com>
+	    Naveen H.S  <Naveen.Hurugalawadi@cavium.com>
+
+	* config/aarch64/aarch64-fusion-pairs.def: Add ALU_BRANCH entry.
+	* config/aarch64/aarch64.c (AARCH64_FUSE_ALU_BRANCH): New fusion type.
+	(thunderx2t99_tunings): Set AARCH64_FUSE_ALU_BRANCH flag.
+	(aarch_macro_fusion_pair_p): Add support for AARCH64_FUSE_ALU_BRANCH.
+
 2017-06-29  Naveen H.S  <Naveen.Hurugalawadi@cavium.com>
 
 	* config/aarch64/aarch64.c (aarch_macro_fusion_pair_p): Push the
