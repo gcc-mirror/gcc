@@ -14304,13 +14304,23 @@ aarch_macro_fusion_pair_p (rtx_insn *prev, rtx_insn *curr)
     {
       enum attr_type prev_type = get_attr_type (prev);
 
-      /* FIXME: this misses some which is considered simple arthematic
-         instructions for ThunderX.  Simple shifts are missed here.  */
-      if (prev_type == TYPE_ALUS_SREG
-          || prev_type == TYPE_ALUS_IMM
-          || prev_type == TYPE_LOGICS_REG
-          || prev_type == TYPE_LOGICS_IMM)
-        return true;
+      unsigned int condreg1, condreg2;
+      rtx cc_reg_1;
+      aarch64_fixed_condition_code_regs (&condreg1, &condreg2);
+      cc_reg_1 = gen_rtx_REG (CCmode, condreg1);
+
+      if (reg_referenced_p (cc_reg_1, PATTERN (curr))
+	  && prev
+	  && modified_in_p (cc_reg_1, prev))
+	{
+	  /* FIXME: this misses some which is considered simple arthematic
+	     instructions for ThunderX.  Simple shifts are missed here.  */
+	  if (prev_type == TYPE_ALUS_SREG
+	      || prev_type == TYPE_ALUS_IMM
+	      || prev_type == TYPE_LOGICS_REG
+	      || prev_type == TYPE_LOGICS_IMM)
+	    return true;
+	}
     }
 
   return false;
