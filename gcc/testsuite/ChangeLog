@@ -1,3 +1,8 @@
+2017-06-29  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/81261
+	* g++.dg/ipa/pr81261.C: New testcase.
+
 2017-06-30  Andrew Pinski  <apinski@cavium.com>
 
 	* gcc.dg/torture/pr81245.c: New testcase.

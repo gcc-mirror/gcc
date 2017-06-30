@@ -4650,6 +4650,9 @@ expand_call_inline (basic_block bb, gimple *stmt, copy_body_data *id)
   else
     id->dst_simt_vars = NULL;
 
+  if (profile_status_for_fn (id->src_cfun) == PROFILE_ABSENT)
+    profile_status_for_fn (dst_cfun) = PROFILE_ABSENT;
+
   /* If the src function contains an IFN_VA_ARG, then so will the dst
      function after inlining.  Likewise for IFN_GOMP_USE_SIMT.  */
   prop_mask = PROP_gimple_lva | PROP_gimple_lomp_dev;
