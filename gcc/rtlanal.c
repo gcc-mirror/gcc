@@ -5263,23 +5263,41 @@ insn_rtx_cost (rtx pat, bool speed)
   int i, cost;
   rtx set;
 
-  /* Extract the single set rtx from the instruction pattern.
-     We can't use single_set since we only have the pattern.  */
+  /* Extract the single set rtx from the instruction pattern.  We
+     can't use single_set since we only have the pattern.  We also
+     consider PARALLELs of a normal set and a single comparison.  In
+     that case we use the cost of the non-comparison SET operation,
+     which is most-likely to be the real cost of this operation.  */
   if (GET_CODE (pat) == SET)
     set = pat;
   else if (GET_CODE (pat) == PARALLEL)
     {
       set = NULL_RTX;
+      rtx comparison = NULL_RTX;
+
       for (i = 0; i < XVECLEN (pat, 0); i++)
 	{
 	  rtx x = XVECEXP (pat, 0, i);
 	  if (GET_CODE (x) == SET)
 	    {
-	      if (set)
-		return 0;
-	      set = x;
+	      if (GET_CODE (SET_SRC (x)) == COMPARE)
+		{
+		  if (comparison)
+		    return 0;
+		  comparison = x;
+		}
+	      else
+		{
+		  if (set)
+		    return 0;
+		  set = x;
+		}
 	    }
 	}
+
+      if (!set && comparison)
+	set = comparison;
+
       if (!set)
 	return 0;
     }
