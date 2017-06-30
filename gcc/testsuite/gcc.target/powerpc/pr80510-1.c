@@ -1,14 +1,12 @@
-/* { dg-do compile { target { powerpc*-*-* && lp64 } } } */
-/* { dg-skip-if "" { powerpc*-*-darwin* } { "*" } { "" } } */
+/* { dg-do compile { target { powerpc*-*-* } } } */
+/* { dg-skip-if "" { powerpc*-*-darwin* } } */
 /* { dg-require-effective-target powerpc_vsx_ok } */
 /* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power7" } } */
 /* { dg-options "-mcpu=power7 -O2" } */
 
 /* Make sure that STXSDX is generated for double scalars in Altivec registers
    on power7 instead of moving the value to a FPR register and doing a X-FORM
-   store.
-
-   32-bit currently does not have support for STXSDX in the mov{df,dd} patterns.  */
+   store.  */
 
 #ifndef TYPE
 #define TYPE double

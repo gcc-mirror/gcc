@@ -1,3 +1,16 @@
+2017-06-30  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	Backport from mainline
+	2017-06-23  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/80510
+	* config/rs6000/rs6000.md (ALTIVEC_DFORM): Do not allow DImode in
+	32-bit, since indexed is not valid for DImode.
+	(mov<mode>_hardfloat32): Reorder ISA 2.07 load/stores before ISA
+	3.0 d-form load/stores to be the same as mov<mode>_hardfloat64.
+	(define_peephole2 for Altivec d-form load): Add 32-bit support.
+	(define_peephole2 for Altivec d-form store): Likewise.
+
 2017-06-27  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	Backports from trunk:
