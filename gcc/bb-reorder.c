@@ -206,8 +206,8 @@ static void find_traces_1_round (int, int, gcov_type, struct trace *, int *,
 				 int, bb_heap_t **, int);
 static basic_block copy_bb (basic_block, edge, basic_block, int);
 static long bb_to_key (basic_block);
-static bool better_edge_p (const_basic_block, const_edge, int, int, int, int,
-			   const_edge);
+static bool better_edge_p (const_basic_block, const_edge, profile_probability,
+			   int, profile_probability, int, const_edge);
 static bool connect_better_edge_p (const_edge, bool, int, const_edge,
 				   struct trace *);
 static void connect_traces (int, struct trace *);
@@ -513,11 +513,12 @@ find_traces_1_round (int branch_th, int exec_th, gcov_type count_th,
 
       do
 	{
-	  int prob, freq;
+	  profile_probability prob;
+	  int freq;
 	  bool ends_in_call;
 
 	  /* The probability and frequency of the best edge.  */
-	  int best_prob = INT_MIN / 2;
+	  profile_probability best_prob = profile_probability::uninitialized ();
 	  int best_freq = INT_MIN / 2;
 
 	  best_edge = NULL;
@@ -565,7 +566,9 @@ find_traces_1_round (int branch_th, int exec_th, gcov_type count_th,
 		 successor (i.e. it is unsuitable successor).  When optimizing
 		 for size, ignore the probability and frequency.  */
 	      if (!(e->flags & EDGE_CAN_FALLTHRU) || (e->flags & EDGE_COMPLEX)
-		  || ((prob < branch_th || EDGE_FREQUENCY (e) < exec_th
+		  || !prob.initialized_p ()
+		  || ((prob.to_reg_br_prob_base () < branch_th
+		       || EDGE_FREQUENCY (e) < exec_th
 		      || e->count < count_th) && (!for_size)))
 		continue;
 
@@ -648,7 +651,9 @@ find_traces_1_round (int branch_th, int exec_th, gcov_type count_th,
 
 		  if (!(e->flags & EDGE_CAN_FALLTHRU)
 		      || (e->flags & EDGE_COMPLEX)
-		      || prob < branch_th || freq < exec_th
+		      || !prob.initialized_p ()
+		      || prob.to_reg_br_prob_base () < branch_th
+		      || freq < exec_th
 		      || e->count < count_th)
 		    {
 		      /* When partitioning hot/cold basic blocks, make sure
@@ -936,14 +941,15 @@ bb_to_key (basic_block bb)
    BEST_PROB; similarly for frequency.  */
 
 static bool
-better_edge_p (const_basic_block bb, const_edge e, int prob, int freq,
-	       int best_prob, int best_freq, const_edge cur_best_edge)
+better_edge_p (const_basic_block bb, const_edge e, profile_probability prob,
+	       int freq, profile_probability best_prob, int best_freq,
+	       const_edge cur_best_edge)
 {
   bool is_better_edge;
 
   /* The BEST_* values do not have to be best, but can be a bit smaller than
      maximum values.  */
-  int diff_prob = best_prob / 10;
+  profile_probability diff_prob = best_prob.apply_scale (1, 10);
   int diff_freq = best_freq / 10;
 
   /* The smaller one is better to keep the original order.  */
@@ -1494,7 +1500,8 @@ sanitize_hot_paths (bool walk_up, unsigned int cold_bb_count,
       vec<edge, va_gc> *edges = walk_up ? bb->preds : bb->succs;
       edge e;
       edge_iterator ei;
-      int highest_probability = 0;
+      profile_probability highest_probability
+				 = profile_probability::uninitialized ();
       int highest_freq = 0;
       profile_count highest_count = profile_count::uninitialized ();
       bool found = false;
@@ -1517,12 +1524,13 @@ sanitize_hot_paths (bool walk_up, unsigned int cold_bb_count,
           /* The following loop will look for the hottest edge via
              the edge count, if it is non-zero, then fallback to the edge
              frequency and finally the edge probability.  */
-          if (e->count > highest_count)
+          if (!highest_count.initialized_p () || e->count > highest_count)
             highest_count = e->count;
           int edge_freq = EDGE_FREQUENCY (e);
           if (edge_freq > highest_freq)
             highest_freq = edge_freq;
-          if (e->probability > highest_probability)
+          if (!highest_probability.initialized_p ()
+	      || e->probability > highest_probability)
             highest_probability = e->probability;
         }
 

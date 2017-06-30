@@ -1,3 +1,54 @@
+2017-06-30  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/81229
+	* g++.dg/lookup/pr81229.C: New.
+
+2017-06-30  Martin Liska  <mliska@suse.cz>
+
+	PR sanitizer/81021
+	* g++.dg/asan/pr81021.C: New test.
+
+2017-06-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/81249
+	* g++.dg/torture/pr81249.C: New testcase.
+
+2017-06-29  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.dg/cpp0x/inh-ctor3.C: Adjust for dg-message vs dg-error.
+	* g++.dg/diagnostic/variadic1.C: Likewise.
+	* g++.dg/gomp/udr-3.C: Likewise.
+	* g++.dg/overload/error1.C: Likewise.
+	* g++.dg/overload/error2.C: Likewise.
+	* g++.dg/template/duplicate1.C: Likewise.
+	* g++.old-deja/g++.benjamin/warn02.C: Likewise.
+	* g++.old-deja/g++.brendan/arm2.C: Likewise.
+	* g++.old-deja/g++.other/redecl2.C: Likewise.
+	* g++.old-deja/g++.other/redecl4.C: Likewise.
+	* g++.old-deja/g++.pt/memtemp78.C: Likewise.
+
+2017-06-29  Cesar Philippidis  <cesar@codesourcery.com>
+
+	PR fortran/77765
+	* gfortran.dg/goacc/pr77765.f90: New test.
+
+2017-06-29  Steve Ellcey  <sellcey@cavium.com>
+
+	* gcc.target/aarch64/ccmp_2.c: New test.
+
+2017-06-29  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/81247
+	* g++.dg/parse/pr81247-[abc].C: New.
+
+2017-06-29  Carl Love  <cel@us.ibm.com>
+
+	* gcc.target/powerpc/builtins-3-runnable.c (test_int_result,
+	test_unsigned_int_result, test_ll_int_result,
+	test_ll_unsigned_int_result): Add result checking functions, add
+	debug support.
+	(main): Add builtin function tests.
+
 2017-06-29  Carl Love  <cel@us.ibm.com>
 
 	* gcc.target/powerpc/builtins-3-vec_reve-runnable.c (dg-options,

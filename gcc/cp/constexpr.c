@@ -4519,7 +4519,6 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
       /* GCC internal stuff.  */
     case VA_ARG_EXPR:
     case OBJ_TYPE_REF:
-    case WITH_CLEANUP_EXPR:
     case NON_DEPENDENT_EXPR:
     case BASELINK:
     case OFFSET_REF:
@@ -5533,7 +5532,6 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict,
     case BIND_EXPR:
       return RECUR (BIND_EXPR_BODY (t), want_rval);
 
-    case WITH_CLEANUP_EXPR:
     case CLEANUP_POINT_EXPR:
     case MUST_NOT_THROW_EXPR:
     case TRY_CATCH_EXPR:

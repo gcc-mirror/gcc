@@ -1611,6 +1611,9 @@ BU_VSX_2 (CMPLE_U2DI,         "cmple_u2di",     CONST,  vector_ngtuv2di)
 BU_VSX_2 (FLOAT2_V2DI,        "float2_v2di",    CONST,  float2_v2di)
 BU_VSX_2 (UNS_FLOAT2_V2DI,    "uns_float2_v2di",    CONST,  uns_float2_v2di)
 
+BU_VSX_2 (VEC_VSIGNED2_V2DF,      "vsigned2_v2df",    CONST,  vsigned2_v2df)
+BU_VSX_2 (VEC_VUNSIGNED2_V2DF,    "vunsigned2_v2df",  CONST,  vunsigned2_v2df)
+
 /* VSX abs builtin functions.  */
 BU_VSX_A (XVABSDP,	      "xvabsdp",	CONST,	absv2df2)
 BU_VSX_A (XVNABSDP,	      "xvnabsdp",	CONST,	vsx_nabsv2df2)
@@ -1702,6 +1705,16 @@ BU_VSX_1 (DOUBLEL_V4SI,      "doublel_v4si",     CONST,	doublelv4si2)
 BU_VSX_1 (DOUBLEL_V4SF,      "doublel_v4sf",     CONST,	doublelv4sf2)
 BU_VSX_1 (UNS_DOUBLEL_V4SI,  "uns_doublel_v4si", CONST,	unsdoublelv4si2)
 
+BU_VSX_1 (VEC_VSIGNED_V4SF,      "vsigned_v4sf",     CONST,  vsx_xvcvspsxws)
+BU_VSX_1 (VEC_VSIGNED_V2DF,      "vsigned_v2df",     CONST,  vsx_xvcvdpsxds)
+BU_VSX_1 (VEC_VSIGNEDE_V2DF,     "vsignede_v2df",    CONST,  vsignede_v2df)
+BU_VSX_1 (VEC_VSIGNEDO_V2DF,     "vsignedo_v2df",    CONST,  vsignedo_v2df)
+
+BU_VSX_1 (VEC_VUNSIGNED_V4SF,    "vunsigned_v4sf",    CONST,  vsx_xvcvspsxws)
+BU_VSX_1 (VEC_VUNSIGNED_V2DF,    "vunsigned_v2df",    CONST,  vsx_xvcvdpsxds)
+BU_VSX_1 (VEC_VUNSIGNEDE_V2DF,   "vunsignede_v2df",   CONST,  vunsignede_v2df)
+BU_VSX_1 (VEC_VUNSIGNEDO_V2DF,   "vunsignedo_v2df",   CONST,  vunsignedo_v2df)
+
 /* VSX predicate functions.  */
 BU_VSX_P (XVCMPEQSP_P,	      "xvcmpeqsp_p",	CONST,	vector_eq_v4sf_p)
 BU_VSX_P (XVCMPGESP_P,	      "xvcmpgesp_p",	CONST,	vector_ge_v4sf_p)
@@ -1791,6 +1804,8 @@ BU_VSX_OVERLOAD_2 (XXSPLTD,  "xxspltd")
 BU_VSX_OVERLOAD_2 (XXSPLTW,  "xxspltw")
 BU_VSX_OVERLOAD_2 (FLOAT2,   "float2")
 BU_VSX_OVERLOAD_2 (UNS_FLOAT2,   "uns_float2")
+BU_VSX_OVERLOAD_2 (VSIGNED2,     "vsigned2")
+BU_VSX_OVERLOAD_2 (VUNSIGNED2,   "vunsigned2")
 
 /* 1 argument VSX overloaded builtin functions.  */
 BU_VSX_OVERLOAD_1 (DOUBLE,   "double")
@@ -1805,6 +1820,14 @@ BU_VSX_OVERLOAD_1 (UNS_DOUBLEL,  "uns_doublel")
 BU_VSX_OVERLOAD_1 (FLOAT,  "float")
 BU_VSX_OVERLOAD_1 (FLOATE,  "floate")
 BU_VSX_OVERLOAD_1 (FLOATO,  "floato")
+
+BU_VSX_OVERLOAD_1 (VSIGNED,   "vsigned")
+BU_VSX_OVERLOAD_1 (VSIGNEDE,  "vsignede")
+BU_VSX_OVERLOAD_1 (VSIGNEDO,  "vsignedo")
+
+BU_VSX_OVERLOAD_1 (VUNSIGNED,   "vunsigned")
+BU_VSX_OVERLOAD_1 (VUNSIGNEDE,  "vunsignede")
+BU_VSX_OVERLOAD_1 (VUNSIGNEDO,  "vunsignedo")
 
 /* VSX builtins that are handled as special cases.  */
 BU_VSX_OVERLOAD_X (LD,	     "ld")

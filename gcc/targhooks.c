@@ -60,6 +60,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "stringpool.h"
 #include "tree-vrp.h"
 #include "tree-ssanames.h"
+#include "profile-count.h"
 #include "optabs.h"
 #include "regs.h"
 #include "recog.h"

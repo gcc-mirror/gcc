@@ -974,7 +974,6 @@ dw2_build_landing_pads (void)
     {
       basic_block bb;
       rtx_insn *seq;
-      edge e;
 
       if (lp == NULL || lp->post_landing_pad == NULL)
 	continue;
@@ -991,9 +990,7 @@ dw2_build_landing_pads (void)
       end_sequence ();
 
       bb = emit_to_new_bb_before (seq, label_rtx (lp->post_landing_pad));
-      e = make_edge (bb, bb->next_bb, e_flags);
-      e->count = bb->count;
-      e->probability = REG_BR_PROB_BASE;
+      make_single_succ_edge (bb, bb->next_bb, e_flags);
       if (current_loops)
 	{
 	  struct loop *loop = bb->next_bb->loop_father;
@@ -1183,7 +1180,8 @@ sjlj_emit_function_enter (rtx_code_label *dispatch_label)
 
       emit_cmp_and_jump_insns (x, const0_rtx, NE, 0,
 			       TYPE_MODE (integer_type_node), 0,
-			       dispatch_label, REG_BR_PROB_BASE / 100);
+			       dispatch_label,
+			       profile_probability::unlikely ());
 #else
       expand_builtin_setjmp_setup (addr, dispatch_label);
 #endif
@@ -1258,7 +1256,6 @@ sjlj_emit_dispatch_table (rtx_code_label *dispatch_label, int num_dispatch)
   rtx_insn *seq;
   basic_block bb;
   eh_region r;
-  edge e;
   int i, disp_index;
   vec<tree> dispatch_labels = vNULL;
 
@@ -1346,9 +1343,7 @@ sjlj_emit_dispatch_table (rtx_code_label *dispatch_label, int num_dispatch)
 
 	rtx_insn *before = label_rtx (lp->post_landing_pad);
 	bb = emit_to_new_bb_before (seq2, before);
-	e = make_edge (bb, bb->next_bb, EDGE_FALLTHRU);
-	e->count = bb->count;
-	e->probability = REG_BR_PROB_BASE;
+	make_single_succ_edge (bb, bb->next_bb, EDGE_FALLTHRU);
 	if (current_loops)
 	  {
 	    struct loop *loop = bb->next_bb->loop_father;
@@ -1386,9 +1381,7 @@ sjlj_emit_dispatch_table (rtx_code_label *dispatch_label, int num_dispatch)
   bb = emit_to_new_bb_before (seq, first_reachable_label);
   if (num_dispatch == 1)
     {
-      e = make_edge (bb, bb->next_bb, EDGE_FALLTHRU);
-      e->count = bb->count;
-      e->probability = REG_BR_PROB_BASE;
+      make_single_succ_edge (bb, bb->next_bb, EDGE_FALLTHRU);
       if (current_loops)
 	{
 	  struct loop *loop = bb->next_bb->loop_father;

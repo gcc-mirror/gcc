@@ -693,7 +693,8 @@ expand_doubleword_shift (machine_mode op1_mode, optab binoptab,
 
   NO_DEFER_POP;
   do_compare_rtx_and_jump (cmp1, cmp2, cmp_code, false, op1_mode,
-			   0, 0, subword_label, -1);
+			   0, 0, subword_label,
+			   profile_probability::uninitialized ());
   OK_DEFER_POP;
 
   if (!expand_superword_shift (binoptab, outof_input, superword_op1,
@@ -3187,7 +3188,8 @@ expand_abs (machine_mode mode, rtx op0, rtx target,
   NO_DEFER_POP;
 
   do_compare_rtx_and_jump (target, CONST0_RTX (mode), GE, 0, mode,
-			   NULL_RTX, NULL, op1, -1);
+			   NULL_RTX, NULL, op1,
+			   profile_probability::uninitialized ());
 
   op0 = expand_unop (mode, result_unsignedp ? neg_optab : negv_optab,
                      target, target, 0);
@@ -3979,7 +3981,8 @@ prepare_operand (enum insn_code icode, rtx x, int opnum, machine_mode mode,
    we can do the branch.  */
 
 static void
-emit_cmp_and_jump_insn_1 (rtx test, machine_mode mode, rtx label, int prob)
+emit_cmp_and_jump_insn_1 (rtx test, machine_mode mode, rtx label,
+			  profile_probability prob)
 {
   machine_mode optab_mode;
   enum mode_class mclass;
@@ -3994,13 +3997,13 @@ emit_cmp_and_jump_insn_1 (rtx test, machine_mode mode, rtx label, int prob)
   gcc_assert (insn_operand_matches (icode, 0, test));
   insn = emit_jump_insn (GEN_FCN (icode) (test, XEXP (test, 0),
                                           XEXP (test, 1), label));
-  if (prob != -1
+  if (prob.initialized_p ()
       && profile_status_for_fn (cfun) != PROFILE_ABSENT
       && insn
       && JUMP_P (insn)
       && any_condjump_p (insn)
       && !find_reg_note (insn, REG_BR_PROB, 0))
-    add_int_reg_note (insn, REG_BR_PROB, prob);
+    add_int_reg_note (insn, REG_BR_PROB, prob.to_reg_br_prob_base ());
 }
 
 /* Generate code to compare X with Y so that the condition codes are
@@ -4025,7 +4028,7 @@ emit_cmp_and_jump_insn_1 (rtx test, machine_mode mode, rtx label, int prob)
 void
 emit_cmp_and_jump_insns (rtx x, rtx y, enum rtx_code comparison, rtx size,
 			 machine_mode mode, int unsignedp, rtx label,
-                         int prob)
+                         profile_probability prob)
 {
   rtx op0 = x, op1 = y;
   rtx test;
@@ -5856,7 +5859,8 @@ expand_compare_and_swap_loop (rtx mem, rtx old_reg, rtx new_reg, rtx seq)
 
   /* Mark this jump predicted not taken.  */
   emit_cmp_and_jump_insns (success, const0_rtx, EQ, const0_rtx,
-			   GET_MODE (success), 1, label, 0);
+			   GET_MODE (success), 1, label,
+			   profile_probability::guessed_never ());
   return true;
 }
 

@@ -875,7 +875,8 @@ static const struct tune_params thunderx2t99_tunings =
   &generic_approx_modes,
   4, /* memmov_cost.  */
   4, /* issue_rate.  */
-  (AARCH64_FUSE_CMP_BRANCH | AARCH64_FUSE_AES_AESMC), /* fusible_ops  */
+  (AARCH64_FUSE_CMP_BRANCH | AARCH64_FUSE_AES_AESMC
+   | AARCH64_FUSE_ALU_BRANCH), /* fusible_ops  */
   16,	/* function_align.  */
   8,	/* jump_align.  */
   16,	/* loop_align.  */
@@ -14304,13 +14305,66 @@ aarch_macro_fusion_pair_p (rtx_insn *prev, rtx_insn *curr)
     {
       enum attr_type prev_type = get_attr_type (prev);
 
-      /* FIXME: this misses some which is considered simple arthematic
-         instructions for ThunderX.  Simple shifts are missed here.  */
-      if (prev_type == TYPE_ALUS_SREG
-          || prev_type == TYPE_ALUS_IMM
-          || prev_type == TYPE_LOGICS_REG
-          || prev_type == TYPE_LOGICS_IMM)
-        return true;
+      unsigned int condreg1, condreg2;
+      rtx cc_reg_1;
+      aarch64_fixed_condition_code_regs (&condreg1, &condreg2);
+      cc_reg_1 = gen_rtx_REG (CCmode, condreg1);
+
+      if (reg_referenced_p (cc_reg_1, PATTERN (curr))
+	  && prev
+	  && modified_in_p (cc_reg_1, prev))
+	{
+	  /* FIXME: this misses some which is considered simple arthematic
+	     instructions for ThunderX.  Simple shifts are missed here.  */
+	  if (prev_type == TYPE_ALUS_SREG
+	      || prev_type == TYPE_ALUS_IMM
+	      || prev_type == TYPE_LOGICS_REG
+	      || prev_type == TYPE_LOGICS_IMM)
+	    return true;
+	}
+    }
+
+  if (aarch64_fusion_enabled_p (AARCH64_FUSE_ALU_BRANCH)
+      && any_condjump_p (curr))
+    {
+      /* We're trying to match:
+	  prev (alu_insn) == (set (r0) plus ((r0) (r1/imm)))
+	  curr (cbz) ==  (set (pc) (if_then_else (eq/ne) (r0)
+							 (const_int 0))
+						 (label_ref ("SYM"))
+						 (pc))  */
+      if (SET_DEST (curr_set) == (pc_rtx)
+	  && GET_CODE (SET_SRC (curr_set)) == IF_THEN_ELSE
+	  && REG_P (XEXP (XEXP (SET_SRC (curr_set), 0), 0))
+	  && REG_P (SET_DEST (prev_set))
+	  && REGNO (SET_DEST (prev_set))
+	     == REGNO (XEXP (XEXP (SET_SRC (curr_set), 0), 0)))
+	{
+	  /* Fuse ALU operations followed by conditional branch instruction.  */
+	  switch (get_attr_type (prev))
+	    {
+	    case TYPE_ALU_IMM:
+	    case TYPE_ALU_SREG:
+	    case TYPE_ADC_REG:
+	    case TYPE_ADC_IMM:
+	    case TYPE_ADCS_REG:
+	    case TYPE_ADCS_IMM:
+	    case TYPE_LOGIC_REG:
+	    case TYPE_LOGIC_IMM:
+	    case TYPE_CSEL:
+	    case TYPE_ADR:
+	    case TYPE_MOV_IMM:
+	    case TYPE_SHIFT_REG:
+	    case TYPE_SHIFT_IMM:
+	    case TYPE_BFM:
+	    case TYPE_RBIT:
+	    case TYPE_REV:
+	    case TYPE_EXTEND:
+	      return true;
+
+	    default:;
+	    }
+	}
     }
 
   return false;

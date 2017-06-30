@@ -2631,7 +2631,8 @@ good_cloning_opportunity_p (struct cgraph_node *node, int time_benefit,
   struct ipa_node_params *info = IPA_NODE_REF (node);
   if (max_count > profile_count::zero ())
     {
-      int factor = RDIV (count_sum.probability_in (max_count)
+      int factor = RDIV (count_sum.probability_in
+				 (max_count).to_reg_br_prob_base ()
 		         * 1000, REG_BR_PROB_BASE);
       int64_t evaluation = (((int64_t) time_benefit * factor)
 				    / size_cost);

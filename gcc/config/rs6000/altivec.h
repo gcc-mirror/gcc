@@ -182,6 +182,14 @@
 #define vec_rlnm(a,b,c) (__builtin_vec_rlnm((a),((b)<<8)|(c)))
 #define vec_rsqrt __builtin_vec_rsqrt
 #define vec_rsqrte __builtin_vec_rsqrte
+#define vec_signed __builtin_vec_vsigned
+#define vec_signed2 __builtin_vec_vsigned2
+#define vec_signede __builtin_vec_vsignede
+#define vec_signedo __builtin_vec_vsignedo
+#define vec_unsigned __builtin_vec_vunsigned
+#define vec_unsigned2 __builtin_vec_vunsigned2
+#define vec_unsignede __builtin_vec_vunsignede
+#define vec_unsignedo __builtin_vec_vunsignedo
 #define vec_vsubfp __builtin_vec_vsubfp
 #define vec_subc __builtin_vec_subc
 #define vec_vsubsws __builtin_vec_vsubsws

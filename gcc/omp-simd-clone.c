@@ -1151,8 +1151,7 @@ simd_clone_adjust (struct cgraph_node *node)
 
   if (incr_bb)
     {
-      edge e = make_edge (incr_bb, EXIT_BLOCK_PTR_FOR_FN (cfun), 0);
-      e->probability = REG_BR_PROB_BASE;
+      make_single_succ_edge (incr_bb, EXIT_BLOCK_PTR_FOR_FN (cfun), 0);
       gsi = gsi_last_bb (incr_bb);
       iter2 = make_ssa_name (iter);
       g = gimple_build_assign (iter2, PLUS_EXPR, iter1,
@@ -1264,7 +1263,10 @@ simd_clone_adjust (struct cgraph_node *node)
 
       redirect_edge_succ (FALLTHRU_EDGE (latch_bb), body_bb);
 
-      make_edge (incr_bb, new_exit_bb, EDGE_FALSE_VALUE);
+      edge new_e = make_edge (incr_bb, new_exit_bb, EDGE_FALSE_VALUE);
+
+      /* FIXME: Do we need to distribute probabilities for the conditional? */
+      new_e->probability = profile_probability::guessed_never ();
       /* The successor of incr_bb is already pointing to latch_bb; just
 	 change the flags.
 	 make_edge (incr_bb, latch_bb, EDGE_TRUE_VALUE);  */

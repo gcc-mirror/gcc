@@ -1,3 +1,38 @@
+2017-06-30  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/81229
+	* name-lookup.c (do_pushdecl): Reset IDENTIFIER_TYPE when finding
+	a matching TYPE_DECL.
+
+2017-06-29  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* class.c (add_method): Change pair of errors to error + inform.
+	(handle_using_decl): Likewise.
+
+2017-06-29  Jason Merrill  <jason@redhat.com>
+
+	* constexpr.c, error.c, tree.c: Remove WITH_CLEANUP_EXPR handling.
+
+	PR c++/81180 - ICE with C++17 deduction of member class template.
+	* pt.c (build_deduction_guide): Correct member template handling.
+
+	PR c++/81188 - matching decltype of member function call.
+	* tree.c (cp_tree_equal): Remove COMPONENT_REF special case.
+
+2017-06-29  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/81247
+	* parser.c (cp_parser_namespace_definition): Immediately close the
+	namespace if there's no open-brace.
+	* name-lookup.c (do_pushdecl): Reset OLD when pushing into new
+	namespace.
+
+2017-06-29  Jason Merrill  <jason@redhat.com>
+
+	PR c++/81164 - ICE with invalid inherited constructor.
+	* search.c (binfo_direct_p): New.
+	* name-lookup.c (do_class_using_decl): Use it.
+
 2017-06-29  Nathan Sidwell  <nathan@acm.org>
 
 	* cp-tree.h (THIS_NAME, IN_CHARGE_NAME, VTBL_PTR_TYPE,

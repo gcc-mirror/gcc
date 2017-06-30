@@ -1592,9 +1592,10 @@ replace_block_by (basic_block bb1, basic_block bb2)
       else if (bb2->frequency && !bb1->frequency)
 	;
       else if (out_freq_sum)
-	e2->probability = GCOV_COMPUTE_SCALE (EDGE_FREQUENCY (e1)
-					      + EDGE_FREQUENCY (e2),
-					      out_freq_sum);
+	e2->probability = profile_probability::from_reg_br_prob_base
+		(GCOV_COMPUTE_SCALE (EDGE_FREQUENCY (e1)
+				     + EDGE_FREQUENCY (e2),
+				     out_freq_sum));
       out_sum += e2->count;
     }
   bb2->frequency += bb1->frequency;

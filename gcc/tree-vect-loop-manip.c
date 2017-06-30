@@ -540,7 +540,7 @@ slpeel_tree_duplicate_loop_to_edge_cfg (struct loop *loop,
 static edge
 slpeel_add_loop_guard (basic_block guard_bb, tree cond,
 		       basic_block guard_to, basic_block dom_bb,
-		       int probability, bool irreducible_p)
+		       profile_probability probability, bool irreducible_p)
 {
   gimple_stmt_iterator gsi;
   edge new_e, enter_e;
@@ -571,7 +571,7 @@ slpeel_add_loop_guard (basic_block guard_bb, tree cond,
     new_e->flags |= EDGE_IRREDUCIBLE_LOOP;
 
   enter_e->count -= new_e->count;
-  enter_e->probability = inverse_probability (probability);
+  enter_e->probability = probability.invert ();
   set_immediate_dominator (CDI_DOMINATORS, guard_to, dom_bb);
 
   /* Split enter_e to preserve LOOPS_HAVE_PREHEADERS.  */
@@ -1660,7 +1660,7 @@ vect_do_peeling (loop_vec_info loop_vinfo, tree niters, tree nitersm1,
   edge e, guard_e;
   tree type = TREE_TYPE (niters), guard_cond;
   basic_block guard_bb, guard_to;
-  int prob_prolog, prob_vector, prob_epilog;
+  profile_probability prob_prolog, prob_vector, prob_epilog;
   int bound_prolog = 0, bound_scalar = 0, bound = 0;
   int vf = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
   int prolog_peeling = LOOP_VINFO_PEELING_FOR_ALIGNMENT (loop_vinfo);
@@ -1670,10 +1670,11 @@ vect_do_peeling (loop_vec_info loop_vinfo, tree niters, tree nitersm1,
   if (!prolog_peeling && !epilog_peeling)
     return NULL;
 
-  prob_vector = 9 * REG_BR_PROB_BASE / 10;
+  prob_vector = profile_probability::guessed_always ().apply_scale (9, 10);
   if ((vf = LOOP_VINFO_VECT_FACTOR (loop_vinfo)) == 2)
     vf = 3;
-  prob_prolog = prob_epilog = (vf - 1) * REG_BR_PROB_BASE / vf;
+  prob_prolog = prob_epilog = profile_probability::guessed_always ()
+			.apply_scale (vf - 1, vf);
   vf = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
 
   struct loop *prolog, *epilog = NULL, *loop = LOOP_VINFO_LOOP (loop_vinfo);
@@ -1718,9 +1719,11 @@ vect_do_peeling (loop_vec_info loop_vinfo, tree niters, tree nitersm1,
 	 separately.  Note in this case, the probability of epilog loop
 	 needs to be scaled back later.  */
       basic_block bb_before_loop = loop_preheader_edge (loop)->src;
-      scale_bbs_frequencies_int (&bb_before_loop, 1, prob_vector,
+      if (prob_vector.initialized_p ())
+      scale_bbs_frequencies_int (&bb_before_loop, 1,
+				 prob_vector.to_reg_br_prob_base (),
 				 REG_BR_PROB_BASE);
-      scale_loop_profile (loop, prob_vector, bound);
+      scale_loop_profile (loop, prob_vector.to_reg_br_prob_base (), bound);
     }
 
   tree niters_prolog = build_int_cst (type, 0);
@@ -1762,15 +1765,17 @@ vect_do_peeling (loop_vec_info loop_vinfo, tree niters, tree nitersm1,
 	  guard_to = split_edge (loop_preheader_edge (loop));
 	  guard_e = slpeel_add_loop_guard (guard_bb, guard_cond,
 					   guard_to, guard_bb,
-					   inverse_probability (prob_prolog),
+					   prob_prolog.invert (),
 					   irred_flag);
 	  e = EDGE_PRED (guard_to, 0);
 	  e = (e != guard_e ? e : EDGE_PRED (guard_to, 1));
 	  slpeel_update_phi_nodes_for_guard1 (prolog, loop, guard_e, e);
 
-	  scale_bbs_frequencies_int (&bb_after_prolog, 1, prob_prolog,
+	  scale_bbs_frequencies_int (&bb_after_prolog, 1,
+				     prob_prolog.to_reg_br_prob_base (),
 				     REG_BR_PROB_BASE);
-	  scale_loop_profile (prolog, prob_prolog, bound_prolog);
+	  scale_loop_profile (prolog, prob_prolog.to_reg_br_prob_base (),
+			      bound_prolog);
 	}
       /* Update init address of DRs.  */
       vect_update_inits_of_drs (loop_vinfo, niters_prolog);
@@ -1834,7 +1839,7 @@ vect_do_peeling (loop_vec_info loop_vinfo, tree niters, tree nitersm1,
 	  guard_to = split_edge (loop_preheader_edge (epilog));
 	  guard_e = slpeel_add_loop_guard (guard_bb, guard_cond,
 					   guard_to, guard_bb,
-					   inverse_probability (prob_vector),
+					   prob_vector.invert (),
 					   irred_flag);
 	  e = EDGE_PRED (guard_to, 0);
 	  e = (e != guard_e ? e : EDGE_PRED (guard_to, 1));
@@ -1846,7 +1851,8 @@ vect_do_peeling (loop_vec_info loop_vinfo, tree niters, tree nitersm1,
 	  guard_to->count = guard_bb->count;
 	  single_succ_edge (guard_to)->count = guard_to->count;
 	  /* Scale probability of epilog loop back.  */
-	  int scale_up = REG_BR_PROB_BASE * REG_BR_PROB_BASE / prob_vector;
+	  int scale_up = REG_BR_PROB_BASE * REG_BR_PROB_BASE
+			 / prob_vector.to_reg_br_prob_base ();
 	  scale_loop_frequencies (epilog, scale_up, REG_BR_PROB_BASE);
 	}
 
@@ -1875,7 +1881,7 @@ vect_do_peeling (loop_vec_info loop_vinfo, tree niters, tree nitersm1,
 	  guard_to = split_edge (single_exit (epilog));
 	  guard_e = slpeel_add_loop_guard (guard_bb, guard_cond, guard_to,
 					   skip_vector ? anchor : guard_bb,
-					   inverse_probability (prob_epilog),
+					   prob_epilog.invert (),
 					   irred_flag);
 	  slpeel_update_phi_nodes_for_guard2 (loop, epilog, guard_e,
 					      single_exit (epilog));
@@ -1883,13 +1889,13 @@ vect_do_peeling (loop_vec_info loop_vinfo, tree niters, tree nitersm1,
 	     the guard_bb, which is the case when skip_vector is true.  */
 	  if (guard_bb != bb_before_epilog)
 	    {
-	      prob_epilog = (combine_probabilities (prob_vector, prob_epilog)
-			     + inverse_probability (prob_vector));
+	      prob_epilog = prob_vector * prob_epilog + prob_vector.invert ();
 
-	      scale_bbs_frequencies_int (&bb_before_epilog, 1, prob_epilog,
+	      scale_bbs_frequencies_int (&bb_before_epilog, 1,
+					 prob_epilog.to_reg_br_prob_base (),
 					 REG_BR_PROB_BASE);
 	    }
-	  scale_loop_profile (epilog, prob_epilog, bound);
+	  scale_loop_profile (epilog, prob_epilog.to_reg_br_prob_base (), bound);
 	}
       else
 	slpeel_update_phi_nodes_for_lcssa (epilog);
@@ -2171,7 +2177,10 @@ vect_loop_versioning (loop_vec_info loop_vinfo,
       /* We don't want to scale SCALAR_LOOP's frequencies, we need to
 	 scale LOOP's frequencies instead.  */
       nloop = loop_version (scalar_loop, cond_expr, &condition_bb,
-			    prob, REG_BR_PROB_BASE - prob,
+			    profile_probability::guessed_always ().apply_scale 
+				(prob, REG_BR_PROB_BASE),
+			    profile_probability::guessed_always ().apply_scale
+				 (REG_BR_PROB_BASE - prob, REG_BR_PROB_BASE),
 			    REG_BR_PROB_BASE, REG_BR_PROB_BASE - prob, true);
       scale_loop_frequencies (loop, prob, REG_BR_PROB_BASE);
       /* CONDITION_BB was created above SCALAR_LOOP's preheader,
@@ -2200,7 +2209,10 @@ vect_loop_versioning (loop_vec_info loop_vinfo,
     }
   else
     nloop = loop_version (loop, cond_expr, &condition_bb,
-			  prob, REG_BR_PROB_BASE - prob,
+			  profile_probability::guessed_always ().apply_scale 
+			      (prob, REG_BR_PROB_BASE),
+			  profile_probability::guessed_always ().apply_scale
+			       (REG_BR_PROB_BASE - prob, REG_BR_PROB_BASE),
 			  prob, REG_BR_PROB_BASE - prob, true);
 
   if (version_niter)

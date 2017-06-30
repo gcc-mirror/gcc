@@ -40,7 +40,7 @@ extern int num_insns_constant_wide (HOST_WIDE_INT);
 extern int small_data_operand (rtx, machine_mode);
 extern bool mem_operand_gpr (rtx, machine_mode);
 extern bool mem_operand_ds_form (rtx, machine_mode);
-extern bool toc_relative_expr_p (const_rtx, bool);
+extern bool toc_relative_expr_p (const_rtx, bool, const_rtx *, const_rtx *);
 extern void validate_condition_mode (enum rtx_code, machine_mode);
 extern bool legitimate_constant_pool_address_p (const_rtx, machine_mode,
 						bool);
@@ -73,6 +73,7 @@ extern void rs6000_expand_extract_even (rtx, rtx, rtx);
 extern void rs6000_expand_interleave (rtx, rtx, rtx, bool);
 extern void rs6000_scale_v2df (rtx, rtx, int);
 extern void rs6000_generate_float2_code (bool, rtx, rtx, rtx);
+extern void rs6000_generate_vsigned2_code (bool, rtx, rtx, rtx);
 extern int expand_block_clear (rtx[]);
 extern int expand_block_move (rtx[]);
 extern bool expand_block_compare (rtx[]);

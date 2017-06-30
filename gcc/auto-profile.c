@@ -1346,9 +1346,10 @@ afdo_propagate_circuit (const bb_set &annotated_bb, edge_set *annotated_edge)
             continue;
           total++;
           only_one = ep;
-          if (e->probability == 0 && !is_edge_annotated (ep, *annotated_edge))
+          if (!e->probability.initialized_p ()
+	      && !is_edge_annotated (ep, *annotated_edge))
             {
-              ep->probability = 0;
+              ep->probability = profile_probability::never ();
               ep->count = profile_count::zero ();
               set_edge_annotated (ep, annotated_edge);
             }

@@ -5349,8 +5349,6 @@ s390_expand_movmem (rtx dst, rtx src, rtx len)
 void
 s390_expand_setmem (rtx dst, rtx len, rtx val)
 {
-  const int very_unlikely = REG_BR_PROB_BASE / 100 - 1;
-
   if (GET_CODE (len) == CONST_INT && INTVAL (len) <= 0)
     return;
 
@@ -5424,7 +5422,7 @@ s390_expand_setmem (rtx dst, rtx len, rtx val)
       convert_move (count, len, 1);
       emit_cmp_and_jump_insns (count, const0_rtx,
 			       EQ, NULL_RTX, mode, 1, zerobyte_end_label,
-			       very_unlikely);
+			       profile_probability::very_unlikely ());
 
       /* We need to make a copy of the target address since memset is
 	 supposed to return it unmodified.  We have to make it here
@@ -5441,7 +5439,8 @@ s390_expand_setmem (rtx dst, rtx len, rtx val)
 	  dstp1 = adjust_address (dst, VOIDmode, 1);
 	  emit_cmp_and_jump_insns (count,
 				   const1_rtx, EQ, NULL_RTX, mode, 1,
-				   onebyte_end_label, very_unlikely);
+				   onebyte_end_label,
+				   profile_probability::very_unlikely ());
 	}
 
       /* There is one unconditional (mvi+mvc)/xc after the loop
