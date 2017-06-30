@@ -1,5 +1,13 @@
 2017-06-30  Richard Biener  <rguenther@suse.de>
 
+	* tree-vect-slp.c (vect_slp_analyze_node_operations): Only
+	analyze the first scalar stmt.  Move vector type computation
+	for the BB case here from ...
+	* tree-vect-stmts.c (vect_analyze_stmt): ... here.  Guard
+	live operation processing in the SLP case properly.
+
+2017-06-30  Richard Biener  <rguenther@suse.de>
+
 	* graph.c (draw_cfg_node_succ_edges): Fix broken dot syntax.
 
 2017-06-30  Martin Liska  <mliska@suse.cz>

@@ -8398,7 +8398,6 @@ vect_analyze_stmt (gimple *stmt, bool *need_to_vectorize, slp_tree node)
   bb_vec_info bb_vinfo = STMT_VINFO_BB_VINFO (stmt_info);
   enum vect_relevant relevance = STMT_VINFO_RELEVANT (stmt_info);
   bool ok;
-  tree scalar_type, vectype;
   gimple *pattern_stmt;
   gimple_seq pattern_def_seq;
 
@@ -8528,48 +8527,6 @@ vect_analyze_stmt (gimple *stmt, bool *need_to_vectorize, slp_tree node)
       default:
         gcc_unreachable ();
     }
-
-  if (bb_vinfo)
-    {
-      gcc_assert (PURE_SLP_STMT (stmt_info));
-
-      /* Memory accesses already got their vector type assigned
-         in vect_analyze_data_refs.  */
-      if (! STMT_VINFO_DATA_REF (stmt_info))
-	{
-	  scalar_type = TREE_TYPE (gimple_get_lhs (stmt));
-	  if (dump_enabled_p ())
-	    {
-	      dump_printf_loc (MSG_NOTE, vect_location,
-			       "get vectype for scalar type:  ");
-	      dump_generic_expr (MSG_NOTE, TDF_SLIM, scalar_type);
-	      dump_printf (MSG_NOTE, "\n");
-	    }
-
-	  vectype = get_vectype_for_scalar_type (scalar_type);
-	  if (!vectype)
-	    {
-	      if (dump_enabled_p ())
-		{
-		  dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-				   "not SLPed: unsupported data-type ");
-		  dump_generic_expr (MSG_MISSED_OPTIMIZATION, TDF_SLIM,
-				     scalar_type);
-		  dump_printf (MSG_MISSED_OPTIMIZATION, "\n");
-		}
-	      return false;
-	    }
-
-	  if (dump_enabled_p ())
-	    {
-	      dump_printf_loc (MSG_NOTE, vect_location, "vectype:  ");
-	      dump_generic_expr (MSG_NOTE, TDF_SLIM, vectype);
-	      dump_printf (MSG_NOTE, "\n");
-	    }
-
-	  STMT_VINFO_VECTYPE (stmt_info) = vectype;
-	}
-   }
 
   if (STMT_VINFO_RELEVANT_P (stmt_info))
     {
@@ -8815,20 +8772,20 @@ vect_transform_stmt (gimple *stmt, gimple_stmt_iterator *gsi,
     {
       gimple *slp_stmt;
       int i;
-      FOR_EACH_VEC_ELT (SLP_TREE_SCALAR_STMTS (slp_node), i, slp_stmt)
-	{
-	  stmt_vec_info slp_stmt_info = vinfo_for_stmt (slp_stmt);
-	  if (STMT_VINFO_LIVE_P (slp_stmt_info)
-	      && STMT_VINFO_TYPE (slp_stmt_info) != reduc_vec_info_type)
-	    {
-	      done = vectorizable_live_operation (slp_stmt, gsi, slp_node, i,
-						  &vec_stmt);
-	      gcc_assert (done);
-	    }
-	}
+      if (STMT_VINFO_TYPE (stmt_info) != reduc_vec_info_type)
+	FOR_EACH_VEC_ELT (SLP_TREE_SCALAR_STMTS (slp_node), i, slp_stmt)
+	  {
+	    stmt_vec_info slp_stmt_info = vinfo_for_stmt (slp_stmt);
+	    if (STMT_VINFO_LIVE_P (slp_stmt_info))
+	      {
+		done = vectorizable_live_operation (slp_stmt, gsi, slp_node, i,
+						    &vec_stmt);
+		gcc_assert (done);
+	      }
+	  }
     }
   else if (STMT_VINFO_LIVE_P (stmt_info)
-      && STMT_VINFO_TYPE (stmt_info) != reduc_vec_info_type)
+	   && STMT_VINFO_TYPE (stmt_info) != reduc_vec_info_type)
     {
       done = vectorizable_live_operation (stmt, gsi, slp_node, -1, &vec_stmt);
       gcc_assert (done);
