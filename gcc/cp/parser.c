@@ -6542,7 +6542,8 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p,
 	/* Look for the `)' token.  Otherwise, we can't be sure that
 	   we're not looking at an expression: consider `typeid (int
 	   (3))', for example.  */
-	cp_parser_require (parser, CPP_CLOSE_PAREN, RT_CLOSE_PAREN);
+	cp_token *close_paren = cp_parser_require (parser, CPP_CLOSE_PAREN,
+						   RT_CLOSE_PAREN);
 	/* If all went well, simply lookup the type-id.  */
 	if (cp_parser_parse_definitely (parser))
 	  postfix_expression = get_typeid (type, tf_warning_or_error);
@@ -6556,13 +6557,26 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p,
 	    /* Compute its typeid.  */
 	    postfix_expression = build_typeid (expression, tf_warning_or_error);
 	    /* Look for the `)' token.  */
-	    cp_parser_require (parser, CPP_CLOSE_PAREN, RT_CLOSE_PAREN);
+	    close_paren
+	      = cp_parser_require (parser, CPP_CLOSE_PAREN, RT_CLOSE_PAREN);
 	  }
 	/* Restore the saved message.  */
 	parser->type_definition_forbidden_message = saved_message;
 	/* `typeid' may not appear in an integral constant expression.  */
 	if (cp_parser_non_integral_constant_expression (parser, NIC_TYPEID))
 	  postfix_expression = error_mark_node;
+
+	/* Construct a location e.g. :
+	     typeid (expr)
+	     ^~~~~~~~~~~~~
+	   ranging from the start of the "typeid" token to the final closing
+	   paren, with the caret at the start.  */
+	if (close_paren)
+	  {
+	    location_t typeid_loc
+	      = make_location (start_loc, start_loc, close_paren->location);
+	    postfix_expression.set_location (typeid_loc);
+	  }
       }
       break;
 
