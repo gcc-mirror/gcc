@@ -1,3 +1,11 @@
+2017-06-30  Aldy Hernandez  <aldyh@redhat.com>
+
+	* tree-ssanames.c (set_range_info_raw): Abstract from ...
+	(set_range_info): ...here.  Only call set_range_info_raw if domain
+	is useful.
+	(set_nonzero_bits): Call set_range_info_raw.
+	* tree-ssanames.h (set_range_info_raw): New.
+
 2017-06-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/81225
