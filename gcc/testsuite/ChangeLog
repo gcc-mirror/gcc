@@ -1,3 +1,8 @@
+2017-06-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/81249
+	* g++.dg/torture/pr81249.C: New testcase.
+
 2017-06-29  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* g++.dg/cpp0x/inh-ctor3.C: Adjust for dg-message vs dg-error.

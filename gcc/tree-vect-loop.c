@@ -4835,12 +4835,9 @@ vect_create_epilog_for_reduction (vec<tree> vect_defs, gimple *stmt,
 
       /* Convert the reduced value back to the result type and set as the
 	 result.  */
-      tree data_reduc_cast = build1 (VIEW_CONVERT_EXPR, scalar_type,
-				     data_reduc);
-      epilog_stmt = gimple_build_assign (new_scalar_dest, data_reduc_cast);
-      new_temp = make_ssa_name (new_scalar_dest, epilog_stmt);
-      gimple_assign_set_lhs (epilog_stmt, new_temp);
-      gsi_insert_before (&exit_gsi, epilog_stmt, GSI_SAME_STMT);
+      gimple_seq stmts = NULL;
+      new_temp = gimple_convert (&stmts, scalar_type, data_reduc);
+      gsi_insert_seq_before (&exit_gsi, stmts, GSI_SAME_STMT);
       scalar_results.safe_push (new_temp);
     }
   else if (STMT_VINFO_VEC_REDUCTION_TYPE (stmt_info) == COND_REDUCTION
@@ -4905,6 +4902,11 @@ vect_create_epilog_for_reduction (vec<tree> vect_defs, gimple *stmt,
 	      val = new_val;
 	    }
 	}
+      /* Convert the reduced value back to the result type and set as the
+	 result.  */
+      gimple_seq stmts = NULL;
+      val = gimple_convert (&stmts, scalar_type, val);
+      gsi_insert_seq_before (&exit_gsi, stmts, GSI_SAME_STMT);
       scalar_results.safe_push (val);
     }
 
