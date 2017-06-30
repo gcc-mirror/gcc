@@ -1,3 +1,8 @@
+2017-06-30  Sylvestre Ledru  <sylvestre@debian.org>
+
+	* lto-wrapper.c (copy_file) Close both file descriptors before
+	exiting normally.
+
 2017-06-30  Martin Liska  <mliska@suse.cz>
 
 	PR ipa/81214
