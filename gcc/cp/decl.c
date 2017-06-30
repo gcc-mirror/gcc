@@ -7849,12 +7849,8 @@ register_dtor_fn (tree decl)
   use_dtor = ob_parm && CLASS_TYPE_P (type);
   if (use_dtor)
     {
-      int idx;
+      cleanup = lookup_fnfields_slot (type, complete_dtor_identifier);
 
-      /* Find the destructor.  */
-      idx = lookup_fnfields_1 (type, complete_dtor_identifier);
-      gcc_assert (idx >= 0);
-      cleanup = (*CLASSTYPE_METHOD_VEC (type))[idx];
       /* Make sure it is accessible.  */
       perform_or_defer_access_check (TYPE_BINFO (type), cleanup, cleanup,
 				     tf_warning_or_error);

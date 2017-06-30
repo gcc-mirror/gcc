@@ -558,10 +558,6 @@ check_member_template (tree tmpl)
 tree
 check_classfn (tree ctype, tree function, tree template_parms)
 {
-  int ix;
-  bool is_template;
-  tree pushed_scope;
-  
   if (DECL_USE_TEMPLATE (function)
       && !(TREE_CODE (function) == TEMPLATE_DECL
 	   && DECL_TEMPLATE_SPECIALIZATION (function))
@@ -594,7 +590,7 @@ check_classfn (tree ctype, tree function, tree template_parms)
     }
 
   /* OK, is this a definition of a member template?  */
-  is_template = (template_parms != NULL_TREE);
+  bool is_template = (template_parms != NULL_TREE);
 
   /* [temp.mem]
 
@@ -608,111 +604,88 @@ check_classfn (tree ctype, tree function, tree template_parms)
   /* We must enter the scope here, because conversion operators are
      named by target type, and type equivalence relies on typenames
      resolving within the scope of CTYPE.  */
-  pushed_scope = push_scope (ctype);
-  ix = class_method_index_for_fn (complete_type (ctype), function);
-  if (ix >= 0)
+  tree pushed_scope = push_scope (ctype);
+  tree matched = NULL_TREE;
+  tree fns = lookup_fnfields_slot (ctype, DECL_NAME (function));
+  
+  for (ovl_iterator iter (fns); !matched && iter; ++iter)
     {
-      vec<tree, va_gc> *methods = CLASSTYPE_METHOD_VEC (ctype);
+      tree fndecl = *iter;
+      tree p1 = TYPE_ARG_TYPES (TREE_TYPE (function));
+      tree p2 = TYPE_ARG_TYPES (TREE_TYPE (fndecl));
 
-      for (ovl_iterator iter ((*methods)[ix]); iter; ++iter)
-	{
-	  tree fndecl = *iter;
-	  tree p1 = TYPE_ARG_TYPES (TREE_TYPE (function));
-	  tree p2 = TYPE_ARG_TYPES (TREE_TYPE (fndecl));
+      /* We cannot simply call decls_match because this doesn't work
+	 for static member functions that are pretending to be
+	 methods, and because the name may have been changed by
+	 asm("new_name").  */
 
-	  /* We cannot simply call decls_match because this doesn't
-	     work for static member functions that are pretending to
-	     be methods, and because the name may have been changed by
-	     asm("new_name").  */
+      /* Get rid of the this parameter on functions that become
+	 static.  */
+      if (DECL_STATIC_FUNCTION_P (fndecl)
+	  && TREE_CODE (TREE_TYPE (function)) == METHOD_TYPE)
+	p1 = TREE_CHAIN (p1);
 
-	   /* Get rid of the this parameter on functions that become
-	      static.  */
-	  if (DECL_STATIC_FUNCTION_P (fndecl)
-	      && TREE_CODE (TREE_TYPE (function)) == METHOD_TYPE)
-	    p1 = TREE_CHAIN (p1);
+      /* A member template definition only matches a member template
+	 declaration.  */
+      if (is_template != (TREE_CODE (fndecl) == TEMPLATE_DECL))
+	continue;
 
-	  /* A member template definition only matches a member template
-	     declaration.  */
-	  if (is_template != (TREE_CODE (fndecl) == TEMPLATE_DECL))
-	    continue;
+      /* ref-qualifier or absence of same must match.  */
+      if (type_memfn_rqual (TREE_TYPE (function))
+	  != type_memfn_rqual (TREE_TYPE (fndecl)))
+	continue;
 
-	  /* ref-qualifier or absence of same must match.  */
-	  if (type_memfn_rqual (TREE_TYPE (function))
-	      != type_memfn_rqual (TREE_TYPE (fndecl)))
-	    continue;
+      // Include constraints in the match.
+      tree c1 = get_constraints (function);
+      tree c2 = get_constraints (fndecl);
 
-	  // Include constraints in the match.
-	  tree c1 = get_constraints (function);
-	  tree c2 = get_constraints (fndecl);
-
-	  /* While finding a match, same types and params are not enough
-	     if the function is versioned.  Also check version ("target")
-	     attributes.  */
-	  if (same_type_p (TREE_TYPE (TREE_TYPE (function)),
-			   TREE_TYPE (TREE_TYPE (fndecl)))
-	      && compparms (p1, p2)
-	      && !targetm.target_option.function_versions (function, fndecl)
-	      && (!is_template
-		  || comp_template_parms (template_parms,
-					  DECL_TEMPLATE_PARMS (fndecl)))
-	      && equivalent_constraints (c1, c2)
-	      && (DECL_TEMPLATE_SPECIALIZATION (function)
-		  == DECL_TEMPLATE_SPECIALIZATION (fndecl))
-	      && (!DECL_TEMPLATE_SPECIALIZATION (function)
-		  || (DECL_TI_TEMPLATE (function)
-		      == DECL_TI_TEMPLATE (fndecl))))
-	    {
-	      if (pushed_scope)
-		pop_scope (pushed_scope);
-	      return fndecl;
-	    }
-	}
-
-      error_at (DECL_SOURCE_LOCATION (function),
-		"prototype for %q#D does not match any in class %qT",
-		function, ctype);
-
-      const char *format = NULL;
-      tree first = OVL_FIRST ((*methods)[ix]);
-      bool is_conv_op = DECL_CONV_FN_P (first);
-      tree prev = NULL_TREE;
-
-      if (is_conv_op)
-	ix = CLASSTYPE_FIRST_CONVERSION_SLOT;
-      do
-	{
-	  ovl_iterator iter ((*methods)[ix++]);
-	  if (is_conv_op && !DECL_CONV_FN_P (*iter))
-	    break;
-	  for (; iter; ++iter)
-	    {
-	      if (prev)
-		{
-		  if (!format)
-		    format = N_("candidates are: %+#D");
-		  error (format, prev);
-		  format = "                %+#D";
-		}
-	      prev = *iter;
-	    }
-	}
-      while (is_conv_op && size_t (ix) < methods->length ());
-      if (prev)
-	{
-	  if (!format)
-	    format = N_("candidate is: %+#D");
-	  error (format, prev);
-	}
+      /* While finding a match, same types and params are not enough
+	 if the function is versioned.  Also check version ("target")
+	 attributes.  */
+      if (same_type_p (TREE_TYPE (TREE_TYPE (function)),
+		       TREE_TYPE (TREE_TYPE (fndecl)))
+	  && compparms (p1, p2)
+	  && !targetm.target_option.function_versions (function, fndecl)
+	  && (!is_template
+	      || comp_template_parms (template_parms,
+				      DECL_TEMPLATE_PARMS (fndecl)))
+	  && equivalent_constraints (c1, c2)
+	  && (DECL_TEMPLATE_SPECIALIZATION (function)
+	      == DECL_TEMPLATE_SPECIALIZATION (fndecl))
+	  && (!DECL_TEMPLATE_SPECIALIZATION (function)
+	      || (DECL_TI_TEMPLATE (function) == DECL_TI_TEMPLATE (fndecl))))
+	matched = fndecl;
     }
-  else if (!COMPLETE_TYPE_P (ctype))
-    cxx_incomplete_type_error (function, ctype);
-  else
-    error ("no %q#D member function declared in class %qT",
-	   function, ctype);
+
+  if (!matched)
+    {
+      if (!COMPLETE_TYPE_P (ctype))
+	cxx_incomplete_type_error (function, ctype);
+      else
+	{
+	  if (DECL_CONV_FN_P (function))
+	    fns = lookup_all_conversions (ctype);
+
+	  error_at (DECL_SOURCE_LOCATION (function),
+		    "no declaration matches %q#D", function);
+	  if (fns)
+	    print_candidates (fns);
+	  else if (DECL_CONV_FN_P (function))
+	    inform (DECL_SOURCE_LOCATION (function),
+		    "no conversion operators declared");
+	  else
+	    inform (DECL_SOURCE_LOCATION (function),
+		    "no functions named %qD", function);
+	  inform (DECL_SOURCE_LOCATION (TYPE_NAME (ctype)),
+		  "%#qT defined here", ctype);
+	}
+      matched = error_mark_node;
+    }
 
   if (pushed_scope)
     pop_scope (pushed_scope);
-  return error_mark_node;
+
+  return matched;
 }
 
 /* DECL is a function with vague linkage.  Remember it so that at the

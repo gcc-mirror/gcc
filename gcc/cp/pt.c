@@ -1196,15 +1196,10 @@ retrieve_specialization (tree tmpl, tree args, hashval_t hash)
 	= retrieve_specialization (class_template, args, 0);
       if (!class_specialization)
 	return NULL_TREE;
-      /* Now, find the appropriate entry in the CLASSTYPE_METHOD_VEC
-	 for the specialization.  */
-      int idx = class_method_index_for_fn (class_specialization, tmpl);
-      if (idx == -1)
-	return NULL_TREE;
-      /* Iterate through the methods with the indicated name, looking
-	 for the one that has an instance of TMPL.  */
-      vec<tree, va_gc> *methods = CLASSTYPE_METHOD_VEC (class_specialization);
-      for (ovl_iterator iter ((*methods)[idx]); iter; ++iter)
+
+      /* Find the instance of TMPL.  */
+      tree fns = lookup_fnfields_slot (class_specialization, DECL_NAME (tmpl));
+      for (ovl_iterator iter (fns); iter; ++iter)
 	{
 	  tree fn = *iter;
 	  if (DECL_TEMPLATE_INFO (fn) && DECL_TI_TEMPLATE (fn) == tmpl
@@ -2876,8 +2871,6 @@ check_explicit_specialization (tree declarator,
 	  /* Find the list of functions in ctype that have the same
 	     name as the declared function.  */
 	  tree name = TREE_OPERAND (declarator, 0);
-	  tree fns = NULL_TREE;
-	  int idx;
 
 	  if (constructor_name_p (name, ctype))
 	    {
@@ -2900,39 +2893,16 @@ check_explicit_specialization (tree declarator,
 	      name = DECL_NAME (decl);
 	    }
 
-	  if (!DECL_CONV_FN_P (decl))
-	    {
-	      idx = lookup_fnfields_1 (ctype, name);
-	      if (idx >= 0)
-		fns = (*CLASSTYPE_METHOD_VEC (ctype))[idx];
-	    }
+	  tree fns = NULL_TREE;
+	  if (DECL_CONV_FN_P (decl))
+	    /* For a type-conversion operator, we cannot do a
+	       name-based lookup.  We might be looking for `operator
+	       int' which will be a specialization of `operator T'.
+	       Grab all the conversion operators, and then select from
+	       them.  */
+	    fns = lookup_all_conversions (ctype);
 	  else
-	    {
-	      vec<tree, va_gc> *methods;
-	      tree ovl;
-
-	      /* For a type-conversion operator, we cannot do a
-		 name-based lookup.  We might be looking for `operator
-		 int' which will be a specialization of `operator T'.
-		 So, we find *all* the conversion operators, and then
-		 select from them.  */
-	      fns = NULL_TREE;
-
-	      methods = CLASSTYPE_METHOD_VEC (ctype);
-	      if (methods)
-		for (idx = CLASSTYPE_FIRST_CONVERSION_SLOT;
-		     methods->iterate (idx, &ovl);
-		     ++idx)
-		  {
-		    if (!DECL_CONV_FN_P (OVL_FIRST (ovl)))
-		      /* There are no more conversion functions.  */
-		      break;
-
-		    /* Glue all these conversion functions together
-		       with those we already have.  */
-		    fns = lookup_add (ovl, fns);
-		  }
-	    }
+	    fns = lookup_fnfields_slot_nolazy (ctype, name);
 
 	  if (fns == NULL_TREE)
 	    {

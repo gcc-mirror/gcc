@@ -1,3 +1,24 @@
+2017-06-30  Nathan Sidwell  <nathan@acm.org>
+
+	* g++.dg/concepts/memfun-err.C: Adjust diagnostics.
+	* g++.dg/cpp0x/decltype9.C: Likewise.
+	* g++.dg/cpp0x/forw_enum9.C: Likewise.
+	* g++.dg/lookup/decl1.C: Likewise.
+	* g++.dg/lookup/extern-c-redecl.C: Likewise.
+	* g++.dg/other/pr28432.C: Likewise.
+	* g++.dg/parse/crash12.C: Likewise.
+	* g++.dg/parse/enum3.C: Likewise.
+	* g++.dg/parse/operator6.C: Likewise.
+	* g++.dg/template/crash69.C: Likewise.
+	* g++.dg/template/error27.C: Likewise.
+	* g++.dg/template/error28.C: Likewise.
+	* g++.dg/template/memfriend6.C: Likewise.
+	* g++.old-deja/g++.mike/err1.C: Likewise.
+	* g++.old-deja/g++.mike/p811.C: Likewise.
+	* g++.old-deja/g++.other/crash25.C: Likewise.
+	* g++.old-deja/g++.other/dtor4.C: Likewise.
+	* g++.old-deja/g++.pt/t37.C: Likewise.
+
 2017-06-30  Martin Liska  <mliska@suse.cz>
 
 	PR ipa/81214
