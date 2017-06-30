@@ -1,3 +1,8 @@
+2017-06-29  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/81261
+	* tree-inline.c (expand_call_inline): Combine profile statuses.
+
 2017-06-30  Andrew Pinski  <apinski@cavium.com>
 
 	* tree-if-conv.c (predicate_scalar_phi): Update new_stmt if
