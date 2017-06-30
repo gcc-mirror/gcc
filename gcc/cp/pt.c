@@ -12385,7 +12385,7 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 	if (member && DECL_CONV_FN_P (r))
 	  /* Type-conversion operator.  Reconstruct the name, in
 	     case it's the name of one of the template's parameters.  */
-	  DECL_NAME (r) = mangle_conv_op_name_for_type (TREE_TYPE (type));
+	  DECL_NAME (r) = make_conv_op_name (TREE_TYPE (type));
 
 	DECL_ARGUMENTS (r) = tsubst (DECL_ARGUMENTS (t), args,
 				     complain, t);
@@ -14242,7 +14242,7 @@ tsubst_baselink (tree baselink, tree object_type,
 
   tree name = OVL_NAME (fns);
   if (IDENTIFIER_CONV_OP_P (name))
-    name = mangle_conv_op_name_for_type (optype);
+    name = make_conv_op_name (optype);
 
   baselink = lookup_fnfields (qualifying_scope, name, /*protect=*/1);
   if (!baselink)
@@ -15032,7 +15032,7 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
       if (IDENTIFIER_CONV_OP_P (t))
 	{
 	  tree new_type = tsubst (TREE_TYPE (t), args, complain, in_decl);
-	  return mangle_conv_op_name_for_type (new_type);
+	  return make_conv_op_name (new_type);
 	}
       else
 	return t;
@@ -16665,7 +16665,7 @@ tsubst_copy_and_build (tree t,
 	if (IDENTIFIER_CONV_OP_P (t))
 	  {
 	    tree new_type = tsubst (TREE_TYPE (t), args, complain, in_decl);
-	    t = mangle_conv_op_name_for_type (new_type);
+	    t = make_conv_op_name (new_type);
 	  }
 
 	/* Look up the name.  */

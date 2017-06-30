@@ -9399,7 +9399,7 @@ apply_deduced_return_type (tree fco, tree return_type)
     }
 
   if (DECL_CONV_FN_P (fco))
-    DECL_NAME (fco) = mangle_conv_op_name_for_type (return_type);
+    DECL_NAME (fco) = make_conv_op_name (return_type);
 
   TREE_TYPE (fco) = change_return_type (return_type, TREE_TYPE (fco));
 

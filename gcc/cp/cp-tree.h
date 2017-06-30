@@ -6326,6 +6326,7 @@ extern void yyungetc				(int, int);
 extern tree unqualified_name_lookup_error	(tree,
 						 location_t = UNKNOWN_LOCATION);
 extern tree unqualified_fn_lookup_error		(cp_expr);
+extern tree make_conv_op_name			(tree);
 extern tree build_lang_decl			(enum tree_code, tree, tree);
 extern tree build_lang_decl_loc			(location_t, enum tree_code, tree, tree);
 extern void retrofit_lang_decl			(tree);
@@ -7180,7 +7181,6 @@ extern tree mangle_vtbl_for_type		(tree);
 extern tree mangle_vtt_for_type			(tree);
 extern tree mangle_ctor_vtbl_for_type		(tree, tree);
 extern tree mangle_thunk			(tree, int, tree, tree, tree);
-extern tree mangle_conv_op_name_for_type	(tree);
 extern tree mangle_guard_variable		(tree);
 extern tree mangle_tls_init_fn			(tree);
 extern tree mangle_tls_wrapper_fn		(tree);
