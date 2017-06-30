@@ -1,3 +1,9 @@
+2017-06-30  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/81214
+	* multiple_target.c (create_dispatcher_calls): Make ifunc
+	also for function that don't have calls or are not referenced.
+
 2017-06-30  Richard Biener  <rguenther@suse.de>
 
 	* tree-vect-slp.c (vect_slp_analyze_node_operations): Only
