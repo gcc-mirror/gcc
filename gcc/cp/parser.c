@@ -15911,11 +15911,6 @@ cp_parser_template_name (cp_parser* parser,
 				/*ambiguous_decls=*/NULL,
 				token->location);
 
-  /* If the lookup failed and we got the 'template' keyword, believe it.  */
-  if (decl == error_mark_node && template_keyword_p
-      && processing_template_decl)
-    return identifier;
-
   decl = strip_using_decl (decl);
 
   /* If DECL is a template, then the name was a template-name.  */

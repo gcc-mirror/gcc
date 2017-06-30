@@ -1,3 +1,9 @@
+2017-06-30  Jason Merrill  <jason@redhat.com>
+
+	PR c++/81257 - ICE with invalid ::template.
+	PR c++/54769 - wrong lookup of dependent template-name.
+	* parser.c (cp_parser_template_name): Revert part of last change.
+
 2017-06-30  Nathan Sidwell  <nathan@acm.org>
 
 	* config-lang.in (gtfiles): Add cp/lex.c.
