@@ -587,15 +587,14 @@ Objective-C and Objective-C++ Dialects}.
 -mgeneral-regs-only @gol
 -mcmodel=tiny  -mcmodel=small  -mcmodel=large @gol
 -mstrict-align @gol
--momit-leaf-frame-pointer  -mno-omit-leaf-frame-pointer @gol
+-momit-leaf-frame-pointer @gol
 -mtls-dialect=desc  -mtls-dialect=traditional @gol
 -mtls-size=@var{size} @gol
--mfix-cortex-a53-835769  -mno-fix-cortex-a53-835769 @gol
--mfix-cortex-a53-843419  -mno-fix-cortex-a53-843419 @gol
--mlow-precision-recip-sqrt  -mno-low-precision-recip-sqrt@gol
--mlow-precision-sqrt  -mno-low-precision-sqrt@gol
--mlow-precision-div  -mno-low-precision-div @gol
--march=@var{name}  -mcpu=@var{name}  -mtune=@var{name}}
+-mfix-cortex-a53-835769  -mfix-cortex-a53-843419 @gol
+-mlow-precision-recip-sqrt  -mlow-precision-sqrt  -mlow-precision-div @gol
+-mpc-relative-literal-loads @gol
+-msign-return-address=@var{scope} @gol
+-march=@var{name}  -mcpu=@var{name}  -mtune=@var{name}  -moverride=@var{string}}
 
 @emph{Adapteva Epiphany Options}
 @gccoptlist{-mhalf-reg-file  -mprefer-short-insn-regs @gol
@@ -14158,8 +14157,10 @@ across releases.
 This option is only intended to be useful when developing GCC.
 
 @item -mpc-relative-literal-loads
+@itemx -mno-pc-relative-literal-loads
 @opindex mpc-relative-literal-loads
-Enable PC-relative literal loads.  With this option literal pools are
+@opindex mno-pc-relative-literal-loads
+Enable or disable PC-relative literal loads.  With this option literal pools are
 accessed using a single instruction and emitted after each function.  This
 limits the maximum size of functions to 1MB.  This is enabled by default for
 @option{-mcmodel=tiny}.

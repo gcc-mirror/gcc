@@ -1,3 +1,8 @@
+2017-06-30  Yvan Roux  <yvan.roux@linaro.org>
+
+	* doc/invoke.texi (AArch64): Add missing options and remove redundant
+	ones.
+
 2017-06-30  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/81249
