@@ -21,15 +21,15 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_PROFILE_COUNT_H
 #define GCC_PROFILE_COUNT_H
 
-/* Quality of the proflie count.  Because gengtype does not support enums
-   inside of clases, this is in global namespace.  */
+/* Quality of the profile count.  Because gengtype does not support enums
+   inside of classes, this is in global namespace.  */
 enum profile_quality {
   /* Profile is based on static branch prediction heuristics.  It may or may
      not reflect the reality.  */
   profile_guessed = 0,
   /* Profile was determined by autofdo.  */
   profile_afdo = 1,
-  /* Profile was originally based on feedback but it was adjusted 
+  /* Profile was originally based on feedback but it was adjusted
      by code duplicating optimization.  It may not precisely reflect the
      particular code path.  */
   profile_adjusted = 2,
@@ -43,13 +43,13 @@ enum profile_quality {
 
 #define RDIV(X,Y) (((X) + (Y) / 2) / (Y))
 
-/* Data type to hold probabilities.  It implement fixed point arithmetics
+/* Data type to hold probabilities.  It implements fixed point arithmetics
    with capping so probability is always in range [0,1] and scaling requiring
    values greater than 1 needs to be represented otherwise.
 
    In addition to actual value the quality of profile is tracked and propagated
    through all operations.  Special value UNINITIALIZED is used for probabilities
-   that has not been detemrined yet (for example bacause of
+   that has not been determined yet (for example bacause of
    -fno-guess-branch-probability)
 
    Typically probabilities are derived from profile feedback (via
@@ -68,15 +68,15 @@ enum profile_quality {
      - always
 
    Named probabilities except for never/always are assumed to be statically
-   guessed and thus not necessarily acurate.  The difference between never
-   and guessedn never is that the first one should be used only in case that
+   guessed and thus not necessarily accurate.  The difference between never
+   and guessed_never is that the first one should be used only in case that
    well behaving program will very likely not execute the "never" path.
    For example if the path is going to abort () call or it exception handling.
 
-   Alawyas and guessted_always probabilities are symmetric.
+   Always and guessed_always probabilities are symmetric.
 
    For legacy code we support conversion to/from REG_BR_PROB_BASE based fixpoint
-   integer arithmetics. Once the code is converted to branch probabiitlies,
+   integer arithmetics. Once the code is converted to branch probabilities,
    these conversions will probably go away because they are lossy.
 */
 
@@ -175,7 +175,7 @@ public:
     }
 
   /* Conversion from and to REG_BR_PROB_BASE integer fixpoint arithmetics.
-     this is mostly to support legacy code and hsould go away.  */
+     this is mostly to support legacy code and should go away.  */
   static profile_probability from_reg_br_prob_base (int v)
     {
       profile_probability ret;
@@ -199,7 +199,7 @@ public:
       if (val1 > val2)
 	ret.m_val = max_probability;
       else
-        ret.m_val = RDIV (val1 * max_probability, val2);
+	ret.m_val = RDIV (val1 * max_probability, val2);
       ret.m_quality = profile_precise;
       return ret;
     }
@@ -237,7 +237,7 @@ public:
       else
 	{
 	  m_val = MIN ((uint32_t)(m_val + other.m_val), max_probability);
-          m_quality = MIN (m_quality, other.m_quality);
+	  m_quality = MIN (m_quality, other.m_quality);
 	}
       return *this;
     }
@@ -263,7 +263,7 @@ public:
       else
 	{
 	  m_val = m_val >= other.m_val ? m_val - other.m_val : 0;
-          m_quality = MIN (m_quality, other.m_quality);
+	  m_quality = MIN (m_quality, other.m_quality);
 	}
       return *this;
     }
@@ -288,8 +288,8 @@ public:
 	return *this = profile_probability::uninitialized ();
       else
 	{
-          m_val = RDIV ((uint64_t)m_val * other.m_val, max_probability);
-          m_quality = MIN (m_quality, other.m_quality);
+	  m_val = RDIV ((uint64_t)m_val * other.m_val, max_probability);
+	  m_quality = MIN (m_quality, other.m_quality);
 	}
       return *this;
     }
@@ -307,7 +307,7 @@ public:
       else
 	{
 	  gcc_checking_assert (other.m_val);
-          ret.m_val = MIN (RDIV ((uint64_t)m_val * max_probability,
+	  ret.m_val = MIN (RDIV ((uint64_t)m_val * max_probability,
 				 other.m_val),
 			   max_probability);
 	}
@@ -329,11 +329,11 @@ public:
 	  else
 	    {
 	      gcc_checking_assert (other.m_val);
-              m_val = MIN (RDIV ((uint64_t)m_val * max_probability,
+	      m_val = MIN (RDIV ((uint64_t)m_val * max_probability,
 				 other.m_val),
 			   max_probability);
 	    }
-          m_quality = MIN (m_quality, other.m_quality);
+	  m_quality = MIN (m_quality, other.m_quality);
 	}
       return *this;
     }
@@ -591,7 +591,7 @@ public:
       else
 	{
 	  m_val += other.m_val;
-          m_quality = MIN (m_quality, other.m_quality);
+	  m_quality = MIN (m_quality, other.m_quality);
 	}
       return *this;
     }
@@ -615,7 +615,7 @@ public:
       else
 	{
 	  m_val = m_val >= other.m_val ? m_val - other.m_val: 0;
-          m_quality = MIN (m_quality, other.m_quality);
+	  m_quality = MIN (m_quality, other.m_quality);
 	}
       return *this;
     }
@@ -727,9 +727,9 @@ public:
       profile_count ret;
       /* Take care for overflows!  */
       if (num.m_val < max_safe_multiplier || m_val < max_safe_multiplier)
-        ret.m_val = RDIV (m_val * num.m_val, den.m_val);
+	ret.m_val = RDIV (m_val * num.m_val, den.m_val);
       else
-        ret.m_val = RDIV (m_val * RDIV (num.m_val * max_safe_multiplier,
+	ret.m_val = RDIV (m_val * RDIV (num.m_val * max_safe_multiplier,
 					den.m_val), max_safe_multiplier);
       ret.m_quality = MIN (m_quality, profile_adjusted);
       return ret;
@@ -748,7 +748,7 @@ public:
       if (overall < m_val)
 	ret.m_val = profile_probability::max_probability;
       else
-        ret.m_val = RDIV (m_val * profile_probability::max_probability,
+	ret.m_val = RDIV (m_val * profile_probability::max_probability,
 			  overall.m_val);
       ret.m_quality = MIN (m_quality, overall.m_quality);
       return ret;
