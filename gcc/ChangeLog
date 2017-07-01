@@ -1,5 +1,10 @@
 2017-07-01  Jan Hubicka  <hubicka@ucw.cz>
 
+	* tree-if-conv.c (combine_blocks): Use make_single_succ_edge
+	to keep profile consistent.
+
+2017-07-01  Jan Hubicka  <hubicka@ucw.cz>
+
 	* cfgrtl.c (rtl_flow_call_edges_add): Update profile.
 	* tree-cfg.c (gimple_flow_call_edges_add): Likewise.
 	* profile-count.h (max_safe_multiplier): Make unsigned.
