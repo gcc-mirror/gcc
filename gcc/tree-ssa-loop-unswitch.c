@@ -490,12 +490,10 @@ tree_unswitch_loop (struct loop *loop,
 
   extract_true_false_edges_from_block (unswitch_on, &edge_true, &edge_false);
   prob_true = edge_true->probability;
-  int p = prob_true.initialized_p () ? prob_true.to_reg_br_prob_base ()
-				     : REG_BR_PROB_BASE / 2;
   return loop_version (loop, unshare_expr (cond),
 		       NULL, prob_true,
 		       prob_true.invert (),
-		       p, REG_BR_PROB_BASE - p,
+		       prob_true, prob_true.invert (),
 		       false);
 }
 

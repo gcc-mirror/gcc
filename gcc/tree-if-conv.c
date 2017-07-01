@@ -2569,7 +2569,8 @@ version_loop_for_if_conversion (struct loop *loop)
   new_loop = loop_version (loop, cond, &cond_bb,
 			   profile_probability::always (),
 			   profile_probability::always (),
-			   REG_BR_PROB_BASE, REG_BR_PROB_BASE, true);
+			   profile_probability::always (),
+			   profile_probability::always (), true);
   free_original_copy_tables ();
 
   for (unsigned i = 0; i < save_length; i++)

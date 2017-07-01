@@ -1051,6 +1051,26 @@ scale_bbs_frequencies_profile_count (basic_block *bbs, int nbbs,
     }
 }
 
+/* Multiply all frequencies of basic blocks in array BBS of length NBBS
+   by NUM/DEN, in profile_count arithmetic.  More accurate than previous
+   function but considerably slower.  */
+void
+scale_bbs_frequencies (basic_block *bbs, int nbbs,
+		       profile_probability p)
+{
+  int i;
+  edge e;
+
+  for (i = 0; i < nbbs; i++)
+    {
+      edge_iterator ei;
+      bbs[i]->frequency = p.apply (bbs[i]->frequency);
+      bbs[i]->count = bbs[i]->count.apply_probability (p);
+      FOR_EACH_EDGE (e, ei, bbs[i]->succs)
+	e->count =  e->count.apply_probability (p);
+    }
+}
+
 /* Helper types for hash tables.  */
 
 struct htab_bb_copy_original_entry
