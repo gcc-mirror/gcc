@@ -1,5 +1,10 @@
 2017-06-29  Jan Hubicka  <hubicka@ucw.cz>
 
+	* pa.c (pa_expand_compare_and_swap_loop): Update call of
+	emit_cmp_and_jump_insns.
+
+2017-06-29  Jan Hubicka  <hubicka@ucw.cz>
+
 	PR ipa/81261
 	* tree-inline.c (expand_call_inline): Combine profile statuses.
 
