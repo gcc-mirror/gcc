@@ -1812,18 +1812,15 @@ static void
 fix_up_fall_thru_edges (void)
 {
   basic_block cur_bb;
-  basic_block new_bb;
-  edge succ1;
-  edge succ2;
-  edge fall_thru;
-  edge cond_jump = NULL;
-  bool cond_jump_crosses;
-  int invert_worked;
-  rtx_insn *old_jump;
-  rtx_code_label *fall_thru_label;
 
   FOR_EACH_BB_FN (cur_bb, cfun)
     {
+      edge succ1;
+      edge succ2;
+      edge fall_thru = NULL;
+      edge cond_jump = NULL;
+      rtx_code_label *fall_thru_label;
+
       fall_thru = NULL;
       if (EDGE_COUNT (cur_bb->succs) > 0)
 	succ1 = EDGE_SUCC (cur_bb, 0);
@@ -1849,20 +1846,8 @@ fix_up_fall_thru_edges (void)
 	  fall_thru = succ2;
 	  cond_jump = succ1;
 	}
-      else if (succ1
-	       && (block_ends_with_call_p (cur_bb)
-		   || can_throw_internal (BB_END (cur_bb))))
-	{
-	  edge e;
-	  edge_iterator ei;
-
-	  FOR_EACH_EDGE (e, ei, cur_bb->succs)
-	    if (e->flags & EDGE_FALLTHRU)
-	      {
-		fall_thru = e;
-		break;
-	      }
-	}
+      else if (succ2 && EDGE_COUNT (cur_bb->succs) > 2)
+	fall_thru = find_fallthru_edge (cur_bb->succs);
 
       if (fall_thru && (fall_thru->dest != EXIT_BLOCK_PTR_FOR_FN (cfun)))
 	{
@@ -1873,9 +1858,9 @@ fix_up_fall_thru_edges (void)
 	      /* The fall_thru edge crosses; now check the cond jump edge, if
 		 it exists.  */
 
-	      cond_jump_crosses = true;
-	      invert_worked  = 0;
-	      old_jump = BB_END (cur_bb);
+	      bool cond_jump_crosses = true;
+	      int invert_worked = 0;
+	      rtx_insn *old_jump = BB_END (cur_bb);
 
 	      /* Find the jump instruction, if there is one.  */
 
@@ -1895,12 +1880,13 @@ fix_up_fall_thru_edges (void)
 		      /* Find label in fall_thru block. We've already added
 			 any missing labels, so there must be one.  */
 
-		      fall_thru_label = block_label (fall_thru->dest);
+		      rtx_code_label *fall_thru_label
+			= block_label (fall_thru->dest);
 
 		      if (old_jump && fall_thru_label)
 			{
-			  rtx_jump_insn *old_jump_insn =
-				dyn_cast <rtx_jump_insn *> (old_jump);
+			  rtx_jump_insn *old_jump_insn
+			    = dyn_cast <rtx_jump_insn *> (old_jump);
 			  if (old_jump_insn)
 			    invert_worked = invert_jump (old_jump_insn,
 							 fall_thru_label, 0);
@@ -1931,7 +1917,7 @@ fix_up_fall_thru_edges (void)
 		     becomes EDGE_CROSSING.  */
 
 		  fall_thru->flags &= ~EDGE_CROSSING;
-		  new_bb = force_nonfallthru (fall_thru);
+		  basic_block new_bb = force_nonfallthru (fall_thru);
 
 		  if (new_bb)
 		    {
