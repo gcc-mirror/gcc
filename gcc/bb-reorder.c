@@ -1819,7 +1819,6 @@ fix_up_fall_thru_edges (void)
       edge succ2;
       edge fall_thru = NULL;
       edge cond_jump = NULL;
-      rtx_code_label *fall_thru_label;
 
       fall_thru = NULL;
       if (EDGE_COUNT (cur_bb->succs) > 0)
