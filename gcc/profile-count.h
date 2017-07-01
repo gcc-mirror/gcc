@@ -506,13 +506,20 @@ class GTY(()) profile_count
   /* Assume numbers smaller than this to multiply.  This is set to make
      testsuite pass, in future we may implement precise multiplication in higer
      rangers.  */
-  static const int64_t max_safe_multiplier = 131072;
+  static const uint64_t max_safe_multiplier = 131072;
 public:
 
   /* Used for counters which are expected to be never executed.  */
   static profile_count zero ()
     {
       return from_gcov_type (0);
+    }
+  static profile_count guessed_zero ()
+    {
+      profile_count c;
+      c.m_val = 0;
+      c.m_quality = profile_guessed;
+      return c;
     }
   static profile_count one ()
     {
