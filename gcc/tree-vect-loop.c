@@ -7668,7 +7668,7 @@ optimize_mask_stores (struct loop *loop)
       /* Put STORE_BB to likely part.  */
       efalse->probability = profile_probability::unlikely ();
       store_bb->frequency = PROB_ALWAYS - EDGE_FREQUENCY (efalse);
-      make_edge (store_bb, join_bb, EDGE_FALLTHRU);
+      make_single_succ_edge (store_bb, join_bb, EDGE_FALLTHRU);
       if (dom_info_available_p (CDI_DOMINATORS))
 	set_immediate_dominator (CDI_DOMINATORS, store_bb, bb);
       if (dump_enabled_p ())

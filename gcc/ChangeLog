@@ -1,3 +1,8 @@
+2017-07-01  Jan Hubicka  <hubicka@ucw.cz>
+
+	* tree-vect-loop.c (optimize_mask_stores): Use make_single_succ_edge
+	to update profile.
+
 2017-07-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR sanitizer/81262
