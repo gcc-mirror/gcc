@@ -245,7 +245,8 @@ probably_never_executed_bb_p (struct function *fun, const_basic_block bb)
 static bool
 unlikely_executed_edge_p (edge e)
 {
-  return e->count == profile_count::zero ()
+  return (e->count == profile_count::zero ()
+	  || e->probability == profile_probability::never ())
 	 || (e->flags & (EDGE_EH | EDGE_FAKE));
 }
 
@@ -254,8 +255,8 @@ unlikely_executed_edge_p (edge e)
 bool
 probably_never_executed_edge_p (struct function *fun, edge e)
 {
-  if (e->count.initialized_p ())
-    unlikely_executed_edge_p (e);
+  if (unlikely_executed_edge_p (e))
+    return true;
   return probably_never_executed (fun, e->count, EDGE_FREQUENCY (e));
 }
 

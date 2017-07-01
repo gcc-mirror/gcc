@@ -1718,9 +1718,7 @@ sms_schedule (void)
 
 	      loop_version (loop, comp_rtx, &condition_bb,
 	  		    prob, prob.invert (),
-			    prob.to_reg_br_prob_base (),
-			    prob.invert ().to_reg_br_prob_base (),
-			    true);
+			    prob, prob.invert (), true);
 	     }
 
 	  /* Set new iteration count of loop kernel.  */

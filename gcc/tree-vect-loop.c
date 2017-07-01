@@ -7118,16 +7118,14 @@ scale_profile_for_vect_loop (struct loop *loop, unsigned vf)
     }
   if (freq_h > 0)
     {
-      gcov_type scale;
+      profile_probability p;
 
       /* Avoid dropping loop body profile counter to 0 because of zero count
 	 in loop's preheader.  */
       if (!(freq_e > profile_count::from_gcov_type (1)))
        freq_e = profile_count::from_gcov_type (1);
-      /* This should not overflow.  */
-      scale = freq_e.apply_scale (new_est_niter + 1, 1).probability_in (freq_h)
-			.to_reg_br_prob_base ();
-      scale_loop_frequencies (loop, scale, REG_BR_PROB_BASE);
+      p = freq_e.apply_scale (new_est_niter + 1, 1).probability_in (freq_h);
+      scale_loop_frequencies (loop, p);
     }
 
   basic_block exit_bb = single_pred (loop->latch);
