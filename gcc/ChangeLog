@@ -1,3 +1,11 @@
+2017-07-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/81262
+	* bb-reorder.c (fix_up_fall_thru_edges): Move variable declarations to
+	the right scopes, make sure cond_jump isn't preserved between multiple
+	iterations.  Search for fallthru edge whenever there are 3+ edges and
+	use find_fallthru_edge for it.
+
 2017-06-29  Jan Hubicka  <hubicka@ucw.cz>
 
 	Patch by Alexander Monakov <amonakov@ispras.ru>
