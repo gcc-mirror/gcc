@@ -1,5 +1,9 @@
 2017-07-01  Jan Hubicka  <hubicka@ucw.cz>
 
+	* trans-mem.c (split_bb_make_tm_edge): Update profile.
+
+2017-07-01  Jan Hubicka  <hubicka@ucw.cz>
+
 	* tree-if-conv.c (combine_blocks): Use make_single_succ_edge
 	to keep profile consistent.
 
