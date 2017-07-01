@@ -1,5 +1,6 @@
 2017-06-29  Jan Hubicka  <hubicka@ucw.cz>
 
+	Patch by Alexander Monakov <amonakov@ispras.ru>
 	* sel-sched-ir.c (compute_succs_info): Handle uninitialized
 	probabilities consistently.
 
