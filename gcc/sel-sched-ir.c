@@ -4749,7 +4749,7 @@ compute_succs_info (insn_t insn, short flags)
                        inner loop to exits.  */
                     si.bb_end && si.e1->probability.initialized_p ()
 		    ? si.e1->probability.to_reg_br_prob_base ()
-		    : REG_BR_PROB_BASE);
+		    : 0);
           sinfo->succs_ok_n++;
         }
       else
