@@ -1450,7 +1450,7 @@ fix_up_crossing_landing_pad (eh_landing_pad old_lp, basic_block old_bb)
 
   emit_barrier_after_bb (new_bb);
 
-  make_edge (new_bb, post_bb, 0);
+  make_single_succ_edge (new_bb, post_bb, 0);
 
   /* Make sure new bb is in the other partition.  */
   new_partition = BB_PARTITION (old_bb);
@@ -2118,7 +2118,7 @@ fix_crossing_conditional_branches (void)
 		 for 'dest'.  */
 
 	      if (EDGE_COUNT (new_bb->succs) == 0)
-		new_edge = make_edge (new_bb, dest, 0);
+		new_edge = make_single_succ_edge (new_bb, dest, 0);
 	      else
 		new_edge = EDGE_SUCC (new_bb, 0);
 
