@@ -1,3 +1,11 @@
+2017-07-02  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	PR tree-optimization/81136
+	* tree-vect-data-refs.c (vect_update_misalignment_for_peel): Only
+	assert that two references with the same misalignment have the same
+	compile-time misalignment if those compile-time misalignments
+	are known.
+
 2017-07-01  Andi Kleen  <ak@linux.intel.com>
 
         * print-tree.c (print_node): Print all attributes.
