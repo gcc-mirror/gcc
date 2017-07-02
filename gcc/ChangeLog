@@ -1,5 +1,40 @@
 2017-07-02  Richard Sandiford  <richard.sandiford@linaro.org>
 
+	* tree-ssa-strlen.c (strinfo): Rename the length field to
+	nonzero_chars.  Add a full_string_p field.
+	(compare_nonzero_chars, zero_length_string_p): New functions.
+	(get_addr_stridx): Add an offset_out parameter.
+	Use compare_nonzero_chars.
+	(get_stridx): Update accordingly.  Use compare_nonzero_chars.
+	(new_strinfo): Update after above changes to strinfo.
+	(set_endptr_and_length): Set full_string_p.
+	(get_string_length): Update after above changes to strinfo.
+	(unshare_strinfo): Update call to new_strinfo.
+	(maybe_invalidate): Likewise.
+	(get_stridx_plus_constant): Change off to unsigned HOST_WIDE_INT.
+	Use compare_nonzero_chars and zero_string_p.  Treat nonzero_chars
+	as a uhwi instead of an shwi.  Update after above changes to
+	strinfo and new_strinfo.
+	(zero_length_string): Assert that chainsi contains full strings.
+	Use zero_length_string_p.  Update call to new_strinfo.
+	(adjust_related_strinfos): Update after above changes to strinfo.
+	Copy full_string_p from origsi.
+	(adjust_last_stmt): Use zero_length_string_p.
+	(handle_builtin_strlen): Update after above changes to strinfo and
+	new_strinfo.  Install the lhs as the string length if the previous
+	entry didn't describe a full string.
+	(handle_builtin_strchr): Update after above changes to strinfo
+	and new_strinfo.
+	(handle_builtin_strcpy): Likewise.
+	(handle_builtin_strcat): Likewise.
+	(handle_builtin_malloc): Likewise.
+	(handle_pointer_plus): Likewise.
+	(handle_builtin_memcpy): Likewise.  Track nonzero characters
+	that aren't necessarily followed by a nul terminator.
+	(handle_char_store): Likewise.
+
+2017-07-02  Richard Sandiford  <richard.sandiford@linaro.org>
+
 	PR tree-optimization/80769
 	* tree-ssa-strlen.c (strinfo): Document that "stmt" is also used
 	for malloc and calloc.  Document the new invariant that all related
