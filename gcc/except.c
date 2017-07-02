@@ -990,6 +990,8 @@ dw2_build_landing_pads (void)
       end_sequence ();
 
       bb = emit_to_new_bb_before (seq, label_rtx (lp->post_landing_pad));
+      bb->count = bb->next_bb->count;
+      bb->frequency = bb->next_bb->frequency;
       make_single_succ_edge (bb, bb->next_bb, e_flags);
       if (current_loops)
 	{

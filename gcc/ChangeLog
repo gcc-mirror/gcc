@@ -1,5 +1,10 @@
 2017-07-02  Jan Hubicka  <hubicka@ucw.cz>
 
+	* expect.c (dw2_build_landing_pads): Update profile of the landing pad
+	bb.
+
+2017-07-02  Jan Hubicka  <hubicka@ucw.cz>
+
 	* tree-complex.c (expand_complex_div_wide): update profile.
 
 2017-07-02  Richard Sandiford  <richard.sandiford@linaro.org>
