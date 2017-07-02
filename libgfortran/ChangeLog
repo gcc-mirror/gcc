@@ -1,3 +1,8 @@
+2017-07-02  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* intrinsics/eoshift0.c:  For contiguous arrays, use
+	block algorithm.  Use memcpy where possible.
+
 2017-06-26  Jim Wilson  <jim.wilson@r3-a15.aus-colo>
 
 	PR libfortran/81195
