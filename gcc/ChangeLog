@@ -1,5 +1,10 @@
 2017-07-02  Jan Hubicka  <hubicka@ucw.cz>
 
+	* cfgrtl.c (rtl_verify_edges): Enable checking of profile_probability
+	consistency.
+
+2017-07-02  Jan Hubicka  <hubicka@ucw.cz>
+
 	* dumpfile.c: Include profile-count.h
 	* tree-cfg.c (gimple_duplicate_sese_tail): Drop UNUSED attributes; update
 	profile.
