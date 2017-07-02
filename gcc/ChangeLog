@@ -1,5 +1,9 @@
 2017-07-02  Jan Hubicka  <hubicka@ucw.cz>
 
+	* bb-reorder.c (fix_up_crossing_landing_pad): Update profile.
+
+2017-07-02  Jan Hubicka  <hubicka@ucw.cz>
+
 	* expect.c (dw2_build_landing_pads): Update profile of the landing pad
 	bb.
 
