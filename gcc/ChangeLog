@@ -1,3 +1,7 @@
+2017-07-01  Andi Kleen  <ak@linux.intel.com>
+
+        * print-tree.c (print_node): Print all attributes.
+
 2017-07-01  Jan Hubicka  <hubicka@ucw.cz>
 
 	* cfg.c (scale_bbs_frequencies): New function.
