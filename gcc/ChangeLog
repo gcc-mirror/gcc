@@ -1,4 +1,56 @@
 2017-07-02  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* Makefile.in (MACHMODE_H): Remove insn-modes.h
+	(CORETYPES_H): New define.
+	(MOSTLYCLEANFILES): Add insn-modes-inline.h.
+	(insn-modes-inline.h, s-modes-inline-h): New rules.
+	(generated_files): Add insn-modes-inline.h.
+	(RTL_BASE_H, TREE_CORE_H): Use CORETYPES_H instead of coretypes.h.
+	(build/gensupport.o, build/ggc-none.o, build/print-rtl.o): Likewise.
+	(build/read-md.o, build/read-rtl.o, build/rtl.o): Likewise.
+	(build/vec.o, build/hash-table.o, build/inchash.o): Likewise.
+	(build/gencondmd.o, build/genattr.o, build/genattr-common.o): Likewise.
+	(build/genattrtab.o, build/genautomata.o, build/gencheck.o): Likewise.
+	(build/gencodes.o, build/genconditions.o): Likewise.
+	(build/genconfig.o, build/genconstants.o, build/genemit.o): Likewise.
+	(build/genenums.o, build/genextract.o, build/genflags.o): Likewise.
+	(build/gentarget-def.o, build/genmddeps.o, build/genopinit.o)
+	(build/genoutput.o, build/genpeep.o, build/genpreds.o): Likewise.
+	(build/genrecog.o, build/genmddump.o, build/genmatch.o): Likewise.
+	(build/gencfn-macros.o, build/gcov-iov.o): Likewise.
+	* coretypes.h: Include everything up to real.h for generators.
+	Include insn-modes.h first.  Include wide-int-print.h after
+	wide-int.h.  Include insn-modes-inline.h and then machmode.h.
+	* machmode.h: Don't include insn-modes.h here.
+	* function-tests.c: Remove includes of signop.h, machmode.h,
+	double-int.h and wide-int.h.
+	* rtl.h: Likewise.
+	* gcc-rich-location.c: Remove includes of machmode.h, double-int.h
+	and wide-int.h.
+	* optc-save-gen.awk: Likewise.
+	* gencheck.c (BITS_PER_UNIT): Delete dummy definition.
+	* godump.c: Remove include of wide-int-print.h.
+	* pretty-print.h: Likewise.
+	* wide-int-print.cc: Likewise.
+	* wide-int.cc: Likewise.
+	* hash-map-tests.c: Remove include of signop.h.
+	* hash-set-tests.c: Likewise.
+	* rtl-tests.c: Likewise.
+	* mkconfig.sh: Remove include of machmode.h.
+	* genmodes.c (emit_insn_modes_h): Split emission of inline functions
+	into...
+	(emit_insn_modes_inline_h): ...this new function.  Emit the code
+	into an insn-modes-inline.h header file, adding appropriate
+	include guards and end comments.
+	(emit_insn_modes_c_header): Remove include of machmode.h.
+	(emit_min_insn_modes_c_header): Include coretypes.h rather than
+	machmode.h.
+	(main): Handle -i flag and call emit_insn_modes_inline_h when
+	it is passed.
+
+2017-07-02  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	* tree-ssa-strlen.c (strinfo): Rename the length field to
 	nonzero_chars.  Add a full_string_p field.
