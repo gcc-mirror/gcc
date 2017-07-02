@@ -1,5 +1,15 @@
 2017-07-02  Jan Hubicka  <hubicka@ucw.cz>
 
+	* dumpfile.c: Include profile-count.h
+	* tree-cfg.c (gimple_duplicate_sese_tail): Drop UNUSED attributes; update
+	profile.
+	(insert_cond_bb): Update profile.
+	* tree-cfg.h (insert_cond_bb): Update prototype.
+	* tree-chkp-opt.c (chkp_optimize_string_function_calls): Update.
+	* tree-dump.c: Do not include tree-cfg.
+
+2017-07-02  Jan Hubicka  <hubicka@ucw.cz>
+
 	* bb-reorder.c (fix_up_crossing_landing_pad): Update profile.
 
 2017-07-02  Jan Hubicka  <hubicka@ucw.cz>
