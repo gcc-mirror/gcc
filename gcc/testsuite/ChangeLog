@@ -1,5 +1,11 @@
 2017-07-02  Richard Sandiford  <richard.sandiford@linaro.org>
 
+	PR tree-optimization/80769
+	* gcc.dg/strlenopt-31.c: New test.
+	* gcc.dg/strlenopt-31g.c: Likewise.
+
+2017-07-02  Richard Sandiford  <richard.sandiford@linaro.org>
+
 	PR tree-optimization/81136
 	* gcc.dg/vect/pr81136.c: New test.
 

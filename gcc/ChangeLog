@@ -1,5 +1,19 @@
 2017-07-02  Richard Sandiford  <richard.sandiford@linaro.org>
 
+	PR tree-optimization/80769
+	* tree-ssa-strlen.c (strinfo): Document that "stmt" is also used
+	for malloc and calloc.  Document the new invariant that all related
+	strinfos have delayed lengths or none do.
+	(verify_related_strinfos): Move earlier in file.
+	(set_endptr_and_length): New function, split out from...
+	(get_string_length): ...here.  Also set the lengths of related
+	strinfos.
+	(zero_length_string): Assert that chainsi has known (rather than
+	delayed) lengths.
+	(adjust_related_strinfos): Likewise.
+
+2017-07-02  Richard Sandiford  <richard.sandiford@linaro.org>
+
 	PR tree-optimization/81136
 	* tree-vect-data-refs.c (vect_update_misalignment_for_peel): Only
 	assert that two references with the same misalignment have the same
