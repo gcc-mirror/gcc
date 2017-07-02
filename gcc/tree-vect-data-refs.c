@@ -906,8 +906,10 @@ vect_update_misalignment_for_peel (struct data_reference *dr,
     {
       if (current_dr != dr)
         continue;
-      gcc_assert (DR_MISALIGNMENT (dr) / dr_size ==
-                  DR_MISALIGNMENT (dr_peel) / dr_peel_size);
+      gcc_assert (!known_alignment_for_access_p (dr)
+		  || !known_alignment_for_access_p (dr_peel)
+		  || (DR_MISALIGNMENT (dr) / dr_size
+		      == DR_MISALIGNMENT (dr_peel) / dr_peel_size));
       SET_DR_MISALIGNMENT (dr, 0);
       return;
     }
