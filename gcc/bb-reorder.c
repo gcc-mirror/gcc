@@ -1446,6 +1446,8 @@ fix_up_crossing_landing_pad (eh_landing_pad old_lp, basic_block old_bb)
   last_bb = EXIT_BLOCK_PTR_FOR_FN (cfun)->prev_bb;
   new_bb = create_basic_block (new_label, jump, last_bb);
   new_bb->aux = last_bb->aux;
+  new_bb->frequency = post_bb->frequency;
+  new_bb->count = post_bb->count;
   last_bb->aux = new_bb;
 
   emit_barrier_after_bb (new_bb);
