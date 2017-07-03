@@ -1,3 +1,7 @@
+2017-07-03  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.target/i386/mvc6.c: Require ifunc support.
+
 2017-07-03  Martin Liska  <mliska@suse.cz>
 
 	PR sanitize/81040
