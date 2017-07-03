@@ -14525,7 +14525,7 @@ resolve_symbol (gfc_symbol *sym)
       && !sym->attr.codimension && !sym->ts.u.derived->attr.coarray_comp)
     {
       gfc_error ("Variable %s at %L of type EVENT_TYPE or with subcomponent of "
-		 "type LOCK_TYPE must be a coarray", sym->name,
+		 "type EVENT_TYPE must be a coarray", sym->name,
 		 &sym->declared_at);
       return;
     }

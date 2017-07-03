@@ -1,5 +1,10 @@
 2017-07-03  Dominique d'Humieres  <dominiq@lps.ens.fr>
 
+	PR fortran/79866
+	* resolve.c (resolve_symbol): Fix typo.
+
+2017-07-03  Dominique d'Humieres  <dominiq@lps.ens.fr>
+
 	PR fortran/79843
 	* symbol.c (check_conflict): Add missing "conflicts".
 
