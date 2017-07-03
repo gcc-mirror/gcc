@@ -94,6 +94,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "dumpfile.h"
 #include "tree-affine.h"
 #include "params.h"
+#include "builtins.h"
 
 static struct datadep_stats
 {
@@ -802,11 +803,26 @@ dr_analyze_innermost (innermost_loop_behavior *drb, tree ref,
       return false;
     }
 
+  /* Calculate the alignment and misalignment for the inner reference.  */
+  unsigned int HOST_WIDE_INT base_misalignment;
+  unsigned int base_alignment;
+  get_object_alignment_1 (base, &base_alignment, &base_misalignment);
+
+  /* There are no bitfield references remaining in BASE, so the values
+     we got back must be whole bytes.  */
+  gcc_assert (base_alignment % BITS_PER_UNIT == 0
+	      && base_misalignment % BITS_PER_UNIT == 0);
+  base_alignment /= BITS_PER_UNIT;
+  base_misalignment /= BITS_PER_UNIT;
+
   if (TREE_CODE (base) == MEM_REF)
     {
       if (!integer_zerop (TREE_OPERAND (base, 1)))
 	{
+	  /* Subtract MOFF from the base and add it to POFFSET instead.
+	     Adjust the misalignment to reflect the amount we subtracted.  */
 	  offset_int moff = mem_ref_offset (base);
+	  base_misalignment -= moff.to_short_addr ();
 	  tree mofft = wide_int_to_tree (sizetype, moff);
 	  if (!poffset)
 	    poffset = mofft;
@@ -855,20 +871,46 @@ dr_analyze_innermost (innermost_loop_behavior *drb, tree ref,
     }
 
   init = ssize_int (pbitpos / BITS_PER_UNIT);
+
+  /* Subtract any constant component from the base and add it to INIT instead.
+     Adjust the misalignment to reflect the amount we subtracted.  */
   split_constant_offset (base_iv.base, &base_iv.base, &dinit);
-  init =  size_binop (PLUS_EXPR, init, dinit);
+  init = size_binop (PLUS_EXPR, init, dinit);
+  base_misalignment -= TREE_INT_CST_LOW (dinit);
+
   split_constant_offset (offset_iv.base, &offset_iv.base, &dinit);
-  init =  size_binop (PLUS_EXPR, init, dinit);
+  init = size_binop (PLUS_EXPR, init, dinit);
 
   step = size_binop (PLUS_EXPR,
 		     fold_convert (ssizetype, base_iv.step),
 		     fold_convert (ssizetype, offset_iv.step));
 
-  drb->base_address = canonicalize_base_object_address (base_iv.base);
+  base = canonicalize_base_object_address (base_iv.base);
 
+  /* See if get_pointer_alignment can guarantee a higher alignment than
+     the one we calculated above.  */
+  unsigned int HOST_WIDE_INT alt_misalignment;
+  unsigned int alt_alignment;
+  get_pointer_alignment_1 (base, &alt_alignment, &alt_misalignment);
+
+  /* As above, these values must be whole bytes.  */
+  gcc_assert (alt_alignment % BITS_PER_UNIT == 0
+	      && alt_misalignment % BITS_PER_UNIT == 0);
+  alt_alignment /= BITS_PER_UNIT;
+  alt_misalignment /= BITS_PER_UNIT;
+
+  if (base_alignment < alt_alignment)
+    {
+      base_alignment = alt_alignment;
+      base_misalignment = alt_misalignment;
+    }
+
+  drb->base_address = base;
   drb->offset = fold_convert (ssizetype, offset_iv.base);
   drb->init = init;
   drb->step = step;
+  drb->base_alignment = base_alignment;
+  drb->base_misalignment = base_misalignment & (base_alignment - 1);
   drb->offset_alignment = highest_pow2_factor (offset_iv.base);
   drb->step_alignment = highest_pow2_factor (step);
 
@@ -1085,6 +1127,9 @@ create_data_ref (loop_p nest, loop_p loop, tree memref, gimple *stmt,
       print_generic_expr (dump_file, DR_INIT (dr), TDF_SLIM);
       fprintf (dump_file, "\n\tstep: ");
       print_generic_expr (dump_file, DR_STEP (dr), TDF_SLIM);
+      fprintf (dump_file, "\n\tbase alignment: %d", DR_BASE_ALIGNMENT (dr));
+      fprintf (dump_file, "\n\tbase misalignment: %d",
+	       DR_BASE_MISALIGNMENT (dr));
       fprintf (dump_file, "\n\toffset alignment: %d",
 	       DR_OFFSET_ALIGNMENT (dr));
       fprintf (dump_file, "\n\tstep alignment: %d", DR_STEP_ALIGNMENT (dr));

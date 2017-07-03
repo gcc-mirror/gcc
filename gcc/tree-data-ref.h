@@ -52,6 +52,42 @@ struct innermost_loop_behavior
   tree init;
   tree step;
 
+  /* BASE_ADDRESS is known to be misaligned by BASE_MISALIGNMENT bytes
+     from an alignment boundary of BASE_ALIGNMENT bytes.  For example,
+     if we had:
+
+       struct S __attribute__((aligned(16))) { ... };
+
+       char *ptr;
+       ... *(struct S *) (ptr - 4) ...;
+
+     the information would be:
+
+       base_address:      ptr
+       base_aligment:      16
+       base_misalignment:   4
+       init:               -4
+
+     where init cancels the base misalignment.  If instead we had a
+     reference to a particular field:
+
+       struct S __attribute__((aligned(16))) { ... int f; ... };
+
+       char *ptr;
+       ... ((struct S *) (ptr - 4))->f ...;
+
+     the information would be:
+
+       base_address:      ptr
+       base_aligment:      16
+       base_misalignment:   4
+       init:               -4 + offsetof (S, f)
+
+     where base_address + init might also be misaligned, and by a different
+     amount from base_address.  */
+  unsigned int base_alignment;
+  unsigned int base_misalignment;
+
   /* The largest power of two that divides OFFSET, capped to a suitably
      high value if the offset is zero.  This is a byte rather than a bit
      quantity.  */
@@ -147,6 +183,8 @@ struct data_reference
 #define DR_INIT(DR)                (DR)->innermost.init
 #define DR_STEP(DR)                (DR)->innermost.step
 #define DR_PTR_INFO(DR)            (DR)->alias.ptr_info
+#define DR_BASE_ALIGNMENT(DR)      (DR)->innermost.base_alignment
+#define DR_BASE_MISALIGNMENT(DR)   (DR)->innermost.base_misalignment
 #define DR_OFFSET_ALIGNMENT(DR)    (DR)->innermost.offset_alignment
 #define DR_STEP_ALIGNMENT(DR)      (DR)->innermost.step_alignment
 #define DR_INNERMOST(DR)           (DR)->innermost
