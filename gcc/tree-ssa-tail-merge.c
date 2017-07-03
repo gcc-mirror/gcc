@@ -207,6 +207,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-eh.h"
 #include "tree-cfgcleanup.h"
 
+const int ignore_edge_flags = EDGE_DFS_BACK | EDGE_EXECUTABLE;
+
 /* Describes a group of bbs with the same successors.  The successor bbs are
    cached in succs, and the successor edge flags are cached in succ_flags.
    If a bb has the EDGE_TRUE/FALSE_VALUE flags swapped compared to succ_flags,
@@ -707,7 +709,7 @@ find_same_succ_bb (basic_block bb, same_succ **same_p)
     {
       int index = e->dest->index;
       bitmap_set_bit (same->succs, index);
-      same_succ_edge_flags[index] = e->flags;
+      same_succ_edge_flags[index] = (e->flags & ~ignore_edge_flags);
     }
   EXECUTE_IF_SET_IN_BITMAP (same->succs, 0, j, bj)
     same->succ_flags.safe_push (same_succ_edge_flags[j]);
