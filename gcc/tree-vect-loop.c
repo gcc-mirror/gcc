@@ -4842,7 +4842,8 @@ vect_create_epilog_for_reduction (vec<tree> vect_defs, gimple *stmt,
       /* Convert the reduced value back to the result type and set as the
 	 result.  */
       gimple_seq stmts = NULL;
-      new_temp = gimple_convert (&stmts, scalar_type, data_reduc);
+      new_temp = gimple_build (&stmts, VIEW_CONVERT_EXPR, scalar_type,
+			       data_reduc);
       gsi_insert_seq_before (&exit_gsi, stmts, GSI_SAME_STMT);
       scalar_results.safe_push (new_temp);
     }
