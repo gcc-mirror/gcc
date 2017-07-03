@@ -19,4 +19,4 @@ fn2 (void)
       ;
 }
 
-/* { dg-final { scan-tree-dump-times "(?n)find_duplicates: <bb .*> duplicate of <bb .*>" 1 "pre" } } */
+/* { dg-final { scan-tree-dump-not "(?n)find_duplicates: <bb .*> duplicate of <bb .*>" "pre" } } */

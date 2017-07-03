@@ -1,6 +1,15 @@
 2017-07-03  Tom de Vries  <tom@codesourcery.com>
 
 	PR tree-optimization/81192
+	* tree-ssa-tail-merge.c (same_succ_hash): Use bb->loop_father->num in
+	hash.
+	(same_succ::equal): Don't find bbs to be equal if bb->loop_father
+	differs.
+	(find_same_succ_bb): Remove obsolete test on bb->loop_father->latch.
+
+2017-07-03  Tom de Vries  <tom@codesourcery.com>
+
+	PR tree-optimization/81192
 	* tree-ssa-tail-merge.c (same_succ_flush_bb): Handle
 	BB_SAME_SUCC (bb) == NULL.
 

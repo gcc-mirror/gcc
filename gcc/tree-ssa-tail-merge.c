@@ -479,6 +479,8 @@ same_succ_hash (const same_succ *e)
   hstate.add_int (size);
   BB_SIZE (bb) = size;
 
+  hstate.add_int (bb->loop_father->num);
+
   for (i = 0; i < e->succ_flags.length (); ++i)
     {
       flags = e->succ_flags[i];
@@ -566,6 +568,9 @@ same_succ::equal (const same_succ *e1, const same_succ *e2)
   bb2 = BASIC_BLOCK_FOR_FN (cfun, first2);
 
   if (BB_SIZE (bb1) != BB_SIZE (bb2))
+    return 0;
+
+  if (bb1->loop_father != bb2->loop_father)
     return 0;
 
   gsi1 = gsi_start_nondebug_bb (bb1);
@@ -695,15 +700,7 @@ find_same_succ_bb (basic_block bb, same_succ **same_p)
   edge_iterator ei;
   edge e;
 
-  if (bb == NULL
-      /* Be conservative with loop structure.  It's not evident that this test
-	 is sufficient.  Before tail-merge, we've just called
-	 loop_optimizer_finalize, and LOOPS_MAY_HAVE_MULTIPLE_LATCHES is now
-	 set, so there's no guarantee that the loop->latch value is still valid.
-	 But we assume that, since we've forced LOOPS_HAVE_SIMPLE_LATCHES at the
-	 start of pre, we've kept that property intact throughout pre, and are
-	 keeping it throughout tail-merge using this test.  */
-      || bb->loop_father->latch == bb)
+  if (bb == NULL)
     return;
   bitmap_set_bit (same->bbs, bb->index);
   FOR_EACH_EDGE (e, ei, bb->succs)
