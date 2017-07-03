@@ -1,3 +1,10 @@
+2017-07-03  Martin Liska  <mliska@suse.cz>
+
+	* asan.c (asan_emit_stack_protection): Unpoison just red zones
+	and shadow memory of auto variables which are subject of
+	use-after-scope sanitization.
+	(asan_expand_mark_ifn): Add do set only when is_poison.
+
 2016-07-03  Richard Biener  <rguenther@suse.de>
 
 	* tree-vect-loop.c (vect_analyze_loop_operations): Also analyze

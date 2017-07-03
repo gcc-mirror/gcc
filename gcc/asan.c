@@ -1062,7 +1062,7 @@ asan_emit_stack_protection (rtx base, rtx pbase, unsigned int alignb,
   HOST_WIDE_INT base_offset = offsets[length - 1];
   HOST_WIDE_INT base_align_bias = 0, offset, prev_offset;
   HOST_WIDE_INT asan_frame_size = offsets[0] - base_offset;
-  HOST_WIDE_INT last_offset;
+  HOST_WIDE_INT last_offset, last_size;
   int l;
   unsigned char cur_shadow_byte = ASAN_STACK_MAGIC_LEFT;
   tree str_cst, decl, id;
@@ -1297,58 +1297,55 @@ asan_emit_stack_protection (rtx base, rtx pbase, unsigned int alignb,
   if (STRICT_ALIGNMENT)
     set_mem_align (shadow_mem, (GET_MODE_ALIGNMENT (SImode)));
 
-  /* Unpoison shadow memory of a stack at the very end of a function.
-     As we're poisoning stack variables at the end of their scope,
-     shadow memory must be properly unpoisoned here.  The easiest approach
-     would be to collect all variables that should not be unpoisoned and
-     we unpoison shadow memory of the whole stack except ranges
-     occupied by these variables.  */
+  prev_offset = base_offset;
   last_offset = base_offset;
-  HOST_WIDE_INT current_offset = last_offset;
-  if (length)
+  last_size = 0;
+  for (l = length; l; l -= 2)
     {
-      HOST_WIDE_INT var_end_offset = 0;
-      HOST_WIDE_INT stack_start = offsets[length - 1];
-      gcc_assert (last_offset == stack_start);
-
-      for (int l = length - 2; l > 0; l -= 2)
+      offset = base_offset + ((offsets[l - 1] - base_offset)
+			     & ~(ASAN_RED_ZONE_SIZE - HOST_WIDE_INT_1));
+      if (last_offset + last_size != offset)
 	{
-	  HOST_WIDE_INT var_offset = offsets[l];
-	  current_offset = var_offset;
-	  var_end_offset = offsets[l - 1];
-	  HOST_WIDE_INT rounded_size = ROUND_UP (var_end_offset - var_offset,
-					     BITS_PER_UNIT);
+	  shadow_mem = adjust_address (shadow_mem, VOIDmode,
+				       (last_offset - prev_offset)
+				       >> ASAN_SHADOW_SHIFT);
+	  prev_offset = last_offset;
+	  asan_clear_shadow (shadow_mem, last_size >> ASAN_SHADOW_SHIFT);
+	  last_offset = offset;
+	  last_size = 0;
+	}
+      last_size += base_offset + ((offsets[l - 2] - base_offset)
+				  & ~(ASAN_RED_ZONE_SIZE - HOST_WIDE_INT_1))
+		   - offset;
 
-	  /* Should we unpoison the variable?  */
+      /* Unpoison shadow memory that corresponds to a variable that is 
+	 is subject of use-after-return sanitization.  */
+      if (l > 2)
+	{
+	  decl = decls[l / 2 - 2];
 	  if (asan_handled_variables != NULL
 	      && asan_handled_variables->contains (decl))
 	    {
+	      HOST_WIDE_INT size = offsets[l - 3] - offsets[l - 2];
 	      if (dump_file && (dump_flags & TDF_DETAILS))
 		{
 		  const char *n = (DECL_NAME (decl)
 				   ? IDENTIFIER_POINTER (DECL_NAME (decl))
 				   : "<unknown>");
 		  fprintf (dump_file, "Unpoisoning shadow stack for variable: "
-			   "%s (%" PRId64 "B)\n", n,
-			   var_end_offset - var_offset);
+			   "%s (%" PRId64 " B)\n", n, size);
 		}
 
-	      unsigned HOST_WIDE_INT s
-		= shadow_mem_size (current_offset - last_offset);
-	      asan_clear_shadow (shadow_mem, s);
-	      HOST_WIDE_INT shift
-		= shadow_mem_size (current_offset - last_offset + rounded_size);
-	      shadow_mem = adjust_address (shadow_mem, VOIDmode, shift);
-	      last_offset = var_offset + rounded_size;
-	      current_offset = last_offset;
+		last_size += size & ~(ASAN_RED_ZONE_SIZE - HOST_WIDE_INT_1);
 	    }
-
 	}
-
-      /* Handle last redzone.  */
-      current_offset = offsets[0];
-      asan_clear_shadow (shadow_mem,
-			 shadow_mem_size (current_offset - last_offset));
+    }
+  if (last_size)
+    {
+      shadow_mem = adjust_address (shadow_mem, VOIDmode,
+				   (last_offset - prev_offset)
+				   >> ASAN_SHADOW_SHIFT);
+      asan_clear_shadow (shadow_mem, last_size >> ASAN_SHADOW_SHIFT);
     }
 
   /* Clean-up set with instrumented stack variables.  */
@@ -2802,9 +2799,13 @@ asan_expand_mark_ifn (gimple_stmt_iterator *iter)
     decl = TREE_OPERAND (decl, 0);
 
   gcc_checking_assert (TREE_CODE (decl) == VAR_DECL);
-  if (asan_handled_variables == NULL)
-    asan_handled_variables = new hash_set<tree> (16);
-  asan_handled_variables->add (decl);
+
+  if (is_poison)
+    {
+      if (asan_handled_variables == NULL)
+	asan_handled_variables = new hash_set<tree> (16);
+      asan_handled_variables->add (decl);
+    }
   tree len = gimple_call_arg (g, 2);
 
   gcc_assert (tree_fits_shwi_p (len));
