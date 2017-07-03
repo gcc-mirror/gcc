@@ -1,3 +1,12 @@
+2017-07-03  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	Backport from trunk:
+
+	2017-06-15  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.md (add<mode>3): Use reg_or_subregno instead
+	of REGNO.
+
 2017-06-30  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	Backport from mainline
