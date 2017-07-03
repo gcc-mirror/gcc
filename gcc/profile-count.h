@@ -565,6 +565,31 @@ public:
       return initialized_p ();
     }
 
+  /* When merging basic blocks, the two different profile counts are unified.
+     Return true if this can be done without losing info about profile.
+     The only case we care about here is when first BB contains something
+     that makes it terminate in a way not visible in CFG.  */
+  bool ok_for_merging (profile_count other) const
+    {
+      if (m_quality < profile_adjusted
+	  || other.m_quality < profile_adjusted)
+	return true;
+      return !(other < *this);
+    }
+
+  /* When merging two BBs with different counts, pick common count that looks
+     most representative.  */
+  profile_count merge (profile_count other) const
+    {
+      if (*this == other || !other.initialized_p ()
+	  || m_quality > other.m_quality)
+	return *this;
+      if (other.m_quality > m_quality
+	  || other > *this)
+	return other;
+      return *this;
+    }
+
   /* Basic operations.  */
   bool operator== (const profile_count &other) const
     {
