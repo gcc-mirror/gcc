@@ -2135,21 +2135,17 @@ start_over:
       goto again;
     }
 
-  min_scalar_loop_bound = ((PARAM_VALUE (PARAM_MIN_VECT_LOOP_BOUND)
-			    * vectorization_factor) - 1);
+  min_scalar_loop_bound = (PARAM_VALUE (PARAM_MIN_VECT_LOOP_BOUND)
+			   * vectorization_factor);
 
   /* Use the cost model only if it is more conservative than user specified
      threshold.  */
-  th = (unsigned) min_scalar_loop_bound;
-  if (min_profitable_iters
-      && (!min_scalar_loop_bound
-          || min_profitable_iters > min_scalar_loop_bound))
-    th = (unsigned) min_profitable_iters;
+  th = (unsigned) MAX (min_scalar_loop_bound, min_profitable_iters);
 
   LOOP_VINFO_COST_MODEL_THRESHOLD (loop_vinfo) = th;
 
   if (LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo)
-      && LOOP_VINFO_INT_NITERS (loop_vinfo) <= th)
+      && LOOP_VINFO_INT_NITERS (loop_vinfo) < th)
     {
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -2168,7 +2164,7 @@ start_over:
     estimated_niter = max_niter;
   if (estimated_niter != -1
       && ((unsigned HOST_WIDE_INT) estimated_niter
-          <= MAX (th, (unsigned)min_profitable_estimate)))
+          < MAX (th, (unsigned) min_profitable_estimate)))
     {
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -2185,9 +2181,9 @@ start_over:
 
   /* Decide whether we need to create an epilogue loop to handle
      remaining scalar iterations.  */
-  th = ((LOOP_VINFO_COST_MODEL_THRESHOLD (loop_vinfo) + 1)
-        / LOOP_VINFO_VECT_FACTOR (loop_vinfo))
-       * LOOP_VINFO_VECT_FACTOR (loop_vinfo);
+  th = ((LOOP_VINFO_COST_MODEL_THRESHOLD (loop_vinfo)
+	 / LOOP_VINFO_VECT_FACTOR (loop_vinfo))
+	* LOOP_VINFO_VECT_FACTOR (loop_vinfo));
 
   if (LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo)
       && LOOP_VINFO_PEELING_FOR_ALIGNMENT (loop_vinfo) > 0)
@@ -2250,7 +2246,7 @@ start_over:
       /* Niters for at least one iteration of vectorized loop.  */
       niters_th += LOOP_VINFO_VECT_FACTOR (loop_vinfo);
       /* One additional iteration because of peeling for gap.  */
-      if (!LOOP_VINFO_PEELING_FOR_GAPS (loop_vinfo))
+      if (LOOP_VINFO_PEELING_FOR_GAPS (loop_vinfo))
 	niters_th++;
       if (LOOP_VINFO_COST_MODEL_THRESHOLD (loop_vinfo) < niters_th)
 	LOOP_VINFO_COST_MODEL_THRESHOLD (loop_vinfo) = niters_th;
@@ -3550,7 +3546,7 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo,
   if ((scalar_single_iter_cost * vf) > (int) vec_inside_cost)
     {
       if (vec_outside_cost <= 0)
-        min_profitable_iters = 1;
+        min_profitable_iters = 0;
       else
         {
           min_profitable_iters = ((vec_outside_cost - scalar_outside_cost) * vf
@@ -3591,11 +3587,6 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo,
   min_profitable_iters =
 	min_profitable_iters < vf ? vf : min_profitable_iters;
 
-  /* Because the condition we create is:
-     if (niters <= min_profitable_iters)
-       then skip the vectorized loop.  */
-  min_profitable_iters--;
-
   if (dump_enabled_p ())
     dump_printf_loc (MSG_NOTE, vect_location,
                      "  Runtime profitability threshold = %d\n",
@@ -3611,7 +3602,7 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo,
      SIC * niters > VIC * ((niters-PL_ITERS-EP_ITERS)/VF) + VOC + SOC  */
 
   if (vec_outside_cost <= 0)
-    min_profitable_estimate = 1;
+    min_profitable_estimate = 0;
   else
     {
       min_profitable_estimate = ((vec_outside_cost + scalar_outside_cost) * vf
@@ -3620,7 +3611,6 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo,
 				 / ((scalar_single_iter_cost * vf)
 				   - vec_inside_cost);
     }
-  min_profitable_estimate --;
   min_profitable_estimate = MAX (min_profitable_estimate, min_profitable_iters);
   if (dump_enabled_p ())
     dump_printf_loc (MSG_NOTE, vect_location,
@@ -7276,7 +7266,7 @@ vect_transform_loop (loop_vec_info loop_vinfo)
      run at least the vectorization factor number of times checking
      is pointless, too.  */
   th = LOOP_VINFO_COST_MODEL_THRESHOLD (loop_vinfo);
-  if (th >= LOOP_VINFO_VECT_FACTOR (loop_vinfo) - 1
+  if (th >= LOOP_VINFO_VECT_FACTOR (loop_vinfo)
       && !LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo))
     {
       if (dump_enabled_p ())

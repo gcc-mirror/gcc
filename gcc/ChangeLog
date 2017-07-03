@@ -1,3 +1,13 @@
+2017-07-03  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* tree-vect-loop.c (vect_analyze_loop_2): Treat min_scalar_loop_bound,
+	min_profitable_iters, and th as inclusive lower bounds.
+	Fix LOOP_VINFO_PEELING_FOR_GAPS condition.
+	(vect_estimate_min_profitable_iters): Return inclusive lower bounds
+	for min_profitable_iters and min_profitable_estimate.
+	(vect_transform_loop): Treat th as an inclusive lower bound.
+	* tree-vect-loop-manip.c (vect_loop_versioning): Likewise.
+
 2017-07-03  Dominique d'Humieres  <dominiq@lps.ens.fr>
 
 	PR target/81033
