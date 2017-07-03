@@ -2142,7 +2142,7 @@ vect_loop_versioning (loop_vec_info loop_vinfo,
   bool version_niter = LOOP_REQUIRES_VERSIONING_FOR_NITERS (loop_vinfo);
 
   if (check_profitability)
-    cond_expr = fold_build2 (GT_EXPR, boolean_type_node, scalar_loop_iters,
+    cond_expr = fold_build2 (GE_EXPR, boolean_type_node, scalar_loop_iters,
 			     build_int_cst (TREE_TYPE (scalar_loop_iters),
 						       th));
 
