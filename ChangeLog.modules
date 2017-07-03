@@ -1,6 +1,20 @@
 2017-07-03  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* class.c (type_has_user_declared_move_constructor,
+	type_has_user_declared_move_assign): Delete, replace with:
+	(classtype_has_user_move_assign_or_ctor_p): ... this.
+	* cp-tree.h (type_has_user_declared_move_constructor,
+	type_has_user_declared_move_assign): Delete, replace with:
+	(classtype_has_user_move_assign_or_ctor_p): ... this.
+	* method.c (maybe_explain_implicit_delete): Update.
+	(lazily_declare_fn): Update.
+	* tree.c (type_has_nontrivial_copy_init): Update.
+	* search.c (lookup_fnfields_slot_nolazy): Don't try and complete
+	the type.
+	* pt.c (check_explicit_specialization): Use regular lookup.
+
+	gcc/cp/
 	* class.c (maybe_warn_about_overly_private_class): Ignore
 	copy/move ctors.
 	* semantics.c (classtype_has_nothrow_assign_or_copy_p): Use

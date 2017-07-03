@@ -1644,12 +1644,12 @@ lookup_fnfields_slot (tree type, tree name)
   return (*CLASSTYPE_METHOD_VEC (type))[ix];
 }
 
-/* As above, but avoid lazily declaring functions.  */
+/* As above, but avoid completing TYPE or lazily declaring functions.  */
 
 tree
 lookup_fnfields_slot_nolazy (tree type, tree name)
 {
-  int ix = lookup_fnfields_idx_nolazy (complete_type (type), name);
+  int ix = lookup_fnfields_idx_nolazy (type, name);
   if (ix < 0)
     return NULL_TREE;
   return (*CLASSTYPE_METHOD_VEC (type))[ix];
