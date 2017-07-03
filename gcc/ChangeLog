@@ -1,3 +1,7 @@
+2017-07-03  Jan Hubicka  <hubicka@ucw.cz>
+
+	* tree-vect-loop-manip.c (vect_do_peeling): Fix scaling up.
+
 2017-07-03  Richard Earnshaw  <rearnsha@arm.com>
 
 	* doc/invoke.texi (ARM Options): Add -mbe8 and -mbe32 to option summary.
