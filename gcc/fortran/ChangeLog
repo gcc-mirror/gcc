@@ -1,3 +1,8 @@
+2017-07-03  Dominique d'Humieres  <dominiq@lps.ens.fr>
+
+	PR fortran/79843
+	* symbol.c (check_conflict): Add missing "conflicts".
+
 2017-06-29  Cesar Philippidis  <cesar@codesourcery.com>
 
 	PR fortran/77765
