@@ -173,7 +173,7 @@ enum required_token {
   RT_AT_THROW, /* @throw */
 
   RT_SELECT,  /* selection-statement */
-  RT_INTERATION, /* iteration-statement */
+  RT_ITERATION, /* iteration-statement */
   RT_JUMP, /* jump-statement */
   RT_CLASS_KEY, /* class-key */
   RT_CLASS_TYPENAME_TEMPLATE, /* class, typename, or template */
@@ -12061,7 +12061,7 @@ cp_parser_iteration_statement (cp_parser* parser, bool *if_p, bool ivdep)
   token_indent_info guard_tinfo;
 
   /* Peek at the next token.  */
-  token = cp_parser_require (parser, CPP_KEYWORD, RT_INTERATION);
+  token = cp_parser_require (parser, CPP_KEYWORD, RT_ITERATION);
   if (!token)
     return error_mark_node;
 
@@ -28074,7 +28074,7 @@ cp_parser_required_error (cp_parser *parser,
 	  case RT_SELECT:
 	    cp_parser_error (parser, "expected selection-statement");
 	    return;
-	  case RT_INTERATION:
+	  case RT_ITERATION:
 	    cp_parser_error (parser, "expected iteration-statement");
 	    return;
 	  case RT_JUMP:
