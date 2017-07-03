@@ -1,7 +1,20 @@
+2017-07-03  Martin Liska  <mliska@suse.cz>
+
+	PR sanitize/81040
+	* sanopt.c (rewrite_usage_of_param): New function.
+	(sanitize_rewrite_addressable_params): Likewise.
+	(pass_sanopt::execute): Call rewrite_usage_of_param.
+
 2017-07-03  Richard Biener  <rguenther@suse.de>
 
 	* tree-vect-loop.c (vect_create_epilog_for_reduction): Revert
 	back to using VIEW_CONVERT_EXPR.
+
+2017-07-03  Martin Liska  <mliska@suse.cz>
+
+	PR other/78366
+	* doc/extend.texi: Document when a resolver function is
+	generated for target_clones.
 
 2017-07-03  Martin Liska  <mliska@suse.cz>
 
