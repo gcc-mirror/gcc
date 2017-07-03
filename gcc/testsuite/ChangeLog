@@ -1,3 +1,8 @@
+2017-07-03  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/60510
+	* gfortran.dg/vect/pr60510.f: New testcase.
+
 2017-07-03  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* gcc.target/i386/mvc6.c: Require ifunc support.
