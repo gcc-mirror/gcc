@@ -40,7 +40,8 @@ enum isa_feature
     isa_bit_ARMv6,	/* Architecture rel 6.  */
     isa_bit_ARMv6k,	/* Architecture rel 6k.  */
     isa_bit_thumb2,	/* Thumb-2.  */
-    isa_bit_notm,	/* Instructions that are not present in 'M' profile.  */
+    isa_bit_notm,	/* Instructions not present in 'M' profile.  */
+    isa_bit_be8,	/* Architecture uses be8 mode in big-endian.  */
     isa_bit_tdiv,	/* Thumb division instructions.  */
     isa_bit_ARMv7em,	/* Architecture rel 7e-m.  */
     isa_bit_ARMv7,	/* Architecture rel 7.  */
@@ -101,7 +102,7 @@ enum isa_feature
 #define ISA_ARMv5e	ISA_ARMv5, isa_bit_ARMv5e
 #define ISA_ARMv5te	ISA_ARMv5e, isa_bit_thumb
 #define ISA_ARMv5tej	ISA_ARMv5te
-#define ISA_ARMv6	ISA_ARMv5te, isa_bit_ARMv6
+#define ISA_ARMv6	ISA_ARMv5te, isa_bit_ARMv6, isa_bit_be8
 #define ISA_ARMv6j	ISA_ARMv6
 #define ISA_ARMv6k	ISA_ARMv6, isa_bit_ARMv6k
 #define ISA_ARMv6z	ISA_ARMv6
