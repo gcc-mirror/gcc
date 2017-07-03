@@ -1,6 +1,12 @@
 2017-07-03  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* class.c (maybe_warn_about_overly_private_class): Ignore
+	copy/move ctors.
+	* semantics.c (classtype_has_nothrow_assign_or_copy_p): Use
+	lookup_fnfields_slot for ctors.
+
+	gcc/cp/
 	* module.c (cpms_{out,in}::start): Don't deal with identifiers
 	here.
 	(cpms_{out,in}::tree_node): Deal with identifiers specially.

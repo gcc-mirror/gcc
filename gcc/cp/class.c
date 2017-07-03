@@ -2237,8 +2237,7 @@ maybe_warn_about_overly_private_class (tree t)
   /* Warn about classes that have private constructors and no friends.  */
   if (TYPE_HAS_USER_CONSTRUCTOR (t)
       /* Implicitly generated constructors are always public.  */
-      && (!CLASSTYPE_LAZY_DEFAULT_CTOR (t)
-	  || !CLASSTYPE_LAZY_COPY_CTOR (t)))
+      && !CLASSTYPE_LAZY_DEFAULT_CTOR (t))
     {
       bool nonprivate_ctor = false;
 
@@ -2257,13 +2256,11 @@ maybe_warn_about_overly_private_class (tree t)
       else
 	for (ovl_iterator iter (CLASSTYPE_CONSTRUCTORS (t));
 	     !nonprivate_ctor && iter; ++iter)
-	  /* Ideally, we wouldn't count copy constructors (or, in
-	     fact, any constructor that takes an argument of the class
-	     type as a parameter) because such things cannot be used
-	     to construct an instance of the class unless you already
-	     have one.  But, for now at least, we're more
-	     generous.  */
-	  if (! TREE_PRIVATE (*iter))
+	  /* Ideally, we wouldn't count any constructor that takes an
+	     argument of the class type as a parameter,  because such
+	     things cannot be used to construct an instance of the
+	     class unless you already have one.   */
+	  if (! TREE_PRIVATE (*iter) && !copy_fn_p (*iter))
 	    nonprivate_ctor = true;
 
       if (!nonprivate_ctor)
