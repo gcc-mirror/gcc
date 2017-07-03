@@ -1,3 +1,7 @@
+2017-07-03  Nathan Sidwell  <nathan@acm.org>
+
+	* hash-table.h (hash_table_mod1): Fix indentation.
+
 2017-07-02  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR middle-end/81290
