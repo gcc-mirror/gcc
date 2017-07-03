@@ -1,3 +1,16 @@
+2017-07-03  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/60510
+	* tree-vect-loop.c (vect_create_epilog_for_reduction): Pass in
+	the scalar reduction PHI and use it.
+	(vectorizable_reduction): Properly guard the single_defuse_cycle
+	path for non-SLP reduction chains where we cannot use it.
+	Rework reduc_def/index and vector type deduction.  Rework
+	vector operand gathering during reduction op code-gen.
+	* tree-vect-slp.c (vect_analyze_slp): For failed SLP reduction
+	chains dissolve the chain and leave it to non-SLP reduction
+	handling.
+
 2017-07-03  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	* tree-data-ref.h (dr_alignment): Declare.

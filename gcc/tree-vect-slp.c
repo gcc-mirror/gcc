@@ -2121,7 +2121,20 @@ vect_analyze_slp (vec_info *vinfo, unsigned max_tree_size)
 	  FOR_EACH_VEC_ELT (loop_vinfo->reduction_chains, i, first_element)
 	    if (! vect_analyze_slp_instance (vinfo, first_element,
 					     max_tree_size))
-	      return false;
+	      {
+		/* Dissolve reduction chain group.  */
+		gimple *next, *stmt = first_element;
+		while (stmt)
+		  {
+		    stmt_vec_info vinfo = vinfo_for_stmt (stmt);
+		    next = GROUP_NEXT_ELEMENT (vinfo);
+		    GROUP_FIRST_ELEMENT (vinfo) = NULL;
+		    GROUP_NEXT_ELEMENT (vinfo) = NULL;
+		    stmt = next;
+		  }
+		STMT_VINFO_DEF_TYPE (vinfo_for_stmt (first_element))
+		  = vect_internal_def;
+	      }
 	}
 
       /* Find SLP sequences starting from groups of reductions.  */

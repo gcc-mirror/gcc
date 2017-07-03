@@ -4313,6 +4313,7 @@ get_initial_defs_for_reduction (slp_tree slp_node,
 
 static void
 vect_create_epilog_for_reduction (vec<tree> vect_defs, gimple *stmt,
+				  gimple *reduc_def_stmt,
 				  int ncopies, enum tree_code reduc_code,
 				  vec<gimple *> reduction_phis,
                                   int reduc_index, bool double_reduc, 
@@ -4401,9 +4402,8 @@ vect_create_epilog_for_reduction (vec<tree> vect_defs, gimple *stmt,
     {
       /* Get at the scalar def before the loop, that defines the initial value
 	 of the reduction variable.  */
-      tree reduction_op = get_reduction_op (stmt, reduc_index);
-      gimple *def_stmt = SSA_NAME_DEF_STMT (reduction_op);
-      initial_def = PHI_ARG_DEF_FROM_EDGE (def_stmt,
+      gimple *def_stmt;
+      initial_def = PHI_ARG_DEF_FROM_EDGE (reduc_def_stmt,
 					   loop_preheader_edge (loop));
       vect_is_simple_use (initial_def, loop_vinfo, &def_stmt, &initial_def_dt);
       vec_initial_def = get_initial_def_for_reduction (stmt, initial_def,
@@ -5581,19 +5581,17 @@ vectorizable_reduction (gimple *stmt, gimple_stmt_iterator *gsi,
   tree scalar_type;
   bool is_simple_use;
   gimple *orig_stmt;
-  stmt_vec_info orig_stmt_info;
+  stmt_vec_info orig_stmt_info = NULL;
   int i;
   int ncopies;
   int epilog_copies;
   stmt_vec_info prev_stmt_info, prev_phi_info;
   bool single_defuse_cycle = false;
-  tree reduc_def = NULL_TREE;
   gimple *new_stmt = NULL;
   int j;
   tree ops[3];
   enum vect_def_type dts[3];
   bool nested_cycle = false, found_nested_cycle_def = false;
-  gimple *reduc_def_stmt = NULL;
   bool double_reduc = false;
   basic_block def_bb;
   struct loop * def_stmt_loop, *outer_loop = NULL;
@@ -5601,6 +5599,7 @@ vectorizable_reduction (gimple *stmt, gimple_stmt_iterator *gsi,
   gimple *def_arg_stmt;
   auto_vec<tree> vec_oprnds0;
   auto_vec<tree> vec_oprnds1;
+  auto_vec<tree> vec_oprnds2;
   auto_vec<tree> vect_defs;
   auto_vec<gimple *> phis;
   int vec_num;
@@ -5643,8 +5642,6 @@ vectorizable_reduction (gimple *stmt, gimple_stmt_iterator *gsi,
       gimple *reduc_stmt = STMT_VINFO_REDUC_DEF (stmt_info);
       if (STMT_VINFO_IN_PATTERN_P (vinfo_for_stmt (reduc_stmt)))
 	reduc_stmt = STMT_VINFO_RELATED_STMT (vinfo_for_stmt (reduc_stmt));
-      if (STMT_VINFO_RELEVANT (vinfo_for_stmt (reduc_stmt)) <= vect_used_only_live)
-	single_defuse_cycle = true;
 
       gcc_assert (is_gimple_assign (reduc_stmt));
       for (unsigned k = 1; k < gimple_num_ops (reduc_stmt); ++k)
@@ -5665,6 +5662,17 @@ vectorizable_reduction (gimple *stmt, gimple_stmt_iterator *gsi,
       else
 	ncopies = (LOOP_VINFO_VECT_FACTOR (loop_vinfo)
 		   / TYPE_VECTOR_SUBPARTS (vectype_in));
+
+      use_operand_p use_p;
+      gimple *use_stmt;
+      if (ncopies > 1
+	  && (STMT_VINFO_RELEVANT (vinfo_for_stmt (reduc_stmt))
+	      <= vect_used_only_live)
+	  && single_imm_use (gimple_phi_result (stmt), &use_p, &use_stmt)
+	  && (use_stmt == reduc_stmt
+	      || (STMT_VINFO_RELATED_STMT (vinfo_for_stmt (use_stmt))
+		  == reduc_stmt)))
+	single_defuse_cycle = true;
 
       /* Create the destination vector  */
       scalar_dest = gimple_assign_lhs (reduc_stmt);
@@ -5769,10 +5777,6 @@ vectorizable_reduction (gimple *stmt, gimple_stmt_iterator *gsi,
     default:
       gcc_unreachable ();
     }
-  /* The default is that the reduction variable is the last in statement.  */
-  int reduc_index = op_type - 1;
-  if (code == MINUS_EXPR)
-    reduc_index = 0;
 
   if (code == COND_EXPR && slp_node)
     return false;
@@ -5792,22 +5796,30 @@ vectorizable_reduction (gimple *stmt, gimple_stmt_iterator *gsi,
      The last use is the reduction variable.  In case of nested cycle this
      assumption is not true: we use reduc_index to record the index of the
      reduction variable.  */
+  gimple *reduc_def_stmt = NULL;
+  int reduc_index = -1;
   for (i = 0; i < op_type; i++)
     {
-      if (i == reduc_index)
-	continue;
-
       /* The condition of COND_EXPR is checked in vectorizable_condition().  */
       if (i == 0 && code == COND_EXPR)
         continue;
 
       is_simple_use = vect_is_simple_use (ops[i], loop_vinfo,
 					  &def_stmt, &dts[i], &tem);
-      if (!vectype_in)
-	vectype_in = tem;
-      gcc_assert (is_simple_use);
-
       dt = dts[i];
+      gcc_assert (is_simple_use);
+      if (dt == vect_reduction_def)
+	{
+          reduc_def_stmt = def_stmt;
+	  reduc_index = i;
+	  continue;
+	}
+      else
+	{
+	  if (!vectype_in)
+	    vectype_in = tem;
+	}
+
       if (dt != vect_internal_def
 	  && dt != vect_external_def
 	  && dt != vect_constant_def
@@ -5836,22 +5848,29 @@ vectorizable_reduction (gimple *stmt, gimple_stmt_iterator *gsi,
 	}
     }
 
-  is_simple_use = vect_is_simple_use (ops[reduc_index], loop_vinfo,
-				      &def_stmt, &dts[reduc_index], &tem);
   if (!vectype_in)
-    vectype_in = tem;
-  gcc_assert (is_simple_use);
-  if (!found_nested_cycle_def)
-    reduc_def_stmt = def_stmt;
+    vectype_in = vectype_out;
 
-  if (reduc_def_stmt && gimple_code (reduc_def_stmt) != GIMPLE_PHI)
+  /* When vectorizing a reduction chain w/o SLP the reduction PHI is not
+     directy used in stmt.  */
+  if (reduc_index == -1)
+    {
+      if (orig_stmt)
+	reduc_def_stmt = STMT_VINFO_REDUC_DEF (orig_stmt_info);
+      else
+	reduc_def_stmt = STMT_VINFO_REDUC_DEF (stmt_info);
+    }
+
+  if (! reduc_def_stmt || gimple_code (reduc_def_stmt) != GIMPLE_PHI)
     return false;
 
-  dt = dts[reduc_index];
-  if (!(dt == vect_reduction_def
-	|| dt == vect_nested_cycle
-	|| ((dt == vect_internal_def || dt == vect_external_def
-	     || dt == vect_constant_def || dt == vect_induction_def)
+  if (!(reduc_index == -1
+	|| dts[reduc_index] == vect_reduction_def
+	|| dts[reduc_index] == vect_nested_cycle
+	|| ((dts[reduc_index] == vect_internal_def
+	     || dts[reduc_index] == vect_external_def
+	     || dts[reduc_index] == vect_constant_def
+	     || dts[reduc_index] == vect_induction_def)
 	    && nested_cycle && found_nested_cycle_def)))
     {
       /* For pattern recognized stmts, orig_stmt might be a reduction,
@@ -6249,9 +6268,17 @@ vectorizable_reduction (gimple *stmt, gimple_stmt_iterator *gsi,
    (i.e. we generate VF/2 results in a single register).
    In this case for each copy we get the vector def for the reduction variable
    from the vectorized reduction operation generated in the previous iteration.
-  */
 
-  if (STMT_VINFO_RELEVANT (stmt_info) <= vect_used_only_live)
+   This only works when we see both the reduction PHI and its only consumer
+   in vectorizable_reduction and there are no intermediate stmts
+   participating.  */
+  use_operand_p use_p;
+  gimple *use_stmt;
+  if (ncopies > 1
+      && (STMT_VINFO_RELEVANT (stmt_info) <= vect_used_only_live)
+      && single_imm_use (gimple_phi_result (reduc_def_stmt), &use_p, &use_stmt)
+      && (use_stmt == stmt
+	  || STMT_VINFO_RELATED_STMT (vinfo_for_stmt (use_stmt)) == stmt))
     {
       single_defuse_cycle = true;
       epilog_copies = 1;
@@ -6267,8 +6294,9 @@ vectorizable_reduction (gimple *stmt, gimple_stmt_iterator *gsi,
     {
       vec_num = 1;
       vec_oprnds0.create (1);
+      vec_oprnds1.create (1);
       if (op_type == ternary_op)
-        vec_oprnds1.create (1);
+        vec_oprnds2.create (1);
     }
 
   phis.create (vec_num);
@@ -6321,65 +6349,66 @@ vectorizable_reduction (gimple *stmt, gimple_stmt_iterator *gsi,
 	      auto_vec<tree, 3> slp_ops;
 	      auto_vec<vec<tree>, 3> vec_defs;
 
-	      slp_ops.quick_push (reduc_index == 0 ? NULL : ops[0]);
-	      slp_ops.quick_push (reduc_index == 1 ? NULL : ops[1]);
+	      slp_ops.quick_push (ops[0]);
+	      slp_ops.quick_push (ops[1]);
 	      if (op_type == ternary_op)
-		slp_ops.quick_push (reduc_index == 2 ? NULL : ops[2]);
+		slp_ops.quick_push (ops[2]);
 
 	      vect_get_slp_defs (slp_ops, slp_node, &vec_defs);
 
-	      vec_oprnds0.safe_splice (vec_defs[reduc_index == 0 ? 1 : 0]);
-	      vec_defs[reduc_index == 0 ? 1 : 0].release ();
+	      vec_oprnds0.safe_splice (vec_defs[0]);
+	      vec_defs[0].release ();
+	      vec_oprnds1.safe_splice (vec_defs[1]);
+	      vec_defs[1].release ();
 	      if (op_type == ternary_op)
 		{
-		  vec_oprnds1.safe_splice (vec_defs[reduc_index == 2 ? 1 : 2]);
-		  vec_defs[reduc_index == 2 ? 1 : 2].release ();
+		  vec_oprnds2.safe_splice (vec_defs[2]);
+		  vec_defs[2].release ();
 		}
 	    }
           else
 	    {
               vec_oprnds0.quick_push
-		(vect_get_vec_def_for_operand (ops[!reduc_index], stmt));
+		(vect_get_vec_def_for_operand (ops[0], stmt));
+              vec_oprnds1.quick_push
+		(vect_get_vec_def_for_operand (ops[1], stmt));
               if (op_type == ternary_op)
-		vec_oprnds1.quick_push 
-		  (vect_get_vec_def_for_operand (reduc_index == 0
-						 ? ops[2] : ops[1], stmt));
+		vec_oprnds2.quick_push 
+		  (vect_get_vec_def_for_operand (ops[2], stmt));
 	    }
         }
       else
         {
           if (!slp_node)
             {
-              vec_oprnds0[0]
-		= vect_get_vec_def_for_stmt_copy (dts[!reduc_index],
-						  vec_oprnds0[0]);
-              if (op_type == ternary_op)
-                vec_oprnds1[0] 
-		  = vect_get_vec_def_for_stmt_copy (dts[reduc_index == 0
-						        ? 2 : 1],
-						    vec_oprnds1[0]);
-            }
+	      gcc_assert (reduc_index != -1 || ! single_defuse_cycle);
 
-          if (single_defuse_cycle)
-            reduc_def = gimple_assign_lhs (new_stmt);
+	      if (single_defuse_cycle && reduc_index == 0)
+		vec_oprnds0[0] = gimple_assign_lhs (new_stmt);
+	      else
+		vec_oprnds0[0]
+		  = vect_get_vec_def_for_stmt_copy (dts[0], vec_oprnds0[0]);
+	      if (single_defuse_cycle && reduc_index == 1)
+		vec_oprnds1[0] = gimple_assign_lhs (new_stmt);
+	      else
+		vec_oprnds1[0]
+		  = vect_get_vec_def_for_stmt_copy (dts[1], vec_oprnds1[0]);
+	      if (op_type == ternary_op)
+		{
+		  if (single_defuse_cycle && reduc_index == 2)
+		    vec_oprnds2[0] = gimple_assign_lhs (new_stmt);
+		  else
+		    vec_oprnds2[0] 
+		      = vect_get_vec_def_for_stmt_copy (dts[2], vec_oprnds2[0]);
+		}
+            }
         }
 
       FOR_EACH_VEC_ELT (vec_oprnds0, i, def0)
         {
-          if (slp_node)
-            reduc_def = PHI_RESULT (phis[i]);
-          else
-            {
-              if (!single_defuse_cycle || j == 0)
-                reduc_def = PHI_RESULT (new_phi);
-            }
-
-	  tree vop[3] = { def0, NULL_TREE, NULL_TREE };
+	  tree vop[3] = { def0, vec_oprnds1[i], NULL_TREE };
 	  if (op_type == ternary_op)
-	    vop[1] = vec_oprnds1[i];
-	  for (int k = 2; k > reduc_index; --k)
-	    vop[k] = vop[k - 1];
-	  vop[reduc_index] = reduc_def;
+	    vop[2] = vec_oprnds2[i];
 
           new_temp = make_ssa_name (vec_dest, new_stmt);
           new_stmt = gimple_build_assign (new_temp, code,
@@ -6411,7 +6440,8 @@ vectorizable_reduction (gimple *stmt, gimple_stmt_iterator *gsi,
   if ((!single_defuse_cycle || code == COND_EXPR) && !slp_node)
     vect_defs[0] = gimple_assign_lhs (*vec_stmt);
 
-  vect_create_epilog_for_reduction (vect_defs, stmt, epilog_copies,
+  vect_create_epilog_for_reduction (vect_defs, stmt, reduc_def_stmt,
+				    epilog_copies,
                                     epilog_reduc_code, phis, reduc_index,
 				    double_reduc, slp_node);
 
