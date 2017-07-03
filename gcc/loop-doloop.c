@@ -347,6 +347,8 @@ add_test (rtx cond, edge *e, basic_block dest)
   rtx op0 = XEXP (cond, 0), op1 = XEXP (cond, 1);
   enum rtx_code code = GET_CODE (cond);
   basic_block bb;
+  /* The jump is supposed to handle an unlikely special case.  */
+  profile_probability prob = profile_probability::guessed_never ();
 
   mode = GET_MODE (XEXP (cond, 0));
   if (mode == VOIDmode)
@@ -357,7 +359,7 @@ add_test (rtx cond, edge *e, basic_block dest)
   op1 = force_operand (op1, NULL_RTX);
   label = block_label (dest);
   do_compare_rtx_and_jump (op0, op1, code, 0, mode, NULL_RTX, NULL, label,
-			   profile_probability::uninitialized ());
+			   prob);
 
   jump = get_last_insn ();
   if (!jump || !JUMP_P (jump))
@@ -387,12 +389,14 @@ add_test (rtx cond, edge *e, basic_block dest)
 
   JUMP_LABEL (jump) = label;
 
-  /* The jump is supposed to handle an unlikely special case.  */
-  add_int_reg_note (jump, REG_BR_PROB, 0);
-
   LABEL_NUSES (label)++;
 
-  make_edge (bb, dest, (*e)->flags & ~EDGE_FALLTHRU);
+  edge e2 = make_edge (bb, dest, (*e)->flags & ~EDGE_FALLTHRU);
+  e2->probability = prob;
+  e2->count = e2->src->count.apply_probability (prob);
+  (*e)->probability = prob.invert ();
+  (*e)->count = (*e)->count.apply_probability (prob);
+  update_br_prob_note (e2->src);
   return true;
 }
 
