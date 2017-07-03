@@ -1,5 +1,14 @@
 2017-07-03  Richard Sandiford  <richard.sandiford@linaro.org>
 
+	* tree-data-ref.h (dr_alignment): Declare.
+	* tree-data-ref.c (dr_alignment): New function.
+	* tree-vectorizer.h (dataref_aux): Remove base_element_aligned.
+	* tree-vect-data-refs.c (vect_compute_data_ref_alignment): Don't
+	set it.
+	* tree-vect-stmts.c (vectorizable_store): Use dr_alignment.
+
+2017-07-03  Richard Sandiford  <richard.sandiford@linaro.org>
+
 	* tree-data-ref.h (innermost_loop_behavior): Add base_alignment
 	and base_misalignment fields.
 	(DR_BASE_ALIGNMENT, DR_BASE_MISALIGNMENT): New macros.

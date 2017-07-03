@@ -4770,6 +4770,30 @@ find_data_references_in_loop (struct loop *loop,
   return NULL_TREE;
 }
 
+/* Return the alignment in bytes that DRB is guaranteed to have at all
+   times.  */
+
+unsigned int
+dr_alignment (innermost_loop_behavior *drb)
+{
+  /* Get the alignment of BASE_ADDRESS + INIT.  */
+  unsigned int alignment = drb->base_alignment;
+  unsigned int misalignment = (drb->base_misalignment
+			       + TREE_INT_CST_LOW (drb->init));
+  if (misalignment != 0)
+    alignment = MIN (alignment, misalignment & -misalignment);
+
+  /* Cap it to the alignment of OFFSET.  */
+  if (!integer_zerop (drb->offset))
+    alignment = MIN (alignment, drb->offset_alignment);
+
+  /* Cap it to the alignment of STEP.  */
+  if (!integer_zerop (drb->step))
+    alignment = MIN (alignment, drb->step_alignment);
+
+  return alignment;
+}
+
 /* Recursive helper function.  */
 
 static bool
