@@ -647,7 +647,9 @@ typedef struct _stmt_vec_info {
      vect_force_simple_reduction.  */
   enum vect_reduction_type reduc_type;
 
-  /* On a reduction PHI the def returned by vect_force_simple_reduction.  */
+  /* On a reduction PHI the def returned by vect_force_simple_reduction.
+     On the def returned by vect_force_simple_reduction the
+     corresponding PHI.  */
   gimple *reduc_def;
 
   /* The number of scalar stmt references from active SLP instances.  */
@@ -1078,6 +1080,10 @@ extern void vect_finish_stmt_generation (gimple *, gimple *,
 extern bool vect_mark_stmts_to_be_vectorized (loop_vec_info);
 extern tree vect_get_vec_def_for_operand_1 (gimple *, enum vect_def_type);
 extern tree vect_get_vec_def_for_operand (tree, gimple *, tree = NULL);
+extern void vect_get_vec_defs (tree, tree, gimple *, vec<tree> *,
+			       vec<tree> *, slp_tree);
+extern void vect_get_vec_defs_for_stmt_copy (enum vect_def_type *,
+					     vec<tree> *, vec<tree> *);
 extern tree vect_init_vector (gimple *, tree, tree,
                               gimple_stmt_iterator *);
 extern tree vect_get_vec_def_for_stmt_copy (enum vect_def_type, tree);

@@ -1367,14 +1367,10 @@ vect_get_vec_def_for_operand_1 (gimple *def_stmt, enum vect_def_type dt)
         return vec_oprnd;
       }
 
-    /* operand is defined by a loop header phi - reduction  */
+    /* operand is defined by a loop header phi.  */
     case vect_reduction_def:
     case vect_double_reduction_def:
     case vect_nested_cycle:
-      /* Code should use get_initial_def_for_reduction.  */
-      gcc_unreachable ();
-
-    /* operand is defined by loop-header phi - induction.  */
     case vect_induction_def:
       {
 	gcc_assert (gimple_code (def_stmt) == GIMPLE_PHI);
@@ -1535,7 +1531,7 @@ vect_get_vec_def_for_stmt_copy (enum vect_def_type dt, tree vec_oprnd)
 /* Get vectorized definitions for the operands to create a copy of an original
    stmt.  See vect_get_vec_def_for_stmt_copy () for details.  */
 
-static void
+void
 vect_get_vec_defs_for_stmt_copy (enum vect_def_type *dt,
 				 vec<tree> *vec_oprnds0,
 				 vec<tree> *vec_oprnds1)
@@ -1554,11 +1550,9 @@ vect_get_vec_defs_for_stmt_copy (enum vect_def_type *dt,
 }
 
 
-/* Get vectorized definitions for OP0 and OP1.
-   REDUC_INDEX is the index of reduction operand in case of reduction,
-   and -1 otherwise.  */
+/* Get vectorized definitions for OP0 and OP1.  */
 
-static void
+void
 vect_get_vec_defs (tree op0, tree op1, gimple *stmt,
 		   vec<tree> *vec_oprnds0,
 		   vec<tree> *vec_oprnds1,
