@@ -1,3 +1,10 @@
+2017-07-03  Martin Liska  <mliska@suse.cz>
+
+	PR sanitize/81040
+	* g++.dg/asan/function-argument-1.C: New test.
+	* g++.dg/asan/function-argument-2.C: New test.
+	* g++.dg/asan/function-argument-3.C: New test.
+
 2017-07-03  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	* gcc.dg/vect/bb-slp-pr65935.c: Expect SLP to be used in main
