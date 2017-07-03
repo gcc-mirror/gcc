@@ -1,3 +1,7 @@
+2017-07-03  Bernd Schmidt  <bschmidt@redhat.com>
+
+	* MAINTAINERS: Readd myself for c6x.
+
 2017-06-28  Martin Liska  <mliska@suse.cz>
 
 	PR bootstrap/81217
