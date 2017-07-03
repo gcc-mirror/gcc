@@ -749,7 +749,7 @@ canonicalize_base_object_address (tree addr)
   return build_fold_addr_expr (TREE_OPERAND (addr, 0));
 }
 
-/* Analyze the behavior of memory reference DR.  There are two modes:
+/* Analyze the behavior of memory reference REF.  There are two modes:
 
    - BB analysis.  In this case we simply split the address into base,
      init and offset components, without reference to any containing loop.
@@ -766,13 +766,13 @@ canonicalize_base_object_address (tree addr)
    Perform BB analysis if LOOP is null, or if LOOP is the function's
    dummy outermost loop.  In other cases perform loop analysis.
 
-   Return true if the analysis succeeded and store the results in DR if so.
+   Return true if the analysis succeeded and store the results in DRB if so.
    BB analysis can only fail for bitfield or reversed-storage accesses.  */
 
 bool
-dr_analyze_innermost (struct data_reference *dr, struct loop *loop)
+dr_analyze_innermost (innermost_loop_behavior *drb, tree ref,
+		      struct loop *loop)
 {
-  tree ref = DR_REF (dr);
   HOST_WIDE_INT pbitsize, pbitpos;
   tree base, poffset;
   machine_mode pmode;
@@ -864,13 +864,12 @@ dr_analyze_innermost (struct data_reference *dr, struct loop *loop)
 		     fold_convert (ssizetype, base_iv.step),
 		     fold_convert (ssizetype, offset_iv.step));
 
-  DR_BASE_ADDRESS (dr) = canonicalize_base_object_address (base_iv.base);
+  drb->base_address = canonicalize_base_object_address (base_iv.base);
 
-  DR_OFFSET (dr) = fold_convert (ssizetype, offset_iv.base);
-  DR_INIT (dr) = init;
-  DR_STEP (dr) = step;
-
-  DR_ALIGNED_TO (dr) = size_int (highest_pow2_factor (offset_iv.base));
+  drb->offset = fold_convert (ssizetype, offset_iv.base);
+  drb->init = init;
+  drb->step = step;
+  drb->aligned_to = size_int (highest_pow2_factor (offset_iv.base));
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     fprintf (dump_file, "success.\n");
@@ -1069,7 +1068,8 @@ create_data_ref (loop_p nest, loop_p loop, tree memref, gimple *stmt,
   DR_REF (dr) = memref;
   DR_IS_READ (dr) = is_read;
 
-  dr_analyze_innermost (dr, nest != NULL ? loop : NULL);
+  dr_analyze_innermost (&DR_INNERMOST (dr), memref,
+			nest != NULL ? loop : NULL);
   dr_analyze_indices (dr, nest, loop);
   dr_analyze_alias (dr);
 

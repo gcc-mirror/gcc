@@ -1,5 +1,13 @@
 2017-07-03  Richard Sandiford  <richard.sandiford@linaro.org>
 
+	* tree-data-ref.h (dr_analyze_innermost): Replace the dr argument
+	with a "innermost_loop_behavior *" and refeence tree.
+	* tree-data-ref.c (dr_analyze_innermost): Likewise.
+	(create_data_ref): Update call accordingly.
+	* tree-predcom.c (find_looparound_phi): Likewise.
+
+2017-07-03  Richard Sandiford  <richard.sandiford@linaro.org>
+
 	* tree-vectorizer.h (_stmt_vec_info): Replace individual dr_*
 	fields with dr_wrt_vec_loop.
 	(STMT_VINFO_DR_BASE_ADDRESS, STMT_VINFO_DR_INIT, STMT_VINFO_DR_OFFSET)

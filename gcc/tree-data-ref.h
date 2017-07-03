@@ -322,7 +322,7 @@ typedef struct data_dependence_relation *ddr_p;
 #define DDR_REVERSED_P(DDR) (DDR)->reversed_p
 
 
-bool dr_analyze_innermost (struct data_reference *, struct loop *);
+bool dr_analyze_innermost (innermost_loop_behavior *, tree, struct loop *);
 extern bool compute_data_dependences_for_loop (struct loop *, bool,
 					       vec<loop_p> *,
 					       vec<data_reference_p> *,
