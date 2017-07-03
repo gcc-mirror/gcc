@@ -1,5 +1,10 @@
 2017-07-03  Dominique d'Humieres  <dominiq@lps.ens.fr>
 
+	PR testsuite/79866
+	* gfortran.dg/coarray_event_2.f08: New test.
+
+2017-07-03  Dominique d'Humieres  <dominiq@lps.ens.fr>
+
 	PR testsuite/79843
 	* gfortran.dg/namelist_3.f90: Adjust the dg-error string.
 	* gfortran.dg/pointer_intent_2.f90: Likewise.
