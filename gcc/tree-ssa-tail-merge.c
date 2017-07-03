@@ -808,6 +808,9 @@ static void
 same_succ_flush_bb (basic_block bb)
 {
   same_succ *same = BB_SAME_SUCC (bb);
+  if (! same)
+    return;
+
   BB_SAME_SUCC (bb) = NULL;
   if (bitmap_single_bit_set_p (same->bbs))
     same_succ_htab->remove_elt_with_hash (same, same->hashval);
