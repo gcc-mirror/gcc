@@ -351,6 +351,22 @@ public:
       return profile_probability::always() - *this;
     }
 
+  /* Return THIS with quality dropped to GUESSED.  */
+  profile_probability guessed () const
+    {
+      profile_probability ret = *this;
+      ret.m_quality = profile_guessed;
+      return ret;
+    }
+
+  /* Return THIS with quality dropped to AFDO.  */
+  profile_probability afdo () const
+    {
+      profile_probability ret = *this;
+      ret.m_quality = profile_afdo;
+      return ret;
+    }
+
   profile_probability combine_with_freq (int freq1, profile_probability other,
 					 int freq2) const
     {
@@ -764,6 +780,22 @@ public:
 	ret.m_val = RDIV (m_val * RDIV (num.m_val * max_safe_multiplier,
 					den.m_val), max_safe_multiplier);
       ret.m_quality = MIN (m_quality, profile_adjusted);
+      return ret;
+    }
+
+  /* Return THIS with quality dropped to GUESSED.  */
+  profile_count guessed () const
+    {
+      profile_count ret = *this;
+      ret.m_quality = profile_guessed;
+      return ret;
+    }
+
+  /* Return THIS with quality dropped to AFDO.  */
+  profile_count afdo () const
+    {
+      profile_count ret = *this;
+      ret.m_quality = profile_afdo;
       return ret;
     }
 

@@ -3962,15 +3962,26 @@ force_edge_cold (edge e, bool impossible)
 	      e2->count.apply_scale (count_sum2, count_sum);
 	    e2->probability /= prob_comp;
 	  }
-      if (current_ir_type () != IR_GIMPLE)
+      if (current_ir_type () != IR_GIMPLE
+	  && e->src != ENTRY_BLOCK_PTR_FOR_FN (cfun))
 	update_br_prob_note (e->src);
     }
   /* If all edges out of e->src are unlikely, the basic block itself
      is unlikely.  */
   else
     {
-      e->probability = profile_probability::always ();
-      if (current_ir_type () != IR_GIMPLE)
+      if (prob_sum == profile_probability::never ())
+        e->probability = profile_probability::always ();
+      else
+	{
+	  if (impossible)
+	    e->probability = profile_probability::never ();
+	  /* If BB has some edges out that are not impossible, we can not
+	     assume that BB itself is.  */
+	  impossible = false;
+	}
+      if (current_ir_type () != IR_GIMPLE
+	  && e->src != ENTRY_BLOCK_PTR_FOR_FN (cfun))
 	update_br_prob_note (e->src);
       if (e->src->count == profile_count::zero ())
 	return;
