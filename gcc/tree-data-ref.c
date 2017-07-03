@@ -870,6 +870,7 @@ dr_analyze_innermost (innermost_loop_behavior *drb, tree ref,
   drb->init = init;
   drb->step = step;
   drb->offset_alignment = highest_pow2_factor (offset_iv.base);
+  drb->step_alignment = highest_pow2_factor (step);
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     fprintf (dump_file, "success.\n");
@@ -1086,6 +1087,7 @@ create_data_ref (loop_p nest, loop_p loop, tree memref, gimple *stmt,
       print_generic_expr (dump_file, DR_STEP (dr), TDF_SLIM);
       fprintf (dump_file, "\n\toffset alignment: %d",
 	       DR_OFFSET_ALIGNMENT (dr));
+      fprintf (dump_file, "\n\tstep alignment: %d", DR_STEP_ALIGNMENT (dr));
       fprintf (dump_file, "\n\tbase_object: ");
       print_generic_expr (dump_file, DR_BASE_OBJECT (dr), TDF_SLIM);
       fprintf (dump_file, "\n");

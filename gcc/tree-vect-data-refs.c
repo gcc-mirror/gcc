@@ -698,10 +698,9 @@ vect_compute_data_ref_alignment (struct data_reference *dr)
      divides by the vector size.  */
   else if (nested_in_vect_loop_p (loop, stmt))
     {
-      tree step = DR_STEP (dr);
       step_preserves_misalignment_p
-	= (tree_fits_shwi_p (step)
-	   && tree_to_shwi (step) % GET_MODE_SIZE (TYPE_MODE (vectype)) == 0);
+	= (DR_STEP_ALIGNMENT (dr)
+	   % GET_MODE_SIZE (TYPE_MODE (vectype))) == 0;
 
       if (dump_enabled_p ())
 	{
@@ -720,12 +719,10 @@ vect_compute_data_ref_alignment (struct data_reference *dr)
      the dataref evenly divides by the vector size.  */
   else
     {
-      tree step = DR_STEP (dr);
       unsigned vf = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
       step_preserves_misalignment_p
-	= (tree_fits_shwi_p (step)
-	   && ((tree_to_shwi (step) * vf)
-	       % GET_MODE_SIZE (TYPE_MODE (vectype)) == 0));
+	= ((DR_STEP_ALIGNMENT (dr) * vf)
+	   % GET_MODE_SIZE (TYPE_MODE (vectype))) == 0;
 
       if (!step_preserves_misalignment_p && dump_enabled_p ())
 	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -773,7 +770,10 @@ vect_compute_data_ref_alignment (struct data_reference *dr)
   alignment = TYPE_ALIGN_UNIT (vectype);
 
   if (drb->offset_alignment < alignment
-      || !step_preserves_misalignment_p)
+      || !step_preserves_misalignment_p
+      /* We need to know whether the step wrt the vectorized loop is
+	 negative when computing the starting misalignment below.  */
+      || TREE_CODE (drb->step) != INTEGER_CST)
     {
       if (dump_enabled_p ())
 	{
@@ -3414,6 +3414,8 @@ again:
 				      DR_STEP (newdr) = step;
 				      DR_OFFSET_ALIGNMENT (newdr)
 					= BIGGEST_ALIGNMENT;
+				      DR_STEP_ALIGNMENT (newdr)
+					= highest_pow2_factor (step);
 				      dr = newdr;
 				      simd_lane_access = true;
 				    }
@@ -3665,6 +3667,8 @@ again:
                                  STMT_VINFO_DR_STEP (stmt_info));
 	      dump_printf (MSG_NOTE, "\n\touter offset alignment: %d\n",
 			   STMT_VINFO_DR_OFFSET_ALIGNMENT (stmt_info));
+	      dump_printf (MSG_NOTE, "\n\touter step alignment: %d\n",
+			   STMT_VINFO_DR_STEP_ALIGNMENT (stmt_info));
 	    }
 	}
 

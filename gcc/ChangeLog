@@ -1,5 +1,20 @@
 2017-07-03  Richard Sandiford  <richard.sandiford@linaro.org>
 
+	* tree-data-ref.h (innermost_loop_behavior): Add a step_alignment
+	field.
+	(DR_STEP_ALIGNMENT): New macro.
+	* tree-vectorizer.h (STMT_VINFO_DR_STEP_ALIGNMENT): Likewise.
+	* tree-data-ref.c (dr_analyze_innermost): Initalize step_alignment.
+	(create_data_ref): Print it.
+	* tree-vect-stmts.c (vectorizable_load): Use the step alignment
+	to tell whether the step preserves vector (mis)alignment.
+	* tree-vect-data-refs.c (vect_compute_data_ref_alignment): Likewise.
+	Move the check for an integer step and generalise to all INTEGER_CST.
+	(vect_analyze_data_refs): Set DR_STEP_ALIGNMENT when setting DR_STEP.
+	Print the outer step alignment.
+
+2017-07-03  Richard Sandiford  <richard.sandiford@linaro.org>
+
 	* tree-data-ref.h (innermost_loop_behavior): Replace aligned_to
 	with offset_alignment.
 	(DR_ALIGNED_TO): Delete.
