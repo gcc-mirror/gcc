@@ -1,3 +1,9 @@
+2017-07-03  Dominique d'Humieres  <dominiq@lps.ens.fr>
+
+	PR testsuite/79843
+	* gfortran.dg/namelist_3.f90: Adjust the dg-error string.
+	* gfortran.dg/pointer_intent_2.f90: Likewise.
+
 2017-07-02  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR middle-end/81290
