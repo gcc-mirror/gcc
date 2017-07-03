@@ -1,9 +1,9 @@
 /* Test the fpscr builtins.  */
 
 /* { dg-do compile } */
-/* { dg-require-effective-target arm_fp_ok } */
+/* { dg-require-effective-target arm_vfp_ok } */
 /* { dg-skip-if "need fp instructions" { *-*-* } { "-mfloat-abi=soft" } { "" } } */
-/* { dg-add-options arm_fp } */
+/* { dg-options "-mfpu=vfp -mfloat-abi=softfp" } */
 
 void
 test_fpscr ()
