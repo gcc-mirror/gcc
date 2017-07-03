@@ -15189,6 +15189,15 @@ the default for all standard configurations.
 Generate code for a processor running in big-endian mode; the default is
 to compile code for a little-endian processor.
 
+@item -mbe8
+@itemx -mbe32
+@opindex mbe8
+When linking a big-endian image select between BE8 and BE32 formats.
+The option has no effect for little-endian images and is ignored.  The
+default is dependent on the selected target architecture.  For ARMv6
+and later architectures the default is BE8, for older architectures
+the default is BE32.  BE32 format has been deprecated by ARM.
+
 @item -march=@var{name@r{[}+extension@dots{}@r{]}}
 @opindex march
 This specifies the name of the target ARM architecture.  GCC uses this

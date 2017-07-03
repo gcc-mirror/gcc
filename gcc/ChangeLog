@@ -1,3 +1,17 @@
+2017-07-02  Richard Earnshaw  <rearnsha@arm.com>
+
+	* common/config/arm/arm-common.c (arm_be8_option): New function.
+	* config/arm/arm-isa.h (isa_feature): Add new feature bit isa_bit_be8.
+	(ISA_ARMv6): Add isa_bit_be8.
+	* config/arm/arm.h (arm_be8_option): Add prototype.
+	(BE8_SPEC_FUNCTION): New define.
+	(EXTRA_SPEC_FUNCTIONS): Add BE8_SPEC_FUNCTION.
+	* config/arm/arm.opt (mbig-endian): Mark as Negative of mlittle-endian.
+	(mlittle-endian): Similarly.
+	(mbe8, mbe32): New options.
+	* config/arm/bpabi.h (BE8_LINK_SPEC): Call arm_be8_option.
+	* doc/invoke.texi (ARM Options): Document -mbe8 and -mbe32.
+
 2017-07-02  Jan Hubicka  <hubicka@ucw.cz>
 
 	* tree-cfg.c (gimple_find_sub_bbs): Fix profile updating.
