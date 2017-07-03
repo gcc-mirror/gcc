@@ -1,5 +1,9 @@
 2017-07-02  Jan Hubicka  <hubicka@ucw.cz>
 
+	* tree-cfg.c (gimple_find_sub_bbs): Fix profile updating.
+
+2017-07-02  Jan Hubicka  <hubicka@ucw.cz>
+
 	* tree-cfgcleanup.c (want_merge_blocks_p): New function.
         (cleanup_tree_cfg_bb): Use it.
 	* profile-count.h (profile_count::of_for_merging, profile_count::merge):
