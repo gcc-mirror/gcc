@@ -2076,7 +2076,7 @@ gimple_merge_blocks (basic_block a, basic_block b)
      profiles.  */
   if (a->loop_father == b->loop_father)
     {
-      a->count = MAX (a->count, b->count);
+      a->count = a->count.merge (b->count);
       a->frequency = MAX (a->frequency, b->frequency);
     }
 
