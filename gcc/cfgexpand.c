@@ -3165,7 +3165,7 @@ expand_asm_stmt (gasm *stmt)
   rtx body = gen_rtx_ASM_OPERANDS ((noutputs == 0 ? VOIDmode
 				    : GET_MODE (output_rvec[0])),
 				   ggc_strdup (gimple_asm_string (stmt)),
-				   empty_string, 0, argvec, constraintvec,
+				   "", 0, argvec, constraintvec,
 				   labelvec, locus);
   MEM_VOLATILE_P (body) = gimple_asm_volatile_p (stmt);
 

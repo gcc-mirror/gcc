@@ -1088,7 +1088,7 @@ maybe_add_lambda_conv_op (tree type)
   /* First build up the conversion op.  */
 
   tree rettype = build_pointer_type (stattype);
-  tree name = mangle_conv_op_name_for_type (rettype);
+  tree name = make_conv_op_name (rettype);
   tree thistype = cp_build_qualified_type (type, TYPE_QUAL_CONST);
   tree fntype = build_method_type_directly (thistype, rettype, void_list_node);
   tree convfn = build_lang_decl (FUNCTION_DECL, name, fntype);

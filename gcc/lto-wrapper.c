@@ -838,6 +838,8 @@ copy_file (const char *dest, const char *src)
 	    fatal_error (input_location, "writing output file");
 	}
     }
+  fclose (d);
+  fclose (s);
 }
 
 /* Find the crtoffloadtable.o file in LIBRARY_PATH, make copy and pass name of

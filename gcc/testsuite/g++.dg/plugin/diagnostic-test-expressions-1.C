@@ -848,3 +848,35 @@ tests::test_method_calls ()
                                ~~~~~~~~~~~~~~~~~~^~
    { dg-end-multiline-output "" } */
 }
+
+namespace std
+{
+  class type_info { public: int foo; };
+}
+
+void test_typeid (int i)
+{
+  __emit_expression_range (0, &typeid(i)); /* { dg-warning "range" } */
+/* { dg-begin-multiline-output "" }
+   __emit_expression_range (0, &typeid(i));
+                               ^~~~~~~~~~
+   { dg-end-multiline-output "" } */
+
+  __emit_expression_range (0, &typeid(int)); /* { dg-warning "range" } */
+/* { dg-begin-multiline-output "" }
+   __emit_expression_range (0, &typeid(int));
+                               ^~~~~~~~~~~~
+   { dg-end-multiline-output "" } */
+
+  __emit_expression_range (0, &typeid(i * 2)); /* { dg-warning "range" } */
+/* { dg-begin-multiline-output "" }
+   __emit_expression_range (0, &typeid(i * 2));
+                               ^~~~~~~~~~~~~~
+   { dg-end-multiline-output "" } */
+
+  __emit_expression_range (0, typeid(int).foo); /* { dg-warning "range" } */
+/* { dg-begin-multiline-output "" }
+   __emit_expression_range (0, typeid(int).foo);
+                               ~~~~~~~~~~~~^~~
+   { dg-end-multiline-output "" } */
+}

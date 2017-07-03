@@ -2054,15 +2054,13 @@ implicitly_declare_fn (special_function_kind kind, tree type,
   if (kind != sfk_inheriting_constructor)
     DECL_SOURCE_LOCATION (fn) = DECL_SOURCE_LOCATION (TYPE_NAME (type));
 
-  if (IDENTIFIER_CDTOR_P (name))
-    {
-      if (IDENTIFIER_CTOR_P (name))
-	DECL_CONSTRUCTOR_P (fn) = true;
-      else
-	DECL_DESTRUCTOR_P (fn) = true;
-    }
-  else
+  if (!IDENTIFIER_CDTOR_P (name))
+    /* Assignment operator.  */
     SET_OVERLOADED_OPERATOR_CODE (fn, NOP_EXPR);
+  else if (IDENTIFIER_CTOR_P (name))
+    DECL_CONSTRUCTOR_P (fn) = true;
+  else
+    DECL_DESTRUCTOR_P (fn) = true;
 
   SET_DECL_ALIGN (fn, MINIMUM_METHOD_BOUNDARY);
 
