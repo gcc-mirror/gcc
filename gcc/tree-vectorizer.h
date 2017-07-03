@@ -754,8 +754,6 @@ struct dataref_aux {
   int misalignment;
   /* If true the alignment of base_decl needs to be increased.  */
   bool base_misaligned;
-  /* If true we know the base is at least vector element alignment aligned.  */
-  bool base_element_aligned;
   tree base_decl;
 };
 

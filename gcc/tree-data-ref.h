@@ -405,6 +405,16 @@ extern bool compute_all_dependences (vec<data_reference_p> ,
 				     vec<loop_p>, bool);
 extern tree find_data_references_in_bb (struct loop *, basic_block,
                                         vec<data_reference_p> *);
+extern unsigned int dr_alignment (innermost_loop_behavior *);
+
+/* Return the alignment in bytes that DR is guaranteed to have at all
+   times.  */
+
+inline unsigned int
+dr_alignment (data_reference *dr)
+{
+  return dr_alignment (&DR_INNERMOST (dr));
+}
 
 extern bool dr_may_alias_p (const struct data_reference *,
 			    const struct data_reference *, bool);

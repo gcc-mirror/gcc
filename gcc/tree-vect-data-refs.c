@@ -731,12 +731,6 @@ vect_compute_data_ref_alignment (struct data_reference *dr)
   unsigned int base_alignment = drb->base_alignment;
   unsigned int base_misalignment = drb->base_misalignment;
   unsigned HOST_WIDE_INT vector_alignment = TYPE_ALIGN_UNIT (vectype);
-  unsigned HOST_WIDE_INT element_alignment
-    = TYPE_ALIGN_UNIT (TREE_TYPE (vectype));
-
-  if (base_alignment >= element_alignment
-      && (base_misalignment & (element_alignment - 1)) == 0)
-    DR_VECT_AUX (dr)->base_element_aligned = true;
 
   if (drb->offset_alignment < vector_alignment
       || !step_preserves_misalignment_p
@@ -797,7 +791,6 @@ vect_compute_data_ref_alignment (struct data_reference *dr)
 
       DR_VECT_AUX (dr)->base_decl = base;
       DR_VECT_AUX (dr)->base_misaligned = true;
-      DR_VECT_AUX (dr)->base_element_aligned = true;
       base_misalignment = 0;
     }
   unsigned int misalignment = (base_misalignment
