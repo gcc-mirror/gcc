@@ -14201,6 +14201,10 @@ Enable Large System Extension instructions.  This is on by default for
 @option{-march=armv8.1-a}.
 @item fp16
 Enable FP16 extension.  This also enables floating-point instructions.
+@item rcpc
+Enable the RcPc extension.  This does not change code generation from GCC,
+but is passed on to the assembler, enabling inline asm statements to use
+instructions from the RcPc extension.
 
 @end table
 

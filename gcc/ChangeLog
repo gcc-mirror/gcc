@@ -1,3 +1,7 @@
+2017-07-03  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* doc/invoke.texi (rcpc architecture extension): Document it.
+
 2017-07-03  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/60510
