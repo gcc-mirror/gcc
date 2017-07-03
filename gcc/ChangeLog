@@ -1,3 +1,8 @@
+2017-07-03  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-loop.c (vect_create_epilog_for_reduction): Revert
+	back to using VIEW_CONVERT_EXPR.
+
 2017-07-03  Martin Liska  <mliska@suse.cz>
 
 	* asan.c (asan_emit_stack_protection): Unpoison just red zones
