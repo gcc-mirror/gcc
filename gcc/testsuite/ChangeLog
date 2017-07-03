@@ -1,3 +1,11 @@
+2017-07-03  Tom de Vries  <tom@codesourcery.com>
+
+	backport from mainline:
+	PR tree-optimization/81192
+	2017-07-03  Tom de Vries  <tom@codesourcery.com>
+
+	* gcc.dg/pr81192.c: New test.
+
 2017-06-27  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	Revert:
