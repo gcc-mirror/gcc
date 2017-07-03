@@ -1,3 +1,10 @@
+2017-07-03  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* tree-data-ref.c (dr_analyze_innermost): Replace the "nest"
+	parameter with a "loop" parameter and use it instead of the
+	loop containing DR_STMT.  Don't check simple_iv when doing
+	BB analysis.  Describe the two analysis modes in the comment.
+
 2017-07-03  Tom de Vries  <tom@codesourcery.com>
 
 	PR tree-optimization/69468

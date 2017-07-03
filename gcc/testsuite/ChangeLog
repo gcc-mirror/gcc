@@ -1,3 +1,8 @@
+2017-07-03  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* gcc.dg/vect/bb-slp-pr65935.c: Expect SLP to be used in main
+	as well.
+
 2017-07-03  Tom de Vries  <tom@codesourcery.com>
 
 	PR tree-optimization/69468

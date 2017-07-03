@@ -749,15 +749,29 @@ canonicalize_base_object_address (tree addr)
   return build_fold_addr_expr (TREE_OPERAND (addr, 0));
 }
 
-/* Analyzes the behavior of the memory reference DR in the innermost loop or
-   basic block that contains it.  Returns true if analysis succeed or false
-   otherwise.  */
+/* Analyze the behavior of memory reference DR.  There are two modes:
+
+   - BB analysis.  In this case we simply split the address into base,
+     init and offset components, without reference to any containing loop.
+     The resulting base and offset are general expressions and they can
+     vary arbitrarily from one iteration of the containing loop to the next.
+     The step is always zero.
+
+   - loop analysis.  In this case we analyze the reference both wrt LOOP
+     and on the basis that the reference occurs (is "used") in LOOP;
+     see the comment above analyze_scalar_evolution_in_loop for more
+     information about this distinction.  The base, init, offset and
+     step fields are all invariant in LOOP.
+
+   Perform BB analysis if LOOP is null, or if LOOP is the function's
+   dummy outermost loop.  In other cases perform loop analysis.
+
+   Return true if the analysis succeeded and store the results in DR if so.
+   BB analysis can only fail for bitfield or reversed-storage accesses.  */
 
 bool
-dr_analyze_innermost (struct data_reference *dr, struct loop *nest)
+dr_analyze_innermost (struct data_reference *dr, struct loop *loop)
 {
-  gimple *stmt = DR_STMT (dr);
-  struct loop *loop = loop_containing_stmt (stmt);
   tree ref = DR_REF (dr);
   HOST_WIDE_INT pbitsize, pbitpos;
   tree base, poffset;
@@ -806,22 +820,11 @@ dr_analyze_innermost (struct data_reference *dr, struct loop *nest)
 
   if (in_loop)
     {
-      if (!simple_iv (loop, loop_containing_stmt (stmt), base, &base_iv,
-                      nest ? true : false))
+      if (!simple_iv (loop, loop, base, &base_iv, true))
         {
-          if (nest)
-            {
-              if (dump_file && (dump_flags & TDF_DETAILS))
-                fprintf (dump_file, "failed: evolution of base is not"
-                                    " affine.\n");
-              return false;
-            }
-          else
-            {
-              base_iv.base = base;
-              base_iv.step = ssize_int (0);
-              base_iv.no_overflow = true;
-            }
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    fprintf (dump_file, "failed: evolution of base is not affine.\n");
+	  return false;
         }
     }
   else
@@ -843,22 +846,11 @@ dr_analyze_innermost (struct data_reference *dr, struct loop *nest)
           offset_iv.base = poffset;
           offset_iv.step = ssize_int (0);
         }
-      else if (!simple_iv (loop, loop_containing_stmt (stmt),
-                           poffset, &offset_iv,
-			   nest ? true : false))
+      else if (!simple_iv (loop, loop, poffset, &offset_iv, true))
         {
-          if (nest)
-            {
-              if (dump_file && (dump_flags & TDF_DETAILS))
-                fprintf (dump_file, "failed: evolution of offset is not"
-                                    " affine.\n");
-              return false;
-            }
-          else
-            {
-              offset_iv.base = poffset;
-              offset_iv.step = ssize_int (0);
-            }
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    fprintf (dump_file, "failed: evolution of offset is not affine.\n");
+	  return false;
         }
     }
 
@@ -1077,7 +1069,7 @@ create_data_ref (loop_p nest, loop_p loop, tree memref, gimple *stmt,
   DR_REF (dr) = memref;
   DR_IS_READ (dr) = is_read;
 
-  dr_analyze_innermost (dr, nest);
+  dr_analyze_innermost (dr, nest != NULL ? loop : NULL);
   dr_analyze_indices (dr, nest, loop);
   dr_analyze_alias (dr);
 
