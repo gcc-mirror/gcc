@@ -1539,13 +1539,13 @@ lookup_fnfields_idx_nolazy (tree type, tree name)
   /* Constructors are first...  */
   if (name == ctor_identifier)
     {
-      fn = CLASSTYPE_CONSTRUCTORS (type);
+      fn = (*method_vec)[CLASSTYPE_CONSTRUCTOR_SLOT];
       return fn ? CLASSTYPE_CONSTRUCTOR_SLOT : -1;
     }
   /* and destructors are second.  */
   if (name == dtor_identifier)
     {
-      fn = CLASSTYPE_DESTRUCTOR (type);
+      fn = (*method_vec)[CLASSTYPE_DESTRUCTOR_SLOT];
       return fn ? CLASSTYPE_DESTRUCTOR_SLOT : -1;
     }
   if (IDENTIFIER_CONV_OP_P (name))

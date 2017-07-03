@@ -1,6 +1,12 @@
 2017-07-03  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* cp-tree.h (CLASSTYPE_CONSTRUCTORS, CLASSTYPE_DESTRUCTOR): Use
+	lookup_fnfields_slot_nolazy.
+	* search.c (lookup_fnfields_idx_nolazy): Don't use
+	CLASSTYPE_CONSTRUCTORS, CLASSTYPE_DESTRUCTOR.
+
+	gcc/cp/
 	* class.c (type_has_user_declared_move_constructor,
 	type_has_user_declared_move_assign): Delete, replace with:
 	(classtype_has_user_move_assign_or_ctor_p): ... this.
