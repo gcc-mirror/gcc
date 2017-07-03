@@ -908,7 +908,7 @@ recompute_probabilities (basic_block bb)
 
       /* Prevent overflow computation due to insane profiles.  */
       if (esucc->count < bb->count)
-	esucc->probability = esucc->count.probability_in (bb->count);
+	esucc->probability = esucc->count.probability_in (bb->count).guessed ();
       else
 	/* Can happen with missing/guessed probabilities, since we
 	   may determine that more is flowing along duplicated
@@ -1051,7 +1051,8 @@ freqs_to_counts_path (struct redirection_data *rd)
       if (ein->probability.initialized_p ())
         ein->count = profile_count::from_gcov_type
 		  (apply_probability (ein->src->frequency * REG_BR_PROB_BASE,
-				        ein->probability.to_reg_br_prob_base ()));
+				        ein->probability
+					  .to_reg_br_prob_base ())).guessed ();
       else
 	/* FIXME: this is hack; we should track uninitialized values.  */
 	ein->count = profile_count::zero ();

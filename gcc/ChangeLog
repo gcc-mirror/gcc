@@ -1,3 +1,13 @@
+2017-07-02  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR middle-end/81290
+	* predict.c (force_edge_cold): Be more careful about propagation
+	backward.
+	* profile-count.h (profile_probability::guessed,
+	profile_probability::fdo, profile_count::guessed, profile_count::fdo):
+	New.
+	* tree-ssa-threadupdate.c (recompute_probabilities): Result is guessed.
+
 2017-07-03  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* doc/invoke.texi (rcpc architecture extension): Document it.
