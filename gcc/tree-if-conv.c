@@ -1441,11 +1441,8 @@ if_convertible_loop_p_1 (struct loop *loop, vec<data_reference_p> *refs)
 	         || TREE_CODE (ref) == REALPART_EXPR)
 	    ref = TREE_OPERAND (ref, 0);
 
-          DR_BASE_ADDRESS (dr) = ref;
-          DR_OFFSET (dr) = NULL;
-          DR_INIT (dr) = NULL;
-          DR_STEP (dr) = NULL;
-          DR_ALIGNED_TO (dr) = NULL;
+	  memset (&DR_INNERMOST (dr), 0, sizeof (DR_INNERMOST (dr)));
+	  DR_BASE_ADDRESS (dr) = ref;
         }
       hash_memrefs_baserefs_and_store_DRs_read_written_info (dr);
     }
