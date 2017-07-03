@@ -1,3 +1,7 @@
+2017-07-03  Richard Earnshaw  <rearnsha@arm.com>
+
+	* doc/invoke.texi (ARM Options): Add -mbe8 and -mbe32 to option summary.
+
 2017-07-03  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	* tree-vect-loop.c (vect_analyze_loop_2): Treat min_scalar_loop_bound,
@@ -133,7 +137,7 @@
 	* tree-vect-stmts.c (compare_step_with_zero): Use vect_dr_behavior.
 	(new_stmt_vec_info): Remove redundant zeroing.
 
-2017-07-02  Richard Earnshaw  <rearnsha@arm.com>
+2017-07-03  Richard Earnshaw  <rearnsha@arm.com>
 
 	* common/config/arm/arm-common.c (arm_be8_option): New function.
 	* config/arm/arm-isa.h (isa_feature): Add new feature bit isa_bit_be8.
