@@ -1,3 +1,28 @@
+2017-07-03  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* tree-vectorizer.h (_stmt_vec_info): Replace individual dr_*
+	fields with dr_wrt_vec_loop.
+	(STMT_VINFO_DR_BASE_ADDRESS, STMT_VINFO_DR_INIT, STMT_VINFO_DR_OFFSET)
+	(STMT_VINFO_DR_STEP, STMT_VINFO_DR_ALIGNED_TO): Update accordingly.
+	(STMT_VINFO_DR_WRT_VEC_LOOP): New macro.
+	(vect_dr_behavior): New function.
+	(vect_create_addr_base_for_vector_ref): Remove loop parameter.
+	* tree-vect-data-refs.c (vect_compute_data_ref_alignment): Use
+	vect_dr_behavior.  Use a step_preserves_misalignment_p boolean to
+	track whether the step preserves the misalignment.
+	(vect_create_addr_base_for_vector_ref): Remove loop parameter.
+	Use vect_dr_behavior.
+	(vect_setup_realignment): Update call accordingly.
+	(vect_create_data_ref_ptr): Likewise.  Use vect_dr_behavior.
+	* tree-vect-loop-manip.c (vect_gen_prolog_loop_niters): Update
+	call to vect_create_addr_base_for_vector_ref.
+	(vect_create_cond_for_align_checks): Likewise.
+	* tree-vect-patterns.c (vect_recog_bool_pattern): Copy
+	STMT_VINFO_DR_WRT_VEC_LOOP as a block.
+	(vect_recog_mask_conversion_pattern): Likewise.
+	* tree-vect-stmts.c (compare_step_with_zero): Use vect_dr_behavior.
+	(new_stmt_vec_info): Remove redundant zeroing.
+
 2017-07-02  Richard Earnshaw  <rearnsha@arm.com>
 
 	* common/config/arm/arm-common.c (arm_be8_option): New function.
