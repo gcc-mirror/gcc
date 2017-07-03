@@ -1,3 +1,24 @@
+2016-07-03  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-loop.c (vect_analyze_loop_operations): Also analyze
+	reduction PHIs.
+	(vect_force_simple_reduction): Record reduction def -> phi mapping.
+	(vectorizable_reduction): Perform reduction PHI creation when
+	visiting a reduction PHI and adjust and simplify code generation
+	phase of the reduction op.  Cache dts, use fold_binary, not fold_build2.
+	(vect_transform_loop): Visit reduction PHIs.
+	* tree-vect-slp.c (vect_get_and_check_slp_defs): Record reduction
+	defs into the SLP tree.
+	(vect_build_slp_tree): Reduction defs terminate the recursion.
+	* tree-vect-stmts.c (vect_get_vec_def_for_operand_1): Allow lookup
+	of reduction defs.
+	(vect_get_vec_defs_for_stmt_copy): Export.
+	(vect_get_vec_defs): Likewise.
+	* tree-vectorizer.h (struct _stmt_vec_info): Amend reduc_def
+	purpose.
+	(vect_get_vec_defs_for_stmt_copy): Declare.
+	(vect_get_vec_defs): Likewise.
+
 2017-07-03  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	* tree-data-ref.c (dr_analyze_innermost): Replace the "nest"
