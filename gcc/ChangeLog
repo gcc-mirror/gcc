@@ -1,3 +1,9 @@
+2017-07-03  Dominique d'Humieres  <dominiq@lps.ens.fr>
+
+	PR target/81033
+	* config/darwin.c (darwin_function_switched_text_sections):
+	Fix spaces.
+
 2017-07-03  Jan Hubicka  <hubicka@ucw.cz>
 
 	* tree-vect-loop-manip.c (vect_do_peeling): Fix scaling up.
