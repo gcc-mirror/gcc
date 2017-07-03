@@ -9992,6 +9992,8 @@ grokdeclarator (const cp_declarator *declarator,
 						      declspecs->locations);
   if (typespec_loc == UNKNOWN_LOCATION)
     typespec_loc = declspecs->locations[ds_type_spec];
+  if (typespec_loc == UNKNOWN_LOCATION)
+    typespec_loc = input_location;
 
   /* Look inside a declarator for the name being declared
      and get it as a string, for an error message.  */
@@ -10822,33 +10824,7 @@ grokdeclarator (const cp_declarator *declarator,
 	    tree arg_types;
 	    int funcdecl_p;
 
-	    /* Declaring a function type.
-	       Make sure we have a valid type for the function to return.  */
-
-	    if (type_quals != TYPE_UNQUALIFIED)
-	      {
-		if (SCALAR_TYPE_P (type) || VOID_TYPE_P (type))
-		  {
-		    warning_at (typespec_loc, OPT_Wignored_qualifiers, "type "
-				"qualifiers ignored on function return type");
-		  }
-		/* We now know that the TYPE_QUALS don't apply to the
-		   decl, but to its return type.  */
-		type_quals = TYPE_UNQUALIFIED;
-	      }
-
-	    /* Error about some types functions can't return.  */
-
-	    if (TREE_CODE (type) == FUNCTION_TYPE)
-	      {
-		error ("%qs declared as function returning a function", name);
-		return error_mark_node;
-	      }
-	    if (TREE_CODE (type) == ARRAY_TYPE)
-	      {
-		error ("%qs declared as function returning an array", name);
-		return error_mark_node;
-	      }
+	    /* Declaring a function type.  */
 
 	    input_location = declspecs->locations[ds_type_spec];
 	    abstract_virtuals_error (ACU_RETURN, type);
@@ -10956,7 +10932,35 @@ grokdeclarator (const cp_declarator *declarator,
 	      return error_mark_node;
 
 	    if (late_return_type)
-	      late_return_type_p = true;
+	      {
+		late_return_type_p = true;
+		type_quals = cp_type_quals (type);
+	      }
+
+	    if (type_quals != TYPE_UNQUALIFIED)
+	      {
+		if (SCALAR_TYPE_P (type) || VOID_TYPE_P (type))
+		  warning_at (typespec_loc, OPT_Wignored_qualifiers, "type "
+			      "qualifiers ignored on function return type");
+		/* We now know that the TYPE_QUALS don't apply to the
+		   decl, but to its return type.  */
+		type_quals = TYPE_UNQUALIFIED;
+	      }
+
+	    /* Error about some types functions can't return.  */
+
+	    if (TREE_CODE (type) == FUNCTION_TYPE)
+	      {
+		error_at (typespec_loc, "%qs declared as function returning "
+			  "a function", name);
+		return error_mark_node;
+	      }
+	    if (TREE_CODE (type) == ARRAY_TYPE)
+	      {
+		error_at (typespec_loc, "%qs declared as function returning "
+			  "an array", name);
+		return error_mark_node;
+	      }
 
 	    if (ctype == NULL_TREE
 		&& decl_context == FIELD

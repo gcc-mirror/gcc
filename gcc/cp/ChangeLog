@@ -1,3 +1,10 @@
+2017-07-03  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/65775
+	* decl.c (grokdeclarator): Move checks on function return type after
+	the splice_late_return_type call; if declspecs->locations[ds_type_spec]
+	is UNKNOWN_LOCATION fall back to input_location.
+
 2017-07-03  David Malcolm  <dmalcolm@redhat.com>
 
 	* parser.c (enum required_token): Fix spelling of
