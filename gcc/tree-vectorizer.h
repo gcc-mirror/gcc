@@ -709,6 +709,9 @@ STMT_VINFO_BB_VINFO (stmt_vec_info stmt_vinfo)
 #define STMT_VINFO_DR_INIT(S)              (S)->dr_wrt_vec_loop.init
 #define STMT_VINFO_DR_OFFSET(S)            (S)->dr_wrt_vec_loop.offset
 #define STMT_VINFO_DR_STEP(S)              (S)->dr_wrt_vec_loop.step
+#define STMT_VINFO_DR_BASE_ALIGNMENT(S)    (S)->dr_wrt_vec_loop.base_alignment
+#define STMT_VINFO_DR_BASE_MISALIGNMENT(S) \
+  (S)->dr_wrt_vec_loop.base_misalignment
 #define STMT_VINFO_DR_OFFSET_ALIGNMENT(S) \
   (S)->dr_wrt_vec_loop.offset_alignment
 #define STMT_VINFO_DR_STEP_ALIGNMENT(S) \

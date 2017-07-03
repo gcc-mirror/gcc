@@ -1,5 +1,20 @@
 2017-07-03  Richard Sandiford  <richard.sandiford@linaro.org>
 
+	* tree-data-ref.h (innermost_loop_behavior): Add base_alignment
+	and base_misalignment fields.
+	(DR_BASE_ALIGNMENT, DR_BASE_MISALIGNMENT): New macros.
+	* tree-data-ref.c: Include builtins.h.
+	(dr_analyze_innermost): Set up the new innmost_loop_behavior fields.
+	* tree-vectorizer.h (STMT_VINFO_DR_BASE_ALIGNMENT): New macro.
+	(STMT_VINFO_DR_BASE_MISALIGNMENT): Likewise.
+	* tree-vect-data-refs.c: Include tree-cfg.h.
+	(vect_compute_data_ref_alignment): Use the new innermost_loop_behavior
+	fields instead of calculating an alignment here.
+	(vect_analyze_data_refs): Use dr_analyze_innermost.  Dump the new
+	innermost_loop_behavior fields.
+
+2017-07-03  Richard Sandiford  <richard.sandiford@linaro.org>
+
 	* tree-data-ref.h (innermost_loop_behavior): Add a step_alignment
 	field.
 	(DR_STEP_ALIGNMENT): New macro.
