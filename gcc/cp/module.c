@@ -851,6 +851,8 @@ public:
     rt_import,		/* An import. */
     rt_binding,		/* A name-binding.  */
     rt_definition,	/* A definition. */
+    rt_identifier,	/* An identifier node.  */
+    rt_conv_identifier,	/* A conversion operator name.  */
     rt_trees,		/* Global trees.  */
     rt_type_name,	/* A type name.  */
     rt_typeinfo_var,	/* A typeinfo object.  */
@@ -2368,7 +2370,7 @@ cpms_out::start (tree_code code, tree t)
 	w.u (VL_EXP_OPERAND_LENGTH (t));
       break;
     case IDENTIFIER_NODE:
-      w.str (IDENTIFIER_POINTER (t), IDENTIFIER_LENGTH (t));
+      gcc_unreachable ();
       break;
     case TREE_BINFO:
       w.u (BINFO_N_BASE_BINFOS (t));
@@ -2411,14 +2413,13 @@ cpms_in::start (tree_code code)
 	t = make_node (code);
       break;
     case IDENTIFIER_NODE:
+      gcc_unreachable ();
+      break;
     case STRING_CST:
       {
 	size_t l;
 	const char *str = r.str (&l);
-	if (code == IDENTIFIER_NODE)
-	  t = get_identifier_with_length (str, l);
-	else
-	  t = build_string (l, str);
+	t = build_string (l, str);
       }
       break;
     case TREE_BINFO:
@@ -3928,6 +3929,27 @@ cpms_out::tree_node (tree t)
       return;
     }
 
+  if (TREE_CODE (t) == IDENTIFIER_NODE)
+    {
+      /* An identifier node.  Stream the name or type.  */
+      bool conv_op = IDENTIFIER_CONV_OP_P (t);
+
+      w.u (conv_op ? rt_conv_identifier : rt_identifier);
+      if (conv_op)
+	{
+	  t = TREE_TYPE (t);
+	  tree_node (t);
+	}
+      else
+	w.str (IDENTIFIER_POINTER (t), IDENTIFIER_LENGTH (t));
+      unsigned tag = insert (t);
+      dump () && dump ("Written:%u %sidentifier:%N",
+		       tag, conv_op ? "conv_op_" : "", t);
+      unnest ();
+      return;
+    }
+
+  /* Generic node streaming.  */    
   tree_code code = TREE_CODE (t);
   tree_code_class klass = TREE_CODE_CLASS (code);
   gcc_assert (rt_tree_base + code < rt_ref_base);
@@ -3935,10 +3957,8 @@ cpms_out::tree_node (tree t)
   unique++;
   w.u (rt_tree_base + code);
 
-  int body = 1;
-  if (code == IDENTIFIER_NODE)
-    body = 0;
-  else if (klass == tcc_declaration)
+  bool body = true;
+  if (klass == tcc_declaration)
     {
       /* Write out ctx, name & maybe import reference info.  */
       tree_node (DECL_CONTEXT (t));
@@ -3952,11 +3972,11 @@ cpms_out::tree_node (tree t)
 	  ident_imported_decl (CP_DECL_CONTEXT (t), node_module, t);
 	  dump () && dump ("Writing imported %N@%I", t,
 			   module_name (node_module));
-	  body = -1;
+	  body = false;
 	}
     }
 
-  if (body >= 0)
+  if (body)
     start (code, t);
 
   unsigned tag = insert (t);
@@ -3964,9 +3984,9 @@ cpms_out::tree_node (tree t)
 		   klass == tcc_declaration && DECL_MODULE_EXPORT_P (t)
 		   ? " (exported)": "");
 
-  if (body > 0)
+  if (body)
     tree_node_raw (code, t);
-  else if (body < 0 && TREE_TYPE (t))
+  else if (TREE_TYPE (t))
     {
       tree type = TREE_TYPE (t);
       bool existed;
@@ -4073,6 +4093,25 @@ cpms_in::tree_node ()
       unnest ();
       return res;
     }
+  else if (tag == rt_identifier)
+    {
+      size_t l;
+      const char *str = r.str (&l);
+      tree id = get_identifier_with_length (str, l);
+      tag = insert (id);
+      dump () && dump ("Read:%u identifier:%N", tag, id);
+      unnest ();
+      return id;
+    }
+  else if (tag == rt_conv_identifier)
+    {
+      tree t = tree_node ();
+      tree id = make_conv_op_name (t);
+      tag = insert (id);
+      dump () && dump ("Read:%u conv_op_identifier:%N", tag, t);
+      unnest ();
+      return id;
+    }
   else if (tag < rt_tree_base || tag >= rt_tree_base + MAX_TREE_CODES)
     {
       error (tag < rt_tree_base ? "unexpected key %qd"
@@ -4086,15 +4125,13 @@ cpms_in::tree_node ()
   tree_code_class klass = TREE_CODE_CLASS (code);
   tree t = NULL_TREE;
 
-  int body = 1;
+  bool body = true;
   tree name = NULL_TREE;
   tree ctx = NULL_TREE;
   int node_module = -1;
   int set_module = -1;
 
-  if (code == IDENTIFIER_NODE)
-    body = 0;
-  else if (klass == tcc_declaration)
+  if (klass == tcc_declaration)
     {
       ctx = tree_node ();
       name = tree_node ();
@@ -4144,24 +4181,24 @@ cpms_in::tree_node ()
 	    }
 	  dump () && dump ("Importing %P@%I",
 			   cp_ctx, name, module_name (node_module));
-	  body = -1;
+	  body = false;
 	}
     }
 
-  if (body >= 0)
+  if (body)
     t = start (code);
 
   /* Insert into map.  */
   tag = insert (t);
-  dump () && dump ("%s:%u %C:%N", body < 0 ? "Imported" : "Reading", tag,
-		   code, code == IDENTIFIER_NODE ? t : name);
+  dump () && dump ("%s:%u %C:%N", body ? "Reading" : "Imported", tag,
+		   code, name);
 
-  if (body > 0)
+  if (body)
     {
       if (!tree_node_raw (code, t, name, ctx, set_module))
 	goto barf;
     }
-  else if (body < 0 && TREE_TYPE (t) && !r.u ())
+  else if (TREE_TYPE (t) && !r.u ())
     {
       tree type = TREE_TYPE (t);
       tag = insert (type);
@@ -4178,7 +4215,7 @@ cpms_in::tree_node ()
       return NULL_TREE;
     }
 
-  if (body > 0)
+  if (body)
     {
       tree found = finish (t, node_module);
 
