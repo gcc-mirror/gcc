@@ -52,9 +52,10 @@ struct innermost_loop_behavior
   tree init;
   tree step;
 
-  /* Alignment information.  ALIGNED_TO is set to the largest power of two
-     that divides OFFSET.  */
-  tree aligned_to;
+  /* The largest power of two that divides OFFSET, capped to a suitably
+     high value if the offset is zero.  This is a byte rather than a bit
+     quantity.  */
+  unsigned int offset_alignment;
 };
 
 /* Describes the evolutions of indices of the memory reference.  The indices
@@ -143,7 +144,7 @@ struct data_reference
 #define DR_INIT(DR)                (DR)->innermost.init
 #define DR_STEP(DR)                (DR)->innermost.step
 #define DR_PTR_INFO(DR)            (DR)->alias.ptr_info
-#define DR_ALIGNED_TO(DR)          (DR)->innermost.aligned_to
+#define DR_OFFSET_ALIGNMENT(DR)    (DR)->innermost.offset_alignment
 #define DR_INNERMOST(DR)           (DR)->innermost
 
 typedef struct data_reference *data_reference_p;

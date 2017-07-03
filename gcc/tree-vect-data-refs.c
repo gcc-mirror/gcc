@@ -772,7 +772,7 @@ vect_compute_data_ref_alignment (struct data_reference *dr)
 
   alignment = TYPE_ALIGN_UNIT (vectype);
 
-  if ((compare_tree_int (drb->aligned_to, alignment) < 0)
+  if (drb->offset_alignment < alignment
       || !step_preserves_misalignment_p)
     {
       if (dump_enabled_p ())
@@ -3412,8 +3412,8 @@ again:
 				    {
 				      DR_OFFSET (newdr) = ssize_int (0);
 				      DR_STEP (newdr) = step;
-				      DR_ALIGNED_TO (newdr)
-					= size_int (BIGGEST_ALIGNMENT);
+				      DR_OFFSET_ALIGNMENT (newdr)
+					= BIGGEST_ALIGNMENT;
 				      dr = newdr;
 				      simd_lane_access = true;
 				    }
@@ -3644,8 +3644,8 @@ again:
 	  STMT_VINFO_DR_INIT (stmt_info) = outer_init;
 	  STMT_VINFO_DR_OFFSET (stmt_info) =
 				fold_convert (ssizetype, offset_iv.base);
-	  STMT_VINFO_DR_ALIGNED_TO (stmt_info) =
-				size_int (highest_pow2_factor (offset_iv.base));
+	  STMT_VINFO_DR_OFFSET_ALIGNMENT (stmt_info)
+	    = highest_pow2_factor (offset_iv.base);
 
           if (dump_enabled_p ())
 	    {
@@ -3663,10 +3663,8 @@ again:
 	      dump_printf (MSG_NOTE, "\n\touter step: ");
 	      dump_generic_expr (MSG_NOTE, TDF_SLIM,
                                  STMT_VINFO_DR_STEP (stmt_info));
-	      dump_printf (MSG_NOTE, "\n\touter aligned to: ");
-	      dump_generic_expr (MSG_NOTE, TDF_SLIM,
-                                 STMT_VINFO_DR_ALIGNED_TO (stmt_info));
-	      dump_printf (MSG_NOTE, "\n");
+	      dump_printf (MSG_NOTE, "\n\touter offset alignment: %d\n",
+			   STMT_VINFO_DR_OFFSET_ALIGNMENT (stmt_info));
 	    }
 	}
 

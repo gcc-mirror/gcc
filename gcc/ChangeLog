@@ -1,5 +1,20 @@
 2017-07-03  Richard Sandiford  <richard.sandiford@linaro.org>
 
+	* tree-data-ref.h (innermost_loop_behavior): Replace aligned_to
+	with offset_alignment.
+	(DR_ALIGNED_TO): Delete.
+	(DR_OFFSET_ALIGNMENT): New macro.
+	* tree-vectorizer.h (STMT_VINFO_DR_ALIGNED_TO): Delete.
+	(STMT_VINFO_DR_OFFSET_ALIGNMENT): New macro.
+	* tree-data-ref.c (dr_analyze_innermost): Update after above changes.
+	(create_data_ref): Likewise.
+	* tree-vect-data-refs.c (vect_compute_data_ref_alignment): Likewise.
+	(vect_analyze_data_refs): Likewise.
+	* tree-if-conv.c (if_convertible_loop_p_1): Use memset before
+	creating dummy innermost behavior.
+
+2017-07-03  Richard Sandiford  <richard.sandiford@linaro.org>
+
 	* tree-data-ref.h (dr_analyze_innermost): Replace the dr argument
 	with a "innermost_loop_behavior *" and refeence tree.
 	* tree-data-ref.c (dr_analyze_innermost): Likewise.
