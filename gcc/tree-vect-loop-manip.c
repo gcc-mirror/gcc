@@ -949,7 +949,6 @@ vect_gen_prolog_loop_niters (loop_vec_info loop_vinfo,
 			     basic_block bb, int *bound)
 {
   struct data_reference *dr = LOOP_VINFO_UNALIGNED_DR (loop_vinfo);
-  struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
   tree var;
   tree niters_type = TREE_TYPE (LOOP_VINFO_NITERS (loop_vinfo));
   gimple_seq stmts = NULL, new_stmts = NULL;
@@ -977,7 +976,7 @@ vect_gen_prolog_loop_niters (loop_vec_info loop_vinfo,
       tree offset = negative
 	  ? size_int (-TYPE_VECTOR_SUBPARTS (vectype) + 1) : size_zero_node;
       tree start_addr = vect_create_addr_base_for_vector_ref (dr_stmt,
-						&stmts, offset, loop);
+							      &stmts, offset);
       tree type = unsigned_type_for (TREE_TYPE (start_addr));
       tree vectype_align_minus_1 = build_int_cst (type, vectype_align - 1);
       HOST_WIDE_INT elem_size =
@@ -1975,7 +1974,6 @@ vect_create_cond_for_align_checks (loop_vec_info loop_vinfo,
                                    tree *cond_expr,
 				   gimple_seq *cond_expr_stmt_list)
 {
-  struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
   vec<gimple *> may_misalign_stmts
     = LOOP_VINFO_MAY_MISALIGN_STMTS (loop_vinfo);
   gimple *ref_stmt;
@@ -2016,7 +2014,7 @@ vect_create_cond_for_align_checks (loop_vec_info loop_vinfo,
       /* create: addr_tmp = (int)(address_of_first_vector) */
       addr_base =
 	vect_create_addr_base_for_vector_ref (ref_stmt, &new_stmt_list,
-					      offset, loop);
+					      offset);
       if (new_stmt_list != NULL)
 	gimple_seq_add_seq (cond_expr_stmt_list, new_stmt_list);
 

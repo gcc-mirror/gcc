@@ -3789,14 +3789,8 @@ vect_recog_bool_pattern (vec<gimple *> *stmts, tree *type_in,
       set_vinfo_for_stmt (pattern_stmt, pattern_stmt_info);
       STMT_VINFO_DATA_REF (pattern_stmt_info)
 	= STMT_VINFO_DATA_REF (stmt_vinfo);
-      STMT_VINFO_DR_BASE_ADDRESS (pattern_stmt_info)
-	= STMT_VINFO_DR_BASE_ADDRESS (stmt_vinfo);
-      STMT_VINFO_DR_INIT (pattern_stmt_info) = STMT_VINFO_DR_INIT (stmt_vinfo);
-      STMT_VINFO_DR_OFFSET (pattern_stmt_info)
-	= STMT_VINFO_DR_OFFSET (stmt_vinfo);
-      STMT_VINFO_DR_STEP (pattern_stmt_info) = STMT_VINFO_DR_STEP (stmt_vinfo);
-      STMT_VINFO_DR_ALIGNED_TO (pattern_stmt_info)
-	= STMT_VINFO_DR_ALIGNED_TO (stmt_vinfo);
+      STMT_VINFO_DR_WRT_VEC_LOOP (pattern_stmt_info)
+	= STMT_VINFO_DR_WRT_VEC_LOOP (stmt_vinfo);
       DR_STMT (STMT_VINFO_DATA_REF (stmt_vinfo)) = pattern_stmt;
       *type_out = vectype;
       *type_in = vectype;
@@ -3930,14 +3924,8 @@ vect_recog_mask_conversion_pattern (vec<gimple *> *stmts, tree *type_in,
       set_vinfo_for_stmt (pattern_stmt, pattern_stmt_info);
       STMT_VINFO_DATA_REF (pattern_stmt_info)
 	= STMT_VINFO_DATA_REF (stmt_vinfo);
-      STMT_VINFO_DR_BASE_ADDRESS (pattern_stmt_info)
-	= STMT_VINFO_DR_BASE_ADDRESS (stmt_vinfo);
-      STMT_VINFO_DR_INIT (pattern_stmt_info) = STMT_VINFO_DR_INIT (stmt_vinfo);
-      STMT_VINFO_DR_OFFSET (pattern_stmt_info)
-	= STMT_VINFO_DR_OFFSET (stmt_vinfo);
-      STMT_VINFO_DR_STEP (pattern_stmt_info) = STMT_VINFO_DR_STEP (stmt_vinfo);
-      STMT_VINFO_DR_ALIGNED_TO (pattern_stmt_info)
-	= STMT_VINFO_DR_ALIGNED_TO (stmt_vinfo);
+      STMT_VINFO_DR_WRT_VEC_LOOP (pattern_stmt_info)
+	= STMT_VINFO_DR_WRT_VEC_LOOP (stmt_vinfo);
       DR_STMT (STMT_VINFO_DATA_REF (stmt_vinfo)) = pattern_stmt;
 
       *type_out = vectype1;

@@ -554,11 +554,7 @@ typedef struct _stmt_vec_info {
 
   /* Information about the data-ref relative to this loop
      nest (the loop that is being considered for vectorization).  */
-  tree dr_base_address;
-  tree dr_init;
-  tree dr_offset;
-  tree dr_step;
-  tree dr_aligned_to;
+  innermost_loop_behavior dr_wrt_vec_loop;
 
   /* For loop PHI nodes, the base and evolution part of it.  This makes sure
      this information is still available in vect_update_ivs_after_vectorizer
@@ -708,11 +704,12 @@ STMT_VINFO_BB_VINFO (stmt_vec_info stmt_vinfo)
 #define STMT_VINFO_VEC_REDUCTION_TYPE(S)   (S)->v_reduc_type
 #define STMT_VINFO_VEC_CONST_COND_REDUC_CODE(S) (S)->const_cond_reduc_code
 
-#define STMT_VINFO_DR_BASE_ADDRESS(S)      (S)->dr_base_address
-#define STMT_VINFO_DR_INIT(S)              (S)->dr_init
-#define STMT_VINFO_DR_OFFSET(S)            (S)->dr_offset
-#define STMT_VINFO_DR_STEP(S)              (S)->dr_step
-#define STMT_VINFO_DR_ALIGNED_TO(S)        (S)->dr_aligned_to
+#define STMT_VINFO_DR_WRT_VEC_LOOP(S)      (S)->dr_wrt_vec_loop
+#define STMT_VINFO_DR_BASE_ADDRESS(S)      (S)->dr_wrt_vec_loop.base_address
+#define STMT_VINFO_DR_INIT(S)              (S)->dr_wrt_vec_loop.init
+#define STMT_VINFO_DR_OFFSET(S)            (S)->dr_wrt_vec_loop.offset
+#define STMT_VINFO_DR_STEP(S)              (S)->dr_wrt_vec_loop.step
+#define STMT_VINFO_DR_ALIGNED_TO(S)        (S)->dr_wrt_vec_loop.aligned_to
 
 #define STMT_VINFO_IN_PATTERN_P(S)         (S)->in_pattern_p
 #define STMT_VINFO_RELATED_STMT(S)         (S)->related_stmt
@@ -1014,6 +1011,22 @@ known_alignment_for_access_p (struct data_reference *data_ref_info)
   return (DR_MISALIGNMENT (data_ref_info) != DR_MISALIGNMENT_UNKNOWN);
 }
 
+/* Return the behavior of DR with respect to the vectorization context
+   (which for outer loop vectorization might not be the behavior recorded
+   in DR itself).  */
+
+static inline innermost_loop_behavior *
+vect_dr_behavior (data_reference *dr)
+{
+  gimple *stmt = DR_STMT (dr);
+  stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
+  loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
+  if (loop_vinfo == NULL
+      || !nested_in_vect_loop_p (LOOP_VINFO_LOOP (loop_vinfo), stmt))
+    return &DR_INNERMOST (dr);
+  else
+    return &STMT_VINFO_DR_WRT_VEC_LOOP (stmt_info);
+}
 
 /* Return true if the vect cost model is unlimited.  */
 static inline bool
@@ -1144,8 +1157,7 @@ extern tree vect_get_new_vect_var (tree, enum vect_var_kind, const char *);
 extern tree vect_get_new_ssa_name (tree, enum vect_var_kind,
 				   const char * = NULL);
 extern tree vect_create_addr_base_for_vector_ref (gimple *, gimple_seq *,
-						  tree, struct loop *,
-						  tree = NULL_TREE);
+						  tree, tree = NULL_TREE);
 
 /* In tree-vect-loop.c.  */
 /* FORNOW: Used in tree-parloops.c.  */
