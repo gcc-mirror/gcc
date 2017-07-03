@@ -1,5 +1,11 @@
 2017-07-03  Tom de Vries  <tom@codesourcery.com>
 
+	PR tree-optimization/69468
+	* tree-ssa-tail-merge.c (ignore_edge_flags): New constant.
+	(find_same_succ_bb): Handle ignore_edge_flags.
+
+2017-07-03  Tom de Vries  <tom@codesourcery.com>
+
 	PR tree-optimization/81192
 	* tree-ssa-tail-merge.c (same_succ_hash): Use bb->loop_father->num in
 	hash.
