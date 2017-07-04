@@ -1,5 +1,11 @@
 2017-07-04  Uros Bizjak  <ubizjak@gmail.com>
 
+	PR target/81300
+	* config/i386/i386.md (setcc + movzbl/and to xor + setcc peepholes):
+	Require dead FLAGS_REG at the beginning of a peephole.
+
+2017-07-04  Uros Bizjak  <ubizjak@gmail.com>
+
 	PR target/81294
 	* config/i386/adxintrin.h (_subborrow_u32): Swap _X and _Y
 	arguments in the call to __builtin_ia32_sbb_u32.
@@ -258,7 +264,7 @@
 2017-07-02  Jan Hubicka  <hubicka@ucw.cz>
 
 	* tree-cfgcleanup.c (want_merge_blocks_p): New function.
-        (cleanup_tree_cfg_bb): Use it.
+	(cleanup_tree_cfg_bb): Use it.
 	* profile-count.h (profile_count::of_for_merging, profile_count::merge):
 	New functions.
 	* tree-cfg.c (gimple_merge_blocks): Use profile_count::merge.
@@ -350,8 +356,8 @@
 2017-07-02  Jan Hubicka  <hubicka@ucw.cz>
 
 	* dumpfile.c: Include profile-count.h
-	* tree-cfg.c (gimple_duplicate_sese_tail): Drop UNUSED attributes; update
-	profile.
+	* tree-cfg.c (gimple_duplicate_sese_tail): Drop UNUSED attributes;
+	update profile.
 	(insert_cond_bb): Update profile.
 	* tree-cfg.h (insert_cond_bb): Update prototype.
 	* tree-chkp-opt.c (chkp_optimize_string_function_calls): Update.
@@ -481,7 +487,7 @@
 
 2017-07-01  Andi Kleen  <ak@linux.intel.com>
 
-        * print-tree.c (print_node): Print all attributes.
+	* print-tree.c (print_node): Print all attributes.
 
 2017-07-01  Jan Hubicka  <hubicka@ucw.cz>
 
@@ -678,7 +684,7 @@
 	* config/i386/i386.c (ix86_macro_fusion_pair_p): Push the check for
 	CC usage from generic code to here.
 	* sched-deps.c (sched_macro_fuse_insns): Move the condition for
-	CC usage into the target macros. 
+	CC usage into the target macros.
 
 2017-06-29  Maya Rashish  <coypu@sdf.org>
 
@@ -693,16 +699,16 @@
 
 2017-06-29  Aaron Sawdey  <acsawdey@linux.vnet.ibm.com>
 
-        * config/rs6000/rs6000.c (toc_relative_expr_p): Make tocrel_base
-        and tocrel_offset be pointer args rather than implicitly using
-        static versions.
-        (legitimate_constant_pool_address_p, rs6000_emit_move,
-        const_load_sequence_p, adjust_vperm): Add local tocrel_base and
-        tocrel_offset and use in toc_relative_expr_p call.
-        (print_operand, print_operand_address): Use static tocrel_base_oac
-        and tocrel_offset_oac.
-        (rs6000_output_addr_const_extra): Use static tocrel_base_oac and
-        tocrel_offset_oac.
+	* config/rs6000/rs6000.c (toc_relative_expr_p): Make tocrel_base
+	and tocrel_offset be pointer args rather than implicitly using
+	static versions.
+	(legitimate_constant_pool_address_p, rs6000_emit_move,
+	const_load_sequence_p, adjust_vperm): Add local tocrel_base and
+	tocrel_offset and use in toc_relative_expr_p call.
+	(print_operand, print_operand_address): Use static tocrel_base_oac
+	and tocrel_offset_oac.
+	(rs6000_output_addr_const_extra): Use static tocrel_base_oac and
+	tocrel_offset_oac.
 
 2017-06-29  Maya Rashish  <coypu@sdf.org>
 
@@ -1038,12 +1044,12 @@
 2017-06-29  Yury Gribov  <tetra2005@gmail.com>
 
 	PR bootstrap/80565
-        * ipa-cp.c (allocate_and_init_ipcp_value): Add initialization
+	* ipa-cp.c (allocate_and_init_ipcp_value): Add initialization
 	code.
-        * ipa-inline.h
+	* ipa-inline.h
 	(edge_growth_cache_entry::edge_growth_cache_entry): New
 	function.
-        (reset_edge_growth_cache): Update to use constructor.
+	(reset_edge_growth_cache): Update to use constructor.
 
 2017-06-28  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
@@ -1238,7 +1244,7 @@
 	(ASM_OUTPUT_ALIGNED_BSS): Add #undef before #define.
 
 2017-06-27  Jerome Lambourg  <lambourg@adacore.com>
-            Olivier Hainque  <hainque@adacore.com>
+	    Olivier Hainque  <hainque@adacore.com>
 
 	* config/i386/vxworks.h (DBX_REGISTER_NUMBER): Pick distinct
 	map for 64bits.
@@ -1283,7 +1289,7 @@
 	* tree.c (builtin_structptr_types): Add four entries.
 
 2017-06-27  Jerome Lambourg  <lambourg@adacore.com>
-            Olivier Hainque  <hainque@adacore.com>
+	    Olivier Hainque  <hainque@adacore.com>
 
 	* config/vxworks.h (VXWORKS_LIB_SPEC): Incorporate ...
 	(TLS_SYM): New local macro, forcing reference to __tls__ on
@@ -1329,7 +1335,7 @@
 	condition.
 
 2017-06-26  Jerome Lambourg  <lambourg@adacore.com>
-            Olivier Hainque  <hainque@adacore.com>
+	    Olivier Hainque  <hainque@adacore.com>
 
 	* config.gcc (*-*-vxworks*): Add TARGET_VXWORKS7=1 to tm_defines
 	for all vxworks7 targets.
@@ -1694,7 +1700,7 @@
 	attribute type list for neon_multiply.
 	* config/arm/types.md (crypto_pmull): Add.
 	* config/arm/xgene1.md (xgene1_neon_pmull): Add crypto_pmull to
-	attribute type list.	
+	attribute type list.
 
 2017-06-20  Andreas Tobler  <andreast@gcc.gnu.org>
 
@@ -1950,9 +1956,9 @@
 2017-06-16  Richard Earnshaw  <rearnsha@arm.com>
 
 	* config/arm/t-linux-eabi (MULTILIB_EXCEPTIONS): Set to empty.
-        (MULTILIB_RESUE): Likewise.
-        (MULTILIB_MATCHES): Likewise.
-        (MULTLIB_REQUIRED): Likewise.
+	(MULTILIB_RESUE): Likewise.
+	(MULTILIB_MATCHES): Likewise.
+	(MULTLIB_REQUIRED): Likewise.
 
 2017-06-16  Richard Earnshaw  <rearnsha@arm.com>
 
@@ -2325,28 +2331,28 @@
 
 2017-06-16  Maxim Kuvyrkov  <maxim.kuvyrkov@linaro.org>
 
-        * config/aarch64/aarch64.c (qdf24xx_prefetch_tune): Update
-        prefetch settings, and enable prefetching by default at -O3.
+	* config/aarch64/aarch64.c (qdf24xx_prefetch_tune): Update
+	prefetch settings, and enable prefetching by default at -O3.
 
 2017-06-16  Maxim Kuvyrkov  <maxim.kuvyrkov@linaro.org>
 
-        * config/aarch64/aarch64.c (aarch64_override_options_internal):
-        Set flag_prefetch_loop_arrays according to tuning data.
+	* config/aarch64/aarch64.c (aarch64_override_options_internal):
+	Set flag_prefetch_loop_arrays according to tuning data.
 
 2017-06-16  Maxim Kuvyrkov  <maxim.kuvyrkov@linaro.org>
 
-        * config/aarch64/aarch64-protos.h (struct cpu_prefetch_tune):
-        New tune structure.
-        (struct tune_params): Use cpu_prefetch_tune instead of cache_line_size.
-        [Unrelated to main purpose of the patch] Place the pointer field last
-        to enable type checking errors when tune structure are wrongly merged.
-        * config/aarch64/aarch64.c (generic_prefetch_tune,)
-        (exynosm1_prefetch_tune, qdf24xx_prefetch_tune,)
-        (thunderx2t99_prefetch_tune): New tune constants.
-        (tune_params *_tunings): Update all tunings (no functional change).
-        (aarch64_override_options_internal): Set PARAM_SIMULTANEOUS_PREFETCHES,
-        PARAM_L1_CACHE_SIZE, PARAM_L1_CACHE_LINE_SIZE, and PARAM_L2_CACHE_SIZE
-        from tunings structures.
+	* config/aarch64/aarch64-protos.h (struct cpu_prefetch_tune):
+	New tune structure.
+	(struct tune_params): Use cpu_prefetch_tune instead of cache_line_size.
+	[Unrelated to main purpose of the patch] Place the pointer field last
+	to enable type checking errors when tune structure are wrongly merged.
+	* config/aarch64/aarch64.c (generic_prefetch_tune,)
+	(exynosm1_prefetch_tune, qdf24xx_prefetch_tune,)
+	(thunderx2t99_prefetch_tune): New tune constants.
+	(tune_params *_tunings): Update all tunings (no functional change).
+	(aarch64_override_options_internal): Set PARAM_SIMULTANEOUS_PREFETCHES,
+	PARAM_L1_CACHE_SIZE, PARAM_L1_CACHE_LINE_SIZE, and PARAM_L2_CACHE_SIZE
+	from tunings structures.
 
 2017-06-16  Jakub Jelinek  <jakub@redhat.com>
 
@@ -2478,7 +2484,7 @@
 
 	PR target/71663
 	* config/aarch64/aarch64.c (aarch64_expand_vector_init):
-	Improve vector initialization code gen for only variable case. 
+	Improve vector initialization code gen for only variable case.
 
 2017-06-14  Eric Botcazou  <ebotcazou@adacore.com>
 
@@ -3322,7 +3328,7 @@
 
 	PR sanitizer/80932
 	* fold-const.c (extract_muldiv_1) <case MINUS_EXPR>: Add
-	TYPE_OVERFLOW_WRAPS check. 
+	TYPE_OVERFLOW_WRAPS check.
 
 2017-06-07  Bin Cheng  <bin.cheng@arm.com>
 
@@ -3365,12 +3371,13 @@
 
 2017-06-07  Tamar Christina  <tamar.christina@arm.com>
 
-	* config/aarch64/aarch64.c (aarch64_rtx_costs): Make sdiv more expensive than udiv.
-	Remove floating point cases from mod.
+	* config/aarch64/aarch64.c (aarch64_rtx_costs): Make sdiv more
+	expensive than udiv.  Remove floating point cases from mod.
 
 2017-06-07  Tamar Christina  <tamar.christina@arm.com>
 
-	* config/arm/aarch-cost-tables.h (cortexa53_extra_cost): Increase idiv cost.
+	* config/arm/aarch-cost-tables.h (cortexa53_extra_cost):
+	Increase idiv cost.
 
 2017-06-07  Tamar Christina  <tamar.christina@arm.com>
 
