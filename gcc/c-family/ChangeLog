@@ -1,5 +1,11 @@
 2017-07-04  Marek Polacek  <polacek@redhat.com>
 
+	PR c/81231
+	* c-common.c (sync_resolve_size): Give error for pointers to incomplete
+	types.
+
+2017-07-04  Marek Polacek  <polacek@redhat.com>
+
 	* c-warn.c (warn_if_unused_value): Remove WITH_CLEANUP_EXPR handling.
 
 2017-06-28  Martin Liska  <mliska@suse.cz>
