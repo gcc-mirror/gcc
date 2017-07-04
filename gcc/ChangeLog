@@ -1,3 +1,17 @@
+2017-07-04  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/81300
+	* config/i386/i386.md (setcc + movzbl/and to xor + setcc peepholes):
+	Require dead FLAGS_REG at the beginning of a peephole.
+
+2017-07-04  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/81294
+	* config/i386/adxintrin.h (_subborrow_u32): Swap _X and _Y
+	arguments in the call to __builtin_ia32_sbb_u32.
+	(_subborrow_u64): Swap _X and _Y arguments in the call to
+	__builtin_ia32_sbb_u64.
+
 2017-07-03  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	Backport from trunk:
