@@ -35,6 +35,17 @@ along with GCC; see the file COPYING3.  If not see
 #define DBX_REGISTER_NUMBER(n) \
   (TARGET_64BIT ? dbx64_register_map[n] : svr4_dbx_register_map[n])
 
+#undef PTRDIFF_TYPE
+#define PTRDIFF_TYPE (TARGET_LP64 ? "long int" : "int")
+
+#undef SIZE_TYPE
+#define SIZE_TYPE (TARGET_LP64 ? "long unsigned int" : "unsigned int")
+
+#if TARGET_64BIT_DEFAULT
+#undef VXWORKS_SYSCALL_LIBS_RTP
+#define VXWORKS_SYSCALL_LIBS_RTP "-lsyscall"
+#endif
+
 #define TARGET_OS_CPP_BUILTINS()			\
   do							\
     {							\
