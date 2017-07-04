@@ -1,5 +1,10 @@
 2017-07-04  Uros Bizjak  <ubizjak@gmail.com>
 
+	PR target/81300
+	* gcc.target/i386/pr81300.c: New test.
+
+2017-07-04  Uros Bizjak  <ubizjak@gmail.com>
+
 	PR target/81294
 	* gcc.target/i386/adx-addcarryx32-2.c (adx_test): Swap
 	x and y arguments in the call to _subborrow_u32.
@@ -505,7 +510,7 @@
 
 2017-06-24  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
-        PR fortran/52473
+	PR fortran/52473
 	* gfortran.dg/cshift_2.f90:  New test.
 
 2017-06-23  Jim Wilson  <jim.wilson@linaro.org>
@@ -536,8 +541,7 @@
 
 2017-06-23  James Cowgill  <James.Cowgill@imgtec.com>
 
-	* go.test/go-test.exp (go-set-goarch): Update MIPS architecture
-        names.
+	* go.test/go-test.exp (go-set-goarch): Update MIPS architecture names.
 
 2017-06-22  Matt Turner  <mattst88@gmail.com>
 
