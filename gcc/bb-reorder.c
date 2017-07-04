@@ -957,7 +957,7 @@ better_edge_p (const_basic_block bb, const_edge e, profile_probability prob,
     return !cur_best_edge
 	   || cur_best_edge->dest->index > e->dest->index;
 
-  if (prob > best_prob + diff_prob)
+  if (prob > best_prob + diff_prob || !best_prob.initialized_p ())
     /* The edge has higher probability than the temporary best edge.  */
     is_better_edge = true;
   else if (prob < best_prob - diff_prob)
