@@ -1,3 +1,11 @@
+2017-07-04  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/81214
+	* g++.dg/ext/mvc2.C: Add dg-require ifunc.
+	* g++.dg/ext/mvc3.C: Likewise.
+	* gcc.target/i386/mvc2.c: Likewise.
+	* gcc.target/i386/mvc3.c: Likewise.
+
 2017-07-04  Jakub Jelinek  <jakub@redhat.com>
 
 	* g++.dg/cpp1z/decomp1.C: Expect structured binding instead of
