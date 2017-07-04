@@ -1,3 +1,13 @@
+2017-07-04  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/81294
+	* gcc.target/i386/adx-addcarryx32-2.c (adx_test): Swap
+	x and y arguments in the call to _subborrow_u32.
+	* gcc.target/i386/adx-addcarryx64-2.c (adx_test): Swap
+	x and y arguments in the call to _subborrow_u64.
+	* gcc.target/i386/pr81294-1.c: New test.
+	* gcc.target/i386/pr81294-2.c: Ditto.
+
 2017-07-04  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* gcc.target/aarch64/simd/vminmaxnm_1.c: Fix strict aliasing issues.
