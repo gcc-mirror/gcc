@@ -1,5 +1,9 @@
 2017-07-04  Jan Hubicka  <hubicka@ucw.cz>
 
+	* haifa-sched.c (sched_create_recovery_edges): Update profile.
+
+2017-07-04  Jan Hubicka  <hubicka@ucw.cz>
+
 	* bb-reorder.c (better_edge_p): Fix handling of uninitialized
 	probability.
 
