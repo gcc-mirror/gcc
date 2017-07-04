@@ -1,3 +1,15 @@
+2017-07-04  Richard Earnshaw  <rearnsha@arm.com>
+
+	* common/config/arm/arm-common.c: Adjust include path for
+	arm-cpu-cdata.h
+	* config/arm/t-arm (TM_H): Adjust path for arm-cpu.h.
+	(arm-cpu.h): Create in build directory.  Adjust dependency rules.
+	(arm-cpu-data.h): Likewise.
+	(arm-cpu-cdata.h): Likewise.
+	* config/arm/arm-cpu.h: Delete.
+	* config/arm/arm-cpu-cdata.h: Delete.
+	* config/arm/arm-cpu-data.h: Delete.
+
 2017-07-04  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* config/arm/arm-cpus.in (cortex-a55): New.

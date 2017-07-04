@@ -1,3 +1,8 @@
+2017-07-04  Richard Earnshaw  <rearnsha@arm.com>
+
+	* contrib/gcc_update (files_and_dependencies): Remove stamp rules for
+	arm-specific auto-generated header files.
+
 2017-07-03  Nathan Sidwell  <nathan@acm.org>
 
 	* configure.ac: Set srcdir when sourcing config-lang.in fragments.

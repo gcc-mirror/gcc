@@ -144,7 +144,7 @@ arm_rewrite_march (int argc, const char **argv)
   return arm_rewrite_selected_arch (argv[argc - 1]);
 }
 
-#include "config/arm/arm-cpu-cdata.h"
+#include "arm-cpu-cdata.h"
 
 /* Scan over a raw feature array BITS checking for BIT being present.
    This is slower than the normal bitmask checks, but we would spend longer
