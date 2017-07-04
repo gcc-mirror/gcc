@@ -87,7 +87,7 @@
 	Backport from mainline
 	2017-05-04  Prakhar Bahuguna  <prakhar.bahuguna@arm.com>
 
-	* gcc/config/arm/arm-builtins.c (arm_init_builtins): Rename
+	* config/arm/arm-builtins.c (arm_init_builtins): Rename
 	__builtin_arm_ldfscr to __builtin_arm_get_fpscr, and rename
 	__builtin_arm_stfscr to __builtin_arm_set_fpscr.
 
