@@ -1,3 +1,7 @@
+2017-07-04  Tom de Vries  <tom@codesourcery.com>
+
+	* graph.c (draw_cfg_edges): Save and restore EDGE_DFS_BACK.
+
 2017-07-03  Dominique d'Humieres  <dominiq@lps.ens.fr>
 
 	PR target/81033
