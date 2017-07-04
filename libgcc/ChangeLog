@@ -1,3 +1,7 @@
+2017-07-03  Olivier Hainque  <hainque@adacore.com>
+
+        * config/t-vxworks7: New file, really.
+
 2017-06-28  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/aarch64/linux-unwind.h (aarch64_fallback_frame_state),
