@@ -11,27 +11,27 @@ namespace std {
 template<> struct std::tuple_size<B> { static constexpr int value = 2; };
 template<int I> struct std::tuple_element<I,B> { typedef int type; };
 
-auto [ aa, bb, cc, dd ] = a;		// { dg-warning "decomposition declaration only available with" "" { target c++14_down } }
+auto [ aa, bb, cc, dd ] = a;		// { dg-warning "structured bindings only available with" "" { target c++14_down } }
 // { dg-final { scan-assembler "_ZDC2aa2bb2cc2ddE" } }
-const auto & [ e, f, g, h ] = a;	// { dg-warning "decomposition declaration only available with" "" { target c++14_down } }
+const auto & [ e, f, g, h ] = a;	// { dg-warning "structured bindings only available with" "" { target c++14_down } }
 // { dg-final { scan-assembler "_ZDC1e1f1g1hE" } }
-auto [ ee, ff ] = b;			// { dg-warning "decomposition declaration only available with" "" { target c++14_down } }
+auto [ ee, ff ] = b;			// { dg-warning "structured bindings only available with" "" { target c++14_down } }
 // { dg-final { scan-assembler "_ZDC2ee2ffE" } }
-auto & [ gg, hh ] = b;			// { dg-warning "decomposition declaration only available with" "" { target c++14_down } }
+auto & [ gg, hh ] = b;			// { dg-warning "structured bindings only available with" "" { target c++14_down } }
 // { dg-final { scan-assembler "_ZDC2gg2hhE" } }
 namespace N
 {
   namespace M
   {
-    auto [ i, j, k, l ] = a;		// { dg-warning "decomposition declaration only available with" "" { target c++14_down } }
+    auto [ i, j, k, l ] = a;		// { dg-warning "structured bindings only available with" "" { target c++14_down } }
     // { dg-final { scan-assembler "_ZN1N1MDC1i1j1k1lEE" } }
-    auto & [ m, n, o, ppp ] = a;	// { dg-warning "decomposition declaration only available with" "" { target c++14_down } }
+    auto & [ m, n, o, ppp ] = a;	// { dg-warning "structured bindings only available with" "" { target c++14_down } }
     // { dg-final { scan-assembler "_ZN1N1MDC1m1n1o3pppEE" } }
-    auto [ ii, jj ] = b;		// { dg-warning "decomposition declaration only available with" "" { target c++14_down } }
+    auto [ ii, jj ] = b;		// { dg-warning "structured bindings only available with" "" { target c++14_down } }
     // { dg-final { scan-assembler "_ZN1N1MDC2ii2jjEE" } }
     // { dg-final { scan-assembler "_ZN1N1M2iiE" } }
     // { dg-final { scan-assembler "_ZN1N1M2jjE" } }
-    auto & [ mm, nn ] = b;		// { dg-warning "decomposition declaration only available with" "" { target c++14_down } }
+    auto & [ mm, nn ] = b;		// { dg-warning "structured bindings only available with" "" { target c++14_down } }
     // { dg-final { scan-assembler "_ZN1N1MDC2mm2nnEE" } }
     // { dg-final { scan-assembler "_ZN1N1M2mmE" } }
     // { dg-final { scan-assembler "_ZN1N1M2nnE" } }
@@ -39,14 +39,14 @@ namespace N
 }
 namespace std
 {
-  auto [ i2, j2, k2, l2 ] = a;		// { dg-warning "decomposition declaration only available with" "" { target c++14_down } }
+  auto [ i2, j2, k2, l2 ] = a;		// { dg-warning "structured bindings only available with" "" { target c++14_down } }
   // { dg-final { scan-assembler "_ZStDC2i22j22k22l2E" } }
-  auto [ vv, ww ] = b;			// { dg-warning "decomposition declaration only available with" "" { target c++14_down } }
+  auto [ vv, ww ] = b;			// { dg-warning "structured bindings only available with" "" { target c++14_down } }
   // { dg-final { scan-assembler "_ZStDC2vv2wwE" } }
   // { dg-final { scan-assembler "_ZSt2vv" } }
   // { dg-final { scan-assembler "_ZSt2ww" } }
 }
 namespace
 {
-  auto [ v, w, x, y ] = a;		// { dg-warning "decomposition declaration only available with" "" { target c++14_down } }
+  auto [ v, w, x, y ] = a;		// { dg-warning "structured bindings only available with" "" { target c++14_down } }
 }

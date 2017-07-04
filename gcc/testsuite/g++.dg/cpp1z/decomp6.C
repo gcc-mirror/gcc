@@ -23,7 +23,7 @@ main ()
     if (ccnt != 6 || dcnt || cccnt || tccnt)
       __builtin_abort ();
     {
-      auto [b,c,d,e,f,g] = a;		// { dg-warning "decomposition declaration only available with" "" { target c++14_down } }
+      auto [b,c,d,e,f,g] = a;		// { dg-warning "structured bindings only available with" "" { target c++14_down } }
       if (ccnt != 6 || dcnt || cccnt || tccnt != 6)
 	__builtin_abort ();
       b.a++;
@@ -34,7 +34,7 @@ main ()
       if (&b == &a[0] || &c == &a[1] || &d == &a[2] || &e == &a[3] || &f == &a[4] || &g == &a[5])
 	__builtin_abort ();
       {
-	auto&[ h, i, j, k, l, m ] = a;	// { dg-warning "decomposition declaration only available with" "" { target c++14_down } }
+	auto&[ h, i, j, k, l, m ] = a;	// { dg-warning "structured bindings only available with" "" { target c++14_down } }
 	if (ccnt != 6 || dcnt || cccnt || tccnt != 6)
 	  __builtin_abort ();
 	j.a += 4;
@@ -59,7 +59,7 @@ main ()
     if (ccnt != 12 || dcnt != 12 || cccnt || tccnt != 6)
       __builtin_abort ();
     {
-      auto [b,c,d,e,f,g] { a };		// { dg-warning "decomposition declaration only available with" "" { target c++14_down } }
+      auto [b,c,d,e,f,g] { a };		// { dg-warning "structured bindings only available with" "" { target c++14_down } }
       if (ccnt != 12 || dcnt != 12 || cccnt != 6 || tccnt != 6)
 	__builtin_abort ();
       b.a++;
@@ -70,7 +70,7 @@ main ()
       if (&b == &a[0] || &c == &a[1] || &d == &a[2] || &e == &a[3] || &f == &a[4] || &g == &a[5])
 	__builtin_abort ();
       {
-	auto&[ h, i, j, k, l, m ] {a};	// { dg-warning "decomposition declaration only available with" "" { target c++14_down } }
+	auto&[ h, i, j, k, l, m ] {a};	// { dg-warning "structured bindings only available with" "" { target c++14_down } }
 	if (ccnt != 12 || dcnt != 12 || cccnt != 6 || tccnt != 6)
 	  __builtin_abort ();
 	j.a += 4;
@@ -95,7 +95,7 @@ main ()
     if (ccnt != 18 || dcnt != 24 || cccnt != 6 || tccnt != 6)
       __builtin_abort ();
     {
-      auto [b,c,d,e,f,g] ( a );		// { dg-warning "decomposition declaration only available with" "" { target c++14_down } }
+      auto [b,c,d,e,f,g] ( a );		// { dg-warning "structured bindings only available with" "" { target c++14_down } }
       if (ccnt != 18 || dcnt != 24 || cccnt != 12 || tccnt != 6)
 	__builtin_abort ();
       b.a++;
@@ -106,7 +106,7 @@ main ()
       if (&b == &a[0] || &c == &a[1] || &d == &a[2] || &e == &a[3] || &f == &a[4] || &g == &a[5])
 	__builtin_abort ();
       {
-	auto&[ h, i, j, k, l, m ] (a);	// { dg-warning "decomposition declaration only available with" "" { target c++14_down } }
+	auto&[ h, i, j, k, l, m ] (a);	// { dg-warning "structured bindings only available with" "" { target c++14_down } }
 	if (ccnt != 18 || dcnt != 24 || cccnt != 12 || tccnt != 6)
 	  __builtin_abort ();
 	j.a += 4;

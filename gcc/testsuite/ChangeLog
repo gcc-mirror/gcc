@@ -1,5 +1,25 @@
 2017-07-04  Jakub Jelinek  <jakub@redhat.com>
 
+	* g++.dg/cpp1z/decomp1.C: Expect structured binding instead of
+	decomposition declaration in diagnostics.
+	* g++.dg/cpp1z/decomp2.C: Likewise.
+	* g++.dg/cpp1z/decomp3.C: Likewise.
+	* g++.dg/cpp1z/decomp4.C: Likewise.
+	* g++.dg/cpp1z/decomp5.C: Likewise.
+	* g++.dg/cpp1z/decomp6.C: Likewise.
+	* g++.dg/cpp1z/decomp7.C: Likewise.
+	* g++.dg/cpp1z/decomp8.C: Likewise.
+	* g++.dg/cpp1z/decomp13.C: Likewise.
+	* g++.dg/cpp1z/decomp14.C: Likewise.
+	* g++.dg/cpp1z/decomp18.C: Likewise.
+	* g++.dg/cpp1z/decomp19.C: Likewise.
+	* g++.dg/cpp1z/decomp22.C: Likewise.
+	* g++.dg/cpp1z/decomp23.C: Likewise.
+	* g++.dg/cpp1z/decomp24.C: Likewise.
+	* g++.dg/cpp1z/decomp25.C: Likewise.
+	* g++.dg/cpp1z/decomp26.C: Likewise.
+	* g++.dg/cpp1z/decomp28.C: Likewise.
+
 	PR c++/81258
 	* g++.dg/cpp1z/decomp21.C (foo): Adjust expected diagnostics.
 	* g++.dg/cpp1z/decomp30.C: New test.

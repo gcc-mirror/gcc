@@ -1,5 +1,10 @@
 2017-07-04  Jakub Jelinek  <jakub@redhat.com>
 
+	* parser.c (cp_parser_decomposition_declaration): Replace
+	decomposition declaration with structured binding in diagnostics.
+	* decl.c (cp_finish_decomp): Likewise.
+	(grokdeclarator): Likewise.
+
 	PR c++/81258
 	* parser.c (cp_parser_decomposition_declaration): Diagnose invalid
 	forms of structured binding initializers.
