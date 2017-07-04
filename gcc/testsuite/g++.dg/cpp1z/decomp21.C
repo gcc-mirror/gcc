@@ -12,5 +12,6 @@ foo ()
   auto [ n, o, p ] { a };
   auto [ q, r, t ] ( s );
   auto [ u, v, w ] ( s, );      // { dg-error "expected primary-expression before '.' token" }
-  auto [ x, y, z ] ( a );       // { dg-error "expression list treated as compound expression in initializer" "" { target *-*-* } .-1 }
+				// { dg-error "invalid initializer for structured binding declaration" "" { target *-*-* } .-1 }
+  auto [ x, y, z ] ( a );
 }
