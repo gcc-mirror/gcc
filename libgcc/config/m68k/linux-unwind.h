@@ -33,7 +33,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 /* <sys/ucontext.h> is unfortunately broken right now.  */
 struct uw_ucontext {
 	unsigned long	  uc_flags;
-	struct ucontext  *uc_link;
+	ucontext_t	 *uc_link;
 	stack_t		  uc_stack;
 	mcontext_t	  uc_mcontext;
 	unsigned long	  uc_filler[80];
