@@ -1,3 +1,17 @@
+2017-07-04  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/aarch64/linux-unwind.h (aarch64_fallback_frame_state),
+	config/alpha/linux-unwind.h (alpha_fallback_frame_state),
+	config/bfin/linux-unwind.h (bfin_fallback_frame_state),
+	config/i386/linux-unwind.h (x86_64_fallback_frame_state,
+	x86_fallback_frame_state), config/m68k/linux-unwind.h (struct
+	uw_ucontext), config/nios2/linux-unwind.h (struct nios2_ucontext),
+	config/pa/linux-unwind.h (pa32_fallback_frame_state),
+	config/sh/linux-unwind.h (sh_fallback_frame_state),
+	config/tilepro/linux-unwind.h (tile_fallback_frame_state),
+	config/xtensa/linux-unwind.h (xtensa_fallback_frame_state): Use
+	ucontext_t instead of struct ucontext.
+
 2017-05-30  Max Filippov  <jcmvbkbc@gmail.com>
 
 	Backport from mainline
