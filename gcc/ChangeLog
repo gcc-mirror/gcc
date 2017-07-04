@@ -1,3 +1,17 @@
+2017-07-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/81278
+	* tree-vrp.c (compare_assert_loc): Turn into a function template
+	with stable template parameter.  Only test if a->e is NULL,
+	!a->e == !b->e has been verified already.  Use e == NULL or
+	e != NULL instead of e or ! e tests.  If stable is true, don't use
+	iterative_hash_expr, on the other side allow a or b or both NULL
+	and sort the NULLs last.
+	(process_assert_insertions): Sort using compare_assert_loc<false>
+	instead of compare_assert_loc, later sort using
+	compare_assert_loc<true> before calling process_assert_insertions_for
+	in a loop.  Use break instead of continue once seen NULL pointer.
+
 2017-07-04  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	* config/arm/driver-arm.c (arm_cpu_table): Add entry for ARM

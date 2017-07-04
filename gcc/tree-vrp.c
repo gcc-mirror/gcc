@@ -6393,20 +6393,37 @@ process_assert_insertions_for (tree name, assert_locus *loc)
   gcc_unreachable ();
 }
 
-/* Qsort helper for sorting assert locations.  */
+/* Qsort helper for sorting assert locations.  If stable is true, don't
+   use iterative_hash_expr because it can be unstable for -fcompare-debug,
+   on the other side some pointers might be NULL.  */
 
+template <bool stable>
 static int
 compare_assert_loc (const void *pa, const void *pb)
 {
   assert_locus * const a = *(assert_locus * const *)pa;
   assert_locus * const b = *(assert_locus * const *)pb;
-  if (! a->e && b->e)
+
+  /* If stable, some asserts might be optimized away already, sort
+     them last.  */
+  if (stable)
+    {
+      if (a == NULL)
+	return b != NULL;
+      else if (b == NULL)
+	return -1;
+    }
+
+  if (a->e == NULL && b->e != NULL)
     return 1;
-  else if (a->e && ! b->e)
+  else if (a->e != NULL && b->e == NULL)
     return -1;
 
+  /* After the above checks, we know that (a->e == NULL) == (b->e == NULL),
+     no need to test both a->e and b->e.  */
+
   /* Sort after destination index.  */
-  if (! a->e && ! b->e)
+  if (a->e == NULL)
     ;
   else if (a->e->dest->index > b->e->dest->index)
     return 1;
@@ -6419,11 +6436,27 @@ compare_assert_loc (const void *pa, const void *pb)
   else if (a->comp_code < b->comp_code)
     return -1;
 
+  hashval_t ha, hb;
+
+  /* E.g. if a->val is ADDR_EXPR of a VAR_DECL, iterative_hash_expr
+     uses DECL_UID of the VAR_DECL, so sorting might differ between
+     -g and -g0.  When doing the removal of redundant assert exprs
+     and commonization to successors, this does not matter, but for
+     the final sort needs to be stable.  */
+  if (stable)
+    {
+      ha = 0;
+      hb = 0;
+    }
+  else
+    {
+      ha = iterative_hash_expr (a->expr, iterative_hash_expr (a->val, 0));
+      hb = iterative_hash_expr (b->expr, iterative_hash_expr (b->val, 0));
+    }
+
   /* Break the tie using hashing and source/bb index.  */
-  hashval_t ha = iterative_hash_expr (a->expr, iterative_hash_expr (a->val, 0));
-  hashval_t hb = iterative_hash_expr (b->expr, iterative_hash_expr (b->val, 0));
   if (ha == hb)
-    return (a->e && b->e
+    return (a->e != NULL
 	    ? a->e->src->index - b->e->src->index
 	    : a->bb->index - b->bb->index);
   return ha - hb;
@@ -6452,7 +6485,7 @@ process_assert_insertions (void)
       auto_vec<assert_locus *, 16> asserts;
       for (; loc; loc = loc->next)
 	asserts.safe_push (loc);
-      asserts.qsort (compare_assert_loc);
+      asserts.qsort (compare_assert_loc<false>);
 
       /* Push down common asserts to successors and remove redundant ones.  */
       unsigned ecnt = 0;
@@ -6506,11 +6539,14 @@ process_assert_insertions (void)
 	    }
 	}
 
+      /* The asserts vector sorting above might be unstable for
+	 -fcompare-debug, sort again to ensure a stable sort.  */
+      asserts.qsort (compare_assert_loc<true>);
       for (unsigned j = 0; j < asserts.length (); ++j)
 	{
 	  loc = asserts[j];
 	  if (! loc)
-	    continue;
+	    break;
 	  update_edges_p |= process_assert_insertions_for (ssa_name (i), loc);
 	  num_asserts++;
 	  free (loc);
