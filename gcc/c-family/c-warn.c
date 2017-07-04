@@ -465,7 +465,6 @@ warn_if_unused_value (const_tree exp, location_t locus)
     case TARGET_EXPR:
     case CALL_EXPR:
     case TRY_CATCH_EXPR:
-    case WITH_CLEANUP_EXPR:
     case EXIT_EXPR:
     case VA_ARG_EXPR:
       return false;
