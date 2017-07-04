@@ -1,5 +1,6 @@
 // { dg-do run }
 // { dg-shouldfail "asan" }
+// { dg-additional-options "-Wno-psabi" }
 
 typedef int v4si __attribute__ ((vector_size (16)));
 

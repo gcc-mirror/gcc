@@ -1,5 +1,8 @@
 2017-07-04  Jakub Jelinek  <jakub@redhat.com>
 
+	* g++.dg/asan/function-argument-3.C: Add -Wno-psabi to additional
+	options.
+
 	PR target/81175
 	* gcc.target/i386/pr69255-2.c (foo): Use the return value of the
 	gather.
