@@ -1,3 +1,8 @@
+2017-07-04  Jan Hubicka  <hubicka@ucw.cz>
+
+	* bb-reorder.c (better_edge_p): Fix handling of uninitialized
+	probability.
+
 2017-07-04  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	PR tree-optimization/81292
