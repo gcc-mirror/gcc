@@ -905,7 +905,7 @@ sanitize_rewrite_addressable_params (function *fun)
 	  tree var = build_decl (DECL_SOURCE_LOCATION (arg),
 				 VAR_DECL, DECL_NAME (arg), type);
 	  TREE_ADDRESSABLE (var) = 1;
-	  DECL_ARTIFICIAL (var) = 1;
+	  DECL_IGNORED_P (var) = 1;
 
 	  gimple_add_tmp_var (var);
 

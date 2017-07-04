@@ -1,5 +1,6 @@
 // { dg-do run }
 // { dg-shouldfail "asan" }
+// { dg-options "-fsanitize=address -fno-sanitize-address-use-after-scope" }
 
 struct A
 {

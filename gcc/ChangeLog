@@ -1,5 +1,11 @@
 2017-07-04  Martin Liska  <mliska@suse.cz>
 
+	PR sanitizer/81040
+	* sanopt.c (sanitize_rewrite_addressable_params): Mark the
+	newly created variable as DECL_IGNORED_P.
+
+2017-07-04  Martin Liska  <mliska@suse.cz>
+
 	PR ipa/81293
 	* ipa-inline.c (inline_small_functions):
 	Use xstrdup_for_dump.
