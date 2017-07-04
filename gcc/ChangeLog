@@ -1,3 +1,7 @@
+2017-07-04  Richard Biener  <rguenther@suse.de>
+
+	* BASE-VER: Bump to 6.4.1.
+
 2017-07-04  Release Manager
 
 	* GCC 6.4.0 released.
