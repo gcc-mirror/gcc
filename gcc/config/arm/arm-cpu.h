@@ -128,6 +128,9 @@ enum processor_type
   TARGET_CPU_cortexa72cortexa53,
   TARGET_CPU_cortexa73cortexa35,
   TARGET_CPU_cortexa73cortexa53,
+  TARGET_CPU_cortexa55,
+  TARGET_CPU_cortexa75,
+  TARGET_CPU_cortexa75cortexa55,
   TARGET_CPU_cortexm23,
   TARGET_CPU_cortexm33,
   TARGET_CPU_arm_none
