@@ -2048,8 +2048,8 @@ inline_small_functions (void)
 	  fprintf (dump_file,
 		   " Inlined %s into %s which now has time %f and size %i, "
 		   "net change of %+i.\n",
-		   edge->callee->name (),
-		   edge->caller->name (),
+		   xstrdup_for_dump (edge->callee->name ()),
+		   xstrdup_for_dump (edge->caller->name ()),
 		   ipa_fn_summaries->get (edge->caller)->time.to_double (),
 		   ipa_fn_summaries->get (edge->caller)->size,
 		   overall_size - old_size);
