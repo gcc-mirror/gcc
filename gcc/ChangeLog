@@ -1,3 +1,17 @@
+2017-07-04  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/arm/arm-cpus.in (cortex-a55): New.
+	(cortex-a75): Likewise.
+	(cortex-a75.cortex-a55): Likewise.
+	* config/arm/driver-arm.c (arm_cpu_table): Add cortex-a55 and
+	cortex-a75.
+	* doc/invoke.texi (-mcpu): Document cortex-a55 and cortex-a75.
+	* config/arm/arm-cpu-cdata.h: Regenerate.
+	* config/arm/arm-cpu-data.h: Regenerate.
+	* config/arm/arm-cpu.h: Regenerate.
+	* config/arm/arm-tables.opt: Regenerate.
+	* config/arm/arm-tune.md: Regenerate.
+
 2017-07-04  Jan Hubicka  <hubicka@ucw.cz>
 
 	* haifa-sched.c (sched_create_recovery_edges): Update profile.

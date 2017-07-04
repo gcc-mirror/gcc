@@ -1206,7 +1206,6 @@ begin cpu xgene1
  costs xgene1
 end cpu xgene1
 
-
 # V8 A-profile big.LITTLE implementations
 begin cpu cortex-a57.cortex-a53
  cname cortexa57cortexa53
@@ -1248,6 +1247,40 @@ begin cpu cortex-a73.cortex-a53
  costs cortex_a73
 end cpu cortex-a73.cortex-a53
 
+
+# ARMv8.2 A-profile Architecture Processors
+begin cpu cortex-a55
+ cname cortexa55
+ tune for cortex-a53
+ tune flags LDSCHED
+ architecture armv8.2-a+fp16
+ fpu neon-fp-armv8
+ option crypto add FP_ARMv8 CRYPTO
+ option nofp remove ALL_FP
+ costs cortex_a53
+end cpu cortex-a55
+
+begin cpu cortex-a75
+ cname cortexa75
+ tune for cortex-a57
+ tune flags LDSCHED
+ architecture armv8.2-a+fp16
+ fpu neon-fp-armv8
+ option crypto add FP_ARMv8 CRYPTO
+ costs cortex_a73
+end cpu cortex-a75
+
+
+# ARMv8.2 A-profile ARM DynamIQ big.LITTLE implementations
+begin cpu cortex-a75.cortex-a55
+ cname cortexa75cortexa55
+ tune for cortex-a53
+ tune flags LDSCHED
+ architecture armv8.2-a+fp16
+ fpu neon-fp-armv8
+ option crypto add FP_ARMv8 CRYPTO
+ costs cortex_a73
+end cpu cortex-a75.cortex-a55
 
 # V8 M-profile implementations.
 begin cpu cortex-m23

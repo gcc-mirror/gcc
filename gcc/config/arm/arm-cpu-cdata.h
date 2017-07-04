@@ -388,6 +388,34 @@ static const cpu_arch_extension cpu_opttab_cortexa73cortexa53[] = {
   { NULL, false, false, {isa_nobit}}
 };
 
+static const cpu_arch_extension cpu_opttab_cortexa55[] = {
+  {
+    "crypto", false, false,
+    { ISA_FP_ARMv8,ISA_CRYPTO, isa_nobit }
+  },
+  {
+    "nofp", true, false,
+    { ISA_ALL_FP, isa_nobit }
+  },
+  { NULL, false, false, {isa_nobit}}
+};
+
+static const cpu_arch_extension cpu_opttab_cortexa75[] = {
+  {
+    "crypto", false, false,
+    { ISA_FP_ARMv8,ISA_CRYPTO, isa_nobit }
+  },
+  { NULL, false, false, {isa_nobit}}
+};
+
+static const cpu_arch_extension cpu_opttab_cortexa75cortexa55[] = {
+  {
+    "crypto", false, false,
+    { ISA_FP_ARMv8,ISA_CRYPTO, isa_nobit }
+  },
+  { NULL, false, false, {isa_nobit}}
+};
+
 static const cpu_arch_extension cpu_opttab_cortexm33[] = {
   {
     "nofp", true, false,
@@ -1621,6 +1649,45 @@ const cpu_option all_cores[] =
       }
     },
     TARGET_ARCH_armv8_a
+  },
+  {
+    {
+      "cortex-a55",
+      cpu_opttab_cortexa55,
+      {
+        ISA_ARMv8_2a,
+        isa_bit_fp16,ISA_FP_ARMv8,ISA_NEON,
+        ISA_FP_ARMv8,ISA_NEON,
+        isa_nobit
+      }
+    },
+    TARGET_ARCH_armv8_2_a
+  },
+  {
+    {
+      "cortex-a75",
+      cpu_opttab_cortexa75,
+      {
+        ISA_ARMv8_2a,
+        isa_bit_fp16,ISA_FP_ARMv8,ISA_NEON,
+        ISA_FP_ARMv8,ISA_NEON,
+        isa_nobit
+      }
+    },
+    TARGET_ARCH_armv8_2_a
+  },
+  {
+    {
+      "cortex-a75.cortex-a55",
+      cpu_opttab_cortexa75cortexa55,
+      {
+        ISA_ARMv8_2a,
+        isa_bit_fp16,ISA_FP_ARMv8,ISA_NEON,
+        ISA_FP_ARMv8,ISA_NEON,
+        isa_nobit
+      }
+    },
+    TARGET_ARCH_armv8_2_a
   },
   {
     {

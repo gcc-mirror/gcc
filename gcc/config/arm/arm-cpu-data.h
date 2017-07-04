@@ -552,6 +552,21 @@ static const cpu_tune all_tunes[] =
     (TF_LDSCHED),
     &arm_cortex_a73_tune
   },
+  { /* cortex-a55.  */
+    TARGET_CPU_cortexa53,
+    (TF_LDSCHED),
+    &arm_cortex_a53_tune
+  },
+  { /* cortex-a75.  */
+    TARGET_CPU_cortexa57,
+    (TF_LDSCHED),
+    &arm_cortex_a73_tune
+  },
+  { /* cortex-a75.cortex-a55.  */
+    TARGET_CPU_cortexa53,
+    (TF_LDSCHED),
+    &arm_cortex_a73_tune
+  },
   { /* cortex-m23.  */
     TARGET_CPU_cortexm23,
     (TF_LDSCHED),
