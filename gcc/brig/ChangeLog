@@ -1,3 +1,8 @@
+2017-07-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* brigfrontend/brig-function.cc: Include profile-count.h.
+	* brigfrontend/brig-to-generic.cc: Likewise.
+
 2017-05-18  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* brigfrontend/brig-to-generic.h (class brig_to_generic): Use
