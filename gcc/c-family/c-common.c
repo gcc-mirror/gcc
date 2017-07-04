@@ -6485,6 +6485,9 @@ sync_resolve_size (tree function, vec<tree, va_gc> *params, bool fetch)
   if (!INTEGRAL_TYPE_P (type) && !POINTER_TYPE_P (type))
     goto incompatible;
 
+  if (!COMPLETE_TYPE_P (type))
+    goto incompatible;
+
   if (fetch && TREE_CODE (type) == BOOLEAN_TYPE)
     goto incompatible;
 
