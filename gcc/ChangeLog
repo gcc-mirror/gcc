@@ -1,3 +1,8 @@
+2017-07-04  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-utils.c (ipa_merge_profiles): Fix merging when dst is
+	uninitialized while src is not.
+
 2017-07-04  Richard Earnshaw  <rearnsha@arm.com>
 
 	* common/config/arm/arm-common.c: Adjust include path for
