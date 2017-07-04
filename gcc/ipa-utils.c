@@ -404,14 +404,17 @@ ipa_merge_profiles (struct cgraph_node *dst,
 
   /* FIXME when we merge in unknown profile, we ought to set counts as
      unsafe.  */
-  if (!dst->count.initialized_p ())
+  if (!src->count.initialized_p ())
     return;
   if (symtab->dump_file)
     {
       fprintf (symtab->dump_file, "Merging profiles of %s to %s\n",
 	       src->dump_name (), dst->dump_name ());
     }
-  dst->count += src->count;
+  if (dst->count.initialized_p ())
+    dst->count += src->count;
+  else
+    dst->count = src->count;
 
   /* This is ugly.  We need to get both function bodies into memory.
      If declaration is merged, we need to duplicate it to be able
@@ -521,12 +524,20 @@ ipa_merge_profiles (struct cgraph_node *dst,
 	  unsigned int i;
 
 	  dstbb = BASIC_BLOCK_FOR_FN (dstcfun, srcbb->index);
-	  dstbb->count += srcbb->count;
+	  if (dstbb->count.initialized_p ())
+	    dstbb->count += srcbb->count;
+	  else
+	    dstbb->count = srcbb->count;
 	  for (i = 0; i < EDGE_COUNT (srcbb->succs); i++)
 	    {
 	      edge srce = EDGE_SUCC (srcbb, i);
 	      edge dste = EDGE_SUCC (dstbb, i);
-	      dste->count += srce->count;
+	      if (dstbb->count.initialized_p ())
+	        dste->count += srce->count;
+	      else
+		dste->count = srce->count;
+	      if (dstbb->count > 0 && dste->count.initialized_p ())
+		dste->probability = dste->count.probability_in (dstbb->count);
 	    }
 	}
       push_cfun (dstcfun);
