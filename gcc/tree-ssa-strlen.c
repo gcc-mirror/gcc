@@ -1214,8 +1214,23 @@ handle_builtin_strlen (gimple_stmt_iterator *gsi)
 	      /* Until now we only had a lower bound on the string length.
 		 Install LHS as the actual length.  */
 	      si = unshare_strinfo (si);
+	      tree old = si->nonzero_chars;
 	      si->nonzero_chars = lhs;
 	      si->full_string_p = true;
+	      if (TREE_CODE (old) == INTEGER_CST)
+		{
+		  location_t loc = gimple_location (stmt);
+		  old = fold_convert_loc (loc, TREE_TYPE (lhs), old);
+		  tree adj = fold_build2_loc (loc, MINUS_EXPR,
+					      TREE_TYPE (lhs), lhs, old);
+		  adjust_related_strinfos (loc, si, adj);
+		}
+	      else
+		{
+		  si->first = 0;
+		  si->prev = 0;
+		  si->next = 0;
+		}
 	    }
 	  return;
 	}

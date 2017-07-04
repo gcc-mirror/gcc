@@ -1,3 +1,10 @@
+2017-07-04  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	PR tree-optimization/81292
+	* tree-ssa-strlen.c (handle_builtin_strlen): When setting
+	full_string_p, also call adjust_related_strinfos if the adjustment
+	is simple, otherwise invalidate related strinfos.
+
 2017-07-04  Martin Liska  <mliska@suse.cz>
 
 	PR sanitizer/81040
