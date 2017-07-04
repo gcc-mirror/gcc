@@ -247,18 +247,41 @@ draw_cfg_nodes (pretty_printer *pp, struct function *fun)
 }
 
 /* Draw all edges in the CFG.  Retreating edges are drawin as not
-   constraining, this makes the layout of the graph better.
-   (??? Calling mark_dfs_back may change the compiler's behavior when
-   dumping, but computing back edges here for ourselves is also not
-   desirable.)  */
+   constraining, this makes the layout of the graph better.  */
 
 static void
 draw_cfg_edges (pretty_printer *pp, struct function *fun)
 {
   basic_block bb;
+
+  /* Save EDGE_DFS_BACK flag to dfs_back.  */
+  auto_bitmap dfs_back;
+  edge e;
+  edge_iterator ei;
+  unsigned int idx = 0;
+  FOR_EACH_BB_FN (bb, cfun)
+    FOR_EACH_EDGE (e, ei, bb->succs)
+      {
+	if (e->flags & EDGE_DFS_BACK)
+	  bitmap_set_bit (dfs_back, idx);
+	idx++;
+      }
+
   mark_dfs_back_edges ();
   FOR_ALL_BB_FN (bb, cfun)
     draw_cfg_node_succ_edges (pp, fun->funcdef_no, bb);
+
+  /* Restore EDGE_DFS_BACK flag from dfs_back.  */
+  idx = 0;
+  FOR_EACH_BB_FN (bb, cfun)
+    FOR_EACH_EDGE (e, ei, bb->succs)
+      {
+	if (bitmap_bit_p (dfs_back, idx))
+	  e->flags |= EDGE_DFS_BACK;
+	else
+	  e->flags &= ~EDGE_DFS_BACK;
+	idx++;
+      }
 
   /* Add an invisible edge from ENTRY to EXIT, to improve the graph layout.  */
   pp_printf (pp,
