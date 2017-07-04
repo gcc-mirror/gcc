@@ -1,3 +1,8 @@
+2017-07-04  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* config/arm/driver-arm.c (arm_cpu_table): Add entry for ARM
+	Cortex-R7 and Cortex-R8 processors.
+
 2017-07-04  Jan Hubicka  <hubicka@ucw.cz>
 
 	* ipa-utils.c (ipa_merge_profiles): Fix merging when dst is
