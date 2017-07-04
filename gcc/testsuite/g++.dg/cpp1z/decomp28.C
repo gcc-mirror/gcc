@@ -15,14 +15,14 @@ template <int N>
 void
 foo (std::tuple<int> b)
 {
-  auto [c] = b;		// { dg-warning "decomposition declaration only available with" "" { target c++14_down } }
+  auto [c] = b;		// { dg-warning "structured bindings only available with" "" { target c++14_down } }
 }
 
 template <typename T>
 void
 bar (std::tuple<T> b)
 {
-  auto [c] = b;		// { dg-warning "decomposition declaration only available with" "" { target c++14_down } }
+  auto [c] = b;		// { dg-warning "structured bindings only available with" "" { target c++14_down } }
 }
 
 void
@@ -35,5 +35,5 @@ baz (std::tuple<int> b)
 int
 main ()
 {
-  [](auto) { [](std::tuple<int> b) { auto[c] = b; }; } (0); // { dg-warning "decomposition declaration only available with" "" { target c++14_down } }
+  [](auto) { [](std::tuple<int> b) { auto[c] = b; }; } (0); // { dg-warning "structured bindings only available with" "" { target c++14_down } }
 }

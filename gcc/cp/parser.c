@@ -13150,7 +13150,7 @@ cp_parser_decomposition_declaration (cp_parser *parser,
     }
 
   if (cxx_dialect < cxx1z)
-    pedwarn (loc, 0, "decomposition declaration only available with "
+    pedwarn (loc, 0, "structured bindings only available with "
 		     "-std=c++1z or -std=gnu++1z");
 
   tree pushed_scope;
@@ -13199,7 +13199,7 @@ cp_parser_decomposition_declaration (cp_parser *parser,
 
   if (v.is_empty ())
     {
-      error_at (loc, "empty decomposition declaration");
+      error_at (loc, "empty structured binding declaration");
       decl = error_mark_node;
     }
 

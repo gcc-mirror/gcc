@@ -12,19 +12,19 @@ main ()
       x.i = i;
       x.j = 2 * i++;
     }
-  for (auto & [ x, y ] : a)	// { dg-warning "decomposition declaration only available with" "" { target c++14_down } }
+  for (auto & [ x, y ] : a)	// { dg-warning "structured bindings only available with" "" { target c++14_down } }
     {
       x += 2;
       y += 3;
     }
   i = 0;
-  for (const auto [ u, v ] : a)	// { dg-warning "decomposition declaration only available with" "" { target c++14_down } }
+  for (const auto [ u, v ] : a)	// { dg-warning "structured bindings only available with" "" { target c++14_down } }
     {
       if (u != i + 2 || v != 2 * i++ + 3)
 	__builtin_abort ();
     }
   i = 0;
-  for (auto [ x, y ] : a)	// { dg-warning "decomposition declaration only available with" "" { target c++14_down } }
+  for (auto [ x, y ] : a)	// { dg-warning "structured bindings only available with" "" { target c++14_down } }
     {
       x += 4;
       y += 5;

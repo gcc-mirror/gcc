@@ -7486,8 +7486,8 @@ cp_finish_decomp (tree decl, tree first, unsigned int count)
 
 	  if (init == error_mark_node || eltype == error_mark_node)
 	    {
-	      inform (dloc, "in initialization of decomposition variable %qD",
-		      v[i]);
+	      inform (dloc, "in initialization of structured binding "
+		      "variable %qD", v[i]);
 	      goto error_out;
 	    }
 	  /* Save the decltype away before reference collapse.  */
@@ -10137,7 +10137,7 @@ grokdeclarator (const cp_declarator *declarator,
 	  break;
 
 	case cdk_decomp:
-	  name = "decomposition";
+	  name = "structured binding";
 	  break;
 
 	case cdk_error:
@@ -10591,43 +10591,43 @@ grokdeclarator (const cp_declarator *declarator,
 			? declarator->declarator->id_loc : declarator->id_loc);
       if (inlinep)
 	error_at (declspecs->locations[ds_inline],
-		  "decomposition declaration cannot be declared %<inline%>");
+		  "structured binding declaration cannot be %<inline%>");
       if (typedef_p)
 	error_at (declspecs->locations[ds_typedef],
-		  "decomposition declaration cannot be declared %<typedef%>");
+		  "structured binding declaration cannot be %<typedef%>");
       if (constexpr_p)
-	error_at (declspecs->locations[ds_constexpr], "decomposition "
-		  "declaration cannot be declared %<constexpr%>");
+	error_at (declspecs->locations[ds_constexpr], "structured "
+		  "binding declaration cannot be %<constexpr%>");
       if (thread_p)
 	error_at (declspecs->locations[ds_thread],
-		  "decomposition declaration cannot be declared %qs",
+		  "structured binding declaration cannot be %qs",
 		  declspecs->gnu_thread_keyword_p
 		  ? "__thread" : "thread_local");
       if (concept_p)
 	error_at (declspecs->locations[ds_concept],
-		  "decomposition declaration cannot be declared %<concept%>");
+		  "structured binding declaration cannot be %<concept%>");
       switch (storage_class)
 	{
 	case sc_none:
 	  break;
 	case sc_register:
-	  error_at (loc, "decomposition declaration cannot be declared "
+	  error_at (loc, "structured binding declaration cannot be "
 		    "%<register%>");
 	  break;
 	case sc_static:
-	  error_at (loc, "decomposition declaration cannot be declared "
+	  error_at (loc, "structured binding declaration cannot be "
 		    "%<static%>");
 	  break;
 	case sc_extern:
-	  error_at (loc, "decomposition declaration cannot be declared "
+	  error_at (loc, "structured binding declaration cannot be "
 		    "%<extern%>");
 	  break;
 	case sc_mutable:
-	  error_at (loc, "decomposition declaration cannot be declared "
+	  error_at (loc, "structured binding declaration cannot be "
 		    "%<mutable%>");
 	  break;
 	case sc_auto:
-	  error_at (loc, "decomposition declaration cannot be declared "
+	  error_at (loc, "structured binding declaration cannot be "
 		    "C++98 %<auto%>");
 	  break;
 	default:
@@ -10638,8 +10638,8 @@ grokdeclarator (const cp_declarator *declarator,
 	{
 	  if (type != error_mark_node)
 	    {
-	      error_at (loc, "decomposition declaration cannot be declared "
-			"with type %qT", type);
+	      error_at (loc, "structured binding declaration cannot have "
+			"type %qT", type);
 	      inform (loc,
 		      "type must be cv-qualified %<auto%> or reference to "
 		      "cv-qualified %<auto%>");

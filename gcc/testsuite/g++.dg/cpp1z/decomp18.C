@@ -7,6 +7,6 @@ void
 foo ()
 {
   int z = 0;
-  for (auto & [ b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s ] : a)	// { dg-warning "decomposition declaration only available with" "" { target c++14_down } }
+  for (auto & [ b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s ] : a)	// { dg-warning "structured bindings only available with" "" { target c++14_down } }
     z += b + c + d + e + f + g + h + i + j + k + l + m + n + o + p + q + r + s;
 }
