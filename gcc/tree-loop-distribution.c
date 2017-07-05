@@ -1254,17 +1254,18 @@ build_rdg_partition_for_vertex (struct graph *rdg, int v)
 }
 
 /* Classifies the builtin kind we can generate for PARTITION of RDG and LOOP.
-   For the moment we detect only the memset zero pattern.  */
+   For the moment we detect memset, memcpy and memmove patterns.  Bitmap
+   STMT_IN_ALL_PARTITIONS contains statements belonging to all partitions.  */
 
 static void
-classify_partition (loop_p loop, struct graph *rdg, partition *partition)
+classify_partition (loop_p loop, struct graph *rdg, partition *partition,
+		    bitmap stmt_in_all_partitions)
 {
   bitmap_iterator bi;
   unsigned i;
   tree nb_iter;
   data_reference_p single_load, single_store;
-  bool volatiles_p = false;
-  bool plus_one = false;
+  bool volatiles_p = false, plus_one = false, has_reduction = false;
 
   partition->kind = PKIND_NORMAL;
   partition->main_dr = NULL;
@@ -1279,16 +1280,31 @@ classify_partition (loop_p loop, struct graph *rdg, partition *partition)
       if (gimple_has_volatile_ops (stmt))
 	volatiles_p = true;
 
-      /* If the stmt has uses outside of the loop mark it as reduction.  */
+      /* If the stmt is not included by all partitions and there is uses
+	 outside of the loop, then mark the partition as reduction.  */
       if (stmt_has_scalar_dependences_outside_loop (loop, stmt))
 	{
-	  partition->reduction_p = true;
-	  return;
+	  /* Due to limitation in the transform phase we have to fuse all
+	     reduction partitions.  As a result, this could cancel valid
+	     loop distribution especially for loop that induction variable
+	     is used outside of loop.  To workaround this issue, we skip
+	     marking partition as reudction if the reduction stmt belongs
+	     to all partitions.  In such case, reduction will be computed
+	     correctly no matter how partitions are fused/distributed.  */
+	  if (!bitmap_bit_p (stmt_in_all_partitions, i))
+	    {
+	      partition->reduction_p = true;
+	      return;
+	    }
+	  has_reduction = true;
 	}
     }
 
   /* Perform general partition disqualification for builtins.  */
   if (volatiles_p
+      /* Simple workaround to prevent classifying the partition as builtin
+	 if it contains any use outside of loop.  */
+      || has_reduction
       || !flag_tree_loop_distribute_patterns)
     return;
 
@@ -1461,9 +1477,9 @@ share_memory_accesses (struct graph *rdg,
   return false;
 }
 
-/* Aggregate several components into a useful partition that is
-   registered in the PARTITIONS vector.  Partitions will be
-   distributed in different loops.  */
+/* For each seed statement in STARTING_STMTS, this function builds
+   partition for it by adding depended statements according to RDG.
+   All partitions are recorded in PARTITIONS.  */
 
 static void
 rdg_build_partitions (struct graph *rdg,
@@ -1731,10 +1747,15 @@ distribute_loop (struct loop *loop, vec<gimple *> stmts,
   auto_vec<struct partition *, 3> partitions;
   rdg_build_partitions (rdg, stmts, &partitions);
 
+  auto_bitmap stmt_in_all_partitions;
+  bitmap_copy (stmt_in_all_partitions, partitions[0]->stmts);
+  for (i = 1; partitions.iterate (i, &partition); ++i)
+    bitmap_and_into (stmt_in_all_partitions, partitions[i]->stmts);
+
   any_builtin = false;
   FOR_EACH_VEC_ELT (partitions, i, partition)
     {
-      classify_partition (loop, rdg, partition);
+      classify_partition (loop, rdg, partition, stmt_in_all_partitions);
       any_builtin |= partition_builtin_p (partition);
     }
 
