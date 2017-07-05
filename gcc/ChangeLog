@@ -1,5 +1,13 @@
 2017-07-05  Bin Cheng  <bin.cheng@arm.com>
 
+	* tree-loop-distribution.c (loop_nest): New global var.
+	(build_rdg): Use loop directly, rather than loop nest.
+	(pg_add_dependence_edges): Remove loop nest parameter.  Use global
+	variable directly.
+	(distribute_loop): Compute global variable loop nest.  Update use.
+
+2017-07-05  Bin Cheng  <bin.cheng@arm.com>
+
 	* tree-loop-distribution.c (enum fuse_type, fuse_message): New.
 	(partition_merge_into): New parameter.  Dump reason for fusion.
 	(distribute_loop): Update use of partition_merge_into.
