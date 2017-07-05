@@ -1623,7 +1623,8 @@ force_single_succ_latches (void)
 
   THEN_PROB is the probability of then branch of the condition.
   ELSE_PROB is the probability of else branch. Note that they may be both
-  REG_BR_PROB_BASE when condition is IFN_LOOP_VECTORIZED.  */
+  REG_BR_PROB_BASE when condition is IFN_LOOP_VECTORIZED or
+  IFN_LOOP_DIST_ALIAS.  */
 
 static basic_block
 lv_adjust_loop_entry_edge (basic_block first_head, basic_block second_head,
