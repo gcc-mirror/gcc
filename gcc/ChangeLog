@@ -1,5 +1,13 @@
 2017-07-05  Bin Cheng  <bin.cheng@arm.com>
 
+	* tree-loop-distribution.c (bb_top_order_index): New.
+	(bb_top_order_index_size, bb_top_order_cmp): New.
+	(stmts_from_loop): Use topological order.
+	(pass_loop_distribution::execute): Compute and release topological
+	order for basic blocks.
+
+2017-07-05  Bin Cheng  <bin.cheng@arm.com>
+
 	* tree-loop-distribution.c (pass_loop_distribution::execute): Skip
 	if no loops.
 
