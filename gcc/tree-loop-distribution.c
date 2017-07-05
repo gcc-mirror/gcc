@@ -63,11 +63,21 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa.h"
 #include "cfgloop.h"
 #include "tree-scalar-evolution.h"
+#include "params.h"
 #include "tree-vectorizer.h"
 
 
+#define MAX_DATAREFS_NUM \
+	((unsigned) PARAM_VALUE (PARAM_LOOP_MAX_DATAREFS_FOR_DATADEPS))
+
 /* The loop (nest) to be distributed.  */
 static vec<loop_p> loop_nest;
+
+/* Vector of data references in the loop to be distributed.  */
+static vec<data_reference_p> datarefs_vec;
+
+/* Store index of data reference in aux field.  */
+#define DR_INDEX(dr)      ((uintptr_t) (dr)->aux)
 
 /* A Reduced Dependence Graph (RDG) vertex representing a statement.  */
 struct rdg_vertex
@@ -339,8 +349,7 @@ create_rdg_cd_edges (struct graph *rdg, control_dependences *cd, loop_p loop)
    if that failed.  */
 
 static bool
-create_rdg_vertices (struct graph *rdg, vec<gimple *> stmts, loop_p loop,
-		     vec<data_reference_p> *datarefs)
+create_rdg_vertices (struct graph *rdg, vec<gimple *> stmts, loop_p loop)
 {
   int i;
   gimple *stmt;
@@ -360,12 +369,12 @@ create_rdg_vertices (struct graph *rdg, vec<gimple *> stmts, loop_p loop,
       if (gimple_code (stmt) == GIMPLE_PHI)
 	continue;
 
-      unsigned drp = datarefs->length ();
-      if (!find_data_references_in_stmt (loop, stmt, datarefs))
+      unsigned drp = datarefs_vec.length ();
+      if (!find_data_references_in_stmt (loop, stmt, &datarefs_vec))
 	return false;
-      for (unsigned j = drp; j < datarefs->length (); ++j)
+      for (unsigned j = drp; j < datarefs_vec.length (); ++j)
 	{
-	  data_reference_p dr = (*datarefs)[j];
+	  data_reference_p dr = datarefs_vec[j];
 	  if (DR_IS_READ (dr))
 	    RDGV_HAS_MEM_READS (v) = true;
 	  else
@@ -449,7 +458,7 @@ free_rdg (struct graph *rdg)
       if (v->data)
 	{
 	  gimple_set_uid (RDGV_STMT (v), -1);
-	  free_data_refs (RDGV_DATAREFS (v));
+	  (RDGV_DATAREFS (v)).release ();
 	  free (v->data);
 	}
     }
@@ -459,22 +468,20 @@ free_rdg (struct graph *rdg)
 
 /* Build the Reduced Dependence Graph (RDG) with one vertex per statement of
    LOOP, and one edge per flow dependence or control dependence from control
-   dependence CD.  */
+   dependence CD.  During visiting each statement, data references are also
+   collected and recorded in global data DATAREFS_VEC.  */
 
 static struct graph *
 build_rdg (struct loop *loop, control_dependences *cd)
 {
   struct graph *rdg;
-  vec<data_reference_p> datarefs;
 
   /* Create the RDG vertices from the stmts of the loop nest.  */
   auto_vec<gimple *, 10> stmts;
   stmts_from_loop (loop, &stmts);
   rdg = new_graph (stmts.length ());
-  datarefs.create (10);
-  if (!create_rdg_vertices (rdg, stmts, loop, &datarefs))
+  if (!create_rdg_vertices (rdg, stmts, loop))
     {
-      datarefs.release ();
       free_rdg (rdg);
       return NULL;
     }
@@ -483,8 +490,6 @@ build_rdg (struct loop *loop, control_dependences *cd)
   create_rdg_flow_edges (rdg);
   if (cd)
     create_rdg_cd_edges (rdg, cd, loop);
-
-  datarefs.release ();
 
   return rdg;
 }
@@ -1518,6 +1523,7 @@ distribute_loop (struct loop *loop, vec<gimple *> stmts,
       return 0;
     }
 
+  datarefs_vec.create (20);
   rdg = build_rdg (loop, cd);
   if (!rdg)
     {
@@ -1527,8 +1533,26 @@ distribute_loop (struct loop *loop, vec<gimple *> stmts,
 		 loop->num);
 
       loop_nest.release ();
+      free_data_refs (datarefs_vec);
       return 0;
     }
+
+  if (datarefs_vec.length () > MAX_DATAREFS_NUM)
+    {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file,
+		 "Loop %d not distributed: too many memory references.\n",
+		 loop->num);
+
+      free_rdg (rdg);
+      loop_nest.release ();
+      free_data_refs (datarefs_vec);
+      return 0;
+    }
+
+  data_reference_p dref;
+  for (i = 0; datarefs_vec.iterate (i, &dref); ++i)
+    dref->aux = (void *) (uintptr_t) i;
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     dump_rdg (dump_file, rdg);
@@ -1735,6 +1759,7 @@ distribute_loop (struct loop *loop, vec<gimple *> stmts,
 
  ldist_done:
   loop_nest.release ();
+  free_data_refs (datarefs_vec);
 
   FOR_EACH_VEC_ELT (partitions, i, partition)
     partition_free (partition);

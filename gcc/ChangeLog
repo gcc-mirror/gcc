@@ -1,5 +1,16 @@
 2017-07-05  Bin Cheng  <bin.cheng@arm.com>
 
+	* tree-loop-distribution.c (params.h): Include header file.
+	(MAX_DATAREFS_NUM, DR_INDEX): New macro.
+	(datarefs_vec): New global var.
+	(create_rdg_vertices): Use datarefs_vec directly.
+	(free_rdg): Don't free data references.
+	(build_rdg): Update use.  Don't free data references.
+	(distribute_loop): Compute global variable for data references.
+	Bail out if there are too many data references.
+
+2017-07-05  Bin Cheng  <bin.cheng@arm.com>
+
 	* tree-loop-distribution.c (loop_nest): New global var.
 	(build_rdg): Use loop directly, rather than loop nest.
 	(pg_add_dependence_edges): Remove loop nest parameter.  Use global
