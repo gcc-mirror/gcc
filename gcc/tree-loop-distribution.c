@@ -1758,6 +1758,9 @@ pass_loop_distribution::execute (function *fun)
   control_dependences *cd = NULL;
   auto_vec<loop_p> loops_to_be_destroyed;
 
+  if (number_of_loops (fun) <= 1)
+    return 0;
+
   FOR_ALL_BB_FN (bb, fun)
     {
       gimple_stmt_iterator gsi;

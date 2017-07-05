@@ -1,5 +1,10 @@
 2017-07-05  Bin Cheng  <bin.cheng@arm.com>
 
+	* tree-loop-distribution.c (pass_loop_distribution::execute): Skip
+	if no loops.
+
+2017-07-05  Bin Cheng  <bin.cheng@arm.com>
+
 	* cfgloop.h (struct loop): Add comment.  New field orig_loop_num.
 	* cfgloopmanip.c (lv_adjust_loop_entry_edge): Comment change.
 	* internal-fn.c (expand_LOOP_DIST_ALIAS): New function.
