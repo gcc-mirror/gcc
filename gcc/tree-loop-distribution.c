@@ -66,6 +66,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-vectorizer.h"
 
 
+/* The loop (nest) to be distributed.  */
+static vec<loop_p> loop_nest;
+
 /* A Reduced Dependence Graph (RDG) vertex representing a statement.  */
 struct rdg_vertex
 {
@@ -454,22 +457,22 @@ free_rdg (struct graph *rdg)
   free_graph (rdg);
 }
 
-/* Build the Reduced Dependence Graph (RDG) with one vertex per
-   statement of the loop nest LOOP_NEST, and one edge per data dependence or
-   scalar dependence.  */
+/* Build the Reduced Dependence Graph (RDG) with one vertex per statement of
+   LOOP, and one edge per flow dependence or control dependence from control
+   dependence CD.  */
 
 static struct graph *
-build_rdg (vec<loop_p> loop_nest, control_dependences *cd)
+build_rdg (struct loop *loop, control_dependences *cd)
 {
   struct graph *rdg;
   vec<data_reference_p> datarefs;
 
   /* Create the RDG vertices from the stmts of the loop nest.  */
   auto_vec<gimple *, 10> stmts;
-  stmts_from_loop (loop_nest[0], &stmts);
+  stmts_from_loop (loop, &stmts);
   rdg = new_graph (stmts.length ());
   datarefs.create (10);
-  if (!create_rdg_vertices (rdg, stmts, loop_nest[0], &datarefs))
+  if (!create_rdg_vertices (rdg, stmts, loop, &datarefs))
     {
       datarefs.release ();
       free_rdg (rdg);
@@ -479,7 +482,7 @@ build_rdg (vec<loop_p> loop_nest, control_dependences *cd)
 
   create_rdg_flow_edges (rdg);
   if (cd)
-    create_rdg_cd_edges (rdg, cd, loop_nest[0]);
+    create_rdg_cd_edges (rdg, cd, loop);
 
   datarefs.release ();
 
@@ -1418,7 +1421,7 @@ partition_contains_all_rw (struct graph *rdg,
    and DRS2 and modify and return DIR according to that.  */
 
 static int
-pg_add_dependence_edges (struct graph *rdg, vec<loop_p> loops, int dir,
+pg_add_dependence_edges (struct graph *rdg, int dir,
 			 vec<data_reference_p> drs1,
 			 vec<data_reference_p> drs2)
 {
@@ -1439,8 +1442,8 @@ pg_add_dependence_edges (struct graph *rdg, vec<loop_p> loops, int dir,
 	    std::swap (dr1, dr2);
 	    this_dir = -this_dir;
 	  }
-	ddr = initialize_data_dependence_relation (dr1, dr2, loops);
-	compute_affine_dependence (ddr, loops[0]);
+	ddr = initialize_data_dependence_relation (dr1, dr2, loop_nest);
+	compute_affine_dependence (ddr, loop_nest[0]);
 	if (DDR_ARE_DEPENDENT (ddr) == chrec_dont_know)
 	  this_dir = 2;
 	else if (DDR_ARE_DEPENDENT (ddr) == NULL_TREE)
@@ -1508,11 +1511,14 @@ distribute_loop (struct loop *loop, vec<gimple *> stmts,
 
   *destroy_p = false;
   *nb_calls = 0;
-  auto_vec<loop_p, 3> loop_nest;
+  loop_nest.create (0);
   if (!find_loop_nest (loop, &loop_nest))
-    return 0;
+    {
+      loop_nest.release ();
+      return 0;
+    }
 
-  rdg = build_rdg (loop_nest, cd);
+  rdg = build_rdg (loop, cd);
   if (!rdg)
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
@@ -1520,6 +1526,7 @@ distribute_loop (struct loop *loop, vec<gimple *> stmts,
 		 "Loop %d not distributed: failed to build the RDG.\n",
 		 loop->num);
 
+      loop_nest.release ();
       return 0;
     }
 
@@ -1643,15 +1650,15 @@ distribute_loop (struct loop *loop, vec<gimple *> stmts,
 	    /* dependence direction - 0 is no dependence, -1 is back,
 	       1 is forth, 2 is both (we can stop then, merging will occur).  */
 	    int dir = 0;
-	    dir = pg_add_dependence_edges (rdg, loop_nest, dir,
+	    dir = pg_add_dependence_edges (rdg, dir,
 					   PGDATA(i)->writes,
 					   PGDATA(j)->reads);
 	    if (dir != 2)
-	      dir = pg_add_dependence_edges (rdg, loop_nest, dir,
+	      dir = pg_add_dependence_edges (rdg, dir,
 					     PGDATA(i)->reads,
 					     PGDATA(j)->writes);
 	    if (dir != 2)
-	      dir = pg_add_dependence_edges (rdg, loop_nest, dir,
+	      dir = pg_add_dependence_edges (rdg, dir,
 					     PGDATA(i)->writes,
 					     PGDATA(j)->writes);
 	    if (dir == 1 || dir == 2)
@@ -1727,6 +1734,7 @@ distribute_loop (struct loop *loop, vec<gimple *> stmts,
     }
 
  ldist_done:
+  loop_nest.release ();
 
   FOR_EACH_VEC_ELT (partitions, i, partition)
     partition_free (partition);
