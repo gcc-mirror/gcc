@@ -1,3 +1,8 @@
+2017-07-05  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/arm.c (arm_fixed_condition_code_regs): New function.
+	(TARGET_FIXED_CONDITION_CODE_REGS): Redefine.
+
 2017-07-05  Richard Sandiford  <richard.sandiford@linaro.org>
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>

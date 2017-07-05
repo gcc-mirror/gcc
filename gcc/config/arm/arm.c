@@ -110,6 +110,7 @@ static void arm_print_operand_address (FILE *, machine_mode, rtx);
 static bool arm_print_operand_punct_valid_p (unsigned char code);
 static const char *fp_const_from_val (REAL_VALUE_TYPE *);
 static arm_cc get_arm_condition_code (rtx);
+static bool arm_fixed_condition_code_regs (unsigned int *, unsigned int *);
 static const char *output_multi_immediate (rtx *, const char *, const char *,
 					   int, HOST_WIDE_INT);
 static const char *shift_op (rtx, HOST_WIDE_INT *);
@@ -774,6 +775,9 @@ static const struct attribute_spec arm_attribute_table[] =
    used for ARM/Thumb ISA selection in v7 and earlier versions.  */
 #undef TARGET_CUSTOM_FUNCTION_DESCRIPTORS
 #define TARGET_CUSTOM_FUNCTION_DESCRIPTORS 2
+
+#undef TARGET_FIXED_CONDITION_CODE_REGS
+#define TARGET_FIXED_CONDITION_CODE_REGS arm_fixed_condition_code_regs
 
 
 /* Obstack for minipool constant handling.  */
@@ -22926,6 +22930,20 @@ get_arm_condition_code (rtx comparison)
   enum arm_cond_code code = maybe_get_arm_condition_code (comparison);
   gcc_assert (code != ARM_NV);
   return code;
+}
+
+/* Implement TARGET_FIXED_CONDITION_CODE_REGS.  We only have condition
+   code registers when not targetting Thumb1.  The VFP condition register
+   only exists when generating hard-float code.  */
+static bool
+arm_fixed_condition_code_regs (unsigned int *p1, unsigned int *p2)
+{
+  if (!TARGET_32BIT)
+    return false;
+
+  *p1 = CC_REGNUM;
+  *p2 = TARGET_HARD_FLOAT ? VFPCC_REGNUM : INVALID_REGNUM;
+  return true;
 }
 
 /* Tell arm_asm_output_opcode to output IT blocks for conditionally executed
