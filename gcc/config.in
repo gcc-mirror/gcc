@@ -1460,6 +1460,13 @@
 #endif
 
 
+/* Define if your default avr linker script for avrxmega3 leaves .rodata in
+   flash. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_LD_AVR_AVRXMEGA3_RODATA_IN_FLASH
+#endif
+
+
 /* Define if your linker supports -z bndplt */
 #ifndef USED_FOR_TARGET
 #undef HAVE_LD_BNDPLT_SUPPORT
