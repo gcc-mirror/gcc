@@ -1,5 +1,17 @@
 2017-07-05  Bin Cheng  <bin.cheng@arm.com>
 
+	* tree-loop-distribution.c (struct partition): New field recording
+	its data reference.
+	(partition_alloc, partition_free): Init and release data refs.
+	(partition_merge_into): Merge data refs.
+	(build_rdg_partition_for_vertex): Collect data refs for partition.
+	(pg_add_dependence_edges): Change parameters from vector to bitmap.
+	Update uses.
+	(distribute_loop): Remve data refs from vertice data of partition
+	graph.
+
+2017-07-05  Bin Cheng  <bin.cheng@arm.com>
+
 	* tree-loop-distribution.c (params.h): Include header file.
 	(MAX_DATAREFS_NUM, DR_INDEX): New macro.
 	(datarefs_vec): New global var.
