@@ -1,3 +1,11 @@
+2017-07-05  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/81305
+	* gcc.target/avr/isr-test.h: New file.
+	* gcc.target/avr/torture/isr-01-simple.c: New test.
+	* gcc.target/avr/torture/isr-02-call.c: New test.
+	* gcc.target/avr/torture/isr-03-fixed.c: New test.
+
 2017-07-05  Bin Cheng  <bin.cheng@arm.com>
 
 	* gcc.dg/tree-ssa/ldist-4.c: Adjust test string.
