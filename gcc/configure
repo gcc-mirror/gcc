@@ -24851,29 +24851,32 @@ EOF
   ac_status=$?
   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; }
-    if test -f conftest.nm
+    if test -s conftest.nm
     then
 	if grep ' R xxvaryy' conftest.nm > /dev/null; then
 	    { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
-	    rm -f conftest.s conftest.o conftest.elf conftest.nm
+
+$as_echo "#define HAVE_LD_AVR_AVRXMEGA3_RODATA_IN_FLASH 1" >>confdefs.h
+
 	else
 	    { $as_echo "$as_me:${as_lineno-$LINENO}: result: no: avrxmega3 .rodata located in RAM" >&5
 $as_echo "no: avrxmega3 .rodata located in RAM" >&6; }
 	    echo "$as_me: nm output was" >&5
 	    cat conftest.nm >&5
-	    rm -f conftest.s conftest.o conftest.elf conftest.nm
 	    avr_ld_ver="`$gcc_cv_ld -v | sed -e 's:^.* ::'`"
-	    as_fn_error "support for avrxmega3 needs Binutils 2.29 or higher (have $avr_ld_ver)" "$LINENO" 5
+	    { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: support for avrxmega3 .rodata in flash needs Binutils 2.29 or higher (have $avr_ld_ver)" >&5
+$as_echo "$as_me: WARNING: support for avrxmega3 .rodata in flash needs Binutils 2.29 or higher (have $avr_ld_ver)" >&2;}
 	fi
     else
 	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: test failed" >&5
 $as_echo "test failed" >&6; }
 	echo "$as_me: failed program was" >&5
 	cat conftest.s >&5
-	rm -f conftest.s conftest.o conftest.elf
-	as_fn_error "see \`config.log' for details" "$LINENO" 5
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: see \`config.log' for details" >&5
+$as_echo "$as_me: WARNING: see \`config.log' for details" >&2;}
     fi
+    rm -f conftest.s conftest.o conftest.elf conftest.nm
     ;;
 
   cris-*-*)

@@ -1,3 +1,18 @@
+2017-07-05  Georg-Johann Lay  <avr@gjlay.de>
+
+	Graceful degrade if Binutils PR21472 is not available.
+
+	PR target/81072
+	* configure.ac [target=avr]: WARN instead of ERROR if avrxmega3
+	.rodata in flash test fails.
+	(HAVE_LD_AVR_AVRXMEGA3_RODATA_IN_FLASH): Define it if test passes.
+	* confgure: Regenerate.
+	* config.in: Regenerate.
+	* config/avr/avr.c (avr_asm_named_section)
+	[HAVE_LD_AVR_AVRXMEGA3_RODATA_IN_FLASH]: Only trigger
+	__do_copy_data for stuff in .rodata if flash_pm_offset = 0.
+	(avr_asm_init_sections): Same.
+
 2017-07-05  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
 	* config/arm/neon.md (fma<VCVTF:mode>4): Remove %?.

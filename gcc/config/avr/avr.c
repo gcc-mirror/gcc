@@ -10000,7 +10000,9 @@ avr_asm_init_sections (void)
      resp. `avr_need_copy_data_p'.  If flash is not mapped to RAM then
      we have also to track .rodata because it is located in RAM then.  */
 
+#if defined HAVE_LD_AVR_AVRXMEGA3_RODATA_IN_FLASH
   if (0 == avr_arch->flash_pm_offset)
+#endif
     readonly_data_section->unnamed.callback = avr_output_data_section_asm_op;
   data_section->unnamed.callback = avr_output_data_section_asm_op;
   bss_section->unnamed.callback = avr_output_bss_section_asm_op;
@@ -10036,7 +10038,10 @@ avr_asm_named_section (const char *name, unsigned int flags, tree decl)
                             || STR_PREFIX_P (name, ".gnu.linkonce.d"));
 
   if (!avr_need_copy_data_p
-      && 0 == avr_arch->flash_pm_offset)
+#if defined HAVE_LD_AVR_AVRXMEGA3_RODATA_IN_FLASH
+      && 0 == avr_arch->flash_pm_offset
+#endif
+      )
     avr_need_copy_data_p = (STR_PREFIX_P (name, ".rodata")
                             || STR_PREFIX_P (name, ".gnu.linkonce.r"));
 

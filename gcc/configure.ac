@@ -3832,26 +3832,26 @@ EOF
     AC_TRY_COMMAND([$gcc_cv_as -mmcu=avrxmega3 conftest.s -o conftest.o])
     AC_TRY_COMMAND([$gcc_cv_ld -mavrxmega3 conftest.o -o conftest.elf])
     AC_TRY_COMMAND([$gcc_cv_nm conftest.elf > conftest.nm])
-    if test -f conftest.nm
+    if test -s conftest.nm
     then
 	if grep ' R xxvaryy' conftest.nm > /dev/null; then
 	    AC_MSG_RESULT(yes)
-	    rm -f conftest.s conftest.o conftest.elf conftest.nm
+	    AC_DEFINE(HAVE_LD_AVR_AVRXMEGA3_RODATA_IN_FLASH, 1,
+		[Define if your default avr linker script for avrxmega3 leaves .rodata in flash.])
 	else
 	    AC_MSG_RESULT(no: avrxmega3 .rodata located in RAM)
 	    echo "$as_me: nm output was" >&AS_MESSAGE_LOG_FD
 	    cat conftest.nm >&AS_MESSAGE_LOG_FD
-	    rm -f conftest.s conftest.o conftest.elf conftest.nm
 	    avr_ld_ver="`$gcc_cv_ld -v | sed -e 's:^.* ::'`"
-	    AC_MSG_ERROR([[support for avrxmega3 needs Binutils 2.29 or higher (have $avr_ld_ver)]])
+	    AC_MSG_WARN([[support for avrxmega3 .rodata in flash needs Binutils 2.29 or higher (have $avr_ld_ver)]])
 	fi
     else
 	AC_MSG_RESULT(test failed)
 	echo "$as_me: failed program was" >&AS_MESSAGE_LOG_FD
 	cat conftest.s >&AS_MESSAGE_LOG_FD
-	rm -f conftest.s conftest.o conftest.elf
-	AC_MSG_ERROR([[see `config.log' for details]])
+	AC_MSG_WARN([[see `config.log' for details]])
     fi
+    rm -f conftest.s conftest.o conftest.elf conftest.nm
     ;;
 
   cris-*-*)
