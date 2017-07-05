@@ -545,15 +545,42 @@ partition_reduction_p (partition *partition)
   return partition->reduction_p;
 }
 
+/* Partitions are fused because of different reasons.  */
+enum fuse_type
+{
+  FUSE_NON_BUILTIN = 0,
+  FUSE_REDUCTION = 1,
+  FUSE_SHARE_REF = 2,
+  FUSE_SAME_SCC = 3,
+  FUSE_FINALIZE = 4
+};
+
+/* Description on different fusing reason.  */
+static const char *fuse_message[] = {
+  "they are non-builtins",
+  "they have reductions",
+  "they have shared memory refs",
+  "they are in the same dependence scc",
+  "there is no point to distribute loop"};
+
 /* Merge PARTITION into the partition DEST.  */
 
 static void
-partition_merge_into (partition *dest, partition *partition)
+partition_merge_into (partition *dest, partition *partition, enum fuse_type ft)
 {
   dest->kind = PKIND_NORMAL;
   bitmap_ior_into (dest->stmts, partition->stmts);
   if (partition_reduction_p (partition))
     dest->reduction_p = true;
+
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    {
+      fprintf (dump_file, "Fuse partitions because %s:\n", fuse_message[ft]);
+      fprintf (dump_file, "  Part 1: ");
+      dump_bitmap (dump_file, dest->stmts);
+      fprintf (dump_file, "  Part 2: ");
+      dump_bitmap (dump_file, partition->stmts);
+    }
 }
 
 
@@ -1531,13 +1558,7 @@ distribute_loop (struct loop *loop, vec<gimple *> stmts,
       for (++i; partitions.iterate (i, &partition); ++i)
 	if (!partition_builtin_p (partition))
 	  {
-	    if (dump_file && (dump_flags & TDF_DETAILS))
-	      {
-		fprintf (dump_file, "fusing non-builtin partitions\n");
-		dump_bitmap (dump_file, into->stmts);
-		dump_bitmap (dump_file, partition->stmts);
-	      }
-	    partition_merge_into (into, partition);
+	    partition_merge_into (into, partition, FUSE_NON_BUILTIN);
 	    partitions.unordered_remove (i);
 	    partition_free (partition);
 	    i--;
@@ -1553,14 +1574,7 @@ distribute_loop (struct loop *loop, vec<gimple *> stmts,
   for (i = i + 1; partitions.iterate (i, &partition); ++i)
     if (partition_reduction_p (partition))
       {
-	if (dump_file && (dump_flags & TDF_DETAILS))
-	  {
-	    fprintf (dump_file, "fusing partitions\n");
-	    dump_bitmap (dump_file, into->stmts);
-	    dump_bitmap (dump_file, partition->stmts);
-	    fprintf (dump_file, "because they have reductions\n");
-	  }
-	partition_merge_into (into, partition);
+	partition_merge_into (into, partition, FUSE_REDUCTION);
 	partitions.unordered_remove (i);
 	partition_free (partition);
 	i--;
@@ -1578,15 +1592,7 @@ distribute_loop (struct loop *loop, vec<gimple *> stmts,
 	{
 	  if (similar_memory_accesses (rdg, into, partition))
 	    {
-	      if (dump_file && (dump_flags & TDF_DETAILS))
-		{
-		  fprintf (dump_file, "fusing partitions\n");
-		  dump_bitmap (dump_file, into->stmts);
-		  dump_bitmap (dump_file, partition->stmts);
-		  fprintf (dump_file, "because they have similar "
-			   "memory accesses\n");
-		}
-	      partition_merge_into (into, partition);
+	      partition_merge_into (into, partition, FUSE_SHARE_REF);
 	      partitions.unordered_remove (j);
 	      partition_free (partition);
 	      j--;
@@ -1678,15 +1684,7 @@ distribute_loop (struct loop *loop, vec<gimple *> stmts,
 	  for (j = j + 1; partitions.iterate (j, &partition); ++j)
 	    if (pg->vertices[j].component == i)
 	      {
-		if (dump_file && (dump_flags & TDF_DETAILS))
-		  {
-		    fprintf (dump_file, "fusing partitions\n");
-		    dump_bitmap (dump_file, first->stmts);
-		    dump_bitmap (dump_file, partition->stmts);
-		    fprintf (dump_file, "because they are in the same "
-			     "dependence SCC\n");
-		  }
-		partition_merge_into (first, partition);
+		partition_merge_into (first, partition, FUSE_SAME_SCC);
 		partitions[j] = NULL;
 		partition_free (partition);
 		PGDATA (j)->partition = NULL;
