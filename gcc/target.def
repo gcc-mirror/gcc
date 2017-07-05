@@ -2369,7 +2369,7 @@ DEFHOOK
 DEFHOOK
 (chkp_bound_mode,
  "Return mode to be used for bounds.",
- enum machine_mode, (void),
+ machine_mode, (void),
  default_chkp_bound_mode)
 
 DEFHOOK
@@ -4370,7 +4370,7 @@ DEFHOOK
  "Use it to store bounds for anonymous register arguments stored\n\
 into the stack.  Arguments meaning is similar to\n\
 @code{TARGET_SETUP_INCOMING_VARARGS}.",
- void, (cumulative_args_t args_so_far, enum machine_mode mode, tree type,
+ void, (cumulative_args_t args_so_far, machine_mode mode, tree type,
 	int *pretend_args_size, int second_time),
  default_setup_incoming_vararg_bounds)
 

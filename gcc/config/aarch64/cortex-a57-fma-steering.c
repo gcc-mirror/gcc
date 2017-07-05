@@ -603,7 +603,7 @@ fma_node::rename (fma_forest *forest)
     {
       rtx_insn *insn = this->m_insn;
       HARD_REG_SET unavailable;
-      enum machine_mode mode;
+      machine_mode mode;
       int reg;
 
       if (dump_file)

@@ -163,7 +163,7 @@ jit_langhook_parse_file (void)
 }
 
 static tree
-jit_langhook_type_for_mode (enum machine_mode mode, int unsignedp)
+jit_langhook_type_for_mode (machine_mode mode, int unsignedp)
 {
   if (mode == TYPE_MODE (float_type_node))
     return float_type_node;

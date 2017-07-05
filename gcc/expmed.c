@@ -363,9 +363,9 @@ check_reverse_float_storage_order_support (void)
    useful if X is a CONST_INT.  */
 
 rtx
-flip_storage_order (enum machine_mode mode, rtx x)
+flip_storage_order (machine_mode mode, rtx x)
 {
-  enum machine_mode int_mode;
+  machine_mode int_mode;
   rtx result;
 
   if (mode == QImode)

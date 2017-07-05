@@ -11363,7 +11363,7 @@ ix86_setup_incoming_varargs (cumulative_args_t cum_v, machine_mode mode,
 
 static void
 ix86_setup_incoming_vararg_bounds (cumulative_args_t cum_v,
-				   enum machine_mode mode,
+				   machine_mode mode,
 				   tree type,
 				   int *pretend_size ATTRIBUTE_UNUSED,
 				   int no_rtl)
@@ -15084,7 +15084,7 @@ ix86_emit_outlined_ms2sysv_restore (const struct ix86_frame &frame,
   for (i = 0; i < ncregs; ++i)
     {
       const xlogue_layout::reginfo &r = xlogue.get_reginfo (i);
-      enum machine_mode mode = SSE_REGNO_P (r.regno) ? V4SFmode : word_mode;
+      machine_mode mode = SSE_REGNO_P (r.regno) ? V4SFmode : word_mode;
       rtx reg, frame_load;
 
       reg = gen_rtx_REG (mode, r.regno);
@@ -31160,7 +31160,7 @@ ix86_constant_alignment (tree exp, int align)
 static int
 iamcu_alignment (tree type, int align)
 {
-  enum machine_mode mode;
+  machine_mode mode;
 
   if (align < 32 || TYPE_USER_ALIGN (type))
     return align;
@@ -47168,7 +47168,7 @@ canonicalize_vector_int_perm (const struct expand_vec_perm_d *d,
 			      struct expand_vec_perm_d *nd)
 {
   int i;
-  enum machine_mode mode = VOIDmode;
+  machine_mode mode = VOIDmode;
 
   switch (d->vmode)
     {
@@ -51418,7 +51418,7 @@ ix86_noce_conversion_profitable_p (rtx_insn *seq, struct noce_if_info *if_info)
 	  if (GET_CODE (SET_SRC (set)) != IF_THEN_ELSE)
 	    continue;
 	  rtx src = SET_SRC (set);
-	  enum machine_mode mode = GET_MODE (src);
+	  machine_mode mode = GET_MODE (src);
 	  if (GET_MODE_CLASS (mode) != MODE_INT
 	      && GET_MODE_CLASS (mode) != MODE_FLOAT)
 	    continue;
@@ -51914,7 +51914,7 @@ ix86_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
 /* Return mode to be used for bounds or VOIDmode
    if bounds are not supported.  */
 
-static enum machine_mode
+static machine_mode
 ix86_mpx_bound_mode ()
 {
   /* Do not support pointer checker if MPX
@@ -52034,7 +52034,7 @@ extract_base_offset_in_addr (rtx mem, rtx *base, rtx *offset)
 
 bool
 ix86_operands_ok_for_move_multiple (rtx *operands, bool load,
-				    enum machine_mode mode)
+				    machine_mode mode)
 {
   HOST_WIDE_INT offval_1, offval_2, msize;
   rtx mem_1, mem_2, reg_1, reg_2, base_1, base_2, offset_1, offset_2;

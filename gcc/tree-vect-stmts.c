@@ -7007,9 +7007,9 @@ vectorizable_load (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 		 to a larger load.  */
 	      unsigned lsize
 		= group_size * TYPE_PRECISION (TREE_TYPE (vectype));
-	      enum machine_mode elmode = mode_for_size (lsize, MODE_INT, 0);
-	      enum machine_mode vmode = mode_for_vector (elmode,
-							 nunits / group_size);
+	      machine_mode elmode = mode_for_size (lsize, MODE_INT, 0);
+	      machine_mode vmode = mode_for_vector (elmode,
+						    nunits / group_size);
 	      /* If we can't construct such a vector fall back to
 		 element loads of the original vector type.  */
 	      if (VECTOR_MODE_P (vmode)

@@ -6584,7 +6584,7 @@ simplify_if_then_else (rtx x)
       && (i = exact_log2 (UINTVAL (true_rtx) & GET_MODE_MASK (mode))) >= 0)
     {
       rtx val = XEXP (cond, 0);
-      enum machine_mode val_mode = GET_MODE (val);
+      machine_mode val_mode = GET_MODE (val);
       if (val_mode == mode)
         return val;
       else if (GET_MODE_PRECISION (val_mode) < GET_MODE_PRECISION (mode))
