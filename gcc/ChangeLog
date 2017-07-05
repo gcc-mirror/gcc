@@ -1,5 +1,14 @@
 2017-07-05  Bin Cheng  <bin.cheng@arm.com>
 
+	* tree-loop-distribution.c (struct ddr_hasher): New.
+	(ddr_hasher::hash, ::equal, get_data_dependence): New function.
+	(ddrs_table): New.
+	(classify_partition): Call get_data_dependence.
+	(pg_add_dependence_edges): Ditto.
+	(distribute_loop): Release data dependence hash table.
+
+2017-07-05  Bin Cheng  <bin.cheng@arm.com>
+
 	* tree-loop-distribution.c (ref_base_address): Delete.
 	(similar_memory_accesses): Rename ...
 	(share_memory_accesses): ... to this.  Check if partitions access
