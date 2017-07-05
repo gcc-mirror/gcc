@@ -1,5 +1,13 @@
 2017-07-05  Bin Cheng  <bin.cheng@arm.com>
 
+	* tree-loop-distribution.c (classify_partition): New parameter and
+	better handle reduction statement.
+	(rdg_build_partitions): Revise comment.
+	(distribute_loop): Compute statements in all partitions and pass it
+	to classify_partition.
+
+2017-07-05  Bin Cheng  <bin.cheng@arm.com>
+
 	* tree-loop-distribution.c (enum partition_type): New.
 	(struct partition): New field type.
 	(partition_merge_into): Add parameter.  Update partition type.
