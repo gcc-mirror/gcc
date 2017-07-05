@@ -1,3 +1,18 @@
+2017-07-05  Sebastian Peryt  <sebastian.peryt@intel.com>
+
+	* gcc.target/i386/avx512f-vaddsd-3.c: New test for mask 0 verification.
+	* gcc.target/i386/avx512f-vaddss-3.c: Ditto.
+	* gcc.target/i386/avx512f-vdivsd-3.c: Ditto.
+	* gcc.target/i386/avx512f-vdivss-3.c: Ditto.
+	* gcc.target/i386/avx512f-vmaxsd-3.c: Ditto.
+	* gcc.target/i386/avx512f-vmaxss-3.c: Ditto.
+	* gcc.target/i386/avx512f-vminsd-3.c: Ditto.
+	* gcc.target/i386/avx512f-vminss-3.c: Ditto.
+	* gcc.target/i386/avx512f-vmulsd-3.c: Ditto.
+	* gcc.target/i386/avx512f-vmulss-3.c: Ditto.
+	* gcc.target/i386/avx512f-vsubsd-3.c: Ditto.
+	* gcc.target/i386/avx512f-vsubss-3.c: Ditto.
+
 2017-07-05  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/81305
