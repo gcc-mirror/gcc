@@ -1268,30 +1268,16 @@ classify_partition (loop_p loop, struct graph *rdg, partition *partition)
     }
 }
 
-/* For a data reference REF, return the declaration of its base
-   address or NULL_TREE if the base is not determined.  */
-
-static tree
-ref_base_address (data_reference_p dr)
-{
-  tree base_address = DR_BASE_ADDRESS (dr);
-  if (base_address
-      && TREE_CODE (base_address) == ADDR_EXPR)
-    return TREE_OPERAND (base_address, 0);
-
-  return base_address;
-}
-
-/* Returns true when PARTITION1 and PARTITION2 have similar memory
-   accesses in RDG.  */
+/* Returns true when PARTITION1 and PARTITION2 access the same memory
+   object in RDG.  */
 
 static bool
-similar_memory_accesses (struct graph *rdg, partition *partition1,
-			 partition *partition2)
+share_memory_accesses (struct graph *rdg,
+		       partition *partition1, partition *partition2)
 {
-  unsigned i, j, k, l;
+  unsigned i, j;
   bitmap_iterator bi, bj;
-  data_reference_p ref1, ref2;
+  data_reference_p dr1, dr2;
 
   /* First check whether in the intersection of the two partitions are
      any loads or stores.  Common loads are the situation that happens
@@ -1301,23 +1287,30 @@ similar_memory_accesses (struct graph *rdg, partition *partition1,
 	|| RDG_MEM_READS_STMT (rdg, i))
       return true;
 
-  /* Then check all data-references against each other.  */
-  EXECUTE_IF_SET_IN_BITMAP (partition1->stmts, 0, i, bi)
-    if (RDG_MEM_WRITE_STMT (rdg, i)
-	|| RDG_MEM_READS_STMT (rdg, i))
-      EXECUTE_IF_SET_IN_BITMAP (partition2->stmts, 0, j, bj)
-	if (RDG_MEM_WRITE_STMT (rdg, j)
-	    || RDG_MEM_READS_STMT (rdg, j))
-	  {
-	    FOR_EACH_VEC_ELT (RDG_DATAREFS (rdg, i), k, ref1)
-	      {
-		tree base1 = ref_base_address (ref1);
-		if (base1)
-		  FOR_EACH_VEC_ELT (RDG_DATAREFS (rdg, j), l, ref2)
-		    if (base1 == ref_base_address (ref2))
-		      return true;
-	      }
-	  }
+  /* Then check whether the two partitions access the same memory object.  */
+  EXECUTE_IF_SET_IN_BITMAP (partition1->datarefs, 0, i, bi)
+    {
+      dr1 = datarefs_vec[i];
+
+      if (!DR_BASE_ADDRESS (dr1)
+	  || !DR_OFFSET (dr1) || !DR_INIT (dr1) || !DR_STEP (dr1))
+	continue;
+
+      EXECUTE_IF_SET_IN_BITMAP (partition2->datarefs, 0, j, bj)
+	{
+	  dr2 = datarefs_vec[j];
+
+	  if (!DR_BASE_ADDRESS (dr2)
+	      || !DR_OFFSET (dr2) || !DR_INIT (dr2) || !DR_STEP (dr2))
+	    continue;
+
+	  if (operand_equal_p (DR_BASE_ADDRESS (dr1), DR_BASE_ADDRESS (dr2), 0)
+	      && operand_equal_p (DR_OFFSET (dr1), DR_OFFSET (dr2), 0)
+	      && operand_equal_p (DR_INIT (dr1), DR_INIT (dr2), 0)
+	      && operand_equal_p (DR_STEP (dr1), DR_STEP (dr2), 0))
+	    return true;
+	}
+    }
 
   return false;
 }
@@ -1654,7 +1647,7 @@ distribute_loop (struct loop *loop, vec<gimple *> stmts,
       for (int j = i + 1;
 	   partitions.iterate (j, &partition); ++j)
 	{
-	  if (similar_memory_accesses (rdg, into, partition))
+	  if (share_memory_accesses (rdg, into, partition))
 	    {
 	      partition_merge_into (into, partition, FUSE_SHARE_REF);
 	      partitions.unordered_remove (j);
