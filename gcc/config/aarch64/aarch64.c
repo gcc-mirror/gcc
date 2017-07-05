@@ -1032,7 +1032,7 @@ static reg_class_t
 aarch64_ira_change_pseudo_allocno_class (int regno, reg_class_t allocno_class,
 					 reg_class_t best_class)
 {
-  enum machine_mode mode;
+  machine_mode mode;
 
   if (allocno_class != ALL_REGS)
     return allocno_class;
@@ -1045,7 +1045,7 @@ aarch64_ira_change_pseudo_allocno_class (int regno, reg_class_t allocno_class,
 }
 
 static unsigned int
-aarch64_min_divisions_for_recip_mul (enum machine_mode mode)
+aarch64_min_divisions_for_recip_mul (machine_mode mode)
 {
   if (GET_MODE_UNIT_SIZE (mode) == 4)
     return aarch64_tune_params.min_div_recip_mul_sf;
@@ -1054,7 +1054,7 @@ aarch64_min_divisions_for_recip_mul (enum machine_mode mode)
 
 static int
 aarch64_reassociation_width (unsigned opc ATTRIBUTE_UNUSED,
-			     enum machine_mode mode)
+			     machine_mode mode)
 {
   if (VECTOR_MODE_P (mode))
     return aarch64_tune_params.vec_reassoc_width;
@@ -4887,7 +4887,7 @@ aarch64_select_cc_mode (RTX_CODE code, rtx x, rtx y)
 }
 
 static int
-aarch64_get_condition_code_1 (enum machine_mode, enum rtx_code);
+aarch64_get_condition_code_1 (machine_mode, enum rtx_code);
 
 int
 aarch64_get_condition_code (rtx x)
@@ -4901,7 +4901,7 @@ aarch64_get_condition_code (rtx x)
 }
 
 static int
-aarch64_get_condition_code_1 (enum machine_mode mode, enum rtx_code comp_code)
+aarch64_get_condition_code_1 (machine_mode mode, enum rtx_code comp_code)
 {
   switch (mode)
     {
@@ -11693,7 +11693,7 @@ aarch64_simd_mem_operand_p (rtx op)
    COUNT is the number of components into which the copy needs to be
    decomposed.  */
 void
-aarch64_simd_emit_reg_reg_move (rtx *operands, enum machine_mode mode,
+aarch64_simd_emit_reg_reg_move (rtx *operands, machine_mode mode,
 				unsigned int count)
 {
   unsigned int i;
@@ -11714,7 +11714,7 @@ aarch64_simd_emit_reg_reg_move (rtx *operands, enum machine_mode mode,
 /* Compute and return the length of aarch64_simd_reglist<mode>, where <mode> is
    one of VSTRUCT modes: OI, CI, or XI.  */
 int
-aarch64_simd_attr_length_rglist (enum machine_mode mode)
+aarch64_simd_attr_length_rglist (machine_mode mode)
 {
   return (GET_MODE_SIZE (mode) / UNITS_PER_VREG) * 4;
 }
@@ -13705,7 +13705,7 @@ aarch64_vectorize_vec_perm_const_ok (machine_mode vmode,
 }
 
 rtx
-aarch64_reverse_mask (enum machine_mode mode)
+aarch64_reverse_mask (machine_mode mode)
 {
   /* We have to reverse each vector because we dont have
      a permuted load that can reverse-load according to ABI rules.  */
@@ -14548,7 +14548,7 @@ aarch64_sched_adjust_priority (rtx_insn *insn, int priority)
 
 bool
 aarch64_operands_ok_for_ldpstp (rtx *operands, bool load,
-				enum machine_mode mode)
+				machine_mode mode)
 {
   HOST_WIDE_INT offval_1, offval_2, msize;
   enum reg_class rclass_1, rclass_2;
@@ -14655,7 +14655,7 @@ aarch64_operands_ok_for_ldpstp (rtx *operands, bool load,
 
 bool
 aarch64_operands_adjust_ok_for_ldpstp (rtx *operands, bool load,
-				       enum machine_mode mode)
+				       machine_mode mode)
 {
   enum reg_class rclass_1, rclass_2, rclass_3, rclass_4;
   HOST_WIDE_INT offval_1, offval_2, offval_3, offval_4, msize;
@@ -14789,7 +14789,7 @@ aarch64_operands_adjust_ok_for_ldpstp (rtx *operands, bool load,
 
 bool
 aarch64_gen_adjusted_ldpstp (rtx *operands, bool load,
-			     enum machine_mode mode, RTX_CODE code)
+			     machine_mode mode, RTX_CODE code)
 {
   rtx base, offset, t1, t2;
   rtx mem_1, mem_2, mem_3, mem_4;

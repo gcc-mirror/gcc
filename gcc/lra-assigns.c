@@ -585,7 +585,7 @@ find_hard_regno_for_1 (int regno, int *cost, int try_only_hard_regno,
 	}
       else
 	{
-	  enum machine_mode biggest_conflict_mode
+	  machine_mode biggest_conflict_mode
 	    = lra_reg_info[conflict_regno].biggest_mode;
 	  int biggest_conflict_nregs
 	    = hard_regno_nregs[conflict_hr][biggest_conflict_mode];

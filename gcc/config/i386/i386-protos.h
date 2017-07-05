@@ -316,7 +316,7 @@ extern enum attr_cpu ix86_schedule;
 
 extern const char * ix86_output_call_insn (rtx_insn *insn, rtx call_op);
 extern bool ix86_operands_ok_for_move_multiple (rtx *operands, bool load,
-						enum machine_mode mode);
+						machine_mode mode);
 
 #ifdef RTX_CODE
 /* Target data for multipass lookahead scheduling.

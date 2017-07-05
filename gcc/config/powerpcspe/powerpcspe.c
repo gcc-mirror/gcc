@@ -3608,12 +3608,12 @@ rs6000_init_hard_regno_mode_ok (bool global_init_p)
 	  CODE_FOR_fusion_gpr_di_df_store },
       };
 
-      enum machine_mode cur_pmode = Pmode;
+      machine_mode cur_pmode = Pmode;
       size_t i;
 
       for (i = 0; i < ARRAY_SIZE (addis_insns); i++)
 	{
-	  enum machine_mode xmode = addis_insns[i].mode;
+	  machine_mode xmode = addis_insns[i].mode;
 	  enum rs6000_reload_reg_type rtype = addis_insns[i].rtype;
 
 	  if (addis_insns[i].pmode != cur_pmode)
@@ -10399,7 +10399,7 @@ rs6000_offsettable_memref_p (rtx op, machine_mode reg_mode)
  
 static int
 rs6000_reassociation_width (unsigned int opc ATTRIBUTE_UNUSED,
-                            enum machine_mode mode)
+                            machine_mode mode)
 {
   switch (rs6000_cpu)
     {
@@ -24860,8 +24860,8 @@ rs6000_invalid_binary_op (int op ATTRIBUTE_UNUSED,
 			  const_tree type1,
 			  const_tree type2)
 {
-  enum machine_mode mode1 = TYPE_MODE (type1);
-  enum machine_mode mode2 = TYPE_MODE (type2);
+  machine_mode mode1 = TYPE_MODE (type1);
+  machine_mode mode2 = TYPE_MODE (type2);
 
   /* For complex modes, use the inner type.  */
   if (COMPLEX_MODE_P (mode1))
@@ -41284,7 +41284,7 @@ fusion_p9_p (rtx addis_reg,		/* register set via addis.  */
 	     rtx src)			/* source (register or memory).  */
 {
   rtx addr, mem, offset;
-  enum machine_mode mode = GET_MODE (src);
+  machine_mode mode = GET_MODE (src);
 
   /* Validate arguments.  */
   if (!base_reg_operand (addis_reg, GET_MODE (addis_reg)))
@@ -41458,7 +41458,7 @@ expand_fusion_p9_store (rtx *operands)
 const char *
 emit_fusion_p9_load (rtx reg, rtx mem, rtx tmp_reg)
 {
-  enum machine_mode mode = GET_MODE (reg);
+  machine_mode mode = GET_MODE (reg);
   rtx hi;
   rtx lo;
   rtx addr;
@@ -41551,7 +41551,7 @@ emit_fusion_p9_load (rtx reg, rtx mem, rtx tmp_reg)
 const char *
 emit_fusion_p9_store (rtx mem, rtx reg, rtx tmp_reg)
 {
-  enum machine_mode mode = GET_MODE (reg);
+  machine_mode mode = GET_MODE (reg);
   rtx hi;
   rtx lo;
   rtx addr;

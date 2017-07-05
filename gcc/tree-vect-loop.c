@@ -3623,7 +3623,7 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo,
 /* Writes into SEL a mask for a vec_perm, equivalent to a vec_shr by OFFSET
    vector elements (not bits) for a vector of mode MODE.  */
 static void
-calc_vec_perm_mask_for_shift (enum machine_mode mode, unsigned int offset,
+calc_vec_perm_mask_for_shift (machine_mode mode, unsigned int offset,
 			      unsigned char *sel)
 {
   unsigned int i, nelt = GET_MODE_NUNITS (mode);
@@ -3636,7 +3636,7 @@ calc_vec_perm_mask_for_shift (enum machine_mode mode, unsigned int offset,
    MODE.  This is the case if _either_ the platform handles vec_shr_optab, _or_
    it supports vec_perm_const with masks for all necessary shift amounts.  */
 static bool
-have_whole_vector_shift (enum machine_mode mode)
+have_whole_vector_shift (machine_mode mode)
 {
   if (optab_handler (vec_shr_optab, mode) != CODE_FOR_nothing)
     return true;

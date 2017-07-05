@@ -2745,7 +2745,7 @@ static int
 allocno_copy_cost_saving (ira_allocno_t allocno, int hard_regno)
 {
   int cost = 0;
-  enum machine_mode allocno_mode = ALLOCNO_MODE (allocno);
+  machine_mode allocno_mode = ALLOCNO_MODE (allocno);
   enum reg_class rclass;
   ira_copy_t cp, next_cp;
 

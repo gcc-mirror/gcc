@@ -1,3 +1,201 @@
+2017-07-05  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* combine.c (simplify_if_then_else): Remove "enum" before
+	"machine_mode".
+	* compare-elim.c (can_eliminate_compare): Likewise.
+	* config/aarch64/aarch64-builtins.c (aarch64_simd_builtin_std_type):
+	Likewise.
+	(aarch64_lookup_simd_builtin_type): Likewise.
+	(aarch64_simd_builtin_type): Likewise.
+	(aarch64_init_simd_builtin_types): Likewise.
+	(aarch64_simd_expand_args): Likewise.
+	* config/aarch64/aarch64-protos.h (aarch64_simd_attr_length_rglist):
+	Likewise.
+	(aarch64_reverse_mask): Likewise.
+	(aarch64_simd_emit_reg_reg_move): Likewise.
+	(aarch64_gen_adjusted_ldpstp): Likewise.
+	(aarch64_ccmp_mode_to_code): Likewise.
+	(aarch64_operands_ok_for_ldpstp): Likewise.
+	(aarch64_operands_adjust_ok_for_ldpstp): Likewise.
+	* config/aarch64/aarch64.c (aarch64_ira_change_pseudo_allocno_class):
+	Likewise.
+	(aarch64_min_divisions_for_recip_mul): Likewise.
+	(aarch64_reassociation_width): Likewise.
+	(aarch64_get_condition_code_1): Likewise.
+	(aarch64_simd_emit_reg_reg_move): Likewise.
+	(aarch64_simd_attr_length_rglist): Likewise.
+	(aarch64_reverse_mask): Likewise.
+	(aarch64_operands_ok_for_ldpstp): Likewise.
+	(aarch64_operands_adjust_ok_for_ldpstp): Likewise.
+	(aarch64_gen_adjusted_ldpstp): Likewise.
+	* config/aarch64/cortex-a57-fma-steering.c (fma_node::rename):
+	Likewise.
+	* config/arc/arc.c (legitimate_offset_address_p): Likewise.
+	* config/arm/arm-builtins.c (arm_simd_builtin_std_type): Likewise.
+	(arm_lookup_simd_builtin_type): Likewise.
+	(arm_simd_builtin_type): Likewise.
+	(arm_init_simd_builtin_types): Likewise.
+	(arm_expand_builtin_args): Likewise.
+	* config/arm/arm-protos.h (arm_expand_builtin): Likewise.
+	* config/ft32/ft32.c (ft32_libcall_value): Likewise.
+	(ft32_setup_incoming_varargs): Likewise.
+	(ft32_function_arg): Likewise.
+	(ft32_function_arg_advance): Likewise.
+	(ft32_pass_by_reference): Likewise.
+	(ft32_arg_partial_bytes): Likewise.
+	(ft32_valid_pointer_mode): Likewise.
+	(ft32_addr_space_pointer_mode): Likewise.
+	(ft32_addr_space_legitimate_address_p): Likewise.
+	* config/i386/i386-protos.h (ix86_operands_ok_for_move_multiple):
+	Likewise.
+	* config/i386/i386.c (ix86_setup_incoming_vararg_bounds): Likewise.
+	(ix86_emit_outlined_ms2sysv_restore): Likewise.
+	(iamcu_alignment): Likewise.
+	(canonicalize_vector_int_perm): Likewise.
+	(ix86_noce_conversion_profitable_p): Likewise.
+	(ix86_mpx_bound_mode): Likewise.
+	(ix86_operands_ok_for_move_multiple): Likewise.
+	* config/microblaze/microblaze-protos.h
+	(microblaze_expand_conditional_branch_reg): Likewise.
+	* config/microblaze/microblaze.c
+	(microblaze_expand_conditional_branch_reg): Likewise.
+	* config/powerpcspe/powerpcspe.c (rs6000_init_hard_regno_mode_ok):
+	Likewise.
+	(rs6000_reassociation_width): Likewise.
+	(rs6000_invalid_binary_op): Likewise.
+	(fusion_p9_p): Likewise.
+	(emit_fusion_p9_load): Likewise.
+	(emit_fusion_p9_store): Likewise.
+	* config/riscv/riscv-protos.h (riscv_regno_mode_ok_for_base_p):
+	Likewise.
+	(riscv_hard_regno_mode_ok_p): Likewise.
+	(riscv_address_insns): Likewise.
+	(riscv_split_symbol): Likewise.
+	(riscv_legitimize_move): Likewise.
+	(riscv_function_value): Likewise.
+	(riscv_hard_regno_nregs): Likewise.
+	(riscv_expand_builtin): Likewise.
+	* config/riscv/riscv.c (riscv_build_integer_1): Likewise.
+	(riscv_build_integer): Likewise.
+	(riscv_split_integer): Likewise.
+	(riscv_legitimate_constant_p): Likewise.
+	(riscv_cannot_force_const_mem): Likewise.
+	(riscv_regno_mode_ok_for_base_p): Likewise.
+	(riscv_valid_base_register_p): Likewise.
+	(riscv_valid_offset_p): Likewise.
+	(riscv_valid_lo_sum_p): Likewise.
+	(riscv_classify_address): Likewise.
+	(riscv_legitimate_address_p): Likewise.
+	(riscv_address_insns): Likewise.
+	(riscv_load_store_insns): Likewise.
+	(riscv_force_binary): Likewise.
+	(riscv_split_symbol): Likewise.
+	(riscv_force_address): Likewise.
+	(riscv_legitimize_address): Likewise.
+	(riscv_move_integer): Likewise.
+	(riscv_legitimize_const_move): Likewise.
+	(riscv_legitimize_move): Likewise.
+	(riscv_address_cost): Likewise.
+	(riscv_subword): Likewise.
+	(riscv_output_move): Likewise.
+	(riscv_canonicalize_int_order_test): Likewise.
+	(riscv_emit_int_order_test): Likewise.
+	(riscv_function_arg_boundary): Likewise.
+	(riscv_pass_mode_in_fpr_p): Likewise.
+	(riscv_pass_fpr_single): Likewise.
+	(riscv_pass_fpr_pair): Likewise.
+	(riscv_get_arg_info): Likewise.
+	(riscv_function_arg): Likewise.
+	(riscv_function_arg_advance): Likewise.
+	(riscv_arg_partial_bytes): Likewise.
+	(riscv_function_value): Likewise.
+	(riscv_pass_by_reference): Likewise.
+	(riscv_setup_incoming_varargs): Likewise.
+	(riscv_print_operand): Likewise.
+	(riscv_elf_select_rtx_section): Likewise.
+	(riscv_save_restore_reg): Likewise.
+	(riscv_for_each_saved_reg): Likewise.
+	(riscv_register_move_cost): Likewise.
+	(riscv_hard_regno_mode_ok_p): Likewise.
+	(riscv_hard_regno_nregs): Likewise.
+	(riscv_class_max_nregs): Likewise.
+	(riscv_memory_move_cost): Likewise.
+	* config/rl78/rl78-protos.h (rl78_split_movsi): Likewise.
+	* config/rl78/rl78.c (rl78_split_movsi): Likewise.
+	(rl78_addr_space_address_mode): Likewise.
+	* config/rs6000/rs6000-c.c (altivec_resolve_overloaded_builtin):
+	Likewise.
+	* config/rs6000/rs6000.c (rs6000_init_hard_regno_mode_ok): Likewise.
+	(rs6000_reassociation_width): Likewise.
+	(rs6000_invalid_binary_op): Likewise.
+	(fusion_p9_p): Likewise.
+	(emit_fusion_p9_load): Likewise.
+	(emit_fusion_p9_store): Likewise.
+	* config/visium/visium-protos.h (prepare_move_operands): Likewise.
+	(ok_for_simple_move_operands): Likewise.
+	(ok_for_simple_move_strict_operands): Likewise.
+	(ok_for_simple_arith_logic_operands): Likewise.
+	(visium_legitimize_reload_address): Likewise.
+	(visium_select_cc_mode): Likewise.
+	(output_cbranch): Likewise.
+	(visium_split_double_move): Likewise.
+	(visium_expand_copysign): Likewise.
+	(visium_expand_int_cstore): Likewise.
+	(visium_expand_fp_cstore): Likewise.
+	* config/visium/visium.c (visium_pass_by_reference): Likewise.
+	(visium_function_arg): Likewise.
+	(visium_function_arg_advance): Likewise.
+	(visium_libcall_value): Likewise.
+	(visium_setup_incoming_varargs): Likewise.
+	(visium_legitimate_constant_p): Likewise.
+	(visium_legitimate_address_p): Likewise.
+	(visium_legitimize_address): Likewise.
+	(visium_secondary_reload): Likewise.
+	(visium_register_move_cost): Likewise.
+	(visium_memory_move_cost): Likewise.
+	(prepare_move_operands): Likewise.
+	(ok_for_simple_move_operands): Likewise.
+	(ok_for_simple_move_strict_operands): Likewise.
+	(ok_for_simple_arith_logic_operands): Likewise.
+	(visium_function_value_1): Likewise.
+	(rtx_ok_for_offset_p): Likewise.
+	(visium_legitimize_reload_address): Likewise.
+	(visium_split_double_move): Likewise.
+	(visium_expand_copysign): Likewise.
+	(visium_expand_int_cstore): Likewise.
+	(visium_expand_fp_cstore): Likewise.
+	(visium_split_cstore): Likewise.
+	(visium_select_cc_mode): Likewise.
+	(visium_split_cbranch): Likewise.
+	(output_cbranch): Likewise.
+	(visium_print_operand_address): Likewise.
+	* expmed.c (flip_storage_order): Likewise.
+	* expmed.h (emit_cstore): Likewise.
+	(flip_storage_order): Likewise.
+	* genrecog.c (validate_pattern): Likewise.
+	* hsa-gen.c (gen_hsa_addr): Likewise.
+	* internal-fn.c (expand_arith_overflow): Likewise.
+	* ira-color.c (allocno_copy_cost_saving): Likewise.
+	* lra-assigns.c (find_hard_regno_for_1): Likewise.
+	* lra-constraints.c (prohibited_class_reg_set_mode_p): Likewise.
+	(process_invariant_for_inheritance): Likewise.
+	* lra-eliminations.c (move_plus_up): Likewise.
+	* omp-low.c (lower_oacc_reductions): Likewise.
+	* simplify-rtx.c (simplify_subreg): Likewise.
+	* target.def (TARGET_SETUP_INCOMING_VARARG_BOUNDS): Likewise.
+	(TARGET_CHKP_BOUND_MODE): Likewise..
+	* targhooks.c (default_chkp_bound_mode): Likewise.
+	(default_setup_incoming_vararg_bounds): Likewise.
+	* targhooks.h (default_chkp_bound_mode): Likewise.
+	(default_setup_incoming_vararg_bounds): Likewise.
+	* tree-ssa-math-opts.c (divmod_candidate_p): Likewise.
+	* tree-vect-loop.c (calc_vec_perm_mask_for_shift): Likewise.
+	(have_whole_vector_shift): Likewise.
+	* tree-vect-stmts.c (vectorizable_load): Likewise.
+	* doc/tm.texi: Regenerate.
+
 2017-07-05  Georg-Johann Lay  <avr@gjlay.de>
 
 	Graceful degrade if Binutils PR21472 is not available.

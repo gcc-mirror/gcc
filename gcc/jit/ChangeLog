@@ -1,3 +1,10 @@
+2017-07-05  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* dummy-frontend.c (jit_langhook_type_for_mode): Remove "enum" before
+	"machine_mode".
+
 2017-04-24  David Malcolm  <dmalcolm@redhat.com>
 
 	* docs/cp/topics/types.rst (gccjit::type::get_const): Remove

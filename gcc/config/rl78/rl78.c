@@ -539,7 +539,7 @@ rl78_expand_movsi (rtx *operands)
 
 /* Generate code to move an SImode value.  */
 void
-rl78_split_movsi (rtx *operands, enum machine_mode omode)
+rl78_split_movsi (rtx *operands, machine_mode omode)
 {
   rtx op00, op02, op10, op12;
 
@@ -997,7 +997,7 @@ rl78_hl_b_c_addr_p (rtx op)
 #undef  TARGET_ADDR_SPACE_ADDRESS_MODE
 #define TARGET_ADDR_SPACE_ADDRESS_MODE rl78_addr_space_address_mode
 
-static enum machine_mode
+static machine_mode
 rl78_addr_space_address_mode (addr_space_t addrspace)
 {
   switch (addrspace)
