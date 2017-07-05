@@ -1,3 +1,10 @@
+2017-07-05  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	* config/arm/neon.md (fma<VCVTF:mode>4): Remove %?.
+	(fma<VH:mode>4_intrinsic): Likewise.
+	(*fmsub<VCVTF:mode>4): Likewise.
+	(*fmsub<VH:mode>4_intrinsic): Likewise.
+
 2017-07-05  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/81305
