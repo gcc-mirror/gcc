@@ -1,5 +1,13 @@
 2017-07-05  Bin Cheng  <bin.cheng@arm.com>
 
+	* tree-loop-distribution.c (ref_base_address): Delete.
+	(similar_memory_accesses): Rename ...
+	(share_memory_accesses): ... to this.  Check if partitions access
+	the same memory reference.
+	(distribute_loop): Call share_memory_accesses.
+
+2017-07-05  Bin Cheng  <bin.cheng@arm.com>
+
 	* tree-loop-distribution.c (struct partition): New field recording
 	its data reference.
 	(partition_alloc, partition_free): Init and release data refs.
