@@ -70,6 +70,35 @@ along with GCC; see the file COPYING3.  If not see
 #define MAX_DATAREFS_NUM \
 	((unsigned) PARAM_VALUE (PARAM_LOOP_MAX_DATAREFS_FOR_DATADEPS))
 
+/* Hashtable helpers.  */
+
+struct ddr_hasher : nofree_ptr_hash <struct data_dependence_relation>
+{
+  static inline hashval_t hash (const data_dependence_relation *);
+  static inline bool equal (const data_dependence_relation *,
+			    const data_dependence_relation *);
+};
+
+/* Hash function for data dependence.  */
+
+inline hashval_t
+ddr_hasher::hash (const data_dependence_relation *ddr)
+{
+  inchash::hash h;
+  h.add_ptr (DDR_A (ddr));
+  h.add_ptr (DDR_B (ddr));
+  return h.end ();
+}
+
+/* Hash table equality function for data dependence.  */
+
+inline bool
+ddr_hasher::equal (const data_dependence_relation *ddr1,
+		   const data_dependence_relation *ddr2)
+{
+  return (DDR_A (ddr1) == DDR_A (ddr2) && DDR_B (ddr1) == DDR_B (ddr2));
+}
+
 /* The loop (nest) to be distributed.  */
 static vec<loop_p> loop_nest;
 
@@ -78,6 +107,10 @@ static vec<data_reference_p> datarefs_vec;
 
 /* Store index of data reference in aux field.  */
 #define DR_INDEX(dr)      ((uintptr_t) (dr)->aux)
+
+/* Hash table for data dependence relation in the loop to be distributed.  */
+static hash_table<ddr_hasher> ddrs_table (389);
+
 
 /* A Reduced Dependence Graph (RDG) vertex representing a statement.  */
 struct rdg_vertex
@@ -1057,6 +1090,32 @@ generate_code_for_partition (struct loop *loop,
   return false;
 }
 
+/* Return data dependence relation for data references A and B.  The two
+   data references must be in lexicographic order wrto reduced dependence
+   graph RDG.  We firstly try to find ddr from global ddr hash table.  If
+   it doesn't exist, compute the ddr and cache it.  */
+
+static data_dependence_relation *
+get_data_dependence (struct graph *rdg, data_reference_p a, data_reference_p b)
+{
+  struct data_dependence_relation ent, **slot;
+  struct data_dependence_relation *ddr;
+
+  gcc_assert (DR_IS_WRITE (a) || DR_IS_WRITE (b));
+  gcc_assert (rdg_vertex_for_stmt (rdg, DR_STMT (a))
+	      <= rdg_vertex_for_stmt (rdg, DR_STMT (b)));
+  ent.a = a;
+  ent.b = b;
+  slot = ddrs_table.find_slot (&ent, INSERT);
+  if (*slot == NULL)
+    {
+      ddr = initialize_data_dependence_relation (a, b, loop_nest);
+      compute_affine_dependence (ddr, loop_nest[0]);
+      *slot = ddr;
+    }
+
+  return *slot;
+}
 
 /* Returns a partition with all the statements needed for computing
    the vertex V of the RDG, also including the loop exit conditions.  */
@@ -1223,44 +1282,27 @@ classify_partition (loop_p loop, struct graph *rdg, partition *partition)
 	return;
       /* Now check that if there is a dependence this dependence is
          of a suitable form for memmove.  */
-      vec<loop_p> loops = vNULL;
-      ddr_p ddr;
-      loops.safe_push (loop);
-      ddr = initialize_data_dependence_relation (single_load, single_store,
-						 loops);
-      compute_affine_dependence (ddr, loop);
+      ddr_p ddr = get_data_dependence (rdg, single_load, single_store);
       if (DDR_ARE_DEPENDENT (ddr) == chrec_dont_know)
-	{
-	  free_dependence_relation (ddr);
-	  loops.release ();
-	  return;
-	}
+	return;
+
       if (DDR_ARE_DEPENDENT (ddr) != chrec_known)
 	{
 	  if (DDR_NUM_DIST_VECTS (ddr) == 0)
-	    {
-	      free_dependence_relation (ddr);
-	      loops.release ();
-	      return;
-	    }
+	    return;
+
 	  lambda_vector dist_v;
 	  FOR_EACH_VEC_ELT (DDR_DIST_VECTS (ddr), i, dist_v)
 	    {
 	      int dist = dist_v[index_in_loop_nest (loop->num,
 						    DDR_LOOP_NEST (ddr))];
 	      if (dist > 0 && !DDR_REVERSED_P (ddr))
-		{
-		  free_dependence_relation (ddr);
-		  loops.release ();
-		  return;
-		}
+		return;
 	    }
 	  partition->kind = PKIND_MEMMOVE;
 	}
       else
 	partition->kind = PKIND_MEMCPY;
-      free_dependence_relation (ddr);
-      loops.release ();
       partition->main_dr = single_store;
       partition->secondary_dr = single_load;
       partition->niter = nb_iter;
@@ -1472,8 +1514,7 @@ pg_add_dependence_edges (struct graph *rdg, int dir,
 	      std::swap (dr1, dr2);
 	      this_dir = -this_dir;
 	    }
-	  ddr = initialize_data_dependence_relation (dr1, dr2, loop_nest);
-	  compute_affine_dependence (ddr, loop_nest[0]);
+	  ddr = get_data_dependence (rdg, dr1, dr2);
 	  if (DDR_ARE_DEPENDENT (ddr) == chrec_dont_know)
 	    this_dir = 2;
 	  else if (DDR_ARE_DEPENDENT (ddr) == NULL_TREE)
@@ -1499,7 +1540,6 @@ pg_add_dependence_edges (struct graph *rdg, int dir,
 	    }
 	  else
 	    this_dir = 0;
-	  free_dependence_relation (ddr);
 	  if (this_dir == 2)
 	    return 2;
 	  else if (dir == 0)
@@ -1762,6 +1802,13 @@ distribute_loop (struct loop *loop, vec<gimple *> stmts,
  ldist_done:
   loop_nest.release ();
   free_data_refs (datarefs_vec);
+  for (hash_table<ddr_hasher>::iterator iter = ddrs_table.begin ();
+       iter != ddrs_table.end (); ++iter)
+    {
+      free_dependence_relation (*iter);
+      *iter = NULL;
+    }
+  ddrs_table.empty ();
 
   FOR_EACH_VEC_ELT (partitions, i, partition)
     partition_free (partition);
