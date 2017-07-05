@@ -12,5 +12,5 @@
 int a;
 void b (__attribute__ ((__vector_size__ (16))) char c)
 {
-  a = ((__attributes__ ((__vector_size__ (2 * sizeof (long)))) long) c)[0];
+  a = ((__attribute__ ((__vector_size__ (2 * sizeof (long)))) long) c)[0];
 }

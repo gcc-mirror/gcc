@@ -1,3 +1,9 @@
+2017-07-05  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	PR target/80103
+	* gcc.target/powerpc/pr80103-1.c (void b): Correct spelling of
+	__attribute__.
+
 2017-07-05  Sebastian Peryt  <sebastian.peryt@intel.com>
 
 	* gcc.target/i386/avx512f-vaddsd-3.c: New test for mask 0 verification.
