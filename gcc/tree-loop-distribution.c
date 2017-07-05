@@ -500,30 +500,40 @@ enum partition_kind {
     PKIND_NORMAL, PKIND_MEMSET, PKIND_MEMCPY, PKIND_MEMMOVE
 };
 
+/* Partition for loop distribution.  */
 struct partition
 {
+  /* Statements of the partition.  */
   bitmap stmts;
+  /* Loops of the partition.  */
   bitmap loops;
+  /* True if the partition defines variable which is used outside of loop.  */
   bool reduction_p;
+  /* For builtin partition, true if it executes one iteration more than
+     number of loop (latch) iterations.  */
   bool plus_one;
   enum partition_kind kind;
   /* data-references a kind != PKIND_NORMAL partition is about.  */
   data_reference_p main_dr;
   data_reference_p secondary_dr;
+  /* Number of loop (latch) iterations.  */
   tree niter;
+  /* Data references in the partition.  */
+  bitmap datarefs;
 };
 
 
 /* Allocate and initialize a partition from BITMAP.  */
 
 static partition *
-partition_alloc (bitmap stmts, bitmap loops)
+partition_alloc (void)
 {
   partition *partition = XCNEW (struct partition);
-  partition->stmts = stmts ? stmts : BITMAP_ALLOC (NULL);
-  partition->loops = loops ? loops : BITMAP_ALLOC (NULL);
+  partition->stmts = BITMAP_ALLOC (NULL);
+  partition->loops = BITMAP_ALLOC (NULL);
   partition->reduction_p = false;
   partition->kind = PKIND_NORMAL;
+  partition->datarefs = BITMAP_ALLOC (NULL);
   return partition;
 }
 
@@ -534,6 +544,7 @@ partition_free (partition *partition)
 {
   BITMAP_FREE (partition->stmts);
   BITMAP_FREE (partition->loops);
+  BITMAP_FREE (partition->datarefs);
   free (partition);
 }
 
@@ -580,6 +591,8 @@ partition_merge_into (partition *dest, partition *partition, enum fuse_type ft)
   bitmap_ior_into (dest->stmts, partition->stmts);
   if (partition_reduction_p (partition))
     dest->reduction_p = true;
+
+  bitmap_ior_into (dest->datarefs, partition->datarefs);
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
@@ -1051,10 +1064,11 @@ generate_code_for_partition (struct loop *loop,
 static partition *
 build_rdg_partition_for_vertex (struct graph *rdg, int v)
 {
-  partition *partition = partition_alloc (NULL, NULL);
+  partition *partition = partition_alloc ();
   auto_vec<int, 3> nodes;
-  unsigned i;
+  unsigned i, j;
   int x;
+  data_reference_p dr;
 
   graphds_dfs (rdg, &v, 1, &nodes, false, NULL);
 
@@ -1063,6 +1077,14 @@ build_rdg_partition_for_vertex (struct graph *rdg, int v)
       bitmap_set_bit (partition->stmts, x);
       bitmap_set_bit (partition->loops,
 		      loop_containing_stmt (RDG_STMT (rdg, x))->num);
+
+      for (j = 0; RDG_DATAREFS (rdg, x).iterate (j, &dr); ++j)
+	{
+	  unsigned idx = (unsigned) DR_INDEX (dr);
+	  gcc_assert (idx < datarefs_vec.length ());
+
+	  bitmap_set_bit (partition->datarefs, idx);
+	}
     }
 
   return partition;
@@ -1427,63 +1449,74 @@ partition_contains_all_rw (struct graph *rdg,
 
 static int
 pg_add_dependence_edges (struct graph *rdg, int dir,
-			 vec<data_reference_p> drs1,
-			 vec<data_reference_p> drs2)
+			 bitmap drs1, bitmap drs2)
 {
-  data_reference_p dr1, dr2;
+  unsigned i, j;
+  bitmap_iterator bi, bj;
+  data_reference_p dr1, dr2, saved_dr1;
 
   /* dependence direction - 0 is no dependence, -1 is back,
      1 is forth, 2 is both (we can stop then, merging will occur).  */
-  for (int ii = 0; drs1.iterate (ii, &dr1); ++ii)
-    for (int jj = 0; drs2.iterate (jj, &dr2); ++jj)
-      {
-	data_reference_p saved_dr1 = dr1;
-	int this_dir = 1;
-	ddr_p ddr;
-	/* Re-shuffle data-refs to be in dominator order.  */
-	if (rdg_vertex_for_stmt (rdg, DR_STMT (dr1))
-	    > rdg_vertex_for_stmt (rdg, DR_STMT (dr2)))
-	  {
-	    std::swap (dr1, dr2);
-	    this_dir = -this_dir;
-	  }
-	ddr = initialize_data_dependence_relation (dr1, dr2, loop_nest);
-	compute_affine_dependence (ddr, loop_nest[0]);
-	if (DDR_ARE_DEPENDENT (ddr) == chrec_dont_know)
-	  this_dir = 2;
-	else if (DDR_ARE_DEPENDENT (ddr) == NULL_TREE)
-	  {
-	    if (DDR_REVERSED_P (ddr))
-	      {
-		std::swap (dr1, dr2);
-		this_dir = -this_dir;
-	      }
-	    /* Known dependences can still be unordered througout the
-	       iteration space, see gcc.dg/tree-ssa/ldist-16.c.  */
-	    if (DDR_NUM_DIST_VECTS (ddr) != 1)
-	      this_dir = 2;
-	    /* If the overlap is exact preserve stmt order.  */
-	    else if (lambda_vector_zerop (DDR_DIST_VECT (ddr, 0), 1))
-	      ;
-	    else
-	      {
-		/* Else as the distance vector is lexicographic positive
-		   swap the dependence direction.  */
-		this_dir = -this_dir;
-	      }
-	  }
-	else
-	  this_dir = 0;
-	free_dependence_relation (ddr);
-	if (this_dir == 2)
-	  return 2;
-	else if (dir == 0)
-	  dir = this_dir;
-	else if (this_dir != 0 && dir != this_dir)
-	  return 2;
-	/* Shuffle "back" dr1.  */
-	dr1 = saved_dr1;
-      }
+  EXECUTE_IF_SET_IN_BITMAP (drs1, 0, i, bi)
+    {
+      dr1 = datarefs_vec[i];
+
+      EXECUTE_IF_SET_IN_BITMAP (drs2, 0, j, bj)
+	{
+	  dr2 = datarefs_vec[j];
+
+	  /* Skip all <read, read> data dependence.  */
+	  if (DR_IS_READ (dr1) && DR_IS_READ (dr2))
+	    continue;
+
+	  saved_dr1 = dr1;
+	  int this_dir = 1;
+	  ddr_p ddr;
+	  /* Re-shuffle data-refs to be in dominator order.  */
+	  if (rdg_vertex_for_stmt (rdg, DR_STMT (dr1))
+	      > rdg_vertex_for_stmt (rdg, DR_STMT (dr2)))
+	    {
+	      std::swap (dr1, dr2);
+	      this_dir = -this_dir;
+	    }
+	  ddr = initialize_data_dependence_relation (dr1, dr2, loop_nest);
+	  compute_affine_dependence (ddr, loop_nest[0]);
+	  if (DDR_ARE_DEPENDENT (ddr) == chrec_dont_know)
+	    this_dir = 2;
+	  else if (DDR_ARE_DEPENDENT (ddr) == NULL_TREE)
+	    {
+	      if (DDR_REVERSED_P (ddr))
+		{
+		  std::swap (dr1, dr2);
+		  this_dir = -this_dir;
+		}
+	      /* Known dependences can still be unordered througout the
+		 iteration space, see gcc.dg/tree-ssa/ldist-16.c.  */
+	      if (DDR_NUM_DIST_VECTS (ddr) != 1)
+		this_dir = 2;
+	      /* If the overlap is exact preserve stmt order.  */
+	      else if (lambda_vector_zerop (DDR_DIST_VECT (ddr, 0), 1))
+		;
+	      else
+		{
+		  /* Else as the distance vector is lexicographic positive
+		     swap the dependence direction.  */
+		  this_dir = -this_dir;
+		}
+	    }
+	  else
+	    this_dir = 0;
+	  free_dependence_relation (ddr);
+	  if (this_dir == 2)
+	    return 2;
+	  else if (dir == 0)
+	    dir = this_dir;
+	  else if (this_dir != 0 && dir != this_dir)
+	    return 2;
+	  /* Shuffle "back" dr1.  */
+	  dr1 = saved_dr1;
+	}
+    }
   return dir;
 }
 
@@ -1644,28 +1677,15 @@ distribute_loop (struct loop *loop, vec<gimple *> stmts,
       pg = new_graph (partitions.length ());
       struct pgdata {
 	  struct partition *partition;
-	  vec<data_reference_p> writes;
-	  vec<data_reference_p> reads;
       };
 #define PGDATA(i) ((pgdata *)(pg->vertices[i].data))
       for (i = 0; partitions.iterate (i, &partition); ++i)
 	{
 	  vertex *v = &pg->vertices[i];
 	  pgdata *data = new pgdata;
-	  data_reference_p dr;
 	  /* FIXME - leaks.  */
 	  v->data = data;
-	  bitmap_iterator bi;
-	  unsigned j;
 	  data->partition = partition;
-	  data->reads = vNULL;
-	  data->writes = vNULL;
-	  EXECUTE_IF_SET_IN_BITMAP (partition->stmts, 0, j, bi)
-	    for (int k = 0; RDG_DATAREFS (rdg, j).iterate (k, &dr); ++k)
-	      if (DR_IS_READ (dr))
-		data->reads.safe_push (dr);
-	      else
-		data->writes.safe_push (dr);
 	}
       struct partition *partition1, *partition2;
       for (i = 0; partitions.iterate (i, &partition1); ++i)
@@ -1673,18 +1693,9 @@ distribute_loop (struct loop *loop, vec<gimple *> stmts,
 	  {
 	    /* dependence direction - 0 is no dependence, -1 is back,
 	       1 is forth, 2 is both (we can stop then, merging will occur).  */
-	    int dir = 0;
-	    dir = pg_add_dependence_edges (rdg, dir,
-					   PGDATA(i)->writes,
-					   PGDATA(j)->reads);
-	    if (dir != 2)
-	      dir = pg_add_dependence_edges (rdg, dir,
-					     PGDATA(i)->reads,
-					     PGDATA(j)->writes);
-	    if (dir != 2)
-	      dir = pg_add_dependence_edges (rdg, dir,
-					     PGDATA(i)->writes,
-					     PGDATA(j)->writes);
+	    int dir = pg_add_dependence_edges (rdg, 0,
+					       partition1->datarefs,
+					       partition2->datarefs);
 	    if (dir == 1 || dir == 2)
 	      add_edge (pg, i, j);
 	    if (dir == -1 || dir == 2)
@@ -1730,8 +1741,6 @@ distribute_loop (struct loop *loop, vec<gimple *> stmts,
 	  pgdata *data = PGDATA (i);
 	  if (data->partition)
 	    partitions.safe_push (data->partition);
-	  data->reads.release ();
-	  data->writes.release ();
 	  delete data;
 	}
       gcc_assert (partitions.length () == (unsigned)num_sccs);
