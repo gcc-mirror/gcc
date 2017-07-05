@@ -1,5 +1,23 @@
 2017-07-05  Bin Cheng  <bin.cheng@arm.com>
 
+	* tree-loop-distribution.c: Add general explanantion on the pass.
+	(generate_loops_for_partition): Mark distributed loop.
+	(pg_add_dependence_edges): New parameter.  Handle alias data
+	dependence specially and record it in the parameter if asked.
+	(struct pg_vdata, pg_edata, pg_edge_callback_data): New structs.
+	(init_partition_graph_vertices, add_partition_graph_edge): New.
+	(pg_skip_alias_edge, free_partition_graph_edata_cb): New.
+	(free_partition_graph_vdata, build_partition_graph): New.
+	(sort_partitions_by_post_order, merge_dep_scc_partitions): New.
+	(pg_collect_alias_ddrs, break_alias_scc_partitions): New.
+	(data_ref_segment_size, latch_dominated_by_data_ref): New.
+	(compute_alias_check_pairs, version_loop_by_alias_check): New.
+	(version_for_distribution_p, finalize_partitions): New.
+	(distribute_loop): Handle alias data dependence specially.  Factor
+	out loop fusion code as functions and call these functions.
+
+2017-07-05  Bin Cheng  <bin.cheng@arm.com>
+
 	* tree-loop-distribution.c (classify_partition): New parameter and
 	better handle reduction statement.
 	(rdg_build_partitions): Revise comment.
