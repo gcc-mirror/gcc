@@ -1,3 +1,16 @@
+2017-07-05  Bin Cheng  <bin.cheng@arm.com>
+
+	* cfgloop.h (struct loop): Add comment.  New field orig_loop_num.
+	* cfgloopmanip.c (lv_adjust_loop_entry_edge): Comment change.
+	* internal-fn.c (expand_LOOP_DIST_ALIAS): New function.
+	* internal-fn.def (LOOP_DIST_ALIAS): New.
+	* tree-vectorizer.c (fold_loop_vectorized_call): Rename to ...
+	(fold_loop_internal_call): ... this.
+	(vect_loop_dist_alias_call): New function.
+	(set_uid_loop_bbs): Call fold_loop_internal_call.
+	(vectorize_loops): Fold IFN_LOOP_VECTORIZED and IFN_LOOP_DIST_ALIAS
+	internal calls.
+
 2017-07-04  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/81300

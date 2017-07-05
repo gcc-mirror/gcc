@@ -2250,6 +2250,14 @@ expand_LOOP_VECTORIZED (internal_fn, gcall *)
   gcc_unreachable ();
 }
 
+/* This should get folded in tree-vectorizer.c.  */
+
+static void
+expand_LOOP_DIST_ALIAS (internal_fn, gcall *)
+{
+  gcc_unreachable ();
+}
+
 /* Expand MASK_LOAD call STMT using optab OPTAB.  */
 
 static void
