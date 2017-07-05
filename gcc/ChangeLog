@@ -1,3 +1,43 @@
+2017-07-05  Sebastian Peryt  <sebastian.peryt@intel.com>
+
+	* config/i386/subst.md (mask_scalar, round_scalar,
+	round_saeonly_scalar): New meta-templates.
+	(mask_scalar_name, mask_scalar_operand3, round_scalar_name,
+	round_scalar_mask_operand3, round_scalar_mask_op3,
+	round_scalar_constraint, round_scalar_prefix, round_saeonly_scalar_name,
+	round_saeonly_scalar_mask_operand3, round_saeonly_scalar_mask_op3,
+	round_saeonly_scalar_constraint,
+	round_saeonly_scalar_prefix): New subst attribute.
+	* config/i386/sse.md
+	(<sse>_vm<plusminus_insn><mode>3<mask_name><round_name>): Renamed to ...
+	<sse>_vm<plusminus_insn><mode>3<mask_scalar_name>
+	<round_scalar_name> ... this.
+	(<sse>_vm<multdiv_mnemonic><mode>3<mask_name><round_name>): Renamed to ...
+	<sse>_vm<multdiv_mnemonic><mode>3<mask_scalar_name>
+	<round_scalar_name> ... this.
+	(<sse>_vm<code><mode>3<mask_name><round_saeonly_name>): Renamed to ...
+	<sse>_vm<code><mode>3<mask_scalar_name>
+	<round_saeonly_scalar_name> ... this.
+	(v<plusminus_mnemonic><ssescalarmodesuffix>
+	\t{<round_mask_op3>%2, %1, %0<mask_operand3>|
+	%0<mask_operand3>, %1, %<iptr>2<round_mask_op3>}): Changed to ...
+	v<plusminus_mnemonic><ssescalarmodesuffix>
+	\t{<round_scalar_mask_op3>%2, %1, %0<mask_scalar_operand3>|
+	%0<mask_scalar_operand3>, %1, %<iptr>2<round_scalar_mask_op3>} ... this.
+	(v<multdiv_mnemonic><ssescalarmodesuffix>
+	\t{<round_mask_op3>%2, %1, %0<mask_operand3>|
+	%0<mask_operand3>, %1, %<iptr>2<round_mask_op3>}): Changed to ...
+	v<multdiv_mnemonic><ssescalarmodesuffix>
+	\t{<round_scalar_mask_op3>%2, %1, %0<mask_scalar_operand3>|
+	%0<mask_scalar_operand3>, %1, %<iptr>2<round_scalar_mask_op3>} ... this.
+	(v<maxmin_float><ssescalarmodesuffix>
+	\t{<round_saeonly_mask_op3>%2, %1, %0<mask_operand3>|
+	%0<mask_operand3>, %1, %<iptr>2<round_saeonly_mask_op3>}): Changed to ...
+	v<maxmin_float><ssescalarmodesuffix>
+	\t{<round_saeonly_scalar_mask_op3>%2, %1, %0<mask_scalar_operand3>|
+	%0<mask_scalar_operand3>, %1, %<iptr>2
+	<round_saeonly_scalar_mask_op3>} ... this.
+
 2017-07-05  Richard Earnshaw  <rearnsha@arm.com>
 
 	* config/arm/arm.c (arm_fixed_condition_code_regs): New function.
