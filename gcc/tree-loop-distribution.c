@@ -373,16 +373,39 @@ create_rdg_vertices (struct graph *rdg, vec<gimple *> stmts, loop_p loop,
   return true;
 }
 
-/* Initialize STMTS with all the statements of LOOP.  The order in
-   which we discover statements is important as
-   generate_loops_for_partition is using the same traversal for
-   identifying statements in loop copies.  */
+/* Array mapping basic block's index to its topological order.  */
+static int *bb_top_order_index;
+/* And size of the array.  */
+static int bb_top_order_index_size;
+
+/* If X has a smaller topological sort number than Y, returns -1;
+   if greater, returns 1.  */
+
+static int
+bb_top_order_cmp (const void *x, const void *y)
+{
+  basic_block bb1 = *(const basic_block *) x;
+  basic_block bb2 = *(const basic_block *) y;
+
+  gcc_assert (bb1->index < bb_top_order_index_size
+	      && bb2->index < bb_top_order_index_size);
+  gcc_assert (bb1 == bb2
+	      || bb_top_order_index[bb1->index]
+		 != bb_top_order_index[bb2->index]);
+
+  return (bb_top_order_index[bb1->index] - bb_top_order_index[bb2->index]);
+}
+
+/* Initialize STMTS with all the statements of LOOP.  We use topological
+   order to discover all statements.  The order is important because
+   generate_loops_for_partition is using the same traversal for identifying
+   statements in loop copies.  */
 
 static void
 stmts_from_loop (struct loop *loop, vec<gimple *> *stmts)
 {
   unsigned int i;
-  basic_block *bbs = get_loop_body_in_dom_order (loop);
+  basic_block *bbs = get_loop_body_in_custom_order (loop, bb_top_order_cmp);
 
   for (i = 0; i < loop->num_nodes; i++)
     {
@@ -1761,6 +1784,22 @@ pass_loop_distribution::execute (function *fun)
   if (number_of_loops (fun) <= 1)
     return 0;
 
+  /* Compute topological order for basic blocks.  Topological order is
+     needed because data dependence is computed for data references in
+     lexicographical order.  */
+  if (bb_top_order_index == NULL)
+    {
+      int *rpo = XNEWVEC (int, last_basic_block_for_fn (cfun));
+
+      bb_top_order_index = XNEWVEC (int, last_basic_block_for_fn (cfun));
+      bb_top_order_index_size
+	= pre_and_rev_post_order_compute_fn (cfun, NULL, rpo, true);
+      for (int i = 0; i < bb_top_order_index_size; i++)
+	bb_top_order_index[rpo[i]] = i;
+
+      free (rpo);
+    }
+
   FOR_ALL_BB_FN (bb, fun)
     {
       gimple_stmt_iterator gsi;
@@ -1868,13 +1907,20 @@ out:
   if (cd)
     delete cd;
 
+  if (bb_top_order_index != NULL)
+    {
+      free (bb_top_order_index);
+      bb_top_order_index = NULL;
+      bb_top_order_index_size = 0;
+    }
+
   if (changed)
     {
       /* Destroy loop bodies that could not be reused.  Do this late as we
 	 otherwise can end up refering to stale data in control dependences.  */
       unsigned i;
       FOR_EACH_VEC_ELT (loops_to_be_destroyed, i, loop)
-	  destroy_loop (loop);
+	destroy_loop (loop);
 
       /* Cached scalar evolutions now may refer to wrong or non-existing
 	 loops.  */
