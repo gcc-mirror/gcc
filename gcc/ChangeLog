@@ -1,5 +1,15 @@
 2017-07-05  Bin Cheng  <bin.cheng@arm.com>
 
+	* tree-loop-distribution.c (enum partition_type): New.
+	(struct partition): New field type.
+	(partition_merge_into): Add parameter.  Update partition type.
+	(data_dep_in_cycle_p, update_type_for_merge): New functions.
+	(build_rdg_partition_for_vertex): Compute partition type.
+	(rdg_build_partitions): Dump partition type.
+	(distribute_loop): Update calls to partition_merge_into.
+
+2017-07-05  Bin Cheng  <bin.cheng@arm.com>
+
 	* tree-loop-distribution.c (struct ddr_hasher): New.
 	(ddr_hasher::hash, ::equal, get_data_dependence): New function.
 	(ddrs_table): New.

@@ -528,9 +528,17 @@ build_rdg (struct loop *loop, control_dependences *cd)
 }
 
 
-
+/* Kind of distributed loop.  */
 enum partition_kind {
     PKIND_NORMAL, PKIND_MEMSET, PKIND_MEMCPY, PKIND_MEMMOVE
+};
+
+/* Type of distributed loop.  */
+enum partition_type {
+    /* The distributed loop can be executed parallelly.  */
+    PTYPE_PARALLEL = 0,
+    /* The distributed loop has to be executed sequentially.  */
+    PTYPE_SEQUENTIAL
 };
 
 /* Partition for loop distribution.  */
@@ -546,6 +554,7 @@ struct partition
      number of loop (latch) iterations.  */
   bool plus_one;
   enum partition_kind kind;
+  enum partition_type type;
   /* data-references a kind != PKIND_NORMAL partition is about.  */
   data_reference_p main_dr;
   data_reference_p secondary_dr;
@@ -615,18 +624,16 @@ static const char *fuse_message[] = {
   "they are in the same dependence scc",
   "there is no point to distribute loop"};
 
-/* Merge PARTITION into the partition DEST.  */
+static void
+update_type_for_merge (struct graph *, partition *, partition *);
+
+/* Merge PARTITION into the partition DEST.  RDG is the reduced dependence
+   graph and we update type for result partition if it is non-NULL.  */
 
 static void
-partition_merge_into (partition *dest, partition *partition, enum fuse_type ft)
+partition_merge_into (struct graph *rdg, partition *dest,
+		      partition *partition, enum fuse_type ft)
 {
-  dest->kind = PKIND_NORMAL;
-  bitmap_ior_into (dest->stmts, partition->stmts);
-  if (partition_reduction_p (partition))
-    dest->reduction_p = true;
-
-  bitmap_ior_into (dest->datarefs, partition->datarefs);
-
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
       fprintf (dump_file, "Fuse partitions because %s:\n", fuse_message[ft]);
@@ -635,6 +642,21 @@ partition_merge_into (partition *dest, partition *partition, enum fuse_type ft)
       fprintf (dump_file, "  Part 2: ");
       dump_bitmap (dump_file, partition->stmts);
     }
+
+  dest->kind = PKIND_NORMAL;
+  if (dest->type == PTYPE_PARALLEL)
+    dest->type = partition->type;
+
+  bitmap_ior_into (dest->stmts, partition->stmts);
+  if (partition_reduction_p (partition))
+    dest->reduction_p = true;
+
+  /* Further check if any data dependence prevents us from executing the
+     new partition parallelly.  */
+  if (dest->type == PTYPE_PARALLEL && rdg != NULL)
+    update_type_for_merge (rdg, dest, partition);
+
+  bitmap_ior_into (dest->datarefs, partition->datarefs);
 }
 
 
@@ -1117,6 +1139,75 @@ get_data_dependence (struct graph *rdg, data_reference_p a, data_reference_p b)
   return *slot;
 }
 
+/* In reduced dependence graph RDG for loop distribution, return true if
+   dependence between references DR1 and DR2 leads to a dependence cycle
+   and such dependence cycle can't be resolved by runtime alias check.  */
+
+static bool
+data_dep_in_cycle_p (struct graph *rdg,
+		     data_reference_p dr1, data_reference_p dr2)
+{
+  struct data_dependence_relation *ddr;
+
+  /* Re-shuffle data-refs to be in topological order.  */
+  if (rdg_vertex_for_stmt (rdg, DR_STMT (dr1))
+      > rdg_vertex_for_stmt (rdg, DR_STMT (dr2)))
+    std::swap (dr1, dr2);
+
+  ddr = get_data_dependence (rdg, dr1, dr2);
+
+  /* In case of no data dependence.  */
+  if (DDR_ARE_DEPENDENT (ddr) == chrec_known)
+    return false;
+  /* For unknown data dependence or known data dependence which can't be
+     expressed in classic distance vector, we check if it can be resolved
+     by runtime alias check.  If yes, we still consider data dependence
+     as won't introduce data dependence cycle.  */
+  else if (DDR_ARE_DEPENDENT (ddr) == chrec_dont_know
+	   || DDR_NUM_DIST_VECTS (ddr) == 0)
+    return !runtime_alias_check_p (ddr, NULL, true);
+  else if (DDR_NUM_DIST_VECTS (ddr) > 1)
+    return true;
+  else if (DDR_REVERSED_P (ddr)
+	   || lambda_vector_zerop (DDR_DIST_VECT (ddr, 0), 1))
+    return false;
+
+  return true;
+}
+
+/* Given reduced dependence graph RDG, PARTITION1 and PARTITION2, update
+   PARTITION1's type after merging PARTITION2 into PARTITION1.  */
+
+static void
+update_type_for_merge (struct graph *rdg,
+		       partition *partition1, partition *partition2)
+{
+  unsigned i, j;
+  bitmap_iterator bi, bj;
+  data_reference_p dr1, dr2;
+
+  EXECUTE_IF_SET_IN_BITMAP (partition1->datarefs, 0, i, bi)
+    {
+      unsigned start = (partition1 == partition2) ? i + 1 : 0;
+
+      dr1 = datarefs_vec[i];
+      EXECUTE_IF_SET_IN_BITMAP (partition2->datarefs, start, j, bj)
+	{
+	  dr2 = datarefs_vec[j];
+	  if (DR_IS_READ (dr1) && DR_IS_READ (dr2))
+	    continue;
+
+	  /* Partition can only be executed sequentially if there is any
+	     data dependence cycle.  */
+	  if (data_dep_in_cycle_p (rdg, dr1, dr2))
+	    {
+	      partition1->type = PTYPE_SEQUENTIAL;
+	      return;
+	    }
+	}
+    }
+}
+
 /* Returns a partition with all the statements needed for computing
    the vertex V of the RDG, also including the loop exit conditions.  */
 
@@ -1142,9 +1233,22 @@ build_rdg_partition_for_vertex (struct graph *rdg, int v)
 	  unsigned idx = (unsigned) DR_INDEX (dr);
 	  gcc_assert (idx < datarefs_vec.length ());
 
+	  /* Partition can only be executed sequentially if there is any
+	     unknown data reference.  */
+	  if (!DR_BASE_ADDRESS (dr) || !DR_OFFSET (dr)
+	      || !DR_INIT (dr) || !DR_STEP (dr))
+	    partition->type = PTYPE_SEQUENTIAL;
+
 	  bitmap_set_bit (partition->datarefs, idx);
 	}
     }
+
+  if (partition->type == PTYPE_SEQUENTIAL)
+    return partition;
+
+  /* Further check if any data dependence prevents us from executing the
+     partition parallelly.  */
+  update_type_for_merge (rdg, partition, partition);
 
   return partition;
 }
@@ -1388,8 +1492,9 @@ rdg_build_partitions (struct graph *rdg,
 
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{
-	  fprintf (dump_file, "ldist useful partition:\n");
-	  dump_bitmap (dump_file, partition->stmts);
+	  fprintf (dump_file, "ldist creates useful %s partition:\n",
+		   partition->type == PTYPE_PARALLEL ? "parallel" : "sequent");
+	  bitmap_print (dump_file, partition->stmts, "  ", "\n");
 	}
 
       partitions->safe_push (partition);
@@ -1655,7 +1760,7 @@ distribute_loop (struct loop *loop, vec<gimple *> stmts,
       for (++i; partitions.iterate (i, &partition); ++i)
 	if (!partition_builtin_p (partition))
 	  {
-	    partition_merge_into (into, partition, FUSE_NON_BUILTIN);
+	    partition_merge_into (NULL, into, partition, FUSE_NON_BUILTIN);
 	    partitions.unordered_remove (i);
 	    partition_free (partition);
 	    i--;
@@ -1671,7 +1776,7 @@ distribute_loop (struct loop *loop, vec<gimple *> stmts,
   for (i = i + 1; partitions.iterate (i, &partition); ++i)
     if (partition_reduction_p (partition))
       {
-	partition_merge_into (into, partition, FUSE_REDUCTION);
+	partition_merge_into (rdg, into, partition, FUSE_REDUCTION);
 	partitions.unordered_remove (i);
 	partition_free (partition);
 	i--;
@@ -1689,7 +1794,7 @@ distribute_loop (struct loop *loop, vec<gimple *> stmts,
 	{
 	  if (share_memory_accesses (rdg, into, partition))
 	    {
-	      partition_merge_into (into, partition, FUSE_SHARE_REF);
+	      partition_merge_into (rdg, into, partition, FUSE_SHARE_REF);
 	      partitions.unordered_remove (j);
 	      partition_free (partition);
 	      j--;
@@ -1759,7 +1864,9 @@ distribute_loop (struct loop *loop, vec<gimple *> stmts,
 	  for (j = j + 1; partitions.iterate (j, &partition); ++j)
 	    if (pg->vertices[j].component == i)
 	      {
-		partition_merge_into (first, partition, FUSE_SAME_SCC);
+		partition_merge_into (NULL, first,
+				      partition, FUSE_SAME_SCC);
+		first->type = PTYPE_SEQUENTIAL;
 		partitions[j] = NULL;
 		partition_free (partition);
 		PGDATA (j)->partition = NULL;
