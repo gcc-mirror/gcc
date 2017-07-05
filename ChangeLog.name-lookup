@@ -1,0 +1,9 @@
+2017-07-05  Nathan Sidwell  <nathan@acm.org>
+
+	Branch creation from trunk:250000
+	Use this Changelog for all branch changes, including merges.
+
+Local Variables:
+mode: change-log
+change-log-default-name: "ChangeLog.name-lookup"
+End:
