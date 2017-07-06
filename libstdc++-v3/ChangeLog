@@ -1,3 +1,11 @@
+2017-07-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/uses_allocator.h (__use_alloc(const _Alloc&&)): Add
+	deleted overload to prevent dangling references to rvalues.
+	* include/experimental/memory_resource
+	(polymorphic_allocator::construct): Do not call __use_alloc with
+	rvalue arguments.
+
 2017-06-27  Tim Shen  <timshen@google.com>
 
 	PR libstdc++/80187
