@@ -1,3 +1,8 @@
+2017-07-06  Andrew Pinski  <apinski@cavium.com>
+
+	* config/aarch64/aarch64.c (aarch64_load_symref_appropriately):
+	Access the lower part of RTX appropriately.
+
 2017-07-04  Richard Biener  <rguenther@suse.de>
 
 	* BASE-VER: Bump to 6.4.1.
