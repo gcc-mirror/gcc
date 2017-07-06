@@ -1,3 +1,22 @@
+2017-07-06  Aaron Sawdey  <acsawdey@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000.c (union_defs, union_uses, insn_is_load_p,
+	insn_is_store_p, insn_is_swap_p, const_load_sequence_p, v2df_reduction_p,
+	rtx_is_swappable_p, insn_is_swappable_p, chain_contains_only_swaps,
+	mark_swaps_for_removal, swap_const_vector_halves, adjust_subreg_index,
+	permute_load, permute_store, adjust_extract, adjust_splat,
+	adjust_xxpermdi, adjust_concat, adjust_vperm, handle_special_swappables,
+	replace_swap_with_copy, dump_swap_insn_table,
+	alignment_with_canonical_addr, alignment_mask, find_alignment_op,
+	recombine_lvx_pattern, recombine_stvx_pattern,
+	recombine_lvx_stvx_patterns, rs6000_analyze_swaps,
+	make_pass_analyze_swaps): Move all code related to p8 swap optimizations
+	to file rs6000-p8swap.c.
+	* config/rs6000/rs6000-p8swap.c: New file.
+	* config/rs6000/t-rs6000: Add rule to build rs6000-p8swap.o.
+	* config.gcc: Add rs6000-p8swap.o to extra_objs for powerpc*-*-*
+	and rs6000*-*-* targets.
+
 2017-07-06  David Malcolm  <dmalcolm@redhat.com>
 
 	* Makefile.in (selftest): Remove dependency on s-selftest-c++.
