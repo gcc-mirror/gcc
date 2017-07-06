@@ -1,5 +1,12 @@
 2017-07-06  Jan Hubicka  <hubicka@ucw.cz>
 
+	* cgraphunit.c (cgraph_node::finalize_function): When
+	!flag_toplevel_reorde set no_reorder flag.
+	(varpool_node::finalize_decl): Likewise.
+	(symbol_table::compile): Drop no toplevel reorder path.
+
+2017-07-06  Jan Hubicka  <hubicka@ucw.cz>
+
 	* bb-reorder.c (better_edge_p): Do not build traces across abnormal/eh
 	edges; zero probability is not better than uninitialized.
 
