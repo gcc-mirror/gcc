@@ -1,3 +1,7 @@
+2017-07-06  David Malcolm  <dmalcolm@redhat.com>
+
+	* Makefile.in (selftest): Remove dependency on s-selftest-c++.
+
 2017-07-06  Jan Hubicka  <hubicka@ucw.cz>
 
 	* lto-wrapper.c (merge_and_complain): Do not merge
