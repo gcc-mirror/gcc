@@ -571,7 +571,7 @@ gimplify_and_update_call_from_tree (gimple_stmt_iterator *si_p, tree expr)
 
 /* Replace the call at *GSI with the gimple value VAL.  */
 
-static void
+void
 replace_call_with_value (gimple_stmt_iterator *gsi, tree val)
 {
   gimple *stmt = gsi_stmt (*gsi);

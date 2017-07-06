@@ -1,3 +1,14 @@
+2017-07-06  Maxim Ostapenko  <m.ostapenko@samsung.com>
+
+	* c-c++-common/asan/alloca_big_alignment.c: New test.
+	* c-c++-common/asan/alloca_detect_custom_size.c: Likewise.
+	* c-c++-common/asan/alloca_instruments_all_paddings.c: Likewise.
+	* c-c++-common/asan/alloca_loop_unpoisoning.c: Likewise.
+	* c-c++-common/asan/alloca_overflow_partial.c: Likewise.
+	* c-c++-common/asan/alloca_overflow_right.c: Likewise.
+	* c-c++-common/asan/alloca_safe_access.c: Likewise.
+	* c-c++-common/asan/alloca_underflow_left.c: Likewise.
+
 2017-07-06  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/81305

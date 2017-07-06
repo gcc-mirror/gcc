@@ -4962,6 +4962,26 @@ expand_builtin_alloca (tree exp)
   return result;
 }
 
+/* Emit a call to __asan_allocas_unpoison call in EXP.  Replace second argument
+   of the call with virtual_stack_dynamic_rtx because in asan pass we emit a
+   dummy value into second parameter relying on this function to perform the
+   change.  See motivation for this in comment to handle_builtin_stack_restore
+   function.  */
+
+static rtx
+expand_asan_emit_allocas_unpoison (tree exp)
+{
+  tree arg0 = CALL_EXPR_ARG (exp, 0);
+  rtx top = expand_expr (arg0, NULL_RTX, GET_MODE (virtual_stack_dynamic_rtx),
+			 EXPAND_NORMAL);
+  rtx ret = init_one_libfunc ("__asan_allocas_unpoison");
+  ret = emit_library_call_value (ret, NULL_RTX, LCT_NORMAL, ptr_mode, 2, top,
+				 TYPE_MODE (pointer_sized_int_node),
+				 virtual_stack_dynamic_rtx,
+				 TYPE_MODE (pointer_sized_int_node));
+  return ret;
+}
+
 /* Expand a call to bswap builtin in EXP.
    Return NULL_RTX if a normal call should be emitted rather than expanding the
    function in-line.  If convenient, the result should be placed in TARGET.
@@ -6762,6 +6782,9 @@ expand_builtin (tree exp, rtx target, rtx subtarget, machine_mode mode,
       if (target)
 	return target;
       break;
+
+    case BUILT_IN_ASAN_ALLOCAS_UNPOISON:
+      return expand_asan_emit_allocas_unpoison (exp);
 
     case BUILT_IN_STACK_SAVE:
       return expand_stack_save ();
