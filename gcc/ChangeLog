@@ -1,5 +1,13 @@
 2017-07-06  Jan Hubicka  <hubicka@ucw.cz>
 
+	* lto-wrapper.c (merge_and_complain): Do not merge
+	fexceptions, fnon_call_exceptions, ftrapv, ffp_contract_, fmath_errno,
+	fsigned_zeros, ftrapping_math, fwrapv.
+	(append_compiler_options): Do not track these options.
+	(append_linker_options): Likewie
+
+2017-07-06  Jan Hubicka  <hubicka@ucw.cz>
+
 	* cgraphunit.c (cgraph_node::finalize_function): When
 	!flag_toplevel_reorde set no_reorder flag.
 	(varpool_node::finalize_decl): Likewise.
