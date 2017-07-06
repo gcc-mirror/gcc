@@ -2950,8 +2950,17 @@ const struct altivec_builtin_types altivec_overloaded_builtins[] = {
     RS6000_BTI_unsigned_V16QI, RS6000_BTI_bool_V16QI, RS6000_BTI_unsigned_V16QI, 0 },
   { ALTIVEC_BUILTIN_VEC_VSUBUBM, ALTIVEC_BUILTIN_VSUBUBM,
     RS6000_BTI_unsigned_V16QI, RS6000_BTI_unsigned_V16QI, RS6000_BTI_bool_V16QI, 0 },
+
+  { ALTIVEC_BUILTIN_VEC_SUBC, ALTIVEC_BUILTIN_VSUBCUW,
+    RS6000_BTI_V4SI, RS6000_BTI_V4SI, RS6000_BTI_V4SI, 0 },
   { ALTIVEC_BUILTIN_VEC_SUBC, ALTIVEC_BUILTIN_VSUBCUW,
     RS6000_BTI_unsigned_V4SI, RS6000_BTI_unsigned_V4SI, RS6000_BTI_unsigned_V4SI, 0 },
+  { ALTIVEC_BUILTIN_VEC_SUBC, P8V_BUILTIN_VSUBCUQ,
+    RS6000_BTI_unsigned_V1TI, RS6000_BTI_unsigned_V1TI,
+    RS6000_BTI_unsigned_V1TI, 0 },
+  { ALTIVEC_BUILTIN_VEC_SUBC, P8V_BUILTIN_VSUBCUQ,
+    RS6000_BTI_V1TI, RS6000_BTI_V1TI, RS6000_BTI_V1TI, 0 },
+
   { ALTIVEC_BUILTIN_VEC_SUBS, ALTIVEC_BUILTIN_VSUBUBS,
     RS6000_BTI_unsigned_V16QI, RS6000_BTI_bool_V16QI, RS6000_BTI_unsigned_V16QI, 0 },
   { ALTIVEC_BUILTIN_VEC_SUBS, ALTIVEC_BUILTIN_VSUBUBS,
@@ -5884,13 +5893,16 @@ altivec_resolve_overloaded_builtin (location_t loc, tree fndecl,
       /* else, fall through and process the Power9 alternative below */
     }
 
-  if (fcode == ALTIVEC_BUILTIN_VEC_ADDE)
+  if (fcode == ALTIVEC_BUILTIN_VEC_ADDE
+      || fcode == ALTIVEC_BUILTIN_VEC_SUBE)
     {
       /* vec_adde needs to be special cased because there is no instruction
 	  for the {un}signed int version.  */
       if (nargs != 3)
 	{
-	  error ("vec_adde only accepts 3 arguments");
+	  const char *name = fcode == ALTIVEC_BUILTIN_VEC_ADDE ?
+	    "vec_adde": "vec_sube";
+	  error ("%s only accepts 3 arguments", name);
 	  return error_mark_node;
 	}
 
@@ -5913,14 +5925,24 @@ altivec_resolve_overloaded_builtin (location_t loc, tree fndecl,
 	{
 	  /* For {un}signed ints,
 	     vec_adde (va, vb, carryv) == vec_add (vec_add (va, vb),
-						   vec_and (carryv, 0x1)).  */
+						   vec_and (carryv, 1)).
+	     vec_sube (va, vb, carryv) == vec_sub (vec_sub (va, vb),
+						   vec_and (carryv, 1)).  */
 	  case SImode:
 	    {
+	      tree add_sub_builtin;
+
 	      vec<tree, va_gc> *params = make_tree_vector ();
 	      vec_safe_push (params, arg0);
 	      vec_safe_push (params, arg1);
-	      tree add_builtin = rs6000_builtin_decls[ALTIVEC_BUILTIN_VEC_ADD];
-	      tree call = altivec_resolve_overloaded_builtin (loc, add_builtin,
+
+	      if (fcode == ALTIVEC_BUILTIN_VEC_ADDE)
+		add_sub_builtin = rs6000_builtin_decls[ALTIVEC_BUILTIN_VEC_ADD];
+	      else
+		add_sub_builtin = rs6000_builtin_decls[ALTIVEC_BUILTIN_VEC_SUB];
+
+	      tree call = altivec_resolve_overloaded_builtin (loc,
+							      add_sub_builtin,
 							      params);
 	      tree const1 = build_int_cstu (TREE_TYPE (arg0_type), 1);
 	      tree ones_vector = build_vector_from_val (arg0_type, const1);
@@ -5929,16 +5951,22 @@ altivec_resolve_overloaded_builtin (location_t loc, tree fndecl,
 	      params = make_tree_vector ();
 	      vec_safe_push (params, call);
 	      vec_safe_push (params, and_expr);
-	      return altivec_resolve_overloaded_builtin (loc, add_builtin,
+	      return altivec_resolve_overloaded_builtin (loc, add_sub_builtin,
 							 params);
 	    }
 	  /* For {un}signed __int128s use the vaddeuqm instruction
 		directly.  */
 	  case TImode:
 	    {
-	      tree adde_bii = rs6000_builtin_decls[P8V_BUILTIN_VEC_VADDEUQM];
-	      return altivec_resolve_overloaded_builtin (loc, adde_bii,
-							 arglist);
+	       tree bii;
+
+	       if (fcode == ALTIVEC_BUILTIN_VEC_ADDE)
+		 bii = rs6000_builtin_decls[P8V_BUILTIN_VEC_VADDEUQM];
+
+	       else
+		 bii = rs6000_builtin_decls[P8V_BUILTIN_VEC_VSUBEUQM];
+
+	       return altivec_resolve_overloaded_builtin (loc, bii, arglist);
 	    }
 
 	  /* Types other than {un}signed int and {un}signed __int128
@@ -5948,13 +5976,16 @@ altivec_resolve_overloaded_builtin (location_t loc, tree fndecl,
 	}
     }
 
-  if (fcode == ALTIVEC_BUILTIN_VEC_ADDEC)
+  if (fcode == ALTIVEC_BUILTIN_VEC_ADDEC
+      || fcode == ALTIVEC_BUILTIN_VEC_SUBEC)
     {
-      /* vec_addec needs to be special cased because there is no instruction
-	for the {un}signed int version.  */
+      /* vec_addec and vec_subec needs to be special cased because there is
+	 no instruction for the {un}signed int version.  */
       if (nargs != 3)
 	{
-	  error ("vec_addec only accepts 3 arguments");
+	  const char *name = fcode == ALTIVEC_BUILTIN_VEC_ADDEC ?
+	    "vec_addec": "vec_subec";
+	  error ("%s only accepts 3 arguments", name);
 	  return error_mark_node;
 	}
 
@@ -5985,19 +6016,33 @@ altivec_resolve_overloaded_builtin (location_t loc, tree fndecl,
 	    /* Use save_expr to ensure that operands used more than once
 		that may have side effects (like calls) are only evaluated
 		once.  */
+	    tree as_builtin;
+	    tree as_c_builtin;
+
 	    arg0 = save_expr (arg0);
 	    arg1 = save_expr (arg1);
 	    vec<tree, va_gc> *params = make_tree_vector ();
 	    vec_safe_push (params, arg0);
 	    vec_safe_push (params, arg1);
-	    tree addc_builtin = rs6000_builtin_decls[ALTIVEC_BUILTIN_VEC_ADDC];
-	    tree call1 = altivec_resolve_overloaded_builtin (loc, addc_builtin,
+
+	    if (fcode == ALTIVEC_BUILTIN_VEC_ADDEC)
+	      as_c_builtin = rs6000_builtin_decls[ALTIVEC_BUILTIN_VEC_ADDC];
+	    else
+	      as_c_builtin = rs6000_builtin_decls[ALTIVEC_BUILTIN_VEC_SUBC];
+
+	    tree call1 = altivec_resolve_overloaded_builtin (loc, as_c_builtin,
 							     params);
 	    params = make_tree_vector ();
 	    vec_safe_push (params, arg0);
 	    vec_safe_push (params, arg1);
-	    tree add_builtin = rs6000_builtin_decls[ALTIVEC_BUILTIN_VEC_ADD];
-	    tree call2 = altivec_resolve_overloaded_builtin (loc, add_builtin,
+
+
+	    if (fcode == ALTIVEC_BUILTIN_VEC_ADDEC)
+	      as_builtin = rs6000_builtin_decls[ALTIVEC_BUILTIN_VEC_ADD];
+	    else
+	      as_builtin = rs6000_builtin_decls[ALTIVEC_BUILTIN_VEC_SUB];
+
+	    tree call2 = altivec_resolve_overloaded_builtin (loc, as_builtin,
 							     params);
 	    tree const1 = build_int_cstu (TREE_TYPE (arg0_type), 1);
 	    tree ones_vector = build_vector_from_val (arg0_type, const1);
@@ -6006,7 +6051,7 @@ altivec_resolve_overloaded_builtin (location_t loc, tree fndecl,
 	    params = make_tree_vector ();
 	    vec_safe_push (params, call2);
 	    vec_safe_push (params, and_expr);
-	    call2 = altivec_resolve_overloaded_builtin (loc, addc_builtin,
+	    call2 = altivec_resolve_overloaded_builtin (loc, as_c_builtin,
 							params);
 	    params = make_tree_vector ();
 	    vec_safe_push (params, call1);
@@ -6015,12 +6060,19 @@ altivec_resolve_overloaded_builtin (location_t loc, tree fndecl,
 	    return altivec_resolve_overloaded_builtin (loc, or_builtin,
 						       params);
 	    }
-	  /* For {un}signed __int128s use the vaddecuq instruction.  */
+	  /* For {un}signed __int128s use the vaddecuq/vsubbecuq
+	     instructions.  */
 	  case TImode:
 	    {
-	    tree VADDECUQ_bii = rs6000_builtin_decls[P8V_BUILTIN_VEC_VADDECUQ];
-	    return altivec_resolve_overloaded_builtin (loc, VADDECUQ_bii,
-						       arglist);
+	       tree bii;
+
+	       if (fcode == ALTIVEC_BUILTIN_VEC_ADDEC)
+		 bii = rs6000_builtin_decls[P8V_BUILTIN_VEC_VADDECUQ];
+
+	       else
+		 bii = rs6000_builtin_decls[P8V_BUILTIN_VEC_VSUBECUQ];
+
+	       return altivec_resolve_overloaded_builtin (loc, bii, arglist);
 	    }
 	  /* Types other than {un}signed int and {un}signed __int128
 		are errors.  */
