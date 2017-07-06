@@ -1,3 +1,27 @@
+2017-07-06  Maxim Ostapenko  <m.ostapenko@samsung.com>
+
+	* asan.c: Include gimple-fold.h.
+	(get_last_alloca_addr): New function.
+	(handle_builtin_stackrestore): Likewise.
+	(handle_builtin_alloca): Likewise.
+	(asan_emit_allocas_unpoison): Likewise.
+	(get_mem_refs_of_builtin_call): Add new parameter, remove const
+	quallifier from first paramerer. Handle BUILT_IN_ALLOCA,
+	BUILT_IN_ALLOCA_WITH_ALIGN and BUILT_IN_STACK_RESTORE builtins.
+	(instrument_builtin_call): Pass gimple iterator to
+	get_mem_refs_of_builtin_call.
+	(last_alloca_addr): New global.
+	* asan.h (asan_emit_allocas_unpoison): Declare.
+	* builtins.c (expand_asan_emit_allocas_unpoison): New function.
+	(expand_builtin): Handle BUILT_IN_ASAN_ALLOCAS_UNPOISON.
+	* cfgexpand.c (expand_used_vars): Call asan_emit_allocas_unpoison
+	if function calls alloca.
+	* gimple-fold.c (replace_call_with_value): Remove static keyword.
+	* gimple-fold.h (replace_call_with_value): Declare.
+	* internal-fn.c: Include asan.h.
+	* sanitizer.def (BUILT_IN_ASAN_ALLOCA_POISON,
+	BUILT_IN_ASAN_ALLOCAS_UNPOISON): New builtins.
+
 2017-07-06  David Malcolm  <dmalcolm@redhat.com>
 
 	* Makefile.in (SELFTEST_FLAGS): Drop "-x c", moving it to...

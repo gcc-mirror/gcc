@@ -25,6 +25,7 @@ extern void asan_function_start (void);
 extern void asan_finish_file (void);
 extern rtx_insn *asan_emit_stack_protection (rtx, rtx, unsigned int,
 					     HOST_WIDE_INT *, tree *, int);
+extern rtx_insn *asan_emit_allocas_unpoison (rtx, rtx, rtx_insn *);
 extern bool asan_protect_global (tree);
 extern void initialize_sanitizer_builtins (void);
 extern tree asan_dynamic_init_call (bool);
