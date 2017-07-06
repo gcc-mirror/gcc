@@ -1,3 +1,7 @@
+2017-07-06  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/t-arm (GTM_H): Add arm-cpu.h.
+
 2017-07-06  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	* doc/sourcebuild.texi (Test Directives, Variants of
