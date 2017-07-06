@@ -1,5 +1,9 @@
 2017-07-06  Carl Love  <cel@us.ibm.com>
 
+ 	* ChangeLog: Clean up from mid air collision
+
+2017-07-06  Carl Love  <cel@us.ibm.com>
+
 	* config/rs6000/rs6000-c.c: Add support for built-in functions
 	vector signed int vec_subc (vector signed int, vector signed int);
 	vector signed __int128 vec_subc (vector signed __int128,
@@ -51,7 +55,6 @@
 	(linemap_client_expand_location_to_spelling_point): Add "aspect"
 	param, and pass it to expand_location_1.
 
->>>>>>> .r250022
 2017-07-06  Sebastian Peryt  <sebastian.peryt@intel.com>
 
 	* config/i386/avx512fintrin.h (_mm_mask_getexp_round_ss,
