@@ -1,3 +1,25 @@
+2017-07-06  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/79300
+	* c-c++-common/Wmisleading-indentation-3.c (fn_14): Update
+	expected underlining within macro expansion.
+	* c-c++-common/pr70264.c: Likewise.
+	* g++.dg/plugin/diagnostic-test-expressions-1.C
+	(test_within_macro_1): New test.
+	(test_within_macro_2): Likewise.
+	(test_within_macro_3): Likewise.
+	(test_within_macro_4): Likewise.
+	* gcc.dg/format/diagnostic-ranges.c (test_macro_3): Update
+	expected underlining within macro expansion.
+	(test_macro_4): Likewise.
+	* gcc.dg/plugin/diagnostic-test-expressions-1.c
+	(test_within_macro_1): New test.
+	(test_within_macro_2): Likewise.
+	(test_within_macro_3): Likewise.
+	(test_within_macro_4): Likewise.
+	* gcc.dg/spellcheck-fields-2.c (test_macro): Update expected
+	underlining within macro expansion.
+
 2017-07-06  Sebastian Peryt  <sebastian.peryt@intel.com>
 
 	* gcc.target/i386/avx512f-vgetexpsd-1.c (_mm_mask_getexp_sd,
