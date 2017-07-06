@@ -1,3 +1,8 @@
+2017-07-06  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* doc/sourcebuild.texi (Test Directives, Variants of
+	dg-require-support): Add documentation for dg-require-stack-check.
+
 2017-07-05  Sebastian Peryt  <sebastian.peryt@intel.com>
 
 	* config/i386/subst.md (mask_scalar, round_scalar,

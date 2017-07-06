@@ -2311,6 +2311,11 @@ the codeset to convert to.
 Skip the test if the target does not support profiling with option
 @var{profopt}.
 
+@item dg-require-stack-check @var{check}
+Skip the test if the target does not support the @code{-fstack-check}
+option.  If @var{check} is @code{""}, support for @code{-fstack-check}
+is checked, for @code{-fstack-check=("@var{check}")} otherwise.
+
 @item dg-require-visibility @var{vis}
 Skip the test if the target does not support the @code{visibility} attribute.
 If @var{vis} is @code{""}, support for @code{visibility("hidden")} is
