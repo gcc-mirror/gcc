@@ -590,21 +590,26 @@ create_symbols(const char* file)
 }
 
 
-const char*
+std::string
 demangle(const std::string& mangled)
 {
-  const char* name;
+  std::string name;
   if (mangled[0] != '_' || mangled[1] != 'Z')
     {
       // This is not a mangled symbol, thus has "C" linkage.
-      name = mangled.c_str();
+      name = mangled;
     }
   else
     {
       // Use __cxa_demangle to demangle.
       int status = 0;
-      name = abi::__cxa_demangle(mangled.c_str(), 0, 0, &status);
-      if (!name)
+      char* ptr = abi::__cxa_demangle(mangled.c_str(), 0, 0, &status);
+      if (ptr)
+	{
+	  name = ptr;
+	  free(ptr);
+	}
+      else
 	{
 	  switch (status)
 	    {
