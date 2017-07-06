@@ -15218,6 +15218,7 @@ Permissible names are:
 @samp{armv7}, @samp{armv7-a}, @samp{armv7ve}, 
 @samp{armv8-a}, @samp{armv8.1-a}, @samp{armv8.2-a},
 @samp{armv7-r},
+@samp{armv8-r},
 @samp{armv6-m}, @samp{armv6s-m},
 @samp{armv7-m}, @samp{armv7e-m},
 @samp{armv8-m.base}, @samp{armv8-m.main},
@@ -15484,7 +15485,20 @@ The single- and double-precision floating-point instructions.
 
 @item +nofp
 Disable the floating-point extension.
+@end table
 
+@item armv8-r
+@table @samp
+@item +crc
+The Cyclic Redundancy Check (CRC) instructions.
+@item +simd
+The ARMv8 Advanced SIMD and floating-point instructions.
+@item +crypto
+The cryptographic instructions.
+@item +nocrypto
+Disable the cryptographic isntructions.
+@item +nofp
+Disable the floating-point, Advanced SIMD and cryptographic instructions.
 @end table
 
 @end table

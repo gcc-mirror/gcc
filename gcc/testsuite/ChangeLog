@@ -1,6 +1,12 @@
+2017-07-06  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* lib/target-supports.exp: Generate
+	check_effective_target_arm_arch_v8r_ok, add_options_for_arm_arch_v8r
+	and check_effective_target_arm_arch_v8r_multilib.
+
 2017-07-06  Carl Love  <cel@us.ibm.com>
 
- 	* ChangeLog: Clean up from mid air collision
+	* ChangeLog: Clean up from mid air collision
 
 2017-07-06  Carl Love  <cel@us.ibm.com>
 

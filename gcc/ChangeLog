@@ -1,6 +1,15 @@
+2017-07-06  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* config/arm/arm-cpus.in (armv8-r): Add new entry.
+	* config/arm/arm-isa.h (ISA_ARMv8r): Define macro.
+	* config/arm/arm-tables.opt: Regenerate.
+	* config/arm/arm.h (enum base_architecture): Add BASE_ARCH_8R
+	enumerator.
+	* doc/invoke.texi: Mention -march=armv8-r and its extensions.
+
 2017-07-06  Carl Love  <cel@us.ibm.com>
 
- 	* ChangeLog: Clean up from mid air collision
+	* ChangeLog: Clean up from mid air collision
 
 2017-07-06  Carl Love  <cel@us.ibm.com>
 

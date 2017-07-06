@@ -127,6 +127,7 @@ enum isa_feature
 #define ISA_ARMv8_2a	ISA_ARMv8_1a, isa_bit_ARMv8_2
 #define ISA_ARMv8m_base ISA_ARMv6m, isa_bit_ARMv8, isa_bit_cmse, isa_bit_tdiv
 #define ISA_ARMv8m_main ISA_ARMv7m, isa_bit_ARMv8, isa_bit_cmse
+#define ISA_ARMv8r	ISA_ARMv8a
 
 /* List of all cryptographic extensions to stripout if crypto is
    disabled.  Currently, that's trivial, but we define it anyway for
