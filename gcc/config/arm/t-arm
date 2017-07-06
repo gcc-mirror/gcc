@@ -19,6 +19,7 @@
 # <http://www.gnu.org/licenses/>.
 
 TM_H += arm-cpu.h
+GTM_H += arm-cpu.h
 
 # All md files - except for arm.md.
 # This list should be kept in alphabetical order and updated whenever an md
