@@ -1,3 +1,10 @@
+2017-07-06  David Malcolm  <dmalcolm@redhat.com>
+
+	* cp-lang.c (LANG_HOOKS_RUN_LANG_SELFTESTS): Define as
+	selftest::run_cp_tests.
+	(selftest::run_cp_tests): New function.
+	* cp-tree.h (selftest::run_cp_tests): New decl.
+
 2017-07-04  Jakub Jelinek  <jakub@redhat.com>
 
 	* parser.c (cp_parser_decomposition_declaration): Replace

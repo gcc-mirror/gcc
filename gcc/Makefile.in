@@ -1904,30 +1904,62 @@ rest.cross: specs
 # "nul.s" on Windows. Because on Windows "nul" is a reserved file name.
 # Specify the path to gcc/testsuite/selftests within the srcdir
 # as an argument to -fself-test.
-SELFTEST_FLAGS = -nostdinc -x c /dev/null -S -o /dev/null \
+SELFTEST_FLAGS = -nostdinc /dev/null -S -o /dev/null \
 	-fself-test=$(srcdir)/testsuite/selftests
 
-# Run the selftests during the build once we have a driver and a cc1,
+C_SELFTEST_FLAGS = -xc $(SELFTEST_FLAGS)
+CPP_SELFTEST_FLAGS = -xc++ $(SELFTEST_FLAGS)
+
+SELFTEST_DEPS = $(GCC_PASSES) stmp-int-hdrs $(srcdir)/testsuite/selftests
+
+C_SELFTEST_DEPS = cc1$(exeext) $(SELFTEST_DEPS)
+CPP_SELFTEST_DEPS = cc1plus$(exeext) $(SELFTEST_DEPS)
+
+# Run the selftests during the build once we have a driver and the frontend,
 # so that self-test failures are caught as early as possible.
-# Use "s-selftest" to ensure that we only run the selftests if the
-# driver, cc1, or selftest data change.
+# Use "s-selftest-FE" to ensure that we only run the selftests if the
+# driver, frontend, or selftest data change.
 .PHONY: selftest
-selftest: s-selftest
-s-selftest: $(GCC_PASSES) cc1$(exeext) stmp-int-hdrs \
-  $(srcdir)/testsuite/selftests
-	$(GCC_FOR_TARGET) $(SELFTEST_FLAGS)
+selftest: s-selftest-c s-selftest-c++
+
+# C selftests
+s-selftest-c: $(C_SELFTEST_DEPS)
+	$(GCC_FOR_TARGET) $(C_SELFTEST_FLAGS)
 	$(STAMP) $@
 
-# Convenience method for running selftests under gdb:
-.PHONY: selftest-gdb
-selftest-gdb: $(GCC_PASSES) cc1$(exeext) stmp-int-hdrs
-	$(GCC_FOR_TARGET) $(SELFTEST_FLAGS) \
+# Convenience methods for running C selftests under gdb:
+.PHONY: selftest-c-gdb
+selftest-c-gdb: $(C_SELFTEST_DEPS)
+	$(GCC_FOR_TARGET) $(C_SELFTEST_FLAGS) \
 	  -wrapper gdb,--args
 
-# Convenience method for running selftests under valgrind:
+.PHONY: selftest-gdb
+selftest-gdb: selftest-c-gdb
+
+# Convenience methods for running C selftests under valgrind:
+.PHONY: selftest-c-valgrind
+selftest-c-valgrind: $(C_SELFTEST_DEPS)
+	$(GCC_FOR_TARGET) $(C_SELFTEST_FLAGS) \
+	  -wrapper valgrind,--leak-check=full
+
 .PHONY: selftest-valgrind
-selftest-valgrind: $(GCC_PASSES) cc1$(exeext) stmp-int-hdrs
-	$(GCC_FOR_TARGET) $(SELFTEST_FLAGS) \
+selftest-valgrind: selftest-c-valgrind
+
+# C++ selftests
+s-selftest-c++: $(CPP_SELFTEST_DEPS)
+	$(GCC_FOR_TARGET) $(CPP_SELFTEST_FLAGS)
+	$(STAMP) $@
+
+# Convenience method for running C++ selftests under gdb:
+.PHONY: selftest-c++-gdb
+selftest-c++-gdb: $(CPP_SELFTEST_DEPS)
+	$(GCC_FOR_TARGET) $(CPP_SELFTEST_FLAGS) \
+	  -wrapper gdb,--args
+
+# Convenience method for running C++ selftests under valgrind:
+.PHONY: selftest-c++-valgrind
+selftest-c++-valgrind: $(CPP_SELFTEST_DEPS)
+	$(GCC_FOR_TARGET) $(CPP_SELFTEST_FLAGS) \
 	  -wrapper valgrind,--leak-check=full
 
 # Recompile all the language-independent object files.

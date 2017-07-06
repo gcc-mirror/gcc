@@ -1,3 +1,29 @@
+2017-07-06  David Malcolm  <dmalcolm@redhat.com>
+
+	* Makefile.in (SELFTEST_FLAGS): Drop "-x c", moving it to...
+	(C_SELFTEST_FLAGS): New.
+	(CPP_SELFTEST_FLAGS): New.
+	(SELFTEST_DEPS): New, from deps of s-selftest.
+	(C_SELFTEST_DEPS): New, from deps of s-selftest.
+	(CPP_SELFTEST_DEPS): New.
+	(selftest): Add dependency on s-selftest-c++.
+	(s-selftest): Rename to...
+	(s-selftest-c): ...this, moving deps to SELFTEST_DEPS
+	and C_SELFTEST_DEPS, and using C_SELFTEST_FLAGS rather
+	than SELFTEST_FLAGS.
+	(selftest-gdb): Rename to...
+	(selftest-c-gdb): ...this, using C_SELFTEST_DEPS and
+	C_SELFTEST_FLAGS.
+	(selftest-gdb): Reintroduce as an alias for selftest-c-gdb.
+	(selftest-valgrind): Rename to...
+	(selftest-c-valgrind): ...this, using C_SELFTEST_DEPS and
+	C_SELFTEST_FLAGS.
+	(selftest-valgrind): Reintroduce as an alias for
+	selftest-c-valgrind.
+	(s-selftest-c++): New.
+	(selftest-c++-gdb): New.
+	(selftest-c++-valgrind): New.
+
 2017-07-06  Olivier Hainque  <hainque@adacore.com>
 
 	* gcc.c (process_command): When deciding if undefined variables
