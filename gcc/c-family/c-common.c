@@ -8003,4 +8003,20 @@ c_flt_eval_method (bool maybe_c11_only_p)
     return c_ts18661_flt_eval_method ();
 }
 
+#if CHECKING_P
+
+namespace selftest {
+
+/* Run all of the tests within c-family.  */
+
+void
+c_family_tests (void)
+{
+  c_format_c_tests ();
+}
+
+} // namespace selftest
+
+#endif /* #if CHECKING_P */
+
 #include "gt-c-family-c-common.h"

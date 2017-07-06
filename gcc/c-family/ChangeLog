@@ -1,3 +1,9 @@
+2017-07-06  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-common.c (selftest::c_family_tests): New.
+	* c-common.h (selftest::run_c_tests): Move decl to c/c-lang.h.
+	(selftest::c_family_tests): New decl.
+
 2017-07-04  Marek Polacek  <polacek@redhat.com>
 
 	PR c/81231

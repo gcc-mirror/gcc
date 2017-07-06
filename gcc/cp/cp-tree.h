@@ -7364,6 +7364,12 @@ extern tree cp_ubsan_maybe_instrument_downcast	(location_t, tree, tree, tree);
 extern tree cp_ubsan_maybe_instrument_cast_to_vbase (location_t, tree, tree);
 extern void cp_ubsan_maybe_initialize_vtbl_ptrs (tree);
 
+#if CHECKING_P
+namespace selftest {
+  extern void run_cp_tests (void);
+} // namespace selftest
+#endif /* #if CHECKING_P */
+
 /* Inline bodies.  */
 
 inline tree

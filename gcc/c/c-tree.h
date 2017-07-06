@@ -764,4 +764,11 @@ extern tree decl_constant_value_for_optimization (tree);
 
 extern vec<tree> incomplete_record_decls;
 
+#if CHECKING_P
+namespace selftest {
+  extern void run_c_tests (void);
+} // namespace selftest
+#endif /* #if CHECKING_P */
+
+
 #endif /* ! GCC_C_TREE_H */
