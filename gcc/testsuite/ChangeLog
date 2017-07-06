@@ -1,3 +1,6 @@
+2017-07-06  Carl Love  <cel@us.ibm.com>
+
+ 	* ChangeLog: Clean up from mid air collision
 
 2017-07-06  Carl Love  <cel@us.ibm.com>
 
@@ -27,7 +30,6 @@
 	* gcc.dg/spellcheck-fields-2.c (test_macro): Update expected
 	underlining within macro expansion.
 
->>>>>>> .r250022
 2017-07-06  Sebastian Peryt  <sebastian.peryt@intel.com>
 
 	* gcc.target/i386/avx512f-vgetexpsd-1.c (_mm_mask_getexp_sd,
