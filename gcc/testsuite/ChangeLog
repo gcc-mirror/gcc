@@ -1,3 +1,47 @@
+2017-07-06  Sebastian Peryt  <sebastian.peryt@intel.com>
+
+	* gcc.target/i386/avx512f-vgetexpsd-1.c (_mm_mask_getexp_sd,
+	_mm_maskz_getexp_sd, _mm_mask_getexp_round_sd,
+	_mm_maskz_getexp_round_sd): Test new intrinsics.
+	* gcc.target/i386/avx512f-vgetexpss-1.c (_mm_mask_getexp_ss,
+	_mm_maskz_getexp_ss, _mm_mask_getexp_round_ss,
+	_mm_maskz_getexp_round_ss): Ditto.
+	* gcc.target/i386/avx512f-vgetmantsd-1.c (_mm_mask_getmant_sd,
+	_mm_maskz_getmant_sd, _mm_mask_getmant_round_sd,
+	_mm_maskz_getmant_round_sd): Ditto.
+	* gcc.target/i386/avx512f-vgetmantss-1.c (_mm_mask_getmant_ss,
+	_mm_maskz_getmant_ss, _mm_mask_getmant_round_ss,
+	_mm_maskz_getmant_round_ss): Ditto.
+	* gcc.target/i386/avx512f-vgetexpsd-2.c (_mm_mask_getexp_sd,
+	_mm_maskz_getexp_sd, _mm_getexp_round_sd, _mm_mask_getexp_round_sd,
+	_mm_maskz_getexp_round_sd): New runtime tests.
+	* gcc.target/i386/avx512f-vgetexpss-2.c (_mm_mask_getexp_ss,
+	_mm_maskz_getexp_ss, _mm_getexp_round_ss, _mm_mask_getexp_round_ss,
+	_mm_maskz_getexp_round_ss): Ditto.
+	* gcc.target/i386/avx512f-vgetmantsd-2.c (_mm_mask_getmant_sd,
+	_mm_maskz_getmant_sd, _mm_getmant_round_sd, _mm_mask_getmant_round_sd,
+	_mm_maskz_getmant_round_sd): Ditto.
+	* gcc.target/i386/avx512f-vgetmantss-2.c (_mm_mask_getmant_ss,
+	_mm_maskz_getmant_ss, _mm_getmant_round_ss, _mm_mask_getmant_round_ss,
+	_mm_maskz_getmant_round_ss): Ditto.
+	* gcc.target/i386/avx-1.c (__builtin_ia32_getexpsd_mask_round,
+	__builtin_ia32_getexpss_mask_round, __builtin_ia32_getmantsd_mask_round,
+	__builtin_ia32_getmantss_mask_round): Test new builtins.
+	* gcc.target/i386/sse-13.c : Ditto.
+	* gcc.target/i386/sse-23.c: Ditto.
+	* gcc.target/i386/sse-14.c (_mm_maskz_getexp_round_sd,
+	_mm_maskz_getexp_round_ss, _mm_mask_getmant_round_sd,
+	_mm_maskz_getmant_round_sd, _mm_mask_getmant_round_ss,
+	_mm_maskz_getmant_round_ss, _mm_mask_getexp_round_sd,
+	_mm_mask_getexp_round_ss): Test new intrinsics.
+	* gcc.target/i386/testround-1.c: Ditto.
+	* gcc.target/i386/sse-22.c (_mm_maskz_getmant_round_sd,
+	_mm_maskz_getmant_round_ss, _mm_mask_getmant_round_sd,
+	_mm_mask_getmant_round_ss): Test new intrinsics
+	* gcc.target/i386/testimm-10.c (_mm_mask_getmant_sd,
+	_mm_maskz_getmant_sd, _mm_mask_getmant_ss,
+	_mm_maskz_getmant_ss): Test new intrinsics.
+
 2017-07-06  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	* lib/target-supports-dg.exp (dg-require-stack-check): New.
