@@ -1,3 +1,8 @@
+2017-07-06  Jason Merrill  <jason@redhat.com>
+
+	PR c++/81204 - parse error with dependent template-name
+	* parser.c (cp_parser_lookup_name): Revert previous change.
+
 2017-07-06  David Malcolm  <dmalcolm@redhat.com>
 
 	* cp-lang.c (LANG_HOOKS_RUN_LANG_SELFTESTS): Define as
