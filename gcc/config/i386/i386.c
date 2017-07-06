@@ -36482,21 +36482,11 @@ ix86_expand_args_builtin (const struct builtin_description *d,
 }
 
 /* Transform pattern of following layout:
-     (parallel [
-       set (A B)
-       (unspec [C] UNSPEC_EMBEDDED_ROUNDING)])
-     ])
+     (set A
+       (unspec [B C] UNSPEC_EMBEDDED_ROUNDING))
+     )
    into:
-     (set (A B))
-
-   Or:
-     (parallel [ A B
-     ...
-     (unspec [C] UNSPEC_EMBEDDED_ROUNDING)
-     ...
-     ])
-   into:
-     (parallel [ A B ... ])  */
+     (set (A B)) */
 
 static rtx
 ix86_erase_embedded_rounding (rtx pat)
@@ -36504,48 +36494,14 @@ ix86_erase_embedded_rounding (rtx pat)
   if (GET_CODE (pat) == INSN)
     pat = PATTERN (pat);
 
-  if (GET_CODE (pat) == PARALLEL)
-  {
-    if (XVECLEN (pat, 0) == 2)
-      {
-	rtx p0 = XVECEXP (pat, 0, 0);
-	rtx p1 = XVECEXP (pat, 0, 1);
-	gcc_assert (GET_CODE (p0) == SET
-		    && GET_CODE (p1) == UNSPEC
-		    && XINT (p1, 1) == UNSPEC_EMBEDDED_ROUNDING);
-	return p0;
-      }
-    else
-      {
-	rtx *res = XALLOCAVEC (rtx, XVECLEN (pat, 0));
-	int i = 0;
-	int j = 0;
-
-	for (; i < XVECLEN (pat, 0); ++i)
-	  {
-	    rtx elem = XVECEXP (pat, 0, i);
-	    if (GET_CODE (elem) != UNSPEC
-		|| XINT (elem, 1) != UNSPEC_EMBEDDED_ROUNDING)
-	      res[j++] = elem;
-	  }
-
-	/*  No more than 1 occurence was removed.  */
-	gcc_assert (j >= XVECLEN (pat, 0) - 1);
-
-	return gen_rtx_PARALLEL (GET_MODE (pat), gen_rtvec_v (j, res));
-    }
-  }
-  else
-  {
-    gcc_assert (GET_CODE (pat) == SET);
-    rtx src = SET_SRC (pat);
-    gcc_assert (XVECLEN (src, 0) == 2);
-    rtx p0 = XVECEXP (src, 0, 0);
-    gcc_assert (GET_CODE (src) == UNSPEC
-		&& XINT (src, 1) == UNSPEC_EMBEDDED_ROUNDING);
-    rtx res = gen_rtx_SET (SET_DEST (pat), p0);
-    return res;
-  }
+  gcc_assert (GET_CODE (pat) == SET);
+  rtx src = SET_SRC (pat);
+  gcc_assert (XVECLEN (src, 0) == 2);
+  rtx p0 = XVECEXP (src, 0, 0);
+  gcc_assert (GET_CODE (src) == UNSPEC
+	      && XINT (src, 1) == UNSPEC_EMBEDDED_ROUNDING);
+  rtx res = gen_rtx_SET (SET_DEST (pat), p0);
+  return res;
 }
 
 /* Subroutine of ix86_expand_round_builtin to take care of comi insns
