@@ -1063,6 +1063,17 @@ proc check_effective_target_fstack_protector {} {
     } "-fstack-protector"]
 }
 
+# Return 1 if the target supports -fstack-check or -fstack-check=$stack_kind
+proc check_stack_check_available { stack_kind } {
+    if [string match "" $stack_kind] then {
+	set stack_opt "-fstack-check"
+    } else { set stack_opt "-fstack-check=$stack_kind" }
+
+    return [check_no_compiler_messages stack_check executable {
+	int main (void) { return 0; }
+    } "$stack_opt"]
+}
+
 # Return 1 if compilation with -freorder-blocks-and-partition is error-free
 # for trivial code, 0 otherwise.  As some targets (ARM for example) only
 # warn when -fprofile-use is also supplied we test that combination too.
