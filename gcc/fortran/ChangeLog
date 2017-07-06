@@ -1,3 +1,8 @@
+2017-07-06  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/70071
+	* array.c (gfc_ref_dimen_size): Handle bad subscript triplets.
+
 2017-07-03  Dominique d'Humieres  <dominiq@lps.ens.fr>
 
 	PR fortran/79866

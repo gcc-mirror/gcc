@@ -2203,8 +2203,14 @@ gfc_ref_dimen_size (gfc_array_ref *ar, int dimen, mpz_t *result, mpz_t *end)
   bool t;
   gfc_expr *stride_expr = NULL;
 
-  if (dimen < 0 || ar == NULL || dimen > ar->dimen - 1)
+  if (dimen < 0 || ar == NULL)
     gfc_internal_error ("gfc_ref_dimen_size(): Bad dimension");
+
+  if (dimen > ar->dimen - 1)
+    {
+      gfc_error ("Bad array dimension at %L", &ar->c_where[dimen]);
+      return false;
+    }
 
   switch (ar->dimen_type[dimen])
     {
