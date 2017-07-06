@@ -1,3 +1,14 @@
+2017-07-06  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/79300
+	* include/line-map.h (enum location_aspect): New enum.
+	(linemap_client_expand_location_to_spelling_point): Add
+	enum location_aspect param.
+	* line-map.c (rich_location::get_expanded_location): Update for
+	new param of linemap_client_expand_location_to_spelling_point.
+	(rich_location::maybe_add_fixit): Likewise.
+	(fixit_hint::affects_line_p): Likewise.
+
 2017-06-21  Jakub Jelinek  <jakub@redhat.com>
 
 	* line-map.c (location_adhoc_data_update): Perform addition in

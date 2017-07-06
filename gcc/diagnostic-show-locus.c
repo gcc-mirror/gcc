@@ -788,11 +788,14 @@ layout::layout (diagnostic_context * context,
 
       /* Expand the various locations.  */
       expanded_location start
-	= linemap_client_expand_location_to_spelling_point (src_range.m_start);
+	= linemap_client_expand_location_to_spelling_point
+	    (src_range.m_start, LOCATION_ASPECT_START);
       expanded_location finish
-	= linemap_client_expand_location_to_spelling_point (src_range.m_finish);
+	= linemap_client_expand_location_to_spelling_point
+	    (src_range.m_finish, LOCATION_ASPECT_FINISH);
       expanded_location caret
-	= linemap_client_expand_location_to_spelling_point (loc_range->m_loc);
+	= linemap_client_expand_location_to_spelling_point
+	    (loc_range->m_loc, LOCATION_ASPECT_CARET);
 
       /* If any part of the range isn't in the same file as the primary
 	 location of this diagnostic, ignore the range.  */

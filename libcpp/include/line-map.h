@@ -1905,6 +1905,15 @@ void linemap_dump (FILE *, struct line_maps *, unsigned, bool);
    specifies how many macro maps to dump.  */
 void line_table_dump (FILE *, struct line_maps *, unsigned int, unsigned int);
 
+/* An enum for distinguishing the various parts within a source_location.  */
+
+enum location_aspect
+{
+  LOCATION_ASPECT_CARET,
+  LOCATION_ASPECT_START,
+  LOCATION_ASPECT_FINISH
+};
+
 /* The rich_location class requires a way to expand source_location instances.
    We would directly use expand_location_to_spelling_point, which is
    implemented in gcc/input.c, but we also need to use it for rich_location
@@ -1912,6 +1921,7 @@ void line_table_dump (FILE *, struct line_maps *, unsigned int, unsigned int);
    Hence we require client code of libcpp to implement the following
    symbol.  */
 extern expanded_location
-linemap_client_expand_location_to_spelling_point (source_location );
+linemap_client_expand_location_to_spelling_point (source_location,
+						  enum location_aspect);
 
 #endif /* !LIBCPP_LINE_MAP_H  */

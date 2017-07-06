@@ -1,3 +1,18 @@
+2017-07-06  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/79300
+	* diagnostic-show-locus.c (layout::layout): Use start and finish
+	spelling location for the start and finish of each range.
+	* genmatch.c (linemap_client_expand_location_to_spelling_point):
+	Add unused aspect param.
+	* input.c (expand_location_1): Add "aspect" param, and use it
+	to access the correct part of the location.
+	(expand_location): Pass LOCATION_ASPECT_CARET to new param of
+	expand_location_1.
+	(expand_location_to_spelling_point): Likewise.
+	(linemap_client_expand_location_to_spelling_point): Add "aspect"
+	param, and pass it to expand_location_1.
+
 2017-07-06  Sebastian Peryt  <sebastian.peryt@intel.com>
 
 	* config/i386/avx512fintrin.h (_mm_mask_getexp_round_ss,

@@ -278,7 +278,7 @@ void test_macro_3 (const char *msg)
   printf(FMT_STRING, msg);  /* { dg-message "10: in expansion of macro 'FMT_STRING" } */
 /* { dg-begin-multiline-output "" }
  #define FMT_STRING "hello %i world"
-                    ^
+                    ^~~~~~~~~~~~~~~~
    { dg-end-multiline-output "" } */
 /* { dg-begin-multiline-output "" }
    printf(FMT_STRING, msg);
@@ -293,7 +293,7 @@ void test_macro_4 (const char *msg)
   printf(FMT_STRING "\n", msg);  /* { dg-message "10: in expansion of macro 'FMT_STRING" } */
 /* { dg-begin-multiline-output "" }
  #define FMT_STRING "hello %i world"
-                    ^
+                    ^~~~~~~~~~~~~~~~
    { dg-end-multiline-output "" } */
 /* { dg-begin-multiline-output "" }
    printf(FMT_STRING "\n", msg);
