@@ -1,3 +1,10 @@
+
+2017-07-06  Carl Love  <cel@us.ibm.com>
+
+	* gcc.target/powerpc/p8vector-builtin-8.c (foo): Add test cases for
+	the new vec_subc, vec_sube, vec_subec built-ins.  Add the missing test
+	cases for vec_addc, adde and addec builtins.
+
 2017-07-06  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c++/79300
@@ -20,6 +27,7 @@
 	* gcc.dg/spellcheck-fields-2.c (test_macro): Update expected
 	underlining within macro expansion.
 
+>>>>>>> .r250022
 2017-07-06  Sebastian Peryt  <sebastian.peryt@intel.com>
 
 	* gcc.target/i386/avx512f-vgetexpsd-1.c (_mm_mask_getexp_sd,

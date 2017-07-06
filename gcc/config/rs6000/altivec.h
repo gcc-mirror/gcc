@@ -192,6 +192,8 @@
 #define vec_unsignedo __builtin_vec_vunsignedo
 #define vec_vsubfp __builtin_vec_vsubfp
 #define vec_subc __builtin_vec_subc
+#define vec_sube __builtin_vec_sube
+#define vec_subec __builtin_vec_subec
 #define vec_vsubsws __builtin_vec_vsubsws
 #define vec_vsubshs __builtin_vec_vsubshs
 #define vec_vsubsbs __builtin_vec_vsubsbs

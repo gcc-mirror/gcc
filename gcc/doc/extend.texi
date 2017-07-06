@@ -17116,7 +17116,34 @@ vector unsigned char vec_vsububm (vector unsigned char,
 vector unsigned char vec_vsububm (vector unsigned char,
                                   vector unsigned char);
 
+vector signed int vec_subc (vector signed int, vector signed int);
 vector unsigned int vec_subc (vector unsigned int, vector unsigned int);
+vector signed __int128 vec_subc (vector signed __int128,
+                                 vector signed __int128);
+vector unsigned __int128 vec_subc (vector unsigned __int128,
+                                   vector unsigned __int128);
+
+vector signed int vec_sube (vector signed int, vector signed int,
+                            vector signed int);
+vector unsigned int vec_sube (vector unsigned int, vector unsigned int,
+                              vector unsigned int);
+vector signed __int128 vec_sube (vector signed __int128,
+                                 vector signed __int128,
+                                 vector signed __int128);
+vector unsigned __int128 vec_sube (vector unsigned __int128,
+                                   vector unsigned __int128,
+                                   vector unsigned __int128);
+
+vector signed int vec_subec (vector signed int, vector signed int,
+                             vector signed int);
+vector unsigned int vec_subec (vector unsigned int, vector unsigned int,
+                               vector unsigned int);
+vector signed __int128 vec_subec (vector signed __int128,
+                                  vector signed __int128,
+                                  vector signed __int128);
+vector unsigned __int128 vec_subec (vector unsigned __int128,
+                                    vector unsigned __int128,
+                                    vector unsigned __int128);
 
 vector unsigned char vec_subs (vector bool char, vector unsigned char);
 vector unsigned char vec_subs (vector unsigned char, vector bool char);
