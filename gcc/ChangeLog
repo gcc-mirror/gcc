@@ -1,3 +1,8 @@
+2017-07-06  Jan Hubicka  <hubicka@ucw.cz>
+
+	* auto-profile.c (afdo_set_bb_count, afdo_propagate_edge,
+	afdo_annotate_cfg): Set counts/probabilities as determined by afdo.
+
 2017-07-06  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	* config/arm/arm-cpus.in (armv8-r): Add new entry.
