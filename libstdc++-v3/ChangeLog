@@ -1,5 +1,11 @@
 2017-07-06  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/abi/pr42230.cc: Free memory.
+	* testsuite/util/testsuite_abi.cc (demangle): Return std::string
+	instead of pointer that might need freeing.
+	* testsuite/util/testsuite_abi.h (demangle): Likewise.
+	* testsuite/util/testsuite_hooks.cc (verify_demangle): Free memory.
+
 	* include/bits/uses_allocator.h (__use_alloc(const _Alloc&&)): Add
 	deleted overload to prevent dangling references to rvalues.
 	* include/experimental/memory_resource
