@@ -1142,6 +1142,11 @@ DEFPARAM (PARAM_ASAN_STACK,
          "Enable asan stack protection.",
          1, 0, 1)
 
+DEFPARAM (PARAM_ASAN_PROTECT_ALLOCAS,
+	"asan-instrument-allocas",
+	"Enable asan allocas/VLAs protection.",
+	1, 0, 1)
+
 DEFPARAM (PARAM_ASAN_GLOBALS,
          "asan-globals",
          "Enable asan globals protection.",

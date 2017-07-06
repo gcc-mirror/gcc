@@ -1,5 +1,18 @@
 2017-07-06  Maxim Ostapenko  <m.ostapenko@samsung.com>
 
+	* asan.h (asan_sanitize_allocas_p): Declare.
+	* asan.c (asan_sanitize_allocas_p): New function.
+	(handle_builtin_stack_restore): Bail out if !asan_sanitize_allocas_p.
+	(handle_builtin_alloca): Likewise.
+	* cfgexpand.c (expand_used_vars): Do not add allocas unpoisoning stuff
+	if !asan_sanitize_allocas_p.
+	* params.def (asan-instrument-allocas): Add new option.
+	* params.h (ASAN_PROTECT_ALLOCAS): Define.
+	* opts.c (common_handle_option): Disable allocas sanitization for
+	KASan by default.
+
+2017-07-06  Maxim Ostapenko  <m.ostapenko@samsung.com>
+
 	* asan.c: Include gimple-fold.h.
 	(get_last_alloca_addr): New function.
 	(handle_builtin_stackrestore): Likewise.

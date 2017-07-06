@@ -1909,6 +1909,9 @@ common_handle_option (struct gcc_options *opts,
 				 opts_set->x_param_values);
 	  maybe_set_param_value (PARAM_ASAN_STACK, 0, opts->x_param_values,
 				 opts_set->x_param_values);
+	  maybe_set_param_value (PARAM_ASAN_PROTECT_ALLOCAS, 0,
+				 opts->x_param_values,
+				 opts_set->x_param_values);
 	  maybe_set_param_value (PARAM_ASAN_USE_AFTER_RETURN, 0,
 				 opts->x_param_values,
 				 opts_set->x_param_values);

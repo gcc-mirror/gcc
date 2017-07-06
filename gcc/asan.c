@@ -310,6 +310,12 @@ asan_sanitize_stack_p (void)
   return (sanitize_flags_p (SANITIZE_ADDRESS) && ASAN_STACK);
 }
 
+bool
+asan_sanitize_allocas_p (void)
+{
+  return (asan_sanitize_stack_p () && ASAN_PROTECT_ALLOCAS);
+}
+
 /* Checks whether section SEC should be sanitized.  */
 
 static bool
@@ -569,7 +575,7 @@ get_last_alloca_addr ()
 static void
 handle_builtin_stack_restore (gcall *call, gimple_stmt_iterator *iter)
 {
-  if (!iter)
+  if (!iter || !asan_sanitize_allocas_p ())
     return;
 
   tree last_alloca = get_last_alloca_addr ();
@@ -607,7 +613,7 @@ handle_builtin_stack_restore (gcall *call, gimple_stmt_iterator *iter)
 static void
 handle_builtin_alloca (gcall *call, gimple_stmt_iterator *iter)
 {
-  if (!iter)
+  if (!iter || !asan_sanitize_allocas_p ())
     return;
 
   gassign *g;
