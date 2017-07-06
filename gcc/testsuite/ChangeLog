@@ -1,3 +1,8 @@
+2017-07-06  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/81305
+	* gcc.target/avr/isr-test.h: Fix warnings.
+
 2017-07-06  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	* lib/target-supports.exp: Generate

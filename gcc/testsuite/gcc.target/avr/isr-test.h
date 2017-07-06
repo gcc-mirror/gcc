@@ -40,14 +40,14 @@ typedef struct
 
 regs_t reginfo1, reginfo2;
 
-__attribute__((noinline))
+__attribute__((noinline,unused))
 static void clear_reginfo (void)
 {
   memset (reginfo1.sfrs, 0, sizeof (reginfo1.sfrs));
   memset (reginfo2.sfrs, 0, sizeof (reginfo2.sfrs));
 }
 
-__attribute__((noinline))
+__attribute__((noinline,unused))
 static void compare_reginfo (unsigned long gpr_ignore)
 {
   signed char regno;
@@ -68,6 +68,7 @@ static void compare_reginfo (unsigned long gpr_ignore)
       if (*preg1 != *preg2)
         {
           static signed char volatile failed_regno;
+          (void) failed_regno;
           failed_regno = regno;
           __builtin_abort();
         }
