@@ -2241,7 +2241,7 @@ expand_used_vars (void)
       expand_stack_vars (NULL, &data);
     }
 
-  if ((flag_sanitize & SANITIZE_ADDRESS) && cfun->calls_alloca)
+  if (asan_sanitize_allocas_p () && cfun->calls_alloca)
     var_end_seq = asan_emit_allocas_unpoison (virtual_stack_dynamic_rtx,
 					      virtual_stack_vars_rtx,
 					      var_end_seq);
