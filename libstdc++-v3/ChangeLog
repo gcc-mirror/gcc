@@ -1,5 +1,10 @@
 2017-07-06  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/20_util/specialized_algorithms/memory_management_tools/
+	1.cc: Free memory.
+	* testsuite/22_locale/locale/cons/5.cc: Remove redundant restoration
+	of original environment and free memory.
+
 	* testsuite/abi/pr42230.cc: Free memory.
 	* testsuite/util/testsuite_abi.cc (demangle): Return std::string
 	instead of pointer that might need freeing.
