@@ -239,6 +239,7 @@
 
 (define_subst_attr "mask_scalar_name" "mask_scalar" "" "_mask")
 (define_subst_attr "mask_scalar_operand3" "mask_scalar" "" "%{%4%}%N3")
+(define_subst_attr "mask_scalar_operand4" "mask_scalar" "" "%{%5%}%N4")
 
 (define_subst "mask_scalar"
   [(set (match_operand:SUBST_V 0)
@@ -280,9 +281,12 @@
 
 (define_subst_attr "round_saeonly_scalar_name" "round_saeonly_scalar" "" "_round")
 (define_subst_attr "round_saeonly_scalar_mask_operand3" "mask_scalar" "%r3" "%r5")
+(define_subst_attr "round_saeonly_scalar_mask_operand4" "mask_scalar" "%r4" "%r6")
 (define_subst_attr "round_saeonly_scalar_mask_op3" "round_saeonly_scalar" "" "<round_saeonly_scalar_mask_operand3>")
+(define_subst_attr "round_saeonly_scalar_mask_op4" "round_saeonly_scalar" "" "<round_saeonly_scalar_mask_operand4>")
 (define_subst_attr "round_saeonly_scalar_constraint" "round_saeonly_scalar" "vm" "v")
 (define_subst_attr "round_saeonly_scalar_prefix" "round_saeonly_scalar" "vex" "evex")
+(define_subst_attr "round_saeonly_scalar_nimm_predicate" "round_saeonly_scalar" "vector_operand" "register_operand")
 
 (define_subst "round_saeonly_scalar"
   [(set (match_operand:SUBST_V 0)

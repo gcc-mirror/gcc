@@ -1,3 +1,49 @@
+2017-07-06  Sebastian Peryt  <sebastian.peryt@intel.com>
+
+	* config/i386/avx512fintrin.h (_mm_mask_getexp_round_ss,
+	_mm_maskz_getexp_round_ss, _mm_mask_getexp_round_sd,
+	_mm_maskz_getexp_round_sd, _mm_mask_getmant_round_sd,
+	_mm_maskz_getmant_round_sd, _mm_mask_getmant_round_ss,
+	_mm_maskz_getmant_round_ss, _mm_mask_getexp_ss, _mm_maskz_getexp_ss,
+	_mm_mask_getexp_sd, _mm_maskz_getexp_sd, _mm_mask_getmant_sd,
+	_mm_maskz_getmant_sd, _mm_mask_getmant_ss,
+	_mm_maskz_getmant_ss): New intrinsics.
+	(__builtin_ia32_getexpss128_mask): Changed to ...
+	__builtin_ia32_getexpss128_round ... this.
+	(__builtin_ia32_getexpsd128_mask): Changed to ...
+	__builtin_ia32_getexpsd128_round ... this.
+	* config/i386/i386-builtin-types.def
+	((V2DF, V2DF, V2DF, INT, V2DF, UQI, INT),
+	(V4SF, V4SF, V4SF, INT, V4SF, UQI, INT)): New function type aliases.
+	* config/i386/i386-builtin.def (__builtin_ia32_getexpsd_mask_round,
+	__builtin_ia32_getexpss_mask_round,	__builtin_ia32_getmantsd_mask_round,
+	__builtin_ia32_getmantss_mask_round): New builtins.
+	* config/i386/i386.c (V2DF_FTYPE_V2DF_V2DF_INT_V2DF_UQI_INT,
+	V4SF_FTYPE_V4SF_V4SF_INT_V4SF_UQI_INT): Handle new types.
+	(CODE_FOR_avx512f_vgetmantv2df_mask_round,
+	CODE_FOR_avx512f_vgetmantv4sf_mask_round): New cases.
+	* config/i386/sse.md
+	(avx512f_sgetexp<mode><round_saeonly_name>): Changed to ...
+	avx512f_sgetexp<mode><mask_scalar_name>
+	<round_saeonly_scalar_name> ... this.
+	(vgetexp<ssescalarmodesuffix>\t{<round_saeonly_op3>%2, %1, %0|
+	%0, %1, %2<round_saeonly_op3>}): Changed to ...
+	vgetexp<ssescalarmodesuffix>
+	\t{<round_saeonly_scalar_mask_op3>%2, %1, %0<mask_scalar_operand3>|
+	%0<mask_scalar_operand3>, %1, %2<round_saeonly_scalar_mask_op3>} ... this.
+	(avx512f_vgetmant<mode><round_saeonly_name>): Changed to ...
+	avx512f_vgetmant<mode><mask_scalar_name>
+	<round_saeonly_scalar_name> ... this.
+	(vgetmant<ssescalarmodesuffix>\t{%3, <round_saeonly_op4>%2, %1, %0|
+	%0, %1, %2<round_saeonly_op4>, %3}): Changed to ...
+	vgetmant<ssescalarmodesuffix>
+	\t{%3, <round_saeonly_scalar_mask_op4>%2, %1, %0<mask_scalar_operand4>|
+	%0<mask_scalar_operand4>, %1, %2
+	<round_saeonly_scalar_mask_op4>, %3} ... this.
+	* config/i386/subst.md (mask_scalar_operand4,
+	round_saeonly_scalar_mask_operand4,	round_saeonly_scalar_mask_op4,
+	round_saeonly_scalar_nimm_predicate): New subst attributes.
+
 2017-07-06  Julia Koval  <julia.koval@intel.com>
 
 	* gcc/config/i386/i386.c (ix86_erase_embedded_rounding):

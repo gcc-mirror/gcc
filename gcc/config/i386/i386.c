@@ -36701,6 +36701,8 @@ ix86_expand_round_builtin (const struct builtin_description *d,
     case V8DF_FTYPE_V8DF_V8DF_INT_V8DF_QI_INT:
     case V4SF_FTYPE_V4SF_V4SF_INT_V4SF_QI_INT:
     case V2DF_FTYPE_V2DF_V2DF_INT_V2DF_QI_INT:
+    case V2DF_FTYPE_V2DF_V2DF_INT_V2DF_UQI_INT:
+    case V4SF_FTYPE_V4SF_V4SF_INT_V4SF_UQI_INT:
       nargs = 6;
       nargs_constant = 4;
       break;
@@ -36738,7 +36740,9 @@ ix86_expand_round_builtin (const struct builtin_description *d,
 		case CODE_FOR_avx512f_getmantv8df_mask_round:
 		case CODE_FOR_avx512f_getmantv16sf_mask_round:
 		case CODE_FOR_avx512f_vgetmantv2df_round:
+		case CODE_FOR_avx512f_vgetmantv2df_mask_round:
 		case CODE_FOR_avx512f_vgetmantv4sf_round:
+		case CODE_FOR_avx512f_vgetmantv4sf_mask_round:
 		  error ("the immediate argument must be a 4-bit immediate");
 		  return const0_rtx;
 		case CODE_FOR_avx512f_cmpv8df3_mask_round:
