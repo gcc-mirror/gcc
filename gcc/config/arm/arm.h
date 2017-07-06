@@ -384,7 +384,8 @@ enum base_architecture
   BASE_ARCH_7EM = 7,
   BASE_ARCH_8A = 8,
   BASE_ARCH_8M_BASE = 8,
-  BASE_ARCH_8M_MAIN = 8
+  BASE_ARCH_8M_MAIN = 8,
+  BASE_ARCH_8R = 8
 };
 
 /* The major revision number of the ARM Architecture implemented by the target.  */

@@ -3901,7 +3901,8 @@ foreach { armfunc armflag armdefs } {
 	v8_2a "-march=armv8.2a" __ARM_ARCH_8A__
 	v8m_base "-march=armv8-m.base -mthumb -mfloat-abi=soft"
 		__ARM_ARCH_8M_BASE__
-	v8m_main "-march=armv8-m.main -mthumb" __ARM_ARCH_8M_MAIN__ } {
+	v8m_main "-march=armv8-m.main -mthumb" __ARM_ARCH_8M_MAIN__
+	v8r "-march=armv8-r" __ARM_ARCH_8R__ } {
     eval [string map [list FUNC $armfunc FLAG $armflag DEFS $armdefs ] {
 	proc check_effective_target_arm_arch_FUNC_ok { } {
 	    if { [ string match "*-marm*" "FLAG" ] &&
