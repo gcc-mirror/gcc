@@ -243,8 +243,6 @@ merge_and_complain (struct cl_decoded_option **decoded_options,
 	case OPT_fPIE:
 	case OPT_fpie:
 	case OPT_fcommon:
-	case OPT_fexceptions:
-	case OPT_fnon_call_exceptions:
 	case OPT_fgnu_tm:
 	  /* Do what the old LTO code did - collect exactly one option
 	     setting per OPT code, we pick the first we encounter.
@@ -257,25 +255,6 @@ merge_and_complain (struct cl_decoded_option **decoded_options,
 	    append_option (decoded_options, decoded_options_count, foption);
 	  break;
 
-	case OPT_ftrapv:
-	case OPT_ffp_contract_:
-	  /* For selected options we can merge conservatively.  */
-	  for (j = 0; j < *decoded_options_count; ++j)
-	    if ((*decoded_options)[j].opt_index == foption->opt_index)
-	      break;
-	  if (j == *decoded_options_count)
-	    append_option (decoded_options, decoded_options_count, foption);
-	  /* FP_CONTRACT_OFF < FP_CONTRACT_ON < FP_CONTRACT_FAST,
-	     -fno-trapv < -ftrapv,
-	     -fno-strict-overflow < -fstrict-overflow  */
-	  else if (foption->value < (*decoded_options)[j].value)
-	    (*decoded_options)[j] = *foption;
-	  break;
-
-	case OPT_fmath_errno:
-	case OPT_fsigned_zeros:
-	case OPT_ftrapping_math:
-	case OPT_fwrapv:
 	case OPT_fopenmp:
 	case OPT_fopenacc:
 	case OPT_fcilkplus:
@@ -286,10 +265,10 @@ merge_and_complain (struct cl_decoded_option **decoded_options,
 	      break;
 	  if (j == *decoded_options_count)
 	    append_option (decoded_options, decoded_options_count, foption);
-	  /* -fmath-errno > -fno-math-errno,
-	     -fsigned-zeros > -fno-signed-zeros,
-	     -ftrapping-math > -fno-trapping-math,
-	     -fwrapv > -fno-wrapv.  */
+	  /* -fopenmp > -fno-openmp,
+	     -fopenacc > -fno-openacc,
+	     -fcilkplus > -fno-cilkplus,
+	     -fcheck_pointer_bounds > -fcheck_pointer_bounds  */
 	  else if (foption->value > (*decoded_options)[j].value)
 	    (*decoded_options)[j] = *foption;
 	  break;
@@ -305,17 +284,6 @@ merge_and_complain (struct cl_decoded_option **decoded_options,
 	    fatal_error (input_location,
 			 "Option %s with different values",
 			 foption->orig_option_with_args_text);
-	  break;
-
-	case OPT_freg_struct_return:
-	case OPT_fpcc_struct_return:
-	  for (j = 0; j < *decoded_options_count; ++j)
-	    if ((*decoded_options)[j].opt_index == foption->opt_index)
-	      break;
-	  if (j == *decoded_options_count)
-	    fatal_error (input_location,
-			 "Option %s not used consistently in all LTO input"
-			 " files", foption->orig_option_with_args_text);
 	  break;
 
 	case OPT_foffload_abi_:
@@ -506,21 +474,11 @@ append_compiler_options (obstack *argv_obstack, struct cl_decoded_option *opts,
 	case OPT_fPIE:
 	case OPT_fpie:
 	case OPT_fcommon:
-	case OPT_fexceptions:
-	case OPT_fnon_call_exceptions:
 	case OPT_fgnu_tm:
-	case OPT_freg_struct_return:
-	case OPT_fpcc_struct_return:
-	case OPT_ffp_contract_:
-	case OPT_fmath_errno:
-	case OPT_fsigned_zeros:
-	case OPT_ftrapping_math:
-	case OPT_fwrapv:
 	case OPT_fopenmp:
 	case OPT_fopenacc:
 	case OPT_fopenacc_dim_:
 	case OPT_fcilkplus:
-	case OPT_ftrapv:
 	case OPT_foffload_abi_:
 	case OPT_O:
 	case OPT_Ofast:
@@ -593,12 +551,6 @@ append_linker_options (obstack *argv_obstack, struct cl_decoded_option *opts,
 	case OPT_flto_:
 	case OPT_flto:
 	  /* We've handled these LTO options, do not pass them on.  */
-	  continue;
-
-	case OPT_freg_struct_return:
-	case OPT_fpcc_struct_return:
-	  /* Ignore these, they are determined by the input files.
-	     ???  We fail to diagnose a possible mismatch here.  */
 	  continue;
 
 	case OPT_fopenmp:
