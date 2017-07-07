@@ -14324,7 +14324,9 @@ aarch_macro_fusion_pair_p (rtx_insn *prev, rtx_insn *curr)
 	}
     }
 
-  if (aarch64_fusion_enabled_p (AARCH64_FUSE_ALU_BRANCH)
+  if (prev_set
+      && curr_set
+      && aarch64_fusion_enabled_p (AARCH64_FUSE_ALU_BRANCH)
       && any_condjump_p (curr))
     {
       /* We're trying to match:
