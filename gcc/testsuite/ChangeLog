@@ -1,5 +1,10 @@
 2017-07-07  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
+	* gcc.target/powerpc/clone1.c: Add check to make sure the
+	__builtin_cpu_supports function is fully supported.
+	* gcc.target/powerpc/clone2.c: New runtime test for
+	target_clones.
+
 	PR target/81348
 	* gcc.target/powerpc/pr81348.c: New test.
 
