@@ -1125,6 +1125,7 @@ See RS/6000 and PowerPC Options.
 -muser-mode  -mno-user-mode @gol
 -mv8plus  -mno-v8plus  -mvis  -mno-vis @gol
 -mvis2  -mno-vis2  -mvis3  -mno-vis3 @gol
+-mvis4 -mno-vis4 -mvis4b -mno-vis4b @gol
 -mcbcond  -mno-cbcond  -mfmaf  -mno-fmaf  @gol
 -mpopc  -mno-popc  -msubxc  -mno-subxc@gol
 -mfix-at697f  -mfix-ut699 @gol
@@ -23893,7 +23894,7 @@ for machine type @var{cpu_type}.  Supported values for @var{cpu_type} are
 @samp{leon}, @samp{leon3}, @samp{leon3v7}, @samp{sparclite}, @samp{f930},
 @samp{f934}, @samp{sparclite86x}, @samp{sparclet}, @samp{tsc701}, @samp{v9},
 @samp{ultrasparc}, @samp{ultrasparc3}, @samp{niagara}, @samp{niagara2},
-@samp{niagara3}, @samp{niagara4} and @samp{niagara7}.
+@samp{niagara3}, @samp{niagara4}, @samp{niagara7} and @samp{m8}.
 
 Native Solaris and GNU/Linux toolchains also support the value @samp{native},
 which selects the best architecture option for the host processor.
@@ -23921,7 +23922,8 @@ f930, f934, sparclite86x
 tsc701
 
 @item v9
-ultrasparc, ultrasparc3, niagara, niagara2, niagara3, niagara4, niagara7
+ultrasparc, ultrasparc3, niagara, niagara2, niagara3, niagara4,
+niagara7, m8
 @end table
 
 By default (unless configured otherwise), GCC generates code for the V7
@@ -23965,7 +23967,8 @@ additionally optimizes it for Sun UltraSPARC T2 chips. With
 UltraSPARC T3 chips.  With @option{-mcpu=niagara4}, the compiler
 additionally optimizes it for Sun UltraSPARC T4 chips.  With
 @option{-mcpu=niagara7}, the compiler additionally optimizes it for
-Oracle SPARC M7 chips.
+Oracle SPARC M7 chips.  With @option{-mcpu=m8}, the compiler
+additionally optimizes it for Oracle M8 chips.
 
 @item -mtune=@var{cpu_type}
 @opindex mtune
@@ -23980,8 +23983,8 @@ that select a particular CPU implementation.  Those are
 @samp{leon3}, @samp{leon3v7}, @samp{f930}, @samp{f934},
 @samp{sparclite86x}, @samp{tsc701}, @samp{ultrasparc},
 @samp{ultrasparc3}, @samp{niagara}, @samp{niagara2}, @samp{niagara3},
-@samp{niagara4} and @samp{niagara7}.  With native Solaris and
-GNU/Linux toolchains, @samp{native} can also be used.
+@samp{niagara4}, @samp{niagara7} and @samp{m8}.  With native Solaris
+and GNU/Linux toolchains, @samp{native} can also be used.
 
 @item -mv8plus
 @itemx -mno-v8plus
@@ -24028,6 +24031,18 @@ version 4.0 of the UltraSPARC Visual Instruction Set extensions.  The
 default is @option{-mvis4} when targeting a cpu that supports such
 instructions, such as niagara-7 and later.  Setting @option{-mvis4}
 also sets @option{-mvis3}, @option{-mvis2} and @option{-mvis}.
+
+@item -mvis4b
+@itemx -mno-vis4b
+@opindex mvis4b
+@opindex mno-vis4b
+With @option{-mvis4b}, GCC generates code that takes advantage of
+version 4.0 of the UltraSPARC Visual Instruction Set extensions, plus
+the additional VIS instructions introduced in the Oracle SPARC
+Architecture 2017.  The default is @option{-mvis4b} when targeting a
+cpu that supports such instructions, such as m8 and later.  Setting
+@option{-mvis4b} also sets @option{-mvis4}, @option{-mvis3},
+@option{-mvis2} and @option{-mvis}.
 
 @item -mcbcond
 @itemx -mno-cbcond

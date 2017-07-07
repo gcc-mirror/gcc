@@ -1,3 +1,11 @@
+2017-07-07  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* gcc.target/sparc/dictunpack.c: New file.
+	* gcc.target/sparc/fpcmpdeshl.c: Likewise.
+	* gcc.target/sparc/fpcmpshl.c: Likewise.
+	* gcc.target/sparc/fpcmpurshl.c: Likewise.
+	* gcc.target/sparc/fpcmpushl.c: Likewise.
+
 2017-07-06  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/70071

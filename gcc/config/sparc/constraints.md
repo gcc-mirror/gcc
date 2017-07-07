@@ -19,7 +19,7 @@
 
 ;;; Unused letters:
 ;;;     B
-;;;    a        jkl    q  tuv xyz
+;;;    a        jkl        uv xyz
 
 
 ;; Register constraints
@@ -57,6 +57,16 @@
       (match_test "const_all_ones_operand (op, mode)")))
 
 ;; Integer constant constraints
+
+(define_constraint "q"
+ "Unsigned 2-bit integer constant"
+  (and (match_code "const_int")
+       (match_test "SPARC_IMM2_P (ival)")))
+
+(define_constraint "t"
+ "Unsigned 5-bit integer constant"
+ (and (match_code "const_int")
+      (match_test "SPARC_IMM5_P (ival)")))
 
 (define_constraint "A"
  "Signed 5-bit integer constant"

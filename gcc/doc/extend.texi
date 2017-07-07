@@ -19253,6 +19253,45 @@ v4hi __builtin_vis_fpminu16 (v4hi, v4hi);
 v2si __builtin_vis_fpminu32 (v2si, v2si);
 @end smallexample
 
+When you use the @option{-mvis4b} switch, the VIS version 4.0B
+built-in functions also become available:
+
+@smallexample
+v8qi __builtin_vis_dictunpack8 (double, int);
+v4hi __builtin_vis_dictunpack16 (double, int);
+v2si __builtin_vis_dictunpack32 (double, int);
+
+long __builtin_vis_fpcmple8shl (v8qi, v8qi, int);
+long __builtin_vis_fpcmpgt8shl (v8qi, v8qi, int);
+long __builtin_vis_fpcmpeq8shl (v8qi, v8qi, int);
+long __builtin_vis_fpcmpne8shl (v8qi, v8qi, int);
+
+long __builtin_vis_fpcmple16shl (v4hi, v4hi, int);
+long __builtin_vis_fpcmpgt16shl (v4hi, v4hi, int);
+long __builtin_vis_fpcmpeq16shl (v4hi, v4hi, int);
+long __builtin_vis_fpcmpne16shl (v4hi, v4hi, int);
+
+long __builtin_vis_fpcmple32shl (v2si, v2si, int);
+long __builtin_vis_fpcmpgt32shl (v2si, v2si, int);
+long __builtin_vis_fpcmpeq32shl (v2si, v2si, int);
+long __builtin_vis_fpcmpne32shl (v2si, v2si, int);
+
+long __builtin_vis_fpcmpule8shl (v8qi, v8qi, int);
+long __builtin_vis_fpcmpugt8shl (v8qi, v8qi, int);
+long __builtin_vis_fpcmpule16shl (v4hi, v4hi, int);
+long __builtin_vis_fpcmpugt16shl (v4hi, v4hi, int);
+long __builtin_vis_fpcmpule32shl (v2si, v2si, int);
+long __builtin_vis_fpcmpugt32shl (v2si, v2si, int);
+
+long __builtin_vis_fpcmpde8shl (v8qi, v8qi, int);
+long __builtin_vis_fpcmpde16shl (v4hi, v4hi, int);
+long __builtin_vis_fpcmpde32shl (v2si, v2si, int);
+
+long __builtin_vis_fpcmpur8shl (v8qi, v8qi, int);
+long __builtin_vis_fpcmpur16shl (v4hi, v4hi, int);
+long __builtin_vis_fpcmpur32shl (v2si, v2si, int);
+@end smallexample
+
 @node SPU Built-in Functions
 @subsection SPU Built-in Functions
 
