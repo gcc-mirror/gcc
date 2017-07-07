@@ -79,6 +79,7 @@
    UNSPEC_VUNPACK_LO_SIGN_DIRECT
    UNSPEC_VUPKHPX
    UNSPEC_VUPKLPX
+   UNSPEC_CONVERT_4F32_8I16
    UNSPEC_DARN
    UNSPEC_DARN_32
    UNSPEC_DARN_RAW
@@ -3169,6 +3170,23 @@
   DONE;
 }
   [(set_attr "type" "veccomplex")])
+
+;; Generate two vector F32 converted to packed vector I16 vector
+(define_expand "convert_4f32_8i16"
+  [(set (match_operand:V8HI 0 "register_operand" "=v")
+	(unspec:V8HI [(match_operand:V4SF 1 "register_operand" "v")
+		      (match_operand:V4SF 2 "register_operand" "v")]
+		     UNSPEC_CONVERT_4F32_8I16))]
+  "TARGET_P9_VECTOR"
+{
+  rtx rtx_tmp_hi = gen_reg_rtx (V4SImode);
+  rtx rtx_tmp_lo = gen_reg_rtx (V4SImode);
+
+  emit_insn (gen_altivec_vctuxs (rtx_tmp_hi, operands[1], const0_rtx));
+  emit_insn (gen_altivec_vctuxs (rtx_tmp_lo, operands[2], const0_rtx));
+  emit_insn (gen_altivec_vpkswss (operands[0], rtx_tmp_hi, rtx_tmp_lo));
+  DONE;
+})
 
 ;; Generate
 ;;    xxlxor/vxor SCRATCH0,SCRATCH0,SCRATCH0

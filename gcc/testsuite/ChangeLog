@@ -1,3 +1,8 @@
+2017-07-07  Carl Love  <cel@us.ibm.com>
+
+	* gcc.target/powerpc/builtins-1-p9-runnable.c: Add new test
+	file for built-ins.
+
 2017-07-07  Jose E. Marchesi  <jose.marchesi@oracle.com>
 
 	* gcc.target/sparc/dictunpack.c: New file.

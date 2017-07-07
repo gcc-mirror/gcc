@@ -1,3 +1,16 @@
+2017-07-07 Carl Love  <cel@us.ibm.com>
+
+	* config/rs6000/rs6000-c: Add support for built-in function
+	vector unsigned short vec_pack_to_short_fp32 (vector float,
+						      vector float).
+	* config/rs6000/rs6000-builtin.def (CONVERT_4F32_8I16): Add
+	BU_P9V_AV_2 and BU_P9V_OVERLOAD_2 definitions.
+	* config/rs6000/altivec.h (vec_pack_to_short_fp32): Add define.
+	* config/rs6000/altivec.md(UNSPEC_CONVERT_4F32_8I16): Add UNSPEC.
+	(convert_4f32_8i16): Add define_expand.
+	* doc/extend.texi: Update the built-in documentation file for the
+	new built-in function.
+
 2017-07-07  Jose E. Marchesi  <jose.marchesi@oracle.com>
 
 	* config/sparc/m8.md: New file.

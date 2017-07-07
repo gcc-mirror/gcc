@@ -15363,6 +15363,8 @@ signed int vec_cntlz_lsbb (vector unsigned char);
 signed int vec_cnttz_lsbb (vector signed char);
 signed int vec_cnttz_lsbb (vector unsigned char);
 
+vector unsigned short vec_pack_to_short_fp32 (vector float, vector float);
+
 vector signed char vec_xl_len (signed char *addr, size_t len);
 vector unsigned char vec_xl_len (unsigned char *addr, size_t len);
 vector signed int vec_xl_len (signed int *addr, size_t len);
