@@ -328,6 +328,33 @@
        (and (match_code "const_int")
             (match_test "SPARC_SIMM5_P (INTVAL (op))"))))
 
+;; Return true if OP is a constant in the range 0..7.  This is an
+;; acceptable second operand for dictunpack instructions setting a
+;; V8QI mode in the destination register.
+(define_predicate "imm5_operand_dictunpack8"
+  (and (match_code "const_int")
+       (match_test "(INTVAL (op) >= 0 && INTVAL (op) < 8)")))
+
+;; Return true if OP is a constant in the range 7..15.  This is an
+;; acceptable second operand for dictunpack instructions setting a
+;; V4HI mode in the destination register.
+(define_predicate "imm5_operand_dictunpack16"
+  (and (match_code "const_int")
+       (match_test "(INTVAL (op) >= 8 && INTVAL (op) < 16)")))
+
+;; Return true if OP is a constant in the range 15..31.  This is an
+;; acceptable second operand for dictunpack instructions setting a
+;; V2SI mode in the destination register.
+(define_predicate "imm5_operand_dictunpack32"
+  (and (match_code "const_int")
+       (match_test "(INTVAL (op) >= 16 && INTVAL (op) < 32)")))
+
+;; Return true if OP is a constant that is representable by a 2-bit
+;; unsigned field.  This is an acceptable third operand for
+;; fpcmp*shl instructions.
+(define_predicate "imm2_operand"
+  (and (match_code "const_int")
+       (match_test "SPARC_IMM2_P (INTVAL (op))")))
 
 ;; Predicates for miscellaneous instructions.
 
