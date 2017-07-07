@@ -1990,10 +1990,12 @@ BU_P8V_OVERLOAD_3 (VSUBEUQM,	"vsubeuqm")
 /* ISA 3.0 vector overloaded 2-argument functions. */
 BU_P9V_AV_2 (VSLV,		"vslv",			CONST, vslv)
 BU_P9V_AV_2 (VSRV,		"vsrv",			CONST, vsrv)
+BU_P9V_AV_2 (CONVERT_4F32_8I16, "convert_4f32_8i16", CONST, convert_4f32_8i16)
 
 /* ISA 3.0 vector overloaded 2-argument functions. */
 BU_P9V_OVERLOAD_2 (VSLV,	"vslv")
 BU_P9V_OVERLOAD_2 (VSRV,	"vsrv")
+BU_P9V_OVERLOAD_2 (CONVERT_4F32_8I16, "convert_4f32_8i16")
 
 /* 2 argument vector functions added in ISA 3.0 (power9). */
 BU_P9V_AV_2 (VADUB,		"vadub",		CONST,  vaduv16qi3)
