@@ -81,6 +81,10 @@ mvis4
 Target Report Mask(VIS4)
 Use UltraSPARC Visual Instruction Set version 4.0 extensions.
 
+mvis4b
+Target Report Mask(VIS4B)
+Use additional VIS instructions introduced in OSA2017.
+
 mcbcond
 Target Report Mask(CBCOND)
 Use UltraSPARC Compare-and-Branch extensions.
@@ -208,6 +212,9 @@ Enum(sparc_processor_type) String(niagara4) Value(PROCESSOR_NIAGARA4)
 
 EnumValue
 Enum(sparc_processor_type) String(niagara7) Value(PROCESSOR_NIAGARA7)
+
+EnumValue
+Enum(sparc_processor_type) String(m8) Value(PROCESSOR_M8)
 
 mcmodel=
 Target RejectNegative Joined Var(sparc_cmodel_string)
