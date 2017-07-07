@@ -3174,22 +3174,20 @@ ipa_fn_summary_generate (void)
 
   FOR_EACH_DEFINED_FUNCTION (node)
     if (DECL_STRUCT_FUNCTION (node->decl))
-      node->local.versionable = tree_versionable_function_p (node->decl);
-
-  /* When not optimizing, do not bother to analyze.  Inlining is still done
-     because edge redirection needs to happen there.  */
-  if (!optimize && !flag_generate_lto && !flag_generate_offload && !flag_wpa)
-    return;
+      node->local.versionable = 
+	(opt_for_fn (node->decl, optimize)
+	&& tree_versionable_function_p (node->decl));
 
   ipa_fn_summary_alloc ();
 
   ipa_fn_summaries->enable_insertion_hook ();
 
   ipa_register_cgraph_hooks ();
-  ipa_free_fn_summary ();
 
   FOR_EACH_DEFINED_FUNCTION (node)
-    if (!node->alias)
+    if (!node->alias
+	&& (flag_generate_lto || flag_generate_offload|| flag_wpa
+	    || opt_for_fn (node->decl, optimize)))
       inline_analyze_function (node);
 }
 
@@ -3342,12 +3340,9 @@ ipa_fn_summary_read (void)
 	fatal_error (input_location,
 		     "ipa inline summary is missing in input file");
     }
-  if (optimize)
-    {
-      ipa_register_cgraph_hooks ();
-      if (!flag_ipa_cp)
-	ipa_prop_read_jump_functions ();
-    }
+  ipa_register_cgraph_hooks ();
+  if (!flag_ipa_cp)
+    ipa_prop_read_jump_functions ();
 
   gcc_assert (ipa_fn_summaries);
   ipa_fn_summaries->enable_insertion_hook ();
@@ -3462,7 +3457,7 @@ ipa_fn_summary_write (void)
   produce_asm (ob, NULL);
   destroy_output_block (ob);
 
-  if (optimize && !flag_ipa_cp)
+  if (!flag_ipa_cp)
     ipa_prop_write_jump_functions ();
 }
 

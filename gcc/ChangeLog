@@ -1,3 +1,28 @@
+2017-07-06  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-comdats.c: Remove optimize check from gate.
+	* ipa-fnsummary.c (ipa_fn_summary_generate): do not generate summary
+	for functions not optimized.
+	(ipa_fn_summary_read): Skip optimize check.
+	(ipa_fn_summary_write): Likewise.
+	* ipa-inline-analysis.c (do_estimate_growth_1): Check that caller
+	is optimized.
+	* ipa-inline.c (can_inline_edge_p): Not optimized functions are
+	uninlinable.
+	(can_inline_edge_p): Check flag_pcc_struct_return for match.
+	(check_callers): Give up on caller which is not optimized.
+	(inline_small_functions): Likewise.
+	(ipa_inline): Do not give up when not optimizing.
+	* ipa-visbility.c (function_and_variable_visibility): Do not optimize
+	away unoptimizes cdtors.
+	(whole_program_function_and_variable_visibility): Do
+	ipa_discover_readonly_nonaddressable_vars in LTO mode.
+	* ipa.c (process_references): Do not check optimize.
+	(symbol_table::remove_unreachable_nodes): Update optimize check.
+	(set_writeonly_bit): Update optimize check.
+	(pass_ipa_cdtor_merge::gate): Do not check optimize.
+	(pass_ipa_single_use::gate): Remove.
+
 2017-07-06  Aaron Sawdey  <acsawdey@linux.vnet.ibm.com>
 
 	* config/rs6000/rs6000.c (union_defs, union_uses, insn_is_load_p,
