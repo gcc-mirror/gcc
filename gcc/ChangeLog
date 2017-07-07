@@ -1,3 +1,8 @@
+2017-07-07  Andrew Pinski  <apinski@cavium.com>
+
+	* config/aarch64/aarch64.c (aarch_macro_fusion_pair_p): Check
+	prev_set and curr_set for AARCH64_FUSE_ALU_BRANCH.
+
 2017-07-07  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* config/rs6000/rs6000.c (rs6000_get_function_versions_dispatcher):
