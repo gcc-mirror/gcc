@@ -1,10 +1,16 @@
+2017-07-07  Peter Bergner  <bergner@vnet.ibm.com>
+
+	* config/rs6000/float128-ifunc.c: Don't include auxv.h.
+	(have_ieee_hw_p): Delete function.
+	(SW_OR_HW) Use __builtin_cpu_supports().
+
 2017-07-06  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	* config/arm/lib1funcs.S: Defined __ARM_ARCH__ to 8 for ARMv8-R.
 
 2017-07-03  Olivier Hainque  <hainque@adacore.com>
 
-        * config/t-vxworks7: New file, really.
+	* config/t-vxworks7: New file, really.
 
 2017-06-28  Joseph Myers  <joseph@codesourcery.com>
 
