@@ -1440,21 +1440,23 @@ linemap_macro_loc_to_def_point (struct line_maps *set,
 {
   struct line_map *map;
 
-  if (IS_ADHOC_LOC (location))
-    location = set->location_adhoc_data_map.data[location
-						 & MAX_SOURCE_LOCATION].locus;
-
   linemap_assert (set && location >= RESERVED_LOCATION_COUNT);
 
   while (true)
     {
-      map = const_cast <line_map *> (linemap_lookup (set, location));
+      source_location caret_loc;
+      if (IS_ADHOC_LOC (location))
+	caret_loc = get_location_from_adhoc_loc (set, location);
+      else
+	caret_loc = location;
+
+      map = const_cast <line_map *> (linemap_lookup (set, caret_loc));
       if (!linemap_macro_expansion_map_p (map))
 	break;
 
       location =
 	linemap_macro_map_loc_to_def_point (linemap_check_macro (map),
-					    location);
+					    caret_loc);
     }
 
   if (original_map)
