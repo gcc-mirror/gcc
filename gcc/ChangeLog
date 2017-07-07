@@ -1,3 +1,229 @@
+2017-07-07  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* config/sparc/m8.md: New file.
+	* config/sparc/sparc.md: Include m8.md.
+
+2017-07-07  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* config/sparc/sparc.opt: New option -mvis4b.
+	* config/sparc/sparc.c (dump_target_flag_bits): Handle MASK_VIS4B.
+	(sparc_option_override): Handle VIS4B.
+	(enum sparc_builtins): Define
+	SPARC_BUILTIN_DICTUNPACK{8,16,32},
+	SPARC_BUILTIN_FPCMP{LE,GT,EQ,NE}{8,16,32}SHL,
+	SPARC_BUILTIN_FPCMPU{LE,GT}{8,16,32}SHL,
+	SPARC_BUILTIN_FPCMPDE{8,16,32}SHL and
+	SPARC_BUILTIN_FPCMPUR{8,16,32}SHL.
+	(check_constant_argument): New function.
+	(sparc_vis_init_builtins): Define builtins
+	__builtin_vis_dictunpack{8,16,32},
+	__builtin_vis_fpcmp{le,gt,eq,ne}{8,16,32}shl,
+	__builtin_vis_fpcmpu{le,gt}{8,16,32}shl,
+	__builtin_vis_fpcmpde{8,16,32}shl and
+	__builtin_vis_fpcmpur{8,16,32}shl.
+	(sparc_expand_builtin): Check that the constant operands to
+	__builtin_vis_fpcmp*shl and _builtin_vis_dictunpack* are indeed
+	constant and in range.
+	* config/sparc/sparc-c.c (sparc_target_macros): Handle
+	TARGET_VIS4B.
+	* config/sparc/sparc.h (SPARC_IMM2_P): Define.
+	(SPARC_IMM5_P): Likewise.
+	* config/sparc/sparc.md (cpu_feature): Add new feagure "vis4b".
+	(enabled): Handle vis4b.
+	(UNSPEC_DICTUNPACK): New unspec.
+	(UNSPEC_FPCMPSHL): Likewise.
+	(UNSPEC_FPUCMPSHL): Likewise.
+	(UNSPEC_FPCMPDESHL): Likewise.
+	(UNSPEC_FPCMPURSHL): Likewise.
+	(cpu_feature): New CPU feature `vis4b'.
+	(dictunpack{8,16,32}): New insns.
+	(FPCSMODE): New mode iterator.
+	(fpcscond): New code iterator.
+	(fpcsucond): Likewise.
+	(fpcmp{le,gt,eq,ne}{8,16,32}{si,di}shl): New insns.
+	(fpcmpu{le,gt}{8,16,32}{si,di}shl): Likewise.
+	(fpcmpde{8,16,32}{si,di}shl): Likewise.
+	(fpcmpur{8,16,32}{si,di}shl): Likewise.
+	* config/sparc/constraints.md: Define constraints `q' for unsigned
+	2-bit integer constants and `t' for unsigned 5-bit integer
+	constants.
+	* config/sparc/predicates.md (imm5_operand_dictunpack8): New
+	predicate.
+	(imm5_operand_dictunpack16): Likewise.
+	(imm5_operand_dictunpack32): Likewise.
+	(imm2_operand): Likewise.
+	* doc/invoke.texi (SPARC Options): Document -mvis4b.
+	* doc/extend.texi (SPARC VIS Built-in Functions): Document the
+	ditunpack* and fpcmp*shl builtins.
+
+2017-07-07  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* config.gcc: Handle m8 in --with-{cpu,tune} options.
+	* config.in: Add HAVE_AS_SPARC6 define.
+	* config/sparc/driver-sparc.c (cpu_names): Add entry for the SPARC
+	M8.
+	* config/sparc/sol2.h (CPP_CPU64_DEFAULT_SPEC): Define for
+	TARGET_CPU_m8.
+	(ASM_CPU32_DEFAUILT_SPEC): Likewise.
+	(CPP_CPU_SPEC): Handle m8.
+	(ASM_CPU_SPEC): Likewise.
+	* config/sparc/sparc-opts.h (enum processor_type): Add
+	PROCESSOR_M8.
+	* config/sparc/sparc.c (m8_costs): New struct.
+	(sparc_option_override): Handle TARGET_CPU_m8.
+	(sparc32_initialize_trampoline): Likewise.
+	(sparc64_initialize_trampoline): Likewise.
+	(sparc_issue_rate): Likewise.
+	(sparc_register_move_cost): Likewise.
+	* config/sparc/sparc.h (TARGET_CPU_m8): Define.
+	(CPP_CPU64_DEFAULT_SPEC): Define for M8.
+	(ASM_CPU64_DEFAULT_SPEC): Likewise.
+	(CPP_CPU_SPEC): Handle M8.
+	(ASM_CPU_SPEC): Likewise.
+	(AS_M8_FLAG): Define.
+	* config/sparc/sparc.md: Add m8 to the cpu attribute.
+	* config/sparc/sparc.opt: New option -mcpu=m8 for sparc targets.
+	* configure.ac (HAVE_AS_SPARC6): Check for assembler support for
+	M8 instructions.
+	* configure: Regenerate.
+	* doc/invoke.texi (SPARC Options): Document -mcpu=m8 and
+	-mtune=m8.
+
+2017-07-07  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* config/sparc/niagara7.md: Rework the DFA scheduler to use insn
+	subtypes.
+	* config/sparc/sparc.md: Remove the `v3pipe' insn attribute.
+	("*movdi_insn_sp32"): Do not set v3pipe.
+	("*movsi_insn"): Likewise.
+	("*movdi_insn_sp64"): Likewise.
+	("*movsf_insn"): Likewise.
+	("*movdf_insn_sp32"): Likewise.
+	("*movdf_insn_sp64"): Likewise.
+	("*zero_extendsidi2_insn_sp64"): Likewise.
+	("*sign_extendsidi2_insn"): Likewise.
+	("*mov<VM32:mode>_insn"): Likewise.
+	("*mov<VM64:mode>_insn_sp64"): Likewise.
+	("*mov<VM64:mode>_insn_sp32"): Likewise.
+	("<plusminus_insn><VADDSUB:mode>3"): Likewise.
+	("<vlop:code><VL:mode>3"): Likewise.
+	("*not_<vlop:code><VL:mode>3"): Likewise.
+	("*nand<VL:mode>_vis"): Likewise.
+	("*<vlnotop:code>_not1<VL:mode>_vis"): Likewise.
+	("*<vlnotop:code>_not2<VL:mode>_vis"): Likewise.
+	("one_cmpl<VL:mode>2"): Likewise.
+	("faligndata<VM64:mode>_vis"): Likewise.
+	("alignaddrsi_vis"): Likewise.
+	("alignaddrdi_vis"): Likweise.
+	("alignaddrlsi_vis"): Likewise.
+	("alignaddrldi_vis"): Likewise.
+	("fcmp<gcond:code><GCM:gcm_name><P:mode>_vis"): Likewise.
+	("bmaskdi_vis"): Likewise.
+	("bmasksi_vis"): Likewise.
+	("bshuffle<VM64:mode>_vis"): Likewise.
+	("cmask8<P:mode>_vis"): Likewise.
+	("cmask16<P:mode>_vis"): Likewise.
+	("cmask32<P:mode>_vis"): Likewise.
+	("pdistn<P:mode>_vis"): Likewise.
+	("<vis3_addsub_ss_patname><VASS:mode>3"): Likewise.
+
+2017-07-07  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* config/sparc/sparc.md ("subtype"): New insn attribute.
+	("*wrgsr_sp64"): Set insn subtype.
+	("*rdgsr_sp64"): Likewise.
+	("alignaddrsi_vis"): Likewise.
+	("alignaddrdi_vis"): Likewise.
+	("alignaddrlsi_vis"): Likewise.
+	("alignaddrldi_vis"): Likewise.
+	("<plusminus_insn><VADDSUB:mode>3"): Likewise.
+	("fexpand_vis"): Likewise.
+	("fpmerge_vis"): Likewise.
+	("faligndata<VM64:mode>_vis"): Likewise.
+	("bshuffle<VM64:mode>_vis"): Likewise.
+	("cmask8<P:mode>_vis"): Likewise.
+	("cmask16<P:mode>_vis"): Likewise.
+	("cmask32<P:mode>_vis"): Likewise.
+	("fchksm16_vis"): Likewise.
+	("v<vis3_shift_patname><GCM:mode>3"): Likewise.
+	("fmean16_vis"): Likewise.
+	("fp<plusminus_insn>64_vis"): Likewise.
+	("<plusminus_insn>v8qi3"): Likewise.
+	("<vis3_addsub_ss_patname><VASS:mode>3"): Likewise.
+	("<vis4_minmax_patname><VMMAX:mode>3"): Likewise.
+	("<vis4_uminmax_patname><VMMAX:mode>3"): Likewise.
+	("<vis3_addsub_ss_patname>v8qi3"): Likewise.
+	("<vis4_addsub_us_patname><VAUS:mode>3"): Likewise.
+	("*movqi_insn"): Likewise.
+	("*movhi_insn"): Likewise.
+	("*movsi_insn"): Likewise.
+	("movsi_pic_gotdata_op"): Likewise.
+	("*movdi_insn_sp32"): Likewise.
+	("*movdi_insn_sp64"): Likewise.
+	("movdi_pic_gotdata_op"): Likewise.
+	("*movsf_insn"): Likewise.
+	("*movdf_insn_sp32"): Likewise.
+	("*movdf_insn_sp64"): Likewise.
+	("*zero_extendhisi2_insn"): Likewise.
+	("*zero_extendqihi2_insn"): Likewise.
+	("*zero_extendqisi2_insn"): Likewise.
+	("*zero_extendqidi2_insn"): Likewise.
+	("*zero_extendhidi2_insn"): Likewise.
+	("*zero_extendsidi2_insn_sp64"): Likewise.
+	("ldfsr"): Likewise.
+	("prefetch_64"): Likewise.
+	("prefetch_32"): Likewise.
+	("tie_ld32"): Likewise.
+	("tie_ld64"): Likewise.
+	("*tldo_ldub_sp32"): Likewise.
+	("*tldo_ldub1_sp32"): Likewise.
+	("*tldo_ldub2_sp32"): Likewise.
+	("*tldo_ldub_sp64"): Likewise.
+	("*tldo_ldub1_sp64"): Likewise.
+	("*tldo_ldub2_sp64"): Likewise.
+	("*tldo_ldub3_sp64"): Likewise.
+	("*tldo_lduh_sp32"): Likewise.
+	("*tldo_lduh1_sp32"): Likewise.
+	("*tldo_lduh_sp64"): Likewise.
+	("*tldo_lduh1_sp64"): Likewise.
+	("*tldo_lduh2_sp64"): Likewise.
+	("*tldo_lduw_sp32"): Likewise.
+	("*tldo_lduw_sp64"): Likewise.
+	("*tldo_lduw1_sp64"): Likewise.
+	("*tldo_ldx_sp64"): Likewise.
+	("*mov<VM32:mode>_insn"): Likewise.
+	("*mov<VM64:mode>_insn_sp64"): Likewise.
+	("*mov<VM64:mode>_insn_sp32"): Likewise.
+
+2017-07-07  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* config/sparc/sparc.md ("type"): New insn type viscmp.
+	("fcmp<gcond:code><GCM:gcm_name><P:mode>_vis"): Set insn type to
+	viscmp.
+	("fpcmp<gcond:code>8<P:mode>_vis"): Likewise.
+	("fucmp<gcond:code>8<P:mode>_vis"): Likewise.
+	("fpcmpu<gcond:code><GCM:gcm_name><P:mode>_vis"): Likewise.
+	* config/sparc/niagara7.md ("n7_vis_logical_v3pipe"): Handle
+	viscmp.
+	("n7_vis_logical_11cycle"): Likewise.
+	* config/sparc/niagara4.md ("n4_vis_logical"): Likewise.
+	* config/sparc/niagara2.md ("niag3_vis": Likewise.
+	* config/sparc/niagara.md ("niag_vis"): Likewise.
+	* config/sparc/ultra3.md ("us3_fga"): Likewise.
+	* config/sparc/ultra1_2.md ("us1_fga_double"): Likewise.
+
+2017-07-07  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* config/sparc/sparc.md: New instruction type `bmask'.
+	(bmaskdi_vis): Use the `bmask' type.
+	(bmasksi_vis): Likewise.
+	* config/sparc/ultra3.md (us3_array): Likewise.
+	* config/sparc/niagara7.md (n7_array): Likewise.
+	* config/sparc/niagara4.md (n4_array): Likewise.
+	* config/sparc/niagara2.md (niag2_vis): Likewise.
+	(niag3_vis): Likewise.
+	* config/sparc/niagara.md (niag_vis): Likewise.
+
 2017-07-06  Jan Hubicka  <hubicka@ucw.cz>
 
 	* ipa-comdats.c: Remove optimize check from gate.

@@ -79,6 +79,7 @@ static const struct cpu_names {
 #endif
   { "SPARC-M7",		"niagara7" },
   { "SPARC-S7",		"niagara7" },
+  { "SPARC-M8",		"m8" },
   { NULL,	NULL }
   };
 

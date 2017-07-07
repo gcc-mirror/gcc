@@ -56,7 +56,7 @@
 
 (define_insn_reservation "us3_array" 2
   (and (eq_attr "cpu" "ultrasparc3")
-    (eq_attr "type" "array,edgen"))
+    (eq_attr "type" "array,edgen,bmask"))
   "us3_ms + us3_slotany, nothing")
 
 ;; ??? Not entirely accurate.
@@ -176,7 +176,7 @@
 (define_insn_reservation "us3_fga"
   3
   (and (eq_attr "cpu" "ultrasparc3")
-       (eq_attr "type" "fga,visl,vismv"))
+       (eq_attr "type" "fga,visl,viscmp,vismv"))
   "us3_fpa + us3_slotany, nothing*2")
 
 (define_insn_reservation "us3_fgm"
