@@ -1,3 +1,16 @@
+2017-07-08  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* Makefile.in (HOOKS_H, RTL_BASE_H, FUNCTION_H, EXPR_H, REGS_H)
+	(REAL_H): Remove $(MACHMODE_H).
+	(FIXED_VALUE_H, TREE_CORE_H, CFGLOOP_H): Remove $(MACHMODE_H) and
+	double-int.h.
+	(CORETYPES_H): Add signop.h, wide-int.h, wide-int-print.h,
+	$(MACHMODE_H) and double-int.h.
+	(build/min-insn-modes.o): Depend on $(CORETYPES_H) rather than
+	$(MACHMODE_H).
+	(gengtype-state.o, gengtype.o, build/gengtype.o): Don't depend on
+	double-int.h.
+
 2017-07-07  Andrew Pinski  <apinski@cavium.com>
 
 	* config/aarch64/aarch64.c (aarch_macro_fusion_pair_p): Check
