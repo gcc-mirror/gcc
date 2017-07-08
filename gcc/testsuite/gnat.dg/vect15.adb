@@ -5,8 +5,9 @@ package body Vect15 is
 
    procedure Add (X, Y : Sarray; R : out Sarray) is
    begin
-      for I in Sarray'Range loop
-         R(I) := X(I) + Y(I);
+      R(1) := X(5) + Y(5);
+      for I in 1 .. 4 loop
+         R(I + 1) := X(I) + Y(I);
       end loop;
    end;
 
