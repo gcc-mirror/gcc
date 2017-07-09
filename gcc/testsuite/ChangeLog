@@ -1,4 +1,10 @@
-2017-06-09  Thomas Koenig  <tkoenig@gcc.gnu.org>
+2017-07-09  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/81313
+	* gcc.dg/stack-layout-dynamic-1.c (bar): Add 4 additional
+	integer argumets to bypass x86_64 outgoing args optimization.
+
+2017-07-09  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	* gfortran.dg/eoshift_4.f90:  New test.
 	* gfortran.dg/eoshift_5.f90:  New test.
