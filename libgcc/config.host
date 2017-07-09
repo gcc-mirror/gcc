@@ -250,14 +250,7 @@ case ${host} in
   tmake_file="$tmake_file t-crtstuff-pic t-libgcc-pic t-eh-dw2-dip"
   tmake_file="$tmake_file t-slibgcc t-slibgcc-gld t-slibgcc-elf-ver"
   tmake_file="$tmake_file t-slibgcc-libgcc"
-  # NetBSD 1.7 and later are set up to use GCC's crtstuff for
-  # ELF configurations.  We will clear extra_parts in the
-  # a.out configurations.
-  case ${host} in
-    *-*-netbsd*1.[7-9]* | *-*-netbsd[2-9]* | *-*-netbsdelf[2-9]*)
-      extra_parts="crtbegin.o crtend.o crtbeginS.o crtendS.o crtbeginT.o"
-      ;;
-  esac
+  extra_parts="crtbegin.o crtend.o crtbeginS.o crtendS.o crtbeginT.o"
   ;;
 *-*-openbsd*)
   tmake_file="$tmake_file t-crtstuff-pic t-libgcc-pic t-eh-dw2-dip"
