@@ -1,3 +1,9 @@
+2017-06-09  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* gfortran.dg/eoshift_4.f90:  New test.
+	* gfortran.dg/eoshift_5.f90:  New test.
+	* gfortran.dg/eoshift_6.f90:  New test.
+
 2017-07-09  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/81313

@@ -181,12 +181,23 @@ eoshift2 (gfc_array_char *ret, const gfc_array_char *array,
           src = sptr;
           dest = &rptr[-shift * roffset];
         }
-      for (n = 0; n < len; n++)
-        {
-          memcpy (dest, src, size);
-          dest += roffset;
-          src += soffset;
-        }
+
+      /* If the elements are contiguous, perform a single block move.  */
+      if (soffset == size && roffset == size)
+	{
+	  size_t chunk = size * len;
+	  memcpy (dest, src, chunk);
+	  dest += chunk;
+	}
+      else
+	{
+	  for (n = 0; n < len; n++)
+	    {
+	      memcpy (dest, src, size);
+	      dest += roffset;
+	      src += soffset;
+	    }
+	}
       if (shift >= 0)
         {
           n = shift;
