@@ -1,3 +1,16 @@
+2017-06-09  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* intrinsics/eoshift2.c (eoshift2):  Use memcpy
+	for innermost copy where possible.
+	* m4/eoshift1.m4 (eoshift1): Likewise.
+	* m4/eoshift3.m4 (eoshift3): Likewise.
+	* generated/eoshift1_16.c: Regenerated.
+	* generated/eoshift1_4.c: Regenerated.
+	* generated/eoshift1_8.c: Regenerated.
+	* generated/eoshift3_16.c: Regenerated.
+	* generated/eoshift3_4.c: Regenerated.
+	* generated/eoshift3_8.c: Regenerated.
+
 2017-07-02  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	* intrinsics/eoshift0.c:  For contiguous arrays, use
