@@ -1,3 +1,9 @@
+2017-07-09  Dominique d'Humieres  <dominiq@lps.ens.fr>
+
+	PR fortran/81341
+	* class.c (class_array_ref_detected): Remove a redundant
+	condition.
+
 2017-07-06  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/70071
