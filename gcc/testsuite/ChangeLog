@@ -1,3 +1,12 @@
+2017-07-09  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/81313
+	* gcc.target/i386/pr81313-1.c: New test.
+	* gcc.target/i386/pr81313-2.c: Likewise.
+	* gcc.target/i386/pr81313-3.c: Likewise.
+	* gcc.target/i386/pr81313-4.c: Likewise.
+	* gcc.target/i386/pr81313-5.c: Likewise.
+
 2017-07-08  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	* gnat.dg/vect15.ads (Sarray): Increase range to 1 .. 5.

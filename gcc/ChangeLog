@@ -1,3 +1,15 @@
+2017-07-09  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/81313
+	* config/i386/i386.c (ix86_function_arg_advance): Set
+	outgoing_args_on_stack to true if there are outgoing arguments
+	on stack.
+	(ix86_function_arg): Likewise.
+	(ix86_get_drap_rtx): Use DRAP only if there are outgoing
+	arguments on stack and ACCUMULATE_OUTGOING_ARGS is false.
+	* config/i386/i386.h (machine_function): Add
+	outgoing_args_on_stack.
+
 2017-07-09  Krister Walfridsson  <krister.walfridsson@gmail.com>
 
 	* config.gcc (*-*-netbsd*): Remove check for NetBSD versions not
