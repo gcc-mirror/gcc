@@ -1,3 +1,9 @@
+2017-07-09  Krister Walfridsson  <krister.walfridsson@gmail.com>
+
+	* config.gcc (*-*-netbsd*): Remove check for NetBSD versions not
+	supporting pthreds.
+	* config/netbsd.h (NETBSD_LIBGCC_SPEC): Always enable pthreads.
+
 2017-07-08  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	* Makefile.in (HOOKS_H, RTL_BASE_H, FUNCTION_H, EXPR_H, REGS_H)
