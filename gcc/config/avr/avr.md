@@ -5185,7 +5185,7 @@
    (set_attr "cc" "none")])
 
 ;; table jump
-;; For entries in jump table see avr_output_addr_vec_elt.
+;; For entries in jump table see avr_output_addr_vec.
 
 ;; Table made from
 ;;    "rjmp .L<n>"   instructions for <= 8K devices

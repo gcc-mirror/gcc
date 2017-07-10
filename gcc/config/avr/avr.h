@@ -398,6 +398,10 @@ typedef struct avr_args
 
 #define SUPPORTS_INIT_PRIORITY 0
 
+/* We pretend jump tables are in text section because otherwise,
+   final.c will switch to .rodata before jump tables and thereby
+   triggers __do_copy_data.  As we implement ASM_OUTPUT_ADDR_VEC,
+   we still have full control over the jump tables themselves.  */
 #define JUMP_TABLES_IN_TEXT_SECTION 1
 
 #define ASM_COMMENT_START " ; "
@@ -447,8 +451,8 @@ typedef struct avr_args
   fprintf (STREAM, "\tpop\tr%d", REGNO);	\
 }
 
-#define ASM_OUTPUT_ADDR_VEC_ELT(STREAM, VALUE)  \
-  avr_output_addr_vec_elt (STREAM, VALUE)
+#define ASM_OUTPUT_ADDR_VEC(TLABEL, TDATA)      \
+  avr_output_addr_vec (TLABEL, TDATA)
 
 #define ASM_OUTPUT_ALIGN(STREAM, POWER)                 \
   do {                                                  \
