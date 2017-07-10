@@ -112,7 +112,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       explicit
       basic_stringbuf(const __string_type& __str,
 		      ios_base::openmode __mode = ios_base::in | ios_base::out)
-      : __streambuf_type(), _M_mode(), _M_string(__str.data(), __str.size())
+      : __streambuf_type(), _M_mode(),
+	_M_string(__str.data(), __str.size(), __str.get_allocator())
       { _M_stringbuf_init(__mode); }
 
 #if __cplusplus >= 201103L
@@ -165,14 +166,14 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       __string_type
       str() const
       {
-	__string_type __ret;
+	__string_type __ret(_M_string.get_allocator());
 	if (this->pptr())
 	  {
 	    // The current egptr() may not be the actual string end.
 	    if (this->pptr() > this->egptr())
-	      __ret = __string_type(this->pbase(), this->pptr());
+	      __ret.assign(this->pbase(), this->pptr());
 	    else
- 	      __ret = __string_type(this->pbase(), this->egptr());
+	      __ret.assign(this->pbase(), this->egptr());
 	  }
 	else
 	  __ret = _M_string;
