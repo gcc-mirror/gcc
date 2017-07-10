@@ -1407,7 +1407,7 @@ format_integer (const directive &dir, tree arg)
 
       return res;
     }
-  else if (TREE_CODE (TREE_TYPE (arg)) == INTEGER_TYPE
+  else if (INTEGRAL_TYPE_P (TREE_TYPE (arg))
 	   || TREE_CODE (TREE_TYPE (arg)) == POINTER_TYPE)
     /* Determine the type of the provided non-constant argument.  */
     argtype = TREE_TYPE (arg);
@@ -1427,7 +1427,7 @@ format_integer (const directive &dir, tree arg)
 
   if (arg
       && TREE_CODE (arg) == SSA_NAME
-      && TREE_CODE (argtype) == INTEGER_TYPE)
+      && INTEGRAL_TYPE_P (argtype))
     {
       /* Try to determine the range of values of the integer argument
 	 (range information is not available for pointers).  */
@@ -1472,7 +1472,7 @@ format_integer (const directive &dir, tree arg)
 	      if (code == NOP_EXPR)
 		{
 		  tree type = TREE_TYPE (gimple_assign_rhs1 (def));
-		  if (TREE_CODE (type) == INTEGER_TYPE
+		  if (INTEGRAL_TYPE_P (type)
 		      || TREE_CODE (type) == POINTER_TYPE)
 		    argtype = type;
 		}
