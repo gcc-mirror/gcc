@@ -1,5 +1,7 @@
 2017-07-10  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/abi/pr42230.cc: Add header for std::free.
+
 	PR libstdc++/81381
 	* include/bits/sstream.tcc (basic_stringbuf::overflow)
 	(basic_stringbuf::basic_stringbuf(const __string_type&, ios::mode))
