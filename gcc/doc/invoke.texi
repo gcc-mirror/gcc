@@ -661,7 +661,8 @@ Objective-C and Objective-C++ Dialects}.
 @emph{AVR Options}
 @gccoptlist{-mmcu=@var{mcu}  -mabsdata  -maccumulate-args @gol
 -mbranch-cost=@var{cost} @gol
--mcall-prologues  -mint8  -mn_flash=@var{size}  -mno-interrupts @gol
+-mcall-prologues  -mgas-isr-prologues  -mint8 @gol
+-mn_flash=@var{size}  -mno-interrupts @gol
 -mrelax  -mrmw  -mstrict-X  -mtiny-stack  -mfract-convert-truncate @gol
 -mshort-calls  -nodevicelib @gol
 -Waddr-space-convert  -Wmisspelled-isr}
@@ -15976,6 +15977,18 @@ integers. The default branch cost is 0.
 @opindex mcall-prologues
 Functions prologues/epilogues are expanded as calls to appropriate
 subroutines.  Code size is smaller.
+
+@item -mgas-isr-prologues
+@opindex mgas-isr-prologues
+Interrupt service routines (ISRs) may use the @code{__gcc_isr} pseudo
+instruction supported by GNU Binutils, see the
+@w{@uref{https://sourceware.org/binutils/docs/as/AVR_002dDependent.html,AVR assembler manual}}
+for details.
+If this option is on, the feature can still be disabled for individual
+ISRs by means of the @ref{AVR Function Attributes,,@code{no_gccisr}}
+function attribute.  This feature is activated per default
+if optimization is on (but not with @option{-Og}, @pxref{Optimize Options}),
+and if GNU Binutils support @w{@uref{https://sourceware.org/PR21683,PR21683}}.
 
 @item -mint8
 @opindex mint8

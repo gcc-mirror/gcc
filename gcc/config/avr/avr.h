@@ -585,6 +585,26 @@ struct GTY(()) machine_function
   /* 'true' if the above is_foo predicates are sanity-checked to avoid
      multiple diagnose for the same function.  */
   int attributes_checked_p;
+
+  /* 'true' - if current function shall not use '__gcc_isr' pseudo
+     instructions as specified by the "no_gccisr" attribute.  */
+  int is_no_gccisr;
+
+  /* Used for `__gcc_isr' pseudo instruction handling of
+     non-naked ISR prologue / epilogue(s).  */
+  struct
+  {
+    /* 'true' if this function actually uses "*gasisr" insns. */
+    int yes;
+    /* 'true' if this function is allowed to use "*gasisr" insns. */
+    int maybe;
+    /* The register numer as printed by the Done chunk.  */
+    int regno;
+  } gasisr;
+
+  /* 'true' if this function references .L__stack_usage like with
+     __builtin_return_address.  */
+  int use_L__stack_usage;
 };
 
 /* AVR does not round pushes, but the existence of this macro is
