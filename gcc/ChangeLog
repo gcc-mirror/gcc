@@ -1,3 +1,7 @@
+2017-07-10  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/arc.h (ADDITIONAL_REGISTER_NAMES): Define.
+
 2017-07-07  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR lto/80838

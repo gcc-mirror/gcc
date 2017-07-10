@@ -1262,6 +1262,13 @@ extern char rname56[], rname57[], rname58[], rname59[];
   "lp_start", "lp_end" \
 }
 
+#define ADDITIONAL_REGISTER_NAMES		\
+{						\
+  {"ilink",  29},				\
+  {"r29",    29},				\
+  {"r30",    30}				\
+}
+
 /* Entry to the insn conditionalizer.  */
 #define FINAL_PRESCAN_INSN(INSN, OPVEC, NOPERANDS) \
   arc_final_prescan_insn (INSN, OPVEC, NOPERANDS)
