@@ -1,3 +1,8 @@
+2017-07-10  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/parsecpu.awk (gen_comm_data): Do not escape single quotes
+	in quoted strings.
+
 2017-07-10  Georg-Johann Lay  <avr@gjlay.de>
 
 	Move jump-tables out of .text again.
@@ -564,11 +569,6 @@
 
 	* gcc/config/i386/i386.c (ix86_erase_embedded_rounding):
 	Remove code for old rounding pattern.
-
-2017-07-06  Richard Earnshaw  <rearnsha@arm.com>
-
-	* config/arm/parsecpu.awk (gen_comm_data): Do not escape single quotes
-	in quoted strings.
 
 2017-07-06  Richard Earnshaw  <rearnsha@arm.com>
 
