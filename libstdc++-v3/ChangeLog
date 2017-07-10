@@ -1,5 +1,11 @@
 2017-07-10  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/81381
+	* include/bits/sstream.tcc (basic_stringbuf::overflow)
+	(basic_stringbuf::basic_stringbuf(const __string_type&, ios::mode))
+	(basic_stringbuf::str()): Construct new strings with an allocator.
+	* testsuite/27_io/basic_stringbuf/cons/81381.cc: New.
+
 	PR libstdc++/81338
 	* include/bits/basic_string.h [_GLIBCXX_USE_CXX11_ABI] (basic_string):
 	Declare basic_stringbuf to be a friend.
