@@ -1,3 +1,9 @@
+2017-07-07  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR lto/80838
+	* lto-wrapper.c (remove_option): New function.
+	(merge_and_complain): Merge PIC/PIE options more realistically.
+
 2017-07-10  Georg-Johann Lay  <avr@gjlay.de>
 
 	Better ISR prologues by supporting GASes __gcc_isr pseudo insn.

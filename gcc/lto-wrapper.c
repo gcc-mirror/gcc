@@ -192,6 +192,20 @@ append_option (struct cl_decoded_option **decoded_options,
 	  sizeof (struct cl_decoded_option));
 }
 
+/* Remove option number INDEX from DECODED_OPTIONS, update
+   DECODED_OPTIONS_COUNT.  */
+
+static void
+remove_option (struct cl_decoded_option **decoded_options,
+	       int index, unsigned int *decoded_options_count)
+{
+  --*decoded_options_count;
+  memmove (&(*decoded_options)[index + 1],
+	   &(*decoded_options)[index],
+	   sizeof (struct cl_decoded_option)
+	   * (*decoded_options_count - index));
+}
+
 /* Try to merge and complain about options FDECODED_OPTIONS when applied
    ontop of DECODED_OPTIONS.  */
 
@@ -202,6 +216,8 @@ merge_and_complain (struct cl_decoded_option **decoded_options,
 		    unsigned int fdecoded_options_count)
 {
   unsigned int i, j;
+  struct cl_decoded_option *pic_option = NULL;
+  struct cl_decoded_option *pie_option = NULL;
 
   /* ???  Merge options from files.  Most cases can be
      handled by either unioning or intersecting
@@ -238,10 +254,6 @@ merge_and_complain (struct cl_decoded_option **decoded_options,
 	case OPT_fdiagnostics_show_option:
 	case OPT_fdiagnostics_show_location_:
 	case OPT_fshow_column:
-	case OPT_fPIC:
-	case OPT_fpic:
-	case OPT_fPIE:
-	case OPT_fpie:
 	case OPT_fcommon:
 	case OPT_fgnu_tm:
 	  /* Do what the old LTO code did - collect exactly one option
@@ -253,6 +265,16 @@ merge_and_complain (struct cl_decoded_option **decoded_options,
 	      break;
 	  if (j == *decoded_options_count)
 	    append_option (decoded_options, decoded_options_count, foption);
+	  break;
+
+	/* Figure out what PIC/PIE level wins and merge the results.  */
+	case OPT_fPIC:
+	case OPT_fpic:
+	  pic_option = foption;
+	  break;
+	case OPT_fPIE:
+	case OPT_fpie:
+	  pie_option = foption;
 	  break;
 
 	case OPT_fopenmp:
@@ -284,18 +306,6 @@ merge_and_complain (struct cl_decoded_option **decoded_options,
 	    fatal_error (input_location,
 			 "Option %s with different values",
 			 foption->orig_option_with_args_text);
-	  break;
-
-	case OPT_foffload_abi_:
-	  for (j = 0; j < *decoded_options_count; ++j)
-	    if ((*decoded_options)[j].opt_index == foption->opt_index)
-	      break;
-	  if (j == *decoded_options_count)
-	    append_option (decoded_options, decoded_options_count, foption);
-	  else if (foption->value != (*decoded_options)[j].value)
-	    fatal_error (input_location,
-			 "Option %s not used consistently in all LTO input"
-			 " files", foption->orig_option_with_args_text);
 	  break;
 
 	case OPT_O:
@@ -368,12 +378,70 @@ merge_and_complain (struct cl_decoded_option **decoded_options,
 	      (*decoded_options)[j].value = 1;
 	    }
 	  break;
+ 
+
+	case OPT_foffload_abi_:
+	  for (j = 0; j < *decoded_options_count; ++j)
+	    if ((*decoded_options)[j].opt_index == foption->opt_index)
+	      break;
+	  if (j == *decoded_options_count)
+	    append_option (decoded_options, decoded_options_count, foption);
+	  else if (foption->value != (*decoded_options)[j].value)
+	    fatal_error (input_location,
+			 "Option %s not used consistently in all LTO input"
+			 " files", foption->orig_option_with_args_text);
+	  break;
+
 
 	case OPT_foffload_:
 	  append_option (decoded_options, decoded_options_count, foption);
 	  break;
 	}
     }
+
+  /* Merge PIC options:
+      -fPIC + -fpic = -fpic
+      -fPIC + -fno-pic = -fno-pic
+      -fpic/-fPIC + nothin = nothing.  
+     It is a common mistake to mix few -fPIC compiled objects into otherwise
+     non-PIC code.  We do not want to build everything with PIC then.
+
+     It would be good to warn on mismatches, but it is bit hard to do as
+     we do not know what nothing translates to.  */
+    
+  for (unsigned int j = 0; j < *decoded_options_count;)
+    if ((*decoded_options)[j].opt_index == OPT_fPIC
+        || (*decoded_options)[j].opt_index == OPT_fpic)
+      {
+	if (!pic_option
+	    || (pic_option->value > 0) != ((*decoded_options)[j].value > 0))
+	  remove_option (decoded_options, j, decoded_options_count);
+	else if (pic_option->opt_index == OPT_fPIC
+		 && (*decoded_options)[j].opt_index == OPT_fpic)
+	  {
+	    (*decoded_options)[j] = *pic_option;
+	    j++;
+	  }
+	else
+	  j++;
+      }
+   else if ((*decoded_options)[j].opt_index == OPT_fPIE
+            || (*decoded_options)[j].opt_index == OPT_fpie)
+      {
+	if (!pie_option
+	    || pie_option->value != (*decoded_options)[j].value)
+	  remove_option (decoded_options, j, decoded_options_count);
+	else if (pie_option->opt_index == OPT_fPIE
+		 && (*decoded_options)[j].opt_index == OPT_fpie)
+	  {
+	    (*decoded_options)[j] = *pie_option;
+	    j++;
+	  }
+	else
+	  j++;
+      }
+   else
+     j++;
 }
 
 /* Auxiliary function that frees elements of PTR and PTR itself.
