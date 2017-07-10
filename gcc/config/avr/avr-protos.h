@@ -158,6 +158,7 @@ extern bool avr_have_dimode;
 namespace gcc { class context; }
 class rtl_opt_pass;
 
+extern rtl_opt_pass *make_avr_pass_pre_proep (gcc::context *);
 extern rtl_opt_pass *make_avr_pass_recompute_notes (gcc::context *);
 extern rtl_opt_pass *make_avr_pass_casesi (gcc::context *);
 

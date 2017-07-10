@@ -17,9 +17,12 @@
    along with GCC; see the file COPYING3.  If not see
    <http://www.gnu.org/licenses/>.  */
 
-/* FIXME: We have to add the last pass first, otherwise
-          gen-pass-instances.awk won't work as expected. */
-          
+/* An analysis pass that runs prior to prologue / epilogue generation.
+   Computes cfun->machine->gasisr.maybe which is used in prologue and
+   epilogue generation provided -mgas-isr-prologues is on.  */
+
+INSERT_PASS_BEFORE (pass_thread_prologue_and_epilogue, 1, avr_pass_pre_proep);
+
 /* This avr-specific pass (re)computes insn notes, in particular REG_DEAD
    notes which are used by `avr.c::reg_unused_after' and branch offset
    computations.  These notes must be correct, i.e. there must be no

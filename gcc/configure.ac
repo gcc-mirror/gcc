@@ -3817,6 +3817,16 @@ AS_HELP_STRING([--disable-fix-cortex-a53-843419],
       [AC_DEFINE(HAVE_AS_AVR_MRMW_OPTION, 1,
 		[Define if your avr assembler supports -mrmw option.])])
 
+    gcc_GAS_CHECK_FEATURE([__gcc_isr pseudo instruction],
+      gcc_cv_as_avr_mgccisr,,
+      [-mgcc-isr], [.text
+      		    __gcc_isr 1
+      		    __gcc_isr 2
+      		    __gcc_isr 0,r24
+      		   ],,
+      [AC_DEFINE(HAVE_AS_AVR_MGCCISR_OPTION, 1,
+		[Define if your avr assembler supports -mgcc-isr option.])])
+
     # Check how default linker description file implements .rodata for
     # avrxmega3 (PR21472).  avr-gcc assumes .rodata is *not* loaded to
     # RAM so avr-gcc skips __do_copy_data for .rodata objects.

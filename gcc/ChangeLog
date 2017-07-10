@@ -1,3 +1,50 @@
+2017-07-10  Georg-Johann Lay  <avr@gjlay.de>
+
+	Better ISR prologues by supporting GASes __gcc_isr pseudo insn.
+
+	PR target/20296
+	PR target/81268
+	* configure.ac [target=avr]: Add GAS check for -mgcc-isr.
+	(HAVE_AS_AVR_MGCCISR_OPTION):  If so, AC_DEFINE it.
+	* config.in: Regenerate.
+	* configure: Regenerate.
+	* doc/extend.texi (AVR Function Attributes) <no_gccisr>: Document it.
+	* doc/invoke.texi (AVR Options) <-mgas-isr-prologues>: Document it.
+	* config/avr/avr.opt (-mgas-isr-prologues): New option and...
+	(TARGET_GASISR_PROLOGUES): ...target mask.
+	* common/config/avr/avr-common.c
+	(avr_option_optimization_table) [OPT_LEVELS_1_PLUS_NOT_DEBUG]:
+	Set -mgas-isr-prologues.
+	* config/avr/avr-passes.def (avr_pass_pre_proep): Add
+	INSERT_PASS_BEFORE for it.
+	* config/avr/avr-protos.h (make_avr_pass_pre_proep): New proto.
+	* config/avr/avr.c (avr_option_override)
+	[!HAVE_AS_AVR_MGCCISR_OPTION]: Unset TARGET_GASISR_PROLOGUES.
+	(avr_no_gccisr_function_p, avr_hregs_split_reg): New static functions.
+	(avr_attribute_table) <no_gccisr>: Add new function attribute.
+	(avr_set_current_function) <is_no_gccisr>: Init machine field.
+	(avr_pass_data_pre_proep, avr_pass_pre_proep): New pass data
+	and rtl_opt_pass.
+	(make_avr_pass_pre_proep): New function.
+	(emit_push_sfr) <treg>: Add argument to function and use it
+	instead of TMP_REG.
+	(avr_expand_prologue) [machine->gasisr.maybe]: Emit gasisr insn
+	and set machine->gasisr.yes.
+	(avr_expand_epilogue) [machine->gasisr.yes]: Similar.
+	(avr_asm_function_end_prologue) [machine->gasisr.yes]: Add
+	__gcc_isr.n_pushed to .L__stack_usage.
+	(TARGET_ASM_FINAL_POSTSCAN_INSN): Define to...
+	(avr_asm_final_postscan_insn): ...this new static function.
+	* config/avr/avr.h (machine_function)
+	<is_no_gccisr, use_L__stack_usage>: New fields.
+	<gasisr, gasisr.yes, gasisr.maybe, gasisr.regno>: New fields.
+	* config/avr/avr.md (UNSPECV_GASISR): Add unspecv enum.
+	(GASISR_Prologue, GASISR_Epilogue, GASISR_Done): New define_constants.
+	(gasisr, *gasisr): New expander and insn.
+	* config/avr/gen-avr-mmcu-specs.c (print_mcu)
+	[HAVE_AS_AVR_MGCCISR_OPTION]: Print asm_gccisr spec.
+	* config/avr/specs.h (ASM_SPEC) <asm_gccisr>: Add sub spec.
+
 2017-07-10  Richard Earnshaw  <rearnsha@arm.com>
 
 	* config/arm/parsecpu.awk (gen_comm_data): Do not escape single quotes

@@ -774,6 +774,10 @@ avr_option_override (void)
   if (flag_pie == 2)
     warning (OPT_fPIE, "-fPIE is not supported");
 
+#if !defined (HAVE_AS_AVR_MGCCISR_OPTION)
+  TARGET_GASISR_PROLOGUES = 0;
+#endif
+
   if (!avr_set_core_architecture())
     return;
 
@@ -1007,6 +1011,15 @@ avr_OS_main_function_p (tree func)
 }
 
 
+/* Return nonzero if FUNC is a no_gccisr function as specified
+   by the "no_gccisr" attribute.  */
+
+static int
+avr_no_gccisr_function_p (tree func)
+{
+  return avr_lookup_function_attribute1 (func, "no_gccisr");
+}
+
 /* Implement `TARGET_SET_CURRENT_FUNCTION'.  */
 /* Sanity cheching for above function attributes.  */
 
@@ -1030,6 +1043,7 @@ avr_set_current_function (tree decl)
   cfun->machine->is_interrupt = avr_interrupt_function_p (decl);
   cfun->machine->is_OS_task = avr_OS_task_function_p (decl);
   cfun->machine->is_OS_main = avr_OS_main_function_p (decl);
+  cfun->machine->is_no_gccisr = avr_no_gccisr_function_p (decl);
 
   isr = cfun->machine->is_interrupt ? "interrupt" : "signal";
 
@@ -1220,6 +1234,9 @@ avr_initial_elimination_offset (int from, int to)
       int offset = frame_pointer_needed ? 2 : 0;
       int avr_pc_size = AVR_HAVE_EIJMP_EICALL ? 3 : 2;
 
+      // If FROM is ARG_POINTER_REGNUM, we are not in an ISR as ISRs
+      // might not have arguments.  Hence the following is not affected
+      // by gasisr prologues.
       offset += avr_regs_to_save (NULL);
       return (get_frame_size () + avr_outgoing_args_size()
               + avr_pc_size + 1 + offset);
@@ -1314,6 +1331,8 @@ avr_return_addr_rtx (int count, rtx tem)
   else
     r = gen_rtx_SYMBOL_REF (Pmode, ".L__stack_usage+1");
 
+  cfun->machine->use_L__stack_usage = 1;
+
   r = gen_rtx_PLUS (Pmode, tem, r);
   r = gen_frame_mem (Pmode, memory_address (Pmode, r));
   r = gen_rtx_ROTATE (HImode, r, GEN_INT (8));
@@ -1394,6 +1413,97 @@ sequent_regs_live (void)
   return (cur_seq == live_seq) ? live_seq : 0;
 }
 
+namespace {
+static const pass_data avr_pass_data_pre_proep =
+{
+  RTL_PASS,      // type
+  "",            // name (will be patched)
+  OPTGROUP_NONE, // optinfo_flags
+  TV_DF_SCAN,    // tv_id
+  0,             // properties_required
+  0,             // properties_provided
+  0,             // properties_destroyed
+  0,             // todo_flags_start
+  0              // todo_flags_finish
+};
+
+
+class avr_pass_pre_proep : public rtl_opt_pass
+{
+public:
+  avr_pass_pre_proep (gcc::context *ctxt, const char *name)
+    : rtl_opt_pass (avr_pass_data_pre_proep, ctxt)
+  {
+    this->name = name;
+  }
+
+  void compute_maybe_gasisr (function*);
+
+  virtual unsigned int execute (function *fun)
+  {
+    if (TARGET_GASISR_PROLOGUES
+        // Whether this function is an ISR worth scanning at all.
+        && !fun->machine->is_no_gccisr
+        && (fun->machine->is_interrupt
+            || fun->machine->is_signal)
+        && !cfun->machine->is_naked
+        // Paranoia: Non-local gotos and labels that might escape.
+        && !cfun->calls_setjmp
+        && !cfun->has_nonlocal_label
+        && !cfun->has_forced_label_in_static)
+      {
+        compute_maybe_gasisr (fun);
+      }
+
+    return 0;
+  }
+
+}; // avr_pass_pre_proep
+
+} // anon namespace
+
+rtl_opt_pass*
+make_avr_pass_pre_proep (gcc::context *ctxt)
+{
+  return new avr_pass_pre_proep (ctxt, "avr-pre-proep");
+}
+
+
+/* Set fun->machine->gasisr.maybe provided we don't find anything that
+   prohibits GAS generating parts of ISR prologues / epilogues for us.  */
+
+void
+avr_pass_pre_proep::compute_maybe_gasisr (function *fun)
+{
+  // Don't use BB iterators so that we see JUMP_TABLE_DATA.
+
+  for (rtx_insn *insn = get_insns (); insn; insn = NEXT_INSN (insn))
+    {
+      // Transparent calls always use [R]CALL and are filtered out by GAS.
+      // ISRs don't use -mcall-prologues, hence what remains to be filtered
+      // out are open coded (tail) calls.
+
+      if (CALL_P (insn))
+        return;
+
+      // __tablejump2__ clobbers something and is targeted by JMP so
+      // that GAS won't see its usage.
+
+      if (AVR_HAVE_JMP_CALL
+          && JUMP_TABLE_DATA_P (insn))
+        return;
+
+      // Non-local gotos not seen in *FUN.
+
+      if (JUMP_P (insn)
+          && find_reg_note (insn, REG_NON_LOCAL_GOTO, NULL_RTX))
+        return;
+    }
+
+  fun->machine->gasisr.maybe = 1;
+}
+
+
 /* Obtain the length sequence of insns.  */
 
 int
@@ -1418,6 +1528,46 @@ avr_incoming_return_addr_rtx (void)
   return gen_frame_mem (HImode, plus_constant (Pmode, stack_pointer_rtx, 1));
 }
 
+
+/* Unset a bit in *SET.  If successful, return the respective bit number.
+   Otherwise, return -1 and *SET is unaltered.  */
+
+static int
+avr_hregs_split_reg (HARD_REG_SET *set)
+{
+  for (int regno = 0; regno < 32; regno++)
+    if (TEST_HARD_REG_BIT (*set, regno))
+      {
+        // Don't remove a register from *SET which might indicate that
+        // some RAMP* register might need ISR prologue / epilogue treatment.
+
+        if (AVR_HAVE_RAMPX
+            && (REG_X == regno || REG_X + 1 == regno)
+            && TEST_HARD_REG_BIT (*set, REG_X)
+            && TEST_HARD_REG_BIT (*set, REG_X + 1))
+          continue;
+
+        if (AVR_HAVE_RAMPY
+            && !frame_pointer_needed
+            && (REG_Y == regno || REG_Y + 1 == regno)
+            && TEST_HARD_REG_BIT (*set, REG_Y)
+            && TEST_HARD_REG_BIT (*set, REG_Y + 1))
+          continue;
+
+        if (AVR_HAVE_RAMPZ
+            && (REG_Z == regno || REG_Z + 1 == regno)
+            && TEST_HARD_REG_BIT (*set, REG_Z)
+            && TEST_HARD_REG_BIT (*set, REG_Z + 1))
+          continue;
+            
+        CLEAR_HARD_REG_BIT (*set, regno);
+        return regno;
+      }
+
+  return -1;
+}
+
+
 /*  Helper for expand_prologue.  Emit a push of a byte register.  */
 
 static void
@@ -1438,24 +1588,24 @@ emit_push_byte (unsigned regno, bool frame_related_p)
 }
 
 
-/*  Helper for expand_prologue.  Emit a push of a SFR via tmp_reg.
+/*  Helper for expand_prologue.  Emit a push of a SFR via register TREG.
     SFR is a MEM representing the memory location of the SFR.
     If CLR_P then clear the SFR after the push using zero_reg.  */
 
 static void
-emit_push_sfr (rtx sfr, bool frame_related_p, bool clr_p)
+emit_push_sfr (rtx sfr, bool frame_related_p, bool clr_p, int treg)
 {
   rtx_insn *insn;
 
   gcc_assert (MEM_P (sfr));
 
-  /* IN __tmp_reg__, IO(SFR) */
-  insn = emit_move_insn (tmp_reg_rtx, sfr);
+  /* IN treg, IO(SFR) */
+  insn = emit_move_insn (all_regs_rtx[treg], sfr);
   if (frame_related_p)
     RTX_FRAME_RELATED_P (insn) = 1;
 
-  /* PUSH __tmp_reg__ */
-  emit_push_byte (AVR_TMP_REGNO, frame_related_p);
+  /* PUSH treg */
+  emit_push_byte (treg, frame_related_p);
 
   if (clr_p)
     {
@@ -1759,37 +1909,66 @@ avr_expand_prologue (void)
 
   if (cfun->machine->is_interrupt || cfun->machine->is_signal)
     {
+      int treg = AVR_TMP_REGNO;
       /* Enable interrupts.  */
       if (cfun->machine->is_interrupt)
         emit_insn (gen_enable_interrupt ());
 
-      /* Push zero reg.  */
-      emit_push_byte (AVR_ZERO_REGNO, true);
+      if (cfun->machine->gasisr.maybe)
+        {
+          /* Let GAS PR21472 emit prologue preamble for us which handles SREG,
+             ZERO_REG and TMP_REG and one additional, optional register for
+             us in an optimal way.  This even scans through inline asm.  */
 
-      /* Push tmp reg.  */
-      emit_push_byte (AVR_TMP_REGNO, true);
+          cfun->machine->gasisr.yes = 1;
 
-      /* Push SREG.  */
-      /* ??? There's no dwarf2 column reserved for SREG.  */
-      emit_push_sfr (sreg_rtx, false, false /* clr */);
+          // The optional reg or TMP_REG if we don't need one.  If we need one,
+          // remove that reg from SET so that it's not puhed / popped twice.
+          // We also use it below instead of TMP_REG in some places.
 
-      /* Clear zero reg.  */
-      emit_move_insn (zero_reg_rtx, const0_rtx);
+          treg = avr_hregs_split_reg (&set);
+          if (treg < 0)
+            treg = AVR_TMP_REGNO;
+          cfun->machine->gasisr.regno = treg;
 
-      /* Prevent any attempt to delete the setting of ZERO_REG!  */
-      emit_use (zero_reg_rtx);
+          // The worst case of pushes.  The exact number can be inferred
+          // at assembly time by magic expression __gcc_isr.n_pushed.
+          cfun->machine->stack_usage += 3 + (treg != AVR_TMP_REGNO);
+
+          // Emit a Prologue chunk.  Epilogue chunk(s) might follow.
+          // The final Done chunk is emit by final postscan.
+          emit_insn (gen_gasisr (GEN_INT (GASISR_Prologue), GEN_INT (treg)));
+        }
+      else // !TARGET_GASISR_PROLOGUES: Classic, dumb prologue preamble.
+        {
+          /* Push zero reg.  */
+          emit_push_byte (AVR_ZERO_REGNO, true);
+
+          /* Push tmp reg.  */
+          emit_push_byte (AVR_TMP_REGNO, true);
+
+          /* Push SREG.  */
+          /* ??? There's no dwarf2 column reserved for SREG.  */
+          emit_push_sfr (sreg_rtx, false, false /* clr */, AVR_TMP_REGNO);
+
+          /* Clear zero reg.  */
+          emit_move_insn (zero_reg_rtx, const0_rtx);
+
+          /* Prevent any attempt to delete the setting of ZERO_REG!  */
+          emit_use (zero_reg_rtx);
+        }
 
       /* Push and clear RAMPD/X/Y/Z if present and low-part register is used.
          ??? There are no dwarf2 columns reserved for RAMPD/X/Y/Z.  */
 
       if (AVR_HAVE_RAMPD)
-        emit_push_sfr (rampd_rtx, false /* frame-related */, true /* clr */);
+        emit_push_sfr (rampd_rtx, false /* frame */, true /* clr */, treg);
 
       if (AVR_HAVE_RAMPX
           && TEST_HARD_REG_BIT (set, REG_X)
           && TEST_HARD_REG_BIT (set, REG_X + 1))
         {
-          emit_push_sfr (rampx_rtx, false /* frame-related */, true /* clr */);
+          emit_push_sfr (rampx_rtx, false /* frame */, true /* clr */, treg);
         }
 
       if (AVR_HAVE_RAMPY
@@ -1797,14 +1976,14 @@ avr_expand_prologue (void)
               || (TEST_HARD_REG_BIT (set, REG_Y)
                   && TEST_HARD_REG_BIT (set, REG_Y + 1))))
         {
-          emit_push_sfr (rampy_rtx, false /* frame-related */, true /* clr */);
+          emit_push_sfr (rampy_rtx, false /* frame */, true /* clr */, treg);
         }
 
       if (AVR_HAVE_RAMPZ
           && TEST_HARD_REG_BIT (set, REG_Z)
           && TEST_HARD_REG_BIT (set, REG_Z + 1))
         {
-          emit_push_sfr (rampz_rtx, false /* frame-related */, AVR_HAVE_RAMPD);
+          emit_push_sfr (rampz_rtx, false /* frame */, AVR_HAVE_RAMPD, treg);
         }
     }  /* is_interrupt is_signal */
 
@@ -1846,11 +2025,23 @@ avr_asm_function_end_prologue (FILE *file)
 
   fprintf (file, "/* frame size = " HOST_WIDE_INT_PRINT_DEC " */\n",
            get_frame_size());
-  fprintf (file, "/* stack size = %d */\n",
-           cfun->machine->stack_usage);
-  /* Create symbol stack offset here so all functions have it. Add 1 to stack
-     usage for offset so that SP + .L__stack_offset = return address.  */
-  fprintf (file, ".L__stack_usage = %d\n", cfun->machine->stack_usage);
+
+  if (!cfun->machine->gasisr.yes)
+    {
+      fprintf (file, "/* stack size = %d */\n", cfun->machine->stack_usage);
+      // Create symbol stack offset so all functions have it. Add 1 to stack
+      // usage for offset so that SP + .L__stack_offset = return address.
+      fprintf (file, ".L__stack_usage = %d\n", cfun->machine->stack_usage);
+    }
+  else
+    {
+      int used_by_gasisr = 3 + (cfun->machine->gasisr.regno != AVR_TMP_REGNO);
+      int to = cfun->machine->stack_usage;
+      int from = to - used_by_gasisr;
+      // Number of pushed regs is only known at assembly-time.
+      fprintf (file, "/* stack size = %d...%d */\n", from , to);
+      fprintf (file, ".L__stack_usage = %d + __gcc_isr.n_pushed\n", from);
+    }
 }
 
 
@@ -2026,6 +2217,15 @@ avr_expand_epilogue (bool sibcall_p)
 
   /* Restore used registers.  */
 
+  int treg = AVR_TMP_REGNO;
+
+  if (isr_p
+      && cfun->machine->gasisr.yes)
+    {
+      treg = cfun->machine->gasisr.regno;
+      CLEAR_HARD_REG_BIT (set, treg);
+    }
+
   for (int reg = 31; reg >= 0; --reg)
     if (TEST_HARD_REG_BIT (set, reg))
       emit_pop_byte (reg);
@@ -2039,8 +2239,8 @@ avr_expand_epilogue (bool sibcall_p)
           && TEST_HARD_REG_BIT (set, REG_Z)
           && TEST_HARD_REG_BIT (set, REG_Z + 1))
         {
-          emit_pop_byte (TMP_REGNO);
-          emit_move_insn (rampz_rtx, tmp_reg_rtx);
+          emit_pop_byte (treg);
+          emit_move_insn (rampz_rtx, all_regs_rtx[treg]);
         }
 
       if (AVR_HAVE_RAMPY
@@ -2048,34 +2248,43 @@ avr_expand_epilogue (bool sibcall_p)
               || (TEST_HARD_REG_BIT (set, REG_Y)
                   && TEST_HARD_REG_BIT (set, REG_Y + 1))))
         {
-          emit_pop_byte (TMP_REGNO);
-          emit_move_insn (rampy_rtx, tmp_reg_rtx);
+          emit_pop_byte (treg);
+          emit_move_insn (rampy_rtx, all_regs_rtx[treg]);
         }
 
       if (AVR_HAVE_RAMPX
           && TEST_HARD_REG_BIT (set, REG_X)
           && TEST_HARD_REG_BIT (set, REG_X + 1))
         {
-          emit_pop_byte (TMP_REGNO);
-          emit_move_insn (rampx_rtx, tmp_reg_rtx);
+          emit_pop_byte (treg);
+          emit_move_insn (rampx_rtx, all_regs_rtx[treg]);
         }
 
       if (AVR_HAVE_RAMPD)
         {
-          emit_pop_byte (TMP_REGNO);
-          emit_move_insn (rampd_rtx, tmp_reg_rtx);
+          emit_pop_byte (treg);
+          emit_move_insn (rampd_rtx, all_regs_rtx[treg]);
         }
 
-      /* Restore SREG using tmp_reg as scratch.  */
+      if (cfun->machine->gasisr.yes)
+        {
+          // Emit an Epilogue chunk.
+          emit_insn (gen_gasisr (GEN_INT (GASISR_Epilogue),
+                                 GEN_INT (cfun->machine->gasisr.regno)));
+        }
+      else // !TARGET_GASISR_PROLOGUES
+        {
+          /* Restore SREG using tmp_reg as scratch.  */
 
-      emit_pop_byte (AVR_TMP_REGNO);
-      emit_move_insn (sreg_rtx, tmp_reg_rtx);
+          emit_pop_byte (AVR_TMP_REGNO);
+          emit_move_insn (sreg_rtx, tmp_reg_rtx);
 
-      /* Restore tmp REG.  */
-      emit_pop_byte (AVR_TMP_REGNO);
+          /* Restore tmp REG.  */
+          emit_pop_byte (AVR_TMP_REGNO);
 
-      /* Restore zero REG.  */
-      emit_pop_byte (AVR_ZERO_REGNO);
+          /* Restore zero REG.  */
+          emit_pop_byte (AVR_ZERO_REGNO);
+        }
     }
 
   if (!sibcall_p)
@@ -2088,6 +2297,7 @@ avr_expand_epilogue (bool sibcall_p)
 static void
 avr_asm_function_begin_epilogue (FILE *file)
 {
+  app_disable();
   fprintf (file, "/* epilogue start */\n");
 }
 
@@ -3093,6 +3303,25 @@ avr_final_prescan_insn (rtx_insn *insn, rtx *operand ATTRIBUTE_UNUSED,
     fprintf (asm_out_file, ";; ADDR = %d\n",
              (int) INSN_ADDRESSES (INSN_UID (insn)));
 }
+
+
+/* Implement `TARGET_ASM_FINAL_POSTSCAN_INSN'.  */
+/* When GAS generates (parts of) ISR prologue / epilogue for us, we must
+   hint GAS about the end of the code to scan.  There migh be code located
+   after the last epilogue.  */
+
+static void
+avr_asm_final_postscan_insn (FILE *stream, rtx_insn *insn, rtx*, int)
+{
+  if (cfun->machine->gasisr.yes
+      && !next_real_insn (insn))
+    {
+      app_disable();
+      fprintf (stream, "\t__gcc_isr %d,r%d\n", GASISR_Done,
+               cfun->machine->gasisr.regno);
+    }
+}
+
 
 /* Return 0 if undefined, 1 if always true or always false.  */
 
@@ -8300,7 +8529,7 @@ avr_out_addto_sp (rtx *op, int *plen)
         }
 
       while (addend++ < 0)
-        avr_asm_len ("push __zero_reg__", op, plen, 1);
+        avr_asm_len ("push __tmp_reg__", op, plen, 1);
     }
   else if (addend > 0)
     {
@@ -9630,6 +9859,8 @@ avr_attribute_table[] =
   { "signal",    0, 0, true,  false, false,  avr_handle_fndecl_attribute,
     false },
   { "interrupt", 0, 0, true,  false, false,  avr_handle_fndecl_attribute,
+    false },
+  { "no_gccisr", 0, 0, true,  false, false,  avr_handle_fndecl_attribute,
     false },
   { "naked",     0, 0, false, true,  true,   avr_handle_fntype_attribute,
     false },
@@ -14369,6 +14600,9 @@ avr_fold_builtin (tree fndecl, int n_args ATTRIBUTE_UNUSED, tree *arg,
 #define TARGET_ENCODE_SECTION_INFO avr_encode_section_info
 #undef  TARGET_ASM_SELECT_SECTION
 #define TARGET_ASM_SELECT_SECTION avr_asm_select_section
+
+#undef  TARGET_ASM_FINAL_POSTSCAN_INSN
+#define TARGET_ASM_FINAL_POSTSCAN_INSN avr_asm_final_postscan_insn
 
 #undef  TARGET_REGISTER_MOVE_COST
 #define TARGET_REGISTER_MOVE_COST avr_register_move_cost

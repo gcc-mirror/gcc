@@ -224,6 +224,11 @@ print_mcu (const avr_mcu_t *mcu)
            : "\t%{mrmw}");
 #endif // have avr-as -mrmw
 
+#ifdef HAVE_AS_AVR_MGCCISR_OPTION
+  fprintf (f, "*asm_gccisr:\n%s\n\n",
+           "\t%{!mno-gas-isr-prologues: -mgcc-isr}");
+#endif // have avr-as -mgcc-isr
+
   fprintf (f, "*asm_errata_skip:\n%s\n\n", errata_skip
            ? "\t%{mno-skip-bug}"
            : "\t%{!mskip-bug: -mno-skip-bug}");

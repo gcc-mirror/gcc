@@ -52,6 +52,7 @@ along with GCC; see the file COPYING3.  If not see
   "%(asm_arch) "                                \
   "%(asm_relax) "                               \
   "%(asm_rmw) "                                 \
+  "%(asm_gccisr) "                              \
   "%(asm_errata_skip) "
 
 #define LINK_ARCH_SPEC                          \
