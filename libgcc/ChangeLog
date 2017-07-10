@@ -1,3 +1,7 @@
+2017-07-10  Vineet Gupta <vgupta@synopsys.com>
+
+	* config.host: Remove uclibc from arc target spec.
+
 2017-07-09  Krister Walfridsson  <krister.walfridsson@gmail.com>
 
 	* config.host (*-*-netbsd*): Remove check for aout NetBSD releases.
