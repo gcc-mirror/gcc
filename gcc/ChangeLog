@@ -1,3 +1,24 @@
+2017-07-10  Georg-Johann Lay  <avr@gjlay.de>
+
+	Move jump-tables out of .text again.
+
+	PR target/81075
+	* config/avr/avr.c (ASM_OUTPUT_ADDR_VEC_ELT): Remove function.
+	(ASM_OUTPUT_ADDR_VEC): New function.
+	(avr_adjust_insn_length) [JUMP_TABLE_DATA_P]: Return 0.
+	(avr_final_prescan_insn) [avr_log.insn_addresses]: Dump
+	INSN_ADDRESSes as asm comment.
+	* config/avr/avr.h (JUMP_TABLES_IN_TEXT_SECTION): Adjust comment.
+	(ASM_OUTPUT_ADDR_VEC_ELT): Remove define.
+	(ASM_OUTPUT_ADDR_VEC): Define to avr_output_addr_vec.
+	* config/avr/avr.md (*tablejump): Adjust comment.
+	* config/avr/elf.h (ASM_OUTPUT_BEFORE_CASE_LABEL): Remove.
+	* config/avr/avr-log.c (avr_log_set_avr_log) <insn_addresses>:
+	New detail.
+	* config/avr/avr-protos.h (avr_output_addr_vec_elt): Remove proto.
+	(avr_output_addr_vec): New proto.
+	(avr_log_t) <insn_addresses>: New field.
+
 2017-07-09  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/81313

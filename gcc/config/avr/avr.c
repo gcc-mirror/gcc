@@ -3088,6 +3088,10 @@ avr_final_prescan_insn (rtx_insn *insn, rtx *operand ATTRIBUTE_UNUSED,
                  rtx_cost (PATTERN (insn), VOIDmode, INSN, 0,
                            optimize_insn_for_speed_p()));
     }
+
+  if (avr_log.insn_addresses)
+    fprintf (asm_out_file, ";; ADDR = %d\n",
+             (int) INSN_ADDRESSES (INSN_UID (insn)));
 }
 
 /* Return 0 if undefined, 1 if always true or always false.  */
@@ -9137,6 +9141,12 @@ avr_adjust_insn_length (rtx_insn *insn, int len)
   rtx *op = recog_data.operand;
   enum attr_adjust_len adjust_len;
 
+  /* As we pretend jump tables in .text, fix branch offsets crossing jump
+     tables now.  */
+
+  if (JUMP_TABLE_DATA_P (insn))
+    return 0;
+
   /* Some complex insns don't need length adjustment and therefore
      the length need not/must not be adjusted for these insns.
      It is easier to state this in an insn attribute "adjust_len" than
@@ -12312,16 +12322,87 @@ avr_out_reload_inpsi (rtx *op, rtx clobber_reg, int *len)
 }
 
 
-/* Worker function for `ASM_OUTPUT_ADDR_VEC_ELT'.  */
+/* Worker function for `ASM_OUTPUT_ADDR_VEC'.  */
+/* Emit jump tables out-of-line so that branches crossing the table
+   get shorter offsets.  If we have JUMP + CALL, then put the tables
+   in a dedicated non-.text section so that CALLs get better chance to
+   be relaxed to RCALLs.
+
+   We emit the tables by hand because `function_rodata_section' does not
+   work as expected, cf. PR71151, and we do *NOT* want the table to be
+   in .rodata, hence setting JUMP_TABLES_IN_TEXT_SECTION = 0 is of limited
+   use; and setting it to 1 attributes table lengths to branch offsets...
+   Moreover, fincal.c keeps switching section before each table entry
+   which we find too fragile as to rely on section caching.  */
 
 void
-avr_output_addr_vec_elt (FILE *stream, int value)
+avr_output_addr_vec (rtx_insn *labl, rtx table)
 {
-  if (AVR_HAVE_JMP_CALL)
-    fprintf (stream, "\t.word gs(.L%d)\n", value);
+  FILE *stream = asm_out_file;
+
+  app_disable();
+
+  // Switch to appropriate (sub)section.
+
+  if (DECL_SECTION_NAME (current_function_decl)
+      && symtab_node::get (current_function_decl)
+      && ! symtab_node::get (current_function_decl)->implicit_section)
+    {
+      // .subsection will emit the code after the function and in the
+      // section as chosen by the user.
+
+      switch_to_section (current_function_section ());
+      fprintf (stream, "\t.subsection\t1\n");
+    }
   else
-    fprintf (stream, "\trjmp .L%d\n", value);
+    {
+      // Since PR63223 there is no restriction where to put the table; it
+      // may even reside above 128 KiB.  We put it in a section as high as
+      // possible and avoid progmem in order not to waste flash <= 64 KiB.
+
+      const char *sec_name = ".jumptables.gcc";
+
+      // The table belongs to its host function, therefore use fine
+      // grained sections so that, if that function is removed by
+      // --gc-sections, the child table(s) may also be removed.  */
+
+      tree asm_name = DECL_ASSEMBLER_NAME (current_function_decl);
+      const char *fname = IDENTIFIER_POINTER (asm_name);
+      fname = targetm.strip_name_encoding (fname);
+      sec_name = ACONCAT ((sec_name, ".", fname, NULL));
+
+      fprintf (stream, "\t.section\t%s,\"%s\",@progbits\n", sec_name,
+               AVR_HAVE_JMP_CALL ? "a" : "ax");
+    }
+
+  // Output the label that preceeds the table.
+
+  ASM_OUTPUT_ALIGN (stream, 1);
+  targetm.asm_out.internal_label (stream, "L", CODE_LABEL_NUMBER (labl));
+
+  // Output the table's content.
+
+  int vlen = XVECLEN (table, 0);
+
+  for (int idx = 0; idx < vlen; idx++)
+    {
+      int value = CODE_LABEL_NUMBER (XEXP (XVECEXP (table, 0, idx), 0));
+
+      if (AVR_HAVE_JMP_CALL)
+        fprintf (stream, "\t.word gs(.L%d)\n", value);
+      else
+        fprintf (stream, "\trjmp .L%d\n", value);
+    }
+
+  // Switch back to original section.  As we clobbered the section above,
+  // forget the current section before switching back.
+
+  in_section = NULL;
+  switch_to_section (current_function_section ());
 }
+
+
+/* Implement `TARGET_CONDITIONAL_REGISTER_USAGE'.  */
 
 static void
 avr_conditional_register_usage (void)
