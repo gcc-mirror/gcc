@@ -1,3 +1,8 @@
+2017-07-10  Martin Sebor  <msebor@redhat.com>
+
+	PR other/81345
+	* gcc.dg/pr81345.c: New test.
+
 2017-07-10  Claudiu Zissulescu  <claziss@synopsys.com>
 
 	* gcc.target/arc/mulsi3_highpart-1.c: Remove 'X' constraint.
