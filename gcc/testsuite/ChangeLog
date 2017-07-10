@@ -1,12 +1,12 @@
+2017-07-10  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/81375
+	* gcc.target/i386/pr81375.c: New test.
+
 2017-07-10  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/80397
 	* gcc.dg/tree-ssa/builtin-sprintf-warn-17.c: New test.
-diff --git a/gcc/gimple-ssa-sprintf.c b/gcc/gimple-ssa-sprintf.c
-index 2e62086..d63d5be 100644
---- a/gcc/gimple-ssa-sprintf.c
-+++ b/gcc/gimple-ssa-sprintf.c
-@@ -1249,7 +1249,7 @@ format_integer (const directive &dir, tree arg)
 
 2017-07-10  Martin Sebor  <msebor@redhat.com>
 
