@@ -2287,6 +2287,7 @@ BU_P9V_OVERLOAD_1 (VPRTYB,	"vprtyb")
 BU_P9V_OVERLOAD_1 (VPRTYBD,	"vprtybd")
 BU_P9V_OVERLOAD_1 (VPRTYBQ,	"vprtybq")
 BU_P9V_OVERLOAD_1 (VPRTYBW,	"vprtybw")
+BU_P9V_OVERLOAD_1 (VPARITY_LSBB,	"vparity_lsbb")
 
 /* 2 argument functions added in ISA 3.0 (power9).  */
 BU_P9_2 (CMPRB,	"byte_in_range",	CONST,	cmprb)
