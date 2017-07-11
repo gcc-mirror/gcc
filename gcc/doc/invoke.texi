@@ -1128,8 +1128,8 @@ See RS/6000 and PowerPC Options.
 -mvis2  -mno-vis2  -mvis3  -mno-vis3 @gol
 -mvis4 -mno-vis4 -mvis4b -mno-vis4b @gol
 -mcbcond  -mno-cbcond  -mfmaf  -mno-fmaf  @gol
--mpopc  -mno-popc  -msubxc  -mno-subxc@gol
--mfix-at697f  -mfix-ut699 @gol
+-mpopc  -mno-popc  -msubxc  -mno-subxc @gol
+-mfix-at697f  -mfix-ut699  -mfix-ut700  -mfix-gr712rc @gol
 -mlra  -mno-lra}
 
 @emph{SPU Options}
@@ -15205,7 +15205,7 @@ default is dependent on the selected target architecture.  For ARMv6
 and later architectures the default is BE8, for older architectures
 the default is BE32.  BE32 format has been deprecated by ARM.
 
-@item -march=@var{name@r{[}+extension@dots{}@r{]}}
+@item -march=@var{name}@r{[}+extension@dots{}@r{]}
 @opindex march
 This specifies the name of the target ARM architecture.  GCC uses this
 name to determine what kind of instructions it can emit when generating
@@ -15579,7 +15579,7 @@ of the build computer.  At present, this feature is only supported on
 GNU/Linux, and not all architectures are recognized.  If the auto-detect is
 unsuccessful the option has no effect.
 
-@item -mcpu=@var{name@r{[}+extension@dots{}@r{]}}
+@item -mcpu=@var{name}@r{[}+extension@dots{}@r{]}
 @opindex mcpu
 This specifies the name of the target ARM processor.  GCC uses this name
 to derive the name of the target ARM architecture (as if specified
@@ -24102,6 +24102,16 @@ processor (which corresponds to erratum #13 of the AT697E processor).
 @opindex mfix-ut699
 Enable the documented workarounds for the floating-point errata and the data
 cache nullify errata of the UT699 processor.
+
+@item -mfix-ut700
+@opindex mfix-ut700
+Enable the documented workaround for the back-to-back store errata of
+the UT699E/UT700 processor.
+
+@item -mfix-gr712rc
+@opindex mfix-gr712rc
+Enable the documented workaround for the back-to-back store errata of
+the GR712RC processor.
 @end table
 
 These @samp{-m} options are supported in addition to the above

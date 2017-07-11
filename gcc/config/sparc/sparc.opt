@@ -237,6 +237,18 @@ mfix-ut699
 Target Report RejectNegative Var(sparc_fix_ut699)
 Enable workarounds for the errata of the UT699 processor.
 
+mfix-ut700
+Target Report RejectNegative Var(sparc_fix_ut700)
+Enable workarounds for the errata of the UT699E/UT700 processor.
+
+mfix-gr712rc
+Target Report RejectNegative Var(sparc_fix_gr712rc)
+Enable workarounds for the errata of the GR712RC processor.
+
+;; Enable workaround for back-to-back store errata
+TargetVariable
+unsigned int sparc_fix_b2bst
+
 Mask(LONG_DOUBLE_128)
 ;; Use 128-bit long double
 

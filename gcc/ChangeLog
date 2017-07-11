@@ -1,3 +1,18 @@
+2017-07-11  Daniel Cederman  <cederman@gaisler.com>
+
+	* config/sparc/sparc.opt (mfix-ut700): New option.
+	(mfix-gr712rc): Likewise.
+	(sparc_fix_b2bst): New variable.
+	* doc/invoke.texi (SPARC options): Document them.
+	(ARM options): Fix warnings.
+	* config/sparc/sparc.c (sparc_do_work_around_errata): Insert NOP
+	instructions to prevent sequences that can trigger the store-store
+	errata for certain LEON3FT processors.
+	(pass_work_around_errata::gate): Also test sparc_fix_b2bst.
+	(sparc_option_override): Set sparc_fix_b2bst appropriately.
+	* config/sparc/sparc.md (fix_b2bst): New attribute.
+	(in_branch_delay): Prevent stores in delay slot if fix_b2bst.
+
 2017-07-10  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/81375
