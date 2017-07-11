@@ -1,3 +1,8 @@
+2017-07-10  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/81375
+	* gcc.target/i386/pr81375.c: New test.
+
 2017-07-07  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	Backport from mainline
