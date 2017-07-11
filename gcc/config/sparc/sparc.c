@@ -920,6 +920,12 @@ mem_ref (rtx x)
    to properly detect the various hazards.  Therefore, this machine specific
    pass runs as late as possible.  */
 
+/* True if INSN is a md pattern or asm statement.  */
+#define USEFUL_INSN_P(INSN)						\
+  (NONDEBUG_INSN_P (INSN)						\
+   && GET_CODE (PATTERN (INSN)) != USE					\
+   && GET_CODE (PATTERN (INSN)) != CLOBBER)
+
 static unsigned int
 sparc_do_work_around_errata (void)
 {
@@ -939,6 +945,81 @@ sparc_do_work_around_errata (void)
 	if (rtx_sequence *seq = dyn_cast <rtx_sequence *> (PATTERN (insn)))
 	  insn = seq->insn (1);
 
+      /* Look for either of these two sequences:
+
+	 Sequence A:
+	 1. store of word size or less (e.g. st / stb / sth / stf)
+	 2. any single instruction that is not a load or store
+	 3. any store instruction (e.g. st / stb / sth / stf / std / stdf)
+
+	 Sequence B:
+	 1. store of double word size (e.g. std / stdf)
+	 2. any store instruction (e.g. st / stb / sth / stf / std / stdf)  */
+      if (sparc_fix_b2bst
+	  && NONJUMP_INSN_P (insn)
+	  && (set = single_set (insn)) != NULL_RTX
+	  && MEM_P (SET_DEST (set)))
+	{
+	  /* Sequence B begins with a double-word store.  */
+	  bool seq_b = GET_MODE_SIZE (GET_MODE (SET_DEST (set))) == 8;
+	  rtx_insn *after;
+	  int i;
+
+	  next = next_active_insn (insn);
+	  if (!next)
+	    break;
+
+	  for (after = next, i = 0; i < 2; i++)
+	    {
+	      /* Skip empty assembly statements.  */
+	      if ((GET_CODE (PATTERN (after)) == UNSPEC_VOLATILE)
+		  || (USEFUL_INSN_P (after)
+		      && (asm_noperands (PATTERN (after))>=0)
+		      && !strcmp (decode_asm_operands (PATTERN (after),
+						       NULL, NULL, NULL,
+						       NULL, NULL), "")))
+		after = next_active_insn (after);
+	      if (!after)
+		break;
+
+	      /* If the insn is a branch, then it cannot be problematic.  */
+	      if (!NONJUMP_INSN_P (after)
+		  || GET_CODE (PATTERN (after)) == SEQUENCE)
+		break;
+
+	      /* Sequence B is only two instructions long.  */
+	      if (seq_b)
+		{
+		  /* Add NOP if followed by a store.  */
+		  if ((set = single_set (after)) != NULL_RTX
+		      && MEM_P (SET_DEST (set)))
+		    insert_nop = true;
+
+		  /* Otherwise it is ok.  */
+		  break;
+		}
+
+	      /* If the second instruction is a load or a store,
+		 then the sequence cannot be problematic.  */
+	      if (i == 0)
+		{
+		  if (((set = single_set (after)) != NULL_RTX)
+		      && (MEM_P (SET_DEST (set)) || MEM_P (SET_SRC (set))))
+		    break;
+
+		  after = next_active_insn (after);
+		  if (!after)
+		    break;
+		}
+
+	      /* Add NOP if third instruction is a store.  */
+	      if (i == 1
+		  && ((set = single_set (after)) != NULL_RTX)
+		  && MEM_P (SET_DEST (set)))
+		insert_nop = true;
+	    }
+	}
+      else
       /* Look for a single-word load into an odd-numbered FP register.  */
       if (sparc_fix_at697f
 	  && NONJUMP_INSN_P (insn)
@@ -1191,8 +1272,7 @@ public:
   /* opt_pass methods: */
   virtual bool gate (function *)
     {
-      /* The only errata we handle are those of the AT697F and UT699.  */
-      return sparc_fix_at697f != 0 || sparc_fix_ut699 != 0;
+      return sparc_fix_at697f || sparc_fix_ut699 || sparc_fix_b2bst;
     }
 
   virtual unsigned int execute (function *)
@@ -1556,6 +1636,10 @@ sparc_option_override (void)
   /* Use LRA instead of reload, unless otherwise instructed.  */
   if (!(target_flags_explicit & MASK_LRA))
     target_flags |= MASK_LRA;
+
+  /* Enable the back-to-back store errata workaround for LEON3FT.  */
+  if (sparc_fix_ut699 || sparc_fix_ut700 || sparc_fix_gr712rc)
+    sparc_fix_b2bst = 1;
 
   /* Supply a default value for align_functions.  */
   if (align_functions == 0)
