@@ -15981,9 +15981,7 @@ subroutines.  Code size is smaller.
 @item -mgas-isr-prologues
 @opindex mgas-isr-prologues
 Interrupt service routines (ISRs) may use the @code{__gcc_isr} pseudo
-instruction supported by GNU Binutils, see the
-@w{@uref{https://sourceware.org/binutils/docs/as/AVR_002dDependent.html,AVR assembler manual}}
-for details.
+instruction supported by GNU Binutils.
 If this option is on, the feature can still be disabled for individual
 ISRs by means of the @ref{AVR Function Attributes,,@code{no_gccisr}}
 function attribute.  This feature is activated per default
