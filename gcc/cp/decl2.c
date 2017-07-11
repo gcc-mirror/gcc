@@ -2622,13 +2622,6 @@ reset_type_linkage_2 (tree type)
 	{
 	  tree mem = STRIP_TEMPLATE (m);
 	  reset_decl_linkage (mem);
-	  if (DECL_MAYBE_IN_CHARGE_CONSTRUCTOR_P (mem))
-	    {
-	      /* Also update its name, for cxx_dwarf_name.  */
-	      DECL_NAME (mem) = TYPE_IDENTIFIER (type);
-	      if (m != mem)
-		DECL_NAME (m) = TYPE_IDENTIFIER (type);
-	    }
 	}
       binding_table_foreach (CLASSTYPE_NESTED_UTDS (type),
 			     bt_reset_linkage_2, NULL);
