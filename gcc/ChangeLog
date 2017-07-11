@@ -1,3 +1,17 @@
+2017-07-11  Carl Love  <cel@us.ibm.com>
+
+	* config/rs6000/rs6000-c.c: Add support for builtins
+	vector unsigned int vec_parity_lsbb (vector signed int);
+	vector unsigned int vec_parity_lsbb (vector unsigned int);
+	vector unsigned __int128 vec_parity_lsbb (vector signed __int128);
+	vector unsigned __int128 vec_parity_lsbb (vector unsigned __int128);
+	vector unsigned long long vec_parity_lsbb (vector signed long long);
+	vector unsigned long long vec_parity_lsbb (vector unsigned long long);
+	* config/rs6000/rs6000-builtin.def (VPARITY_LSBB): Add BU_P9V_OVERLOAD1.
+	* config/rs6000/altivec.h (vec_parity_lsbb): Add define.
+	* doc/extend.texi: Update the built-in documentation file for the
+	new built-in functions.
+
 2017-07-11  David Malcolm  <dmalcolm@redhat.com>
 
 	* diagnostic-show-locus.c: Include "gcc-rich-location.h".

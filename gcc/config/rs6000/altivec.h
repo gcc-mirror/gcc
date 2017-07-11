@@ -419,6 +419,7 @@
 #ifdef __POWER9_VECTOR__
 /* Vector additions added in ISA 3.0.  */
 #define vec_pack_to_short_fp32 __builtin_vec_convert_4f32_8i16
+#define vec_parity_lsbb __builtin_vec_vparity_lsbb
 #define vec_vctz __builtin_vec_vctz
 #define vec_cnttz __builtin_vec_vctz
 #define vec_vctzb __builtin_vec_vctzb

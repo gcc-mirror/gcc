@@ -1,3 +1,8 @@
+2017-07-11  Carl Love  <cel@us.ibm.com>
+
+	* gcc.target/powerpc/builtins-2-p9-runnable.c: Add new file with
+	test cases for the builtins.
+
 2017-07-11  Yury Gribov  <tetra2005@gmail.com>
 
 	* lib/profopt.exp: Print relative names in UNSUPPORTED

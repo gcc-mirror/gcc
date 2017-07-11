@@ -18288,6 +18288,13 @@ vector unsigned char vec_insert4b (vector unsigned int, vector unsigned char,
 vector signed char vec_insert4b (long long, vector signed char, const int);
 vector unsigned char vec_insert4b (long long, vector unsigned char, const int);
 
+vector unsigned int vec_parity_lsbb (vector signed int);
+vector unsigned int vec_parity_lsbb (vector unsigned int);
+vector unsigned __int128 vec_parity_lsbb (vector signed __int128);
+vector unsigned __int128 vec_parity_lsbb (vector unsigned __int128);
+vector unsigned long long vec_parity_lsbb (vector signed long long);
+vector unsigned long long vec_parity_lsbb (vector unsigned long long);
+
 vector int vec_vprtyb (vector int);
 vector unsigned int vec_vprtyb (vector unsigned int);
 vector long long vec_vprtyb (vector long long);
