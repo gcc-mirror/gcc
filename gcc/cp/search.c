@@ -444,6 +444,10 @@ lookup_field_1 (tree type, tree name, bool want_type)
     {
       tree decl = field;
 
+      if (DECL_DECLARES_FUNCTION_P (decl))
+	/* Functions are kep separately, at the moment.  */
+	continue;
+
       if (GATHER_STATISTICS)
 	n_fields_searched++;
 

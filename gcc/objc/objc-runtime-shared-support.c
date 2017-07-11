@@ -528,34 +528,32 @@ build_ivar_list_initializer (tree type, tree field_decl)
 {
   vec<constructor_elt, va_gc> *inits = NULL;
 
-  do
-    {
-      vec<constructor_elt, va_gc> *ivar = NULL;
-      tree id;
+  for (; field_decl; field_decl = DECL_CHAIN (field_decl))
+    if (TREE_CODE (field_decl) == FIELD_DECL)
+      {
+	vec<constructor_elt, va_gc> *ivar = NULL;
+	tree id;
 
-      /* Set name.  */
-      if (DECL_NAME (field_decl))
-	CONSTRUCTOR_APPEND_ELT (ivar, NULL_TREE,
-				add_objc_string (DECL_NAME (field_decl),
-						 meth_var_names));
-      else
-	/* Unnamed bit-field ivar (yuck).  */
-	CONSTRUCTOR_APPEND_ELT (ivar, NULL_TREE, build_int_cst (NULL_TREE, 0));
+	/* Set name.  */
+	if (DECL_NAME (field_decl))
+	  CONSTRUCTOR_APPEND_ELT (ivar, NULL_TREE,
+				  add_objc_string (DECL_NAME (field_decl),
+						   meth_var_names));
+	else
+	  /* Unnamed bit-field ivar (yuck).  */
+	  CONSTRUCTOR_APPEND_ELT (ivar, NULL_TREE,
+				  build_int_cst (NULL_TREE, 0));
 
-      /* Set type.  */
-      id = add_objc_string (encode_field_decl (field_decl),
-                            meth_var_types);
-      CONSTRUCTOR_APPEND_ELT (ivar, NULL_TREE, id);
+	/* Set type.  */
+	id = add_objc_string (encode_field_decl (field_decl),
+			      meth_var_types);
+	CONSTRUCTOR_APPEND_ELT (ivar, NULL_TREE, id);
 
-      /* Set offset.  */
-      CONSTRUCTOR_APPEND_ELT (ivar, NULL_TREE, byte_position (field_decl));
-      CONSTRUCTOR_APPEND_ELT (inits, NULL_TREE,
-			      objc_build_constructor (type, ivar));
-      do
-	field_decl = DECL_CHAIN (field_decl);
-      while (field_decl && TREE_CODE (field_decl) != FIELD_DECL);
+	/* Set offset.  */
+	CONSTRUCTOR_APPEND_ELT (ivar, NULL_TREE, byte_position (field_decl));
+	CONSTRUCTOR_APPEND_ELT (inits, NULL_TREE,
+				objc_build_constructor (type, ivar));
     }
-  while (field_decl);
 
   return objc_build_constructor (build_array_type (type, 0), inits);
 }

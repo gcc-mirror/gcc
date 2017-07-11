@@ -2110,8 +2110,8 @@ extern machine_mode element_mode (const_tree t);
   (FUNC_OR_METHOD_CHECK (NODE)->type_non_common.values)
 #define TYPE_VALUES_RAW(NODE) (TYPE_CHECK (NODE)->type_non_common.values)
 
-#define TYPE_METHODS(NODE) \
-  (RECORD_OR_UNION_CHECK (NODE)->type_non_common.maxval)
+/*#define TYPE_METHODS(NODE)
+  (RECORD_OR_UNION_CHECK (NODE)->type_non_common.maxval)  */
 #define TYPE_VFIELD(NODE) \
   (RECORD_OR_UNION_CHECK (NODE)->type_non_common.minval)
 #define TYPE_METHOD_BASETYPE(NODE) \
