@@ -1,3 +1,9 @@
+2017-07-11  Georg-Johann Lay  <avr@gjlay.de>
+
+	* doc/extend.texi (AVR Function Attributes): Remove weblink to
+	Binutils doc as TEXI will mess them up.
+	* doc/invoke.texi (AVR Options): Same here.
+
 2017-07-11  Daniel Cederman  <cederman@gaisler.com>
 
 	* config/sparc/sparc.opt (mfix-ut700): New option.

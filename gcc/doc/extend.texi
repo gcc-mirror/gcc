@@ -3820,8 +3820,6 @@ depended upon to work reliably and are not supported.
 Do not use @code{__gcc_isr} pseudo instructions in a function with
 the @code{interrupt} or @code{signal} attribute aka. interrupt
 service routine (ISR).
-For details on @code{__gcc_isr}, see the GNU Binutils
-@w{@uref{https://sourceware.org/binutils/docs/as/AVR_002dDependent.html,AVR assembler manual}}.
 Use this attribute if the preamble of the ISR prologue should always read
 @example
 push  __zero_reg__
