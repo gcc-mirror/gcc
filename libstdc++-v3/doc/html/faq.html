@@ -76,7 +76,8 @@
     </a></dt><dt>6.9. <a href="faq.html#faq.easy_to_fix">
       Aw, that's easy to fix!
     </a></dt></dl></dd><dt></dt><dd><dl><dt>7.1. <a href="faq.html#faq.iterator_as_pod">
-      string::iterator is not char*; vector&lt;T&gt;::iterator is not T*
+      string::iterator is not char*;
+      vector&lt;T&gt;::iterator is not T*
     </a></dt><dt>7.2. <a href="faq.html#faq.what_is_next">
       What's next after libstdc++?
     </a></dt><dt>7.3. <a href="faq.html#faq.sgi_stl">
@@ -133,10 +134,10 @@
     <a class="link" href="https://gcc.gnu.org/buildstat.html" target="_top">portability</a>
     that are the hallmarks of an open-source project are applied to libstdc++.
     </p><p>
-    All of the standard classes and functions from C++98/C++03
+    All of the standard classes and functions from C++98/C++03, C++11 and C++14
     (such as <code class="classname">string</code>,
     <code class="classname">vector&lt;&gt;</code>, iostreams, algorithms etc.)
-    are freely available and atempt to be fully compliant.
+    are freely available and attempt to be fully compliant.
     Work is ongoing to complete support for the current revision of the
     ISO C++ Standard.
     </p></td></tr><tr class="question"><td align="left" valign="top"><a id="faq.who"></a><a id="q-who"></a><p><strong>1.3.</strong></p></td><td align="left" valign="top"><p>
@@ -431,7 +432,7 @@
     C++ compiler.
     </p></td></tr><tr class="question"><td align="left" valign="top"><a id="faq.solaris_long_long"></a><a id="q-solaris_long_long"></a><p><strong>4.2.</strong></p></td><td align="left" valign="top"><p>
       No '<span class="type">long long</span>' type on Solaris?
-    </p></td></tr><tr class="answer"><td align="left" valign="top"><a id="a-solaris_long_long"></a></td><td align="left" valign="top"><p>
+    </p></td></tr><tr class="answer"><td align="left" valign="top"><a id="a-solaris_long_long"></a></td><td align="left" valign="top"><div class="note" style="margin-left: 0.5in; margin-right: 0.5in;"><h3 class="title">Note</h3><p>This answer is old and probably no longer be relevant.</p></div><p>
     By default we try to support the C99 <span class="type">long long</span> type.
     This requires that certain functions from your C library be present.
     </p><p> 
@@ -509,7 +510,7 @@
          more recent the C library.  (This is also documented in the main
          GCC installation instructions.)
       </p></td></tr><tr class="question"><td align="left" valign="top"><a id="faq.freebsd_wchar"></a><a id="q-freebsd_wchar"></a><p><strong>4.8.</strong></p></td><td align="left" valign="top"><p>
-      Can't use wchar_t/wstring on FreeBSD
+      Can't use <span class="type">wchar_t</span>/<code class="classname">wstring</code> on FreeBSD
     </p></td></tr><tr class="answer"><td align="left" valign="top"><a id="a-freebsd_wchar"></a></td><td align="left" valign="top"><div class="note" style="margin-left: 0.5in; margin-right: 0.5in;"><h3 class="title">Note</h3><p>This answer is old and probably no longer be relevant.</p></div><p>
     Older versions of FreeBSD's C library do not have sufficient
     support for wide character functions, and as a result the
@@ -552,7 +553,8 @@
     place), a public list of the library defects is occasionally
     published on <a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/" target="_top">the WG21
     website</a>.
-    Many of these issues have resulted in code changes in libstdc++.
+    Many of these issues have resulted in
+    <a class="link" href="manual/bugs.html#manual.intro.status.bugs.iso" title="Standard Bugs">code changes in libstdc++</a>.
     </p><p>
     If you think you've discovered a new bug that is not listed,
     please post a message describing your problem to the author of
@@ -570,8 +572,8 @@
     these lists with terms describing your issue.
     </p><p> 
     Before reporting a bug, please examine the
-    <a class="link" href="http://gcc.gnu.org/bugs/" target="_top">bugs database</a> with the
-    category set to <span class="quote">“<span class="quote">g++</span>”</span>. 
+    <a class="link" href="https://gcc.gnu.org/bugs/" target="_top">bugs database</a>, with the
+    component set to <span class="quote">“<span class="quote">c++</span>”</span>.
     </p></td></tr><tr class="toc"><td align="left" valign="top" colspan="2"><dl><dt>6.1. <a href="faq.html#faq.stream_reopening_fails">
       Reopening a stream fails
     </a></dt><dt>6.2. <a href="faq.html#faq.wefcxx_verbose">
@@ -594,8 +596,9 @@
       Aw, that's easy to fix!
     </a></dt></dl></td></tr><tr class="question"><td align="left" valign="top"><a id="faq.stream_reopening_fails"></a><a id="q-stream_reopening_fails"></a><p><strong>6.1.</strong></p></td><td align="left" valign="top"><p>
       Reopening a stream fails
-    </p></td></tr><tr class="answer"><td align="left" valign="top"><a id="a-stream_reopening_fails"></a></td><td align="left" valign="top"><p>
-    One of the most-reported non-bug reports. Executing a sequence like:
+    </p></td></tr><tr class="answer"><td align="left" valign="top"><a id="a-stream_reopening_fails"></a></td><td align="left" valign="top"><div class="note" style="margin-left: 0.5in; margin-right: 0.5in;"><h3 class="title">Note</h3><p>This answer is old and probably no longer be relevant.</p></div><p>
+    Prior to GCC 4.0 this was one of the most-reported non-bug reports.
+    Executing a sequence like this would fail:
     </p><pre class="programlisting">
     #include &lt;fstream&gt;
     ...
@@ -606,19 +609,20 @@
     fs.close();
     fs.open("a_new_file");
     </pre><p>
-    All operations on the re-opened <code class="varname">fs</code> will fail, or at
-    least act very strangely.  Yes, they often will, especially if
-    <code class="varname">fs</code> reached the EOF state on the previous file.  The
-    reason is that the state flags are <span class="emphasis"><em>not</em></span> cleared
-    on a successful call to open().  The standard unfortunately did
-    not specify behavior in this case, and to everybody's great sorrow,
-    the <a class="link" href="manual/bugs.html" title="Bugs">proposed LWG resolution in
-      DR #22</a> is to leave the flags unchanged.  You must insert a call
-    to <code class="function">fs.clear()</code> between the calls to close() and open(),
-    and then everything will work like we all expect it to work.
-    <span class="emphasis"><em>Update:</em></span> for GCC 4.0 we implemented the resolution
-    of <a class="link" href="manual/bugs.html" title="Bugs">DR #409</a> and open() 
-    now calls <code class="function">clear()</code> on success!
+    All operations on the re-opened <code class="varname">fs</code> would fail, or at
+    least act very strangely, especially if <code class="varname">fs</code> reached the
+    EOF state on the previous file.
+    The original C++98 standard did not specify behavior in this case, and
+    the <a class="link" href="manual/bugs.html#manual.bugs.dr22">resolution of DR #22</a> was to
+    leave the state flags unchanged on a successful call to
+    <code class="function">open()</code>.
+    You had to insert a call to <code class="function">fs.clear()</code> between the
+    calls to <code class="function">close()</code> and <code class="function">open()</code>,
+    and then everything will work as expected.
+    <span class="emphasis"><em>Update:</em></span> For GCC 4.0 we implemented the resolution
+    of <a class="link" href="manual/bugs.html#manual.bugs.dr409">DR #409</a> and
+    <code class="function">open()</code>
+    now calls <code class="function">clear()</code> on success.
     </p></td></tr><tr class="question"><td align="left" valign="top"><a id="faq.wefcxx_verbose"></a><a id="q-wefcxx_verbose"></a><p><strong>6.2.</strong></p></td><td align="left" valign="top"><p>
       -Weffc++ complains too much
     </p></td></tr><tr class="answer"><td align="left" valign="top"><a id="a-wefcxx_verbose"></a></td><td align="left" valign="top"><p>
@@ -626,7 +630,9 @@
     libstdc++ <code class="option">-Weffc++</code>-clean is not a goal of the project,
     for a few reasons.  Mainly, that option tries to enforce
     object-oriented programming, while the Standard Library isn't
-    necessarily trying to be OO.
+    necessarily trying to be OO. The option also enforces outdated guidelines
+    from old editions of the books, and the advice isn't all relevant to
+    modern C++ (especially C++11 and later).
     </p><p>
     We do, however, try to have libstdc++ sources as clean as possible. If
     you see some simple changes that pacify <code class="option">-Weffc++</code>
@@ -637,15 +643,16 @@
     Another problem is the <code class="literal">rel_ops</code> namespace and the template
     comparison operator functions contained therein.  If they become
     visible in the same namespace as other comparison functions
-    (e.g., <span class="quote">“<span class="quote">using</span>”</span> them and the &lt;iterator&gt; header),
+    (e.g., <span class="quote">“<span class="quote">using</span>”</span> them and the
+    <code class="filename">&lt;iterator&gt;</code> header),
     then you will suddenly be faced with huge numbers of ambiguity
-    errors.  This was discussed on the -v3 list; Nathan Myers
+    errors.  This was discussed on the mailing list; Nathan Myers
     <a class="link" href="http://gcc.gnu.org/ml/libstdc++/2001-01/msg00247.html" target="_top">sums
       things up here</a>.  The collisions with vector/string iterator
     types have been fixed for 3.1.
     </p></td></tr><tr class="question"><td align="left" valign="top"><a id="faq.v2_headers"></a><a id="q-v2_headers"></a><p><strong>6.4.</strong></p></td><td align="left" valign="top"><p>
       The g++-3 headers are <span class="emphasis"><em>not ours</em></span>
-    </p></td></tr><tr class="answer"><td align="left" valign="top"><a id="a-v2_headers"></a></td><td align="left" valign="top"><p>
+    </p></td></tr><tr class="answer"><td align="left" valign="top"><a id="a-v2_headers"></a></td><td align="left" valign="top"><div class="note" style="margin-left: 0.5in; margin-right: 0.5in;"><h3 class="title">Note</h3><p>This answer is old and probably no longer be relevant.</p></div><p>
 	If you are using headers in
 	<code class="filename">${prefix}/include/g++-3</code>, or if
 	the installed library's name looks like
@@ -698,11 +705,12 @@
     <span class="command"><strong>g++ -fPIC -rdynamic -o foo ... -L. -lfoo -ldl</strong></span><br />
     </p></div></td></tr><tr class="question"><td align="left" valign="top"><a id="faq.memory_leaks"></a><a id="q-memory_leaks"></a><p><strong>6.7.</strong></p></td><td align="left" valign="top"><p>
       <span class="quote">“<span class="quote">Memory leaks</span>”</span> in containers
-    </p></td></tr><tr class="answer"><td align="left" valign="top"><a id="a-memory_leaks"></a></td><td align="left" valign="top"><p>
+    </p></td></tr><tr class="answer"><td align="left" valign="top"><a id="a-memory_leaks"></a></td><td align="left" valign="top"><div class="note" style="margin-left: 0.5in; margin-right: 0.5in;"><h3 class="title">Note</h3><p>This answer is old and probably no longer be relevant.</p></div><p>
     A few people have reported that the standard containers appear
     to leak memory when tested with memory checkers such as
     <a class="link" href="http://valgrind.org/" target="_top"><span class="command"><strong>valgrind</strong></span></a>.
-    Under some configurations the library's allocators keep free memory in a
+    Under some (non-default) configurations the library's allocators keep
+    free memory in a
     pool for later reuse, rather than returning it to the OS.  Although
     this memory is always reachable by the library and is never
     lost, memory debugging tools can report it as a leak.  If you
@@ -710,7 +718,7 @@
     <a class="link" href="manual/debug.html#debug.memory" title="Memory Leak Hunting">Tips for memory leak hunting</a>
     first.
     </p></td></tr><tr class="question"><td align="left" valign="top"><a id="faq.list_size_on"></a><a id="q-list_size_on"></a><p><strong>6.8.</strong></p></td><td align="left" valign="top"><p>
-      list::size() is O(n)!
+      <code class="code">list::size()</code> is O(n)!
     </p></td></tr><tr class="answer"><td align="left" valign="top"><a id="a-list_size_on"></a></td><td align="left" valign="top"><p>
     See
     the <a class="link" href="manual/containers.html" title="Chapter 9.  Containers">Containers</a>
@@ -734,7 +742,8 @@
     creeps back in, it will be caught immediately by the testsuite -
     but only if such a test exists.
     </p></td></tr><tr class="toc"><td align="left" valign="top" colspan="2"><dl><dt>7.1. <a href="faq.html#faq.iterator_as_pod">
-      string::iterator is not char*; vector&lt;T&gt;::iterator is not T*
+      string::iterator is not char*;
+      vector&lt;T&gt;::iterator is not T*
     </a></dt><dt>7.2. <a href="faq.html#faq.what_is_next">
       What's next after libstdc++?
     </a></dt><dt>7.3. <a href="faq.html#faq.sgi_stl">
@@ -749,7 +758,8 @@
     </a></dt><dt>7.8. <a href="faq.html#faq.size_equals_capacity">
       How do I make std::vector&lt;T&gt;::capacity() == std::vector&lt;T&gt;::size?
     </a></dt></dl></td></tr><tr class="question"><td align="left" valign="top"><a id="faq.iterator_as_pod"></a><a id="faq.iterator_as_pod_q"></a><p><strong>7.1.</strong></p></td><td align="left" valign="top"><p>
-      string::iterator is not char*; vector&lt;T&gt;::iterator is not T*
+      <code class="classname">string::iterator</code> is not <code class="code">char*</code>;
+      <code class="classname">vector&lt;T&gt;::iterator</code> is not <code class="code">T*</code>
     </p></td></tr><tr class="answer"><td align="left" valign="top"><a id="faq.iterator_as_pod_a"></a></td><td align="left" valign="top"><p>
     If you have code that depends on container&lt;T&gt; iterators
     being implemented as pointer-to-T, your code is broken. It's
@@ -762,38 +772,38 @@
     than a typedef for <span class="type">T*</span> outweighs nearly all opposing
     arguments.
     </p><p>
-    Code which does assume that a vector iterator <code class="varname">i</code>
+    Code which does assume that a vector/string iterator <code class="varname">i</code>
     is a pointer can often be fixed by changing <code class="varname">i</code> in
-    certain expressions to <code class="varname">&amp;*i</code>.  Future revisions
-    of the Standard are expected to bless this usage for
-    vector&lt;&gt; (but not for basic_string&lt;&gt;).
+    certain expressions to <code class="varname">&amp;*i</code>.
     </p></td></tr><tr class="question"><td align="left" valign="top"><a id="faq.what_is_next"></a><a id="q-what_is_next"></a><p><strong>7.2.</strong></p></td><td align="left" valign="top"><p>
       What's next after libstdc++?
     </p></td></tr><tr class="answer"><td align="left" valign="top"><a id="a-what_is_next"></a></td><td align="left" valign="top"><p>
-	Hopefully, not much.  The goal of libstdc++ is to produce a
-	fully-compliant, fully-portable Standard Library.  After that,
-	we're mostly done: there won't <span class="emphasis"><em>be</em></span> any
-	more compliance work to do.
-      </p><p>
-	There is an effort underway to add significant extensions to
-	the standard library specification.  The latest version of
-	this effort is described in
-         <a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2005/n1836.pdf" target="_top">
-         The C++ Library Technical Report 1</a>.
+	The goal of libstdc++ is to produce a
+	fully-compliant, fully-portable Standard Library.
+	While the C++ Standard continues to evolve the libstdc++ will
+        continue to track it.
       </p></td></tr><tr class="question"><td align="left" valign="top"><a id="faq.sgi_stl"></a><a id="q-sgi_stl"></a><p><strong>7.3.</strong></p></td><td align="left" valign="top"><p>
       What about the STL from SGI?
     </p></td></tr><tr class="answer"><td align="left" valign="top"><a id="a-sgi_stl"></a></td><td align="left" valign="top"><p>
-      The <a class="link" href="http://www.sgi.com/tech/stl/" target="_top">STL from SGI</a>,
-    version 3.3, was the final merge of the STL codebase.  The
-    code in libstdc++ contains many fixes and changes, and
-    the SGI code is no longer under active
-    development.  We expect that no future merges will take place.
+    The STL (Standard Template Library) was the inspiration for large chunks
+    of the C++ Standard Library, but the terms are not interchangeable and
+    they don't mean the same thing. The C++ Standard Library includes lots of
+    things that didn't come from the STL, and some of them aren't even
+    templates, such as <code class="classname">std::locale</code> and
+    <code class="classname">std::thread</code>.
+    </p><p>
+    Libstdc++-v3 incorporates a lot of code from
+    <a class="link" href="http://www.sgi.com/tech/stl/" target="_top">the SGI STL</a>
+    (the final merge was from
+    <a class="link" href="http://www.sgi.com/tech/stl/whats_new.html" target="_top">release 3.3</a>).
+    The code in libstdc++ contains many fixes and changes compared to the
+    original SGI code.
     </p><p>
     In particular, <code class="classname">string</code> is not from SGI and makes no
-    use of their "rope" class (which is included as an
-    optional extension), nor is <code class="classname">valarray</code> and some others.
-    Classes like <code class="classname">vector&lt;&gt;</code> are, but have been
-    extensively modified.
+    use of their "rope" class (although that is included as an optional
+    extension), neither is <code class="classname">valarray</code> nor some others.
+    Classes like <code class="classname">vector&lt;&gt;</code> were from SGI, but have
+    been extensively modified.
     </p><p>
     More information on the evolution of libstdc++ can be found at the
     <a class="link" href="manual/api.html" title="API Evolution and Deprecation History">API
@@ -812,13 +822,17 @@
     </p></td></tr><tr class="answer"><td align="left" valign="top"><a id="a-tr1_support"></a></td><td align="left" valign="top"><p>
     Yes.
     </p><p>
-    The C++ Standard Library Technical Report adds many new features to 
-    the library.  The latest version of this effort is described in
+    The C++ Standard Library
     <a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2005/n1836.pdf" target="_top">
-         Technical Report 1</a>.
+    Technical Report 1</a> added many new features to the library.
     </p><p>
-    The implementation status of TR1 in libstdc++ can be tracked <a class="link" href="manual/status.html#status.iso.tr1" title="C++ TR1">on the TR1 status
-    page</a>.
+    The implementation status of TR1 in libstdc++ can be tracked
+    <a class="link" href="manual/status.html#status.iso.tr1" title="C++ TR1">on the TR1 status page</a>.
+    </p><p>
+    New code should probably not use TR1, because almost everything in it has
+    been added to the main C++ Standard Library (usually with significant
+    improvements).
+    The TR1 implementation in libstdc++ is no longer actively maintained.
     </p></td></tr><tr class="question"><td align="left" valign="top"><a id="faq.get_iso_cxx"></a><a id="q-get_iso_cxx"></a><p><strong>7.6.</strong></p></td><td align="left" valign="top"><p>How do I get a copy of the ISO C++ Standard?
     </p></td></tr><tr class="answer"><td align="left" valign="top"><a id="a-get_iso_cxx"></a></td><td align="left" valign="top"><p>
     Please refer to the <a class="link" href="manual/appendix_contributing.html" title="Appendix A.  Contributing">Contributing</a>
@@ -878,10 +892,14 @@
     the decisions, must happen before you can reasonably document a
     candidate C++ ABI that encompasses the standard library.
     </p></td></tr><tr class="question"><td align="left" valign="top"><a id="faq.size_equals_capacity"></a><a id="q-size_equals_capacity"></a><p><strong>7.8.</strong></p></td><td align="left" valign="top"><p>
-      How do I make std::vector&lt;T&gt;::capacity() == std::vector&lt;T&gt;::size?
+      How do I make <code class="code">std::vector&lt;T&gt;::capacity() == std::vector&lt;T&gt;::size</code>?
     </p></td></tr><tr class="answer"><td align="left" valign="top"><a id="a-size_equals_capacity"></a></td><td align="left" valign="top"><p>
-    The standard idiom for deallocating a <code class="classname">vector&lt;T&gt;</code>'s
-    unused memory is to create a temporary copy of the vector and swap their
+    Since C++11 just call the <code class="function">shrink_to_fit()</code> member
+    function.
+    </p><p>
+    Before C++11, the standard idiom for deallocating a
+    <code class="classname">vector&lt;T&gt;</code>'s
+    unused memory was to create a temporary copy of the vector and swap their
     contents, e.g. for <code class="classname">vector&lt;T&gt; v</code>
     </p><div class="literallayout"><p><br />
      std::vector&lt;T&gt;(v).swap(v);<br />
