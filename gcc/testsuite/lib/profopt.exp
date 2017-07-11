@@ -285,7 +285,7 @@ proc auto-profopt-execute { src } {
 
     if { ! [check_profiling_available "-fauto-profile"] } {
         regsub "(?q)$srcdir/" $src "" testcase
-        unsupported "$src -fauto-profile"
+        unsupported "$testcase -fauto-profile"
         return
     }
     set profile_wrapper [profopt-perf-wrapper]
@@ -451,7 +451,7 @@ proc profopt-execute { src } {
 		verbose "Running $cmd"
 		set id [remote_spawn "" $cmd]
 		if { $id < 0 } {
-		    unsupported "$src -fauto-profile: cannot run create_gcov"
+		    unsupported "$testcase -fauto-profile: cannot run create_gcov"
 		    set status "fail"
 		    return
 		}
