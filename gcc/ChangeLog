@@ -1,3 +1,10 @@
+2017-07-11  Tom de Vries  <tom@codesourcery.com>
+
+	* config/nvptx/nvptx.c (WORKAROUND_PTXJIT_BUG): New macro.
+	(bb_first_real_insn): New function.
+	(nvptx_single): Add extra initialization of broadcasted condition
+	variables.
+
 2017-07-11  Nathan Sidwell  <nathan@acm.org>
 
 	* dwarf2out.c (gen_member_die): Remove useless check for anon ctors.
