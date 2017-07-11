@@ -1,3 +1,18 @@
+2017-07-11  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic-show-locus.c: Include "gcc-rich-location.h".
+	(layout::m_primary_loc): New field.
+	(layout::layout): Initialize new field.  Move location filtering
+	logic from here to...
+	(layout::maybe_add_location_range): ...this new method.  Add
+	support for filtering to just the lines already specified by other
+	locations.
+	(layout::will_show_line_p): New method.
+	(selftest::test_add_location_if_nearby): New test function.
+	(selftest::diagnostic_show_locus_c_tests): Call it.
+	* gcc-rich-location.h (gcc_rich_location::add_location_if_nearby):
+	New method.
+
 2017-07-11  Tom de Vries  <tom@codesourcery.com>
 
 	* config/nvptx/nvptx.c (WORKAROUND_PTXJIT_BUG): New macro.
