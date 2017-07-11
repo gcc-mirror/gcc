@@ -1,3 +1,29 @@
+2017-07-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backport from mainline
+	2017-04-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/80316
+	* include/std/future (_State_baseV2::_Setter::operator()): Remove
+	_S_check calls that are done after the pointer to the shared state is
+	already dereferenced.
+	(_State_baseV2::_Setter<_Res, void>): Define specialization for void
+	as partial specialization so it can be defined within the definition
+	of _State_baseV2.
+	(_State_baseV2::__setter): Call _S_check.
+	(_State_baseV2::__setter(promise<void>*)): Add overload for use by
+	promise<void>::set_value and promise<void>::set_value_at_thread_exit.
+	(promise<T>, promise<T&>, promise<void>): Make _State a friend.
+	(_State_baseV2::_Setter<void, void>): Remove explicit specialization.
+	(promise<void>::set_value, promise<void>::set_value_at_thread_exit):
+	Use new __setter overload.
+	* testsuite/30_threads/promise/members/at_thread_exit2.cc: New test.
+	* testsuite/30_threads/promise/members/set_exception.cc: Test
+	promise<T&> and promise<void> specializations.
+	* testsuite/30_threads/promise/members/set_exception2.cc: Likewise.
+	Test for no_state error condition.
+	* testsuite/30_threads/promise/members/set_value2.cc: Likewise.
+
 2017-07-04  Release Manager
 
 	* GCC 6.4.0 released.
