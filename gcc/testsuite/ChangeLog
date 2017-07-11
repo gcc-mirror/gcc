@@ -1,3 +1,8 @@
+2017-07-11  Yury Gribov  <tetra2005@gmail.com>
+
+	* lib/profopt.exp: Print relative names in UNSUPPORTED
+	AutoFDO tests.
+
 2017-07-10  Michael Collison <michael.collison@arm.com>
 
 	* gcc.target/aarch64/var_shift_mask_1.c: Fix for ILP32
