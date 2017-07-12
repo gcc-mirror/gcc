@@ -3414,6 +3414,48 @@ s390_rtx_costs (rtx x, machine_mode mode, int outer_code,
       *total = 0;
       return true;
 
+    case SET:
+      {
+	/* Without this a conditional move instruction would be
+	   accounted as 3 * COSTS_N_INSNS (set, if_then_else,
+	   comparison operator).  That's a bit pessimistic.  */
+
+	if (!TARGET_Z196 || GET_CODE (SET_SRC (x)) != IF_THEN_ELSE)
+	  return false;
+
+	rtx cond = XEXP (SET_SRC (x), 0);
+
+	if (!CC_REG_P (XEXP (cond, 0)) || !CONST_INT_P (XEXP (cond, 1)))
+	  return false;
+
+	/* It is going to be a load/store on condition.  Make it
+	   slightly more expensive than a normal load.  */
+	*total = COSTS_N_INSNS (1) + 1;
+
+	rtx dst = SET_DEST (x);
+	rtx then = XEXP (SET_SRC (x), 1);
+	rtx els = XEXP (SET_SRC (x), 2);
+
+	/* It is a real IF-THEN-ELSE.  An additional move will be
+	   needed to implement that.  */
+	if (reload_completed
+	    && !rtx_equal_p (dst, then)
+	    && !rtx_equal_p (dst, els))
+	  *total += COSTS_N_INSNS (1) / 2;
+
+	/* A minor penalty for constants we cannot directly handle.  */
+	if ((CONST_INT_P (then) || CONST_INT_P (els))
+	    && (!TARGET_Z13 || MEM_P (dst)
+		|| (CONST_INT_P (then) && !satisfies_constraint_K (then))
+		|| (CONST_INT_P (els) && !satisfies_constraint_K (els))))
+	  *total += COSTS_N_INSNS (1) / 2;
+
+	/* A store on condition can only handle register src operands.  */
+	if (MEM_P (dst) && (!REG_P (then) || !REG_P (els)))
+	  *total += COSTS_N_INSNS (1) / 2;
+
+	return true;
+      }
     case IOR:
       /* risbg */
       if (GET_CODE (XEXP (x, 0)) == AND
