@@ -1,3 +1,33 @@
+2017-07-12  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/81193
+	* gcc.target/powerpc/bmi-andn-1.c: Add guard against using
+	__builtin_cpu_supports with old GLIBC's.
+	* gcc.target/powerpc/bmi-andn-2.c: Likewise.
+	* gcc.target/powerpc/bmi-bextr-1.c: Likewise.
+	* gcc.target/powerpc/bmi-bextr-2.c: Likewise.
+	* gcc.target/powerpc/bmi-bextr-4.c: Likewise.
+	* gcc.target/powerpc/bmi-bextr-5.c: Likewise.
+	* gcc.target/powerpc/bmi-blsi-1.c: Likewise.
+	* gcc.target/powerpc/bmi-blsi-2.c: Likewise.
+	* gcc.target/powerpc/bmi-blsmsk-1.c: Likewise.
+	* gcc.target/powerpc/bmi-blsmsk-2.c: Likewise.
+	* gcc.target/powerpc/bmi-blsr-1.c: Likewise.
+	* gcc.target/powerpc/bmi-blsr-2.c: Likewise.
+	* gcc.target/powerpc/bmi-tzcnt-1.c: Likewise.
+	* gcc.target/powerpc/bmi-tzcnt-2.c: Likewise.
+	* gcc.target/powerpc/bmi2-bzhi32-1.c: Likewise.
+	* gcc.target/powerpc/bmi2-bzhi64-1.c: Likewise.
+	* gcc.target/powerpc/bmi2-mulx32-1.c: Likewise.
+	* gcc.target/powerpc/bmi2-mulx32-2.c: Likewise.
+	* gcc.target/powerpc/bmi2-mulx64-1.c: Likewise.
+	* gcc.target/powerpc/bmi2-mulx64-2.c: Likewise.
+	* gcc.target/powerpc/bmi2-pdep32-1.c: Likewise.
+	* gcc.target/powerpc/bmi2-pdep64-1.c: Likewise.
+	* gcc.target/powerpc/bmi2-pext32-1.c: Likewise.
+	* gcc.target/powerpc/bmi2-pext64-1.c: Likewise.
+	* gcc.target/powerpc/cpu-builtin-1.c: Likewise.
+
 2017-07-12  Carl Love  <cel@us.ibm.com>
 
 	* gcc.target/powerpc/p9-xxbr-1.c (rev_bool_char, rev_bool_short,

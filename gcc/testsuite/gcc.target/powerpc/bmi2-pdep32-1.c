@@ -3,6 +3,7 @@
 /* { dg-require-effective-target lp64 } */
 /* { dg-require-effective-target vsx_hw } */
 /* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power7" } } */
+/* { dg-require-effective-target ppc_cpu_supports_hw } */
 
 #define NO_WARN_X86_INTRINSICS 1
 #include <x86intrin.h>
