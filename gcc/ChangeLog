@@ -1,3 +1,13 @@
+2017-07-12  Georg-Johann Lay  <avr@gjlay.de>
+
+	Backport from 2017-07-12 trunk r250156.
+
+	PR target/79883
+	* config/avr/avr.c (avr_set_current_function): In diagnostic
+	messages: Quote keywords and (parts of) identifiers.
+	[WITH_AVRLIBC]: Warn for functions named "ISR", "SIGNAL" or
+	"INTERRUPT".
+
 2017-07-11  Daniel Cederman  <cederman@gaisler.com>
 
 	* config/sparc/sparc.opt (mfix-ut700): New option.
