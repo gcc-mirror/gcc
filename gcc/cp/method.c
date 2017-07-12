@@ -137,8 +137,8 @@ make_thunk (tree function, bool this_adjusting,
   DECL_SAVED_FUNCTION_DATA (thunk) = NULL;
   /* The thunk itself is not a constructor or destructor, even if
      the thing it is thunking to is.  */
-  DECL_DESTRUCTOR_P (thunk) = 0;
-  DECL_CONSTRUCTOR_P (thunk) = 0;
+  DECL_CXX_DESTRUCTOR_P (thunk) = 0;
+  DECL_CXX_CONSTRUCTOR_P (thunk) = 0;
   DECL_EXTERNAL (thunk) = 1;
   DECL_ARTIFICIAL (thunk) = 1;
   /* The THUNK is not a pending inline, even if the FUNCTION is.  */
@@ -223,8 +223,8 @@ make_alias_for (tree target, tree newid)
   if (TREE_CODE (alias) == FUNCTION_DECL)
     {
       DECL_SAVED_FUNCTION_DATA (alias) = NULL;
-      DECL_DESTRUCTOR_P (alias) = 0;
-      DECL_CONSTRUCTOR_P (alias) = 0;
+      DECL_CXX_DESTRUCTOR_P (alias) = 0;
+      DECL_CXX_CONSTRUCTOR_P (alias) = 0;
       DECL_PENDING_INLINE_P (alias) = 0;
       DECL_DECLARED_INLINE_P (alias) = 0;
       DECL_INITIAL (alias) = error_mark_node;
@@ -2058,9 +2058,9 @@ implicitly_declare_fn (special_function_kind kind, tree type,
     /* Assignment operator.  */
     SET_OVERLOADED_OPERATOR_CODE (fn, NOP_EXPR);
   else if (IDENTIFIER_CTOR_P (name))
-    DECL_CONSTRUCTOR_P (fn) = true;
+    DECL_CXX_CONSTRUCTOR_P (fn) = true;
   else
-    DECL_DESTRUCTOR_P (fn) = true;
+    DECL_CXX_DESTRUCTOR_P (fn) = true;
 
   SET_DECL_ALIGN (fn, MINIMUM_METHOD_BOUNDARY);
 
