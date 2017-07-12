@@ -376,10 +376,10 @@ esac
 esac
 
 case ${host} in
-# At present, we cannot turn -mfloat128 on via #pragma GCC target,
-# so just check if we have VSX (ISA 2.06) support to build the
-# software libraries, and whether the assembler can handle xsaddqp
-# for hardware support.
+# At present, we cannot turn -mfloat128 on via #pragma GCC target, so just
+# check if we have VSX (ISA 2.06) support to build the software libraries, and
+# whether the assembler can handle xsaddqp for hardware support.  Also check if
+# a new glibc is being used so that __builtin_cpu_supports can be used.
 powerpc*-*-linux*)
   saved_CFLAGS="$CFLAGS"
   CFLAGS="$CFLAGS -mabi=altivec -mvsx -mfloat128"
@@ -397,6 +397,9 @@ powerpc*-*-linux*)
     [#include <sys/auxv.h>
      #ifndef AT_PLATFORM
      #error "AT_PLATFORM is not defined"
+     #endif
+     #ifndef __BUILTIN_CPU_SUPPORTS__
+     #error "__builtin_cpu_supports is not available"
      #endif
      vector unsigned char add (vector unsigned char a, vector unsigned char b)
      {

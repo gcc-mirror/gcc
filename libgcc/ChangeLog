@@ -1,3 +1,11 @@
+2017-07-12  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/81193
+	* configure.ac (PowerPC float128 hardware support): Test whether
+	we can use __builtin_cpu_supports before enabling the ifunc
+	handler.
+	* configure: Regenerate.
+
 2017-07-10  Vineet Gupta <vgupta@synopsys.com>
 
 	* config.host: Remove uclibc from arc target spec.

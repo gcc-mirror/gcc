@@ -15176,6 +15176,8 @@ cpu_expand_builtin (enum rs6000_builtins fcode, tree exp ATTRIBUTE_UNUSED,
       emit_insn (gen_eqsi3 (scratch2, scratch1, const0_rtx));
       emit_insn (gen_rtx_SET (target, gen_rtx_XOR (SImode, scratch2, const1_rtx)));
     }
+  else
+    gcc_unreachable ();
 
   /* Record that we have expanded a CPU builtin, so that we can later
      emit a reference to the special symbol exported by LIBC to ensure we
@@ -15183,6 +15185,9 @@ cpu_expand_builtin (enum rs6000_builtins fcode, tree exp ATTRIBUTE_UNUSED,
   cpu_builtin_p = true;
 
 #else
+  warning (0, "%s needs GLIBC (2.23 and newer) that exports hardware "
+	   "capability bits", rs6000_builtin_info[(size_t) fcode].name);
+  
   /* For old LIBCs, always return FALSE.  */
   emit_move_insn (target, GEN_INT (0));
 #endif /* TARGET_LIBC_PROVIDES_HWCAP_IN_TCB */
@@ -37284,10 +37289,10 @@ rs6000_get_function_versions_dispatcher (void *decl)
   default_node = default_version_info->this_node;
 
 #ifndef TARGET_LIBC_PROVIDES_HWCAP_IN_TCB
-  warning_at (DECL_SOURCE_LOCATION (default_node->decl), 0,
-	      "target_clone needs GLIBC (2.23 and newer) to export hardware "
-	      "capability bits");
-#endif
+  error_at (DECL_SOURCE_LOCATION (default_node->decl),
+	    "target_clones attribute needs GLIBC (2.23 and newer) that "
+	    "exports hardware capability bits");
+#else
 
   if (targetm.has_ifunc_p ())
     {
@@ -37320,6 +37325,7 @@ rs6000_get_function_versions_dispatcher (void *decl)
 		"multiversioning needs ifunc which is not supported "
 		"on this target");
     }
+#endif
 
   return dispatch_decl;
 }
