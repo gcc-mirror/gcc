@@ -1,3 +1,9 @@
+2017-07-12  Jeff Law  <law@redhat.com>
+
+	* config/riscv/riscv.c: Remove unnecessary includes.  Reorder
+	remaining includes slightly.
+	* config/riscv/riscv-builtins.c: Include profile-count.h.
+
 2017-07-12  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/79883
