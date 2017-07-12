@@ -529,7 +529,7 @@ do_friend (tree ctype, tree declarator, tree decl,
 
       /* A method friend.  */
       if (flags == NO_SPECIAL && declarator == cname)
-	DECL_CONSTRUCTOR_P (decl) = 1;
+	DECL_CXX_CONSTRUCTOR_P (decl) = 1;
 
       grokclassfn (ctype, decl, flags);
 
