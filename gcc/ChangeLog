@@ -1,3 +1,8 @@
+2017-07-11  Michael Collison  <michael.collison@arm.com>
+
+	* config/aarch64/aarch64-simd.md (aarch64_sub<mode>_compare0):
+	New pattern.
+
 2017-07-11  Carl Love  <cel@us.ibm.com>
 
 	* config/rs6000/rs6000-c.c: Add support for builtins
