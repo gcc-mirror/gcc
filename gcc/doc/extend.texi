@@ -18510,13 +18510,17 @@ of each element.
 If the ISA 3.0 instruction set additions (@option{-mcpu=power9})
 are available:
 @smallexample
+vector signed bool char vec_revb (vector signed char);
 vector signed char vec_revb (vector signed char);
 vector unsigned char vec_revb (vector unsigned char);
+vector bool short vec_revb (vector bool short);
 vector short vec_revb (vector short);
 vector unsigned short vec_revb (vector unsigned short);
+vector bool int vec_revb (vector bool int);
 vector int vec_revb (vector int);
 vector unsigned int vec_revb (vector unsigned int);
 vector float vec_revb (vector float);
+vector bool long long vec_revb (vector bool long long);
 vector long long vec_revb (vector long long);
 vector unsigned long long vec_revb (vector unsigned long long);
 vector double vec_revb (vector double);
