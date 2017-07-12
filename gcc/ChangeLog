@@ -1,3 +1,13 @@
+2017-07-12  Carl Love  <cel@us.ibm.com>
+
+	* config/rs6000/rs6000-c.c: Add support for built-in functions
+	vector bool char vec_revb (vector bool char);
+	vector bool short vec_revb (vector short char);
+	vector bool int vec_revb (vector bool int);
+	vector bool long long vec_revb (vector bool long long);
+	* doc/extend.texi: Update the built-in documentation file for the
+	new built-in functions.
+
 2017-07-12  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
 	* config/s390/s390.md: Remove movcc splitter.

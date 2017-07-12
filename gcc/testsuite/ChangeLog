@@ -1,5 +1,12 @@
 2017-07-12  Carl Love  <cel@us.ibm.com>
 
+	* gcc.target/powerpc/p9-xxbr-1.c (rev_bool_char, rev_bool_short,
+	rev_bool_int): Add test cases for builtins.
+	* gcc.target/powerpc/p9-xxbr-2.c (rev_long_long, rev_ulong_ulong): Add
+	test cases for builtins.
+
+2017-07-12  Carl Love  <cel@us.ibm.com>
+
 	* gcc.target/powerpc/builtins-1-p9-runnable.c (dg-ddo run): Add
 	lp64 && p9vector_hw.
 
