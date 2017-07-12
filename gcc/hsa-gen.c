@@ -1929,7 +1929,7 @@ gen_hsa_addr (tree ref, hsa_bb *hbb, HOST_WIDE_INT *output_bitsize = NULL,
 
   if (handled_component_p (ref))
     {
-      enum machine_mode mode;
+      machine_mode mode;
       int unsignedp, volatilep, preversep;
 
       ref = get_inner_reference (ref, &bitsize, &bitpos, &varoffset, &mode,

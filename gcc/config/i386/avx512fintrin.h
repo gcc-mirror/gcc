@@ -8417,6 +8417,29 @@ _mm_getexp_round_ss (__m128 __A, __m128 __B, const int __R)
 						    __R);
 }
 
+extern __inline __m128
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask_getexp_round_ss (__m128 __W, __mmask8 __U, __m128 __A,
+			  __m128 __B, const int __R)
+{
+  return (__m128) __builtin_ia32_getexpss_mask_round ((__v4sf) __A,
+						 (__v4sf) __B,
+						 (__v4sf) __W,
+						 (__mmask8) __U, __R);
+}
+
+extern __inline __m128
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_maskz_getexp_round_ss (__mmask8 __U, __m128 __A, __m128 __B,
+			   const int __R)
+{
+  return (__m128) __builtin_ia32_getexpss_mask_round ((__v4sf) __A,
+						 (__v4sf) __B,
+						 (__v4sf)
+						 _mm_setzero_ps (),
+						 (__mmask8) __U, __R);
+}
+
 extern __inline __m128d
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm_getexp_round_sd (__m128d __A, __m128d __B, const int __R)
@@ -8424,6 +8447,29 @@ _mm_getexp_round_sd (__m128d __A, __m128d __B, const int __R)
   return (__m128d) __builtin_ia32_getexpsd128_round ((__v2df) __A,
 						     (__v2df) __B,
 						     __R);
+}
+
+extern __inline __m128d
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask_getexp_round_sd (__m128d __W, __mmask8 __U, __m128d __A,
+			  __m128d __B, const int __R)
+{
+  return (__m128d) __builtin_ia32_getexpsd_mask_round ((__v2df) __A,
+						 (__v2df) __B,
+						 (__v2df) __W,
+						 (__mmask8) __U, __R);
+}
+
+extern __inline __m128d
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_maskz_getexp_round_sd (__mmask8 __U, __m128d __A, __m128d __B,
+			   const int __R)
+{
+  return (__m128d) __builtin_ia32_getexpsd_mask_round ((__v2df) __A,
+						 (__v2df) __B,
+						 (__v2df)
+						 _mm_setzero_pd (),
+						 (__mmask8) __U, __R);
 }
 
 extern __inline __m512
@@ -8570,6 +8616,33 @@ _mm_getmant_round_sd (__m128d __A, __m128d __B,
 						   __R);
 }
 
+extern __inline __m128d
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask_getmant_round_sd (__m128d __W, __mmask8 __U, __m128d __A,
+			      __m128d __B, _MM_MANTISSA_NORM_ENUM __C,
+			      _MM_MANTISSA_SIGN_ENUM __D, const int __R)
+{
+  return (__m128d) __builtin_ia32_getmantsd_mask_round ((__v2df) __A,
+						    (__v2df) __B,
+						    (__D << 2) | __C,
+                                                    (__v2df) __W,
+						     __U, __R);
+}
+
+extern __inline __m128d
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_maskz_getmant_round_sd (__mmask8 __U, __m128d __A, __m128d __B,
+			       _MM_MANTISSA_NORM_ENUM __C,
+			       _MM_MANTISSA_SIGN_ENUM __D, const int __R)
+{
+  return (__m128d) __builtin_ia32_getmantsd_mask_round ((__v2df) __A,
+							(__v2df) __B,
+						        (__D << 2) | __C,
+                                                        (__v2df)
+                                                        _mm_setzero_pd(),
+						        __U, __R);
+}
+
 extern __inline __m128
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm_getmant_round_ss (__m128 __A, __m128 __B,
@@ -8580,6 +8653,33 @@ _mm_getmant_round_ss (__m128 __A, __m128 __B,
 						  (__v4sf) __B,
 						  (__D << 2) | __C,
 						  __R);
+}
+
+extern __inline __m128
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask_getmant_round_ss (__m128 __W, __mmask8 __U, __m128 __A,
+			      __m128 __B, _MM_MANTISSA_NORM_ENUM __C,
+			      _MM_MANTISSA_SIGN_ENUM __D, const int __R)
+{
+  return (__m128) __builtin_ia32_getmantss_mask_round ((__v4sf) __A,
+						    (__v4sf) __B,
+						    (__D << 2) | __C,
+                                                    (__v4sf) __W,
+						     __U, __R);
+}
+
+extern __inline __m128
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_maskz_getmant_round_ss (__mmask8 __U, __m128 __A, __m128 __B,
+			       _MM_MANTISSA_NORM_ENUM __C,
+			       _MM_MANTISSA_SIGN_ENUM __D, const int __R)
+{
+  return (__m128) __builtin_ia32_getmantss_mask_round ((__v4sf) __A,
+							(__v4sf) __B,
+						        (__D << 2) | __C,
+                                                        (__v4sf)
+                                                        _mm_setzero_ps(),
+						        __U, __R);
 }
 
 #else
@@ -8629,17 +8729,62 @@ _mm_getmant_round_ss (__m128 __A, __m128 __B,
 					    (int)(((D)<<2) | (C)),	\
 					    (R)))
 
+#define _mm_mask_getmant_round_sd(W, U, X, Y, C, D, R)                                       \
+  ((__m128d)__builtin_ia32_getmantsd_mask_round ((__v2df)(__m128d)(X),                  \
+					     (__v2df)(__m128d)(Y),                  \
+                                             (int)(((D)<<2) | (C)),                 \
+                                             (__v2df)(__m128d)(W),                   \
+                                             (__mmask8)(U),\
+					     (R)))
+
+#define _mm_maskz_getmant_round_sd(U, X, Y, C, D, R)                                         \
+  ((__m128d)__builtin_ia32_getmantsd_mask_round ((__v2df)(__m128d)(X),                  \
+                                                 (__v2df)(__m128d)(Y),                  \
+                                             (int)(((D)<<2) | (C)),              \
+                                             (__v2df)(__m128d)_mm_setzero_pd(),  \
+                                             (__mmask8)(U),\
+					     (R)))
+
 #define _mm_getmant_round_ss(X, Y, C, D, R)                                                  \
   ((__m128)__builtin_ia32_getmantss_round ((__v4sf)(__m128)(X),                      \
 					   (__v4sf)(__m128)(Y),		\
 					   (int)(((D)<<2) | (C)),	\
 					   (R)))
 
+#define _mm_mask_getmant_round_ss(W, U, X, Y, C, D, R)                                       \
+  ((__m128)__builtin_ia32_getmantss_mask_round ((__v4sf)(__m128)(X),                  \
+					     (__v4sf)(__m128)(Y),                  \
+                                             (int)(((D)<<2) | (C)),                 \
+                                             (__v4sf)(__m128)(W),                   \
+                                             (__mmask8)(U),\
+					     (R)))
+
+#define _mm_maskz_getmant_round_ss(U, X, Y, C, D, R)                                         \
+  ((__m128)__builtin_ia32_getmantss_mask_round ((__v4sf)(__m128)(X),                  \
+                                                 (__v4sf)(__m128)(Y),                  \
+                                             (int)(((D)<<2) | (C)),              \
+                                             (__v4sf)(__m128)_mm_setzero_ps(),  \
+                                             (__mmask8)(U),\
+					     (R)))
+
 #define _mm_getexp_round_ss(A, B, R)						      \
   ((__m128)__builtin_ia32_getexpss128_round((__v4sf)(__m128)(A), (__v4sf)(__m128)(B), R))
 
+#define _mm_mask_getexp_round_ss(W, U, A, B, C) \
+    (__m128)__builtin_ia32_getexpss_mask_round(A, B, W, U, C)
+
+#define _mm_maskz_getexp_round_ss(U, A, B, C)   \
+    (__m128)__builtin_ia32_getexpss_mask_round(A, B, (__v4sf)_mm_setzero_ps(), U, C)
+
 #define _mm_getexp_round_sd(A, B, R)						       \
   ((__m128d)__builtin_ia32_getexpsd128_round((__v2df)(__m128d)(A), (__v2df)(__m128d)(B), R))
+
+#define _mm_mask_getexp_round_sd(W, U, A, B, C) \
+    (__m128d)__builtin_ia32_getexpsd_mask_round(A, B, W, U, C)
+
+#define _mm_maskz_getexp_round_sd(U, A, B, C)   \
+    (__m128d)__builtin_ia32_getexpsd_mask_round(A, B, (__v2df)_mm_setzero_pd(), U, C)
+
 
 #define _mm512_getexp_round_ps(A, R)						\
   ((__m512)__builtin_ia32_getexpps512_mask((__v16sf)(__m512)(A),		\
@@ -13358,6 +13503,29 @@ _mm_getexp_ss (__m128 __A, __m128 __B)
 						    _MM_FROUND_CUR_DIRECTION);
 }
 
+extern __inline __m128
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask_getexp_ss (__m128 __W, __mmask8 __U, __m128 __A, __m128 __B)
+{
+  return (__m128) __builtin_ia32_getexpss_mask_round ((__v4sf) __A,
+						(__v4sf) __B,
+						(__v4sf) __W,
+						(__mmask8) __U,
+						_MM_FROUND_CUR_DIRECTION);
+}
+
+extern __inline __m128
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_maskz_getexp_ss (__mmask8 __U, __m128 __A, __m128 __B)
+{
+  return (__m128) __builtin_ia32_getexpss_mask_round ((__v4sf) __A,
+						(__v4sf) __B,
+						(__v4sf)
+						_mm_setzero_ps (),
+						(__mmask8) __U,
+						_MM_FROUND_CUR_DIRECTION);
+}
+
 extern __inline __m128d
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm_getexp_sd (__m128d __A, __m128d __B)
@@ -13365,6 +13533,29 @@ _mm_getexp_sd (__m128d __A, __m128d __B)
   return (__m128d) __builtin_ia32_getexpsd128_round ((__v2df) __A,
 						     (__v2df) __B,
 						     _MM_FROUND_CUR_DIRECTION);
+}
+
+extern __inline __m128d
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask_getexp_sd (__m128d __W, __mmask8 __U, __m128d __A, __m128d __B)
+{
+  return (__m128d) __builtin_ia32_getexpsd_mask_round ((__v2df) __A,
+						(__v2df) __B,
+						(__v2df) __W,
+						(__mmask8) __U,
+						_MM_FROUND_CUR_DIRECTION);
+}
+
+extern __inline __m128d
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_maskz_getexp_sd (__mmask8 __U, __m128d __A, __m128d __B)
+{
+  return (__m128d) __builtin_ia32_getexpsd_mask_round ((__v2df) __A,
+						(__v2df) __B,
+						(__v2df)
+						_mm_setzero_pd (),
+						(__mmask8) __U,
+						_MM_FROUND_CUR_DIRECTION);
 }
 
 extern __inline __m512d
@@ -13450,6 +13641,33 @@ _mm_getmant_sd (__m128d __A, __m128d __B, _MM_MANTISSA_NORM_ENUM __C,
 						   _MM_FROUND_CUR_DIRECTION);
 }
 
+extern __inline __m128d
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask_getmant_sd (__m128d __W, __mmask8 __U, __m128d __A, __m128d __B,
+			_MM_MANTISSA_NORM_ENUM __C, _MM_MANTISSA_SIGN_ENUM __D)
+{
+  return (__m128d) __builtin_ia32_getmantsd_mask_round ((__v2df) __A,
+							(__v2df) __B,
+						        (__D << 2) | __C,
+                                                        (__v2df) __W,
+						       __U,
+						     _MM_FROUND_CUR_DIRECTION);
+}
+
+extern __inline __m128d
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_maskz_getmant_sd (__mmask8 __U, __m128d __A, __m128d __B,
+			 _MM_MANTISSA_NORM_ENUM __C, _MM_MANTISSA_SIGN_ENUM __D)
+{
+  return (__m128d) __builtin_ia32_getmantsd_mask_round ((__v2df) __A,
+                                                        (__v2df) __B,
+						        (__D << 2) | __C,
+                                                        (__v2df)
+							_mm_setzero_pd(),
+						        __U,
+						     _MM_FROUND_CUR_DIRECTION);
+}
+
 extern __inline __m128
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm_getmant_ss (__m128 __A, __m128 __B, _MM_MANTISSA_NORM_ENUM __C,
@@ -13459,6 +13677,33 @@ _mm_getmant_ss (__m128 __A, __m128 __B, _MM_MANTISSA_NORM_ENUM __C,
 						  (__v4sf) __B,
 						  (__D << 2) | __C,
 						  _MM_FROUND_CUR_DIRECTION);
+}
+
+extern __inline __m128
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask_getmant_ss (__m128 __W, __mmask8 __U, __m128 __A, __m128 __B,
+			_MM_MANTISSA_NORM_ENUM __C, _MM_MANTISSA_SIGN_ENUM __D)
+{
+  return (__m128) __builtin_ia32_getmantss_mask_round ((__v4sf) __A,
+							(__v4sf) __B,
+						        (__D << 2) | __C,
+                                                        (__v4sf) __W,
+						       __U,
+						     _MM_FROUND_CUR_DIRECTION);
+}
+
+extern __inline __m128
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_maskz_getmant_ss (__mmask8 __U, __m128 __A, __m128 __B,
+			 _MM_MANTISSA_NORM_ENUM __C, _MM_MANTISSA_SIGN_ENUM __D)
+{
+  return (__m128) __builtin_ia32_getmantss_mask_round ((__v4sf) __A,
+                                                        (__v4sf) __B,
+						        (__D << 2) | __C,
+                                                        (__v4sf)
+							_mm_setzero_ps(),
+						        __U,
+						     _MM_FROUND_CUR_DIRECTION);
 }
 
 #else
@@ -13508,19 +13753,67 @@ _mm_getmant_ss (__m128 __A, __m128 __B, _MM_MANTISSA_NORM_ENUM __C,
                                            (int)(((D)<<2) | (C)),                   \
 					   _MM_FROUND_CUR_DIRECTION))
 
+#define _mm_mask_getmant_sd(W, U, X, Y, C, D)                                       \
+  ((__m128d)__builtin_ia32_getmantsd_mask_round ((__v2df)(__m128d)(X),                 \
+                                                 (__v2df)(__m128d)(Y),                 \
+                                                 (int)(((D)<<2) | (C)),                \
+                                                (__v2df)(__m128d)(W),                 \
+                                              (__mmask8)(U),\
+					      _MM_FROUND_CUR_DIRECTION))
+
+#define _mm_maskz_getmant_sd(U, X, Y, C, D)                                         \
+  ((__m128d)__builtin_ia32_getmantsd_mask_round ((__v2df)(__m128d)(X),                 \
+                                           (__v2df)(__m128d)(Y),                     \
+                                              (int)(((D)<<2) | (C)),                \
+                                           (__v2df)_mm_setzero_pd(),             \
+                                              (__mmask8)(U),\
+					      _MM_FROUND_CUR_DIRECTION))
+
 #define _mm_getmant_ss(X, Y, C, D)                                                  \
   ((__m128)__builtin_ia32_getmantss_round ((__v4sf)(__m128)(X),                      \
                                           (__v4sf)(__m128)(Y),                      \
                                           (int)(((D)<<2) | (C)),                    \
 					  _MM_FROUND_CUR_DIRECTION))
 
+#define _mm_mask_getmant_ss(W, U, X, Y, C, D)                                       \
+  ((__m128)__builtin_ia32_getmantss_mask_round ((__v4sf)(__m128)(X),                 \
+                                                 (__v4sf)(__m128)(Y),                 \
+                                                 (int)(((D)<<2) | (C)),                \
+                                                (__v4sf)(__m128)(W),                 \
+                                              (__mmask8)(U),\
+					      _MM_FROUND_CUR_DIRECTION))
+
+#define _mm_maskz_getmant_ss(U, X, Y, C, D)                                         \
+  ((__m128)__builtin_ia32_getmantss_mask_round ((__v4sf)(__m128)(X),                 \
+                                           (__v4sf)(__m128)(Y),                     \
+                                              (int)(((D)<<2) | (C)),                \
+                                           (__v4sf)_mm_setzero_ps(),             \
+                                              (__mmask8)(U),\
+					      _MM_FROUND_CUR_DIRECTION))
+
 #define _mm_getexp_ss(A, B)						      \
-  ((__m128)__builtin_ia32_getexpss128_mask((__v4sf)(__m128)(A), (__v4sf)(__m128)(B),  \
+  ((__m128)__builtin_ia32_getexpss128_round((__v4sf)(__m128)(A), (__v4sf)(__m128)(B),  \
 					   _MM_FROUND_CUR_DIRECTION))
 
+#define _mm_mask_getexp_ss(W, U, A, B) \
+    (__m128)__builtin_ia32_getexpss_mask_round(A, B, W, U,\
+                                             _MM_FROUND_CUR_DIRECTION)
+
+#define _mm_maskz_getexp_ss(U, A, B)   \
+    (__m128)__builtin_ia32_getexpss_mask_round(A, B, (__v4sf)_mm_setzero_ps(), U,\
+					      _MM_FROUND_CUR_DIRECTION)
+
 #define _mm_getexp_sd(A, B)						       \
-  ((__m128d)__builtin_ia32_getexpsd128_mask((__v2df)(__m128d)(A), (__v2df)(__m128d)(B),\
+  ((__m128d)__builtin_ia32_getexpsd128_round((__v2df)(__m128d)(A), (__v2df)(__m128d)(B),\
 					    _MM_FROUND_CUR_DIRECTION))
+
+#define _mm_mask_getexp_sd(W, U, A, B) \
+    (__m128d)__builtin_ia32_getexpsd_mask_round(A, B, W, U,\
+                                             _MM_FROUND_CUR_DIRECTION)
+
+#define _mm_maskz_getexp_sd(U, A, B)   \
+    (__m128d)__builtin_ia32_getexpsd_mask_round(A, B, (__v2df)_mm_setzero_pd(), U,\
+					      _MM_FROUND_CUR_DIRECTION)
 
 #define _mm512_getexp_ps(A)						\
   ((__m512)__builtin_ia32_getexpps512_mask((__v16sf)(__m512)(A),		\

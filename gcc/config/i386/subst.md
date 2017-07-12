@@ -236,3 +236,70 @@
     (match_dup 3)
     (match_operand:SUBST_V 4 "vector_move_operand")
     (match_operand:<avx512fmaskmode> 5 "register_operand")])
+
+(define_subst_attr "mask_scalar_name" "mask_scalar" "" "_mask")
+(define_subst_attr "mask_scalar_operand3" "mask_scalar" "" "%{%4%}%N3")
+(define_subst_attr "mask_scalar_operand4" "mask_scalar" "" "%{%5%}%N4")
+
+(define_subst "mask_scalar"
+  [(set (match_operand:SUBST_V 0)
+	(vec_merge:SUBST_V
+	  (match_operand:SUBST_V 1)
+	  (match_operand:SUBST_V 2)
+	  (const_int 1)))]
+  "TARGET_AVX512F"
+  [(set (match_dup 0)
+	(vec_merge:SUBST_V
+	  (vec_merge:SUBST_V
+	    (match_dup 1)
+	    (match_operand:SUBST_V 3 "vector_move_operand" "0C")
+	    (match_operand:<avx512fmaskmode> 4 "register_operand" "Yk"))
+	  (match_dup 2)
+	  (const_int 1)))])
+
+(define_subst_attr "round_scalar_name" "round_scalar" "" "_round")
+(define_subst_attr "round_scalar_mask_operand3" "mask_scalar" "%R3" "%R5")
+(define_subst_attr "round_scalar_mask_op3" "round_scalar" "" "<round_scalar_mask_operand3>")
+(define_subst_attr "round_scalar_constraint" "round_scalar" "vm" "v")
+(define_subst_attr "round_scalar_prefix" "round_scalar" "vex" "evex")
+
+(define_subst "round_scalar"
+  [(set (match_operand:SUBST_V 0)
+        (vec_merge:SUBST_V
+          (match_operand:SUBST_V 1)
+          (match_operand:SUBST_V 2)
+          (const_int 1)))]
+  "TARGET_AVX512F"
+  [(set (match_dup 0)
+	(unspec:SUBST_V [
+	     (vec_merge:SUBST_V
+		(match_dup 1)
+		(match_dup 2)
+		(const_int 1))
+	     (match_operand:SI 3 "const_4_or_8_to_11_operand")]
+		UNSPEC_EMBEDDED_ROUNDING))])
+
+(define_subst_attr "round_saeonly_scalar_name" "round_saeonly_scalar" "" "_round")
+(define_subst_attr "round_saeonly_scalar_mask_operand3" "mask_scalar" "%r3" "%r5")
+(define_subst_attr "round_saeonly_scalar_mask_operand4" "mask_scalar" "%r4" "%r6")
+(define_subst_attr "round_saeonly_scalar_mask_op3" "round_saeonly_scalar" "" "<round_saeonly_scalar_mask_operand3>")
+(define_subst_attr "round_saeonly_scalar_mask_op4" "round_saeonly_scalar" "" "<round_saeonly_scalar_mask_operand4>")
+(define_subst_attr "round_saeonly_scalar_constraint" "round_saeonly_scalar" "vm" "v")
+(define_subst_attr "round_saeonly_scalar_prefix" "round_saeonly_scalar" "vex" "evex")
+(define_subst_attr "round_saeonly_scalar_nimm_predicate" "round_saeonly_scalar" "vector_operand" "register_operand")
+
+(define_subst "round_saeonly_scalar"
+  [(set (match_operand:SUBST_V 0)
+        (vec_merge:SUBST_V
+          (match_operand:SUBST_V 1)
+          (match_operand:SUBST_V 2)
+          (const_int 1)))]
+  "TARGET_AVX512F"
+  [(set (match_dup 0)
+	(unspec:SUBST_V [
+	     (vec_merge:SUBST_V
+		(match_dup 1)
+		(match_dup 2)
+		(const_int 1))
+	     (match_operand:SI 3 "const48_operand")]
+		UNSPEC_EMBEDDED_ROUNDING))])

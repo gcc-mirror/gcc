@@ -1474,6 +1474,8 @@ BU_ALTIVEC_OVERLOAD_X (STVLX,	   "stvlx")
 BU_ALTIVEC_OVERLOAD_X (STVLXL,	   "stvlxl")
 BU_ALTIVEC_OVERLOAD_X (STVRX,	   "stvrx")
 BU_ALTIVEC_OVERLOAD_X (STVRXL,	   "stvrxl")
+BU_ALTIVEC_OVERLOAD_X (SUBE,	   "sube")
+BU_ALTIVEC_OVERLOAD_X (SUBEC,	   "subec")
 BU_ALTIVEC_OVERLOAD_X (VCFSX,	   "vcfsx")
 BU_ALTIVEC_OVERLOAD_X (VCFUX,	   "vcfux")
 BU_ALTIVEC_OVERLOAD_X (VSPLTB,	   "vspltb")
@@ -1988,10 +1990,12 @@ BU_P8V_OVERLOAD_3 (VSUBEUQM,	"vsubeuqm")
 /* ISA 3.0 vector overloaded 2-argument functions. */
 BU_P9V_AV_2 (VSLV,		"vslv",			CONST, vslv)
 BU_P9V_AV_2 (VSRV,		"vsrv",			CONST, vsrv)
+BU_P9V_AV_2 (CONVERT_4F32_8I16, "convert_4f32_8i16", CONST, convert_4f32_8i16)
 
 /* ISA 3.0 vector overloaded 2-argument functions. */
 BU_P9V_OVERLOAD_2 (VSLV,	"vslv")
 BU_P9V_OVERLOAD_2 (VSRV,	"vsrv")
+BU_P9V_OVERLOAD_2 (CONVERT_4F32_8I16, "convert_4f32_8i16")
 
 /* 2 argument vector functions added in ISA 3.0 (power9). */
 BU_P9V_AV_2 (VADUB,		"vadub",		CONST,  vaduv16qi3)
@@ -2283,6 +2287,7 @@ BU_P9V_OVERLOAD_1 (VPRTYB,	"vprtyb")
 BU_P9V_OVERLOAD_1 (VPRTYBD,	"vprtybd")
 BU_P9V_OVERLOAD_1 (VPRTYBQ,	"vprtybq")
 BU_P9V_OVERLOAD_1 (VPRTYBW,	"vprtybw")
+BU_P9V_OVERLOAD_1 (VPARITY_LSBB,	"vparity_lsbb")
 
 /* 2 argument functions added in ISA 3.0 (power9).  */
 BU_P9_2 (CMPRB,	"byte_in_range",	CONST,	cmprb)

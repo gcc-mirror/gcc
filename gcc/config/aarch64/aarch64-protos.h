@@ -342,8 +342,8 @@ bool aarch64_modes_tieable_p (machine_mode mode1,
 bool aarch64_zero_extend_const_eq (machine_mode, rtx, machine_mode, rtx);
 bool aarch64_move_imm (HOST_WIDE_INT, machine_mode);
 bool aarch64_mov_operand_p (rtx, machine_mode);
-int aarch64_simd_attr_length_rglist (enum machine_mode);
-rtx aarch64_reverse_mask (enum machine_mode);
+int aarch64_simd_attr_length_rglist (machine_mode);
+rtx aarch64_reverse_mask (machine_mode);
 bool aarch64_offset_7bit_signed_scaled_p (machine_mode, HOST_WIDE_INT);
 char *aarch64_output_scalar_simd_mov_immediate (rtx, machine_mode);
 char *aarch64_output_simd_mov_immediate (rtx, machine_mode, unsigned);
@@ -411,7 +411,7 @@ void aarch64_save_restore_target_globals (tree);
 /* Initialize builtins for SIMD intrinsics.  */
 void init_aarch64_simd_builtins (void);
 
-void aarch64_simd_emit_reg_reg_move (rtx *, enum machine_mode, unsigned int);
+void aarch64_simd_emit_reg_reg_move (rtx *, machine_mode, unsigned int);
 
 /* Expand builtins for SIMD intrinsics.  */
 rtx aarch64_simd_expand_builtin (int, tree, rtx);
@@ -444,7 +444,7 @@ bool aarch64_atomic_ldop_supported_p (enum rtx_code);
 void aarch64_gen_atomic_ldop (enum rtx_code, rtx, rtx, rtx, rtx, rtx);
 void aarch64_split_atomic_op (enum rtx_code, rtx, rtx, rtx, rtx, rtx, rtx);
 
-bool aarch64_gen_adjusted_ldpstp (rtx *, bool, enum machine_mode, RTX_CODE);
+bool aarch64_gen_adjusted_ldpstp (rtx *, bool, machine_mode, RTX_CODE);
 #endif /* RTX_CODE */
 
 void aarch64_init_builtins (void);
@@ -468,11 +468,11 @@ extern void aarch64_final_prescan_insn (rtx_insn *);
 extern bool
 aarch64_expand_vec_perm_const (rtx target, rtx op0, rtx op1, rtx sel);
 void aarch64_atomic_assign_expand_fenv (tree *, tree *, tree *);
-int aarch64_ccmp_mode_to_code (enum machine_mode mode);
+int aarch64_ccmp_mode_to_code (machine_mode mode);
 
 bool extract_base_offset_in_addr (rtx mem, rtx *base, rtx *offset);
-bool aarch64_operands_ok_for_ldpstp (rtx *, bool, enum machine_mode);
-bool aarch64_operands_adjust_ok_for_ldpstp (rtx *, bool, enum machine_mode);
+bool aarch64_operands_ok_for_ldpstp (rtx *, bool, machine_mode);
+bool aarch64_operands_adjust_ok_for_ldpstp (rtx *, bool, machine_mode);
 
 extern void aarch64_asm_output_pool_epilogue (FILE *, const char *,
 					      tree, HOST_WIDE_INT);

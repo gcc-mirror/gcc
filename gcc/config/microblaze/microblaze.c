@@ -3453,8 +3453,7 @@ microblaze_expand_conditional_branch (machine_mode mode, rtx operands[])
 }
 
 void
-microblaze_expand_conditional_branch_reg (enum machine_mode mode,
-                                          rtx operands[])
+microblaze_expand_conditional_branch_reg (machine_mode mode, rtx operands[])
 {
   enum rtx_code code = GET_CODE (operands[0]);
   rtx cmp_op0 = operands[1];

@@ -47,7 +47,7 @@ extern unsigned int arm_dbx_register_number (unsigned int);
 extern void arm_output_fn_unwind (FILE *, bool);
 
 extern rtx arm_expand_builtin (tree exp, rtx target, rtx subtarget
-			       ATTRIBUTE_UNUSED, enum machine_mode mode
+			       ATTRIBUTE_UNUSED, machine_mode mode
 			       ATTRIBUTE_UNUSED, int ignore ATTRIBUTE_UNUSED);
 extern tree arm_builtin_decl (unsigned code, bool initialize_p
 			      ATTRIBUTE_UNUSED);

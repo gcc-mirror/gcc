@@ -276,8 +276,7 @@ const arc_cpu_t *arc_selected_cpu;
    register, an immediate or an long immediate. */
 
 static bool
-legitimate_offset_address_p (enum machine_mode mode, rtx x, bool index,
-			     bool strict)
+legitimate_offset_address_p (machine_mode mode, rtx x, bool index, bool strict)
 {
   if (GET_CODE (x) != PLUS)
     return false;

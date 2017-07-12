@@ -10143,7 +10143,13 @@ ix86_function_arg_advance (cumulative_args_t cum_v, machine_mode mode,
   /* For pointers passed in memory we expect bounds passed in Bounds
      Table.  */
   if (!nregs)
-    cum->bnds_in_bt = chkp_type_bounds_count (type);
+    {
+      /* Track if there are outgoing arguments on stack.  */
+      if (cum->caller)
+	cfun->machine->outgoing_args_on_stack = true;
+
+      cum->bnds_in_bt = chkp_type_bounds_count (type);
+    }
 }
 
 /* Define where to put the arguments to a function.
@@ -10472,6 +10478,10 @@ ix86_function_arg (cumulative_args_t cum_v, machine_mode omode,
     }
   else
     arg = function_arg_32 (cum, mode, omode, type, bytes, words);
+
+  /* Track if there are outgoing arguments on stack.  */
+  if (arg == NULL_RTX && cum->caller)
+    cfun->machine->outgoing_args_on_stack = true;
 
   return arg;
 }
@@ -11363,7 +11373,7 @@ ix86_setup_incoming_varargs (cumulative_args_t cum_v, machine_mode mode,
 
 static void
 ix86_setup_incoming_vararg_bounds (cumulative_args_t cum_v,
-				   enum machine_mode mode,
+				   machine_mode mode,
 				   tree type,
 				   int *pretend_size ATTRIBUTE_UNUSED,
 				   int no_rtl)
@@ -13646,7 +13656,11 @@ ix86_update_stack_boundary (void)
 static rtx
 ix86_get_drap_rtx (void)
 {
-  if (ix86_force_drap || !ACCUMULATE_OUTGOING_ARGS)
+  /* We must use DRAP if there are outgoing arguments on stack and
+     ACCUMULATE_OUTGOING_ARGS is false.  */
+  if (ix86_force_drap
+      || (cfun->machine->outgoing_args_on_stack
+	  && !ACCUMULATE_OUTGOING_ARGS))
     crtl->need_drap = true;
 
   if (stack_realign_drap)
@@ -15084,7 +15098,7 @@ ix86_emit_outlined_ms2sysv_restore (const struct ix86_frame &frame,
   for (i = 0; i < ncregs; ++i)
     {
       const xlogue_layout::reginfo &r = xlogue.get_reginfo (i);
-      enum machine_mode mode = SSE_REGNO_P (r.regno) ? V4SFmode : word_mode;
+      machine_mode mode = SSE_REGNO_P (r.regno) ? V4SFmode : word_mode;
       rtx reg, frame_load;
 
       reg = gen_rtx_REG (mode, r.regno);
@@ -31160,7 +31174,7 @@ ix86_constant_alignment (tree exp, int align)
 static int
 iamcu_alignment (tree type, int align)
 {
-  enum machine_mode mode;
+  machine_mode mode;
 
   if (align < 32 || TYPE_USER_ALIGN (type))
     return align;
@@ -36482,21 +36496,11 @@ ix86_expand_args_builtin (const struct builtin_description *d,
 }
 
 /* Transform pattern of following layout:
-     (parallel [
-       set (A B)
-       (unspec [C] UNSPEC_EMBEDDED_ROUNDING)])
-     ])
+     (set A
+       (unspec [B C] UNSPEC_EMBEDDED_ROUNDING))
+     )
    into:
-     (set (A B))
-
-   Or:
-     (parallel [ A B
-     ...
-     (unspec [C] UNSPEC_EMBEDDED_ROUNDING)
-     ...
-     ])
-   into:
-     (parallel [ A B ... ])  */
+     (set (A B)) */
 
 static rtx
 ix86_erase_embedded_rounding (rtx pat)
@@ -36504,48 +36508,14 @@ ix86_erase_embedded_rounding (rtx pat)
   if (GET_CODE (pat) == INSN)
     pat = PATTERN (pat);
 
-  if (GET_CODE (pat) == PARALLEL)
-  {
-    if (XVECLEN (pat, 0) == 2)
-      {
-	rtx p0 = XVECEXP (pat, 0, 0);
-	rtx p1 = XVECEXP (pat, 0, 1);
-	gcc_assert (GET_CODE (p0) == SET
-		    && GET_CODE (p1) == UNSPEC
-		    && XINT (p1, 1) == UNSPEC_EMBEDDED_ROUNDING);
-	return p0;
-      }
-    else
-      {
-	rtx *res = XALLOCAVEC (rtx, XVECLEN (pat, 0));
-	int i = 0;
-	int j = 0;
-
-	for (; i < XVECLEN (pat, 0); ++i)
-	  {
-	    rtx elem = XVECEXP (pat, 0, i);
-	    if (GET_CODE (elem) != UNSPEC
-		|| XINT (elem, 1) != UNSPEC_EMBEDDED_ROUNDING)
-	      res[j++] = elem;
-	  }
-
-	/*  No more than 1 occurence was removed.  */
-	gcc_assert (j >= XVECLEN (pat, 0) - 1);
-
-	return gen_rtx_PARALLEL (GET_MODE (pat), gen_rtvec_v (j, res));
-    }
-  }
-  else
-  {
-    gcc_assert (GET_CODE (pat) == SET);
-    rtx src = SET_SRC (pat);
-    gcc_assert (XVECLEN (src, 0) == 2);
-    rtx p0 = XVECEXP (src, 0, 0);
-    gcc_assert (GET_CODE (src) == UNSPEC
-		&& XINT (src, 1) == UNSPEC_EMBEDDED_ROUNDING);
-    rtx res = gen_rtx_SET (SET_DEST (pat), p0);
-    return res;
-  }
+  gcc_assert (GET_CODE (pat) == SET);
+  rtx src = SET_SRC (pat);
+  gcc_assert (XVECLEN (src, 0) == 2);
+  rtx p0 = XVECEXP (src, 0, 0);
+  gcc_assert (GET_CODE (src) == UNSPEC
+	      && XINT (src, 1) == UNSPEC_EMBEDDED_ROUNDING);
+  rtx res = gen_rtx_SET (SET_DEST (pat), p0);
+  return res;
 }
 
 /* Subroutine of ix86_expand_round_builtin to take care of comi insns
@@ -36745,6 +36715,8 @@ ix86_expand_round_builtin (const struct builtin_description *d,
     case V8DF_FTYPE_V8DF_V8DF_INT_V8DF_QI_INT:
     case V4SF_FTYPE_V4SF_V4SF_INT_V4SF_QI_INT:
     case V2DF_FTYPE_V2DF_V2DF_INT_V2DF_QI_INT:
+    case V2DF_FTYPE_V2DF_V2DF_INT_V2DF_UQI_INT:
+    case V4SF_FTYPE_V4SF_V4SF_INT_V4SF_UQI_INT:
       nargs = 6;
       nargs_constant = 4;
       break;
@@ -36782,7 +36754,9 @@ ix86_expand_round_builtin (const struct builtin_description *d,
 		case CODE_FOR_avx512f_getmantv8df_mask_round:
 		case CODE_FOR_avx512f_getmantv16sf_mask_round:
 		case CODE_FOR_avx512f_vgetmantv2df_round:
+		case CODE_FOR_avx512f_vgetmantv2df_mask_round:
 		case CODE_FOR_avx512f_vgetmantv4sf_round:
+		case CODE_FOR_avx512f_vgetmantv4sf_mask_round:
 		  error ("the immediate argument must be a 4-bit immediate");
 		  return const0_rtx;
 		case CODE_FOR_avx512f_cmpv8df3_mask_round:
@@ -47168,7 +47142,7 @@ canonicalize_vector_int_perm (const struct expand_vec_perm_d *d,
 			      struct expand_vec_perm_d *nd)
 {
   int i;
-  enum machine_mode mode = VOIDmode;
+  machine_mode mode = VOIDmode;
 
   switch (d->vmode)
     {
@@ -51418,7 +51392,7 @@ ix86_noce_conversion_profitable_p (rtx_insn *seq, struct noce_if_info *if_info)
 	  if (GET_CODE (SET_SRC (set)) != IF_THEN_ELSE)
 	    continue;
 	  rtx src = SET_SRC (set);
-	  enum machine_mode mode = GET_MODE (src);
+	  machine_mode mode = GET_MODE (src);
 	  if (GET_MODE_CLASS (mode) != MODE_INT
 	      && GET_MODE_CLASS (mode) != MODE_FLOAT)
 	    continue;
@@ -51914,7 +51888,7 @@ ix86_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
 /* Return mode to be used for bounds or VOIDmode
    if bounds are not supported.  */
 
-static enum machine_mode
+static machine_mode
 ix86_mpx_bound_mode ()
 {
   /* Do not support pointer checker if MPX
@@ -52034,7 +52008,7 @@ extract_base_offset_in_addr (rtx mem, rtx *base, rtx *offset)
 
 bool
 ix86_operands_ok_for_move_multiple (rtx *operands, bool load,
-				    enum machine_mode mode)
+				    machine_mode mode)
 {
   HOST_WIDE_INT offval_1, offval_2, msize;
   rtx mem_1, mem_2, reg_1, reg_2, base_1, base_2, offset_1, offset_2;

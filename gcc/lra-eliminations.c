@@ -279,7 +279,7 @@ static rtx
 move_plus_up (rtx x)
 {
   rtx subreg_reg;
-  enum machine_mode x_mode, subreg_reg_mode;
+  machine_mode x_mode, subreg_reg_mode;
   
   if (GET_CODE (x) != SUBREG || !subreg_lowpart_p (x))
     return x;

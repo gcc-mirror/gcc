@@ -1558,8 +1558,12 @@ extern void add_no_sanitize_value (tree node, unsigned int flags);
 
 #if CHECKING_P
 namespace selftest {
+  /* Declarations for specific families of tests within c-family,
+     by source file, in alphabetical order.  */
   extern void c_format_c_tests (void);
-  extern void run_c_tests (void);
+
+  /* The entrypoint for running all of the above tests.  */
+  extern void c_family_tests (void);
 } // namespace selftest
 #endif /* #if CHECKING_P */
 

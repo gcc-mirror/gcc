@@ -109,6 +109,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __ret._M_a = std::__addressof(__a);
       return __ret;
     }
+
+  template<typename _Tp, typename _Alloc, typename... _Args>
+    void
+    __use_alloc(const _Alloc&&) = delete;
+
 #if __cplusplus > 201402L
   template <typename _Tp, typename _Alloc>
     inline constexpr bool uses_allocator_v =

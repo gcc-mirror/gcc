@@ -302,6 +302,7 @@ avr_log_set_avr_log (void)
       SET_DUMP_DETAIL (address_cost);
       SET_DUMP_DETAIL (builtin);
       SET_DUMP_DETAIL (constraints);
+      SET_DUMP_DETAIL (insn_addresses);
       SET_DUMP_DETAIL (legitimate_address_p);
       SET_DUMP_DETAIL (legitimize_address);
       SET_DUMP_DETAIL (legitimize_reload_address);

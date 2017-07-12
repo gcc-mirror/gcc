@@ -1,3 +1,966 @@
+2017-07-11  Carl Love  <cel@us.ibm.com>
+
+	* config/rs6000/rs6000-c.c: Add support for builtins
+	vector unsigned int vec_parity_lsbb (vector signed int);
+	vector unsigned int vec_parity_lsbb (vector unsigned int);
+	vector unsigned __int128 vec_parity_lsbb (vector signed __int128);
+	vector unsigned __int128 vec_parity_lsbb (vector unsigned __int128);
+	vector unsigned long long vec_parity_lsbb (vector signed long long);
+	vector unsigned long long vec_parity_lsbb (vector unsigned long long);
+	* config/rs6000/rs6000-builtin.def (VPARITY_LSBB): Add BU_P9V_OVERLOAD1.
+	* config/rs6000/altivec.h (vec_parity_lsbb): Add define.
+	* doc/extend.texi: Update the built-in documentation file for the
+	new built-in functions.
+
+2017-07-11  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic-show-locus.c: Include "gcc-rich-location.h".
+	(layout::m_primary_loc): New field.
+	(layout::layout): Initialize new field.  Move location filtering
+	logic from here to...
+	(layout::maybe_add_location_range): ...this new method.  Add
+	support for filtering to just the lines already specified by other
+	locations.
+	(layout::will_show_line_p): New method.
+	(gcc_rich_location::add_location_if_nearby): New method.
+	(selftest::test_add_location_if_nearby): New test function.
+	(selftest::diagnostic_show_locus_c_tests): Call it.
+	* gcc-rich-location.h (gcc_rich_location::add_location_if_nearby):
+	New method.
+
+2017-07-11  Tom de Vries  <tom@codesourcery.com>
+
+	* config/nvptx/nvptx.c (WORKAROUND_PTXJIT_BUG): New macro.
+	(bb_first_real_insn): New function.
+	(nvptx_single): Add extra initialization of broadcasted condition
+	variables.
+
+2017-07-11  Nathan Sidwell  <nathan@acm.org>
+
+	* dwarf2out.c (gen_member_die): Remove useless check for anon ctors.
+
+2017-07-11  Georg-Johann Lay  <avr@gjlay.de>
+
+	* doc/extend.texi (AVR Function Attributes): Remove weblink to
+	Binutils doc as TEXI will mess them up.
+	* doc/invoke.texi (AVR Options): Same here.
+
+2017-07-11  Daniel Cederman  <cederman@gaisler.com>
+
+	* config/sparc/sparc.opt (mfix-ut700): New option.
+	(mfix-gr712rc): Likewise.
+	(sparc_fix_b2bst): New variable.
+	* doc/invoke.texi (SPARC options): Document them.
+	(ARM options): Fix warnings.
+	* config/sparc/sparc.c (sparc_do_work_around_errata): Insert NOP
+	instructions to prevent sequences that can trigger the store-store
+	errata for certain LEON3FT processors.
+	(pass_work_around_errata::gate): Also test sparc_fix_b2bst.
+	(sparc_option_override): Set sparc_fix_b2bst appropriately.
+	* config/sparc/sparc.md (fix_b2bst): New attribute.
+	(in_branch_delay): Prevent stores in delay slot if fix_b2bst.
+
+2017-07-10  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/81375
+	* config/i386/i386.md (divsf3): Add TARGET_SSE to TARGET_SSE_MATH.
+	(rcpps): Ditto.
+	(*rsqrtsf2_sse): Ditto.
+	(rsqrtsf2): Ditto.
+	(div<mode>3): Macroize insn from divdf3 and divsf3
+	using MODEF mode iterator.
+
+2017-07-10  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/80397
+	* gimple-ssa-sprintf.c (format_integer): Use INTEGRAL_TYPE_P()
+	instead of testing for equality to INTEGER_TYPE.
+
+2017-07-10  Vineet Gupta <vgupta@synopsys.com>
+
+	* config.gcc: Remove uclibc from arc target spec.
+
+2017-07-10  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/arc.h (ADDITIONAL_REGISTER_NAMES): Define.
+
+2017-07-07  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR lto/80838
+	* lto-wrapper.c (remove_option): New function.
+	(merge_and_complain): Merge PIC/PIE options more realistically.
+
+2017-07-10  Georg-Johann Lay  <avr@gjlay.de>
+
+	Better ISR prologues by supporting GASes __gcc_isr pseudo insn.
+
+	PR target/20296
+	PR target/81268
+	* configure.ac [target=avr]: Add GAS check for -mgcc-isr.
+	(HAVE_AS_AVR_MGCCISR_OPTION):  If so, AC_DEFINE it.
+	* config.in: Regenerate.
+	* configure: Regenerate.
+	* doc/extend.texi (AVR Function Attributes) <no_gccisr>: Document it.
+	* doc/invoke.texi (AVR Options) <-mgas-isr-prologues>: Document it.
+	* config/avr/avr.opt (-mgas-isr-prologues): New option and...
+	(TARGET_GASISR_PROLOGUES): ...target mask.
+	* common/config/avr/avr-common.c
+	(avr_option_optimization_table) [OPT_LEVELS_1_PLUS_NOT_DEBUG]:
+	Set -mgas-isr-prologues.
+	* config/avr/avr-passes.def (avr_pass_pre_proep): Add
+	INSERT_PASS_BEFORE for it.
+	* config/avr/avr-protos.h (make_avr_pass_pre_proep): New proto.
+	* config/avr/avr.c (avr_option_override)
+	[!HAVE_AS_AVR_MGCCISR_OPTION]: Unset TARGET_GASISR_PROLOGUES.
+	(avr_no_gccisr_function_p, avr_hregs_split_reg): New static functions.
+	(avr_attribute_table) <no_gccisr>: Add new function attribute.
+	(avr_set_current_function) <is_no_gccisr>: Init machine field.
+	(avr_pass_data_pre_proep, avr_pass_pre_proep): New pass data
+	and rtl_opt_pass.
+	(make_avr_pass_pre_proep): New function.
+	(emit_push_sfr) <treg>: Add argument to function and use it
+	instead of TMP_REG.
+	(avr_expand_prologue) [machine->gasisr.maybe]: Emit gasisr insn
+	and set machine->gasisr.yes.
+	(avr_expand_epilogue) [machine->gasisr.yes]: Similar.
+	(avr_asm_function_end_prologue) [machine->gasisr.yes]: Add
+	__gcc_isr.n_pushed to .L__stack_usage.
+	(TARGET_ASM_FINAL_POSTSCAN_INSN): Define to...
+	(avr_asm_final_postscan_insn): ...this new static function.
+	* config/avr/avr.h (machine_function)
+	<is_no_gccisr, use_L__stack_usage>: New fields.
+	<gasisr, gasisr.yes, gasisr.maybe, gasisr.regno>: New fields.
+	* config/avr/avr.md (UNSPECV_GASISR): Add unspecv enum.
+	(GASISR_Prologue, GASISR_Epilogue, GASISR_Done): New define_constants.
+	(gasisr, *gasisr): New expander and insn.
+	* config/avr/gen-avr-mmcu-specs.c (print_mcu)
+	[HAVE_AS_AVR_MGCCISR_OPTION]: Print asm_gccisr spec.
+	* config/avr/specs.h (ASM_SPEC) <asm_gccisr>: Add sub spec.
+
+2017-07-10  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/parsecpu.awk (gen_comm_data): Do not escape single quotes
+	in quoted strings.
+
+2017-07-10  Georg-Johann Lay  <avr@gjlay.de>
+
+	Move jump-tables out of .text again.
+
+	PR target/81075
+	* config/avr/avr.c (ASM_OUTPUT_ADDR_VEC_ELT): Remove function.
+	(ASM_OUTPUT_ADDR_VEC): New function.
+	(avr_adjust_insn_length) [JUMP_TABLE_DATA_P]: Return 0.
+	(avr_final_prescan_insn) [avr_log.insn_addresses]: Dump
+	INSN_ADDRESSes as asm comment.
+	* config/avr/avr.h (JUMP_TABLES_IN_TEXT_SECTION): Adjust comment.
+	(ASM_OUTPUT_ADDR_VEC_ELT): Remove define.
+	(ASM_OUTPUT_ADDR_VEC): Define to avr_output_addr_vec.
+	* config/avr/avr.md (*tablejump): Adjust comment.
+	* config/avr/elf.h (ASM_OUTPUT_BEFORE_CASE_LABEL): Remove.
+	* config/avr/avr-log.c (avr_log_set_avr_log) <insn_addresses>:
+	New detail.
+	* config/avr/avr-protos.h (avr_output_addr_vec_elt): Remove proto.
+	(avr_output_addr_vec): New proto.
+	(avr_log_t) <insn_addresses>: New field.
+
+2017-07-09  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/81313
+	* config/i386/i386.c (ix86_function_arg_advance): Set
+	outgoing_args_on_stack to true if there are outgoing arguments
+	on stack.
+	(ix86_function_arg): Likewise.
+	(ix86_get_drap_rtx): Use DRAP only if there are outgoing
+	arguments on stack and ACCUMULATE_OUTGOING_ARGS is false.
+	* config/i386/i386.h (machine_function): Add
+	outgoing_args_on_stack.
+
+2017-07-09  Krister Walfridsson  <krister.walfridsson@gmail.com>
+
+	* config.gcc (*-*-netbsd*): Remove check for NetBSD versions not
+	supporting pthreds.
+	* config/netbsd.h (NETBSD_LIBGCC_SPEC): Always enable pthreads.
+
+2017-07-08  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* Makefile.in (HOOKS_H, RTL_BASE_H, FUNCTION_H, EXPR_H, REGS_H)
+	(REAL_H): Remove $(MACHMODE_H).
+	(FIXED_VALUE_H, TREE_CORE_H, CFGLOOP_H): Remove $(MACHMODE_H) and
+	double-int.h.
+	(CORETYPES_H): Add signop.h, wide-int.h, wide-int-print.h,
+	$(MACHMODE_H) and double-int.h.
+	(build/min-insn-modes.o): Depend on $(CORETYPES_H) rather than
+	$(MACHMODE_H).
+	(gengtype-state.o, gengtype.o, build/gengtype.o): Don't depend on
+	double-int.h.
+
+2017-07-07  Andrew Pinski  <apinski@cavium.com>
+
+	* config/aarch64/aarch64.c (aarch_macro_fusion_pair_p): Check
+	prev_set and curr_set for AARCH64_FUSE_ALU_BRANCH.
+
+2017-07-07  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000.c (rs6000_get_function_versions_dispatcher):
+	Add warning if GCC was not configured to link against a GLIBC that
+	exports the hardware capability bits.
+	(make_resolver_func): Make resolver function private and not a
+	COMDAT function.  Create the name with clone_function_name instead
+	of make_unique_name.
+
+	PR target/81348
+	* config/rs6000/rs6000.md (HI sign_extend splitter): Use the
+	correct operand in doing the split.
+
+2017-07-07 Carl Love  <cel@us.ibm.com>
+
+	* config/rs6000/rs6000-c: Add support for built-in function
+	vector unsigned short vec_pack_to_short_fp32 (vector float,
+						      vector float).
+	* config/rs6000/rs6000-builtin.def (CONVERT_4F32_8I16): Add
+	BU_P9V_AV_2 and BU_P9V_OVERLOAD_2 definitions.
+	* config/rs6000/altivec.h (vec_pack_to_short_fp32): Add define.
+	* config/rs6000/altivec.md(UNSPEC_CONVERT_4F32_8I16): Add UNSPEC.
+	(convert_4f32_8i16): Add define_expand.
+	* doc/extend.texi: Update the built-in documentation file for the
+	new built-in function.
+
+2017-07-07  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* config/sparc/m8.md: New file.
+	* config/sparc/sparc.md: Include m8.md.
+
+2017-07-07  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* config/sparc/sparc.opt: New option -mvis4b.
+	* config/sparc/sparc.c (dump_target_flag_bits): Handle MASK_VIS4B.
+	(sparc_option_override): Handle VIS4B.
+	(enum sparc_builtins): Define
+	SPARC_BUILTIN_DICTUNPACK{8,16,32},
+	SPARC_BUILTIN_FPCMP{LE,GT,EQ,NE}{8,16,32}SHL,
+	SPARC_BUILTIN_FPCMPU{LE,GT}{8,16,32}SHL,
+	SPARC_BUILTIN_FPCMPDE{8,16,32}SHL and
+	SPARC_BUILTIN_FPCMPUR{8,16,32}SHL.
+	(check_constant_argument): New function.
+	(sparc_vis_init_builtins): Define builtins
+	__builtin_vis_dictunpack{8,16,32},
+	__builtin_vis_fpcmp{le,gt,eq,ne}{8,16,32}shl,
+	__builtin_vis_fpcmpu{le,gt}{8,16,32}shl,
+	__builtin_vis_fpcmpde{8,16,32}shl and
+	__builtin_vis_fpcmpur{8,16,32}shl.
+	(sparc_expand_builtin): Check that the constant operands to
+	__builtin_vis_fpcmp*shl and _builtin_vis_dictunpack* are indeed
+	constant and in range.
+	* config/sparc/sparc-c.c (sparc_target_macros): Handle
+	TARGET_VIS4B.
+	* config/sparc/sparc.h (SPARC_IMM2_P): Define.
+	(SPARC_IMM5_P): Likewise.
+	* config/sparc/sparc.md (cpu_feature): Add new feagure "vis4b".
+	(enabled): Handle vis4b.
+	(UNSPEC_DICTUNPACK): New unspec.
+	(UNSPEC_FPCMPSHL): Likewise.
+	(UNSPEC_FPUCMPSHL): Likewise.
+	(UNSPEC_FPCMPDESHL): Likewise.
+	(UNSPEC_FPCMPURSHL): Likewise.
+	(cpu_feature): New CPU feature `vis4b'.
+	(dictunpack{8,16,32}): New insns.
+	(FPCSMODE): New mode iterator.
+	(fpcscond): New code iterator.
+	(fpcsucond): Likewise.
+	(fpcmp{le,gt,eq,ne}{8,16,32}{si,di}shl): New insns.
+	(fpcmpu{le,gt}{8,16,32}{si,di}shl): Likewise.
+	(fpcmpde{8,16,32}{si,di}shl): Likewise.
+	(fpcmpur{8,16,32}{si,di}shl): Likewise.
+	* config/sparc/constraints.md: Define constraints `q' for unsigned
+	2-bit integer constants and `t' for unsigned 5-bit integer
+	constants.
+	* config/sparc/predicates.md (imm5_operand_dictunpack8): New
+	predicate.
+	(imm5_operand_dictunpack16): Likewise.
+	(imm5_operand_dictunpack32): Likewise.
+	(imm2_operand): Likewise.
+	* doc/invoke.texi (SPARC Options): Document -mvis4b.
+	* doc/extend.texi (SPARC VIS Built-in Functions): Document the
+	ditunpack* and fpcmp*shl builtins.
+
+2017-07-07  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* config.gcc: Handle m8 in --with-{cpu,tune} options.
+	* config.in: Add HAVE_AS_SPARC6 define.
+	* config/sparc/driver-sparc.c (cpu_names): Add entry for the SPARC
+	M8.
+	* config/sparc/sol2.h (CPP_CPU64_DEFAULT_SPEC): Define for
+	TARGET_CPU_m8.
+	(ASM_CPU32_DEFAUILT_SPEC): Likewise.
+	(CPP_CPU_SPEC): Handle m8.
+	(ASM_CPU_SPEC): Likewise.
+	* config/sparc/sparc-opts.h (enum processor_type): Add
+	PROCESSOR_M8.
+	* config/sparc/sparc.c (m8_costs): New struct.
+	(sparc_option_override): Handle TARGET_CPU_m8.
+	(sparc32_initialize_trampoline): Likewise.
+	(sparc64_initialize_trampoline): Likewise.
+	(sparc_issue_rate): Likewise.
+	(sparc_register_move_cost): Likewise.
+	* config/sparc/sparc.h (TARGET_CPU_m8): Define.
+	(CPP_CPU64_DEFAULT_SPEC): Define for M8.
+	(ASM_CPU64_DEFAULT_SPEC): Likewise.
+	(CPP_CPU_SPEC): Handle M8.
+	(ASM_CPU_SPEC): Likewise.
+	(AS_M8_FLAG): Define.
+	* config/sparc/sparc.md: Add m8 to the cpu attribute.
+	* config/sparc/sparc.opt: New option -mcpu=m8 for sparc targets.
+	* configure.ac (HAVE_AS_SPARC6): Check for assembler support for
+	M8 instructions.
+	* configure: Regenerate.
+	* doc/invoke.texi (SPARC Options): Document -mcpu=m8 and
+	-mtune=m8.
+
+2017-07-07  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* config/sparc/niagara7.md: Rework the DFA scheduler to use insn
+	subtypes.
+	* config/sparc/sparc.md: Remove the `v3pipe' insn attribute.
+	("*movdi_insn_sp32"): Do not set v3pipe.
+	("*movsi_insn"): Likewise.
+	("*movdi_insn_sp64"): Likewise.
+	("*movsf_insn"): Likewise.
+	("*movdf_insn_sp32"): Likewise.
+	("*movdf_insn_sp64"): Likewise.
+	("*zero_extendsidi2_insn_sp64"): Likewise.
+	("*sign_extendsidi2_insn"): Likewise.
+	("*mov<VM32:mode>_insn"): Likewise.
+	("*mov<VM64:mode>_insn_sp64"): Likewise.
+	("*mov<VM64:mode>_insn_sp32"): Likewise.
+	("<plusminus_insn><VADDSUB:mode>3"): Likewise.
+	("<vlop:code><VL:mode>3"): Likewise.
+	("*not_<vlop:code><VL:mode>3"): Likewise.
+	("*nand<VL:mode>_vis"): Likewise.
+	("*<vlnotop:code>_not1<VL:mode>_vis"): Likewise.
+	("*<vlnotop:code>_not2<VL:mode>_vis"): Likewise.
+	("one_cmpl<VL:mode>2"): Likewise.
+	("faligndata<VM64:mode>_vis"): Likewise.
+	("alignaddrsi_vis"): Likewise.
+	("alignaddrdi_vis"): Likweise.
+	("alignaddrlsi_vis"): Likewise.
+	("alignaddrldi_vis"): Likewise.
+	("fcmp<gcond:code><GCM:gcm_name><P:mode>_vis"): Likewise.
+	("bmaskdi_vis"): Likewise.
+	("bmasksi_vis"): Likewise.
+	("bshuffle<VM64:mode>_vis"): Likewise.
+	("cmask8<P:mode>_vis"): Likewise.
+	("cmask16<P:mode>_vis"): Likewise.
+	("cmask32<P:mode>_vis"): Likewise.
+	("pdistn<P:mode>_vis"): Likewise.
+	("<vis3_addsub_ss_patname><VASS:mode>3"): Likewise.
+
+2017-07-07  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* config/sparc/sparc.md ("subtype"): New insn attribute.
+	("*wrgsr_sp64"): Set insn subtype.
+	("*rdgsr_sp64"): Likewise.
+	("alignaddrsi_vis"): Likewise.
+	("alignaddrdi_vis"): Likewise.
+	("alignaddrlsi_vis"): Likewise.
+	("alignaddrldi_vis"): Likewise.
+	("<plusminus_insn><VADDSUB:mode>3"): Likewise.
+	("fexpand_vis"): Likewise.
+	("fpmerge_vis"): Likewise.
+	("faligndata<VM64:mode>_vis"): Likewise.
+	("bshuffle<VM64:mode>_vis"): Likewise.
+	("cmask8<P:mode>_vis"): Likewise.
+	("cmask16<P:mode>_vis"): Likewise.
+	("cmask32<P:mode>_vis"): Likewise.
+	("fchksm16_vis"): Likewise.
+	("v<vis3_shift_patname><GCM:mode>3"): Likewise.
+	("fmean16_vis"): Likewise.
+	("fp<plusminus_insn>64_vis"): Likewise.
+	("<plusminus_insn>v8qi3"): Likewise.
+	("<vis3_addsub_ss_patname><VASS:mode>3"): Likewise.
+	("<vis4_minmax_patname><VMMAX:mode>3"): Likewise.
+	("<vis4_uminmax_patname><VMMAX:mode>3"): Likewise.
+	("<vis3_addsub_ss_patname>v8qi3"): Likewise.
+	("<vis4_addsub_us_patname><VAUS:mode>3"): Likewise.
+	("*movqi_insn"): Likewise.
+	("*movhi_insn"): Likewise.
+	("*movsi_insn"): Likewise.
+	("movsi_pic_gotdata_op"): Likewise.
+	("*movdi_insn_sp32"): Likewise.
+	("*movdi_insn_sp64"): Likewise.
+	("movdi_pic_gotdata_op"): Likewise.
+	("*movsf_insn"): Likewise.
+	("*movdf_insn_sp32"): Likewise.
+	("*movdf_insn_sp64"): Likewise.
+	("*zero_extendhisi2_insn"): Likewise.
+	("*zero_extendqihi2_insn"): Likewise.
+	("*zero_extendqisi2_insn"): Likewise.
+	("*zero_extendqidi2_insn"): Likewise.
+	("*zero_extendhidi2_insn"): Likewise.
+	("*zero_extendsidi2_insn_sp64"): Likewise.
+	("ldfsr"): Likewise.
+	("prefetch_64"): Likewise.
+	("prefetch_32"): Likewise.
+	("tie_ld32"): Likewise.
+	("tie_ld64"): Likewise.
+	("*tldo_ldub_sp32"): Likewise.
+	("*tldo_ldub1_sp32"): Likewise.
+	("*tldo_ldub2_sp32"): Likewise.
+	("*tldo_ldub_sp64"): Likewise.
+	("*tldo_ldub1_sp64"): Likewise.
+	("*tldo_ldub2_sp64"): Likewise.
+	("*tldo_ldub3_sp64"): Likewise.
+	("*tldo_lduh_sp32"): Likewise.
+	("*tldo_lduh1_sp32"): Likewise.
+	("*tldo_lduh_sp64"): Likewise.
+	("*tldo_lduh1_sp64"): Likewise.
+	("*tldo_lduh2_sp64"): Likewise.
+	("*tldo_lduw_sp32"): Likewise.
+	("*tldo_lduw_sp64"): Likewise.
+	("*tldo_lduw1_sp64"): Likewise.
+	("*tldo_ldx_sp64"): Likewise.
+	("*mov<VM32:mode>_insn"): Likewise.
+	("*mov<VM64:mode>_insn_sp64"): Likewise.
+	("*mov<VM64:mode>_insn_sp32"): Likewise.
+
+2017-07-07  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* config/sparc/sparc.md ("type"): New insn type viscmp.
+	("fcmp<gcond:code><GCM:gcm_name><P:mode>_vis"): Set insn type to
+	viscmp.
+	("fpcmp<gcond:code>8<P:mode>_vis"): Likewise.
+	("fucmp<gcond:code>8<P:mode>_vis"): Likewise.
+	("fpcmpu<gcond:code><GCM:gcm_name><P:mode>_vis"): Likewise.
+	* config/sparc/niagara7.md ("n7_vis_logical_v3pipe"): Handle
+	viscmp.
+	("n7_vis_logical_11cycle"): Likewise.
+	* config/sparc/niagara4.md ("n4_vis_logical"): Likewise.
+	* config/sparc/niagara2.md ("niag3_vis": Likewise.
+	* config/sparc/niagara.md ("niag_vis"): Likewise.
+	* config/sparc/ultra3.md ("us3_fga"): Likewise.
+	* config/sparc/ultra1_2.md ("us1_fga_double"): Likewise.
+
+2017-07-07  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* config/sparc/sparc.md: New instruction type `bmask'.
+	(bmaskdi_vis): Use the `bmask' type.
+	(bmasksi_vis): Likewise.
+	* config/sparc/ultra3.md (us3_array): Likewise.
+	* config/sparc/niagara7.md (n7_array): Likewise.
+	* config/sparc/niagara4.md (n4_array): Likewise.
+	* config/sparc/niagara2.md (niag2_vis): Likewise.
+	(niag3_vis): Likewise.
+	* config/sparc/niagara.md (niag_vis): Likewise.
+
+2017-07-06  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-comdats.c: Remove optimize check from gate.
+	* ipa-fnsummary.c (ipa_fn_summary_generate): do not generate summary
+	for functions not optimized.
+	(ipa_fn_summary_read): Skip optimize check.
+	(ipa_fn_summary_write): Likewise.
+	* ipa-inline-analysis.c (do_estimate_growth_1): Check that caller
+	is optimized.
+	* ipa-inline.c (can_inline_edge_p): Not optimized functions are
+	uninlinable.
+	(can_inline_edge_p): Check flag_pcc_struct_return for match.
+	(check_callers): Give up on caller which is not optimized.
+	(inline_small_functions): Likewise.
+	(ipa_inline): Do not give up when not optimizing.
+	* ipa-visbility.c (function_and_variable_visibility): Do not optimize
+	away unoptimizes cdtors.
+	(whole_program_function_and_variable_visibility): Do
+	ipa_discover_readonly_nonaddressable_vars in LTO mode.
+	* ipa.c (process_references): Do not check optimize.
+	(symbol_table::remove_unreachable_nodes): Update optimize check.
+	(set_writeonly_bit): Update optimize check.
+	(pass_ipa_cdtor_merge::gate): Do not check optimize.
+	(pass_ipa_single_use::gate): Remove.
+
+2017-07-06  Aaron Sawdey  <acsawdey@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000.c (union_defs, union_uses, insn_is_load_p,
+	insn_is_store_p, insn_is_swap_p, const_load_sequence_p, v2df_reduction_p,
+	rtx_is_swappable_p, insn_is_swappable_p, chain_contains_only_swaps,
+	mark_swaps_for_removal, swap_const_vector_halves, adjust_subreg_index,
+	permute_load, permute_store, adjust_extract, adjust_splat,
+	adjust_xxpermdi, adjust_concat, adjust_vperm, handle_special_swappables,
+	replace_swap_with_copy, dump_swap_insn_table,
+	alignment_with_canonical_addr, alignment_mask, find_alignment_op,
+	recombine_lvx_pattern, recombine_stvx_pattern,
+	recombine_lvx_stvx_patterns, rs6000_analyze_swaps,
+	make_pass_analyze_swaps): Move all code related to p8 swap optimizations
+	to file rs6000-p8swap.c.
+	* config/rs6000/rs6000-p8swap.c: New file.
+	* config/rs6000/t-rs6000: Add rule to build rs6000-p8swap.o.
+	* config.gcc: Add rs6000-p8swap.o to extra_objs for powerpc*-*-*
+	and rs6000*-*-* targets.
+
+2017-07-06  David Malcolm  <dmalcolm@redhat.com>
+
+	* Makefile.in (selftest): Remove dependency on s-selftest-c++.
+
+2017-07-06  Jan Hubicka  <hubicka@ucw.cz>
+
+	* lto-wrapper.c (merge_and_complain): Do not merge
+	fexceptions, fnon_call_exceptions, ftrapv, ffp_contract_, fmath_errno,
+	fsigned_zeros, ftrapping_math, fwrapv.
+	(append_compiler_options): Do not track these options.
+	(append_linker_options): Likewie
+
+2017-07-06  Jan Hubicka  <hubicka@ucw.cz>
+
+	* cgraphunit.c (cgraph_node::finalize_function): When
+	!flag_toplevel_reorde set no_reorder flag.
+	(varpool_node::finalize_decl): Likewise.
+	(symbol_table::compile): Drop no toplevel reorder path.
+
+2017-07-06  Jan Hubicka  <hubicka@ucw.cz>
+
+	* bb-reorder.c (better_edge_p): Do not build traces across abnormal/eh
+	edges; zero probability is not better than uninitialized.
+
+2017-07-06  Maxim Ostapenko  <m.ostapenko@samsung.com>
+
+	* asan.h (asan_sanitize_allocas_p): Declare.
+	* asan.c (asan_sanitize_allocas_p): New function.
+	(handle_builtin_stack_restore): Bail out if !asan_sanitize_allocas_p.
+	(handle_builtin_alloca): Likewise.
+	* cfgexpand.c (expand_used_vars): Do not add allocas unpoisoning stuff
+	if !asan_sanitize_allocas_p.
+	* params.def (asan-instrument-allocas): Add new option.
+	* params.h (ASAN_PROTECT_ALLOCAS): Define.
+	* opts.c (common_handle_option): Disable allocas sanitization for
+	KASan by default.
+
+2017-07-06  Maxim Ostapenko  <m.ostapenko@samsung.com>
+
+	* asan.c: Include gimple-fold.h.
+	(get_last_alloca_addr): New function.
+	(handle_builtin_stackrestore): Likewise.
+	(handle_builtin_alloca): Likewise.
+	(asan_emit_allocas_unpoison): Likewise.
+	(get_mem_refs_of_builtin_call): Add new parameter, remove const
+	quallifier from first paramerer. Handle BUILT_IN_ALLOCA,
+	BUILT_IN_ALLOCA_WITH_ALIGN and BUILT_IN_STACK_RESTORE builtins.
+	(instrument_builtin_call): Pass gimple iterator to
+	get_mem_refs_of_builtin_call.
+	(last_alloca_addr): New global.
+	* asan.h (asan_emit_allocas_unpoison): Declare.
+	* builtins.c (expand_asan_emit_allocas_unpoison): New function.
+	(expand_builtin): Handle BUILT_IN_ASAN_ALLOCAS_UNPOISON.
+	* cfgexpand.c (expand_used_vars): Call asan_emit_allocas_unpoison
+	if function calls alloca.
+	* gimple-fold.c (replace_call_with_value): Remove static keyword.
+	* gimple-fold.h (replace_call_with_value): Declare.
+	* internal-fn.c: Include asan.h.
+	* sanitizer.def (BUILT_IN_ASAN_ALLOCA_POISON,
+	BUILT_IN_ASAN_ALLOCAS_UNPOISON): New builtins.
+
+2017-07-06  David Malcolm  <dmalcolm@redhat.com>
+
+	* Makefile.in (SELFTEST_FLAGS): Drop "-x c", moving it to...
+	(C_SELFTEST_FLAGS): New.
+	(CPP_SELFTEST_FLAGS): New.
+	(SELFTEST_DEPS): New, from deps of s-selftest.
+	(C_SELFTEST_DEPS): New, from deps of s-selftest.
+	(CPP_SELFTEST_DEPS): New.
+	(selftest): Add dependency on s-selftest-c++.
+	(s-selftest): Rename to...
+	(s-selftest-c): ...this, moving deps to SELFTEST_DEPS
+	and C_SELFTEST_DEPS, and using C_SELFTEST_FLAGS rather
+	than SELFTEST_FLAGS.
+	(selftest-gdb): Rename to...
+	(selftest-c-gdb): ...this, using C_SELFTEST_DEPS and
+	C_SELFTEST_FLAGS.
+	(selftest-gdb): Reintroduce as an alias for selftest-c-gdb.
+	(selftest-valgrind): Rename to...
+	(selftest-c-valgrind): ...this, using C_SELFTEST_DEPS and
+	C_SELFTEST_FLAGS.
+	(selftest-valgrind): Reintroduce as an alias for
+	selftest-c-valgrind.
+	(s-selftest-c++): New.
+	(selftest-c++-gdb): New.
+	(selftest-c++-valgrind): New.
+
+2017-07-06  Olivier Hainque  <hainque@adacore.com>
+
+	* gcc.c (process_command): When deciding if undefined variables
+	should be ignored when processing specs, accept "gcc -v" as well.
+
+2017-07-06  Jan Hubicka  <hubicka@ucw.cz>
+
+	* auto-profile.c (afdo_set_bb_count, afdo_propagate_edge,
+	afdo_annotate_cfg): Set counts/probabilities as determined by afdo.
+
+2017-07-06  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* config/arm/arm-cpus.in (armv8-r): Add new entry.
+	* config/arm/arm-isa.h (ISA_ARMv8r): Define macro.
+	* config/arm/arm-tables.opt: Regenerate.
+	* config/arm/arm.h (enum base_architecture): Add BASE_ARCH_8R
+	enumerator.
+	* doc/invoke.texi: Mention -march=armv8-r and its extensions.
+
+2017-07-06  Carl Love  <cel@us.ibm.com>
+
+	* ChangeLog: Clean up from mid air collision
+
+2017-07-06  Carl Love  <cel@us.ibm.com>
+
+	* config/rs6000/rs6000-c.c: Add support for built-in functions
+	vector signed int vec_subc (vector signed int, vector signed int);
+	vector signed __int128 vec_subc (vector signed __int128,
+					 vector signed __int128);
+	vector unsigned __int128 vec_subc (vector unsigned __int128,
+					   vector unsigned __int128);
+	vector signed int vec_sube (vector signed int, vector signed int,
+				    vector signed int);
+	vector unsigned int vec_sube (vector unsigned int,
+				      vector unsigned int,
+				      vector unsigned int);
+	vector signed __int128 vec_sube (vector signed __int128,
+					 vector signed __int128,
+					 vector signed__int128);
+	vector unsigned __int128 vec_sube (vector unsigned __int128,
+					   vector unsigned __int128,
+					   vector unsigned __int128);
+	vector signed int vec_subec (vector signed int, vector signed int,
+				     vector signed int);
+	vector unsigned int vec_subec (vector unsigned int,
+				       vector unsigned int,
+				       vector unsigned int);
+	vector signed __int128 vec_subec (vector signed __int128,
+					  vector signed __int128,
+					  vector signed__int128);
+	vector unsigned __int128 vec_subec (vector unsigned __int128,
+					    vector unsigned __int128,
+					    vector unsigned __int128);
+	* config/rs6000/rs6000.c (ALTIVEC_BUILTIN_VEC_SUBE,
+	ALTIVEC_BUILTIN_VEC_SUBEC): Add ef_builtins.
+	* config/rs6000/rs6000-builtin.def (SUBE, SUBEC): Add
+	BU_ALTIVEC_OVERLOAD_X definitions.
+	* config/rs6000/altivec.h (vec_sube, vec_subec): Add builtin defines.
+	* doc/extend.texi: Update the built-in documentation file for the new
+	built-in functions.
+
+2017-07-06  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/79300
+	* diagnostic-show-locus.c (layout::layout): Use start and finish
+	spelling location for the start and finish of each range.
+	* genmatch.c (linemap_client_expand_location_to_spelling_point):
+	Add unused aspect param.
+	* input.c (expand_location_1): Add "aspect" param, and use it
+	to access the correct part of the location.
+	(expand_location): Pass LOCATION_ASPECT_CARET to new param of
+	expand_location_1.
+	(expand_location_to_spelling_point): Likewise.
+	(linemap_client_expand_location_to_spelling_point): Add "aspect"
+	param, and pass it to expand_location_1.
+
+2017-07-06  Sebastian Peryt  <sebastian.peryt@intel.com>
+
+	* config/i386/avx512fintrin.h (_mm_mask_getexp_round_ss,
+	_mm_maskz_getexp_round_ss, _mm_mask_getexp_round_sd,
+	_mm_maskz_getexp_round_sd, _mm_mask_getmant_round_sd,
+	_mm_maskz_getmant_round_sd, _mm_mask_getmant_round_ss,
+	_mm_maskz_getmant_round_ss, _mm_mask_getexp_ss, _mm_maskz_getexp_ss,
+	_mm_mask_getexp_sd, _mm_maskz_getexp_sd, _mm_mask_getmant_sd,
+	_mm_maskz_getmant_sd, _mm_mask_getmant_ss,
+	_mm_maskz_getmant_ss): New intrinsics.
+	(__builtin_ia32_getexpss128_mask): Changed to ...
+	__builtin_ia32_getexpss128_round ... this.
+	(__builtin_ia32_getexpsd128_mask): Changed to ...
+	__builtin_ia32_getexpsd128_round ... this.
+	* config/i386/i386-builtin-types.def
+	((V2DF, V2DF, V2DF, INT, V2DF, UQI, INT),
+	(V4SF, V4SF, V4SF, INT, V4SF, UQI, INT)): New function type aliases.
+	* config/i386/i386-builtin.def (__builtin_ia32_getexpsd_mask_round,
+	__builtin_ia32_getexpss_mask_round,	__builtin_ia32_getmantsd_mask_round,
+	__builtin_ia32_getmantss_mask_round): New builtins.
+	* config/i386/i386.c (V2DF_FTYPE_V2DF_V2DF_INT_V2DF_UQI_INT,
+	V4SF_FTYPE_V4SF_V4SF_INT_V4SF_UQI_INT): Handle new types.
+	(CODE_FOR_avx512f_vgetmantv2df_mask_round,
+	CODE_FOR_avx512f_vgetmantv4sf_mask_round): New cases.
+	* config/i386/sse.md
+	(avx512f_sgetexp<mode><round_saeonly_name>): Changed to ...
+	avx512f_sgetexp<mode><mask_scalar_name>
+	<round_saeonly_scalar_name> ... this.
+	(vgetexp<ssescalarmodesuffix>\t{<round_saeonly_op3>%2, %1, %0|
+	%0, %1, %2<round_saeonly_op3>}): Changed to ...
+	vgetexp<ssescalarmodesuffix>
+	\t{<round_saeonly_scalar_mask_op3>%2, %1, %0<mask_scalar_operand3>|
+	%0<mask_scalar_operand3>, %1, %2<round_saeonly_scalar_mask_op3>} ... this.
+	(avx512f_vgetmant<mode><round_saeonly_name>): Changed to ...
+	avx512f_vgetmant<mode><mask_scalar_name>
+	<round_saeonly_scalar_name> ... this.
+	(vgetmant<ssescalarmodesuffix>\t{%3, <round_saeonly_op4>%2, %1, %0|
+	%0, %1, %2<round_saeonly_op4>, %3}): Changed to ...
+	vgetmant<ssescalarmodesuffix>
+	\t{%3, <round_saeonly_scalar_mask_op4>%2, %1, %0<mask_scalar_operand4>|
+	%0<mask_scalar_operand4>, %1, %2
+	<round_saeonly_scalar_mask_op4>, %3} ... this.
+	* config/i386/subst.md (mask_scalar_operand4,
+	round_saeonly_scalar_mask_operand4,	round_saeonly_scalar_mask_op4,
+	round_saeonly_scalar_nimm_predicate): New subst attributes.
+
+2017-07-06  Julia Koval  <julia.koval@intel.com>
+
+	* gcc/config/i386/i386.c (ix86_erase_embedded_rounding):
+	Remove code for old rounding pattern.
+
+2017-07-06  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/t-arm (GTM_H): Add arm-cpu.h.
+
+2017-07-06  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* doc/sourcebuild.texi (Test Directives, Variants of
+	dg-require-support): Add documentation for dg-require-stack-check.
+
+2017-07-05  Sebastian Peryt  <sebastian.peryt@intel.com>
+
+	* config/i386/subst.md (mask_scalar, round_scalar,
+	round_saeonly_scalar): New meta-templates.
+	(mask_scalar_name, mask_scalar_operand3, round_scalar_name,
+	round_scalar_mask_operand3, round_scalar_mask_op3,
+	round_scalar_constraint, round_scalar_prefix, round_saeonly_scalar_name,
+	round_saeonly_scalar_mask_operand3, round_saeonly_scalar_mask_op3,
+	round_saeonly_scalar_constraint,
+	round_saeonly_scalar_prefix): New subst attribute.
+	* config/i386/sse.md
+	(<sse>_vm<plusminus_insn><mode>3<mask_name><round_name>): Renamed to ...
+	<sse>_vm<plusminus_insn><mode>3<mask_scalar_name>
+	<round_scalar_name> ... this.
+	(<sse>_vm<multdiv_mnemonic><mode>3<mask_name><round_name>): Renamed to ...
+	<sse>_vm<multdiv_mnemonic><mode>3<mask_scalar_name>
+	<round_scalar_name> ... this.
+	(<sse>_vm<code><mode>3<mask_name><round_saeonly_name>): Renamed to ...
+	<sse>_vm<code><mode>3<mask_scalar_name>
+	<round_saeonly_scalar_name> ... this.
+	(v<plusminus_mnemonic><ssescalarmodesuffix>
+	\t{<round_mask_op3>%2, %1, %0<mask_operand3>|
+	%0<mask_operand3>, %1, %<iptr>2<round_mask_op3>}): Changed to ...
+	v<plusminus_mnemonic><ssescalarmodesuffix>
+	\t{<round_scalar_mask_op3>%2, %1, %0<mask_scalar_operand3>|
+	%0<mask_scalar_operand3>, %1, %<iptr>2<round_scalar_mask_op3>} ... this.
+	(v<multdiv_mnemonic><ssescalarmodesuffix>
+	\t{<round_mask_op3>%2, %1, %0<mask_operand3>|
+	%0<mask_operand3>, %1, %<iptr>2<round_mask_op3>}): Changed to ...
+	v<multdiv_mnemonic><ssescalarmodesuffix>
+	\t{<round_scalar_mask_op3>%2, %1, %0<mask_scalar_operand3>|
+	%0<mask_scalar_operand3>, %1, %<iptr>2<round_scalar_mask_op3>} ... this.
+	(v<maxmin_float><ssescalarmodesuffix>
+	\t{<round_saeonly_mask_op3>%2, %1, %0<mask_operand3>|
+	%0<mask_operand3>, %1, %<iptr>2<round_saeonly_mask_op3>}): Changed to ...
+	v<maxmin_float><ssescalarmodesuffix>
+	\t{<round_saeonly_scalar_mask_op3>%2, %1, %0<mask_scalar_operand3>|
+	%0<mask_scalar_operand3>, %1, %<iptr>2
+	<round_saeonly_scalar_mask_op3>} ... this.
+
+2017-07-05  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/arm.c (arm_fixed_condition_code_regs): New function.
+	(TARGET_FIXED_CONDITION_CODE_REGS): Redefine.
+
+2017-07-05  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* combine.c (simplify_if_then_else): Remove "enum" before
+	"machine_mode".
+	* compare-elim.c (can_eliminate_compare): Likewise.
+	* config/aarch64/aarch64-builtins.c (aarch64_simd_builtin_std_type):
+	Likewise.
+	(aarch64_lookup_simd_builtin_type): Likewise.
+	(aarch64_simd_builtin_type): Likewise.
+	(aarch64_init_simd_builtin_types): Likewise.
+	(aarch64_simd_expand_args): Likewise.
+	* config/aarch64/aarch64-protos.h (aarch64_simd_attr_length_rglist):
+	Likewise.
+	(aarch64_reverse_mask): Likewise.
+	(aarch64_simd_emit_reg_reg_move): Likewise.
+	(aarch64_gen_adjusted_ldpstp): Likewise.
+	(aarch64_ccmp_mode_to_code): Likewise.
+	(aarch64_operands_ok_for_ldpstp): Likewise.
+	(aarch64_operands_adjust_ok_for_ldpstp): Likewise.
+	* config/aarch64/aarch64.c (aarch64_ira_change_pseudo_allocno_class):
+	Likewise.
+	(aarch64_min_divisions_for_recip_mul): Likewise.
+	(aarch64_reassociation_width): Likewise.
+	(aarch64_get_condition_code_1): Likewise.
+	(aarch64_simd_emit_reg_reg_move): Likewise.
+	(aarch64_simd_attr_length_rglist): Likewise.
+	(aarch64_reverse_mask): Likewise.
+	(aarch64_operands_ok_for_ldpstp): Likewise.
+	(aarch64_operands_adjust_ok_for_ldpstp): Likewise.
+	(aarch64_gen_adjusted_ldpstp): Likewise.
+	* config/aarch64/cortex-a57-fma-steering.c (fma_node::rename):
+	Likewise.
+	* config/arc/arc.c (legitimate_offset_address_p): Likewise.
+	* config/arm/arm-builtins.c (arm_simd_builtin_std_type): Likewise.
+	(arm_lookup_simd_builtin_type): Likewise.
+	(arm_simd_builtin_type): Likewise.
+	(arm_init_simd_builtin_types): Likewise.
+	(arm_expand_builtin_args): Likewise.
+	* config/arm/arm-protos.h (arm_expand_builtin): Likewise.
+	* config/ft32/ft32.c (ft32_libcall_value): Likewise.
+	(ft32_setup_incoming_varargs): Likewise.
+	(ft32_function_arg): Likewise.
+	(ft32_function_arg_advance): Likewise.
+	(ft32_pass_by_reference): Likewise.
+	(ft32_arg_partial_bytes): Likewise.
+	(ft32_valid_pointer_mode): Likewise.
+	(ft32_addr_space_pointer_mode): Likewise.
+	(ft32_addr_space_legitimate_address_p): Likewise.
+	* config/i386/i386-protos.h (ix86_operands_ok_for_move_multiple):
+	Likewise.
+	* config/i386/i386.c (ix86_setup_incoming_vararg_bounds): Likewise.
+	(ix86_emit_outlined_ms2sysv_restore): Likewise.
+	(iamcu_alignment): Likewise.
+	(canonicalize_vector_int_perm): Likewise.
+	(ix86_noce_conversion_profitable_p): Likewise.
+	(ix86_mpx_bound_mode): Likewise.
+	(ix86_operands_ok_for_move_multiple): Likewise.
+	* config/microblaze/microblaze-protos.h
+	(microblaze_expand_conditional_branch_reg): Likewise.
+	* config/microblaze/microblaze.c
+	(microblaze_expand_conditional_branch_reg): Likewise.
+	* config/powerpcspe/powerpcspe.c (rs6000_init_hard_regno_mode_ok):
+	Likewise.
+	(rs6000_reassociation_width): Likewise.
+	(rs6000_invalid_binary_op): Likewise.
+	(fusion_p9_p): Likewise.
+	(emit_fusion_p9_load): Likewise.
+	(emit_fusion_p9_store): Likewise.
+	* config/riscv/riscv-protos.h (riscv_regno_mode_ok_for_base_p):
+	Likewise.
+	(riscv_hard_regno_mode_ok_p): Likewise.
+	(riscv_address_insns): Likewise.
+	(riscv_split_symbol): Likewise.
+	(riscv_legitimize_move): Likewise.
+	(riscv_function_value): Likewise.
+	(riscv_hard_regno_nregs): Likewise.
+	(riscv_expand_builtin): Likewise.
+	* config/riscv/riscv.c (riscv_build_integer_1): Likewise.
+	(riscv_build_integer): Likewise.
+	(riscv_split_integer): Likewise.
+	(riscv_legitimate_constant_p): Likewise.
+	(riscv_cannot_force_const_mem): Likewise.
+	(riscv_regno_mode_ok_for_base_p): Likewise.
+	(riscv_valid_base_register_p): Likewise.
+	(riscv_valid_offset_p): Likewise.
+	(riscv_valid_lo_sum_p): Likewise.
+	(riscv_classify_address): Likewise.
+	(riscv_legitimate_address_p): Likewise.
+	(riscv_address_insns): Likewise.
+	(riscv_load_store_insns): Likewise.
+	(riscv_force_binary): Likewise.
+	(riscv_split_symbol): Likewise.
+	(riscv_force_address): Likewise.
+	(riscv_legitimize_address): Likewise.
+	(riscv_move_integer): Likewise.
+	(riscv_legitimize_const_move): Likewise.
+	(riscv_legitimize_move): Likewise.
+	(riscv_address_cost): Likewise.
+	(riscv_subword): Likewise.
+	(riscv_output_move): Likewise.
+	(riscv_canonicalize_int_order_test): Likewise.
+	(riscv_emit_int_order_test): Likewise.
+	(riscv_function_arg_boundary): Likewise.
+	(riscv_pass_mode_in_fpr_p): Likewise.
+	(riscv_pass_fpr_single): Likewise.
+	(riscv_pass_fpr_pair): Likewise.
+	(riscv_get_arg_info): Likewise.
+	(riscv_function_arg): Likewise.
+	(riscv_function_arg_advance): Likewise.
+	(riscv_arg_partial_bytes): Likewise.
+	(riscv_function_value): Likewise.
+	(riscv_pass_by_reference): Likewise.
+	(riscv_setup_incoming_varargs): Likewise.
+	(riscv_print_operand): Likewise.
+	(riscv_elf_select_rtx_section): Likewise.
+	(riscv_save_restore_reg): Likewise.
+	(riscv_for_each_saved_reg): Likewise.
+	(riscv_register_move_cost): Likewise.
+	(riscv_hard_regno_mode_ok_p): Likewise.
+	(riscv_hard_regno_nregs): Likewise.
+	(riscv_class_max_nregs): Likewise.
+	(riscv_memory_move_cost): Likewise.
+	* config/rl78/rl78-protos.h (rl78_split_movsi): Likewise.
+	* config/rl78/rl78.c (rl78_split_movsi): Likewise.
+	(rl78_addr_space_address_mode): Likewise.
+	* config/rs6000/rs6000-c.c (altivec_resolve_overloaded_builtin):
+	Likewise.
+	* config/rs6000/rs6000.c (rs6000_init_hard_regno_mode_ok): Likewise.
+	(rs6000_reassociation_width): Likewise.
+	(rs6000_invalid_binary_op): Likewise.
+	(fusion_p9_p): Likewise.
+	(emit_fusion_p9_load): Likewise.
+	(emit_fusion_p9_store): Likewise.
+	* config/visium/visium-protos.h (prepare_move_operands): Likewise.
+	(ok_for_simple_move_operands): Likewise.
+	(ok_for_simple_move_strict_operands): Likewise.
+	(ok_for_simple_arith_logic_operands): Likewise.
+	(visium_legitimize_reload_address): Likewise.
+	(visium_select_cc_mode): Likewise.
+	(output_cbranch): Likewise.
+	(visium_split_double_move): Likewise.
+	(visium_expand_copysign): Likewise.
+	(visium_expand_int_cstore): Likewise.
+	(visium_expand_fp_cstore): Likewise.
+	* config/visium/visium.c (visium_pass_by_reference): Likewise.
+	(visium_function_arg): Likewise.
+	(visium_function_arg_advance): Likewise.
+	(visium_libcall_value): Likewise.
+	(visium_setup_incoming_varargs): Likewise.
+	(visium_legitimate_constant_p): Likewise.
+	(visium_legitimate_address_p): Likewise.
+	(visium_legitimize_address): Likewise.
+	(visium_secondary_reload): Likewise.
+	(visium_register_move_cost): Likewise.
+	(visium_memory_move_cost): Likewise.
+	(prepare_move_operands): Likewise.
+	(ok_for_simple_move_operands): Likewise.
+	(ok_for_simple_move_strict_operands): Likewise.
+	(ok_for_simple_arith_logic_operands): Likewise.
+	(visium_function_value_1): Likewise.
+	(rtx_ok_for_offset_p): Likewise.
+	(visium_legitimize_reload_address): Likewise.
+	(visium_split_double_move): Likewise.
+	(visium_expand_copysign): Likewise.
+	(visium_expand_int_cstore): Likewise.
+	(visium_expand_fp_cstore): Likewise.
+	(visium_split_cstore): Likewise.
+	(visium_select_cc_mode): Likewise.
+	(visium_split_cbranch): Likewise.
+	(output_cbranch): Likewise.
+	(visium_print_operand_address): Likewise.
+	* expmed.c (flip_storage_order): Likewise.
+	* expmed.h (emit_cstore): Likewise.
+	(flip_storage_order): Likewise.
+	* genrecog.c (validate_pattern): Likewise.
+	* hsa-gen.c (gen_hsa_addr): Likewise.
+	* internal-fn.c (expand_arith_overflow): Likewise.
+	* ira-color.c (allocno_copy_cost_saving): Likewise.
+	* lra-assigns.c (find_hard_regno_for_1): Likewise.
+	* lra-constraints.c (prohibited_class_reg_set_mode_p): Likewise.
+	(process_invariant_for_inheritance): Likewise.
+	* lra-eliminations.c (move_plus_up): Likewise.
+	* omp-low.c (lower_oacc_reductions): Likewise.
+	* simplify-rtx.c (simplify_subreg): Likewise.
+	* target.def (TARGET_SETUP_INCOMING_VARARG_BOUNDS): Likewise.
+	(TARGET_CHKP_BOUND_MODE): Likewise..
+	* targhooks.c (default_chkp_bound_mode): Likewise.
+	(default_setup_incoming_vararg_bounds): Likewise.
+	* targhooks.h (default_chkp_bound_mode): Likewise.
+	(default_setup_incoming_vararg_bounds): Likewise.
+	* tree-ssa-math-opts.c (divmod_candidate_p): Likewise.
+	* tree-vect-loop.c (calc_vec_perm_mask_for_shift): Likewise.
+	(have_whole_vector_shift): Likewise.
+	* tree-vect-stmts.c (vectorizable_load): Likewise.
+	* doc/tm.texi: Regenerate.
+
 2017-07-05  Georg-Johann Lay  <avr@gjlay.de>
 
 	Graceful degrade if Binutils PR21472 is not available.

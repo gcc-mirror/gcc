@@ -3842,7 +3842,7 @@ static bool
 divmod_candidate_p (gassign *stmt)
 {
   tree type = TREE_TYPE (gimple_assign_lhs (stmt));
-  enum machine_mode mode = TYPE_MODE (type);
+  machine_mode mode = TYPE_MODE (type);
   optab divmod_optab, div_optab;
 
   if (TYPE_UNSIGNED (type))

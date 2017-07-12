@@ -24126,18 +24126,9 @@ gen_member_die (tree type, dw_die_ref context_die)
 	   && (lang_hooks.decls.decl_dwarf_attribute (member, DW_AT_inline)
 	       != -1));
 
-      if (TREE_CODE (member) == FUNCTION_DECL)
-	{
-	  /* Ignore clones.  */
-	  if (DECL_ABSTRACT_ORIGIN (member))
-	    continue;
-
-	  /* Ignore ctors of anon classes.  */
-	  // FIXME: Why don't we just not generate these?
-	  if (DECL_ARTIFICIAL (member) && !dwarf2_name (member, 0))
-	    gcc_unreachable ();
-	  //	    continue;
-	}
+      /* Ignore clones.  */
+      if (DECL_ABSTRACT_ORIGIN (member))
+	continue;
 
       /* If we thought we were generating minimal debug info for TYPE
 	 and then changed our minds, some of the member declarations

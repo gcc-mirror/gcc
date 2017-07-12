@@ -1,3 +1,14 @@
+2017-07-12  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/
+	* tree-core.h (struct tree_type_non_common): Rename binfo to
+	lang_1.
+	* tree.h (TYPE_BINFO): Move to maxval field.
+	(TYPE_LANG_SLOT_1): Allow any type.
+	gcc/lto/
+	* lto.c (mentions_vars_p_type, lto_fixup_prevailing_decls): Use
+	TYPE_LANG_SLOT_1, not binfo.
+
 2017-07-11  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/

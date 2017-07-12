@@ -193,8 +193,8 @@ requirements of the license of GCC.
       
     <para>
       Information on known bugs, details on efforts to fix them, and
-      fixed bugs are all available as part of the <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gcc.gnu.org/bugs/">GCC bug tracking system</link>,
-      with the category set to <literal>libstdc++</literal>.
+      fixed bugs are all available as part of the <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://gcc.gnu.org/bugs/">GCC bug tracking system</link>,
+      under the component <quote>libstdc++</quote>.
     </para>
     </section>
 
@@ -211,71 +211,73 @@ requirements of the license of GCC.
       </para>
       <para>
 	Here are the issues which have resulted in code changes to the library.
-	The links are to the specific defect reports from a <emphasis>partial
-	copy</emphasis> of the Issues List.  You can read the full version online
+	The links are to the full version of the Issues List.
+        You can read the full version online
 	at the <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/">ISO C++
 	Committee homepage</link>.
       </para>
       <para>
 	If a DR is not listed here, we may simply not have gotten to
-	it yet; feel free to submit a patch.  Search the include/bits
-	and src directories for appearances of
+	it yet; feel free to submit a patch.  Search the
+        <filename class="directory">include</filename> and
+        <filename class="directory">src</filename>
+	directories for appearances of
 	<constant>_GLIBCXX_RESOLVE_LIB_DEFECTS</constant> for examples
 	of style.  Note that we usually do not make changes to the
 	code until an issue has reached <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#DR">DR</link> status.
       </para>
 
       <variablelist>
-    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#5">5</link>:
+    <varlistentry xml:id="manual.bugs.dr5"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#5">5</link>:
 	<emphasis>string::compare specification questionable</emphasis>
     </term>
     <listitem><para>This should be two overloaded functions rather than a single function.
     </para></listitem></varlistentry>
 
-    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#17">17</link>:
+    <varlistentry xml:id="manual.bugs.dr17"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#17">17</link>:
 	<emphasis>Bad bool parsing</emphasis>
     </term>
     <listitem><para>Apparently extracting Boolean values was messed up...
     </para></listitem></varlistentry>
 
-    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#19">19</link>:
+    <varlistentry xml:id="manual.bugs.dr19"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#19">19</link>:
 	<emphasis>"Noconv" definition too vague</emphasis>
     </term>
     <listitem><para>If <code>codecvt::do_in</code> returns <code>noconv</code> there are
 	no changes to the values in <code>[to, to_limit)</code>.
     </para></listitem></varlistentry>
 
-    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#22">22</link>:
+    <varlistentry xml:id="manual.bugs.dr22"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#22">22</link>:
 	<emphasis>Member open vs flags</emphasis>
     </term>
     <listitem><para>Re-opening a file stream does <emphasis>not</emphasis> clear the state flags.
     </para></listitem></varlistentry>
 
-    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#23">23</link>:
+    <varlistentry xml:id="manual.bugs.dr23"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#23">23</link>:
 	<emphasis>Num_get overflow result</emphasis>
     </term>
     <listitem><para>Implement the proposed resolution.
     </para></listitem></varlistentry>
 
-    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#25">25</link>:
+    <varlistentry xml:id="manual.bugs.dr25"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#25">25</link>:
 	<emphasis>String operator&lt;&lt; uses width() value wrong</emphasis>
     </term>
     <listitem><para>Padding issues.
     </para></listitem></varlistentry>
 
-    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#48">48</link>:
+    <varlistentry xml:id="manual.bugs.dr48"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#48">48</link>:
 	<emphasis>Use of non-existent exception constructor</emphasis>
     </term>
     <listitem><para>An instance of <code>ios_base::failure</code> is constructed instead.
     </para></listitem></varlistentry>
 
-    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#49">49</link>:
+    <varlistentry xml:id="manual.bugs.dr49"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#49">49</link>:
 	<emphasis>Underspecification of ios_base::sync_with_stdio</emphasis>
     </term>
     <listitem><para>The return type is the <emphasis>previous</emphasis> state of synchronization.
     </para></listitem></varlistentry>
 
-    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#50">50</link>:
+    <varlistentry xml:id="manual.bugs.dr50"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#50">50</link>:
 	<emphasis>Copy constructor and assignment operator of ios_base</emphasis>
     </term>
     <listitem><para>These members functions are declared <code>private</code> and are
@@ -283,55 +285,55 @@ requirements of the license of GCC.
 	"copying stream state" was deemed too complicated.
     </para></listitem></varlistentry>
 
-    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#60">60</link>:
+    <varlistentry xml:id="manual.bugs.dr60"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#60">60</link>:
 	<emphasis>What is a formatted input function?</emphasis>
     </term>
     <listitem><para>This DR made many widespread changes to <code>basic_istream</code>
 	and <code>basic_ostream</code> all of which have been implemented.
     </para></listitem></varlistentry>
 
-    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#63">63</link>:
+    <varlistentry xml:id="manual.bugs.dr63"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#63">63</link>:
 	<emphasis>Exception-handling policy for unformatted output</emphasis>
     </term>
     <listitem><para>Make the policy consistent with that of formatted input, unformatted
 	input, and formatted output.
     </para></listitem></varlistentry>
 
-    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#68">68</link>:
+    <varlistentry xml:id="manual.bugs.dr68"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#68">68</link>:
 	<emphasis>Extractors for char* should store null at end</emphasis>
     </term>
     <listitem><para>And they do now.  An editing glitch in the last item in the list of
 	[27.6.1.2.3]/7.
     </para></listitem></varlistentry>
 
-    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#74">74</link>:
+    <varlistentry xml:id="manual.bugs.dr74"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#74">74</link>:
 	<emphasis>Garbled text for codecvt::do_max_length</emphasis>
     </term>
     <listitem><para>The text of the standard was gibberish.  Typos gone rampant.
     </para></listitem></varlistentry>
 
-    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#75">75</link>:
+    <varlistentry xml:id="manual.bugs.dr75"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#75">75</link>:
 	<emphasis>Contradiction in codecvt::length's argument types</emphasis>
     </term>
     <listitem><para>Change the first parameter to <code>stateT&amp;</code> and implement
 	the new effects paragraph.
     </para></listitem></varlistentry>
 
-    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#83">83</link>:
+    <varlistentry xml:id="manual.bugs.dr83"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#83">83</link>:
 	<emphasis>string::npos vs. string::max_size()</emphasis>
     </term>
     <listitem><para>Safety checks on the size of the string should test against
 	<code>max_size()</code> rather than <code>npos</code>.
     </para></listitem></varlistentry>
 
-    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#90">90</link>:
+    <varlistentry xml:id="manual.bugs.dr90"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#90">90</link>:
 	<emphasis>Incorrect description of operator&gt;&gt; for strings</emphasis>
     </term>
     <listitem><para>The effect contain <code>isspace(c,getloc())</code> which must be
 	replaced by <code>isspace(c,is.getloc())</code>.
     </para></listitem></varlistentry>
 
-    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#91">91</link>:
+    <varlistentry xml:id="manual.bugs.dr91"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#91">91</link>:
 	<emphasis>Description of operator&gt;&gt; and getline() for string&lt;&gt;
 	    might cause endless loop</emphasis>
     </term>
@@ -340,7 +342,7 @@ requirements of the license of GCC.
 	not required to set <code>gcount</code>).
     </para></listitem></varlistentry>
 
-    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#103">103</link>:
+    <varlistentry xml:id="manual.bugs.dr103"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#103">103</link>:
 	<emphasis>set::iterator is required to be modifiable, but this allows
 	    modification of keys.</emphasis>
     </term>
@@ -349,14 +351,14 @@ requirements of the license of GCC.
 	</code> are constant iterators.
     </para></listitem></varlistentry>
 
-    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#109">109</link>:
+    <varlistentry xml:id="manual.bugs.dr109"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#109">109</link>:
 	<emphasis>Missing binders for non-const sequence elements</emphasis>
     </term>
     <listitem><para>The <code>binder1st</code> and <code>binder2nd</code> didn't have an
 	<code>operator()</code> taking a non-const parameter.
     </para></listitem></varlistentry>
 
-    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#110">110</link>:
+    <varlistentry xml:id="manual.bugs.dr110"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#110">110</link>:
 	<emphasis>istreambuf_iterator::equal not const</emphasis>
     </term>
     <listitem><para>This was not a const member function.  Note that the DR says to
@@ -364,31 +366,31 @@ requirements of the license of GCC.
 	overloaded version with identical contents.
     </para></listitem></varlistentry>
 
-    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#117">117</link>:
+    <varlistentry xml:id="manual.bugs.dr117"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#117">117</link>:
 	<emphasis>basic_ostream uses nonexistent num_put member functions</emphasis>
     </term>
     <listitem><para><code>num_put::put()</code> was overloaded on the wrong types.
     </para></listitem></varlistentry>
 
-    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#118">118</link>:
+    <varlistentry xml:id="manual.bugs.dr118"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#118">118</link>:
 	<emphasis>basic_istream uses nonexistent num_get member functions</emphasis>
     </term>
     <listitem><para>Same as 117, but for <code>num_get::get()</code>.
     </para></listitem></varlistentry>
 
-    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#129">129</link>:
+    <varlistentry xml:id="manual.bugs.dr129"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#129">129</link>:
 	<emphasis>Need error indication from seekp() and seekg()</emphasis>
     </term>
     <listitem><para>These functions set <code>failbit</code> on error now.
     </para></listitem></varlistentry>
 
-    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#130">130</link>:
+    <varlistentry xml:id="manual.bugs.dr130"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#130">130</link>:
 	<emphasis>Return type of container::erase(iterator) differs for associative containers</emphasis>
     </term>
     <listitem><para>Make member <code>erase</code> return iterator for <code>set</code>, <code>multiset</code>, <code>map</code>, <code>multimap</code>.
     </para></listitem></varlistentry>
 
-    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#136">136</link>:
+    <varlistentry xml:id="manual.bugs.dr136"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#136">136</link>:
 	<emphasis>seekp, seekg setting wrong streams?</emphasis>
     </term>
     <listitem><para><code>seekp</code> should only set the output stream, and
@@ -402,46 +404,46 @@ requirements of the license of GCC.
 	should probably not be calling <code>underflow()</code>.
     </para></listitem></varlistentry> -->
 
-    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#167">167</link>:
+    <varlistentry xml:id="manual.bugs.dr167"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#167">167</link>:
 	<emphasis>Improper use of traits_type::length()</emphasis>
     </term>
     <listitem><para><code>op&lt;&lt;</code> with a <code>const char*</code> was
 	calculating an incorrect number of characters to write.
     </para></listitem></varlistentry>
 
-    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#169">169</link>:
+    <varlistentry xml:id="manual.bugs.dr169"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#169">169</link>:
 	<emphasis>Bad efficiency of overflow() mandated</emphasis>
     </term>
     <listitem><para>Grow efficiently the internal array object.
     </para></listitem></varlistentry>
 
-    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#171">171</link>:
+    <varlistentry xml:id="manual.bugs.dr171"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#171">171</link>:
 	<emphasis>Strange seekpos() semantics due to joint position</emphasis>
     </term>
     <listitem><para>Quite complex to summarize...
     </para></listitem></varlistentry>
 
-    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#181">181</link>:
+    <varlistentry xml:id="manual.bugs.dr181"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#181">181</link>:
 	<emphasis>make_pair() unintended behavior</emphasis>
     </term>
     <listitem><para>This function used to take its arguments as reference-to-const, now
 	it copies them (pass by value).
     </para></listitem></varlistentry>
 
-    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#195">195</link>:
+    <varlistentry xml:id="manual.bugs.dr195"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#195">195</link>:
 	<emphasis>Should basic_istream::sentry's constructor ever set eofbit?</emphasis>
     </term>
     <listitem><para>Yes, it can, specifically if EOF is reached while skipping whitespace.
     </para></listitem></varlistentry>
 
-    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#211">211</link>:
+    <varlistentry xml:id="manual.bugs.dr211"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#211">211</link>:
 	<emphasis>operator&gt;&gt;(istream&amp;, string&amp;) doesn't set failbit</emphasis>
     </term>
     <listitem><para>If nothing is extracted into the string, <code>op&gt;&gt;</code> now
 	sets <code>failbit</code> (which can cause an exception, etc., etc.).
     </para></listitem></varlistentry>
 
-    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#214">214</link>:
+    <varlistentry xml:id="manual.bugs.dr214"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#214">214</link>:
 	<emphasis>set::find() missing const overload</emphasis>
     </term>
     <listitem><para>Both <code>set</code> and <code>multiset</code> were missing
@@ -449,47 +451,47 @@ requirements of the license of GCC.
 	for const instances.
     </para></listitem></varlistentry>
 
-    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#231">231</link>:
+    <varlistentry xml:id="manual.bugs.dr231"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#231">231</link>:
 	<emphasis>Precision in iostream?</emphasis>
     </term>
     <listitem><para>For conversion from a floating-point type, <code>str.precision()</code>
 	is specified in the conversion specification.
     </para></listitem></varlistentry>
 
-    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#233">233</link>:
+    <varlistentry xml:id="manual.bugs.dr233"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#233">233</link>:
 	<emphasis>Insertion hints in associative containers</emphasis>
     </term>
     <listitem><para>Implement N1780, first check before then check after, insert as close
 	to hint as possible.
     </para></listitem></varlistentry>
 
-    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#235">235</link>:
+    <varlistentry xml:id="manual.bugs.dr235"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#235">235</link>:
 	<emphasis>No specification of default ctor for reverse_iterator</emphasis>
     </term>
     <listitem><para>The declaration of <code>reverse_iterator</code> lists a default constructor.
 	However, no specification is given what this constructor should do.
     </para></listitem></varlistentry>
 
-    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#241">241</link>:
+    <varlistentry xml:id="manual.bugs.dr241"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#241">241</link>:
 	<emphasis>Does unique_copy() require CopyConstructible and Assignable?</emphasis>
     </term>
     <listitem><para>Add a helper for forward_iterator/output_iterator, fix the existing
 	one for input_iterator/output_iterator to not rely on Assignability.
     </para></listitem></varlistentry>
 
-    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#243">243</link>:
+    <varlistentry xml:id="manual.bugs.dr243"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#243">243</link>:
 	<emphasis>get and getline when sentry reports failure</emphasis>
     </term>
     <listitem><para>Store a null character only if the character array has a non-zero size.
     </para></listitem></varlistentry>
 
-    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#251">251</link>:
+    <varlistentry xml:id="manual.bugs.dr251"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#251">251</link>:
 	<emphasis>basic_stringbuf missing allocator_type</emphasis>
     </term>
     <listitem><para>This nested typedef was originally not specified.
     </para></listitem></varlistentry>
 
-    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#253">253</link>:
+    <varlistentry xml:id="manual.bugs.dr253"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#253">253</link>:
 	<emphasis>valarray helper functions are almost entirely useless</emphasis>
     </term>
     <listitem><para>Make the copy constructor and copy-assignment operator declarations
@@ -497,60 +499,60 @@ requirements of the license of GCC.
 	definitions.
     </para></listitem></varlistentry>
 
-    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#265">265</link>:
+    <varlistentry xml:id="manual.bugs.dr265"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#265">265</link>:
 	<emphasis>std::pair::pair() effects overly restrictive</emphasis>
     </term>
     <listitem><para>The default ctor would build its members from copies of temporaries;
 	now it simply uses their respective default ctors.
     </para></listitem></varlistentry>
 
-    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#266">266</link>:
+    <varlistentry xml:id="manual.bugs.dr266"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#266">266</link>:
 	<emphasis>bad_exception::~bad_exception() missing Effects clause</emphasis>
     </term>
     <listitem><para>The <code>bad_</code>* classes no longer have destructors (they
 	are trivial), since no description of them was ever given.
     </para></listitem></varlistentry>
 
-    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#271">271</link>:
+    <varlistentry xml:id="manual.bugs.dr271"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#271">271</link>:
 	<emphasis>basic_iostream missing typedefs</emphasis>
     </term>
     <listitem><para>The typedefs it inherits from its base classes can't be used, since
 	(for example) <code>basic_iostream&lt;T&gt;::traits_type</code> is ambiguous.
     </para></listitem></varlistentry>
 
-    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#275">275</link>:
+    <varlistentry xml:id="manual.bugs.dr275"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#275">275</link>:
 	<emphasis>Wrong type in num_get::get() overloads</emphasis>
     </term>
     <listitem><para>Similar to 118.
     </para></listitem></varlistentry>
 
-    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#280">280</link>:
+    <varlistentry xml:id="manual.bugs.dr280"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#280">280</link>:
 	<emphasis>Comparison of reverse_iterator to const reverse_iterator</emphasis>
     </term>
     <listitem><para>Add global functions with two template parameters.
 	(NB: not added for now a templated assignment operator)
     </para></listitem></varlistentry>
 
-    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#292">292</link>:
+    <varlistentry xml:id="manual.bugs.dr292"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#292">292</link>:
 	<emphasis>Effects of a.copyfmt (a)</emphasis>
     </term>
     <listitem><para>If <code>(this == &amp;rhs)</code> do nothing.
     </para></listitem></varlistentry>
 
-    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#300">300</link>:
+    <varlistentry xml:id="manual.bugs.dr300"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#300">300</link>:
 	<emphasis>List::merge() specification incomplete</emphasis>
     </term>
     <listitem><para>If <code>(this == &amp;x)</code> do nothing.
     </para></listitem></varlistentry>
 
-    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#303">303</link>:
+    <varlistentry xml:id="manual.bugs.dr303"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#303">303</link>:
 	<emphasis>Bitset input operator underspecified</emphasis>
     </term>
     <listitem><para>Basically, compare the input character to
 		    <code>is.widen(0)</code> and <code>is.widen(1)</code>.
     </para></listitem></varlistentry>
 
-    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#305">305</link>:
+    <varlistentry xml:id="manual.bugs.dr305"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#305">305</link>:
 	<emphasis>Default behavior of codecvt&lt;wchar_t, char,
 		  mbstate_t&gt;::length()</emphasis>
     </term>
@@ -558,20 +560,20 @@ requirements of the license of GCC.
 		    mbstate_t&gt;::do_length</code> must return.
     </para></listitem></varlistentry>
 
-    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#328">328</link>:
+    <varlistentry xml:id="manual.bugs.dr328"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#328">328</link>:
 	<emphasis>Bad sprintf format modifier in
 		  money_put&lt;&gt;::do_put()</emphasis>
     </term>
     <listitem><para>Change the format string to "%.0Lf".
     </para></listitem></varlistentry>
 
-    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#365">365</link>:
+    <varlistentry xml:id="manual.bugs.dr365"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#365">365</link>:
 	<emphasis>Lack of const-qualification in clause 27</emphasis>
     </term>
     <listitem><para>Add const overloads of <code>is_open</code>.
     </para></listitem></varlistentry>
 
-    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#387">387</link>:
+    <varlistentry xml:id="manual.bugs.dr387"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#387">387</link>:
 	<emphasis>std::complex over-encapsulated</emphasis>
     </term>
     <listitem><para>Add the <code>real(T)</code> and <code>imag(T)</code>
@@ -580,20 +582,20 @@ requirements of the license of GCC.
 		    free functions.
     </para></listitem></varlistentry>
 
-    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#389">389</link>:
+    <varlistentry xml:id="manual.bugs.dr389"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#389">389</link>:
 	<emphasis>Const overload of valarray::operator[] returns
 		  by value</emphasis>
     </term>
     <listitem><para>Change it to return a <code>const T&amp;</code>.
     </para></listitem></varlistentry>
 
-    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#396">396</link>:
+    <varlistentry xml:id="manual.bugs.dr396"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#396">396</link>:
 	<emphasis>what are characters zero and one</emphasis>
     </term>
     <listitem><para>Implement the proposed resolution.
     </para></listitem></varlistentry>
 
-    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#402">402</link>:
+    <varlistentry xml:id="manual.bugs.dr402"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#402">402</link>:
 	<emphasis>Wrong new expression in [some_]allocator::construct</emphasis>
     </term>
     <listitem><para>Replace "new" with "::new".
@@ -607,7 +609,7 @@ requirements of the license of GCC.
     <listitem><para>Tweak the debug-mode checks in _Safe_iterator.
     </para></listitem></varlistentry>
 
-    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#409">409</link>:
+    <varlistentry xml:id="manual.bugs.dr409"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#409">409</link>:
 	<emphasis>Closing an fstream should clear the error state</emphasis>
     </term>
     <listitem><para>Have <code>open</code> clear the error flags.
@@ -619,57 +621,57 @@ requirements of the license of GCC.
     <listitem><para>Implement Option 3, as per N1599.
     </para></listitem></varlistentry>
 
-    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#432">432</link>:
+    <varlistentry xml:id="manual.bugs.dr432"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#432">432</link>:
 	<emphasis>stringbuf::overflow() makes only one write position
 	    available</emphasis>
     </term>
     <listitem><para>Implement the resolution, beyond DR 169.
     </para></listitem></varlistentry>
 
-    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#434">434</link>:
+    <varlistentry xml:id="manual.bugs.dr434"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#434">434</link>:
 	<emphasis>bitset::to_string() hard to use</emphasis>
     </term>
     <listitem><para>Add three overloads, taking fewer template arguments.
     </para></listitem></varlistentry>
 
-    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#438">438</link>:
+    <varlistentry xml:id="manual.bugs.dr438"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#438">438</link>:
 	<emphasis>Ambiguity in the "do the right thing" clause</emphasis>
     </term>
     <listitem><para>Implement the resolution, basically cast less.
     </para></listitem></varlistentry>
 
-    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#445">445</link>:
+    <varlistentry xml:id="manual.bugs.dr445"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#445">445</link>:
 	<emphasis>iterator_traits::reference unspecified for some iterator categories</emphasis>
     </term>
     <listitem><para>Change <code>istreambuf_iterator::reference</code> in C++11 mode.
     </para></listitem></varlistentry>
 
-    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#453">453</link>:
+    <varlistentry xml:id="manual.bugs.dr453"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#453">453</link>:
 	<emphasis>basic_stringbuf::seekoff need not always fail for an empty stream</emphasis>
     </term>
     <listitem><para>Don't fail if the next pointer is null and newoff is zero.
     </para></listitem></varlistentry>
 
-    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#455">455</link>:
+    <varlistentry xml:id="manual.bugs.dr455"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#455">455</link>:
 	<emphasis>cerr::tie() and wcerr::tie() are overspecified</emphasis>
     </term>
     <listitem><para>Initialize cerr tied to cout and wcerr tied to wcout.
     </para></listitem></varlistentry>
 
-    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#464">464</link>:
+    <varlistentry xml:id="manual.bugs.dr464"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#464">464</link>:
 	<emphasis>Suggestion for new member functions in standard containers</emphasis>
     </term>
     <listitem><para>Add <code>data()</code> to <code>std::vector</code> and
 	<code>at(const key_type&amp;)</code> to <code>std::map</code>.
     </para></listitem></varlistentry>
 
-    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#467">467</link>:
+    <varlistentry xml:id="manual.bugs.dr467"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#467">467</link>:
 	<emphasis>char_traits::lt(), compare(), and memcmp()</emphasis>
     </term>
     <listitem><para>Change <code>lt</code>.
     </para></listitem></varlistentry>
 
-    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#508">508</link>:
+    <varlistentry xml:id="manual.bugs.dr508"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#508">508</link>:
 	<emphasis>Bad parameters for ranlux64_base_01</emphasis>
     </term>
     <listitem><para>Fix the parameters.
@@ -688,7 +690,7 @@ requirements of the license of GCC.
     <listitem><para>Use &amp;value.
     </para></listitem></varlistentry>
 
-    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#538">538</link>:
+    <varlistentry xml:id="manual.bugs.dr538"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#538">538</link>:
 	<emphasis>241 again: Does unique_copy() require CopyConstructible
 	    and Assignable?</emphasis>
     </term>
@@ -696,7 +698,7 @@ requirements of the license of GCC.
 	input_iterator' value_type.
     </para></listitem></varlistentry>
 
-    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#539">539</link>:
+    <varlistentry xml:id="manual.bugs.dr539"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#539">539</link>:
 	<emphasis>partial_sum and adjacent_difference should mention
 	    requirements</emphasis>
     </term>
@@ -704,250 +706,250 @@ requirements of the license of GCC.
 	in adjacent_difference.
     </para></listitem></varlistentry>
 
-    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#541">541</link>:
+    <varlistentry xml:id="manual.bugs.dr541"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#541">541</link>:
 	<emphasis>shared_ptr template assignment and void</emphasis>
     </term>
     <listitem><para>Add an auto_ptr&lt;void&gt; specialization.
     </para></listitem></varlistentry>
 
-    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#543">543</link>:
+    <varlistentry xml:id="manual.bugs.dr543"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#543">543</link>:
 	<emphasis>valarray slice default constructor</emphasis>
     </term>
     <listitem><para>Follow the straightforward proposed resolution.
     </para></listitem></varlistentry>
 
-    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#550">550</link>:
+    <varlistentry xml:id="manual.bugs.dr550"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#550">550</link>:
 	<emphasis>What should the return type of pow(float,int) be?</emphasis>
     </term>
     <listitem><para>In C++11 mode, remove the pow(float,int), etc., signatures.
     </para></listitem></varlistentry>
 
-    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#586">586</link>:
+    <varlistentry xml:id="manual.bugs.dr586"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#586">586</link>:
 	<emphasis>string inserter not a formatted function</emphasis>
     </term>
     <listitem><para>Change it to be a formatted output function (i.e. catch exceptions).
     </para></listitem></varlistentry>
 
-    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#596">596</link>:
+    <varlistentry xml:id="manual.bugs.dr596"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#596">596</link>:
 	<emphasis>27.8.1.3 Table 112 omits "a+" and "a+b" modes</emphasis>
     </term>
     <listitem><para>Add the missing modes to fopen_mode.
     </para></listitem></varlistentry>
 
-    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#630">630</link>:
+    <varlistentry xml:id="manual.bugs.dr630"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#630">630</link>:
 	<emphasis>arrays of valarray</emphasis>
     </term>
     <listitem><para>Implement the simple resolution.
     </para></listitem></varlistentry>
 
-    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#660">660</link>:
+    <varlistentry xml:id="manual.bugs.dr660"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#660">660</link>:
 	<emphasis>Missing bitwise operations</emphasis>
     </term>
     <listitem><para>Add the missing operations.
     </para></listitem></varlistentry>
 
-    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#691">691</link>:
+    <varlistentry xml:id="manual.bugs.dr691"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#691">691</link>:
 	<emphasis>const_local_iterator cbegin, cend missing from TR1</emphasis>
     </term>
     <listitem><para>In C++11 mode add cbegin(size_type) and cend(size_type)
 		    to the unordered containers.
     </para></listitem></varlistentry>
 
-    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#693">693</link>:
+    <varlistentry xml:id="manual.bugs.dr693"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#693">693</link>:
 	<emphasis>std::bitset::all() missing</emphasis>
     </term>
     <listitem><para>Add it, consistently with the discussion.
     </para></listitem></varlistentry>
 
-    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#695">695</link>:
+    <varlistentry xml:id="manual.bugs.dr695"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#695">695</link>:
 	<emphasis>ctype&lt;char&gt;::classic_table() not accessible</emphasis>
     </term>
     <listitem><para>Make the member functions table and classic_table public.
     </para></listitem></varlistentry>
 
-    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#696">696</link>:
+    <varlistentry xml:id="manual.bugs.dr696"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#696">696</link>:
 	<emphasis>istream::operator&gt;&gt;(int&amp;) broken</emphasis>
     </term>
     <listitem><para>Implement the straightforward resolution.
     </para></listitem></varlistentry>
 
-    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#761">761</link>:
+    <varlistentry xml:id="manual.bugs.dr761"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#761">761</link>:
 	<emphasis>unordered_map needs an at() member function</emphasis>
     </term>
     <listitem><para>In C++11 mode, add at() and at() const.
     </para></listitem></varlistentry>
 
-    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#775">775</link>:
+    <varlistentry xml:id="manual.bugs.dr775"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#775">775</link>:
 	<emphasis>Tuple indexing should be unsigned?</emphasis>
     </term>
     <listitem><para>Implement the int -&gt; size_t replacements.
     </para></listitem></varlistentry>
 
-    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#776">776</link>:
+    <varlistentry xml:id="manual.bugs.dr776"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#776">776</link>:
 	<emphasis>Undescribed assign function of std::array</emphasis>
     </term>
     <listitem><para>In C++11 mode, remove assign, add fill.
     </para></listitem></varlistentry>
 
-    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#781">781</link>:
+    <varlistentry xml:id="manual.bugs.dr781"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#781">781</link>:
 	<emphasis>std::complex should add missing C99 functions</emphasis>
     </term>
     <listitem><para>In C++11 mode, add std::proj.
     </para></listitem></varlistentry>
 
-    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#809">809</link>:
+    <varlistentry xml:id="manual.bugs.dr809"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#809">809</link>:
 	<emphasis>std::swap should be overloaded for array types</emphasis>
     </term>
     <listitem><para>Add the overload.
     </para></listitem></varlistentry>
 
-    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#853">853</link>:
+    <varlistentry xml:id="manual.bugs.dr853"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#853">853</link>:
 	<emphasis>to_string needs updating with zero and one</emphasis>
     </term>
     <listitem><para>Update / add the signatures.
     </para></listitem></varlistentry>
 
-    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#865">865</link>:
+    <varlistentry xml:id="manual.bugs.dr865"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#865">865</link>:
 	<emphasis>More algorithms that throw away information</emphasis>
     </term>
     <listitem><para>The traditional HP / SGI return type and value is blessed
 		    by the resolution of the DR.
     </para></listitem></varlistentry>
 
-    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#1339">1339</link>:
+    <varlistentry xml:id="manual.bugs.dr1339"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#1339">1339</link>:
        <emphasis>uninitialized_fill_n should return the end of its range</emphasis>
     </term>
     <listitem><para>Return the end of the filled range.
     </para></listitem></varlistentry>
 
-    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2021">2021</link>:
+    <varlistentry xml:id="manual.bugs.dr2021"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2021">2021</link>:
        <emphasis>Further incorrect uses of <code>result_of</code></emphasis>
     </term>
     <listitem><para>Correctly decay types in signature of <code>std::async</code>.
     </para></listitem></varlistentry>
 
-    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2049">2049</link>:
+    <varlistentry xml:id="manual.bugs.dr2049"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2049">2049</link>:
 	<emphasis><code>is_destructible</code> underspecified</emphasis>
     </term>
     <listitem><para>Handle non-object types.
     </para></listitem></varlistentry>
 
-    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2056">2056</link>:
+    <varlistentry xml:id="manual.bugs.dr2056"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2056">2056</link>:
 	<emphasis>future_errc enums start with value 0 (invalid value for broken_promise)</emphasis>
     </term>
     <listitem><para>Reorder enumerators.
     </para></listitem></varlistentry>
 
-    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2059">2059</link>:
+    <varlistentry xml:id="manual.bugs.dr2059"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2059">2059</link>:
 	<emphasis>C++0x ambiguity problem with map::erase</emphasis>
     </term>
     <listitem><para>Add additional overloads.
     </para></listitem></varlistentry>
 
-    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2062">2062</link>:
+    <varlistentry xml:id="manual.bugs.dr2062"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2062">2062</link>:
 	<emphasis>2062. Effect contradictions w/o no-throw guarantee of <code>std::function</code> swaps</emphasis>
     </term>
     <listitem><para>Add <code>noexcept</code> to swap functions.
     </para></listitem></varlistentry>
 
-    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2063">2063</link>:
+    <varlistentry xml:id="manual.bugs.dr2063"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2063">2063</link>:
 	<emphasis>Contradictory requirements for string move assignment</emphasis>
     </term>
     <listitem><para>Respect propagation trait for move assignment.
     </para></listitem></varlistentry>
 
-    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2064">2064</link>:
+    <varlistentry xml:id="manual.bugs.dr2064"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2064">2064</link>:
 	<emphasis>More noexcept issues in basic_string</emphasis>
     </term>
     <listitem><para>Add noexcept to the comparison operators.
     </para></listitem></varlistentry>
 
-    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2067">2067</link>:
+    <varlistentry xml:id="manual.bugs.dr2067"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2067">2067</link>:
 	<emphasis>packaged_task should have deleted copy c'tor with const parameter</emphasis>
     </term>
     <listitem><para>Fix signatures.
     </para></listitem></varlistentry>
 
-    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2101">2101</link>:
+    <varlistentry xml:id="manual.bugs.dr2101"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2101">2101</link>:
 	<emphasis>Some transformation types can produce impossible types</emphasis>
     </term>
     <listitem><para>Use the referenceable type concept.
     </para></listitem></varlistentry>
 
-    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2106">2106</link>:
+    <varlistentry xml:id="manual.bugs.dr2106"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2106">2106</link>:
 	<emphasis>move_iterator wrapping iterators returning prvalues</emphasis>
     </term>
     <listitem><para>Change the <code>reference</code> type.
     </para></listitem></varlistentry>
 
-    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2108">2108</link>:
+    <varlistentry xml:id="manual.bugs.dr2108"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2108">2108</link>:
 	<emphasis>No way to identify allocator types that always compare equal</emphasis>
     </term>
     <listitem><para>Define and use <code>is_always_equal</code> even for C++11.
     </para></listitem></varlistentry>
 
-    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2118">2118</link>:
+    <varlistentry xml:id="manual.bugs.dr2118"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2118">2118</link>:
 	<emphasis><code>unique_ptr</code> for array does not support cv qualification conversion of actual argument</emphasis>
     </term>
     <listitem><para>Adjust constraints to allow safe conversions.
     </para></listitem></varlistentry>
 
-    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2127">2127</link>:
+    <varlistentry xml:id="manual.bugs.dr2127"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2127">2127</link>:
 	<emphasis>Move-construction with <code>raw_storage_iterator</code></emphasis>
     </term>
     <listitem><para>Add assignment operator taking an rvalue.
     </para></listitem></varlistentry>
 
-    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2132">2132</link>:
+    <varlistentry xml:id="manual.bugs.dr2132"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2132">2132</link>:
 	<emphasis><code>std::function</code> ambiguity</emphasis>
     </term>
     <listitem><para>Constrain the constructor to only accept callable types.
     </para></listitem></varlistentry>
 
-    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2141">2141</link>:
+    <varlistentry xml:id="manual.bugs.dr2141"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2141">2141</link>:
 	<emphasis><code>common_type</code> trait produces reference types</emphasis>
     </term>
     <listitem><para>Use <code>decay</code> for the result type.
     </para></listitem></varlistentry>
 
-    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2144">2144</link>:
+    <varlistentry xml:id="manual.bugs.dr2144"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2144">2144</link>:
 	<emphasis>Missing <code>noexcept</code> specification in <code>type_index</code></emphasis>
     </term>
     <listitem><para>Add <code>noexcept</code>
     </para></listitem></varlistentry>
 
-    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2145">2145</link>:
+    <varlistentry xml:id="manual.bugs.dr2145"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2145">2145</link>:
 	<emphasis><code>error_category</code> default constructor</emphasis>
     </term>
     <listitem><para>Declare a public constexpr constructor.
     </para></listitem></varlistentry>
 
-    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2162">2162</link>:
+    <varlistentry xml:id="manual.bugs.dr2162"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2162">2162</link>:
 	<emphasis><code>allocator_traits::max_size</code> missing <code>noexcept</code></emphasis>
     </term>
     <listitem><para>Add <code>noexcept</code>.
     </para></listitem></varlistentry>
 
-    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2187">2187</link>:
+    <varlistentry xml:id="manual.bugs.dr2187"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2187">2187</link>:
 	<emphasis><code>vector&lt;bool&gt;</code> is missing <code>emplace</code> and <code>emplace_back</code> member functions</emphasis>
     </term>
     <listitem><para>Add <code>emplace</code> and <code>emplace_back</code> member functions.
     </para></listitem></varlistentry>
 
-    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2192">2192</link>:
+    <varlistentry xml:id="manual.bugs.dr2192"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2192">2192</link>:
 	<emphasis>Validity and return type of <code>std::abs(0u)</code> is unclear</emphasis>
     </term>
     <listitem><para>Move all declarations to a common header and remove the
     generic <code>abs</code> which accepted unsigned arguments.
     </para></listitem></varlistentry>
 
-    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2196">2196</link>:
+    <varlistentry xml:id="manual.bugs.dr2196"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2196">2196</link>:
 	<emphasis>Specification of <code>is_*[copy/move]_[constructible/assignable]</code> unclear for non-referencable types</emphasis>
     </term>
     <listitem><para>Use the referenceable type concept.
     </para></listitem></varlistentry>
 
-    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2212">2212</link>:
+    <varlistentry xml:id="manual.bugs.dr2212"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2212">2212</link>:
 	<emphasis><code>tuple_size</code> for <code>const pair</code> request <code>&lt;tuple&gt;</code> header</emphasis>
     </term>
     <listitem><para>The <code>tuple_size</code> and <code>tuple_element</code>
@@ -955,56 +957,56 @@ requirements of the license of GCC.
     is included by <code>&lt;array&gt;</code>.
     </para></listitem></varlistentry>
 
-    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2296">2296</link>:
+    <varlistentry xml:id="manual.bugs.dr2296"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2296">2296</link>:
 	<emphasis><code>std::addressof</code> should be constexpr</emphasis>
     </term>
     <listitem><para>Use <code>__builtin_addressof</code> and add
     <code>constexpr</code> to <code>addressof</code> for C++17 and later.
     </para></listitem></varlistentry>
 
-    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2313">2313</link>:
+    <varlistentry xml:id="manual.bugs.dr2313"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2313">2313</link>:
 	<emphasis><code>tuple_size</code> should always derive from <code>integral_constant&lt;size_t, N&gt;</code></emphasis>
     </term>
     <listitem><para>Update definitions of the partial specializations for const and volatile types.
     </para></listitem></varlistentry>
 
-    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2328">2328</link>:
+    <varlistentry xml:id="manual.bugs.dr2328"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2328">2328</link>:
        <emphasis>Rvalue stream extraction should use perfect forwarding</emphasis>
     </term>
     <listitem><para>Use perfect forwarding for right operand.
     </para></listitem></varlistentry>
 
-    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2329">2329</link>:
+    <varlistentry xml:id="manual.bugs.dr2329"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2329">2329</link>:
        <emphasis><code>regex_match()/regex_search()</code> with <code>match_results</code> should forbid temporary strings</emphasis>
     </term>
     <listitem><para>Add deleted overloads for rvalue strings.
     </para></listitem></varlistentry>
 
-    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2332">2332</link>:
+    <varlistentry xml:id="manual.bugs.dr2332"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2332">2332</link>:
        <emphasis><code>regex_iterator/regex_token_iterator</code> should forbid temporary regexes</emphasis>
     </term>
     <listitem><para>Add deleted constructors.
     </para></listitem></varlistentry>
 
-    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2399">2399</link>:
+    <varlistentry xml:id="manual.bugs.dr2399"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2399">2399</link>:
 	<emphasis><code>shared_ptr</code>'s constructor from <code>unique_ptr</code> should be constrained</emphasis>
     </term>
     <listitem><para>Constrain the constructor to require convertibility.
     </para></listitem></varlistentry>
 
-    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2400">2400</link>:
+    <varlistentry xml:id="manual.bugs.dr2400"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2400">2400</link>:
 	<emphasis><code>shared_ptr</code>'s <code>get_deleter()</code> should use <code>addressof()</code></emphasis>
     </term>
     <listitem><para>Use <code>addressof</code>.
     </para></listitem></varlistentry>
 
-    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2401">2401</link>:
+    <varlistentry xml:id="manual.bugs.dr2401"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2401">2401</link>:
 	<emphasis><code>std::function</code> needs more <code>noexcept</code></emphasis>
     </term>
     <listitem><para>Add <code>noexcept</code> to the assignment and comparisons.
     </para></listitem></varlistentry>
 
-    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2407">2407</link>:
+    <varlistentry xml:id="manual.bugs.dr2407"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2407">2407</link>:
        <emphasis><code>packaged_task(allocator_arg_t, const Allocator&amp;, F&amp;&amp;)</code>
                  should neither be constrained nor <code>explicit</code>
        </emphasis>
@@ -1012,74 +1014,74 @@ requirements of the license of GCC.
     <listitem><para>Remove <code>explicit</code> from the constructor.
     </para></listitem></varlistentry>
 
-    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2415">2415</link>:
+    <varlistentry xml:id="manual.bugs.dr2415"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2415">2415</link>:
        <emphasis>Inconsistency between <code>unique_ptr</code> and <code>shared_ptr</code></emphasis>
     </term>
     <listitem><para>Create empty an <code>shared_ptr</code> from an empty
                     <code>unique_ptr</code>.
     </para></listitem></varlistentry>
 
-    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2418">2418</link>:
+    <varlistentry xml:id="manual.bugs.dr2418"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2418">2418</link>:
        <emphasis><code>apply</code> does not work with member pointers</emphasis>
     </term>
     <listitem><para>Use <code>mem_fn</code> for member pointers.
     </para></listitem></varlistentry>
 
-    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2440">2440</link>:
+    <varlistentry xml:id="manual.bugs.dr2440"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2440">2440</link>:
        <emphasis><code>seed_seq::size()</code> should be <code>noexcept</code></emphasis>
     </term>
     <listitem><para>Add <code>noexcept</code>.
     </para></listitem></varlistentry>
 
-    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2441">2441</link>:
+    <varlistentry xml:id="manual.bugs.dr2441"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2441">2441</link>:
        <emphasis>Exact-width atomic typedefs should be provided</emphasis>
     </term>
     <listitem><para>Define the typedefs.
     </para></listitem></varlistentry>
 
-    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2442">2442</link>:
+    <varlistentry xml:id="manual.bugs.dr2442"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2442">2442</link>:
        <emphasis><code>call_once()</code> shouldn't <code>DECAY_COPY()</code></emphasis>
     </term>
     <listitem><para>Remove indirection through call wrapper that made copies
     of arguments and forward arguments straight to <code>std::invoke</code>.
     </para></listitem></varlistentry>
 
-    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2454">2454</link>:
+    <varlistentry xml:id="manual.bugs.dr2454"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2454">2454</link>:
        <emphasis>Add <code>raw_storage_iterator::base()</code> member
        </emphasis>
     </term>
     <listitem><para>Add the <code>base()</code> member function.
     </para></listitem></varlistentry>
 
-    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2455">2455</link>:
+    <varlistentry xml:id="manual.bugs.dr2455"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2455">2455</link>:
        <emphasis>Allocator default construction should be allowed to throw
        </emphasis>
     </term>
     <listitem><para>Make <code>noexcept</code> specifications conditional.
     </para></listitem></varlistentry>
 
-    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2458">2458</link>:
+    <varlistentry xml:id="manual.bugs.dr2458"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2458">2458</link>:
        <emphasis>N3778 and new library deallocation signatures
        </emphasis>
     </term>
     <listitem><para>Remove unused overloads.
     </para></listitem></varlistentry>
 
-    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2459">2459</link>:
+    <varlistentry xml:id="manual.bugs.dr2459"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2459">2459</link>:
        <emphasis><code>std::polar</code> should require a non-negative rho
        </emphasis>
     </term>
     <listitem><para>Add debug mode assertion.
     </para></listitem></varlistentry>
 
-    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2466">2466</link>:
+    <varlistentry xml:id="manual.bugs.dr2466"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2466">2466</link>:
        <emphasis><code>allocator_traits::max_size()</code> default behavior is incorrect
        </emphasis>
     </term>
     <listitem><para>Divide by the object type.
     </para></listitem></varlistentry>
 
-    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2484">2484</link>:
+    <varlistentry xml:id="manual.bugs.dr2484"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2484">2484</link>:
        <emphasis><code>rethrow_if_nested()</code>  is doubly unimplementable
        </emphasis>
     </term>
@@ -1087,21 +1089,21 @@ requirements of the license of GCC.
     ill-formed.
     </para></listitem></varlistentry>
 
-    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2583">2583</link>:
+    <varlistentry xml:id="manual.bugs.dr2583"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2583">2583</link>:
        <emphasis>There is no way to supply an allocator for <code>basic_string(str, pos)</code>
        </emphasis>
     </term>
     <listitem><para>Add new constructor
     </para></listitem></varlistentry>
 
-    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2684">2684</link>:
+    <varlistentry xml:id="manual.bugs.dr2684"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2684">2684</link>:
        <emphasis><code>priority_queue</code> lacking comparator typedef
        </emphasis>
     </term>
     <listitem><para>Define the <code>value_compare</code> typedef.
     </para></listitem></varlistentry>
 
-    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2770">2770</link>:
+    <varlistentry xml:id="manual.bugs.dr2770"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2770">2770</link>:
        <emphasis><code>tuple_size&lt;const T&gt;</code> specialization is not
 	 SFINAE compatible and breaks decomposition declarations
        </emphasis>
@@ -1110,7 +1112,7 @@ requirements of the license of GCC.
       only use it if valid.
     </para></listitem></varlistentry>
 
-    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2781">2781</link>:
+    <varlistentry xml:id="manual.bugs.dr2781"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2781">2781</link>:
        <emphasis>Contradictory requirements for <code>std::function</code>
          and <code>std::reference_wrapper</code>
        </emphasis>
@@ -1119,7 +1121,7 @@ requirements of the license of GCC.
       arguments and store them directly as the target object.
     </para></listitem></varlistentry>
 
-    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2802">2802</link>:
+    <varlistentry xml:id="manual.bugs.dr2802"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2802">2802</link>:
        <emphasis>Add noexcept to several <code>shared_ptr</code> related
          functions
        </emphasis>
@@ -1127,14 +1129,14 @@ requirements of the license of GCC.
     <listitem><para>Add noexcept.
     </para></listitem></varlistentry>
 
-    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2873">2873</link>:
+    <varlistentry xml:id="manual.bugs.dr2873"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2873">2873</link>:
        <emphasis><code>shared_ptr</code> constructor requirements for a deleter
        </emphasis>
     </term>
     <listitem><para>Use rvalues for deleters.
     </para></listitem></varlistentry>
 
-    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2942">2942</link>:
+    <varlistentry xml:id="manual.bugs.dr2942"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2942">2942</link>:
        <emphasis>LWG 2873's resolution missed
          <code>weak_ptr::owner_before</code>
        </emphasis>

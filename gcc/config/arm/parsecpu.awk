@@ -301,7 +301,7 @@ function gen_comm_data () {
 	    arch_base[archs[n]] ","
 	# profile letter code, or zero if none.
 	if (archs[n] in arch_prof) {
-	    print "    \'" arch_prof[archs[n]] "\',"
+	    print "    '" arch_prof[archs[n]] "',"
 	} else {
 	    print "    0,"
 	}

@@ -192,6 +192,8 @@
 #define vec_unsignedo __builtin_vec_vunsignedo
 #define vec_vsubfp __builtin_vec_vsubfp
 #define vec_subc __builtin_vec_subc
+#define vec_sube __builtin_vec_sube
+#define vec_subec __builtin_vec_subec
 #define vec_vsubsws __builtin_vec_vsubsws
 #define vec_vsubshs __builtin_vec_vsubshs
 #define vec_vsubsbs __builtin_vec_vsubsbs
@@ -416,6 +418,8 @@
 
 #ifdef __POWER9_VECTOR__
 /* Vector additions added in ISA 3.0.  */
+#define vec_pack_to_short_fp32 __builtin_vec_convert_4f32_8i16
+#define vec_parity_lsbb __builtin_vec_vparity_lsbb
 #define vec_vctz __builtin_vec_vctz
 #define vec_cnttz __builtin_vec_vctz
 #define vec_vctzb __builtin_vec_vctzb

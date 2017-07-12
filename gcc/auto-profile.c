@@ -1151,7 +1151,7 @@ afdo_set_bb_count (basic_block bb, const stmt_set &promoted)
   FOR_EACH_EDGE (e, ei, bb->succs)
   afdo_source_profile->mark_annotated (e->goto_locus);
 
-  bb->count = profile_count::from_gcov_type (max_count);
+  bb->count = profile_count::from_gcov_type (max_count).afdo ();
   return true;
 }
 
@@ -1228,7 +1228,7 @@ afdo_propagate_edge (bool is_succ, bb_set *annotated_bb,
     edge e, unknown_edge = NULL;
     edge_iterator ei;
     int num_unknown_edge = 0;
-    profile_count total_known_count = profile_count::zero ();
+    profile_count total_known_count = profile_count::zero ().afdo ();
 
     FOR_EACH_EDGE (e, ei, is_succ ? bb->succs : bb->preds)
       if (!is_edge_annotated (e, *annotated_edge))
@@ -1350,7 +1350,7 @@ afdo_propagate_circuit (const bb_set &annotated_bb, edge_set *annotated_edge)
 	      && !is_edge_annotated (ep, *annotated_edge))
             {
               ep->probability = profile_probability::never ();
-              ep->count = profile_count::zero ();
+              ep->count = profile_count::zero ().afdo ();
               set_edge_annotated (ep, annotated_edge);
             }
         }
@@ -1537,9 +1537,9 @@ afdo_annotate_cfg (const stmt_set &promoted_stmts)
   if (s == NULL)
     return;
   cgraph_node::get (current_function_decl)->count
-     = profile_count::from_gcov_type (s->head_count ());
+     = profile_count::from_gcov_type (s->head_count ()).afdo ();
   ENTRY_BLOCK_PTR_FOR_FN (cfun)->count
-     = profile_count::from_gcov_type (s->head_count ());
+     = profile_count::from_gcov_type (s->head_count ()).afdo ();
   profile_count max_count = ENTRY_BLOCK_PTR_FOR_FN (cfun)->count;
 
   FOR_EACH_BB_FN (bb, cfun)
