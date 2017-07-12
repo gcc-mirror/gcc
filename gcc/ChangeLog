@@ -1,5 +1,9 @@
 2017-07-12  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
+	* config/s390/s390.md: Remove movcc splitter.
+
+2017-07-12  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
 	* config/s390/s390.c (s390_rtx_costs): Return proper costs for
 	load/store on condition.
 
