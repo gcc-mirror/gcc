@@ -2706,7 +2706,7 @@ struct GTY(()) lang_decl {
 /* For FUNCTION_DECLs and TEMPLATE_DECLs: nonzero means that this function
    is a constructor.  */
 #define DECL_CONSTRUCTOR_P(NODE) \
-  DECL_CXX_CONSTRUCTOR_P (STRIP_TEMPLATE (NODE))
+  IDENTIFIER_CTOR_P (DECL_NAME (NODE))
 
 /* Nonzero if NODE (a FUNCTION_DECL) is a constructor for a complete
    object.  */
@@ -2722,8 +2722,7 @@ struct GTY(()) lang_decl {
    specialized in-charge constructor or the specialized not-in-charge
    constructor.  */
 #define DECL_MAYBE_IN_CHARGE_CONSTRUCTOR_P(NODE)		\
-  (DECL_DECLARES_FUNCTION_P (NODE) && DECL_CONSTRUCTOR_P (NODE) \
-   && !DECL_CLONED_FUNCTION_P (NODE))
+  (DECL_NAME (NODE) == ctor_identifier)
 
 /* Nonzero if NODE (a FUNCTION_DECL) is a copy constructor.  */
 #define DECL_COPY_CONSTRUCTOR_P(NODE) \
@@ -2736,14 +2735,13 @@ struct GTY(()) lang_decl {
 /* Nonzero if NODE (a FUNCTION_DECL or TEMPLATE_DECL)
    is a destructor.  */
 #define DECL_DESTRUCTOR_P(NODE)				\
-  DECL_CXX_DESTRUCTOR_P (STRIP_TEMPLATE (NODE))
+  IDENTIFIER_DTOR_P (DECL_NAME (NODE))
 
 /* Nonzero if NODE (a FUNCTION_DECL) is a destructor, but not the
    specialized in-charge constructor, in-charge deleting constructor,
    or the base destructor.  */
 #define DECL_MAYBE_IN_CHARGE_DESTRUCTOR_P(NODE)			\
-  (DECL_DECLARES_FUNCTION_P (NODE) && DECL_DESTRUCTOR_P (NODE)	\
-   && !DECL_CLONED_FUNCTION_P (NODE))
+  (DECL_NAME (NODE) == dtor_identifier)
 
 /* Nonzero if NODE (a FUNCTION_DECL) is a destructor for a complete
    object.  */

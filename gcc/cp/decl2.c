@@ -342,7 +342,7 @@ grokclassfn (tree ctype, tree function, enum overload_flags flags)
   DECL_CONTEXT (function) = ctype;
 
   if (flags == DTOR_FLAG)
-    DECL_DESTRUCTOR_P (function) = 1;
+    DECL_CXX_DESTRUCTOR_P (function) = 1;
 
   if (flags == DTOR_FLAG || DECL_CONSTRUCTOR_P (function))
     maybe_retrofit_in_chrg (function);

@@ -1,3 +1,24 @@
+2017-07-12  Carl Love  <cel@us.ibm.com>
+
+	* gcc.target/powerpc/p9-xxbr-1.c (rev_bool_char, rev_bool_short,
+	rev_bool_int): Add test cases for builtins.
+	* gcc.target/powerpc/p9-xxbr-2.c (rev_long_long, rev_ulong_ulong): Add
+	test cases for builtins.
+
+2017-07-12  Carl Love  <cel@us.ibm.com>
+
+	* gcc.target/powerpc/builtins-1-p9-runnable.c (dg-ddo run): Add
+	lp64 && p9vector_hw.
+
+2017-07-12  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* lib/target-supports.exp (check_stack_check_available): Make
+	testcase name depend on stack_kind.
+
+2017-07-11  Michael Collison  <michael.collison@arm.com>
+
+	* testsuite/gcc.target/aarch64/cmp-2.c: New testcase.
+
 2017-07-11  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/51270
