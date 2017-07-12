@@ -1,3 +1,10 @@
+2017-07-12  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/81407
+	* config/avr/avr.c (avr_encode_section_info)
+	[progmem && !TREE_READONLY]: Error if progmem object needs
+	constructing.
+
 2017-07-11  Michael Collison  <michael.collison@arm.com>
 
 	* config/aarch64/aarch64-simd.md (aarch64_sub<mode>_compare0):
