@@ -1,3 +1,8 @@
+2017-07-12  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
+	* config/s390/s390.c (s390_rtx_costs): Return proper costs for
+	load/store on condition.
+
 2017-07-12  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/81407
