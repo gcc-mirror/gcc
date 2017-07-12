@@ -1069,7 +1069,7 @@ proc check_stack_check_available { stack_kind } {
 	set stack_opt "-fstack-check"
     } else { set stack_opt "-fstack-check=$stack_kind" }
 
-    return [check_no_compiler_messages stack_check executable {
+    return [check_no_compiler_messages stack_check_$stack_kind executable {
 	int main (void) { return 0; }
     } "$stack_opt"]
 }

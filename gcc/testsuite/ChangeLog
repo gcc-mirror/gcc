@@ -1,3 +1,8 @@
+2017-07-12  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* lib/target-supports.exp (check_stack_check_available): Make
+	testcase name depend on stack_kind.
+
 2017-07-11  Michael Collison  <michael.collison@arm.com>
 
 	* testsuite/gcc.target/aarch64/cmp-2.c: New testcase.
