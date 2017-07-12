@@ -1,3 +1,8 @@
+2017-07-12  Nathan Sidwell  <nathan@acm.org>
+
+	* libcp1plugin.cc (plugin_build_decl): Use
+	DECL_CXX_{CON,DE}STRUCTOR directly.
+
 2017-07-05  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	* libcp1plugin.cc (plugin_build_field): Use SET_DECL_MODE.

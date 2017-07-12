@@ -1419,9 +1419,9 @@ plugin_build_decl (cc1_plugin::connection *self,
       if (ctor || dtor)
 	{
 	  if (ctor)
-	    DECL_CONSTRUCTOR_P (decl) = 1;
+	    DECL_CXX_CONSTRUCTOR_P (decl) = 1;
 	  if (dtor)
-	    DECL_DESTRUCTOR_P (decl) = 1;
+	    DECL_CXX_DESTRUCTOR_P (decl) = 1;
 	}
       else
 	{
