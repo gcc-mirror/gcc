@@ -25329,14 +25329,20 @@ do_class_deduction (tree ptype, tree tmpl, tree init, int flags,
 
   tree type = TREE_TYPE (tmpl);
 
+  bool try_list_ctor = false;
+
   vec<tree,va_gc> *args;
   if (init == NULL_TREE
       || TREE_CODE (init) == TREE_LIST)
     args = make_tree_vector_from_list (init);
-  else if (BRACE_ENCLOSED_INITIALIZER_P (init)
-	   && !TYPE_HAS_LIST_CTOR (type)
-	   && !is_std_init_list (type))
-    args = make_tree_vector_from_ctor (init);
+  else if (BRACE_ENCLOSED_INITIALIZER_P (init))
+    {
+      try_list_ctor = TYPE_HAS_LIST_CTOR (type);
+      if (try_list_ctor || is_std_init_list (type))
+	args = make_tree_vector_single (init);
+      else
+	args = make_tree_vector_from_ctor (init);
+    }
   else
     args = make_tree_vector_single (init);
 
@@ -25391,13 +25397,43 @@ do_class_deduction (tree ptype, tree tmpl, tree init, int flags,
 	saw_ctor = true;
       }
 
-  if (args->length () < 2)
+  tree call = error_mark_node;
+
+  /* If this is list-initialization and the class has a list constructor, first
+     try deducing from the list as a single argument, as [over.match.list].  */
+  tree list_cands = NULL_TREE;
+  if (try_list_ctor && cands)
+    for (lkp_iterator iter (cands); iter; ++iter)
+      {
+	tree dg = *iter;
+	if (is_list_ctor (dg))
+	  list_cands = lookup_add (dg, list_cands);
+      }
+  if (list_cands)
+    {
+      ++cp_unevaluated_operand;
+      call = build_new_function_call (list_cands, &args, tf_decltype);
+      --cp_unevaluated_operand;
+
+      if (call == error_mark_node)
+	{
+	  /* That didn't work, now try treating the list as a sequence of
+	     arguments.  */
+	  release_tree_vector (args);
+	  args = make_tree_vector_from_ctor (init);
+	}
+    }
+
+  /* Maybe generate an implicit deduction guide.  */
+  if (call == error_mark_node && args->length () < 2)
     {
       tree gtype = NULL_TREE;
 
       if (args->length () == 1)
+	/* Generate a copy guide.  */
 	gtype = build_reference_type (type);
       else if (!saw_ctor)
+	/* Generate a default guide.  */
 	gtype = type;
 
       if (gtype)
@@ -25419,22 +25455,29 @@ do_class_deduction (tree ptype, tree tmpl, tree init, int flags,
       return error_mark_node;
     }
 
-  ++cp_unevaluated_operand;
-  tree t = build_new_function_call (cands, &args, tf_decltype);
+  if (call == error_mark_node)
+    {
+      ++cp_unevaluated_operand;
+      call = build_new_function_call (cands, &args, tf_decltype);
+      --cp_unevaluated_operand;
+    }
 
-  if (t == error_mark_node && (complain & tf_warning_or_error))
+  if (call == error_mark_node && (complain & tf_warning_or_error))
     {
       error ("class template argument deduction failed:");
-      t = build_new_function_call (cands, &args, complain | tf_decltype);
+
+      ++cp_unevaluated_operand;
+      call = build_new_function_call (cands, &args, complain | tf_decltype);
+      --cp_unevaluated_operand;
+
       if (elided)
 	inform (input_location, "explicit deduction guides not considered "
 		"for copy-initialization");
     }
 
-  --cp_unevaluated_operand;
   release_tree_vector (args);
 
-  return cp_build_qualified_type (TREE_TYPE (t), cp_type_quals (ptype));
+  return cp_build_qualified_type (TREE_TYPE (call), cp_type_quals (ptype));
 }
 
 /* Replace occurrences of 'auto' in TYPE with the appropriate type deduced
