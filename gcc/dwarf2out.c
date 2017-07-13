@@ -23305,46 +23305,6 @@ gen_field_die (tree decl, struct vlr_context *ctx, dw_die_ref context_die)
   equate_decl_number_to_die (decl, decl_die);
 }
 
-#if 0
-/* Don't generate either pointer_type DIEs or reference_type DIEs here.
-   Use modified_type_die instead.
-   We keep this code here just in case these types of DIEs may be needed to
-   represent certain things in other languages (e.g. Pascal) someday.  */
-
-static void
-gen_pointer_type_die (tree type, dw_die_ref context_die)
-{
-  dw_die_ref ptr_die
-    = new_die (DW_TAG_pointer_type, scope_die_for (type, context_die), type);
-
-  equate_type_number_to_die (type, ptr_die);
-  add_type_attribute (ptr_die, TREE_TYPE (type), TYPE_UNQUALIFIED, false,
-		      context_die);
-  add_AT_unsigned (mod_type_die, DW_AT_byte_size, PTR_SIZE);
-}
-
-/* Don't generate either pointer_type DIEs or reference_type DIEs here.
-   Use modified_type_die instead.
-   We keep this code here just in case these types of DIEs may be needed to
-   represent certain things in other languages (e.g. Pascal) someday.  */
-
-static void
-gen_reference_type_die (tree type, dw_die_ref context_die)
-{
-  dw_die_ref ref_die, scope_die = scope_die_for (type, context_die);
-
-  if (TYPE_REF_IS_RVALUE (type) && dwarf_version >= 4)
-    ref_die = new_die (DW_TAG_rvalue_reference_type, scope_die, type);
-  else
-    ref_die = new_die (DW_TAG_reference_type, scope_die, type);
-
-  equate_type_number_to_die (type, ref_die);
-  add_type_attribute (ref_die, TREE_TYPE (type), TYPE_UNQUALIFIED, false,
-		      context_die);
-  add_AT_unsigned (mod_type_die, DW_AT_byte_size, PTR_SIZE);
-}
-#endif
-
 /* Generate a DIE for a pointer to a member type.  TYPE can be an
    OFFSET_TYPE, for a pointer to data member, or a RECORD_TYPE, for a
    pointer to member function.  */
