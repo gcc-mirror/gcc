@@ -16302,6 +16302,10 @@ rs6000_gimple_fold_builtin (gimple_stmt_iterator *gsi)
     = (enum rs6000_builtins) DECL_FUNCTION_CODE (fndecl);
   tree arg0, arg1, lhs;
 
+  /* Generic solution to prevent gimple folding of code without a LHS.  */
+  if (!gimple_call_lhs (stmt))
+    return false;
+
   switch (fn_code)
     {
     /* Flavors of vec_add.  We deliberately don't expand
