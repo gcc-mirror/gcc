@@ -954,26 +954,26 @@ finish_options (struct gcc_options *opts, struct gcc_options *opts_set,
   if ((opts->x_flag_sanitize & SANITIZE_USER_ADDRESS)
       && (opts->x_flag_sanitize & SANITIZE_KERNEL_ADDRESS))
     error_at (loc,
-	      "-fsanitize=address is incompatible with "
-	      "-fsanitize=kernel-address");
+	      "%<-fsanitize=address%> is incompatible with "
+	      "%<-fsanitize=kernel-address%>");
 
   /* And with TSan.  */
   if ((opts->x_flag_sanitize & SANITIZE_ADDRESS)
       && (opts->x_flag_sanitize & SANITIZE_THREAD))
     error_at (loc,
-	      "-fsanitize=address and -fsanitize=kernel-address "
-	      "are incompatible with -fsanitize=thread");
+	      "%<-fsanitize=address%> and %<-fsanitize=kernel-address%> "
+	      "are incompatible with %<-fsanitize=thread%>");
 
   if ((opts->x_flag_sanitize & SANITIZE_LEAK)
       && (opts->x_flag_sanitize & SANITIZE_THREAD))
     error_at (loc,
-	      "-fsanitize=leak is incompatible with -fsanitize=thread");
+	      "%<-fsanitize=leak%> is incompatible with %<-fsanitize=thread%>");
 
   /* Check error recovery for -fsanitize-recover option.  */
   for (int i = 0; sanitizer_opts[i].name != NULL; ++i)
     if ((opts->x_flag_sanitize_recover & sanitizer_opts[i].flag)
 	&& !sanitizer_opts[i].can_recover)
-      error_at (loc, "-fsanitize-recover=%s is not supported",
+      error_at (loc, "%<-fsanitize-recover=%s%> is not supported",
 		sanitizer_opts[i].name);
 
   /* When instrumenting the pointers, we don't want to remove
@@ -999,8 +999,8 @@ finish_options (struct gcc_options *opts, struct gcc_options *opts_set,
       if (opts->x_flag_stack_reuse != SR_NONE
 	  && opts_set->x_flag_stack_reuse != SR_NONE)
 	error_at (loc,
-		  "-fsanitize-address-use-after-scope requires "
-		  "-fstack-reuse=none option");
+		  "%<-fsanitize-address-use-after-scope%> requires "
+		  "%<-fstack-reuse=none%> option");
 
       opts->x_flag_stack_reuse = SR_NONE;
     }
@@ -1613,7 +1613,7 @@ parse_sanitizer_options (const char *p, location_t loc, int scode,
 		if (code == OPT_fsanitize_)
 		  {
 		    if (complain)
-		      error_at (loc, "-fsanitize=all option is not valid");
+		      error_at (loc, "%<-fsanitize=all%> option is not valid");
 		  }
 		else
 		  flags |= ~(SANITIZE_THREAD | SANITIZE_LEAK
