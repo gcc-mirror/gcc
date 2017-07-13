@@ -1,4 +1,9 @@
-	2017-07-13  Will Schmidt  <will_schmidt@vnet.ibm.com>
+2017-07-13  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/81405
+	* gcc.dg/Wmissing-braces-fixits.c: Add coverage for PR c/81405.  */
+
+2017-07-13  Will Schmidt  <will_schmidt@vnet.ibm.com>
 
 	* gcc.target/powerpc/fold-vec-missing-lhs.c: New.
 
