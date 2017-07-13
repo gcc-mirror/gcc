@@ -2448,13 +2448,11 @@ rtl_verify_edges (void)
 	{
 	  if (!BRANCH_EDGE (bb)->probability.initialized_p ())
 	    {
-	      /* FIXME: sometimes we create BBs with only branch edge
-		 probability defined.  */
-	      if (0)
+	      if (profile_status_for_fn (cfun) != PROFILE_ABSENT)
 		{
-	          error ("verify_flow_info: "
-		         "REG_BR_PROB is set but cfg probability is not");
-	          err = 1;
+		  error ("verify_flow_info: "
+			 "REG_BR_PROB is set but cfg probability is not");
+		  err = 1;
 		}
 	    }
 	  else if (XINT (note, 0)
@@ -4904,7 +4902,9 @@ rtl_flow_call_edges_add (sbitmap blocks)
 		    blocks_split++;
 		}
 
-	      make_edge (bb, EXIT_BLOCK_PTR_FOR_FN (cfun), EDGE_FAKE);
+	      edge ne = make_edge (bb, EXIT_BLOCK_PTR_FOR_FN (cfun), EDGE_FAKE);
+	      ne->probability = profile_probability::guessed_never ();
+	      ne->count = profile_count::guessed_zero ();
 	    }
 
 	  if (insn == BB_HEAD (bb))

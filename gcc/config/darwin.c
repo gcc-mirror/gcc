@@ -3683,11 +3683,9 @@ default_function_sections:
 void
 darwin_function_switched_text_sections (FILE *fp, tree decl, bool new_is_cold)
 {
-  char buf[128];
-  snprintf (buf, 128, "%s%s",new_is_cold?"__cold_sect_of_":"__hot_sect_of_",
-	    IDENTIFIER_POINTER (DECL_NAME (decl)));
   /* Make sure we pick up all the relevant quotes etc.  */
-  assemble_name_raw (fp, (const char *) buf);
+  assemble_name_raw (fp, new_is_cold ? "__cold_sect_of_" : "__hot_sect_of_");
+  assemble_name_raw (fp, IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl)));
   fputs (":\n", fp);
 }
 

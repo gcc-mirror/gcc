@@ -39,7 +39,7 @@
 #include <dlfcn.h>
 #include "libgomp-plugin.h"
 #include "gomp-constants.h"
-#include "secure-getenv.h"
+#include "secure_getenv.h"
 
 /* As an HSA runtime is dlopened, following structure defines function
    pointers utilized by the HSA plug-in.  */

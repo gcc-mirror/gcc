@@ -87,7 +87,7 @@ extern bool avr_emit_movmemhi (rtx*);
 extern int avr_epilogue_uses (int regno);
 extern int avr_starting_frame_offset (void);
 
-extern void avr_output_addr_vec_elt (FILE *stream, int value);
+extern void avr_output_addr_vec (rtx_insn*, rtx);
 extern const char *avr_out_sbxx_branch (rtx_insn *insn, rtx operands[]);
 extern const char* avr_out_bitop (rtx, rtx*, int*);
 extern const char* avr_out_plus (rtx, rtx*, int* =NULL, int* =NULL, bool =true);
@@ -158,6 +158,7 @@ extern bool avr_have_dimode;
 namespace gcc { class context; }
 class rtl_opt_pass;
 
+extern rtl_opt_pass *make_avr_pass_pre_proep (gcc::context *);
 extern rtl_opt_pass *make_avr_pass_recompute_notes (gcc::context *);
 extern rtl_opt_pass *make_avr_pass_casesi (gcc::context *);
 
@@ -175,6 +176,7 @@ typedef struct
   unsigned address_cost :1;
   unsigned builtin :1;
   unsigned constraints :1;
+  unsigned insn_addresses :1;
   unsigned legitimate_address_p :1;
   unsigned legitimize_address :1;
   unsigned legitimize_reload_address :1;

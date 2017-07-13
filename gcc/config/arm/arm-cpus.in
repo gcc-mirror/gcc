@@ -380,6 +380,22 @@ begin arch armv8-m.main
  option nodsp remove bit_ARMv7em
 end arch armv8-m.main
 
+begin arch armv8-r
+ tune for cortex-r4
+ tune flags CO_PROC
+ base 8R
+ profile R
+ isa ARMv8r
+ option crc add bit_crc32
+# fp.sp => fp-armv8 (d16); simd => simd + fp-armv8 + d32 + double precision
+# note: no fp option for fp-armv8 (d16) + double precision at the moment
+ option fp.sp add FP_ARMv8
+ option simd add FP_ARMv8 NEON
+ option crypto add FP_ARMv8 CRYPTO
+ option nocrypto remove ALL_CRYPTO
+ option nofp remove ALL_FP
+end arch armv8-r
+
 begin arch iwmmxt
  tune for iwmmxt
  tune flags LDSCHED STRONG XSCALE
@@ -1206,7 +1222,6 @@ begin cpu xgene1
  costs xgene1
 end cpu xgene1
 
-
 # V8 A-profile big.LITTLE implementations
 begin cpu cortex-a57.cortex-a53
  cname cortexa57cortexa53
@@ -1248,6 +1263,40 @@ begin cpu cortex-a73.cortex-a53
  costs cortex_a73
 end cpu cortex-a73.cortex-a53
 
+
+# ARMv8.2 A-profile Architecture Processors
+begin cpu cortex-a55
+ cname cortexa55
+ tune for cortex-a53
+ tune flags LDSCHED
+ architecture armv8.2-a+fp16
+ fpu neon-fp-armv8
+ option crypto add FP_ARMv8 CRYPTO
+ option nofp remove ALL_FP
+ costs cortex_a53
+end cpu cortex-a55
+
+begin cpu cortex-a75
+ cname cortexa75
+ tune for cortex-a57
+ tune flags LDSCHED
+ architecture armv8.2-a+fp16
+ fpu neon-fp-armv8
+ option crypto add FP_ARMv8 CRYPTO
+ costs cortex_a73
+end cpu cortex-a75
+
+
+# ARMv8.2 A-profile ARM DynamIQ big.LITTLE implementations
+begin cpu cortex-a75.cortex-a55
+ cname cortexa75cortexa55
+ tune for cortex-a53
+ tune flags LDSCHED
+ architecture armv8.2-a+fp16
+ fpu neon-fp-armv8
+ option crypto add FP_ARMv8 CRYPTO
+ costs cortex_a73
+end cpu cortex-a75.cortex-a55
 
 # V8 M-profile implementations.
 begin cpu cortex-m23

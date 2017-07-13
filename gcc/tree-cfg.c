@@ -1051,6 +1051,7 @@ gimple_find_sub_bbs (gimple_seq seq, gimple_stmt_iterator *gsi)
       struct omp_region *cur_region = NULL;
       profile_count cnt = profile_count::zero ();
       int freq = 0;
+      bool all = true;
 
       int cur_omp_region_idx = 0;
       int mer = make_edges_bb (bb, &cur_region, &cur_omp_region_idx);
@@ -1061,12 +1062,16 @@ gimple_find_sub_bbs (gimple_seq seq, gimple_stmt_iterator *gsi)
       edge_iterator ei;
       FOR_EACH_EDGE (e, ei, bb->preds)
 	{
-	  cnt += e->count;
+	  if (e->count.initialized_p ())
+	    cnt += e->count;
+	  else
+	    all = false;
 	  freq += EDGE_FREQUENCY (e);
 	}
-      bb->count = cnt;
-      bb->frequency = freq;
       tree_guess_outgoing_edge_probabilities (bb);
+      if (all || profile_status_for_fn (cfun) == PROFILE_READ)
+        bb->count = cnt;
+      bb->frequency = freq;
       FOR_EACH_EDGE (e, ei, bb->succs)
 	e->count = bb->count.apply_probability (e->probability);
 
@@ -2076,7 +2081,7 @@ gimple_merge_blocks (basic_block a, basic_block b)
      profiles.  */
   if (a->loop_father == b->loop_father)
     {
-      a->count = MAX (a->count, b->count);
+      a->count = a->count.merge (b->count);
       a->frequency = MAX (a->frequency, b->frequency);
     }
 
@@ -6390,9 +6395,9 @@ bb_part_of_region_p (basic_block bb, basic_block* bbs, unsigned n_region)
 */
 
 bool
-gimple_duplicate_sese_tail (edge entry ATTRIBUTE_UNUSED, edge exit ATTRIBUTE_UNUSED,
-			  basic_block *region ATTRIBUTE_UNUSED, unsigned n_region ATTRIBUTE_UNUSED,
-			  basic_block *region_copy ATTRIBUTE_UNUSED)
+gimple_duplicate_sese_tail (edge entry, edge exit,
+			  basic_block *region, unsigned n_region,
+			  basic_block *region_copy)
 {
   unsigned i;
   bool free_region_copy = false;
@@ -6502,7 +6507,12 @@ gimple_duplicate_sese_tail (edge entry ATTRIBUTE_UNUSED, edge exit ATTRIBUTE_UNU
 
   sorig = single_succ_edge (switch_bb);
   sorig->flags = exits[1]->flags;
+  sorig->probability = exits[1]->probability;
+  sorig->count = exits[1]->count;
   snew = make_edge (switch_bb, nentry_bb, exits[0]->flags);
+  snew->probability = exits[0]->probability;
+  snew->count = exits[1]->count;
+  
 
   /* Register the new edge from SWITCH_BB in loop exit lists.  */
   rescan_loop_exit (snew, true, false);
@@ -8211,7 +8221,9 @@ gimple_flow_call_edges_add (sbitmap blocks)
 		      if (e)
 			blocks_split++;
 		    }
-		  make_edge (bb, EXIT_BLOCK_PTR_FOR_FN (cfun), EDGE_FAKE);
+		  e = make_edge (bb, EXIT_BLOCK_PTR_FOR_FN (cfun), EDGE_FAKE);
+		  e->probability = profile_probability::guessed_never ();
+		  e->count = profile_count::guessed_zero ();
 		}
 	      gsi_prev (&gsi);
 	    }
@@ -8220,7 +8232,7 @@ gimple_flow_call_edges_add (sbitmap blocks)
     }
 
   if (blocks_split)
-    verify_flow_info ();
+    checking_verify_flow_info ();
 
   return blocks_split;
 }
@@ -8702,9 +8714,11 @@ make_pass_split_crit_edges (gcc::context *ctxt)
 /* Insert COND expression which is GIMPLE_COND after STMT
    in basic block BB with appropriate basic block split
    and creation of a new conditionally executed basic block.
+   Update profile so the new bb is visited with probability PROB.
    Return created basic block.  */
 basic_block
-insert_cond_bb (basic_block bb, gimple *stmt, gimple *cond)
+insert_cond_bb (basic_block bb, gimple *stmt, gimple *cond,
+	        profile_probability prob)
 {
   edge fall = split_block (bb, stmt);
   gimple_stmt_iterator iter = gsi_last_bb (bb);
@@ -8719,11 +8733,17 @@ insert_cond_bb (basic_block bb, gimple *stmt, gimple *cond)
 
   /* Create conditionally executed block.  */
   new_bb = create_empty_bb (bb);
-  make_edge (bb, new_bb, EDGE_TRUE_VALUE);
+  edge e = make_edge (bb, new_bb, EDGE_TRUE_VALUE);
+  e->probability = prob;
+  e->count = bb->count.apply_probability (prob);
+  new_bb->count = e->count;
+  new_bb->frequency = prob.apply (bb->frequency);
   make_single_succ_edge (new_bb, fall->dest, EDGE_FALLTHRU);
 
   /* Fix edge for split bb.  */
   fall->flags = EDGE_FALSE_VALUE;
+  fall->count -= e->count;
+  fall->probability -= e->probability;
 
   /* Update dominance info.  */
   if (dom_info_available_p (CDI_DOMINATORS))

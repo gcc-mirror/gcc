@@ -265,6 +265,21 @@ proc dg-require-linker-plugin { args } {
     }
 }
 
+# If this target does not support the "stack-check" option, skip this
+# test.
+
+proc dg-require-stack-check { args } {
+    set stack_check_available [ check_stack_check_available [lindex $args 1 ] ]
+    if { $stack_check_available == -1 } {
+	upvar name name
+	unresolved "$name"
+    }
+    if { $stack_check_available != 1 } {
+	upvar dg-do-what dg-do-what
+	set dg-do-what [list [lindex ${dg-do-what} 0] "N" "P"]
+    }
+}
+
 # Add any target-specific flags needed for accessing the given list
 # of features.  This must come after all dg-options.
 

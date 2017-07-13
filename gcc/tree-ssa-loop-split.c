@@ -564,7 +564,8 @@ split_loop (struct loop *loop1, struct tree_niter_desc *niter)
 	struct loop *loop2 = loop_version (loop1, cond, &cond_bb,
 					   profile_probability::always (),
 					   profile_probability::always (),
-					   REG_BR_PROB_BASE, REG_BR_PROB_BASE,
+					   profile_probability::always (),
+					   profile_probability::always (),
 					   true);
 	gcc_assert (loop2);
 	update_ssa (TODO_update_ssa);

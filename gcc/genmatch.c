@@ -61,7 +61,8 @@ static struct line_maps *line_table;
    This is the implementation for genmatch.  */
 
 expanded_location
-linemap_client_expand_location_to_spelling_point (source_location loc)
+linemap_client_expand_location_to_spelling_point (source_location loc,
+						  enum location_aspect)
 {
   const struct line_map_ordinary *map;
   loc = linemap_resolve_location (line_table, loc, LRK_SPELLING_LOCATION, &map);

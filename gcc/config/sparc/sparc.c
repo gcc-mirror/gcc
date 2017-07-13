@@ -448,6 +448,30 @@ struct processor_costs niagara7_costs = {
   0, /* shift penalty */
 };
 
+static const
+struct processor_costs m8_costs = {
+  COSTS_N_INSNS (3), /* int load */
+  COSTS_N_INSNS (3), /* int signed load */
+  COSTS_N_INSNS (3), /* int zeroed load */
+  COSTS_N_INSNS (3), /* float load */
+  COSTS_N_INSNS (9), /* fmov, fneg, fabs */
+  COSTS_N_INSNS (9), /* fadd, fsub */
+  COSTS_N_INSNS (9), /* fcmp */
+  COSTS_N_INSNS (9), /* fmov, fmovr */
+  COSTS_N_INSNS (9), /* fmul */
+  COSTS_N_INSNS (26), /* fdivs */
+  COSTS_N_INSNS (30), /* fdivd */
+  COSTS_N_INSNS (33), /* fsqrts */
+  COSTS_N_INSNS (41), /* fsqrtd */
+  COSTS_N_INSNS (12), /* imul */
+  COSTS_N_INSNS (10), /* imulX */
+  0, /* imul bit factor */
+  COSTS_N_INSNS (57), /* udiv/sdiv */
+  COSTS_N_INSNS (30), /* udivx/sdivx */
+  COSTS_N_INSNS (1), /* movcc/movr */
+  0, /* shift penalty */
+};
+
 static const struct processor_costs *sparc_costs = &cypress_costs;
 
 #ifdef HAVE_AS_RELAX_OPTION
@@ -896,6 +920,12 @@ mem_ref (rtx x)
    to properly detect the various hazards.  Therefore, this machine specific
    pass runs as late as possible.  */
 
+/* True if INSN is a md pattern or asm statement.  */
+#define USEFUL_INSN_P(INSN)						\
+  (NONDEBUG_INSN_P (INSN)						\
+   && GET_CODE (PATTERN (INSN)) != USE					\
+   && GET_CODE (PATTERN (INSN)) != CLOBBER)
+
 static unsigned int
 sparc_do_work_around_errata (void)
 {
@@ -915,6 +945,81 @@ sparc_do_work_around_errata (void)
 	if (rtx_sequence *seq = dyn_cast <rtx_sequence *> (PATTERN (insn)))
 	  insn = seq->insn (1);
 
+      /* Look for either of these two sequences:
+
+	 Sequence A:
+	 1. store of word size or less (e.g. st / stb / sth / stf)
+	 2. any single instruction that is not a load or store
+	 3. any store instruction (e.g. st / stb / sth / stf / std / stdf)
+
+	 Sequence B:
+	 1. store of double word size (e.g. std / stdf)
+	 2. any store instruction (e.g. st / stb / sth / stf / std / stdf)  */
+      if (sparc_fix_b2bst
+	  && NONJUMP_INSN_P (insn)
+	  && (set = single_set (insn)) != NULL_RTX
+	  && MEM_P (SET_DEST (set)))
+	{
+	  /* Sequence B begins with a double-word store.  */
+	  bool seq_b = GET_MODE_SIZE (GET_MODE (SET_DEST (set))) == 8;
+	  rtx_insn *after;
+	  int i;
+
+	  next = next_active_insn (insn);
+	  if (!next)
+	    break;
+
+	  for (after = next, i = 0; i < 2; i++)
+	    {
+	      /* Skip empty assembly statements.  */
+	      if ((GET_CODE (PATTERN (after)) == UNSPEC_VOLATILE)
+		  || (USEFUL_INSN_P (after)
+		      && (asm_noperands (PATTERN (after))>=0)
+		      && !strcmp (decode_asm_operands (PATTERN (after),
+						       NULL, NULL, NULL,
+						       NULL, NULL), "")))
+		after = next_active_insn (after);
+	      if (!after)
+		break;
+
+	      /* If the insn is a branch, then it cannot be problematic.  */
+	      if (!NONJUMP_INSN_P (after)
+		  || GET_CODE (PATTERN (after)) == SEQUENCE)
+		break;
+
+	      /* Sequence B is only two instructions long.  */
+	      if (seq_b)
+		{
+		  /* Add NOP if followed by a store.  */
+		  if ((set = single_set (after)) != NULL_RTX
+		      && MEM_P (SET_DEST (set)))
+		    insert_nop = true;
+
+		  /* Otherwise it is ok.  */
+		  break;
+		}
+
+	      /* If the second instruction is a load or a store,
+		 then the sequence cannot be problematic.  */
+	      if (i == 0)
+		{
+		  if (((set = single_set (after)) != NULL_RTX)
+		      && (MEM_P (SET_DEST (set)) || MEM_P (SET_SRC (set))))
+		    break;
+
+		  after = next_active_insn (after);
+		  if (!after)
+		    break;
+		}
+
+	      /* Add NOP if third instruction is a store.  */
+	      if (i == 1
+		  && ((set = single_set (after)) != NULL_RTX)
+		  && MEM_P (SET_DEST (set)))
+		insert_nop = true;
+	    }
+	}
+      else
       /* Look for a single-word load into an odd-numbered FP register.  */
       if (sparc_fix_at697f
 	  && NONJUMP_INSN_P (insn)
@@ -1167,8 +1272,7 @@ public:
   /* opt_pass methods: */
   virtual bool gate (function *)
     {
-      /* The only errata we handle are those of the AT697F and UT699.  */
-      return sparc_fix_at697f != 0 || sparc_fix_ut699 != 0;
+      return sparc_fix_at697f || sparc_fix_ut699 || sparc_fix_b2bst;
     }
 
   virtual unsigned int execute (function *)
@@ -1222,6 +1326,8 @@ dump_target_flag_bits (const int flags)
     fprintf (stderr, "VIS3 ");
   if (flags & MASK_VIS4)
     fprintf (stderr, "VIS4 ");
+  if (flags & MASK_VIS4B)
+    fprintf (stderr, "VIS4B ");
   if (flags & MASK_CBCOND)
     fprintf (stderr, "CBCOND ");
   if (flags & MASK_DEPRECATED_V8_INSNS)
@@ -1286,6 +1392,7 @@ sparc_option_override (void)
     { TARGET_CPU_niagara3, PROCESSOR_NIAGARA3 },
     { TARGET_CPU_niagara4, PROCESSOR_NIAGARA4 },
     { TARGET_CPU_niagara7, PROCESSOR_NIAGARA7 },
+    { TARGET_CPU_m8, PROCESSOR_M8 },
     { -1, PROCESSOR_V7 }
   };
   const struct cpu_default *def;
@@ -1337,7 +1444,11 @@ sparc_option_override (void)
       MASK_V9|MASK_POPC|MASK_VIS3|MASK_FMAF|MASK_CBCOND },
     /* UltraSPARC M7 */
     { "niagara7",	MASK_ISA,
-      MASK_V9|MASK_POPC|MASK_VIS4|MASK_FMAF|MASK_CBCOND|MASK_SUBXC }
+      MASK_V9|MASK_POPC|MASK_VIS4|MASK_FMAF|MASK_CBCOND|MASK_SUBXC },
+    /* UltraSPARC M8 */
+    { "m8",		MASK_ISA,
+      MASK_V9|MASK_POPC|MASK_VIS4|MASK_FMAF|MASK_CBCOND|MASK_SUBXC
+      |MASK_VIS4B }
   };
   const struct cpu_table *cpu;
   unsigned int i;
@@ -1467,6 +1578,9 @@ sparc_option_override (void)
 #ifndef HAVE_AS_SPARC5_VIS4
 		   & ~(MASK_VIS4 | MASK_SUBXC)
 #endif
+#ifndef HAVE_AS_SPARC6
+		   & ~(MASK_VIS4B)
+#endif
 #ifndef HAVE_AS_LEON
 		   & ~(MASK_LEON | MASK_LEON3)
 #endif
@@ -1485,11 +1599,15 @@ sparc_option_override (void)
   if (TARGET_VIS4)
     target_flags |= MASK_VIS3 | MASK_VIS2 | MASK_VIS;
 
-  /* Don't allow -mvis, -mvis2, -mvis3, -mvis4 or -mfmaf if FPU is
-     disabled.  */
+  /* -mvis4b implies -mvis4, -mvis3, -mvis2 and -mvis */
+  if (TARGET_VIS4B)
+    target_flags |= MASK_VIS4 | MASK_VIS3 | MASK_VIS2 | MASK_VIS;
+
+  /* Don't allow -mvis, -mvis2, -mvis3, -mvis4, -mvis4b and -mfmaf if
+     FPU is disabled.  */
   if (! TARGET_FPU)
     target_flags &= ~(MASK_VIS | MASK_VIS2 | MASK_VIS3 | MASK_VIS4
-		      | MASK_FMAF);
+		      | MASK_VIS4B | MASK_FMAF);
 
   /* -mvis assumes UltraSPARC+, so we are sure v9 instructions
      are available; -m64 also implies v9.  */
@@ -1519,6 +1637,10 @@ sparc_option_override (void)
   if (!(target_flags_explicit & MASK_LRA))
     target_flags |= MASK_LRA;
 
+  /* Enable the back-to-back store errata workaround for LEON3FT.  */
+  if (sparc_fix_ut699 || sparc_fix_ut700 || sparc_fix_gr712rc)
+    sparc_fix_b2bst = 1;
+
   /* Supply a default value for align_functions.  */
   if (align_functions == 0)
     {
@@ -1529,7 +1651,8 @@ sparc_option_override (void)
 	  || sparc_cpu == PROCESSOR_NIAGARA3
 	  || sparc_cpu == PROCESSOR_NIAGARA4)
 	align_functions = 32;
-      else if (sparc_cpu == PROCESSOR_NIAGARA7)
+      else if (sparc_cpu == PROCESSOR_NIAGARA7
+	       || sparc_cpu == PROCESSOR_M8)
 	align_functions = 64;
     }
 
@@ -1597,6 +1720,9 @@ sparc_option_override (void)
     case PROCESSOR_NIAGARA7:
       sparc_costs = &niagara7_costs;
       break;
+    case PROCESSOR_M8:
+      sparc_costs = &m8_costs;
+      break;
     case PROCESSOR_NATIVE:
       gcc_unreachable ();
     };
@@ -1659,13 +1785,14 @@ sparc_option_override (void)
 			   || sparc_cpu == PROCESSOR_NIAGARA4)
 			  ? 2
 			  : (sparc_cpu == PROCESSOR_ULTRASPARC3
-			     ? 8 : (sparc_cpu == PROCESSOR_NIAGARA7
+			     ? 8 : ((sparc_cpu == PROCESSOR_NIAGARA7
+				     || sparc_cpu == PROCESSOR_M8)
 				    ? 32 : 3))),
 			 global_options.x_param_values,
 			 global_options_set.x_param_values);
 
-  /* For PARAM_L1_CACHE_LINE_SIZE we use the default 32 bytes (see
-     params.def), so no maybe_set_param_value is needed.
+  /* PARAM_L1_CACHE_LINE_SIZE is the size of the L1 cache line, in
+     bytes.
 
      The Oracle SPARC Architecture (previously the UltraSPARC
      Architecture) specification states that when a PREFETCH[A]
@@ -1681,6 +1808,11 @@ sparc_option_override (void)
      L2 and L3, but only 32B are brought into the L1D$. (Assuming it
      is a read_n prefetch, which is the only type which allocates to
      the L1.)  */
+  maybe_set_param_value (PARAM_L1_CACHE_LINE_SIZE,
+			 (sparc_cpu == PROCESSOR_M8
+			  ? 64 : 32),
+			 global_options.x_param_values,
+			 global_options_set.x_param_values);
 
   /* PARAM_L1_CACHE_SIZE is the size of the L1D$ (most SPARC chips use
      Hardvard level-1 caches) in kilobytes.  Both UltraSPARC and
@@ -1692,7 +1824,8 @@ sparc_option_override (void)
 			   || sparc_cpu == PROCESSOR_NIAGARA2
 			   || sparc_cpu == PROCESSOR_NIAGARA3
 			   || sparc_cpu == PROCESSOR_NIAGARA4
-			   || sparc_cpu == PROCESSOR_NIAGARA7)
+			   || sparc_cpu == PROCESSOR_NIAGARA7
+			   || sparc_cpu == PROCESSOR_M8)
 			  ? 16 : 64),
 			 global_options.x_param_values,
 			 global_options_set.x_param_values);
@@ -1701,7 +1834,8 @@ sparc_option_override (void)
   /* PARAM_L2_CACHE_SIZE is the size fo the L2 in kilobytes.  Note
      that 512 is the default in params.def.  */
   maybe_set_param_value (PARAM_L2_CACHE_SIZE,
-			 (sparc_cpu == PROCESSOR_NIAGARA4
+			 ((sparc_cpu == PROCESSOR_NIAGARA4
+			   || sparc_cpu == PROCESSOR_M8)
 			  ? 128 : (sparc_cpu == PROCESSOR_NIAGARA7
 				   ? 256 : 512)),
 			 global_options.x_param_values,
@@ -9478,7 +9612,8 @@ sparc32_initialize_trampoline (rtx m_tramp, rtx fnaddr, rtx cxt)
       && sparc_cpu != PROCESSOR_NIAGARA2
       && sparc_cpu != PROCESSOR_NIAGARA3
       && sparc_cpu != PROCESSOR_NIAGARA4
-      && sparc_cpu != PROCESSOR_NIAGARA7)
+      && sparc_cpu != PROCESSOR_NIAGARA7
+      && sparc_cpu != PROCESSOR_M8)
     emit_insn (gen_flushsi (validize_mem (adjust_address (m_tramp, SImode, 8))));
 
   /* Call __enable_execute_stack after writing onto the stack to make sure
@@ -9524,7 +9659,8 @@ sparc64_initialize_trampoline (rtx m_tramp, rtx fnaddr, rtx cxt)
       && sparc_cpu != PROCESSOR_NIAGARA2
       && sparc_cpu != PROCESSOR_NIAGARA3
       && sparc_cpu != PROCESSOR_NIAGARA4
-      && sparc_cpu != PROCESSOR_NIAGARA7)
+      && sparc_cpu != PROCESSOR_NIAGARA7
+      && sparc_cpu != PROCESSOR_M8)
     emit_insn (gen_flushdi (validize_mem (adjust_address (m_tramp, DImode, 8))));
 
   /* Call __enable_execute_stack after writing onto the stack to make sure
@@ -9724,7 +9860,8 @@ sparc_use_sched_lookahead (void)
       || sparc_cpu == PROCESSOR_NIAGARA3)
     return 0;
   if (sparc_cpu == PROCESSOR_NIAGARA4
-      || sparc_cpu == PROCESSOR_NIAGARA7)
+      || sparc_cpu == PROCESSOR_NIAGARA7
+      || sparc_cpu == PROCESSOR_M8)
     return 2;
   if (sparc_cpu == PROCESSOR_ULTRASPARC
       || sparc_cpu == PROCESSOR_ULTRASPARC3)
@@ -9758,6 +9895,7 @@ sparc_issue_rate (void)
       return 2;
     case PROCESSOR_ULTRASPARC:
     case PROCESSOR_ULTRASPARC3:
+    case PROCESSOR_M8:
       return 4;
     }
 }
@@ -10340,12 +10478,72 @@ enum sparc_builtins
   SPARC_BUILTIN_FPSUBS8,
   SPARC_BUILTIN_FPSUBUS8,
   SPARC_BUILTIN_FPSUBUS16,
+
+  /* VIS 4.0B builtins.  */
+
+  /* Note that all the DICTUNPACK* entries should be kept
+     contiguous.  */
+  SPARC_BUILTIN_FIRST_DICTUNPACK,
+  SPARC_BUILTIN_DICTUNPACK8 = SPARC_BUILTIN_FIRST_DICTUNPACK,
+  SPARC_BUILTIN_DICTUNPACK16,
+  SPARC_BUILTIN_DICTUNPACK32,
+  SPARC_BUILTIN_LAST_DICTUNPACK = SPARC_BUILTIN_DICTUNPACK32,
+
+  /* Note that all the FPCMP*SHL entries should be kept
+     contiguous.  */
+  SPARC_BUILTIN_FIRST_FPCMPSHL,
+  SPARC_BUILTIN_FPCMPLE8SHL = SPARC_BUILTIN_FIRST_FPCMPSHL,
+  SPARC_BUILTIN_FPCMPGT8SHL,
+  SPARC_BUILTIN_FPCMPEQ8SHL,
+  SPARC_BUILTIN_FPCMPNE8SHL,
+  SPARC_BUILTIN_FPCMPLE16SHL,
+  SPARC_BUILTIN_FPCMPGT16SHL,
+  SPARC_BUILTIN_FPCMPEQ16SHL,
+  SPARC_BUILTIN_FPCMPNE16SHL,
+  SPARC_BUILTIN_FPCMPLE32SHL,
+  SPARC_BUILTIN_FPCMPGT32SHL,
+  SPARC_BUILTIN_FPCMPEQ32SHL,
+  SPARC_BUILTIN_FPCMPNE32SHL,
+  SPARC_BUILTIN_FPCMPULE8SHL,
+  SPARC_BUILTIN_FPCMPUGT8SHL,
+  SPARC_BUILTIN_FPCMPULE16SHL,
+  SPARC_BUILTIN_FPCMPUGT16SHL,
+  SPARC_BUILTIN_FPCMPULE32SHL,
+  SPARC_BUILTIN_FPCMPUGT32SHL,
+  SPARC_BUILTIN_FPCMPDE8SHL,
+  SPARC_BUILTIN_FPCMPDE16SHL,
+  SPARC_BUILTIN_FPCMPDE32SHL,
+  SPARC_BUILTIN_FPCMPUR8SHL,
+  SPARC_BUILTIN_FPCMPUR16SHL,
+  SPARC_BUILTIN_FPCMPUR32SHL,
+  SPARC_BUILTIN_LAST_FPCMPSHL = SPARC_BUILTIN_FPCMPUR32SHL,
   
   SPARC_BUILTIN_MAX
 };
 
 static GTY (()) tree sparc_builtins[(int) SPARC_BUILTIN_MAX];
 static enum insn_code sparc_builtins_icode[(int) SPARC_BUILTIN_MAX];
+
+/* Return true if OPVAL can be used for operand OPNUM of instruction ICODE.
+   The instruction should require a constant operand of some sort.  The
+   function prints an error if OPVAL is not valid.  */
+
+static int
+check_constant_argument (enum insn_code icode, int opnum, rtx opval)
+{
+  if (GET_CODE (opval) != CONST_INT)
+    {
+      error ("%qs expects a constant argument", insn_data[icode].name);
+      return false;
+    }
+
+  if (!(*insn_data[icode].operand[opnum].predicate) (opval, VOIDmode))
+    {
+      error ("constant argument out of range for %qs", insn_data[icode].name);
+      return false;
+    }
+  return true;
+}
 
 /* Add a SPARC builtin function with NAME, ICODE, CODE and TYPE.  Return the
    function decl or NULL_TREE if the builtin was not added.  */
@@ -10440,6 +10638,12 @@ sparc_vis_init_builtins (void)
 						      v8qi, v8qi, 0);
   tree si_ftype_v8qi_v8qi = build_function_type_list (intSI_type_node,
 						      v8qi, v8qi, 0);
+  tree v8qi_ftype_df_si = build_function_type_list (v8qi, double_type_node,
+						    intSI_type_node, 0);
+  tree v4hi_ftype_df_si = build_function_type_list (v4hi, double_type_node,
+						    intSI_type_node, 0);
+  tree v2si_ftype_df_si = build_function_type_list (v2si, double_type_node,
+						    intDI_type_node, 0);
   tree di_ftype_di_di = build_function_type_list (intDI_type_node,
 						  intDI_type_node,
 						  intDI_type_node, 0);
@@ -10894,6 +11098,156 @@ sparc_vis_init_builtins (void)
       def_builtin_const ("__builtin_vis_fpsubus16", CODE_FOR_ussubv4hi3,
 			 SPARC_BUILTIN_FPSUBUS16, v4hi_ftype_v4hi_v4hi);
     }
+
+  if (TARGET_VIS4B)
+    {
+      def_builtin_const ("__builtin_vis_dictunpack8", CODE_FOR_dictunpack8,
+			 SPARC_BUILTIN_DICTUNPACK8, v8qi_ftype_df_si);
+      def_builtin_const ("__builtin_vis_dictunpack16", CODE_FOR_dictunpack16,
+			 SPARC_BUILTIN_DICTUNPACK16, v4hi_ftype_df_si);
+      def_builtin_const ("__builtin_vis_dictunpack32", CODE_FOR_dictunpack32,
+			 SPARC_BUILTIN_DICTUNPACK32, v2si_ftype_df_si);
+
+      if (TARGET_ARCH64)
+	{
+	  tree di_ftype_v8qi_v8qi_si = build_function_type_list (intDI_type_node,
+								 v8qi, v8qi,
+								 intSI_type_node, 0);
+	  tree di_ftype_v4hi_v4hi_si = build_function_type_list (intDI_type_node,
+								 v4hi, v4hi,
+								 intSI_type_node, 0);
+	  tree di_ftype_v2si_v2si_si = build_function_type_list (intDI_type_node,
+								 v2si, v2si,
+								 intSI_type_node, 0);
+	  
+	  def_builtin_const ("__builtin_vis_fpcmple8shl", CODE_FOR_fpcmple8dishl,
+			     SPARC_BUILTIN_FPCMPLE8SHL, di_ftype_v8qi_v8qi_si);
+	  def_builtin_const ("__builtin_vis_fpcmpgt8shl", CODE_FOR_fpcmpgt8dishl,
+			     SPARC_BUILTIN_FPCMPGT8SHL, di_ftype_v8qi_v8qi_si);
+	  def_builtin_const ("__builtin_vis_fpcmpeq8shl", CODE_FOR_fpcmpeq8dishl,
+			     SPARC_BUILTIN_FPCMPEQ8SHL, di_ftype_v8qi_v8qi_si);
+	  def_builtin_const ("__builtin_vis_fpcmpne8shl", CODE_FOR_fpcmpne8dishl,
+			     SPARC_BUILTIN_FPCMPNE8SHL, di_ftype_v8qi_v8qi_si);
+
+	  def_builtin_const ("__builtin_vis_fpcmple16shl", CODE_FOR_fpcmple16dishl,
+			     SPARC_BUILTIN_FPCMPLE16SHL, di_ftype_v4hi_v4hi_si);
+	  def_builtin_const ("__builtin_vis_fpcmpgt16shl", CODE_FOR_fpcmpgt16dishl,
+			     SPARC_BUILTIN_FPCMPGT16SHL, di_ftype_v4hi_v4hi_si);
+	  def_builtin_const ("__builtin_vis_fpcmpeq16shl", CODE_FOR_fpcmpeq16dishl,
+			     SPARC_BUILTIN_FPCMPEQ16SHL, di_ftype_v4hi_v4hi_si);
+	  def_builtin_const ("__builtin_vis_fpcmpne16shl", CODE_FOR_fpcmpne16dishl,
+			     SPARC_BUILTIN_FPCMPNE16SHL, di_ftype_v4hi_v4hi_si);
+
+	  def_builtin_const ("__builtin_vis_fpcmple32shl", CODE_FOR_fpcmple32dishl,
+			     SPARC_BUILTIN_FPCMPLE32SHL, di_ftype_v2si_v2si_si);
+	  def_builtin_const ("__builtin_vis_fpcmpgt32shl", CODE_FOR_fpcmpgt32dishl,
+			     SPARC_BUILTIN_FPCMPGT32SHL, di_ftype_v2si_v2si_si);
+	  def_builtin_const ("__builtin_vis_fpcmpeq32shl", CODE_FOR_fpcmpeq32dishl,
+			     SPARC_BUILTIN_FPCMPEQ32SHL, di_ftype_v2si_v2si_si);
+	  def_builtin_const ("__builtin_vis_fpcmpne32shl", CODE_FOR_fpcmpne32dishl,
+			     SPARC_BUILTIN_FPCMPNE32SHL, di_ftype_v2si_v2si_si);
+
+
+	  def_builtin_const ("__builtin_vis_fpcmpule8shl", CODE_FOR_fpcmpule8dishl,
+			     SPARC_BUILTIN_FPCMPULE8SHL, di_ftype_v8qi_v8qi_si);
+	  def_builtin_const ("__builtin_vis_fpcmpugt8shl", CODE_FOR_fpcmpugt8dishl,
+			     SPARC_BUILTIN_FPCMPUGT8SHL, di_ftype_v8qi_v8qi_si);
+
+	  def_builtin_const ("__builtin_vis_fpcmpule16shl", CODE_FOR_fpcmpule16dishl,
+			     SPARC_BUILTIN_FPCMPULE16SHL, di_ftype_v4hi_v4hi_si);
+	  def_builtin_const ("__builtin_vis_fpcmpugt16shl", CODE_FOR_fpcmpugt16dishl,
+			     SPARC_BUILTIN_FPCMPUGT16SHL, di_ftype_v4hi_v4hi_si);
+
+	  def_builtin_const ("__builtin_vis_fpcmpule32shl", CODE_FOR_fpcmpule32dishl,
+			     SPARC_BUILTIN_FPCMPULE32SHL, di_ftype_v2si_v2si_si);
+	  def_builtin_const ("__builtin_vis_fpcmpugt32shl", CODE_FOR_fpcmpugt32dishl,
+			     SPARC_BUILTIN_FPCMPUGT32SHL, di_ftype_v2si_v2si_si);
+
+	  def_builtin_const ("__builtin_vis_fpcmpde8shl", CODE_FOR_fpcmpde8dishl,
+			     SPARC_BUILTIN_FPCMPDE8SHL, di_ftype_v8qi_v8qi_si);
+	  def_builtin_const ("__builtin_vis_fpcmpde16shl", CODE_FOR_fpcmpde16dishl,
+			     SPARC_BUILTIN_FPCMPDE16SHL, di_ftype_v4hi_v4hi_si);
+	  def_builtin_const ("__builtin_vis_fpcmpde32shl", CODE_FOR_fpcmpde32dishl,
+			     SPARC_BUILTIN_FPCMPDE32SHL, di_ftype_v2si_v2si_si);
+
+	  def_builtin_const ("__builtin_vis_fpcmpur8shl", CODE_FOR_fpcmpur8dishl,
+			     SPARC_BUILTIN_FPCMPUR8SHL, di_ftype_v8qi_v8qi_si);
+	  def_builtin_const ("__builtin_vis_fpcmpur16shl", CODE_FOR_fpcmpur16dishl,
+			     SPARC_BUILTIN_FPCMPUR16SHL, di_ftype_v4hi_v4hi_si);
+	  def_builtin_const ("__builtin_vis_fpcmpur32shl", CODE_FOR_fpcmpur32dishl,
+			     SPARC_BUILTIN_FPCMPUR32SHL, di_ftype_v2si_v2si_si);
+
+	}
+      else
+	{
+	  tree si_ftype_v8qi_v8qi_si = build_function_type_list (intSI_type_node,
+								 v8qi, v8qi,
+								 intSI_type_node, 0);
+	  tree si_ftype_v4hi_v4hi_si = build_function_type_list (intSI_type_node,
+								 v4hi, v4hi,
+								 intSI_type_node, 0);
+	  tree si_ftype_v2si_v2si_si = build_function_type_list (intSI_type_node,
+								 v2si, v2si,
+								 intSI_type_node, 0);
+	  
+	  def_builtin_const ("__builtin_vis_fpcmple8shl", CODE_FOR_fpcmple8sishl,
+			     SPARC_BUILTIN_FPCMPLE8SHL, si_ftype_v8qi_v8qi_si);
+	  def_builtin_const ("__builtin_vis_fpcmpgt8shl", CODE_FOR_fpcmpgt8sishl,
+			     SPARC_BUILTIN_FPCMPGT8SHL, si_ftype_v8qi_v8qi_si);
+	  def_builtin_const ("__builtin_vis_fpcmpeq8shl", CODE_FOR_fpcmpeq8sishl,
+			     SPARC_BUILTIN_FPCMPEQ8SHL, si_ftype_v8qi_v8qi_si);
+	  def_builtin_const ("__builtin_vis_fpcmpne8shl", CODE_FOR_fpcmpne8sishl,
+			     SPARC_BUILTIN_FPCMPNE8SHL, si_ftype_v8qi_v8qi_si);
+
+	  def_builtin_const ("__builtin_vis_fpcmple16shl", CODE_FOR_fpcmple16sishl,
+			     SPARC_BUILTIN_FPCMPLE16SHL, si_ftype_v4hi_v4hi_si);
+	  def_builtin_const ("__builtin_vis_fpcmpgt16shl", CODE_FOR_fpcmpgt16sishl,
+			     SPARC_BUILTIN_FPCMPGT16SHL, si_ftype_v4hi_v4hi_si);
+	  def_builtin_const ("__builtin_vis_fpcmpeq16shl", CODE_FOR_fpcmpeq16sishl,
+			     SPARC_BUILTIN_FPCMPEQ16SHL, si_ftype_v4hi_v4hi_si);
+	  def_builtin_const ("__builtin_vis_fpcmpne16shl", CODE_FOR_fpcmpne16sishl,
+			     SPARC_BUILTIN_FPCMPNE16SHL, si_ftype_v4hi_v4hi_si);
+
+	  def_builtin_const ("__builtin_vis_fpcmple32shl", CODE_FOR_fpcmple32sishl,
+			     SPARC_BUILTIN_FPCMPLE32SHL, si_ftype_v2si_v2si_si);
+	  def_builtin_const ("__builtin_vis_fpcmpgt32shl", CODE_FOR_fpcmpgt32sishl,
+			     SPARC_BUILTIN_FPCMPGT32SHL, si_ftype_v2si_v2si_si);
+	  def_builtin_const ("__builtin_vis_fpcmpeq32shl", CODE_FOR_fpcmpeq32sishl,
+			     SPARC_BUILTIN_FPCMPEQ32SHL, si_ftype_v2si_v2si_si);
+	  def_builtin_const ("__builtin_vis_fpcmpne32shl", CODE_FOR_fpcmpne32sishl,
+			     SPARC_BUILTIN_FPCMPNE32SHL, si_ftype_v2si_v2si_si);
+
+
+	  def_builtin_const ("__builtin_vis_fpcmpule8shl", CODE_FOR_fpcmpule8sishl,
+			     SPARC_BUILTIN_FPCMPULE8SHL, si_ftype_v8qi_v8qi_si);
+	  def_builtin_const ("__builtin_vis_fpcmpugt8shl", CODE_FOR_fpcmpugt8sishl,
+			     SPARC_BUILTIN_FPCMPUGT8SHL, si_ftype_v8qi_v8qi_si);
+
+	  def_builtin_const ("__builtin_vis_fpcmpule16shl", CODE_FOR_fpcmpule16sishl,
+			     SPARC_BUILTIN_FPCMPULE16SHL, si_ftype_v4hi_v4hi_si);
+	  def_builtin_const ("__builtin_vis_fpcmpugt16shl", CODE_FOR_fpcmpugt16sishl,
+			     SPARC_BUILTIN_FPCMPUGT16SHL, si_ftype_v4hi_v4hi_si);
+
+	  def_builtin_const ("__builtin_vis_fpcmpule32shl", CODE_FOR_fpcmpule32sishl,
+			     SPARC_BUILTIN_FPCMPULE32SHL, si_ftype_v2si_v2si_si);
+	  def_builtin_const ("__builtin_vis_fpcmpugt32shl", CODE_FOR_fpcmpugt32sishl,
+			     SPARC_BUILTIN_FPCMPUGT32SHL, si_ftype_v2si_v2si_si);
+
+	  def_builtin_const ("__builtin_vis_fpcmpde8shl", CODE_FOR_fpcmpde8sishl,
+			     SPARC_BUILTIN_FPCMPDE8SHL, si_ftype_v8qi_v8qi_si);
+	  def_builtin_const ("__builtin_vis_fpcmpde16shl", CODE_FOR_fpcmpde16sishl,
+			     SPARC_BUILTIN_FPCMPDE16SHL, si_ftype_v4hi_v4hi_si);
+	  def_builtin_const ("__builtin_vis_fpcmpde32shl", CODE_FOR_fpcmpde32sishl,
+			     SPARC_BUILTIN_FPCMPDE32SHL, si_ftype_v2si_v2si_si);
+
+	  def_builtin_const ("__builtin_vis_fpcmpur8shl", CODE_FOR_fpcmpur8sishl,
+			     SPARC_BUILTIN_FPCMPUR8SHL, si_ftype_v8qi_v8qi_si);
+	  def_builtin_const ("__builtin_vis_fpcmpur16shl", CODE_FOR_fpcmpur16sishl,
+			     SPARC_BUILTIN_FPCMPUR16SHL, si_ftype_v4hi_v4hi_si);
+	  def_builtin_const ("__builtin_vis_fpcmpur32shl", CODE_FOR_fpcmpur32sishl,
+			     SPARC_BUILTIN_FPCMPUR32SHL, si_ftype_v2si_v2si_si);
+	}
+    }
 }
 
 /* Implement TARGET_BUILTIN_DECL hook.  */
@@ -10947,6 +11301,19 @@ sparc_expand_builtin (tree exp, rtx target,
       idx = arg_count - !nonvoid;
       insn_op = &insn_data[icode].operand[idx];
       op[arg_count] = expand_normal (arg);
+
+      /* Some of the builtins require constant arguments.  We check
+	 for this here.  */
+      if ((code >= SPARC_BUILTIN_FIRST_FPCMPSHL
+	   && code <= SPARC_BUILTIN_LAST_FPCMPSHL
+	   && arg_count == 3)
+	  || (code >= SPARC_BUILTIN_FIRST_DICTUNPACK
+	      && code <= SPARC_BUILTIN_LAST_DICTUNPACK
+	      && arg_count == 2))
+	{
+	  if (!check_constant_argument (icode, idx, op[arg_count]))
+	    return const0_rtx;
+	}
 
       if (code == SPARC_BUILTIN_LDFSR || code == SPARC_BUILTIN_STFSR)
 	{
@@ -11458,7 +11825,8 @@ sparc_register_move_cost (machine_mode mode ATTRIBUTE_UNUSED,
 	  || sparc_cpu == PROCESSOR_NIAGARA2
 	  || sparc_cpu == PROCESSOR_NIAGARA3
 	  || sparc_cpu == PROCESSOR_NIAGARA4
-	  || sparc_cpu == PROCESSOR_NIAGARA7)
+	  || sparc_cpu == PROCESSOR_NIAGARA7
+	  || sparc_cpu == PROCESSOR_M8)
 	return 12;
 
       return 6;

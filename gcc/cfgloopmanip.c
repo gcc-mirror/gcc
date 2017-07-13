@@ -488,38 +488,42 @@ add_loop (struct loop *loop, struct loop *outer)
   free (bbs);
 }
 
-/* Multiply all frequencies in LOOP by NUM/DEN.  */
+/* Scale profile of loop by P.  */
 
 void
-scale_loop_frequencies (struct loop *loop, int num, int den)
+scale_loop_frequencies (struct loop *loop, profile_probability p)
 {
   basic_block *bbs;
 
   bbs = get_loop_body (loop);
-  scale_bbs_frequencies_int (bbs, loop->num_nodes, num, den);
+  scale_bbs_frequencies (bbs, loop->num_nodes, p);
   free (bbs);
 }
 
-/* Multiply all frequencies in LOOP by SCALE/REG_BR_PROB_BASE.
+/* Scale profile in LOOP by P.
    If ITERATION_BOUND is non-zero, scale even further if loop is predicted
    to iterate too many times.  */
 
 void
-scale_loop_profile (struct loop *loop, int scale, gcov_type iteration_bound)
+scale_loop_profile (struct loop *loop, profile_probability p,
+		    gcov_type iteration_bound)
 {
   gcov_type iterations = expected_loop_iterations_unbounded (loop);
   edge e;
   edge_iterator ei;
 
   if (dump_file && (dump_flags & TDF_DETAILS))
-    fprintf (dump_file, ";; Scaling loop %i with scale %f, "
-	     "bounding iterations to %i from guessed %i\n",
-	     loop->num, (double)scale / REG_BR_PROB_BASE,
-	     (int)iteration_bound, (int)iterations);
+    {
+      fprintf (dump_file, ";; Scaling loop %i with scale ",
+	       loop->num);
+      p.dump (dump_file);
+      fprintf (dump_file, " bounding iterations to %i from guessed %i\n",
+	       (int)iteration_bound, (int)iterations);
+    }
 
   /* See if loop is predicted to iterate too many times.  */
   if (iteration_bound && iterations > 0
-      && apply_probability (iterations, scale) > iteration_bound)
+      && p.apply (iterations) > iteration_bound)
     {
       /* Fixing loop profile for different trip count is not trivial; the exit
 	 probabilities has to be updated to match and frequencies propagated down
@@ -569,7 +573,7 @@ scale_loop_profile (struct loop *loop, int scale, gcov_type iteration_bound)
       /* Roughly speaking we want to reduce the loop body profile by the
 	 difference of loop iterations.  We however can do better if
 	 we look at the actual profile, if it is available.  */
-      scale = RDIV (iteration_bound * scale, iterations);
+      p = p.apply_scale (iteration_bound, iterations);
 
       bool determined = false;
       if (loop->header->count.initialized_p ())
@@ -582,9 +586,8 @@ scale_loop_profile (struct loop *loop, int scale, gcov_type iteration_bound)
 
 	  if (count_in > profile_count::zero () )
 	    {
-	      scale = GCOV_COMPUTE_SCALE (count_in.to_gcov_type ()
-					  * iteration_bound,
-                                          loop->header->count.to_gcov_type ());
+	      p = count_in.probability_in (loop->header->count.apply_scale
+						 (iteration_bound, 1));
 	      determined = true;
 	    }
 	}
@@ -597,18 +600,19 @@ scale_loop_profile (struct loop *loop, int scale, gcov_type iteration_bound)
 	      freq_in += EDGE_FREQUENCY (e);
 
 	  if (freq_in != 0)
-	    scale = GCOV_COMPUTE_SCALE (freq_in * iteration_bound,
-                                        loop->header->frequency);
+	    p = profile_probability::probability_in_gcov_type
+			 (freq_in * iteration_bound, loop->header->frequency);
 	}
-      if (!scale)
-	scale = 1;
+      if (!(p > profile_probability::never ()))
+	p = profile_probability::very_unlikely ();
     }
 
-  if (scale == REG_BR_PROB_BASE)
+  if (p >= profile_probability::always ()
+      || !p.initialized_p ())
     return;
 
   /* Scale the actual probabilities.  */
-  scale_loop_frequencies (loop, scale, REG_BR_PROB_BASE);
+  scale_loop_frequencies (loop, p);
   if (dump_file && (dump_flags & TDF_DETAILS))
     fprintf (dump_file, ";; guessed iterations are now %i\n",
 	     (int)expected_loop_iterations_unbounded (loop));
@@ -778,7 +782,6 @@ create_empty_loop_on_edge (edge entry_edge,
   gcond *cond_expr;
   tree exit_test;
   edge exit_e;
-  int prob;
 
   gcc_assert (entry_edge && initial_value && stride && upper_bound && iv);
 
@@ -802,9 +805,7 @@ create_empty_loop_on_edge (edge entry_edge,
   add_loop (loop, outer);
 
   /* TODO: Fix frequencies and counts.  */
-  prob = REG_BR_PROB_BASE / 2;
-
-  scale_loop_frequencies (loop, REG_BR_PROB_BASE - prob, REG_BR_PROB_BASE);
+  scale_loop_frequencies (loop, profile_probability::even ());
 
   /* Update dominators.  */
   update_dominators_in_loop (loop);
@@ -862,7 +863,8 @@ create_empty_loop_on_edge (edge entry_edge,
 struct loop *
 loopify (edge latch_edge, edge header_edge,
 	 basic_block switch_bb, edge true_edge, edge false_edge,
-	 bool redirect_all_edges, unsigned true_scale, unsigned false_scale)
+	 bool redirect_all_edges, profile_probability true_scale,
+	 profile_probability false_scale)
 {
   basic_block succ_bb = latch_edge->dest;
   basic_block pred_bb = header_edge->src;
@@ -915,8 +917,8 @@ loopify (edge latch_edge, edge header_edge,
 	  e->count = switch_bb->count.apply_probability (e->probability);
 	}
     }
-  scale_loop_frequencies (loop, false_scale, REG_BR_PROB_BASE);
-  scale_loop_frequencies (succ_bb->loop_father, true_scale, REG_BR_PROB_BASE);
+  scale_loop_frequencies (loop, false_scale);
+  scale_loop_frequencies (succ_bb->loop_father, true_scale);
   update_dominators_in_loop (loop);
 
   return loop;
@@ -1621,7 +1623,8 @@ force_single_succ_latches (void)
 
   THEN_PROB is the probability of then branch of the condition.
   ELSE_PROB is the probability of else branch. Note that they may be both
-  REG_BR_PROB_BASE when condition is IFN_LOOP_VECTORIZED.  */
+  REG_BR_PROB_BASE when condition is IFN_LOOP_VECTORIZED or
+  IFN_LOOP_DIST_ALIAS.  */
 
 static basic_block
 lv_adjust_loop_entry_edge (basic_block first_head, basic_block second_head,
@@ -1683,7 +1686,7 @@ struct loop *
 loop_version (struct loop *loop,
 	      void *cond_expr, basic_block *condition_bb,
 	      profile_probability then_prob, profile_probability else_prob,
-	      unsigned then_scale, unsigned else_scale,
+	      profile_probability then_scale, profile_probability else_scale,
 	      bool place_after)
 {
   basic_block first_head, second_head;

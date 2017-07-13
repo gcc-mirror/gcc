@@ -845,13 +845,13 @@ conflict:
 conflict_std:
   if (name == NULL)
     {
-      return gfc_notify_std (standard, "%s attribute "
+      return gfc_notify_std (standard, "%s attribute conflicts "
                              "with %s attribute at %L", a1, a2,
                              where);
     }
   else
     {
-      return gfc_notify_std (standard, "%s attribute "
+      return gfc_notify_std (standard, "%s attribute conflicts "
 			     "with %s attribute in %qs at %L",
                              a1, a2, name, where);
     }

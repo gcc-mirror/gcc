@@ -94,6 +94,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "dumpfile.h"
 #include "tree-affine.h"
 #include "params.h"
+#include "builtins.h"
 
 static struct datadep_stats
 {
@@ -749,16 +750,30 @@ canonicalize_base_object_address (tree addr)
   return build_fold_addr_expr (TREE_OPERAND (addr, 0));
 }
 
-/* Analyzes the behavior of the memory reference DR in the innermost loop or
-   basic block that contains it.  Returns true if analysis succeed or false
-   otherwise.  */
+/* Analyze the behavior of memory reference REF.  There are two modes:
+
+   - BB analysis.  In this case we simply split the address into base,
+     init and offset components, without reference to any containing loop.
+     The resulting base and offset are general expressions and they can
+     vary arbitrarily from one iteration of the containing loop to the next.
+     The step is always zero.
+
+   - loop analysis.  In this case we analyze the reference both wrt LOOP
+     and on the basis that the reference occurs (is "used") in LOOP;
+     see the comment above analyze_scalar_evolution_in_loop for more
+     information about this distinction.  The base, init, offset and
+     step fields are all invariant in LOOP.
+
+   Perform BB analysis if LOOP is null, or if LOOP is the function's
+   dummy outermost loop.  In other cases perform loop analysis.
+
+   Return true if the analysis succeeded and store the results in DRB if so.
+   BB analysis can only fail for bitfield or reversed-storage accesses.  */
 
 bool
-dr_analyze_innermost (struct data_reference *dr, struct loop *nest)
+dr_analyze_innermost (innermost_loop_behavior *drb, tree ref,
+		      struct loop *loop)
 {
-  gimple *stmt = DR_STMT (dr);
-  struct loop *loop = loop_containing_stmt (stmt);
-  tree ref = DR_REF (dr);
   HOST_WIDE_INT pbitsize, pbitpos;
   tree base, poffset;
   machine_mode pmode;
@@ -788,11 +803,26 @@ dr_analyze_innermost (struct data_reference *dr, struct loop *nest)
       return false;
     }
 
+  /* Calculate the alignment and misalignment for the inner reference.  */
+  unsigned int HOST_WIDE_INT base_misalignment;
+  unsigned int base_alignment;
+  get_object_alignment_1 (base, &base_alignment, &base_misalignment);
+
+  /* There are no bitfield references remaining in BASE, so the values
+     we got back must be whole bytes.  */
+  gcc_assert (base_alignment % BITS_PER_UNIT == 0
+	      && base_misalignment % BITS_PER_UNIT == 0);
+  base_alignment /= BITS_PER_UNIT;
+  base_misalignment /= BITS_PER_UNIT;
+
   if (TREE_CODE (base) == MEM_REF)
     {
       if (!integer_zerop (TREE_OPERAND (base, 1)))
 	{
+	  /* Subtract MOFF from the base and add it to POFFSET instead.
+	     Adjust the misalignment to reflect the amount we subtracted.  */
 	  offset_int moff = mem_ref_offset (base);
+	  base_misalignment -= moff.to_short_addr ();
 	  tree mofft = wide_int_to_tree (sizetype, moff);
 	  if (!poffset)
 	    poffset = mofft;
@@ -806,22 +836,11 @@ dr_analyze_innermost (struct data_reference *dr, struct loop *nest)
 
   if (in_loop)
     {
-      if (!simple_iv (loop, loop_containing_stmt (stmt), base, &base_iv,
-                      nest ? true : false))
+      if (!simple_iv (loop, loop, base, &base_iv, true))
         {
-          if (nest)
-            {
-              if (dump_file && (dump_flags & TDF_DETAILS))
-                fprintf (dump_file, "failed: evolution of base is not"
-                                    " affine.\n");
-              return false;
-            }
-          else
-            {
-              base_iv.base = base;
-              base_iv.step = ssize_int (0);
-              base_iv.no_overflow = true;
-            }
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    fprintf (dump_file, "failed: evolution of base is not affine.\n");
+	  return false;
         }
     }
   else
@@ -843,42 +862,57 @@ dr_analyze_innermost (struct data_reference *dr, struct loop *nest)
           offset_iv.base = poffset;
           offset_iv.step = ssize_int (0);
         }
-      else if (!simple_iv (loop, loop_containing_stmt (stmt),
-                           poffset, &offset_iv,
-			   nest ? true : false))
+      else if (!simple_iv (loop, loop, poffset, &offset_iv, true))
         {
-          if (nest)
-            {
-              if (dump_file && (dump_flags & TDF_DETAILS))
-                fprintf (dump_file, "failed: evolution of offset is not"
-                                    " affine.\n");
-              return false;
-            }
-          else
-            {
-              offset_iv.base = poffset;
-              offset_iv.step = ssize_int (0);
-            }
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    fprintf (dump_file, "failed: evolution of offset is not affine.\n");
+	  return false;
         }
     }
 
   init = ssize_int (pbitpos / BITS_PER_UNIT);
+
+  /* Subtract any constant component from the base and add it to INIT instead.
+     Adjust the misalignment to reflect the amount we subtracted.  */
   split_constant_offset (base_iv.base, &base_iv.base, &dinit);
-  init =  size_binop (PLUS_EXPR, init, dinit);
+  init = size_binop (PLUS_EXPR, init, dinit);
+  base_misalignment -= TREE_INT_CST_LOW (dinit);
+
   split_constant_offset (offset_iv.base, &offset_iv.base, &dinit);
-  init =  size_binop (PLUS_EXPR, init, dinit);
+  init = size_binop (PLUS_EXPR, init, dinit);
 
   step = size_binop (PLUS_EXPR,
 		     fold_convert (ssizetype, base_iv.step),
 		     fold_convert (ssizetype, offset_iv.step));
 
-  DR_BASE_ADDRESS (dr) = canonicalize_base_object_address (base_iv.base);
+  base = canonicalize_base_object_address (base_iv.base);
 
-  DR_OFFSET (dr) = fold_convert (ssizetype, offset_iv.base);
-  DR_INIT (dr) = init;
-  DR_STEP (dr) = step;
+  /* See if get_pointer_alignment can guarantee a higher alignment than
+     the one we calculated above.  */
+  unsigned int HOST_WIDE_INT alt_misalignment;
+  unsigned int alt_alignment;
+  get_pointer_alignment_1 (base, &alt_alignment, &alt_misalignment);
 
-  DR_ALIGNED_TO (dr) = size_int (highest_pow2_factor (offset_iv.base));
+  /* As above, these values must be whole bytes.  */
+  gcc_assert (alt_alignment % BITS_PER_UNIT == 0
+	      && alt_misalignment % BITS_PER_UNIT == 0);
+  alt_alignment /= BITS_PER_UNIT;
+  alt_misalignment /= BITS_PER_UNIT;
+
+  if (base_alignment < alt_alignment)
+    {
+      base_alignment = alt_alignment;
+      base_misalignment = alt_misalignment;
+    }
+
+  drb->base_address = base;
+  drb->offset = fold_convert (ssizetype, offset_iv.base);
+  drb->init = init;
+  drb->step = step;
+  drb->base_alignment = base_alignment;
+  drb->base_misalignment = base_misalignment & (base_alignment - 1);
+  drb->offset_alignment = highest_pow2_factor (offset_iv.base);
+  drb->step_alignment = highest_pow2_factor (step);
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     fprintf (dump_file, "success.\n");
@@ -1077,7 +1111,8 @@ create_data_ref (loop_p nest, loop_p loop, tree memref, gimple *stmt,
   DR_REF (dr) = memref;
   DR_IS_READ (dr) = is_read;
 
-  dr_analyze_innermost (dr, nest);
+  dr_analyze_innermost (&DR_INNERMOST (dr), memref,
+			nest != NULL ? loop : NULL);
   dr_analyze_indices (dr, nest, loop);
   dr_analyze_alias (dr);
 
@@ -1092,8 +1127,12 @@ create_data_ref (loop_p nest, loop_p loop, tree memref, gimple *stmt,
       print_generic_expr (dump_file, DR_INIT (dr), TDF_SLIM);
       fprintf (dump_file, "\n\tstep: ");
       print_generic_expr (dump_file, DR_STEP (dr), TDF_SLIM);
-      fprintf (dump_file, "\n\taligned to: ");
-      print_generic_expr (dump_file, DR_ALIGNED_TO (dr), TDF_SLIM);
+      fprintf (dump_file, "\n\tbase alignment: %d", DR_BASE_ALIGNMENT (dr));
+      fprintf (dump_file, "\n\tbase misalignment: %d",
+	       DR_BASE_MISALIGNMENT (dr));
+      fprintf (dump_file, "\n\toffset alignment: %d",
+	       DR_OFFSET_ALIGNMENT (dr));
+      fprintf (dump_file, "\n\tstep alignment: %d", DR_STEP_ALIGNMENT (dr));
       fprintf (dump_file, "\n\tbase_object: ");
       print_generic_expr (dump_file, DR_BASE_OBJECT (dr), TDF_SLIM);
       fprintf (dump_file, "\n");
@@ -4729,6 +4768,30 @@ find_data_references_in_loop (struct loop *loop,
   free (bbs);
 
   return NULL_TREE;
+}
+
+/* Return the alignment in bytes that DRB is guaranteed to have at all
+   times.  */
+
+unsigned int
+dr_alignment (innermost_loop_behavior *drb)
+{
+  /* Get the alignment of BASE_ADDRESS + INIT.  */
+  unsigned int alignment = drb->base_alignment;
+  unsigned int misalignment = (drb->base_misalignment
+			       + TREE_INT_CST_LOW (drb->init));
+  if (misalignment != 0)
+    alignment = MIN (alignment, misalignment & -misalignment);
+
+  /* Cap it to the alignment of OFFSET.  */
+  if (!integer_zerop (drb->offset))
+    alignment = MIN (alignment, drb->offset_alignment);
+
+  /* Cap it to the alignment of STEP.  */
+  if (!integer_zerop (drb->step))
+    alignment = MIN (alignment, drb->step_alignment);
+
+  return alignment;
 }
 
 /* Recursive helper function.  */

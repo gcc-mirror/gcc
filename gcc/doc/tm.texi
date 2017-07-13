@@ -5172,7 +5172,7 @@ returns bounds for returned pointers.  Arguments meaning is similar to
 @code{TARGET_FUNCTION_VALUE}.
 @end deftypefn
 
-@deftypefn {Target Hook} void TARGET_SETUP_INCOMING_VARARG_BOUNDS (cumulative_args_t @var{args_so_far}, enum machine_mode @var{mode}, tree @var{type}, int *@var{pretend_args_size}, int @var{second_time})
+@deftypefn {Target Hook} void TARGET_SETUP_INCOMING_VARARG_BOUNDS (cumulative_args_t @var{args_so_far}, machine_mode @var{mode}, tree @var{type}, int *@var{pretend_args_size}, int @var{second_time})
 Use it to store bounds for anonymous register arguments stored
 into the stack.  Arguments meaning is similar to
 @code{TARGET_SETUP_INCOMING_VARARGS}.
@@ -11346,7 +11346,7 @@ returns upper bound of bounds @var{b}.
 @deftypefn {Target Hook} tree TARGET_CHKP_BOUND_TYPE (void)
 Return type to be used for bounds
 @end deftypefn
-@deftypefn {Target Hook} {enum machine_mode} TARGET_CHKP_BOUND_MODE (void)
+@deftypefn {Target Hook} machine_mode TARGET_CHKP_BOUND_MODE (void)
 Return mode to be used for bounds.
 @end deftypefn
 @deftypefn {Target Hook} tree TARGET_CHKP_MAKE_BOUNDS_CONSTANT (HOST_WIDE_INT @var{lb}, HOST_WIDE_INT @var{ub})

@@ -1441,11 +1441,8 @@ if_convertible_loop_p_1 (struct loop *loop, vec<data_reference_p> *refs)
 	         || TREE_CODE (ref) == REALPART_EXPR)
 	    ref = TREE_OPERAND (ref, 0);
 
-          DR_BASE_ADDRESS (dr) = ref;
-          DR_OFFSET (dr) = NULL;
-          DR_INIT (dr) = NULL;
-          DR_STEP (dr) = NULL;
-          DR_ALIGNED_TO (dr) = NULL;
+	  memset (&DR_INNERMOST (dr), 0, sizeof (DR_INNERMOST (dr)));
+	  DR_BASE_ADDRESS (dr) = ref;
         }
       hash_memrefs_baserefs_and_store_DRs_read_written_info (dr);
     }
@@ -1853,8 +1850,11 @@ predicate_scalar_phi (gphi *phi, gimple_stmt_iterator *gsi)
       new_stmt = gimple_build_assign (res, rhs);
       gsi_insert_before (gsi, new_stmt, GSI_SAME_STMT);
       gimple_stmt_iterator new_gsi = gsi_for_stmt (new_stmt);
-      fold_stmt (&new_gsi, ifcvt_follow_ssa_use_edges);
-      update_stmt (new_stmt);
+      if (fold_stmt (&new_gsi, ifcvt_follow_ssa_use_edges))
+	{
+	  new_stmt = gsi_stmt (new_gsi);
+	  update_stmt (new_stmt);
+	}
 
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{
@@ -2400,7 +2400,7 @@ combine_blocks (struct loop *loop)
       if (exit_bb != loop->header)
 	{
 	  /* Connect this node to loop header.  */
-	  make_edge (loop->header, exit_bb, EDGE_FALLTHRU);
+	  make_single_succ_edge (loop->header, exit_bb, EDGE_FALLTHRU);
 	  set_immediate_dominator (CDI_DOMINATORS, exit_bb, loop->header);
 	}
 
@@ -2566,7 +2566,8 @@ version_loop_for_if_conversion (struct loop *loop)
   new_loop = loop_version (loop, cond, &cond_bb,
 			   profile_probability::always (),
 			   profile_probability::always (),
-			   REG_BR_PROB_BASE, REG_BR_PROB_BASE, true);
+			   profile_probability::always (),
+			   profile_probability::always (), true);
   free_original_copy_tables ();
 
   for (unsigned i = 0; i < save_length; i++)

@@ -636,6 +636,19 @@ fixup_noreturn_call (gimple *stmt)
   return changed;
 }
 
+/* Return true if we want to merge BB1 and BB2 into a single block.  */
+
+static bool
+want_merge_blocks_p (basic_block bb1, basic_block bb2)
+{
+  if (!can_merge_blocks_p (bb1, bb2))
+    return false;
+  gimple_stmt_iterator gsi = gsi_last_nondebug_bb (bb1);
+  if (gsi_end_p (gsi) || !stmt_can_terminate_bb_p (gsi_stmt (gsi)))
+    return true;
+  return bb1->count.ok_for_merging (bb2->count);
+}
+
 
 /* Tries to cleanup cfg in basic block BB.  Returns true if anything
    changes.  */
@@ -652,7 +665,7 @@ cleanup_tree_cfg_bb (basic_block bb)
      This happens when we visit BBs in a non-optimal order and
      avoids quadratic behavior with adjusting stmts BB pointer.  */
   if (single_pred_p (bb)
-      && can_merge_blocks_p (single_pred (bb), bb))
+      && want_merge_blocks_p (single_pred (bb), bb))
     /* But make sure we _do_ visit it.  When we remove unreachable paths
        ending in a backedge we fail to mark the destinations predecessors
        as changed.  */
@@ -662,7 +675,7 @@ cleanup_tree_cfg_bb (basic_block bb)
      conditional branches (due to the elimination of single-valued PHI
      nodes).  */
   else if (single_succ_p (bb)
-	   && can_merge_blocks_p (bb, single_succ (bb)))
+	   && want_merge_blocks_p (bb, single_succ (bb)))
     {
       merge_blocks (bb, single_succ (bb));
       return true;

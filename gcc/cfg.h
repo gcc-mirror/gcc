@@ -109,6 +109,7 @@ extern void scale_bbs_frequencies_gcov_type (basic_block *, int, gcov_type,
 					     gcov_type);
 extern void scale_bbs_frequencies_profile_count (basic_block *, int,
 					     profile_count, profile_count);
+extern void scale_bbs_frequencies (basic_block *, int, profile_probability);
 extern void initialize_original_copy_tables (void);
 extern void reset_original_copy_tables (void);
 extern void free_original_copy_tables (void);

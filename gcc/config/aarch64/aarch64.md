@@ -1905,6 +1905,17 @@
   [(set_attr "type" "alus_sreg,alus_imm,alus_imm")]
 )
 
+(define_insn "aarch64_sub<mode>_compare0"
+  [(set (reg:CC_NZ CC_REGNUM)
+	(compare:CC_NZ
+	 (minus:GPI (match_operand:GPI 0 "register_operand" "r")
+		   (match_operand:GPI 1 "aarch64_plus_operand" "r"))
+	 (const_int 0)))]
+  ""
+  "cmp\\t%<w>0, %<w>1"
+  [(set_attr "type" "alus_sreg")]
+)
+
 (define_insn "*compare_neg<mode>"
   [(set (reg:CC_Z CC_REGNUM)
 	(compare:CC_Z

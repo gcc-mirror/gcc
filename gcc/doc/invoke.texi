@@ -631,6 +631,7 @@ Objective-C and Objective-C++ Dialects}.
 -mapcs-reentrant  -mno-apcs-reentrant @gol
 -msched-prolog  -mno-sched-prolog @gol
 -mlittle-endian  -mbig-endian @gol
+-mbe8 -mbe32 @gol
 -mfloat-abi=@var{name} @gol
 -mfp16-format=@var{name}
 -mthumb-interwork  -mno-thumb-interwork @gol
@@ -660,7 +661,8 @@ Objective-C and Objective-C++ Dialects}.
 @emph{AVR Options}
 @gccoptlist{-mmcu=@var{mcu}  -mabsdata  -maccumulate-args @gol
 -mbranch-cost=@var{cost} @gol
--mcall-prologues  -mint8  -mn_flash=@var{size}  -mno-interrupts @gol
+-mcall-prologues  -mgas-isr-prologues  -mint8 @gol
+-mn_flash=@var{size}  -mno-interrupts @gol
 -mrelax  -mrmw  -mstrict-X  -mtiny-stack  -mfract-convert-truncate @gol
 -mshort-calls  -nodevicelib @gol
 -Waddr-space-convert  -Wmisspelled-isr}
@@ -1124,9 +1126,10 @@ See RS/6000 and PowerPC Options.
 -muser-mode  -mno-user-mode @gol
 -mv8plus  -mno-v8plus  -mvis  -mno-vis @gol
 -mvis2  -mno-vis2  -mvis3  -mno-vis3 @gol
+-mvis4 -mno-vis4 -mvis4b -mno-vis4b @gol
 -mcbcond  -mno-cbcond  -mfmaf  -mno-fmaf  @gol
--mpopc  -mno-popc  -msubxc  -mno-subxc@gol
--mfix-at697f  -mfix-ut699 @gol
+-mpopc  -mno-popc  -msubxc  -mno-subxc @gol
+-mfix-at697f  -mfix-ut699  -mfix-ut700  -mfix-gr712rc @gol
 -mlra  -mno-lra}
 
 @emph{SPU Options}
@@ -14213,6 +14216,10 @@ Enable Large System Extension instructions.  This is on by default for
 @option{-march=armv8.1-a}.
 @item fp16
 Enable FP16 extension.  This also enables floating-point instructions.
+@item rcpc
+Enable the RcPc extension.  This does not change code generation from GCC,
+but is passed on to the assembler, enabling inline asm statements to use
+instructions from the RcPc extension.
 
 @end table
 
@@ -15201,7 +15208,16 @@ the default for all standard configurations.
 Generate code for a processor running in big-endian mode; the default is
 to compile code for a little-endian processor.
 
-@item -march=@var{name@r{[}+extension@dots{}@r{]}}
+@item -mbe8
+@itemx -mbe32
+@opindex mbe8
+When linking a big-endian image select between BE8 and BE32 formats.
+The option has no effect for little-endian images and is ignored.  The
+default is dependent on the selected target architecture.  For ARMv6
+and later architectures the default is BE8, for older architectures
+the default is BE32.  BE32 format has been deprecated by ARM.
+
+@item -march=@var{name}@r{[}+extension@dots{}@r{]}
 @opindex march
 This specifies the name of the target ARM architecture.  GCC uses this
 name to determine what kind of instructions it can emit when generating
@@ -15216,6 +15232,7 @@ Permissible names are:
 @samp{armv7}, @samp{armv7-a}, @samp{armv7ve}, 
 @samp{armv8-a}, @samp{armv8.1-a}, @samp{armv8.2-a},
 @samp{armv7-r},
+@samp{armv8-r},
 @samp{armv6-m}, @samp{armv6s-m},
 @samp{armv7-m}, @samp{armv7e-m},
 @samp{armv8-m.base}, @samp{armv8-m.main},
@@ -15482,7 +15499,22 @@ The single- and double-precision floating-point instructions.
 
 @item +nofp
 Disable the floating-point extension.
+@end table
 
+@item armv8-r
+@table @samp
+@item +crc
+The Cyclic Redundancy Check (CRC) instructions.
+@item +fp.sp
+The single-precision FPv5 floating-point instructions.
+@item +simd
+The ARMv8 Advanced SIMD and floating-point instructions.
+@item +crypto
+The cryptographic instructions.
+@item +nocrypto
+Disable the cryptographic isntructions.
+@item +nofp
+Disable the floating-point, Advanced SIMD and cryptographic instructions.
 @end table
 
 @end table
@@ -15517,9 +15549,10 @@ Permissible names are: @samp{arm2}, @samp{arm250},
 @samp{arm1156t2-s}, @samp{arm1156t2f-s}, @samp{arm1176jz-s}, @samp{arm1176jzf-s},
 @samp{generic-armv7-a}, @samp{cortex-a5}, @samp{cortex-a7}, @samp{cortex-a8},
 @samp{cortex-a9}, @samp{cortex-a12}, @samp{cortex-a15}, @samp{cortex-a17},
-@samp{cortex-a32}, @samp{cortex-a35}, @samp{cortex-a53}, @samp{cortex-a57},
-@samp{cortex-a72}, @samp{cortex-a73}, @samp{cortex-r4},
-@samp{cortex-r4f}, @samp{cortex-r5}, @samp{cortex-r7}, @samp{cortex-r8},
+@samp{cortex-a32}, @samp{cortex-a35}, @samp{cortex-a53}, @samp{cortex-a55},
+@samp{cortex-a57}, @samp{cortex-a72}, @samp{cortex-a73}, @samp{cortex-a75},
+@samp{cortex-r4}, @samp{cortex-r4f}, @samp{cortex-r5}, @samp{cortex-r7},
+@samp{cortex-r8},
 @samp{cortex-m33},
 @samp{cortex-m23},
 @samp{cortex-m7},
@@ -15542,7 +15575,8 @@ Additionally, this option can specify that GCC should tune the performance
 of the code for a big.LITTLE system.  Permissible names are:
 @samp{cortex-a15.cortex-a7}, @samp{cortex-a17.cortex-a7},
 @samp{cortex-a57.cortex-a53}, @samp{cortex-a72.cortex-a53},
-@samp{cortex-a72.cortex-a35}, @samp{cortex-a73.cortex-a53}.
+@samp{cortex-a72.cortex-a35}, @samp{cortex-a73.cortex-a53},
+@samp{cortex-a75.cortex-a55}.
 
 @option{-mtune=generic-@var{arch}} specifies that GCC should tune the
 performance for a blend of processors within architecture @var{arch}.
@@ -15559,7 +15593,7 @@ of the build computer.  At present, this feature is only supported on
 GNU/Linux, and not all architectures are recognized.  If the auto-detect is
 unsuccessful the option has no effect.
 
-@item -mcpu=@var{name@r{[}+extension@dots{}@r{]}}
+@item -mcpu=@var{name}@r{[}+extension@dots{}@r{]}
 @opindex mcpu
 This specifies the name of the target ARM processor.  GCC uses this name
 to derive the name of the target ARM architecture (as if specified
@@ -15603,8 +15637,8 @@ Disables the floating-point and SIMD instructions on
 @samp{generic-armv7-a}, @samp{cortex-a5}, @samp{cortex-a7},
 @samp{cortex-a8}, @samp{cortex-a9}, @samp{cortex-a12},
 @samp{cortex-a15}, @samp{cortex-a17}, @samp{cortex-a15.cortex-a7},
-@samp{cortex-a17.cortex-a7}, @samp{cortex-a32}, @samp{cortex-a35}
-and @samp{cortex-a53}.
+@samp{cortex-a17.cortex-a7}, @samp{cortex-a32}, @samp{cortex-a35},
+@samp{cortex-a53} and @samp{cortex-a55}.
 
 @item +nofp.dp
 Disables the double-precision component of the floating-point instructions
@@ -15957,6 +15991,16 @@ integers. The default branch cost is 0.
 @opindex mcall-prologues
 Functions prologues/epilogues are expanded as calls to appropriate
 subroutines.  Code size is smaller.
+
+@item -mgas-isr-prologues
+@opindex mgas-isr-prologues
+Interrupt service routines (ISRs) may use the @code{__gcc_isr} pseudo
+instruction supported by GNU Binutils.
+If this option is on, the feature can still be disabled for individual
+ISRs by means of the @ref{AVR Function Attributes,,@code{no_gccisr}}
+function attribute.  This feature is activated per default
+if optimization is on (but not with @option{-Og}, @pxref{Optimize Options}),
+and if GNU Binutils support @w{@uref{https://sourceware.org/PR21683,PR21683}}.
 
 @item -mint8
 @opindex mint8
@@ -23875,7 +23919,7 @@ for machine type @var{cpu_type}.  Supported values for @var{cpu_type} are
 @samp{leon}, @samp{leon3}, @samp{leon3v7}, @samp{sparclite}, @samp{f930},
 @samp{f934}, @samp{sparclite86x}, @samp{sparclet}, @samp{tsc701}, @samp{v9},
 @samp{ultrasparc}, @samp{ultrasparc3}, @samp{niagara}, @samp{niagara2},
-@samp{niagara3}, @samp{niagara4} and @samp{niagara7}.
+@samp{niagara3}, @samp{niagara4}, @samp{niagara7} and @samp{m8}.
 
 Native Solaris and GNU/Linux toolchains also support the value @samp{native},
 which selects the best architecture option for the host processor.
@@ -23903,7 +23947,8 @@ f930, f934, sparclite86x
 tsc701
 
 @item v9
-ultrasparc, ultrasparc3, niagara, niagara2, niagara3, niagara4, niagara7
+ultrasparc, ultrasparc3, niagara, niagara2, niagara3, niagara4,
+niagara7, m8
 @end table
 
 By default (unless configured otherwise), GCC generates code for the V7
@@ -23947,7 +23992,8 @@ additionally optimizes it for Sun UltraSPARC T2 chips. With
 UltraSPARC T3 chips.  With @option{-mcpu=niagara4}, the compiler
 additionally optimizes it for Sun UltraSPARC T4 chips.  With
 @option{-mcpu=niagara7}, the compiler additionally optimizes it for
-Oracle SPARC M7 chips.
+Oracle SPARC M7 chips.  With @option{-mcpu=m8}, the compiler
+additionally optimizes it for Oracle M8 chips.
 
 @item -mtune=@var{cpu_type}
 @opindex mtune
@@ -23962,8 +24008,8 @@ that select a particular CPU implementation.  Those are
 @samp{leon3}, @samp{leon3v7}, @samp{f930}, @samp{f934},
 @samp{sparclite86x}, @samp{tsc701}, @samp{ultrasparc},
 @samp{ultrasparc3}, @samp{niagara}, @samp{niagara2}, @samp{niagara3},
-@samp{niagara4} and @samp{niagara7}.  With native Solaris and
-GNU/Linux toolchains, @samp{native} can also be used.
+@samp{niagara4}, @samp{niagara7} and @samp{m8}.  With native Solaris
+and GNU/Linux toolchains, @samp{native} can also be used.
 
 @item -mv8plus
 @itemx -mno-v8plus
@@ -24011,6 +24057,18 @@ default is @option{-mvis4} when targeting a cpu that supports such
 instructions, such as niagara-7 and later.  Setting @option{-mvis4}
 also sets @option{-mvis3}, @option{-mvis2} and @option{-mvis}.
 
+@item -mvis4b
+@itemx -mno-vis4b
+@opindex mvis4b
+@opindex mno-vis4b
+With @option{-mvis4b}, GCC generates code that takes advantage of
+version 4.0 of the UltraSPARC Visual Instruction Set extensions, plus
+the additional VIS instructions introduced in the Oracle SPARC
+Architecture 2017.  The default is @option{-mvis4b} when targeting a
+cpu that supports such instructions, such as m8 and later.  Setting
+@option{-mvis4b} also sets @option{-mvis4}, @option{-mvis3},
+@option{-mvis2} and @option{-mvis}.
+
 @item -mcbcond
 @itemx -mno-cbcond
 @opindex mcbcond
@@ -24056,6 +24114,16 @@ processor (which corresponds to erratum #13 of the AT697E processor).
 @opindex mfix-ut699
 Enable the documented workarounds for the floating-point errata and the data
 cache nullify errata of the UT699 processor.
+
+@item -mfix-ut700
+@opindex mfix-ut700
+Enable the documented workaround for the back-to-back store errata of
+the UT699E/UT700 processor.
+
+@item -mfix-gr712rc
+@opindex mfix-gr712rc
+Enable the documented workaround for the back-to-back store errata of
+the GR712RC processor.
 @end table
 
 These @samp{-m} options are supported in addition to the above

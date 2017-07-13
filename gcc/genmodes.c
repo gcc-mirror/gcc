@@ -1204,6 +1204,24 @@ enum machine_mode\n{");
 
   printf ("#define NUM_INT_N_ENTS %d\n", n_int_n_ents);
 
+  puts ("\
+\n\
+#endif /* insn-modes.h */");
+}
+
+static void
+emit_insn_modes_inline_h (void)
+{
+  printf ("/* Generated automatically from machmode.def%s%s\n",
+	   HAVE_EXTRA_MODES ? " and " : "",
+	   EXTRA_MODES_FILE);
+
+  puts ("\
+   by genmodes.  */\n\
+\n\
+#ifndef GCC_INSN_MODES_INLINE_H\n\
+#define GCC_INSN_MODES_INLINE_H");
+
   puts ("\n#if !defined (USED_FOR_TARGET) && GCC_VERSION >= 4001\n");
   emit_mode_size_inline ();
   emit_mode_nunits_inline ();
@@ -1214,7 +1232,7 @@ enum machine_mode\n{");
 
   puts ("\
 \n\
-#endif /* insn-modes.h */");
+#endif /* insn-modes-inline.h */");
 }
 
 static void
@@ -1231,7 +1249,6 @@ emit_insn_modes_c_header (void)
 #include \"system.h\"\n\
 #include \"coretypes.h\"\n\
 #include \"tm.h\"\n\
-#include \"machmode.h\"\n\
 #include \"real.h\"");
 }
 
@@ -1247,7 +1264,7 @@ emit_min_insn_modes_c_header (void)
 \n\
 #include \"bconfig.h\"\n\
 #include \"system.h\"\n\
-#include \"machmode.h\"");
+#include \"coretypes.h\"");
 }
 
 static void
@@ -1799,18 +1816,20 @@ emit_min_insn_modes_c (void)
 int
 main (int argc, char **argv)
 {
-  bool gen_header = false, gen_min = false;
+  bool gen_header = false, gen_inlines = false, gen_min = false;
   progname = argv[0];
 
   if (argc == 1)
     ;
   else if (argc == 2 && !strcmp (argv[1], "-h"))
     gen_header = true;
+  else if (argc == 2 && !strcmp (argv[1], "-i"))
+    gen_inlines = true;
   else if (argc == 2 && !strcmp (argv[1], "-m"))
     gen_min = true;
   else
     {
-      error ("usage: %s [-h|-m] > file", progname);
+      error ("usage: %s [-h|-i|-m] > file", progname);
       return FATAL_EXIT_CODE;
     }
 
@@ -1826,6 +1845,8 @@ main (int argc, char **argv)
 
   if (gen_header)
     emit_insn_modes_h ();
+  else if (gen_inlines)
+    emit_insn_modes_inline_h ();
   else if (gen_min)
     emit_min_insn_modes_c ();
   else

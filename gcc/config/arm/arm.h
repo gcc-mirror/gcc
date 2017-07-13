@@ -384,7 +384,8 @@ enum base_architecture
   BASE_ARCH_7EM = 7,
   BASE_ARCH_8A = 8,
   BASE_ARCH_8M_BASE = 8,
-  BASE_ARCH_8M_MAIN = 8
+  BASE_ARCH_8M_MAIN = 8,
+  BASE_ARCH_8R = 8
 };
 
 /* The major revision number of the ARM Architecture implemented by the target.  */
@@ -2257,11 +2258,16 @@ const char *arm_canon_arch_option (int argc, const char **argv);
 #define CANON_ARCH_SPEC_FUNCTION		\
   { "canon_arch", arm_canon_arch_option },
 
+const char *arm_be8_option (int argc, const char **argv);
+#define BE8_SPEC_FUNCTION			\
+  { "be8_linkopt", arm_be8_option },
+
 # define EXTRA_SPEC_FUNCTIONS			\
   MCPU_MTUNE_NATIVE_FUNCTIONS			\
   ASM_CPU_SPEC_FUNCTIONS			\
   CANON_ARCH_SPEC_FUNCTION			\
-  TARGET_MODE_SPEC_FUNCTIONS
+  TARGET_MODE_SPEC_FUNCTIONS			\
+  BE8_SPEC_FUNCTION
 
 /* Automatically add -mthumb for Thumb-only targets if mode isn't specified
    via the configuration option --with-mode or via the command line. The

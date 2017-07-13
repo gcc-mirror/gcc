@@ -325,7 +325,7 @@ hash_table_mod1 (hashval_t hash, unsigned int index)
 {
   const struct prime_ent *p = &prime_tab[index];
   gcc_checking_assert (sizeof (hashval_t) * CHAR_BIT <= 32);
-    return mul_mod (hash, p->prime, p->inv, p->shift);
+  return mul_mod (hash, p->prime, p->inv, p->shift);
 }
 
 /* Compute the secondary table index for HASH given current prime index.  */

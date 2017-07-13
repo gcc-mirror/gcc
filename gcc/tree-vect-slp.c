@@ -403,9 +403,9 @@ again:
 	{
 	case vect_constant_def:
 	case vect_external_def:
-	case vect_reduction_def:
 	  break;
 
+	case vect_reduction_def:
 	case vect_induction_def:
 	case vect_internal_def:
 	  oprnd_info->def_stmts.quick_push (def_stmt);
@@ -943,13 +943,15 @@ vect_build_slp_tree (vec_info *vinfo,
   else
     return NULL;
 
-  /* If the SLP node is a PHI (induction), terminate the recursion.  */
+  /* If the SLP node is a PHI (induction or reduction), terminate
+     the recursion.  */
   if (gimple_code (stmt) == GIMPLE_PHI)
     {
-      FOR_EACH_VEC_ELT (stmts, i, stmt)
-	if (stmt != stmts[0])
-	  /* Induction from different IVs is not supported.  */
-	  return NULL;
+      /* Induction from different IVs is not supported.  */
+      if (STMT_VINFO_DEF_TYPE (vinfo_for_stmt (stmt)) == vect_induction_def)
+	FOR_EACH_VEC_ELT (stmts, i, stmt)
+	  if (stmt != stmts[0])
+	    return NULL;
       node = vect_create_new_slp_node (stmts);
       return node;
     }
@@ -1005,6 +1007,7 @@ vect_build_slp_tree (vec_info *vinfo,
       unsigned int j;
 
       if (oprnd_info->first_dt != vect_internal_def
+	  && oprnd_info->first_dt != vect_reduction_def
 	  && oprnd_info->first_dt != vect_induction_def)
         continue;
 
@@ -2118,7 +2121,20 @@ vect_analyze_slp (vec_info *vinfo, unsigned max_tree_size)
 	  FOR_EACH_VEC_ELT (loop_vinfo->reduction_chains, i, first_element)
 	    if (! vect_analyze_slp_instance (vinfo, first_element,
 					     max_tree_size))
-	      return false;
+	      {
+		/* Dissolve reduction chain group.  */
+		gimple *next, *stmt = first_element;
+		while (stmt)
+		  {
+		    stmt_vec_info vinfo = vinfo_for_stmt (stmt);
+		    next = GROUP_NEXT_ELEMENT (vinfo);
+		    GROUP_FIRST_ELEMENT (vinfo) = NULL;
+		    GROUP_NEXT_ELEMENT (vinfo) = NULL;
+		    stmt = next;
+		  }
+		STMT_VINFO_DEF_TYPE (vinfo_for_stmt (first_element))
+		  = vect_internal_def;
+	      }
 	}
 
       /* Find SLP sequences starting from groups of reductions.  */

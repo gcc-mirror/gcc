@@ -1186,13 +1186,22 @@ expand_complex_div_wide (gimple_stmt_iterator *gsi, tree inner_type,
       bb_join = e->dest;
       bb_true = create_empty_bb (bb_cond);
       bb_false = create_empty_bb (bb_true);
+      bb_true->frequency = bb_false->frequency = bb_cond->frequency / 2;
+      bb_true->count = bb_false->count
+	 = bb_cond->count.apply_probability (profile_probability::even ());
 
       /* Wire the blocks together.  */
       e->flags = EDGE_TRUE_VALUE;
+      e->count = bb_true->count;
+      /* TODO: With value profile we could add an historgram to determine real
+	 branch outcome.  */
+      e->probability = profile_probability::even ();
       redirect_edge_succ (e, bb_true);
-      make_edge (bb_cond, bb_false, EDGE_FALSE_VALUE);
-      make_edge (bb_true, bb_join, EDGE_FALLTHRU);
-      make_edge (bb_false, bb_join, EDGE_FALLTHRU);
+      edge e2 = make_edge (bb_cond, bb_false, EDGE_FALSE_VALUE);
+      e2->count = bb_false->count;
+      e2->probability = profile_probability::even ();
+      make_single_succ_edge (bb_true, bb_join, EDGE_FALLTHRU);
+      make_single_succ_edge (bb_false, bb_join, EDGE_FALLTHRU);
       add_bb_to_loop (bb_true, bb_cond->loop_father);
       add_bb_to_loop (bb_false, bb_cond->loop_father);
 

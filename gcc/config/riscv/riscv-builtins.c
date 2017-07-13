@@ -27,6 +27,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-expr.h"
 #include "memmodel.h"
 #include "expmed.h"
+#include "profile-count.h"
 #include "optabs.h"
 #include "recog.h"
 #include "diagnostic-core.h"

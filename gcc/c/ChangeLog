@@ -1,3 +1,9 @@
+2017-07-06  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-lang.c (selftest::run_c_tests): Move body to c_family_tests,
+	and call that instead.
+	* c-tree.h (selftest::run_c_tests): New decl.
+
 2017-06-26  Marek Polacek  <polacek@redhat.com>
 
 	PR c/80116

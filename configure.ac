@@ -1839,7 +1839,12 @@ if test -d ${srcdir}/gcc; then
         language=
         lang_requires=
         lang_requires_boot_languages=
-        . ${lang_frag}
+        # set srcdir during sourcing lang_frag to the gcc dir.
+        # Sadly overriding srcdir on the . line doesn't work in plain sh as it
+        # polutes this shell
+        saved_srcdir=${srcdir}
+        srcdir=${srcdir}/gcc . ${lang_frag}
+        srcdir=${saved_srcdir}
         for other in ${lang_requires} ${lang_requires_boot_languages}; do
           case ,${enable_languages}, in
 	    *,$other,*) ;;
@@ -1914,7 +1919,10 @@ if test -d ${srcdir}/gcc; then
         subdir_requires=
         boot_language=no
         build_by_default=yes
-        . ${lang_frag}
+        # set srcdir during sourcing.  See above about save & restore
+        saved_srcdir=${srcdir}
+        srcdir=${srcdir}/gcc . ${lang_frag}
+        srcdir=${saved_srcdir}
         if test x${language} = x; then
           echo "${lang_frag} doesn't set \$language." 1>&2
           exit 1

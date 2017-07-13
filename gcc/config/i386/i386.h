@@ -2657,6 +2657,9 @@ struct GTY(()) machine_function {
      frame pointer.) */
   unsigned int call_ms2sysv_extra_regs:3;
 
+  /* Nonzero if the function places outgoing arguments on stack.  */
+  BOOL_BITFIELD outgoing_args_on_stack : 1;
+
   /* During prologue/epilogue generation, the current frame state.
      Otherwise, the frame state at the end of the prologue.  */
   struct machine_frame_state fs;

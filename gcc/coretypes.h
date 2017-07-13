@@ -358,12 +358,17 @@ typedef void (*gt_pointer_operator) (void *, void *);
 typedef unsigned char uchar;
 #endif
 
-/* Most host source files will require the following headers.  */
-#if !defined (GENERATOR_FILE) && !defined (USED_FOR_TARGET)
-#include "machmode.h"
+/* Most source files will require the following headers.  */
+#if !defined (USED_FOR_TARGET)
+#include "insn-modes.h"
 #include "signop.h"
 #include "wide-int.h" 
+#include "wide-int-print.h"
+#include "insn-modes-inline.h"
+#include "machmode.h"
 #include "double-int.h"
+/* Most host source files will require the following headers.  */
+#if !defined (GENERATOR_FILE)
 #include "real.h"
 #include "fixed-value.h"
 #include "hash-table.h"
@@ -372,6 +377,7 @@ typedef unsigned char uchar;
 #include "is-a.h"
 #include "memory-block.h"
 #include "dumpfile.h"
+#endif
 #endif /* GENERATOR_FILE && !USED_FOR_TARGET */
 
 #endif /* coretypes.h */

@@ -4615,23 +4615,23 @@ process_command (unsigned int decoded_options_count,
 
   /* Decide if undefined variable references are allowed in specs.  */
 
-  /* --version and --help alone or together are safe.  Note that -v would
-     make them unsafe, as they'd then be run for subprocesses as well, the
-     location of which might depend on variables possibly coming from
-     self-specs.
+  /* -v alone is safe. --version and --help alone or together are safe.  Note
+     that -v would make them unsafe, as they'd then be run for subprocesses as
+     well, the location of which might depend on variables possibly coming
+     from self-specs.  Note also that the command name is counted in
+     decoded_options_count.  */
 
-     Count the number of options we have for which undefined variables
-     are harmless for sure, and check that nothing else is set.  */
-
-  unsigned n_varsafe_options = 0;
+  unsigned help_version_count = 0;
 
   if (print_version)
-    n_varsafe_options++;
-  
+    help_version_count++;
+
   if (print_help_list)
-    n_varsafe_options++;
-  
-  spec_undefvar_allowed = (n_varsafe_options == decoded_options_count - 1);
+    help_version_count++;
+
+  spec_undefvar_allowed =
+    ((verbose_flag && decoded_options_count == 2)
+     || help_version_count == decoded_options_count - 1);
 
   alloc_switch ();
   switches[n_switches].part1 = 0;

@@ -209,8 +209,19 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
 /* std::align_val_t */
 #define align_type_node			cp_global_trees[CPTI_ALIGN_TYPE]
 
-/* We cache these tree nodes so as to call get_identifier less
-   frequently.  */
+/* We cache these tree nodes so as to call get_identifier less frequently.
+   For identifiers for functions, including special member functions such
+   as ctors and assignment operators, the nodes can be used (among other
+   things) to iterate over their overloads defined by/for a type.  For
+   example:
+
+     tree ovlid = cp_assignment_operator_id (NOP_EXPR);
+     tree overloads = lookup_fnfields_slot (type, ovlid);
+     for (ovl_iterator it (overloads); it; ++it) { ... }
+
+   iterates over the set of implicitly and explicitly defined overloads
+   of the assignment operator for type (including the copy and move
+   assignment operators, whether deleted or not).  */
 
 /* The name of a constructor that takes an in-charge parameter to
    decide whether or not to construct virtual base classes.  */
@@ -231,6 +242,18 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
 /* The name of a destructor that destroys virtual base classes, and
    then deletes the entire object.  */
 #define deleting_dtor_identifier	cp_global_trees[CPTI_DELETING_DTOR_IDENTIFIER]
+
+/* The name of the identifier used internally to represent operator CODE.  */
+#define cp_operator_id(CODE) \
+  (operator_name_info[(int) (CODE)].identifier)
+
+/* The name of the identifier used to represent assignment operator CODE,
+   both simple (i.e., operator= with CODE == NOP_EXPR) and compound (e.g.,
+   operator+= with CODE == PLUS_EXPR).  Includes copy and move assignment.
+   Use copy_fn_p() to test specifically for copy assignment.  */
+#define cp_assignment_operator_id(CODE)				\
+  (assignment_operator_name_info[(int) (CODE)].identifier)
+
 #define delta_identifier		cp_global_trees[CPTI_DELTA_IDENTIFIER]
 #define in_charge_identifier		cp_global_trees[CPTI_IN_CHARGE_IDENTIFIER]
 /* The name of the parameter that contains a pointer to the VTT to use
@@ -1840,11 +1863,6 @@ struct GTY(()) language_function {
 #define current_function_auto_return_pattern \
   (cp_function_chain->x_auto_return_pattern)
 
-#define cp_operator_id(CODE) \
-  (operator_name_info[(int) (CODE)].identifier)
-#define cp_assignment_operator_id(CODE) \
-  (assignment_operator_name_info[(int) (CODE)].identifier)
-
 /* In parser.c.  */
 extern tree cp_literal_operator_id (const char *);
 
@@ -2760,7 +2778,7 @@ struct GTY(()) lang_decl {
 /* For FUNCTION_DECLs and TEMPLATE_DECLs: nonzero means that this function
    is a constructor.  */
 #define DECL_CONSTRUCTOR_P(NODE) \
-  DECL_CXX_CONSTRUCTOR_P (STRIP_TEMPLATE (NODE))
+  IDENTIFIER_CTOR_P (DECL_NAME (NODE))
 
 /* Nonzero if NODE (a FUNCTION_DECL) is a constructor for a complete
    object.  */
@@ -2776,8 +2794,7 @@ struct GTY(()) lang_decl {
    specialized in-charge constructor or the specialized not-in-charge
    constructor.  */
 #define DECL_MAYBE_IN_CHARGE_CONSTRUCTOR_P(NODE)		\
-  (DECL_DECLARES_FUNCTION_P (NODE) && DECL_CONSTRUCTOR_P (NODE) \
-   && !DECL_CLONED_FUNCTION_P (NODE))
+  (DECL_NAME (NODE) == ctor_identifier)
 
 /* Nonzero if NODE (a FUNCTION_DECL) is a copy constructor.  */
 #define DECL_COPY_CONSTRUCTOR_P(NODE) \
@@ -2790,14 +2807,13 @@ struct GTY(()) lang_decl {
 /* Nonzero if NODE (a FUNCTION_DECL or TEMPLATE_DECL)
    is a destructor.  */
 #define DECL_DESTRUCTOR_P(NODE)				\
-  DECL_CXX_DESTRUCTOR_P (STRIP_TEMPLATE (NODE))
+  IDENTIFIER_DTOR_P (DECL_NAME (NODE))
 
 /* Nonzero if NODE (a FUNCTION_DECL) is a destructor, but not the
    specialized in-charge constructor, in-charge deleting constructor,
    or the base destructor.  */
 #define DECL_MAYBE_IN_CHARGE_DESTRUCTOR_P(NODE)			\
-  (DECL_DECLARES_FUNCTION_P (NODE) && DECL_DESTRUCTOR_P (NODE)	\
-   && !DECL_CLONED_FUNCTION_P (NODE))
+  (DECL_NAME (NODE) == dtor_identifier)
 
 /* Nonzero if NODE (a FUNCTION_DECL) is a destructor for a complete
    object.  */
@@ -7447,6 +7463,12 @@ extern void cp_ubsan_instrument_member_accesses (tree *);
 extern tree cp_ubsan_maybe_instrument_downcast	(location_t, tree, tree, tree);
 extern tree cp_ubsan_maybe_instrument_cast_to_vbase (location_t, tree, tree);
 extern void cp_ubsan_maybe_initialize_vtbl_ptrs (tree);
+
+#if CHECKING_P
+namespace selftest {
+  extern void run_cp_tests (void);
+} // namespace selftest
+#endif /* #if CHECKING_P */
 
 /* Inline bodies.  */
   

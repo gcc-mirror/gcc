@@ -1,3 +1,15 @@
+2017-07-05  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* brig-c.h (brig_type_for_mode): Remove "enum" before "machine_mode".
+	* brig-lang.c (brig_langhook_type_for_mode): Likewise.
+
+2017-07-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* brigfrontend/brig-function.cc: Include profile-count.h.
+	* brigfrontend/brig-to-generic.cc: Likewise.
+
 2017-05-18  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* brigfrontend/brig-to-generic.h (class brig_to_generic): Use

@@ -351,6 +351,22 @@ public:
       return profile_probability::always() - *this;
     }
 
+  /* Return THIS with quality dropped to GUESSED.  */
+  profile_probability guessed () const
+    {
+      profile_probability ret = *this;
+      ret.m_quality = profile_guessed;
+      return ret;
+    }
+
+  /* Return THIS with quality dropped to AFDO.  */
+  profile_probability afdo () const
+    {
+      profile_probability ret = *this;
+      ret.m_quality = profile_afdo;
+      return ret;
+    }
+
   profile_probability combine_with_freq (int freq1, profile_probability other,
 					 int freq2) const
     {
@@ -506,13 +522,20 @@ class GTY(()) profile_count
   /* Assume numbers smaller than this to multiply.  This is set to make
      testsuite pass, in future we may implement precise multiplication in higer
      rangers.  */
-  static const int64_t max_safe_multiplier = 131072;
+  static const uint64_t max_safe_multiplier = 131072;
 public:
 
   /* Used for counters which are expected to be never executed.  */
   static profile_count zero ()
     {
       return from_gcov_type (0);
+    }
+  static profile_count guessed_zero ()
+    {
+      profile_count c;
+      c.m_val = 0;
+      c.m_quality = profile_guessed;
+      return c;
     }
   static profile_count one ()
     {
@@ -556,6 +579,31 @@ public:
   bool reliable_p () const
     {
       return initialized_p ();
+    }
+
+  /* When merging basic blocks, the two different profile counts are unified.
+     Return true if this can be done without losing info about profile.
+     The only case we care about here is when first BB contains something
+     that makes it terminate in a way not visible in CFG.  */
+  bool ok_for_merging (profile_count other) const
+    {
+      if (m_quality < profile_adjusted
+	  || other.m_quality < profile_adjusted)
+	return true;
+      return !(other < *this);
+    }
+
+  /* When merging two BBs with different counts, pick common count that looks
+     most representative.  */
+  profile_count merge (profile_count other) const
+    {
+      if (*this == other || !other.initialized_p ()
+	  || m_quality > other.m_quality)
+	return *this;
+      if (other.m_quality > m_quality
+	  || other > *this)
+	return other;
+      return *this;
     }
 
   /* Basic operations.  */
@@ -732,6 +780,22 @@ public:
 	ret.m_val = RDIV (m_val * RDIV (num.m_val * max_safe_multiplier,
 					den.m_val), max_safe_multiplier);
       ret.m_quality = MIN (m_quality, profile_adjusted);
+      return ret;
+    }
+
+  /* Return THIS with quality dropped to GUESSED.  */
+  profile_count guessed () const
+    {
+      profile_count ret = *this;
+      ret.m_quality = profile_guessed;
+      return ret;
+    }
+
+  /* Return THIS with quality dropped to AFDO.  */
+  profile_count afdo () const
+    {
+      profile_count ret = *this;
+      ret.m_quality = profile_afdo;
       return ret;
     }
 

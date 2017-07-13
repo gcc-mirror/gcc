@@ -84,7 +84,6 @@ along with GCC; see the file COPYING3.  If not see
    FIXME: Could eliminate the duplication here if we were allowed to
    use string concatenation.  */
 
-#ifdef NETBSD_ENABLE_PTHREADS
 #define NETBSD_LIB_SPEC		\
   "%{pthread:			\
      %{!p:			\
@@ -103,21 +102,6 @@ along with GCC; see the file COPYING3.  If not see
 	 %{!pg:-lc}}		\
        %{p:-lc_p}		\
        %{pg:-lc_p}}}"
-#else
-#define NETBSD_LIB_SPEC		\
-  "%{posix:			\
-     %{!p:			\
-       %{!pg:-lposix}}		\
-     %{p:-lposix_p}		\
-     %{pg:-lposix_p}}		\
-   %{shared:-lc}		\
-   %{!shared:			\
-     %{!symbolic:		\
-       %{!p:			\
-	 %{!pg:-lc}}		\
-       %{p:-lc_p}		\
-       %{pg:-lc_p}}}"
-#endif
 
 #undef LIB_SPEC
 #define LIB_SPEC NETBSD_LIB_SPEC

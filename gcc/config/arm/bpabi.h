@@ -26,7 +26,7 @@
 /* Use the AAPCS ABI by default.  */
 #define ARM_DEFAULT_ABI ARM_ABI_AAPCS
 
-/* Assume that AAPCS ABIs should adhere to the full BPABI.  */ 
+/* Assume that AAPCS ABIs should adhere to the full BPABI.  */
 #define TARGET_BPABI (TARGET_AAPCS_BASED)
 
 /* BPABI targets use EABI frame unwinding tables.  */
@@ -55,84 +55,11 @@
 #define TARGET_FIX_V4BX_SPEC " %{mcpu=arm8|mcpu=arm810|mcpu=strongarm*"\
   "|march=armv4|mcpu=fa526|mcpu=fa626:--fix-v4bx}"
 
-#if TARGET_BIG_ENDIAN_DEFAULT
-#define BE8_LINK_SPEC \
-  " %{!mlittle-endian:%{march=armv7-a|mcpu=cortex-a5    \
-   |mcpu=cortex-a7                                      \
-   |mcpu=cortex-a8|mcpu=cortex-a9|mcpu=cortex-a15       \
-   |mcpu=cortex-a12|mcpu=cortex-a17			\
-   |mcpu=cortex-a15.cortex-a7				\
-   |mcpu=cortex-a17.cortex-a7				\
-   |mcpu=marvell-pj4					\
-   |mcpu=cortex-a32					\
-   |mcpu=cortex-a35					\
-   |mcpu=cortex-a53					\
-   |mcpu=cortex-a57					\
-   |mcpu=cortex-a57.cortex-a53				\
-   |mcpu=cortex-a72					\
-   |mcpu=cortex-a72.cortex-a53				\
-   |mcpu=cortex-a73					\
-   |mcpu=cortex-a73.cortex-a35				\
-   |mcpu=cortex-a73.cortex-a53				\
-   |mcpu=exynos-m1                                      \
-   |mcpu=xgene1                                         \
-   |mcpu=cortex-m1.small-multiply                       \
-   |mcpu=cortex-m0.small-multiply                       \
-   |mcpu=cortex-m0plus.small-multiply			\
-   |mcpu=generic-armv7-a                                \
-   |march=armv7ve	                                \
-   |march=armv7-m|mcpu=cortex-m3                        \
-   |march=armv7e-m|mcpu=cortex-m4|mcpu=cortex-m7        \
-   |march=armv6-m|mcpu=cortex-m0                        \
-   |march=armv8-a					\
-   |march=armv8-a+crc					\
-   |march=armv8.1-a					\
-   |march=armv8.1-a+crc					\
-   |march=armv8.2-a					\
-   |march=armv8.2-a+fp16				\
-   |march=armv8-m.base|mcpu=cortex-m23			\
-   |march=armv8-m.main					\
-   |march=armv8-m.main+dsp|mcpu=cortex-m33		\
-   :%{!r:--be8}}}"
-#else
-#define BE8_LINK_SPEC \
-  " %{mbig-endian:%{march=armv7-a|mcpu=cortex-a5        \
-   |mcpu=cortex-a7                                      \
-   |mcpu=cortex-a8|mcpu=cortex-a9|mcpu=cortex-a15       \
-   |mcpu=cortex-a12|mcpu=cortex-a17			\
-   |mcpu=cortex-a15.cortex-a7				\
-   |mcpu=cortex-a17.cortex-a7				\
-   |mcpu=cortex-a35					\
-   |mcpu=cortex-a53					\
-   |mcpu=cortex-a57					\
-   |mcpu=cortex-a57.cortex-a53				\
-   |mcpu=cortex-a72					\
-   |mcpu=cortex-a72.cortex-a53				\
-   |mcpu=cortex-a73					\
-   |mcpu=cortex-a73.cortex-a35				\
-   |mcpu=cortex-a73.cortex-a53				\
-   |mcpu=exynos-m1                                      \
-   |mcpu=xgene1                                         \
-   |mcpu=cortex-m1.small-multiply                       \
-   |mcpu=cortex-m0.small-multiply                       \
-   |mcpu=cortex-m0plus.small-multiply                   \
-   |mcpu=marvell-pj4					\
-   |mcpu=generic-armv7-a                                \
-   |march=armv7ve	                                \
-   |march=armv7-m|mcpu=cortex-m3                        \
-   |march=armv7e-m|mcpu=cortex-m4|mcpu=cortex-m7        \
-   |march=armv6-m|mcpu=cortex-m0                        \
-   |march=armv8-a					\
-   |march=armv8-a+crc					\
-   |march=armv8.1-a					\
-   |march=armv8.1-a+crc					\
-   |march=armv8.2-a					\
-   |march=armv8.2-a+fp16				\
-   |march=armv8-m.base|mcpu=cortex-m23			\
-   |march=armv8-m.main					\
-   |march=armv8-m.main+dsp|mcpu=cortex-m33		\
-   :%{!r:--be8}}}"
-#endif
+#define BE8_LINK_SPEC							\
+  "%{!r:%{!mbe32:%:be8_linkopt(%{mlittle-endian:little}"		\
+  "			       %{mbig-endian:big}"			\
+  "			       %{mbe8:be8}"				\
+  "			       %{march=*:arch %*})}}"
 
 /* Tell the assembler to build BPABI binaries.  */
 #undef  SUBTARGET_EXTRA_ASM_SPEC

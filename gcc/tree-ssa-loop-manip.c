@@ -1212,7 +1212,7 @@ tree_transform_and_unroll_loop (struct loop *loop, unsigned factor,
   gimple_stmt_iterator bsi;
   use_operand_p op;
   bool ok;
-  unsigned i, prob, prob_entry, scale_unrolled, scale_rest;
+  unsigned i, prob, prob_entry, scale_unrolled;
   profile_count freq_e, freq_h;
   gcov_type new_est_niter = niter_for_unrolled_loop (loop, factor);
   unsigned irr = loop_preheader_edge (loop)->flags & EDGE_IRREDUCIBLE_LOOP;
@@ -1241,14 +1241,16 @@ tree_transform_and_unroll_loop (struct loop *loop, unsigned factor,
      of this change (scale the frequencies of blocks before and after the exit
      by appropriate factors).  */
   scale_unrolled = prob_entry;
-  scale_rest = REG_BR_PROB_BASE;
 
   new_loop = loop_version (loop, enter_main_cond, NULL,
 			   profile_probability::from_reg_br_prob_base
 				 (prob_entry),
 			   profile_probability::from_reg_br_prob_base
 				 (REG_BR_PROB_BASE - prob_entry),
-			   scale_unrolled, scale_rest, true);
+			   profile_probability::from_reg_br_prob_base
+				(scale_unrolled),
+			   profile_probability::guessed_always (),
+			   true);
   gcc_assert (new_loop != NULL);
   update_ssa (TODO_update_ssa);
 
@@ -1369,14 +1371,11 @@ tree_transform_and_unroll_loop (struct loop *loop, unsigned factor,
     }
   if (freq_h > 0)
     {
-      gcov_type scale;
       /* Avoid dropping loop body profile counter to 0 because of zero count
 	 in loop's preheader.  */
       if (freq_e == profile_count::zero ())
         freq_e = profile_count::from_gcov_type (1);
-      /* This should not overflow.  */
-      scale = freq_e.probability_in (freq_h).to_reg_br_prob_base ();
-      scale_loop_frequencies (loop, scale, REG_BR_PROB_BASE);
+      scale_loop_frequencies (loop, freq_e.probability_in (freq_h));
     }
 
   exit_bb = single_pred (loop->latch);

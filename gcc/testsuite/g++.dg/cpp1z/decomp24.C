@@ -7,5 +7,5 @@ foo ()
 {
   int a {10};
   auto [b] { [&a](){} };	// { dg-error "cannot decompose lambda closure type" }
-  return b - a;			// { dg-warning "decomposition declaration only available with" "" { target c++14_down } .-1 }
+  return b - a;			// { dg-warning "structured bindings only available with" "" { target c++14_down } .-1 }
 }

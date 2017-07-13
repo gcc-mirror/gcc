@@ -448,11 +448,11 @@ vect_loop_vectorized_call (struct loop *loop)
   return NULL;
 }
 
-/* Fold LOOP_VECTORIZED internal call G to VALUE and
-   update any immediate uses of it's LHS.  */
+/* Fold loop internal call G like IFN_LOOP_VECTORIZED/IFN_LOOP_DIST_ALIAS
+   to VALUE and update any immediate uses of it's LHS.  */
 
 static void
-fold_loop_vectorized_call (gimple *g, tree value)
+fold_loop_internal_call (gimple *g, tree value)
 {
   tree lhs = gimple_call_lhs (g);
   use_operand_p use_p;
@@ -467,6 +467,60 @@ fold_loop_vectorized_call (gimple *g, tree value)
 	SET_USE (use_p, value);
       update_stmt (use_stmt);
     }
+}
+
+/* If LOOP has been versioned during loop distribution, return the gurading
+   internal call.  */
+
+static gimple *
+vect_loop_dist_alias_call (struct loop *loop)
+{
+  basic_block bb;
+  basic_block entry;
+  struct loop *outer, *orig;
+  gimple_stmt_iterator gsi;
+  gimple *g;
+
+  if (loop->orig_loop_num == 0)
+    return NULL;
+
+  orig = get_loop (cfun, loop->orig_loop_num);
+  if (orig == NULL)
+    {
+      /* The original loop is somehow destroyed.  Clear the information.  */
+      loop->orig_loop_num = 0;
+      return NULL;
+    }
+
+  if (loop != orig)
+    bb = nearest_common_dominator (CDI_DOMINATORS, loop->header, orig->header);
+  else
+    bb = loop_preheader_edge (loop)->src;
+
+  outer = bb->loop_father;
+  entry = ENTRY_BLOCK_PTR_FOR_FN (cfun);
+
+  /* Look upward in dominance tree.  */
+  for (; bb != entry && flow_bb_inside_loop_p (outer, bb);
+       bb = get_immediate_dominator (CDI_DOMINATORS, bb))
+    {
+      g = last_stmt (bb);
+      if (g == NULL || gimple_code (g) != GIMPLE_COND)
+	continue;
+
+      gsi = gsi_for_stmt (g);
+      gsi_prev (&gsi);
+      if (gsi_end_p (gsi))
+	continue;
+
+      g = gsi_stmt (gsi);
+      /* The guarding internal function call must have the same distribution
+	 alias id.  */
+      if (gimple_call_internal_p (g, IFN_LOOP_DIST_ALIAS)
+	  && (tree_to_shwi (gimple_call_arg (g, 0)) == loop->orig_loop_num))
+	return g;
+    }
+  return NULL;
 }
 
 /* Set the uids of all the statements in basic blocks inside loop
@@ -494,7 +548,7 @@ set_uid_loop_bbs (loop_vec_info loop_vinfo, gimple *loop_vectorized_call)
 	{
 	  arg = gimple_call_arg (g, 0);
 	  get_loop (cfun, tree_to_shwi (arg))->dont_vectorize = true;
-	  fold_loop_vectorized_call (g, boolean_false_node);
+	  fold_loop_internal_call (g, boolean_false_node);
 	}
     }
   bbs = get_loop_body (scalar_loop);
@@ -595,7 +649,7 @@ vectorize_loops (void)
     else
       {
 	loop_vec_info loop_vinfo, orig_loop_vinfo;
-	gimple *loop_vectorized_call;
+	gimple *loop_vectorized_call, *loop_dist_alias_call;
        try_vectorize:
 	if (!((flag_tree_loop_vectorize
 	       && optimize_loop_nest_for_speed_p (loop))
@@ -603,6 +657,7 @@ vectorize_loops (void)
 	  continue;
 	orig_loop_vinfo = NULL;
 	loop_vectorized_call = vect_loop_vectorized_call (loop);
+	loop_dist_alias_call = vect_loop_dist_alias_call (loop);
        vectorize_epilogue:
 	vect_location = find_loop_location (loop);
         if (LOCATION_LOCUS (vect_location) != UNKNOWN_LOCATION
@@ -652,8 +707,8 @@ vectorize_loops (void)
 		  {
 		    dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, vect_location,
 				     "basic block vectorized\n");
-		    fold_loop_vectorized_call (loop_vectorized_call,
-					       boolean_true_node);
+		    fold_loop_internal_call (loop_vectorized_call,
+					     boolean_true_node);
 		    loop_vectorized_call = NULL;
 		    ret |= TODO_cleanup_cfg;
 		  }
@@ -706,8 +761,15 @@ vectorize_loops (void)
 
 	if (loop_vectorized_call)
 	  {
-	    fold_loop_vectorized_call (loop_vectorized_call, boolean_true_node);
+	    fold_loop_internal_call (loop_vectorized_call, boolean_true_node);
 	    loop_vectorized_call = NULL;
+	    ret |= TODO_cleanup_cfg;
+	  }
+	if (loop_dist_alias_call)
+	  {
+	    tree value = gimple_call_arg (loop_dist_alias_call, 1);
+	    fold_loop_internal_call (loop_dist_alias_call, value);
+	    loop_dist_alias_call = NULL;
 	    ret |= TODO_cleanup_cfg;
 	  }
 
@@ -741,7 +803,16 @@ vectorize_loops (void)
 	    gimple *g = vect_loop_vectorized_call (loop);
 	    if (g)
 	      {
-		fold_loop_vectorized_call (g, boolean_false_node);
+		fold_loop_internal_call (g, boolean_false_node);
+		ret |= TODO_cleanup_cfg;
+		g = NULL;
+	      }
+	    else
+	      g = vect_loop_dist_alias_call (loop);
+
+	    if (g)
+	      {
+		fold_loop_internal_call (g, boolean_false_node);
 		ret |= TODO_cleanup_cfg;
 	      }
 	  }

@@ -342,7 +342,7 @@ grokclassfn (tree ctype, tree function, enum overload_flags flags)
   DECL_CONTEXT (function) = ctype;
 
   if (flags == DTOR_FLAG)
-    DECL_DESTRUCTOR_P (function) = 1;
+    DECL_CXX_DESTRUCTOR_P (function) = 1;
 
   if (flags == DTOR_FLAG || DECL_CONSTRUCTOR_P (function))
     maybe_retrofit_in_chrg (function);
@@ -2618,13 +2618,6 @@ reset_type_linkage_2 (tree type)
 	{
 	  tree mem = STRIP_TEMPLATE (m);
 	  reset_decl_linkage (mem);
-	  if (DECL_MAYBE_IN_CHARGE_CONSTRUCTOR_P (mem))
-	    {
-	      /* Also update its name, for cxx_dwarf_name.  */
-	      DECL_NAME (mem) = TYPE_IDENTIFIER (type);
-	      if (m != mem)
-		DECL_NAME (m) = TYPE_IDENTIFIER (type);
-	    }
 	}
       binding_table_foreach (CLASSTYPE_NESTED_UTDS (type),
 			     bt_reset_linkage_2, NULL);

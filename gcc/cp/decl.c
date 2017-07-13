@@ -7502,8 +7502,8 @@ cp_finish_decomp (tree decl, tree first, unsigned int count)
 
 	  if (init == error_mark_node || eltype == error_mark_node)
 	    {
-	      inform (dloc, "in initialization of decomposition variable %qD",
-		      v[i]);
+	      inform (dloc, "in initialization of structured binding "
+		      "variable %qD", v[i]);
 	      goto error_out;
 	    }
 	  /* Save the decltype away before reference collapse.  */
@@ -8529,11 +8529,11 @@ grokfndecl (tree ctype,
     case sfk_constructor:
     case sfk_copy_constructor:
     case sfk_move_constructor:
-      DECL_CONSTRUCTOR_P (decl) = 1;
+      DECL_CXX_CONSTRUCTOR_P (decl) = 1;
       DECL_NAME (decl) = ctor_identifier;
       break;
     case sfk_destructor:
-      DECL_DESTRUCTOR_P (decl) = 1;
+      DECL_CXX_DESTRUCTOR_P (decl) = 1;
       DECL_NAME (decl) = dtor_identifier;
       break;
     default:
@@ -10010,6 +10010,8 @@ grokdeclarator (const cp_declarator *declarator,
 						      declspecs->locations);
   if (typespec_loc == UNKNOWN_LOCATION)
     typespec_loc = declspecs->locations[ds_type_spec];
+  if (typespec_loc == UNKNOWN_LOCATION)
+    typespec_loc = input_location;
 
   /* Look inside a declarator for the name being declared
      and get it as a string, for an error message.  */
@@ -10153,7 +10155,7 @@ grokdeclarator (const cp_declarator *declarator,
 	  break;
 
 	case cdk_decomp:
-	  name = "decomposition";
+	  name = "structured binding";
 	  break;
 
 	case cdk_error:
@@ -10607,43 +10609,43 @@ grokdeclarator (const cp_declarator *declarator,
 			? declarator->declarator->id_loc : declarator->id_loc);
       if (inlinep)
 	error_at (declspecs->locations[ds_inline],
-		  "decomposition declaration cannot be declared %<inline%>");
+		  "structured binding declaration cannot be %<inline%>");
       if (typedef_p)
 	error_at (declspecs->locations[ds_typedef],
-		  "decomposition declaration cannot be declared %<typedef%>");
+		  "structured binding declaration cannot be %<typedef%>");
       if (constexpr_p)
-	error_at (declspecs->locations[ds_constexpr], "decomposition "
-		  "declaration cannot be declared %<constexpr%>");
+	error_at (declspecs->locations[ds_constexpr], "structured "
+		  "binding declaration cannot be %<constexpr%>");
       if (thread_p)
 	error_at (declspecs->locations[ds_thread],
-		  "decomposition declaration cannot be declared %qs",
+		  "structured binding declaration cannot be %qs",
 		  declspecs->gnu_thread_keyword_p
 		  ? "__thread" : "thread_local");
       if (concept_p)
 	error_at (declspecs->locations[ds_concept],
-		  "decomposition declaration cannot be declared %<concept%>");
+		  "structured binding declaration cannot be %<concept%>");
       switch (storage_class)
 	{
 	case sc_none:
 	  break;
 	case sc_register:
-	  error_at (loc, "decomposition declaration cannot be declared "
+	  error_at (loc, "structured binding declaration cannot be "
 		    "%<register%>");
 	  break;
 	case sc_static:
-	  error_at (loc, "decomposition declaration cannot be declared "
+	  error_at (loc, "structured binding declaration cannot be "
 		    "%<static%>");
 	  break;
 	case sc_extern:
-	  error_at (loc, "decomposition declaration cannot be declared "
+	  error_at (loc, "structured binding declaration cannot be "
 		    "%<extern%>");
 	  break;
 	case sc_mutable:
-	  error_at (loc, "decomposition declaration cannot be declared "
+	  error_at (loc, "structured binding declaration cannot be "
 		    "%<mutable%>");
 	  break;
 	case sc_auto:
-	  error_at (loc, "decomposition declaration cannot be declared "
+	  error_at (loc, "structured binding declaration cannot be "
 		    "C++98 %<auto%>");
 	  break;
 	default:
@@ -10654,8 +10656,8 @@ grokdeclarator (const cp_declarator *declarator,
 	{
 	  if (type != error_mark_node)
 	    {
-	      error_at (loc, "decomposition declaration cannot be declared "
-			"with type %qT", type);
+	      error_at (loc, "structured binding declaration cannot have "
+			"type %qT", type);
 	      inform (loc,
 		      "type must be cv-qualified %<auto%> or reference to "
 		      "cv-qualified %<auto%>");
@@ -10840,33 +10842,7 @@ grokdeclarator (const cp_declarator *declarator,
 	    tree arg_types;
 	    int funcdecl_p;
 
-	    /* Declaring a function type.
-	       Make sure we have a valid type for the function to return.  */
-
-	    if (type_quals != TYPE_UNQUALIFIED)
-	      {
-		if (SCALAR_TYPE_P (type) || VOID_TYPE_P (type))
-		  {
-		    warning_at (typespec_loc, OPT_Wignored_qualifiers, "type "
-				"qualifiers ignored on function return type");
-		  }
-		/* We now know that the TYPE_QUALS don't apply to the
-		   decl, but to its return type.  */
-		type_quals = TYPE_UNQUALIFIED;
-	      }
-
-	    /* Error about some types functions can't return.  */
-
-	    if (TREE_CODE (type) == FUNCTION_TYPE)
-	      {
-		error ("%qs declared as function returning a function", name);
-		return error_mark_node;
-	      }
-	    if (TREE_CODE (type) == ARRAY_TYPE)
-	      {
-		error ("%qs declared as function returning an array", name);
-		return error_mark_node;
-	      }
+	    /* Declaring a function type.  */
 
 	    input_location = declspecs->locations[ds_type_spec];
 	    abstract_virtuals_error (ACU_RETURN, type);
@@ -10974,7 +10950,35 @@ grokdeclarator (const cp_declarator *declarator,
 	      return error_mark_node;
 
 	    if (late_return_type)
-	      late_return_type_p = true;
+	      {
+		late_return_type_p = true;
+		type_quals = cp_type_quals (type);
+	      }
+
+	    if (type_quals != TYPE_UNQUALIFIED)
+	      {
+		if (SCALAR_TYPE_P (type) || VOID_TYPE_P (type))
+		  warning_at (typespec_loc, OPT_Wignored_qualifiers, "type "
+			      "qualifiers ignored on function return type");
+		/* We now know that the TYPE_QUALS don't apply to the
+		   decl, but to its return type.  */
+		type_quals = TYPE_UNQUALIFIED;
+	      }
+
+	    /* Error about some types functions can't return.  */
+
+	    if (TREE_CODE (type) == FUNCTION_TYPE)
+	      {
+		error_at (typespec_loc, "%qs declared as function returning "
+			  "a function", name);
+		return error_mark_node;
+	      }
+	    if (TREE_CODE (type) == ARRAY_TYPE)
+	      {
+		error_at (typespec_loc, "%qs declared as function returning "
+			  "an array", name);
+		return error_mark_node;
+	      }
 
 	    if (ctype == NULL_TREE
 		&& decl_context == FIELD
@@ -12605,9 +12609,11 @@ grokparms (tree parmlist, tree *parms)
 	    }
 	  else if (abstract_virtuals_error (decl, type))
 	    any_error = 1;  /* Seems like a good idea.  */
-	  else if (POINTER_TYPE_P (type))
+	  else if (cxx_dialect < cxx1z
+		   && POINTER_TYPE_P (type))
 	    {
-	      /* [dcl.fct]/6, parameter types cannot contain pointers
+	      /* Before C++17 DR 393:
+		 [dcl.fct]/6, parameter types cannot contain pointers
 		 (references) to arrays of unknown bound.  */
 	      tree t = TREE_TYPE (type);
 	      int ptr = TYPE_PTR_P (type);
@@ -12623,12 +12629,13 @@ grokparms (tree parmlist, tree *parms)
 		  t = TREE_TYPE (t);
 		}
 	      if (TREE_CODE (t) == ARRAY_TYPE)
-		error (ptr
-                       ? G_("parameter %qD includes pointer to array of "
-                            "unknown bound %qT")
-                       : G_("parameter %qD includes reference to array of "
-                            "unknown bound %qT"),
-                       decl, t);
+		pedwarn (DECL_SOURCE_LOCATION (decl), OPT_Wpedantic,
+			 ptr
+			 ? G_("parameter %qD includes pointer to array of "
+			      "unknown bound %qT")
+			 : G_("parameter %qD includes reference to array of "
+			      "unknown bound %qT"),
+			 decl, t);
 	    }
 
 	  if (any_error)

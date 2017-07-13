@@ -50,6 +50,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "expr.h"
 #include "builtins.h"
 #include "params.h"
+#include "tree-cfg.h"
 
 /* Return true if load- or store-lanes optab OPTAB is implemented for
    COUNT vectors of type VECTYPE.  NAME is the name of OPTAB.  */
@@ -666,12 +667,7 @@ vect_compute_data_ref_alignment (struct data_reference *dr)
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
   struct loop *loop = NULL;
   tree ref = DR_REF (dr);
-  tree vectype;
-  tree base, base_addr;
-  tree misalign = NULL_TREE;
-  tree aligned_to;
-  tree step;
-  unsigned HOST_WIDE_INT alignment;
+  tree vectype = STMT_VINFO_VECTYPE (stmt_info);
 
   if (dump_enabled_p ())
     dump_printf_loc (MSG_NOTE, vect_location,
@@ -683,11 +679,15 @@ vect_compute_data_ref_alignment (struct data_reference *dr)
   /* Initialize misalignment to unknown.  */
   SET_DR_MISALIGNMENT (dr, DR_MISALIGNMENT_UNKNOWN);
 
-  if (tree_fits_shwi_p (DR_STEP (dr)))
-    misalign = DR_INIT (dr);
-  aligned_to = DR_ALIGNED_TO (dr);
-  base_addr = DR_BASE_ADDRESS (dr);
-  vectype = STMT_VINFO_VECTYPE (stmt_info);
+  innermost_loop_behavior *drb = vect_dr_behavior (dr);
+  bool step_preserves_misalignment_p;
+
+  /* No step for BB vectorization.  */
+  if (!loop)
+    {
+      gcc_assert (integer_zerop (drb->step));
+      step_preserves_misalignment_p = true;
+    }
 
   /* In case the dataref is in an inner-loop of the loop that is being
      vectorized (LOOP), we use the base and misalignment information
@@ -695,26 +695,20 @@ vect_compute_data_ref_alignment (struct data_reference *dr)
      stays the same throughout the execution of the inner-loop, which is why
      we have to check that the stride of the dataref in the inner-loop evenly
      divides by the vector size.  */
-  if (loop && nested_in_vect_loop_p (loop, stmt))
+  else if (nested_in_vect_loop_p (loop, stmt))
     {
-      tree step = DR_STEP (dr);
+      step_preserves_misalignment_p
+	= (DR_STEP_ALIGNMENT (dr)
+	   % GET_MODE_SIZE (TYPE_MODE (vectype))) == 0;
 
-      if (tree_fits_shwi_p (step)
-	  && tree_to_shwi (step) % GET_MODE_SIZE (TYPE_MODE (vectype)) == 0)
-        {
-          if (dump_enabled_p ())
-            dump_printf_loc (MSG_NOTE, vect_location,
-                             "inner step divides the vector-size.\n");
-	  misalign = STMT_VINFO_DR_INIT (stmt_info);
-	  aligned_to = STMT_VINFO_DR_ALIGNED_TO (stmt_info);
-	  base_addr = STMT_VINFO_DR_BASE_ADDRESS (stmt_info);
-        }
-      else
+      if (dump_enabled_p ())
 	{
-	  if (dump_enabled_p ())
+	  if (step_preserves_misalignment_p)
+	    dump_printf_loc (MSG_NOTE, vect_location,
+			     "inner step divides the vector-size.\n");
+	  else
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-	                     "inner step doesn't divide the vector-size.\n");
-	  misalign = NULL_TREE;
+			     "inner step doesn't divide the vector-size.\n");
 	}
     }
 
@@ -724,61 +718,25 @@ vect_compute_data_ref_alignment (struct data_reference *dr)
      the dataref evenly divides by the vector size.  */
   else
     {
-      tree step = DR_STEP (dr);
-      unsigned vf = loop ? LOOP_VINFO_VECT_FACTOR (loop_vinfo) : 1;
+      unsigned vf = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
+      step_preserves_misalignment_p
+	= ((DR_STEP_ALIGNMENT (dr) * vf)
+	   % GET_MODE_SIZE (TYPE_MODE (vectype))) == 0;
 
-      if (tree_fits_shwi_p (step)
-	  && ((tree_to_shwi (step) * vf)
-	      % GET_MODE_SIZE (TYPE_MODE (vectype)) != 0))
-	{
-	  if (dump_enabled_p ())
-	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-	                     "step doesn't divide the vector-size.\n");
-	  misalign = NULL_TREE;
-	}
+      if (!step_preserves_misalignment_p && dump_enabled_p ())
+	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			 "step doesn't divide the vector-size.\n");
     }
 
-  /* To look at alignment of the base we have to preserve an inner MEM_REF
-     as that carries alignment information of the actual access.  */
-  base = ref;
-  while (handled_component_p (base))
-    base = TREE_OPERAND (base, 0);
-  unsigned int base_alignment = 0;
-  unsigned HOST_WIDE_INT base_bitpos;
-  get_object_alignment_1 (base, &base_alignment, &base_bitpos);
-  /* As data-ref analysis strips the MEM_REF down to its base operand
-     to form DR_BASE_ADDRESS and adds the offset to DR_INIT we have to
-     adjust things to make base_alignment valid as the alignment of
-     DR_BASE_ADDRESS.  */
-  if (TREE_CODE (base) == MEM_REF)
-    {
-      /* Note all this only works if DR_BASE_ADDRESS is the same as
-	 MEM_REF operand zero, otherwise DR/SCEV analysis might have factored
-	 in other offsets.  We need to rework DR to compute the alingment
-	 of DR_BASE_ADDRESS as long as all information is still available.  */
-      if (operand_equal_p (TREE_OPERAND (base, 0), base_addr, 0))
-	{
-	  base_bitpos -= mem_ref_offset (base).to_short_addr () * BITS_PER_UNIT;
-	  base_bitpos &= (base_alignment - 1);
-	}
-      else
-	base_bitpos = BITS_PER_UNIT;
-    }
-  if (base_bitpos != 0)
-    base_alignment = base_bitpos & -base_bitpos;
-  /* Also look at the alignment of the base address DR analysis
-     computed.  */
-  unsigned int base_addr_alignment = get_pointer_alignment (base_addr);
-  if (base_addr_alignment > base_alignment)
-    base_alignment = base_addr_alignment;
+  unsigned int base_alignment = drb->base_alignment;
+  unsigned int base_misalignment = drb->base_misalignment;
+  unsigned HOST_WIDE_INT vector_alignment = TYPE_ALIGN_UNIT (vectype);
 
-  if (base_alignment >= TYPE_ALIGN (TREE_TYPE (vectype)))
-    DR_VECT_AUX (dr)->base_element_aligned = true;
-
-  alignment = TYPE_ALIGN_UNIT (vectype);
-
-  if ((compare_tree_int (aligned_to, alignment) < 0)
-      || !misalign)
+  if (drb->offset_alignment < vector_alignment
+      || !step_preserves_misalignment_p
+      /* We need to know whether the step wrt the vectorized loop is
+	 negative when computing the starting misalignment below.  */
+      || TREE_CODE (drb->step) != INTEGER_CST)
     {
       if (dump_enabled_p ())
 	{
@@ -790,12 +748,13 @@ vect_compute_data_ref_alignment (struct data_reference *dr)
       return true;
     }
 
-  if (base_alignment < TYPE_ALIGN (vectype))
+  if (base_alignment < vector_alignment)
     {
-      base = base_addr;
+      tree base = drb->base_address;
       if (TREE_CODE (base) == ADDR_EXPR)
 	base = TREE_OPERAND (base, 0);
-      if (!vect_can_force_dr_alignment_p (base, TYPE_ALIGN (vectype)))
+      if (!vect_can_force_dr_alignment_p (base,
+					  vector_alignment * BITS_PER_UNIT))
 	{
 	  if (dump_enabled_p ())
 	    {
@@ -832,28 +791,20 @@ vect_compute_data_ref_alignment (struct data_reference *dr)
 
       DR_VECT_AUX (dr)->base_decl = base;
       DR_VECT_AUX (dr)->base_misaligned = true;
-      DR_VECT_AUX (dr)->base_element_aligned = true;
+      base_misalignment = 0;
     }
+  unsigned int misalignment = (base_misalignment
+			       + TREE_INT_CST_LOW (drb->init));
 
-  if (loop && nested_in_vect_loop_p (loop, stmt))
-    step = STMT_VINFO_DR_STEP (stmt_info);
-  else
-    step = DR_STEP (dr);
   /* If this is a backward running DR then first access in the larger
      vectype actually is N-1 elements before the address in the DR.
      Adjust misalign accordingly.  */
-  if (tree_int_cst_sgn (step) < 0)
-    {
-      tree offset = ssize_int (TYPE_VECTOR_SUBPARTS (vectype) - 1);
-      /* DR_STEP(dr) is the same as -TYPE_SIZE of the scalar type,
-	 otherwise we wouldn't be here.  */
-      offset = fold_build2 (MULT_EXPR, ssizetype, offset, step);
-      /* PLUS because STEP was negative.  */
-      misalign = size_binop (PLUS_EXPR, misalign, offset);
-    }
+  if (tree_int_cst_sgn (drb->step) < 0)
+    /* PLUS because STEP is negative.  */
+    misalignment += ((TYPE_VECTOR_SUBPARTS (vectype) - 1)
+		     * TREE_INT_CST_LOW (drb->step));
 
-  SET_DR_MISALIGNMENT (dr,
-		       wi::mod_floor (misalign, alignment, SIGNED).to_uhwi ());
+  SET_DR_MISALIGNMENT (dr, misalignment & (vector_alignment - 1));
 
   if (dump_enabled_p ())
     {
@@ -906,8 +857,10 @@ vect_update_misalignment_for_peel (struct data_reference *dr,
     {
       if (current_dr != dr)
         continue;
-      gcc_assert (DR_MISALIGNMENT (dr) / dr_size ==
-                  DR_MISALIGNMENT (dr_peel) / dr_peel_size);
+      gcc_assert (!known_alignment_for_access_p (dr)
+		  || !known_alignment_for_access_p (dr_peel)
+		  || (DR_MISALIGNMENT (dr) / dr_size
+		      == DR_MISALIGNMENT (dr_peel) / dr_peel_size));
       SET_DR_MISALIGNMENT (dr, 0);
       return;
     }
@@ -3418,8 +3371,10 @@ again:
 				    {
 				      DR_OFFSET (newdr) = ssize_int (0);
 				      DR_STEP (newdr) = step;
-				      DR_ALIGNED_TO (newdr)
-					= size_int (BIGGEST_ALIGNMENT);
+				      DR_OFFSET_ALIGNMENT (newdr)
+					= BIGGEST_ALIGNMENT;
+				      DR_STEP_ALIGNMENT (newdr)
+					= highest_pow2_factor (step);
 				      dr = newdr;
 				      simd_lane_access = true;
 				    }
@@ -3558,100 +3513,27 @@ again:
 	 the outer-loop.  */
       if (loop && nested_in_vect_loop_p (loop, stmt))
 	{
-	  tree outer_step, outer_base, outer_init;
-	  HOST_WIDE_INT pbitsize, pbitpos;
-	  tree poffset;
-	  machine_mode pmode;
-	  int punsignedp, preversep, pvolatilep;
-	  affine_iv base_iv, offset_iv;
-	  tree dinit;
-
 	  /* Build a reference to the first location accessed by the
-	     inner-loop: *(BASE+INIT).  (The first location is actually
-	     BASE+INIT+OFFSET, but we add OFFSET separately later).  */
-          tree inner_base = build_fold_indirect_ref
-                                (fold_build_pointer_plus (base, init));
+	     inner loop: *(BASE + INIT + OFFSET).  By construction,
+	     this address must be invariant in the inner loop, so we
+	     can consider it as being used in the outer loop.  */
+	  tree init_offset = fold_build2 (PLUS_EXPR, TREE_TYPE (offset),
+					  init, offset);
+	  tree init_addr = fold_build_pointer_plus (base, init_offset);
+	  tree init_ref = build_fold_indirect_ref (init_addr);
 
 	  if (dump_enabled_p ())
 	    {
 	      dump_printf_loc (MSG_NOTE, vect_location,
-                               "analyze in outer-loop: ");
-	      dump_generic_expr (MSG_NOTE, TDF_SLIM, inner_base);
+                               "analyze in outer loop: ");
+	      dump_generic_expr (MSG_NOTE, TDF_SLIM, init_ref);
 	      dump_printf (MSG_NOTE, "\n");
 	    }
 
-	  outer_base = get_inner_reference (inner_base, &pbitsize, &pbitpos,
-					    &poffset, &pmode, &punsignedp,
-					    &preversep, &pvolatilep);
-	  gcc_assert (outer_base != NULL_TREE);
-
-	  if (pbitpos % BITS_PER_UNIT != 0)
-	    {
-	      if (dump_enabled_p ())
-		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-                                 "failed: bit offset alignment.\n");
-	      return false;
-	    }
-
-	  if (preversep)
-	    {
-	      if (dump_enabled_p ())
-		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-				 "failed: reverse storage order.\n");
-	      return false;
-	    }
-
-	  outer_base = build_fold_addr_expr (outer_base);
-	  if (!simple_iv (loop, loop_containing_stmt (stmt), outer_base,
-                          &base_iv, false))
-	    {
-	      if (dump_enabled_p ())
-		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-                                 "failed: evolution of base is not affine.\n");
-	      return false;
-	    }
-
-	  if (offset)
-	    {
-	      if (poffset)
-		poffset = fold_build2 (PLUS_EXPR, TREE_TYPE (offset), offset,
-                                       poffset);
-	      else
-		poffset = offset;
-	    }
-
-	  if (!poffset)
-	    {
-	      offset_iv.base = ssize_int (0);
-	      offset_iv.step = ssize_int (0);
-	    }
-	  else if (!simple_iv (loop, loop_containing_stmt (stmt), poffset,
-                               &offset_iv, false))
-	    {
-	      if (dump_enabled_p ())
-	        dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-                                 "evolution of offset is not affine.\n");
-	      return false;
-	    }
-
-	  outer_init = ssize_int (pbitpos / BITS_PER_UNIT);
-	  split_constant_offset (base_iv.base, &base_iv.base, &dinit);
-	  outer_init =  size_binop (PLUS_EXPR, outer_init, dinit);
-	  split_constant_offset (offset_iv.base, &offset_iv.base, &dinit);
-	  outer_init =  size_binop (PLUS_EXPR, outer_init, dinit);
-
-	  outer_step = size_binop (PLUS_EXPR,
-				fold_convert (ssizetype, base_iv.step),
-				fold_convert (ssizetype, offset_iv.step));
-
-	  STMT_VINFO_DR_STEP (stmt_info) = outer_step;
-	  /* FIXME: Use canonicalize_base_object_address (base_iv.base); */
-	  STMT_VINFO_DR_BASE_ADDRESS (stmt_info) = base_iv.base;
-	  STMT_VINFO_DR_INIT (stmt_info) = outer_init;
-	  STMT_VINFO_DR_OFFSET (stmt_info) =
-				fold_convert (ssizetype, offset_iv.base);
-	  STMT_VINFO_DR_ALIGNED_TO (stmt_info) =
-				size_int (highest_pow2_factor (offset_iv.base));
+	  if (!dr_analyze_innermost (&STMT_VINFO_DR_WRT_VEC_LOOP (stmt_info),
+				     init_ref, loop))
+	    /* dr_analyze_innermost already explained the failure.  */
+	    return false;
 
           if (dump_enabled_p ())
 	    {
@@ -3669,10 +3551,14 @@ again:
 	      dump_printf (MSG_NOTE, "\n\touter step: ");
 	      dump_generic_expr (MSG_NOTE, TDF_SLIM,
                                  STMT_VINFO_DR_STEP (stmt_info));
-	      dump_printf (MSG_NOTE, "\n\touter aligned to: ");
-	      dump_generic_expr (MSG_NOTE, TDF_SLIM,
-                                 STMT_VINFO_DR_ALIGNED_TO (stmt_info));
-	      dump_printf (MSG_NOTE, "\n");
+	      dump_printf (MSG_NOTE, "\n\touter base alignment: %d\n",
+			   STMT_VINFO_DR_BASE_ALIGNMENT (stmt_info));
+	      dump_printf (MSG_NOTE, "\n\touter base misalignment: %d\n",
+			   STMT_VINFO_DR_BASE_MISALIGNMENT (stmt_info));
+	      dump_printf (MSG_NOTE, "\n\touter offset alignment: %d\n",
+			   STMT_VINFO_DR_OFFSET_ALIGNMENT (stmt_info));
+	      dump_printf (MSG_NOTE, "\n\touter step alignment: %d\n",
+			   STMT_VINFO_DR_STEP_ALIGNMENT (stmt_info));
 	    }
 	}
 
@@ -3971,38 +3857,22 @@ tree
 vect_create_addr_base_for_vector_ref (gimple *stmt,
 				      gimple_seq *new_stmt_list,
 				      tree offset,
-				      struct loop *loop,
 				      tree byte_offset)
 {
   stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
   struct data_reference *dr = STMT_VINFO_DATA_REF (stmt_info);
-  tree data_ref_base;
   const char *base_name;
   tree addr_base;
   tree dest;
   gimple_seq seq = NULL;
-  tree base_offset;
-  tree init;
   tree vect_ptr_type;
   tree step = TYPE_SIZE_UNIT (TREE_TYPE (DR_REF (dr)));
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
+  innermost_loop_behavior *drb = vect_dr_behavior (dr);
 
-  if (loop_vinfo && loop && loop != (gimple_bb (stmt))->loop_father)
-    {
-      struct loop *outer_loop = LOOP_VINFO_LOOP (loop_vinfo);
-
-      gcc_assert (nested_in_vect_loop_p (outer_loop, stmt));
-
-      data_ref_base = unshare_expr (STMT_VINFO_DR_BASE_ADDRESS (stmt_info));
-      base_offset = unshare_expr (STMT_VINFO_DR_OFFSET (stmt_info));
-      init = unshare_expr (STMT_VINFO_DR_INIT (stmt_info));
-    }
-  else
-    {
-      data_ref_base = unshare_expr (DR_BASE_ADDRESS (dr));
-      base_offset = unshare_expr (DR_OFFSET (dr));
-      init = unshare_expr (DR_INIT (dr));
-    }
+  tree data_ref_base = unshare_expr (drb->base_address);
+  tree base_offset = unshare_expr (drb->offset);
+  tree init = unshare_expr (drb->init);
 
   if (loop_vinfo)
     base_name = get_name (data_ref_base);
@@ -4167,11 +4037,7 @@ vect_create_data_ref_ptr (gimple *stmt, tree aggr_type, struct loop *at_loop,
 
   /* Check the step (evolution) of the load in LOOP, and record
      whether it's invariant.  */
-  if (nested_in_vect_loop)
-    step = STMT_VINFO_DR_STEP (stmt_info);
-  else
-    step = DR_STEP (STMT_VINFO_DATA_REF (stmt_info));
-
+  step = vect_dr_behavior (dr)->step;
   if (integer_zerop (step))
     *inv_p = true;
   else
@@ -4269,7 +4135,7 @@ vect_create_data_ref_ptr (gimple *stmt, tree aggr_type, struct loop *at_loop,
   /* Create: (&(base[init_val+offset]+byte_offset) in the loop preheader.  */
 
   new_temp = vect_create_addr_base_for_vector_ref (stmt, &new_stmt_list,
-						   offset, loop, byte_offset);
+						   offset, byte_offset);
   if (new_stmt_list)
     {
       if (pe)
@@ -4983,7 +4849,7 @@ vect_setup_realignment (gimple *stmt, gimple_stmt_iterator *gsi,
 	{
 	  /* Generate the INIT_ADDR computation outside LOOP.  */
 	  init_addr = vect_create_addr_base_for_vector_ref (stmt, &stmts,
-							NULL_TREE, loop);
+							    NULL_TREE);
           if (loop)
             {
    	      pe = loop_preheader_edge (loop);

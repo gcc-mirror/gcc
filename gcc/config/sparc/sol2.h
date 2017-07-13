@@ -174,13 +174,22 @@ along with GCC; see the file COPYING3.  If not see
 #define ASM_CPU64_DEFAULT_SPEC AS_SPARC64_FLAG AS_NIAGARA7_FLAG
 #endif
 
+#if TARGET_CPU_DEFAULT == TARGET_CPU_m8
+#undef CPP_CPU64_DEFAULT_SPEC
+#define CPP_CPU64_DEFAULT_SPEC ""
+#undef ASM_CPU32_DEFAULT_SPEC
+#define ASM_CPU32_DEFAULT_SPEC AS_SPARC32_FLAG AS_M8_FLAG
+#undef ASM_CPU64_DEFAULT_SPEC
+#define ASM_CPU64_DEFAULT_SPEC AS_SPARC64_FLAG AS_M8_FLAG
+#endif
+
 #undef CPP_CPU_SPEC
 #define CPP_CPU_SPEC "\
 %{mcpu=sparclet|mcpu=tsc701:-D__sparclet__} \
 %{mcpu=sparclite|mcpu-f930|mcpu=f934:-D__sparclite__} \
 %{mcpu=v8:" DEF_ARCH32_SPEC("-D__sparcv8") "} \
 %{mcpu=supersparc:-D__supersparc__ " DEF_ARCH32_SPEC("-D__sparcv8") "} \
-%{mcpu=v9|mcpu=ultrasparc|mcpu=ultrasparc3|mcpu=niagara|mcpu=niagara2|mcpu=niagara3|mcpu=niagara4|mcpu=niagara7:" DEF_ARCH32_SPEC("-D__sparcv8") "} \
+%{mcpu=v9|mcpu=ultrasparc|mcpu=ultrasparc3|mcpu=niagara|mcpu=niagara2|mcpu=niagara3|mcpu=niagara4|mcpu=niagara7|mcpu=m8:" DEF_ARCH32_SPEC("-D__sparcv8") "} \
 %{!mcpu*:%(cpp_cpu_default)} \
 "
 
@@ -290,7 +299,8 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 %{mcpu=niagara3:" DEF_ARCH32_SPEC("-xarch=v8plus" AS_NIAGARA3_FLAG) DEF_ARCH64_SPEC("-xarch=v9" AS_NIAGARA3_FLAG) "} \
 %{mcpu=niagara4:" DEF_ARCH32_SPEC(AS_SPARC32_FLAG AS_NIAGARA4_FLAG) DEF_ARCH64_SPEC(AS_SPARC64_FLAG AS_NIAGARA4_FLAG) "} \
 %{mcpu=niagara7:" DEF_ARCH32_SPEC(AS_SPARC32_FLAG AS_NIAGARA7_FLAG) DEF_ARCH64_SPEC(AS_SPARC64_FLAG AS_NIAGARA7_FLAG) "} \
-%{!mcpu=niagara7:%{!mcpu=niagara4:%{!mcpu=niagara3:%{!mcpu=niagara2:%{!mcpu=niagara:%{!mcpu=ultrasparc3:%{!mcpu=ultrasparc:%{!mcpu=v9:%{mcpu*:" DEF_ARCH32_SPEC("-xarch=v8") DEF_ARCH64_SPEC("-xarch=v9") "}}}}}}}}} \
+%{mcpu=m8:" DEF_ARCH32_SPEC(AS_SPARC32_FLAG AS_M8_FLAG) DEF_ARCH64_SPEC(AS_SPARC64_FLAG AS_M8_FLAG) "} \
+%{!mcpu=m8:%{!mcpu=niagara7:%{!mcpu=niagara4:%{!mcpu=niagara3:%{!mcpu=niagara2:%{!mcpu=niagara:%{!mcpu=ultrasparc3:%{!mcpu=ultrasparc:%{!mcpu=v9:%{mcpu*:" DEF_ARCH32_SPEC("-xarch=v8") DEF_ARCH64_SPEC("-xarch=v9") "}}}}}}}}}} \
 %{!mcpu*:%(asm_cpu_default)} \
 "
 

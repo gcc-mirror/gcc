@@ -41,13 +41,10 @@ print "#include " quote "flags.h" quote
 print "#include " quote "target.h" quote
 print "#include " quote "inchash.h" quote
 print "#include " quote "hash-set.h" quote
-print "#include " quote "machmode.h" quote
 print "#include " quote "vec.h" quote
-print "#include " quote "double-int.h" quote
 print "#include " quote "input.h" quote
 print "#include " quote "alias.h" quote
 print "#include " quote "symtab.h" quote
-print "#include " quote "wide-int.h" quote
 print "#include " quote "inchash.h" quote
 print "#include " quote "tree.h" quote
 print "#include " quote "fold-const.h" quote

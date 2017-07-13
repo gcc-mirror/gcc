@@ -732,7 +732,7 @@ Warn about buffer overflow in string manipulation functions like memcpy
 and strcpy.
 
 Wstringop-overflow=
-C ObjC C++ ObjC++ Joined RejectNegative UInteger Var(warn_stringop_overflow) Init(2) Warning LangEnabledBy(C ObjC C++ ObjC++, Wall) IntegerRange(0, 4)
+C ObjC C++ ObjC++ Joined RejectNegative UInteger Var(warn_stringop_overflow) Init(2) Warning LangEnabledBy(C ObjC C++ ObjC++, Wall, 2, 0) IntegerRange(0, 4)
 Under the control of Object Size type, warn about buffer overflow in string
 manipulation functions like memcpy and strcpy.
 

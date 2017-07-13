@@ -530,7 +530,7 @@ aarch64_mangle_builtin_type (const_tree type)
 }
 
 static tree
-aarch64_simd_builtin_std_type (enum machine_mode mode,
+aarch64_simd_builtin_std_type (machine_mode mode,
 			       enum aarch64_type_qualifiers q)
 {
 #define QUAL_TYPE(M)  \
@@ -566,7 +566,7 @@ aarch64_simd_builtin_std_type (enum machine_mode mode,
 }
 
 static tree
-aarch64_lookup_simd_builtin_type (enum machine_mode mode,
+aarch64_lookup_simd_builtin_type (machine_mode mode,
 				  enum aarch64_type_qualifiers q)
 {
   int i;
@@ -585,7 +585,7 @@ aarch64_lookup_simd_builtin_type (enum machine_mode mode,
 }
 
 static tree
-aarch64_simd_builtin_type (enum machine_mode mode,
+aarch64_simd_builtin_type (machine_mode mode,
 			   bool unsigned_p, bool poly_p)
 {
   if (poly_p)
@@ -649,7 +649,7 @@ aarch64_init_simd_builtin_types (void)
   for (i = 0; i < nelts; i++)
     {
       tree eltype = aarch64_simd_types[i].eltype;
-      enum machine_mode mode = aarch64_simd_types[i].mode;
+      machine_mode mode = aarch64_simd_types[i].mode;
 
       if (aarch64_simd_types[i].itype == NULL)
 	{
@@ -1015,7 +1015,7 @@ typedef enum
 static rtx
 aarch64_simd_expand_args (rtx target, int icode, int have_retval,
 			  tree exp, builtin_simd_arg *args,
-			  enum machine_mode builtin_mode)
+			  machine_mode builtin_mode)
 {
   rtx pat;
   rtx op[SIMD_MAX_BUILTIN_ARGS + 1]; /* First element for result operand.  */
@@ -1040,7 +1040,7 @@ aarch64_simd_expand_args (rtx target, int icode, int have_retval,
       else
 	{
 	  tree arg = CALL_EXPR_ARG (exp, opc - have_retval);
-	  enum machine_mode mode = insn_data[icode].operand[opc].mode;
+	  machine_mode mode = insn_data[icode].operand[opc].mode;
 	  op[opc] = expand_normal (arg);
 
 	  switch (thisarg)

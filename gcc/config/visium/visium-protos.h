@@ -32,28 +32,28 @@ extern void visium_profile_hook (void);
 extern int visium_hard_regno_rename_ok (unsigned int, unsigned int);
 extern int visium_initial_elimination_offset (int from, int to);
 #ifdef RTX_CODE
-extern void prepare_move_operands (rtx *, enum machine_mode);
-extern bool ok_for_simple_move_operands (rtx *, enum machine_mode);
-extern bool ok_for_simple_move_strict_operands (rtx *, enum machine_mode);
-extern bool ok_for_simple_arith_logic_operands (rtx *, enum machine_mode);
+extern void prepare_move_operands (rtx *, machine_mode);
+extern bool ok_for_simple_move_operands (rtx *, machine_mode);
+extern bool ok_for_simple_move_strict_operands (rtx *, machine_mode);
+extern bool ok_for_simple_arith_logic_operands (rtx *, machine_mode);
 extern void visium_initialize_trampoline (rtx, rtx, rtx);
 extern int empty_delay_slot (rtx_insn *);
 extern int gr5_hazard_bypass_p (rtx_insn *, rtx_insn *);
 extern rtx visium_return_addr_rtx (int, rtx);
 extern rtx visium_eh_return_handler_rtx (void);
 extern rtx visium_dynamic_chain_address (rtx);
-extern rtx visium_legitimize_reload_address (rtx, enum machine_mode, int, int,
+extern rtx visium_legitimize_reload_address (rtx, machine_mode, int, int,
 					     int);
-extern enum machine_mode visium_select_cc_mode (enum rtx_code, rtx, rtx);
+extern machine_mode visium_select_cc_mode (enum rtx_code, rtx, rtx);
 extern void visium_split_cbranch (enum rtx_code, rtx, rtx, rtx);
 extern const char *output_ubranch (rtx, rtx_insn *);
-extern const char *output_cbranch (rtx, enum rtx_code, enum machine_mode, int,
+extern const char *output_cbranch (rtx, enum rtx_code, machine_mode, int,
 				   rtx_insn *);
-extern void visium_split_double_move (rtx *, enum machine_mode);
+extern void visium_split_double_move (rtx *, machine_mode);
 extern void visium_split_double_add (enum rtx_code, rtx, rtx, rtx);
-extern void visium_expand_copysign (rtx *, enum machine_mode);
-extern void visium_expand_int_cstore (rtx *, enum machine_mode);
-extern void visium_expand_fp_cstore (rtx *, enum machine_mode);
+extern void visium_expand_copysign (rtx *, machine_mode);
+extern void visium_expand_int_cstore (rtx *, machine_mode);
+extern void visium_expand_fp_cstore (rtx *, machine_mode);
 extern void visium_split_cstore (enum rtx_code, rtx, rtx,
 				 enum rtx_code, rtx, rtx);
 extern int visium_expand_block_move (rtx *);

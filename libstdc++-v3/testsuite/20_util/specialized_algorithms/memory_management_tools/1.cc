@@ -180,6 +180,7 @@ void test12()
     std::uninitialized_default_construct(target, target+10);
   } catch (...) {
   }
+  free(target);
   VERIFY(ctor_count == 5);
   VERIFY(del_count == 5);
   throw_after = 0;
@@ -198,6 +199,7 @@ void test13()
     std::uninitialized_value_construct(target, target+10);
   } catch (...) {
   }
+  free(target);
   VERIFY(ctor_count == 5);
   VERIFY(del_count == 5);
   throw_after = 0;
@@ -216,6 +218,7 @@ void test14()
     std::uninitialized_default_construct_n(target, 10);
   } catch (...) {
   }
+  free(target);
   VERIFY(ctor_count == 5);
   VERIFY(del_count == 5);
   throw_after = 0;
@@ -234,6 +237,7 @@ void test15()
     std::uninitialized_value_construct_n(target, 10);
   } catch (...) {
   }
+  free(target);
   VERIFY(ctor_count == 5);
   VERIFY(del_count == 5);
   throw_after = 0;
@@ -254,6 +258,7 @@ void test16()
     std::uninitialized_move(source.begin(), source.end(), target);
   } catch (...) {
   }
+  free(target);
   VERIFY(ctor_count == 5);
   VERIFY(del_count == 5);
   throw_after = 0;
@@ -273,6 +278,7 @@ void test17()
     std::uninitialized_move_n(source.begin(), 10, target);
   } catch (...) {
   }
+  free(target);
   VERIFY(ctor_count == 5);
   VERIFY(del_count == 5);
   throw_after = 0;

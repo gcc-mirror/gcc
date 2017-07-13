@@ -1,3 +1,72 @@
+2017-07-12  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-tree.h (DECL_CONSTRUCTOR_P, DECL_MAYBE_IN_CHARGE_CONSTRUCTOR,
+	DECL_DESTRUCTOR_P, DECL_MAYBE_IN_CHARGE_DESTRCTOR): Look at
+	identifier flags.
+	* decl.c (grokfndecl): Set DECL_CXX_CONSTRUCTOR and
+	DECL_CXX_DESTRUCTOR explicitly.
+	* decl2.c (grokclassfn): Likewise.
+	* friend.c (do_friend): Likewise.
+	* method.c (make_thunk, make_alias_for,
+	implicitly_declare_fn): Likewise.
+
+2017-07-11  Jason Merrill  <jason@redhat.com>
+
+	Core DR 393
+	* decl.c (grokparms): Downgrade error about array of unknown bound
+	to pedwarn and disable it for C++17.
+
+2017-07-11  Nathan Sidwell  <nathan@acm.org>
+
+	* decl2.c (reset_type_linkage_2): Dont't change ctor name.
+
+2017-07-10  Martin Sebor  <msebor@redhat.com>
+
+	* cp-tree.h (cp_operator_id, cp_assignment_operator_id): Document.
+
+2017-07-06  Jason Merrill  <jason@redhat.com>
+
+	PR c++/81204 - parse error with dependent template-name
+	* parser.c (cp_parser_lookup_name): Revert previous change.
+
+2017-07-06  David Malcolm  <dmalcolm@redhat.com>
+
+	* cp-lang.c (LANG_HOOKS_RUN_LANG_SELFTESTS): Define as
+	selftest::run_cp_tests.
+	(selftest::run_cp_tests): New function.
+	* cp-tree.h (selftest::run_cp_tests): New decl.
+
+2017-07-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* parser.c (cp_parser_decomposition_declaration): Replace
+	decomposition declaration with structured binding in diagnostics.
+	* decl.c (cp_finish_decomp): Likewise.
+	(grokdeclarator): Likewise.
+
+	PR c++/81258
+	* parser.c (cp_parser_decomposition_declaration): Diagnose invalid
+	forms of structured binding initializers.
+
+2017-07-03  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/65775
+	* decl.c (grokdeclarator): Move checks on function return type after
+	the splice_late_return_type call; if declspecs->locations[ds_type_spec]
+	is UNKNOWN_LOCATION fall back to input_location.
+
+2017-07-03  David Malcolm  <dmalcolm@redhat.com>
+
+	* parser.c (enum required_token): Fix spelling of
+	RT_INTERATION to RT_ITERATION.
+	(cp_parser_iteration_statement): Likewise.
+	(cp_parser_required_error): Likewise.
+
+2017-06-30  Jason Merrill  <jason@redhat.com>
+
+	PR c++/81257 - ICE with invalid ::template.
+	PR c++/54769 - wrong lookup of dependent template-name.
+	* parser.c (cp_parser_template_name): Revert part of last change.
+
 2017-06-30  Nathan Sidwell  <nathan@acm.org>
 
 	* config-lang.in (gtfiles): Add cp/lex.c.

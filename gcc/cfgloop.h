@@ -114,7 +114,8 @@ struct GTY ((chain_next ("%h.next"))) control_iv {
 
 /* Structure to hold information for each natural loop.  */
 struct GTY ((chain_next ("%h.next"))) loop {
-  /* Index into loops array.  */
+  /* Index into loops array.  Note indices will never be reused after loop
+     is destroyed.  */
   int num;
 
   /* Number of loop insns.  */
@@ -224,6 +225,16 @@ struct GTY ((chain_next ("%h.next"))) loop {
      by IFN_GOMP_SIMD_VF, IFN_GOMP_SIMD_LANE and IFN_GOMP_SIMD_LAST_LANE
      builtins.  */
   tree simduid;
+
+  /* In loop optimization, it's common to generate loops from the original
+     loop.  This field records the index of the original loop which can be
+     used to track the original loop from newly generated loops.  This can
+     be done by calling function get_loop (cfun, orig_loop_num).  Note the
+     original loop could be destroyed for various reasons thus no longer
+     exists, as a result, function call to get_loop returns NULL pointer.
+     In this case, this field should not be used and needs to be cleared
+     whenever possible.  */
+  int orig_loop_num;
 
   /* Upper bound on number of iterations of a loop.  */
   struct nb_iter_bound *bounds;

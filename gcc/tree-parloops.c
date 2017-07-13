@@ -2251,7 +2251,6 @@ gen_parallel_loop (struct loop *loop,
   gimple_seq stmts;
   edge entry, exit;
   struct clsn_data clsn_data;
-  unsigned prob;
   location_t loc;
   gimple *cond_stmt;
   unsigned int m_p_thread=2;
@@ -2358,12 +2357,11 @@ gen_parallel_loop (struct loop *loop,
       initialize_original_copy_tables ();
 
       /* We assume that the loop usually iterates a lot.  */
-      prob = 4 * REG_BR_PROB_BASE / 5;
       loop_version (loop, many_iterations_cond, NULL,
-		    profile_probability::from_reg_br_prob_base (prob),
-		    profile_probability::from_reg_br_prob_base
-				 (REG_BR_PROB_BASE - prob),
-		    prob, REG_BR_PROB_BASE - prob, true);
+		    profile_probability::likely (),
+		    profile_probability::unlikely (),
+		    profile_probability::likely (),
+		    profile_probability::unlikely (), true);
       update_ssa (TODO_update_ssa);
       free_original_copy_tables ();
     }

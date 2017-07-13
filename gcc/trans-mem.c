@@ -3211,7 +3211,12 @@ split_bb_make_tm_edge (gimple *stmt, basic_block dest_bb,
       edge e = split_block (bb, stmt);
       *pnext = gsi_start_bb (e->dest);
     }
-  make_edge (bb, dest_bb, EDGE_ABNORMAL);
+  edge e = make_edge (bb, dest_bb, EDGE_ABNORMAL);
+  if (e)
+    {
+      e->probability = profile_probability::guessed_never ();
+      e->count = profile_count::guessed_zero ();
+    }
 
   // Record the need for the edge for the benefit of the rtl passes.
   if (cfun->gimple_df->tm_restart == NULL)

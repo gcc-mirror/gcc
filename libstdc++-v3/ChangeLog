@@ -1,3 +1,48 @@
+2017-07-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/faq.xml: Update several old entries. Improve
+	cross-references.
+	* doc/xml/manual/intro.xml: Add anchors to each DR.
+	* doc/html/*: Regenerate.
+
+2017-07-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/abi/pr42230.cc: Add header for std::free.
+
+	PR libstdc++/81381
+	* include/bits/sstream.tcc (basic_stringbuf::overflow)
+	(basic_stringbuf::basic_stringbuf(const __string_type&, ios::mode))
+	(basic_stringbuf::str()): Construct new strings with an allocator.
+	* testsuite/27_io/basic_stringbuf/cons/81381.cc: New.
+
+	PR libstdc++/81338
+	* include/bits/basic_string.h [_GLIBCXX_USE_CXX11_ABI] (basic_string):
+	Declare basic_stringbuf to be a friend.
+	* include/bits/sstream.tcc (basic_stringbuf::overflow)
+	[_GLIBCXX_USE_CXX11_ABI]: Use unused capacity before reallocating.
+	* include/std/sstream (basic_stringbuf::__xfer_bufptrs): Update string
+	length to buffer length.
+	* testsuite/27_io/basic_stringstream/assign/81338.cc: New.
+
+2017-07-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/20_util/specialized_algorithms/memory_management_tools/
+	1.cc: Free memory.
+	* testsuite/22_locale/locale/cons/5.cc: Remove redundant restoration
+	of original environment and free memory.
+
+	* testsuite/abi/pr42230.cc: Free memory.
+	* testsuite/util/testsuite_abi.cc (demangle): Return std::string
+	instead of pointer that might need freeing.
+	* testsuite/util/testsuite_abi.h (demangle): Likewise.
+	* testsuite/util/testsuite_hooks.cc (verify_demangle): Free memory.
+
+	* include/bits/uses_allocator.h (__use_alloc(const _Alloc&&)): Add
+	deleted overload to prevent dangling references to rvalues.
+	* include/experimental/memory_resource
+	(polymorphic_allocator::construct): Do not call __use_alloc with
+	rvalue arguments.
+
 2017-06-27  Tim Shen  <timshen@google.com>
 
 	PR libstdc++/80187

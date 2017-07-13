@@ -7,9 +7,9 @@ struct S
 {
   enum E { A };
   void f () { auto [x] = 0; x++; }	// { dg-error "cannot decompose non-array non-class type" }
-					// { dg-warning "decomposition declaration only available with" "" { target c++14_down } .-1 }
+					// { dg-warning "structured bindings only available with" "" { target c++14_down } .-1 }
   void g (T t) { auto [y] = t; y++; }	// { dg-error "cannot decompose non-array non-class type" }
-};					// { dg-warning "decomposition declaration only available with" "" { target c++14_down } .-1 }
+};					// { dg-warning "structured bindings only available with" "" { target c++14_down } .-1 }
 
 int
 main ()

@@ -1367,14 +1367,10 @@ vect_get_vec_def_for_operand_1 (gimple *def_stmt, enum vect_def_type dt)
         return vec_oprnd;
       }
 
-    /* operand is defined by a loop header phi - reduction  */
+    /* operand is defined by a loop header phi.  */
     case vect_reduction_def:
     case vect_double_reduction_def:
     case vect_nested_cycle:
-      /* Code should use get_initial_def_for_reduction.  */
-      gcc_unreachable ();
-
-    /* operand is defined by loop-header phi - induction.  */
     case vect_induction_def:
       {
 	gcc_assert (gimple_code (def_stmt) == GIMPLE_PHI);
@@ -1535,7 +1531,7 @@ vect_get_vec_def_for_stmt_copy (enum vect_def_type dt, tree vec_oprnd)
 /* Get vectorized definitions for the operands to create a copy of an original
    stmt.  See vect_get_vec_def_for_stmt_copy () for details.  */
 
-static void
+void
 vect_get_vec_defs_for_stmt_copy (enum vect_def_type *dt,
 				 vec<tree> *vec_oprnds0,
 				 vec<tree> *vec_oprnds1)
@@ -1554,11 +1550,9 @@ vect_get_vec_defs_for_stmt_copy (enum vect_def_type *dt,
 }
 
 
-/* Get vectorized definitions for OP0 and OP1.
-   REDUC_INDEX is the index of reduction operand in case of reduction,
-   and -1 otherwise.  */
+/* Get vectorized definitions for OP0 and OP1.  */
 
-static void
+void
 vect_get_vec_defs (tree op0, tree op1, gimple *stmt,
 		   vec<tree> *vec_oprnds0,
 		   vec<tree> *vec_oprnds1,
@@ -1698,13 +1692,9 @@ static int
 compare_step_with_zero (gimple *stmt)
 {
   stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
-  loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
-  tree step;
-  if (loop_vinfo && nested_in_vect_loop_p (LOOP_VINFO_LOOP (loop_vinfo), stmt))
-    step = STMT_VINFO_DR_STEP (stmt_info);
-  else
-    step = DR_STEP (STMT_VINFO_DATA_REF (stmt_info));
-  return tree_int_cst_compare (step, size_zero_node);
+  data_reference *dr = STMT_VINFO_DATA_REF (stmt_info);
+  return tree_int_cst_compare (vect_dr_behavior (dr)->step,
+			       size_zero_node);
 }
 
 /* If the target supports a permute mask that reverses the elements in
@@ -6363,11 +6353,7 @@ vectorizable_store (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 		misalign = 0;
 	      else if (DR_MISALIGNMENT (first_dr) == -1)
 		{
-		  if (DR_VECT_AUX (first_dr)->base_element_aligned)
-		    align = TYPE_ALIGN_UNIT (elem_type);
-		  else
-		    align = get_object_alignment (DR_REF (first_dr))
-			/ BITS_PER_UNIT;
+		  align = dr_alignment (vect_dr_behavior (first_dr));
 		  misalign = 0;
 		  TREE_TYPE (data_ref)
 		    = build_aligned_type (TREE_TYPE (data_ref),
@@ -7021,9 +7007,9 @@ vectorizable_load (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 		 to a larger load.  */
 	      unsigned lsize
 		= group_size * TYPE_PRECISION (TREE_TYPE (vectype));
-	      enum machine_mode elmode = mode_for_size (lsize, MODE_INT, 0);
-	      enum machine_mode vmode = mode_for_vector (elmode,
-							 nunits / group_size);
+	      machine_mode elmode = mode_for_size (lsize, MODE_INT, 0);
+	      machine_mode vmode = mode_for_vector (elmode,
+						    nunits / group_size);
 	      /* If we can't construct such a vector fall back to
 		 element loads of the original vector type.  */
 	      if (VECTOR_MODE_P (vmode)
@@ -7298,8 +7284,7 @@ vectorizable_load (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
      nested within an outer-loop that is being vectorized.  */
 
   if (nested_in_vect_loop
-      && (TREE_INT_CST_LOW (DR_STEP (dr))
-	  % GET_MODE_SIZE (TYPE_MODE (vectype)) != 0))
+      && (DR_STEP_ALIGNMENT (dr) % GET_MODE_SIZE (TYPE_MODE (vectype))) != 0)
     {
       gcc_assert (alignment_support_scheme != dr_explicit_realign_optimized);
       compute_in_loop = true;
@@ -7440,11 +7425,7 @@ vectorizable_load (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 		      }
 		    else if (DR_MISALIGNMENT (first_dr) == -1)
 		      {
-			if (DR_VECT_AUX (first_dr)->base_element_aligned)
-			  align = TYPE_ALIGN_UNIT (elem_type);
-			else
-			  align = (get_object_alignment (DR_REF (first_dr))
-				   / BITS_PER_UNIT);
+			align = dr_alignment (vect_dr_behavior (first_dr));
 			misalign = 0;
 			TREE_TYPE (data_ref)
 			  = build_aligned_type (TREE_TYPE (data_ref),
@@ -8850,12 +8831,6 @@ new_stmt_vec_info (gimple *stmt, vec_info *vinfo)
   STMT_VINFO_DATA_REF (res) = NULL;
   STMT_VINFO_VEC_REDUCTION_TYPE (res) = TREE_CODE_REDUCTION;
   STMT_VINFO_VEC_CONST_COND_REDUC_CODE (res) = ERROR_MARK;
-
-  STMT_VINFO_DR_BASE_ADDRESS (res) = NULL;
-  STMT_VINFO_DR_OFFSET (res) = NULL;
-  STMT_VINFO_DR_INIT (res) = NULL;
-  STMT_VINFO_DR_STEP (res) = NULL;
-  STMT_VINFO_DR_ALIGNED_TO (res) = NULL;
 
   if (gimple_code (stmt) == GIMPLE_PHI
       && is_loop_header_bb_p (gimple_bb (stmt)))

@@ -24,10 +24,6 @@ along with GCC; see the file COPYING3.  If not see
    machmode.h and other files to exist and would not normally have been
    included by coretypes.h.  */
 #ifdef GENERATOR_FILE
-#include "machmode.h"     
-#include "signop.h"
-#include "wide-int.h"
-#include "double-int.h"
 #include "real.h"
 #include "fixed-value.h"
 #include "statistics.h"

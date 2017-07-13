@@ -1,5 +1,6 @@
 /* { dg-do compile { target { powerpc*-*-* } } } */
 /* { dg-skip-if "" { powerpc*-*-darwin* } } */
+/* { dg-require-effective-target ppc_cpu_supports_hw } */
 
 void
 use_cpu_is_builtins (unsigned int *p)

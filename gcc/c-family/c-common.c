@@ -6421,6 +6421,9 @@ sync_resolve_size (tree function, vec<tree, va_gc> *params, bool fetch)
   if (!INTEGRAL_TYPE_P (type) && !POINTER_TYPE_P (type))
     goto incompatible;
 
+  if (!COMPLETE_TYPE_P (type))
+    goto incompatible;
+
   if (fetch && TREE_CODE (type) == BOOLEAN_TYPE)
     goto incompatible;
 
@@ -7935,5 +7938,21 @@ c_flt_eval_method (bool maybe_c11_only_p)
   else
     return c_ts18661_flt_eval_method ();
 }
+
+#if CHECKING_P
+
+namespace selftest {
+
+/* Run all of the tests within c-family.  */
+
+void
+c_family_tests (void)
+{
+  c_format_c_tests ();
+}
+
+} // namespace selftest
+
+#endif /* #if CHECKING_P */
 
 #include "gt-c-family-c-common.h"

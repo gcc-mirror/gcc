@@ -454,7 +454,7 @@ powerpc*-*-*spe*)
 	;;
 powerpc*-*-*)
 	cpu_type=rs6000
-	extra_objs="rs6000-string.o"
+	extra_objs="rs6000-string.o rs6000-p8swap.o"
 	extra_headers="ppc-asm.h altivec.h htmintrin.h htmxlintrin.h"
 	extra_headers="${extra_headers} bmi2intrin.h bmiintrin.h x86intrin.h"
 	extra_headers="${extra_headers} ppu_intrinsics.h spu2vmx.h vec_types.h si2vmx.h"
@@ -472,7 +472,7 @@ riscv*)
 	;;
 rs6000*-*-*)
 	extra_options="${extra_options} g.opt fused-madd.opt rs6000/rs6000-tables.opt"
-	extra_objs="rs6000-string.o"
+	extra_objs="rs6000-string.o rs6000-p8swap.o"
 	;;
 sparc*-*-*)
 	cpu_type=sparc
@@ -794,22 +794,8 @@ case ${target} in
   gas=yes
   gnu_ld=yes
   use_gcc_stdint=wrap
-
-  # NetBSD 2.0 and later get POSIX threads enabled by default.
-  # Allow them to be explicitly enabled on any other version.
   case ${enable_threads} in
-    "")
-      case ${target} in
-        *-*-netbsd[2-9]* | *-*-netbsdelf[2-9]*)
-          thread_file='posix'
-          tm_defines="${tm_defines} NETBSD_ENABLE_PTHREADS"
-          ;;
-      esac
-      ;;
-    yes | posix)
-      thread_file='posix'
-      tm_defines="${tm_defines} NETBSD_ENABLE_PTHREADS"
-      ;;
+    "" | yes | posix) thread_file='posix' ;;
   esac
 
   # NetBSD 2.0 and later provide __cxa_atexit(), which we use by
@@ -1058,7 +1044,7 @@ arc*-*-elf*)
 	big*)	tm_file="arc/big.h ${tm_file}"
 	esac
 	;;
-arc*-*-linux-uclibc*)
+arc*-*-linux*)
 	tm_file="arc/arc-arch.h dbxelf.h elfos.h gnu-user.h linux.h linux-android.h glibc-stdint.h arc/linux.h ${tm_file}"
 	tmake_file="${tmake_file} arc/t-arc"
 	extra_gcc_objs="driver-arc.o"
@@ -4435,7 +4421,7 @@ case "${target}" in
 			| sparclite | f930 | f934 | sparclite86x \
 			| sparclet | tsc701 \
 			| v9 | ultrasparc | ultrasparc3 | niagara | niagara2 \
-			| niagara3 | niagara4 | niagara7)
+			| niagara3 | niagara4 | niagara7 | m8)
 				# OK
 				;;
 			*)

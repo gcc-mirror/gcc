@@ -4747,8 +4747,10 @@ compute_succs_info (insn_t insn, short flags)
           sinfo->probs_ok.safe_push (
 		    /* FIXME: Improve calculation when skipping
                        inner loop to exits.  */
-                    si.bb_end && si.e1->probability.initialized_p ()
-		    ? si.e1->probability.to_reg_br_prob_base ()
+                    si.bb_end
+		    ? (si.e1->probability.initialized_p ()
+                       ? si.e1->probability.to_reg_br_prob_base ()
+                       : 0)
 		    : REG_BR_PROB_BASE);
           sinfo->succs_ok_n++;
         }

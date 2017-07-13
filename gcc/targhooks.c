@@ -2009,7 +2009,7 @@ default_chkp_bound_type (void)
   return res;
 }
 
-enum machine_mode
+machine_mode
 default_chkp_bound_mode (void)
 {
   return VOIDmode;
@@ -2047,7 +2047,7 @@ default_chkp_initialize_bounds (tree var ATTRIBUTE_UNUSED,
 
 void
 default_setup_incoming_vararg_bounds (cumulative_args_t ca ATTRIBUTE_UNUSED,
-				      enum machine_mode mode ATTRIBUTE_UNUSED,
+				      machine_mode mode ATTRIBUTE_UNUSED,
 				      tree type ATTRIBUTE_UNUSED,
 				      int *pretend_arg_size ATTRIBUTE_UNUSED,
 				      int second_time ATTRIBUTE_UNUSED)

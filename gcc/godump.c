@@ -31,7 +31,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tree.h"
-#include "wide-int-print.h"
 #include "diagnostic-core.h"
 #include "debug.h"
 #include "stor-layout.h"

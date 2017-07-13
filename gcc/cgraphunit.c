@@ -449,6 +449,8 @@ cgraph_node::finalize_function (tree decl, bool no_collect)
   node->definition = true;
   notice_global_symbol (decl);
   node->lowered = DECL_STRUCT_FUNCTION (decl)->cfg != NULL;
+  if (!flag_toplevel_reorder)
+    node->no_reorder = true;
 
   /* With -fkeep-inline-functions we are keeping all inline functions except
      for extern inline ones.  */
@@ -471,7 +473,8 @@ cgraph_node::finalize_function (tree decl, bool no_collect)
      declared inline and nested functions.  These were optimized out
      in the original implementation and it is unclear whether we want
      to change the behavior here.  */
-  if (((!opt_for_fn (decl, optimize) || flag_keep_static_functions)
+  if (((!opt_for_fn (decl, optimize) || flag_keep_static_functions
+	|| node->no_reorder)
        && !node->cpp_implicit_alias
        && !DECL_DISREGARD_INLINE_LIMITS (decl)
        && !DECL_DECLARED_INLINE_P (decl)
@@ -840,13 +843,13 @@ varpool_node::finalize_decl (tree decl)
      it is available to notice_global_symbol.  */
   node->definition = true;
   notice_global_symbol (decl);
+  if (!flag_toplevel_reorder)
+    node->no_reorder = true;
   if (TREE_THIS_VOLATILE (decl) || DECL_PRESERVE_P (decl)
       /* Traditionally we do not eliminate static variables when not
 	 optimizing and when not doing toplevel reoder.  */
-      || node->no_reorder
-      || ((!flag_toplevel_reorder
-          && !DECL_COMDAT (node->decl)
-	   && !DECL_ARTIFICIAL (node->decl))))
+      || (node->no_reorder && !DECL_COMDAT (node->decl)
+	  && !DECL_ARTIFICIAL (node->decl)))
     node->force_output = true;
 
   if (symtab->state == CONSTRUCTION
@@ -857,8 +860,8 @@ varpool_node::finalize_decl (tree decl)
   /* Some frontends produce various interface variables after compilation
      finished.  */
   if (symtab->state == FINISHED
-      || (!flag_toplevel_reorder
-	&& symtab->state == EXPANSION))
+      || (node->no_reorder
+	  && symtab->state == EXPANSION))
     node->assemble_decl ();
 
   if (DECL_INITIAL (decl))
@@ -2226,11 +2229,10 @@ struct cgraph_order_sort
    according to their order fields, which is the order in which they
    appeared in the file.  This implements -fno-toplevel-reorder.  In
    this mode we may output functions and variables which don't really
-   need to be output.
-   When NO_REORDER is true only do this for symbols marked no reorder. */
+   need to be output.  */
 
 static void
-output_in_order (bool no_reorder)
+output_in_order (void)
 {
   int max;
   cgraph_order_sort *nodes;
@@ -2245,7 +2247,7 @@ output_in_order (bool no_reorder)
     {
       if (pf->process && !pf->thunk.thunk_p && !pf->alias)
 	{
-	  if (no_reorder && !pf->no_reorder)
+	  if (!pf->no_reorder)
 	    continue;
 	  i = pf->order;
 	  gcc_assert (nodes[i].kind == ORDER_UNDEFINED);
@@ -2258,7 +2260,7 @@ output_in_order (bool no_reorder)
      Please keep them in sync.  */
   FOR_EACH_VARIABLE (pv)
     {
-      if (no_reorder && !pv->no_reorder)
+      if (!pv->no_reorder)
 	continue;
       if (DECL_HARD_REGISTER (pv->decl)
 	  || DECL_HAS_VALUE_EXPR_P (pv->decl))
@@ -2532,16 +2534,11 @@ symbol_table::compile (void)
 
   state = EXPANSION;
 
-  if (!flag_toplevel_reorder)
-    output_in_order (false);
-  else
-    {
-      /* Output first asm statements and anything ordered. The process
-         flag is cleared for these nodes, so we skip them later.  */
-      output_in_order (true);
-      expand_all_functions ();
-      output_variables ();
-    }
+  /* Output first asm statements and anything ordered. The process
+     flag is cleared for these nodes, so we skip them later.  */
+  output_in_order ();
+  expand_all_functions ();
+  output_variables ();
 
   process_new_functions ();
   state = FINISHED;

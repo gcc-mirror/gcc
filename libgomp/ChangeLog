@@ -1,3 +1,7 @@
+2017-07-03  Tom de Vries  <tom@codesourcery.com>
+
+	* plugin/plugin-hsa.c: Fix secure_getenv.h include.
+
 2017-06-27  Tom de Vries  <tom@codesourcery.com>
 
 	* plugin/plugin-nvptx.c (notify_var): New function.
