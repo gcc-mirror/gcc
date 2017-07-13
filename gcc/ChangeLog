@@ -1,3 +1,9 @@
+2017-07-13  Maxim Ostapenko  <m.ostapenko@samsung.com>
+
+	* asan.c (asan_emit_allocas_unpoison): Use ptr_mode for arguments
+	during expansion.
+	* builtins.c (expand_asan_emit_allocas_unpoison): Likewise.
+
 2017-07-12  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	PR target/81193

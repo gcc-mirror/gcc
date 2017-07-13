@@ -4972,13 +4972,11 @@ static rtx
 expand_asan_emit_allocas_unpoison (tree exp)
 {
   tree arg0 = CALL_EXPR_ARG (exp, 0);
-  rtx top = expand_expr (arg0, NULL_RTX, GET_MODE (virtual_stack_dynamic_rtx),
-			 EXPAND_NORMAL);
+  rtx top = expand_expr (arg0, NULL_RTX, ptr_mode, EXPAND_NORMAL);
+  rtx bot = convert_memory_address (ptr_mode, virtual_stack_dynamic_rtx);
   rtx ret = init_one_libfunc ("__asan_allocas_unpoison");
   ret = emit_library_call_value (ret, NULL_RTX, LCT_NORMAL, ptr_mode, 2, top,
-				 TYPE_MODE (pointer_sized_int_node),
-				 virtual_stack_dynamic_rtx,
-				 TYPE_MODE (pointer_sized_int_node));
+				 ptr_mode, bot, ptr_mode);
   return ret;
 }
 
