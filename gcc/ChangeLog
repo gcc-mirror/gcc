@@ -1,4 +1,19 @@
-	2017-07-13  Will Schmidt  <will_schmidt@vnet.ibm.com>
+2017-07-13  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/81405
+	* diagnostic-show-locus.c (fixit_cmp): New function.
+	(layout::layout): Sort m_fixit_hints.
+	(column_range::column_range): Assert that the values are valid.
+	(struct char_span): New struct.
+	(correction::overwrite): New method.
+	(struct source_line): New struct.
+	(line_corrections::add_hint): Add assertions.  Reimplement memcpy
+	calls in terms of classes source_line and char_span, and
+	correction::overwrite.
+	(selftest::test_overlapped_fixit_printing_2): New function.
+	(selftest::diagnostic_show_locus_c_tests): Call it.
+
+2017-07-13  Will Schmidt  <will_schmidt@vnet.ibm.com>
 
 	* config/rs6000/rs6000.c (rs6000_gimple_fold_builtin): Return
 	early if there is no lhs.
