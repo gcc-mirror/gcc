@@ -1,3 +1,8 @@
+2017-07-12  Jason Merrill  <jason@redhat.com>
+
+	P0512R0 - Deduction from an initializer list.
+	* pt.c (do_class_deduction): Do list deduction in two phases.
+
 2017-07-12  Nathan Sidwell  <nathan@acm.org>
 
 	* cp-tree.h (DECL_CONSTRUCTOR_P, DECL_MAYBE_IN_CHARGE_CONSTRUCTOR,
