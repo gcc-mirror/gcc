@@ -15493,6 +15493,8 @@ Disable the floating-point extension.
 @table @samp
 @item +crc
 The Cyclic Redundancy Check (CRC) instructions.
+@item +fp.sp
+The single-precision FPv5 floating-point instructions.
 @item +simd
 The ARMv8 Advanced SIMD and floating-point instructions.
 @item +crypto
