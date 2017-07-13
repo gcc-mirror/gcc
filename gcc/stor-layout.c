@@ -2647,8 +2647,7 @@ set_min_and_max_values_for_integral_type (tree type,
 
 /* Set the extreme values of TYPE based on its precision in bits,
    then lay it out.  Used when make_signed_type won't do
-   because the tree code is not INTEGER_TYPE.
-   E.g. for Pascal, when the -fsigned-char option is given.  */
+   because the tree code is not INTEGER_TYPE.  */
 
 void
 fixup_signed_type (tree type)
