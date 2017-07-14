@@ -139,13 +139,13 @@ set_struct_debug_option (struct gcc_options *opts, location_t loc,
 /* Strip off a legitimate source ending from the input string NAME of
    length LEN.  Rather than having to know the names used by all of
    our front ends, we strip off an ending of a period followed by
-   up to five characters.  (Java uses ".class".)  */
+   up to fource characters.  (C++ uses ".cpp".)  */
 
 void
 strip_off_ending (char *name, int len)
 {
   int i;
-  for (i = 2; i < 6 && len > i; i++)
+  for (i = 2; i < 5 && len > i; i++)
     {
       if (name[len - i] == '.')
 	{

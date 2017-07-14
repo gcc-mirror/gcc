@@ -1,5 +1,30 @@
 2017-07-14  Martin Liska  <mliska@suse.cz>
 
+	* cfgexpand.c (expand_gimple_basic_block): Remove dead comment.
+	* dwarf2out.c (is_java): Remove the function.
+	(output_pubname): Remove usage of the function.
+	(lower_bound_default): Remove usage of DW_LANG_Java.
+	(gen_compile_unit_die): Likewise.
+	* gcc.c: Remove compiler defaults for .java and .zip files.
+	* gimple-expr.c (remove_suffix): Change as there's no longer
+	extension than 4-letter one.
+	* gimplify.c (mostly_copy_tree_r): Remove Java-special part.
+	(gimplify_save_expr): Likewise.
+	* ipa-utils.h (polymorphic_type_binfo_p): Remove the comment
+	as it's possible even for other languages than Java.
+	* langhooks.h (struct lang_hooks): Remove Java from a comment.
+	* lto-opts.c (lto_write_options): Remove reference to Java.
+	* opts.c (strip_off_ending): Update file extension handling.
+	* tree-cfg.c (verify_gimple_call): Remove comment with Java.
+	* tree-eh.c (lower_resx): Likewise.
+	* tree.c (free_lang_data_in_type): Remove dead code.
+	(find_decls_types_r): Likewise.
+	(build_common_builtin_nodes): Remove Java from a comment.
+	(verify_type): Remove dead code.
+	* varasm.c (assemble_external): Remove Java from a comment.
+
+2017-07-14  Martin Liska  <mliska@suse.cz>
+
 	* opts.c (finish_options): Add quotes.
 	(common_handle_option): Likewise.
 

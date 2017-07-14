@@ -5497,8 +5497,6 @@ expand_gimple_basic_block (basic_block bb, bool disable_tail_calls)
       if (elt)
 	emit_label (*elt);
 
-      /* Java emits line number notes in the top of labels.
-	 ??? Make this go away once line number notes are obsoleted.  */
       BB_HEAD (bb) = NEXT_INSN (last);
       if (NOTE_P (BB_HEAD (bb)))
 	BB_HEAD (bb) = NEXT_INSN (BB_HEAD (bb));

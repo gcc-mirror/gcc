@@ -5049,16 +5049,6 @@ is_cxx (const_tree decl)
   return is_cxx ();
 }
 
-/* Return TRUE if the language is Java.  */
-
-static inline bool
-is_java (void)
-{
-  unsigned int lang = get_AT_unsigned (comp_unit_die (), DW_AT_language);
-
-  return lang == DW_LANG_Java;
-}
-
 /* Return TRUE if the language is Fortran.  */
 
 static inline bool
@@ -10756,8 +10746,8 @@ output_pubname (dw_offset die_offset, pubname_entry *entry)
         case DW_TAG_enumerator:
           GDB_INDEX_SYMBOL_KIND_SET_VALUE(flags,
                                           GDB_INDEX_SYMBOL_KIND_VARIABLE);
-          if (!is_cxx () && !is_java ())
-            GDB_INDEX_SYMBOL_STATIC_SET_VALUE(flags, 1);
+	  if (!is_cxx ())
+	    GDB_INDEX_SYMBOL_STATIC_SET_VALUE(flags, 1);
           break;
         case DW_TAG_subprogram:
           GDB_INDEX_SYMBOL_KIND_SET_VALUE(flags,
@@ -10785,7 +10775,7 @@ output_pubname (dw_offset die_offset, pubname_entry *entry)
         case DW_TAG_union_type:
         case DW_TAG_enumeration_type:
           GDB_INDEX_SYMBOL_KIND_SET_VALUE(flags, GDB_INDEX_SYMBOL_KIND_TYPE);
-          if (!is_cxx () && !is_java ())
+	  if (!is_cxx ())
 	    GDB_INDEX_SYMBOL_STATIC_SET_VALUE(flags, 1);
           break;
         default:
@@ -19830,7 +19820,6 @@ lower_bound_default (void)
     case DW_LANG_C_plus_plus_14:
     case DW_LANG_ObjC:
     case DW_LANG_ObjC_plus_plus:
-    case DW_LANG_Java:
       return 0;
     case DW_LANG_Fortran77:
     case DW_LANG_Fortran90:
@@ -23550,8 +23539,6 @@ gen_compile_unit_die (const char *filename)
 		language = DW_LANG_Fortran08;
 	    }
 	}
-      else if (strcmp (language_string, "GNU Java") == 0)
-	language = DW_LANG_Java;
       else if (strcmp (language_string, "GNU Objective-C") == 0)
 	language = DW_LANG_ObjC;
       else if (strcmp (language_string, "GNU Objective-C++") == 0)

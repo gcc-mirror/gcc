@@ -293,7 +293,7 @@ struct lang_hooks_for_lto
 struct lang_hooks
 {
   /* String identifying the front end and optionally language standard
-     version, e.g. "GNU C++98" or "GNU Java".  */
+     version, e.g. "GNU C++98".  */
   const char *name;
 
   /* sizeof (struct lang_identifier), so make_node () creates
