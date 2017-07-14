@@ -381,7 +381,7 @@ begin arch armv8-m.main
 end arch armv8-m.main
 
 begin arch armv8-r
- tune for cortex-r4
+ tune for cortex-r52
  tune flags CO_PROC
  base 8R
  profile R
@@ -1314,6 +1314,16 @@ begin cpu cortex-m33
  option nofp remove ALL_FP
  costs v7m
 end cpu cortex-m33
+
+# V8 R-profile implementations.
+begin cpu cortex-r52
+ cname cortexr52
+ tune flags LDSCHED
+ architecture armv8-r+crc+simd
+ fpu neon-fp-armv8
+ option nofp.dp remove FP_DBL ALL_SIMD
+ costs cortex
+end cpu cortex-r52
 
 # FPU entries
 # format:
