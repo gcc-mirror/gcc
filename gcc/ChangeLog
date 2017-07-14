@@ -1,3 +1,35 @@
+2017-07-14  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	Backports from trunk
+
+	2017-03-23  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+	* config/rs6000/rs6000.c (rs6000_option_override_internal): Change
+	handling of certain combinations of target options, including the
+	combinations -mpower8-vector vs. -mno-vsx, -mpower8-vector vs.
+	-mno-power8-vector, and -mpower9_dform vs. -mno-power9-vector.
+
+	2017-03-27  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+	PR target/80103
+	* config/rs6000/rs6000.c (rs6000_option_override_internal): Add
+	special handling for target option conflicts between dform options
+	(-mpower9-dform, -mpower9-dform-vector, -mpower9-dform-scalar) and
+	-mno-direct-move.
+
+	2017-05-08  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+	PR target/80101
+	* config/rs6000/power6.md: Replace store_data_bypass_p calls with
+	rs6000_store_data_bypass_p in seven define_bypass directives and
+	in several comments.
+	* config/rs6000/rs6000-protos.h: Add prototype for
+	rs6000_store_data_bypass_p function.
+	* config/rs6000/rs6000.c (rs6000_store_data_bypass_p): New
+	function implements slightly different (rs6000-specific) semantics
+	than store_data_bypass_p, returning false rather than aborting
+	with assertion error when arguments do not satisfy the
+	requirements of store data bypass.
+	(rs6000_adjust_cost): Replace six calls of store_data_bypass_p with
+	rs6000_store_data_bypass_p.
+
 2017-07-14  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backport from mainline

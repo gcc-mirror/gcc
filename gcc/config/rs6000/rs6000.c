@@ -494,6 +494,91 @@ mode_supports_pre_modify_p (machine_mode mode)
 	  != 0);
 }
 
+/* Given that there exists at least one variable that is set (produced)
+   by OUT_INSN and read (consumed) by IN_INSN, return true iff
+   IN_INSN represents one or more memory store operations and none of
+   the variables set by OUT_INSN is used by IN_INSN as the address of a
+   store operation.  If either IN_INSN or OUT_INSN does not represent
+   a "single" RTL SET expression (as loosely defined by the
+   implementation of the single_set function) or a PARALLEL with only
+   SETs, CLOBBERs, and USEs inside, this function returns false.
+
+   This rs6000-specific version of store_data_bypass_p checks for
+   certain conditions that result in assertion failures (and internal
+   compiler errors) in the generic store_data_bypass_p function and
+   returns false rather than calling store_data_bypass_p if one of the
+   problematic conditions is detected.  */
+
+int
+rs6000_store_data_bypass_p (rtx_insn *out_insn, rtx_insn *in_insn)
+{
+  rtx out_set, in_set;
+  rtx out_pat, in_pat;
+  rtx out_exp, in_exp;
+  int i, j;
+
+  in_set = single_set (in_insn);
+  if (in_set)
+    {
+      if (MEM_P (SET_DEST (in_set)))
+	{
+	  out_set = single_set (out_insn);
+	  if (!out_set)
+	    {
+	      out_pat = PATTERN (out_insn);
+	      if (GET_CODE (out_pat) == PARALLEL)
+		{
+		  for (i = 0; i < XVECLEN (out_pat, 0); i++)
+		    {
+		      out_exp = XVECEXP (out_pat, 0, i);
+		      if ((GET_CODE (out_exp) == CLOBBER)
+			  || (GET_CODE (out_exp) == USE))
+			continue;
+		      else if (GET_CODE (out_exp) != SET)
+			return false;
+		    }
+		}
+	    }
+	}
+    }
+  else
+    {
+      in_pat = PATTERN (in_insn);
+      if (GET_CODE (in_pat) != PARALLEL)
+	return false;
+
+      for (i = 0; i < XVECLEN (in_pat, 0); i++)
+	{
+	  in_exp = XVECEXP (in_pat, 0, i);
+	  if ((GET_CODE (in_exp) == CLOBBER) || (GET_CODE (in_exp) == USE))
+	    continue;
+	  else if (GET_CODE (in_exp) != SET)
+	    return false;
+
+	  if (MEM_P (SET_DEST (in_exp)))
+	    {
+	      out_set = single_set (out_insn);
+	      if (!out_set)
+		{
+		  out_pat = PATTERN (out_insn);
+		  if (GET_CODE (out_pat) != PARALLEL)
+		    return false;
+		  for (j = 0; j < XVECLEN (out_pat, 0); j++)
+		    {
+		      out_exp = XVECEXP (out_pat, 0, j);
+		      if ((GET_CODE (out_exp) == CLOBBER)
+			  || (GET_CODE (out_exp) == USE))
+			continue;
+		      else if (GET_CODE (out_exp) != SET)
+			return false;
+		    }
+		}
+	    }
+	}
+    }
+  return store_data_bypass_p (out_insn, in_insn);
+}
+
 /* Return true if we have D-form addressing in altivec registers.  */
 static inline bool
 mode_supports_vmx_dform (machine_mode mode)
@@ -4075,9 +4160,22 @@ rs6000_option_override_internal (bool global_init_p)
 
   if (TARGET_P8_VECTOR && !TARGET_VSX)
     {
-      if (rs6000_isa_flags_explicit & OPTION_MASK_P8_VECTOR)
+      if ((rs6000_isa_flags_explicit & OPTION_MASK_P8_VECTOR)
+	  && (rs6000_isa_flags_explicit & OPTION_MASK_VSX))
 	error ("-mpower8-vector requires -mvsx");
-      rs6000_isa_flags &= ~OPTION_MASK_P8_VECTOR;
+      else if ((rs6000_isa_flags_explicit & OPTION_MASK_P8_VECTOR) == 0)
+	{
+	  rs6000_isa_flags &= ~OPTION_MASK_P8_VECTOR;
+	  if (rs6000_isa_flags_explicit & OPTION_MASK_VSX)
+	    rs6000_isa_flags_explicit |= OPTION_MASK_P8_VECTOR;
+	}
+      else
+	{
+	  /* OPTION_MASK_P8_VECTOR is explicit, and OPTION_MASK_VSX is
+	     not explicit.  */
+	  rs6000_isa_flags |= OPTION_MASK_VSX;
+	  rs6000_isa_flags_explicit |= OPTION_MASK_VSX;
+	}
     }
 
   if (TARGET_VSX_TIMODE && !TARGET_VSX)
@@ -4258,9 +4356,22 @@ rs6000_option_override_internal (bool global_init_p)
 	 error messages.  However, if users have managed to select
 	 power9-vector without selecting power8-vector, they
 	 already know about undocumented flags.  */
-      if (rs6000_isa_flags_explicit & OPTION_MASK_P8_VECTOR)
+      if ((rs6000_isa_flags_explicit & OPTION_MASK_P9_VECTOR) &&
+	  (rs6000_isa_flags_explicit & OPTION_MASK_P8_VECTOR))
 	error ("-mpower9-vector requires -mpower8-vector");
-      rs6000_isa_flags &= ~OPTION_MASK_P9_VECTOR;
+      else if ((rs6000_isa_flags_explicit & OPTION_MASK_P9_VECTOR) == 0)
+	{
+	  rs6000_isa_flags &= ~OPTION_MASK_P9_VECTOR;
+	  if (rs6000_isa_flags_explicit & OPTION_MASK_P8_VECTOR)
+	    rs6000_isa_flags_explicit |= OPTION_MASK_P9_VECTOR;
+	}
+      else
+	{
+	  /* OPTION_MASK_P9_VECTOR is explicit and
+	     OPTION_MASK_P8_VECTOR is not explicit.  */
+	  rs6000_isa_flags |= OPTION_MASK_P8_VECTOR;
+	  rs6000_isa_flags_explicit |= OPTION_MASK_P8_VECTOR;
+	}
     }
 
   /* -mpower9-dform turns on both -mpower9-dform-scalar and
@@ -4289,10 +4400,52 @@ rs6000_option_override_internal (bool global_init_p)
 	 error messages.  However, if users have managed to select
 	 power9-dform without selecting power9-vector, they
 	 already know about undocumented flags.  */
-      if (rs6000_isa_flags_explicit & OPTION_MASK_P9_VECTOR)
+      if ((rs6000_isa_flags_explicit & OPTION_MASK_P9_VECTOR)
+	  && (rs6000_isa_flags_explicit & (OPTION_MASK_P9_DFORM_SCALAR
+					   | OPTION_MASK_P9_DFORM_VECTOR)))
 	error ("-mpower9-dform requires -mpower9-vector");
-      rs6000_isa_flags &= ~(OPTION_MASK_P9_DFORM_SCALAR
-			    | OPTION_MASK_P9_DFORM_VECTOR);
+      else if (rs6000_isa_flags_explicit & OPTION_MASK_P9_VECTOR)
+	{
+	  rs6000_isa_flags &=
+	    ~(OPTION_MASK_P9_DFORM_SCALAR | OPTION_MASK_P9_DFORM_VECTOR);
+	  rs6000_isa_flags_explicit |=
+	    (OPTION_MASK_P9_DFORM_SCALAR | OPTION_MASK_P9_DFORM_VECTOR);
+	}
+      else
+	{
+	  /* We know that OPTION_MASK_P9_VECTOR is not explicit and
+	     OPTION_MASK_P9_DFORM_SCALAR or OPTION_MASK_P9_DORM_VECTOR
+	     may be explicit.  */
+	  rs6000_isa_flags |= OPTION_MASK_P9_VECTOR;
+	  rs6000_isa_flags_explicit |= OPTION_MASK_P9_VECTOR;
+	}
+    }
+
+  if ((TARGET_P9_DFORM_SCALAR || TARGET_P9_DFORM_VECTOR)
+      && !TARGET_DIRECT_MOVE)
+    {
+      /* We prefer to not mention undocumented options in
+	 error messages.  However, if users have managed to select
+	 power9-dform without selecting power9-vector, they
+	 already know about undocumented flags.  */
+      if ((rs6000_isa_flags_explicit & OPTION_MASK_DIRECT_MOVE)
+	  && ((rs6000_isa_flags_explicit & OPTION_MASK_P9_DFORM_VECTOR) ||
+	      (rs6000_isa_flags_explicit & OPTION_MASK_P9_DFORM_SCALAR) ||
+	      (TARGET_P9_DFORM_BOTH == 1)))
+	error ("-mpower9-dform, -mpower9-dform-vector, -mpower9-dform-scalar"
+	       " require -mdirect-move");
+      else if ((rs6000_isa_flags_explicit & OPTION_MASK_DIRECT_MOVE) == 0)
+	{
+	  rs6000_isa_flags |= OPTION_MASK_DIRECT_MOVE;
+	  rs6000_isa_flags_explicit |= OPTION_MASK_DIRECT_MOVE;
+	}
+      else
+	{
+	  rs6000_isa_flags &=
+	    ~(OPTION_MASK_P9_DFORM_SCALAR | OPTION_MASK_P9_DFORM_VECTOR);
+	  rs6000_isa_flags_explicit |=
+	    (OPTION_MASK_P9_DFORM_SCALAR | OPTION_MASK_P9_DFORM_VECTOR);
+	}
     }
 
   if (TARGET_P9_DFORM_SCALAR && !TARGET_UPPER_REGS_DF)
@@ -30187,14 +30340,14 @@ rs6000_adjust_cost (rtx_insn *insn, rtx link, rtx_insn *dep_insn, int cost)
                   case TYPE_LOAD:
                   case TYPE_CNTLZ:
                     {
-                      if (! store_data_bypass_p (dep_insn, insn))
+                      if (! rs6000_store_data_bypass_p (dep_insn, insn))
                         return get_attr_sign_extend (dep_insn)
                                == SIGN_EXTEND_YES ? 6 : 4;
                       break;
                     }
                   case TYPE_SHIFT:
                     {
-                      if (! store_data_bypass_p (dep_insn, insn))
+                      if (! rs6000_store_data_bypass_p (dep_insn, insn))
                         return get_attr_var_shift (dep_insn) == VAR_SHIFT_YES ?
                                6 : 3;
                       break;
@@ -30205,7 +30358,7 @@ rs6000_adjust_cost (rtx_insn *insn, rtx link, rtx_insn *dep_insn, int cost)
                   case TYPE_EXTS:
                   case TYPE_INSERT:
                     {
-                      if (! store_data_bypass_p (dep_insn, insn))
+                      if (! rs6000_store_data_bypass_p (dep_insn, insn))
                         return 3;
                       break;
                     }
@@ -30214,19 +30367,19 @@ rs6000_adjust_cost (rtx_insn *insn, rtx link, rtx_insn *dep_insn, int cost)
                   case TYPE_FPSTORE:
                     {
                       if (get_attr_update (dep_insn) == UPDATE_YES
-                          && ! store_data_bypass_p (dep_insn, insn))
+                          && ! rs6000_store_data_bypass_p (dep_insn, insn))
                         return 3;
                       break;
                     }
                   case TYPE_MUL:
                     {
-                      if (! store_data_bypass_p (dep_insn, insn))
+                      if (! rs6000_store_data_bypass_p (dep_insn, insn))
                         return 17;
                       break;
                     }
                   case TYPE_DIV:
                     {
-                      if (! store_data_bypass_p (dep_insn, insn))
+                      if (! rs6000_store_data_bypass_p (dep_insn, insn))
                         return get_attr_size (dep_insn) == SIZE_32 ? 45 : 57;
                       break;
                     }

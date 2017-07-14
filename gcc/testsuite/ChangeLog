@@ -1,3 +1,33 @@
+2017-07-14  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	Backports from trunk:
+
+	2017-01-23  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+	PR target/66669
+	* gcc.dg/loop-8.c: Modify dg-skip-if directive to exclude this
+	test on powerpc targets.
+
+	2017-02-08  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+	PR target/68972
+	* g++.dg/cpp1y/vla-initlist1.C: Add dg-skip-if directive to
+	disable this test on power architecture.
+
+	2017-03-23  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+	* gcc.target/powerpc/p9-options-1.c: New test.
+
+	2017-03-27  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+	PR target/80103
+	* gcc.target/powerpc/pr80103-1.c: New test.
+
+	2017-05-08  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+	PR target/80101
+	* gcc.target/powerpc/pr80101-1.c: New test.
+
+	2017-07-05  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+	PR target/80103
+	* gcc.target/powerpc/pr80103-1.c (b): Correct spelling of
+	__attribute__.
+
 2017-07-14  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backport from mainline
