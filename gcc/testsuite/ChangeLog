@@ -1,3 +1,17 @@
+2017-07-14  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backport from mainline
+	2017-07-10  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/81375
+	* gcc.target/i386/pr81375.c: New test.
+
+	Backport from mainline
+	2017-07-04  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/81300
+	* gcc.target/i386/pr81300.c: New test.
+
 2017-07-13  Tom de Vries  <tom@codesourcery.com>
 
 	backport from mainline:
