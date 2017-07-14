@@ -1,3 +1,8 @@
+2016-07-14  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	PR tree-optimization/81162
+	* gcc.dg/pr81162.c: New file.
+
 2017-07-14  Martin Sebor  <msebor@redhat.com>
 
 	* gcc.dg/tree-ssa/ssa-dse-30.c: Correct test to look for memmove

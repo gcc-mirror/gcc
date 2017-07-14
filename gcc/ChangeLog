@@ -1,3 +1,9 @@
+2016-07-14  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	PR tree-optimization/81162
+	* gimple-ssa-strength-reduction.c (replace_mult_candidate): Don't
+	replace a negate with an add.
+
 2017-07-14  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* doc/invoke.texi (arm/-mcpu): Document +crypto.
