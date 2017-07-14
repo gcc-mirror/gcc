@@ -196,10 +196,6 @@ extern tree arm_fp16_type_node;
 /* FPU supports fused-multiply-add operations.  */
 #define TARGET_FMA (bitmap_bit_p (arm_active_target.isa, isa_bit_VFPv4))
 
-/* FPU is ARMv8 compatible.  */
-#define TARGET_FPU_ARMV8					\
-  (bitmap_bit_p (arm_active_target.isa, isa_bit_FP_ARMv8))
-
 /* FPU supports Crypto extensions.  */
 #define TARGET_CRYPTO (bitmap_bit_p (arm_active_target.isa, isa_bit_crypto))
 
@@ -216,7 +212,7 @@ extern tree arm_fp16_type_node;
 
 /* FPU supports the floating point FP16 instructions for ARMv8.2 and later.  */
 #define TARGET_VFP_FP16INST \
-  (TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_FPU_ARMV8 && arm_fp16_inst)
+  (TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP5 && arm_fp16_inst)
 
 /* FPU supports the AdvSIMD FP16 instructions for ARMv8.2 and later.  */
 #define TARGET_NEON_FP16INST (TARGET_VFP_FP16INST && TARGET_NEON_RDMA)
