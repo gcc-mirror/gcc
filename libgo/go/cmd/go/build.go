@@ -3092,8 +3092,7 @@ func (tools gccgoToolchain) cc(b *builder, p *Package, objdir, ofile, cfile stri
 	if pkgpath := gccgoCleanPkgpath(p); pkgpath != "" {
 		defs = append(defs, `-D`, `GOPKGPATH="`+pkgpath+`"`)
 	}
-	switch goarch {
-	case "386", "amd64":
+	if b.gccSupportsFlag("-fsplit-stack") {
 		defs = append(defs, "-fsplit-stack")
 	}
 	defs = tools.maybePIC(defs)
@@ -3428,8 +3427,7 @@ func (b *builder) cgo(a *action, cgoExe, obj string, pcCFLAGS, pcLDFLAGS, cgofil
 	}
 
 	if _, ok := buildToolchain.(gccgoToolchain); ok {
-		switch goarch {
-		case "386", "amd64":
+		if b.gccSupportsFlag("-fsplit-stack") {
 			cgoCFLAGS = append(cgoCFLAGS, "-fsplit-stack")
 		}
 		cgoflags = append(cgoflags, "-gccgo")
