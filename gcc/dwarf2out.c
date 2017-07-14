@@ -19846,7 +19846,6 @@ lower_bound_default (void)
     case DW_LANG_Ada83:
     case DW_LANG_Cobol74:
     case DW_LANG_Cobol85:
-    case DW_LANG_Pascal83:
     case DW_LANG_Modula2:
     case DW_LANG_PLI:
       return dwarf_version >= 4 ? 1 : -1;
@@ -23536,8 +23535,6 @@ gen_compile_unit_die (const char *filename)
     }
   else if (strcmp (language_string, "GNU F77") == 0)
     language = DW_LANG_Fortran77;
-  else if (strcmp (language_string, "GNU Pascal") == 0)
-    language = DW_LANG_Pascal83;
   else if (dwarf_version >= 3 || !dwarf_strict)
     {
       if (strcmp (language_string, "GNU Ada") == 0)

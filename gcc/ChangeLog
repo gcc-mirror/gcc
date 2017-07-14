@@ -1,3 +1,15 @@
+2017-07-14  Martin Liska  <mliska@suse.cz>
+
+	* dbxout.c (get_lang_number): Do not handle GNU Pascal.
+	* dbxout.h (extern void dbxout_stab_value_internal_label_diff):
+	Remove N_SO_PASCAL.
+	* dwarf2out.c (lower_bound_default): Do not handle
+	DW_LANG_Pascal83.
+	(gen_compile_unit_die): Likewise.
+	* gcc.c: Remove default extension binding for GNU Pascal.
+	* stmt.c: Remove Pascal language from a comment.
+	* xcoffout.c: Likewise.
+
 2017-07-13  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c/81405

@@ -952,8 +952,6 @@ get_lang_number (void)
     return N_SO_FORTRAN;
   else if (lang_GNU_Fortran ())
     return N_SO_FORTRAN90; /* CHECKME */
-  else if (strcmp (language_string, "GNU Pascal") == 0)
-    return N_SO_PASCAL;
   else if (strcmp (language_string, "GNU Objective-C") == 0)
     return N_SO_OBJC;
   else if (strcmp (language_string, "GNU Objective-C++") == 0)
