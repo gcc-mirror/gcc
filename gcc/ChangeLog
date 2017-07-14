@@ -1,5 +1,16 @@
 2017-07-14  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
+	* config/arm/arm-cpus.in (cortex-r52): Add new entry.
+	(armv8-r): Set ARM Cortex-R52 as default CPU.
+	* config/arm/arm-tables.opt: Regenerate.
+	* config/arm/arm-tune.md: Regenerate.
+	* config/arm/driver-arm.c (arm_cpu_table): Add entry for ARM
+	Cortex-R52.
+	* doc/invoke.texi: Mention -mtune=cortex-r52 and availability of fp.dp
+	extension for -mcpu=cortex-r52.
+
+2017-07-14  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
 	* config/arm/arm-isa.h (isa_bit_FP_ARMv8): Delete enumerator.
 	(ISA_FP_ARMv8): Define as ISA_FPv5 and ISA_FP_D32.
 	* config/arm/arm-cpus.in (armv8-r): Define fp.sp as enabling FPv5.
