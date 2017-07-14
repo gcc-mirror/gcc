@@ -15636,6 +15636,14 @@ on @samp{cortex-r5}, @samp{cortex-r52} and @samp{cortex-m7}.
 Disables the SIMD (but not floating-point) instructions on
 @samp{generic-armv7-a}, @samp{cortex-a5}, @samp{cortex-a7}
 and @samp{cortex-a9}.
+
+@item +crypto
+Enables the cryptographic instructions on @samp{cortex-a32},
+@samp{cortex-a35}, @samp{cortex-a53}, @samp{cortex-a55}, @samp{cortex-a57},
+@samp{cortex-a72}, @samp{cortex-a73}, @samp{cortex-a75}, @samp{exynos-m1},
+@samp{xgene1}, @samp{cortex-a57.cortex-a53}, @samp{cortex-a72.cortex-a53},
+@samp{cortex-a73.cortex-a35}, @samp{cortex-a73.cortex-a53} and
+@samp{cortex-a75.cortex-a55}.
 @end table
 
 Additionally the @samp{generic-armv7-a} pseudo target defaults to
