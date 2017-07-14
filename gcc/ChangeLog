@@ -1,3 +1,52 @@
+2017-07-14  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	* config/rs6000/rs6000-c.c (altivec_overloaded_builtins): Add
+	array entries to represent __ieee128 versions of the
+	scalar_test_data_class, scalar_test_neg, scalar_extract_exp,
+	scalar_extract_sig, and scalar_insert_exp built-in functions.
+	(altivec_resolve_overloaded_builtin): Add special case handling
+	for the __builtin_scalar_insert_exp function, as represented by
+	the P9V_BUILTIN_VEC_VSIEDP constant.
+	* config/rs6000/rs6000-builtin.def (VSEEQP): Add scalar extract
+	exponent support for __ieee128 argument.
+	(VSESQP): Add scalar extract signature support for __ieee128
+	argument.
+	(VSTDCNQP): Add scalar test negative support for __ieee128
+	argument.
+	(VSIEQP): Add scalar insert exponent support for __int128 argument
+	with __ieee128 result.
+	(VSIEQPF): Add scalar insert exponent support for __ieee128
+	argument with __ieee128 result.
+	(VSTDCQP): Add scalar test data class support for __ieee128
+	argument.
+	(VSTDCNQP): Add overload support for scalar test negative with
+	__ieee128 argument.
+	(VSTDCQP): Add overload support for scalar test data class
+	__ieee128 argument.
+	* config/rs6000/vsx.md (UNSPEC_VSX_SXSIG) Replace
+	UNSPEC_VSX_SXSIGDP.
+	(UNSPEC_VSX_SIEXPQP): New constant.
+	(xsxexpqp): New insn for VSX scalar extract exponent quad
+	precision.
+	(xsxsigqp): New insn for VSX scalar extract significand quad
+	precision.
+	(xsiexpqpf): New insn for VSX scalar insert exponent quad
+	precision with floating point argument.
+	(xststdcqp): New expand for VSX scalar test data class quad
+	precision.
+	(xststdcnegqp): New expand for VSX scalar test negative quad
+	precision.
+	(xststdcqp): New insn to match expansions for VSX scalar test data
+	class quad precision and VSX scalar test negative quad precision.
+	* config/rs6000/rs6000.c (rs6000_expand_binop_builtin): Add
+	special case operand checking to enforce that second operand of
+	VSX scalar test data class with quad precision argument is a 7-bit
+	unsigned literal.
+	* doc/extend.texi (PowerPC AltiVec Built-in Functions): Add
+	prototypes and descriptions of __ieee128 versions of
+	scalar_extract_exp, scalar_extract_sig, scalar_insert_exp,
+	scalar_test_data_class, and scalar_test_neg built-in functions.
+
 2016-07-14  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	PR tree-optimization/81162
