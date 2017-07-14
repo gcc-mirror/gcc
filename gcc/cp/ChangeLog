@@ -1,3 +1,16 @@
+2017-07-14  David Malcolm  <dmalcolm@redhat.com>
+
+	* name-lookup.c (get_std_name_hint): Add '<' and '>' around
+	the header names.
+	(maybe_suggest_missing_header): Update for addition of '<' and '>'
+	to above.  Provide a fix-it hint.
+	* pt.c: Include "gcc-rich-location.h"
+	(listify): Attempt to add fix-it hint for missing
+	#include <initializer_list>.
+	* rtti.c: Include "gcc-rich-location.h".
+	(typeid_ok_p): Attempt to add fix-it hint for missing
+	#include <typeinfo>.
+
 2017-07-12  Jason Merrill  <jason@redhat.com>
 
 	P0512R0 - Deduction from an initializer list.

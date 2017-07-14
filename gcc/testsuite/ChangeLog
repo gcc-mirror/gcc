@@ -1,3 +1,13 @@
+2017-07-14  David Malcolm  <dmalcolm@redhat.com>
+
+	* g++.dg/cpp0x/missing-initializer_list-include.C: New test case.
+	* g++.dg/lookup/missing-std-include-2.C: New test case.
+	* g++.dg/lookup/missing-std-include-3.C: New test case.
+	* g++.dg/rtti/missing-typeinfo-include.C: New test case.
+	* gcc.dg/missing-header-fixit-1.c: New test case.
+	* gcc.dg/missing-header-fixit-2.c: New test case.
+	* gcc.dg/missing-header-fixit-2.h: New header.
+
 2017-07-13  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c/81405

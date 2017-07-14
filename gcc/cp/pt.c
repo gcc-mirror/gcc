@@ -40,6 +40,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-iterator.h"
 #include "type-utils.h"
 #include "gimplify.h"
+#include "gcc-rich-location.h"
 
 /* The type of functions taking a tree, and some additional data, and
    returning an int.  */
@@ -24867,8 +24868,12 @@ listify (tree arg)
 
   if (!std_init_list || !DECL_CLASS_TEMPLATE_P (std_init_list))
     {    
-      error ("deducing from brace-enclosed initializer list requires "
-	     "#include <initializer_list>");
+      gcc_rich_location richloc (input_location);
+      maybe_add_include_fixit (&richloc, "<initializer_list>");
+      error_at_rich_loc (&richloc,
+                         "deducing from brace-enclosed initializer list"
+                         " requires #include <initializer_list>");
+
       return error_mark_node;
     }
   tree argvec = make_tree_vec (1);

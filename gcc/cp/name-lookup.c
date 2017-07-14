@@ -4760,7 +4760,7 @@ suggest_alternatives_for (location_t location, tree name,
 /* Subroutine of maybe_suggest_missing_header for handling unrecognized names
    for some of the most common names within "std::".
    Given non-NULL NAME, a name for lookup within "std::", return the header
-   name defining it within the C++ Standard Library (without '<' and '>'),
+   name defining it within the C++ Standard Library (with '<' and '>'),
    or NULL.  */
 
 static const char *
@@ -4773,61 +4773,61 @@ get_std_name_hint (const char *name)
   };
   static const std_name_hint hints[] = {
     /* <array>.  */
-    {"array", "array"}, // C++11
+    {"array", "<array>"}, // C++11
     /* <deque>.  */
-    {"deque", "deque"},
+    {"deque", "<deque>"},
     /* <forward_list>.  */
-    {"forward_list", "forward_list"},  // C++11
+    {"forward_list", "<forward_list>"},  // C++11
     /* <fstream>.  */
-    {"basic_filebuf", "fstream"},
-    {"basic_ifstream", "fstream"},
-    {"basic_ofstream", "fstream"},
-    {"basic_fstream", "fstream"},
+    {"basic_filebuf", "<fstream>"},
+    {"basic_ifstream", "<fstream>"},
+    {"basic_ofstream", "<fstream>"},
+    {"basic_fstream", "<fstream>"},
     /* <iostream>.  */
-    {"cin", "iostream"},
-    {"cout", "iostream"},
-    {"cerr", "iostream"},
-    {"clog", "iostream"},
-    {"wcin", "iostream"},
-    {"wcout", "iostream"},
-    {"wclog", "iostream"},
+    {"cin", "<iostream>"},
+    {"cout", "<iostream>"},
+    {"cerr", "<iostream>"},
+    {"clog", "<iostream>"},
+    {"wcin", "<iostream>"},
+    {"wcout", "<iostream>"},
+    {"wclog", "<iostream>"},
     /* <list>.  */
-    {"list", "list"},
+    {"list", "<list>"},
     /* <map>.  */
-    {"map", "map"},
-    {"multimap", "map"},
+    {"map", "<map>"},
+    {"multimap", "<map>"},
     /* <queue>.  */
-    {"queue", "queue"},
-    {"priority_queue", "queue"},
+    {"queue", "<queue>"},
+    {"priority_queue", "<queue>"},
     /* <ostream>.  */
-    {"ostream", "ostream"},
-    {"wostream", "ostream"},
-    {"ends", "ostream"},
-    {"flush", "ostream"},
-    {"endl", "ostream"},
+    {"ostream", "<ostream>"},
+    {"wostream", "<ostream>"},
+    {"ends", "<ostream>"},
+    {"flush", "<ostream>"},
+    {"endl", "<ostream>"},
     /* <set>.  */
-    {"set", "set"},
-    {"multiset", "set"},
+    {"set", "<set>"},
+    {"multiset", "<set>"},
     /* <sstream>.  */
-    {"basic_stringbuf", "sstream"},
-    {"basic_istringstream", "sstream"},
-    {"basic_ostringstream", "sstream"},
-    {"basic_stringstream", "sstream"},
+    {"basic_stringbuf", "<sstream>"},
+    {"basic_istringstream", "<sstream>"},
+    {"basic_ostringstream", "<sstream>"},
+    {"basic_stringstream", "<sstream>"},
     /* <stack>.  */
-    {"stack", "stack"},
+    {"stack", "<stack>"},
     /* <string>.  */
-    {"string", "string"},
-    {"wstring", "string"},
-    {"u16string", "string"},
-    {"u32string", "string"},
+    {"string", "<string>"},
+    {"wstring", "<string>"},
+    {"u16string", "<string>"},
+    {"u32string", "<string>"},
     /* <unordered_map>.  */
-    {"unordered_map", "unordered_map"}, // C++11
-    {"unordered_multimap", "unordered_map"}, // C++11
+    {"unordered_map", "<unordered_map>"}, // C++11
+    {"unordered_multimap", "<unordered_map>"}, // C++11
     /* <unordered_set>.  */
-    {"unordered_set", "unordered_set"}, // C++11
-    {"unordered_multiset", "unordered_set"}, // C++11
+    {"unordered_set", "<unordered_set>"}, // C++11
+    {"unordered_multiset", "<unordered_set>"}, // C++11
     /* <vector>.  */
-    {"vector", "vector"},
+    {"vector", "<vector>"},
   };
   const size_t num_hints = sizeof (hints) / sizeof (hints[0]);
   for (size_t i = 0; i < num_hints; i++)
@@ -4858,10 +4858,14 @@ maybe_suggest_missing_header (location_t location, tree name, tree scope)
   const char *name_str = IDENTIFIER_POINTER (name);
   const char *header_hint = get_std_name_hint (name_str);
   if (header_hint)
-    inform (location,
-	    "%<std::%s%> is defined in header %<<%s>%>;"
-	    " did you forget to %<#include <%s>%>?",
-	    name_str, header_hint, header_hint);
+    {
+      gcc_rich_location richloc (location);
+      maybe_add_include_fixit (&richloc, header_hint);
+      inform_at_rich_loc (&richloc,
+			  "%<std::%s%> is defined in header %qs;"
+			  " did you forget to %<#include %s%>?",
+			  name_str, header_hint, header_hint);
+    }
 }
 
 /* Look for alternatives for NAME, an IDENTIFIER_NODE for which name
