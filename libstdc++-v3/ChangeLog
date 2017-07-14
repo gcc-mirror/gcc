@@ -1,3 +1,11 @@
+2017-07-14  Jason Merrill  <jason@redhat.com>
+	    Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/variant (variant::variant(_Tp&&)): Constrain to remove
+	the constructor for empty variants from the candidate functions
+	during class template argument deduction.
+	* testsuite/20_util/variant/deduction.cc: New.
+
 2017-07-11  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/xml/faq.xml: Update several old entries. Improve
