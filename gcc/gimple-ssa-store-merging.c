@@ -331,8 +331,8 @@ clear_bit_region (unsigned char *ptr, unsigned int start,
   else if (start == 0 && len > BITS_PER_UNIT)
     {
       unsigned int nbytes = len / BITS_PER_UNIT;
-      /* We could recurse on each byte but do the loop here to avoid
-	 recursing too deep.  */
+      /* We could recurse on each byte but we clear whole bytes, so a simple
+	 memset will do.  */
       memset (ptr, '\0', nbytes);
       /* Clear the remaining sub-byte region if there is one.  */
       if (len % BITS_PER_UNIT != 0)

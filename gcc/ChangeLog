@@ -1,3 +1,8 @@
+2017-07-14  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gimple-ssa-store-merging.c (clear_bit_region): Replace reference to
+	loop in comment with memset.
+
 2017-07-14  Martin Liska  <mliska@suse.cz>
 
 	* cfgexpand.c (expand_gimple_basic_block): Remove dead comment.
