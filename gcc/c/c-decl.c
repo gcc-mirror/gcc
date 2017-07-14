@@ -3386,8 +3386,14 @@ implicitly_declare (location_t loc, tree functionid)
 		  const char *header
 		    = header_for_builtin_fn (DECL_FUNCTION_CODE (decl));
 		  if (header != NULL && warned)
-		    inform (loc, "include %qs or provide a declaration of %qD",
-			    header, decl);
+		    {
+		      rich_location richloc (line_table, loc);
+		      maybe_add_include_fixit (&richloc, header);
+		      inform_at_rich_loc
+			(&richloc,
+			 "include %qs or provide a declaration of %qD",
+			 header, decl);
+		    }
 		  newtype = TREE_TYPE (decl);
 		}
 	    }

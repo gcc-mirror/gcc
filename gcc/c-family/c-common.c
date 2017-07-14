@@ -8019,4 +8019,135 @@ c_family_tests (void)
 
 #endif /* #if CHECKING_P */
 
+/* Attempt to locate a suitable location within FILE for a
+   #include directive to be inserted before.  FILE should
+   be a string from libcpp (pointer equality is used).
+   LOC is the location of the relevant diagnostic.
+
+   Attempt to return the location within FILE immediately
+   after the last #include within that file, or the start of
+   that file if it has no #include directives.
+
+   Return UNKNOWN_LOCATION if no suitable location is found,
+   or if an error occurs.  */
+
+static location_t
+try_to_locate_new_include_insertion_point (const char *file, location_t loc)
+{
+  /* Locate the last ordinary map within FILE that ended with a #include.  */
+  const line_map_ordinary *last_include_ord_map = NULL;
+
+  /* ...and the next ordinary map within FILE after that one.  */
+  const line_map_ordinary *last_ord_map_after_include = NULL;
+
+  /* ...and the first ordinary map within FILE.  */
+  const line_map_ordinary *first_ord_map_in_file = NULL;
+
+  /*  Get ordinary map containing LOC (or its expansion).  */
+  const line_map_ordinary *ord_map_for_loc = NULL;
+  loc = linemap_resolve_location (line_table, loc, LRK_MACRO_EXPANSION_POINT,
+				  &ord_map_for_loc);
+  gcc_assert (ord_map_for_loc);
+
+  for (unsigned int i = 0; i < LINEMAPS_ORDINARY_USED (line_table); i++)
+    {
+      const line_map_ordinary *ord_map
+	= LINEMAPS_ORDINARY_MAP_AT (line_table, i);
+
+      const line_map_ordinary *from = INCLUDED_FROM (line_table, ord_map);
+      if (from)
+	if (from->to_file == file)
+	  {
+	    last_include_ord_map = from;
+	    last_ord_map_after_include = NULL;
+	  }
+
+      if (ord_map->to_file == file)
+	{
+	  if (!first_ord_map_in_file)
+	    first_ord_map_in_file = ord_map;
+	  if (last_include_ord_map && !last_ord_map_after_include)
+	    last_ord_map_after_include = ord_map;
+	}
+
+      /* Stop searching when reaching the ord_map containing LOC,
+	 as it makes no sense to provide fix-it hints that appear
+	 after the diagnostic in question.  */
+      if (ord_map == ord_map_for_loc)
+	break;
+    }
+
+  /* Determine where to insert the #include.  */
+  const line_map_ordinary *ord_map_for_insertion;
+
+  /* We want the next ordmap in the file after the last one that's a
+     #include, but failing that, the start of the file.  */
+  if (last_ord_map_after_include)
+    ord_map_for_insertion = last_ord_map_after_include;
+  else
+    ord_map_for_insertion = first_ord_map_in_file;
+
+  if (!ord_map_for_insertion)
+    return UNKNOWN_LOCATION;
+
+  /* The "start_location" is column 0, meaning "the whole line".
+     rich_location and edit_context can't cope with this, so use
+     column 1 instead.  */
+  location_t col_0 = ord_map_for_insertion->start_location;
+  return linemap_position_for_loc_and_offset (line_table, col_0, 1);
+}
+
+/* A map from filenames to sets of headers added to them, for
+   ensuring idempotency within maybe_add_include_fixit.  */
+
+/* The values within the map.  We need string comparison as there's
+   no guarantee that two different diagnostics that are recommending
+   adding e.g. "<stdio.h>" are using the same buffer.  */
+
+typedef hash_set <const char *, nofree_string_hash> per_file_includes_t;
+
+/* The map itself.  We don't need string comparison for the filename keys,
+   as they come from libcpp.  */
+
+typedef hash_map <const char *, per_file_includes_t *> added_includes_t;
+static added_includes_t *added_includes;
+
+/* Attempt to add a fix-it hint to RICHLOC, adding "#include HEADER\n"
+   in a suitable location within the file of RICHLOC's primary
+   location.
+
+   This function is idempotent: a header will be added at most once to
+   any given file.  */
+
+void
+maybe_add_include_fixit (rich_location *richloc, const char *header)
+{
+  location_t loc = richloc->get_loc ();
+  const char *file = LOCATION_FILE (loc);
+  if (!file)
+    return;
+
+  /* Idempotency: don't add the same header more than once to a given file.  */
+  if (!added_includes)
+    added_includes = new added_includes_t ();
+  per_file_includes_t *&set = added_includes->get_or_insert (file);
+  if (set)
+    if (set->contains (header))
+      /* ...then we've already added HEADER to that file.  */
+      return;
+  if (!set)
+    set = new per_file_includes_t ();
+  set->add (header);
+
+  /* Attempt to locate a suitable place for the new directive.  */
+  location_t include_insert_loc
+    = try_to_locate_new_include_insertion_point (file, loc);
+  if (include_insert_loc == UNKNOWN_LOCATION)
+    return;
+
+  char *text = xasprintf ("#include %s\n", header);
+  richloc->add_fixit_insert_before (include_insert_loc, text);
+  free (text);
+}
+
 #include "gt-c-family-c-common.h"
