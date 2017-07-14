@@ -1,5 +1,10 @@
 2017-07-14  Martin Liska  <mliska@suse.cz>
 
+	* opts.c (finish_options): Add quotes.
+	(common_handle_option): Likewise.
+
+2017-07-14  Martin Liska  <mliska@suse.cz>
+
 	* dbxout.c (get_lang_number): Do not handle GNU Pascal.
 	* dbxout.h (extern void dbxout_stab_value_internal_label_diff):
 	Remove N_SO_PASCAL.
