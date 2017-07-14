@@ -389,7 +389,7 @@ begin arch armv8-r
  option crc add bit_crc32
 # fp.sp => fp-armv8 (d16); simd => simd + fp-armv8 + d32 + double precision
 # note: no fp option for fp-armv8 (d16) + double precision at the moment
- option fp.sp add FP_ARMv8
+ option fp.sp add FPv5
  option simd add FP_ARMv8 NEON
  option crypto add FP_ARMv8 CRYPTO
  option nocrypto remove ALL_CRYPTO
@@ -1390,7 +1390,7 @@ begin fpu fpv5-d16
 end fpu fpv5-d16
 
 begin fpu fp-armv8
- isa FP_ARMv8 FP_D32
+ isa FP_ARMv8
 end fpu fp-armv8
 
 begin fpu neon-fp-armv8

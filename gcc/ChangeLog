@@ -1,3 +1,29 @@
+2017-07-14  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* config/arm/arm-isa.h (isa_bit_FP_ARMv8): Delete enumerator.
+	(ISA_FP_ARMv8): Define as ISA_FPv5 and ISA_FP_D32.
+	* config/arm/arm-cpus.in (armv8-r): Define fp.sp as enabling FPv5.
+	(fp-armv8): Define it as FP_ARMv8 only.
+	config/arm/arm.h (TARGET_FPU_ARMV8): Delete.
+	(TARGET_VFP_FP16INST): Define using TARGET_VFP5 rather than
+	TARGET_FPU_ARMV8.
+	config/arm/arm.c (arm_rtx_costs_internal): Replace checks against
+	TARGET_FPU_ARMV8 by checks against TARGET_VFP5.
+	* config/arm/arm-builtins.c (arm_builtin_vectorized_function): Define
+	first ARM_CHECK_BUILTIN_MODE definition using TARGET_VFP5 rather
+	than TARGET_FPU_ARMV8.
+	* config/arm/arm-c.c (arm_cpu_builtins): Likewise for
+	__ARM_FEATURE_NUMERIC_MAXMIN macro definition.
+	* config/arm/arm.md (cmov<mode>): Condition on TARGET_VFP5 rather than
+	TARGET_FPU_ARMV8.
+	* config/arm/neon.md (neon_vrint): Likewise.
+	(neon_vcvt): Likewise.
+	(neon_<fmaxmin_op><mode>): Likewise.
+	(<fmaxmin><mode>3): Likewise.
+	* config/arm/vfp.md (l<vrint_pattern><su_optab><mode>si2): Likewise.
+	* config/arm/predicates.md (arm_cond_move_operator): Check against
+	TARGET_VFP5 rather than TARGET_FPU_ARMV8 and fix spacing.
+
 2017-07-14  Jackson Woodruff  <jackson.woodruff@arm.com>
 
 	* config/aarch64/aarch64.c (aarch64_print_operand): Move comments
