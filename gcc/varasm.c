@@ -2403,7 +2403,7 @@ assemble_external (tree decl ATTRIBUTE_UNUSED)
   gcc_assert (asm_out_file);
 
   /* In a perfect world, the following condition would be true.
-     Sadly, the Java and Go front ends emit assembly *from the front end*,
+     Sadly, the Go front end emit assembly *from the front end*,
      bypassing the call graph.  See PR52739.  Fix before GCC 4.8.  */
 #if 0
   /* This function should only be called if we are expanding, or have
