@@ -1,5 +1,10 @@
 2017-07-14  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
+	* config/arm/arm-c.c (arm_cpu_builtins): Define
+	__ARM_FEATURE_NUMERIC_MAXMIN solely based on TARGET_VFP5.
+
+2017-07-14  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
 	* config/arm/arm-cpus.in (cortex-r52): Add new entry.
 	(armv8-r): Set ARM Cortex-R52 as default CPU.
 	* config/arm/arm-tables.opt: Regenerate.
