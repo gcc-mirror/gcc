@@ -1105,7 +1105,7 @@ compute_cases_per_edge (gswitch *stmt)
     }
 }
 
-/* Terminate a case (Pascal/Ada) or switch (C) statement
+/* Terminate a case Ada or switch (C) statement
    in which ORIG_INDEX is the expression to be tested.
    If ORIG_TYPE is not NULL, it is the original ORIG_INDEX
    type as given in the source before any compiler conversions.
