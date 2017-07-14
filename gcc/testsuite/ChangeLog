@@ -1,3 +1,57 @@
+2017-07-14  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	* gcc.target/powerpc/bfp/scalar-cmp-exp-eq-3.c: New test.
+	* gcc.target/powerpc/bfp/scalar-cmp-exp-eq-4.c: New test.
+	* gcc.target/powerpc/bfp/scalar-cmp-exp-gt-3.c: New test.
+	* gcc.target/powerpc/bfp/scalar-cmp-exp-gt-4.c: New test.
+	* gcc.target/powerpc/bfp/scalar-cmp-exp-lt-3.c: New test.
+	* gcc.target/powerpc/bfp/scalar-cmp-exp-lt-4.c: New test.
+	* gcc.target/powerpc/bfp/scalar-cmp-exp-unordered-3.c: New test.
+	* gcc.target/powerpc/bfp/scalar-cmp-exp-unordered-4.c: New test.
+	* gcc.target/powerpc/bfp/scalar-extract-exp-3.c: New test.
+	* gcc.target/powerpc/bfp/scalar-extract-exp-4.c: New test.
+	* gcc.target/powerpc/bfp/scalar-extract-exp-5.c: New test.
+	* gcc.target/powerpc/bfp/scalar-extract-exp-6.c: New test.
+	* gcc.target/powerpc/bfp/scalar-extract-exp-7.c: New test.
+	* gcc.target/powerpc/bfp/scalar-extract-sig-3.c: New test.
+	* gcc.target/powerpc/bfp/scalar-extract-sig-4.c: New test.
+	* gcc.target/powerpc/bfp/scalar-extract-sig-5.c: New test.
+	* gcc.target/powerpc/bfp/scalar-extract-sig-6.c: New test.
+	* gcc.target/powerpc/bfp/scalar-extract-sig-7.c: New test.
+	* gcc.target/powerpc/bfp/scalar-insert-exp-10.c: New test.
+	* gcc.target/powerpc/bfp/scalar-insert-exp-11.c: New test.
+	* gcc.target/powerpc/bfp/scalar-insert-exp-12.c: New test.
+	* gcc.target/powerpc/bfp/scalar-insert-exp-13.c: New test.
+	* gcc.target/powerpc/bfp/scalar-insert-exp-14.c: New test.
+	* gcc.target/powerpc/bfp/scalar-insert-exp-15.c: New test.
+	* gcc.target/powerpc/bfp/scalar-insert-exp-6.c: New test.
+	* gcc.target/powerpc/bfp/scalar-insert-exp-7.c: New test.
+	* gcc.target/powerpc/bfp/scalar-insert-exp-8.c: New test.
+	* gcc.target/powerpc/bfp/scalar-insert-exp-9.c: New test.
+	* gcc.target/powerpc/bfp/scalar-test-data-class-10.c: New test.
+	* gcc.target/powerpc/bfp/scalar-test-data-class-11.c: New test.
+	* gcc.target/powerpc/bfp/scalar-test-data-class-12.c: New test.
+	* gcc.target/powerpc/bfp/scalar-test-data-class-13.c: New test.
+	* gcc.target/powerpc/bfp/scalar-test-data-class-14.c: New test.
+	* gcc.target/powerpc/bfp/scalar-test-data-class-15.c: New test.
+	* gcc.target/powerpc/bfp/scalar-test-data-class-8.c: New test.
+	* gcc.target/powerpc/bfp/scalar-test-data-class-9.c: New test.
+	* gcc.target/powerpc/bfp/scalar-test-neg-4.c: New test.
+	* gcc.target/powerpc/bfp/scalar-test-neg-5.c: New test.
+	* gcc.target/powerpc/bfp/scalar-test-neg-6.c: New test.
+	* gcc.target/powerpc/bfp/scalar-test-neg-7.c: New test.
+	* gcc.target/powerpc/bfp/scalar-test-neg-8.c: New test.
+	* gcc.target/powerpc/bfp/vec-extract-exp-4.c: New test.
+	* gcc.target/powerpc/bfp/vec-extract-exp-5.c: New test.
+	* gcc.target/powerpc/bfp/vec-extract-sig-4.c: New test.
+	* gcc.target/powerpc/bfp/vec-extract-sig-5.c: New test.
+	* gcc.target/powerpc/bfp/vec-insert-exp-10.c: New test.
+	* gcc.target/powerpc/bfp/vec-insert-exp-11.c: New test.
+	* gcc.target/powerpc/bfp/vec-insert-exp-8.c: New test.
+	* gcc.target/powerpc/bfp/vec-insert-exp-9.c: New test.
+	* gcc.target/powerpc/bfp/vec-test-data-class-8.c: New test.
+	* gcc.target/powerpc/bfp/vec-test-data-class-9.c: New test.
+
 2016-07-14  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	PR tree-optimization/81162

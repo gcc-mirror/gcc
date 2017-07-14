@@ -14354,7 +14354,8 @@ rs6000_expand_binop_builtin (enum insn_code icode, tree exp, rtx target)
 	  return CONST0_RTX (tmode);
 	}
     }
-  else if (icode == CODE_FOR_xststdcdp
+  else if (icode == CODE_FOR_xststdcqp
+	   || icode == CODE_FOR_xststdcdp
 	   || icode == CODE_FOR_xststdcsp
 	   || icode == CODE_FOR_xvtstdcdp
 	   || icode == CODE_FOR_xvtstdcsp)
