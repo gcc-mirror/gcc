@@ -5053,12 +5053,43 @@ static const int aarch64_nzcv_codes[] =
   0		/* NV, Any.  */
 };
 
+/* Print operand X to file F in a target specific manner according to CODE.
+   The acceptable formatting commands given by CODE are:
+     'c':		An integer or symbol address without a preceding #
+			sign.
+     'e':		Print the sign/zero-extend size as a character 8->b,
+			16->h, 32->w.
+     'p':		Prints N such that 2^N == X (X must be power of 2 and
+			const int).
+     'P':		Print the number of non-zero bits in X (a const_int).
+     'H':		Print the higher numbered register of a pair (TImode)
+			of regs.
+     'm':		Print a condition (eq, ne, etc).
+     'M':		Same as 'm', but invert condition.
+     'b/h/s/d/q':	Print a scalar FP/SIMD register name.
+     'S/T/U/V':		Print a FP/SIMD register name for a register list.
+			The register printed is the FP/SIMD register name
+			of X + 0/1/2/3 for S/T/U/V.
+     'R':		Print a scalar FP/SIMD register name + 1.
+     'X':		Print bottom 16 bits of integer constant in hex.
+     'w/x':		Print a general register name or the zero register
+			(32-bit or 64-bit).
+     '0':		Print a normal operand, if it's a general register,
+			then we assume DImode.
+     'k':		Print NZCV for conditional compare instructions.
+     'A':		Output address constant representing the first
+			argument of X, specifying a relocation offset
+			if appropriate.
+     'L':		Output constant address specified by X
+			with a relocation offset if appropriate.
+     'G':		Prints address of X, specifying a PC relative
+			relocation mode if appropriate.  */
+
 static void
 aarch64_print_operand (FILE *f, rtx x, int code)
 {
   switch (code)
     {
-    /* An integer or symbol address without a preceding # sign.  */
     case 'c':
       switch (GET_CODE (x))
 	{
@@ -5085,7 +5116,6 @@ aarch64_print_operand (FILE *f, rtx x, int code)
       break;
 
     case 'e':
-      /* Print the sign/zero-extend size as a character 8->b, 16->h, 32->w.  */
       {
 	int n;
 
@@ -5118,7 +5148,6 @@ aarch64_print_operand (FILE *f, rtx x, int code)
       {
 	int n;
 
-	/* Print N such that 2^N == X.  */
 	if (!CONST_INT_P (x) || (n = exact_log2 (INTVAL (x))) < 0)
 	  {
 	    output_operand_lossage ("invalid operand for '%%%c'", code);
@@ -5130,7 +5159,6 @@ aarch64_print_operand (FILE *f, rtx x, int code)
       break;
 
     case 'P':
-      /* Print the number of non-zero bits in X (a const_int).  */
       if (!CONST_INT_P (x))
 	{
 	  output_operand_lossage ("invalid operand for '%%%c'", code);
@@ -5141,7 +5169,6 @@ aarch64_print_operand (FILE *f, rtx x, int code)
       break;
 
     case 'H':
-      /* Print the higher numbered register of a pair (TImode) of regs.  */
       if (!REG_P (x) || !GP_REGNUM_P (REGNO (x) + 1))
 	{
 	  output_operand_lossage ("invalid operand for '%%%c'", code);
@@ -5155,8 +5182,6 @@ aarch64_print_operand (FILE *f, rtx x, int code)
     case 'm':
       {
         int cond_code;
-	/* Print a condition (eq, ne, etc) or its inverse.  */
-
 	/* CONST_TRUE_RTX means al/nv (al is the default, don't print it).  */
 	if (x == const_true_rtx)
 	  {
@@ -5184,7 +5209,6 @@ aarch64_print_operand (FILE *f, rtx x, int code)
     case 's':
     case 'd':
     case 'q':
-      /* Print a scalar FP/SIMD register name.  */
       if (!REG_P (x) || !FP_REGNUM_P (REGNO (x)))
 	{
 	  output_operand_lossage ("incompatible floating point / vector register operand for '%%%c'", code);
@@ -5197,7 +5221,6 @@ aarch64_print_operand (FILE *f, rtx x, int code)
     case 'T':
     case 'U':
     case 'V':
-      /* Print the first FP/SIMD register name in a list.  */
       if (!REG_P (x) || !FP_REGNUM_P (REGNO (x)))
 	{
 	  output_operand_lossage ("incompatible floating point / vector register operand for '%%%c'", code);
@@ -5207,7 +5230,6 @@ aarch64_print_operand (FILE *f, rtx x, int code)
       break;
 
     case 'R':
-      /* Print a scalar FP/SIMD register name + 1.  */
       if (!REG_P (x) || !FP_REGNUM_P (REGNO (x)))
 	{
 	  output_operand_lossage ("incompatible floating point / vector register operand for '%%%c'", code);
@@ -5217,7 +5239,6 @@ aarch64_print_operand (FILE *f, rtx x, int code)
       break;
 
     case 'X':
-      /* Print bottom 16 bits of integer constant in hex.  */
       if (!CONST_INT_P (x))
 	{
 	  output_operand_lossage ("invalid operand for '%%%c'", code);
@@ -5228,8 +5249,6 @@ aarch64_print_operand (FILE *f, rtx x, int code)
 
     case 'w':
     case 'x':
-      /* Print a general register name or the zero register (32-bit or
-         64-bit).  */
       if (x == const0_rtx
 	  || (CONST_DOUBLE_P (x) && aarch64_float_const_zero_rtx_p (x)))
 	{
@@ -5252,8 +5271,6 @@ aarch64_print_operand (FILE *f, rtx x, int code)
       /* Fall through */
 
     case 0:
-      /* Print a normal operand, if it's a general register, then we
-	 assume DImode.  */
       if (x == NULL)
 	{
 	  output_operand_lossage ("missing operand");
@@ -5406,7 +5423,6 @@ aarch64_print_operand (FILE *f, rtx x, int code)
       break;
 
     case 'G':
-
       switch (aarch64_classify_symbolic_expression (x))
 	{
 	case SYMBOL_TLSLE24:
@@ -5421,7 +5437,6 @@ aarch64_print_operand (FILE *f, rtx x, int code)
     case 'k':
       {
 	HOST_WIDE_INT cond_code;
-	/* Print nzcv.  */
 
 	if (!CONST_INT_P (x))
 	  {

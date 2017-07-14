@@ -1,3 +1,8 @@
+2017-07-14  Jackson Woodruff  <jackson.woodruff@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_print_operand): Move comments
+	to top of function.
+
 2017-07-14  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* gimple-ssa-store-merging.c (clear_bit_region): Replace reference to
