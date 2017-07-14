@@ -823,8 +823,8 @@ finish_options (struct gcc_options *opts, struct gcc_options *opts_set,
     {
       if (opts_set->x_flag_reorder_blocks_and_partition)
         inform (loc,
-                "-freorder-blocks-and-partition does not work "
-                "with exceptions on this architecture");
+		"%<-freorder-blocks-and-partition%> does not work "
+		"with exceptions on this architecture");
       opts->x_flag_reorder_blocks_and_partition = 0;
       opts->x_flag_reorder_blocks = 1;
     }
@@ -839,8 +839,8 @@ finish_options (struct gcc_options *opts, struct gcc_options *opts_set,
     {
       if (opts_set->x_flag_reorder_blocks_and_partition)
         inform (loc,
-                "-freorder-blocks-and-partition does not support "
-                "unwind info on this architecture");
+		"%<-freorder-blocks-and-partition%> does not support "
+		"unwind info on this architecture");
       opts->x_flag_reorder_blocks_and_partition = 0;
       opts->x_flag_reorder_blocks = 1;
     }
@@ -857,8 +857,8 @@ finish_options (struct gcc_options *opts, struct gcc_options *opts_set,
     {
       if (opts_set->x_flag_reorder_blocks_and_partition)
         inform (loc,
-                "-freorder-blocks-and-partition does not work "
-                "on this architecture");
+		"%<-freorder-blocks-and-partition%> does not work "
+		"on this architecture");
       opts->x_flag_reorder_blocks_and_partition = 0;
       opts->x_flag_reorder_blocks = 1;
     }
@@ -895,7 +895,8 @@ finish_options (struct gcc_options *opts, struct gcc_options *opts_set,
 		  && !opts->x_flag_use_linker_plugin)))
 	{
 	  if (opts_set->x_flag_fat_lto_objects)
-            error_at (loc, "-fno-fat-lto-objects are supported only with linker plugin");
+	    error_at (loc, "%<-fno-fat-lto-objects%> are supported only with "
+		      "linker plugin");
 	  opts->x_flag_fat_lto_objects = 1;
 	}
     }
@@ -2127,7 +2128,7 @@ common_handle_option (struct gcc_options *opts,
 
 #ifndef ACCEL_COMPILER
     case OPT_foffload_abi_:
-      error_at (loc, "-foffload-abi option can be specified only for "
+      error_at (loc, "%<-foffload-abi%> option can be specified only for "
 		"offload compiler");
       break;
 #endif
