@@ -25,6 +25,12 @@
 
 #include <mutex>
 
+#ifndef __cpp_lib_scoped_lock
+# error "Feature-test macro for scoped_lock missing"
+#elif __cpp_lib_scoped_lock != 201707
+# error "Feature-test macro for scoped_lock has wrong value"
+#endif
+
 void test01()
 {
   // Check for required typedefs
