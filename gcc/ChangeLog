@@ -1,3 +1,11 @@
+2017-07-15  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	Revert:
+	2017-07-14  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* config/arm/arm-c.c (arm_cpu_builtins): Define
+	__ARM_FEATURE_NUMERIC_MAXMIN solely based on TARGET_VFP5.
+
 2017-07-14  Kelvin Nilsen  <kelvin@gcc.gnu.org>
 
 	* config/rs6000/rs6000-c.c (altivec_overloaded_builtins): Add
