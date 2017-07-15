@@ -1,3 +1,9 @@
+2017-07-15  John Paul Adrian Glaubitz  <glaubitz@physik.fu-berlin.de>
+
+	PR ada/81446
+	* system-linux-m68k.ads: Add pragma No_Elaboration_Code_All.
+	(Backend_Overflow_Checks): Set to True.
+
 2017-06-23  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc-interface/trans.c (gnat_to_gnu): Initialize sync to false to
