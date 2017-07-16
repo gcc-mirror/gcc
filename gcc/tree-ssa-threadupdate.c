@@ -763,8 +763,7 @@ compute_path_counts (struct redirection_data *rd,
   /* Handle incoming profile insanities.  */
   if (total_count < path_in_count)
     path_in_count = total_count;
-  int onpath_scale
-	 = path_in_count.probability_in (total_count).to_reg_br_prob_base ();
+  profile_probability onpath_scale = path_in_count.probability_in (total_count);
 
   /* Walk the entire path to do some more computation in order to estimate
      how much of the path_in_count will flow out of the duplicated threading
@@ -977,8 +976,8 @@ update_joiner_offpath_counts (edge epath, basic_block dup_bb,
 	 among the duplicated off-path edges based on their original
 	 ratio to the full off-path count (total_orig_off_path_count).
 	 */
-      int scale = enonpath->count.probability_in (total_orig_off_path_count)
-			.to_reg_br_prob_base ();
+      profile_probability scale
+		 = enonpath->count.probability_in (total_orig_off_path_count);
       /* Give the duplicated offpath edge a portion of the duplicated
 	 total.  */
       enonpathdup->count = total_dup_off_path_count.apply_probability (scale);
