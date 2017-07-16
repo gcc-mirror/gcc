@@ -897,9 +897,7 @@ hoist_guard (struct loop *loop, edge guard)
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    fprintf (dump_file, " %i", bb->index);
 	  if (e->probability.initialized_p ())
-            scale_bbs_frequencies_int (&bb, 1,
-				       e->probability.to_reg_br_prob_base (),
-				       REG_BR_PROB_BASE);
+            scale_bbs_frequencies (&bb, 1, e->probability);
   	}
     }
 
