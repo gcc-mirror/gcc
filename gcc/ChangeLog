@@ -1,3 +1,8 @@
+2017-07-07  Jan Hubicka  <hubicka@ucw.cz>
+
+	* tree-ssa-threadupdate.c (compute_path_counts,
+	update_joiner_offpath_counts): Use profile_probability.
+
 2017-07-15  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	Revert:
