@@ -1,3 +1,9 @@
+2017-07-16  Daniel Cederman  <cederman@gaisler.com>
+
+	* config/sparc/sparc.md (divdf3_fix): Add NOP to prevent back
+	to back store errata sensitive sequence from being generated.
+	(sqrtdf2_fix): Likewise.
+
 2017-07-07  Jan Hubicka  <hubicka@ucw.cz>
 
 	* tree-ssa-threadupdate.c (compute_path_counts,
