@@ -1,5 +1,10 @@
 2017-07-16  Jan Hubicka  <hubicka@ucw.cz>
 
+	* asan.c (create_cond_insert_point): Avoid use of REG_BR_PROB_BASE
+	fixpoint arithmetics.
+
+2017-07-16  Jan Hubicka  <hubicka@ucw.cz>
+
 	* profile-count.h (profile_probability::from_reg_br_prob_note,
 	profile_probability::to_reg_br_prob_note): New functions.
 	* doc/rtl.texi (REG_BR_PROB_NOTE): Update documentation.
