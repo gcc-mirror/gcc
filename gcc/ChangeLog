@@ -1,3 +1,9 @@
+2017-07-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR rtl-optimization/81424
+	* optabs.c (prepare_cmp_insn): Use copy_to_reg instead of force_reg
+	to remove potential trapping from operands if -fnon-call-exceptions.
+
 2017-07-16  Jan Hubicka  <hubicka@ucw.cz>
 
 	* tree-ssa-loop-manip.c (tree_transform_and_unroll_loop): Use
