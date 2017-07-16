@@ -3172,10 +3172,6 @@ type_to_string (tree typ, int verbose)
       if (len == aka_len && memcmp (p, p+aka_start, len) == 0)
 	p[len] = '\0';
     }
-
-  if (typ && TYPE_P (typ) && TREE_CODE (typ) == ENUMERAL_TYPE)
-    pp_string (cxx_pp, M_(" {enum}"));
-
   return pp_ggc_formatted_text (cxx_pp);
 }
 

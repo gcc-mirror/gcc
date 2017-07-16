@@ -8890,7 +8890,7 @@ cp_parser_cast_expression (cp_parser *parser, bool address_p, bool cast_p,
 		  maybe_add_cast_fixit (&rich_loc, open_paren_loc, close_paren_loc,
 					expr, type);
 		  warning_at_rich_loc (&rich_loc, OPT_Wold_style_cast,
-				       "use of old-style cast to %qT", type);
+				       "use of old-style cast to %q#T", type);
 		}
 
 	      /* Only type conversions to integral or enumeration types
