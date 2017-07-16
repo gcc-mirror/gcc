@@ -4022,9 +4022,10 @@ are stored in the @code{REG_NOTES} field of an insn.
 @item REG_BR_PROB
 This is used to specify the ratio of branches to non-branches of a
 branch insn according to the profile data.  The note is represented
-as an @code{int_list} expression whose integer value is between 0 and
-REG_BR_PROB_BASE.  Larger values indicate a higher probability that
-the branch will be taken.
+as an @code{int_list} expression whose integer value is an encoding
+of @code{profile_probability} type.  @code{profile_probability} provide
+member function @code{from_reg_br_prob_note} and @code{to_reg_br_prob_note}
+to extract and store the probability into the RTL encoding.
 
 @findex REG_BR_PRED
 @item REG_BR_PRED

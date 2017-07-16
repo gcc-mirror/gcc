@@ -816,7 +816,7 @@ compare_and_jump_seq (rtx op0, rtx op1, enum rtx_code comp,
       LABEL_NUSES (label)++;
     }
   if (prob.initialized_p ())
-    add_int_reg_note (jump, REG_BR_PROB, prob.to_reg_br_prob_base ());
+    add_reg_br_prob_note (jump, prob);
 
   seq = get_insns ();
   end_sequence ();

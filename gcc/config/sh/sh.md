@@ -1188,7 +1188,7 @@
    (clobber (reg:SI T_REG))]
   "can_create_pseudo_p ()"
 {
-  expand_cbranchsi4 (operands, LAST_AND_UNUSED_RTX_CODE, -1);
+  expand_cbranchsi4 (operands, LAST_AND_UNUSED_RTX_CODE);
   DONE;
 })
 

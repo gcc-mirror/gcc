@@ -22759,7 +22759,8 @@ output_cbranch (rtx op, const char *label, int reversed, rtx_insn *insn)
   if (note != NULL_RTX)
     {
       /* PROB is the difference from 50%.  */
-      int prob = XINT (note, 0) - REG_BR_PROB_BASE / 2;
+      int prob = profile_probability::from_reg_br_prob_note (XINT (note, 0))
+		   .to_reg_br_prob_base () - REG_BR_PROB_BASE / 2;
 
       /* Only hint for highly probable/improbable branches on newer cpus when
 	 we have real profile data, as static prediction overrides processor
@@ -23528,10 +23529,9 @@ rs6000_split_signbit (rtx dest, rtx src)
 static void
 emit_unlikely_jump (rtx cond, rtx label)
 {
-  int very_unlikely = REG_BR_PROB_BASE / 100 - 1;
   rtx x = gen_rtx_IF_THEN_ELSE (VOIDmode, cond, label, pc_rtx);
   rtx_insn *insn = emit_jump_insn (gen_rtx_SET (pc_rtx, x));
-  add_int_reg_note (insn, REG_BR_PROB, very_unlikely);
+  add_reg_br_prob_note (insn, profile_probability::very_unlikely ());
 }
 
 /* A subroutine of the atomic operation splitters.  Emit a load-locked
@@ -29284,8 +29284,7 @@ rs6000_expand_split_stack_prologue (void)
   insn = emit_jump_insn (gen_rtx_SET (pc_rtx, jump));
   JUMP_LABEL (insn) = ok_label;
   /* Mark the jump as very likely to be taken.  */
-  add_int_reg_note (insn, REG_BR_PROB,
-		    REG_BR_PROB_BASE - REG_BR_PROB_BASE / 100);
+  add_reg_br_prob_note (insn, profile_probability::very_likely ());
 
   lr = gen_rtx_REG (Pmode, LR_REGNO);
   insn = emit_move_insn (r0, lr);

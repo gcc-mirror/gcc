@@ -1208,7 +1208,9 @@ asan_clear_shadow (rtx shadow_mem, HOST_WIDE_INT len)
   emit_cmp_and_jump_insns (addr, end, LT, NULL_RTX, Pmode, true, top_label);
   jump = get_last_insn ();
   gcc_assert (JUMP_P (jump));
-  add_int_reg_note (jump, REG_BR_PROB, REG_BR_PROB_BASE * 80 / 100);
+  add_reg_br_prob_note (jump,
+			profile_probability::guessed_always ()
+			   .apply_scale (80, 100));
 }
 
 void
