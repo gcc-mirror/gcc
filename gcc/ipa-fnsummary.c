@@ -3572,7 +3572,7 @@ const pass_data pass_data_ipa_fn_summary =
   IPA_PASS, /* type */
   "fnsummary", /* name */
   OPTGROUP_INLINE, /* optinfo_flags */
-  TV_IPA_INLINING, /* tv_id */
+  TV_IPA_FNSUMMARY, /* tv_id */
   0, /* properties_required */
   0, /* properties_provided */
   0, /* properties_destroyed */

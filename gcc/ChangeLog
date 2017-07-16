@@ -1,3 +1,9 @@
+2017-07-07  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-fnsummary.c (pass_data_ipa_fn_summary): Use
+	TV_IPA_FNSUMMARY.
+	* timevar.def (TV_IPA_FNSUMMARY): Define.
+
 2017-07-16  Daniel Cederman  <cederman@gaisler.com>
 
 	* config/sparc/sparc.md (divdf3_fix): Add NOP to prevent back
