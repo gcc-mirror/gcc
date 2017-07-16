@@ -1,5 +1,9 @@
 2017-07-07  Jan Hubicka  <hubicka@ucw.cz>
 
+	* ipa-visibility.c (function_and_variable_visibility): Fix pasto.
+
+2017-07-07  Jan Hubicka  <hubicka@ucw.cz>
+
 	* ipa-fnsummary.c (pass_data_ipa_fn_summary): Use
 	TV_IPA_FNSUMMARY.
 	* timevar.def (TV_IPA_FNSUMMARY): Define.
