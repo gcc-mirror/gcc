@@ -7222,13 +7222,11 @@ scale_profile_for_vect_loop (struct loop *loop, unsigned vf)
 				 .apply_scale (1, new_est_niter + 1);
 
   edge exit_l = single_pred_edge (loop->latch);
-  int prob = exit_l->probability.initialized_p ()
-	     ? exit_l->probability.to_reg_br_prob_base () : 0;
+  profile_probability prob = exit_l->probability;
   exit_l->probability = exit_e->probability.invert ();
   exit_l->count = exit_bb->count - exit_e->count;
-  if (prob > 0)
-    scale_bbs_frequencies_int (&loop->latch, 1,
-			       exit_l->probability.to_reg_br_prob_base (), prob);
+  if (prob.initialized_p () && exit_l->probability.initialized_p ())
+    scale_bbs_frequencies (&loop->latch, 1, exit_l->probability / prob);
 }
 
 /* Function vect_transform_loop.
