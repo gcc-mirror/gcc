@@ -1212,7 +1212,8 @@ tree_transform_and_unroll_loop (struct loop *loop, unsigned factor,
   gimple_stmt_iterator bsi;
   use_operand_p op;
   bool ok;
-  unsigned i, prob, prob_entry, scale_unrolled;
+  unsigned i;
+  profile_probability prob, prob_entry, scale_unrolled;
   profile_count freq_e, freq_h;
   gcov_type new_est_niter = niter_for_unrolled_loop (loop, factor);
   unsigned irr = loop_preheader_edge (loop)->flags & EDGE_IRREDUCIBLE_LOOP;
@@ -1224,9 +1225,10 @@ tree_transform_and_unroll_loop (struct loop *loop, unsigned factor,
 
   /* Let us assume that the unrolled loop is quite likely to be entered.  */
   if (integer_nonzerop (enter_main_cond))
-    prob_entry = REG_BR_PROB_BASE;
+    prob_entry = profile_probability::always ();
   else
-    prob_entry = PROB_UNROLLED_LOOP_ENTERED * REG_BR_PROB_BASE / 100;
+    prob_entry = profile_probability::guessed_always ()
+			.apply_scale (PROB_UNROLLED_LOOP_ENTERED, 100);
 
   /* The values for scales should keep profile consistent, and somewhat close
      to correct.
@@ -1242,13 +1244,8 @@ tree_transform_and_unroll_loop (struct loop *loop, unsigned factor,
      by appropriate factors).  */
   scale_unrolled = prob_entry;
 
-  new_loop = loop_version (loop, enter_main_cond, NULL,
-			   profile_probability::from_reg_br_prob_base
-				 (prob_entry),
-			   profile_probability::from_reg_br_prob_base
-				 (REG_BR_PROB_BASE - prob_entry),
-			   profile_probability::from_reg_br_prob_base
-				(scale_unrolled),
+  new_loop = loop_version (loop, enter_main_cond, NULL, prob_entry,
+			   prob_entry.invert (), scale_unrolled,
 			   profile_probability::guessed_always (),
 			   true);
   gcc_assert (new_loop != NULL);
@@ -1266,6 +1263,8 @@ tree_transform_and_unroll_loop (struct loop *loop, unsigned factor,
      1 / (1 - exit->probability).  */
   if (exit->probability.initialized_p ())
     scale_dominated_blocks_in_loop (loop, exit->src,
+				    /* We are scaling up here so probability
+				       does not fit.  */
 				    REG_BR_PROB_BASE,
 				    REG_BR_PROB_BASE
 				    - exit->probability.to_reg_br_prob_base ());
@@ -1289,9 +1288,7 @@ tree_transform_and_unroll_loop (struct loop *loop, unsigned factor,
   new_nonexit->flags = EDGE_TRUE_VALUE;
   new_nonexit->count -= exit->count;
   if (new_nonexit->probability.initialized_p ())
-    scale_bbs_frequencies_int (&loop->latch, 1,
-			       new_nonexit->probability.to_reg_br_prob_base (),
-			       REG_BR_PROB_BASE);
+    scale_bbs_frequencies (&loop->latch, 1, new_nonexit->probability);
 
   old_entry = loop_preheader_edge (loop);
   new_entry = loop_preheader_edge (new_loop);
@@ -1388,16 +1385,12 @@ tree_transform_and_unroll_loop (struct loop *loop, unsigned factor,
   rest->frequency += EDGE_FREQUENCY (new_exit);
 
   new_nonexit = single_pred_edge (loop->latch);
-  if (new_nonexit->probability.initialized_p ())
-    prob = new_nonexit->probability.to_reg_br_prob_base ();
-  else
-    prob = 0;
+  prob = new_nonexit->probability;
   new_nonexit->probability = new_exit->probability.invert ();
   new_nonexit->count = exit_bb->count - new_exit->count;
-  if (prob > 0)
-    scale_bbs_frequencies_int (&loop->latch, 1,
-			       new_nonexit->probability.to_reg_br_prob_base (),
-			       prob);
+  prob = new_nonexit->probability / prob;
+  if (prob.initialized_p ())
+    scale_bbs_frequencies (&loop->latch, 1, prob);
 
   /* Finally create the new counter for number of iterations and add the new
      exit instruction.  */

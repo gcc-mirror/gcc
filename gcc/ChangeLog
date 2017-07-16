@@ -1,5 +1,11 @@
 2017-07-16  Jan Hubicka  <hubicka@ucw.cz>
 
+	* tree-ssa-loop-manip.c (tree_transform_and_unroll_loop): Use
+	profile_proability for scalling.
+	* scale_profile_for_vect_loop.c (scale_profile_for_vect_loop): Likewise.
+
+2017-07-16  Jan Hubicka  <hubicka@ucw.cz>
+
 	* cgraph.c (cgraph_edge::redirect_call_stmt_to_caller): Cleanup.
 
 2017-07-16  Jan Hubicka  <hubicka@ucw.cz>
