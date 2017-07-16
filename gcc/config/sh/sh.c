@@ -1139,7 +1139,9 @@ sh_print_operand (FILE *stream, rtx x, int code)
       {
 	rtx note = find_reg_note (current_output_insn, REG_BR_PROB, 0);
 
-	if (note && XINT (note, 0) * 2 < REG_BR_PROB_BASE)
+	if (note
+	    && profile_probability::from_reg_br_prob_note (XINT (note, 0))
+	       < profile_probability::even ())
 	  fputs ("/u", stream);
 	break;
       }
@@ -1999,8 +2001,9 @@ prepare_cbranch_operands (rtx *operands, machine_mode mode,
   return comparison;
 }
 
-void
-expand_cbranchsi4 (rtx *operands, enum rtx_code comparison, int probability)
+static void
+expand_cbranchsi4 (rtx *operands, enum rtx_code comparison,
+		   profile_probability probability)
 {
   rtx (*branch_expander) (rtx) = gen_branch_true;
   comparison = prepare_cbranch_operands (operands, SImode, comparison);
@@ -2015,8 +2018,15 @@ expand_cbranchsi4 (rtx *operands, enum rtx_code comparison, int probability)
 			  gen_rtx_fmt_ee (comparison, SImode,
 					  operands[1], operands[2])));
   rtx_insn *jump = emit_jump_insn (branch_expander (operands[3]));
-  if (probability >= 0)
-    add_int_reg_note (jump, REG_BR_PROB, probability);
+  if (probability.initialized_p ())
+    add_reg_br_prob_note (jump, probability);
+}
+
+void
+expand_cbranchsi4 (rtx *operands, enum rtx_code comparison)
+{
+  expand_cbranchsi4 (operands, comparison,
+		     profile_probability::uninitialized ());
 }
 
 /* ??? How should we distribute probabilities when more than one branch
@@ -2043,8 +2053,10 @@ expand_cbranchdi4 (rtx *operands, enum rtx_code comparison)
   rtx_code_label *skip_label = NULL;
   rtx op1h, op1l, op2h, op2l;
   int num_branches;
-  int prob, rev_prob;
-  int msw_taken_prob = -1, msw_skip_prob = -1, lsw_taken_prob = -1;
+  profile_probability prob, rev_prob;
+  profile_probability msw_taken_prob = profile_probability::uninitialized (),
+		      msw_skip_prob = profile_probability::uninitialized (),
+		      lsw_taken_prob = profile_probability::uninitialized ();
 
   comparison = prepare_cbranch_operands (operands, DImode, comparison);
   op1h = gen_highpart_mode (SImode, DImode, operands[1]);
@@ -2053,34 +2065,28 @@ expand_cbranchdi4 (rtx *operands, enum rtx_code comparison)
   op2l = gen_lowpart (SImode, operands[2]);
   msw_taken = msw_skip = lsw_taken = LAST_AND_UNUSED_RTX_CODE;
   prob = split_branch_probability;
-  rev_prob = REG_BR_PROB_BASE - prob;
+  rev_prob = prob.invert ();
   switch (comparison)
     {
     case EQ:
       msw_skip = NE;
       lsw_taken = EQ;
-      if (prob >= 0)
+      if (prob.initialized_p ())
 	{
-	  // If we had more precision, we'd use rev_prob - (rev_prob >> 32) .
+	  /* FIXME: This is not optimal.  We do not really know the probablity
+	     that values differ by MCW only, but we should probably distribute
+	     probabilities more evenly.  */
 	  msw_skip_prob = rev_prob;
-	  if (REG_BR_PROB_BASE <= 65535)
-	    lsw_taken_prob = prob ? REG_BR_PROB_BASE : 0;
-	  else
-	    {
-	      lsw_taken_prob
-		= (prob
-		   ? (REG_BR_PROB_BASE
-		      - ((gcov_type) REG_BR_PROB_BASE * rev_prob
-			 / ((gcov_type) prob << 32)))
-		   : 0);
-	    }
+	  lsw_taken_prob = prob > profile_probability::never ()
+			   ? profile_probability::guessed_always ()
+			   : profile_probability::guessed_never ();
 	}
       break;
     case NE:
       msw_taken = NE;
       msw_taken_prob = prob;
       lsw_taken = NE;
-      lsw_taken_prob = 0;
+      lsw_taken_prob = profile_probability::guessed_never ();
       break;
     case GTU: case GT:
       msw_taken = comparison;
@@ -2133,18 +2139,20 @@ expand_cbranchdi4 (rtx *operands, enum rtx_code comparison)
   if (comparison != EQ && comparison != NE && num_branches > 1)
     {
       if (!CONSTANT_P (operands[2])
-	  && prob >= (int) (REG_BR_PROB_BASE * 3 / 8U)
-	  && prob <= (int) (REG_BR_PROB_BASE * 5 / 8U))
+	  && prob.initialized_p ()
+	  && prob.to_reg_br_prob_base () >= (int) (REG_BR_PROB_BASE * 3 / 8U)
+	  && prob.to_reg_br_prob_base () <= (int) (REG_BR_PROB_BASE * 5 / 8U))
 	{
-	  msw_taken_prob = prob / 2U;
-	  msw_skip_prob
-	    = REG_BR_PROB_BASE * rev_prob / (REG_BR_PROB_BASE + rev_prob);
+	  msw_taken_prob = prob.apply_scale (1, 2);
+	  msw_skip_prob = rev_prob.apply_scale (REG_BR_PROB_BASE,
+						rev_prob.to_reg_br_prob_base ()
+						+ REG_BR_PROB_BASE);
 	  lsw_taken_prob = prob;
 	}
       else
 	{
 	  msw_taken_prob = prob;
-	  msw_skip_prob = REG_BR_PROB_BASE;
+	  msw_skip_prob = profile_probability::guessed_always ();
 	  /* ??? If we have a constant op2h, should we use that when
 	     calculating lsw_taken_prob?  */
 	  lsw_taken_prob = prob;

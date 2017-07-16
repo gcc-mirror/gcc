@@ -741,7 +741,8 @@ expand_addsub_overflow (location_t loc, tree_code code, tree lhs,
 		  && JUMP_P (last)
 		  && any_condjump_p (last)
 		  && !find_reg_note (last, REG_BR_PROB, 0))
-		add_int_reg_note (last, REG_BR_PROB, PROB_VERY_UNLIKELY);
+		add_reg_br_prob_note (last,
+				      profile_probability::very_unlikely ());
 	      emit_jump (done_label);
 	      goto do_error_label;
 	    }
@@ -961,7 +962,8 @@ expand_addsub_overflow (location_t loc, tree_code code, tree lhs,
 		&& JUMP_P (last)
 		&& any_condjump_p (last)
 		&& !find_reg_note (last, REG_BR_PROB, 0))
-	      add_int_reg_note (last, REG_BR_PROB, PROB_UNLIKELY);
+	      add_reg_br_prob_note (last, 
+				    profile_probability::very_unlikely ());
 	    emit_jump (done_label);
 	    goto do_error_label;
 	  }
@@ -1110,7 +1112,8 @@ expand_neg_overflow (location_t loc, tree lhs, tree arg1, bool is_ubsan,
 	      && JUMP_P (last)
 	      && any_condjump_p (last)
 	      && !find_reg_note (last, REG_BR_PROB, 0))
-	    add_int_reg_note (last, REG_BR_PROB, PROB_VERY_UNLIKELY);
+	    add_reg_br_prob_note (last, 
+				  profile_probability::very_unlikely ());
 	  emit_jump (done_label);
         }
       else
@@ -1431,7 +1434,8 @@ expand_mul_overflow (location_t loc, tree lhs, tree arg0, tree arg1,
 	      && JUMP_P (last)
 	      && any_condjump_p (last)
 	      && !find_reg_note (last, REG_BR_PROB, 0))
-	    add_int_reg_note (last, REG_BR_PROB, PROB_VERY_UNLIKELY);
+	    add_reg_br_prob_note (last, 
+				  profile_probability::very_unlikely ());
 	  emit_jump (done_label);
         }
       else

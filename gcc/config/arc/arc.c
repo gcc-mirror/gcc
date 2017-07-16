@@ -9979,10 +9979,8 @@ arc_post_atomic_barrier (enum memmodel model)
 static void
 emit_unlikely_jump (rtx insn)
 {
-  int very_unlikely = REG_BR_PROB_BASE / 100 - 1;
-
   rtx_insn *jump = emit_jump_insn (insn);
-  add_int_reg_note (jump, REG_BR_PROB, very_unlikely);
+  add_reg_br_prob_note (jump, profile_probability::very_unlikely ());
 }
 
 /* Expand code to perform a 8 or 16-bit compare and swap by doing

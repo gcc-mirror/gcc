@@ -5502,7 +5502,8 @@ ia64_print_operand (FILE * file, rtx x, int code)
 	x = find_reg_note (current_output_insn, REG_BR_PROB, 0);
 	if (x)
 	  {
-	    int pred_val = XINT (x, 0);
+	    int pred_val = profile_probability::from_reg_br_prob_note
+				 (XINT (x, 0)).to_reg_br_prob_base ();
 
 	    /* Guess top and bottom 10% statically predicted.  */
 	    if (pred_val < REG_BR_PROB_BASE / 50

@@ -190,6 +190,23 @@ public:
       return RDIV (m_val * REG_BR_PROB_BASE, max_probability);
     }
 
+  /* Conversion to and from RTL representation of profile probabilities.  */
+  static profile_probability from_reg_br_prob_note (int v)
+    {
+      profile_probability ret;
+      ret.m_val = ((unsigned int)v) / 4;
+      ret.m_quality = (enum profile_quality)(v & 3);
+      return ret;
+    }
+  int to_reg_br_prob_note () const
+    {
+      gcc_checking_assert (initialized_p ());
+      int ret = m_val * 4 + m_quality;
+      gcc_checking_assert (profile_probability::from_reg_br_prob_note (ret)
+			   == *this);
+      return ret;
+    }
+
   /* Return VAL1/VAL2.  */
   static profile_probability probability_in_gcov_type
 				 (gcov_type val1, gcov_type val2)

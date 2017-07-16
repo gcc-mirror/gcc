@@ -546,12 +546,10 @@ compute_outgoing_frequencies (basic_block b)
 	  probability = XINT (note, 0);
 	  e = BRANCH_EDGE (b);
 	  e->probability
-		 = profile_probability::from_reg_br_prob_base (probability);
-	  e->count = b->count.apply_probability (probability);
+		 = profile_probability::from_reg_br_prob_note (probability);
+	  e->count = b->count.apply_probability (e->probability);
 	  f = FALLTHRU_EDGE (b);
-	  f->probability
-		 = profile_probability::from_reg_br_prob_base (REG_BR_PROB_BASE
-							       - probability);
+	  f->probability = e->probability.invert ();
 	  f->count = b->count - e->count;
 	  return;
 	}

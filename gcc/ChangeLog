@@ -1,3 +1,63 @@
+2017-07-16  Jan Hubicka  <hubicka@ucw.cz>
+
+	* profile-count.h (profile_probability::from_reg_br_prob_note,
+	profile_probability::to_reg_br_prob_note): New functions.
+	* doc/rtl.texi (REG_BR_PROB_NOTE): Update documentation.
+	* reg-notes.h (REG_BR_PROB, REG_BR_PRED): Update docs.
+	* predict.c (probability_reliable_p): Update.
+	(edge_probability_reliable_p): Update.
+	(br_prob_note_reliable_p): Update.
+	(invert_br_probabilities): Update.
+	(add_reg_br_prob_note): New function.
+	(combine_predictions_for_insn): Update.
+	* asan.c (asan_clear_shadow): Update.
+	* cfgbuild.c (compute_outgoing_frequencies): Update.
+	* cfgrtl.c (force_nonfallthru_and_redirect): Update.
+	(update_br_prob_note): Update.
+	(rtl_verify_edges): Update.
+	(purge_dead_edges): Update.
+	(fixup_reorder_chain): Update.
+	* emit-rtl.c (try_split): Update.
+	* ifcvt.c (cond_exec_process_insns): Update.
+	(cond_exec_process_if_block): Update.
+	(dead_or_predicable): Update.
+	* internal-fn.c (expand_addsub_overflow): Update.
+	(expand_neg_overflow): Update.
+	(expand_mul_overflow): Update.
+	* loop-doloop.c (doloop_modify): Update.
+	* loop-unroll.c (compare_and_jump_seq): Update.
+	* optabs.c (emit_cmp_and_jump_insn_1): Update.
+	* predict.h: Update.
+	* reorg.c (mostly_true_jump): Update.
+	* rtl.h: Update.
+	* config/aarch64/aarch64.c (aarch64_emit_unlikely_jump): Update.
+	* config/alpha/alpha.c (emit_unlikely_jump): Update.
+	* config/arc/arc.c: (emit_unlikely_jump): Update.
+	* config/arm/arm.c: (emit_unlikely_jump): Update.
+	* config/bfin/bfin.c (cbranch_predicted_taken_p): Update.
+	* config/frv/frv.c (frv_print_operand_jump_hint): Update.
+	* config/i386/i386.c (ix86_expand_split_stack_prologue): Update.
+	(ix86_print_operand): Update.
+	(ix86_split_fp_branch): Update.
+	(predict_jump): Update.
+	* config/ia64/ia64.c (ia64_print_operand): Update.
+	* config/mmix/mmix.c (mmix_print_operand): Update.
+	* config/powerpcspe/powerpcspe.c (output_cbranch): Update.
+	(rs6000_expand_split_stack_prologue): Update.
+	* config/rs6000/rs6000.c: Update.
+	* config/s390/s390.c (s390_expand_vec_strlen): Update.
+	(s390_expand_vec_movstr): Update.
+	(s390_expand_cs_tdsi): Update.
+	(s390_expand_split_stack_prologue): Update.
+	* config/sh/sh.c (sh_print_operand): Update.
+	(expand_cbranchsi4): Update.
+	(expand_cbranchdi4): Update.
+	* config/sparc/sparc.c (output_v9branch): Update.
+	* config/spu/spu.c (get_branch_target): Update.
+	(ea_load_store_inline): Update.
+	* config/tilegx/tilegx.c (cbranch_predicted_p): Update.
+	* config/tilepro/tilepro.c: Update.
+
 2017-07-16  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gimplify.c (mostly_copy_tree_r): Revert latest change.

@@ -419,7 +419,6 @@ doloop_modify (struct loop *loop, struct niter_desc *desc,
   bool increment_count;
   basic_block loop_end = desc->out_edge->src;
   machine_mode mode;
-  rtx true_prob_val;
   widest_int iterations;
 
   jump_insn = BB_END (loop_end);
@@ -433,10 +432,6 @@ doloop_modify (struct loop *loop, struct niter_desc *desc,
 	fputs ("runtime", dump_file);
       fputs (" iterations).\n", dump_file);
     }
-
-  /* Get the probability of the original branch. If it exists we would
-     need to update REG_BR_PROB of the new jump_insn.  */
-  true_prob_val = find_reg_note (jump_insn, REG_BR_PROB, NULL_RTX);
 
   /* Discard original jump to continue loop.  The original compare
      result may still be live, so it cannot be discarded explicitly.  */
@@ -580,12 +575,8 @@ doloop_modify (struct loop *loop, struct niter_desc *desc,
     add_reg_note (jump_insn, REG_NONNEG, NULL_RTX);
 
   /* Update the REG_BR_PROB note.  */
-  if (true_prob_val && desc->in_edge->probability.initialized_p ())
-    {
-      /* Seems safer to use the branch probability.  */
-      add_int_reg_note (jump_insn, REG_BR_PROB,
-			desc->in_edge->probability.to_reg_br_prob_base ());
-    }
+  if (desc->in_edge->probability.initialized_p ())
+    add_reg_br_prob_note (jump_insn, desc->in_edge->probability);
 }
 
 /* Called through note_stores.  */

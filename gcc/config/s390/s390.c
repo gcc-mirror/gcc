@@ -5720,8 +5720,6 @@ s390_emit_ccraw_jump (HOST_WIDE_INT mask, enum rtx_code comparison, rtx label)
 void
 s390_expand_vec_strlen (rtx target, rtx string, rtx alignment)
 {
-  int very_unlikely = REG_BR_PROB_BASE / 100 - 1;
-  int very_likely = REG_BR_PROB_BASE - 1;
   rtx highest_index_to_load_reg = gen_reg_rtx (Pmode);
   rtx str_reg = gen_reg_rtx (V16QImode);
   rtx str_addr_base_reg = gen_reg_rtx (Pmode);
@@ -5792,7 +5790,8 @@ s390_expand_vec_strlen (rtx target, rtx string, rtx alignment)
 				  GEN_INT (VSTRING_FLAG_ZS | VSTRING_FLAG_CS)));
 
   add_int_reg_note (s390_emit_ccraw_jump (8, NE, loop_start_label),
-		    REG_BR_PROB, very_likely);
+		    REG_BR_PROB,
+		    profile_probability::very_likely ().to_reg_br_prob_note ());
   emit_insn (gen_vec_extractv16qi (len, result_reg, GEN_INT (7)));
 
   /* If the string pointer wasn't aligned we have loaded less then 16
@@ -5812,8 +5811,8 @@ s390_expand_vec_strlen (rtx target, rtx string, rtx alignment)
     emit_insn (gen_movsicc (str_idx_reg, cond,
 			    highest_index_to_load_reg, str_idx_reg));
 
-  add_int_reg_note (s390_emit_jump (is_aligned_label, cond), REG_BR_PROB,
-		    very_unlikely);
+  add_reg_br_prob_note (s390_emit_jump (is_aligned_label, cond),
+		        profile_probability::very_unlikely ());
 
   expand_binop (Pmode, add_optab, str_idx_reg,
 		GEN_INT (-16), str_idx_reg, 1, OPTAB_DIRECT);
@@ -5829,7 +5828,6 @@ s390_expand_vec_strlen (rtx target, rtx string, rtx alignment)
 void
 s390_expand_vec_movstr (rtx result, rtx dst, rtx src)
 {
-  int very_unlikely = REG_BR_PROB_BASE / 100 - 1;
   rtx temp = gen_reg_rtx (Pmode);
   rtx src_addr = XEXP (src, 0);
   rtx dst_addr = XEXP (dst, 0);
@@ -5906,7 +5904,8 @@ s390_expand_vec_movstr (rtx result, rtx dst, rtx src)
   emit_insn (gen_vec_vfenesv16qi (vpos, vsrc, vsrc,
 				  GEN_INT (VSTRING_FLAG_ZS | VSTRING_FLAG_CS)));
   add_int_reg_note (s390_emit_ccraw_jump (8, EQ, done_label),
-		    REG_BR_PROB, very_unlikely);
+		    REG_BR_PROB, profile_probability::very_unlikely ()
+				  .to_reg_br_prob_note ());
 
   emit_move_insn (gen_rtx_MEM (V16QImode,
 			       gen_rtx_PLUS (Pmode, dst_addr_reg, offset)),
@@ -6929,7 +6928,6 @@ s390_expand_cs_tdsi (machine_mode mode, rtx btarget, rtx vtarget, rtx mem,
 
   if (do_const_opt)
     {
-      const int very_unlikely = REG_BR_PROB_BASE / 100 - 1;
       rtx cc = gen_rtx_REG (CCZmode, CC_REGNUM);
 
       skip_cs_label = gen_label_rtx ();
@@ -6950,7 +6948,8 @@ s390_expand_cs_tdsi (machine_mode mode, rtx btarget, rtx vtarget, rtx mem,
 	  emit_insn (gen_rtx_SET (cc, gen_rtx_COMPARE (CCZmode, output, cmp)));
 	}
       s390_emit_jump (skip_cs_label, gen_rtx_NE (VOIDmode, cc, const0_rtx));
-      add_int_reg_note (get_last_insn (), REG_BR_PROB, very_unlikely);
+      add_reg_br_prob_note (get_last_insn (), 
+		            profile_probability::very_unlikely ());
       /* If the jump is not taken, OUTPUT is the expected value.  */
       cmp = output;
       /* Reload newval to a register manually, *after* the compare and jump
@@ -11678,7 +11677,8 @@ s390_expand_split_stack_prologue (void)
       LABEL_NUSES (call_done)++;
 
       /* Mark the jump as very unlikely to be taken.  */
-      add_int_reg_note (insn, REG_BR_PROB, REG_BR_PROB_BASE / 100);
+      add_reg_br_prob_note (insn, 
+		            profile_probability::very_unlikely ());
 
       if (cfun->machine->split_stack_varargs_pointer != NULL_RTX)
 	{

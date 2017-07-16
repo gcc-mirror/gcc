@@ -84,8 +84,6 @@ static rtx_insn *last_active_insn (basic_block, int);
 static rtx_insn *find_active_insn_before (basic_block, rtx_insn *);
 static rtx_insn *find_active_insn_after (basic_block, rtx_insn *);
 static basic_block block_fallthru (basic_block);
-static int cond_exec_process_insns (ce_if_block *, rtx_insn *, rtx, rtx, int,
-				    int);
 static rtx cond_exec_get_condition (rtx_insn *);
 static rtx noce_get_condition (rtx_insn *, rtx_insn **, bool);
 static int noce_operand_ok (const_rtx);
@@ -335,7 +333,8 @@ cond_exec_process_insns (ce_if_block *ce_info ATTRIBUTE_UNUSED,
 			 /* if block information */rtx_insn *start,
 			 /* first insn to look at */rtx end,
 			 /* last insn to look at */rtx test,
-			 /* conditional execution test */int prob_val,
+			 /* conditional execution test */profile_probability
+							    prob_val,
 			 /* probability of branch taken. */int mod_ok)
 {
   int must_be_last = FALSE;
@@ -410,10 +409,11 @@ cond_exec_process_insns (ce_if_block *ce_info ATTRIBUTE_UNUSED,
 
       validate_change (insn, &PATTERN (insn), pattern, 1);
 
-      if (CALL_P (insn) && prob_val >= 0)
+      if (CALL_P (insn) && prob_val.initialized_p ())
 	validate_change (insn, &REG_NOTES (insn),
 			 gen_rtx_INT_LIST ((machine_mode) REG_BR_PROB,
-					   prob_val, REG_NOTES (insn)), 1);
+					   prob_val.to_reg_br_prob_note (),
+					   REG_NOTES (insn)), 1);
 
     insn_done:
       if (insn == end)
@@ -472,8 +472,8 @@ cond_exec_process_if_block (ce_if_block * ce_info,
   int then_mod_ok;		/* whether conditional mods are ok in THEN */
   rtx true_expr;		/* test for else block insns */
   rtx false_expr;		/* test for then block insns */
-  int true_prob_val;		/* probability of else block */
-  int false_prob_val;		/* probability of then block */
+  profile_probability true_prob_val;/* probability of else block */
+  profile_probability false_prob_val;/* probability of then block */
   rtx_insn *then_last_head = NULL;	/* Last match at the head of THEN */
   rtx_insn *else_last_head = NULL;	/* Last match at the head of ELSE */
   rtx_insn *then_first_tail = NULL;	/* First match at the tail of THEN */
@@ -618,13 +618,13 @@ cond_exec_process_if_block (ce_if_block * ce_info,
   note = find_reg_note (BB_END (test_bb), REG_BR_PROB, NULL_RTX);
   if (note)
     {
-      true_prob_val = XINT (note, 0);
-      false_prob_val = REG_BR_PROB_BASE - true_prob_val;
+      true_prob_val = profile_probability::from_reg_br_prob_note (XINT (note, 0));
+      false_prob_val = true_prob_val.invert ();
     }
   else
     {
-      true_prob_val = -1;
-      false_prob_val = -1;
+      true_prob_val = profile_probability::uninitialized ();
+      false_prob_val = profile_probability::uninitialized ();
     }
 
   /* If we have && or || tests, do them here.  These tests are in the adjacent
@@ -5121,7 +5121,9 @@ dead_or_predicable (basic_block test_bb, basic_block merge_bb,
 	return FALSE;
 
       rtx note = find_reg_note (jump, REG_BR_PROB, NULL_RTX);
-      int prob_val = (note ? XINT (note, 0) : -1);
+      profile_probability prob_val
+	  = (note ? profile_probability::from_reg_br_prob_note (XINT (note, 0))
+	     : profile_probability::uninitialized ());
 
       if (reversep)
 	{
@@ -5130,8 +5132,7 @@ dead_or_predicable (basic_block test_bb, basic_block merge_bb,
 	    return FALSE;
 	  cond = gen_rtx_fmt_ee (rev, GET_MODE (cond), XEXP (cond, 0),
 			         XEXP (cond, 1));
-	  if (prob_val >= 0)
-	    prob_val = REG_BR_PROB_BASE - prob_val;
+	  prob_val = prob_val.invert ();
 	}
 
       if (cond_exec_process_insns (NULL, head, end, cond, prob_val, 0)

@@ -2195,7 +2195,8 @@ get_branch_target (rtx_insn *branch)
 	    {
 	      /* If the more probable case is not a fall through, then
 	         try a branch hint.  */
-	      int prob = XINT (note, 0);
+	      int prob = profile_probability::from_reg_br_prob_note
+			    (XINT (note, 0)).to_reg_br_prob_base ();
 	      if (prob > (REG_BR_PROB_BASE * 6 / 10)
 		  && GET_CODE (XEXP (src, 1)) != PC)
 		lab = XEXP (src, 1);
@@ -4335,8 +4336,7 @@ ea_load_store_inline (rtx mem, bool is_store, rtx ea_addr, rtx data_addr)
 				      gen_rtx_IF_THEN_ELSE (VOIDmode, bcomp,
 							    hit_ref, pc_rtx)));
   /* Say that this branch is very likely to happen.  */
-  v = REG_BR_PROB_BASE - REG_BR_PROB_BASE / 100 - 1;
-  add_int_reg_note (insn, REG_BR_PROB, v);
+  add_reg_br_prob_note (insn, profile_probability::very_likely ());
 
   ea_load_store (mem, is_store, ea_addr, data_addr);
   cont_label = gen_label_rtx ();

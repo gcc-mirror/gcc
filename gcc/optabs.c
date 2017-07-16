@@ -4003,7 +4003,7 @@ emit_cmp_and_jump_insn_1 (rtx test, machine_mode mode, rtx label,
       && JUMP_P (insn)
       && any_condjump_p (insn)
       && !find_reg_note (insn, REG_BR_PROB, 0))
-    add_int_reg_note (insn, REG_BR_PROB, prob.to_reg_br_prob_base ());
+    add_reg_br_prob_note (insn, prob);
 }
 
 /* Generate code to compare X with Y so that the condition codes are

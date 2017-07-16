@@ -1,3 +1,7 @@
+2017-07-16  Jan Hubicka  <hubicka@ucw.cz>
+
+	* gcc.dg/predict-8.c: Update.
+
 2017-07-16  Volker Reichelt  <v.reichelt@netcologne.de>
 
 	* g++.dg/cpp1z/direct-enum-init1.C: Revert special enum handling.
