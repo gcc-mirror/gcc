@@ -1798,12 +1798,11 @@ create_cond_insert_point (gimple_stmt_iterator *iter,
 
   /* Set up the newly created 'then block'.  */
   e = make_edge (cond_bb, then_bb, EDGE_TRUE_VALUE);
-  int fallthrough_probability
+  profile_probability fallthrough_probability
     = then_more_likely_p
-    ? PROB_VERY_UNLIKELY
-    : PROB_ALWAYS - PROB_VERY_UNLIKELY;
-  e->probability = profile_probability::from_reg_br_prob_base
-		(PROB_ALWAYS - fallthrough_probability);
+    ? profile_probability::very_unlikely ()
+    : profile_probability::very_likely ();
+  e->probability = fallthrough_probability.invert ();
   if (create_then_fallthru_edge)
     make_single_succ_edge (then_bb, fallthru_bb, EDGE_FALLTHRU);
 
@@ -1811,8 +1810,7 @@ create_cond_insert_point (gimple_stmt_iterator *iter,
   e = find_edge (cond_bb, fallthru_bb);
   e->flags = EDGE_FALSE_VALUE;
   e->count = cond_bb->count;
-  e->probability
-	 = profile_probability::from_reg_br_prob_base (fallthrough_probability);
+  e->probability = fallthrough_probability;
 
   /* Update dominance info for the newly created then_bb; note that
      fallthru_bb's dominance info has already been updated by
