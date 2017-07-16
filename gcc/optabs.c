@@ -3844,9 +3844,9 @@ prepare_cmp_insn (rtx x, rtx y, enum rtx_code comparison, rtx size,
   if (cfun->can_throw_non_call_exceptions)
     {
       if (may_trap_p (x))
-	x = force_reg (mode, x);
+	x = copy_to_reg (x);
       if (may_trap_p (y))
-	y = force_reg (mode, y);
+	y = copy_to_reg (y);
     }
 
   if (GET_MODE_CLASS (mode) == MODE_CC)
