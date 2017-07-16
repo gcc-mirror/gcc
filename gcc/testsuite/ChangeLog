@@ -1,3 +1,7 @@
+2017-07-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/opt65.adb: New test.
+
 2017-07-16  Jan Hubicka  <hubicka@ucw.cz>
 
 	* gcc.dg/predict-8.c: Update.
