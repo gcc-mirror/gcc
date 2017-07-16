@@ -1,3 +1,11 @@
+2017-07-16  Volker Reichelt  <v.reichelt@netcologne.de>
+
+	* parser.c (cp_parser_cast_expression): Use %q#T instead of %qT
+	in old-style cast diagnostic.
+	* typeck.c (maybe_warn_about_useless_cast): Use %q#T instead of %qT
+	in useless cast diagnostic.
+	* error.c (type_to_string): Remove enum special handling.
+
 2017-07-14  David Malcolm  <dmalcolm@redhat.com>
 
 	* name-lookup.c (get_std_name_hint): Add '<' and '>' around

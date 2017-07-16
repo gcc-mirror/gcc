@@ -1,3 +1,8 @@
+2017-07-16  Volker Reichelt  <v.reichelt@netcologne.de>
+
+	* g++.dg/cpp1z/direct-enum-init1.C: Revert special enum handling.
+	* g++.dg/warn/pr12242.C: Likewise.
+
 2017-07-14  Kelvin Nilsen  <kelvin@gcc.gnu.org>
 
 	* gcc.target/powerpc/bfp/scalar-cmp-exp-eq-3.c: New test.
