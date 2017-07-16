@@ -1,3 +1,8 @@
+2017-07-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gimplify.c (mostly_copy_tree_r): Revert latest change.
+	(gimplify_save_expr): Likewise.
+
 2017-07-07  Jan Hubicka  <hubicka@ucw.cz>
 
 	* ipa-visibility.c (function_and_variable_visibility): Fix pasto.
