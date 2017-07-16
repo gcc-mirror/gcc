@@ -1,5 +1,10 @@
 2017-07-16  Jan Hubicka  <hubicka@ucw.cz>
 
+	* cfgloopmanip.c (scale_loop_profile): Avoid use of REG_BR_PROB_BASE
+	fixpoint arithmetics.
+
+2017-07-16  Jan Hubicka  <hubicka@ucw.cz>
+
 	* tree-ssa-loop-unswitch.c (hoist_guard): Avoid use of REG_BR_PROB_BASE
 	fixpoint arithmetics.
 
