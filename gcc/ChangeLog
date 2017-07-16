@@ -1,5 +1,9 @@
 2017-07-16  Jan Hubicka  <hubicka@ucw.cz>
 
+	* cgraph.c (cgraph_edge::redirect_call_stmt_to_caller): Cleanup.
+
+2017-07-16  Jan Hubicka  <hubicka@ucw.cz>
+
 	* cfgloopmanip.c (scale_loop_profile): Avoid use of REG_BR_PROB_BASE
 	fixpoint arithmetics.
 
