@@ -43,6 +43,9 @@ if { [ishost "*-*-cygwin*"] } {
   setenv LANG C.ASCII
 }
 
+# Avoid sporadic data-losses with expect
+match_max -d 10000
+
 # Ensure GCC_COLORS is unset, for the rare testcases that verify
 # how output is colorized.
 if [info exists ::env(GCC_COLORS) ] {
