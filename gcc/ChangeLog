@@ -1,3 +1,9 @@
+2017-07-17  Daniel Cederman  <cederman@gaisler.com>
+
+	* config/sparc/t-rtems: Add mfix-gr712rc multilibs. Replace
+	MULTILIB_EXCEPTIONS with MULTILIB_REQUIRED. Match -mfix-gr712rc
+	with -mfix-ut700.
+
 2017-07-16  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR rtl-optimization/81424
