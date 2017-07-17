@@ -5491,48 +5491,30 @@ type_has_move_assign (tree t)
   return false;
 }
 
-/* Returns true iff class T has a move constructor that was explicitly
-   declared in the class body.  Note that this is different from
-   "user-provided", which doesn't include functions that are defaulted in
-   the class.  */
+/* Returns true iff T, a class, has a user-declared move-assignment or
+   move-constructor.  Note that this is different from
+   "user-provided", which doesn't include functions that are defaulted
+   in the class.  */
 
 bool
-type_has_user_declared_move_constructor (tree t)
+classtype_has_user_move_assign_or_move_ctor_p (tree t)
 {
-  if (CLASSTYPE_LAZY_MOVE_CTOR (t))
-    return false;
-
   if (!CLASSTYPE_METHOD_VEC (t))
     return false;
 
-  for (ovl_iterator iter (CLASSTYPE_CONSTRUCTORS (t)); iter; ++iter)
-    {
-      tree fn = *iter;
-      if (move_fn_p (fn) && !DECL_ARTIFICIAL (fn))
+  if (!CLASSTYPE_LAZY_MOVE_CTOR (t))
+    for (ovl_iterator iter (lookup_fnfields_slot_nolazy (t, ctor_identifier));
+	 iter; ++iter)
+      if (!DECL_ARTIFICIAL (*iter) && move_fn_p (*iter))
 	return true;
-    }
 
-  return false;
-}
-
-/* Returns true iff class T has a move assignment operator that was
-   explicitly declared in the class body.  */
-
-bool
-type_has_user_declared_move_assign (tree t)
-{
-  if (CLASSTYPE_LAZY_MOVE_ASSIGN (t))
-    return false;
-
-  for (ovl_iterator iter (lookup_fnfields_slot_nolazy
-			  (t, cp_assignment_operator_id (NOP_EXPR)));
-       iter; ++iter)
-    {
-      tree fn = *iter;
-      if (move_fn_p (fn) && !DECL_ARTIFICIAL (fn))
+  if (!CLASSTYPE_LAZY_MOVE_ASSIGN (t))
+    for (ovl_iterator iter (lookup_fnfields_slot_nolazy
+			    (t, cp_assignment_operator_id (NOP_EXPR)));
+	 iter; ++iter)
+      if (!DECL_ARTIFICIAL (*iter) && move_fn_p (*iter))
 	return true;
-    }
-
+  
   return false;
 }
 

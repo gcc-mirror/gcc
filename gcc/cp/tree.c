@@ -3976,8 +3976,7 @@ type_has_nontrivial_copy_init (const_tree type)
       else if (CLASSTYPE_LAZY_COPY_CTOR (t))
 	{
 	  saw_copy = true;
-	  if (type_has_user_declared_move_constructor (t)
-	      || type_has_user_declared_move_assign (t))
+	  if (classtype_has_user_move_assign_or_move_ctor_p (t))
 	    /* [class.copy]/8 If the class definition declares a move
 	       constructor or move assignment operator, the implicitly declared
 	       copy constructor is defined as deleted.... */;
