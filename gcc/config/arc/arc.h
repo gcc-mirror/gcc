@@ -901,10 +901,10 @@ extern int arc_initial_elimination_offset(int from, int to);
    a special predicate for the memory operand of stores, like for the SH.  */
 
 /* Recognize any constant value that is a valid address.  */
-#define CONSTANT_ADDRESS_P(X) \
-(flag_pic?arc_legitimate_pic_addr_p (X): \
-(GET_CODE (X) == LABEL_REF || GET_CODE (X) == SYMBOL_REF	\
- || GET_CODE (X) == CONST_INT || GET_CODE (X) == CONST))
+#define CONSTANT_ADDRESS_P(X)					\
+  (flag_pic ? (arc_legitimate_pic_addr_p (X) || LABEL_P (X)):	\
+   (GET_CODE (X) == LABEL_REF || GET_CODE (X) == SYMBOL_REF	\
+    || GET_CODE (X) == CONST_INT || GET_CODE (X) == CONST))
 
 /* Is the argument a const_int rtx, containing an exact power of 2 */
 #define  IS_POWEROF2_P(X) (! ( (X) & ((X) - 1)) && (X))
@@ -1083,7 +1083,8 @@ arc_select_cc_mode (OP, X, Y)
    check it either.  You need not define this macro if all constants
    (including SYMBOL_REF) can be immediate operands when generating
    position independent code.  */
-#define LEGITIMATE_PIC_OPERAND_P(X)  (arc_legitimate_pic_operand_p(X))
+#define LEGITIMATE_PIC_OPERAND_P(X)  \
+  (!arc_raw_symbolic_reference_mentioned_p ((X), true))
 
 /* PIC and small data don't mix on ARC because they use the same register.  */
 #define SDATA_BASE_REGNUM 26
