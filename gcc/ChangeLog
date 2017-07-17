@@ -1,3 +1,7 @@
+2017-07-17  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/alpha/alpha.c: Include predict.h.
+
 2017-07-17  Yury Gribov  <tetra2005@gmail.com>
 
         * tree-vrp.c (compare_assert_loc): Fix comparison function
