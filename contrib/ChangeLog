@@ -1,3 +1,8 @@
+2017-07-17  Georg-Johann Lay  <avr@gjlay.de>
+
+	* gcc_update (files_and_dependencies)
+	[gcc/config/avr/avr-tables.opt]: Remove dead entry.
+
 2017-06-28  Martin Liska  <mliska@suse.cz>
 
 	* gcc.doxy: Add default location for filters and output folder.
