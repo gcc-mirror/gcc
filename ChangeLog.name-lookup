@@ -1,5 +1,14 @@
 2017-07-17  Nathan Sidwell  <nathan@acm.org>
 
+	Remove special ctor/dtor slots
+	gcc/cp/
+	* cp-tree.h (CLASSTYPE_CONSTRUCTOR_SLOT,
+	CLASSTYPE_DESTRUCTOR_SLOT): Delete.
+	(CLASSTYPE_FIRST_CONVERSION_SLOT): Set to zero.
+	* class.c (add_method): cdtors do not have specia slots.
+	* search.c (lookup_fnfields_idx_nolazy): Likewise.
+	(look_for_overrides_here): Use lookup_fnfields_slot.
+
 	Replace lang_type::sorted_fields with lang_type::bindings.
 	(from c++modules branch)
 	gcc/cp/
@@ -54,46 +63,6 @@
 	* c-decl.c (field_decl_cmp, resort_data,
 	resort_field_decl_cmp): Moved from c-common.c
 	* c-lang.h (struct sorted_fields_type): Moved from c-common.h.
-
-2017-06-26  Nathan Sidwell  <nathan@acm.org>
-
-	gcc/cp/
-	* cp-tree.h (lang_type): Delete sorted_fields.  Add bindings
-	field.
-	(CLASSTYPE_SORTED_FIELDS): Replace with ...
-	(CLASSTYPE_BINDINGS): ... this.
-	* name-lookup.c (lookup_class_member): Reimplement.
-	(count_fields): Delete.
-	(sorted_fields_type_new): Delete.
-	(add_class_member): New.
-	(add_fields_to_record_type): Replace with ...
-	(add_class_members): ... this.
-	(add_enum_fields_to_record_type): Delete.
-	(create_classtype_sorted_fields): Replace with ...
-	(set_class_bindings): ... this.
-	(insert_late_enum_def_into_classtype_sorted_fields): Replace with ...
-	(insert_late_enum_def_bindings): ... this.
-	* name-lookup.h (create_classtype_sorted_fields,
-	insert_late_enum_def_into_classtype_sorted_fields): Replace with ...
-	(set_class_bindings, insert_late_enum_def_bindings): ... this.
-	* ptree.h (cxx_print_type): Don't print SORTED_FIELDS.
-	* search.c (lookup_field_1): Check CLASSTYPE_BINDINGS.
-	* decl.c (finish_enum_value_list): Use insert_late_enum_def_bindings.
-	* class.c (finish_struct_1): Use set_class_bindings.
-	* module.c (cpms_in::define_class): Likewise.
-
-	Start moving class name lookup around
-	gcc/cp/
-	* class.c (count_fields, add_fields_to_record_type,
-	add_enum_fields_to_record_type, sorted_fields_type_new,
-	create_classtype_sorted_fields,
-	insert_late_enum_def_into_classtype_sorted_fields): Move to ...
-	* name-lookup.c: ... here.
-	(lookup_class_member): New.  Broken out of ...
-	* search.c (lookup_field_1): ... here.  Call it.
-	* name-lookup.h (lookup_class_member,
-	create_classtype_sorted_fields,
-	insert_late_enum_def_into_classtype_sorted_fields): Declare.
 
 2017-07-12  Nathan Sidwell  <nathan@acm.org>
 

@@ -1011,12 +1011,10 @@ modify_vtable_entry (tree t,
 bool
 add_method (tree type, tree method, bool via_using)
 {
-  unsigned slot;
   bool template_conv_p = false;
   bool conv_p;
   vec<tree, va_gc> *method_vec;
   bool complete_p;
-  bool insert_p = false;
   tree current_fns;
 
   if (method == error_mark_node)
@@ -1031,55 +1029,42 @@ add_method (tree type, tree method, bool via_using)
   method_vec = CLASSTYPE_METHOD_VEC (type);
   if (!method_vec)
     {
-      /* Make a new method vector.  We start with 8 entries.  We must
-	 allocate at least two (for constructors and destructors), and
-	 we're going to end up with an assignment operator at some
-	 point as well.  */
+      /* Make a new method vector.  We start with 8 entries.  */
       vec_alloc (method_vec, 8);
-      /* Create slots for constructors and destructors.  */
-      method_vec->quick_push (NULL_TREE);
-      method_vec->quick_push (NULL_TREE);
       CLASSTYPE_METHOD_VEC (type) = method_vec;
     }
 
   /* Maintain TYPE_HAS_USER_CONSTRUCTOR, etc.  */
   grok_special_member_properties (method);
 
-  /* Constructors and destructors go in special slots.  */
-  if (DECL_MAYBE_IN_CHARGE_CONSTRUCTOR_P (method))
-    slot = CLASSTYPE_CONSTRUCTOR_SLOT;
-  else if (DECL_MAYBE_IN_CHARGE_DESTRUCTOR_P (method))
-    slot = CLASSTYPE_DESTRUCTOR_SLOT;
-  else
-    {
-      tree m;
+  bool insert_p = true;
+  unsigned slot;
+  tree m;
 
-      insert_p = true;
-      /* See if we already have an entry with this name.  */
-      for (slot = CLASSTYPE_FIRST_CONVERSION_SLOT;
-	   vec_safe_iterate (method_vec, slot, &m);
-	   ++slot)
+  /* See if we already have an entry with this name.  */
+  for (slot = CLASSTYPE_FIRST_CONVERSION_SLOT;
+       vec_safe_iterate (method_vec, slot, &m);
+       ++slot)
+    {
+      m = OVL_FIRST (m);
+      if (template_conv_p)
 	{
-	  m = OVL_FIRST (m);
-	  if (template_conv_p)
-	    {
-	      if (TREE_CODE (m) == TEMPLATE_DECL
-		  && DECL_TEMPLATE_CONV_FN_P (m))
-		insert_p = false;
-	      break;
-	    }
-	  if (conv_p && !DECL_CONV_FN_P (m))
-	    break;
-	  if (DECL_NAME (m) == DECL_NAME (method))
-	    {
-	      insert_p = false;
-	      break;
-	    }
-	  if (complete_p
-	      && !DECL_CONV_FN_P (m)
-	      && DECL_NAME (m) > DECL_NAME (method))
-	    break;
+	  if (TREE_CODE (m) == TEMPLATE_DECL
+	      && DECL_TEMPLATE_CONV_FN_P (m))
+	    insert_p = false;
+	  break;
 	}
+      if (conv_p && !DECL_CONV_FN_P (m))
+	break;
+      if (DECL_NAME (m) == DECL_NAME (method))
+	{
+	  insert_p = false;
+	  break;
+	}
+      if (complete_p
+	  && !DECL_CONV_FN_P (m)
+	  && DECL_NAME (m) > DECL_NAME (method))
+	break;
     }
   current_fns = insert_p ? NULL_TREE : (*method_vec)[slot];
 
@@ -1253,7 +1238,7 @@ add_method (tree type, tree method, bool via_using)
 
   if (conv_p)
     TYPE_HAS_CONVERSION (type) = 1;
-  else if (slot >= CLASSTYPE_FIRST_CONVERSION_SLOT && !complete_p)
+  else if (!complete_p)
     push_class_level_binding (DECL_NAME (method), current_fns);
 
   if (insert_p)
