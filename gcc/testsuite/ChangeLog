@@ -1,4 +1,10 @@
 2017-07-17  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* gcc.target/arc/pr9000674901.c: New file.
+	* gcc.target/arc/pic-1.c: Likewise.
+	* gcc.target/arc/pr9001191897.c: Likewise.
+
+2017-07-17  Claudiu Zissulescu  <claziss@synopsys.com>
 	    Andrew Burgess  <andrew.burgess@embecosm.com>
 
 	* gcc.target/arc/naked-1.c: New file.
