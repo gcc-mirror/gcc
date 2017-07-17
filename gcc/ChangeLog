@@ -1,3 +1,7 @@
+2017-07-17  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/arm/arm_neon.h: Fix softp typo.
+
 2017-07-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/81365
