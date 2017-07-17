@@ -1,3 +1,36 @@
+2017-07-17  Claudiu Zissulescu  <claziss@synopsys.com>
+	Andrew Burgess  <andrew.burgess@embecosm.com>
+
+	* config/arc/arc-protos.h (arc_compute_function_type): Change prototype.
+	(arc_return_address_register): New function.
+	* config/arc/arc.c (arc_handle_fndecl_attribute): New function.
+	(arc_handle_fndecl_attribute): Add naked attribute.
+	(TARGET_ALLOCATE_STACK_SLOTS_FOR_ARGS): Define.
+	(TARGET_WARN_FUNC_RETURN): Likewise.
+	(arc_allocate_stack_slots_for_args): New function.
+	(arc_warn_func_return): Likewise.
+	(machine_function): Change type fn_type.
+	(arc_compute_function_type): Consider new naked function type,
+	change function return type.
+	(arc_must_save_register): Adapt to handle new
+	arc_compute_function_type's return type.
+	(arc_expand_prologue): Likewise.
+	(arc_expand_epilogue): Likewise.
+	(arc_return_address_regs): Delete.
+	(arc_return_address_register): New function.
+	(arc_epilogue_uses): Use above function.
+	* config/arc/arc.h (arc_return_address_regs): Delete prototype.
+	(arc_function_type): Change encoding, add naked type.
+	(ARC_INTERRUPT_P): Change to handle the new encoding.
+	(ARC_FAST_INTERRUPT_P): Likewise.
+	(ARC_NORMAL_P): Define.
+	(ARC_NAKED_P): Likewise.
+	(arc_compute_function_type): Delete prototype.
+	* config/arc/arc.md (in_ret_delay_slot): Use
+	arc_return_address_register function.
+	(simple_return): Likewise.
+	(p_return_i): Likewise.
+
 2017-07-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/81428
