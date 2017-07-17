@@ -1,3 +1,10 @@
+2017-07-17  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR 80929
+	* config/avr/avr.c (avr_mul_highpart_cost): New static function.
+	(avr_rtx_costs_1) [TRUNCATE]: Use it to compute mul_highpart cost.
+	[LSHIFTRT, outer_code = TRUNCATE]: Same.
+
 2017-07-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/81396
