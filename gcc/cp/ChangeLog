@@ -1,3 +1,8 @@
+2017-07-17  Volker Reichelt  <v.reichelt@netcologne.de>
+
+	* parser.c (cp_parser_decl_specifier_seq): Add fix-it hints for
+	friend outside class and obsolete auto as storage-class-specifier.
+
 2017-07-17  Nathan Sidwell  <nathan@acm.org>
 
 	* class.c (maybe_warn_about_overly_private_class): Ignore public
