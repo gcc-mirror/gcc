@@ -9072,19 +9072,16 @@ finish_decltype_type (tree expr, bool id_expression_or_member_access_p,
 }
 
 /* Called from trait_expr_value to evaluate either __has_nothrow_assign or 
-   __has_nothrow_copy, depending on assign_p.  */
+   __has_nothrow_copy, depending on assign_p.  Returns true iff all
+   the copy {ctor,assign} fns are nothrow.  */
 
 static bool
 classtype_has_nothrow_assign_or_copy_p (tree type, bool assign_p)
 {
-  tree fns;
+  tree fns = NULL_TREE;
 
   if (assign_p)
-    {
-      fns = lookup_fnfields_slot (type, cp_assignment_operator_id (NOP_EXPR));
-      if (!fns)
-	return false;
-    } 
+    fns = lookup_fnfields_slot (type, cp_assignment_operator_id (NOP_EXPR));
   else if (TYPE_HAS_COPY_CTOR (type))
     {
       /* If construction of the copy constructor was postponed, create
@@ -9095,27 +9092,22 @@ classtype_has_nothrow_assign_or_copy_p (tree type, bool assign_p)
 	lazily_declare_fn (sfk_move_constructor, type);
       fns = CLASSTYPE_CONSTRUCTORS (type);
     }
-  else
-    return false;
 
+  bool saw_copy = false;
   for (ovl_iterator iter (fns); iter; ++iter)
     {
       tree fn = *iter;
- 
-      if (assign_p)
-	{
-	  if (copy_fn_p (fn) == 0)
-	    continue;
-	}
-      else if (copy_fn_p (fn) <= 0)
-	continue;
 
-      maybe_instantiate_noexcept (fn);
-      if (!TYPE_NOTHROW_P (TREE_TYPE (fn)))
-	return false;
+      if (copy_fn_p (fn) > 0)
+	{
+	  saw_copy = true;
+	  maybe_instantiate_noexcept (fn);
+	  if (!TYPE_NOTHROW_P (TREE_TYPE (fn)))
+	    return false;
+	}
     }
 
-  return true;
+  return saw_copy;
 }
 
 /* Actually evaluates the trait.  */

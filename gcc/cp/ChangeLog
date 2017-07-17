@@ -1,3 +1,8 @@
+2017-07-17  Nathan Sidwell  <nathan@acm.org>
+
+	* semantics.c (classtype_has_nothrow_assign_or_copy_p): Clarify
+	semantics, simplify implementation.
+
 2017-07-16  Volker Reichelt  <v.reichelt@netcologne.de>
 
 	* parser.c (cp_parser_cast_expression): Use %q#T instead of %qT
