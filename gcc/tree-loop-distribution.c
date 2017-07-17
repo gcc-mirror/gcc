@@ -1412,8 +1412,7 @@ classify_partition (loop_p loop, struct graph *rdg, partition *partition,
     return;
 
   nb_iter = number_of_latch_executions (loop);
-  if (!nb_iter || nb_iter == chrec_dont_know)
-    return;
+  gcc_assert (nb_iter && nb_iter != chrec_dont_know);
   if (dominated_by_p (CDI_DOMINATORS, single_exit (loop)->src,
 		      gimple_bb (DR_STMT (single_store))))
     plus_one = true;
@@ -1962,18 +1961,16 @@ sort_partitions_by_post_order (struct graph *pg,
 }
 
 /* Given reduced dependence graph RDG merge strong connected components
-   of PARTITIONS.  If IGNORE_ALIAS_P is true, data dependence caused by
-   possible alias between references is ignored, as if it doesn't exist
-   at all; otherwise all depdendences are considered.  */
+   of PARTITIONS.  In this function, data dependence caused by possible
+   alias between references is ignored, as if it doesn't exist at all.  */
 
 static void
 merge_dep_scc_partitions (struct graph *rdg,
-			  vec<struct partition *> *partitions,
-			  bool ignore_alias_p)
+			  vec<struct partition *> *partitions)
 {
   struct partition *partition1, *partition2;
   struct pg_vdata *data;
-  graph *pg = build_partition_graph (rdg, partitions, ignore_alias_p);
+  graph *pg = build_partition_graph (rdg, partitions, true);
   int i, j, num_sccs = graphds_scc (pg, NULL);
 
   /* Strong connected compoenent means dependence cycle, we cannot distribute
@@ -2420,9 +2417,6 @@ distribute_loop (struct loop *loop, vec<gimple *> stmts,
   auto_vec<struct partition *, 3> partitions;
   rdg_build_partitions (rdg, stmts, &partitions);
 
-  /* Can't do runtime alias check if loop niter is unknown.  */
-  tree niters = number_of_latch_executions (loop);
-  bool rt_alias_check_p = (niters != NULL_TREE && niters != chrec_dont_know);
   auto_vec<ddr_p> alias_ddrs;
 
   auto_bitmap stmt_in_all_partitions;
@@ -2511,9 +2505,9 @@ distribute_loop (struct loop *loop, vec<gimple *> stmts,
   /* Build the partition dependency graph.  */
   if (partitions.length () > 1)
     {
-      merge_dep_scc_partitions (rdg, &partitions, rt_alias_check_p);
+      merge_dep_scc_partitions (rdg, &partitions);
       alias_ddrs.truncate (0);
-      if (rt_alias_check_p && partitions.length () > 1)
+      if (partitions.length () > 1)
 	break_alias_scc_partitions (rdg, &partitions, &alias_ddrs);
     }
 
@@ -2652,6 +2646,11 @@ pass_loop_distribution::execute (function *fun)
 
       /* Only optimize hot loops.  */
       if (!optimize_loop_for_speed_p (loop))
+	continue;
+
+      /* Don't distribute loop if niters is unknown.  */
+      tree niters = number_of_latch_executions (loop);
+      if (niters == NULL_TREE || niters == chrec_dont_know)
 	continue;
 
       /* Initialize the worklist with stmts we seed the partitions with.  */

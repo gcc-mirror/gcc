@@ -1,6 +1,15 @@
 2017-07-17  Bin Cheng  <bin.cheng@arm.com>
 
 	PR target/81369
+	* tree-loop-distribution.c (classify_partition): Only assert on
+	numer of iterations.
+	(merge_dep_scc_partitions): Delete prameter.  Update function call.
+	(distribute_loop): Remove code handling loop with unknown niters.
+	(pass_loop_distribution::execute): Skip loop with unknown niters.
+
+2017-07-17  Bin Cheng  <bin.cheng@arm.com>
+
+	PR target/81369
 	* tree-loop-distribution.c (merge_dep_scc_partitions): Sink call to
 	function sort_partitions_by_post_order.
 
