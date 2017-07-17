@@ -2614,12 +2614,13 @@ pass_loop_distribution::execute (function *fun)
      lexicographical order.  */
   if (bb_top_order_index == NULL)
     {
+      int rpo_num;
       int *rpo = XNEWVEC (int, last_basic_block_for_fn (cfun));
 
       bb_top_order_index = XNEWVEC (int, last_basic_block_for_fn (cfun));
-      bb_top_order_index_size
-	= pre_and_rev_post_order_compute_fn (cfun, NULL, rpo, true);
-      for (int i = 0; i < bb_top_order_index_size; i++)
+      bb_top_order_index_size = last_basic_block_for_fn (cfun);
+      rpo_num = pre_and_rev_post_order_compute_fn (cfun, NULL, rpo, true);
+      for (int i = 0; i < rpo_num; i++)
 	bb_top_order_index[rpo[i]] = i;
 
       free (rpo);
