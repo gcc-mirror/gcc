@@ -1,3 +1,9 @@
+2017-07-17  Martin Liska  <mliska@suse.cz>
+
+	PR sanitizer/81302
+	* opts.c (finish_options): Do not allow -fgnu-tm
+	w/ -fsanitize={kernel-,}address.  Say sorry.
+
 2017-07-17  Bin Cheng  <bin.cheng@arm.com>
 
 	PR target/81369
