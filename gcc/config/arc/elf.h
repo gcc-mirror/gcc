@@ -58,3 +58,11 @@ along with GCC; see the file COPYING3.  If not see
 /* Bare-metal toolchains do not need a thread pointer register.  */
 #undef TARGET_ARC_TP_REGNO_DEFAULT
 #define TARGET_ARC_TP_REGNO_DEFAULT -1
+
+/* Indexed loads are default.  */
+#undef TARGET_INDEXED_LOADS_DEFAULT
+#define TARGET_INDEXED_LOADS_DEFAULT 1
+
+/* Pre/post modify with register displacement are default.  */
+#undef TARGET_AUTO_MODIFY_REG_DEFAULT
+#define TARGET_AUTO_MODIFY_REG_DEFAULT 1

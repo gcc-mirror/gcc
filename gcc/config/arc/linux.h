@@ -83,3 +83,11 @@ along with GCC; see the file COPYING3.  If not see
 #define SUBTARGET_CPP_SPEC "\
    %{pthread:-D_REENTRANT} \
 "
+
+/* Indexed loads are default off.  */
+#undef TARGET_INDEXED_LOADS_DEFAULT
+#define TARGET_INDEXED_LOADS_DEFAULT 0
+
+/* Pre/post modify with register displacement are default off.  */
+#undef TARGET_AUTO_MODIFY_REG_DEFAULT
+#define TARGET_AUTO_MODIFY_REG_DEFAULT 0
