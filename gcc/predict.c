@@ -513,35 +513,11 @@ edge_predicted_by_p (edge e, enum br_predictor predictor, bool taken)
   return false;
 }
 
-/* Return true when the probability of edge is reliable.
-
-   The profile guessing code is good at predicting branch outcome (ie.
-   taken/not taken), that is predicted right slightly over 75% of time.
-   It is however notoriously poor on predicting the probability itself.
-   In general the profile appear a lot flatter (with probabilities closer
-   to 50%) than the reality so it is bad idea to use it to drive optimization
-   such as those disabling dynamic branch prediction for well predictable
-   branches.
-
-   There are two exceptions - edges leading to noreturn edges and edges
-   predicted by number of iterations heuristics are predicted well.  This macro
-   should be able to distinguish those, but at the moment it simply check for
-   noreturn heuristic that is only one giving probability over 99% or bellow
-   1%.  In future we might want to propagate reliability information across the
-   CFG if we find this information useful on multiple places.   */
-static bool
-probability_reliable_p (int prob)
-{
-  return (profile_status_for_fn (cfun) == PROFILE_READ
-	  || (profile_status_for_fn (cfun) == PROFILE_GUESSED
-	      && (prob <= HITRATE (1) || prob >= HITRATE (99))));
-}
-
 /* Same predicate as above, working on edges.  */
 bool
 edge_probability_reliable_p (const_edge e)
 {
-  return e->probability.reliable_p ();
+  return e->probability.probably_reliable_p ();
 }
 
 /* Same predicate as edge_probability_reliable_p, working on notes.  */
@@ -549,7 +525,8 @@ bool
 br_prob_note_reliable_p (const_rtx note)
 {
   gcc_assert (REG_NOTE_KIND (note) == REG_BR_PROB);
-  return probability_reliable_p (XINT (note, 0));
+  return profile_probability::from_reg_br_prob_note
+		 (XINT (note, 0)).probably_reliable_p ();
 }
 
 static void
@@ -723,7 +700,8 @@ invert_br_probabilities (rtx insn)
 
   for (note = REG_NOTES (insn); note; note = XEXP (note, 1))
     if (REG_NOTE_KIND (note) == REG_BR_PROB)
-      XINT (note, 0) = REG_BR_PROB_BASE - XINT (note, 0);
+      XINT (note, 0) = profile_probability::from_reg_br_prob_note
+			 (XINT (note, 0)).invert ().to_reg_br_prob_note ();
     else if (REG_NOTE_KIND (note) == REG_BR_PRED)
       XEXP (XEXP (note, 0), 1)
 	= GEN_INT (REG_BR_PROB_BASE - INTVAL (XEXP (XEXP (note, 0), 1)));
@@ -870,6 +848,15 @@ set_even_probabilities (basic_block bb,
       e->probability = profile_probability::never ();
 }
 
+/* Add REG_BR_PROB note to JUMP with PROB.  */
+
+void
+add_reg_br_prob_note (rtx_insn *jump, profile_probability prob)
+{
+  gcc_checking_assert (JUMP_P (jump) && !find_reg_note (jump, REG_BR_PROB, 0));
+  add_int_reg_note (jump, REG_BR_PROB, prob.to_reg_br_prob_note ());
+}
+
 /* Combine all REG_BR_PRED notes into single probability and attach REG_BR_PROB
    note if not already present.  Remove now useless REG_BR_PRED notes.  */
 
@@ -968,26 +955,26 @@ combine_predictions_for_insn (rtx_insn *insn, basic_block bb)
 
   if (!prob_note)
     {
-      add_int_reg_note (insn, REG_BR_PROB, combined_probability);
+      profile_probability p
+	 = profile_probability::from_reg_br_prob_base (combined_probability);
+      add_reg_br_prob_note (insn, p);
 
       /* Save the prediction into CFG in case we are seeing non-degenerated
 	 conditional jump.  */
       if (!single_succ_p (bb))
 	{
-	  BRANCH_EDGE (bb)->probability
-	    = profile_probability::from_reg_br_prob_base (combined_probability);
+	  BRANCH_EDGE (bb)->probability = p;
 	  FALLTHRU_EDGE (bb)->probability
 	    = BRANCH_EDGE (bb)->probability.invert ();
 	}
     }
   else if (!single_succ_p (bb))
     {
-      int prob = XINT (prob_note, 0);
+      profile_probability prob = profile_probability::from_reg_br_prob_note
+					(XINT (prob_note, 0));
 
-      BRANCH_EDGE (bb)->probability
-	 = profile_probability::from_reg_br_prob_base (prob);
-      FALLTHRU_EDGE (bb)->probability
-	 = BRANCH_EDGE (bb)->probability.invert ();
+      BRANCH_EDGE (bb)->probability = prob;
+      FALLTHRU_EDGE (bb)->probability = prob.invert ();
     }
   else
     single_succ_edge (bb)->probability = profile_probability::always ();

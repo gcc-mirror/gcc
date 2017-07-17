@@ -1,3 +1,453 @@
+2017-07-17  Martin Liska  <mliska@suse.cz>
+
+	PR sanitizer/81302
+	* opts.c (finish_options): Do not allow -fgnu-tm
+	w/ -fsanitize={kernel-,}address.  Say sorry.
+
+2017-07-17  Bin Cheng  <bin.cheng@arm.com>
+
+	PR target/81369
+	* tree-loop-distribution.c (classify_partition): Only assert on
+	numer of iterations.
+	(merge_dep_scc_partitions): Delete prameter.  Update function call.
+	(distribute_loop): Remove code handling loop with unknown niters.
+	(pass_loop_distribution::execute): Skip loop with unknown niters.
+
+2017-07-17  Bin Cheng  <bin.cheng@arm.com>
+
+	PR target/81369
+	* tree-loop-distribution.c (merge_dep_scc_partitions): Sink call to
+	function sort_partitions_by_post_order.
+
+2017-07-17  Bin Cheng  <bin.cheng@arm.com>
+
+	PR tree-optimization/81374
+	* tree-loop-distribution.c (pass_loop_distribution::execute): Record
+	the max index of basic blocks, rather than number of basic blocks.
+
+2017-07-17  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/arc-protos.h (arc_legitimate_pc_offset_p): Remove
+	proto.
+	(arc_legitimate_pic_operand_p): Likewise.
+	* config/arc/arc.c (arc_legitimate_pic_operand_p): Remove
+	function.
+	(arc_needs_pcl_p): Likewise.
+	(arc_legitimate_pc_offset_p): Likewise.
+	(arc_legitimate_pic_addr_p): Remove LABEL_REF case, as this
+	function is also used in constrains.md.
+	(arc_legitimate_constant_p): Use arc_legitimate_pic_addr_p to
+	validate pic constants. Handle CONST_INT, CONST_DOUBLE, MINUS and
+	PLUS.  Only return true/false in known cases, otherwise assert.
+	(arc_legitimate_address_p): Remove arc_legitimate_pic_addr_p as it
+	is already called in arc_legitimate_constant_p.
+	* config/arc/arc.h (CONSTANT_ADDRESS_P): Consider also LABEL for
+	pic addresses.
+	(LEGITIMATE_PIC_OPERAND_P): Use
+	arc_raw_symbolic_reference_mentioned_p function.
+	* config/arc/constraints.md (Cpc): Use arc_legitimate_pic_addr_p
+	function.
+	(Cal): Likewise.
+	(C32): Likewise.
+
+2017-07-17  Claudiu Zissulescu  <claziss@synopsys.com>
+	Andrew Burgess  <andrew.burgess@embecosm.com>
+
+	* config/arc/arc-protos.h (arc_compute_function_type): Change prototype.
+	(arc_return_address_register): New function.
+	* config/arc/arc.c (arc_handle_fndecl_attribute): New function.
+	(arc_handle_fndecl_attribute): Add naked attribute.
+	(TARGET_ALLOCATE_STACK_SLOTS_FOR_ARGS): Define.
+	(TARGET_WARN_FUNC_RETURN): Likewise.
+	(arc_allocate_stack_slots_for_args): New function.
+	(arc_warn_func_return): Likewise.
+	(machine_function): Change type fn_type.
+	(arc_compute_function_type): Consider new naked function type,
+	change function return type.
+	(arc_must_save_register): Adapt to handle new
+	arc_compute_function_type's return type.
+	(arc_expand_prologue): Likewise.
+	(arc_expand_epilogue): Likewise.
+	(arc_return_address_regs): Delete.
+	(arc_return_address_register): New function.
+	(arc_epilogue_uses): Use above function.
+	* config/arc/arc.h (arc_return_address_regs): Delete prototype.
+	(arc_function_type): Change encoding, add naked type.
+	(ARC_INTERRUPT_P): Change to handle the new encoding.
+	(ARC_FAST_INTERRUPT_P): Likewise.
+	(ARC_NORMAL_P): Define.
+	(ARC_NAKED_P): Likewise.
+	(arc_compute_function_type): Delete prototype.
+	* config/arc/arc.md (in_ret_delay_slot): Use
+	arc_return_address_register function.
+	(simple_return): Likewise.
+	(p_return_i): Likewise.
+
+2017-07-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/81428
+	* match.pd (X / X -> one): Don't optimize _Fract divisions, as 1
+	can't be built for those types.
+
+2017-07-17  Georg-Johann Lay  <avr@gjlay.de>
+
+	Remove stuff dead since r239246.
+
+	* config/avr/avr-arch.h (avr_inform_devices): Remove dead proto.
+	* config/avr/avr-devices.c (mcu_name, comparator, avr_mcus_str)
+	(avr_inform_devices): Remove dead stuff.
+
+2017-07-17  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/arm/arm_neon.h: Fix softp typo.
+
+2017-07-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/81365
+	* tree-ssa-phiprop.c (propagate_with_phi): When considering hoisting
+	aggregate moves onto bb predecessor edges, make sure there are no
+	loads that could alias the lhs in between the start of bb and the
+	loads from *phi.
+
+2017-07-17  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR 80929
+	* config/avr/avr.c (avr_mul_highpart_cost): New static function.
+	(avr_rtx_costs_1) [TRUNCATE]: Use it to compute mul_highpart cost.
+	[LSHIFTRT, outer_code = TRUNCATE]: Same.
+
+2017-07-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/81396
+	* tree-ssa-math-opts.c (struct symbolic_number): Add n_ops field.
+	(init_symbolic_number): Initialize it to 1.
+	(perform_symbolic_merge): Add n_ops from both operands into the new
+	n_ops.
+	(find_bswap_or_nop): Don't consider n->n == cmpnop computations
+	without base_addr as useless if they need more than one operation.
+	(bswap_replace): Handle !bswap case for NULL base_addr.
+
+2017-07-17  Tom de Vries  <tom@codesourcery.com>
+
+	PR target/81069
+	* config/nvptx/nvptx.c (nvptx_single): Insert diverging branch as late
+	as possible.
+
+2017-07-17  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	*  gcc/config/sparc/rtemself.h (TARGET_OS_CPP_BUILTINS): Add
+	conditional builtin define __FIX_LEON3FT_B2BST.
+
+2017-07-17  Daniel Cederman  <cederman@gaisler.com>
+
+	* config/sparc/t-rtems: Add mfix-gr712rc multilibs. Replace
+	MULTILIB_EXCEPTIONS with MULTILIB_REQUIRED. Match -mfix-gr712rc
+	with -mfix-ut700.
+
+2017-07-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR rtl-optimization/81424
+	* optabs.c (prepare_cmp_insn): Use copy_to_reg instead of force_reg
+	to remove potential trapping from operands if -fnon-call-exceptions.
+
+2017-07-16  Jan Hubicka  <hubicka@ucw.cz>
+
+	* tree-ssa-loop-manip.c (tree_transform_and_unroll_loop): Use
+	profile_proability for scalling.
+	* scale_profile_for_vect_loop.c (scale_profile_for_vect_loop): Likewise.
+
+2017-07-16  Jan Hubicka  <hubicka@ucw.cz>
+
+	* cgraph.c (cgraph_edge::redirect_call_stmt_to_caller): Cleanup.
+
+2017-07-16  Jan Hubicka  <hubicka@ucw.cz>
+
+	* cfgloopmanip.c (scale_loop_profile): Avoid use of REG_BR_PROB_BASE
+	fixpoint arithmetics.
+
+2017-07-16  Jan Hubicka  <hubicka@ucw.cz>
+
+	* tree-ssa-loop-unswitch.c (hoist_guard): Avoid use of REG_BR_PROB_BASE
+	fixpoint arithmetics.
+
+2017-07-16  Jan Hubicka  <hubicka@ucw.cz>
+
+	* asan.c (create_cond_insert_point): Avoid use of REG_BR_PROB_BASE
+	fixpoint arithmetics.
+
+2017-07-16  Jan Hubicka  <hubicka@ucw.cz>
+
+	* profile-count.h (profile_probability::from_reg_br_prob_note,
+	profile_probability::to_reg_br_prob_note): New functions.
+	* doc/rtl.texi (REG_BR_PROB_NOTE): Update documentation.
+	* reg-notes.h (REG_BR_PROB, REG_BR_PRED): Update docs.
+	* predict.c (probability_reliable_p): Update.
+	(edge_probability_reliable_p): Update.
+	(br_prob_note_reliable_p): Update.
+	(invert_br_probabilities): Update.
+	(add_reg_br_prob_note): New function.
+	(combine_predictions_for_insn): Update.
+	* asan.c (asan_clear_shadow): Update.
+	* cfgbuild.c (compute_outgoing_frequencies): Update.
+	* cfgrtl.c (force_nonfallthru_and_redirect): Update.
+	(update_br_prob_note): Update.
+	(rtl_verify_edges): Update.
+	(purge_dead_edges): Update.
+	(fixup_reorder_chain): Update.
+	* emit-rtl.c (try_split): Update.
+	* ifcvt.c (cond_exec_process_insns): Update.
+	(cond_exec_process_if_block): Update.
+	(dead_or_predicable): Update.
+	* internal-fn.c (expand_addsub_overflow): Update.
+	(expand_neg_overflow): Update.
+	(expand_mul_overflow): Update.
+	* loop-doloop.c (doloop_modify): Update.
+	* loop-unroll.c (compare_and_jump_seq): Update.
+	* optabs.c (emit_cmp_and_jump_insn_1): Update.
+	* predict.h: Update.
+	* reorg.c (mostly_true_jump): Update.
+	* rtl.h: Update.
+	* config/aarch64/aarch64.c (aarch64_emit_unlikely_jump): Update.
+	* config/alpha/alpha.c (emit_unlikely_jump): Update.
+	* config/arc/arc.c: (emit_unlikely_jump): Update.
+	* config/arm/arm.c: (emit_unlikely_jump): Update.
+	* config/bfin/bfin.c (cbranch_predicted_taken_p): Update.
+	* config/frv/frv.c (frv_print_operand_jump_hint): Update.
+	* config/i386/i386.c (ix86_expand_split_stack_prologue): Update.
+	(ix86_print_operand): Update.
+	(ix86_split_fp_branch): Update.
+	(predict_jump): Update.
+	* config/ia64/ia64.c (ia64_print_operand): Update.
+	* config/mmix/mmix.c (mmix_print_operand): Update.
+	* config/powerpcspe/powerpcspe.c (output_cbranch): Update.
+	(rs6000_expand_split_stack_prologue): Update.
+	* config/rs6000/rs6000.c: Update.
+	* config/s390/s390.c (s390_expand_vec_strlen): Update.
+	(s390_expand_vec_movstr): Update.
+	(s390_expand_cs_tdsi): Update.
+	(s390_expand_split_stack_prologue): Update.
+	* config/sh/sh.c (sh_print_operand): Update.
+	(expand_cbranchsi4): Update.
+	(expand_cbranchdi4): Update.
+	* config/sparc/sparc.c (output_v9branch): Update.
+	* config/spu/spu.c (get_branch_target): Update.
+	(ea_load_store_inline): Update.
+	* config/tilegx/tilegx.c (cbranch_predicted_p): Update.
+	* config/tilepro/tilepro.c: Update.
+
+2017-07-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gimplify.c (mostly_copy_tree_r): Revert latest change.
+	(gimplify_save_expr): Likewise.
+
+2017-07-07  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-visibility.c (function_and_variable_visibility): Fix pasto.
+
+2017-07-07  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-fnsummary.c (pass_data_ipa_fn_summary): Use
+	TV_IPA_FNSUMMARY.
+	* timevar.def (TV_IPA_FNSUMMARY): Define.
+
+2017-07-16  Daniel Cederman  <cederman@gaisler.com>
+
+	* config/sparc/sparc.md (divdf3_fix): Add NOP to prevent back
+	to back store errata sensitive sequence from being generated.
+	(sqrtdf2_fix): Likewise.
+
+2017-07-07  Jan Hubicka  <hubicka@ucw.cz>
+
+	* tree-ssa-threadupdate.c (compute_path_counts,
+	update_joiner_offpath_counts): Use profile_probability.
+
+2017-07-15  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	Revert:
+	2017-07-14  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* config/arm/arm-c.c (arm_cpu_builtins): Define
+	__ARM_FEATURE_NUMERIC_MAXMIN solely based on TARGET_VFP5.
+
+2017-07-14  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	* config/rs6000/rs6000-c.c (altivec_overloaded_builtins): Add
+	array entries to represent __ieee128 versions of the
+	scalar_test_data_class, scalar_test_neg, scalar_extract_exp,
+	scalar_extract_sig, and scalar_insert_exp built-in functions.
+	(altivec_resolve_overloaded_builtin): Add special case handling
+	for the __builtin_scalar_insert_exp function, as represented by
+	the P9V_BUILTIN_VEC_VSIEDP constant.
+	* config/rs6000/rs6000-builtin.def (VSEEQP): Add scalar extract
+	exponent support for __ieee128 argument.
+	(VSESQP): Add scalar extract signature support for __ieee128
+	argument.
+	(VSTDCNQP): Add scalar test negative support for __ieee128
+	argument.
+	(VSIEQP): Add scalar insert exponent support for __int128 argument
+	with __ieee128 result.
+	(VSIEQPF): Add scalar insert exponent support for __ieee128
+	argument with __ieee128 result.
+	(VSTDCQP): Add scalar test data class support for __ieee128
+	argument.
+	(VSTDCNQP): Add overload support for scalar test negative with
+	__ieee128 argument.
+	(VSTDCQP): Add overload support for scalar test data class
+	__ieee128 argument.
+	* config/rs6000/vsx.md (UNSPEC_VSX_SXSIG) Replace
+	UNSPEC_VSX_SXSIGDP.
+	(UNSPEC_VSX_SIEXPQP): New constant.
+	(xsxexpqp): New insn for VSX scalar extract exponent quad
+	precision.
+	(xsxsigqp): New insn for VSX scalar extract significand quad
+	precision.
+	(xsiexpqpf): New insn for VSX scalar insert exponent quad
+	precision with floating point argument.
+	(xststdcqp): New expand for VSX scalar test data class quad
+	precision.
+	(xststdcnegqp): New expand for VSX scalar test negative quad
+	precision.
+	(xststdcqp): New insn to match expansions for VSX scalar test data
+	class quad precision and VSX scalar test negative quad precision.
+	* config/rs6000/rs6000.c (rs6000_expand_binop_builtin): Add
+	special case operand checking to enforce that second operand of
+	VSX scalar test data class with quad precision argument is a 7-bit
+	unsigned literal.
+	* doc/extend.texi (PowerPC AltiVec Built-in Functions): Add
+	prototypes and descriptions of __ieee128 versions of
+	scalar_extract_exp, scalar_extract_sig, scalar_insert_exp,
+	scalar_test_data_class, and scalar_test_neg built-in functions.
+
+2016-07-14  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	PR tree-optimization/81162
+	* gimple-ssa-strength-reduction.c (replace_mult_candidate): Don't
+	replace a negate with an add.
+
+2017-07-14  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* doc/invoke.texi (arm/-mcpu): Document +crypto.
+
+2017-07-14  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* config/arm/arm-c.c (arm_cpu_builtins): Define
+	__ARM_FEATURE_NUMERIC_MAXMIN solely based on TARGET_VFP5.
+
+2017-07-14  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* config/arm/arm-cpus.in (cortex-r52): Add new entry.
+	(armv8-r): Set ARM Cortex-R52 as default CPU.
+	* config/arm/arm-tables.opt: Regenerate.
+	* config/arm/arm-tune.md: Regenerate.
+	* config/arm/driver-arm.c (arm_cpu_table): Add entry for ARM
+	Cortex-R52.
+	* doc/invoke.texi: Mention -mtune=cortex-r52 and availability of fp.dp
+	extension for -mcpu=cortex-r52.
+
+2017-07-14  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* config/arm/arm-isa.h (isa_bit_FP_ARMv8): Delete enumerator.
+	(ISA_FP_ARMv8): Define as ISA_FPv5 and ISA_FP_D32.
+	* config/arm/arm-cpus.in (armv8-r): Define fp.sp as enabling FPv5.
+	(fp-armv8): Define it as FP_ARMv8 only.
+	config/arm/arm.h (TARGET_FPU_ARMV8): Delete.
+	(TARGET_VFP_FP16INST): Define using TARGET_VFP5 rather than
+	TARGET_FPU_ARMV8.
+	config/arm/arm.c (arm_rtx_costs_internal): Replace checks against
+	TARGET_FPU_ARMV8 by checks against TARGET_VFP5.
+	* config/arm/arm-builtins.c (arm_builtin_vectorized_function): Define
+	first ARM_CHECK_BUILTIN_MODE definition using TARGET_VFP5 rather
+	than TARGET_FPU_ARMV8.
+	* config/arm/arm-c.c (arm_cpu_builtins): Likewise for
+	__ARM_FEATURE_NUMERIC_MAXMIN macro definition.
+	* config/arm/arm.md (cmov<mode>): Condition on TARGET_VFP5 rather than
+	TARGET_FPU_ARMV8.
+	* config/arm/neon.md (neon_vrint): Likewise.
+	(neon_vcvt): Likewise.
+	(neon_<fmaxmin_op><mode>): Likewise.
+	(<fmaxmin><mode>3): Likewise.
+	* config/arm/vfp.md (l<vrint_pattern><su_optab><mode>si2): Likewise.
+	* config/arm/predicates.md (arm_cond_move_operator): Check against
+	TARGET_VFP5 rather than TARGET_FPU_ARMV8 and fix spacing.
+
+2017-07-14  Jackson Woodruff  <jackson.woodruff@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_print_operand): Move comments
+	to top of function.
+
+2017-07-14  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gimple-ssa-store-merging.c (clear_bit_region): Replace reference to
+	loop in comment with memset.
+
+2017-07-14  Martin Liska  <mliska@suse.cz>
+
+	* cfgexpand.c (expand_gimple_basic_block): Remove dead comment.
+	* dwarf2out.c (is_java): Remove the function.
+	(output_pubname): Remove usage of the function.
+	(lower_bound_default): Remove usage of DW_LANG_Java.
+	(gen_compile_unit_die): Likewise.
+	* gcc.c: Remove compiler defaults for .java and .zip files.
+	* gimple-expr.c (remove_suffix): Change as there's no longer
+	extension than 4-letter one.
+	* gimplify.c (mostly_copy_tree_r): Remove Java-special part.
+	(gimplify_save_expr): Likewise.
+	* ipa-utils.h (polymorphic_type_binfo_p): Remove the comment
+	as it's possible even for other languages than Java.
+	* langhooks.h (struct lang_hooks): Remove Java from a comment.
+	* lto-opts.c (lto_write_options): Remove reference to Java.
+	* opts.c (strip_off_ending): Update file extension handling.
+	* tree-cfg.c (verify_gimple_call): Remove comment with Java.
+	* tree-eh.c (lower_resx): Likewise.
+	* tree.c (free_lang_data_in_type): Remove dead code.
+	(find_decls_types_r): Likewise.
+	(build_common_builtin_nodes): Remove Java from a comment.
+	(verify_type): Remove dead code.
+	* varasm.c (assemble_external): Remove Java from a comment.
+
+2017-07-14  Martin Liska  <mliska@suse.cz>
+
+	* opts.c (finish_options): Add quotes.
+	(common_handle_option): Likewise.
+
+2017-07-14  Martin Liska  <mliska@suse.cz>
+
+	* dbxout.c (get_lang_number): Do not handle GNU Pascal.
+	* dbxout.h (extern void dbxout_stab_value_internal_label_diff):
+	Remove N_SO_PASCAL.
+	* dwarf2out.c (lower_bound_default): Do not handle
+	DW_LANG_Pascal83.
+	(gen_compile_unit_die): Likewise.
+	* gcc.c: Remove default extension binding for GNU Pascal.
+	* stmt.c: Remove Pascal language from a comment.
+	* xcoffout.c: Likewise.
+
+2017-07-13  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/81405
+	* diagnostic-show-locus.c (fixit_cmp): New function.
+	(layout::layout): Sort m_fixit_hints.
+	(column_range::column_range): Assert that the values are valid.
+	(struct char_span): New struct.
+	(correction::overwrite): New method.
+	(struct source_line): New struct.
+	(line_corrections::add_hint): Add assertions.  Reimplement memcpy
+	calls in terms of classes source_line and char_span, and
+	correction::overwrite.
+	(selftest::test_overlapped_fixit_printing_2): New function.
+	(selftest::diagnostic_show_locus_c_tests): Call it.
+
+2017-07-13  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	* config/rs6000/rs6000.c (rs6000_gimple_fold_builtin): Return
+	early if there is no lhs.
+
+2017-07-13  Martin Liska  <mliska@suse.cz>
+
+	* dwarf2out.c (gen_pointer_type_die): Remove dead code.
+	(gen_reference_type_die): Likewise.
+	* stor-layout.c: Remove Pascal-related comment.
+
 2017-07-13  Martin Liska  <mliska@suse.cz>
 
 	* opts.c (finish_options): Add quotes to error messages.

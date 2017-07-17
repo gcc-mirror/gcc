@@ -53,7 +53,6 @@ extern void dbxout_stab_value_internal_label_diff (const char *, int *,
 #define N_SO_ANSI_C      3
 #define N_SO_CC          4 /* c++*/
 #define N_SO_FORTRAN     5
-#define N_SO_PASCAL      6
 #define N_SO_FORTRAN90   7
 #define N_SO_OBJC        50
 #define N_SO_OBJCPLUS    51

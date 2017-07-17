@@ -1504,8 +1504,8 @@ force_nonfallthru_and_redirect (edge e, basic_block target, rtx jump_label)
 	{
 	  int prob = XINT (note, 0);
 
-	  b->probability = profile_probability::from_reg_br_prob_base (prob);
-	  b->count = e->count.apply_probability (prob);
+	  b->probability = profile_probability::from_reg_br_prob_note (prob);
+	  b->count = e->count.apply_probability (b->probability);
 	  e->probability -= e->probability;
 	  e->count -= b->count;
 	}
@@ -2253,9 +2253,9 @@ update_br_prob_note (basic_block bb)
     return;
   note = find_reg_note (BB_END (bb), REG_BR_PROB, NULL_RTX);
   if (!note
-      || XINT (note, 0) == BRANCH_EDGE (bb)->probability.to_reg_br_prob_base ())
+      || XINT (note, 0) == BRANCH_EDGE (bb)->probability.to_reg_br_prob_note ())
     return;
-  XINT (note, 0) = BRANCH_EDGE (bb)->probability.to_reg_br_prob_base ();
+  XINT (note, 0) = BRANCH_EDGE (bb)->probability.to_reg_br_prob_note ();
 }
 
 /* Get the last insn associated with block BB (that includes barriers and
@@ -2456,12 +2456,12 @@ rtl_verify_edges (void)
 		}
 	    }
 	  else if (XINT (note, 0)
-	           != BRANCH_EDGE (bb)->probability.to_reg_br_prob_base ()
+	           != BRANCH_EDGE (bb)->probability.to_reg_br_prob_note ()
 	           && profile_status_for_fn (cfun) != PROFILE_ABSENT)
 	    {
 	      error ("verify_flow_info: REG_BR_PROB does not match cfg %i %i",
 		     XINT (note, 0),
-		     BRANCH_EDGE (bb)->probability.to_reg_br_prob_base ());
+		     BRANCH_EDGE (bb)->probability.to_reg_br_prob_note ());
 	      err = 1;
 	    }
 	}
@@ -3164,9 +3164,9 @@ purge_dead_edges (basic_block bb)
 
 	  b = BRANCH_EDGE (bb);
 	  f = FALLTHRU_EDGE (bb);
-	  b->probability = profile_probability::from_reg_br_prob_base
+	  b->probability = profile_probability::from_reg_br_prob_note
 					 (XINT (note, 0));
-	  f->probability = profile_probability::always () - b->probability;
+	  f->probability = b->probability.invert ();
 	  b->count = bb->count.apply_probability (b->probability);
 	  f->count = bb->count.apply_probability (f->probability);
 	}
@@ -3792,7 +3792,8 @@ fixup_reorder_chain (void)
 		  rtx note = find_reg_note (bb_end_jump, REG_BR_PROB, 0);
 
 		  if (note
-		      && XINT (note, 0) < REG_BR_PROB_BASE / 2
+		      && profile_probability::from_reg_br_prob_note
+				 (XINT (note, 0)) < profile_probability::even ()
 		      && invert_jump (bb_end_jump,
 				      (e_fall->dest
 				       == EXIT_BLOCK_PTR_FOR_FN (cfun)

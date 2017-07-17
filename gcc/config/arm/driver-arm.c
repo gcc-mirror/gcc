@@ -58,6 +58,7 @@ static struct vendor_cpu arm_cpu_table[] = {
     {"0xc15", "armv7-r", "cortex-r5"},
     {"0xc17", "armv7-r", "cortex-r7"},
     {"0xc18", "armv7-r", "cortex-r8"},
+    {"0xd13", "armv8-r+crc", "cortex-r52"},
     {"0xc20", "armv6-m", "cortex-m0"},
     {"0xc21", "armv6-m", "cortex-m1"},
     {"0xc23", "armv7-m", "cortex-m3"},

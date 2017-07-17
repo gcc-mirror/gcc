@@ -3098,7 +3098,7 @@ arm_builtin_vectorized_function (unsigned int fn, tree type_out, tree type_in)
    NULL_TREE is returned if no such builtin is available.  */
 #undef ARM_CHECK_BUILTIN_MODE
 #define ARM_CHECK_BUILTIN_MODE(C)    \
-  (TARGET_FPU_ARMV8   \
+  (TARGET_VFP5   \
    && flag_unsafe_math_optimizations \
    && ARM_CHECK_BUILTIN_MODE_1 (C))
 

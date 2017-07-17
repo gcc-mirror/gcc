@@ -7,7 +7,7 @@
 --                                 S p e c                                  --
 --                         (GNU/Linux/m68k Version)                         --
 --                                                                          --
---          Copyright (C) 2014-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 2014-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -39,6 +39,9 @@ package System is
    --  Note that we take advantage of the implementation permission to make
    --  this unit Pure instead of Preelaborable; see RM 13.7.1(15). In Ada
    --  2005, this is Pure in any case (AI-362).
+
+   pragma No_Elaboration_Code_All;
+   --  Allow the use of that restriction in units that WITH this unit
 
    type Name is (SYSTEM_NAME_GNAT);
    System_Name : constant Name := SYSTEM_NAME_GNAT;
@@ -126,7 +129,7 @@ private
    --  of the individual switch values.
 
    Backend_Divide_Checks     : constant Boolean := False;
-   Backend_Overflow_Checks   : constant Boolean := False;
+   Backend_Overflow_Checks   : constant Boolean := True;
    Command_Line_Args         : constant Boolean := True;
    Configurable_Run_Time     : constant Boolean := False;
    Denorm                    : constant Boolean := True;

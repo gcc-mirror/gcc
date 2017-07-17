@@ -1564,12 +1564,6 @@ lower_try_finally_switch (struct leh_state *state, struct leh_tf_state *tf)
 /* Decide whether or not we are going to duplicate the finally block.
    There are several considerations.
 
-   First, if this is Java, then the finally block contains code
-   written by the user.  It has line numbers associated with it,
-   so duplicating the block means it's difficult to set a breakpoint.
-   Since controlling code generation via -g is verboten, we simply
-   never duplicate code without optimization.
-
    Second, we'd like to prevent egregious code growth.  One way to
    do this is to estimate the size of the finally block, multiply
    that by the number of copies we'd need to make, and compare against
@@ -3286,7 +3280,7 @@ lower_resx (basic_block bb, gresx *stmt,
 	 _Unwind_Resume library function.  */
 
       /* The ARM EABI redefines _Unwind_Resume as __cxa_end_cleanup
-	 with no arguments for C++ and Java.  Check for that.  */
+	 with no arguments for C++.  Check for that.  */
       if (src_r->use_cxa_end_cleanup)
 	{
 	  fn = builtin_decl_implicit (BUILT_IN_CXA_END_CLEANUP);

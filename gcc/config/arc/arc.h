@@ -901,10 +901,10 @@ extern int arc_initial_elimination_offset(int from, int to);
    a special predicate for the memory operand of stores, like for the SH.  */
 
 /* Recognize any constant value that is a valid address.  */
-#define CONSTANT_ADDRESS_P(X) \
-(flag_pic?arc_legitimate_pic_addr_p (X): \
-(GET_CODE (X) == LABEL_REF || GET_CODE (X) == SYMBOL_REF	\
- || GET_CODE (X) == CONST_INT || GET_CODE (X) == CONST))
+#define CONSTANT_ADDRESS_P(X)					\
+  (flag_pic ? (arc_legitimate_pic_addr_p (X) || LABEL_P (X)):	\
+   (GET_CODE (X) == LABEL_REF || GET_CODE (X) == SYMBOL_REF	\
+    || GET_CODE (X) == CONST_INT || GET_CODE (X) == CONST))
 
 /* Is the argument a const_int rtx, containing an exact power of 2 */
 #define  IS_POWEROF2_P(X) (! ( (X) & ((X) - 1)) && (X))
@@ -1083,7 +1083,8 @@ arc_select_cc_mode (OP, X, Y)
    check it either.  You need not define this macro if all constants
    (including SYMBOL_REF) can be immediate operands when generating
    position independent code.  */
-#define LEGITIMATE_PIC_OPERAND_P(X)  (arc_legitimate_pic_operand_p(X))
+#define LEGITIMATE_PIC_OPERAND_P(X)  \
+  (!arc_raw_symbolic_reference_mentioned_p ((X), true))
 
 /* PIC and small data don't mix on ARC because they use the same register.  */
 #define SDATA_BASE_REGNUM 26
@@ -1370,10 +1371,6 @@ do { \
 #define ASM_OUTPUT_ALIGNED_DECL_LOCAL(STREAM, DECL, NAME, SIZE, ALIGNMENT) \
   arc_asm_output_aligned_decl_local (STREAM, DECL, NAME, SIZE, ALIGNMENT, 0)
 
-/* To translate the return value of arc_function_type into a register number
-   to jump through for function return.  */
-extern int arc_return_address_regs[5];
-
 /* Debugging information.  */
 
 /* Generate DBX and DWARF debugging information.  */
@@ -1506,22 +1503,38 @@ extern struct rtx_def *arc_compare_op0, *arc_compare_op1;
 
 /* ARC function types.   */
 enum arc_function_type {
-  ARC_FUNCTION_UNKNOWN, ARC_FUNCTION_NORMAL,
+  /* No function should have the unknown type.  This value is used to
+   indicate the that function type has not yet been computed.  */
+  ARC_FUNCTION_UNKNOWN  = 0,
+
+  /* The normal function type indicates that the function has the
+   standard prologue and epilogue.  */
+  ARC_FUNCTION_NORMAL  = 1 << 0,
   /* These are interrupt handlers.  The name corresponds to the register
      name that contains the return address.  */
-  ARC_FUNCTION_ILINK1, ARC_FUNCTION_ILINK2,
+  ARC_FUNCTION_ILINK1  = 1 << 1,
+  ARC_FUNCTION_ILINK2  = 1 << 2,
   /* Fast interrupt is only available on ARCv2 processors.  */
-  ARC_FUNCTION_FIRQ
+  ARC_FUNCTION_FIRQ    = 1 << 3,
+  /* The naked function type indicates that the function does not have
+   prologue or epilogue, and that no stack frame is available.  */
+  ARC_FUNCTION_NAKED   = 1 << 4
 };
-#define ARC_INTERRUPT_P(TYPE)						\
-  (((TYPE) == ARC_FUNCTION_ILINK1) || ((TYPE) == ARC_FUNCTION_ILINK2)	\
-   || ((TYPE) == ARC_FUNCTION_FIRQ))
 
-#define ARC_FAST_INTERRUPT_P(TYPE) ((TYPE) == ARC_FUNCTION_FIRQ)
+/* Check if a function is an interrupt function.  */
+#define ARC_INTERRUPT_P(TYPE)					\
+  (((TYPE) & (ARC_FUNCTION_ILINK1 | ARC_FUNCTION_ILINK2		\
+	      | ARC_FUNCTION_FIRQ)) != 0)
 
-/* Compute the type of a function from its DECL.  Needed for EPILOGUE_USES.  */
-struct function;
-extern enum arc_function_type arc_compute_function_type (struct function *);
+/* Check if a function is a fast interrupt function.  */
+#define ARC_FAST_INTERRUPT_P(TYPE) (((TYPE) & ARC_FUNCTION_FIRQ) != 0)
+
+/* Check if a function is normal, that is, has standard prologue and
+   epilogue.  */
+#define ARC_NORMAL_P(TYPE) (((TYPE) & ARC_FUNCTION_NORMAL) != 0)
+
+/* Check if a function is naked.  */
+#define ARC_NAKED_P(TYPE) (((TYPE) & ARC_FUNCTION_NAKED) != 0)
 
 /* Called by crtstuff.c to make calls to function FUNCTION that are defined in
    SECTION_OP, and then to switch back to text section.  */

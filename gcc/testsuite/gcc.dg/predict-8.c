@@ -8,4 +8,4 @@ int foo(float a, float b) {
     return 2;
 }
 
-/* { dg-final { scan-rtl-dump-times "REG_BR_PROB 100" 1 "expand"} } */
+/* { dg-final { scan-rtl-dump-times "REG_BR_PROB 400 " 1 "expand"} } */

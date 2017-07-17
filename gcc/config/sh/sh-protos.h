@@ -68,7 +68,7 @@ extern bool sh_expand_strlen  (rtx *);
 extern void sh_expand_setmem (rtx *);
 extern enum rtx_code prepare_cbranch_operands (rtx *, machine_mode mode,
 					       enum rtx_code comparison);
-extern void expand_cbranchsi4 (rtx *operands, enum rtx_code comparison, int);
+extern void expand_cbranchsi4 (rtx *operands, enum rtx_code comparison);
 extern bool expand_cbranchdi4 (rtx *operands, enum rtx_code comparison);
 extern void sh_emit_scc_to_t (enum rtx_code, rtx, rtx);
 extern void sh_emit_compare_and_branch (rtx *, machine_mode);

@@ -211,6 +211,7 @@ static int rgf_banked_register_count;
 static int get_arc_condition_code (rtx);
 
 static tree arc_handle_interrupt_attribute (tree *, tree, tree, int, bool *);
+static tree arc_handle_fndecl_attribute (tree *, tree, tree, int, bool *);
 
 /* Initialized arc_attribute_table to NULL since arc doesnot have any
    machine specific supported attributes.  */
@@ -229,6 +230,9 @@ const struct attribute_spec arc_attribute_table[] =
   /* And these functions are always known to reside within the 21 bit
      addressing range of blcc.  */
   { "short_call",   0, 0, false, true,  true,  NULL, false },
+  /* Function which are not having the prologue and epilogue generated
+     by the compiler.  */
+  { "naked", 0, 0, true, false, false, arc_handle_fndecl_attribute, false },
   { NULL, 0, 0, false, false, false, NULL, false }
 };
 static int arc_comp_type_attributes (const_tree, const_tree);
@@ -245,7 +249,6 @@ static rtx arc_expand_builtin (tree, rtx, rtx, machine_mode, int);
 static int branch_dest (rtx);
 
 static void  arc_output_pic_addr_const (FILE *,  rtx, int);
-bool arc_legitimate_pic_operand_p (rtx);
 static bool arc_function_ok_for_sibcall (tree, tree);
 static rtx arc_function_value (const_tree, const_tree, bool);
 const char * output_shift (rtx *);
@@ -511,6 +514,12 @@ static void arc_finalize_pic (void);
 /* Stores with scaled offsets have different displacement ranges.  */
 #define TARGET_DIFFERENT_ADDR_DISPLACEMENT_P hook_bool_void_true
 #define TARGET_SPILL_CLASS arc_spill_class
+
+#undef TARGET_ALLOCATE_STACK_SLOTS_FOR_ARGS
+#define TARGET_ALLOCATE_STACK_SLOTS_FOR_ARGS arc_allocate_stack_slots_for_args
+
+#undef TARGET_WARN_FUNC_RETURN
+#define TARGET_WARN_FUNC_RETURN arc_warn_func_return
 
 #include "target-def.h"
 
@@ -1855,6 +1864,42 @@ arc_handle_interrupt_attribute (tree *, tree name, tree args, int,
   return NULL_TREE;
 }
 
+static tree
+arc_handle_fndecl_attribute (tree *node, tree name, tree args ATTRIBUTE_UNUSED,
+			     int flags ATTRIBUTE_UNUSED, bool *no_add_attrs)
+{
+  if (TREE_CODE (*node) != FUNCTION_DECL)
+    {
+      warning (OPT_Wattributes, "%qE attribute only applies to functions",
+	       name);
+      *no_add_attrs = true;
+    }
+
+  return NULL_TREE;
+}
+
+/* Implement `TARGET_ALLOCATE_STACK_SLOTS_FOR_ARGS' */
+
+static bool
+arc_allocate_stack_slots_for_args (void)
+{
+  /* Naked functions should not allocate stack slots for arguments.  */
+  unsigned int fn_type = arc_compute_function_type (cfun);
+
+  return !ARC_NAKED_P(fn_type);
+}
+
+/* Implement `TARGET_WARN_FUNC_RETURN'.  */
+
+static bool
+arc_warn_func_return (tree decl)
+{
+  struct function *func = DECL_STRUCT_FUNCTION (decl);
+  unsigned int fn_type = arc_compute_function_type (func);
+
+  return !ARC_NAKED_P (fn_type);
+}
+
 /* Return zero if TYPE1 and TYPE are incompatible, one if they are compatible,
    and two if they are nearly compatible (which causes a warning to be
    generated).  */
@@ -2358,7 +2403,7 @@ struct GTY (()) arc_frame_info
 
 typedef struct GTY (()) machine_function
 {
-  enum arc_function_type fn_type;
+  unsigned int fn_type;
   struct arc_frame_info frame_info;
   /* To keep track of unalignment caused by short insns.  */
   int unalign;
@@ -2376,43 +2421,40 @@ typedef struct GTY (()) machine_function
    The result is cached.  To reset the cache at the end of a function,
    call with DECL = NULL_TREE.  */
 
-enum arc_function_type
+unsigned int
 arc_compute_function_type (struct function *fun)
 {
-  tree decl = fun->decl;
-  tree a;
-  enum arc_function_type fn_type = fun->machine->fn_type;
+  tree attr, decl = fun->decl;
+  unsigned int fn_type = fun->machine->fn_type;
 
   if (fn_type != ARC_FUNCTION_UNKNOWN)
     return fn_type;
 
-  /* Assume we have a normal function (not an interrupt handler).  */
-  fn_type = ARC_FUNCTION_NORMAL;
+  /* Check if it is a naked function.  */
+  if (lookup_attribute ("naked", DECL_ATTRIBUTES (decl)) != NULL_TREE)
+    fn_type |= ARC_FUNCTION_NAKED;
+  else
+    fn_type |= ARC_FUNCTION_NORMAL;
 
   /* Now see if this is an interrupt handler.  */
-  for (a = DECL_ATTRIBUTES (decl);
-       a;
-       a = TREE_CHAIN (a))
+  attr = lookup_attribute ("interrupt", DECL_ATTRIBUTES (decl));
+  if (attr != NULL_TREE)
     {
-      tree name = TREE_PURPOSE (a), args = TREE_VALUE (a);
+      tree value, args = TREE_VALUE (attr);
 
-      if (name == get_identifier ("interrupt")
-	  && list_length (args) == 1
-	  && TREE_CODE (TREE_VALUE (args)) == STRING_CST)
-	{
-	  tree value = TREE_VALUE (args);
+      gcc_assert (list_length (args) == 1);
+      value = TREE_VALUE (args);
+      gcc_assert (TREE_CODE (value) == STRING_CST);
 
-	  if (!strcmp (TREE_STRING_POINTER (value), "ilink1")
-	      || !strcmp (TREE_STRING_POINTER (value), "ilink"))
-	    fn_type = ARC_FUNCTION_ILINK1;
-	  else if (!strcmp (TREE_STRING_POINTER (value), "ilink2"))
-	    fn_type = ARC_FUNCTION_ILINK2;
-	  else if (!strcmp (TREE_STRING_POINTER (value), "firq"))
-	    fn_type = ARC_FUNCTION_FIRQ;
-	  else
-	    gcc_unreachable ();
-	  break;
-	}
+      if (!strcmp (TREE_STRING_POINTER (value), "ilink1")
+	  || !strcmp (TREE_STRING_POINTER (value), "ilink"))
+	fn_type |= ARC_FUNCTION_ILINK1;
+      else if (!strcmp (TREE_STRING_POINTER (value), "ilink2"))
+	fn_type |= ARC_FUNCTION_ILINK2;
+      else if (!strcmp (TREE_STRING_POINTER (value), "firq"))
+	fn_type |= ARC_FUNCTION_FIRQ;
+      else
+	gcc_unreachable ();
     }
 
   return fun->machine->fn_type = fn_type;
@@ -2433,7 +2475,7 @@ arc_compute_function_type (struct function *fun)
 static bool
 arc_must_save_register (int regno, struct function *func)
 {
-  enum arc_function_type fn_type = arc_compute_function_type (func);
+  unsigned int fn_type = arc_compute_function_type (func);
   bool irq_auto_save_p = ((irq_ctrl_saved.irq_save_last_reg >= regno)
 			  && ARC_AUTO_IRQ_P (fn_type));
   bool firq_auto_save_p = ARC_FAST_INTERRUPT_P (fn_type);
@@ -2878,7 +2920,11 @@ arc_expand_prologue (void)
      Change the stack layout so that we rather store a high register with the
      PRE_MODIFY, thus enabling more short insn generation.)  */
   int first_offset = 0;
-  enum arc_function_type fn_type = arc_compute_function_type (cfun);
+  unsigned int fn_type = arc_compute_function_type (cfun);
+
+  /* Naked functions don't have prologue.  */
+  if (ARC_NAKED_P (fn_type))
+    return;
 
   size = ARC_STACK_ALIGN (size);
 
@@ -2989,7 +3035,7 @@ void
 arc_expand_epilogue (int sibcall_p)
 {
   int size = get_frame_size ();
-  enum arc_function_type fn_type = arc_compute_function_type (cfun);
+  unsigned int fn_type = arc_compute_function_type (cfun);
 
   size = ARC_STACK_ALIGN (size);
   size = (!cfun->machine->frame_info.initialized
@@ -3004,6 +3050,10 @@ arc_expand_epilogue (int sibcall_p)
   int first_offset = 0;
   int millicode_p = cfun->machine->frame_info.millicode_end_reg > 0;
   rtx insn;
+
+  /* Naked functions don't have epilogue.  */
+  if (ARC_NAKED_P (fn_type))
+    return;
 
   size_to_deallocate = size;
 
@@ -5004,57 +5054,6 @@ arc_rtx_costs (rtx x, machine_mode mode, int outer_code,
     }
 }
 
-/* Helper used by arc_legitimate_pc_offset_p.  */
-
-static bool
-arc_needs_pcl_p (rtx x)
-{
-  register const char *fmt;
-  register int i, j;
-
-  if ((GET_CODE (x) == UNSPEC)
-      && (XVECLEN (x, 0) == 1)
-      && (GET_CODE (XVECEXP (x, 0, 0)) == SYMBOL_REF))
-    switch (XINT (x, 1))
-      {
-      case ARC_UNSPEC_GOT:
-      case ARC_UNSPEC_GOTOFFPC:
-      case UNSPEC_TLS_GD:
-      case UNSPEC_TLS_IE:
-	return true;
-      default:
-	break;
-      }
-
-  fmt = GET_RTX_FORMAT (GET_CODE (x));
-  for (i = GET_RTX_LENGTH (GET_CODE (x)) - 1; i >= 0; i--)
-    {
-      if (fmt[i] == 'e')
-	{
-	  if (arc_needs_pcl_p (XEXP (x, i)))
-	    return true;
-	}
-      else if (fmt[i] == 'E')
-	for (j = XVECLEN (x, i) - 1; j >= 0; j--)
-	  if (arc_needs_pcl_p (XVECEXP (x, i, j)))
-	    return true;
-    }
-
-  return false;
-}
-
-/* Return true if ADDR is an address that needs to be expressed as an
-   explicit sum of pcl + offset.  */
-
-bool
-arc_legitimate_pc_offset_p (rtx addr)
-{
-  if (GET_CODE (addr) != CONST)
-    return false;
-
-  return arc_needs_pcl_p (addr);
-}
-
 /* Return true if ADDR is a valid pic address.
    A valid pic address on arc should look like
    const (unspec (SYMBOL_REF/LABEL) (ARC_UNSPEC_GOTOFF/ARC_UNSPEC_GOT))  */
@@ -5062,8 +5061,6 @@ arc_legitimate_pc_offset_p (rtx addr)
 bool
 arc_legitimate_pic_addr_p (rtx addr)
 {
-  if (GET_CODE (addr) == LABEL_REF)
-    return true;
   if (GET_CODE (addr) != CONST)
     return false;
 
@@ -5767,16 +5764,6 @@ arc_return_addr_rtx (int count, ATTRIBUTE_UNUSED rtx frame)
   return get_hard_reg_initial_val (Pmode , RETURN_ADDR_REGNUM);
 }
 
-/* Nonzero if the constant value X is a legitimate general operand
-   when generating PIC code.  It is given that flag_pic is on and
-   that X satisfies CONSTANT_P or is a CONST_DOUBLE.  */
-
-bool
-arc_legitimate_pic_operand_p (rtx x)
-{
-  return !arc_raw_symbolic_reference_mentioned_p (x, true);
-}
-
 /* Determine if a given RTX is a valid constant.  We already know this
    satisfies CONSTANT_P.  */
 
@@ -5792,40 +5779,12 @@ arc_legitimate_constant_p (machine_mode mode, rtx x)
   switch (GET_CODE (x))
     {
     case CONST:
-      x = XEXP (x, 0);
-
-      if (GET_CODE (x) == PLUS)
+      if (flag_pic)
 	{
-	  if (flag_pic
-	      ? GET_CODE (XEXP (x, 1)) != CONST_INT
-	      : !arc_legitimate_constant_p (mode, XEXP (x, 1)))
-	    return false;
-	  x = XEXP (x, 0);
-	}
-
-      /* Only some unspecs are valid as "constants".  */
-      if (GET_CODE (x) == UNSPEC)
-	switch (XINT (x, 1))
-	  {
-	  case ARC_UNSPEC_PLT:
-	  case ARC_UNSPEC_GOTOFF:
-	  case ARC_UNSPEC_GOTOFFPC:
-	  case ARC_UNSPEC_GOT:
-	  case UNSPEC_TLS_GD:
-	  case UNSPEC_TLS_IE:
-	  case UNSPEC_TLS_OFF:
+	  if (arc_legitimate_pic_addr_p (x))
 	    return true;
-
-	  default:
-	    gcc_unreachable ();
-	  }
-
-      /* We must have drilled down to a symbol.  */
-      if (arc_raw_symbolic_reference_mentioned_p (x, false))
-	return false;
-
-      /* Return true.  */
-      break;
+	}
+      return arc_legitimate_constant_p (mode, XEXP (x, 0));
 
     case SYMBOL_REF:
       if (SYMBOL_REF_TLS_MODEL (x))
@@ -5835,13 +5794,53 @@ arc_legitimate_constant_p (machine_mode mode, rtx x)
       if (flag_pic)
 	return false;
       /* Fall through.  */
+    case CONST_INT:
+    case CONST_DOUBLE:
+      return true;
+
+    case NEG:
+      return arc_legitimate_constant_p (mode, XEXP (x, 0));
+
+    case PLUS:
+    case MINUS:
+      {
+	bool t1 = arc_legitimate_constant_p (mode, XEXP (x, 0));
+	bool t2 = arc_legitimate_constant_p (mode, XEXP (x, 1));
+
+	return (t1 && t2);
+      }
+
+    case CONST_VECTOR:
+      switch (mode)
+	{
+	case V2HImode:
+	  return TARGET_PLUS_DMPY;
+	case V2SImode:
+	case V4HImode:
+	  return TARGET_PLUS_QMACW;
+	default:
+	  return false;
+	}
+
+    case UNSPEC:
+      switch (XINT (x, 1))
+	{
+	case UNSPEC_TLS_GD:
+	case UNSPEC_TLS_OFF:
+	case UNSPEC_TLS_IE:
+	  return true;
+	default:
+	  /* Any other unspec ending here are pic related, hence the above
+	     constant pic address checking returned false.  */
+	  return false;
+	}
+      /* Fall through.  */
 
     default:
-      break;
+      fatal_insn ("unrecognized supposed constant", x);
     }
 
-  /* Otherwise we handle everything else in the move patterns.  */
-  return true;
+  gcc_unreachable ();
 }
 
 static bool
@@ -5878,9 +5877,7 @@ arc_legitimate_address_p (machine_mode mode, rtx x, bool strict)
 
   if ((GET_MODE_SIZE (mode) != 16) && CONSTANT_P (x))
     {
-      if (flag_pic ? arc_legitimate_pic_addr_p (x)
-	  : arc_legitimate_constant_p (Pmode, x))
-	return true;
+      return arc_legitimate_constant_p (mode, x);
     }
   if ((GET_CODE (x) == PRE_DEC || GET_CODE (x) == PRE_INC
        || GET_CODE (x) == POST_DEC || GET_CODE (x) == POST_INC)
@@ -9788,37 +9785,60 @@ arc_can_follow_jump (const rtx_insn *follower, const rtx_insn *followee)
   return true;
 }
 
-int arc_return_address_regs[5] =
-  {0, RETURN_ADDR_REGNUM, ILINK1_REGNUM, ILINK2_REGNUM, ILINK1_REGNUM};
+/* Return the register number of the register holding the return address
+   for a function of type TYPE.  */
 
-/* Implement EPILOGUE__USES.
+int
+arc_return_address_register (unsigned int fn_type)
+{
+  int regno = 0;
+
+  if (ARC_INTERRUPT_P (fn_type))
+    {
+      if (((fn_type & ARC_FUNCTION_ILINK1) | ARC_FUNCTION_FIRQ) != 0)
+        regno = ILINK1_REGNUM;
+      else if ((fn_type & ARC_FUNCTION_ILINK2) != 0)
+        regno = ILINK2_REGNUM;
+      else
+        gcc_unreachable ();
+    }
+  else if (ARC_NORMAL_P (fn_type) || ARC_NAKED_P (fn_type))
+    regno = RETURN_ADDR_REGNUM;
+
+  gcc_assert (regno != 0);
+  return regno;
+}
+
+/* Implement EPILOGUE_USES.
    Return true if REGNO should be added to the deemed uses of the epilogue.
 
-   We use the return address
-   arc_return_address_regs[arc_compute_function_type (cfun)].  But
-   also, we have to make sure all the register restore instructions
-   are known to be live in interrupt functions, plus the blink
-   register if it is clobbered by the isr.  */
+   We have to make sure all the register restore instructions are
+   known to be live in interrupt functions, plus the blink register if
+   it is clobbered by the isr.  */
 
 bool
 arc_epilogue_uses (int regno)
 {
+  unsigned int fn_type;
+
   if (regno == arc_tp_regno)
     return true;
+
+  fn_type = arc_compute_function_type (cfun);
   if (reload_completed)
     {
       if (ARC_INTERRUPT_P (cfun->machine->fn_type))
 	{
 	  if (!fixed_regs[regno])
 	    return true;
-	  return ((regno == arc_return_address_regs[cfun->machine->fn_type])
+	  return ((regno == arc_return_address_register (fn_type))
 		  || (regno == RETURN_ADDR_REGNUM));
 	}
       else
 	return regno == RETURN_ADDR_REGNUM;
     }
   else
-    return regno == arc_return_address_regs[arc_compute_function_type (cfun)];
+    return regno == arc_return_address_register (fn_type);
 }
 
 /* Helper for EH_USES macro.  */
@@ -9979,10 +9999,8 @@ arc_post_atomic_barrier (enum memmodel model)
 static void
 emit_unlikely_jump (rtx insn)
 {
-  int very_unlikely = REG_BR_PROB_BASE / 100 - 1;
-
   rtx_insn *jump = emit_jump_insn (insn);
-  add_int_reg_note (jump, REG_BR_PROB, very_unlikely);
+  add_reg_br_prob_note (jump, profile_probability::very_unlikely ());
 }
 
 /* Expand code to perform a 8 or 16-bit compare and swap by doing

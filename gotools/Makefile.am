@@ -174,11 +174,13 @@ CHECK_ENV = \
 	export GO_TESTING_GOTOOLS; \
 	abs_libgodir=`cd $(libgodir) && $(PWD_COMMAND)`; \
 	LD_LIBRARY_PATH=`echo $${abs_libgodir}/.libs:$${LD_LIBRARY_PATH} | sed 's,::*,:,g;s,^:*,,;s,:*$$,,'`; \
-	export LD_LIBRARY_PATH;
+	export LD_LIBRARY_PATH; \
+	GOROOT=$${abs_libgodir}; \
+	export GOROOT;
 
 # ECHO_ENV is a variant of CHECK_ENV to put into a testlog file.
 # It assumes that abs_libgodir is set.
-ECHO_ENV = PATH=`echo $(abs_builddir):$${PATH} | sed 's,::*,:,g;s,^:*,,;s,:*$$,,'` GCCGO='$(abs_builddir)/check-gccgo' GCCGOTOOLDIR='$(abs_builddir)' GO_TESTING_GOTOOLS=yes LD_LIBRARY_PATH=`echo $${abs_libgodir}/.libs:$${LD_LIBRARY_PATH} | sed 's,::*,:,g;s,^:*,,;s,:*$$,,'`
+ECHO_ENV = PATH=`echo $(abs_builddir):$${PATH} | sed 's,::*,:,g;s,^:*,,;s,:*$$,,'` GCCGO='$(abs_builddir)/check-gccgo' GCCGOTOOLDIR='$(abs_builddir)' GO_TESTING_GOTOOLS=yes LD_LIBRARY_PATH=`echo $${abs_libgodir}/.libs:$${LD_LIBRARY_PATH} | sed 's,::*,:,g;s,^:*,,;s,:*$$,,'` GOROOT=`echo $${abs_libgodir}`
 
 # check-go-tools runs `go test cmd/go` in our environment.
 check-go-tool: go$(EXEEXT) cgo$(EXEEXT) check-head check-gccgo

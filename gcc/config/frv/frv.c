@@ -2621,7 +2621,6 @@ frv_print_operand_jump_hint (rtx_insn *insn)
   rtx note;
   rtx labelref;
   int ret;
-  int prob = -1;
   enum { UNKNOWN, BACKWARD, FORWARD } jump_type = UNKNOWN;
 
   gcc_assert (JUMP_P (insn));
@@ -2647,8 +2646,8 @@ frv_print_operand_jump_hint (rtx_insn *insn)
 
       else
 	{
-	  prob = XINT (note, 0);
-	  ret = ((prob >= (REG_BR_PROB_BASE / 2))
+	  ret = ((profile_probability::from_reg_br_prob_note (XINT (note, 0))
+		  >= profile_probability::even ())
 		 ? FRV_JUMP_LIKELY
 		 : FRV_JUMP_NOT_LIKELY);
 	}

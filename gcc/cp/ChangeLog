@@ -1,3 +1,34 @@
+2017-07-17  Nathan Sidwell  <nathan@acm.org>
+
+	* semantics.c (classtype_has_nothrow_assign_or_copy_p): Clarify
+	semantics, simplify implementation.
+
+2017-07-16  Volker Reichelt  <v.reichelt@netcologne.de>
+
+	* parser.c (cp_parser_cast_expression): Use %q#T instead of %qT
+	in old-style cast diagnostic.
+	* typeck.c (maybe_warn_about_useless_cast): Use %q#T instead of %qT
+	in useless cast diagnostic.
+	* error.c (type_to_string): Remove enum special handling.
+
+2017-07-14  David Malcolm  <dmalcolm@redhat.com>
+
+	* name-lookup.c (get_std_name_hint): Add '<' and '>' around
+	the header names.
+	(maybe_suggest_missing_header): Update for addition of '<' and '>'
+	to above.  Provide a fix-it hint.
+	* pt.c: Include "gcc-rich-location.h"
+	(listify): Attempt to add fix-it hint for missing
+	#include <initializer_list>.
+	* rtti.c: Include "gcc-rich-location.h".
+	(typeid_ok_p): Attempt to add fix-it hint for missing
+	#include <typeinfo>.
+
+2017-07-12  Jason Merrill  <jason@redhat.com>
+
+	P0512R0 - Deduction from an initializer list.
+	* pt.c (do_class_deduction): Do list deduction in two phases.
+
 2017-07-12  Nathan Sidwell  <nathan@acm.org>
 
 	* cp-tree.h (DECL_CONSTRUCTOR_P, DECL_MAYBE_IN_CHARGE_CONSTRUCTOR,

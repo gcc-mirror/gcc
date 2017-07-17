@@ -1,3 +1,9 @@
+2017-07-15  Ian Lance Taylor  <iant@golang.org>
+
+	* Makefile.am (CHECK_ENV): Set GOROOT.
+	(ECHO_ENV): Report setting GOROOT.
+	* Makefile.in: Rebuild.
+
 2017-06-29  Ian Lance Taylor  <iant@golang.org>
 
 	* Makefile.am (MOSTLYCLEANFILES): Remove testing files and logs.

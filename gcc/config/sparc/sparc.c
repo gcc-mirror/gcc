@@ -7999,7 +7999,8 @@ output_cbranch (rtx op, rtx dest, int label, int reversed, int annul,
       if (*labelno && insn && (note = find_reg_note (insn, REG_BR_PROB, NULL_RTX)))
 	{
 	  strcpy (p,
-		  ((XINT (note, 0) >= REG_BR_PROB_BASE / 2) ^ far)
+		  ((profile_probability::from_reg_br_prob_note (XINT (note, 0))
+		   >= profile_probability::even ()) ^ far)
 		  ? ",pt" : ",pn");
 	  p += 3;
 	  spaces -= 3;
@@ -8462,7 +8463,8 @@ output_v9branch (rtx op, rtx dest, int reg, int label, int reversed,
   if (insn && (note = find_reg_note (insn, REG_BR_PROB, NULL_RTX)))
     {
       strcpy (p,
-	      ((XINT (note, 0) >= REG_BR_PROB_BASE / 2) ^ far)
+	      ((profile_probability::from_reg_br_prob_note (XINT (note, 0))
+	       >= profile_probability::even ()) ^ far)
 	      ? ",pt" : ",pn");
       p += 3;
     }

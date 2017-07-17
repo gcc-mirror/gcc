@@ -15783,8 +15783,7 @@ ix86_expand_split_stack_prologue (void)
   JUMP_LABEL (jump_insn) = label;
 
   /* Mark the jump as very likely to be taken.  */
-  add_int_reg_note (jump_insn, REG_BR_PROB,
-		    REG_BR_PROB_BASE - REG_BR_PROB_BASE / 100);
+  add_reg_br_prob_note (jump_insn, profile_probability::very_likely ());
 
   if (split_stack_fn == NULL_RTX)
     {
@@ -19128,7 +19127,8 @@ ix86_print_operand (FILE *file, rtx x, int code)
 	    x = find_reg_note (current_output_insn, REG_BR_PROB, 0);
 	    if (x)
 	      {
-		int pred_val = XINT (x, 0);
+		int pred_val = profile_probability::from_reg_br_prob_note
+				 (XINT (x, 0)).to_reg_br_prob_base ();
 
 		if (pred_val < REG_BR_PROB_BASE * 45 / 100
 		    || pred_val > REG_BR_PROB_BASE * 55 / 100)
@@ -23865,8 +23865,8 @@ ix86_split_fp_branch (enum rtx_code code, rtx op1, rtx op2,
 		      (pc_rtx,
 		       gen_rtx_IF_THEN_ELSE (VOIDmode,
 					     condition, target1, target2)));
-  if (split_branch_probability >= 0)
-    add_int_reg_note (i, REG_BR_PROB, split_branch_probability);
+  if (split_branch_probability.initialized_p ())
+    add_reg_br_prob_note (i, split_branch_probability);
 }
 
 void
@@ -26911,7 +26911,7 @@ predict_jump (int prob)
 {
   rtx_insn *insn = get_last_insn ();
   gcc_assert (JUMP_P (insn));
-  add_int_reg_note (insn, REG_BR_PROB, prob);
+  add_reg_br_prob_note (insn, profile_probability::from_reg_br_prob_base (prob));
 }
 
 /* Helper function for the string operations below.  Dest VARIABLE whether

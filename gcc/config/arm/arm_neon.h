@@ -28,7 +28,7 @@
 #define _GCC_ARM_NEON_H 1
 
 #ifndef __ARM_FP
-#error "NEON intrinsics not available with the soft-float ABI.  Please use -mfloat-abi=softp or -mfloat-abi=hard"
+#error "NEON intrinsics not available with the soft-float ABI.  Please use -mfloat-abi=softfp or -mfloat-abi=hard"
 #else
 
 #pragma GCC push_options
