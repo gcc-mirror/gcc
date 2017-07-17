@@ -1,5 +1,8 @@
 2017-07-17  Nathan Sidwell  <nathan@acm.org>
 
+	* class.c (maybe_warn_about_overly_private_class): Ignore public
+	copy ctors.
+
 	* class.c (type_has_user_declared_move_constructor,
 	type_has_user_declared_move_assign): Combine into ...
 	(classtype_has_user_move_assign_or_move_ctor_p): ... this new function.
