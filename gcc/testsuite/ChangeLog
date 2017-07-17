@@ -1,5 +1,8 @@
 2017-07-17  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/81428
+	* gcc.dg/fixed-point/pr81428.c: New test.
+
 	PR tree-optimization/81365
 	* g++.dg/torture/pr81365.C: New test.
 

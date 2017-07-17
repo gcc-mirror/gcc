@@ -165,8 +165,9 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  /* X / X is one.  */
  (simplify
   (div @0 @0)
-  /* But not for 0 / 0 so that we can get the proper warnings and errors.  */
-  (if (!integer_zerop (@0))
+  /* But not for 0 / 0 so that we can get the proper warnings and errors.
+     And not for _Fract types where we can't build 1.  */
+  (if (!integer_zerop (@0) && !ALL_FRACT_MODE_P (TYPE_MODE (type)))
    { build_one_cst (type); }))
  /* X / abs (X) is X < 0 ? -1 : 1.  */ 
  (simplify
