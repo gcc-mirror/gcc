@@ -9864,6 +9864,33 @@ avr_memory_move_cost (machine_mode mode,
 }
 
 
+/* Cost for mul highpart.  X is a LSHIFTRT, i.e. the outer TRUNCATE is
+   already stripped off.  */
+
+static int
+avr_mul_highpart_cost (rtx x, int)
+{
+  if (AVR_HAVE_MUL
+      && LSHIFTRT == GET_CODE (x)
+      && MULT == GET_CODE (XEXP (x, 0))
+      && CONST_INT_P (XEXP (x, 1)))
+    {
+      // This is the wider mode.
+      machine_mode mode = GET_MODE (x);
+  
+      // The middle-end might still have PR81444, i.e. it is calling the cost
+      // functions with strange modes.  Fix this now by also considering
+      // PSImode (should actually be SImode instead).
+      if (HImode == mode || PSImode == mode || SImode == mode)
+        {
+          return COSTS_N_INSNS (2);
+        }
+    }
+
+  return 10000;
+}
+
+
 /* Mutually recursive subroutine of avr_rtx_cost for calculating the
    cost of an RTX operand given its context.  X is the rtx of the
    operand, MODE is its mode, and OUTER is the rtx_code of this
@@ -9903,7 +9930,7 @@ avr_operand_rtx_cost (rtx x, machine_mode mode, enum rtx_code outer,
    In either case, *TOTAL contains the cost result.  */
 
 static bool
-avr_rtx_costs_1 (rtx x, machine_mode mode, int outer_code ATTRIBUTE_UNUSED,
+avr_rtx_costs_1 (rtx x, machine_mode mode, int outer_code,
                  int opno ATTRIBUTE_UNUSED, int *total, bool speed)
 {
   enum rtx_code code = GET_CODE (x);
@@ -10544,6 +10571,12 @@ avr_rtx_costs_1 (rtx x, machine_mode mode, int outer_code ATTRIBUTE_UNUSED,
       return true;
 
     case LSHIFTRT:
+      if (outer_code == TRUNCATE)
+        {
+          *total = avr_mul_highpart_cost (x, speed);
+          return true;
+        }
+
       switch (mode)
 	{
 	case QImode:
@@ -10721,16 +10754,10 @@ avr_rtx_costs_1 (rtx x, machine_mode mode, int outer_code ATTRIBUTE_UNUSED,
       return true;
 
     case TRUNCATE:
-      if (AVR_HAVE_MUL
-          && LSHIFTRT == GET_CODE (XEXP (x, 0))
-          && MULT == GET_CODE (XEXP (XEXP (x, 0), 0))
-          && CONST_INT_P (XEXP (XEXP (x, 0), 1)))
+      if (LSHIFTRT == GET_CODE (XEXP (x, 0)))
         {
-          if (QImode == mode || HImode == mode)
-            {
-              *total = COSTS_N_INSNS (2);
-              return true;
-            }
+          *total = avr_mul_highpart_cost (XEXP (x, 0), speed);
+          return true;
         }
       break;
 
