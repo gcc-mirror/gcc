@@ -1,5 +1,11 @@
 2017-07-17  Bin Cheng  <bin.cheng@arm.com>
 
+	PR target/81369
+	* tree-loop-distribution.c (merge_dep_scc_partitions): Sink call to
+	function sort_partitions_by_post_order.
+
+2017-07-17  Bin Cheng  <bin.cheng@arm.com>
+
 	PR tree-optimization/81374
 	* tree-loop-distribution.c (pass_loop_distribution::execute): Record
 	the max index of basic blocks, rather than number of basic blocks.
