@@ -26,6 +26,8 @@ along with GCC; see the file COPYING3.  If not see
 	builtin_define ("__rtems__");		\
 	builtin_define ("__USE_INIT_FINI__");	\
 	builtin_assert ("system=rtems");	\
+	if (sparc_fix_b2bst)			\
+	  builtin_define ("__FIX_LEON3FT_B2BST"); \
     }						\
   while (0)
 
