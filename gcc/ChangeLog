@@ -1,3 +1,9 @@
+2017-07-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/81428
+	* match.pd (X / X -> one): Don't optimize _Fract divisions, as 1
+	can't be built for those types.
+
 2017-07-17  Georg-Johann Lay  <avr@gjlay.de>
 
 	Remove stuff dead since r239246.
