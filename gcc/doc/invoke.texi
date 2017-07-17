@@ -14906,7 +14906,7 @@ Enable pre-reload use of the @code{cbranchsi} pattern.
 @item -mexpand-adddi
 @opindex mexpand-adddi
 Expand @code{adddi3} and @code{subdi3} at RTL generation time into
-@code{add.f}, @code{adc} etc.
+@code{add.f}, @code{adc} etc.  This option is deprecated.
 
 @item -mindexed-loads
 @opindex mindexed-loads
