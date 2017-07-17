@@ -1,5 +1,15 @@
 2017-07-17  Claudiu Zissulescu  <claziss@synopsys.com>
 
+	* config/arc/arc.md (clzsi2): Expand to an arc_clzsi2 instruction
+	that also clobbers the CC register. The old expand code is moved
+	to ...
+	(*arc_clzsi2): ... here.
+	(ctzsi2): Expand to an arc_ctzsi2 instruction that also clobbers
+	the CC register. The old expand code is moved to ...
+	(arc_ctzsi2): ... here.
+
+2017-07-17  Claudiu Zissulescu  <claziss@synopsys.com>
+
 	* config/arc/arc.opt (mindexed-loads): Use initial value
 	TARGET_INDEXED_LOADS_DEFAULT.
 	(mauto-modify-reg): Use initial value

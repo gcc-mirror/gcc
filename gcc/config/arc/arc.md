@@ -4533,9 +4533,21 @@
    (set_attr "type" "two_cycle_core,two_cycle_core")])
 
 (define_expand "clzsi2"
-  [(set (match_operand:SI 0 "dest_reg_operand" "")
-	(clz:SI (match_operand:SI 1 "register_operand" "")))]
+  [(parallel
+    [(set (match_operand:SI 0 "register_operand" "")
+	  (clz:SI (match_operand:SI 1 "register_operand" "")))
+     (clobber (match_dup 2))])]
   "TARGET_NORM"
+  "operands[2] = gen_rtx_REG (CC_ZNmode, CC_REG);")
+
+(define_insn_and_split "*arc_clzsi2"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(clz:SI (match_operand:SI 1 "register_operand" "r")))
+   (clobber (reg:CC_ZN CC_REG))]
+  "TARGET_NORM"
+  "#"
+  "reload_completed"
+  [(const_int 0)]
 {
   emit_insn (gen_norm_f (operands[0], operands[1]));
   emit_insn
@@ -4552,9 +4564,23 @@
 })
 
 (define_expand "ctzsi2"
-  [(set (match_operand:SI 0 "register_operand" "")
-	(ctz:SI (match_operand:SI 1 "register_operand" "")))]
+  [(match_operand:SI 0 "register_operand" "")
+   (match_operand:SI 1 "register_operand" "")]
   "TARGET_NORM"
+  "
+  emit_insn (gen_arc_ctzsi2 (operands[0], operands[1]));
+  DONE;
+")
+
+(define_insn_and_split "arc_ctzsi2"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(ctz:SI (match_operand:SI 1 "register_operand" "r")))
+   (clobber (reg:CC_ZN CC_REG))
+   (clobber (match_scratch:SI 2 "=&r"))]
+  "TARGET_NORM"
+  "#"
+  "reload_completed"
+  [(const_int 0)]
 {
   rtx temp = operands[0];
 
@@ -4562,10 +4588,10 @@
       || (REGNO (temp) < FIRST_PSEUDO_REGISTER
 	  && !TEST_HARD_REG_BIT (reg_class_contents[GENERAL_REGS],
 				 REGNO (temp))))
-    temp = gen_reg_rtx (SImode);
+    temp = operands[2];
   emit_insn (gen_addsi3 (temp, operands[1], constm1_rtx));
   emit_insn (gen_bic_f_zn (temp, temp, operands[1]));
-  emit_insn (gen_clrsbsi2 (temp, temp));
+  emit_insn (gen_clrsbsi2 (operands[0], temp));
   emit_insn
     (gen_rtx_COND_EXEC
       (VOIDmode,
@@ -4575,7 +4601,8 @@
     (gen_rtx_COND_EXEC
       (VOIDmode,
        gen_rtx_GE (VOIDmode, gen_rtx_REG (CC_ZNmode, CC_REG), const0_rtx),
-       gen_rtx_SET (operands[0], gen_rtx_MINUS (SImode, GEN_INT (31), temp))));
+       gen_rtx_SET (operands[0], gen_rtx_MINUS (SImode, GEN_INT (31),
+						operands[0]))));
   DONE;
 })
 
