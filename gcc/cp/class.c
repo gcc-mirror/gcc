@@ -139,9 +139,6 @@ static tree build_simple_base_path (tree expr, tree binfo);
 static tree build_vtbl_ref_1 (tree, tree);
 static void build_vtbl_initializer (tree, tree, tree, tree, int *,
 				    vec<constructor_elt, va_gc> **);
-static int count_fields (tree);
-static int add_fields_to_record_type (tree, struct sorted_fields_type*, int);
-static void insert_into_classtype_sorted_fields (tree, tree, int);
 static bool check_bitfield_decl (tree);
 static bool check_field_decl (tree, tree, int *, int *);
 static void check_field_decls (tree, tree *, int *, int *);
@@ -2239,8 +2236,7 @@ maybe_warn_about_overly_private_class (tree t)
   /* Warn about classes that have private constructors and no friends.  */
   if (TYPE_HAS_USER_CONSTRUCTOR (t)
       /* Implicitly generated constructors are always public.  */
-      && (!CLASSTYPE_LAZY_DEFAULT_CTOR (t)
-	  || !CLASSTYPE_LAZY_COPY_CTOR (t)))
+      && !CLASSTYPE_LAZY_DEFAULT_CTOR (t))
     {
       bool nonprivate_ctor = false;
 
@@ -2259,13 +2255,11 @@ maybe_warn_about_overly_private_class (tree t)
       else
 	for (ovl_iterator iter (CLASSTYPE_CONSTRUCTORS (t));
 	     !nonprivate_ctor && iter; ++iter)
-	  /* Ideally, we wouldn't count copy constructors (or, in
-	     fact, any constructor that takes an argument of the class
-	     type as a parameter) because such things cannot be used
-	     to construct an instance of the class unless you already
-	     have one.  But, for now at least, we're more
-	     generous.  */
-	  if (! TREE_PRIVATE (*iter))
+	  /* Ideally, we wouldn't count any constructor that takes an
+	     argument of the class type as a parameter,  because such
+	     things cannot be used to construct an instance of the
+	     class unless you already have one.   */
+	  if (! TREE_PRIVATE (*iter) && !copy_fn_p (*iter))
 	    nonprivate_ctor = true;
 
       if (!nonprivate_ctor)
@@ -3447,61 +3441,6 @@ add_implicitly_declared_members (tree t, tree* access_decls,
       else
 	access_decls = &TREE_CHAIN (*access_decls);
     }
-}
-
-/* Subroutine of insert_into_classtype_sorted_fields.  Recursively
-   count the number of fields in TYPE, including anonymous union
-   members.  */
-
-static int
-count_fields (tree fields)
-{
-  tree x;
-  int n_fields = 0;
-  for (x = fields; x; x = DECL_CHAIN (x))
-    {
-      if (DECL_DECLARES_FUNCTION_P (x))
-	/* Functions are dealt with separately.  */;
-      else if (TREE_CODE (x) == FIELD_DECL && ANON_AGGR_TYPE_P (TREE_TYPE (x)))
-	n_fields += count_fields (TYPE_FIELDS (TREE_TYPE (x)));
-      else
-	n_fields += 1;
-    }
-  return n_fields;
-}
-
-/* Subroutine of insert_into_classtype_sorted_fields.  Recursively add
-   all the fields in the TREE_LIST FIELDS to the SORTED_FIELDS_TYPE
-   elts, starting at offset IDX.  */
-
-static int
-add_fields_to_record_type (tree fields, struct sorted_fields_type *field_vec, int idx)
-{
-  tree x;
-  for (x = fields; x; x = DECL_CHAIN (x))
-    {
-      if (DECL_DECLARES_FUNCTION_P (x))
-	/* Functions are handled separately.  */;
-      else if (TREE_CODE (x) == FIELD_DECL && ANON_AGGR_TYPE_P (TREE_TYPE (x)))
-	idx = add_fields_to_record_type (TYPE_FIELDS (TREE_TYPE (x)), field_vec, idx);
-      else
-	field_vec->elts[idx++] = x;
-    }
-  return idx;
-}
-
-/* Add all of the enum values of ENUMTYPE, to the FIELD_VEC elts,
-   starting at offset IDX.  */
-
-static int
-add_enum_fields_to_record_type (tree enumtype,
-				struct sorted_fields_type *field_vec,
-				int idx)
-{
-  tree values;
-  for (values = TYPE_VALUES (enumtype); values; values = TREE_CHAIN (values))
-      field_vec->elts[idx++] = TREE_VALUE (values);
-  return idx;
 }
 
 /* FIELD is a bit-field.  We are finishing the processing for its
@@ -5502,48 +5441,30 @@ type_has_move_assign (tree t)
   return false;
 }
 
-/* Returns true iff class T has a move constructor that was explicitly
-   declared in the class body.  Note that this is different from
-   "user-provided", which doesn't include functions that are defaulted in
-   the class.  */
+/* Returns true iff T, a class, has a user-declared move-assignment or
+   move-constructor.  Note that this is different from
+   "user-provided", which doesn't include functions that are defaulted
+   in the class.  */
 
 bool
-type_has_user_declared_move_constructor (tree t)
+classtype_has_user_move_assign_or_ctor_p (tree t)
 {
-  if (CLASSTYPE_LAZY_MOVE_CTOR (t))
-    return false;
-
   if (!CLASSTYPE_METHOD_VEC (t))
     return false;
 
-  for (ovl_iterator iter (CLASSTYPE_CONSTRUCTORS (t)); iter; ++iter)
-    {
-      tree fn = *iter;
-      if (move_fn_p (fn) && !DECL_ARTIFICIAL (fn))
+  if (!CLASSTYPE_LAZY_MOVE_CTOR (t))
+    for (ovl_iterator iter (lookup_fnfields_slot_nolazy (t, ctor_identifier));
+	 iter; ++iter)
+      if (!DECL_ARTIFICIAL (*iter) && move_fn_p (*iter))
 	return true;
-    }
 
-  return false;
-}
-
-/* Returns true iff class T has a move assignment operator that was
-   explicitly declared in the class body.  */
-
-bool
-type_has_user_declared_move_assign (tree t)
-{
-  if (CLASSTYPE_LAZY_MOVE_ASSIGN (t))
-    return false;
-
-  for (ovl_iterator iter (lookup_fnfields_slot_nolazy
-			  (t, cp_assignment_operator_id (NOP_EXPR)));
-       iter; ++iter)
-    {
-      tree fn = *iter;
-      if (move_fn_p (fn) && !DECL_ARTIFICIAL (fn))
+  if (!CLASSTYPE_LAZY_MOVE_ASSIGN (t))
+    for (ovl_iterator iter (lookup_fnfields_slot_nolazy
+			    (t, cp_assignment_operator_id (NOP_EXPR)));
+	 iter; ++iter)
+      if (!DECL_ARTIFICIAL (*iter) && move_fn_p (*iter))
 	return true;
-    }
-
+  
   return false;
 }
 
@@ -6714,21 +6635,6 @@ determine_key_method (tree type)
   return;
 }
 
-
-/* Allocate and return an instance of struct sorted_fields_type with
-   N fields.  */
-
-static struct sorted_fields_type *
-sorted_fields_type_new (int n)
-{
-  struct sorted_fields_type *sft;
-  sft = (sorted_fields_type *) ggc_internal_alloc (sizeof (sorted_fields_type)
-				      + n * sizeof (tree));
-  sft->len = n;
-
-  return sft;
-}
-
 /* Helper of find_flexarrays.  Return true when FLD refers to a non-static
    class data member of non-zero size, otherwise false.  */
 
@@ -7267,14 +7173,7 @@ finish_struct_1 (tree t)
 	&& same_type_p (TYPE_MAIN_VARIANT (TREE_TYPE (x)), t))
       SET_DECL_MODE (x, TYPE_MODE (t));
 
-  /* Done with FIELDS...now decide whether to sort these for
-     faster lookups later.
-
-     We use a small number because most searches fail (succeeding
-     ultimately as the search bores through the inheritance
-     hierarchy), and we want this failure to occur quickly.  */
-
-  insert_into_classtype_sorted_fields (TYPE_FIELDS (t), t, 8);
+  set_class_bindings (t, TYPE_FIELDS (t));
 
   /* Complain if one of the field types requires lower visibility.  */
   constrain_class_visibility (t);
@@ -7339,45 +7238,6 @@ finish_struct_1 (tree t)
 		 "class overall", t);
 	  TYPE_TRANSPARENT_AGGR (t) = 0;
 	}
-    }
-}
-
-/* Insert FIELDS into T for the sorted case if the FIELDS count is
-   equal to THRESHOLD or greater than THRESHOLD.  */
-
-static void 
-insert_into_classtype_sorted_fields (tree fields, tree t, int threshold)
-{
-  int n_fields = count_fields (fields);
-  if (n_fields >= threshold)
-    {
-      struct sorted_fields_type *field_vec = sorted_fields_type_new (n_fields);
-      add_fields_to_record_type (fields, field_vec, 0);
-      qsort (field_vec->elts, n_fields, sizeof (tree), field_decl_cmp);
-      CLASSTYPE_SORTED_FIELDS (t) = field_vec;
-    }
-}
-
-/* Insert lately defined enum ENUMTYPE into T for the sorted case.  */
-
-void
-insert_late_enum_def_into_classtype_sorted_fields (tree enumtype, tree t)
-{
-  struct sorted_fields_type *sorted_fields = CLASSTYPE_SORTED_FIELDS (t);
-  if (sorted_fields)
-    {
-      int i;
-      int n_fields
-	= list_length (TYPE_VALUES (enumtype)) + sorted_fields->len;
-      struct sorted_fields_type *field_vec = sorted_fields_type_new (n_fields);
-      
-      for (i = 0; i < sorted_fields->len; ++i)
-	field_vec->elts[i] = sorted_fields->elts[i];
-
-      add_enum_fields_to_record_type (enumtype, field_vec,
-				      sorted_fields->len);
-      qsort (field_vec->elts, n_fields, sizeof (tree), field_decl_cmp);
-      CLASSTYPE_SORTED_FIELDS (t) = field_vec;
     }
 }
 

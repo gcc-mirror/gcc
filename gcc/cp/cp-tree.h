@@ -2007,10 +2007,10 @@ struct GTY(()) lang_type {
      as a list of adopted protocols or a pointer to a corresponding
      @interface.  See objc/objc-act.h for details.  */
   tree objc_info;
-  /* sorted_fields is sorted based on a pointer, so we need to be able
-     to resort it if pointers get rearranged.  */
-  struct sorted_fields_type * GTY ((reorder ("resort_sorted_fields")))
-    sorted_fields;
+
+  /* Map from IDENTIFIER nodes to DECLS.  */
+  hash_map<lang_identifier *, tree> *bindings;
+
   /* FIXME reuse another field?  */
   tree lambda_expr;
 };
@@ -2161,16 +2161,14 @@ struct GTY(()) lang_type {
 /* A FUNCTION_DECL or OVERLOAD for the constructors for NODE.  These
    are the constructors that take an in-charge parameter.  */
 #define CLASSTYPE_CONSTRUCTORS(NODE) \
-  ((*CLASSTYPE_METHOD_VEC (NODE))[CLASSTYPE_CONSTRUCTOR_SLOT])
+  (lookup_fnfields_slot_nolazy (NODE, ctor_identifier))
 
 /* A FUNCTION_DECL for the destructor for NODE.  This is the
    destructors that take an in-charge parameter.  If
    CLASSTYPE_LAZY_DESTRUCTOR is true, then this entry will be NULL
    until the destructor is created with lazily_declare_fn.  */
 #define CLASSTYPE_DESTRUCTOR(NODE) \
-  (CLASSTYPE_METHOD_VEC (NODE)						      \
-   ? (*CLASSTYPE_METHOD_VEC (NODE))[CLASSTYPE_DESTRUCTOR_SLOT]		      \
-   : NULL_TREE)
+  (lookup_fnfields_slot_nolazy (NODE, dtor_identifier))
 
 /* A dictionary of the nested user-defined-types (class-types, or enums)
    found within this class.  This table includes nested member class
@@ -3248,10 +3246,9 @@ extern void decl_shadowed_for_var_insert (tree, tree);
    && TREE_CODE (TYPE_NAME (NODE)) == TYPE_DECL	\
    && TYPE_DECL_ALIAS_P (TYPE_NAME (NODE)))
 
-/* For a class type: if this structure has many fields, we'll sort them
-   and put them into a TREE_VEC.  */
-#define CLASSTYPE_SORTED_FIELDS(NODE) \
-  (LANG_TYPE_CLASS_CHECK (NODE)->sorted_fields)
+/* The binding map for a class (not always present).  */
+#define CLASSTYPE_BINDINGS(NODE) \
+  (LANG_TYPE_CLASS_CHECK (NODE)->bindings)
 
 /* If non-NULL for a VAR_DECL, FUNCTION_DECL, TYPE_DECL or
    TEMPLATE_DECL, the entity is either a template specialization (if
@@ -6025,8 +6022,7 @@ extern bool type_has_constexpr_default_constructor (tree);
 extern bool type_has_virtual_destructor		(tree);
 extern bool type_has_move_constructor		(tree);
 extern bool type_has_move_assign		(tree);
-extern bool type_has_user_declared_move_constructor (tree);
-extern bool type_has_user_declared_move_assign(tree);
+extern bool classtype_has_user_move_assign_or_ctor_p (tree);
 extern bool type_build_ctor_call		(tree);
 extern bool type_build_dtor_call		(tree);
 extern void explain_non_literal_class		(tree);
@@ -6041,7 +6037,6 @@ extern tree* decl_cloned_function_p		(const_tree, bool);
 extern void clone_function_decl			(tree, bool);
 extern void adjust_clone_args			(tree);
 extern void deduce_noexcept_on_destructor       (tree);
-extern void insert_late_enum_def_into_classtype_sorted_fields (tree, tree);
 extern bool uniquely_derived_from_p             (tree, tree);
 extern bool publicly_uniquely_derived_p         (tree, tree);
 extern tree common_enclosing_class		(tree, tree);
@@ -6586,7 +6581,6 @@ extern tree lookup_field_1			(tree, tree, bool);
 extern tree lookup_field			(tree, tree, int, bool);
 extern tree lookup_fnfields_slot		(tree, tree);
 extern tree lookup_fnfields_slot_nolazy		(tree, tree);
-extern tree lookup_all_conversions		(tree);
 extern tree lookup_fnfields			(tree, tree, int);
 extern tree lookup_member			(tree, tree, int, bool,
 						 tsubst_flags_t,

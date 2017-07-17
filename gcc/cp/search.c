@@ -382,58 +382,8 @@ lookup_field_1 (tree type, tree name, bool want_type)
        The TYPE_FIELDS of TYPENAME_TYPE is its TYPENAME_TYPE_FULLNAME.  */
     return NULL_TREE;
 
-  if (CLASSTYPE_SORTED_FIELDS (type))
-    {
-      tree *fields = &CLASSTYPE_SORTED_FIELDS (type)->elts[0];
-      int lo = 0, hi = CLASSTYPE_SORTED_FIELDS (type)->len;
-      int i;
-
-      while (lo < hi)
-	{
-	  i = (lo + hi) / 2;
-
-	  if (GATHER_STATISTICS)
-	    n_fields_searched++;
-
-	  if (DECL_NAME (fields[i]) > name)
-	    hi = i;
-	  else if (DECL_NAME (fields[i]) < name)
-	    lo = i + 1;
-	  else
-	    {
-	      field = NULL_TREE;
-
-	      /* We might have a nested class and a field with the
-		 same name; we sorted them appropriately via
-		 field_decl_cmp, so just look for the first or last
-		 field with this name.  */
-	      if (want_type)
-		{
-		  do
-		    field = fields[i--];
-		  while (i >= lo && DECL_NAME (fields[i]) == name);
-		  if (!DECL_DECLARES_TYPE_P (field))
-		    field = NULL_TREE;
-		}
-	      else
-		{
-		  do
-		    field = fields[i++];
-		  while (i < hi && DECL_NAME (fields[i]) == name);
-		}
-
-	      if (field)
-	      	{
-	      	  field = strip_using_decl (field);
-	      	  if (is_overloaded_fn (field))
-	      	    field = NULL_TREE;
-	      	}
-
-	      return field;
-	    }
-	}
-      return NULL_TREE;
-    }
+  if (CLASSTYPE_BINDINGS (type))
+    return lookup_class_member (type, name, want_type);
 
   field = TYPE_FIELDS (type);
 
@@ -1593,13 +1543,13 @@ lookup_fnfields_idx_nolazy (tree type, tree name)
   /* Constructors are first...  */
   if (name == ctor_identifier)
     {
-      fn = CLASSTYPE_CONSTRUCTORS (type);
+      fn = (*method_vec)[CLASSTYPE_CONSTRUCTOR_SLOT];
       return fn ? CLASSTYPE_CONSTRUCTOR_SLOT : -1;
     }
   /* and destructors are second.  */
   if (name == dtor_identifier)
     {
-      fn = CLASSTYPE_DESTRUCTOR (type);
+      fn = (*method_vec)[CLASSTYPE_DESTRUCTOR_SLOT];
       return fn ? CLASSTYPE_DESTRUCTOR_SLOT : -1;
     }
   if (IDENTIFIER_CONV_OP_P (name))
@@ -1698,39 +1648,15 @@ lookup_fnfields_slot (tree type, tree name)
   return (*CLASSTYPE_METHOD_VEC (type))[ix];
 }
 
-/* As above, but avoid lazily declaring functions.  */
+/* As above, but avoid completing TYPE or lazily declaring functions.  */
 
 tree
 lookup_fnfields_slot_nolazy (tree type, tree name)
 {
-  int ix = lookup_fnfields_idx_nolazy (complete_type (type), name);
+  int ix = lookup_fnfields_idx_nolazy (type, name);
   if (ix < 0)
     return NULL_TREE;
   return (*CLASSTYPE_METHOD_VEC (type))[ix];
-}
-
-/* Collect all the conversion operators of KLASS.  */
-
-tree
-lookup_all_conversions (tree klass)
-{
-  tree lkp = NULL_TREE;
-
-  if (vec<tree, va_gc> *methods = CLASSTYPE_METHOD_VEC (klass))
-    {
-      tree ovl;
-      for (int idx = CLASSTYPE_FIRST_CONVERSION_SLOT;
-	   methods->iterate (idx, &ovl); ++idx)
-	{
-	  if (!DECL_CONV_FN_P (OVL_FIRST (ovl)))
-	    /* There are no more conversion functions.  */
-	    break;
-
-	  lkp = lookup_add (ovl, lkp);
-	}
-    }
-
-  return lkp;
 }
 
 /* DECL is the result of a qualified name lookup.  QUALIFYING_SCOPE is

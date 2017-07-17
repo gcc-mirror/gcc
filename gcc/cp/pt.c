@@ -2902,7 +2902,7 @@ check_explicit_specialization (tree declarator,
 	       them.  */
 	    fns = lookup_all_conversions (ctype);
 	  else
-	    fns = lookup_fnfields_slot_nolazy (ctype, name);
+	    fns = lookup_fnfields_slot (ctype, name);
 
 	  if (fns == NULL_TREE)
 	    {

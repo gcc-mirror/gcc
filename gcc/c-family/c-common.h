@@ -493,13 +493,6 @@ extern const unsigned int num_c_common_reswords;
 
 extern GTY(()) tree c_global_trees[CTI_MAX];
 
-/* In a RECORD_TYPE, a sorted array of the fields of the type, not a
-   tree for size reasons.  */
-struct GTY(()) sorted_fields_type {
-  int len;
-  tree GTY((length ("%h.len"))) elts[1];
-};
-
 /* Mark which labels are explicitly declared.
    These may be shadowed, and may be referenced from nested functions.  */
 #define C_DECLARED_LABEL_FLAG(label) TREE_LANG_FLAG_1 (label)
@@ -597,9 +590,6 @@ extern tree build_array_notation_expr (location_t, tree, tree, enum tree_code,
 extern tree build_array_notation_ref (location_t, tree, tree, tree, tree, tree);
 extern tree build_indirect_ref (location_t, tree, ref_operator);
 
-extern int field_decl_cmp (const void *, const void *);
-extern void resort_sorted_fields (void *, void *, gt_pointer_operator,
-				  void *);
 extern bool has_c_linkage (const_tree decl);
 extern bool c_decl_implicit (const_tree);
 

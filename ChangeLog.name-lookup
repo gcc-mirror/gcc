@@ -1,3 +1,100 @@
+2017-07-17  Nathan Sidwell  <nathan@acm.org>
+
+	Replace lang_type::sorted_fields with lang_type::bindings.
+	(from c++modules branch)
+	gcc/cp/
+	* cp-tree.h (struct lang_type): Replace sorted_fields with
+	bindings map.
+	(CLASSTYPE_CONSTRUCTORS, CLASSTYPE_DESTRUCTOR): Use
+	lookup_fnfields_slot_nolazy.
+	(CLASSTYPE_SORTED_FIELDS): Replace with ...
+	(CLASSTYPE_BINDINGS): ... this.
+	(type_has_user_declared_move_constructor,
+	type_has_user_declared_move_assign): Delete, replace with:
+	(classtype_has_user_move_assign_or_ctor_p): ... this.
+	(insert_late_enum_def_into_classtype_sorted_fields): Delete.
+	(lookup_all_conversions): Delete.
+	* decl.c (finish_enum_value_list): Use
+	insert_late_enum_def_bindings.
+	* method.c (maybe_explain_implicit_delete): Use
+	classtype_has_user_move_assign_or_ctor_p.
+	(lazily_declare_fn): Likewise.
+	* class.c (maybe_warn_about_overly_private_class): Ignore
+	copy/move ctors.
+	(type_has_user_declared_move_constructor,
+	type_has_user_declared_move_assign): Delete, replace with:
+	(classtype_has_user_move_assign_or_ctor_p): ... this.
+	(count_fields, add_fields_to_record_type,
+	add_enum_fields_to_record_type, sorted_fields_type_new,
+	create_classtype_sorted_fields,
+	insert_late_enum_def_into_classtype_sorted_fields): Move to ...
+	* name-lookup.c: ... here.
+	(add_class_member, add_class_members, set_class_bindings): New.
+	(lookup_class_member): New.  Broken out of ...
+	* search.c (lookup_field_1): ... here.  Call it.
+	(lookup_fnfields_idx_nolazy): Look directly at method_vec.
+	(lookup_fnfields_slot_nolazy): Don't complete the type.
+	(lookup_all_conversions): Move to name-lookup.c
+	* semantics.c (classtype_has_nothrow_assign_or_copy_p): Use
+	lookup_fnfields_slot always.
+	* tree.c (type_has_nontrivial_copy_init): Use
+	classtype_has_user_move_assign_or_ctor_p.
+	* name-lookup.h (lookup_class_member,
+	set_class_bindings, insert_late_enum_def_binsings,
+	lookup_all_conversions): Declare.
+	* pt.c (check_explicit_specialization): Use lookup_fnfields_slot.
+	* ptree.c (cxx_print_type): Delete sorted-fields.
+	gcc/c-family/
+	* c-common.h (field_decl_cmp, resort_sorted_fields): Delete.
+	(struct sorted_fields_type): Move to c-lang.h.
+	* c-common.c (field_decl_cmp, resort_data,
+	resort_field_decl_cmp): Move to c-decl.c.
+	* c-ada-spec.c (decl_sloc): Ignore builtin fields.
+	gcc/c/
+	* c-decl.c (field_decl_cmp, resort_data,
+	resort_field_decl_cmp): Moved from c-common.c
+	* c-lang.h (struct sorted_fields_type): Moved from c-common.h.
+
+2017-06-26  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* cp-tree.h (lang_type): Delete sorted_fields.  Add bindings
+	field.
+	(CLASSTYPE_SORTED_FIELDS): Replace with ...
+	(CLASSTYPE_BINDINGS): ... this.
+	* name-lookup.c (lookup_class_member): Reimplement.
+	(count_fields): Delete.
+	(sorted_fields_type_new): Delete.
+	(add_class_member): New.
+	(add_fields_to_record_type): Replace with ...
+	(add_class_members): ... this.
+	(add_enum_fields_to_record_type): Delete.
+	(create_classtype_sorted_fields): Replace with ...
+	(set_class_bindings): ... this.
+	(insert_late_enum_def_into_classtype_sorted_fields): Replace with ...
+	(insert_late_enum_def_bindings): ... this.
+	* name-lookup.h (create_classtype_sorted_fields,
+	insert_late_enum_def_into_classtype_sorted_fields): Replace with ...
+	(set_class_bindings, insert_late_enum_def_bindings): ... this.
+	* ptree.h (cxx_print_type): Don't print SORTED_FIELDS.
+	* search.c (lookup_field_1): Check CLASSTYPE_BINDINGS.
+	* decl.c (finish_enum_value_list): Use insert_late_enum_def_bindings.
+	* class.c (finish_struct_1): Use set_class_bindings.
+	* module.c (cpms_in::define_class): Likewise.
+
+	Start moving class name lookup around
+	gcc/cp/
+	* class.c (count_fields, add_fields_to_record_type,
+	add_enum_fields_to_record_type, sorted_fields_type_new,
+	create_classtype_sorted_fields,
+	insert_late_enum_def_into_classtype_sorted_fields): Move to ...
+	* name-lookup.c: ... here.
+	(lookup_class_member): New.  Broken out of ...
+	* search.c (lookup_field_1): ... here.  Call it.
+	* name-lookup.h (lookup_class_member,
+	create_classtype_sorted_fields,
+	insert_late_enum_def_into_classtype_sorted_fields): Declare.
+
 2017-07-12  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/
@@ -64,6 +161,55 @@
 	* pt.c (instantiate_class_member): Delete.
 
 2017-07-05  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/
+	* tree.h (TYPE_METHODS): Delete.
+	* tree.c (free_lang_data_in_type): Stitch out member functions and
+	templates from TYPE_FIELDS.
+	(build_distinct_type_copy, verify_type_variant,
+	verify_type): Member fns are on TYPE_FIELDS.
+	* tree-dump.c (dequeue_and_dump): No TYPE_METHODS.
+	* tree-pretty-print.c (dump_generic_node): Likewise.
+	* dbxout.c (dbxout_type_fields): Member fns are on TYPE_FIELDS.
+	(dbxout_type_method_1, dbxout_type_methods): Delete.
+	(dbxout_type_fn_member): New, constructed from previous.
+	(dbxout_type): No TYPE_METHODS scan.
+	* dwarf2out.c (gen_member_die): Member fns are on TYPE_FIELDS.
+	* function.c (use_register_for_decl): Always ignore register for
+	class types when not optimizing.
+	* ipa-devirt.c (odr_types_equivalent_p): Delete TYPE_METHODS scan.
+	gcc/c-family/
+	* c-ada-spec.c (is_tagged_type, has_nontrivial_methods,
+	dump_ada_template, print_ada_methods,
+	print_ada_declaration): Member fns are on TYPE_FIELDS.
+	gcc/cp/
+	* class.c (maybe_warn_about_overly_private_class,
+	finish_struct_methods, one_inheriting_sig, count_fields,
+	add_fields_to_record_type, check_field_decls, check_methods,
+	clone_function_decl, set_method_tm_attributes,
+	finalize_literal_type_property, check_bases_and_members,
+	create_vtable_ptr, determine_key_method,
+	unreverse_member_declarations, finish_struct,
+	add_vcall_offset_vtbl_entries_1): Member fns are on TYPE_FIELDS.
+	* decl.c (fixup_anonymous_aggr): Likewise.
+	* decl2.c (reset_type_linkage_2): Likewise.
+	* method.c (after_nsdmi_defaulted_late_checks,
+	lazily_declare_fn): Likewise.
+	* optimize.c (maybe_thunk_body, maybe_clone_body): Likewise.
+	* pt.c (instantiate_class_template_1, tsubst_expr,
+	do_type_instantiation, instantiate_pending_templates): Likewise.
+	* search.c (lookup_field_1): Likewise.
+	* semantics.c (finish_member_declaration,
+	finish_omp_declare_simd_methods): Likewise.
+	libcc1/
+	* libcp1plugin.cc (plugin_build_decl): Member fns are on TYPE_FIELDS.
+	gcc/testsuite/
+	* g++.dg/ext/anon-struct6.C: Adjust diag.
+	* g++.old-deja/g++.other/anon4.C: Adjust diag.
+
+	gcc/cp/
+	* decl2.c (mark_used): Reformat.
+	* pt.c (instantiate_class_member): Delete.
 
 	Branch creation from trunk:250000
 	Use this Changelog for all branch changes, including merges.

@@ -3339,6 +3339,116 @@ pushdecl_outermost_localscope (tree x)
   return ret;
 }
 
+/* Look for NAME in exactly TYPE (including anon-members).  */
+// FIXME currently only fields, will be extending
+
+tree
+lookup_class_member (tree klass, tree name, bool want_type)
+{
+  tree *slot = CLASSTYPE_BINDINGS (klass)->get (name);
+  if (!slot)
+    return NULL_TREE;
+
+  tree val = *slot;
+  if (STAT_HACK_P (val))
+    {
+      if (want_type)
+	return STAT_TYPE (val);
+      val = STAT_DECL (val);
+    }
+
+  val = strip_using_decl (val);
+  if (OVL_P (val))
+    return NULL_TREE;
+
+  if (want_type && !DECL_DECLARES_TYPE_P (val))
+    val = NULL_TREE;
+
+  return val;
+}
+
+/* Collect all the conversion operators of KLASS.  */
+
+tree
+lookup_all_conversions (tree klass)
+{
+  tree lkp = NULL_TREE;
+
+  if (vec<tree, va_gc> *methods = CLASSTYPE_METHOD_VEC (klass))
+    {
+      tree ovl;
+      for (int idx = CLASSTYPE_FIRST_CONVERSION_SLOT;
+	   methods->iterate (idx, &ovl); ++idx)
+	{
+	  if (!DECL_CONV_FN_P (OVL_FIRST (ovl)))
+	    /* There are no more conversion functions.  */
+	    break;
+
+	  lkp = lookup_add (ovl, lkp);
+	}
+    }
+
+  return lkp;
+}
+
+/* Add DECL into MAP under NAME.  Collisions fail silently.  Doesn't
+   do sophistacated collision checking.  Deals with STAT_HACK.  */
+
+static void
+add_class_member (hash_map<lang_identifier *, tree> *map, tree name, tree decl)
+{
+  bool existed;
+  tree *slot = &map->get_or_insert (name, &existed);
+  if (!existed)
+    *slot = decl;
+  else if (TREE_CODE (*slot) == TYPE_DECL && DECL_ARTIFICIAL (*slot))
+    *slot = stat_hack (decl, *slot);
+  else if (TREE_CODE (decl) == TYPE_DECL && DECL_ARTIFICIAL (decl))
+    *slot = stat_hack (*slot, decl);
+
+  /* Else ignore collision.  */
+}
+
+/* Insert the chain FIELDS into MAP.  */
+
+static void
+add_class_members (hash_map<lang_identifier *, tree> *map, tree fields)
+{
+  for (tree field = fields; field; field = DECL_CHAIN (field))
+    {
+      if (TREE_CODE (field) == FIELD_DECL
+	  && ANON_AGGR_TYPE_P (TREE_TYPE (field)))
+	add_class_members (map, TYPE_FIELDS (TREE_TYPE (field)));
+      else if (DECL_NAME (field))
+	add_class_member (map, DECL_NAME (field), field);
+    }
+}
+
+/* Create the binding map of KLASS and insert FIELDS.  */
+
+void
+set_class_bindings (tree klass, tree fields)
+{
+  gcc_assert (!CLASSTYPE_BINDINGS (klass));
+
+  CLASSTYPE_BINDINGS (klass)
+    = hash_map<lang_identifier *, tree>::create_ggc (8);
+  add_class_members (CLASSTYPE_BINDINGS (klass), fields);
+}
+
+/* Insert lately defined enum ENUMTYPE into T for the sorted case.  */
+
+void
+insert_late_enum_def_bindings (tree klass, tree enumtype)
+{
+  hash_map<lang_identifier *, tree> *map = CLASSTYPE_BINDINGS (klass);
+
+  for (tree values = TYPE_VALUES (enumtype);
+       values; values = TREE_CHAIN (values))
+    add_class_member (map, DECL_NAME (TREE_VALUE (values)),
+		      TREE_VALUE (values));
+}
+
 /* Check a non-member using-declaration. Return the name and scope
    being used, and the USING_DECL, or NULL_TREE on failure.  */
 
