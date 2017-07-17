@@ -1,3 +1,9 @@
+2017-07-17  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	PR tree-optimization/81162
+	* gcc.dg/pr81162.c: Move this to...
+	* gcc.dg/ubsan/pr81162.c: ...here.
+
 2017-07-17  Volker Reichelt  <v.reichelt@netcologne.de>
 
 	* g++.dg/diagnostic/friend1.C: New test.
