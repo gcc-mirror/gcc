@@ -1997,8 +1997,9 @@ merge_dep_scc_partitions (struct graph *rdg,
 		data->partition = NULL;
 	      }
 	}
-      sort_partitions_by_post_order (pg, partitions);
     }
+
+  sort_partitions_by_post_order (pg, partitions);
   gcc_assert (partitions->length () == (unsigned)num_sccs);
   free_partition_graph_vdata (pg);
   free_graph (pg);
