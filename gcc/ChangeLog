@@ -1,3 +1,14 @@
+2017-07-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/81396
+	* tree-ssa-math-opts.c (struct symbolic_number): Add n_ops field.
+	(init_symbolic_number): Initialize it to 1.
+	(perform_symbolic_merge): Add n_ops from both operands into the new
+	n_ops.
+	(find_bswap_or_nop): Don't consider n->n == cmpnop computations
+	without base_addr as useless if they need more than one operation.
+	(bswap_replace): Handle !bswap case for NULL base_addr.
+
 2017-07-17  Tom de Vries  <tom@codesourcery.com>
 
 	PR target/81069

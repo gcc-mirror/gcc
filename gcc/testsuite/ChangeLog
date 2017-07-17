@@ -1,3 +1,8 @@
+2017-07-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/81396
+	* gcc.dg/tree-ssa/pr81396.c: New test.
+
 2017-07-16  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/opt65.adb: New test.
