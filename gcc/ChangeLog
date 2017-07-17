@@ -1,3 +1,11 @@
+2017-07-17  Georg-Johann Lay  <avr@gjlay.de>
+
+	Remove stuff dead since r239246.
+
+	* config/avr/avr-arch.h (avr_inform_devices): Remove dead proto.
+	* config/avr/avr-devices.c (mcu_name, comparator, avr_mcus_str)
+	(avr_inform_devices): Remove dead stuff.
+
 2017-07-17  Tamar Christina  <tamar.christina@arm.com>
 
 	* config/arm/arm_neon.h: Fix softp typo.
