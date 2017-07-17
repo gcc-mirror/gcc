@@ -1,3 +1,12 @@
+2017-07-17  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2017-07-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/81258
+	* parser.c (cp_parser_decomposition_declaration): Diagnose invalid
+	forms of structured binding initializers.
+
 2017-07-06  Jason Merrill  <jason@redhat.com>
 
 	PR c++/81204 - parse error with dependent template-name

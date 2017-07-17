@@ -13045,6 +13045,16 @@ cp_parser_decomposition_declaration (cp_parser *parser,
       *init_loc = cp_lexer_peek_token (parser->lexer)->location;
       tree initializer = cp_parser_initializer (parser, &is_direct_init,
 						&non_constant_p);
+      if (initializer == NULL_TREE
+	  || (TREE_CODE (initializer) == TREE_LIST
+	      && TREE_CHAIN (initializer))
+	  || (TREE_CODE (initializer) == CONSTRUCTOR
+	      && CONSTRUCTOR_NELTS (initializer) != 1))
+	{
+	  error_at (loc, "invalid initializer for structured binding "
+		    "declaration");
+	  initializer = error_mark_node;
+	}
 
       if (decl != error_mark_node)
 	{
