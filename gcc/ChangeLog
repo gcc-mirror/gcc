@@ -1,3 +1,8 @@
+2017-07-17  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	*  gcc/config/sparc/rtemself.h (TARGET_OS_CPP_BUILTINS): Add
+	conditional builtin define __FIX_LEON3FT_B2BST.
+
 2017-07-17  Daniel Cederman  <cederman@gaisler.com>
 
 	* config/sparc/t-rtems: Add mfix-gr712rc multilibs. Replace
