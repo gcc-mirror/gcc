@@ -1,3 +1,9 @@
+2017-07-17  Tom de Vries  <tom@codesourcery.com>
+
+	PR target/81069
+	* config/nvptx/nvptx.c (nvptx_single): Insert diverging branch as late
+	as possible.
+
 2017-07-17  Sebastian Huber  <sebastian.huber@embedded-brains.de>
 
 	*  gcc/config/sparc/rtemself.h (TARGET_OS_CPP_BUILTINS): Add
