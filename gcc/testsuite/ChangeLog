@@ -1,5 +1,8 @@
 2017-07-17  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/81365
+	* g++.dg/torture/pr81365.C: New test.
+
 	Backported from mainline
 	2017-07-04  Jakub Jelinek  <jakub@redhat.com>
 

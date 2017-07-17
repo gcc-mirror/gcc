@@ -1,5 +1,11 @@
 2017-07-17  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/81365
+	* tree-ssa-phiprop.c (propagate_with_phi): When considering hoisting
+	aggregate moves onto bb predecessor edges, make sure there are no
+	loads that could alias the lhs in between the start of bb and the
+	loads from *phi.
+
 	Backported from mainline
 	2017-06-30  Jakub Jelinek  <jakub@redhat.com>
 
