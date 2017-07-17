@@ -1,3 +1,12 @@
+2017-07-17  Georg-Johann Lay  <avr@gjlay.de>
+
+	Backport from 2017-07-17 trunk r250258.
+
+	PR 80929
+	* config/avr/avr.c (avr_mul_highpart_cost): New static function.
+	(avr_rtx_costs_1) [TRUNCATE]: Use it to compute mul_highpart cost.
+	[LSHIFTRT, outer_code = TRUNCATE]: Same.
+
 2017-07-17  Sebastian Huber  <sebastian.huber@embedded-brains.de>
 
 	Backport from mainline
