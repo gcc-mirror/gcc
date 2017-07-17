@@ -1,3 +1,7 @@
+2017-07-17  Nathan Sidwell  <nathan@acm.org>
+
+	* g++.dg/warn/ctor-dtor-privacy-3.C: New.
+
 2017-07-17  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	* lib/gcc-dg.exp: Increase expect's match buffer size.
