@@ -1,3 +1,11 @@
+2017-07-17  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2017-06-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/81225
+	* gcc.target/i386/pr81225.c: New test.
+
 2017-07-16  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/opt65.adb: New test.
