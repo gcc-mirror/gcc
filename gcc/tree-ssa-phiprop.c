@@ -327,7 +327,7 @@ propagate_with_phi (basic_block bb, gphi *phi, struct phiprop_d *phivn,
       if (!dominated_by_p (CDI_POST_DOMINATORS,
 			   bb, gimple_bb (use_stmt)))
 	continue;
-         
+
       /* Check whether this is a load of *ptr.  */
       if (!(is_gimple_assign (use_stmt)
 	    && gimple_assign_rhs_code (use_stmt) == MEM_REF
@@ -356,6 +356,9 @@ propagate_with_phi (basic_block bb, gphi *phi, struct phiprop_d *phivn,
          insert aggregate copies on the edges instead.  */
       if (!is_gimple_reg_type (TREE_TYPE (TREE_TYPE (ptr))))
 	{
+	  if (!gimple_vdef (use_stmt))
+	    goto next;
+
 	  /* As we replicate the lhs on each incoming edge all
 	     used SSA names have to be available there.  */
 	  if (! for_each_index (gimple_assign_lhs_ptr (use_stmt),
@@ -363,6 +366,28 @@ propagate_with_phi (basic_block bb, gphi *phi, struct phiprop_d *phivn,
 				get_immediate_dominator (CDI_DOMINATORS,
 							 gimple_bb (phi))))
 	    goto next;
+
+	  gimple *vuse_stmt;
+	  imm_use_iterator vui;
+	  use_operand_p vuse_p;
+	  /* In order to move the aggregate copies earlier, make sure
+	     there are no statements that could read from memory
+	     aliasing the lhs in between the start of bb and use_stmt.
+	     As we require use_stmt to have a VDEF above, loads after
+	     use_stmt will use a different virtual SSA_NAME.  */
+	  FOR_EACH_IMM_USE_FAST (vuse_p, vui, vuse)
+	    {
+	      vuse_stmt = USE_STMT (vuse_p);
+	      if (vuse_stmt == use_stmt)
+		continue;
+	      if (!dominated_by_p (CDI_DOMINATORS,
+				   gimple_bb (vuse_stmt), bb))
+		continue;
+	      if (ref_maybe_used_by_stmt_p (vuse_stmt,
+					    gimple_assign_lhs (use_stmt)))
+		goto next;
+	    }
+
 	  phiprop_insert_phi (bb, phi, use_stmt, phivn, n);
 
 	  /* Remove old stmt.  The phi is taken care of by DCE.  */
