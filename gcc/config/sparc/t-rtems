@@ -18,19 +18,25 @@
 #
 
 MULTILIB_OPTIONS = msoft-float mcpu=v8/mcpu=leon3/mcpu=leon3v7/mcpu=leon \
-		   mfix-ut699/mfix-at697f
-MULTILIB_DIRNAMES = soft v8 leon3 leon3v7 leon ut699 at697f
-MULTILIB_MATCHES = msoft-float=mno-fpu
+		   mfix-ut699/mfix-at697f/mfix-gr712rc
+MULTILIB_DIRNAMES = soft v8 leon3 leon3v7 leon ut699 at697f gr712rc
+MULTILIB_MATCHES = msoft-float=mno-fpu mfix-gr712rc=mfix-ut700
 
-MULTILIB_EXCEPTIONS = mfix-ut699
-MULTILIB_EXCEPTIONS += msoft-float/mfix-ut699
-MULTILIB_EXCEPTIONS += msoft-float/mcpu=v8/mfix-ut699
-MULTILIB_EXCEPTIONS += msoft-float/mcpu=leon3*/mfix-ut699
-MULTILIB_EXCEPTIONS += mcpu=v8/mfix-ut699
-MULTILIB_EXCEPTIONS += mcpu=leon3*/mfix-ut699
-MULTILIB_EXCEPTIONS += mfix-at697f
-MULTILIB_EXCEPTIONS += msoft-float/mfix-at697f
-MULTILIB_EXCEPTIONS += msoft-float/mcpu=v8/mfix-at697f
-MULTILIB_EXCEPTIONS += msoft-float/mcpu=leon3*/mfix-at697f
-MULTILIB_EXCEPTIONS += mcpu=v8/mfix-at697f
-MULTILIB_EXCEPTIONS += mcpu=leon3*/mfix-at697f
+MULTILIB_REQUIRED =
+MULTILIB_REQUIRED += msoft-float
+MULTILIB_REQUIRED += mcpu=v8
+MULTILIB_REQUIRED += mcpu=leon3
+MULTILIB_REQUIRED += mcpu=leon3v7
+MULTILIB_REQUIRED += mcpu=leon
+MULTILIB_REQUIRED += mcpu=leon3/mfix-gr712rc
+MULTILIB_REQUIRED += mcpu=leon3v7/mfix-gr712rc
+MULTILIB_REQUIRED += mcpu=leon/mfix-ut699
+MULTILIB_REQUIRED += mcpu=leon/mfix-at697f
+MULTILIB_REQUIRED += msoft-float/mcpu=v8
+MULTILIB_REQUIRED += msoft-float/mcpu=leon3
+MULTILIB_REQUIRED += msoft-float/mcpu=leon3v7
+MULTILIB_REQUIRED += msoft-float/mcpu=leon
+MULTILIB_REQUIRED += msoft-float/mcpu=leon3/mfix-gr712rc
+MULTILIB_REQUIRED += msoft-float/mcpu=leon3v7/mfix-gr712rc
+MULTILIB_REQUIRED += msoft-float/mcpu=leon/mfix-ut699
+MULTILIB_REQUIRED += msoft-float/mcpu=leon/mfix-at697f
