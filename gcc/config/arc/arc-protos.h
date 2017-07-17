@@ -45,12 +45,9 @@ extern void arc_expand_atomic_op (enum rtx_code, rtx, rtx, rtx, rtx, rtx);
 extern void arc_split_compare_and_swap (rtx *);
 extern void arc_expand_compare_and_swap (rtx *);
 extern bool compact_memory_operand_p (rtx, machine_mode, bool, bool);
+extern int arc_return_address_register (unsigned int);
+extern unsigned int arc_compute_function_type (struct function *);
 #endif /* RTX_CODE */
-
-#ifdef TREE_CODE
-extern enum arc_function_type arc_compute_function_type (struct function *);
-#endif /* TREE_CODE */
-
 
 extern unsigned int arc_compute_frame_size (int);
 extern bool arc_ccfsm_branch_deleted_p (void);
