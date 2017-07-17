@@ -1946,7 +1946,9 @@ make_pass_cse_sincos (gcc::context *ctxt)
    - a range which gives the difference between the highest and lowest accessed
      memory location to make such a symbolic number;
    - the address SRC of the source element of lowest address as a convenience
-     to easily get BASE_ADDR + offset + lowest bytepos.
+     to easily get BASE_ADDR + offset + lowest bytepos;
+   - number of expressions N_OPS bitwise ored together to represent
+     approximate cost of the computation.
 
    Note 1: the range is different from size as size reflects the size of the
    type of the current expression.  For instance, for an array char a[],
@@ -1968,6 +1970,7 @@ struct symbolic_number {
   tree alias_set;
   tree vuse;
   unsigned HOST_WIDE_INT range;
+  int n_ops;
 };
 
 #define BITS_PER_MARKER 8
@@ -2083,6 +2086,7 @@ init_symbolic_number (struct symbolic_number *n, tree src)
     return false;
   n->range = size;
   n->n = CMPNOP;
+  n->n_ops = 1;
 
   if (size < 64 / BITS_PER_MARKER)
     n->n &= ((uint64_t) 1 << (size * BITS_PER_MARKER)) - 1;
@@ -2293,6 +2297,7 @@ perform_symbolic_merge (gimple *source_stmt1, struct symbolic_number *n1,
 	return NULL;
     }
   n->n = n1->n | n2->n;
+  n->n_ops = n1->n_ops + n2->n_ops;
 
   return source_stmt;
 }
@@ -2588,7 +2593,7 @@ find_bswap_or_nop (gimple *stmt, struct symbolic_number *n, bool *bswap)
     return NULL;
 
   /* Useless bit manipulation performed by code.  */
-  if (!n->base_addr && n->n == cmpnop)
+  if (!n->base_addr && n->n == cmpnop && n->n_ops == 1)
     return NULL;
 
   n->range *= BITS_PER_UNIT;
@@ -2746,6 +2751,36 @@ bswap_replace (gimple *cur_stmt, gimple *ins_stmt, tree fndecl,
 	  gsi_insert_before (&gsi, load_stmt, GSI_SAME_STMT);
 	}
       src = val_tmp;
+    }
+  else if (!bswap)
+    {
+      gimple *g;
+      if (!useless_type_conversion_p (TREE_TYPE (tgt), TREE_TYPE (src)))
+	{
+	  if (!is_gimple_val (src))
+	    return false;
+	  g = gimple_build_assign (tgt, NOP_EXPR, src);
+	}
+      else
+	g = gimple_build_assign (tgt, src);
+      if (n->range == 16)
+	nop_stats.found_16bit++;
+      else if (n->range == 32)
+	nop_stats.found_32bit++;
+      else
+	{
+	  gcc_assert (n->range == 64);
+	  nop_stats.found_64bit++;
+	}
+      if (dump_file)
+	{
+	  fprintf (dump_file,
+		   "%d bit reshuffle in target endianness found at: ",
+		   (int) n->range);
+	  print_gimple_stmt (dump_file, cur_stmt, 0);
+	}
+      gsi_replace (&gsi, g, true);
+      return true;
     }
   else if (TREE_CODE (src) == BIT_FIELD_REF)
     src = TREE_OPERAND (src, 0);
