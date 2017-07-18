@@ -1,3 +1,8 @@
+2017-06-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/81410
+	* gcc.dg/vect/pr81410.c: New testcase.
+
 2017-07-18  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR middle-end/81462
