@@ -1,3 +1,42 @@
+2017-07-18  Nathan Sidwell  <nathan@acm.org>
+
+	Rename TYPE_{MIN,MAX}VAL to TYPE_{MIN,MAX}VAL_RAW.
+	gcc/c/
+	* c-parser.c (c_parser_array_notation): Use TYPE_{MIN,MAX}_VALUE.
+	gcc/c-family/
+	* c-warn.c (warn_for_memset): Use TYPE_{MIN,MAX}_VALUE.
+	gcc/cp/
+	* cp-array-notation.c (build_array_notation_ref): Use
+	TYPE_{MIN,MAX}_VALUE.
+	* cp-tree.h (PACK_EXPANSION_PARAMETER_PACKS,
+	PACK_EXPANSION_EXTRA_ARGS): Use TYPE_{MIN,MAX}VAL_RAW.
+	fortran/
+	* trans.c (gfc_build_array_ref): Use TYPE_{MIN,MAX}_VALUE.
+	lto/
+	* lto.c (mentions_vars_p_type): Use TYPE_{MIN,MAX}VAL_RAW.
+	(compare_tree_sccs_1): Likewise.  Don't check BINFO directly.
+	(lto_fixup_prevailing_decls): Use TYPE_{MIN,MAX}VAL_RAW.
+	gcc/
+	* tree.h (TYPE_MINVAL, TYPE_MAXVAL): Rename to ...
+	(TYPE_MINVAL_RAW, TYPE_MAXVAL_RAW): ... these.
+	* lto-streamer-out.c (DFS::DFS_write_tree_body): Use
+	TYPE_{MIN,MAX}VAL_RAW.  Don't process BINFO directly.
+	(hash_tree): Likewise.
+	* tree-parloops.c (try_transform_to_exit_first_loop_alt): Use
+	TYPE_MAX_VALUE.
+	* tree-streamer-in.c (lto_input_ts_type_non_common_tree_pointers):
+	Use TYPE_{MIN,MAX}VAL_RAW.  Don't process BINFO directly.
+	* tree-streamer-out.c (write_ts_type_non_common_tree_pointers):
+	Likewise.
+	* tree.c (free_lang_data_in_type): Use switch, cleanup.
+	(find_decls_types_r): Use TYPE_{MIN,MAX}VAL_RAW.  Don't process
+	BINFO directly.
+	(verify_type): Use TYPE_{MIN,MAX}VAL_RAW.  Move BINFO checking
+	into RECORD check.
+	objc/
+	* objc-act.h (CLASS_NST_METHODS, CLASS_CLS_METHODS): Use
+	TYPE_{MIN,MAX}VAL_RAW.
+
 2017-07-17  Nathan Sidwell  <nathan@acm.org>
 
 	Remove special ctor/dtor slots
