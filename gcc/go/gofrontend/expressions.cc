@@ -1204,7 +1204,14 @@ Func_expression::do_get_backend(Translate_context* context)
   // expression.  It is a pointer to a struct whose first field points
   // to the function code and whose remaining fields are the addresses
   // of the closed-over variables.
-  return this->closure_->get_backend(context);
+  Bexpression *bexpr = this->closure_->get_backend(context);
+
+  // Introduce a backend type conversion, to account for any differences
+  // between the argument type (function descriptor, struct with a
+  // single field) and the closure (struct with multiple fields).
+  Gogo* gogo = context->gogo();
+  Btype *btype = this->type()->get_backend(gogo);
+  return gogo->backend()->convert_expression(btype, bexpr, this->location());
 }
 
 // Ast dump for function.
