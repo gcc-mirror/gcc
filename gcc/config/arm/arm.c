@@ -28268,8 +28268,6 @@ arm_emit_store_exclusive (machine_mode mode, rtx bval, rtx rval,
 static void
 emit_unlikely_jump (rtx insn)
 {
-  int very_unlikely = REG_BR_PROB_BASE / 100 - 1;
-
   rtx_insn *jump = emit_jump_insn (insn);
   add_reg_br_prob_note (jump, profile_probability::very_unlikely ());
 }
