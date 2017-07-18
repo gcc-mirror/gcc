@@ -334,15 +334,15 @@ gfc_build_array_ref (tree base, tree offset, tree decl, tree vptr)
   /* Use pointer arithmetic for deferred character length array
      references.  */
   if (type && TREE_CODE (type) == ARRAY_TYPE
-      && TYPE_MAXVAL (TYPE_DOMAIN (type)) != NULL_TREE
-      && (VAR_P (TYPE_MAXVAL (TYPE_DOMAIN (type)))
-	  || TREE_CODE (TYPE_MAXVAL (TYPE_DOMAIN (type))) == INDIRECT_REF)
+      && TYPE_MAX_VALUE (TYPE_DOMAIN (type)) != NULL_TREE
+      && (VAR_P (TYPE_MAX_VALUE (TYPE_DOMAIN (type)))
+	  || TREE_CODE (TYPE_MAX_VALUE (TYPE_DOMAIN (type))) == INDIRECT_REF)
       && decl
-      && (TREE_CODE (TYPE_MAXVAL (TYPE_DOMAIN (type))) == INDIRECT_REF
+      && (TREE_CODE (TYPE_MAX_VALUE (TYPE_DOMAIN (type))) == INDIRECT_REF
 	  || TREE_CODE (decl) == FUNCTION_DECL
-	  || DECL_CONTEXT (TYPE_MAXVAL (TYPE_DOMAIN (type)))
-					== DECL_CONTEXT (decl)))
-    span = TYPE_MAXVAL (TYPE_DOMAIN (type));
+	  || (DECL_CONTEXT (TYPE_MAX_VALUE (TYPE_DOMAIN (type)))
+	      == DECL_CONTEXT (decl))))
+    span = TYPE_MAX_VALUE (TYPE_DOMAIN (type));
   else
     span = NULL_TREE;
 

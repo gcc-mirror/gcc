@@ -1,3 +1,8 @@
+2017-07-18  Nathan Sidwell  <nathan@acm.org>
+
+	* tree-parloops.c (try_transform_to_exit_first_loop_alt): Use
+	TYPE_MAX_VALUE.
+
 2017-07-18  Bin Cheng  <bin.cheng@arm.com>
 
 	PR target/81408
