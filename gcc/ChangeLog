@@ -1,3 +1,14 @@
+2017-07-18  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/81471
+	* config/i386/i386.md (rorx_immediate_operand): New mode attribute.
+	(*bmi2_rorx<mode>3_1): Use rorx_immediate_operand as
+	operand 2 predicate.
+	(*bmi2_rorxsi3_1_zext): Use const_0_to_31_operand as
+	operand 2 predicate.
+	(ror,rol -> rorx splitters): Use const_int_operand as
+	operand 2 predicate.
+
 2017-06-18  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/81410
