@@ -1,3 +1,11 @@
+2017-07-18  Nathan Sidwell  <nathan@acm.org>
+
+	* class.c (classtype_has_move_assign_or_move_ctor): Declare.
+	(add_implicitly_declared_members): Use it.
+	(type_has_move_constructor, type_has_move_assign): Merge into ...
+	(classtype_has_move_assign_or_move_ctor): ... this new function.
+	* cp-tree.h (type_has_move_constructor, type_has_move_assign): Delete.
+
 2017-07-17  Volker Reichelt  <v.reichelt@netcologne.de>
 
 	* parser.c (cp_parser_decl_specifier_seq): Add fix-it hints for

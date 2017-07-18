@@ -150,6 +150,7 @@ static void build_base_fields (record_layout_info, splay_tree, tree *);
 static void check_methods (tree);
 static void remove_zero_width_bit_fields (tree);
 static bool accessible_nvdtor_p (tree);
+static bool classtype_has_move_assign_or_move_ctor (tree);
 
 /* Used by find_flexarrays and related functions.  */
 struct flexmems_t;
@@ -3384,7 +3385,7 @@ add_implicitly_declared_members (tree t, tree* access_decls,
   bool move_ok = false;
   if (cxx_dialect >= cxx11 && CLASSTYPE_LAZY_DESTRUCTOR (t)
       && !TYPE_HAS_COPY_CTOR (t) && !TYPE_HAS_COPY_ASSIGN (t)
-      && !type_has_move_constructor (t) && !type_has_move_assign (t))
+      && !classtype_has_move_assign_or_move_ctor (t))
     move_ok = true;
 
   /* [class.ctor]
@@ -5456,37 +5457,18 @@ type_has_virtual_destructor (tree type)
   return (dtor && DECL_VIRTUAL_P (dtor));
 }
 
-/* Returns true iff class T has a move constructor.  */
+/* Returns true iff class T has move assignment or move constructor.  */
 
-bool
-type_has_move_constructor (tree t)
+static bool
+classtype_has_move_assign_or_move_ctor (tree t)
 {
-  if (CLASSTYPE_LAZY_MOVE_CTOR (t))
-    {
-      gcc_assert (COMPLETE_TYPE_P (t));
-      lazily_declare_fn (sfk_move_constructor, t);
-    }
+  gcc_assert (!CLASSTYPE_LAZY_MOVE_CTOR (t)
+	      && !CLASSTYPE_LAZY_MOVE_ASSIGN (t));
 
-  if (!CLASSTYPE_METHOD_VEC (t))
-    return false;
-
-  for (ovl_iterator iter (CLASSTYPE_CONSTRUCTORS (t)); iter; ++iter)
+  for (ovl_iterator iter (lookup_fnfields_slot_nolazy
+			  (t, ctor_identifier)); iter; ++iter)
     if (move_fn_p (*iter))
       return true;
-
-  return false;
-}
-
-/* Returns true iff class T has a move assignment operator.  */
-
-bool
-type_has_move_assign (tree t)
-{
-  if (CLASSTYPE_LAZY_MOVE_ASSIGN (t))
-    {
-      gcc_assert (COMPLETE_TYPE_P (t));
-      lazily_declare_fn (sfk_move_assignment, t);
-    }
 
   for (ovl_iterator iter (lookup_fnfields_slot_nolazy
 			  (t, cp_assignment_operator_id (NOP_EXPR)));
