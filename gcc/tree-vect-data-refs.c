@@ -1078,7 +1078,6 @@ typedef struct _vect_peel_extended_info
   struct _vect_peel_info peel_info;
   unsigned int inside_cost;
   unsigned int outside_cost;
-  stmt_vector_for_cost body_cost_vec;
 } *vect_peel_extended_info;
 
 
@@ -1226,6 +1225,8 @@ vect_peeling_hash_get_lowest_cost (_vect_peel_info **slot,
   vect_get_peeling_costs_all_drs (elem->dr, &inside_cost, &outside_cost,
 				  &body_cost_vec, elem->npeel, false);
 
+  body_cost_vec.release ();
+
   outside_cost += vect_get_known_peeling_cost
     (loop_vinfo, elem->npeel, &dummy,
      &LOOP_VINFO_SCALAR_ITERATION_COST (loop_vinfo),
@@ -1244,14 +1245,10 @@ vect_peeling_hash_get_lowest_cost (_vect_peel_info **slot,
     {
       min->inside_cost = inside_cost;
       min->outside_cost = outside_cost;
-      min->body_cost_vec.release ();
-      min->body_cost_vec = body_cost_vec;
       min->peel_info.dr = elem->dr;
       min->peel_info.npeel = elem->npeel;
       min->peel_info.count = elem->count;
     }
-  else
-    body_cost_vec.release ();
 
   return 1;
 }
@@ -1263,14 +1260,11 @@ vect_peeling_hash_get_lowest_cost (_vect_peel_info **slot,
 
 static struct _vect_peel_extended_info
 vect_peeling_hash_choose_best_peeling (hash_table<peel_info_hasher> *peeling_htab,
-				       loop_vec_info loop_vinfo,
-                                       unsigned int *npeel,
-				       stmt_vector_for_cost *body_cost_vec)
+				       loop_vec_info loop_vinfo)
 {
    struct _vect_peel_extended_info res;
 
    res.peel_info.dr = NULL;
-   res.body_cost_vec = stmt_vector_for_cost ();
 
    if (!unlimited_cost_model (LOOP_VINFO_LOOP (loop_vinfo)))
      {
@@ -1288,8 +1282,6 @@ vect_peeling_hash_choose_best_peeling (hash_table<peel_info_hasher> *peeling_hta
        res.outside_cost = 0;
      }
 
-   *npeel = res.peel_info.npeel;
-   *body_cost_vec = res.body_cost_vec;
    return res;
 }
 
@@ -1454,7 +1446,6 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
   unsigned possible_npeel_number = 1;
   tree vectype;
   unsigned int nelements, mis, same_align_drs_max = 0;
-  stmt_vector_for_cost body_cost_vec = stmt_vector_for_cost ();
   hash_table<peel_info_hasher> peeling_htab (1);
 
   if (dump_enabled_p ())
@@ -1729,7 +1720,7 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
          unless aligned.  So we try to choose the best possible peeling from
 	 the hash table.  */
       peel_for_known_alignment = vect_peeling_hash_choose_best_peeling
-	(&peeling_htab, loop_vinfo, &npeel, &body_cost_vec);
+	(&peeling_htab, loop_vinfo);
     }
 
   /* Compare costs of peeling for known and unknown alignment. */
@@ -1755,7 +1746,8 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
     {
       /* Calculate the penalty for no peeling, i.e. leaving everything
 	 unaligned.
-	 TODO: Adapt vect_get_peeling_costs_all_drs and use here.  */
+	 TODO: Adapt vect_get_peeling_costs_all_drs and use here.
+	 TODO: Use nopeel_outside_cost or get rid of it?  */
       unsigned nopeel_inside_cost = 0;
       unsigned nopeel_outside_cost = 0;
 
@@ -1837,10 +1829,7 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
           if (!stat)
             do_peeling = false;
           else
-	    {
-	      body_cost_vec.release ();
-	      return stat;
-	    }
+	    return stat;
         }
 
       /* Cost model #1 - honor --param vect-max-peeling-for-alignment.  */
@@ -1916,18 +1905,15 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
               dump_printf_loc (MSG_NOTE, vect_location,
                                "Peeling for alignment will be applied.\n");
             }
+
 	  /* The inside-loop cost will be accounted for in vectorizable_load
 	     and vectorizable_store correctly with adjusted alignments.
 	     Drop the body_cst_vec on the floor here.  */
-	  body_cost_vec.release ();
-
 	  stat = vect_verify_datarefs_alignment (loop_vinfo);
 	  gcc_assert (stat);
           return stat;
         }
     }
-
-  body_cost_vec.release ();
 
   /* (2) Versioning to force alignment.  */
 
