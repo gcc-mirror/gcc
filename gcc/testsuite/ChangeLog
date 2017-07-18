@@ -1,3 +1,8 @@
+2017-07-18  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR middle-end/81462
+	* g++.dg/torture/pr81462.C: New testcase.
+
 2017-07-18  Bin Cheng  <bin.cheng@arm.com>
 
 	PR target/81408

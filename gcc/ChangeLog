@@ -1,3 +1,10 @@
+2017-07-18  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR middle-end/81462
+	* predict.c (set_even_probabilities): Cleanup; do not affect
+	probabilities that are already known.
+	(combine_predictions_for_bb): Call even when count is set.
+
 2017-07-18  Nathan Sidwell  <nathan@acm.org>
 
 	* tree-parloops.c (try_transform_to_exit_first_loop_alt): Use
