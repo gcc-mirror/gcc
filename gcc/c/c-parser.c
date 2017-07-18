@@ -18238,18 +18238,18 @@ c_parser_array_notation (location_t loc, c_parser *parser, tree initial_index,
 	      return error_mark_node;
 	    }
 
-	  start_index = TYPE_MINVAL (array_type_domain);
+	  start_index = TYPE_MIN_VALUE (array_type_domain);
 	  start_index = fold_build1 (CONVERT_EXPR, ptrdiff_type_node,
 				     start_index);
-	  if (!TYPE_MAXVAL (array_type_domain)
-	      || !TREE_CONSTANT (TYPE_MAXVAL (array_type_domain)))
+	  if (!TYPE_MAX_VALUE (array_type_domain)
+	      || !TREE_CONSTANT (TYPE_MAX_VALUE (array_type_domain)))
 	    {
 	      error_at (loc, "start-index and length fields necessary for "
 			"using array notations in variable-length arrays");
 	      c_parser_skip_until_found (parser, CPP_CLOSE_SQUARE, NULL);
 	      return error_mark_node;
 	    }
-	  end_index = TYPE_MAXVAL (array_type_domain);
+	  end_index = TYPE_MAX_VALUE (array_type_domain);
 	  end_index = fold_build2 (PLUS_EXPR, TREE_TYPE (end_index),
 				   end_index, integer_one_node);
 	  end_index = fold_build1 (CONVERT_EXPR, ptrdiff_type_node, end_index);

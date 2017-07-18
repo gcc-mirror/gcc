@@ -2110,7 +2110,6 @@ extern machine_mode element_mode (const_tree t);
   (FUNC_OR_METHOD_CHECK (NODE)->type_non_common.values)
 #define TYPE_VALUES_RAW(NODE) (TYPE_CHECK (NODE)->type_non_common.values)
 
-#define TYPE_MAXVAL(NODE) (TYPE_CHECK (NODE)->type_non_common.maxval)
 #define TYPE_MAX_VALUE(NODE) \
   (NUMERICAL_TYPE_CHECK (NODE)->type_non_common.maxval)
 /* If non-NULL, this is an upper bound of the size (in bytes) of an
@@ -2125,8 +2124,8 @@ extern machine_mode element_mode (const_tree t);
   (FUNC_OR_METHOD_CHECK (NODE)->type_non_common.maxval)
 #define TYPE_OFFSET_BASETYPE(NODE) \
   (OFFSET_TYPE_CHECK (NODE)->type_non_common.maxval)
+#define TYPE_MAXVAL_RAW(NODE) (TYPE_CHECK (NODE)->type_non_common.maxval)
 
-#define TYPE_MINVAL(NODE) (TYPE_CHECK (NODE)->type_non_common.minval)
 #define TYPE_MIN_VALUE(NODE) \
   (NUMERICAL_TYPE_CHECK (NODE)->type_non_common.minval)
 #define TYPE_VFIELD(NODE) \
@@ -2135,6 +2134,7 @@ extern machine_mode element_mode (const_tree t);
   (POINTER_TYPE_CHECK (NODE)->type_non_common.minval)
 #define TYPE_NEXT_REF_TO(NODE) \
   (REFERENCE_TYPE_CHECK (NODE)->type_non_common.minval)
+#define TYPE_MINVAL_RAW(NODE) (TYPE_CHECK (NODE)->type_non_common.minval)
 
 /* Used in a language-dependent way.  */
 #define TYPE_LANG_SLOT_1(NODE) \
