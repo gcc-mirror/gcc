@@ -1,4 +1,9 @@
-gcc/ChangeLog:
+2017-06-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/81418
+	* tree-vect-loop.c (vectorizable_reduction): Properly compute
+	vectype_in.  Verify that with lane-reducing reduction operations
+	we have a single def-use cycle.
 
 2017-07-17  Carl Love  <cel@us.ibm.com>
 

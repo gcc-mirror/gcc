@@ -5642,7 +5642,10 @@ vectorizable_reduction (gimple *stmt, gimple_stmt_iterator *gsi,
 	  if (k == 1
 	      && gimple_assign_rhs_code (reduc_stmt) == COND_EXPR)
 	    continue;
-	  vectype_in = get_vectype_for_scalar_type (TREE_TYPE (op));
+	  tem = get_vectype_for_scalar_type (TREE_TYPE (op));
+	  if (! vectype_in
+	      || TYPE_VECTOR_SUBPARTS (tem) < TYPE_VECTOR_SUBPARTS (vectype_in))
+	    vectype_in = tem;
 	  break;
 	}
       gcc_assert (vectype_in);
@@ -6213,26 +6216,6 @@ vectorizable_reduction (gimple *stmt, gimple_stmt_iterator *gsi,
 	}
     }
 
-  if (!vec_stmt) /* transformation not required.  */
-    {
-      if (first_p)
-	vect_model_reduction_cost (stmt_info, epilog_reduc_code, ncopies);
-      STMT_VINFO_TYPE (stmt_info) = reduc_vec_info_type;
-      return true;
-    }
-
-  /* Transform.  */
-
-  if (dump_enabled_p ())
-    dump_printf_loc (MSG_NOTE, vect_location, "transform reduction.\n");
-
-  /* FORNOW: Multiple types are not supported for condition.  */
-  if (code == COND_EXPR)
-    gcc_assert (ncopies == 1);
-
-  /* Create the destination vector  */
-  vec_dest = vect_create_destination_var (scalar_dest, vectype_out);
-
   /* In case the vectorization factor (VF) is bigger than the number
      of elements that we can fit in a vectype (nunits), we have to generate
      more than one vector stmt - i.e - we need to "unroll" the
@@ -6275,6 +6258,41 @@ vectorizable_reduction (gimple *stmt, gimple_stmt_iterator *gsi,
     }
   else
     epilog_copies = ncopies;
+
+  /* If the reduction stmt is one of the patterns that have lane
+     reduction embedded we cannot handle the case of ! single_defuse_cycle.  */
+  if ((ncopies > 1
+       && ! single_defuse_cycle)
+      && (code == DOT_PROD_EXPR
+	  || code == WIDEN_SUM_EXPR
+	  || code == SAD_EXPR))
+    {
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			 "multi def-use cycle not possible for lane-reducing "
+			 "reduction operation\n");
+      return false;
+    }
+
+  if (!vec_stmt) /* transformation not required.  */
+    {
+      if (first_p)
+	vect_model_reduction_cost (stmt_info, epilog_reduc_code, ncopies);
+      STMT_VINFO_TYPE (stmt_info) = reduc_vec_info_type;
+      return true;
+    }
+
+  /* Transform.  */
+
+  if (dump_enabled_p ())
+    dump_printf_loc (MSG_NOTE, vect_location, "transform reduction.\n");
+
+  /* FORNOW: Multiple types are not supported for condition.  */
+  if (code == COND_EXPR)
+    gcc_assert (ncopies == 1);
+
+  /* Create the destination vector  */
+  vec_dest = vect_create_destination_var (scalar_dest, vectype_out);
 
   prev_stmt_info = NULL;
   prev_phi_info = NULL;
