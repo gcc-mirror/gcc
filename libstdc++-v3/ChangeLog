@@ -1,3 +1,10 @@
+2017-07-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/81395
+	* include/bits/fstream.tcc (basic_filebuf::xsgetn): Don't set buffer
+	pointers for write mode after reading.
+	* testsuite/27_io/basic_filebuf/sgetn/char/81395.cc: New.
+
 2017-07-18  François Dumont  <fdumont@gcc.gnu.org>
 
 	* include/bits/stl_list.h
