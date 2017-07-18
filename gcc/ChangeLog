@@ -1,3 +1,9 @@
+2017-07-18  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/81473
+	* config/avr/avr.c (avr_optimize_casesi): Don't use
+	INT8_MIN, INT8_MAX, UINT8_MAX, INT16_MIN, INT16_MAX, UINT16_MAX.
+
 2017-07-18  Robin Dapp  <rdapp@linux.vnet.ibm.com>
 
         * tree-vect-data-refs.c (vect_enhance_data_refs_alignment): Remove
