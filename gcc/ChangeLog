@@ -1,5 +1,11 @@
 2017-07-18  Jan Hubicka  <hubicka@ucw.cz>
 
+	PR middle-end/81463
+	* cfgloopmanip.c (scale_loop_profile): Watch out for zero frequency
+	again.
+
+2017-07-18  Jan Hubicka  <hubicka@ucw.cz>
+
 	PR middle-end/81462
 	* predict.c (set_even_probabilities): Cleanup; do not affect
 	probabilities that are already known.
