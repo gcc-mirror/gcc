@@ -2378,9 +2378,9 @@ number_of_iterations_exit (struct loop *loop, edge exit,
     return true;
 
   if (warn)
-    warning_at (gimple_location_safe (stmt),
-		OPT_Wunsafe_loop_optimizations,
-		"missed loop optimization, the loop counter may overflow");
+    dump_printf_loc (MSG_MISSED_OPTIMIZATION, gimple_location_safe (stmt),
+		     "missed loop optimization: niters analysis ends up "
+		     "with assumptions.\n");
 
   return false;
 }

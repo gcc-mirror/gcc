@@ -1,3 +1,9 @@
+2017-07-18  Bin Cheng  <bin.cheng@arm.com>
+
+	PR target/81408
+	* tree-ssa-loop-niter.c (number_of_iterations_exit): Dump missed
+	optimization for loop niter analysis.
+
 2017-07-18  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/81473
