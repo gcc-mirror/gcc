@@ -1,3 +1,7 @@
+2017-07-18  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
+	* MAINTAINERS: Update my email address.
+
 2017-07-04  Richard Earnshaw  <rearnsha@arm.com>
 
 	* contrib/gcc_update (files_and_dependencies): Remove stamp rules for
