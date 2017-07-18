@@ -1,3 +1,21 @@
+2017-07-18  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/bits/stl_list.h
+	(struct _List_node_header): New.
+	(_List_impl()): Fix noexcept qualification.
+	(_List_impl(_List_impl&&)): New, default.
+	(_List_base()): Default.
+	(_List_base(_List_base&&)): Default.
+	(_List_base::_M_move_nodes): Adapt to use
+	_List_node_header._M_move_nodes.
+	(_List_base::_M_init): Likewise.
+	(list<>()): Default.
+	(list<>(list&&)): Default.
+	(list<>::_M_move_assign(list&&, true_type)): Use _M_move_nodes.
+	(__distance(_List_const_iterator<>, _List_const_iterator<>,
+	input_iterator_tag)): Adapt.
+	* testsuite/23_containers/list/allocator/default_init.cc: New.
+
 2017-07-15  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/std/mutex (scoped_lock): Reorder std::adopt_lock_t parameter
