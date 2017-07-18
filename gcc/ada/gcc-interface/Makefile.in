@@ -2643,10 +2643,10 @@ gnatlink-re: ../stamp-tools gnatmake-re
 #  stamp target in the parent directory whenever gnat1 is rebuilt
 
 # Likewise for the tools
-../../gnatmake$(exeext): $(P) b_gnatm.o $(GNATMAKE_OBJS)
+../../gnatmake$(exeext): b_gnatm.o $(GNATMAKE_OBJS)
 	+$(GCC_LINK) $(ALL_CFLAGS) -o $@ b_gnatm.o $(GNATMAKE_OBJS) $(TOOLS_LIBS) $(TOOLS1_LIBS)
 
-../../gnatlink$(exeext): $(P) b_gnatl.o $(GNATLINK_OBJS)
+../../gnatlink$(exeext): b_gnatl.o $(GNATLINK_OBJS)
 	+$(GCC_LINK) $(ALL_CFLAGS) -o $@ b_gnatl.o $(GNATLINK_OBJS) $(TOOLS_LIBS) $(TOOLS1_LIBS)
 
 ../stamp-gnatlib-$(RTSDIR):
