@@ -1,3 +1,9 @@
+2017-07-18  Bin Cheng  <bin.cheng@arm.com>
+
+	PR target/81408
+	* g++.dg/tree-ssa/pr81408.C: New.
+	* gcc.dg/tree-ssa/pr19210-1.c: Check dump message rather than warning.
+
 2017-07-18  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/80620
