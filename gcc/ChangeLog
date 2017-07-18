@@ -1,3 +1,12 @@
+2017-07-18  Tom de Vries  <tom@codesourcery.com>
+
+	backport from mainline:
+	PR target/81069
+	2017-07-17  Tom de Vries  <tom@codesourcery.com>
+
+	* config/nvptx/nvptx.c (nvptx_single): Insert diverging branch as late
+	as possible.
+
 2017-07-18  Georg-Johann Lay  <avr@gjlay.de>
 
 	Backport from 2017-07-18 trunk r250301.
