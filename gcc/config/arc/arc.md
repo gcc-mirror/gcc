@@ -505,8 +505,8 @@
   (cond [(eq_attr "in_delay_slot" "false")
 	 (const_string "no")
 	 (match_test "regno_clobbered_p
-			(arc_return_address_regs
-			  [arc_compute_function_type (cfun)],
+			(arc_return_address_register
+			  (arc_compute_function_type (cfun)),
 			 insn, SImode, 1)")
 	 (const_string "no")]
 	(const_string "yes")))
@@ -2649,30 +2649,7 @@
 			    (match_operand:DI 2 "nonmemory_operand" "")))
 	      (clobber (reg:CC CC_REG))])]
   ""
-{
-  if (TARGET_EXPAND_ADDDI)
-    {
-      rtx l0 = gen_lowpart (SImode, operands[0]);
-      rtx h0 = disi_highpart (operands[0]);
-      rtx l1 = gen_lowpart (SImode, operands[1]);
-      rtx h1 = disi_highpart (operands[1]);
-      rtx l2 = gen_lowpart (SImode, operands[2]);
-      rtx h2 = disi_highpart (operands[2]);
-      rtx cc_c = gen_rtx_REG (CC_Cmode, CC_REG);
-
-      if (CONST_INT_P (h2) && INTVAL (h2) < 0 && SIGNED_INT12 (INTVAL (h2)))
-	{
-	  emit_insn (gen_sub_f (l0, l1, gen_int_mode (-INTVAL (l2), SImode)));
-	  emit_insn (gen_sbc (h0, h1,
-			      gen_int_mode (-INTVAL (h2) - (l1 != 0), SImode),
-			      cc_c));
-	  DONE;
-	}
-      emit_insn (gen_add_f (l0, l1, l2));
-      emit_insn (gen_adc (h0, h1, h2));
-      DONE;
-    }
-})
+{})
 
 ; This assumes that there can be no strictly partial overlap between
 ; operands[1] and operands[2].
@@ -2911,20 +2888,6 @@
 {
   if (!register_operand (operands[2], DImode))
     operands[1] = force_reg (DImode, operands[1]);
-  if (TARGET_EXPAND_ADDDI)
-    {
-      rtx l0 = gen_lowpart (SImode, operands[0]);
-      rtx h0 = disi_highpart (operands[0]);
-      rtx l1 = gen_lowpart (SImode, operands[1]);
-      rtx h1 = disi_highpart (operands[1]);
-      rtx l2 = gen_lowpart (SImode, operands[2]);
-      rtx h2 = disi_highpart (operands[2]);
-      rtx cc_c = gen_rtx_REG (CC_Cmode, CC_REG);
-
-      emit_insn (gen_sub_f (l0, l1, l2));
-      emit_insn (gen_sbc (h0, h1, h2, cc_c));
-      DONE;
-    }
 })
 
 (define_insn_and_split "subdi3_i"
@@ -4533,9 +4496,21 @@
    (set_attr "type" "two_cycle_core,two_cycle_core")])
 
 (define_expand "clzsi2"
-  [(set (match_operand:SI 0 "dest_reg_operand" "")
-	(clz:SI (match_operand:SI 1 "register_operand" "")))]
+  [(parallel
+    [(set (match_operand:SI 0 "register_operand" "")
+	  (clz:SI (match_operand:SI 1 "register_operand" "")))
+     (clobber (match_dup 2))])]
   "TARGET_NORM"
+  "operands[2] = gen_rtx_REG (CC_ZNmode, CC_REG);")
+
+(define_insn_and_split "*arc_clzsi2"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(clz:SI (match_operand:SI 1 "register_operand" "r")))
+   (clobber (reg:CC_ZN CC_REG))]
+  "TARGET_NORM"
+  "#"
+  "reload_completed"
+  [(const_int 0)]
 {
   emit_insn (gen_norm_f (operands[0], operands[1]));
   emit_insn
@@ -4552,9 +4527,23 @@
 })
 
 (define_expand "ctzsi2"
-  [(set (match_operand:SI 0 "register_operand" "")
-	(ctz:SI (match_operand:SI 1 "register_operand" "")))]
+  [(match_operand:SI 0 "register_operand" "")
+   (match_operand:SI 1 "register_operand" "")]
   "TARGET_NORM"
+  "
+  emit_insn (gen_arc_ctzsi2 (operands[0], operands[1]));
+  DONE;
+")
+
+(define_insn_and_split "arc_ctzsi2"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(ctz:SI (match_operand:SI 1 "register_operand" "r")))
+   (clobber (reg:CC_ZN CC_REG))
+   (clobber (match_scratch:SI 2 "=&r"))]
+  "TARGET_NORM"
+  "#"
+  "reload_completed"
+  [(const_int 0)]
 {
   rtx temp = operands[0];
 
@@ -4562,10 +4551,10 @@
       || (REGNO (temp) < FIRST_PSEUDO_REGISTER
 	  && !TEST_HARD_REG_BIT (reg_class_contents[GENERAL_REGS],
 				 REGNO (temp))))
-    temp = gen_reg_rtx (SImode);
+    temp = operands[2];
   emit_insn (gen_addsi3 (temp, operands[1], constm1_rtx));
   emit_insn (gen_bic_f_zn (temp, temp, operands[1]));
-  emit_insn (gen_clrsbsi2 (temp, temp));
+  emit_insn (gen_clrsbsi2 (operands[0], temp));
   emit_insn
     (gen_rtx_COND_EXEC
       (VOIDmode,
@@ -4575,7 +4564,8 @@
     (gen_rtx_COND_EXEC
       (VOIDmode,
        gen_rtx_GE (VOIDmode, gen_rtx_REG (CC_ZNmode, CC_REG), const0_rtx),
-       gen_rtx_SET (operands[0], gen_rtx_MINUS (SImode, GEN_INT (31), temp))));
+       gen_rtx_SET (operands[0], gen_rtx_MINUS (SImode, GEN_INT (31),
+						operands[0]))));
   DONE;
 })
 
@@ -4859,7 +4849,8 @@
 {
   rtx reg
     = gen_rtx_REG (Pmode,
-		   arc_return_address_regs[arc_compute_function_type (cfun)]);
+		   arc_return_address_register (arc_compute_function_type
+						(cfun)));
 
   if (TARGET_V2
       && ARC_INTERRUPT_P (arc_compute_function_type (cfun)))
@@ -4908,7 +4899,8 @@
   xop[0] = operands[0];
   xop[1]
     = gen_rtx_REG (Pmode,
-		   arc_return_address_regs[arc_compute_function_type (cfun)]);
+		   arc_return_address_register (arc_compute_function_type
+						(cfun)));
 
   if (TARGET_PAD_RETURN)
     arc_pad_return ();

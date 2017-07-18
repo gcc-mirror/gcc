@@ -117,3 +117,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 /* This platform supports the probing method of stack checking (RTP mode).
    8K is reserved in the stack to propagate exceptions in case of overflow.  */
 #define STACK_CHECK_PROTECT 8192
+
+/* Unless overridded by the target options, the default is little-endian.  */
+#define TARGET_ENDIAN_DEFAULT 0

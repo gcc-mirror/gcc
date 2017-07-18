@@ -5138,39 +5138,33 @@ free_lang_data_in_type (tree type)
   TREE_LANG_FLAG_5 (type) = 0;
   TREE_LANG_FLAG_6 (type) = 0;
 
-  switch (TREE_CODE (type))
-    {
-    case FUNCTION_TYPE:
-      /* Remove the const and volatile qualifiers from arguments.  The
-	 C++ front end removes them, but the C front end does not,
-	 leading to false ODR violation errors when merging two
-	 instances of the same function signature compiled by
-	 different front ends.  */
-      for (tree p = TYPE_ARG_TYPES (type); p; p = TREE_CHAIN (p))
-	{
-	  tree arg_type = TREE_VALUE (p);
+  if (TREE_CODE (type) == FUNCTION_TYPE)
+    /* Remove the const and volatile qualifiers from arguments.  The
+       C++ front end removes them, but the C front end does not,
+       leading to false ODR violation errors when merging two
+       instances of the same function signature compiled by different
+       front ends.  */
+    for (tree p = TYPE_ARG_TYPES (type); p; p = TREE_CHAIN (p))
+      {
+	tree arg_type = TREE_VALUE (p);
 
-	  if (TYPE_READONLY (arg_type) || TYPE_VOLATILE (arg_type))
-	    {
-	      int quals = (TYPE_QUALS (arg_type)
-			   & ~TYPE_QUAL_CONST
-			   & ~TYPE_QUAL_VOLATILE);
-	      TREE_VALUE (p) = build_qualified_type (arg_type, quals);
-	      free_lang_data_in_type (TREE_VALUE (p));
-	    }
-	}
-      /* FALLTHROUGH  */
-
-    case METHOD_TYPE:
-      for (tree p = TYPE_ARG_TYPES (type); p; p = TREE_CHAIN (p))
+	if (TYPE_READONLY (arg_type) || TYPE_VOLATILE (arg_type))
+	  {
+	    int quals = (TYPE_QUALS (arg_type)
+			 & ~TYPE_QUAL_CONST
+			 & ~TYPE_QUAL_VOLATILE);
+	    TREE_VALUE (p) = build_qualified_type (arg_type, quals);
+	    free_lang_data_in_type (TREE_VALUE (p));
+	  }
 	/* C++ FE uses TREE_PURPOSE to store initial values.  */
 	TREE_PURPOSE (p) = NULL;
-      TYPE_MINVAL_RAW (type) = NULL;
-      break;
-
-    case RECORD_TYPE:
-    case UNION_TYPE:
-    case QUAL_UNION_TYPE:
+      }
+  else if (TREE_CODE (type) == METHOD_TYPE)
+    for (tree p = TYPE_ARG_TYPES (type); p; p = TREE_CHAIN (p))
+      /* C++ FE uses TREE_PURPOSE to store initial values.  */
+      TREE_PURPOSE (p) = NULL;
+  else if (RECORD_OR_UNION_TYPE_P (type))
+    {
       /* Remove members that are not FIELD_DECLs (and maybe
 	 TYPE_DECLs) from the field list of an aggregate.  These occur
 	 in C++.  */
@@ -5204,17 +5198,13 @@ free_lang_data_in_type (tree type)
 		  || debug_info_level != DINFO_LEVEL_NONE))
 	    TYPE_BINFO (type) = NULL;
 	}
-      break;
-
-    default:
-      if (INTEGRAL_TYPE_P (type)
-	  || SCALAR_FLOAT_TYPE_P (type)
-	  || FIXED_POINT_TYPE_P (type))
-	{
-	  free_lang_data_in_one_sizepos (&TYPE_MIN_VALUE (type));
-	  free_lang_data_in_one_sizepos (&TYPE_MAX_VALUE (type));
-	}
-      break;
+    }
+  else if (INTEGRAL_TYPE_P (type)
+	   || SCALAR_FLOAT_TYPE_P (type)
+	   || FIXED_POINT_TYPE_P (type))
+    {
+      free_lang_data_in_one_sizepos (&TYPE_MIN_VALUE (type));
+      free_lang_data_in_one_sizepos (&TYPE_MAX_VALUE (type));
     }
 
   TYPE_LANG_SLOT_1 (type) = NULL_TREE;
@@ -5623,16 +5613,7 @@ find_decls_types_r (tree *tp, int *ws, void *data)
 	  tree tem;
 	  FOR_EACH_VEC_ELT (*BINFO_BASE_BINFOS (TYPE_BINFO (t)), i, tem)
 	    fld_worklist_push (TREE_TYPE (tem), fld);
-	  tem = BINFO_VIRTUALS (TYPE_BINFO (t));
-	  if (tem
-	      /* The Java FE overloads BINFO_VIRTUALS for its own purpose.  */
-	      && TREE_CODE (tem) == TREE_LIST)
-	    do
-	      {
-		fld_worklist_push (TREE_VALUE (tem), fld);
-		tem = TREE_CHAIN (tem);
-	      }
-	    while (tem);
+	  fld_worklist_push (BINFO_VIRTUALS (TYPE_BINFO (t)), fld);
 	}
       if (RECORD_OR_UNION_TYPE_P (t))
 	{
@@ -10755,7 +10736,7 @@ build_common_builtin_nodes (void)
 			ECF_PURE | ECF_NOTHROW | ECF_LEAF);
 
   /* If there's a possibility that we might use the ARM EABI, build the
-    alternate __cxa_end_cleanup node used to resume from C++ and Java.  */
+    alternate __cxa_end_cleanup node used to resume from C++.  */
   if (targetm.arm_eabi_unwinder)
     {
       ftype = build_function_type_list (void_type_node, NULL_TREE);
@@ -13934,7 +13915,6 @@ verify_type (const_tree t)
       error_found = true;
    }
 
-
   /* Check various uses of TYPE_MINVAL_RAW.  */
   if (RECORD_OR_UNION_TYPE_P (t))
     {
@@ -13976,15 +13956,6 @@ verify_type (const_tree t)
 	  useless_type_conversion_p (const_cast <tree> (t),
 				     TREE_TYPE (TYPE_MIN_VALUE (t))
 	 but does not for C sizetypes in LTO.  */
-    }
-  /* Java uses TYPE_MINVAL for TYPE_ARGUMENT_SIGNATURE.  */
-  else if (TYPE_MINVAL_RAW (t)
-	   && ((TREE_CODE (t) != METHOD_TYPE && TREE_CODE (t) != FUNCTION_TYPE)
-	       || in_lto_p))
-    {
-      error ("TYPE_MINVAL_RAW non-NULL");
-      debug_tree (TYPE_MINVAL_RAW (t));
-      error_found = true;
     }
 
   /* Check various uses of TYPE_MAXVAL_RAW.  */
@@ -14206,20 +14177,6 @@ verify_type (const_tree t)
     {
       error ("TYPE_STRING_FLAG is set on wrong type code");
       error_found = true;
-    }
-  else if (TYPE_STRING_FLAG (t))
-    {
-      const_tree b = t;
-      if (TREE_CODE (b) == ARRAY_TYPE)
-	b = TREE_TYPE (t);
-      /* Java builds arrays with TYPE_STRING_FLAG of promoted_char_type
-	 that is 32bits.  */
-      if (TREE_CODE (b) != INTEGER_TYPE)
-	{
-	  error ("TYPE_STRING_FLAG is set on type that does not look like "
-		 "char nor array of chars");
-	  error_found = true;
-	}
     }
   
   /* ipa-devirt makes an assumption that TYPE_METHOD_BASETYPE is always

@@ -1,3 +1,7 @@
+2017-07-18  Nathan Sidwell  <nathan@acm.org>
+
+	* trans.c (gfc_build_array_ref): Use TYPE_MAX_VALUE.
+
 2017-07-09  Dominique d'Humieres  <dominiq@lps.ens.fr>
 
 	PR fortran/81341

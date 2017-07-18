@@ -1,5 +1,7 @@
 2017-07-18  Nathan Sidwell  <nathan@acm.org>
 
+	Merge trunk r250313.
+
 	Rename TYPE_{MIN,MAX}VAL to TYPE_{MIN,MAX}VAL_RAW.
 	gcc/c/
 	* c-parser.c (c_parser_array_notation): Use TYPE_{MIN,MAX}_VALUE.

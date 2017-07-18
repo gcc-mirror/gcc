@@ -756,6 +756,16 @@ compatible_locations_p (location_t loc_a, location_t loc_b)
     }
 }
 
+/* Comparator for sorting fix-it hints.  */
+
+static int
+fixit_cmp (const void *p_a, const void *p_b)
+{
+  const fixit_hint * hint_a = *static_cast<const fixit_hint * const *> (p_a);
+  const fixit_hint * hint_b = *static_cast<const fixit_hint * const *> (p_b);
+  return hint_a->get_start_loc () - hint_b->get_start_loc ();
+}
+
 /* Implementation of class layout.  */
 
 /* Constructor for class layout.
@@ -798,6 +808,9 @@ layout::layout (diagnostic_context * context,
       if (validate_fixit_hint_p (hint))
 	m_fixit_hints.safe_push (hint);
     }
+
+  /* Sort m_fixit_hints.  */
+  m_fixit_hints.qsort (fixit_cmp);
 
   /* Populate m_line_spans.  */
   calculate_line_spans ();
@@ -1385,7 +1398,11 @@ layout::annotation_line_showed_range_p (int line, int start_column,
 
 struct column_range
 {
-  column_range (int start_, int finish_) : start (start_), finish (finish_) {}
+  column_range (int start_, int finish_) : start (start_), finish (finish_)
+  {
+    /* We must have either a range, or an insertion.  */
+    gcc_assert (start <= finish || finish == start - 1);
+  }
 
   bool operator== (const column_range &other) const
   {
@@ -1427,6 +1444,26 @@ get_printed_columns (const fixit_hint *hint)
     }
 }
 
+/* A struct capturing the bounds of a buffer, to allow for run-time
+   bounds-checking in a checked build.  */
+
+struct char_span
+{
+  char_span (const char *ptr, size_t n_elts) : m_ptr (ptr), m_n_elts (n_elts) {}
+
+  char_span subspan (int offset, int n_elts)
+  {
+    gcc_assert (offset >= 0);
+    gcc_assert (offset < (int)m_n_elts);
+    gcc_assert (n_elts >= 0);
+    gcc_assert (offset + n_elts <= (int)m_n_elts);
+    return char_span (m_ptr + offset, n_elts);
+  }
+
+  const char *m_ptr;
+  size_t m_n_elts;
+};
+
 /* A correction on a particular line.
    This describes a plan for how to print one or more fixit_hint
    instances that affected the line, potentially consolidating hints
@@ -1454,6 +1491,14 @@ struct correction
 
   void ensure_capacity (size_t len);
   void ensure_terminated ();
+
+  void overwrite (int dst_offset, const char_span &src_span)
+  {
+    gcc_assert (dst_offset >= 0);
+    gcc_assert (dst_offset + src_span.m_n_elts < m_alloc_sz);
+    memcpy (m_text + dst_offset, src_span.m_ptr,
+	    src_span.m_n_elts);
+  }
 
   /* If insert, then start: the column before which the text
      is to be inserted, and finish is offset by the length of
@@ -1526,6 +1571,26 @@ line_corrections::~line_corrections ()
     delete c;
 }
 
+/* A struct wrapping a particular source line, allowing
+   run-time bounds-checking of accesses in a checked build.  */
+
+struct source_line
+{
+  source_line (const char *filename, int line);
+
+  char_span as_span () { return char_span (chars, width); }
+
+  const char *chars;
+  int width;
+};
+
+/* source_line's ctor.  */
+
+source_line::source_line (const char *filename, int line)
+{
+  chars = location_get_source_line (filename, line, &width);
+}
+
 /* Add HINT to the corrections for this line.
    Attempt to consolidate nearby hints so that they will not
    overlap with printed.  */
@@ -1541,6 +1606,14 @@ line_corrections::add_hint (const fixit_hint *hint)
     {
       correction *last_correction
 	= m_corrections[m_corrections.length () - 1];
+
+      /* The following consolidation code assumes that the fix-it hints
+	 have been sorted by start (done within layout's ctor).  */
+      gcc_assert (affected_columns.start
+		  >= last_correction->m_affected_columns.start);
+      gcc_assert (printed_columns.start
+		  >= last_correction->m_printed_columns.start);
+
       if (printed_columns.start <= last_correction->m_printed_columns.finish)
 	{
 	  /* We have two hints for which the printed forms of the hints
@@ -1553,23 +1626,26 @@ line_corrections::add_hint (const fixit_hint *hint)
 				printed_columns.start - 1);
 
 	  /* Try to read the source.  */
-	  int line_width;
-	  const char *line = location_get_source_line (m_filename, m_row,
-						       &line_width);
-	  if (line && between.finish < line_width)
+	  source_line line (m_filename, m_row);
+	  if (line.chars && between.finish < line.width)
 	    {
 	      /* Consolidate into the last correction:
 		 add a no-op "replace" of the "between" text, and
 		 add the text from the new hint.  */
-	      size_t old_len = last_correction->m_len;
-	      size_t between_len = between.finish + 1 - between.start;
-	      size_t new_len = old_len + between_len + hint->get_length ();
+	      int old_len = last_correction->m_len;
+	      gcc_assert (old_len >= 0);
+	      int between_len = between.finish + 1 - between.start;
+	      gcc_assert (between_len >= 0);
+	      int new_len = old_len + between_len + hint->get_length ();
+	      gcc_assert (new_len >= 0);
 	      last_correction->ensure_capacity (new_len);
-	      memcpy (last_correction->m_text + old_len,
-		      line + between.start - 1,
-		      between.finish + 1 - between.start);
-	      memcpy (last_correction->m_text + old_len + between_len,
-		      hint->get_string (), hint->get_length ());
+	      last_correction->overwrite
+		(old_len,
+		 line.as_span ().subspan (between.start - 1,
+					  between.finish + 1 - between.start));
+	      last_correction->overwrite (old_len + between_len,
+					  char_span (hint->get_string (),
+						     hint->get_length ()));
 	      last_correction->m_len = new_len;
 	      last_correction->ensure_terminated ();
 	      last_correction->m_affected_columns.finish
@@ -2791,6 +2867,96 @@ test_overlapped_fixit_printing (const line_table_case &case_)
   }
 }
 
+/* Verify that the line_corrections machinery correctly prints
+   overlapping fixit-hints that have been added in the wrong
+   order.
+   Adapted from PR c/81405 seen on gcc.dg/init-excess-1.c*/
+
+static void
+test_overlapped_fixit_printing_2 (const line_table_case &case_)
+{
+  /* Create a tempfile and write some text to it.
+     ...000000000111111111122222222223333333333.
+     ...123456789012345678901234567890123456789.  */
+  const char *content
+    = ("int a5[][0][0] = { 1, 2 };\n");
+  temp_source_file tmp (SELFTEST_LOCATION, ".c", content);
+  line_table_test ltt (case_);
+
+  const line_map_ordinary *ord_map
+    = linemap_check_ordinary (linemap_add (line_table, LC_ENTER, false,
+					   tmp.get_filename (), 0));
+
+  linemap_line_start (line_table, 1, 100);
+
+  const location_t final_line_end
+    = linemap_position_for_line_and_column (line_table, ord_map, 1, 100);
+
+  /* Don't attempt to run the tests if column data might be unavailable.  */
+  if (final_line_end > LINE_MAP_MAX_LOCATION_WITH_COLS)
+    return;
+
+  const location_t col_1
+    = linemap_position_for_line_and_column (line_table, ord_map, 1, 1);
+  const location_t col_20
+    = linemap_position_for_line_and_column (line_table, ord_map, 1, 20);
+  const location_t col_21
+    = linemap_position_for_line_and_column (line_table, ord_map, 1, 21);
+  const location_t col_23
+    = linemap_position_for_line_and_column (line_table, ord_map, 1, 23);
+  const location_t col_25
+    = linemap_position_for_line_and_column (line_table, ord_map, 1, 25);
+
+  /* Two insertions, in the wrong order.  */
+  {
+    rich_location richloc (line_table, col_20);
+    richloc.add_fixit_insert_before (col_23, "{");
+    richloc.add_fixit_insert_before (col_21, "}");
+
+    /* These fixits should be accepted; they can't be consolidated.  */
+    ASSERT_EQ (2, richloc.get_num_fixit_hints ());
+    const fixit_hint *hint_0 = richloc.get_fixit_hint (0);
+    ASSERT_EQ (column_range (23, 22), get_affected_columns (hint_0));
+    ASSERT_EQ (column_range (23, 23), get_printed_columns (hint_0));
+    const fixit_hint *hint_1 = richloc.get_fixit_hint (1);
+    ASSERT_EQ (column_range (21, 20), get_affected_columns (hint_1));
+    ASSERT_EQ (column_range (21, 21), get_printed_columns (hint_1));
+
+    /* Verify that they're printed correctly.  */
+    test_diagnostic_context dc;
+    diagnostic_show_locus (&dc, &richloc, DK_ERROR);
+    ASSERT_STREQ ("\n"
+		  " int a5[][0][0] = { 1, 2 };\n"
+		  "                    ^\n"
+		  "                     } {\n",
+		  pp_formatted_text (dc.printer));
+  }
+
+  /* Various overlapping insertions, some occurring "out of order"
+     (reproducing the fix-it hints from PR c/81405).  */
+  {
+    test_diagnostic_context dc;
+    rich_location richloc (line_table, col_20);
+
+    richloc.add_fixit_insert_before (col_20, "{{");
+    richloc.add_fixit_insert_before (col_21, "}}");
+    richloc.add_fixit_insert_before (col_23, "{");
+    richloc.add_fixit_insert_before (col_21, "}");
+    richloc.add_fixit_insert_before (col_23, "{{");
+    richloc.add_fixit_insert_before (col_25, "}");
+    richloc.add_fixit_insert_before (col_21, "}");
+    richloc.add_fixit_insert_before (col_1, "{");
+    richloc.add_fixit_insert_before (col_25, "}");
+    diagnostic_show_locus (&dc, &richloc, DK_ERROR);
+    ASSERT_STREQ ("\n"
+		  " int a5[][0][0] = { 1, 2 };\n"
+		  "                    ^\n"
+		  " {                  -----\n"
+		  "                    {{1}}}}, {{{2 }}\n",
+		  pp_formatted_text (dc.printer));
+  }
+}
+
 /* Insertion fix-it hint: adding a "break;" on a line by itself.  */
 
 static void
@@ -3001,6 +3167,7 @@ diagnostic_show_locus_c_tests ()
   for_each_line_table_case (test_diagnostic_show_locus_fixit_lines);
   for_each_line_table_case (test_fixit_consolidation);
   for_each_line_table_case (test_overlapped_fixit_printing);
+  for_each_line_table_case (test_overlapped_fixit_printing_2);
   for_each_line_table_case (test_fixit_insert_containing_newline);
   for_each_line_table_case (test_fixit_insert_containing_newline_2);
   for_each_line_table_case (test_fixit_replace_containing_newline);

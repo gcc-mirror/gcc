@@ -363,8 +363,9 @@
    UNSPEC_VSX_VSLO
    UNSPEC_VSX_EXTRACT
    UNSPEC_VSX_SXEXPDP
-   UNSPEC_VSX_SXSIGDP
+   UNSPEC_VSX_SXSIG
    UNSPEC_VSX_SIEXPDP
+   UNSPEC_VSX_SIEXPQP
    UNSPEC_VSX_SCMPEXPDP
    UNSPEC_VSX_STSTDC
    UNSPEC_VSX_VXEXP
@@ -3934,6 +3935,15 @@
 
 ;; ISA 3.0 Binary Floating-Point Support
 
+;; VSX Scalar Extract Exponent Quad-Precision
+(define_insn "xsxexpqp"
+  [(set (match_operand:DI 0 "altivec_register_operand" "=v")
+	(unspec:DI [(match_operand:KF 1 "altivec_register_operand" "v")]
+	 UNSPEC_VSX_SXEXPDP))]
+  "TARGET_P9_VECTOR"
+  "xsxexpqp %0,%1"
+  [(set_attr "type" "vecmove")])
+
 ;; VSX Scalar Extract Exponent Double-Precision
 (define_insn "xsxexpdp"
   [(set (match_operand:DI 0 "register_operand" "=r")
@@ -3943,14 +3953,43 @@
   "xsxexpdp %0,%x1"
   [(set_attr "type" "integer")])
 
+;; VSX Scalar Extract Significand Quad-Precision
+(define_insn "xsxsigqp"
+  [(set (match_operand:TI 0 "altivec_register_operand" "=v")
+	(unspec:TI [(match_operand:KF 1 "altivec_register_operand" "v")]
+	 UNSPEC_VSX_SXSIG))]
+  "TARGET_P9_VECTOR"
+  "xsxsigqp %0,%1"
+  [(set_attr "type" "vecmove")])
+
 ;; VSX Scalar Extract Significand Double-Precision
 (define_insn "xsxsigdp"
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(unspec:DI [(match_operand:DF 1 "vsx_register_operand" "wa")]
-	 UNSPEC_VSX_SXSIGDP))]
+	 UNSPEC_VSX_SXSIG))]
   "TARGET_P9_VECTOR && TARGET_64BIT"
   "xsxsigdp %0,%x1"
   [(set_attr "type" "integer")])
+
+;; VSX Scalar Insert Exponent Quad-Precision Floating Point Argument
+(define_insn "xsiexpqpf"
+  [(set (match_operand:KF 0 "altivec_register_operand" "=v")
+	(unspec:KF [(match_operand:KF 1 "altivec_register_operand" "v")
+		    (match_operand:DI 2 "altivec_register_operand" "v")]
+	 UNSPEC_VSX_SIEXPQP))]
+  "TARGET_P9_VECTOR"
+  "xsiexpqp %0,%1,%2"
+  [(set_attr "type" "vecmove")])
+
+;; VSX Scalar Insert Exponent Quad-Precision
+(define_insn "xsiexpqp"
+  [(set (match_operand:KF 0 "altivec_register_operand" "=v")
+	(unspec:KF [(match_operand:TI 1 "altivec_register_operand" "v")
+		    (match_operand:DI 2 "altivec_register_operand" "v")]
+	 UNSPEC_VSX_SIEXPQP))]
+  "TARGET_P9_VECTOR"
+  "xsiexpqp %0,%1,%2"
+  [(set_attr "type" "vecmove")])
 
 ;; VSX Scalar Insert Exponent Double-Precision
 (define_insn "xsiexpdp"
@@ -4000,6 +4039,27 @@
   "xscmpexpdp %0,%x1,%x2"
   [(set_attr "type" "fpcompare")])
 
+;; VSX Scalar Test Data Class Quad-Precision
+;;  (Expansion for scalar_test_data_class (__ieee128, int))
+;;   (Has side effect of setting the lt bit if operand 1 is negative,
+;;    setting the eq bit if any of the conditions tested by operand 2
+;;    are satisfied, and clearing the gt and undordered bits to zero.)
+(define_expand "xststdcqp"
+  [(set (match_dup 3)
+	(compare:CCFP
+	 (unspec:KF
+	  [(match_operand:KF 1 "altivec_register_operand" "v")
+	   (match_operand:SI 2 "u7bit_cint_operand" "n")]
+	  UNSPEC_VSX_STSTDC)
+	 (const_int 0)))
+   (set (match_operand:SI 0 "register_operand" "=r")
+	(eq:SI (match_dup 3)
+	       (const_int 0)))]
+  "TARGET_P9_VECTOR"
+{
+  operands[3] = gen_reg_rtx (CCFPmode);
+})
+
 ;; VSX Scalar Test Data Class Double- and Single-Precision
 ;;  (The lt bit is set if operand 1 is negative.  The eq bit is set
 ;;   if any of the conditions tested by operand 2 are satisfied.
@@ -4021,8 +4081,24 @@
   operands[4] = CONST0_RTX (SImode);
 })
 
-;; The VSX Scalar Test Data Class Double- and Single-Precision
-;; instruction may also be used to test for negative value.
+;; The VSX Scalar Test Negative Quad-Precision
+(define_expand "xststdcnegqp"
+  [(set (match_dup 2)
+	(compare:CCFP
+	 (unspec:KF
+	  [(match_operand:KF 1 "altivec_register_operand" "v")
+	   (const_int 0)]
+	  UNSPEC_VSX_STSTDC)
+	 (const_int 0)))
+   (set (match_operand:SI 0 "register_operand" "=r")
+	(lt:SI (match_dup 2)
+	       (const_int 0)))]
+  "TARGET_P9_VECTOR"
+{
+  operands[2] = gen_reg_rtx (CCFPmode);
+})
+
+;; The VSX Scalar Test Negative Double- and Single-Precision
 (define_expand "xststdcneg<Fvsx>"
   [(set (match_dup 2)
 	(compare:CCFP
@@ -4039,6 +4115,17 @@
   operands[2] = gen_reg_rtx (CCFPmode);
   operands[3] = CONST0_RTX (SImode);
 })
+
+(define_insn "*xststdcqp"
+  [(set (match_operand:CCFP 0 "" "=y")
+	(compare:CCFP
+	 (unspec:KF [(match_operand:KF 1 "altivec_register_operand" "v")
+		     (match_operand:SI 2 "u7bit_cint_operand" "n")]
+	  UNSPEC_VSX_STSTDC)
+	 (const_int 0)))]
+  "TARGET_P9_VECTOR"
+  "xststdcqp %0,%1,%2"
+  [(set_attr "type" "fpcompare")])
 
 (define_insn "*xststdc<Fvsx>"
   [(set (match_operand:CCFP 0 "" "=y")

@@ -6459,7 +6459,7 @@ compare_assert_loc (const void *pa, const void *pb)
     return (a->e != NULL
 	    ? a->e->src->index - b->e->src->index
 	    : a->bb->index - b->bb->index);
-  return ha - hb;
+  return ha > hb ? 1 : -1;
 }
 
 /* Process all the insertions registered for every name N_i registered

@@ -8890,7 +8890,7 @@ cp_parser_cast_expression (cp_parser *parser, bool address_p, bool cast_p,
 		  maybe_add_cast_fixit (&rich_loc, open_paren_loc, close_paren_loc,
 					expr, type);
 		  warning_at_rich_loc (&rich_loc, OPT_Wold_style_cast,
-				       "use of old-style cast to %qT", type);
+				       "use of old-style cast to %q#T", type);
 		}
 
 	      /* Only type conversions to integral or enumeration types
@@ -13382,7 +13382,9 @@ cp_parser_decl_specifier_seq (cp_parser* parser,
 	case RID_FRIEND:
 	  if (!at_class_scope_p ())
 	    {
-	      error_at (token->location, "%<friend%> used outside of class");
+	      gcc_rich_location richloc (token->location);
+	      richloc.add_fixit_remove ();
+	      error_at_rich_loc (&richloc, "%<friend%> used outside of class");
 	      cp_lexer_purge_token (parser->lexer);
 	    }
 	  else
@@ -13444,10 +13446,13 @@ cp_parser_decl_specifier_seq (cp_parser* parser,
 	      /* Consume the token.  */
 	      cp_lexer_consume_token (parser->lexer);
 
-              /* Complain about `auto' as a storage specifier, if
-                 we're complaining about C++0x compatibility.  */
-              warning_at (token->location, OPT_Wc__11_compat, "%<auto%>"
-			  " changes meaning in C++11; please remove it");
+	      /* Complain about `auto' as a storage specifier, if
+		 we're complaining about C++0x compatibility.  */
+	      gcc_rich_location richloc (token->location);
+	      richloc.add_fixit_remove ();
+	      warning_at_rich_loc (&richloc, OPT_Wc__11_compat,
+				   "%<auto%> changes meaning in C++11; "
+				   "please remove it");
 
               /* Set the storage class anyway.  */
               cp_parser_set_storage_class (parser, decl_specs, RID_AUTO,

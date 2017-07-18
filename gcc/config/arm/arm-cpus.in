@@ -381,7 +381,7 @@ begin arch armv8-m.main
 end arch armv8-m.main
 
 begin arch armv8-r
- tune for cortex-r4
+ tune for cortex-r52
  tune flags CO_PROC
  base 8R
  profile R
@@ -389,7 +389,7 @@ begin arch armv8-r
  option crc add bit_crc32
 # fp.sp => fp-armv8 (d16); simd => simd + fp-armv8 + d32 + double precision
 # note: no fp option for fp-armv8 (d16) + double precision at the moment
- option fp.sp add FP_ARMv8
+ option fp.sp add FPv5
  option simd add FP_ARMv8 NEON
  option crypto add FP_ARMv8 CRYPTO
  option nocrypto remove ALL_CRYPTO
@@ -1315,6 +1315,16 @@ begin cpu cortex-m33
  costs v7m
 end cpu cortex-m33
 
+# V8 R-profile implementations.
+begin cpu cortex-r52
+ cname cortexr52
+ tune flags LDSCHED
+ architecture armv8-r+crc+simd
+ fpu neon-fp-armv8
+ option nofp.dp remove FP_DBL ALL_SIMD
+ costs cortex
+end cpu cortex-r52
+
 # FPU entries
 # format:
 # begin fpu <name>
@@ -1390,7 +1400,7 @@ begin fpu fpv5-d16
 end fpu fpv5-d16
 
 begin fpu fp-armv8
- isa FP_ARMv8 FP_D32
+ isa FP_ARMv8
 end fpu fp-armv8
 
 begin fpu neon-fp-armv8

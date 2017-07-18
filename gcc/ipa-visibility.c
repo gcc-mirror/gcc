@@ -624,7 +624,7 @@ function_and_variable_visibility (bool whole_program)
       /* Optimize away PURE and CONST constructors and destructors.  */
       if (node->analyzed
 	  && (DECL_STATIC_CONSTRUCTOR (node->decl)
-	      || DECL_STATIC_CONSTRUCTOR (node->decl))
+	      || DECL_STATIC_DESTRUCTOR (node->decl))
 	  && (flags & (ECF_CONST | ECF_PURE))
 	  && !(flags & ECF_LOOPING_CONST_OR_PURE)
 	  && opt_for_fn (node->decl, optimize))

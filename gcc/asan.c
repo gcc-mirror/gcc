@@ -1208,7 +1208,9 @@ asan_clear_shadow (rtx shadow_mem, HOST_WIDE_INT len)
   emit_cmp_and_jump_insns (addr, end, LT, NULL_RTX, Pmode, true, top_label);
   jump = get_last_insn ();
   gcc_assert (JUMP_P (jump));
-  add_int_reg_note (jump, REG_BR_PROB, REG_BR_PROB_BASE * 80 / 100);
+  add_reg_br_prob_note (jump,
+			profile_probability::guessed_always ()
+			   .apply_scale (80, 100));
 }
 
 void
@@ -1567,9 +1569,10 @@ asan_emit_allocas_unpoison (rtx top, rtx bot, rtx_insn *before)
   else
     start_sequence ();
   rtx ret = init_one_libfunc ("__asan_allocas_unpoison");
+  top = convert_memory_address (ptr_mode, top);
+  bot = convert_memory_address (ptr_mode, bot);
   ret = emit_library_call_value (ret, NULL_RTX, LCT_NORMAL, ptr_mode, 2, top,
-				 TYPE_MODE (pointer_sized_int_node), bot,
-				 TYPE_MODE (pointer_sized_int_node));
+				 ptr_mode, bot, ptr_mode);
 
   do_pending_stack_adjust ();
   rtx_insn *insns = get_insns ();
@@ -1795,12 +1798,11 @@ create_cond_insert_point (gimple_stmt_iterator *iter,
 
   /* Set up the newly created 'then block'.  */
   e = make_edge (cond_bb, then_bb, EDGE_TRUE_VALUE);
-  int fallthrough_probability
+  profile_probability fallthrough_probability
     = then_more_likely_p
-    ? PROB_VERY_UNLIKELY
-    : PROB_ALWAYS - PROB_VERY_UNLIKELY;
-  e->probability = profile_probability::from_reg_br_prob_base
-		(PROB_ALWAYS - fallthrough_probability);
+    ? profile_probability::very_unlikely ()
+    : profile_probability::very_likely ();
+  e->probability = fallthrough_probability.invert ();
   if (create_then_fallthru_edge)
     make_single_succ_edge (then_bb, fallthru_bb, EDGE_FALLTHRU);
 
@@ -1808,8 +1810,7 @@ create_cond_insert_point (gimple_stmt_iterator *iter,
   e = find_edge (cond_bb, fallthru_bb);
   e->flags = EDGE_FALSE_VALUE;
   e->count = cond_bb->count;
-  e->probability
-	 = profile_probability::from_reg_br_prob_base (fallthrough_probability);
+  e->probability = fallthrough_probability;
 
   /* Update dominance info for the newly created then_bb; note that
      fallthru_bb's dominance info has already been updated by

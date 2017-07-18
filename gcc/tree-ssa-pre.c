@@ -1489,6 +1489,45 @@ phi_translate_1 (pre_expr expr, bitmap_set_t set1, bitmap_set_t set2,
 		PRE_EXPR_NARY (expr) = nary;
 		new_val_id = nary->value_id;
 		get_or_alloc_expression_id (expr);
+		/* When we end up re-using a value number make sure that
+		   doesn't have unrelated (which we can't check here)
+		   range or points-to info on it.  */
+		if (result
+		    && INTEGRAL_TYPE_P (TREE_TYPE (result))
+		    && SSA_NAME_RANGE_INFO (result)
+		    && ! SSA_NAME_IS_DEFAULT_DEF (result))
+		  {
+		    if (! VN_INFO (result)->info.range_info)
+		      {
+			VN_INFO (result)->info.range_info
+			  = SSA_NAME_RANGE_INFO (result);
+			VN_INFO (result)->range_info_anti_range_p
+			  = SSA_NAME_ANTI_RANGE_P (result);
+		      }
+		    if (dump_file && (dump_flags & TDF_DETAILS))
+		      {
+			fprintf (dump_file, "clearing range info of ");
+			print_generic_expr (dump_file, result);
+			fprintf (dump_file, "\n");
+		      }
+		    SSA_NAME_RANGE_INFO (result) = NULL;
+		  }
+		else if (result
+			 && POINTER_TYPE_P (TREE_TYPE (result))
+			 && SSA_NAME_PTR_INFO (result)
+			 && ! SSA_NAME_IS_DEFAULT_DEF (result))
+		  {
+		    if (! VN_INFO (result)->info.ptr_info)
+		      VN_INFO (result)->info.ptr_info
+			= SSA_NAME_PTR_INFO (result);
+		    if (dump_file && (dump_flags & TDF_DETAILS))
+		      {
+			fprintf (dump_file, "clearing points-to info of ");
+			print_generic_expr (dump_file, result);
+			fprintf (dump_file, "\n");
+		      }
+		    SSA_NAME_PTR_INFO (result) = NULL;
+		  }
 	      }
 	    else
 	      {

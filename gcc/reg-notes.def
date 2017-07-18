@@ -99,20 +99,21 @@ REG_NOTE (DEP_OUTPUT)
 REG_NOTE (DEP_ANTI)
 REG_NOTE (DEP_CONTROL)
 
-/* REG_BR_PROB is attached to JUMP_INSNs and CALL_INSNs.  It has an
+/* REG_BR_PROB is attached to JUMP_INSNs.  It has an
    integer value (in an INT_LIST).  For jumps, it is the probability
-   that this is a taken branch.  For calls, it is the probability that
-   this call won't return.  */
+   that this is a taken branch. The integer represents a value of
+   profile_probability type. Use to_reg_br_prob_note and from_reg_br_prob_note
+   to extract the actual value.  */
 REG_NOTE (BR_PROB)
 
 /* Attached to a call insn; indicates that the call is malloc-like and
    that the pointer returned cannot alias anything else.  */
 REG_NOTE (NOALIAS)
 
-/* REG_BR_PRED is attached to JUMP_INSNs and CALL_INSNSs.  It contains
+/* REG_BR_PRED is attached to JUMP_INSNs.  It contains
    CONCAT of two integer value.  First specifies the branch predictor
    that added the note, second specifies the predicted hitrate of
-   branch in the same format as REG_BR_PROB note uses.  */
+   branch in a fixed point arithmetic based on REG_BR_PROB_BASE.  */
 REG_NOTE (BR_PRED)
 
 /* Attached to insns that are RTX_FRAME_RELATED_P, but are too complex

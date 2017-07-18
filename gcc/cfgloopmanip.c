@@ -546,8 +546,8 @@ scale_loop_profile (struct loop *loop, profile_probability p,
 
 	  /* Probability of exit must be 1/iterations.  */
 	  freq_delta = EDGE_FREQUENCY (e);
-	  e->probability = profile_probability::from_reg_br_prob_base
-				(REG_BR_PROB_BASE / iteration_bound);
+	  e->probability = profile_probability::always ()
+				.apply_scale (1, iteration_bound);
 	  other_e->probability = e->probability.invert ();
 	  freq_delta -= EDGE_FREQUENCY (e);
 
@@ -591,7 +591,7 @@ scale_loop_profile (struct loop *loop, profile_probability p,
 	      determined = true;
 	    }
 	}
-      if (!determined)
+      if (!determined && loop->header->frequency)
 	{
 	  int freq_in = 0;
 

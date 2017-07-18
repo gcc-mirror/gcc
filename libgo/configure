@@ -13773,7 +13773,7 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
     esac
     case "${host}" in
     mips*el-*-*)
-	GOARCH="${GOARCH}le"
+        GOARCH="${GOARCH}le"
         ;;
     *)
 	GOARCH_BIGENDIAN=1

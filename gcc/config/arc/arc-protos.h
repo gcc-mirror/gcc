@@ -45,12 +45,9 @@ extern void arc_expand_atomic_op (enum rtx_code, rtx, rtx, rtx, rtx, rtx);
 extern void arc_split_compare_and_swap (rtx *);
 extern void arc_expand_compare_and_swap (rtx *);
 extern bool compact_memory_operand_p (rtx, machine_mode, bool, bool);
+extern int arc_return_address_register (unsigned int);
+extern unsigned int arc_compute_function_type (struct function *);
 #endif /* RTX_CODE */
-
-#ifdef TREE_CODE
-extern enum arc_function_type arc_compute_function_type (struct function *);
-#endif /* TREE_CODE */
-
 
 extern unsigned int arc_compute_frame_size (int);
 extern bool arc_ccfsm_branch_deleted_p (void);
@@ -64,10 +61,8 @@ extern rtx arc_return_addr_rtx (int , rtx);
 extern bool check_if_valid_regno_const (rtx *, int);
 extern bool check_if_valid_sleep_operand (rtx *, int);
 extern bool arc_legitimate_constant_p (machine_mode, rtx);
-extern bool arc_legitimate_pc_offset_p (rtx);
 extern bool arc_legitimate_pic_addr_p (rtx);
 extern bool arc_raw_symbolic_reference_mentioned_p (rtx, bool);
-extern bool arc_legitimate_pic_operand_p (rtx);
 extern bool arc_is_longcall_p (rtx);
 extern bool arc_is_shortcall_p (rtx);
 extern bool valid_brcc_with_delay_p (rtx *);

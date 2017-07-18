@@ -1,3 +1,12 @@
+2017-07-18  Nathan Sidwell  <nathan@acm.org>
+
+	* c-parser.c (c_parser_array_notation): Use TYPE_{MIN,MAX}_VALUE.
+
+2017-07-14  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-decl.c (implicitly_declare): When suggesting a missing
+	#include, provide a fix-it hint.
+
 2017-07-06  David Malcolm  <dmalcolm@redhat.com>
 
 	* c-lang.c (selftest::run_c_tests): Move body to c_family_tests,

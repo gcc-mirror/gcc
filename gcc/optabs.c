@@ -3846,9 +3846,9 @@ prepare_cmp_insn (rtx x, rtx y, enum rtx_code comparison, rtx size,
   if (cfun->can_throw_non_call_exceptions)
     {
       if (may_trap_p (x))
-	x = force_reg (mode, x);
+	x = copy_to_reg (x);
       if (may_trap_p (y))
-	y = force_reg (mode, y);
+	y = copy_to_reg (y);
     }
 
   if (GET_MODE_CLASS (mode) == MODE_CC)
@@ -4003,7 +4003,7 @@ emit_cmp_and_jump_insn_1 (rtx test, machine_mode mode, rtx label,
       && JUMP_P (insn)
       && any_condjump_p (insn)
       && !find_reg_note (insn, REG_BR_PROB, 0))
-    add_int_reg_note (insn, REG_BR_PROB, prob.to_reg_br_prob_base ());
+    add_reg_br_prob_note (insn, prob);
 }
 
 /* Generate code to compare X with Y so that the condition codes are
