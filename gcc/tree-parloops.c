@@ -1824,7 +1824,7 @@ try_transform_to_exit_first_loop_alt (struct loop *loop,
   /* Figure out whether nit + 1 overflows.  */
   if (TREE_CODE (nit) == INTEGER_CST)
     {
-      if (!tree_int_cst_equal (nit, TYPE_MAXVAL (nit_type)))
+      if (!tree_int_cst_equal (nit, TYPE_MAX_VALUE (nit_type)))
 	{
 	  alt_bound = fold_build2_loc (UNKNOWN_LOCATION, PLUS_EXPR, nit_type,
 				       nit, build_one_cst (nit_type));
@@ -1869,7 +1869,7 @@ try_transform_to_exit_first_loop_alt (struct loop *loop,
     return false;
 
   /* Check if nit + 1 overflows.  */
-  widest_int type_max = wi::to_widest (TYPE_MAXVAL (nit_type));
+  widest_int type_max = wi::to_widest (TYPE_MAX_VALUE (nit_type));
   if (nit_max >= type_max)
     return false;
 

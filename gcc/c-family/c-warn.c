@@ -1799,12 +1799,12 @@ warn_for_memset (location_t loc, tree arg0, tree arg2,
 	  tree domain = TYPE_DOMAIN (type);
 	  if (!integer_onep (TYPE_SIZE_UNIT (elt_type))
 	      && domain != NULL_TREE
-	      && TYPE_MAXVAL (domain)
-	      && TYPE_MINVAL (domain)
-	      && integer_zerop (TYPE_MINVAL (domain))
+	      && TYPE_MAX_VALUE (domain)
+	      && TYPE_MIN_VALUE (domain)
+	      && integer_zerop (TYPE_MIN_VALUE (domain))
 	      && integer_onep (fold_build2 (MINUS_EXPR, domain,
 					    arg2,
-					    TYPE_MAXVAL (domain))))
+					    TYPE_MAX_VALUE (domain))))
 	    warning_at (loc, OPT_Wmemset_elt_size,
 			"%<memset%> used with length equal to "
 			"number of elements without multiplication "
