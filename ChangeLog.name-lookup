@@ -1,5 +1,13 @@
 2017-07-18  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* search.c (lookup_conversion_operator): Return overloads not
+	index.
+	(lookup_fnfields_idx_nolazy): Absorb into ...
+	(lookup_fnfields_slot_nolazy): ... this.
+	(lookup_fnfields_1): Absorb into ...
+	(lookup_fnfields_slot): ... this.
+
 	Merge trunk r250313.
 
 	Rename TYPE_{MIN,MAX}VAL to TYPE_{MIN,MAX}VAL_RAW.
