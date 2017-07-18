@@ -553,9 +553,9 @@ avr_optimize_casesi (rtx_insn *insns[6], rtx *xop)
   HOST_WIDE_INT hig_idx = low_idx + num_idx;
 
   // Maximum ranges of (un)signed QImode resp. HImode.
-  int imin = QImode == mode ? INT8_MIN : INT16_MIN;
-  int imax = QImode == mode ? INT8_MAX : INT16_MAX;
-  unsigned umax = QImode == mode ? UINT8_MAX : UINT16_MAX;
+  unsigned umax = QImode == mode ? 0xff : 0xffff;
+  int imax = QImode == mode ? 0x7f : 0x7fff;
+  int imin = -imax - 1;
 
   // Testing the case range and whether it fits into the range of the
   // (un)signed mode.  This test should actually always pass because it
