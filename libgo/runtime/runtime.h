@@ -217,7 +217,6 @@ extern	M*	runtime_getallm(void)
 extern	Sched*  runtime_sched;
 extern	uint32	runtime_panicking(void)
   __asm__ (GOSYM_PREFIX "runtime.getPanicking");
-extern	int32	runtime_ncpu;
 extern	struct debugVars runtime_debug;
 
 extern	bool	runtime_isstarted;
@@ -237,7 +236,6 @@ void	runtime_gogo(G*)
 struct __go_func_type;
 void	runtime_args(int32, byte**)
   __asm__ (GOSYM_PREFIX "runtime.args");
-void	runtime_osinit();
 void	runtime_alginit(void)
   __asm__ (GOSYM_PREFIX "runtime.alginit");
 void	runtime_goargs(void)
