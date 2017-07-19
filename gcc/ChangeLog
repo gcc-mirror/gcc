@@ -1,5 +1,9 @@
 2017-07-19  Tom de Vries  <tom@codesourcery.com>
 
+	* gimple.h (gimple_phi_set_arg): Make assert more strict.
+
+2017-07-19  Tom de Vries  <tom@codesourcery.com>
+
 	* gimple.h (gimple_phi_arg): Make assert more strict.
 
 2017-07-19  Steven Munroe  <munroesj@gcc.gnu.org>

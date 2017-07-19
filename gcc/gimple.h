@@ -4351,7 +4351,7 @@ gimple_phi_arg (gimple *gs, unsigned index)
 static inline void
 gimple_phi_set_arg (gphi *phi, unsigned index, struct phi_arg_d * phiarg)
 {
-  gcc_gimple_checking_assert (index <= phi->nargs);
+  gcc_gimple_checking_assert (index < phi->nargs);
   phi->args[index] = *phiarg;
 }
 
