@@ -2686,8 +2686,9 @@ public:
   virtual bool gate (function *);
   virtual unsigned int execute (function *)
     {
+      int ret = convert_to_eh_region_ranges ();
       maybe_add_nop_after_section_switch ();
-      return convert_to_eh_region_ranges ();
+      return ret;
     }
 
 }; // class pass_convert_to_eh_region_ranges
