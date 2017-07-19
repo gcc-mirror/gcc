@@ -594,7 +594,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       result_type
       min() const
-      { return 0; };
+      { return 0; }
 
       result_type
       max() const

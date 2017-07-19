@@ -898,7 +898,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
       explicit
       time_put_byname(const char*, size_t __refs = 0)
       : time_put<_CharT, _OutIter>(__refs)
-      { };
+      { }
 
 #if __cplusplus >= 201103L
       explicit
