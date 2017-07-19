@@ -183,19 +183,17 @@ am__DEPENDENCIES_4 = $(am__DEPENDENCIES_2) \
 	$(am__DEPENDENCIES_3) $(am__DEPENDENCIES_3) \
 	$(am__DEPENDENCIES_3) $(am__DEPENDENCIES_3)
 libgo_llgo_la_DEPENDENCIES = $(am__DEPENDENCIES_4)
-@LIBGO_IS_LINUX_FALSE@am__objects_1 = thread-sema.lo
-@LIBGO_IS_LINUX_TRUE@am__objects_1 = thread-linux.lo
-@LIBGO_IS_RTEMS_TRUE@am__objects_2 = rtems-task-variable-add.lo
-@LIBGO_IS_AIX_FALSE@@LIBGO_IS_DARWIN_FALSE@@LIBGO_IS_FREEBSD_FALSE@@LIBGO_IS_IRIX_FALSE@@LIBGO_IS_LINUX_FALSE@@LIBGO_IS_NETBSD_FALSE@@LIBGO_IS_SOLARIS_FALSE@am__objects_3 = getncpu-none.lo
-@LIBGO_IS_AIX_TRUE@@LIBGO_IS_DARWIN_FALSE@@LIBGO_IS_FREEBSD_FALSE@@LIBGO_IS_IRIX_FALSE@@LIBGO_IS_LINUX_FALSE@@LIBGO_IS_NETBSD_FALSE@@LIBGO_IS_SOLARIS_FALSE@am__objects_3 = getncpu-aix.lo
-@LIBGO_IS_DARWIN_FALSE@@LIBGO_IS_FREEBSD_FALSE@@LIBGO_IS_IRIX_FALSE@@LIBGO_IS_LINUX_FALSE@@LIBGO_IS_NETBSD_TRUE@@LIBGO_IS_SOLARIS_FALSE@am__objects_3 = getncpu-bsd.lo
-@LIBGO_IS_DARWIN_FALSE@@LIBGO_IS_FREEBSD_TRUE@@LIBGO_IS_IRIX_FALSE@@LIBGO_IS_LINUX_FALSE@@LIBGO_IS_SOLARIS_FALSE@am__objects_3 = getncpu-bsd.lo
-@LIBGO_IS_DARWIN_FALSE@@LIBGO_IS_IRIX_FALSE@@LIBGO_IS_LINUX_FALSE@@LIBGO_IS_SOLARIS_TRUE@am__objects_3 = getncpu-solaris.lo
-@LIBGO_IS_DARWIN_FALSE@@LIBGO_IS_IRIX_TRUE@@LIBGO_IS_LINUX_FALSE@am__objects_3 = getncpu-irix.lo
-@LIBGO_IS_DARWIN_TRUE@@LIBGO_IS_LINUX_FALSE@am__objects_3 =  \
+@LIBGO_IS_RTEMS_TRUE@am__objects_1 = rtems-task-variable-add.lo
+@LIBGO_IS_AIX_FALSE@@LIBGO_IS_DARWIN_FALSE@@LIBGO_IS_FREEBSD_FALSE@@LIBGO_IS_IRIX_FALSE@@LIBGO_IS_LINUX_FALSE@@LIBGO_IS_NETBSD_FALSE@@LIBGO_IS_SOLARIS_FALSE@am__objects_2 = getncpu-none.lo
+@LIBGO_IS_AIX_TRUE@@LIBGO_IS_DARWIN_FALSE@@LIBGO_IS_FREEBSD_FALSE@@LIBGO_IS_IRIX_FALSE@@LIBGO_IS_LINUX_FALSE@@LIBGO_IS_NETBSD_FALSE@@LIBGO_IS_SOLARIS_FALSE@am__objects_2 = getncpu-aix.lo
+@LIBGO_IS_DARWIN_FALSE@@LIBGO_IS_FREEBSD_FALSE@@LIBGO_IS_IRIX_FALSE@@LIBGO_IS_LINUX_FALSE@@LIBGO_IS_NETBSD_TRUE@@LIBGO_IS_SOLARIS_FALSE@am__objects_2 = getncpu-bsd.lo
+@LIBGO_IS_DARWIN_FALSE@@LIBGO_IS_FREEBSD_TRUE@@LIBGO_IS_IRIX_FALSE@@LIBGO_IS_LINUX_FALSE@@LIBGO_IS_SOLARIS_FALSE@am__objects_2 = getncpu-bsd.lo
+@LIBGO_IS_DARWIN_FALSE@@LIBGO_IS_IRIX_FALSE@@LIBGO_IS_LINUX_FALSE@@LIBGO_IS_SOLARIS_TRUE@am__objects_2 = getncpu-solaris.lo
+@LIBGO_IS_DARWIN_FALSE@@LIBGO_IS_IRIX_TRUE@@LIBGO_IS_LINUX_FALSE@am__objects_2 = getncpu-irix.lo
+@LIBGO_IS_DARWIN_TRUE@@LIBGO_IS_LINUX_FALSE@am__objects_2 =  \
 @LIBGO_IS_DARWIN_TRUE@@LIBGO_IS_LINUX_FALSE@	getncpu-bsd.lo
-@LIBGO_IS_LINUX_TRUE@am__objects_3 = getncpu-linux.lo
-am__objects_4 = aeshash.lo go-assert.lo go-caller.lo go-callers.lo \
+@LIBGO_IS_LINUX_TRUE@am__objects_2 = getncpu-linux.lo
+am__objects_3 = aeshash.lo go-assert.lo go-caller.lo go-callers.lo \
 	go-cdiv.lo go-cgo.lo go-construct-map.lo go-ffi.lo \
 	go-fieldtrack.lo go-matherr.lo go-memclr.lo go-memcmp.lo \
 	go-memequal.lo go-memmove.lo go-nanotime.lo go-now.lo \
@@ -203,16 +201,15 @@ am__objects_4 = aeshash.lo go-assert.lo go-caller.lo go-callers.lo \
 	go-setenv.lo go-signal.lo go-strslice.lo go-typedesc-equal.lo \
 	go-unsafe-pointer.lo go-unsetenv.lo go-unwind.lo go-varargs.lo \
 	env_posix.lo panic.lo print.lo proc.lo runtime_c.lo stack.lo \
-	thread.lo $(am__objects_1) yield.lo $(am__objects_2) \
-	$(am__objects_3)
-am_libgo_llgo_la_OBJECTS = $(am__objects_4)
+	thread.lo yield.lo $(am__objects_1) $(am__objects_2)
+am_libgo_llgo_la_OBJECTS = $(am__objects_3)
 libgo_llgo_la_OBJECTS = $(am_libgo_llgo_la_OBJECTS)
 libgo_llgo_la_LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
 	$(libgo_llgo_la_LDFLAGS) $(LDFLAGS) -o $@
 @GOC_IS_LLGO_TRUE@am_libgo_llgo_la_rpath = -rpath $(toolexeclibdir)
 libgo_la_DEPENDENCIES = $(am__DEPENDENCIES_4)
-am_libgo_la_OBJECTS = $(am__objects_4)
+am_libgo_la_OBJECTS = $(am__objects_3)
 libgo_la_OBJECTS = $(am_libgo_la_OBJECTS)
 libgo_la_LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
 	--mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(libgo_la_LDFLAGS) \
@@ -765,8 +762,6 @@ toolexeclibgounicode_DATA = \
 
 @LIBGO_IS_RTEMS_FALSE@rtems_task_variable_add_file = 
 @LIBGO_IS_RTEMS_TRUE@rtems_task_variable_add_file = runtime/rtems-task-variable-add.c
-@LIBGO_IS_LINUX_FALSE@runtime_thread_files = runtime/thread-sema.c
-@LIBGO_IS_LINUX_TRUE@runtime_thread_files = runtime/thread-linux.c
 @LIBGO_IS_AIX_FALSE@@LIBGO_IS_DARWIN_FALSE@@LIBGO_IS_FREEBSD_FALSE@@LIBGO_IS_IRIX_FALSE@@LIBGO_IS_LINUX_FALSE@@LIBGO_IS_NETBSD_FALSE@@LIBGO_IS_SOLARIS_FALSE@runtime_getncpu_file = runtime/getncpu-none.c
 @LIBGO_IS_AIX_TRUE@@LIBGO_IS_DARWIN_FALSE@@LIBGO_IS_FREEBSD_FALSE@@LIBGO_IS_IRIX_FALSE@@LIBGO_IS_LINUX_FALSE@@LIBGO_IS_NETBSD_FALSE@@LIBGO_IS_SOLARIS_FALSE@runtime_getncpu_file = runtime/getncpu-aix.c
 @LIBGO_IS_DARWIN_FALSE@@LIBGO_IS_FREEBSD_FALSE@@LIBGO_IS_IRIX_FALSE@@LIBGO_IS_LINUX_FALSE@@LIBGO_IS_NETBSD_TRUE@@LIBGO_IS_SOLARIS_FALSE@runtime_getncpu_file = runtime/getncpu-bsd.c
@@ -810,7 +805,6 @@ runtime_files = \
 	runtime/runtime_c.c \
 	runtime/stack.c \
 	runtime/thread.c \
-	$(runtime_thread_files) \
 	runtime/yield.c \
 	$(rtems_task_variable_add_file) \
 	$(runtime_getncpu_file)
@@ -1525,8 +1519,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/rtems-task-variable-add.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/runtime_c.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/stack.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/thread-linux.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/thread-sema.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/thread.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yield.Plo@am__quote@
 
@@ -1830,20 +1822,6 @@ thread.lo: runtime/thread.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='runtime/thread.c' object='thread.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o thread.lo `test -f 'runtime/thread.c' || echo '$(srcdir)/'`runtime/thread.c
-
-thread-sema.lo: runtime/thread-sema.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT thread-sema.lo -MD -MP -MF $(DEPDIR)/thread-sema.Tpo -c -o thread-sema.lo `test -f 'runtime/thread-sema.c' || echo '$(srcdir)/'`runtime/thread-sema.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/thread-sema.Tpo $(DEPDIR)/thread-sema.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='runtime/thread-sema.c' object='thread-sema.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o thread-sema.lo `test -f 'runtime/thread-sema.c' || echo '$(srcdir)/'`runtime/thread-sema.c
-
-thread-linux.lo: runtime/thread-linux.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT thread-linux.lo -MD -MP -MF $(DEPDIR)/thread-linux.Tpo -c -o thread-linux.lo `test -f 'runtime/thread-linux.c' || echo '$(srcdir)/'`runtime/thread-linux.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/thread-linux.Tpo $(DEPDIR)/thread-linux.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='runtime/thread-linux.c' object='thread-linux.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o thread-linux.lo `test -f 'runtime/thread-linux.c' || echo '$(srcdir)/'`runtime/thread-linux.c
 
 yield.lo: runtime/yield.c
 @am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT yield.lo -MD -MP -MF $(DEPDIR)/yield.Tpo -c -o yield.lo `test -f 'runtime/yield.c' || echo '$(srcdir)/'`runtime/yield.c

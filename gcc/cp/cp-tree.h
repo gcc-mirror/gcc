@@ -3513,13 +3513,13 @@ extern void decl_shadowed_for_var_insert (tree, tree);
 #define PACK_EXPANSION_PARAMETER_PACKS(NODE)		\
   *(TREE_CODE (NODE) == EXPR_PACK_EXPANSION		\
     ? &TREE_OPERAND (NODE, 1)				\
-    : &TYPE_MINVAL_RAW (TYPE_PACK_EXPANSION_CHECK (NODE)))
+    : &TYPE_MIN_VALUE_RAW (TYPE_PACK_EXPANSION_CHECK (NODE)))
 
 /* Any additional template args to be applied when substituting into
    the pattern, set by tsubst_pack_expansion for partial instantiations.  */
 #define PACK_EXPANSION_EXTRA_ARGS(NODE)		\
   *(TREE_CODE (NODE) == TYPE_PACK_EXPANSION	\
-    ? &TYPE_MAXVAL_RAW (NODE)			\
+    ? &TYPE_MAX_VALUE_RAW (NODE)			\
     : &TREE_OPERAND ((NODE), 2))
 
 /* True iff this pack expansion is within a function context.  */
@@ -6014,7 +6014,7 @@ extern tree default_init_uninitialized_part (tree);
 extern bool trivial_default_constructor_is_constexpr (tree);
 extern bool type_has_constexpr_default_constructor (tree);
 extern bool type_has_virtual_destructor		(tree);
-extern bool classtype_has_user_move_assign_or_move_ctor_p (tree);
+extern bool classtype_has_move_assign_or_move_ctor_p (tree, bool user_declared);
 extern bool type_build_ctor_call		(tree);
 extern bool type_build_dtor_call		(tree);
 extern void explain_non_literal_class		(tree);

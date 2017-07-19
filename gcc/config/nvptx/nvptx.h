@@ -52,12 +52,14 @@
 
 /* Alignments in bits.  */
 #define PARM_BOUNDARY 32
-#define STACK_BOUNDARY 64
+#define STACK_BOUNDARY 128
 #define FUNCTION_BOUNDARY 32
-#define BIGGEST_ALIGNMENT 64
+#define BIGGEST_ALIGNMENT 128
 #define STRICT_ALIGNMENT 1
 
 #define MAX_STACK_ALIGNMENT (1024 * 8)
+
+#define DATA_ALIGNMENT nvptx_data_alignment
 
 /* Copied from elf.h and other places.  We'd otherwise use
    BIGGEST_ALIGNMENT and fail a number of testcases.  */

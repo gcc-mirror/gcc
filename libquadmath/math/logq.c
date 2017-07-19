@@ -212,9 +212,8 @@ logq (__float128 x)
     }
 
   /* Extract exponent and reduce domain to 0.703125 <= u < 1.40625  */
-  e = (int) (m >> 16) - (int) 0x3ffe;
-  m &= 0xffff;
-  u.words32.w0 = m | 0x3ffe0000;
+  u.value = frexpq (x, &e);
+  m = u.words32.w0 & 0xffff;
   m |= 0x10000;
   /* Find lookup table index k from high order bits of the significand. */
   if (m < 0x16800)
@@ -241,6 +240,8 @@ logq (__float128 x)
   /* On this interval the table is not used due to cancellation error.  */
   if ((x <= 1.0078125Q) && (x >= 0.9921875Q))
     {
+      if (x == 1.0Q)
+	return 0.0Q;
       z = x - 1.0Q;
       k = 64;
       t.value  = 1.0Q;

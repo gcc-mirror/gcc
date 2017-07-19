@@ -4206,6 +4206,10 @@ expand_omp_for_static_chunk (struct omp_region *region,
 	  source_location locus;
 
 	  phi = psi.phi ();
+	  if (operand_equal_p (gimple_phi_arg_def (phi, 0),
+			       redirect_edge_var_map_def (vm), 0))
+	    continue;
+
 	  t = gimple_phi_result (phi);
 	  gcc_assert (t == redirect_edge_var_map_result (vm));
 

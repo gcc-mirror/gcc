@@ -1,5 +1,5 @@
 /* Quad-precision floating point e^x.
-   Copyright (C) 1999 Free Software Foundation, Inc.
+   Copyright (C) 1999-2017 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Jakub Jelinek <jj@ultra.linux.cz>
    Partly based on double-precision code
@@ -1075,7 +1075,7 @@ static const __float128 C[] = {
 #define TWO15 C[11]
  32768.0Q,
 
-/* Chebyshev polynom coeficients for (exp(x)-1)/x */
+/* Chebyshev polynom coefficients for (exp(x)-1)/x */
 #define P1 C[12]
 #define P2 C[13]
 #define P3 C[14]
@@ -1142,7 +1142,7 @@ expq (__float128 x)
 		* __expq_table[T_EXPL_RES2 + tval2];
       n_i = (int)n;
       /* 'unsafe' is 1 iff n_1 != 0.  */
-      unsafe = abs(n_i) >= -FLT128_MIN_EXP - 1;
+      unsafe = abs(n_i) >= 15000;
       ex2_u.ieee.exponent += n_i >> unsafe;
 
       /* Compute scale = 2^n_1.  */
@@ -1179,7 +1179,7 @@ expq (__float128 x)
 	  ex3_u.d = (result - ex2_u.d) - x22 * ex2_u.d;
 	  ex2_u.d = result;
 	  ex3_u.ieee.exponent += LDBL_MANT_DIG + 15 + IEEE854_LONG_DOUBLE_BIAS
-	  			 - ex2_u.ieee.exponent;
+				 - ex2_u.ieee.exponent;
 	  n_i = abs (ex3_u.d);
 	  n_i = (n_i + 1) / 2;
 #ifdef USE_FENV_H
@@ -1196,7 +1196,11 @@ expq (__float128 x)
       if (!unsafe)
 	return result;
       else
-	return result * scale_u.value;
+	{
+	  result *= scale_u.value;
+	  math_check_force_underflow_nonneg (result);
+	  return result;
+	}
     }
   /* Exceptional cases:  */
   else if (__builtin_isless (x, himark))

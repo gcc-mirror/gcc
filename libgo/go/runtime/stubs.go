@@ -422,13 +422,13 @@ func getPanicking() uint32 {
 	return panicking
 }
 
-// Temporary for gccgo until we initialize ncpu in Go.
+// Called by C code to set the number of CPUs.
 //go:linkname setncpu runtime.setncpu
 func setncpu(n int32) {
 	ncpu = n
 }
 
-// Temporary for gccgo until we reliably initialize physPageSize in Go.
+// Called by C code to set the page size.
 //go:linkname setpagesize runtime.setpagesize
 func setpagesize(s uintptr) {
 	if physPageSize == 0 {

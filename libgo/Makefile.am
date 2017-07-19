@@ -399,12 +399,6 @@ rtems_task_variable_add_file =
 endif
 
 if LIBGO_IS_LINUX
-runtime_thread_files = runtime/thread-linux.c
-else
-runtime_thread_files = runtime/thread-sema.c
-endif
-
-if LIBGO_IS_LINUX
 runtime_getncpu_file = runtime/getncpu-linux.c
 else
 if LIBGO_IS_DARWIN
@@ -469,7 +463,6 @@ runtime_files = \
 	runtime/runtime_c.c \
 	runtime/stack.c \
 	runtime/thread.c \
-	$(runtime_thread_files) \
 	runtime/yield.c \
 	$(rtems_task_variable_add_file) \
 	$(runtime_getncpu_file)

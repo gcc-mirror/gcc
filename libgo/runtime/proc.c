@@ -370,7 +370,6 @@ extern G* allocg(void)
   __asm__ (GOSYM_PREFIX "runtime.allocg");
 
 Sched*	runtime_sched;
-int32	runtime_ncpu;
 
 bool	runtime_isarchive;
 

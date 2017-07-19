@@ -646,8 +646,8 @@ mentions_vars_p_type (tree t)
   CHECK_NO_VAR (TYPE_ATTRIBUTES (t));
   CHECK_NO_VAR (TYPE_NAME (t));
 
-  CHECK_VAR (TYPE_MINVAL_RAW (t));
-  CHECK_VAR (TYPE_MAXVAL_RAW (t));
+  CHECK_VAR (TYPE_MIN_VALUE_RAW (t));
+  CHECK_VAR (TYPE_MAX_VALUE_RAW (t));
 
   /* Accessor is for derived node types only. */
   CHECK_NO_VAR (TYPE_LANG_SLOT_1 (t));
@@ -1415,8 +1415,8 @@ compare_tree_sccs_1 (tree t1, tree t2, tree **map)
 	compare_tree_edges (TYPE_ARG_TYPES (t1), TYPE_ARG_TYPES (t2));
 
       if (!POINTER_TYPE_P (t1))
-	compare_tree_edges (TYPE_MINVAL_RAW (t1), TYPE_MINVAL_RAW (t2));
-      compare_tree_edges (TYPE_MAXVAL_RAW (t1), TYPE_MAXVAL_RAW (t2));
+	compare_tree_edges (TYPE_MIN_VALUE_RAW (t1), TYPE_MIN_VALUE_RAW (t2));
+      compare_tree_edges (TYPE_MAX_VALUE_RAW (t1), TYPE_MAX_VALUE_RAW (t2));
     }
 
   if (CODE_CONTAINS_STRUCT (code, TS_LIST))
@@ -2580,8 +2580,8 @@ lto_fixup_prevailing_decls (tree t)
       LTO_NO_PREVAIL (TYPE_ATTRIBUTES (t));
       LTO_NO_PREVAIL (TYPE_NAME (t));
 
-      LTO_SET_PREVAIL (TYPE_MINVAL_RAW (t));
-      LTO_SET_PREVAIL (TYPE_MAXVAL_RAW (t));
+      LTO_SET_PREVAIL (TYPE_MIN_VALUE_RAW (t));
+      LTO_SET_PREVAIL (TYPE_MAX_VALUE_RAW (t));
       LTO_NO_PREVAIL (TYPE_LANG_SLOT_1 (t));
 
       LTO_SET_PREVAIL (TYPE_CONTEXT (t));

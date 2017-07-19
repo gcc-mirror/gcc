@@ -1,3 +1,8 @@
+2017-07-19  Nathan Sidwell  <nathan@acm.org>
+
+	* objc-act.h (CLASS_NST_METHODS, CLASS_CLS_METHODS): Use
+	TYPE_{MIN,MAX}_VALUE_RAW.
+
 2017-05-16  Sylvestre Ledru  <sylvestre@debian.org>
 
 	* objc-runtime-shared-support.c (build_module_descriptor):

@@ -821,8 +821,8 @@ lto_input_ts_type_non_common_tree_pointers (struct lto_input_block *ib,
     TYPE_ARG_TYPES (expr) = stream_read_tree (ib, data_in);
 
   if (!POINTER_TYPE_P (expr))
-    TYPE_MINVAL_RAW (expr) = stream_read_tree (ib, data_in);
-  TYPE_MAXVAL_RAW (expr) = stream_read_tree (ib, data_in);
+    TYPE_MIN_VALUE_RAW (expr) = stream_read_tree (ib, data_in);
+  TYPE_MAX_VALUE_RAW (expr) = stream_read_tree (ib, data_in);
 }
 
 

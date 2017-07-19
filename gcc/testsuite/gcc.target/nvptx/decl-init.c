@@ -37,7 +37,7 @@ struct five five2[2] = {{12, 13}, {14, 15}};
 /* { dg-final { scan-assembler ".align 1 .u8 five2\\\[10\\\] = { 12, 13, 0, 0, 0, 14, 15, 0, 0, 0 };" } } */
 
 int __attribute__((vector_size(16))) vi = {16, 17, 18, 19};
-/* { dg-final { scan-assembler ".align 8 .u32 vi\\\[4\\\] = { 16, 17, 18, 19 };" } } */
+/* { dg-final { scan-assembler ".align 16 .u32 vi\\\[4\\\] = { 16, 17, 18, 19 };" } } */
 
 typedef int __attribute ((mode(TI))) ti_t;
 
