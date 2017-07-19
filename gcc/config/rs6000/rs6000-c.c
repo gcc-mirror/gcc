@@ -428,6 +428,9 @@ rs6000_cpu_cpp_builtins (cpp_reader *pfile)
     builtin_define ("__FLOAT128__");
   if (TARGET_FLOAT128_HW)
     builtin_define ("__FLOAT128_HARDWARE__");
+#ifdef TARGET_LIBC_PROVIDES_HWCAP_IN_TCB
+  builtin_define ("__BUILTIN_CPU_SUPPORTS__");
+#endif
 
   if (TARGET_EXTRA_BUILTINS && cpp_get_options (pfile)->lang != CLK_ASM)
     {

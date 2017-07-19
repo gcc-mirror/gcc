@@ -14315,6 +14315,8 @@ cpu_expand_builtin (enum rs6000_builtins fcode, tree exp ATTRIBUTE_UNUSED,
       emit_insn (gen_eqsi3 (scratch2, scratch1, const0_rtx));
       emit_insn (gen_rtx_SET (target, gen_rtx_XOR (SImode, scratch2, const1_rtx)));
     }
+  else
+    gcc_unreachable ();
 
   /* Record that we have expanded a CPU builtin, so that we can later
      emit a reference to the special symbol exported by LIBC to ensure we
@@ -14322,6 +14324,9 @@ cpu_expand_builtin (enum rs6000_builtins fcode, tree exp ATTRIBUTE_UNUSED,
   cpu_builtin_p = true;
 
 #else
+  warning (0, "%s needs GLIBC (2.23 and newer) that exports hardware "
+	   "capability bits", rs6000_builtin_info[(size_t) fcode].name);
+  
   /* For old LIBCs, always return FALSE.  */
   emit_move_insn (target, GEN_INT (0));
 #endif /* TARGET_LIBC_PROVIDES_HWCAP_IN_TCB */

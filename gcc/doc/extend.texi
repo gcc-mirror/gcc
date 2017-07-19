@@ -13667,10 +13667,25 @@ This function is a @code{nop} on the PowerPC platform and is included solely
 to maintain API compatibility with the x86 builtins.
 @end deftypefn
 
+@deftypefn {Built-in Function} void __builtin_cpu_init (void)
+This function is a @code{nop} on the PowerPC platform and is included solely
+to maintain API compatibility with the x86 builtins.
+@end deftypefn
+
 @deftypefn {Built-in Function} int __builtin_cpu_is (const char *@var{cpuname})
 This function returns a value of @code{1} if the run-time CPU is of type
-@var{cpuname} and returns @code{0} otherwise. The following CPU names can be
-detected:
+@var{cpuname} and returns @code{0} otherwise
+
+The @code{__builtin_cpu_is} function requires GLIBC 2.23 or newer
+which exports the hardware capability bits.  GCC defines the macro
+@code{__BUILTIN_CPU_SUPPORTS__} if the @code{__builtin_cpu_supports}
+built-in function is fully supported.
+
+If GCC was configured to use a GLIBC before 2.23, the built-in
+function @code{__builtin_cpu_is} always returns a 0 and the compiler
+issues a warning.
+
+The following CPU names can be detected:
 
 @table @samp
 @item power9
@@ -13707,20 +13722,33 @@ IBM PowerPC Cell Broadband Engine Architecture CPU.
 
 Here is an example:
 @smallexample
-if (__builtin_cpu_is ("power8"))
-  @{
-     do_power8 (); // POWER8 specific implementation.
-  @}
-else
-  @{
-     do_generic (); // Generic implementation.
-  @}
+#ifdef __BUILTIN_CPU_SUPPORTS__
+  if (__builtin_cpu_is ("power8"))
+    @{
+       do_power8 (); // POWER8 specific implementation.
+    @}
+  else
+#endif
+    @{
+       do_generic (); // Generic implementation.
+    @}
 @end smallexample
 @end deftypefn
 
 @deftypefn {Built-in Function} int __builtin_cpu_supports (const char *@var{feature})
 This function returns a value of @code{1} if the run-time CPU supports the HWCAP
-feature @var{feature} and returns @code{0} otherwise. The following features can be
+feature @var{feature} and returns @code{0} otherwise.
+
+The @code{__builtin_cpu_supports} function requires GLIBC 2.23 or
+newer which exports the hardware capability bits.  GCC defines the
+macro @code{__BUILTIN_CPU_SUPPORTS__} if the
+@code{__builtin_cpu_supports} built-in function is fully supported.
+
+If GCC was configured to use a GLIBC before 2.23, the built-in
+function @code{__builtin_cpu_suports} always returns a 0 and the
+compiler issues a warning.
+
+The following features can be
 detected:
 
 @table @samp
@@ -13804,14 +13832,16 @@ CPU supports the vector-scalar extension.
 
 Here is an example:
 @smallexample
-if (__builtin_cpu_supports ("fpu"))
-  @{
-     asm("fadd %0,%1,%2" : "=d"(dst) : "d"(src1), "d"(src2));
-  @}
-else
-  @{
-     dst = __fadd (src1, src2); // Software FP addition function.
-  @}
+#ifdef __BUILTIN_CPU_SUPPORTS__
+  if (__builtin_cpu_supports ("fpu"))
+    @{
+       asm("fadd %0,%1,%2" : "=d"(dst) : "d"(src1), "d"(src2));
+    @}
+  else
+#endif
+    @{
+       dst = __fadd (src1, src2); // Software FP addition function.
+    @}
 @end smallexample
 @end deftypefn
 
