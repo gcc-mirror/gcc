@@ -1,5 +1,25 @@
 2017-07-19  Tom de Vries  <tom@codesourcery.com>
 
+	* config/nvptx/nvptx.md (VECIM): Add V2DI.
+
+2017-07-19  Tom de Vries  <tom@codesourcery.com>
+
+	* config/nvptx/nvptx-modes.def: Add V2DImode.
+	* config/nvptx/nvptx-protos.h (nvptx_data_alignment): Declare.
+	* config/nvptx/nvptx.c (nvptx_ptx_type_from_mode): Handle V2DImode.
+	(nvptx_output_mov_insn): Handle lack of mov.b128.
+	(nvptx_print_operand): Handle 'H' and 'L' codes.
+	(nvptx_vector_mode_supported): Allow V2DImode.
+	(nvptx_preferred_simd_mode): New function.
+	(nvptx_data_alignment): New function.
+	(TARGET_VECTORIZE_PREFERRED_SIMD_MODE): Redefine to
+	nvptx_preferred_simd_mode.
+	* config/nvptx/nvptx.h (STACK_BOUNDARY, BIGGEST_ALIGNMENT): Change from
+	64 to 128 bits.
+	(DATA_ALIGNMENT): Define.  Set to nvptx_data_alignment.
+
+2017-07-19  Tom de Vries  <tom@codesourcery.com>
+
 	* config/nvptx/nvptx-modes.def: New file.  Add V2SImode.
 	* config/nvptx/nvptx.c (nvptx_ptx_type_from_mode): Handle V2SImode.
 	(nvptx_vector_mode_supported): New function.  Allow V2SImode.

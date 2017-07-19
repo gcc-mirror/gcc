@@ -184,7 +184,7 @@
 (define_mode_iterator SDCM [SC DC])
 (define_mode_iterator BITS [SI SF])
 (define_mode_iterator BITD [DI DF])
-(define_mode_iterator VECIM [V2SI])
+(define_mode_iterator VECIM [V2SI V2DI])
 
 ;; This mode iterator allows :P to be used for patterns that operate on
 ;; pointer-sized quantities.  Exactly one of the two alternatives will match.
