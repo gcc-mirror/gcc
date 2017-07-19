@@ -1,3 +1,12 @@
+2017-07-19  Tom de Vries  <tom@codesourcery.com>
+
+	* gcc.target/nvptx/slp-run.c: New test.
+	* gcc.target/nvptx/slp.c: New test.
+	* gcc.target/nvptx/v2si-cvt.c: New test.
+	* gcc.target/nvptx/v2si-run.c: New test.
+	* gcc.target/nvptx/v2si.c: New test.
+	* gcc.target/nvptx/vec.inc: New test.
+
 2017-07-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/81346
