@@ -88,6 +88,8 @@ extern void fold_undefer_overflow_warnings (bool, const gimple *, int);
 extern void fold_undefer_and_ignore_overflow_warnings (void);
 extern bool fold_deferring_overflow_warnings_p (void);
 extern void fold_overflow_warning (const char*, enum warn_strict_overflow_code);
+extern enum tree_code fold_div_compare (enum tree_code, tree, tree,
+					tree *, tree *, bool *);
 extern int operand_equal_p (const_tree, const_tree, unsigned int);
 extern int multiple_of_p (tree, const_tree, const_tree);
 #define omit_one_operand(T1,T2,T3)\
@@ -175,6 +177,7 @@ extern bool tree_expr_nonnegative_warnv_p (tree, bool *, int = 0);
 extern tree make_range (tree, int *, tree *, tree *, bool *);
 extern tree make_range_step (location_t, enum tree_code, tree, tree, tree,
 			     tree *, tree *, int *, bool *);
+extern tree range_check_type (tree);
 extern tree build_range_check (location_t, tree, tree, int, tree, tree);
 extern bool merge_ranges (int *, tree *, tree *, int, tree, tree, int,
 			  tree, tree);

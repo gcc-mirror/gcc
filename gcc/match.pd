@@ -1132,6 +1132,60 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (if (wi::gt_p(@2, 0, TYPE_SIGN (TREE_TYPE (@2))))
    (cmp @0 @1))))
 
+/* X / C1 op C2 into a simple range test.  */
+(for cmp (simple_comparison)
+ (simplify
+  (cmp (trunc_div:s @0 INTEGER_CST@1) INTEGER_CST@2)
+  (if (INTEGRAL_TYPE_P (TREE_TYPE (@0))
+       && integer_nonzerop (@1)
+       && !TREE_OVERFLOW (@1)
+       && !TREE_OVERFLOW (@2))
+   (with { tree lo, hi; bool neg_overflow;
+	   enum tree_code code = fold_div_compare (cmp, @1, @2, &lo, &hi,
+						   &neg_overflow); }
+    (switch
+     (if (code == LT_EXPR || code == GE_EXPR)
+       (if (TREE_OVERFLOW (lo))
+	{ build_int_cst (type, (code == LT_EXPR) ^ neg_overflow); }
+	(if (code == LT_EXPR)
+	 (lt @0 { lo; })
+	 (ge @0 { lo; }))))
+     (if (code == LE_EXPR || code == GT_EXPR)
+       (if (TREE_OVERFLOW (hi))
+	{ build_int_cst (type, (code == LE_EXPR) ^ neg_overflow); }
+	(if (code == LE_EXPR)
+	 (le @0 { hi; })
+	 (gt @0 { hi; }))))
+     (if (!lo && !hi)
+      { build_int_cst (type, code == NE_EXPR); })
+     (if (code == EQ_EXPR && !hi)
+      (ge @0 { lo; }))
+     (if (code == EQ_EXPR && !lo)
+      (le @0 { hi; }))
+     (if (code == NE_EXPR && !hi)
+      (lt @0 { lo; }))
+     (if (code == NE_EXPR && !lo)
+      (gt @0 { hi; }))
+     (if (GENERIC)
+      { build_range_check (UNKNOWN_LOCATION, type, @0, code == EQ_EXPR,
+			   lo, hi); })
+     (with
+      {
+	tree etype = range_check_type (TREE_TYPE (@0));
+	if (etype)
+	  {
+	    if (! TYPE_UNSIGNED (etype))
+	      etype = unsigned_type_for (etype);
+	    hi = fold_convert (etype, hi);
+	    lo = fold_convert (etype, lo);
+	    hi = const_binop (MINUS_EXPR, etype, hi, lo);
+	  }
+      }
+      (if (etype && hi && !TREE_OVERFLOW (hi))
+       (if (code == EQ_EXPR)
+	(le (minus (convert:etype @0) { lo; }) { hi; })
+	(gt (minus (convert:etype @0) { lo; }) { hi; })))))))))
+
 /* X + Z < Y + Z is the same as X < Y when there is no overflow.  */
 (for op (lt le ge gt)
  (simplify
