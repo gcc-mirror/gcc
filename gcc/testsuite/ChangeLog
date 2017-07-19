@@ -1,3 +1,8 @@
+2017-07-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/81346
+	* gcc.dg/tree-ssa/pr81346-5.c: New test.
+
 2017-07-19  Tom de Vries  <tom@codesourcery.com>
 
 	* gcc.target/nvptx/decl-init.c: Update alignment.
