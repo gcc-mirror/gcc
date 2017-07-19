@@ -1,3 +1,9 @@
+2018-07-19  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR rtl-optimization/81423
+	* combine.c (make_compound_operation_int): Don't try to optimize
+	the AND of a SUBREG of an LSHIFTRT if that SUBREG is paradoxical.
+
 2017-07-19  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR rtl-optimization/81423
