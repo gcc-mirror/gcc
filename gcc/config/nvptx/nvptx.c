@@ -236,6 +236,9 @@ nvptx_ptx_type_from_mode (machine_mode mode, bool promote)
     case DFmode:
       return ".f64";
 
+    case V2SImode:
+      return ".v2.u32";
+
     default:
       gcc_unreachable ();
     }
@@ -5433,6 +5436,12 @@ nvptx_cannot_force_const_mem (machine_mode mode ATTRIBUTE_UNUSED,
   return true;
 }
 
+static bool
+nvptx_vector_mode_supported (machine_mode mode)
+{
+  return mode == V2SImode;
+}
+
 #undef TARGET_OPTION_OVERRIDE
 #define TARGET_OPTION_OVERRIDE nvptx_option_override
 
@@ -5549,6 +5558,9 @@ nvptx_cannot_force_const_mem (machine_mode mode ATTRIBUTE_UNUSED,
 
 #undef TARGET_CANNOT_FORCE_CONST_MEM
 #define TARGET_CANNOT_FORCE_CONST_MEM nvptx_cannot_force_const_mem
+
+#undef TARGET_VECTOR_MODE_SUPPORTED_P
+#define TARGET_VECTOR_MODE_SUPPORTED_P nvptx_vector_mode_supported
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
