@@ -209,21 +209,24 @@ do {							 \
    this is a conflict on the minval field, but there doesn't seem to be
    simple fix, so we'll live with this kludge for now.  */
 #define TYPE_OBJECT_RECORD_TYPE(NODE) \
-  (TYPE_MINVAL (TREE_CHECK2 ((NODE), UNCONSTRAINED_ARRAY_TYPE, ENUMERAL_TYPE)))
+  (TYPE_MIN_VALUE_RAW (TREE_CHECK2 ((NODE), UNCONSTRAINED_ARRAY_TYPE, \
+				    ENUMERAL_TYPE)))
 
 /* For numerical types, this is the GCC lower bound of the type.  The GCC
    type system is based on the invariant that an object X of a given type
    cannot hold at run time a value smaller than its lower bound; otherwise
    the behavior is undefined.  The optimizer takes advantage of this and
    considers that the assertion X >= LB is always true.  */
-#define TYPE_GCC_MIN_VALUE(NODE) (TYPE_MINVAL (NUMERICAL_TYPE_CHECK (NODE)))
+#define TYPE_GCC_MIN_VALUE(NODE) \
+  (TYPE_MIN_VALUE_RAW (NUMERICAL_TYPE_CHECK (NODE)))
 
 /* For numerical types, this is the GCC upper bound of the type.  The GCC
    type system is based on the invariant that an object X of a given type
    cannot hold at run time a value larger than its upper bound; otherwise
    the behavior is undefined.  The optimizer takes advantage of this and
    considers that the assertion X <= UB is always true.  */
-#define TYPE_GCC_MAX_VALUE(NODE) (TYPE_MAXVAL (NUMERICAL_TYPE_CHECK (NODE)))
+#define TYPE_GCC_MAX_VALUE(NODE) \
+  (TYPE_MAX_VALUE_RAW (NUMERICAL_TYPE_CHECK (NODE)))
 
 /* For a FUNCTION_TYPE, if the subprogram has parameters passed by copy in/
    copy out, this is the list of nodes used to specify the return values of
