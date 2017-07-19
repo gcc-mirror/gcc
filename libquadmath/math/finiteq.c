@@ -25,6 +25,6 @@ finiteq (const __float128 x)
 {
   int64_t hx;
   GET_FLT128_MSW64(hx,x);
-  return (int)((uint64_t)((hx&0x7fffffffffffffffLL)
+  return (int)((uint64_t)((hx&0x7fff000000000000LL)
 			   -0x7fff000000000000LL)>>63);
 }

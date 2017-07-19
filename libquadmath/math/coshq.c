@@ -76,10 +76,10 @@ coshq (__float128 x)
   /* |x| in [0,0.5*ln2], return 1+expm1l(|x|)^2/(2*expq(|x|)) */
   if (ex < 0x3ffd62e4) /* 0.3465728759765625 */
     {
+      if (ex < 0x3fb80000) /* |x| < 2^-116 */
+	return one;		/* cosh(tiny) = 1 */
       t = expm1q (u.value);
       w = one + t;
-      if (ex < 0x3fb80000) /* |x| < 2^-116 */
-	return w;		/* cosh(tiny) = 1 */
 
       return one + (t * t) / (w + w);
     }

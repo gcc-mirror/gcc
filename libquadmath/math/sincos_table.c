@@ -1,5 +1,5 @@
 /* Quad-precision floating point sine and cosine tables.
-   Copyright (C) 1999 Free Software Foundation, Inc.
+   Copyright (C) 1999-2017 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Jakub Jelinek <jj@ultra.linux.cz>
 
@@ -37,7 +37,7 @@ const __float128 __sincosq_table[] = {
 /* sin(x) = 0.25dc50bc95711d0d9787d108fd438cf5959ee0bfb7a1e36e8b1a112968f356657420e9cc9ea */
  1.47892995873409608580026675734609314e-01Q, /* 3ffc2ee285e4ab88e86cbc3e8847ea1c */
  9.74950446464233268291647449768590886e-36Q, /* 3f8a9eb2b3dc17f6f43c6dd16342252d */
-    
+
 /* x = 1.56250000000000000000000000000000000e-01 3ffc4000000000000000000000000000 */
 /* cos(x) = 0.fce1a053e621438b6d60c76e8c45bf0a9dc71aa16f922acc10e95144ec796a249813c9cb649 */
  9.87817783816471944100503034363211317e-01Q, /* 3ffef9c340a7cc428716dac18edd188b */
