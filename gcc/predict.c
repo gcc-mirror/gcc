@@ -3374,6 +3374,55 @@ expensive_function_p (int threshold)
   return false;
 }
 
+/* All basic blocks that are reachable only from unlikely basic blocks are
+   unlikely.  */
+
+void
+propagate_unlikely_bbs_forward (void)
+{
+  auto_vec<basic_block, 64> worklist;
+  basic_block bb;
+  edge_iterator ei;
+  edge e;
+
+  if (!(ENTRY_BLOCK_PTR_FOR_FN (cfun)->count == profile_count::zero ()))
+    {
+      ENTRY_BLOCK_PTR_FOR_FN (cfun)->aux = (void *)(size_t) 1;
+      worklist.safe_push (ENTRY_BLOCK_PTR_FOR_FN (cfun));
+
+      while (worklist.length () > 0)
+	{
+	  bb = worklist.pop ();
+	  FOR_EACH_EDGE (e, ei, bb->succs)
+	    if (!(e->count == profile_count::zero ())
+		&& !(e->dest->count == profile_count::zero ())
+		&& !e->dest->aux)
+	      {
+		e->dest->aux = (void *)(size_t) 1;
+		worklist.safe_push (e->dest);
+	      }
+	}
+    }
+
+  FOR_ALL_BB_FN (bb, cfun)
+    {
+      if (!bb->aux)
+	{
+	  if (!(bb->count == profile_count::zero ())
+	      && (dump_file && (dump_flags & TDF_DETAILS)))
+	    fprintf (dump_file,
+		     "Basic block %i is marked unlikely by forward prop\n",
+		     bb->index);
+	  bb->count = profile_count::zero ();
+	  bb->frequency = 0;
+          FOR_EACH_EDGE (e, ei, bb->succs)
+	    e->count = profile_count::zero ();
+	}
+      else
+        bb->aux = NULL;
+    }
+}
+
 /* Determine basic blocks/edges that are known to be unlikely executed and set
    their counters to zero.
    This is done with first identifying obviously unlikely BBs/edges and then
@@ -3416,43 +3465,6 @@ determine_unlikely_bbs ()
 	  }
 
       gcc_checking_assert (!bb->aux);
-    }
-
-  if (!(ENTRY_BLOCK_PTR_FOR_FN (cfun)->count == profile_count::zero ()))
-    {
-      ENTRY_BLOCK_PTR_FOR_FN (cfun)->aux = (void *)(size_t) 1;
-      worklist.safe_push (ENTRY_BLOCK_PTR_FOR_FN (cfun));
-
-      while (worklist.length () > 0)
-	{
-	  bb = worklist.pop ();
-	  FOR_EACH_EDGE (e, ei, bb->succs)
-	    if (!(e->count == profile_count::zero ())
-		&& !(e->dest->count == profile_count::zero ())
-		&& !e->dest->aux)
-	      {
-		e->dest->aux = (void *)(size_t) 1;
-		worklist.safe_push (e->dest);
-	      }
-	}
-    }
-
-  FOR_ALL_BB_FN (bb, cfun)
-    {
-      if (!bb->aux)
-	{
-	  if (!(bb->count == profile_count::zero ())
-	      && (dump_file && (dump_flags & TDF_DETAILS)))
-	    fprintf (dump_file,
-		     "Basic block %i is marked unlikely by forward prop\n",
-		     bb->index);
-	  bb->count = profile_count::zero ();
-	  bb->frequency = 0;
-          FOR_EACH_EDGE (e, ei, bb->succs)
-	    e->count = profile_count::zero ();
-	}
-      else
-        bb->aux = NULL;
     }
 
   auto_vec<int, 64> nsuccs;
