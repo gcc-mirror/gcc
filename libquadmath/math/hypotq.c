@@ -89,6 +89,17 @@ hypotq (__float128 x, __float128 y)
   	b *= t1;
   	a *= t1;
   	k -= 16382;
+	GET_FLT128_MSW64 (ha, a);
+	GET_FLT128_MSW64 (hb, b);
+	if (hb > ha)
+	  {
+	    t1 = a;
+	    a = b;
+	    b = t1;
+	    j = ha;
+	    ha = hb;
+	    hb = j;
+	  }
       } else {		/* scale a and b by 2^9600 */
           ha += 0x2580000000000000LL; 	/* a *= 2^9600 */
   	hb += 0x2580000000000000LL;	/* b *= 2^9600 */
@@ -119,6 +130,8 @@ hypotq (__float128 x, __float128 y)
       t1 = 1.0Q;
       GET_FLT128_MSW64(high,t1);
       SET_FLT128_MSW64(t1,high+(k<<48));
-      return t1*w;
+      w *= t1;
+      math_check_force_underflow_nonneg (w);
+      return w;
   } else return w;
 }
