@@ -1,3 +1,9 @@
+2017-07-18  Tom de Vries  <tom@codesourcery.com>
+
+	PR middle-end/81464
+	* omp-expand.c (expand_omp_for_static_chunk): Handle equal-argument loop
+	exit phi.
+
 2017-07-18  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/81471
