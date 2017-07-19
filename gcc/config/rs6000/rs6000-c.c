@@ -648,6 +648,9 @@ rs6000_cpu_cpp_builtins (cpp_reader *pfile)
     builtin_define ("__FLOAT128_HARDWARE__");
   if (TARGET_LONG_DOUBLE_128 && FLOAT128_IBM_P (TFmode))
     builtin_define ("__ibm128=long double");
+#ifdef TARGET_LIBC_PROVIDES_HWCAP_IN_TCB
+  builtin_define ("__BUILTIN_CPU_SUPPORTS__");
+#endif
 
   /* We needed to create a keyword if -mfloat128-type was used but not -mfloat,
      so we used __ieee128.  If -mfloat128 was used, create a #define back to
