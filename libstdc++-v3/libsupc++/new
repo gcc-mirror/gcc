@@ -68,7 +68,7 @@ namespace std
   class bad_array_new_length : public bad_alloc
   {
   public:
-    bad_array_new_length() throw() { };
+    bad_array_new_length() throw() { }
 
     // This declaration is not useless:
     // http://gcc.gnu.org/onlinedocs/gcc-3.0.2/gcc_6.html#SEC118

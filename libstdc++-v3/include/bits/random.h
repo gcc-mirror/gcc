@@ -520,7 +520,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        */
       static constexpr result_type
       min()
-      { return 0; };
+      { return 0; }
 
       /**
        * @brief Gets the largest possible value in the output range.

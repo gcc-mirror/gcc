@@ -1,3 +1,18 @@
+2017-07-19  Volker Reichelt  <v.reichelt@netcologne.de>
+
+	* libsupc++/new (bad_array_new_length): Remove redundant
+	semicolon after in-class member function definition.
+	* include/bits/locale_facets.h (ctype_byname, num_put): Likewise.
+	* include/bits/locale_facets_nonio.h (time_put_byname): Likewise.
+	* include/bits/random.h (mersenne_twister_engine): Likewise.
+	* include/tr1/random.h (mersenne_twister): Likewise
+	* include/ext/random (simd_fast_mersenne_twister_engine): Likewise.
+	* include/ext/rope (char_producer, _Rope_char_consumer,
+	_Rope_self_destruct_ptr, _Rope_const_iterator, _Rope_iterator):
+	Likewise.
+	* include/ext/ropeimpl.h (_Rope_flatten_char_consumer,
+	_Rope_insert_char_consumer): Likewise.
+
 2017-07-19  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/fstream.tcc (basic_filebuf::xsgetn)
