@@ -1,3 +1,9 @@
+2017-07-19  Steven Munroe  <munroesj@gcc.gnu.org>
+
+	* config.gcc (powerpc*-*-*): Add mmintrin.h.
+	* config/rs6000/mmintrin.h: New file.
+	* config/rs6000/x86intrin.h [__ALTIVEC__]: Include mmintrin.h.
+
 2017-07-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/81346
