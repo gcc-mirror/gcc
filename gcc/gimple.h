@@ -4341,7 +4341,7 @@ static inline struct phi_arg_d *
 gimple_phi_arg (gimple *gs, unsigned index)
 {
   gphi *phi_stmt = as_a <gphi *> (gs);
-  gcc_gimple_checking_assert (index <= phi_stmt->capacity);
+  gcc_gimple_checking_assert (index < phi_stmt->capacity);
   return &(phi_stmt->args[index]);
 }
 
