@@ -150,7 +150,6 @@ static void build_base_fields (record_layout_info, splay_tree, tree *);
 static void check_methods (tree);
 static void remove_zero_width_bit_fields (tree);
 static bool accessible_nvdtor_p (tree);
-static bool classtype_has_move_assign_or_move_ctor (tree);
 
 /* Used by find_flexarrays and related functions.  */
 struct flexmems_t;
@@ -3385,7 +3384,7 @@ add_implicitly_declared_members (tree t, tree* access_decls,
   bool move_ok = false;
   if (cxx_dialect >= cxx11 && CLASSTYPE_LAZY_DESTRUCTOR (t)
       && !TYPE_HAS_COPY_CTOR (t) && !TYPE_HAS_COPY_ASSIGN (t)
-      && !classtype_has_move_assign_or_move_ctor (t))
+      && !classtype_has_move_assign_or_move_ctor_p (t, false))
     move_ok = true;
 
   /* [class.ctor]
@@ -5457,50 +5456,36 @@ type_has_virtual_destructor (tree type)
   return (dtor && DECL_VIRTUAL_P (dtor));
 }
 
-/* Returns true iff class T has move assignment or move constructor.  */
+/* Returns true iff T, a class, has a move-assignment or
+   move-constructor.  Does not lazily declare either.
+   If USER_P is false, any move function will do.  If it is true, the
+   move function must be user-declared.
 
-static bool
-classtype_has_move_assign_or_move_ctor (tree t)
-{
-  gcc_assert (!CLASSTYPE_LAZY_MOVE_CTOR (t)
-	      && !CLASSTYPE_LAZY_MOVE_ASSIGN (t));
-
-  for (ovl_iterator iter (lookup_fnfields_slot_nolazy
-			  (t, ctor_identifier)); iter; ++iter)
-    if (move_fn_p (*iter))
-      return true;
-
-  for (ovl_iterator iter (lookup_fnfields_slot_nolazy
-			  (t, cp_assignment_operator_id (NOP_EXPR)));
-       iter; ++iter)
-    if (move_fn_p (*iter))
-      return true;
-
-  return false;
-}
-
-/* Returns true iff T, a class, has a user-declared move-assignment or
-   move-constructor.  Note that this is different from
-   "user-provided", which doesn't include functions that are defaulted
-   in the class.  */
+   Note that user-declared here is different from "user-provided",
+   which doesn't include functions that are defaulted in the
+   class.  */
 
 bool
-classtype_has_user_move_assign_or_move_ctor_p (tree t)
+classtype_has_move_assign_or_move_ctor_p (tree t, bool user_p)
 {
+  gcc_assert (user_p
+	      || (!CLASSTYPE_LAZY_MOVE_CTOR (t)
+		  && !CLASSTYPE_LAZY_MOVE_ASSIGN (t)));
+
   if (!CLASSTYPE_METHOD_VEC (t))
     return false;
 
   if (!CLASSTYPE_LAZY_MOVE_CTOR (t))
     for (ovl_iterator iter (lookup_fnfields_slot_nolazy (t, ctor_identifier));
 	 iter; ++iter)
-      if (!DECL_ARTIFICIAL (*iter) && move_fn_p (*iter))
+      if ((!user_p || !DECL_ARTIFICIAL (*iter)) && move_fn_p (*iter))
 	return true;
 
   if (!CLASSTYPE_LAZY_MOVE_ASSIGN (t))
     for (ovl_iterator iter (lookup_fnfields_slot_nolazy
 			    (t, cp_assignment_operator_id (NOP_EXPR)));
 	 iter; ++iter)
-      if (!DECL_ARTIFICIAL (*iter) && move_fn_p (*iter))
+      if ((!user_p || !DECL_ARTIFICIAL (*iter)) && move_fn_p (*iter))
 	return true;
   
   return false;

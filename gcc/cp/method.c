@@ -1809,7 +1809,7 @@ maybe_explain_implicit_delete (tree decl)
 	}
       else if (DECL_ARTIFICIAL (decl)
 	       && (sfk == sfk_copy_assignment || sfk == sfk_copy_constructor)
-	       && classtype_has_user_move_assign_or_move_ctor_p (ctype))
+	       && classtype_has_move_assign_or_move_ctor_p (ctype, true))
 	{
 	  inform (DECL_SOURCE_LOCATION (decl),
 		  "%q#D is implicitly declared as deleted because %qT "
@@ -2371,10 +2371,10 @@ lazily_declare_fn (special_function_kind sfk, tree type)
      move assignment operator, the implicitly declared copy constructor is
      defined as deleted.... */
   if ((sfk == sfk_copy_assignment || sfk == sfk_copy_constructor)
-      && classtype_has_user_move_assign_or_move_ctor_p (type))
+      && classtype_has_move_assign_or_move_ctor_p (type, true))
     DECL_DELETED_FN (fn) = true;
 
-  /* A destructor may be virtual.  */
+  /* Destructors and assignment operators may be virtual.  */
   if (sfk == sfk_destructor
       || sfk == sfk_move_assignment
       || sfk == sfk_copy_assignment)

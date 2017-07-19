@@ -6023,7 +6023,7 @@ extern tree default_init_uninitialized_part (tree);
 extern bool trivial_default_constructor_is_constexpr (tree);
 extern bool type_has_constexpr_default_constructor (tree);
 extern bool type_has_virtual_destructor		(tree);
-extern bool classtype_has_user_move_assign_or_move_ctor_p (tree);
+extern bool classtype_has_move_assign_or_move_ctor_p (tree, bool user_declared);
 extern bool type_build_ctor_call		(tree);
 extern bool type_build_dtor_call		(tree);
 extern void explain_non_literal_class		(tree);
