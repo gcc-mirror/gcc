@@ -1,3 +1,8 @@
+2017-07-19  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR middle-end/81331
+	* except.c (execute): Fix ordering issue.
+
 2018-07-19  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR rtl-optimization/81423
