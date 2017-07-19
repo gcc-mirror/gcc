@@ -617,10 +617,17 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       _M_range_insert(iterator __pos, _InputIterator __first,
 		      _InputIterator __last, std::input_iterator_tag)
       {
-	for (; __first != __last; ++__first)
+	if (__pos == end())
 	  {
-	    __pos = insert(__pos, *__first);
-	    ++__pos;
+	    for (; __first != __last; ++__first)
+	      insert(end(), *__first);
+	  }
+	else if (__first != __last)
+	  {
+	    vector __tmp(__first, __last, _M_get_Tp_allocator());
+	    insert(__pos,
+		   _GLIBCXX_MAKE_MOVE_ITERATOR(__tmp.begin()),
+		   _GLIBCXX_MAKE_MOVE_ITERATOR(__tmp.end()));
 	  }
       }
 

@@ -1,3 +1,10 @@
+2017-07-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/81476
+	* include/bits/vector.tcc (vector::_M_range_insert<_InputIterator>):
+	Only insert elements one-by-one when inserting at the end.
+	* testsuite/performance/23_containers/insert/81476.cc: New.
+
 2017-07-19  Volker Reichelt  <v.reichelt@netcologne.de>
 
 	* libsupc++/new (bad_array_new_length): Remove redundant
