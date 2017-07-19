@@ -857,6 +857,15 @@ simplify_truncation (machine_mode mode, rtx op,
     return simplify_gen_unary (TRUNCATE, mode, XEXP (op, 0),
 			       GET_MODE (XEXP (op, 0)));
 
+  /* (truncate:A (ior X C)) is (const_int -1) if C is equal to that already,
+     in mode A.  */
+  if (GET_CODE (op) == IOR
+      && SCALAR_INT_MODE_P (mode)
+      && SCALAR_INT_MODE_P (op_mode)
+      && CONST_INT_P (XEXP (op, 1))
+      && trunc_int_for_mode (INTVAL (XEXP (op, 1)), mode) == -1)
+    return constm1_rtx;
+
   return NULL_RTX;
 }
 

@@ -1,3 +1,9 @@
+2017-07-19  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR rtl-optimization/81423
+	* simplify-rtx.c (simplify_truncation): Handle truncating an IOR
+	with a constant that is -1 in the truncated to mode.
+
 2017-07-19  Jan Hubicka  <hubicka@ucw.cz>
 
 	* predict.c (propagate_unlikely_bbs_forward): Break out from ...
