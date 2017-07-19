@@ -2444,6 +2444,61 @@ emit_note_eh_region_end (rtx_insn *insn)
   return emit_note_after (NOTE_INSN_EH_REGION_END, insn);
 }
 
+/* Add NOP after NOTE_INSN_SWITCH_TEXT_SECTIONS when the cold section starts
+   with landing pad.
+   With landing pad being at offset 0 from the start label of the section
+   we would miss EH delivery because 0 is special and means no landing pad.  */
+
+static bool
+maybe_add_nop_after_section_switch (void)
+{
+  if (!crtl->uses_eh_lsda
+      || !crtl->eh.call_site_record_v[1])
+    return false;
+  int n = vec_safe_length (crtl->eh.call_site_record_v[1]);
+  hash_set<rtx_insn *> visited;
+
+  for (int i = 0; i < n; ++i)
+    {
+      struct call_site_record_d *cs
+	 = (*crtl->eh.call_site_record_v[1])[i];
+      if (cs->landing_pad)
+	{
+	  rtx_insn *insn = as_a <rtx_insn *> (cs->landing_pad);
+	  while (true)
+	    {
+	      /* Landing pads have LABEL_PRESERVE_P flag set.  This check make
+		 sure that we do not walk past landing pad visited earlier
+		 which would result in possible quadratic behaviour.  */
+	      if (LABEL_P (insn) && LABEL_PRESERVE_P (insn)
+		  && visited.add (insn))
+		break;
+
+	      /* Conservatively assume that ASM insn may be empty.  We have
+		 now way to tell what they contain.  */
+	      if (active_insn_p (insn)
+		  && GET_CODE (PATTERN (insn)) != ASM_INPUT
+		  && GET_CODE (PATTERN (insn)) != ASM_OPERANDS)
+		break;
+
+	      /* If we reached the start of hot section, then NOP will be
+		 needed.  */
+	      if (GET_CODE (insn) == NOTE
+		  && NOTE_KIND (insn) == NOTE_INSN_SWITCH_TEXT_SECTIONS)
+		{
+		  emit_insn_after (gen_nop (), insn);
+		  break;
+		}
+
+	      /* We visit only labels from cold section.  We should never hit
+		 begining of the insn stream here.  */
+	      insn = PREV_INSN (insn);
+	    }
+	}
+    }
+  return false;
+}
+
 /* Turn REG_EH_REGION notes back into NOTE_INSN_EH_REGION notes.
    The new note numbers will not refer to region numbers, but
    instead to call site entries.  */
@@ -2631,6 +2686,7 @@ public:
   virtual bool gate (function *);
   virtual unsigned int execute (function *)
     {
+      maybe_add_nop_after_section_switch ();
       return convert_to_eh_region_ranges ();
     }
 
