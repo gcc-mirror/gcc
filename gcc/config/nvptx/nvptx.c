@@ -2405,9 +2405,15 @@ nvptx_print_operand (FILE *file, rtx x, int code)
     case 'u':
       if (x_code == SUBREG)
 	{
-	  mode = GET_MODE (SUBREG_REG (x));
-	  if (split_mode_p (mode))
-	    mode = maybe_split_mode (mode);
+	  machine_mode inner_mode = GET_MODE (SUBREG_REG (x));
+	  if (VECTOR_MODE_P (inner_mode)
+	      && (GET_MODE_SIZE (mode)
+		  <= GET_MODE_SIZE (GET_MODE_INNER (inner_mode))))
+	    mode = GET_MODE_INNER (inner_mode);
+	  else if (split_mode_p (inner_mode))
+	    mode = maybe_split_mode (inner_mode);
+	  else
+	    mode = inner_mode;
 	}
       fprintf (file, "%s", nvptx_ptx_type_from_mode (mode, code == 't'));
       break;
@@ -2508,7 +2514,14 @@ nvptx_print_operand (FILE *file, rtx x, int code)
 	    machine_mode inner_mode = GET_MODE (inner_x);
 	    machine_mode split = maybe_split_mode (inner_mode);
 
-	    if (split_mode_p (inner_mode)
+	    if (VECTOR_MODE_P (inner_mode)
+		&& (GET_MODE_SIZE (mode)
+		    <= GET_MODE_SIZE (GET_MODE_INNER (inner_mode))))
+	      {
+		output_reg (file, REGNO (inner_x), VOIDmode);
+		fprintf (file, ".%s", SUBREG_BYTE (x) == 0 ? "x" : "y");
+	      }
+	    else if (split_mode_p (inner_mode)
 		&& (GET_MODE_SIZE (inner_mode) == GET_MODE_SIZE (mode)))
 	      output_reg (file, REGNO (inner_x), split);
 	    else
@@ -2548,6 +2561,22 @@ nvptx_print_operand (FILE *file, rtx x, int code)
 	    fprintf (file, "0f%08lx", vals[0]);
 	  else
 	    fprintf (file, "0d%08lx%08lx", vals[1], vals[0]);
+	  break;
+
+	case CONST_VECTOR:
+	  {
+	    unsigned n = CONST_VECTOR_NUNITS (x);
+	    fprintf (file, "{ ");
+	    for (unsigned i = 0; i < n; ++i)
+	      {
+		if (i != 0)
+		  fprintf (file, ", ");
+
+		rtx elem = CONST_VECTOR_ELT (x, i);
+		output_addr_const (file, elem);
+	      }
+	    fprintf (file, " }");
+	  }
 	  break;
 
 	default:

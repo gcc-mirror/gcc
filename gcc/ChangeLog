@@ -1,3 +1,7 @@
+2017-07-19  Tom de Vries  <tom@codesourcery.com>
+
+	* config/nvptx/nvptx.c (nvptx_print_operand): Handle v2 vector mode.
+
 2017-07-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/81346
