@@ -1,5 +1,7 @@
 2017-07-19  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/util/testsuite_iterators.h: Fix indentation.
+
 	* testsuite/27_io/basic_filebuf/sgetn/char/81395.cc: Add dg-require.
 
 2017-07-18  Jonathan Wakely  <jwakely@redhat.com>
