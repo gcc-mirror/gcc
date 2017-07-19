@@ -1,3 +1,7 @@
+2017-07-19  Tom de Vries  <tom@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c/vec.c: New test.
+
 2017-07-03  Tom de Vries  <tom@codesourcery.com>
 
 	* plugin/plugin-hsa.c: Fix secure_getenv.h include.

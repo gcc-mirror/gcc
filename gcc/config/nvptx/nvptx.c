@@ -238,6 +238,8 @@ nvptx_ptx_type_from_mode (machine_mode mode, bool promote)
 
     case V2SImode:
       return ".v2.u32";
+    case V2DImode:
+      return ".v2.u64";
 
     default:
       gcc_unreachable ();
@@ -2183,7 +2185,20 @@ nvptx_output_mov_insn (rtx dst, rtx src)
 	    ? "%.\tmov%t0\t%0, %1;" : "%.\tmov.b%T0\t%0, %1;");
 
   if (GET_MODE_SIZE (dst_inner) == GET_MODE_SIZE (src_inner))
-    return "%.\tmov.b%T0\t%0, %1;";
+    {
+      if (GET_MODE_BITSIZE (dst_mode) == 128
+	  && GET_MODE_BITSIZE (GET_MODE (src)) == 128)
+	{
+	  /* mov.b128 is not supported.  */
+	  if (dst_inner == V2DImode && src_inner == TImode)
+	    return "%.\tmov.u64\t%0.x, %L1;\n\t%.\tmov.u64\t%0.y, %H1;";
+	  else if (dst_inner == TImode && src_inner == V2DImode)
+	    return "%.\tmov.u64\t%L0, %1.x;\n\t%.\tmov.u64\t%H0, %1.y;";
+
+	  gcc_unreachable ();
+	}
+      return "%.\tmov.b%T0\t%0, %1;";
+    }
 
   return "%.\tcvt%t0%t1\t%0, %1;";
 }
@@ -2419,6 +2434,20 @@ nvptx_print_operand (FILE *file, rtx x, int code)
 	    mode = inner_mode;
 	}
       fprintf (file, "%s", nvptx_ptx_type_from_mode (mode, code == 't'));
+      break;
+
+    case 'H':
+    case 'L':
+      {
+	rtx inner_x = SUBREG_REG (x);
+	machine_mode inner_mode = GET_MODE (inner_x);
+	machine_mode split = maybe_split_mode (inner_mode);
+
+	output_reg (file, REGNO (inner_x), split,
+		    (code == 'H'
+		     ? GET_MODE_SIZE (inner_mode) / 2
+		     : 0));
+      }
       break;
 
     case 'S':
@@ -5439,7 +5468,38 @@ nvptx_cannot_force_const_mem (machine_mode mode ATTRIBUTE_UNUSED,
 static bool
 nvptx_vector_mode_supported (machine_mode mode)
 {
-  return mode == V2SImode;
+  return (mode == V2SImode
+	  || mode == V2DImode);
+}
+
+/* Return the preferred mode for vectorizing scalar MODE.  */
+
+static machine_mode
+nvptx_preferred_simd_mode (machine_mode mode)
+{
+  switch (mode)
+    {
+    case DImode:
+      return V2DImode;
+    case SImode:
+      return V2SImode;
+
+    default:
+      return default_preferred_simd_mode (mode);
+    }
+}
+
+unsigned int
+nvptx_data_alignment (const_tree type, unsigned int basic_align)
+{
+  if (TREE_CODE (type) == INTEGER_TYPE)
+    {
+      unsigned HOST_WIDE_INT size = tree_to_uhwi (TYPE_SIZE_UNIT (type));
+      if (size == GET_MODE_SIZE (TImode))
+	return GET_MODE_BITSIZE (maybe_split_mode (TImode));
+    }
+
+  return basic_align;
 }
 
 #undef TARGET_OPTION_OVERRIDE
@@ -5561,6 +5621,10 @@ nvptx_vector_mode_supported (machine_mode mode)
 
 #undef TARGET_VECTOR_MODE_SUPPORTED_P
 #define TARGET_VECTOR_MODE_SUPPORTED_P nvptx_vector_mode_supported
+
+#undef TARGET_VECTORIZE_PREFERRED_SIMD_MODE
+#define TARGET_VECTORIZE_PREFERRED_SIMD_MODE \
+    nvptx_preferred_simd_mode
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

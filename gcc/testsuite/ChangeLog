@@ -1,5 +1,12 @@
 2017-07-19  Tom de Vries  <tom@codesourcery.com>
 
+	* gcc.target/nvptx/decl-init.c: Update alignment.
+	* gcc.target/nvptx/slp-2-run.c: New test.
+	* gcc.target/nvptx/slp-2.c: New test.
+	* gcc.target/nvptx/v2di.c: New test.
+
+2017-07-19  Tom de Vries  <tom@codesourcery.com>
+
 	* gcc.target/nvptx/slp-run.c: New test.
 	* gcc.target/nvptx/slp.c: New test.
 	* gcc.target/nvptx/v2si-cvt.c: New test.
