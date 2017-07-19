@@ -1,3 +1,7 @@
+2017-07-19  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* math/powq.c (powq): Use uint32_t instead of u_int32_t.
+
 2017-07-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR libquadmath/65757
