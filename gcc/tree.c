@@ -5633,9 +5633,9 @@ find_decls_types_r (tree *tp, int *ws, void *data)
 	 them and thus do not and want not to reach unused pointer types
 	 this way.  */
       if (!POINTER_TYPE_P (t))
-	fld_worklist_push (TYPE_MINVAL (t), fld);
+	fld_worklist_push (TYPE_MIN_VALUE_RAW (t), fld);
       if (!RECORD_OR_UNION_TYPE_P (t))
-	fld_worklist_push (TYPE_MAXVAL (t), fld);
+	fld_worklist_push (TYPE_MAX_VALUE_RAW (t), fld);
       fld_worklist_push (TYPE_MAIN_VARIANT (t), fld);
       /* Do not walk TYPE_NEXT_VARIANT.  We do not stream it and thus
          do not and want not to reach unused variants this way.  */
@@ -13974,7 +13974,7 @@ verify_type (const_tree t)
    }
 
 
-  /* Check various uses of TYPE_MINVAL.  */
+  /* Check various uses of TYPE_MIN_VALUE_RAW.  */
   if (RECORD_OR_UNION_TYPE_P (t))
     {
       /* FIXME: C FE uses TYPE_VFIELD to record C_TYPE_INCOMPLETE_VARS
@@ -14069,10 +14069,10 @@ verify_type (const_tree t)
 	  error_found = true;
         } 
     }
-  else if (TYPE_MAXVAL (t))
+  else if (TYPE_MAX_VALUE_RAW (t))
     {
-      error ("TYPE_MAXVAL non-NULL");
-      debug_tree (TYPE_MAXVAL (t));
+      error ("TYPE_MAX_VALUE_RAW non-NULL");
+      debug_tree (TYPE_MAX_VALUE_RAW (t));
       error_found = true;
     }
 

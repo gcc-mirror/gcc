@@ -704,8 +704,8 @@ write_ts_type_non_common_tree_pointers (struct output_block *ob, tree expr,
     stream_write_tree (ob, TYPE_ARG_TYPES (expr), ref_p);
 
   if (!POINTER_TYPE_P (expr))
-    stream_write_tree (ob, TYPE_MINVAL (expr), ref_p);
-  stream_write_tree (ob, TYPE_MAXVAL (expr), ref_p);
+    stream_write_tree (ob, TYPE_MIN_VALUE_RAW (expr), ref_p);
+  stream_write_tree (ob, TYPE_MAX_VALUE_RAW (expr), ref_p);
   if (RECORD_OR_UNION_TYPE_P (expr))
     stream_write_tree (ob, TYPE_BINFO (expr), ref_p);
 }

@@ -1,3 +1,8 @@
+2017-07-19  Nathan Sidwell  <nathan@acm.org>
+
+	* lto.c (mentions_vars_p_type): Use TYPE_{MIN,MAX}_VALUE_RAW.
+	(compare_tree_sccs_1, lto_fixup_prevailing_decls): Likewise.
+
 2017-07-06  Jan Hubicka  <hubicka@ucw.cz>
 
 	* lto-partition.c (lto_balanced_map): Do not check

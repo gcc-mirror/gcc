@@ -2103,37 +2103,37 @@ extern machine_mode element_mode (const_tree t);
 
 #define TYPE_VALUES(NODE) (ENUMERAL_TYPE_CHECK (NODE)->type_non_common.values)
 #define TYPE_DOMAIN(NODE) (ARRAY_TYPE_CHECK (NODE)->type_non_common.values)
-#define TYPE_FIELDS(NODE) \
+#define TYPE_FIELDS(NODE)				\
   (RECORD_OR_UNION_CHECK (NODE)->type_non_common.values)
 #define TYPE_CACHED_VALUES(NODE) (TYPE_CHECK (NODE)->type_non_common.values)
-#define TYPE_ARG_TYPES(NODE) \
+#define TYPE_ARG_TYPES(NODE)				\
   (FUNC_OR_METHOD_CHECK (NODE)->type_non_common.values)
 #define TYPE_VALUES_RAW(NODE) (TYPE_CHECK (NODE)->type_non_common.values)
 
-#define TYPE_METHODS(NODE) \
-  (RECORD_OR_UNION_CHECK (NODE)->type_non_common.maxval)
-#define TYPE_VFIELD(NODE) \
-  (RECORD_OR_UNION_CHECK (NODE)->type_non_common.minval)
-#define TYPE_METHOD_BASETYPE(NODE) \
-  (FUNC_OR_METHOD_CHECK (NODE)->type_non_common.maxval)
-#define TYPE_OFFSET_BASETYPE(NODE) \
-  (OFFSET_TYPE_CHECK (NODE)->type_non_common.maxval)
-#define TYPE_MAXVAL(NODE) (TYPE_CHECK (NODE)->type_non_common.maxval)
-#define TYPE_MINVAL(NODE) (TYPE_CHECK (NODE)->type_non_common.minval)
-#define TYPE_NEXT_PTR_TO(NODE) \
-  (POINTER_TYPE_CHECK (NODE)->type_non_common.minval)
-#define TYPE_NEXT_REF_TO(NODE) \
-  (REFERENCE_TYPE_CHECK (NODE)->type_non_common.minval)
-#define TYPE_MIN_VALUE(NODE) \
+#define TYPE_MIN_VALUE(NODE)				\
   (NUMERICAL_TYPE_CHECK (NODE)->type_non_common.minval)
+#define TYPE_NEXT_PTR_TO(NODE)				\
+  (POINTER_TYPE_CHECK (NODE)->type_non_common.minval)
+#define TYPE_NEXT_REF_TO(NODE)				\
+  (REFERENCE_TYPE_CHECK (NODE)->type_non_common.minval)
+#define TYPE_VFIELD(NODE)				\
+  (RECORD_OR_UNION_CHECK (NODE)->type_non_common.minval)
+#define TYPE_MIN_VALUE_RAW(NODE) (TYPE_CHECK (NODE)->type_non_common.minval)
+
 #define TYPE_MAX_VALUE(NODE) \
   (NUMERICAL_TYPE_CHECK (NODE)->type_non_common.maxval)
-
+#define TYPE_METHODS(NODE)				\
+  (RECORD_OR_UNION_CHECK (NODE)->type_non_common.maxval)
+#define TYPE_METHOD_BASETYPE(NODE)			\
+  (FUNC_OR_METHOD_CHECK (NODE)->type_non_common.maxval)
+#define TYPE_OFFSET_BASETYPE(NODE)			\
+  (OFFSET_TYPE_CHECK (NODE)->type_non_common.maxval)
 /* If non-NULL, this is an upper bound of the size (in bytes) of an
    object of the given ARRAY_TYPE_NON_COMMON.  This allows temporaries to be
    allocated.  */
 #define TYPE_ARRAY_MAX_SIZE(ARRAY_TYPE) \
   (ARRAY_TYPE_CHECK (ARRAY_TYPE)->type_non_common.maxval)
+#define TYPE_MAX_VALUE_RAW(NODE) (TYPE_CHECK (NODE)->type_non_common.maxval)
 
 /* For record and union types, information about this type, as a base type
    for itself.  */
