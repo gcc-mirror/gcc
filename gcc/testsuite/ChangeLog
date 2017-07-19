@@ -1,3 +1,9 @@
+2017-07-19  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* gcc.target/powerpc/cpu-builtin-1.c: Change test to use #ifdef
+	__BUILTIN_CPU_SUPPORTS to see if the GLIBC is new enough that
+	__builtin_cpu_is and __builtin_cpu_supports are supported.
+
 2017-07-19  Steven Munroe  <munroesj@gcc.gnu.org>
 
 	* gcc.target/powerpc/bmi-check.h (main): Skip unless
