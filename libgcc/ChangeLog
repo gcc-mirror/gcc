@@ -1,3 +1,7 @@
+2017-07-19  John Marino  <gnugcc@marino.st>
+
+	* config/i386/dragonfly-unwind.h: Handle sigtramp relocation.
+
 2017-07-04  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/aarch64/linux-unwind.h (aarch64_fallback_frame_state),
