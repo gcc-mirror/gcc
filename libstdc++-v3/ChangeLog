@@ -1,5 +1,8 @@
 2017-07-19  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/fstream.tcc (basic_filebuf::xsgetn)
+	(basic_filebuf::xsputn, basic_filebuf::seekoff): Fix indentation.
+
 	* testsuite/util/testsuite_iterators.h: Fix indentation.
 
 	* testsuite/27_io/basic_filebuf/sgetn/char/81395.cc: Add dg-require.
