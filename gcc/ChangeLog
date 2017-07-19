@@ -1,8 +1,21 @@
+2017-07-19  Nathan Sidwell  <nathan@acm.org>
+
+	* tree.h (TYPE_MINVAL, TYPE_MAXVAL): Rename to ...
+	(TYPE_MIN_VALUE_RAW, TYPE_MAX_VALUE_RAW): ... these.
+	* tree.c (find_decls_types_r, verify_type): Use
+	TYPE_{MIN,MAX}_VALUE_RAW.
+	* lto-streamer-out.c (DFS::DFS_write_tree_body): Likewise.
+	(hash_tree): Likewise.
+	* tree-streamer-in.c (lto_input_ts_type_non_common_tree_pointers):
+	Likewise.
+	* tree-streamer-out.c (write_ts_type_non_common_tree_pointers):
+	Likewise.
+
 2017-07-18  Tom de Vries  <tom@codesourcery.com>
 
 	PR middle-end/81464
-	* omp-expand.c (expand_omp_for_static_chunk): Handle equal-argument loop
-	exit phi.
+	* omp-expand.c (expand_omp_for_static_chunk): Handle
+	equal-argument loop exit phi.
 
 2017-07-18  Uros Bizjak  <ubizjak@gmail.com>
 
