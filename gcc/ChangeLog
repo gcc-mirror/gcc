@@ -1,3 +1,15 @@
+2017-07-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/81346
+	* fold-const.h (fold_div_compare, range_check_type): Declare.
+	* fold-const.c (range_check_type): New function.
+	(build_range_check): Use range_check_type.
+	(fold_div_compare): No longer static, rewritten into
+	a match.pd helper function.
+	(fold_comparison): Don't call fold_div_compare here.
+	* match.pd (X / C1 op C2): New optimization using fold_div_compare
+	as helper function.
+
 2017-07-19  Nathan Sidwell  <nathan@acm.org>
 
 	* tree.h (TYPE_MINVAL, TYPE_MAXVAL): Rename to ...
