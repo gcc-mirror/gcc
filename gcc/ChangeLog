@@ -1,3 +1,10 @@
+2017-07-18  Jan Hubicka  <hubicka@ucw.cz>
+	    Tom de Vries  <tom@codesourcery.com>
+
+	PR middle-end/81030
+	* cfgbuild.c (find_many_sub_basic_blocks): Update REG_BR_PROB note
+	when gimple level profile disagrees with what RTL expander did.
+
 2017-07-20  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/61171
