@@ -253,10 +253,9 @@ pseudo_compare_func (const void *v1p, const void *v2p)
 
   /* Assign hard reg to static chain pointer first pseudo when
      non-local goto is used.  */
-  if (non_spilled_static_chain_regno_p (r1))
-    return -1;
-  else if (non_spilled_static_chain_regno_p (r2))
-    return 1;
+  if ((diff = (non_spilled_static_chain_regno_p (r2)
+	       - non_spilled_static_chain_regno_p (r1))) != 0)
+    return diff;
 
   /* Prefer to assign more frequently used registers first.  */
   if ((diff = lra_reg_info[r2].freq - lra_reg_info[r1].freq) != 0)

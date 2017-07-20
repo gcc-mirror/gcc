@@ -1,5 +1,10 @@
 2017-07-20  Alexander Monakov  <amonakov@ispras.ru>
 
+	* lra-assigns.c (pseudo_compare_func): Fix comparison step based on
+	non_spilled_static_chain_regno_p.
+
+2017-07-20  Alexander Monakov  <amonakov@ispras.ru>
+
 	* gimple-ssa-store-merging.c (sort_by_bitpos): Return 0 on equal bitpos.
 
 2017-07-20  Jan Hubicka  <hubicka@ucw.cz>
