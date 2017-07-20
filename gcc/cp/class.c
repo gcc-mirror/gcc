@@ -1031,6 +1031,7 @@ add_method (tree type, tree method, bool via_using)
   bool insert_p = true;
   unsigned slot;
   tree m;
+  char const *method_string = IDENTIFIER_POINTER (DECL_NAME (method));
 
   /* See if we already have an entry with this name.  */
   for (slot = CLASSTYPE_FIRST_CONVERSION_SLOT;
@@ -1043,14 +1044,15 @@ add_method (tree type, tree method, bool via_using)
 	  insert_p = !DECL_CONV_FN_P (m);
 	  break;
 	}
-      if (DECL_NAME (m) == DECL_NAME (method))
+      char const *m_string = IDENTIFIER_POINTER (DECL_NAME (m));
+      if (m_string == method_string)
 	{
 	  insert_p = false;
 	  break;
 	}
       if (complete_p
 	  && !DECL_CONV_FN_P (m)
-	  && DECL_NAME (m) > DECL_NAME (method))
+	  && m_string > method_string)
 	break;
     }
   tree current_fns = insert_p ? NULL_TREE : (*method_vec)[slot];
@@ -2266,13 +2268,8 @@ method_name_cmp (const void* m1_p, const void* m2_p)
   const tree *const m1 = (const tree *) m1_p;
   const tree *const m2 = (const tree *) m2_p;
 
-  if (*m1 == NULL_TREE && *m2 == NULL_TREE)
-    return 0;
-  if (*m1 == NULL_TREE)
-    return -1;
-  if (*m2 == NULL_TREE)
-    return 1;
-  if (OVL_NAME (*m1) < OVL_NAME (*m2))
+  if (IDENTIFIER_POINTER (OVL_NAME (*m1))
+      < IDENTIFIER_POINTER (OVL_NAME (*m2)))
     return -1;
   return 1;
 }
@@ -2285,20 +2282,13 @@ resort_method_name_cmp (const void* m1_p, const void* m2_p)
 {
   const tree *const m1 = (const tree *) m1_p;
   const tree *const m2 = (const tree *) m2_p;
-  if (*m1 == NULL_TREE && *m2 == NULL_TREE)
-    return 0;
-  if (*m1 == NULL_TREE)
+
+  const char *n1 = IDENTIFIER_POINTER (OVL_NAME (*m1));
+  const char *n2 = IDENTIFIER_POINTER (OVL_NAME (*m2));
+  resort_data.new_value (&n1, resort_data.cookie);
+  resort_data.new_value (&n2, resort_data.cookie);
+  if (n1 < n2)
     return -1;
-  if (*m2 == NULL_TREE)
-    return 1;
-  {
-    tree d1 = OVL_NAME (*m1);
-    tree d2 = OVL_NAME (*m2);
-    resort_data.new_value (&d1, resort_data.cookie);
-    resort_data.new_value (&d2, resort_data.cookie);
-    if (d1 < d2)
-      return -1;
-  }
   return 1;
 }
 

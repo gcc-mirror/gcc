@@ -1,5 +1,12 @@
 2017-07-20  Nathan Sidwell  <nathan@acm.org>
 
+	Method vec sorted by identifier pointer (not conv ops)
+	gcc/cp/
+	* class.c (add_method): Use IDENTIFIER_POINTER.
+	(method_name_cmp, resort_method_name_cmp): Likewise. DECL_NAME can
+	never be NULL.
+	* search.c (lookup_fnfields_slot_nolazy): Use IDENTIFIER_POINTER.
+
 	Conv op names all same.
 	gcc/cp/
 	* cp-tree.h (CPTI_CONV_OP_IDENTIFIER): New.

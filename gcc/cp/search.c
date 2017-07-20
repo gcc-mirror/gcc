@@ -1542,6 +1542,7 @@ lookup_fnfields_slot_nolazy (tree type, tree name)
       break;
 
   /* If the type is complete, use binary search.  */
+  const char *name_string = IDENTIFIER_POINTER (name);
   if (COMPLETE_TYPE_P (type))
     {
       int lo = i;
@@ -1554,10 +1555,10 @@ lookup_fnfields_slot_nolazy (tree type, tree name)
 	    n_outer_fields_searched++;
 
 	  fns = (*method_vec)[i];
-	  tree n = OVL_NAME (fns);
-	  if (n > name)
+	  const char *fns_string = IDENTIFIER_POINTER (OVL_NAME (fns));
+	  if (fns_string > name_string)
 	    hi = i;
-	  else if (n < name)
+	  else if (fns_string < name_string)
 	    lo = i + 1;
 	  else
 	    return fns;
@@ -1568,7 +1569,7 @@ lookup_fnfields_slot_nolazy (tree type, tree name)
       {
 	if (GATHER_STATISTICS)
 	  n_outer_fields_searched++;
-	if (OVL_NAME (fns) == name)
+	if (IDENTIFIER_POINTER (OVL_NAME (fns)) == name_string)
 	  return fns;
       }
 
