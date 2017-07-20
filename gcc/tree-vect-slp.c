@@ -2439,7 +2439,7 @@ destroy_bb_vec_info (bb_vec_info bb_vinfo)
    the subtree. Return TRUE if the operations are supported.  */
 
 static bool
-vect_slp_analyze_node_operations (slp_tree node)
+vect_slp_analyze_node_operations (slp_tree node, slp_instance node_instance)
 {
   bool dummy;
   int i, j;
@@ -2450,7 +2450,7 @@ vect_slp_analyze_node_operations (slp_tree node)
     return true;
 
   FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (node), i, child)
-    if (!vect_slp_analyze_node_operations (child))
+    if (!vect_slp_analyze_node_operations (child, node_instance))
       return false;
 
   stmt = SLP_TREE_SCALAR_STMTS (node)[0];
@@ -2507,7 +2507,7 @@ vect_slp_analyze_node_operations (slp_tree node)
     if (SLP_TREE_DEF_TYPE (child) != vect_internal_def)
       STMT_VINFO_DEF_TYPE (vinfo_for_stmt (SLP_TREE_SCALAR_STMTS (child)[0]))
 	= SLP_TREE_DEF_TYPE (child);
-  bool res = vect_analyze_stmt (stmt, &dummy, node);
+  bool res = vect_analyze_stmt (stmt, &dummy, node, node_instance);
   /* Restore def-types.  */
   FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (node), j, child)
     if (SLP_TREE_DEF_TYPE (child) != vect_internal_def)
@@ -2535,7 +2535,8 @@ vect_slp_analyze_operations (vec<slp_instance> slp_instances, void *data)
 
   for (i = 0; slp_instances.iterate (i, &instance); )
     {
-      if (!vect_slp_analyze_node_operations (SLP_INSTANCE_TREE (instance)))
+      if (!vect_slp_analyze_node_operations (SLP_INSTANCE_TREE (instance),
+					     instance))
         {
 	  dump_printf_loc (MSG_NOTE, vect_location,
 			   "removing SLP instance operations starting from: ");

@@ -1,3 +1,27 @@
+2017-07-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/61171
+	* tree-vectorizer.h (slp_instance): Add reduc_phis member.
+	(vect_analyze_stmt): Add slp instance parameter.
+	(vectorizable_reduction): Likewise.
+	* tree-vect-loop.c (vect_analyze_loop_operations): Adjust.
+	(vect_is_simple_reduction): Deal with chains not detected
+	as SLP reduction chain, specifically not properly associated
+	chains containing a mix of plus/minus.
+	(get_reduction_op): Remove.
+	(get_initial_defs_for_reduction): Simplify, pass in whether
+	this is a reduction chain, pass in the SLP node for the PHIs.
+	(vect_create_epilog_for_reduction): Get the SLP instance as
+	arg and adjust.
+	(vectorizable_reduction): Get the SLP instance as arg.
+	During analysis remember the SLP node with the PHIs in the
+	instance.  Simplify getting at the vectorized reduction PHIs.
+	* tree-vect-slp.c (vect_slp_analyze_node_operations): Pass
+	through SLP instance.
+	(vect_slp_analyze_operations): Likewise.
+	* tree-vect-stms.c (vect_analyze_stmt): Likewise.
+	(vect_transform_stmt): Likewise.
+
 2017-07-20  Tom de Vries  <tom@codesourcery.com>
 
 	PR tree-optimization/81489

@@ -127,6 +127,9 @@ typedef struct _slp_instance {
 
   /* The group of nodes that contain loads of this SLP instance.  */
   vec<slp_tree> loads;
+
+  /* The SLP node containing the reduction PHIs.  */
+  slp_tree reduc_phis;
 } *slp_instance;
 
 
@@ -1107,7 +1110,7 @@ extern tree vect_get_vec_def_for_stmt_copy (enum vect_def_type, tree);
 extern bool vect_transform_stmt (gimple *, gimple_stmt_iterator *,
                                  bool *, slp_tree, slp_instance);
 extern void vect_remove_stores (gimple *);
-extern bool vect_analyze_stmt (gimple *, bool *, slp_tree);
+extern bool vect_analyze_stmt (gimple *, bool *, slp_tree, slp_instance);
 extern bool vectorizable_condition (gimple *, gimple_stmt_iterator *,
 				    gimple **, tree, int, slp_tree);
 extern void vect_get_load_cost (struct data_reference *, int, bool,
@@ -1178,7 +1181,7 @@ extern loop_vec_info vect_analyze_loop_form (struct loop *);
 extern bool vectorizable_live_operation (gimple *, gimple_stmt_iterator *,
 					 slp_tree, int, gimple **);
 extern bool vectorizable_reduction (gimple *, gimple_stmt_iterator *,
-				    gimple **, slp_tree);
+				    gimple **, slp_tree, slp_instance);
 extern bool vectorizable_induction (gimple *, gimple_stmt_iterator *,
 				    gimple **, slp_tree);
 extern tree get_initial_def_for_reduction (gimple *, tree, tree *);
