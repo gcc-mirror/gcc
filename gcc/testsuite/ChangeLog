@@ -1,3 +1,9 @@
+2017-07-20  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/vect/slp-43.c: Increase loop count to enable vectorization
+	with V64QImode.
+	* gcc.dg/vect/slp-45.c: Likewise.
+
 2017-07-20  Naveen H.S  <Naveen.Hurugalawadi@cavium.com>
 
 	* gcc.dg/tree-ssa/vrp116.c: New Test.
