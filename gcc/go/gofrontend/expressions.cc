@@ -14307,7 +14307,10 @@ Type_guard_expression::do_get_backend(Translate_context* context)
         Expression::convert_for_assignment(context->gogo(), this->type_,
                                            this->expr_, this->location());
 
-  return conversion->get_backend(context);
+  Gogo* gogo = context->gogo();
+  Btype* bt = this->type_->get_backend(gogo);
+  Bexpression* bexpr = conversion->get_backend(context);
+  return gogo->backend()->convert_expression(bt, bexpr, this->location());
 }
 
 // Dump ast representation for a type guard expression.
