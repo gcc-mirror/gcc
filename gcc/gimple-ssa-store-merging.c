@@ -516,12 +516,12 @@ sort_by_bitpos (const void *x, const void *y)
   store_immediate_info *const *tmp = (store_immediate_info * const *) x;
   store_immediate_info *const *tmp2 = (store_immediate_info * const *) y;
 
-  if ((*tmp)->bitpos <= (*tmp2)->bitpos)
+  if ((*tmp)->bitpos < (*tmp2)->bitpos)
     return -1;
   else if ((*tmp)->bitpos > (*tmp2)->bitpos)
     return 1;
-
-  gcc_unreachable ();
+  else
+    return 0;
 }
 
 /* Sorting function for store_immediate_info objects.
