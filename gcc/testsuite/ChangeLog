@@ -1,3 +1,8 @@
+2017-07-17  Tom de Vries  <tom@codesourcery.com>
+
+	PR middle-end/81030
+	* gcc.dg/pr81030.c: New test.
+
 2017-07-20  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/61171
