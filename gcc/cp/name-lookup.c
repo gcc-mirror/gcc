@@ -3374,19 +3374,13 @@ lookup_all_conversions (tree klass)
 {
   tree lkp = NULL_TREE;
 
-  if (vec<tree, va_gc> *methods = CLASSTYPE_METHOD_VEC (klass))
-    {
-      tree ovl;
-      for (int idx = CLASSTYPE_FIRST_CONVERSION_SLOT;
-	   methods->iterate (idx, &ovl); ++idx)
-	{
-	  if (!DECL_CONV_FN_P (OVL_FIRST (ovl)))
-	    /* There are no more conversion functions.  */
-	    break;
-
-	  lkp = lookup_add (ovl, lkp);
-	}
-    }
+  if (TYPE_HAS_CONVERSION (klass))
+    if (vec<tree, va_gc> *method_vec = CLASSTYPE_METHOD_VEC (klass))
+      {
+	lkp = (*method_vec)[CLASSTYPE_FIRST_CONVERSION_SLOT];
+	if (!DECL_CONV_FN_P (OVL_FIRST (lkp)))
+	  lkp = NULL_TREE;
+      }
 
   return lkp;
 }

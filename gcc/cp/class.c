@@ -1011,22 +1011,13 @@ modify_vtable_entry (tree t,
 bool
 add_method (tree type, tree method, bool via_using)
 {
-  bool template_conv_p = false;
-  bool conv_p;
-  vec<tree, va_gc> *method_vec;
-  bool complete_p;
-  tree current_fns;
-
   if (method == error_mark_node)
     return false;
 
-  complete_p = COMPLETE_TYPE_P (type);
-  conv_p = DECL_CONV_FN_P (method);
-  if (conv_p)
-    template_conv_p = (TREE_CODE (method) == TEMPLATE_DECL
-		       && DECL_TEMPLATE_CONV_FN_P (method));
+  bool complete_p = COMPLETE_TYPE_P (type);
+  bool conv_p = DECL_CONV_FN_P (method);
 
-  method_vec = CLASSTYPE_METHOD_VEC (type);
+  vec<tree, va_gc> *method_vec = CLASSTYPE_METHOD_VEC (type);
   if (!method_vec)
     {
       /* Make a new method vector.  We start with 8 entries.  */
@@ -1047,15 +1038,11 @@ add_method (tree type, tree method, bool via_using)
        ++slot)
     {
       m = OVL_FIRST (m);
-      if (template_conv_p)
+      if (conv_p)
 	{
-	  if (TREE_CODE (m) == TEMPLATE_DECL
-	      && DECL_TEMPLATE_CONV_FN_P (m))
-	    insert_p = false;
+	  insert_p = !DECL_CONV_FN_P (m);
 	  break;
 	}
-      if (conv_p && !DECL_CONV_FN_P (m))
-	break;
       if (DECL_NAME (m) == DECL_NAME (method))
 	{
 	  insert_p = false;
@@ -1066,7 +1053,7 @@ add_method (tree type, tree method, bool via_using)
 	  && DECL_NAME (m) > DECL_NAME (method))
 	break;
     }
-  current_fns = insert_p ? NULL_TREE : (*method_vec)[slot];
+  tree current_fns = insert_p ? NULL_TREE : (*method_vec)[slot];
 
   /* Check to see if we've already got this method.  */
   for (ovl_iterator iter (current_fns); iter; ++iter)

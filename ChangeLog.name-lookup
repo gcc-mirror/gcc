@@ -1,5 +1,16 @@
 2017-07-20  Nathan Sidwell  <nathan@acm.org>
 
+	All conv ops on one slot.
+	gcc/cp/
+	* class.c (add_method): Put conversion ops on a single slot.
+	* name-lookup.c (lookup_all_conversions): Only examine single
+	slot.
+	* search.c (lookup_conversion_operator): Examine single slot in
+	detail to pull out requested conversions.
+	(lookup_conversions_r): Lose tmp/non-tmpl distinction. All ops on
+	one slot.
+	(lookup_conversions): Likewise.
+
 	gcc/cp/
 	* call.c (add_candidates): Move decls to initialization.  Don't
 	use !!.
