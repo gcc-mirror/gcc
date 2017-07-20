@@ -1487,6 +1487,14 @@ fmodules
 C++ ObjC++ Var(flag_modules)
 Enable C++ modules (experimental).
 
+fmodule-output=
+C++ ObjC++ Joined MissingArgError(missing filename after %qs)
+-fmodule-output=<file> Write the binary module interface into <file>.
+
+fmodule-file=
+C++ ObjC++ Joined MissingArgError(missing module map after %qs)
+-fmodule-file=<name>=<file> Read the binary interface for module <name> from <file>.
+
 fms-extensions
 C ObjC C++ ObjC++ Var(flag_ms_extensions)
 Don't warn about uses of Microsoft extensions.

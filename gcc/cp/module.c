@@ -4569,9 +4569,23 @@ do_module_import (location_t loc, tree name, import_kind kind,
 	index = THIS_MODULE_INDEX;
       else
 	{
-	  // FIXME:Path search along the -I path
-	  // FIXME: Think about make dependency generation
-	  char *fname = module_to_filename (name);
+          // FIXME: Path search along the -I path? Note that here we are
+          //        searching for the binary module interface, not source,
+          //        which may have to be built with "our" options, etc. So
+          //        it's not clear searching, say, in /usr/include, makes
+          //        much sense.
+          //
+          // FIXME: Think about make dependency generation.
+
+          /* First look in the module file map. If not found, fall back to the
+             default mapping. */
+          const char *fname = NULL;
+          char *fname_free = NULL;
+          if (char **slot = module_files.get (IDENTIFIER_POINTER (name)))
+            fname = *slot;
+          else
+            fname = fname_free = module_to_filename (name);
+
 	  FILE *stream = fopen (fname, "rb");
 
 	  if (!stream)
@@ -4583,7 +4597,7 @@ do_module_import (location_t loc, tree name, import_kind kind,
 	      fclose (stream);
 	      gcc_assert (*val == ~0U);
 	    }
-	  free (fname);
+          free (fname_free);
 	}
     }
 
@@ -4681,8 +4695,10 @@ finish_module ()
 {
   if (this_module && this_module->direct_import)
     {
-      // FIXME:option to specify location? take dirname from output file?
-      char *fname = module_to_filename (this_module->name);
+      char *fname_free = NULL;
+      const char *fname = module_output
+        ? module_output
+        : (fname_free = module_to_filename (this_module->name));
 
       if (!errorcount)
 	{
@@ -4699,8 +4715,10 @@ finish_module ()
 	}
       if (errorcount)
 	unlink (fname);
-      free (fname);
+      free (fname_free);
     }
+  else if (module_output)
+    error ("-fmodule-output specified for non-module interface compilation");
 
   /* GC can clean up the detritus.  */
   module_map = NULL;

@@ -1,3 +1,24 @@
+2017-07-20  Boris Kolpackov <boris@codesynthesis.com>
+
+	Add -fmodule-output & -fmodule-file options.
+	gcc/c-family/
+	* c.opt (-fmodule-output): New option.
+	(-fmodule-file): New option.
+	* c-common.h (module_output): Declare.
+	(module_files): Declare.
+	* c-common.c (module_output): New variable.
+	(module_files): New variable.
+	* c-opts.c (add_module_file): New function.
+	* c-opts.c: Handle -fmodule-output and -fmodule-file.
+	gcc/cp/
+	* module.c (finish_module): If specified, use module_output as output
+	file name.
+	* module.c (do_module_import): Check module_files for a module name
+	to file mapping before falling back to default.
+	gcc/
+	* doc/invoke.texi (C++ Dialect Options): Document -fmodule-output
+	and -fmodule-file.
+
 2017-07-17  Nathan Sidwell  <nathan@acm.org>
 
 	Merge trunk r250272.
