@@ -1,3 +1,7 @@
+2017-07-20  Naveen H.S  <Naveen.Hurugalawadi@cavium.com>
+
+	* gcc.dg/tree-ssa/vrp116.c: New Test.
+
 2017-07-19  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* gcc.target/powerpc/cpu-builtin-1.c: Change test to use #ifdef
