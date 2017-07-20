@@ -6,7 +6,8 @@
 
 2017-07-18  Mike Frysinger  <vapier@chromium.org>
 
-	* gcc-interface/Makefile.in ($(P)): Delete.
+	* gcc-interface/Makefile.in (../../gnatmake$(exeext)): Delete $(P).
+	(../../gnatlink$(exeext)): Likewise.
 
 2017-07-15  John Paul Adrian Glaubitz  <glaubitz@physik.fu-berlin.de>
 
@@ -16,8 +17,7 @@
 
 2017-06-23  Jakub Jelinek  <jakub@redhat.com>
 
-	* gcc-interface/trans.c (gnat_to_gnu): Initialize sync to false to
-	avoid UB.
+	* gcc-interface/trans.c (gnat_to_gnu): Initialize sync to false.
 
 2017-06-21  Pierre-Marie de Rodat  <derodat@adacore.com>
 
