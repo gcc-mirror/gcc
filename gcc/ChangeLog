@@ -1,3 +1,18 @@
+2017-07-20  Richard Biener  <rguenther@suse.de>
+
+	* gimple.h (gimple_phi_result): Add gphi * overload.
+	(gimple_phi_result_ptr): Likewise.
+	(gimple_phi_arg): Likewise.  Adjust index assert to only
+	allow actual argument accesses rather than all slots available
+	by capacity.
+	(gimple_phi_arg_def): Add gphi * overload.
+	* tree-phinodes.c (make_phi_node): Initialize only actual
+	arguments.
+	(resize_phi_node): Clear memory not covered by old node,
+	do not initialize excess argument slots.
+	(reserve_phi_args_for_new_edge): Initialize new argument slot
+	completely.
+
 2017-07-20  Bin Cheng  <bin.cheng@arm.com>
 
 	PR tree-optimization/81388
