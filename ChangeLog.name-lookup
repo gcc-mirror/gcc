@@ -1,5 +1,12 @@
 2017-07-20  Nathan Sidwell  <nathan@acm.org>
 
+	Conv op names all same.
+	gcc/cp/
+	* cp-tree.h (CPTI_CONV_OP_IDENTIFIER): New.
+	(conv_op_identifier): New.
+	* decl.c (initialize_predefined_identifiers): Add it.
+	* lex.c (make_conv_op_name): Names are not in the symbol table.
+
 	All conv ops on one slot.
 	gcc/cp/
 	* class.c (add_method): Put conversion ops on a single slot.

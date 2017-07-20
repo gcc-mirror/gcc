@@ -133,6 +133,7 @@ enum cp_tree_index
     CPTI_COMPLETE_DTOR_IDENTIFIER,
     CPTI_BASE_DTOR_IDENTIFIER,
     CPTI_DELETING_DTOR_IDENTIFIER,
+    CPTI_CONV_OP_IDENTIFIER,
     CPTI_DELTA_IDENTIFIER,
     CPTI_IN_CHARGE_IDENTIFIER,
     CPTI_VTT_PARM_IDENTIFIER,
@@ -239,6 +240,10 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
 /* The name of a destructor that destroys virtual base classes, and
    then deletes the entire object.  */
 #define deleting_dtor_identifier	cp_global_trees[CPTI_DELETING_DTOR_IDENTIFIER]
+/* The name used for conversion operators -- but note that actual
+   conversion functions use special identifiers outside the identifier
+   table.  */
+#define conv_op_identifier		cp_global_trees[CPTI_CONV_OP_IDENTIFIER]
 
 /* The name of the identifier used internally to represent operator CODE.  */
 #define cp_operator_id(CODE) \
