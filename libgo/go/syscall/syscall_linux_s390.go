@@ -12,10 +12,29 @@ func (r *PtraceRegs) PC() uint64 { return uint64(r.Psw.Addr) }
 
 func (r *PtraceRegs) SetPC(pc uint64) { r.Psw.Addr = uint32(pc) }
 
-func PtraceGetRegs(pid int, regsout *PtraceRegs) (err error) {
-	return ptrace(PTRACE_GETREGS, pid, 0, uintptr(unsafe.Pointer(regsout)))
+const syscall_PTRACE_PEEKUSR_AREA = 0x5000
+const syscall_PTRACE_POKEUSR_AREA = 0x5001
+
+type syscall_ptrace_area struct {
+	len          uint32
+	kernel_addr  uint32
+	process_addr uint32
+}
+
+func PtraceGetRegs(pid int, regs *PtraceRegs) (err error) {
+	parea := syscall_ptrace_area{
+		12,
+		0,
+		uint32(uintptr(unsafe.Pointer(regs))),
+	}
+	return ptrace(syscall_PTRACE_PEEKUSR_AREA, pid, uintptr(unsafe.Pointer(&parea)), 0)
 }
 
 func PtraceSetRegs(pid int, regs *PtraceRegs) (err error) {
-	return ptrace(PTRACE_SETREGS, pid, 0, uintptr(unsafe.Pointer(regs)))
+	parea := syscall_ptrace_area{
+		12,
+		0,
+		uint32(uintptr(unsafe.Pointer(regs))),
+	}
+	return ptrace(syscall_PTRACE_POKEUSR_AREA, pid, uintptr(unsafe.Pointer(&parea)), 0)
 }
