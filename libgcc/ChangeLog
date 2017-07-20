@@ -1,3 +1,12 @@
+2017-07-20  Peter Bergner  <bergner@vnet.ibm.com>
+
+	Backport from mainline
+	2017-07-07  Peter Bergner  <bergner@vnet.ibm.com>
+
+	* config/rs6000/float128-ifunc.c: Don't include auxv.h.
+	(have_ieee_hw_p): Delete function.
+	(SW_OR_HW) Use __builtin_cpu_supports().
+
 2017-07-04  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/aarch64/linux-unwind.h (aarch64_fallback_frame_state),
