@@ -1,4 +1,8 @@
-2017-07-18  Jan Hubicka  <hubicka@ucw.cz>
+2017-07-20  Alexander Monakov  <amonakov@ispras.ru>
+
+	* gimple-ssa-store-merging.c (sort_by_bitpos): Return 0 on equal bitpos.
+
+2017-07-20  Jan Hubicka  <hubicka@ucw.cz>
 
 	* bb-reorder.c (connect_traces): Allow copying of blocks within
 	single partition.
