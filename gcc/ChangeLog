@@ -1,3 +1,8 @@
+2017-07-18  Jan Hubicka  <hubicka@ucw.cz>
+
+	* bb-reorder.c (connect_traces): Allow copying of blocks within
+	single partition.
+
 2017-07-20  Richard Biener  <rguenther@suse.de>
 
 	* gimple.h (gimple_phi_result): Add gphi * overload.
