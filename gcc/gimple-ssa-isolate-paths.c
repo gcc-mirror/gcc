@@ -442,6 +442,8 @@ find_implicit_erroneous_behavior (void)
 	      if (!integer_zerop (op))
 		continue;
 
+	      location_t phi_arg_loc = gimple_phi_arg_location (phi, i);
+
 	      /* We've got a NULL PHI argument.  Now see if the
  	         PHI's result is dereferenced within BB.  */
 	      FOR_EACH_IMM_USE_STMT (use_stmt, iter, lhs)
@@ -454,7 +456,7 @@ find_implicit_erroneous_behavior (void)
 
 		  location_t loc = gimple_location (use_stmt)
 		    ? gimple_location (use_stmt)
-		    : gimple_phi_arg_location (phi, i);
+		    : phi_arg_loc;
 
 		  if (stmt_uses_name_in_undefined_way (use_stmt, lhs, loc))
 		    {

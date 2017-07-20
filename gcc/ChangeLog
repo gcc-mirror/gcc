@@ -1,3 +1,62 @@
+2017-07-20  Tom de Vries  <tom@codesourcery.com>
+
+	PR tree-optimization/81489
+	* gimple-ssa-isolate-paths.c (find_implicit_erroneous_behavior): Move
+	read of phi arg location to before loop that modifies phi.
+
+2017-07-20  Naveen H.S  <Naveen.Hurugalawadi@cavium.com>
+
+	* match.pd (((m1 >/</>=/<= m2) * d -> (m1 >/</>=/<= m2) ? d : 0):
+	New pattern.
+
+2017-07-19  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR middle-end/81331
+	* except.c (execute): Fix ordering issue.
+
+2018-07-19  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR rtl-optimization/81423
+	* combine.c (make_compound_operation_int): Don't try to optimize
+	the AND of a SUBREG of an LSHIFTRT if that SUBREG is paradoxical.
+
+2017-07-19  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR rtl-optimization/81423
+	* simplify-rtx.c (simplify_truncation): Handle truncating an IOR
+	with a constant that is -1 in the truncated to mode.
+
+2017-07-19  Jan Hubicka  <hubicka@ucw.cz>
+
+	* predict.c (propagate_unlikely_bbs_forward): Break out from ...
+	(determine_unlikely_bbs): ... here.
+	* predict.h (propagate_unlikely_bbs_forward): Declare.
+	* cfgexpand.c (pass_expand::execute): Use it.
+	* bb-reorder.c (sanitize_hot_paths): Do not consider known to be
+	unlikely edges.
+	(find_rarely_executed_basic_blocks_and_crossing_edges): Use
+	propagate_unlikely_bbs_forward.
+
+2017-07-19  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR middle-end/81331
+	* except.c (maybe_add_nop_after_section_switch): New function.
+	(execute): Use it.
+
+2017-07-19  Tom de Vries  <tom@codesourcery.com>
+
+	* gimple.h (gimple_phi_set_arg): Make assert more strict.
+
+2017-07-19  Tom de Vries  <tom@codesourcery.com>
+
+	* gimple.h (gimple_phi_arg): Make assert more strict.
+
+2017-07-19  Steven Munroe  <munroesj@gcc.gnu.org>
+
+	* config.gcc (powerpc*-*-*): Add mmintrin.h.
+	* config/rs6000/mmintrin.h: New file.
+	* config/rs6000/x86intrin.h [__ALTIVEC__]: Include mmintrin.h.
+
 2017-07-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/81346

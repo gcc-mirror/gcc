@@ -1,6 +1,12 @@
+2017-07-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc-interface/ada-tree.h (TYPE_OBJECT_RECORD_TYPE,
+	TYPE_GCC_MIN_VALUE): Use TYPE_MIN_VALUE_RAW instead of TYPE_MINVAL.
+	(TYPE_GCC_MAX_VALUE): Use TYPE_MAX_VALUE_RAW instead of TYPE_MAXVAL.
+
 2017-07-18  Mike Frysinger  <vapier@chromium.org>
 
-	* gcc-interface/Makefile.in ($(P)): Delete
+	* gcc-interface/Makefile.in ($(P)): Delete.
 
 2017-07-15  John Paul Adrian Glaubitz  <glaubitz@physik.fu-berlin.de>
 

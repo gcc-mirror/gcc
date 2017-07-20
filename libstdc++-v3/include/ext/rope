@@ -150,7 +150,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     class char_producer
     {
     public:
-      virtual ~char_producer() { };
+      virtual ~char_producer() { }
 
       virtual void
       operator()(size_t __start_pos, size_t __len,
@@ -314,7 +314,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // compile-time would do.  Hence this should all be private
       // for now.
       // The symmetry with char_producer is accidental and temporary.
-      virtual ~_Rope_char_consumer() { };
+      virtual ~_Rope_char_consumer() { }
   
       virtual bool
       operator()(const _CharT* __buffer, size_t __len) = 0;
@@ -924,9 +924,9 @@ protected:
       ~_Rope_self_destruct_ptr()
       { _Rope_RopeRep<_CharT, _Alloc>::_S_unref(_M_ptr); }
 #if __cpp_exceptions
-      _Rope_self_destruct_ptr() : _M_ptr(0) { };
+      _Rope_self_destruct_ptr() : _M_ptr(0) { }
 #else
-      _Rope_self_destruct_ptr() { };
+      _Rope_self_destruct_ptr() { }
 #endif
       _Rope_self_destruct_ptr(_Rope_RopeRep<_CharT, _Alloc>* __p)
       : _M_ptr(__p) { }
@@ -1153,7 +1153,7 @@ protected:
       typedef const _CharT* pointer;
 
     public:
-      _Rope_const_iterator() { };
+      _Rope_const_iterator() { }
 
       _Rope_const_iterator(const _Rope_const_iterator& __x)
       : _Rope_iterator_base<_CharT,_Alloc>(__x) { }
@@ -1325,7 +1325,7 @@ protected:
       _Rope_iterator()
       {
         this->_M_root = 0;  // Needed for reference counting.
-      };
+      }
 
       _Rope_iterator(const _Rope_iterator& __x)
       : _Rope_iterator_base<_CharT, _Alloc>(__x)

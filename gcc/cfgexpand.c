@@ -6480,6 +6480,11 @@ pass_expand::execute (function *fun)
   if (fun->eh->region_tree != NULL)
     finish_eh_generation ();
 
+  /* BB subdivision may have created basic blocks that are are only reachable
+     from unlikely bbs but not marked as such in the profile.  */
+  if (optimize)
+    propagate_unlikely_bbs_forward ();
+
   /* Remove unreachable blocks, otherwise we cannot compute dominators
      which are needed for loop state verification.  As a side-effect
      this also compacts blocks.
