@@ -1,5 +1,9 @@
 2017-07-20  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* call.c (add_candidates): Move decls to initialization.  Don't
+	use !!.
+
 	Merge trunk r250380.
 
 2017-07-19  Nathan Sidwell  <nathan@acm.org>
