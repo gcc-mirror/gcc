@@ -175,7 +175,7 @@
    (V32HI "TARGET_AVX512F") (V16HI "TARGET_AVX") V8HI
    (V16SI "TARGET_AVX512F") (V8SI "TARGET_AVX") V4SI
    (V8DI "TARGET_AVX512F")  (V4DI "TARGET_AVX") V2DI
-   (V4TI "TARGET_AVX512BW") (V2TI "TARGET_AVX") V1TI
+   (V4TI "TARGET_AVX512F") (V2TI "TARGET_AVX") V1TI
    (V16SF "TARGET_AVX512F") (V8SF "TARGET_AVX") V4SF
    (V8DF "TARGET_AVX512F")  (V4DF "TARGET_AVX") V2DF])
 
@@ -687,7 +687,8 @@
    (V16SI "SI") (V8SI "SI")  (V4SI "SI")
    (V8DI "DI")  (V4DI "DI")  (V2DI "DI")
    (V16SF "SF") (V8SF "SF")  (V4SF "SF")
-   (V8DF "DF")  (V4DF "DF")  (V2DF "DF")])
+   (V8DF "DF")  (V4DF "DF")  (V2DF "DF")
+   (V4TI "TI")  (V2TI "TI")])
 
 ;; Mapping of vector modes to the 128bit modes
 (define_mode_attr ssexmmmode
@@ -6920,15 +6921,6 @@
    (set_attr "prefix" "orig,maybe_evex,orig,maybe_evex")
    (set_attr "mode" "V4SF,V4SF,V2SF,V2SF")])
 
-(define_expand "vec_init<mode>"
-  [(match_operand:V_128 0 "register_operand")
-   (match_operand 1)]
-  "TARGET_SSE"
-{
-  ix86_expand_vector_init (false, operands[0], operands[1]);
-  DONE;
-})
-
 ;; Avoid combining registers from different units in a single alternative,
 ;; see comment above inline_secondary_memory_needed function in i386.c
 (define_insn "vec_set<mode>_0"
@@ -7886,7 +7878,8 @@
    (V16SI "TARGET_AVX512F") (V8SI "TARGET_AVX") V4SI
    (V8DI "TARGET_AVX512F") (V4DI "TARGET_AVX") V2DI
    (V16SF "TARGET_AVX512F") (V8SF "TARGET_AVX") V4SF
-   (V8DF "TARGET_AVX512F") (V4DF "TARGET_AVX") V2DF])
+   (V8DF "TARGET_AVX512F") (V4DF "TARGET_AVX") V2DF
+   (V4TI "TARGET_AVX512F") (V2TI "TARGET_AVX")])
 
 (define_expand "vec_extract<mode>"
   [(match_operand:<ssescalarmode> 0 "register_operand")
@@ -13734,6 +13727,50 @@
   operands[1] = adjust_address (operands[1], <ssescalarmode>mode, offs);
 })
 
+(define_insn "*vec_extractv2ti"
+  [(set (match_operand:TI 0 "nonimmediate_operand" "=xm,vm")
+	(vec_select:TI
+	  (match_operand:V2TI 1 "register_operand" "x,v")
+	  (parallel
+	    [(match_operand:SI 2 "const_0_to_1_operand")])))]
+  "TARGET_AVX"
+  "@
+   vextract%~128\t{%2, %1, %0|%0, %1, %2}
+   vextracti32x4\t{%2, %g1, %0|%0, %g1, %2}"
+  [(set_attr "type" "sselog")
+   (set_attr "prefix_extra" "1")
+   (set_attr "length_immediate" "1")
+   (set_attr "prefix" "vex,evex")
+   (set_attr "mode" "OI")])
+
+(define_insn "*vec_extractv4ti"
+  [(set (match_operand:TI 0 "nonimmediate_operand" "=vm")
+	(vec_select:TI
+	  (match_operand:V4TI 1 "register_operand" "v")
+	  (parallel
+	    [(match_operand:SI 2 "const_0_to_3_operand")])))]
+  "TARGET_AVX512F"
+  "vextracti32x4\t{%2, %1, %0|%0, %1, %2}"
+  [(set_attr "type" "sselog")
+   (set_attr "prefix_extra" "1")
+   (set_attr "length_immediate" "1")
+   (set_attr "prefix" "evex")
+   (set_attr "mode" "XI")])
+
+(define_mode_iterator VEXTRACTI128_MODE
+  [(V4TI "TARGET_AVX512F") V2TI])
+
+(define_split
+  [(set (match_operand:TI 0 "nonimmediate_operand")
+	(vec_select:TI
+	  (match_operand:VEXTRACTI128_MODE 1 "register_operand")
+	  (parallel [(const_int 0)])))]
+  "TARGET_AVX
+   && reload_completed
+   && (TARGET_AVX512VL || !EXT_REX_SSE_REG_P (operands[1]))"
+  [(set (match_dup 0) (match_dup 1))]
+  "operands[1] = gen_lowpart (TImode, operands[1]);")
+
 ;; Turn SImode or DImode extraction from arbitrary SSE/AVX/AVX512F
 ;; vector modes into vec_extract*.
 (define_split
@@ -18738,19 +18775,20 @@
 				  <ssehalfvecmode>mode);
 })
 
-(define_expand "vec_init<mode>"
-  [(match_operand:V_256 0 "register_operand")
-   (match_operand 1)]
-  "TARGET_AVX"
-{
-  ix86_expand_vector_init (false, operands[0], operands[1]);
-  DONE;
-})
+;; Modes handled by vec_init patterns.
+(define_mode_iterator VEC_INIT_MODE
+  [(V64QI "TARGET_AVX512F") (V32QI "TARGET_AVX") V16QI
+   (V32HI "TARGET_AVX512F") (V16HI "TARGET_AVX") V8HI
+   (V16SI "TARGET_AVX512F") (V8SI "TARGET_AVX") V4SI
+   (V8DI "TARGET_AVX512F") (V4DI "TARGET_AVX") V2DI
+   (V16SF "TARGET_AVX512F") (V8SF "TARGET_AVX") V4SF
+   (V8DF "TARGET_AVX512F") (V4DF "TARGET_AVX") (V2DF "TARGET_SSE2")
+   (V4TI "TARGET_AVX512F") (V2TI "TARGET_AVX")])
 
 (define_expand "vec_init<mode>"
-  [(match_operand:VF48_I1248 0 "register_operand")
+  [(match_operand:VEC_INIT_MODE 0 "register_operand")
    (match_operand 1)]
-  "TARGET_AVX512F"
+  "TARGET_SSE"
 {
   ix86_expand_vector_init (false, operands[0], operands[1]);
   DONE;

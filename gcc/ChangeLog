@@ -1,3 +1,20 @@
+2017-07-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/80846
+	* config/i386/i386.c (ix86_expand_vector_init_general): Handle
+	V2TImode and V4TImode.
+	(ix86_expand_vector_extract): Likewise.
+	* config/i386/sse.md (VMOVE): Enable V4TImode even for just
+	TARGET_AVX512F, instead of only for TARGET_AVX512BW.
+	(ssescalarmode): Handle V4TImode and V2TImode.
+	(VEC_EXTRACT_MODE): Add V4TImode and V2TImode.
+	(*vec_extractv2ti, *vec_extractv4ti): New insns.
+	(VEXTRACTI128_MODE): New mode iterator.
+	(splitter for *vec_extractv?ti first element): New.
+	(VEC_INIT_MODE): New mode iterator.
+	(vec_init<mode>): Consolidate 3 expanders into one using
+	VEC_INIT_MODE mode iterator.
+
 2017-07-20  Alexander Monakov  <amonakov@ispras.ru>
 
 	* lra-assigns.c (pseudo_compare_func): Fix comparison step based on

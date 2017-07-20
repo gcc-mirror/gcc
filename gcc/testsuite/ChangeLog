@@ -1,3 +1,10 @@
+2017-07-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/80846
+	* gcc.target/i386/avx-pr80846.c: New test.
+	* gcc.target/i386/avx2-pr80846.c: New test.
+	* gcc.target/i386/avx512f-pr80846.c: New test.
+
 2017-07-20  Bin Cheng  <bin.cheng@arm.com>
 
 	PR tree-optimization/81388
