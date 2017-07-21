@@ -10,7 +10,7 @@
 struct A
 {
   union
-  {  // { dg-error "" } anon union cannot have member fns
-    void bad();
+  {
+    void bad(); // { dg-error "can only have non-static data" }
   };
 };

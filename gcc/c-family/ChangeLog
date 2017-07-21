@@ -1,3 +1,10 @@
+2017-07-20  Nathan Sidwell  <nathan@acm.org>
+
+	Remove TYPE_METHODS.
+	* c-ada-spec.c (is_tagged_type, has_nontrivial_methods,
+	dump_ada_template, print_ada_methods,
+	print_ada_declaration): Member fns are on TYPE_FIELDS.
+
 2017-07-18  Nathan Sidwell  <nathan@acm.org>
 
 	* c-warn.c (warn_for_memset): Use TYPE_{MIN,MAX}_VALUE.

@@ -1,3 +1,21 @@
+2017-07-20  Nathan Sidwell  <nathan@acm.org>
+
+	Remove TYPE_METHODS.
+	* tree.h (TYPE_METHODS): Delete.
+	* dwarf2out.c (gen_member_die): Member fns are on TYPE_FIELDS.
+	* dbxout.c (dbxout_type_fields): Ignore FUNCTION_DECLs.
+	(dbxout_type_methods): Scan TYPE_FIELDS.
+	(dbxout_type): Don't check TYPE_METHODS here.
+	* function.c (use_register_for_decl): Always ignore register for
+	class types when not optimizing.
+	* ipa-devirt.c (odr_types_equivalent_p): Delete TYPE_METHODS scan.
+	* tree.c (free_lang_data_in_type): Stitch out member functions and
+	templates from TYPE_FIELDS.
+	(build_distinct_type_copy, verify_type_variant,
+	verify_type): Member fns are on TYPE_FIELDS.
+	* tree-dump.c (dequeue_and_dump): No TYPE_METHODS.
+	* tree-pretty-print.c (dump_generic_node): Likewise.
+
 2017-07-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/80846

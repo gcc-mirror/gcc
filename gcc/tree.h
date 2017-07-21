@@ -2122,8 +2122,6 @@ extern machine_mode element_mode (const_tree t);
 
 #define TYPE_MAX_VALUE(NODE) \
   (NUMERICAL_TYPE_CHECK (NODE)->type_non_common.maxval)
-#define TYPE_METHODS(NODE)				\
-  (RECORD_OR_UNION_CHECK (NODE)->type_non_common.maxval)
 #define TYPE_METHOD_BASETYPE(NODE)			\
   (FUNC_OR_METHOD_CHECK (NODE)->type_non_common.maxval)
 #define TYPE_OFFSET_BASETYPE(NODE)			\

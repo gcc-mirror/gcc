@@ -1860,22 +1860,9 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, dump_flags_t flags,
 	dump_decl_name (pp, node, flags);
       else if (TYPE_NAME (TREE_TYPE (node)) != node)
 	{
-	  if ((TREE_CODE (TREE_TYPE (node)) == RECORD_TYPE
-	       || TREE_CODE (TREE_TYPE (node)) == UNION_TYPE)
-	      && TYPE_METHODS (TREE_TYPE (node)))
-	    {
-	      /* The type is a c++ class: all structures have at least
-		 4 methods.  */
-	      pp_string (pp, "class ");
-	      dump_generic_node (pp, TREE_TYPE (node), spc, flags, false);
-	    }
-	  else
-	    {
-	      pp_string (pp,
-			 (TREE_CODE (TREE_TYPE (node)) == UNION_TYPE
+	  pp_string (pp, (TREE_CODE (TREE_TYPE (node)) == UNION_TYPE
 			  ? "union" : "struct "));
-	      dump_generic_node (pp, TREE_TYPE (node), spc, flags, false);
-	    }
+	  dump_generic_node (pp, TREE_TYPE (node), spc, flags, false);
 	}
       else
 	pp_string (pp, "<anon>");

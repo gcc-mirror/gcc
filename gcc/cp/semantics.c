@@ -3037,9 +3037,9 @@ finish_member_declaration (tree decl)
   if (DECL_LANG_SPECIFIC (decl) && DECL_LANGUAGE (decl) == lang_c)
     SET_DECL_LANGUAGE (decl, lang_cplusplus);
 
-  /* Put functions on the TYPE_METHODS list and everything else on the
-     TYPE_FIELDS list.  Note that these are built up in reverse order.
-     We reverse them (to obtain declaration order) in finish_struct.  */
+  /* Put the decl on the TYPE_FIELDS list.  Note that this is built up
+     in reverse order.  We reverse it (to obtain declaration order) in
+     finish_struct.  */
   if (DECL_DECLARES_FUNCTION_P (decl))
     {
       /* We also need to add this function to the
@@ -3047,8 +3047,8 @@ finish_member_declaration (tree decl)
       if (add_method (current_class_type, decl, false))
 	{
 	  gcc_assert (TYPE_MAIN_VARIANT (current_class_type) == current_class_type);
-	  DECL_CHAIN (decl) = TYPE_METHODS (current_class_type);
-	  TYPE_METHODS (current_class_type) = decl;
+	  DECL_CHAIN (decl) = TYPE_FIELDS (current_class_type);
+	  TYPE_FIELDS (current_class_type) = decl;
 
 	  maybe_add_class_template_decl_list (current_class_type, decl,
 					      /*friend_p=*/0);
@@ -5794,7 +5794,7 @@ finish_omp_declare_simd_methods (tree t)
   if (processing_template_decl)
     return;
 
-  for (tree x = TYPE_METHODS (t); x; x = DECL_CHAIN (x))
+  for (tree x = TYPE_FIELDS (t); x; x = DECL_CHAIN (x))
     {
       if (TREE_CODE (TREE_TYPE (x)) != METHOD_TYPE)
 	continue;
