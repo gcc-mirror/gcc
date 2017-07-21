@@ -1,3 +1,9 @@
+2017-06-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/81500
+	* tree-vect-loop.c (vect_is_simple_reduction): Properly fail if
+	we didn't identify a reduction path.
+
 2017-07-21  Tom de Vries  <tom@codesourcery.com>
 	    Cesar Philippidis  <cesar@codesourcery.com>
 
