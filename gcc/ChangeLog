@@ -1,3 +1,16 @@
+2017-07-21  Jim Wilson  <jim.wilson@linaro.org>
+
+	* config/aarch64/aarch64-cores.def (falkor): Add AARCH64_FL_RDMA.
+	(qdf24xx): Likewise.
+	* config/aarch64/aarch64-options-extensions.def (rdma); New.
+	* config/aarch64/aarch64.h (AARCH64_FL_RDMA): New.
+	(AARCH64_FL_V8_1): Renumber.
+	(AARCH64_FL_FOR_ARCH8_1): Add AARCH64_FL_RDMA.
+	(AARCH64_ISA_RDMA): Use AARCH64_FL_RDMA.
+	* config/aarch64/arm_neon.h: Use +rdma instead of arch=armv8.1-a.
+	* doc/invoke.texi (AArch64 Options): Mention +rmda in -march docs.  Add
+	rdma to feature modifiers list.
+
 2017-07-21  Yury Gribov  <tetra2005@gmail.com>
 
 	PR middle-end/56727

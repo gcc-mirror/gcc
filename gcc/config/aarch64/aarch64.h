@@ -144,7 +144,8 @@ extern unsigned aarch64_architecture_version;
 #define AARCH64_FL_CRC        (1 << 3)	/* Has CRC.  */
 /* ARMv8.1-A architecture extensions.  */
 #define AARCH64_FL_LSE	      (1 << 4)  /* Has Large System Extensions.  */
-#define AARCH64_FL_V8_1	      (1 << 5)  /* Has ARMv8.1-A extensions.  */
+#define AARCH64_FL_RDMA	      (1 << 5)  /* Has Round Double Multiply Add.  */
+#define AARCH64_FL_V8_1	      (1 << 6)  /* Has ARMv8.1-A extensions.  */
 /* ARMv8.2-A architecture extensions.  */
 #define AARCH64_FL_V8_2	      (1 << 8)  /* Has ARMv8.2-A features.  */
 #define AARCH64_FL_F16	      (1 << 9)  /* Has ARMv8.2-A FP16 extensions.  */
@@ -161,7 +162,8 @@ extern unsigned aarch64_architecture_version;
 /* Architecture flags that effect instruction selection.  */
 #define AARCH64_FL_FOR_ARCH8       (AARCH64_FL_FPSIMD)
 #define AARCH64_FL_FOR_ARCH8_1			       \
-  (AARCH64_FL_FOR_ARCH8 | AARCH64_FL_LSE | AARCH64_FL_CRC | AARCH64_FL_V8_1)
+  (AARCH64_FL_FOR_ARCH8 | AARCH64_FL_LSE | AARCH64_FL_CRC \
+   | AARCH64_FL_RDMA | AARCH64_FL_V8_1)
 #define AARCH64_FL_FOR_ARCH8_2			\
   (AARCH64_FL_FOR_ARCH8_1 | AARCH64_FL_V8_2)
 #define AARCH64_FL_FOR_ARCH8_3			\
@@ -174,7 +176,7 @@ extern unsigned aarch64_architecture_version;
 #define AARCH64_ISA_FP             (aarch64_isa_flags & AARCH64_FL_FP)
 #define AARCH64_ISA_SIMD           (aarch64_isa_flags & AARCH64_FL_SIMD)
 #define AARCH64_ISA_LSE		   (aarch64_isa_flags & AARCH64_FL_LSE)
-#define AARCH64_ISA_RDMA	   (aarch64_isa_flags & AARCH64_FL_V8_1)
+#define AARCH64_ISA_RDMA	   (aarch64_isa_flags & AARCH64_FL_RDMA)
 #define AARCH64_ISA_V8_2	   (aarch64_isa_flags & AARCH64_FL_V8_2)
 #define AARCH64_ISA_F16		   (aarch64_isa_flags & AARCH64_FL_F16)
 #define AARCH64_ISA_V8_3	   (aarch64_isa_flags & AARCH64_FL_V8_3)

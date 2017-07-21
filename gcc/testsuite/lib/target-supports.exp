@@ -3436,7 +3436,7 @@ proc add_options_for_arm_v8_1a_neon { flags } {
 	return "$flags"
     }
     global et_arm_v8_1a_neon_flags
-    return "$flags $et_arm_v8_1a_neon_flags -march=armv8.1-a"
+    return "$flags $et_arm_v8_1a_neon_flags"
 }
 
 # Add the options needed for ARMv8.2 with the scalar FP16 extension.
@@ -4127,13 +4127,15 @@ proc check_effective_target_arm_v8_1a_neon_ok_nocache { } {
     # since AArch64 only needs the -march setting.
     foreach flags {"" "-mfpu=neon-fp-armv8" "-mfloat-abi=softfp" \
 		       "-mfpu=neon-fp-armv8 -mfloat-abi=softfp"} {
-	if { [check_no_compiler_messages_nocache arm_v8_1a_neon_ok object {
-	    #if !defined (__ARM_FEATURE_QRDMX)
-	    #error "__ARM_FEATURE_QRDMX not defined"
-	    #endif
-	} "$flags -march=armv8.1-a"] } {
-	    set et_arm_v8_1a_neon_flags "$flags -march=armv8.1-a"
-	    return 1
+	foreach arches { "-march=armv8-a+rdma" "-march=armv8.1-a" } {
+	    if { [check_no_compiler_messages_nocache arm_v8_1a_neon_ok object {
+		#if !defined (__ARM_FEATURE_QRDMX)
+		#error "__ARM_FEATURE_QRDMX not defined"
+		#endif
+	    } "$flags $arches"] } {
+		set et_arm_v8_1a_neon_flags "$flags $arches"
+		return 1
+	    }
 	}
     }
 

@@ -14084,7 +14084,7 @@ support for the ARMv8.2-A architecture extensions.
 
 The value @samp{armv8.1-a} implies @samp{armv8-a} and enables compiler
 support for the ARMv8.1-A architecture extension.  In particular, it
-enables the @samp{+crc} and @samp{+lse} features.
+enables the @samp{+crc}, @samp{+lse}, and @samp{+rdma} features.
 
 The value @samp{native} is available on native AArch64 GNU/Linux and
 causes the compiler to pick the architecture of the host system.  This
@@ -14202,6 +14202,9 @@ instructions.  This is on by default for all possible values for options
 @item lse
 Enable Large System Extension instructions.  This is on by default for
 @option{-march=armv8.1-a}.
+@item rdma
+Enable Round Double Multiply Accumulate instructions.  This is on by default
+for @option{-march=armv8.1-a}.
 @item fp16
 Enable FP16 extension.  This also enables floating-point instructions.
 @item rcpc
