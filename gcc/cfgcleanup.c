@@ -1435,6 +1435,13 @@ flow_find_cross_jump (basic_block bb1, basic_block bb2, rtx_insn **f1,
       if (i1 == BB_HEAD (bb1) || i2 == BB_HEAD (bb2))
 	break;
 
+      /* Do not turn corssing edge to non-crossing or vice versa after
+	 reload. */
+      if (BB_PARTITION (BLOCK_FOR_INSN (i1))
+	  != BB_PARTITION (BLOCK_FOR_INSN (i2))
+	  && reload_completed)
+	break;
+
       dir = merge_dir (dir, old_insns_match_p (0, i1, i2));
       if (dir == dir_none || (!dir_p && dir != dir_both))
 	break;
@@ -1958,18 +1965,6 @@ try_crossjump_to_edge (int mode, edge e1, edge e2,
 
   newpos1 = newpos2 = NULL;
 
-  /* If we have partitioned hot/cold basic blocks, it is a bad idea
-     to try this optimization.
-
-     Basic block partitioning may result in some jumps that appear to
-     be optimizable (or blocks that appear to be mergeable), but which really
-     must be left untouched (they are required to make it safely across
-     partition boundaries).  See the comments at the top of
-     bb-reorder.c:partition_hot_cold_basic_blocks for complete details.  */
-
-  if (crtl->has_bb_partition && reload_completed)
-    return false;
-
   /* Search backward through forwarder blocks.  We don't need to worry
      about multiple entry or chained forwarders, as they will be optimized
      away.  We do this to look past the unconditional jump following a
@@ -2003,6 +1998,11 @@ try_crossjump_to_edge (int mode, edge e1, edge e2,
   if (EDGE_COUNT (src1->preds) == 0 || EDGE_COUNT (src2->preds) == 0)
     return false;
 
+  /* Do not turn corssing edge to non-crossing or vice versa after reload.  */
+  if (BB_PARTITION (src1) != BB_PARTITION (src2)
+      && reload_completed)
+    return false;
+
   /* Look for the common insn sequence, part the first ...  */
   if (!outgoing_edges_match (mode, src1, src2))
     return false;
@@ -2024,12 +2024,10 @@ try_crossjump_to_edge (int mode, edge e1, edge e2,
 
   if (dir == dir_backward)
     {
-#define SWAP(T, X, Y) do { T tmp = (X); (X) = (Y); (Y) = tmp; } while (0)
-      SWAP (basic_block, osrc1, osrc2);
-      SWAP (basic_block, src1, src2);
-      SWAP (edge, e1, e2);
-      SWAP (rtx_insn *, newpos1, newpos2);
-#undef SWAP
+      std::swap (osrc1, osrc2);
+      std::swap (src1, src2);
+      std::swap (e1, e2);
+      std::swap (newpos1, newpos2);
     }
 
   /* Don't proceed with the crossjump unless we found a sufficient number
