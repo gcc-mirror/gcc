@@ -1,3 +1,26 @@
+2017-07-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	* config/allocator/malloc_allocator_base.h [__SANITIZE_ADDRESS__]
+	(_GLIBCXX_SANITIZE_STD_ALLOCATOR): Define.
+	* config/allocator/new_allocator_base.h [__SANITIZE_ADDRESS__]
+	(_GLIBCXX_SANITIZE_STD_ALLOCATOR): Define.
+	* doc/xml/manual/using.xml (_GLIBCXX_SANITIZE_VECTOR): Document macro.
+	* include/bits/stl_vector.h [_GLIBCXX_SANITIZE_VECTOR]
+	(_Vector_impl::_Asan, _Vector_impl::_Asan::_Reinit)
+	(_Vector_impl::_Asan::_Grow, _GLIBCXX_ASAN_ANNOTATE_REINIT)
+	(_GLIBCXX_ASAN_ANNOTATE_GROW, _GLIBCXX_ASAN_ANNOTATE_GREW)
+	(_GLIBCXX_ASAN_ANNOTATE_SHRINK, _GLIBCXX_ASAN_ANNOTATE_BEFORE_DEALLOC):
+	Define annotation helper types and macros.
+	(vector::~vector, vector::push_back, vector::pop_back)
+	(vector::_M_erase_at_end): Add annotations.
+	* include/bits/vector.tcc (vector::reserve, vector::emplace_back)
+	(vector::insert, vector::_M_erase, vector::operator=)
+	(vector::_M_fill_assign, vector::_M_assign_aux)
+	(vector::_M_insert_rval, vector::_M_emplace_aux)
+	(vector::_M_insert_aux, vector::_M_realloc_insert)
+	(vector::_M_fill_insert, vector::_M_default_append)
+	(vector::_M_shrink_to_fit, vector::_M_range_insert): Annotate.
+
 2017-07-19  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/81476
