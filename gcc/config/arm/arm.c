@@ -31222,12 +31222,15 @@ namespace selftest {
    inconsistencies in the option extensions at present (extensions
    that duplicate others but aren't marked as aliases).  Furthermore,
    for correct canonicalization later options must never be a subset
-   of an earlier option.  */
+   of an earlier option.  Any extension should also only specify other
+   feature bits and never an architecture bit.  The architecture is inferred
+   from the declaration of the extension.  */
 static void
 arm_test_cpu_arch_data (void)
 {
   const arch_option *arch;
   const cpu_option *cpu;
+  auto_sbitmap target_isa (isa_num_bits);
   auto_sbitmap isa1 (isa_num_bits);
   auto_sbitmap isa2 (isa_num_bits);
 
@@ -31237,6 +31240,8 @@ arm_test_cpu_arch_data (void)
 
       if (arch->common.extensions == NULL)
 	continue;
+
+      arm_initialize_isa (target_isa, arch->common.isa_bits);
 
       for (ext1 = arch->common.extensions; ext1->name != NULL; ++ext1)
 	{
@@ -31250,7 +31255,13 @@ arm_test_cpu_arch_data (void)
 		continue;
 
 	      arm_initialize_isa (isa2, ext2->isa_bits);
+	      /* If the option is a subset of the parent option, it doesn't
+		 add anything and so isn't useful.  */
 	      ASSERT_TRUE (!bitmap_subset_p (isa2, isa1));
+
+	      /* If the extension specifies any architectural bits then
+		 disallow it.  Extensions should only specify feature bits.  */
+	      ASSERT_TRUE (!bitmap_intersect_p (isa2, target_isa));
 	    }
 	}
     }
@@ -31261,6 +31272,8 @@ arm_test_cpu_arch_data (void)
 
       if (cpu->common.extensions == NULL)
 	continue;
+
+      arm_initialize_isa (target_isa, arch->common.isa_bits);
 
       for (ext1 = cpu->common.extensions; ext1->name != NULL; ++ext1)
 	{
@@ -31274,7 +31287,13 @@ arm_test_cpu_arch_data (void)
 		continue;
 
 	      arm_initialize_isa (isa2, ext2->isa_bits);
+	      /* If the option is a subset of the parent option, it doesn't
+		 add anything and so isn't useful.  */
 	      ASSERT_TRUE (!bitmap_subset_p (isa2, isa1));
+
+	      /* If the extension specifies any architectural bits then
+		 disallow it.  Extensions should only specify feature bits.  */
+	      ASSERT_TRUE (!bitmap_intersect_p (isa2, target_isa));
 	    }
 	}
     }
