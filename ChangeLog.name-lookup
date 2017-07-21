@@ -1,5 +1,7 @@
 2017-07-21  Nathan Sidwell  <nathan@acm.org>
 
+	Merge trunk r250426.
+
 	Conv ops are regular METHODVEC fns.
 	gcc/cp/
 	* cp-tree.h (CLASSTYPE_FIRST_CONVERSION_SLOT): Delete.

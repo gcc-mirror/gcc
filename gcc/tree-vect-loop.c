@@ -3243,7 +3243,7 @@ pop:
     }
 
   /* Check whether the reduction path detected is valid.  */
-  bool fail = false;
+  bool fail = path.length () == 0;
   bool neg = false;
   for (unsigned i = 1; i < path.length (); ++i)
     {
@@ -3276,9 +3276,7 @@ pop:
 
   if (dump_enabled_p ())
     {
-      report_vect_op (MSG_MISSED_OPTIMIZATION,
-		      SSA_NAME_DEF_STMT
-		        (USE_FROM_PTR (path[path.length ()-1].second)),
+      report_vect_op (MSG_MISSED_OPTIMIZATION, def_stmt,
 		      "reduction: unknown pattern: ");
     }
 
@@ -3702,8 +3700,9 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo,
 	       "  Calculated minimum iters for profitability: %d\n",
 	       min_profitable_iters);
 
-  min_profitable_iters =
-	min_profitable_iters < vf ? vf : min_profitable_iters;
+  /* We want the vectorized loop to execute at least once.  */
+  if (min_profitable_iters < (vf + peel_iters_prologue + peel_iters_epilogue))
+    min_profitable_iters = vf + peel_iters_prologue + peel_iters_epilogue;
 
   if (dump_enabled_p ())
     dump_printf_loc (MSG_NOTE, vect_location,

@@ -207,6 +207,17 @@ nvptx_option_override (void)
     target_flags |= MASK_SOFT_STACK | MASK_UNIFORM_SIMT;
 }
 
+/* Implement TARGET_OVERRIDE_OPTIONS_AFTER_CHANGE.  */
+
+static void
+nvptx_override_options_after_change (void)
+{
+  /* This is a workaround for PR81430 - nvptx acceleration compilation broken
+     because of running pass_partition_blocks.  This should be dealt with in the
+     common code, not in the target.  */
+  flag_reorder_blocks_and_partition = 0;
+}
+
 /* Return a ptx type for MODE.  If PROMOTE, then use .u32 for QImode to
    deal with ptx ideosyncracies.  */
 
@@ -5273,6 +5284,7 @@ nvptx_goacc_reduction_init (gcall *call)
 
       /* Fixup flags from call_bb to init_bb.  */
       init_edge->flags ^= EDGE_FALLTHRU | EDGE_TRUE_VALUE;
+      init_edge->probability = profile_probability::even ();
       
       /* Set the initialization stmts.  */
       gimple_seq init_seq = NULL;
@@ -5288,6 +5300,7 @@ nvptx_goacc_reduction_init (gcall *call)
       
       /* Create false edge from call_bb to dst_bb.  */
       edge nop_edge = make_edge (call_bb, dst_bb, EDGE_FALSE_VALUE);
+      nop_edge->probability = profile_probability::even ();
 
       /* Create phi node in dst block.  */
       gphi *phi = create_phi_node (lhs, dst_bb);
@@ -5504,6 +5517,9 @@ nvptx_data_alignment (const_tree type, unsigned int basic_align)
 
 #undef TARGET_OPTION_OVERRIDE
 #define TARGET_OPTION_OVERRIDE nvptx_option_override
+
+#undef TARGET_OVERRIDE_OPTIONS_AFTER_CHANGE
+#define TARGET_OVERRIDE_OPTIONS_AFTER_CHANGE nvptx_override_options_after_change
 
 #undef TARGET_ATTRIBUTE_TABLE
 #define TARGET_ATTRIBUTE_TABLE nvptx_attribute_table

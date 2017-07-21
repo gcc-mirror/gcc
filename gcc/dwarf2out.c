@@ -11697,7 +11697,7 @@ output_file_names (void)
       output_line_string (str_form, filename0, "File Entry", 0);
 
       /* Include directory index.  */
-      if (dwarf_version >= 5 && idx_form != DW_FORM_udata)
+      if (idx_form != DW_FORM_udata)
 	dw2_asm_output_data (idx_form == DW_FORM_data1 ? 1 : 2,
 			     0, NULL);
       else

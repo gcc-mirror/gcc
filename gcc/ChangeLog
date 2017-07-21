@@ -1,3 +1,68 @@
+2017-07-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/81303
+	* tree-vect-data-refs.c (vect_get_peeling_costs_all_drs): Pass
+	in datarefs vector.  Allow NULL dr0 for no peeling cost estimate.
+	(vect_peeling_hash_get_lowest_cost): Adjust.
+	(vect_enhance_data_refs_alignment): Likewise.  Use
+	vect_get_peeling_costs_all_drs to compute the penalty for no
+	peeling to match up costs.
+
+2017-07-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/81500
+	* tree-vect-loop.c (vect_is_simple_reduction): Properly fail if
+	we didn't identify a reduction path.
+
+2017-07-21  Tom de Vries  <tom@codesourcery.com>
+	    Cesar Philippidis  <cesar@codesourcery.com>
+
+	PR gcov-profile/81442
+	* config/nvptx/nvptx.c (nvptx_goacc_reduction_init): Add missing edge
+	probabilities.
+
+2017-07-21  Tom de Vries  <tom@codesourcery.com>
+
+	PR lto/81430
+	* config/nvptx/nvptx.c (nvptx_override_options_after_change): New
+	function.
+	(TARGET_OVERRIDE_OPTIONS_AFTER_CHANGE): Define to
+	nvptx_override_options_after_change.
+
+2017-07-21  Ulrich Drepper  <drepper@redhat.com>
+
+	* dwarf2out.c (output_file_names): Avoid double testing for
+	dwarf_version >= 5.
+
+2017-07-21  Georg-Johann Lay  <avr@gjlay.de>
+
+	* doc/invoke.texi (AVR Built-in Functions): Re-layout section.
+
+2016-07-21  Jan Hubicka  <hubicka@ucw.cz>
+
+	* cfgcleanup.c (flow_find_cross_jump): Do not crossjump across
+	hot/cold regions.
+	(try_crossjump_to_edge): Do not punt on partitioned functions.
+
+2016-07-21  Jan Hubicka  <hubicka@ucw.cz>
+
+	* bb-reorder.c (find_rarely_executed_basic_blocks_and_crossing_edges):
+	Put all BBs reachable only via paths crossing cold region to cold
+	region.
+	* cfgrtl.c (find_bbs_reachable_by_hot_paths): New function.
+
+2016-07-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/81303
+	* tree-vect-loop.c (vect_estimate_min_profitable_iters): Take
+	into account prologue and epilogue iterations when raising
+	min_profitable_iters to sth at least covering one vector iteration.
+
+2017-07-21  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/arm/arm.c (arm_test_cpu_arch_dat):
+	Check for overlap.
+
 2017-07-20  Nathan Sidwell  <nathan@acm.org>
 
 	Remove TYPE_METHODS.
