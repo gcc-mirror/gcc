@@ -3184,9 +3184,18 @@ operand_equal_p (const_tree arg0, const_tree arg1, unsigned int flags)
 	  flags &= ~OEP_ADDRESS_OF;
 	  return OP_SAME (0);
 
+	case BIT_INSERT_EXPR:
+	  /* BIT_INSERT_EXPR has an implict operand as the type precision
+	     of op1.  Need to check to make sure they are the same.  */
+	  if (TREE_CODE (TREE_OPERAND (arg0, 1)) == INTEGER_CST
+	      && TREE_CODE (TREE_OPERAND (arg1, 1)) == INTEGER_CST
+	      && TYPE_PRECISION (TREE_TYPE (TREE_OPERAND (arg0, 1)))
+		 != TYPE_PRECISION (TREE_TYPE (TREE_OPERAND (arg1, 1))))
+	    return false;
+	  /* FALLTHRU */
+
 	case VEC_COND_EXPR:
 	case DOT_PROD_EXPR:
-	case BIT_INSERT_EXPR:
 	  return OP_SAME (0) && OP_SAME (1) && OP_SAME (2);
 
 	case MODIFY_EXPR:

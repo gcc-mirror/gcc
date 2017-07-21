@@ -2636,6 +2636,14 @@ vn_nary_op_eq (const_vn_nary_op_t const vno1, const_vn_nary_op_t const vno2)
     if (!expressions_equal_p (vno1->op[i], vno2->op[i]))
       return false;
 
+  /* BIT_INSERT_EXPR has an implict operand as the type precision
+     of op1.  Need to check to make sure they are the same.  */
+  if (vno1->opcode == BIT_INSERT_EXPR
+      && TREE_CODE (vno1->op[1]) == INTEGER_CST
+      && TYPE_PRECISION (TREE_TYPE (vno1->op[1]))
+	 != TYPE_PRECISION (TREE_TYPE (vno2->op[1])))
+    return false;
+
   return true;
 }
 
