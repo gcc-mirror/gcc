@@ -1665,6 +1665,12 @@ find_rarely_executed_basic_blocks_and_crossing_edges (void)
                                           &bbs_in_hot_partition);
       if (cold_bb_count)
         sanitize_hot_paths (false, cold_bb_count, &bbs_in_hot_partition);
+
+      hash_set <basic_block> set;
+      find_bbs_reachable_by_hot_paths (&set);
+      FOR_EACH_BB_FN (bb, cfun)
+	if (!set.contains (bb))
+	  BB_SET_PARTITION (bb, BB_COLD_PARTITION);
     }
 
   /* The format of .gcc_except_table does not allow landing pads to

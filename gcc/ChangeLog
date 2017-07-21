@@ -1,3 +1,10 @@
+2016-07-21  Jan Hubicka  <hubicka@ucw.cz>
+
+	* bb-reorder.c (find_rarely_executed_basic_blocks_and_crossing_edges):
+	Put all BBs reachable only via paths crossing cold region to cold
+	region.
+	* cfgrtl.c (find_bbs_reachable_by_hot_paths): New function.
+
 2016-07-21  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/81303
