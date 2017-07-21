@@ -5217,13 +5217,15 @@ free_lang_data_in_type (tree type)
       if (TYPE_VFIELD (type) && TREE_CODE (TYPE_VFIELD (type)) != FIELD_DECL)
         TYPE_VFIELD (type) = NULL_TREE;
 
-      /* Remove TYPE_METHODS list.  While it would be nice to keep it
- 	 to enable ODR warnings about different method lists, doing so
-	 seems to impractically increase size of LTO data streamed.
-	 Keep the information if TYPE_METHODS was non-NULL. This is used
-	 by function.c and pretty printers.  */
-      if (TYPE_METHODS (type))
-        TYPE_METHODS (type) = error_mark_node;
+      /* Splice out FUNCTION_DECLS and TEMPLATE_DECLS from
+	 TYPE_FIELDS.  So LTO doesn't grow.  */
+      for (tree probe, *prev= &TYPE_FIELDS (type); (probe = *prev); )
+	if (TREE_CODE (probe) == FUNCTION_DECL
+	    || TREE_CODE (probe) == TEMPLATE_DECL)
+	  *prev = probe;
+	else
+	  prev = &DECL_CHAIN (probe);
+
       if (TYPE_BINFO (type))
 	{
 	  free_lang_data_in_binfo (TYPE_BINFO (type));
@@ -5418,9 +5420,10 @@ free_lang_data_in_decl (tree decl)
 	 At this point, it is not needed anymore.  */
       DECL_SAVED_TREE (decl) = NULL_TREE;
 
-      /* Clear the abstract origin if it refers to a method.  Otherwise
-         dwarf2out.c will ICE as we clear TYPE_METHODS and thus the
-	 origin will not be output correctly.  */
+      /* Clear the abstract origin if it refers to a method.
+         Otherwise dwarf2out.c will ICE as we splice functions out of
+         TYPE_FIELDS and thus the origin will not be output
+         correctly.  */
       if (DECL_ABSTRACT_ORIGIN (decl)
 	  && DECL_CONTEXT (DECL_ABSTRACT_ORIGIN (decl))
 	  && RECORD_OR_UNION_TYPE_P
@@ -6678,12 +6681,6 @@ build_distinct_type_copy (tree type MEM_STAT_DECL)
   /* Make it its own variant.  */
   TYPE_MAIN_VARIANT (t) = t;
   TYPE_NEXT_VARIANT (t) = 0;
-
-  /* We do not record methods in type copies nor variants
-     so we do not need to keep them up to date when new method
-     is inserted.  */
-  if (RECORD_OR_UNION_TYPE_P (t))
-    TYPE_METHODS (t) = NULL_TREE;
 
   /* Note that it is now possible for TYPE_MIN_VALUE to be a value
      whose TREE_TYPE is not t.  This can also happen in the Ada
@@ -13410,8 +13407,6 @@ verify_type_variant (const_tree t, tree tv)
      - aggregates may have new TYPE_FIELDS list that list variants of
        the main variant TYPE_FIELDS.
      - vector types may differ by TYPE_VECTOR_OPAQUE
-     - TYPE_METHODS is always NULL for variant types and maintained for
-       main variant only.
    */
 
   /* Convenience macro for matching individual fields.  */
@@ -13512,12 +13507,6 @@ verify_type_variant (const_tree t, tree tv)
     }
   if (TREE_CODE (t) == METHOD_TYPE)
     verify_variant_match (TYPE_METHOD_BASETYPE);
-  if (RECORD_OR_UNION_TYPE_P (t) && TYPE_METHODS (t))
-    {
-      error ("type variant has TYPE_METHODS");
-      debug_tree (tv);
-      return false;
-    }
   if (TREE_CODE (t) == OFFSET_TYPE)
     verify_variant_match (TYPE_OFFSET_BASETYPE);
   if (TREE_CODE (t) == ARRAY_TYPE)
@@ -14020,14 +14009,6 @@ verify_type (const_tree t)
   /* Check various uses of TYPE_MAXVAL.  */
   if (RECORD_OR_UNION_TYPE_P (t))
     {
-      if (TYPE_METHODS (t) && TREE_CODE (TYPE_METHODS (t)) != FUNCTION_DECL
-	  && TREE_CODE (TYPE_METHODS (t)) != TEMPLATE_DECL
-	  && TYPE_METHODS (t) != error_mark_node)
-	{
-	  error ("TYPE_METHODS is not FUNCTION_DECL, TEMPLATE_DECL nor error_mark_node");
-	  debug_tree (TYPE_METHODS (t));
-	  error_found = true;
-	}
     }
   else if (TREE_CODE (t) == FUNCTION_TYPE || TREE_CODE (t) == METHOD_TYPE)
     {
@@ -14157,6 +14138,8 @@ verify_type (const_tree t)
 	  else if (TREE_CODE (fld) == TEMPLATE_DECL)
 	    ;
 	  else if (TREE_CODE (fld) == USING_DECL)
+	    ;
+	  else if (TREE_CODE (fld) == FUNCTION_DECL)
 	    ;
 	  else
 	    {

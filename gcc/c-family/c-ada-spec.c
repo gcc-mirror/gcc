@@ -1070,16 +1070,11 @@ has_static_fields (const_tree type)
 static bool
 is_tagged_type (const_tree type)
 {
-  tree tmp;
-
   if (!type || !RECORD_OR_UNION_TYPE_P (type))
     return false;
 
-  /* TYPE_METHODS is only set on the main variant.  */
-  type = TYPE_MAIN_VARIANT (type);
-
-  for (tmp = TYPE_METHODS (type); tmp; tmp = TREE_CHAIN (tmp))
-    if (TREE_CODE (tmp) == FUNCTION_DECL && DECL_VINDEX (tmp))
+  for (tree fld = TYPE_FIELDS (type); fld; fld = TREE_CHAIN (fld))
+    if (TREE_CODE (fld) == FUNCTION_DECL && DECL_VINDEX (fld))
       return true;
 
   return false;
@@ -1093,8 +1088,6 @@ is_tagged_type (const_tree type)
 static bool
 has_nontrivial_methods (tree type)
 {
-  tree tmp;
-
   if (!type || !RECORD_OR_UNION_TYPE_P (type))
     return false;
 
@@ -1106,12 +1099,9 @@ has_nontrivial_methods (tree type)
   if (!cpp_check (type, IS_TRIVIAL))
     return true;
 
-  /* TYPE_METHODS is only set on the main variant.  */
-  type = TYPE_MAIN_VARIANT (type);
-
   /* If there are user-defined methods, they are deemed non-trivial.  */
-  for (tmp = TYPE_METHODS (type); tmp; tmp = TREE_CHAIN (tmp))
-    if (!DECL_ARTIFICIAL (tmp))
+  for (tree fld = TYPE_FIELDS (type); fld; fld = DECL_CHAIN (fld))
+    if (TREE_CODE (TREE_TYPE (fld)) == METHOD_TYPE && !DECL_ARTIFICIAL (fld))
       return true;
 
   return false;
@@ -1896,7 +1886,7 @@ dump_ada_template (pretty_printer *buffer, tree t, int spc)
       if (TREE_VEC_LENGTH (types) == 0)
 	break;
 
-      if (!RECORD_OR_UNION_TYPE_P (instance) || !TYPE_METHODS (instance))
+      if (!RECORD_OR_UNION_TYPE_P (instance))
 	break;
 
       /* We are interested in concrete template instantiations only: skip
@@ -2442,25 +2432,23 @@ dump_generic_ada_node (pretty_printer *buffer, tree node, tree type, int spc,
 static int
 print_ada_methods (pretty_printer *buffer, tree node, int spc)
 {
-  tree t;
-  int res;
-
   if (!has_nontrivial_methods (node))
     return 0;
 
   pp_semicolon (buffer);
 
-  res = 1;
-  for (t = TYPE_METHODS (node); t; t = TREE_CHAIN (t))
-    {
-      if (res)
-	{
-	  pp_newline (buffer);
-	  pp_newline (buffer);
-	}
-
-      res = print_ada_declaration (buffer, t, node, spc);
-    }
+  int res = 1;
+  for (tree fld = TYPE_FIELDS (node); fld; fld = DECL_CHAIN (fld))
+    if (TREE_CODE (TREE_TYPE (fld)) == METHOD_TYPE)
+      {
+	if (res)
+	  {
+	    pp_newline (buffer);
+	    pp_newline (buffer);
+	  }
+	
+	res = print_ada_declaration (buffer, fld, node, spc);
+      }
 
   return 1;
 }
@@ -2961,19 +2949,13 @@ print_ada_declaration (pretty_printer *buffer, tree t, tree type, int spc)
 	  dump_generic_ada_node (buffer, ret_type, type, spc, false, true);
 	}
 
-      if (is_constructor
-	  && RECORD_OR_UNION_TYPE_P (type)
-	  && TYPE_METHODS (type))
-	{
-	  tree tmp;
-
-	  for (tmp = TYPE_METHODS (type); tmp; tmp = TREE_CHAIN (tmp))
-	    if (cpp_check (tmp, IS_ABSTRACT))
-	      {
-		is_abstract_class = true;
-		break;
-	      }
-	}
+      if (is_constructor && RECORD_OR_UNION_TYPE_P (type))
+	for (tree fld = TYPE_FIELDS (type); fld; fld = DECL_CHAIN (fld))
+	  if (cpp_check (fld, IS_ABSTRACT))
+	    {
+	      is_abstract_class = true;
+	      break;
+	    }
 
       if (is_abstract || is_abstract_class)
 	pp_string (buffer, " is abstract");
@@ -3028,35 +3010,33 @@ print_ada_declaration (pretty_printer *buffer, tree t, tree type, int spc)
 
       pp_string (buffer, " is ");
 
-      /* Check whether we have an Ada interface compatible class.  */
+      /* Check whether we have an Ada interface compatible class.
+	 That is only have a vtable non-static data member and no
+	 non-abstract methods.  */
       if (cpp_check
-	  && RECORD_OR_UNION_TYPE_P (TREE_TYPE (t))
-	  && TYPE_METHODS (TREE_TYPE (t)))
+	  && RECORD_OR_UNION_TYPE_P (TREE_TYPE (t)))
 	{
-	  int num_fields = 0;
-	  tree tmp;
+	  is_interface = -1;
 
 	  /* Check that there are no fields other than the virtual table.  */
-	  for (tmp = TYPE_FIELDS (TREE_TYPE (t)); tmp; tmp = TREE_CHAIN (tmp))
+	  for (tree fld = TYPE_FIELDS (TREE_TYPE (t));
+	       fld; fld = TREE_CHAIN (fld))
 	    {
-	      if (TREE_CODE (tmp) == TYPE_DECL)
-		continue;
-	      num_fields++;
-	    }
-
-	  if (num_fields == 1)
-	    is_interface = 1;
-
-	  /* Also check that there are only pure virtual methods.  Since the
-	     class is empty, we can skip implicit constructors/destructors.  */
-	  for (tmp = TYPE_METHODS (TREE_TYPE (t)); tmp; tmp = TREE_CHAIN (tmp))
-	    {
-	      if (DECL_ARTIFICIAL (tmp))
-		continue;
-	      if (cpp_check (tmp, IS_ABSTRACT))
-		is_abstract_record = 1;
-	      else
-		is_interface = 0;
+	      if (TREE_CODE (fld) == FIELD_DECL)
+		{
+		  if (is_interface < 0 && DECL_VIRTUAL_P (fld))
+		    is_interface = 1;
+		  else
+		    is_interface = 0;
+		}
+	      else if (TREE_CODE (TREE_TYPE (fld)) == METHOD_TYPE
+		       && !DECL_ARTIFICIAL (fld))
+		{
+		  if (cpp_check (fld, IS_ABSTRACT))
+		    is_abstract_record = 1;
+		  else
+		    is_interface = 0;
+		}
 	    }
 	}
 
