@@ -2153,10 +2153,6 @@ struct GTY(()) lang_type {
    and the RECORD_TYPE for the class template otherwise.  */
 #define CLASSTYPE_DECL_LIST(NODE) (LANG_TYPE_CLASS_CHECK (NODE)->decl_list)
 
-/* The first slot in the CLASSTYPE_METHOD_VEC where conversion
-   operators can appear.  */
-#define CLASSTYPE_FIRST_CONVERSION_SLOT 0
-
 /* A FUNCTION_DECL or OVERLOAD for the constructors for NODE.  These
    are the constructors that take an in-charge parameter.  */
 #define CLASSTYPE_CONSTRUCTORS(NODE) \

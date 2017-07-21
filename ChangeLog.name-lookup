@@ -1,3 +1,22 @@
+2017-07-21  Nathan Sidwell  <nathan@acm.org>
+
+	Conv ops are regular METHODVEC fns.
+	gcc/cp/
+	* cp-tree.h (CLASSTYPE_FIRST_CONVERSION_SLOT): Delete.
+	* class (add-method): Treat conv ops as regular fns.
+	(resort_type_method_vec, finish_struct_methods, warn_hidden) No
+	need to skip conversion ops.
+	* decl.c (initialize_predefined_identifiers): Naked
+	conv_op_identifier is not a conv op.
+	* lex.c (make_conv_op_name): Set identifier kind.
+	* name-lookup.c (lookup_all_conversions): Use
+	lookup_fnfields_slot_nolazy.
+	* search.c (lookup_conversion_operator): Process passed in
+	overload set.
+	(lookup_fnfields_slot_nolazy): Don't skip conversion ops.  Process
+	conversions after lookup.
+	(lookup_conversions_r): Use lookup_fnfields_slot_nolazy.
+
 2017-07-20  Nathan Sidwell  <nathan@acm.org>
 
 	Merge trunk r250413.

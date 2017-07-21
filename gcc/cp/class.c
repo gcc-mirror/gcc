@@ -1034,25 +1034,16 @@ add_method (tree type, tree method, bool via_using)
   char const *method_string = IDENTIFIER_POINTER (DECL_NAME (method));
 
   /* See if we already have an entry with this name.  */
-  for (slot = CLASSTYPE_FIRST_CONVERSION_SLOT;
-       vec_safe_iterate (method_vec, slot, &m);
-       ++slot)
+  for (slot = 0; vec_safe_iterate (method_vec, slot, &m); ++slot)
     {
       m = OVL_FIRST (m);
-      if (conv_p)
-	{
-	  insert_p = !DECL_CONV_FN_P (m);
-	  break;
-	}
       char const *m_string = IDENTIFIER_POINTER (DECL_NAME (m));
       if (m_string == method_string)
 	{
 	  insert_p = false;
 	  break;
 	}
-      if (complete_p
-	  && !DECL_CONV_FN_P (m)
-	  && m_string > method_string)
+      if (complete_p && m_string > method_string)
 	break;
     }
   tree current_fns = insert_p ? NULL_TREE : (*method_vec)[slot];
@@ -2303,20 +2294,12 @@ resort_type_method_vec (void* obj,
   if (vec<tree, va_gc> *method_vec = (vec<tree, va_gc> *) obj)
     {
       int len = method_vec->length ();
-      int slot;
 
-      /* The type conversion ops have to live at the front of the vec, so we
-	 can't sort them.  */
-      for (slot = CLASSTYPE_FIRST_CONVERSION_SLOT;
-	   slot < len; slot++)
-	if (!DECL_CONV_FN_P (OVL_FIRST ((*method_vec)[slot])))
-	  break;
-
-      if (len > slot + 1)
+      if (len > 1)
 	{
 	  resort_data.new_value = new_value;
 	  resort_data.cookie = cookie;
-	  qsort (method_vec->address () + slot, len - slot, sizeof (tree),
+	  qsort (method_vec->address (), len, sizeof (tree),
 		 resort_method_name_cmp);
 	}
     }
@@ -2331,14 +2314,9 @@ resort_type_method_vec (void* obj,
 static void
 finish_struct_methods (tree t)
 {
-  vec<tree, va_gc> *method_vec;
-  int slot, len;
-
-  method_vec = CLASSTYPE_METHOD_VEC (t);
+  vec<tree, va_gc> *method_vec = CLASSTYPE_METHOD_VEC (t);
   if (!method_vec)
     return;
-
-  len = method_vec->length ();
 
   /* Clear DECL_IN_AGGR_P for all functions.  */
   for (tree fn = TYPE_FIELDS (t); fn; fn = DECL_CHAIN (fn))
@@ -2349,17 +2327,9 @@ finish_struct_methods (tree t)
      no methods, then some public defaults are generated.  */
   maybe_warn_about_overly_private_class (t);
 
-  /* The type conversion ops have to live at the front of the vec, so we
-     can't sort them.  */
-  tree fn_fields;
-  for (slot = CLASSTYPE_FIRST_CONVERSION_SLOT;
-       method_vec->iterate (slot, &fn_fields);
-       ++slot)
-    if (!DECL_CONV_FN_P (OVL_FIRST (fn_fields)))
-      break;
-  if (len - slot > 1)
-    qsort (method_vec->address () + slot,
-	   len-slot, sizeof (tree), method_name_cmp);
+  int len = method_vec->length ();
+  if (len > 1)
+    qsort (method_vec->address (), len, sizeof (tree), method_name_cmp);
 }
 
 /* Make BINFO's vtable have N entries, including RTTI entries,
@@ -3008,12 +2978,9 @@ warn_hidden (tree t)
 {
   vec<tree, va_gc> *method_vec = CLASSTYPE_METHOD_VEC (t);
   tree fns;
-  size_t i;
 
   /* We go through each separately named virtual function.  */
-  for (i = CLASSTYPE_FIRST_CONVERSION_SLOT;
-       vec_safe_iterate (method_vec, i, &fns);
-       ++i)
+  for (int i = 0; vec_safe_iterate (method_vec, i, &fns); ++i)
     {
       tree fndecl;
       tree base_binfo;

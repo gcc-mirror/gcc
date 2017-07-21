@@ -1479,39 +1479,28 @@ lookup_fnfields (tree xbasetype, tree name, int protect)
   return rval;
 }
 
-/* Return the index in the CLASSTYPE_METHOD_VEC for CLASS_TYPE
-   corresponding to "operator TYPE ()", or -1 if there is no such
-   operator.  Only CLASS_TYPE itself is searched; this routine does
-   not scan the base classes of CLASS_TYPE.  */
+/* FNS is an overload set of conversion functions.  Return the
+   overloads converting to TYPE.  */
 
 static tree
-lookup_conversion_operator (tree class_type, tree type)
+lookup_conversion_operator (tree fns, tree type)
 {
   tree convs = NULL_TREE;
+  tree tpls = NULL_TREE;
 
-  if (TYPE_HAS_CONVERSION (class_type))
-    if (vec<tree, va_gc> *methods = CLASSTYPE_METHOD_VEC (class_type))
-      {
-	tree fns = (*methods)[CLASSTYPE_FIRST_CONVERSION_SLOT];
+  for (ovl_iterator iter (fns); iter; ++iter)
+    {
+      if (same_type_p (DECL_CONV_FN_TYPE (*iter), type))
+	convs = lookup_add (*iter, convs);
 
-	if (DECL_CONV_FN_P (OVL_FIRST (fns)))
-	  {
-	    tree tpls = NULL_TREE;
+      // FIXME: really want some way to say 'no templates'
+      // FIXME: Plus ordering the overload to put templates last
+      if (TREE_CODE (*iter) == TEMPLATE_DECL)
+	tpls = lookup_add (*iter, tpls);
+    }
 
-	    for (ovl_iterator iter (fns); iter; ++iter)
-	      {
-		if (same_type_p (DECL_CONV_FN_TYPE (*iter), type))
-		  convs = lookup_add (*iter, convs);
-
-		// FIXME: really want some way to say 'no templates'
-		// FIXME: Plus ordering the overload to put templates last
-		if (TREE_CODE (*iter) == TEMPLATE_DECL)
-		  tpls = lookup_add (*iter, tpls);
-	      }
-	    if (!convs)
-	      convs = tpls;
-	  }
-      }
+  if (!convs)
+    convs = tpls;
 
   return convs;
 }
@@ -1529,27 +1518,17 @@ lookup_fnfields_slot_nolazy (tree type, tree name)
   if (GATHER_STATISTICS)
     n_calls_lookup_fnfields_1++;
 
-  if (IDENTIFIER_CONV_OP_P (name))
-    return lookup_conversion_operator (type, TREE_TYPE (name));
-
-  /* Skip the conversion operators.  */
-  size_t i;
-  tree fns;
-  for (i = CLASSTYPE_FIRST_CONVERSION_SLOT;
-       vec_safe_iterate (method_vec, i, &fns);
-       ++i)
-    if (!DECL_CONV_FN_P (OVL_FIRST (fns)))
-      break;
+  tree fns = NULL_TREE;
 
   /* If the type is complete, use binary search.  */
   const char *name_string = IDENTIFIER_POINTER (name);
   if (COMPLETE_TYPE_P (type))
     {
-      int lo = i;
+      int lo = 0;
       int hi = method_vec->length ();
       while (lo < hi)
 	{
-	  i = (lo + hi) / 2;
+	  int i = (lo + hi) / 2;
 
 	  if (GATHER_STATISTICS)
 	    n_outer_fields_searched++;
@@ -1561,19 +1540,25 @@ lookup_fnfields_slot_nolazy (tree type, tree name)
 	  else if (fns_string < name_string)
 	    lo = i + 1;
 	  else
-	    return fns;
+	    break;
+	  fns = NULL_TREE;
 	}
     }
   else
-    for (; vec_safe_iterate (method_vec, i, &fns); ++i)
+    for (int i = 0; vec_safe_iterate (method_vec, i, &fns); ++i)
       {
 	if (GATHER_STATISTICS)
 	  n_outer_fields_searched++;
 	if (IDENTIFIER_POINTER (OVL_NAME (fns)) == name_string)
-	  return fns;
+	  break;
+	fns = NULL_TREE;
       }
 
-  return NULL_TREE;
+  /* Extract the conversion operators asked for.  */
+  if (IDENTIFIER_CONV_OP_P (name))
+    fns = lookup_conversion_operator (fns, TREE_TYPE (name));
+
+  return fns;
 }
 
 /* TYPE is a class type. Return the field within the method vector with
@@ -2657,34 +2642,31 @@ lookup_conversions_r (tree binfo, int virtual_depth, int virtualness,
     virtual_depth++;
 
   /* First, locate the unhidden ones at this level.  */
-  if (vec<tree, va_gc> *method_vec = CLASSTYPE_METHOD_VEC (BINFO_TYPE (binfo)))
-    {
-      tree conv = (*method_vec)[CLASSTYPE_FIRST_CONVERSION_SLOT];
-      if (DECL_CONV_FN_P (OVL_FIRST (conv)))
-	for (ovl_iterator iter (conv); iter; ++iter)
+  if (tree conv = lookup_fnfields_slot_nolazy (BINFO_TYPE (binfo),
+					       conv_op_identifier))
+    for (ovl_iterator iter (conv); iter; ++iter)
+      {
+	tree fn = *iter;
+	tree type = DECL_CONV_FN_TYPE (fn);
+
+	if (TREE_CODE (fn) != TEMPLATE_DECL && type_uses_auto (type))
 	  {
-	    tree fn = *iter;
-	    tree type = DECL_CONV_FN_TYPE (fn);
+	    mark_used (fn);
+	    type = DECL_CONV_FN_TYPE (fn);
+	  }
 
-	    if (TREE_CODE (fn) != TEMPLATE_DECL && type_uses_auto (type))
+	if (check_hidden_convs (binfo, virtual_depth, virtualness,
+				type, parent_convs, other_convs))
+	  {
+	    my_convs = tree_cons (binfo, fn, my_convs);
+	    TREE_TYPE (my_convs) = type;
+	    if (virtual_depth)
 	      {
-		mark_used (fn);
-		type = DECL_CONV_FN_TYPE (fn);
-	      }
-
-	    if (check_hidden_convs (binfo, virtual_depth, virtualness,
-				    type, parent_convs, other_convs))
-	      {
-		my_convs = tree_cons (binfo, fn, my_convs);
-		TREE_TYPE (my_convs) = type;
-		if (virtual_depth)
-		  {
-		    TREE_STATIC (my_convs) = 1;
-		    my_virtualness = 1;
-		  }
+		TREE_STATIC (my_convs) = 1;
+		my_virtualness = 1;
 	      }
 	  }
-    }
+      }
 
   if (my_convs)
     {

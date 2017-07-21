@@ -3375,12 +3375,7 @@ lookup_all_conversions (tree klass)
   tree lkp = NULL_TREE;
 
   if (TYPE_HAS_CONVERSION (klass))
-    if (vec<tree, va_gc> *method_vec = CLASSTYPE_METHOD_VEC (klass))
-      {
-	lkp = (*method_vec)[CLASSTYPE_FIRST_CONVERSION_SLOT];
-	if (!DECL_CONV_FN_P (OVL_FIRST (lkp)))
-	  lkp = NULL_TREE;
-      }
+    lkp = lookup_fnfields_slot_nolazy (klass, conv_op_identifier);
 
   return lkp;
 }
