@@ -3243,7 +3243,7 @@ pop:
     }
 
   /* Check whether the reduction path detected is valid.  */
-  bool fail = false;
+  bool fail = path.length () == 0;
   bool neg = false;
   for (unsigned i = 1; i < path.length (); ++i)
     {
@@ -3276,9 +3276,7 @@ pop:
 
   if (dump_enabled_p ())
     {
-      report_vect_op (MSG_MISSED_OPTIMIZATION,
-		      SSA_NAME_DEF_STMT
-		        (USE_FROM_PTR (path[path.length ()-1].second)),
+      report_vect_op (MSG_MISSED_OPTIMIZATION, def_stmt,
 		      "reduction: unknown pattern: ");
     }
 
