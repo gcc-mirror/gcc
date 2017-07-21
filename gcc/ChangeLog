@@ -1,3 +1,10 @@
+2016-07-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/81303
+	* tree-vect-loop.c (vect_estimate_min_profitable_iters): Take
+	into account prologue and epilogue iterations when raising
+	min_profitable_iters to sth at least covering one vector iteration.
+
 2017-07-21  Tamar Christina  <tamar.christina@arm.com>
 
 	* config/arm/arm.c (arm_test_cpu_arch_dat):
