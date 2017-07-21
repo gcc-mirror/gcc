@@ -1,5 +1,15 @@
 2017-07-21  Nathan Sidwell  <nathan@acm.org>
 
+	Remove special CDtor METHOD_VEC slots.
+	* cp-tree.h (CLASSTYPE_CONSTRUCTOR_SLOT,
+	CLASSTYPE_DESTRUCTOR_SLOT): Delete.
+	(CLASSTYPE_CONSTRUCTORS): Use lookup_fnfields_slot_nolazy.
+	(CLASSTYPE_DESTRUCTOR): Likewise.
+	* class (add_method): Don't use special cdtor slots.
+	* search.c (lookup_fnfields_idx_nolazy): Likewise.
+	(look_for_overrides_here): Use lookup_fnfields_slot.
+	* semantics (classtype_has_nothrow_assign_or_copy_p): Likewise.
+
 	* call.c (add_candidates): Move decls to initialization.  Don't
 	use !!.
 

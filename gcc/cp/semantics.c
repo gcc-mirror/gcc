@@ -9083,15 +9083,7 @@ classtype_has_nothrow_assign_or_copy_p (tree type, bool assign_p)
   if (assign_p)
     fns = lookup_fnfields_slot (type, cp_assignment_operator_id (NOP_EXPR));
   else if (TYPE_HAS_COPY_CTOR (type))
-    {
-      /* If construction of the copy constructor was postponed, create
-	 it now.  */
-      if (CLASSTYPE_LAZY_COPY_CTOR (type))
-	lazily_declare_fn (sfk_copy_constructor, type);
-      if (CLASSTYPE_LAZY_MOVE_CTOR (type))
-	lazily_declare_fn (sfk_move_constructor, type);
-      fns = CLASSTYPE_CONSTRUCTORS (type);
-    }
+    fns = lookup_fnfields_slot (type, ctor_identifier);
 
   bool saw_copy = false;
   for (ovl_iterator iter (fns); iter; ++iter)
