@@ -1,3 +1,8 @@
+2017-07-21  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/arm/arm.c (arm_test_cpu_arch_dat):
+	Check for overlap.
+
 2017-07-20  Nathan Sidwell  <nathan@acm.org>
 
 	Remove TYPE_METHODS.
