@@ -12162,7 +12162,7 @@ vbslq_u64 (uint64x2_t __a, uint64x2_t __b, uint64x2_t __c)
 
 /* ARMv8.1-A instrinsics.  */
 #pragma GCC push_options
-#pragma GCC target ("arch=armv8.1-a")
+#pragma GCC target ("+nothing+rdma")
 
 __extension__ extern __inline int16x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))

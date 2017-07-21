@@ -1,3 +1,10 @@
+2017-07-21  Jim Wilson  <jim.wilson@linaro.org>
+
+	* lib/target-supports.exp (add_options_for_arm_v8_1a_neon): Delete
+	redundant -march option.
+	(check_effective_target_arm_v8_1a_neon_ok_nocache): Try armv8-a+rdma
+	in addition to armv8.1-a.
+
 2017-07-21  Yury Gribov  <tetra2005@gmail.com>
 
 	PR middle-end/56727
