@@ -1,3 +1,25 @@
+2017-07-20  Nathan Sidwell  <nathan@acm.org>
+
+	Remove TYPE_METHODS.
+	* class.c (maybe_warn_about_overly_private_class,
+	finish_struct_methods, one_inheriting_sig, count_fields,
+	add_fields_to_record_type, check_field_decls, check_methods,
+	clone_function_decl, set_method_tm_attributes,
+	finalize_literal_type_property, check_bases_and_members,
+	create_vtable_ptr, determine_key_method,
+	unreverse_member_declarations, finish_struct,
+	add_vcall_offset_vtbl_entries_1): Member fns are on TYPE_FIELDS.
+	* decl.c (fixup_anonymous_aggr): Likewise.
+	* decl2.c (reset_type_linkage_2): Likewise.
+	* method.c (after_nsdmi_defaulted_late_checks,
+	lazily_declare_fn): Likewise.
+	* optimize.c (maybe_thunk_body, maybe_clone_body): Likewise.
+	* pt.c (instantiate_class_template_1, tsubst_expr,
+	do_type_instantiation, instantiate_pending_templates): Likewise.
+	* search.c (lookup_field_1): Likewise.
+	* semantics.c (finish_member_declaration,
+	finish_omp_declare_simd_methods): Likewise.
+
 2017-07-19  Nathan Sidwell  <nathan@acm.org>
 
 	* class.c (add_implicitly_declared_members): Use

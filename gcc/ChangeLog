@@ -1,3 +1,107 @@
+2017-07-20  Nathan Sidwell  <nathan@acm.org>
+
+	Remove TYPE_METHODS.
+	* tree.h (TYPE_METHODS): Delete.
+	* dwarf2out.c (gen_member_die): Member fns are on TYPE_FIELDS.
+	* dbxout.c (dbxout_type_fields): Ignore FUNCTION_DECLs.
+	(dbxout_type_methods): Scan TYPE_FIELDS.
+	(dbxout_type): Don't check TYPE_METHODS here.
+	* function.c (use_register_for_decl): Always ignore register for
+	class types when not optimizing.
+	* ipa-devirt.c (odr_types_equivalent_p): Delete TYPE_METHODS scan.
+	* tree.c (free_lang_data_in_type): Stitch out member functions and
+	templates from TYPE_FIELDS.
+	(build_distinct_type_copy, verify_type_variant,
+	verify_type): Member fns are on TYPE_FIELDS.
+	* tree-dump.c (dequeue_and_dump): No TYPE_METHODS.
+	* tree-pretty-print.c (dump_generic_node): Likewise.
+
+2017-07-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/80846
+	* config/i386/i386.c (ix86_expand_vector_init_general): Handle
+	V2TImode and V4TImode.
+	(ix86_expand_vector_extract): Likewise.
+	* config/i386/sse.md (VMOVE): Enable V4TImode even for just
+	TARGET_AVX512F, instead of only for TARGET_AVX512BW.
+	(ssescalarmode): Handle V4TImode and V2TImode.
+	(VEC_EXTRACT_MODE): Add V4TImode and V2TImode.
+	(*vec_extractv2ti, *vec_extractv4ti): New insns.
+	(VEXTRACTI128_MODE): New mode iterator.
+	(splitter for *vec_extractv?ti first element): New.
+	(VEC_INIT_MODE): New mode iterator.
+	(vec_init<mode>): Consolidate 3 expanders into one using
+	VEC_INIT_MODE mode iterator.
+
+2017-07-20  Alexander Monakov  <amonakov@ispras.ru>
+
+	* lra-assigns.c (pseudo_compare_func): Fix comparison step based on
+	non_spilled_static_chain_regno_p.
+
+2017-07-20  Alexander Monakov  <amonakov@ispras.ru>
+
+	* gimple-ssa-store-merging.c (sort_by_bitpos): Return 0 on equal bitpos.
+
+2017-07-20  Jan Hubicka  <hubicka@ucw.cz>
+
+	* bb-reorder.c (connect_traces): Allow copying of blocks within
+	single partition.
+
+2017-07-20  Richard Biener  <rguenther@suse.de>
+
+	* gimple.h (gimple_phi_result): Add gphi * overload.
+	(gimple_phi_result_ptr): Likewise.
+	(gimple_phi_arg): Likewise.  Adjust index assert to only
+	allow actual argument accesses rather than all slots available
+	by capacity.
+	(gimple_phi_arg_def): Add gphi * overload.
+	* tree-phinodes.c (make_phi_node): Initialize only actual
+	arguments.
+	(resize_phi_node): Clear memory not covered by old node,
+	do not initialize excess argument slots.
+	(reserve_phi_args_for_new_edge): Initialize new argument slot
+	completely.
+
+2017-07-20  Bin Cheng  <bin.cheng@arm.com>
+
+	PR tree-optimization/81388
+	Revert r238585:
+	2016-07-21  Bin Cheng  <bin.cheng@arm.com>
+
+	* tree-ssa-loop-niter.c (number_of_iterations_lt_to_ne): Clean up
+	by removing computation of may_be_zero.
+
+2017-07-18  Jan Hubicka  <hubicka@ucw.cz>
+	    Tom de Vries  <tom@codesourcery.com>
+
+	PR middle-end/81030
+	* cfgbuild.c (find_many_sub_basic_blocks): Update REG_BR_PROB note
+	when gimple level profile disagrees with what RTL expander did.
+
+2017-07-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/61171
+	* tree-vectorizer.h (slp_instance): Add reduc_phis member.
+	(vect_analyze_stmt): Add slp instance parameter.
+	(vectorizable_reduction): Likewise.
+	* tree-vect-loop.c (vect_analyze_loop_operations): Adjust.
+	(vect_is_simple_reduction): Deal with chains not detected
+	as SLP reduction chain, specifically not properly associated
+	chains containing a mix of plus/minus.
+	(get_reduction_op): Remove.
+	(get_initial_defs_for_reduction): Simplify, pass in whether
+	this is a reduction chain, pass in the SLP node for the PHIs.
+	(vect_create_epilog_for_reduction): Get the SLP instance as
+	arg and adjust.
+	(vectorizable_reduction): Get the SLP instance as arg.
+	During analysis remember the SLP node with the PHIs in the
+	instance.  Simplify getting at the vectorized reduction PHIs.
+	* tree-vect-slp.c (vect_slp_analyze_node_operations): Pass
+	through SLP instance.
+	(vect_slp_analyze_operations): Likewise.
+	* tree-vect-stms.c (vect_analyze_stmt): Likewise.
+	(vect_transform_stmt): Likewise.
+
 2017-07-20  Tom de Vries  <tom@codesourcery.com>
 
 	PR tree-optimization/81489

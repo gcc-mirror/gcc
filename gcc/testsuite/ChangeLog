@@ -1,3 +1,33 @@
+2017-07-20  Nathan Sidwell  <nathan@acm.org>
+
+	* g++.dg/ext/anon-struct6.C: Adjust diag.
+	* g++.old-deja/g++.other/anon4.C: Adjust diag.
+
+2017-07-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/80846
+	* gcc.target/i386/avx-pr80846.c: New test.
+	* gcc.target/i386/avx2-pr80846.c: New test.
+	* gcc.target/i386/avx512f-pr80846.c: New test.
+
+2017-07-20  Bin Cheng  <bin.cheng@arm.com>
+
+	PR tree-optimization/81388
+	* gcc.dg/tree-ssa/pr81388-1.c: New test.
+	* gcc.dg/tree-ssa/pr81388-2.c: New test.
+
+2017-07-17  Tom de Vries  <tom@codesourcery.com>
+
+	PR middle-end/81030
+	* gcc.dg/pr81030.c: New test.
+
+2017-07-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/61171
+	* g++.dg/vect/pr61171.cc: New testcase.
+	* gfortran.dg/vect/pr61171.f: Likewise.
+	* gcc.dg/vect/vect-reduc-11.c: Likewise.
+
 2017-07-20  Richard Biener  <rguenther@suse.de>
 
 	* gcc.dg/vect/slp-43.c: Increase loop count to enable vectorization

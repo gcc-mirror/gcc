@@ -4308,19 +4308,31 @@ gimple_phi_num_args (const gimple *gs)
 /* Return the SSA name created by GIMPLE_PHI GS.  */
 
 static inline tree
+gimple_phi_result (const gphi *gs)
+{
+  return gs->result;
+}
+
+static inline tree
 gimple_phi_result (const gimple *gs)
 {
   const gphi *phi_stmt = as_a <const gphi *> (gs);
-  return phi_stmt->result;
+  return gimple_phi_result (phi_stmt);
 }
 
 /* Return a pointer to the SSA name created by GIMPLE_PHI GS.  */
 
 static inline tree *
+gimple_phi_result_ptr (gphi *gs)
+{
+  return &gs->result;
+}
+
+static inline tree *
 gimple_phi_result_ptr (gimple *gs)
 {
   gphi *phi_stmt = as_a <gphi *> (gs);
-  return &phi_stmt->result;
+  return gimple_phi_result_ptr (phi_stmt);
 }
 
 /* Set RESULT to be the SSA name created by GIMPLE_PHI PHI.  */
@@ -4338,11 +4350,17 @@ gimple_phi_set_result (gphi *phi, tree result)
    GIMPLE_PHI GS.  */
 
 static inline struct phi_arg_d *
+gimple_phi_arg (gphi *gs, unsigned index)
+{
+  gcc_gimple_checking_assert (index < gs->nargs);
+  return &(gs->args[index]);
+}
+
+static inline struct phi_arg_d *
 gimple_phi_arg (gimple *gs, unsigned index)
 {
   gphi *phi_stmt = as_a <gphi *> (gs);
-  gcc_gimple_checking_assert (index < phi_stmt->capacity);
-  return &(phi_stmt->args[index]);
+  return gimple_phi_arg (phi_stmt, index);
 }
 
 /* Set PHIARG to be the argument corresponding to incoming edge INDEX
@@ -4375,6 +4393,12 @@ phi_nodes_ptr (basic_block bb)
 }
 
 /* Return the tree operand for argument I of PHI node GS.  */
+
+static inline tree
+gimple_phi_arg_def (gphi *gs, size_t index)
+{
+  return gimple_phi_arg (gs, index)->def;
+}
 
 static inline tree
 gimple_phi_arg_def (gimple *gs, size_t index)

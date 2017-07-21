@@ -1,3 +1,8 @@
+2017-07-20  Nathan Sidwell  <nathan@acm.org>
+
+	Remove TYPE_METHODS.
+	* libcp1plugin.cc (plugin_build_decl): Member fns are on TYPE_FIELDS.
+
 2017-07-12  Nathan Sidwell  <nathan@acm.org>
 
 	* libcp1plugin.cc (plugin_build_decl): Use

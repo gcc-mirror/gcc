@@ -1,5 +1,7 @@
 2017-07-20  Nathan Sidwell  <nathan@acm.org>
 
+	Merge trunk r250413.
+
 	Method vec sorted by identifier pointer (not conv ops)
 	gcc/cp/
 	* class.c (add_method): Use IDENTIFIER_POINTER.

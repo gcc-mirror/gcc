@@ -1302,16 +1302,15 @@ connect_traces (int n_traces, struct trace *traces)
 		      }
 		  }
 
-	      if (crtl->has_bb_partition)
-		try_copy = false;
-
 	      /* Copy tiny blocks always; copy larger blocks only when the
 		 edge is traversed frequently enough.  */
 	      if (try_copy
+		  && BB_PARTITION (best->src) == BB_PARTITION (best->dest)
 		  && copy_bb_p (best->dest,
 				optimize_edge_for_speed_p (best)
 				&& EDGE_FREQUENCY (best) >= freq_threshold
-				&& best->count >= count_threshold))
+				&& (!best->count.initialized_p ()
+				    || best->count >= count_threshold)))
 		{
 		  basic_block new_bb;
 

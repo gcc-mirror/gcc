@@ -5242,14 +5242,12 @@ bool
 vbase_has_user_provided_move_assign (tree type)
 {
   /* Does the type itself have a user-provided move assignment operator?  */
-  for (ovl_iterator iter (lookup_fnfields_slot_nolazy
-			  (type, cp_assignment_operator_id (NOP_EXPR)));
-       iter; ++iter)
-    {
-      tree fn = *iter;
-      if (move_fn_p (fn) && user_provided_p (fn))
+  if (!CLASSTYPE_LAZY_MOVE_ASSIGN (type))
+    for (ovl_iterator iter (lookup_fnfields_slot_nolazy
+			    (type, cp_assignment_operator_id (NOP_EXPR)));
+	 iter; ++iter)
+      if (!DECL_ARTIFICIAL (*iter) && move_fn_p (*iter))
 	return true;
-    }
 
   /* Do any of its bases?  */
   tree binfo = TYPE_BINFO (type);

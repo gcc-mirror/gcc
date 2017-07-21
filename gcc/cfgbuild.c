@@ -673,10 +673,18 @@ find_many_sub_basic_blocks (sbitmap blocks)
 		     && profile_status_for_fn (cfun) != PROFILE_READ))
 	      bb->count = profile_count::uninitialized ();
 	  }
-	else
-	  /* If nothing changed, there is no need to create new BBs.  */
-	  if (EDGE_COUNT (bb->succs) == n_succs[bb->index])
+ 	/* If nothing changed, there is no need to create new BBs.  */
+	else if (EDGE_COUNT (bb->succs) == n_succs[bb->index])
+	  {
+	    /* In rare occassions RTL expansion might have mistakely assigned
+	       a probabilities different from what is in CFG.  This happens
+	       when we try to split branch to two but optimize out the
+	       second branch during the way. See PR81030.  */
+	    if (JUMP_P (BB_END (bb)) && any_condjump_p (BB_END (bb))
+		&& EDGE_COUNT (bb->succs) >= 2)
+	      update_br_prob_note (bb);
 	    continue;
+	  }
 
 	compute_outgoing_frequencies (bb);
       }
