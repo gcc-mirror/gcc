@@ -5481,10 +5481,10 @@ add_candidates (tree fns, tree first_arg, const vec<tree, va_gc> *args,
       tree fn_first_arg = NULL_TREE;
       const vec<tree, va_gc> *fn_args = args;
 
-      /* Figure out which set of arguments to use.  */
       if (DECL_NONSTATIC_MEMBER_FUNCTION_P (fn))
 	{
-	  /* If this function is a non-static member and we didn't get an
+	  /* Figure out where the object arg comes from.  If this
+	     function is a non-static member and we didn't get an
 	     implicit object argument, move it out of args.  */
 	  if (first_arg == NULL_TREE)
 	    {

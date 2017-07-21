@@ -1,3 +1,13 @@
+2017-07-21  Tony Reix  <tony.reix@atos.net>
+
+	* filetype.awk: Add AIX XCOFF type detection.
+	* configure.ac: Recognize xcoff format.
+	* Makefile.am (FORMAT_FILES): Add xcoff.c.
+	* fileline.c: Include <unistd.h>.
+	(fileline_initialize): Add case for AIX procfs.
+	* xcoff.c: New file.
+	* configure, Makefile.in: Rebuild.
+
 2017-06-21  Richard Biener  <rguenther@suse.de>
 
 	* configure.ac: Add AC_SYS_LARGEFILE.
