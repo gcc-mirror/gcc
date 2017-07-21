@@ -1,5 +1,11 @@
 2017-07-21  Nathan Sidwell  <nathan@acm.org>
 
+	* search.c (lookup_conversion_operator): Return overloads.
+	(lookup_fnfields_idx_nolazy): Absorb into ...
+	(lookup_fnfields_slot_nolaxy): ... here.
+	(lookup_fnfields_1): Absorb into ...
+	(lookup_fnfields_slot): ... here.
+
 	Remove special CDtor METHOD_VEC slots.
 	* cp-tree.h (CLASSTYPE_CONSTRUCTOR_SLOT,
 	CLASSTYPE_DESTRUCTOR_SLOT): Delete.
