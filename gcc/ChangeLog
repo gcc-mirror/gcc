@@ -1,3 +1,11 @@
+2017-07-21  Tom de Vries  <tom@codesourcery.com>
+
+	PR lto/81430
+	* config/nvptx/nvptx.c (nvptx_override_options_after_change): New
+	function.
+	(TARGET_OVERRIDE_OPTIONS_AFTER_CHANGE): Define to
+	nvptx_override_options_after_change.
+
 2017-07-21  Ulrich Drepper  <drepper@redhat.com>
 
 	* dwarf2out.c (output_file_names): Avoid double testing for
