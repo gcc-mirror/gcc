@@ -1590,18 +1590,6 @@ lookup_fnfields_idx_nolazy (tree type, tree name)
   if (GATHER_STATISTICS)
     n_calls_lookup_fnfields_1++;
 
-  /* Constructors are first...  */
-  if (name == ctor_identifier)
-    {
-      fn = CLASSTYPE_CONSTRUCTORS (type);
-      return fn ? CLASSTYPE_CONSTRUCTOR_SLOT : -1;
-    }
-  /* and destructors are second.  */
-  if (name == dtor_identifier)
-    {
-      fn = CLASSTYPE_DESTRUCTOR (type);
-      return fn ? CLASSTYPE_DESTRUCTOR_SLOT : -1;
-    }
   if (IDENTIFIER_CONV_OP_P (name))
     return lookup_conversion_operator (type, TREE_TYPE (name));
 
@@ -2428,37 +2416,26 @@ look_for_overrides (tree type, tree fndecl)
 tree
 look_for_overrides_here (tree type, tree fndecl)
 {
-  int ix;
+  tree ovl = lookup_fnfields_slot (type, DECL_NAME (fndecl));
 
-  /* If there are no methods in TYPE (meaning that only implicitly
-     declared methods will ever be provided for TYPE), then there are
-     no virtual functions.  */
-  if (!CLASSTYPE_METHOD_VEC (type))
-    return NULL_TREE;
+  for (ovl_iterator iter (ovl); iter; ++iter)
+    {
+      tree fn = *iter;
 
-  if (DECL_MAYBE_IN_CHARGE_DESTRUCTOR_P (fndecl))
-    ix = CLASSTYPE_DESTRUCTOR_SLOT;
-  else
-    ix = lookup_fnfields_1 (type, DECL_NAME (fndecl));
-  if (ix >= 0)
-    for (ovl_iterator iter ((*CLASSTYPE_METHOD_VEC (type))[ix]); iter; ++iter)
-      {
-	tree fn = *iter;
-
-	if (!DECL_VIRTUAL_P (fn))
-	  /* Not a virtual.  */;
-	else if (DECL_CONTEXT (fn) != type)
-	  /* Introduced with a using declaration.  */;
-	else if (DECL_STATIC_FUNCTION_P (fndecl))
-	  {
-	    tree btypes = TYPE_ARG_TYPES (TREE_TYPE (fn));
-	    tree dtypes = TYPE_ARG_TYPES (TREE_TYPE (fndecl));
-	    if (compparms (TREE_CHAIN (btypes), dtypes))
-	      return fn;
-	  }
-	else if (same_signature_p (fndecl, fn))
-	  return fn;
-      }
+      if (!DECL_VIRTUAL_P (fn))
+	/* Not a virtual.  */;
+      else if (DECL_CONTEXT (fn) != type)
+	/* Introduced with a using declaration.  */;
+      else if (DECL_STATIC_FUNCTION_P (fndecl))
+	{
+	  tree btypes = TYPE_ARG_TYPES (TREE_TYPE (fn));
+	  tree dtypes = TYPE_ARG_TYPES (TREE_TYPE (fndecl));
+	  if (compparms (TREE_CHAIN (btypes), dtypes))
+	    return fn;
+	}
+      else if (same_signature_p (fndecl, fn))
+	return fn;
+    }
 
   return NULL_TREE;
 }

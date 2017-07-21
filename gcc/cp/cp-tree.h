@@ -2148,29 +2148,21 @@ struct GTY(()) lang_type {
    and the RECORD_TYPE for the class template otherwise.  */
 #define CLASSTYPE_DECL_LIST(NODE) (LANG_TYPE_CLASS_CHECK (NODE)->decl_list)
 
-/* The slot in the CLASSTYPE_METHOD_VEC where constructors go.  */
-#define CLASSTYPE_CONSTRUCTOR_SLOT 0
-
-/* The slot in the CLASSTYPE_METHOD_VEC where destructors go.  */
-#define CLASSTYPE_DESTRUCTOR_SLOT 1
-
 /* The first slot in the CLASSTYPE_METHOD_VEC where conversion
    operators can appear.  */
-#define CLASSTYPE_FIRST_CONVERSION_SLOT 2
+#define CLASSTYPE_FIRST_CONVERSION_SLOT 0
 
 /* A FUNCTION_DECL or OVERLOAD for the constructors for NODE.  These
    are the constructors that take an in-charge parameter.  */
 #define CLASSTYPE_CONSTRUCTORS(NODE) \
-  ((*CLASSTYPE_METHOD_VEC (NODE))[CLASSTYPE_CONSTRUCTOR_SLOT])
+  (lookup_fnfields_slot_nolazy (NODE, ctor_identifier))
 
 /* A FUNCTION_DECL for the destructor for NODE.  This is the
    destructors that take an in-charge parameter.  If
    CLASSTYPE_LAZY_DESTRUCTOR is true, then this entry will be NULL
    until the destructor is created with lazily_declare_fn.  */
 #define CLASSTYPE_DESTRUCTOR(NODE) \
-  (CLASSTYPE_METHOD_VEC (NODE)						      \
-   ? (*CLASSTYPE_METHOD_VEC (NODE))[CLASSTYPE_DESTRUCTOR_SLOT]		      \
-   : NULL_TREE)
+  (lookup_fnfields_slot_nolazy (NODE, dtor_identifier))
 
 /* A dictionary of the nested user-defined-types (class-types, or enums)
    found within this class.  This table includes nested member class
