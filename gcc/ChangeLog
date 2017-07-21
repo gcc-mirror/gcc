@@ -1,3 +1,8 @@
+2017-07-21  Ulrich Drepper  <drepper@redhat.com>
+
+	* dwarf2out.c (output_file_names): Avoid double testing for
+	dwarf_version >= 5.
+
 2017-07-21  Georg-Johann Lay  <avr@gjlay.de>
 
 	* doc/invoke.texi (AVR Built-in Functions): Re-layout section.
