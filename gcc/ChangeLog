@@ -1,5 +1,11 @@
 2016-07-21  Jan Hubicka  <hubicka@ucw.cz>
 
+	* cfgcleanup.c (flow_find_cross_jump): Do not crossjump across
+	hot/cold regions.
+	(try_crossjump_to_edge): Do not punt on partitioned functions.
+
+2016-07-21  Jan Hubicka  <hubicka@ucw.cz>
+
 	* bb-reorder.c (find_rarely_executed_basic_blocks_and_crossing_edges):
 	Put all BBs reachable only via paths crossing cold region to cold
 	region.
