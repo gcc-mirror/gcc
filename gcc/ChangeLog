@@ -1,3 +1,7 @@
+2017-07-21  Georg-Johann Lay  <avr@gjlay.de>
+
+	* doc/invoke.texi (AVR Built-in Functions): Re-layout section.
+
 2016-07-21  Jan Hubicka  <hubicka@ucw.cz>
 
 	* cfgcleanup.c (flow_find_cross_jump): Do not crossjump across
