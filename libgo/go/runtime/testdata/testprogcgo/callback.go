@@ -23,7 +23,9 @@ static void foo() {
     pthread_t th;
     pthread_attr_t attr;
     pthread_attr_init(&attr);
-    pthread_attr_setstacksize(&attr, 256 << 10);
+    // For gccgo use a stack size large enough for all the callbacks,
+    // in case we are on a platform that does not support -fsplit-stack.
+    pthread_attr_setstacksize(&attr, 512 * 10000);
     pthread_create(&th, &attr, thr, 0);
     pthread_join(th, 0);
 }
