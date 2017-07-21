@@ -1505,8 +1505,9 @@ lookup_conversion_operator (tree fns, tree type)
   return convs;
 }
 
-/* TYPE is a class type. Return the overloads called NAME.
-   Does not lazily declare implicitly-declared member functions.  */
+/* TYPE is a class type. Return the member functions in the method
+   vector with name NAME.  Does not lazily declare implicitly-declared
+   member functions.  */
 
 tree
 lookup_fnfields_slot_nolazy (tree type, tree name)
@@ -1561,13 +1562,12 @@ lookup_fnfields_slot_nolazy (tree type, tree name)
   return fns;
 }
 
-/* TYPE is a class type. Return the field within the method vector with
-   name NAME, or NULL_TREE if no such field exists.  */
+/* TYPE is a class type. Return the overloads in
+   the method vector with name NAME.  Lazily create ctors etc.  */
 
 tree
 lookup_fnfields_slot (tree type, tree name)
 {
-  gcc_assert (CLASS_TYPE_P (type));
   type = complete_type (type);
 
   if (COMPLETE_TYPE_P (type))
