@@ -1,4 +1,14 @@
-2017-06-21  Richard Biener  <rguenther@suse.de>
+2017-07-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/81303
+	* tree-vect-data-refs.c (vect_get_peeling_costs_all_drs): Pass
+	in datarefs vector.  Allow NULL dr0 for no peeling cost estimate.
+	(vect_peeling_hash_get_lowest_cost): Adjust.
+	(vect_enhance_data_refs_alignment): Likewise.  Use
+	vect_get_peeling_costs_all_drs to compute the penalty for no
+	peeling to match up costs.
+
+2017-07-21  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/81500
 	* tree-vect-loop.c (vect_is_simple_reduction): Properly fail if
