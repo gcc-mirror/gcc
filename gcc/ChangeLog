@@ -1,4 +1,11 @@
 2017-07-21  Tom de Vries  <tom@codesourcery.com>
+	    Cesar Philippidis  <cesar@codesourcery.com>
+
+	PR gcov-profile/81442
+	* config/nvptx/nvptx.c (nvptx_goacc_reduction_init): Add missing edge
+	probabilities.
+
+2017-07-21  Tom de Vries  <tom@codesourcery.com>
 
 	PR lto/81430
 	* config/nvptx/nvptx.c (nvptx_override_options_after_change): New
