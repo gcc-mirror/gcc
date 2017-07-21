@@ -5423,8 +5423,8 @@ add_candidates (tree fns, tree first_arg, const vec<tree, va_gc> *args,
 {
   tree ctype;
   const vec<tree, va_gc> *non_static_args;
-  bool check_list_ctor;
-  bool check_converting;
+  bool check_list_ctor = false;
+  bool check_converting = false;
   unification_kind_t strict;
 
   if (!fns)
@@ -5435,7 +5435,7 @@ add_candidates (tree fns, tree first_arg, const vec<tree, va_gc> *args,
   if (DECL_CONV_FN_P (fn))
     {
       check_list_ctor = false;
-      check_converting = !!(flags & LOOKUP_ONLYCONVERTING);
+      check_converting = (flags & LOOKUP_ONLYCONVERTING) != 0;
       if (flags & LOOKUP_NO_CONVERSION)
 	/* We're doing return_type(x).  */
 	strict = DEDUCE_CONV;
@@ -5452,17 +5452,12 @@ add_candidates (tree fns, tree first_arg, const vec<tree, va_gc> *args,
     {
       if (DECL_CONSTRUCTOR_P (fn))
 	{
-	  check_list_ctor = !!(flags & LOOKUP_LIST_ONLY);
+	  check_list_ctor = (flags & LOOKUP_LIST_ONLY) != 0;
 	  /* For list-initialization we consider explicit constructors
 	     and complain if one is chosen.  */
 	  check_converting
 	    = ((flags & (LOOKUP_ONLYCONVERTING|LOOKUP_LIST_INIT_CTOR))
 	       == LOOKUP_ONLYCONVERTING);
-	}
-      else
-	{
-	  check_list_ctor = false;
-	  check_converting = false;
 	}
       strict = DEDUCE_CALL;
       ctype = conversion_path ? BINFO_TYPE (conversion_path) : NULL_TREE;
@@ -5476,9 +5471,6 @@ add_candidates (tree fns, tree first_arg, const vec<tree, va_gc> *args,
 
   for (lkp_iterator iter (fns); iter; ++iter)
     {
-      tree fn_first_arg;
-      const vec<tree, va_gc> *fn_args;
-
       fn = *iter;
 
       if (check_converting && DECL_NONCONVERTING_P (fn))
@@ -5486,10 +5478,13 @@ add_candidates (tree fns, tree first_arg, const vec<tree, va_gc> *args,
       if (check_list_ctor && !is_list_ctor (fn))
 	continue;
 
-      /* Figure out which set of arguments to use.  */
+      tree fn_first_arg = NULL_TREE;
+      const vec<tree, va_gc> *fn_args = args;
+
       if (DECL_NONSTATIC_MEMBER_FUNCTION_P (fn))
 	{
-	  /* If this function is a non-static member and we didn't get an
+	  /* Figure out where the object arg comes from.  If this
+	     function is a non-static member and we didn't get an
 	     implicit object argument, move it out of args.  */
 	  if (first_arg == NULL_TREE)
 	    {
@@ -5505,12 +5500,6 @@ add_candidates (tree fns, tree first_arg, const vec<tree, va_gc> *args,
 
 	  fn_first_arg = first_arg;
 	  fn_args = non_static_args;
-	}
-      else
-	{
-	  /* Otherwise, just use the list of arguments provided.  */
-	  fn_first_arg = NULL_TREE;
-	  fn_args = args;
 	}
 
       if (TREE_CODE (fn) == TEMPLATE_DECL)
