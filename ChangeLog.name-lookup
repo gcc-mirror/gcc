@@ -1,5 +1,8 @@
 2017-07-21  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/
+	* dbxout.c: Restore from trunk.
+
 	Merge trunk r250426.
 
 	Conv ops are regular METHODVEC fns.

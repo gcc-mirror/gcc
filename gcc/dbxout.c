@@ -311,7 +311,8 @@ static void dbxout_typedefs (tree);
 static void dbxout_type_index (tree);
 static void dbxout_args (tree);
 static void dbxout_type_fields (tree);
-static void dbxout_type_fn_member (tree);
+static void dbxout_type_method_1 (tree);
+static void dbxout_type_methods (tree);
 static void dbxout_range_type (tree, tree, tree);
 static void dbxout_type (tree, int);
 static bool print_int_cst_bounds_in_octal_p (tree, tree, tree);
@@ -1480,6 +1481,8 @@ dbxout_type_fields (tree type)
       /* Omit here local type decls until we know how to support them.  */
       if (TREE_CODE (tem) == TYPE_DECL
 	  || TREE_CODE (tem) == TEMPLATE_DECL
+	  /* Member functions emitted after fields.  */
+	  || TREE_CODE (tem) == FUNCTION_DECL
 	  /* Omit here the nameless fields that are used to skip bits.  */
 	  || DECL_IGNORED_P (tem)
 	  /* Omit fields whose position or size are variable or too large to
@@ -1490,8 +1493,6 @@ dbxout_type_fields (tree type)
 		  || ! tree_fits_uhwi_p (DECL_SIZE (tem)))))
 	continue;
 
-      else if (TREE_CODE (tem) == FUNCTION_DECL)
-	dbxout_type_fn_member (tem);
       else if (TREE_CODE (tem) != CONST_DECL)
 	{
 	  /* Continue the line if necessary,
@@ -1541,22 +1542,13 @@ dbxout_type_fields (tree type)
     }
 }
 
-/* Subroutine of `dbxout_type'.  Output debug info about the
-   function member DECL.  */
+/* Subroutine of `dbxout_type_methods'.  Output debug info about the
+   method described DECL.  */
 
 static void
-dbxout_type_fn_member (tree decl)
+dbxout_type_method_1 (tree decl)
 {
-  if (!use_gnu_debug_info_extensions)
-    return;
-
   char c1 = 'A', c2;
-
-  CONTIN;
-  stabstr_I (DECL_NAME (decl));
-  stabstr_S ("::");
-
-  dbxout_type (TREE_TYPE (decl), 0);
 
   if (TREE_CODE (TREE_TYPE (decl)) == FUNCTION_TYPE)
     c2 = '?';
@@ -1594,7 +1586,55 @@ dbxout_type_fn_member (tree decl)
       dbxout_type (DECL_CONTEXT (decl), 0);
       stabstr_C (';');
     }
-  stabstr_C (';');
+}
+
+/* Subroutine of `dbxout_type'.  Output debug info about the member
+   functions defined in TYPE.  */
+
+static void
+dbxout_type_methods (tree type)
+{
+  for (tree fndecl = TYPE_FIELDS (type); fndecl;)
+    {
+      int need_prefix = 1;
+
+      /* Group together all the methods for the same operation.
+	 These differ in the types of the arguments.  */
+      for (tree last = NULL_TREE;
+	   fndecl && (last == NULL_TREE || DECL_NAME (fndecl) == DECL_NAME (last));
+	   fndecl = DECL_CHAIN (fndecl))
+	/* Output the name of the field (after overloading), as
+	   well as the name of the field before overloading, along
+	   with its parameter list */
+	{
+	  /* Skip non-functions.  */
+	  if (TREE_CODE (fndecl) != FUNCTION_DECL)
+	    continue;
+
+	  /* Also ignore abstract methods; those are only interesting to
+	     the DWARF backends.  */
+	  if (DECL_IGNORED_P (fndecl) || DECL_ABSTRACT_P (fndecl))
+	    continue;
+
+	  CONTIN;
+
+	  last = fndecl;
+
+	  /* Redundantly output the plain name, since that's what gdb
+	     expects.  */
+	  if (need_prefix)
+	    {
+	      stabstr_I (DECL_NAME (fndecl));
+	      stabstr_S ("::");
+	      need_prefix = 0;
+	    }
+
+	  dbxout_type (TREE_TYPE (fndecl), 0);
+	  dbxout_type_method_1 (fndecl);
+	}
+      if (!need_prefix)
+	stabstr_C (';');
+    }
 }
 
 /* Emit a "range" type specification, which has the form:
@@ -2154,6 +2194,8 @@ dbxout_type (tree type, int full)
 
       /* Write out the field declarations.  */
       dbxout_type_fields (type);
+      if (use_gnu_debug_info_extensions)
+	dbxout_type_methods (type);
 
       stabstr_C (';');
 
