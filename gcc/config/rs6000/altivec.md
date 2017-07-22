@@ -36,10 +36,14 @@
    UNSPEC_VMULESB
    UNSPEC_VMULEUH
    UNSPEC_VMULESH
+   UNSPEC_VMULEUW
+   UNSPEC_VMULESW
    UNSPEC_VMULOUB
    UNSPEC_VMULOSB
    UNSPEC_VMULOUH
    UNSPEC_VMULOSH
+   UNSPEC_VMULOUW
+   UNSPEC_VMULOSW
    UNSPEC_VPKPX
    UNSPEC_VPACK_SIGN_SIGN_SAT
    UNSPEC_VPACK_SIGN_UNS_SAT
@@ -1538,6 +1542,41 @@
   "vmulosh %0,%1,%2"
   [(set_attr "type" "veccomplex")])
 
+(define_insn "altivec_vmuleuw"
+  [(set (match_operand:V2DI 0 "register_operand" "=v")
+       (unspec:V2DI [(match_operand:V4SI 1 "register_operand" "v")
+                     (match_operand:V4SI 2 "register_operand" "v")]
+                    UNSPEC_VMULEUW))]
+  "TARGET_P8_VECTOR"
+  "vmuleuw %0,%1,%2"
+  [(set_attr "type" "veccomplex")])
+
+(define_insn "altivec_vmulouw"
+  [(set (match_operand:V2DI 0 "register_operand" "=v")
+       (unspec:V2DI [(match_operand:V4SI 1 "register_operand" "v")
+                     (match_operand:V4SI 2 "register_operand" "v")]
+                    UNSPEC_VMULOUW))]
+  "TARGET_P8_VECTOR"
+  "vmulouw %0,%1,%2"
+  [(set_attr "type" "veccomplex")])
+
+(define_insn "altivec_vmulesw"
+  [(set (match_operand:V2DI 0 "register_operand" "=v")
+       (unspec:V2DI [(match_operand:V4SI 1 "register_operand" "v")
+                     (match_operand:V4SI 2 "register_operand" "v")]
+                    UNSPEC_VMULESW))]
+  "TARGET_P8_VECTOR"
+  "vmulesw %0,%1,%2"
+  [(set_attr "type" "veccomplex")])
+
+(define_insn "altivec_vmulosw"
+  [(set (match_operand:V2DI 0 "register_operand" "=v")
+       (unspec:V2DI [(match_operand:V4SI 1 "register_operand" "v")
+                     (match_operand:V4SI 2 "register_operand" "v")]
+                    UNSPEC_VMULOSW))]
+  "TARGET_P8_VECTOR"
+  "vmulosw %0,%1,%2"
+  [(set_attr "type" "veccomplex")])
 
 ;; Vector pack/unpack
 (define_insn "altivec_vpkpx"

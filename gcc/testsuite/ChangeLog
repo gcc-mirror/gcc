@@ -1,3 +1,9 @@
+2017-07-21  Carl Love  <cel@us.ibm.com>
+
+	* gcc.target/powerpc/builtins-2.c (vmulosh, vmulouh, vmulesh,
+	vmuleuh): Fix scan-assembler-times should check for word not half word
+	instructions.
+
 2017-07-21  Jim Wilson  <jim.wilson@linaro.org>
 
 	* lib/target-supports.exp (add_options_for_arm_v8_1a_neon): Delete
