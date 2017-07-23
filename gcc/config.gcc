@@ -798,14 +798,7 @@ case ${target} in
   case ${enable_threads} in
     "" | yes | posix) thread_file='posix' ;;
   esac
-
-  # NetBSD 2.0 and later provide __cxa_atexit(), which we use by
-  # default (unless overridden by --disable-__cxa_atexit).
-  case ${target} in
-    *-*-netbsd[2-9]* | *-*-netbsdelf[2-9]*)
-      default_use_cxa_atexit=yes
-      ;;
-  esac
+  default_use_cxa_atexit=yes
   ;;
 *-*-openbsd*)
   tmake_file="t-openbsd"
