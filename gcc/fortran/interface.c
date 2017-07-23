@@ -3294,7 +3294,7 @@ argpair;
    order:
     - p->a->expr == NULL
     - p->a->expr->expr_type != EXPR_VARIABLE
-    - growing p->a->expr->symbol.  */
+    - by gfc_symbol pointer value (larger first).  */
 
 static int
 pair_cmp (const void *p1, const void *p2)
@@ -3320,6 +3320,8 @@ pair_cmp (const void *p1, const void *p2)
     }
   if (a2->expr->expr_type != EXPR_VARIABLE)
     return 1;
+  if (a1->expr->symtree->n.sym > a2->expr->symtree->n.sym)
+    return -1;
   return a1->expr->symtree->n.sym < a2->expr->symtree->n.sym;
 }
 
