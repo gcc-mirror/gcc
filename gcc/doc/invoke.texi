@@ -15714,6 +15714,8 @@ incompatible.  Code compiled with one value cannot necessarily expect to
 work with code or libraries compiled with another value, if they exchange
 information using structures or unions.
 
+This option is deprecated.
+
 @item -mabort-on-noreturn
 @opindex mabort-on-noreturn
 Generate a call to the function @code{abort} at the end of a

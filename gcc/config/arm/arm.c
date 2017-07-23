@@ -3489,6 +3489,8 @@ arm_option_override (void)
     }
   else
     {
+      warning (0, "option %<-mstructure-size-boundary%> is deprecated");
+
       if (arm_structure_size_boundary != 8
 	  && arm_structure_size_boundary != 32
 	  && !(ARM_DOUBLEWORD_ALIGN && arm_structure_size_boundary == 64))

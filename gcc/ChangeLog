@@ -1,3 +1,10 @@
+2017-07-23  Michael Collison  <michael.collison@arm.com>
+
+	* config/arm/arm.c (arm_option_override): Deprecate
+	use of -mstructure-size-boundary.
+	* config/arm/arm.opt: Deprecate -mstructure-size-boundary.
+	* doc/invoke.texi: Deprecate -mstructure-size-boundary.
+
 2017-07-23  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	PR target/80695
