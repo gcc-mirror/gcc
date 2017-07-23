@@ -45,6 +45,8 @@
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+
 namespace tr1
 {
 /**
@@ -58,8 +60,6 @@ namespace tr1
  */
 namespace regex_constants
 {
-_GLIBCXX_BEGIN_NAMESPACE_VERSION
-
   /**
    * @name 5.1 Regular Expression Syntax Options
    */
@@ -397,10 +397,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   static const error_type error_stack(_S_error_stack);
 
   //@}
-_GLIBCXX_END_NAMESPACE_VERSION
 }
-
-_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // [7.8] Class regex_error
   /**
@@ -2722,9 +2719,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
   
   //@}
+}
 
 _GLIBCXX_END_NAMESPACE_VERSION
-}
 }
 
 #endif // _GLIBCXX_TR1_REGEX

@@ -41,10 +41,10 @@
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+
   namespace chrono
   {
-  _GLIBCXX_BEGIN_NAMESPACE_VERSION
-
     // XXX GLIBCXX_ABI Deprecated
     inline namespace _V2 {
 
@@ -97,9 +97,9 @@ namespace std _GLIBCXX_VISIBILITY(default)
     }
 
   } // end inline namespace _V2
-
-  _GLIBCXX_END_NAMESPACE_VERSION
   } // namespace chrono
+
+_GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 
 #endif // _GLIBCXX_USE_C99_STDINT_TR1

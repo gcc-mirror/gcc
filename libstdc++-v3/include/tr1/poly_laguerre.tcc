@@ -43,6 +43,8 @@
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+
 #if _GLIBCXX_USE_STD_SPEC_FUNCS
 # define _GLIBCXX_MATH_NS ::std
 #elif defined(_GLIBCXX_TR1_CMATH)
@@ -57,8 +59,6 @@ namespace tr1
   // Implementation-space details.
   namespace __detail
   {
-  _GLIBCXX_BEGIN_NAMESPACE_VERSION
-
     /**
      *   @brief This routine returns the associated Laguerre polynomial 
      *          of order @f$ n @f$, degree @f$ \alpha @f$ for large n.
@@ -317,13 +317,13 @@ namespace tr1
     inline _Tp
     __laguerre(unsigned int __n, _Tp __x)
     { return __poly_laguerre<unsigned int, _Tp>(__n, 0, __x); }
-
-  _GLIBCXX_END_NAMESPACE_VERSION
   } // namespace __detail
 #undef _GLIBCXX_MATH_NS
 #if ! _GLIBCXX_USE_STD_SPEC_FUNCS && defined(_GLIBCXX_TR1_CMATH)
 } // namespace tr1
 #endif
+
+_GLIBCXX_END_NAMESPACE_VERSION
 }
 
 #endif // _GLIBCXX_TR1_POLY_LAGUERRE_TCC

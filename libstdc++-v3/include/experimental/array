@@ -40,12 +40,12 @@
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+
 namespace experimental
 {
 inline namespace fundamentals_v2
 {
-_GLIBCXX_BEGIN_NAMESPACE_VERSION
-
 #define __cpp_lib_experimental_make_array 201505
   /**
    * @defgroup make_array Array creation functions
@@ -104,10 +104,10 @@ template <typename _Tp, size_t _Nm>
   }
 
   // @} group make_array
-  _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace fundamentals_v2
 } // namespace experimental
 
+_GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 
 #endif // C++14

@@ -55,13 +55,14 @@
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+
 namespace experimental
 {
 namespace filesystem
 {
 inline namespace v1
 {
-_GLIBCXX_BEGIN_NAMESPACE_VERSION
 _GLIBCXX_BEGIN_NAMESPACE_CXX11
 
 #if __cplusplus == 201402L
@@ -1080,10 +1081,11 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 
   // @} group filesystem
 _GLIBCXX_END_NAMESPACE_CXX11
-_GLIBCXX_END_NAMESPACE_VERSION
 } // namespace v1
 } // namespace filesystem
 } // namespace experimental
+
+_GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 
 #endif // C++11

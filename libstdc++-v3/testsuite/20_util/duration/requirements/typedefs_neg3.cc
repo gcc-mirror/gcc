@@ -32,4 +32,4 @@ void test01()
   test_type d;  // { dg-error "required from here" }
 }
 
-// { dg-error "period must be positive" "" { target *-*-* } 311 }
+// { dg-error "period must be positive" "" { target *-*-* } 303 }

@@ -49,12 +49,12 @@
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+
 namespace experimental
 {
 inline namespace fundamentals_v1
 {
-_GLIBCXX_BEGIN_NAMESPACE_VERSION
-
   // See C++14 §20.9.9, Function object binders
 
   /// Variable template for std::is_bind_expression
@@ -368,14 +368,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
       return __last;
     }
-
-_GLIBCXX_END_NAMESPACE_VERSION
 } // namespace fundamentals_v1
 
 inline namespace fundamentals_v2
 {
-_GLIBCXX_BEGIN_NAMESPACE_VERSION
-
 #define __cpp_lib_experimental_not_fn 201406
 
   /// [func.not_fn] Function template not_fn
@@ -386,10 +382,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       return std::_Not_fn<std::decay_t<_Fn>>{std::forward<_Fn>(__fn), 0};
     }
-
-_GLIBCXX_END_NAMESPACE_VERSION
 } // namespace fundamentals_v2
 } // namespace experimental
+
+_GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 
 #endif // C++14

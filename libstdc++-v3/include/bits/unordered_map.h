@@ -32,6 +32,7 @@
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
   /// Base types for unordered_map.
@@ -1911,7 +1912,6 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 _GLIBCXX_END_NAMESPACE_CONTAINER
 
 #if __cplusplus > 201402L
-_GLIBCXX_BEGIN_NAMESPACE_VERSION
   // Allow std::unordered_map access to internals of compatible maps.
   template<typename _Key, typename _Val, typename _Hash1, typename _Eq1,
 	   typename _Alloc, typename _Hash2, typename _Eq2>
@@ -1959,9 +1959,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _S_get_table(unordered_multimap<_Key, _Val, _Hash2, _Eq2, _Alloc>& __map)
       { return __map._M_h; }
     };
-_GLIBCXX_END_NAMESPACE_VERSION
 #endif // C++17
 
+_GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 
 #endif /* _UNORDERED_MAP_H */

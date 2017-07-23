@@ -33,10 +33,10 @@
 #include <experimental/bits/lfts_config.h>
 
 namespace std {
-namespace experimental {
-inline namespace fundamentals_v2 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
+namespace experimental {
+inline namespace fundamentals_v2 {
 #define __cpp_lib_experimental_randint 201511
 
   inline std::default_random_engine&
@@ -71,10 +71,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   {
     _S_randint_engine().seed(__value);
   }
-
-_GLIBCXX_END_NAMESPACE_VERSION
 } // namespace fundamentals_v2
 } // namespace experimental
+
+_GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 
 #endif

@@ -24,7 +24,6 @@
 
 namespace __detail
 {
-_GLIBCXX_BEGIN_NAMESPACE_VERSION
   // The sentinel value is kept only for abi backward compatibility.
   extern const unsigned long __prime_list[] = // 256 + 1 or 256 + 48 + 1
   {
@@ -90,5 +89,4 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     18446744073709551557ul, 18446744073709551557ul
 #endif
   };
-_GLIBCXX_END_NAMESPACE_VERSION
 } // namespace __detail

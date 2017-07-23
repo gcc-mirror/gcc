@@ -29,10 +29,10 @@
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
-namespace tr1
-{
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
+namespace tr1
+{
   // NB: When we get typedef templates these class definitions
   // will be unnecessary.
   template<class _Value,
@@ -261,7 +261,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     swap(unordered_multiset<_Value, _Hash, _Pred, _Alloc>& __x,
 	 unordered_multiset<_Value, _Hash, _Pred, _Alloc>& __y)
     { __x.swap(__y); }
+}
 
 _GLIBCXX_END_NAMESPACE_VERSION
-}
 }

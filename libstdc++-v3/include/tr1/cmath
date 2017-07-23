@@ -145,10 +145,10 @@
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
-namespace tr1
-{
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
+namespace tr1
+{
 #if _GLIBCXX_USE_C99_MATH_TR1
 
   // Using declarations to bring names from libc's <math.h> into std::tr1.
@@ -1059,16 +1059,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // @}
 
-#endif
-_GLIBCXX_END_NAMESPACE_VERSION
-}
-}
-
-namespace std _GLIBCXX_VISIBILITY(default)
-{
-namespace tr1
-{
-_GLIBCXX_BEGIN_NAMESPACE_VERSION
+#endif /* _GLIBCXX_USE_C99_MATH_TR1 */
 
   // DR 550. What should the return type of pow(float,int) be?
   // NB: C++11 and TR1 != C++03.
@@ -1135,19 +1126,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #endif // C++11
 
-
-
-_GLIBCXX_END_NAMESPACE_VERSION
-}
-}
-
 #if _GLIBCXX_USE_STD_SPEC_FUNCS
-
-namespace std _GLIBCXX_VISIBILITY(default)
-{
-namespace tr1
-{
-_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /**
    * @defgroup tr1_math_spec_func Mathematical Special Functions
@@ -1250,11 +1229,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   using std::sph_neumann;
 
   /* @} */ // tr1_math_spec_func
-_GLIBCXX_END_NAMESPACE_VERSION
-}
-}
 
 #else // ! _GLIBCXX_USE_STD_SPEC_FUNCS
+
+} // namespace tr1
+
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace std
 
 #include <bits/stl_algobase.h>
 #include <limits>
@@ -1274,10 +1255,10 @@ _GLIBCXX_END_NAMESPACE_VERSION
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
-namespace tr1
-{
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
+namespace tr1
+{
   /**
    * @defgroup tr1_math_spec_func Mathematical Special Functions
    * @ingroup numerics
@@ -1680,9 +1661,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
   /* @} */ // tr1_math_spec_func
-_GLIBCXX_END_NAMESPACE_VERSION
-}
-}
 #endif // _GLIBCXX_USE_STD_SPEC_FUNCS
+
+} // namespace tr1
+
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace std
 
 #endif // _GLIBCXX_TR1_CMATH

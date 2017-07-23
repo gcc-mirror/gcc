@@ -41,6 +41,8 @@
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+
 #if _GLIBCXX_USE_STD_SPEC_FUNCS
 #elif defined(_GLIBCXX_TR1_CMATH)
 namespace tr1
@@ -53,8 +55,6 @@ namespace tr1
   // Implementation-space details.
   namespace __detail
   {
-  _GLIBCXX_BEGIN_NAMESPACE_VERSION
-
     /**
      *   @brief This routine returns the Hermite polynomial
      *          of order n: \f$ H_n(x) \f$ by recursion on n.
@@ -120,12 +120,12 @@ namespace tr1
       else
         return __poly_hermite_recursion(__n, __x);
     }
-
-  _GLIBCXX_END_NAMESPACE_VERSION
   } // namespace __detail
 #if ! _GLIBCXX_USE_STD_SPEC_FUNCS && defined(_GLIBCXX_TR1_CMATH)
 } // namespace tr1
 #endif
+
+_GLIBCXX_END_NAMESPACE_VERSION
 }
 
 #endif // _GLIBCXX_TR1_POLY_HERMITE_TCC

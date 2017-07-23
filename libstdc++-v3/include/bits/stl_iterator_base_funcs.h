@@ -66,13 +66,13 @@
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+
 _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
   // Forward declaration for the overloads of __distance.
   template <typename> struct _List_iterator;
   template <typename> struct _List_const_iterator;
 _GLIBCXX_END_NAMESPACE_CONTAINER
-
-_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _InputIterator>
     inline _GLIBCXX14_CONSTEXPR
