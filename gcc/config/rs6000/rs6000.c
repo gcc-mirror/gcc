@@ -5757,7 +5757,7 @@ rs6000_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost,
 	    if (TARGET_P9_VECTOR)
 	      return TYPE_VECTOR_SUBPARTS (vectype) - 1 + 2;
 	    else
-	      return TYPE_VECTOR_SUBPARTS (vectype) - 1 + 11;
+	      return TYPE_VECTOR_SUBPARTS (vectype) - 1 + 5;
 	  }
 	else
 	  /* V2DFmode doesn't need a direct move.  */
