@@ -1,3 +1,7 @@
+2017-07-23  Alexander Monakov  <amonakov@ispras.ru>
+
+	* interface.c (pair_cmp): Fix gfc_symbol comparison.  Adjust comment.
+
 2017-07-18  Nathan Sidwell  <nathan@acm.org>
 
 	* trans.c (gfc_build_array_ref): Use TYPE_MAX_VALUE.
