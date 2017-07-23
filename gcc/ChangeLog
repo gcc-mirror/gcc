@@ -1,3 +1,9 @@
+2017-07-23  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	PR target/80695
+	* config/rs6000/rs6000.c (rs6000_builtin_vectorization_cost):
+	Reduce cost estimate for direct moves.
+
 2017-07-23  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/80569
