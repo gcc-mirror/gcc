@@ -1,3 +1,17 @@
+2017-07-23  Michael Collison  <michael.collison@arm.com>
+
+	Add optimized implementation of mersenne twister for aarch64
+	* config/cpu/aarch64/opt/ext/opt_random.h: New file.
+	(__arch64_recursion): New function.
+	(__aarch64_lsr_128): New function.
+	(__aarch64_lsl_128): New function.
+	(operator==): New function.
+	(simd_fast_mersenne_twister_engine): Implement
+	method _M_gen_rand.
+	* config/cpu/aarch64/opt/bits/opt_random.h: New file.
+	* include/ext/random: (simd_fast_mersenne_twister_engine):
+	add _M_state private array.
+
 2017-07-23  François Dumont  <fdumont@gcc.gnu.org>
 
 	PR libstdc++/81064
