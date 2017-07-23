@@ -192,7 +192,7 @@ Target RejectNegative Alias(mfloat-abi=, soft) Undocumented
 
 mstructure-size-boundary=
 Target RejectNegative Joined UInteger Var(arm_structure_size_boundary) Init(DEFAULT_STRUCTURE_SIZE_BOUNDARY)
-Specify the minimum bit alignment of structures.
+Specify the minimum bit alignment of structures. (Deprecated).
 
 mthumb
 Target Report RejectNegative Negative(marm) Mask(THUMB) Save
