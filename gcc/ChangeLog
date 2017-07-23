@@ -1,3 +1,9 @@
+2017-07-23  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/80569
+	* config/i386/i386.c (ix86_option_override_internal): Disable
+	BMI, BMI2 and TBM instructions for -m16.
+
 2017-07-21  Carl Love  <cel@us.ibm.com>
 
 	* config/rs6000/rs6000-c.c (altivec_overloaded_builtins): Add
@@ -384,10 +390,10 @@
 
 2017-07-18  Robin Dapp  <rdapp@linux.vnet.ibm.com>
 
-        * tree-vect-data-refs.c (vect_enhance_data_refs_alignment): Remove
+	* tree-vect-data-refs.c (vect_enhance_data_refs_alignment): Remove
 	body_cost_vec from _vect_peel_extended_info.
 	(vect_peeling_hash_get_lowest_cost): Do not set body_cost_vec.
-        (vect_peeling_hash_choose_best_peeling): Remove body_cost_vec and
+	(vect_peeling_hash_choose_best_peeling): Remove body_cost_vec and
 	npeel.
 
 2017-07-18  Bin Cheng  <bin.cheng@arm.com>
@@ -431,7 +437,7 @@
 
 2017-07-17  Yury Gribov  <tetra2005@gmail.com>
 
-        * tree-vrp.c (compare_assert_loc): Fix comparison function
+	* tree-vrp.c (compare_assert_loc): Fix comparison function
 	to return predictable results.
 
 2017-07-17  Claudiu Zissulescu  <claziss@synopsys.com>
@@ -3422,11 +3428,11 @@
 2017-06-27  Jerome Lambourg  <lambourg@adacore.com>
 
 	* config/vxworks.h (VXWORKS_LIBS_RTP): Alternative definition for
-  	64bit configurations.
-  	(PTR_DIFF_TYPE): Alternative definition for TARGET_LP64.
-  	(SIZE_TYPE): Likewise.
-  	* config/vxworks.c (vxworks_emutls_var_fields): Use
-  	long_unsigned_type_node instead of unsigned_type_node as the offset
+	64bit configurations.
+	(PTR_DIFF_TYPE): Alternative definition for TARGET_LP64.
+	(SIZE_TYPE): Likewise.
+	* config/vxworks.c (vxworks_emutls_var_fields): Use
+	long_unsigned_type_node instead of unsigned_type_node as the offset
 	field type, which is "pointer" mode in emutls.c.
 
 2017-06-27  Jakub Jelinek  <jakub@redhat.com>
