@@ -35,10 +35,10 @@
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
-namespace tr1
-{
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
+namespace tr1
+{
   /**
    * @addtogroup metaprogramming
    * @{
@@ -679,9 +679,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #undef _DEFINE_SPEC
 
   /// @} group metaprogramming
+}
 
 _GLIBCXX_END_NAMESPACE_VERSION
-}
 }
 
 #endif // _GLIBCXX_TR1_TYPE_TRAITS

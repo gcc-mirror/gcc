@@ -35,10 +35,10 @@
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
-namespace tr1
-{
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
+namespace tr1
+{
   /**
    * @addtogroup complex_numbers
    * @{
@@ -412,9 +412,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { return std::pow(__x, __y); }
 
 // @} group complex_numbers
+}
 
 _GLIBCXX_END_NAMESPACE_VERSION
-}
 }
 
 #endif // _GLIBCXX_TR1_COMPLEX

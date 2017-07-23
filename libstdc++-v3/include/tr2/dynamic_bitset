@@ -42,10 +42,10 @@
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
-namespace tr2
-{
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
+namespace tr2
+{
   /**
    *  @defgroup dynamic_bitset Dynamic Bitset.
    *  @ingroup extensions
@@ -1220,9 +1220,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /**
    *  @}
    */
+} // tr2
 
 _GLIBCXX_END_NAMESPACE_VERSION
-} // tr2
 } // std
 
 #include <tr2/dynamic_bitset.tcc>

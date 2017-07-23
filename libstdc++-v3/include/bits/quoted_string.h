@@ -39,9 +39,9 @@
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
-  namespace __detail {
-  _GLIBCXX_BEGIN_NAMESPACE_VERSION
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
+  namespace __detail {
     /**
      * @brief Struct for delimited strings.
      */
@@ -155,9 +155,9 @@ namespace std _GLIBCXX_VISIBILITY(default)
 
 	return __is;
       }
-
-  _GLIBCXX_END_NAMESPACE_VERSION
   } // namespace __detail
+
+_GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 
 #endif // C++11

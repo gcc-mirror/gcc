@@ -37,10 +37,10 @@
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
-namespace tr1
-{
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
+namespace tr1
+{
   template<class _Tp>
     class tuple_size;
 
@@ -100,9 +100,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline const typename tuple_element<_Int, std::pair<_Tp1, _Tp2> >::type&
     get(const std::pair<_Tp1, _Tp2>& __in)
     { return __pair_get<_Int>::__const_get(__in); }
+}
 
 _GLIBCXX_END_NAMESPACE_VERSION
-}
 }
 
 #endif // _GLIBCXX_TR1_UTILITY

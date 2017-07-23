@@ -38,10 +38,10 @@
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
-namespace tr1
-{
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
+namespace tr1
+{
   // Adds a const reference to a non-reference type.
   template<typename _Tp>
     struct __add_c_ref
@@ -418,9 +418,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   {
     _Swallow_assign ignore;
   }; // anonymous namespace
+}
 
 _GLIBCXX_END_NAMESPACE_VERSION
-}
 }
 
 #endif // _GLIBCXX_TR1_TUPLE

@@ -37,11 +37,11 @@
 #include <experimental/bits/lfts_config.h>
 
 namespace std {
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+
 namespace experimental {
 inline namespace fundamentals_v2 {
 namespace pmr {
-_GLIBCXX_BEGIN_NAMESPACE_VERSION
-
 #define __cpp_lib_experimental_memory_resources 201402L
 
   class memory_resource;
@@ -379,11 +379,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __r = new_delete_resource();
     return __get_default_resource().exchange(__r);
   }
-
-_GLIBCXX_END_NAMESPACE_VERSION
 } // namespace pmr
 } // namespace fundamentals_v2
 } // namespace experimental
+
+_GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 
 #endif

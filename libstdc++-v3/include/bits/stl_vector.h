@@ -73,6 +73,7 @@ __sanitizer_annotate_contiguous_container(const void*, const void*,
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
   /// See bits/stl_deque.h's _Deque_base for an explanation.
@@ -312,7 +313,6 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	this->_M_impl._M_end_of_storage = this->_M_impl._M_start + __n;
       }
     };
-
 
   /**
    *  @brief A standard container which offers fixed time access to
@@ -1789,6 +1789,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     { __x.swap(__y); }
 
 _GLIBCXX_END_NAMESPACE_CONTAINER
+_GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 
 #endif /* _STL_VECTOR_H */

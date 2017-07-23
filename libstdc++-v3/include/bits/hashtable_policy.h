@@ -43,12 +43,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	   typename _RehashPolicy, typename _Traits>
     class _Hashtable;
 
-_GLIBCXX_END_NAMESPACE_VERSION
-
 namespace __detail
 {
-_GLIBCXX_BEGIN_NAMESPACE_VERSION
-
   /**
    *  @defgroup hashtable-detail Base and Implementation Classes
    *  @ingroup unordered_associative_containers
@@ -2122,8 +2118,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
  //@} hashtable-detail
-_GLIBCXX_END_NAMESPACE_VERSION
 } // namespace __detail
+_GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 
 #endif // _HASHTABLE_POLICY_H

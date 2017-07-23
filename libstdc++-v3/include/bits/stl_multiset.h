@@ -63,6 +63,7 @@
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
   template<typename _Key, typename _Compare, typename _Alloc>
@@ -953,7 +954,6 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 _GLIBCXX_END_NAMESPACE_CONTAINER
 
 #if __cplusplus > 201402L
-_GLIBCXX_BEGIN_NAMESPACE_VERSION
   // Allow std::multiset access to internals of compatible sets.
   template<typename _Val, typename _Cmp1, typename _Alloc, typename _Cmp2>
     struct
@@ -971,9 +971,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _S_get_tree(_GLIBCXX_STD_C::multiset<_Val, _Cmp2, _Alloc>& __set)
       { return __set._M_t; }
     };
-_GLIBCXX_END_NAMESPACE_VERSION
 #endif // C++17
 
+_GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 
 #endif /* _STL_MULTISET_H */

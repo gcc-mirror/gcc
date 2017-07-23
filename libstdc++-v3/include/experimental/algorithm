@@ -40,12 +40,12 @@
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+
 namespace experimental
 {
 inline namespace fundamentals_v1
 {
-_GLIBCXX_BEGIN_NAMESPACE_VERSION
-
   template<typename _ForwardIterator, typename _Searcher>
     inline _ForwardIterator
     search(_ForwardIterator __first, _ForwardIterator __last,
@@ -81,10 +81,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 			   __d,
 			   std::forward<_UniformRandomNumberGenerator>(__g));
     }
-
-_GLIBCXX_END_NAMESPACE_VERSION
 } // namespace fundamentals_v1
 } // namespace experimental
+
+_GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 
 #endif // C++14

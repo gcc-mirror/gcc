@@ -41,12 +41,12 @@
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+
 namespace experimental
 {
 inline namespace fundamentals_v2
 {
-_GLIBCXX_BEGIN_NAMESPACE_VERSION
-
   template<typename _Key, typename _Tp, typename _Hash, typename _CPred,
 	   typename _Alloc, typename _Predicate>
     inline void
@@ -61,28 +61,24 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	     _Predicate __pred)
     { __detail::__erase_nodes_if(__cont, __pred); }
 
-_GLIBCXX_END_NAMESPACE_VERSION
-
-namespace pmr {
-_GLIBCXX_BEGIN_NAMESPACE_VERSION
-
-  template<typename _Key, typename _Tp, typename _Hash = hash<_Key>,
-	   typename _Pred = equal_to<_Key>>
-    using unordered_map
+  namespace pmr {
+    template<typename _Key, typename _Tp, typename _Hash = hash<_Key>,
+	     typename _Pred = equal_to<_Key>>
+      using unordered_map
       = std::unordered_map<_Key, _Tp, _Hash, _Pred,
 		 polymorphic_allocator<pair<const _Key, _Tp>>>;
 
-  template<typename _Key, typename _Tp, typename _Hash = hash<_Key>,
-	   typename _Pred = equal_to<_Key>>
-    using unordered_multimap
+    template<typename _Key, typename _Tp, typename _Hash = hash<_Key>,
+	     typename _Pred = equal_to<_Key>>
+      using unordered_multimap
       = std::unordered_multimap<_Key, _Tp, _Hash, _Pred,
 		      polymorphic_allocator<pair<const _Key, _Tp>>>;
-
-_GLIBCXX_END_NAMESPACE_VERSION
-} // namespace pmr
+  } // namespace pmr
 
 } // namespace fundamentals_v2
 } // namespace experimental
+
+_GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 
 #endif // C++14

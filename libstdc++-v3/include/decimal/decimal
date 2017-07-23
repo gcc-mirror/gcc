@@ -42,6 +42,8 @@ that is currently not available.
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+
   /**
     * @defgroup decimal Decimal Floating-Point Arithmetic
     * @ingroup numerics
@@ -55,8 +57,6 @@ namespace std _GLIBCXX_VISIBILITY(default)
     */
 namespace decimal
 {
-  _GLIBCXX_BEGIN_NAMESPACE_VERSION
-
   class decimal32;
   class decimal64;
   class decimal128;
@@ -483,10 +483,10 @@ namespace decimal
   };
 
 #define _GLIBCXX_USE_DECIMAL_ 1
-
-  _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace decimal
   // @} group decimal
+
+_GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 
 #include <decimal/decimal.h>

@@ -30,10 +30,10 @@
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
-namespace __detail
-{
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
+namespace __detail
+{
   // Result of merging regex_match and regex_search.
   //
   // __policy now can be _S_auto (auto dispatch) and _S_alternate (use
@@ -118,11 +118,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
       return __ret;
     }
-
-_GLIBCXX_END_NAMESPACE_VERSION
 }
-
-_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _Ch_type>
   template<typename _Fwd_iter>
@@ -663,4 +659,3 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace
-

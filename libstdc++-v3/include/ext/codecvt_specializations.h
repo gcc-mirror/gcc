@@ -41,8 +41,8 @@
 
 namespace __gnu_cxx _GLIBCXX_VISIBILITY(default)
 {
-_GLIBCXX_BEGIN_NAMESPACE_CXX11
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
+_GLIBCXX_BEGIN_NAMESPACE_CXX11
 
   /// Extension to use iconv for dealing with character encodings.
   // This includes conversions and comparisons between various character
@@ -215,8 +215,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef typename std::fpos<state_type>		pos_type;
     };
 
-_GLIBCXX_END_NAMESPACE_VERSION
 _GLIBCXX_END_NAMESPACE_CXX11
+_GLIBCXX_END_NAMESPACE_VERSION
 } // namespace
 
 

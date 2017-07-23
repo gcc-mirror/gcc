@@ -30,12 +30,12 @@
 
 namespace std _GLIBCXX_VISIBILITY(default)
 { 
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+
 namespace tr1
 {
 namespace __detail
 {
-_GLIBCXX_BEGIN_NAMESPACE_VERSION
-
   // Helper function: return distance(first, last) for forward
   // iterators, or 0 for input iterators.
   template<class _Iterator>
@@ -772,7 +772,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _H1          _M_h1;
       _H2          _M_h2;
     };
-_GLIBCXX_END_NAMESPACE_VERSION
 } // namespace __detail
 }
+
+_GLIBCXX_END_NAMESPACE_VERSION
 }

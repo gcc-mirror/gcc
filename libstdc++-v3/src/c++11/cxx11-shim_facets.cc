@@ -45,6 +45,8 @@
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+
   // Base class of facet shims, holds a reference to the underlying facet
   // that the shim forwards to.
   class locale::facet::__shim
@@ -67,8 +69,6 @@ namespace std _GLIBCXX_VISIBILITY(default)
 
 namespace __facet_shims
 {
-_GLIBCXX_BEGIN_NAMESPACE_VERSION
-
   namespace // unnamed
   {
     template<typename C>
@@ -777,10 +777,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		bool, ios_base&, wchar_t, long double, const __any_string*);
 #endif
 
-_GLIBCXX_END_NAMESPACE_VERSION
 } // namespace __facet_shims
 
-_GLIBCXX_BEGIN_NAMESPACE_VERSION
   // Create a new shim facet of type WHICH that forwards calls to F.
   // F is the replacement facet provided by the user, WHICH is the ID of
   // F's "other ABI twin" which we are replacing with a shim.

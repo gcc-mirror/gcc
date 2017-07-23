@@ -45,6 +45,8 @@
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+
   /**
    * @defgroup chrono Time
    * @ingroup utilities
@@ -58,18 +60,12 @@ namespace std _GLIBCXX_VISIBILITY(default)
    */
   namespace chrono
   {
-  _GLIBCXX_BEGIN_NAMESPACE_VERSION
-
     template<typename _Rep, typename _Period = ratio<1>>
       struct duration;
 
     template<typename _Clock, typename _Dur = typename _Clock::duration>
       struct time_point;
-
-  _GLIBCXX_END_NAMESPACE_VERSION
   }
-
-_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // 20.11.4.3 specialization of common_type (for duration, sfinae-friendly)
 
@@ -117,12 +113,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
              common_type<_Duration1, _Duration2>>::type, _Clock>::type
     { };
 
-_GLIBCXX_END_NAMESPACE_VERSION
-
   namespace chrono
   {
-  _GLIBCXX_BEGIN_NAMESPACE_VERSION
-
     // Primary template for duration_cast impl.
     template<typename _ToDur, typename _CF, typename _CR,
 	     bool _NumIsOne = false, bool _DenIsOne = false>
@@ -871,8 +863,6 @@ _GLIBCXX_END_NAMESPACE_VERSION
     using high_resolution_clock = system_clock;
 
     } // end inline namespace _V2
-
-  _GLIBCXX_END_NAMESPACE_VERSION
   } // namespace chrono
 
 #if __cplusplus > 201103L
@@ -883,8 +873,6 @@ _GLIBCXX_END_NAMESPACE_VERSION
   {
   inline namespace chrono_literals
   {
-  _GLIBCXX_BEGIN_NAMESPACE_VERSION
-
     template<typename _Rep, unsigned long long _Val>
       struct _Checked_integral_constant
       : integral_constant<_Rep, static_cast<_Rep>(_Val)>
@@ -959,22 +947,19 @@ _GLIBCXX_END_NAMESPACE_VERSION
       operator""ns()
       { return __check_overflow<chrono::nanoseconds, _Digits...>(); }
 
-  _GLIBCXX_END_NAMESPACE_VERSION
   } // inline namespace chrono_literals
   } // inline namespace literals
 
   namespace chrono
   {
-  _GLIBCXX_BEGIN_NAMESPACE_VERSION
-
-  using namespace literals::chrono_literals;
-
-  _GLIBCXX_END_NAMESPACE_VERSION
+    using namespace literals::chrono_literals;
   } // namespace chrono
 
 #endif // __cplusplus > 201103L
 
   // @} group chrono
+
+_GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 
 #endif //_GLIBCXX_USE_C99_STDINT_TR1

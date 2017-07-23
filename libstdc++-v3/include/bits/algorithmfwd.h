@@ -615,8 +615,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     _FIter
     upper_bound(_FIter, _FIter, const _Tp&, _Compare);
 
-_GLIBCXX_END_NAMESPACE_VERSION
-
 _GLIBCXX_BEGIN_NAMESPACE_ALGO
 
   template<typename _FIter>
@@ -845,6 +843,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
     unique_copy(_IIter, _IIter, _OIter, _BinaryPredicate);
 
 _GLIBCXX_END_NAMESPACE_ALGO
+_GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 
 #ifdef _GLIBCXX_PARALLEL

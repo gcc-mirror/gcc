@@ -127,18 +127,7 @@ namespace typelist
   template<typename T1, typename T2, typename T3,
 	   typename T4, typename T5, typename T6>
     struct create6;
-} // namespace typelist
 
-_GLIBCXX_END_NAMESPACE_VERSION
-} // namespace
-
-
-namespace __gnu_cxx _GLIBCXX_VISIBILITY(default)
-{
-_GLIBCXX_BEGIN_NAMESPACE_VERSION
-
-namespace typelist
-{
 namespace detail
 {
   template<typename Fn, typename Typelist_Chain>
@@ -366,10 +355,6 @@ namespace detail
       typedef typename append_type::type::root 			type;
     };
 } // namespace detail
-} // namespace typelist
-
-_GLIBCXX_END_NAMESPACE_VERSION
-} // namespace
 
 #define _GLIBCXX_TYPELIST_CHAIN1(X0) __gnu_cxx::typelist::chain<X0, __gnu_cxx::typelist::null_type>
 #define _GLIBCXX_TYPELIST_CHAIN2(X0, X1) __gnu_cxx::typelist::chain<X0, _GLIBCXX_TYPELIST_CHAIN1(X1) >
@@ -392,12 +377,6 @@ _GLIBCXX_END_NAMESPACE_VERSION
 #define _GLIBCXX_TYPELIST_CHAIN19(X0, X1, X2, X3, X4, X5, X6, X7, X8, X9, X10, X11, X12, X13, X14, X15, X16, X17, X18) __gnu_cxx::typelist::chain<X0, _GLIBCXX_TYPELIST_CHAIN18(X1, X2, X3, X4, X5, X6, X7, X8, X9, X10, X11, X12, X13, X14, X15, X16, X17, X18) >
 #define _GLIBCXX_TYPELIST_CHAIN20(X0, X1, X2, X3, X4, X5, X6, X7, X8, X9, X10, X11, X12, X13, X14, X15, X16, X17, X18, X19) __gnu_cxx::typelist::chain<X0, _GLIBCXX_TYPELIST_CHAIN19(X1, X2, X3, X4, X5, X6, X7, X8, X9, X10, X11, X12, X13, X14, X15, X16, X17, X18, X19) >
 
-namespace __gnu_cxx _GLIBCXX_VISIBILITY(default)
-{
-_GLIBCXX_BEGIN_NAMESPACE_VERSION
-
-namespace typelist
-{
   template<typename Fn, typename Typelist>
     void
     apply(Fn& fn, Typelist)

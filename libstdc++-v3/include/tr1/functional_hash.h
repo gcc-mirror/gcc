@@ -34,10 +34,10 @@
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
-namespace tr1
-{
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
+namespace tr1
+{
   /// Class template hash.
   // Declaration of default hash functor std::tr1::hash.  The types for
   // which std::tr1::hash<T> is well-defined is in clause 6.3.3. of the PDTR.
@@ -192,9 +192,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     _GLIBCXX_PURE size_t
     hash<const wstring&>::operator()(const wstring&) const;
 #endif
+}
 
 _GLIBCXX_END_NAMESPACE_VERSION
-}
 }
 
 #endif // _GLIBCXX_TR1_FUNCTIONAL_HASH_H
