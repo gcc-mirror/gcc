@@ -1,3 +1,8 @@
+2017-07-23  David Edelsohn  <dje.gcc@gmail.com>
+
+	* gcc.dg/pr56727-2.c: Limit to powerpc-linux.
+	* gcc.dg/debug/dwarf2/stacked-qualified-types-3.c: Remove AIX XFAIL.
+
 2017-07-23  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/80569
