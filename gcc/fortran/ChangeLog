@@ -1,4 +1,8 @@
 2017-07-24  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* dump-parse-tree.c (show_symbol):  Show binding label if present.
+
+2017-07-24  Thomas Koenig  <tkoenig@gcc.gnu.org>
 	    Mikael Morin <mikael@gcc.gnu.org>
 
 	PR fortran/66102
