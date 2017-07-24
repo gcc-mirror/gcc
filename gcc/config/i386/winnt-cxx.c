@@ -114,14 +114,11 @@ i386_pe_adjust_class_at_definition (tree t)
 	  decl_attributes (&ti_decl, na, 0);
 	}
 
-      /* Check static VAR_DECL's.  */
+      /* Check FUNCTION_DECL's and static VAR_DECL's.  */
       for (member = TYPE_FIELDS (t); member; member = DECL_CHAIN (member))
 	if (TREE_CODE (member) == VAR_DECL)     
 	  maybe_add_dllexport (member);
-    
-      /* Check FUNCTION_DECL's.  */
-      for (member = TYPE_METHODS (t); member;  member = DECL_CHAIN (member))
-	if (TREE_CODE (member) == FUNCTION_DECL)
+	else if (TREE_CODE (member) == FUNCTION_DECL)
 	  {
 	    tree thunk;
 	    maybe_add_dllexport (member);
@@ -132,7 +129,8 @@ i386_pe_adjust_class_at_definition (tree t)
 	      maybe_add_dllexport (thunk);
 	}
       /* Check vtables  */
-      for (member = CLASSTYPE_VTABLES (t); member;  member = DECL_CHAIN (member))
+      for (member = CLASSTYPE_VTABLES (t);
+	   member; member = DECL_CHAIN (member))
 	if (TREE_CODE (member) == VAR_DECL) 
 	  maybe_add_dllexport (member);
     }
