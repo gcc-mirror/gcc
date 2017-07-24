@@ -1,3 +1,9 @@
+2017-07-24  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	PR target/79041
+	* config/aarch64/aarch64.c (aarch64_classify_symbol):
+	Avoid SYMBOL_SMALL_ABSOLUTE for literals with pc-relative literals.
+
 2017-07-24  Carl Love  <cel@us.ibm.com>
 
 	* config/rs6000/rs6000-c.c: Add support for built-in functions
