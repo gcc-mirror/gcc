@@ -582,6 +582,9 @@ buf_read (unix_stream *s, void *buf, ssize_t nbyte)
 static ssize_t
 buf_write (unix_stream *s, const void *buf, ssize_t nbyte)
 {
+  if (nbyte == 0)
+    return 0;
+
   if (s->ndirty == 0)
     s->buffer_offset = s->logical_offset;
 
