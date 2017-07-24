@@ -1045,9 +1045,6 @@ See RS/6000 and PowerPC Options.
 -mquad-memory  -mno-quad-memory @gol
 -mquad-memory-atomic  -mno-quad-memory-atomic @gol
 -mcompat-align-parm  -mno-compat-align-parm @gol
--mupper-regs-df  -mno-upper-regs-df  -mupper-regs-sf  -mno-upper-regs-sf @gol
--mupper-regs-di  -mno-upper-regs-di @gol
--mupper-regs  -mno-upper-regs @gol
 -mfloat128  -mno-float128  -mfloat128-hardware  -mno-float128-hardware @gol
 -mgnu-attribute  -mno-gnu-attribute @gol
 -mstack-protector-guard=@var{guard} -mstack-protector-guard-reg=@var{reg} @gol
@@ -21903,50 +21900,6 @@ instructions.  The @option{-mquad-memory} option requires use of
 Generate code that uses (does not use) the atomic quad word memory
 instructions.  The @option{-mquad-memory-atomic} option requires use of
 64-bit mode.
-
-@item -mupper-regs-di
-@itemx -mno-upper-regs-di
-@opindex mupper-regs-di
-@opindex mno-upper-regs-di
-Generate code that uses (does not use) the scalar instructions that
-target all 64 registers in the vector/scalar floating point register
-set that were added in version 2.06 of the PowerPC ISA when processing
-integers.  @option{-mupper-regs-di} is turned on by default if you use
-any of the @option{-mcpu=power7}, @option{-mcpu=power8},
-@option{-mcpu=power9}, or @option{-mvsx} options.
-
-@item -mupper-regs-df
-@itemx -mno-upper-regs-df
-@opindex mupper-regs-df
-@opindex mno-upper-regs-df
-Generate code that uses (does not use) the scalar double precision
-instructions that target all 64 registers in the vector/scalar
-floating point register set that were added in version 2.06 of the
-PowerPC ISA.  @option{-mupper-regs-df} is turned on by default if you
-use any of the @option{-mcpu=power7}, @option{-mcpu=power8},
-@option{-mcpu=power9}, or @option{-mvsx} options.
-
-@item -mupper-regs-sf
-@itemx -mno-upper-regs-sf
-@opindex mupper-regs-sf
-@opindex mno-upper-regs-sf
-Generate code that uses (does not use) the scalar single precision
-instructions that target all 64 registers in the vector/scalar
-floating point register set that were added in version 2.07 of the
-PowerPC ISA.  @option{-mupper-regs-sf} is turned on by default if you
-use either of the @option{-mcpu=power8}, @option{-mpower8-vector}, or
-@option{-mcpu=power9} options.
-
-@item -mupper-regs
-@itemx -mno-upper-regs
-@opindex mupper-regs
-@opindex mno-upper-regs
-Generate code that uses (does not use) the scalar
-instructions that target all 64 registers in the vector/scalar
-floating point register set, depending on the model of the machine.
-
-If the @option{-mno-upper-regs} option is used, it turns off both
-@option{-mupper-regs-sf} and @option{-mupper-regs-df} options.
 
 @item -mfloat128
 @itemx -mno-float128

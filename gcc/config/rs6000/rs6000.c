@@ -2907,9 +2907,7 @@ rs6000_setup_reg_addr_masks (void)
 		  && !VECTOR_MODE_P (m2)
 		  && !FLOAT128_VECTOR_P (m2)
 		  && !complex_p
-		  && !small_int_vsx_p
-		  && (m2 != DFmode || !TARGET_UPPER_REGS_DF)
-		  && (m2 != SFmode || !TARGET_UPPER_REGS_SF))
+		  && !small_int_vsx_p)
 		{
 		  addr_mask |= RELOAD_REG_PRE_INCDEC;
 
@@ -3263,7 +3261,7 @@ rs6000_init_hard_regno_mode_ok (bool global_init_p)
       rs6000_constraints[RS6000_CONSTRAINT_wA] = BASE_REGS;
     }
 
-  if (TARGET_P8_VECTOR && TARGET_UPPER_REGS_SF)			/* SFmode  */
+  if (TARGET_P8_VECTOR)						/* SFmode  */
     {
       rs6000_constraints[RS6000_CONSTRAINT_wu] = ALTIVEC_REGS;
       rs6000_constraints[RS6000_CONSTRAINT_wy] = VSX_REGS;
@@ -3458,13 +3456,13 @@ rs6000_init_hard_regno_mode_ok (bool global_init_p)
 	    }
 	}
 
-      if (TARGET_UPPER_REGS_DF)
-	reg_addr[DFmode].scalar_in_vmx_p = true;
+      if (TARGET_VSX)
+	{
+	  reg_addr[DFmode].scalar_in_vmx_p = true;
+	  reg_addr[DImode].scalar_in_vmx_p = true;
+	}
 
-      if (TARGET_UPPER_REGS_DI)
-	reg_addr[DImode].scalar_in_vmx_p = true;
-
-      if (TARGET_UPPER_REGS_SF)
+      if (TARGET_P8_VECTOR)
 	reg_addr[SFmode].scalar_in_vmx_p = true;
 
       if (TARGET_VSX_SMALL_INTEGER)
@@ -4277,18 +4275,10 @@ rs6000_option_override_internal (bool global_init_p)
 	{
 	  if (cpu_index == PROCESSOR_POWER9)
 	    {
-	      /* legacy behavior: allow -mcpu-power9 with certain
+	      /* legacy behavior: allow -mcpu=power9 with certain
 		 capabilities explicitly disabled.  */
 	      rs6000_isa_flags |= (ISA_3_0_MASKS_SERVER & ~ignore_masks);
-	      /* However, reject this automatic fix if certain
-		 capabilities required for TARGET_P9_MINMAX support
-		 have been explicitly disabled.  */
-	      if (((OPTION_MASK_VSX | OPTION_MASK_UPPER_REGS_SF
-		    | OPTION_MASK_UPPER_REGS_DF) & rs6000_isa_flags)
-		  != (OPTION_MASK_VSX | OPTION_MASK_UPPER_REGS_SF
-		      | OPTION_MASK_UPPER_REGS_DF))
-		error ("-mpower9-minmax incompatible with explicitly disabled options");
-		}
+	    }
 	  else
 	    error ("Power9 target option is incompatible with -mcpu=<xxx> for "
 		   "<xxx> less than power9");
@@ -4372,73 +4362,6 @@ rs6000_option_override_internal (bool global_init_p)
       if (rs6000_isa_flags_explicit & OPTION_MASK_DFP)
 	error ("-mhard-dfp requires -mhard-float");
       rs6000_isa_flags &= ~OPTION_MASK_DFP;
-    }
-
-  /* Allow an explicit -mupper-regs to set -mupper-regs-df, -mupper-regs-di,
-     and -mupper-regs-sf, depending on the cpu, unless the user explicitly also
-     set the individual option.  */
-  if (TARGET_UPPER_REGS > 0)
-    {
-      if (TARGET_VSX
-	  && !(rs6000_isa_flags_explicit & OPTION_MASK_UPPER_REGS_DF))
-	{
-	  rs6000_isa_flags |= OPTION_MASK_UPPER_REGS_DF;
-	  rs6000_isa_flags_explicit |= OPTION_MASK_UPPER_REGS_DF;
-	}
-      if (TARGET_VSX
-	  && !(rs6000_isa_flags_explicit & OPTION_MASK_UPPER_REGS_DI))
-	{
-	  rs6000_isa_flags |= OPTION_MASK_UPPER_REGS_DI;
-	  rs6000_isa_flags_explicit |= OPTION_MASK_UPPER_REGS_DI;
-	}
-      if (TARGET_P8_VECTOR
-	  && !(rs6000_isa_flags_explicit & OPTION_MASK_UPPER_REGS_SF))
-	{
-	  rs6000_isa_flags |= OPTION_MASK_UPPER_REGS_SF;
-	  rs6000_isa_flags_explicit |= OPTION_MASK_UPPER_REGS_SF;
-	}
-    }
-  else if (TARGET_UPPER_REGS == 0)
-    {
-      if (TARGET_VSX
-	  && !(rs6000_isa_flags_explicit & OPTION_MASK_UPPER_REGS_DF))
-	{
-	  rs6000_isa_flags &= ~OPTION_MASK_UPPER_REGS_DF;
-	  rs6000_isa_flags_explicit |= OPTION_MASK_UPPER_REGS_DF;
-	}
-      if (TARGET_VSX
-	  && !(rs6000_isa_flags_explicit & OPTION_MASK_UPPER_REGS_DI))
-	{
-	  rs6000_isa_flags &= ~OPTION_MASK_UPPER_REGS_DI;
-	  rs6000_isa_flags_explicit |= OPTION_MASK_UPPER_REGS_DI;
-	}
-      if (TARGET_P8_VECTOR
-	  && !(rs6000_isa_flags_explicit & OPTION_MASK_UPPER_REGS_SF))
-	{
-	  rs6000_isa_flags &= ~OPTION_MASK_UPPER_REGS_SF;
-	  rs6000_isa_flags_explicit |= OPTION_MASK_UPPER_REGS_SF;
-	}
-    }
-
-  if (TARGET_UPPER_REGS_DF && !TARGET_VSX)
-    {
-      if (rs6000_isa_flags_explicit & OPTION_MASK_UPPER_REGS_DF)
-	error ("-mupper-regs-df requires -mvsx");
-      rs6000_isa_flags &= ~OPTION_MASK_UPPER_REGS_DF;
-    }
-
-  if (TARGET_UPPER_REGS_DI && !TARGET_VSX)
-    {
-      if (rs6000_isa_flags_explicit & OPTION_MASK_UPPER_REGS_DI)
-	error ("-mupper-regs-di requires -mvsx");
-      rs6000_isa_flags &= ~OPTION_MASK_UPPER_REGS_DI;
-    }
-
-  if (TARGET_UPPER_REGS_SF && !TARGET_P8_VECTOR)
-    {
-      if (rs6000_isa_flags_explicit & OPTION_MASK_UPPER_REGS_SF)
-	error ("-mupper-regs-sf requires -mpower8-vector");
-      rs6000_isa_flags &= ~OPTION_MASK_UPPER_REGS_SF;
     }
 
   /* The quad memory instructions only works in 64-bit mode. In 32-bit mode,
@@ -4647,24 +4570,6 @@ rs6000_option_override_internal (bool global_init_p)
 	  rs6000_isa_flags_explicit |=
 	    (OPTION_MASK_P9_DFORM_SCALAR | OPTION_MASK_P9_DFORM_VECTOR);
 	}
-    }
-
-  if (TARGET_P9_DFORM_SCALAR && !TARGET_UPPER_REGS_DF)
-    {
-      /* We prefer to not mention undocumented options in
-	 error messages.  However, if users have managed to select
-	 power9-dform without selecting upper-regs-df, they
-	 already know about undocumented flags.  */
-      if (rs6000_isa_flags_explicit & OPTION_MASK_UPPER_REGS_DF)
-	error ("-mpower9-dform requires -mupper-regs-df");
-      rs6000_isa_flags &= ~OPTION_MASK_P9_DFORM_SCALAR;
-    }
-
-  if (TARGET_P9_DFORM_SCALAR && !TARGET_UPPER_REGS_SF)
-    {
-      if (rs6000_isa_flags_explicit & OPTION_MASK_UPPER_REGS_SF)
-	error ("-mpower9-dform requires -mupper-regs-sf");
-      rs6000_isa_flags &= ~OPTION_MASK_P9_DFORM_SCALAR;
     }
 
   /* Enable LRA by default.  */
@@ -36360,9 +36265,6 @@ static struct rs6000_opt_mask const rs6000_opt_masks[] =
   { "string",			OPTION_MASK_STRING,		false, true  },
   { "toc-fusion",		OPTION_MASK_TOC_FUSION,		false, true  },
   { "update",			OPTION_MASK_NO_UPDATE,		true , true  },
-  { "upper-regs-di",		OPTION_MASK_UPPER_REGS_DI,	false, true  },
-  { "upper-regs-df",		OPTION_MASK_UPPER_REGS_DF,	false, true  },
-  { "upper-regs-sf",		OPTION_MASK_UPPER_REGS_SF,	false, true  },
   { "vsx",			OPTION_MASK_VSX,		false, true  },
   { "vsx-small-integer",	OPTION_MASK_VSX_SMALL_INTEGER,	false, true  },
   { "vsx-timode",		OPTION_MASK_VSX_TIMODE,		false, true  },

@@ -200,9 +200,6 @@ mvsx-scalar-double
 Target Undocumented Report Var(TARGET_VSX_SCALAR_DOUBLE) Init(1)
 ; If -mvsx, use VSX arithmetic instructions for DFmode (on by default)
 
-mvsx-scalar-memory
-Target Undocumented Report Alias(mupper-regs-df)
-
 mvsx-align-128
 Target Undocumented Report Var(TARGET_VSX_ALIGN_128) Save
 ; If -mvsx, set alignment to 128 bits instead of 32/64
@@ -548,22 +545,6 @@ Generate the quad word memory atomic instructions (lqarx/stqcx).
 mcompat-align-parm
 Target Report Var(rs6000_compat_align_parm) Init(0) Save
 Generate aggregate parameter passing code with at most 64-bit alignment.
-
-mupper-regs-df
-Target Report Mask(UPPER_REGS_DF) Var(rs6000_isa_flags)
-Allow double variables in upper registers with -mcpu=power7 or -mvsx.
-
-mupper-regs-sf
-Target Report Mask(UPPER_REGS_SF) Var(rs6000_isa_flags)
-Allow float variables in upper registers with -mcpu=power8 or -mpower8-vector.
-
-mupper-regs
-Target Report Var(TARGET_UPPER_REGS) Init(-1) Save
-Allow float/double variables in upper registers if cpu allows it.
-
-mupper-regs-di
-Target Report Mask(UPPER_REGS_DI) Var(rs6000_isa_flags)
-Allow 64-bit integer variables in upper registers with -mcpu=power7 or -mvsx.
 
 moptimize-swaps
 Target Undocumented Var(rs6000_optimize_swaps) Init(1) Save

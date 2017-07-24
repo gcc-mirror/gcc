@@ -2,10 +2,10 @@
 /* { dg-require-effective-target powerpc_p8vector_ok } */
 /* { dg-skip-if "" { powerpc*-*-darwin* } } */
 /* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power8" } } */
-/* { dg-options "-mcpu=power8 -O2 -mupper-regs-df -mupper-regs-sf" } */
+/* { dg-options "-mcpu=power8 -O2" } */
 
-/* Test for the -mupper-regs-df option to make sure double values are allocated
-   to the Altivec registers as well as the traditional FPR registers.  */
+/* Test make sure single precision values are allocated to the Altivec
+   registers as well as the traditional FPR registers.  */
 
 #ifndef TYPE
 #define TYPE float
