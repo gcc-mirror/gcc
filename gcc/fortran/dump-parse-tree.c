@@ -857,6 +857,9 @@ show_symbol (gfc_symbol *sym)
   for (i=len; i<12; i++)
     fputc(' ', dumpfile);
 
+  if (sym->binding_label)
+      fprintf (dumpfile,"|| binding_label: '%s' ", sym->binding_label);
+
   ++show_level;
 
   show_indent ();
