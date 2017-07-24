@@ -1,3 +1,34 @@
+2017-07-24  Daniel Santos  <daniel.santos@pobox.com>
+
+	PR testsuite/80759
+	* gcc.target/x86_64/abi/ms-sysv/do-test.S
+	(ELFFN_BEGIN): Rename to FN_TYPE.
+	(ELFFN_END): Rename to FN_SIZE.
+	(ASMNAME): New macro.
+	(FUNC): Rename to FUNC_BEGIN, use ASMNAME and use .globl instead of
+	.global.
+	(FUNC_END): Use ASMNAME.
+	(test_data_save): Remove.
+	(test_data_input): Likewise.
+	(test_data_output: Likewise.
+	(test_data_fn): Likewise.
+	(test_data_retaddr): Likewise.
+	(regs_to_mem): Make globals, use r10 instead of rax.
+	(mem_to_regs): Likewise.
+	(do_test_unaligned): Remove .cfi directives, remove pushf/popf, move
+	body to ms-sysv.c.
+	(do_test_aligned): Likewise.
+	* gcc.target/x86_64/abi/ms-sysv/ms-sysv.c:
+	Add dg-* directives.
+	(PASTE_STR): New macro.
+	(ASMNAME): Likewise.
+	(LOAD_TEST_DATA_ADDR): Likewise.
+	(TEST_DATA_OFFSET): Likewise.
+	(do_test_body0): New C function.
+	(do_test_body): New inline assembly routine.
+	* gcc.target/x86_64/abi/ms-sysv/ms-sysv.exp
+	(runtest_ms_sysv): Modify.
+
 2017-07-24  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* gcc.target/powerpc/pr65849-1.c: Delete, test no longer valid
