@@ -449,6 +449,9 @@
 #define vec_insert_exp __builtin_vec_insert_exp
 #define vec_test_data_class __builtin_vec_test_data_class
 
+#define vec_extract_fp_from_shorth __builtin_vec_vextract_fp_from_shorth
+#define vec_extract_fp_from_shortl __builtin_vec_vextract_fp_from_shortl
+
 #define scalar_extract_exp __builtin_vec_scalar_extract_exp
 #define scalar_extract_sig __builtin_vec_scalar_extract_sig
 #define scalar_insert_exp __builtin_vec_scalar_insert_exp

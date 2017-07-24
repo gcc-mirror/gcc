@@ -2066,6 +2066,9 @@ BU_P9V_OVERLOAD_1 (VSTDCNSP,	"scalar_test_neg_sp")
 
 BU_P9V_OVERLOAD_1 (REVB,	"revb")
 
+BU_P9V_OVERLOAD_1 (VEXTRACT_FP_FROM_SHORTH, "vextract_fp_from_shorth")
+BU_P9V_OVERLOAD_1 (VEXTRACT_FP_FROM_SHORTL, "vextract_fp_from_shortl")
+
 /* ISA 3.0 vector scalar overloaded 2 argument functions.  */
 BU_P9V_OVERLOAD_2 (VSIEDP,	"scalar_insert_exp")
 
@@ -2084,6 +2087,8 @@ BU_P9V_VSX_1 (VEEDP, "extract_exp_dp", CONST, xvxexpdp)
 BU_P9V_VSX_1 (VEESP, "extract_exp_sp", CONST, xvxexpsp)
 BU_P9V_VSX_1 (VESDP, "extract_sig_dp", CONST, xvxsigdp)
 BU_P9V_VSX_1 (VESSP, "extract_sig_sp", CONST, xvxsigsp)
+BU_P9V_VSX_1 (VEXTRACT_FP_FROM_SHORTH, "vextract_fp_from_shorth", CONST, vextract_fp_from_shorth)
+BU_P9V_VSX_1 (VEXTRACT_FP_FROM_SHORTL, "vextract_fp_from_shortl", CONST, vextract_fp_from_shortl)
 
 /* 2 argument vsx vector functions added in ISA 3.0 (power9).  */
 BU_P9V_VSX_2 (VIEDP, "insert_exp_dp", CONST, xviexpdp)

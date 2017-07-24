@@ -326,6 +326,7 @@
    UNSPEC_VSX_CVDPSXWS
    UNSPEC_VSX_CVDPUXWS
    UNSPEC_VSX_CVSPDP
+   UNSPEC_VSX_CVHPSP
    UNSPEC_VSX_CVSPDPN
    UNSPEC_VSX_CVDPSPN
    UNSPEC_VSX_CVSXWDP
@@ -348,6 +349,8 @@
    UNSPEC_VSX_ROUND_I
    UNSPEC_VSX_ROUND_IC
    UNSPEC_VSX_SLDWI
+   UNSPEC_VSX_XXPERM
+
    UNSPEC_VSX_XXSPLTW
    UNSPEC_VSX_XXSPLTD
    UNSPEC_VSX_DIVSD
@@ -368,6 +371,8 @@
    UNSPEC_VSX_SIEXPQP
    UNSPEC_VSX_SCMPEXPDP
    UNSPEC_VSX_STSTDC
+   UNSPEC_VSX_VEXTRACT_FP_FROM_SHORTH
+   UNSPEC_VSX_VEXTRACT_FP_FROM_SHORTL
    UNSPEC_VSX_VXEXP
    UNSPEC_VSX_VXSIG
    UNSPEC_VSX_VIEXP
@@ -1745,6 +1750,15 @@
   "VECTOR_UNIT_VSX_P (V4SFmode)"
   "xscvspdp %x0,%x1"
   [(set_attr "type" "fp")])
+
+;; Generate xvcvhpsp instruction
+(define_insn "vsx_xvcvhpsp"
+  [(set (match_operand:V4SF 0 "vsx_register_operand" "=wa")
+	(unspec:V4SF [(match_operand: V16QI 1 "vsx_register_operand" "wa")]
+		     UNSPEC_VSX_CVHPSP))]
+  "TARGET_P9_VECTOR"
+  "xvcvhpsp %x0,%x1"
+  [(set_attr "type" "vecfloat")])
 
 ;; xscvdpsp used for splat'ing a scalar to V4SF, knowing that the internal SF
 ;; format of scalars is actually DF.
@@ -4506,7 +4520,65 @@
   "xxinsertw %x0,%x1,%3"
   [(set_attr "type" "vecperm")])
 
-
+;; Generate vector extract four float 32 values from left four elements
+;; of eight element vector of float 16 values.
+(define_expand "vextract_fp_from_shorth"
+  [(set (match_operand:V4SF 0 "register_operand" "=wa")
+	(unspec:V4SF [(match_operand:V8HI 1 "register_operand" "wa")]
+   UNSPEC_VSX_VEXTRACT_FP_FROM_SHORTH))]
+  "TARGET_P9_VECTOR"
+{
+  int vals[16] = {15, 14, 0, 0, 13, 12, 0, 0, 11, 10, 0, 0, 9, 8, 0, 0};
+  int i;
+
+  rtx rvals[16];
+  rtx mask = gen_reg_rtx (V16QImode);
+  rtx tmp = gen_reg_rtx (V16QImode);
+  rtvec v;
+
+  for (i = 0; i < 16; i++)
+    rvals[i] = GEN_INT (vals[i]);
+
+  /* xvcvhpsp - vector convert F16 to vector F32 requires the four F16
+     inputs in half words 1,3,5,7 (IBM numbering).  Use xxperm to move
+     src half words 0,1,2,3 for the conversion instruction.  */
+  v = gen_rtvec_v (16, rvals);
+  emit_insn (gen_vec_initv16qi (mask, gen_rtx_PARALLEL (V16QImode, v)));
+  emit_insn (gen_altivec_vperm_v8hiv16qi (tmp, operands[1],
+					  operands[1], mask));
+  emit_insn (gen_vsx_xvcvhpsp (operands[0], tmp));
+  DONE;
+})
+
+;; Generate vector extract four float 32 values from right four elements
+;; of eight element vector of float 16 values.
+(define_expand "vextract_fp_from_shortl"
+  [(set (match_operand:V4SF 0 "register_operand" "=wa")
+	(unspec:V4SF [(match_operand:V8HI 1 "register_operand" "wa")]
+	UNSPEC_VSX_VEXTRACT_FP_FROM_SHORTL))]
+  "TARGET_P9_VECTOR"
+{
+  int vals[16] = {7, 6, 0, 0, 5, 4, 0, 0, 3, 2, 0, 0, 1, 0, 0, 0};
+  int i;
+  rtx rvals[16];
+  rtx mask = gen_reg_rtx (V16QImode);
+  rtx tmp = gen_reg_rtx (V16QImode);
+  rtvec v;
+
+  for (i = 0; i < 16; i++)
+    rvals[i] = GEN_INT (vals[i]);
+
+  /* xvcvhpsp - vector convert F16 to vector F32 requires the four F16
+     inputs in half words 1,3,5,7 (IBM numbering).  Use xxperm to move
+     src half words 4,5,6,7 for the conversion instruction.  */
+  v = gen_rtvec_v (16, rvals);
+  emit_insn (gen_vec_initv16qi (mask, gen_rtx_PARALLEL (V16QImode, v)));
+  emit_insn (gen_altivec_vperm_v8hiv16qi (tmp, operands[1],
+					  operands[1], mask));
+  emit_insn (gen_vsx_xvcvhpsp (operands[0], tmp));
+  DONE;
+})
+
 ;; Support for ISA 3.0 vector byte reverse
 
 ;; Swap all bytes with in a vector

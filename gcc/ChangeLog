@@ -1,3 +1,18 @@
+2017-07-24  Carl Love  <cel@us.ibm.com>
+
+	* config/rs6000/rs6000-c.c: Add support for built-in functions
+	vector float vec_extract_fp32_from_shorth (vector unsigned short);
+	vector float vec_extract_fp32_from_shortl (vector unsigned short);
+	* config/rs6000/altivec.h (vec_extract_fp_from_shorth,
+	vec_extract_fp_from_shortl): Add defines for the two builtins.
+	* config/rs6000/rs6000-builtin.def (VEXTRACT_FP_FROM_SHORTH,
+	VEXTRACT_FP_FROM_SHORTL): Add BU_P9V_OVERLOAD_1 and BU_P9V_VSX_1
+	new builtins.
+	* config/rs6000/vsx.md vsx_xvcvhpsp): Add define_insn.
+	(vextract_fp_from_shorth, vextract_fp_from_shortl): Add define_expands.
+	* doc/extend.texi: Update the built-in documentation file for the
+	new built-in function.
+
 2017-07-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR bootstrap/81521
