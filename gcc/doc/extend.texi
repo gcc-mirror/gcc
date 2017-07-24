@@ -18306,6 +18306,9 @@ vector bool short vec_cmpne (vector bool short, vector bool short);
 vector bool int vec_cmpne (vector bool int, vector bool int);
 vector bool long long vec_cmpne (vector bool long long, vector bool long long);
 
+vector float vec_extract_fp32_from_shorth (vector unsigned short);
+vector float vec_extract_fp32_from_shortl (vector unsigned short);
+
 vector long long vec_vctz (vector long long);
 vector unsigned long long vec_vctz (vector unsigned long long);
 vector int vec_vctz (vector int);
