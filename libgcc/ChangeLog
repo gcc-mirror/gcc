@@ -1,3 +1,24 @@
+2017-07-24  Daniel Santos  <daniel.santos@pobox.com>
+
+	PR testsuite/80759
+	* config.host: include i386/t-msabi for darwin and solaris.
+	* config/i386/i386-asm.h
+	(ELFFN): Rename to FN_TYPE.
+	(FN_SIZE): New macro.
+	(FN_HIDDEN): Likewise.
+	(ASMNAME): Likewise.
+	(FUNC_START): Rename to FUNC_BEGIN, use ASMNAME, replace .global with
+	.globl.
+	(HIDDEN_FUNC): Use ASMNAME and .globl instead of .global.
+	(SSE_SAVE): Convert to cpp macro, hard-code offset (always 0x60).
+	* config/i386/resms64.S: Use SSE_SAVE as cpp macro instead of gas
+	.macro.
+	* config/i386/resms64f.S: Likewise.
+	* config/i386/resms64fx.S: Likewise.
+	* config/i386/resms64x.S: Likewise.
+	* config/i386/savms64.S: Likewise.
+	* config/i386/savms64f.S: Likewise.
+
 2017-07-19  John Marino  <gnugcc@marino.st>
 
 	* config/i386/dragonfly-unwind.h: Handle sigtramp relocation.
