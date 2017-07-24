@@ -1,3 +1,12 @@
+2017-07-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/81521
+	* tree.def: Remove TYPE_METHODS documentation, adjust TYPE_FIELDS
+	documentation.
+	* doc/generic.texi: Likewise.
+	* config/i386/winnt-cxx.c (i386_pe_adjust_class_at_definition): Look
+	for FUNCTION_DECLs in TYPE_FIELDS rather than TYPE_METHODS.
+
 2017-07-24  Jackson Woodruff  <jackson.woodruff@arm.com>
 
 	* config/aarch64/aarch64-simd.md (aarch64_mla_elt_merge<mode>): New.
