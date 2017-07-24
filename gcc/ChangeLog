@@ -1,3 +1,30 @@
+2017-07-24  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000-cpus.def (ISA_2_6_MASKS_SERVER): Delete
+	upper-regs options.
+	(ISA_2_7_MASKS_SERVER): Likewise.
+	(ISA_3_0_MASKS_IEEE): Likewise.
+	(OTHER_P8_VECTOR_MASKS): Likewise.
+	(OTHER_VSX_VECTOR_MASKS): Likewise.
+	(POWERPC_MASKS): Likewise.
+	(power7 cpu): Use ISA_2_6_MASKS_SERVER instead of using a
+	duplicate list of options.
+	* config/rs6000/rs6000-c.c (rs6000_target_modify_macros): Remove
+	explicit -mupper-regs options.
+	* config/rs6000/rs6000.opt (-mvsx-scalar-memory): Delete
+	-mupper-regs* options.  Delete -mvsx-scalar-memory, which was an
+	alias for -mupper-regs-df.
+	* config/rs6000/rs6000.c (rs6000_setup_reg_addr_masks): Likewise.
+	(rs6000_init_hard_regno_mode_ok): Likewise.
+	(rs6000_option_override_internal): Likewise.
+	(rs6000_opt_masks): Likewise.
+	* config/rs6000/rs6000.h (TARGET_UPPER_REGS_DF): Define upper regs
+	options in terms of whether -mvsx or -mpower8-vector was used.
+	(TARGET_UPPER_REGS_DI): Likewise.
+	(TARGET_UPPER_REGS_SF): Likewise.
+	* doc/invoke.texi (RS/6000 and PowerPC Options): Delete the
+	-mupper-regs-* options.
+
 2017-07-24  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* passes.c (emergency_dump_function): Print some empty lines and a

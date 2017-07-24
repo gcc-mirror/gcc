@@ -575,40 +575,6 @@ rs6000_target_modify_macros (bool define_p, HOST_WIDE_INT flags,
      2. If TARGET_ALTIVEC is turned off.  */
   if ((flags & OPTION_MASK_CRYPTO) != 0)
     rs6000_define_or_undefine_macro (define_p, "__CRYPTO__");
-  /* Note that the OPTION_MASK_UPPER_REGS_DF flag is automatically
-     turned on in the following conditions:
-     1. If TARGET_UPPER_REGS is explicitly turned on and
-	TARGET_VSX is turned on and OPTION_MASK_UPPER_REGS_DF is not
-	explicitly turned off.  Hereafter, the
-	OPTION_MASK_UPPER_REGS_DF flag is considered to have been
-	explicitly set.
-     Note that the OPTION_MASK_UPPER_REGS_DF flag is automatically
-     turned off in the following conditions:
-     1. If TARGET_UPPER_REGS is explicitly turned off and TARGET_VSX
-	is turned on and OPTION_MASK_UPPER_REGS_DF is not explicitly
-	turned on.  Hereafter, the OPTION_MASK_UPPER_REGS_DF flag is
-	considered to have been explicitly cleared.
-     2. If TARGET_UPPER_REGS_DF is turned on but TARGET_VSX is turned
-	off.  */
-  if ((flags & OPTION_MASK_UPPER_REGS_DF) != 0)
-    rs6000_define_or_undefine_macro (define_p, "__UPPER_REGS_DF__");
-  /* Note that the OPTION_MASK_UPPER_REGS_SF flag is automatically
-     turned on in the following conditions:
-     1. If TARGET_UPPER_REGS is explicitly turned on and
-	TARGET_P8_VECTOR is on and OPTION_MASK_UPPER_REGS_SF is not
-	turned off explicitly.  Hereafter, the
-	OPTION_MASK_UPPER_REGS_SF flag is considered to have been
-	explicitly set.
-     Note that the OPTION_MASK_UPPER_REGS_SF flag is automatically
-     turned off in the following conditions:
-     1. If TARGET_UPPER_REGS is explicitly turned off and
-	TARGET_P8_VECTOR is on and OPTION_MASK_UPPER_REGS_SF is not
-	turned off explicitly.  Hereafter, the
-	OPTION_MASK_UPPER_REGS_SF flag is considered to have been
-	explicitly cleared.
-     2. If TARGET_P8_VECTOR is off.  */
-  if ((flags & OPTION_MASK_UPPER_REGS_SF) != 0)
-    rs6000_define_or_undefine_macro (define_p, "__UPPER_REGS_SF__");
 
   /* options from the builtin masks.  */
   /* Note that RS6000_BTM_PAIRED is enabled only if

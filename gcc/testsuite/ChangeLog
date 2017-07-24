@@ -1,3 +1,38 @@
+2017-07-24  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* gcc.target/powerpc/pr65849-1.c: Delete, test no longer valid
+	since the upper-regs options have been deleted.
+	* gcc.target/powerpc/pr65849-2.c: Likewise.
+	* gcc.target/powerpc/pr80099-1.c: Likewise.
+	* gcc.target/powerpc/pr80099-2.c: Likewise.
+	* gcc.target/powerpc/pr80099-3.c: Likewise.
+	* gcc.target/powerpc/pr80099-4.c: Likewise.
+	* gcc.target/powerpc/pr80099-5.c: Likewise.
+	* gcc.target/powerpc/builtins-2-p9-runnable.c: Update test to
+	support removal of the upper-regs options.
+	* gcc.target/powerpc/p8vector-fp.c: Likewise.
+	* gcc.target/powerpc/p8vector-ldst.c: Likewise.
+	* gcc.target/powerpc/p9-dimode1.c: Likewise.
+	* gcc.target/powerpc/p9-dimode2.c: Likewise.
+	* gcc.target/powerpc/ppc-fpconv-1.c: Likewise.
+	* gcc.target/powerpc/ppc-fpconv-10.c: Likewise.
+	* gcc.target/powerpc/ppc-fpconv-5.c: Likewise.
+	* gcc.target/powerpc/ppc-fpconv-9.c: Likewise.
+	* gcc.target/powerpc/ppc-round.c: Likewise.
+	* gcc.target/powerpc/pr71720.c: Likewise.
+	* gcc.target/powerpc/pr72853.c: Likewise.
+	* gcc.target/powerpc/pr79907.c: Likewise.
+	* gcc.target/powerpc/pr78953.c: Likewise.
+	* gcc.target/powerpc/upper-regs-df.c: Likewise.
+	* gcc.target/powerpc/upper-regs-sf.c: Likewise.
+	* gcc.target/powerpc/vec-extract-1.c: Likewise.
+	* gcc.target/powerpc/vec-init-3.c: Likewise.
+	* gcc.target/powerpc/vec-init-6.c: Likewise.
+	* gcc.target/powerpc/vec-init-7.c: Likewise.
+	* gcc.target/powerpc/vec-set-char.c: Likewise.
+	* gcc.target/powerpc/vec-set-int.c: Likewise.
+	* gcc.target/powerpc/vec-set-short.c: Likewise.
+
 2017-07-24  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	PR target/79041

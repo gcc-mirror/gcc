@@ -2,15 +2,15 @@
 /* { dg-skip-if "" { powerpc*-*-darwin* } } */
 /* { dg-require-effective-target powerpc_vsx_ok } */
 /* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power7" } } */
-/* { dg-options "-O2 -mcpu=power7 -mno-upper-regs-df" } */
-/* { dg-final { scan-assembler-times "stfiwx" 4 } } */
-/* { dg-final { scan-assembler-times "lfiwax" 2 } } */
-/* { dg-final { scan-assembler-times "lfiwzx" 2 } } */
-/* { dg-final { scan-assembler-times "fctiwz " 2 } } */
-/* { dg-final { scan-assembler-times "fctiwuz " 2 } } */
-/* { dg-final { scan-assembler-times "fcfids " 2 } } */
-/* { dg-final { scan-assembler-not "lwz" } } */
-/* { dg-final { scan-assembler-not "stw" } } */
+/* { dg-options "-O2 -mcpu=power7" } */
+/* { dg-final { scan-assembler-times {\mstfiwx\M|\mstxsiwx\M}     4 } } */
+/* { dg-final { scan-assembler-times {\mlfiwax\M|\mlxsiwax\M}     2 } } */
+/* { dg-final { scan-assembler-times {\mlfiwzx\M|\mlxsiwzx\M}     2 } } */
+/* { dg-final { scan-assembler-times {\mfctiwz\M|\mxscvdpsxws\M}  2 } } */
+/* { dg-final { scan-assembler-times {\mfctiwuz\M|\mxscvdpuxws\M} 2 } } */
+/* { dg-final { scan-assembler-times {\mfcfids\M|\mxscvsxdsp\M}   2 } } */
+/* { dg-final { scan-assembler-not   {\mlwz\M}                      } } */
+/* { dg-final { scan-assembler-not   {\mstw\M}                      } } */
 
 /* Make sure we don't have loads/stores to the GPR unit.  */
 double
