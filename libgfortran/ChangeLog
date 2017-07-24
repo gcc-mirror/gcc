@@ -1,3 +1,8 @@
+2017-07-24  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* io/unix.c (buf_write):  Return early if there is
+	nothing to write.
+
 2017-06-09  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	* intrinsics/eoshift2.c (eoshift2):  Use memcpy
