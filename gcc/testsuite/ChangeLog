@@ -1,3 +1,9 @@
+2017-07-24  Thomas Koenig  <tkoenig@gcc.gnu.org>
+	    Mikael Morin <mikael@gcc.gnu.org>
+
+	PR fortran/66102
+	* gfortran.dg/realloc_on_assign_28.f90:  New test.
+
 2017-07-23  David Edelsohn  <dje.gcc@gmail.com>
 
 	* gcc.dg/pr56727-2.c: Limit to powerpc-linux.
