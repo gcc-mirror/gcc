@@ -1,5 +1,10 @@
 2017-07-24  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	* passes.c (emergency_dump_function): Print some empty lines and a
+	header before the RTL dump.
+
+2017-07-24  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	* cfgrtl.c (rtl_dump_bb): Don't call NEXT_INSN on NULL.
 
 2017-07-24  Wilco Dijkstra  <wdijkstr@arm.com>
