@@ -438,7 +438,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  The newly-created %function contains the target of @a __x
        *  (if it has one).
        */
-      function(function&& __x) : _Function_base()
+      function(function&& __x) noexcept : _Function_base()
       {
 	__x.swap(*this);
       }
@@ -495,7 +495,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  object, then this operation will not throw an %exception.
        */
       function&
-      operator=(function&& __x)
+      operator=(function&& __x) noexcept
       {
 	function(std::move(__x)).swap(*this);
 	return *this;
