@@ -1,6 +1,15 @@
 2017-07-25  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline
+	2017-06-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/80939
+	* include/std/variant (__erased_ctor, __erased_assign, __erased_swap)
+	(__erased_hash): Remove constexpr specifier and qualify calls to
+	__ref_cast.
+	(__erased_dtor): Remove constexpr specifier and use _Destroy.
+
+	Backport from mainline
 	2017-05-20  Tim Shen  <timshen@google.com>
 
 	PR libstdc++/80737
