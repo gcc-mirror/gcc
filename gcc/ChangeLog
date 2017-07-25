@@ -1,5 +1,11 @@
 2017-07-25  Richard Biener  <rguenther@suse.de>
 
+	PR middle-end/81546
+	* tree-ssa-operands.c (verify_imm_links): Remove cap on number
+	of immediate uses, be more verbose on errors.
+
+2017-07-25  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/81510
 	* tree-vect-loop.c (vect_is_simple_reduction): When the
 	reduction stmt is not inside the loop bail out.
