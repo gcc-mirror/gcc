@@ -3105,6 +3105,27 @@ that affect more than one function.
 This attribute should be used for debugging purposes only.  It is not
 suitable in production code.
 
+@item patchable_function_entry
+@cindex @code{patchable_function_entry} function attribute
+@cindex extra NOP instructions at the function entry point
+In case the target's text segment can be made writable at run time by
+any means, padding the function entry with a number of NOPs can be
+used to provide a universal tool for instrumentation.
+
+The @code{patchable_function_entry} function attribute can be used to
+change the number of NOPs to any desired value.  The two-value syntax
+is the same as for the command-line switch
+@option{-fpatchable-function-entry=N,M}, generating @var{N} NOPs, with
+the function entry point before the @var{M}th NOP instruction.
+@var{M} defaults to 0 if omitted e.g. function entry point is before
+the first NOP.
+
+If patchable function entries are enabled globally using the command-line
+option @option{-fpatchable-function-entry=N,M}, then you must disable
+instrumentation on all functions that are part of the instrumentation
+framework with the attribute @code{patchable_function_entry (0)}
+to prevent recursion.
+
 @item pure
 @cindex @code{pure} function attribute
 @cindex functions that have no side effects

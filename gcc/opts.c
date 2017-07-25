@@ -2207,6 +2207,33 @@ common_handle_option (struct gcc_options *opts,
         opts->x_flag_ipa_reference = false;
       break;
 
+    case OPT_fpatchable_function_entry_:
+      {
+	char *patch_area_arg = xstrdup (arg);
+	char *comma = strchr (patch_area_arg, ',');
+	if (comma)
+	  {
+	    *comma = '\0';
+	    function_entry_patch_area_size = 
+	      integral_argument (patch_area_arg);
+	    function_entry_patch_area_start =
+	      integral_argument (comma + 1);
+	  }
+	else
+	  {
+	    function_entry_patch_area_size =
+	      integral_argument (patch_area_arg);
+	    function_entry_patch_area_start = 0;
+	  }
+	if (function_entry_patch_area_size < 0
+	    || function_entry_patch_area_start < 0
+	    || function_entry_patch_area_size 
+		< function_entry_patch_area_start)
+	  error ("invalid arguments for %<-fpatchable_function_entry%>");
+	free (patch_area_arg);
+      }
+      break;
+
     case OPT_ftree_vectorize:
       if (!opts_set->x_flag_tree_loop_vectorize)
         opts->x_flag_tree_loop_vectorize = value;

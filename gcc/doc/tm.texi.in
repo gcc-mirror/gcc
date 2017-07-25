@@ -3650,6 +3650,8 @@ will select the smallest suitable mode.
 This section describes the macros that output function entry
 (@dfn{prologue}) and exit (@dfn{epilogue}) code.
 
+@hook TARGET_ASM_PRINT_PATCHABLE_FUNCTION_ENTRY
+
 @hook TARGET_ASM_FUNCTION_PROLOGUE
 
 @hook TARGET_ASM_FUNCTION_END_PROLOGUE

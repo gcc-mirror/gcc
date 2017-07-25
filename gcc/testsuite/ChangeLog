@@ -1,3 +1,9 @@
+2017-07-07  Torsten Duwe  <duwe@suse.de>
+
+	* c-c++-common/patchable_function_entry-default.c: New test.
+	* c-c++-common/patchable_function_entry-decl.c: Likewise.
+	* c-c++-common/patchable_function_entry-definition.c: Likewise.
+
 2017-07-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/81532

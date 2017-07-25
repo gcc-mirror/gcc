@@ -1,3 +1,26 @@
+2017-07-07  Torsten Duwe  <duwe@suse.de>
+
+	* common.opt: Introduce -fpatchable-function-entry
+	command line option, and its variables function_entry_patch_area_size
+	and function_entry_patch_area_start.
+	* opts.c (common_handle_option): Add -fpatchable_function_entry_ case,
+	including a two-value parser.
+	* target.def (print_patchable_function_entry): New target hook.
+	* targhooks.h (default_print_patchable_function_entry): New function.
+	* targhooks.c (default_print_patchable_function_entry): Likewise.
+	* toplev.c (process_options): Switch off IPA-RA if
+	patchable function entries are being generated.
+	* varasm.c (assemble_start_function): Look at the
+	patchable-function-entry command line switch and current
+	function attributes and maybe generate NOP instructions by
+	calling the print_patchable_function_entry hook.
+	* doc/extend.texi: Document patchable_function_entry attribute.
+	* doc/invoke.texi: Document -fpatchable_function_entry
+	command line option.
+	* doc/tm.texi.in (TARGET_ASM_PRINT_PATCHABLE_FUNCTION_ENTRY):
+	New target hook.
+	* doc/tm.texi: Re-generate.
+
 2017-07-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/81532

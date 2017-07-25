@@ -1,3 +1,8 @@
+2017-07-07  Torsten Duwe  <duwe@suse.de>
+
+	* lto-lang.c (lto_attribute_table): Add entry for
+	"patchable_function_entry".
+
 2017-07-19  Nathan Sidwell  <nathan@acm.org>
 
 	* lto.c (mentions_vars_p_type): Use TYPE_{MIN,MAX}_VALUE_RAW.
