@@ -150,9 +150,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  whatever data is appropriate for the type of the argument.
        *
        *  If an exception is thrown during extraction, ios_base::badbit
-       *  will be turned on in the stream's error state without causing an
-       *  ios_base::failure to be thrown.  The original exception will then
-       *  be rethrown.
+       *  will be turned on in the stream's error state (without causing an
+       *  ios_base::failure to be thrown) and the original exception will
+       *  be rethrown if badbit is set in the exceptions mask.
       */
 
       //@{
@@ -286,9 +286,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  by gcount().
        *
        *  If an exception is thrown during extraction, ios_base::badbit
-       *  will be turned on in the stream's error state without causing an
-       *  ios_base::failure to be thrown.  The original exception will then
-       *  be rethrown.
+       *  will be turned on in the stream's error state (without causing an
+       *  ios_base::failure to be thrown) and the original exception will
+       *  be rethrown if badbit is set in the exceptions mask.
       */
 
       /**
