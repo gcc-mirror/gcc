@@ -1613,7 +1613,7 @@ gimple_assign_set_rhs_with_ops (gimple_stmt_iterator *gsi, enum tree_code code,
       gimple *new_stmt = gimple_alloc (gimple_code (stmt), new_rhs_ops + 1);
       memcpy (new_stmt, stmt, gimple_size (gimple_code (stmt)));
       gimple_init_singleton (new_stmt);
-      gsi_replace (gsi, new_stmt, true);
+      gsi_replace (gsi, new_stmt, false);
       stmt = new_stmt;
 
       /* The LHS needs to be reset as this also changes the SSA name

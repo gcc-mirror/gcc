@@ -1,3 +1,8 @@
+2017-07-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gimple.c (gimple_assign_set_rhs_with_ops): Do not ask gsi_replace
+	to update EH info here.
+
 2017-07-25  Alexander Monakov  <amonakov@ispras.ru>
 
 	* match.pd ((X * CST1) * CST2): Simplify to X * (CST1 * CST2).
