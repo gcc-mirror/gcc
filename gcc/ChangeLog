@@ -1,3 +1,12 @@
+2017-07-25  Georg-Johann Lay  <avr@gjlay.de>
+
+	Backport from 2017-07-12 trunk r250151.
+
+	PR target/81407
+	* config/avr/avr.c (avr_encode_section_info)
+	[progmem && !TREE_READONLY]: Error if progmem object needs
+	constructing.
+
 2017-07-25  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	PR target/79041
