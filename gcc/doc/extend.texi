@@ -15453,6 +15453,15 @@ vector bool short vec_cmpnez (vector unsigned short arg1, vector unsigned short 
 vector bool int vec_cmpnez (vector signed int arg1, vector signed int arg2);
 vector bool int vec_cmpnez (vector unsigned int, vector unsigned int);
 
+vector signed char vec_cnttz (vector signed char);
+vector unsigned char vec_cnttz (vector unsigned char);
+vector signed short vec_cnttz (vector signed short);
+vector unsigned short vec_cnttz (vector unsigned short);
+vector signed int vec_cnttz (vector signed int);
+vector unsigned int vec_cnttz (vector unsigned int);
+vector signed long long vec_cnttz (vector signed long long);
+vector unsigned long long vec_cnttz (vector unsigned long long);
+
 signed int vec_cntlz_lsbb (vector signed char);
 signed int vec_cntlz_lsbb (vector unsigned char);
 

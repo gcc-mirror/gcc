@@ -1,3 +1,16 @@
+2017-07-25  Carl Love  <cel@us.ibm.com>
+
+	* doc/extend.texi: Update the built-in documentation file for the
+	existing built-in functions
+	vector signed char vec_cnttz (vector signed char);
+	vector unsigned char vec_cnttz (vector unsigned char);
+	vector signed short vec_cnttz (vector signed short);
+	vector unsigned short vec_cnttz (vector unsigned short);
+	vector signed int vec_cnttz (vector signed int);
+	vector unsigned int vec_cnttz (vector unsigned int);
+	vector signed long long vec_cnttz (vector signed long long);
+	vector unsigned long long vec_cnttz (vector unsigned long long);
+
 2017-07-25  Andrew Pinski  <apinski@cavium.com>
 
 	* tree-ssa-uninit.c (warn_uninitialized_vars): Don't warn about memory
