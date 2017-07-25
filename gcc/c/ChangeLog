@@ -1,3 +1,11 @@
+2017-07-25  Marek Polacek  <polacek@redhat.com>
+
+	PR c/81364
+	* c-parser.c (c_parser_else_body): Don't warn about multistatement
+	macro expansion if the body is in { }.
+	(c_parser_while_statement): Likewise.
+	(c_parser_for_statement): Likewise.
+
 2017-07-18  Nathan Sidwell  <nathan@acm.org>
 
 	* c-parser.c (c_parser_array_notation): Use TYPE_{MIN,MAX}_VALUE.
