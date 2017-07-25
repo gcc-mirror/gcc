@@ -1,3 +1,9 @@
+2017-07-25  Bin Cheng  <bin.cheng@arm.com>
+
+	PR target/81414
+	* config/aarch64/cortex-a57-fma-steering.c (analyze): Skip fmul/fmac
+	instructions if no du chain is found.
+
 2017-07-25  Georg-Johann Lay  <avr@gjlay.de>
 
 	* config/avr/avr-log.c (avr_log_vadump) ['T']: Print NULL-TREE.
