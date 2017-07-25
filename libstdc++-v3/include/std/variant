@@ -936,9 +936,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       noexcept((is_nothrow_move_constructible_v<_Types> && ...)) = default;
 
       template<typename _Tp,
+	       typename = enable_if_t<!is_same_v<decay_t<_Tp>, variant>>,
 	       typename = enable_if_t<__exactly_once<__accepted_type<_Tp&&>>
-			  && is_constructible_v<__accepted_type<_Tp&&>, _Tp&&>
-			  && !is_same_v<decay_t<_Tp>, variant>>>
+			  && is_constructible_v<__accepted_type<_Tp&&>, _Tp&&>>>
 	constexpr
 	variant(_Tp&& __t)
 	noexcept(is_nothrow_constructible_v<__accepted_type<_Tp&&>, _Tp&&>)
