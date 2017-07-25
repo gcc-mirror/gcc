@@ -1,3 +1,11 @@
+2017-07-25  David Edelsohn  <dje.gcc@gmail.com>
+
+	* dwarf2asm.c (dw2_asm_output_nstring): Encode double quote
+	character for AIX.
+	* dwarf2out.c (output_macinfo): Copy debug_line_section_label
+	to dl_section_ref.  On AIX, append an expression to subtract
+	the size of the section length to dl_section_ref.
+
 2017-07-25  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* configure.ac: If any of the config.* scripts fail, exit 1.
