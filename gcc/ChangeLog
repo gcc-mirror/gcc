@@ -1,3 +1,9 @@
+2017-07-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/81529
+	* tree-vect-stmts.c (process_use): Disregard live induction PHIs
+	when optimizing backedge uses.
+
 2017-07-25  David Edelsohn  <dje.gcc@gmail.com>
 
 	* dwarf2asm.c (dw2_asm_output_nstring): Encode double quote
