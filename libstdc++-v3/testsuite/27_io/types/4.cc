@@ -1,4 +1,4 @@
-// Copyright (C) 2002-2017 Free Software Foundation, Inc.
+// Copyright (C) 2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -15,17 +15,15 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-do compile { target c++14_down } }
+// { dg-options "-std=gnu++17" }
+// { dg-do compile { target c++1z } }
 
-// 27.4.2.1 - Types [lib.ios.types]
+// In C++17 these names are not reserved by the library.
+#define io_state 1
+#define open_mode 2
+#define seek_dir 3
+#define stossc 4
+#include <streambuf>
 
-#include <ios>
-#include <testsuite_hooks.h>
-
-// libstdc++/7219
-// Annex D, deprecated.
-void test01()
-{
-  typedef std::ios_base::streampos streampos_type;
-  typedef std::ios_base::streamoff streamoff_type;
-}
+template class std::basic_streambuf<char>;
+template class std::basic_streambuf<wchar_t>;

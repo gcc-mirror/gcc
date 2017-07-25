@@ -469,13 +469,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     /// Request a seek relative to the current end of the sequence.
     static const seekdir end =		_S_end;
 
-    // Annex D.6
+#if __cplusplus <= 201402L
+    // Annex D.6 (removed in C++17)
     typedef int io_state;
     typedef int open_mode;
     typedef int seek_dir;
 
     typedef std::streampos streampos;
     typedef std::streamoff streamoff;
+#endif
 
     // Callbacks;
     /**
