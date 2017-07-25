@@ -1,5 +1,10 @@
 2017-07-25  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/81410
+	* gcc.dg/vect/pr81410.c: Do not typedef uint64_t.
+
+2017-07-25  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/81510
 	* gcc.dg/torture/pr81510.c: New testcase.
 	* gcc.dg/torture/pr81510-2.c: Likewise.

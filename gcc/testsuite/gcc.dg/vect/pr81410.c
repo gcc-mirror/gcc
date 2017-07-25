@@ -3,10 +3,9 @@
 
 #include "tree-vect.h"
 
-typedef long long uint64_t;
-uint64_t x[24];
-uint64_t y[16];
-uint64_t z[8];
+long long x[24];
+long long y[16];
+long long z[8];
 
 void __attribute__((noinline)) foo()
 {
