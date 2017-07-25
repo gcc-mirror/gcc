@@ -1,5 +1,9 @@
 2017-07-25  Marek Polacek  <polacek@redhat.com>
 
+	* c-decl.c (grokfield): Remove local variable.
+
+2017-07-25  Marek Polacek  <polacek@redhat.com>
+
 	PR c/81364
 	* c-parser.c (c_parser_else_body): Don't warn about multistatement
 	macro expansion if the body is in { }.
