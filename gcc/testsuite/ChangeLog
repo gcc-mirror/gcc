@@ -1,3 +1,10 @@
+2017-07-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/81532
+	* gcc.target/i386/pr80833-3.c: New test.
+	* gcc.target/i386/avx512dq-pr81532.c: New test.
+	* gcc.target/i386/avx512bw-pr81532.c: New test.
+
 2017-07-25  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/81455
@@ -10,7 +17,7 @@
 
 2017-07-25  Wilco Dijkstra  <wdijkstr@arm.com>
 
-	* testsuite/gcc.target/aarch64/pr79041-2.c: Improve test.
+	* gcc.target/aarch64/pr79041-2.c: Improve test.
 
 2017-07-25  Richard Biener  <rguenther@suse.de>
 
@@ -545,7 +552,7 @@
 
 2017-07-11  Michael Collison  <michael.collison@arm.com>
 
-	* testsuite/gcc.target/aarch64/cmp-2.c: New testcase.
+	* gcc.target/aarch64/cmp-2.c: New testcase.
 
 2017-07-11  Paolo Carlini  <paolo.carlini@oracle.com>
 
@@ -1721,7 +1728,7 @@
 	* gcc.dg/fold-bcopy.c: New test.
 	* gcc.dg/tree-ssa/ssa-dse-30.c: Likewise..
 	* gcc.dg/tree-ssa/alias-36.c: Likewise.
-	* gcc/testsuite/gcc.dg/pr79214.c: Adjust.
+	* gcc.dg/pr79214.c: Adjust.
 	* gcc.dg/tree-prof/val-prof-7.c: Likewise.
 	* gcc.dg/Wsizeof-pointer-memaccess1.c: Likewise.
 	* gcc.dg/builtins-nonnull.c: Likewise.
@@ -2062,12 +2069,12 @@
 
 2017-06-08  Will Schmidt  <will_schmidt@vnet.ibm.com>
 
-	* testsuite/gcc.target/powerpc/fold-vec-logical-eqv-char.c: New.
-	* testsuite/gcc.target/powerpc/fold-vec-logical-eqv-float.c: New.
-	* testsuite/gcc.target/powerpc/fold-vec-logical-eqv-floatdouble.c: New.
-	* testsuite/gcc.target/powerpc/fold-vec-logical-eqv-int.c: New.
-	* testsuite/gcc.target/powerpc/fold-vec-logical-eqv-longlong.c: New.
-	* testsuite/gcc.target/powerpc/fold-vec-logical-eqv-short.c: New.
+	* gcc.target/powerpc/fold-vec-logical-eqv-char.c: New.
+	* gcc.target/powerpc/fold-vec-logical-eqv-float.c: New.
+	* gcc.target/powerpc/fold-vec-logical-eqv-floatdouble.c: New.
+	* gcc.target/powerpc/fold-vec-logical-eqv-int.c: New.
+	* gcc.target/powerpc/fold-vec-logical-eqv-longlong.c: New.
+	* gcc.target/powerpc/fold-vec-logical-eqv-short.c: New.
 
 2017-06-08  Jakub Jelinek  <jakub@redhat.com>
 
@@ -3790,8 +3797,8 @@
 
 2017-05-08  Wilco Dijkstra  <wdijkstr@arm.com>
 
-	* testsuite/gcc.dg/vect/vect-44.c: Add -fno-vect-cost-model.
-	* gcc/testsuite/gcc.dg/vect/vect-50.c: Likewise.
+	* gcc.dg/vect/vect-44.c: Add -fno-vect-cost-model.
+	* gcc.dg/vect/vect-50.c: Likewise.
 
 2017-05-07  Jeff Law  <law@redhat.com>
 
