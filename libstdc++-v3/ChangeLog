@@ -1,6 +1,15 @@
 2017-07-25  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline
+	2017-06-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/81017
+	* include/bits/std_function.h (function::function(function&&))
+	(function::operator=(funtion&&)): Add noexcept.
+	* testsuite/20_util/function/assign/move.cc: Check for noexcept.
+	* testsuite/20_util/function/cons/move.cc: Likewise.
+
+	Backport from mainline
 	2017-07-15  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/std/mutex (scoped_lock): Reorder std::adopt_lock_t parameter
