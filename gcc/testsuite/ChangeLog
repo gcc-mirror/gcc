@@ -1,3 +1,8 @@
+2017-07-25  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/81414
+	* gcc.target/aarch64/pr81414.C: New.
+
 2017-07-25  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/81505
