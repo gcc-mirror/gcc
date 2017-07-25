@@ -1,3 +1,8 @@
+2017-07-25  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* configure.ac: If any of the config.* scripts fail, exit 1.
+	* configure: Regenerate.
+
 2017-07-25  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/81546
