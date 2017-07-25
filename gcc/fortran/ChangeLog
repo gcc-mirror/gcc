@@ -1,9 +1,13 @@
+2017-07-25  Jakub Jelinek  <jakub@redhat.com>
+
+	* ioparm.def: Use 1U << 31 instead of 1 << 31 as flags2 mask.
+
 2017-07-24  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	* dump-parse-tree.c (show_symbol):  Show binding label if present.
 
 2017-07-24  Thomas Koenig  <tkoenig@gcc.gnu.org>
-	    Mikael Morin <mikael@gcc.gnu.org>
+	    Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/66102
 	* fortran/trans-array.c (gfc_conv_resolve_dependencies):
