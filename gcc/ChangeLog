@@ -1,3 +1,9 @@
+2017-07-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/81532
+	* config/i386/constraints.md (Yd, Ye): Use ALL_SSE_REGS for
+	TARGET_AVX512DQ rather than TARGET_AVX512BW.
+
 2017-07-25  Tamar Christina  <tamar.christina@arm.com>
 
 	* config/arm/parsecpu.awk (all_cores): Remove duplicates.
@@ -799,7 +805,7 @@
 
 2017-07-17  Sebastian Huber  <sebastian.huber@embedded-brains.de>
 
-	*  gcc/config/sparc/rtemself.h (TARGET_OS_CPP_BUILTINS): Add
+	* config/sparc/rtemself.h (TARGET_OS_CPP_BUILTINS): Add
 	conditional builtin define __FIX_LEON3FT_B2BST.
 
 2017-07-17  Daniel Cederman  <cederman@gaisler.com>
@@ -1903,7 +1909,7 @@
 
 2017-07-06  Julia Koval  <julia.koval@intel.com>
 
-	* gcc/config/i386/i386.c (ix86_erase_embedded_rounding):
+	* config/i386/i386.c (ix86_erase_embedded_rounding):
 	Remove code for old rounding pattern.
 
 2017-07-06  Richard Earnshaw  <rearnsha@arm.com>
@@ -15356,7 +15362,7 @@
 2017-02-06  Palmer Dabbelt  <palmer@dabbelt.com>
 
 	* config/riscv/riscv.c: New file.
-	* gcc/common/config/riscv/riscv-common.c: Likewise.
+	* common/config/riscv/riscv-common.c: Likewise.
 	* config.gcc: Likewise.
 	* config/riscv/constraints.md: Likewise.
 	* config/riscv/elf.h: Likewise.
@@ -16619,7 +16625,7 @@
 	* config/i386/avx512bwintrin.h: Add k-mask test, kortest intrinsics.
 	* config/i386/avx512dqintrin.h: Ditto.
 	* config/i386/avx512fintrin.h: Ditto.
-	* gcc/config/i386/i386.c: Handle new builtins.
+	* config/i386/i386.c: Handle new builtins.
 	* config/i386/i386-builtin.def: Add new builtins.
 	* config/i386/sse.md (ktest<mode>, kortest<mode>): New.
 	(UNSPEC_KORTEST, UNSPEC_KTEST): New.
@@ -16800,7 +16806,7 @@
 	* config/i386/avx512dqintrin.h: Ditto.
 	* config/i386/avx512fintrin.h: Ditto.
 	* config/i386/i386-builtin-types.def: Add new types.
-	* gcc/config/i386/i386.c: Handle new types.
+	* config/i386/i386.c: Handle new types.
 	* config/i386/i386-builtin.def (__builtin_ia32_kshiftliqi)
 	(__builtin_ia32_kshiftlihi, __builtin_ia32_kshiftlisi)
 	(__builtin_ia32_kshiftlidi, __builtin_ia32_kshiftriqi)
@@ -16823,14 +16829,14 @@
 	(with_madd4): Add validation.
 	(all_defaults): Add madd4.
 	* config/mips/mips.opt (mmadd4): New option.
-	* gcc/config/mips/mips.h (OPTION_DEFAULT_SPECS): Add a default for
+	* config/mips/mips.h (OPTION_DEFAULT_SPECS): Add a default for
 	mmadd4.
 	(TARGET_CPU_CPP_BUILTINS): Add builtin_define for
 	__mips_no_madd4.
 	(ISA_HAS_UNFUSED_MADD4): Gate with mips_madd4.
 	(ISA_HAS_FUSED_MADD4): Likewise.
-	* gcc/doc/invoke.texi (-mmadd4): Document the new option.
-	* gcc/doc/install.texi (--with-madd4): Document the new option.
+	* doc/invoke.texi (-mmadd4): Document the new option.
+	* doc/install.texi (--with-madd4): Document the new option.
 
 2017-01-19  Jiong Wang  <jiong.wang@arm.com>
 
@@ -16968,12 +16974,12 @@
 	(with_lxc1_sxc1): Add validation.
 	(all_defaults): Add lxc1-sxc1.
 	* config/mips/mips.opt (mlxc1-sxc1): New option.
-	* gcc/config/mips/mips.h (OPTION_DEFAULT_SPECS): Add a default for
+	* config/mips/mips.h (OPTION_DEFAULT_SPECS): Add a default for
 	mlxc1-sxc1.
 	(TARGET_CPU_CPP_BUILTINS): Add builtin_define for
 	__mips_no_lxc1_sxc1.
 	(ISA_HAS_LXC1_SXC1): Gate with mips_lxc1_sxc1.
-	* gcc/doc/invoke.texi (-mlxc1-sxc1): Document the new option.
+	* doc/invoke.texi (-mlxc1-sxc1): Document the new option.
 	* doc/install.texi (--with-lxc1-sxc1): Document the new option.
 
 2017-01-19  Richard Biener  <rguenther@suse.de>
@@ -18390,8 +18396,8 @@
 	'arm_const_bounds'.
 	* config/arm/types.md (coproc): New.
 	* config/arm/unspecs.md (VUNSPEC_CDP, VUNSPEC_CDP2): New.
-	* gcc/doc/extend.texi (ACLE): Add a mention of Coprocessor intrinsics.
-	* gcc/doc/sourcebuild.texi (arm_coproc1_ok, arm_coproc2_ok,
+	* doc/extend.texi (ACLE): Add a mention of Coprocessor intrinsics.
+	* doc/sourcebuild.texi (arm_coproc1_ok, arm_coproc2_ok,
 	arm_coproc3_ok, arm_coproc4_ok): Document new effective targets.
 
 2017-01-06  Andre Vieira  <andre.simoesdiasvieira@arm.com>
