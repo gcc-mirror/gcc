@@ -1,5 +1,11 @@
 2017-07-25  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/81455
+	* tree-ssa-loop-unswitch.c (find_loop_guard): Make sure to
+	not walk in cycles when looking for guards.
+
+2017-07-25  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/81529
 	* tree-vect-stmts.c (process_use): Disregard live induction PHIs
 	when optimizing backedge uses.
