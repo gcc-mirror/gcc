@@ -1,3 +1,12 @@
+2017-07-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/ios_base.h (ios_base::io_state, ios_base::open_mode)
+	(ios_base::seek_dir): Remove for C++17.
+	* include/std/streambuf (basic_streambuf::stossc): Remove for C++17.
+	Add deprecated attribute for C++11 and C++14.
+	* testsuite/27_io/types/1.cc: Don't run for C++17 and later.
+	* testsuite/27_io/types/4.cc: New.
+
 2017-07-23  Michael Collison  <michael.collison@arm.com>
 
 	Add optimized implementation of mersenne twister for aarch64
