@@ -1,3 +1,7 @@
+2017-07-25  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr-log.c (avr_log_vadump) ['T']: Print NULL-TREE.
+
 2017-07-25  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/81505
