@@ -1,3 +1,9 @@
+2017-07-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/81303
+	* tree-vect-loop-manip.c (vect_loop_versioning): Build
+	profitability check against LOOP_VINFO_NITERSM1.
+
 2017-07-25  Alexander Monakov  <amonakov@ispras.ru>
 
 	* domwalk.c (cmp_bb_postorder): Simplify.

@@ -2136,7 +2136,7 @@ vect_loop_versioning (loop_vec_info loop_vinfo,
   tree arg;
   profile_probability prob = profile_probability::likely ();
   gimple_seq gimplify_stmt_list = NULL;
-  tree scalar_loop_iters = LOOP_VINFO_NITERS (loop_vinfo);
+  tree scalar_loop_iters = LOOP_VINFO_NITERSM1 (loop_vinfo);
   bool version_align = LOOP_REQUIRES_VERSIONING_FOR_ALIGNMENT (loop_vinfo);
   bool version_alias = LOOP_REQUIRES_VERSIONING_FOR_ALIAS (loop_vinfo);
   bool version_niter = LOOP_REQUIRES_VERSIONING_FOR_NITERS (loop_vinfo);
@@ -2144,7 +2144,7 @@ vect_loop_versioning (loop_vec_info loop_vinfo,
   if (check_profitability)
     cond_expr = fold_build2 (GE_EXPR, boolean_type_node, scalar_loop_iters,
 			     build_int_cst (TREE_TYPE (scalar_loop_iters),
-						       th));
+					    th - 1));
 
   if (version_niter)
     vect_create_cond_for_niters_checks (loop_vinfo, &cond_expr);
