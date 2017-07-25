@@ -10140,18 +10140,26 @@ avr_encode_section_info (tree decl, rtx rtl, int new_decl_p)
 
   if (new_decl_p
       && decl && DECL_P (decl)
-      && NULL_TREE == DECL_INITIAL (decl)
       && !DECL_EXTERNAL (decl)
       && avr_progmem_p (decl, DECL_ATTRIBUTES (decl)))
     {
-      // Don't warn for (implicit) aliases like in PR80462.
-      tree asmname = DECL_ASSEMBLER_NAME (decl);
-      varpool_node *node = varpool_node::get_for_asmname (asmname);
-      bool alias_p = node && node->alias;
+      if (!TREE_READONLY (decl))
+        {
+          // This might happen with C++ if stuff needs constructing.
+          error ("variable %q+D with dynamic initialization put "
+                 "into program memory area", decl);
+        }
+      else if (NULL_TREE == DECL_INITIAL (decl))
+        {
+          // Don't warn for (implicit) aliases like in PR80462.
+          tree asmname = DECL_ASSEMBLER_NAME (decl);
+          varpool_node *node = varpool_node::get_for_asmname (asmname);
+          bool alias_p = node && node->alias;
 
-      if (!alias_p)
-        warning (OPT_Wuninitialized, "uninitialized variable %q+D put into "
-                 "program memory area", decl);
+          if (!alias_p)
+            warning (OPT_Wuninitialized, "uninitialized variable %q+D put "
+                     "into program memory area", decl);
+        }
     }
 
   default_encode_section_info (decl, rtl, new_decl_p);
