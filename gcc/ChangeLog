@@ -1,3 +1,25 @@
+2017-07-25  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	PR libgcc/61152
+	* config/aarch64/rtems.h: Add GCC Runtime Library Exception.
+	Format changes.
+	* config/arm/rtems.h: Likewise.
+	* config/bfin/rtems.h: Likewise.
+	* config/i386/rtemself.h: Likewise.
+	* config/lm32/rtems.h: Likewise.
+	* config/m32c/rtems.h: Likewise.
+	* config/m68k/rtemself.h: Likewise.
+	* config/microblaze/rtems.h: Likewise.
+	* config/mips/rtems.h: Likewise.
+	* config/moxie/rtems.h: Likewise.
+	* config/nios2/rtems.h: Likewise.
+	* config/powerpcspe/rtems.h: Likewise.
+	* config/rs6000/rtems.h: Likewise.
+	* config/rtems.h: Likewise.
+	* config/sh/rtems.h: Likewise.
+	* config/sh/rtemself.h: Likewise.
+	* config/sparc/rtemself.h: Likewise.
+
 2017-07-25  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR 81487
