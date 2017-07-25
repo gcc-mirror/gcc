@@ -127,7 +127,8 @@ i386_pe_adjust_class_at_definition (tree t)
 	    for (thunk = DECL_THUNKS (member); thunk;
 		 thunk = TREE_CHAIN (thunk))
 	      maybe_add_dllexport (thunk);
-	}
+	  }
+
       /* Check vtables  */
       for (member = CLASSTYPE_VTABLES (t);
 	   member; member = DECL_CHAIN (member))
@@ -145,14 +146,11 @@ i386_pe_adjust_class_at_definition (tree t)
 	 That is just right since out-of class declarations can only be a
 	 definition.   */
 
-      /* Check static VAR_DECL's.  */
+      /* Check FUNCTION_DECL's and static VAR_DECL's.  */
       for (member = TYPE_FIELDS (t); member; member = DECL_CHAIN (member))
 	if (TREE_CODE (member) == VAR_DECL)     
 	  maybe_add_dllimport (member);
-    
-      /* Check FUNCTION_DECL's.  */
-      for (member = TYPE_METHODS (t); member;  member = DECL_CHAIN (member))
-	if (TREE_CODE (member) == FUNCTION_DECL)
+	else if (TREE_CODE (member) == FUNCTION_DECL)
 	  {
 	    tree thunk;
 	    maybe_add_dllimport (member);
@@ -161,10 +159,11 @@ i386_pe_adjust_class_at_definition (tree t)
 	    for (thunk = DECL_THUNKS (member); thunk;
 		 thunk = DECL_CHAIN (thunk))
 	      maybe_add_dllimport (thunk);
-	 }
+	  }
  
       /* Check vtables  */
-      for (member = CLASSTYPE_VTABLES (t); member;  member = DECL_CHAIN (member))
+      for (member = CLASSTYPE_VTABLES (t);
+	   member;  member = DECL_CHAIN (member))
 	if (TREE_CODE (member) == VAR_DECL) 
 	  maybe_add_dllimport (member);
 
