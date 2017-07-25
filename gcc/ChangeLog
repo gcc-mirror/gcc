@@ -1,4 +1,8 @@
-2017-07-07  Torsten Duwe  <duwe@suse.de>
+2017-07-25  Alexander Monakov  <amonakov@ispras.ru>
+
+	* match.pd ((X * CST) * Y): Reassociate to (X * Y) * CST.
+
+2017-07-25  Torsten Duwe  <duwe@suse.de>
 
 	* common.opt: Introduce -fpatchable-function-entry
 	command line option, and its variables function_entry_patch_area_size
