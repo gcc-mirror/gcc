@@ -5557,7 +5557,8 @@ c_parser_else_body (c_parser *parser, const token_indent_info &else_tinfo,
     }
   else
     {
-      body_loc_after_labels = c_parser_peek_token (parser)->location;
+      if (!c_parser_next_token_is (parser, CPP_OPEN_BRACE))
+	body_loc_after_labels = c_parser_peek_token (parser)->location;
       c_parser_statement_after_labels (parser, NULL, chain);
     }
 
@@ -5811,6 +5812,7 @@ c_parser_while_statement (c_parser *parser, bool ivdep, bool *if_p)
     = get_token_indent_info (c_parser_peek_token (parser));
 
   location_t loc_after_labels;
+  bool open_brace = c_parser_next_token_is (parser, CPP_OPEN_BRACE);
   body = c_parser_c99_block_statement (parser, if_p, &loc_after_labels);
   c_finish_loop (loc, cond, NULL, body, c_break_label, c_cont_label, true);
   add_stmt (c_end_compound_stmt (loc, block, flag_isoc99));
@@ -5820,7 +5822,7 @@ c_parser_while_statement (c_parser *parser, bool ivdep, bool *if_p)
     = get_token_indent_info (c_parser_peek_token (parser));
   warn_for_misleading_indentation (while_tinfo, body_tinfo, next_tinfo);
 
-  if (next_tinfo.type != CPP_SEMICOLON)
+  if (next_tinfo.type != CPP_SEMICOLON && !open_brace)
     warn_for_multistatement_macros (loc_after_labels, next_tinfo.location,
 				    while_tinfo.location, RID_WHILE);
 
@@ -6109,6 +6111,7 @@ c_parser_for_statement (c_parser *parser, bool ivdep, bool *if_p)
     = get_token_indent_info (c_parser_peek_token (parser));
 
   location_t loc_after_labels;
+  bool open_brace = c_parser_next_token_is (parser, CPP_OPEN_BRACE);
   body = c_parser_c99_block_statement (parser, if_p, &loc_after_labels);
 
   if (is_foreach_statement)
@@ -6122,7 +6125,7 @@ c_parser_for_statement (c_parser *parser, bool ivdep, bool *if_p)
     = get_token_indent_info (c_parser_peek_token (parser));
   warn_for_misleading_indentation (for_tinfo, body_tinfo, next_tinfo);
 
-  if (next_tinfo.type != CPP_SEMICOLON)
+  if (next_tinfo.type != CPP_SEMICOLON && !open_brace)
     warn_for_multistatement_macros (loc_after_labels, next_tinfo.location,
 				    for_tinfo.location, RID_FOR);
 
