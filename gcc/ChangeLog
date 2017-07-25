@@ -1,5 +1,9 @@
 2017-07-25  Alexander Monakov  <amonakov@ispras.ru>
 
+	* match.pd ((X * CST1) * CST2): Simplify to X * (CST1 * CST2).
+
+2017-07-25  Alexander Monakov  <amonakov@ispras.ru>
+
 	* match.pd ((X * CST) * Y): Reassociate to (X * Y) * CST.
 
 2017-07-25  Torsten Duwe  <duwe@suse.de>
