@@ -1,3 +1,10 @@
+2017-07-25  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR 81487
+	* hsa-brig.c (brig_init): Use xasprintf instead of asprintf.
+	* gimple-pretty-print.c (dump_profile, dump_probability): Same.
+	* tree-ssa-structalias.c (alias_get_name): Same.
+
 2017-07-25  Bin Cheng  <bin.cheng@arm.com>
 
 	PR target/81414

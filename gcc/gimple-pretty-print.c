@@ -91,10 +91,10 @@ dump_profile (int frequency, profile_count &count)
 
   char *buf;
   if (count.initialized_p ())
-    asprintf (&buf, "[%.2f%%] [count: %" PRId64 "]", fvalue,
-	      count.to_gcov_type ());
+    buf = xasprintf ("[%.2f%%] [count: %" PRId64 "]", fvalue,
+		     count.to_gcov_type ());
   else
-    asprintf (&buf, "[%.2f%%] [count: INV]", fvalue);
+    buf = xasprintf ("[%.2f%%] [count: INV]", fvalue);
 
   const char *ret = xstrdup_for_dump (buf);
   free (buf);
@@ -121,12 +121,12 @@ dump_probability (profile_probability probability, profile_count &count)
 
   char *buf;
   if (count.initialized_p ())
-    asprintf (&buf, "[%.2f%%] [count: %" PRId64 "]", fvalue,
-	      count.to_gcov_type ());
+    buf = xasprintf ("[%.2f%%] [count: %" PRId64 "]", fvalue,
+		     count.to_gcov_type ());
   else if (probability.initialized_p ())
-    asprintf (&buf, "[%.2f%%] [count: INV]", fvalue);
+    buf = xasprintf ("[%.2f%%] [count: INV]", fvalue);
   else
-    asprintf (&buf, "[INV] [count: INV]");
+    buf = xasprintf ("[INV] [count: INV]");
 
   const char *ret = xstrdup_for_dump (buf);
   free (buf);
