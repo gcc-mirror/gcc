@@ -1,3 +1,8 @@
+2017-07-25  Jim Wilson  <jim.wilson@linaro.org>
+
+	* config/i386/gstabs.h: Delete.
+	* config/i386/openbsd.h, config/i386/t-openbsd: Likewise.
+
 2017-07-25  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.c (ix86_decompose_address): Do not check for
