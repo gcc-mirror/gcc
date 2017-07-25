@@ -4824,6 +4824,8 @@ Gogo::convert_named_types()
   Runtime::convert_types(this);
 
   this->named_types_are_converted_ = true;
+
+  Type::finish_pointer_types(this);
 }
 
 // Convert all names types in a set of bindings.
