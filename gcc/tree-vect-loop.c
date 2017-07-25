@@ -2813,27 +2813,29 @@ vect_is_simple_reduction (loop_vec_info loop_info, gimple *phi,
       return NULL;
     }
 
+  if (! flow_bb_inside_loop_p (loop, gimple_bb (def_stmt)))
+    return NULL;
+
   nloop_uses = 0;
   auto_vec<gphi *, 3> lcphis;
-  if (flow_bb_inside_loop_p (loop, gimple_bb (def_stmt)))
-    FOR_EACH_IMM_USE_FAST (use_p, imm_iter, name)
-      {
-	gimple *use_stmt = USE_STMT (use_p);
-	if (is_gimple_debug (use_stmt))
-	  continue;
-	if (flow_bb_inside_loop_p (loop, gimple_bb (use_stmt)))
-	  nloop_uses++;
-	else
-	  /* We can have more than one loop-closed PHI.  */
-	  lcphis.safe_push (as_a <gphi *> (use_stmt));
-	if (nloop_uses > 1)
-	  {
-	    if (dump_enabled_p ())
-	      dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			       "reduction used in loop.\n");
-	    return NULL;
-	  }
-      }
+  FOR_EACH_IMM_USE_FAST (use_p, imm_iter, name)
+    {
+      gimple *use_stmt = USE_STMT (use_p);
+      if (is_gimple_debug (use_stmt))
+	continue;
+      if (flow_bb_inside_loop_p (loop, gimple_bb (use_stmt)))
+	nloop_uses++;
+      else
+	/* We can have more than one loop-closed PHI.  */
+	lcphis.safe_push (as_a <gphi *> (use_stmt));
+      if (nloop_uses > 1)
+	{
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			     "reduction used in loop.\n");
+	  return NULL;
+	}
+    }
 
   /* If DEF_STMT is a phi node itself, we expect it to have a single argument
      defined in the inner loop.  */

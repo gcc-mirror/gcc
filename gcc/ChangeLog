@@ -1,5 +1,11 @@
 2017-07-25  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/81510
+	* tree-vect-loop.c (vect_is_simple_reduction): When the
+	reduction stmt is not inside the loop bail out.
+
+2017-07-25  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/81303
 	* tree-vect-loop-manip.c (vect_loop_versioning): Build
 	profitability check against LOOP_VINFO_NITERSM1.
