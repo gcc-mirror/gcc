@@ -1,6 +1,19 @@
 2017-07-25  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline
+	2017-04-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/80553
+	* include/bits/stl_construct.h (_Destroy, _Destroy_n): Add static
+	assertions to ensure type is destructible.
+	(destroy_at, destroy, destroy_n): Move from stl_uninitialized.h.
+	* include/bits/stl_uninitialized.h (destroy_at, destroy, destroy_n):
+	Move to stl_construct.h.
+	* testsuite/20_util/specialized_algorithms/memory_management_tools/
+	destroy_neg.cc: New test.
+	* testsuite/23_containers/vector/cons/destructible_neg.cc: New test.
+
+	Backport from mainline
 	2017-05-16  Jonathan Wakely  <jwakely@redhat.com>
 
 	* configure: Regenerate.
