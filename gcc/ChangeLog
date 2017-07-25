@@ -1,3 +1,9 @@
+2017-07-25  Alexander Monakov  <amonakov@ispras.ru>
+
+	* domwalk.c (cmp_bb_postorder): Simplify.
+	(sort_bbs_postorder): New function.  Use it...
+	(dom_walker::walk): ...here to optimize common cases.
+
 2017-07-25  Martin Liska  <mliska@suse.cz>
 
 	PR ipa/81520
