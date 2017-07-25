@@ -1,6 +1,17 @@
 2017-07-25  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline
+	2017-05-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* configure: Regenerate.
+	* doc/xml/manual/status_cxx2017.xml: Update status table.
+	* doc/html/*: Regenerate.
+	* include/Makefile.am: Add new header.
+	* include/Makefile.in: Regenerate.
+	* include/experimental/source_location: New header implementing N4519.
+	* testsuite/experimental/source_location/1.cc: New test.
+
+	Backport from mainline
 	2017-07-06  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/uses_allocator.h (__use_alloc(const _Alloc&&)): Add
