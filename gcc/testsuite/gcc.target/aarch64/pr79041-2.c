@@ -8,3 +8,4 @@ t (void)
 }
 
 /* { dg-final { scan-assembler "adr" } } */
+/* { dg-final { scan-assembler-not "adrp" } } */
