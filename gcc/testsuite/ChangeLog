@@ -1,3 +1,8 @@
+2017-07-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/81529
+	* gfortran.dg/pr81529.f90: New testcase.
+
 2017-07-25  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	* testsuite/gcc.target/aarch64/pr79041-2.c: Improve test.
