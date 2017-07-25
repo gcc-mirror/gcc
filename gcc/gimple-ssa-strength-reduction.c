@@ -2012,13 +2012,14 @@ replace_mult_candidate (slsr_cand_t c, tree basis_name, widest_int bump)
      types but allows for safe negation without twisted logic.  */
   if (wi::fits_shwi_p (bump)
       && bump.to_shwi () != HOST_WIDE_INT_MIN
-      /* It is not useful to replace casts, copies, or adds of
+      /* It is not useful to replace casts, copies, negates, or adds of
 	 an SSA name and a constant.  */
       && cand_code != MODIFY_EXPR
       && !CONVERT_EXPR_CODE_P (cand_code)
       && cand_code != PLUS_EXPR
       && cand_code != POINTER_PLUS_EXPR
-      && cand_code != MINUS_EXPR)
+      && cand_code != MINUS_EXPR
+      && cand_code != NEGATE_EXPR)
     {
       enum tree_code code = PLUS_EXPR;
       tree bump_tree;
