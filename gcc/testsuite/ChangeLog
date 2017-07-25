@@ -1,3 +1,9 @@
+2017-07-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/81510
+	* gcc.dg/torture/pr81510.c: New testcase.
+	* gcc.dg/torture/pr81510-2.c: Likewise.
+
 2017-07-25  Martin Liska  <mliska@suse.cz>
 
 	PR ipa/81520
