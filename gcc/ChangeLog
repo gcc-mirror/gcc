@@ -1,3 +1,9 @@
+2017-07-25  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/81505
+	* fold-const.c (fold_negate_const): TREE_OVERFLOW should be
+	sticky.
+
 2017-07-24  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* config/rs6000/rs6000-cpus.def (ISA_2_6_MASKS_SERVER): Delete

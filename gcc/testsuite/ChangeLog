@@ -1,3 +1,8 @@
+2017-07-25  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/81505
+	* gcc.dg/ubsan/pr81505.c: New testcase.
+
 2017-07-24  Daniel Santos  <daniel.santos@pobox.com>
 
 	PR testsuite/80759
