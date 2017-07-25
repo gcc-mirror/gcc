@@ -163,6 +163,13 @@ bool flag_stack_usage_info = false
 Variable
 int flag_debug_asm
 
+; How many NOP insns to place at each function entry by default
+Variable
+HOST_WIDE_INT function_entry_patch_area_size
+
+; And how far the real asm entry point is into this area
+Variable
+HOST_WIDE_INT function_entry_patch_area_start
 
 ; Balance between GNAT encodings and standard DWARF to emit.
 Variable
@@ -2029,6 +2036,10 @@ Report on consistency of profile.
 fprofile-reorder-functions
 Common Report Var(flag_profile_reorder_functions)
 Enable function reordering that improves code placement.
+
+fpatchable-function-entry=
+Common Joined Optimization
+Insert NOP instructions at each function entry.
 
 frandom-seed
 Common Var(common_deferred_options) Defer

@@ -1630,8 +1630,10 @@ process_options (void)
     }
 
  /* Do not use IPA optimizations for register allocation if profiler is active
+    or patchable function entries are inserted for run-time instrumentation
     or port does not emit prologue and epilogue as RTL.  */
-  if (profile_flag || !targetm.have_prologue () || !targetm.have_epilogue ())
+  if (profile_flag || function_entry_patch_area_size
+      || !targetm.have_prologue () || !targetm.have_epilogue ())
     flag_ipa_ra = 0;
 
   /* Enable -Werror=coverage-mismatch when -Werror and -Wno-error

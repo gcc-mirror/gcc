@@ -73,6 +73,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "calls.h"
 #include "expr.h"
 #include "output.h"
+#include "common/common-target.h"
 #include "reload.h"
 #include "intl.h"
 #include "opts.h"
@@ -1608,6 +1609,51 @@ int
 default_compare_by_pieces_branch_ratio (machine_mode)
 {
   return 1;
+}
+
+/* Write PATCH_AREA_SIZE NOPs into the asm outfile FILE around a function
+   entry.  If RECORD_P is true and the target supports named sections,
+   the location of the NOPs will be recorded in a special object section
+   called "__patchable_function_entries".  This routine may be called
+   twice per function to put NOPs before and after the function
+   entry.  */
+
+void
+default_print_patchable_function_entry (FILE *file,
+					unsigned HOST_WIDE_INT patch_area_size,
+					bool record_p)
+{
+  const char *nop_templ = 0;
+  int code_num;
+  rtx_insn *my_nop = make_insn_raw (gen_nop ());
+
+  /* We use the template alone, relying on the (currently sane) assumption
+     that the NOP template does not have variable operands.  */
+  code_num = recog_memoized (my_nop);
+  nop_templ = get_insn_template (code_num, my_nop);
+
+  if (record_p && targetm_common.have_named_sections)
+    {
+      char buf[256];
+      static int patch_area_number;
+      section *previous_section = in_section;
+
+      patch_area_number++;
+      ASM_GENERATE_INTERNAL_LABEL (buf, "LPFE", patch_area_number);
+
+      switch_to_section (get_section ("__patchable_function_entries",
+				      0, NULL));
+      fputs (integer_asm_op (POINTER_SIZE_UNITS, false), file);
+      assemble_name_raw (file, buf);
+      fputc ('\n', file);
+
+      switch_to_section (previous_section);
+      ASM_OUTPUT_LABEL (file, buf);
+    }
+
+  unsigned i;
+  for (i = 0; i < patch_area_size; ++i)
+    fprintf (file, "\t%s\n", nop_templ);
 }
 
 bool

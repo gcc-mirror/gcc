@@ -11519,6 +11519,34 @@ of the function name, it is considered to be a match.  For C99 and C++
 extended identifiers, the function name must be given in UTF-8, not
 using universal character names.
 
+@item -fpatchable-function-entry=@var{N}[,@var{M}]
+@opindex fpatchable-function-entry
+Generate @var{N} NOPs right at the beginning
+of each function, with the function entry point before the @var{M}th NOP.
+If @var{M} is omitted, it defaults to @code{0} so the
+function entry points to the address just at the first NOP.
+The NOP instructions reserve extra space which can be used to patch in
+any desired instrumentation at run time, provided that the code segment
+is writable.  The amount of space is controllable indirectly via
+the number of NOPs; the NOP instruction used corresponds to the instruction
+emitted by the internal GCC back-end interface @code{gen_nop}.  This behavior
+is target-specific and may also depend on the architecture variant and/or
+other compilation options.
+
+For run-time identification, the starting addresses of these areas,
+which correspond to their respective function entries minus @var{M},
+are additionally collected in the @code{__patchable_function_entries}
+section of the resulting binary.
+
+Note that the value of @code{__attribute__ ((patchable_function_entry
+(N,M)))} takes precedence over command-line option
+@option{-fpatchable-function-entry=N,M}.  This can be used to increase
+the area size or to remove it completely on a single function.
+If @code{N=0}, no pad location is recorded.
+
+The NOP instructions are inserted at---and maybe before, depending on
+@var{M}---the function entry address, even before the prologue.
+
 @end table
 
 

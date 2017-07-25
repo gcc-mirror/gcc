@@ -142,6 +142,8 @@ static tree handle_bnd_variable_size_attribute (tree *, tree, tree, int, bool *)
 static tree handle_bnd_legacy (tree *, tree, tree, int, bool *);
 static tree handle_bnd_instrument (tree *, tree, tree, int, bool *);
 static tree handle_fallthrough_attribute (tree *, tree, tree, int, bool *);
+static tree handle_patchable_function_entry_attribute (tree *, tree, tree,
+						       int, bool *);
 
 /* Table of machine-independent attributes common to all C-like languages.
 
@@ -351,6 +353,9 @@ const struct attribute_spec c_common_attribute_table[] =
 			      handle_bnd_instrument, false },
   { "fallthrough",	      0, 0, false, false, false,
 			      handle_fallthrough_attribute, false },
+  { "patchable_function_entry",	1, 2, true, false, false,
+			      handle_patchable_function_entry_attribute,
+			      false },
   { NULL,                     0, 0, false, false, false, NULL, false }
 };
 
@@ -3258,5 +3263,12 @@ handle_fallthrough_attribute (tree *, tree name, tree, int,
 {
   warning (OPT_Wattributes, "%qE attribute ignored", name);
   *no_add_attrs = true;
+  return NULL_TREE;
+}
+
+static tree
+handle_patchable_function_entry_attribute (tree *, tree, tree, int, bool *)
+{
+  /* Nothing to be done here.  */
   return NULL_TREE;
 }

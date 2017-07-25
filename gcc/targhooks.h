@@ -203,6 +203,9 @@ extern bool default_use_by_pieces_infrastructure_p (unsigned HOST_WIDE_INT,
 						    bool);
 extern int default_compare_by_pieces_branch_ratio (machine_mode);
 
+extern void default_print_patchable_function_entry (FILE *,
+						    unsigned HOST_WIDE_INT,
+						    bool);
 extern bool default_profile_before_prologue (void);
 extern reg_class_t default_preferred_reload_class (rtx, reg_class_t);
 extern reg_class_t default_preferred_output_reload_class (rtx, reg_class_t);
