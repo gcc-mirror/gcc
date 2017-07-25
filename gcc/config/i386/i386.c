@@ -13594,8 +13594,7 @@ ix86_minimum_incoming_stack_boundary (bool sibcall)
 {
   unsigned int incoming_stack_boundary;
 
-  /* Stack of interrupt handler is aligned to 128 bits in 64bit
-     mode.  */
+  /* Stack of interrupt handler is aligned to 128 bits in 64bit mode.  */
   if (cfun->machine->func_type != TYPE_NORMAL)
     incoming_stack_boundary = TARGET_64BIT ? 128 : MIN_STACK_BOUNDARY;
   /* Prefer the one specified at command line. */
@@ -16187,9 +16186,9 @@ ix86_decompose_address (rtx addr, struct ix86_address *out)
 
   /* Allow arg pointer and stack pointer as index if there is not scaling.  */
   if (base_reg && index_reg && scale == 1
-      && (index_reg == arg_pointer_rtx
-	  || index_reg == frame_pointer_rtx
-	  || (REG_P (index_reg) && REGNO (index_reg) == STACK_POINTER_REGNUM)))
+      && (REGNO (index_reg) == ARG_POINTER_REGNUM
+	  || REGNO (index_reg) == FRAME_POINTER_REGNUM
+	  || REGNO (index_reg) == SP_REG))
     {
       std::swap (base, index);
       std::swap (base_reg, index_reg);
@@ -16197,14 +16196,11 @@ ix86_decompose_address (rtx addr, struct ix86_address *out)
 
   /* Special case: %ebp cannot be encoded as a base without a displacement.
      Similarly %r13.  */
-  if (!disp
-      && base_reg
-      && (base_reg == hard_frame_pointer_rtx
-	  || base_reg == frame_pointer_rtx
-	  || base_reg == arg_pointer_rtx
-	  || (REG_P (base_reg)
-	      && (REGNO (base_reg) == HARD_FRAME_POINTER_REGNUM
-		  || REGNO (base_reg) == R13_REG))))
+  if (!disp && base_reg
+      && (REGNO (base_reg) == ARG_POINTER_REGNUM
+	  || REGNO (base_reg) == FRAME_POINTER_REGNUM
+	  || REGNO (base_reg) == BP_REG
+	  || REGNO (base_reg) == R13_REG))
     disp = const0_rtx;
 
   /* Special case: on K6, [%esi] makes the instruction vector decoded.
@@ -16213,7 +16209,7 @@ ix86_decompose_address (rtx addr, struct ix86_address *out)
      to test cfun for being non-NULL. */
   if (TARGET_K6 && cfun && optimize_function_for_speed_p (cfun)
       && base_reg && !index_reg && !disp
-      && REG_P (base_reg) && REGNO (base_reg) == SI_REG)
+      && REGNO (base_reg) == SI_REG)
     disp = const0_rtx;
 
   /* Special case: encode reg+reg instead of reg*2.  */

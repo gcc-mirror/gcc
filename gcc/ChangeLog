@@ -1,3 +1,9 @@
+2017-07-25  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (ix86_decompose_address): Do not check for
+	register RTX when looking at index_reg or base_reg.
+	* config/i386/i386.h (INCOMING_RETURN_ADDR_RTX): Use stack_pointer_rtx.
+
 2017-07-25  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gimple.c (gimple_assign_set_rhs_with_ops): Do not ask gsi_replace
@@ -96,8 +102,9 @@
 2017-07-25  Martin Liska  <mliska@suse.cz>
 
 	PR ipa/81520
-	* ipa-visibility.c (function_and_variable_visibility): Make the redirection
-	just on target that do supporting aliasing.  Fix GNU coding style.
+	* ipa-visibility.c (function_and_variable_visibility): Make the
+	redirection just on target that supports aliasing.
+	Fix GNU coding style.
 
 2017-07-25  Sebastian Huber  <sebastian.huber@embedded-brains.de>
 
