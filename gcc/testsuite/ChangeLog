@@ -1,3 +1,11 @@
+2017-07-25  Bin Cheng  <bin.cheng@arm.com>
+
+	Backport from 2017-07-20 trunk r250384.
+
+	PR tree-optimization/81388
+	* gcc.dg/tree-ssa/pr81388-1.c: New test.
+	* gcc.dg/tree-ssa/pr81388-2.c: New test.
+
 2017-07-23  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/80569
