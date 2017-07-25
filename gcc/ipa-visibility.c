@@ -615,9 +615,10 @@ function_and_variable_visibility (bool whole_program)
   struct cgraph_node *node;
   varpool_node *vnode;
 
-  /* All aliases should be procssed at this point.  */
+  /* All aliases should be processed at this point.  */
   gcc_checking_assert (!alias_pairs || !alias_pairs->length ());
 
+#ifdef ASM_OUTPUT_DEF
   FOR_EACH_DEFINED_FUNCTION (node)
     {
       if (node->get_availability () != AVAIL_INTERPOSABLE
@@ -634,20 +635,22 @@ function_and_variable_visibility (bool whole_program)
 	    continue;
 
 	  if (!alias)
-	    { 
+	    {
 	      alias = dyn_cast<cgraph_node *> (node->noninterposable_alias ());
 	      gcc_assert (alias && alias != node);
 	    }
 
 	  e->redirect_callee (alias);
 	  if (gimple_has_body_p (e->caller->decl))
-	    { 
+	    {
 	      push_cfun (DECL_STRUCT_FUNCTION (e->caller->decl));
 	      e->redirect_call_stmt_to_callee ();
-	      pop_cfun (); 
+	      pop_cfun ();
 	    }
 	}
     }
+#endif
+
   FOR_EACH_FUNCTION (node)
     {
       int flags = flags_from_decl_or_type (node->decl);
