@@ -488,20 +488,6 @@ static const struct cpu_branch_cost generic_branch_cost =
   3   /* Unpredictable.  */
 };
 
-/* Branch costs for Cortex-A57.  */
-static const struct cpu_branch_cost cortexa57_branch_cost =
-{
-  1,  /* Predictable.  */
-  3   /* Unpredictable.  */
-};
-
-/* Branch costs for Vulcan.  */
-static const struct cpu_branch_cost thunderx2t99_branch_cost =
-{
-  1,  /* Predictable.  */
-  3   /* Unpredictable.  */
-};
-
 /* Generic approximation modes.  */
 static const cpu_approx_modes generic_approx_modes =
 {
@@ -612,7 +598,7 @@ static const struct tune_params cortexa35_tunings =
   &generic_addrcost_table,
   &cortexa53_regmove_cost,
   &generic_vector_cost,
-  &cortexa57_branch_cost,
+  &generic_branch_cost,
   &generic_approx_modes,
   4, /* memmov_cost  */
   1, /* issue_rate  */
@@ -638,7 +624,7 @@ static const struct tune_params cortexa53_tunings =
   &generic_addrcost_table,
   &cortexa53_regmove_cost,
   &generic_vector_cost,
-  &cortexa57_branch_cost,
+  &generic_branch_cost,
   &generic_approx_modes,
   4, /* memmov_cost  */
   2, /* issue_rate  */
@@ -664,7 +650,7 @@ static const struct tune_params cortexa57_tunings =
   &cortexa57_addrcost_table,
   &cortexa57_regmove_cost,
   &cortexa57_vector_cost,
-  &cortexa57_branch_cost,
+  &generic_branch_cost,
   &generic_approx_modes,
   4, /* memmov_cost  */
   3, /* issue_rate  */
@@ -690,7 +676,7 @@ static const struct tune_params cortexa72_tunings =
   &cortexa57_addrcost_table,
   &cortexa57_regmove_cost,
   &cortexa57_vector_cost,
-  &cortexa57_branch_cost,
+  &generic_branch_cost,
   &generic_approx_modes,
   4, /* memmov_cost  */
   3, /* issue_rate  */
@@ -716,7 +702,7 @@ static const struct tune_params cortexa73_tunings =
   &cortexa57_addrcost_table,
   &cortexa57_regmove_cost,
   &cortexa57_vector_cost,
-  &cortexa57_branch_cost,
+  &generic_branch_cost,
   &generic_approx_modes,
   4, /* memmov_cost.  */
   2, /* issue_rate.  */
@@ -871,7 +857,7 @@ static const struct tune_params thunderx2t99_tunings =
   &thunderx2t99_addrcost_table,
   &thunderx2t99_regmove_cost,
   &thunderx2t99_vector_cost,
-  &thunderx2t99_branch_cost,
+  &generic_branch_cost,
   &generic_approx_modes,
   4, /* memmov_cost.  */
   4, /* issue_rate.  */
