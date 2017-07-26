@@ -1,3 +1,9 @@
+2017-07-26  Martin Liska  <mliska@suse.cz>
+
+	PR sanitize/81186
+	* function.c (expand_function_start): Make expansion of
+	nonlocal_goto_save_area after parm_birth_insn.
+
 2017-07-26  Sebastian Huber  <sebastian.huber@embedded-brains.de>
 
 	* config/sparc/sparc.c (sparc_option_override): Remove MASK_FPU
