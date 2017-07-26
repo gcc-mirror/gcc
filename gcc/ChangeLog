@@ -1,3 +1,14 @@
+2017-07-26  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/aarch64/aarch64.c (cortexa57_branch_cost): Remove.
+	(thunderx2t99_branch_cost): Likewise.
+	(cortexa35_tunings): Update to use generic_branch_cost.
+	(cortexa53_tunings): Likewise.
+	(cortexa57_tunings): Likewise.
+	(cortexa72_tunings): Likewise.
+	(cortexa73_tunings): Likewise.
+	(thunderx2t99_tunings): Likewise.
+
 2017-07-26  Sebastian Huber  <sebastian.huber@embedded-brains.de>
 
 	* config/sparc/sparc.c (dump_target_flag_bits): Dump MASK_FSMULD.
