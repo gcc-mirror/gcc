@@ -2938,7 +2938,7 @@
   "VECTOR_MEM_VSX_P (<MODE>mode) && TARGET_DIRECT_MOVE_64BIT"
 {
   /* If we have ISA 3.0, we can do a xxextractuw/vextractu{b,h}.  */
-  if (TARGET_VSX_SMALL_INTEGER && TARGET_P9_VECTOR)
+  if (TARGET_P9_VECTOR)
     {
       emit_insn (gen_vsx_extract_<mode>_p9 (operands[0], operands[1],
 					    operands[2]));
@@ -2952,8 +2952,7 @@
 	 (match_operand:VSX_EXTRACT_I 1 "gpc_reg_operand" "wK,<VSX_EX>")
 	 (parallel [(match_operand:QI 2 "<VSX_EXTRACT_PREDICATE>" "n,n")])))
    (clobber (match_scratch:SI 3 "=r,X"))]
-  "VECTOR_MEM_VSX_P (<MODE>mode) && TARGET_VEXTRACTUB
-   && TARGET_VSX_SMALL_INTEGER"
+  "VECTOR_MEM_VSX_P (<MODE>mode) && TARGET_VEXTRACTUB"
 {
   if (which_alternative == 0)
     return "#";
@@ -2983,8 +2982,7 @@
 	 (match_operand:VSX_EXTRACT_I 1 "altivec_register_operand")
 	 (parallel [(match_operand:QI 2 "const_int_operand")])))
    (clobber (match_operand:SI 3 "int_reg_operand"))]
-  "VECTOR_MEM_VSX_P (<MODE>mode) && TARGET_VEXTRACTUB
-   && TARGET_VSX_SMALL_INTEGER && reload_completed"
+  "VECTOR_MEM_VSX_P (<MODE>mode) && TARGET_VEXTRACTUB && reload_completed"
   [(const_int 0)]
 {
   rtx op0_si = gen_rtx_REG (SImode, REGNO (operands[0]));
@@ -3009,8 +3007,7 @@
 	  (match_operand:VSX_EXTRACT_I 1 "gpc_reg_operand" "wK,<VSX_EX>")
 	  (parallel [(match_operand:QI 2 "const_int_operand" "n,n")]))))
    (clobber (match_scratch:SI 3 "=r,X"))]
-  "VECTOR_MEM_VSX_P (<MODE>mode) && TARGET_VEXTRACTUB
-   && TARGET_VSX_SMALL_INTEGER"
+  "VECTOR_MEM_VSX_P (<MODE>mode) && TARGET_VEXTRACTUB"
   "#"
   "&& reload_completed"
   [(parallel [(set (match_dup 4)
@@ -3030,8 +3027,7 @@
 	 (parallel [(match_operand:QI 2 "const_int_operand" "n,n")])))
    (clobber (match_scratch:<VS_scalar> 3 "=<VSX_EX>,&r"))
    (clobber (match_scratch:SI 4 "=X,&r"))]
-  "VECTOR_MEM_VSX_P (<MODE>mode) && TARGET_VEXTRACTUB
-   && TARGET_VSX_SMALL_INTEGER"
+  "VECTOR_MEM_VSX_P (<MODE>mode) && TARGET_VEXTRACTUB"
   "#"
   "&& reload_completed"
   [(parallel [(set (match_dup 3)
@@ -3048,8 +3044,7 @@
 	 (match_operand:V4SI 1 "gpc_reg_operand" "wJv,wJv,wJv")
 	 (parallel [(match_operand:QI 2 "const_0_to_3_operand" "n,n,n")])))
    (clobber (match_scratch:V4SI 3 "=wJv,wJv,wJv"))]
-  "VECTOR_MEM_VSX_P (V4SImode) && TARGET_DIRECT_MOVE_64BIT
-   && (!TARGET_P9_VECTOR || !TARGET_VSX_SMALL_INTEGER)"
+  "VECTOR_MEM_VSX_P (V4SImode) && TARGET_DIRECT_MOVE_64BIT && !TARGET_P9_VECTOR"
   "#"
   "&& reload_completed"
   [(const_int 0)]
@@ -3067,15 +3062,7 @@
      instruction.  */
   value = INTVAL (element);
   if (value != 1)
-    {
-      if (TARGET_P9_VECTOR && TARGET_VSX_SMALL_INTEGER)
-	{
-	  rtx si_tmp = gen_rtx_REG (SImode, REGNO (vec_tmp));
-	  emit_insn (gen_vsx_extract_v4si_p9 (si_tmp,src, element));
-	}
-      else
-	emit_insn (gen_altivec_vspltw_direct (vec_tmp, src, element));
-    }
+    emit_insn (gen_altivec_vspltw_direct (vec_tmp, src, element));
   else
     vec_tmp = src;
 
@@ -3084,13 +3071,13 @@
       if (can_create_pseudo_p ())
 	dest = rs6000_address_for_fpconvert (dest);
 
-      if (TARGET_VSX_SMALL_INTEGER)
+      if (TARGET_P8_VECTOR)
 	emit_move_insn (dest, gen_rtx_REG (SImode, REGNO (vec_tmp)));
       else
 	emit_insn (gen_stfiwx (dest, gen_rtx_REG (DImode, REGNO (vec_tmp))));
     }
 
-  else if (TARGET_VSX_SMALL_INTEGER)
+  else if (TARGET_P8_VECTOR)
     emit_move_insn (dest, gen_rtx_REG (SImode, REGNO (vec_tmp)));
   else
     emit_move_insn (gen_rtx_REG (DImode, REGNO (dest)),
@@ -3108,7 +3095,7 @@
 	 (parallel [(match_operand:QI 2 "<VSX_EXTRACT_PREDICATE>" "n")])))
    (clobber (match_scratch:VSX_EXTRACT_I2 3 "=v"))]
   "VECTOR_MEM_VSX_P (<MODE>mode) && TARGET_DIRECT_MOVE_64BIT
-   && (!TARGET_P9_VECTOR || !TARGET_VSX_SMALL_INTEGER)"
+   && !TARGET_P9_VECTOR"
   "#"
   "&& reload_completed"
   [(const_int 0)]
@@ -3319,7 +3306,7 @@
 	  (parallel [(match_operand:QI 2 "const_int_operand" "n")]))))
    (clobber (match_scratch:<VSX_EXTRACT_I:VS_scalar> 3 "=v"))]
   "VECTOR_MEM_VSX_P (<VSX_EXTRACT_I:MODE>mode) && TARGET_DIRECT_MOVE_64BIT
-   && TARGET_P9_VECTOR && TARGET_VSX_SMALL_INTEGER"
+   && TARGET_P9_VECTOR"
   "#"
   "&& reload_completed"
   [(parallel [(set (match_dup 3)
@@ -3343,7 +3330,7 @@
 	  (parallel [(match_operand:QI 2 "const_int_operand" "n")]))))
    (clobber (match_scratch:<VSX_EXTRACT_I:VS_scalar> 3 "=v"))]
   "VECTOR_MEM_VSX_P (<VSX_EXTRACT_I:MODE>mode) && TARGET_DIRECT_MOVE_64BIT
-   && TARGET_P9_VECTOR && TARGET_VSX_SMALL_INTEGER"
+   && TARGET_P9_VECTOR"
   "#"
   "&& reload_completed"
   [(parallel [(set (match_dup 3)
@@ -3365,8 +3352,7 @@
 	  (match_operand:<VS_scalar> 2 "gpc_reg_operand" "<VSX_EX>")
 	  (match_operand:QI 3 "<VSX_EXTRACT_PREDICATE>" "n")]
 	 UNSPEC_VSX_SET))]
-  "VECTOR_MEM_VSX_P (<MODE>mode) && TARGET_P9_VECTOR && TARGET_VSX_SMALL_INTEGER
-   && TARGET_POWERPC64"
+  "VECTOR_MEM_VSX_P (<MODE>mode) && TARGET_P9_VECTOR && TARGET_POWERPC64"
 {
   int ele = INTVAL (operands[3]);
   int nunits = GET_MODE_NUNITS (<MODE>mode);
@@ -3390,8 +3376,7 @@
 	  (match_operand:QI 3 "const_0_to_3_operand" "n")]
 	 UNSPEC_VSX_SET))
    (clobber (match_scratch:SI 4 "=&wJwK"))]
-  "VECTOR_MEM_VSX_P (V4SFmode) && TARGET_P9_VECTOR && TARGET_VSX_SMALL_INTEGER
-   && TARGET_POWERPC64"
+  "VECTOR_MEM_VSX_P (V4SFmode) && TARGET_P9_VECTOR && TARGET_POWERPC64"
   "#"
   "&& reload_completed"
   [(set (match_dup 5)
@@ -3426,8 +3411,7 @@
 	  (match_operand:QI 3 "const_0_to_3_operand" "n")]
 	 UNSPEC_VSX_SET))
    (clobber (match_scratch:SI 4 "=&wJwK"))]
-  "VECTOR_MEM_VSX_P (V4SFmode) && TARGET_P9_VECTOR && TARGET_VSX_SMALL_INTEGER
-   && TARGET_POWERPC64"
+  "VECTOR_MEM_VSX_P (V4SFmode) && TARGET_P9_VECTOR && TARGET_POWERPC64"
   "#"
   "&& reload_completed"
   [(set (match_dup 4)
@@ -3457,8 +3441,7 @@
 			  [(match_operand:QI 3 "const_0_to_3_operand" "n")]))
 	  (match_operand:QI 4 "const_0_to_3_operand" "n")]
 	 UNSPEC_VSX_SET))]
-  "VECTOR_MEM_VSX_P (V4SFmode) && TARGET_P9_VECTOR && TARGET_VSX_SMALL_INTEGER
-   && TARGET_POWERPC64
+  "VECTOR_MEM_VSX_P (V4SFmode) && TARGET_P9_VECTOR && TARGET_POWERPC64
    && (INTVAL (operands[3]) == (VECTOR_ELT_ORDER_BIG ? 1 : 2))"
 {
   int ele = INTVAL (operands[4]);
@@ -3486,7 +3469,7 @@
 	 UNSPEC_VSX_SET))
    (clobber (match_scratch:SI 5 "=&wJwK"))]
   "VECTOR_MEM_VSX_P (V4SFmode) && VECTOR_MEM_VSX_P (V4SImode)
-   && TARGET_P9_VECTOR && TARGET_VSX_SMALL_INTEGER && TARGET_POWERPC64
+   && TARGET_P9_VECTOR && TARGET_POWERPC64
    && (INTVAL (operands[3]) != (VECTOR_ELT_ORDER_BIG ? 1 : 2))"
   "#"
   "&& 1"
