@@ -1,3 +1,9 @@
+2017-07-26  Leonid Koppel  <lkoppel@uwaterloo.ca>
+
+        PR c++/67054 - Inherited ctor with non-default-constructible members
+        * method.c (walk_field_subobs) Consider member initializers (NSDMIs)
+	when deducing an inheriting constructor.
+
 2017-07-21  Nathan Sidwell  <nathan@acm.org>
 
 	* search.c (lookup_conversion_operator): Return overloads.
