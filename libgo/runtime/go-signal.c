@@ -215,6 +215,11 @@ getSiginfo(siginfo_t *info, void *context __attribute__((unused)))
 	ret.sigpc = ((ucontext_t*)(context))->uc_mcontext.gregs[REG_EIP];
   #endif
 #endif
+#ifdef __alpha__
+  #ifdef __linux__
+	ret.sigpc = ((ucontext_t*)(context))->uc_mcontext.sc_pc;
+  #endif
+#endif
 #ifdef __PPC__
   #ifdef __linux__
 	ret.sigpc = ((ucontext_t*)(context))->uc_mcontext.regs->nip;
