@@ -1,3 +1,11 @@
+2017-07-26  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	Backport from mainline r235874
+	2016-05-04  Alan Modra  <amodra@gmail.com>
+
+	* config/rs6000/rs6000.c (rs6000_elf_output_toc_section_asm_op):
+	Align .toc.
+
 2016-07-25  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	Backport from mainline
