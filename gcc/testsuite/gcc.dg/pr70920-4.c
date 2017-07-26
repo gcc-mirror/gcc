@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target lp64 } */
-/* { dg-options "-O2 -fdump-tree-forwprop-details -Wno-int-to-pointer-cast" } */
+/* { dg-options "-O2 -fdump-tree-ccp1 -Wno-int-to-pointer-cast" } */
 
 #include <stdint.h>
 
@@ -19,4 +19,4 @@ foo (int a)
     }
 }
 
-/* { dg-final { scan-tree-dump "if \\(_\[0-9\]* == 0\\)" "forwprop1" } } */
+/* { dg-final { scan-tree-dump "if \\(a_\[0-9\]*\\(D\\) == 0\\)" "ccp1" } } */
