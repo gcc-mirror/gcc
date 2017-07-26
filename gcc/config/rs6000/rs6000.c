@@ -3216,22 +3216,12 @@ rs6000_init_hard_regno_mode_ok (bool global_init_p)
       rs6000_constraints[RS6000_CONSTRAINT_wa] = VSX_REGS;
       rs6000_constraints[RS6000_CONSTRAINT_wd] = VSX_REGS;	/* V2DFmode  */
       rs6000_constraints[RS6000_CONSTRAINT_wf] = VSX_REGS;	/* V4SFmode  */
+      rs6000_constraints[RS6000_CONSTRAINT_ws] = VSX_REGS;	/* DFmode  */
+      rs6000_constraints[RS6000_CONSTRAINT_wv] = ALTIVEC_REGS;	/* DFmode  */
+      rs6000_constraints[RS6000_CONSTRAINT_wi] = VSX_REGS;	/* DImode  */
 
       if (TARGET_VSX_TIMODE)
 	rs6000_constraints[RS6000_CONSTRAINT_wt] = VSX_REGS;	/* TImode  */
-
-      if (TARGET_UPPER_REGS_DF)					/* DFmode  */
-	{
-	  rs6000_constraints[RS6000_CONSTRAINT_ws] = VSX_REGS;
-	  rs6000_constraints[RS6000_CONSTRAINT_wv] = ALTIVEC_REGS;
-	}
-      else
-	rs6000_constraints[RS6000_CONSTRAINT_ws] = FLOAT_REGS;
-
-      if (TARGET_UPPER_REGS_DI)					/* DImode  */
-	rs6000_constraints[RS6000_CONSTRAINT_wi] = VSX_REGS;
-      else
-	rs6000_constraints[RS6000_CONSTRAINT_wi] = FLOAT_REGS;
     }
 
   /* Add conditional constraints based on various options, to allow us to
@@ -4647,11 +4637,11 @@ rs6000_option_override_internal (bool global_init_p)
      variables through memory to do moves.  SImode can be used on ISA 2.07,
      while HImode and QImode require ISA 3.0.  */
   if (TARGET_VSX_SMALL_INTEGER
-      && (!TARGET_DIRECT_MOVE || !TARGET_P8_VECTOR || !TARGET_UPPER_REGS_DI))
+      && (!TARGET_DIRECT_MOVE || !TARGET_P8_VECTOR))
     {
       if (rs6000_isa_flags_explicit & OPTION_MASK_VSX_SMALL_INTEGER)
 	error ("-mvsx-small-integer requires -mpower8-vector, "
-	       "-mupper-regs-di, and -mdirect-move");
+	       "and -mdirect-move");
 
       rs6000_isa_flags &= ~OPTION_MASK_VSX_SMALL_INTEGER;
     }
@@ -7348,8 +7338,7 @@ rs6000_expand_vector_set (rtx target, rtx val, int elt)
       else if (mode == V2DImode)
 	insn = gen_vsx_set_v2di (target, target, val, elt_rtx);
 
-      else if (TARGET_P9_VECTOR && TARGET_VSX_SMALL_INTEGER
-	       && TARGET_UPPER_REGS_DI && TARGET_POWERPC64)
+      else if (TARGET_P9_VECTOR && TARGET_VSX_SMALL_INTEGER && TARGET_POWERPC64)
 	{
 	  if (mode == V4SImode)
 	    insn = gen_vsx_set_v4si_p9 (target, target, val, elt_rtx);
