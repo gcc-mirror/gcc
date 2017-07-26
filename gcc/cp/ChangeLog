@@ -1,3 +1,9 @@
+2017-07-26  Jason Merrill  <jason@redhat.com>
+
+	P0702R1 - List deduction of vector.
+	* pt.c (do_class_deduction): Special-case deduction from a single
+	element of related type.
+
 2017-07-26  Leonid Koppel  <lkoppel@uwaterloo.ca>
 
         PR c++/67054 - Inherited ctor with non-default-constructible members
