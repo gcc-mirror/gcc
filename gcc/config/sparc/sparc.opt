@@ -93,6 +93,10 @@ mfmaf
 Target Report Mask(FMAF)
 Use UltraSPARC Fused Multiply-Add extensions.
 
+mfsmuld
+Target Report Mask(FSMULD)
+Use Floating-point Multiply Single to Double (FsMULd) instruction.
+
 mpopc
 Target Report Mask(POPC)
 Use UltraSPARC Population-Count instruction.
