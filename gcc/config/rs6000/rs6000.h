@@ -571,14 +571,6 @@ extern int rs6000_vector_align[];
 
 #define TARGET_ISEL64 (TARGET_ISEL && TARGET_POWERPC64)
 
-/* We previously had -mupper-regs-{df,di,sf} to control whether DFmode, DImode,
-   and/or SFmode could go in the traditional Altivec registers.  GCC 8.x deleted
-   these options.  In order to simplify the code, define the options in terms
-   of the base option (vsx, power8-vector).  */
-#define TARGET_UPPER_REGS_DF	TARGET_VSX
-#define TARGET_UPPER_REGS_DI	TARGET_VSX
-#define TARGET_UPPER_REGS_SF	TARGET_P8_VECTOR
-
 /* ISA 2.01 allowed FCFID to be done in 32-bit, previously it was 64-bit only.
    Enable 32-bit fcfid's on any of the switches for newer ISA machines or
    XILINX.  */
@@ -608,7 +600,7 @@ extern int rs6000_vector_align[];
 #define TARGET_DIRECT_MOVE_128	(TARGET_P9_VECTOR && TARGET_DIRECT_MOVE \
 				 && TARGET_POWERPC64)
 #define TARGET_VEXTRACTUB	(TARGET_P9_VECTOR && TARGET_DIRECT_MOVE \
-				 && TARGET_UPPER_REGS_DI && TARGET_POWERPC64)
+				 && TARGET_POWERPC64)
 
 /* Whether we should avoid (SUBREG:SI (REG:SF) and (SUBREG:SF (REG:SI).  */
 #define TARGET_NO_SF_SUBREG	TARGET_DIRECT_MOVE_64BIT
@@ -768,7 +760,6 @@ extern int rs6000_vector_align[];
 #define TARGET_DIRECT_MOVE_64BIT	(TARGET_DIRECT_MOVE		\
 					 && TARGET_P8_VECTOR		\
 					 && TARGET_POWERPC64		\
-					 && TARGET_UPPER_REGS_DI	\
 					 && (rs6000_altivec_element_order != 2))
 
 /* Whether the various reciprocal divide/square root estimate instructions

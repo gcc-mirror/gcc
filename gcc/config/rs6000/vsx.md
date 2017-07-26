@@ -3366,7 +3366,7 @@
 	  (match_operand:QI 3 "<VSX_EXTRACT_PREDICATE>" "n")]
 	 UNSPEC_VSX_SET))]
   "VECTOR_MEM_VSX_P (<MODE>mode) && TARGET_P9_VECTOR && TARGET_VSX_SMALL_INTEGER
-   && TARGET_UPPER_REGS_DI && TARGET_POWERPC64"
+   && TARGET_POWERPC64"
 {
   int ele = INTVAL (operands[3]);
   int nunits = GET_MODE_NUNITS (<MODE>mode);
@@ -3391,7 +3391,7 @@
 	 UNSPEC_VSX_SET))
    (clobber (match_scratch:SI 4 "=&wJwK"))]
   "VECTOR_MEM_VSX_P (V4SFmode) && TARGET_P9_VECTOR && TARGET_VSX_SMALL_INTEGER
-   && TARGET_UPPER_REGS_DI && TARGET_POWERPC64"
+   && TARGET_POWERPC64"
   "#"
   "&& reload_completed"
   [(set (match_dup 5)
@@ -3427,7 +3427,7 @@
 	 UNSPEC_VSX_SET))
    (clobber (match_scratch:SI 4 "=&wJwK"))]
   "VECTOR_MEM_VSX_P (V4SFmode) && TARGET_P9_VECTOR && TARGET_VSX_SMALL_INTEGER
-   && TARGET_UPPER_REGS_DI && TARGET_POWERPC64"
+   && TARGET_POWERPC64"
   "#"
   "&& reload_completed"
   [(set (match_dup 4)
@@ -3458,7 +3458,7 @@
 	  (match_operand:QI 4 "const_0_to_3_operand" "n")]
 	 UNSPEC_VSX_SET))]
   "VECTOR_MEM_VSX_P (V4SFmode) && TARGET_P9_VECTOR && TARGET_VSX_SMALL_INTEGER
-   && TARGET_UPPER_REGS_DI && TARGET_POWERPC64
+   && TARGET_POWERPC64
    && (INTVAL (operands[3]) == (VECTOR_ELT_ORDER_BIG ? 1 : 2))"
 {
   int ele = INTVAL (operands[4]);
@@ -3486,8 +3486,7 @@
 	 UNSPEC_VSX_SET))
    (clobber (match_scratch:SI 5 "=&wJwK"))]
   "VECTOR_MEM_VSX_P (V4SFmode) && VECTOR_MEM_VSX_P (V4SImode)
-   && TARGET_P9_VECTOR && TARGET_VSX_SMALL_INTEGER
-   && TARGET_UPPER_REGS_DI && TARGET_POWERPC64
+   && TARGET_P9_VECTOR && TARGET_VSX_SMALL_INTEGER && TARGET_POWERPC64
    && (INTVAL (operands[3]) != (VECTOR_ELT_ORDER_BIG ? 1 : 2))"
   "#"
   "&& 1"
