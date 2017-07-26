@@ -1408,15 +1408,15 @@ sparc_option_override (void)
     { "v8",		MASK_ISA, MASK_V8 },
     /* TI TMS390Z55 supersparc */
     { "supersparc",	MASK_ISA, MASK_V8 },
-    { "hypersparc",	MASK_ISA, MASK_V8|MASK_FPU },
-    { "leon",		MASK_ISA, MASK_V8|MASK_LEON|MASK_FPU },
-    { "leon3",		MASK_ISA, MASK_V8|MASK_LEON3|MASK_FPU },
-    { "leon3v7",	MASK_ISA, MASK_LEON3|MASK_FPU },
+    { "hypersparc",	MASK_ISA, MASK_V8 },
+    { "leon",		MASK_ISA, MASK_V8|MASK_LEON },
+    { "leon3",		MASK_ISA, MASK_V8|MASK_LEON3 },
+    { "leon3v7",	MASK_ISA, MASK_LEON3 },
     { "sparclite",	MASK_ISA, MASK_SPARCLITE },
     /* The Fujitsu MB86930 is the original sparclite chip, with no FPU.  */
     { "f930",		MASK_ISA|MASK_FPU, MASK_SPARCLITE },
     /* The Fujitsu MB86934 is the recent sparclite chip, with an FPU.  */
-    { "f934",		MASK_ISA, MASK_SPARCLITE|MASK_FPU },
+    { "f934",		MASK_ISA, MASK_SPARCLITE },
     { "sparclite86x",	MASK_ISA|MASK_FPU, MASK_SPARCLITE },
     { "sparclet",	MASK_ISA, MASK_SPARCLET },
     /* TEMIC sparclet */

@@ -1,3 +1,8 @@
+2017-07-26  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* config/sparc/sparc.c (sparc_option_override): Remove MASK_FPU
+	from all CPU target flags enable members.
+
 2017-07-26  Richard Biener  <rguenther@suse.de>
 
 	* genmatch.c (dt_simplify::gen): Make iterator vars const.
