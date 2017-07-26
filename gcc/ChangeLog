@@ -1,6 +1,14 @@
 2017-07-26  Sebastian Huber  <sebastian.huber@embedded-brains.de>
 
 	Backport from mainline
+	2017-07-26  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* config/sparc/sparc.c (sparc_option_override): Remove MASK_FPU
+	from all CPU target flags enable members.
+
+2017-07-26  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	Backport from mainline
 	2017-07-25  Sebastian Huber  <sebastian.huber@embedded-brains.de>
 
 	PR libgcc/61152
