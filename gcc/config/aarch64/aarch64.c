@@ -363,8 +363,8 @@ static const struct cpu_vector_cost thunderx_vector_cost =
   2, /* vec_to_scalar_cost  */
   2, /* scalar_to_vec_cost  */
   3, /* vec_align_load_cost  */
-  10, /* vec_unalign_load_cost  */
-  10, /* vec_unalign_store_cost  */
+  5, /* vec_unalign_load_cost  */
+  5, /* vec_unalign_store_cost  */
   1, /* vec_store_cost  */
   3, /* cond_taken_branch_cost  */
   3 /* cond_not_taken_branch_cost  */

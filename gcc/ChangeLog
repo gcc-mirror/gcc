@@ -1,3 +1,8 @@
+2017-07-26  Andrew Pinski  <apinski@cavium.com>
+
+	* config/aarch64/aarch64.c (thunderx_vector_cost): Decrease cost of
+	vec_unalign_load_cost and vec_unalign_store_cost.
+
 2017-07-26  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* config/rs6000/rs6000-cpus.def (ISA_2_7_MASKS_SERVER): Delete
