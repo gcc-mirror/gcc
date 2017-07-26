@@ -23,10 +23,13 @@
 void
 test01()
 {
-  std::fstream in(".");
-  int x;
-  in >> x;
-  VERIFY( in.bad() );
+  std::ifstream in(".");
+  if (in)
+  {
+    int x;
+    in >> x;
+    VERIFY( in.bad() );
+  }
 }
 
 int
