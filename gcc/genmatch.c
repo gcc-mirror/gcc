@@ -2646,6 +2646,7 @@ dt_operand::gen_gimple_expr (FILE *f, int indent)
   expr *e = static_cast<expr *> (op);
   id_base *id = e->operation;
   unsigned n_ops = e->ops.length ();
+  unsigned n_braces = 0;
 
   for (unsigned i = 0; i < n_ops; ++i)
     {
@@ -2678,14 +2679,15 @@ dt_operand::gen_gimple_expr (FILE *f, int indent)
 			      "if ((TREE_CODE (%s) == SSA_NAME\n",
 			      child_opname);
 	      fprintf_indent (f, indent,
-			      "     || is_gimple_min_invariant (%s))\n",
+			      "     || is_gimple_min_invariant (%s)))\n",
 			      child_opname);
-	      fprintf_indent (f, indent,
-			      "    && (%s = do_valueize (valueize, %s)))\n",
-			      child_opname, child_opname);
 	      fprintf_indent (f, indent,
 			      "  {\n");
 	      indent += 4;
+	      n_braces++;
+	      fprintf_indent (f, indent,
+			      "%s = do_valueize (valueize, %s);\n",
+			      child_opname, child_opname);
 	      continue;
 	    }
 	  else
@@ -2698,10 +2700,8 @@ dt_operand::gen_gimple_expr (FILE *f, int indent)
 			"tree %s = gimple_call_arg (def, %u);\n",
 			child_opname, i);
       fprintf_indent (f, indent,
-		      "if ((%s = do_valueize (valueize, %s)))\n",
+		      "%s = do_valueize (valueize, %s);\n",
 		      child_opname, child_opname);
-      fprintf_indent (f, indent, "  {\n");
-      indent += 4;
     }
   /* While the toplevel operands are canonicalized by the caller
      after valueizing operands of sub-expressions we have to
@@ -2726,7 +2726,7 @@ dt_operand::gen_gimple_expr (FILE *f, int indent)
 	}
     }
 
-  return n_ops;
+  return n_braces;
 }
 
 /* Generate GENERIC matching code for the decision tree operand.  */
@@ -2867,14 +2867,10 @@ dt_node::gen_kids_1 (FILE *f, int indent, bool gimple,
       fprintf_indent (f, indent,
 		      "case SSA_NAME:\n");
       fprintf_indent (f, indent,
-		      "  if (do_valueize (valueize, %s) != NULL_TREE)\n",
+		      "  if (gimple *def_stmt = get_def (valueize, %s))\n",
 		      kid_opname);
       fprintf_indent (f, indent,
 		      "    {\n");
-      fprintf_indent (f, indent,
-		      "      gimple *def_stmt = SSA_NAME_DEF_STMT (%s);\n",
-		      kid_opname);
-
       indent += 6;
       if (exprs_len)
 	{
