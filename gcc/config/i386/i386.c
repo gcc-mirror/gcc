@@ -13102,24 +13102,26 @@ choose_baseaddr_len (unsigned int regno, HOST_WIDE_INT offset)
   return len;
 }
 
-/* Determine if the stack pointer is valid for accessing the cfa_offset.  */
+/* Determine if the stack pointer is valid for accessing the cfa_offset.
+   The register is saved at CFA - CFA_OFFSET.  */
 
 static inline bool
 sp_valid_at (HOST_WIDE_INT cfa_offset)
 {
   const struct machine_frame_state &fs = cfun->machine->fs;
   return fs.sp_valid && !(fs.sp_realigned
-			  && cfa_offset < fs.sp_realigned_offset);
+			  && cfa_offset <= fs.sp_realigned_offset);
 }
 
-/* Determine if the frame pointer is valid for accessing the cfa_offset.  */
+/* Determine if the frame pointer is valid for accessing the cfa_offset.
+   The register is saved at CFA - CFA_OFFSET.  */
 
 static inline bool
 fp_valid_at (HOST_WIDE_INT cfa_offset)
 {
   const struct machine_frame_state &fs = cfun->machine->fs;
   return fs.fp_valid && !(fs.sp_valid && fs.sp_realigned
-			  && cfa_offset >= fs.sp_realigned_offset);
+			  && cfa_offset > fs.sp_realigned_offset);
 }
 
 /* Choose a base register based upon alignment requested, speed and/or
