@@ -358,7 +358,7 @@ static const struct cpu_vector_cost thunderx_vector_cost =
   3, /* scalar_load_cost  */
   1, /* scalar_store_cost  */
   4, /* vec_int_stmt_cost  */
-  4, /* vec_fp_stmt_cost  */
+  1, /* vec_fp_stmt_cost  */
   4, /* vec_permute_cost  */
   2, /* vec_to_scalar_cost  */
   2, /* scalar_to_vec_cost  */
