@@ -1304,6 +1304,8 @@ dump_target_flag_bits (const int flags)
     fprintf (stderr, "FLAT ");
   if (flags & MASK_FMAF)
     fprintf (stderr, "FMAF ");
+  if (flags & MASK_FSMULD)
+    fprintf (stderr, "FSMULD ");
   if (flags & MASK_FPU)
     fprintf (stderr, "FPU ");
   if (flags & MASK_HARD_QUAD)
@@ -1403,24 +1405,24 @@ sparc_option_override (void)
     const int disable;
     const int enable;
   } const cpu_table[] = {
-    { "v7",		MASK_ISA, 0 },
-    { "cypress",	MASK_ISA, 0 },
+    { "v7",		MASK_ISA|MASK_FSMULD, 0 },
+    { "cypress",	MASK_ISA|MASK_FSMULD, 0 },
     { "v8",		MASK_ISA, MASK_V8 },
     /* TI TMS390Z55 supersparc */
     { "supersparc",	MASK_ISA, MASK_V8 },
     { "hypersparc",	MASK_ISA, MASK_V8 },
-    { "leon",		MASK_ISA, MASK_V8|MASK_LEON },
+    { "leon",		MASK_ISA|MASK_FSMULD, MASK_V8|MASK_LEON },
     { "leon3",		MASK_ISA, MASK_V8|MASK_LEON3 },
-    { "leon3v7",	MASK_ISA, MASK_LEON3 },
-    { "sparclite",	MASK_ISA, MASK_SPARCLITE },
+    { "leon3v7",	MASK_ISA|MASK_FSMULD, MASK_LEON3 },
+    { "sparclite",	MASK_ISA|MASK_FSMULD, MASK_SPARCLITE },
     /* The Fujitsu MB86930 is the original sparclite chip, with no FPU.  */
     { "f930",		MASK_ISA|MASK_FPU, MASK_SPARCLITE },
     /* The Fujitsu MB86934 is the recent sparclite chip, with an FPU.  */
-    { "f934",		MASK_ISA, MASK_SPARCLITE },
+    { "f934",		MASK_ISA|MASK_FSMULD, MASK_SPARCLITE },
     { "sparclite86x",	MASK_ISA|MASK_FPU, MASK_SPARCLITE },
-    { "sparclet",	MASK_ISA, MASK_SPARCLET },
+    { "sparclet",	MASK_ISA|MASK_FSMULD, MASK_SPARCLET },
     /* TEMIC sparclet */
-    { "tsc701",		MASK_ISA, MASK_SPARCLET },
+    { "tsc701",		MASK_ISA|MASK_FSMULD, MASK_SPARCLET },
     { "v9",		MASK_ISA, MASK_V9 },
     /* UltraSPARC I, II, IIi */
     { "ultrasparc",	MASK_ISA,
@@ -1510,6 +1512,12 @@ sparc_option_override (void)
       error ("-mlong-double-64 not allowed with -m64");
       target_flags |= MASK_LONG_DOUBLE_128;
     }
+
+  /* Enable the FsMULd instruction by default if not explicitly configured by
+     the user.  It may be later disabled by the CPU target flags or if
+     !TARGET_FPU.  */
+  if (!(target_flags_explicit & MASK_FSMULD))
+    target_flags |= MASK_FSMULD;
 
   /* Code model selection.  */
   sparc_cmodel = SPARC_DEFAULT_CMODEL;
@@ -1603,11 +1611,11 @@ sparc_option_override (void)
   if (TARGET_VIS4B)
     target_flags |= MASK_VIS4 | MASK_VIS3 | MASK_VIS2 | MASK_VIS;
 
-  /* Don't allow -mvis, -mvis2, -mvis3, -mvis4, -mvis4b and -mfmaf if
+  /* Don't allow -mvis, -mvis2, -mvis3, -mvis4, -mvis4b, -mfmaf and -mfsmuld if
      FPU is disabled.  */
   if (! TARGET_FPU)
     target_flags &= ~(MASK_VIS | MASK_VIS2 | MASK_VIS3 | MASK_VIS4
-		      | MASK_VIS4B | MASK_FMAF);
+		      | MASK_VIS4B | MASK_FMAF | MASK_FSMULD);
 
   /* -mvis assumes UltraSPARC+, so we are sure v9 instructions
      are available; -m64 also implies v9.  */
@@ -1640,6 +1648,10 @@ sparc_option_override (void)
   /* Enable the back-to-back store errata workaround for LEON3FT.  */
   if (sparc_fix_ut699 || sparc_fix_ut700 || sparc_fix_gr712rc)
     sparc_fix_b2bst = 1;
+
+  /* Disable FsMULd for the UT699 since it doesn't work correctly.  */
+  if (sparc_fix_ut699)
+    target_flags &= ~MASK_FSMULD;
 
   /* Supply a default value for align_functions.  */
   if (align_functions == 0)
