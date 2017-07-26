@@ -15,7 +15,7 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-require-file-io "" }
+// { dg-require-fileio "" }
 
 #include <fstream>
 #include <testsuite_hooks.h>
