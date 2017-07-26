@@ -3461,11 +3461,11 @@ dt_simplify::gen (FILE *f, int indent, bool gimple)
 	  if (! s->for_subst_vec[i].first->used)
 	    continue;
 	  if (is_a <operator_id *> (s->for_subst_vec[i].second))
-	    fprintf_indent (f, indent, "enum tree_code %s = %s;\n",
+	    fprintf_indent (f, indent, "const enum tree_code %s = %s;\n",
 			    s->for_subst_vec[i].first->id,
 			    s->for_subst_vec[i].second->id);
 	  else if (is_a <fn_id *> (s->for_subst_vec[i].second))
-	    fprintf_indent (f, indent, "combined_fn %s = %s;\n",
+	    fprintf_indent (f, indent, "const combined_fn %s = %s;\n",
 			    s->for_subst_vec[i].first->id,
 			    s->for_subst_vec[i].second->id);
 	  else
@@ -3601,13 +3601,13 @@ decision_tree::gen (FILE *f, bool gimple)
 		 "%s (code_helper *res_code, tree *res_ops,\n"
 		 "                 gimple_seq *seq, tree (*valueize)(tree) "
 		 "ATTRIBUTE_UNUSED,\n"
-		 "                 tree ARG_UNUSED (type), tree *ARG_UNUSED "
+		 "                 const tree ARG_UNUSED (type), tree *ARG_UNUSED "
 		 "(captures)\n",
 		 s->fname);
       else
 	{
 	  fprintf (f, "\nstatic tree\n"
-		   "%s (location_t ARG_UNUSED (loc), tree ARG_UNUSED (type),\n",
+		   "%s (location_t ARG_UNUSED (loc), const tree ARG_UNUSED (type),\n",
 		   (*iter).second->fname);
 	  for (unsigned i = 0;
 	       i < as_a <expr *>(s->s->s->match)->ops.length (); ++i)
@@ -3619,10 +3619,10 @@ decision_tree::gen (FILE *f, bool gimple)
 	  if (! s->s->s->for_subst_vec[i].first->used)
 	    continue;
 	  if (is_a <operator_id *> (s->s->s->for_subst_vec[i].second))
-	    fprintf (f, ", enum tree_code ARG_UNUSED (%s)",
+	    fprintf (f, ", const enum tree_code ARG_UNUSED (%s)",
 		     s->s->s->for_subst_vec[i].first->id);
 	  else if (is_a <fn_id *> (s->s->s->for_subst_vec[i].second))
-	    fprintf (f, ", combined_fn ARG_UNUSED (%s)",
+	    fprintf (f, ", const combined_fn ARG_UNUSED (%s)",
 		     s->s->s->for_subst_vec[i].first->id);
 	}
 
@@ -3663,7 +3663,7 @@ decision_tree::gen (FILE *f, bool gimple)
 	  else
 	    fprintf (f, "\nstatic tree\n"
 		     "generic_simplify_%s (location_t ARG_UNUSED (loc), enum "
-		     "tree_code ARG_UNUSED (code), tree ARG_UNUSED (type)",
+		     "tree_code ARG_UNUSED (code), const tree ARG_UNUSED (type)",
 		     e->operation->id);
 	  for (unsigned i = 0; i < n; ++i)
 	    fprintf (f, ", tree op%d", i);
@@ -3683,11 +3683,11 @@ decision_tree::gen (FILE *f, bool gimple)
 	fprintf (f, "\nstatic bool\n"
 		 "gimple_simplify (code_helper *res_code, tree *res_ops,\n"
 		 "                 gimple_seq *seq, tree (*valueize)(tree),\n"
-		 "                 code_helper code, tree type");
+		 "                 code_helper code, const tree type");
       else
 	fprintf (f, "\ntree\n"
 		 "generic_simplify (location_t loc, enum tree_code code, "
-		 "tree type ATTRIBUTE_UNUSED");
+		 "const tree type ATTRIBUTE_UNUSED");
       for (unsigned i = 0; i < n; ++i)
 	fprintf (f, ", tree op%d", i);
       fprintf (f, ")\n");
@@ -3751,7 +3751,7 @@ write_predicate (FILE *f, predicate_id *p, decision_tree &dt, bool gimple)
 	   p->nargs > 0 ? ", tree *res_ops" : "",
 	   gimple ? ", tree (*valueize)(tree) ATTRIBUTE_UNUSED" : "");
   /* Conveniently make 'type' available.  */
-  fprintf_indent (f, 2, "tree type = TREE_TYPE (t);\n");
+  fprintf_indent (f, 2, "const tree type = TREE_TYPE (t);\n");
 
   if (!gimple)
     fprintf_indent (f, 2, "if (TREE_SIDE_EFFECTS (t)) return false;\n");
