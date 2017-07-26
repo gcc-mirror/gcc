@@ -529,7 +529,10 @@ add_capture (tree lambda, tree id, tree orig_init, bool by_reference_p,
       else if (id != this_identifier && by_reference_p)
 	{
 	  if (!lvalue_p (initializer))
-	    error ("cannot capture %qE by reference", initializer);
+	    {
+	      error ("cannot capture %qE by reference", initializer);
+	      return error_mark_node;
+	    }
 	}
       else
 	{
