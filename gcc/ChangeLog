@@ -1,3 +1,12 @@
+2017-07-26  Georg-Johann Lay  <avr@gjlay.de>
+
+	Backport from 2017-07-25 trunk r250499.
+
+	PR 81487
+	* hsa-brig.c (brig_init): Use xasprintf instead of asprintf.
+	* gimple-pretty-print.c (dump_probability): Same.
+	* tree-ssa-structalias.c (alias_get_name): Same.
+
 2017-07-26  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline
@@ -32,7 +41,7 @@
 	Use def_builtin_pure for all gather builtins.
 
 	2017-06-21  Marc Glisse  <marc.glisse@inria.fr>
- 
+
 	* config/i386/i386.c (struct builtin_isa): New field pure_p.
 	Reorder for compactness.
 	(def_builtin, def_builtin2, ix86_add_new_builtins): Handle pure_p.
@@ -71,10 +80,10 @@
 	* config/sh/rtemself.h: Likewise.
 	* config/sparc/rtemself.h: Likewise.
 
-2016-07-25  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+2017-07-25  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	Backport from mainline
-	2016-07-14  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+	2017-07-14  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	PR tree-optimization/81162
 	* gimple-ssa-strength-reduction.c (replace_mult_candidate): Don't

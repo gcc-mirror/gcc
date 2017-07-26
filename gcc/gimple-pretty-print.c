@@ -89,7 +89,7 @@ dump_probability (int value)
     return "[0.01%]";
 
   char *buf;
-  asprintf (&buf, "[%.2f%%]", fvalue);
+  buf = xasprintf ("[%.2f%%]", fvalue);
   const char *ret = xstrdup_for_dump (buf);
   free (buf);
 
