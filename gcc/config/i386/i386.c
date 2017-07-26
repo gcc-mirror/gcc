@@ -31075,11 +31075,12 @@ static GTY(()) tree ix86_builtins[(int) IX86_BUILTIN_MAX];
    but are waiting to be built until a function is declared to use that
    ISA.  */
 struct builtin_isa {
-  const char *name;		/* function name */
-  enum ix86_builtin_func_type tcode; /* type to use in the declaration */
   HOST_WIDE_INT isa;		/* isa_flags this builtin is defined for */
   HOST_WIDE_INT isa2;		/* additional isa_flags this builtin is defined for */
-  bool const_p;			/* true if the declaration is constant */
+  const char *name;		/* function name */
+  enum ix86_builtin_func_type tcode; /* type to use in the declaration */
+  unsigned char const_p:1;	/* true if the declaration is constant */
+  unsigned char pure_p:1;	/* true if the declaration has pure attribute */
   bool leaf_p;			/* true if the declaration has leaf attribute */
   bool nothrow_p;		/* true if the declaration has nothrow attribute */
   bool set_and_not_built_p;
@@ -31150,6 +31151,7 @@ def_builtin (HOST_WIDE_INT mask, const char *name,
 	  ix86_builtins_isa[(int) code].leaf_p = false;
 	  ix86_builtins_isa[(int) code].nothrow_p = false;
 	  ix86_builtins_isa[(int) code].const_p = false;
+	  ix86_builtins_isa[(int) code].pure_p = false;
 	  ix86_builtins_isa[(int) code].set_and_not_built_p = true;
 	}
     }
@@ -31168,6 +31170,21 @@ def_builtin_const (HOST_WIDE_INT mask, const char *name,
     TREE_READONLY (decl) = 1;
   else
     ix86_builtins_isa[(int) code].const_p = true;
+
+  return decl;
+}
+
+/* Like def_builtin, but also marks the function decl "pure".  */
+
+static inline tree
+def_builtin_pure (HOST_WIDE_INT mask, const char *name,
+		  enum ix86_builtin_func_type tcode, enum ix86_builtins code)
+{
+  tree decl = def_builtin (mask, name, tcode, code);
+  if (decl)
+    DECL_PURE_P (decl) = 1;
+  else
+    ix86_builtins_isa[(int) code].pure_p = true;
 
   return decl;
 }
@@ -31206,6 +31223,7 @@ def_builtin2 (HOST_WIDE_INT mask, const char *name,
       ix86_builtins_isa[(int) code].leaf_p = false;
       ix86_builtins_isa[(int) code].nothrow_p = false;
       ix86_builtins_isa[(int) code].const_p = false;
+      ix86_builtins_isa[(int) code].pure_p = false;
       ix86_builtins_isa[(int) code].set_and_not_built_p = true;
     }
 
@@ -31223,6 +31241,21 @@ def_builtin_const2 (HOST_WIDE_INT mask, const char *name,
     TREE_READONLY (decl) = 1;
   else
     ix86_builtins_isa[(int) code].const_p = true;
+
+  return decl;
+}
+
+/* Like def_builtin, but also marks the function decl "pure".  */
+
+static inline tree
+def_builtin_pure2 (HOST_WIDE_INT mask, const char *name,
+		   enum ix86_builtin_func_type tcode, enum ix86_builtins code)
+{
+  tree decl = def_builtin2 (mask, name, tcode, code);
+  if (decl)
+    DECL_PURE_P (decl) = 1;
+  else
+    ix86_builtins_isa[(int) code].pure_p = true;
 
   return decl;
 }
@@ -31265,6 +31298,8 @@ ix86_add_new_builtins (HOST_WIDE_INT isa, HOST_WIDE_INT isa2)
 	  ix86_builtins[i] = decl;
 	  if (ix86_builtins_isa[i].const_p)
 	    TREE_READONLY (decl) = 1;
+	  if (ix86_builtins_isa[i].pure_p)
+	    DECL_PURE_P (decl) = 1;
 	  if (ix86_builtins_isa[i].leaf_p)
 	    DECL_ATTRIBUTES (decl) = build_tree_list (get_identifier ("leaf"),
 						      NULL_TREE);
@@ -31618,8 +31653,8 @@ ix86_init_mmx_sse_builtins (void)
   /* SSE */
   def_builtin (OPTION_MASK_ISA_SSE, "__builtin_ia32_ldmxcsr",
 	       VOID_FTYPE_UNSIGNED, IX86_BUILTIN_LDMXCSR);
-  def_builtin (OPTION_MASK_ISA_SSE, "__builtin_ia32_stmxcsr",
-	       UNSIGNED_FTYPE_VOID, IX86_BUILTIN_STMXCSR);
+  def_builtin_pure (OPTION_MASK_ISA_SSE, "__builtin_ia32_stmxcsr",
+		    UNSIGNED_FTYPE_VOID, IX86_BUILTIN_STMXCSR);
 
   /* SSE or 3DNow!A */
   def_builtin (OPTION_MASK_ISA_SSE | OPTION_MASK_ISA_3DNOW_A,
@@ -31669,134 +31704,134 @@ ix86_init_mmx_sse_builtins (void)
 	       IX86_BUILTIN_RDRAND64_STEP);
 
   /* AVX2 */
-  def_builtin (OPTION_MASK_ISA_AVX2, "__builtin_ia32_gathersiv2df",
-	       V2DF_FTYPE_V2DF_PCDOUBLE_V4SI_V2DF_INT,
-	       IX86_BUILTIN_GATHERSIV2DF);
+  def_builtin_pure (OPTION_MASK_ISA_AVX2, "__builtin_ia32_gathersiv2df",
+		    V2DF_FTYPE_V2DF_PCDOUBLE_V4SI_V2DF_INT,
+		    IX86_BUILTIN_GATHERSIV2DF);
 
-  def_builtin (OPTION_MASK_ISA_AVX2, "__builtin_ia32_gathersiv4df",
-	       V4DF_FTYPE_V4DF_PCDOUBLE_V4SI_V4DF_INT,
-	       IX86_BUILTIN_GATHERSIV4DF);
+  def_builtin_pure (OPTION_MASK_ISA_AVX2, "__builtin_ia32_gathersiv4df",
+		    V4DF_FTYPE_V4DF_PCDOUBLE_V4SI_V4DF_INT,
+		    IX86_BUILTIN_GATHERSIV4DF);
 
-  def_builtin (OPTION_MASK_ISA_AVX2, "__builtin_ia32_gatherdiv2df",
-	       V2DF_FTYPE_V2DF_PCDOUBLE_V2DI_V2DF_INT,
-	       IX86_BUILTIN_GATHERDIV2DF);
+  def_builtin_pure (OPTION_MASK_ISA_AVX2, "__builtin_ia32_gatherdiv2df",
+		    V2DF_FTYPE_V2DF_PCDOUBLE_V2DI_V2DF_INT,
+		    IX86_BUILTIN_GATHERDIV2DF);
 
-  def_builtin (OPTION_MASK_ISA_AVX2, "__builtin_ia32_gatherdiv4df",
-	       V4DF_FTYPE_V4DF_PCDOUBLE_V4DI_V4DF_INT,
-	       IX86_BUILTIN_GATHERDIV4DF);
+  def_builtin_pure (OPTION_MASK_ISA_AVX2, "__builtin_ia32_gatherdiv4df",
+		    V4DF_FTYPE_V4DF_PCDOUBLE_V4DI_V4DF_INT,
+		    IX86_BUILTIN_GATHERDIV4DF);
 
-  def_builtin (OPTION_MASK_ISA_AVX2, "__builtin_ia32_gathersiv4sf",
-	       V4SF_FTYPE_V4SF_PCFLOAT_V4SI_V4SF_INT,
-	       IX86_BUILTIN_GATHERSIV4SF);
+  def_builtin_pure (OPTION_MASK_ISA_AVX2, "__builtin_ia32_gathersiv4sf",
+		    V4SF_FTYPE_V4SF_PCFLOAT_V4SI_V4SF_INT,
+		    IX86_BUILTIN_GATHERSIV4SF);
 
-  def_builtin (OPTION_MASK_ISA_AVX2, "__builtin_ia32_gathersiv8sf",
-	       V8SF_FTYPE_V8SF_PCFLOAT_V8SI_V8SF_INT,
-	       IX86_BUILTIN_GATHERSIV8SF);
+  def_builtin_pure (OPTION_MASK_ISA_AVX2, "__builtin_ia32_gathersiv8sf",
+		    V8SF_FTYPE_V8SF_PCFLOAT_V8SI_V8SF_INT,
+		    IX86_BUILTIN_GATHERSIV8SF);
 
-  def_builtin (OPTION_MASK_ISA_AVX2, "__builtin_ia32_gatherdiv4sf",
-	       V4SF_FTYPE_V4SF_PCFLOAT_V2DI_V4SF_INT,
-	       IX86_BUILTIN_GATHERDIV4SF);
+  def_builtin_pure (OPTION_MASK_ISA_AVX2, "__builtin_ia32_gatherdiv4sf",
+		    V4SF_FTYPE_V4SF_PCFLOAT_V2DI_V4SF_INT,
+		    IX86_BUILTIN_GATHERDIV4SF);
 
-  def_builtin (OPTION_MASK_ISA_AVX2, "__builtin_ia32_gatherdiv4sf256",
-	       V4SF_FTYPE_V4SF_PCFLOAT_V4DI_V4SF_INT,
-	       IX86_BUILTIN_GATHERDIV8SF);
+  def_builtin_pure (OPTION_MASK_ISA_AVX2, "__builtin_ia32_gatherdiv4sf256",
+		    V4SF_FTYPE_V4SF_PCFLOAT_V4DI_V4SF_INT,
+		    IX86_BUILTIN_GATHERDIV8SF);
 
-  def_builtin (OPTION_MASK_ISA_AVX2, "__builtin_ia32_gathersiv2di",
-	       V2DI_FTYPE_V2DI_PCINT64_V4SI_V2DI_INT,
-	       IX86_BUILTIN_GATHERSIV2DI);
+  def_builtin_pure (OPTION_MASK_ISA_AVX2, "__builtin_ia32_gathersiv2di",
+		    V2DI_FTYPE_V2DI_PCINT64_V4SI_V2DI_INT,
+		    IX86_BUILTIN_GATHERSIV2DI);
 
-  def_builtin (OPTION_MASK_ISA_AVX2, "__builtin_ia32_gathersiv4di",
-	       V4DI_FTYPE_V4DI_PCINT64_V4SI_V4DI_INT,
-	       IX86_BUILTIN_GATHERSIV4DI);
+  def_builtin_pure (OPTION_MASK_ISA_AVX2, "__builtin_ia32_gathersiv4di",
+		    V4DI_FTYPE_V4DI_PCINT64_V4SI_V4DI_INT,
+		    IX86_BUILTIN_GATHERSIV4DI);
 
-  def_builtin (OPTION_MASK_ISA_AVX2, "__builtin_ia32_gatherdiv2di",
-	       V2DI_FTYPE_V2DI_PCINT64_V2DI_V2DI_INT,
-	       IX86_BUILTIN_GATHERDIV2DI);
+  def_builtin_pure (OPTION_MASK_ISA_AVX2, "__builtin_ia32_gatherdiv2di",
+		    V2DI_FTYPE_V2DI_PCINT64_V2DI_V2DI_INT,
+		    IX86_BUILTIN_GATHERDIV2DI);
 
-  def_builtin (OPTION_MASK_ISA_AVX2, "__builtin_ia32_gatherdiv4di",
-	       V4DI_FTYPE_V4DI_PCINT64_V4DI_V4DI_INT,
-	       IX86_BUILTIN_GATHERDIV4DI);
+  def_builtin_pure (OPTION_MASK_ISA_AVX2, "__builtin_ia32_gatherdiv4di",
+		    V4DI_FTYPE_V4DI_PCINT64_V4DI_V4DI_INT,
+		    IX86_BUILTIN_GATHERDIV4DI);
 
-  def_builtin (OPTION_MASK_ISA_AVX2, "__builtin_ia32_gathersiv4si",
-	       V4SI_FTYPE_V4SI_PCINT_V4SI_V4SI_INT,
-	       IX86_BUILTIN_GATHERSIV4SI);
+  def_builtin_pure (OPTION_MASK_ISA_AVX2, "__builtin_ia32_gathersiv4si",
+		    V4SI_FTYPE_V4SI_PCINT_V4SI_V4SI_INT,
+		    IX86_BUILTIN_GATHERSIV4SI);
 
-  def_builtin (OPTION_MASK_ISA_AVX2, "__builtin_ia32_gathersiv8si",
-	       V8SI_FTYPE_V8SI_PCINT_V8SI_V8SI_INT,
-	       IX86_BUILTIN_GATHERSIV8SI);
+  def_builtin_pure (OPTION_MASK_ISA_AVX2, "__builtin_ia32_gathersiv8si",
+		    V8SI_FTYPE_V8SI_PCINT_V8SI_V8SI_INT,
+		    IX86_BUILTIN_GATHERSIV8SI);
 
-  def_builtin (OPTION_MASK_ISA_AVX2, "__builtin_ia32_gatherdiv4si",
-	       V4SI_FTYPE_V4SI_PCINT_V2DI_V4SI_INT,
-	       IX86_BUILTIN_GATHERDIV4SI);
+  def_builtin_pure (OPTION_MASK_ISA_AVX2, "__builtin_ia32_gatherdiv4si",
+		    V4SI_FTYPE_V4SI_PCINT_V2DI_V4SI_INT,
+		    IX86_BUILTIN_GATHERDIV4SI);
 
-  def_builtin (OPTION_MASK_ISA_AVX2, "__builtin_ia32_gatherdiv4si256",
-	       V4SI_FTYPE_V4SI_PCINT_V4DI_V4SI_INT,
-	       IX86_BUILTIN_GATHERDIV8SI);
+  def_builtin_pure (OPTION_MASK_ISA_AVX2, "__builtin_ia32_gatherdiv4si256",
+		    V4SI_FTYPE_V4SI_PCINT_V4DI_V4SI_INT,
+		    IX86_BUILTIN_GATHERDIV8SI);
 
-  def_builtin (OPTION_MASK_ISA_AVX2, "__builtin_ia32_gatheraltsiv4df ",
-	       V4DF_FTYPE_V4DF_PCDOUBLE_V8SI_V4DF_INT,
-	       IX86_BUILTIN_GATHERALTSIV4DF);
+  def_builtin_pure (OPTION_MASK_ISA_AVX2, "__builtin_ia32_gatheraltsiv4df ",
+		    V4DF_FTYPE_V4DF_PCDOUBLE_V8SI_V4DF_INT,
+		    IX86_BUILTIN_GATHERALTSIV4DF);
 
-  def_builtin (OPTION_MASK_ISA_AVX2, "__builtin_ia32_gatheraltdiv4sf256 ",
-	       V8SF_FTYPE_V8SF_PCFLOAT_V4DI_V8SF_INT,
-	       IX86_BUILTIN_GATHERALTDIV8SF);
+  def_builtin_pure (OPTION_MASK_ISA_AVX2, "__builtin_ia32_gatheraltdiv4sf256 ",
+		    V8SF_FTYPE_V8SF_PCFLOAT_V4DI_V8SF_INT,
+		    IX86_BUILTIN_GATHERALTDIV8SF);
 
-  def_builtin (OPTION_MASK_ISA_AVX2, "__builtin_ia32_gatheraltsiv4di ",
-	       V4DI_FTYPE_V4DI_PCINT64_V8SI_V4DI_INT,
-	       IX86_BUILTIN_GATHERALTSIV4DI);
+  def_builtin_pure (OPTION_MASK_ISA_AVX2, "__builtin_ia32_gatheraltsiv4di ",
+		    V4DI_FTYPE_V4DI_PCINT64_V8SI_V4DI_INT,
+		    IX86_BUILTIN_GATHERALTSIV4DI);
 
-  def_builtin (OPTION_MASK_ISA_AVX2, "__builtin_ia32_gatheraltdiv4si256 ",
-	       V8SI_FTYPE_V8SI_PCINT_V4DI_V8SI_INT,
-	       IX86_BUILTIN_GATHERALTDIV8SI);
+  def_builtin_pure (OPTION_MASK_ISA_AVX2, "__builtin_ia32_gatheraltdiv4si256 ",
+		    V8SI_FTYPE_V8SI_PCINT_V4DI_V8SI_INT,
+		    IX86_BUILTIN_GATHERALTDIV8SI);
 
   /* AVX512F */
-  def_builtin (OPTION_MASK_ISA_AVX512F, "__builtin_ia32_gathersiv16sf",
-	       V16SF_FTYPE_V16SF_PCVOID_V16SI_HI_INT,
-	       IX86_BUILTIN_GATHER3SIV16SF);
+  def_builtin_pure (OPTION_MASK_ISA_AVX512F, "__builtin_ia32_gathersiv16sf",
+		    V16SF_FTYPE_V16SF_PCVOID_V16SI_HI_INT,
+		    IX86_BUILTIN_GATHER3SIV16SF);
 
-  def_builtin (OPTION_MASK_ISA_AVX512F, "__builtin_ia32_gathersiv8df",
-	       V8DF_FTYPE_V8DF_PCVOID_V8SI_QI_INT,
-	       IX86_BUILTIN_GATHER3SIV8DF);
+  def_builtin_pure (OPTION_MASK_ISA_AVX512F, "__builtin_ia32_gathersiv8df",
+		    V8DF_FTYPE_V8DF_PCVOID_V8SI_QI_INT,
+		    IX86_BUILTIN_GATHER3SIV8DF);
 
-  def_builtin (OPTION_MASK_ISA_AVX512F, "__builtin_ia32_gatherdiv16sf",
-	       V8SF_FTYPE_V8SF_PCVOID_V8DI_QI_INT,
-	       IX86_BUILTIN_GATHER3DIV16SF);
+  def_builtin_pure (OPTION_MASK_ISA_AVX512F, "__builtin_ia32_gatherdiv16sf",
+		    V8SF_FTYPE_V8SF_PCVOID_V8DI_QI_INT,
+		    IX86_BUILTIN_GATHER3DIV16SF);
 
-  def_builtin (OPTION_MASK_ISA_AVX512F, "__builtin_ia32_gatherdiv8df",
-	       V8DF_FTYPE_V8DF_PCVOID_V8DI_QI_INT,
-	       IX86_BUILTIN_GATHER3DIV8DF);
+  def_builtin_pure (OPTION_MASK_ISA_AVX512F, "__builtin_ia32_gatherdiv8df",
+		    V8DF_FTYPE_V8DF_PCVOID_V8DI_QI_INT,
+		    IX86_BUILTIN_GATHER3DIV8DF);
 
-  def_builtin (OPTION_MASK_ISA_AVX512F, "__builtin_ia32_gathersiv16si",
-	       V16SI_FTYPE_V16SI_PCVOID_V16SI_HI_INT,
-	       IX86_BUILTIN_GATHER3SIV16SI);
+  def_builtin_pure (OPTION_MASK_ISA_AVX512F, "__builtin_ia32_gathersiv16si",
+		    V16SI_FTYPE_V16SI_PCVOID_V16SI_HI_INT,
+		    IX86_BUILTIN_GATHER3SIV16SI);
 
-  def_builtin (OPTION_MASK_ISA_AVX512F, "__builtin_ia32_gathersiv8di",
-	       V8DI_FTYPE_V8DI_PCVOID_V8SI_QI_INT,
-	       IX86_BUILTIN_GATHER3SIV8DI);
+  def_builtin_pure (OPTION_MASK_ISA_AVX512F, "__builtin_ia32_gathersiv8di",
+		    V8DI_FTYPE_V8DI_PCVOID_V8SI_QI_INT,
+		    IX86_BUILTIN_GATHER3SIV8DI);
 
-  def_builtin (OPTION_MASK_ISA_AVX512F, "__builtin_ia32_gatherdiv16si",
-	       V8SI_FTYPE_V8SI_PCVOID_V8DI_QI_INT,
-	       IX86_BUILTIN_GATHER3DIV16SI);
+  def_builtin_pure (OPTION_MASK_ISA_AVX512F, "__builtin_ia32_gatherdiv16si",
+		    V8SI_FTYPE_V8SI_PCVOID_V8DI_QI_INT,
+		    IX86_BUILTIN_GATHER3DIV16SI);
 
-  def_builtin (OPTION_MASK_ISA_AVX512F, "__builtin_ia32_gatherdiv8di",
-	       V8DI_FTYPE_V8DI_PCVOID_V8DI_QI_INT,
-	       IX86_BUILTIN_GATHER3DIV8DI);
+  def_builtin_pure (OPTION_MASK_ISA_AVX512F, "__builtin_ia32_gatherdiv8di",
+		    V8DI_FTYPE_V8DI_PCVOID_V8DI_QI_INT,
+		    IX86_BUILTIN_GATHER3DIV8DI);
 
-  def_builtin (OPTION_MASK_ISA_AVX512F, "__builtin_ia32_gatheraltsiv8df ",
-	       V8DF_FTYPE_V8DF_PCDOUBLE_V16SI_QI_INT,
-	       IX86_BUILTIN_GATHER3ALTSIV8DF);
+  def_builtin_pure (OPTION_MASK_ISA_AVX512F, "__builtin_ia32_gatheraltsiv8df ",
+		    V8DF_FTYPE_V8DF_PCDOUBLE_V16SI_QI_INT,
+		    IX86_BUILTIN_GATHER3ALTSIV8DF);
 
-  def_builtin (OPTION_MASK_ISA_AVX512F, "__builtin_ia32_gatheraltdiv8sf ",
-	       V16SF_FTYPE_V16SF_PCFLOAT_V8DI_HI_INT,
-	       IX86_BUILTIN_GATHER3ALTDIV16SF);
+  def_builtin_pure (OPTION_MASK_ISA_AVX512F, "__builtin_ia32_gatheraltdiv8sf ",
+		    V16SF_FTYPE_V16SF_PCFLOAT_V8DI_HI_INT,
+		    IX86_BUILTIN_GATHER3ALTDIV16SF);
 
-  def_builtin (OPTION_MASK_ISA_AVX512F, "__builtin_ia32_gatheraltsiv8di ",
-	       V8DI_FTYPE_V8DI_PCINT64_V16SI_QI_INT,
-	       IX86_BUILTIN_GATHER3ALTSIV8DI);
+  def_builtin_pure (OPTION_MASK_ISA_AVX512F, "__builtin_ia32_gatheraltsiv8di ",
+		    V8DI_FTYPE_V8DI_PCINT64_V16SI_QI_INT,
+		    IX86_BUILTIN_GATHER3ALTSIV8DI);
 
-  def_builtin (OPTION_MASK_ISA_AVX512F, "__builtin_ia32_gatheraltdiv8si ",
-	       V16SI_FTYPE_V16SI_PCINT_V8DI_HI_INT,
-	       IX86_BUILTIN_GATHER3ALTDIV16SI);
+  def_builtin_pure (OPTION_MASK_ISA_AVX512F, "__builtin_ia32_gatheraltdiv8si ",
+		    V16SI_FTYPE_V16SI_PCINT_V8DI_HI_INT,
+		    IX86_BUILTIN_GATHER3ALTDIV16SI);
 
   def_builtin (OPTION_MASK_ISA_AVX512F, "__builtin_ia32_scattersiv16sf",
 	       VOID_FTYPE_PVOID_HI_V16SI_V16SF_INT,
@@ -31831,85 +31866,85 @@ ix86_init_mmx_sse_builtins (void)
 	       IX86_BUILTIN_SCATTERDIV8DI);
 
   /* AVX512VL */
-  def_builtin (OPTION_MASK_ISA_AVX512VL, "__builtin_ia32_gather3siv2df",
-	       V2DF_FTYPE_V2DF_PCVOID_V4SI_QI_INT,
-	       IX86_BUILTIN_GATHER3SIV2DF);
+  def_builtin_pure (OPTION_MASK_ISA_AVX512VL, "__builtin_ia32_gather3siv2df",
+		    V2DF_FTYPE_V2DF_PCVOID_V4SI_QI_INT,
+		    IX86_BUILTIN_GATHER3SIV2DF);
 
-  def_builtin (OPTION_MASK_ISA_AVX512VL, "__builtin_ia32_gather3siv4df",
-	       V4DF_FTYPE_V4DF_PCVOID_V4SI_QI_INT,
-	       IX86_BUILTIN_GATHER3SIV4DF);
+  def_builtin_pure (OPTION_MASK_ISA_AVX512VL, "__builtin_ia32_gather3siv4df",
+		    V4DF_FTYPE_V4DF_PCVOID_V4SI_QI_INT,
+		    IX86_BUILTIN_GATHER3SIV4DF);
 
-  def_builtin (OPTION_MASK_ISA_AVX512VL, "__builtin_ia32_gather3div2df",
-	       V2DF_FTYPE_V2DF_PCVOID_V2DI_QI_INT,
-	       IX86_BUILTIN_GATHER3DIV2DF);
+  def_builtin_pure (OPTION_MASK_ISA_AVX512VL, "__builtin_ia32_gather3div2df",
+		    V2DF_FTYPE_V2DF_PCVOID_V2DI_QI_INT,
+		    IX86_BUILTIN_GATHER3DIV2DF);
 
-  def_builtin (OPTION_MASK_ISA_AVX512VL, "__builtin_ia32_gather3div4df",
-	       V4DF_FTYPE_V4DF_PCVOID_V4DI_QI_INT,
-	       IX86_BUILTIN_GATHER3DIV4DF);
+  def_builtin_pure (OPTION_MASK_ISA_AVX512VL, "__builtin_ia32_gather3div4df",
+		    V4DF_FTYPE_V4DF_PCVOID_V4DI_QI_INT,
+		    IX86_BUILTIN_GATHER3DIV4DF);
 
-  def_builtin (OPTION_MASK_ISA_AVX512VL, "__builtin_ia32_gather3siv4sf",
-	       V4SF_FTYPE_V4SF_PCVOID_V4SI_QI_INT,
-	       IX86_BUILTIN_GATHER3SIV4SF);
+  def_builtin_pure (OPTION_MASK_ISA_AVX512VL, "__builtin_ia32_gather3siv4sf",
+		    V4SF_FTYPE_V4SF_PCVOID_V4SI_QI_INT,
+		    IX86_BUILTIN_GATHER3SIV4SF);
 
-  def_builtin (OPTION_MASK_ISA_AVX512VL, "__builtin_ia32_gather3siv8sf",
-	       V8SF_FTYPE_V8SF_PCVOID_V8SI_QI_INT,
-	       IX86_BUILTIN_GATHER3SIV8SF);
+  def_builtin_pure (OPTION_MASK_ISA_AVX512VL, "__builtin_ia32_gather3siv8sf",
+		    V8SF_FTYPE_V8SF_PCVOID_V8SI_QI_INT,
+		    IX86_BUILTIN_GATHER3SIV8SF);
 
-  def_builtin (OPTION_MASK_ISA_AVX512VL, "__builtin_ia32_gather3div4sf",
-	       V4SF_FTYPE_V4SF_PCVOID_V2DI_QI_INT,
-	       IX86_BUILTIN_GATHER3DIV4SF);
+  def_builtin_pure (OPTION_MASK_ISA_AVX512VL, "__builtin_ia32_gather3div4sf",
+		    V4SF_FTYPE_V4SF_PCVOID_V2DI_QI_INT,
+		    IX86_BUILTIN_GATHER3DIV4SF);
 
-  def_builtin (OPTION_MASK_ISA_AVX512VL, "__builtin_ia32_gather3div8sf",
-	       V4SF_FTYPE_V4SF_PCVOID_V4DI_QI_INT,
-	       IX86_BUILTIN_GATHER3DIV8SF);
+  def_builtin_pure (OPTION_MASK_ISA_AVX512VL, "__builtin_ia32_gather3div8sf",
+		    V4SF_FTYPE_V4SF_PCVOID_V4DI_QI_INT,
+		    IX86_BUILTIN_GATHER3DIV8SF);
 
-  def_builtin (OPTION_MASK_ISA_AVX512VL, "__builtin_ia32_gather3siv2di",
-	       V2DI_FTYPE_V2DI_PCVOID_V4SI_QI_INT,
-	       IX86_BUILTIN_GATHER3SIV2DI);
+  def_builtin_pure (OPTION_MASK_ISA_AVX512VL, "__builtin_ia32_gather3siv2di",
+		    V2DI_FTYPE_V2DI_PCVOID_V4SI_QI_INT,
+		    IX86_BUILTIN_GATHER3SIV2DI);
 
-  def_builtin (OPTION_MASK_ISA_AVX512VL, "__builtin_ia32_gather3siv4di",
-	       V4DI_FTYPE_V4DI_PCVOID_V4SI_QI_INT,
-	       IX86_BUILTIN_GATHER3SIV4DI);
+  def_builtin_pure (OPTION_MASK_ISA_AVX512VL, "__builtin_ia32_gather3siv4di",
+		    V4DI_FTYPE_V4DI_PCVOID_V4SI_QI_INT,
+		    IX86_BUILTIN_GATHER3SIV4DI);
 
-  def_builtin (OPTION_MASK_ISA_AVX512VL, "__builtin_ia32_gather3div2di",
-	       V2DI_FTYPE_V2DI_PCVOID_V2DI_QI_INT,
-	       IX86_BUILTIN_GATHER3DIV2DI);
+  def_builtin_pure (OPTION_MASK_ISA_AVX512VL, "__builtin_ia32_gather3div2di",
+		    V2DI_FTYPE_V2DI_PCVOID_V2DI_QI_INT,
+		    IX86_BUILTIN_GATHER3DIV2DI);
 
-  def_builtin (OPTION_MASK_ISA_AVX512VL, "__builtin_ia32_gather3div4di",
-	       V4DI_FTYPE_V4DI_PCVOID_V4DI_QI_INT,
-	       IX86_BUILTIN_GATHER3DIV4DI);
+  def_builtin_pure (OPTION_MASK_ISA_AVX512VL, "__builtin_ia32_gather3div4di",
+		    V4DI_FTYPE_V4DI_PCVOID_V4DI_QI_INT,
+		    IX86_BUILTIN_GATHER3DIV4DI);
 
-  def_builtin (OPTION_MASK_ISA_AVX512VL, "__builtin_ia32_gather3siv4si",
-	       V4SI_FTYPE_V4SI_PCVOID_V4SI_QI_INT,
-	       IX86_BUILTIN_GATHER3SIV4SI);
+  def_builtin_pure (OPTION_MASK_ISA_AVX512VL, "__builtin_ia32_gather3siv4si",
+		    V4SI_FTYPE_V4SI_PCVOID_V4SI_QI_INT,
+		    IX86_BUILTIN_GATHER3SIV4SI);
 
-  def_builtin (OPTION_MASK_ISA_AVX512VL, "__builtin_ia32_gather3siv8si",
-	       V8SI_FTYPE_V8SI_PCVOID_V8SI_QI_INT,
-	       IX86_BUILTIN_GATHER3SIV8SI);
+  def_builtin_pure (OPTION_MASK_ISA_AVX512VL, "__builtin_ia32_gather3siv8si",
+		    V8SI_FTYPE_V8SI_PCVOID_V8SI_QI_INT,
+		    IX86_BUILTIN_GATHER3SIV8SI);
 
-  def_builtin (OPTION_MASK_ISA_AVX512VL, "__builtin_ia32_gather3div4si",
-	       V4SI_FTYPE_V4SI_PCVOID_V2DI_QI_INT,
-	       IX86_BUILTIN_GATHER3DIV4SI);
+  def_builtin_pure (OPTION_MASK_ISA_AVX512VL, "__builtin_ia32_gather3div4si",
+		    V4SI_FTYPE_V4SI_PCVOID_V2DI_QI_INT,
+		    IX86_BUILTIN_GATHER3DIV4SI);
 
-  def_builtin (OPTION_MASK_ISA_AVX512VL, "__builtin_ia32_gather3div8si",
-	       V4SI_FTYPE_V4SI_PCVOID_V4DI_QI_INT,
-	       IX86_BUILTIN_GATHER3DIV8SI);
+  def_builtin_pure (OPTION_MASK_ISA_AVX512VL, "__builtin_ia32_gather3div8si",
+		    V4SI_FTYPE_V4SI_PCVOID_V4DI_QI_INT,
+		    IX86_BUILTIN_GATHER3DIV8SI);
 
-  def_builtin (OPTION_MASK_ISA_AVX512VL, "__builtin_ia32_gather3altsiv4df ",
-	       V4DF_FTYPE_V4DF_PCDOUBLE_V8SI_QI_INT,
-	       IX86_BUILTIN_GATHER3ALTSIV4DF);
+  def_builtin_pure (OPTION_MASK_ISA_AVX512VL, "__builtin_ia32_gather3altsiv4df ",
+		    V4DF_FTYPE_V4DF_PCDOUBLE_V8SI_QI_INT,
+		    IX86_BUILTIN_GATHER3ALTSIV4DF);
 
-  def_builtin (OPTION_MASK_ISA_AVX512VL, "__builtin_ia32_gather3altdiv8sf ",
-	       V8SF_FTYPE_V8SF_PCFLOAT_V4DI_QI_INT,
-	       IX86_BUILTIN_GATHER3ALTDIV8SF);
+  def_builtin_pure (OPTION_MASK_ISA_AVX512VL, "__builtin_ia32_gather3altdiv8sf ",
+		    V8SF_FTYPE_V8SF_PCFLOAT_V4DI_QI_INT,
+		    IX86_BUILTIN_GATHER3ALTDIV8SF);
 
-  def_builtin (OPTION_MASK_ISA_AVX512VL, "__builtin_ia32_gather3altsiv4di ",
-	       V4DI_FTYPE_V4DI_PCINT64_V8SI_QI_INT,
-	       IX86_BUILTIN_GATHER3ALTSIV4DI);
+  def_builtin_pure (OPTION_MASK_ISA_AVX512VL, "__builtin_ia32_gather3altsiv4di ",
+		    V4DI_FTYPE_V4DI_PCINT64_V8SI_QI_INT,
+		    IX86_BUILTIN_GATHER3ALTSIV4DI);
 
-  def_builtin (OPTION_MASK_ISA_AVX512VL, "__builtin_ia32_gather3altdiv8si ",
-	       V8SI_FTYPE_V8SI_PCINT_V4DI_QI_INT,
-	       IX86_BUILTIN_GATHER3ALTDIV8SI);
+  def_builtin_pure (OPTION_MASK_ISA_AVX512VL, "__builtin_ia32_gather3altdiv8si ",
+		    V8SI_FTYPE_V8SI_PCINT_V4DI_QI_INT,
+		    IX86_BUILTIN_GATHER3ALTDIV8SI);
 
   def_builtin (OPTION_MASK_ISA_AVX512VL, "__builtin_ia32_scattersiv8sf",
 	       VOID_FTYPE_PVOID_QI_V8SI_V8SF_INT,

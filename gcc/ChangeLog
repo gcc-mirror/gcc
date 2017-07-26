@@ -1,3 +1,44 @@
+2017-07-26  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2017-06-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/81410
+	* tree-vect-stmts.c (vectorizable_load): Properly adjust for
+	the gap in the ! slp_perm SLP case after each group.
+
+	2017-07-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/81455
+	* tree-ssa-loop-unswitch.c (find_loop_guard): Make sure to
+	not walk in cycles when looking for guards.
+
+	2017-07-25  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/81505
+	* fold-const.c (fold_negate_const): TREE_OVERFLOW should be
+	sticky.
+
+	2017-06-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/81175
+	* config/i386/i386.c (ix86_init_mmx_sse_builtins): Use def_builtin
+	rather than def_builtin_pure for __builtin_ia32_gatherpf*.
+
+	2017-06-26  Richard Biener  <rguenther@suse.de>
+
+	PR target/81175
+	* config/i386/i386.c (ix86_init_mmx_sse_builtins):
+	Use def_builtin_pure for all gather builtins.
+
+	2017-06-21  Marc Glisse  <marc.glisse@inria.fr>
+ 
+	* config/i386/i386.c (struct builtin_isa): New field pure_p.
+	Reorder for compactness.
+	(def_builtin, def_builtin2, ix86_add_new_builtins): Handle pure_p.
+	(def_builtin_pure, def_builtin_pure2): New functions.
+	(ix86_init_mmx_sse_builtins) [__builtin_ia32_stmxcsr]: Mark as pure.
+
 2017-07-26  Sebastian Huber  <sebastian.huber@embedded-brains.de>
 
 	Backport from mainline

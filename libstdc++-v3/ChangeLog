@@ -1,3 +1,13 @@
+2017-07-26  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2017-06-02  Richard Biener  <rguenther@suse.de>
+		Markus Eisenmann  <meisenmann.lba@fh-salzburg.ac.at>
+
+	PR libstdc++/80721
+	* libsupc++/eh_alloc.cc (pool::free): Keep list properly
+	sorted and add missing freelist item merging cases.
+
 2017-07-25  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline

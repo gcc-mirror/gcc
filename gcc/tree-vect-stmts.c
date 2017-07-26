@@ -7109,6 +7109,7 @@ vectorizable_load (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
     {
       first_stmt = GROUP_FIRST_ELEMENT (stmt_info);
       group_size = GROUP_SIZE (vinfo_for_stmt (first_stmt));
+      int group_gap = GROUP_GAP (vinfo_for_stmt (first_stmt));
       /* For SLP vectorization we directly vectorize a subchain
          without permutation.  */
       if (slp && ! SLP_TREE_LOAD_PERMUTATION (slp_node).exists ())
@@ -7144,10 +7145,15 @@ vectorizable_load (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 	     not only the number of vector stmts the permutation result
 	     fits in.  */
 	  if (slp_perm)
-	    vec_num = (group_size * vf + nunits - 1) / nunits;
+	    {
+	      vec_num = (group_size * vf + nunits - 1) / nunits;
+	      group_gap_adj = vf * group_size - nunits * vec_num;
+	    }
 	  else
-	    vec_num = SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node);
-	  group_gap_adj = vf * group_size - nunits * vec_num;
+	    {
+	      vec_num = SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node);
+	      group_gap_adj = group_gap;
+	    }
     	}
       else
 	vec_num = group_size;
@@ -7308,6 +7314,7 @@ vectorizable_load (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
     aggr_type = vectype;
 
   prev_stmt_info = NULL;
+  int group_elt = 0;
   for (j = 0; j < ncopies; j++)
     {
       /* 1. Create the vector or array pointer update chain.  */
@@ -7599,10 +7606,27 @@ vectorizable_load (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 	      /* Store vector loads in the corresponding SLP_NODE.  */
 	      if (slp && !slp_perm)
 		SLP_TREE_VEC_STMTS (slp_node).quick_push (new_stmt);
+
+	      /* With SLP permutation we load the gaps as well, without
+	         we need to skip the gaps after we manage to fully load
+		 all elements.  group_gap_adj is GROUP_SIZE here.  */
+	      group_elt += nunits;
+	      if (group_gap_adj != 0 && ! slp_perm
+		  && group_elt == group_size - group_gap_adj)
+		{
+		  bool ovf;
+		  tree bump
+		    = wide_int_to_tree (sizetype,
+					wi::smul (TYPE_SIZE_UNIT (elem_type),
+						  group_gap_adj, &ovf));
+		  dataref_ptr = bump_vector_ptr (dataref_ptr, ptr_incr, gsi,
+						 stmt, bump);
+		  group_elt = 0;
+		}
 	    }
 	  /* Bump the vector pointer to account for a gap or for excess
 	     elements loaded for a permuted SLP load.  */
-	  if (group_gap_adj != 0)
+	  if (group_gap_adj != 0 && slp_perm)
 	    {
 	      bool ovf;
 	      tree bump
