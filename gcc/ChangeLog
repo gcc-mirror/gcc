@@ -1,3 +1,72 @@
+2017-07-26  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000-cpus.def (ISA_2_7_MASKS_SERVER): Delete
+	-mvsx-small-integer option.
+	(ISA_3_0_MASKS_IEEE): Likewise.
+	(OTHER_VSX_VECTOR_MASKS): Likewise.
+	(POWERPC_MASKS): Likewise.
+	* config/rs6000/rs6000.opt (-mvsx-small-integer): Likewise.
+	* config/rs6000/rs6000.c (rs6000_hard_regno_mode_ok): Simplify
+	code, only testing for DImode being allowed in non-VSX floating
+	point registers.
+	(rs6000_init_hard_regno_mode_ok): Change TARGET_VSX_SMALL_INTEGER
+	to TARGET_P8_VECTOR test.  Remove redundant VSX test inside of
+	another VSX test.
+	(rs6000_option_override_internal): Delete -mvsx-small-integer.
+	(rs6000_expand_vector_set): Change TARGET_VSX_SMALL_INTEGER to
+	TARGET_P8_VECTOR test.
+	(rs6000_secondary_reload_simple_move): Likewise.
+	(rs6000_preferred_reload_class): Delete TARGET_VSX_SMALL_INTEGER,
+	since TARGET_P9_VECTOR was already tested.
+	(rs6000_opt_masks): Remove -mvsx-small-integer.
+	* config/rs6000/vsx.md (vsx_extract_<mode>): Delete
+	TARGET_VSX_SMALL_INTEGER, since a test for TARGET_P9_VECTOR was
+	used.
+	(vsx_extract_<mode>_p9): Delete TARGET_VSX_SMALL_INTEGER, since a
+	test for TARGET_VEXTRACTUB was used, and that uses
+	TARGET_P9_VECTOR.
+	(p9 extract splitter): Likewise.
+	(vsx_extract_<mode>_di_p9): Likewise.
+	(vsx_extract_<mode>_store_p9): Likewise.
+	(vsx_extract_si): Delete TARGET_VSX_SMALL_INTEGER, since a test
+	for TARGET_P9_VECTOR was used.  Delete code that is now dead with
+	the elimination of TARGET_VSX_SMALL_INTEGER.
+	(vsx_extract_<mode>_p8): Likewise.
+	(vsx_ext_<VSX_EXTRACT_I:VS_scalar>_fl_<FL_CONV:mode>): Likewise.
+	(vsx_ext_<VSX_EXTRACT_I:VS_scalar>_ufl_<FL_CONV:mode>): Likewise.
+	(vsx_set_<mode>_p9): Likewise.
+	(vsx_set_v4sf_p9): Likewise.
+	(vsx_set_v4sf_p9_zero): Likewise.
+	(vsx_insert_extract_v4sf_p9): Likewise.
+	(vsx_insert_extract_v4sf_p9_2): Likewise.
+	* config/rs6000/rs6000.md (sign extend splitter): Change
+	TARGET_VSX_SMALL_INTEGER to TARGET_P8_VECTOR test.
+	(floatsi<mode>2_lfiwax_mem): Likewise.
+	(floatunssi<mode>2_lfiwzx_mem): Likewise.
+	(float<QHI:mode><FP_ISA3:mode>2): Delete TARGET_VSX_SMALL_INTEGER,
+	since a test for TARGET_P9_VECTOR was used.
+	(float<QHI:mode><FP_ISA3:mode>2_internal): Likewise.
+	(floatuns<QHI:mode><FP_ISA3:mode>2): Likewise.
+	(floatuns<QHI:mode><FP_ISA3:mode>2_internal): Likewise.
+	(fix_trunc<mode>si2): Change TARGET_VSX_SMALL_INTEGER to
+	TARGET_P8_VECTOR test.
+	(fix_trunc<mode>si2_stfiwx): Likewise.
+	(fix_trunc<mode>si2_internal): Likewise.
+	(fix_trunc<SFDF:mode><QHI:mode>2): Delete
+	TARGET_VSX_SMALL_INTEGER, since a test for TARGET_P9_VECTOR was
+	used.
+	(fix_trunc<SFDF:mode><QHI:mode>2_internal): Likewise.
+	(fixuns_trunc<mode>si2): Change TARGET_VSX_SMALL_INTEGER to
+	TARGET_P8_VECTOR test.
+	(fixuns_trunc<mode>si2_stfiwx): Likewise.
+	(fixuns_trunc<SFDF:mode><QHI:mode>2): Delete
+	TARGET_VSX_SMALL_INTEGER, since a test for TARGET_P9_VECTOR was
+	used.
+	(fixuns_trunc<SFDF:mode><QHI:mode>2_internal): Likewise.
+	(fctiw<u>z_<mode>_smallint): Delete TARGET_VSX_SMALL_INTEGER,
+	since a test for TARGET_P9_VECTOR was used.
+	(splitter for loading small constants): Likewise.
+
 2017-07-26  Andrew Pinski  <apinski@cavium.com>
 
 	* config/aarch64/aarch64.c (thunderx_vector_cost): Fix

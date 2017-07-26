@@ -2104,14 +2104,11 @@ rs6000_hard_regno_mode_ok (int regno, machine_mode mode)
 	  if(GET_MODE_SIZE (mode) == UNITS_PER_FP_WORD)
 	    return 1;
 
-	  if (TARGET_VSX_SMALL_INTEGER)
-	    {
-	      if (mode == SImode)
-		return 1;
+	  if (TARGET_P8_VECTOR && (mode == SImode))
+	    return 1;
 
-	      if (TARGET_P9_VECTOR && (mode == HImode || mode == QImode))
-		return 1;
-	    }
+	  if (TARGET_P9_VECTOR && (mode == QImode || mode == HImode))
+	    return 1;
 	}
 
       if (PAIRED_SIMD_REGNO_P (regno) && TARGET_PAIRED_FLOAT
@@ -3291,7 +3288,7 @@ rs6000_init_hard_regno_mode_ok (bool global_init_p)
     rs6000_constraints[RS6000_CONSTRAINT_we] = VSX_REGS;
 
   /* Support small integers in VSX registers.  */
-  if (TARGET_VSX_SMALL_INTEGER)
+  if (TARGET_P8_VECTOR)
     {
       rs6000_constraints[RS6000_CONSTRAINT_wH] = ALTIVEC_REGS;
       rs6000_constraints[RS6000_CONSTRAINT_wI] = FLOAT_REGS;
@@ -3446,18 +3443,14 @@ rs6000_init_hard_regno_mode_ok (bool global_init_p)
 	    }
 	}
 
-      if (TARGET_VSX)
-	{
-	  reg_addr[DFmode].scalar_in_vmx_p = true;
-	  reg_addr[DImode].scalar_in_vmx_p = true;
-	}
+      reg_addr[DFmode].scalar_in_vmx_p = true;
+      reg_addr[DImode].scalar_in_vmx_p = true;
 
       if (TARGET_P8_VECTOR)
-	reg_addr[SFmode].scalar_in_vmx_p = true;
-
-      if (TARGET_VSX_SMALL_INTEGER)
 	{
+	  reg_addr[SFmode].scalar_in_vmx_p = true;
 	  reg_addr[SImode].scalar_in_vmx_p = true;
+
 	  if (TARGET_P9_VECTOR)
 	    {
 	      reg_addr[HImode].scalar_in_vmx_p = true;
@@ -4630,20 +4623,6 @@ rs6000_option_override_internal (bool global_init_p)
 
 	  rs6000_isa_flags &= ~OPTION_MASK_EFFICIENT_UNALIGNED_VSX;
 	}
-    }
-
-  /* Check whether we should allow small integers into VSX registers.  We
-     require direct move to prevent the register allocator from having to move
-     variables through memory to do moves.  SImode can be used on ISA 2.07,
-     while HImode and QImode require ISA 3.0.  */
-  if (TARGET_VSX_SMALL_INTEGER
-      && (!TARGET_DIRECT_MOVE || !TARGET_P8_VECTOR))
-    {
-      if (rs6000_isa_flags_explicit & OPTION_MASK_VSX_SMALL_INTEGER)
-	error ("-mvsx-small-integer requires -mpower8-vector, "
-	       "and -mdirect-move");
-
-      rs6000_isa_flags &= ~OPTION_MASK_VSX_SMALL_INTEGER;
     }
 
   /* Set long double size before the IEEE 128-bit tests.  */
@@ -7338,7 +7317,7 @@ rs6000_expand_vector_set (rtx target, rtx val, int elt)
       else if (mode == V2DImode)
 	insn = gen_vsx_set_v2di (target, target, val, elt_rtx);
 
-      else if (TARGET_P9_VECTOR && TARGET_VSX_SMALL_INTEGER && TARGET_POWERPC64)
+      else if (TARGET_P9_VECTOR && TARGET_POWERPC64)
 	{
 	  if (mode == V4SImode)
 	    insn = gen_vsx_set_v4si_p9 (target, target, val, elt_rtx);
@@ -19713,7 +19692,7 @@ rs6000_secondary_reload_simple_move (enum rs6000_reg_type to_type,
 	}
 
       /* ISA 2.07: MTVSRWZ or  MFVSRWZ.  */
-      if (TARGET_VSX_SMALL_INTEGER)
+      if (TARGET_P8_VECTOR)
 	{
 	  if (mode == SImode)
 	    return true;
@@ -20547,7 +20526,6 @@ rs6000_preferred_reload_class (rtx x, enum reg_class rclass)
 	      /* ISA 3.0 can load -128..127 using the XXSPLTIB instruction and
 		 a sign extend in the Altivec registers.  */
 	      if (IN_RANGE (value, -128, 127) && TARGET_P9_VECTOR
-		  && TARGET_VSX_SMALL_INTEGER
 		  && (rclass == ALTIVEC_REGS || rclass == VSX_REGS))
 		return ALTIVEC_REGS;
 	    }
@@ -36255,7 +36233,6 @@ static struct rs6000_opt_mask const rs6000_opt_masks[] =
   { "toc-fusion",		OPTION_MASK_TOC_FUSION,		false, true  },
   { "update",			OPTION_MASK_NO_UPDATE,		true , true  },
   { "vsx",			OPTION_MASK_VSX,		false, true  },
-  { "vsx-small-integer",	OPTION_MASK_VSX_SMALL_INTEGER,	false, true  },
   { "vsx-timode",		OPTION_MASK_VSX_TIMODE,		false, true  },
 #ifdef OPTION_MASK_64BIT
 #if TARGET_AIX_OS
