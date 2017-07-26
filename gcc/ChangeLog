@@ -1,12 +1,21 @@
 2017-07-26  Georg-Johann Lay  <avr@gjlay.de>
 
+	Backport from 2017-07-12 trunk r250151.
+
+	PR target/81407
+	* config/avr/avr.c (avr_encode_section_info)
+	[progmem && !TREE_READONLY]: Error if progmem object needs
+	constructing.
+
+2017-07-26  Georg-Johann Lay  <avr@gjlay.de>
+
 	Backport from 2017-07-26 gcc-7-branch r250562.
 
 	PR 81487
 	* hsa-brig.c (brig_init): Use xasprintf instead of asprintf.
 	* tree-ssa-structalias.c (alias_get_name): Same.
 
-2016-07-25  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+2017-07-25  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	Backport from mainline
 	2016-07-14  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
