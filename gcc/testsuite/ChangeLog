@@ -1,7 +1,17 @@
-2016-07-25  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+2017-07-26  Georg-Johann Lay  <avr@gjlay.de>
+
+	Backport from 2017-07-05 trunk r249995, r249996.
+
+	PR target/81305
+	* gcc.target/avr/isr-test.h: New file.
+	* gcc.target/avr/torture/isr-01-simple.c: New test.
+	* gcc.target/avr/torture/isr-02-call.c: New test.
+	* gcc.target/avr/torture/isr-03-fixed.c: New test.
+
+2017-07-25  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	Backport from mainline
-	2016-07-14  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+	2017-07-14  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	PR tree-optimization/81162
 	* gcc.dg/ubsan/pr81162.c: New file.

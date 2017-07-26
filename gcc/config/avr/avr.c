@@ -3490,7 +3490,7 @@ out_movqi_r_mr (rtx_insn *insn, rtx op[], int *plen)
   if (CONSTANT_ADDRESS_P (x))
     {
       int n_words = AVR_TINY ? 1 : 2;
-      return optimize > 0 && io_address_operand (x, QImode)
+      return io_address_operand (x, QImode)
         ? avr_asm_len ("in %0,%i1", op, plen, -1)
         : avr_asm_len ("lds %0,%m1", op, plen, -n_words);
     }
@@ -3745,7 +3745,7 @@ out_movhi_r_mr (rtx_insn *insn, rtx op[], int *plen)
   else if (CONSTANT_ADDRESS_P (base))
     {
       int n_words = AVR_TINY ? 2 : 4;
-      return optimize > 0 && io_address_operand (base, HImode)
+      return io_address_operand (base, HImode)
         ? avr_asm_len ("in %A0,%i1" CR_TAB
                        "in %B0,%i1+1", op, plen, -2)
 
@@ -4873,7 +4873,7 @@ out_movqi_mr_r (rtx_insn *insn, rtx op[], int *plen)
   if (CONSTANT_ADDRESS_P (x))
     {
       int n_words = AVR_TINY ? 1 : 2;
-      return optimize > 0 && io_address_operand (x, QImode)
+      return io_address_operand (x, QImode)
         ? avr_asm_len ("out %i0,%1", op, plen, -1)
         : avr_asm_len ("sts %m0,%1", op, plen, -n_words);
     }
@@ -4949,13 +4949,12 @@ avr_out_movhi_mr_r_xmega (rtx_insn *insn, rtx op[], int *plen)
 
   if (CONSTANT_ADDRESS_P (base))
     {
-      int n_words = AVR_TINY ? 2 : 4;
-      return optimize > 0 && io_address_operand (base, HImode)
+      return io_address_operand (base, HImode)
         ? avr_asm_len ("out %i0,%A1" CR_TAB
                        "out %i0+1,%B1", op, plen, -2)
 
         : avr_asm_len ("sts %m0,%A1" CR_TAB
-                       "sts %m0+1,%B1", op, plen, -n_words);
+                       "sts %m0+1,%B1", op, plen, -4);
     }
 
   if (reg_base > 0)
@@ -5132,7 +5131,7 @@ out_movhi_mr_r (rtx_insn *insn, rtx op[], int *plen)
   if (CONSTANT_ADDRESS_P (base))
     {
       int n_words = AVR_TINY ? 2 : 4;
-      return optimize > 0 && io_address_operand (base, HImode)
+      return io_address_operand (base, HImode)
         ? avr_asm_len ("out %i0+1,%B1" CR_TAB
                        "out %i0,%A1", op, plen, -2)
 
@@ -10814,8 +10813,7 @@ avr_address_cost (rtx x, machine_mode mode ATTRIBUTE_UNUSED,
     }
   else if (CONSTANT_ADDRESS_P (x))
     {
-      if (optimize > 0
-          && io_address_operand (x, QImode))
+      if (io_address_operand (x, QImode))
         cost = 2;
     }
 
