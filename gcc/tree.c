@@ -4456,7 +4456,7 @@ build1_stat (enum tree_code code, tree type, tree node MEM_STAT_DECL)
 tree
 build2_stat (enum tree_code code, tree tt, tree arg0, tree arg1 MEM_STAT_DECL)
 {
-  bool constant, read_only, side_effects;
+  bool constant, read_only, side_effects, div_by_zero;
   tree t;
 
   gcc_assert (TREE_CODE_LENGTH (code) == 2);
@@ -4489,6 +4489,23 @@ build2_stat (enum tree_code code, tree tt, tree arg0, tree arg1 MEM_STAT_DECL)
   read_only = 1;
   side_effects = TREE_SIDE_EFFECTS (t);
 
+  switch (code)
+    {
+    case TRUNC_DIV_EXPR:
+    case CEIL_DIV_EXPR:
+    case FLOOR_DIV_EXPR:
+    case ROUND_DIV_EXPR:
+    case EXACT_DIV_EXPR:
+    case CEIL_MOD_EXPR:
+    case FLOOR_MOD_EXPR:
+    case ROUND_MOD_EXPR:
+    case TRUNC_MOD_EXPR:
+      div_by_zero = integer_zerop (arg1);
+      break;
+    default:
+      div_by_zero = false;
+    }
+
   PROCESS_ARG (0);
   PROCESS_ARG (1);
 
@@ -4505,7 +4522,8 @@ build2_stat (enum tree_code code, tree tt, tree arg0, tree arg1 MEM_STAT_DECL)
   else
     {
       TREE_READONLY (t) = read_only;
-      TREE_CONSTANT (t) = constant;
+      /* Don't mark X / 0 as constant.  */
+      TREE_CONSTANT (t) = constant && !div_by_zero;
       TREE_THIS_VOLATILE (t)
 	= (TREE_CODE_CLASS (code) == tcc_reference
 	   && arg0 && TREE_THIS_VOLATILE (arg0));
