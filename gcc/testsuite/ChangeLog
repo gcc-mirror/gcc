@@ -1,3 +1,37 @@
+2017-07-26  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2017-06-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/81410
+	* gcc.dg/vect/pr81410.c: New testcase.
+
+	2017-07-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/81455
+	* gcc.dg/pr81455.c: New testcase.
+
+	2017-07-25  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/81505
+	* gcc.dg/ubsan/pr81505.c: New testcase.
+
+	2017-07-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/81175
+	* gcc.target/i386/pr69255-2.c (foo): Use the return value of the
+	gather.
+
+	2017-06-26  Richard Biener  <rguenther@suse.de>
+
+	PR target/81175
+	* gfortran.dg/pr81175.f: New testcase.
+
+	2017-06-21  Marc Glisse  <marc.glisse@inria.fr>
+ 
+ 	* gcc.dg/tree-ssa/addadd.c: Un-XFAIL.
+ 	* gcc.dg/tree-ssa/addadd-2.c: New file.
+
 2016-07-25  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	Backport from mainline
