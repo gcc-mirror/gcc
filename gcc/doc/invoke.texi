@@ -1124,7 +1124,7 @@ See RS/6000 and PowerPC Options.
 -mv8plus  -mno-v8plus  -mvis  -mno-vis @gol
 -mvis2  -mno-vis2  -mvis3  -mno-vis3 @gol
 -mvis4 -mno-vis4 -mvis4b -mno-vis4b @gol
--mcbcond  -mno-cbcond  -mfmaf  -mno-fmaf  @gol
+-mcbcond  -mno-cbcond  -mfmaf  -mno-fmaf  -mfsmuld  -mno-fsmuld  @gol
 -mpopc  -mno-popc  -msubxc  -mno-subxc @gol
 -mfix-at697f  -mfix-ut699  -mfix-ut700  -mfix-gr712rc @gol
 -mlra  -mno-lra}
@@ -24068,6 +24068,15 @@ With @option{-mfmaf}, GCC generates code that takes advantage of the UltraSPARC
 Fused Multiply-Add Floating-point instructions.  The default is @option{-mfmaf}
 when targeting a CPU that supports such instructions, such as Niagara-3 and
 later.
+
+@item -mfsmuld
+@itemx -mno-fsmuld
+@opindex mfsmuld
+@opindex mno-fsmuld
+With @option{-mfsmuld}, GCC generates code that takes advantage of the
+Floating-point Multiply Single to Double (FsMULd) instruction.  The default is
+@option{-mfsmuld} when targeting a CPU supporting the architecture versions V8
+or V9 with FPU except @option{-mcpu=leon}.
 
 @item -mpopc
 @itemx -mno-popc

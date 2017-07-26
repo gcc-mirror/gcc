@@ -1,3 +1,12 @@
+2017-07-26  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* config/sparc/sparc.c (dump_target_flag_bits): Dump MASK_FSMULD.
+	(sparc_option_override): Honour MASK_FSMULD.
+	* config/sparc/sparc.h (MASK_FEATURES): Add MASK_FSMULD.
+	* config/sparc/sparc.md (muldf3_extend): Use TARGET_FSMULD.
+	* config/sparc/sparc.opt (mfsmuld): New option.
+	* doc/invoke.texi (mfsmuld): Document option.
+
 2017-07-26  Marek Polacek  <polacek@redhat.com>
 
 	PR middle-end/70992
