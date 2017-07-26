@@ -206,22 +206,6 @@ static const struct cpu_addrcost_table generic_addrcost_table =
   0 /* imm_offset  */
 };
 
-static const struct cpu_addrcost_table cortexa57_addrcost_table =
-{
-    {
-      1, /* hi  */
-      0, /* si  */
-      0, /* di  */
-      1, /* ti  */
-    },
-  0, /* pre_modify  */
-  0, /* post_modify  */
-  0, /* register_offset  */
-  0, /* register_sextend  */
-  0, /* register_zextend  */
-  0, /* imm_offset  */
-};
-
 static const struct cpu_addrcost_table exynosm1_addrcost_table =
 {
     {
@@ -252,22 +236,6 @@ static const struct cpu_addrcost_table xgene1_addrcost_table =
   1, /* register_sextend  */
   1, /* register_zextend  */
   0, /* imm_offset  */
-};
-
-static const struct cpu_addrcost_table qdf24xx_addrcost_table =
-{
-    {
-      1, /* hi  */
-      0, /* si  */
-      0, /* di  */
-      1, /* ti  */
-    },
-  0, /* pre_modify  */
-  0, /* post_modify  */
-  0, /* register_offset  */
-  0, /* register_sextend  */
-  0, /* register_zextend  */
-  0 /* imm_offset  */
 };
 
 static const struct cpu_addrcost_table thunderx2t99_addrcost_table =
@@ -647,7 +615,7 @@ static const struct tune_params cortexa53_tunings =
 static const struct tune_params cortexa57_tunings =
 {
   &cortexa57_extra_costs,
-  &cortexa57_addrcost_table,
+  &generic_addrcost_table,
   &cortexa57_regmove_cost,
   &cortexa57_vector_cost,
   &generic_branch_cost,
@@ -673,7 +641,7 @@ static const struct tune_params cortexa57_tunings =
 static const struct tune_params cortexa72_tunings =
 {
   &cortexa57_extra_costs,
-  &cortexa57_addrcost_table,
+  &generic_addrcost_table,
   &cortexa57_regmove_cost,
   &cortexa57_vector_cost,
   &generic_branch_cost,
@@ -699,7 +667,7 @@ static const struct tune_params cortexa72_tunings =
 static const struct tune_params cortexa73_tunings =
 {
   &cortexa57_extra_costs,
-  &cortexa57_addrcost_table,
+  &generic_addrcost_table,
   &cortexa57_regmove_cost,
   &cortexa57_vector_cost,
   &generic_branch_cost,
@@ -828,7 +796,7 @@ static const struct tune_params xgene1_tunings =
 static const struct tune_params qdf24xx_tunings =
 {
   &qdf24xx_extra_costs,
-  &qdf24xx_addrcost_table,
+  &generic_addrcost_table,
   &qdf24xx_regmove_cost,
   &generic_vector_cost,
   &generic_branch_cost,
