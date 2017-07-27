@@ -1,3 +1,8 @@
+2017-07-27  Martin Liska  <mliska@suse.cz>
+
+	* auto-profile.c (afdo_annotate_cfg): Assign zero counts to
+	BBs and edges seen by autoFDO.
+
 2017-07-27  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/81502

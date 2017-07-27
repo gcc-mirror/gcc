@@ -1547,9 +1547,11 @@ afdo_annotate_cfg (const stmt_set &promoted_stmts)
     edge e;
     edge_iterator ei;
 
-    bb->count = profile_count::uninitialized ();
+    /* As autoFDO uses sampling approach, we have to assume that all
+       counters are zero when not seen by autoFDO.  */
+    bb->count = profile_count::zero ().afdo ();
     FOR_EACH_EDGE (e, ei, bb->succs)
-      e->count = profile_count::uninitialized ();
+      e->count = profile_count::zero ().afdo ();
 
     if (afdo_set_bb_count (bb, promoted_stmts))
       set_bb_annotated (bb, &annotated_bb);
