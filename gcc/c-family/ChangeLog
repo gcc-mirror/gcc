@@ -1,3 +1,9 @@
+2017-07-27  Marek Polacek  <polacek@redhat.com>
+
+	PR c/81417
+	* c-warn.c (warn_for_sign_compare): Tweak the warning message.  Print
+	the types.
+
 2017-07-27  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-attribs.c (c_common_attribute_table): Add noipa attribute.

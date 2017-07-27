@@ -1,3 +1,18 @@
+2017-07-27  Marek Polacek  <polacek@redhat.com>
+
+	PR c/81417
+	* c-c++-common/Wsign-compare-1.c: New test.
+	* g++.dg/warn/Wsign-compare-2.C: Update dg-warning.
+	* g++.dg/warn/Wsign-compare-4.C: Likewise.
+	* g++.dg/warn/Wsign-compare-6.C: Likewise.
+	* g++.dg/warn/compare1.C: Likewise.
+	* gcc.dg/compare1.c: Likewise.
+	* gcc.dg/compare2.c: Likewise.
+	* gcc.dg/compare4.c: Likewise.
+	* gcc.dg/compare5.c: Likewise.
+	* gcc.dg/pr35430.c: Likewise.
+	* gcc.dg/pr60087.c: Likewise.
+
 2017-07-27  Peter Bergner  <bergner@vnet.ibm.com>
 
 	PR middle-end/81564
