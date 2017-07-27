@@ -774,15 +774,15 @@ autofdo_source_profile::update_inlined_ind_target (gcall *stmt,
      hot any more. Will avoid promote the original target.
 
      To check if original promoted target is still hot, we check the total
-     count of the unpromoted targets (stored in old_info). If it is no less
-     than half of the callsite count (stored in INFO), the original promoted
-     target is considered not hot any more.  */
-  if (total >= info->count / 2)
+     count of the unpromoted targets (stored in TOTAL). If a callsite count
+     (stored in INFO) is smaller than half of the total count, the original
+     promoted target is considered not hot any more.  */
+  if (info->count < total / 2)
     {
       if (dump_file)
-	fprintf (dump_file, " not hot anymore %ld >= %ld",
-		 (long)total,
-		 (long)info->count /2);
+	fprintf (dump_file, " not hot anymore %ld < %ld",
+		 (long)info->count,
+		 (long)total /2);
       return false;
     }
 
