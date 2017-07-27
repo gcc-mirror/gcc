@@ -1,5 +1,11 @@
 2017-07-27  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* cp-tree.h (maybe_version_functions): Declare.
+	* decl.c (maybe_version_functions): New.  Broken out of ...
+	(decls_match): ... here.  Call it.
+	* class.c (add_method): Add asserts, use maybe_version_functions.
+
 	Add conversion marker fn.
 	gcc/cp/
 	* cp-tree.h (CPTI_CONV_OP_MARKER, conv_op_marker): New.
