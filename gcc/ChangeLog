@@ -1,3 +1,8 @@
+2017-07-27  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* tree-ssa-loop-ch.c (pass_ch::process_loop_p): Guard on
+	flag_tree_loop_vectorize rather than flag_tree_vectorize.
+
 2017-07-27  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
 	PR target/81534
