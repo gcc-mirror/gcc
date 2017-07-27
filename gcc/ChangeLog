@@ -1,3 +1,9 @@
+2017-07-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/81571
+	* tree-vect-slp.c (vect_build_slp_tree): Properly verify reduction
+	PHIs.
+
 2017-07-27  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/sparc/sparc.c (sparc_option_override): Set MASK_FSMULD flag

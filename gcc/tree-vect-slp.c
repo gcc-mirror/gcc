@@ -947,11 +947,27 @@ vect_build_slp_tree (vec_info *vinfo,
      the recursion.  */
   if (gimple_code (stmt) == GIMPLE_PHI)
     {
+      vect_def_type def_type = STMT_VINFO_DEF_TYPE (vinfo_for_stmt (stmt));
       /* Induction from different IVs is not supported.  */
-      if (STMT_VINFO_DEF_TYPE (vinfo_for_stmt (stmt)) == vect_induction_def)
-	FOR_EACH_VEC_ELT (stmts, i, stmt)
-	  if (stmt != stmts[0])
-	    return NULL;
+      if (def_type == vect_induction_def)
+	{
+	  FOR_EACH_VEC_ELT (stmts, i, stmt)
+	    if (stmt != stmts[0])
+	      return NULL;
+	}
+      else
+	{
+	  /* Else def types have to match.  */
+	  FOR_EACH_VEC_ELT (stmts, i, stmt)
+	    {
+	      /* But for reduction chains only check on the first stmt.  */
+	      if (GROUP_FIRST_ELEMENT (vinfo_for_stmt (stmt))
+		  && GROUP_FIRST_ELEMENT (vinfo_for_stmt (stmt)) != stmt)
+		continue;
+	      if (STMT_VINFO_DEF_TYPE (vinfo_for_stmt (stmt)) != def_type)
+		return NULL;
+	    }
+	}
       node = vect_create_new_slp_node (stmts);
       return node;
     }

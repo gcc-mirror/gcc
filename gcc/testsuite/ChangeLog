@@ -1,5 +1,10 @@
 2017-07-27  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/81571
+	* gcc.dg/torture/pr81571.c: New testcase.
+
+2017-07-27  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/81502
 	* gcc.target/i386/vect-insert-1.c: New testcase.
 
