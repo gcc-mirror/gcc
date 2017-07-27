@@ -1,5 +1,12 @@
 2017-07-27  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/81573
+	PR tree-optimization/81494
+	* tree-vect-loop.c (vect_create_epilog_for_reduction): Handle
+	multi defuse cycle case.
+
+2017-07-27  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/81571
 	* tree-vect-slp.c (vect_build_slp_tree): Properly verify reduction
 	PHIs.
