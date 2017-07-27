@@ -1,3 +1,10 @@
+2017-07-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/81555
+	PR tree-optimization/81556
+	* gcc.c-torture/execute/pr81555.c: New test.
+	* gcc.c-torture/execute/pr81556.c: New test.
+
 2016-07-25  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	Backport from mainline
