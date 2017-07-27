@@ -3835,6 +3835,22 @@
   [(set_attr "type" "logics_reg,logics_imm")]
 )
 
+(define_split
+  [(set (reg:CC_NZ CC_REGNUM)
+	(compare:CC_NZ
+	 (and:GPI (match_operand:GPI 0 "register_operand")
+		  (match_operand:GPI 1 "aarch64_mov_imm_operand"))
+	 (const_int 0)))
+   (clobber (match_operand:SI 2 "register_operand"))]
+  ""
+  [(set (match_dup 2) (match_dup 1))
+   (set (reg:CC_NZ CC_REGNUM)
+	(compare:CC_NZ
+	 (and:GPI (match_dup 0)
+		  (match_dup 2))
+	 (const_int 0)))]
+)
+
 (define_insn "*and<mode>3nr_compare0_zextract"
   [(set (reg:CC_NZ CC_REGNUM)
 	(compare:CC_NZ
@@ -3868,6 +3884,26 @@
   ""
   "tst\\t%<w>2, %<w>0, <SHIFT:shift> %1"
   [(set_attr "type" "logics_shift_imm")]
+)
+
+(define_split
+  [(set (reg:CC_NZ CC_REGNUM)
+	(compare:CC_NZ
+	 (and:GPI (SHIFT:GPI
+		   (match_operand:GPI 0 "register_operand")
+		   (match_operand:QI 1 "aarch64_shift_imm_<mode>"))
+		  (match_operand:GPI 2 "aarch64_mov_imm_operand"))
+	(const_int 0)))
+    (clobber (match_operand:SI 3 "register_operand"))]
+  ""
+  [(set (match_dup 3) (match_dup 2))
+   (set (reg:CC_NZ CC_REGNUM)
+	(compare:CC_NZ
+	 (and:GPI (SHIFT:GPI
+		   (match_dup 0)
+		   (match_dup 1))
+		  (match_dup 3))
+	 (const_int 0)))]
 )
 
 ;; -------------------------------------------------------------------
