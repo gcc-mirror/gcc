@@ -123,7 +123,6 @@
 				 | OPTION_MASK_FPRND			\
 				 | OPTION_MASK_HTM			\
 				 | OPTION_MASK_ISEL			\
-				 | OPTION_MASK_LRA			\
 				 | OPTION_MASK_MFCRF			\
 				 | OPTION_MASK_MFPGPR			\
 				 | OPTION_MASK_MODULO			\

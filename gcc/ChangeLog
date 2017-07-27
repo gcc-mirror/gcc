@@ -1,3 +1,13 @@
+2017-07-27  Peter Bergner  <bergner@vnet.ibm.com>
+
+	* config/rs6000/rs6000.opt (mlra): Replace with stub.
+	* config/rs6000/rs6000-cpus.def (POWERPC_MASKS): Delete OPTION_MASK_LRA.
+	* config/rs6000/rs6000.c (TARGET_LRA_P): Delete.
+	(rs6000_debug_reg_global): Delete print of LRA status.
+	(rs6000_option_override_internal): Delete dead LRA related code.
+	(rs6000_lra_p): Delete function.
+	* doc/invoke.texi (RS/6000 and PowerPC Options): Delete -mlra.
+
 2017-07-27  Sebastian Huber  <sebastian.huber@embedded-brains.de>
 
 	* config.gcc (riscv*-*-elf*): Add (riscv*-*-rtems*).

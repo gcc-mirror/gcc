@@ -2,7 +2,7 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target powerpc_p9vector_ok } */
 /* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power9" } } */
-/* { dg-options "-O3 -mcpu=power9 -mpower9-dform-vector -mno-lra -funroll-loops -fno-aggressive-loop-optimizations" } */
+/* { dg-options "-O3 -mcpu=power9 -mpower9-dform-vector -funroll-loops -fno-aggressive-loop-optimizations" } */
 
 typedef double vec[3];
 struct vec_t
