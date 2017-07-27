@@ -37,6 +37,9 @@
 				  (TI	"TARGET_VSX_TIMODE")
 				  V1TI])
 
+;; Iterator for 128-bit integer types that go in a single vector register.
+(define_mode_iterator VSX_TI [(TI "TARGET_VSX_TIMODE") V1TI])
+
 ;; Iterator for the 2 32-bit vector types
 (define_mode_iterator VSX_W [V4SF V4SI])
 
@@ -756,9 +759,9 @@
 ;; special V1TI container class, which it is not appropriate to use vec_select
 ;; for the type.
 (define_insn "*vsx_le_permute_<mode>"
-  [(set (match_operand:VSX_LE_128 0 "nonimmediate_operand" "=<VSa>,<VSa>,Z")
-	(rotate:VSX_LE_128
-	 (match_operand:VSX_LE_128 1 "input_operand" "<VSa>,Z,<VSa>")
+  [(set (match_operand:VSX_TI 0 "nonimmediate_operand" "=<VSa>,<VSa>,Z")
+	(rotate:VSX_TI
+	 (match_operand:VSX_TI 1 "input_operand" "<VSa>,Z,<VSa>")
 	 (const_int 64)))]
   "!BYTES_BIG_ENDIAN && TARGET_VSX && !TARGET_P9_VECTOR"
   "@
@@ -769,10 +772,10 @@
    (set_attr "type" "vecperm,vecload,vecstore")])
 
 (define_insn_and_split "*vsx_le_undo_permute_<mode>"
-  [(set (match_operand:VSX_LE_128 0 "vsx_register_operand" "=<VSa>,<VSa>")
-	(rotate:VSX_LE_128
-	 (rotate:VSX_LE_128
-	  (match_operand:VSX_LE_128 1 "vsx_register_operand" "0,<VSa>")
+  [(set (match_operand:VSX_TI 0 "vsx_register_operand" "=<VSa>,<VSa>")
+	(rotate:VSX_TI
+	 (rotate:VSX_TI
+	  (match_operand:VSX_TI 1 "vsx_register_operand" "0,<VSa>")
 	  (const_int 64))
 	 (const_int 64)))]
   "!BYTES_BIG_ENDIAN && TARGET_VSX"
@@ -797,16 +800,15 @@
   "!BYTES_BIG_ENDIAN && TARGET_VSX && !TARGET_P9_VECTOR"
   "#"
   "!BYTES_BIG_ENDIAN && TARGET_VSX && !TARGET_P9_VECTOR"
-  [(set (match_dup 2)
-	(rotate:VSX_LE_128 (match_dup 1)
-			   (const_int 64)))
-   (set (match_dup 0)
-	(rotate:VSX_LE_128 (match_dup 2)
-			   (const_int 64)))]
+  [(const_int 0)]
   "
 {
-  operands[2] = can_create_pseudo_p () ? gen_reg_rtx_and_attrs (operands[0])
-                                       : operands[0];
+  rtx tmp = (can_create_pseudo_p ()
+	     ? gen_reg_rtx_and_attrs (operands[0])
+	     : operands[0]);
+  rs6000_emit_le_vsx_permute (tmp, operands[1], <MODE>mode);
+  rs6000_emit_le_vsx_permute (operands[0], tmp, <MODE>mode);
+  DONE;
 }
   "
   [(set_attr "type" "vecload")
@@ -824,15 +826,14 @@
   [(set (match_operand:VSX_LE_128 0 "memory_operand" "")
         (match_operand:VSX_LE_128 1 "vsx_register_operand" ""))]
   "!BYTES_BIG_ENDIAN && TARGET_VSX && !reload_completed && !TARGET_P9_VECTOR"
-  [(set (match_dup 2)
-	(rotate:VSX_LE_128 (match_dup 1)
-			   (const_int 64)))
-   (set (match_dup 0)
-	(rotate:VSX_LE_128 (match_dup 2)
-			   (const_int 64)))]
+  [(const_int 0)]
 {
-  operands[2] = can_create_pseudo_p () ? gen_reg_rtx_and_attrs (operands[0])
-                                       : operands[0];
+  rtx tmp = (can_create_pseudo_p ()
+	     ? gen_reg_rtx_and_attrs (operands[0])
+	     : operands[0]);
+  rs6000_emit_le_vsx_permute (tmp, operands[1], <MODE>mode);
+  rs6000_emit_le_vsx_permute (operands[0], tmp, <MODE>mode);
+  DONE;
 })
 
 ;; Peephole to catch memory to memory transfers for TImode if TImode landed in
@@ -856,16 +857,13 @@
   [(set (match_operand:VSX_LE_128 0 "memory_operand" "")
         (match_operand:VSX_LE_128 1 "vsx_register_operand" ""))]
   "!BYTES_BIG_ENDIAN && TARGET_VSX && reload_completed && !TARGET_P9_VECTOR"
-  [(set (match_dup 1)
-	(rotate:VSX_LE_128 (match_dup 1)
-			   (const_int 64)))
-   (set (match_dup 0)
-	(rotate:VSX_LE_128 (match_dup 1)
-			   (const_int 64)))
-   (set (match_dup 1)
-	(rotate:VSX_LE_128 (match_dup 1)
-			   (const_int 64)))]
-  "")
+  [(const_int 0)]
+{
+  rs6000_emit_le_vsx_permute (operands[1], operands[1], <MODE>mode);
+  rs6000_emit_le_vsx_permute (operands[0], operands[1], <MODE>mode);
+  rs6000_emit_le_vsx_permute (operands[1], operands[1], <MODE>mode);
+  DONE;
+})
 
 ;; Vector constants that can be generated with XXSPLTIB that was added in ISA
 ;; 3.0.  Both (const_vector [..]) and (vec_duplicate ...) forms are recognized.

@@ -1,3 +1,19 @@
+2017-07-27  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* config/rs6000/rs6000-protos.h (rs6000_emit_le_vsx_permute): Declare.
+	* config/rs6000/rs6000.c (rs6000_gen_le_vsx_permute): Replace with...
+	(rs6000_emit_le_vsx_permute): ...this.  Take the destination as input.
+	Emit instructions rather than returning an expression.  Handle TFmode
+	and KFmode by casting to TImode.
+	(rs6000_emit_le_vsx_load): Update to use rs6000_emit_le_vsx_permute.
+	(rs6000_emit_le_vsx_store): Likewise.
+	* config/rs6000/vsx.md (VSX_TI): New iterator.
+	(*vsx_le_permute_<mode>): Use it instead of VSX_LE_128.
+	(*vsx_le_undo_permute_<mode>): Likewise.
+	(*vsx_le_perm_load_<mode>): Use rs6000_emit_le_vsx_permute to
+	emit the split sequence.
+	(*vsx_le_perm_store_<mode>): Likewise.
+
 2017-07-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/81555
