@@ -8,7 +8,7 @@ int main()
   int i = 5;
   int const ic = 5;
 
-  i < 5u;  // { dg-warning "5:comparison between signed and unsigned" }
+  i < 5u;  // { dg-warning "5:comparison of integer expressions of different signedness" }
   ic < 5u;     
   FIVE < 5u;
 }

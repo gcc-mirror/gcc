@@ -1891,9 +1891,10 @@ warn_for_sign_compare (location_t location,
 				   c_common_signed_type (base_type)))
 	/* OK */;
       else
-	warning_at (location,
-		    OPT_Wsign_compare,
-		    "comparison between signed and unsigned integer expressions");
+	warning_at (location, OPT_Wsign_compare,
+		    "comparison of integer expressions of different "
+		    "signedness: %qT and %qT", TREE_TYPE (orig_op0),
+		    TREE_TYPE (orig_op1));
     }
 
   /* Warn if two unsigned values are being compared in a size larger

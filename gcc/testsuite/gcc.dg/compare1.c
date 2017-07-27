@@ -37,5 +37,5 @@ int h(enum mm2 x)
 
 int i(enum mm2 x)
 {
-  return x == (tf?DI2:-1); /* { dg-warning "signed and unsigned" "case 4" } */
+  return x == (tf?DI2:-1); /* { dg-warning "different signedness" "case 4" } */
 }
