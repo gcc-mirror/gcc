@@ -151,6 +151,7 @@ extern rtx rs6000_longcall_ref (rtx);
 extern void rs6000_fatal_bad_address (rtx);
 extern rtx create_TOC_reference (rtx, rtx);
 extern void rs6000_split_multireg_move (rtx, rtx);
+extern void rs6000_emit_le_vsx_permute (rtx, rtx, machine_mode);
 extern void rs6000_emit_le_vsx_move (rtx, rtx, machine_mode);
 extern bool valid_sf_si_move (rtx, rtx, machine_mode);
 extern void rs6000_emit_move (rtx, rtx, machine_mode);
