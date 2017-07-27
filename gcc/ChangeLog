@@ -1,5 +1,10 @@
 2017-07-27  Martin Liska  <mliska@suse.cz>
 
+	* auto-profile.c (autofdo_source_profile::update_inlined_ind_target):
+	Fix wrong condition.
+
+2017-07-27  Martin Liska  <mliska@suse.cz>
+
 	* auto-profile.c (afdo_annotate_cfg): Assign zero counts to
 	BBs and edges seen by autoFDO.
 
