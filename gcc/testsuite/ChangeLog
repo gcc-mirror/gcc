@@ -1,5 +1,10 @@
 2017-07-27  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/81555
+	PR tree-optimization/81556
+	* gcc.c-torture/execute/pr81555.c: New test.
+	* gcc.c-torture/execute/pr81556.c: New test.
+
 	* gcc.dg/attr-noipa.c: New test.
 	* gcc.dg/ipa/ipa-pta-18.c: New test.
 	* gcc.dg/ipa/ipa-sra-11.c: New test.
