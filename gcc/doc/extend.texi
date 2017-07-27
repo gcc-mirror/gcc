@@ -2984,6 +2984,19 @@ asm ("");
 (@pxref{Extended Asm}) in the called function, to serve as a special
 side-effect.
 
+@item noipa
+@cindex @code{noipa} function attribute
+Disable interprocedural optimizations between the function with this
+attribute and its callers, as if the body of the function is not available
+when optimizing callers and the callers are unavailable when optimizing
+the body.  This attribute implies @code{noinline}, @code{noclone} and
+@code{no_icf} attributes.    However, this attribute is not equivalent
+to a combination of other attributes, because its purpose is to suppress
+existing and future optimizations employing interprocedural analysis,
+including those that do not have an attribute suitable for disabling
+them individually.  This attribute is supported mainly for the purpose
+of testing the compiler.
+
 @item nonnull (@var{arg-index}, @dots{})
 @cindex @code{nonnull} function attribute
 @cindex functions with non-null pointer arguments
