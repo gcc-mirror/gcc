@@ -1877,6 +1877,9 @@ instrument_derefs (gimple_stmt_iterator *iter, tree t,
       || bitsize != size_in_bytes * BITS_PER_UNIT)
     return;
 
+  if (VAR_P (inner) && DECL_HARD_REGISTER (inner))
+    return;
+
   if (VAR_P (inner)
       && offset == NULL_TREE
       && bitpos >= 0
