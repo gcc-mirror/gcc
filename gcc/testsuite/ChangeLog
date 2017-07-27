@@ -1,6 +1,14 @@
 2017-07-27  Martin Liska  <mliska@suse.cz>
 
 	Backport from mainline
+	2017-06-30  Martin Liska  <mliska@suse.cz>
+
+	PR sanitizer/81021
+	* g++.dg/asan/pr81021.C: New test.
+
+2017-07-27  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
 	2017-06-28  Martin Liska  <mliska@suse.cz>
 
 	PR sanitizer/81224
