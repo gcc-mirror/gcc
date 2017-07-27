@@ -1007,6 +1007,13 @@ finish_options (struct gcc_options *opts, struct gcc_options *opts_set,
 
       opts->x_flag_stack_reuse = SR_NONE;
     }
+
+  if ((opts->x_flag_sanitize & SANITIZE_USER_ADDRESS) && opts->x_flag_tm)
+    sorry ("transactional memory is not supported with %<-fsanitize=address%>");
+
+  if ((opts->x_flag_sanitize & SANITIZE_KERNEL_ADDRESS) && opts->x_flag_tm)
+    sorry ("transactional memory is not supported with "
+	   "%<-fsanitize=kernel-address%>");
 }
 
 #define LEFT_COLUMN	27
