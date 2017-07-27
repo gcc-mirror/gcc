@@ -400,7 +400,8 @@ for (i = 0; i < n_opts; i++) {
 		       "    0, %s,\n",
 		       cl_flags, cl_bit_fields)
 	printf("    %s, %s, %s }%s\n", var_ref(opts[i], flags[i]),
-	       var_set(flags[i]), integer_range_info(opt_args("IntegerRange", flags[i])), comma)
+	       var_set(flags[i]), integer_range_info(opt_args("IntegerRange", flags[i]),
+		    opt_args("Init", flags[i]), opts[i]), comma)
 }
 
 print "};"

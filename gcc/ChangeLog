@@ -5,6 +5,11 @@
 
 2017-07-27  Martin Liska  <mliska@suse.cz>
 
+	* opt-functions.awk: Add validation of value of Init.
+	* optc-gen.awk: Pass new argument.
+
+2017-07-27  Martin Liska  <mliska@suse.cz>
+
 	* auto-profile.c (autofdo_source_profile::update_inlined_ind_target):
 	Fix wrong condition.
 
