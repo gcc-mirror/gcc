@@ -1,3 +1,12 @@
+2017-07-27  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
+	2017-06-28  Martin Liska  <mliska@suse.cz>
+
+	PR sanitizer/81224
+	* asan.c (instrument_derefs): Bail out inner references
+	that are hard register variables.
+
 2017-07-26  Sebastian Huber  <sebastian.huber@embedded-brains.de>
 
 	Backport from mainline
