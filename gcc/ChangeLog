@@ -1,3 +1,10 @@
+2017-07-27  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
+	PR target/81534
+	* config/s390/s390.md ("*atomic_compare_and_swap<mode>_1")
+	("*atomic_compare_and_swapdi_2", "*atomic_compare_and_swapsi_3"):
+	Change s_operand to memory_operand.
+
 2017-07-27  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	* config/rs6000/rs6000-protos.h (rs6000_emit_le_vsx_permute): Declare.
