@@ -5263,6 +5263,16 @@ expand_function_start (tree subr)
 	}
     }
 
+  /* The following was moved from init_function_start.
+     The move is supposed to make sdb output more accurate.  */
+  /* Indicate the beginning of the function body,
+     as opposed to parm setup.  */
+  emit_note (NOTE_INSN_FUNCTION_BEG);
+
+  gcc_assert (NOTE_P (get_last_insn ()));
+
+  parm_birth_insn = get_last_insn ();
+
   /* If the function receives a non-local goto, then store the
      bits we need to restore the frame pointer.  */
   if (cfun->nonlocal_goto_save_area)
@@ -5283,16 +5293,6 @@ expand_function_start (tree subr)
       emit_move_insn (r_save, targetm.builtin_setjmp_frame_value ());
       update_nonlocal_goto_save_area ();
     }
-
-  /* The following was moved from init_function_start.
-     The move is supposed to make sdb output more accurate.  */
-  /* Indicate the beginning of the function body,
-     as opposed to parm setup.  */
-  emit_note (NOTE_INSN_FUNCTION_BEG);
-
-  gcc_assert (NOTE_P (get_last_insn ()));
-
-  parm_birth_insn = get_last_insn ();
 
   if (crtl->profile)
     {
