@@ -1,5 +1,12 @@
 2017-07-27  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/81555
+	PR tree-optimization/81556
+	* tree-ssa-reassoc.c (rewrite_expr_tree): Add NEXT_CHANGED argument,
+	if true, force CHANGED for the recursive invocation.
+	(reassociate_bb): Remember original length of ops array, pass
+	len != orig_len as NEXT_CHANGED in rewrite_expr_tree call.
+
 	* attribs.c (decl_attributes): Imply noinline, noclone and no_icf
 	attributes for noipa attribute.  For naked attribute use
 	lookup_attribute first before lookup_attribute_spec.
