@@ -1,3 +1,9 @@
+2017-07-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/45784
+	* testsuite/libgomp.c/pr45784.c: New test.
+	* testsuite/libgomp.c++/pr45784.C: New test.
+
 2017-07-19  Tom de Vries  <tom@codesourcery.com>
 
 	* testsuite/libgomp.oacc-c/vec.c: New test.
