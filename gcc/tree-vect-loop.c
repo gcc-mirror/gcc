@@ -4787,20 +4787,17 @@ vect_create_epilog_for_reduction (vec<tree> vect_defs, gimple *stmt,
   if (GROUP_FIRST_ELEMENT (vinfo_for_stmt (stmt)))
     {
       tree first_vect = PHI_RESULT (new_phis[0]);
-      tree tmp;
       gassign *new_vec_stmt = NULL;
-
       vec_dest = vect_create_destination_var (scalar_dest, vectype);
       for (k = 1; k < new_phis.length (); k++)
         {
 	  gimple *next_phi = new_phis[k];
           tree second_vect = PHI_RESULT (next_phi);
-
-          tmp = build2 (code, vectype,  first_vect, second_vect);
-          new_vec_stmt = gimple_build_assign (vec_dest, tmp);
-          first_vect = make_ssa_name (vec_dest, new_vec_stmt);
-          gimple_assign_set_lhs (new_vec_stmt, first_vect);
+          tree tem = make_ssa_name (vec_dest, new_vec_stmt);
+          new_vec_stmt = gimple_build_assign (tem, code,
+					      first_vect, second_vect);
           gsi_insert_before (&exit_gsi, new_vec_stmt, GSI_SAME_STMT);
+	  first_vect = tem;
         }
 
       new_phi_result = first_vect;
@@ -4809,6 +4806,28 @@ vect_create_epilog_for_reduction (vec<tree> vect_defs, gimple *stmt,
           new_phis.truncate (0);
           new_phis.safe_push (new_vec_stmt);
         }
+    }
+  /* Likewise if we couldn't use a single defuse cycle.  */
+  else if (ncopies > 1)
+    {
+      gcc_assert (new_phis.length () == 1);
+      tree first_vect = PHI_RESULT (new_phis[0]);
+      gassign *new_vec_stmt = NULL;
+      vec_dest = vect_create_destination_var (scalar_dest, vectype);
+      gimple *next_phi = new_phis[0];
+      for (int k = 1; k < ncopies; ++k)
+	{
+	  next_phi = STMT_VINFO_RELATED_STMT (vinfo_for_stmt (next_phi));
+	  tree second_vect = PHI_RESULT (next_phi);
+          tree tem = make_ssa_name (vec_dest, new_vec_stmt);
+          new_vec_stmt = gimple_build_assign (tem, code,
+					      first_vect, second_vect);
+          gsi_insert_before (&exit_gsi, new_vec_stmt, GSI_SAME_STMT);
+	  first_vect = tem;
+	}
+      new_phi_result = first_vect;
+      new_phis.truncate (0);
+      new_phis.safe_push (new_vec_stmt);
     }
   else
     new_phi_result = PHI_RESULT (new_phis[0]);
