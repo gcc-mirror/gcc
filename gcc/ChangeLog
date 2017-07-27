@@ -1,3 +1,13 @@
+2017-07-27  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+	    Sudakshina Das  <sudi.das@arm.com>
+
+	* config/aarch64/aarch64.md
+	(define_split for and<mode>3nr_compare): Move
+	non aarch64_logical_operand to a register.
+	(define_split for and_<SHIFT:optab><mode>3nr_compare0): Move non
+	register immediate operand to a register.
+	* config/aarch64/predicates.md (aarch64_mov_imm_operand): New.
+
 2017-07-27  Peter Bergner  <bergner@vnet.ibm.com>
 
 	PR middle-end/81564
