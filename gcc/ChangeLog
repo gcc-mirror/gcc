@@ -1,5 +1,40 @@
 2017-07-27  Peter Bergner  <bergner@vnet.ibm.com>
 
+	* config/rs6000/predicates.md (volatile_mem_operand): Remove code
+	related to reload_in_progress.
+	(splat_input_operand): Likewise.
+	* config/rs6000/rs6000-protos.h (rs6000_secondary_memory_needed_rtx):
+	Delete prototype.
+	* config/rs6000/rs6000.c (machine_function): Remove sdmode_stack_slot
+	field.
+	(TARGET_EXPAND_TO_RTL_HOOK): Delete.
+	(TARGET_INSTANTIATE_DECLS): Likewise.
+	(legitimate_indexed_address_p): Delete reload_in_progress code.
+	(rs6000_debug_legitimate_address_p): Likewise.
+	(rs6000_eliminate_indexed_memrefs): Likewise.
+	(rs6000_emit_le_vsx_store): Likewise.
+	(rs6000_emit_move_si_sf_subreg): Likewise.
+	(rs6000_emit_move): Likewise.
+	(register_to_reg_type): Likewise.
+	(rs6000_pre_atomic_barrier): Likewise.
+	(rs6000_machopic_legitimize_pic_address): Likewise.
+	(rs6000_allocate_stack_temp): Likewise.
+	(rs6000_address_for_fpconvert): Likewise.
+	(rs6000_address_for_altivec): Likewise.
+	(rs6000_secondary_memory_needed_rtx): Delete function.
+	(rs6000_check_sdmode): Likewise.
+	(rs6000_alloc_sdmode_stack_slot): Likewise.
+	(rs6000_instantiate_decls): Likewise.
+	* config/rs6000/rs6000.h (SECONDARY_MEMORY_NEEDED_RTX): Delete.
+	* config/rs6000/rs6000.md (splitter for *movsi_got_internal):
+	Delete reload_in_progress.
+	(*vec_reload_and_plus_<mptrsize>): Likewise.
+	* config/rs6000/vsx.md (vsx_mul_v2di): Likewise.
+	(vsx_div_v2di): Likewise.
+	(vsx_udiv_v2di): Likewise.
+
+2017-07-27  Peter Bergner  <bergner@vnet.ibm.com>
+
 	* config/rs6000/rs6000.opt (mlra): Replace with stub.
 	* config/rs6000/rs6000-cpus.def (POWERPC_MASKS): Delete OPTION_MASK_LRA.
 	* config/rs6000/rs6000.c (TARGET_LRA_P): Delete.

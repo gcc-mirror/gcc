@@ -1583,13 +1583,6 @@ extern enum reg_class rs6000_constraints[RS6000_CONSTRAINT_MAX];
 #define SECONDARY_MEMORY_NEEDED(CLASS1,CLASS2,MODE)			\
   rs6000_secondary_memory_needed_ptr (CLASS1, CLASS2, MODE)
 
-/* For cpus that cannot load/store SDmode values from the 64-bit
-   FP registers without using a full 64-bit load/store, we need
-   to allocate a full 64-bit stack slot for them.  */
-
-#define SECONDARY_MEMORY_NEEDED_RTX(MODE) \
-  rs6000_secondary_memory_needed_rtx (MODE)
-
 /* Specify the mode to be used for memory when a secondary memory
    location is needed.  For cpus that cannot load/store SDmode values
    from the 64-bit FP registers without using a full 64-bit

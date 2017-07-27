@@ -1201,7 +1201,7 @@
                      UNSPEC_VSX_MULSD))]
   "VECTOR_MEM_VSX_P (V2DImode)"
   "#"
-  "VECTOR_MEM_VSX_P (V2DImode) && !reload_completed && !reload_in_progress"
+  "VECTOR_MEM_VSX_P (V2DImode) && !reload_completed"
   [(const_int 0)]
   "
 {
@@ -1239,7 +1239,7 @@
                      UNSPEC_VSX_DIVSD))]
   "VECTOR_MEM_VSX_P (V2DImode)"
   "#"
-  "VECTOR_MEM_VSX_P (V2DImode) && !reload_completed && !reload_in_progress"
+  "VECTOR_MEM_VSX_P (V2DImode) && !reload_completed"
   [(const_int 0)]
   "
 {
@@ -1267,7 +1267,7 @@
                      UNSPEC_VSX_DIVUD))]
   "VECTOR_MEM_VSX_P (V2DImode)"
   "#"
-  "VECTOR_MEM_VSX_P (V2DImode) && !reload_completed && !reload_in_progress"
+  "VECTOR_MEM_VSX_P (V2DImode) && !reload_completed"
   [(const_int 0)]
   "
 {
