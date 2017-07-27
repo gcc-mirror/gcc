@@ -92,10 +92,11 @@ non_local_p (struct cgraph_node *node, void *data ATTRIBUTE_UNUSED)
 {
   return !(node->only_called_directly_or_aliased_p ()
 	   /* i386 would need update to output thunk with local calling
-	      convetions.  */
+	      conventions.  */
 	   && !node->thunk.thunk_p
 	   && node->definition
 	   && !DECL_EXTERNAL (node->decl)
+	   && !lookup_attribute ("noipa", DECL_ATTRIBUTES (node->decl))
 	   && !node->externally_visible
 	   && !node->used_from_other_partition
 	   && !node->in_other_partition
@@ -210,6 +211,8 @@ cgraph_externally_visible_p (struct cgraph_node *node,
     return true;
   if (lookup_attribute ("externally_visible",
 			DECL_ATTRIBUTES (node->decl)))
+    return true;
+  if (lookup_attribute ("noipa", DECL_ATTRIBUTES (node->decl)))
     return true;
   if (TARGET_DLLIMPORT_DECL_ATTRIBUTES
       && lookup_attribute ("dllexport",

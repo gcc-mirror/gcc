@@ -66,6 +66,7 @@ static tree handle_stack_protect_attribute (tree *, tree, tree, int, bool *);
 static tree handle_noinline_attribute (tree *, tree, tree, int, bool *);
 static tree handle_noclone_attribute (tree *, tree, tree, int, bool *);
 static tree handle_noicf_attribute (tree *, tree, tree, int, bool *);
+static tree handle_noipa_attribute (tree *, tree, tree, int, bool *);
 static tree handle_leaf_attribute (tree *, tree, tree, int, bool *);
 static tree handle_always_inline_attribute (tree *, tree, tree, int,
 					    bool *);
@@ -178,6 +179,8 @@ const struct attribute_spec c_common_attribute_table[] =
 			      handle_noclone_attribute, false },
   { "no_icf",                 0, 0, true,  false, false,
 			      handle_noicf_attribute, false },
+  { "noipa",		      0, 0, true,  false, false,
+			      handle_noipa_attribute, false },
   { "leaf",                   0, 0, true,  false, false,
 			      handle_leaf_attribute, false },
   { "always_inline",          0, 0, true,  false, false,
@@ -698,6 +701,21 @@ handle_asan_odr_indicator_attribute (tree *, tree, tree, int, bool *)
 static tree
 handle_stack_protect_attribute (tree *node, tree name, tree, int,
 				bool *no_add_attrs)
+{
+  if (TREE_CODE (*node) != FUNCTION_DECL)
+    {
+      warning (OPT_Wattributes, "%qE attribute ignored", name);
+      *no_add_attrs = true;
+    }
+
+  return NULL_TREE;
+}
+
+/* Handle a "noipa" attribute; arguments as in
+   struct attribute_spec.handler.  */
+
+static tree
+handle_noipa_attribute (tree *node, tree name, tree, int, bool *no_add_attrs)
 {
   if (TREE_CODE (*node) != FUNCTION_DECL)
     {

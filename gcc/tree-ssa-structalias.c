@@ -7764,7 +7764,8 @@ refered_from_nonlocal_fn (struct cgraph_node *node, void *data)
   bool *nonlocal_p = (bool *)data;
   *nonlocal_p |= (node->used_from_other_partition
 		  || node->externally_visible
-		  || node->force_output);
+		  || node->force_output
+		  || lookup_attribute ("noipa", DECL_ATTRIBUTES (node->decl)));
   return false;
 }
 
@@ -7824,7 +7825,9 @@ ipa_pta_execute (void)
 	 constraints for parameters.  */
       bool nonlocal_p = (node->used_from_other_partition
 			 || node->externally_visible
-			 || node->force_output);
+			 || node->force_output
+			 || lookup_attribute ("noipa",
+					      DECL_ATTRIBUTES (node->decl)));
       node->call_for_symbol_thunks_and_aliases (refered_from_nonlocal_fn,
 						&nonlocal_p, true);
 

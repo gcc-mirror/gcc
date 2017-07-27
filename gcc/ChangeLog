@@ -1,3 +1,21 @@
+2017-07-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* attribs.c (decl_attributes): Imply noinline, noclone and no_icf
+	attributes for noipa attribute.  For naked attribute use
+	lookup_attribute first before lookup_attribute_spec.
+	* final.c (rest_of_handle_final): Disable IPA RA for functions with
+	noipa attribute.
+	* ipa-visibility.c (non_local_p): Fix comment typos.  Return true
+	for functions with noipa attribute.
+	(cgraph_externally_visible_p): Return true for functions with noipa
+	attribute.
+	* cgraph.c (cgraph_node::get_availability): Return AVAIL_INTERPOSABLE
+	for functions with noipa attribute.
+	* doc/extend.texi: Document noipa function attribute.
+	* tree-ssa-structalias.c (refered_from_nonlocal_fn): Set *nonlocal_p
+	also for functions with noipa attribute.
+	(ipa_pta_execute): Set nonlocal_p also for nodes with noipa attribute.
+
 2017-07-26  Andrew Pinski  <apinski@cavium.com>
 
 	* config/aarch64/aarch64.c (thunderx_vector_cost): Decrease cost of
