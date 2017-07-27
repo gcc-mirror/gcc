@@ -1,3 +1,10 @@
+2017-07-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/81502
+	* tree-ssa.c (non_rewritable_lvalue_p): Handle BIT_INSERT_EXPR
+	with incompatible but same sized type.
+	(execute_update_addresses_taken): Likewise.
+
 2017-07-27  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* tree-ssa-loop-ch.c (pass_ch::process_loop_p): Guard on
