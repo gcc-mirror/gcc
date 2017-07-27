@@ -1,6 +1,15 @@
 2017-07-27  Martin Liska  <mliska@suse.cz>
 
 	Backport from mainline
+	2017-06-30  Martin Liska  <mliska@suse.cz>
+
+	PR sanitizer/81021
+	* tree-eh.c (lower_resx): Call BUILT_IN_ASAN_HANDLE_NO_RETURN
+	before BUILT_IN_UNWIND_RESUME when ASAN is used.
+
+2017-07-27  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
 	2017-06-28  Martin Liska  <mliska@suse.cz>
 
 	PR sanitizer/81224
