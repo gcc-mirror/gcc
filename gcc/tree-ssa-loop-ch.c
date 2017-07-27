@@ -436,7 +436,7 @@ pass_ch::process_loop_p (struct loop *loop)
 bool
 pass_ch_vect::process_loop_p (struct loop *loop)
 {
-  if (!flag_tree_vectorize && !loop->force_vectorize)
+  if (!flag_tree_loop_vectorize && !loop->force_vectorize)
     return false;
 
   if (loop->dont_vectorize)
