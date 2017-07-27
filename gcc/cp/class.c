@@ -1031,22 +1031,38 @@ add_method (tree type, tree method, bool via_using)
   bool insert_p = true;
   unsigned slot;
   tree m;
-  char const *method_string = IDENTIFIER_POINTER (DECL_NAME (method));
+  tree method_name = conv_p ? conv_op_identifier : DECL_NAME (method);
 
   /* See if we already have an entry with this name.  */
   for (slot = 0; vec_safe_iterate (method_vec, slot, &m); ++slot)
     {
-      m = OVL_FIRST (m);
-      char const *m_string = IDENTIFIER_POINTER (DECL_NAME (m));
-      if (m_string == method_string)
+      m = DECL_NAME (OVL_FIRST (m));
+      if (m == method_name)
 	{
 	  insert_p = false;
 	  break;
 	}
-      if (complete_p && m_string > method_string)
+      if (complete_p && m > method_name)
 	break;
     }
   tree current_fns = insert_p ? NULL_TREE : (*method_vec)[slot];
+
+  tree conv_marker = NULL_TREE;
+  if (conv_p)
+    {
+      /* For conversion operators, we prepend a dummy overload
+	 pointing at conv_op_marker.  That function's DECL_NAME is
+	 conv_op_identifier, so we can use identifier equality to
+	 locate it.  */
+      if (current_fns)
+	{
+	  gcc_checking_assert (OVL_FUNCTION (current_fns) == conv_op_marker);
+	  conv_marker = current_fns;
+	  current_fns = OVL_CHAIN (current_fns);
+	}
+      else
+	conv_marker = ovl_make (conv_op_marker, NULL_TREE);
+    }
 
   /* Check to see if we've already got this method.  */
   for (ovl_iterator iter (current_fns); iter; ++iter)
@@ -1217,7 +1233,11 @@ add_method (tree type, tree method, bool via_using)
   current_fns = ovl_insert (method, current_fns, via_using);
 
   if (conv_p)
-    TYPE_HAS_CONVERSION (type) = 1;
+    {
+      TYPE_HAS_CONVERSION (type) = 1;
+      OVL_CHAIN (conv_marker) = current_fns;
+      current_fns = conv_marker;
+    }
   else if (!complete_p)
     push_class_level_binding (DECL_NAME (method), current_fns);
 
@@ -2259,8 +2279,7 @@ method_name_cmp (const void* m1_p, const void* m2_p)
   const tree *const m1 = (const tree *) m1_p;
   const tree *const m2 = (const tree *) m2_p;
 
-  if (IDENTIFIER_POINTER (OVL_NAME (*m1))
-      < IDENTIFIER_POINTER (OVL_NAME (*m2)))
+  if (OVL_NAME (*m1) < OVL_NAME (*m2))
     return -1;
   return 1;
 }
@@ -2274,8 +2293,8 @@ resort_method_name_cmp (const void* m1_p, const void* m2_p)
   const tree *const m1 = (const tree *) m1_p;
   const tree *const m2 = (const tree *) m2_p;
 
-  const char *n1 = IDENTIFIER_POINTER (OVL_NAME (*m1));
-  const char *n2 = IDENTIFIER_POINTER (OVL_NAME (*m2));
+  tree n1 = OVL_NAME (*m1);
+  tree n2 = OVL_NAME (*m2);
   resort_data.new_value (&n1, resort_data.cookie);
   resort_data.new_value (&n2, resort_data.cookie);
   if (n1 < n2)

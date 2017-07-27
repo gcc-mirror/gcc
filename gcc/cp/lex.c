@@ -584,8 +584,6 @@ make_conv_op_name (tree type)
 	 table.  */
       identifier = copy_node (conv_op_identifier);
 
-      set_identifier_kind (identifier, cik_conv_op);
-
       /* Just in case something managed to bind.  */
       IDENTIFIER_BINDING (identifier) = NULL;
       IDENTIFIER_LABEL_VALUE (identifier) = NULL_TREE;

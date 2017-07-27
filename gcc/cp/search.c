@@ -1510,7 +1510,7 @@ lookup_conversion_operator (tree fns, tree type)
    member functions.  */
 
 tree
-lookup_fnfields_slot_nolazy (tree type, tree name)
+lookup_fnfields_slot_nolazy (tree type, tree realname)
 {
   vec<tree, va_gc> *method_vec = CLASSTYPE_METHOD_VEC (type);
   if (!method_vec)
@@ -1520,9 +1520,11 @@ lookup_fnfields_slot_nolazy (tree type, tree name)
     n_calls_lookup_fnfields_1++;
 
   tree fns = NULL_TREE;
+  tree name = realname;
+  if (IDENTIFIER_CONV_OP_P (realname))
+    name = conv_op_identifier;
 
   /* If the type is complete, use binary search.  */
-  const char *name_string = IDENTIFIER_POINTER (name);
   if (COMPLETE_TYPE_P (type))
     {
       int lo = 0;
@@ -1535,10 +1537,10 @@ lookup_fnfields_slot_nolazy (tree type, tree name)
 	    n_outer_fields_searched++;
 
 	  fns = (*method_vec)[i];
-	  const char *fns_string = IDENTIFIER_POINTER (OVL_NAME (fns));
-	  if (fns_string > name_string)
+	  tree fns_name = OVL_NAME (fns);
+	  if (fns_name > name)
 	    hi = i;
-	  else if (fns_string < name_string)
+	  else if (fns_name < name)
 	    lo = i + 1;
 	  else
 	    break;
@@ -1550,14 +1552,20 @@ lookup_fnfields_slot_nolazy (tree type, tree name)
       {
 	if (GATHER_STATISTICS)
 	  n_outer_fields_searched++;
-	if (IDENTIFIER_POINTER (OVL_NAME (fns)) == name_string)
+	if (OVL_NAME (fns) == name)
 	  break;
 	fns = NULL_TREE;
       }
 
-  /* Extract the conversion operators asked for.  */
-  if (IDENTIFIER_CONV_OP_P (name))
-    fns = lookup_conversion_operator (fns, TREE_TYPE (name));
+  /* Extract the conversion operators asked for, unless the general
+     conversion operator was requested.   */
+  if (fns && name == conv_op_identifier)
+    {
+      gcc_checking_assert (OVL_FUNCTION (fns) == conv_op_marker);
+      fns = OVL_CHAIN (fns);
+      if (tree type = TREE_TYPE (realname))
+	fns = lookup_conversion_operator (fns, type);
+    }
 
   return fns;
 }

@@ -125,6 +125,7 @@ enum cp_tree_index
     CPTI_TYPE_INFO_PTR_TYPE,
     CPTI_ABORT_FNDECL,
     CPTI_AGGR_TAG,
+    CPTI_CONV_OP_MARKER,
 
     CPTI_CTOR_IDENTIFIER,
     CPTI_COMPLETE_CTOR_IDENTIFIER,
@@ -200,6 +201,7 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
 #define global_type_node		cp_global_trees[CPTI_GLOBAL_TYPE]
 #define const_type_info_type_node	cp_global_trees[CPTI_CONST_TYPE_INFO_TYPE]
 #define type_info_ptr_type		cp_global_trees[CPTI_TYPE_INFO_PTR_TYPE]
+#define conv_op_marker			cp_global_trees[CPTI_CONV_OP_MARKER]
 #define abort_fndecl			cp_global_trees[CPTI_ABORT_FNDECL]
 #define current_aggr			cp_global_trees[CPTI_AGGR_TAG]
 #define nullptr_node			cp_global_trees[CPTI_NULLPTR]

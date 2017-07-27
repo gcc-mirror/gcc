@@ -1,3 +1,17 @@
+2017-07-27  Nathan Sidwell  <nathan@acm.org>
+
+	Add conversion marker fn.
+	gcc/cp/
+	* cp-tree.h (CPTI_CONV_OP_MARKER, conv_op_marker): New.
+	* decl.c (initialize_predefined_identifiers): conv_op is conv_op.
+	(cxx_init_decl_processing): Create conv_op_marker.
+	* class.c (add_method): Compare identifiers.  Insert
+	conv_op_marker for conv op overloads.
+	(method_name_cmp, resort_method_name): Compare identifiers.
+	* lex.c (make_conv_op_name): No need to set identifier kind.
+	* search.c (lookup_fnfields_slot_nolazy): Compare identifiers,
+	deal with conv_op_marker.
+
 2017-07-21  Nathan Sidwell  <nathan@acm.org>
 
 	Merge trunk r250440.

@@ -3376,7 +3376,7 @@ lookup_all_conversions (tree klass)
 
   if (TYPE_HAS_CONVERSION (klass))
     lkp = lookup_fnfields_slot_nolazy (klass, conv_op_identifier);
-
+  
   return lkp;
 }
 
