@@ -1,7 +1,7 @@
 // { dg-do compile { target { powerpc64*-*-* && lp64 } } }
 // { dg-require-effective-target powerpc_p8vector_ok } */
 // { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power8" } }
-// { dg-options "-mcpu=power8 -O3 -fstack-protector -mno-lra" }
+// { dg-options "-mcpu=power8 -O3 -fstack-protector" }
 
 // PAR target/71294 failed because RELOAD could not figure how create a V2DI
 // vector that auto vectorization created with each element being the same

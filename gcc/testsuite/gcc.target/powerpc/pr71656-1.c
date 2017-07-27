@@ -2,7 +2,7 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target powerpc_p9vector_ok } */
 /* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power9" } } */
-/* { dg-options "-O1 -mcpu=power9 -mpower9-dform-vector -mno-lra" } */
+/* { dg-options "-O1 -mcpu=power9 -mpower9-dform-vector" } */
 
 typedef __attribute__((altivec(vector__))) int type_t;
 type_t

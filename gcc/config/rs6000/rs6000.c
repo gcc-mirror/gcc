@@ -1887,9 +1887,6 @@ static const struct attribute_spec rs6000_attribute_table[] =
 #undef TARGET_MODE_DEPENDENT_ADDRESS_P
 #define TARGET_MODE_DEPENDENT_ADDRESS_P rs6000_mode_dependent_address_p
 
-#undef TARGET_LRA_P
-#define TARGET_LRA_P rs6000_lra_p
-
 #undef TARGET_COMPUTE_PRESSURE_CLASSES
 #define TARGET_COMPUTE_PRESSURE_CLASSES rs6000_compute_pressure_classes
 
@@ -2789,8 +2786,6 @@ rs6000_debug_reg_global (void)
 
   if (TARGET_LINK_STACK)
     fprintf (stderr, DEBUG_FMT_S, "link_stack", "true");
-
-  fprintf (stderr, DEBUG_FMT_S, "lra", TARGET_LRA ? "true" : "false");
 
   if (TARGET_P8_FUSION)
     {
@@ -4555,35 +4550,10 @@ rs6000_option_override_internal (bool global_init_p)
 	}
     }
 
-  /* Enable LRA by default.  */
-  if ((rs6000_isa_flags_explicit & OPTION_MASK_LRA) == 0)
-    rs6000_isa_flags |= OPTION_MASK_LRA;
-
-  /* There have been bugs with -mvsx-timode that don't show up with -mlra,
-     but do show up with -mno-lra.  Given -mlra will become the default once
-     PR 69847 is fixed, turn off the options with problems by default if
-     -mno-lra was used, and warn if the user explicitly asked for the option.
-
-     Enable -mpower9-dform-vector by default if LRA and other power9 options.
-     Enable -mvsx-timode by default if LRA and VSX.  */
-  if (!TARGET_LRA)
-    {
-      if (TARGET_VSX_TIMODE)
-	{
-	  if ((rs6000_isa_flags_explicit & OPTION_MASK_VSX_TIMODE) != 0)
-	    warning (0, "-mvsx-timode might need -mlra");
-
-	  else
-	    rs6000_isa_flags &= ~OPTION_MASK_VSX_TIMODE;
-	}
-    }
-
-  else
-    {
-      if (TARGET_VSX && !TARGET_VSX_TIMODE
-	  && (rs6000_isa_flags_explicit & OPTION_MASK_VSX_TIMODE) == 0)
-	rs6000_isa_flags |= OPTION_MASK_VSX_TIMODE;
-    }
+  /* Enable -mvsx-timode by default if VSX.  */
+  if (TARGET_VSX && !TARGET_VSX_TIMODE
+      && (rs6000_isa_flags_explicit & OPTION_MASK_VSX_TIMODE) == 0)
+    rs6000_isa_flags |= OPTION_MASK_VSX_TIMODE;
 
   /* Set -mallow-movmisalign to explicitly on if we have full ISA 2.07
      support. If we only have ISA 2.06 support, and the user did not specify
@@ -35874,14 +35844,6 @@ rs6000_libcall_value (machine_mode mode)
     regno = GP_ARG_RETURN;
 
   return gen_rtx_REG (mode, regno);
-}
-
-
-/* Return true if we use LRA instead of reload pass.  */
-static bool
-rs6000_lra_p (void)
-{
-  return TARGET_LRA;
 }
 
 /* Compute register pressure classes.  We implement the target hook to avoid
