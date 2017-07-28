@@ -1,3 +1,8 @@
+2017-07-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/81502
+	* gcc.target/i386/pr81502.c: New testcase.
+
 2017-07-28  Martin Liska  <mliska@suse.cz>
 
 	PR sanitizer/81460

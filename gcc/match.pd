@@ -4178,3 +4178,25 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	 { CONSTRUCTOR_ELT (ctor, idx / k)->value; })
 	(BIT_FIELD_REF { CONSTRUCTOR_ELT (ctor, idx / k)->value; }
 		       @1 { bitsize_int ((idx % k) * width); })))))))))
+
+/* Simplify a bit extraction from a bit insertion for the cases with
+   the inserted element fully covering the extraction or the insertion
+   not touching the extraction.  */
+(simplify
+ (BIT_FIELD_REF (bit_insert @0 @1 @ipos) @rsize @rpos)
+ (with
+  {
+    unsigned HOST_WIDE_INT isize;
+    if (INTEGRAL_TYPE_P (TREE_TYPE (@1)))
+      isize = TYPE_PRECISION (TREE_TYPE (@1));
+    else
+      isize = tree_to_uhwi (TYPE_SIZE (TREE_TYPE (@1)));
+  }
+  (switch
+   (if (wi::leu_p (@ipos, @rpos)
+        && wi::leu_p (wi::add (@rpos, @rsize), wi::add (@ipos, isize)))
+    (BIT_FIELD_REF @1 @rsize { wide_int_to_tree (bitsizetype,
+                                                 wi::sub (@rpos, @ipos)); }))
+   (if (wi::geu_p (@ipos, wi::add (@rpos, @rsize))
+        || wi::geu_p (@rpos, wi::add (@ipos, isize)))
+    (BIT_FIELD_REF @0 @rsize @rpos)))))

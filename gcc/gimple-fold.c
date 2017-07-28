@@ -4245,7 +4245,7 @@ maybe_canonicalize_mem_ref_addr (tree *t)
 				       TREE_TYPE (*t),
 				       TREE_OPERAND (TREE_OPERAND (*t, 0), 0),
 				       TYPE_SIZE (TREE_TYPE (*t)),
-				       wide_int_to_tree (sizetype, idx));
+				       wide_int_to_tree (bitsizetype, idx));
 		      res = true;
 		    }
 		}

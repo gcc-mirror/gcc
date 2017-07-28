@@ -3936,7 +3936,7 @@ make_bit_field_ref (location_t loc, tree inner, tree orig_inner, tree type,
     bftype = build_nonstandard_integer_type (bitsize, 0);
 
   result = build3_loc (loc, BIT_FIELD_REF, bftype, inner,
-		       size_int (bitsize), bitsize_int (bitpos));
+		       bitsize_int (bitsize), bitsize_int (bitpos));
   REF_REVERSE_STORAGE_ORDER (result) = reversep;
 
   if (bftype != type)
