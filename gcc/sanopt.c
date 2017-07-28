@@ -894,11 +894,12 @@ sanitize_rewrite_addressable_params (function *fun)
   for (tree arg = DECL_ARGUMENTS (current_function_decl);
        arg; arg = DECL_CHAIN (arg))
     {
-      if (TREE_ADDRESSABLE (arg) && !TREE_ADDRESSABLE (TREE_TYPE (arg)))
+      tree type = TREE_TYPE (arg);
+      if (TREE_ADDRESSABLE (arg) && !TREE_ADDRESSABLE (type)
+	  && TREE_CODE (TYPE_SIZE (type)) == INTEGER_CST)
 	{
 	  TREE_ADDRESSABLE (arg) = 0;
 	  /* The parameter is no longer addressable.  */
-	  tree type = TREE_TYPE (arg);
 	  has_any_addressable_param = true;
 
 	  /* Create a new automatic variable.  */

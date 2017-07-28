@@ -1,3 +1,9 @@
+2017-07-28  Martin Liska  <mliska@suse.cz>
+
+	PR sanitizer/81460
+	* sanopt.c (sanitize_rewrite_addressable_params): Do not rewrite
+	parameters that are of a variable-length.
+
 2017-07-28  Sebastian Huber  <sebastian.huber@embedded-brains.de>
 
 	* config.gcc (powerpc-*-rtems*): Remove rs6000/eabi.h.  Add
