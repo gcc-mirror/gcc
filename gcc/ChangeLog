@@ -1,5 +1,34 @@
 2017-07-28  Bin Cheng  <bin.cheng@arm.com>
 
+	* tree-predcom.c: Revise general description of the pass.
+	(enum chain_type): New enum type for store elimination.
+	(struct chain): New field supporting store elimination.
+	(struct component): Ditto.
+	(dump_chain): Dump store-stores chain.
+	(release_chain): Release resources.
+	(split_data_refs_to_components): Compute and create component
+	contains only stores for elimination.
+	(get_chain_last_ref_at): New function.
+	(make_invariant_chain): Initialization.
+	(make_rooted_chain): Specify chain type in parameter and record it.
+	(add_looparound_copies): Skip for store-stores chain.
+	(determine_roots_comp): Compute type of chain and pass it to
+	make_rooted_chain.
+	(initialize_root_vars_store_elim_2): New function.
+	(finalize_eliminated_stores): New function.
+	(remove_stmt): Handle store for elimination.
+	(execute_pred_commoning_chain): Execute predictive commoning on
+	store-store chains.
+	(determine_unroll_factor): Skip unroll for store-stores chain.
+	(prepare_initializers_chain_store_elim): New function.
+	(prepare_initializers_chain): Hanlde store-store chain.
+	(prepare_finalizers_chain, prepare_finalizers): New function.
+	(tree_predictive_commoning_loop): Return integer value indicating
+	if loop is unrolled or lcssa form is corrupted.
+	(tree_predictive_commoning): Rewrite for lcssa form if necessary.
+
+2017-07-28  Bin Cheng  <bin.cheng@arm.com>
+
 	* tree-predcom.c (initialize_root): Delete.
 	(execute_pred_commoning_chain): Initialize root vars and replace
 	reference of non-combined chain directly, rather than call above
