@@ -181,6 +181,11 @@
 ;; will be disabled when !TARGET_FLOAT.
 (define_attr "fp" "no,yes" (const_string "no"))
 
+;; Attribute that specifies whether or not the instruction touches half
+;; precision fp registers.  When this is set to yes for an alternative,
+;; that alternative will be disabled when !TARGET_FP_F16INST.
+(define_attr "fp16" "no,yes" (const_string "no"))
+
 ;; Attribute that specifies whether or not the instruction touches simd
 ;; registers.  When this is set to yes for an alternative, that alternative
 ;; will be disabled when !TARGET_SIMD.
@@ -194,11 +199,14 @@
 ;; registers when -mgeneral-regs-only is specified.
 (define_attr "enabled" "no,yes"
   (cond [(ior
-	(and (eq_attr "fp" "yes")
-	     (eq (symbol_ref "TARGET_FLOAT") (const_int 0)))
-	(and (eq_attr "simd" "yes")
-	     (eq (symbol_ref "TARGET_SIMD") (const_int 0))))
-	     (const_string "no")
+	    (ior
+		(and (eq_attr "fp" "yes")
+		     (eq (symbol_ref "TARGET_FLOAT") (const_int 0)))
+		(and (eq_attr "simd" "yes")
+		     (eq (symbol_ref "TARGET_SIMD") (const_int 0))))
+	    (and (eq_attr "fp16" "yes")
+		 (eq (symbol_ref "TARGET_FP_F16INST") (const_int 0))))
+	    (const_string "no")
 	] (const_string "yes")))
 
 ;; Attribute that specifies whether we are dealing with a branch to a
@@ -1064,65 +1072,94 @@
 )
 
 (define_insn "*movhf_aarch64"
-  [(set (match_operand:HF 0 "nonimmediate_operand" "=w,w  ,?r,w,w,m,r,m ,r")
-	(match_operand:HF 1 "general_operand"      "Y ,?rY, w,w,m,w,m,rY,r"))]
+  [(set (match_operand:HF 0 "nonimmediate_operand" "=w,w  ,?r,w,w  ,w  ,w,m,r,m ,r")
+	(match_operand:HF 1 "general_operand"      "Y ,?rY, w,w,Ufc,Uvi,m,w,m,rY,r"))]
   "TARGET_FLOAT && (register_operand (operands[0], HFmode)
-    || aarch64_reg_or_fp_zero (operands[1], HFmode))"
+    || aarch64_reg_or_fp_float (operands[1], HFmode))"
   "@
    movi\\t%0.4h, #0
-   mov\\t%0.h[0], %w1
+   fmov\\t%h0, %w1
    umov\\t%w0, %1.h[0]
    mov\\t%0.h[0], %1.h[0]
+   fmov\\t%h0, %1
+   * return aarch64_output_scalar_simd_mov_immediate (operands[1], SImode);
    ldr\\t%h0, %1
    str\\t%h1, %0
    ldrh\\t%w0, %1
    strh\\t%w1, %0
    mov\\t%w0, %w1"
-  [(set_attr "type" "neon_move,neon_from_gp,neon_to_gp,neon_move,\
-                     f_loads,f_stores,load1,store1,mov_reg")
-   (set_attr "simd" "yes,yes,yes,yes,*,*,*,*,*")]
+  [(set_attr "type" "neon_move,f_mcr,neon_to_gp,neon_move,fconsts, \
+		     neon_move,f_loads,f_stores,load1,store1,mov_reg")
+   (set_attr "simd" "yes,*,yes,yes,*,yes,*,*,*,*,*")
+   (set_attr "fp16"   "*,yes,*,*,yes,*,*,*,*,*,*")]
 )
 
 (define_insn "*movsf_aarch64"
-  [(set (match_operand:SF 0 "nonimmediate_operand" "=w,w  ,?r,w,w  ,w,m,r,m ,r")
-	(match_operand:SF 1 "general_operand"      "Y ,?rY, w,w,Ufc,m,w,m,rY,r"))]
+  [(set (match_operand:SF 0 "nonimmediate_operand" "=w,w  ,?r,w,w  ,w  ,w,m,r,m ,r,r")
+	(match_operand:SF 1 "general_operand"      "Y ,?rY, w,w,Ufc,Uvi,m,w,m,rY,r,M"))]
   "TARGET_FLOAT && (register_operand (operands[0], SFmode)
-    || aarch64_reg_or_fp_zero (operands[1], SFmode))"
+    || aarch64_reg_or_fp_float (operands[1], SFmode))"
   "@
    movi\\t%0.2s, #0
    fmov\\t%s0, %w1
    fmov\\t%w0, %s1
    fmov\\t%s0, %s1
    fmov\\t%s0, %1
+   * return aarch64_output_scalar_simd_mov_immediate (operands[1], SImode);
    ldr\\t%s0, %1
    str\\t%s1, %0
    ldr\\t%w0, %1
    str\\t%w1, %0
-   mov\\t%w0, %w1"
-  [(set_attr "type" "neon_move,f_mcr,f_mrc,fmov,fconsts,\
-                     f_loads,f_stores,load1,store1,mov_reg")
-   (set_attr "simd" "yes,*,*,*,*,*,*,*,*,*")]
+   mov\\t%w0, %w1
+   mov\\t%w0, %1"
+  [(set_attr "type" "neon_move,f_mcr,f_mrc,fmov,fconsts,neon_move,\
+		     f_loads,f_stores,load1,store1,mov_reg,\
+		     fconsts")
+   (set_attr "simd" "yes,*,*,*,*,yes,*,*,*,*,*,*")]
 )
 
 (define_insn "*movdf_aarch64"
-  [(set (match_operand:DF 0 "nonimmediate_operand" "=w,w  ,?r,w,w  ,w,m,r,m ,r")
-	(match_operand:DF 1 "general_operand"      "Y ,?rY, w,w,Ufc,m,w,m,rY,r"))]
+  [(set (match_operand:DF 0 "nonimmediate_operand" "=w, w  ,?r,w,w  ,w  ,w,m,r,m ,r,r")
+	(match_operand:DF 1 "general_operand"      "Y , ?rY, w,w,Ufc,Uvi,m,w,m,rY,r,N"))]
   "TARGET_FLOAT && (register_operand (operands[0], DFmode)
-    || aarch64_reg_or_fp_zero (operands[1], DFmode))"
+    || aarch64_reg_or_fp_float (operands[1], DFmode))"
   "@
    movi\\t%d0, #0
    fmov\\t%d0, %x1
    fmov\\t%x0, %d1
    fmov\\t%d0, %d1
    fmov\\t%d0, %1
+   * return aarch64_output_scalar_simd_mov_immediate (operands[1], DImode);
    ldr\\t%d0, %1
    str\\t%d1, %0
    ldr\\t%x0, %1
    str\\t%x1, %0
-   mov\\t%x0, %x1"
-  [(set_attr "type" "neon_move,f_mcr,f_mrc,fmov,fconstd,\
-                     f_loadd,f_stored,load1,store1,mov_reg")
-   (set_attr "simd" "yes,*,*,*,*,*,*,*,*,*")]
+   mov\\t%x0, %x1
+   mov\\t%x0, %1"
+  [(set_attr "type" "neon_move,f_mcr,f_mrc,fmov,fconstd,neon_move,\
+		     f_loadd,f_stored,load1,store1,mov_reg,\
+		     fconstd")
+   (set_attr "simd" "yes,*,*,*,*,yes,*,*,*,*,*,*")]
+)
+
+(define_split
+  [(set (match_operand:GPF_HF 0 "nonimmediate_operand")
+	(match_operand:GPF_HF 1 "general_operand"))]
+  "can_create_pseudo_p ()
+   && !aarch64_can_const_movi_rtx_p (operands[1], <MODE>mode)
+   && !aarch64_float_const_representable_p (operands[1])
+   &&  aarch64_float_const_rtx_p (operands[1])"
+  [(const_int 0)]
+  {
+    unsigned HOST_WIDE_INT ival;
+    if (!aarch64_reinterpret_float_as_int (operands[1], &ival))
+      FAIL;
+
+    rtx tmp = gen_reg_rtx (<FCVT_TARGET>mode);
+    emit_move_insn (tmp, gen_int_mode (ival, <FCVT_TARGET>mode));
+    emit_move_insn (operands[0], gen_lowpart (<MODE>mode, tmp));
+    DONE;
+  }
 )
 
 (define_insn "*movtf_aarch64"
