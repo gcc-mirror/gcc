@@ -1,5 +1,15 @@
 2017-07-28  Bin Cheng  <bin.cheng@arm.com>
 
+	* tree-predcom.c: (struct chain): Handle store-store chain in which
+	stores for elimination only store loop invariant values.
+	(execute_pred_commoning_chain): Ditto.
+	(prepare_initializers_chain_store_elim): Ditto.
+	(prepare_finalizers): Ditto.
+	(is_inv_store_elimination_chain): New function.
+	(initialize_root_vars_store_elim_1): New function.
+
+2017-07-28  Bin Cheng  <bin.cheng@arm.com>
+
 	* tree-predcom.c: Revise general description of the pass.
 	(enum chain_type): New enum type for store elimination.
 	(struct chain): New field supporting store elimination.
