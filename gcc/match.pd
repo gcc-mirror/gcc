@@ -900,7 +900,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
    (X | Y) | (X | Z) -> (X | Y) | Z  */
 (for op (bit_and bit_ior)
  (simplify
-  (op:c (convert1?@3 (op:c@4 @0 @1)) (convert2?@5 (op:c@6 @0 @2)))
+  (op (convert1?@3 (op:c@4 @0 @1)) (convert2?@5 (op:c@6 @0 @2)))
   (if (tree_nop_conversion_p (type, TREE_TYPE (@1))
        && tree_nop_conversion_p (type, TREE_TYPE (@2)))
    (if (single_use (@5) && single_use (@6))
