@@ -1,3 +1,10 @@
+2017-07-28  Peter Bergner  <bergner@vnet.ibm.com>
+
+	Backport from mainline
+	2017-07-28  Peter Bergner  <bergner@vnet.ibm.com>
+
+	* gcc.target/powerpc/cpu-builtin-1.c (darn, scv): Add tests.
+
 2017-07-28  Bin Cheng  <bin.cheng@arm.com>
 
 	Backport from mainline r250496
