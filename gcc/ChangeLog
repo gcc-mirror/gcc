@@ -1,5 +1,14 @@
 2017-07-28  Bin Cheng  <bin.cheng@arm.com>
 
+	* tree-predcom.c (struct chain): New field init_seq.
+	(release_chain): Release init_seq.
+	(prepare_initializers_chain): Record intialization stmts in above
+	field.
+	(insert_init_seqs): New function.
+	(tree_predictive_commoning_loop): Call insert_init_seqs.
+
+2017-07-28  Bin Cheng  <bin.cheng@arm.com>
+
 	* tree-predcom.c (determine_roots_comp): Skip trivial components.
 
 2017-07-28  Richard Biener  <rguenther@suse.de>

@@ -294,6 +294,9 @@ typedef struct chain
   /* Initializers for the variables.  */
   vec<tree> inits;
 
+  /* gimple stmts intializing the initial variables of the chain.  */
+  gimple_seq init_seq;
+
   /* True if there is a use of a variable with the maximal distance
      that comes after the root in the loop.  */
   unsigned has_max_use_after : 1;
@@ -511,6 +514,8 @@ release_chain (chain_p chain)
   chain->refs.release ();
   chain->vars.release ();
   chain->inits.release ();
+  if (chain->init_seq)
+    gimple_seq_discard (chain->init_seq);
 
   free (chain);
 }
@@ -2457,7 +2462,7 @@ prepare_initializers_chain (struct loop *loop, chain_p chain)
 	}
 
       if (stmts)
-	gsi_insert_seq_on_edge_immediate (entry, stmts);
+	gimple_seq_add_seq_without_update (&chain->init_seq, stmts);
 
       chain->inits[i] = init;
     }
@@ -2485,6 +2490,22 @@ prepare_initializers (struct loop *loop, vec<chain_p> chains)
 	  chains.unordered_remove (i);
 	}
     }
+}
+
+/* Insert all initializing gimple stmts into loop's entry edge.  */
+
+static void
+insert_init_seqs (struct loop *loop, vec<chain_p> chains)
+{
+  unsigned i;
+  edge entry = loop_preheader_edge (loop);
+
+  for (i = 0; i < chains.length (); ++i)
+    if (chains[i]->init_seq)
+      {
+	gsi_insert_seq_on_edge_immediate (entry, chains[i]->init_seq);
+	chains[i]->init_seq = NULL;
+      }
 }
 
 /* Performs predictive commoning for LOOP.  Returns true if LOOP was
@@ -2567,6 +2588,8 @@ tree_predictive_commoning_loop (struct loop *loop)
 
   /* Try to combine the chains that are always worked with together.  */
   try_combine_chains (&chains);
+
+  insert_init_seqs (loop, chains);
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
