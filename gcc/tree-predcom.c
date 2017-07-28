@@ -1227,8 +1227,11 @@ determine_roots_comp (struct loop *loop,
       return;
     }
 
-  comp->refs.qsort (order_drefs);
+  /* Trivial component.  */
+  if (comp->refs.length () <= 1)
+    return;
 
+  comp->refs.qsort (order_drefs);
   FOR_EACH_VEC_ELT (comp->refs, i, a)
     {
       if (!chain || DR_IS_WRITE (a->ref)
