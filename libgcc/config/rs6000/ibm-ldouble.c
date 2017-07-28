@@ -45,7 +45,8 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    This code currently assumes the most significant double is in
    the lower numbered register or lower addressed memory.  */
 
-#if defined (__MACH__) || defined (__powerpc__) || defined (_AIX)
+#if (defined (__MACH__) || defined (__powerpc__) || defined (_AIX)) \
+    && !defined (__rtems__)
 
 #define fabs(x) __builtin_fabs(x)
 #define isless(x, y) __builtin_isless (x, y)
