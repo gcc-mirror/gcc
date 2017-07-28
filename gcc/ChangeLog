@@ -1,4 +1,11 @@
 2017-07-28  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/aarch64/aarch64.c
+	(aarch64_internal_mov_immediate): Add new special pattern.
+	* config/aarch64/aarch64.md (*movdi_aarch64):
+	Add reg/32bit const mov case.
+
+2017-07-28  Tamar Christina  <tamar.christina@arm.com>
 	    Richard Sandiford <richard.sandiford@linaro.org>
 
 	* config/aarch64/aarch64.md (mov<mode>): Generalize.
