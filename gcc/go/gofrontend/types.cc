@@ -1057,6 +1057,8 @@ Type::get_backend_placeholder(Gogo* gogo)
       {
 	Location loc = Linemap::unknown_location();
 	bt = gogo->backend()->placeholder_pointer_type("", loc, false);
+	Pointer_type* pt = this->convert<Pointer_type, TYPE_POINTER>();
+	Type::placeholder_pointers.push_back(pt);
       }
       break;
 
@@ -5521,6 +5523,11 @@ Pointer_type::do_import(Import* imp)
 
 Type::Pointer_type_table Type::pointer_types;
 
+// A list of placeholder pointer types.  We keep this so we can ensure
+// they are finalized.
+
+std::vector<Pointer_type*> Type::placeholder_pointers;
+
 // Make a pointer type.
 
 Pointer_type*
@@ -5551,11 +5558,11 @@ Type::make_pointer_type(Type* to_type)
 void
 Type::finish_pointer_types(Gogo* gogo)
 {
-  for (Pointer_type_table::const_iterator i = pointer_types.begin();
-       i != pointer_types.end();
-       ++i)
+  // We don't use begin() and end() because it is possible to add new
+  // placeholder pointer types as we finalized existing ones.
+  for (size_t i = 0; i < Type::placeholder_pointers.size(); i++)
     {
-      Pointer_type* pt = i->second;
+      Pointer_type* pt = Type::placeholder_pointers[i];
       Type_btypes::iterator tbti = Type::type_btypes.find(pt);
       if (tbti != Type::type_btypes.end() && tbti->second.is_placeholder)
         {
