@@ -1,3 +1,9 @@
+2017-07-28  Martin Liska  <mliska@suse.cz>
+
+	PR sanitizer/81340
+	* sanopt.c (sanitize_rewrite_addressable_params): Set VALUE_EXPR after
+	gimple_build_debug_bind.
+
 2017-07-28  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/81502
