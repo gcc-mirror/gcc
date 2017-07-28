@@ -1,3 +1,23 @@
+2017-07-28  Richard Biener  <rguenther@suse.de>
+
+	* match.pd: Remove superfluous :c.
+	* genmatch.c (simplify::id): Add member.
+	(lower_commutative, lower_opt_convert, lower_cond, lower_for):
+	Copy id.
+	(current_id): New global.
+	(dt_node::parent): Move from ...
+	(dt_operand::parent): ... here.  Add for_id member.
+	(is_a_helper <dt_operand *>::test): DT_TRUE is also a dt_operand.
+	(decision_tree::find_node): Relax order requirement when
+	merging DT_TRUE nodes to ones inbetween the current simplify
+	and the one we try to merge with.  Add diagnostic whenever
+	we need to enforce pattern order by not merging.
+	(decision_tree::insert): Set current_id.
+	(decision_tree::print_node): Dump parent node and for_id.
+	(parser::last_id): Add member.
+	(parser::push_simplify): Assign unique id.
+	(parser::parser): Initialize last_id.
+
 2017-07-28  Martin Liska  <mliska@suse.cz>
 
 	PR sanitizer/81340
