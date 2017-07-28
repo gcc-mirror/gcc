@@ -1,3 +1,12 @@
+2017-07-28  Tamar Christina  <tamar.christina@arm.com>
+	    Bilyan Borisov  <bilyan.borisov@arm.com>
+
+	* gcc.target/aarch64/dbl_mov_immediate_1.c: New.
+	* gcc.target/aarch64/flt_mov_immediate_1.c: New.
+	* gcc.target/aarch64/f16_mov_immediate_1.c: New.
+	* gcc.target/aarch64/f16_mov_immediate_2.c: New.
+	* gcc.target/aarch64/pr63304_1.c: Changed to double.
+
 2017-07-28  Bin Cheng  <bin.cheng@arm.com>
 
 	* gcc.dg/tree-ssa/predcom-dse-1.c: New test.
