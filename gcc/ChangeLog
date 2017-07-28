@@ -1,3 +1,40 @@
+2017-07-28  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* config.gcc (powerpc-*-rtems*): Remove rs6000/eabi.h.  Add
+	rs6000/biarch64.h.
+	* config/rs6000/rtems.h (ASM_DECLARE_FUNCTION_SIZE): New macro.
+	(ASM_OUTPUT_SPECIAL_POOL_ENTRY_P): Likewise.
+	(CRT_CALL_STATIC_FUNCTION): Likewise.
+	(ASM_DEFAULT_SPEC): New define.
+	(ASM_SPEC32): Likewise.
+	(ASM_SPEC64): Likewise.
+	(ASM_SPEC_COMMON): Likewise.
+	(ASM_SPEC): Likewise.
+	(INVALID_64BIT): Likewise.
+	(LINK_OS_DEFAULT_SPEC): Likewise.
+	(LINK_OS_SPEC32): Likewise.
+	(LINK_OS_SPEC64): Likewise.
+	(POWERPC_LINUX): Likewise.
+	(PTRDIFF_TYPE): Likewise.
+	(RESTORE_FP_PREFIX): Likewise.
+	(RESTORE_FP_SUFFIX): Likewise.
+	(SAVE_FP_PREFIX): Likewise.
+	(SAVE_FP_SUFFIX): Likewise.
+	(SIZE_TYPE): Likewise.
+	(SUBSUBTARGET_OVERRIDE_OPTIONS): Likewise.
+	(TARGET_64BIT): Likewise.
+	(TARGET_64BIT): Likewise.
+	(TARGET_AIX): Likewise.
+	(WCHAR_TYPE_SIZE): Likewise.
+	(WCHAR_TYPE): Undefine.
+	(TARGET_OS_CPP_BUILTINS): Add 64-bit PowerPC defines.
+	(CPP_OS_DEFAULT_SPEC): Use previous CPP_OS_RTEMS_SPEC.
+	(CPP_OS_RTEMS_SPEC): Delete.
+	(SUBSUBTARGET_EXTRA_SPECS): Remove cpp_os_rtems.  Add
+	asm_spec_common, asm_spec32, asm_spec64, link_os_spec32, and
+	link_os_spec64.
+	* config/rs6000/t-rtems: Add mcpu=e6500/m64 multilibs.
+
 2017-07-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/81578
